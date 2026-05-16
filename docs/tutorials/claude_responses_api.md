@@ -143,6 +143,63 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
 claude
 ```
 
+### Listing LiteLLM models in `/model` with gateway discovery
+
+Claude Code v2.1.129+ can populate the in-session `/model` picker with the
+models your LiteLLM proxy exposes, instead of only showing Claude Code's
+built-in list. This is off by default — opt in by setting
+`CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` before launching `claude`:
+
+```bash
+export ANTHROPIC_BASE_URL="http://0.0.0.0:4000"
+export ANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"
+export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1
+claude
+```
+
+Or pin it for every session in `~/.claude/settings.json`:
+
+```json title="~/.claude/settings.json"
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY": "1"
+  }
+}
+```
+
+**How it works:**
+
+- On startup, Claude Code calls `GET {ANTHROPIC_BASE_URL}/v1/models` using
+  the same auth (`ANTHROPIC_AUTH_TOKEN` as a bearer token, or
+  `ANTHROPIC_API_KEY` as `x-api-key`) it uses for inference requests.
+- Discovered entries are labeled **"From gateway"** in `/model` and use the
+  `display_name` field from the response when present.
+- Only model IDs that begin with `claude` or `anthropic` are surfaced in
+  the picker. Name your LiteLLM `model_name` entries accordingly (e.g.
+  `claude-opus-4-7`, `claude-sonnet-4-6`) so they show up.
+- Discovery is skipped when `ANTHROPIC_BASE_URL` is unset or points at
+  `api.anthropic.com`, and it does not run for Bedrock or Vertex pass-through
+  endpoints.
+- Results are cached at `~/.claude/cache/gateway-models.json` and refreshed
+  on each startup; if the request fails, Claude Code falls back to the cache
+  and then to its built-in model list.
+
+:::warning Response-format compatibility
+
+Gateway discovery requires the Anthropic-native `/v1/models` response shape
+(`type: "model"`, `created_at`, optional `display_name`). LiteLLM's
+`/v1/models` currently returns the OpenAI-style shape (`object: "model"`,
+`created`), so the picker may not light up out of the box — tracked in
+[BerriAI/litellm#27180](https://github.com/BerriAI/litellm/issues/27180).
+
+Until that ships, you can still select any proxy model the usual way:
+
+- `claude --model <model_name>` at startup
+- `/model <model_name>` inside a session
+- `ANTHROPIC_DEFAULT_OPUS_MODEL` / `_SONNET_MODEL` / `_HAIKU_MODEL` env vars
+
+:::
+
 ### Using 1M Context Window
 
 Claude Code supports extended context (1 million tokens) using the `[1m]` suffix:
