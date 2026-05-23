@@ -374,6 +374,14 @@ const sidebars = {
             "proxy/error_diagnosis",
             "proxy/deploy",
             "proxy/microservices_helm",
+            {
+              type: "category",
+              label: "Terraform",
+              items: [
+                "proxy/deploy_terraform_aws",
+                "proxy/deploy_terraform_gcp",
+              ],
+            },
             "proxy/docker_image_security",
             "proxy/health",
             "proxy/master_key_rotations",

@@ -253,9 +253,12 @@ docker run \
 
 ### Terraform
 
-s/o [Nicholas Cecere](https://www.linkedin.com/in/nicholas-cecere-24243549/) for his LiteLLM User Management Terraform
+Deploy the componentized LiteLLM proxy (gateway + backend + UI) on AWS or GCP using the official Terraform stacks bundled in the LiteLLM repository:
 
-👉 [Go here for Terraform](https://github.com/BerriAI/terraform-provider-litellm)
+- 👉 [**Deploy on AWS (ECS Fargate)**](/docs/proxy/deploy_terraform_aws) — Aurora Postgres (IAM auth), ElastiCache Redis, S3, Application Load Balancer
+- 👉 [**Deploy on GCP (Cloud Run)**](/docs/proxy/deploy_terraform_gcp) — Cloud SQL, Memorystore Redis, GCS, External HTTPS Load Balancer
+
+For the LiteLLM User Management Terraform provider, see [terraform-provider-litellm](https://github.com/BerriAI/terraform-provider-litellm).
 
 ### Kubernetes
 
@@ -919,24 +922,19 @@ This will use the local model prices file instead.
 <Tabs>
 <TabItem value="AWS ECS" label="AWS ECS - Elastic Container Service">
 
-### Terraform-based ECS Deployment
+### Terraform-based ECS Fargate Deployment
 
-LiteLLM maintains a dedicated Terraform tutorial for deploying the proxy on ECS. Follow the step-by-step guide in the [litellm-ecs-deployment repository](https://github.com/BerriAI/litellm-ecs-deployment) to provision the required ECS services, task definitions, and supporting AWS resources.
+LiteLLM provides a production-ready Terraform module for deploying the componentized proxy on ECS Fargate with Aurora PostgreSQL, ElastiCache Redis, S3, and an Application Load Balancer.
 
-1. Clone the tutorial repository to review the Terraform modules and variables.
-  ```bash
-  git clone https://github.com/BerriAI/litellm-ecs-deployment.git
-  cd litellm-ecs-deployment
-  ```
+See the full guide: **[Deploy LiteLLM on AWS (ECS Fargate) via Terraform](/docs/proxy/deploy_terraform_aws)**
 
-2. Initialize and validate the Terraform project before applying it to your chosen workspace/account.
-  ```bash
-  terraform init
-  terraform plan
-  terraform apply
-  ```
-
-3. Once `terraform apply` completes, do `./build.sh` to push the repository on ECR and update the ECS cluster. Use that endpoint (port `4000` by default) for API requests to your LiteLLM proxy.
+```bash
+git clone https://github.com/BerriAI/litellm.git
+cd litellm/terraform/litellm/aws
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars: region, azs, tenant, env, proxy_config, gateway_extra_secrets
+terraform init && terraform apply
+```
 
 
 </TabItem>
