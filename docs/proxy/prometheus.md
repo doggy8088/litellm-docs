@@ -59,6 +59,35 @@ export PROMETHEUS_MULTIPROC_DIR="/prometheus_multiproc"
 
 This directory is used by the Prometheus client library to store metric files that can be shared across multiple worker processes. Make sure the directory exists and is writable by your LiteLLM process.
 
+#### Storage management
+
+Each gunicorn/uvicorn worker writes its metrics to per-process `.db` files inside `PROMETHEUS_MULTIPROC_DIR` (e.g. `counter_<pid>.db`, `histogram_<pid>.db`). When a worker exits — for example because `--max_requests_before_restart` is set — its files must be removed so they do not accumulate indefinitely.
+
+LiteLLM handles this automatically:
+
+| Event | What LiteLLM does |
+|---|---|
+| **Server start** | Wipes all `*.db` files in the directory so workers start from a clean state. |
+| **Worker exit** (gunicorn `child_exit` hook) | Deletes **all** `*_{pid}.db` files for the exiting worker — counters, histograms, and gauges alike. |
+
+:::tip Use a tmpfs or dedicated directory
+Set `PROMETHEUS_MULTIPROC_DIR` to a directory on a memory-backed filesystem (e.g. `/dev/shm/prometheus_multiproc` or a Kubernetes `emptyDir: medium: Memory`) or at least a path that is **not** inside the container's writable layer. This avoids counting the files against ephemeral-storage limits and makes I/O cheaper.
+:::
+
+:::note Why did storage grow before this fix?
+`prometheus_client` v0.20's built-in `mark_process_dead()` only removes *live-gauge* files (`gauge_livesum_<pid>.db`, etc.). Counter and histogram files were never removed by the library itself. LiteLLM now performs an explicit glob-delete of all `*_{pid}.db` files after calling `mark_process_dead()`, which prevents the ~100 MB/day growth observed when workers restart frequently.
+:::
+
+If you ever need to inspect the directory manually:
+
+```bash
+# How many files are in the multiproc dir, and their total size?
+ls -1 "$PROMETHEUS_MULTIPROC_DIR" | wc -l
+du -sh "$PROMETHEUS_MULTIPROC_DIR"
+```
+
+**Do not delete files manually while the proxy is running** — the safest way to reset the directory is to restart the proxy, which calls `wipe_directory()` before workers fork.
+
 ## Virtual Keys, Teams, Internal Users
 
 Use this for for tracking per [user, key, team, etc.](virtual_keys)
@@ -77,7 +106,7 @@ Per-token-type counters that break out the `usage.prompt_tokens_details` and `us
 Each detail counter is **sparse**: it is only incremented when the provider reports a non-zero value for the corresponding field, so providers that don't expose a given detail will not produce a series for it. The label set is identical to the parent input / output token counter, so you can join cleanly in PromQL.
 
 | Metric Name                                      | Source field on `usage`                                              | Typical providers                                  |
-|--------------------------------------------------|----------------------------------------------------------------------|----------------------------------------------------|
+|--------------------------------------------------|----------------------------------------------------------------------|-------------------------------------------------|
 | `litellm_input_cached_tokens_metric`             | `prompt_tokens_details.cached_tokens`                                | OpenAI prompt cache, Anthropic `cache_read_input_tokens`, DeepSeek `prompt_cache_hit_tokens` |
 | `litellm_input_cache_creation_tokens_metric`     | `prompt_tokens_details.cache_creation_tokens`                        | Anthropic `cache_creation_input_tokens` (prompt cache writes) |
 | `litellm_input_audio_tokens_metric`              | `prompt_tokens_details.audio_tokens`                                 | OpenAI `gpt-4o-audio-*`, Gemini audio inputs       |
@@ -588,7 +617,7 @@ litellm_settings:
 Use these metrics to monitor the health of the DB Transaction Queue. Eg. Monitoring the size of the in-memory and redis buffers. 
 
 | Metric Name                                         | Description                                                                 | Storage Type |
-|-----------------------------------------------------|-----------------------------------------------------------------------------|--------------|
+|-----------------------------------------------------|-----------------------------------------------------------------------------|-------------|
 | `litellm_pod_lock_manager_size`                     | Indicates which pod has the lock to write updates to the database.         | Redis    |
 | `litellm_in_memory_daily_spend_update_queue_size`   | Number of items in the in-memory daily spend update queue. These are the aggregate spend logs for each user.                 | In-Memory    |
 | `litellm_redis_daily_spend_update_queue_size`       | Number of items in the Redis daily spend update queue.  These are the aggregate spend logs for each user.                    | Redis        |
