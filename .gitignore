@@ -8,6 +8,12 @@
 .docusaurus
 .cache-loader
 
+# Versioned docs snapshots: regenerated from git history by CI
+# (versioning/generate_versions.sh); never committed. See versioning/README.md.
+/versioned_docs
+/versioned_sidebars
+/versions.json
+
 # Misc
 .DS_Store
 .env

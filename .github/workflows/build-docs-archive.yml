@@ -36,6 +36,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history is required to reconstruct each version's docs from its
+          # mapped source commit (versioned snapshots are NOT committed).
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -44,6 +48,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Regenerate version snapshots from git history
+        # Rebuilds versioned_docs/ + versioned_sidebars/ + versions.json from the
+        # committed manifest. Idempotent; output is not committed to the repo.
+        run: versioning/generate_versions.sh --reset
 
       - name: Build full versioned archive
         env:
