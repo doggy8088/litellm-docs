@@ -19,6 +19,26 @@ try {
 }
 const hasDocsVersions = Array.isArray(docsVersions) && docsVersions.length > 0;
 
+// Building every backfilled version at once is resource-heavy (70+ full doc
+// snapshots need >8GB Node heap and tens of minutes — more than a default Vercel
+// builder). By default we BUILD only the most recent N released versions (plus
+// the unversioned "main"); the rest remain committed in versioned_docs/ and can
+// be served by raising the limit on a larger builder:
+//   DOCS_VERSIONS_BUILD_LIMIT=all   -> build every version
+//   DOCS_VERSIONS_BUILD_LIMIT=40    -> build the latest 40 released versions
+const DEFAULT_VERSIONS_BUILD_LIMIT = 20;
+const versionsBuildLimitRaw =
+  process.env.DOCS_VERSIONS_BUILD_LIMIT || String(DEFAULT_VERSIONS_BUILD_LIMIT);
+const buildAllVersions =
+  versionsBuildLimitRaw === 'all' || versionsBuildLimitRaw === '0';
+const versionsBuildLimit = buildAllVersions
+  ? docsVersions.length
+  : Math.max(1, parseInt(versionsBuildLimitRaw, 10) || DEFAULT_VERSIONS_BUILD_LIMIT);
+// versions.json is newest-first, so the first N are the most recent releases.
+const includedReleasedVersions = hasDocsVersions
+  ? docsVersions.slice(0, versionsBuildLimit)
+  : [];
+
 // @ts-ignore
 const lightCodeTheme = require('prism-react-renderer/themes/vsLight');
 // @ts-ignore
@@ -295,6 +315,16 @@ const config = {
                     banner: 'unreleased',
                   },
                 },
+                // Limit which versions are built (see DOCS_VERSIONS_BUILD_LIMIT
+                // above). Omitted when building all so every version is included.
+                ...(buildAllVersions
+                  ? {}
+                  : {
+                      onlyIncludeVersions: [
+                        'current',
+                        ...includedReleasedVersions,
+                      ],
+                    }),
               }
             : {}),
         },

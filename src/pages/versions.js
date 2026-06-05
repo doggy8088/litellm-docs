@@ -22,6 +22,8 @@ export default function Versions() {
   const versions = useVersions(undefined);
   const current = versions.find((v) => v.name === 'current');
   const released = versions.filter((v) => v.name !== 'current');
+  const totalReleases = (manifest.versions || []).length;
+  const oldestManifest = (manifest.versions || [])[0];
 
   return (
     <Layout
@@ -55,6 +57,22 @@ export default function Versions() {
         )}
 
         <h2>Released versions ({released.length})</h2>
+        {released.length < totalReleases && (
+          <p
+            style={{
+              padding: '0.75rem 1rem',
+              border: '1px solid var(--ifm-color-emphasis-300)',
+              borderRadius: 8,
+              background: 'var(--ifm-color-emphasis-100)',
+            }}>
+            Showing the <strong>{released.length}</strong> most recent of{' '}
+            <strong>{totalReleases}</strong> released versions. Older releases
+            (back to {oldestManifest && oldestManifest.version}, released{' '}
+            {oldestManifest && (oldestManifest.pypi_published || '').slice(0, 10)})
+            are archived in the repository and can be published by maintainers by
+            raising <code>DOCS_VERSIONS_BUILD_LIMIT</code>.
+          </p>
+        )}
         <table>
           <thead>
             <tr>
