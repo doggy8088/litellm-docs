@@ -69,5 +69,18 @@ done
 
 restore_worktree
 trap - EXIT
+
+# Historical docs reference repo-root images via relative paths (e.g.
+# ../../img/foo.png). Because versioned_docs/version-X/ is one level deeper than
+# docs/, those refs resolve to versioned_docs/img/... -> expose that as a symlink
+# to the repo-root img/ so every still-present image resolves across all versions.
+echo ">> linking versioned_docs/img -> ../img"
+rm -rf versioned_docs/img
+ln -s ../img versioned_docs/img
+
+# Restore any images referenced by old snapshots but removed from img/ since.
+echo ">> restoring historical images removed from img/"
+python3 versioning/fill_missing_images.py || true
+
 echo ">> done. versions.json:"
 cat versions.json 2>/dev/null || echo "(none)"
