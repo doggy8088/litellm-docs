@@ -48,6 +48,19 @@ const METHODS = [
   'realpath', 'readlink', 'access', 'copyFile', 'writeFile',
 ];
 
+// Preserve sub-properties on the original (e.g. fs.realpath.native, which
+// fs-extra probes — a missing one triggers "is fs being monkey-patched?").
+function copyProps(wrapped, orig) {
+  for (const key of Object.getOwnPropertyNames(orig)) {
+    if (key === 'length' || key === 'name' || key === 'prototype') continue;
+    try {
+      wrapped[key] = orig[key];
+    } catch (e) {
+      /* non-writable intrinsic — ignore */
+    }
+  }
+}
+
 function wrapPromise(obj) {
   if (!obj) return;
   for (const name of METHODS) {
@@ -63,6 +76,7 @@ function wrapPromise(obj) {
       }
     };
     wrapped[WRAPPED] = true;
+    copyProps(wrapped, orig);
     obj[name] = wrapped;
   }
 }
@@ -88,6 +102,7 @@ function wrapCallback(obj) {
       });
     };
     wrapped[WRAPPED] = true;
+    copyProps(wrapped, orig);
     obj[name] = wrapped;
   }
 }
