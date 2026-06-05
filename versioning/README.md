@@ -1,5 +1,10 @@
 # Docs versioning
 
+> ⚠️ **Status / blocker:** the full version set does **not** currently build on a
+> standard Vercel builder (memory). Read [`STATUS.md`](./STATUS.md) before
+> changing anything — it has the open decision, the evidence, and what's already
+> been ruled out. This README describes the as-built machinery.
+
 Versioned LiteLLM docs, so users can read the documentation for the specific
 stable `litellm` release they're running.
 
@@ -34,7 +39,10 @@ npm run build
 
 This keeps the repo clean (only the ~small `manifest.json` is committed) and means
 the live build renders the versions directly — there's no separate archive to host.
-With ~two dozen stable versions the build stays well under typical CI/Vercel limits.
+
+> ⚠️ **Memory:** building all ~23 versions needs **~14 GB RAM** and is OOM-killed
+> on a standard 8 GB Vercel builder. Either render fewer versions or build on a
+> bigger machine. See [`STATUS.md`](./STATUS.md) §4–§5 for the evidence and options.
 
 `DOCS_VERSIONS_BUILD_LIMIT` controls how many versions a build renders:
 
