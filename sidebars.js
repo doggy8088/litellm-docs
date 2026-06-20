@@ -633,6 +633,19 @@ const sidebars = {
             "proxy/billing",
           ],
         },
+        {
+          type: "category",
+          label: "Cost Optimization",
+          items: [
+            "proxy/auto_routing",
+            "adaptive_router",
+            {
+              type: "link",
+              label: "Prompt Compression",
+              href: "/docs/completion/prompt_compression#server-side-callback-loop-v1messages",
+            },
+          ],
+        },
       ]
     },
     {
