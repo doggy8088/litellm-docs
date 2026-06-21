@@ -280,6 +280,11 @@ const sidebars = {
               label: "speech()",
             },
             {
+              type: "doc",
+              id: "sandbox",
+              label: "acode_interpreter_tool()",
+            },
+            {
               type: "link",
               label: "All Supported Endpoints →",
               href: "https://docs.litellm.ai/docs/supported_endpoints",
