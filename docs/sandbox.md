@@ -128,27 +128,56 @@ Behind the scenes the call goes directly to e2b's REST API: `POST api.e2b.app/sa
 
 A client can call OpenAI's code interpreter through the Responses API and have the code run in the configured sandbox instead of OpenAI's container, with no change to the request. OpenAI runs code interpreter server-side, so a proxy cannot intercept the execution itself; the interceptor works the same way the web search and prompt compression interceptors do. A pre-call hook converts the native `code_interpreter` tool into a `litellm_code_execution` function tool, the model emits the code as a tool call, the interceptor runs that code in the sandbox via the SDK primitive above, feeds a `function_call_output` back, and litellm's agentic loop continues until the model stops calling the tool.
 
-### Configure
+### Tutorial: route `code_interpreter` to e2b on the Responses API
 
-Register your sandbox under `sandbox_tools` and turn on the interceptor with `enabled_providers`:
+End-to-end walkthrough from a clean checkout to a working `/v1/responses` request whose code ran in e2b.
+
+#### Step 1: Get an e2b API key
+
+Sign up at [e2b.dev](https://e2b.dev/), create a key in the dashboard, and export it.
+
+```bash
+export E2B_API_KEY="e2b_..."
+export OPENAI_API_KEY="sk-..."
+```
+
+#### Step 2: Write `config.yaml`
+
+A complete config that wires up a `gpt-5` model and registers one e2b sandbox tool as `my-e2b`. `sandbox_tools` is the registry; `code_interpreter_interception_params.sandbox_tool_name` picks which entry the interceptor uses.
 
 ```yaml showLineNumbers title="config.yaml"
-sandbox_tools:
-  - sandbox_tool_name: "my-e2b"
+model_list:
+  - model_name: gpt-5
     litellm_params:
-      sandbox_provider: "e2b"
+      model: openai/gpt-5
+      api_key: os.environ/OPENAI_API_KEY
+
+sandbox_tools:
+  - sandbox_tool_name: my-e2b
+    litellm_params:
+      sandbox_provider: e2b
       api_key: os.environ/E2B_API_KEY
 
 litellm_settings:
   callbacks: ["code_interpreter_interception"]
   code_interpreter_interception_params:
     enabled_providers: ["openai"]
-    sandbox_tool_name: "my-e2b"
+    sandbox_tool_name: my-e2b
 ```
 
-### Use it
+`enabled_providers` is the safety gate. Only requests routed to a provider in this list have their `code_interpreter` tool swapped, so flipping the callback on for `openai` does not silently change behaviour for other providers.
 
-The request is plain OpenAI Responses API. The client never knows code ran in e2b.
+#### Step 3: Start the proxy
+
+```bash
+litellm --config /path/to/config.yaml
+
+# RUNNING on http://0.0.0.0:4000
+```
+
+#### Step 4: Call `/v1/responses`
+
+The request is plain OpenAI Responses API; the client never knows the code ran in e2b instead of OpenAI's container.
 
 ```bash showLineNumbers title="curl"
 curl -s "http://localhost:4000/v1/responses" \
@@ -160,6 +189,26 @@ curl -s "http://localhost:4000/v1/responses" \
     "input": "Use python to compute the product of the first 6 primes. Tell me just the number."
   }'
 ```
+
+Or with the OpenAI SDK pointed at the proxy:
+
+```python showLineNumbers title="openai_sdk_client.py"
+from openai import OpenAI
+
+client = OpenAI(api_key="sk-1234", base_url="http://localhost:4000/v1")
+
+response = client.responses.create(
+    model="gpt-5",
+    tools=[{"type": "code_interpreter", "container": {"type": "auto"}}],
+    input="Use python to compute the product of the first 6 primes. Tell me just the number.",
+)
+print(response.output_text)            # '30030'
+print([item.type for item in response.output])  # ['code_interpreter_call', 'message']
+```
+
+#### Step 5: Confirm code ran in e2b
+
+The `response.output` array contains a `code_interpreter_call` item whose `container_id` is litellm's `cntr_*` encoding wrapping the e2b sandbox id, and the e2b dashboard at [e2b.dev/dashboard](https://e2b.dev/dashboard) shows the sandbox count tick up while the request is in flight, then drop back when the response is assembled and the sandbox is deleted.
 
 ### Response shape parity
 
