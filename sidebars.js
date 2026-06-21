@@ -1295,6 +1295,11 @@ const learnSidebar = {
             "completion/web_fetch",
             "completion/computer_use",
             "guides/code_interpreter",
+            {
+              type: "doc",
+              id: "sandbox",
+              label: "Code Interpreter Sandbox Interception",
+            },
             "completion/anthropic_advisor_tool",
             "completion/message_sanitization",
           ],
