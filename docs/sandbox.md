@@ -126,9 +126,9 @@ Behind the scenes the call goes directly to e2b's REST API: `POST api.e2b.app/sa
 
 ## LiteLLM Proxy: Responses API code interpreter interceptor
 
-A client can call OpenAI's code interpreter through the Responses API and have the code run in the configured sandbox instead of OpenAI's container, with no change to the request. OpenAI runs code interpreter server-side, so a proxy cannot intercept the execution itself; the interceptor works the same way the web search and prompt compression interceptors do. A pre-call hook converts the native `code_interpreter` tool into a `litellm_code_execution` function tool, the model emits the code as a tool call, the interceptor runs that code in the sandbox via the SDK primitive above, feeds a `function_call_output` back, and litellm's agentic loop continues until the model stops calling the tool.
+Route OpenAI's `code_interpreter` tool to your sandbox instead of OpenAI's container. The client request stays plain Responses API.
 
-### Tutorial: route `code_interpreter` to e2b
+### Setup
 
 #### 1. Set keys
 
@@ -180,30 +180,8 @@ curl -s "http://localhost:4000/v1/responses" \
   }'
 ```
 
-#### 5. Verify
+Response contains a `code_interpreter_call` item with a `cntr_*` `container_id` wrapping the e2b sandbox id.
 
-The response contains a `code_interpreter_call` item; its `container_id` wraps the e2b sandbox id. The [e2b dashboard](https://e2b.dev/dashboard) shows the sandbox count tick up during the call and drop when it ends.
+### Notes
 
-### Response shape parity
-
-The response shape matches OpenAI's native code interpreter. The interceptor re-injects a `code_interpreter_call` output item next to the message with the same keys OpenAI emits (`id`, `type`, `status`, `code`, `container_id`, `outputs`). `outputs` is an OpenAI-shaped logs array (`[{"type": "logs", "logs": stdout}]`, or `[]` when there is no stdout), so a client that iterates over `code_interpreter_call.outputs` or validates against the OpenAI SDK's pydantic model sees the same shape. `container_id` is litellm's standard responses `cntr_*` encoding wrapping the e2b sandbox id.
-
-### Streaming
-
-`stream: true` works. The pre-call hook forces `stream=False` internally so the agentic loop can run in the sandbox, then the responses handler wraps the completed response back into a synthetic SSE stream. The caller receives the usual `response.created`, `output_text.delta`, `output_item.done`, `response.completed` events and the `response.completed` payload contains the `[code_interpreter_call, message]` shape.
-
-### Forced `tool_choice`
-
-A request that forces the hosted tool (`{"type":"code_interpreter"}` or a `hosted_tool` named `code_interpreter`) is rewritten to `{"type":"function","name":"litellm_code_execution"}` since the native tool has been swapped out. Unrelated values such as `"auto"` are left untouched.
-
-### Sandbox lifecycle and isolation
-
-Sandboxes are created lazily on the first tool call in a request, reused across the agentic loop, and deleted once the final response is assembled rather than left running until their own timeout. Deletion is idempotent across nested loop levels. Cache keys are server-minted random tokens, not the client-controlled `litellm_call_id` header, so two concurrent requests with a colliding call id cannot share a container or read each other's state. The interception marker (`_code_interpreter_interception_active`), agentic-loop control fields (`_agentic_loop_depth`, `_agentic_loop_fingerprints`), the converted-stream flag, and `max_agentic_loops` are all stripped at the request boundary so a client cannot forge them, define a function tool named `litellm_code_execution` to trigger sandbox execution, or raise the loop ceiling to drive arbitrarily many model calls.
-
-### Hot reload
-
-`register_sandbox_tools` is called unconditionally with an empty-list fallback on every config reload, so removing a tool from `sandbox_tools` clears its registered credentials in the process rather than leaving them resolvable.
-
-### v0 limitations
-
-No file upload or download yet. Stdout and inline results flow back through `code_interpreter_call.outputs`, but attaching input files to the sandbox and downloading produced files are not supported. The OpenAI-compatible `/v1/containers` management endpoints and the OpenSandbox and Daytona backends are tracked separately on the parent ticket.
+Response shape matches OpenAI's native `code_interpreter_call`. `stream: true` works. Forced `tool_choice: {"type":"code_interpreter"}` is rewritten automatically. One sandbox per request, deleted on completion; concurrent requests are isolated by a server-minted cache key. Removing a tool from `sandbox_tools` clears its credentials on reload. v0 does not support file upload or download yet.
