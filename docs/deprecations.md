@@ -1,8 +1,8 @@
 # Deprecations
 
-This page is the migration guide for the features and integrations targeting to be retired in the **August 25, 2026** release. 
+This page is the migration guide for the features and integrations targeting to be retired in the **August 25, 2026** release. This is a living document; we'll keep it updated as plans firm up and as we incorporate your feedback. 
 
-If you don't use any of the items below, nothing changes for you. If you do, each section explains what is going away and how to move off it. Some items have a direct replacement and a step-by-step guide; others are experimental or low-usage features with no replacement, in which case the guidance is simply to stop relying on them before the removal date.
+If you don't use any of the items below, nothing changes for you. If you do, each section explains what is going away and where to move. Where a replacement exists, its own docs cover the migration steps; the rest are experimental or low-usage features with no replacement, so the guidance is simply to stop relying on them before the removal date.
 
 :::info Want to keep a feature?
 
@@ -17,11 +17,11 @@ If you use one of these and want it to stay, reach out:
 
 ## What's being deprecated
 
-The tables below list every deprecation, its replacement, and whether there is a migration guide on this page. Items marked "No" have no replacement right now. 
+The tables below list every deprecation, its replacement, and whether you need to migrate. Where migration is needed, the replacement's own docs cover the steps. Items marked "No" have no replacement; the action is to stop using them before the removal date. 
 
 ### Dashboard features
 
-| Feature | Replacement | Migration guide |
+| Feature | Replacement | Migration needed |
 | --- | --- | --- |
 | [Workflows](#workflows) | None | No |
 | [Memory](#memory) | None | No |
@@ -34,7 +34,7 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### Integrations and backends
 
-| Feature | Replacement | Migration guide |
+| Feature | Replacement | Migration needed |
 | --- | --- | --- |
 | [GreenScale logging](#greenscale-logging) | None | No |
 | [DynamoDB as a proxy database](#dynamodb-as-a-proxy-database) | PostgreSQL | Yes |
@@ -47,7 +47,7 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### Packaging
 
-| Change | Replacement | Migration guide |
+| Change | Replacement | Migration needed |
 | --- | --- | --- |
 | [Package consolidation](#package-consolidation) | Single `litellm` package | Yes |
 
@@ -144,9 +144,9 @@ litellm_settings:
 
 ### OpenTelemetry v1
 
-**Feature docs:** [OpenTelemetry](/docs/observability/opentelemetry_integration). Replacement: [OTEL v2](/docs/observability/opentelemetry_v2).
+**Feature docs:** [OpenTelemetry](/docs/observability/opentelemetry_integration)
 
-**Replacement:** OTEL v2.
+**Replacement:** migrate to [OTEL v2](/docs/observability/opentelemetry_v2); that guide covers the setup.
 
 
 ### Disk caching
@@ -174,6 +174,8 @@ litellm_settings:
 ### Package consolidation
 
 We're consolidating the PyPI and Docker packages down to a single `litellm` package. The extra variants (`litellm-database`, `litellm-ee`, `litellm-dev`, `litellm-non_root`) are going away. The `litellm` package will be the only supported package going forward and will absorb the functionality from `litellm-database` and `litellm-non_root`.
+
+The exact migration path and timeline for this change are still being finalized; we'll update this section once they're confirmed.
 
 ---
 
