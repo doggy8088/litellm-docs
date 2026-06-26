@@ -28,9 +28,7 @@ This list is not final. If you depend on something here and want it to stay, rea
 | Old Usage page | Replaced by a faster, more accurate Usage dashboard | New Usage dashboard |
 | API Reference tab | Replaced by a guided getting-started flow | Guided getting-started flow |
 | Learning Resources | Low usage | None |
-| MCP Network Settings + "Internal network only" flag | TBD | TBD |
-
-<!-- TODO: confirm MCP Network Settings scope and replacement before publishing -->
+| MCP Network Settings + "Internal network only" flag | Not core, and inherently insecure as a network control | Filter at a load balancer; gate public vs private MCP servers with teams |
 
 ## Integrations and backends going away
 

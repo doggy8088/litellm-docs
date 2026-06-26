@@ -25,7 +25,7 @@ The tables below list every deprecation, its replacement, and whether there is a
 | [Old Usage page](#old-usage-page) | New Usage dashboard | Yes |
 | [API Reference tab](#api-reference-tab) | Guided getting-started flow | Yes |
 | [Learning Resources](#learning-resources) | None | No |
-| [MCP Network Settings + "Internal network only" flag](#mcp-network-settings) | TBD | TBD |
+| [MCP Network Settings + "Internal network only" flag](#mcp-network-settings) | Load balancer filtering; teams to gate public/private MCPs | Yes |
 
 ### Integrations and backends
 
@@ -100,11 +100,16 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### MCP Network Settings
 
-The MCP "Network Settings" panel and the "Internal network only" flag.
+The MCP "Network Settings" panel and the "Internal network only" flag. This was never core to the gateway and the flag is inherently insecure as a network control.
 
-**Replacement:** TBD.
+**Replacement:** filter MCP access at a load balancer instead of relying on the in-app flag. If you need to expose some MCP servers publicly and keep others private, gate them with teams.
 
-<!-- TODO: details pending. Confirm scope and replacement before publishing. -->
+<!-- TODO: migration guide
+- What the "Internal network only" flag did
+- How to replicate it with a load balancer (filtering rules)
+- How to gate public vs private MCP servers with teams
+- Before / after config
+-->
 
 ---
 
