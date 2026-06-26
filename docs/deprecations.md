@@ -1,18 +1,18 @@
 # Deprecations
 
-This page is the migration guide for the features and integrations being retired in the **August 25, 2026** release. The deprecations were announced on June 25, 2026, giving roughly 60 days of notice.
+This page is the migration guide for the features and integrations targeting to be retired in the **August 25, 2026** release. 
 
 If you don't use any of the items below, nothing changes for you. If you do, each section explains what is going away and how to move off it. Some items have a direct replacement and a step-by-step guide; others are experimental or low-usage features with no replacement, in which case the guidance is simply to stop relying on them before the removal date.
 
 :::info Removal date
 
-All items on this page are removed in the release shipping on **August 25, 2026**. The exact version number is TBD; this note will be updated once it's pinned.
+If you use one of these features and you would like to advocate to keep them, please go to this github discussion here or email us at 
 
 :::
 
 ## What's being deprecated
 
-The tables below list every deprecation, its replacement, and whether there is a migration guide on this page. Items marked "No" have no replacement; the action is to stop using them.
+The tables below list every deprecation, its replacement, and whether there is a migration guide on this page. Items marked "No" have no replacement right now. 
 
 ### Dashboard features
 
@@ -21,7 +21,7 @@ The tables below list every deprecation, its replacement, and whether there is a
 | [Workflows](#workflows) | None | No |
 | [Memory](#memory) | None | No |
 | [Playground's Agent Builder](#playgrounds-agent-builder) | None | No |
-| [Prompt Management](#prompt-management) | Langfuse / Arize Prompt Management | Yes |
+| [Prompt Management](#prompt-management) | None | No |
 | [Old Usage page](#old-usage-page) | New Usage dashboard | Yes |
 | [API Reference tab](#api-reference-tab) | Guided getting-started flow | Yes |
 | [Learning Resources](#learning-resources) | None | No |
@@ -71,15 +71,7 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### Prompt Management
 
-**Replacement:** Langfuse Prompt Management or Arize Prompt Management.
-
-<!-- TODO: migration guide
-- Who is affected (who uses native prompt management today)
-- What changes
-- Steps to move prompts to Langfuse / Arize
-- Links: Langfuse integration doc, Arize integration doc
-- Before / after config
--->
+**Replacement:** none. Experimental feature with little usage. There is no migration path; remove any reliance on it before August 25, 2026.
 
 ### Old Usage page
 

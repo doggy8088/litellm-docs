@@ -24,7 +24,7 @@ This list is not final. If you depend on something here and want it to stay, rea
 | Workflows | Experimental feature, did not get usage | None |
 | Memory | Experimental feature, did not get usage | None |
 | Playground's Agent Builder | Experimental feature, did not get usage | None |
-| Prompt Management | Experimental feature, did not get usage | Langfuse or Arize Prompt Management |
+| Prompt Management | Experimental feature, did not get usage | None |
 | Old Usage page | Replaced by a faster, more accurate Usage dashboard | New Usage dashboard |
 | API Reference tab | Replaced by a guided getting-started flow | Guided getting-started flow |
 | Learning Resources | Low usage | None |
