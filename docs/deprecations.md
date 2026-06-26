@@ -2,7 +2,7 @@
 
 This page is the migration guide for the features and integrations being retired in the **August 25, 2026** release. The deprecations were announced on June 25, 2026, giving roughly 60 days of notice.
 
-If you don't use any of the items below, nothing changes for you. If you do, each section explains what is going away and how to move off it. Some items have a direct replacement and a step-by-step guide; others are low-usage features with no replacement, in which case the guidance is simply to stop relying on them before the removal date.
+If you don't use any of the items below, nothing changes for you. If you do, each section explains what is going away and how to move off it. Some items have a direct replacement and a step-by-step guide; others are experimental or low-usage features with no replacement, in which case the guidance is simply to stop relying on them before the removal date.
 
 :::info Removal date
 
@@ -53,19 +53,19 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### Workflows
 
-**Replacement:** none. Low usage. Remove any reliance on it before August 25, 2026.
+**Replacement:** none. Experimental feature with little usage. Remove any reliance on it before August 25, 2026.
 
 <!-- TODO: optional note on what users had built with it, if anything to preserve. -->
 
 ### Memory
 
-**Replacement:** none. Low usage. Remove any reliance on it before August 25, 2026.
+**Replacement:** none. Experimental feature with little usage. Remove any reliance on it before August 25, 2026.
 
 <!-- TODO -->
 
 ### Playground's Agent Builder
 
-**Replacement:** none. Low usage. Remove any reliance on it before August 25, 2026.
+**Replacement:** none. Experimental feature with little usage. Remove any reliance on it before August 25, 2026.
 
 <!-- TODO -->
 

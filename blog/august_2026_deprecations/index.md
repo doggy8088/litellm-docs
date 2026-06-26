@@ -21,10 +21,10 @@ This list is not final. If you depend on something here and want it to stay, rea
 
 | Feature | Why it's going | What to use instead |
 | --- | --- | --- |
-| Workflows | Low usage | None |
-| Memory | Low usage | None |
-| Playground's Agent Builder | Low usage | None |
-| Prompt Management | Low usage | Langfuse or Arize Prompt Management |
+| Workflows | Experimental feature, did not get usage | None |
+| Memory | Experimental feature, did not get usage | None |
+| Playground's Agent Builder | Experimental feature, did not get usage | None |
+| Prompt Management | Experimental feature, did not get usage | Langfuse or Arize Prompt Management |
 | Old Usage page | Replaced by a faster, more accurate Usage dashboard | New Usage dashboard |
 | API Reference tab | Replaced by a guided getting-started flow | Guided getting-started flow |
 | Learning Resources | Low usage | None |
