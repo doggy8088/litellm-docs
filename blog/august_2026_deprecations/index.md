@@ -24,7 +24,7 @@ This list is not final. If you depend on something here and want it to stay, rea
 | Workflows | Low usage | None |
 | Memory | Low usage | None |
 | Playground's Agent Builder | Low usage | None |
-| Prompt Management | Doubling down on the core AI gateway, spend tracking, and guardrails | Langfuse or Arize Prompt Management |
+| Prompt Management | Low usage | Langfuse or Arize Prompt Management |
 | Old Usage page | Replaced by a faster, more accurate Usage dashboard | New Usage dashboard |
 | API Reference tab | Replaced by a guided getting-started flow | Guided getting-started flow |
 | Learning Resources | Low usage | None |
