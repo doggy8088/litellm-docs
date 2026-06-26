@@ -11,7 +11,7 @@ hide_table_of_contents: false
 
 We're focusing LiteLLM on being the most reliable LLM gateway in production. As part of that, we're retiring a set of older features and integrations that few teams use and that we can no longer maintain to the standard you expect. Removing them keeps the core of LiteLLM stable and performant.
 
-These features are targeted for removal in the release on **August 25, 2026**, roughly 60 days from now. If you don't use any of them, nothing changes and you can stop reading. If you do, the full [Deprecations migration guide](/deprecations) walks through each one; most paths are a one-line config change.
+These features are targeted for removal in the release on **August 25, 2026**, roughly 60 days from now. If you don't use any of them, nothing changes and you can stop reading. If you do, the full [Deprecations migration guide](https://docs.litellm.ai/docs/deprecations) walks through each one; most paths are a one-line config change.
 
 This list is not final. If you depend on something here and want it to stay, reach out with the feature and your use case.
 
@@ -52,7 +52,7 @@ We're consolidating the PyPI and Docker packages down to a single `litellm` pack
 
 ## What you need to do
 
-If you use any of the above, follow the [Deprecations migration guide](/deprecations). Most paths are a one-line config change. If you're unsure whether you're affected, reach out and we'll check for you.
+If you use any of the above, follow the [Deprecations migration guide](https://docs.litellm.ai/docs/deprecations). Most paths are a one-line config change. If you're unsure whether you're affected, reach out and we'll check for you.
 
 <!-- TODO: add the canonical feedback channel (email / GitHub discussion / Slack) once confirmed. -->
 
