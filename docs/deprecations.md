@@ -59,6 +59,8 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### Memory
 
+**Feature docs:** [Memory Management](/docs/proxy/memory), [/memory API](/docs/memory_management)
+
 **Replacement:** none. Experimental feature with little usage. Remove any reliance on it before August 25, 2026.
 
 <!-- TODO -->
@@ -70,6 +72,8 @@ The tables below list every deprecation, its replacement, and whether there is a
 <!-- TODO -->
 
 ### Prompt Management
+
+**Feature docs:** [LiteLLM AI Gateway Prompt Management](/docs/proxy/litellm_prompt_management)
 
 **Replacement:** none. Experimental feature with little usage. There is no migration path; remove any reliance on it before August 25, 2026.
 
@@ -100,6 +104,8 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 ### MCP Network Settings
 
+**Feature docs:** [Exposing MCPs on the Public Internet](/docs/mcp_public_internet)
+
 The MCP "Network Settings" panel and the "Internal network only" flag. This was never core to the gateway and the flag is inherently insecure as a network control.
 
 **Replacement:** filter MCP access at a load balancer instead of relying on the in-app flag. If you need to expose some MCP servers publicly and keep others private, gate them with teams.
@@ -116,6 +122,8 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 ## Integrations and backends
 
 ### GreenScale logging
+
+**Feature docs:** [Greenscale](/docs/observability/greenscale_integration)
 
 **Replacement:** none. Low usage; can no longer be maintained to the expected standard.
 
@@ -134,11 +142,15 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 
 ### Gradient AI provider
 
+**Feature docs:** [GradientAI](/docs/providers/gradient_ai)
+
 **Replacement:** none. The upstream service was discontinued.
 
 <!-- TODO: provider prefix being removed; what calls will stop working -->
 
 ### S3 logging v1
+
+**Feature docs:** [S3 logging](/docs/proxy/logging#s3-buckets)
 
 **Replacement:** S3 logging v2.
 
@@ -149,6 +161,8 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 -->
 
 ### OpenTelemetry v1
+
+**Feature docs:** [OpenTelemetry](/docs/observability/opentelemetry_integration). Replacement: [OTEL v2](/docs/observability/opentelemetry_v2).
 
 **Replacement:** OTEL v2.
 
@@ -161,11 +175,15 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 
 ### Disk caching
 
+**Feature docs:** [Disk Cache](/docs/proxy/caching)
+
 **Replacement:** none. Low usage; can no longer be maintained to the expected standard.
 
 <!-- TODO: which cache_params type is going away and what to remove -->
 
 ### Auto Router v1
+
+**Feature docs:** [Auto Routing](/docs/proxy/auto_routing)
 
 **Replacement:** Auto Router v2.
 
@@ -176,6 +194,8 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 -->
 
 ### CloudZero connector
+
+**Feature docs:** [CloudZero Integration](/docs/observability/cloudzero)
 
 **Replacement:** the OTEL v2 connector.
 

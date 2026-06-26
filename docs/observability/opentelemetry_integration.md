@@ -4,6 +4,12 @@ import TabItem from '@theme/TabItem';
 
 # OpenTelemetry - Tracing LLMs with any observability tool
 
+:::warning Deprecated
+
+OpenTelemetry v1 is deprecated and will be removed in the **August 25, 2026** release; migrate to [OTEL v2](/docs/observability/opentelemetry_v2). See the [deprecations notice](/docs/deprecations) and the [migration guide for this feature](/docs/deprecations#opentelemetry-v1).
+
+:::
+
 OpenTelemetry is a CNCF standard for observability. It connects to any observability tool, such as Jaeger, Zipkin, Datadog, New Relic, Traceloop, Levo AI and others.
 
 <Image img={require('../../img/traceloop_dash.png')} />
