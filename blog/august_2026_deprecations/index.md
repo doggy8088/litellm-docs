@@ -40,7 +40,6 @@ This list is not final. If you depend on something here and want it to stay, rea
 | S3 logging v1 | Superseded by S3 logging v2 | S3 logging v2 |
 | OpenTelemetry v1 | Superseded by OTEL v2 | OTEL v2 |
 | Disk caching | Low usage; can't maintain to standard | None |
-| Auto Router v1 | Superseded by Auto Router v2 | Auto Router v2 |
 | CloudZero connector | Replaced by the OTEL v2 connector | OTEL v2 connector |
 | Prisma resolve v1 | Superseded by the v2 migration resolver | Prisma resolver v2 |
 

@@ -37,7 +37,6 @@ The tables below list every deprecation, its replacement, and whether there is a
 | [S3 logging v1](#s3-logging-v1) | S3 logging v2 | Yes |
 | [OpenTelemetry v1](#opentelemetry-v1) | OTEL v2 | Yes |
 | [Disk caching](#disk-caching) | None | No |
-| [Auto Router v1](#auto-router-v1) | Auto Router v2 | Yes |
 | [CloudZero connector](#cloudzero-connector) | OTEL v2 connector | Yes |
 | [Prisma resolve v1](#prisma-resolve-v1) | Prisma resolver v2 | Yes |
 
@@ -180,18 +179,6 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 **Replacement:** none. Low usage; can no longer be maintained to the expected standard.
 
 <!-- TODO: which cache_params type is going away and what to remove -->
-
-### Auto Router v1
-
-**Feature docs:** [Auto Routing](/docs/proxy/auto_routing)
-
-**Replacement:** Auto Router v2.
-
-<!-- TODO: migration guide
-- v1 vs v2 config
-- How to opt into v2
-- Before / after config
--->
 
 ### CloudZero connector
 
