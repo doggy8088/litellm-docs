@@ -51,6 +51,4 @@ We're consolidating the PyPI and Docker packages down to a single `litellm` pack
 
 If you use any of the above, follow the [Deprecations migration guide](https://docs.litellm.ai/docs/deprecations). Most paths are a one-line config change. If you're unsure whether you're affected, reach out and we'll check for you.
 
-<!-- TODO: add the canonical feedback channel (email / GitHub discussion / Slack) once confirmed. -->
-
 Thanks for building on LiteLLM.

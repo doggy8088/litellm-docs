@@ -59,8 +59,6 @@ The tables below list every deprecation, its replacement, and whether there is a
 
 **Replacement:** none. Experimental feature with little usage. Remove any reliance on it before August 25, 2026.
 
-<!-- TODO: optional note on what users had built with it, if anything to preserve. -->
-
 ### Memory
 
 **Feature docs:** [Memory Management](/docs/proxy/memory), [/memory API](/docs/memory_management)
@@ -110,8 +108,6 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 
 **Replacement:** none. Low usage; can no longer be maintained to the expected standard.
 
-<!-- TODO: how to remove the greenscale callback from config -->
-
 ### DynamoDB as a proxy database
 
 **Replacement:** PostgreSQL.
@@ -121,7 +117,6 @@ The MCP "Network Settings" panel and the "Internal network only" flag. This was 
 **Feature docs:** [GradientAI](/docs/providers/gradient_ai)
 
 **Replacement:** none. The upstream service was discontinued.
-<!-- TODO: provider prefix being removed; what calls will stop working -->
 
 ### S3 logging v1
 
