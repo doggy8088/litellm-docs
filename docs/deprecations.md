@@ -162,9 +162,9 @@ litellm_settings:
 **Replacement:** the [OTEL v2 connector](/docs/observability/opentelemetry_v2).
 
 
-### Prisma resolve v1
+### Prisma resolver v1
 
-**Replacement:** the v2 migration resolver.
+**Replacement:** the v2 migration resolver. No changes needed, this will be flipped to be the default. 
 
 ---
 
@@ -182,7 +182,6 @@ The exact migration path and timeline for this change are still being finalized;
 
 This list is not final. If you depend on something here and want it to stay, reach out with the feature and your use case.
 
-- GitHub: https://github.com/BerriAI/litellm/issues
-- Email: ishaan@berri.ai / krrish@berri.ai
+- GitHub: <i want to have a specific github issue here on the berriai/litellm repo> 
 - Discord: https://discord.gg/wuPM9dRgDw
 - Slack: https://www.litellm.ai/support
