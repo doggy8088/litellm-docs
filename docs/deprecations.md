@@ -9,7 +9,6 @@ If you don't use any of the items below, nothing changes for you. If you do, eac
 If you use one of these and want it to stay, reach out:
 
 - GitHub: https://github.com/BerriAI/litellm/issues
-- Email: ishaan@berri.ai / krrish@berri.ai
 - Discord: https://discord.gg/wuPM9dRgDw
 - Slack: https://www.litellm.ai/support 
 
