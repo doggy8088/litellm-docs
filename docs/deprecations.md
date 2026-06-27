@@ -160,7 +160,7 @@ litellm_settings:
 
 **Feature docs:** [CloudZero Integration](/docs/observability/cloudzero)
 
-**Replacement:** the OTEL v2 connector.
+**Replacement:** the [OTEL v2 connector](/docs/observability/opentelemetry_v2).
 
 
 ### Prisma resolve v1
