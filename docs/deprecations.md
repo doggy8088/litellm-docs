@@ -179,7 +179,7 @@ The exact migration path and timeline for this change are still being finalized;
 
 ### Docker tags
 
-We're consolidating the Docker image tags. This change follows the timeline from [LiteLLM release versioning is changing](/blog/cleaner-release-versions), not the August 25 date used elsewhere on this page: the legacy tags stop publishing on **June 30, 2026**. Switch to the replacement tag below; `latest` tracks the newest stable image, `main-latest` tracks the newest build off `main`, and `rc` tracks the newest release candidate.
+We're consolidating the Docker image tags; the legacy tags stop publishing in the **August 25, 2026** release, in line with the rest of this page. See [LiteLLM release versioning is changing](/blog/cleaner-release-versions) for background. Switch to the replacement tag below; `latest` tracks the newest stable image, `main-latest` tracks the newest build off `main`, and `rc` tracks the newest release candidate.
 
 | Deprecated tag | Switch to |
 | --- | --- |
