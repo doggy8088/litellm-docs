@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 
 Headroom is the context optimization layer for LLM applications. It compresses tool outputs, database results, file reads, and RAG payloads before they reach the model, so you get the same answers at a fraction of the tokens.
 
-It ships as a pre-call LiteLLM guardrail plugin, so the YAML config uses `guardrail: headroom`. The plugin runs prompt compression, not safety filtering, on both `/v1/chat/completions` and `/v1/messages` (Anthropic format). For the in-process SDK alternative, see [`litellm.compress()`](/docs/completion/prompt_compression).
+This is available on on both `/v1/chat/completions` and `/v1/messages` (Anthropic format).
 
 ## Requirements
 
