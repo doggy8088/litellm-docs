@@ -49,6 +49,7 @@ The tables below list every deprecation, its replacement, and whether you need t
 | Change | Replacement | Migration needed |
 | --- | --- | --- |
 | [Package consolidation](#package-consolidation) | Single `litellm` package | Yes |
+| [Docker tags](#docker-tags) | `latest`, `main-latest`, `rc` | Yes |
 
 ---
 
@@ -175,6 +176,21 @@ litellm_settings:
 We're consolidating the PyPI and Docker packages down to a single `litellm` package. The extra variants (`litellm-database`, `litellm-ee`, `litellm-dev`, `litellm-non_root`) are going away. The `litellm` package will be the only supported package going forward and will absorb the functionality from `litellm-database` and `litellm-non_root`.
 
 The exact migration path and timeline for this change are still being finalized; we'll update this section once they're confirmed.
+
+### Docker tags
+
+We're consolidating the Docker image tags. Switch to the replacement tag below; `latest` tracks the newest stable image, `main-latest` tracks the newest build off `main`, and `rc` tracks the newest release candidate.
+
+| Deprecated tag | Switch to |
+| --- | --- |
+| `main-stable` | `latest` |
+| `latest-stable` | `latest` |
+| `main` | `latest` |
+| `main-test` | `latest` |
+| `dev` | `main-latest` |
+| `main-dev` | `main-latest` |
+| `main-nightly` | `main-latest` |
+| `main-rc` | `rc` |
 
 ---
 
