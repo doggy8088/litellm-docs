@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 
 Headroom is the context optimization layer for LLM applications. It compresses tool outputs, database results, file reads, and RAG payloads before they reach the model, so you get the same answers at a fraction of the tokens.
 
-This is available on on both `/v1/chat/completions` and `/v1/messages` (Anthropic format).
+This is available on both `/v1/chat/completions` and `/v1/messages` (Anthropic format).
 
 ## Requirements
 
