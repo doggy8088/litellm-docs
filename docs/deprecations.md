@@ -42,7 +42,7 @@ The tables below list every deprecation, its replacement, and whether you need t
 | [OpenTelemetry v1](#opentelemetry-v1) | OTEL v2 | Yes |
 | [Disk caching](#disk-caching) | None | No |
 | [CloudZero connector](#cloudzero-connector) | OTEL v2 connector | Yes |
-| [Prisma resolve v1](#prisma-resolve-v1) | Prisma resolver v2 | Yes |
+| [Prisma resolver v1](#prisma-resolver-v1) | Prisma resolver v2 | No |
 
 ### Packaging
 
