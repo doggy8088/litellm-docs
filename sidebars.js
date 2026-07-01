@@ -526,6 +526,7 @@ const sidebars = {
             "proxy/project_management",
             "proxy/ui_team_soft_budget_alerts",
             "proxy/tag_budgets",
+            "proxy/per_tag_rate_limits",
             "proxy/customers",
             "proxy/dynamic_rate_limit",
             "proxy/rate_limit_tiers",
