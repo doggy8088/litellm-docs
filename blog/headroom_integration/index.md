@@ -1,6 +1,6 @@
 ---
 slug: headroom-integration
-title: "LiteLLM × Headroom: Use 60-95% fewer tokens with Prompt Compression"
+title: "LiteLLM × Headroom: Use 60-95% fewer tokens with Claude Code"
 date: 2026-06-30T10:00:00
 authors:
   - krrish
@@ -33,3 +33,5 @@ Compression works on both `/v1/chat/completions` and `/v1/messages` (Anthropic f
 Turn it on per key, per request, or globally via `default_on: true`. Confirm it ran by checking the `x-litellm-applied-guardrails` response header or the Guardrails panel in the Logs UI.
 
 **Get started:** [Headroom guardrail setup guide](../../docs/proxy/headroom)
+
+**Discussion:** [GitHub discussion #31816](https://github.com/BerriAI/litellm/discussions/31816)
