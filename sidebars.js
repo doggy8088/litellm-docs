@@ -696,6 +696,7 @@ const sidebars = {
           items: [
             "batches",
             "proxy/managed_batches",
+            "proxy/unmanaged_vertex_batches",
           ]
         },
         "containers",
