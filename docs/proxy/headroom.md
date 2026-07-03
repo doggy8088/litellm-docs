@@ -214,6 +214,12 @@ ENV HEADROOM_TELEMETRY=off
 CMD ["headroom", "proxy", "--host", "0.0.0.0", "--port", "8787"]
 ```
 
+### Why `requests_compressed` can be 0
+
+Headroom protects two message types by default, set on the Headroom container itself, not in LiteLLM's `config.yaml`:
+
+- `user`/`system` messages, unless `ENV HEADROOM_COMPRESS_USER_MESSAGES=1` is set. Most Claude Code traffic is `user` role, so a default deployment compresses none of it.
+- Messages with an Anthropic `cache_control` marker, always. Compressing them would break prompt-cache byte matching. No override exists.
 
 ## Configuration reference
 
