@@ -5,8 +5,13 @@ import Image from '@theme/IdealImage';
 
 Benchmarks for LiteLLM Gateway (Proxy Server) tested against a fake OpenAI endpoint.
 
-
 LiteLLM Gateway has **8ms P95 latency** at 1k RPS (See benchmarks [here](#4-instances))
+
+:::tip Production Deployment
+
+For production, we recommend running **one Uvicorn worker per pod** and scaling **horizontally** (more pods). See [Best Practices for Production](./proxy/prod) for full guidance on server configuration, worker recycling, and hitless restarts.
+
+:::
 
 ## Machine Spec used for testing
 
@@ -14,6 +19,7 @@ Each machine deploying LiteLLM had the following specs:
 
 - 4 CPU
 - 8GB RAM
+- 1 worker per instance
 
 ## Configuration
 
@@ -49,9 +55,9 @@ In these tests the baseline latency characteristics are measured against a fake-
 |  | Aggregated | 77 | 130 | 180 | 57.53 | 2340 |
 
 #### Key Findings
-- Doubling from 2 to 4 LiteLLM instances halves median latency: 200 ms → 100 ms.
-- High-percentile latencies drop significantly: P95 630 ms → 150 ms, P99 1,200 ms → 240 ms.
-- Setting workers equal to CPU count gives optimal performance.
+- Doubling from 2 to 4 LiteLLM instances halves median latency: 200 ms to 100 ms.
+- High-percentile latencies drop significantly: P95 630 ms to 150 ms, P99 1,200 ms to 240 ms.
+- Scaling horizontally (more instances with 1 worker each) is more effective than adding workers per instance. See [production best practices](./proxy/prod#3-choose-your-server-uvicorn-vs-gunicorn) for details.
 
 
 ## Setting Up Benchmarking with Network Mock
@@ -81,7 +87,7 @@ general_settings:
 **2. Start the proxy:**
 
 ```bash
-litellm --config benchmark_config.yaml --port 4000 --num_workers 8
+litellm --config benchmark_config.yaml --port 4000 --num_workers 1
 ```
 
 **3. Run the benchmark script:**
@@ -131,13 +137,13 @@ End-to-end latency benchmarks for the `/realtime` endpoint tested against a fake
 | Category | Specification |
 |----------|---------------|
 | **Load Testing** | Locust: 1,000 concurrent users, 500 ramp-up |
-| **System** | 4 vCPUs, 8 GB RAM, 4 workers, 4 instances |
+| **System** | 4 vCPUs, 8 GB RAM, 1 worker per instance, 4 instances |
 | **Database** | PostgreSQL (Redis unused) |
 
 
 ## Infrastructure Recommendations
 
-Recommended specifications based on benchmark results and industry standards for API gateway deployments.
+Recommended specifications based on benchmark results and industry standards for API gateway deployments. For full production configuration guidance (server choice, worker recycling, Kubernetes deployment), see [Best Practices for Production](./proxy/prod).
 
 ### PostgreSQL
 
