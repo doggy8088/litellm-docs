@@ -31,10 +31,10 @@ entry stays here until the named fix has landed in a `v*-stable` release;
 the next daily run after that tag is cut will flip the cells green and
 the entry will be removed.
 
-### All Claude Code requests fail with a 400 error — Sonnet 4.6 / Opus 4.6, all providers
+### Legacy `thinking` params rejected with 400 on Sonnet 4.6 / Opus 4.6
 
 - **Affected versions**: v1.83.9 – v1.87.x
-- **Symptom**: A recent Claude Code update changed its default thinking behavior in a way that exposed a compatibility issue in LiteLLM. All requests to Sonnet 4.6 and Opus 4.6 models fail immediately with `400 output_config.effort: Input should be 'low', 'medium', 'high' or 'max'` across all providers.
+- **Symptom**: Requests to Sonnet 4.6 or Opus 4.6 that use the legacy `thinking` parameter shape (e.g. `"thinking": {"type": "enabled", "budget_tokens": 31999}`) fail with `400 output_config.effort: Input should be 'low', 'medium', 'high' or 'max'`. This is because LiteLLM's legacy-thinking translator mapped high `budget_tokens` values to `effort=xhigh`, which is not a valid effort tier for these models. Requests that already use the modern `output_config.effort` parameter are **not affected**. Claude Code's default configuration sends the legacy shape, so unmodified Claude Code sessions hit this error.
 - **Workaround**: If upgrading is not immediately possible, add `drop_params: true` to the affected model entry in your proxy config. Extended thinking will be disabled but requests will succeed.
 - **Status**: Fixed in v1.88.0.
 
