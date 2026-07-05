@@ -5,9 +5,12 @@ date: 2026-07-04T10:00:00
 authors:
   - krrish
 description: "Practical levers a platform admin can pull on the LiteLLM proxy to reduce Claude Code spend without asking developers to change a thing."
+image: ./title_card.png
 tags: [claude-code, cost, budgets, headroom, mcp, prompt-caching]
 hide_table_of_contents: false
 ---
+
+![5 ways to save Claude Code cost with LiteLLM](./title_card.png)
 
 Claude Code is one of the heaviest consumers of input tokens in a modern engineering org. Long tool loops, large file reads, and MCP catalogs with hundreds of tools push every request toward the top of the context window, and the bill scales with it.
 
