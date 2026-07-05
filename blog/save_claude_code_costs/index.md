@@ -15,9 +15,11 @@ If Claude Code already points at a LiteLLM proxy (via `ANTHROPIC_BASE_URL`), the
 
 {/* truncate */}
 
-## 1. Budget-based fallbacks
+## 1. Budget windows + budget fallbacks
 
-Budget fallbacks let you cap a developer's daily spend on the expensive Claude model and silently degrade to a cheaper one once the cap is hit, instead of returning an error to their terminal. The config lives on the virtual key: attach `model_max_budget` per model and a `budget_fallbacks` chain that names the cheaper models to reroute to.
+Two knobs, used together. A budget window (`model_max_budget` with a `time_period`) caps how much a virtual key can spend on a given model in a rolling window, say $20 of Opus per day per developer. That alone stops runaway spend, but at the ceiling every subsequent request errors out at the developer's terminal, which is a bad experience.
+
+Budget fallbacks paper over the ceiling. Attach a `budget_fallbacks` chain to the same key and, once a model is tapped out for the window, requests silently reroute to the next cheaper model still under budget.
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
