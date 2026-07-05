@@ -23,6 +23,23 @@ Two knobs, used together on the virtual key.
 
 **Budget fallbacks** decide what happens once a window is exhausted. Instead of returning a 429 to the developer's terminal, attach a `budget_fallbacks` chain that names the cheaper models to reroute to. The request silently falls to the first fallback still under its own budget.
 
+Windows alone. `model_max_budget` caps daily spend per model on the key:
+
+```bash
+curl -X POST http://localhost:4000/key/generate \
+  -H "Authorization: Bearer $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_max_budget": {
+      "claude-opus-4-8":   {"budget_limit": 20.0, "time_period": "1d"},
+      "claude-sonnet-5":   {"budget_limit": 10.0, "time_period": "1d"},
+      "claude-haiku-4-5":  {"budget_limit": 5.0,  "time_period": "1d"}
+    }
+  }'
+```
+
+Windows + fallbacks. Add `budget_fallbacks` so the request degrades instead of erroring at the ceiling:
+
 ```bash
 curl -X POST http://localhost:4000/key/generate \
   -H "Authorization: Bearer $ADMIN_KEY" \
