@@ -17,28 +17,23 @@ If Claude Code already points at a LiteLLM proxy (via `ANTHROPIC_BASE_URL`), the
 
 ## 1. Budget windows + budget fallbacks
 
-Two knobs, used together on the virtual key.
+Two knobs on the virtual key.
 
-**Budget windows** cap how much the key can spend on a given model over a rolling time period. Set `model_max_budget` with a `budget_limit` (dollars) and a `time_period` ("1d", "7d", "30d", etc). LiteLLM tracks spend per model per window and resets automatically when the window rolls.
-
-**Budget fallbacks** decide what happens once a window is exhausted. Instead of returning a 429 to the developer's terminal, attach a `budget_fallbacks` chain that names the cheaper models to reroute to. The request silently falls to the first fallback still under its own budget.
-
-Windows alone. `model_max_budget` caps daily spend per model on the key:
+**Budget windows** cap how much the key can spend inside a rolling time period. Set `max_budget` (dollars) and `budget_duration` ("24h", "7d", "30d", etc). LiteLLM resets the counter automatically at the end of every window. You can stack windows too, e.g. $10/day AND $100/month, so one bad afternoon can't burn the whole month:
 
 ```bash
-curl -X POST http://localhost:4000/key/generate \
-  -H "Authorization: Bearer $ADMIN_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model_max_budget": {
-      "claude-opus-4-8":   {"budget_limit": 20.0, "time_period": "1d"},
-      "claude-sonnet-5":   {"budget_limit": 10.0, "time_period": "1d"},
-      "claude-haiku-4-5":  {"budget_limit": 5.0,  "time_period": "1d"}
-    }
+curl 'http://0.0.0.0:4000/key/generate' \
+  --header 'Authorization: Bearer <your-master-key>' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "budget_limits": [
+      {"budget_duration": "24h", "max_budget": 10},
+      {"budget_duration": "30d", "max_budget": 100}
+    ]
   }'
 ```
 
-Windows + fallbacks. Add `budget_fallbacks` so the request degrades instead of erroring at the ceiling:
+**Budget fallbacks** decide what happens once a per-model budget is exhausted. Instead of erroring at the developer's terminal, attach `model_max_budget` per model and a `budget_fallbacks` chain naming the cheaper models to reroute to. The request silently falls to the first fallback still under its own budget:
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
