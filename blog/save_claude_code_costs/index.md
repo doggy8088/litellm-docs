@@ -1,6 +1,6 @@
 ---
 slug: save-claude-code-costs-with-litellm
-title: "4 ways to cut Claude Code costs with LiteLLM"
+title: "5 ways to cut Claude Code costs with LiteLLM"
 date: 2026-07-04T10:00:00
 authors:
   - krrish
@@ -11,7 +11,7 @@ hide_table_of_contents: false
 
 Claude Code is one of the heaviest consumers of input tokens in a modern engineering org. Long tool loops, large file reads, and MCP catalogs with hundreds of tools push every request toward the top of the context window, and the bill scales with it.
 
-If Claude Code already points at a LiteLLM proxy (via `ANTHROPIC_BASE_URL`), there are four levers the platform admin can pull to bring that cost down. None of them require a client-side change.
+If Claude Code already points at a LiteLLM proxy (via `ANTHROPIC_BASE_URL`), there are five levers the platform admin can pull to bring that cost down. None of them require a client-side change.
 
 {/* truncate */}
 
@@ -115,12 +115,14 @@ curl -X POST http://localhost:4000/key/generate \
 
 Ranking is token-overlap over `name + description`, so there is no embedding dependency to run. The access surface does not widen; search only returns tools the key was already allowed to call. Full walkthrough in [MCP Tool Search](../../docs/mcp_tool_search).
 
+## 5. Auto routing
+
+Static fallbacks pick the cheaper model only after a budget is blown. Auto routing goes one step further and picks the right model per request, so cheap requests never touch the expensive model in the first place. LiteLLM ships three approaches today. [Semantic auto routing](../../docs/proxy/auto_routing) matches the input against utterances you define and dispatches to specialized models via embeddings. The [Complexity Router](../../docs/proxy/auto_routing#complexity-router) uses rule-based scoring for zero-latency classification with no external API call. The [Adaptive Router](../../docs/adaptive_router) is a beta that learns from live traffic which model performs best for each request type and balances quality against cost automatically.
+
 ## Stacking the levers
 
-The four features compose. Budget-based fallbacks bound the total spend regardless of what else you do. Prompt cache checkpoints and Headroom compression each shave a different slice of the request payload before it hits the model. Tool search cuts the tool schema overhead at the front of every turn. Turn them on together and the same Claude Code workload runs on a fraction of the input tokens it did before, without touching a single developer machine.
+The five features compose. Budget-based fallbacks bound the total spend regardless of what else you do. Prompt cache checkpoints and Headroom compression each shave a different slice of the request payload before it hits the model. MCP tool search cuts the tool schema overhead at the front of every turn. Auto routing sends every request to the smallest model that can handle it. Turn them on together and the same Claude Code workload runs on a fraction of the input tokens it did before, without touching a single developer machine.
 
-## What's next: auto routing
+## Help us make this better
 
-The natural next step past static fallbacks is picking the right model per request, not per budget window. LiteLLM ships three approaches to this today. [Semantic auto routing](../../docs/proxy/auto_routing) matches the input against utterances you define and dispatches to specialized models via embeddings. The [Complexity Router](../../docs/proxy/auto_routing#complexity-router) uses rule-based scoring for zero-latency classification with no external API call. The [Adaptive Router](../../docs/adaptive_router) is a beta that learns from live traffic which model performs best for each request type and balances quality against cost automatically.
-
-This is an area we are actively investing in. If you're interested in shaping where auto routing goes next, join the discussion at [litellm#32168](https://github.com/BerriAI/litellm/discussions/32168).
+We're actively investing in cost optimization across the whole stack. If you've got ideas, on auto routing, better cache heuristics, smarter budget policies, anything, join the discussion at [litellm#32168](https://github.com/BerriAI/litellm/discussions/32168).
