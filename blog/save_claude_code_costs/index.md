@@ -17,9 +17,11 @@ If Claude Code already points at a LiteLLM proxy (via `ANTHROPIC_BASE_URL`), the
 
 ## 1. Budget windows + budget fallbacks
 
-Two knobs, used together. A budget window (`model_max_budget` with a `time_period`) caps how much a virtual key can spend on a given model in a rolling window, say $20 of Opus per day per developer. That alone stops runaway spend, but at the ceiling every subsequent request errors out at the developer's terminal, which is a bad experience.
+Two knobs, used together on the virtual key.
 
-Budget fallbacks paper over the ceiling. Attach a `budget_fallbacks` chain to the same key and, once a model is tapped out for the window, requests silently reroute to the next cheaper model still under budget.
+**Budget windows** cap how much the key can spend on a given model over a rolling time period. Set `model_max_budget` with a `budget_limit` (dollars) and a `time_period` ("1d", "7d", "30d", etc). LiteLLM tracks spend per model per window and resets automatically when the window rolls.
+
+**Budget fallbacks** decide what happens once a window is exhausted. Instead of returning a 429 to the developer's terminal, attach a `budget_fallbacks` chain that names the cheaper models to reroute to. The request silently falls to the first fallback still under its own budget.
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
@@ -40,7 +42,7 @@ curl -X POST http://localhost:4000/key/generate \
 
 Once the developer burns $20 of Opus in a day, subsequent Opus requests silently reroute to Sonnet; if Sonnet is also tapped out, Haiku picks up. Fallback models without a `model_max_budget` entry are treated as unlimited.
 
-**→ Learn more:** [Budget Fallbacks](../../docs/proxy/budget_fallbacks)
+**→ Learn more:** [Budget Windows](../../docs/proxy/users#set-multiple-budget-windows-on-a-key) · [Budget Fallbacks](../../docs/proxy/budget_fallbacks)
 
 ## 2. Automatic Prompt Caching 
 
