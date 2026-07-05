@@ -117,7 +117,41 @@ Ranking is token-overlap over `name + description`, so there is no embedding dep
 
 ## 5. Auto routing
 
-Static fallbacks pick the cheaper model only after a budget is blown. Auto routing goes one step further and picks the right model per request, so cheap requests never touch the expensive model in the first place. LiteLLM ships three approaches today. [Semantic auto routing](../../docs/proxy/auto_routing) matches the input against utterances you define and dispatches to specialized models via embeddings. The [Complexity Router](../../docs/proxy/auto_routing#complexity-router) uses rule-based scoring for zero-latency classification with no external API call. The [Adaptive Router](../../docs/adaptive_router) is a beta that learns from live traffic which model performs best for each request type and balances quality against cost automatically.
+Send every request to the smallest model that can handle it, so cheap requests never touch the expensive model. LiteLLM ships three flavors: [Semantic](../../docs/proxy/auto_routing) (embedding match), [Complexity](../../docs/proxy/auto_routing#complexity-router) (rule-based, zero external call), and [Adaptive](../../docs/adaptive_router) (learns from live traffic, beta).
+
+Complexity router is the fastest to set up. Point Claude Code at `smart-router` and it classifies each request into a tier:
+
+```yaml title="config.yaml"
+model_list:
+  # Target models
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: gpt-4o-mini
+
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o
+
+  - model_name: claude-sonnet
+    litellm_params:
+      model: claude-sonnet-4-20250514
+
+  - model_name: o1-preview
+    litellm_params:
+      model: o1-preview
+
+  # Complexity router
+  - model_name: smart-router
+    litellm_params:
+      model: auto_router/complexity_router
+      complexity_router_config:
+        tiers:
+          SIMPLE: gpt-4o-mini
+          MEDIUM: gpt-4o
+          COMPLEX: claude-sonnet
+          REASONING: o1-preview
+      complexity_router_default_model: gpt-4o
+```
 
 ## Stacking the levers
 
