@@ -169,4 +169,4 @@ The five features compose. Budget-based fallbacks bound the total spend regardle
 
 ## Help us make this better
 
-We're actively investing in cost optimization across the whole stack. If you've got ideas, on auto routing, better cache heuristics, smarter budget policies, anything, join the discussion at [litellm#32168](https://github.com/BerriAI/litellm/discussions/32168).
+We're actively investing in cost optimization across the whole stack. If you've got ideas, on auto routing, better cache heuristics, smarter budget policies, anything, join the discussion at [litellm#32172](https://github.com/BerriAI/litellm/discussions/32172).
