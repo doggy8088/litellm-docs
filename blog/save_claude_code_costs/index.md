@@ -118,3 +118,9 @@ Ranking is token-overlap over `name + description`, so there is no embedding dep
 ## Stacking the levers
 
 The four features compose. Budget-based fallbacks bound the total spend regardless of what else you do. Prompt cache checkpoints and Headroom compression each shave a different slice of the request payload before it hits the model. Tool search cuts the tool schema overhead at the front of every turn. Turn them on together and the same Claude Code workload runs on a fraction of the input tokens it did before, without touching a single developer machine.
+
+## What's next: auto routing
+
+The natural next step past static fallbacks is picking the right model per request, not per budget window. LiteLLM ships three approaches to this today. [Semantic auto routing](../../docs/proxy/auto_routing) matches the input against utterances you define and dispatches to specialized models via embeddings. The [Complexity Router](../../docs/proxy/auto_routing#complexity-router) uses rule-based scoring for zero-latency classification with no external API call. The [Adaptive Router](../../docs/adaptive_router) is a beta that learns from live traffic which model performs best for each request type and balances quality against cost automatically.
+
+This is an area we are actively investing in. If you're interested in shaping where auto routing goes next, join the discussion at [litellm#32168](https://github.com/BerriAI/litellm/discussions/32168).
