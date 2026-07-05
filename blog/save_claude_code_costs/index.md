@@ -1,0 +1,120 @@
+---
+slug: save-claude-code-costs-with-litellm
+title: "4 ways to cut Claude Code costs with LiteLLM"
+date: 2026-07-04T10:00:00
+authors:
+  - krrish
+description: "Practical levers a platform admin can pull on the LiteLLM proxy to reduce Claude Code spend without asking developers to change a thing."
+tags: [claude-code, cost, budgets, headroom, mcp, prompt-caching]
+hide_table_of_contents: false
+---
+
+Claude Code is one of the heaviest consumers of input tokens in a modern engineering org. Long tool loops, large file reads, and MCP catalogs with hundreds of tools push every request toward the top of the context window, and the bill scales with it.
+
+If Claude Code already points at a LiteLLM proxy (via `ANTHROPIC_BASE_URL`), there are four levers the platform admin can pull to bring that cost down. None of them require a client-side change.
+
+{/* truncate */}
+
+## 1. Budget-based fallbacks
+
+Budget fallbacks let you cap a developer's daily spend on the expensive Claude model and silently degrade to a cheaper one once the cap is hit, instead of returning an error to their terminal. The config lives on the virtual key: attach `model_max_budget` per model and a `budget_fallbacks` chain that names the cheaper models to reroute to.
+
+```bash
+curl -X POST http://localhost:4000/key/generate \
+  -H "Authorization: Bearer $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_max_budget": {
+      "claude-opus-4-8":   {"budget_limit": 20.0, "time_period": "1d"},
+      "claude-sonnet-5":   {"budget_limit": 10.0, "time_period": "1d"},
+      "claude-haiku-4-5":  {"budget_limit": 5.0,  "time_period": "1d"}
+    },
+    "budget_fallbacks": {
+      "claude-opus-4-8":  ["claude-sonnet-5", "claude-haiku-4-5"],
+      "claude-sonnet-5":  ["claude-haiku-4-5"]
+    }
+  }'
+```
+
+Once the developer burns $20 of Opus in a day, subsequent Opus requests silently reroute to Sonnet; if Sonnet is also tapped out, Haiku picks up. Fallback models without a `model_max_budget` entry are treated as unlimited. Full reference in [Budget Fallbacks](../../docs/proxy/budget_fallbacks).
+
+## 2. Automatic Prompt Caching 
+
+Claude's prompt cache reads a cache hit for roughly 10% of the price of a fresh input token, but only if the request marks the right message with `cache_control`. LiteLLM injects that marker for you: point `cache_control_injection_points` at the system message (or the second-to-last user turn), and every Claude Code call through the proxy carries the checkpoint without any client-side edit.
+
+```yaml title="config.yaml"
+model_list:
+  - model_name: claude-sonnet-4-5
+    litellm_params:
+      model: anthropic/claude-sonnet-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      cache_control_injection_points:
+        - location: message
+          role: system
+
+router_settings:
+  optional_pre_call_checks: ["prompt_caching"]
+```
+
+for automatically injecting this in all requests, do this 
+
+```yaml title="config.yaml"
+model_list:
+  - model_name: claude-sonnet-4.5-20250929
+    litellm_params:
+      model: vertex_ai/claude-sonnet-4-5@20250929
+      # ...
+
+router_settings:
+  default_litellm_params:
+    cache_control_injection_points:
+      - location: message
+        role: system
+  optional_pre_call_checks: ["prompt_caching"]
+```
+
+Turning on 'prompt_caching' as a pre call check, means if you run multiple deployments of the same Claude model, LiteLLM will intelligently route to the model deployment which was initially used for the request. 
+
+Details in [Auto-Inject Prompt Caching Checkpoints](../../docs/tutorials/prompt_caching) and [Claude Code - Prompt Cache Routing](../../docs/tutorials/claude_code_prompt_cache_routing).
+
+## 3. Prompt Compression (Headroom)
+
+Prompt cache trims the static prefix; Headroom trims the dynamic middle. Tool outputs, file reads, database dumps, and RAG payloads get rewritten into a compressed form before they reach the model, and if the model actually needs the original bytes, a `retrieve_headroom` tool call fetches them on demand. Reported savings run 60-95% on the compressible portion of Claude Code traffic.
+
+Headroom runs as a sidecar container next to LiteLLM. Register it as a `pre_call` guardrail and either flip `default_on: true` or attach it to per-developer virtual keys.
+
+```yaml title="config.yaml"
+guardrails:
+  - guardrail_name: headroom-compression
+    litellm_params:
+      guardrail: headroom
+      mode: pre_call
+      api_base: https://your-headroom-service
+      default_on: true
+```
+
+The developer still exports `ANTHROPIC_BASE_URL` and runs `claude`; the only thing they notice is a smaller number on the spend log. Deployment Dockerfile and per-key rollout pattern are in the [Headroom guardrail setup guide](../../docs/proxy/headroom).
+
+## 4. Defer MCP tools
+
+A Claude Code session that connects to five or six MCP servers can easily surface a few hundred tools, and every one of those tool schemas ships on every `tools/list` call. That is pure input-token overhead on a workload where the model uses two or three tools per turn.
+
+Turn on `mcp_tool_search_enabled` on the virtual key, and LiteLLM replaces the full catalog with two virtual tools, `mcp_tool_search` and `mcp_tool_call`. The model searches by keyword, gets the ranked matches back, and calls the one it wants. The token cost of tool listing collapses from hundreds of schemas to two.
+
+```bash
+curl -X POST http://localhost:4000/key/generate \
+  -H "Authorization: Bearer $ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "object_permission": {
+      "mcp_tool_search_enabled": true,
+      "mcp_servers": ["github", "slack", "linear", "jira"]
+    }
+  }'
+```
+
+Ranking is token-overlap over `name + description`, so there is no embedding dependency to run. The access surface does not widen; search only returns tools the key was already allowed to call. Full walkthrough in [MCP Tool Search](../../docs/mcp_tool_search).
+
+## Stacking the levers
+
+The four features compose. Budget-based fallbacks bound the total spend regardless of what else you do. Prompt cache checkpoints and Headroom compression each shave a different slice of the request payload before it hits the model. Tool search cuts the tool schema overhead at the front of every turn. Turn them on together and the same Claude Code workload runs on a fraction of the input tokens it did before, without touching a single developer machine.
