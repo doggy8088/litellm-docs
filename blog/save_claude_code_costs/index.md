@@ -36,7 +36,9 @@ curl -X POST http://localhost:4000/key/generate \
   }'
 ```
 
-Once the developer burns $20 of Opus in a day, subsequent Opus requests silently reroute to Sonnet; if Sonnet is also tapped out, Haiku picks up. Fallback models without a `model_max_budget` entry are treated as unlimited. Full reference in [Budget Fallbacks](../../docs/proxy/budget_fallbacks).
+Once the developer burns $20 of Opus in a day, subsequent Opus requests silently reroute to Sonnet; if Sonnet is also tapped out, Haiku picks up. Fallback models without a `model_max_budget` entry are treated as unlimited.
+
+**→ Learn more:** [Budget Fallbacks](../../docs/proxy/budget_fallbacks)
 
 ## 2. Automatic Prompt Caching 
 
@@ -75,7 +77,7 @@ router_settings:
 
 Turning on 'prompt_caching' as a pre call check, means if you run multiple deployments of the same Claude model, LiteLLM will intelligently route to the model deployment which was initially used for the request. 
 
-Details in [Auto-Inject Prompt Caching Checkpoints](../../docs/tutorials/prompt_caching) and [Claude Code - Prompt Cache Routing](../../docs/tutorials/claude_code_prompt_cache_routing).
+**→ Learn more:** [Auto-Inject Prompt Caching Checkpoints](../../docs/tutorials/prompt_caching) · [Claude Code - Prompt Cache Routing](../../docs/tutorials/claude_code_prompt_cache_routing)
 
 ## 3. Prompt Compression (Headroom)
 
@@ -93,7 +95,9 @@ guardrails:
       default_on: true
 ```
 
-The developer still exports `ANTHROPIC_BASE_URL` and runs `claude`; the only thing they notice is a smaller number on the spend log. Deployment Dockerfile and per-key rollout pattern are in the [Headroom guardrail setup guide](../../docs/proxy/headroom).
+The developer still exports `ANTHROPIC_BASE_URL` and runs `claude`; the only thing they notice is a smaller number on the spend log.
+
+**→ Learn more:** [Headroom guardrail setup guide](../../docs/proxy/headroom)
 
 ## 4. Defer MCP tools
 
@@ -113,11 +117,13 @@ curl -X POST http://localhost:4000/key/generate \
   }'
 ```
 
-Ranking is token-overlap over `name + description`, so there is no embedding dependency to run. The access surface does not widen; search only returns tools the key was already allowed to call. Full walkthrough in [MCP Tool Search](../../docs/mcp_tool_search).
+Ranking is token-overlap over `name + description`, so there is no embedding dependency to run. The access surface does not widen; search only returns tools the key was already allowed to call.
+
+**→ Learn more:** [MCP Tool Search](../../docs/mcp_tool_search)
 
 ## 5. Auto routing
 
-Send every request to the smallest model that can handle it, so cheap requests never touch the expensive model. LiteLLM ships three flavors: [Semantic](../../docs/proxy/auto_routing) (embedding match), [Complexity](../../docs/proxy/auto_routing#complexity-router) (rule-based, zero external call), and [Adaptive](../../docs/adaptive_router) (learns from live traffic, beta).
+Send every request to the smallest model that can handle it, so cheap requests never touch the expensive model. LiteLLM ships three flavors: Semantic (embedding match), Complexity (rule-based, zero external call), and Adaptive (learns from live traffic, beta).
 
 Complexity router is the fastest to set up. Point Claude Code at `smart-router` and it classifies each request into a tier:
 
@@ -152,6 +158,8 @@ model_list:
           REASONING: o1-preview
       complexity_router_default_model: gpt-4o
 ```
+
+**→ Learn more:** [Complexity Router](../../docs/proxy/auto_routing#complexity-router) · [Semantic Auto Routing](../../docs/proxy/auto_routing) · [Adaptive Router](../../docs/adaptive_router)
 
 ## Stacking the levers
 
