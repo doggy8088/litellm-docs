@@ -9,22 +9,24 @@ LiteLLM Gateway has **8ms P95 latency** at 1k RPS (See benchmarks [here](#4-inst
 
 :::tip Production Deployment
 
-For production, we recommend running **one Uvicorn worker per pod** and scaling **horizontally** (more pods). See [Best Practices for Production](./proxy/prod) for full guidance on server configuration, worker recycling, and hitless restarts.
+The rule of thumb is **one worker per CPU core**. In production we recommend **1 CPU per pod, which means 1 worker per pod**, and scaling **horizontally** (more pods) rather than packing many workers onto a pod. Oversubscribing workers relative to CPUs (for example 4 workers on a 1 CPU pod) causes CPU contention and node pressure. See [Best Practices for Production](./proxy/prod) for full guidance on server configuration, worker recycling, and hitless restarts.
 
 :::
 
 ## Machine Spec used for testing
 
-Each machine deploying LiteLLM had the following specs:
+Each LiteLLM instance under test had the following specs:
 
 - 4 CPU
 - 8GB RAM
-- 1 worker per instance
+- 4 workers per instance (1 worker per CPU core)
 
 ## Configuration
 
 - Database: PostgreSQL
 - Redis: Not used
+- Deployment: litellm-helm chart (litellm-database image)
+- Pod resources: requests 1 CPU / 4 GiB, limits 4 CPU / 8 GiB
 
 
 ### 2 Instance LiteLLM Proxy
@@ -57,7 +59,7 @@ In these tests the baseline latency characteristics are measured against a fake-
 #### Key Findings
 - Doubling from 2 to 4 LiteLLM instances halves median latency: 200 ms to 100 ms.
 - High-percentile latencies drop significantly: P95 630 ms to 150 ms, P99 1,200 ms to 240 ms.
-- Scaling horizontally (more instances with 1 worker each) is more effective than adding workers per instance. See [production best practices](./proxy/prod#3-choose-your-server-uvicorn-vs-gunicorn) for details.
+- Set the worker count equal to the pod's CPU cores (1 worker per CPU core) for optimal performance. In production we run 1 CPU per pod, so that means 1 worker per pod, scaled horizontally across pods. See [production best practices](./proxy/prod#3-choose-your-server-uvicorn-vs-gunicorn) for details.
 
 
 ## Setting Up Benchmarking with Network Mock
@@ -87,7 +89,7 @@ general_settings:
 **2. Start the proxy:**
 
 ```bash
-litellm --config benchmark_config.yaml --port 4000 --num_workers 1
+litellm --config benchmark_config.yaml --port 4000 --num_workers 4
 ```
 
 **3. Run the benchmark script:**
@@ -137,7 +139,7 @@ End-to-end latency benchmarks for the `/realtime` endpoint tested against a fake
 | Category | Specification |
 |----------|---------------|
 | **Load Testing** | Locust: 1,000 concurrent users, 500 ramp-up |
-| **System** | 4 vCPUs, 8 GB RAM, 1 worker per instance, 4 instances |
+| **System** | 4 vCPUs, 8 GB RAM, 4 workers per instance (1 per CPU core), 4 instances |
 | **Database** | PostgreSQL (Redis unused) |
 
 
