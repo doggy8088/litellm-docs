@@ -9,7 +9,7 @@ LiteLLM Gateway has **8ms P95 latency** at 1k RPS (See benchmarks [here](#4-inst
 
 :::tip Production Deployment
 
-The rule of thumb is **one worker per CPU core**. In production we recommend **1 CPU per pod, which means 1 worker per pod**, and scaling **horizontally** (more pods) rather than packing many workers onto a pod. Oversubscribing workers relative to CPUs (for example 4 workers on a 1 CPU pod) causes CPU contention and node pressure. See [Best Practices for Production](./proxy/prod) for full guidance on server configuration, worker recycling, and hitless restarts.
+The rule of thumb is **one worker per CPU core**, with resource **requests** sized to the worker count (`requests.cpu = num_workers` and `requests.memory = num_workers × 4Gi`, each `<=` the corresponding limit). Kubernetes schedules pods on requests, not limits, so running more workers than the requested CPUs provide (for example 4 workers on a pod that only requests 1 CPU) causes CPU contention and node pressure. We recommend **1 worker per pod** (requests = limits = 1 CPU / 4Gi) and scaling **horizontally** (more pods); multiple workers per pod also works as long as requests are sized accordingly. See [Best Practices for Production](./proxy/prod) for the resource math and full guidance on server configuration, worker recycling, and hitless restarts.
 
 :::
 
@@ -26,7 +26,7 @@ Each LiteLLM instance under test had the following specs:
 - Database: PostgreSQL
 - Redis: Not used
 - Deployment: litellm-helm chart (litellm-database image)
-- Pod resources: requests 1 CPU / 4 GiB, limits 4 CPU / 8 GiB
+- Pod resource requests sized to the worker count (see the production deployment note above)
 
 
 ### 2 Instance LiteLLM Proxy
