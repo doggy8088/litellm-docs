@@ -398,7 +398,7 @@ const sidebars = {
         slug: "/simple_proxy",
       },
       items: [
-        { type: "doc", id: "proxy/docker_quick_start", label: "Getting Started Tutorial" },
+        { type: "doc", id: "proxy/docker_quick_start", label: "Docker Quickstart" },
         {
           type: "category",
           label: "Agent & MCP Gateway",

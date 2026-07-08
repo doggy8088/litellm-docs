@@ -29,11 +29,7 @@ import Image from '@theme/IdealImage';
 uv add litellm
 ```
 
-To run the full Proxy Server (LLM Gateway):
-
-```shell
-uv tool install 'litellm[proxy]'
-```
+To deploy the full AI Gateway (Proxy) with the Admin UI, follow the [Docker Quickstart](./proxy/docker_quick_start.md); it runs as a container and needs no Python setup. To run it from the CLI instead, see the [Gateway Quickstart](./learn/gateway_quickstart.md).
 
 ---
 

@@ -16,6 +16,8 @@ Official images are published to `ghcr.io/berriai` (`litellm`, `litellm-database
 
 ## Quick Start
 
+New to LiteLLM? The [Docker Quickstart](./docker_quick_start.md) takes you from zero to a running gateway with the Admin UI in about five minutes.
+
 :::info
 Facing issues with pulling the docker image? Email us at support@berri.ai.
 :::
