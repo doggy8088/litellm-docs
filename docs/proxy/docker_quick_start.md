@@ -56,7 +56,7 @@ Then start it:
 docker compose up -d
 ```
 
-That is the entire terminal portion of this guide. The stack runs the gateway on port 4000 and a Postgres database that stores your models, keys, and spend logs.
+That is the entire terminal portion of this guide. The stack runs the gateway on port 4000 and a Postgres database that stores your models, keys, and spend logs. For anything beyond local evaluation, pin a specific release tag instead of `latest`; see [available tags](https://github.com/BerriAI/litellm/pkgs/container/litellm-database).
 
 :::warning Set a real salt key
 `LITELLM_SALT_KEY` encrypts the provider API keys you add in the UI. Set it to a long random value before adding models, and never change it afterwards; credentials encrypted with the old value cannot be decrypted with a new one. A password generator works well for this.
