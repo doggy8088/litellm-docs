@@ -212,4 +212,4 @@ Requests authenticate with the master key. See the [full config reference](./con
 
 ## Next steps
 
-Going to production: follow the [production checklist](./prod.md) and review [Docker image verification](./docker_image_security.md). Deploying on Kubernetes, Helm, or a specific cloud: see [Docker, Helm, Terraform](./deploy.md) and [Deploy to Cloud](./deploy_cloud.md). Full container and database options, including Redis and Prometheus, are covered in the repo [docker-compose.yml](https://github.com/BerriAI/litellm/blob/main/docker-compose.yml).
+Going to production: the [Deploy guide](./deploy.md) covers Helm, Terraform, and Kubernetes on AWS, GCP, and Azure, and the [production checklist](./prod.md) covers hardening and tuning. Full container and database options, including Redis and Prometheus, are covered in the repo [docker-compose.yml](https://github.com/BerriAI/litellm/blob/main/docker-compose.yml).

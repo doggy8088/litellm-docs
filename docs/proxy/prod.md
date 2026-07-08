@@ -452,6 +452,110 @@ The proxy will log a warning about the UI but API endpoints will work normally.
 3. **Server Root Path**: If using a custom `server_root_path`, you must pre-process UI files in your Dockerfile as the proxy cannot modify files at runtime with read-only filesystem
 4. **Automatic Detection**: The UI is automatically detected as pre-restructured if it contains a `.litellm_ui_ready` marker file (created by the official Docker images)
 
+## 10. Server tuning
+
+Flags and env vars for tuning the container itself. See the [CLI reference](./cli.md) for every flag.
+
+### SSL certificates
+
+For TLS terminated by the proxy itself (rather than your load balancer), pass the key and cert paths:
+
+```shell
+docker run docker.litellm.ai/berriai/litellm:latest \
+    --ssl_keyfile_path ssl_test/keyfile.key \
+    --ssl_certfile_path ssl_test/certfile.crt
+```
+
+### HTTP/2 with Hypercorn
+
+To serve HTTP/2, build an image with hypercorn installed and pass `--run_hypercorn`:
+
+```shell
+FROM docker.litellm.ai/berriai/litellm:latest
+WORKDIR /app
+COPY config.yaml .
+RUN chmod +x ./docker/entrypoint.sh
+EXPOSE 4000/tcp
+RUN uv add hypercorn
+CMD ["--port", "4000", "--config", "config.yaml"]
+```
+
+```shell
+docker run \
+    -v $(pwd)/proxy_config.yaml:/app/config.yaml \
+    -p 4000:4000 \
+    -e DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname> \
+    -e LITELLM_MASTER_KEY="sk-1234" \
+    your_custom_docker_image \
+    --config /app/config.yaml \
+    --run_hypercorn
+```
+
+### Granian ASGI server [Beta]
+
+:::info Beta feature
+`--run_granian` is in **beta**. Uvicorn is still the default server. Try Granian when you need more gateway throughput or see instability under load with uvicorn; report issues on [GitHub](https://github.com/BerriAI/litellm/issues).
+:::
+
+[Granian](https://github.com/emmett-framework/granian) is a Rust-backed ASGI server. In LiteLLM benchmarks it showed a 10 to 20 RPS improvement over uvicorn with the same worker count, steadier latency under sustained load, and lower error rates (see [PR #26027](https://github.com/BerriAI/litellm/pull/26027)). Scale throughput with `--num_workers`.
+
+```shell
+docker run docker.litellm.ai/berriai/litellm:latest \
+    --config /app/config.yaml \
+    --port 4000 \
+    --run_granian \
+    --num_workers 4
+```
+
+Both `--ssl_certfile_path` and `--ssl_keyfile_path` are required when enabling TLS with Granian. Not supported with Granian: `--max_requests_before_restart` (use Gunicorn for per-request worker recycling) and `--ciphers` (Hypercorn only). See [CLI server backend options](/docs/proxy/cli#server-backend-options).
+
+### Keepalive timeout
+
+Defaults to 5 seconds; between requests, connections must receive new data within this period or be disconnected.
+
+```shell
+docker run docker.litellm.ai/berriai/litellm:latest \
+    --keepalive_timeout 75
+```
+
+Or set `KEEPALIVE_TIMEOUT=75` as an env var.
+
+### Load config.yaml from S3 or GCS
+
+Use this if you cannot mount a config file on your deployment service (AWS Fargate, Railway, etc.). LiteLLM reads `config.yaml` from the bucket at startup.
+
+<Tabs>
+<TabItem value="gcs" label="GCS Bucket">
+
+```shell
+docker run --name litellm-proxy \
+   -e DATABASE_URL=<database_url> \
+   -e LITELLM_CONFIG_BUCKET_TYPE="gcs" \
+   -e LITELLM_CONFIG_BUCKET_NAME="litellm-proxy" \
+   -e LITELLM_CONFIG_BUCKET_OBJECT_KEY="proxy_config.yaml" \
+   -p 4000:4000 \
+   docker.litellm.ai/berriai/litellm-database:latest
+```
+
+</TabItem>
+<TabItem value="s3" label="s3">
+
+```shell
+docker run --name litellm-proxy \
+   -e DATABASE_URL=<database_url> \
+   -e LITELLM_CONFIG_BUCKET_NAME="litellm-proxy" \
+   -e LITELLM_CONFIG_BUCKET_OBJECT_KEY="litellm_proxy_config.yaml" \
+   -p 4000:4000 \
+   docker.litellm.ai/berriai/litellm-database:latest
+```
+
+</TabItem>
+</Tabs>
+
+### Disable pulling live model prices
+
+Set `LITELLM_LOCAL_MODEL_COST_MAP="True"` to use the bundled [model prices file](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) instead of fetching it at startup, if you see long cold starts or have network egress restrictions.
+
 ## Extras
 ### Expected Performance in Production
 
@@ -465,3 +569,15 @@ You should only see the following level of details in logs on the proxy server
 # INFO:     192.168.2.205:34717 - "POST /chat/completions HTTP/1.1" 200 OK
 # INFO:     192.168.2.205:29734 - "POST /chat/completions HTTP/1.1" 200 OK
 ```
+
+## Deployment FAQ
+
+**Q: Is Postgres the only supported database, or do you support other ones (like Mongo)?**
+
+A: We explored MySQL but that was hard to maintain and led to bugs for customers. Currently, PostgreSQL is our primary supported database for production deployments.
+
+Because LiteLLM talks to the database through Prisma over the PostgreSQL wire protocol, any Postgres-wire-compatible distributed SQL database works as a drop-in replacement. [YugabyteDB](https://www.yugabyte.com/) is used in production this way; point `DATABASE_URL` at its YSQL endpoint (`postgresql://<user>:<password>@<host>:<port>/<dbname>`) and LiteLLM runs its migrations and queries unchanged. This is a good fit if you need horizontal scale or multi-region high availability beyond what a single Postgres instance provides.
+
+**Q: If there is Postgres downtime, how does LiteLLM react? Does it fail-open or is there API downtime?**
+
+A: You can gracefully handle DB unavailability if it's on your VPC; see [Gracefully Handle DB Unavailability](#6-if-running-litellm-on-vpc-gracefully-handle-db-unavailability) above.

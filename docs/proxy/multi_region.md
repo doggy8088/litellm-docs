@@ -7,7 +7,7 @@ import { MultiRegionArchitecture } from '@site/src/components/CloudArchitecture'
 
 Run LiteLLM proxy instances in multiple regions of the same cloud provider, all connected to one shared PostgreSQL database. Clients get routed to the nearest region for low latency, while keys, teams, users, and spend tracking stay consistent everywhere because there is a single source of truth.
 
-This page covers the supported topology, how licensing works across regions, and step-by-step setup. For deploying the proxy itself in each region, see [Deploy to Cloud (AWS, GCP, Azure)](./deploy_cloud.md).
+This page covers the supported topology, how licensing works across regions, and step-by-step setup. For deploying the proxy itself in each region, see [Deploy](./deploy.md).
 
 ## Architecture
 
@@ -59,11 +59,11 @@ Rate limits (TPM/RPM on keys, teams, and users) are enforced through Redis. With
 
 ## Setup
 
-The steps below assume you can already deploy a single-region production proxy (load balancer, proxy instances, Postgres, Redis). If not, start with [Deploy to Cloud](./deploy_cloud.md) and the [production checklist](./prod.md).
+The steps below assume you can already deploy a single-region production proxy (load balancer, proxy instances, Postgres, Redis). If not, start with the [Deploy guide](./deploy.md) and the [production checklist](./prod.md).
 
 ### 1. Provision the shared database
 
-Create one PostgreSQL database in your primary region and run the schema migrations against it once, using the migrations job from the [Helm charts](./deploy_cloud.md#deploy-with-helm) or the [Terraform modules](./deploy_cloud.md#deploy-with-terraform-aws-and-gcp). All regions will use this database's connection string.
+Create one PostgreSQL database in your primary region and run the schema migrations against it once, using the migrations job from the [Helm charts](./deploy.md#deploy-with-helm) or the [Terraform modules](./deploy.md#deploy-with-terraform-aws-and-gcp). All regions will use this database's connection string.
 
 ### 2. Connect the regions' networks
 
