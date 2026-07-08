@@ -465,11 +465,11 @@ const sidebars = {
           items: [
             "proxy/deploy",
             "proxy/prod",
+            "proxy/server_tuning",
             "proxy/multi_region",
             "proxy/health",
-            "proxy/master_key_rotations",
             "proxy/model_management",
-            "proxy/worker_startup_hooks",
+            "proxy/master_key_rotations",
           ],
         },
         {
@@ -508,10 +508,8 @@ const sidebars = {
               type: "category",
               label: "Models",
               items: [
-                "proxy/ui_credentials",
                 "proxy/ai_hub",
                 "proxy/model_compare_ui",
-                "proxy/ui_store_model_db_setting",
                 "proxy/ui/routing_groups",
               ]
             },
@@ -655,6 +653,7 @@ const sidebars = {
             "proxy/call_hooks",
             "proxy/agentic_loop_hook",
             "proxy/rules",
+            "proxy/worker_startup_hooks",
           ]
         },
         "proxy/management_cli",

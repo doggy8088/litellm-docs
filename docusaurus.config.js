@@ -103,6 +103,14 @@ const config = {
             from: '/docs/proxy/microservices_helm',
             to: '/docs/proxy/deploy#deploy-with-helm',
           },
+          {
+            from: '/docs/proxy/ui_credentials',
+            to: '/docs/proxy/model_management#reusable-provider-credentials',
+          },
+          {
+            from: '/docs/proxy/ui_store_model_db_setting',
+            to: '/docs/proxy/model_management#database-vs-configyaml-models',
+          },
         ],
       },
     ],
