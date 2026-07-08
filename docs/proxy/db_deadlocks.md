@@ -2,7 +2,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# High Availability Setup (Resolve DB Deadlocks)
+# Resolve DB Deadlocks (Redis Transaction Buffer)
 
 :::tip Essential for Production
 

@@ -38,6 +38,8 @@ general_settings:
   proxy_batch_write_at: 60
 ```
 
+Above roughly 1000 requests per second, also route these writes through Redis with the [Redis transaction buffer](./db_deadlocks.md) to prevent connection exhaustion and deadlocks.
+
 ### Bound database connections
 
 Cap the connection pool per worker process so your instances cannot exhaust the database. Size it as `MAX_DB_CONNECTIONS / (instances × workers)`; the default is 10.
