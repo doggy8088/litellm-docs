@@ -466,7 +466,6 @@ const sidebars = {
             "proxy/deploy",
             "proxy/prod",
             "proxy/multi_region",
-            "proxy/microservices_helm",
             "proxy/docker_image_security",
             "proxy/health",
             "proxy/master_key_rotations",

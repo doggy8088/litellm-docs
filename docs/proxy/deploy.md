@@ -21,7 +21,7 @@ There are two supported paths. If you run Kubernetes, [deploy with Helm](#deploy
 LiteLLM provides two deployment modes:
 
 - **Monolithic**: one `litellm` image serves LLM traffic, management APIs, and the UI. This is what the `litellm-helm` chart runs, and the simplest to operate.
-- **Microservices**: a `gateway` (LLM traffic, port 4000), `backend` (management APIs and UI backend, port 4001), and `ui` (port 3000), each deployed and scaled independently. This is what the componentized `litellm` chart and both Terraform modules run; see [Microservices Helm](./microservices_helm.md) for the full reference.
+- **Microservices**: a `gateway` (LLM traffic, port 4000), `backend` (management APIs and UI backend, port 4001), and `ui` (port 3000), each deployed and scaled independently. This is what the componentized `litellm` chart and both Terraform modules run; see the [chart values](https://github.com/BerriAI/litellm/blob/main/helm/litellm/values.yaml) for the full reference.
 
 The supporting infrastructure is identical in either mode:
 
@@ -186,7 +186,7 @@ helm upgrade --install litellm \
   -f values.yaml
 ```
 
-This deploys `gateway`, `backend`, and `ui` as separate services with per-component autoscaling, so you can run many gateway replicas against a small fixed backend. It requires external Postgres and Redis (no bundled subcharts) and supports reader/writer database splits, IAM database auth, and Redis Cluster mode. See [Microservices Helm](./microservices_helm.md) for the full values reference.
+This deploys `gateway`, `backend`, and `ui` as separate services with per-component autoscaling, so you can run many gateway replicas against a small fixed backend. It requires external Postgres and Redis (no bundled subcharts) and supports reader/writer database splits, IAM database auth, and Redis Cluster mode. Every knob (per-component scaling and probes, read replica routing, Redis Cluster, migrations job, ingress) is documented in the [chart's values.yaml](https://github.com/BerriAI/litellm/blob/main/helm/litellm/values.yaml).
 
 </TabItem>
 </Tabs>

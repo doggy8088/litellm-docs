@@ -99,6 +99,10 @@ const config = {
             from: '/docs/proxy/deploy_cloud',
             to: '/docs/proxy/deploy',
           },
+          {
+            from: '/docs/proxy/microservices_helm',
+            to: '/docs/proxy/deploy#deploy-with-helm',
+          },
         ],
       },
     ],
