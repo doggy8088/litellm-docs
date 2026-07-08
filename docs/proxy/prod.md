@@ -13,46 +13,74 @@ Work through this page before going live. It covers the production configuration
 
 ## Configuration
 
-### Recommended config.yaml
+### Set a master key
 
-Use this config.yaml in production (with your own LLMs):
+The master key is the proxy admin credential: it authenticates admin API calls and is the Admin UI login password. Set it as an env var (it must start with `sk-`), keep it in your secret manager, and rotate it with the [master key rotation flow](./master_key_rotations.md).
+
+```bash
+export LITELLM_MASTER_KEY="sk-<long-random-value>"
+```
+
+### Turn on alerting
+
+Get notified about LLM exceptions, slow or hanging requests, budget crossings, database exceptions, outages, and weekly spend reports. In the Admin UI go to **Settings** then **Logging & Alerts**, open the **Alerting Types** tab, toggle the alert types you want, paste your Slack webhook URL, and click **Test Alerts** to confirm delivery. Thresholds and report frequency live in the **Alerting Settings** tab next to it.
+
+<Image img={require('../../img/ui_alerting_types.png')} alt="Alerting Types tab in the Admin UI with per-alert toggles and Slack webhook fields" />
+
+To bake it into config instead, set `alerting: ["slack"]` under `general_settings` and export `SLACK_WEBHOOK_URL` in the environment.
+
+### Batch spend writes
+
+Write spend updates to the database every 60 seconds instead of on every request; at production traffic, per-request writes become a database hot spot.
 
 ```yaml
-model_list:
-  - model_name: fake-openai-endpoint
-    litellm_params:
-      model: openai/fake
-      api_key: fake-key
-      api_base: https://exampleopenaiendpoint-production.up.railway.app/
-
 general_settings:
-  master_key: sk-1234      # enter your own master key, ensure it starts with 'sk-'
-  alerting: ["slack"]      # Setup slack alerting - get alerts on LLM exceptions, Budget Alerts, Slow LLM Responses
-  proxy_batch_write_at: 60 # Batch write spend updates every 60s
-  database_connection_pool_limit: 10 # connection pool limit per worker process. Total connections = limit × workers × instances. Calculate: MAX_DB_CONNECTIONS / (instances × workers). Default: 10.
+  proxy_batch_write_at: 60
+```
 
-  # OPTIONAL Best Practices
-  disable_error_logs: True # turn off writing LLM Exceptions to DB
-  allow_requests_on_db_unavailable: True # Only USE when running LiteLLM on your VPC. Allow requests to still be processed even if the DB is unavailable. We recommend doing this if you're running LiteLLM on VPC that cannot be accessed from the public internet.
+### Bound database connections
 
-litellm_settings:
-  request_timeout: 600    # raise Timeout error if call takes longer than 600 seconds. Default value is 6000seconds if not set
-  set_verbose: False      # Switch off Debug Logging, ensure your logs do not have any debugging on
-  json_logs: true         # Get debug logs in json format
+Cap the connection pool per worker process so your instances cannot exhaust the database. Size it as `MAX_DB_CONNECTIONS / (instances × workers)`; the default is 10.
+
+```yaml
+general_settings:
+  database_connection_pool_limit: 10
 ```
 
 :::warning Multiple instances
 
-If running multiple LiteLLM instances (e.g., Kubernetes pods), remember each instance multiplies your total connections. Example: 3 instances × 4 workers × 10 connections = 120 total connections.
+Each instance multiplies your total connections: 3 instances × 4 workers × 10 connections = 120 total connections against your database.
 
 :::
 
-Set slack webhook url in your env
-```shell
-export SLACK_WEBHOOK_URL="example-slack-webhook-url"
+### Keep error logs out of the database
+
+LLM exceptions are written to the database by default. Under sustained provider errors this bloats the spend logs table; send exceptions to your logging stack (see [alerting](#turn-on-alerting) and [logging callbacks](./logging.md)) instead.
+
+```yaml
+general_settings:
+  disable_error_logs: True
 ```
 
-Turn off FASTAPI's default info logs
+### Set a request timeout
+
+Fail requests that hang instead of holding connections open; the default is 6000 seconds.
+
+```yaml
+litellm_settings:
+  request_timeout: 600
+```
+
+### Production logging
+
+Switch off debug logging, emit JSON logs, and silence FastAPI's per-request info logs:
+
+```yaml
+litellm_settings:
+  set_verbose: False
+  json_logs: true
+```
+
 ```bash
 export LITELLM_LOG="ERROR"
 ```
