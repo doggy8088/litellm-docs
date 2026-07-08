@@ -1,4 +1,4 @@
-import Image from '@theme/IdealImage';
+import { TenancyDiagram } from '@site/src/components/CloudArchitecture';
 
 # Multi-Tenant Architecture with LiteLLM
 
@@ -14,7 +14,7 @@ Teams and Virtual Keys are available in open source, and Teams alone can serve a
 
 ## The Tenancy Hierarchy
 
-<Image img={require('../../img/litellm_user_heirarchy.png')} style={{ width: '100%', maxWidth: '4000px' }} />
+<TenancyDiagram />
 
 LiteLLM models tenancy as four nested levels: Organizations contain Teams, Teams contain Users, and Users and Teams own Keys. Each level is a boundary for isolation and for spend attribution.
 

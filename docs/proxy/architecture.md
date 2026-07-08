@@ -1,10 +1,10 @@
-import Image from '@theme/IdealImage';
+import { RequestFlowDiagram, RouterFlowDiagram, ImageFlowDiagram } from '@site/src/components/CloudArchitecture';
 
 # Life of a Request
 
 ## High Level architecture
 
-<Image img={require('../../img/litellm_gateway.png')} style={{ width: '100%', maxWidth: '4000px' }} />
+<RequestFlowDiagram />
 
 
 ### Request Flow 
@@ -38,7 +38,7 @@ import Image from '@theme/IdealImage';
 
 ## The router: fallbacks and retries
 
-<Image img={require('../../img/router_architecture.png')} style={{ width: '100%', maxWidth: '4000px' }} />
+<RouterFlowDiagram />
 
 Step 5 above hands the request to the LiteLLM Router, which owns load balancing, fallbacks, and retries. All unified endpoints (`.completion`, `.embeddings`, and so on) flow through it the same way.
 
@@ -48,7 +48,7 @@ A **model_group** is a set of LLM API deployments that share the same `model_nam
 
 ## Image URL handling
 
-<Image img={require('../../img/image_handling.png')} style={{ width: '900px', height: 'auto' }} />
+<ImageFlowDiagram />
 
 Some LLM APIs don't accept image URLs but do accept base64 strings. For those, LiteLLM detects a URL in the request, checks whether the target API supports URLs, and if not, downloads the image and sends the provider a base64 string instead. Up to 10 converted images are cached in memory to reduce latency on repeated calls, and individual downloads are capped at 50MB (configurable with `MAX_IMAGE_URL_DOWNLOAD_SIZE_MB`).
 
