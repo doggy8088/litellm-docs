@@ -12,6 +12,7 @@ Everything that has to agree across replicas rides on it:
 - **Spend tracking** through the Redis transaction buffer (`general_settings.use_redis_transaction_buffer`)
 - The **pod lock manager**, which elects the single pod allowed to flush spend updates to the database
 - **Shared health checks** (`general_settings.use_shared_health_check`)
+- **Virtual key auth caching**, opt-in via `litellm_settings.enable_redis_auth_cache`, so workers and replicas share cached key lookups instead of each warming their own
 
 Without it, each pod counts tokens, requests, and spend in its own process memory, so a key limited to 100 RPM effectively gets 100 RPM per pod
 
@@ -51,11 +52,17 @@ The proxy picks the first of these that yields a connection:
 
 1. The explicit `general_settings.coordination_redis` block
 2. The response cache, when `litellm_settings.cache_params.type` is `redis` (or Redis Cluster). Its client is borrowed for coordination
-3. The `REDIS_*` environment variables, which build a standalone client: `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD`, or `REDIS_URL`, or `REDIS_CLUSTER_NODES`, or `REDIS_SENTINEL_NODES`, with TLS via `REDIS_SSL` and friends
+3. The `REDIS_*` environment variables, which build a standalone client: `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD`, or `REDIS_URL`. `REDIS_CLUSTER_NODES` builds a cluster client and `REDIS_SENTINEL_NODES` a sentinel-managed one, so the environment covers the same topologies as the config block. TLS comes from `REDIS_SSL` and friends
 
 If none of the three produce a connection, coordination falls back to per-pod in-memory state, which is only correct for a single-replica deployment
 
 Steps 2 and 3 mean existing deployments keep working untouched. Step 3 also closes a gap: a proxy configured with a semantic response cache, or no response cache, previously had no coordination Redis even when `REDIS_HOST` was set in the environment
+
+:::warning
+
+A `host` set in the `coordination_redis` block outranks a `REDIS_URL` exported in the environment. Earlier versions let the environment's url win and silently discard the explicit host and port, so a deployment carrying a global `REDIS_URL` alongside a `coordination_redis.host` will now connect to the host named in the block
+
+:::
 
 ## TLS, Cluster, and Sentinel
 
@@ -128,11 +135,13 @@ litellm_settings:
 
 `router_settings.redis_host` / `redis_port` / `redis_password` configures the **router's** Redis, which holds load-balancing state: deployment cooldowns, usage-based routing counters, and model-level rpm/tpm tracking
 
-Key, user, team, and end-user rate limits, parallel request limits, spend, the pod lock, and shared health checks all live on the coordination Redis instead. When the router has no Redis of its own, the proxy attaches the coordination Redis to it, so a single `coordination_redis` block is enough for most deployments. Configure `router_settings` explicitly when you want routing state on a different instance
+Key, user, team, and end-user rate limits, parallel request limits, spend, the pod lock, and shared health checks all live on the coordination Redis instead. When the router has no Redis of its own, the proxy attaches the coordination Redis to it, so a single `coordination_redis` block is enough for most deployments. The attach only happens in that case: an explicit `router_settings.redis_host` always wins for router state, so set it when you want routing state on a different instance
 
 ## Configure from the Admin UI
 
-Go to the **Caching** page in the Admin UI and open the **Coordination Redis** tab. Fill in the connection details, use **Test Connection** to confirm the proxy can reach the instance, and save. Settings persist to the database and take effect on the next proxy restart
+Go to the **Caching** page in the Admin UI and open the **Coordination Redis** tab. Fill in the connection details, use **Test Connection** to confirm the proxy can reach the instance, then **Save Changes**. Settings persist to the database and take effect on the next proxy restart, so a proxy with no config-file block and no `REDIS_*` environment variables can be pointed at a Redis entirely from the UI
+
+The same settings are available over the API through `GET` and `POST /coordination_redis/settings`, with `POST /coordination_redis/settings/test` for the connection check
 
 ## Migrating from `cache: true` with `supported_call_types: []`
 

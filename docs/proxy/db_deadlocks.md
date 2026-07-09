@@ -105,10 +105,11 @@ This means all available Redis connections are in use, and LiteLLM cannot obtain
 - Increase the `max_connections` parameter in your Redis config section in `proxy_config.yaml` to allow more simultaneous connections. For example:
 
 ```yaml
-litellm_settings:
-  cache: True
-  cache_params:
-    type: redis
+general_settings:
+  coordination_redis:
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+    password: os.environ/REDIS_PASSWORD
     max_connections: 100  # Increase as needed for your traffic
 ```
 
