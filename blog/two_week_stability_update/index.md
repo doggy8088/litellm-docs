@@ -36,7 +36,15 @@ flowchart TD
   class Fall,Bugs bad;
 ```
 
-Field-presence inference + a precedence cascade + a silent fallback = no single place that decides, and no error when the decision is ambiguous.
+**Why this was bad:** there was no single place that decided which credential to attach, and no error when the decision was ambiguous. Field-presence inference meant two different code paths could read the same server row and disagree; the precedence cascade meant adding a field could silently change which credential won; and the silent fallback meant an unhandled case still sent *something* upstream instead of refusing. Ambiguity resolved to "attach a credential anyway" rather than "stop."
+
+**The types of bugs we saw from this:**
+
+- Tokens leaking to the wrong upstream server (Authorization fan-out).
+- Duplicate or stale `Authorization` headers slipping through.
+- MCP requests skipping the normal team / route / key checks.
+- Cached OAuth tokens going stale or crossing between users.
+- Upstream URLs and secrets showing up in logs.
 
 ### After — one typed resolver, dispatch on a declared mode, fail closed
 
@@ -60,44 +68,6 @@ flowchart TD
 
 Each arm receives its own fully-typed config — **no field-presence guessing, no precedence cascade**. The `match` is exhaustive with an `assert_never` tail, so adding a mode without handling it fails the type checker, and a bypassed gate raises loudly instead of returning no auth.
 
-### The DCR-bridge sealed envelope
-
-The hardest case is an MCP client that does OAuth **Dynamic Client Registration** (Claude, Cursor): it can hold only *one* bearer, but that bearer must carry both the caller's LiteLLM identity **and** the upstream OAuth grant — ideally with no server-side storage. The `oauth_delegate` mode solves this with a **litellm-signed sealed envelope**:
-
-```mermaid
-flowchart LR
-  U["User completes<br/>upstream OAuth"] --> M["Token endpoint MINTS<br/>llm_env_… (HS256 JWT)<br/>· identity: server_id + key_hash<br/>· grant: upstream token, encrypted<br/>· keys via scrypt(master_key)"]
-  M --> H["Client holds ONE bearer<br/>(zero server-side storage)"]
-  H --> E["MCP edge OPENS envelope<br/>(total over hostile input)"]
-  E --> P["Admit under recovered identity<br/>key · team · route gate"]
-  P --> D["Decrypt inner grant →<br/>forward upstream token"]
-  D --> Up["Upstream MCP server"]
-  classDef gw fill:#eaf1ff,stroke:#2563eb,color:#1e3a8a;
-  class M,E,P gw;
-```
-
-The upstream token is **never in plaintext** anywhere in the envelope, and the signing/encryption keys are derived from the proxy `master_key` with **memory-hard scrypt** (n=2¹⁵, ~50ms/~32MB per derivation), so guessing a candidate master key is memory-hard rather than a bare hash compare.
-
-### What kinds of bugs this removes
-
-- Tokens leaking to the wrong upstream server (Authorization fan-out).
-- Duplicate or stale `Authorization` headers slipping through.
-- MCP requests skipping the normal team / route / key checks.
-- Cached OAuth tokens going stale or crossing between users.
-- Upstream URLs and secrets showing up in logs.
-
-### Credential modes the resolver supports
-
-| Mode | What it is |
-|---|---|
-| `none` | No upstream credential (no-op auth, never an error) |
-| `api_key` | Static header, any scheme — BYOK is a per-user-seeded source |
-| `passthrough` | Client forwards its own upstream-audience token |
-| `authorization_code` | Per-user 3-legged OAuth; gateway-stored token, per-user isolated |
-| `client_credentials` | Gateway service account (machine-to-machine) |
-| `token_exchange` | RFC 8693 on-behalf-of (swap the caller's inbound token) |
-| `aws_sigv4` | AWS SigV4 per-request signing (e.g. Bedrock AgentCore) |
-
 ## AI Eng — LLM providers (27 fixes)
 
 **Central theme: new models are correct on day one — especially the money math.** The bulk of this work made sure new **Claude 4.8 / Opus 4.8** and **Bedrock Invoke** requests bill correctly and do not silently drop capabilities.
@@ -113,7 +83,7 @@ The upstream token is **never in plaintext** anywhere in the envelope, and the s
 Large **non-JSON** pass-through downloads — batch-result files, binary / octet-stream downloads — now stream chunk-by-chunk instead of being buffered whole in memory. This covers the provider pass-through routes (`/vertex_ai/*`, `/bedrock/*`, `/openai/*`, `/anthropic/*`, and others) and custom pass-through endpoints.
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph B["Before — buffer the whole file"]
     direction LR
     U1[Upstream] -->|entire body| L1["LiteLLM<br/>holds full file in RAM<br/>(memory grows with size)"]
