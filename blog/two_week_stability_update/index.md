@@ -71,20 +71,17 @@ Each mode has its own fully typed config, so there is no guessing from which fie
 
 ## AI Eng: LLM providers (27 fixes)
 
-The 27 AI Eng fixes, by area:
+AI engineering spent the two weeks driving down reported bugs, mostly on new models. The 27 fixes, grouped by the type of bug they removed:
 
-| Area | Fixes |
+| Type of bug fixed | Count |
 |---|---|
-| Routing & fallbacks | 8 |
-| Bedrock | 8 |
-| Anthropic | 4 |
-| Responses API | 3 |
-| Cost / pricing | 2 |
-| Vertex | 1 |
-| Rerank | 1 |
+| New-model capabilities silently dropped (mid-conversation system messages, thinking/effort translation, cache TTL, version handling) | 10 |
+| Billing / cost wrong (tier-only deployments billing $0, regional pricing, new-model cost-map entries) | 6 |
+| Routing & fallback correctness (auth propagation and model selection under the complexity router) | 6 |
+| Response & streaming fidelity (reasoning tokens preserved through translation, in-stream errors surfaced instead of swallowed) | 5 |
 | Total | 27 |
 
-The most common theme was billing correctness for new Claude and Bedrock models: tier-only deployments that were billing $0, regional pricing resolution, and preserving cache and reasoning-token accounting through translation.
+Most of the volume landed on Bedrock and the routing layer.
 
 ## Performance: pass-through memory
 
@@ -100,6 +97,7 @@ flowchart TB
     direction LR
     U2[Upstream] -->|chunk| L2["LiteLLM<br/>forwards chunk by chunk<br/>(flat memory)"] -->|chunk| C2[Client]
   end
+  L1 ~~~ U2
   classDef bad fill:#fdecec,stroke:#dc2626,color:#7f1d1d;
   classDef good fill:#e8f7ee,stroke:#16a34a,color:#14532d;
   class L1 bad;
@@ -133,9 +131,11 @@ A note on the count: these 134 are every merged `fix:` PR in the two-week window
 
 Most of the 134 fixes above were caught late, in staging or by a report. The next lever is catching them before they merge. We are pushing end-to-end test coverage to 95% across the product, and we believe this will significantly improve release quality: fewer regressions reaching a release, and less time spent hot-fixing after one ships.
 
-## Appendix: the PRs
+## Appendix
 
-### MCP Gateway
+PRs from this window.
+
+**MCP Gateway**
 
 Credential resolver:
 
@@ -166,7 +166,7 @@ Sealed envelope and delegate admission (LIT-4338):
 - [#32794](https://github.com/BerriAI/litellm/pull/32794) envelope edge consumer
 - [#32824](https://github.com/BerriAI/litellm/pull/32824) delegate admission
 
-### Performance
+**Performance**
 
 - [#32386](https://github.com/BerriAI/litellm/pull/32386) stream non-SSE pass-through responses instead of buffering in memory
 - [#32404](https://github.com/BerriAI/litellm/pull/32404) stop request params from clobbering merged target query params
