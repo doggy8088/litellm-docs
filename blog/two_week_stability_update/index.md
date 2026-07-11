@@ -131,6 +131,8 @@ A note on the count: these 134 are every merged `fix:` PR in the two-week window
 
 Most of the 134 fixes above were caught late, in staging or by a report. The next lever is catching them before they merge. We are pushing end-to-end test coverage to 95% across the product, and we believe this will significantly improve release quality: fewer regressions reaching a release, and less time spent hot-fixing after one ships.
 
+We are learning from [Meta's approach to fixing bugs fast](https://engineering.fb.com/2021/02/17/developer-tools/fix-fast/) and adopting a higher testing bar across the product.
+
 ## Appendix
 
 PRs from this window.
