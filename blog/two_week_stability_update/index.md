@@ -71,15 +71,24 @@ Each mode has its own fully typed config, so there is no guessing from which fie
 
 ## AI Eng: LLM providers (27 fixes)
 
-The theme here was making new models correct on day one, especially the billing math. Most of this work made sure new Claude 4.8 / Opus 4.8 and Bedrock Invoke requests bill correctly and do not silently drop capabilities.
+The 27 AI Eng fixes, by area:
 
-- Billing accuracy: tier-only deployments were billing $0 and are now billed correctly, regional inference profiles resolve to regional pricing, and tiered-pricing costs are coerced safely.
-- Capability correctness: mid-conversation system messages are honored for Claude 4.8+ on Bedrock, adaptive thinking/effort is translated for pre-4.6 models, and `@version` suffixes are stripped in model lookup.
-- Translation fidelity: `cache_control` TTL is preserved on Bedrock cache points, reasoning tokens are preserved through chat to responses, and in-stream error events now raise real API errors instead of vanishing.
+| Area | Fixes |
+|---|---|
+| Routing & fallbacks | 8 |
+| Bedrock | 8 |
+| Anthropic | 4 |
+| Responses API | 3 |
+| Cost / pricing | 2 |
+| Vertex | 1 |
+| Rerank | 1 |
+| Total | 27 |
+
+The most common theme was billing correctness for new Claude and Bedrock models: tier-only deployments that were billing $0, regional pricing resolution, and preserving cache and reasoning-token accounting through translation.
 
 ## Performance: pass-through memory
 
-Pass-through APIs had high memory consumption. Large non-JSON pass-through downloads (batch-result files, binary and octet-stream downloads) were buffered whole in memory before being sent on. We changed this to stream the response chunk by chunk, so memory stays flat regardless of file size. This covers the provider pass-through routes (`/vertex_ai/*`, `/bedrock/*`, `/openai/*`, `/anthropic/*`, and others) and custom pass-through endpoints.
+Pass-through APIs had high memory consumption. Large non-JSON pass-through downloads (batch-result files, binary and octet-stream downloads) were buffered whole in memory before being sent on. We changed this to stream the response chunk by chunk, so memory stays flat regardless of file size ([#32386](https://github.com/BerriAI/litellm/pull/32386)). This covers the provider pass-through routes (`/vertex_ai/*`, `/bedrock/*`, `/openai/*`, `/anthropic/*`, and others) and custom pass-through endpoints.
 
 ```mermaid
 flowchart TB
@@ -123,3 +132,42 @@ A note on the count: these 134 are every merged `fix:` PR in the two-week window
 ## Next goal: 95% end-to-end test coverage
 
 Most of the 134 fixes above were caught late, in staging or by a report. The next lever is catching them before they merge. We are pushing end-to-end test coverage to 95% across the product, and we believe this will significantly improve release quality: fewer regressions reaching a release, and less time spent hot-fixing after one ships.
+
+## Appendix: the PRs
+
+### MCP Gateway
+
+Credential resolver:
+
+- [#32815](https://github.com/BerriAI/litellm/pull/32815) credential class merge (the single typed resolver)
+- [#32652](https://github.com/BerriAI/litellm/pull/32652) stale token invalidation
+- [#32715](https://github.com/BerriAI/litellm/pull/32715) semantic filter fail-closed
+
+Pass-through and delegate credential modes:
+
+- [#31989](https://github.com/BerriAI/litellm/pull/31989) passthrough / delegate modes
+- [#32414](https://github.com/BerriAI/litellm/pull/32414) passthrough UI enum
+- [#32556](https://github.com/BerriAI/litellm/pull/32556) passthrough call relay
+- [#32752](https://github.com/BerriAI/litellm/pull/32752) configured client for passthrough
+- [#32735](https://github.com/BerriAI/litellm/pull/32735) no DCR persist for passthrough
+- [#32507](https://github.com/BerriAI/litellm/pull/32507) token exchange secret pairing
+
+DCR bridge (LIT-4337):
+
+- [#32745](https://github.com/BerriAI/litellm/pull/32745) plumbing
+- [#32747](https://github.com/BerriAI/litellm/pull/32747) authorize relay
+- [#32753](https://github.com/BerriAI/litellm/pull/32753) facade
+- [#32804](https://github.com/BerriAI/litellm/pull/32804) UI
+- [#32527](https://github.com/BerriAI/litellm/pull/32527) DCR redirect_uri
+
+Sealed envelope and delegate admission (LIT-4338):
+
+- [#32748](https://github.com/BerriAI/litellm/pull/32748) envelope module
+- [#32794](https://github.com/BerriAI/litellm/pull/32794) envelope edge consumer
+- [#32824](https://github.com/BerriAI/litellm/pull/32824) delegate admission
+
+### Performance
+
+- [#32386](https://github.com/BerriAI/litellm/pull/32386) stream non-SSE pass-through responses instead of buffering in memory
+- [#32404](https://github.com/BerriAI/litellm/pull/32404) stop request params from clobbering merged target query params
+- [#32834](https://github.com/BerriAI/litellm/pull/32834) Prometheus skips budget-metric DB lookups when gauges are no-ops
