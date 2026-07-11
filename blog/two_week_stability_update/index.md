@@ -19,42 +19,66 @@ Below: the MCP story first, then the AI-Eng and performance work, the full numbe
 
 ## MCP Gateway stability — 50 of 134 fixes
 
-**In plain terms:** LiteLLM sits between your AI app (Claude Desktop, Cursor, an agent) and the real tools it wants to use (GitHub, a database, an internal API). Those tools need a credential. The whole question is: **who holds the credential, and can it leak to the wrong place?**
+**In plain terms:** LiteLLM sits between your AI app (Claude Desktop, Cursor, an agent) and the real tools it wants to use (GitHub, a database, an internal API). Those tools need a credential. The whole question is: **how does the gateway decide which credential to attach — and what happens when it isn't sure?**
 
-Two weeks ago the answer was "the credential travels with every request and could be handed to the wrong server." Now it is **"the credential lives in one locked vault inside the gateway, encrypted, and is only ever sent to the one server it belongs to."**
+The core change is a **single typed credential resolver**. Before, outbound MCP auth was inferred from *whichever fields happened to be present* on a server row, resolved through a precedence cascade — and when nothing matched cleanly it **fell back silently** (forwarding the caller's own token, or attaching none). That silent-fallback path is exactly where the leak and bypass bugs lived. Now there is one `resolve_credentials` that dispatches on **one declared mode**, each with its own fully-typed config, and **fails closed** if a mode isn't handled.
 
-### Before — the credential rode along with the request
+### Before — infer the credential from whatever fields are set
 
 ```mermaid
-flowchart LR
-  C["MCP Client<br/>(Claude, Cursor)<br/>holds the raw upstream token"]
-  C -->|token sent with request| G["LiteLLM Gateway<br/>(old path)<br/>forwards the header onward"]
-  G -->|intended| A["Correct MCP server<br/>(GitHub)"]
-  G -.->|token leaks here too ✕| B["Wrong MCP server<br/>(Internal API)"]
+flowchart TD
+  Req["Outbound MCP call"] --> Chk{"Which fields are set?<br/>auth_value? client_id?<br/>token? header?"}
+  Chk -->|precedence cascade| Pick["Pick one by priority order"]
+  Chk -.->|nothing matched| Fall["Silent fallback:<br/>forward caller's token<br/>or attach none"]
+  Pick --> Bugs["→ wrong header forwarded<br/>→ token fan-out to wrong upstream<br/>→ stale / cross-user token"]
+  Fall --> Bugs
   classDef bad fill:#fdecec,stroke:#dc2626,color:#7f1d1d;
-  classDef ok fill:#f8fafc,stroke:#cbd5e1,color:#0f172a;
-  class B,G bad;
-  class A,C ok;
+  class Fall,Bugs bad;
 ```
 
-The credential lived **in transit** — on the client and inside each request. A token meant for one server could reach another (Authorization fan-out), and bridge keys were not derived with a memory-hard hash.
+Field-presence inference + a precedence cascade + a silent fallback = no single place that decides, and no error when the decision is ambiguous.
 
-### After — the credential lives only in the gateway vault
+### After — one typed resolver, dispatch on a declared mode, fail closed
+
+```mermaid
+flowchart TD
+  Req["Outbound MCP call"] --> R{"resolve_credentials<br/>match on ONE declared mode"}
+  R --> m1["none"]
+  R --> m2["api_key<br/>(static header · BYOK)"]
+  R --> m3["passthrough<br/>(client forwards upstream token)"]
+  R --> m4["authorization_code<br/>(per-user 3LO, gateway-stored)"]
+  R --> m5["client_credentials<br/>(gateway M2M)"]
+  R --> m6["token_exchange<br/>(RFC 8693 on-behalf-of)"]
+  R --> m7["aws_sigv4<br/>(Bedrock AgentCore)"]
+  R ==>|unknown / unhandled mode| X["FAIL CLOSED<br/>assert_never → type error at build,<br/>raises at runtime — never a silent None"]
+  m1 & m2 & m3 & m4 & m5 & m6 & m7 --> Auth["typed httpx.Auth → one upstream"]
+  classDef good fill:#e8f7ee,stroke:#16a34a,color:#14532d;
+  classDef bad fill:#fdecec,stroke:#dc2626,color:#7f1d1d;
+  class R,Auth good;
+  class X bad;
+```
+
+Each arm receives its own fully-typed config — **no field-presence guessing, no precedence cascade**. The `match` is exhaustive with an `assert_never` tail, so adding a mode without handling it fails the type checker, and a bypassed gate raises loudly instead of returning no auth.
+
+### The DCR-bridge sealed envelope
+
+The hardest case is an MCP client that does OAuth **Dynamic Client Registration** (Claude, Cursor): it can hold only *one* bearer, but that bearer must carry both the caller's LiteLLM identity **and** the upstream OAuth grant — ideally with no server-side storage. The `oauth_delegate` mode solves this with a **litellm-signed sealed envelope**:
 
 ```mermaid
 flowchart LR
-  C["MCP Client<br/>authenticates once<br/>with a gateway key"]
-  C -->|gateway key only<br/>no upstream secret| G["LiteLLM MCP Gateway<br/>🔒 scrypt-encrypted vault<br/>policy gate · per-user token isolation"]
-  G -->|bound to one upstream| A["Correct MCP server<br/>(GitHub)"]
+  U["User completes<br/>upstream OAuth"] --> M["Token endpoint MINTS<br/>llm_env_… (HS256 JWT)<br/>· identity: server_id + key_hash<br/>· grant: upstream token, encrypted<br/>· keys via scrypt(master_key)"]
+  M --> H["Client holds ONE bearer<br/>(zero server-side storage)"]
+  H --> E["MCP edge OPENS envelope<br/>(total over hostile input)"]
+  E --> P["Admit under recovered identity<br/>key · team · route gate"]
+  P --> D["Decrypt inner grant →<br/>forward upstream token"]
+  D --> Up["Upstream MCP server"]
   classDef gw fill:#eaf1ff,stroke:#2563eb,color:#1e3a8a;
-  classDef ok fill:#f8fafc,stroke:#cbd5e1,color:#0f172a;
-  class G gw;
-  class A,C ok;
+  class M,E,P gw;
 ```
 
-The credential now lives **only inside the gateway vault**, encrypted with memory-hard scrypt and bound to exactly one upstream. The client never holds an upstream secret, and every call passes the same auth and permission gate as normal LLM traffic.
+The upstream token is **never in plaintext** anywhere in the envelope, and the signing/encryption keys are derived from the proxy `master_key` with **memory-hard scrypt** (n=2¹⁵, ~50ms/~32MB per derivation), so guessing a candidate master key is memory-hard rather than a bare hash compare.
 
-### What kinds of bugs this class of change removes
+### What kinds of bugs this removes
 
 - Tokens leaking to the wrong upstream server (Authorization fan-out).
 - Duplicate or stale `Authorization` headers slipping through.
@@ -62,20 +86,17 @@ The credential now lives **only inside the gateway vault**, encrypted with memor
 - Cached OAuth tokens going stale or crossing between users.
 - Upstream URLs and secrets showing up in logs.
 
-### Auth types the gateway supports
+### Credential modes the resolver supports
 
-Every one of these now stores its secret in the gateway vault (encrypted) rather than trusting the client to carry it.
-
-| Auth type | What it is | Secret held in vault |
-|---|---|---|
-| `none` | Public server, no auth | — |
-| `api_key` | API key sent in a header | ✅ |
-| `bearer_token` | Static bearer token | ✅ |
-| `basic` | HTTP Basic (user : password) | ✅ |
-| `authorization` | Raw `Authorization` header value | ✅ |
-| `oauth2` | OAuth 2.0 — `authorization_code` (interactive) and `client_credentials` (machine-to-machine) | ✅ + per-user token isolation |
-| `aws_sigv4` | AWS SigV4 request signing | ✅ |
-| `token` | Generic token credential | ✅ |
+| Mode | What it is |
+|---|---|
+| `none` | No upstream credential (no-op auth, never an error) |
+| `api_key` | Static header, any scheme — BYOK is a per-user-seeded source |
+| `passthrough` | Client forwards its own upstream-audience token |
+| `authorization_code` | Per-user 3-legged OAuth; gateway-stored token, per-user isolated |
+| `client_credentials` | Gateway service account (machine-to-machine) |
+| `token_exchange` | RFC 8693 on-behalf-of (swap the caller's inbound token) |
+| `aws_sigv4` | AWS SigV4 per-request signing (e.g. Bedrock AgentCore) |
 
 ## AI Eng — LLM providers (27 fixes)
 
