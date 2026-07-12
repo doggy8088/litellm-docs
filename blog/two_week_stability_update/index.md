@@ -113,7 +113,7 @@ Two more fixes in the same spirit, don't pay for work nobody needs:
 
 ## By the numbers
 
-Every fix, bucketed by the area it landed in.
+All 134 fixes, by area:
 
 | Area | Fixes |
 |---|---|
@@ -125,13 +125,13 @@ Every fix, bucketed by the area it landed in.
 | Guardrails | 5 |
 | Total | 134 |
 
-A note on the count: these 134 are every merged `fix:` PR in the two-week window. One reported ticket usually becomes several fix PRs (the MCP work alone was around 50 commits behind a handful of tickets), so the PR count runs higher than the reported-ticket count.
+These 134 are every merged `fix:` PR in the two weeks. One reported ticket often turns into several fix PRs, so this count is higher than the number of tickets in Linear.
 
 ## Next goal: 95% end-to-end test coverage
 
-Most of the 134 fixes above were caught late, in staging or by a report. The next lever is catching them before they merge. We are pushing end-to-end test coverage to 95% across the product, and we believe this will significantly improve release quality: fewer regressions reaching a release, and less time spent hot-fixing after one ships.
+Most of these 134 bugs were caught late, in staging or from a user report. We want to catch them before they merge. We are pushing end-to-end test coverage to 95% across the product. We believe this will significantly improve release quality and mean fewer bugs reach a release.
 
-We are learning from [Meta's approach to fixing bugs fast](https://engineering.fb.com/2021/02/17/developer-tools/fix-fast/) and adopting a higher testing bar across the product.
+We are learning from [Meta's approach to fixing bugs fast](https://engineering.fb.com/2021/02/17/developer-tools/fix-fast/) and raising our testing bar.
 
 ## Appendix
 
