@@ -71,17 +71,17 @@ Each mode has its own fully typed config, so there is no guessing from which fie
 
 ## AI Eng: LLM providers (27 fixes)
 
-AI engineering spent the two weeks driving down reported bugs, mostly on new models. The 27 fixes, grouped by the type of bug they removed:
+AI Eng was focused on driving down reported bugs. Most of them were on new models (Claude 4.8, Opus 4.8, Bedrock Invoke). Here are the types of bugs we fixed:
 
-| Type of bug fixed | Count |
+| Type of bug | Count |
 |---|---|
-| New-model capabilities silently dropped (mid-conversation system messages, thinking/effort translation, cache TTL, version handling) | 10 |
-| Billing / cost wrong (tier-only deployments billing $0, regional pricing, new-model cost-map entries) | 6 |
-| Routing & fallback correctness (auth propagation and model selection under the complexity router) | 6 |
-| Response & streaming fidelity (reasoning tokens preserved through translation, in-stream errors surfaced instead of swallowed) | 5 |
+| New model capabilities getting dropped | 10 |
+| Wrong cost or billing | 6 |
+| Routing or fallback picking the wrong model | 6 |
+| Broken response or streaming output | 5 |
 | Total | 27 |
 
-Most of the volume landed on Bedrock and the routing layer.
+Most of these were on Bedrock and the routing layer.
 
 ## Performance: pass-through memory
 
