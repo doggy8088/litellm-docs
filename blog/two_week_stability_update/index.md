@@ -129,7 +129,7 @@ These 134 are every merged `fix:` PR in the two weeks. One reported ticket often
 
 ## Next goal: 95% end-to-end test coverage
 
-Most of these 134 bugs were caught late, in staging or from a user report. We want to catch them before they merge. We are pushing end-to-end test coverage to 95% across the product. We believe this will significantly improve release quality and mean fewer bugs reach a release.
+Most of these 134 bugs were caught late, in staging or from a user report. We want to catch them before they merge. We believe by investing in improving our e2e testing coverage we can significantly reduce the number of reported regressions from users on an upgrade.
 
 We are learning from [Meta's approach to fixing bugs fast](https://engineering.fb.com/2021/02/17/developer-tools/fix-fast/) and raising our testing bar.
 
