@@ -168,6 +168,44 @@ Sealed envelope and delegate admission (LIT-4338):
 - [#32794](https://github.com/BerriAI/litellm/pull/32794) envelope edge consumer
 - [#32824](https://github.com/BerriAI/litellm/pull/32824) delegate admission
 
+**AI Eng (LLM providers)**
+
+Bedrock:
+
+- [#32882](https://github.com/BerriAI/litellm/pull/32882) flag Claude 4.8+ entries with supports_mid_conversation_system
+- [#32831](https://github.com/BerriAI/litellm/pull/32831) gate in-place system role messages for Claude Invoke
+- [#32578](https://github.com/BerriAI/litellm/pull/32578) keep mid-conversation system messages for Claude Invoke
+- [#32658](https://github.com/BerriAI/litellm/pull/32658) retain clear_tool_uses context-management edits and emit the beta header
+- [#32551](https://github.com/BerriAI/litellm/pull/32551) honor cache_control ttl on message-level cachePoint blocks
+- [#32538](https://github.com/BerriAI/litellm/pull/32538) preserve cache_control ttl on message-level cache points
+- [#32840](https://github.com/BerriAI/litellm/pull/32840) add jp.anthropic.claude-opus-4-8 to the model cost map
+- [#32389](https://github.com/BerriAI/litellm/pull/32389) resolve regional inference profiles to regional pricing
+
+Anthropic:
+
+- [#32874](https://github.com/BerriAI/litellm/pull/32874) thread the real provider through capability probes (was pinned to anthropic)
+- [#32867](https://github.com/BerriAI/litellm/pull/32867) translate adaptive thinking/effort for pre-4.6 models
+- [#32833](https://github.com/BerriAI/litellm/pull/32833) strip @version suffix in model lookup
+
+Routing and fallbacks:
+
+- [#32859](https://github.com/BerriAI/litellm/pull/32859) complexity router keyword tiers (max aggregation, blank-keyword hardening)
+- [#32943](https://github.com/BerriAI/litellm/pull/32943) complexity router logging and auth propagation, index built once
+- [#32873](https://github.com/BerriAI/litellm/pull/32873) fallback rules routing split (bare-Claude coverage, cost-map precedence, legacy schema)
+
+Responses API:
+
+- [#32835](https://github.com/BerriAI/litellm/pull/32835) raise APIError on in-stream error events
+- [#32837](https://github.com/BerriAI/litellm/pull/32837) preserve reasoning_tokens through chat to responses
+- [#32034](https://github.com/BerriAI/litellm/pull/32034) idempotent response-id encoding (prevents MCP gateway double-encoding)
+
+Cost, Vertex, Rerank:
+
+- [#32387](https://github.com/BerriAI/litellm/pull/32387) add gpt-realtime-2.1 models with regional uplift
+- coerce string tiered-pricing costs and share the tier helper
+- [#32550](https://github.com/BerriAI/litellm/pull/32550) forward realtime health check params (Vertex)
+- [#32533](https://github.com/BerriAI/litellm/pull/32533) log rerank params at debug to stop leaking request content
+
 **Performance**
 
 - [#32386](https://github.com/BerriAI/litellm/pull/32386) stream non-SSE pass-through responses instead of buffering in memory
