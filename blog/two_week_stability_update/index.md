@@ -1,6 +1,6 @@
 ---
 slug: two-week-stability-update
-title: "Two-Week Stability Update: MCP Credential Resolver and Pass-Through Memory"
+title: "July stability update: hardening MCP auth and cutting pass-through memory"
 date: 2026-07-11T12:00:00
 authors:
   - ishaan
