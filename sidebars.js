@@ -735,6 +735,7 @@ const sidebars = {
           label: "Cost Optimization",
           items: [
             "proxy/auto_routing",
+            "proxy/auto_routing_semantic",
             "adaptive_router",
             {
               type: "link",
@@ -1213,6 +1214,7 @@ const sidebars = {
         "adaptive_router",
         "scheduler",
         "proxy/auto_routing",
+        "proxy/auto_routing_semantic",
         "proxy/load_balancing",
         "proxy/keys_teams_router_settings",
         "proxy/provider_budget_routing",
