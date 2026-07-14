@@ -96,32 +96,15 @@ The messages are sent to the headroom service at `{api_base}/v1/compress` with t
 
 ## What triggers compression
 
-Headroom compresses the large blocks of machine-generated context that pile up in a conversation, principally tool and function results: SQL or tabular query output, JSON API responses, and the large file reads or RAG chunks that come back as `tool`-role messages. A short chat prompt has nothing to compress. The 21-token `"Summarize the prior conversation..."` style request people reach for when testing passes straight through with zero savings, because there is no bulky payload to rewrite. Compression only starts to engage once a single message carries roughly a thousand tokens or more; below that the router returns the message unchanged with a `router:noop` transform.
+Headroom only compresses large machine-generated payloads carried in the conversation: JSON API responses, database dumps, and the large file reads or RAG chunks that come back as `tool`-role messages. Short chat prompts pass straight through, which is why a 20-token question saves nothing; compression only engages once a single message is on the order of a thousand tokens or more. `user`/`system` messages (unless `HEADROOM_COMPRESS_USER_MESSAGES=1` is set on the Headroom container) and `cache_control`-marked messages are never compressed, see [Why `requests_compressed` can be 0](#why-requests_compressed-can-be-0).
 
-Two things are also protected by default and will not compress no matter how large they are: `user`/`system` messages (unless `HEADROOM_COMPRESS_USER_MESSAGES=1` is set on the Headroom container) and any message with an Anthropic `cache_control` marker. See [Why `requests_compressed` can be 0](#why-requests_compressed-can-be-0) for the details. So the reliable way to see compression is to send a request whose conversation includes a large `tool` result.
-
-The example below returns a ~600-row SQL result as a `tool` message. Headroom rewrites the tabular block and the model still answers from the compressed payload.
+To confirm compression is firing, run [`headroom_compression_check.sh`](/scripts/headroom_compression_check.sh) against any Headroom endpoint. It calls `/v1/compress` (the same call the guardrail makes) with a tiny prompt and a large `tool` result, and prints `tokens_before`, `tokens_after`, `tokens_saved`, and `transforms_applied`; the tiny prompt reports `router:noop` with zero savings while the large payload compresses.
 
 ```shell
-curl -i http://0.0.0.0:4000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-..." \
-  -d '{
-    "model": "claude-sonnet-4",
-    "messages": [
-      {"role": "user", "content": "How many enterprise users are in us-east-1? Answer with just a number."},
-      {"role": "assistant", "content": null, "tool_calls": [
-        {"id": "c1", "type": "function", "function": {"name": "run_sql", "arguments": "{\"query\": \"SELECT * FROM users\"}"}}
-      ]},
-      {"role": "tool", "tool_call_id": "c1", "content": "1,user1@example.com,active,enterprise,us-east-1,2026-07-02,37\n2,user2@example.com,active,enterprise,us-east-1,2026-07-03,74\n... (600 rows) ..."}
-    ],
-    "guardrails": ["headroom-compression"]
-  }'
+HEADROOM_URL=http://localhost:8787 bash headroom_compression_check.sh
 ```
 
-Different payload shapes take different paths through Headroom. A CSV or database result is handled by the tabular transform (`router:tabular`), while a large JSON API response or free-form text block is handled by the general crusher (`router:smart_crusher`); both are visible in `transforms_applied`. On the SQL example above Headroom compressed roughly 15,000 tokens to 13,800 (about 1,200 saved), and an equivalently sized JSON API result compressed about 27%. The exact ratio depends on how repetitive and structured the payload is, so highly regular tabular and JSON data compress the most.
-
-To confirm what happened on a given request, read `guardrail_information` on the spend log row (or the **Guardrails & Policy Compliance** panel in the Logs UI); it carries `tokens_before`, `tokens_after`, `tokens_saved`, `compression_ratio`, and `transforms_applied`. A `router:noop` value there means the payload was too small or fully protected, which is the signal to test with a larger tool result.
+On a live request, the same numbers land in `guardrail_information` on the spend log row and in the **Guardrails & Policy Compliance** panel of the Logs UI. A `router:noop` value there means the payload was too small or fully protected.
 
 ## Enabling compression per key
 
