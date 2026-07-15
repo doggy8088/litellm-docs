@@ -1,47 +1,47 @@
 # litellm-docs
 
-Source for [docs.litellm.ai](https://docs.litellm.ai) — the documentation site for [LiteLLM](https://github.com/BerriAI/litellm).
+[docs.litellm.ai](https://docs.litellm.ai) 的原始碼；該網站是 [LiteLLM](https://github.com/BerriAI/litellm) 的文件網站。
 
-Built with [Docusaurus 3](https://docusaurus.io/).
+使用 [Docusaurus 3](https://docusaurus.io/) 建置。
 
-## Local development
+## 本機開發
 
 ```bash
 npm install
 npm start
 ```
 
-Open http://localhost:3000 to see the site with live reload.
+在瀏覽器開啟 <http://localhost:3000>，即可檢視支援即時重新載入的網站。
 
-## Build
+## 建置
 
 ```bash
 npm run build
 ```
 
-Static output goes to `build/`.
+靜態網站會輸出至 `build/`。
 
-## Deploy
+## 部署
 
-Deploys are handled automatically by Vercel on push to `main`.
+推送至 `main` 時，Vercel 會自動處理部署。
 
 ### Firebase Hosting
 
-The `Firebase Hosting` GitHub Actions workflow builds every pull request and
-deploys the `main` branch to the Firebase Hosting live channel. It can also be
-started manually with `workflow_dispatch`.
+`Firebase Hosting` GitHub Actions 工作流程會建置每個 Pull Request，並將
+`main` 分支部署至 Firebase Hosting 正式頻道。也可以透過
+`workflow_dispatch` 手動啟動工作流程。
 
-This fork deploys the `litellm-docs-zh-tw` target in the
-`vertex-ai-sprint` project to the dedicated Hosting site at
-<https://litellm-docs-zh-tw-8088.web.app>.
+此 fork 會將 `vertex-ai-sprint` 專案中的 `litellm-docs-zh-tw` 部署目標
+發布至下列專用 Hosting 站台：
+<https://litellm-docs-zh-tw-8088.web.app>。
 
-Deploying from another repository or fork requires these GitHub Actions values:
+從其他存放庫或 fork 部署時，必須設定下列 GitHub Actions 值：
 
-- Repository variable `FIREBASE_PROJECT_ID`: the target Firebase project ID.
-- Repository secret `FIREBASE_SERVICE_ACCOUNT`: the complete service account
-  JSON key authorized to deploy to Firebase Hosting.
+- 存放庫變數 `FIREBASE_PROJECT_ID`：目標 Firebase Project ID。
+- 存放庫 secret `FIREBASE_SERVICE_ACCOUNT`：具備 Firebase Hosting 部署權限的
+  完整服務帳戶 JSON 金鑰。
 
-With the GitHub CLI, configure them for a fork as follows:
+使用 GitHub CLI 為 fork 設定這些值：
 
 ```bash
 gh variable set FIREBASE_PROJECT_ID \
@@ -53,14 +53,13 @@ gh secret set FIREBASE_SERVICE_ACCOUNT \
   < /secure/path/firebase-service-account.json
 ```
 
-Follow the official Firebase Action
-[service account guide](https://github.com/FirebaseExtended/action-hosting-deploy/blob/main/docs/service-account.md)
-to create the JSON key and grant its deployment permissions. The workflow
-deploys the static Docusaurus output from `build/`, as configured in
-`firebase.json`.
+請依照 Firebase Action 官方的
+[服務帳戶指南](https://github.com/FirebaseExtended/action-hosting-deploy/blob/main/docs/service-account.md)
+建立 JSON 金鑰並授予部署權限。工作流程會依據 `firebase.json` 的設定，
+部署 `build/` 中的 Docusaurus 靜態輸出。
 
-## Contributing
+## 貢獻
 
-Edits are welcome via pull request. For substantive content changes, please open an issue first to discuss.
+歡迎透過 Pull Request 提交修改。若涉及實質內容變更，請先建立 issue 討論。
 
-The main LiteLLM repository is at <https://github.com/BerriAI/litellm>.
+LiteLLM 的主要存放庫位於 <https://github.com/BerriAI/litellm>。
