@@ -1,0 +1,130 @@
+# Release notes
+
+This directory contains 124 OKF concepts generated from the repository's release-notes Markdown sources.
+
+## Concepts (124)
+
+- [Release Notes](__index.md) - `release_notes/index.md`
+- [v1.55.10](v1.55.10/__index.md) - `release_notes/v1.55.10/index.md`
+- [v1.55.8-stable](v1.55.8-stable/__index.md) - `release_notes/v1.55.8-stable/index.md`
+- [v1.56.1](v1.56.1/__index.md) - `release_notes/v1.56.1/index.md`
+- [v1.56.3](v1.56.3/__index.md) - `release_notes/v1.56.3/index.md`
+- [v1.56.4](v1.56.4/__index.md) - `release_notes/v1.56.4/index.md`
+- [v1.57.3 - New Base Docker Image](v1.57.3/__index.md) - `release_notes/v1.57.3/index.md`
+- [v1.57.7](v1.57.7/__index.md) - `release_notes/v1.57.7/index.md`
+- [v1.57.8-stable](v1.57.8-stable/__index.md) - `release_notes/v1.57.8-stable/index.md`
+- [v1.59.0](v1.59.0/__index.md) - `release_notes/v1.59.0/index.md`
+- [v1.59.8-stable](v1.59.8-stable/__index.md) - `release_notes/v1.59.8-stable/index.md`
+- [v1.61.20-stable](v1.61.20-stable/__index.md) - `release_notes/v1.61.20-stable/index.md`
+- [v1.63.0 - Anthropic 'thinking' response update](v1.63.0/__index.md) - `release_notes/v1.63.0/index.md`
+- [v1.63.11-stable](v1.63.11-stable/__index.md) - `release_notes/v1.63.11-stable/index.md`
+- [v1.63.14-stable](v1.63.14/__index.md) - `release_notes/v1.63.14/index.md`
+- [v1.63.2-stable](v1.63.2-stable/__index.md) - `release_notes/v1.63.2-stable/index.md`
+- [v1.65.0-stable - Model Context Protocol](v1.65.0-stable/__index.md) - `release_notes/v1.65.0-stable/index.md`
+- [v1.65.0 - Team Model Add - update](v1.65.0/__index.md) - `release_notes/v1.65.0/index.md`
+- [v1.65.4-stable](v1.65.4-stable/__index.md) - `release_notes/v1.65.4-stable/index.md`
+- [v1.66.0-stable - Realtime API Cost Tracking](v1.66.0-stable/__index.md) - `release_notes/v1.66.0-stable/index.md`
+- [v1.67.0-stable - SCIM Integration](v1.67.0-stable/__index.md) - `release_notes/v1.67.0-stable/index.md`
+- [v1.67.4-stable - Improved User Management](v1.67.4-stable/__index.md) - `release_notes/v1.67.4-stable/index.md`
+- [v1.68.0-stable](v1.68.0-stable/__index.md) - `release_notes/v1.68.0-stable/index.md`
+- [v1.69.0-stable - Loadbalance Batch API Models](v1.69.0-stable/__index.md) - `release_notes/v1.69.0-stable/index.md`
+- [v1.70.1-stable - Gemini Realtime API Support](v1.70.1-stable/__index.md) - `release_notes/v1.70.1-stable/index.md`
+- [v1.71.1-stable - 2x Higher Requests Per Second (RPS)](v1.71.1-stable/__index.md) - `release_notes/v1.71.1-stable/index.md`
+- [v1.72.0-stable](v1.72.0-stable/__index.md) - `release_notes/v1.72.0-stable/index.md`
+- [v1.72.2-stable](v1.72.2-stable/__index.md) - `release_notes/v1.72.2-stable/index.md`
+- [v1.72.6-stable - MCP Gateway Permission Management](v1.72.6-stable/__index.md) - `release_notes/v1.72.6-stable/index.md`
+- [v1.73.0-stable - Set default team for new users](v1.73.0-stable/__index.md) - `release_notes/v1.73.0-stable/index.md`
+- [v1.73.6-stable](v1.73.6-stable/__index.md) - `release_notes/v1.73.6-stable/index.md`
+- [v1.74.0-stable](v1.74.0-stable/__index.md) - `release_notes/v1.74.0-stable/index.md`
+- [v1.74.15-stable](v1.74.15-stable/__index.md) - `release_notes/v1.74.15-stable/index.md`
+- [v1.74.3-stable](v1.74.3-stable/__index.md) - `release_notes/v1.74.3-stable/index.md`
+- [v1.74.7-stable](v1.74.7/__index.md) - `release_notes/v1.74.7/index.md`
+- [v1.74.9-stable - Auto-Router](v1.74.9-stable/__index.md) - `release_notes/v1.74.9-stable/index.md`
+- [v1.75.5-stable - Redis latency improvements](v1.75.5-stable/__index.md) - `release_notes/v1.75.5-stable/index.md`
+- [v1.75.8-stable - Team Member Rate Limits](v1.75.8/__index.md) - `release_notes/v1.75.8/index.md`
+- [v1.76.0-stable - RPS Improvements](v1.76.0-stable/__index.md) - `release_notes/v1.76.0-stable/index.md`
+- [v1.76.1-stable - Gemini 2.5 Flash Image](v1.76.1-stable/__index.md) - `release_notes/v1.76.1-stable/index.md`
+- [v1.76.3-stable - Performance, Video Generation & CloudZero Integration](v1.76.3-stable/__index.md) - `release_notes/v1.76.3-stable/index.md`
+- [v1.77.2-stable - Bedrock Batches API](v1.77.2-stable/__index.md) - `release_notes/v1.77.2-stable/index.md`
+- [v1.77.3-stable - Priority Based Rate Limiting](v1.77.3-stable/__index.md) - `release_notes/v1.77.3-stable/index.md`
+- [v1.77.5-stable - MCP OAuth 2.0 Support](v1.77.5-stable/__index.md) - `release_notes/v1.77.5-stable/index.md`
+- [v1.77.7-stable - 2.9x Lower Median Latency](v1.77.7-stable/__index.md) - `release_notes/v1.77.7-stable/index.md`
+- [v1.78.0-stable - MCP Gateway: Control Tool Access by Team, Key](v1.78.0-stable/__index.md) - `release_notes/v1.78.0-stable/index.md`
+- [v1.78.5-stable - Native OCR Support](v1.78.5-stable/__index.md) - `release_notes/v1.78.5-stable/index.md`
+- [v1.79.0-stable - Search APIs](v1.79.0-stable/__index.md) - `release_notes/v1.79.0-stable/index.md`
+- [v1.79.1-stable - Guardrail Playground](v1.79.1-stable/__index.md) - `release_notes/v1.79.1-stable/index.md`
+- [v1.79.3-stable - Built-in Guardrails on AI Gateway](v1.79.3-stable/__index.md) - `release_notes/v1.79.3-stable/index.md`
+- [v1.80.0-stable - Introducing Agent Hub: Register, Publish, and Share Agents](v1.80.0-stable/__index.md) - `release_notes/v1.80.0-stable/index.md`
+- [[Preview] v1.80.10.rc.1 - Agent Gateway: Azure Foundry & Bedrock AgentCore](v1.80.10-stable/__index.md) - `release_notes/v1.80.10-stable/index.md`
+- [v1.80.11-stable - Google Interactions API](v1.80.11-stable/__index.md) - `release_notes/v1.80.11-stable/index.md`
+- [v1.80.15-stable - Manus API Support](v1.80.15/__index.md) - `release_notes/v1.80.15/index.md`
+- [v1.80.5-stable - Gemini 3.0 Support](v1.80.5-stable/__index.md) - `release_notes/v1.80.5-stable/index.md`
+- [v1.80.8-stable - Introducing A2A Agent Gateway](v1.80.8-stable/__index.md) - `release_notes/v1.80.8-stable/index.md`
+- [v1.81.0-stable - Claude Code - Web Search Across All Providers](v1.81.0/__index.md) - `release_notes/v1.81.0/index.md`
+- [v1.81.12-stable.1 - Guardrail Policy Templates & Action Builder](v1.81.12/__index.md) - `release_notes/v1.81.12/index.md`
+- [v1.81.14 - New Gateway Level Guardrails & Compliance Playground](v1.81.14/__index.md) - `release_notes/v1.81.14/index.md`
+- [v1.81.3 - Performance - 25% CPU Usage Reduction](v1.81.3/__index.md) - `release_notes/v1.81.3/index.md`
+- [[Preview] v1.81.6 - Logs v2 with Tool Call Tracing](v1.81.6/__index.md) - `release_notes/v1.81.6/index.md`
+- [v1.81.9 - Control which MCP Servers are exposed on the Internet](v1.81.9/__index.md) - `release_notes/v1.81.9/index.md`
+- [v1.82.0 - Realtime Guardrails, Projects Management, and 10+ Performance Optimizations](v1.82.0/__index.md) - `release_notes/v1.82.0/index.md`
+- [v1.82.3 - Nebius AI, gpt-5.4, Gemini 3.x, FLUX Kontext, and 116 New Models](v1.82.3/__index.md) - `release_notes/v1.82.3/index.md`
+- [v1.83.0 - Official Release (Post Supply Chain Incident)](v1.83.0/__index.md) - `release_notes/v1.83.0/index.md`
+- [v1.83.10 - Claude Opus 4.7, Prompt Compression & Multi-Window Budgets](v1.83.10/__index.md) - `release_notes/v1.83.10/index.md`
+- [v1.83.14 - GPT-5.5, Prompt Compression & Memory API](v1.83.14/__index.md) - `release_notes/v1.83.14/index.md`
+- [v1.83.3-stable - MCP Toolsets & Skills Marketplace](v1.83.3/__index.md) - `release_notes/v1.83.3/index.md`
+- [v1.83.7-stable - Per-User MCP OAuth, Team Spend Logs RBAC](v1.83.7/__index.md) - `release_notes/v1.83.7/index.md`
+- [v1.84.0 - Reliability hardening + multi-pod budget accuracy](v1.84.0/__index.md) - `release_notes/v1.84.0/index.md`
+- [v1.84.1 - Gemini 3.5 Flash & Reliability Fixes](v1.84.1/__index.md) - `release_notes/v1.84.1/index.md`
+- [v1.84.10 - Interrupted-Stream Cost Recovery](v1.84.10/__index.md) - `release_notes/v1.84.10/index.md`
+- [v1.84.2 - Path-Handling Hardening Backport](v1.84.2/__index.md) - `release_notes/v1.84.2/index.md`
+- [v1.84.3 - Dockerfile Re-cut for Non-Root Image](v1.84.3/__index.md) - `release_notes/v1.84.3/index.md`
+- [v1.84.4 - Reset-Budget & Observability Fixes](v1.84.4/__index.md) - `release_notes/v1.84.4/index.md`
+- [v1.84.5 - Azure AD, Batch Auth & Passthrough Backports](v1.84.5/__index.md) - `release_notes/v1.84.5/index.md`
+- [v1.84.6 - CrowdStrike AIDR Identity Capture](v1.84.6/__index.md) - `release_notes/v1.84.6/index.md`
+- [v1.84.7 - Claude Fable 5 & Batch File Authorization](v1.84.7/__index.md) - `release_notes/v1.84.7/index.md`
+- [v1.84.8 - Database Resilience & Grace-Period Key Rotation](v1.84.8/__index.md) - `release_notes/v1.84.8/index.md`
+- [v1.84.9 - Anthropic Cache-Control Cap](v1.84.9/__index.md) - `release_notes/v1.84.9/index.md`
+- [v1.85.0 - Realtime GA, MCP Gateway Expansion & Hardened Multi-Tenancy](v1.85.0/__index.md) - `release_notes/v1.85.0/index.md`
+- [v1.85.1 - Gemini 3.5 Flash & Reliability Fixes](v1.85.1/__index.md) - `release_notes/v1.85.1/index.md`
+- [v1.85.2 - Path-Handling Hardening Backport](v1.85.2/__index.md) - `release_notes/v1.85.2/index.md`
+- [v1.85.3 - Observability, Budget & Rate-Limit Fixes](v1.85.3/__index.md) - `release_notes/v1.85.3/index.md`
+- [v1.85.4 - Azure AD, Batch Auth & Passthrough Backports](v1.85.4/__index.md) - `release_notes/v1.85.4/index.md`
+- [v1.85.5 - Claude Fable 5, CrowdStrike AIDR & Batch File Auth](v1.85.5/__index.md) - `release_notes/v1.85.5/index.md`
+- [v1.85.6 - Database Resilience Backport](v1.85.6/__index.md) - `release_notes/v1.85.6/index.md`
+- [v1.85.7 - Stream Cost Recovery & Cache-Control Cap](v1.85.7/__index.md) - `release_notes/v1.85.7/index.md`
+- [v1.86.0 - Weighted-Routing Failover, Native Web-Search Citations & OTel-Standard Tracing](v1.86.0/__index.md) - `release_notes/v1.86.0/index.md`
+- [v1.86.1 - Non-Root Docker Build Fix](v1.86.1/__index.md) - `release_notes/v1.86.1/index.md`
+- [v1.86.2 - Path-Handling Hardening Backport](v1.86.2/__index.md) - `release_notes/v1.86.2/index.md`
+- [v1.86.3 - Gemini 3.5 Flash Day-0 & Pending Line Backports](v1.86.3/__index.md) - `release_notes/v1.86.3/index.md`
+- [v1.86.4 - Azure AD, Batch Auth & Passthrough Backports](v1.86.4/__index.md) - `release_notes/v1.86.4/index.md`
+- [v1.86.5 - Claude Fable 5, CrowdStrike AIDR & Batch File Auth](v1.86.5/__index.md) - `release_notes/v1.86.5/index.md`
+- [v1.86.6 - DB Resilience, Passthrough & Dependency Backports](v1.86.6/__index.md) - `release_notes/v1.86.6/index.md`
+- [v1.86.7 - Stream Cost Recovery & MCP Key Scoping](v1.86.7/__index.md) - `release_notes/v1.86.7/index.md`
+- [v1.87.0 - OCI Generative AI Provider, Gemini 3.5 Flash Day-0, MCP UI for OAuth Servers](v1.87.0/__index.md) - `release_notes/v1.87.0/index.md`
+- [v1.87.1 - Azure AD, Batch Auth & Key Access Backports](v1.87.1/__index.md) - `release_notes/v1.87.1/index.md`
+- [v1.87.2 - Claude Fable 5, Batch Auth, CrowdStrike & Mantle SigV4](v1.87.2/__index.md) - `release_notes/v1.87.2/index.md`
+- [v1.87.3 - DB Resilience & Passthrough Hardening](v1.87.3/__index.md) - `release_notes/v1.87.3/index.md`
+- [v1.87.4 - Guardrails & Logging Fixes](v1.87.4/__index.md) - `release_notes/v1.87.4/index.md`
+- [v1.87.5 - Web Search Costing & MCP Key Scoping](v1.87.5/__index.md) - `release_notes/v1.87.5/index.md`
+- [v1.88.0 - Claude Opus 4.8, MCP Access-Group Authorization & Typed OpenTelemetry](v1.88.0/__index.md) - `release_notes/v1.88.0/index.md`
+- [v1.88.1 - Dependency Bumps](v1.88.1/__index.md) - `release_notes/v1.88.1/index.md`
+- [v1.88.2 - DB Resilience, Passthrough, Model-Info & Budget](v1.88.2/__index.md) - `release_notes/v1.88.2/index.md`
+- [v1.88.3 - Guardrail Polling & Hook Fixes](v1.88.3/__index.md) - `release_notes/v1.88.3/index.md`
+- [v1.88.4 - Proxy Exception & Guardrails Fixes](v1.88.4/__index.md) - `release_notes/v1.88.4/index.md`
+- [v1.88.5 - Vertex Batch Uploads & Stream Cost Recovery](v1.88.5/__index.md) - `release_notes/v1.88.5/index.md`
+- [v1.89.0 - Claude Fable 5, A2A Agent Providers & MCP Per-Server Controls](v1.89.0/__index.md) - `release_notes/v1.89.0/index.md`
+- [v1.89.1 - DB Resilience, MCP & Model-Info Backports](v1.89.1/__index.md) - `release_notes/v1.89.1/index.md`
+- [v1.89.2 - Cost Tracking & Model-List Fixes](v1.89.2/__index.md) - `release_notes/v1.89.2/index.md`
+- [v1.89.3 - Guardrails & Cache-Control Fixes](v1.89.3/__index.md) - `release_notes/v1.89.3/index.md`
+- [v1.89.4 - Vertex Batch Uploads & CVE Patches](v1.89.4/__index.md) - `release_notes/v1.89.4/index.md`
+- [v1.89.5 - Vertex Batch Upload Fix & Key Redaction](v1.89.5/__index.md) - `release_notes/v1.89.5/index.md`
+- [v1.90.0 - Six New Providers, OpenTelemetry v2 Parity & Streaming Reliability](v1.90.0/__index.md) - `release_notes/v1.90.0/index.md`
+- [v1.90.1 - Vertex Batch Uploads & Key Redaction](v1.90.1/__index.md) - `release_notes/v1.90.1/index.md`
+- [v1.90.2 - Realtime Stability & Bounded Logging](v1.90.2/__index.md) - `release_notes/v1.90.2/index.md`
+- [v1.90.3 - Bedrock Tool Config & MCP Log Redaction](v1.90.3/__index.md) - `release_notes/v1.90.3/index.md`
+- [v1.90.4 - Responses API Guardrail Coverage](v1.90.4/__index.md) - `release_notes/v1.90.4/index.md`
+- [v1.91.0 - MCP OAuth v2, Rust OCR Gateway & Realtime Performance](v1.91.0/__index.md) - `release_notes/v1.91.0/index.md`
+- [v1.91.1 - DB Model Config Consistency & OTel Error Spans](v1.91.1/__index.md) - `release_notes/v1.91.1/index.md`
+- [v1.91.3 - Responses Guardrail Coverage & OTel Exception Events](v1.91.3/__index.md) - `release_notes/v1.91.3/index.md`
+- [v1.92.0 - Claude Sonnet 5, Production MCP OAuth & New Providers](v1.92.0/__index.md) - `release_notes/v1.92.0/index.md`
+- [v1.93.0rc1 - GPT-5.6, Client-Forwarded MCP Credentials & Meta Model API](v1.93.0rc1/__index.md) - `release_notes/v1.93.0rc1/index.md`

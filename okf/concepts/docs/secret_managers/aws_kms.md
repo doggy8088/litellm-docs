@@ -1,0 +1,54 @@
+---
+type: "Documentation page"
+title: "Aws Kms"
+description: "AWS Key Management V1 :::info ✨ This is an Enterprise Feature Enterprise Pricing Contact us here to get a free trial ::: :::tip [BETA] AWS Key Management v2 is on the enterprise..."
+resource: "https://github.com/BerriAI/litellm-docs/blob/main/docs/secret_managers/aws_kms.md"
+tags: ["docs","documentation-page"]
+source_path: "docs/secret_managers/aws_kms.md"
+source_area: "docs"
+source_revision: "038c9caf294fea449d24d6a787f9eaf7e3ca882f"
+source_frontmatter_keys: []
+---
+# Source document
+
+This concept mirrors [`docs/secret_managers/aws_kms.md`](https://github.com/BerriAI/litellm-docs/blob/main/docs/secret_managers/aws_kms.md) from Git revision `038c9caf294fea449d24d6a787f9eaf7e3ca882f`.
+
+The original file is preserved below so the OKF bundle remains a portable, inspectable representation of the repository documentation.
+
+## Original content
+
+````markdown
+# AWS Key Management V1
+
+:::info
+
+✨ **This is an Enterprise Feature**
+
+[Enterprise Pricing](https://www.litellm.ai/#pricing)
+
+[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+
+:::
+
+:::tip
+
+[BETA] AWS Key Management v2 is on the enterprise tier. Go [here for docs](../enterprise.md#beta-aws-key-manager---key-decryption)
+
+:::
+
+Use AWS KMS to storing a hashed copy of your Proxy Master Key in the environment. 
+
+```bash
+export LITELLM_MASTER_KEY="djZ9xjVaZ..." # 👈 ENCRYPTED KEY
+export AWS_REGION_NAME="us-west-2"
+```
+
+```yaml
+general_settings:
+  key_management_system: "aws_kms"
+  key_management_settings:
+    hosted_keys: ["LITELLM_MASTER_KEY"] # 👈 WHICH KEYS ARE STORED ON KMS
+```
+
+[**See Decryption Code**](https://github.com/BerriAI/litellm/blob/a2da2a8f168d45648b61279d4795d647d94f90c9/litellm/utils.py#L10182)
+````

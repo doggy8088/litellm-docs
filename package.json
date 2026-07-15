@@ -8,6 +8,8 @@
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
+    "generate:okf": "node scripts/generate-okf.mjs",
+    "validate:okf": "node scripts/validate-okf.mjs",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",

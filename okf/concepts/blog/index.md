@@ -1,0 +1,76 @@
+# Blog posts
+
+This directory contains 70 OKF concepts generated from the repository's blog Markdown sources.
+
+## Concepts (70)
+
+- [LiteLLM Managed Agents Platform — Alpha Now Open for Public Preview](agent_platform_alpha/__index.md) - `blog/agent_platform_alpha/index.md`
+- [LiteLLM × Akto: Model-Based Detection Alongside Built-in Guardrails](akto_partnership/__index.md) - `blog/akto_partnership/index.md`
+- [Day 0 Support: Claude 4.5 Opus (+Advanced Features)](anthropic_opus_4_5_and_advanced_features/__index.md) - `blog/anthropic_opus_4_5_and_advanced_features/index.md`
+- [Incident Report: Wildcard Blocking New Models After Cost Map Reload](anthropic_wildcard_model_access_incident/__index.md) - `blog/anthropic_wildcard_model_access_incident/index.md`
+- [April Townhall: Security + Product Roadmap](april_townhall_announcement/__index.md) - `blog/april_townhall_announcement/index.md`
+- [April Townhall Updates: CI/CD v2, Stability, and Product Roadmap](april_townhall_updates/__index.md) - `blog/april_townhall_updates/index.md`
+- [Auto Router v2: one router for complexity, semantic, and adaptive routing](autorouter_v2/__index.md) - `blog/autorouter_v2/index.md`
+- [Announcing CI/CD v2 for LiteLLM](ci_cd_v2_improvements/__index.md) - `blog/ci_cd_v2_improvements/index.md`
+- [Incident Report: Invalid beta headers with Claude Code](claude_code_beta_headers/__index.md) - `blog/claude_code_beta_headers/index.md`
+- [Day 0 Support: Claude Fable 5](claude_fable_5/__index.md) - `blog/claude_fable_5/index.md`
+- [Day 0 Support: Claude Opus 4.6](claude_opus_4_6/__index.md) - `blog/claude_opus_4_6/index.md`
+- [Day 0 Support: Claude Opus 4.7](claude_opus_4_7/__index.md) - `blog/claude_opus_4_7/index.md`
+- [Day 0 Support: Claude Opus 4.8](claude_opus_4_8/__index.md) - `blog/claude_opus_4_8/index.md`
+- [Day 0 Support: Claude Sonnet 4.6](claude_sonnet_4_6/__index.md) - `blog/claude_sonnet_4_6/index.md`
+- [Day 0 Support: Claude Sonnet 5](claude_sonnet_5/__index.md) - `blog/claude_sonnet_5/index.md`
+- [LiteLLM release versioning is changing: standard names, MINOR for weekly, PATCH for hotfixes](cleaner_release_versions/__index.md) - `blog/cleaner_release_versions/index.md`
+- [Announcing Componentized Deployments](componentized_deployment/__index.md) - `blog/componentized_deployment/index.md`
+- [DAY 0 Support: Gemini 3.1 Pro on LiteLLM](gemin_3.1/__index.md) - `blog/gemin_3.1/index.md`
+- [DAY 0 Support: Gemini 3.1 Flash Lite Preview on LiteLLM](gemini_3_1_flash_lite/__index.md) - `blog/gemini_3_1_flash_lite/index.md`
+- [DAY 0 Support: Gemini 3.5 Flash on LiteLLM](gemini_3_5_flash/__index.md) - `blog/gemini_3_5_flash/index.md`
+- [DAY 0 Support: Gemini 3 Flash on LiteLLM](gemini_3_flash/__index.md) - `blog/gemini_3_flash/index.md`
+- [DAY 0 Support: Gemini 3 on LiteLLM](gemini_3/__index.md) - `blog/gemini_3/index.md`
+- [Gemini Embedding 2 (GA): Multimodal Embeddings on LiteLLM](gemini_embedding_2_ga/__index.md) - `blog/gemini_embedding_2_ga/index.md`
+- [Gemini Embedding 2 Preview: Multimodal Embeddings on LiteLLM](gemini_embedding_2_multimodal/__index.md) - `blog/gemini_embedding_2_multimodal/index.md`
+- [Google AI Studio Managed Agents on LiteLLM](google_ai_studio_managed_agents/__index.md) - `blog/google_ai_studio_managed_agents/index.md`
+- [Day 0 Support: GPT-5.3-Codex](gpt_5_3_codex/__index.md) - `blog/gpt_5_3_codex/index.md`
+- [Day 0 Support: GPT-5.4-mini and GPT-5.4-nano](gpt_5_4_mini_nano/__index.md) - `blog/gpt_5_4_mini_nano/index.md`
+- [Day 0 Support: GPT-5.4](gpt_5_4/__index.md) - `blog/gpt_5_4/index.md`
+- [Day 0 Support: GPT-5.5 and GPT-5.5 Pro](gpt_5_5/__index.md) - `blog/gpt_5_5/index.md`
+- [Day 0 Support: GPT-5.6 (Sol, Terra, Luna)](gpt_5_6/__index.md) - `blog/gpt_5_6/index.md`
+- [Incident Report: Guardrail logging exposed secret headers in spend logs and traces](guardrail_logging_secret_exposure_incident/__index.md) - `blog/guardrail_logging_secret_exposure_incident/index.md`
+- [A Unified Agent Control Plane](harnesses-are-the-new-llms/__index.md) - `blog/harnesses-are-the-new-llms/index.md`
+- [LiteLLM × Headroom: Use 60-95% fewer tokens with Claude Code](headroom_integration/__index.md) - `blog/headroom_integration/index.md`
+- [Fixed in 1.84.0+ - Version Update: Authentication Bypass via Host Header Injection (GHSA-4xpc-pv4p-pm3w)](host_header_auth_bypass/__index.md) - `blog/host_header_auth_bypass/index.md`
+- [Incident Report: Cache Eviction Closes In-Use httpx Clients](httpx_cache_eviction_incident/__index.md) - `blog/httpx_cache_eviction_incident/index.md`
+- [July Townhall: Product + Roadmap Updates](july_townhall_announcement/__index.md) - `blog/july_townhall_announcement/index.md`
+- [June Townhall: Product + Roadmap Updates](june_townhall_announcement/__index.md) - `blog/june_townhall_announcement/index.md`
+- [June Townhall Updates: 94 Bug Fixes, OCR + Realtime are in Rust, and a Zero-Regression Commitment](june_townhall_updates/__index.md) - `blog/june_townhall_updates/index.md`
+- [How we built a background agent to cover 30% of our backlog](lap_internal_agent_30pct/__index.md) - `blog/lap_internal_agent_30pct/index.md`
+- [LiteLLM Labs: Announcing Lite-Harness SDK — Unified API for Claude Code, Codex, and Pi AI](lite-harness-sdk/__index.md) - `blog/lite-harness-sdk/index.md`
+- [Announcing LiteLLM x Microsoft ASSERT](litellm_microsoft_assert/__index.md) - `blog/litellm_microsoft_assert/index.md`
+- [Improve release stability with 24 hour load tests](litellm_observatory/__index.md) - `blog/litellm_observatory/index.md`
+- [Security Update: CVE-2026-42208 in LiteLLM Proxy](litellm_proxy_sql_injection_april_2026/__index.md) - `blog/litellm_proxy_sql_injection_april_2026/index.md`
+- [README](litellm_rust_launch/benchmark/README.md) - `blog/litellm_rust_launch/benchmark/README.md`
+- [Migrating LiteLLM to Rust - Building the Fastest and Litest AI Gateway](litellm_rust_launch/__index.md) - `blog/litellm_rust_launch/index.md`
+- [May Townhall: Product + Roadmap Updates](may_townhall_announcement/__index.md) - `blog/may_townhall_announcement/index.md`
+- [May Townhall Updates: Security Hardening, Release Versioning, and the Agent Platform](may_townhall_updates/__index.md) - `blog/may_townhall_updates/index.md`
+- [Security Update: CVE-2026-30623 — Command Injection via Anthropic's MCP SDK](mcp_stdio_command_injection_april_2026/__index.md) - `blog/mcp_stdio_command_injection_april_2026/index.md`
+- [Day 0 Support: MiniMax-M2.5](minimax_m2_5/__index.md) - `blog/minimax_m2_5/index.md`
+- [Security Update: Mistral AI PyPI Supply Chain Attack — LiteLLM Not Impacted](mistral_supply_chain_attack_2026/__index.md) - `blog/mistral_supply_chain_attack_2026/index.md`
+- [Incident Report: Invalid model cost map on main](model_cost_map_incident/__index.md) - `blog/model_cost_map_incident/index.md`
+- [Incident Report: Prisma DB Reconnect Blocks the Event Loop and Kills Liveliness](prisma_reconnect_blocking_incident/__index.md) - `blog/prisma_reconnect_blocking_incident/index.md`
+- [Realtime WebRTC HTTP Endpoints](realtime_webrtc_http_endpoints/__index.md) - `blog/realtime_webrtc_http_endpoints/index.md`
+- [Making the AI Gateway Resilient to Redis Failures](redis_circuit_breaker/__index.md) - `blog/redis_circuit_breaker/index.md`
+- [Incident Report: Encrypted Content Failures in Multi-Region Responses API Load Balancing](responses_api_encrypted_content_incident/__index.md) - `blog/responses_api_encrypted_content_incident/index.md`
+- [5 ways to cut Claude Code costs with LiteLLM](save_claude_code_costs/__index.md) - `blog/save_claude_code_costs/index.md`
+- [Security Update: Vulnerability Disclosures and Ongoing Hardening](security_hardening_april_2026/__index.md) - `blog/security_hardening_april_2026/index.md`
+- [Security Townhall Updates](security_townhall_updates/__index.md) - `blog/security_townhall_updates/index.md`
+- [Security Update: Suspected Supply Chain Incident](security_update_march_2026/__index.md) - `blog/security_update_march_2026/index.md`
+- [Incident Report: SERVER_ROOT_PATH regression broke UI routing](server_root_path/__index.md) - `blog/server_root_path/index.md`
+- [June Stability Update: We're Making Stability a First-Class Citizen at](stability/__index.md) - `blog/stability/index.md`
+- [Achieving Sub-Millisecond Proxy Overhead](sub_millisecond_proxy_overhead/__index.md) - `blog/sub_millisecond_proxy_overhead/index.md`
+- [Swap OpenAI Code Interpreter for E2B/OpenSandbox](swap_openai_code_interpreter/__index.md) - `blog/swap_openai_code_interpreter/index.md`
+- [July stability update: hardening MCP auth and cutting pass-through memory](two_week_stability_update/__index.md) - `blog/two_week_stability_update/index.md`
+- [Semantic Caching on Valkey and AWS ElastiCache](valkey_semantic_caching/__index.md) - `blog/valkey_semantic_caching/index.md`
+- [LiteLLM + Vanta: SOC 2 Type 2 and ISO 27001 Recertification](vanta_compliance_recertification/__index.md) - `blog/vanta_compliance_recertification/index.md`
+- [LiteLLM version support: focusing on the four most recent stable lines](version_support/__index.md) - `blog/version_support/index.md`
+- [New Video Characters, Edit and Extension API support](video_characters_litellm/__index.md) - `blog/video_characters_litellm/index.md`
+- [Incident Report: vLLM Embeddings Broken by encoding_format Parameter](vllm_embeddings_incident/__index.md) - `blog/vllm_embeddings_incident/index.md`
+- [Welcome](root-index.md) - `index.md`
