@@ -78,12 +78,22 @@ const config = {
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
 
-  // Even if you don't use internalization, you can use this field to set useful
-  // metadata like html lang. For example, if your site is Chinese, you may want
-  // to replace "en" with "zh-Hans".
+  // Set the default locale and the available site languages.
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: 'zh-tw',
+    locales: ['zh-tw', 'en'],
+    localeConfigs: {
+      'zh-tw': {
+        label: '繁體中文（台灣）',
+        htmlLang: 'zh-TW',
+        direction: 'ltr',
+      },
+      en: {
+        label: 'English',
+        htmlLang: 'en-US',
+        direction: 'ltr',
+      },
+    },
   },
   plugins: [
     require('./plugins/optimize-images'),
@@ -362,6 +372,10 @@ const config = {
             position: 'right',
             className: 'header-discord-link',
             'aria-label': 'Discord / Slack community',
+          },
+          {
+            type: 'localeDropdown',
+            position: 'right',
           },
           ...(hasInkeepSearch
             ? [{type: 'search', position: 'right'}]

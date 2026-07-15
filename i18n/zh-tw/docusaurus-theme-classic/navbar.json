@@ -1,0 +1,34 @@
+{
+  "title": {
+    "message": "🚅 LiteLLM",
+    "description": "The title in the navbar"
+  },
+  "item.label.Docs": {
+    "message": "文件",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Learn": {
+    "message": "學習",
+    "description": "Navbar item with label Learn"
+  },
+  "item.label.Integrations": {
+    "message": "整合",
+    "description": "Navbar item with label Integrations"
+  },
+  "item.label.Enterprise": {
+    "message": "企業版",
+    "description": "Navbar item with label Enterprise"
+  },
+  "item.label.Changelog": {
+    "message": "變更記錄",
+    "description": "Navbar item with label Changelog"
+  },
+  "item.label.Blog": {
+    "message": "部落格",
+    "description": "Navbar item with label Blog"
+  },
+  "item.label.Trust Center": {
+    "message": "信任中心",
+    "description": "Navbar item with label Trust Center"
+  }
+}
