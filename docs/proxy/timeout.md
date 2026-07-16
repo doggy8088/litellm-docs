@@ -1,11 +1,11 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Timeouts
+# 逾時 {#timeouts}
 
-The timeout set in router is for the entire length of the call, and is passed down to the completion() call level as well. 
+在 router 中設定的逾時是針對整個呼叫的完整長度，且也會傳遞到 completion() 呼叫層級。 
 
-### Global Timeouts
+### 全域逾時 {#global-timeouts}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -29,7 +29,7 @@ router_settings:
     timeout: 30 # sets a 30s timeout for the entire call
 ```
 
-**Start Proxy** 
+**啟動 Proxy** 
 
 ```shell
 $ litellm --config /path/to/config.yaml
@@ -38,15 +38,15 @@ $ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-### Custom Timeouts & Stream Timeouts (Per Model)
+### 自訂逾時與串流逾時（每個模型） {#custom-timeouts--stream-timeouts-per-model}
 
-For each model, you can set `timeout` and `stream_timeout` under `litellm_params`:
+對於每個模型，您可以在 `litellm_params` 下設定 `timeout` 和 `stream_timeout`：
 
-- **`timeout`** → maximum time for the *complete response*.  
-  Use this to cap long-running completions.
+- **`timeout`** → 完整回應的最長時間。  
+  用於限制長時間執行的 completions。
 
-- **`stream_timeout`** → maximum time to wait for the *first chunk* (i.e., first token) in a streaming response.  
-  Use this to abort “hanging” providers (e.g., Bedrock slow start) and retry another model.
+- **`stream_timeout`** → 在串流回應中等待第一個區塊（亦即第一個 token）的最長時間。  
+  用於中止「卡住」的提供者（例如 Bedrock 啟動緩慢），並重試另一個模型。
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -104,7 +104,7 @@ model_list:
 ```
 
 
-**Start Proxy**
+**啟動 Proxy**
 
 ```shell
 $ litellm --config /path/to/config.yaml
@@ -114,12 +114,11 @@ $ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
+### 設定動態逾時 - 每個請求 {#setting-dynamic-timeouts---per-request}
 
-### Setting Dynamic Timeouts - Per Request
+LiteLLM 支援針對每個請求設定 `timeout` 
 
-LiteLLM supports setting a `timeout` per request 
-
-**Example Usage**
+**使用範例**
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -140,7 +139,7 @@ response = router.completion(
 <TabItem value="proxy" label="PROXY">
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -183,12 +182,11 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 測試逾時處理  {#testing-timeout-handling}
 
-## Testing timeout handling 
+若要測試您的 retry/fallback 邏輯是否能處理逾時，您可以將 `mock_timeout=True` 設為測試用途。 
 
-To test if your retry/fallback logic can handle timeouts, you can set `mock_timeout=True` for testing. 
-
-This is currently only supported on `/chat/completions` and `/completions` endpoints. Please [let us know](https://github.com/BerriAI/litellm/issues) if you need this for other endpoints. 
+目前僅支援 `/chat/completions` 和 `/completions` 端點。若您需要其他端點支援，請[告訴我們](https://github.com/BerriAI/litellm/issues)。 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \

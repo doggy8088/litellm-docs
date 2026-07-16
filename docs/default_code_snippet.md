@@ -1,19 +1,18 @@
 ---
 displayed_sidebar: tutorialSidebar
 ---
-# Get Started
+# 開始使用 {#get-started}
 
 import QueryParamReader from '../src/components/queryParamReader.js'
 import TokenComponent from '../src/components/queryParamToken.js'
 
 :::info
 
-This section assumes you've already added your API keys in <TokenComponent/>
+本節假設您已經在 <TokenComponent/> 中新增您的 API 金鑰
 
-If you want to use the non-hosted version, [go here](https://docs.litellm.ai/docs/#quick-start)
+如果您想使用非託管版本，請[前往這裡](https://docs.litellm.ai/docs/#quick-start)
 
 :::
-
 
 ```
 uv add litellm

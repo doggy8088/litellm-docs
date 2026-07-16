@@ -1,40 +1,40 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# PublicAI
+# PublicAI {#publicai}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | PublicAI provides large language models including essential models like the swiss-ai apertus model. |
-| Provider Route on LiteLLM | `publicai/` |
-| Link to Provider Doc | [PublicAI ↗](https://platform.publicai.co/) |
+| 說明 | PublicAI 提供大型語言模型，包括 swiss-ai apertus 模型等關鍵模型。 |
+| LiteLLM 提供者路由 | `publicai/` |
+| 提供者文件連結 | [PublicAI ↗](https://platform.publicai.co/) |
 | Base URL | `https://platform.publicai.co/` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 <br />
 
 https://platform.publicai.co/
 
-**We support ALL PublicAI models, just set `publicai/` as a prefix when sending completion requests**
+**我們支援所有 PublicAI 模型，只要在送出 completion 請求時將 `publicai/` 設為前綴即可**
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["PUBLICAI_API_KEY"] = ""  # your PublicAI API key
 ```
 
-You can overwrite the base url with:
+您可以使用以下方式覆寫 base url：
 
 ```
 os.environ["PUBLICAI_API_BASE"] = "https://platform.publicai.co/v1"
 ```
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="PublicAI Non-streaming Completion"
 import os
@@ -54,7 +54,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="PublicAI Streaming Completion"
 import os
@@ -76,9 +76,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -93,7 +93,7 @@ model_list:
       api_key: os.environ/PUBLICAI_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -206,4 +206,4 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For more detailed information on using the LiteLLM Proxy, see the [LiteLLM Proxy documentation](../providers/litellm_proxy).
+如需有關使用 LiteLLM Proxy 的更詳細資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。

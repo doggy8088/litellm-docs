@@ -1,29 +1,28 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Codestral API [Mistral AI]
+# Codestral API [Mistral AI] {#codestral-api-mistral-ai}
 
-Codestral is available in select code-completion plugins but can also be queried directly. See the documentation for more details.
+Codestral 可在部分程式碼補全外掛中使用，也可直接查詢。詳情請參閱文件。
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['CODESTRAL_API_KEY']
 ```
 
-## FIM / Completions
+## FIM / 補全 {#fim--completions}
 
 :::info
 
-Official Mistral API Docs: https://docs.mistral.ai/api/#operation/createFIMCompletion
+官方 Mistral API 文件： https://docs.mistral.ai/api/#operation/createFIMCompletion
 
 :::
 
-
 <Tabs>
-<TabItem value="no-streaming" label="No Streaming">
+<TabItem value="no-streaming" label="不串流">
 
-#### Sample Usage
+#### 範例用法 {#sample-usage}
 
 ```python
 import os
@@ -44,7 +43,7 @@ response = await litellm.atext_completion(
 )
 ```
 
-#### Expected Response
+#### 預期回應 {#expected-response}
 
 ```json
 {
@@ -71,9 +70,9 @@ response = await litellm.atext_completion(
 
 
 </TabItem>
-<TabItem value="stream" label="Streaming">
+<TabItem value="stream" label="串流">
 
-#### Sample Usage - Streaming
+#### 範例用法 - 串流 {#sample-usage---streaming}
 
 ```python
 import os
@@ -96,7 +95,7 @@ async for chunk in response:
     print(chunk)
 ```
 
-#### Expected Response
+#### 預期回應 {#expected-response-1}
 
 ```json
 {
@@ -118,29 +117,25 @@ async for chunk in response:
 </TabItem>
 </Tabs>
 
-### Supported Models
-All models listed here https://docs.mistral.ai/platform/endpoints are supported. We actively maintain the list of models, pricing, token window, etc. [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+### 支援的模型 {#supported-models}
+此處列出的所有模型 https://docs.mistral.ai/platform/endpoints皆受支援。我們持續維護模型清單、定價、token 視窗等資訊。[此處](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。
 
-| Model Name     | Function Call                                                |
+| 模型名稱     | 函式呼叫                                                |
 |----------------|--------------------------------------------------------------|
 | Codestral Latest  | `completion(model="text-completion-codestral/codestral-latest", messages)` |
 | Codestral 2405 | `completion(model="text-completion-codestral/codestral-2405", messages)`|
 
-
-
-
-## Chat Completions
+## 聊天補全 {#chat-completions}
 
 :::info
 
-Official Mistral API Docs: https://docs.mistral.ai/api/#operation/createChatCompletion
+官方 Mistral API 文件： https://docs.mistral.ai/api/#operation/createChatCompletion
 :::
 
-
 <Tabs>
-<TabItem value="no-streaming" label="No Streaming">
+<TabItem value="no-streaming" label="不串流">
 
-#### Sample Usage
+#### 範例用法 {#sample-usage-1}
 
 ```python
 import os
@@ -164,7 +159,7 @@ response = await litellm.acompletion(
 )
 ```
 
-#### Expected Response
+#### 預期回應 {#expected-response-2}
 
 ```json
 {
@@ -194,9 +189,9 @@ response = await litellm.acompletion(
 
 
 </TabItem>
-<TabItem value="stream" label="Streaming">
+<TabItem value="stream" label="串流">
 
-#### Sample Usage - Streaming
+#### 範例用法 - 串流 {#sample-usage---streaming-1}
 
 ```python
 import os
@@ -223,7 +218,7 @@ async for chunk in response:
     print(chunk)
 ```
 
-#### Expected Response
+#### 預期回應 {#expected-response-3}
 
 ```json
 {
@@ -246,10 +241,10 @@ async for chunk in response:
 </TabItem>
 </Tabs>
 
-### Supported Models
-All models listed here https://docs.mistral.ai/platform/endpoints are supported. We actively maintain the list of models, pricing, token window, etc. [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+### 支援的模型 {#supported-models-1}
+此處列出的所有模型 https://docs.mistral.ai/platform/endpoints皆受支援。我們持續維護模型清單、定價、token 視窗等資訊。[此處](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。
 
-| Model Name     | Function Call                                                |
+| 模型名稱     | 函式呼叫                                                |
 |----------------|--------------------------------------------------------------|
 | Codestral Latest  | `completion(model="codestral/codestral-latest", messages)` |
 | Codestral 2405 | `completion(model="codestral/codestral-2405", messages)`|

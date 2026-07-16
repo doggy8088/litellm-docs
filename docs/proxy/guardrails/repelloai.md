@@ -1,33 +1,33 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# RepelloAI Argus
+# RepelloAI Argus {#repelloai-argus}
 
-Use [RepelloAI Argus](https://repello.ai/) to scan prompts and responses against the policies you configure per asset in the Repello dashboard. Argus is a cloud-hosted API; prompts are scanned on `pre_call` and model responses on `post_call`, and the policies enforced for a request come from the asset you point the guardrail at.
+使用 [RepelloAI Argus](https://repello.ai/) 來依據您在 Repello 儀表板中按資產設定的政策掃描提示詞與回應。Argus 是雲端代管的 API；提示詞會在 `pre_call` 時掃描，模型回應則在 `post_call` 時掃描，而對請求所強制執行的政策來自您為該防護欄指向的資產。
 
-## Overview
+## 概觀 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Cloud-hosted guardrail for prompt and response policy enforcement |
-| Provider | [RepelloAI](https://repello.ai/) |
-| Supported actions | `BLOCK` (blocked verdict); `LOG` warning (flagged verdict) |
-| Supported modes | `pre_call`, `post_call` |
-| Streaming support | Yes |
-| API requirements | Repello API key and asset ID |
+| 說明 | 用於強制執行提示詞與回應政策的雲端代管防護欄 |
+| 提供者 | [RepelloAI](https://repello.ai/) |
+| 支援的動作 | `BLOCK`（封鎖判定）；`LOG` 警告（標記判定） |
+| 支援的模式 | `pre_call`、`post_call` |
+| 串流支援 | 是 |
+| API 要求 | Repello API 金鑰與 asset ID |
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-Before configuring the guardrail, you need two things from the Repello dashboard at [https://platform.repello.ai/](https://platform.repello.ai/):
+在設定防護欄之前，您需要從 [https://platform.repello.ai/](https://platform.repello.ai/) 的 Repello 儀表板取得兩項資料：
 
-- **API key** — go to your account settings and generate an API key. Set it as `ARGUS_API_KEY` in your environment.
-- **Asset ID** — create an asset in the dashboard and configure the policies you want enforced. Copy the asset ID; this is what you pass as `asset_id` in the config.
+- **API 金鑰** — 前往您的帳戶設定並產生 API 金鑰。將其設為環境中的 `ARGUS_API_KEY`。
+- **Asset ID** — 在儀表板中建立一個資產，並設定您想要強制執行的政策。複製該 asset ID；這就是您在設定中傳入 `asset_id` 的值。
 
-Policies (what to block, what to flag, thresholds) are managed entirely from the dashboard on a per-asset basis. The LiteLLM config only points at an asset — it does not define policies inline.
+政策（要封鎖什麼、要標記什麼、門檻值）完全由儀表板按資產管理。LiteLLM 設定只會指向一個資產——不會在設定內直接定義政策。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -46,30 +46,30 @@ guardrails:
       api_base: os.environ/REPELLOAI_API_BASE   # Optional
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** the LLM call to scan request text
-- `post_call` Run **after** the LLM call to scan model output
+- `pre_call` 在 LLM 呼叫之前執行，用來掃描請求文字
+- `post_call` 在 LLM 呼叫之後執行，用來掃描模型輸出
 
-### 2. Set Environment Variables
+### 2. 設定環境變數 {#2-set-environment-variables}
 
 ```shell
 export ARGUS_API_KEY="your-argus-api-key"
 export REPELLOAI_API_BASE="https://argusapi.repello.ai/sdk/v1"   # Optional, this is the default
 ```
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM Gateway {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test request
+### 4. 測試請求 {#4-test-request}
 
 <Tabs>
-<TabItem label="Blocked Request" value="blocked">
+<TabItem label="封鎖的請求" value="blocked">
 
-Test prompt scanning with a policy-violating input:
+使用違反政策的輸入測試提示詞掃描：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -83,7 +83,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response when a policy blocks the request:
+當政策封鎖請求時的預期回應：
 
 ```json
 {
@@ -98,9 +98,9 @@ Expected response when a policy blocks the request:
 
 </TabItem>
 
-<TabItem label="Successful Call" value="allowed">
+<TabItem label="成功的呼叫" value="allowed">
 
-Test with safe content:
+使用安全內容測試：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -114,7 +114,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -136,31 +136,31 @@ Expected response:
 </TabItem>
 </Tabs>
 
-## What Argus Scans
+## Argus 會掃描什麼 {#what-argus-scans}
 
-RepelloAI scans the inspectable text it can find in the request body:
+RepelloAI 會掃描它在請求主體中找到的可檢視文字：
 
-- Chat Completions `messages` (all roles)
-- Responses API `input` items, including `input_text` content parts
-- Responses API `instructions` field
-- Legacy `prompt` field (completions API)
-- Tool call arguments (`tool_calls[*].function.arguments`) in messages and Responses API output
-- Tool and function definitions (`tools[*].function` schema text — names, descriptions, enum values)
-- Multimodal text parts inside `content` lists
-- Assistant output returned from chat completions and Responses API requests
+- Chat Completions `messages`（所有角色）
+- Responses API `input` 項目，包括 `input_text` 內容部分
+- Responses API `instructions` 欄位
+- 傳統 `prompt` 欄位（completions API）
+- 訊息與 Responses API 輸出中的工具呼叫參數（`tool_calls[*].function.arguments`）
+- 工具與函式定義（`tools[*].function` 結構描述文字——名稱、描述、列舉值）
+- `content` 清單中的多模態文字部分
+- 來自 chat completions 與 Responses API 請求的 assistant 輸出
 
-A guardrail configured with `mode: pre_call` inspects the full prompt text (messages, instructions, tool definitions, and tool call arguments). `mode: post_call` inspects assistant message content, Responses API output text, and any tool call arguments in the model response.
+使用 `mode: pre_call` 設定的防護欄會檢查完整提示詞文字（訊息、指示、工具定義與工具呼叫參數）。`mode: post_call` 會檢查 assistant 訊息內容、Responses API 輸出文字，以及模型回應中的任何工具呼叫參數。
 
-## Streaming Support
+## 串流支援 {#streaming-support}
 
-RepelloAI supports `post_call` streaming flows by buffering the stream, analyzing the completed assistant text, and then either:
+RepelloAI 透過緩衝串流、分析完成的 assistant 文字，然後以下列方式之一支援 `post_call` 串流流程：
 
-- returning the original chunks when the output is allowed
-- raising a streaming callback error when the output is blocked
+- 在輸出允許時回傳原始區塊
+- 在輸出被封鎖時引發串流 callback 錯誤
 
-Flagged responses are allowed, but LiteLLM logs a warning so the policy hit is still visible in operator logs.
+標記的回應會被允許，但 LiteLLM 會記錄警告，因此政策命中仍會在操作人員記錄中可見。
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```yaml
 guardrails:
@@ -175,36 +175,36 @@ guardrails:
       default_on: true                           # Optional
 ```
 
-### Required
+### 必填 {#required}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `asset_id` | Repello asset whose dashboard policies are enforced. Create an asset in the Repello dashboard and copy its ID here. |
-| `api_key` | Repello API key. Falls back to `ARGUS_API_KEY` in the environment or the legacy `REPELLOAI_API_KEY`. |
+| `asset_id` | 其儀表板政策會被強制執行的 Repello 資產。在 Repello 儀表板中建立資產並將其 ID 複製到此處。 |
+| `api_key` | Repello API 金鑰。若未設定，則回退至環境中的 `ARGUS_API_KEY` 或舊版的 `REPELLOAI_API_KEY`。 |
 
-### Optional
+### 選填 {#optional}
 
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |-----------|---------|-------------|
-| `api_base` | `https://argusapi.repello.ai/sdk/v1` | Argus API base URL. Falls back to `REPELLOAI_API_BASE` in the environment. |
-| `unreachable_fallback` | `fail_closed` | Behaviour when the Argus API is unreachable. `fail_closed` blocks the request; `fail_open` logs a warning and lets the request through. |
-| `default_on` | `false` | When `true`, the guardrail runs on every request without needing to specify it in the request body. |
+| `api_base` | `https://argusapi.repello.ai/sdk/v1` | Argus API 基底 URL。若未設定，則回退至環境中的 `REPELLOAI_API_BASE`。 |
+| `unreachable_fallback` | `fail_closed` | Argus API 無法連線時的行為。`fail_closed` 會封鎖請求；`fail_open` 會記錄警告並讓請求通過。 |
+| `default_on` | `false` | 當 `true` 時，防護欄會對每個請求執行，而不需要在請求主體中指定它。 |
 
-## Verdicts
+## 判定 {#verdicts}
 
-Argus returns one of three verdicts per scan:
+Argus 每次掃描會回傳三種判定之一：
 
-- `passed` the request is allowed
-- `flagged` the request is allowed and LiteLLM logs a warning with the violated policies
-- `blocked` the request is blocked with an HTTP 400 listing the violated policies
+- `passed`：請求被允許
+- `flagged`：請求被允許，且 LiteLLM 會記錄警告並附上違反的政策
+- `blocked`：請求被封鎖，並以 HTTP 400 列出違反的政策
 
-An unrecognized or missing verdict is treated as `blocked` so an upstream schema change cannot silently disable enforcement.
+未辨識或缺少的判定會被視為 `blocked`，因此上游的結構描述變更不會在不知不覺中停用強制執行。
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Fail-Open Mode
+### 失敗開放模式 {#fail-open-mode}
 
-By default the guardrail is **fail-closed**; if Argus is unreachable, the request is blocked. Set `unreachable_fallback: fail_open` to let requests through when the API fails:
+預設情況下，防護欄為**失敗關閉**；如果 Argus 無法連線，請求會被封鎖。將 `unreachable_fallback: fail_open` 設為讓 API 失敗時仍允許請求通過：
 
 ```yaml
 guardrails:
@@ -217,11 +217,11 @@ guardrails:
       unreachable_fallback: "fail_open"
 ```
 
-Authentication and configuration errors (HTTP 400/401/403/404/422) always block regardless of `unreachable_fallback`, since a permanently misconfigured guardrail should never silently pass traffic.
+驗證與設定錯誤（HTTP 400/401/403/404/422）一律會封鎖，不論 `unreachable_fallback` 為何，因為永久設定錯誤的防護欄絕不應在不知不覺中放行流量。
 
-### Input + Output Pipeline
+### 輸入 + 輸出流程 {#input--output-pipeline}
 
-Scan prompts on the way in and responses on the way out. You can use a single guardrail entry with `mode` set to a list, or two separate entries pointing at the same asset:
+在輸入時掃描提示詞，在輸出時掃描回應。您可以使用單一防護欄項目，將 `mode` 設為清單，或使用兩個分開的項目指向同一個資產：
 
 ```yaml
 guardrails:
@@ -233,7 +233,7 @@ guardrails:
       api_key: os.environ/ARGUS_API_KEY
 ```
 
-Or equivalently with two entries:
+或者，也可以使用兩個項目：
 
 ```yaml
 guardrails:
@@ -252,9 +252,9 @@ guardrails:
       api_key: os.environ/ARGUS_API_KEY
 ```
 
-### Always-On Protection
+### 永遠啟用的保護 {#always-on-protection}
 
-Enable the guardrail for every request without specifying it per-call:
+為每個請求啟用防護欄，而不需在每次呼叫時指定：
 
 ```yaml
 guardrails:
@@ -267,27 +267,27 @@ guardrails:
       default_on: true
 ```
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-**Missing API Credentials:**
+**缺少 API 憑證：**
 ```
 RepelloAIGuardrailMissingSecrets: Couldn't get Repello API key.
 Set `ARGUS_API_KEY` in the environment or pass `api_key` to the guardrail in the config file.
 ```
 
-**Missing asset_id:**
+**缺少 asset_id：**
 ```
 ValueError: Repello guardrail requires an `asset_id`. Create an asset in the Repello
 dashboard and set `asset_id` on the guardrail in the config file.
 ```
 
-**API Unreachable (fail-closed, default):**
-The request is blocked with an HTTP 500.
+**API 無法連線（失敗關閉，預設）：**
+請求會以 HTTP 500 被封鎖。
 
-**API Unreachable (fail-open, `unreachable_fallback: fail_open`):**
-The request passes through unchanged and a warning is logged.
+**API 無法連線（失敗開放，`unreachable_fallback: fail_open`）：**
+請求會原樣通過，並記錄警告。
 
-## Need Help?
+## 需要協助嗎？ {#need-help}
 
-- **Website**: [https://repello.ai/](https://repello.ai/)
-- **API host**: `https://argusapi.repello.ai/sdk/v1`
+- **網站**：[https://repello.ai/](https://repello.ai/)
+- **API 主機**：`https://argusapi.repello.ai/sdk/v1`

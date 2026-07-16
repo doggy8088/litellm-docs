@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Tencent TokenHub
+# Tencent TokenHub {#tencent-tokenhub}
 https://www.tencentcloud.com/products/tokenhub
 
-**We support ALL Tencent TokenHub models, just set `tencent/` as a prefix when sending completion requests**
+**我們支援所有 Tencent TokenHub 模型，只要在發送 completion 請求時將 `tencent/` 設為前綴**
 
-TokenHub is Tencent Cloud's unified LLM gateway. It provides an OpenAI-compatible Chat Completions endpoint and an Anthropic-compatible Messages endpoint, giving you access to DeepSeek, GLM, Kimi, MiniMax, and Hunyuan models through a single API key.
+TokenHub 是 Tencent Cloud 的統一 LLM 閘道。它提供與 OpenAI 相容的 Chat Completions endpoint，以及與 Anthropic 相容的 Messages endpoint，讓您能透過單一 API 金鑰存取 DeepSeek、GLM、Kimi、MiniMax 和 Hunyuan 模型。
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['TENCENT_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -29,7 +29,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -47,10 +47,10 @@ for chunk in response:
     print(chunk)
 ```
 
-## Supported Models
-We support ALL models available on the TokenHub international endpoint.
+## 支援的模型 {#supported-models}
+我們支援 TokenHub international endpoint 上可用的所有模型。
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |---|---|
 | deepseek-v4-flash-202605 | `completion(model="tencent/deepseek-v4-flash-202605", messages)` |
 | deepseek-v4-pro-202606 | `completion(model="tencent/deepseek-v4-pro-202606", messages)` |
@@ -68,9 +68,9 @@ We support ALL models available on the TokenHub international endpoint.
 | minimax-m2.5 | `completion(model="tencent/minimax-m2.5", messages)` |
 | hy-mt2-plus | `completion(model="tencent/hy-mt2-plus", messages)` |
 
-## Custom API Base
+## 自訂 API Base {#custom-api-base}
 
-By default, LiteLLM uses the Singapore region endpoint. You can override it with `TENCENT_API_BASE`.
+預設情況下，LiteLLM 使用新加坡區域的 endpoint。您可以用 `TENCENT_API_BASE` 覆寫它。
 
 ```python
 import os
@@ -78,12 +78,12 @@ import os
 os.environ['TENCENT_API_BASE'] = "https://tokenhub.tencentcloudmaas.com/v1"  # Guangzhou region
 ```
 
-## Thinking / Reasoning Mode
+## Thinking / Reasoning 模式 {#thinking--reasoning-mode}
 
-Many TokenHub models support extended thinking. LiteLLM supports both the `thinking` and `reasoning_effort` params.
+許多 TokenHub 模型支援延伸思考。LiteLLM 支援 `thinking` 和 `reasoning_effort` 這兩個參數。
 
 <Tabs>
-<TabItem value="thinking" label="thinking param">
+<TabItem value="thinking" label="thinking 參數">
 
 ```python
 from litellm import completion
@@ -102,7 +102,7 @@ print(resp.choices[0].message.content)
 ```
 
 </TabItem>
-<TabItem value="reasoning_effort" label="reasoning_effort param">
+<TabItem value="reasoning_effort" label="reasoning_effort 參數">
 
 ```python
 from litellm import completion
@@ -124,10 +124,10 @@ print(resp.choices[0].message.content)
 </Tabs>
 
 :::note
-When `reasoning_effort` is anything other than `"none"`, LiteLLM automatically maps it to `thinking={"type": "enabled"}`.
+當 `reasoning_effort` 的值不是 `"none"` 時，LiteLLM 會自動將其對應為 `thinking={"type": "enabled"}`。
 :::
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -150,7 +150,7 @@ print(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -160,13 +160,13 @@ model_list:
         api_key: os.environ/TENCENT_API_KEY
 ```
 
-2. Run proxy
+2. 執行 proxy
 
 ```bash
 python litellm/proxy/main.py
 ```
 
-3. Test it!
+3. 測試看看！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -187,18 +187,18 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 </Tabs>
 
-## Anthropic-compatible Messages API
+## 與 Anthropic 相容的 Messages API {#anthropic-compatible-messages-api}
 
-TokenHub also exposes an Anthropic-compatible Messages API. LiteLLM routes requests through this endpoint when available.
+TokenHub 也提供與 Anthropic 相容的 Messages API。LiteLLM 會在可用時透過此 endpoint 路由請求。
 
 ```python
 os.environ['TENCENT_API_KEY'] = ""
 ```
 
-To override the Anthropic-compatible base URL separately from the Chat Completions endpoint:
+若要分別覆寫與 Chat Completions endpoint 不同的 Anthropic 相容 base URL：
 
 ```python
 os.environ['TENCENT_ANTHROPIC_API_BASE'] = "https://tokenhub-intl.tencentcloudmaas.com"
 ```
 
-When both `TENCENT_ANTHROPIC_API_BASE` and `TENCENT_API_BASE` are set, the Anthropic-specific one takes precedence for Messages API calls.
+當 `TENCENT_ANTHROPIC_API_BASE` 和 `TENCENT_API_BASE` 都有設定時，針對 Messages API 呼叫會以 Anthropic 專用的設定為優先。

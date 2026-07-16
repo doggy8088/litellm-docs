@@ -1,34 +1,34 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# GitHub Copilot
+# GitHub Copilot {#github-copilot}
 
 https://docs.github.com/en/copilot
 
 :::tip
 
-**We support GitHub Copilot Chat API with automatic authentication handling**
+**我們支援具自動驗證處理的 GitHub Copilot Chat API**
 
 :::
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | GitHub Copilot Chat API provides access to GitHub's AI-powered coding assistant. |
-| Provider Route on LiteLLM | `github_copilot/` |
-| Supported Endpoints | `/chat/completions`, `/embeddings` |
-| API Reference | [GitHub Copilot docs](https://docs.github.com/en/copilot) |
+| 說明 | GitHub Copilot Chat API 可存取 GitHub 的 AI 驅動程式碼助理。 |
+| LiteLLM 提供者路由 | `github_copilot/` |
+| 支援的端點 | `/chat/completions`, `/embeddings` |
+| API Reference | [GitHub Copilot 文件](https://docs.github.com/en/copilot) |
 
-## Authentication
+## 驗證 {#authentication}
 
-GitHub Copilot uses OAuth device flow for authentication. On first use, you'll be prompted to authenticate via GitHub:
+GitHub Copilot 使用 OAuth device flow 進行驗證。第一次使用時，系統會提示您透過 GitHub 進行驗證：
 
-1. LiteLLM will display a device code and verification URL
-2. Visit the URL and enter the code to authenticate
-3. Your credentials will be stored locally for future use
+1. LiteLLM 會顯示 device code 和驗證 URL
+2. 前往該 URL 並輸入代碼以完成驗證
+3. 您的憑證會儲存在本機供日後使用
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Chat Completion
+### 聊天補全 {#chat-completion}
 
 ```python showLineNumbers title="GitHub Copilot Chat Completion"
 from litellm import completion
@@ -57,9 +57,9 @@ for chunk in stream:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-### Responses
+### 回應 {#responses}
 
-For GPT Codex models, only responses API is supported.
+對於 GPT Codex models，僅支援 responses API。
 
 ```python showLineNumbers title="GitHub Copilot Responses"
 import litellm
@@ -73,7 +73,7 @@ response = await litellm.aresponses(
 print(response)
 ```
 
-### Embedding
+### 嵌入 {#embedding}
 
 ```python showLineNumbers title="GitHub Copilot Embedding"
 import litellm
@@ -85,9 +85,9 @@ response = litellm.embedding(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容新增到您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -106,7 +106,7 @@ model_list:
       model: github_copilot/text-embedding-ada-002
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -170,18 +170,18 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Getting Started
+## 開始使用 {#getting-started}
 
-1. Ensure you have GitHub Copilot access (paid GitHub subscription required)
-2. Run your first LiteLLM request - you'll be prompted to authenticate
-3. Follow the device flow authentication process
-4. Start making requests to GitHub Copilot through LiteLLM
+1. 確保您擁有 GitHub Copilot 存取權限（需要付費 GitHub 訂閱）
+2. 執行您的第一個 LiteLLM 請求 - 系統會提示您進行驗證
+3. 依照 device flow 驗證程序操作
+4. 開始透過 LiteLLM 向 GitHub Copilot 發送請求
 
-## Configuration
+## 設定 {#configuration}
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
-You can customize token storage locations:
+您可以自訂 token 儲存位置：
 
 ```bash showLineNumbers title="Environment Variables"
 # Optional: Custom token directory
@@ -201,11 +201,11 @@ export GITHUB_COPILOT_ACCESS_TOKEN_URL="https://my-company.ghe.com/login/oauth/a
 export GITHUB_COPILOT_API_KEY_URL="https://my-company.ghe.com/api/v3/copilot_internal/v2/token"
 ```
 
-### Headers
+### 標頭 {#headers}
 
-LiteLLM automatically injects the required GitHub Copilot headers (simulating VSCode). You don't need to specify them manually.
+LiteLLM 會自動注入所需的 GitHub Copilot 標頭（模擬 VSCode）。您不需要手動指定它們。
 
-If you want to override the defaults (e.g., to simulate a different editor), you can use `extra_headers`:
+如果您想覆寫預設值（例如，模擬不同的編輯器），可以使用 `extra_headers`：
 
 ```python showLineNumbers title="Custom Headers (Optional)"
 extra_headers = {
@@ -215,4 +215,3 @@ extra_headers = {
     "user-agent": "GithubCopilot/1.155.0"        # User agent
 }
 ```
-

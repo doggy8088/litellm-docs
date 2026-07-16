@@ -2,16 +2,16 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Lago
+# Lago {#lago}
 
-[Lago](https://www.getlago.com/) offers a self-hosted and cloud, metering and usage-based billing solution.
+[Lago](https://www.getlago.com/) 提供自架與雲端、依用量計費與基於使用量計費的解決方案。
 
 <Image img={require('../../img/lago.jpeg')} />
 
-## Quick Start
-Use just 1 lines of code, to instantly log your responses **across all providers** with Lago
+## 快速開始 {#quick-start}
+只需 1 行程式碼，即可立即將您的回應記錄到 **所有提供者**，搭配 Lago
 
-Get your Lago [API Key](https://docs.getlago.com/guide/self-hosted/docker#find-your-api-key)
+取得您的 Lago [API 金鑰](https://docs.getlago.com/guide/self-hosted/docker#find-your-api-key)
 
 ```python
 litellm.callbacks = ["lago"] # logs cost + usage of successful calls to lago
@@ -49,7 +49,7 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add to Config.yaml
+1. 新增至 Config.yaml
 ```yaml
 model_list:
 - litellm_params:
@@ -62,13 +62,13 @@ litellm_settings:
   callbacks: ["lago"] # 👈 KEY CHANGE
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -149,12 +149,11 @@ print(response)
 </TabItem>
 </Tabs>
 
-
 <Image img={require('../../img/lago_2.png')} />
 
-## Advanced - Lagos Logging object 
+## 進階 - Lagos 記錄物件  {#advanced---lagos-logging-object}
 
-This is what LiteLLM will log to Lagos
+這是 LiteLLM 將記錄到 Lagos 的內容
 
 ```
 {

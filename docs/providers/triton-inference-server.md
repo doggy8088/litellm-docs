@@ -1,25 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Triton Inference Server
+# Triton Inference Server {#triton-inference-server}
 
-LiteLLM supports Embedding Models on Triton Inference Servers
+LiteLLM 支援 Triton Inference Server 上的嵌入模型
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | NVIDIA Triton Inference Server |
-| Provider Route on LiteLLM | `triton/` |
-| Supported Operations | `/chat/completion`, `/completion`, `/embedding` |
-| Supported Triton endpoints | `/infer`, `/generate`, `/embeddings` |
-| Link to Provider Doc | [Triton Inference Server ↗](https://developer.nvidia.com/triton-inference-server) |
+| 說明 | NVIDIA Triton Inference Server |
+| LiteLLM 上的提供者路由 | `triton/` |
+| 支援的操作 | `/chat/completion`, `/completion`, `/embedding` |
+| 支援的 Triton 端點 | `/infer`, `/generate`, `/embeddings` |
+| 提供者文件連結 | [Triton Inference Server ↗](https://developer.nvidia.com/triton-inference-server) |
 
-## Triton `/generate` - Chat Completion 
-
+## Triton `/generate` - 聊天完成 {#triton-generate---chat-completion}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Use the `triton/` prefix to route to triton server
+使用 `triton/` 前綴來路由至 triton server
 ```python
 from litellm import completion
 response = completion(
@@ -33,7 +32,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型新增至您的 config.yaml
 
   ```yaml
   model_list:
@@ -44,13 +43,13 @@ response = completion(
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --detailed_debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -78,7 +77,7 @@ response = completion(
 
   <TabItem value="curl" label="curl">
 
-  `--header` is optional, only required if you're using litellm proxy with Virtual Keys
+  `--header` 為選用項目，僅在您使用帶有 Virtual Keys 的 litellm proxy 時才需要
 
     ```shell
     curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -97,13 +96,12 @@ response = completion(
 </TabItem>
 </Tabs>
 
-## Triton `/infer` - Chat Completion 
+## Triton `/infer` - 聊天完成 {#triton-infer---chat-completion}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-
-Use the `triton/` prefix to route to triton server
+使用 `triton/` 前綴來路由至 triton server
 ```python
 from litellm import completion
 
@@ -119,7 +117,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型新增至您的 config.yaml
 
   ```yaml
   model_list:
@@ -130,13 +128,13 @@ response = completion(
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --detailed_debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -164,7 +162,7 @@ response = completion(
 
   <TabItem value="curl" label="curl">
 
-  `--header` is optional, only required if you're using litellm proxy with Virtual Keys
+  `--header` 為選用項目，僅在您使用帶有 Virtual Keys 的 litellm proxy 時才需要
 
     ```shell
     curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -183,14 +181,12 @@ response = completion(
 </TabItem>
 </Tabs>
 
-
-
-## Triton `/embeddings` - Embedding
+## Triton `/embeddings` - 嵌入 {#triton-embeddings---embedding}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Use the `triton/` prefix to route to triton server
+使用 `triton/` 前綴來路由至 triton server
 ```python
 from litellm import embedding
 import os
@@ -205,7 +201,7 @@ response = await litellm.aembedding(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型新增至您的 config.yaml
 
   ```yaml
   model_list:
@@ -216,13 +212,13 @@ response = await litellm.aembedding(
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --detailed_debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -249,7 +245,7 @@ response = await litellm.aembedding(
 
   <TabItem value="curl" label="curl">
 
-  `--header` is optional, only required if you're using litellm proxy with Virtual Keys
+  `--header` 為選用項目，僅在您使用帶有 Virtual Keys 的 litellm proxy 時才需要
 
     ```shell
     curl --location 'http://0.0.0.0:4000/embeddings' \
@@ -264,7 +260,6 @@ response = await litellm.aembedding(
   </TabItem>
 
   </Tabs>
-
 
 </TabItem>
 

@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenTelemetry v2
+# OpenTelemetry v2 {#opentelemetry-v2}
 
-OpenTelemetry v2 (OTel v2) is LiteLLM Proxy's next-generation tracing. It gives you **one clean trace per request** that shows the whole story of a request — the incoming HTTP call, authentication, guardrails, the LLM call itself, and the internal database/cache work — all nested in a single tree.
+OpenTelemetry v2（OTel v2）是 LiteLLM Proxy 的下一代追蹤。它為您提供**每個請求一條乾淨的 trace**，完整呈現請求的整個過程——進入的 HTTP 呼叫、驗證、防護欄、LLM 呼叫本身，以及內部資料庫/快取作業——全部巢狀在同一棵樹中。
 
-It follows standard [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/), so the traces it produces are readable in any OTel backend (Grafana Tempo, Jaeger, Honeycomb, Datadog, …) and come with ready-made presets for popular LLM observability tools (Arize, Phoenix, Langfuse, Weave, Langtrace, Levo, AgentOps).
+它遵循標準的 [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)，因此它產生的 trace 可在任何 OTel 後端（Grafana Tempo、Jaeger、Honeycomb、Datadog，⋯）中讀取，並附帶可直接使用的預設設定，適用於常見的 LLM 可觀測性工具（Arize、Phoenix、Langfuse、Weave、Langtrace、Levo、AgentOps）。
 
-:::info Opt-in feature
+:::info 選用功能
 
-OTel v2 is **off by default**. Nothing in it runs until you set `LITELLM_OTEL_V2=true`. It is separate from the existing [OpenTelemetry integration](./opentelemetry_integration) — pick one. If you are moving from v1, see [Migrating to OpenTelemetry v2](./opentelemetry_v2_migration).
+OTel v2 預設為**關閉**。在您設定 `LITELLM_OTEL_V2=true` 之前，這裡的任何功能都不會執行。它與現有的 [OpenTelemetry integration](./opentelemetry_integration) 是分開的——請擇一使用。如果您是從 v1 移轉，請參閱 [Migrating to OpenTelemetry v2](./opentelemetry_v2_migration)。
 
 :::
 
-## What you get
+## 您會得到什麼 {#what-you-get}
 
-A single request to your proxy produces **one trace** that looks like this:
+對您的 proxy 發出單一請求會產生**一條 trace**，如下所示：
 
 ```
 POST /v1/chat/completions                  ← HTTP request (server span)
@@ -27,26 +27,26 @@ POST /v1/chat/completions                  ← HTTP request (server span)
 └── batch_write_to_db                      ← spend/usage written to DB
 ```
 
-Highlights:
+重點：
 
-- **One trace, end to end** — the HTTP request, auth, guardrails, the LLM call, and DB writes all live in the same trace, correctly nested.
-- **Rich GenAI attributes** — every LLM-call span carries `gen_ai.*` attributes: model, provider, token usage, cost, finish reasons, request parameters, and more.
-- **Standards-based** — built on the official OpenTelemetry GenAI semantic conventions, so it works with any OTel-compatible backend.
-- **Vendor presets** — one line to ship traces to Arize, Phoenix, Langfuse, Weave, Langtrace, Levo, or AgentOps in the format each tool expects.
-- **Safe by default** — prompts and responses are **not** captured unless you explicitly opt in. Noisy routes (health checks, metrics scrapes, UI assets) are excluded automatically.
-- **Distributed tracing** — if your client sends a `traceparent` header, LiteLLM's spans nest inside your existing trace.
+- **一條 trace，端到端**——HTTP 請求、驗證、防護欄、LLM 呼叫與 DB 寫入都在同一條 trace 中，且正確巢狀。
+- **豐富的 GenAI 屬性**——每個 LLM 呼叫 span 都帶有 `gen_ai.*` 屬性：model、provider、token 使用量、成本、完成原因、請求參數等。
+- **以標準為基礎**——建立於官方 OpenTelemetry GenAI semantic conventions 之上，因此可與任何相容 OTel 的後端搭配使用。
+- **提供者預設設定**——一行設定即可將 trace 傳送到 Arize、Phoenix、Langfuse、Weave、Langtrace、Levo 或 AgentOps，並使用各工具預期的格式。
+- **預設安全**——除非您明確選擇啟用，否則不會擷取 prompts 與回應。雜訊路由（健康檢查、metrics 掃描、UI 資產）會自動排除。
+- **分散式追蹤**——如果您的用戶端送出 `traceparent` header，LiteLLM 的 spans 會巢狀在您既有的 trace 之內。
 
-## Getting started
+## 快速開始 {#getting-started}
 
-Set `LITELLM_OTEL_V2=true` in the proxy environment, then pick a destination below.
+在 proxy 環境中設定 `LITELLM_OTEL_V2=true`，然後選擇下方的目的地。
 
-### 1. Send traces to any OTLP collector
+### 1. 將 trace 傳送到任何 OTLP 收集器 {#1-send-traces-to-any-otlp-collector}
 
-This path sends spans over OTLP (the OpenTelemetry Protocol) to a collector or backend you are already running at the endpoint below; if you do not have one yet, stay on the console exporter from the [Quickstart](#quickstart) until you do. Set the feature flag plus the standard `OTEL_*` environment variables in the proxy's environment. No config change is needed.
+此路徑會透過 OTLP（OpenTelemetry Protocol）將 spans 傳送到您已在下方端點執行的收集器或後端；如果您還沒有，請先沿用 [Quickstart](#quickstart) 中的主控台 exporter。請在 proxy 的環境中設定功能旗標以及標準的 `OTEL_*` 環境變數。不需要變更設定。
 
 <Tabs>
 
-<TabItem value="otlp-http" label="OTLP HTTP collector">
+<TabItem value="otlp-http" label="OTLP HTTP 收集器">
 
 ```shell
 LITELLM_OTEL_V2=true
@@ -56,7 +56,7 @@ OTEL_ENDPOINT="http://localhost:4318"
 
 </TabItem>
 
-<TabItem value="otlp-grpc" label="OTLP gRPC collector">
+<TabItem value="otlp-grpc" label="OTLP gRPC 收集器">
 
 ```shell
 LITELLM_OTEL_V2=true
@@ -64,29 +64,29 @@ OTEL_EXPORTER="otlp_grpc"
 OTEL_ENDPOINT="http://localhost:4317"
 ```
 
-> gRPC export needs `grpcio`. Install with `pip install grpcio`.
+> gRPC 匯出需要 `grpcio`。請使用 `pip install grpcio` 安裝。
 
 </TabItem>
 
 </Tabs>
 
-Pass auth headers your backend needs via `OTEL_HEADERS`:
+透過 `OTEL_HEADERS` 傳入您的後端所需的驗證 headers：
 
 ```shell
 OTEL_HEADERS="api-key=your-key,x-tenant=acme"
 ```
 
-Then start the proxy as usual:
+然後照常啟動 proxy：
 
 ```shell
 litellm --config config.yaml
 ```
 
-Make a request, and you'll see one trace per request in your backend.
+發出請求後，您會在後端看到每個請求一條 trace。
 
-### 2. Send traces to a specific tool (presets)
+### 2. 將 trace 傳送到特定工具（預設設定） {#2-send-traces-to-a-specific-tool-presets}
 
-For LLM observability tools, use a **preset**. A preset knows the tool's endpoint and emits attributes in the schema that tool expects. To enable one, add its name to `callbacks` in your config and set the tool's credentials as env vars.
+對於 LLM 可觀測性工具，請使用**預設設定**。預設設定會知道該工具的端點，並以該工具預期的 schema 發出屬性。若要啟用，請將其名稱加入設定中的 `callbacks`，並將該工具的憑證設定為環境變數。
 
 <Tabs>
 
@@ -155,7 +155,7 @@ WANDB_PROJECT_ID="your-entity/your-project"
 
 <TabItem value="langtrace" label="Langtrace">
 
-Langtrace does not accept litellm's OTLP spans directly. It ingests JSON-encoded OTLP at a custom path (`/api/trace`) with an `x-api-key` header, whereas litellm v2 sends protobuf to `/v1/traces`. Run an OpenTelemetry Collector between them: litellm exports to the collector, and the collector re-encodes the spans to JSON and forwards them to Langtrace. The `langtrace` callback still applies Langtrace's attribute schema; the collector only handles delivery.
+Langtrace 不會直接接受 litellm 的 OTLP spans。它會在自訂路徑（`/api/trace`）上，以 `x-api-key` header 擷取 JSON 編碼的 OTLP，而 litellm v2 則會將 protobuf 傳送到 `/v1/traces`。請在兩者之間執行 OpenTelemetry Collector：litellm 匯出到 collector，collector 再將 spans 重新編碼為 JSON 並轉送到 Langtrace。`langtrace` 回呼仍會套用 Langtrace 的屬性 schema；collector 只負責傳遞。
 
 ```yaml title="config.yaml"
 litellm_settings:
@@ -167,7 +167,7 @@ LITELLM_OTEL_V2=true
 OTEL_ENDPOINT="http://otel-collector:4318"
 ```
 
-Collector config (`otel-collector-config.yaml`), with `LANGTRACE_API_KEY` set in the collector's environment:
+Collector 設定（`otel-collector-config.yaml`），並在 collector 的環境中設定 `LANGTRACE_API_KEY`：
 
 ```yaml
 receivers:
@@ -225,244 +225,244 @@ AGENTOPS_API_KEY="your-api-key"
 
 </Tabs>
 
-:::tip Send to several backends at once
+:::tip 一次傳送到多個後端
 
-To send the same traces to multiple vendors, list each preset in `callbacks` and set each one's env vars. For example, Langfuse and Arize together:
+若要將相同的 trace 傳送到多個提供者，請在 `callbacks` 中列出每個預設設定，並設定各自的環境變數。例如，Langfuse 與 Arize 一起使用：
 
 ```yaml title="config.yaml"
 litellm_settings:
   callbacks: ["langfuse_otel", "arize"]
 ```
 
-Each preset adds its own destination, so your spans reach all of them in parallel, each in that tool's native format.
+每個預設設定都會新增自己的目的地，因此您的 spans 會並行送達所有目的地，且各自使用該工具的原生格式。
 
 :::
 
-### Preset reference
+### 預設設定參考 {#preset-reference}
 
-Every preset turns into one exporter on a single shared tracer. The table lists, for each one, the callback name you put in `callbacks`, the credentials it reads, where it sends, the attribute vocabulary it adds on top of the canonical `gen_ai.*` keys, and whether it supports per-request (per-team/key) credentials.
+每個預設設定都會轉換為單一共用 tracer 上的一個 exporter。表格列出每一項的 callback 名稱（填入 `callbacks`）、其讀取的憑證、傳送目的地、在標準 `gen_ai.*` keys 之外新增的屬性詞彙，以及是否支援每個請求（每個 team/key）憑證。
 
-| Preset | Callback | Required env vars | Optional env vars | Destination | Vocabulary | Per-request creds |
+| 預設設定 | Callback | 必要環境變數 | 選用環境變數 | 目的地 | 詞彙 | 每個請求憑證 |
 |---|---|---|---|---|---|---|
-| Arize AX | `arize` | `ARIZE_SPACE_ID` (`ARIZE_SPACE_KEY` deprecated), `ARIZE_API_KEY`, `ARIZE_PROJECT_NAME` | `ARIZE_ENDPOINT` (gRPC, default `https://otlp.arize.com/v1`), `ARIZE_HTTP_ENDPOINT` (HTTP) | Arize AX platform | OpenInference | Yes |
-| Arize Phoenix | `arize_phoenix` | `PHOENIX_API_KEY` | `PHOENIX_COLLECTOR_HTTP_ENDPOINT` or `PHOENIX_COLLECTOR_ENDPOINT` (gRPC), `PHOENIX_PROJECT_NAME` | Phoenix (self-hosted or Phoenix Cloud) | OpenInference | No |
-| Langfuse | `langfuse_otel` | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | `LANGFUSE_HOST` (or `LANGFUSE_OTEL_HOST`; default `https://us.cloud.langfuse.com`, EU is `https://cloud.langfuse.com`), `OTEL_IGNORE_CONTEXT_PROPAGATION` (set `true` to drop inbound `traceparent`) | Langfuse Cloud or self-hosted | Langfuse | Yes |
-| Weave (W&B) | `weave_otel` | `WANDB_API_KEY`, `WANDB_PROJECT_ID` (`<entity>/<project>`) | `WANDB_HOST` (default `https://trace.wandb.ai`) | Weights & Biases Weave | OpenInference + Weave | Yes |
-| Langtrace | `langtrace` | none of its own | — | Langtrace, via an OpenTelemetry Collector (Langtrace ingests JSON-only OTLP) | Langtrace | No |
-| Levo | `levo` | `LEVOAI_API_KEY`, `LEVOAI_ORG_ID`, `LEVOAI_WORKSPACE_ID`, `LEVOAI_COLLECTOR_URL` | `LEVOAI_ENV_NAME` | Levo collector | canonical `gen_ai.*` only | No |
-| AgentOps | `agentops` | `AGENTOPS_API_KEY` | `AGENTOPS_SERVICE_NAME` (default `agentops`), `AGENTOPS_ENVIRONMENT` (default `production`) | AgentOps (`https://otlp.agentops.cloud`) | canonical `gen_ai.*` only | No |
+| Arize AX | `arize` | `ARIZE_SPACE_ID`（`ARIZE_SPACE_KEY` 已淘汰）、`ARIZE_API_KEY`、`ARIZE_PROJECT_NAME` | `ARIZE_ENDPOINT`（gRPC，預設 `https://otlp.arize.com/v1`）、`ARIZE_HTTP_ENDPOINT`（HTTP） | Arize AX 平台 | OpenInference | 是 |
+| Arize Phoenix | `arize_phoenix` | `PHOENIX_API_KEY` | `PHOENIX_COLLECTOR_HTTP_ENDPOINT` 或 `PHOENIX_COLLECTOR_ENDPOINT`（gRPC）、`PHOENIX_PROJECT_NAME` | Phoenix（自架或 Phoenix Cloud） | OpenInference | 否 |
+| Langfuse | `langfuse_otel` | `LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY` | `LANGFUSE_HOST`（或 `LANGFUSE_OTEL_HOST`；預設 `https://us.cloud.langfuse.com`，EU 為 `https://cloud.langfuse.com`）、`OTEL_IGNORE_CONTEXT_PROPAGATION`（設定 `true` 以捨棄傳入的 `traceparent`） | Langfuse Cloud 或自架 | Langfuse | 是 |
+| Weave (W&B) | `weave_otel` | `WANDB_API_KEY`、`WANDB_PROJECT_ID`（`<entity>/<project>`） | `WANDB_HOST`（預設 `https://trace.wandb.ai`） | Weights & Biases Weave | OpenInference + Weave | 是 |
+| Langtrace | `langtrace` | 無其專屬項目 | — | Langtrace，透過 OpenTelemetry Collector（Langtrace 僅擷取 JSON OTLP） | Langtrace | 否 |
+| Levo | `levo` | `LEVOAI_API_KEY`、`LEVOAI_ORG_ID`、`LEVOAI_WORKSPACE_ID`、`LEVOAI_COLLECTOR_URL` | `LEVOAI_ENV_NAME` | Levo collector | 僅 canonical `gen_ai.*` | 否 |
+| AgentOps | `agentops` | `AGENTOPS_API_KEY` | `AGENTOPS_SERVICE_NAME`（預設 `agentops`）、`AGENTOPS_ENVIRONMENT`（預設 `production`） | AgentOps（`https://otlp.agentops.cloud`） | 僅 canonical `gen_ai.*` | 否 |
 
-Notes:
+附註：
 
-- **Arize AX vs Arize Phoenix** are different backends from the same company. AX (`arize`) is the hosted platform; Phoenix (`arize_phoenix`) is the open-source tracer you self-host or run on Phoenix Cloud. They use different credentials and endpoints, so pick the callback for the backend you actually run. You can also enable both at once to send to each.
-- **Langtrace** ingests JSON-only OTLP at a custom path, so litellm v2 (which sends protobuf to `/v1/traces`) cannot export to it directly. Route through an OpenTelemetry Collector that re-encodes to JSON; the `langtrace` preset only adds the Langtrace attribute schema to your spans. See the Langtrace tab above for the collector config.
-- Vocabulary is additive: every preset's spans always carry the canonical OpenTelemetry `gen_ai.*` attributes; the listed vocabulary is layered on top so the destination tool reads its native schema.
+- **Arize AX 與 Arize Phoenix** 是同一家公司提供的不同後端。AX（`arize`）是代管平台；Phoenix（`arize_phoenix`）是您自行架設或在 Phoenix Cloud 執行的開源 tracer。它們使用不同的憑證與端點，因此請選擇您實際執行的後端對應的 callback。您也可以同時啟用兩者，將資料傳送到各自的後端。
+- **Langtrace** 會在自訂路徑以 JSON-only OTLP 擷取資料，因此 litellm v2（其會將 protobuf 傳送到 `/v1/traces`）無法直接匯出到它。請透過會重新編碼為 JSON 的 OpenTelemetry Collector 進行路由；`langtrace` 預設設定只會將 Langtrace 的屬性 schema 加到您的 spans 上。請參閱上方 Langtrace 分頁中的 collector 設定。
+- 詞彙是附加的：每個預設設定的 spans 都會始終帶有標準的 OpenTelemetry `gen_ai.*` 屬性；所列詞彙是疊加在上面，讓目的地工具讀取其原生 schema。
 
-## Seeing your traces
+## 查看您的追蹤 {#seeing-your-traces}
 
-Once a backend is configured with its preset, each request shows up in that tool's UI as a `chat <model>` span under the request root. Each tab below covers the vendor-specific gotchas (project mapping, endpoint variants, metadata keys) that trip people up.
+一旦後端以其預設設定完成設定，每個請求都會以 `chat <model>` span 的形式顯示在該工具的 UI 中，位於請求根節點之下。下方每個分頁會涵蓋各提供者特有的注意事項（專案對應、端點變體、中繼資料鍵），這些常常是使用者卡關的地方。
 
 <Tabs>
 
 <TabItem value="arize-shot" label="Arize">
 
-#### What Arize renders
+#### Arize 呈現的內容 {#what-arize-renders}
 
-Open your Arize project; the trace appears under the project named by `ARIZE_PROJECT_NAME`. The `openinference` mapper stamps the OpenInference vocabulary onto the LLM-call span alongside the canonical `gen_ai.*` keys, so Arize reads its native schema without dropping the canonical ones.
+開啟您的 Arize 專案；追蹤會顯示在由 `ARIZE_PROJECT_NAME` 命名的專案之下。`openinference` 對應器會把 OpenInference 詞彙標記到 LLM 呼叫 span 上，並同時附上標準的 `gen_ai.*` 鍵，因此 Arize 會讀取其原生 schema，而不會遺漏標準鍵。
 
-#### Attributes added by the `openinference` mapper
+#### `openinference` 對應器新增的屬性 {#attributes-added-by-the-openinference-mapper}
 
-| Attribute | Restates |
+| 屬性 | 重述 |
 |---|---|
-| `openinference.span.kind` | Fixed `LLM` |
+| `openinference.span.kind` | 固定的 `LLM` |
 | `llm.model_name`, `llm.provider` | model, provider |
 | `llm.token_count.prompt`, `completion`, `total` | usage split |
-| `llm.invocation_parameters` | JSON blob of request params |
-| `llm.input_messages.{idx}.message.role`, `content` | prompt (content capture on) |
-| `llm.output_messages.{idx}.message.role`, `content` | response (content capture on) |
-| `input.value`, `output.value` | JSON arrays of the same (content capture on) |
-| `llm.tools.{idx}.tool.name`, `description`, `json_schema` | tool definitions |
+| `llm.invocation_parameters` | request 參數的 JSON blob |
+| `llm.input_messages.{idx}.message.role`, `content` | prompt（內容擷取開啟） |
+| `llm.output_messages.{idx}.message.role`, `content` | response（內容擷取開啟） |
+| `input.value`, `output.value` | 相同內容的 JSON 陣列（內容擷取開啟） |
+| `llm.tools.{idx}.tool.name`, `description`, `json_schema` | tool 定義 |
 
-See the full [OpenInference spec](https://github.com/Arize-ai/openinference/blob/main/spec/semantic_conventions.md) for the definitive vocabulary.
+請參閱完整的 [OpenInference spec](https://github.com/Arize-ai/openinference/blob/main/spec/semantic_conventions.md) 以取得最終的詞彙定義。
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes}
 
-- `ARIZE_SPACE_KEY` is the deprecated name for `ARIZE_SPACE_ID`; the preset still reads it for backward compatibility, but prefer `ARIZE_SPACE_ID` in new configs.
+- `ARIZE_SPACE_KEY` 是 `ARIZE_SPACE_ID` 的已棄用名稱；該預設值仍會為了向後相容而讀取它，但在新設定中請優先使用 `ARIZE_SPACE_ID`。
 
-![LiteLLM trace in Arize](/img/observability/otel_v2_arize.png)
+![LiteLLM 在 Arize 中的追蹤](/img/observability/otel_v2_arize.png)
 
 </TabItem>
 
 <TabItem value="phoenix-shot" label="Arize Phoenix">
 
-#### What Phoenix renders
+#### Phoenix 呈現的內容 {#what-phoenix-renders}
 
-Open Phoenix; the project comes from `PHOENIX_PROJECT_NAME` (default `default`), stamped as the `openinference.project.name` resource attribute. Phoenix uses the same OpenInference vocabulary as Arize AX.
+開啟 Phoenix；專案來自 `PHOENIX_PROJECT_NAME`（預設 `default`），並標記為 `openinference.project.name` 資源屬性。Phoenix 使用與 Arize AX 相同的 OpenInference 詞彙。
 
-#### Attributes added by the `openinference` mapper
+#### `openinference` 對應器新增的屬性 {#attributes-added-by-the-openinference-mapper-1}
 
-Same as the Arize tab above.
+與上方 Arize 分頁相同。
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-1}
 
-Phoenix has more than one collector endpoint shape, and picking the wrong one is the most common Phoenix setup mistake. Point `PHOENIX_COLLECTOR_HTTP_ENDPOINT` (or `PHOENIX_COLLECTOR_ENDPOINT` for gRPC) at the shape that matches your deployment:
+Phoenix 有不只一種 collector endpoint 形式，而選錯是最常見的 Phoenix 設定錯誤。將 `PHOENIX_COLLECTOR_HTTP_ENDPOINT`（或用於 gRPC 的 `PHOENIX_COLLECTOR_ENDPOINT`）指向與您的部署相符的形式：
 
-| Deployment | Endpoint |
+| 部署 | 端點 |
 |---|---|
-| Phoenix Cloud (Spaces) | `https://app.phoenix.arize.com/s/<space-name>/v1/traces` |
-| Phoenix Cloud (legacy) | `https://app.phoenix.arize.com/legacy/v1/traces` |
-| Phoenix Cloud (old) | `https://app.phoenix.arize.com/v1/traces` |
-| Self-hosted | `http://localhost:6006/v1/traces` |
+| Phoenix Cloud（Spaces） | `https://app.phoenix.arize.com/s/<space-name>/v1/traces` |
+| Phoenix Cloud（舊版） | `https://app.phoenix.arize.com/legacy/v1/traces` |
+| Phoenix Cloud（更舊版） | `https://app.phoenix.arize.com/v1/traces` |
+| 自架 | `http://localhost:6006/v1/traces` |
 
-![LiteLLM trace in Phoenix](/img/observability/otel_v2_phoenix.png)
+![LiteLLM 在 Phoenix 中的追蹤](/img/observability/otel_v2_phoenix.png)
 
 </TabItem>
 
 <TabItem value="langfuse-shot" label="Langfuse">
 
-#### What Langfuse renders
+#### Langfuse 呈現的內容 {#what-langfuse-renders}
 
-Open the Langfuse traces view; the LLM-call span appears as a Langfuse **generation**, filterable by team. Endpoint resolution is `LANGFUSE_OTEL_HOST`, then `LANGFUSE_HOST`, then the US cloud default, with `/api/public/otel` appended for a self-hosted host.
+開啟 Langfuse traces 檢視；LLM 呼叫 span 會顯示為 Langfuse **generation**，可依 team 篩選。端點解析順序為 `LANGFUSE_OTEL_HOST`、接著 `LANGFUSE_HOST`、接著美國雲端預設值；若是自架主機，則會附加 `/api/public/otel`。
 
-#### Attributes added by the `langfuse` mapper
+#### `langfuse` 對應器新增的屬性 {#attributes-added-by-the-langfuse-mapper}
 
-| Attribute | Purpose |
+| 屬性 | 用途 |
 |---|---|
-| `langfuse.observation.type` | Fixed `generation` so this span appears as a model call |
-| `langfuse.observation.model.name` | Model shown on the generation |
-| `langfuse.observation.model.parameters` | JSON of request params (temperature, top_p, max_tokens, penalties, seed) |
-| `langfuse.observation.id` | Same as `litellm.call_id` |
-| `langfuse.observation.input` / `output` | Prompt and response bodies (content capture on) |
-| `langfuse.observation.usage_details` | Input/output/total token counts |
-| `langfuse.observation.cost_details` | Total cost |
-| `langfuse.trace.metadata.team_id`, `team_alias` | Filterable team identity |
+| `langfuse.observation.type` | 固定的 `generation`，因此此 span 會顯示為 model call |
+| `langfuse.observation.model.name` | generation 上顯示的 model |
+| `langfuse.observation.model.parameters` | request 參數的 JSON（temperature、top_p、max_tokens、penalties、seed） |
+| `langfuse.observation.id` | 與 `litellm.call_id` 相同 |
+| `langfuse.observation.input` / `output` | prompt 與 response 主體（內容擷取開啟） |
+| `langfuse.observation.usage_details` | 輸入／輸出／總 token 數 |
+| `langfuse.observation.cost_details` | 總成本 |
+| `langfuse.trace.metadata.team_id`, `team_alias` | 可篩選的 team 身分 |
 
-These are set by the preset from the request and response, not from a client-supplied metadata dict, so you get them without extra config.
+這些由預設值根據 request 與 response 設定，而不是來自用戶端提供的 metadata dict，因此您不需要額外設定就能取得它們。
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-2}
 
-- Auth is HTTP Basic, `Authorization: Basic <base64(public_key:secret_key)>`; the preset builds this from `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` so you never set the header directly.
-- If your client already sends a W3C `traceparent` and Langfuse is picking up the wrong parent, set `OTEL_IGNORE_CONTEXT_PROPAGATION=true` in the proxy environment to drop inbound context.
-- This is a Langfuse-flavored path; for a general-purpose OTel backend, use the [generic OTLP setup](#1-send-traces-to-any-otlp-collector) instead.
+- 驗證方式為 HTTP Basic，`Authorization: Basic <base64(public_key:secret_key)>`；預設值會根據 `LANGFUSE_PUBLIC_KEY` 與 `LANGFUSE_SECRET_KEY` 建立，因此您不需要直接設定標頭。
+- 如果您的用戶端已經送出 W3C `traceparent`，而 Langfuse 擷取到錯誤的 parent，請在 proxy 環境中設定 `OTEL_IGNORE_CONTEXT_PROPAGATION=true` 以捨棄傳入的 context。
+- 這是 Langfuse 風格的路徑；若是通用的 OTel 後端，請改用 [generic OTLP setup](#1-send-traces-to-any-otlp-collector)。
 
-![LiteLLM trace in Langfuse](/img/observability/otel_v2_langfuse.png)
+![LiteLLM 在 Langfuse 中的追蹤](/img/observability/otel_v2_langfuse.png)
 
 </TabItem>
 
 <TabItem value="weave-shot" label="Weave (W&B)">
 
-#### What Weave renders
+#### Weave 呈現的內容 {#what-weave-renders}
 
-Open the Weave project at `wandb.ai/<entity>/weave`. Weave consumes OpenInference plus a small Weave overlay, so the `weave_otel` preset composes both mappers on the same span.
+開啟位於 `wandb.ai/<entity>/weave` 的 Weave 專案。Weave 會接收 OpenInference 以及一個小型 Weave overlay，因此 `weave_otel` 預設值會在同一個 span 上組合兩種對應器。
 
-#### Attributes added by the `weave` mapper
+#### `weave` 對應器新增的屬性 {#attributes-added-by-the-weave-mapper}
 
-The `openinference` mapper (see the Arize tab) runs first, then the `weave` mapper adds:
+`openinference` 對應器（見 Arize 分頁）會先執行，接著 `weave` 對應器會新增：
 
-| Attribute | Purpose |
+| 屬性 | 用途 |
 |---|---|
-| `weave.display_name` | `"{operation} {model}"` (e.g. `chat gpt-4o`) |
-| `weave.call_id` | Same as `litellm.call_id` |
-| `weave.output` | JSON array of choices (content capture on) |
+| `weave.display_name` | `"{operation} {model}"`（例如 `chat gpt-4o`） |
+| `weave.call_id` | 與 `litellm.call_id` 相同 |
+| `weave.output` | choices 的 JSON 陣列（內容擷取開啟） |
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-3}
 
-- `WANDB_PROJECT_ID` must be in `entity/project` form, which is the most common setup mistake.
-- The `weave_otel` preset is the OTel-based Weave integration and is unrelated to the older `wandb` success-callback logger (which uses the `wandb` Python package and writes to W&B directly, not through OTel); see the [W&B legacy page](./wandb_integration) if you're looking for that one.
+- `WANDB_PROJECT_ID` 必須是 `entity/project` 形式，這是最常見的設定錯誤。
+- `weave_otel` 預設值是基於 OTel 的 Weave 整合，與較舊的 `wandb` success-callback 記錄器無關（後者使用 `wandb` Python 套件並直接寫入 W&B，而不是透過 OTel）；如果您在找的是那個，請參閱 [W&B legacy page](./wandb_integration)。
 
-![LiteLLM trace in Weave](/img/observability/otel_v2_weave.png)
+![LiteLLM 在 Weave 中的追蹤](/img/observability/otel_v2_weave.png)
 
 </TabItem>
 
 <TabItem value="agentops-shot" label="AgentOps">
 
-#### What AgentOps renders
+#### AgentOps 呈現的內容 {#what-agentops-renders}
 
-Open the AgentOps dashboard. AgentOps does not add a vendor mapper, so spans arrive in the canonical `gen_ai.*` schema (plus `legacy` if enabled).
+開啟 AgentOps 儀表板。AgentOps 不會新增提供者對應器，因此 spans 會以標準的 `gen_ai.*` schema 抵達（若已啟用，另加 `legacy`）。
 
-#### Attributes added by the AgentOps preset
+#### AgentOps 預設值新增的屬性 {#attributes-added-by-the-agentops-preset}
 
-No vendor mapper is added, so the LLM-call span carries only the canonical keys listed in [Span attributes](#span-attributes). The preset controls two resource-level labels on the traces:
+不會新增提供者對應器，因此 LLM 呼叫 span 只會帶有 [Span attributes](#span-attributes) 中列出的標準鍵。預設值會控制追蹤上的兩個資源層級標籤：
 
-| Attribute | Purpose |
+| 屬性 | 用途 |
 |---|---|
-| `service.name` | From `AGENTOPS_SERVICE_NAME` (default `agentops`) |
-| `deployment.environment` | From `AGENTOPS_ENVIRONMENT` (default `production`) |
+| `service.name` | 來自 `AGENTOPS_SERVICE_NAME`（預設 `agentops`） |
+| `deployment.environment` | 來自 `AGENTOPS_ENVIRONMENT`（預設 `production`） |
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-4}
 
-- AgentOps mints its auth token on the first span export rather than at startup, so the very first export can look briefly delayed; this happens once per process and is expected.
-- Set `AGENTOPS_SERVICE_NAME` / `AGENTOPS_ENVIRONMENT` if you want to separate environments in the AgentOps UI.
+- AgentOps 會在第一次 span 匯出時才建立驗證 token，而不是在啟動時，因此第一次匯出看起來可能會短暫延遲；這種情況每個 process 只會發生一次，屬於預期行為。
+- 如果您想在 AgentOps UI 中區分環境，請設定 `AGENTOPS_SERVICE_NAME` / `AGENTOPS_ENVIRONMENT`。
 
-![LiteLLM trace in AgentOps](/img/observability/otel_v2_agentops.png)
+![LiteLLM 在 AgentOps 中的追蹤](/img/observability/otel_v2_agentops.png)
 
 </TabItem>
 
 <TabItem value="langtrace-shot" label="Langtrace">
 
-#### What Langtrace renders
+#### Langtrace 呈現的內容 {#what-langtrace-renders}
 
-Open the Langtrace UI; the spans flow through your OpenTelemetry Collector carrying the `langtrace.*` and `llm.*` keys.
+開啟 Langtrace UI；spans 會透過您的 OpenTelemetry Collector 流動，並帶有 `langtrace.*` 與 `llm.*` 鍵。
 
-#### Attributes added by the `langtrace` mapper
+#### `langtrace` 對應器新增的屬性 {#attributes-added-by-the-langtrace-mapper}
 
-| Attribute | Restates |
+| 屬性 | 重述 |
 |---|---|
 | `langtrace.service.name` | provider |
-| `llm.model`, `gen_ai.response.model`, `gen_ai.response_id`, `gen_ai.system_fingerprint` | request/response identifiers |
-| `llm.temperature`, `top_p`, `top_k`, `max_tokens`, `frequency_penalty`, `presence_penalty` | request params |
-| `llm.stream` | streaming flag |
+| `llm.model`, `gen_ai.response.model`, `gen_ai.response_id`, `gen_ai.system_fingerprint` | request／response 識別碼 |
+| `llm.temperature`, `top_p`, `top_k`, `max_tokens`, `frequency_penalty`, `presence_penalty` | request 參數 |
+| `llm.stream` | streaming 標記 |
 | `llm.token.counts.prompt`, `completion`, `total` | usage split |
-| `llm.prompts`, `llm.completions` | JSON arrays (content capture on) |
+| `llm.prompts`, `llm.completions` | JSON 陣列（內容擷取開啟） |
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-5}
 
-Langtrace ingests JSON-only OTLP at a custom path, so litellm exports through an OpenTelemetry Collector that re-encodes to JSON. See the [Langtrace tab under Getting started](#2-send-traces-to-a-specific-tool-presets) for the collector configuration.
+Langtrace 會在自訂路徑攝取僅 JSON 的 OTLP，因此 litellm 會透過 OpenTelemetry Collector 匯出，並重新編碼為 JSON。請參閱 [Getting started 下的 Langtrace 分頁](#2-send-traces-to-a-specific-tool-presets) 以了解 collector 設定。
 
-![LiteLLM trace in Langtrace](/img/observability/otel_v2_langtrace.png)
+![LiteLLM 在 Langtrace 中的追蹤](/img/observability/otel_v2_langtrace.png)
 
 </TabItem>
 
 <TabItem value="levo-shot" label="Levo">
 
-#### What Levo renders
+#### Levo 顯示的內容 {#what-levo-renders}
 
-Open the Levo dashboard. Levo does not add a vendor mapper, so spans arrive in the canonical `gen_ai.*` schema (plus `legacy` if enabled).
+開啟 Levo 儀表板。Levo 不會新增提供者對應器，因此 spans 會以標準的 `gen_ai.*` 結構描述到達（若已啟用，則另含 `legacy`）。
 
-#### Attributes added by the Levo preset
+#### Levo 預設值新增的屬性 {#attributes-added-by-the-levo-preset}
 
-No vendor mapper is added. Traces carry only the canonical keys from [Span attributes](#span-attributes). The preset routes spans to `LEVOAI_COLLECTOR_URL` with `Authorization: Bearer $LEVOAI_API_KEY`, plus `x-levo-organization-id` and `x-levo-workspace-id` headers built from `LEVOAI_ORG_ID` and `LEVOAI_WORKSPACE_ID`.
+不會新增提供者對應器。追蹤僅帶有 [Span attributes](#span-attributes) 中的標準鍵。此預設會將 spans 路由至 `LEVOAI_COLLECTOR_URL`，並使用 `Authorization: Bearer $LEVOAI_API_KEY`，另外還有由 `LEVOAI_ORG_ID` 和 `LEVOAI_WORKSPACE_ID` 建立的 `x-levo-organization-id` 與 `x-levo-workspace-id` 標頭。
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-6}
 
-- The collector URL is used as-is, no path manipulation, so provide the exact URL Levo gave you.
-- `LEVOAI_ENV_NAME` is optional and tags spans with an environment label in the Levo UI.
+- collector URL 會原樣使用，不會處理路徑，因此請提供 Levo 給您的精確 URL。
+- `LEVOAI_ENV_NAME` 為選用項目，會在 Levo UI 中以環境標籤為 spans 加上標記。
 
 </TabItem>
 
 <TabItem value="generic-shot" label="Generic OTLP">
 
-#### What a generic OTLP backend renders
+#### 通用 OTLP 後端會顯示什麼內容 {#what-a-generic-otlp-backend-renders}
 
-Whatever your backend's UI shows for standard OTel GenAI spans. The `generic` preset (and the plain env-var OTLP path from [Getting started section 1](#1-send-traces-to-any-otlp-collector)) does not add a vendor mapper.
+您的後端 UI 對標準 OTel GenAI spans 顯示的任何內容。`generic` 預設（以及 [Getting started 第 1 節](#1-send-traces-to-any-otlp-collector) 中純環境變數的 OTLP 路徑）不會新增提供者對應器。
 
-#### Attributes added
+#### 新增的屬性 {#attributes-added}
 
-None beyond the canonical `gen_ai.*` and `litellm.*` keys listed in [Span attributes](#span-attributes), plus the `legacy` Traceloop keys if `LITELLM_OTEL_LEGACY_COMPAT=true`.
+除了 [Span attributes](#span-attributes) 中列出的標準 `gen_ai.*` 和 `litellm.*` 鍵之外沒有其他內容，另外如果 `LITELLM_OTEL_LEGACY_COMPAT=true`，則會再加上 `legacy` Traceloop 鍵。
 
-#### Setup notes
+#### 設定注意事項 {#setup-notes-7}
 
-Use this path for Jaeger, Grafana Tempo, Honeycomb, Datadog, SigNoz, Splunk Observability Cloud, and any other backend that consumes standard OTLP. If a backend is not listed above and there is no dedicated tab, this is the one to use.
+此路徑適用於 Jaeger、Grafana Tempo、Honeycomb、Datadog、SigNoz、Splunk Observability Cloud，以及任何其他使用標準 OTLP 的後端。如果上述未列出某個後端，且沒有專用分頁，請使用這個。
 
 </TabItem>
 
 </Tabs>
 
-## Capturing prompts & responses
+## 擷取 prompts 與 responses {#capturing-prompts--responses}
 
-By default, OTel v2 records **metadata only** (model, tokens, cost, timing) and **never** writes prompt or response text to your traces. This is intentional — it keeps sensitive content out of your observability backend.
+預設情況下，OTel v2 只會記錄 **中繼資料**（模型、tokens、成本、時間），且**絕不**會將 prompt 或 response 文字寫入您的追蹤。這是刻意設計的——可避免敏感內容進入您的可觀測性後端。
 
-To capture message content, opt in explicitly:
+若要擷取訊息內容，請明確啟用：
 
 ```shell
 # no_content (default) — never capture prompts/responses
@@ -478,138 +478,138 @@ OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT="event_only"
 OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT="span_and_event"
 ```
 
-The gate is enforced centrally, so it applies to **every** backend at once — a user request can never force its prompt into your backend while capture is disabled.
+此開關由中央強制執行，因此會同時套用至**所有**後端——在停用擷取時，使用者請求絕不可能強迫將其 prompt 送入您的後端。
 
-## Span attributes
+## Span 屬性 {#span-attributes}
 
-Attributes come from a chain of mappers stamped onto each span in order. The canonical `genai` mapper is always applied first, the `legacy` compatibility mapper is on by default, and each preset adds one vendor mapper on top. Later mappers can override earlier ones; the same span therefore carries several vocabularies describing the same call.
+屬性來自依序套用到每個 span 上的一串對應器。標準的 `genai` 對應器一定會先套用，`legacy` 相容性對應器預設為開啟，且每個預設都會在上層再加上一個提供者對應器。後面的對應器可以覆寫前面的值；因此同一個 span 會同時帶有多組描述相同呼叫的詞彙。
 
-The first two tables cover the LLM-call span in the canonical vocabulary. Sections below list the other span kinds, then what each vendor mapper adds.
+前兩個表格涵蓋 LLM 呼叫 span 的標準詞彙。下方章節列出其他 span 類型，接著說明各提供者對應器新增的內容。
 
-### LLM-call span, canonical `gen_ai.*` + `litellm.*`
+### LLM 呼叫 span，標準 `gen_ai.*` + `litellm.*` {#llm-call-span-canonical-gen_ai--litellm}
 
-Request-side keys:
+請求端鍵值：
 
-| Attribute | When set |
+| 屬性 | 設定時機 |
 |---|---|
-| `gen_ai.operation.name` | always (`chat`, `text_completion`, `embeddings`) |
-| `gen_ai.provider.name` | always |
-| `gen_ai.request.model` | always (the user-facing model group name) |
-| `gen_ai.request.temperature`, `top_p`, `top_k`, `max_tokens` | when set on the request |
-| `gen_ai.request.frequency_penalty`, `presence_penalty`, `seed` | when set |
-| `gen_ai.request.stop_sequences` | when set (string array) |
-| `gen_ai.tool.{idx}.name`, `description`, `parameters` | one set per tool definition |
-| `server.address`, `server.port` | when the provider endpoint is known |
+| `gen_ai.operation.name` | 永遠（`chat`、`text_completion`、`embeddings`） |
+| `gen_ai.provider.name` | 永遠 |
+| `gen_ai.request.model` | 永遠（面向使用者的模型群組名稱） |
+| `gen_ai.request.temperature`, `top_p`, `top_k`, `max_tokens` | 在請求上設定時 |
+| `gen_ai.request.frequency_penalty`, `presence_penalty`, `seed` | 設定時 |
+| `gen_ai.request.stop_sequences` | 設定時（字串陣列） |
+| `gen_ai.tool.{idx}.name`, `description`, `parameters` | 每個工具定義一組 |
+| `server.address`, `server.port` | 當提供者端點已知時 |
 
-Response, usage, cost, identity:
+回應、用量、成本、識別資訊：
 
-| Attribute | When set |
+| 屬性 | 設定時機 |
 |---|---|
-| `gen_ai.response.id`, `gen_ai.response.model` | on success |
-| `gen_ai.response.finish_reasons` | on success (string array) |
-| `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` | on success |
-| `gen_ai.input.messages`, `gen_ai.output.messages` | content capture on |
-| `gen_ai.system_instructions` | content capture on, when a system prompt is present |
-| `litellm.call_id` | always |
-| `litellm.provider.model` | always (the model string actually sent to the provider) |
-| `litellm.request.streaming` | when true |
-| `litellm.cost.total` | on success |
-| `litellm.cost.input`, `output`, `cache_read`, `cache_creation`, `tool_usage` | when the source reported the breakdown |
-| `litellm.cost.original`, `discount_amount`, `discount_percent`, `margin_fixed_amount`, `margin_percent`, `margin_total_amount` | when reported |
+| `gen_ai.response.id`, `gen_ai.response.model` | 成功時 |
+| `gen_ai.response.finish_reasons` | 成功時（字串陣列） |
+| `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` | 成功時 |
+| `gen_ai.input.messages`, `gen_ai.output.messages` | 開啟內容擷取時 |
+| `gen_ai.system_instructions` | 開啟內容擷取時，且存在系統提示時 |
+| `litellm.call_id` | 永遠 |
+| `litellm.provider.model` | 永遠（實際送往提供者的模型字串） |
+| `litellm.request.streaming` | 當為 true 時 |
+| `litellm.cost.total` | 成功時 |
+| `litellm.cost.input`, `output`, `cache_read`, `cache_creation`, `tool_usage` | 來源回報細目時 |
+| `litellm.cost.original`, `discount_amount`, `discount_percent`, `margin_fixed_amount`, `margin_percent`, `margin_total_amount` | 回報時 |
 
-Status and errors:
+狀態與錯誤：
 
-- **On failure:** the span records the standard `exception` event (`exception.type`, `exception.message`), sets `error.type` from the exception class, and sets its status to `ERROR`.
-- **On success:** the status is left `UNSET` (the semconv default, matching the FastAPI server span). Only a genuine error sets `ERROR`, so do not key an alert on a status of `OK`.
+- **失敗時：** span 會記錄標準的 `exception` 事件（`exception.type`、`exception.message`），根據例外類別設定 `error.type`，並將其狀態設為 `ERROR`。
+- **成功時：** 狀態保持為 `UNSET`（semconv 預設值，與 FastAPI server span 相符）。只有真正的錯誤才會設為 `ERROR`，因此不要以 `OK` 的狀態作為警示依據。
 
-### Other span kinds
+### 其他 span 類型 {#other-span-kinds}
 
-**Guardrail span** — uses the `litellm.guardrail.*` namespace: `name`, `mode`, `status`, `provider`, `action`, `response`, `violation_categories`, `confidence_score`, `risk_score`, `masked_entity_count`, `duration`, `id`, `policy_template`, `detection_method`. `status` is one of `success`, `guardrail_intervened`, `guardrail_failed_to_respond`, or `not_run`; a blocking `guardrail_intervened` or `guardrail_failed_to_respond` also sets span status to `ERROR`.
+**Guardrail span** — 使用 `litellm.guardrail.*` 命名空間：`name`、`mode`、`status`、`provider`、`action`、`response`、`violation_categories`、`confidence_score`、`risk_score`、`masked_entity_count`、`duration`、`id`、`policy_template`、`detection_method`。`status` 是 `success`、`guardrail_intervened`、`guardrail_failed_to_respond` 或 `not_run` 之一；阻擋性的 `guardrail_intervened` 或 `guardrail_failed_to_respond` 也會將 span 狀態設為 `ERROR`。
 
-**Datastore span** (redis, postgres) — `db.system.name`, `db.operation.name`, `litellm.service.name`, `litellm.service.call_type`.
+**Datastore span**（redis、postgres）— `db.system.name`、`db.operation.name`、`litellm.service.name`、`litellm.service.call_type`。
 
-**Internal service span** — the `litellm.service.*` keys only (no `db.*`).
+**內部服務 span** — 僅使用 `litellm.service.*` 鍵（不含 `db.*`）。
 
-**MCP tool-call span** — `gen_ai.operation.name=execute_tool`, `mcp.method.name`, `mcp.session.id`, `gen_ai.tool.name`, `litellm.mcp.server.name`, `litellm.call_id`, `litellm.cost.total`. `gen_ai.tool.call.arguments` and `gen_ai.tool.call.result` are gated by the same content-capture setting as prompt content.
+**MCP tool-call span** — `gen_ai.operation.name=execute_tool`、`mcp.method.name`、`mcp.session.id`、`gen_ai.tool.name`、`litellm.mcp.server.name`、`litellm.call_id`、`litellm.cost.total`。`gen_ai.tool.call.arguments` 和 `gen_ai.tool.call.result` 受與 prompt 內容相同的內容擷取設定所控管。
 
-**Root HTTP server span** — the HTTP semconv keys `http.request.method`, `http.route`, `http.response.status_code`, `url.path`, stamped by the FastAPI instrumentation (not by any of LiteLLM's mappers).
+**Root HTTP server span** — HTTP semconv 鍵 `http.request.method`、`http.route`、`http.response.status_code`、`url.path`，由 FastAPI instrumentation 加上（而非 LiteLLM 的任何對應器）。
 
-Each vendor preset also composes one vendor-specific mapper on top of these canonical keys, so the destination reads the trace in its native schema. Those per-vendor tables live under the matching [Seeing your traces](#seeing-your-traces) tab.
+每個提供者預設值也會在這些標準鍵之上組合一個提供者專屬對應器，因此目的地會以其原生結構描述讀取追蹤。這些各提供者表格位於對應的 [Seeing your traces](#seeing-your-traces) 分頁下。
 
-## Attribute conventions
+## 屬性慣例 {#attribute-conventions}
 
-LiteLLM emits one canonical set of GenAI attributes and layers other vocabularies on top by adding a mapper; the active set is controlled by `mapper_names`, with `genai` always first. The `legacy` mapper is on by default (`LITELLM_OTEL_LEGACY_COMPAT=true`) and re-emits the same data under the older semconv-ai / Traceloop names, so dashboards built against those keep working through a migration. Turn it off with `LITELLM_OTEL_LEGACY_COMPAT=false` once your queries use the canonical keys. Vendor mappers (`openinference`, `langfuse`, `weave`, `langtrace`) are added by their presets and never replace the canonical keys.
+LiteLLM 會輸出一組標準的 GenAI 屬性，並透過新增對應器在其上疊加其他詞彙；啟用中的集合由 `mapper_names` 控制，而 `genai` 一律最先套用。`legacy` 對應器預設為開啟（`LITELLM_OTEL_LEGACY_COMPAT=true`），並會以較舊的 semconv-ai / Traceloop 名稱重新輸出相同資料，因此以這些名稱建立的儀表板在遷移期間仍可正常運作。當您的查詢已使用標準鍵後，可透過 `LITELLM_OTEL_LEGACY_COMPAT=false` 將其關閉。提供者對應器（`openinference`、`langfuse`、`weave`、`langtrace`）由各自的預設值加入，且永遠不會取代標準鍵。
 
-The most common keys line up across vocabularies as follows:
+最常見的鍵值在不同詞彙中的對應如下：
 
-| Canonical (`genai`) | Legacy (Traceloop) | OpenInference |
+| Canonical (`genai`) | 舊版（Traceloop） | OpenInference |
 |---|---|---|
 | `gen_ai.usage.input_tokens` | `gen_ai.usage.prompt_tokens` | `llm.token_count.prompt` |
 | `gen_ai.usage.output_tokens` | `gen_ai.usage.completion_tokens` | `llm.token_count.completion` |
 | `gen_ai.provider.name` | `gen_ai.system` | `llm.provider` |
-| `litellm.request.streaming` | `llm.is_streaming` | n/a |
-| `gen_ai.request.model` | n/a | `llm.model_name` |
+| `litellm.request.streaming` | `llm.is_streaming` | 不適用 |
+| `gen_ai.request.model` | 不適用 | `llm.model_name` |
 
-## Request identity on every span
+## 每個 span 上的請求身分 {#request-identity-on-every-span}
 
-LiteLLM writes a small allowlist of request-identity values into standard OpenTelemetry [Baggage](https://opentelemetry.io/docs/specs/otel/baggage/) at the auth boundary. A custom span processor then copies those values onto every span in the trace, so a guardrail, datastore, or service span is filterable by team or key without LiteLLM re-stamping each one by hand.
+LiteLLM 會在驗證邊界將一小組請求身分值寫入標準 OpenTelemetry [Baggage](https://opentelemetry.io/docs/specs/otel/baggage/)。接著，自訂 span processor 會把這些值複製到 trace 中的每個 span，因此 guardrail、datastore 或 service span 可以依團隊或金鑰進行篩選，而不必由 LiteLLM 逐一手動重新標記。
 
-By default the following keys are written onto every span:
+預設情況下，以下鍵會寫入每個 span：
 
-| Key | Value |
+| 鍵 | 值 |
 |---|---|
 | `litellm.team.id` | Team UUID |
-| `litellm.team.alias` | Team display name |
-| `litellm.team.metadata` | Team's free-form metadata, filtered to the sub-keys you allowlist |
-| `litellm.api_key.hash` | Hash of the caller's virtual key |
-| `gen_ai.request.model` | User-facing model group name |
-| `litellm.provider.model` | Dispatched model on the provider |
+| `litellm.team.alias` | Team 顯示名稱 |
+| `litellm.team.metadata` | Team 的自由格式 metadata，會篩選為您 allowlist 中允許的子鍵 |
+| `litellm.api_key.hash` | 呼叫者虛擬金鑰的雜湊值 |
+| `gen_ai.request.model` | 面向使用者的 model group 名稱 |
+| `litellm.provider.model` | 在提供者上派送的 model |
 
-A separate set of request-metadata fields is written under the `litellm.metadata.*` namespace. Defaults:
+另一組 request-metadata 欄位會寫入 `litellm.metadata.*` 命名空間下。預設值：
 
-`litellm.metadata.user_api_key_org_id`, `litellm.metadata.user_api_key_user_id`, `litellm.metadata.user_api_key_alias`, `litellm.metadata.user_api_key_end_user_id`, `litellm.metadata.requester_ip_address`.
+`litellm.metadata.user_api_key_org_id`、`litellm.metadata.user_api_key_user_id`、`litellm.metadata.user_api_key_alias`、`litellm.metadata.user_api_key_end_user_id`、`litellm.metadata.requester_ip_address`。
 
-Two defaults stay conservative for privacy. The end-user id is promotable but off by default at the top level (it identifies an individual); it appears under `litellm.metadata.user_api_key_end_user_id`, which callers who filter by user should enable. A team's free-form metadata is never emitted whole; only the sub-keys you allowlist leave the process, and the allowlist is empty by default.
+有兩個預設值在隱私上保持保守。end-user id 可提升，但在頂層預設為關閉（它可識別個人）；它會出現在 `litellm.metadata.user_api_key_end_user_id` 下，按使用者篩選的呼叫者應啟用此項。Team 的自由格式 metadata 絕不會整體輸出；只有您 allowlist 的子鍵會離開程序，而且 allowlist 預設為空。
 
-Override any of these with the `LITELLM_OTEL_BAGGAGE_PROMOTED_KEYS`, `LITELLM_OTEL_BAGGAGE_METADATA_KEYS`, and `LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS` env vars (comma-separated), or the matching YAML lists under `callback_settings.otel`.
+可透過 `LITELLM_OTEL_BAGGAGE_PROMOTED_KEYS`、`LITELLM_OTEL_BAGGAGE_METADATA_KEYS`、`LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS` 環境變數（以逗號分隔），或 `callback_settings.otel` 底下對應的 YAML 清單來覆寫這些設定。
 
-## Metrics
+## 指標 {#metrics}
 
-Alongside traces, OTel v2 can emit GenAI **client metrics**: histograms for call latency, token usage, and cost that your backend aggregates across requests. Like the rest of OTel v2 they stay off until you turn them on.
+除了 traces 之外，OTel v2 還可發出 GenAI **client metrics**：呼叫延遲、token 使用量與成本的 histogram，您的後端會在多次請求之間彙總這些資料。和 OTel v2 的其他功能一樣，在您開啟之前它們都不會啟用。
 
-Set the flag in the proxy environment next to `LITELLM_OTEL_V2`:
+在 `LITELLM_OTEL_V2` 旁邊的 proxy 環境中設定此旗標：
 
 ```shell
 LITELLM_OTEL_V2=true
 LITELLM_OTEL_INTEGRATION_ENABLE_METRICS=true
 ```
 
-Metrics ship through the exporter you already configured for traces. `OTEL_EXPORTER` (`console`, `otlp_http`, `otlp_grpc`), `OTEL_ENDPOINT`, and `OTEL_HEADERS` decide where the metric stream goes exactly as they do for spans, so the collector that receives your traces receives the metrics too.
+指標會透過您已為 traces 設定的 exporter 傳送。`OTEL_EXPORTER`（`console`、`otlp_http`、`otlp_grpc`）、`OTEL_ENDPOINT`，以及 `OTEL_HEADERS` 會像處理 span 一樣，決定 metric stream 的確切去向，因此接收您 traces 的 collector 也會接收指標。
 
-### What's recorded
+### 記錄了什麼 {#whats-recorded}
 
-Each successful LLM call records the standard OpenTelemetry GenAI client metrics:
+每次成功的 LLM 請求都會記錄標準 OpenTelemetry GenAI client metrics：
 
-| Metric | Unit | What it measures |
+| 指標 | 單位 | 衡量內容 |
 |---|---|---|
-| `gen_ai.client.operation.duration` | `s` | Wall-clock time for the whole LLM call |
-| `gen_ai.client.token.usage` | `{token}` | Tokens consumed, split into input and output by the `gen_ai.token.type` attribute |
-| `gen_ai.client.token.cost` | `USD` | LiteLLM's computed cost for the call |
-| `gen_ai.client.response.time_to_first_token` | `s` | Time to the first streamed token (streaming calls) |
-| `gen_ai.client.response.time_per_output_token` | `s` | Average time per output token |
-| `gen_ai.client.response.duration` | `s` | Provider-side generation time |
+| `gen_ai.client.operation.duration` | `s` | 整個 LLM 請求的實際經過時間 |
+| `gen_ai.client.token.usage` | `{token}` | 消耗的 token，依 `gen_ai.token.type` 屬性拆分為輸入與輸出 |
+| `gen_ai.client.token.cost` | `USD` | LiteLLM 為此請求計算出的成本 |
+| `gen_ai.client.response.time_to_first_token` | `s` | 到第一個串流 token 的時間（串流請求） |
+| `gen_ai.client.response.time_per_output_token` | `s` | 每個輸出 token 的平均時間 |
+| `gen_ai.client.response.duration` | `s` | 提供者端生成時間 |
 
-Every sample carries the same identity attributes as the matching span (operation, provider/system, request model, framework, and selected `metadata.*` fields), so you can group the histograms by model, provider, key, or team. These are the same six metrics the [v1 OpenTelemetry integration](./opentelemetry_integration) emits, with identical names and units, so a dashboard built for one reads the other.
+每個樣本都帶有與對應 span 相同的身分屬性（operation、provider/system、request model、framework，以及選定的 `metadata.*` 欄位），因此您可以依 model、提供者、金鑰或團隊來分組 histogram。這六個指標與 [v1 OpenTelemetry integration](./opentelemetry_integration) 發出的指標相同，名稱與單位也一致，因此為其中一個建立的 dashboard 也適用於另一個。
 
-### Control metric attribute cardinality
+### 控制指標屬性的基數 {#control-metric-attribute-cardinality}
 
-By default every metric sample is stamped with the full identity attribute set, which includes per-request fields such as `hidden_params` and several `metadata.*` values. Those are close to unique per request, so each one multiplies the number of time series your backend tracks (one series per distinct attribute combination). At volume this explodes metric cardinality, and some backends, for example Splunk Observability Cloud, start throttling or dropping the metrics.
+預設情況下，每個 metric sample 都會標記完整的身分屬性集合，其中包含如 `hidden_params` 與多個 `metadata.*` 值等每次請求不同的欄位。這些欄位幾乎每個請求都唯一，因此每一項都會把後端追蹤的 time series 數量乘開（每種不同屬性組合一條 series）。在高流量下，這會讓 metric cardinality 爆增，而某些後端，例如 Splunk Observability Cloud，會開始節流或丟棄這些指標。
 
-v2 reads the same filter v1 does, from `callback_settings.otel.attributes` in your config. Nest an `attributes` block there with either an `include_list` (allowlist; emit only the listed attributes) or an `exclude_list` (denylist; emit everything except the listed attributes). The two are mutually exclusive. The filter applies to metrics only; spans keep their full attribute set, so traces stay rich while metric cardinality stays bounded.
+v2 讀取與 v1 相同的 filter，來源是您設定中的 `callback_settings.otel.attributes`。在那裡巢狀放入一個 `attributes` 區塊，並使用 `include_list`（allowlist；只輸出列出的屬性）或 `exclude_list`（denylist；輸出除列出屬性以外的全部內容）其一。兩者互斥。此 filter 只套用於 metrics；spans 會保留完整屬性集合，因此 traces 仍然豐富，而 metric cardinality 也維持在可控範圍內。
 
-The block sits under `callback_settings.otel`. With `LITELLM_OTEL_V2` set, listing `otel` in `callbacks` builds the v2 logger and reads this block (it builds the legacy v1 logger only when the flag is off); the block is also read on the default path when no `otel` callback is listed.
+此區塊位於 `callback_settings.otel` 之下。設定 `LITELLM_OTEL_V2` 時，在 `otel` 中列出 `callbacks` 會建置 v2 logger 並讀取此區塊（只有在該旗標關閉時才會建置舊版 v1 logger）；當未列出任何 `otel` callback 時，預設路徑也會讀取此區塊。
 
-Unlike v1, v2 has no per-instance `attributes` field, so this global block is the only source. v2 also resolves the filter lazily on the first metric a request records rather than at boot, so a bad config (both lists set, or a forbidden name) surfaces on that first recorded request and editing the lists takes effect only after a restart. The filter is read only on the default OTLP path (callback name `otel` or unset); preset destinations such as `arize`, `arize_phoenix`, and `langfuse_otel` emit their metrics with the full attribute set, the same as in v1.
+與 v1 不同，v2 沒有每個實例的 `attributes` 欄位，因此此全域區塊是唯一來源。v2 也會延遲解析 filter，直到某次請求記錄的第一個 metric 才處理，而不是在啟動時處理，因此不良設定（兩個清單都設了，或名稱被禁止）會在第一次記錄的請求時才顯現，且修改清單要在重新啟動後才會生效。此 filter 只會在預設 OTLP 路徑上讀取（callback 名稱為 `otel` 或未設定）；預設目的地，例如 `arize`、`arize_phoenix` 和 `langfuse_otel`，會以完整屬性集合輸出其 metrics，與 v1 相同。
 
 ```yaml title="config.yaml"
 callback_settings:
@@ -625,7 +625,7 @@ callback_settings:
         - metadata.prompt_management_metadata
 ```
 
-When you want the smallest, most predictable attribute set, list exactly the attributes to keep with `include_list`. Anything not listed is dropped from metrics:
+當您想要最小且最可預測的屬性集合時，請使用 `include_list` 明確列出要保留的屬性。未列出的內容都會從 metrics 中移除：
 
 ```yaml title="config.yaml"
 callback_settings:
@@ -640,13 +640,13 @@ callback_settings:
         - metadata.user_api_key_org_id
 ```
 
-`gen_ai.token.type` is never filtered out. It is stamped on `gen_ai.client.token.usage` after the filter runs, so the input/output split survives whatever list you set, and naming it in either `include_list` or `exclude_list` is rejected.
+`gen_ai.token.type` 絕不會被過濾掉。它會在 filter 執行後標記到 `gen_ai.client.token.usage` 上，因此輸入/輸出拆分會保留下來，不論您設定哪個清單都一樣，而把它寫進 `include_list` 或 `exclude_list` 都會被拒絕。
 
-## Which routes are traced
+## 哪些路由會被追蹤 {#which-routes-are-traced}
 
-High-frequency, non-LLM routes are **excluded by default** so they don't flood your traces: health checks (`/health*`), the Prometheus scrape (`/metrics`), and static UI/docs assets (`/ui`, `/docs`, `/redoc`, `/_next`, `/openapi.json`, favicons, …).
+高頻率、非 LLM 的路由預設會**排除**，以免您的 traces 被淹沒：health checks（`/health*`）、Prometheus scrape（`/metrics`），以及靜態 UI/docs 資產（`/ui`、`/docs`、`/redoc`、`/_next`、`/openapi.json`、favicons，…）。
 
-To change the set, use the standard OpenTelemetry env var (comma-separated paths, substring-matched):
+若要變更此集合，請使用標準 OpenTelemetry 環境變數（以逗號分隔的路徑，使用子字串比對）：
 
 ```shell
 # Trace everything, including health checks
@@ -656,9 +656,9 @@ OTEL_PYTHON_FASTAPI_EXCLUDED_URLS=""
 OTEL_PYTHON_FASTAPI_EXCLUDED_URLS="/health,/internal"
 ```
 
-## Per-key / per-team destinations (multi-tenant)
+## 每個金鑰 / 每個團隊的目的地（多租戶） {#per-key--per-team-destinations-multi-tenant}
 
-One proxy can serve many tenants and send each tenant's traces only to that tenant's own backend, so a team never sees another team's traces. The proxy admin owns the routing; a team or key just points at a destination by name and never handles another tenant's secrets.
+單一 proxy 可服務多個租戶，並將每個租戶的 traces 僅傳送至該租戶自己的後端，因此一個團隊不會看到另一個團隊的 traces。proxy 管理員負責路由；團隊或金鑰只需依名稱指向某個目的地，且不會碰觸其他租戶的機密。
 
 ```
 Proxy admin                          Team admin
@@ -670,55 +670,55 @@ Proxy admin                          Team admin
               and sends that request's trace there
 ```
 
-### The idea in one minute
+### 一分鐘看懂概念 {#the-idea-in-one-minute}
 
-There are two pieces.
+這裡有兩個部分。
 
-A **destination** is a named place to send traces, created by the proxy admin. It reuses the same backends and credentials as the [presets](#2-send-traces-to-a-specific-tool-presets) above: it holds which backend it is (`langfuse_otel`, `arize`, `weave_otel`, or a `generic` OTLP endpoint, meaning any backend that speaks the OpenTelemetry Protocol), the connection details and secrets for that backend, and an **access scope** that says which teams or organizations are allowed to use it. An **organization** here is a group of teams; a team belongs to one org.
+**目的地** 是由 proxy 管理員建立的、用來傳送 traces 的具名位置。它重用與上方 [預設值](#2-send-traces-to-a-specific-tool-presets) 相同的後端與憑證：包含它是哪一種後端（`langfuse_otel`、`arize`、`weave_otel`，或 `generic` OTLP 端點，意即任何支援 OpenTelemetry Protocol 的後端）、該後端的連線詳細資訊與機密，以及一個 **存取範圍**，說明哪些團隊或組織可以使用它。這裡的 **組織** 是由多個團隊組成的群組；團隊隸屬於某一個組織。
 
-A **team, key, or organization** turns a destination on by listing its name in a setting called `logging_exporters`. That is the only thing a team admin ever touches; the secrets stay with the proxy admin.
+**團隊、金鑰或組織** 會在名為 `logging_exporters` 的設定中列出目的地名稱，以啟用該目的地。這是團隊管理員唯一會碰觸的部分；機密則由 proxy 管理員保管。
 
-At request time the proxy looks at the key that made the call, the team that key belongs to, and that team's organization, collects every destination name those three list, keeps only the destinations whose access scope actually includes this caller, and sends the request's trace to each one. If nothing matches, the trace goes only to your normal global exporter from the sections above.
+在請求時間，proxy 會查看發出呼叫的 key、該 key 所屬的 team，以及該 team 的 organization，收集這三個清單所列出的所有目的地名稱，只保留存取範圍實際包含此呼叫者的目的地，並將該請求的 trace 傳送到每一個目的地。如果都不符合，trace 就只會送到上方各節中的一般全域 exporter。
 
-### Who can change what
+### 誰可以變更什麼 {#who-can-change-what}
 
-Three roles appear below. The **proxy admin** runs the whole proxy and holds every secret. An **org admin** runs one organization (a group of teams). A **team admin** runs a single team. The split exists so a team admin can opt their own team in without ever seeing or editing another tenant's secrets.
+以下會出現三種角色。**proxy admin** 負責整個 proxy 並持有所有密鑰。**org admin** 管理一個 organization（一組 teams）。**team admin** 管理單一 team。這種拆分的存在，是為了讓 team admin 可以只為自己的 team 啟用，而不必看到或編輯其他租戶的密鑰。
 
-| Action | Proxy admin | Org admin (of the team's org) | Team admin (of the team) |
+| 動作 | Proxy admin | Org admin（該 team 所屬 org） | Team admin（該 team） |
 |---|:-:|:-:|:-:|
-| Create or delete a destination | Yes | No | No |
-| Edit a destination's backend, host, or secrets | Yes | No | No |
-| Make a destination global, or grant it to whole orgs | Yes | No | No |
-| Grant a destination to a team | Yes, any team | Yes, teams in their org | Yes, their own team |
-| Turn a destination on for a team or key (`logging_exporters`) | Yes | Yes | Yes (their team) |
+| 建立或刪除 destination | 是 | 否 | 否 |
+| 編輯 destination 的 backend、host 或 secrets | 是 | 否 | 否 |
+| 將 destination 設為全域，或授權給整個 org | 是 | 否 | 否 |
+| 將 destination 授權給 team | 是，任何 team | 是，該 org 內的 teams | 是，自己的 team |
+| 為 team 或 key（`logging_exporters`）開啟 destination | 是 | 是 | 是（自己的 team） |
 
-### Set it up in the UI
+### 在 UI 中設定 {#set-it-up-in-the-ui}
 
-This is the common path, and it always takes two things to be true before a team's traces flow: the destination's access scope must include the team, and the team must list the destination in its **Logging Exporters**. The admin handles the first; the team admin handles the second. Note these are two different screens: the admin works in **Settings, Logging Callbacks** (where destinations are created), and the team admin works in a team's **Logging Exporters** picker (where a destination is switched on).
+這是常見路徑，而在 team 的 traces 開始流動之前，必須先滿足兩件事：destination 的存取範圍必須包含該 team，且該 team 必須在其 **Logging Exporters** 中列出該 destination。admin 負責第一件；team admin 負責第二件。請注意，這是兩個不同的畫面：admin 在 **Settings, Logging Callbacks** 中操作（建立 destinations 的地方），而 team admin 則在 team 的 **Logging Exporters** 選擇器中操作（啟用 destination 的地方）。
 
-Proxy admin, create the destination:
+Proxy admin，建立 destination：
 
-1. Open the proxy UI and go to **Settings**, then **Logging Callbacks**.
-2. Click to add a logging destination. Choose the **backend** (`langfuse_otel`, `arize`, `weave_otel`, or `generic`), fill in the **host** and the **secrets** for that backend, and set the **Access** scope: make it Global (every team), or pick specific Teams or Orgs. The secret values are the same ones you would set as that preset's env vars, copied from the backend's own dashboard (for example, your Langfuse project's API keys); see the [Preset reference](#preset-reference) for which fields each backend needs.
-3. Save. From now on the secrets and the Global/Org scope are admin-only; team admins can only attach the destination to teams already in its scope.
+1. 開啟 proxy UI，前往 **Settings**，再到 **Logging Callbacks**。
+2. 點擊以新增 logging destination。選擇 **backend**（`langfuse_otel`、`arize`、`weave_otel`，或 `generic`），填入該 backend 的 **host** 和 **secrets**，並設定 **Access** 範圍：設為 Global（每個 team），或選擇特定的 Teams 或 Orgs。密鑰值與您會為該預設設定的 env vars 相同，且複製自 backend 自己的儀表板（例如您的 Langfuse 專案 API 金鑰）；請參閱 [Preset reference](#preset-reference) 了解每個 backend 需要哪些欄位。
+3. 儲存。從此之後，secrets 與 Global/Org 範圍都只限 admin 使用；team admins 只能將 destination 連結到其範圍內既有的 teams。
 
-![Adding a logging destination: choose the backend, set the host and secrets, then set the access scope with the Global, Teams, Organizations, and Auto-enable controls](/img/observability/otel_v2_destination_admin.png)
+![新增 logging destination：選擇 backend、設定 host 與 secrets，然後使用 Global、Teams、Organizations 與 Auto-enable 控制項設定存取範圍](/img/observability/otel_v2_destination_admin.png)
 
-The destinations you create appear in the Logging Callbacks list, each tagged with its access scope:
+您建立的 destinations 會出現在 Logging Callbacks 清單中，每一列都會標示其存取範圍：
 
-![Active logging callbacks, each row showing its scope: one Global, one scoped to a single team](/img/observability/otel_v2_destinations_list.png)
+![啟用中的 logging callbacks，每一列顯示其範圍：一個為 Global，一個僅限單一 team](/img/observability/otel_v2_destinations_list.png)
 
-Team admin, switch it on for a team:
+Team admin，為 team 開啟它：
 
-1. Go to **Teams**, pick your team, open **Settings** (or go to **Virtual Keys**, pick a key, and edit it).
-2. In the **Logging Exporters** multi-select, choose the destination. Only destinations in your scope appear here; other tenants' destinations are never listed.
-3. Save. Every request from that team or key now also sends its trace to the destination you picked.
+1. 前往 **Teams**，選取您的 team，開啟 **Settings**（或前往 **Virtual Keys**，選擇一個 key，然後編輯它）。
+2. 在 **Logging Exporters** 多選欄位中，選擇該 destination。這裡只會顯示您範圍內的 destinations；其他租戶的 destinations 絕不會列出。
+3. 儲存。該 team 或 key 的每個請求現在也會將其 trace 傳送到您選取的 destination。
 
-### Set it up over the API
+### 透過 API 設定 {#set-it-up-over-the-api}
 
-The UI calls these endpoints; you can use them directly. The placeholders are: `$ADMIN_KEY` is a proxy-admin virtual key and `$TEAM_ADMIN_KEY` is the team admin's virtual key (mint either on the **Virtual Keys** page in the UI, or with `/key/generate`), `<team-id>` comes from the Teams page, and `pk-...` / `sk-...` are the backend's own keys from its dashboard. As in the UI, both the grant (step 1 or 2) and the turn-on (step 3) must be done before traces flow.
+UI 會呼叫這些端點；您也可以直接使用它們。預留位置如下：`$ADMIN_KEY` 是 proxy-admin virtual key，而 `$TEAM_ADMIN_KEY` 是 team admin 的 virtual key（可在 UI 的 **Virtual Keys** 頁面上鑄造任一個，或使用 `/key/generate`），`<team-id>` 來自 Teams 頁面，而 `pk-...` / `sk-...` 則是 backend 儀表板中的自有金鑰。如同在 UI 中，必須先完成授權（步驟 1 或 2）以及啟用（步驟 3），traces 才會開始流動。
 
-Step 1, proxy admin creates a destination (here a Langfuse destination granted to one team):
+步驟 1，proxy admin 建立 destination（此處為授權給一個 team 的 Langfuse destination）：
 
 ```shell
 curl -X POST http://localhost:4000/credentials \
@@ -739,7 +739,7 @@ curl -X POST http://localhost:4000/credentials \
   }'
 ```
 
-`credential_type` must be `logging`, and `description` names the backend. Step 2 (an alternative to the grant in step 1): a team admin grants their own team with a narrow patch, and cannot touch secrets, host, or the global/org scope:
+`credential_type` 必須是 `logging`，而 `description` 指定 backend。步驟 2（步驟 1 中授權的替代作法）：team admin 以狹窄的 patch 授權自己的 team，且無法碰觸 secrets、host 或全域/org 範圍：
 
 ```shell
 curl -X PATCH http://localhost:4000/credentials/tenant-a-langfuse \
@@ -747,7 +747,7 @@ curl -X PATCH http://localhost:4000/credentials/tenant-a-langfuse \
   -d '{"credential_info": {"access": {"teams": ["<their-team-id>"]}}}'
 ```
 
-Step 3, turn the destination on for a team by adding its name to the team's `logging_exporters`:
+步驟 3，將 destination 加入 team 的 `logging_exporters`，以為該 team 開啟 destination：
 
 ```shell
 curl -X POST http://localhost:4000/team/update \
@@ -755,24 +755,24 @@ curl -X POST http://localhost:4000/team/update \
   -d '{"team_id": "<team-id>", "metadata": {"logging_exporters": ["tenant-a-langfuse"]}}'
 ```
 
-The same `metadata.logging_exporters` works on a key (`/key/update`) and on an organization, and the proxy unions all three at request time.
+同一個 `metadata.logging_exporters` 也可用於 key（`/key/update`）以及 organization，而 proxy 會在請求時間將三者合併。
 
-### Backends and the fields each one needs
+### Backends 與各自需要的欄位 {#backends-and-the-fields-each-one-needs}
 
-The admin fills these into the destination's secret fields; the values come from the backend's own dashboard, the same as the preset env vars in the [Preset reference](#preset-reference). Anything OTLP-compatible that is not one of the first three uses `generic`.
+admin 會將這些填入 destination 的 secret 欄位；其值來自 backend 自己的儀表板，與 [Preset reference](#preset-reference) 中的 preset env vars 相同。任何相容 OTLP、但不屬於前三者的項目都使用 `generic`。
 
-| Backend (`description`) | Secret fields |
+| Backend (`description`) | Secret 欄位 |
 |---|---|
-| `langfuse_otel` | `langfuse_public_key`, `langfuse_secret_key`, `langfuse_host` (optional; defaults to Langfuse US cloud) |
-| `arize` | `arize_space_id` (or `arize_space_key`), `arize_api_key`, `arize_project_name`; `arize_endpoint` optional |
-| `weave_otel` | `wandb_api_key`, `weave_project_id` (optional); `weave_endpoint` optional |
-| `generic` | `otel_endpoint` (required), `otel_headers` (optional, `key=value,key2=value2`) |
+| `langfuse_otel` | `langfuse_public_key`、`langfuse_secret_key`、`langfuse_host`（選用；預設為 Langfuse US cloud） |
+| `arize` | `arize_space_id`（或 `arize_space_key`）、`arize_api_key`、`arize_project_name`；`arize_endpoint` 為選用 |
+| `weave_otel` | `wandb_api_key`、`weave_project_id`（選用）；`weave_endpoint` 為選用 |
+| `generic` | `otel_endpoint`（必要）、`otel_headers`（選用，`key=value,key2=value2`） |
 
-### Good to know
+### 需要知道的事 {#good-to-know}
 
-Resolution is **default-deny**: a team only reaches a destination it both lists in `logging_exporters` and is in scope for. A misconfigured or misspelled name simply sends nothing, rather than leaking a trace to the wrong tenant.
+解析是 **預設拒絕**：team 只有在同時於 `logging_exporters` 中列出某 destination，且該 destination 也在其範圍內時，才能存取。設定錯誤或拼字錯誤的名稱只會讓資料不送出，而不會把 trace 洩漏到錯誤的租戶。
 
-Two shortcuts skip the per-team opt-in, and both are admin-only, set on the destination itself. A destination marked **global** is available to every team without an admin granting it team by team; a team admin still lists it to turn it on. A destination marked **auto-enable** goes further and applies to every request automatically, without any team listing it at all; use it when you want one backend to capture every request's trace across the whole proxy. In the UI both are toggles in the destination modal next to the Access scope; over the API they are `credential_info.access.global` and `credential_info.auto_enable`, for example:
+有兩個捷徑可以略過 per-team 的明確啟用，而且兩者都只限 admin 在 destination 本身上設定。標記為 **global** 的 destination，不需要 admin 逐一替 team 授權，就可供每個 team 使用；team admin 仍需將其列出以啟用它。標記為 **auto-enable** 的 destination 更進一步，會自動套用到每個請求，完全不需要任何 team 將其列出；當您想要讓單一 backend 捕捉整個 proxy 中每個請求的 trace 時，就使用它。在 UI 中，這兩者都是 destination modal 中、Access 範圍旁的切換；透過 API 則分別是 `credential_info.access.global` 和 `credential_info.auto_enable`，例如：
 
 ```shell
 curl -X PATCH http://localhost:4000/credentials/tenant-a-langfuse \
@@ -780,44 +780,44 @@ curl -X PATCH http://localhost:4000/credentials/tenant-a-langfuse \
   -d '{"credential_info": {"auto_enable": true}}'
 ```
 
-This routing applies to **traces only**. The GenAI client metrics (see [Metrics](#metrics)) still go to your single globally-configured exporter, not to per-tenant destinations.
+這種路由只適用於 **traces**。GenAI client metrics（請參閱 [Metrics](#metrics)）仍然會送到您單一全域設定的 exporter，而不是 per-tenant destinations。
 
-## Distributed tracing
+## 分散式追蹤 {#distributed-tracing}
 
-If the incoming request has a W3C `traceparent` header, LiteLLM continues that trace instead of starting a new one. Your LiteLLM spans then appear inline inside whatever distributed trace your application already has — so you can follow a request from your app, through the proxy, to the LLM provider, in one view.
+如果傳入的請求帶有 W3C `traceparent` 標頭，LiteLLM 會延續該 trace，而不是建立新的 trace。如此一來，您的 LiteLLM spans 會直接出現在應用程式原本已有的任何分散式 trace 之中——因此您可以在同一個畫面中，追蹤請求從應用程式經由 proxy 到 LLM 提供者的完整路徑。
 
-## Configuration reference
+## 設定參考 {#configuration-reference}
 
-All values are environment variables. Boolean flags accept `true`/`false`.
+所有值都是環境變數。布林旗標接受 `true`/`false`。
 
-| Variable | Default | Purpose |
+| 變數 | 預設值 | 用途 |
 |---|---|---|
-| `LITELLM_OTEL_V2` | `false` | **Master switch.** OTel v2 does nothing until this is `true`. |
-| `OTEL_EXPORTER` (alias `OTEL_EXPORTER_OTLP_PROTOCOL`) | `console` | Exporter kind: `console`, `otlp_http`, `otlp_grpc`. |
-| `OTEL_ENDPOINT` (alias `OTEL_EXPORTER_OTLP_ENDPOINT`) | none | OTLP collector URL. Setting an endpoint implies `otlp_http` unless you override `OTEL_EXPORTER`. |
-| `OTEL_HEADERS` (alias `OTEL_EXPORTER_OTLP_HEADERS`) | none | Comma-separated `key=value` auth headers for your backend. |
-| `OTEL_SERVICE_NAME` | `litellm` | `service.name` resource attribute shown in your backend. |
-| `OTEL_ENVIRONMENT_NAME` | none | `deployment.environment` resource attribute (e.g. `production`). |
-| `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` | `no_content` | Prompt/response capture: `no_content`, `span_only`, `event_only`, `span_and_event`. |
-| `OTEL_PYTHON_FASTAPI_EXCLUDED_URLS` | health/metrics/UI routes | Comma-separated paths to exclude from tracing (substring match). Set to `""` to trace everything. |
-| `LITELLM_OTEL_INTEGRATION_ENABLE_METRICS` | `false` | Also emit the GenAI client metrics (duration, token usage, cost, streaming timings). See [Metrics](#metrics). |
-| `LITELLM_OTEL_LEGACY_COMPAT` | `true` | Also emit attributes under the older Traceloop key names. See [Attribute conventions](#attribute-conventions). |
+| `LITELLM_OTEL_V2` | `false` | **總開關。** 在這個值為 `true` 之前，OTel v2 不會執行任何動作。 |
+| `OTEL_EXPORTER`（別名 `OTEL_EXPORTER_OTLP_PROTOCOL`） | `console` | 匯出器種類：`console`、`otlp_http`、`otlp_grpc`。 |
+| `OTEL_ENDPOINT`（別名 `OTEL_EXPORTER_OTLP_ENDPOINT`） | 無 | OTLP collector URL。設定 endpoint 表示會使用 `otlp_http`，除非您覆寫 `OTEL_EXPORTER`。 |
+| `OTEL_HEADERS`（別名 `OTEL_EXPORTER_OTLP_HEADERS`） | 無 | 以逗號分隔的 `key=value` 驗證標頭，供您的後端使用。 |
+| `OTEL_SERVICE_NAME` | `litellm` | 顯示在您的後端中的 `service.name` 資源屬性。 |
+| `OTEL_ENVIRONMENT_NAME` | 無 | `deployment.environment` 資源屬性（例如 `production`）。 |
+| `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` | `no_content` | Prompt/response 擷取：`no_content`、`span_only`、`event_only`、`span_and_event`。 |
+| `OTEL_PYTHON_FASTAPI_EXCLUDED_URLS` | health/metrics/UI 路由 | 要從追蹤中排除的以逗號分隔路徑（子字串比對）。設為 `""` 以追蹤所有內容。 |
+| `LITELLM_OTEL_INTEGRATION_ENABLE_METRICS` | `false` | 也輸出 GenAI 用戶端指標（持續時間、token 使用量、成本、串流計時）。請參閱 [指標](#metrics)。 |
+| `LITELLM_OTEL_LEGACY_COMPAT` | `true` | 也輸出舊版 Traceloop 鍵名稱下的屬性。請參閱 [屬性慣例](#attribute-conventions)。 |
 
-The full set of keys on each span kind is in [Span attributes](#span-attributes).
+每種 span 類型上的完整鍵集合，請參閱 [span 屬性](#span-attributes)。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**No traces showing up?**
+**沒有看到 traces？**
 
-1. Confirm `LITELLM_OTEL_V2=true` is set in the proxy's environment.
-2. Try `OTEL_EXPORTER="console"` first — if spans print to stdout, the problem is your exporter endpoint/headers, not LiteLLM.
-3. Make sure you hit an LLM route (e.g. `/v1/chat/completions`). Health checks and UI routes are excluded by default.
-4. Check that `opentelemetry-instrumentation-fastapi` is installed (see [Requirements](#requirements)).
+1. 確認 `LITELLM_OTEL_V2=true` 已設定在 proxy 的環境中。
+2. 先試試 `OTEL_EXPORTER="console"`——如果 spans 輸出到 stdout，問題就在您的 exporter endpoint/headers，而不是 LiteLLM。
+3. 確認您有打到 LLM 路由（例如 `/v1/chat/completions`）。健康檢查和 UI 路由預設會被排除。
+4. 確認已安裝 `opentelemetry-instrumentation-fastapi`（請參閱 [需求](#requirements)）。
 
-**Only see the LLM call but no `auth`/`postgres`/server span?** Those server and DB spans require the FastAPI instrumentation package — install `opentelemetry-instrumentation-fastapi`.
+**只看到 LLM 呼叫，但沒有 `auth`/`postgres`/server span？** 這些 server 和 DB spans 需要 FastAPI instrumentation 套件——請安裝 `opentelemetry-instrumentation-fastapi`。
 
-**I see metadata but no prompts/responses.** That's the default. Set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only` to capture content.
+**我看到中繼資料，但沒有 prompts/responses。** 這是預設行為。請設定 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only` 以擷取內容。
 
-## Support
+## 支援 {#support}
 
-For questions, open an issue at [BerriAI/litellm](https://github.com/BerriAI/litellm/issues).
+如有疑問，請在 [BerriAI/litellm](https://github.com/BerriAI/litellm/issues) 開啟 issue。

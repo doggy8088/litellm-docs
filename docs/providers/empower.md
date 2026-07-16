@@ -1,13 +1,13 @@
-# Empower
-LiteLLM supports all models on Empower. 
+# Empower {#empower}
+LiteLLM 支援 Empower 上的所有模型。 
 
-## API Keys
+## API 金鑰 {#api-keys}
 
 ```python 
 import os 
 os.environ["EMPOWER_API_KEY"] = "your-api-key"
 ```
-## Example Usage
+## 使用範例 {#example-usage}
 
 ```python
 from litellm import completion 
@@ -21,7 +21,7 @@ response = completion(model="empower/empower-functions", messages=messages)
 print(response)
 ```
 
-## Example Usage - Streaming
+## 使用範例 - 串流 {#example-usage---streaming}
 ```python
 from litellm import completion 
 import os
@@ -36,7 +36,7 @@ for chunk in response:
 
 ```
 
-## Example Usage - Automatic Tool Calling
+## 使用範例 - 自動工具呼叫 {#example-usage---automatic-tool-calling}
 
 ```python
 from litellm import completion 
@@ -75,15 +75,13 @@ response = completion(
 print("\nLLM Response:\n", response)
 ```
 
-## Empower Models
-liteLLM supports `non-streaming` and `streaming` requests to all models on https://empower.dev/
+## Empower 模型 {#empower-models}
+liteLLM 支援對 https://empower.dev/ 上所有模型的 `non-streaming` 與 `streaming` 請求
 
-Example Empower Usage - Note: liteLLM supports all models deployed on Empower
+Empower 使用範例 - 注意：liteLLM 支援部署在 Empower 上的所有模型
 
-
-### Empower LLMs - Automatic Tool Using models
-| Model Name                        | Function Call                                                          | Required OS Variables           |
+### Empower LLMs - 自動工具使用模型 {#empower-llms---automatic-tool-using-models}
+| 模型名稱                        | 函式呼叫                                                          | 必要的 OS 變數           |
 |-----------------------------------|------------------------------------------------------------------------|---------------------------------|
 | empower/empower-functions  | `completion('empower/empower-functions', messages)`            | `os.environ['TOGETHERAI_API_KEY']` |
 | empower/empower-functions-small  | `completion('empower/empower-functions-small', messages)`            | `os.environ['TOGETHERAI_API_KEY']` |
-

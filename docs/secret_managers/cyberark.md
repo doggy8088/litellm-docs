@@ -1,31 +1,31 @@
-# CyberArk Conjur
+# CyberArk Conjur {#cyberark-conjur}
 
 import Image from '@theme/IdealImage';
 
 :::info
 
-✨ **This is an Enterprise Feature**
+✨ **這是企業版功能**
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[請在這裡聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-| Feature | Support | Description |
+| 功能 | 支援 | 說明 |
 |---------|----------|-------------|
-| Reading Secrets | ✅ | Read secrets e.g `OPENAI_API_KEY` |
-| Writing Secrets | ✅ | Store secrets e.g `Virtual Keys` |
-| Deleting Secrets | ❌ | Secrets must be removed via policy updates |
+| 讀取密鑰 | ✅ | 讀取密鑰，例如 `OPENAI_API_KEY` |
+| 寫入密鑰 | ✅ | 儲存密鑰，例如 `Virtual Keys` |
+| 刪除密鑰 | ❌ | 必須透過政策更新移除密鑰 |
 
-Read and write secrets from [CyberArk Conjur](https://www.cyberark.com/products/secrets-management/) (self-hosted secrets manager)
+從 [CyberArk Conjur](https://www.cyberark.com/products/secrets-management/)（自架密鑰管理工具）讀取和寫入密鑰
 
-**Step 1.** Add CyberArk Conjur details in your environment
+**步驟 1.** 在您的環境中新增 CyberArk Conjur 詳細資訊
 
-LiteLLM supports two methods of authentication:
+LiteLLM 支援兩種驗證方式：
 
-1. API key authentication - `CYBERARK_API_KEY` (recommended)
-2. Certificate authentication - `CYBERARK_CLIENT_CERT` and `CYBERARK_CLIENT_KEY`
+1. API key 驗證 - `CYBERARK_API_KEY`（建議）
+2. 憑證驗證 - `CYBERARK_CLIENT_CERT` 和 `CYBERARK_CLIENT_KEY`
 
 ```bash title="Environment Variables" showLineNumbers
 CYBERARK_API_BASE="http://your-conjur-instance:8080"
@@ -44,7 +44,7 @@ CYBERARK_REFRESH_INTERVAL="300" # defaults to 300 seconds (5 minutes), frequency
 CYBERARK_SSL_VERIFY="true" # defaults to true, set to "false" to disable SSL verification (for self-signed certificates)
 ```
 
-**Step 2.** Add to proxy config.yaml
+**步驟 2.** 新增至 proxy config.yaml
 
 ```yaml title="Proxy Config" showLineNumbers
 general_settings:
@@ -57,27 +57,27 @@ general_settings:
     access_mode: "read_and_write" # Literal["read_only", "write_only", "read_and_write"]
 ```
 
-**Step 3.** Start + test proxy
+**步驟 3.** 啟動 + 測試 proxy
 
 ```bash title="Start Proxy" showLineNumbers
 $ litellm --config /path/to/config.yaml
 ```
 
-[Quick Test Proxy](../proxy/user_keys)
+[快速測試 Proxy](../proxy/user_keys)
 
-## Writing Virtual Keys to CyberArk
+## 將 Virtual Key 寫入 CyberArk {#writing-virtual-keys-to-cyberark}
 
-When you create a virtual key in the LiteLLM UI, it automatically gets stored in CyberArk Conjur.
+當您在 LiteLLM UI 中建立 virtual key 時，它會自動儲存在 CyberArk Conjur 中。
 
-**Step 1:** Create a virtual key in the LiteLLM Admin UI
+**步驟 1：** 在 LiteLLM Admin UI 中建立 virtual key
 
-In this example, we create a key named `litellm-cyber-ark-secret-key`:
+在這個範例中，我們建立一個名為 `litellm-cyber-ark-secret-key` 的 key：
 
-<Image img={require('../../img/cyberark1.png')} alt="Creating virtual key in LiteLLM UI" />
+<Image img={require('../../img/cyberark1.png')} alt="在 LiteLLM UI 中建立 virtual key" />
 
-**Step 2:** Verify the secret exists in CyberArk
+**步驟 2：** 驗證該密鑰是否存在於 CyberArk
 
-You can verify the virtual key was stored in CyberArk by querying the secrets API:
+您可以透過查詢 secrets API 來驗證 virtual key 已儲存在 CyberArk 中：
 
 ```bash title="Verify Secret in CyberArk" showLineNumbers
 TOKEN=$(curl -s -X POST http://0.0.0.0:8080/authn/default/admin/authenticate \
@@ -87,79 +87,79 @@ curl -H "Authorization: Token token=\"$TOKEN\"" \
   "http://0.0.0.0:8080/resources/default/variable" | jq .
 ```
 
-The response shows `litellm-cyber-ark-secret-key` exists in CyberArk:
+回應顯示 `litellm-cyber-ark-secret-key` 存在於 CyberArk 中：
 
-<Image img={require('../../img/cyberark2.png')} alt="Virtual key stored in CyberArk API" />
+<Image img={require('../../img/cyberark2.png')} alt="儲存在 CyberArk API 中的 virtual key" />
 
-The virtual key is stored with the full path: `default:variable:litellm/litellm-cyber-ark-secret-key`
+virtual key 會以完整路徑儲存：`default:variable:litellm/litellm-cyber-ark-secret-key`
 
-## How it works
+## 運作方式 {#how-it-works}
 
-**Authentication**
+**驗證**
 
-CyberArk Conjur uses a two-step authentication process:
+CyberArk Conjur 使用兩步驟驗證流程：
 
-1. LiteLLM authenticates with your API key to get a session token
-2. The session token (base64-encoded) is used for subsequent API requests
-3. Tokens expire after ~8 minutes, so LiteLLM caches and refreshes them automatically
+1. LiteLLM 使用您的 API key 進行驗證以取得 session token
+2. session token（經 base64 編碼）用於後續的 API 請求
+3. token 會在約 8 分鐘後過期，因此 LiteLLM 會自動快取並重新整理它們
 
-**Reading Secrets**
+**讀取密鑰**
 
-LiteLLM reads secrets from CyberArk Conjur using the following URL format:
+LiteLLM 使用下列 URL 格式從 CyberArk Conjur 讀取密鑰：
 
 ```
 {CYBERARK_API_BASE}/secrets/{ACCOUNT}/variable/{SECRET_NAME}
 ```
 
-For example, if you have:
+例如，如果您有：
 - `CYBERARK_API_BASE="http://conjur.example.com:8080"`
 - `CYBERARK_ACCOUNT="default"`
-- Secret name: `AZURE_API_KEY`
+- 密鑰名稱：`AZURE_API_KEY`
 
-LiteLLM will look up:
+LiteLLM 會查詢：
 ```
 http://conjur.example.com:8080/secrets/default/variable/AZURE_API_KEY
 ```
 
-**Writing Secrets**
+**寫入密鑰**
 
-When a Virtual Key is created on LiteLLM, the following happens automatically:
+當在 LiteLLM 上建立 Virtual Key 時，會自動發生以下動作：
 
-1. LiteLLM creates a policy entry to define the variable in Conjur (if it doesn't exist)
-2. LiteLLM sets the secret value via the Conjur API
+1. LiteLLM 建立一筆 policy 項目，在 Conjur 中定義該變數（若尚不存在）
+2. LiteLLM 透過 Conjur API 設定密鑰值
 
-LiteLLM stores secrets under the `prefix_for_stored_virtual_keys` path (default: `litellm/`)
+LiteLLM 會將密鑰儲存在 `prefix_for_stored_virtual_keys` 路徑下（預設：`litellm/`）
 
-For example, a virtual key would be stored as: `litellm/virtual-key-name`
+例如，virtual key 會儲存為：`litellm/virtual-key-name`
 
-**Important Notes**
+**重要注意事項**
 
-- Variables must be defined in a Conjur policy before setting their values
-- LiteLLM automatically creates policy entries when writing new secrets
-- Secret names with slashes (e.g., `litellm/key`) are automatically URL-encoded
-- Session tokens are cached for 5 minutes by default to minimize API calls
+- 變數必須先在 Conjur policy 中定義，才能設定其值
+- LiteLLM 在寫入新密鑰時會自動建立 policy 項目
+- 含有斜線的密鑰名稱（例如：`litellm/key`）會自動進行 URL 編碼
+- 預設會快取 session token 5 分鐘，以將 API 呼叫降到最低
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-If you're experiencing issues with the LiteLLM integration, first validate that your CyberArk Conjur instance is working correctly. Run these curl commands directly against your CyberArk endpoints to verify connectivity and authentication:
+如果您在 LiteLLM 整合上遇到問題，請先驗證您的 CyberArk Conjur 執行個體是否正常運作。直接針對您的 CyberArk 端點執行這些 curl 指令，以確認連線與驗證是否正常：
 
-**Step 1: Authenticate and get a token**
+**步驟 1：驗證並取得 token**
 
-Replace `http://conjur.example.com:8080` with your `CYBERARK_API_BASE` and use your actual credentials:
+將 `http://conjur.example.com:8080` 替換為您的 `CYBERARK_API_BASE`，並使用您的實際憑證：
 
 ```bash title="Authenticate" showLineNumbers
 TOKEN=$(curl -s -X POST http://conjur.example.com:8080/authn/default/admin/authenticate \
   -d "your-api-key" | base64 | tr -d '\n')
 ```
 
-**Step 2: Test reading a secret**
+**步驟 2：測試讀取密鑰**
 
 ```bash title="Read Secret" showLineNumbers
 curl -H "Authorization: Token token=\"$TOKEN\"" \
   "http://conjur.example.com:8080/secrets/default/variable/test-secret"
 ```
 
-**Step 3: Test writing a secret**
+**步驟 3：測試寫入密鑰**
 
 ```bash title="Write Secret" showLineNumbers
 curl -X POST \
@@ -168,31 +168,31 @@ curl -X POST \
   "http://conjur.example.com:8080/secrets/default/variable/test-secret"
 ```
 
-If these commands work successfully against your CyberArk instance, then CyberArk is functioning correctly and the issue is with your LiteLLM configuration. Check that:
-- Your environment variables are correctly set
-- The `CYBERARK_API_BASE` URL is accessible from your LiteLLM instance
-- Your API key or certificates have the necessary permissions in CyberArk
+如果這些指令能在您的 CyberArk 執行個體上成功執行，則代表 CyberArk 運作正常，問題出在您的 LiteLLM 設定。請檢查：
+- 您的環境變數是否已正確設定
+- `CYBERARK_API_BASE` URL 是否可從您的 LiteLLM 執行個體存取
+- 您的 API key 或憑證在 CyberArk 中是否具有必要權限
 
-### SSL Certificate Errors
+### SSL 憑證錯誤 {#ssl-certificate-errors}
 
-If you encounter SSL certificate verification errors like:
+如果您遇到如下的 SSL 憑證驗證錯誤：
 
 ```
 RuntimeError: Could not authenticate to CyberArk Conjur: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain
 ```
 
-This typically occurs when your CyberArk Conjur instance uses a self-signed certificate. You can disable SSL verification by setting:
+這通常發生在您的 CyberArk Conjur 執行個體使用自簽憑證時。您可以透過設定下列項目來停用 SSL 驗證：
 
 ```bash
 CYBERARK_SSL_VERIFY="false"
 ```
 
 :::warning
-Disabling SSL verification is insecure and should only be used for testing or development environments with self-signed certificates. For production, configure your certificate chain properly or use certificate-based authentication with `CYBERARK_CLIENT_CERT` and `CYBERARK_CLIENT_KEY`.
+停用 SSL 驗證是不安全的，且僅應在使用自簽憑證的測試或開發環境中使用。對於正式環境，請正確設定您的憑證鏈，或使用搭配 `CYBERARK_CLIENT_CERT` 和 `CYBERARK_CLIENT_KEY` 的憑證式驗證。
 :::
 
-## Video Walkthrough
+## 影片導覽 {#video-walkthrough}
 
-This video walks through using CyberArk Conjur as a secret manager with LiteLLM. We create a virtual key in the LiteLLM Admin UI and verify it exists in CyberArk. Then we rotate the secret key and verify it exists in CyberArk.
+這部影片示範如何使用 CyberArk Conjur 作為 LiteLLM 的密鑰管理工具。我們會在 LiteLLM Admin UI 中建立一個 virtual key，並驗證它是否存在於 CyberArk 中。接著我們會輪替密鑰並驗證它是否存在於 CyberArk 中。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/e9892ae6cb9545d1b709b82e8695db91" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>

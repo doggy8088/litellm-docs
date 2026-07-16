@@ -1,94 +1,91 @@
-# [BETA] OpenID Connect (OIDC)
-LiteLLM supports using OpenID Connect (OIDC) for authentication to upstream services . This allows you to avoid storing sensitive credentials in your configuration files.
+# [BETA] OpenID Connect (OIDC) {#beta-openid-connect-oidc}
+LiteLLM 支援使用 OpenID Connect (OIDC) 來進行上游服務的驗證。這可讓您避免在設定檔中儲存敏感憑證。
 
 :::info
 
-This feature is in Beta
+此功能為 Beta 版
 
 :::
 
+## OIDC 身分提供者 (IdP) {#oidc-identity-provider-idp}
 
-## OIDC Identity Provider (IdP)
+LiteLLM 支援以下 OIDC 身分提供者：
 
-LiteLLM supports the following OIDC identity providers:
-
-| Provider                 | Config Name  | Custom Audiences |
+| 提供者                 | 設定名稱  | 自訂 Audience |
 | -------------------------| ------------ | ---------------- |
-| Google Cloud Run         | `google`     | Yes              |
-| CircleCI v1              | `circleci`   | No               |
-| CircleCI v2              | `circleci_v2`| No               |
-| GitHub Actions           | `github`     | Yes              |
-| Azure Kubernetes Service | `azure`      | No               |
-| Azure AD                 | `azure`      | Yes              |
-| File                     | `file`       | No               |
-| Environment Variable     | `env`        | No               |
-| Environment Path         | `env_path`   | No               |
+| Google Cloud Run         | `google`     | 是              |
+| CircleCI v1              | `circleci`   | 否               |
+| CircleCI v2              | `circleci_v2`| 否               |
+| GitHub Actions           | `github`     | 是              |
+| Azure Kubernetes Service | `azure`      | 否               |
+| Azure AD                 | `azure`      | 是               |
+| File                     | `file`       | 否               |
+| Environment Variable     | `env`        | 否               |
+| Environment Path         | `env_path`   | 否               |
 
-If you would like to use a different OIDC provider, please open an issue on GitHub.
+如果您想使用不同的 OIDC 提供者，請在 GitHub 上開啟 issue。
 
 :::tip
 
-Do not use the `file`, `env`, or `env_path` providers unless you know what you're doing, and you are sure none of the other providers will work for your use-case. Hint: they probably will.
+除非您非常清楚自己在做什麼，而且確定沒有其他提供者能滿足您的使用案例，否則請不要使用 `file`、`env` 或 `env_path` 提供者。提示：它們很可能可以。
 
 :::
 
-## OIDC Connect Relying Party (RP)
+## OIDC Connect 倚賴方 (RP) {#oidc-connect-relying-party-rp}
 
-LiteLLM supports the following OIDC relying parties / clients:
+LiteLLM 支援以下 OIDC 倚賴方 / 用戶端：
 
 - Amazon Bedrock
 - Azure OpenAI
-- _(Coming soon) Google Cloud Vertex AI_
+- _(即將推出) Google Cloud Vertex AI_
 
+### 設定 OIDC {#configuring-oidc}
 
-### Configuring OIDC
-
-Wherever a secret key can be used, OIDC can be used in-place. The general format is:
+凡是可以使用密鑰的地方，都可以直接改用 OIDC。一般格式如下：
 
 ```
 oidc/config_name_here/audience_here
 ```
 
-For providers that do not use the `audience` parameter, you can (and should) omit it:
+對於不使用 `audience` 參數的提供者，您可以（也應該）省略它：
 
 ```
 oidc/config_name_here/
 ```
 
-#### Unofficial Providers (not recommended)
+#### 非官方提供者（不建議） {#unofficial-providers-not-recommended}
 
-For the unofficial `file` provider, you can use the following format
-(note the double slash — the path after `oidc/file/` must be absolute):
+對於非官方的 `file` 提供者，您可以使用以下格式
+（請注意雙斜線 —— `oidc/file/` 後面的路徑必須是絕對路徑）：
 
 ```
 oidc/file//var/run/secrets/my-token
 ```
 
-For safety, the resolved path must live inside an allowed credential
-directory. By default the following directories are allowed:
+為了安全起見，解析後的路徑必須位於允許的憑證
+目錄內。預設允許以下目錄：
 
 - `/var/run/secrets`
 - `/run/secrets`
 
-If your deployment mounts credentials elsewhere, set the
-`LITELLM_OIDC_ALLOWED_CREDENTIAL_DIRS` environment variable to a
-comma-separated list of absolute directories. The value replaces the
-default list, so include the defaults if you still need them:
+如果您的部署將憑證掛載到其他位置，請將
+`LITELLM_OIDC_ALLOWED_CREDENTIAL_DIRS` 環境變數設定為以逗號分隔的絕對目錄清單。該值會取代
+預設清單，因此如果您仍需要預設目錄，請將其一併包含：
 
 ```bash
 export LITELLM_OIDC_ALLOWED_CREDENTIAL_DIRS="/var/run/secrets,/etc/litellm/creds"
 ```
 
-Paths that resolve (after following symlinks and `..`) outside the
-allowlist are rejected.
+解析後（在跟隨符號連結和 `..` 之後）位於
+允許清單之外的路徑會被拒絕。
 
-For the unofficial `env`, use the following format, where `SECRET_TOKEN` is the name of the environment variable that contains the token:
+對於非官方的 `env`，請使用以下格式，其中 `SECRET_TOKEN` 是包含權杖的環境變數名稱：
 
 ```
 oidc/env/SECRET_TOKEN
 ```
 
-For the unofficial `env_path`, use the following format, where `SECRET_TOKEN` is the name of the environment variable that contains the path to the file with the token:
+對於非官方的 `env_path`，請使用以下格式，其中 `SECRET_TOKEN` 是包含權杖檔案路徑的環境變數名稱：
 
 ```
 oidc/env_path/SECRET_TOKEN
@@ -96,13 +93,13 @@ oidc/env_path/SECRET_TOKEN
 
 :::tip
 
-If you are tempted to use oidc/env_path/AZURE_FEDERATED_TOKEN_FILE, don't do that. Instead, use `oidc/azure/`, as this will ensure continued support from LiteLLM if Azure changes their OIDC configuration and/or adds new features.
+如果您想使用 oidc/env_path/AZURE_FEDERATED_TOKEN_FILE，請不要這麼做。請改用 `oidc/azure/`，這樣可確保即使 Azure 變更其 OIDC 設定和／或新增功能，LiteLLM 仍能持續支援。
 
 :::
 
-## Examples
+## 範例 {#examples}
 
-### Google Cloud Run -> Amazon Bedrock
+### Google Cloud Run -> Amazon Bedrock {#google-cloud-run---amazon-bedrock}
 
 ```yaml
 model_list:
@@ -115,7 +112,7 @@ model_list:
       aws_web_identity_token: "oidc/google/https://example.com"
 ```
 
-### CircleCI v2 -> Amazon Bedrock
+### CircleCI v2 -> Amazon Bedrock {#circleci-v2---amazon-bedrock}
 
 ```yaml
 model_list:
@@ -128,11 +125,11 @@ model_list:
       aws_web_identity_token: "oidc/example-provider/"
 ```
 
-#### Amazon IAM Role Configuration for CircleCI v2 -> Bedrock
+#### CircleCI v2 的 Amazon IAM 角色設定 -> Bedrock {#amazon-iam-role-configuration-for-circleci-v2---bedrock}
 
-The configuration below is only an example. You should adjust the permissions and trust relationship to match your specific use case.
+以下設定僅為範例。您應依照您的特定使用案例調整權限與信任關係。
 
-Permissions:
+權限：
 
 ```json
 {
@@ -154,9 +151,9 @@ Permissions:
 }
 ```
 
-See https://docs.aws.amazon.com/bedrock/latest/userguide/security_iam_id-based-policy-examples.html for more examples. 
+請參閱 https://docs.aws.amazon.com/bedrock/latest/userguide/security_iam_id-based-policy-examples.html 以取得更多範例。 
 
-Trust Relationship:
+信任關係：
 
 ```json
 {
@@ -184,18 +181,17 @@ Trust Relationship:
 }
 ```
 
-This trust relationship restricts CircleCI to only assume the role on the main branch and branches that start with `litellm_`.
+此信任關係將 CircleCI 限制為只能在 main 分支，以及以 `litellm_` 開頭的分支上承擔該角色。
 
-For CircleCI (v1 and v2), you also need to add your organization's OIDC provider in your AWS IAM settings. See https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_oidc.html for more information.
+對於 CircleCI（v1 和 v2），您還需要在 AWS IAM 設定中新增貴組織的 OIDC 提供者。請參閱 https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_oidc.html 以取得更多資訊。
 
 :::tip
 
-You should _never_ need to create an IAM user. If you did, you're not using OIDC correctly. You should only be creating a role with permissions and a trust relationship to your OIDC provider.
+您 _絕不_ 應該需要建立 IAM 使用者。如果您真的建立了，那代表您沒有正確使用 OIDC。您應該只建立一個具有權限且與您的 OIDC 提供者建立信任關係的角色。
 
 :::
 
-
-### Google Cloud Run -> Azure OpenAI
+### Google Cloud Run -> Azure OpenAI {#google-cloud-run---azure-openai}
 
 ```yaml
 model_list:
@@ -209,7 +205,7 @@ model_list:
       base_model: azure/gpt-4o-2024-05-13
 ```
 
-For Azure OpenAI, you need to define `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and optionally `AZURE_AUTHORITY_HOST` in your environment.
+對於 Azure OpenAI，您需要在環境中定義 `AZURE_CLIENT_ID`、`AZURE_TENANT_ID`，以及選填的 `AZURE_AUTHORITY_HOST`。
 
 ```bash
 export AZURE_CLIENT_ID="91a43c21-cf21-4f34-9085-331015ea4f91" # Azure AD Application (Client) ID
@@ -219,35 +215,32 @@ export AZURE_AUTHORITY_HOST="https://login.microsoftonline.com" # 👈 Optional,
 
 :::tip
 
-You can find `AZURE_CLIENT_ID` by visiting `https://login.microsoftonline.com/YOUR_DOMAIN_HERE/v2.0/.well-known/openid-configuration` and looking for the UUID in the `issuer` field.
+您可以前往 `https://login.microsoftonline.com/YOUR_DOMAIN_HERE/v2.0/.well-known/openid-configuration`，並在 `issuer` 欄位中尋找 UUID，以找出 `AZURE_CLIENT_ID`。
 
 :::
-
 
 :::tip
 
-Don't set `AZURE_AUTHORITY_HOST` in your environment unless you need to override the default value. This way, if the default value changes in the future, you won't need to update your environment.
+除非您需要覆寫預設值，否則不要在環境中設定 `AZURE_AUTHORITY_HOST`。這樣一來，如果未來預設值變更，您就不需要更新環境。
 
 :::
-
 
 :::tip
 
-By default, Azure AD applications use the audience `api://AzureADTokenExchange`. We recommend setting the audience to something more specific to your application.
+預設情況下，Azure AD 應用程式使用的 audience 為 `api://AzureADTokenExchange`。我們建議將 audience 設定為更符合您應用程式的特定值。
 
 :::
 
+#### Azure AD 應用程式設定 {#azure-ad-application-configuration}
 
-#### Azure AD Application Configuration
+很遺憾，Azure 的設定比 AWS 等其他 OIDC 倚賴方稍微複雜一些。基本上，您必須：
 
-Unfortunately, Azure is bit more complicated to set up than other OIDC relying parties like AWS. Basically, you have to:
+1. 建立 Azure 應用程式。
+2. 為您使用的 OIDC IdP（例如 Google Cloud Run）新增 federated credential。
+3. 將 Azure 應用程式新增至包含 Azure OpenAI 資源的 resource group。
+4. 授予 Azure 應用程式存取 Azure OpenAI 資源所需的角色。
 
-1. Create an Azure application.
-2. Add a federated credential for the OIDC IdP you're using (e.g. Google Cloud Run).
-3. Add the Azure application to resource group that contains the Azure OpenAI resource(s).
-4. Give the Azure application the necessary role to access the Azure OpenAI resource(s).
-
-The custom role below is the recommended minimum permissions for the Azure application to access Azure OpenAI resources. You should adjust the permissions to match your specific use case.
+以下的自訂角色是 Azure 應用程式存取 Azure OpenAI 資源的建議最低權限。您應調整權限以符合您的特定使用案例。
 
 ```json
 {
@@ -278,11 +271,11 @@ The custom role below is the recommended minimum permissions for the Azure appli
 }
 ```
 
-_Note: Your UUIDs will be different._
+_註：您的 UUID 會不同。_
 
-Please contact us for paid enterprise support if you need help setting up Azure AD applications.
+如果您需要協助設定 Azure AD 應用程式，請聯絡我們取得付費企業支援。
 
-### Azure AD -> Amazon Bedrock
+### Azure AD -> Amazon Bedrock {#azure-ad---amazon-bedrock}
 ```yaml
 model list:
   - model_name: aws/claude-3-5-sonnet

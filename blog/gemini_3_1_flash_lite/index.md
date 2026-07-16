@@ -1,31 +1,30 @@
 ---
 slug: gemini_3_1_flash_lite_preview
-title: "DAY 0 Support: Gemini 3.1 Flash Lite Preview on LiteLLM"
+title: "DAY 0 支援：LiteLLM 上的 Gemini 3.1 Flash Lite Preview"
 date: 2026-03-03T08:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Guide to using Gemini 3.1 Flash Lite Preview on LiteLLM Proxy and SDK with day 0 support."
+description: "在 LiteLLM Proxy 和 SDK 上使用 Gemini 3.1 Flash Lite Preview 的指南，具備 day 0 支援。"
 tags: [gemini, day 0 support, llms, supernova]
 hide_table_of_contents: false
 ---
 
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini 3.1 Flash Lite Preview Day 0 Support 
+# Gemini 3.1 Flash Lite Preview 第 0 天支援  {#gemini-31-flash-lite-preview-day-0-support}
 
-LiteLLM now supports `gemini-3.1-flash-lite-preview` with full day 0 support!
+LiteLLM 現在完整支援 `gemini-3.1-flash-lite-preview`，具備完整的 day 0 支援！
 
 :::note
-If you only want cost tracking, you need no change in your current Litellm version. But if you want the support for new features introduced along with it like thinking levels, you will need to use v1.80.8-stable.1 or above.
+如果您只想進行成本追蹤，您目前的 Litellm 版本不需要任何變更。但如果您想使用隨之推出的新功能，例如 thinking levels，則需要使用 v1.80.8-stable.1 或以上版本。
 :::
 
 {/* truncate */}
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -48,22 +47,22 @@ pip install litellm==v1.80.8-stable.1
 </TabItem>
 </Tabs>
 
-## What's New
+## 新功能 {#whats-new}
 
-Supports all four thinking levels:
-- **MINIMAL**: Ultra-fast responses with minimal reasoning
-- **LOW**: Simple instruction following
-- **MEDIUM**: Balanced reasoning for complex tasks
-- **HIGH**: Maximum reasoning depth (dynamic)
+支援全部四種 thinking levels：
+- **MINIMAL**：極速回應，推理最少
+- **LOW**：簡單的指令遵循
+- **MEDIUM**：適合複雜任務的平衡推理
+- **HIGH**：最大推理深度（動態）
 
 ---
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Basic Usage**
+**基本用法**
 
 ```python
 from litellm import completion
@@ -76,7 +75,7 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-**With Thinking Levels**
+**搭配 Thinking Levels**
 
 ```python
 from litellm import completion
@@ -95,7 +94,7 @@ print(response.choices[0].message.content)
 
 <TabItem value="proxy" label="PROXY">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -112,13 +111,13 @@ model_list:
       vertex_location: us-central1
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Make requests**
+**3. 發出請求**
 
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -136,33 +135,33 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 
 ---
 
-## Supported Endpoints
+## 支援的端點 {#supported-endpoints}
 
-LiteLLM provides **full end-to-end support** for Gemini 3.1 Flash Lite Preview on:
+LiteLLM 在以下平台上為 Gemini 3.1 Flash Lite Preview 提供 **完整端到端支援**：
 
-- ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
-- ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) compatible endpoint 
+- ✅ `/v1/chat/completions` - 相容 OpenAI chat completions 的端點
+- ✅ `/v1/responses` - 相容 OpenAI Responses API 的端點（串流與非串流）
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - 相容 Anthropic messages 的端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容的端點 
 
-All endpoints support:
-- Streaming and non-streaming responses
-- Function calling with thought signatures
-- Multi-turn conversations
-- All Gemini 3-specific features (thinking levels, thought signatures)
-- Full multimodal support (text, image, audio, video)
+所有端點都支援：
+- 串流與非串流回應
+- 具備 thought signatures 的函式呼叫
+- 多輪對話
+- 所有 Gemini 3 專屬功能（thinking levels、thought signatures）
+- 完整多模態支援（文字、圖片、音訊、影片）
 
 ---
 
-## `reasoning_effort` Mapping for Gemini 3.1
+## Gemini 3.1 的 `reasoning_effort` 對應 {#reasoning_effort-mapping-for-gemini-31}
 
-LiteLLM automatically maps OpenAI's `reasoning_effort` parameter to Gemini's `thinkingLevel`:
+LiteLLM 會自動將 OpenAI 的 `reasoning_effort` 參數對應到 Gemini 的 `thinkingLevel`：
 
-| reasoning_effort | thinking_level | Use Case |
+| reasoning_effort | thinking_level | 使用情境 |
 |------------------|----------------|----------|
-| `minimal` | `minimal` | Ultra-fast responses, simple queries |
-| `low` | `low` | Basic instruction following |
-| `medium` | `medium` | Balanced reasoning for moderate complexity |
-| `high` | `high` | Maximum reasoning depth, complex problems |
-| `disable` | `minimal` | Disable extended reasoning |
-| `none` | `minimal` | No extended reasoning |
+| `minimal` | `minimal` | 極速回應、簡單查詢 |
+| `low` | `low` | 基本指令遵循 |
+| `medium` | `medium` | 適用於中等複雜度的平衡推理 |
+| `high` | `high` | 最大推理深度、複雜問題 |
+| `disable` | `minimal` | 停用延伸推理 |
+| `none` | `minimal` | 不進行延伸推理 |

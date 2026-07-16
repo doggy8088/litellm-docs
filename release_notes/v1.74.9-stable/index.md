@@ -1,5 +1,5 @@
 ---
-title: "v1.74.9-stable - Auto-Router"
+title: "v1.74.9-stable - 自動路由器"
 slug: "v1-74-9"
 date: 2025-07-27T10:00:00
 authors:
@@ -19,7 +19,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -43,37 +43,36 @@ pip install litellm==1.74.9.post2
 
 ---
 
-## Key Highlights
+## 主要亮點 {#key-highlights}
 
-- **Auto-Router** - Automatically route requests to specific models based on request content.
-- **Model-level Guardrails** - Only run guardrails when specific models are used.
-- **MCP Header Propagation** - Propagate headers from client to backend MCP.
-- **New LLM Providers** - Added Bedrock inpainting support and Recraft API image generation  / image edits support.
+- **自動路由器** - 根據請求內容自動將請求路由到特定模型。
+- **模型層級防護欄** - 僅在使用特定模型時執行防護欄。
+- **MCP 標頭傳遞** - 將標頭從用戶端傳遞到後端 MCP。
+- **新 LLM 提供者** - 新增 Bedrock inpainting 支援與 Recraft API 圖像生成 / 圖像編輯支援。
 
 ---
 
-## Auto-Router
+## 自動路由器 {#auto-router}
 
 <Image img={require('../../img/release_notes/auto_router.png')} />
 
 <br/>
 
-This release introduces auto-routing to models based on request content. This means **Proxy Admins** can define a set of keywords that always routes to specific models when **users** opt in to using the auto-router.
+此版本導入了依據請求內容自動路由到模型的功能。這表示當 **Proxy Admins** 選擇啟用自動路由器時，**users** 可以定義一組關鍵字，讓系統一律路由到特定模型。
 
-This is great for internal use cases where you don't want **users** to think about which model to use - for example, use Claude models for coding vs GPT models for generating ad copy.
+這非常適合內部使用情境，因為您不希望 **users** 去思考要使用哪個模型——例如，使用 Claude 模型進行程式撰寫，而使用 GPT 模型生成廣告文案。
 
-
-[Read More](../../docs/proxy/auto_routing)
+[閱讀更多](../../docs/proxy/auto_routing)
 
 ---
 
-## Model-level Guardrails
+## 模型層級防護欄 {#model-level-guardrails}
 
 <Image img={require('../../img/release_notes/model_level_guardrails.jpg')} />
 
 <br/>
 
-This release brings model-level guardrails support to your config.yaml + UI. This is great for cases when you have an on-prem and hosted model, and just want to run prevent sending PII to the hosted model.
+此版本為您的 config.yaml + UI 帶來模型層級防護欄支援。這非常適合當您同時有內部部署與託管模型，且只想執行以防止將 PII 傳送到託管模型的情境。
 
 ```yaml
 model_list:
@@ -94,29 +93,28 @@ guardrails:
 ```
 
 
-[Read More](../../docs/proxy/guardrails/quick_start#model-level-guardrails)
+[閱讀更多](../../docs/proxy/guardrails/quick_start#model-level-guardrails)
 
 ---
-## MCP Header Propagation
+## MCP 標頭傳遞 {#mcp-header-propagation}
 
 <Image img={require('../../img/release_notes/mcp_header_propogation.png')} />
 
 <br/>
 
-v1.74.9-stable allows you to propagate MCP server specific authentication headers via LiteLLM
+v1.74.9-stable 讓您可以透過 LiteLLM 傳遞 MCP 伺服器特定的驗證標頭
 
-- Allowing users to specify which `header_name` is to be propagated to which `mcp_server` via headers
-- Allows adding of different deployments of same MCP server type to use different authentication headers
+- 允許使用者透過標頭指定哪個 `header_name` 要傳遞到哪個 `mcp_server`
+- 可為同一 MCP 伺服器類型的不同部署新增不同的驗證標頭
 
-
-[Read More](https://docs.litellm.ai/docs/mcp#new-server-specific-auth-headers-recommended)
+[閱讀更多](https://docs.litellm.ai/docs/mcp#new-server-specific-auth-headers-recommended)
 
 ---
-## New Models / Updated Models
+## 新模型 / 更新模型 {#new-models--updated-models}
 
-#### Pricing / Context Window Updates
+#### 價格 / Context Window 更新 {#pricing--context-window-updates}
 
-| Provider    | Model                                  | Context Window | Input ($/1M tokens) | Output ($/1M tokens) |
+| 提供者    | 模型                                  | 上下文視窗 | 輸入（$/百萬 tokens） | 輸出（$/百萬 tokens） |
 | ----------- | -------------------------------------- | -------------- | ------------------- | -------------------- |
 | Fireworks AI | `fireworks/models/kimi-k2-instruct` | 131k | $0.6 | $2.5 | 
 | OpenRouter | `openrouter/qwen/qwen-vl-plus` | 8192 | $0.21 | $0.63 | 
@@ -131,169 +129,169 @@ v1.74.9-stable allows you to propagate MCP server specific authentication header
 | VertexAI | `vertex_ai/gemini-2.0-flash-lite-001` | 1,048,576 | $0.35 | $1.5 | 
 | OpenAI | `gpt-4o-realtime-preview-2025-06-03` | 128k | $5 | $20 |
 
-#### Features
+#### 功能 {#features}
 
 - **[Lambda AI](../../docs/providers/lambda_ai)**
-    - New LLM API provider - [PR #12817](https://github.com/BerriAI/litellm/pull/12817)
+    - 新 LLM API 提供者 - [PR #12817](https://github.com/BerriAI/litellm/pull/12817)
 - **[Github Copilot](../../docs/providers/github_copilot)**
-    - Dynamic endpoint support - [PR #12827](https://github.com/BerriAI/litellm/pull/12827)
+    - 支援動態端點 - [PR #12827](https://github.com/BerriAI/litellm/pull/12827)
 - **[Morph](../../docs/providers/morph)**
-    - New LLM API provider - [PR #12821](https://github.com/BerriAI/litellm/pull/12821)
+    - 新 LLM API 提供者 - [PR #12821](https://github.com/BerriAI/litellm/pull/12821)
 - **[Groq](../../docs/providers/groq)**
-    - Remove deprecated groq/qwen-qwq-32b - [PR #12832](https://github.com/BerriAI/litellm/pull/12831)
+    - 移除已淘汰的 groq/qwen-qwq-32b - [PR #12832](https://github.com/BerriAI/litellm/pull/12831)
 - **[Recraft](../../docs/providers/recraft)**
-    - New image generation API - [PR #12832](https://github.com/BerriAI/litellm/pull/12832)
-    - New image edits api - [PR #12874](https://github.com/BerriAI/litellm/pull/12874)
+    - 新圖像生成 API - [PR #12832](https://github.com/BerriAI/litellm/pull/12832)
+    - 新圖像編輯 API - [PR #12874](https://github.com/BerriAI/litellm/pull/12874)
 - **[Azure OpenAI](../../docs/providers/azure/azure)**
-    - Support DefaultAzureCredential without hard-coded environment variables - [PR #12841](https://github.com/BerriAI/litellm/pull/12841)
+    - 支援 DefaultAzureCredential，無需硬編碼環境變數 - [PR #12841](https://github.com/BerriAI/litellm/pull/12841)
 - **[Hyperbolic](../../docs/providers/hyperbolic)**
-    - New LLM API provider - [PR #12826](https://github.com/BerriAI/litellm/pull/12826)
+    - 新 LLM API 提供者 - [PR #12826](https://github.com/BerriAI/litellm/pull/12826)
 - **[OpenAI](../../docs/providers/openai)**
-    - `/realtime` API - pass through intent query param - [PR #12838](https://github.com/BerriAI/litellm/pull/12838)
+    - `/realtime` API - 傳遞 intent 查詢參數 - [PR #12838](https://github.com/BerriAI/litellm/pull/12838)
 - **[Bedrock](../../docs/providers/bedrock)**
-    - Add inpainting support for Amazon Nova Canvas - [PR #12949](https://github.com/BerriAI/litellm/pull/12949) s/o @[SantoshDhaladhuli](https://github.com/SantoshDhaladhuli)
+    - 新增 Amazon Nova Canvas 的 inpainting 支援 - [PR #12949](https://github.com/BerriAI/litellm/pull/12949) 感謝 @[SantoshDhaladhuli](https://github.com/SantoshDhaladhuli)
 
-#### Bugs
+#### 錯誤修正 {#bugs}
 - **Gemini ([Google AI Studio](../../docs/providers/gemini) + [VertexAI](../../docs/providers/vertex))**
-    - Fix leaking file descriptor error on sync calls - [PR #12824](https://github.com/BerriAI/litellm/pull/12824)
+    - 修正同步請求時洩漏檔案描述元錯誤 - [PR #12824](https://github.com/BerriAI/litellm/pull/12824)
 - **IBM Watsonx**
-    - use correct parameter name for tool choice - [PR #9980](https://github.com/BerriAI/litellm/pull/9980)
+    - 為 tool choice 使用正確的參數名稱 - [PR #9980](https://github.com/BerriAI/litellm/pull/9980)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Only show ‘reasoning_effort’ for supported models - [PR #12847](https://github.com/BerriAI/litellm/pull/12847)
-    - Handle $id and $schema in tool call requests (Anthropic API stopped accepting them) - [PR #12959](https://github.com/BerriAI/litellm/pull/12959)
+    - 僅為支援的模型顯示 ‘reasoning_effort’ - [PR #12847](https://github.com/BerriAI/litellm/pull/12847)
+    - 處理 tool call 請求中的 $id 和 $schema（Anthropic API 已停止接受它們）- [PR #12959](https://github.com/BerriAI/litellm/pull/12959)
 - **[Openrouter](../../docs/providers/openrouter)**
-    - filter out cache_control flag for non-anthropic models (allows usage with claude code) https://github.com/BerriAI/litellm/pull/12850
+    - 過濾掉非 anthropic 模型的 cache_control 標記（可搭配 claude code 使用）https://github.com/BerriAI/litellm/pull/12850
 - **[Gemini](../../docs/providers/gemini)**
-    - Shorten Gemini tool_call_id for Open AI compatibility - [PR #12941](https://github.com/BerriAI/litellm/pull/12941) s/o @[tonga54](https://github.com/tonga54)
+    - 縮短 Gemini tool_call_id 以相容 Open AI - [PR #12941](https://github.com/BerriAI/litellm/pull/12941) 感謝 @[tonga54](https://github.com/tonga54)
 
 ---
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Features
+#### 功能 {#features-1}
 
-- **[Passthrough endpoints](../../docs/pass_through/)**
-    - Make key/user/team cost tracking OSS - [PR #12847](https://github.com/BerriAI/litellm/pull/12847)
+- **[Passthrough 端點](../../docs/pass_through/)**
+    - 將 key/user/team 成本追蹤改為 OSS - [PR #12847](https://github.com/BerriAI/litellm/pull/12847)
 - **[/v1/models](../../docs/providers/passthrough)**
-    - Return fallback models as part of api response - [PR #12811](https://github.com/BerriAI/litellm/pull/12811) s/o @[murad-khafizov](https://github.com/murad-khafizov)
+    - 將備援模型作為 API 回應的一部分回傳 - [PR #12811](https://github.com/BerriAI/litellm/pull/12811) 感謝 @[murad-khafizov](https://github.com/murad-khafizov)
 - **[/vector_stores](../../docs/providers/passthrough)**
-    - Make permission management OSS - [PR #12990](https://github.com/BerriAI/litellm/pull/12990)
+    - 將權限管理改為 OSS - [PR #12990](https://github.com/BerriAI/litellm/pull/12990)
 
-#### Bugs
+#### 錯誤修正 {#bugs-1}
 1. `/batches`
-    1. Skip invalid batch during cost tracking check (prev. Would stop all checks) - [PR #12782](https://github.com/BerriAI/litellm/pull/12782)
+    1. 在成本追蹤檢查期間略過無效批次（先前會停止所有檢查） - [PR #12782](https://github.com/BerriAI/litellm/pull/12782)
 2. `/chat/completions`
-    1. Fix async retryer on .acompletion() - [PR #12886](https://github.com/BerriAI/litellm/pull/12886)
+    1. 修正 .acompletion() 的非同步重試器 - [PR #12886](https://github.com/BerriAI/litellm/pull/12886)
 
 ---
 
-## [MCP Gateway](../../docs/mcp)
+## [MCP 閘道](../../docs/mcp) {#mcp-gatewaydocsmcp}
 
-#### Features
-- **[Permission Management](../../docs/mcp#grouping-mcps-access-groups)**
-    - Make permission management by key/team OSS - [PR #12988](https://github.com/BerriAI/litellm/pull/12988)
-- **[MCP Alias](../../docs/mcp#mcp-aliases)**
-    - Support mcp server aliases (useful for calling long mcp server names on Cursor) - [PR #12994](https://github.com/BerriAI/litellm/pull/12994)
-- **Header Propagation**
-    - Support propagating headers from client to backend MCP (useful for sending personal access tokens to backend MCP) - [PR #13003](https://github.com/BerriAI/litellm/pull/13003)
+#### 功能 {#features-2}
+- **[權限管理](../../docs/mcp#grouping-mcps-access-groups)**
+    - 將依 key/team 的權限管理改為 OSS - [PR #12988](https://github.com/BerriAI/litellm/pull/12988)
+- **[MCP 別名](../../docs/mcp#mcp-aliases)**
+    - 支援 mcp server 別名（適合在 Cursor 上呼叫很長的 mcp server 名稱）- [PR #12994](https://github.com/BerriAI/litellm/pull/12994)
+- **標頭傳遞**
+    - 支援將標頭從用戶端傳遞到後端 MCP（適合將 personal access tokens 傳送到後端 MCP）- [PR #13003](https://github.com/BerriAI/litellm/pull/13003)
 
 ---
 
-## Management Endpoints / UI
+## 管理端點 / UI {#management-endpoints--ui}
 
-#### Features
-- **Usage**
-    - Support viewing usage by model group - [PR #12890](https://github.com/BerriAI/litellm/pull/12890)
-- **Virtual Keys**
-    - New `key_type` field on `/key/generate` - allows specifying if key can call LLM API vs. Management routes - [PR #12909](https://github.com/BerriAI/litellm/pull/12909)
-- **Models**
-    - Add ‘auto router’ on UI - [PR #12960](https://github.com/BerriAI/litellm/pull/12960)
-    - Show global retry policy on UI - [PR #12969](https://github.com/BerriAI/litellm/pull/12969)
-    - Add model-level guardrails on create + update - [PR #13006](https://github.com/BerriAI/litellm/pull/13006)
+#### 功能 {#features-3}
+- **用量**
+    - 支援依模型群組檢視用量 - [PR #12890](https://github.com/BerriAI/litellm/pull/12890)
+- **虛擬金鑰**
+    - 在 `/key/generate` 上新增 `key_type` 欄位 - 可指定 key 是否能呼叫 LLM API 與管理路由 - [PR #12909](https://github.com/BerriAI/litellm/pull/12909)
+- **模型**
+    - 在 UI 上新增「自動路由器」- [PR #12960](https://github.com/BerriAI/litellm/pull/12960)
+    - 在 UI 上顯示全域重試政策 - [PR #12969](https://github.com/BerriAI/litellm/pull/12969)
+    - 在建立與更新時新增模型層級防護欄 - [PR #13006](https://github.com/BerriAI/litellm/pull/13006)
 
-#### Bugs
+#### 錯誤修正 {#bugs-2}
 - **SSO**
-    - Fix logout when SSO is enabled - [PR #12703](https://github.com/BerriAI/litellm/pull/12703)
-    - Fix reset SSO when ui_access_mode is updated - [PR #13011](https://github.com/BerriAI/litellm/pull/13011)
-- **Guardrails**
-    - Show correct guardrails when editing a team - [PR #12823](https://github.com/BerriAI/litellm/pull/12823)
-- **Virtual Keys**
-    - Get updated token on regenerate key - [PR #12788](https://github.com/BerriAI/litellm/pull/12788)
-    - Fix CVE with key injection - [PR #12840](https://github.com/BerriAI/litellm/pull/12840)
+    - 在啟用 SSO 時修正登出問題 - [PR #12703](https://github.com/BerriAI/litellm/pull/12703)
+    - 在更新 ui_access_mode 時修正重設 SSO - [PR #13011](https://github.com/BerriAI/litellm/pull/13011)
+- **防護欄**
+    - 編輯團隊時顯示正確的 guardrails - [PR #12823](https://github.com/BerriAI/litellm/pull/12823)
+- **虛擬金鑰**
+    - 重新產生 key 時取得更新後的 token - [PR #12788](https://github.com/BerriAI/litellm/pull/12788)
+    - 修正 key 注入的 CVE - [PR #12840](https://github.com/BerriAI/litellm/pull/12840)
 ---
 
-## Logging / Guardrail Integrations
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
 
-#### Features
+#### 功能 {#features-4}
 - **[Google Cloud Model Armor](../../docs/proxy/guardrails/model_armor)**
-    - Document new guardrail - [PR #12492](https://github.com/BerriAI/litellm/pull/12492)
+    - 文件新的防護欄 - [PR #12492](https://github.com/BerriAI/litellm/pull/12492)
 - **[Pillar Security](../../docs/proxy/guardrails/pillar_security)**
-    - New LLM Guardrail - [PR #12791](https://github.com/BerriAI/litellm/pull/12791)
+    - 新的 LLM 防護欄 - [PR #12791](https://github.com/BerriAI/litellm/pull/12791)
 - **CloudZero**
-    - Allow exporting spend to cloudzero - [PR #12908](https://github.com/BerriAI/litellm/pull/12908)
-- **Model-level Guardrails**
-    - Support model-level guardrails - [PR #12968](https://github.com/BerriAI/litellm/pull/12968)
+    - 允許將支出匯出到 cloudzero - [PR #12908](https://github.com/BerriAI/litellm/pull/12908)
+- **模型層級防護欄**
+    - 支援模型層級防護欄 - [PR #12968](https://github.com/BerriAI/litellm/pull/12968)
 
-#### Bugs
+#### 錯誤 {#bugs-3}
 - **[Prometheus](../../docs/proxy/prometheus)**
-    - Fix `[tag]=false` when tag is set for tag-based metrics - [PR #12916](https://github.com/BerriAI/litellm/pull/12916)
+    - 修正設定標籤式指標的標籤時的 `[tag]=false` - [PR #12916](https://github.com/BerriAI/litellm/pull/12916)
 - **[Guardrails AI](../../docs/proxy/guardrails/guardrails_ai)**
-    - Use ‘validatedOutput’ to allow usage of “fix” guards - [PR #12891](https://github.com/BerriAI/litellm/pull/12891) s/o @[DmitriyAlergant](https://github.com/DmitriyAlergant)
+    - 使用 ‘validatedOutput’ 以允許使用 “fix” guards - [PR #12891](https://github.com/BerriAI/litellm/pull/12891) 感謝 @[DmitriyAlergant](https://github.com/DmitriyAlergant)
 
 ---
 
-## Performance / Loadbalancing / Reliability improvements
+## 效能 / 負載平衡 / 可靠性改進 {#performance--loadbalancing--reliability-improvements}
 
-#### Features
-- **[Auto-Router](../../docs/proxy/auto_routing)**
-    - New auto-router powered by `semantic-router` - [PR #12955](https://github.com/BerriAI/litellm/pull/12955)
+#### 功能 {#features-5}
+- **[自動路由器](../../docs/proxy/auto_routing)**
+    - 由 `semantic-router` 驅動的新 auto-router - [PR #12955](https://github.com/BerriAI/litellm/pull/12955)
 
-#### Bugs
+#### 錯誤 {#bugs-4}
 - **forward_clientside_headers**
-    - Filter out `content-length` from headers (caused backend requests to hang) - [PR #12886](https://github.com/BerriAI/litellm/pull/12886/files)
-- **Message Redaction**
-    - Fix cannot pickle coroutine object error - [PR #13005](https://github.com/BerriAI/litellm/pull/13005)
+    - 從標頭中篩除 `content-length`（導致後端請求卡住）- [PR #12886](https://github.com/BerriAI/litellm/pull/12886/files)
+- **訊息遮罩**
+    - 修正無法 pickle coroutine object 錯誤 - [PR #13005](https://github.com/BerriAI/litellm/pull/13005)
 ---
 
-## General Proxy Improvements
+## 一般 Proxy 改進 {#general-proxy-improvements}
 
-#### Features
-- **Benchmarks**
-    - Updated litellm proxy benchmarks (p50, p90, p99 overhead) - [PR #12842](https://github.com/BerriAI/litellm/pull/12842)
-- **Request Headers**
-    - Added new `x-litellm-num-retries` request header 
+#### 功能 {#features-6}
+- **基準測試**
+    - 更新 litellm proxy 基準測試（p50、p90、p99 額外負擔）- [PR #12842](https://github.com/BerriAI/litellm/pull/12842)
+- **請求標頭**
+    - 新增 `x-litellm-num-retries` 請求標頭
 - **Swagger**
-    - Support local swagger on custom root paths - [PR #12911](https://github.com/BerriAI/litellm/pull/12911)
-- **Health**
-    - Track cost + add tags for health checks done by LiteLLM Proxy - [PR #12880](https://github.com/BerriAI/litellm/pull/12880)
-#### Bugs
+    - 支援自訂 root paths 上的本機 swagger - [PR #12911](https://github.com/BerriAI/litellm/pull/12911)
+- **健康狀態**
+    - 追蹤成本 + 為 LiteLLM Proxy 執行的健康檢查新增標籤 - [PR #12880](https://github.com/BerriAI/litellm/pull/12880)
+#### 錯誤 {#bugs-5}
 
-- **Proxy Startup**
-    - Fixes issue on startup where team member budget is None would block startup - [PR #12843](https://github.com/BerriAI/litellm/pull/12843)
+- **Proxy 啟動**
+    - 修正在啟動時，當 team member budget 為 None 會阻擋啟動的問題 - [PR #12843](https://github.com/BerriAI/litellm/pull/12843)
 - **Docker**
-    - Move non-root docker to chain guard image (fewer vulnerabilities) - [PR #12707](https://github.com/BerriAI/litellm/pull/12707)
-    - add azure-keyvault==4.2.0 to Docker img - [PR #12873](https://github.com/BerriAI/litellm/pull/12873)
-- **Separate Health App**
-    - Pass through cmd args via supervisord (enables user config to still work via docker) - [PR #12871](https://github.com/BerriAI/litellm/pull/12871)
+    - 將 non-root docker 移至 chain guard image（更少漏洞）- [PR #12707](https://github.com/BerriAI/litellm/pull/12707)
+    - 將 azure-keyvault==4.2.0 加入 Docker img - [PR #12873](https://github.com/BerriAI/litellm/pull/12873)
+- **分離式健康檢查應用程式**
+    - 透過 supervisord 傳遞 cmd args（讓使用者設定在 docker 中仍可運作）- [PR #12871](https://github.com/BerriAI/litellm/pull/12871)
 - **Swagger**
-    - Bump DOMPurify version (fixes vulnerability) - [PR #12911](https://github.com/BerriAI/litellm/pull/12911)
-    - Add back local swagger bundle (enables swagger to work in air gapped env.) - [PR #12911](https://github.com/BerriAI/litellm/pull/12911)
-- **Request Headers**
-    - Make ‘user_header_name’ field check case insensitive (fixes customer budget enforcement for OpenWebUi) - [PR #12950](https://github.com/BerriAI/litellm/pull/12950)
-- **SpendLogs**
-    - Fix issues writing to DB when custom_llm_provider is None - [PR #13001](https://github.com/BerriAI/litellm/pull/13001)
+    - 升級 DOMPurify 版本（修正漏洞）- [PR #12911](https://github.com/BerriAI/litellm/pull/12911)
+    - 加回本機 swagger bundle（讓 swagger 能在 air gapped 環境中運作）- [PR #12911](https://github.com/BerriAI/litellm/pull/12911)
+- **請求標頭**
+    - 將 ‘user_header_name’ 欄位檢查改為不分大小寫（修正 OpenWebUi 的客戶預算強制執行）- [PR #12950](https://github.com/BerriAI/litellm/pull/12950)
+- **支出記錄**
+    - 修正 custom_llm_provider 為 None 時寫入 DB 的問題 - [PR #13001](https://github.com/BerriAI/litellm/pull/13001)
 
 ---
 
-## New Contributors
-* @magicalne made their first contribution in https://github.com/BerriAI/litellm/pull/12804
-* @pavangudiwada made their first contribution in https://github.com/BerriAI/litellm/pull/12798
-* @mdiloreto made their first contribution in https://github.com/BerriAI/litellm/pull/12707
-* @murad-khafizov made their first contribution in https://github.com/BerriAI/litellm/pull/12811
-* @eagle-p made their first contribution in https://github.com/BerriAI/litellm/pull/12791
-* @apoorv-sharma made their first contribution in https://github.com/BerriAI/litellm/pull/12920
-* @SantoshDhaladhuli made their first contribution in https://github.com/BerriAI/litellm/pull/12949
-* @tonga54 made their first contribution in https://github.com/BerriAI/litellm/pull/12941
-* @sings-to-bees-on-wednesdays made their first contribution in https://github.com/BerriAI/litellm/pull/12950
+## 新貢獻者 {#new-contributors}
+* @magicalne 在 https://github.com/BerriAI/litellm/pull/12804 完成了他們的第一次貢獻
+* @pavangudiwada 在 https://github.com/BerriAI/litellm/pull/12798 完成了他們的第一次貢獻
+* @mdiloreto 在 https://github.com/BerriAI/litellm/pull/12707 完成了他們的第一次貢獻
+* @murad-khafizov 在 https://github.com/BerriAI/litellm/pull/12811 完成了他們的第一次貢獻
+* @eagle-p 在 https://github.com/BerriAI/litellm/pull/12791 完成了他們的第一次貢獻
+* @apoorv-sharma 在 https://github.com/BerriAI/litellm/pull/12920 完成了他們的第一次貢獻
+* @SantoshDhaladhuli 在 https://github.com/BerriAI/litellm/pull/12949 完成了他們的第一次貢獻
+* @tonga54 在 https://github.com/BerriAI/litellm/pull/12941 完成了他們的第一次貢獻
+* @sings-to-bees-on-wednesdays 在 https://github.com/BerriAI/litellm/pull/12950 完成了他們的第一次貢獻
 
-## **[Full Changelog](https://github.com/BerriAI/litellm/compare/v1.74.7-stable...v1.74.9.rc-draft)**
+## **[完整變更記錄](https://github.com/BerriAI/litellm/compare/v1.74.7-stable...v1.74.9.rc-draft)** {#full-changeloghttpsgithubcomberriailitellmcomparev1747-stablev1749rc-draft}

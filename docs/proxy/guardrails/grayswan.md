@@ -1,35 +1,34 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gray Swan Cygnal Guardrail
+# Gray Swan Cygnal 防護欄 {#gray-swan-cygnal-guardrail}
 
-Use [Gray Swan Cygnal](https://docs.grayswan.ai/cygnal/monitor-requests) to continuously monitor conversations for policy violations, indirect prompt injection (IPI), jailbreak attempts, and other safety risks.
+使用 [Gray Swan Cygnal](https://docs.grayswan.ai/cygnal/monitor-requests) 持續監控對話中的政策違規、間接提示注入（IPI）、越獄嘗試，以及其他安全風險。
 
-Cygnal returns a `violation` score between `0` and `1` (higher means more likely to violate policy), plus metadata such as violated rule indices, mutation detection, and IPI flags. LiteLLM can automatically block or monitor requests based on this signal.
+Cygnal 會回傳介於 `0` 和 `1` 之間的 `violation` 分數（分數越高表示越可能違反政策），以及違反規則索引、變異偵測和 IPI 標記等中繼資料。LiteLLM 可根據此訊號自動封鎖或監控請求。
 
 ---
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Obtain Credentials
+### 1. 取得憑證 {#1-obtain-credentials}
 
-1. Log in to our Gray Swan platform and generate a Cygnal API key. 
+1. 登入我們的 Gray Swan 平台並產生 Cygnal API 金鑰。 
 
-    For existing customers, you should already have access to our [platform](https://platform.grayswan.ai).
+    現有客戶應已可存取我們的 [平台](https://platform.grayswan.ai)。
 
-    For new users, please register at this [page](https://hubs.ly/Q03-sX1J0) and we are more than happy to give you an onboarding!
+    新使用者請先到這個 [頁面](https://hubs.ly/Q03-sX1J0) 註冊，我們很樂意為您進行導入！
 
-
-2. Configure environment variables for the LiteLLM proxy host:
+2. 為 LiteLLM proxy 主機設定環境變數：
 
     ```bash
     export GRAYSWAN_API_KEY="your-grayswan-key"
     export GRAYSWAN_API_BASE="https://api.grayswan.ai"
     ```
 
-### 2. Configure `config.yaml`
+### 2. 設定 `config.yaml` {#2-configure-configyaml}
 
-Add a guardrail entry that references the Gray Swan integration. Below is our recommmended settings.
+新增一個參照 Gray Swan 整合的防護欄項目。以下是我們建議的設定。
 
 ```yaml
 model_list:                                 # this part is a standard litellm configuration for reference
@@ -62,7 +61,7 @@ litellm_settings:
   set_verbose: true
 ```
 
-### 3. Launch the Proxy
+### 3. 啟動 Proxy {#3-launch-the-proxy}
 
 ```bash
 litellm --config config.yaml --port 4000
@@ -70,44 +69,42 @@ litellm --config config.yaml --port 4000
 
 ---
 
-## Choosing Guardrail Modes
+## 選擇防護欄模式 {#choosing-guardrail-modes}
 
-Gray Swan can run during `pre_call`, `during_call`, and `post_call` stages. Combine modes based on your latency and coverage requirements. 
+Gray Swan 可在 `pre_call`、`during_call` 與 `post_call` 階段執行。請根據您的延遲與涵蓋範圍需求組合模式。 
 
-| Mode         | When it Runs      | Protects              | Typical Use Case |
+| 模式         | 執行時機      | 防護範圍              | 典型使用情境 |
 |--------------|-------------------|-----------------------|------------------|
-| `pre_call`   | Before LLM call   | User input only       | Block prompt injection before it reaches the model |
-| `during_call`| Parallel to call  | User input only       | Low-latency monitoring without blocking |
-| `post_call`  | After response    | Model Outputs         | Scan output for policy violations, leaked secrets, or IPI |
+| `pre_call`   | 在 LLM 呼叫前   | 僅使用者輸入       | 在提示注入到達模型前加以封鎖 |
+| `during_call`| 與呼叫平行執行  | 僅使用者輸入       | 低延遲監控而不封鎖 |
+| `post_call`  | 在回應後    | 模型輸出         | 掃描輸出中的政策違規、洩漏的秘密或 IPI |
 
+當使用 `during_call` 搭配 `on_flagged_action: block` 或 `on_flagged_action: passthrough` 時：
 
-When using `during_call` with `on_flagged_action: block` or `on_flagged_action: passthrough`:
+- **LLM 呼叫會與防護欄檢查平行執行**，並使用 `asyncio.gather`
+- 即使防護欄偵測到違規，**LLM tokens 仍會被消耗**
+- 防護欄例外會阻止回應送達使用者，但**不會取消正在執行的 LLM 任務**
+- 這表示您會支付完整的 LLM 成本，同時向使用者回傳錯誤/直通訊息
 
-- **The LLM call runs in parallel** with the guardrail check using `asyncio.gather`
-- **LLM tokens are still consumed** even if the guardrail detects a violation
-- The guardrail exception prevents the response from reaching the user, but **does not cancel the running LLM task**
-- This means you pay full LLM costs while returning an error/passthrough message to the user
-
-**Recommendation:** Use `pre_call` and `post_call` instead of `during_call` for `passthrough` (or `block`) `on_flagged_action` (see our recommended configuration above). Reserve `during_call` for `monitor` mode ONLY when you want low-latency logging without impacting the user experience.
-
+**建議：** 對於 `passthrough`（或 `block`）`on_flagged_action`，請使用 `pre_call` 與 `post_call`，不要使用 `during_call`（請參見上方我們建議的設定）。僅在您想要低延遲記錄且不影響使用者體驗時，才將 `during_call` 保留給 `monitor` 模式。
 
 ---
 
-## Work with Claude Code
+## 搭配 Claude Code {#work-with-claude-code}
 
-Follow the official litellm [guide](https://docs.litellm.ai/docs/tutorials/claude_responses_api) on setting up Claude Code with litellm, with the guardrail part mentioned above added to your litellm configuration. Cygnal natively supports coding agent policies defense. Define your own policy or use the provided coding policies on the platform. The example config we show above is also the recommended setup for Claude Code (with the `policy_id` replaced with an appropriate one).
+請依照官方 litellm [指南](https://docs.litellm.ai/docs/tutorials/claude_responses_api) 設定 Claude Code 與 litellm，並將上述提到的防護欄部分加入您的 litellm 設定。Cygnal 原生支援 coding agent policies defense。您可以自行定義政策，或使用平台上提供的 coding policies。我們上方展示的範例設定也是 Claude Code 的建議設定（將 `policy_id` 替換為適當的值）。
 
 ---
 
-## Per-request overrides via `extra_body`
+## 透過 `extra_body` 進行每次請求覆寫 {#per-request-overrides-via-extra_body}
 
-You can override parts of the Gray Swan guardrail configuration on a per-request basis by passing `litellm_metadata.guardrails[*].grayswan.extra_body`.
+您可以透過傳遞 `litellm_metadata.guardrails[*].grayswan.extra_body`，在每次請求層級覆寫 Gray Swan 防護欄設定的部分內容。
 
-`extra_body` is merged into the Cygnal request body and takes precedence over specific fields from `config.yaml`, which are `policy_id`, `violation_threshold`, and `reasoning_mode`.
+`extra_body` 會合併到 Cygnal 請求本文中，並優先於來自 `config.yaml` 的特定欄位；這些欄位為 `policy_id`、`violation_threshold` 與 `reasoning_mode`。
 
-If you include a `metadata` field inside `extra_body`, it is forwarded to the Cygnal API as-is under the request body's `metadata` field.
+如果您在 `extra_body` 中加入 `metadata` 欄位，它會原樣以請求本文的 `metadata` 欄位轉送至 Cygnal API。
 
-Example:
+範例：
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/v1/messages?beta=true" \
@@ -133,7 +130,7 @@ curl -X POST "http://0.0.0.0:4000/v1/messages?beta=true" \
   }'
 ```
 
-OpenAI client:
+OpenAI 用戶端：
 
 ```python
 from openai import OpenAI
@@ -160,7 +157,7 @@ resp = client.responses.create(
 )
 ```
 
-Anthropic client:
+Anthropic 用戶端：
 
 ```python
 from anthropic import Anthropic
@@ -188,26 +185,26 @@ resp = client.messages.create(
 )
 ```
 
-Notes:
+注意：
 
-- The guardrail name (for example, `cygnal-monitor`) must match the `guardrail_name` in `config.yaml`.
-- Per-request guardrail overrides may require a premium license, depending on your proxy settings.
+- 防護欄名稱（例如 `cygnal-monitor`）必須與 `config.yaml` 中的 `guardrail_name` 相符。
+- 依據您的 proxy 設定，每次請求的防護欄覆寫可能需要付費授權。
 
 ---
 
-## Configuration Reference
+## 設定參考 {#configuration-reference}
 
-| Parameter                             | Type            | Description |
+| 參數                             | 類型            | 說明 |
 |---------------------------------------|-----------------|-------------|
-| `api_key`                             | string          | Gray Swan Cygnal API key. Reads from `GRAYSWAN_API_KEY` if omitted. |
-| `api_base`                            | string          | Override for the Gray Swan API base URL. Defaults to `https://api.grayswan.ai` or `GRAYSWAN_API_BASE`. |
-| `mode`                                | string or list  | Guardrail stages (`pre_call`, `during_call`, `post_call`). |
-| `optional_params.on_flagged_action`   | string          | `monitor` (log only), `block` (raise `HTTPException`), or `passthrough` (replace response content with violation message, no 400 error). |
-| `optional_params.violation_threshold` | number (0-1)    | Scores at or above this value are considered violations. |
-| `optional_params.reasoning_mode`      | string          | `off`, `hybrid`, or `thinking`. Enables Cygnal's reasoning capabilities. |
-| `optional_params.categories`          | object          | Map of custom category names to descriptions. |
-| `optional_params.policy_id`           | string          | Gray Swan policy identifier. |
-| `guardrail_timeout`                   | number          | Timeout in seconds for the Cygnal request. Defaults to 30. |
-| `fail_open`                           | boolean         | If true, errors contacting Cygnal are logged and the request proceeds; if false, errors propagate. Defaults to treu. |
-| `streaming_end_of_stream_only`        | boolean         | For streaming `post_call`, only send the final assembled response to Cygnal. Defaults to false. |
-| `default_on`                          | boolean         | Run the guardrail on every request by default. |
+| `api_key`                             | string          | Gray Swan Cygnal API 金鑰。若省略，則從 `GRAYSWAN_API_KEY` 讀取。 |
+| `api_base`                            | string          | Gray Swan API base URL 的覆寫。預設為 `https://api.grayswan.ai` 或 `GRAYSWAN_API_BASE`。 |
+| `mode`                                | string or list  | 防護欄階段（`pre_call`、`during_call`、`post_call`）。 |
+| `optional_params.on_flagged_action`   | string          | `monitor`（僅記錄）、`block`（擲出 `HTTPException`），或 `passthrough`（以違規訊息取代回應內容，不回傳 400 錯誤）。 |
+| `optional_params.violation_threshold` | number (0-1)    | 分數大於或等於此值視為違規。 |
+| `optional_params.reasoning_mode`      | string          | `off`、`hybrid`，或 `thinking`。可啟用 Cygnal 的推理能力。 |
+| `optional_params.categories`          | object          | 自訂類別名稱對應至描述的對照表。 |
+| `optional_params.policy_id`           | string          | Gray Swan 政策識別碼。 |
+| `guardrail_timeout`                   | number          | Cygnal 請求的逾時秒數。預設為 30。 |
+| `fail_open`                           | boolean         | 若為 true，與 Cygnal 通訊時的錯誤會被記錄且請求會繼續；若為 false，錯誤會向上拋出。預設為 treu。 |
+| `streaming_end_of_stream_only`        | boolean         | 對於串流 `post_call`，只將最終組合完成的回應送至 Cygnal。預設為 false。 |
+| `default_on`                          | boolean         | 預設在每次請求上執行防護欄。 |

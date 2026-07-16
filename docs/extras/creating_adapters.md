@@ -1,14 +1,14 @@
-# Call any LiteLLM model in your custom format
+# 以自訂格式呼叫任何 LiteLLM 模型 {#call-any-litellm-model-in-your-custom-format}
 
-Use this to call any LiteLLM supported `.completion()` model, in your custom format. Useful if you have a custom API and want to support any LiteLLM supported model.
+使用此功能可用您的自訂格式呼叫任何 LiteLLM 支援的 `.completion()` 模型。若您有自訂 API，並想支援任何 LiteLLM 支援的模型，這會很有用。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-Your request → Adapter translates to OpenAI format → LiteLLM processes it → Adapter translates response back → Your response
+您的請求 → Adapter 轉換為 OpenAI 格式 → LiteLLM 處理 → Adapter 將回應轉回 → 您的回應
 
-## Create an Adapter
+## 建立 Adapter {#create-an-adapter}
 
-Inherit from `CustomLogger` and implement 3 methods:
+繼承自 `CustomLogger` 並實作 3 個方法：
 
 ```python
 from litellm.integrations.custom_logger import CustomLogger
@@ -39,7 +39,7 @@ class MyAdapter(CustomLogger):
         return MyStreamWrapper(completion_stream)
 ```
 
-## Register it
+## 註冊它 {#register-it}
 
 ```python
 import litellm
@@ -48,7 +48,7 @@ my_adapter = MyAdapter()
 litellm.adapters = [{"id": "my_provider", "adapter": my_adapter}]
 ```
 
-## Use it
+## 使用它 {#use-it}
 
 ```python
 from litellm import adapter_completion
@@ -62,7 +62,7 @@ response = adapter_completion(
 )
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python
 stream = adapter_completion(
@@ -76,7 +76,7 @@ for chunk in stream:
     print(chunk)
 ```
 
-### Async
+### 非同步 {#async}
 
 ```python
 from litellm import aadapter_completion
@@ -88,11 +88,11 @@ response = await aadapter_completion(
 )
 ```
 
-## Example: Anthropic Adapter
+## 範例：Anthropic Adapter {#example-anthropic-adapter}
 
-Here's how we translate Anthropic's format:
+以下是我們如何轉換 Anthropic 的格式：
 
-### Input Translation
+### 輸入轉換 {#input-translation}
 
 ```python
 def translate_completion_input_params(self, kwargs):
@@ -122,7 +122,7 @@ def translate_completion_input_params(self, kwargs):
     }
 ```
 
-### Output Translation
+### 輸出轉換 {#output-translation}
 
 ```python
 def translate_completion_output_params(self, response):
@@ -141,7 +141,7 @@ def translate_completion_output_params(self, response):
     )
 ```
 
-### Streaming
+### 串流 {#streaming-1}
 
 ```python
 from litellm.types.utils import AdapterCompletionStreamWrapper
@@ -172,9 +172,9 @@ def translate_completion_output_params_streaming(self, stream, model):
     return AnthropicStreamWrapper(stream, model)
 ```
 
-## Use with Proxy
+## 搭配 Proxy 使用 {#use-with-proxy}
 
-Add to your proxy config:
+加入您的 proxy 設定：
 
 ```yaml
 general_settings:
@@ -183,7 +183,7 @@ general_settings:
       target: "my_module.MyAdapter"
 ```
 
-Then call it:
+然後這樣呼叫：
 
 ```bash
 curl http://localhost:4000/v1/messages \
@@ -191,16 +191,16 @@ curl http://localhost:4000/v1/messages \
   -d '{"model": "gpt-4", "messages": [...]}'
 ```
 
-## Real Example
+## 實際範例 {#real-example}
 
-Check out the full Anthropic adapter:
+查看完整的 Anthropic adapter：
 - [transformation.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py)
 - [handler.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/experimental_pass_through/adapters/handler.py)
 - [streaming_iterator.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py)
 
-## That's it
+## 就是這樣 {#thats-it}
 
-1. Create a class that inherits `CustomLogger`
-2. Implement the 3 translation methods
-3. Register with `litellm.adapters = [{"id": "...", "adapter": ...}]`
-4. Call with `adapter_completion(adapter_id="...")`
+1. 建立一個繼承自 `CustomLogger` 的類別
+2. 實作這 3 個轉換方法
+3. 使用 `litellm.adapters = [{"id": "...", "adapter": ...}]` 註冊
+4. 透過 `adapter_completion(adapter_id="...")` 呼叫

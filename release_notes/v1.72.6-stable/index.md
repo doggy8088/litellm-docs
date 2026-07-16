@@ -1,5 +1,5 @@
 ---
-title: "v1.72.6-stable - MCP Gateway Permission Management"
+title: "v1.72.6-stable - MCP 閘道權限管理"
 slug: "v1-72-6-stable"
 date: 2025-06-14T10:00:00
 authors:
@@ -19,7 +19,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -41,254 +41,239 @@ pip install litellm==1.72.6.post2
 </TabItem>
 </Tabs>
 
+## 重點摘要 {#tldr}
 
-## TLDR
-
-
-* **Why Upgrade**
-    - Codex-mini on Claude Code: You can now use `codex-mini` (OpenAI’s code assistant model) via Claude Code.
-    - MCP Permissions Management: Manage permissions for MCP Servers by Keys, Teams, Organizations (entities) on LiteLLM.
-    - UI: Turn on/off auto refresh on logs view. 
-    - Rate Limiting: Support for output token-only rate limiting.  
-* **Who Should Read**
-    - Teams using `/v1/messages` API (Claude Code)
-    - Teams using **MCP**
-    - Teams giving access to self-hosted models and setting rate limits
-* **Risk of Upgrade**
-    - **Low**
-        - No major changes to existing functionality or package updates.
-
+* **為什麼要升級**
+    - Claude Code 上的 Codex-mini：您現在可以透過 Claude Code 使用 `codex-mini`（OpenAI 的程式碼助理模型）。
+    - MCP 權限管理：在 LiteLLM 上依 Keys、Teams、Organizations（entities）管理 MCP Servers 的權限。
+    - UI：可在 logs view 上開啟/關閉自動重新整理。 
+    - Rate Limiting：支援僅針對 output token 的 rate limiting。  
+* **誰應該閱讀**
+    - 使用 `/v1/messages` API（Claude Code）的團隊
+    - 使用 **MCP** 的團隊
+    - 提供自架模型存取並設定 rate limits 的團隊
+* **升級風險**
+    - **低**
+        - 現有功能或套件更新沒有重大變更。
 
 ---
 
-## Key Highlights
+## 主要亮點 {#key-highlights}
 
-
-### MCP Permissions Management
+### MCP 權限管理 {#mcp-permissions-management}
 
 <Image img={require('../../img/release_notes/mcp_permissions.png')}/>
 
-This release brings support for managing permissions for MCP Servers by Keys, Teams, Organizations (entities) on LiteLLM. When a MCP client attempts to list tools, LiteLLM will only return the tools the entity has permissions to access.
+本次釋出新增支援在 LiteLLM 上依 Keys、Teams、Organizations（entities）管理 MCP Servers 的權限。當 MCP client 嘗試列出 tools 時，LiteLLM 只會回傳該 entity 有權存取的 tools。
 
-This is great for use cases that require access to restricted data (e.g Jira MCP) that you don't want everyone to use.
+這對於需要存取受限制資料（例如 Jira MCP）、但不希望所有人都能使用的情境非常有幫助。
 
-For Proxy Admins, this enables centralized management of all MCP Servers with access control. For developers, this means you'll only see the MCP tools assigned to you.
+對 Proxy Admins 而言，這可讓所有 MCP Servers 的存取控制集中管理。對開發者而言，這表示您只會看到指派給您的 MCP tools。
 
-
-
-
-### Codex-mini on Claude Code
+### Claude Code 上的 Codex-mini {#codex-mini-on-claude-code}
 
 <Image img={require('../../img/release_notes/codex_on_claude_code.jpg')} />
 
-This release brings support for calling `codex-mini` (OpenAI’s code assistant model) via Claude Code.
+本次釋出新增支援透過 Claude Code 呼叫 `codex-mini`（OpenAI 的程式碼助理模型）。
 
-This is done by LiteLLM enabling any Responses API model (including `o3-pro`) to be called via `/chat/completions` and `/v1/messages` endpoints. This includes:
+這是透過 LiteLLM 啟用任何 Responses API model（包括 `o3-pro`）可經由 `/chat/completions` 與 `/v1/messages` endpoints 呼叫而達成。這包括：
 
-- Streaming calls
-- Non-streaming calls
-- Cost Tracking on success + failure for Responses API models
+- 串流請求
+- 非串流請求
+- Responses API models 在成功與失敗時的成本追蹤
 
-Here's how to use it [today](../../docs/tutorials/claude_responses_api)
-
-
-
+以下是今天的使用方式 [today](../../docs/tutorials/claude_responses_api)
 
 ---
 
+## 新增 / 更新的模型 {#new--updated-models}
 
-## New / Updated Models
+### 價格 / Context Window 更新 {#pricing--context-window-updates}
 
-### Pricing / Context Window Updates
+| 提供者    | 模型                                  | 上下文視窗 | 輸入（$/1M tokens） | 輸出（$/1M tokens） | 類型 |
+| ----------- | -------------------------------------- | -------------- | ------------------- | -------------------- | -------------------- | 
+| VertexAI   | `vertex_ai/claude-opus-4`               | 200K           | $15.00              | $75.00               | 新增 |
+| OpenAI   | `gpt-4o-audio-preview-2025-06-03`             | 128k           | $2.5 (text), $40 (audio)              | $10 (text), $80 (audio)               | 新增 |
+| OpenAI | `o3-pro` | 200k | 20 | 80 | 新增 |
+| OpenAI | `o3-pro-2025-06-10` | 200k | 20 | 80 | 新增 |
+| OpenAI | `o3` | 200k | 2 | 8 | 已更新 |
+| OpenAI | `o3-2025-04-16` | 200k | 2 | 8 | 已更新 |
+| Azure | `azure/gpt-4o-mini-transcribe` | 16k | 1.25 (text), 3 (audio) | 5 (text) | 新增 |
+| Mistral | `mistral/magistral-medium-latest` | 40k | 2 | 5 | 新增 |
+| Mistral | `mistral/magistral-small-latest` | 40k | 0.5 | 1.5 | 新增 |
 
-| Provider    | Model                                  | Context Window | Input ($/1M tokens) | Output ($/1M tokens) | Type |
-| ----------- | -------------------------------------- | -------------- | ------------------- | -------------------- | -------------------- |
-| VertexAI   | `vertex_ai/claude-opus-4`               | 200K           | $15.00              | $75.00               | New |
-| OpenAI   | `gpt-4o-audio-preview-2025-06-03`             | 128k           | $2.5 (text), $40 (audio)              | $10 (text), $80 (audio)               | New |
-| OpenAI | `o3-pro` | 200k | 20 | 80 | New |
-| OpenAI | `o3-pro-2025-06-10` | 200k | 20 | 80 | New |
-| OpenAI | `o3` | 200k | 2 | 8 | Updated |
-| OpenAI | `o3-2025-04-16` | 200k | 2 | 8 | Updated |
-| Azure | `azure/gpt-4o-mini-transcribe` | 16k | 1.25 (text), 3 (audio) | 5 (text) | New |
-| Mistral | `mistral/magistral-medium-latest` | 40k | 2 | 5 | New |
-| Mistral | `mistral/magistral-small-latest` | 40k | 0.5 | 1.5 | New |
+- Deepgram：現在支援 `nova-3` 的每秒成本定價。(https://github.com/BerriAI/litellm/pull/11634)
 
-- Deepgram: `nova-3` cost per second pricing is [now supported](https://github.com/BerriAI/litellm/pull/11634).
-
-### Updated Models
-#### Bugs
+### 已更新模型 {#updated-models}
+#### 錯誤修正 {#bugs}
 - **[Watsonx](../../docs/providers/watsonx)**
-    - Ignore space id on Watsonx deployments (throws json errors) - [PR](https://github.com/BerriAI/litellm/pull/11527)
+    - 忽略 Watsonx deployments 上的 space id（會拋出 json errors）- [PR](https://github.com/BerriAI/litellm/pull/11527)
 - **[Ollama](../../docs/providers/ollama)**
-    - Set tool call id for streaming calls - [PR](https://github.com/BerriAI/litellm/pull/11528)
+    - 為串流請求設定 tool call id - [PR](https://github.com/BerriAI/litellm/pull/11528)
 - **Gemini ([VertexAI](../../docs/providers/vertex) + [Google AI Studio](../../docs/providers/gemini))**
-    - Fix tool call indexes - [PR](https://github.com/BerriAI/litellm/pull/11558)
-    - Handle empty string for arguments in function calls - [PR](https://github.com/BerriAI/litellm/pull/11601)
-    - Add audio/ogg mime type support when inferring from file url’s - [PR](https://github.com/BerriAI/litellm/pull/11635)
-- **[Custom LLM](../../docs/providers/custom_llm_server)**
-    - Fix passing api_base, api_key, litellm_params_dict to custom_llm embedding methods - [PR](https://github.com/BerriAI/litellm/pull/11450) s/o [ElefHead](https://github.com/ElefHead)
+    - 修正 tool call indexes - [PR](https://github.com/BerriAI/litellm/pull/11558)
+    - 處理 function calls 中 arguments 的空字串 - [PR](https://github.com/BerriAI/litellm/pull/11601)
+    - 從 file url’s 推斷時新增 audio/ogg mime type 支援 - [PR](https://github.com/BerriAI/litellm/pull/11635)
+- **[自訂 LLM](../../docs/providers/custom_llm_server)**
+    - 修正將 api_base、api_key、litellm_params_dict 傳入 custom_llm embedding methods - [PR](https://github.com/BerriAI/litellm/pull/11450) s/o [ElefHead](https://github.com/ElefHead)
 - **[Huggingface](../../docs/providers/huggingface)**
-    - Add /chat/completions to endpoint url when missing - [PR](https://github.com/BerriAI/litellm/pull/11630)
+    - 在缺少時將 /chat/completions 加入 endpoint url - [PR](https://github.com/BerriAI/litellm/pull/11630)
 - **[Deepgram](../../docs/providers/deepgram)**
-    - Support async httpx calls - [PR](https://github.com/BerriAI/litellm/pull/11641)
+    - 支援 async httpx calls - [PR](https://github.com/BerriAI/litellm/pull/11641)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Append prefix (if set) to assistant content start - [PR](https://github.com/BerriAI/litellm/pull/11719)
+    - 將前綴（如果已設定）附加到 assistant content start - [PR](https://github.com/BerriAI/litellm/pull/11719)
 
-#### Features
+#### 功能 {#features}
 - **[VertexAI](../../docs/providers/vertex)**
-    - Support vertex credentials set via env var on passthrough - [PR](https://github.com/BerriAI/litellm/pull/11527)
-    - Support for choosing ‘global’ region when model is only available there - [PR](https://github.com/BerriAI/litellm/pull/11566)
-    - Anthropic passthrough cost calculation + token tracking - [PR](https://github.com/BerriAI/litellm/pull/11611)
-    - Support ‘global’ vertex region on passthrough - [PR](https://github.com/BerriAI/litellm/pull/11661)
+    - 支援在 passthrough 上透過 env var 設定的 vertex credentials - [PR](https://github.com/BerriAI/litellm/pull/11527)
+    - 支援在 model 只有該區域可用時選擇 ‘global’ region - [PR](https://github.com/BerriAI/litellm/pull/11566)
+    - Anthropic passthrough 成本計算 + token 追蹤 - [PR](https://github.com/BerriAI/litellm/pull/11611)
+    - 支援 passthrough 上的 ‘global’ vertex region - [PR](https://github.com/BerriAI/litellm/pull/11661)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - ‘none’ tool choice param support - [PR](https://github.com/BerriAI/litellm/pull/11695), [Get Started](../../docs/providers/anthropic#disable-tool-calling)
+    - ‘none’ tool choice param 支援 - [PR](https://github.com/BerriAI/litellm/pull/11695), [開始使用](../../docs/providers/anthropic#disable-tool-calling)
 - **[Perplexity](../../docs/providers/perplexity)**
-    - Add ‘reasoning_effort’ support - [PR](https://github.com/BerriAI/litellm/pull/11562), [Get Started](../../docs/providers/perplexity#reasoning-effort)
+    - 新增 ‘reasoning_effort’ 支援 - [PR](https://github.com/BerriAI/litellm/pull/11562), [開始使用](../../docs/providers/perplexity#reasoning-effort)
 - **[Mistral](../../docs/providers/mistral)**
-    - Add mistral reasoning support - [PR](https://github.com/BerriAI/litellm/pull/11642), [Get Started](../../docs/providers/mistral#reasoning)
+    - 新增 mistral reasoning 支援 - [PR](https://github.com/BerriAI/litellm/pull/11642), [開始使用](../../docs/providers/mistral#reasoning)
 - **[SGLang](../../docs/providers/openai_compatible)**
-    - Map context window exceeded error for proper handling - [PR](https://github.com/BerriAI/litellm/pull/11575/)
+    - 對 context window exceeded error 進行對應以便正確處理 - [PR](https://github.com/BerriAI/litellm/pull/11575/)
 - **[Deepgram](../../docs/providers/deepgram)**
-    - Provider specific params support - [PR](https://github.com/BerriAI/litellm/pull/11638)
+    - 支援 provider specific params - [PR](https://github.com/BerriAI/litellm/pull/11638)
 - **[Azure](../../docs/providers/azure)**
-    - Return content safety filter results - [PR](https://github.com/BerriAI/litellm/pull/11655)
+    - 回傳內容安全性篩選結果 - [PR](https://github.com/BerriAI/litellm/pull/11655)
 ---
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Bugs
-- **[Chat Completion](../../docs/completion/input)**
-    - Streaming - Ensure consistent ‘created’ across chunks - [PR](https://github.com/BerriAI/litellm/pull/11528)
-#### Features
+#### 錯誤修正 {#bugs-1}
+- **[聊天完成](../../docs/completion/input)**
+    - 串流 - 確保各個 chunks 的 ‘created’ 一致 - [PR](https://github.com/BerriAI/litellm/pull/11528)
+#### 功能 {#features-1}
 - **MCP**
-    - Add controls for MCP Permission Management - [PR](https://github.com/BerriAI/litellm/pull/11598), [Docs](../../docs/mcp#-mcp-permission-management)
-    - Add permission management for MCP List + Call Tool operations - [PR](https://github.com/BerriAI/litellm/pull/11682), [Docs](../../docs/mcp#-mcp-permission-management)
-    - Streamable HTTP server support - [PR](https://github.com/BerriAI/litellm/pull/11628), [PR](https://github.com/BerriAI/litellm/pull/11645), [Docs](../../docs/mcp#using-your-mcp)
-    - Use Experimental dedicated Rest endpoints for list, calling MCP tools - [PR](https://github.com/BerriAI/litellm/pull/11684)
-- **[Responses API](../../docs/response_api)**
-    - NEW API Endpoint - List input items - [PR](https://github.com/BerriAI/litellm/pull/11602) 
-    - Background mode for OpenAI + Azure OpenAI - [PR](https://github.com/BerriAI/litellm/pull/11640)
-    - Langfuse/other Logging support on responses api requests - [PR](https://github.com/BerriAI/litellm/pull/11685)
-- **[Chat Completions](../../docs/completion/input)**
-    - Bridge for Responses API - allows calling codex-mini via `/chat/completions` and `/v1/messages` - [PR](https://github.com/BerriAI/litellm/pull/11632), [PR](https://github.com/BerriAI/litellm/pull/11685)
-
-
----
-
-## Spend Tracking
-
-#### Bugs
-- **[End Users](../../docs/proxy/customers)**
-    - Update enduser spend and budget reset date based on budget duration - [PR](https://github.com/BerriAI/litellm/pull/8460) (s/o [laurien16](https://github.com/laurien16))
-- **[Custom Pricing](../../docs/proxy/custom_pricing)**
-    - Convert scientific notation str to int - [PR](https://github.com/BerriAI/litellm/pull/11655)
+    - 新增 MCP 權限管理控制項 - [PR](https://github.com/BerriAI/litellm/pull/11598), [文件](../../docs/mcp#-mcp-permission-management)
+    - 新增 MCP List + Call Tool 操作的權限管理 - [PR](https://github.com/BerriAI/litellm/pull/11682), [文件](../../docs/mcp#-mcp-permission-management)
+    - 可串流 HTTP server 支援 - [PR](https://github.com/BerriAI/litellm/pull/11628), [PR](https://github.com/BerriAI/litellm/pull/11645), [文件](../../docs/mcp#using-your-mcp)
+    - 使用 Experimental dedicated Rest endpoints 進行 list、呼叫 MCP tools - [PR](https://github.com/BerriAI/litellm/pull/11684)
+- **[回應 API](../../docs/response_api)**
+    - 新 API Endpoint - 列出輸入項目 - [PR](https://github.com/BerriAI/litellm/pull/11602) 
+    - OpenAI + Azure OpenAI 的背景模式 - [PR](https://github.com/BerriAI/litellm/pull/11640)
+    - responses api 請求上的 Langfuse/other Logging 支援 - [PR](https://github.com/BerriAI/litellm/pull/11685)
+- **[聊天完成](../../docs/completion/input)**
+    - Responses API 的橋接器 - 可透過 `/chat/completions` 和 `/v1/messages` 呼叫 codex-mini - [PR](https://github.com/BerriAI/litellm/pull/11632), [PR](https://github.com/BerriAI/litellm/pull/11685)
 
 ---
 
-## Management Endpoints / UI
+## 支出追蹤 {#spend-tracking}
 
-#### Bugs
-- **[Users](../../docs/proxy/users)**
-    - `/user/info` - fix passing user with `+` in user id
-    - Add admin-initiated password reset flow - [PR](https://github.com/BerriAI/litellm/pull/11618)
-    - Fixes default user settings UI rendering error - [PR](https://github.com/BerriAI/litellm/pull/11674)
-- **[Budgets](../../docs/proxy/users)**
-    - Correct success message when new user budget is created - [PR](https://github.com/BerriAI/litellm/pull/11608)
+#### 錯誤修正 {#bugs-2}
+- **[終端使用者](../../docs/proxy/customers)**
+    - 根據 budget duration 更新 enduser spend 與 budget reset date - [PR](https://github.com/BerriAI/litellm/pull/8460) (s/o [laurien16](https://github.com/laurien16))
+- **[自訂定價](../../docs/proxy/custom_pricing)**
+    - 將科學記號字串轉換為整數 - [PR](https://github.com/BerriAI/litellm/pull/11655)
 
-#### Features
-- **Leftnav**
-    - Show remaining Enterprise users on UI
+---
+
+## 管理端點 / UI {#management-endpoints--ui}
+
+#### 錯誤 {#bugs-3}
+- **[使用者](../../docs/proxy/users)**
+    - `/user/info` - 修正傳入使用者時，在使用者 ID 中包含 `+` 的情況
+    - 新增由管理員啟動的密碼重設流程 - [PR](https://github.com/BerriAI/litellm/pull/11618)
+    - 修正預設使用者設定 UI 渲染錯誤 - [PR](https://github.com/BerriAI/litellm/pull/11674)
+- **[預算](../../docs/proxy/users)**
+    - 修正建立新使用者預算時的成功訊息 - [PR](https://github.com/BerriAI/litellm/pull/11608)
+
+#### 功能 {#features-2}
+- **左側導覽**
+    - 在 UI 顯示剩餘的 Enterprise 使用者數
 - **MCP**
-    - New server add form - [PR](https://github.com/BerriAI/litellm/pull/11604)
-    - Allow editing mcp servers - [PR](https://github.com/BerriAI/litellm/pull/11693)
-- **Models**
-    - Add deepgram models on UI
-    - Model Access Group support on UI - [PR](https://github.com/BerriAI/litellm/pull/11719)
-- **Keys**
-    - Trim long user id’s - [PR](https://github.com/BerriAI/litellm/pull/11488)
-- **Logs**
-    - Add live tail feature to logs view, allows user to disable auto refresh in high traffic - [PR](https://github.com/BerriAI/litellm/pull/11712)
-    - Audit Logs - preview screenshot - [PR](https://github.com/BerriAI/litellm/pull/11715)
+    - 新增伺服器新增表單 - [PR](https://github.com/BerriAI/litellm/pull/11604)
+    - 允許編輯 mcp 伺服器 - [PR](https://github.com/BerriAI/litellm/pull/11693)
+- **模型**
+    - 在 UI 新增 deepgram 模型
+    - 在 UI 新增 Model Access Group 支援 - [PR](https://github.com/BerriAI/litellm/pull/11719)
+- **金鑰**
+    - 修剪過長的使用者 ID - [PR](https://github.com/BerriAI/litellm/pull/11488)
+- **記錄**
+    - 在記錄檢視新增即時尾隨功能，允許使用者在高流量時停用自動重新整理 - [PR](https://github.com/BerriAI/litellm/pull/11712)
+    - 稽核記錄 - 預覽截圖 - [PR](https://github.com/BerriAI/litellm/pull/11715)
 
 ---
 
-## Logging / Guardrails Integrations
+## 記錄 / 防護欄 整合 {#logging--guardrails-integrations}
 
-#### Bugs
+#### 錯誤 {#bugs-4}
 - **[Arize](../../docs/observability/arize_integration)**
-    - Change space_key header to space_id - [PR](https://github.com/BerriAI/litellm/pull/11595) (s/o [vanities](https://github.com/vanities))
+    - 將 space_key 標頭改為 space_id - [PR](https://github.com/BerriAI/litellm/pull/11595)（s/o [vanities](https://github.com/vanities)）
 - **[Prometheus](../../docs/proxy/prometheus)**
-    - Fix total requests increment - [PR](https://github.com/BerriAI/litellm/pull/11718)
+    - 修正總請求數累加 - [PR](https://github.com/BerriAI/litellm/pull/11718)
 
-#### Features
-- **[Lasso Guardrails](../../docs/proxy/guardrails/lasso_security)**
-    - [NEW] Lasso Guardrails support - [PR](https://github.com/BerriAI/litellm/pull/11565)
-- **[Users](../../docs/proxy/users)**
-    - New `organizations` param on `/user/new` - allows adding users to orgs on creation - [PR](https://github.com/BerriAI/litellm/pull/11572/files)
-- **Prevent double logging when using bridge logic** - [PR](https://github.com/BerriAI/litellm/pull/11687)
-
----
-
-## Performance / Reliability Improvements
-
-#### Bugs
-- **[Tag based routing](../../docs/proxy/tag_routing)**
-    - Do not consider ‘default’ models when request specifies a tag - [PR](https://github.com/BerriAI/litellm/pull/11454) (s/o [thiagosalvatore](https://github.com/thiagosalvatore))
-
-#### Features
-- **[Caching](../../docs/caching/all_caches)**
-    - New optional ‘litellm[caching]’ pip install for adding disk cache dependencies - [PR](https://github.com/BerriAI/litellm/pull/11600)
+#### 功能 {#features-3}
+- **[Lasso 防護欄](../../docs/proxy/guardrails/lasso_security)**
+    - [NEW] Lasso Guardrails 支援 - [PR](https://github.com/BerriAI/litellm/pull/11565)
+- **[使用者](../../docs/proxy/users)**
+    - 在 `/user/new` 上新增 `organizations` 參數 - 可在建立時將使用者加入組織 - [PR](https://github.com/BerriAI/litellm/pull/11572/files)
+- **在使用 bridge 邏輯時防止重複記錄** - [PR](https://github.com/BerriAI/litellm/pull/11687)
 
 ---
 
-## General Proxy Improvements
+## 效能 / 可靠性改善 {#performance--reliability-improvements}
 
-#### Bugs
-- **aiohttp**
-    - fixes for transfer encoding error on aiohttp transport - [PR](https://github.com/BerriAI/litellm/pull/11561)
+#### 錯誤 {#bugs-5}
+- **[基於標籤的路由](../../docs/proxy/tag_routing)**
+    - 當請求指定標籤時，不要考慮「default」模型 - [PR](https://github.com/BerriAI/litellm/pull/11454)（s/o [thiagosalvatore](https://github.com/thiagosalvatore)）
 
-#### Features
+#### 功能 {#features-4}
+- **[快取](../../docs/caching/all_caches)**
+    - 新增可選的 ‘litellm[caching]’ pip install，以加入磁碟快取依賴 - [PR](https://github.com/BerriAI/litellm/pull/11600)
+
+---
+
+## 一般 Proxy 改善 {#general-proxy-improvements}
+
+#### 錯誤 {#bugs-6}
 - **aiohttp**
-    - Enable System Proxy Support for aiohttp transport - [PR](https://github.com/BerriAI/litellm/pull/11616) (s/o [idootop](https://github.com/idootop))
+    - 修正 aiohttp transport 的 transfer encoding 錯誤 - [PR](https://github.com/BerriAI/litellm/pull/11561)
+
+#### 功能 {#features-5}
+- **aiohttp**
+    - 為 aiohttp transport 啟用系統 Proxy 支援 - [PR](https://github.com/BerriAI/litellm/pull/11616)（s/o [idootop](https://github.com/idootop)）
 - **CLI**
-    - Make all commands show server URL - [PR](https://github.com/BerriAI/litellm/pull/10801)
+    - 讓所有命令都顯示伺服器 URL - [PR](https://github.com/BerriAI/litellm/pull/10801)
 - **Unicorn**
-    - Allow setting keep alive timeout - [PR](https://github.com/BerriAI/litellm/pull/11594)
-- **Experimental Rate Limiting v2** (enable via `EXPERIMENTAL_MULTI_INSTANCE_RATE_LIMITING="True"`)
-    - Support specifying rate limit by output_tokens only - [PR](https://github.com/BerriAI/litellm/pull/11646)
-    - Decrement parallel requests on call failure - [PR](https://github.com/BerriAI/litellm/pull/11646)
-    - In-memory only rate limiting support - [PR](https://github.com/BerriAI/litellm/pull/11646)
-    - Return remaining rate limits by key/user/team - [PR](https://github.com/BerriAI/litellm/pull/11646)
+    - 允許設定 keep alive timeout - [PR](https://github.com/BerriAI/litellm/pull/11594)
+- **Experimental Rate Limiting v2**（透過 `EXPERIMENTAL_MULTI_INSTANCE_RATE_LIMITING="True"` 啟用）
+    - 支援僅依 output_tokens 指定 rate limit - [PR](https://github.com/BerriAI/litellm/pull/11646)
+    - 呼叫失敗時減少平行請求數 - [PR](https://github.com/BerriAI/litellm/pull/11646)
+    - 僅支援 in-memory rate limiting - [PR](https://github.com/BerriAI/litellm/pull/11646)
+    - 依 key/user/team 回傳剩餘 rate limits - [PR](https://github.com/BerriAI/litellm/pull/11646)
 - **Helm**
-    - support extraContainers in migrations-job.yaml - [PR](https://github.com/BerriAI/litellm/pull/11649)
-
-
-
+    - 支援 migrations-job.yaml 中的 extraContainers - [PR](https://github.com/BerriAI/litellm/pull/11649)
 
 ---
 
-## New Contributors
-* @laurien16 made their first contribution in https://github.com/BerriAI/litellm/pull/8460
-* @fengbohello made their first contribution in https://github.com/BerriAI/litellm/pull/11547
-* @lapinek made their first contribution in https://github.com/BerriAI/litellm/pull/11570
-* @yanwork made their first contribution in https://github.com/BerriAI/litellm/pull/11586
-* @dhs-shine made their first contribution in https://github.com/BerriAI/litellm/pull/11575
-* @ElefHead made their first contribution in https://github.com/BerriAI/litellm/pull/11450
-* @idootop made their first contribution in https://github.com/BerriAI/litellm/pull/11616
-* @stevenaldinger made their first contribution in https://github.com/BerriAI/litellm/pull/11649
-* @thiagosalvatore made their first contribution in https://github.com/BerriAI/litellm/pull/11454
-* @vanities made their first contribution in https://github.com/BerriAI/litellm/pull/11595
-* @alvarosevilla95 made their first contribution in https://github.com/BerriAI/litellm/pull/11661
+## 新增貢獻者 {#new-contributors}
+* @laurien16 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/8460
+* @fengbohello 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11547
+* @lapinek 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11570
+* @yanwork 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11586
+* @dhs-shine 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11575
+* @ElefHead 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11450
+* @idootop 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11616
+* @stevenaldinger 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11649
+* @thiagosalvatore 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11454
+* @vanities 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11595
+* @alvarosevilla95 完成了第一次貢獻，於 https://github.com/BerriAI/litellm/pull/11661
 
 ---
 
-## Demo Instance
+## Demo 實例 {#demo-instance}
 
-Here's a Demo Instance to test changes:
+以下是用來測試變更的 Demo 實例：
 
-- Instance: https://demo.litellm.ai/
-- Login Credentials:
-    - Username: admin
-    - Password: sk-1234
+- 實例：https://demo.litellm.ai/
+- 登入憑證：
+    - 使用者名稱：admin
+    - 密碼：sk-1234
 
-## [Git Diff](https://github.com/BerriAI/litellm/compare/v1.72.2-stable...1.72.6.rc)
+## [Git Diff](https://github.com/BerriAI/litellm/compare/v1.72.2-stable...1.72.6.rc) {#git-diffhttpsgithubcomberriailitellmcomparev1722-stable1726rc}

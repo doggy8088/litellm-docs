@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI Agents SDK
+# OpenAI Agents SDK {#openai-agents-sdk}
 
-Use OpenAI Agents SDK with any LLM provider through LiteLLM Proxy.
+透過 LiteLLM Proxy 使用 OpenAI Agents SDK 搭配任何 LLM 提供者。
 
-The [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) is a lightweight framework for building multi-agent workflows. It includes an official LiteLLM extension that lets you use any of the 100+ supported providers.
+[OpenAI Agents SDK](https://github.com/openai/openai-agents-python) 是一個用於建置多代理程式工作流程的輕量型框架。它包含官方的 LiteLLM 擴充功能，讓您可以使用 100+ 個受支援的提供者。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Install Dependencies
+### 1. 安裝相依套件 {#1-install-dependencies}
 
 ```bash
 uv add "openai-agents[litellm]"
 ```
 
-### 2. Add Model to Config
+### 2. 將模型加入設定檔 {#2-add-model-to-config}
 
 ```yaml title="config.yaml"
 model_list:
@@ -35,16 +35,16 @@ model_list:
       api_key: "os.environ/GEMINI_API_KEY"
 ```
 
-### 3. Start LiteLLM Proxy
+### 3. 啟動 LiteLLM Proxy {#3-start-litellm-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 4. Use with Proxy
+### 4. 搭配 Proxy 使用 {#4-use-with-proxy}
 
 <Tabs>
-<TabItem value="proxy" label="Via Proxy">
+<TabItem value="proxy" label="透過 Proxy">
 
 ```python
 from agents import Agent, Runner
@@ -66,7 +66,7 @@ print(result.final_output)
 ```
 
 </TabItem>
-<TabItem value="direct" label="Direct (No Proxy)">
+<TabItem value="direct" label="直接使用（不透過 Proxy）">
 
 ```python
 from agents import Agent, Runner
@@ -89,9 +89,9 @@ print(result.final_output)
 </TabItem>
 </Tabs>
 
-## Track Usage
+## 追蹤用量 {#track-usage}
 
-Enable usage tracking to monitor token consumption:
+啟用用量追蹤以監控 token 消耗：
 
 ```python
 from agents import Agent, ModelSettings
@@ -107,15 +107,15 @@ result = await Runner.run(agent, "Hello")
 print(result.context_wrapper.usage)  # Token counts
 ```
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Value | Description |
+| 變數 | 值 | 說明 |
 |----------|-------|-------------|
 | `LITELLM_BASE_URL` | `http://localhost:4000` | LiteLLM proxy URL |
-| `LITELLM_API_KEY` | `sk-1234` | Your LiteLLM API key |
+| `LITELLM_API_KEY` | `sk-1234` | 您的 LiteLLM API 金鑰 |
 
-## Related Resources
+## 相關資源 {#related-resources}
 
-- [OpenAI Agents SDK Documentation](https://openai.github.io/openai-agents-python/)
-- [LiteLLM Extension Docs](https://openai.github.io/openai-agents-python/models/litellm/)
-- [LiteLLM Proxy Quick Start](../proxy/quick_start)
+- [OpenAI Agents SDK 文件](https://openai.github.io/openai-agents-python/)
+- [LiteLLM 擴充功能文件](https://openai.github.io/openai-agents-python/models/litellm/)
+- [LiteLLM Proxy 快速開始](../proxy/quick_start)

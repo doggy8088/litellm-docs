@@ -2,19 +2,19 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# HuggingFace Rerank
+# HuggingFace Rerank {#huggingface-rerank}
 
-HuggingFace Rerank allows you to use reranking models hosted on Hugging Face infrastructure or your custom endpoints to reorder documents based on their relevance to a query.
+HuggingFace Rerank 讓您可以使用託管在 Hugging Face 基礎架構上的 reranking 模型，或使用自訂端點，根據文件與查詢的相關性重新排序文件。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | HuggingFace Rerank enables semantic reranking of documents using models hosted on Hugging Face infrastructure or custom endpoints. |
-| Provider Route on LiteLLM | `huggingface/` in model name |
-| Provider Doc | [Hugging Face Hub ↗](https://huggingface.co/models?pipeline_tag=sentence-similarity) |
+| 說明 | HuggingFace Rerank 可使用託管在 Hugging Face 基礎架構上的模型或自訂端點，對文件進行語意 reranking。 |
+| LiteLLM 上的提供者路由 | 模型名稱中的 `huggingface/` |
+| 提供者文件 | [Hugging Face Hub ↗](https://huggingface.co/models?pipeline_tag=sentence-similarity) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Example using LiteLLM Python SDK"
 import litellm
@@ -39,7 +39,7 @@ response = litellm.rerank(
 print(response)
 ```
 
-### Custom Endpoint Usage
+### 自訂端點用法 {#custom-endpoint-usage}
 
 ```python showLineNumbers title="Using custom HuggingFace endpoint"
 import litellm
@@ -56,7 +56,7 @@ response = litellm.rerank(
 print(response)
 ```
 
-### Async Usage
+### 非同步用法 {#async-usage}
 
 ```python showLineNumbers title="Async rerank example"
 import litellm
@@ -82,9 +82,9 @@ async def async_rerank_example():
 asyncio.run(async_rerank_example())
 ```
 
-## LiteLLM Proxy
+## LiteLLM Proxy {#litellm-proxy}
 
-### 1. Configure your model in config.yaml
+### 1. 在 config.yaml 中設定您的模型 {#1-configure-your-model-in-configyaml}
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -109,7 +109,7 @@ model_list:
 </TabItem>
 </Tabs>
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 export HF_TOKEN="hf_xxxxxx"
@@ -118,7 +118,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Make rerank requests
+### 3. 發出 rerank 請求 {#3-make-rerank-requests}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -167,7 +167,7 @@ print(response)
 
 </TabItem>
 
-<TabItem value="requests" label="Using requests library">
+<TabItem value="requests" label="使用 requests 函式庫">
 
 ```python
 import requests
@@ -197,13 +197,11 @@ print(response.json())
 </TabItem>
 </Tabs>
 
+## 設定選項 {#configuration-options}
 
+### 驗證 {#authentication}
 
-## Configuration Options
-
-### Authentication
-
-#### Using HuggingFace Token (Serverless)
+#### 使用 HuggingFace Token（Serverless） {#using-huggingface-token-serverless}
 ```python
 import os
 os.environ["HF_TOKEN"] = "hf_xxxxxx"
@@ -216,7 +214,7 @@ litellm.rerank(
 )
 ```
 
-#### Using Custom Endpoint
+#### 使用自訂端點 {#using-custom-endpoint}
 ```python
 litellm.rerank(
     model="huggingface/BAAI/bge-reranker-base",
@@ -227,10 +225,9 @@ litellm.rerank(
 ```
 
 
+## 回應格式 {#response-format}
 
-## Response Format
-
-The response follows the standard rerank API format:
+回應遵循標準 rerank API 格式：
 
 ```json
 {
@@ -260,4 +257,3 @@ The response follows the standard rerank API format:
   }
 }
 ```
-

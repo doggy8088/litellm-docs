@@ -1,32 +1,31 @@
 ---
 slug: realtime_webrtc_http_endpoints
-title: "Realtime WebRTC HTTP Endpoints"
+title: "即時 WebRTC HTTP 端點"
 date: 2026-03-12T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Use the LiteLLM proxy to route OpenAI-style WebRTC realtime via HTTP: client_secrets and SDP exchange."
+description: "使用 LiteLLM proxy 透過 HTTP 路由 OpenAI 風格的 WebRTC 即時通訊：client_secrets 與 SDP 交換。"
 tags: [realtime, webrtc, proxy, openai]
 hide_table_of_contents: false
 ---
 
 import WebRTCTester from '@site/src/components/WebRTCTester';
 
-Connect to the Realtime API via WebRTC from browser/mobile clients. LiteLLM handles auth and key management.
+從瀏覽器／行動用戶端透過 WebRTC 連線到 Realtime API。LiteLLM 負責驗證與金鑰管理。
 
 {/* truncate */}
 
-## How it works
+## 運作方式 {#how-it-works}
 
-![WebRTC flow: Browser, LiteLLM Proxy, and OpenAI/Azure](../../img/webrtc_flow.png)
+![WebRTC 流程：瀏覽器、LiteLLM Proxy 與 OpenAI/Azure](../../img/webrtc_flow.png)
 
-**Flow of generating ephemeral token**
+**產生暫時性 token 的流程**
 
-![Ephemeral token flow: Browser requests token, LiteLLM gets real token from OpenAI, returns encrypted token](../../img/ephemeral_token.png)
+![暫時性 token 流程：瀏覽器請求 token、LiteLLM 從 OpenAI 取得正式 token、回傳加密 token](../../img/ephemeral_token.png)
 
-
-## Proxy Setup
+## Proxy 設定 {#proxy-setup}
 
 ```yaml
 model_list:
@@ -38,26 +37,26 @@ model_list:
       mode: realtime
 ```
 
-**Azure:** use `model: azure/gpt-4o-realtime-preview`, `api_key`, `api_base`.
+**Azure：**使用 `model: azure/gpt-4o-realtime-preview`、`api_key`、`api_base`。
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-## Try it live
+## 線上試用 {#try-it-live}
 
 <WebRTCTester />
 
-## Client Usage
+## 用戶端使用方式 {#client-usage}
 
-**1. Get token** - `POST /v1/realtime/client_secrets` with LiteLLM API key and `{ model }`.
+**1. 取得 token** - 使用 LiteLLM API 金鑰與 `{ model }` 進行 `POST /v1/realtime/client_secrets`。
 
-**2. WebRTC handshake** - Create `RTCPeerConnection`, add mic track, create data channel `oai-events`, send SDP offer to `POST /v1/realtime/calls` with `Authorization: Bearer <encrypted_token>` and `Content-Type: application/sdp`.
+**2. WebRTC 握手** - 建立 `RTCPeerConnection`、加入麥克風 track、建立資料通道 `oai-events`、使用 `Authorization: Bearer <encrypted_token>` 與 `Content-Type: application/sdp` 將 SDP offer 傳送至 `POST /v1/realtime/calls`。
 
-**3. Events** - Use the data channel for `session.update` and other events.
+**3. 事件** - 使用資料通道處理 `session.update` 與其他事件。
 
 <details>
-<summary>Full code example</summary>
+<summary>完整程式碼範例</summary>
 
 ```javascript
 // 1. Token
@@ -93,19 +92,19 @@ dc.send(JSON.stringify({ type: "session.update", session: { instructions: "..." 
 
 </details>
 
-## FAQ
+## 常見問題 {#faq}
 
-**Q: What do I do if I get a 401 Token expired error?**  
-A: Tokens are short-lived. Get a fresh token right before creating the WebRTC offer.
+**Q: 如果我收到 401 Token expired 錯誤，該怎麼辦？**  
+A: token 的有效期很短。請在建立 WebRTC offer 前立即取得新的 token。
 
-**Q: Which key should I use for `/v1/realtime/calls`?**  
-A: Use the **encrypted token** from `client_secrets`, not your raw API key.
+**Q: `/v1/realtime/calls` 應該使用哪把金鑰？**  
+A: 請使用 `client_secrets` 的**加密 token**，不要使用原始 API 金鑰。
 
-**Q: Should I pass the `model` parameter when making the call?**  
-A: No, the encrypted token already encodes all routing information including model.
+**Q: 呼叫時我應該傳入 `model` 參數嗎？**  
+A: 不需要，加密 token 已經編碼了所有路由資訊，包括模型。
 
-**Q: How do I resolve Azure `api-version` errors?**  
-A: Set the correct `api_version` in `litellm_params` (or via the `AZURE_API_VERSION` environment variable), along with the right `api_base` and deployment values.
+**Q: 我要如何解決 Azure `api-version` 錯誤？**  
+A: 在 `litellm_params` 中設定正確的 `api_version`（或透過 `AZURE_API_VERSION` 環境變數），並搭配正確的 `api_base` 與部署值。
 
-**Q: What if I get no audio?**  
-A: Make sure you grant microphone permission, ensure `pc.ontrack` assigns the audio element with `autoplay` enabled, check your network/firewall for WebRTC traffic, and inspect the browser console for ICE or SDP errors.
+**Q: 如果我沒有音訊，該怎麼辦？**  
+A: 請確認您已授予麥克風權限，確保 `pc.ontrack` 會將音訊元素設為啟用 `autoplay`，檢查網路／防火牆是否允許 WebRTC 流量，並查看瀏覽器主控台中的 ICE 或 SDP 錯誤。

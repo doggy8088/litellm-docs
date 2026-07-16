@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './styles.module.css';
+import useLocaleText from '@site/src/utils/useLocaleText';
 
 /* ── Constants ── */
 const TOTAL_REQUESTS = 50_000;
@@ -47,6 +48,7 @@ interface Dot {
 
 /* ── Component ── */
 export default function BenchmarkVisualization() {
+  const t = useLocaleText();
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [afterDone, setAfterDone] = useState(false);
@@ -198,7 +200,7 @@ export default function BenchmarkVisualization() {
             className={`${styles.flowLayer} ${layer.warning ? styles.flowLayerWarning : ''}`}
           >
             {layer.label}
-            {layer.warning && <span className={styles.overheadTag}>&larr; overhead</span>}
+            {layer.warning && <span className={styles.overheadTag}>&larr; {t('額外負擔', 'overhead')}</span>}
           </div>
         </React.Fragment>
       ))}
@@ -210,16 +212,16 @@ export default function BenchmarkVisualization() {
   return (
     <div className={styles.benchmarkWrapper} ref={wrapperRef}>
       <div className={styles.benchmarkConfig}>
-        50,000 requests &middot; 1,000 concurrent &middot; 1 worker
+        {t('50,000 個請求 · 1,000 個並行連線 · 1 個工作程序', '50,000 requests · 1,000 concurrent · 1 worker')}
       </div>
 
       <div className={styles.benchmarkColumns}>
         {/* Before column */}
         <div className={styles.benchmarkColumn}>
           <div className={`${styles.columnTitle} ${styles.columnTitleBefore}`}>
-            Before (1 ASGI + 1 BaseHTTP)
+            {t('之前（1 個 ASGI + 1 個 BaseHTTP）', 'Before (1 ASGI + 1 BaseHTTP)')}
             {beforeDone && (
-              <span className={`${styles.doneBadge} ${styles.doneBadgeBefore}`}>done</span>
+              <span className={`${styles.doneBadge} ${styles.doneBadgeBefore}`}>{t('完成', 'done')}</span>
             )}
           </div>
           {renderFlowStack(BEFORE_LAYERS, beforeDots, true)}
@@ -230,7 +232,7 @@ export default function BenchmarkVisualization() {
             </div>
             <div className={styles.stat}>
               <div className={styles.statValue}>{formatNum(beforeCompleted)}</div>
-              <div className={styles.statLabel}>Completed</div>
+              <div className={styles.statLabel}>{t('已完成', 'Completed')}</div>
             </div>
             <div className={styles.stat}>
               <div className={styles.statValue}>{BEFORE_P50}ms</div>
@@ -248,9 +250,9 @@ export default function BenchmarkVisualization() {
         {/* After column */}
         <div className={styles.benchmarkColumn}>
           <div className={`${styles.columnTitle} ${styles.columnTitleAfter}`}>
-            After (2x Pure ASGI)
+            {t('之後（2 個純 ASGI）', 'After (2x Pure ASGI)')}
             {afterDone && (
-              <span className={`${styles.doneBadge} ${styles.doneBadgeAfter}`}>done</span>
+              <span className={`${styles.doneBadge} ${styles.doneBadgeAfter}`}>{t('完成', 'done')}</span>
             )}
           </div>
           {renderFlowStack(AFTER_LAYERS, afterDots, false)}
@@ -261,7 +263,7 @@ export default function BenchmarkVisualization() {
             </div>
             <div className={styles.stat}>
               <div className={styles.statValue}>{formatNum(afterCompleted)}</div>
-              <div className={styles.statLabel}>Completed</div>
+              <div className={styles.statLabel}>{t('已完成', 'Completed')}</div>
             </div>
             <div className={styles.stat}>
               <div className={styles.statValue}>{AFTER_P50}ms</div>
@@ -281,11 +283,11 @@ export default function BenchmarkVisualization() {
       <div className={styles.summaryStats}>
         <div className={styles.summaryItem}>
           <div className={styles.summaryValue}>+74%</div>
-          <div className={styles.summaryLabel}>Throughput (RPS)</div>
+          <div className={styles.summaryLabel}>{t('處理量（RPS）', 'Throughput (RPS)')}</div>
         </div>
         <div className={styles.summaryItem}>
           <div className={styles.summaryValue}>-38%</div>
-          <div className={styles.summaryLabel}>Median Latency (P50)</div>
+          <div className={styles.summaryLabel}>{t('延遲中位數（P50）', 'Median Latency (P50)')}</div>
         </div>
       </div>
 
@@ -302,7 +304,7 @@ export default function BenchmarkVisualization() {
           >
             &#9654;
           </span>
-          Per-run data (3 runs each)
+          {t('各次執行資料（各 3 次）', 'Per-run data (3 runs each)')}
         </button>
         <div
           className={`${styles.collapsibleContent} ${
@@ -312,8 +314,8 @@ export default function BenchmarkVisualization() {
           <table className={styles.dataTable}>
             <thead>
               <tr>
-                <th>Config</th>
-                <th>Run</th>
+                <th>{t('設定', 'Config')}</th>
+                <th>{t('執行次數', 'Run')}</th>
                 <th>RPS</th>
                 <th>P50 (ms)</th>
               </tr>
@@ -321,7 +323,7 @@ export default function BenchmarkVisualization() {
             <tbody>
               {BENCHMARK_RUNS.map((row, i) => (
                 <tr key={i}>
-                  <td>{row.config}</td>
+                  <td>{t(row.config.replace('Before', '之前').replace('After', '之後').replace('Pure', '純'), row.config)}</td>
                   <td>{row.run}</td>
                   <td>{formatNum(row.rps)}</td>
                   <td>{row.p50}</td>

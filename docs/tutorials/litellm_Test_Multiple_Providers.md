@@ -1,13 +1,8 @@
-# Reliability test Multiple LLM Providers with LiteLLM
+# 使用 LiteLLM 對多個 LLM 提供者進行可靠性測試 {#reliability-test-multiple-llm-providers-with-litellm}
 
-
-
-*   Quality Testing
-*   Load Testing
-*   Duration Testing
-
-
-
+*   品質測試
+*   負載測試
+*   持續時間測試
 
 ```python
 !uv add litellm python-dotenv
@@ -26,12 +21,11 @@ from dotenv import load_dotenv
 load_dotenv()
 ```
 
-# Quality Test endpoint
+# 品質測試端點 {#quality-test-endpoint}
 
-## Test the same prompt across multiple LLM providers
+## 在多個 LLM 提供者之間測試相同的提示詞 {#test-the-same-prompt-across-multiple-llm-providers}
 
-In this example, let's ask some questions about Paul Graham
-
+在這個範例中，我們來問一些關於 Paul Graham 的問題
 
 ```python
 models = ["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "claude-instant-1", "replicate/llama-2-70b-chat:58d078176e02c219e11eb4da5a02a7830a283b14cf8f94537af893ccff5ee781"]
@@ -42,10 +36,9 @@ result = testing_batch_completion(models=models, messages=messages)
 ```
 
 
-# Load Test endpoint
+# 負載測試端點 {#load-test-endpoint}
 
-Run 100+ simultaneous queries across multiple providers to see when they fail + impact on latency
-
+在多個提供者之間執行 100+ 個同時請求，看看它們何時失敗，以及對延遲的影響
 
 ```python
 models=["gpt-3.5-turbo", "replicate/llama-2-70b-chat:58d078176e02c219e11eb4da5a02a7830a283b14cf8f94537af893ccff5ee781", "claude-instant-1"]
@@ -55,8 +48,7 @@ final_prompt = context + prompt
 result = load_test_model(models=models, prompt=final_prompt, num_calls=5)
 ```
 
-## Visualize the data
-
+## 視覺化資料 {#visualize-the-data}
 
 ```python
 import matplotlib.pyplot as plt
@@ -88,11 +80,9 @@ plt.show()
 ![png](litellm_Test_Multiple_Providers_files/litellm_Test_Multiple_Providers_11_0.png)
     
 
+# 持續時間測試端點 {#duration-test-endpoint}
 
-# Duration Test endpoint
-
-Run load testing for 2 mins. Hitting endpoints with 100+ queries every 15 seconds.
-
+執行 2 分鐘的負載測試。每 15 秒以 100+ 個請求打到端點。
 
 ```python
 models=["gpt-3.5-turbo", "replicate/llama-2-70b-chat:58d078176e02c219e11eb4da5a02a7830a283b14cf8f94537af893ccff5ee781", "claude-instant-1"]
@@ -132,5 +122,3 @@ plt.show()
 
     
 ![png](litellm_Test_Multiple_Providers_files/litellm_Test_Multiple_Providers_14_0.png)
-    
-

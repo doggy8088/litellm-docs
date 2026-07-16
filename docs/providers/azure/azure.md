@@ -1,21 +1,20 @@
-
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure OpenAI
+# Azure OpenAI {#azure-openai}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure OpenAI Service provides REST API access to OpenAI's powerful language models including o1, o1-mini, GPT-5, GPT-4o, GPT-4o mini, GPT-4 Turbo with Vision, GPT-4, GPT-3.5-Turbo, and Embeddings model series. Also supports Claude models via Azure Foundry. |
-| Provider Route on LiteLLM | `azure/`, [`azure/o_series/`](#o-series-models), [`azure/gpt5_series/`](#gpt-5-models), [`azure/claude-*`](./azure_anthropic) (Claude models via Azure Foundry) |
-| Supported Operations | [`/chat/completions`](#azure-openai-chat-completion-models), [`/responses`](./azure_responses), [`/completions`](#azure-instruct-models), [`/embeddings`](./azure_embedding), [`/audio/speech`](azure_speech), [`/audio/transcriptions`](../../audio_transcription), `/fine_tuning`, [`/batches`](#azure-batches-api), `/files`, [`/images`](../../image_generation#azure-openai-image-generation-models), [`/anthropic/v1/messages`](./azure_anthropic) |
-| Link to Provider Doc | [Azure OpenAI ↗](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview), [Azure Foundry Claude ↗](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude)
+| 說明 | Azure OpenAI Service 提供 REST API 存取 OpenAI 強大的語言模型，包括 o1、o1-mini、GPT-5、GPT-4o、GPT-4o mini、GPT-4 Turbo with Vision、GPT-4、GPT-3.5-Turbo，以及 Embeddings 模型系列。也透過 Azure Foundry 支援 Claude 模型。 |
+| LiteLLM 提供者路由 | `azure/`, [`azure/o_series/`](#o-series-models), [`azure/gpt5_series/`](#gpt-5-models), [`azure/claude-*`](./azure_anthropic)（透過 Azure Foundry 的 Claude 模型） |
+| 支援的操作 | [`/chat/completions`](#azure-openai-chat-completion-models), [`/responses`](./azure_responses), [`/completions`](#azure-instruct-models), [`/embeddings`](./azure_embedding), [`/audio/speech`](azure_speech), [`/audio/transcriptions`](../../audio_transcription), `/fine_tuning`, [`/batches`](#azure-batches-api), `/files`, [`/images`](../../image_generation#azure-openai-image-generation-models), [`/anthropic/v1/messages`](./azure_anthropic) |
+| 提供者文件連結 | [Azure OpenAI ↗](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview), [Azure Foundry Claude ↗](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude)
 
-## API Keys, Params
-api_key, api_base, api_version etc can be passed directly to `litellm.completion` - see here or set as `litellm.api_key` params see here
+## API 金鑰、參數 {#api-keys-params}
+api_key、api_base、api_version 等可以直接傳遞給 `litellm.completion` - 請參見此處，或將其設為 `litellm.api_key` 參數，請參見此處
 ```python
 import os
 os.environ["AZURE_API_KEY"] = "" # "my-azure-api-key"
@@ -29,16 +28,16 @@ os.environ["AZURE_API_TYPE"] = ""
 
 :::info Azure Foundry Claude Models
 
-Azure also supports Claude models via Azure Foundry. Use `azure/claude-*` model names (e.g., `azure/claude-sonnet-4-5`) with Azure authentication. See the [Azure Anthropic documentation](./azure_anthropic) for details.
+Azure 也透過 Azure Foundry 支援 Claude 模型。請使用 `azure/claude-*` 模型名稱（例如 `azure/claude-sonnet-4-5`）並搭配 Azure 驗證。詳情請參見 [Azure Anthropic 文件](./azure_anthropic)。
 
 :::
 
-## **Usage - LiteLLM Python SDK**
+## **使用方式 - LiteLLM Python SDK** {#usage---litellm-python-sdk}
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_Azure_OpenAI.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-### Completion - using .env variables
+### Completion - 使用 .env 變數 {#completion---using-env-variables}
 
 ```python
 from litellm import completion
@@ -55,7 +54,7 @@ response = completion(
 )
 ```
 
-### Completion - using api_key, api_base, api_version
+### Completion - 使用 api_key、api_base、api_version {#completion---using-api_key-api_base-api_version}
 
 ```python
 import litellm
@@ -70,7 +69,7 @@ response = litellm.completion(
 )
 ```
 
-### Completion - using azure_ad_token, api_base, api_version
+### Completion - 使用 azure_ad_token、api_base、api_version {#completion---using-azure_ad_token-api_base-api_version}
 
 ```python
 import litellm
@@ -86,17 +85,17 @@ response = litellm.completion(
 ```
 
 
-## **Usage - LiteLLM Proxy Server**
+## **使用方式 - LiteLLM Proxy Server** {#usage---litellm-proxy-server}
 
-Here's how to call Azure OpenAI models with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 Azure OpenAI 模型
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export AZURE_API_KEY=""
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy  {#2-start-the-proxy}
 
 ```yaml
 model_list:
@@ -108,7 +107,7 @@ model_list:
       api_key: os.environ/AZURE_API_KEY # The `os.environ/` prefix tells litellm to read this from the env.
 ```
 
-### 3. Test it
+### 3. 測試它 {#3-test-it}
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -180,12 +179,11 @@ print(response)
 </TabItem>
 </Tabs>
 
+### 設定 API 版本 {#setting-api-version}
 
-### Setting API Version
+您可以透過以下方式在 proxy config.yaml 中設定 Azure OpenAI 的 `api_version`
 
-You can set the `api_version` for Azure OpenAI in your proxy config.yaml in the following ways
-
-#### Option 1: Per Model Configuration
+#### 選項 1：每個模型的設定 {#option-1-per-model-configuration}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -198,18 +196,15 @@ model_list:
 ```
 
 
-
-
-
-## Azure OpenAI Chat Completion Models
+## Azure OpenAI Chat Completion 模型 {#azure-openai-chat-completion-models}
 
 :::tip
 
-**We support ALL Azure models, just set `model=azure/<your deployment name>` as a prefix when sending litellm requests**
+**我們支援所有 Azure 模型，只要在送出 litellm 請求時將 `model=azure/<your deployment name>` 設為前綴即可**
 
 :::
 
-| Model Name       | Function Call                          |
+| 模型名稱       | 函式呼叫                          |
 |------------------|----------------------------------------|
 | o1-mini | `response = completion(model="azure/<your deployment name>", messages=messages)` |
 | o1-preview | `response = completion(model="azure/<your deployment name>", messages=messages)` |
@@ -230,13 +225,13 @@ model_list:
 | gpt-3.5-turbo-16k    | `completion('azure/<your deployment name>', messages)` |
 | gpt-3.5-turbo-16k-0613    | `completion('azure/<your deployment name>', messages)`
 
-## Azure OpenAI Vision Models 
-| Model Name            | Function Call                                                   |
+## Azure OpenAI Vision 模型  {#azure-openai-vision-models}
+| 模型名稱            | 函式呼叫                                                   |
 |-----------------------|-----------------------------------------------------------------|
 | gpt-4-vision   | `completion(model="azure/<your deployment name>", messages=messages)` |
 | gpt-4o            | `completion('azure/<your deployment name>', messages)`         |
 
-#### Usage
+#### 使用方式 {#usage}
 ```python
 import os 
 from litellm import completion
@@ -267,17 +262,17 @@ response = completion(
 
 ```
 
-#### Usage - with Azure Vision enhancements
+#### 使用方式 - 搭配 Azure Vision 增強功能 {#usage---with-azure-vision-enhancements}
 
-Note: **Azure requires the `base_url` to be set with `/extensions`** 
+注意：**Azure 需要將 `base_url` 設定為 `/extensions`** 
 
-Example 
+範例 
 ```python
 base_url=https://gpt-4-vision-resource.openai.azure.com/openai/deployments/gpt-4-vision/extensions
 # base_url="{azure_endpoint}/openai/deployments/{azure_deployment}/extensions"
 ```
 
-**Usage**
+**使用方式**
 ```python
 import os 
 from litellm import completion
@@ -317,15 +312,15 @@ response = completion(
 )
 ```
 
-## O-Series Models
+## O-Series 模型 {#o-series-models}
 
-Azure OpenAI O-Series models are supported on LiteLLM. 
+LiteLLM 支援 Azure OpenAI O-Series 模型。 
 
-LiteLLM routes any deployment name with `o1` or `o3` in the model name, to the O-Series [transformation](https://github.com/BerriAI/litellm/blob/91ed05df2962b8eee8492374b048d27cc144d08c/litellm/llms/azure/chat/o1_transformation.py#L4) logic.
+LiteLLM 會將任何模型名稱中包含 `o1` 或 `o3` 的部署名稱，路由到 O-Series [轉換](https://github.com/BerriAI/litellm/blob/91ed05df2962b8eee8492374b048d27cc144d08c/litellm/llms/azure/chat/o1_transformation.py#L4) 邏輯。
 
-To set this explicitly, set `model` to `azure/o_series/<your-deployment-name>`.
+若要明確設定，請將 `model` 設為 `azure/o_series/<your-deployment-name>`。
 
-**Automatic Routing**
+**自動路由**
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -350,7 +345,7 @@ model_list:
 </TabItem>
 </Tabs>
 
-**Explicit Routing**
+**明確路由**
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -374,20 +369,19 @@ model_list:
 </TabItem>
 </Tabs>
 
+## GPT-5 模型 {#gpt-5-models}
 
-## GPT-5 Models
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure OpenAI GPT-5 models |
-| Provider Route on LiteLLM | `azure/gpt5_series/<custom-name>` or `azure/gpt-5-deployment-name` |
+| 說明 | Azure OpenAI GPT-5 models |
+| LiteLLM 提供者路由 | `azure/gpt5_series/<custom-name>` or `azure/gpt-5-deployment-name` |
 
-LiteLLM supports using Azure GPT-5 models in one of the two ways:
-1. Explicit Routing: `model = azure/gpt5_series/<deployment-name>`. In this scenario the model onboarded to litellm follows the format `model=azure/gpt5_series/<deployment-name>`.
-2. Inferred Routing (If the azure deployment name contains `gpt-5` in the name): `model = azure/gpt-5-mini`. In this scenario the model onboarded to litellm follows the format `model=azure/gpt-5-mini`.
+LiteLLM 支援以下兩種方式使用 Azure GPT-5 模型：
+1. 明確路由：`model = azure/gpt5_series/<deployment-name>`。在此情況下，導入 litellm 的模型格式為 `model=azure/gpt5_series/<deployment-name>`。
+2. 推斷路由（如果 azure 部署名稱中包含 `gpt-5`）：`model = azure/gpt-5-mini`。在此情況下，導入 litellm 的模型格式為 `model=azure/gpt-5-mini`。
 
-#### Explicit Routing
-Use `azure/gpt5_series/<deployment-name>` for explicit GPT-5 model routing. 
+#### 明確路由 {#explicit-routing}
+請使用 `azure/gpt5_series/<deployment-name>` 進行明確的 GPT-5 模型路由。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -415,8 +409,8 @@ model_list:
 </TabItem>
 </Tabs>
 
-#### Inferred Routing (gpt-5 in the deployment name)
-If your Azure deployment name contains `gpt-5`, LiteLLM automatically recognizes it as a GPT-5 model.
+#### 推斷路由（部署名稱中包含 gpt-5） {#inferred-routing-gpt-5-in-the-deployment-name}
+如果您的 Azure 部署名稱包含 `gpt-5`，LiteLLM 會自動將其辨識為 GPT-5 模型。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -446,12 +440,7 @@ model_list:
 </TabItem>
 </Tabs>
 
-
-
-
-
-
-## Azure Audio Model
+## Azure 音訊模型 {#azure-audio-model}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -481,7 +470,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -493,14 +482,13 @@ model_list:
       api_version: os.environ/AZURE_API_VERSION
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
-
+3. 測試它！
 
 ```bash
 curl http://localhost:4000/v1/chat/completions \
@@ -518,15 +506,14 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Azure Instruct Models
+## Azure Instruct 模型 {#azure-instruct-models}
 
-Use `model="azure_text/<your-deployment>"`
+請使用 `model="azure_text/<your-deployment>"`
 
-| Model Name          | Function Call                                      |
+| 模型名稱          | 函式呼叫                                      |
 |---------------------|----------------------------------------------------|
 | gpt-3.5-turbo-instruct | `response = completion(model="azure_text/<your deployment name>", messages=messages)` |
 | gpt-3.5-turbo-instruct-0914 | `response = completion(model="azure_text/<your deployment name>", messages=messages)` |
-
 
 ```python
 import litellm
@@ -544,30 +531,29 @@ response = litellm.completion(
 print(response)
 ```
 
-## **Authentication**
+## **驗證** {#authentication}
 
+### Entra ID - 使用 `azure_ad_token` {#entra-id---use-azure_ad_token}
 
-### Entra ID - use `azure_ad_token`
+這是一個關於如何使用 Azure Active Directory Tokens - Microsoft Entra ID 來進行 `litellm.completion()` 呼叫的操作說明。  
+> **注意：** 您可以遵循下方相同步驟，使用 Azure Active Directory Tokens 搭配 LiteLLM 來處理所有其他 Azure 端點（例如 chat、embeddings、image、audio 等）。
 
-This is a walkthrough on how to use Azure Active Directory Tokens - Microsoft Entra ID to make `litellm.completion()` calls.  
-> **Note:** You can follow the same process below to use Azure Active Directory Tokens for all other Azure endpoints (e.g., chat, embeddings, image, audio, etc.) with LiteLLM.
-
-Step 1 - Download Azure CLI 
-Installation instructions: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
+Step 1 - 下載 Azure CLI 
+安裝說明： https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
 ```shell
 brew update && brew install azure-cli
 ```
-Step 2 - Sign in using `az`
+步驟 2 - 使用 `az` 登入
 ```shell
 az login --output table
 ```
 
-Step 3 - Generate azure ad token
+步驟 3 - 產生 azure ad token
 ```shell
 az account get-access-token --resource https://cognitiveservices.azure.com
 ```
 
-In this step you should see an `accessToken` generated
+在這個步驟中，您應該會看到已產生一個 `accessToken`
 ```shell
 {
   "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IjlHbW55RlBraGMzaE91UjIybXZTdmduTG83WSIsImtpZCI6IjlHbW55RlBraGMzaE91UjIybXZTdmduTG83WSJ9",
@@ -579,14 +565,12 @@ In this step you should see an `accessToken` generated
 }
 ```
 
-Step 4 - Make litellm.completion call with Azure AD token
+步驟 4 - 使用 Azure AD token 進行 litellm.completion 請求
 
-Set `azure_ad_token` = `accessToken` from step 3 or set `os.environ['AZURE_AD_TOKEN']`
-
+設定 `azure_ad_token` = `accessToken`（來自步驟 3）或設定 `os.environ['AZURE_AD_TOKEN']`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
-
 
 ```python
 response = litellm.completion(
@@ -615,9 +599,9 @@ model_list:
 </TabItem>
 </Tabs>
 
-### Entra ID - use tenant_id, client_id, client_secret
+### Entra ID - 使用 tenant_id、client_id、client_secret {#entra-id---use-tenant_id-client_id-client_secret}
 
-Here is an example of setting up `tenant_id`, `client_id`, `client_secret` in your litellm proxy `config.yaml`
+以下是將 `tenant_id`、`client_id`、`client_secret` 設定到您的 litellm proxy `config.yaml` 的範例
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -631,7 +615,7 @@ model_list:
       azure_scope: os.environ/AZURE_SCOPE  # defaults to "https://cognitiveservices.azure.com/.default"
 ```
 
-Test it 
+測試它
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -648,13 +632,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-Example video of using `tenant_id`, `client_id`, `client_secret` with LiteLLM Proxy Server
+使用 `tenant_id`、`client_id`、`client_secret` 搭配 LiteLLM Proxy Server 的示範影片
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/70d3f219ee7f4e5d84778b7f17bba506?sid=04b8ff29-485f-4cb8-929e-6b392722f36d" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-### Entra ID - use client_id, username, password
+### Entra ID - 使用 client_id、username、password {#entra-id---use-client_id-username-password}
 
-Here is an example of setting up `client_id`, `azure_username`, `azure_password` in your litellm proxy `config.yaml`
+以下是將 `client_id`、`azure_username`、`azure_password` 設定到您的 litellm proxy `config.yaml` 的範例
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -668,7 +652,7 @@ model_list:
       azure_scope: os.environ/AZURE_SCOPE  # defaults to "https://cognitiveservices.azure.com/.default"
 ```
 
-Test it 
+測試它
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -686,14 +670,14 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
-### Azure AD Token Refresh - `DefaultAzureCredential`
+### Azure AD 權杖重新整理 - `DefaultAzureCredential` {#azure-ad-token-refresh---defaultazurecredential}
 
-Use this if you want to use Azure `DefaultAzureCredential` for Authentication on your requests. `DefaultAzureCredential` automatically discovers and uses available Azure credentials from multiple sources.
+如果您想在請求上使用 Azure `DefaultAzureCredential` 進行驗證，請使用此項。`DefaultAzureCredential` 會自動從多個來源探索並使用可用的 Azure 憑證。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Option 1: Explicit DefaultAzureCredential (Recommended)**
+**選項 1：明確指定 DefaultAzureCredential（建議）**
 ```python
 from litellm import completion
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
@@ -714,7 +698,7 @@ response = completion(
 )
 ```
 
-**Option 2: LiteLLM Auto-Fallback to DefaultAzureCredential**
+**選項 2：LiteLLM 自動回退到 DefaultAzureCredential**
 ```python
 import litellm
 
@@ -732,9 +716,9 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY config.yaml">
 
-**Scenario 1: With Environment Variables (Traditional)**
+**情境 1：使用環境變數（傳統方式）**
 
-1. Add relevant env vars
+1. 新增相關的環境變數
 
 ```bash
 export AZURE_TENANT_ID=""
@@ -742,7 +726,7 @@ export AZURE_CLIENT_ID=""
 export AZURE_CLIENT_SECRET=""
 ```
 
-2. Setup config.yaml
+2. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -755,24 +739,9 @@ litellm_settings:
     enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
 ```
 
-**Scenario 2: Managed Identity (AKS, Azure VMs) - No Hard-coded Credentials Required**
+**情境 2：受控身分識別（AKS、Azure VM）- 不需要硬編碼憑證**
 
-Perfect for AKS clusters, Azure VMs, or other managed environments where Azure automatically injects credentials.
-
-```yaml
-model_list:
-  - model_name: gpt-3.5-turbo
-    litellm_params:
-      model: azure/your-deployment-name
-      api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
-
-litellm_settings:
-    enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
-```
-
-**Scenario 3: Azure CLI Authentication**
-
-If you're authenticated via `az login`, no additional configuration needed:
+非常適合 AKS 叢集、Azure VM，或其他 Azure 會自動注入憑證的受控環境。
 
 ```yaml
 model_list:
@@ -785,36 +754,49 @@ litellm_settings:
     enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
 ```
 
-3. Start proxy
+**情境 3：Azure CLI 驗證**
+
+如果您是透過 `az login` 完成驗證，則不需要額外設定：
+
+```yaml
+model_list:
+  - model_name: gpt-3.5-turbo
+    litellm_params:
+      model: azure/your-deployment-name
+      api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
+
+litellm_settings:
+    enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
+```
+
+3. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**How it works**: 
-- LiteLLM first tries Service Principal authentication (if environment variables are available)
-- If that fails, it automatically falls back to `DefaultAzureCredential`
-- `DefaultAzureCredential` will use Managed Identity, Azure CLI credentials, or other available Azure identity sources
-- This eliminates the need for hard-coded credentials in managed environments like AKS
+**運作方式**： 
+- LiteLLM 會先嘗試 Service Principal 驗證（如果可用環境變數）
+- 如果失敗，會自動回退到 `DefaultAzureCredential`
+- `DefaultAzureCredential` 會使用 Managed Identity、Azure CLI 憑證，或其他可用的 Azure 身分來源
+- 這樣就不需要在 AKS 之類的受控環境中硬編碼憑證
 
 </TabItem>
 </Tabs>
 
+## **Azure Batches API** {#azure-batches-api}
 
-## **Azure Batches API**
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure OpenAI Batches API |
-| `custom_llm_provider` on LiteLLM | `azure/` |
-| Supported Operations | `/v1/batches`, `/v1/files` |
+| 說明 | Azure OpenAI Batches API |
+| LiteLLM 上的 `custom_llm_provider` | `azure/` |
+| 支援的操作 | `/v1/batches`、`/v1/files` |
 | Azure OpenAI Batches API | [Azure OpenAI Batches API ↗](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/batch) |
-| Cost Tracking, Logging Support | ✅ LiteLLM will log, track cost for Batch API Requests |
+| 成本追蹤、記錄支援 | ✅ LiteLLM 會記錄、追蹤 Batch API 請求的成本 |
 
+### 快速開始 {#quick-start}
 
-### Quick Start
-
-Just add the azure env vars to your environment. 
+只要將 azure 環境變數加入您的環境中即可。 
 
 ```bash
 export AZURE_API_KEY=""
@@ -824,7 +806,7 @@ export AZURE_API_BASE=""
 <Tabs>
 <TabItem value="proxy" label="LiteLLM PROXY Server">
 
-**1. Upload a File**
+**1. 上傳檔案**
 
 <Tabs>
 <TabItem value="sdk" label="OpenAI Python SDK">
@@ -859,14 +841,14 @@ curl http://localhost:4000/v1/files \
 </TabItem>
 </Tabs>
 
-**Example File Format**
+**檔案格式範例**
 ```json
 {"custom_id": "task-0", "method": "POST", "url": "/chat/completions", "body": {"model": "REPLACE-WITH-MODEL-DEPLOYMENT-NAME", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was Microsoft founded?"}]}}
 {"custom_id": "task-1", "method": "POST", "url": "/chat/completions", "body": {"model": "REPLACE-WITH-MODEL-DEPLOYMENT-NAME", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was the first XBOX released?"}]}}
 {"custom_id": "task-2", "method": "POST", "url": "/chat/completions", "body": {"model": "REPLACE-WITH-MODEL-DEPLOYMENT-NAME", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "What is Altair Basic?"}]}}
 ```
 
-**2. Create a Batch Request**
+**2. 建立 Batch 請求**
 
 <Tabs>
 <TabItem value="sdk" label="OpenAI Python SDK">
@@ -897,7 +879,7 @@ curl http://localhost:4000/v1/batches \
 </TabItem>
 </Tabs>
 
-**3. Retrieve a Batch**
+**3. 取得 Batch**
 
 <Tabs>
 <TabItem value="sdk" label="OpenAI Python SDK">
@@ -921,7 +903,7 @@ curl http://localhost:4000/v1/batches/batch_abc123 \
 </TabItem>
 </Tabs>
 
-**4. Cancel a Batch**
+**4. 取消 Batch**
 
 <Tabs>
 <TabItem value="sdk" label="OpenAI Python SDK">
@@ -946,7 +928,7 @@ curl http://localhost:4000/v1/batches/batch_abc123/cancel \
 </TabItem>
 </Tabs>
 
-**5. List Batches**
+**5. 列出 Batch**
 
 <Tabs>
 <TabItem value="sdk" label="OpenAI Python SDK">
@@ -968,7 +950,7 @@ curl http://localhost:4000/v1/batches?limit=2 \
 </TabItem>
 <TabItem value="sdk" label="LiteLLM SDK">
 
-**1. Create File for Batch Completion**
+**1. 建立用於 Batch Completion 的檔案**
 
 ```python
 from litellm
@@ -988,7 +970,7 @@ file_obj = await litellm.acreate_file(
 print("Response from creating file=", file_obj)
 ```
 
-**2. Create Batch Request**
+**2. 建立 Batch 請求**
 
 ```python
 create_batch_response = await litellm.acreate_batch(
@@ -1002,7 +984,7 @@ create_batch_response = await litellm.acreate_batch(
 print("response from litellm.create_batch=", create_batch_response)
 ```
 
-**3. Retrieve Batch and File Content**
+**3. 取得 Batch 和檔案內容**
 
 ```python
 retrieved_batch = await litellm.aretrieve_batch(
@@ -1019,7 +1001,7 @@ file_content = await litellm.afile_content(
 print("file content = ", file_content)
 ```
 
-**4. List Batches**
+**4. 列出 Batch**
 
 ```python
 list_batches_response = litellm.list_batches(
@@ -1032,11 +1014,10 @@ print("list_batches_response=", list_batches_response)
 </TabItem>
 </Tabs>
 
-### [Health Check Azure Batch models](../../proxy/health.md#batch-models-azure-only)
+### [健康檢查 Azure Batch models](../../proxy/health.md#batch-models-azure-only) {#health-check-azure-batch-modelsproxyhealthmdbatch-models-azure-only}
 
-
-### [BETA] Loadbalance Multiple Azure Deployments 
-In your config.yaml, set `enable_loadbalancing_on_batch_endpoints: true`
+### [BETA] 對多個 Azure 部署進行負載平衡 {#beta-loadbalance-multiple-azure-deployments}
+在您的 config.yaml 中，設定 `enable_loadbalancing_on_batch_endpoints: true`
 
 ```yaml
 model_list:
@@ -1052,12 +1033,12 @@ litellm_settings:
   enable_loadbalancing_on_batch_endpoints: true # 👈 KEY CHANGE
 ```
 
-Note: This works on `{PROXY_BASE_URL}/v1/files` and `{PROXY_BASE_URL}/v1/batches`.
-Note: Response is in the OpenAI-format. 
+注意：這可在 `{PROXY_BASE_URL}/v1/files` 和 `{PROXY_BASE_URL}/v1/batches` 上運作。
+注意：回應為 OpenAI 格式。 
 
-1. Upload a file 
+1. 上傳檔案 
 
-Just set `model: batch-gpt-4o-mini` in your .jsonl.
+只要在您的 .jsonl 中設定 `model: batch-gpt-4o-mini` 即可。
 
 ```bash
 curl http://localhost:4000/v1/files \
@@ -1066,9 +1047,9 @@ curl http://localhost:4000/v1/files \
     -F file="@mydata.jsonl"
 ```
 
-**Example File**
+**檔案範例**
 
-Note: `model` should be your azure deployment name.
+注意：`model` 應該是您的 azure 部署名稱。
 
 ```json
 {"custom_id": "task-0", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-gpt-4o-mini", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was Microsoft founded?"}]}}
@@ -1076,13 +1057,13 @@ Note: `model` should be your azure deployment name.
 {"custom_id": "task-2", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-gpt-4o-mini", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "What is Altair Basic?"}]}}
 ```
 
-Expected Response (OpenAI-compatible)
+預期回應（相容 OpenAI）
 
 ```bash
 {"id":"file-f0be81f654454113a922da60acb0eea6",...}
 ```
 
-2. Create a batch 
+2. 建立 batch 
 
 ```bash
 curl http://0.0.0.0:4000/v1/batches \
@@ -1096,13 +1077,13 @@ curl http://0.0.0.0:4000/v1/batches \
   }'
 ```
 
-Expected Response: 
+預期回應： 
 
 ```bash
 {"id":"batch_94e43f0a-d805-477d-adf9-bbb9c50910ed",...}
 ```
 
-3. Retrieve a batch 
+3. 取得 batch 
 
 ```bash
 curl http://0.0.0.0:4000/v1/batches/batch_94e43f0a-d805-477d-adf9-bbb9c50910ed \
@@ -1111,13 +1092,13 @@ curl http://0.0.0.0:4000/v1/batches/batch_94e43f0a-d805-477d-adf9-bbb9c50910ed \
 ```
 
 
-Expected Response: 
+預期回應： 
 
 ```
 {"id":"batch_94e43f0a-d805-477d-adf9-bbb9c50910ed",...}
 ```
 
-4. List batch
+4. 列出 batch
 
 ```bash
 curl http://0.0.0.0:4000/v1/batches?limit=2 \
@@ -1125,22 +1106,22 @@ curl http://0.0.0.0:4000/v1/batches?limit=2 \
   -H "Content-Type: application/json"
 ```
 
-Expected Response:
+預期回應：
 
 ```bash
 {"data":[{"id":"batch_R3V...}
 ```
 
-## Advanced
-### Azure API Load-Balancing
+## 進階 {#advanced}
+### Azure API 負載平衡 {#azure-api-load-balancing}
 
-Use this if you're trying to load-balance across multiple Azure/OpenAI deployments. 
+如果您要在多個 Azure/OpenAI 部署之間進行負載平衡，請使用此項。 
 
-`Router` prevents failed requests, by picking the deployment which is below rate-limit and has the least amount of tokens used. 
+`Router` 會透過選擇低於速率限制且已使用 token 數量最少的部署，來避免請求失敗。 
 
-In production, [Router connects to a Redis Cache](#redis-queue) to track usage across multiple deployments.
+在正式環境中，[Router 會連接到 Redis 快取](#redis-queue) 以追蹤多個部署之間的使用量。
 
-#### Quick Start
+#### 快速開始 {#quick-start-1}
 
 ```python
 uv add litellm
@@ -1188,7 +1169,7 @@ response = router.completion(model="gpt-3.5-turbo",
 print(response)
 ```
 
-#### Redis Queue 
+#### Redis 佇列 {#redis-queue}
 
 ```python
 router = Router(model_list=model_list, 
@@ -1200,10 +1181,9 @@ print(response)
 ```
 
 
-### Tool Calling / Function Calling
+### 工具呼叫 / Function Calling {#tool-calling--function-calling}
 
-See a detailed walthrough of parallel function calling with litellm [here](https://docs.litellm.ai/docs/completion/function_call)
-
+請參閱 litellm 平行 function calling 的詳細逐步說明 [這裡](https://docs.litellm.ai/docs/completion/function_call)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1253,7 +1233,7 @@ print("\nTool Choice:\n", tool_calls)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1265,13 +1245,13 @@ model_list:
       api_version: "2023-07-01-preview"
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試它
 
 ```bash
 curl -L -X POST 'http://localhost:4000/v1/chat/completions' \
@@ -1289,15 +1269,13 @@ curl -L -X POST 'http://localhost:4000/v1/chat/completions' \
 ```
 
 
-
-
 </TabItem>
 </Tabs>
-### Spend Tracking for Azure OpenAI Models (PROXY)
+### Azure OpenAI 模型的支出追蹤（PROXY） {#spend-tracking-for-azure-openai-models-proxy}
 
-Set base model for cost tracking azure image-gen call
+設定 base model 以進行成本追蹤 azure image-gen 呼叫
 
-#### Image Generation 
+#### 影像生成  {#image-generation}
 
 ```yaml
 model_list: 
@@ -1312,15 +1290,15 @@ model_list:
         mode: image_generation
 ```
 
-#### Chat Completions / Embeddings
+#### 聊天完成 / Embeddings {#chat-completions--embeddings}
 
-**Problem**: Azure returns `gpt-4` in the response when `azure/gpt-4-1106-preview` is used. This leads to inaccurate cost tracking
+**問題**：當使用 `azure/gpt-4-1106-preview` 時，Azure 會在回應中回傳 `gpt-4`。這會導致成本追蹤不準確
 
-**Solution** ✅ :  Set `base_model` on your config so litellm uses the correct model for calculating azure cost
+**解決方案** ✅：在您的 config 中設定 `base_model`，讓 litellm 使用正確的模型來計算 azure 成本
 
-Get the base model name from [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
+從[這裡](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)取得 base model 名稱
 
-Example config with `base_model`
+含有 `base_model` 的範例設定
 ```yaml
 model_list:
   - model_name: azure-gpt-3.5

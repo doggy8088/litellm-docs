@@ -2,27 +2,27 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Prompt Management
+# 提示管理 {#prompt-management}
 
-Run experiments or change the specific model (e.g. from gpt-4o to gpt4o-mini finetune) from your prompt management tool (e.g. Langfuse) instead of making changes in the application. 
+請直接從您的提示管理工具（例如 Langfuse）執行實驗或變更特定模型（例如從 gpt-4o 改為 gpt4o-mini finetune），而不是在應用程式中進行修改。 
 
-| Supported Integrations | Link |
+| 支援的整合 | 連結 |
 |------------------------|------|
-| Native LiteLLM GitOps (.prompt files) | [Get Started](native_litellm_prompt) |
-| Langfuse               | [Get Started](https://langfuse.com/docs/prompts/get-started) |
-| Humanloop              | [Get Started](../observability/humanloop) |
-| Generic Prompt Management API | [Get Started](../adding_provider/generic_prompt_management_api) |
+| 原生 LiteLLM GitOps (.prompt files) | [開始使用](native_litellm_prompt) |
+| Langfuse               | [開始使用](https://langfuse.com/docs/prompts/get-started) |
+| Humanloop              | [開始使用](../observability/humanloop) |
+| 一般提示管理 API | [開始使用](../adding_provider/generic_prompt_management_api) |
 
-## Onboarding Prompts via config.yaml
+## 透過 config.yaml 上線提示 {#onboarding-prompts-via-configyaml}
 
-You can onboard and initialize prompts directly in your `config.yaml` file. This allows you to:
-- Load prompts at proxy startup
-- Manage prompts as code alongside your proxy configuration
-- Use any supported prompt integration (dotprompt, Langfuse, BitBucket, GitLab, custom)
+您可以直接在您的 `config.yaml` 檔案中上線並初始化提示。這讓您可以：
+- 在代理程式啟動時載入提示
+- 將提示作為程式碼與您的代理程式組態一起管理
+- 使用任何支援的提示整合（dotprompt、Langfuse、BitBucket、GitLab、自訂）
 
-### Basic Structure
+### 基本結構 {#basic-structure}
 
-Add a `prompts` field to your config.yaml:
+將 `prompts` 欄位加入您的 config.yaml：
 
 ```yaml
 model_list:
@@ -39,25 +39,25 @@ prompts:
       # integration-specific parameters below
 ```
 
-### Understanding `prompt_integration`
+### 了解 `prompt_integration` {#understanding-prompt_integration}
 
-The `prompt_integration` field determines where and how prompts are loaded:
+`prompt_integration` 欄位決定提示的載入位置與方式：
 
-- **`dotprompt`**: Load from local `.prompt` files or inline content
-- **`langfuse`**: Fetch prompts from Langfuse prompt management
-- **`bitbucket`**: Load from BitBucket repository `.prompt` files (team-based access control)
-- **`gitlab`**: Load from GitLab repository `.prompt` files (team-based access control)
-- **`generic_prompt_management`**: Integrate any prompt management system via a simple API endpoint (no PR required)
-- **`custom`**: Use your own custom prompt management implementation
+- **`dotprompt`**：從本機 `.prompt` 檔案或內嵌內容載入
+- **`langfuse`**：從 Langfuse 提示管理擷取提示
+- **`bitbucket`**：從 BitBucket 儲存庫 `.prompt` 檔案載入（以團隊為基礎的存取控制）
+- **`gitlab`**：從 GitLab 儲存庫 `.prompt` 檔案載入（以團隊為基礎的存取控制）
+- **`generic_prompt_management`**：透過簡單的 API 端點整合任何提示管理系統（不需要 PR）
+- **`custom`**：使用您自己的自訂提示管理實作
 
-Each integration has its own configuration parameters and access control mechanisms.
+每個整合都有其各自的組態參數與存取控制機制。
 
-### Supported Integrations
+### 支援的整合 {#supported-integrations}
 
 <Tabs>
-<TabItem value="dotprompt" label="DotPrompt (File-based)">
+<TabItem value="dotprompt" label="DotPrompt（檔案型）">
 
-**Option 1: Using a prompt directory**
+**選項 1：使用提示目錄**
 
 ```yaml
 prompts:
@@ -71,7 +71,7 @@ litellm_settings:
   global_prompt_directory: "./prompts"  # Global setting for all dotprompt integrations
 ```
 
-**Option 2: Using inline prompt data**
+**選項 2：使用內嵌提示資料**
 
 ```yaml
 prompts:
@@ -88,7 +88,7 @@ prompts:
             max_tokens: 150
 ```
 
-**Option 3: Using dotprompt_content for single prompts**
+**選項 3：使用 dotprompt_content 處理單一提示**
 
 ```yaml
 prompts:
@@ -106,7 +106,7 @@ prompts:
         User: {{user_message}}
 ```
 
-Create `.prompt` files in your prompt directory:
+在您的提示目錄中建立 `.prompt` 檔案：
 
 ```yaml
 # prompts/hello.prompt
@@ -161,7 +161,7 @@ litellm_settings:
     branch: "main"
 ```
 
-Your BitBucket repository should contain `.prompt` files:
+您的 BitBucket 儲存庫應包含 `.prompt` 檔案：
 
 ```yaml
 # prompts/my_bitbucket_prompt.prompt
@@ -196,7 +196,7 @@ litellm_settings:
     branch: "main"
 ```
 
-Your GitLab repository should contain `.prompt` files:
+您的 GitLab 儲存庫應包含 `.prompt` 檔案：
 
 ```yaml
 # prompts/my_gitlab_prompt.prompt
@@ -211,7 +211,7 @@ User: {{user_message}}
 
 </TabItem>
 
-<TabItem value="generic" label="Generic Prompt Management">
+<TabItem value="generic" label="一般提示管理">
 
 ```yaml
 prompts:
@@ -227,9 +227,9 @@ prompts:
       ignore_prompt_manager_optional_params: true  # optional
 ```
 
-**What you need to implement:**
+**您需要實作的內容：**
 
-A GET endpoint at `/beta/litellm_prompt_management` that returns:
+在 `/beta/litellm_prompt_management` 提供一個 GET 端點，回傳：
 
 ```json
 {
@@ -252,20 +252,20 @@ A GET endpoint at `/beta/litellm_prompt_management` that returns:
 }
 ```
 
-**Benefits:**
-- No PR required - integrate any prompt management system
-- Full control over your prompt storage and versioning
-- Support for variable substitution with `{variable}` syntax
-- Custom query parameters for filtering and access control
+**優點：**
+- 不需要 PR - 可整合任何提示管理系統
+- 完全掌控您的提示儲存與版本控管
+- 支援使用 `{variable}` 語法進行變數替換
+- 用於篩選與存取控制的自訂查詢參數
 
-**Learn more:** [Generic Prompt Management API Documentation](../adding_provider/generic_prompt_management_api)
+**深入了解：** [一般提示管理 API 文件](../adding_provider/generic_prompt_management_api)
 
 </TabItem>
 </Tabs>
 
-### Complete Example
+### 完整範例 {#complete-example}
 
-Here's a complete example showing multiple prompts with different integrations:
+以下是一個完整範例，展示具有不同整合的多個提示：
 
 ```yaml
 model_list:
@@ -306,16 +306,16 @@ litellm_settings:
   global_prompt_directory: "./prompts"
 ```
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-1. **At Startup**: When the proxy starts, it reads the `prompts` field from `config.yaml`
-2. **Initialization**: Each prompt is initialized based on its `prompt_integration` type
-3. **In-Memory Storage**: Prompts are stored in the `IN_MEMORY_PROMPT_REGISTRY`
-4. **Access**: Use these prompts via `/v1/chat/completions` or `/v1/responses` with `prompt_id` in the request
+1. **在啟動時**：代理程式啟動時，會從 `config.yaml` 讀取 `prompts` 欄位
+2. **初始化**：每個提示都會根據其 `prompt_integration` 類型進行初始化
+3. **記憶體內儲存**：提示會儲存在 `IN_MEMORY_PROMPT_REGISTRY` 中
+4. **存取**：透過 `/v1/chat/completions` 或 `/v1/responses` 搭配請求中的 `prompt_id` 使用這些提示
 
-### Using Config-Loaded Prompts
+### 使用從組態載入的提示 {#using-config-loaded-prompts}
 
-After loading prompts via config.yaml, use them in your API requests:
+透過 config.yaml 載入提示後，請在您的 API 請求中使用它們：
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -331,7 +331,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-You can also use the same `prompt_id` with the Responses API:
+您也可以在 Responses API 中使用相同的 `prompt_id`：
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/responses' \
@@ -348,28 +348,26 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/responses' \
 }'
 ```
 
-### Prompt Schema Reference
+### 提示結構參考 {#prompt-schema-reference}
 
-Each prompt in the `prompts` list requires:
+`prompts` 清單中的每個提示都需要：
 
-- **`prompt_id`** (string, required): Unique identifier for the prompt
-- **`litellm_params`** (object, required): Configuration for the prompt
-  - **`prompt_id`** (string, required): Must match the top-level prompt_id
-  - **`prompt_integration`** (string, required): One of: `dotprompt`, `langfuse`, `bitbucket`, `gitlab`, `custom`
-  - Additional integration-specific parameters (see tabs above)
-- **`prompt_info`** (object, optional): Metadata about the prompt
-  - **`prompt_type`** (string): Defaults to `"config"` for config-loaded prompts
+- **`prompt_id`**（字串，必填）：提示的唯一識別碼
+- **`litellm_params`**（物件，必填）：提示的組態
+  - **`prompt_id`**（字串，必填）：必須與最上層的 prompt_id 相符
+  - **`prompt_integration`**（字串，必填）：下列之一：`dotprompt`、`langfuse`、`bitbucket`、`gitlab`、`custom`
+  - 其他特定整合的參數（請見上方分頁）
+- **`prompt_info`**（物件，選填）：關於提示的中繼資料
+  - **`prompt_type`**（字串）：對於從組態載入的提示，預設為 `"config"`
 
-### Notes
+### 注意事項 {#notes}
 
-- Config-loaded prompts have `prompt_type: "config"` and **cannot be updated** via the API
-- To update config prompts, modify your `config.yaml` and restart the proxy
-- For dynamic prompts that can be updated via API, use the `/prompts` endpoints instead
-- All supported integrations work with config-loaded prompts
+- 從組態載入的提示具有 `prompt_type: "config"`，且 **無法** 透過 API 更新
+- 若要更新組態提示，請修改您的 `config.yaml` 並重新啟動代理程式
+- 若要使用可透過 API 更新的動態提示，請改用 `/prompts` 端點
+- 所有支援的整合都可與從組態載入的提示一起使用
 
-
-## Quick Start
-
+## 快速開始 {#quick-start}
 
 <Tabs>
 
@@ -393,11 +391,10 @@ resp = litellm.completion(
 ```
 
 
-
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -412,13 +409,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動代理程式
 
 ```bash
 litellm --config config.yaml --detailed_debug
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
 <Tabs>
 <TabItem value="curl" label="CURL">
@@ -475,8 +472,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-**Expected Logs:**
+**預期記錄：**
 
 ```
 POST Request Sent from LiteLLM:
@@ -485,11 +481,11 @@ https://api.openai.com/v1/ \
 -d '{'model': 'gpt-3.5-turbo', 'messages': <YOUR LANGFUSE PROMPT TEMPLATE>}'
 ```
 
-## How to set model 
+## 如何設定模型  {#how-to-set-model}
 
-### Set the model on LiteLLM 
+### 在 LiteLLM 上設定模型  {#set-the-model-on-litellm}
 
-You can do `langfuse/<litellm_model_name>`
+您可以做到 `langfuse/<litellm_model_name>`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -516,9 +512,9 @@ model_list:
 </TabItem>
 </Tabs>
 
-### Set the model in Langfuse
+### 在 Langfuse 中設定模型 {#set-the-model-in-langfuse}
 
-If the model is specified in the Langfuse config, it will be used.
+如果在 Langfuse 組態中指定了模型，將會使用該模型。
 
 <Image img={require('../../img/langfuse_prompt_management_model_config.png')} />
 
@@ -531,38 +527,37 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
 ```
 
-## What is 'prompt_variables'?
+## 什麼是 'prompt_variables'？ {#what-is-prompt_variables}
 
-- `prompt_variables`: A dictionary of variables that will be used to replace parts of the prompt.
+- `prompt_variables`：一個字典，內含將用來取代提示部分內容的變數。
 
+## 什麼是 'prompt_id'？ {#what-is-prompt_id}
 
-## What is 'prompt_id'?
-
-- `prompt_id`: The ID of the prompt that will be used for the request.
+- `prompt_id`：將用於請求的提示 ID。
 
 <Image img={require('../../img/langfuse_prompt_id.png')} />
 
-## What will the formatted prompt look like?
+## 格式化後的提示會是什麼樣子？ {#what-will-the-formatted-prompt-look-like}
 
-### `/chat/completions` messages
+### `/chat/completions` 訊息 {#chatcompletions-messages}
 
-The `messages` field sent in by the client is ignored. 
+用戶端傳入的 `messages` 欄位會被忽略。 
 
-The Langfuse prompt will replace the `messages` field.
+Langfuse 提示會取代 `messages` 欄位。
 
-To replace parts of the prompt, use the `prompt_variables` field. [See how prompt variables are used](https://github.com/BerriAI/litellm/blob/017f83d038f85f93202a083cf334de3544a3af01/litellm/integrations/langfuse/langfuse_prompt_management.py#L127)
+若要取代提示中的部分內容，請使用 `prompt_variables` 欄位。[查看如何使用提示變數](https://github.com/BerriAI/litellm/blob/017f83d038f85f93202a083cf334de3544a3af01/litellm/integrations/langfuse/langfuse_prompt_management.py#L127)
 
-If the Langfuse prompt is a string, it will be sent as a user message (not all providers support system messages).
+如果 Langfuse 提示是字串，將會以使用者訊息傳送（並非所有提供者都支援系統訊息）。
 
-If the Langfuse prompt is a list, it will be sent as is (Langfuse chat prompts are OpenAI compatible).
+如果 Langfuse 提示是清單，將會照原樣傳送（Langfuse 聊天提示與 OpenAI 相容）。
 
-## Architectural Overview
+## 架構總覽 {#architectural-overview}
 
 <Image img={require('../../img/prompt_management_architecture_doc.png')} />
 
-## API Reference
+## API 參考 {#api-reference}
 
-These are the params you can pass to the `litellm.completion` function in SDK and `litellm_params` in config.yaml
+以下是您可傳遞給 SDK 中 `litellm.completion` 函式以及 config.yaml 中 `litellm_params` 的參數
 
 ```
 prompt_id: str # required

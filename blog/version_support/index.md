@@ -1,32 +1,32 @@
 ---
 slug: version-support
-title: "LiteLLM version support: focusing on the four most recent stable lines"
+title: "LiteLLM 版本支援：聚焦最近四條穩定次版本線"
 date: 2026-06-20
 authors:
   - yuneng
-description: "Starting Monday, June 29, 2026, LiteLLM actively supports the four most recent stable minor lines. Older lines reach end of life, and the window rolls forward as new stable lines ship."
+description: "自 2026 年 6 月 29 日星期一起，LiteLLM 將主動支援最近四條穩定次版本線。較舊的版本線將進入生命週期結束，並且隨著新的穩定版本線發布，支援視窗會往前推進。"
 tags: [release, support]
 hide_table_of_contents: false
 ---
 
-*Starting Monday, June 29, 2026, LiteLLM will only actively support the four most recent stable minor lines. Here's what's changing and what it means for you.*
+*自 2026 年 6 月 29 日星期一起，LiteLLM 將只主動支援最近四條穩定次版本線。以下說明變更內容以及對您的影響。*
 
-## Why we're doing this
+## 我們為什麼這麼做 {#why-were-doing-this}
 
-Maintaining older lines means carrying every fix back to keep them all in parity. That overhead grows with the number of lines we keep alive, not the number of fixes we make. Our focus is ensuring the most up-to-date product offerings are stable and working for you. Because of this, LiteLLM is focusing on the four most recent stable minor lines going forward.
+維護較舊的版本線，意味著必須將每個修正回補，以維持所有版本線一致。這項額外負擔會隨著我們保留的版本線數量增加，而不是隨著我們所做的修正數量增加。我們的重點是確保最新的產品提供內容穩定且能為您正常運作。因此，LiteLLM 接下來將聚焦於最近四條穩定次版本線。
 
-## How the rolling window works
+## 滾動視窗如何運作 {#how-the-rolling-window-works}
 
-This shift in focus takes effect Monday, June 29, 2026.
+這項焦點轉移將於 2026 年 6 月 29 日星期一生效。
 
-A minor line is a release series written as 1.89.x, covering every patch in it: 1.89.0, 1.89.1, 1.89.2, and any later ones. We support the four most recent lines and every patch inside each of them.
+次版本線是一個以 1.89.x 這種格式表示的發布系列，涵蓋其中的所有 patch：1.89.0、1.89.1、1.89.2，以及任何後續版本。我們支援最近四條版本線，以及每條版本線中的所有 patch。
 
-Today the four supported lines are **1.89.x, 1.88.x, 1.87.x, and 1.86.x**. Everything **1.85.x and earlier** has reached end of life and will no longer actively receive updates. The window rolls forward: when 1.90.x ships, 1.86.x rolls out and the supported set becomes 1.90.x, 1.89.x, 1.88.x, and 1.87.x. With a new line about every week, that works out to roughly a month of coverage per line.
+目前受支援的四條版本線是 **1.89.x、1.88.x、1.87.x 和 1.86.x**。所有 **1.85.x 及更早版本**都已達到生命週期結束，將不再主動接收更新。這個視窗會往前推進：當 1.90.x 發布時，1.86.x 會移出，受支援的組合就會變成 1.90.x、1.89.x、1.88.x 和 1.87.x。由於大約每週會有一條新版本線，因此每條版本線大約可獲得一個月的涵蓋範圍。
 
-## What this means for you
+## 這對您意味著什麼 {#what-this-means-for-you}
 
-To stay supported, pin to a line and take its patches, then move up before it ages out. Patching within a line is a drop-in; moving up a line is where you'd check the release notes for changes. Enterprise customers who need longer coverage can reach out, and for rare high-severity issues we'll use our judgment and may patch outside the window.
+若要維持受支援狀態，請鎖定在某條版本線並套用其 patch，然後在其過時之前升級到更新的版本線。同一版本線內的 patch 可以直接套用；升級到更高版本線時，則需要查看發行說明中的變更內容。需要更長涵蓋範圍的企業客戶可以與我們聯絡，而對於罕見的高嚴重性問題，我們會依據判斷，並可能在視窗之外進行修補。
 
-## How to stay current
+## 如何保持最新 {#how-to-stay-current}
 
-The best way to stay up to date on these changes is to bookmark our [release notes](https://docs.litellm.ai/release_notes). We update it as new versions ship, so you can see the latest stable line and the three behind it that are still supported.
+隨時掌握這些變更的最佳方式，是將我們的 [發行說明](https://docs.litellm.ai/release_notes) 加入書籤。我們會在新版本發布時更新它，因此您可以看到最新的穩定版本線，以及仍受支援的前三個前版版本線。

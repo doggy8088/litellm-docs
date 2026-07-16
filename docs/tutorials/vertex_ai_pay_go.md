@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI PayGo and Priority
+# Vertex AI PayGo 與 Priority {#vertex-ai-paygo-and-priority}
 
-## Priority PayGo
+## 優先 PayGo {#priority-paygo}
 
-LiteLLM supports Priority PayGo.  
-Send a priority header, get priority queueing, and pay priority token rates.
+LiteLLM 支援 Priority PayGo。  
+傳送 priority 標頭，即可獲得 priority 排隊，並以 priority token 費率計費。
 
-:::info Which models support Priority PayGo?
-As of this writing: `gemini/gemini-2.5-pro`, `vertex_ai/gemini-3-pro-preview`, `vertex_ai/gemini-3.1-pro-preview`, `vertex_ai/gemini-3-flash-preview`, and their variants.  
-Check `supports_service_tier: true` in LiteLLM's [model pricing JSON](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+:::info 哪些模型支援 Priority PayGo？
+截至撰寫本文時：`gemini/gemini-2.5-pro`、`vertex_ai/gemini-3-pro-preview`、`vertex_ai/gemini-3.1-pro-preview`、`vertex_ai/gemini-3-flash-preview`，以及它們的變體。  
+請查看 LiteLLM 的 [model pricing JSON](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中的 `supports_service_tier: true`。
 :::
 
-### Send a priority request
+### 傳送 priority 請求 {#send-a-priority-request}
 
-Use this header:
+使用此標頭：
 
 `X-Vertex-AI-LLM-Shared-Request-Type: priority`
 
@@ -37,7 +37,7 @@ print(response.choices[0].message.content)
 ```
 
 </TabItem>
-<TabItem value="proxy-config" label="Proxy config">
+<TabItem value="proxy-config" label="Proxy 設定">
 
 ```yaml title="config.yaml"
 model_list:
@@ -59,9 +59,9 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 
 </TabItem>
-<TabItem value="pass-through" label="Pass-through mode">
+<TabItem value="pass-through" label="直通模式">
 
-Use `x-pass-` so LiteLLM forwards provider-specific headers.
+使用 `x-pass-`，讓 LiteLLM 轉送特定提供者的標頭。
 
 ```bash
 MODEL_ID="gemini-3-pro-preview-0325"
@@ -78,32 +78,32 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-### How cost tracking works
+### 費用追蹤運作方式 {#how-cost-tracking-works}
 
-![Vertex AI Priority PayGo Cost Tracking Flow](/img/vertex_cost_tracking_flow.svg)
+![Vertex AI Priority PayGo 費用追蹤流程](/img/vertex_cost_tracking_flow.svg)
 
-**`trafficType` → `service_tier` mapping**
+**`trafficType` → `service_tier` 對應**
 
-| `usageMetadata.trafficType` | `service_tier` | Pricing keys used |
+| `usageMetadata.trafficType` | `service_tier` | 使用的定價鍵 |
 |---|---|---|
 | `ON_DEMAND` | `None` | `input_cost_per_token` |
 | `ON_DEMAND_PRIORITY` | `"priority"` | `input_cost_per_token_priority` |
 | `FLEX` / `BATCH` | `"flex"` | `input_cost_per_token_flex` |
 
-If a tier-specific key is missing, LiteLLM falls back to standard pricing keys.
+如果缺少特定層級的鍵，LiteLLM 會回退到標準定價鍵。
 
 ---
 
-## Standard PayGo vs Provisioned Throughput
+## 標準 PayGo 與 Provisioned Throughput {#standard-paygo-vs-provisioned-throughput}
 
-This is a different header from priority routing:
+這與 priority 路由是不同的標頭：
 
-| Header value | Behavior |
+| 標頭值 | 行為 |
 |---|---|
-| `X-Vertex-AI-LLM-Request-Type: shared` | Force standard PayGo (bypass PT) |
-| `X-Vertex-AI-LLM-Request-Type: dedicated` | Force Provisioned Throughput only (`429` if exhausted) |
+| `X-Vertex-AI-LLM-Request-Type: shared` | 強制標準 PayGo（略過 PT） |
+| `X-Vertex-AI-LLM-Request-Type: dedicated` | 僅強制 Provisioned Throughput（若耗盡則 `429`） |
 
-### Native route example
+### 原生路由範例 {#native-route-example}
 
 ```python
 import litellm
@@ -117,7 +117,7 @@ response = litellm.completion(
 )
 ```
 
-### Pass-through example
+### 直通範例 {#pass-through-example}
 
 ```bash
 MODEL_ID="gemini-2.0-flash-001"
@@ -135,17 +135,16 @@ curl -X POST \
 
 ---
 
-## Troubleshooting 
+## 疑難排解  {#troubleshooting}
 
-**Q: What does `403 Permission denied` or `IAM_PERMISSION_DENIED` mean?**  
-A: The service account or Application Default Credentials (ADC) user does not have the `roles/aiplatform.user` role. To resolve this, re-run the `gcloud projects add-iam-policy-binding`.
+**Q: `403 Permission denied` 或 `IAM_PERMISSION_DENIED` 代表什麼？**  
+A: 服務帳戶或 Application Default Credentials (ADC) 使用者沒有 `roles/aiplatform.user` 角色。若要解決此問題，請重新執行 `gcloud projects add-iam-policy-binding`。
 
-**Q: What should I do if I get a `429 Quota exceeded` error?**  
-A: This means you've hit the per-region QPM (queries per minute) or TPM (tokens per minute) quota. You can:
-- Request a quota increase from the [GCP Quotas console](https://console.cloud.google.com/iam-admin/quotas)
-- Add more regions to your LiteLLM configuration for load balancing
-- Upgrade to [Provisioned Throughput](https://cloud.google.com/vertex-ai/generative-ai/docs/provisioned-throughput) for guaranteed capacity
+**Q: 如果我收到 `429 Quota exceeded` 錯誤，該怎麼做？**  
+A: 這表示您已達到每個區域的 QPM（每分鐘查詢數）或 TPM（每分鐘 token 數）配額。您可以：
+- 從 [GCP Quotas console](https://console.cloud.google.com/iam-admin/quotas) 申請提高配額
+- 在 LiteLLM 設定中新增更多區域以進行負載平衡
+- 升級到 [Provisioned Throughput](https://cloud.google.com/vertex-ai/generative-ai/docs/provisioned-throughput) 以獲得保證容量
 
-**Q: How do I fix the `VERTEXAI_PROJECT not set` error?**  
-A: Either pass the `vertex_project` parameter explicitly in your LiteLLM call, or set the `VERTEXAI_PROJECT` environment variable before running your code.
-
+**Q: 我要如何修正 `VERTEXAI_PROJECT not set` 錯誤？**  
+A: 請在 LiteLLM 呼叫中明確傳入 `vertex_project` 參數，或在執行程式碼前設定 `VERTEXAI_PROJECT` 環境變數。

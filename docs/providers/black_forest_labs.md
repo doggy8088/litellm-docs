@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Black Forest Labs Image Generation
+# Black Forest Labs 圖像生成 {#black-forest-labs-image-generation}
 
-Black Forest Labs provides state-of-the-art text-to-image generation using their FLUX models.
+Black Forest Labs 使用其 FLUX 模型提供最先進的文字轉圖像生成。
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Black Forest Labs FLUX models for high-quality text-to-image generation |
-| Provider Route on LiteLLM | `black_forest_labs/` |
-| Provider Doc | [Black Forest Labs API ↗](https://docs.bfl.ai/) |
-| Supported Operations | [`/images/generations`](#image-generation) |
+| 說明 | 用於高品質文字轉圖像生成的 Black Forest Labs FLUX 模型 |
+| LiteLLM 上的提供者路由 | `black_forest_labs/` |
+| 提供者文件 | [Black Forest Labs API ↗](https://docs.bfl.ai/) |
+| 支援的操作 | [`/images/generations`](#image-generation) |
 
-## Setup
+## 設定 {#setup}
 
-### API Key
+### API 金鑰 {#api-key}
 
 ```python showLineNumbers
 import os
@@ -25,23 +25,23 @@ import os
 os.environ["BFL_API_KEY"] = "your-api-key-here"
 ```
 
-Get your API key from [Black Forest Labs](https://blackforestlabs.ai/).
+請從 [Black Forest Labs](https://blackforestlabs.ai/) 取得您的 API 金鑰。
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Description | Price |
+| 模型名稱 | 說明 | 價格 |
 |------------|-------------|-------|
-| `black_forest_labs/flux-pro-1.1` | Fast & reliable standard generation | $0.04/image |
-| `black_forest_labs/flux-pro-1.1-ultra` | Ultra high-resolution (up to 4MP) | $0.06/image |
-| `black_forest_labs/flux-dev` | Development/open-source variant | $0.025/image |
-| `black_forest_labs/flux-pro` | Original pro model | $0.05/image |
+| `black_forest_labs/flux-pro-1.1` | 快速且可靠的標準生成 | $0.04/張圖片 |
+| `black_forest_labs/flux-pro-1.1-ultra` | 超高解析度（最高 4MP） | $0.06/張圖片 |
+| `black_forest_labs/flux-dev` | 開發／開源變體 | $0.025/張圖片 |
+| `black_forest_labs/flux-pro` | 原始 pro 模型 | $0.05/張圖片 |
 
-## Image Generation
+## 圖像生成 {#image-generation}
 
-### Usage - LiteLLM Python SDK
+### 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
 <Tabs>
-<TabItem value="basic" label="Basic Usage">
+<TabItem value="basic" label="基本用法">
 
 ```python showLineNumbers title="Basic Image Generation"
 import os
@@ -62,7 +62,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="async" label="Async Usage">
+<TabItem value="async" label="非同步用法">
 
 ```python showLineNumbers title="Async Image Generation"
 import os
@@ -85,7 +85,7 @@ asyncio.run(generate_image())
 
 </TabItem>
 
-<TabItem value="size" label="Custom Size">
+<TabItem value="size" label="自訂尺寸">
 
 ```python showLineNumbers title="Image Generation with Custom Size"
 import os
@@ -106,7 +106,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="ultra" label="Ultra High-Res">
+<TabItem value="ultra" label="超高解析度">
 
 ```python showLineNumbers title="Ultra High Resolution with flux-pro-1.1-ultra"
 import os
@@ -128,7 +128,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="advanced" label="Advanced Parameters">
+<TabItem value="advanced" label="進階參數">
 
 ```python showLineNumbers title="Advanced Image Generation with BFL Parameters"
 import os
@@ -153,9 +153,9 @@ print(response.data[0].url)
 </TabItem>
 </Tabs>
 
-### Usage - LiteLLM Proxy Server
+### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-#### 1. Configure your config.yaml
+#### 1. 設定您的 config.yaml {#1-configure-your-configyaml}
 
 ```yaml showLineNumbers title="Black Forest Labs Image Generation Configuration"
 model_list:
@@ -184,7 +184,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start LiteLLM Proxy Server
+#### 2. 啟動 LiteLLM Proxy Server {#2-start-litellm-proxy-server}
 
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -192,7 +192,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Make image generation requests
+#### 3. 發出圖像生成請求 {#3-make-image-generation-requests}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -234,58 +234,58 @@ curl -X POST 'http://localhost:4000/v1/images/generations' \
 </TabItem>
 </Tabs>
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-### OpenAI-Compatible Parameters
+### OpenAI 相容參數 {#openai-compatible-parameters}
 
-| Parameter | Type | Description | Mapping |
+| 參數 | 類型 | 說明 | 對應 |
 |-----------|------|-------------|---------|
-| `prompt` | string | Text description of the image to generate | Direct |
-| `model` | string | The FLUX model to use | Direct |
-| `size` | string | Image dimensions (e.g., `1024x1024`) | Maps to `width` and `height` |
-| `n` | integer | Number of images (ultra model only, up to 4) | Maps to `num_images` |
-| `quality` | string | `hd` for natural look | Maps to `raw=True` for ultra |
-| `response_format` | string | `url` or `b64_json` | Direct |
+| `prompt` | string | 要生成的圖像文字描述 | 直接對應 |
+| `model` | string | 要使用的 FLUX 模型 | 直接對應 |
+| `size` | string | 圖像尺寸（例如，`1024x1024`） | 對應到 `width` 和 `height` |
+| `n` | integer | 圖像數量（僅 ultra 模型，最多 4 張） | 對應到 `num_images` |
+| `quality` | string | 用於營造自然外觀的 `hd` | ultra 時對應到 `raw=True` |
+| `response_format` | string | `url` 或 `b64_json` | 直接對應 |
 
-### Black Forest Labs Specific Parameters
+### Black Forest Labs 特定參數 {#black-forest-labs-specific-parameters}
 
-| Parameter | Type | Description | Default |
+| 參數 | 類型 | 說明 | 預設值 |
 |-----------|------|-------------|---------|
-| `width` | integer | Image width (256-1920, multiples of 16) | 1024 |
-| `height` | integer | Image height (256-1920, multiples of 16) | 1024 |
-| `aspect_ratio` | string | Alternative to width/height (e.g., `16:9`, `1:1`) | - |
-| `seed` | integer | Seed for reproducible results | Random |
-| `output_format` | string | Output format: `png` or `jpeg` | `png` |
-| `safety_tolerance` | integer | Safety filter tolerance (0-6, higher = more permissive) | 2 |
-| `prompt_upsampling` | boolean | Enhance prompt for better results | `false` |
+| `width` | integer | 圖像寬度（256-1920，16 的倍數） | 1024 |
+| `height` | integer | 圖像高度（256-1920，16 的倍數） | 1024 |
+| `aspect_ratio` | string | 寬度／高度的替代選項（例如，`16:9`、`1:1`） | - |
+| `seed` | integer | 用於重現結果的種子 | 隨機 |
+| `output_format` | string | 輸出格式：`png` 或 `jpeg` | `png` |
+| `safety_tolerance` | integer | 安全過濾器容忍度（0-6，越高 = 越寬鬆） | 2 |
+| `prompt_upsampling` | boolean | 增強提示詞以獲得更好結果 | `false` |
 
-### Ultra Model Specific Parameters
+### Ultra 模型特定參數 {#ultra-model-specific-parameters}
 
-| Parameter | Type | Description | Default |
+| 參數 | 類型 | 說明 | 預設值 |
 |-----------|------|-------------|---------|
-| `raw` | boolean | Raw mode for more natural, less synthetic look | `false` |
-| `num_images` | integer | Number of images to generate (1-4) | 1 |
+| `raw` | boolean | 更原始的模式，呈現更自然、較少人工感的外觀 | `false` |
+| `num_images` | integer | 要生成的圖像數量（1-4） | 1 |
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Black Forest Labs uses a polling-based API:
+Black Forest Labs 使用輪詢式 API：
 
-1. **Submit Request**: LiteLLM sends your prompt to BFL
-2. **Get Task ID**: BFL returns a task ID and polling URL
-3. **Poll for Result**: LiteLLM automatically polls until the image is ready
-4. **Return Result**: The generated image URL is returned
+1. **提交請求**：LiteLLM 將您的提示詞傳送到 BFL
+2. **取得任務 ID**：BFL 回傳任務 ID 和輪詢 URL
+3. **輪詢結果**：LiteLLM 自動輪詢直到圖像就緒
+4. **回傳結果**：回傳生成的圖像 URL
 
-This polling is handled automatically by LiteLLM - you just call `image_generation()` and get the result.
+此輪詢由 LiteLLM 自動處理——您只需呼叫 `image_generation()` 並取得結果。
 
-## Getting Started
+## 開始使用 {#getting-started}
 
-1. Create an account at [Black Forest Labs](https://blackforestlabs.ai/)
-2. Get your API key from the dashboard
-3. Set your `BFL_API_KEY` environment variable
-4. Use `litellm.image_generation()` with any supported model
+1. 在 [Black Forest Labs](https://blackforestlabs.ai/) 建立帳號
+2. 從儀表板取得您的 API 金鑰
+3. 設定您的 `BFL_API_KEY` 環境變數
+4. 搭配任何支援的模型使用 `litellm.image_generation()`
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Black Forest Labs Documentation](https://docs.bfl.ai/)
-- [Black Forest Labs Image Editing](./black_forest_labs_img_edit.md) - For editing existing images
-- [FLUX Model Information](https://blackforestlabs.ai/)
+- [Black Forest Labs 文件](https://docs.bfl.ai/)
+- [Black Forest Labs 圖像編輯](./black_forest_labs_img_edit.md) - 用於編輯現有圖像
+- [FLUX 模型資訊](https://blackforestlabs.ai/)

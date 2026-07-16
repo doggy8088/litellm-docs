@@ -1,11 +1,11 @@
-# 💸 GET Daily Spend, Usage Metrics
+# 💸 取得每日支出、用量指標 {#-get-daily-spend-usage-metrics}
 
-## Request Format
+## 請求格式 {#request-format}
 ```shell
 curl -X GET "http://0.0.0.0:4000/daily_metrics" -H "Authorization: Bearer sk-1234"
 ```
 
-## Response format 
+## 回應格式  {#response-format}
 ```json
 [
     daily_spend = [

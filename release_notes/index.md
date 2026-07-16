@@ -1,66 +1,66 @@
 ---
-title: Release Notes
-sidebar_label: Overview
+title: 版本說明
+sidebar_label: 總覽
 slug: /
 ---
 
-# Release Notes
+# 版本說明 {#release-notes}
 
-LiteLLM ships new releases regularly with new provider support, performance improvements, and enterprise features. Use the sidebar to browse all releases.
+LiteLLM 定期推出新版本，包含新的提供者支援、效能改進與企業功能。請使用側邊欄瀏覽所有版本。
 
-## Latest Release
+## 最新版本 {#latest-release}
 
-### [v1.92.0 — Claude Sonnet 5, Production MCP OAuth & New Providers](/release_notes/v1.92.0/v1-92-0)
+### [v1.92.0 — Claude Sonnet 5、正式版 MCP OAuth 與新提供者](/release_notes/v1.92.0/v1-92-0) {#v1920--claude-sonnet-5-production-mcp-oauth--new-providersrelease_notesv1920v1-92-0}
 
-_July 11, 2026_
+_2026 年 7 月 11 日_
 
-First-class Claude Sonnet 5 support across Anthropic, Amazon Bedrock (including regional inference profiles), Vertex AI, and Azure AI with a 1M-token context window, reasoning, computer use, and PDF input; a production-ready MCP OAuth 2.0 On-Behalf-Of arm on the v2 resolver with RFC 9728 to RFC 8414 endpoint discovery, persisted Dynamic Client Registration, per-server outbound concurrency limits, and an `mcp_tool_search` virtual tool for large tool catalogs; two new providers in Tencent (DeepSeek V4 flash and pro) and Google Distributed Cloud Gemini for on-prem and sovereign deployments; access-control hardening across the key, user, and team endpoints plus AES-256-GCM at-rest credential encryption; and faster spend and budget hot paths with Redis-cluster reconnect and read-replica boot resilience.
-
----
-
-## Recent Releases
-
-| Version                             | Date         | Highlights                                                 |
-| ----------------------------------- | ------------ | ---------------------------------------------------------- |
-| [v1.92.0](/release_notes/v1.92.0/v1-92-0)   | Jul 11, 2026 | Claude Sonnet 5, production MCP OAuth (On-Behalf-Of) v2, Tencent & GDC providers |
-| [v1.91.0](/release_notes/v1.91.0/v1-91-0)   | Jul 4, 2026  | MCP OAuth 2.0 v2 resolver, Rust OCR gateway, realtime performance |
-| [v1.90.0](/release_notes/v1.90.0/v1-90-0)   | Jun 26, 2026 | Six new providers, OpenTelemetry v2 metrics parity, streaming-reliability sweep |
-| [v1.89.0](/release_notes/v1.89.0/v1-89-0)   | Jun 10, 2026 | Claude Fable 5, A2A agent providers, MCP per-server controls |
-| [v1.88.0](/release_notes/v1.88.0/v1-88-0)   | Jun 4, 2026  | Claude Opus 4.8, MCP access-group authorization, typed OpenTelemetry |
-| [v1.87.0](/release_notes/v1.87.0/v1-87-0)   | May 23, 2026 | OCI Generative AI provider, Gemini 3.5 Flash day-0, MCP UI for OAuth servers |
-| [v1.86.0](/release_notes/v1.86.0/v1-86-0)   | May 16, 2026 | Weighted-Routing Failover, native Anthropic web-search citations, OTel-standard server spans |
-| [v1.85.1](/release_notes/v1.85.1/v1-85-1)   | May 20, 2026 | Patch — Gemini 3.5 Flash day-0 + cross-pod spend fix       |
-| [v1.84.1](/release_notes/v1.84.1/v1-84-1)   | May 20, 2026 | Patch — Gemini 3.5 Flash day-0 + cross-pod spend fix       |
-| [v1.85.0](/release_notes/v1.85.0/v1-85-0)   | May 16, 2026 | Realtime GA, MCP Gateway expansion & hardened multi-tenancy |
-| [v1.84.0](/release_notes/v1.84.0/v1-84-0)   | May 14, 2026 | Reliability hardening + multi-pod budget accuracy          |
-| [v1.83.14](/release_notes/v1.83.14/v1-83-14) | Apr 27, 2026 | GPT-5.5, Prompt Compression & Memory API                   |
-| [v1.83.10](/release_notes/v1.83.10/v1-83-10) | Apr 27, 2026 | Claude Opus 4.7, Prompt Compression & Multi-Window Budgets |
-| [v1.82.3](/release_notes/v1.82.3/v1-82-3)   | Mar 16, 2026 | Nebius AI, gpt-5.4, Gemini 3.x, FLUX Kontext, and 116 new models |
-| [v1.82.0](/release_notes/v1.82.0/v1-82-0)   | Feb 28, 2026 | Realtime Guardrails, Projects Management, and 10+ Performance Optimizations |
-| [v1.81.14](/release_notes/v1.81.14/v1-81-14) | Feb 21, 2026 | New Gateway Level Guardrails & Compliance Playground       |
-| [v1.81.12](/release_notes/v1.81.12/v1-81-12) | Feb 14, 2026 | Guardrail Policy Templates & Action Builder                |
-| [v1.81.9](/release_notes/v1.81.9/v1-81-9)   | Feb 7, 2026  | Control which MCP Servers are exposed on the Internet      |
-| [v1.81.6](/release_notes/v1.81.6/v1-81-6)   | Jan 31, 2026 | Logs v2 with Tool Call Tracing                             |
-| [v1.81.3](/release_notes/v1.81.3/v1-81-3)   | Jan 26, 2026 | Performance — 25% CPU Usage Reduction                      |
-| [v1.81.0](/release_notes/v1.81.0/v1-81-0)          | Jan 18, 2026 | Claude Code — Web Search Across All Providers              |
-| [v1.80.15](/release_notes/v1.80.15/v1-80-15)       | Jan 10, 2026 | Manus API Support                                          |
-| [v1.80.8](/release_notes/v1.80.8-stable/v1-80-8)   | Dec 6, 2025  | Introducing A2A Agent Gateway                              |
-| [v1.80.5](/release_notes/v1.80.5-stable/v1-80-5)   | Nov 22, 2025 | Gemini 3.0 Support                                         |
-| [v1.80.0](/release_notes/v1.80.0-stable/v1-80-0)   | Nov 15, 2025 | Introducing Agent Hub: Register, Publish, and Share Agents |
-| [v1.79.3](/release_notes/v1.79.3-stable/v1-79-3)   | Nov 8, 2025  | Built-in Guardrails on AI Gateway                          |
-| [v1.79.0](/release_notes/v1.79.0-stable/v1-79-0)   | Oct 26, 2025 | Search APIs                                                |
-| [v1.78.5](/release_notes/v1.78.5-stable/v1-78-5)   | Oct 18, 2025 | Native OCR Support                                         |
-| [v1.78.0](/release_notes/v1.78.0-stable/v1-78-0)   | Oct 11, 2025 | MCP Gateway: Control Tool Access by Team, Key              |
-| [v1.77.7](/release_notes/v1.77.7-stable/v1-77-7)   | Oct 4, 2025  | 2.9x Lower Median Latency                                  |
-| [v1.77.5](/release_notes/v1.77.5-stable/v1-77-5)   | Sep 29, 2025 | MCP OAuth 2.0 Support                                      |
-| [v1.77.3](/release_notes/v1.77.3-stable/v1-77-3)   | Sep 21, 2025 | Priority Based Rate Limiting                               |
+在 Anthropic、Amazon Bedrock（包含 regional inference profiles）、Vertex AI 與 Azure AI 上提供一流的 Claude Sonnet 5 支援，具備 100 萬 token 的上下文視窗、推理、電腦使用與 PDF 輸入；在 v2 resolver 上提供可正式上線的 MCP OAuth 2.0 On-Behalf-Of arm，具備 RFC 9728 到 RFC 8414 端點探索、持久化的 Dynamic Client Registration、每個伺服器的 outbound concurrency 限制，以及用於大型工具目錄的 `mcp_tool_search` virtual tool；新增 Tencent（DeepSeek V4 flash 與 pro）和 Google Distributed Cloud Gemini 兩個提供者，用於內部部署與主權部署；加強 key、user 與 team 端點的存取控制，並以 AES-256-GCM 實作靜態憑證加密；以及透過 Redis 叢集重新連線與讀取副本啟動韌性，加快 spend 與 budget 的 hot path。
 
 ---
 
-## Stay Updated
+## 最近版本 {#recent-releases}
 
-- **GitHub**: Watch the [BerriAI/litellm](https://github.com/BerriAI/litellm) repository for release notifications
-- **Discord**: Join our [community](https://discord.com/invite/wuPM9dRgDw) for announcements
-- **Twitter**: Follow [@LiteLLM](https://twitter.com/LiteLLM)
+| 版本                                | 日期         | 重點                                                     |
+| ----------------------------------- | ------------ | -------------------------------------------------------- |
+| [v1.92.0](/release_notes/v1.92.0/v1-92-0)   | 2026 年 7 月 11 日 | Claude Sonnet 5、正式版 MCP OAuth（On-Behalf-Of）v2、Tencent 與 GDC 提供者 |
+| [v1.91.0](/release_notes/v1.91.0/v1-91-0)   | 2026 年 7 月 4 日  | MCP OAuth 2.0 v2 resolver、Rust OCR 閘道、即時效能 |
+| [v1.90.0](/release_notes/v1.90.0/v1-90-0)   | 2026 年 6 月 26 日 | 六個新提供者、OpenTelemetry v2 指標一致性、串流可靠性整體檢查 |
+| [v1.89.0](/release_notes/v1.89.0/v1-89-0)   | 2026 年 6 月 10 日 | Claude Fable 5、A2A 代理程式提供者、MCP per-server controls |
+| [v1.88.0](/release_notes/v1.88.0/v1-88-0)   | 2026 年 6 月 4 日  | Claude Opus 4.8、MCP access-group authorization、typed OpenTelemetry |
+| [v1.87.0](/release_notes/v1.87.0/v1-87-0)   | 2026 年 5 月 23 日 | OCI Generative AI 提供者、Gemini 3.5 Flash day-0、OAuth 伺服器的 MCP UI |
+| [v1.86.0](/release_notes/v1.86.0/v1-86-0)   | 2026 年 5 月 16 日 | Weighted-Routing Failover、原生 Anthropic web-search citations、OTel 標準 server spans |
+| [v1.85.1](/release_notes/v1.85.1/v1-85-1)   | 2026 年 5 月 20 日 | Patch — Gemini 3.5 Flash day-0 + 跨 pod spend 修正       |
+| [v1.84.1](/release_notes/v1.84.1/v1-84-1)   | 2026 年 5 月 20 日 | Patch — Gemini 3.5 Flash day-0 + 跨 pod spend 修正       |
+| [v1.85.0](/release_notes/v1.85.0/v1-85-0)   | 2026 年 5 月 16 日 | 即時 GA、MCP Gateway 擴充與強化多租戶                     |
+| [v1.84.0](/release_notes/v1.84.0/v1-84-0)   | 2026 年 5 月 14 日 | 可靠性強化 + 多 pod budget 準確性                         |
+| [v1.83.14](/release_notes/v1.83.14/v1-83-14) | 2026 年 4 月 27 日 | GPT-5.5、Prompt Compression 與 Memory API               |
+| [v1.83.10](/release_notes/v1.83.10/v1-83-10) | 2026 年 4 月 27 日 | Claude Opus 4.7、Prompt Compression 與 Multi-Window Budgets |
+| [v1.82.3](/release_notes/v1.82.3/v1-82-3)   | 2026 年 3 月 16 日 | Nebius AI、gpt-5.4、Gemini 3.x、FLUX Kontext 與 116 個新模型 |
+| [v1.82.0](/release_notes/v1.82.0/v1-82-0)   | 2026 年 2 月 28 日 | 即時防護欄、專案管理與 10+ 效能最佳化                    |
+| [v1.81.14](/release_notes/v1.81.14/v1-81-14) | 2026 年 2 月 21 日 | 新的閘道層級防護欄與法規遵循體驗沙盒                   |
+| [v1.81.12](/release_notes/v1.81.12/v1-81-12) | 2026 年 2 月 14 日 | 防護欄政策範本與動作建構器                               |
+| [v1.81.9](/release_notes/v1.81.9/v1-81-9)   | 2026 年 2 月 7 日  | 控制哪些 MCP Servers 會暴露在網際網路上                |
+| [v1.81.6](/release_notes/v1.81.6/v1-81-6)   | 2026 年 1 月 31 日 | Logs v2 搭配工具呼叫追蹤                                 |
+| [v1.81.3](/release_notes/v1.81.3/v1-81-3)   | 2026 年 1 月 26 日 | 效能 — CPU 使用率降低 25%                                |
+| [v1.81.0](/release_notes/v1.81.0/v1-81-0)          | 2026 年 1 月 18 日 | Claude Code — 跨所有提供者的 Web Search              |
+| [v1.80.15](/release_notes/v1.80.15/v1-80-15)       | 2026 年 1 月 10 日 | Manus API 支援                                          |
+| [v1.80.8](/release_notes/v1.80.8-stable/v1-80-8)   | 2025 年 12 月 6 日  | 介紹 A2A Agent Gateway                              |
+| [v1.80.5](/release_notes/v1.80.5-stable/v1-80-5)   | 2025 年 11 月 22 日 | Gemini 3.0 支援                                         |
+| [v1.80.0](/release_notes/v1.80.0-stable/v1-80-0)   | 2025 年 11 月 15 日 | 介紹 Agent Hub：註冊、發佈與分享 Agents |
+| [v1.79.3](/release_notes/v1.79.3-stable/v1-79-3)   | 2025 年 11 月 8 日  | AI Gateway 內建防護欄                          |
+| [v1.79.0](/release_notes/v1.79.0-stable/v1-79-0)   | 2025 年 10 月 26 日 | Search APIs                                                |
+| [v1.78.5](/release_notes/v1.78.5-stable/v1-78-5)   | 2025 年 10 月 18 日 | 原生 OCR 支援                                         |
+| [v1.78.0](/release_notes/v1.78.0-stable/v1-78-0)   | 2025 年 10 月 11 日 | MCP Gateway：依團隊、Key 控制工具存取              |
+| [v1.77.7](/release_notes/v1.77.7-stable/v1-77-7)   | 2025 年 10 月 4 日  | 中位延遲降低 2.9 倍                                  |
+| [v1.77.5](/release_notes/v1.77.5-stable/v1-77-5)   | 2025 年 9 月 29 日 | MCP OAuth 2.0 支援                                      |
+| [v1.77.3](/release_notes/v1.77.3-stable/v1-77-3)   | 2025 年 9 月 21 日 | 以優先順序為基礎的速率限制                               |
 
-Use the sidebar to browse the full release history.
+---
+
+## 持續更新 {#stay-updated}
+
+- **GitHub**：關注 [BerriAI/litellm](https://github.com/BerriAI/litellm) repository 以接收版本通知
+- **Discord**：加入我們的 [community](https://discord.com/invite/wuPM9dRgDw) 以獲得公告
+- **Twitter**：追蹤 [@LiteLLM](https://twitter.com/LiteLLM)
+
+請使用側邊欄瀏覽完整的版本歷史。

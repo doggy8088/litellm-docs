@@ -1,5 +1,5 @@
 ---
-description: "LiteLLM Router for load balancing, routing, retries, cooldowns, and fallbacks (failover) across multiple LLM deployments and providers."
+description: "LiteLLM 路由器用於在多個 LLM 部署與提供者之間進行負載平衡、路由、重試、冷卻與備援（故障移轉）。"
 keywords:
   [
     router,
@@ -19,29 +19,28 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-# Router - Load Balancing
+# Router - 負載平衡 {#router---load-balancing}
 
-LiteLLM manages:
-- Load-balance across multiple deployments (e.g. Azure/OpenAI)
-- Prioritizing important requests to ensure they don't fail (i.e. Queueing)
-- Basic reliability logic - cooldowns, fallbacks, timeouts and retries (fixed + exponential backoff) across multiple deployments/providers.
+LiteLLM 管理：
+- 在多個部署之間進行負載平衡（例如 Azure/OpenAI）
+- 將重要請求排在優先位置，以確保它們不會失敗（亦即排隊）
+- 基本可靠性邏輯 - 在多個部署/提供者之間進行冷卻、備援、逾時與重試（固定 + 指數退避）。
 
-In production, litellm supports using Redis as a way to track cooldown server and usage (managing tpm/rpm limits).
+在正式環境中，litellm 支援使用 Redis 來追蹤冷卻伺服器與使用量（管理 tpm/rpm 限制）。
 
 :::info
 
-If you want a server to load balance across different LLM APIs, use our [LiteLLM Proxy Server](./proxy/load_balancing.md)
+如果您想要一個可在不同 LLM API 之間進行負載平衡的伺服器，請使用我們的 [LiteLLM Proxy Server](./proxy/load_balancing.md)
 
 :::
 
+## 負載平衡 {#load-balancing}
+（感謝 [@paulpierre](https://www.linkedin.com/in/paulpierre/) 與 [sweep proxy](https://docs.sweep.dev/blogs/openai-proxy) 對此實作的貢獻）
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/main/litellm/router.py)
 
-## Load Balancing
-(s/o [@paulpierre](https://www.linkedin.com/in/paulpierre/) and [sweep proxy](https://docs.sweep.dev/blogs/openai-proxy) for their contributions to this implementation)
-[**See Code**](https://github.com/BerriAI/litellm/blob/main/litellm/router.py)
+### 快速開始 {#quick-start}
 
-### Quick Start
-
-Loadbalance across multiple [azure](./providers/azure)/[bedrock](./providers/bedrock.md)/[provider](./providers/) deployments. LiteLLM will handle retrying in different regions if a call fails.
+在多個 [azure](./providers/azure)/[bedrock](./providers/bedrock.md)/[provider](./providers/) 部署之間進行負載平衡。若呼叫失敗，LiteLLM 會處理在不同區域的重試。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -110,11 +109,11 @@ print(response)
 
 :::info
 
-See detailed proxy loadbalancing/fallback docs [here](./proxy/reliability.md)
+請參閱詳細的 proxy 負載平衡/備援文件 [這裡](./proxy/reliability.md)
 
 :::
 
-1. Setup model_list with multiple deployments
+1. 使用多個部署設定 model_list
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -134,13 +133,13 @@ model_list:
       api_key: <your-azure-api-key>
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml 
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -157,36 +156,36 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Available Endpoints
-- `router.completion()` - chat completions endpoint to call 100+ LLMs
-- `router.acompletion()` - async chat completion calls
-- `router.embedding()` - embedding endpoint for Azure, OpenAI, Huggingface endpoints
-- `router.aembedding()` - async embeddings calls
-- `router.text_completion()` - completion calls in the old OpenAI `/v1/completions` endpoint format
-- `router.atext_completion()` - async text completion calls
-- `router.image_generation()` - completion calls in OpenAI `/v1/images/generations` endpoint format
-- `router.aimage_generation()` - async image generation calls
+### 可用端點 {#available-endpoints}
+- `router.completion()` - 用於呼叫 100+ 個 LLM 的聊天完成端點
+- `router.acompletion()` - 非同步聊天完成呼叫
+- `router.embedding()` - Azure、OpenAI、Huggingface 端點的嵌入端點
+- `router.aembedding()` - 非同步嵌入呼叫
+- `router.text_completion()` - 舊版 OpenAI `/v1/completions` 端點格式中的完成呼叫
+- `router.atext_completion()` - 非同步文字完成呼叫
+- `router.image_generation()` - OpenAI `/v1/images/generations` 端點格式中的完成呼叫
+- `router.aimage_generation()` - 非同步圖片生成呼叫
 
-## Advanced - Routing Strategies ⭐️
-#### Routing Strategies - Weighted Pick, Rate Limit Aware, Least Busy, Latency Based, Cost Based
+## 進階 - 路由策略 ⭐️ {#advanced---routing-strategies-️}
+#### 路由策略 - 權重選取、感知速率限制、最少忙碌、基於延遲、基於成本 {#routing-strategies---weighted-pick-rate-limit-aware-least-busy-latency-based-cost-based}
 
-Router provides multiple strategies for routing your calls across multiple deployments. **We recommend using `simple-shuffle` (default) for best performance in production.**
-
-<Tabs>
-<TabItem value="simple-shuffle" label="(Default) Weighted Pick - RECOMMENDED">
-
-**Default and Recommended for Production** - Best performance with minimal latency overhead.
-
-Picks a deployment based on the provided **Requests per minute (rpm) or Tokens per minute (tpm)**
-
-If `rpm` or `tpm` is not provided, it randomly picks a deployment
-
-You can also set a `weight` param, to specify which model should get picked when.
+Router 提供多種策略，可將您的呼叫路由到多個部署。**我們建議在正式環境中使用 `simple-shuffle`（預設）以獲得最佳效能。**
 
 <Tabs>
-<TabItem value="rpm" label="RPM-based shuffling">
+<TabItem value="simple-shuffle" label="（預設）權重選取 - 推薦">
 
-##### **LiteLLM Proxy Config.yaml**
+**正式環境的預設與推薦** - 以最小的延遲額外負擔達到最佳效能。
+
+根據提供的 **每分鐘請求數（rpm）或每分鐘 tokens 數（tpm）** 選取一個部署
+
+如果未提供 `rpm` 或 `tpm`，則會隨機選取一個部署
+
+您也可以設定 `weight` 參數，以指定何時應選取哪個模型。
+
+<Tabs>
+<TabItem value="rpm" label="基於 RPM 的洗牌">
+
+##### **LiteLLM Proxy Config.yaml** {#litellm-proxy-configyaml}
 
 ```yaml
 model_list:
@@ -206,7 +205,7 @@ model_list:
 		rpm: 10 
 ```
 
-##### **Python SDK**
+##### **Python SDK** {#python-sdk}
 
 ```python
 from litellm import Router 
@@ -246,9 +245,9 @@ asyncio.run(router_acompletion())
 ```
 
 </TabItem>
-<TabItem value="weight" label="Weight-based shuffling">
+<TabItem value="weight" label="基於權重的洗牌">
 
-##### **LiteLLM Proxy Config.yaml**
+##### **LiteLLM Proxy Config.yaml** {#litellm-proxy-configyaml-1}
 
 ```yaml
 model_list:
@@ -268,7 +267,7 @@ model_list:
 		weight: 1 
 ```
 
-##### **Python SDK**
+##### **Python SDK** {#python-sdk-1}
 
 ```python
 from litellm import Router 
@@ -311,21 +310,20 @@ asyncio.run(router_acompletion())
 </Tabs>
 
 </TabItem>
-<TabItem value="usage-based-v2" label="Rate-Limit Aware v2 (ASYNC)">
+<TabItem value="usage-based-v2" label="感知速率限制 v2（非同步）">
 
 > [!WARNING]  
-**Usage-based routing is not recommended for production due to performance impacts.** Use `simple-shuffle` (default) for optimal performance in high-traffic scenarios. Usage-based routing adds significant latency due to Redis operations for tracking usage across deployments.
+**不建議在正式環境使用以使用量為基礎的路由，因為會影響效能。** 在高流量情境下，請使用 `simple-shuffle`（預設）以獲得最佳效能。以使用量為基礎的路由會因為使用 Redis 跨部署追蹤使用量而增加顯著延遲。
 
+**🎉 NEW** 這是以使用量為基礎路由的非同步實作。
 
-**🎉 NEW** This is an async implementation of usage-based-routing.
+**如果 tpm/rpm 限制超過，則會過濾掉部署** - 如果您傳入該部署的 tpm/rpm 限制。
 
-**Filters out deployment if tpm/rpm limit exceeded** - If you pass in the deployment's tpm/rpm limits.
+路由至該分鐘中 **TPM 使用量最低的部署**。 
 
-Routes to **deployment with lowest TPM usage** for that minute. 
+在正式環境中，我們使用 Redis 追蹤跨多個部署的使用量（TPM/RPM）。此實作使用 **非同步 redis 呼叫**（redis.incr 和 redis.mget）。
 
-In production, we use Redis to track usage (TPM/RPM) across multiple deployments. This implementation uses **async redis calls** (redis.incr and redis.mget).
-
-For Azure, [you get 6 RPM per 1000 TPM](https://stackoverflow.com/questions/77368844/what-is-the-request-per-minute-rate-limit-for-azure-openai-models-for-gpt-3-5-tu)
+對於 Azure，[每 1000 TPM 有 6 RPM](https://stackoverflow.com/questions/77368844/what-is-the-request-per-minute-rate-limit-for-azure-openai-models-for-gpt-3-5-tu)
 
 <Tabs>
 <TabItem value="sdk" label="sdk">
@@ -379,7 +377,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="proxy">
 
-**1. Set strategy in config**
+**1. 在設定中設定 strategy**
 
 ```yaml
 model_list:
@@ -409,13 +407,13 @@ general_settings:
   master_key: sk-1234
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://localhost:4000/v1/chat/completions' \
@@ -430,16 +428,14 @@ curl --location 'http://localhost:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-
 </TabItem>
-<TabItem value="latency-based" label="Latency-Based">
+<TabItem value="latency-based" label="基於延遲">
 
+選取回應時間最低的部署。
 
-Picks the deployment with the lowest response time.
+它會根據請求送出與從部署接收的時間，快取並更新各部署的回應時間。
 
-It caches, and updates the response times for deployments based on when a request was sent and received from a deployment.
-
-[**How to test**](https://github.com/BerriAI/litellm/blob/main/tests/local_testing/test_lowest_latency_routing.py)
+[**如何測試**](https://github.com/BerriAI/litellm/blob/main/tests/local_testing/test_lowest_latency_routing.py)
 
 ```python
 from litellm import Router 
@@ -476,29 +472,29 @@ if response is not None:
 	)
 ```
 
-#### Set Time Window 
+#### 設定時間視窗  {#set-time-window}
 
-Set time window for how far back to consider when averaging latency for a deployment. 
+設定計算部署平均延遲時要回溯考量的時間視窗。 
 
-**In Router**
+**在 Router 中**
 ```python 
 router = Router(..., routing_strategy_args={"ttl": 10})
 ```
 
-**In Proxy**
+**在 Proxy 中**
 
 ```yaml
 router_settings:
 	routing_strategy_args: {"ttl": 10}
 ```
 
-#### Set Lowest Latency Buffer
+#### 設定最低延遲緩衝  {#set-lowest-latency-buffer}
 
-Set a buffer within which deployments are candidates for making calls to. 
+設定一個緩衝區，只有在此範圍內的部署才是可用來發出呼叫的候選者。 
 
-E.g. 
+例如： 
 
-if you have 5 deployments
+如果您有 5 個部署
 
 ```
 https://litellm-prod-1.openai.azure.com/: 0.07s
@@ -508,14 +504,14 @@ https://litellm-prod-4.openai.azure.com/: 0.1s
 https://litellm-prod-5.openai.azure.com/: 4.66s
 ```
 
-to prevent initially overloading `prod-1`, with all requests - we can set a buffer of 50%, to consider deployments `prod-2, prod-3, prod-4`. 
+為了避免一開始就以所有請求過度負載 `prod-1`，我們可以將緩衝設為 50%，以考慮部署 `prod-2, prod-3, prod-4`。 
 
-**In Router**
+**在 Router 中**
 ```python 
 router = Router(..., routing_strategy_args={"lowest_latency_buffer": 0.5})
 ```
 
-**In Proxy**
+**在 Proxy 中**
 
 ```yaml
 router_settings:
@@ -524,16 +520,15 @@ router_settings:
 
 </TabItem>
 
-<TabItem value="usage-based" label="Rate-Limit Aware">
+<TabItem value="usage-based" label="感知速率限制">
 
-This will route to the deployment with the lowest TPM usage for that minute. 
+這會將請求路由到該分鐘 TPM 使用量最低的部署。 
 
-In production, we use Redis to track usage (TPM/RPM) across multiple deployments. 
+在正式環境中，我們使用 Redis 追蹤跨多個部署的使用量（TPM/RPM）。 
 
-If you pass in the deployment's tpm/rpm limits, this will also check against that, and filter out any who's limits would be exceeded. 
+如果您傳入部署的 tpm/rpm 限制，這也會一併檢查，並過濾掉任何其限制會被超出的部署。 
 
-For Azure, your RPM = TPM/6. 
-
+對於 Azure，您的 RPM = TPM/6。 
 
 ```python
 from litellm import Router 
@@ -584,12 +579,11 @@ print(response)
 
 
 </TabItem>
-<TabItem value="least-busy" label="Least-Busy">
+<TabItem value="least-busy" label="最少忙碌">
 
+選取目前處理中的呼叫數量最少的部署。
 
-Picks a deployment with the least number of ongoing calls, it's handling.
-
-[**How to test**](https://github.com/BerriAI/litellm/blob/main/tests/local_testing/test_least_busy_routing.py)
+[**如何測試**](https://github.com/BerriAI/litellm/blob/main/tests/local_testing/test_least_busy_routing.py)
 
 ```python
 from litellm import Router 
@@ -634,12 +628,11 @@ asyncio.run(router_acompletion())
 
 </TabItem>
 
-<TabItem value="custom" label="Custom Routing Strategy">
+<TabItem value="custom" label="自訂路由策略">
 
-**Plugin a custom routing strategy to select deployments**
+**插入自訂路由策略以選取部署**
 
-
-Step 1. Define your custom routing strategy
+步驟 1. 定義您的自訂路由策略
 
 ```python
 
@@ -701,7 +694,7 @@ class CustomRoutingStrategy(CustomRoutingStrategyBase):
         pass
 ```
 
-Step 2. Initialize Router with custom routing strategy
+步驟 2. 使用自訂路由策略初始化 Router
 ```python
 from litellm import Router
 
@@ -734,7 +727,7 @@ router = Router(
 router.set_custom_routing_strategy(CustomRoutingStrategy()) # 👈 Set your routing strategy here
 ```
 
-Step 3. Test your routing strategy. Expect your custom routing strategy to be called when running `router.acompletion` requests
+步驟 3. 測試您的路由策略。預期在執行 `router.acompletion` 請求時會呼叫您的自訂路由策略
 ```python
 for _ in range(10):
 	response = await router.acompletion(
@@ -746,19 +739,18 @@ for _ in range(10):
 ```
 
 
-
 </TabItem>
 
-<TabItem value="lowest-cost" label="Lowest Cost Routing (Async)">
+<TabItem value="lowest-cost" label="最低成本路由（非同步）">
 
-Picks a deployment based on the lowest cost
+根據最低成本選取一個部署
 
-How this works:
-- Get all healthy deployments
-- Select all deployments that are under their provided `rpm/tpm` limits
-- For each deployment check if `litellm_param["model"]` exists in [`litellm_model_cost_map`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 
-	- if deployment does not exist in `litellm_model_cost_map` -> use deployment_cost= `$1`
-- Select deployment with lowest cost
+運作方式：
+- 取得所有健康的部署
+- 選取所有低於其所提供 `rpm/tpm` 限制的部署
+- 對每個部署檢查 `litellm_param["model"]` 是否存在於 [`litellm_model_cost_map`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中 
+	- 如果部署不存在於 `litellm_model_cost_map` 中 -> 使用 deployment_cost= `$1`
+- 選取成本最低的部署
 
 ```python
 from litellm import Router 
@@ -794,9 +786,9 @@ asyncio.run(router_acompletion())
 ```
 
 
-#### Using Custom Input/Output pricing
+#### 使用自訂輸入/輸出定價 {#using-custom-inputoutput-pricing}
 
-Set `litellm_params["input_cost_per_token"]` and `litellm_params["output_cost_per_token"]` for using custom pricing when routing
+設定 `litellm_params["input_cost_per_token"]` 和 `litellm_params["output_cost_per_token"]` 以在路由時使用自訂定價
 
 ```python
 model_list = [
@@ -846,22 +838,22 @@ asyncio.run(router_acompletion())
 </TabItem>
 </Tabs>
 
-## Routing Groups - Per-Model Strategies
+## 路由群組 - 每模型策略 {#routing-groups---per-model-strategies}
 
-Apply different routing strategies to different models in the same router. A **routing group** binds a list of `model_name`s to a strategy and (optionally) strategy args. Models not claimed by any group fall back to the router's top-level `routing_strategy`.
+將不同的路由策略套用到同一個 Router 中的不同模型。**路由群組** 會將一個 `model_name` 清單綁定到某個策略，並（可選）綁定策略參數。未被任何群組納入的模型，會回退到 Router 的頂層 `routing_strategy`。
 
 :::tip
-You can also create, edit, and delete routing groups from the dashboard. See [Manage Routing Groups via UI](./proxy/ui/routing_groups.md).
+您也可以從儀表板建立、編輯與刪除路由群組。請參閱 [透過 UI 管理路由群組](./proxy/ui/routing_groups.md)。
 :::
 
-**When to use this:** you want latency-based routing for `gpt-4o`, but plain weighted-pick for cheaper models — without spinning up a second router.
+**適用時機：**您希望對 `gpt-4o` 使用基於延遲的路由，而對較便宜的模型使用單純的權重選取——而不需要再啟動第二個 Router。
 
-#### Rules
+#### 規則 {#rules}
 
-- Each `model_name` may belong to **at most one** group. Overlap raises `ValueError` at init.
-- Models not in any group use the top-level `routing_strategy` / `routing_strategy_args` (an implicit `"default"` group). The name `"default"` is reserved.
-- Each group can override `routing_strategy_args` (e.g. latency window TTL, TPM ceilings).
-- The group is resolved per-request based on the post-pre-routing-hook `model` name.
+- 每個 `model_name` 最多只能屬於一個群組。重疊會在初始化時引發 `ValueError`。
+- 不屬於任何群組的模型會使用頂層 `routing_strategy` / `routing_strategy_args`（一個隱含的 `"default"` 群組）。名稱 `"default"` 已保留。
+- 每個群組都可以覆寫 `routing_strategy_args`（例如：延遲視窗 TTL、TPM 上限）。
+- 群組會根據預路由 hook 之後的 `model` 名稱，逐請求解析。
 
 <Tabs>
 <TabItem value="config-yaml" label="LiteLLM Proxy Config.yaml">
@@ -895,9 +887,9 @@ router_settings:
         ttl: 3600
 ```
 
-Behavior:
-- `gpt-4o` → latency-based routing across the OpenAI + Azure deployments.
-- `cheap-model` → simple-shuffle (the default group).
+行為：
+- `gpt-4o` → 依延遲在 OpenAI + Azure 部署之間路由。
+- `cheap-model` → simple-shuffle（預設群組）。
 
 </TabItem>
 <TabItem value="sdk" label="Python SDK">
@@ -926,9 +918,9 @@ router = Router(
 </TabItem>
 </Tabs>
 
-#### Multiple groups
+#### 多個群組 {#multiple-groups}
 
-Two groups can use the same strategy with different args; each gets an independent state instance.
+兩個群組可以使用相同策略但帶有不同的引數；每個群組都會取得獨立的狀態實例。
 
 ```yaml
 router_settings:
@@ -946,23 +938,23 @@ router_settings:
         rpm: 10000
 ```
 
-#### Updating at runtime
+#### 執行階段更新 {#updating-at-runtime}
 
-Routing groups can be updated via `Router.update_settings(routing_groups=[...])` or the proxy's `/config/update` endpoint. Per-group state is rebuilt on update.
+路由群組可透過 `Router.update_settings(routing_groups=[...])` 或 proxy 的 `/config/update` 端點更新。更新時會重建每個群組的狀態。
 
-## Traffic Mirroring / Silent Experiments
+## 流量鏡像 / 靜默實驗 {#traffic-mirroring--silent-experiments}
 
-Traffic mirroring allows you to "mimic" production traffic to a secondary (silent) model for evaluation purposes. The silent model's response is gathered in the background and does not affect the latency or result of the primary request.
+流量鏡像可讓您將正式環境流量「模擬」到次要（靜默）模型，以供評估之用。靜默模型的回應會在背景中收集，不會影響主要請求的延遲或結果。
 
-[**See detailed guide on A/B Testing - Traffic Mirroring here**](./traffic_mirroring.md)
+[**請在此查看 A/B 測試 - 流量鏡像的詳細指南**](./traffic_mirroring.md)
 
-## Basic Reliability
+## 基本可靠性 {#basic-reliability}
 
-### Deployment Ordering (Priority)
+### 部署排序（優先順序） {#deployment-ordering-priority}
 
-Set `order` in `litellm_params` to prioritize deployments. Lower values = higher priority. When multiple deployments share the same `order`, the routing strategy picks among them.
+在 `litellm_params` 中設定 `order` 以優先處理部署。數值越低＝優先順序越高。當多個部署共享相同的 `order` 時，路由策略會在它們之間進行選擇。
 
-When a request to an `order=1` deployment fails (connection error, 404, 429, etc.), the router automatically tries `order=2` deployments, then `order=3`, and so on. Each order level gets its own set of retries before escalating to the next. If all order levels are exhausted, the router falls through to any configured [fallbacks](#fallbacks).
+當對 `order=1` 部署的請求失敗（連線錯誤、404、429 等）時，路由器會自動嘗試 `order=2` 部署，接著是 `order=3`，以此類推。每個順序層級都會先獲得自己的重試次數，然後才升級到下一層。如果所有順序層級都耗盡，路由器就會轉往任何已設定的 [fallbacks](#fallbacks)。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1013,11 +1005,11 @@ model_list:
 </TabItem>
 </Tabs>
 
-### Weighted Deployments 
+### 加權部署  {#weighted-deployments}
 
-Set `weight` on a deployment to pick one deployment more often than others. 
+在部署上設定 `weight`，即可讓某個部署比其他部署更常被選中。 
 
-This works across **simple-shuffle** routing strategy (this is the default, if no routing strategy is selected). 
+這適用於 **simple-shuffle** 路由策略（如果未選擇路由策略，這就是預設值）。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1072,27 +1064,27 @@ model_list:
 </TabItem>
 </Tabs>
 
-### Weighted Failover
+### 加權故障轉移 {#weighted-failover}
 
-By default, when a deployment in a model group fails, the router moves on to the next entry in `fallbacks` (a different model group). With `enable_weighted_failover`, the router first retries **inside the same model group** by re-picking a different deployment using the existing weights, and only escalates to cross-group fallbacks once every deployment in the group has been tried.
+預設情況下，當模型群組中的某個部署失敗時，路由器會移到 `fallbacks`（另一個模型群組）中的下一個項目。使用 `enable_weighted_failover` 時，路由器會先在**同一模型群組內**重新重試，使用現有權重重新挑選不同的部署，只有在群組中的每個部署都嘗試過之後，才升級到跨群組備援。
 
-This is useful when you have multiple regional copies of the same model (e.g. Azure `eastus2` + `swedencentral`) and want a failed region to fail over to a healthy peer with the same `model_name`, instead of immediately switching to a different model.
+當您有同一模型的多個區域副本（例如 Azure `eastus2` + `swedencentral`），並且希望失敗的區域故障轉移到同樣 `model_name` 的健康同儕，而不是立即切換到不同模型時，這就很有用。
 
-**Behavior**
+**行為**
 
-- Only active when `routing_strategy="simple-shuffle"` (the default).
-- On a retryable failure, the failing deployment ID is excluded and a new deployment is picked from the remaining peers in the same model group, respecting `weight` / `rpm` / `tpm`.
-- Exclusions accumulate across hops: each retry adds the previous failure to the exclusion set, so a deployment that just failed is never picked again in the same request chain.
-- Capped by `max_fallbacks` (default `5`).
-- Not triggered for `ContextWindowExceededError` or `ContentPolicyViolationError` — those keep their dedicated fallback paths.
-- Async-only: honored by `router.acompletion()` and other async entrypoints. The sync `router.completion()` path falls through to regular fallbacks.
-- Cooldowns still apply: a deployment that crosses `allowed_fails` is cooled down independently of weighted failover.
+- 僅在 `routing_strategy="simple-shuffle"`（預設值）時生效。
+- 發生可重試失敗時，會排除失敗的部署 ID，並從同一模型群組中剩餘的同儕裡選出新的部署，同時遵守 `weight` / `rpm` / `tpm`。
+- 排除會跨跳次累積：每次重試都會把前一次失敗加入排除集合，因此剛失敗過的部署絕不會在同一個請求鏈中再次被選中。
+- 受 `max_fallbacks` 限制（預設 `5`）。
+- 不會對 `ContextWindowExceededError` 或 `ContentPolicyViolationError` 觸發——它們仍會保留各自專用的備援路徑。
+- 僅限非同步：由 `router.acompletion()` 與其他非同步進入點支援。同步的 `router.completion()` 路徑會轉入一般備援。
+- 冷卻時間仍然適用：跨越 `allowed_fails` 的部署會獨立於加權故障轉移而進入冷卻。
 
-**Order vs. weight**
+**順序 vs. 權重**
 
-If the same group also uses `order`, the order filter runs **before** the weighted pick. So weighted failover re-picks only among the deployments in the current minimum-order tier. Promotion to the next order tier happens through the existing order-based fallback path.
+如果同一群組也使用 `order`，順序篩選會在加權選取**之前**執行。因此，加權故障轉移只會在目前最低順序層級中的部署之間重新選取。晉升到下一個順序層級則會透過既有的基於順序的備援路徑發生。
 
-**Config**
+**設定**
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1159,24 +1151,23 @@ router_settings:
 </TabItem>
 </Tabs>
 
-**Walkthrough**
+**操作流程**
 
-With the config above and a request to `gpt-4.1-mini`:
+使用上述設定並對 `gpt-4.1-mini` 發出請求時：
 
-1. `simple-shuffle` picks one of the two deployments using `weight`.
-2. If the picked deployment raises a provider error (e.g. `RateLimitError`, `InternalServerError`), its deployment ID is added to `metadata._failover_excluded_ids`.
-3. The router re-enters `simple-shuffle` with the failed deployment excluded and weights renormalized over what's left.
-4. Steps 2–3 repeat until a deployment succeeds, every peer has been excluded, or `max_fallbacks` is reached.
-5. Only after all peers are exhausted does the router fall through to any `fallbacks` configured for the group.
+1. `simple-shuffle` 會使用 `weight` 從兩個部署中選出一個。
+2. 如果被選中的部署拋出提供者錯誤（例如 `RateLimitError`、`InternalServerError`），其部署 ID 會加入 `metadata._failover_excluded_ids`。
+3. 路由器會以排除失敗部署後的狀態重新進入 `simple-shuffle`，並在剩餘項目上重新正規化權重。
+4. 重複步驟 2–3，直到某個部署成功、每個同儕都已被排除，或達到 `max_fallbacks`。
+5. 只有在所有同儕都用盡之後，路由器才會轉入為該群組設定的任何 `fallbacks`。
 
-See [`enable_weighted_failover`](./proxy/config_settings#router_settings---reference) in the router settings reference for the flag.
+請參閱路由器設定參考中的 [`enable_weighted_failover`](./proxy/config_settings#router_settings---reference) 以了解此旗標。
 
-### Max Parallel Requests (ASYNC)
+### 最大平行請求數（ASYNC） {#max-parallel-requests-async}
 
-Used in semaphore for async requests on router. Limit the max concurrent calls made to a deployment. Useful in high-traffic scenarios. 
+用於路由器上非同步請求的 semaphore。限制對部署發出的最大並行呼叫數。在高流量情境下很有用。 
 
-If tpm/rpm is set, and no max parallel request limit given, we use the RPM or calculated RPM (tpm/1000/6) as the max parallel request limit. 
-
+如果已設定 tpm/rpm，且未提供最大平行請求限制，我們會使用 RPM 或計算出的 RPM（tpm/1000/6）作為最大平行請求限制。 
 
 ```python
 from litellm import Router 
@@ -1198,11 +1189,11 @@ router = Router(model_list=model_list, default_max_parallel_requests=20) # 👈 
 # deployment max parallel requests > default max parallel requests
 ```
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/a978f2d8813c04dad34802cb95e0a0e35a3324bc/litellm/utils.py#L5605)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/a978f2d8813c04dad34802cb95e0a0e35a3324bc/litellm/utils.py#L5605)
 
-### Cooldowns
+### 冷卻時間 {#cooldowns}
 
-Set the limit for how many calls a model is allowed to fail in a minute, before being cooled down for a minute. 
+設定模型在一分鐘內允許失敗的呼叫次數上限，超過後會冷卻一分鐘。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1229,7 +1220,7 @@ print(f"response: {response}")
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Set Global Value**
+**設定全域值**
 
 ```yaml
 router_settings:
@@ -1237,11 +1228,11 @@ router_settings:
   	cooldown_time: 30 # (in seconds) how long to cooldown model if fails/min > allowed_fails
 ```
 
-Defaults:
+預設值：
 - allowed_fails: 3
-- cooldown_time: 5s (`DEFAULT_COOLDOWN_TIME_SECONDS` in constants.py)
+- cooldown_time: 5s（`DEFAULT_COOLDOWN_TIME_SECONDS` 於 constants.py）
 
-**Set Per Model**
+**按模型設定**
 
 ```yaml
 model_list:
@@ -1257,14 +1248,13 @@ model_list:
 </TabItem>
 </Tabs>
 
-**Expected Response**
+**預期回應**
 
 ```
 No deployments available for selected model, Try again in 60 seconds. Passed model=claude-3-5-sonnet. pre-call-checks=False, allowed_model_region=n/a.
 ```
 
-#### **Disable cooldowns**
-
+#### **停用冷卻時間** {#disable-cooldowns}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1286,17 +1276,17 @@ router_settings:
 </TabItem>
 </Tabs>
 
-### How Cooldowns Work
+### 冷卻時間如何運作 {#how-cooldowns-work}
 
-Cooldowns apply to individual deployments, not entire model groups. The router isolates failures to specific deployments while keeping healthy alternatives available.
+冷卻時間是套用在單一部署上，而不是整個模型群組。路由器會將失敗隔離到特定部署，同時保留可用的健康替代方案。
 
-#### What is a deployment?
+#### 什麼是部署？ {#what-is-a-deployment}
 
-A deployment is a single entry in your `config.yaml` model list. Each deployment represents a unique configuration with its own `litellm_params`. 
+部署是您 `config.yaml` 模型清單中的一個單一項目。每個部署代表一組具有其自身 `litellm_params` 的唯一設定。 
 
-LiteLLM generates a unique `model_id` for each deployment by creating a deterministic hash of all the `litellm_params`. This allows the router to track and manage each deployment independently.
+LiteLLM 會透過對所有 `litellm_params` 進行決定性雜湊，為每個部署產生唯一的 `model_id`。這讓路由器能夠獨立追蹤與管理每個部署。
 
-**Example: Multiple deployments for the same model**
+**範例：同一模型的多個部署**
 
 ```yaml showLineNumbers title="Load Balancing config.yaml"
 model_list:
@@ -1317,32 +1307,32 @@ model_list:
       vertex_project: my-project
 ```
 
-Each deployment gets a unique `model_id` (e.g., `1234567890`, `9129922`, `4982929292`) that the router uses for tracking health and cooldown status.
+每個部署都會取得唯一的 `model_id`（例如 `1234567890`、`9129922`、`4982929292`），路由器會使用它來追蹤健康狀態與冷卻狀態。
 
-#### When are deployments cooled down?
+#### 部署何時會進入冷卻？ {#when-are-deployments-cooled-down}
 
-The router automatically cools down deployments based on the following conditions:
+路由器會根據以下條件自動讓部署進入冷卻：
 
 | Condition | Trigger | Cooldown Duration |
 |-----------|---------|-------------------|
-| **Rate Limiting (429)** | Immediate on 429 response | 5 seconds (default) |
-| **High Failure Rate** | >50% failures in current minute | 5 seconds (default) |
-| **Non-Retryable Errors** | 401 (Auth), 404 (Not Found), 408 (Timeout) | 5 seconds (default) |
+| **Rate Limiting (429)** | 收到 429 回應時立即觸發 | 5 秒（預設） |
+| **High Failure Rate** | 目前這一分鐘內失敗率 >50% | 5 秒（預設） |
+| **Non-Retryable Errors** | 401（認證）、404（找不到）、408（逾時） | 5 秒（預設） |
 
-During cooldown, the specific deployment is temporarily removed from the available pool, while other healthy deployments continue serving requests.
+在冷卻期間，特定部署會暫時從可用池中移除，而其他健康的部署會繼續提供請求服務。
 
-#### Cooldown Recovery
+#### 冷卻恢復 {#cooldown-recovery}
 
-Deployments automatically recover from cooldown after the cooldown period expires. The router will:
+部署會在冷卻期間結束後自動從冷卻中恢復。路由器將會：
 
-1. **Monitor cooldown timers** for each deployment
-2. **Automatically re-enable** deployments when cooldown expires  
-3. **Gradually reintroduce** cooled-down deployments to the rotation
-4. **Reset failure counters** once the deployment is healthy again
+1. **監控冷卻計時器**，針對每個部署
+2. 在冷卻結束時**自動重新啟用**部署  
+3. **逐步重新引入**已冷卻的部署到輪替中
+4. 當部署再次健康時**重設失敗計數器**
 
-#### Real-World Example
+#### 真實世界範例 {#real-world-example}
 
-Consider this high-availability setup with multiple providers:
+考慮這個具有多個提供者的高可用性設定：
 
 ```yaml showLineNumbers title="Load Balancing config.yaml"
 model_list:
@@ -1363,34 +1353,32 @@ model_list:
       vertex_project: my-project
 ```
 
-**Failure Scenario:**
+**失敗情境：**
 ```mermaid
 flowchart TD
-    A["Request for 'sonnet-4'"] --> B["Router finds available deployments"]
-    B --> C["Available:<br/>• Anthropic Direct<br/>• Vertex AI"]
-    C --> D["Selects Anthropic Direct"]
-    D --> E{"Request fails with 429?"}
-    E -->|No| F["Success ✅"]
-    E -->|Yes| G["Cooldown Anthropic Direct<br/>for 5 seconds"]
-    G --> H["Next request for 'sonnet-4'"]
-    H --> I["Route to Vertex AI<br/>(only available deployment for model_name='sonnet-4')"]
-    I --> J["Success ✅"]
+    A["請求 'sonnet-4'"] --> B["路由器尋找可用部署"]
+    B --> C["可用：<br/>• Anthropic Direct<br/>• Vertex AI"]
+    C --> D["選擇 Anthropic Direct"]
+    D --> E{"請求失敗並回傳 429？"}
+    E -->|No| F["成功 ✅"]
+    E -->|Yes| G["將 Anthropic Direct 冷卻<br/>5 秒"]
+    G --> H["下一個對 'sonnet-4' 的請求"]
+    H --> I["路由至 Vertex AI<br/>(此為 model_name='sonnet-4' 的唯一可用部署)"]
+    I --> J["成功 ✅"]
     
     style G fill:#ffcccc
     style I fill:#ccffcc
 ```
 
+### 重試 {#retries}
 
+對於 async 與 sync 函式，我們都支援重試失敗的請求。 
 
-### Retries
+對於 RateLimitError，我們會實作指數退避 
 
-For both async + sync functions, we support retrying failed requests. 
+對於一般錯誤，我們會立即重試 
 
-For RateLimitError we implement exponential backoffs 
-
-For generic errors, we retry immediately 
-
-Here's a quick look at how we can set `num_retries = 3`: 
+以下快速看一下如何設定 `num_retries = 3`： 
 
 ```python 
 from litellm import Router
@@ -1409,7 +1397,7 @@ response = router.completion(model="gpt-3.5-turbo", messages=messages)
 print(f"response: {response}")
 ```
 
-We also support setting minimum time to wait before retrying a failed request. This is via the `retry_after` param. 
+我們也支援設定在重試失敗請求前，至少要等待的時間。這是透過 `retry_after` 參數來設定。 
 
 ```python 
 from litellm import Router
@@ -1428,18 +1416,17 @@ response = router.completion(model="gpt-3.5-turbo", messages=messages)
 print(f"response: {response}")
 ```
 
-### [Advanced]: Custom Retries, Cooldowns based on Error Type
+### [進階]：依錯誤類型自訂重試、冷卻 {#advanced-custom-retries-cooldowns-based-on-error-type}
 
-- Use `RetryPolicy` if you want to set a `num_retries` based on the Exception received
-- Use `AllowedFailsPolicy` to set a custom number of `allowed_fails`/minute before cooling down a deployment
+- 如果您想根據收到的 Exception 設定 `num_retries`，請使用 `RetryPolicy`
+- 使用 `AllowedFailsPolicy` 來在將部署冷卻之前，設定每分鐘自訂的 `allowed_fails` 數量
 
-[**See All Exception Types**](https://github.com/BerriAI/litellm/blob/ccda616f2f881375d4e8586c76fe4662909a7d22/litellm/types/router.py#L436)
-
+[**查看所有 Exception 類型**](https://github.com/BerriAI/litellm/blob/ccda616f2f881375d4e8586c76fe4662909a7d22/litellm/types/router.py#L436)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Example:
+範例：
 
 ```python
 retry_policy = RetryPolicy(
@@ -1453,7 +1440,7 @@ allowed_fails_policy = AllowedFailsPolicy(
 )
 ```
 
-Example Usage
+使用範例
 
 ```python
 from litellm.router import RetryPolicy, AllowedFailsPolicy
@@ -1520,11 +1507,11 @@ router_settings:
 </TabItem>
 </Tabs>
 
-### Caching
+### 快取 {#caching}
 
-In production, we recommend using a Redis cache. For quickly testing things locally, we also support simple in-memory caching. 
+在正式環境中，我們建議使用 Redis 快取。若要在本機快速測試，也支援簡單的記憶體內快取。 
 
-**In-memory Cache**
+**記憶體內快取**
 
 ```python
 router = Router(model_list=model_list, 
@@ -1533,7 +1520,7 @@ router = Router(model_list=model_list,
 print(response)
 ```
 
-**Redis Cache**
+**Redis 快取**
 ```python
 router = Router(model_list=model_list, 
                 redis_host=os.getenv("REDIS_HOST"), 
@@ -1544,7 +1531,7 @@ router = Router(model_list=model_list,
 print(response)
 ```
 
-**Pass in Redis URL, additional kwargs** 
+**傳入 Redis URL、額外 kwargs** 
 ```python 
 router = Router(model_list: Optional[list] = None,
                  ## CACHING ## 
@@ -1554,19 +1541,19 @@ router = Router(model_list: Optional[list] = None,
 ```
 
 :::info
-When configuring Redis caching in router settings, use `cache_kwargs` to pass additional Redis parameters, especially for non-string values that may fail when set via `REDIS_*` environment variables.
+在路由器設定中設定 Redis 快取時，請使用 `cache_kwargs` 傳入額外的 Redis 參數，特別是對於那些透過 `REDIS_*` 環境變數設定時可能失敗的非字串值。
 :::
 
-## Pre-Call Checks (Context Window, EU-Regions)
+## 預先呼叫檢查（Context Window、EU 區域） {#pre-call-checks-context-window-eu-regions}
 
-Enable pre-call checks to filter out:
-1. deployments with context window limit < messages for a call.
-2. deployments outside of eu-region
+啟用預先呼叫檢查以篩選出：
+1. context window 上限 < 該請求訊息數量的部署。
+2. 位於 eu-region 之外的部署
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**1. Enable pre-call checks**
+**1. 啟用預先呼叫檢查**
 ```python 
 from litellm import Router 
 # ...
@@ -1574,16 +1561,15 @@ router = Router(model_list=model_list, enable_pre_call_checks=True) # 👈 Set t
 ```
 
 
-**2. Set Model List**
+**2. 設定模型清單**
 
-For context window checks on azure deployments, set the base model. Pick the base model from [this list](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json), all the azure models start with `azure/`. 
+若要針對 azure 部署進行 context window 檢查，請設定 base model。請從[此清單](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)中選擇 base model，所有 azure 模型都以 `azure/` 開頭。 
 
-For 'eu-region' filtering, Set 'region_name' of deployment. 
+對於 'eu-region' 篩選，請設定部署的 'region_name'。 
 
-**Note:** We automatically infer region_name for Vertex AI, Bedrock, and IBM WatsonxAI based on your litellm params. For Azure, set `litellm.enable_preview = True`.
+**注意：** 我們會根據您的 litellm 參數，自動推斷 Vertex AI、Bedrock 和 IBM WatsonxAI 的 region_name。對於 Azure，請設定 `litellm.enable_preview = True`。
 
-
-[**See Code**](https://github.com/BerriAI/litellm/blob/d33e49411d6503cb634f9652873160cd534dec96/litellm/router.py#L2958)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/d33e49411d6503cb634f9652873160cd534dec96/litellm/router.py#L2958)
 
 ```python
 model_list = [
@@ -1619,8 +1605,7 @@ router = Router(model_list=model_list, enable_pre_call_checks=True)
 ```
 
 
-**3. Test it!**
-
+**3. 測試它！**
 
 <Tabs>
 <TabItem value="context-window-check" label="Context Window Check">
@@ -1728,14 +1713,14 @@ print(f"response id: {response._hidden_params['model_id']}")
 <TabItem value="proxy" label="Proxy">
 
 :::info
-Go [here](./proxy/reliability.md#advanced---context-window-fallbacks) for how to do this on the proxy
+請前往[這裡](./proxy/reliability.md#advanced---context-window-fallbacks)了解如何在 proxy 上執行此操作
 :::
 </TabItem>
 </Tabs>
 
-## Caching across model groups
+## 跨模型群組的快取 {#caching-across-model-groups}
 
-If you want to cache across 2 different model groups (e.g. azure deployments, and openai), use caching groups. 
+如果您想在 2 個不同的模型群組之間快取（例如 azure 部署和 openai），請使用 caching groups。 
 
 ```python
 import litellm, asyncio, time
@@ -1790,16 +1775,16 @@ async def test_acompletion_caching_on_router_caching_groups():
 asyncio.run(test_acompletion_caching_on_router_caching_groups())
 ```
 
-## Alerting 🚨
+## 告警 🚨 {#alerting-}
 
-Send alerts to slack / your webhook url for the following events
+將以下事件的警示傳送到 slack / 您的 webhook url
 - LLM API Exceptions
-- Slow LLM Responses
+- 緩慢的 LLM 回應
 
-Get a slack webhook url from https://api.slack.com/messaging/webhooks
+從 https://api.slack.com/messaging/webhooks 取得 slack webhook url
 
-#### Usage
-Initialize an `AlertingConfig` and pass it to `litellm.Router`. The following code will trigger an alert because `api_key=bad-key` which is invalid
+#### 用法 {#usage}
+初始化一個 `AlertingConfig` 並將其傳入 `litellm.Router`。以下程式碼會觸發告警，因為 `api_key=bad-key` 是無效的
 
 ```python
 import litellm
@@ -1843,13 +1828,13 @@ async def main():
 asyncio.run(main())
 ```
 
-## Track cost for Azure Deployments
+## 追蹤 Azure 部署成本 {#track-cost-for-azure-deployments}
 
-**Problem**: Azure returns `gpt-4` in the response when `azure/gpt-4-1106-preview` is used. This leads to inaccurate cost tracking
+**問題**：當使用 `azure/gpt-4-1106-preview` 時，Azure 會在回應中傳回 `gpt-4`。這會導致成本追蹤不準確
 
-**Solution** ✅ :  Set `model_info["base_model"]` on your router init so litellm uses the correct model for calculating azure cost
+**解決方案** ✅：在路由器初始化時設定 `model_info["base_model"]`，讓 litellm 使用正確的模型來計算 azure 成本
 
-Step 1. Router Setup
+步驟 1. 路由器設定
 
 ```python
 from litellm import Router
@@ -1885,7 +1870,7 @@ router = Router(model_list=model_list)
 
 ```
 
-Step 2. Access `response_cost` in the custom callback, **litellm calculates the response cost for you**
+步驟 2. 在自訂回呼中存取 `response_cost`，**litellm 會為您計算回應成本**
 
 ```python
 import litellm
@@ -1908,9 +1893,9 @@ response = router.completion(
 ```
 
 
-#### Default litellm.completion/embedding params
+#### 預設 litellm.completion/embedding 參數 {#default-litellmcompletionembedding-params}
 
-You can also set default params for litellm completion/embedding calls. Here's how to do that: 
+您也可以為 litellm completion/embedding 呼叫設定預設參數。以下是設定方式： 
 
 ```python 
 from litellm import Router
@@ -1929,11 +1914,11 @@ response = router.completion(model="gpt-3.5-turbo", messages=messages)
 print(f"response: {response}")
 ```
 
-## Custom Callbacks - Track API Key, API Endpoint, Model Used 
+## 自訂回呼 - 追蹤 API 金鑰、API 端點、使用的模型  {#custom-callbacks---track-api-key-api-endpoint-model-used}
 
-If you need to track the api_key, api endpoint, model, custom_llm_provider used for each completion call, you can setup a [custom callback](https://docs.litellm.ai/docs/observability/custom_callback) 
+如果您需要追蹤每次 completion 呼叫所使用的 api_key、api endpoint、model、custom_llm_provider，您可以設定一個[自訂回呼](https://docs.litellm.ai/docs/observability/custom_callback) 
 
-### Usage
+### 用法 {#usage-1}
 
 ```python
 import litellm
@@ -1973,15 +1958,13 @@ response = router.completion(
 )
 ```
 
-## Deploy Router 
+## 部署路由器  {#deploy-router}
 
-If you want a server to load balance across different LLM APIs, use our [LiteLLM Proxy Server](./simple_proxy#load-balancing---multiple-instances-of-1-model)
+如果您想要一台伺服器在不同的 LLM API 之間進行負載平衡，請使用我們的 [LiteLLM Proxy Server](./simple_proxy#load-balancing---multiple-instances-of-1-model)
 
-
-
-## Debugging Router
-### Basic Debugging
-Set `Router(set_verbose=True)`
+## 除錯路由器 {#debugging-router}
+### 基本除錯 {#basic-debugging}
+設定 `Router(set_verbose=True)`
 
 ```python
 from litellm import Router
@@ -1992,8 +1975,8 @@ router = Router(
 )
 ```
 
-### Detailed Debugging
-Set `Router(set_verbose=True,debug_level="DEBUG")`
+### 詳細除錯 {#detailed-debugging}
+設定 `Router(set_verbose=True,debug_level="DEBUG")`
 
 ```python
 from litellm import Router
@@ -2005,8 +1988,8 @@ router = Router(
 )
 ```
 
-### Very Detailed Debugging
-Set `litellm.set_verbose=True` and `Router(set_verbose=True,debug_level="DEBUG")`
+### 非常詳細的除錯 {#very-detailed-debugging}
+設定 `litellm.set_verbose=True` 和 `Router(set_verbose=True,debug_level="DEBUG")`
 
 ```python
 from litellm import Router
@@ -2021,15 +2004,15 @@ router = Router(
 )
 ```
 
-## Router General Settings
+## 路由器一般設定 {#router-general-settings}
 
-### Usage 
+### 用法  {#usage-2}
 
 ```python
 router = Router(model_list=..., router_general_settings=RouterGeneralSettings(async_only_mode=True))
 ```
 
-### Spec 
+### 規格  {#spec}
 ```python
 class RouterGeneralSettings(BaseModel):
     async_only_mode: bool = Field(

@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Lemonade
+# Lemonade {#lemonade}
 
-[Lemonade Server](https://lemonade-server.ai/) is an OpenAI-compatible local language model inference provider optimized for AMD GPUs and NPUs. The `lemonade` litellm provider supports standard chat completions with full OpenAI API compatibility.
+[Lemonade Server](https://lemonade-server.ai/) 是一個與 OpenAI 相容的本地語言模型推論提供者，針對 AMD GPU 與 NPU 進行最佳化。`lemonade` litellm 提供者支援標準 chat completions，並與 OpenAI API 完全相容。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | OpenAI-compatible AI provider for local and cloud-based language model inference |
-| Provider Route on LiteLLM | `lemonade/` (add this prefix to the model name - e.g. `lemonade/your-model-name`) |
-| API Endpoint for Provider | http://localhost:8000/api/v1 (default) |
-| Supported Endpoints | `/chat/completions` |
+| 說明 | 適用於本地與雲端語言模型推論的 OpenAI 相容 AI 提供者 |
+| LiteLLM 上的提供者路由 | `lemonade/`（將此前綴加到模型名稱前，例如 `lemonade/your-model-name`） |
+| 提供者的 API 端點 | http://localhost:8000/api/v1（預設） |
+| 支援的端點 | `/chat/completions` |
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-Lemonade is fully OpenAI-compatible and supports the following parameters:
+Lemonade 完全與 OpenAI 相容，並支援以下參數：
 
 ```
 "repeat_penalty"
@@ -32,11 +32,11 @@ Lemonade is fully OpenAI-compatible and supports the following parameters:
 ```
 
 
-## API Key Setup
+## API 金鑰設定 {#api-key-setup}
 
-Lemonade can be configured with custom API URLs and doesn't require strict API key validation. Set the `LEMONADE_API_BASE` environment variable to modify the base URL.
+Lemonade 可搭配自訂 API URL 進行設定，且不需要嚴格的 API 金鑰驗證。設定 `LEMONADE_API_BASE` 環境變數即可修改 base URL。
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -58,7 +58,7 @@ response = completion(
 print(response)
 ```
 
-## Streaming
+## 串流 {#streaming}
 
 ```python
 from litellm import completion
@@ -80,11 +80,11 @@ for chunk in response:
     print(chunk.choices[0].delta.content, end='', flush=True)
 ```
 
-## Advanced Usage
+## 進階用法 {#advanced-usage}
 
-### Custom Parameters
+### 自訂參數 {#custom-parameters}
 
-Lemonade supports additional parameters beyond the standard OpenAI set:
+Lemonade 支援標準 OpenAI 設定之外的其他參數：
 
 ```python
 from litellm import completion
@@ -102,9 +102,9 @@ response = completion(
 print(response)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
-Lemonade supports OpenAI-compatible function calling:
+Lemonade 支援與 OpenAI 相容的函式呼叫：
 
 ```python
 from litellm import completion
@@ -135,9 +135,9 @@ response = completion(
 print(response)
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-Lemonade supports structured output with response format:
+Lemonade 支援使用回應格式的結構化輸出：
 
 ```python
 from litellm import completion
@@ -170,9 +170,9 @@ json_data = json.loads(response.choices[0].message.content)
 print(json.dumps(json_data, indent=2))
 ```
 
-## Available Models
+## 可用模型 {#available-models}
 
-Lemonade automatically validates available models by querying the `/models` endpoint. You can check available models programmatically:
+Lemonade 會透過查詢 `/models` 端點自動驗證可用模型。您可以以程式方式檢查可用模型：
 
 ```python
 import httpx
@@ -183,9 +183,9 @@ models = response.json()
 print("Available models:", [model['id'] for model in models.get('data', [])])
 ```
 
-## Support
+## 支援 {#support}
 
-For more information regarding Lemonade please go to to the [Lemonade website](https://lemonade-server.ai/) or [Lemonade repository](https://github.com/lemonade-sdk/lemonade).
+如需更多關於 Lemonade 的資訊，請前往 [Lemonade 網站](https://lemonade-server.ai/) 或 [Lemonade 儲存庫](https://github.com/lemonade-sdk/lemonade)。
 
 </TabItem>
 </Tabs>

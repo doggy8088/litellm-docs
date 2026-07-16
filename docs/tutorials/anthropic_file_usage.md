@@ -1,22 +1,22 @@
-# Using Anthropic File API with LiteLLM Proxy
+# 使用 LiteLLM Proxy 搭配 Anthropic File API {#using-anthropic-file-api-with-litellm-proxy}
 
-## Overview
+## 概觀 {#overview}
 
-This tutorial shows how to create and analyze files with Claude-4 on Anthropic via LiteLLM Proxy.
+本教學示範如何透過 LiteLLM Proxy 使用 Claude-4 在 Anthropic 上建立並分析檔案。
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-- LiteLLM Proxy running
-- Anthropic API key
+- LiteLLM Proxy 正在執行
+- Anthropic API 金鑰
 
-Add the following to your `.env` file:
+將下列內容加入您的 `.env` 檔案：
 ```
 ANTHROPIC_API_KEY=sk-1234
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -26,9 +26,9 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-## 2. Create a file 
+## 2. 建立檔案  {#2-create-a-file}
 
-Use the `/anthropic` passthrough endpoint to create a file.
+使用 `/anthropic` passthrough 端點來建立檔案。
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/anthropic/v1/files' \
@@ -38,7 +38,7 @@ curl -L -X POST 'http://0.0.0.0:4000/anthropic/v1/files' \
 -F 'file=@"/path/to/your/file.csv"'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -53,8 +53,7 @@ Expected response:
 ```
 
 
-## 3. Analyze the file with Claude-4 via `/chat/completions`
-
+## 3. 透過 `/chat/completions` 使用 Claude-4 分析檔案 {#3-analyze-the-file-with-claude-4-via-chatcompletions}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \

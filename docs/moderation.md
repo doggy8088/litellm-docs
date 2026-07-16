@@ -1,10 +1,9 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /moderations
+# /moderations {#moderations}
 
-
-### Usage
+### 使用方式 {#usage}
 <Tabs>
 <TabItem value="python" label="LiteLLM Python SDK">
 
@@ -20,10 +19,9 @@ response = moderation(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy Server">
 
-For `/moderations` endpoint, there is **no need to specify `model` in the request or on the litellm config.yaml**
+對於 `/moderations` 端點，**不需要**在請求中或 litellm config.yaml 中指定 `model`
 
-
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: text-moderation-stable
@@ -31,7 +29,7 @@ model_list:
       model: openai/omni-moderation-latest
 ```
 
-2. Start litellm proxy server 
+2. 啟動 litellm proxy server 
 
 ```
 litellm --config /path/to/config.yaml
@@ -71,31 +69,30 @@ curl --location 'http://0.0.0.0:4000/moderations' \
 </TabItem>
 </Tabs>
 
-## Input Params
-LiteLLM accepts and translates the [OpenAI Moderation params](https://platform.openai.com/docs/api-reference/moderations) across all supported providers.
+## 輸入參數 {#input-params}
+LiteLLM 可接受並轉換所有支援提供者的 [OpenAI Moderation 參數](https://platform.openai.com/docs/api-reference/moderations)。
 
-### Required Fields
+### 必填欄位 {#required-fields}
 
-- `input`: *string or array* - Input (or inputs) to classify. Can be a single string, an array of strings, or an array of multi-modal input objects similar to other models.
-  - If string: A string of text to classify for moderation
-  - If array of strings: An array of strings to classify for moderation
-  - If array of objects: An array of multi-modal inputs to the moderation model, where each object can be:
-    - An object describing an image to classify with:
-      - `type`: *string, required* - Always `image_url`
-      - `image_url`: *object, required* - Contains either an image URL or a data URL for a base64 encoded image
-    - An object describing text to classify with:
-      - `type`: *string, required* - Always `text`
-      - `text`: *string, required* - A string of text to classify
+- `input`: *string 或 array* - 要分類的輸入（或多個輸入）。可以是單一字串、字串陣列，或類似其他模型的多模態輸入物件陣列。
+  - 如果是字串：要進行 moderation 分類的文字字串
+  - 如果是字串陣列：要進行 moderation 分類的字串陣列
+  - 如果是物件陣列：送入 moderation model 的多模態輸入陣列，其中每個物件可以是：
+    - 描述要分類的圖片之物件：
+      - `type`: *string, required* - 一律為 `image_url`
+      - `image_url`: *object, required* - 包含圖片 URL 或 base64 編碼圖片的 data URL
+    - 描述要分類的文字之物件：
+      - `type`: *string, required* - 一律為 `text`
+      - `text`: *string, required* - 要分類的文字字串
 
-### Optional Fields
+### 選填欄位 {#optional-fields}
 
-- `model`: *string (optional)* - The moderation model to use. Defaults to `omni-moderation-latest`.
+- `model`: *string (optional)* - 要使用的 moderation model。預設為 `omni-moderation-latest`。
 
-## Output Format
-Here's the exact json output and type you can expect from all moderation calls:
+## 輸出格式 {#output-format}
+以下是您可以從所有 moderation 請求預期得到的完整 json 輸出與型別：
 
-[**LiteLLM follows OpenAI's output format**](https://platform.openai.com/docs/api-reference/moderations/object)
-
+[**LiteLLM 遵循 OpenAI 的輸出格式**](https://platform.openai.com/docs/api-reference/moderations/object)
 
 ```python
 {
@@ -137,10 +134,10 @@ Here's the exact json output and type you can expect from all moderation calls:
 ```
 
 
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-#### ⚡️See all supported models and providers at [models.litellm.ai](https://models.litellm.ai/)
+#### ⚡️請前往 [models.litellm.ai](https://models.litellm.ai/) 查看所有支援的模型與提供者 {#️see-all-supported-models-and-providers-at-modelslitellmaihttpsmodelslitellmai}
 
-| Provider    |
+| 提供者    |
 |-------------|
-| OpenAI      |  
+| OpenAI      |

@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini Video Generation (Veo)
+# Gemini 影片生成 (Veo) {#gemini-video-generation-veo}
 
-LiteLLM supports Google's Veo video generation models through a unified API interface.
+LiteLLM 透過統一的 API 介面支援 Google 的 Veo 影片生成模型。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Google's Veo AI video generation models |
-| Provider Route on LiteLLM | `gemini/` |
-| Supported Models | Veo 3.0 / 3.1 preview and production IDs (see table below), including **Veo 3.1 Lite** |
-| Cost Tracking | ✅ Duration-based pricing; optional **per-resolution** tiers where the catalog lists them (e.g. 720p vs 1080p) |
-| Logging Support | ✅ Full request/response logging |
-| Proxy Server Support | ✅ Full proxy integration with virtual keys |
-| Spend Management | ✅ Budget tracking and rate limiting |
-| Link to Provider Doc | [Google Veo Documentation ↗](https://ai.google.dev/gemini-api/docs/video) |
+| 說明 | Google 的 Veo AI 影片生成模型 |
+| LiteLLM 上的提供者路由 | `gemini/` |
+| 支援的模型 | Veo 3.0 / 3.1 預覽版與正式版 ID（見下表），包括 **Veo 3.1 Lite** |
+| 成本追蹤 | ✅ 依時長計價；目錄中列出的情況下，另有可選的 **依解析度** 分級（例如 720p 與 1080p） |
+| 記錄支援 | ✅ 完整的請求/回應記錄 |
+| Proxy 伺服器支援 | ✅ 與虛擬金鑰的完整 proxy 整合 |
+| 支出管理 | ✅ 預算追蹤與速率限制 |
+| 提供者文件連結 | [Google Veo 文件 ↗](https://ai.google.dev/gemini-api/docs/video) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Required API Keys
+### 所需 API 金鑰 {#required-api-keys}
 
 ```python
 import os 
@@ -27,7 +27,7 @@ os.environ["GEMINI_API_KEY"] = "your-google-api-key"
 os.environ["GOOGLE_API_KEY"] = "your-google-api-key"
 ```
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 ```python
 from litellm import video_generation, video_status, video_content
@@ -73,63 +73,63 @@ with open("generated_video.mp4", "wb") as f:
 print("Video downloaded successfully!")
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Description | Max Duration | Status |
+| 模型名稱 | 說明 | 最長時長 | 狀態 |
 |------------|-------------|--------------|--------|
-| veo-3.0-generate-preview | Veo 3.0 video generation | 8 seconds | Preview |
-| veo-3.1-generate-preview | Veo 3.1 video generation | 8 seconds | Preview |
-| veo-3.1-lite-generate-preview | Veo 3.1 **Lite** (cost-efficient; [Gemini pricing](https://ai.google.dev/gemini-api/docs/video)) | Per Google docs | Preview |
-| veo-3.1-fast-generate-preview / `…-001` | Faster / prod variants | Per Google docs | Preview / GA |
-| veo-3.1-generate-001 | Veo 3.1 production | Per Google docs | GA |
+| veo-3.0-generate-preview | Veo 3.0 影片生成 | 8 秒 | 預覽版 |
+| veo-3.1-generate-preview | Veo 3.1 影片生成 | 8 秒 | 預覽版 |
+| veo-3.1-lite-generate-preview | Veo 3.1 **Lite**（成本更有效率；[Gemini 定價](https://ai.google.dev/gemini-api/docs/video)） | 依 Google 文件 | 預覽版 |
+| veo-3.1-fast-generate-preview / `…-001` | 較快 / 正式版變體 | 依 Google 文件 | 預覽版 / GA |
+| veo-3.1-generate-001 | Veo 3.1 正式版 | 依 Google 文件 | GA |
 
-Use the full LiteLLM model id with the `gemini/` prefix (for example `gemini/veo-3.1-lite-generate-preview`).
+請使用帶有 `gemini/` 前綴的完整 LiteLLM 模型 id（例如 `gemini/veo-3.1-lite-generate-preview`）。
 
-## Video Generation Parameters
+## 影片生成參數 {#video-generation-parameters}
 
-LiteLLM automatically maps OpenAI-style parameters to Veo's format:
+LiteLLM 會自動將 OpenAI 風格參數對應為 Veo 的格式：
 
-| OpenAI Parameter | Veo Parameter | Description | Example |
+| OpenAI 參數 | Veo 參數 | 說明 | 範例 |
 |------------------|---------------|-------------|---------|
-| `prompt` | `prompt` | Text description of the video | "A cat playing" |
-| `size` | `aspectRatio` and, when applicable, **`resolution`** | Standard widths/heights map to landscape/portrait **and** to `720p` or `1080p` for the API | See below |
-| `seconds` | `durationSeconds` | Duration in seconds | "8" → 8 |
-| `input_reference` | `image` | Reference image to animate | File object or path |
-| `model` | `model` | Model to use | "gemini/veo-3.0-generate-preview" |
+| `prompt` | `prompt` | 影片的文字描述 | "A cat playing" |
+| `size` | `aspectRatio`，且在適用時為 **`resolution`** | 標準寬高會對應到橫向/直向 **並且** 對應 API 的 `720p` 或 `1080p` | 見下方 |
+| `seconds` | `durationSeconds` | 以秒為單位的時長 | "8" → 8 |
+| `input_reference` | `image` | 要動畫化的參考圖片 | 檔案物件或路徑 |
+| `model` | `model` | 要使用的模型 | "gemini/veo-3.0-generate-preview" |
 
-### `size` and output resolution
+### `size` 與輸出解析度 {#size-and-output-resolution}
 
-When you pass a **standard `size`** string, LiteLLM sets both:
+當您傳入 **標準 `size`** 字串時，LiteLLM 會同時設定：
 
-- **Aspect ratio** (`16:9` or `9:16`) — same as before.
-- **Output resolution** (`720p` or `1080p`) when the height is clear from the preset, so the correct Veo tier is requested without extra fields.
+- **長寬比**（`16:9` 或 `9:16`）——與之前相同。
+- **輸出解析度**（`720p` 或 `1080p`）在預設值可明確由高度判定時，會以此請求正確的 Veo 分級，而無需額外欄位。
 
-| `size` | Aspect ratio | Resolution sent to Veo |
+| `size` | 長寬比 | 傳送至 Veo 的解析度 |
 |--------|----------------|-------------------------|
 | `1280x720`, `720x1280` | `16:9` / `9:16` | `720p` |
 | `1920x1080`, `1080x1920` | `16:9` / `9:16` | `1080p` |
 
-Other `size` values still map to an aspect ratio (defaulting to `16:9` when unknown); resolution is left to **Google’s default** unless you set it yourself.
+其他 `size` 值仍會對應到長寬比（若未知則預設為 `16:9`）；除非您自行設定，否則解析度會由 **Google 的預設值** 決定。
 
-You can also pass Veo’s **`resolution`** (for example via `extra_body`) if you need an explicit value that does not match the presets above. If you set `resolution` yourself, it takes precedence over the value inferred from `size`.
+您也可以傳入 Veo 的 **`resolution`**（例如透過 `extra_body`），如果您需要一個不符合上述預設的明確值。如果您自行設定 `resolution`，它會優先於從 `size` 推斷出的值。
 
-### Size to aspect ratio (reference)
+### 尺寸到長寬比（參考） {#size-to-aspect-ratio-reference}
 
-- `"1280x720"`, `"1920x1080"` → `"16:9"` (landscape)
-- `"720x1280"`, `"1080x1920"` → `"9:16"` (portrait)
+- `"1280x720"`, `"1920x1080"` → `"16:9"`（橫向）
+- `"720x1280"`, `"1080x1920"` → `"9:16"`（直向）
 
-### Supported Veo Parameters
+### 支援的 Veo 參數 {#supported-veo-parameters}
 
-Based on Veo's API:
-- **prompt** (required): Text description with optional audio cues
-- **aspectRatio**: `"16:9"` (default) or `"9:16"`
-- **resolution**: `"720p"` (default) or `"1080p"` (Veo 3.1 only, 16:9 aspect ratio only)
-- **durationSeconds**: Video length (max 8 seconds for most models)
-- **image**: Reference image for animation
-- **negativePrompt**: What to exclude from the video (Veo 3.1)
-- **referenceImages**: Style and content references (Veo 3.1 only)
+根據 Veo 的 API：
+- **prompt**（必填）：可包含可選音訊提示的文字描述
+- **aspectRatio**：`"16:9"`（預設）或 `"9:16"`
+- **resolution**：`"720p"`（預設）或 `"1080p"`（僅 Veo 3.1，且僅支援 16:9 長寬比）
+- **durationSeconds**：影片長度（多數模型最長 8 秒）
+- **image**：用於動畫化的參考圖片
+- **negativePrompt**：要從影片中排除的內容（Veo 3.1）
+- **referenceImages**：風格與內容參考（僅 Veo 3.1）
 
-## Complete Workflow Example
+## 完整工作流程範例 {#complete-workflow-example}
 
 ```python
 import litellm
@@ -203,7 +203,7 @@ generate_and_download_veo_video(
 )
 ```
 
-## Async Usage
+## 非同步用法 {#async-usage}
 
 ```python
 from litellm import avideo_generation, avideo_status, avideo_content
@@ -233,11 +233,11 @@ async def async_video_workflow():
 asyncio.run(async_video_workflow())
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM Proxy 用法 {#litellm-proxy-usage}
 
-### Configuration
+### 設定 {#configuration}
 
-Add Veo models to your `config.yaml`:
+將 Veo 模型新增至您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -247,14 +247,14 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config config.yaml
 # Server running on http://0.0.0.0:4000
 ```
 
-### Making Requests
+### 發送請求 {#making-requests}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -313,16 +313,16 @@ with open("video.mp4", "wb") as f:
 </TabItem>
 </Tabs>
 
-## Cost tracking and spend
+## 成本追蹤與支出 {#cost-tracking-and-spend}
 
-LiteLLM estimates **video spend** from:
+LiteLLM 會根據以下項目估算 **影片支出**：
 
-1. **How long** the generated clip is billed for (seconds), and  
-2. **The per-second price** for that model in LiteLLM’s model catalog (aligned with [Google’s Gemini API video pricing](https://ai.google.dev/gemini-api/docs/video) where applicable).
+1. **生成片段計費的時長**（秒），以及  
+2. LiteLLM 模型目錄中該模型的 **每秒價格**（在適用時與 [Google 的 Gemini API 影片定價](https://ai.google.dev/gemini-api/docs/video) 一致）。
 
-Some models charge **different per-second rates** for **720p** vs **1080p**. When you use the standard `size` presets above (or set `resolution` explicitly), LiteLLM uses the matching tier so **proxy spend, logs, and budgets** line up with the resolution you requested.
+某些模型對 **720p** 與 **1080p** 收取 **不同的每秒費率**。當您使用上述標準 `size` 預設值（或明確設定 `resolution`）時，LiteLLM 會使用相符的分級，讓 **proxy 支出、記錄與預算** 與您請求的解析度一致。
 
-LiteLLM automatically tracks costs for Veo video generation:
+LiteLLM 會自動追蹤 Veo 影片生成的成本：
 
 ```python
 response = litellm.video_generation(
@@ -336,19 +336,19 @@ response = litellm.video_generation(
 # Estimated cost: ~$0.50
 ```
 
-## Differences from OpenAI Video API
+## 與 OpenAI 影片 API 的差異 {#differences-from-openai-video-api}
 
-| Feature | OpenAI (Sora) | Gemini (Veo) |
+| 功能 | OpenAI (Sora) | Gemini (Veo) |
 |---------|---------------|--------------|
-| Reference Images | ✅ Supported | ❌ Not supported |
-| Size / dimensions | ✅ Supported | ✅ Supported via `size` → aspect ratio + `720p`/`1080p` where preset |
-| Duration (`seconds`) | ✅ Supported | ✅ Supported (maps to `durationSeconds`; limits per Google docs) |
-| Video Remix/Edit | ✅ Supported | ❌ Not supported |
-| Video List | ✅ Supported | ❌ Not supported |
-| Prompt-based Generation | ✅ Supported | ✅ Supported |
-| Async Operations | ✅ Supported | ✅ Supported |
+| 參考圖片 | ✅ 支援 | ❌ 不支援 |
+| 尺寸 / 維度 | ✅ 支援 | ✅ 透過 `size` → 長寬比 + `720p`/`1080p`（若有預設）支援 |
+| 時長（`seconds`） | ✅ 支援 | ✅ 支援（對應到 `durationSeconds`；限制依 Google 文件） |
+| 影片重混 / 編輯 | ✅ 支援 | ❌ 不支援 |
+| 影片清單 | ✅ 支援 | ❌ 不支援 |
+| 以提示詞為基礎的生成 | ✅ 支援 | ✅ 支援 |
+| 非同步操作 | ✅ 支援 | ✅ 支援 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python
 from litellm import video_generation, video_status, video_content
@@ -385,24 +385,24 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
-## Best Practices
+## 最佳實務 {#best-practices}
 
-1. **Always poll for completion**: Veo video generation is asynchronous and can take several minutes
-2. **Set reasonable timeouts**: Allow at least 5-10 minutes for video generation
-3. **Handle failures gracefully**: Check for `failed` status and implement retry logic
-4. **Use descriptive prompts**: More detailed prompts generally produce better results
-5. **Store video IDs**: Save the operation ID/video ID to resume polling if your application restarts
+1. **一律輪詢完成狀態**：Veo 影片生成是非同步的，可能需要幾分鐘
+2. **設定合理的逾時**：請為影片生成預留至少 5-10 分鐘
+3. **優雅處理失敗**：檢查 `failed` 狀態並實作重試邏輯
+4. **使用描述性提示詞**：更詳細的提示詞通常會產生更好的結果
+5. **儲存影片 ID**：儲存作業 ID/影片 ID，以便應用程式重新啟動後可繼續輪詢
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Video generation times out
+### 影片生成逾時 {#video-generation-times-out}
 
 ```python
 # Increase polling timeout
 max_wait_time = 900  # 15 minutes instead of 10
 ```
 
-### Video not found when downloading
+### 下載時找不到影片 {#video-not-found-when-downloading}
 
 ```python
 # Make sure video is completed before downloading
@@ -411,7 +411,7 @@ if status.status != "completed":
     print("Video not ready yet!")
 ```
 
-### API key errors
+### API 金鑰錯誤 {#api-key-errors}
 
 ```python
 # Verify your API key is set
@@ -426,11 +426,10 @@ response = video_generation(
 )
 ```
 
-## See Also
+## 另請參閱 {#see-also}
 
-- [OpenAI Video Generation](../openai/videos.md)
-- [Azure Video Generation](../azure/videos.md)
-- [Vertex AI Video Generation](../vertex_ai/videos.md)
-- [Video Generation API Reference](/docs/videos)
-- [Veo Pass-through Endpoints](/docs/pass_through/google_ai_studio#example-4-video-generation-with-veo)
-
+- [OpenAI 影片生成](../openai/videos.md)
+- [Azure 影片生成](../azure/videos.md)
+- [Vertex AI 影片生成](../vertex_ai/videos.md)
+- [影片生成 API 參考](/docs/videos)
+- [Veo 直通端點](/docs/pass_through/google_ai_studio#example-4-video-generation-with-veo)

@@ -2,38 +2,38 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Claude Code Quickstart
+# Claude Code 快速入門 {#claude-code-quickstart}
 
-This tutorial shows how to call Claude models through LiteLLM proxy from Claude Code.
+本教學示範如何透過 Claude Code 中的 LiteLLM proxy 呼叫 Claude 模型。
 
 :::info 
 
-This tutorial is based on [Anthropic's official LiteLLM configuration documentation](https://code.claude.com/docs/en/llm-gateway#litellm-configuration). This integration allows you to use any LiteLLM supported model through Claude Code with centralized authentication, usage tracking, and cost controls.
+本教學以 [Anthropic 的官方 LiteLLM 組態文件](https://code.claude.com/docs/en/llm-gateway#litellm-configuration) 為基礎。此整合可讓您透過 Claude Code 使用任何 LiteLLM 支援的模型，並具備集中式驗證、用量追蹤與成本控制。
 
 :::
 
 <br />
 
-### Video Walkthrough
+### 影片導覽 {#video-walkthrough}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/3c17d683cdb74d36a3698763cc558f56" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) installed
-- API keys for your chosen providers
+- 已安裝 [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
+- 您所選提供者的 API 金鑰
 
-## Installation
+## 安裝 {#installation}
 
-First, install LiteLLM with proxy support:
+首先，安裝支援 proxy 的 LiteLLM：
 
 ```bash
 uv tool install 'litellm[proxy]'
 ```
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
-Create a secure configuration using environment variables:
+使用環境變數建立安全的設定：
 
 ```yaml
 model_list:
@@ -57,7 +57,7 @@ litellm_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-Set your environment variables:
+設定您的環境變數：
 
 ```bash
 export ANTHROPIC_API_KEY="your-anthropic-api-key"
@@ -65,10 +65,10 @@ export LITELLM_MASTER_KEY="sk-1234567890"  # Generate a secure key
 ```
 
 :::tip
-Alternatively, you can store `ANTHROPIC_API_KEY` in a `.env` file in your proxy directory. LiteLLM will automatically load it when starting.
+或者，您也可以將 `ANTHROPIC_API_KEY` 儲存在 proxy 目錄中的 `.env` 檔案裡。LiteLLM 會在啟動時自動載入。
 :::
 
-### 2. Start proxy
+### 2. 啟動 proxy {#2-start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -76,9 +76,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Verify Setup
+### 3. 驗證設定 {#3-verify-setup}
 
-Test that your proxy is working correctly:
+測試您的 proxy 是否正常運作：
 
 ```bash
 curl -X POST http://0.0.0.0:4000/v1/messages \
@@ -91,41 +91,41 @@ curl -X POST http://0.0.0.0:4000/v1/messages \
 }'
 ```
 
-### 4. Configure Claude Code
+### 4. 設定 Claude Code {#4-configure-claude-code}
 
-#### Static API key
+#### 靜態 API 金鑰 {#static-api-key}
 
-Set a fixed LiteLLM key as `ANTHROPIC_AUTH_TOKEN`:
+將固定的 LiteLLM 金鑰設為 `ANTHROPIC_AUTH_TOKEN`：
 
 ```bash
 export ANTHROPIC_AUTH_TOKEN="$LITELLM_KEY"
 ```
 
 :::tip
-`$LITELLM_KEY` can be your proxy **master key** or a **virtual key**. A master key gives Claude Code access to all proxy models. A virtual key is limited to the models that key has access to.
+`$LITELLM_KEY` 可以是您的 proxy **master key** 或 **virtual key**。master key 可讓 Claude Code 存取所有 proxy 模型。virtual key 則僅限於該金鑰可存取的模型。
 :::
 
-#### Method 1: Unified Endpoint (Recommended)
+#### 方法 1：統一端點（建議） {#method-1-unified-endpoint-recommended}
 
-Configure Claude Code to use LiteLLM's unified endpoint:
+將 Claude Code 設定為使用 LiteLLM 的統一端點：
 
 ```bash
 export ANTHROPIC_BASE_URL="http://0.0.0.0:4000"
 ```
 
-#### Method 2: Provider-specific Pass-through Endpoint
+#### 方法 2：提供者特定的直通端點 {#method-2-provider-specific-pass-through-endpoint}
 
-Alternatively, use the Anthropic pass-through endpoint:
+或者，使用 Anthropic 直通端點：
 
 ```bash
 export ANTHROPIC_BASE_URL="http://0.0.0.0:4000/anthropic"
 ```
 
-#### Dynamic API key with helper
+#### 搭配 helper 的動態 API 金鑰 {#dynamic-api-key-with-helper}
 
-For rotating keys or per-user authentication, Claude Code can run a script to fetch a key (for example, a JWT) instead of a static `ANTHROPIC_AUTH_TOKEN`.
+若要輪替金鑰或進行每位使用者驗證，Claude Code 可以執行腳本來擷取金鑰（例如 JWT），而不是使用靜態 `ANTHROPIC_AUTH_TOKEN`。
 
-1. Create an API key helper script:
+1. 建立 API 金鑰 helper 腳本：
 
 ```bash
 #!/bin/bash
@@ -138,7 +138,7 @@ jwt encode \
   '{"user":"'${USER}'","team":"engineering"}'
 ```
 
-2. Configure Claude Code settings to use the helper:
+2. 設定 Claude Code 設定檔以使用 helper：
 
 ```json
 {
@@ -146,18 +146,18 @@ jwt encode \
 }
 ```
 
-3. Set token refresh interval:
+3. 設定 token 重新整理間隔：
 
 ```bash
 # Refresh every hour (3600000 ms)
 export CLAUDE_CODE_API_KEY_HELPER_TTL_MS=3600000
 ```
 
-This value will be sent as `Authorization` and `X-Api-Key` headers. The `apiKeyHelper` has lower precedence than `ANTHROPIC_AUTH_TOKEN` or `ANTHROPIC_API_KEY`.
+此值會以 `Authorization` 與 `X-Api-Key` 標頭傳送。`apiKeyHelper` 的優先順序低於 `ANTHROPIC_AUTH_TOKEN` 或 `ANTHROPIC_API_KEY`。
 
-### 5. Use Claude Code
+### 5. 使用 Claude Code {#5-use-claude-code}
 
-Start Claude Code with the model you want to use:
+以您要使用的模型啟動 Claude Code：
 
 ```bash
 # Specify model at startup (Opus 4.7 — newest Claude Code model)
@@ -172,7 +172,7 @@ claude
 /model claude-opus-4-7
 ```
 
-Alternatively, set default models with environment variables:
+或者，使用環境變數設定預設模型：
 
 ```bash
 export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-7
@@ -181,9 +181,9 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
 claude
 ```
 
-### Using 1M Context Window
+### 使用 1M Context Window {#using-1m-context-window}
 
-Claude Code supports extended context (1 million tokens) using the `[1m]` suffix:
+Claude Code 支援使用 `[1m]` 後綴的延伸上下文（100 萬個 token）：
 
 ```bash
 # Use Opus 4.7 with 1M context (requires quotes in shell)
@@ -194,53 +194,53 @@ claude --model 'claude-opus-4-7[1m]'
 ```
 
 :::warning
-**Important:** When using `--model` with `[1m]` in the shell, you must use quotes to prevent the shell from interpreting the brackets.
+**重要：** 當在 shell 中使用 `--model` 搭配 `[1m]` 時，您必須使用引號，以避免 shell 解讀中括號。
 :::
 
-**How it works:**
-- Claude Code strips the `[1m]` suffix before sending to LiteLLM
-- Claude Code automatically adds the header `anthropic-beta: context-1m-2025-08-07`
-- Your LiteLLM config should **NOT** include `[1m]` in model names
+**運作方式：**
+- Claude Code 在傳送至 LiteLLM 前會移除 `[1m]` 後綴
+- Claude Code 會自動新增標頭 `anthropic-beta: context-1m-2025-08-07`
+- 您的 LiteLLM 設定檔 **不應** 在模型名稱中包含 `[1m]`
 
-**Verify 1M context is active:**
+**驗證 1M context 已啟用：**
 ```bash
 /context
 # Should show: 21k/1000k tokens (2%)
 ```
 
-Example conversation:
+範例對話：
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-Common issues and solutions:
+常見問題與解決方案：
 
-**Claude Code not connecting:**
-- Verify your proxy is running: `curl http://0.0.0.0:4000/health`
-- Check that `ANTHROPIC_BASE_URL` is set correctly
-- Ensure your `ANTHROPIC_AUTH_TOKEN` matches your LiteLLM master key
+**Claude Code 無法連線：**
+- 驗證您的 proxy 是否正在執行：`curl http://0.0.0.0:4000/health`
+- 檢查 `ANTHROPIC_BASE_URL` 是否設定正確
+- 確保您的 `ANTHROPIC_AUTH_TOKEN` 與您的 LiteLLM master key 相符
 
-**Authentication errors:**
-- Verify your environment variables are set: `echo $LITELLM_MASTER_KEY`
-- Check that your API keys are valid and have sufficient credits
-- Ensure the `ANTHROPIC_AUTH_TOKEN` matches your LiteLLM master key
+**驗證錯誤：**
+- 驗證您的環境變數是否已設定：`echo $LITELLM_MASTER_KEY`
+- 檢查您的 API 金鑰是否有效且有足夠的額度
+- 確保 `ANTHROPIC_AUTH_TOKEN` 與您的 LiteLLM master key 相符
 
-**Model not found:**
-- Ensure the model name in Claude Code matches exactly with your `config.yaml`
-- Use `--model` flag or environment variables to specify the model
-- Check LiteLLM logs for detailed error messages
+**找不到模型：**
+- 確保 Claude Code 中的模型名稱與您的 `config.yaml` 完全一致
+- 使用 `--model` 旗標或環境變數指定模型
+- 檢查 LiteLLM 記錄以取得詳細錯誤訊息
 
-## Using Bedrock/Vertex AI/Azure Foundry Models
+## 使用 Bedrock/Vertex AI/Azure Foundry 模型 {#using-bedrockvertex-aiazure-foundry-models}
 
-Expand your configuration to support multiple providers and models:
+擴充您的設定以支援多個提供者與模型：
 
-:::tip Check live compatibility before you wire up a provider
+:::tip 在接上提供者前先查看即時相容性
 
-Compatibility between Claude Code features and each provider (Anthropic, Bedrock, Vertex AI, Azure) changes as Claude Code and LiteLLM ship updates. The [Claude Code × LiteLLM compatibility matrix](https://docs.litellm.ai/docs/claude_code_compatibility) is regenerated daily against the latest stable LiteLLM proxy across Haiku 4.5, Sonnet 4.6, and Opus 4.7 — check it first to see which `(feature, provider)` cells are currently green.
+Claude Code 功能與各提供者（Anthropic、Bedrock、Vertex AI、Azure）之間的相容性，會隨著 Claude Code 與 LiteLLM 的更新而變動。[Claude Code × LiteLLM 相容性矩陣](https://docs.litellm.ai/docs/claude_code_compatibility) 會以最新穩定版 LiteLLM proxy，每日針對 Haiku 4.5、Sonnet 4.6 與 Opus 4.7 重新產生——請先查看，確認目前哪些 `(feature, provider)` 儲存格是綠色。
 
 :::
 
 <Tabs>
-<TabItem value="multi-provider" label="Multi-Provider Setup">
+<TabItem value="multi-provider" label="多提供者設定">
 
 ```yaml
 model_list:
@@ -296,7 +296,7 @@ litellm_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-Switch between models seamlessly:
+在模型之間無縫切換：
 
 ```bash
 # Use Anthropic API directly (newest Claude Code model)
@@ -315,35 +315,35 @@ claude --model claude-opus-vertex
 </TabItem>
 </Tabs>
 
-### Bedrock-specific setup for Claude Code
+### Claude Code 的 Bedrock 專用設定 {#bedrock-specific-setup-for-claude-code}
 
-Two extra steps make Claude Code work cleanly against Bedrock through LiteLLM today. Please do both before launching `claude` against a Bedrock-backed model.
+目前有兩個額外步驟可讓 Claude Code 透過 LiteLLM 乾淨地對接 Bedrock。請在以 Bedrock 為後端的模型上啟動 `claude` 之前，先完成這兩步。
 
-:::note Temporary workaround
+:::note 暫時性替代方案
 
-The Invoke preference and the beta-header flag below are temporary. LiteLLM already re-implements many Anthropic-API features on top of Bedrock inside the gateway, and we're steadily extending that coverage on the Converse path. Soon, these workarounds will no longer be necessary.
+下方的 Invoke 偏好設定與 beta-header 旗標都是暫時性的。LiteLLM 已在閘道內的 Bedrock 之上重新實作了許多 Anthropic API 功能，而且我們也持續在 Converse 路徑上擴充這些涵蓋範圍。不久之後，這些替代方案將不再需要。
 
 :::
 
-#### 1. Prefer Bedrock Invoke
+#### 1. 優先使用 Bedrock Invoke {#1-prefer-bedrock-invoke}
 
-In the config above, Bedrock models use the `bedrock/invoke/<model-id>` prefix — currently the smoother path for Claude Code traffic. If you'd like to try Converse, swap the prefix from `bedrock/invoke/` to `bedrock/converse/` and check the matrix for the feature you need.
+在上方設定中，Bedrock 模型使用 `bedrock/invoke/<model-id>` 前綴——目前是 Claude Code 流量較順暢的路徑。若您想嘗試 Converse，請將前綴從 `bedrock/invoke/` 改為 `bedrock/converse/`，並在相容性矩陣中檢查您需要的功能。
 
-#### 2. Disable Claude Code's experimental beta headers for Bedrock
+#### 2. 停用 Claude Code 對 Bedrock 的實驗性 beta 標頭 {#2-disable-claude-codes-experimental-beta-headers-for-bedrock}
 
-Claude Code attaches Anthropic experimental beta headers (e.g. `anthropic-beta: prompt-caching-scope-2026-01-05,advanced-tool-use-2025-11-20`) on every request. These work great against Anthropic's first-party API, but Bedrock doesn't currently accept all of them and might return a `400 invalid beta flag` error. Set the **`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`** environment variable to `1` to strip those headers.
+Claude Code 會在每個請求附加 Anthropic 實驗性 beta 標頭（例如 `anthropic-beta: prompt-caching-scope-2026-01-05,advanced-tool-use-2025-11-20`）。這些標頭對 Anthropic 第一方 API 運作良好，但 Bedrock 目前不接受所有標頭，可能會回傳 `400 invalid beta flag` 錯誤。請將 **`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`** 環境變數設為 `1` 以移除這些標頭。
 
-The recommended place to set it is your **global Claude Code user settings file** at:
+建議將其設定在下列位置的 **Claude Code 全域使用者設定檔**：
 
 ```
 ~/.claude/settings.json
 ```
 
-(That's `/Users/<you>/.claude/settings.json` on macOS / Linux, or `C:\Users\<you>\.claude\settings.json` on Windows. All Claude Code clients, incl. CLI, VS Code extension, JetBrains plugin, etc., read from this file.)
+（在 macOS / Linux 上是 `/Users/<you>/.claude/settings.json`，在 Windows 上是 `C:\Users\<you>\.claude\settings.json`。所有 Claude Code 用戶端，包括 CLI、VS Code extension、JetBrains plugin 等，都會讀取此檔案。）
 
-**How to edit it:**
+**如何編輯：**
 
-1. Open `~/.claude/settings.json` in your editor of choice. If it doesn't exist yet, create it.
+1. 在您慣用的編輯器中開啟 `~/.claude/settings.json`。如果尚不存在，請建立它。
 
    ```bash
    # macOS / Linux - open with your default editor
@@ -353,7 +353,7 @@ The recommended place to set it is your **global Claude Code user settings file*
    code ~/.claude/settings.json
    ```
 
-2. Add (or merge into the existing) `env` block:
+2. 新增（或合併至現有的）`env` 區塊：
 
    ```json title="~/.claude/settings.json"
    {
@@ -363,15 +363,14 @@ The recommended place to set it is your **global Claude Code user settings file*
    }
    ```
 
-3. **Fully quit and reopen Claude Code** so the new setting is picked up. For IDE plugins (VS Code, JetBrains), restart your IDE.
+3. **完全結束並重新開啟 Claude Code**，讓新設定生效。若是 IDE plugin（VS Code、JetBrains），請重新啟動 IDE。
 
-:::tip Alternative: project-scoped or shell-scoped
+:::tip 替代方案：以專案範圍或 shell 範圍設定
 
-If you only want to disable beta headers for a single project, put the same `env` block in `.claude/settings.json` (committed) or `.claude/settings.local.json` (gitignored, personal) at the project root.
+如果您只想針對單一專案停用 beta 標頭，請將相同的 `env` 區塊放入專案根目錄中的 `.claude/settings.json`（已提交）或 `.claude/settings.local.json`（被 gitignore，個人用）中。
 
-Shell-level exports also work for the CLI (`export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1` before launching `claude`), but **not** IDE plugins.
+CLI 也可以使用 shell 層級的 export（在啟動 `claude` 前先執行 `export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`），但 **不適用** 於 IDE plugin。
 
 :::
 
 <Image img={require('../../img/release_notes/claude_code_demo.png')} style={{ width: '500px', height: 'auto' }} />
-

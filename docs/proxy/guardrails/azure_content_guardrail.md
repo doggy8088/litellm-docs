@@ -2,20 +2,19 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure Content Safety Guardrail
+# Azure Content Safety 防護欄 {#azure-content-safety-guardrail}
 
-LiteLLM supports Azure Content Safety guardrails via the [Azure Content Safety API](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview). 
+LiteLLM 透過 [Azure Content Safety API](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview) 支援 Azure Content Safety 防護欄。 
 
-
-## Supported Guardrails
+## 支援的防護欄 {#supported-guardrails}
 
 - [Prompt Shield](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-jailbreak?pivots=programming-language-rest)
 - [Text Moderation](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text?tabs=visual-studio%2Clinux&pivots=programming-language-rest)
 
-## Quick Start
-### 1. Define Guardrails on your LiteLLM config.yaml 
+## 快速開始 {#quick-start}
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section
+在 `guardrails` 區段下定義您的防護欄
 
 ```yaml
 model_list:
@@ -40,21 +39,20 @@ guardrails:
       default_on: true
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
+- `pre_call` 在 **LLM 呼叫之前** 執行，針對 **輸入**
+- `post_call` 在 **LLM 呼叫之後** 執行，針對 **輸入與輸出**
 
-### 2. Start LiteLLM Gateway 
-
+### 2. 啟動 LiteLLM 閘道 {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求 {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -71,24 +69,23 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## Supported Params 
+## 支援的參數 {#supported-params}
 
-### Common Params
+### 通用參數 {#common-params}
 
-- `api_key` - str - Azure Content Safety API key
-- `api_base` - str - Azure Content Safety API base URL
-- `default_on` - bool - Whether to run the guardrail by default. Default is `false`.
-- `mode` - Union[str, list[str]] - Mode to run the guardrail. Either `pre_call` or `post_call`. Default is `pre_call`.
+- `api_key` - str - Azure Content Safety API 金鑰
+- `api_base` - str - Azure Content Safety API 基礎 URL
+- `default_on` - bool - 是否預設執行此防護欄。預設值為 `false`。
+- `mode` - Union[str, list[str]] - 執行防護欄的模式。可為 `pre_call` 或 `post_call`。預設值為 `pre_call`。
 
-### Azure Text Moderation
+### Azure 文字審核 {#azure-text-moderation}
 
-- `severity_threshold` - int - Severity threshold for the Azure Content Safety Text Moderation guardrail across all categories
-- `severity_threshold_by_category` - Dict[AzureHarmCategories, int] - Severity threshold by category for the Azure Content Safety Text Moderation guardrail. See list of categories - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
-- `categories` - List[AzureHarmCategories] - Categories to scan for the Azure Content Safety Text Moderation guardrail. See list of categories - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
-- `blocklistNames` - List[str] - Blocklist names to scan for the Azure Content Safety Text Moderation guardrail. Learn more - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
-- `haltOnBlocklistHit` - bool - Whether to halt the request if a blocklist hit is detected
-- `outputType` - Literal["FourSeverityLevels", "EightSeverityLevels"] - Output type for the Azure Content Safety Text Moderation guardrail. Learn more - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
-
+- `severity_threshold` - int - Azure Content Safety Text Moderation 防護欄跨所有類別的嚴重程度閾值
+- `severity_threshold_by_category` - Dict[AzureHarmCategories, int] - Azure Content Safety Text Moderation 防護欄依類別的嚴重程度閾值。請參閱類別清單 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
+- `categories` - List[AzureHarmCategories] - Azure Content Safety Text Moderation 防護欄要掃描的類別。請參閱類別清單 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
+- `blocklistNames` - List[str] - Azure Content Safety Text Moderation 防護欄要掃描的封鎖清單名稱。深入瞭解 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
+- `haltOnBlocklistHit` - bool - 若偵測到封鎖清單命中，是否中止請求
+- `outputType` - Literal["FourSeverityLevels", "EightSeverityLevels"] - Azure Content Safety Text Moderation 防護欄的輸出類型。深入瞭解 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
 
 AzureHarmCategories:
 - Hate
@@ -96,24 +93,23 @@ AzureHarmCategories:
 - Sexual
 - Violence
 
-### Azure Prompt Shield Only
+### 僅 Azure Prompt Shield {#azure-prompt-shield-only}
 
-n/a 
+不適用
 
-## Important Notes
+## 重要注意事項 {#important-notes}
 
-### Azure Content Safety Character Limit
+### Azure Content Safety 字元限制 {#azure-content-safety-character-limit}
 
-Both Azure Prompt Shield and Azure Text Moderation have a **10,000 character limit** per request. When text exceeds this limit:
+Azure Prompt Shield 與 Azure Text Moderation 的每個請求都有 **10,000 字元限制**。當文字超過此限制時：
 
-- LiteLLM automatically splits the text into chunks at word boundaries (no words are broken)
-- Each chunk is sent separately to the Azure Content Safety API for analysis
-- If any chunk is flagged (attack detected or severity threshold exceeded), the entire request is blocked
-- If all chunks are safe, the request is allowed to proceed
+- LiteLLM 會自動在單字邊界將文字分割成多個區塊（不會截斷任何單字）
+- 每個區塊會分別送往 Azure Content Safety API 進行分析
+- 若任何區塊被標記（偵測到攻擊或嚴重程度閾值超過），整個請求會被封鎖
+- 若所有區塊皆安全，則允許請求繼續進行
 
-This applies to both `pre_call` and `post_call` hooks and ensures that long prompts are properly analyzed without breaking words or losing context. 
+這同時適用於 `pre_call` 與 `post_call` 回呼，並確保長提示可被正確分析，而不會截斷單字或遺失上下文。 
 
+## 延伸閱讀 {#further-reading}
 
-## Further Reading
-
-- [Control Guardrails per API Key](./quick_start#-control-guardrails-per-api-key)
+- [依 API 金鑰控管防護欄](./quick_start#-control-guardrails-per-api-key)

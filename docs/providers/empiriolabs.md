@@ -1,49 +1,49 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# EmpirioLabs AI
+# EmpirioLabs AI {#empiriolabs-ai}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | EmpirioLabs AI hosts open, proprietary, and custom models behind one OpenAI-compatible API with pay-as-you-go pricing across text, image, video, audio, search, and 3D endpoints. |
-| Provider Route on LiteLLM | `empiriolabs/` |
-| Link to Provider Doc | [EmpirioLabs AI Documentation ↗](https://docs.empiriolabs.ai) |
+| 說明 | EmpirioLabs AI 在單一相容於 OpenAI 的 API 後方託管開源、專有與自訂模型，並對文字、圖片、影片、音訊、搜尋與 3D 端點提供隨用隨付定價。 |
+| LiteLLM 提供者路由 | `empiriolabs/` |
+| 提供者文件連結 | [EmpirioLabs AI 文件 ↗](https://docs.empiriolabs.ai) |
 | Base URL | `https://api.empiriolabs.ai/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage), `/responses` |
+| 支援的操作 | [`/chat/completions`](#sample-usage), `/responses` |
 
 <br />
 <br />
 
-**We support ALL EmpirioLabs chat models, just set `empiriolabs/` as a prefix when sending completion requests**
+**我們支援所有 EmpirioLabs 聊天模型，只要在傳送 completion 請求時將 `empiriolabs/` 設為前綴即可**
 
-## Available Models (selection)
+## 可用模型（選擇） {#available-models-selection}
 
-The full live catalog with pricing is at [empiriolabs.ai/models](https://empiriolabs.ai/models). Popular chat models:
+完整即時目錄與定價請見 [empiriolabs.ai/models](https://empiriolabs.ai/models)。熱門聊天模型：
 
-| Model | Description | Context Window |
+| 模型 | 說明 | 上下文視窗 |
 |-------|-------------|----------------|
-| `empiriolabs/qwen3-7-max` | Qwen3.7 Max flagship text model for coding, agents, and deep thinking | 1M tokens |
-| `empiriolabs/qwen3-7-plus` | Cost-effective Qwen3.7 vision-language model (text, image, video input) | 1M tokens |
-| `empiriolabs/deepseek-v4-pro` | DeepSeek V4 flagship MoE (1.6T total / 49B active parameters) | 1M tokens |
-| `empiriolabs/deepseek-v4-flash` | Lightweight DeepSeek V4 MoE (284B total / 13B active parameters) | 1M tokens |
-| `empiriolabs/glm-5-1` | Zhipu AI long-context reasoning model with tool use | 202K tokens |
-| `empiriolabs/kimi-k2-6` | Moonshot Kimi K2.6 multimodal reasoning model | 256K tokens |
-| `empiriolabs/minimax-m3` | MiniMax M3 multimodal reasoning for coding and agents | 524K tokens |
-| `empiriolabs/gemma-4-26b-a4b` | Google Gemma 4 26B A4B open multimodal model | 256K tokens |
+| `empiriolabs/qwen3-7-max` | 用於編碼、代理程式與深度思考的 Qwen3.7 Max 旗艦文字模型 | 1M tokens |
+| `empiriolabs/qwen3-7-plus` | 成本效益高的 Qwen3.7 視覺語言模型（文字、圖片、影片輸入） | 1M tokens |
+| `empiriolabs/deepseek-v4-pro` | DeepSeek V4 旗艦 MoE（總計 1.6T / 啟用 49B 參數） | 1M tokens |
+| `empiriolabs/deepseek-v4-flash` | 輕量級 DeepSeek V4 MoE（總計 284B / 啟用 13B 參數） | 1M tokens |
+| `empiriolabs/glm-5-1` | 具備工具使用能力的 Zhipu AI 長上下文推理模型 | 202K tokens |
+| `empiriolabs/kimi-k2-6` | Moonshot Kimi K2.6 多模態推理模型 | 256K tokens |
+| `empiriolabs/minimax-m3` | 用於編碼與代理程式的 MiniMax M3 多模態推理 | 524K tokens |
+| `empiriolabs/gemma-4-26b-a4b` | Google Gemma 4 26B A4B 開源多模態模型 | 256K tokens |
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["EMPIRIOLABS_API_KEY"] = ""  # your EmpirioLabs API key
 ```
 
-Get an API key from the [EmpirioLabs dashboard](https://platform.empiriolabs.ai/dashboard/api-keys).
+從 [EmpirioLabs 儀表板](https://platform.empiriolabs.ai/dashboard/api-keys) 取得 API 金鑰。
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="EmpirioLabs Non-streaming Completion"
 import os
@@ -60,7 +60,7 @@ response = completion(model="empiriolabs/qwen3-7-plus", messages=messages)
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="EmpirioLabs Streaming Completion"
 import os
@@ -82,9 +82,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -99,7 +99,7 @@ model_list:
       api_key: os.environ/EMPIRIOLABS_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -144,7 +144,7 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Additional Notes
+## 其他注意事項 {#additional-notes}
 
-- Thinking-capable models accept `reasoning_effort` (`none`, `low`, `medium`, `high`, `max`); the gateway maps it onto each model's native thinking controls.
-- Per-model parameters, limits, and live pricing are listed at [docs.empiriolabs.ai](https://docs.empiriolabs.ai) and on each model page at [empiriolabs.ai/models](https://empiriolabs.ai/models).
+- 具備思考能力的模型接受 `reasoning_effort`（`none`、`low`、`medium`、`high`、`max`）；閘道會將其對應到每個模型原生的思考控制。
+- 各模型參數、限制與即時定價列於 [docs.empiriolabs.ai](https://docs.empiriolabs.ai)，並可在每個模型頁面上的 [empiriolabs.ai/models](https://empiriolabs.ai/models) 查看。

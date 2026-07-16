@@ -1,24 +1,24 @@
 ---
 slug: june-townhall-announcement
-title: "June Townhall: Product + Roadmap Updates"
+title: "6 月 Townhall：產品 + 路線圖更新"
 date: 2026-06-16T07:30:00
 authors:
   - krrish
   - ishaan-alt
-description: "Join the LiteLLM June townhall on Thursday, 25 June at 7:30 AM PST to learn about LiteLLM's product updates and roadmap."
+description: "請於 6 月 25 日星期四美西時間上午 7:30 參加 LiteLLM 6 月 townhall，瞭解 LiteLLM 的產品更新與路線圖。"
 tags: [announcement, townhall]
 hide_table_of_contents: true
 ---
 
 import Image from '@theme/IdealImage';
 
-:::note Rescheduled
+:::note 已重新排程
 
-The June townhall has been moved from Thursday, 18 June to **Thursday, 25 June at 7:30 AM PST**. Thanks for your patience!
+6 月 townhall 已從 6 月 18 日星期四改期至 **6 月 25 日星期四美西時間上午 7:30**。感謝您的耐心等候！
 
 :::
 
-We are hosting our June townhall on **Thursday, 25 June at 7:30 AM PST**.
+我們將於 **6 月 25 日星期四美西時間上午 7:30** 舉辦 6 月 townhall。
 
 <Image
   img={require('../../img/june_townhall_banner.png')}
@@ -27,24 +27,24 @@ We are hosting our June townhall on **Thursday, 25 June at 7:30 AM PST**.
 
 {/* truncate */}
 
-## Agenda
+## 議程 {#agenda}
 
-- Product updates and roadmap progress
-- Reliability and security updates
-- Open Q&A with the team
+- 產品更新與路線圖進度
+- 可靠性與安全性更新
+- 與團隊公開問答
 
-## Stability
+## 穩定性 {#stability}
 
-Our team is focused on stability: improving reliability and reducing regressions across releases. Follow the roadmap here: [Stability roadmap](https://github.com/BerriAI/litellm/issues/30484).
+我們的團隊專注於穩定性：提升可靠性並減少各版本之間的迴歸問題。請在此追蹤路線圖：[穩定性路線圖](https://github.com/BerriAI/litellm/issues/30484)。
 
-## How to contribute
+## 如何貢獻 {#how-to-contribute}
 
-Add the topics and questions you'd like us to cover when you register below. We use your responses to set the agenda.
+在下方註冊時，加入您希望我們涵蓋的主題與問題。我們會使用您的回應來設定議程。
 
-## Register
+## 註冊 {#register}
 
-Register here: [LiteLLM June Townhall Form](https://forms.gle/sjWTYN2BBrikZg3KA)
+在此註冊：[LiteLLM 6 月 Townhall 表單](https://forms.gle/sjWTYN2BBrikZg3KA)
 
-We will hold the townhall from **7:30 AM to 8:30 AM PST on Zoom**.
+我們將於 **美西時間上午 7:30 至 8:30 在 Zoom** 舉行 townhall。
 
-For security, attendance is restricted to corporate emails. If you register with a non-corporate email, we will share the townhall slides and accompanying blog post after the event.
+為了安全起見，僅限公司電子郵件地址參與。如果您使用非公司電子郵件註冊，我們將在活動後分享 townhall 投影片及隨附的部落格文章。

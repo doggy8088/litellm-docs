@@ -1,5 +1,5 @@
 ---
-title: v1.67.4-stable - Improved User Management
+title: v1.67.4-stable - 改良的使用者管理
 slug: v1.67.4-stable
 date: 2025-04-26T10:00:00
 authors:
@@ -20,8 +20,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -42,156 +41,146 @@ pip install litellm==1.67.4.post1
 </TabItem>
 </Tabs>
 
-## Key Highlights
+## 主要亮點 {#key-highlights}
 
-- **Improved User Management**: This release enables search and filtering across users, keys, teams, and models.
-- **Responses API Load Balancing**: Route requests across provider regions and ensure session continuity. 
-- **UI Session Logs**: Group several requests to LiteLLM into a session. 
+- **改良的使用者管理**：此版本可跨使用者、金鑰、團隊與模型進行搜尋與篩選。
+- **Responses API 負載平衡**：跨提供者區域路由請求，並確保工作階段延續性。 
+- **UI 工作階段記錄**：將多個傳送至 LiteLLM 的請求分組為一個工作階段。 
 
-## Improved User Management
+## 改良的使用者管理 {#improved-user-management}
 
 <Image img={require('../../img/release_notes/ui_search_users.png')}/>
 <br/>
 
-This release makes it easier to manage users and keys on LiteLLM. You can now search and filter across users, keys, teams, and models, and control user settings more easily.
+此版本讓您更容易在 LiteLLM 上管理使用者和金鑰。您現在可以跨使用者、金鑰、團隊與模型進行搜尋和篩選，並更輕鬆地控制使用者設定。
 
-New features include:
+新功能包括：
 
-- Search for users by email, ID, role, or team.
-- See all of a user's models, teams, and keys in one place.
-- Change user roles and model access right from the Users Tab.
+- 可依電子郵件、ID、角色或團隊搜尋使用者。
+- 在同一處查看使用者的所有模型、團隊和金鑰。
+- 直接在 Users Tab 中變更使用者角色和模型存取權限。
 
-These changes help you spend less time on user setup and management on LiteLLM.
+這些變更可幫助您在 LiteLLM 上花更少時間進行使用者設定與管理。
 
-## Responses API Load Balancing
+## Responses API 負載平衡 {#responses-api-load-balancing}
 
 <Image img={require('../../img/release_notes/ui_responses_lb.png')}/>
 <br/>
 
-This release introduces load balancing for the Responses API, allowing you to route requests across provider regions and ensure session continuity. It works as follows:
+此版本為 Responses API 引入負載平衡，可讓您跨提供者區域路由請求並確保工作階段延續性。運作方式如下：
 
-- If a `previous_response_id` is provided, LiteLLM will route the request to the original deployment that generated the prior response — ensuring session continuity.
-- If no `previous_response_id` is provided, LiteLLM will load-balance requests across your available deployments.
+- 如果提供了 `previous_response_id`，LiteLLM 會將請求路由到產生前一個回應的原始部署，確保工作階段延續性。
+- 如果未提供 `previous_response_id`，LiteLLM 會在可用部署之間對請求進行負載平衡。
 
-[Read more](https://docs.litellm.ai/docs/response_api#load-balancing-with-session-continuity)
+[閱讀更多](https://docs.litellm.ai/docs/response_api#load-balancing-with-session-continuity)
 
-## UI Session Logs
+## UI 工作階段記錄 {#ui-session-logs}
 
 <Image img={require('../../img/ui_session_logs.png')}/>
 <br/>
 
-This release allow you to group requests to LiteLLM proxy into a session. If you specify a litellm_session_id in your request LiteLLM will automatically group all logs in the same session. This allows you to easily track usage and request content per session. 
+此版本可讓您將傳送至 LiteLLM proxy 的請求分組為一個工作階段。如果您在請求中指定 litellm_session_id，LiteLLM 會自動將同一工作階段中的所有記錄分組。這讓您能夠輕鬆追蹤每個工作階段的使用量與請求內容。 
 
-[Read more](https://docs.litellm.ai/docs/proxy/ui_logs_sessions)
+[閱讀更多](https://docs.litellm.ai/docs/proxy/ui_logs_sessions)
 
-## New Models / Updated Models
+## 新模型 / 已更新模型 {#new-models--updated-models}
 
 - **OpenAI**
-    1. Added `gpt-image-1` cost tracking [Get Started](https://docs.litellm.ai/docs/image_generation)
-    2. Bug fix: added cost tracking for gpt-image-1 when quality is unspecified [PR](https://github.com/BerriAI/litellm/pull/10247)
+    1. 新增 `gpt-image-1` 成本追蹤 [開始使用](https://docs.litellm.ai/docs/image_generation)
+    2. 錯誤修正：在未指定 quality 時，為 gpt-image-1 新增成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/10247)
 - **Azure**
-    1. Fixed timestamp granularities passing to whisper in Azure [Get Started](https://docs.litellm.ai/docs/audio_transcription)
-    2. Added azure/gpt-image-1 pricing [Get Started](https://docs.litellm.ai/docs/image_generation), [PR](https://github.com/BerriAI/litellm/pull/10327)
-    3. Added cost tracking for `azure/computer-use-preview`, `azure/gpt-4o-audio-preview-2024-12-17`, `azure/gpt-4o-mini-audio-preview-2024-12-17` [PR](https://github.com/BerriAI/litellm/pull/10178)
+    1. 修正傳遞至 Azure 中 whisper 的 timestamp granularities [開始使用](https://docs.litellm.ai/docs/audio_transcription)
+    2. 新增 azure/gpt-image-1 定價 [開始使用](https://docs.litellm.ai/docs/image_generation), [PR](https://github.com/BerriAI/litellm/pull/10327)
+    3. 為 `azure/computer-use-preview`、`azure/gpt-4o-audio-preview-2024-12-17`、`azure/gpt-4o-mini-audio-preview-2024-12-17` 新增成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/10178)
 - **Bedrock**
-    1. Added support for all compatible Bedrock parameters when model="arn:.." (Bedrock application inference profile models) [Get started](https://docs.litellm.ai/docs/providers/bedrock#bedrock-application-inference-profile), [PR](https://github.com/BerriAI/litellm/pull/10256)
-    2. Fixed wrong system prompt transformation [PR](https://github.com/BerriAI/litellm/pull/10120)
+    1. 新增對 model="arn:.."（Bedrock application inference profile models）時所有相容 Bedrock 參數的支援 [開始使用](https://docs.litellm.ai/docs/providers/bedrock#bedrock-application-inference-profile), [PR](https://github.com/BerriAI/litellm/pull/10256)
+    2. 修正錯誤的 system prompt 轉換 [PR](https://github.com/BerriAI/litellm/pull/10120)
 - **VertexAI / Google AI Studio**
-    1. Allow setting `budget_tokens=0` for `gemini-2.5-flash` [Get Started](https://docs.litellm.ai/docs/providers/gemini#usage---thinking--reasoning_content),[PR](https://github.com/BerriAI/litellm/pull/10198)
-    2. Ensure returned `usage` includes thinking token usage [PR](https://github.com/BerriAI/litellm/pull/10198)
-    3. Added cost tracking for `gemini-2.5-pro-preview-03-25` [PR](https://github.com/BerriAI/litellm/pull/10178)
+    1. 允許為 `gemini-2.5-flash` 設定 `budget_tokens=0` [開始使用](https://docs.litellm.ai/docs/providers/gemini#usage---thinking--reasoning_content),[PR](https://github.com/BerriAI/litellm/pull/10198)
+    2. 確保回傳的 `usage` 包含 thinking token 使用量 [PR](https://github.com/BerriAI/litellm/pull/10198)
+    3. 新增 `gemini-2.5-pro-preview-03-25` 的成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/10178)
 - **Cohere**
-    1. Added support for cohere command-a-03-2025 [Get Started](https://docs.litellm.ai/docs/providers/cohere), [PR](https://github.com/BerriAI/litellm/pull/10295)
+    1. 新增對 cohere command-a-03-2025 的支援 [開始使用](https://docs.litellm.ai/docs/providers/cohere), [PR](https://github.com/BerriAI/litellm/pull/10295)
 - **SageMaker**
-    1. Added support for max_completion_tokens parameter [Get Started](https://docs.litellm.ai/docs/providers/sagemaker), [PR](https://github.com/BerriAI/litellm/pull/10300)
+    1. 新增對 max_completion_tokens 參數的支援 [開始使用](https://docs.litellm.ai/docs/providers/sagemaker), [PR](https://github.com/BerriAI/litellm/pull/10300)
 - **Responses API**
-    1. Added support for GET and DELETE operations - `/v1/responses/{response_id}` [Get Started](../../docs/response_api)
-    2. Added session management support for all supported models [PR](https://github.com/BerriAI/litellm/pull/10321)
-    3. Added routing affinity to maintain model consistency within sessions [Get Started](https://docs.litellm.ai/docs/response_api#load-balancing-with-routing-affinity), [PR](https://github.com/BerriAI/litellm/pull/10193)
+    1. 新增對 GET 和 DELETE 操作的支援 - `/v1/responses/{response_id}` [開始使用](../../docs/response_api)
+    2. 為所有支援的模型新增工作階段管理支援 [PR](https://github.com/BerriAI/litellm/pull/10321)
+    3. 新增路由親和性，以在工作階段內維持模型一致性 [開始使用](https://docs.litellm.ai/docs/response_api#load-balancing-with-routing-affinity), [PR](https://github.com/BerriAI/litellm/pull/10193)
 
+## 支出追蹤改進 {#spend-tracking-improvements}
 
-## Spend Tracking Improvements
+- **錯誤修正**：修正支出追蹤錯誤，確保預設的 litellm 參數不會在記憶體中被修改 [PR](https://github.com/BerriAI/litellm/pull/10167)
+- **棄用日期**：為 Azure、VertexAI 模型新增棄用日期 [PR](https://github.com/BerriAI/litellm/pull/10308)
 
-- **Bug Fix**: Fixed spend tracking bug, ensuring default litellm params aren't modified in memory [PR](https://github.com/BerriAI/litellm/pull/10167)
-- **Deprecation Dates**: Added deprecation dates for Azure, VertexAI models [PR](https://github.com/BerriAI/litellm/pull/10308)
+## 管理端點 / UI {#management-endpoints--ui}
 
-## Management Endpoints / UI
-
-#### Users
-- **Filtering and Searching**: 
-  - Filter users by user_id, role, team, sso_id 
-  - Search users by email
+#### 使用者 {#users}
+- **篩選與搜尋**： 
+  - 依 user_id、role、team、sso_id 篩選使用者 
+  - 依電子郵件搜尋使用者
 
   <br/>
 
   <Image img={require('../../img/release_notes/user_filters.png')}/>
 
-- **User Info Panel**: Added a new user information pane [PR](https://github.com/BerriAI/litellm/pull/10213)
-  - View teams, keys, models associated with User 
-  - Edit user role, model permissions 
+- **使用者資訊面板**：新增一個使用者資訊窗格 [PR](https://github.com/BerriAI/litellm/pull/10213)
+  - 檢視與使用者相關聯的團隊、金鑰、模型 
+  - 編輯使用者角色、模型權限 
 
-
-
-#### Teams
-- **Filtering and Searching**: 
-    - Filter teams by Organization, Team ID [PR](https://github.com/BerriAI/litellm/pull/10324)
-    - Search teams by Team Name [PR](https://github.com/BerriAI/litellm/pull/10324)
+#### 團隊 {#teams}
+- **篩選與搜尋**： 
+    - 依 Organization、Team ID 篩選團隊 [PR](https://github.com/BerriAI/litellm/pull/10324)
+    - 依 Team Name 搜尋團隊 [PR](https://github.com/BerriAI/litellm/pull/10324)
 
   <br/>
 
   <Image img={require('../../img/release_notes/team_filters.png')}/>
 
+#### 金鑰 {#keys}
+- **金鑰管理**： 
+  - 支援依 key hash 進行交叉篩選與篩選 [PR](https://github.com/BerriAI/litellm/pull/10322)
+  - 修正重設篩選條件時的金鑰別名重設問題 [PR](https://github.com/BerriAI/litellm/pull/10099)
+  - 修正建立金鑰時的表格渲染問題 [PR](https://github.com/BerriAI/litellm/pull/10224)
 
+#### UI 記錄頁面 {#ui-logs-page}
 
-#### Keys
-- **Key Management**: 
-  - Support for cross-filtering and filtering by key hash [PR](https://github.com/BerriAI/litellm/pull/10322)
-  - Fixed key alias reset when resetting filters [PR](https://github.com/BerriAI/litellm/pull/10099)
-  - Fixed table rendering on key creation [PR](https://github.com/BerriAI/litellm/pull/10224)
+- **工作階段記錄**：新增 UI 工作階段記錄 [開始使用](https://docs.litellm.ai/docs/proxy/ui_logs_sessions)
 
-#### UI Logs Page
+#### UI 驗證與安全性 {#ui-authentication--security}
+- **必須驗證**：現在所有儀表板頁面都需要驗證 [PR](https://github.com/BerriAI/litellm/pull/10229)
+- **SSO 修正**：修正 SSO 使用者登入無效權杖錯誤 [PR](https://github.com/BerriAI/litellm/pull/10298)
+- [BETA] **加密權杖**：將 UI 轉為使用加密權杖 [PR](https://github.com/BerriAI/litellm/pull/10302)
+- **權杖到期**：支援透過重新導向至登入頁面來重新整理權杖（修正過期權杖會顯示空白頁面的問題） [PR](https://github.com/BerriAI/litellm/pull/10250)
 
-- **Session Logs**: Added UI Session Logs [Get Started](https://docs.litellm.ai/docs/proxy/ui_logs_sessions)
+#### UI 一般修正 {#ui-general-fixes}
+- **修正 UI 閃爍**：處理儀表板中的 UI 閃爍問題 [PR](https://github.com/BerriAI/litellm/pull/10261)
+- **改良術語**：改善 Keys 和 Tools 頁面上的載入與無資料狀態 [PR](https://github.com/BerriAI/litellm/pull/10253)
+- **Azure 模型支援**：修正編輯 Azure 公開模型名稱以及在建立後變更模型名稱的問題 [PR](https://github.com/BerriAI/litellm/pull/10249)
+- **團隊模型選擇器**：修正團隊模型選擇的錯誤 [PR](https://github.com/BerriAI/litellm/pull/10171)
 
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
 
-#### UI Authentication & Security
-- **Required Authentication**: Authentication now required for all dashboard pages [PR](https://github.com/BerriAI/litellm/pull/10229)
-- **SSO Fixes**: Fixed SSO user login invalid token error [PR](https://github.com/BerriAI/litellm/pull/10298)
-- [BETA] **Encrypted Tokens**: Moved UI to encrypted token usage [PR](https://github.com/BerriAI/litellm/pull/10302)
-- **Token Expiry**: Support token refresh by re-routing to login page (fixes issue where expired token would show a blank page) [PR](https://github.com/BerriAI/litellm/pull/10250)
+- **Datadog**：
+    1. 修正 Datadog LLM 可觀測性記錄 [開始使用](https://docs.litellm.ai/docs/proxy/logging#datadog), [PR](https://github.com/BerriAI/litellm/pull/10206)
+- **Prometheus / Grafana**： 
+    1. 啟用 LiteLLM Grafana Template 上的資料來源選擇 [開始使用](https://docs.litellm.ai/docs/proxy/prometheus#-litellm-maintained-grafana-dashboards-), [PR](https://github.com/BerriAI/litellm/pull/10257)
+- **AgentOps**： 
+    1. 新增 AgentOps 整合 [開始使用](https://docs.litellm.ai/docs/observability/agentops_integration), [PR](https://github.com/BerriAI/litellm/pull/9685)
+- **Arize**： 
+    1. 新增 Arize 與 Phoenix 整合缺少的屬性 [開始使用](https://docs.litellm.ai/docs/observability/arize_integration), [PR](https://github.com/BerriAI/litellm/pull/10215)
 
-#### UI General fixes
-- **Fixed UI Flicker**: Addressed UI flickering issues in Dashboard [PR](https://github.com/BerriAI/litellm/pull/10261)
-- **Improved Terminology**: Better loading and no-data states on Keys and Tools pages [PR](https://github.com/BerriAI/litellm/pull/10253)
-- **Azure Model Support**: Fixed editing Azure public model names and changing model names after creation [PR](https://github.com/BerriAI/litellm/pull/10249)
-- **Team Model Selector**: Bug fix for team model selection [PR](https://github.com/BerriAI/litellm/pull/10171)
+## 一般 Proxy 改進 {#general-proxy-improvements}
 
+- **快取**：修正快取計算 cache key 時未將 `thinking` 或 `reasoning_effort` 納入考量的問題 [PR](https://github.com/BerriAI/litellm/pull/10140)
+- **模型群組**：修正使用者在 model_info 中設定 model_group 時的處理問題 [PR](https://github.com/BerriAI/litellm/pull/10191)
+- **透傳端點**：確保 `PassthroughStandardLoggingPayload` 會連同 method、URL、request/response body 一併記錄 [PR](https://github.com/BerriAI/litellm/pull/10194)
+- **修正 SQL 注入**：修正 spend_management_endpoints.py 中潛在的 SQL injection 漏洞 [PR](https://github.com/BerriAI/litellm/pull/9878)
 
-## Logging / Guardrail Integrations
+## Helm {#helm}
 
-- **Datadog**:
-    1. Fixed Datadog LLM observability logging [Get Started](https://docs.litellm.ai/docs/proxy/logging#datadog), [PR](https://github.com/BerriAI/litellm/pull/10206)
-- **Prometheus / Grafana**: 
-    1. Enable datasource selection on LiteLLM Grafana Template [Get Started](https://docs.litellm.ai/docs/proxy/prometheus#-litellm-maintained-grafana-dashboards-), [PR](https://github.com/BerriAI/litellm/pull/10257)
-- **AgentOps**: 
-    1. Added AgentOps Integration [Get Started](https://docs.litellm.ai/docs/observability/agentops_integration), [PR](https://github.com/BerriAI/litellm/pull/9685)
-- **Arize**: 
-    1. Added missing attributes for Arize & Phoenix Integration [Get Started](https://docs.litellm.ai/docs/observability/arize_integration), [PR](https://github.com/BerriAI/litellm/pull/10215)
+- 修正 migration job 上的 serviceAccountName [PR](https://github.com/BerriAI/litellm/pull/10258)
 
+## 完整變更記錄 {#full-changelog}
 
-## General Proxy Improvements
-
-- **Caching**: Fixed caching to account for `thinking` or `reasoning_effort` when calculating cache key [PR](https://github.com/BerriAI/litellm/pull/10140)
-- **Model Groups**: Fixed handling for cases where user sets model_group inside model_info [PR](https://github.com/BerriAI/litellm/pull/10191)
-- **Passthrough Endpoints**: Ensured `PassthroughStandardLoggingPayload` is logged with method, URL, request/response body [PR](https://github.com/BerriAI/litellm/pull/10194)
-- **Fix SQL Injection**: Fixed potential SQL injection vulnerability in spend_management_endpoints.py [PR](https://github.com/BerriAI/litellm/pull/9878)
-
-
-
-## Helm
-
-- Fixed serviceAccountName on migration job [PR](https://github.com/BerriAI/litellm/pull/10258)
-
-## Full Changelog
-
-The complete list of changes can be found in the [GitHub release notes](https://github.com/BerriAI/litellm/compare/v1.67.0-stable...v1.67.4-stable).
+完整的變更清單可於 [GitHub release notes](https://github.com/BerriAI/litellm/compare/v1.67.0-stable...v1.67.4-stable) 中找到。

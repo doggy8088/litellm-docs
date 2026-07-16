@@ -1,5 +1,5 @@
 ---
-title: "v1.89.2 - Cost Tracking & Model-List Fixes"
+title: "v1.89.2 - 成本追蹤與模型清單修正"
 slug: "v1-89-2"
 date: 2026-06-17T19:22:38
 authors:
@@ -18,17 +18,17 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info Update: no performance regression found
+:::info 更新：未發現效能回退
 
-An earlier version of this note flagged a potential throughput regression. We investigated and could not confirm or reproduce any regression in the released version. The one report we received came from a deployment running custom code on top of what we shipped, and our testing points to those changes, not LiteLLM, as the likely cause.
+先前這則說明的版本曾標示可能有吞吐量回退。我們已進行調查，且無法在已發布版本中確認或重現任何回退。我們收到的唯一回報來自一個在我們所發布內容之上執行自訂程式碼的部署，而我們的測試顯示，較可能的原因是那些變更，而非 LiteLLM。
 
-Correctness and error rates were never affected. If you're on this version, there's nothing you need to do.
+正確性與錯誤率從未受到影響。若您使用的是此版本，無需採取任何行動。
 
-We're still monitoring incoming reports and will update this note if anything changes.
+我們仍在持續監控傳入的回報，若有任何變化，會更新這則說明。
 
 :::
 
-## Deploy this version
+## 以此版本部署 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -53,18 +53,18 @@ pip install litellm==1.89.2
 </TabItem>
 </Tabs>
 
-`v1.89.2` is a patch release on top of [`v1.89.1`](/release_notes/v1.89.1/v1-89-1). It hardens cost tracking around `service_tier`, corrects `/v1/models` listing for team and BYOK setups, and tightens vector-store access and OTEL error reporting.
+`v1.89.2` 是建構在 [`v1.89.1`](/release_notes/v1.89.1/v1-89-1) 之上的修補版釋出。它強化了 `service_tier` 周邊的成本追蹤，修正了團隊與 BYOK 設定中的 `/v1/models` 列出問題，並加強向量儲存區存取與 OTEL 錯誤回報。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(cost): stop a non-string `service_tier` from silently dropping cost tracking - [PR #30690](https://github.com/BerriAI/litellm/pull/30690)
-- fix(anthropic): price and surface the response `service_tier` in cost tracking - [PR #30558](https://github.com/BerriAI/litellm/pull/30558)
-- fix(proxy): list the public team model name in `/v1/models` - [PR #30588](https://github.com/BerriAI/litellm/pull/30588)
-- feat(proxy): add an opt-in `healthy_only` filter to `GET /v1/models` - [PR #30130](https://github.com/BerriAI/litellm/pull/30130)
-- fix(proxy): resolve list-files credentials from team BYOK deployments - [PR #30495](https://github.com/BerriAI/litellm/pull/30495)
-- fix(proxy): allow internal roles to access vector store CRUD routes - [PR #30503](https://github.com/BerriAI/litellm/pull/30503)
-- fix(otel): record the full error message on the standard exception event in OTEL v2 - [PR #30380](https://github.com/BerriAI/litellm/pull/30380)
+- fix(cost): 停止非字串的 `service_tier` 在不發出任何提示下導致成本追蹤被忽略 - [PR #30690](https://github.com/BerriAI/litellm/pull/30690)
+- fix(anthropic): 在成本追蹤中為回應 `service_tier` 計價並顯示 - [PR #30558](https://github.com/BerriAI/litellm/pull/30558)
+- fix(proxy): 在 `/v1/models` 中列出公開的團隊模型名稱 - [PR #30588](https://github.com/BerriAI/litellm/pull/30588)
+- feat(proxy): 新增可選加入的 `healthy_only` 篩選器至 `GET /v1/models` - [PR #30130](https://github.com/BerriAI/litellm/pull/30130)
+- fix(proxy): 從團隊 BYOK 部署解析 list-files 憑證 - [PR #30495](https://github.com/BerriAI/litellm/pull/30495)
+- fix(proxy): 允許內部角色存取 vector store CRUD 路由 - [PR #30503](https://github.com/BerriAI/litellm/pull/30503)
+- fix(otel): 在 OTEL v2 的標準例外事件上記錄完整錯誤訊息 - [PR #30380](https://github.com/BerriAI/litellm/pull/30380)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.89.1...v1.89.2

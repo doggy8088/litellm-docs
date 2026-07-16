@@ -2,27 +2,27 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Getting Started Tutorial
+# 入門教學 {#getting-started-tutorial}
 
-End-to-End tutorial for LiteLLM Proxy to:
-- Add an Azure OpenAI model
-- Make a successful /chat/completion call
-- Generate a virtual key
-- Set RPM limit on virtual key
+LiteLLM Proxy 的端到端教學，用於：
+- 新增 Azure OpenAI 模型
+- 成功發出 /chat/completion 請求
+- 產生虛擬金鑰
+- 設定虛擬金鑰的 RPM 限制
 
-## Quick Install (Recommended for local / beginners)
+## 快速安裝（建議給本機／初學者） {#quick-install-recommended-for-local--beginners}
 
-New to LiteLLM? This is the easiest way to get started locally. One command installs LiteLLM and walks you through setup interactively — no config files to write by hand.
+如果您剛接觸 LiteLLM，這是最簡單的本機上手方式。一個指令即可安裝 LiteLLM，並以互動式方式引導您完成設定，無需手動撰寫設定檔。
 
-### 1. Install
+### 1. 安裝 {#1-install}
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install.sh | sh
 ```
 
-This detects your OS, installs `litellm[proxy]`, and drops you straight into the setup wizard.
+這會偵測您的作業系統、安裝 `litellm[proxy]`，並直接進入設定精靈。
 
-### 2. Follow the wizard
+### 2. 依照精靈指示操作 {#2-follow-the-wizard}
 
 ```
 $ litellm --setup
@@ -50,15 +50,15 @@ $ litellm --setup
   ❯ Start the proxy now? (Y/n):
 ```
 
-The wizard walks you through:
-1. Pick your LLM providers (OpenAI, Anthropic, Azure, Bedrock, Gemini, Ollama)
-2. Enter API keys for each provider
-3. Set a port and master key (or accept the defaults)
-4. Config is saved to `./litellm_config.yaml` and the proxy starts immediately
+精靈會引導您完成：
+1. 選擇您的 LLM 提供者（OpenAI、Anthropic、Azure、Bedrock、Gemini、Ollama）
+2. 輸入每個提供者的 API 金鑰
+3. 設定連接埠與主金鑰（或接受預設值）
+4. 設定會儲存至 `./litellm_config.yaml`，且 proxy 會立即啟動
 
-### 3. Make a call
+### 3. 發出請求 {#3-make-a-call}
 
-Your proxy is running on `http://0.0.0.0:4000`. Test it:
+您的 proxy 正在 `http://0.0.0.0:4000` 上執行。請進行測試：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -70,15 +70,15 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-:::tip Already have uv installed?
-You can skip the curl install and run `litellm --setup` directly after `uv tool install 'litellm[proxy]'`.
+:::tip 已安裝 uv？
+您可以略過 curl 安裝，並在 `uv tool install 'litellm[proxy]'` 後直接執行 `litellm --setup`。
 :::
 
 ---
 
-## Pre-Requisites 
+## 前置需求  {#pre-requisites}
 
-Choose your install method. **Docker Compose** users complete their full setup inside the tab and are done. **Docker** and **LiteLLM CLI** users continue with the steps below the tabs.
+請選擇您的安裝方式。**Docker Compose** 使用者會在分頁內完成完整設定，之後就結束。**Docker** 與 **LiteLLM CLI** 使用者則請繼續依照下方分頁下方的步驟操作。
 
 <Tabs>
 
@@ -88,7 +88,7 @@ Choose your install method. **Docker Compose** users complete their full setup i
 docker pull docker.litellm.ai/berriai/litellm:latest
 ```
 
-[**See all docker images**](https://github.com/orgs/BerriAI/packages)
+[**查看所有 docker 映像**](https://github.com/orgs/BerriAI/packages)
 
 </TabItem>
 
@@ -98,33 +98,33 @@ docker pull docker.litellm.ai/berriai/litellm:latest
 $ uv tool install 'litellm[proxy]'
 ```
 
-:::warning Requires Python 3.10+
-LiteLLM 1.84.0 and newer require Python 3.10 or higher (`requires-python >=3.10`). `uv tool install` and the `install.sh` script above handle this for you by provisioning a compatible Python automatically. A bare `pip install 'litellm[proxy]'` does not; on Python 3.9 pip silently resolves down to the last release that still allowed 3.9, which is 1.83.9, with no error. If you pinned to an old version unexpectedly, check `python --version` and upgrade to 3.10+ (or use uv), then reinstall
+:::warning 需要 Python 3.10+
+LiteLLM 1.84.0 及更新版本需要 Python 3.10 或更高版本（`requires-python >=3.10`）。`uv tool install` 與上方的 `install.sh` 腳本會自動提供相容的 Python，因此可替您處理這件事。單獨的 `pip install 'litellm[proxy]'` 不會；在 Python 3.9 下，pip 會默默解析到最後一個仍允許 3.9 的版本，也就是 1.83.9，且不會報錯。如果您意外被鎖定到舊版本，請檢查 `python --version`，並升級至 3.10+（或使用 uv），然後重新安裝
 :::
 
 </TabItem>
 
-<TabItem value="docker-compose" label="Docker Compose (Proxy + DB)">
+<TabItem value="docker-compose" label="Docker Compose（Proxy + DB）">
 
-Docker Compose bundles LiteLLM with a Postgres database. Follow the steps below — the proxy will be fully running by the end.
+Docker Compose 會將 LiteLLM 與 Postgres 資料庫一起打包。請依照下方步驟操作——到最後 proxy 就會完整執行。
 
-### Step 1 — Pull the LiteLLM database image
+### 步驟 1 — 下載 LiteLLM 資料庫映像 {#step-1--pull-the-litellm-database-image}
 
-LiteLLM provides a dedicated `litellm-database` image for proxy deployments that connect to Postgres.
+LiteLLM 提供專用的 `litellm-database` 映像，供連接至 Postgres 的 proxy 部署使用。
 
 ```bash
 docker pull ghcr.io/berriai/litellm-database:latest
 ```
 
-See all available tags on the [GitHub Container Registry](https://github.com/BerriAI/litellm/pkgs/container/litellm-database).
+所有可用標籤請見 [GitHub Container Registry](https://github.com/BerriAI/litellm/pkgs/container/litellm-database)。
 
 ---
 
-### Step 2 — Set up a database
+### 步驟 2 — 設定資料庫 {#step-2--set-up-a-database}
 
-Complete all three config files **before** running `docker compose up`. The proxy server will not start correctly if any of these are missing.
+請在執行 `docker compose up` 之前完成所有三個設定檔。若其中任何一個缺失，proxy 伺服器都無法正確啟動。
 
-#### 2.1 — Get `docker-compose.yml` and create `.env`
+#### 2.1 — 取得 `docker-compose.yml` 並建立 `.env` {#21--get-docker-composeyml-and-create-env}
 
 ```bash
 # Get the docker compose file
@@ -143,9 +143,9 @@ echo 'AZURE_API_BASE="https://openai-***********/"' >> .env
 echo 'AZURE_API_KEY="your-azure-api-key"' >> .env
 ```
 
-#### 2.2 — Create `config.yaml`
+#### 2.2 — 建立 `config.yaml` {#22--create-configyaml}
 
-The default `docker-compose.yml` starts a Postgres container at `db:5432`. Your `config.yaml` must include `database_url` pointing to it:
+預設的 `docker-compose.yml` 會在 `db:5432` 啟動一個 Postgres 容器。您的 `config.yaml` 必須包含指向它的 `database_url`：
 
 ```yaml
 model_list:
@@ -162,12 +162,12 @@ general_settings:
 ```
 
 :::tip
-`database_url` enables virtual keys, spend tracking, and the UI. Replace it with your [Supabase](https://supabase.com/) or [Neon](https://neon.tech/) connection string if you prefer a managed database.
+`database_url` 可啟用虛擬金鑰、支出追蹤與 UI。若您偏好代管資料庫，請將其替換為您的 [Supabase](https://supabase.com/) 或 [Neon](https://neon.tech/) 連線字串。
 :::
 
-#### 2.3 — Create `prometheus.yml`
+#### 2.3 — 建立 `prometheus.yml` {#23--create-prometheusyml}
 
-This file **must exist as a file** before `docker compose up`. If it is missing, Docker auto-creates it as an empty directory and the Prometheus container fails to start.
+在執行 `docker compose up` 之前，此檔案**必須以檔案形式存在**。如果缺少，Docker 會自動將其建立為空目錄，而 Prometheus 容器會無法啟動。
 
 ```yaml
 global:
@@ -180,7 +180,7 @@ scrape_configs:
       - targets: ["litellm:4000"]
 ```
 
-Also verify that the `config.yaml` volume mount and `--config` flag are **not commented out** in `docker-compose.yml`:
+也請確認 `config.yaml` volume mount 與 `--config` 旗標在 `docker-compose.yml` 中**沒有被註解掉**：
 
 ```yaml
 services:
@@ -192,20 +192,20 @@ services:
 ```
 
 :::warning
-All three files (`.env`, `config.yaml`, `prometheus.yml`) must be present before running `docker compose up`. See [Troubleshooting](#troubleshooting) if you run into issues.
+在執行 `docker compose up` 之前，三個檔案（`.env`、`config.yaml`、`prometheus.yml`）都必須存在。如果遇到問題，請參閱[疑難排解](#troubleshooting)。
 :::
 
 ---
 
-### Step 3 — Start the proxy server and test it
+### 步驟 3 — 啟動 proxy 伺服器並進行測試 {#step-3--start-the-proxy-server-and-test-it}
 
-After `config.yaml`, `prometheus.yml`, and `.env` are complete, start the proxy:
+在 `config.yaml`、`prometheus.yml` 與 `.env` 完成後，啟動 proxy：
 
 ```bash
 docker compose up
 ```
 
-Once running, test it with a curl request:
+啟動後，使用 curl 請求進行測試：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -217,7 +217,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-**Expected response:**
+**預期回應：**
 
 ```json
 {
@@ -258,29 +258,29 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 ---
 
-### Optional — Navigate to the LiteLLM UI and generate a virtual key
+### 選用 — 前往 LiteLLM UI 並產生虛擬金鑰 {#optional--navigate-to-the-litellm-ui-and-generate-a-virtual-key}
 
-Open [http://localhost:4000/ui](http://localhost:4000/ui) in your browser and log in with your master key (`sk-1234`).
+在瀏覽器中開啟 [http://localhost:4000/ui](http://localhost:4000/ui)，並使用您的主金鑰（`sk-1234`）登入。
 
-Navigate to **Virtual Keys** and click **+ Create New Key**:
+前往 **虛擬金鑰**，然後點選 **+ 建立新金鑰**：
 
-<Image img={require('../../img/litellm_ui_create_key.png')} alt="LiteLLM UI — Create Virtual Key" />
+<Image img={require('../../img/litellm_ui_create_key.png')} alt="LiteLLM UI — 建立虛擬金鑰" />
 
-Virtual keys let you track spend, set rate limits, and control model access per user or team.
+虛擬金鑰可讓您追蹤支出、設定速率限制，並依使用者或團隊控制模型存取權。
 
 </TabItem>
 
 </Tabs>
 
-:::note Docker Compose users
-Your setup is complete — the steps below are for **Docker** and **LiteLLM CLI** users only.
+:::note Docker Compose 使用者
+您的設定已完成——下方步驟僅供 **Docker** 與 **LiteLLM CLI** 使用者使用。
 :::
 
 ---
 
-## Step 1 — Add a model
+## 步驟 1 — 新增模型 {#step-1--add-a-model}
 
-Control LiteLLM Proxy with a `config.yaml` file. Create one with your Azure model:
+使用 `config.yaml` 檔案控制 LiteLLM Proxy。請建立一個包含您的 Azure 模型的檔案：
 
 ```yaml
 model_list:
@@ -293,36 +293,33 @@ model_list:
 ```
 ---
 
-### Model List Specification
+### 模型清單規格 {#model-list-specification}
 
-You can read more about how model resolution works in the [Model Configuration](#understanding-model-configuration) section.
+您可以在[模型設定](#understanding-model-configuration)章節中進一步了解模型解析的運作方式。
 
-- **`model_name`** (`str`) - This field should contain the name of the model as received.
-- **`litellm_params`** (`dict`) [See All LiteLLM Params](https://github.com/BerriAI/litellm/blob/559a6ad826b5daef41565f54f06c739c8c068b28/litellm/types/router.py#L222)
-    - **`model`** (`str`) - Specifies the model name to be sent to `litellm.acompletion` / `litellm.aembedding`, etc. This is the identifier used by LiteLLM to route to the correct model + provider logic on the backend. 
-    - **`api_key`** (`str`) - The API key required for authentication. It can be retrieved from an environment variable using `os.environ/`.
-    - **`api_base`** (`str`) - The API base for your azure deployment.
-    - **`api_version`** (`str`) - The API Version to use when calling Azure's OpenAI API. Get the latest Inference API version [here](https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation?source=recommendations#latest-preview-api-releases).
-
+- **`model_name`**（`str`）- 此欄位應包含收到的模型名稱。
+- **`litellm_params`**（`dict`）[查看所有 LiteLLM 參數](https://github.com/BerriAI/litellm/blob/559a6ad826b5daef41565f54f06c739c8c068b28/litellm/types/router.py#L222)
+    - **`model`**（`str`）- 指定要傳送給 `litellm.acompletion` / `litellm.aembedding` 等的模型名稱。這是 LiteLLM 用來在後端路由至正確模型與提供者邏輯的識別碼。 
+    - **`api_key`**（`str`）- 驗證所需的 API 金鑰。可使用 `os.environ/` 從環境變數取得。
+    - **`api_base`**（`str`）- 您的 azure 部署的 API 基底位址。
+    - **`api_version`**（`str`）- 呼叫 Azure 的 OpenAI API 時要使用的 API 版本。請在[這裡](https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-deprecation?source=recommendations#latest-preview-api-releases)取得最新的 Inference API 版本。
 
 ---
 
-### Useful Links
-- [**All Supported LLM API Providers (OpenAI/Bedrock/Vertex/etc.)**](../providers/)
-- [**Full Config.Yaml Spec**](./configs.md)
-- [**Pass provider-specific params**](../completion/provider_specific_params.md#proxy-usage)
+### 實用連結 {#useful-links}
+- [**所有支援的 LLM API 提供者（OpenAI/Bedrock/Vertex 等）**](../providers/)
+- [**完整 Config.Yaml 規格**](./configs.md)
+- [**傳遞特定提供者參數**](../completion/provider_specific_params.md#proxy-usage)
 
+## 2. 成功發出 /chat/completion 請求  {#2-make-a-successful-chatcompletion-call}
 
-## 2. Make a successful /chat/completion call 
+LiteLLM Proxy 與 OpenAI 100% 相容。請透過 `/chat/completions` 路由測試您的 azure 模型。
 
-LiteLLM Proxy is 100% OpenAI-compatible. Test your azure model via the `/chat/completions` route.
+### 2.1 啟動 Proxy  {#21-start-proxy}
 
-### 2.1 Start Proxy 
-
-Save your config.yaml from step 1. as `litellm_config.yaml`.
+將步驟 1 的 config.yaml 儲存為 `litellm_config.yaml`。
 
 <Tabs>
-
 
 <TabItem value="docker" label="Docker">
 
@@ -348,10 +345,9 @@ $ litellm --config /app/config.yaml --detailed_debug
 
 </TabItem>
 
-
 </Tabs>
 
-Confirm your config was loaded correctly — you should see this in the logs:
+確認您的設定已正確載入——您應該會在記錄中看到這些內容：
 
 ```
 Loaded config YAML (api_key and environment_variables are not shown):
@@ -361,9 +357,9 @@ Loaded config YAML (api_key and environment_variables are not shown):
       "model_name": ...
 ```
 
-### 2.2 Make Call 
+### 2.2 發出請求  {#22-make-call}
 
-LiteLLM Proxy is 100% OpenAI-compatible. Test your model via `/chat/completions`:
+LiteLLM Proxy 與 OpenAI 100% 相容。請透過 `/chat/completions` 測試您的模型：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -384,7 +380,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -449,25 +445,24 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
+### 實用連結 {#useful-links-1}
+- [所有支援的 LLM API 提供者（OpenAI/Bedrock/Vertex 等）](../providers/)
+- [透過 OpenAI SDK、Langchain 等呼叫 LiteLLM Proxy](./user_keys.md#request-format)
+- [所有 API 端點 Swagger](https://litellm-api.up.railway.app/#/chat%2Fcompletions)
+- [其他／非 Chat Completion 端點](../embedding/supported_embedding.md)
+- [VertexAI、Bedrock 等的透傳](../pass_through/vertex_ai.md)
 
-### Useful Links
-- [All Supported LLM API Providers (OpenAI/Bedrock/Vertex/etc.)](../providers/)
-- [Call LiteLLM Proxy via OpenAI SDK, Langchain, etc.](./user_keys.md#request-format)
-- [All API Endpoints Swagger](https://litellm-api.up.railway.app/#/chat%2Fcompletions)
-- [Other/Non-Chat Completion Endpoints](../embedding/supported_embedding.md)
-- [Pass-through for VertexAI, Bedrock, etc.](../pass_through/vertex_ai.md)
+## 選用：產生虛擬金鑰 {#optional-generate-a-virtual-key}
 
-## Optional: Generate a virtual key
+透過虛擬金鑰追蹤支出並控制 proxy 的模型存取權。
 
-Track spend and control model access via virtual keys for the proxy.
+### 前置條件 — 設定資料庫 {#prerequisite--set-up-a-database}
 
-### Prerequisite — Set up a database
-
-:::note Docker Compose users
-Your Postgres container is already running — skip ahead to [Create Key w/ RPM Limit](#create-key-w-rpm-limit) below.
+:::note Docker Compose 使用者
+您的 Postgres 容器已在執行中——請直接跳至下方的[建立具 RPM 限制的金鑰](#create-key-w-rpm-limit)。
 :::
 
-**Docker / LiteLLM CLI users** — you need a Postgres database (e.g. [Supabase](https://supabase.com/), [Neon](https://neon.tech/), or self-hosted). Add `general_settings` to your `config.yaml`:
+**Docker / LiteLLM CLI 使用者** — 您需要一個 Postgres 資料庫（例如 [Supabase](https://supabase.com/)、[Neon](https://neon.tech/)，或自行架設）。將 `general_settings` 加入您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -483,35 +478,35 @@ general_settings:
   database_url: "postgresql://<user>:<password>@<host>:<port>/<dbname>" # 👈 KEY CHANGE
 ```
 
-Save config.yaml as `litellm_config.yaml` before continuing.
+在繼續之前，請將 config.yaml 儲存為 `litellm_config.yaml`。
 
-You must finish this setup before starting the proxy server.
+您必須在啟動 proxy server 之前完成此設定。
 
 ---
 
-**What is `general_settings`?**
+**什麼是 `general_settings`？**
 
-These are settings for the LiteLLM Proxy Server. 
+這些是 LiteLLM Proxy Server 的設定。 
 
-See All General Settings [here](https://docs.litellm.ai/docs/proxy/config_settings).
+請參閱所有一般設定 [這裡](https://docs.litellm.ai/docs/proxy/config_settings)。
 
 1. **`master_key`** (`str`)
-   - **Description**: 
-     - Set a `master key`, this is your Proxy Admin key - you can use this to create other keys (🚨 must start with `sk-`).
-   - **Usage**: 
-     - **Set on config.yaml** set your master key under `general_settings:master_key`, example - 
+   - **說明**： 
+     - 設定一個 `master key`，這是您的 Proxy 管理金鑰 — 您可以用它來建立其他金鑰（🚨 必須以 `sk-` 開頭）。
+   - **用法**： 
+     - **在 config.yaml 中設定**：將您的 master key 設在 `general_settings:master_key` 下方，範例 — 
         `master_key: sk-1234`
-     - **Set env variable** set `LITELLM_MASTER_KEY`
+     - **設定環境變數**：設定 `LITELLM_MASTER_KEY`
 
 2. **`database_url`** (str)
-   - **Description**: 
-     - Set a `database_url`, this is the connection to your Postgres DB, which is used by litellm for generating keys, users, teams.
-   - **Usage**: 
-     - **Set on config.yaml** set your `database_url` under `general_settings:database_url`, example - 
+   - **說明**： 
+     - 設定一個 `database_url`，這是連線到您的 Postgres DB，用於 litellm 產生金鑰、使用者、團隊。
+   - **用法**： 
+     - **在 config.yaml 中設定**：將您的 `database_url` 設在 `general_settings:database_url` 下方，範例 — 
         `database_url: "postgresql://..."`
-     - Set `DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname>` in your env 
+     - 在您的環境中設定 `DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname>`
 
-### Start Proxy
+### 啟動 Proxy {#start-proxy}
 
 ```bash
 docker run \
@@ -523,9 +518,9 @@ docker run \
     --config /app/config.yaml --detailed_debug
 ```
 
-### Create Key w/ RPM Limit
+### 建立具有 RPM 限制的金鑰 {#create-key-w-rpm-limit}
 
-Create a key with `rpm_limit: 1`. This will only allow 1 request per minute for calls to proxy with this key.
+建立一個具有 `rpm_limit: 1` 的金鑰。這將只允許使用此金鑰對 proxy 的請求每分鐘 1 次。
 
 ```bash 
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -536,9 +531,9 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-[**See full API Spec**](https://litellm-api.up.railway.app/#/key%20management/generate_key_fn_key_generate_post)
+[**查看完整 API 規格**](https://litellm-api.up.railway.app/#/key%20management/generate_key_fn_key_generate_post)
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -546,11 +541,11 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 }
 ```
 
-### Test it!
+### 測試看看！ {#test-it}
 
-**Use the virtual key you just created.**
+**使用您剛建立的虛擬金鑰。**
 
-1st call - Expect to work! 
+第 1 次呼叫 - 預期會成功！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -571,7 +566,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -581,12 +576,11 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }
 ```
 
-2nd call - Expect to fail! 
+第 2 次呼叫 - 預期會失敗！ 
 
-**Why did this call fail?**
+**為什麼這次呼叫失敗？**
 
-We set the virtual key's requests per minute (RPM) limit to 1. This has now been crossed.
-
+我們已將虛擬金鑰的每分鐘請求數（RPM）限制設為 1。現在這個限制已被超過。
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -607,7 +601,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -620,20 +614,20 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }
 ```
 
-### Useful Links 
+### 實用連結  {#useful-links-2}
 
-- [Creating Virtual Keys](./virtual_keys.md)
-- [Key Management API Endpoints Swagger](https://litellm-api.up.railway.app/#/key%20management)
-- [Set Budgets / Rate Limits per key/user/teams](./users.md)
-- [Dynamic TPM/RPM Limits for keys](./team_budgets.md#dynamic-tpmrpm-allocation)
+- [建立虛擬金鑰](./virtual_keys.md)
+- [金鑰管理 API 端點 Swagger](https://litellm-api.up.railway.app/#/key%20management)
+- [為每個金鑰/使用者/團隊設定預算 / 速率限制](./users.md)
+- [金鑰的動態 TPM/RPM 限制](./team_budgets.md#dynamic-tpmrpm-allocation)
 
-## Key Concepts
+## 核心概念 {#key-concepts}
 
-This section explains key concepts on LiteLLM AI Gateway.
+本節說明 LiteLLM AI Gateway 的核心概念。
 
-### Understanding Model Configuration
+### 了解模型設定 {#understanding-model-configuration}
 
-For this config.yaml example:
+以下是這個 config.yaml 範例：
 
 ```yaml
 model_list:
@@ -645,7 +639,7 @@ model_list:
       api_version: "2025-01-01-preview" # [OPTIONAL] litellm uses the latest azure api_version by default
 ```
 
-**How Model Resolution Works:**
+**模型解析運作方式：**
 
 ```
 Client Request                LiteLLM Proxy                 Provider API
@@ -667,7 +661,7 @@ POST /chat/completions
                                                       POST /deployments/my_azure_deployment/...
 ```
 
-**Breaking Down the `model` Parameter under `litellm_params`:**
+**拆解 `model` 參數在 `litellm_params` 下的作用：**
 
 ```yaml
 model_list:
@@ -681,7 +675,7 @@ model_list:
                └─────────────────▶ Provider that LiteLLM routes to
 ```
 
-**Visual Breakdown:**
+**視覺化拆解：**
 
 ```
 model: azure/my_azure_deployment
@@ -694,17 +688,17 @@ model: azure/my_azure_deployment
                              (azure, openai, anthropic, bedrock, etc.)
 ```
 
-**Key Concepts:**
+**核心概念：**
 
-- **`model_name`**: The alias your client uses to call the model. This is what you send in your API requests (e.g., `gpt-4o`).
+- **`model_name`**：您的用戶端用來呼叫模型的別名。這是您在 API 請求中傳送的內容（例如，`gpt-4o`）。
 
-- **`model` (in litellm_params)**: Format is `<provider>/<model-identifier>`
-  - **Provider** (before `/`): Routes to the correct LLM provider (e.g., `azure`, `openai`, `anthropic`, `bedrock`)
-  - **Model identifier** (after `/`): The actual model/deployment name sent to that provider's API
+- **`model`（在 litellm_params 中）**：格式為 `<provider>/<model-identifier>`
+  - **提供者**（在 `/` 之前）：路由到正確的 LLM 提供者（例如，`azure`、`openai`、`anthropic`、`bedrock`）
+  - **模型識別碼**（在 `/` 之後）：傳送給該提供者 API 的實際模型/部署名稱
 
-**Advanced Configuration Examples:**
+**進階設定範例：**
 
-For custom OpenAI-compatible endpoints (e.g., vLLM, Ollama, custom deployments):
+針對自訂的 OpenAI 相容端點（例如 vLLM、Ollama、自訂部署）：
 
 ```yaml
 model_list:
@@ -715,7 +709,7 @@ model_list:
       api_key: "sk-1234"
 ```
 
-**Breaking down complex model paths:**
+**拆解複雜的模型路徑：**
 
 ```
 model: openai/nvidia/llama-3.2-nv-embedqa-1b-v2
@@ -727,9 +721,9 @@ model: openai/nvidia/llama-3.2-nv-embedqa-1b-v2
          └──────────────────────▶ Provider (openai = OpenAI-compatible API)
 ```
 
-The key point: Everything after the first `/` is passed as-is to the provider's API.
+重點是：第一個 `/` 之後的所有內容都會原封不動地傳遞給提供者的 API。
 
-**Common Patterns:**
+**常見模式：**
 
 ```yaml
 model_list:
@@ -760,45 +754,45 @@ model_list:
 ```
 
 
-## Troubleshooting 
+## 疑難排解  {#troubleshooting}
 
-### `prometheus.yml` mount error — "not a directory"
+### `prometheus.yml` 掛載錯誤 — 「不是目錄」 {#prometheusyml-mount-error--not-a-directory}
 
-If you see:
+如果您看到：
 
 ```bash
 Error: cannot create subdirectories in ".../prometheus.yml": not a directory
 ```
 
-Docker created `prometheus.yml` as an **empty directory** instead of a file. This happens when the file is missing at `docker compose up` time.
+Docker 將 `prometheus.yml` 建立為一個**空目錄**而不是檔案。這種情況發生在檔案於 `docker compose up` 時不存在。
 
-Fix it:
-Then create the file (see [Step 2.3 — Create `prometheus.yml`](#23--create-prometheusyml)) and run `docker compose up` again.
+修正方式：
+然後建立該檔案（請參閱 [步驟 2.3 — 建立 `prometheus.yml`](#23--create-prometheusyml)），並再次執行 `docker compose up`。
 ```bash
 rm -rf prometheus.yml
 ```
 
-Then create the file (see [Step 2.4](#step-24--create-prometheusyml)) and run `docker compose up` again.
+然後建立該檔案（請參閱 [步驟 2.4](#step-24--create-prometheusyml)），並再次執行 `docker compose up`。
 
-### Non-root docker image?
+### 非 root docker 映像檔？ {#non-root-docker-image}
 
-If you need to run the docker image as a non-root user, use [this](https://github.com/BerriAI/litellm/pkgs/container/litellm-non_root).
+如果您需要以非 root 使用者執行 docker 映像檔，請使用 [這個](https://github.com/BerriAI/litellm/pkgs/container/litellm-non_root)。
 
-### SSL Verification Issue / Connection Error.
+### SSL 驗證問題 / 連線錯誤。 {#ssl-verification-issue--connection-error}
 
-If you see 
+如果您看到 
 
 ```bash
 ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1006)
 ```
 
-OR
+或
 
 ```bash
 Connection Error.
 ```
 
-You can disable ssl verification with: 
+您可以透過以下方式停用 ssl 驗證： 
 
 ```yaml
 model_list:
@@ -814,10 +808,9 @@ litellm_settings:
 ```
 
 
-### (DB) All connection attempts failed 
+### （DB）所有連線嘗試都失敗  {#db-all-connection-attempts-failed}
 
-
-If you see:
+如果您看到：
 
 ```
 httpx.ConnectError: All connection attempts failed                                                                        
@@ -826,27 +819,27 @@ ERROR:    Application startup failed. Exiting.
 3:21:43 - LiteLLM Proxy:ERROR: utils.py:2207 - Error getting LiteLLM_SpendLogs row count: All connection attempts failed 
 ```
 
-This might be a DB permission issue. 
+這可能是 DB 權限問題。 
 
-1. Validate db user permission issue 
+1. 驗證 db 使用者權限問題 
 
-Try creating a new database. 
+嘗試建立一個新資料庫。 
 
 ```bash
 STATEMENT: CREATE DATABASE "litellm"
 ```
 
-If you get:
+如果您得到：
 
 ```
 ERROR: permission denied to create 
 ```
 
-This indicates you have a permission issue. 
+這表示您有權限問題。 
 
-2. Grant permissions to your DB user
+2. 授予您的 DB 使用者權限
 
-It should look something like this:
+看起來應該像這樣：
 
 ```
 psql -U postgres
@@ -856,26 +849,26 @@ psql -U postgres
 CREATE DATABASE litellm;
 ```
 
-On CloudSQL, this is:
+在 CloudSQL 上，這是：
 
 ```
 GRANT ALL PRIVILEGES ON DATABASE litellm TO your_username;
 ```
 
 
-**What is `litellm_settings`?**
+**什麼是 `litellm_settings`？**
 
-LiteLLM Proxy uses the [LiteLLM Python SDK](https://docs.litellm.ai/docs/routing) for handling LLM API calls. 
+LiteLLM Proxy 使用 [LiteLLM Python SDK](https://docs.litellm.ai/docs/routing) 來處理 LLM API 呼叫。 
 
-`litellm_settings` are module-level params for the LiteLLM Python SDK (equivalent to doing `litellm.<some_param>` on the SDK). You can see all params [here](https://github.com/BerriAI/litellm/blob/208fe6cb90937f73e0def5c97ccb2359bf8a467b/litellm/__init__.py#L114)
+`litellm_settings` 是 LiteLLM Python SDK 的模組層級參數（等同於在 SDK 上執行 `litellm.<some_param>`）。您可以在 [這裡](https://github.com/BerriAI/litellm/blob/208fe6cb90937f73e0def5c97ccb2359bf8a467b/litellm/__init__.py#L114) 查看所有參數
 
-## Support & Talk with founders
+## 支援與創辦人對談 {#support--talk-with-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
 
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- [Community Slack 💭](https://www.litellm.ai/support)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- [社群 Slack 💭](https://www.litellm.ai/support)
 
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
 
-[![Chat on WhatsApp](https://img.shields.io/static/v1?label=Chat%20on&message=WhatsApp&color=success&logo=WhatsApp&style=flat-square)](https://wa.link/huol9n) [![Chat on Discord](https://img.shields.io/static/v1?label=Chat%20on&message=Discord&color=blue&logo=Discord&style=flat-square)](https://discord.gg/wuPM9dRgDw) 
+[![在 WhatsApp 上聊天](https://img.shields.io/static/v1?label=Chat%20on&message=WhatsApp&color=success&logo=WhatsApp&style=flat-square)](https://wa.link/huol9n) [![在 Discord 上聊天](https://img.shields.io/static/v1?label=Chat%20on&message=Discord&color=blue&logo=Discord&style=flat-square)](https://discord.gg/wuPM9dRgDw)

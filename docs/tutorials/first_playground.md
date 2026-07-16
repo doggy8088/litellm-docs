@@ -1,27 +1,27 @@
-# Create your first LLM playground
+# 建立您的第一個 LLM playground {#create-your-first-llm-playground}
 import Image from '@theme/IdealImage';
 
-Create a playground to **evaluate multiple LLM Providers in less than 10 minutes**. If you want to see this in prod, check out our [website](https://litellm.ai/).
+建立一個 playground，以便在不到 10 分鐘內**評估多個 LLM 提供者**。如果您想在正式環境中查看這一點，請參閱我們的[網站](https://litellm.ai/)。
 
-**What will it look like?**
+**它會長什麼樣子？**
 <Image
   img={require('../../img/litellm_streamlit_playground.png')}
   alt="streamlit_playground"
   style={{ maxWidth: '75%', height: 'auto' }}
 />
 
-**How will we do this?**: We'll build <u>the server</u> and connect it to our template frontend, ending up with a working playground UI by the end!
+**我們要怎麼做？**：我們會建立<u>伺服器</u>，並將它連接到我們的範本前端，最後在結束時得到一個可運作的 playground UI！
 
 :::info
 
- Before you start, make sure you have followed the [environment-setup](./installation) guide. Please note, that this tutorial relies on you having API keys from at least 1 model provider (E.g. OpenAI). 
+ 在開始之前，請確認您已遵循 [environment-setup](./installation) 指南。請注意，本教學依賴您至少擁有 1 個模型提供者的 API 金鑰（例如 OpenAI）。
 :::
 
-## 1. Quick start 
+## 1. 快速開始 {#1-quick-start}
 
-Let's make sure our keys are working. Run this script in any environment of your choice (e.g. [Google Colab](https://colab.research.google.com/#create=true)).
+讓我們先確認金鑰可正常運作。請在您選擇的任何環境中執行這段程式（例如 [Google Colab](https://colab.research.google.com/#create=true)）。
 
-🚨 Don't forget to replace the placeholder key values with your keys!
+🚨 別忘了將預留位置的金鑰值替換成您的金鑰！
 
 ```python 
 uv add litellm
@@ -48,15 +48,15 @@ response = completion("command-nightly", messages)
 response = completion("j2-mid", messages)
 ```
 
-## 2. Set-up Server
+## 2. 設定伺服器 {#2-set-up-server}
 
-Let's build a basic Flask app as our backend server. We'll give it a specific route for our completion calls.  
+讓我們先建立一個基本的 Flask 應用程式作為後端伺服器。我們會為 completion 請求設定一個特定路由。  
 
-**Notes**:
-* 🚨 Don't forget to replace the placeholder key values with your keys!
-* `completion_with_retries`: LLM API calls can fail in production. This function wraps the normal litellm completion() call with [tenacity](https://tenacity.readthedocs.io/en/latest/) to retry the call in case it fails. 
+**注意**：
+* 🚨 別忘了將預留位置的金鑰值替換成您的金鑰！
+* `completion_with_retries`：LLM API 請求在正式環境中可能會失敗。這個函式會用 [tenacity](https://tenacity.readthedocs.io/en/latest/) 封裝一般的 litellm completion() 呼叫，以便在失敗時重試。
 
-LiteLLM specific snippet:
+LiteLLM 特定片段：
 
 ```python 
 import os
@@ -81,7 +81,7 @@ def api_completion():
     return response
 ```
 
-The complete code:
+完整程式碼如下：
 
 ```python 
 import os
@@ -119,13 +119,13 @@ if __name__ == '__main__':
     serve(app, host="0.0.0.0", port=4000, threads=500)
 ```
 
-### Let's test it
-Start the server:
+### 讓我們測試一下 {#lets-test-it}
+啟動伺服器：
 ```python 
 python main.py
 ```
 
-Run this curl command to test it:
+執行這個 curl 指令來測試：
 ```curl
 curl -X POST localhost:4000/chat/completions \
 -H 'Content-Type: application/json' \
@@ -138,50 +138,49 @@ curl -X POST localhost:4000/chat/completions \
 }'
 ```
 
-This is what you should see
+您應該會看到這樣的結果
 
 <Image img={require('../../img/test_python_server_2.png')} alt="python_code_sample_2" />
 
-## 3. Connect to our frontend template
+## 3. 連接到我們的前端範本 {#3-connect-to-our-frontend-template}
 
-### 3.1 Download template
+### 3.1 下載範本 {#31-download-template}
 
-For our frontend, we'll use [Streamlit](https://streamlit.io/) - this enables us to build a simple python web-app.
+前端我們會使用 [Streamlit](https://streamlit.io/)——這讓我們能夠建立一個簡單的 Python 網頁應用程式。
 
-Let's download the playground template we (LiteLLM) have created: 
+讓我們下載 LiteLLM 為您建立的 playground 範本：
 
 ```zsh
 git clone https://github.com/BerriAI/litellm_playground_fe_template.git
 ```
 
-### 3.2 Run it
+### 3.2 執行它 {#32-run-it}
 
-Make sure our server from [step 2](#2-set-up-server) is still running at port 4000
+請確認 [步驟 2](#2-set-up-server) 的伺服器仍在 4000 埠執行
 
 :::info
 
- If you used another port, no worries - just make sure you change [this line](https://github.com/BerriAI/litellm_playground_fe_template/blob/411bea2b6a2e0b079eb0efd834886ad783b557ef/app.py#L7) in your playground template's app.py
+ 如果您使用其他埠，沒問題——只要確認您有在 playground 範本的 app.py 中更改[這一行](https://github.com/BerriAI/litellm_playground_fe_template/blob/411bea2b6a2e0b079eb0efd834886ad783b557ef/app.py#L7)
 :::
 
-Now let's run our app: 
+現在讓我們執行應用程式：
 
 ```zsh
 cd litellm_playground_fe_template && streamlit run app.py
 ```
 
-If you're missing Streamlit - just uv add it (or check out their [installation guidelines](https://docs.streamlit.io/library/get-started/installation#install-streamlit-on-macoslinux))
+如果您沒有安裝 Streamlit——只要使用 uv add 加上它即可（或查看他們的[安裝指南](https://docs.streamlit.io/library/get-started/installation#install-streamlit-on-macoslinux)）
 
 ```zsh
 uv add streamlit
 ```
 
-This is what you should see: 
+您應該會看到這樣的結果：
 <Image img={require('../../img/litellm_streamlit_playground.png')} alt="streamlit_playground" />
 
+# 恭喜 🚀 {#congratulations-}
 
-# Congratulations 🚀 
+您已建立您的第一個 LLM Playground——具備可呼叫 50+ 個 LLM API 的能力。
 
-You've created your first LLM Playground - with the ability to call 50+ LLM APIs. 
-
-Next Steps: 
-* [Check out the full list of LLM Providers you can now add](https://docs.litellm.ai/docs/providers)
+下一步：
+* [查看您現在可以新增的完整 LLM 提供者清單](https://docs.litellm.ai/docs/providers)

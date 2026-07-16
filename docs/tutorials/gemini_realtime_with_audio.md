@@ -1,10 +1,10 @@
-# Call Gemini Realtime API with Audio Input/Output 
+# 使用音訊輸入/輸出呼叫 Gemini Realtime API  {#call-gemini-realtime-api-with-audio-inputoutput}
 
 :::info
-Requires LiteLLM Proxy v1.70.1+
+需要 LiteLLM Proxy v1.70.1+
 :::
 
-1. Setup config.yaml for LiteLLM Proxy 
+1. 為 LiteLLM Proxy 設定 config.yaml
 
 ```yaml
 model_list:
@@ -15,13 +15,13 @@ model_list:
       mode: realtime
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy
 
 ```bash
 litellm-proxy start
 ```
 
-3. Run test script 
+3. 執行測試腳本
 
 ```python
 import asyncio
@@ -133,4 +133,3 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-

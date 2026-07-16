@@ -1,25 +1,25 @@
-# Bedrock (boto3) SDK
+# Bedrock（boto3）SDK {#bedrock-boto3-sdk}
 
-Pass-through endpoints for Bedrock - call provider-specific endpoint, in native format (no translation).
+Bedrock 的透傳端點 - 直接呼叫提供者特定端點，使用原生格式（不進行轉換）。
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | For `/invoke` and `/converse` endpoints |
-| Load Balancing | ✅ | You can load balance `/invoke`, `/converse` routes across multiple deployments| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ✅ | |
+| 成本追蹤 | ✅ | 適用於 `/invoke` 和 `/converse` 端點 |
+| 負載平衡 | ✅ | 您可以在多個部署之間對 `/invoke`、`/converse` 路由進行負載平衡| 記錄 | ✅ | 可在所有整合中運作 |
+| 終端使用者追蹤 | ❌ | [如果您需要，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ✅ | |
 
-Just replace `https://bedrock-runtime.{aws_region_name}.amazonaws.com` with `LITELLM_PROXY_BASE_URL/bedrock` 🚀
+只要將 `https://bedrock-runtime.{aws_region_name}.amazonaws.com` 直接替換為 `LITELLM_PROXY_BASE_URL/bedrock` 🚀
 
-## Overview
+## 總覽 {#overview}
 
-LiteLLM supports two ways to call Bedrock endpoints:
+LiteLLM 支援兩種呼叫 Bedrock 端點的方式：
 
-### 1. **Using config.yaml** (Recommended for model endpoints)
+### 1. **使用 config.yaml**（建議用於模型端點） {#1-using-configyaml-recommended-for-model-endpoints}
 
-Define your Bedrock models in `config.yaml` and reference them by name. The proxy handles authentication and routing.
+在 `config.yaml` 中定義您的 Bedrock 模型，並以名稱參照它們。Proxy 會處理驗證與路由。
 
-**Use for**: `/converse`, `/converse-stream`, `/invoke`, `/invoke-with-response-stream`
+**適用於**：`/converse`、`/converse-stream`、`/invoke`、`/invoke-with-response-stream`
 
 ```yaml showLineNumbers
 model_list:
@@ -37,11 +37,11 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse' \
 -d '{"messages": [{"role": "user", "content": [{"text": "Hello"}]}]}'
 ```
 
-### 2. **Direct passthrough** (For non-model endpoints)
+### 2. **直接透傳**（適用於非模型端點） {#2-direct-passthrough-for-non-model-endpoints}
 
-Set AWS credentials via environment variables and call Bedrock endpoints directly.
+透過環境變數設定 AWS 憑證，並直接呼叫 Bedrock 端點。
 
-**Use for**: Guardrails, Knowledge Bases, Agents, and other non-model endpoints
+**適用於**：Guardrails、Knowledge Bases、Agents，以及其他非模型端點
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID=""
@@ -56,15 +56,15 @@ curl "http://0.0.0.0:4000/bedrock/guardrail/my-guardrail-id/version/1/apply" \
 -d '{"contents": [{"text": {"text": "Hello"}}], "source": "INPUT"}'
 ```
 
-Supports **ALL** Bedrock Endpoints (including streaming).
+支援 **所有** Bedrock 端點（包含串流）。
 
-[**See All Bedrock Endpoints**](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html)
+[**查看所有 Bedrock 端點**](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the Bedrock [`/converse` endpoint](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html)
+讓我們呼叫 Bedrock [`/converse` 端點](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html)
 
-1. Create a `config.yaml` file with your Bedrock model
+1. 建立一個含有您的 Bedrock 模型的 `config.yaml` 檔案
 
 ```yaml showLineNumbers
 model_list:
@@ -75,14 +75,14 @@ model_list:
       custom_llm_provider: bedrock
 ```
 
-Set your AWS credentials:
+設定您的 AWS 憑證：
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID=""  # Access key
 export AWS_SECRET_ACCESS_KEY="" # Secret access key
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy 
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -90,9 +90,9 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
-Let's call the Bedrock converse endpoint using the model name from config:
+讓我們使用 config 中的模型名稱呼叫 Bedrock converse 端點：
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse' \
@@ -111,11 +111,11 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse' \
 }'
 ```
 
-## Setup with config.yaml
+## 使用 config.yaml 設定 {#setup-with-configyaml}
 
-Use config.yaml to define Bedrock models and use them via passthrough endpoints.
+使用 config.yaml 定義 Bedrock 模型，並透過透傳端點使用它們。
 
-### 1. Define models in config.yaml
+### 1. 在 config.yaml 中定義模型 {#1-define-models-in-configyaml}
 
 ```yaml showLineNumbers
 model_list:
@@ -132,7 +132,7 @@ model_list:
       custom_llm_provider: bedrock
 ```
 
-### 2. Start proxy with config
+### 2. 使用設定啟動 proxy {#2-start-proxy-with-config}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -140,9 +140,9 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Call Bedrock Converse endpoint
+### 3. 呼叫 Bedrock Converse 端點 {#3-call-bedrock-converse-endpoint}
 
-Use the `model_name` from config in the URL path:
+在 URL 路徑中使用 config 中的 `model_name`：
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/converse' \
@@ -162,9 +162,9 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/converse' \
 }'
 ```
 
-### 4. Call Bedrock Converse Stream endpoint
+### 4. 呼叫 Bedrock Converse Stream 端點 {#4-call-bedrock-converse-stream-endpoint}
 
-For streaming responses, use the `/converse-stream` endpoint:
+對於串流回應，請使用 `/converse-stream` 端點：
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/converse-stream' \
@@ -184,24 +184,24 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/converse-stream'
 }'
 ```
 
-### Supported Bedrock Endpoints with config.yaml
+### 使用 config.yaml 支援的 Bedrock 端點 {#supported-bedrock-endpoints-with-configyaml}
 
-When using models from config.yaml, you can call any Bedrock endpoint:
+使用 config.yaml 中的模型時，您可以呼叫任何 Bedrock 端點：
 
-| Endpoint | Description | Example |
+| 端點 | 說明 | 範例 |
 |----------|-------------|---------|
 | `/model/{model_name}/converse` | Converse API | `http://0.0.0.0:4000/bedrock/model/my-claude-model/converse` |
-| `/model/{model_name}/converse-stream` | Streaming Converse | `http://0.0.0.0:4000/bedrock/model/my-claude-model/converse-stream` |
-| `/model/{model_name}/invoke` | Legacy Invoke API | `http://0.0.0.0:4000/bedrock/model/my-claude-model/invoke` |
-| `/model/{model_name}/invoke-with-response-stream` | Legacy Streaming | `http://0.0.0.0:4000/bedrock/model/my-claude-model/invoke-with-response-stream` |
+| `/model/{model_name}/converse-stream` | 串流 Converse | `http://0.0.0.0:4000/bedrock/model/my-claude-model/converse-stream` |
+| `/model/{model_name}/invoke` | 舊版 Invoke API | `http://0.0.0.0:4000/bedrock/model/my-claude-model/invoke` |
+| `/model/{model_name}/invoke-with-response-stream` | 舊版串流 | `http://0.0.0.0:4000/bedrock/model/my-claude-model/invoke-with-response-stream` |
 
-The proxy automatically resolves the `model_name` to the actual Bedrock model ID and region configured in your `config.yaml`.
+Proxy 會自動將 `model_name` 解析為您在 `config.yaml` 中設定的實際 Bedrock 模型 ID 與區域。
 
-### Load Balancing Across Multiple Deployments
+### 跨多個部署的負載平衡 {#load-balancing-across-multiple-deployments}
 
-Define multiple Bedrock deployments with the same `model_name` to enable automatic load balancing.
+以相同的 `model_name` 定義多個 Bedrock 部署，以啟用自動負載平衡。
 
-#### 1. Define multiple deployments in config.yaml
+#### 1. 在 config.yaml 中定義多個部署 {#1-define-multiple-deployments-in-configyaml}
 
 ```yaml showLineNumbers
 model_list:
@@ -220,7 +220,7 @@ model_list:
       custom_llm_provider: bedrock
 ```
 
-#### 2. Start proxy with config
+#### 2. 使用設定啟動 proxy {#2-start-proxy-with-config-1}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -228,7 +228,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Call the endpoint - requests are automatically load balanced
+#### 3. 呼叫端點 - 請求會自動進行負載平衡 {#3-call-the-endpoint---requests-are-automatically-load-balanced}
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/invoke' \
@@ -246,11 +246,11 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/invoke' \
 }'
 ```
 
-The proxy will automatically distribute requests across both `us-west-2` and `us-east-1` deployments. This works for all Bedrock endpoints: `/invoke`, `/invoke-with-response-stream`, `/converse`, and `/converse-stream`.
+Proxy 會自動在 `us-west-2` 與 `us-east-1` 部署之間分配請求。這適用於所有 Bedrock 端點：`/invoke`、`/invoke-with-response-stream`、`/converse`，以及 `/converse-stream`。
 
-#### Using boto3 SDK with load balancing
+#### 搭配負載平衡使用 boto3 SDK {#using-boto3-sdk-with-load-balancing}
 
-You can also call the load-balanced endpoint using the boto3 SDK:
+您也可以使用 boto3 SDK 呼叫經過負載平衡的端點：
 
 ```python showLineNumbers
 import boto3
@@ -291,25 +291,22 @@ response_body = json.loads(response['body'].read())
 print(response_body['content'][0]['text'])
 ```
 
-The proxy will automatically load balance your boto3 requests across all configured deployments.
+Proxy 會自動在所有已設定的部署之間對您的 boto3 請求進行負載平衡。
 
+## 範例 {#examples}
 
-## Examples
+在 `http://0.0.0.0:4000/bedrock` 之後的任何內容都會被視為提供者特定路由，並相應處理。
 
-Anything after `http://0.0.0.0:4000/bedrock` is treated as a provider-specific route, and handled accordingly.
+重點變更： 
 
-Key Changes: 
-
-| **Original Endpoint**                                | **Replace With**                  |
+| **原始端點**                                | **替換為**                  |
 |------------------------------------------------------|-----------------------------------|
-| `https://bedrock-runtime.{aws_region_name}.amazonaws.com`          | `http://0.0.0.0:4000/bedrock` (LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000")      |
-| `AWS4-HMAC-SHA256..`                                 | `Bearer anything` (use `Bearer LITELLM_VIRTUAL_KEY` if Virtual Keys are setup on proxy)                    |
+| `https://bedrock-runtime.{aws_region_name}.amazonaws.com`          | `http://0.0.0.0:4000/bedrock`（`LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000"`）      |
+| `AWS4-HMAC-SHA256..`                                 | `Bearer anything`（若 Proxy 上已設定 Virtual Keys，請使用 `Bearer LITELLM_VIRTUAL_KEY`）                    |
 
+### **範例 1：Converse API** {#example-1-converse-api}
 
-
-### **Example 1: Converse API**
-
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call}
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/cohere.command-r-v1:0/converse' \
@@ -324,7 +321,7 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/cohere.command-r-v1:0/converse' 
 }'
 ```
 
-#### Direct Bedrock API Call 
+#### 直接 Bedrock API 呼叫  {#direct-bedrock-api-call}
 
 ```bash showLineNumbers
 curl -X POST 'https://bedrock-runtime.us-west-2.amazonaws.com/model/cohere.command-r-v1:0/converse' \
@@ -339,9 +336,9 @@ curl -X POST 'https://bedrock-runtime.us-west-2.amazonaws.com/model/cohere.comma
 }'
 ```
 
-### **Example 2: Apply Guardrail**
+### **範例 2：套用 Guardrail** {#example-2-apply-guardrail}
 
-**Setup**: Set AWS credentials for direct passthrough
+**設定**：為直接透傳設定 AWS 憑證
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID="your-access-key"
@@ -349,7 +346,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 export AWS_REGION_NAME="us-west-2"
 ```
 
-Start proxy:
+啟動 proxy：
 
 ```bash showLineNumbers
 litellm
@@ -357,7 +354,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call-1}
 
 ```bash showLineNumbers
 curl "http://0.0.0.0:4000/bedrock/guardrail/guardrailIdentifier/version/guardrailVersion/apply" \
@@ -370,7 +367,7 @@ curl "http://0.0.0.0:4000/bedrock/guardrail/guardrailIdentifier/version/guardrai
        }'
 ```
 
-#### Direct Bedrock API Call
+#### 直接 Bedrock API 呼叫 {#direct-bedrock-api-call-1}
 
 ```bash showLineNumbers
 curl "https://bedrock-runtime.us-west-2.amazonaws.com/guardrail/guardrailIdentifier/version/guardrailVersion/apply" \
@@ -383,9 +380,9 @@ curl "https://bedrock-runtime.us-west-2.amazonaws.com/guardrail/guardrailIdentif
        }'
 ```
 
-### **Example 3: Query Knowledge Base**
+### **範例 3：查詢 Knowledge Base** {#example-3-query-knowledge-base}
 
-**Setup**: Set AWS credentials for direct passthrough
+**設定**：為直接透傳設定 AWS 憑證
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID="your-access-key"
@@ -393,7 +390,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 export AWS_REGION_NAME="us-west-2"
 ```
 
-Start proxy:
+啟動 proxy：
 
 ```bash showLineNumbers
 litellm
@@ -401,7 +398,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### LiteLLM Proxy Call
+#### LiteLLM Proxy 呼叫 {#litellm-proxy-call-2}
 
 ```bash showLineNumbers
 curl -X POST "http://0.0.0.0:4000/bedrock/knowledgebases/{knowledgeBaseId}/retrieve" \
@@ -422,7 +419,7 @@ curl -X POST "http://0.0.0.0:4000/bedrock/knowledgebases/{knowledgeBaseId}/retri
 }'
 ```
 
-#### Direct Bedrock API Call 
+#### 直接 Bedrock API 呼叫  {#direct-bedrock-api-call-2}
 
 ```bash showLineNumbers
 curl -X POST "https://bedrock-agent-runtime.us-west-2.amazonaws.com/knowledgebases/{knowledgeBaseId}/retrieve" \
@@ -444,16 +441,16 @@ curl -X POST "https://bedrock-agent-runtime.us-west-2.amazonaws.com/knowledgebas
 ```
 
 
-## Advanced - Use with Virtual Keys 
+## 進階 - 搭配 Virtual Keys 使用  {#advanced---use-with-virtual-keys}
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+先決條件
+- [以 DB 設定 proxy](../proxy/virtual_keys.md#setup)
 
-Use this, to avoid giving developers the raw AWS Keys, but still letting them use AWS Bedrock endpoints.
+使用此方法可避免將原始 AWS 金鑰提供給開發人員，但仍讓他們能使用 AWS Bedrock 端點。
 
-### Usage
+### 使用方式 {#usage}
 
-1. Setup environment
+1. 設定環境
 
 ```bash showLineNumbers
 export DATABASE_URL=""
@@ -469,7 +466,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生 virtual key 
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -478,7 +475,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash showLineNumbers
 {
@@ -487,8 +484,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試它！ 
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/cohere.command-r-v1:0/converse' \
@@ -503,11 +499,11 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/cohere.command-r-v1:0/converse' 
 }'
 ```
 
-## Advanced - Bedrock Agents 
+## 進階 - Bedrock Agents  {#advanced---bedrock-agents}
 
-Call Bedrock Agents via LiteLLM proxy
+透過 LiteLLM proxy 呼叫 Bedrock Agents
 
-**Setup**: Set AWS credentials on your LiteLLM proxy server
+**設定**：在您的 LiteLLM proxy server 上設定 AWS 憑證
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID="your-access-key"
@@ -515,7 +511,7 @@ export AWS_SECRET_ACCESS_KEY="your-secret-key"
 export AWS_REGION_NAME="us-west-2"
 ```
 
-Start proxy:
+啟動 proxy：
 
 ```bash showLineNumbers
 litellm
@@ -523,7 +519,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Usage from Python**:
+**Python 使用方式**：
 
 ```python showLineNumbers
 import os 
@@ -557,21 +553,21 @@ for event in response.get("completion"):
 print(completion)
 ```
 
-## Using LangChain AWS SDK with LiteLLM
+## 搭配 LiteLLM 使用 LangChain AWS SDK {#using-langchain-aws-sdk-with-litellm}
 
-You can use the [LangChain AWS SDK](https://python.langchain.com/docs/integrations/chat/bedrock/) with LiteLLM Proxy to get cost tracking, load balancing, and other LiteLLM features.
+您可以將 [LangChain AWS SDK](https://python.langchain.com/docs/integrations/chat/bedrock/) 與 LiteLLM Proxy 搭配使用，以獲得成本追蹤、負載平衡及其他 LiteLLM 功能。
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
-**1. Install LangChain AWS**:
+**1. 安裝 LangChain AWS**：
 
 ```bash showLineNumbers
 uv add langchain-aws
 ```
 
-**2. Setup LiteLLM Proxy**:
+**2. 設定 LiteLLM Proxy**：
 
-Create a `config.yaml`:
+建立一個 `config.yaml`：
 
 ```yaml showLineNumbers
 model_list:
@@ -582,7 +578,7 @@ model_list:
       custom_llm_provider: bedrock
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID="your-access-key"
@@ -593,7 +589,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**3. Use LangChain with LiteLLM**:
+**3. 搭配 LiteLLM 使用 LangChain**：
 
 ```python showLineNumbers
 from langchain_aws import ChatBedrockConverse
@@ -618,9 +614,9 @@ response = llm.invoke(messages)
 print(response.content)
 ```
 
-### Advanced Example: PDF Document Processing with Citations
+### 進階範例：含引用的 PDF 文件處理 {#advanced-example-pdf-document-processing-with-citations}
 
-LangChain AWS SDK supports Bedrock's document processing features. Here's how to use it with LiteLLM:
+LangChain AWS SDK 支援 Bedrock 的文件處理功能。以下是如何將它與 LiteLLM 搭配使用：
 
 ```python showLineNumbers
 import os
@@ -673,30 +669,30 @@ if __name__ == "__main__":
     print(json.dumps(response.content, indent=4))
 ```
 
-### Supported LangChain Features
+### 支援的 LangChain 功能 {#supported-langchain-features}
 
-All LangChain AWS features work with LiteLLM:
+所有 LangChain AWS 功能都可與 LiteLLM 搭配使用：
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Text Generation | ✅ | Full support |
-| Streaming | ✅ | Use `stream()` method |
-| Document Processing | ✅ | PDF, images, etc. |
-| Citations | ✅ | Enable in document config |
-| Tool Use | ✅ | Function calling support |
-| Multi-modal | ✅ | Text + images + documents |
+| 文字生成 | ✅ | 完整支援 |
+| 串流 | ✅ | 使用 `stream()` 方法 |
+| 文件處理 | ✅ | PDF、圖片等 |
+| 引用 | ✅ | 在文件設定中啟用 |
+| 工具使用 | ✅ | 支援函式呼叫 |
+| 多模態 | ✅ | 文字 + 圖片 + 文件 |
 
-### Troubleshooting
+### 疑難排解 {#troubleshooting}
 
-**Issue**: `UnknownOperationException` error
+**問題**：`UnknownOperationException` 錯誤
 
-**Solution**: Make sure you're using the correct endpoint URL format:
-- ✅ Correct: `http://localhost:4000/bedrock`
-- ❌ Wrong: `http://localhost:4000/bedrock/v2`
+**解決方法**：請確保您使用正確的端點 URL 格式：
+- ✅ 正確：`http://localhost:4000/bedrock`
+- ❌ 錯誤：`http://localhost:4000/bedrock/v2`
 
-**Issue**: Authentication errors
+**問題**：驗證錯誤
 
-**Solution**: Ensure your API key is in the correct format:
+**解決方法**：請確認您的 API 金鑰格式正確：
 ```python
 aws_access_key_id="Bearer sk-1234"  # Include "Bearer " prefix
 ```

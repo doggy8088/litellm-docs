@@ -1,17 +1,17 @@
-# /converse
+# /converse {#converse}
 
-Call Bedrock's `/converse` endpoint through LiteLLM Proxy.
+透過 LiteLLM Proxy 呼叫 Bedrock 的 `/converse` 端點。
 
-| Feature | Supported | 
+| 功能 | 支援 |
 |---------|-----------|
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Streaming | ✅ via `/converse-stream` |
-| Load Balancing | ✅ |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 串流 | ✅ 透過 `/converse-stream` |
+| 負載平衡 | ✅ |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers
 model_list:
@@ -24,14 +24,14 @@ model_list:
       custom_llm_provider: bedrock
 ```
 
-Set AWS credentials in your environment:
+在您的環境中設定 AWS 憑證：
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID="your-access-key"
 export AWS_SECRET_ACCESS_KEY="your-secret-key"
 ```
 
-### 2. Start Proxy
+### 2. 啟動 Proxy {#2-start-proxy}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -39,7 +39,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Call /converse endpoint
+### 3. 呼叫 /converse 端點 {#3-call-converse-endpoint}
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse' \
@@ -59,9 +59,9 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse' \
 }'
 ```
 
-## Streaming
+## 串流 {#streaming}
 
-For streaming responses, use `/converse-stream`:
+對於串流回應，請使用 `/converse-stream`：
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse-stream' \
@@ -81,9 +81,9 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-bedrock-model/converse-stream
 }'
 ```
 
-## Load Balancing
+## 負載平衡 {#load-balancing}
 
-Define multiple deployments with the same `model_name` for automatic load balancing:
+定義多個具有相同 `model_name` 的部署，以便自動負載平衡：
 
 ```yaml showLineNumbers
 model_list:
@@ -106,9 +106,9 @@ model_list:
       custom_llm_provider: bedrock
 ```
 
-The proxy automatically distributes requests across both regions.
+Proxy 會自動將請求分散到兩個區域。
 
-## Using boto3 SDK
+## 使用 boto3 SDK {#using-boto3-sdk}
 
 ```python showLineNumbers
 import boto3
@@ -144,8 +144,7 @@ response = bedrock_runtime.converse(
 print(response['output']['message']['content'][0]['text'])
 ```
 
-## More Info
+## 更多資訊 {#more-info}
 
-For complete documentation including Guardrails, Knowledge Bases, and Agents, see:
-- [Full Bedrock Passthrough Docs](./pass_through/bedrock)
-
+如需包含防護欄、知識庫和代理程式的完整文件，請參閱：
+- [完整 Bedrock Passthrough 文件](./pass_through/bedrock)

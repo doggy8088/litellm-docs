@@ -2,18 +2,18 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# MCP Server Submissions
+# MCP 伺服器提交 {#mcp-server-submissions}
 
-LiteLLM supports a submission and approval workflow for MCP servers. Team members can submit MCP servers for admin review — the server is held in a `pending_review` state until an admin approves or rejects it.
+LiteLLM 支援 MCP 伺服器的提交與核准工作流程。團隊成員可以提交 MCP 伺服器供管理員審查——在管理員核准或拒絕之前，該伺服器會保持在 `pending_review` 狀態。
 
-This lets organizations give team members self-service MCP registration without immediately exposing unapproved servers to all users.
+這讓組織能夠讓團隊成員自助註冊 MCP，而不會立即將尚未核准的伺服器暴露給所有使用者。
 
-:::info Related Documentation
-- [MCP Overview](./mcp.md) - Adding and managing MCP servers
-- [MCP Permission Management](./mcp_control.md) - Control MCP access by key, team, or org
+:::info 相關文件
+- [MCP 總覽](./mcp.md) - 新增與管理 MCP 伺服器
+- [MCP 權限管理](./mcp_control.md) - 依金鑰、團隊或組織控制 MCP 存取
 :::
 
-## How It Works
+## 運作方式 {#how-it-works}
 
 ```
 Team member submits MCP server via API
@@ -26,9 +26,9 @@ Approve → server goes "active" and is loaded into the registry
 Reject  → server stays out with optional review notes
 ```
 
-**Prerequisites:**
-- `store_model_in_db: true` must be set in your proxy config (required to persist MCP servers)
-- The submitting user must use a **team-scoped API key** (admin keys bypass the workflow and use `POST /v1/mcp/server` directly)
+**必要條件：**
+- 必須在您的 proxy 設定中設定 `store_model_in_db: true`（為了持久化 MCP 伺服器所必需）
+- 提交的使用者必須使用 **team-scoped API key**（管理員金鑰會繞過此工作流程並直接使用 `POST /v1/mcp/server`）
 
 ```yaml title="config.yaml" showLineNumbers
 general_settings:
@@ -37,9 +37,9 @@ general_settings:
 
 ---
 
-## User: Submit an MCP Server
+## 使用者：提交 MCP 伺服器 {#user-submit-an-mcp-server}
 
-Use a team-scoped API key. Admin keys are rejected at this endpoint — admins should use `POST /v1/mcp/server` directly.
+請使用 team-scoped API key。此端點會拒絕管理員金鑰——管理員應直接使用 `POST /v1/mcp/server`。
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -81,7 +81,7 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-**Response** — the server is created in `pending_review` state:
+**回應** — 伺服器會建立為 `pending_review` 狀態：
 
 ```json
 {
@@ -96,49 +96,49 @@ print(response.json())
 ```
 
 :::note
-The server is **not** accessible to MCP clients yet. It only becomes active after an admin approves it.
+該伺服器尚**無法**供 MCP 用戶端存取。只有在管理員核准後才會啟用。
 :::
 
 ---
 
-## Admin: Review Submissions
+## 管理員：審查提交內容 {#admin-review-submissions}
 
-### Via UI
+### 透過 UI {#via-ui}
 
-Go to **MCP Servers → Submitted MCPs** tab. You'll see:
-- Submission counts: Total Submitted, Pending Review, Active, Rejected
-- Each submission card with server name, description, URL, transport, and submission date
-- **Approve** and **Reject** buttons on each card
+前往 **MCP Servers → Submitted MCPs** 分頁。您會看到：
+- 提交統計：總提交數、待審查、已啟用、已拒絕
+- 每個提交卡片包含伺服器名稱、描述、URL、傳輸方式與提交日期
+- 每張卡片上的 **Approve** 與 **Reject** 按鈕
 
 <Image
   img={require('../static/img/mcp/02_submitted_mcps_tab.png')}
   style={{width: '100%', display: 'block', margin: '1rem 0'}}
 />
 
-**Approving** a server pops a confirmation dialog. Click **Approve** to make it active and load it into the MCP registry immediately.
+**核准** 伺服器會跳出確認對話框。點選 **Approve** 即可讓它啟用，並立即載入 MCP 登錄檔。
 
 <Image
   img={require('../static/img/mcp/04_approve_dialog.png')}
   style={{width: '100%', display: 'block', margin: '1rem 0'}}
 />
 
-After approval, the card badge changes to **Active** and the counters update:
+核准後，卡片徽章會變更為 **Active**，而計數器會更新：
 
 <Image
   img={require('../static/img/mcp/05_after_approve.png')}
   style={{width: '100%', display: 'block', margin: '1rem 0'}}
 />
 
-**Rejecting** opens a dialog with an optional review notes field — useful for explaining why the submission was declined:
+**拒絕** 會開啟一個對話框，並提供可選的審查備註欄位——適合用來說明為何該提交被拒絕：
 
 <Image
   img={require('../static/img/mcp/03_reject_dialog.png')}
   style={{width: '100%', display: 'block', margin: '1rem 0'}}
 />
 
-### Via API
+### 透過 API {#via-api}
 
-Admin or `proxy_admin_viewer` role required.
+需要 Admin 或 `proxy_admin_viewer` 角色。
 
 <Tabs>
 <TabItem value="list" label="List submissions">
@@ -148,7 +148,7 @@ curl http://localhost:4000/v1/mcp/server/submissions \
   -H "Authorization: Bearer $ADMIN_API_KEY"
 ```
 
-Response:
+回應：
 
 ```json
 {
@@ -176,7 +176,7 @@ curl -X PUT http://localhost:4000/v1/mcp/server/{server_id}/approve \
   -H "Authorization: Bearer $ADMIN_API_KEY"
 ```
 
-The server status changes to `active` and it is immediately loaded into the MCP runtime registry.
+伺服器狀態會變更為 `active`，並立即載入 MCP 執行階段登錄檔。
 
 </TabItem>
 <TabItem value="reject" label="Reject">
@@ -188,33 +188,33 @@ curl -X PUT http://localhost:4000/v1/mcp/server/{server_id}/reject \
   -d '{"review_notes": "This URL is not on the approved vendor list."}'
 ```
 
-`review_notes` is optional. The server stays out of the registry.
+`review_notes` 為選填。伺服器會維持不在登錄檔中。
 
 </TabItem>
 </Tabs>
 
 ---
 
-## Approval Status Values
+## 核准狀態值 {#approval-status-values}
 
-| Status | Meaning |
+| 狀態 | 含義 |
 |--------|---------|
-| `pending_review` | Submitted, waiting for admin review. Not accessible to MCP clients. |
-| `active` | Approved. Loaded into the MCP registry and available to clients. |
-| `rejected` | Rejected by admin. Not accessible. May include `review_notes`. |
+| `pending_review` | 已提交，等待管理員審查。MCP 用戶端無法存取。 |
+| `active` | 已核准。已載入 MCP 登錄檔並可供用戶端使用。 |
+| `rejected` | 已被管理員拒絕。無法存取。可能包含 `review_notes`。 |
 
 ---
 
-## FAQ
+## 常見問題 {#faq}
 
-**Can an admin re-approve a rejected server?**
+**管理員可以重新核准已被拒絕的伺服器嗎？**
 
-Yes. Call `PUT /v1/mcp/server/{id}/approve` — the endpoint accepts servers in both `pending_review` and `rejected` status.
+可以。呼叫 `PUT /v1/mcp/server/{id}/approve`——此端點接受處於 `pending_review` 和 `rejected` 狀態的伺服器。
 
-**What happens if a previously-active server is rejected?**
+**如果先前已啟用的伺服器被拒絕，會發生什麼事？**
 
-It is evicted from the runtime registry immediately — clients will no longer see its tools.
+它會立即從執行階段登錄檔中移除——用戶端將不再看到其工具。
 
-**Do I need a special config flag to enable submissions?**
+**是否需要特殊的設定旗標來啟用提交？**
 
-No. The submission endpoints are available by default as long as `store_model_in_db: true` is set. No additional feature flags are required.
+不需要。只要已設定 `store_model_in_db: true`，提交端點預設即可使用。不需要額外的功能旗標。

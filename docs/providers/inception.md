@@ -1,37 +1,37 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Inception
+# Inception {#inception}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | Inception serves the Mercury family of diffusion LLMs (dLLMs). The API is OpenAI-compatible. |
-| Provider Route on LiteLLM | `inception/` (chat), `text-completion-inception/` (fill-in-the-middle) |
-| Link to Provider Doc | [Inception Platform Documentation ↗](https://docs.inceptionlabs.ai/) |
-| Base URL | `https://api.inceptionlabs.ai/v1` |
-| Supported Operations | [`/chat/completions`](#usage---litellm-python-sdk), [`/fim/completions`](#fill-in-the-middle-fim) |
+| 說明 | Inception 提供 Mercury 系列的 diffusion LLM（dLLMs）。此 API 與 OpenAI 相容。 |
+| LiteLLM 上的提供者路由 | `inception/`（chat）、`text-completion-inception/`（fill-in-the-middle） |
+| 提供者文件連結 | [Inception Platform Documentation ↗](https://docs.inceptionlabs.ai/) |
+| 基底 URL | `https://api.inceptionlabs.ai/v1` |
+| 支援的操作 | [`/chat/completions`](#usage---litellm-python-sdk)、[`/fim/completions`](#fill-in-the-middle-fim) |
 
 <br />
 <br />
 
-## Available Models
+## 可用模型 {#available-models}
 
-| Model | Description | Context Window |
+| 模型 | 說明 | 上下文視窗 |
 |-------|-------------|----------------|
-| `inception/mercury-2` | Fast reasoning chat model; supports tool calling and structured outputs | 128,000 tokens |
-| `text-completion-inception/mercury-edit-2` | Code model for fill-in-the-middle (FIM) autocomplete | 32,000 tokens |
+| `inception/mercury-2` | 快速推理聊天模型；支援工具呼叫與結構化輸出 | 128,000 tokens |
+| `text-completion-inception/mercury-edit-2` | 用於 fill-in-the-middle（FIM）自動完成的程式碼模型 | 32,000 tokens |
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["INCEPTION_API_KEY"] = ""  # your Inception API key
 ```
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Inception Non-streaming Completion"
 import os
@@ -51,7 +51,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Inception Streaming Completion"
 import os
@@ -73,9 +73,9 @@ for chunk in response:
     print(chunk)
 ```
 
-### Reasoning Effort and Reasoning Summary
+### 推理努力與推理摘要 {#reasoning-effort-and-reasoning-summary}
 
-Mercury exposes a `reasoning_effort` control with an Inception-specific `instant` value for near real-time responses, alongside the standard `low`, `medium`, and `high`. Set `reasoning_summary=True` to receive a summary of the model's reasoning on the response.
+Mercury 提供一個 `reasoning_effort` 控制項，並具備 Inception 專屬的 `instant` 值，可用於近即時回應；同時也提供標準的 `low`、`medium` 與 `high`。設定 `reasoning_summary=True` 以接收模型在回應中的推理摘要。
 
 ```python showLineNumbers title="Inception Reasoning"
 import os
@@ -94,7 +94,7 @@ print(response.choices[0].message.content)
 print(response.reasoning_summary)  # {"content": "...", "status": "complete"}
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="Inception Function Calling"
 import os
@@ -132,9 +132,9 @@ response = completion(
 print(response)
 ```
 
-### Fill-in-the-Middle (FIM)
+### 中間填補（FIM） {#fill-in-the-middle-fim}
 
-`mercury-edit-2` provides code autocomplete through Inception's `/v1/fim/completions` endpoint. Use `text_completion` with the `text-completion-inception/` route and pass a `prompt` (prefix) plus an optional `suffix`.
+`mercury-edit-2` 透過 Inception 的 `/v1/fim/completions` 端點提供程式碼自動完成。搭配 `text_completion` 與 `text-completion-inception/` 路由使用，並傳入一個 `prompt`（前綴）以及可選的 `suffix`。
 
 ```python showLineNumbers title="Inception FIM"
 import os
@@ -152,7 +152,7 @@ response = text_completion(
 print(response.choices[0].text)
 ```
 
-## Usage - LiteLLM Proxy Server
+## 使用方式 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -166,7 +166,7 @@ model_list:
       api_key: os.environ/INCEPTION_API_KEY
 ```
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
 - `max_tokens`
 - `max_completion_tokens`
@@ -178,12 +178,12 @@ model_list:
 - `stream_options`
 - `response_format`
 
-## Inception-specific Parameters
+## Inception 專屬參數 {#inception-specific-parameters}
 
-These are passed through to the Inception chat API:
+這些參數會轉送到 Inception chat API：
 
 - `reasoning_effort` (`instant` | `low` | `medium` | `high`)
-- `reasoning_summary` (bool) — return a summary of the model's reasoning
-- `reasoning_summary_wait` (bool) — wait for the summary to complete before returning
-- `diffusing` (bool) — stream intermediate denoising steps
-- `realtime` (bool) — optimize for lowest latency
+- `reasoning_summary`（bool）— 傳回模型推理摘要
+- `reasoning_summary_wait`（bool）— 在傳回前等待摘要完成
+- `diffusing`（bool）— 串流中間去噪步驟
+- `realtime`（bool）— 針對最低延遲進行最佳化

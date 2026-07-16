@@ -1,8 +1,8 @@
-# Linkup Search
+# Linkup 搜尋 {#linkup-search}
 
-**Get API Key:** [https://linkup.so](https://linkup.so)
+**取得 API 金鑰：** [https://linkup.so](https://linkup.so)
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Linkup Search"
 import os
@@ -17,9 +17,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -35,7 +35,7 @@ search_tools:
       api_key: os.environ/LINKUP_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/linkup-search \
@@ -55,7 +55,7 @@ curl http://0.0.0.0:4000/v1/search/linkup-search \
   }'
 ```
 
-## Provider-specific Parameters
+## Provider-specific 參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Linkup Search with Provider-specific Parameters"
 import os
@@ -80,23 +80,23 @@ response = search(
 )
 ```
 
-## Features
+## 功能 {#features}
 
-Linkup provides powerful web search with context retrieval capabilities:
+Linkup 提供強大的網頁搜尋與內容擷取能力：
 
-### Search Depth
-Control the precision and speed of your search:
-- `standard` - Returns results faster
-- `deep` - Takes longer but yields more comprehensive results
+### 搜尋深度 {#search-depth}
+控制搜尋的精確度與速度：
+- `standard` - 回傳結果較快
+- `deep` - 需要較長時間，但可產生更全面的結果
 
-### Output Types
-Choose how results are formatted:
-- `searchResults` - Returns a list of search results with URLs and content
-- `sourcedAnswer` - Returns an AI-generated answer with sources
-- `structured` - Returns results in a custom JSON schema format
+### 輸出類型 {#output-types}
+選擇結果的格式：
+- `searchResults` - 回傳包含 URL 與內容的搜尋結果清單
+- `sourcedAnswer` - 回傳附帶來源的 AI 生成答案
+- `structured` - 以自訂 JSON schema 格式回傳結果
 
-### Date Filtering
-Filter results by date range:
+### 日期篩選 {#date-filtering}
+依日期範圍篩選結果：
 ```python
 response = search(
     query="AI developments",
@@ -106,8 +106,8 @@ response = search(
 )
 ```
 
-### Domain Filtering
-Include or exclude specific domains:
+### 網域篩選 {#domain-filtering}
+包含或排除特定網域：
 ```python
 response = search(
     query="research papers",
@@ -117,8 +117,8 @@ response = search(
 )
 ```
 
-### Structured Output
-Get results in a custom JSON schema format:
+### 結構化輸出 {#structured-output}
+以自訂 JSON schema 格式取得結果：
 ```python
 response = search(
     query="Microsoft 2024 revenue",
@@ -128,9 +128,9 @@ response = search(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
-Linkup returns results in the following format:
+Linkup 會以以下格式回傳結果：
 
 ```json
 {
@@ -145,8 +145,7 @@ Linkup returns results in the following format:
 }
 ```
 
-LiteLLM transforms this to the standard `SearchResponse` format:
+LiteLLM 會將其轉換為標準的 `SearchResponse` 格式：
 - `results[].name` → `SearchResult.title`
 - `results[].url` → `SearchResult.url`
 - `results[].content` → `SearchResult.snippet`
-

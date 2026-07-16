@@ -1,46 +1,44 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# RAGFlow
+# RAGFlow {#ragflow}
 
-Litellm supports Ragflow's chat completions APIs
+Litellm 支援 Ragflow 的 chat completions API
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-- ✅ Chat completions
-- ✅ Streaming responses
-- ✅ Both chat and agent endpoints
-- ✅ Multiple credential sources (params, env vars, litellm_params)
-- ✅ OpenAI-compatible API format
+- ✅ 聊天 completions
+- ✅ 串流回應
+- ✅ 聊天與 agent 端點皆支援
+- ✅ 多種認證來源（params、env vars、litellm_params）
+- ✅ 相容 OpenAI 的 API 格式
 
-
-## API Key
+## API 金鑰 {#api-key}
 
 ```python
 # env variable
 os.environ['RAGFLOW_API_KEY']
 ```
 
-## API Base
+## API 基底網址 {#api-base}
 
 ```python
 # env variable
 os.environ['RAGFLOW_API_BASE']
 ```
 
-## Overview
+## 概觀 {#overview}
 
-RAGFlow provides OpenAI-compatible APIs with unique path structures that include chat and agent IDs:
+RAGFlow 提供相容 OpenAI 的 API，且具有包含 chat 與 agent ID 的獨特路徑結構：
 
-- **Chat endpoint**: `/api/v1/chats_openai/{chat_id}/chat/completions`
-- **Agent endpoint**: `/api/v1/agents_openai/{agent_id}/chat/completions`
+- **聊天端點**：`/api/v1/chats_openai/{chat_id}/chat/completions`
+- **Agent 端點**：`/api/v1/agents_openai/{agent_id}/chat/completions`
 
-The model name format embeds the endpoint type and ID:
-- Chat: `ragflow/chat/{chat_id}/{model_name}`
-- Agent: `ragflow/agent/{agent_id}/{model_name}`
+模型名稱格式會內嵌端點類型與 ID：
+- Chat：`ragflow/chat/{chat_id}/{model_name}`
+- Agent：`ragflow/agent/{agent_id}/{model_name}`
 
-
-## Sample Usage - Chat Endpoint
+## 範例用法 - 聊天端點 {#sample-usage---chat-endpoint}
 
 ```python
 from litellm import completion
@@ -56,7 +54,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Agent Endpoint
+## 範例用法 - Agent 端點 {#sample-usage---agent-endpoint}
 
 ```python
 from litellm import completion
@@ -72,9 +70,9 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - With Parameters
+## 範例用法 - 使用參數 {#sample-usage---with-parameters}
 
-You can also pass `api_key` and `api_base` directly as parameters:
+您也可以直接將 `api_key` 和 `api_base` 作為參數傳入：
 
 ```python
 from litellm import completion
@@ -88,7 +86,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 
 ```python
 from litellm import completion
@@ -107,47 +105,47 @@ for chunk in response:
     print(chunk)
 ```
 
-## Model Name Format
+## 模型名稱格式 {#model-name-format}
 
-The model name must follow one of these formats:
+模型名稱必須符合以下其中一種格式：
 
-### Chat Endpoint
+### 聊天端點 {#chat-endpoint}
 ```
 ragflow/chat/{chat_id}/{model_name}
 ```
 
-Example: `ragflow/chat/my-chat-id/gpt-4o-mini`
+範例：`ragflow/chat/my-chat-id/gpt-4o-mini`
 
-### Agent Endpoint
+### Agent 端點 {#agent-endpoint}
 ```
 ragflow/agent/{agent_id}/{model_name}
 ```
 
-Example: `ragflow/agent/my-agent-id/gpt-4o-mini`
+範例：`ragflow/agent/my-agent-id/gpt-4o-mini`
 
-Where:
-- `{chat_id}` or `{agent_id}` is the ID of your chat or agent in RAGFlow
-- `{model_name}` is the actual model name (e.g., `gpt-4o-mini`, `gpt-4o`, etc.)
+其中：
+- `{chat_id}` 或 `{agent_id}` 是您在 RAGFlow 中的 chat 或 agent ID
+- `{model_name}` 是實際的模型名稱（例如 `gpt-4o-mini`、`gpt-4o` 等）
 
-## Configuration Sources
+## 設定來源 {#configuration-sources}
 
-LiteLLM supports multiple ways to provide credentials, checked in this order:
+LiteLLM 支援多種提供認證資訊的方式，並依照以下順序檢查：
 
-1. **Function parameters**: `api_key="..."`, `api_base="..."`
-2. **litellm_params**: `litellm_params={"api_key": "...", "api_base": "..."}`
-3. **Environment variables**: `RAGFLOW_API_KEY`, `RAGFLOW_API_BASE`
-4. **Global litellm settings**: `litellm.api_key`, `litellm.api_base`
+1. **函式參數**：`api_key="..."`、`api_base="..."`
+2. **litellm_params**：`litellm_params={"api_key": "...", "api_base": "..."}`
+3. **環境變數**：`RAGFLOW_API_KEY`、`RAGFLOW_API_BASE`
+4. **全域 litellm 設定**：`litellm.api_key`、`litellm.api_base`
 
-## Usage - LiteLLM Proxy Server
+## 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export RAGFLOW_API_KEY="your-ragflow-api-key"
 export RAGFLOW_API_BASE="http://localhost:9380"
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -178,7 +176,7 @@ $ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -218,27 +216,26 @@ print(response)
 </TabItem>
 </Tabs>
 
-## API Base URL Handling
+## API 基底網址處理 {#api-base-url-handling}
 
-The `api_base` parameter can be provided with or without `/v1` suffix. LiteLLM will automatically handle it:
+`api_base` 參數可帶有或不帶有 `/v1` 後綴。LiteLLM 會自動處理：
 
 - `http://localhost:9380` → `http://localhost:9380/api/v1/chats_openai/{chat_id}/chat/completions`
 - `http://localhost:9380/v1` → `http://localhost:9380/api/v1/chats_openai/{chat_id}/chat/completions`
 - `http://localhost:9380/api/v1` → `http://localhost:9380/api/v1/chats_openai/{chat_id}/chat/completions`
 
-All three formats will work correctly.
+這三種格式都可正常運作。
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-If you encounter errors:
+如果您遇到錯誤：
 
-1. **Invalid model format**: Ensure your model name follows `ragflow/{chat|agent}/{id}/{model_name}` format
-2. **Missing api_base**: Provide `api_base` via parameter, environment variable, or litellm_params
-3. **Connection errors**: Verify your RAGFlow server is running and accessible at the provided `api_base`
+1. **無效的模型格式**：請確認您的模型名稱符合 `ragflow/{chat|agent}/{id}/{model_name}` 格式
+2. **缺少 api_base**：透過參數、環境變數或 litellm_params 提供 `api_base`
+3. **連線錯誤**：驗證您的 RAGFlow 伺服器正在執行，且可透過提供的 `api_base` 存取
 
 :::info
 
-For more information about passing provider-specific parameters, [go here](../completion/provider_specific_params.md)
+如需更多關於傳入 provider-specific 參數的資訊，請[前往此處](../completion/provider_specific_params.md)
 
 :::
-

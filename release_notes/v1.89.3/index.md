@@ -1,5 +1,5 @@
 ---
-title: "v1.89.3 - Guardrails & Cache-Control Fixes"
+title: "v1.89.3 - 防護欄與 Cache-Control 修正"
 slug: "v1-89-3"
 date: 2026-06-20T14:45:08
 authors:
@@ -18,17 +18,17 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info Update: no performance regression found
+:::info 更新：未發現效能回歸
 
-An earlier version of this note flagged a potential throughput regression. We investigated and could not confirm or reproduce any regression in the released version. The one report we received came from a deployment running custom code on top of what we shipped, and our testing points to those changes, not LiteLLM, as the likely cause.
+本說明先前版本曾標示可能有吞吐量回歸。我們已進行調查，無法在已發布版本中確認或重現任何回歸。我們收到的唯一一則回報來自一個在我們提供的內容之上執行自訂程式碼的部署，而我們的測試顯示最可能的原因是那些變更，而不是 LiteLLM。
 
-Correctness and error rates were never affected. If you're on this version, there's nothing you need to do.
+正確性與錯誤率從未受到影響。如果您正在使用此版本，無需採取任何行動。
 
-We're still monitoring incoming reports and will update this note if anything changes.
+我們仍在監控後續回報，若有任何變化，將更新本說明。
 
 :::
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -53,15 +53,15 @@ pip install litellm==1.89.3
 </TabItem>
 </Tabs>
 
-`v1.89.3` is a patch release on top of [`v1.89.2`](/release_notes/v1.89.2/v1-89-2). It backports guardrail correctness fixes (a single pre-call hook for model-level guardrails, no DB re-init on every poll, 400 instead of 500 when AIM blocks a request) and caps Anthropic cache-control injection at the 4-block limit.
+`v1.89.3` 是建置在 [`v1.89.2`](/release_notes/v1.89.2/v1-89-2) 之上的修補版發行。它回補了防護欄正確性修正（針對模型層級防護欄的單次 pre_call hook、每次輪詢時不重新初始化 DB、當 AIM 封鎖請求時回傳 400 而非 500），並將 Anthropic cache-control 注入上限設為 4 個區塊限制。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(integrations): cap Anthropic cache_control injection at 4 blocks - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
-- fix(guardrails): run pre_call hook once for model-level guardrails - [PR #30543](https://github.com/BerriAI/litellm/pull/30543)
-- fix(guardrails): stop re-initializing DB guardrails on every poll - [PR #30542](https://github.com/BerriAI/litellm/pull/30542)
-- fix(guardrails): return 400 not 500 when AIM blocks a request - [PR #30573](https://github.com/BerriAI/litellm/pull/30573)
+- fix(integrations): 將 Anthropic cache_control 注入上限限制為 4 個區塊 - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
+- fix(guardrails): 針對模型層級防護欄僅執行一次 pre_call hook - [PR #30543](https://github.com/BerriAI/litellm/pull/30543)
+- fix(guardrails): 停止在每次輪詢時重新初始化 DB 防護欄 - [PR #30542](https://github.com/BerriAI/litellm/pull/30542)
+- fix(guardrails): 當 AIM 封鎖請求時回傳 400 而非 500 - [PR #30573](https://github.com/BerriAI/litellm/pull/30573)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.89.2...v1.89.3

@@ -1,25 +1,25 @@
-# Google Key Management Service
+# Google 金鑰管理服務 {#google-key-management-service}
 
 :::info
 
-✨ **This is an Enterprise Feature**
+✨ **這是企業版功能**
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業版定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[請點此聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-Use encrypted keys from Google KMS on the proxy
+在 proxy 上使用來自 Google KMS 的加密金鑰
 
-Step 1. Add keys to env 
+步驟 1. 將金鑰加入 env 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/credentials.json"
 export GOOGLE_KMS_RESOURCE_NAME="projects/*/locations/*/keyRings/*/cryptoKeys/*"
 export PROXY_DATABASE_URL_ENCRYPTED=b'\n$\x00D\xac\xb4/\x8e\xc...'
 ```
 
-Step 2: Update Config
+步驟 2: 更新設定
 
 ```yaml
 general_settings:
@@ -28,16 +28,15 @@ general_settings:
   master_key: sk-1234
 ```
 
-Step 3: Start + test proxy
+步驟 3: 啟動 + 測試 proxy
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-And in another terminal
+並在另一個終端機中
 ```
 $ litellm --test 
 ```
 
-[Quick Test Proxy](../proxy/user_keys)
-
+[快速測試 Proxy](../proxy/user_keys)

@@ -2,35 +2,35 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenCode Quickstart
+# OpenCode 快速入門 {#opencode-quickstart}
 
-This tutorial shows how to connect OpenCode to your existing LiteLLM instance and switch between models.
+本教學示範如何將 OpenCode 連接到您現有的 LiteLLM 實例，並在模型之間切換。
 
 :::info 
 
-This integration allows you to use any LiteLLM supported model through OpenCode with centralized authentication, usage tracking, and cost controls.
+此整合可讓您透過 OpenCode 使用任何 LiteLLM 支援的模型，並具備集中式驗證、用量追蹤與成本控管。
 
 :::
 
 <br />
 
-### Video Walkthrough
+### 影片導覽 {#video-walkthrough}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/00791498f1d84e4ba6d7476bd2e1442f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-- LiteLLM already configured and running (e.g., http://localhost:4000)
-- LiteLLM API key
+- 已設定並執行中的 LiteLLM（例如：`http://localhost:4000`）
+- LiteLLM API 金鑰
 
-## Installation
+## 安裝 {#installation}
 
-### Step 1: Install OpenCode
+### 步驟 1：安裝 OpenCode {#step-1-install-opencode}
 
-Choose your preferred installation method:
+請選擇您偏好的安裝方式：
 
 <Tabs>
-<TabItem value="curl" label="One-line install (recommended)">
+<TabItem value="curl" label="單行安裝（建議）">
 
 ```bash
 curl -fsSL https://opencode.ai/install | bash
@@ -53,22 +53,22 @@ brew install sst/tap/opencode
 </TabItem>
 </Tabs>
 
-Verify installation:
+驗證安裝：
 
 ```bash
 opencode --version
 ```
 
-### Step 2: Configure LiteLLM Provider
+### 步驟 2：設定 LiteLLM 提供者 {#step-2-configure-litellm-provider}
 
-Create your OpenCode configuration file. You can place this in different locations depending on your needs:
+建立您的 OpenCode 設定檔。您可以根據需求將其放在不同位置：
 
-**Configuration locations:**
-- **Global**: `~/.config/opencode/opencode.json` (applies to all projects)
-- **Project**: `opencode.json` in your project root (project-specific settings)
-- **Custom**: Set `OPENCODE_CONFIG` environment variable
+**設定位置：**
+- **全域**：`~/.config/opencode/opencode.json`（適用於所有專案）
+- **專案**：位於您專案根目錄中的 `opencode.json`（專案專屬設定）
+- **自訂**：設定 `OPENCODE_CONFIG` 環境變數
 
-Create `~/.config/opencode/opencode.json` (global config):
+建立 `~/.config/opencode/opencode.json`（全域設定）：
 
 ```json
 {
@@ -97,42 +97,42 @@ Create `~/.config/opencode/opencode.json` (global config):
 ```
 
 :::tip
-The keys in the "models" object (e.g., "gpt-4", "claude-3-5-sonnet-20241022") should match the `model_name` values from your LiteLLM configuration. The "name" field provides a friendly display name that will appear as an alias in OpenCode.
+"models" 物件中的鍵（例如 "gpt-4"、"claude-3-5-sonnet-20241022"）應與您 LiteLLM 設定中的 `model_name` 值相符。"name" 欄位提供友善的顯示名稱，將在 OpenCode 中作為別名顯示。
 :::
 
-### Step 3: Connect to LiteLLM Provider
+### 步驟 3：連接到 LiteLLM 提供者 {#step-3-connect-to-litellm-provider}
 
-Launch OpenCode:
+啟動 OpenCode：
 
 ```bash
 opencode
 ```
 
-Add your API key:
+新增您的 API 金鑰：
 
 ```bash
 /connect
 ```
 
-Then:
-- **Enter provider name**: `LiteLLM` (must match the "name" field in your config)
-- **Enter your LiteLLM API key**: Your LiteLLM master key or virtual key
+接著：
+- **輸入提供者名稱**：`LiteLLM`（必須與您設定中的 "name" 欄位相符）
+- **輸入您的 LiteLLM API 金鑰**：您的 LiteLLM 主金鑰或虛擬金鑰
 
-### Step 4: Switch Between Models
+### 步驟 4：在模型之間切換 {#step-4-switch-between-models}
 
-In OpenCode, run:
+在 OpenCode 中執行：
 
 ```bash
 /models
 ```
 
-Select any model from your LiteLLM configuration. OpenCode will route all requests through your LiteLLM instance.
+從您的 LiteLLM 設定中選擇任一模型。OpenCode 會將所有請求透過您的 LiteLLM 實例進行路由。
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Model Parameters
+### 模型參數 {#model-parameters}
 
-You can customize model parameters like context limits:
+您可以自訂模型參數，例如上下文限制：
 
 ```json
 {
@@ -165,12 +165,12 @@ You can customize model parameters like context limits:
 }
 ```
 
-### Multi-Provider Setup
+### 多提供者設定 {#multi-provider-setup}
 
-You can configure multiple LiteLLM instances or mix with other providers:
+您可以設定多個 LiteLLM 實例，或與其他提供者混合使用：
 
 <Tabs>
-<TabItem value="multi-litellm" label="Multiple LiteLLM Instances">
+<TabItem value="multi-litellm" label="多個 LiteLLM 實例">
 
 ```json
 {
@@ -205,7 +205,7 @@ You can configure multiple LiteLLM instances or mix with other providers:
 ```
 
 </TabItem>
-<TabItem value="mixed-providers" label="Mixed Providers">
+<TabItem value="mixed-providers" label="混合提供者">
 
 ```json
 {
@@ -242,9 +242,9 @@ You can configure multiple LiteLLM instances or mix with other providers:
 </TabItem>
 </Tabs>
 
-## Example LiteLLM Configuration
+## LiteLLM 設定範例 {#example-litellm-configuration}
 
-Here's an example LiteLLM `config.yaml` that works well with OpenCode:
+以下是一個與 OpenCode 搭配效果良好的 LiteLLM `config.yaml` 範例：
 
 ```yaml
 model_list:
@@ -272,9 +272,9 @@ model_list:
       api_key: os.environ/DEEPSEEK_API_KEY
 ```
 
-### Dropping OpenCode-specific parameters
+### 捨棄 OpenCode 專用參數 {#dropping-opencode-specific-parameters}
 
-OpenCode sends a `reasoningSummary` parameter with reasoning-capable models such as `gpt-5`. This parameter is not supported by the Chat Completions API and will cause errors. Add `additional_drop_params` to every model entry in your `model_list` that will receive requests from OpenCode with reasoning enabled:
+OpenCode 會對具備推理能力的模型（例如 `gpt-5`）傳送 `reasoningSummary` 參數。此參數不受 Chat Completions API 支援，並會導致錯誤。請將 `additional_drop_params` 加到您所有會接收來自 OpenCode、且已啟用推理請求的模型項目中，於您的 `model_list`：
 
 ```yaml
 model_list:
@@ -285,30 +285,30 @@ model_list:
       additional_drop_params: ["reasoningSummary"]
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**OpenCode not connecting:**
-- Verify your LiteLLM proxy is running: `curl http://localhost:4000/health`
-- Check that the `baseURL` in your OpenCode config matches your LiteLLM instance
-- Ensure the provider name in `/connect` matches exactly with your config
+**OpenCode 無法連線：**
+- 驗證您的 LiteLLM proxy 是否正在執行：`curl http://localhost:4000/health`
+- 檢查您 OpenCode 設定中的 `baseURL` 是否與您的 LiteLLM 實例相符
+- 確保 `/connect` 中的提供者名稱與您的設定完全一致
 
-**Authentication errors:**
-- Verify your LiteLLM API key is correct
-- Check that your LiteLLM instance has authentication properly configured
-- Ensure your API key has access to the models you're trying to use
+**驗證錯誤：**
+- 驗證您的 LiteLLM API 金鑰是否正確
+- 檢查您的 LiteLLM 實例是否已正確設定驗證
+- 確保您的 API 金鑰可存取您嘗試使用的模型
 
-**Model not found:**
-- Ensure the model names in OpenCode config match your LiteLLM `model_name` values
-- Check LiteLLM logs for detailed error messages
-- Verify the models are properly configured in your LiteLLM instance
+**找不到模型：**
+- 確保 OpenCode 設定中的模型名稱與您的 LiteLLM `model_name` 值相符
+- 檢查 LiteLLM 記錄以取得詳細錯誤訊息
+- 驗證模型是否已在您的 LiteLLM 實例中正確設定
 
-**Configuration not loading:**
-- Check the config file path and permissions
-- Validate JSON syntax using a JSON validator
-- Ensure the `$schema` URL is accessible
+**設定未載入：**
+- 檢查設定檔路徑與權限
+- 使用 JSON 驗證器驗證 JSON 語法
+- 確保 `$schema` URL 可存取
 
-**`Unknown parameter: 'reasoningSummary'` error:**
-- OpenCode sends a `reasoningSummary` parameter that is not supported by the Chat Completions API. Add `additional_drop_params: ["reasoningSummary"]` to each affected model entry in your `litellm_params`:
+**`Unknown parameter: 'reasoningSummary'` 錯誤：**
+- OpenCode 會傳送一個 Chat Completions API 不支援的 `reasoningSummary` 參數。請將 `additional_drop_params: ["reasoningSummary"]` 加到您 `litellm_params` 中每個受影響的模型項目：
   ```yaml
   - model_name: gpt-5
     litellm_params:
@@ -317,8 +317,8 @@ model_list:
       additional_drop_params: ["reasoningSummary"]
   ```
 
-## Tips
+## 提示 {#tips}
 
-- Add more models to the config as needed - they'll appear in `/models`
-- Use project-specific configs for different codebases with different model requirements
-- Monitor your LiteLLM proxy logs to see OpenCode requests in real-time
+- 視需要在設定中新增更多模型——它們會顯示在 `/models` 中
+- 對於不同且有不同模型需求的程式碼基底，使用專案專屬設定
+- 監控您的 LiteLLM proxy 記錄，以即時查看 OpenCode 請求

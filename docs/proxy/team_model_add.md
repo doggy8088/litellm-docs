@@ -1,20 +1,19 @@
-# ✨ Allow Teams to Add Models
+# ✨ 允許團隊新增模型 {#-allow-teams-to-add-models}
 
 :::info
 
-This is an Enterprise feature.
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+這是企業版功能。
+[企業版定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[在這裡聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-Allow team to add a their own models/key for that project - so any OpenAI call they make uses their OpenAI key.
+允許團隊為該專案新增自己的模型／金鑰——如此一來，任何他們發出的 OpenAI 呼叫都會使用他們自己的 OpenAI 金鑰。
 
-Useful for teams that want to call their own finetuned models.
+適合想要呼叫自己微調模型的團隊。
 
-## Specify Team ID in `/model/add` endpoint
-
+## 在 `/model/add` 端點指定團隊 ID {#specify-team-id-in-modeladd-endpoint}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/model/new' \
@@ -36,7 +35,7 @@ curl -L -X POST 'http://0.0.0.0:4000/model/new' \
 
 ```
 
-## Test it! 
+## 測試它！ {#test-it}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -54,18 +53,18 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 ```
 
-## Debugging
+## 除錯 {#debugging}
 
-### 'model_name' not found 
+### 找不到 'model_name' {#model_name-not-found}
 
-Check if model alias exists in team table. 
+檢查模型別名是否存在於團隊表中。 
 
 ```bash
 curl -L -X GET 'http://localhost:4000/team/info?team_id=e59e2671-a064-436a-a0fa-16ae96e5a0a1' \
 -H 'Authorization: Bearer sk-******2ql3-sm28WU0tTAmA' \
 ```
 
-**Expected Response:**
+**預期回應：**
 
 ```json
 {
@@ -83,4 +82,3 @@ curl -L -X GET 'http://localhost:4000/team/info?team_id=e59e2671-a064-436a-a0fa-
     },
 }
 ```
-

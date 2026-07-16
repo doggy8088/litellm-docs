@@ -1,38 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AWS Secret Manager
+# AWS Secret Manager {#aws-secret-manager}
 
 :::info
 
-✨ **This is an Enterprise Feature**
+✨ **這是一項企業功能**
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[請點此聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-Store your proxy keys in AWS Secret Manager.
+將您的 proxy 金鑰儲存在 AWS Secret Manager 中。
 
-| Feature | Support | Description |
+| 功能 | 支援 | 說明 |
 |---------|----------|-------------|
-| Reading Secrets | ✅ | Read secrets e.g `OPENAI_API_KEY` |
-| Writing Secrets | ✅ | Store secrets e.g `Virtual Keys` |
+| 讀取 Secrets | ✅ | 讀取 secrets，例如 `OPENAI_API_KEY` |
+| 寫入 Secrets | ✅ | 儲存 secrets，例如 `Virtual Keys` |
 
-## Proxy Usage
+## Proxy 使用方式 {#proxy-usage}
 
-1. Save AWS Credentials in your environment
+1. 將 AWS 憑證儲存在您的環境中
 ```bash
 os.environ["AWS_ACCESS_KEY_ID"] = ""  # Access key
 os.environ["AWS_SECRET_ACCESS_KEY"] = "" # Secret access key
 os.environ["AWS_REGION_NAME"] = "" # us-east-1, us-east-2, us-west-1, us-west-2
 ```
 
-2. Enable AWS Secret Manager in config. 
+2. 在設定中啟用 AWS Secret Manager。 
 
 <Tabs>
-<TabItem value="read_only" label="Read Keys from AWS Secret Manager">
+<TabItem value="read_only" label="從 AWS Secret Manager 讀取金鑰">
 
 ```yaml
 general_settings:
@@ -45,9 +45,9 @@ general_settings:
 
 </TabItem>
 
-<TabItem value="write_only" label="Write Virtual Keys to AWS Secret Manager">
+<TabItem value="write_only" label="將虛擬金鑰寫入 AWS Secret Manager">
 
-This will only store virtual keys in AWS Secret Manager. No keys will be read from AWS Secret Manager.
+這將只會將虛擬金鑰儲存在 AWS Secret Manager 中。不會從 AWS Secret Manager 讀取任何金鑰。
 
 ```yaml
 general_settings:
@@ -62,7 +62,7 @@ general_settings:
       Owner: "AI Platform team"
 ```
 </TabItem>
-<TabItem value="read_and_write" label="Read + Write Keys with AWS Secret Manager">
+<TabItem value="read_and_write" label="使用 AWS Secret Manager 讀取 + 寫入金鑰">
 
 ```yaml
 general_settings:
@@ -78,15 +78,15 @@ general_settings:
 </TabItem>
 </Tabs>
 
-3. Run proxy
+3. 執行 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-## Using K/V pairs in 1 AWS Secret
+## 在 1 個 AWS Secret 中使用 K/V 配對 {#using-kv-pairs-in-1-aws-secret}
 
-You can read multiple keys from a single AWS Secret using the `primary_secret_name` parameter:
+您可以使用 `primary_secret_name` 參數從單一 AWS Secret 讀取多個金鑰：
 
 ```yaml
 general_settings:
@@ -99,7 +99,7 @@ general_settings:
     primary_secret_name: "litellm_secrets" # 👈 Read multiple keys from one JSON secret
 ```
 
-The `primary_secret_name` allows you to read multiple keys from a single AWS Secret as a JSON object. For example, the "litellm_secrets" would contain:
+`primary_secret_name` 可讓您將單一 AWS Secret 中的多個金鑰作為 JSON 物件讀取。例如，「litellm_secrets」將包含：
 
 ```json
 {
@@ -108,13 +108,13 @@ The `primary_secret_name` allows you to read multiple keys from a single AWS Sec
 }
 ```
 
-This reduces the number of AWS Secrets you need to manage.
+這可減少您需要管理的 AWS Secrets 數量。
 
-## IAM Role Assumption
+## IAM 角色假設 {#iam-role-assumption}
 
-Use IAM roles instead of static AWS credentials for better security.
+使用 IAM 角色取代靜態 AWS 憑證，以提升安全性。
 
-### Basic IAM Role
+### 基本 IAM 角色 {#basic-iam-role}
 
 ```yaml
 general_settings:
@@ -126,7 +126,7 @@ general_settings:
     aws_session_name: "litellm-session"
 ```
 
-### Cross-Account Access
+### 跨帳戶存取 {#cross-account-access}
 
 ```yaml
 general_settings:
@@ -138,7 +138,7 @@ general_settings:
     aws_external_id: "unique-external-id"
 ```
 
-### EKS with IRSA
+### 搭配 IRSA 的 EKS {#eks-with-irsa}
 
 ```yaml
 general_settings:
@@ -150,17 +150,14 @@ general_settings:
     aws_web_identity_token: "os.environ/AWS_WEB_IDENTITY_TOKEN_FILE"
 ```
 
-### Configuration Parameters
+### 設定參數 {#configuration-parameters}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `aws_region_name` | AWS region |
-| `aws_role_name` | IAM role ARN to assume |
-| `aws_session_name` | Session name (optional) |
-| `aws_external_id` | External ID for cross-account |
-| `aws_profile_name` | AWS profile from `~/.aws/credentials` |
-| `aws_web_identity_token` | OIDC token path for IRSA |
-| `aws_sts_endpoint` | Custom STS endpoint for VPC |
-
-
-
+| `aws_region_name` | AWS 區域 |
+| `aws_role_name` | 要假設的 IAM 角色 ARN |
+| `aws_session_name` | 工作階段名稱（選用） |
+| `aws_external_id` | 跨帳戶用的外部 ID |
+| `aws_profile_name` | 來自 `~/.aws/credentials` 的 AWS 設定檔 |
+| `aws_web_identity_token` | IRSA 的 OIDC token 路徑 |
+| `aws_sts_endpoint` | VPC 的自訂 STS 端點 |

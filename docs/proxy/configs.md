@@ -2,33 +2,32 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Overview
-Set model list, `api_base`, `api_key`, `temperature` & proxy server settings (`master-key`) on the config.yaml. 
+# 概覽 {#overview}
+在 config.yaml 上設定 model list、`api_base`、`api_key`、`temperature` 與 proxy server settings（`master-key`）。
 
-| Param Name           | Description                                                   |
+| Param Name           | 說明                                                   |
 |----------------------|---------------------------------------------------------------|
-| `model_list`         | List of supported models on the server, with model-specific configs |
-| `router_settings`   | litellm Router settings, example `routing_strategy="least-busy"` [**see all**](./config_settings#router_settings---reference)|
-| `litellm_settings`   | litellm Module settings, example `litellm.drop_params=True`, `litellm.set_verbose=True`, `litellm.api_base`, `litellm.cache` [**see all**](./config_settings#litellm_settings---reference)|
-| `general_settings`   | Server settings, example setting `master_key: sk-my_special_key` [**see all**](./config_settings#general_settings---reference)|
-| `environment_variables`   | Environment Variables example, `REDIS_HOST`, `REDIS_PORT` [**see all**](./config_settings#environment-variables---reference)|
+| `model_list`         | 伺服器上支援的模型清單，包含各模型專屬設定 |
+| `router_settings`   | litellm Router 設定，範例 `routing_strategy="least-busy"` [**查看全部**](./config_settings#router_settings---reference)|
+| `litellm_settings`   | litellm Module 設定，範例 `litellm.drop_params=True`、`litellm.set_verbose=True`、`litellm.api_base`、`litellm.cache` [**查看全部**](./config_settings#litellm_settings---reference)|
+| `general_settings`   | 伺服器設定，範例設定 `master_key: sk-my_special_key` [**查看全部**](./config_settings#general_settings---reference)|
+| `environment_variables`   | 環境變數範例，`REDIS_HOST`、`REDIS_PORT` [**查看全部**](./config_settings#environment-variables---reference)|
 
-**Complete List:** Check the Swagger UI docs on `<your-proxy-url>/#/config.yaml` (e.g. http://0.0.0.0:4000/#/config.yaml), for everything you can pass in the config.yaml.
+**完整清單：** 請查看 `<your-proxy-url>/#/config.yaml` 上的 Swagger UI 文件（例如 http://0.0.0.0:4000/#/config.yaml），以了解您可以在 config.yaml 中傳入的一切內容。
 
+## 快速入門 {#quick-start}
 
-## Quick Start 
+為您的部署設定模型別名。 
 
-Set a model alias for your deployments. 
+在 `config.yaml` 中，model_name 參數是供您的部署使用的面向使用者名稱。 
 
-In the `config.yaml` the model_name parameter is the user-facing name to use for your deployment. 
+在下方的 config 中：
+- `model_name`：從外部用戶端傳給 litellm 的名稱  
+- `litellm_params.model`：傳遞給 litellm.completion() 函式的模型字串
 
-In the config below:
-- `model_name`: the name to pass TO litellm from the external client  
-- `litellm_params.model`: the model string passed to the litellm.completion() function
-
-E.g.: 
-- `model=vllm-models` will route to `openai/facebook/opt-125m`. 
-- `model=gpt-4o` will load balance between `azure/gpt-4o-eu` and `azure/gpt-4o-ca`
+例如： 
+- `model=vllm-models` 會路由到 `openai/facebook/opt-125m`。 
+- `model=gpt-4o` 會在 `azure/gpt-4o-eu` 和 `azure/gpt-4o-ca` 之間進行負載平衡
 
 ```yaml
 model_list:
@@ -78,11 +77,11 @@ general_settings:
 ```
 :::info
 
-For more provider-specific info, [go here](../providers/)
+如需更多與提供者相關的資訊，請[前往此處](../providers/)
 
 :::
 
-#### Step 2: Start Proxy with config
+#### 步驟 2：使用 config 啟動 Proxy {#step-2-start-proxy-with-config}
 
 ```shell
 $ litellm --config /path/to/config.yaml
@@ -90,7 +89,7 @@ $ litellm --config /path/to/config.yaml
 
 :::tip
 
-Run with `--detailed_debug` if you need detailed debug logs 
+如果您需要詳細的除錯記錄，請以 `--detailed_debug` 執行
 
 ```shell
 $ litellm --config /path/to/config.yaml --detailed_debug
@@ -98,13 +97,13 @@ $ litellm --config /path/to/config.yaml --detailed_debug
 
 :::
 
-#### Step 3: Test it
+#### 步驟 3：測試它 {#step-3-test-it}
 
-Sends request to model where `model_name=gpt-4o` on config.yaml. 
+將請求送至模型，其中 `model_name=gpt-4o` 在 config.yaml 中。 
 
-If multiple with `model_name=gpt-4o` does [Load Balancing](https://docs.litellm.ai/docs/proxy/load_balancing)
+如果有多個具有 `model_name=gpt-4o`，則會進行[負載平衡](https://docs.litellm.ai/docs/proxy/load_balancing)
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -121,14 +120,14 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-## LLM configs `model_list`
+## LLM 設定 `model_list` {#llm-configs-model_list}
 
-### Model-specific params (API Base, Keys, Temperature, Max Tokens, Organization, Headers etc.)
-You can use the config to save model-specific information like api_base, api_key, temperature, max_tokens, etc. 
+### 模型專屬參數（API Base、Keys、Temperature、Max Tokens、Organization、Headers 等） {#model-specific-params-api-base-keys-temperature-max-tokens-organization-headers-etc}
+您可以使用 config 來儲存模型專屬資訊，例如 api_base、api_key、temperature、max_tokens 等。 
 
-[**All input params**](https://docs.litellm.ai/docs/completion/input#input-params-1)
+[**所有輸入參數**](https://docs.litellm.ai/docs/completion/input#input-params-1)
 
-**Step 1**: Create a `config.yaml` file
+**步驟 1**：建立一個 `config.yaml` 檔案
 ```yaml
 model_list:
   - model_name: gpt-4-team1
@@ -158,23 +157,22 @@ model_list:
       api_base: your_ollama_api_base
 ```
 
-**Step 2**: Start server with config
+**步驟 2**：使用 config 啟動伺服器
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-**Expected Logs:**
+**預期記錄：**
 
-Look for this line in your console logs to confirm the config.yaml was loaded in correctly.
+請在您的主控台記錄中尋找這一行，以確認 config.yaml 已正確載入。
 ```
 LiteLLM: Proxy initialized with Config, Set models:
 ```
 
-### Embedding Models - Use Sagemaker, Bedrock, Azure, OpenAI, XInference
+### Embedding 模型 - 使用 Sagemaker、Bedrock、Azure、OpenAI、XInference {#embedding-models---use-sagemaker-bedrock-azure-openai-xinference}
 
-See supported Embedding Providers & Models [here](https://docs.litellm.ai/docs/embedding/supported_embedding)
-
+查看支援的 Embedding 提供者與模型 [這裡](https://docs.litellm.ai/docs/embedding/supported_embedding)
 
 <Tabs>
 <TabItem value="bedrock" label="Bedrock Completion/Chat">
@@ -200,7 +198,7 @@ model_list:
 
 <TabItem value="sagemaker" label="Sagemaker, Bedrock Embeddings">
 
-Here's how to route between GPT-J embedding (sagemaker endpoint), Amazon Titan embedding (Bedrock) and Azure OpenAI embedding on the proxy server: 
+以下示範如何在 proxy server 上於 GPT-J embedding（sagemaker endpoint）、Amazon Titan embedding（Bedrock）與 Azure OpenAI embedding 之間路由： 
 
 ```yaml
 model_list:
@@ -224,7 +222,7 @@ general_settings:
 </TabItem>
 
 <TabItem value="Hugging Face emb" label="Hugging Face Embeddings">
-LiteLLM Proxy supports all <a href="https://huggingface.co/models?pipeline_tag=feature-extraction">Feature-Extraction Embedding models</a>.
+LiteLLM Proxy 支援所有 <a href="https://huggingface.co/models?pipeline_tag=feature-extraction">特徵擷取 Embedding 模型</a>。
 
 ```yaml
 model_list:
@@ -274,12 +272,11 @@ model_list:
 
 </TabItem>
 
-
 <TabItem value="xinf" label="XInference">
 
 https://docs.litellm.ai/docs/providers/xinference
 
-**Note add `xinference/` prefix to `litellm_params`: `model` so litellm knows to route to OpenAI**
+**注意：請在 `litellm_params` 前加上 `xinference/` 前綴：`model`，如此 litellm 才知道要路由到 OpenAI**
 
 ```yaml
 model_list:
@@ -293,9 +290,9 @@ model_list:
 
 <TabItem value="openai emb" label="OpenAI Compatible Embeddings">
 
-<p>Use this for calling <a href="https://github.com/xorbitsai/inference">/embedding endpoints on OpenAI Compatible Servers</a>.</p>
+<p>當要呼叫 <a href="https://github.com/xorbitsai/inference">OpenAI Compatible Servers 上的 /embedding 端點</a>時請使用這個。</p>
 
-**Note add `openai/` prefix to `litellm_params`: `model` so litellm knows to route to OpenAI**
+**注意：請在 `litellm_params` 前加上 `openai/` 前綴：`model`，如此 litellm 才知道要路由到 OpenAI**
 
 ```yaml
 model_list:
@@ -308,14 +305,14 @@ model_list:
 </TabItem>
 </Tabs>
 
-#### Start Proxy
+#### 啟動 Proxy {#start-proxy}
 
 ```shell
 litellm --config config.yaml
 ```
 
-#### Make Request
-Sends Request to `bedrock-cohere`
+#### 發出請求 {#make-request}
+將請求傳送至 `bedrock-cohere`
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -332,9 +329,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
-### Multiple OpenAI Organizations 
+### 多個 OpenAI Organization {#multiple-openai-organizations}
 
-Add all openai models across all OpenAI organizations with just 1 model definition 
+只需 1 個 model 定義即可新增跨所有 OpenAI organizations 的所有 openai models
 
 ```yaml
   - model_name: *
@@ -347,9 +344,9 @@ Add all openai models across all OpenAI organizations with just 1 model definiti
        - org-3
 ```
 
-LiteLLM will automatically create separate deployments for each org.
+LiteLLM 會自動為每個 org 建立獨立的 deployment。
 
-Confirm this via 
+請透過以下方式確認
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/model/info' \
@@ -357,25 +354,25 @@ curl --location 'http://0.0.0.0:4000/v1/model/info' \
 --data ''
 ```
 
-### Load Balancing 
+### 負載平衡 {#load-balancing}
 
 :::info
-For more on this, go to [this page](https://docs.litellm.ai/docs/proxy/load_balancing)
+如需更多相關資訊，請前往[此頁面](https://docs.litellm.ai/docs/proxy/load_balancing)
 :::
 
-Use this to call multiple instances of the same model and configure things like [routing strategy](https://docs.litellm.ai/docs/routing#advanced).
+可用來呼叫同一個 model 的多個 instance，並設定如 [routing strategy](https://docs.litellm.ai/docs/routing#advanced) 等內容。
 
-For optimal performance:
-- Set `tpm/rpm` per model deployment. Weighted picks are then based on the established tpm/rpm.
-- Select your optimal routing strategy in `router_settings:routing_strategy`.
+為了達到最佳效能：
+- 針對每個 model deployment 設定 `tpm/rpm`。之後的加權選擇會根據既定的 tpm/rpm。
+- 在 `router_settings:routing_strategy` 中選擇您的最佳 routing strategy。
 
-LiteLLM supports
+LiteLLM 支援
 ```python
 ["simple-shuffle", "least-busy", "usage-based-routing","latency-based-routing"], default="simple-shuffle"`
 ```
 
-When `tpm/rpm` is set + `routing_strategy==simple-shuffle` litellm will use a weighted pick based on set tpm/rpm. **In our load tests setting tpm/rpm for all deployments + `routing_strategy==simple-shuffle` maximized throughput**
-- When using multiple LiteLLM Servers / Kubernetes set redis settings `router_settings:redis_host` etc
+當設定了 `tpm/rpm` + `routing_strategy==simple-shuffle` 時，litellm 會根據設定的 tpm/rpm 使用加權選擇。**在我們的負載測試中，為所有 deployments 設定 tpm/rpm + `routing_strategy==simple-shuffle` 可將吞吐量最大化**
+- 當使用多個 LiteLLM Servers / Kubernetes 時，請設定 redis 設定 `router_settings:redis_host` 等
 
 ```yaml
 model_list:
@@ -423,12 +420,11 @@ router_settings: # router_settings are optional
   redis_port: 1992
 ```
 
-You can view your cost once you set up [Virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys) or [custom_callbacks](https://docs.litellm.ai/docs/proxy/logging)
+在您設定好 [虛擬金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys) 或 [custom_callbacks](https://docs.litellm.ai/docs/proxy/logging) 之後，您就可以檢視成本。
 
+### 從環境載入 API 金鑰／設定值 {#load-api-keys--config-values-from-environment}
 
-### Load API Keys / config values from Environment 
-
-If you have secrets saved in your environment, and don't want to expose them in the config.yaml, here's how to load model-specific keys from the environment. **This works for ANY value on the config.yaml**
+如果您的環境中已儲存機密，且不想在 config.yaml 中暴露它們，以下說明如何從環境中載入特定模型的金鑰。**這適用於 config.yaml 上的任何值**
 
 ```yaml
 os.environ/<YOUR-ENV-VAR> # runs os.getenv("YOUR-ENV-VAR")
@@ -444,15 +440,15 @@ model_list:
       api_key: os.environ/AZURE_NORTH_AMERICA_API_KEY # 👈 KEY CHANGE
 ```
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/c12d6c3fe80e1b5e704d9846b246c059defadce7/litellm/utils.py#L2366)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/c12d6c3fe80e1b5e704d9846b246c059defadce7/litellm/utils.py#L2366)
 
-s/o to [@David Manouchehri](https://www.linkedin.com/in/davidmanouchehri/) for helping with this. 
+感謝 [@David Manouchehri](https://www.linkedin.com/in/davidmanouchehri/) 協助完成這個功能。 
 
-### Centralized Credential Management
+### 集中式憑證管理 {#centralized-credential-management}
 
-Define credentials once and reuse them across multiple models. This helps with:
-- Secret rotation
-- Reducing config duplication
+一次定義認證並在多個模型之間重複使用。這有助於：
+- 機密輪替
+- 減少設定重複
 
 ```yaml
 model_list:
@@ -472,29 +468,27 @@ credential_list:
       custom_llm_provider: "azure"
 ```
 
-#### Key Parameters
-- `credential_name`: Unique identifier for the credential set
-- `credential_values`: Key-value pairs of credentials/secrets (supports `os.environ/` syntax)
-- `credential_info`: Key-value pairs of user provided credentials information.  No key-value pairs are required, but the dictionary must exist.
+#### 主要參數 {#key-parameters}
+- `credential_name`：認證集合的唯一識別碼
+- `credential_values`：認證／機密的鍵值對（支援 `os.environ/` 語法）
+- `credential_info`：使用者提供之認證資訊的鍵值對。雖然不需要任何鍵值對，但該字典必須存在。
 
-### Load API Keys from Secret Managers (Azure Vault, etc)
+### 從密鑰管理服務載入 API 金鑰（Azure Vault 等） {#load-api-keys-from-secret-managers-azure-vault-etc}
 
-[**Using Secret Managers with LiteLLM Proxy**](../secret)
+[**在 LiteLLM Proxy 中使用 Secret Managers**](../secret)
 
+### 為模型設定支援的環境 - `production`, `staging`, `development` {#set-supported-environments-for-a-model---production-staging-development}
 
-### Set Supported Environments for a model - `production`, `staging`, `development`
+如果您想控制在特定 litellm 環境中曝光哪個模型，請使用這個設定
 
-Use this if you want to control which model is exposed on a specific litellm environment
-
-Supported Environments:
+支援的環境：
 - `production`
 - `staging`
 - `development`
 
-1. Set `LITELLM_ENVIRONMENT="<environment>"` in your environment. Can be one of `production`, `staging` or `development`
+1. 在您的環境中設定 `LITELLM_ENVIRONMENT="<environment>"`。可以是 `production`、`staging` 或 `development`
 
-
-2. For each model set the list of supported environments in `model_info.supported_environments`
+2. 針對每個模型，在 `model_info.supported_environments` 中設定支援環境的清單
 ```yaml
 model_list:
  - model_name: gpt-3.5-turbo-16k
@@ -518,11 +512,11 @@ model_list:
 ```
 
 
-### Set Custom Prompt Templates
+### 設定自訂 Prompt 範本 {#set-custom-prompt-templates}
 
-LiteLLM by default checks if a model has a [prompt template and applies it](../completion/prompt_formatting.md) (e.g. if a huggingface model has a saved chat template in it's tokenizer_config.json). However, you can also set a custom prompt template on your proxy in the `config.yaml`: 
+LiteLLM 預設會檢查模型是否具有 [prompt template 並套用它](../completion/prompt_formatting.md)（例如，如果 huggingface 模型在其 tokenizer_config.json 中有已儲存的聊天範本）。不過，您也可以在 `config.yaml` 中為您的 proxy 設定自訂 prompt template： 
 
-**Step 1**: Save your prompt template in a `config.yaml`
+**步驟 1**：將您的 prompt template 儲存在 `config.yaml`
 ```yaml
 # Model-specific parameters
 model_list:
@@ -539,15 +533,15 @@ model_list:
       max_tokens: 4096
 ```
 
-**Step 2**: Start server with config
+**步驟 2**：使用設定啟動伺服器
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ``` 
 
-### Set custom tokenizer 
+### 設定自訂 tokenizer {#set-custom-tokenizer}
 
-If you're using the [`/utils/token_counter` endpoint](https://litellm-api.up.railway.app/#/llm%20utils/token_counter_utils_token_counter_post), and want to set a custom huggingface tokenizer for a model, you can do so in the `config.yaml`
+如果您使用 [`/utils/token_counter` 端點](https://litellm-api.up.railway.app/#/llm%20utils/token_counter_utils_token_counter_post)，並且想為某個模型設定自訂 huggingface tokenizer，您可以在 `config.yaml` 中這麼做
 
 ```yaml
 model_list:
@@ -563,7 +557,7 @@ model_list:
         auth_token: os.environ/HUGGINGFACE_API_KEY
 ```
 
-**Spec**
+**規格**
 ```
 custom_tokenizer: 
   identifier: str # huggingface model identifier
@@ -571,9 +565,9 @@ custom_tokenizer:
   auth_token: Optional[str] # huggingface auth token 
 ```
 
-## General Settings `general_settings` (DB Connection, etc)
+## 一般設定 `general_settings`（DB 連線等） {#general-settings-general_settings-db-connection-etc}
 
-### Configure DB Pool Limits + Connection Timeouts 
+### 設定 DB 集區限制 + 連線逾時 {#configure-db-pool-limits--connection-timeouts}
 
 ```yaml
 general_settings: 
@@ -581,32 +575,32 @@ general_settings:
   database_connection_timeout: 60 # sets a 60s timeout for any connection call to the db 
 ```
 
-**How to calculate the right value:**
+**如何計算正確的值：**
 
-The connection limit is applied **per worker process**, not per instance. This means if you have multiple workers, each worker will create its own connection pool.
+連線限制是套用在**每個 worker process**，而不是每個 instance。這表示如果您有多個 workers，每個 worker 都會建立自己的連線池。
 
-**Formula:**
+**公式：**
 ```
 database_connection_pool_limit = MAX_DB_CONNECTIONS ÷ (number_of_instances × number_of_workers_per_instance)
 ```
 
-**Example:**
-- Your database allows a maximum of **100 connections**
-- You're running **1 instance** of LiteLLM
-- Each instance has **8 workers** (set via `--num_workers 8`)
+**範例：**
+- 您的資料庫允許的最大連線數為 **100**
+- 您正在執行 **1 個** LiteLLM 實例
+- 每個實例有 **8 個工作執行緒**（透過 `--num_workers 8` 設定）
 
-Calculation: `100 ÷ (1 × 8) = 12.5`
+計算：`100 ÷ (1 × 8) = 12.5`
 
-Since you shouldn't use 12.5, round down to **10** to leave a safety buffer. This means:
-- Each of the 8 workers will have a connection pool limit of 10
-- Total maximum connections: 8 workers × 10 connections = 80 connections
-- This stays safely under your database's 100 connection limit
+由於不應使用 12.5，請向下取整為 **10** 以保留安全緩衝。這表示：
+- 8 個工作執行緒中的每一個都會有 10 的連線池上限
+- 連線總上限：8 個工作執行緒 × 10 個連線 = 80 個連線
+- 這會安全地低於資料庫的 100 連線限制
 
-### Cap Idle DB Connections + Pass Extra Prisma URL Params
+### 限制閒置 DB 連線 + 傳遞額外 Prisma URL 參數 {#cap-idle-db-connections--pass-extra-prisma-url-params}
 
-If you're seeing a large number of idle Prisma connections that never close, set `database_socket_timeout` so Prisma closes any connection that's been silent past the threshold. You can also bound how long Prisma waits to open a new connection with `database_connect_timeout`, and pass arbitrary extra query-string params through to Prisma via `database_extra_connection_params`.
+如果您看到大量從未關閉的 Prisma 閒置連線，請設定 `database_socket_timeout`，讓 Prisma 在連線靜默超過門檻後關閉任何連線。您也可以使用 `database_connect_timeout` 來限制 Prisma 等待開啟新連線的時間，並透過 `database_extra_connection_params` 將任意額外的查詢字串參數傳遞給 Prisma。
 
-These map to the Prisma [PostgreSQL connection URL params](https://www.prisma.io/docs/orm/overview/databases/postgresql) of the same name (minus the `database_` prefix), and LiteLLM appends them to both `DATABASE_URL` and `DIRECT_URL`.
+這些對應到 Prisma [PostgreSQL connection URL params](https://www.prisma.io/docs/orm/overview/databases/postgresql) 中同名的參數（去掉 `database_` 前綴），而 LiteLLM 會將它們附加到 `DATABASE_URL` 和 `DIRECT_URL`。
 
 ```yaml
 general_settings:
@@ -619,68 +613,67 @@ general_settings:
     sslmode: "require"
 ```
 
-**Notes:**
-- `database_socket_timeout` is the main knob for capping idle DB connections from LiteLLM.
-- `database_connect_timeout` and `database_socket_timeout` are omitted from the URL when unset, so Prisma's defaults apply.
-- `database_extra_connection_params` is an untyped passthrough — any key you set here **overrides** the LiteLLM-set defaults for that key (e.g. you can override `pool_timeout` from this dict). Use it for `sslmode`, `pgbouncer`, `statement_cache_size`, or any other Prisma URL param.
+**注意：**
+- `database_socket_timeout` 是限制來自 LiteLLM 的閒置資料庫連線的主要調整項。
+- `database_connect_timeout` 和 `database_socket_timeout` 在未設定時會從 URL 中省略，因此會套用 Prisma 的預設值。
+- `database_extra_connection_params` 是不具型別的轉傳——您在這裡設定的任何鍵都會**覆寫** LiteLLM 為該鍵設定的預設值（例如，您可以從這個 dict 中覆寫 `pool_timeout`）。可將其用於 `sslmode`、`pgbouncer`、`statement_cache_size`，或任何其他 Prisma URL 參數。
 
-### Disable Server-Side Prepared Statements
+### 停用 Server-Side Prepared Statements {#disable-server-side-prepared-statements}
 
-Set `database_disable_prepared_statements: true` to stop Prisma from reusing server-side prepared statements. It appends `pgbouncer=true` to the Prisma connection URL, so each query is prepared fresh instead of reusing a cached plan.
+將 `database_disable_prepared_statements: true` 設為停止 Prisma 重用伺服器端預先準備的陳述式。它會將 `pgbouncer=true` 附加到 Prisma 連線 URL，因此每個查詢都會重新準備，而不是重用快取的執行計畫。
 
 ```yaml
 general_settings:
   database_disable_prepared_statements: true
 ```
 
-Use this when:
-- LiteLLM connects to Postgres through **PgBouncer in transaction pooling mode**, where reused prepared statements break because consecutive queries can land on different server connections.
-- You run **rolling deployments with schema migrations** and see `cached plan must not change result type` errors. The error fires when a migration changes the result type of a column referenced by a plan that a pooled connection still holds; with this flag on there is no reused plan to invalidate, so the migration is harmless.
+在以下情況使用：
+- LiteLLM 透過 **PgBouncer 的交易池模式** 連線到 Postgres 時，因為連續的查詢可能會落到不同的伺服器連線上，重用的預先準備陳述式會失效。
+- 您執行**滾動式部署與結構描述遷移**，並看到 `cached plan must not change result type` 錯誤。當遷移變更了某個欄位的結果型別，而該欄位所參照的執行計畫仍被池化連線持有時，就會觸發此錯誤；啟用此旗標後，不會有可被使失效的重用計畫，因此遷移不會有影響。
 
-The tradeoff is that every query pays the prepare cost instead of amortizing it, which adds a small per-query overhead. An explicit `pgbouncer` key in `database_extra_connection_params` takes precedence over this flag.
+其代價是每個查詢都要支付準備成本，而不是將其攤提，因此會增加少量的每查詢額外負擔。`database_extra_connection_params` 中明確的 `pgbouncer` 鍵會優先於此旗標。
 
-## LiteLLM License Key (Enterprise)
+## LiteLLM 授權金鑰（企業版） {#litellm-license-key-enterprise}
 
-To enable [LiteLLM Enterprise features](https://docs.litellm.ai/docs/enterprise), set your license key as an environment variable:
+若要啟用 [LiteLLM Enterprise 功能](https://docs.litellm.ai/docs/enterprise)，請將您的授權金鑰設為環境變數：
 
 ```bash
 export LITELLM_LICENSE="eyJ..."
 ```
 
-The license key is a JWT token provided when you purchase a LiteLLM Enterprise license. Once set, LiteLLM will automatically detect and activate enterprise features.
+授權金鑰是在您購買 LiteLLM Enterprise 授權時提供的 JWT 權杖。設定後，LiteLLM 會自動偵測並啟用企業功能。
 
-You can also add it to your `.env` file:
+您也可以將其加入您的 `.env` 檔案：
 
 ```env
 LITELLM_LICENSE="eyJ..."
 ```
 
-## Extras
+## 其他 {#extras}
 
+### 停用 Swagger UI {#disable-swagger-ui}
 
-### Disable Swagger UI 
-
-To disable the Swagger docs from the base url, set 
+若要從基底 URL 停用 Swagger 文件，請在您的環境中設定 
 
 ```env
 NO_DOCS="True"
 ```
 
-in your environment, and restart the proxy. 
+，並重新啟動 proxy。 
 
-### Disable Redoc
+### 停用 Redoc {#disable-redoc}
 
-To disable the Redoc docs (defaults to `<your-proxy-url>/redoc`), set 
+若要停用 Redoc 文件（預設為 `<your-proxy-url>/redoc`），請在您的環境中設定 
 
 ```env
 NO_REDOC="True"
 ```
 
-in your environment, and restart the proxy. 
+，並重新啟動 proxy。 
 
-### Use CONFIG_FILE_PATH for proxy (Easier Azure container deployment)
+### 為 proxy 使用 CONFIG_FILE_PATH（更容易在 Azure container 部署） {#use-config_file_path-for-proxy-easier-azure-container-deployment}
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -690,13 +683,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Store filepath as env var 
+2. 將檔案路徑儲存為環境變數 
 
 ```bash
 CONFIG_FILE_PATH="/path/to/config.yaml"
 ```
 
-3. Start Proxy
+3. 啟動 Proxy
 
 ```bash
 $ litellm 
@@ -705,23 +698,23 @@ $ litellm
 ```
 
 
-### Providing LiteLLM config.yaml file as a s3, GCS Bucket Object/url
+### 將 LiteLLM config.yaml 檔案以 s3、GCS Bucket Object/url 提供 {#providing-litellm-configyaml-file-as-a-s3-gcs-bucket-objecturl}
 
-Use this if you cannot mount a config file on your deployment service (example - AWS Fargate, Railway etc)
+若您的部署服務無法掛載設定檔，請使用此方式（範例 - AWS Fargate、Railway 等）
 
-LiteLLM Proxy will read your config.yaml from an s3 Bucket or GCS Bucket 
+LiteLLM Proxy 會從 s3 Bucket 或 GCS Bucket 讀取您的 config.yaml 
 
 <Tabs>
 <TabItem value="gcs" label="GCS Bucket">
 
-Set the following .env vars 
+設定以下 .env 變數 
 ```shell
 LITELLM_CONFIG_BUCKET_TYPE = "gcs"                              # set this to "gcs"         
 LITELLM_CONFIG_BUCKET_NAME = "litellm-proxy"                    # your bucket name on GCS
 LITELLM_CONFIG_BUCKET_OBJECT_KEY = "proxy_config.yaml"         # object key on GCS
 ```
 
-Start litellm proxy with these env vars - litellm will read your config from GCS 
+使用這些 env vars 啟動 litellm proxy - litellm 會從 GCS 讀取您的設定 
 
 ```shell
 docker run --name litellm-proxy \
@@ -737,13 +730,13 @@ docker run --name litellm-proxy \
 
 <TabItem value="s3" label="s3">
 
-Set the following .env vars 
+設定以下 .env 變數 
 ```shell
 LITELLM_CONFIG_BUCKET_NAME = "litellm-proxy"                    # your bucket name on s3 
 LITELLM_CONFIG_BUCKET_OBJECT_KEY = "litellm_proxy_config.yaml"  # object key on s3
 ```
 
-Start litellm proxy with these env vars - litellm will read your config from s3 
+使用這些 env vars 啟動 litellm proxy - litellm 會從 s3 讀取您的設定 
 
 ```shell
 docker run --name litellm-proxy \

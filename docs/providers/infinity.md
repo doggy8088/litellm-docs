@@ -1,16 +1,16 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Infinity
+# Infinity {#infinity}
 
-| Property                  | Details                                                                                                    |
+| 屬性                  | 詳細資訊                                                                                                    |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Description               | Infinity is a high-throughput, low-latency REST API for serving text-embeddings, reranking models and clip |
-| Provider Route on LiteLLM | `infinity/`                                                                                                |
-| Supported Operations      | `/rerank`, `/embeddings`                                                                                   |
-| Link to Provider Doc      | [Infinity ↗](https://github.com/michaelfeil/infinity)                                                      |
+| 說明               | Infinity 是一個高吞吐量、低延遲的 REST API，用於提供 text-embeddings、reranking models 和 clip |
+| LiteLLM 提供者路由 | `infinity/`                                                                                                |
+| 支援的操作      | `/rerank`, `/embeddings`                                                                                   |
+| 提供者文件連結      | [Infinity ↗](https://github.com/michaelfeil/infinity)                                                      |
 
-## **Usage - LiteLLM Python SDK**
+## **使用方式 - LiteLLM Python SDK** {#usage---litellm-python-sdk}
 
 ```python
 from litellm import rerank, embedding
@@ -25,13 +25,13 @@ response = rerank(
 )
 ```
 
-## **Usage - LiteLLM Proxy**
+## **使用方式 - LiteLLM Proxy** {#usage---litellm-proxy}
 
-LiteLLM provides an cohere api compatible `/rerank` endpoint for Rerank calls.
+LiteLLM 提供與 cohere api 相容的 `/rerank` 端點，用於 Rerank 請求。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容新增至您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -42,7 +42,7 @@ model_list:
       api_key: os.environ/INFINITY_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -50,9 +50,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-## Test request:
+## 測試請求： {#test-request}
 
-### Rerank
+### 重新排序 {#rerank}
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -71,16 +71,16 @@ curl http://0.0.0.0:4000/rerank \
   }'
 ```
 
-#### Supported Cohere Rerank API Params
+#### 支援的 Cohere Rerank API 參數 {#supported-cohere-rerank-api-params}
 
-| Param              | Type        | Description                                     |
+| Param              | 類型        | 說明                                     |
 | ------------------ | ----------- | ----------------------------------------------- |
-| `query`            | `str`       | The query to rerank the documents against       |
-| `documents`        | `list[str]` | The documents to rerank                         |
-| `top_n`            | `int`       | The number of documents to return               |
-| `return_documents` | `bool`      | Whether to return the documents in the response |
+| `query`            | `str`       | 要據以重新排序文件的查詢               |
+| `documents`        | `list[str]` | 要重新排序的文件                         |
+| `top_n`            | `int`       | 要回傳的文件數量                           |
+| `return_documents` | `bool`      | 是否在回應中回傳文件 |
 
-### Usage - Return Documents
+### 使用方式 - 回傳文件 {#usage---return-documents}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -118,9 +118,9 @@ curl http://0.0.0.0:4000/rerank \
 </TabItem>
 </Tabs>
 
-## Pass Provider-specific Params
+## 傳遞提供者專屬參數 {#pass-provider-specific-params}
 
-Any unmapped params will be passed to the provider as-is.
+任何未對應的參數都會原樣傳遞給提供者。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -143,7 +143,7 @@ response = rerank(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -154,7 +154,7 @@ model_list:
       raw_scores: True # 👈 EITHER SET PROVIDER-SPECIFIC PARAMS HERE OR IN REQUEST BODY
 ```
 
-2. Start litellm
+2. 啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -162,7 +162,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 進行測試！
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -185,13 +185,13 @@ curl http://0.0.0.0:4000/rerank \
 
 </Tabs>
 
-## Embeddings
+## 嵌入 {#embeddings}
 
-LiteLLM provides an OpenAI api compatible `/embeddings` endpoint for embedding calls.
+LiteLLM 提供與 OpenAI api 相容的 `/embeddings` 端點，用於 embedding 請求。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容新增至您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -202,7 +202,7 @@ model_list:
       api_key: os.environ/INFINITY_API_KEY
 ```
 
-### Test request:
+### 測試請求： {#test-request-1}
 
 ```bash
 curl http://0.0.0.0:4000/embeddings \
@@ -214,16 +214,16 @@ curl http://0.0.0.0:4000/embeddings \
   }'
 ```
 
-#### Supported Embedding API Params
+#### 支援的 Embedding API 參數 {#supported-embedding-api-params}
 
-| Param             | Type        | Description                                                 |
+| Param             | 類型        | 說明                                                 |
 | ----------------- | ----------- | ----------------------------------------------------------- |
-| `model`           | `str`       | The embedding model to use                                  |
-| `input`           | `list[str]` | The text inputs to generate embeddings for                  |
-| `encoding_format` | `str`       | The format to return embeddings in (e.g. "float", "base64") |
-| `modality`        | `str`       | The type of input (e.g. "text", "image", "audio")           |
+| `model`           | `str`       | 要使用的 embedding 模型                              |
+| `input`           | `list[str]` | 要為其產生 embeddings 的文字輸入                  |
+| `encoding_format` | `str`       | 回傳 embeddings 的格式（例如「float」、「base64」） |
+| `modality`        | `str`       | 輸入類型（例如「text」、「image」、「audio」）           |
 
-### Usage - Basic Examples
+### 使用方式 - 基本範例 {#usage---basic-examples}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -259,7 +259,7 @@ curl http://0.0.0.0:4000/embeddings \
 </TabItem>
 </Tabs>
 
-### Usage - OpenAI Client
+### 使用方式 - OpenAI Client {#usage---openai-client}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -297,4 +297,5 @@ curl http://0.0.0.0:4000/embeddings \
 ```
 
 </TabItem>
+
 </Tabs>

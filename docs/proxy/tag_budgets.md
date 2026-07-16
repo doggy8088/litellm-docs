@@ -2,37 +2,37 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Setting Tag Budgets
+# 設定標籤預算 {#setting-tag-budgets}
 
-Track spend and set budgets for your API requests using tags. Tags allow you to categorize and monitor costs across different cost centers, projects, and departments.
+使用標籤追蹤支出並為您的 API 請求設定預算。標籤可讓您跨不同成本中心、專案與部門分類並監控成本。
 
-## Pre-Requisites
+## 前置條件 {#pre-requisites}
 
-- You must set up a Postgres database (e.g. Supabase, Neon, etc.)
+- 您必須先設定 Postgres 資料庫（例如 Supabase、Neon 等）
 
-## What are Tags?
+## 什麼是標籤？ {#what-are-tags}
 
-Tags are labels you can attach to your LLM requests to track and limit spending by category. 
+標籤是您可以附加到 LLM 請求上的標記，用於依類別追蹤並限制支出。 
 
-**Common Use Cases:**
-- **Cost Center Tracking**: Allocate LLM costs to specific departments or business units (e.g., "engineering", "marketing", "customer-support")
-- **Project-based Budgeting**: Set budgets for different projects or initiatives (e.g., "project-alpha", "chatbot-v2")
-- **Customer Attribution**: Track spend per customer or client (e.g., "customer-acme", "customer-techcorp")
-- **Feature Monitoring**: Monitor costs for specific features (e.g., "feature-chat", "feature-summarization")
+**常見使用情境：**
+- **成本中心追蹤**：將 LLM 成本分配給特定部門或業務單位（例如「engineering」、「marketing」、「customer-support」）
+- **專案式預算管理**：為不同專案或計畫設定預算（例如「project-alpha」、「chatbot-v2」）
+- **客戶歸屬**：追蹤每位客戶或用戶端的支出（例如「customer-acme」、「customer-techcorp」）
+- **功能監控**：監控特定功能的成本（例如「feature-chat」、「feature-summarization」）
 
-Tags can be set on each request (in `metadata` or via `x-litellm-tags`), or attached to a virtual key so every request using that key inherits the tag and its budget limits automatically.
+標籤可在每次請求時設定（在 `metadata` 中或透過 `x-litellm-tags`），或附加到虛擬金鑰，如此每個使用該金鑰的請求都會自動繼承該標籤及其預算限制。
 
-## Setting Tag Budgets
+## 設定標籤預算 {#setting-tag-budgets-1}
 
-### 1. Create a tag with budget
+### 1. 建立具有預算的標籤 {#1-create-a-tag-with-budget}
 
-Create a tag to represent a cost center, project, or any budget category. Set `max_budget` ($ value allowed) and `budget_duration` (how frequently the budget resets).
+建立一個標籤來代表成本中心、專案或任何預算類別。設定 `max_budget`（可使用 $ 金額）與 `budget_duration`（預算重設的頻率）。
 
-**Example:** Create a tag for your Engineering department with a monthly $500 budget
+**範例：** 為您的工程部門建立一個每月 500 美元預算的標籤
 
-#### API
+#### API {#api}
 
-Create a new tag and set `max_budget` and `budget_duration`
+建立新標籤並設定 `max_budget` 與 `budget_duration`
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/tag/new' \
@@ -46,18 +46,18 @@ curl -X POST 'http://0.0.0.0:4000/tag/new' \
         }' 
 ```
 
-**Request Body Parameters:**
+**請求本文參數：**
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `name` | string | Yes | Unique name for the tag (e.g., cost center name) |
-| `description` | string | No | Description of what this tag tracks |
-| `models` | list[string] | No | Restrict tag to specific models |
-| `max_budget` | float | No | Maximum budget in USD |
-| `budget_duration` | string | No | How often budget resets (e.g., "30d", "1d") |
-| `soft_budget` | float | No | Soft budget limit for warnings |
+| `name` | string | 是 | 標籤的唯一名稱（例如，成本中心名稱） |
+| `description` | string | 否 | 此標籤追蹤內容的說明 |
+| `models` | list[string] | 否 | 將標籤限制為特定模型 |
+| `max_budget` | float | 否 | 以 USD 計的最高預算 |
+| `budget_duration` | string | 否 | 預算重設的頻率（例如，「30d」、「1d」） |
+| `soft_budget` | float | 否 | 用於警告的軟性預算上限 |
 
-**Response:**
+**回應：**
 
 ```json
 {
@@ -70,9 +70,9 @@ curl -X POST 'http://0.0.0.0:4000/tag/new' \
 }  
 ```
 
-#### LiteLLM Admin UI
+#### LiteLLM 管理介面 {#litellm-admin-ui}
 
-Navigate to the **Tag Management** page and click **Create New Tag**. Fill in the tag details and set your budget:
+前往 **標籤管理** 頁面並點擊 **建立新標籤**。填入標籤詳細資料並設定您的預算：
 
 <Image 
   img={require('../../img/tag_budget1.png')}
@@ -81,25 +81,24 @@ Navigate to the **Tag Management** page and click **Create New Tag**. Fill in th
 
 <br />
 
+**`budget_duration` 的可用值：**
 
-**Possible values for `budget_duration`:**
-
-| `budget_duration` | When Budget will reset |
+| `budget_duration` | 預算將於何時重設 |
 | --- | --- |
-| `budget_duration="1s"` | every 1 second |
-| `budget_duration="1m"` | every 1 minute |
-| `budget_duration="1h"` | every 1 hour |
-| `budget_duration="1d"` | every 1 day |
-| `budget_duration="7d"` | every 1 week |
-| `budget_duration="30d"` | every 1 month |
+| `budget_duration="1s"` | 每 1 秒 |
+| `budget_duration="1m"` | 每 1 分鐘 |
+| `budget_duration="1h"` | 每 1 小時 |
+| `budget_duration="1d"` | 每 1 天 |
+| `budget_duration="7d"` | 每 1 週 |
+| `budget_duration="30d"` | 每 1 個月 |
 
-### 2. Attach the tag to an API key (recommended)
+### 2. 將標籤附加到 API 金鑰（建議） {#2-attach-the-tag-to-an-api-key-recommended}
 
-Attach the tag when creating or updating a virtual key. Every request made with that key automatically inherits the tag, and the proxy enforces the tag's budget **without** requiring clients to pass `metadata.tags` on each request.
+在建立或更新虛擬金鑰時附加標籤。每個使用該金鑰發出的請求都會自動繼承該標籤，而且閘道會強制執行該標籤的預算，**無須**用戶端在每個請求中傳遞 `metadata.tags`。
 
-#### API
+#### API {#api-1}
 
-Use the top-level `tags` field on `/key/generate` or `/key/update`:
+在 `/key/generate` 或 `/key/update` 上使用頂層的 `tags` 欄位：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -110,7 +109,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
         }'
 ```
 
-You can also set tags under key `metadata`:
+您也可以在金鑰 `metadata` 下設定標籤：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -123,18 +122,18 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
         }'
 ```
 
-#### LiteLLM Admin UI
+#### LiteLLM 管理介面 {#litellm-admin-ui-1}
 
-Navigate to **Virtual Keys** → **Create Key** (or edit an existing key) and select the tag(s) in the **Tags** field.
+前往 **Virtual Keys** → **Create Key**（或編輯現有金鑰），並在 **Tags** 欄位中選取標籤。
 
 <Image
   img={require('../../img/add_tag_in_key_creation.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-### 3. Use the tag in your requests (optional)
+### 3. 在您的請求中使用標籤（選用） {#3-use-the-tag-in-your-requests-optional}
 
-If you did not attach tags to the API key, add tags to each request in the `metadata` field (or via the `x-litellm-tags` header — see [Request Tags](request_tags.md)):
+如果您沒有將標籤附加到 API 金鑰，請在每個請求的 `metadata` 欄位中加入標籤（或透過 `x-litellm-tags` 標頭 — 請參閱 [Request Tags](request_tags.md)）：
 
 <Tabs>
 
@@ -180,9 +179,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 </Tabs>
 
-### 4. Test It
+### 4. 進行測試 {#4-test-it}
 
-Make requests with the virtual key from step 2 until the tag budget is exceeded. You do **not** need to pass `metadata.tags` if the tag is already on the key:
+使用第 2 步的虛擬金鑰發出請求，直到超出標籤預算。若標籤已在金鑰上，您**不需要**傳遞 `metadata.tags`：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -194,7 +193,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
          }'
 ```
 
-If you skipped step 2, include the tag in the request body instead:
+如果您略過第 2 步，請改為在請求本文中加入標籤：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -209,7 +208,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
          }'
 ```
 
-**When budget is exceeded, you'll see:**
+**當預算超出時，您會看到：**
 
 ```json
 {
@@ -222,11 +221,11 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }
 ```
 
-## Managing Tags
+## 管理標籤 {#managing-tags}
 
-### View Tag Information
+### 檢視標籤資訊 {#view-tag-information}
 
-Get information about specific tags:
+取得特定標籤的資訊：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/tag/info' \
@@ -237,7 +236,7 @@ curl -X POST 'http://0.0.0.0:4000/tag/info' \
          }'
 ```
 
-**Response:**
+**回應：**
 
 ```json
 {
@@ -264,9 +263,9 @@ curl -X POST 'http://0.0.0.0:4000/tag/info' \
 }
 ```
 
-### Update Tag Budget
+### 更新標籤預算 {#update-tag-budget}
 
-Update an existing tag's budget:
+更新既有標籤的預算：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/tag/update' \
@@ -279,7 +278,7 @@ curl -X POST 'http://0.0.0.0:4000/tag/update' \
          }'
 ```
 
-### Delete Tag
+### 刪除標籤 {#delete-tag}
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/tag/delete' \
@@ -290,9 +289,9 @@ curl -X POST 'http://0.0.0.0:4000/tag/delete' \
          }'
 ```
 
-## Multiple Tags per Request
+## 每個請求可使用多個標籤 {#multiple-tags-per-request}
 
-You can apply multiple tags to a single request to track costs across different dimensions simultaneously. For example, track both the cost center and the specific project:
+您可以將多個標籤套用到單一請求，以同時追蹤不同維度的成本。例如，同時追蹤成本中心與特定專案：
 
 ```python
 response = client.chat.completions.create(
@@ -319,4 +318,4 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
          }'
 ```
 
-**Budget Enforcement:** If any tag exceeds its budget, the request will be rejected.
+**預算強制執行：** 若任何標籤超出其預算，請求將被拒絕。

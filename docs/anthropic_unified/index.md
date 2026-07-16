@@ -1,33 +1,32 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /v1/messages
+# /v1/messages {#v1messages}
 
-Use LiteLLM to call all your LLM APIs in the Anthropic `v1/messages` format. 
+使用 LiteLLM 以 Anthropic `v1/messages` 格式呼叫您所有的 LLM API。
 
+## 概覽  {#overview}
 
-## Overview 
-
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Streaming | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Guardrails | ✅ | Applies to input and output text (non-streaming only) |
-| Supported Providers | **All LiteLLM supported providers** | `openai`, `anthropic`, `bedrock`, `vertex_ai`, `gemini`, `azure`, `azure_ai`, etc. |
+| 成本追蹤 | ✅ | 可與所有支援的模型搭配運作 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 最終使用者追蹤 | ✅ | |
+| 串流 | ✅ | |
+| 備援 | ✅ | 可在支援的模型之間運作 |
+| 負載平衡 | ✅ | 可在支援的模型之間運作 |
+| 防護欄 | ✅ | 套用於輸入與輸出文字（僅限非串流） |
+| 支援的提供者 | **所有 LiteLLM 支援的提供者** | `openai`、`anthropic`、`bedrock`、`vertex_ai`、`gemini`、`azure`、`azure_ai` 等。 |
 
-## Usage 
+## 用法  {#usage}
 ---
 
-### LiteLLM Python SDK 
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-#### Non-streaming example
+#### 非串流範例 {#non-streaming-example}
 ```python showLineNumbers title="Anthropic Example using LiteLLM Python SDK"
 import litellm
 response = await litellm.anthropic.messages.acreate(
@@ -38,7 +37,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Streaming example
+#### 串流範例 {#streaming-example}
 ```python showLineNumbers title="Anthropic Streaming Example using LiteLLM Python SDK"
 import litellm
 response = await litellm.anthropic.messages.acreate(
@@ -56,7 +55,7 @@ async for chunk in response:
 
 <TabItem value="openai" label="OpenAI">
 
-#### Non-streaming example
+#### 非串流範例 {#non-streaming-example-1}
 ```python showLineNumbers title="OpenAI Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -71,7 +70,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Streaming example
+#### 串流範例 {#streaming-example-1}
 ```python showLineNumbers title="OpenAI Streaming Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -93,7 +92,7 @@ async for chunk in response:
 
 <TabItem value="gemini" label="Google AI Studio">
 
-#### Non-streaming example
+#### 非串流範例 {#non-streaming-example-2}
 ```python showLineNumbers title="Google Gemini Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -108,7 +107,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Streaming example
+#### 串流範例 {#streaming-example-2}
 ```python showLineNumbers title="Google Gemini Streaming Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -130,7 +129,7 @@ async for chunk in response:
 
 <TabItem value="vertex" label="Vertex AI">
 
-#### Non-streaming example
+#### 非串流範例 {#non-streaming-example-3}
 ```python showLineNumbers title="Vertex AI Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -147,7 +146,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Streaming example
+#### 串流範例 {#streaming-example-3}
 ```python showLineNumbers title="Vertex AI Streaming Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -171,7 +170,7 @@ async for chunk in response:
 
 <TabItem value="bedrock" label="AWS Bedrock">
 
-#### Non-streaming example
+#### 非串流範例 {#non-streaming-example-4}
 ```python showLineNumbers title="AWS Bedrock Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -188,7 +187,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Streaming example
+#### 串流範例 {#streaming-example-4}
 ```python showLineNumbers title="AWS Bedrock Streaming Example using LiteLLM Python SDK"
 import litellm
 import os
@@ -211,7 +210,7 @@ async for chunk in response:
 </TabItem>
 </Tabs>
 
-Example response:
+範例回應：
 ```json
 {
   "content": [
@@ -235,12 +234,12 @@ Example response:
 }
 ```
 
-### LiteLLM Proxy Server 
+### LiteLLM Proxy 伺服器 {#litellm-proxy-server}
 
 <Tabs>
 <TabItem value="anthropic-proxy" label="Anthropic">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -250,13 +249,13 @@ model_list:
         api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python showLineNumbers title="Anthropic Example using LiteLLM Proxy Server"
 import anthropic
@@ -278,7 +277,7 @@ response = client.messages.create(
 
 <TabItem value="openai-proxy" label="OpenAI">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -288,13 +287,13 @@ model_list:
         api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python showLineNumbers title="OpenAI Example using LiteLLM Proxy Server"
 import anthropic
@@ -316,7 +315,7 @@ response = client.messages.create(
 
 <TabItem value="gemini-proxy" label="Google AI Studio">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -326,13 +325,13 @@ model_list:
         api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python showLineNumbers title="Google Gemini Example using LiteLLM Proxy Server"
 import anthropic
@@ -354,7 +353,7 @@ response = client.messages.create(
 
 <TabItem value="vertex-proxy" label="Vertex AI">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -365,13 +364,13 @@ model_list:
         vertex_location: us-central1
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python showLineNumbers title="Vertex AI Example using LiteLLM Proxy Server"
 import anthropic
@@ -393,7 +392,7 @@ response = client.messages.create(
 
 <TabItem value="bedrock-proxy" label="AWS Bedrock">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -405,13 +404,13 @@ model_list:
         aws_region_name: us-west-2
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python showLineNumbers title="AWS Bedrock Example using LiteLLM Proxy Server"
 import anthropic
@@ -453,12 +452,12 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
-## Request Format
+## 請求格式 {#request-format}
 ---
 
-Request body will be in the Anthropic messages API format. **litellm follows the Anthropic messages specification for this endpoint.**
+請求主體將採用 Anthropic messages API 格式。**litellm 遵循此端點的 Anthropic messages 規格。**
 
-#### Example request body
+#### 請求主體範例 {#example-request-body}
 
 ```json
 {
@@ -473,70 +472,69 @@ Request body will be in the Anthropic messages API format. **litellm follows the
 }
 ```
 
-#### Required Fields
+#### 必要欄位 {#required-fields}
 - **model** (string):  
-  The model identifier (e.g., `"claude-3-7-sonnet-20250219"`).
+  模型識別碼（例如，`"claude-3-7-sonnet-20250219"`）。
 - **max_tokens** (integer):  
-  The maximum number of tokens to generate before stopping.  
-  _Note: The model may stop before reaching this limit; value must be greater than 1._
+  在停止前要生成的最大 token 數量。  
+  _注意：模型可能會在達到此限制前停止；值必須大於 1。_
 - **messages** (array of objects):  
-  An ordered list of conversational turns.  
-  Each message object must include:
-  - **role** (enum: `"user"` or `"assistant"`):  
-    Specifies the speaker of the message.
+  依序排列的對話輪次清單。  
+  每個 message 物件必須包含：
+  - **role** (enum: `"user"` 或 `"assistant"`):  
+    指定該訊息的說話者。
   - **content** (string or array of content blocks):  
-    The text or content blocks (e.g., an array containing objects with a `type` such as `"text"`) that form the message.  
-    _Example equivalence:_
+    構成該訊息的文字或內容區塊（例如，包含具有 `type` 的物件陣列，例如 `"text"`）。  
+    _範例對應：_
     ```json
     {"role": "user", "content": "Hello, Claude"}
     ```
-    is equivalent to:
+    等同於：
     ```json
     {"role": "user", "content": [{"type": "text", "text": "Hello, Claude"}]}
     ```
 
-#### Optional Fields
+#### 選用欄位 {#optional-fields}
 - **metadata** (object):  
-  Contains additional metadata about the request (e.g., `user_id` as an opaque identifier).
+  包含關於此請求的額外中繼資料（例如，將 `user_id` 作為不透明識別碼）。
 - **stop_sequences** (array of strings):  
-  Custom sequences that, when encountered in the generated text, cause the model to stop.
+  自訂序列；當在生成的文字中遇到時，會使模型停止。
 - **stream** (boolean):  
-  Indicates whether to stream the response using server-sent events.
+  指示是否使用伺服器推送事件串流回應。
 - **system** (string or array):  
-  A system prompt providing context or specific instructions to the model.
+  提供上下文或特定指示給模型的系統提示。
 - **temperature** (number):  
-  Controls randomness in the model's responses. Valid range: `0 < temperature < 1`.
+  控制模型回應的隨機性。有效範圍：`0 < temperature < 1`。
 - **thinking** (object):
-  Configuration for enabling extended thinking. If enabled, it includes:
+  啟用延伸思考的設定。若啟用，包含：
   - **budget_tokens** (integer):
-    Minimum of 1024 tokens (and less than `max_tokens`).
+    至少 1024 個 token（且少於 `max_tokens`）。
   - **type** (enum):
-    E.g., `"enabled"`.
+    例如，`"enabled"`。
   - **summary** (string, optional):
-    Enables the summary style for thinking blocks. Possible values: `"auto"`, `"concise"`, `"detailed"`, `"disabled"`.
-    When routing to non-Anthropic providers (e.g., `openai/gpt-5.1`), the `summary` value is preserved and forwarded to the downstream API.
+    啟用 thinking 區塊的摘要樣式。可能的值：`"auto"`、`"concise"`、`"detailed"`、`"disabled"`。
+    當路由至非 Anthropic 提供者（例如，`openai/gpt-5.1`）時，`summary` 值會被保留並轉送至下游 API。
 - **tool_choice** (object):  
-  Instructs how the model should utilize any provided tools.
+  指示模型應如何使用任何提供的工具。
 - **tools** (array of objects):  
-  Definitions for tools available to the model. Each tool includes:
+  提供給模型可用工具的定義。每個工具包含：
   - **name** (string):  
-    The tool's name.
+    工具名稱。
   - **description** (string):  
-    A detailed description of the tool.
+    工具的詳細說明。
   - **input_schema** (object):  
-    A JSON schema describing the expected input format for the tool.
+    描述該工具預期輸入格式的 JSON schema。
 - **top_k** (integer):  
-  Limits sampling to the top K options.
+  將取樣限制為前 K 個選項。
 - **top_p** (number):  
-  Enables nucleus sampling with a cumulative probability cutoff. Valid range: `0 < top_p < 1`.
+  啟用 nucleus sampling，並設定累積機率截斷點。有效範圍：`0 < top_p < 1`。
 
-
-## Response Format
+## 回應格式 {#response-format}
 ---
 
-Responses will be in the Anthropic messages API format.
+回應將採用 Anthropic messages API 格式。
 
-#### Example Response
+#### 回應範例 {#example-response}
 
 ```json
 {
@@ -561,60 +559,60 @@ Responses will be in the Anthropic messages API format.
 }
 ```
 
-#### Response fields
+#### 回應欄位 {#response-fields}
 
 - **content** (array of objects):  
-  Contains the generated content blocks from the model. Each block includes:
+  包含模型生成的內容區塊。每個區塊包含：
   - **type** (string):  
-    Indicates the type of content (e.g., `"text"`, `"tool_use"`, `"thinking"`, or `"redacted_thinking"`).
+    指示內容類型（例如，`"text"`、`"tool_use"`、`"thinking"` 或 `"redacted_thinking"`）。
   - **text** (string):  
-    The generated text from the model.  
-    _Note: Maximum length is 5,000,000 characters._
+    模型生成的文字。  
+    _注意：最大長度為 5,000,000 個字元。_
   - **citations** (array of objects or `null`):  
-    Optional field providing citation details. Each citation includes:
+    提供引用詳細資訊的選用欄位。每個引用包含：
     - **cited_text** (string):  
-      The excerpt being cited.
+      被引用的摘錄。
     - **document_index** (integer):  
-      An index referencing the cited document.
+      參照被引用文件的索引。
     - **document_title** (string or `null`):  
-      The title of the cited document.
+      被引用文件的標題。
     - **start_char_index** (integer):  
-      The starting character index for the citation.
+      引用的起始字元索引。
     - **end_char_index** (integer):  
-      The ending character index for the citation.
+      引用的結束字元索引。
     - **type** (string):  
-      Typically `"char_location"`.
+      通常為 `"char_location"`。
 
 - **id** (string):  
-  A unique identifier for the response message.  
-  _Note: The format and length of IDs may change over time._
+  回應訊息的唯一識別碼。  
+  _注意：ID 的格式與長度可能會隨時間變更。_
 
 - **model** (string):  
-  Specifies the model that generated the response.
+  指定產生回應的模型。
 
 - **role** (string):  
-  Indicates the role of the generated message. For responses, this is always `"assistant"`.
+  指示生成訊息的角色。對於回應，這永遠是 `"assistant"`。
 
 - **stop_reason** (string):  
-  Explains why the model stopped generating text. Possible values include:
-  - `"end_turn"`: The model reached a natural stopping point.
-  - `"max_tokens"`: The generation stopped because the maximum token limit was reached.
-  - `"stop_sequence"`: A custom stop sequence was encountered.
-  - `"tool_use"`: The model invoked one or more tools.
+  說明模型為何停止生成文字。可能的值包括：
+  - `"end_turn"`：模型已達到自然停止點。
+  - `"max_tokens"`：因為已達到最大 token 限制而停止生成。
+  - `"stop_sequence"`：遇到自訂停止序列。
+  - `"tool_use"`：模型呼叫了一個或多個工具。
 
 - **stop_sequence** (string or `null`):  
-  Contains the specific stop sequence that caused the generation to halt, if applicable; otherwise, it is `null`.
+  包含導致生成停止的特定停止序列（若適用）；否則為 `null`。
 
 - **type** (string):  
-  Denotes the type of response object, which is always `"message"`.
+  表示回應物件的類型，且一律為 `"message"`。
 
-- **usage** (object):  
-  Provides details on token usage for billing and rate limiting. This includes:
-  - **input_tokens** (integer):  
-    Total number of input tokens processed.
-  - **output_tokens** (integer):  
-    Total number of output tokens generated.
-  - **cache_creation_input_tokens** (integer or `null`):  
-    Number of tokens used to create a cache entry.
-  - **cache_read_input_tokens** (integer or `null`):  
-    Number of tokens read from the cache.
+- **usage**（物件）：  
+  提供用於計費與速率限制的 token 使用量詳細資訊。包括：
+  - **input_tokens**（整數）：  
+    已處理的輸入 token 總數。
+  - **output_tokens**（整數）：  
+    已產生的輸出 token 總數。
+  - **cache_creation_input_tokens**（整數或 `null`）：  
+    用於建立快取項目的 token 數量。
+  - **cache_read_input_tokens**（整數或 `null`）：  
+    從快取讀取的 token 數量。

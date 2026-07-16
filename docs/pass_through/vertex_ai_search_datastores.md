@@ -1,19 +1,19 @@
-# Vertex AI Search Datastores
+# Vertex AI Search 資料儲存庫 {#vertex-ai-search-datastores}
 
-Call Vertex AI Discovery Engine Search API through LiteLLM.
+透過 LiteLLM 呼叫 Vertex AI Discovery Engine Search API。
 
-Provider Doc: https://cloud.google.com/generative-ai-app-builder/docs/reference/rest/v1/projects.locations.dataStores.servingConfigs/search
+提供者文件：https://cloud.google.com/generative-ai-app-builder/docs/reference/rest/v1/projects.locations.dataStores.servingConfigs/search
 
-## What you get
+## 您可獲得的內容 {#what-you-get}
 
-- Reference datastores by ID. LiteLLM finds the credentials.
-- No project/location in every request.
-- Configure credentials once, use everywhere.
-- Cost tracking works automatically.
+- 以 ID 參照 datastore。LiteLLM 會找出憑證。
+- 每次請求都不需要 project/location。
+- 憑證只需設定一次，到處都能用。
+- 成本追蹤會自動運作。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-**Step 1. Set credentials**
+**步驟 1. 設定憑證**
 
 ```bash
 export DEFAULT_VERTEXAI_PROJECT="your-project-id"
@@ -21,13 +21,13 @@ export DEFAULT_VERTEXAI_LOCATION="us-central1"
 export DEFAULT_GOOGLE_APPLICATION_CREDENTIALS="/path/to/credentials.json"
 ```
 
-**Step 2. Start proxy**
+**步驟 2. 啟動 proxy**
 
 ```bash
 litellm
 ```
 
-**Step 3. Search your datastore**
+**步驟 3. 搜尋您的 datastore**
 
 ```bash
 curl -X POST \
@@ -40,11 +40,11 @@ curl -X POST \
   }'
 ```
 
-## Managed Vector Stores (Recommended)
+## 受管理的向量儲存（建議） {#managed-vector-stores-recommended}
 
-Register your datastore once. Reference it by ID.
+只需註冊一次 datastore。以 ID 參照它。
 
-**In config.yaml:**
+**在 config.yaml 中：**
 
 ```yaml
 vector_store_registry:
@@ -60,19 +60,19 @@ vector_store_registry:
         source: "https://www.litellm.com/docs"
 ```
 
-**How it works:**
+**運作方式：**
 
-LiteLLM sees `dataStores/my-datastore` in your URL. It looks up the vector store. Uses the right project and credentials automatically.
+LiteLLM 會在您的 URL 中看到 `dataStores/my-datastore`。它會查找向量儲存。自動使用正確的 project 和憑證。
 
-## Endpoint
+## 端點 {#endpoint}
 
 `{PROXY_BASE_URL}/vertex_ai/discovery/{endpoint:path}`
 
-Routes to `https://discoveryengine.googleapis.com`
+路由至 `https://discoveryengine.googleapis.com`
 
-## Examples
+## 範例 {#examples}
 
-### Basic Search
+### 基本搜尋 {#basic-search}
 
 ```bash
 curl -X POST \
@@ -85,7 +85,7 @@ curl -X POST \
   }'
 ```
 
-### Search with Filters
+### 具有篩選條件的搜尋 {#search-with-filters}
 
 ```bash
 curl -X POST \
@@ -100,7 +100,7 @@ curl -X POST \
   }'
 ```
 
-### Python
+### Python {#python}
 
 ```python
 import requests
@@ -120,7 +120,7 @@ for result in response.json().get("results", []):
     print(f"{data['title']}: {data['link']}")
 ```
 
-### Use with Chat Completion
+### 與 Chat Completion 搭配使用 {#use-with-chat-completion}
 
 ```bash
 curl http://localhost:4000/v1/chat/completions \

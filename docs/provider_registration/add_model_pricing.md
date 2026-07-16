@@ -1,14 +1,14 @@
 ---
-title: "Add Model Pricing & Context Window"
+title: "新增模型定價與上下文視窗"
 ---
 
-To add pricing or context window information for a model, simply make a PR to this file:
+若要為模型新增定價或上下文視窗資訊，只需對此檔案提出 PR：
 
-**[model_prices_and_context_window.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)**
+**[模型價格與上下文視窗.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)**
 
-### Sample Spec
+### 範例規格 {#sample-spec}
 
-Here's the full specification with all available fields:
+以下是包含所有可用欄位的完整規格：
 
 ```json
 {
@@ -56,9 +56,9 @@ Here's the full specification with all available fields:
 }
 ```
 
-### Examples
+### 範例 {#examples}
 
-#### Anthropic Claude
+#### Anthropic Claude {#anthropic-claude}
 
 ```json
 {
@@ -88,7 +88,7 @@ Here's the full specification with all available fields:
 }
 ```
 
-#### Vertex AI Gemini
+#### Vertex AI Gemini {#vertex-ai-gemini}
 
 ```json
 {
@@ -122,9 +122,9 @@ Here's the full specification with all available fields:
 }
 ```
 
-### Using Aliases
+### 使用別名 {#using-aliases}
 
-Many providers release the same model under multiple names — for example, a `latest` tag and a dated version like `claude-sonnet-4-5-20250929`. Instead of duplicating the entire entry, you can use the `aliases` field:
+許多提供者會以多個名稱推出同一個模型——例如，`latest` 標籤和像 `claude-sonnet-4-5-20250929` 這樣的日期版本。與其重複整個項目，您可以使用 `aliases` 欄位：
 
 ```json
 {
@@ -142,8 +142,8 @@ Many providers release the same model under multiple names — for example, a `l
 }
 ```
 
-At load time, each alias is expanded into a top-level entry sharing the same data as the canonical entry. The example above makes both `claude-sonnet-4-5` and `claude-sonnet-4-5-20250929` resolve with the same pricing and capabilities.
+在載入時，每個別名都會展開為頂層項目，並與標準項目共享相同的資料。上方範例會讓 `claude-sonnet-4-5` 和 `claude-sonnet-4-5-20250929` 都以相同的定價與功能解析。
 
 :::info
-This is different from [`model_alias_map`](../completion/model_alias.md), which is a runtime SDK/proxy feature for mapping user-facing model names to LiteLLM model identifiers. The `aliases` field here is for the model cost JSON only — it avoids duplicate entries for models that share identical pricing and capabilities.
+這與 [`model_alias_map`](../completion/model_alias.md) 不同，後者是用於將使用者可見的模型名稱對應到 LiteLLM 模型識別碼的執行階段 SDK/代理程式功能。此處的 `aliases` 欄位僅適用於模型成本 JSON —— 它可避免對具有相同定價與功能的模型出現重複項目。
 :::

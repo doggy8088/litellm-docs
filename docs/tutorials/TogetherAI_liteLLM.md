@@ -1,7 +1,5 @@
-# Llama2 Together AI Tutorial
+# Llama2 Together AI 教學 {#llama2-together-ai-tutorial}
 https://together.ai/
-
-
 
 ```python
 !uv add litellm
@@ -16,7 +14,7 @@ user_message = "Hello, whats the weather in San Francisco??"
 messages = [{ "content": user_message,"role": "user"}]
 ```
 
-## Calling Llama2 on TogetherAI
+## 在 TogetherAI 上呼叫 Llama2 {#calling-llama2-on-togetherai}
 https://api.together.xyz/playground/chat?model=togethercomputer%2Fllama-2-70b-chat
 
 ```python
@@ -32,13 +30,12 @@ print(response)
 ```
 
 
-LiteLLM handles the prompt formatting for Together AI's Llama2 models as well, converting your message to the 
-`[INST] <your instruction> [/INST]` format required. 
+LiteLLM 也會處理 Together AI 的 Llama2 模型提示格式化，將您的訊息轉換為所需的 
+`[INST] <your instruction> [/INST]` 格式。 
 
-[Implementation Code](https://github.com/BerriAI/litellm/blob/64f3d3c56ef02ac5544983efc78293de31c1c201/litellm/llms/prompt_templates/factory.py#L17)
+[實作程式碼](https://github.com/BerriAI/litellm/blob/64f3d3c56ef02ac5544983efc78293de31c1c201/litellm/llms/prompt_templates/factory.py#L17)
 
-## With Streaming
-
+## 使用串流 {#with-streaming}
 
 ```python
 response = completion(model=model_name, messages=messages, together_ai=True, stream=True)
@@ -48,15 +45,15 @@ for chunk in response:
 ```
 
 
-## Use Llama2 variants with Custom Prompt Templates
+## 搭配自訂提示樣板使用 Llama2 變體 {#use-llama2-variants-with-custom-prompt-templates}
 
-Using a version of Llama2 on TogetherAI that needs custom prompt formatting? 
+在 TogetherAI 上使用需要自訂提示格式化的 Llama2 版本？ 
 
-You can create a custom prompt template. 
+您可以建立自訂提示樣板。 
 
-Let's make one for `OpenAssistant/llama2-70b-oasst-sft-v10`!
+讓我們為 `OpenAssistant/llama2-70b-oasst-sft-v10` 製作一個！
 
-The accepted template format is: [Reference](https://huggingface.co/OpenAssistant/llama2-70b-oasst-sft-v10)
+可接受的樣板格式為：[參考](https://huggingface.co/OpenAssistant/llama2-70b-oasst-sft-v10)
 ```
 """
 <|im_start|>system
@@ -67,7 +64,7 @@ The accepted template format is: [Reference](https://huggingface.co/OpenAssistan
 """
 ```
 
-Let's register our custom prompt template: [Implementation Code](https://github.com/BerriAI/litellm/blob/64f3d3c56ef02ac5544983efc78293de31c1c201/litellm/llms/prompt_templates/factory.py#L77)
+讓我們註冊自訂提示樣板：[實作程式碼](https://github.com/BerriAI/litellm/blob/64f3d3c56ef02ac5544983efc78293de31c1c201/litellm/llms/prompt_templates/factory.py#L77)
 ```python
 import litellm 
 
@@ -79,7 +76,7 @@ litellm.register_prompt_template(
 )
 ```
 
-Let's use it! 
+讓我們來使用它！ 
 
 ```python
 from litellm import completion 
@@ -92,7 +89,7 @@ messages=[{"role":"user", "content": "Write me a poem about the blue sky"}]
 completion(model="together_ai/OpenAssistant/llama2-70b-oasst-sft-v10", messages=messages)
 ```
 
-**Complete Code**
+**完整程式碼**
 
 ```python
 import litellm 
@@ -115,7 +112,7 @@ response = completion(model="together_ai/OpenAssistant/llama2-70b-oasst-sft-v10"
 print(response)
 ```
 
-**Output**
+**輸出**
 ```json
 {
   "choices": [

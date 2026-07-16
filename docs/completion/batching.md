@@ -1,27 +1,27 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Batching Completion()
-LiteLLM allows you to:
-* Send many completion calls to 1 model
-* Send 1 completion call to many models: Return Fastest Response
-* Send 1 completion call to many models: Return All Responses
+# 批次處理 Completion() {#batching-completion}
+LiteLLM 讓您可以：
+* 將多個 completion 呼叫傳送至 1 個 model
+* 將 1 個 completion 呼叫傳送至多個 model：傳回最快回應
+* 將 1 個 completion 呼叫傳送至多個 model：傳回所有回應
 
 :::info
 
-Trying to do batch completion on LiteLLM Proxy ? Go here: https://docs.litellm.ai/docs/proxy/user_keys#beta-batch-completions---pass-model-as-list
+想在 LiteLLM Proxy 上進行批次 completion 嗎？請前往：https://docs.litellm.ai/docs/proxy/user_keys#beta-batch-completions---pass-model-as-list
 
 :::
 
-## Send multiple completion calls to 1 model
+## 將多個 completion 呼叫傳送至 1 個 model {#send-multiple-completion-calls-to-1-model}
 
-In the batch_completion method, you provide a list of `messages` where each sub-list of messages is passed to `litellm.completion()`, allowing you to process multiple prompts efficiently in a single API call.
+在 batch_completion 方法中，您提供一個 `messages` 清單，其中每個子清單的 messages 都會傳遞給 `litellm.completion()`，讓您能在單一 API 呼叫中有效率地處理多個提示。
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_batch_completion.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-### Example Code
+### 範例程式碼 {#example-code}
 ```python
 import litellm
 import os
@@ -49,15 +49,15 @@ responses = batch_completion(
 )
 ```
 
-## Send 1 completion call to many models: Return Fastest Response
-This makes parallel calls to the specified `models` and returns the first response 
+## 將 1 個 completion 呼叫傳送至多個 model：傳回最快回應 {#send-1-completion-call-to-many-models-return-fastest-response}
+這會對指定的 `models` 發出平行呼叫，並傳回第一個回應
 
-Use this to reduce latency
+請用這個方式來降低延遲
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### Example Code
+### 範例程式碼 {#example-code-1}
 ```python
 import litellm
 import os
@@ -75,13 +75,12 @@ print(result)
 ```
 
 
-
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-[how to setup proxy config](#example-setup)
+[如何設定 proxy 組態](#example-setup)
 
-Just pass a comma-separated string of model names and the flag `fastest_response=True`.
+只要傳入以逗號分隔的 model 名稱字串，以及旗標 `fastest_response=True` 即可。
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -136,7 +135,7 @@ print(response)
 
 ---
 
-### Example Setup: 
+### 範例設定：  {#example-setup}
 
 ```yaml 
 model_list: 
@@ -159,8 +158,8 @@ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-### Output
-Returns the first response in OpenAI format. Cancels other LLM API calls. 
+### 輸出 {#output}
+傳回 OpenAI 格式中的第一個回應。會取消其他 LLM API 呼叫。 
 ```json
 {
   "object": "chat.completion",
@@ -187,12 +186,12 @@ Returns the first response in OpenAI format. Cancels other LLM API calls.
 ```
 
 
-## Send 1 completion call to many models: Return All Responses
-This makes parallel calls to the specified models and returns all responses
+## 將 1 個 completion 呼叫傳送至多個 model：傳回所有回應 {#send-1-completion-call-to-many-models-return-all-responses}
+這會對指定的 models 發出平行呼叫，並傳回所有回應
 
-Use this to process requests concurrently and get responses from multiple models.
+請用這個方式來並行處理請求，並從多個 model 取得回應。
 
-### Example Code
+### 範例程式碼 {#example-code-2}
 ```python
 import litellm
 import os
@@ -210,7 +209,7 @@ print(responses)
 
 ```
 
-### Output
+### 輸出 {#output-1}
 
 ```json
 [<ModelResponse chat.completion id=chatcmpl-e673ec8e-4e8f-4c9e-bf26-bf9fa7ee52b9 at 0x103a62160> JSON: {

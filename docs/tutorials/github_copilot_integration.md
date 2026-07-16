@@ -5,49 +5,49 @@ sidebar_label: "GitHub Copilot"
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# GitHub Copilot
+# GitHub Copilot {#github-copilot}
 
-This tutorial shows you how to integrate GitHub Copilot with LiteLLM Proxy, allowing you to route requests through LiteLLM's unified interface.
+本教學說明如何將 GitHub Copilot 與 LiteLLM Proxy 整合，讓您可以透過 LiteLLM 的統一介面路由請求。
 
 :::info 
 
-This tutorial is based on [Sergio Pino's excellent guide](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4) for calling GitHub Copilot models through LiteLLM Proxy. This integration allows you to use any LiteLLM supported model through GitHub Copilot's interface.
+本教學以 [Sergio Pino 的優秀指南](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4) 為基礎，內容是透過 LiteLLM Proxy 呼叫 GitHub Copilot 模型。此整合可讓您透過 GitHub Copilot 的介面使用任何 LiteLLM 支援的模型。
 
 :::
 
-## Benefits of using GitHub Copilot with LiteLLM
+## 使用 GitHub Copilot 搭配 LiteLLM 的好處 {#benefits-of-using-github-copilot-with-litellm}
 
-When you use GitHub Copilot with LiteLLM you get the following benefits:
+當您使用 GitHub Copilot 與 LiteLLM 時，您將獲得以下好處：
 
-**Developer Benefits:**
-- Universal Model Access: Use any LiteLLM supported model (Anthropic, OpenAI, Vertex AI, Bedrock, etc.) through the GitHub Copilot interface.
-- Higher Rate Limits & Reliability: Load balance across multiple models and providers to avoid hitting individual provider limits, with fallbacks to ensure you get responses even if one provider fails.
+**開發者好處：**
+- 通用模型存取：透過 GitHub Copilot 介面使用任何 LiteLLM 支援的模型（Anthropic、OpenAI、Vertex AI、Bedrock 等）。
+- 更高的速率限制與可靠性：在多個模型與提供者之間進行負載平衡，以避免觸及單一提供者的限制，並透過備援確保即使某個提供者失敗也能取得回應。
 
-**Proxy Admin Benefits:**
-- Centralized Management: Control access to all models through a single LiteLLM proxy instance without giving your developers API Keys to each provider.
-- Budget Controls: Set spending limits and track costs across all GitHub Copilot usage.
+**Proxy 管理員好處：**
+- 集中式管理：透過單一 LiteLLM proxy 實例控制所有模型的存取，而不必將每個提供者的 API 金鑰交給您的開發者。
+- 預算控管：為所有 GitHub Copilot 使用設定支出上限並追蹤成本。
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-Before you begin, ensure you have:
-- GitHub Copilot subscription (Individual, Business, or Enterprise)
-- A running LiteLLM Proxy instance
-- A valid LiteLLM Proxy API key
-- VS Code or compatible IDE with GitHub Copilot extension
+開始之前，請確認您已具備：
+- GitHub Copilot 訂閱（Individual、Business 或 Enterprise）
+- 正在執行的 LiteLLM Proxy 實例
+- 有效的 LiteLLM Proxy API 金鑰
+- 已安裝 GitHub Copilot 擴充功能的 VS Code 或相容 IDE
 
-## Quick Start Guide
+## 快速入門指南 {#quick-start-guide}
 
-### Step 1: Install LiteLLM
+### 步驟 1：安裝 LiteLLM {#step-1-install-litellm}
 
-Install LiteLLM with proxy support:
+安裝具備 proxy 支援的 LiteLLM：
 
 ```bash
 uv tool install litellm[proxy]
 ```
 
-### Step 2: Configure LiteLLM Proxy
+### 步驟 2：設定 LiteLLM Proxy {#step-2-configure-litellm-proxy}
 
-Create a `config.yaml` file with your model configurations:
+建立一個 `config.yaml` 檔案，內容為您的模型設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -65,17 +65,17 @@ general_settings:
   master_key: sk-1234567890 # Change this to a secure key
 ```
 
-### Step 3: Start LiteLLM Proxy
+### 步驟 3：啟動 LiteLLM Proxy {#step-3-start-litellm-proxy}
 
-Start the proxy server:
+啟動 proxy 伺服器：
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-### Step 4: Configure GitHub Copilot
+### 步驟 4：設定 GitHub Copilot {#step-4-configure-github-copilot}
 
-Configure GitHub Copilot to use your LiteLLM proxy. Add the following to your VS Code `settings.json`:
+將 GitHub Copilot 設定為使用您的 LiteLLM proxy。將以下內容加入您的 VS Code `settings.json`：
 
 ```json
 {
@@ -86,24 +86,24 @@ Configure GitHub Copilot to use your LiteLLM proxy. Add the following to your VS
 }
 ```
 
-### Step 5: Test the Integration
+### 步驟 5：測試整合 {#step-5-test-the-integration}
 
-Restart VS Code and test GitHub Copilot. Your requests will now be routed through LiteLLM Proxy, giving you access to LiteLLM's features like:
-- Request/response logging
-- Rate limiting
-- Cost tracking
-- Model routing and fallbacks
+重新啟動 VS Code 並測試 GitHub Copilot。您的請求現在將透過 LiteLLM Proxy 路由，讓您使用 LiteLLM 的功能，例如：
+- 請求/回應記錄
+- 速率限制
+- 成本追蹤
+- 模型路由與備援
 
-## Advanced
+## 進階 {#advanced}
 
-### Use Anthropic, OpenAI, Bedrock, etc. models with GitHub Copilot
+### 在 GitHub Copilot 中使用 Anthropic、OpenAI、Bedrock 等模型 {#use-anthropic-openai-bedrock-etc-models-with-github-copilot}
 
-You can route GitHub Copilot requests to any provider by configuring different models in your LiteLLM Proxy config:
+您可以在 LiteLLM Proxy 設定中設定不同模型，將 GitHub Copilot 的請求路由至任何提供者：
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-Route requests to Claude Sonnet:
+將請求路由至 Claude Sonnet：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -119,7 +119,7 @@ general_settings:
 </TabItem>
 <TabItem value="openai" label="OpenAI">
 
-Route requests to GPT-4o:
+將請求路由至 GPT-4o：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -135,7 +135,7 @@ general_settings:
 </TabItem>
 <TabItem value="bedrock" label="Bedrock">
 
-Route requests to Claude on Bedrock:
+將請求路由至 Bedrock 上的 Claude：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -151,9 +151,9 @@ general_settings:
 ```
 
 </TabItem>
-<TabItem value="multi-provider" label="Multi-Provider Load Balancing">
+<TabItem value="multi-provider" label="多提供者負載平衡">
 
-All deployments with the same model_name will be load balanced. In this example we load balance between OpenAI and Anthropic:
+所有具有相同 model_name 的部署都會進行負載平衡。在此範例中，我們在 OpenAI 與 Anthropic 之間進行負載平衡：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -176,16 +176,16 @@ general_settings:
 </TabItem>
 </Tabs>
 
-With this configuration, GitHub Copilot will automatically route requests through LiteLLM to your configured provider(s) with load balancing and fallbacks.
+使用此設定後，GitHub Copilot 會自動透過 LiteLLM 將請求路由至您設定的提供者，並提供負載平衡與備援。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-If you encounter issues:
+如果您遇到問題：
 
-1. **GitHub Copilot not using proxy**: Verify the proxy URL is correctly configured in VS Code settings and that LiteLLM proxy is running
-2. **Authentication errors**: Ensure your master key is valid and API keys for providers are correctly set
-3. **Connection errors**: Check that your LiteLLM Proxy is accessible at `http://localhost:4000`
+1. **GitHub Copilot 未使用 proxy**：確認 proxy URL 已在 VS Code 設定中正確設定，且 LiteLLM proxy 正在執行
+2. **驗證錯誤**：確認您的 master key 有效，且提供者的 API 金鑰已正確設定
+3. **連線錯誤**：檢查您的 LiteLLM Proxy 是否可透過 `http://localhost:4000` 存取
 
-## Credits
+## 致謝 {#credits}
 
-This tutorial is based on the work by [Sergio Pino](https://dev.to/spino327) from his original article: [Calling GitHub Copilot models from OpenHands using LiteLLM Proxy](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4). Thank you for the foundational work! 
+本教學基於 [Sergio Pino](https://dev.to/spino327) 的原始文章：[使用 LiteLLM Proxy 從 OpenHands 呼叫 GitHub Copilot 模型](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4)。感謝這項奠基性的工作！

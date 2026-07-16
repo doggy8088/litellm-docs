@@ -2,144 +2,143 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# ✨ Enterprise
+# ✨ 企業版 {#-enterprise}
 
 :::info
 
-- **New to Enterprise?** Start with the [✨ Enterprise Quickstart](/docs/learn/enterprise_quickstart)
-- **Free trial**: [7-day enterprise license](https://www.litellm.ai/enterprise#trial)
-- **Talk to us**: [Book a demo](https://enterprise.litellm.ai/demo)
-- **SSO is free for up to 5 users.** Beyond that, an enterprise license is required.
+- **Enterprise 新手？** 從 [✨ Enterprise 快速入門](/docs/learn/enterprise_quickstart) 開始
+- **免費試用**：[7 天企業授權](https://www.litellm.ai/enterprise#trial)
+- **與我們聯絡**：[預約示範](https://enterprise.litellm.ai/demo)
+- **SSO 於最多 5 位使用者內免費。** 超過後則需要企業授權。
 
 :::
 
-## Who is Enterprise for?
+## Enterprise 適用於誰？ {#who-is-enterprise-for}
 
-For teams running LiteLLM at scale — 100+ users or 10+ production AI use-cases — that need SSO, audit logs, fine-grained access control, and professional support on top of OSS. Not sure if you qualify? [Get in touch](https://enterprise.litellm.ai/demo).
+適用於大規模執行 LiteLLM 的團隊——100 位以上使用者或 10 個以上正式上線的 AI 使用案例——且需要在 OSS 之上提供 SSO、稽核記錄、精細存取控制與專業支援。 不確定是否符合資格？[與我們聯絡](https://enterprise.litellm.ai/demo)。
 
-## Why Enterprise?
+## 為什麼選擇 Enterprise？ {#why-enterprise}
 
-LiteLLM OSS already covers the fundamentals — an OpenAI-compatible gateway, virtual keys, spend tracking, budgets, fallbacks, and request/response logging. Enterprise adds the controls larger organizations need to safely give hundreds of users and dozens of applications access to LLMs.
+LiteLLM OSS 已涵蓋基礎功能——與 OpenAI 相容的閘道、虛擬金鑰、支出追蹤、預算、備援，以及請求/回應記錄。Enterprise 則加入大型組織安全地讓數百位使用者與數十個應用程式存取 LLM 所需的控管能力。
 
 | | **OSS** | **Enterprise** |
 |---|---|---|
-| **Auth** | API keys | SSO + SCIM, OIDC/JWT |
-| **Key Management** | Virtual keys, users, teams across LLM APIs, MCPs, and Agents | Organizations, org/team admins, delegated admin roles |
-| **Security** | — | Key rotations, read/write to secret manager |
-| **Guardrails** | Always-on / request-based<sup>[1](#guardrails-oss-vs-enterprise)</sup> | Key and team scoped guardrails |
-| **Logging** | Request/response logging, Prometheus metrics | Per-key / per-team routing to Langfuse, Langsmith, Arize and more. Management-op logs |
-| **Deployment** | Single-region proxy | [Multi-region deployment](./proxy/multi_region) under one license, admin/worker split |
+| **驗證** | API keys | SSO + SCIM, OIDC/JWT |
+| **金鑰管理** | 跨 LLM API、MCP 與 Agents 的虛擬金鑰、使用者、團隊 | 組織、組織/團隊管理員、委派管理員角色 |
+| **安全性** | — | 金鑰輪替、可讀寫秘密管理工具 |
+| **防護欄** | 永遠啟用 / 以請求為基礎<sup>[1](#guardrails-oss-vs-enterprise)</sup> | 以金鑰與團隊為範圍的防護欄 |
+| **記錄** | 請求/回應記錄、Prometheus 指標 | 依金鑰 / 團隊路由至 Langfuse、Langsmith、Arize 等。管理作業記錄 |
+| **部署** | 單區域 proxy | [多區域部署](./proxy/multi_region)，單一授權，管理員/工作者分離 |
 
 <a id="guardrails-oss-vs-enterprise"></a>
-<sup>1</sup> The OSS guardrail framework supports custom guardrails plus Presidio (PII masking). Several built-in callback integrations &mdash; including `llmguard_moderations`, `llamaguard_moderations`, `hide_secrets`, `openai_moderations`, `google_text_moderation`, `lakera_prompt_injection`, and `aporia_prompt_injection` &mdash; require a LiteLLM Enterprise license.
+<sup>1</sup> OSS 防護欄架構支援自訂防護欄與 Presidio（PII 遮罩）。多個內建 callback 整合——包括 `llmguard_moderations`、`llamaguard_moderations`、`hide_secrets`、`openai_moderations`、`google_text_moderation`、`lakera_prompt_injection` 與 `aporia_prompt_injection`——需要 LiteLLM Enterprise 授權。
 
-## Core Enterprise Features
+## 核心 Enterprise 功能 {#core-enterprise-features}
 
-### Security & Access Control
+### 安全性與存取控制 {#security--access-control}
 
-- **[SSO for the Admin UI](./proxy/ui.md#-enterprise-features)** – Okta, Azure AD, Google Workspace, and any OIDC/SAML provider
-- **[JWT-based Authentication](./proxy/token_auth.md)** – Authenticate requests with your identity provider's tokens
-- **[Audit Logs with retention policies](./proxy/multiple_admins.md)** – Track every admin action and key-level change
-- **[Role-Based Access Control](./proxy/access_control.md)** – Organizations, teams, and user roles
-- **[Public & private route controls](./proxy/public_routes.md)** – Restrict admin routes, lock down surface area
-- **[IP address-based access control lists](./proxy/ip_address.md)** – Restrict proxy access to specific CIDR ranges
-- **[Key Rotations](./proxy/virtual_keys.md#-key-rotations)** – Automate rotation for virtual keys
-- **[Secret Managers](./secret_managers/overview.md)** – AWS KMS, AWS Secrets Manager, Azure Key Vault, Google KMS, Google Secret Manager, HashiCorp Vault, CyberArk, or a custom secret manager
-- **[AI Hub](./proxy/ai_hub.md)** – Share a public, branded page of available models and agents with your users
+- **[Admin UI 的 SSO](./proxy/ui.md#-enterprise-features)** – Okta、Azure AD、Google Workspace，以及任何 OIDC/SAML 提供者
+- **[基於 JWT 的驗證](./proxy/token_auth.md)** – 使用您的身分提供者 token 驗證請求
+- **[具保留政策的稽核記錄](./proxy/multiple_admins.md)** – 追蹤每一項管理員操作與金鑰層級變更
+- **[基於角色的存取控制](./proxy/access_control.md)** – 組織、團隊與使用者角色
+- **[公開與私有路由控制](./proxy/public_routes.md)** – 限制管理路由，鎖定可接觸面
+- **[基於 IP 位址的存取控制清單](./proxy/ip_address.md)** – 將 proxy 存取限制於特定 CIDR 範圍
+- **[金鑰輪替](./proxy/virtual_keys.md#-key-rotations)** – 自動化虛擬金鑰輪替
+- **[秘密管理工具](./secret_managers/overview.md)** – AWS KMS、AWS Secrets Manager、Azure Key Vault、Google KMS、Google Secret Manager、HashiCorp Vault、CyberArk，或自訂秘密管理工具
+- **[AI Hub](./proxy/ai_hub.md)** – 與您的使用者分享一個公開、具品牌識別頁面的可用模型與代理程式
 
-### Governance & Cost Control
+### 治理與成本控制 {#governance--cost-control}
 
-- **[Multi-tenant Architecture](./proxy/multi_tenant_architecture.md)** – Organizations → Teams → Projects → Keys
-- **[Project Management](./proxy/project_management.md)** – Group keys by application or use-case with budgets, owners, and isolated spend tracking
-- **[Tag-based Budgets](./proxy/provider_budget_routing.md)** – Budgets and spend tracking by custom tag
-- **[Model-specific Budgets per Virtual Key](./proxy/users.md)** – Different limits per model, per key
-- **[Temporary Budget Increases](./proxy/temporary_budget_increase.md)** – Time-boxed spend bumps without permanent changes
-- **[Soft Budget Email Alerts](./proxy/ui_team_soft_budget_alerts.md)** – Warn teams before they hit hard limits
-- **[Generate Spend Reports](./proxy/cost_tracking.md#-enterprise-generate-spend-reports)** – Programmatic access to spend by key/team/tag/model
+- **[多租戶架構](./proxy/multi_tenant_architecture.md)** – 組織 → 團隊 → 專案 → 金鑰
+- **[專案管理](./proxy/project_management.md)** – 依應用程式或使用案例分組金鑰，並搭配預算、擁有者與隔離的支出追蹤
+- **[基於標籤的預算](./proxy/provider_budget_routing.md)** – 依自訂標籤進行預算與支出追蹤
+- **[每個虛擬金鑰的模型特定預算](./proxy/users.md)** – 每個模型、每個金鑰有不同限制
+- **[暫時性預算增加](./proxy/temporary_budget_increase.md)** – 有時間範圍的支出提高，不做永久變更
+- **[柔性預算電子郵件警示](./proxy/ui_team_soft_budget_alerts.md)** – 在團隊觸及硬性限制前發出警告
+- **[產生支出報表](./proxy/cost_tracking.md#-enterprise-generate-spend-reports)** – 以金鑰/團隊/標籤/模型方式程式化存取支出
 
-### Observability & Compliance
+### 可觀測性與合規 {#observability--compliance}
 
-- **[Team-Based Logging](./proxy/team_logging.md)** – Route each team's logs to their own Langfuse project or callback
-- **[Disable logging per team](./proxy/team_logging.md#disable-logging-for-a-team)** – GDPR-friendly opt-out at the team level
-- **[Log export to GCS / Azure Blob](./observability/gcs_bucket_integration.md)** – Durable storage for compliance
-- **[Guardrails per key/team](#guardrails---secret-detectionredaction)** – Secret redaction, content moderation, banned keywords
-- **[Enforced required params](#required-params-for-llm-requests)** – Reject requests missing required metadata
+- **[以團隊為基礎的記錄](./proxy/team_logging.md)** – 將每個團隊的記錄路由至其各自的 Langfuse 專案或 callback
+- **[依團隊停用記錄](./proxy/team_logging.md#disable-logging-for-a-team)** – 團隊層級符合 GDPR 的退出選項
+- **[將記錄匯出至 GCS / Azure Blob](./observability/gcs_bucket_integration.md)** – 供合規使用的持久儲存
+- **[每個金鑰/團隊的防護欄](#guardrails---secret-detectionredaction)** – 秘密資訊遮罩、內容審核、禁止關鍵字
+- **[強制必填參數](#required-params-for-llm-requests)** – 拒絕缺少必要中繼資料的請求
 
-### Operations & Branding
+### 營運與品牌 {#operations--branding}
 
-- **[Custom Swagger branding](#swagger-docs---custom-routes--branding)** – Your title, description, and filtered routes
-- **[Custom email branding](./proxy/email.md#customizing-email-branding)** – Your logo and colors on system emails
-- **[Max request/response size limits](#set-max-request--response-size-on-litellm-proxy)** – Protect the proxy from runaway payloads
-- **[Team-managed models](./proxy/team_model_add.md)** – Let teams bring their own keys and fine-tunes
+- **[自訂 Swagger 品牌化](#swagger-docs---custom-routes--branding)** – 您的標題、描述與已過濾路由
+- **[自訂電子郵件品牌化](./proxy/email.md#customizing-email-branding)** – 系統電子郵件上的您的標誌與色彩
+- **[最大請求/回應大小限制](#set-max-request--response-size-on-litellm-proxy)** – 保護 proxy 不受失控 payload 影響
+- **[由團隊管理的模型](./proxy/team_model_add.md)** – 讓團隊帶入自己的金鑰與 fine-tune 模型
 
-### Projects
+### 專案 {#projects}
 
-[Projects](./proxy/project_management.md) let you group virtual keys by application or use-case. Each project has its own budget, owners, rate limits, and isolated spend view — useful when a single team runs multiple apps and needs separate reporting per app.
+[專案](./proxy/project_management.md) 可讓您依應用程式或使用案例將虛擬金鑰分組。每個專案都有自己的預算、擁有者、速率限制與隔離的支出檢視——當單一團隊執行多個應用程式並需要依應用程式分開報表時特別有用。
 
-- Group keys by application, environment, or customer
-- Per-project budgets, rate limits, and model allowlists
-- Dedicated owners and spend dashboards
-- Works with organizations, teams, and tags
+- 依應用程式、環境或客戶分組金鑰
+- 每個專案的預算、速率限制與模型允許清單
+- 專屬擁有者與支出儀表板
+- 可與組織、團隊與標籤搭配使用
 
-See [Project Management](./proxy/project_management.md) and the [UI walkthrough](./proxy/ui_project_management.md) for setup.
+請參閱 [專案管理](./proxy/project_management.md) 與 [UI 走讀](./proxy/ui_project_management.md) 進行設定。
 
 ---
 
+## 部署選項 {#deployment-options}
 
-## Deployment Options
+### 自架部署 {#self-hosted}
 
-### Self-Hosted
-
-Deploy our Docker image (or build from the pip package) on your own infrastructure. We provide a license key that unlocks the enterprise features above, plus a dedicated support channel.
+在您自己的基礎架構上部署我們的 Docker image（或從 pip 套件建置）。我們會提供一組授權金鑰，用以解鎖上述企業功能，以及專屬支援管道。
 
 ```env
 LITELLM_LICENSE="eyJ..."
 ```
 
-**No data leaves your environment.** [Procurement available via AWS and Azure Marketplace.](./data_security.md#legalcompliance-faqs)
+**沒有資料會離開您的環境。** [可透過 AWS 與 Azure Marketplace 採購。](./data_security.md#legalcompliance-faqs)
 
-Pricing depends on your deployment size — [get in touch](https://enterprise.litellm.ai/demo) to scope it.
+價格取決於您的部署規模——請 [與我們聯絡](https://enterprise.litellm.ai/demo) 以進行範圍規劃。
 
 ---
 
-## Professional Support
+## 專業支援 {#professional-support}
 
-Included with every enterprise license: a dedicated Slack/Teams channel with our engineering team for integration, deployment, and provider troubleshooting.
+每一份企業授權皆包含：與我們工程團隊的專屬 Slack/Teams 頻道，用於整合、部署與提供者疑難排解。
 
-| Severity | Response SLA |
+| 嚴重程度 | 回應 SLA |
 |---|---|
-| **Sev 0** — 100% production traffic failing | 1 hour |
-| **Sev 1** — partial production impact | 6 hours |
-| **Sev 2–3** — setup issues, non-urgent bugs | 24 hours (7am–7pm PT, Mon–Sat) |
-| **Security patches** | 72 hours |
+| **Sev 0** — 100% 生產流量失敗 | 1 小時 |
+| **Sev 1** — 部分生產影響 | 6 小時 |
+| **Sev 2–3** — 設定問題、非緊急臭蟲 | 24 小時（PT 上午 7 點至晚上 7 點，週一至週六） |
+| **安全性修補** | 72 小時 |
 
-Custom SLAs available on request.
-
----
-
-## Version support
-
-LiteLLM supports the four most recent stable minor lines. Each of those lines keeps getting patch releases; anything older reaches end of life and stops receiving updates. This policy takes effect Monday, June 29, 2026. As of mid-June 2026 the supported lines are 1.86, 1.87, 1.88, and 1.89, and the set rolls forward as new stable releases ship.
-
-**Why we are doing this.** LiteLLM ships fast, with a new minor line going out roughly every week. Patching lines well down the list meant carrying every fix forward onto every line we kept alive, a cost that grows with the number of lines we maintain rather than the number of fixes we make. Focusing on four lines lets us give each one more care.
-
-**How it works.** The window always holds the four most recent stable minor lines. When we promote a new line, the oldest one drops out and stops receiving releases. End of life is a clean cutoff; there is no separate long-term maintenance track. For any supported line, the recommended build is its latest patch. For rare, high-severity issues we will use our judgment and may act beyond the window when the situation calls for it.
-
-**What it means for you.** To check where you stand, take the latest stable line and count back four; if your version is older than that, plan an upgrade. The simplest path is to pin to a minor line, take its patches, and move onto a newer line before yours drops out.
+可依需求提供自訂 SLA。
 
 ---
 
-## Public AI Hub
+## 版本支援 {#version-support}
 
-Share a public page of available models, MCP, Agents and skills for users
+LiteLLM 支援最近四個穩定的次要版本線。這些版本線都會持續取得修補版本；更舊的版本會達到生命週期終點並停止接收更新。此政策將於 2026 年 6 月 29 日星期一生效。截至 2026 年 6 月中旬，受支援的版本線為 1.86、1.87、1.88 與 1.89，並會隨著新的穩定版發布而向前推進。
 
-[Learn more](./proxy/ai_hub.md)
+**我們為什麼要這麼做。** LiteLLM 發布速度很快，大約每週會推出一個新的次要版本線。若要將修補程式一路往下帶到我們仍維護的每條版本線，成本會隨著維護版本線數量而成長，而不是隨著修補數量成長。聚焦四條版本線，能讓我們更仔細照顧每一條。
+
+**運作方式。** 這個窗口會永遠保留最近四個穩定的次要版本線。當我們升級到新版本線時，最舊的版本線會退出並停止接收發布。生命週期終點是明確切點；沒有另外的長期維護分支。對於任何受支援版本線，建議的建置版本都是其最新修補版。對於罕見且高嚴重度的問題，我們會視情況判斷，並可能在需要時超出此窗口處理。
+
+**這對您代表什麼。** 要確認您目前的位置，請取最新的穩定版版本線並往回數四個；如果您的版本比那更舊，請規劃升級。最簡單的做法是鎖定某個次要版本線、套用其修補版，並在您的版本線退出前移轉到更新的版本線。
+
+---
+
+## 公開 AI Hub {#public-ai-hub}
+
+與使用者分享一個公開頁面，列出可用模型、MCP、Agents 與技能
+
+[了解更多](./proxy/ai_hub.md)
 
 <Image img={require('../img/everything_ai_hub.png')} style={{ width: '900px', height: 'auto' }}/>
 
-## Secret Managers
+## 秘密管理工具 {#secret-managers}
 
-LiteLLM Enterprise integrates with the following secret managers:
+LiteLLM Enterprise 可與以下秘密管理工具整合：
 
 - [AWS KMS](./secret_managers/aws_kms.md)
 - [AWS Secrets Manager](./secret_managers/aws_secret_manager.md)
@@ -150,24 +149,23 @@ LiteLLM Enterprise integrates with the following secret managers:
 - [CyberArk](./secret_managers/cyberark.md)
 - [Custom Secret Manager](./secret_managers/custom_secret_manager.md)
 
-See the [Secret Managers overview](./secret_managers/overview.md) for setup.
+請參閱 [Secret Managers 總覽](./secret_managers/overview.md) 以進行設定。
 
+## Enterprise 功能參考 {#enterprise-feature-reference}
 
-## Enterprise Feature Reference
+本頁其餘內容為完整功能參考 — 各項 enterprise 能力的設定片段與範例。
 
-The rest of this page is the full feature reference — configuration snippets and examples for each enterprise capability.
+### 💸 支出追蹤 {#-spend-tracking}
 
-### 💸 Spend Tracking
+#### 依標籤查看支出 {#viewing-spend-per-tag}
 
-#### Viewing Spend per tag
-
-#### `/spend/tags` Request Format
+#### `/spend/tags` 請求格式 {#spendtags-request-format}
 ```shell
 curl -X GET "http://0.0.0.0:4000/spend/tags" \
 -H "Authorization: Bearer sk-1234"
 ```
 
-#### `/spend/tags`Response Format
+#### `/spend/tags`回應格式 {#spendtagsresponse-format}
 ```shell
 [
   {
@@ -189,39 +187,39 @@ curl -X GET "http://0.0.0.0:4000/spend/tags" \
 ```
 
 :::tip
-For comprehensive spend tracking features including budgets, alerts, and detailed analytics, check out [Spend Tracking](./proxy/cost_tracking.md).
+如需包含預算、警示與詳細分析的完整支出追蹤功能，請參閱 [支出追蹤](./proxy/cost_tracking.md)。
 
 :::
 
-### Blocking web crawlers
+### 封鎖網路爬蟲 {#blocking-web-crawlers}
 
-To block web crawlers from indexing the proxy server endpoints, set the `block_robots` setting to `true` in your `litellm_config.yaml` file.
+若要封鎖網路爬蟲索引 proxy 伺服器端點，請在您的 `litellm_config.yaml` 檔案中將 `block_robots` 設定為 `true`。
 
 ```yaml showLineNumbers title="litellm_config.yaml"
 general_settings:
   block_robots: true
 ```
 
-#### How it works
+#### 運作方式 {#how-it-works}
 
-When this is enabled, the `/robots.txt` endpoint will return a 200 status code with the following content:
+啟用此功能後，`/robots.txt` 端點會回傳 200 狀態碼與以下內容：
 
 ```shell showLineNumbers title="robots.txt"
 User-agent: *
 Disallow: /
 ```
 
-### Required Params for LLM Requests
+### LLM 請求必填參數 {#required-params-for-llm-requests}
 
-Use this when you want to enforce all requests to include certain params. Example you need all requests to include the `user` and `["metadata]["generation_name"]` params.
+當您想強制所有請求都包含特定參數時使用此功能。範例是您需要所有請求都包含 `user` 與 `["metadata]["generation_name"]` 參數。
 
 <Tabs>
 
-<TabItem value="config" label="Set on Config">
+<TabItem value="config" label="在設定中設定">
 
-**Step 1** Define all Params you want to enforce on config.yaml
+**步驟 1** 在 config.yaml 中定義您想強制的所有參數
 
-This means `["user"]` and `["metadata]["generation_name"]` are required in all LLM Requests to LiteLLM
+這表示所有送到 LiteLLM 的 LLM 請求都必須包含 `["user"]` 與 `["metadata]["generation_name"]`
 
 ```yaml
 general_settings:
@@ -232,7 +230,7 @@ general_settings:
 ```
 </TabItem>
 
-<TabItem value="key" label="Set on Key">
+<TabItem value="key" label="在金鑰上設定">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -246,11 +244,11 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 </TabItem>
 </Tabs>
 
-**Step 2 Verify if this works**
+**步驟 2 驗證是否可運作**
 
 <Tabs>
 
-<TabItem value="bad" label="Invalid Request (No `user` passed)">
+<TabItem value="bad" label="無效請求（未傳入 `user`）">
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -267,7 +265,7 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```shell
 {"error":{"message":"Authentication Error, BadRequest please pass param=user in request body. This is a required param","type":"auth_error","param":"None","code":401}}%
@@ -275,7 +273,7 @@ Expected Response
 
 </TabItem>
 
-<TabItem value="bad2" label="Invalid Request (No `metadata` passed)">
+<TabItem value="bad2" label="無效請求（未傳入 `metadata`）">
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -294,14 +292,14 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```shell
 {"error":{"message":"Authentication Error, BadRequest please pass param=[metadata][generation_name] in request body. This is a required param","type":"auth_error","param":"None","code":401}}%
 ```
 
 </TabItem>
-<TabItem value="good" label="Valid Request">
+<TabItem value="good" label="有效請求">
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -320,7 +318,7 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```shell
 {"id":"chatcmpl-9XALnHqkCBMBKrOx7Abg0hURHqYtY","choices":[{"finish_reason":"stop","index":0,"message":{"content":"Hello! How can I assist you today?","role":"assistant"}}],"created":1717691639,"model":"gpt-3.5-turbo-0125","object":"chat.completion","system_fingerprint":null,"usage":{"completion_tokens":9,"prompt_tokens":8,"total_tokens":17}}%
@@ -329,17 +327,16 @@ Expected Response
 </TabItem>
 </Tabs>
 
-### Control available public, private routes
+### 控制可用的公開、私有路由 {#control-available-public-private-routes}
 
-See [Control Public & Private Routes](./proxy/public_routes.md) for detailed documentation on configuring public routes, admin-only routes, allowed routes, and wildcard patterns.
+請參閱 [控制公開與私有路由](./proxy/public_routes.md)，了解設定公開路由、僅管理員可用路由、允許路由，以及萬用字元模式的詳細文件。
 
+## 防護欄 - 秘密偵測/去識別化 {#guardrails---secret-detectionredaction}
+❓ 當您要在傳送給 LLM 的請求中 REDACT API 金鑰與秘密時使用此功能。
 
-## Guardrails - Secret Detection/Redaction
-❓ Use this to REDACT API Keys, Secrets sent in requests to an LLM.
+範例：如果您想在以下請求中去除 `OPENAI_API_KEY` 的值
 
-Example if you want to redact the value of `OPENAI_API_KEY` in the following request
-
-#### Incoming Request
+#### 傳入請求 {#incoming-request}
 
 ```json
 {
@@ -352,7 +349,7 @@ Example if you want to redact the value of `OPENAI_API_KEY` in the following req
 }
 ```
 
-#### Request after Moderation
+#### 經過審核後的請求 {#request-after-moderation}
 
 ```json
 {
@@ -365,24 +362,24 @@ Example if you want to redact the value of `OPENAI_API_KEY` in the following req
 }
 ```
 
-**Usage**
+**使用方式**
 
-**Step 1** Add this to your config.yaml
+**步驟 1** 將以下內容加入您的 config.yaml
 
 ```yaml
 litellm_settings:
   callbacks: ["hide_secrets"]
 ```
 
-**Step 2** Run litellm proxy with `--detailed_debug` to see the server logs
+**步驟 2** 以 `--detailed_debug` 執行 litellm proxy 以查看伺服器記錄
 
 ```
 litellm --config config.yaml --detailed_debug
 ```
 
-**Step 3** Test it with request
+**步驟 3** 使用請求測試
 
-Send this request
+送出此請求
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
     --header 'Authorization: Bearer sk-1234' \
@@ -398,13 +395,13 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expect to see the following warning on your litellm server logs
+預期在您的 litellm 伺服器記錄中看到以下警告
 
 ```shell
 LiteLLM Proxy:WARNING: secret_detection.py:88 - Detected and redacted secrets in message: ['Secret Keyword']
 ```
 
-You can also see the raw request sent from litellm to the API Provider
+您也可以看到從 litellm 傳送到 API 提供者的原始請求
 ```json
 POST Request Sent from LiteLLM:
 curl -X POST \
@@ -423,15 +420,15 @@ https://api.groq.com/openai/v1/ \
 }
 ```
 
-### Secret Detection On/Off per API Key
+### 每個 API 金鑰的秘密偵測開/關 {#secret-detection-onoff-per-api-key}
 
-❓ Use this when you need to switch guardrails on/off per API Key
+❓ 當您需要針對每個 API 金鑰切換防護欄開/關時使用此功能
 
-**Step 1** Create Key with `hide_secrets` Off
+**步驟 1** 建立將 `hide_secrets` 設為關閉的金鑰
 
-👉 Set `"permissions": {"hide_secrets": false}` with either `/key/generate` or `/key/update`
+👉 將 `"permissions": {"hide_secrets": false}` 設為 `/key/generate` 或 `/key/update`
 
-This means the `hide_secrets` guardrail is off for all requests from this API Key
+這表示對此 API 金鑰發出的所有請求都會關閉 `hide_secrets` 防護欄
 
 <Tabs>
 <TabItem value="/key/generate" label="/key/generate">
@@ -469,7 +466,7 @@ curl --location 'http://0.0.0.0:4000/key/update' \
 </TabItem>
 </Tabs>
 
-**Step 2** Test it with new key
+**步驟 2** 使用新金鑰測試
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -486,55 +483,55 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-Expect to see `sk-1234777` in your server logs on your callback.
+預期在您的回呼所記錄的伺服器記錄中看到 `sk-1234777`。
 
 :::info
-The `hide_secrets` guardrail check did not run on this request because api key=sk-jNm1Zar7XfNdZXp49Z1kSQ has `"permissions": {"hide_secrets": false}`
+此請求未執行 `hide_secrets` 防護欄檢查，因為 api key=sk-jNm1Zar7XfNdZXp49Z1kSQ 已經 `"permissions": {"hide_secrets": false}`
 :::
 
-## Content Moderation
-### Content Moderation with LLM Guard
+## 內容審核 {#content-moderation}
+### 使用 LLM Guard 的內容審核 {#content-moderation-with-llm-guard}
 
 :::info
 
-`llmguard_moderations` requires a LiteLLM Enterprise license and the `litellm-enterprise` package. The OSS guardrail framework still supports custom guardrails and Presidio PII masking.
+`llmguard_moderations` 需要 LiteLLM Enterprise 授權與 `litellm-enterprise` 套件。OSS 防護欄架構仍支援自訂防護欄與 Presidio PII 遮罩。
 
 :::
 
-Set the LLM Guard API Base in your environment
+在您的環境中設定 LLM Guard API Base
 
 ```env
 LLM_GUARD_API_BASE = "http://0.0.0.0:8192" # deployed llm guard api
 ```
 
-Add `llmguard_moderations` as a callback
+將 `llmguard_moderations` 加入為回呼
 
 ```yaml
 litellm_settings:
     callbacks: ["llmguard_moderations"]
 ```
 
-Now you can easily test it
+現在您可以輕鬆測試了
 
-- Make a regular /chat/completion call
+- 進行一般的 /chat/completion 呼叫
 
-- Check your proxy logs for any statement with `LLM Guard:`
+- 檢查您的 proxy 記錄中是否有任何包含 `LLM Guard:` 的陳述
 
-Expected results:
+預期結果：
 
 ```
 LLM Guard: Received response - {"sanitized_prompt": "hello world", "is_valid": true, "scanners": { "Regex": 0.0 }}
 ```
-#### Turn on/off per key
+#### 依金鑰開啟/關閉 {#turn-onoff-per-key}
 
-**1. Update config**
+**1. 更新設定**
 ```yaml
 litellm_settings:
     callbacks: ["llmguard_moderations"]
     llm_guard_mode: "key-specific"
 ```
 
-**2. Create new key**
+**2. 建立新金鑰**
 
 ```bash
 curl --location 'http://localhost:4000/key/generate' \
@@ -550,7 +547,7 @@ curl --location 'http://localhost:4000/key/generate' \
 # Returns {..'key': 'my-new-key'}
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -563,16 +560,16 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
     }'
 ```
 
-#### Turn on/off per request
+#### 依請求開啟/關閉 {#turn-onoff-per-request}
 
-**1. Update config**
+**1. 更新設定**
 ```yaml
 litellm_settings:
     callbacks: ["llmguard_moderations"]
     llm_guard_mode: "request-specific"
 ```
 
-**2. Create new key**
+**2. 建立新金鑰**
 
 ```bash
 curl --location 'http://localhost:4000/key/generate' \
@@ -585,7 +582,7 @@ curl --location 'http://localhost:4000/key/generate' \
 # Returns {..'key': 'my-new-key'}
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
@@ -618,7 +615,7 @@ response = client.chat.completions.create(
 print(response)
 ```
 </TabItem>
-<TabItem value="curl" label="Curl Request">
+<TabItem value="curl" label="Curl 請求">
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -634,11 +631,11 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Content Moderation with LlamaGuard
+### 使用 LlamaGuard 的內容審核 {#content-moderation-with-llamaguard}
 
-Currently works with Sagemaker's LlamaGuard endpoint.
+目前可搭配 Sagemaker 的 LlamaGuard 端點運作。
 
-How to enable this in your config.yaml:
+如何在您的 config.yaml 中啟用此功能：
 
 ```yaml
 litellm_settings:
@@ -646,7 +643,7 @@ litellm_settings:
    llamaguard_model_name: "sagemaker/jumpstart-dft-meta-textgeneration-llama-guard-7b"
 ```
 
-Make sure you have the relevant keys in your environment, eg.:
+請確保您的環境中有相關金鑰，例如：
 
 ```
 os.environ["AWS_ACCESS_KEY_ID"] = ""
@@ -654,11 +651,11 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = ""
 os.environ["AWS_REGION_NAME"] = ""
 ```
 
-#### Customize LlamaGuard prompt
+#### 自訂 LlamaGuard 提示詞 {#customize-llamaguard-prompt}
 
-To modify the unsafe categories llama guard evaluates against, just create your own version of [this category list](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/llamaguard_prompt.txt)
+若要修改 llama guard 所評估的非安全類別，只要建立您自己的 [此類別清單](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/llamaguard_prompt.txt) 版本即可
 
-Point your proxy to it
+將您的 proxy 指向它
 
 ```yaml
 callbacks: ["llamaguard_moderations"]
@@ -666,42 +663,42 @@ callbacks: ["llamaguard_moderations"]
   llamaguard_unsafe_content_categories: /path/to/llamaguard_prompt.txt
 ```
 
-### Content Moderation with Google Text Moderation
+### 使用 Google Text Moderation 的內容審核 {#content-moderation-with-google-text-moderation}
 
-Requires your GOOGLE_APPLICATION_CREDENTIALS to be set in your .env (same as VertexAI).
+需要在您的 .env 中設定 GOOGLE_APPLICATION_CREDENTIALS（與 VertexAI 相同）。
 
-How to enable this in your config.yaml:
+如何在您的 config.yaml 中啟用此功能：
 
 ```yaml
 litellm_settings:
    callbacks: ["google_text_moderation"]
 ```
 
-#### Set custom confidence thresholds
+#### 設定自訂信心閾值 {#set-custom-confidence-thresholds}
 
-Google Moderations checks the test against several categories. [Source](https://cloud.google.com/natural-language/docs/moderating-text#safety_attribute_confidence_scores)
+Google Moderations 會針對多個類別檢查測試。[來源](https://cloud.google.com/natural-language/docs/moderating-text#safety_attribute_confidence_scores)
 
-#### Set global default confidence threshold
+#### 設定全域預設信心閾值 {#set-global-default-confidence-threshold}
 
-By default this is set to 0.8. But you can override this in your config.yaml.
+預設值為 0.8，但您可以在 config.yaml 中覆寫。
 
 ```yaml
 litellm_settings:
     google_moderation_confidence_threshold: 0.4
 ```
 
-#### Set category-specific confidence threshold
+#### 設定特定類別的信心閾值 {#set-category-specific-confidence-threshold}
 
-Set a category specific confidence threshold in your config.yaml. If none set, the global default will be used.
+在 config.yaml 中為特定類別設定信心閾值。若未設定，將使用全域預設值。
 
 ```yaml
 litellm_settings:
     toxic_confidence_threshold: 0.1
 ```
 
-Here are the category specific values:
+以下為特定類別的值：
 
-| Category | Setting |
+| 類別 | 設定 |
 | -------- | -------- |
 | "toxic" | toxic_confidence_threshold: 0.1 |
 | "insult" | insult_confidence_threshold: 0.1 |
@@ -720,34 +717,34 @@ Here are the category specific values:
 | "finance" | finance_threshold: 0.1 |
 | "legal" | legal_threshold: 0.1 |
 
-## Swagger Docs - Custom Routes + Branding
+## Swagger 文件 - 自訂路由 + 品牌化 {#swagger-docs---custom-routes--branding}
 
 :::info
 
-Requires a LiteLLM Enterprise key to use. Get a free 2-week license [here](https://forms.gle/sTDVprBs18M4V8Le8)
+使用此功能需要 LiteLLM Enterprise 金鑰。可在 [這裡](https://forms.gle/sTDVprBs18M4V8Le8) 取得 2 週免費授權
 
 :::
 
-Set LiteLLM Key in your environment
+在您的環境中設定 LiteLLM Key
 
 ```bash
 LITELLM_LICENSE=""
 ```
 
-#### Customize Title + Description
+#### 自訂標題 + 描述 {#customize-title--description}
 
-In your environment, set:
+在您的環境中，設定：
 
 ```bash
 DOCS_TITLE="TotalGPT"
 DOCS_DESCRIPTION="Sample Company Description"
 ```
 
-#### Customize Routes
+#### 自訂路由 {#customize-routes}
 
-Hide admin routes from users.
+對使用者隱藏管理員路由。
 
-In your environment, set:
+在您的環境中，設定：
 
 ```bash
 DOCS_FILTERED="True" # only shows openai routes to user
@@ -755,8 +752,8 @@ DOCS_FILTERED="True" # only shows openai routes to user
 
 <Image img={require('../img/custom_swagger.png')}  style={{ width: '900px', height: 'auto' }} />
 
-## Enable Blocked User Lists
-If any call is made to proxy with this user id, it'll be rejected - use this if you want to let users opt-out of ai features
+## 啟用封鎖使用者清單 {#enable-blocked-user-lists}
+如果對 proxy 發出任何包含此使用者 id 的呼叫，該呼叫將會被拒絕 - 當您希望讓使用者選擇退出 AI 功能時可使用此功能
 
 ```yaml
 litellm_settings:
@@ -764,13 +761,13 @@ litellm_settings:
      blocked_user_list: ["user_id_1", "user_id_2", ...]  # can also be a .txt filepath e.g. `/relative/path/blocked_list.txt`
 ```
 
-### How to test
+### 如何測試 {#how-to-test}
 
 <Tabs>
 
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-Set `user=<user_id>` to the user id of the user who might have opted out.
+將 `user=<user_id>` 設為可能已選擇退出之使用者的 user id。
 
 ```python
 import openai
@@ -818,13 +815,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 :::info
 
-[Suggest a way to improve this](https://github.com/BerriAI/litellm/issues/new/choose)
+[建議改善此處](https://github.com/BerriAI/litellm/issues/new/choose)
 
 :::
 
-### Using via API
+### 透過 API 使用 {#using-via-api}
 
-**Block all calls for a customer id**
+**封鎖某個 customer id 的所有呼叫**
 
 ```
 curl -X POST "http://0.0.0.0:4000/customer/block" \
@@ -834,7 +831,7 @@ curl -X POST "http://0.0.0.0:4000/customer/block" \
 }'
 ```
 
-**Unblock calls for a user id**
+**解除某個 user id 的呼叫封鎖**
 
 ```
 curl -X POST "http://0.0.0.0:4000/user/unblock" \
@@ -844,7 +841,7 @@ curl -X POST "http://0.0.0.0:4000/user/unblock" \
 }'
 ```
 
-## Enable Banned Keywords List
+## 啟用禁用關鍵字清單 {#enable-banned-keywords-list}
 
 ```yaml
 litellm_settings:
@@ -852,7 +849,7 @@ litellm_settings:
      banned_keywords_list: ["hello"] # can also be a .txt file - e.g.: `/relative/path/keywords.txt`
 ```
 
-### Test this
+### 測試此功能 {#test-this}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -869,17 +866,17 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-## Set Max Request / Response Size on LiteLLM Proxy
+## 在 LiteLLM Proxy 上設定最大請求 / 回應大小 {#set-max-request--response-size-on-litellm-proxy}
 
-Use this if you want to set a maximum request / response size for your proxy server. If a request size is above the size it gets rejected + slack alert triggered
+如果您想為 proxy server 設定最大請求 / 回應大小，可使用此功能。如果請求大小超過此大小，該請求會被拒絕，並觸發 Slack 警示
 
-#### Usage
-**Step 1.** Set `max_request_size_mb` and `max_response_size_mb`
+#### 使用方式 {#usage}
+**步驟 1.** 設定 `max_request_size_mb` 和 `max_response_size_mb`
 
-For this example we set a very low limit on `max_request_size_mb` and expect it to get rejected
+在此範例中，我們對 `max_request_size_mb` 設定一個非常低的限制，並預期它會被拒絕
 
 :::info
-In production we recommend setting a `max_request_size_mb` /  `max_response_size_mb` around `32 MB`
+在正式環境中，我們建議將 `max_request_size_mb` /  `max_response_size_mb` 設為約 `32 MB`
 
 :::
 
@@ -898,7 +895,7 @@ general_settings:
   max_response_size_mb: 100 # 👈 Key Change - Max Response Size in MB
 ```
 
-**Step 2.** Test it with `/chat/completions` request
+**步驟 2.** 使用 `/chat/completions` 請求進行測試
 
 ```shell
 curl http://localhost:4000/v1/chat/completions \
@@ -912,36 +909,36 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Expected Response from request**
-We expect this to fail since the request size is over `max_request_size_mb`
+**請求的預期回應**
+我們預期這會失敗，因為請求大小超過 `max_request_size_mb`
 ```shell
 {"error":{"message":"Request size is too large. Request size is 0.0001125335693359375 MB. Max size is 1e-09 MB","type":"bad_request_error","param":"content-length","code":400}}
 ```
 
 ---
 
-## FAQ
+## 常見問題 {#faq}
 
-### How do I set up and verify an Enterprise License?
+### 如何設定並驗證 Enterprise 授權？ {#how-do-i-set-up-and-verify-an-enterprise-license}
 
-1. Add the license key to your environment:
+1. 將授權金鑰加入您的環境：
 
    ```env
    LITELLM_LICENSE="eyJ..."
    ```
 
-2. Restart LiteLLM Proxy.
+2. 重新啟動 LiteLLM Proxy。
 
-3. Open `http://<your-proxy-host>:<port>/` — the Swagger page should show **"Enterprise Edition"** in the description. If it doesn't, confirm the key is correct, unexpired, and that the proxy was fully restarted.
+3. 開啟 `http://<your-proxy-host>:<port>/` — Swagger 頁面應在描述中顯示 **"Enterprise Edition"**。如果沒有，請確認金鑰正確、尚未過期，且 proxy 已完全重新啟動。
 
-### Where can I read more about data security and compliance?
+### 我可以在哪裡閱讀更多關於資料安全與法規遵循的資訊？ {#where-can-i-read-more-about-data-security-and-compliance}
 
-See [Data Security / Legal / Compliance FAQs](./data_security.md).
+請參閱 [資料安全 / 法務 / 法規遵循常見問題](./data_security.md)。
 
-### How is pricing structured?
+### 定價結構是什麼？ {#how-is-pricing-structured}
 
-Pricing is based on usage. [Contact us](https://enterprise.litellm.ai/demo) for a quote tailored to your team.
+定價依使用量而定。請 [聯絡我們](https://enterprise.litellm.ai/demo) 取得為您的團隊量身打造的報價。
 
-### How do I get day-0 support for new models without restarting?
+### 如何在不重新啟動的情況下，為新模型取得 day-0 支援？ {#how-do-i-get-day-0-support-for-new-models-without-restarting}
 
-Use [Auto Sync New Models](./proxy/sync_models_github.md) to pull the latest pricing and context-window data from GitHub on demand or on a schedule — no restart required. Trigger a manual sync with `POST /reload/model_cost_map`, or schedule periodic syncs with `POST /schedule/model_cost_map_reload?hours=6`.
+使用 [自動同步新模型](./proxy/sync_models_github.md) 依需求或排程從 GitHub 取得最新的定價與 context-window 資料 — 無需重新啟動。可使用 `POST /reload/model_cost_map` 觸發手動同步，或使用 `POST /schedule/model_cost_map_reload?hours=6` 排程定期同步。

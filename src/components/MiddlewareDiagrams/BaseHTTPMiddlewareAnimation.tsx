@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './styles.module.css';
+import useLocaleText from '@site/src/utils/useLocaleText';
+
+const STAGE_LABELS_ZH: Record<string, string> = {
+  'Request Wrapping': '請求包裝',
+  'Sync Event': '同步事件',
+  'Memory Stream': '記憶體串流',
+  'Task Group': '工作群組',
+  'Background Task': '背景工作',
+  'Nested Task Group': '巢狀工作群組',
+  'Response Wrapping': '回應包裝',
+};
 
 interface Stage {
   label: string;
@@ -49,6 +60,7 @@ const INTERVAL_MS = 1200;
 const PAUSE_MS = 600;
 
 export default function BaseHTTPMiddlewareAnimation() {
+  const t = useLocaleText();
   const [activeStage, setActiveStage] = useState(0);
   const [paused, setPaused] = useState(false);
   const [expandedStage, setExpandedStage] = useState<number | null>(null);
@@ -99,7 +111,7 @@ export default function BaseHTTPMiddlewareAnimation() {
 
   return (
     <div className={styles.pipelineWrapper}>
-      <div className={styles.pipelineLabel}>7 steps per request</div>
+      <div className={styles.pipelineLabel}>{t('每個請求需 7 個步驟', '7 steps per request')}</div>
       <div className={styles.pipeline}>
         {STAGES.map((stage, i) => (
           <div className={styles.stageWrapper} key={i}>
@@ -113,7 +125,7 @@ export default function BaseHTTPMiddlewareAnimation() {
               }}
             >
               <div className={styles.stageNumber}>{i + 1}</div>
-              <div className={styles.stageLabel}>{stage.label}</div>
+              <div className={styles.stageLabel}>{t(STAGE_LABELS_ZH[stage.label], stage.label)}</div>
               <div className={styles.stageSubtitle}>{stage.subtitle}</div>
             </div>
           </div>

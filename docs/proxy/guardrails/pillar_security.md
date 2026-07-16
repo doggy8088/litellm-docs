@@ -1,30 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Pillar Security
+# Pillar Security {#pillar-security}
 
-Pillar Security integrates with [LiteLLM Proxy](https://docs.litellm.ai) via the [Generic Guardrail API](https://docs.litellm.ai/docs/adding_provider/generic_guardrail_api), providing comprehensive AI security scanning for your LLM applications.
+Pillar Security 透過 [Generic Guardrail API](https://docs.litellm.ai/docs/adding_provider/generic_guardrail_api) 與 [LiteLLM Proxy](https://docs.litellm.ai) 整合，為您的 LLM 應用程式提供完整的 AI 安全掃描。
 
-- **Prompt Injection Protection**: Prevent malicious prompt manipulation
-- **Jailbreak Detection**: Detect attempts to bypass AI safety measures
-- **PII + PCI Detection**: Automatically detect sensitive personal and payment card information
-- **Secret Detection**: Identify API keys, tokens, and credentials
-- **Content Moderation**: Filter harmful or inappropriate content
-- **Toxic Language**: Filter offensive or harmful language
+- **Prompt Injection Protection**：防止惡意 prompt 操作
+- **Jailbreak Detection**：偵測繞過 AI 安全措施的嘗試
+- **PII + PCI Detection**：自動偵測敏感個人資料與支付卡資訊
+- **Secret Detection**：識別 API 金鑰、token 與憑證
+- **Content Moderation**：篩選有害或不當內容
+- **Toxic Language**：篩選攻擊性或有害語言
 
+## 快速開始 {#quick-start}
 
-## Quick Start
-
-### 1. Set Environment Variables
+### 1. 設定環境變數 {#1-set-environment-variables}
 
 ```bash
 export PILLAR_API_KEY=your-pillar-api-key
 export OPENAI_API_KEY=your-openai-api-key
 ```
 
-### 2. Configure LiteLLM
+### 2. 設定 LiteLLM {#2-configure-litellm}
 
-Create or update your `config.yaml`:
+建立或更新您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -48,17 +47,17 @@ guardrails:
 ```
 
 :::warning Important
-- The `api_base` must be exactly `https://api.pillar.security/api/v1/integrations/litellm` — this is the only endpoint that supports the Generic Guardrail API integration.
-- The value `guardrail: generic_guardrail_api` must not be changed. This is the LiteLLM built-in guardrail type. However, you can customize the `guardrail_name` to any value you prefer.
+- `api_base` 必須完全等於 `https://api.pillar.security/api/v1/integrations/litellm` — 這是唯一支援 Generic Guardrail API 整合的端點。
+- `guardrail: generic_guardrail_api` 的值不可更改。這是 LiteLLM 內建的 guardrail 類型。不過，您可以將 `guardrail_name` 自訂為任何您偏好的值。
 :::
 
-### 3. Start LiteLLM Proxy
+### 3. 啟動 LiteLLM Proxy {#3-start-litellm-proxy}
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-### 4. Test the Integration
+### 4. 測試整合 {#4-test-the-integration}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -70,71 +69,71 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-Before you begin, ensure you have:
+在開始之前，請確認您已具備：
 
-1. **Pillar Security Account**: Sign up at [Pillar Dashboard](https://app.pillar.security)
-2. **API Credentials**: Get your API key from the dashboard
-3. **LiteLLM Proxy**: Install and configure LiteLLM proxy
+1. **Pillar Security 帳戶**：在 [Pillar Dashboard](https://app.pillar.security) 註冊
+2. **API 憑證**：從儀表板取得您的 API 金鑰
+3. **LiteLLM Proxy**：安裝並設定 LiteLLM proxy
 
-## Guardrail Modes
+## Guardrail 模式 {#guardrail-modes}
 
-Pillar Security supports three execution modes for comprehensive protection:
+Pillar Security 支援三種執行模式，以提供完整保護：
 
-| Mode | When It Runs | What It Protects | Use Case |
+| 模式 | 執行時間 | 保護內容 | 使用情境 |
 |------|-------------|------------------|----------|
-| **`pre_call`** | Before LLM call | User input only | Block malicious prompts, prevent prompt injection |
-| **`during_call`** | Parallel with LLM call | User input only | Input monitoring with lower latency |
-| **`post_call`** | After LLM response | Full conversation context | Output filtering, PII/PCI detection in responses |
+| **`pre_call`** | 在 LLM 呼叫之前 | 僅使用者輸入 | 封鎖惡意 prompts，防止 prompt injection |
+| **`during_call`** | 與 LLM 呼叫並行 | 僅使用者輸入 | 低延遲的輸入監控 |
+| **`post_call`** | 在 LLM 回應之後 | 完整對話內容 | 輸出篩選、回應中的 PII/PCI 偵測 |
 
-### Why Dual Mode is Recommended
+### 為什麼建議雙模式 {#why-dual-mode-is-recommended}
 
 :::tip Recommended
-Use `[pre_call, post_call]` for complete protection of both inputs and outputs.
+使用 `[pre_call, post_call]` 以完整保護輸入與輸出。
 :::
 
-- **Complete Protection**: Guards both incoming prompts and outgoing responses
-- **Prompt Injection Defense**: Blocks malicious input before reaching the LLM
-- **Response Monitoring**: Detects PII, secrets, or inappropriate content in outputs
-- **Full Context Analysis**: Pillar sees the complete conversation for better detection
+- **完整保護**：同時保護傳入的 prompts 與傳出的回應
+- **Prompt Injection 防禦**：在惡意輸入到達 LLM 前加以封鎖
+- **回應監控**：偵測輸出中的 PII、secret 或不當內容
+- **完整內容分析**：Pillar 可查看完整對話以提升偵測效果
 
-## Configuration Reference
+## 設定參考 {#configuration-reference}
 
-### Core Parameters
+### 核心參數 {#core-parameters}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `guardrail` | Must be `generic_guardrail_api` (do not change this value) |
-| `api_base` | Must be `https://api.pillar.security/api/v1/integrations/litellm` (do not change this value) |
-| `api_key` | Pillar API key (sent as `x-api-key` header) |
-| `mode` | When to run: `pre_call`, `post_call`, `during_call`, or array like `[pre_call, post_call]` |
-| `default_on` | Enable guardrail for all requests by default |
+| `guardrail` | 必須是 `generic_guardrail_api`（請勿更改此值） |
+| `api_base` | 必須是 `https://api.pillar.security/api/v1/integrations/litellm`（請勿更改此值） |
+| `api_key` | Pillar API 金鑰（以 `x-api-key` 標頭傳送） |
+| `mode` | 執行時間：`pre_call`、`post_call`、`during_call`，或類似 `[pre_call, post_call]` 的陣列 |
+| `default_on` | 預設為所有請求啟用 guardrail |
 
-### Pillar-Specific Parameters
+### Pillar 專屬參數 {#pillar-specific-parameters}
 
-These parameters are passed via `additional_provider_specific_params`:
+這些參數透過 `additional_provider_specific_params` 傳入：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `plr_mask` | bool | Enable automatic masking of sensitive data (PII, PCI, secrets) before sending to LLM |
-| `plr_evidence` | bool | Include detection evidence in response |
-| `plr_scanners` | bool | Include scanner details in response |
-| `plr_persist` | bool | Persist session data to Pillar dashboard |
+| `plr_mask` | bool | 在將資料送往 LLM 前，自動遮罩敏感資料（PII、PCI、secret） |
+| `plr_evidence` | bool | 在回應中包含偵測證據 |
+| `plr_scanners` | bool | 在回應中包含掃描器詳細資訊 |
+| `plr_persist` | bool | 將 session 資料儲存到 Pillar 儀表板 |
 
 :::tip
-**Enable `plr_mask: true`** to automatically sanitize sensitive data (PII, secrets, payment card info) before it reaches the LLM. Masked content is replaced with placeholders while original data is preserved in Pillar's audit logs.
+**啟用 `plr_mask: true`**，可在敏感資料（PII、secret、支付卡資訊）到達 LLM 前自動進行去識別化處理。被遮罩的內容會以替代字元取代，而原始資料會保留在 Pillar 的稽核記錄中。
 :::
 
-## Configuration Examples
+## 設定範例 {#configuration-examples}
 
 <Tabs>
-<TabItem value="recommended" label="Recommended (Dual Mode)">
+<TabItem value="recommended" label="建議（雙模式）">
 
-**Best for:**
-- **Complete Protection**: Guards both incoming prompts and outgoing responses
-- **Maximum Visibility**: Full scanner and evidence details for debugging
-- **Production Use**: Persistent sessions for dashboard monitoring
+**最適合：**
+- **完整保護**：同時保護傳入的 prompts 與傳出的回應
+- **最高可視性**：完整的掃描器與證據細節，便於除錯
+- **正式環境使用**：使用持久化 sessions 進行儀表板監控
 
 ```yaml
 model_list:
@@ -165,12 +164,12 @@ litellm_settings:
 ```
 
 </TabItem>
-<TabItem value="monitor" label="Monitor Mode">
+<TabItem value="monitor" label="監控模式">
 
-**Best for:**
-- **Logging Only**: Log all threats without blocking requests
-- **Analysis**: Understand threat patterns before enforcing blocks
-- **Testing**: Evaluate detection accuracy before production
+**最適合：**
+- **僅記錄**：記錄所有威脅但不封鎖請求
+- **分析**：在實施封鎖前了解威脅模式
+- **測試**：在正式上線前評估偵測準確度
 
 ```yaml
 model_list:
@@ -198,12 +197,12 @@ general_settings:
 ```
 
 </TabItem>
-<TabItem value="input-only" label="Input-Only Protection">
+<TabItem value="input-only" label="僅輸入保護">
 
-**Best for:**
-- **Input Protection**: Block malicious prompts before they reach the LLM
-- **Simple Setup**: Single guardrail configuration
-- **Lower Latency**: Only scans user input, not LLM responses
+**最適合：**
+- **輸入保護**：在惡意 prompts 到達 LLM 前加以封鎖
+- **簡單設定**：單一 guardrail 設定
+- **較低延遲**：只掃描使用者輸入，不掃描 LLM 回應
 
 ```yaml
 model_list:
@@ -230,12 +229,12 @@ general_settings:
 ```
 
 </TabItem>
-<TabItem value="lowlatency" label="Low Latency Parallel">
+<TabItem value="lowlatency" label="低延遲並行">
 
-**Best for:**
-- **Minimal Latency**: Run security scans in parallel with LLM calls
-- **Real-time Monitoring**: Threat detection without blocking
-- **High Throughput**: Performance-optimized configuration
+**最適合：**
+- **最低延遲**：與 LLM 呼叫並行執行安全掃描
+- **即時監控**：偵測威脅但不封鎖
+- **高吞吐量**：針對效能最佳化的設定
 
 ```yaml
 model_list:
@@ -263,13 +262,13 @@ general_settings:
 </TabItem>
 </Tabs>
 
-## Response Detail Levels
+## 回應詳細程度 {#response-detail-levels}
 
-Control what detection data is included in responses using `plr_scanners` and `plr_evidence`:
+使用 `plr_scanners` 和 `plr_evidence` 控制回應中包含哪些偵測資料：
 
-### Minimal Response
+### 最小回應 {#minimal-response}
 
-When both `plr_scanners` and `plr_evidence` are `false`:
+當 `plr_scanners` 和 `plr_evidence` 皆為 `false` 時：
 
 ```json
 {
@@ -278,11 +277,11 @@ When both `plr_scanners` and `plr_evidence` are `false`:
 }
 ```
 
-Use when you only care about whether Pillar detected a threat.
+當您只在意 Pillar 是否偵測到威脅時使用。
 
-### Scanner Breakdown
+### 掃描器分解 {#scanner-breakdown}
 
-When `plr_scanners: true`:
+當 `plr_scanners: true` 時：
 
 ```json
 {
@@ -298,11 +297,11 @@ When `plr_scanners: true`:
 }
 ```
 
-Use when you need to know which categories triggered.
+當您需要知道是哪一些類別觸發時使用。
 
-### Full Context
+### 完整內容 {#full-context}
 
-When both `plr_scanners: true` and `plr_evidence: true`:
+當 `plr_scanners: true` 和 `plr_evidence: true` 皆為真時：
 
 ```json
 {
@@ -322,15 +321,15 @@ When both `plr_scanners: true` and `plr_evidence: true`:
 }
 ```
 
-Ideal for debugging, audit logs, or compliance exports.
+適合用於除錯、稽核記錄或合規匯出。
 
 :::tip
-**Always set `plr_scanners: true` and `plr_evidence: true`** to see what Pillar detected. This is essential for troubleshooting and understanding security threats.
+**務必設定 `plr_scanners: true` 與 `plr_evidence: true`**，以查看 Pillar 偵測到的內容。這對於疑難排解與理解安全威脅至關重要。
 :::
 
-## Session Tracking
+## Session 追蹤 {#session-tracking}
 
-Pillar supports comprehensive session tracking using LiteLLM's metadata system:
+Pillar 使用 LiteLLM 的 metadata 系統支援完整的 session 追蹤：
 
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -346,22 +345,22 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-This provides clear, explicit conversation tracking that works seamlessly with LiteLLM's session management.
+這提供清楚且明確的對話追蹤，並可與 LiteLLM 的 session 管理無縫搭配。
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-Set your Pillar API key as an environment variable:
+將您的 Pillar API 金鑰設為環境變數：
 
 ```bash
 export PILLAR_API_KEY=your-pillar-api-key
 ```
 
-## Examples
+## 範例 {#examples}
 
 <Tabs>
-<TabItem value="safe" label="Safe Request">
+<TabItem value="safe" label="安全請求">
 
-**Safe request**
+**安全請求**
 
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -374,7 +373,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-**Expected response (Allowed):**
+**預期回應（允許）：**
 
 ```json
 {
@@ -398,7 +397,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
 </TabItem>
 <TabItem value="injection" label="Prompt Injection">
 
-**Prompt injection detection request:**
+**Prompt injection 偵測請求：**
 
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -416,7 +415,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-**Expected response (Blocked):**
+**預期回應（已封鎖）：**
 
 ```json
 {
@@ -447,9 +446,9 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
 ```
 
 </TabItem>
-<TabItem value="secrets" label="Secret Detection">
+<TabItem value="secrets" label="Secret 偵測">
 
-**Secret detection request:**
+**Secret 偵測請求：**
 
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -467,7 +466,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-**Expected response (Blocked):**
+**預期回應（已封鎖）：**
 
 ```json
 {
@@ -501,18 +500,18 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
 </TabItem>
 </Tabs>
 
-## Next Steps
+## 下一步 {#next-steps}
 
-- **Monitor your applications**: Use the [Pillar Dashboard](https://app.pillar.security) to view security events and analytics
-- **Customize detection**: Configure specific scanners and thresholds for your use case
-- **Scale your deployment**: Use LiteLLM's load balancing features with Pillar protection
+- **監控您的應用程式**：使用 [Pillar Dashboard](https://app.pillar.security) 查看安全事件與分析
+- **自訂偵測**：針對您的使用情境設定特定的掃描器與閾值
+- **擴展您的部署**：將 LiteLLM 的負載平衡功能與 Pillar 保護搭配使用
 
-## Support
+## 支援 {#support}
 
-Need help with your LiteLLM integration? Contact us at support@pillar.security
+您的 LiteLLM 整合需要協助嗎？請聯絡 support@pillar.security
 
-### Resources
+### 資源 {#resources}
 
 - [Pillar Dashboard](https://app.pillar.security)
-- [LiteLLM Documentation](https://docs.litellm.ai)
-- [Pillar API Reference](https://docs.pillar.security/docs/api/introduction)
+- [LiteLLM 文件](https://docs.litellm.ai)
+- [Pillar API 參考](https://docs.pillar.security/docs/api/introduction)

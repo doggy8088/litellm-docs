@@ -2,18 +2,18 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock Guardrails
+# Bedrock 防護欄 {#bedrock-guardrails}
 
 :::tip ⚡️
-If you haven't set up or authenticated your Bedrock provider yet, see the [Bedrock Provider Setup & Authentication Guide](../../providers/bedrock.md).
+如果您尚未設定或完成 Bedrock 提供者驗證，請參閱 [Bedrock 提供者設定與驗證指南](../../providers/bedrock.md)。
 :::
 
-LiteLLM supports Bedrock guardrails via the [Bedrock ApplyGuardrail API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html). 
+LiteLLM 支援透過 [Bedrock ApplyGuardrail API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html) 使用 Bedrock 防護欄。 
 
-## Quick Start
-### 1. Define Guardrails on your LiteLLM config.yaml 
+## 快速開始 {#quick-start}
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄  {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section
+在 `guardrails` 區段下定義您的防護欄
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -33,27 +33,26 @@ guardrails:
   
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
-- `during_call` Run **during** LLM call, on **input** Same as `pre_call` but runs in parallel as LLM call.  Response not returned until guardrail check completes
+- `pre_call` 在 LLM 請求**之前**執行，針對**輸入**
+- `post_call` 在 LLM 請求**之後**執行，針對**輸入與輸出**
+- `during_call` 在 LLM 請求**期間**執行，針對**輸入**。與 `pre_call` 相同，但會與 LLM 請求並行執行。 在防護欄檢查完成之前不會回傳回應
 
-### 2. Start LiteLLM Gateway 
-
+### 2. 啟動 LiteLLM 閘道  {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求  {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="失敗的呼叫" value = "not-allowed">
 
-Expect this to fail since since `ishaan@berri.ai` in the request is PII
+預期這會失敗，因為請求中的 `ishaan@berri.ai` 是 PII
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -68,7 +67,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```shell
 {
@@ -121,7 +120,7 @@ Expected response on failure
 
 </TabItem>
 
-<TabItem label="Successful Call " value = "allowed">
+<TabItem label="成功的呼叫 " value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -138,17 +137,16 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-
 </Tabs>
 
-## PII Masking with Bedrock Guardrails
+## 使用 Bedrock 防護欄進行 PII 遮罩 {#pii-masking-with-bedrock-guardrails}
 
-Bedrock guardrails support PII detection and masking capabilities. To enable this feature, you need to:
+Bedrock 防護欄支援 PII 偵測與遮罩功能。若要啟用此功能，您需要：
 
-1. Set `mode` to `pre_call` to run the guardrail check before the LLM call
-2. Enable masking by setting `mask_request_content` and/or `mask_response_content` to `true`
+1. 將 `mode` 設為 `pre_call`，以便在 LLM 請求之前執行防護欄檢查
+2. 透過將 `mask_request_content` 和／或 `mask_response_content` 設為 `true` 來啟用遮罩
 
-Here's how to configure it in your config.yaml:
+以下是如何在您的 config.yaml 中進行設定：
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 model_list:
@@ -170,31 +168,31 @@ guardrails:
       mask_response_content: true   # Enable masking in model responses
 ```
 
-With this configuration, when the bedrock guardrail intervenes, litellm will read the masked output from the guardrail and send it to the model.
+使用此設定時，當 bedrock 防護欄介入時，litellm 會讀取來自防護欄的已遮罩輸出，並將其傳送給模型。
 
-### Example Usage
+### 使用範例 {#example-usage}
 
-When enabled, PII will be automatically masked in the text. For example, if a user sends:
+啟用後，PII 會自動在文字中被遮罩。範例如下，若使用者送出：
 
 ```
 My email is john.doe@example.com and my phone number is 555-123-4567
 ```
 
-The text sent to the model might be masked as:
+傳送給模型的文字可能會被遮罩為：
 
 ```
 My email is [EMAIL] and my phone number is [PHONE_NUMBER]
 ```
 
-This helps protect sensitive information while still allowing the model to understand the context of the request.
+這有助於在仍能讓模型理解請求脈絡的同時，保護敏感資訊。
 
-## Experimental: Only Send Latest User Message
+## 實驗性：只傳送最新的使用者訊息 {#experimental-only-send-latest-user-message}
 
-When you're chaining long conversations through Bedrock guardrails, you can opt into a lighter, experimental behavior by setting `experimental_use_latest_role_message_only: true` in the guardrail's `litellm_params`. When enabled, LiteLLM only sends the most recent `user` message (or assistant output during post-call checks) to Bedrock, which:
+當您透過 Bedrock 防護欄串接長篇對話時，可透過在防護欄的 `litellm_params` 中設定 `experimental_use_latest_role_message_only: true`，選擇較輕量、實驗性的行為。啟用後，LiteLLM 只會將最近的 `user` 訊息（或在後續呼叫檢查期間的 assistant 輸出）傳送給 Bedrock，這會：
 
-- prevents unintended blocks on older system/dev messages
-- keeps Bedrock payloads smaller, reducing latency and cost
-- applies to proxy hooks (`pre_call`, `during_call`) and the `/guardrails/apply_guardrail` testing endpoint
+- 避免舊的 system/dev 訊息造成非預期封鎖
+- 讓 Bedrock 載荷更小，降低延遲與成本
+- 適用於 proxy hooks（`pre_call`、`during_call`）以及 `/guardrails/apply_guardrail` 測試端點
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 guardrails:
@@ -208,17 +206,17 @@ guardrails:
       experimental_use_latest_role_message_only: true  # NEW
 ```
 
-> ⚠️ This flag is currently experimental and defaults to `false` to preserve the legacy behavior (entire message history). We'll be listening to user feedback to decide if this becomes the default or rolls out more broadly.
+> ⚠️ 此旗標目前屬於實驗性功能，預設為 `false`，以保留舊版行為（完整訊息歷史）。我們會持續聆聽使用者回饋，以決定是否將其設為預設或更廣泛推出。
 
-## Disabling Exceptions on Bedrock BLOCK
+## 停用 Bedrock BLOCK 時的例外 {#disabling-exceptions-on-bedrock-block}
 
-By default, when Bedrock guardrails block content, LiteLLM raises an HTTP 400 exception. However, you can disable this behavior by setting `disable_exception_on_block: true`. This is particularly useful when integrating with **OpenWebUI**, where exceptions can interrupt the chat flow and break the user experience.
+預設情況下，當 Bedrock 防護欄封鎖內容時，LiteLLM 會引發 HTTP 400 例外。不過，您可以透過設定 `disable_exception_on_block: true` 來停用此行為。這在與 **OpenWebUI** 整合時特別有用，因為例外可能會中斷對話流程並破壞使用者體驗。
 
-When exceptions are disabled, instead of receiving an error, you'll get a successful response containing the Bedrock guardrail's modified/blocked output.
+停用例外後，您不會收到錯誤，而是會收到一個成功回應，內容包含 Bedrock 防護欄修改／封鎖後的輸出。
 
-### Configuration
+### 設定 {#configuration}
 
-Add `disable_exception_on_block: true` to your guardrail configuration:
+將 `disable_exception_on_block: true` 加入您的防護欄設定：
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 model_list:
@@ -239,12 +237,12 @@ guardrails:
       disable_exception_on_block: true  # Prevents exceptions when content is blocked
 ```
 
-### Behavior Comparison
+### 行為比較 {#behavior-comparison}
 
 <Tabs>
-<TabItem label="With Exceptions (Default)" value="with-exceptions">
+<TabItem label="有例外（預設）" value="with-exceptions">
 
-When `disable_exception_on_block: false` (default):
+當 `disable_exception_on_block: false`（預設）時：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -259,7 +257,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 400 Error**
+**回應：HTTP 400 錯誤**
 ```json
 {
   "error": {
@@ -280,9 +278,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem label="Without Exceptions" value="without-exceptions">
+<TabItem label="無例外" value="without-exceptions">
 
-When `disable_exception_on_block: true`:
+當 `disable_exception_on_block: true` 時：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -297,7 +295,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 200 Success**
+**回應：HTTP 200 成功**
 ```json
 {
   "id": "chatcmpl-123",

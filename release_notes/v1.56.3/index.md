@@ -21,38 +21,35 @@ import Image from '@theme/IdealImage';
 
 :::info
 
-Get a 7 day free trial for LiteLLM Enterprise [here](https://litellm.ai/#trial).
+在此可免費試用 LiteLLM Enterprise 7 天 [這裡](https://litellm.ai/#trial)。
 
-**no call needed**
+**無需致電**
 
 :::
 
-## New Features
+## 新功能 {#new-features}
 
-### ✨ Log Guardrail Traces 
+### ✨ 記錄防護欄追蹤 {#-log-guardrail-traces}
 
-Track guardrail failure rate and if a guardrail is going rogue and failing requests. [Start here](https://docs.litellm.ai/docs/proxy/guardrails/quick_start)
+追蹤防護欄失敗率，以及防護欄是否失控並導致請求失敗。 [從這裡開始](https://docs.litellm.ai/docs/proxy/guardrails/quick_start)
 
-
-#### Traced Guardrail Success
+#### 已追蹤的防護欄成功 {#traced-guardrail-success}
 
 <Image img={require('../../img/gd_success.png')} />
 
-#### Traced Guardrail Failure
+#### 已追蹤的防護欄失敗 {#traced-guardrail-failure}
 
 <Image img={require('../../img/gd_fail.png')} />
 
+### `/guardrails/list`  {#guardrailslist}
 
-### `/guardrails/list` 
-
-`/guardrails/list` allows clients to view available guardrails + supported guardrail params
-
+`/guardrails/list` 可讓用戶端檢視可用的防護欄 + 支援的防護欄參數
 
 ```shell
 curl -X GET 'http://0.0.0.0:4000/guardrails/list'
 ```
 
-Expected response
+預期回應
 
 ```json
 {
@@ -78,10 +75,9 @@ Expected response
 ```
 
 
-### ✨ Guardrails with Mock LLM 
+### ✨ 搭配 Mock LLM 的防護欄 {#-guardrails-with-mock-llm}
 
-
-Send `mock_response` to test guardrails without making an LLM call. More info on `mock_response` [here](https://docs.litellm.ai/docs/proxy/guardrails/quick_start)
+傳送 `mock_response` 來測試防護欄，無需進行 LLM 請求。更多關於 `mock_response` 的資訊 [請見這裡](https://docs.litellm.ai/docs/proxy/guardrails/quick_start)
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -98,20 +94,18 @@ curl -i http://localhost:4000/v1/chat/completions \
 ```
 
 
+### 將金鑰指派給使用者 {#assign-keys-to-users}
 
-### Assign Keys to Users
-
-You can now assign keys to users via Proxy UI
-
+您現在可以透過 Proxy UI 將金鑰指派給使用者
 
 <Image img={require('../../img/ui_key.png')} />
 
-## New Models
+## 新模型 {#new-models}
 
 - `openrouter/openai/o1`
 - `vertex_ai/mistral-large@2411`
 
-## Fixes 
+## 修正 {#fixes}
 
-- Fix `vertex_ai/` mistral model pricing: https://github.com/BerriAI/litellm/pull/7345
-- Missing model_group field in logs for aspeech call types https://github.com/BerriAI/litellm/pull/7392
+- 修正 `vertex_ai/` mistral 模型定價：https://github.com/BerriAI/litellm/pull/7345
+- logs 中 aspeech 請求類型缺少 model_group 欄位 https://github.com/BerriAI/litellm/pull/7392

@@ -2,23 +2,23 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CLI - Quick Start
+# CLI - 快速開始 {#cli---quick-start}
 
-Setup LiteLLM Proxy quickly via CLI. 
+透過 CLI 快速設定 LiteLLM Proxy。 
 
-LiteLLM Server (LLM Gateway) manages:
+LiteLLM Server（LLM 閘道）管理：
 
-* **Unified Interface**: Calling 100+ LLMs [Huggingface/Bedrock/TogetherAI/etc.](#other-supported-models) in the OpenAI `ChatCompletions` & `Completions` format
-* **Cost tracking**: Authentication, Spend Tracking & Budgets [Virtual Keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
-* **Load Balancing**: between [Multiple Models](#multiple-models---quick-start) + [Deployments of the same model](#multiple-instances-of-1-model) - LiteLLM proxy can handle 1.5k+ requests/second during load tests.
+* **統一介面**：以 OpenAI `ChatCompletions` 與 `Completions` 格式呼叫 100+ 個 LLM [Huggingface/Bedrock/TogetherAI/etc.](#other-supported-models)
+* **成本追蹤**：驗證、支出追蹤與預算 [Virtual Keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
+* **負載平衡**：[多個模型](#multiple-models---quick-start) + [相同模型的多個部署](#multiple-instances-of-1-model) 之間 - LiteLLM proxy 在負載測試期間可處理每秒 1.5k+ 個請求。
 
 ```shell
 $ uv tool install 'litellm[proxy]'
 ```
 
-## Quick Start - LiteLLM Proxy CLI
+## 快速開始 - LiteLLM Proxy CLI {#quick-start---litellm-proxy-cli}
 
-Run the following command to start the litellm proxy
+執行以下命令以啟動 litellm proxy
 ```shell
 $ litellm --model huggingface/bigcode/starcoder
 
@@ -28,7 +28,7 @@ $ litellm --model huggingface/bigcode/starcoder
 
 :::info
 
-Run with `--detailed_debug` if you need detailed debug logs 
+若您需要詳細的除錯記錄，請使用 `--detailed_debug` 
 
 ```shell
 $ litellm --model huggingface/bigcode/starcoder --detailed_debug
@@ -40,10 +40,10 @@ In a new shell, run, this will make an `openai.chat.completions` request. Ensure
 litellm --test
 ```
 
-This will now automatically route any requests for gpt-3.5-turbo to bigcode starcoder, hosted on huggingface inference endpoints. 
+這現在會自動將所有對 gpt-3.5-turbo 的請求路由到託管於 huggingface inference endpoints 的 bigcode starcoder。 
 
-### Supported LLMs
-All LiteLLM supported LLMs are supported on the Proxy. Seel all [supported llms](https://docs.litellm.ai/docs/providers)
+### 支援的 LLM {#supported-llms}
+LiteLLM 支援的所有 LLM 都支援在 Proxy 上使用。查看所有[支援的 llms](https://docs.litellm.ai/docs/providers)
 <Tabs>
 <TabItem value="bedrock" label="AWS Bedrock">
 
@@ -85,7 +85,7 @@ $ litellm --model ollama/<ollama-model-name>
 ```
 
 </TabItem>
-<TabItem value="openai-proxy" label="OpenAI Compatible Endpoint">
+<TabItem value="openai-proxy" label="OpenAI 相容端點">
 
 ```shell
 $ export OPENAI_API_KEY=my-api-key
@@ -108,7 +108,7 @@ $ litellm --model vertex_ai/gemini-pro
 ```
 </TabItem>
 
-<TabItem value="huggingface" label="Huggingface (TGI) Deployed">
+<TabItem value="huggingface" label="已部署的 Huggingface (TGI)">
 
 ```shell
 $ export HUGGINGFACE_API_KEY=my-api-key #[OPTIONAL]
@@ -118,7 +118,7 @@ $ litellm --model huggingface/<your model name> --api_base <your-api-base> # e.g
 ```
 
 </TabItem>
-<TabItem value="huggingface-local" label="Huggingface (TGI) Local">
+<TabItem value="huggingface-local" label="本機 Huggingface (TGI)">
 
 ```shell
 $ litellm --model huggingface/<your model name> --api_base http://0.0.0.0:8001
@@ -149,7 +149,7 @@ $ litellm --model claude-instant-1
 
 </TabItem>
 <TabItem value="vllm-local" label="VLLM">
-Assuming you're running vllm locally
+假設您是在本機執行 vllm
 
 ```shell
 $ litellm --model vllm/facebook/opt-125m
@@ -223,11 +223,11 @@ $ litellm --model command-nightly
 
 </Tabs>
 
-## Quick Start - LiteLLM Proxy + Config.yaml
-The config allows you to create a model list and set `api_base`, `max_tokens` (all litellm params). See more details about the config [here](https://docs.litellm.ai/docs/proxy/configs)
+## 快速開始 - LiteLLM Proxy + Config.yaml {#quick-start---litellm-proxy--configyaml}
+此設定讓您可以建立模型清單並設定 `api_base`、`max_tokens`（所有 litellm 參數）。關於設定的更多詳細資訊請見[這裡](https://docs.litellm.ai/docs/proxy/configs)
 
-### Create a Config for LiteLLM Proxy
-Example config
+### 為 LiteLLM Proxy 建立設定 {#create-a-config-for-litellm-proxy}
+設定範例
 
 ```yaml
 model_list: 
@@ -248,23 +248,23 @@ model_list:
       api_key: <your-vllm-api-key|none>
 ```
 
-### Run proxy with config
+### 使用設定執行 proxy {#run-proxy-with-config}
 
 ```shell
 litellm --config your_config.yaml
 ```
 
 
-## Using LiteLLM Proxy - Curl Request, OpenAI Package, Langchain
+## 使用 LiteLLM Proxy - Curl 請求、OpenAI 套件、Langchain {#using-litellm-proxy---curl-request-openai-package-langchain}
 
 :::info
-LiteLLM is compatible with several SDKs - including OpenAI SDK, Anthropic SDK, Mistral SDK, LLamaIndex, Langchain (Js, Python)
+LiteLLM 與多個 SDK 相容 - 包括 OpenAI SDK、Anthropic SDK、Mistral SDK、LLamaIndex、Langchain（Js、Python）
 
-[More examples here](user_keys)
+[更多範例請見這裡](user_keys)
 :::
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -369,7 +369,7 @@ print(query_result[:5])
 </TabItem>
 <TabItem value="litellm" label="LiteLLM SDK">
 
-This is **not recommended**. There is duplicate logic as the proxy also uses the sdk, which might lead to unexpected errors. 
+這**不建議**。由於 proxy 也會使用此 SDK，因此存在重複邏輯，這可能導致非預期錯誤。 
 
 ```python
 from litellm import completion 
@@ -420,43 +420,40 @@ print(message.content)
 
 </Tabs>
 
-[**More Info**](./configs.md)
+[**更多資訊**](./configs.md)
 
+## 📖 Proxy 端點 - [Swagger 文件](https://litellm-api.up.railway.app/) {#-proxy-endpoints---swagger-docshttpslitellm-apiuprailwayapp}
+- POST `/chat/completions` - 呼叫 100+ 個 LLM 的聊天完成端點
+- POST `/completions` - 完成端點
+- POST `/embeddings` - Azure、OpenAI、Huggingface 端點的嵌入端點
+- GET `/models` - 伺服器上的可用模型
+- POST `/key/generate` - 產生用於存取 proxy 的金鑰
 
+## 除錯 Proxy  {#debugging-proxy}
 
-## 📖 Proxy Endpoints - [Swagger Docs](https://litellm-api.up.railway.app/)
-- POST `/chat/completions` - chat completions endpoint to call 100+ LLMs
-- POST `/completions` - completions endpoint
-- POST `/embeddings` - embedding endpoint for Azure, OpenAI, Huggingface endpoints
-- GET `/models` - available models on server
-- POST `/key/generate` - generate a key to access the proxy
-
-
-## Debugging Proxy 
-
-Events that occur during normal operation
+正常運作期間發生的事件
 ```shell
 litellm --model gpt-3.5-turbo --debug
 ```
 
-Detailed information
+詳細資訊
 ```shell
 litellm --model gpt-3.5-turbo --detailed_debug
 ```
 
-### Set Debug Level using env variables
+### 使用環境變數設定除錯等級 {#set-debug-level-using-env-variables}
 
-Events that occur during normal operation
+正常運作期間發生的事件
 ```shell
 export LITELLM_LOG=INFO
 ```
 
-Detailed information
+詳細資訊
 ```shell
 export LITELLM_LOG=DEBUG
 ```
 
-No Logs
+沒有記錄
 ```shell
 export LITELLM_LOG=None
 ```

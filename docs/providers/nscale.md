@@ -1,45 +1,44 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Nscale (EU Sovereign)
+# Nscale（EU 主權） {#nscale-eu-sovereign}
 
 https://docs.nscale.com/docs/inference/chat
 
 :::tip
 
-**We support ALL Nscale models, just set `model=nscale/<any-model-on-nscale>` as a prefix when sending litellm requests**
+**我們支援所有 Nscale 模型，只要在送出 litellm 請求時將 `model=nscale/<any-model-on-nscale>` 設為前綴即可**
 
 :::
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | European-domiciled full-stack AI cloud platform for LLMs and image generation. |
-| Provider Route on LiteLLM | `nscale/` |
-| Supported Endpoints | `/chat/completions`, `/images/generations` |
-| API Reference | [Nscale docs](https://docs.nscale.com/docs/getting-started/overview) |
+| 說明 | 位於歐洲的全端 AI 雲端平台，適用於 LLM 與影像生成。 |
+| LiteLLM 上的提供者路由 | `nscale/` |
+| 支援的端點 | `/chat/completions`, `/images/generations` |
+| API 參考 | [Nscale 文件](https://docs.nscale.com/docs/getting-started/overview) |
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["NSCALE_API_KEY"] = ""  # your Nscale API key
 ```
 
-## Explore Available Models  
+## 探索可用模型   {#explore-available-models}
 
-Explore our full list of text and multimodal AI models — all available at highly competitive pricing:
-📚 [Full List of Models](https://docs.nscale.com/docs/inference/serverless-models/current)  
+探索我們完整的文字與多模態 AI 模型清單——全部皆可用極具競爭力的價格取得：
+📚 [完整模型清單](https://docs.nscale.com/docs/inference/serverless-models/current)  
 
+## 主要功能 {#key-features}
+- **EU Sovereign**：完整資料主權與符合歐洲法規
+- **超低成本（起價 $0.01 / 百萬 tokens）**：文字與影像生成模型皆具極具競爭力的價格
+- **生產等級**：具完整隔離的可靠無伺服器部署
+- **無需設定**：無需管理基礎架構即可立即使用運算資源
+- **完整控制**：您的資料保持私有且隔離
 
-## Key Features
-- **EU Sovereign**: Full data sovereignty and compliance with European regulations
-- **Ultra-Low Cost (starting at $0.01 / M tokens)**: Extremely competitive pricing for both text and image generation models
-- **Production Grade**: Reliable serverless deployments with full isolation
-- **No Setup Required**: Instant access to compute without infrastructure management
-- **Full Control**: Your data remains private and isolated
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-## Usage - LiteLLM Python SDK
-
-### Text Generation
+### 文字生成 {#text-generation}
 
 ```python showLineNumbers title="Nscale Text Generation"
 from litellm import completion
@@ -69,7 +68,7 @@ for chunk in stream:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-### Image Generation
+### 影像生成 {#image-generation}
 
 ```python showLineNumbers title="Nscale Image Generation"
 from litellm import image_generation
@@ -85,9 +84,9 @@ response = image_generation(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -105,7 +104,7 @@ model_list:
       api_key: os.environ/NSCALE_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -169,12 +168,12 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Getting Started
-1. Create an account at [console.nscale.com](https://console.nscale.com)
-2. Claim free credit
-3. Create an API key in settings
-4. Start making API calls using LiteLLM
+## 開始使用 {#getting-started}
+1. 在 [console.nscale.com](https://console.nscale.com) 建立帳戶
+2. 領取免費點數
+3. 在設定中建立 API 金鑰
+4. 開始使用 LiteLLM 發送 API 請求
 
-## Additional Resources
-- [Nscale Documentation](https://docs.nscale.com/docs/getting-started/overview)
-- [Blog: Sovereign Serverless](https://www.nscale.com/blog/sovereign-serverless-how-we-designed-full-isolation-without-sacrificing-performance) 
+## 其他資源 {#additional-resources}
+- [Nscale 文件](https://docs.nscale.com/docs/getting-started/overview)
+- [部落格：Sovereign Serverless](https://www.nscale.com/blog/sovereign-serverless-how-we-designed-full-isolation-without-sacrificing-performance)

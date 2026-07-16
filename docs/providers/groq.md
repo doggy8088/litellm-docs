@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Groq
+# Groq {#groq}
 https://groq.com/
 
 :::tip
 
-**We support ALL Groq models, just set `model=groq/<any-model-on-groq>` as a prefix when sending litellm requests**
+**我們支援所有 Groq 模型，只要在傳送 litellm 請求時將 `model=groq/<any-model-on-groq>` 設為前綴**
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['GROQ_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -31,7 +31,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -50,10 +50,9 @@ for chunk in response:
 ```
 
 
+## 與 LiteLLM Proxy 搭配使用 {#usage-with-litellm-proxy}
 
-## Usage with LiteLLM Proxy 
-
-### 1. Set Groq Models on config.yaml
+### 1. 在 config.yaml 上設定 Groq 模型 {#1-set-groq-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -63,18 +62,18 @@ model_list:
       api_key: "os.environ/GROQ_API_KEY" # ensure you have `GROQ_API_KEY` in your .env
 ```
 
-### 2. Start Proxy 
+### 2. 啟動 Proxy {#2-start-proxy}
 
 ```
 litellm --config config.yaml
 ```
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
-Make request to litellm proxy
+向 litellm proxy 發送請求
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -143,12 +142,10 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 支援的模型 - 全部 Groq 模型皆支援！ {#supported-models---all-groq-models-supported}
+我們支援所有 Groq 模型，只要在傳送 completion 請求時將 `groq/` 設為前綴
 
-
-## Supported Models - ALL Groq Models Supported!
-We support ALL Groq models, just set `groq/` as a prefix when sending completion requests
-
-| Model Name         | Usage                                           |
+| 模型名稱         | 用法                                           |
 |--------------------|---------------------------------------------------------|
 | llama-3.3-70b-versatile     | `completion(model="groq/llama-3.3-70b-versatile", messages)`     |
 | llama-3.1-8b-instant     | `completion(model="groq/llama-3.1-8b-instant", messages)`     |
@@ -161,7 +158,7 @@ We support ALL Groq models, just set `groq/` as a prefix when sending completion
 | openai/gpt-oss-20b | `completion(model="groq/openai/gpt-oss-20b", messages)` |
 | openai/gpt-oss-safeguard-20b | `completion(model="groq/openai/gpt-oss-safeguard-20b", messages)` |
 
-## Groq - Tool / Function Calling Example
+## Groq - 工具 / 函式呼叫範例 {#groq---tool--function-calling-example}
 
 ```python
 # Example dummy function hard coded to return the current weather
@@ -262,9 +259,9 @@ if tool_calls:
     print("second response\n", second_response)
 ```
 
-## Groq - Vision Example
+## Groq - 視覺範例 {#groq---vision-example}
 
-Groq's Llama 4 models support vision. Check out their [model list](https://console.groq.com/docs/vision) for more details.
+Groq 的 Llama 4 模型支援視覺。請查看他們的 [模型清單](https://console.groq.com/docs/vision) 以取得更多詳細資訊。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -301,7 +298,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add Groq models to config.yaml   
+1. 將 Groq 模型新增至 config.yaml   
 
 ```yaml
 model_list:
@@ -311,13 +308,13 @@ model_list:
       api_key: "os.environ/GROQ_API_KEY" # ensure you have `GROQ_API_KEY` in your .env
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```python
 import os 
@@ -352,7 +349,7 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-## Speech to Text - Whisper
+## 語音轉文字 - Whisper {#speech-to-text---whisper}
 
 ```python
 os.environ["GROQ_API_KEY"] = ""
@@ -368,4 +365,3 @@ transcript = litellm.transcription(
 
 print("response=", transcript)
 ```
-

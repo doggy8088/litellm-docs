@@ -1,52 +1,52 @@
-# Guardrails on Pass-Through Endpoints
+# Pass-Through 端點上的防護欄 {#guardrails-on-pass-through-endpoints}
 
 import Image from '@theme/IdealImage';
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Enable guardrail execution on LiteLLM pass-through endpoints with opt-in activation and automatic inheritance from org/team/key levels |
-| Supported Guardrails | All LiteLLM guardrails (Bedrock, Aporia, Lakera, etc.) |
-| Default Behavior | Guardrails are **disabled** on pass-through endpoints unless explicitly enabled |
+| 說明 | 在 LiteLLM pass-through 端點上啟用防護欄執行，採用 opt-in 啟用並可自動從 org/team/key 層級繼承 |
+| 支援的防護欄 | 所有 LiteLLM 防護欄（Bedrock、Aporia、Lakera 等） |
+| 預設行為 | 除非明確啟用，否則 pass-through 端點上的防護欄為 **停用** |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-You can configure guardrails on pass-through endpoints either via the **UI** (recommended) or **config file**.
+您可以透過 **UI**（建議）或 **設定檔** 來設定 pass-through 端點上的防護欄。
 
-### Using the UI
+### 使用 UI {#using-the-ui}
 
-#### 1. Navigate to Pass-Through Endpoints
+#### 1. 前往 Pass-Through Endpoints {#1-navigate-to-pass-through-endpoints}
 
-Go to **Models + Endpoints** → Click **+ Add Pass-Through Endpoint**
+前往 **Models + Endpoints** → 點擊 **+ Add Pass-Through Endpoint**
 
-<Image img={require('../../img/pt_guard1.png')} alt="Add guardrails to pass-through endpoint" />
+<Image img={require('../../img/pt_guard1.png')} alt="將防護欄新增至 pass-through 端點" />
 
-Scroll to the **Guardrails** section and select which guardrails to enforce.
+捲動到 **Guardrails** 區段並選取要強制執行的防護欄。
 
-:::tip Default Behavior
-By default, you don't need to specify fields - LiteLLM will JSON dump the entire request/response payload and send it to the guardrail.
+:::tip 預設行為
+預設情況下，您不需要指定欄位 - LiteLLM 會將整個 request/response payload 轉成 JSON 並傳送給防護欄。
 :::
 
-#### 2. Target Specific Fields (Optional)
+#### 2. 指定特定欄位（選用） {#2-target-specific-fields-optional}
 
-<Image img={require('../../img/pt_guard2.png')} alt="Configure field-level targeting" />
+<Image img={require('../../img/pt_guard2.png')} alt="設定欄位層級的目標指定" />
 
-To check only specific fields instead of the entire payload:
+若只要檢查特定欄位而不是整個 payload：
 
-1. Select your guardrails
-2. In **Field Targeting (Optional)**, specify fields for each guardrail
-3. Use the quick-add buttons (`+ query`, `+ documents[*]`) or type custom JSONPath expressions
-4. **Request Fields (pre_call)**: Fields to check before sending to target API
-5. **Response Fields (post_call)**: Fields to check in the response from target API
+1. 選取您的防護欄
+2. 在 **Field Targeting (Optional)** 中，為每個防護欄指定欄位
+3. 使用快速新增按鈕（`+ query`、`+ documents[*]`）或輸入自訂 JSONPath expression
+4. **Request Fields (pre_call)**：在傳送至目標 API 前要檢查的欄位
+5. **Response Fields (post_call)**：要檢查來自目標 API 的回應中的欄位
 
-**Example**: In the screenshot above, we set `query` as a request field, so only the `query` field is sent to the guardrail instead of the entire request.
+**範例**：在上方截圖中，我們將 `query` 設為 request field，因此只有 `query` 欄位會被傳送到防護欄，而不是整個 request。
 
 ---
 
-### Using Config File
+### 使用設定檔 {#using-config-file}
 
-#### 1. Define guardrails and pass-through endpoint
+#### 1. 定義防護欄與 pass-through 端點 {#1-define-guardrails-and-pass-through-endpoint}
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -67,13 +67,13 @@ general_settings:
         pii-guard:
 ```
 
-#### 2. Start proxy
+#### 2. 啟動 proxy {#2-start-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-#### 3. Test request
+#### 3. 測試請求 {#3-test-request}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/rerank" \
@@ -88,35 +88,34 @@ curl -X POST "http://localhost:4000/v1/rerank" \
 
 ---
 
-## Opt-In Behavior
+## Opt-In 行為 {#opt-in-behavior}
 
-| Configuration | Behavior |
+| 設定 | 行為 |
 |--------------|----------|
-| `guardrails` not set | No guardrails execute (default) |
-| `guardrails` set | All org/team/key + pass-through guardrails execute |
+| 未設定 `guardrails` | 不執行任何防護欄（預設） |
+| 已設定 `guardrails` | 執行所有 org/team/key + pass-through 防護欄 |
 
-When guardrails are enabled, the system collects and executes:
-- Org-level guardrails
-- Team-level guardrails  
-- Key-level guardrails
-- Pass-through specific guardrails
+啟用防護欄時，系統會收集並執行：
+- Org 層級防護欄
+- Team 層級防護欄  
+- Key 層級防護欄
+- pass-through 特定防護欄
 
 ---
 
+## 運作方式 {#how-it-works}
 
-## How It Works
+下方圖示說明當用戶端對 `/special/rerank` 發出請求時會發生什麼事 - 這是一個在您的 `config.yaml` 中設定了防護欄的 pass-through 端點。
 
-The diagram below shows what happens when a client makes a request to `/special/rerank` - a pass-through endpoint configured with guardrails in your `config.yaml`.
-
-When guardrails are configured on a pass-through endpoint:
-1. **Pre-call guardrails** run on the request before forwarding to the target API
-2. If `request_fields` is specified (e.g., `["query"]`), only those fields are sent to the guardrail. Otherwise, the entire request payload is evaluated.
-3. The request is forwarded to the target API only if guardrails pass
-4. **Post-call guardrails** run on the response from the target API
-5. If `response_fields` is specified (e.g., `["results[*].text"]`), only those fields are evaluated. Otherwise, the entire response is checked.
+當 pass-through 端點上設定了防護欄時：
+1. **Pre-call guardrails** 會在轉送至目標 API 前於 request 上執行
+2. 若指定了 `request_fields`（例如 `["query"]`），則只有那些欄位會被傳送到防護欄。否則，會評估整個 request payload。
+3. 只有在防護欄通過時，request 才會被轉送至目標 API
+4. **Post-call guardrails** 會在來自目標 API 的回應上執行
+5. 若指定了 `response_fields`（例如 `["results[*].text"]`），則只會評估那些欄位。否則，會檢查整個回應。
 
 :::info
-If the `guardrails` block is omitted or empty in your pass-through endpoint config, the request skips the guardrail flow entirely and goes directly to the target API.
+如果您的 pass-through 端點設定中省略或留空 `guardrails` 區塊，請求會完全跳過防護欄流程，直接送往目標 API。
 :::
 
 ```mermaid
@@ -129,21 +128,21 @@ sequenceDiagram
     participant Target as Target API (Cohere, etc.)
 
     Client->>PassThrough: POST /special/rerank
-    Note over PassThrough,Guardrails: Collect passthrough + org/team/key guardrails
-    PassThrough->>Guardrails: Run pre_call (request_fields or full payload)
-    Guardrails-->>PassThrough: ✓ Pass / ✗ Block
-    PassThrough->>Target: Forward request
-    Target-->>PassThrough: Response
-    PassThrough->>Guardrails: Run post_call (response_fields or full payload)
-    Guardrails-->>PassThrough: ✓ Pass / ✗ Block
-    PassThrough-->>Client: Return response (or error)
+    Note over PassThrough,Guardrails: 收集 passthrough + org/team/key 防護欄
+    PassThrough->>Guardrails: 執行 pre_call（request_fields 或完整 payload）
+    Guardrails-->>PassThrough: ✓ 通過 / ✗ 封鎖
+    PassThrough->>Target: 轉送 request
+    Target-->>PassThrough: 回應
+    PassThrough->>Guardrails: 執行 post_call（response_fields 或完整 payload）
+    Guardrails-->>PassThrough: ✓ 通過 / ✗ 封鎖
+    PassThrough-->>Client: 回傳回應（或錯誤）
 ```
 
 ---
 
-## Field-Level Targeting
+## 欄位層級目標指定 {#field-level-targeting}
 
-Target specific JSON fields instead of the entire request/response payload.
+指定特定 JSON 欄位，而不是整個 request/response payload。
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -174,27 +173,27 @@ general_settings:
           response_fields: ["results[*].text"]
 ```
 
-### Field Options
+### 欄位選項 {#field-options}
 
-| Field | Description |
+| 欄位 | 說明 |
 |-------|-------------|
-| `request_fields` | JSONPath expressions for input (pre_call) |
-| `response_fields` | JSONPath expressions for output (post_call) |
-| Neither specified | Guardrail runs on entire payload |
+| `request_fields` | input（pre_call）的 JSONPath expression |
+| `response_fields` | output（post_call）的 JSONPath expression |
+| 兩者皆未指定 | 防護欄會在整個 payload 上執行 |
 
-### JSONPath Examples
+### JSONPath 範例 {#jsonpath-examples}
 
-| Expression | Matches |
+| 表達式 | 比對 |
 |------------|---------|
-| `query` | Single field named `query` |
-| `documents[*].text` | All `text` fields in `documents` array |
-| `messages[*].content` | All `content` fields in `messages` array |
+| `query` | 名為 `query` 的單一欄位 |
+| `documents[*].text` | `documents` 陣列中的所有 `text` 欄位 |
+| `messages[*].content` | `messages` 陣列中的所有 `content` 欄位 |
 
 ---
 
-## Configuration Examples
+## 設定範例 {#configuration-examples}
 
-### Single guardrail on entire payload
+### 整個 payload 上的單一防護欄 {#single-guardrail-on-entire-payload}
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -213,7 +212,7 @@ general_settings:
         pii-detection:
 ```
 
-### Multiple guardrails with mixed settings
+### 混合設定的多個防護欄 {#multiple-guardrails-with-mixed-settings}
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:

@@ -1,11 +1,11 @@
-# OpenRouter
-LiteLLM supports all the text / chat / vision / embedding models from [OpenRouter](https://openrouter.ai/docs)
+# OpenRouter {#openrouter}
+LiteLLM 支援來自 [OpenRouter](https://openrouter.ai/docs) 的所有文字／聊天／視覺／嵌入模型
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_OpenRouter.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-## Usage
+## 用法 {#usage}
 ```python
 import os
 from litellm import completion
@@ -21,9 +21,9 @@ response = completion(
         )
 ```
 
-## Configuration with Environment Variables
+## 使用環境變數進行設定 {#configuration-with-environment-variables}
 
-For production environments, you can dynamically configure the base_url using environment variables:
+對於正式環境，您可以使用環境變數動態設定 base_url：
 
 ```python
 import os
@@ -44,12 +44,12 @@ response = completion(
 )
 ```
 
-This approach provides better flexibility for managing configurations across different environments (dev, staging, production) and makes it easier to switch between self-hosted and cloud endpoints.
+這種做法在管理不同環境（dev、staging、production）之間的設定時提供更高的彈性，也讓在自架與雲端端點之間切換更容易。
 
-## OpenRouter Completion Models
-🚨 LiteLLM supports ALL OpenRouter models, send `model=openrouter/<your-openrouter-model>` to send it to open router. See all openrouter models [here](https://openrouter.ai/models)
+## OpenRouter 補全文本模型 {#openrouter-completion-models}
+🚨 LiteLLM 支援所有 OpenRouter 模型，傳送 `model=openrouter/<your-openrouter-model>` 即可將其送至 open router。請在 [這裡](https://openrouter.ai/models) 查看所有 openrouter 模型
 
-| Model Name                | Function Call                                       |
+| 模型名稱                | 函式呼叫                                       |
 |---------------------------|-----------------------------------------------------|
 | openrouter/openai/gpt-3.5-turbo | `completion('openrouter/openai/gpt-3.5-turbo', messages)` | `os.environ['OR_SITE_URL']`,`os.environ['OR_APP_NAME']`,`os.environ['OPENROUTER_API_KEY']` |
 | openrouter/openai/gpt-3.5-turbo-16k | `completion('openrouter/openai/gpt-3.5-turbo-16k', messages)` | `os.environ['OR_SITE_URL']`,`os.environ['OR_APP_NAME']`,`os.environ['OPENROUTER_API_KEY']` |
@@ -62,8 +62,8 @@ This approach provides better flexibility for managing configurations across dif
 | openrouter/meta-llama/llama-2-13b-chat | `completion('openrouter/meta-llama/llama-2-13b-chat', messages)` | `os.environ['OR_SITE_URL']`,`os.environ['OR_APP_NAME']`,`os.environ['OPENROUTER_API_KEY']` |
 | openrouter/meta-llama/llama-2-70b-chat | `completion('openrouter/meta-llama/llama-2-70b-chat', messages)` | `os.environ['OR_SITE_URL']`,`os.environ['OR_APP_NAME']`,`os.environ['OPENROUTER_API_KEY']` |
 
-## Passing OpenRouter Params - transforms, models, route
-Pass `transforms`, `models`, `route`as arguments to `litellm.completion()`
+## 傳遞 OpenRouter 參數 - transforms, models, route {#passing-openrouter-params---transforms-models-route}
+將 `transforms`、`models`、`route` 作為引數傳遞給 `litellm.completion()`
 
 ```python
 import os
@@ -79,7 +79,7 @@ response = completion(
         )
 ```
 
-## Embedding
+## 嵌入 {#embedding}
 
 ```python
 from litellm import embedding
@@ -94,27 +94,27 @@ response = embedding(
 print(response)
 ```
 
-## Image Generation
+## 圖片生成 {#image-generation}
 
-OpenRouter supports image generation through select models like Google Gemini image generation models. LiteLLM transforms standard image generation requests to OpenRouter's chat completion format.
+OpenRouter 透過 Google Gemini 圖片生成模型等特定模型支援圖片生成。LiteLLM 會將標準圖片生成請求轉換為 OpenRouter 的聊天補全格式。
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
-- `size`: Maps to OpenRouter's `aspect_ratio` format
-  - `1024x1024` → `1:1` (square)
-  - `1536x1024` → `3:2` (landscape)
-  - `1024x1536` → `2:3` (portrait)
-  - `1792x1024` → `16:9` (wide landscape)
-  - `1024x1792` → `9:16` (tall portrait)
+- `size`：對應至 OpenRouter 的 `aspect_ratio` 格式
+  - `1024x1024` → `1:1`（正方形）
+  - `1536x1024` → `3:2`（橫向）
+  - `1024x1536` → `2:3`（直向）
+  - `1792x1024` → `16:9`（寬幅橫向）
+  - `1024x1792` → `9:16`（高幅直向）
 
-- `quality`: Maps to OpenRouter's `image_size` format (Gemini models)
-  - `low` or `standard` → `1K`
+- `quality`：對應至 OpenRouter 的 `image_size` 格式（Gemini 模型）
+  - `low` 或 `standard` → `1K`
   - `medium` → `2K`
-  - `high` or `hd` → `4K`
+  - `high` 或 `hd` → `4K`
 
-- `n`: Number of images to generate
+- `n`：要生成的圖片數量
 
-### Usage
+### 用法 {#usage-1}
 
 ```python
 from litellm import image_generation
@@ -130,7 +130,7 @@ response = image_generation(
 print(response)
 ```
 
-### Advanced Usage with Parameters
+### 進階用法與參數 {#advanced-usage-with-parameters}
 
 ```python
 from litellm import image_generation
@@ -156,9 +156,9 @@ elif image_data.url:
     print(f"Generated image URL: {image_data.url}")
 ```
 
-### Using OpenRouter-Specific Parameters
+### 使用 OpenRouter 特定參數 {#using-openrouter-specific-parameters}
 
-You can also pass OpenRouter-specific parameters directly using `image_config`:
+您也可以直接使用 `image_config` 傳遞 OpenRouter 特定參數：
 
 ```python
 from litellm import image_generation
@@ -177,9 +177,9 @@ response = image_generation(
 print(response)
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-The response follows the standard LiteLLM ImageResponse format:
+回應遵循標準的 LiteLLM ImageResponse 格式：
 
 ```python
 {
@@ -197,9 +197,9 @@ The response follows the standard LiteLLM ImageResponse format:
 }
 ```
 
-### Cost Tracking
+### 成本追蹤 {#cost-tracking}
 
-OpenRouter provides cost information in the response, which LiteLLM automatically tracks:
+OpenRouter 會在回應中提供成本資訊，LiteLLM 會自動追蹤：
 
 ```python
 response = image_generation(
@@ -211,31 +211,31 @@ response = image_generation(
 print(f"Request cost: ${response._hidden_params['additional_headers']['llm_provider-x-litellm-response-cost']}")
 ```
 
-## Image Edit
+## 圖片編輯 {#image-edit}
 
-OpenRouter supports image editing through select models like Google Gemini image models. LiteLLM routes image edit requests to OpenRouter's chat completions endpoint with the source image sent as a base64 data URL and `modalities: ["image", "text"]`.
+OpenRouter 透過 Google Gemini 圖片模型等特定模型支援圖片編輯。LiteLLM 會將圖片編輯請求路由到 OpenRouter 的 chat completions 端點，來源圖片會以 base64 資料 URL 傳送，並附帶 `modalities: ["image", "text"]`。
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-| Model | Description |
+| 模型 | 說明 |
 |-------|-------------|
-| `openrouter/google/gemini-2.5-flash-image` | Gemini 2.5 Flash with image editing |
+| `openrouter/google/gemini-2.5-flash-image` | 具備圖片編輯功能的 Gemini 2.5 Flash |
 
-See all available image models on [OpenRouter's model list](https://openrouter.ai/models?modality=image).
+請參閱 [OpenRouter 的模型清單](https://openrouter.ai/models?modality=image) 以查看所有可用的圖片模型。
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters-1}
 
-| Parameter | OpenRouter Mapping | Notes |
+| 參數 | OpenRouter 對應 | 備註 |
 |-----------|--------------------|-------|
-| `size` | `image_config.aspect_ratio` | `1024x1024` → `1:1`, `1536x1024` → `3:2`, `1024x1536` → `2:3`, `1792x1024` → `16:9`, `1024x1792` → `9:16` |
-| `quality` | `image_config.image_size` | `low`/`standard` → `1K`, `medium` → `2K`, `high`/`hd` → `4K` |
-| `n` | `n` | Number of images |
+| `size` | `image_config.aspect_ratio` | `1024x1024` → `1:1`、`1536x1024` → `3:2`、`1024x1536` → `2:3`、`1792x1024` → `16:9`、`1024x1792` → `9:16` |
+| `quality` | `image_config.image_size` | `low`/`standard` → `1K`、`medium` → `2K`、`high`/`hd` → `4K` |
+| `n` | `n` | 圖片數量 |
 
 :::note
-`quality=high` (4K) is only supported by `google/gemini-3-pro-image-preview` and `google/gemini-3.1-flash-image-preview`. The `google/gemini-2.5-flash-image` model supports up to `medium` (2K).
+`quality=high`（4K）僅支援 `google/gemini-3-pro-image-preview` 和 `google/gemini-3.1-flash-image-preview`。`google/gemini-2.5-flash-image` 模型最高支援 `medium`（2K）。
 :::
 
-### Usage
+### 用法 {#usage-2}
 
 ```python
 from litellm import image_edit
@@ -253,7 +253,7 @@ response = image_edit(
 print(response)
 ```
 
-### Advanced Usage with Parameters
+### 進階用法與參數 {#advanced-usage-with-parameters-1}
 
 ```python
 from litellm import image_edit
@@ -278,7 +278,7 @@ if image_data.b64_json:
         f.write(base64.b64decode(image_data.b64_json))
 ```
 
-### Multiple Images Edit
+### 多張圖片編輯 {#multiple-images-edit}
 
 ```python
 from litellm import image_edit

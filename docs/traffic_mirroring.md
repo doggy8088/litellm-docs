@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# A/B Testing - Traffic Mirroring
+# A/B 測試 - 流量鏡像 {#ab-testing---traffic-mirroring}
 
-Traffic mirroring allows you to "mimic" production traffic to a secondary (silent) model for evaluation purposes. The silent model's response is gathered in the background and does not affect the latency or result of the primary request.
+流量鏡像可讓您將生產流量「模擬」到第二個（靜默）模型，以供評估之用。靜默模型的回應會在背景中收集，不會影響主要請求的延遲或結果。
 
-This is useful for:
-- Testing a new model's performance on production prompts before switching.
-- Comparing costs and latency between different providers.
-- Debugging issues by mirroring traffic to a more verbose model.
+這對以下情況很有用：
+- 在切換前，先測試新模型在生產提示上的效能。
+- 比較不同提供者之間的成本與延遲。
+- 透過將流量鏡像到更詳細的模型來除錯問題。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-To enable traffic mirroring, add `silent_model` to the `litellm_params` of a deployment.
+若要啟用流量鏡像，請將 `silent_model` 新增到部署的 `litellm_params` 中。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -50,7 +50,7 @@ response = await router.acompletion(
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-Add `silent_model` to your `config.yaml`:
+將 `silent_model` 新增到您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -68,16 +68,16 @@ model_list:
 </TabItem>
 </Tabs>
 
-## How it works
-1. **Request Received**: A request is made to a model group (e.g. `primary-model`).
-2. **Deployment Picked**: LiteLLM picks a deployment from the group.
-3. **Primary Call**: LiteLLM makes the call to the primary deployment.
-4. **Mirroring**: If `silent_model` is present, LiteLLM triggers a background call to that model. 
-   - For **Sync** calls: Uses a shared thread pool.
-   - For **Async** calls: Uses `asyncio.create_task`.
-5. **Isolation**: The background call uses a `deepcopy` of the original request parameters and sets `metadata["is_silent_experiment"] = True`. It also strips out logging IDs to prevent collisions in usage tracking.
+## 運作方式 {#how-it-works}
+1. **收到請求**：對模型群組發出請求（例如 `primary-model`）。
+2. **選取部署**：LiteLLM 從群組中挑選一個部署。
+3. **主要呼叫**：LiteLLM 對主要部署發出呼叫。
+4. **鏡像**：如果存在 `silent_model`，LiteLLM 會觸發對該模型的背景呼叫。 
+   - 對於 **Sync** 呼叫：使用共享的執行緒池。
+   - 對於 **Async** 呼叫：使用 `asyncio.create_task`。
+5. **隔離**：背景呼叫會使用原始請求參數的 `deepcopy`，並設定 `metadata["is_silent_experiment"] = True`。它也會移除記錄 ID，以防止使用量追蹤中的衝突。
 
-## Key Features
-- **Latency Isolation**: The primary request returns as soon as it's ready. The background (silent) call does not block.
-- **Unified Logging**: Background calls are processed via the Router, meaning they are automatically logged to your configured observability tools (Langfuse, S3, etc.).
-- **Evaluation**: Use the `is_silent_experiment: True` flag in your logs to filter and compare results between the primary and mirrored calls.
+## 主要功能 {#key-features}
+- **延遲隔離**：主要請求在準備好後立即回應。背景（靜默）呼叫不會阻塞。
+- **統一記錄**：背景呼叫會透過 Router 處理，這表示它們會自動記錄到您設定的可觀測性工具（Langfuse、S3 等）。
+- **評估**：在您的記錄中使用 `is_silent_experiment: True` 標記，以篩選並比較主要與鏡像呼叫之間的結果。

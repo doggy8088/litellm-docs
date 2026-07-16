@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Image Generation in Chat Completions, Responses API
+# 聊天完成、Responses API 中的圖片生成 {#image-generation-in-chat-completions-responses-api}
 
-This guide covers how to generate images when using the `chat/completions`. Note - if you want this on Responses API please file a Feature Request [here](https://github.com/BerriAI/litellm/issues/new).
+本指南說明如何在使用 `chat/completions` 時生成圖片。注意－如果您希望在 Responses API 上使用此功能，請在此處提出功能請求 [這裡](https://github.com/BerriAI/litellm/issues/new)。
 
 :::info
 
-Requires LiteLLM v1.76.1+
+需要 LiteLLM v1.76.1+
 
 :::
 
-Supported Providers:
+支援的提供者：
 - Google AI Studio (`gemini`)
 - Vertex AI (`vertex_ai/`)
 
-LiteLLM will standardize the `images` response in the assistant message for models that support image generation during chat completions.
+對於支援在聊天完成期間進行圖片生成的模型，LiteLLM 會將 `images` 回應標準化到 assistant 訊息中。
 
 ```python title="Example response from litellm"
 "message": {
@@ -34,7 +34,7 @@ LiteLLM will standardize the `images` response in the assistant message for mode
 }
 ```
 
-## Quick Start 
+## 快速開始  {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -59,7 +59,7 @@ print(response.choices[0].message.images)   # List of image objects
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -69,7 +69,7 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Run proxy server
+2. 執行 proxy 伺服器
 
 ```bash showLineNumbers title="Start the proxy"
 litellm --config config.yaml
@@ -77,7 +77,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash showLineNumbers title="Make request"
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -97,7 +97,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -133,7 +133,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 }
 ```
 
-## Streaming Support
+## 串流支援 {#streaming-support}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -180,7 +180,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-**Expected Streaming Response**
+**預期串流回應**
 
 ```bash
 data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1723323084,"model":"gemini/gemini-2.5-flash-image-preview","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}]}
@@ -194,7 +194,7 @@ data: {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1723323084
 data: [DONE]
 ```
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async image generation"
 from litellm import acompletion
@@ -220,16 +220,16 @@ async def generate_image():
 asyncio.run(generate_image())
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Provider | Model | 
+| 提供者 | 模型 | 
 |----------|--------|
 | Google AI Studio | `gemini/gemini-2.0-flash-preview-image-generation`, `gemini/gemini-2.5-flash-image-preview`, `gemini/gemini-3-pro-image-preview` |
 | Vertex AI | `vertex_ai/gemini-2.0-flash-preview-image-generation`, `vertex_ai/gemini-2.5-flash-image-preview`, `vertex_ai/gemini-3-pro-image-preview` |
 
-## Spec
+## 規格 {#spec}
 
-The `images` field in the response follows this structure:
+回應中的 `images` 欄位遵循以下結構：
 
 ```python
 "images": [
@@ -244,11 +244,11 @@ The `images` field in the response follows this structure:
 ]
 ```
 
-- `images` - List[ImageURLListItem]: Array of generated images
-  - `image_url` - ImageURLObject: Container for image data
-    - `url` - str: Base64 encoded image data in data URI format
-    - `detail` - str: Image detail level (always "auto" for generated images)
-  - `index` - int: Index of the image in the response
-  - `type` - str: Type identifier (always "image_url")
+- `images` - List[ImageURLListItem]：生成圖片的陣列
+  - `image_url` - ImageURLObject：圖片資料容器
+    - `url` - str：以 data URI 格式編碼的 Base64 圖片資料
+    - `detail` - str：圖片詳細程度（生成的圖片一律為 "auto"）
+  - `index` - int：回應中圖片的索引
+  - `type` - str：類型識別碼（一律為 "image_url"）
 
-The images are returned as base64-encoded data URIs that can be directly used in HTML `<img>` tags or saved to files.
+圖片會以 Base64 編碼的 data URI 回傳，可直接用於 HTML `<img>` 標籤，或儲存為檔案。

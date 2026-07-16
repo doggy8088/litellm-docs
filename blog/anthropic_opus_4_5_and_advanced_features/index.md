@@ -1,12 +1,12 @@
 ---
 slug: anthropic_advanced_features
-title: "Day 0 Support: Claude 4.5 Opus (+Advanced Features)"
+title: "第 0 天支援：Claude 4.5 Opus（+進階功能）"
 date: 2025-11-25T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Guide to Claude Opus 4.5 and advanced features in LiteLLM: Tool Search, Programmatic Tool Calling, and Effort Parameter."
+description: "LiteLLM 中 Claude Opus 4.5 與進階功能指南：Tool Search、Programmatic Tool Calling 與 Effort 參數。"
 tags: [anthropic, claude, tool search, programmatic tool calling, effort, advanced features]
 hide_table_of_contents: false
 ---
@@ -14,26 +14,25 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-This guide covers Anthropic's latest model (Claude Opus 4.5) and its advanced features now available in LiteLLM: Tool Search, Programmatic Tool Calling, Tool Input Examples, and the Effort Parameter.
+本指南涵蓋 Anthropic 的最新模型（Claude Opus 4.5）及其目前可在 LiteLLM 中使用的進階功能：Tool Search、Programmatic Tool Calling、Tool Input Examples 與 Effort 參數。
 
 {/* truncate */}
 
 ---
 
-| Feature | Supported Models |
+| 功能 | 支援的模型 |
 |---------|-----------------|
 | Tool Search | Claude Opus 4.5, Sonnet 4.5 |
 | Programmatic Tool Calling | Claude Opus 4.5, Sonnet 4.5 |
 | Input Examples | Claude Opus 4.5, Sonnet 4.5 |
-| Effort Parameter | Claude Opus 4.5 only |
+| Effort 參數 | 僅 Claude Opus 4.5 |
 
-Supported Providers: [Anthropic](../../docs/providers/anthropic), [Bedrock](../../docs/providers/bedrock), [Vertex AI](../../docs/providers/vertex_partner#vertex-ai---anthropic-claude), [Azure AI](../../docs/providers/azure_ai).
+支援的提供者：[Anthropic](../../docs/providers/anthropic)、[Bedrock](../../docs/providers/bedrock)、[Vertex AI](../../docs/providers/vertex_partner#vertex-ai---anthropic-claude)、[Azure AI](../../docs/providers/azure_ai)。
 
-## Usage
+## 使用 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
-
 
 ```python
 import os
@@ -53,7 +52,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -63,13 +62,13 @@ model_list:
       api_key: "os.environ/ANTHROPIC_API_KEY" # does os.getenv("ANTHROPIC_API_KEY")
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 <Tabs>
 <TabItem value="curl" label="OpenAI Chat Completions">
@@ -111,19 +110,18 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
-## Usage - Bedrock
+## 使用 - Bedrock {#usage---bedrock}
 
 :::info
 
-LiteLLM uses the boto3 library to authenticate with Bedrock.
+LiteLLM 使用 boto3 函式庫與 Bedrock 進行驗證。
 
-For more ways to authenticate with Bedrock, see the [Bedrock documentation](../../docs/providers/bedrock#authentication).
+如需更多與 Bedrock 驗證的方式，請參閱 [Bedrock 文件](../../docs/providers/bedrock#authentication)。
 
 :::
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
-
 
 ```python
 import os
@@ -143,7 +141,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -155,13 +153,13 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 <Tabs>
 <TabItem value="curl" label="OpenAI Chat Completions">
@@ -224,9 +222,7 @@ curl --location 'http://0.0.0.0:4000/bedrock/model/claude-4/converse' \
 </TabItem>
 </Tabs>
 
-
-## Usage - Vertex AI
-
+## 使用 - Vertex AI {#usage---vertex-ai}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -261,7 +257,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -273,13 +269,13 @@ model_list:
         vertex_location: "us-east5"
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 <Tabs>
 <TabItem value="curl" label="OpenAI Chat Completions">
@@ -321,9 +317,9 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
-## Usage - Azure Anthropic (Azure Foundry Claude)
+## 使用 - Azure Anthropic（Azure Foundry Claude） {#usage---azure-anthropic-azure-foundry-claude}
 
-LiteLLM funnels Azure Claude deployments through the `azure_ai/` provider so Claude Opus models on Azure Foundry keep working with Tool Search, Effort, streaming, and the rest of the advanced feature set. Point `AZURE_AI_API_BASE` to `https://<resource>.services.ai.azure.com/anthropic` (LiteLLM appends `/v1/messages` automatically) and authenticate with `AZURE_AI_API_KEY` or an Azure AD token.
+LiteLLM 會透過 `azure_ai/` 提供者將 Azure Claude 部署導向，讓 Azure Foundry 上的 Claude Opus 模型可繼續使用 Tool Search、Effort、串流以及其餘進階功能組合。將 `AZURE_AI_API_BASE` 指向 `https://<resource>.services.ai.azure.com/anthropic`（LiteLLM 會自動附加 `/v1/messages`），並使用 `AZURE_AI_API_KEY` 或 Azure AD 權杖進行驗證。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -352,14 +348,14 @@ for chunk in response:
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Set environment variables**
+**1. 設定環境變數**
 
 ```bash
 export AZURE_AI_API_KEY="your-azure-ai-api-key"
 export AZURE_AI_API_BASE="https://my-resource.services.ai.azure.com/anthropic"
 ```
 
-**2. Configure the proxy**
+**2. 設定 proxy**
 
 ```yaml
 model_list:
@@ -370,13 +366,13 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE
 ```
 
-**3. Start LiteLLM**
+**3. 啟動 LiteLLM**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**4. Test the Azure Claude route**
+**4. 測試 Azure Claude 路由**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -397,12 +393,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## 工具搜尋 {#tool-search}
 
-## Tool Search {#tool-search}
+這可讓 Claude 透過按需動態載入工具，而不是一開始就將所有工具載入到 context window 中，進而支援數千個工具。
 
-This lets Claude work with thousands of tools, by dynamically loading tools on-demand, instead of loading all tools into the context window upfront.
-
-### Usage Example
+### 使用範例 {#usage-example}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -501,7 +496,7 @@ if hasattr(response.usage, 'server_tool_use'):
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -511,14 +506,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
-
+3. 測試！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -601,9 +595,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### BM25 Variant (Natural Language Search)
+### BM25 變體（自然語言搜尋） {#bm25-variant-natural-language-search}
 
-For natural language queries instead of regex patterns:
+針對自然語言查詢，而非 regex 模式：
 
 ```python
 tools = [
@@ -617,9 +611,9 @@ tools = [
 
 ---
 
-## Programmatic Tool Calling {#programmatic-tool-calling}
+## 程式化工具呼叫 {#programmatic-tool-calling}
 
-Programmatic tool calling allows Claude to write code that calls your tools programmatically. [Learn more](https://platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling)
+Programmatic tool calling 讓 Claude 能撰寫程式碼，以程式化方式呼叫您的工具。[深入了解](https://platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling)
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -713,7 +707,7 @@ print("\nFinal answer:", final_response.choices[0].message.content)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -723,14 +717,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
-
+3. 測試！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -776,10 +769,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 ---
 
-## Tool Input Examples {#tool-input-examples}
+## 工具輸入範例 {#tool-input-examples}
 
-You can now provide Claude with examples of how to use your tools. [Learn more](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-input-examples)
-
+您現在可以提供 Claude 如何使用工具的範例。[深入了解](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-input-examples)
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -865,7 +857,7 @@ print("Tool call:", response.choices[0].message.tool_calls[0].function.arguments
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -875,14 +867,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
-
+3. 測試！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -964,17 +955,17 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 ---
 
-## Effort Parameter: Control Token Usage {#effort-parameter}
+## Effort 參數：控制 Token 使用量 {#effort-parameter}
 
-Control how much effort Claude puts into its response using the `reasoning_effort` parameter. This allows you to trade off between response thoroughness and token efficiency.
+使用 `reasoning_effort` 參數控制 Claude 在回應中投入多少 effort。這可讓您在回應完整度與 token 效率之間取得取捨。
 
 :::info
-LiteLLM automatically maps `reasoning_effort` to Anthropic's `output_config` format and adds the required `effort-2025-11-24` beta header for Claude Opus 4.5.
+LiteLLM 會自動將 `reasoning_effort` 對應到 Anthropic 的 `output_config` 格式，並為 Claude Opus 4.5 加上所需的 `effort-2025-11-24` beta 標頭。
 :::
 
-Potential values for `reasoning_effort` parameter: `"high"`, `"medium"`, `"low"`.
+`reasoning_effort` 參數的可能值：`"high"`、`"medium"`、`"low"`。
 
-### Usage Example
+### 使用範例 {#usage-example-1}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -1027,7 +1018,7 @@ print(f"Low:    {response_low.usage.completion_tokens} tokens")
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1037,13 +1028,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \

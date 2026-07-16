@@ -1,43 +1,41 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Proxy - Load Balancing
-Load balance multiple instances of the same model
+# Proxy - 負載平衡 {#proxy---load-balancing}
+同時負載平衡相同模型的多個執行個體
 
-The proxy will handle routing requests (using LiteLLM's Router). **Set `rpm` in the config if you want maximize throughput**
-
+Proxy 會處理請求路由（使用 LiteLLM 的 Router）。**如果您想要最大化輸送量，請在設定檔中設定 `rpm`**
 
 :::info
 
-For more details on routing strategies / params, see [Routing](../routing.md)
+如需路由策略／參數的更多詳細資訊，請參閱 [路由](../routing.md)
 
 :::
 
-## How Load Balancing Works
+## 負載平衡如何運作 {#how-load-balancing-works}
 
-LiteLLM automatically distributes requests across multiple deployments of the same model using its built-in router. the proxy routes traffic to optimize performance and reliability.
+LiteLLM 會使用其內建路由器，自動在同一模型的多個部署之間分配請求。Proxy 會路由流量以最佳化效能與可靠性。
 
-"simple-shuffle" routing strategy is used by default
+預設使用「simple-shuffle」路由策略
 
-### Routing Strategies
+### 路由策略 {#routing-strategies}
 
-| Strategy | Description | When to Use |
+| 策略 | 說明 | 使用時機 |
 |----------|-------------|-------------|
-| **simple-shuffle** (recommended) | Randomly distributes requests | General purpose, good for even load distribution |
-| **least-busy** | Routes to deployment with fewest active requests | High concurrency scenarios |
-| **usage-based-routing** (bad for perf) | Routes to deployment with lowest current usage (RPM/TPM) | When you want to respect rate limits evenly |
-| **latency-based-routing** | Routes to fastest responding deployment | Latency-critical applications |
-| **cost-based-routing** | Routes to deployment with lowest cost | Cost-sensitive applications |
+| **simple-shuffle**（推薦） | 隨機分配請求 | 通用，適合均勻分配負載 |
+| **least-busy** | 路由至目前作用中請求最少的部署 | 高併發情境 |
+| **usage-based-routing**（對效能不佳） | 路由至目前使用量最低（RPM/TPM）的部署 | 當您希望均勻遵守速率限制時 |
+| **latency-based-routing** | 路由至回應最快的部署 | 對延遲敏感的應用程式 |
+| **cost-based-routing** | 路由至成本最低的部署 | 成本敏感的應用程式 |
 
-:::tip Deployment Priority
-Use the `order` parameter to prioritize specific deployments. [See Deployment Ordering](#deployment-ordering-priority) for details.
+:::tip 部署優先順序
+使用 `order` 參數來優先處理特定部署。詳情請參閱 [部署排序](#deployment-ordering-priority)。
 :::
 
+## 快速開始 - 負載平衡 {#quick-start---load-balancing}
+#### 步驟 1 - 在設定中設定部署 {#step-1---set-deployments-on-config}
 
-## Quick Start - Load Balancing
-#### Step 1 - Set deployments on config
-
-**Example config below**. Here requests with `model=gpt-3.5-turbo` will be routed across multiple instances of `azure/gpt-3.5-turbo`
+**以下為設定範例**。此處帶有 `model=gpt-3.5-turbo` 的請求將在 `azure/gpt-3.5-turbo` 的多個執行個體之間路由
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -69,19 +67,19 @@ router_settings:
   redis_port: 1992
 ```
 
-## Enforce Model Rate Limits
+## 強制執行模型速率限制 {#enforce-model-rate-limits}
 
-Strictly enforce RPM/TPM limits set on deployments. When limits are exceeded, requests are blocked **before** reaching the LLM provider with a `429 Too Many Requests` error.
+嚴格強制套用在部署上設定的 RPM/TPM 限制。當超過限制時，請求會在到達 LLM 提供者之前被阻擋，並回傳 `429 Too Many Requests` 錯誤。
 
-:::tip Separate input/output limits
-Set `itpm` and `otpm` instead of `tpm`/`rpm` when a provider publishes distinct input and output throughput limits. See [Separate ITPM / OTPM Rate Limits](./io_token_rate_limits).
+:::tip 分開的輸入／輸出限制
+當提供者公布不同的輸入與輸出輸送量限制時，請設定 `itpm` 與 `otpm`，而不是 `tpm`/`rpm`。請參閱 [分開的 ITPM / OTPM 速率限制](./io_token_rate_limits)。
 :::
 
 :::info
-By default, `rpm` and `tpm` values are only used for **routing decisions** (picking deployments with capacity). With `enforce_model_rate_limits`, they become **hard limits**.
+預設情況下，`rpm` 和 `tpm` 值只用於**路由決策**（挑選有容量的部署）。使用 `enforce_model_rate_limits` 後，它們會變成**硬性限制**。
 :::
 
-### Quick Start
+### 快速開始 {#quick-start}
 
 ```yaml
 model_list:
@@ -97,16 +95,16 @@ router_settings:
     - enforce_model_rate_limits  # 👈 Enables strict enforcement
 ```
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-| Limit Type | Enforcement | Accuracy |
+| 限制類型 | 強制方式 | 準確性 |
 |------------|-------------|----------|
-| **RPM** | Hard limit - blocked at exact threshold | 100% accurate |
-| **TPM** | Best-effort - may slightly exceed | Blocked when already over limit |
+| **RPM** | 硬性限制－在精確門檻處阻擋 | 100% 準確 |
+| **TPM** | 盡力而為－可能略微超出 | 在已超過限制時阻擋 |
 
-**Why TPM is best-effort:** Token count is unknown until the LLM responds. TPM is checked before each request (blocks if already over), and tracked after (adds actual tokens used).
+**為什麼 TPM 屬於 best-effort：** 在 LLM 回應之前，Token 數量是未知的。TPM 會在每次請求前檢查（若已超過則阻擋），並在之後追蹤（加入實際使用的 token 數）。
 
-### Error Response
+### 錯誤回應 {#error-response}
 
 ```json
 {
@@ -118,11 +116,11 @@ router_settings:
 }
 ```
 
-Response includes `retry-after: 60` header.
+回應包含 `retry-after: 60` 標頭。
 
-### Multi-Instance Deployment
+### 多執行個體部署 {#multi-instance-deployment}
 
-For multiple LiteLLM proxy instances, add Redis to share rate limit state:
+若有多個 LiteLLM proxy 執行個體，請加入 Redis 以共享 rate limit 狀態：
 
 ```yaml
 router_settings:
@@ -135,22 +133,22 @@ router_settings:
 
 
 :::info
-Detailed information about [routing strategies can be found here](../routing)
+關於 [路由策略的詳細資訊可在此處找到](../routing)
 :::
 
-#### Step 2: Start Proxy with config
+#### 步驟 2：使用設定啟動 Proxy {#step-2-start-proxy-with-config}
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-### Test - Simple Call
+### 測試 - 簡單請求 {#test---simple-call}
 
-Here requests with model=gpt-3.5-turbo will be routed across multiple instances of azure/gpt-3.5-turbo
+此處請求中，model=gpt-3.5-turbo 會跨多個 azure/gpt-3.5-turbo 執行個體進行路由
 
-👉 Key Change: `model="gpt-3.5-turbo"`
+👉 主要變更：`model="gpt-3.5-turbo"`
 
-**Check the `model_id` in Response Headers to make sure the requests are being load balanced**
+**請檢查回應標頭中的 `model_id`，以確認請求已進行負載平衡**
 
 <Tabs>
 
@@ -177,7 +175,7 @@ print(response)
 ```
 </TabItem>
 
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -195,11 +193,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 
 </Tabs>
-### Test - Loadbalancing
+### 測試 - 負載平衡 {#test---loadbalancing}
 
-In this request, the following will occur:
-1. A rate limit exception will be raised 
-2. LiteLLM proxy will retry the request on the model group (default retries are 3).
+在這個請求中，將會發生以下情況：
+1. 會引發 rate limit 例外
+2. LiteLLM proxy 會在 model group 上重試該請求（預設重試次數為 3）。
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -214,14 +212,13 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/6b8806b45f970cb2446654d2c379f8dcaa93ce3c/litellm/router.py#L2535)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/6b8806b45f970cb2446654d2c379f8dcaa93ce3c/litellm/router.py#L2535)
 
+## 使用多個 litellm 執行個體進行負載平衡（Kubernetes、自動擴縮） {#load-balancing-using-multiple-litellm-instances-kubernetes-auto-scaling}
 
-## Load Balancing using multiple litellm instances (Kubernetes, Auto Scaling)
+LiteLLM Proxy 支援在多個 litellm 執行個體之間共享 rpm/tpm，請傳入 `redis_host`、`redis_password` 和 `redis_port` 以啟用此功能。（LiteLLM 會使用 Redis 追蹤 rpm/tpm 使用量）
 
-LiteLLM Proxy supports sharing rpm/tpm shared across multiple litellm instances, pass `redis_host`, `redis_password` and `redis_port` to enable this. (LiteLLM will use Redis to track rpm/tpm usage )
-
-Example config
+範例設定
 
 ```yaml
 model_list:
@@ -246,9 +243,9 @@ router_settings:
     max_connections: 100  # maximum Redis connections in the pool; tune based on expected concurrency/load
 ```
 
-## Router settings on config - routing_strategy, model_group_alias
+## 設定中的路由器設定 - routing_strategy、model_group_alias {#router-settings-on-config---routing_strategy-model_group_alias}
 
-Expose an 'alias' for a 'model_name' on the proxy server. 
+在 proxy server 上為 'model_name' 公開一個 'alias'。 
 
 ```
 model_group_alias: {
@@ -256,15 +253,13 @@ model_group_alias: {
 }
 ```
 
-These aliases are shown on `/v1/models`, `/v1/model/info`, and `/v1/model_group/info` by default.
+這些別名預設會顯示在 `/v1/models`、`/v1/model/info` 和 `/v1/model_group/info` 上。
 
-litellm.Router() settings can be set under `router_settings`. You can set `model_group_alias`, `routing_strategy`, `num_retries`,`timeout` . See all Router supported params [here](https://github.com/BerriAI/litellm/blob/1b942568897a48f014fa44618ec3ce54d7570a46/litellm/router.py#L64)
+可在 `router_settings` 下設定 litellm.Router() 的設定。您可以設定 `model_group_alias`、`routing_strategy`、`num_retries`、`timeout`。請參閱所有 Router 支援的參數 [此處](https://github.com/BerriAI/litellm/blob/1b942568897a48f014fa44618ec3ce54d7570a46/litellm/router.py#L64)
 
+### 用法 {#usage}
 
-
-### Usage
-
-Example config with `router_settings`
+含 `router_settings` 的範例設定
 
 ```yaml
 model_list:
@@ -278,13 +273,13 @@ router_settings:
   model_group_alias: {"gpt-4": "gpt-3.5-turbo"} # all requests with `gpt-4` will be routed to models 
 ```
 
-### Hide Alias Models 
+### 隱藏別名模型 {#hide-alias-models}
 
-Use this if you want to set-up aliases for:
+如果您想為以下項目設定別名，請使用此功能：
 
-1. typos
-2. minor model version changes
-3. case sensitive changes between updates
+1. 拼字錯誤
+2. 輕微的模型版本變更
+3. 版本更新之間的大小寫變更
 
 ```yaml
 model_list:
@@ -301,7 +296,7 @@ router_settings:
       hidden: true             # Exclude from `/v1/models`, `/v1/model/info`, `/v1/model_group/info`
 ```
 
-### Complete Spec 
+### 完整規格 {#complete-spec}
 
 ```python
 model_group_alias: Optional[Dict[str, Union[str, RouterModelGroupAliasItem]]] = {}
@@ -312,9 +307,9 @@ class RouterModelGroupAliasItem(TypedDict):
     hidden: bool  # if 'True', don't return on `/v1/models`, `/v1/model/info`, `/v1/model_group/info`
 ```
 
-## Deployment Ordering (Priority)
+## 部署順序（優先順序） {#deployment-ordering-priority}
 
-Set `order` in `litellm_params` to prioritize deployments. Lower values = higher priority. When multiple deployments share the same `order`, the routing strategy picks among them.
+在 `litellm_params` 中設定 `order` 以優先處理部署。數值越低 = 優先級越高。當多個部署共用相同的 `order` 時，路由策略會從中挑選。 
 
 ```yaml
 model_list:
@@ -331,11 +326,11 @@ model_list:
       order: 2  # 👈 Used when order=1 fails
 ```
 
-### How order-based fallback works
+### 基於順序的備援如何運作 {#how-order-based-fallback-works}
 
-When a request to an `order=1` deployment fails (connection error, 404, 429, etc.), the router automatically tries `order=2` deployments, then `order=3`, and so on. Each order level gets its own set of retries before escalating to the next.
+當對 `order=1` 部署的請求失敗（連線錯誤、404、429 等）時，路由器會自動嘗試 `order=2` 部署，接著是 `order=3`，依此類推。每個順序層級在升級到下一層之前，都會先有自己的一組重試。
 
-If all order levels are exhausted, the router falls through to any configured [model-level fallbacks](#fallbacks).
+如果所有順序層級都已用盡，路由器會轉而使用任何已設定的[模型層級備援](#fallbacks)。
 
 ```yaml
 model_list:
@@ -362,42 +357,42 @@ router_settings:
         - gpt-4-fallback  # tried after all order levels fail
 ```
 
-The fallback chain for the above config: `order=1` → `order=2` → `gpt-4-fallback`.
+上述設定的備援鏈為：`order=1` → `order=2` → `gpt-4-fallback`。
 
-For 429 (rate limit) errors specifically, the failed deployment is immediately placed on cooldown. If all `order=1` deployments are on cooldown, the router picks `order=2` deployments directly during retries without waiting for the fallback path.
+特別針對 429（速率限制）錯誤，失敗的部署會立即進入冷卻。如果所有 `order=1` 部署都處於冷卻狀態，路由器會在重試期間直接選擇 `order=2` 部署，而不等待備援路徑。
 
-### Team-scoped models and legacy `model_aliases` {#team-scoped-models-and-legacy-model_aliases}
+### 團隊範圍模型與傳統 `model_aliases` {#team-scoped-models-and-legacy-model_aliases}
 
-Team-scoped deployments are identified by `model_info.team_id` and `model_info.team_public_model_name`. Requests should use the **public** model name; the router resolves all sibling deployments (same public name, different `api_base` / `order`, etc.) for routing, failover, and deployment `order`.
+團隊範圍的部署由 `model_info.team_id` 和 `model_info.team_public_model_name` 識別。請求應使用**公開**模型名稱；路由器會解析所有同層部署（相同的公開名稱、不同的 `api_base` / `order` 等）以進行路由、故障轉移和部署 `order`。
 
-For router internals: when a `team_id` is in scope, optimized lookups key off `(team_id, team_public_model_name)`. If code passes an internal deployment id (e.g. `model_name_<team_id>_<uuid>`) instead of the public name, routing still works via the usual deployment-name paths, but the team-specific fast path applies only to the public name.
+關於路由器內部：當 `team_id` 在作用範圍內時，最佳化查詢會以 `(team_id, team_public_model_name)` 作為索引鍵。如果程式碼傳入的是內部部署 ID（例如 `model_name_<team_id>_<uuid>`）而不是公開名稱，路由仍可透過一般的部署名稱路徑運作，但團隊專用快速路徑只適用於公開名稱。
 
-**Legacy teams:** Older proxy versions could persist `model_aliases` on the team row mapping a public name to a single internal deployment id (`model_name_<team_id>_<uuid>`). On each request, pre-call logic may still rewrite `model` to that internal name **before** routing, which collapses to one deployment and can make newer sibling deployments unreachable.
+**舊版團隊：**較舊的 proxy 版本可能會在團隊列中保留 `model_aliases`，將公開名稱對應到單一內部部署 ID（`model_name_<team_id>_<uuid>`）。在每次請求時，前置呼叫邏輯仍可能在路由之前將 `model` 重新寫入該內部名稱，這會收斂成單一部署，並可能使較新的同層部署無法存取。
 
-**Migration options:**
+**遷移選項：**
 
-1. **Recommended for upgrades:** Set environment variable `LITELLM_ENABLE_TEAM_STALE_ALIAS_BYPASS=true` so that when sibling team deployments exist for the public name, the stale alias rewrite is skipped and team-scoped routing (including `order` and failover) applies. See the [Environment variables](./config_settings) table in the proxy settings doc.
-2. **Data cleanup:** Remove obsolete `model_aliases` entries for team public names from the team record in the database so only `team_public_model_name` + team model list drive access.
+1. **升級時建議：**設定環境變數 `LITELLM_ENABLE_TEAM_STALE_ALIAS_BYPASS=true`，如此一來，當公開名稱存在同層團隊部署時，就會略過過時的別名重寫，並套用團隊範圍路由（包含 `order` 和故障轉移）。請參閱 proxy 設定文件中的[環境變數](./config_settings)表格。
+2. **資料清理：**從資料庫中的團隊紀錄移除團隊公開名稱的過時 `model_aliases` 項目，如此只有 `team_public_model_name` + 團隊模型清單會驅動存取。
 
-If a stale alias is detected and the bypass is **not** enabled, the proxy may emit a **one-time** warning in logs explaining that sibling deployments may be unreachable until the flag is set or aliases are cleaned up.
+如果偵測到過時別名且未啟用繞過，proxy 可能會在記錄中發出**一次性**警告，說明在設定該旗標或清理別名之前，同層部署可能無法存取。
 
-### When You'll See Load Balancing in Action
+### 您將在哪些情況下看到負載平衡實際運作 {#when-youll-see-load-balancing-in-action}
 
-**Immediate Effects:**
+**立即效果：**
 
-- Different deployments serve subsequent requests (visible in logs)
-- Better response times during high traffic
+- 不同的部署會服務後續請求（會顯示在記錄中）
+- 在高流量期間有更好的回應時間
 
-**Observable Benefits:**
-- **Higher throughput**: More requests handled simultaneously across deployments
-- **Improved reliability**: If one deployment fails, traffic automatically routes to healthy ones
-- **Better resource utilization**: Load spread evenly across all available deployments
+**可觀測效益：**
+- **更高的吞吐量**：可同時在多個部署上處理更多請求
+- **更好的可靠性**：如果某個部署失敗，流量會自動路由到健康的部署
+- **更佳的資源利用率**：負載平均分散到所有可用部署
 
-## Special Considerations for Responses API
+## Responses API 的特殊考量 {#special-considerations-for-responses-api}
 
-When load balancing OpenAI's Responses API across deployments with **different API keys** (e.g., different Azure regions or organizations), encrypted content items (like `rs_...` reasoning items) can only be decrypted by the originating API key.
+當在不同部署之間進行 OpenAI Responses API 的負載平衡，且使用**不同的 API 金鑰**時（例如，不同的 Azure 區域或組織），加密內容項目（如 `rs_...` reasoning 項目）只能由最初的 API 金鑰解密。
 
-**Solution:** Use the `encrypted_content_affinity` pre-call check (requires LiteLLM >= 1.82.3) to automatically route follow-up requests containing encrypted items to the correct deployment:
+**解決方案：** 使用 `encrypted_content_affinity` pre-call 檢查（需要 LiteLLM >= 1.82.3），將包含加密項目的後續請求自動路由到正確的部署：
 
 ```yaml
 model_list:
@@ -422,6 +417,6 @@ router_settings:
     - encrypted_content_affinity  # 👈 Prevents invalid_encrypted_content errors
 ```
 
-This ensures requests containing encrypted content are routed to the deployment that created them, while other requests continue to load balance normally.
+這可確保包含加密內容的請求會被路由到建立它們的部署，而其他請求則會持續正常進行負載平衡。
 
-**[Learn more about Encrypted Content Affinity →](../response_api.md#encrypted-content-affinity-multi-region-load-balancing)**
+**[進一步瞭解加密內容親和性 →](../response_api.md#encrypted-content-affinity-multi-region-load-balancing)**

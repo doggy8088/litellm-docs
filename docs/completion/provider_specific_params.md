@@ -1,16 +1,16 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Provider-specific Params
+# 提供者專屬參數 {#provider-specific-params}
 
-Providers might offer params not supported by OpenAI (e.g. top_k). LiteLLM treats any non-openai param, as a provider-specific param, and passes it to the provider in the request body, as a kwarg. [**See Reserved Params**](https://github.com/BerriAI/litellm/blob/aa2fd29e48245f360e771a8810a69376464b195e/litellm/main.py#L700)
+提供者可能會提供 OpenAI 不支援的參數（例如 top_k）。LiteLLM 會將任何非 openai 參數視為提供者專屬參數，並在請求內文中以 kwargs 形式傳遞給提供者。[**請參閱保留參數**](https://github.com/BerriAI/litellm/blob/aa2fd29e48245f360e771a8810a69376464b195e/litellm/main.py#L700)
 
-You can pass those in 2 ways: 
-- via completion(): We'll pass the non-openai param, straight to the provider as part of the request body.
-    - e.g. `completion(model="claude-instant-1", top_k=3)`
-- via provider-specific config variable (e.g. `litellm.OpenAIConfig()`). 
+您可以透過 2 種方式傳遞這些參數： 
+- 透過 completion()：我們會將非 openai 參數直接作為請求內文的一部分傳遞給提供者。
+    - 例如 `completion(model="claude-instant-1", top_k=3)`
+- 透過提供者專屬設定變數（例如 `litellm.OpenAIConfig()`）。 
 
-## SDK Usage
+## SDK 使用方式 {#sdk-usage}
 <Tabs>
 <TabItem value="openai" label="OpenAI">
 
@@ -44,7 +44,7 @@ assert len(response_2_text) > len(response_1_text)
 ```
 
 </TabItem>
-<TabItem value="openai-text" label="OpenAI Text Completion">
+<TabItem value="openai-text" label="OpenAI 文字完成">
 
 ```python
 import litellm, os
@@ -177,7 +177,6 @@ assert len(response_2_text) > len(response_1_text)
 
 <TabItem value="together_ai" label="TogetherAI">
 
-
 ```python
 import litellm, os 
 
@@ -270,7 +269,6 @@ assert len(response_2_text) > len(response_1_text)
 </TabItem>
 
 <TabItem value="petals" label="Petals">
-
 
 ```python
 import litellm
@@ -398,13 +396,11 @@ assert len(response_2_text) > len(response_1_text)
 
 </Tabs>
 
+[**查看教學！**](../tutorials/provider_specific_params.md)
 
-[**Check out the tutorial!**](../tutorials/provider_specific_params.md)
+## 代理程式使用方式  {#proxy-usage}
 
-
-## Proxy Usage 
-
-**via Config**
+**透過設定**
 
 ```yaml
 model_list:
@@ -417,7 +413,7 @@ model_list:
         adapter_base: <my-special_base> # 👈 PROVIDER-SPECIFIC PARAM
 ```
 
-**via Request**
+**透過請求**
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -435,13 +431,13 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Provider-Specific Metadata Parameters
+## 提供者專屬中繼資料參數 {#provider-specific-metadata-parameters}
 
-| Provider | Parameter | Use Case |
+| 提供者 | 參數 | 使用情境 |
 |----------|-----------|----------|
-| **AWS Bedrock** | `requestMetadata` | Cost attribution, logging |
-| **Gemini/Vertex AI** | `labels` | Resource labeling |
-| **Anthropic** | `metadata` | User identification |
+| **AWS Bedrock** | `requestMetadata` | 成本歸屬、記錄 |
+| **Gemini/Vertex AI** | `labels` | 資源標記 |
+| **Anthropic** | `metadata` | 使用者識別 |
 
 <Tabs>
 <TabItem value="bedrock" label="AWS Bedrock">

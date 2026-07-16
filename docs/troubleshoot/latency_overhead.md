@@ -1,10 +1,10 @@
-# Latency Overhead Troubleshooting
+# 延遲額外負擔疑難排解 {#latency-overhead-troubleshooting}
 
-Use this guide when you see unexpected latency overhead between LiteLLM proxy and the LLM provider.
+當您看到 LiteLLM proxy 與 LLM 提供者之間有非預期的延遲額外負擔時，請使用本指南。
 
-## The Invisible Latency Gap
+## 看不見的延遲落差 {#the-invisible-latency-gap}
 
-LiteLLM measures latency from when its handler starts. If a request waits in uvicorn's event loop **before** the handler runs, that wait is invisible to LiteLLM's own logs.
+LiteLLM 會從其處理常式開始執行時開始計算延遲。如果請求在 uvicorn 的事件迴圈中於 **處理常式執行之前** 等待，這段等待對 LiteLLM 自己的記錄來說是看不見的。
 
 ```
 T=0   Request arrives at load balancer
@@ -15,7 +15,7 @@ T=20  Response sent
 LiteLLM logs: 10s    User experiences: 20s
 ```
 
-To measure the pre-handler wait, poll `/health/backlog` on each pod:
+要量測處理常式前的等待時間，請在每個 pod 上輪詢 `/health/backlog`：
 
 ```bash
 curl http://localhost:4000/health/backlog \
@@ -23,29 +23,29 @@ curl http://localhost:4000/health/backlog \
 # {"in_flight_requests": 47}
 ```
 
-Or scrape the `litellm_in_flight_requests` Prometheus gauge at `/metrics`.
+或者從 `litellm_in_flight_requests` Prometheus gauge 抓取 `/metrics`。
 
-| `in_flight_requests` | ALB `TargetResponseTime` | Diagnosis |
+| `in_flight_requests` | ALB `TargetResponseTime` | 診斷 |
 |---|---|---|
-| High | High | Pod overloaded → scale out |
-| Low | High | Delay is pre-ASGI — check for sync blocking code or event loop saturation |
-| High | Normal | Pod is busy but healthy, no queue buildup |
+| 高 | 高 | pod 過載 → 擴充 |
+| 低 | 高 | 延遲發生在 ASGI 之前 — 檢查同步阻塞程式碼或事件迴圈飽和 |
+| 高 | 正常 | pod 忙碌但健康，沒有佇列累積 |
 
-If you're on **AWS ALB**, correlate `litellm_in_flight_requests` spikes with ALB's `TargetResponseTime` CloudWatch metric. The gap between what ALB reports and what LiteLLM logs is the invisible wait.
+如果您使用的是 **AWS ALB**，請將 `litellm_in_flight_requests` 的尖峰與 ALB 的 `TargetResponseTime` CloudWatch 指標進行關聯。ALB 回報的數值與 LiteLLM 記錄的數值之間的落差，就是看不見的等待時間。
 
-## Quick Checklist
+## 快速檢查清單 {#quick-checklist}
 
-1. **Check `in_flight_requests` on each pod** via `/health/backlog` or the `litellm_in_flight_requests` Prometheus gauge — this tells you if requests are queuing before LiteLLM starts processing. Start here for unexplained latency.
-2. **Collect the `x-litellm-overhead-duration-ms` response header** — this tells you LiteLLM's total overhead on every request.
-2. **Is DEBUG logging enabled?** This is the #1 cause of latency with large payloads.
-3. **Are you sending large base64 payloads?** (images, PDFs) — see [Large Payload Overhead](#large-payload-overhead).
-4. **Enable detailed timing headers** to pinpoint where time is spent.
+1. **透過 `/health/backlog` 或 `litellm_in_flight_requests` Prometheus gauge 檢查每個 pod 上的 `in_flight_requests`** — 這會告訴您請求是否在 LiteLLM 開始處理之前就已排隊。若有無法解釋的延遲，請先從這裡開始。
+2. **收集 `x-litellm-overhead-duration-ms` 回應標頭** — 這會告訴您 LiteLLM 在每個請求上的總額外負擔。
+2. **是否啟用 DEBUG 記錄？** 這是大型酬載造成延遲的首要原因。
+3. **您是否傳送大型 base64 酬載？**（圖片、PDF）— 請參閱 [大型酬載額外負擔](#large-payload-overhead)。
+4. **啟用詳細時間標頭**，以找出時間耗費在哪裡。
 
-## Diagnostic Headers
+## 診斷標頭 {#diagnostic-headers}
 
-### `x-litellm-overhead-duration-ms` (always on)
+### `x-litellm-overhead-duration-ms`（一律啟用） {#x-litellm-overhead-duration-ms-always-on}
 
-Every response from LiteLLM includes this header. It shows the total latency overhead in milliseconds added by LiteLLM proxy (i.e. total response time minus the LLM API call time). Collect this on every request to understand your baseline overhead.
+LiteLLM 的每個回應都會包含此標頭。它會顯示 LiteLLM proxy 所增加的總延遲額外負擔（毫秒），也就是總回應時間減去 LLM API 呼叫時間。請在每個請求上收集此資訊，以了解您的基準額外負擔。
 
 ```bash
 curl -s -D - http://localhost:4000/v1/chat/completions \
@@ -54,9 +54,9 @@ curl -s -D - http://localhost:4000/v1/chat/completions \
   2>&1 | grep x-litellm-overhead-duration-ms
 ```
 
-### `x-litellm-callback-duration-ms` (always on)
+### `x-litellm-callback-duration-ms`（一律啟用） {#x-litellm-callback-duration-ms-always-on}
 
-Shows time spent building callback/logging payloads (ms). If this is high (>100ms), your payloads may be too large for efficient logging.
+顯示建立 callback/記錄酬載所花費的時間（ms）。如果這個值很高（>100ms），您的酬載可能過大，不利於有效率地記錄。
 
 ```bash
 curl -s -D - http://localhost:4000/v1/chat/completions \
@@ -65,58 +65,58 @@ curl -s -D - http://localhost:4000/v1/chat/completions \
   2>&1 | grep x-litellm
 ```
 
-### Detailed Timing Breakdown (opt-in)
+### 詳細時間分解（可選啟用） {#detailed-timing-breakdown-opt-in}
 
-Set `LITELLM_DETAILED_TIMING=true` to get per-phase timing in response headers:
+設定 `LITELLM_DETAILED_TIMING=true` 以在回應標頭中取得各階段的時間：
 
-| Header | What it measures |
+| 標頭 | 衡量內容 |
 |--------|-----------------|
-| `x-litellm-timing-pre-processing-ms` | Auth, routing, request processing (before LLM call) |
-| `x-litellm-timing-llm-api-ms` | Actual LLM API call duration |
-| `x-litellm-timing-post-processing-ms` | Response processing (after LLM returns) |
-| `x-litellm-timing-message-copy-ms` | Message copy time in logging layer |
+| `x-litellm-timing-pre-processing-ms` | 驗證、路由、請求處理（LLM 呼叫前） |
+| `x-litellm-timing-llm-api-ms` | 實際 LLM API 呼叫持續時間 |
+| `x-litellm-timing-post-processing-ms` | 回應處理（LLM 返回後） |
+| `x-litellm-timing-message-copy-ms` | 記錄層中的訊息複製時間 |
 
 ```bash
 # Enable detailed timing
 export LITELLM_DETAILED_TIMING=true
 ```
 
-## Large Payload Overhead
+## 大型酬載額外負擔 {#large-payload-overhead}
 
-When sending large payloads (>1MB, e.g. base64-encoded images/PDFs), three things can add overhead:
+當傳送大型酬載（>1MB，例如 base64 編碼的圖片/PDF）時，會有三件事可能增加額外負擔：
 
-### 1. DEBUG Logging (most common)
+### 1. DEBUG 記錄（最常見） {#1-debug-logging-most-common}
 
-When `LITELLM_LOG=DEBUG` or `set_verbose=True` is enabled, every request payload is serialized with `json.dumps(indent=4)` synchronously. For a 2MB+ payload, this alone can take **2-5 seconds**.
+當啟用 `LITELLM_LOG=DEBUG` 或 `set_verbose=True` 時，每個請求酬載都會以 `json.dumps(indent=4)` 同步序列化。對於 2MB 以上的酬載，單這一步就可能花費 **2-5 秒**。
 
-**Fix:** Don't use DEBUG logging in production. Use `INFO` level instead:
+**修正方式：** 請勿在正式環境使用 DEBUG 記錄。改用 `INFO` 等級：
 
 ```bash
 export LITELLM_LOG=INFO
 ```
 
-If you need DEBUG logging but have large payloads, you can increase the size threshold for full payload logging:
+如果您需要 DEBUG 記錄但有大型酬載，可以提高完整酬載記錄的大小閾值：
 
 ```bash
 # Only fully serialize payloads under 100KB for DEBUG logs (default)
 export MAX_PAYLOAD_SIZE_FOR_DEBUG_LOG=102400
 ```
 
-### 2. Base64 in Logging Payloads
+### 2. 記錄酬載中的 Base64 {#2-base64-in-logging-payloads}
 
-Callback payloads (sent to Langfuse, etc.) include message content. Large base64 strings are automatically truncated to size placeholders in logging payloads.
+callback 酬載（傳送到 Langfuse 等）包含訊息內容。大型 base64 字串會在記錄酬載中自動截斷為大小佔位符。
 
-You can control the truncation threshold:
+您可以控制截斷閾值：
 
 ```bash
 # Max base64 characters before truncation (default: 64)
 export MAX_BASE64_LENGTH_FOR_LOGGING=64
 ```
 
-## Environment Variables Reference
+## 環境變數參考 {#environment-variables-reference}
 
-| Variable | Default | Description |
+| 變數 | 預設值 | 說明 |
 |----------|---------|-------------|
-| `LITELLM_DETAILED_TIMING` | `false` | Enable per-phase timing headers |
-| `MAX_PAYLOAD_SIZE_FOR_DEBUG_LOG` | `102400` | Max payload bytes for full DEBUG serialization |
-| `MAX_BASE64_LENGTH_FOR_LOGGING` | `64` | Max base64 chars before truncation in logging |
+| `LITELLM_DETAILED_TIMING` | `false` | 啟用各階段時間標頭 |
+| `MAX_PAYLOAD_SIZE_FOR_DEBUG_LOG` | `102400` | 完整 DEBUG 序列化的最大酬載位元組數 |
+| `MAX_BASE64_LENGTH_FOR_LOGGING` | `64` | 記錄中截斷前允許的最大 base64 字元數 |

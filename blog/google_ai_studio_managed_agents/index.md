@@ -1,6 +1,6 @@
 ---
 slug: google-ai-studio-managed-agents
-title: "Google AI Studio Managed Agents on LiteLLM"
+title: "LiteLLM 上的 Google AI Studio 受管代理程式"
 date: 2026-05-19T10:00:00
 authors:
   - sameer
@@ -13,17 +13,17 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Google AI Studio - Managed Agents
+# Google AI Studio - 受管代理程式 {#google-ai-studio---managed-agents}
 
-LiteLLM now supports the [Google AI Studio Managed Agents API](https://ai.google.dev/gemini-api/docs/agents). Create, manage, and run custom agents through LiteLLM.
+LiteLLM 現在支援 [Google AI Studio Managed Agents API](https://ai.google.dev/gemini-api/docs/agents)。透過 LiteLLM 建立、管理並執行自訂代理程式。
 
 :::note
-Available from LiteLLM `v1.87.0-dev.1` or above.
+自 LiteLLM `v1.87.0-dev.1` 起可用。
 :::
 
 {/* truncate */}
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -46,27 +46,27 @@ pip install litellm==1.87.0.dev1
 </TabItem>
 </Tabs>
 
-## Overview
+## 概覽 {#overview}
 
-There are two distinct steps:
+有兩個不同的步驟：
 
-1. **Create a custom agent**: /v1beta/agents defines your agent on the Gemini side (name, base model, instructions).
-2. **Run the agent**: Once you have created a named agent, you can interact with it by specifying its resource name in the agent field of the /interactions request.
+1. **建立自訂代理程式**：/v1beta/agents 會在 Gemini 端定義您的代理程式（名稱、基礎模型、指示）。
+2. **執行代理程式**：建立命名代理程式後，您可以在 /interactions 請求的 agent 欄位中指定其資源名稱來與它互動。
 
-LiteLLM does **not** store the agent in its own database. The agent lives entirely on Google's side. LiteLLM is just the auth + routing layer.
+LiteLLM **不會**將代理程式儲存在自己的資料庫中。代理程式完全存在於 Google 端。LiteLLM 只是驗證 + 路由層。
 
-## Quick start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
 
-Add your Gemini API key to the environment:
+將您的 Gemini API 金鑰加入環境中：
 
 ```bash
 export GEMINI_API_KEY="AIzaSy..."
 ```
 
-**Minimal `proxy_config.yaml`**:
+**最小 `proxy_config.yaml`**：
 
 ```yaml
 general_settings:
@@ -76,13 +76,13 @@ environment_variables:
   GEMINI_API_KEY: "AIzaSy..."   # or set in shell env
 ```
 
-Start the proxy:
+啟動代理伺服器：
 
 ```bash
 litellm --config proxy_config.yaml
 ```
 
-If `GEMINI_API_KEY` is not set, all managed-agent calls will fail with an auth error from Google.
+如果未設定 `GEMINI_API_KEY`，所有受管代理程式呼叫都會因 Google 的驗證錯誤而失敗。
 
 </TabItem>
 <TabItem value="sdk" label="SDK">
@@ -94,12 +94,12 @@ import litellm
 os.environ["GEMINI_API_KEY"] = "AIzaSy..."
 ```
 
-You can also pass `api_key="AIzaSy..."` to each call instead of setting the environment variable.
+您也可以在每次呼叫時傳入 `api_key="AIzaSy..."`，而不是設定環境變數。
 
 </TabItem>
 </Tabs>
 
-## 1. Create an agent
+## 1. 建立代理程式 {#1-create-an-agent}
 <Tabs>
 <TabItem value="proxy" label="Proxy">
 
@@ -115,7 +115,7 @@ curl -X POST "http://localhost:4000/v1beta/agents" \
 }'
 ```
 
-**Response:**
+**回應：**
 
 ```json
 {
@@ -139,23 +139,23 @@ response = litellm.interactions.agents.create(
 print(response.id)  # "my-slides-agent"
 ```
 
-Async variant: `litellm.interactions.agents.acreate(...)`.
+非同步版本：`litellm.interactions.agents.acreate(...)`。
 
 </TabItem>
 </Tabs>
 
-**Parameters:**
+**參數：**
 
-| Field | Required | Description |
+| 欄位 | 必填 | 說明 |
 |---|---|---|
-| `name` | Yes | Unique agent identifier, used as the ID in later calls |
-| `base_agent` | Yes | Base model to build on. Currently only `"antigravity-preview-05-2026"` is supported by Google |
-| `instructions` | No | System-level instructions for the agent |
-| `base_environment` | No | Environment config (e.g. GCS skill sources) |
+| `name` | 是 | 唯一的代理程式識別碼，後續呼叫中用作 ID |
+| `base_agent` | 是 | 要建立的基礎模型。目前 Google 僅支援 `"antigravity-preview-05-2026"` |
+| `instructions` | 否 | 代理程式的系統層級指示 |
+| `base_environment` | 否 | 環境設定（例如 GCS 技能來源） |
 
-> Calling create twice with the same `name` returns a `409 Conflict` from Google.
+> 以相同的 `name` 呼叫建立兩次，會從 Google 回傳 `409 Conflict`。
 
-## 2. Run an agent
+## 2. 執行代理程式 {#2-run-an-agent}
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
@@ -183,18 +183,18 @@ response = litellm.interactions.create(
 print(response)
 ```
 
-Async variant: `litellm.interactions.acreate(...)`.
+非同步版本：`litellm.interactions.acreate(...)`。
 
 </TabItem>
 </Tabs>
 
-Note: pass `agent`, **not** `model`. The agent name is not a LiteLLM model, do not put it in the `model` field.
+注意：請傳入 `agent`，**不要**傳入 `model`。代理程式名稱不是 LiteLLM 模型，請不要將其放入 `model` 欄位。
 
-See also: [/interactions](/docs/interactions) for the full Interactions API.
+另請參閱：[/interactions](/docs/interactions) 以了解完整的 Interactions API。
 
-## Manage agents
+## 管理代理程式 {#manage-agents}
 
-### List agents
+### 列出代理程式 {#list-agents}
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
@@ -204,7 +204,7 @@ curl "http://localhost:4000/v1beta/agents" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**Response**
+**回應**
 ```json
 {
     "agents": [
@@ -228,7 +228,7 @@ agents = litellm.interactions.agents.list()
 </TabItem>
 </Tabs>
 
-### Get an agent
+### 取得代理程式 {#get-an-agent}
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
@@ -238,7 +238,7 @@ curl "http://localhost:4000/v1beta/agents/my-slides-agent" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**Response**
+**回應**
 ```json
 {
     "id": "my-custom-slides-agent",
@@ -269,7 +269,7 @@ agent = litellm.interactions.agents.get(
 </TabItem>
 </Tabs>
 
-### Delete an agent
+### 刪除代理程式 {#delete-an-agent}
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
@@ -292,7 +292,7 @@ litellm.interactions.agents.delete(
 </TabItem>
 </Tabs>
 
-### List agent versions
+### 列出代理程式版本 {#list-agent-versions}
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
@@ -301,7 +301,7 @@ litellm.interactions.agents.delete(
 curl "http://localhost:4000/v1beta/agents/my-slides-agent/versions" \
   -H "Authorization: Bearer sk-1234"
 ```
-**Response**
+**回應**
 ```json
 {
     "agentVersions": [
@@ -331,19 +331,18 @@ versions = litellm.interactions.agents.list_versions(
 </TabItem>
 </Tabs>
 
-## Authentication
+## 驗證 {#authentication}
 
-| Method | How to provide the key |
+| 方法 | 如何提供金鑰 |
 |---|---|
-| **Proxy** | Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in the proxy's environment. Virtual keys (`sk-...`) authenticate users *to the proxy*; the proxy uses your Gemini key to talk to Google. |
-| **SDK** | Set `GEMINI_API_KEY` in the environment, or pass `api_key="AIzaSy..."` to each call. |
+| **Proxy** | 在代理伺服器的環境中設定 `GEMINI_API_KEY`（或 `GOOGLE_API_KEY`）。虛擬金鑰（`sk-...`）會對使用者在 *proxy* 進行驗證；代理伺服器會使用您的 Gemini 金鑰與 Google 溝通。 |
+| **SDK** | 在環境中設定 `GEMINI_API_KEY`，或在每次呼叫時傳入 `api_key="AIzaSy..."`。 |
 
-There is no way to use managed agents with any provider other than Google AI Studio. Other providers are not supported by this API.
+除了 Google AI Studio 之外，沒有其他方式可以使用受管代理程式。此 API 不支援其他提供者。
 
+## 限制 {#limitations}
 
-## Limitations
-
-- `base_agent` only accepts `"antigravity-preview-05-2026"` (Google's current restriction).
-- Agents are stored on Google's side only. LiteLLM does not persist them in its database. If you delete an agent via Google's API directly, the proxy will not know.
-- Using the Interactions API via the `agent` param is only supported by Gemini as of now. Use the `model` param to call other providers' models.
-- `GEMINI_API_KEY` / `GOOGLE_API_KEY` must be present in the proxy environment. Passing the key per-request via `api_key` is supported in the SDK but not currently via the proxy endpoint.
+- `base_agent` 只接受 `"antigravity-preview-05-2026"`（Google 目前的限制）。
+- 代理程式僅儲存在 Google 端。LiteLLM 不會將它們持續儲存到其資料庫中。如果您透過 Google 的 API 直接刪除代理程式，代理伺服器不會知道。
+- 透過 `agent` 參數使用 Interactions API，目前只受 Gemini 支援。請使用 `model` 參數來呼叫其他提供者的模型。
+- `GEMINI_API_KEY` / `GOOGLE_API_KEY` 必須存在於代理伺服器環境中。在 SDK 中支援透過 `api_key` 逐請求傳入金鑰，但目前代理端點尚不支援。

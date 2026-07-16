@@ -1,20 +1,19 @@
-# Featherless AI
+# Featherless AI {#featherless-ai}
 https://featherless.ai/
 
 :::tip
 
-**We support ALL Featherless AI models, just set `model=featherless_ai/<any-model-on-featherless>` as a prefix when sending litellm requests. For the complete supported model list, visit https://featherless.ai/models **
+**我們支援所有 Featherless AI 模型，只要在傳送 litellm 請求時，將 `model=featherless_ai/<any-model-on-featherless>` 設為前綴即可。如需完整的支援模型清單，請造訪 https://featherless.ai/models **
 
 :::
 
-
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['FEATHERLESS_AI_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -26,7 +25,7 @@ response = completion(
 )
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -42,8 +41,8 @@ for chunk in response:
     print(chunk)
 ```
 
-## Chat Models
-| Model Name                                 | Function Call                                                                                  |
+## 聊天模型 {#chat-models}
+| 模型名稱                                 | 函式呼叫                                                                                  |
 |---------------------------------------------|-----------------------------------------------------------------------------------------------|
 | featherless-ai/Qwerky-72B                   | `completion(model="featherless_ai/featherless-ai/Qwerky-72B", messages)`                      |
 | featherless-ai/Qwerky-QwQ-32B               | `completion(model="featherless_ai/featherless-ai/Qwerky-QwQ-32B", messages)`                  |

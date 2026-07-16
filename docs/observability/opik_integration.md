@@ -2,32 +2,31 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Comet Opik
-Opik is an open source end-to-end [LLM Evaluation Platform](https://www.comet.com/site/products/opik/?utm_source=litelllm&utm_medium=docs&utm_content=intro_paragraph) that helps developers track their LLM prompts and responses during both development and production. Users can define and run evaluations to test their LLMs apps before deployment to check for hallucinations, accuracy, context retrevial, and more!
-
+# Comet Opik {#comet-opik}
+Opik 是一個開源的端到端 [LLM 評估平台](https://www.comet.com/site/products/opik/?utm_source=litelllm&utm_medium=docs&utm_content=intro_paragraph)，可協助開發人員在開發與生產環境中追蹤其 LLM 提示與回應。使用者可以定義並執行評估，在部署前測試其 LLM 應用程式，以檢查幻覺、準確性、上下文擷取等項目！
 
 <Image img={require('../../img/opik.png')} />
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們希望了解如何讓回呼更好！歡迎認識 LiteLLM [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 :::
 
-## Pre-Requisites
+## 前置條件 {#pre-requisites}
 
-You can learn more about setting up Opik in the [Opik quickstart guide](https://www.comet.com/docs/opik/quickstart/). You can also learn more about self-hosting Opik in our [self-hosting guide](https://www.comet.com/docs/opik/self-host/local_deployment).
+您可以在 [Opik 快速入門指南](https://www.comet.com/docs/opik/quickstart/) 中進一步了解如何設定 Opik。您也可以在我們的 [自架指南](https://www.comet.com/docs/opik/self-host/local_deployment) 中進一步了解如何自我代管 Opik。
 
-## Quick Start
-Use just 4 lines of code, to instantly log your responses **across all providers** with Opik
+## 快速開始 {#quick-start}
+只要 4 行程式碼，即可立即透過 Opik 記錄您**跨所有提供者**的回應
 
-Get your Opik API Key by signing up [here](https://www.comet.com/signup?utm_source=litelllm&utm_medium=docs&utm_content=api_key_cell)!
+請在 [這裡](https://www.comet.com/signup?utm_source=litelllm&utm_medium=docs&utm_content=api_key_cell) 註冊以取得您的 Opik API 金鑰！
 
 ```python
 import litellm
 litellm.callbacks = ["opik"]
 ```
 
-Full examples:
+完整範例：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -55,9 +54,9 @@ response = litellm.completion(
 )
 ```
 
-If you are using liteLLM within a function tracked using Opik's `@track` decorator,
-you will need provide the `current_span_data` field in the metadata attribute
-so that the LLM call is assigned to the correct trace:
+如果您是在由 Opik 的 `@track` 裝飾器追蹤的函式內使用 liteLLM，
+您需要在 metadata 屬性中提供 `current_span_data` 欄位，
+以便將 LLM 請求指派到正確的 trace：
 
 ```python
 from opik import track
@@ -88,7 +87,7 @@ chunks = list(response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -105,13 +104,13 @@ environment_variables:
   OPIK_WORKSPACE: ""
 ```
 
-2. Run proxy
+2. 執行 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -131,18 +130,18 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Opik-Specific Parameters
+## Opik 特定參數 {#opik-specific-parameters}
 
-These can be passed inside metadata with the `opik` key.
+這些可以透過 metadata 與 `opik` 鍵一起傳入。
 
-### Fields 
+### 欄位  {#fields}
 
-- `project_name` - Name of the Opik project to send data to.
-- `current_span_data` - The current span data to be used for tracing.
-- `tags` - Tags to be used for tracing.
-- `thread_id` - The thread id to group together multiple related traces.
+- `project_name` - 要傳送資料至的 Opik 專案名稱。
+- `current_span_data` - 用於追蹤的目前 span 資料。
+- `tags` - 用於追蹤的標籤。
+- `thread_id` - 用來將多個相關 trace 群組在一起的 thread id。
 
-### Usage
+### 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -198,9 +197,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-
-You can also pass the fields as part of the request header with a `opik_*` prefix:
+您也可以透過帶有 `opik_*` 前綴的請求標頭傳遞這些欄位：
 
 ```shell
 curl --location --request POST 'http://0.0.0.0:4000/chat/completions' \
@@ -220,24 +217,23 @@ curl --location --request POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Automatic Metadata from API Keys
+## 來自 API 金鑰的自動 metadata {#automatic-metadata-from-api-keys}
 
-In some cases, the requester may be unable or unaware of how to add Opik metadata to their requests. To ensure all Opik-related actions are properly tracked, LiteLLM Proxy can automatically associate metadata from a user-specific API key when none is provided in the request.
+在某些情況下，請求者可能無法或不知道如何將 Opik metadata 加入其請求中。為了確保所有與 Opik 相關的動作都能被正確追蹤，LiteLLM Proxy 可以在未提供任何 request 內 metadata 時，自動將使用者專屬 API 金鑰中的 metadata 關聯起來。
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-When you create an API key in LiteLLM Proxy, you can attach Opik-specific metadata to the key itself. This metadata will be automatically applied to all requests made with that key, unless the request explicitly provides its own Opik metadata (which takes precedence).
+當您在 LiteLLM Proxy 中建立 API 金鑰時，可以將 Opik 特定 metadata 附加到該金鑰本身。除非請求明確提供自己的 Opik metadata（此時其優先），否則此 metadata 會自動套用至所有使用該金鑰發出的請求。
 
+### 使用方式 {#usage-1}
 
-### Usage
-
-**Step 1: Save Opik Metadata to the corresponding Api Key**
-Go to 'Virtual Keys', click on your choosen api key and edit 'Settings'.
-Now save the opik metadata as user api key metdata.
+**步驟 1：將 Opik Metadata 儲存到對應的 Api Key**
+前往 'Virtual Keys'，點擊您選擇的 api key，並編輯 'Settings'。
+現在將 opik metadata 儲存為使用者 api key metdata。
 
 <Image img={require('../../img/opik_key_metadata.png')} />
 
-**Step 2: Use the key - Opik metadata is automatically applied**
+**步驟 2：使用該金鑰 - Opik metadata 會自動套用**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -254,11 +250,10 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-All requests made with this key will automatically be tracked in the "TestProject" Opik project with the specified tags, without requiring the user to pass metadata in each request.
+使用此金鑰發出的所有請求都會自動追蹤到指定標籤的 "TestProject" Opik 專案中，而無需使用者在每個請求中傳遞 metadata。
 
+## 支援與聯絡創辦人 {#support--talk-to-founders}
 
-## Support & Talk to Founders
-
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

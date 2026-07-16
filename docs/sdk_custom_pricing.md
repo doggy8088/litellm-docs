@@ -1,8 +1,8 @@
-# Custom Pricing - SageMaker, Azure, etc
+# 自訂定價 - SageMaker、Azure 等 {#custom-pricing---sagemaker-azure-etc}
 
-Register custom pricing for sagemaker completion model. 
+為 sagemaker completion model 註冊自訂定價。 
 
-For cost per second pricing, you **just** need to register `input_cost_per_second`. 
+若要使用每秒成本定價，您**只**需要註冊 `input_cost_per_second`。 
 
 ```python
 # !uv add boto3 
@@ -31,8 +31,7 @@ def test_completion_sagemaker():
 ```
 
 
-## Cost Per Token (e.g. Azure)
-
+## 每個 Token 成本（例如 Azure） {#cost-per-token-eg-azure}
 
 ```python
 # !uv add boto3 

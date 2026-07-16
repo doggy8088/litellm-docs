@@ -1,24 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure AI Studio
+# Azure AI Studio {#azure-ai-studio}
 
-LiteLLM supports all models on Azure AI Studio
+LiteLLM 支援 Azure AI Studio 上的所有模型
 
-
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### ENV VAR
+### 環境變數 {#env-var}
 ```python
 import os 
 os.environ["AZURE_AI_API_KEY"] = ""
 os.environ["AZURE_AI_API_BASE"] = ""
 ```
 
-### Example Call
+### 範例呼叫 {#example-call}
 
 ```python
 from litellm import completion
@@ -37,7 +36,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型加入您的 config.yaml
 
   ```yaml
   model_list:
@@ -49,14 +48,13 @@ response = completion(
   ```
 
 
-
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -112,13 +110,12 @@ response = completion(
 
   </Tabs>
 
-
 </TabItem>
 
 </Tabs>
 
-## Passing additional params - max_tokens, temperature 
-See all litellm.completion supported params [here](../completion/input.md#translated-openai-params)
+## 傳遞額外參數 - max_tokens, temperature  {#passing-additional-params---max_tokens-temperature}
+請參閱所有 litellm.completion 支援的參數 [這裡](../completion/input.md#translated-openai-params)
 
 ```python
 # !uv add litellm
@@ -137,7 +134,7 @@ response = completion(
 )
 ```
 
-**proxy**
+**代理**
 
 ```yaml
   model_list:
@@ -151,14 +148,13 @@ response = completion(
 ```
 
 
-
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -205,7 +201,7 @@ response = completion(
 
   </Tabs>
 
-## Function Calling 
+## 函式呼叫 {#function-calling}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -301,20 +297,20 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-LiteLLM supports **ALL** azure ai models. Here's a few examples:
+LiteLLM 支援 **所有** azure ai 模型。以下是幾個範例：
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Cohere command-r-plus | `completion(model="azure_ai/command-r-plus", messages)` | 
 | Cohere command-r | `completion(model="azure_ai/command-r", messages)` | 
 | mistral-large-latest | `completion(model="azure_ai/mistral-large-latest", messages)` | 
 | AI21-Jamba-Instruct | `completion(model="azure_ai/ai21-jamba-instruct", messages)` | 
 
-## Usage - Azure Anthropic (Azure Foundry Claude)
+## 使用方式 - Azure Anthropic (Azure Foundry Claude) {#usage---azure-anthropic-azure-foundry-claude}
 
-LiteLLM funnels Azure Claude deployments through the `azure_ai/` provider so Claude Opus models on Azure Foundry keep working with Tool Search, Effort, streaming, and the rest of the advanced feature set. Point `AZURE_AI_API_BASE` to `https://<resource>.services.ai.azure.com/anthropic` (LiteLLM appends `/v1/messages` automatically) and authenticate with `AZURE_AI_API_KEY` or an Azure AD token.
+LiteLLM 透過 `azure_ai/` 提供者轉送 Azure Claude 部署，因此 Azure Foundry 上的 Claude Opus 模型可繼續支援 Tool Search、Effort、串流，以及其餘進階功能集。將 `AZURE_AI_API_BASE` 指向 `https://<resource>.services.ai.azure.com/anthropic`（LiteLLM 會自動附加 `/v1/messages`），並使用 `AZURE_AI_API_KEY` 或 Azure AD 權杖進行驗證。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -343,14 +339,14 @@ for chunk in response:
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Set environment variables**
+**1. 設定環境變數**
 
 ```bash
 export AZURE_AI_API_KEY="your-azure-ai-api-key"
 export AZURE_AI_API_BASE="https://my-resource.services.ai.azure.com/anthropic"
 ```
 
-**2. Configure the proxy**
+**2. 設定 proxy**
 
 ```yaml
 model_list:
@@ -361,13 +357,13 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE
 ```
 
-**3. Start LiteLLM**
+**3. 啟動 LiteLLM**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**4. Test the Azure Claude route**
+**4. 測試 Azure Claude 路由**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -388,13 +384,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## Rerank 端點 {#rerank-endpoint}
 
-
-## Rerank Endpoint
-
-### Usage
-
-
+### 使用方式 {#usage-1}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM SDK Usage">
@@ -426,11 +418,11 @@ print(response)
 
 <TabItem value="proxy" label="LiteLLM Proxy Usage">
 
-LiteLLM provides an cohere api compatible `/rerank` endpoint for Rerank calls.
+LiteLLM 提供與 cohere api 相容的 `/rerank` 端點，供 Rerank 呼叫使用。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -445,7 +437,7 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -453,7 +445,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test request
+測試請求
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -474,4 +466,3 @@ curl http://0.0.0.0:4000/rerank \
 
 </TabItem>
 </Tabs>
-

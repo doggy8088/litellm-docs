@@ -1,65 +1,65 @@
 ---
 slug: mistral-supply-chain-attack-may-2026
-title: "Security Update: Mistral AI PyPI Supply Chain Attack — LiteLLM Not Impacted"
+title: "安全更新：Mistral AI PyPI 供應鏈攻擊 — LiteLLM 未受影響"
 date: 2026-05-12T10:00:00
 authors:
   - mubashir
-description: "On May 11, 2026, a malicious version of the mistralai PyPI package was published as part of a coordinated supply chain attack. LiteLLM is not affected — we call Mistral exclusively via httpx, never by importing the mistralai SDK."
+description: "2026 年 5 月 11 日，mistralai PyPI 套件的惡意版本被發布，作為協同供應鏈攻擊的一部分。LiteLLM 未受影響 — 我們僅透過 httpx 直接呼叫 Mistral，從不匯入 mistralai SDK。"
 tags: [security, supply-chain, mistral, incident-report]
 hide_table_of_contents: false
 ---
 
-On May 11, 2026, security researchers at [Aikido Security](https://www.aikido.dev/blog/mini-shai-hulud-is-back-tanstack-compromised) discovered a coordinated supply chain attack dubbed **"Mini Shai-Hulud"** that published malicious versions of over 170 npm packages and 2 PyPI packages, including `mistralai==2.4.6`. 
+2026 年 5 月 11 日，來自 [Aikido Security](https://www.aikido.dev/blog/mini-shai-hulud-is-back-tanstack-compromised) 的資安研究人員發現了一起名為 **"Mini Shai-Hulud"** 的協同供應鏈攻擊，該攻擊發布了超過 170 個 npm 套件與 2 個 PyPI 套件的惡意版本，其中包括 `mistralai==2.4.6`。 
 
-**LiteLLM is not impacted.** We call Mistral's API directly over HTTP via `httpx` and do not import the `mistralai` Python SDK anywhere in the codebase.
+**LiteLLM 不受影響。** 我們透過 `httpx` 直接經由 HTTP 呼叫 Mistral 的 API，且在程式碼庫中的任何地方都不會匯入 `mistralai` Python SDK。
 
-## TLDR;
+## 重點摘要； {#tldr}
 
-- **LiteLLM does not install or import the `mistralai` package.** We call Mistral's API the same way we call every other provider (via `httpx`). The compromised package is never executed in any LiteLLM environment.
-- **No LiteLLM user credentials were at risk from this attack.** The malware runs at `import mistralai` time. Since LiteLLM never reaches that import, the payload never fires.
-- **No action is required from LiteLLM users.** If you have separately installed `mistralai==2.4.6` in the same environment for your own application code, you should follow [Mistral AI's guidance](https://docs.mistral.ai/resources/security-advisories) immediately.
+- **LiteLLM 不會安裝或匯入 `mistralai` 套件。** 我們呼叫 Mistral 的 API 方式與呼叫其他所有提供者相同（透過 `httpx`）。這個遭入侵的套件在任何 LiteLLM 環境中都不會被執行。
+- **這次攻擊未使任何 LiteLLM 使用者憑證面臨風險。** 惡意程式在 `import mistralai` 時執行。由於 LiteLLM 從未觸發該匯入，因此負載永遠不會執行。
+- **LiteLLM 使用者無需採取任何行動。** 如果您為了自己的應用程式程式碼，已在相同環境中另外安裝 `mistralai==2.4.6`，請立即遵循 [Mistral AI 的指引](https://docs.mistral.ai/resources/security-advisories)。
 
 {/* truncate */}
 
 ---
 
-## What happened
+## 發生了什麼事 {#what-happened}
 
-TeamPCP published `mistralai==2.4.6` to PyPI — a version Mistral AI never released. The package contained a backdoor injected into `src/mistralai/client/__init__.py` that fires at import time on Linux hosts. When triggered, it downloads a file named `transformers.pyz` from a hardcoded attacker-controlled IP address (`83.142.209.194`) and executes it as a detached background process.
+TeamPCP 將 `mistralai==2.4.6` 發布到 PyPI —— 這個版本是 Mistral AI 從未釋出的。該套件包含一個植入於 `src/mistralai/client/__init__.py` 的後門，會在 Linux 主機上於匯入時觸發。被觸發後，它會從一個硬編碼、由攻擊者控制的 IP 位址（`83.142.209.194`）下載名為 `transformers.pyz` 的檔案，並將其作為分離的背景程序執行。
 
-The filename was deliberately chosen to resemble Hugging Face's widely used `transformers` library, giving it cover in ML environments.
+此檔名刻意設計成與 Hugging Face 廣泛使用的 `transformers` 程式庫相似，以便在 ML 環境中作為掩護。
 
-The payload functions as a **credential stealer**, targeting secrets stored on the host — cloud credentials, CI/CD tokens, GitHub access tokens, and API keys. Researchers also found a geofenced destructive branch with a 1-in-6 probability of running `rm -rf /` on systems detected to be in certain regions.
+該負載是一個 **憑證竊取程式**，目標是主機上儲存的機密資料——雲端憑證、CI/CD 權杖、GitHub 存取權杖，以及 API 金鑰。研究人員也發現一個具地理封鎖的破壞性分支，在偵測到位於某些地區的系統上，有 1/6 的機率執行 `rm -rf /`。
 
-PyPI has since quarantined the entire `mistralai` project. The attack was part of a broader campaign that hit TanStack (42 packages), UiPath (65 packages), Guardrails AI, OpenSearch, and others across both npm and PyPI.
+PyPI 之後已將整個 `mistralai` 專案隔離收容。這次攻擊是更廣泛行動的一部分，該行動在 npm 與 PyPI 上波及 TanStack（42 個套件）、UiPath（65 個套件）、Guardrails AI、OpenSearch 及其他專案。
 
 ---
 
-## What to check if you use LiteLLM
+## 如果您使用 LiteLLM，請檢查什麼 {#what-to-check-if-you-use-litellm}
 
-No LiteLLM-specific action is needed. If you want to be thorough:
+不需要任何 LiteLLM 特定的動作。如果您想要更全面檢查：
 
-1. **Confirm `mistralai` is not in your environment.**
+1. **確認 `mistralai` 不在您的環境中。**
    ```bash
    pip show mistralai
    ```
-   If the output shows version `2.4.6`, remove it immediately and follow [Mistral AI's security advisory](https://docs.mistral.ai/resources/security-advisories).
+   如果輸出顯示版本 `2.4.6`，請立即移除並遵循 [Mistral AI 的安全公告](https://docs.mistral.ai/resources/security-advisories)。
 
-2. **Check your environment for the dropper.**
-   Look for `/tmp/transformers.pyz` on any Linux hosts that had `mistralai==2.4.6` installed, and for unexpected outbound connections to `83.142.209.194`.
+2. **檢查您的環境中是否有 dropper。**
+   在任何曾安裝過 `mistralai==2.4.6` 的 Linux 主機上，尋找 `/tmp/transformers.pyz`，以及對 `83.142.209.194` 的異常對外連線。
 
-3. **Rotate credentials if you were affected.**
-   If `mistralai==2.4.6` was installed and imported in your environment, treat all secrets present on that host as compromised: cloud credentials, API keys, CI/CD tokens, and GitHub tokens.
-
----
-
-## Our broader approach to dependency security
-
-If you discover a security issue in LiteLLM, please report it through our [bug bounty program](https://github.com/BerriAI/litellm/security). We pay out for P0 (supply chain) and P1 (unauthenticated proxy access) issues.
+3. **如果您受到影響，請輪替憑證。**
+   如果 `mistralai==2.4.6` 曾在您的環境中安裝並匯入，請將該主機上存在的所有機密視為已洩露：雲端憑證、API 金鑰、CI/CD 權杖與 GitHub 權杖。
 
 ---
 
-**References**
+## 我們對依賴套件安全性的更廣泛作法 {#our-broader-approach-to-dependency-security}
+
+如果您在 LiteLLM 中發現安全問題，請透過我們的 [漏洞獎勵計畫](https://github.com/BerriAI/litellm/security) 回報。我們會對 P0（供應鏈）與 P1（未驗證的代理存取）問題支付獎金。
+
+---
+
+**參考資料**
 
 - [Aikido Security — Mini Shai-Hulud Is Back](https://www.aikido.dev/blog/mini-shai-hulud-is-back-tanstack-compromised)
 - [The Hacker News — Mini Shai-Hulud Worm Compromises TanStack, Mistral AI, Guardrails AI & More](https://thehackernews.com/2026/05/mini-shai-hulud-worm-compromises.html)

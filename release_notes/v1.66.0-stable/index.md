@@ -1,5 +1,5 @@
 ---
-title: v1.66.0-stable - Realtime API Cost Tracking
+title: v1.66.0-stable - 即時 API 成本追蹤
 slug: v1.66.0-stable
 date: 2025-04-12T10:00:00
 authors:
@@ -20,7 +20,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -41,113 +41,107 @@ pip install litellm==1.66.0.post1
 </TabItem>
 </Tabs>
 
-v1.66.0-stable is live now, here are the key highlights of this release
+v1.66.0-stable 現已上線，以下是此版本的重點摘要
 
-## Key Highlights
-- **Realtime API Cost Tracking**: Track cost of realtime API calls
-- **Microsoft SSO Auto-sync**: Auto-sync groups and group members from Azure Entra ID to LiteLLM
-- **xAI grok-3**: Added support for `xai/grok-3` models
-- **Security Fixes**: Fixed [CVE-2025-0330](https://www.cve.org/CVERecord?id=CVE-2025-0330) and [CVE-2024-6825](https://www.cve.org/CVERecord?id=CVE-2024-6825) vulnerabilities
+## 重點摘要 {#key-highlights}
+- **即時 API 成本追蹤**：追蹤即時 API 請求的成本
+- **Microsoft SSO 自動同步**：從 Azure Entra ID 自動同步群組與群組成員到 LiteLLM
+- **xAI grok-3**：新增對 `xai/grok-3` 模型的支援
+- **安全性修正**：修正 [CVE-2025-0330](https://www.cve.org/CVERecord?id=CVE-2025-0330) 與 [CVE-2024-6825](https://www.cve.org/CVERecord?id=CVE-2024-6825) 漏洞
 
-Let's dive in.
+讓我們開始。
 
-## Realtime API Cost Tracking
+## 即時 API 成本追蹤 {#realtime-api-cost-tracking}
 
 <Image 
   img={require('../../img/realtime_api.png')}
   style={{width: '100%', display: 'block'}}
 />
 
+此版本新增即時 API 記錄 + 成本追蹤。
+- **記錄**：LiteLLM 現在會將即時呼叫的完整回應記錄到所有記錄整合（DB、S3、Langfuse 等）。
+- **成本追蹤**：您現在可以為即時模型設定 'base_model' 與自訂定價。[自訂定價](../../docs/proxy/custom_pricing)
+- **預算**：您的 key/user/team 預算現在也適用於即時模型。
 
-This release adds Realtime API logging + cost tracking. 
-- **Logging**: LiteLLM now logs the complete response from realtime calls to all logging integrations (DB, S3, Langfuse, etc.) 
-- **Cost Tracking**: You can now set 'base_model' and custom pricing for realtime models. [Custom Pricing](../../docs/proxy/custom_pricing)
-- **Budgets**: Your key/user/team budgets now work for realtime models as well.
+從[這裡](https://docs.litellm.ai/docs/realtime)開始
 
-Start [here](https://docs.litellm.ai/docs/realtime)
-
-
-
-## Microsoft SSO Auto-sync
+## Microsoft SSO 自動同步 {#microsoft-sso-auto-sync}
 
 <Image 
   img={require('../../img/release_notes/sso_sync.png')}
   style={{width: '100%', display: 'block'}}
 />
 <p style={{textAlign: 'left', color: '#666'}}>
-  Auto-sync groups and members from Azure Entra ID to LiteLLM
+  從 Azure Entra ID 自動同步群組與成員到 LiteLLM
 </p>
 
-This release adds support for auto-syncing groups and members on Microsoft Entra ID with LiteLLM. This means that LiteLLM proxy administrators can spend less time managing teams and members and LiteLLM handles the following: 
+此版本新增對 Microsoft Entra ID 上群組與成員自動同步至 LiteLLM 的支援。這表示 LiteLLM proxy 管理員可以花更少時間管理團隊與成員，而 LiteLLM 會處理以下事項：
 
-- Auto-create teams that exist on Microsoft Entra ID 
-- Sync team members on Microsoft Entra ID with LiteLLM teams
+- 自動建立 Microsoft Entra ID 上存在的團隊
+- 同步 Microsoft Entra ID 上的團隊成員與 LiteLLM 團隊
 
-Get started with this [here](https://docs.litellm.ai/docs/tutorials/msft_sso)
+從[這裡](https://docs.litellm.ai/docs/tutorials/msft_sso)開始使用
 
-
-## New Models / Updated Models
+## 新模型 / 已更新模型 {#new-models--updated-models}
 
 - **xAI**
-    1. Added reasoning_effort support for `xai/grok-3-mini-beta` [Get Started](https://docs.litellm.ai/docs/providers/xai#reasoning-usage)
-    2. Added cost tracking for `xai/grok-3` models [PR](https://github.com/BerriAI/litellm/pull/9920)
+    1. 新增 `xai/grok-3-mini-beta` 的 reasoning_effort 支援 [開始使用](https://docs.litellm.ai/docs/providers/xai#reasoning-usage)
+    2. 新增 `xai/grok-3` 模型的成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/9920)
 
 - **Hugging Face**
-    1. Added inference providers support [Get Started](https://docs.litellm.ai/docs/providers/huggingface#serverless-inference-providers)
+    1. 新增 inference providers 支援 [開始使用](https://docs.litellm.ai/docs/providers/huggingface#serverless-inference-providers)
 
 - **Azure**
-    1. Added azure/gpt-4o-realtime-audio cost tracking [PR](https://github.com/BerriAI/litellm/pull/9893)
+    1. 新增 azure/gpt-4o-realtime-audio 成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/9893)
 
 - **VertexAI**
-    1. Added enterpriseWebSearch tool support [Get Started](https://docs.litellm.ai/docs/providers/vertex#grounding---web-search)
-    2. Moved to only passing keys accepted by the Vertex AI response schema [PR](https://github.com/BerriAI/litellm/pull/8992)
+    1. 新增 enterpriseWebSearch 工具支援 [開始使用](https://docs.litellm.ai/docs/providers/vertex#grounding---web-search)
+    2. 改為只傳遞 Vertex AI 回應結構描述接受的鍵值 [PR](https://github.com/BerriAI/litellm/pull/8992)
 
 - **Google AI Studio**
-    1. Added cost tracking for `gemini-2.5-pro` [PR](https://github.com/BerriAI/litellm/pull/9837)
-    2. Fixed pricing for 'gemini/gemini-2.5-pro-preview-03-25' [PR](https://github.com/BerriAI/litellm/pull/9896)
-    3. Fixed handling file_data being passed in [PR](https://github.com/BerriAI/litellm/pull/9786)
+    1. 新增 `gemini-2.5-pro` 的成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/9837)
+    2. 修正 'gemini/gemini-2.5-pro-preview-03-25' 的定價 [PR](https://github.com/BerriAI/litellm/pull/9896)
+    3. 修正傳入 file_data 的處理 [PR](https://github.com/BerriAI/litellm/pull/9786)
 
 - **Azure**
-    1. Updated Azure Phi-4 pricing [PR](https://github.com/BerriAI/litellm/pull/9862)
-    2. Added azure/gpt-4o-realtime-audio cost tracking [PR](https://github.com/BerriAI/litellm/pull/9893)
+    1. 更新 Azure Phi-4 定價 [PR](https://github.com/BerriAI/litellm/pull/9862)
+    2. 新增 azure/gpt-4o-realtime-audio 成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/9893)
 
 - **Databricks**
-    1. Removed reasoning_effort from parameters [PR](https://github.com/BerriAI/litellm/pull/9811)
-    2. Fixed custom endpoint check for Databricks [PR](https://github.com/BerriAI/litellm/pull/9925)
+    1. 從參數中移除 reasoning_effort [PR](https://github.com/BerriAI/litellm/pull/9811)
+    2. 修正 Databricks 的自訂端點檢查 [PR](https://github.com/BerriAI/litellm/pull/9925)
 
-- **General**
-    1. Added litellm.supports_reasoning() util to track if an llm supports reasoning [Get Started](https://docs.litellm.ai/docs/providers/anthropic#reasoning)
-    2. Function Calling - Handle pydantic base model in message tool calls, handle tools = [], and support fake streaming on tool calls for meta.llama3-3-70b-instruct-v1:0 [PR](https://github.com/BerriAI/litellm/pull/9774)
-    3. LiteLLM Proxy - Allow passing `thinking` param to litellm proxy via client sdk [PR](https://github.com/BerriAI/litellm/pull/9386)
-    4. Fixed correctly translating 'thinking' param for litellm [PR](https://github.com/BerriAI/litellm/pull/9904)
+- **一般**
+    1. 新增 litellm.supports_reasoning() 工具，用來追蹤某個 llm 是否支援 reasoning [開始使用](https://docs.litellm.ai/docs/providers/anthropic#reasoning)
+    2. Function Calling - 在訊息工具呼叫中處理 pydantic base model，處理 tools = []，並支援 meta.llama3-3-70b-instruct-v1:0 的工具呼叫假串流 [PR](https://github.com/BerriAI/litellm/pull/9774)
+    3. LiteLLM Proxy - 允許透過 client sdk 將 `thinking` 參數傳遞給 litellm proxy [PR](https://github.com/BerriAI/litellm/pull/9386)
+    4. 修正 litellm 對 'thinking' 參數的正確轉譯 [PR](https://github.com/BerriAI/litellm/pull/9904)
 
-
-## Spend Tracking Improvements
+## 支出追蹤改進 {#spend-tracking-improvements}
 - **OpenAI, Azure**
-    1. Realtime API Cost tracking with token usage metrics in spend logs [Get Started](https://docs.litellm.ai/docs/realtime)
+    1. 在支出記錄中使用 token 使用量指標進行即時 API 成本追蹤 [開始使用](https://docs.litellm.ai/docs/realtime)
 - **Anthropic**
-    1. Fixed Claude Haiku cache read pricing per token [PR](https://github.com/BerriAI/litellm/pull/9834)
-    2. Added cost tracking for Claude responses with base_model [PR](https://github.com/BerriAI/litellm/pull/9897)
-    3. Fixed Anthropic prompt caching cost calculation and trimmed logged message in db [PR](https://github.com/BerriAI/litellm/pull/9838)
-- **General**
-    1. Added token tracking and log usage object in spend logs [PR](https://github.com/BerriAI/litellm/pull/9843)
-    2. Handle custom pricing at deployment level [PR](https://github.com/BerriAI/litellm/pull/9855)
+    1. 修正 Claude Haiku 快取讀取每 token 定價 [PR](https://github.com/BerriAI/litellm/pull/9834)
+    2. 新增以 base_model 為基礎的 Claude 回應成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/9897)
+    3. 修正 Anthropic 提示快取成本計算與 db 中裁切的記錄訊息 [PR](https://github.com/BerriAI/litellm/pull/9838)
+- **一般**
+    1. 在支出記錄中新增 token 追蹤與記錄使用量物件 [PR](https://github.com/BerriAI/litellm/pull/9843)
+    2. 處理部署層級的自訂定價 [PR](https://github.com/BerriAI/litellm/pull/9855)
 
+## 管理端點 / UI {#management-endpoints--ui}
 
-## Management Endpoints / UI
-
-- **Test Key Tab**
-    1. Added rendering of Reasoning content, ttft, usage metrics on test key page [PR](https://github.com/BerriAI/litellm/pull/9931)
+- **測試 Key 分頁**
+    1. 新增在測試 key 頁面上呈現 Reasoning 內容、ttft、使用量指標 [PR](https://github.com/BerriAI/litellm/pull/9931)
 
     <Image 
     img={require('../../img/release_notes/chat_metrics.png')}
     style={{width: '100%', display: 'block'}}
     />
     <p style={{textAlign: 'left', color: '#666'}}>
-    View input, output, reasoning tokens, ttft metrics.
+    檢視輸入、輸出、reasoning token、ttft 指標。
     </p>
-- **Tag / Policy Management**
-    1. Added Tag/Policy Management. Create routing rules based on request metadata. This allows you to enforce that requests with `tags="private"` only go to specific models. [Get Started](https://docs.litellm.ai/docs/tutorials/tag_management)
+- **標籤 / 政策管理**
+    1. 新增標籤/政策管理。根據請求中繼資料建立路由規則。這可讓您強制要求帶有 `tags="private"` 的請求只能送往特定模型。[開始使用](https://docs.litellm.ai/docs/tutorials/tag_management)
 
     <br />
 
@@ -156,42 +150,40 @@ Get started with this [here](https://docs.litellm.ai/docs/tutorials/msft_sso)
     style={{width: '100%', display: 'block'}}
     />
     <p style={{textAlign: 'left', color: '#666'}}>
-    Create and manage tags.
+    建立並管理標籤。
     </p>
-- **Redesigned Login Screen**
-    1. Polished login screen [PR](https://github.com/BerriAI/litellm/pull/9778)
-- **Microsoft SSO Auto-Sync**
-    1. Added debug route to allow admins to debug SSO JWT fields [PR](https://github.com/BerriAI/litellm/pull/9835)
-    2. Added ability to use MSFT Graph API to assign users to teams [PR](https://github.com/BerriAI/litellm/pull/9865)
-    3. Connected litellm to Azure Entra ID Enterprise Application [PR](https://github.com/BerriAI/litellm/pull/9872)
-    4. Added ability for admins to set `default_team_params` for when litellm SSO creates default teams [PR](https://github.com/BerriAI/litellm/pull/9895)
-    5. Fixed MSFT SSO to use correct field for user email [PR](https://github.com/BerriAI/litellm/pull/9886)
-    6. Added UI support for setting Default Team setting when litellm SSO auto creates teams [PR](https://github.com/BerriAI/litellm/pull/9918)
-- **UI Bug Fixes**
-    1. Prevented team, key, org, model numerical values changing on scrolling [PR](https://github.com/BerriAI/litellm/pull/9776)
-    2. Instantly reflect key and team updates in UI [PR](https://github.com/BerriAI/litellm/pull/9825)
+- **重新設計的登入畫面**
+    1. 美化登入畫面 [PR](https://github.com/BerriAI/litellm/pull/9778)
+- **Microsoft SSO 自動同步**
+    1. 新增 debug 路由，讓管理員可除錯 SSO JWT 欄位 [PR](https://github.com/BerriAI/litellm/pull/9835)
+    2. 新增使用 MSFT Graph API 將使用者指派到團隊的能力 [PR](https://github.com/BerriAI/litellm/pull/9865)
+    3. 將 litellm 連接到 Azure Entra ID Enterprise Application [PR](https://github.com/BerriAI/litellm/pull/9872)
+    4. 新增讓管理員在 litellm SSO 建立預設團隊時設定 `default_team_params` 的能力 [PR](https://github.com/BerriAI/litellm/pull/9895)
+    5. 修正 MSFT SSO 使用正確欄位作為使用者 email [PR](https://github.com/BerriAI/litellm/pull/9886)
+    6. 新增在 litellm SSO 自動建立團隊時，於 UI 中設定 Default Team 設定的支援 [PR](https://github.com/BerriAI/litellm/pull/9918)
+- **UI 錯誤修正**
+    1. 防止團隊、key、org、model 數值在捲動時變動 [PR](https://github.com/BerriAI/litellm/pull/9776)
+    2. 在 UI 中即時反映 key 與團隊更新 [PR](https://github.com/BerriAI/litellm/pull/9825)
 
-## Logging / Guardrail Improvements
+## 記錄 / 防護欄改進 {#logging--guardrail-improvements}
 
 - **Prometheus**
-    1. Emit Key and Team Budget metrics on a cron job schedule [Get Started](https://docs.litellm.ai/docs/proxy/prometheus#initialize-budget-metrics-on-startup)
+    1. 依 cron job 排程發出 Key 與 Team Budget 指標 [開始使用](https://docs.litellm.ai/docs/proxy/prometheus#initialize-budget-metrics-on-startup)
 
-## Security Fixes
+## 安全性修正 {#security-fixes}
 
-- Fixed [CVE-2025-0330](https://www.cve.org/CVERecord?id=CVE-2025-0330) - Leakage of Langfuse API keys in team exception handling [PR](https://github.com/BerriAI/litellm/pull/9830)
-- Fixed [CVE-2024-6825](https://www.cve.org/CVERecord?id=CVE-2024-6825) - Remote code execution in post call rules [PR](https://github.com/BerriAI/litellm/pull/9826)
+- 修正 [CVE-2025-0330](https://www.cve.org/CVERecord?id=CVE-2025-0330) - 團隊例外處理中 Langfuse API 金鑰外洩 [PR](https://github.com/BerriAI/litellm/pull/9830)
+- 修正 [CVE-2024-6825](https://www.cve.org/CVERecord?id=CVE-2024-6825) - post call rules 中的遠端程式碼執行 [PR](https://github.com/BerriAI/litellm/pull/9826)
 
-## Helm
+## Helm {#helm}
 
-- Added service annotations to litellm-helm chart [PR](https://github.com/BerriAI/litellm/pull/9840)
-- Added extraEnvVars to the helm deployment [PR](https://github.com/BerriAI/litellm/pull/9292)
+- 為 litellm-helm chart 新增 service 註解 [PR](https://github.com/BerriAI/litellm/pull/9840)
+- 為 helm deployment 新增 extraEnvVars [PR](https://github.com/BerriAI/litellm/pull/9292)
 
-## Demo
+## 示範 {#demo}
 
-Try this on the demo instance [today](https://docs.litellm.ai/docs/proxy/demo)
+今天就在示範實例上試試看 [今天](https://docs.litellm.ai/docs/proxy/demo)
 
-## Complete Git Diff
+## 完整 Git Diff {#complete-git-diff}
 
-See the complete git diff since v1.65.4-stable, [here](https://github.com/BerriAI/litellm/releases/tag/v1.66.0-stable)
-
-
+查看自 v1.65.4-stable 以來的完整 git diff，請見[這裡](https://github.com/BerriAI/litellm/releases/tag/v1.66.0-stable)

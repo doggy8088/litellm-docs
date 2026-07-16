@@ -1,30 +1,30 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Sandbox / Code Execution
+# Sandbox / 程式碼執行 {#sandbox--code-execution}
 
-Run model-generated code inside an isolated sandbox and get its output back. The API is provider-agnostic; e2b and opensandbox are supported backends, talked to directly over HTTPS with no extra SDK dependency.
+在隔離的 sandbox 中執行模型產生的程式碼，並取得其輸出回傳。此 API 不特定於任何提供者；支援 e2b 和 opensandbox，透過 HTTPS 直接連線，無需額外的 SDK 依賴。
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Supported Providers | `e2b`, `opensandbox` |
-| Cost Tracking | Passthrough (sandbox billing stays with the provider) |
-| Logging | Via the standard `@client` logging path used by `litellm.asearch` |
-| Proxy Endpoint | Via the code interpreter interceptor on `/v1/responses` and `/v1/chat/completions` (see below); no standalone `/v1/sandbox` yet |
+| 支援的提供者 | `e2b`, `opensandbox` |
+| 成本追蹤 | 直通（sandbox 計費仍由提供者處理） |
+| 記錄 | 透過 `litellm.asearch` 使用的標準 `@client` 記錄路徑 |
+| Proxy 端點 | 透過 `/v1/responses` 和 `/v1/chat/completions` 上的 code interpreter interceptor（見下方）；目前尚無獨立的 `/v1/sandbox` |
 
 :::tip
 
-`code` is an executable string. There is no language knob and no invented result schema; the [`CodeExecutionResult`](#response-codeexecutionresult) is a passthrough of the sandbox's own output (stdout, stderr, results such as base64 charts, error name/value/traceback, execution count).
+`code` 是可執行字串。沒有語言切換選項，也沒有虛構的結果結構；[`CodeExecutionResult`](#response-codeexecutionresult) 會直通 sandbox 本身的輸出（stdout、stderr、結果，例如 base64 圖表、錯誤名稱/值/traceback、執行次數）。
 
 :::
 
-## Code interpreter interceptor
+## 程式碼解譯器攔截器 {#code-interpreter-interceptor}
 
-Route OpenAI's `code_interpreter` tool to your sandbox instead of OpenAI's container. Works on both `/v1/responses` and `/v1/chat/completions`; client requests stay plain OpenAI shape. On the chat path the native `{"type": "code_interpreter"}` tool is rewritten into a `litellm_code_execution` function tool, LiteLLM runs the generated code in your sandbox, appends the result as a `role: tool` message, and continues the loop until a final answer.
+將 OpenAI 的 `code_interpreter` 工具路由到您的 sandbox，而不是 OpenAI 的容器。可在 `/v1/responses` 與 `/v1/chat/completions` 上運作；用戶端請求保持原生 OpenAI 形狀。在聊天路徑上，原生的 `{"type": "code_interpreter"}` 工具會被重寫成 `litellm_code_execution` function tool，LiteLLM 會在您的 sandbox 中執行產生的程式碼，將結果追加為 `role: tool` 訊息，並持續循環直到得到最終答案。
 
-### SDK
+### SDK {#sdk}
 
-Register the sandbox tool, install the interceptor as a callback, call `litellm.aresponses` (or `litellm.acompletion`) with the `code_interpreter` tool unchanged.
+註冊 sandbox 工具，將 interceptor 安裝為回呼，並以不變的 `code_interpreter` 工具呼叫 `litellm.aresponses`（或 `litellm.acompletion`）。
 
 <Tabs>
 <TabItem value="responses" label="Responses API">
@@ -101,21 +101,21 @@ response = await litellm.acompletion(
 print(response.choices[0].message.content)
 ```
 
-`max_agentic_loops` caps how many sandbox round-trips LiteLLM will run before returning whatever the model has produced; the loop also short-circuits on repeated tool-call fingerprints. Defaults are conservative, raise it if your task needs deeper chained execution.
+`max_agentic_loops` 用來限制 LiteLLM 在回傳模型已產生內容前，會進行多少次 sandbox 往返；此循環也會在重複的工具呼叫指紋上短路。預設值較保守；若您的任務需要更深層的鏈式執行，請提高此值。
 
 </TabItem>
 </Tabs>
 
-### Proxy setup
+### Proxy 設定 {#proxy-setup}
 
-#### 1. Set keys
+#### 1. 設定金鑰 {#1-set-keys}
 
 ```bash
 export E2B_API_KEY="e2b_..."
 export OPENAI_API_KEY="sk-..."
 ```
 
-#### 2. Write `config.yaml`
+#### 2. 撰寫 `config.yaml` {#2-write-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -136,13 +136,13 @@ litellm_settings:
     sandbox_tool_name: my-e2b
 ```
 
-#### 3. Start the proxy
+#### 3. 啟動 proxy {#3-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-#### 4. Call the proxy
+#### 4. 呼叫 proxy {#4-call-the-proxy}
 
 <Tabs>
 <TabItem value="responses-curl" label="Responses (curl)">
@@ -209,9 +209,9 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-On the Responses path the result contains a `code_interpreter_call` item with a `cntr_*` `container_id` wrapping the sandbox id. On the Chat Completions path the tool call shows up as a `litellm_code_execution` function call with the executed code, followed by a `role: tool` message holding the stdout; the model's final answer arrives in the next assistant message.
+在 Responses 路徑上，結果包含一個 `code_interpreter_call` 項目，其中有一個 `cntr_*` `container_id` 包裝 sandbox id。在 Chat Completions 路徑上，工具呼叫會以帶有已執行程式碼的 `litellm_code_execution` function call 顯示，接著是一則包含 stdout 的 `role: tool` 訊息；模型的最終答案會在下一則 assistant 訊息中送達。
 
-To run against OpenSandbox instead of e2b, swap the `sandbox_tools` entry:
+若要改用 OpenSandbox 而非 e2b，請替換 `sandbox_tools` 項目：
 
 ```yaml
 sandbox_tools:
@@ -222,9 +222,9 @@ sandbox_tools:
       api_key: os.environ/OPEN_SANDBOX_API_KEY
 ```
 
-### Sticky sessions
+### 黏著工作階段 {#sticky-sessions}
 
-By default each request spins up a fresh sandbox that gets deleted when the agentic loop ends. Pass `metadata.session_id` to reuse the same sandbox across sequential requests so variables, imports, and files defined in one turn stay live for the next.
+預設情況下，每個請求都會啟動一個新的 sandbox，並在 agentic loop 結束時刪除。傳入 `metadata.session_id` 可讓連續請求重用同一個 sandbox，如此在某一輪中定義的變數、import 和檔案，會在下一輪仍保持有效。
 
 <Tabs>
 <TabItem value="sticky-curl" label="curl">
@@ -281,19 +281,19 @@ print(followup.output_text)
 </TabItem>
 </Tabs>
 
-Cross-tenant isolation is enforced by combining the client-supplied `session_id` with the proxy-minted `user_api_key_hash` to form the cache key (`{hash}:{session_id}`), so two API keys sending the same `session_id` never share a sandbox. Each API key is capped at 10 live session-scoped sandboxes; when a new session would exceed the cap, the least-recently-used session for that key is evicted and its sandbox deleted. Active sessions do not expire mid-conversation because the TTL resets on every access. Omitting `session_id` keeps the original ephemeral per-request behavior.
+透過將用戶端提供的 `session_id` 與 proxy 代為建立的 `user_api_key_hash` 組合成快取金鑰（`{hash}:{session_id}`），來強制執行跨租戶隔離，因此送出相同 `session_id` 的兩個 API 金鑰絕不會共用 sandbox。每個 API 金鑰最多可有 10 個存活的工作階段範圍 sandbox；當新的工作階段將超過上限時，該金鑰最近最少使用的工作階段會被逐出，其 sandbox 也會被刪除。由於 TTL 會在每次存取時重設，作用中的工作階段不會在對話中途過期。若省略 `session_id`，則會維持原本每個請求皆為短暫存在的行為。
 
-### Notes
+### 注意事項 {#notes}
 
-Response shape matches OpenAI's native `code_interpreter_call`. `stream: true` works. Forced `tool_choice: {"type":"code_interpreter"}` is rewritten automatically. Sandboxes are ephemeral per request by default, or sticky when `metadata.session_id` is set (see above); concurrent requests are isolated by a server-minted cache key. Removing a tool from `sandbox_tools` clears its credentials on reload. v0 does not support file upload or download yet.
+回應格式與 OpenAI 原生的 `code_interpreter_call` 相同。`stream: true` 可運作。強制的 `tool_choice: {"type":"code_interpreter"}` 會自動重寫。預設情況下，sandbox 會針對每個請求短暫存在；若設定 `metadata.session_id`（見上方），則會保持黏著；同時請求會由伺服器代為建立的快取金鑰隔離。從 `sandbox_tools` 移除工具會在重新載入時清除其憑證。v0 目前尚不支援檔案上傳或下載。
 
-## Direct sandbox SDK
+## 直接 sandbox SDK {#direct-sandbox-sdk}
 
-If you want to drive the sandbox yourself, without a model in the loop, the same providers are exposed as plain Python helpers.
+如果您想自行驅動 sandbox，而不讓模型參與其中，同樣的提供者會以一般 Python helper 形式公開。
 
-### Quick start (ephemeral)
+### 快速開始（短暫存在） {#quick-start-ephemeral}
 
-The fastest path is `acode_interpreter_tool`. It creates a sandbox, runs the code, then deletes the sandbox in a `finally` block so a raised exception still cleans up.
+最快的路徑是 `acode_interpreter_tool`。它會建立 sandbox、執行程式碼，然後在 `finally` 區塊中刪除 sandbox，因此即使發生例外也會清理資源。
 
 ```python showLineNumbers title="Ephemeral code execution"
 import asyncio, os, litellm
@@ -311,7 +311,7 @@ async def main():
 asyncio.run(main())
 ```
 
-If the code raises inside the sandbox, the error surfaces in `result.error` rather than as a Python exception, so a sandbox-level `ZeroDivisionError` does not crash the caller:
+如果程式碼在 sandbox 內拋出錯誤，錯誤會以 `result.error` 形式浮現，而不是以 Python 例外的方式，因此 sandbox 層級的 `ZeroDivisionError` 不會讓呼叫端崩潰：
 
 ```python
 result = await litellm.acode_interpreter_tool(provider="e2b", code="1/0")
@@ -320,9 +320,9 @@ result.error["value"]      # 'division by zero'
 result.error["traceback"]  # full traceback string
 ```
 
-### Low-level lifecycle
+### 低階生命週期 {#low-level-lifecycle}
 
-When you want to reuse a sandbox across multiple `arun_code` calls, drive the lifecycle yourself with `acreate_sandbox`, `arun_code`, and `adelete_sandbox`. The low-level names are sandbox-scoped on purpose so they do not collide with the existing OpenAI Containers API (`litellm.create_container`), which is unrelated and stays untouched.
+當您想在多次 `arun_code` 呼叫之間重用同一個 sandbox 時，請自行使用 `acreate_sandbox`、`arun_code` 和 `adelete_sandbox` 來驅動生命週期。這些低階名稱刻意以 sandbox 為範圍，因此不會與既有的 OpenAI Containers API（`litellm.create_container`）衝突；兩者彼此無關，且會維持不變。
 
 ```python showLineNumbers title="Manual sandbox lifecycle"
 import asyncio, os, litellm
@@ -347,47 +347,47 @@ async def main():
 asyncio.run(main())
 ```
 
-`arun_code` and `adelete_sandbox` accept either the `ContainerHandle` returned by `acreate_sandbox` or a bare sandbox id string, so you can persist the id between processes and pick the sandbox back up later.
+`arun_code` 與 `adelete_sandbox` 可接受由 `acreate_sandbox` 回傳的 `ContainerHandle`，或單純的 sandbox id 字串，因此您可以在程序之間儲存 id，之後再取回該 sandbox。
 
-## Parameters
+## 參數 {#parameters}
 
-### `acode_interpreter_tool`
+### `acode_interpreter_tool` {#acode_interpreter_tool}
 
-| Parameter | Type | Required | Description |
+| 參數 | 型別 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `provider` | string | Yes | Sandbox provider slug. One of `"e2b"`, `"opensandbox"`. |
-| `code` | string | Yes | Executable string passed straight to the sandbox. |
-| `template` | string | No | Provider template id. Defaults to e2b's `code-interpreter-v1`. |
-| `timeout` | int | No | Sandbox lifetime in seconds. Defaults to 300. |
-| `api_key` | string | No | Overrides the env var lookup. |
-| `api_base` | string | No | Overrides the provider's default host. Use this to point a self-hosted sandbox at a cluster URL. |
+| `provider` | string | 是 | sandbox 提供者 slug。可為 `"e2b"`、`"opensandbox"`。 |
+| `code` | string | 是 | 直接傳送給 sandbox 的可執行字串。 |
+| `template` | string | 否 | 提供者 template id。預設為 e2b 的 `code-interpreter-v1`。 |
+| `timeout` | int | 否 | sandbox 存活秒數。預設為 300。 |
+| `api_key` | string | 否 | 覆寫環境變數查找。 |
+| `api_base` | string | 否 | 覆寫提供者的預設主機。可用來將 self-hosted sandbox 指向叢集 URL。 |
 
-### `acreate_sandbox`
+### `acreate_sandbox` {#acreate_sandbox}
 
-Same shape as above without `code`, plus `allow_internet_access: bool = True` for backends that gate egress.
+與上方相同的格式，但不含 `code`，另外還有適用於限制 egress 的後端之 `allow_internet_access: bool = True`。
 
-### `arun_code` and `adelete_sandbox`
+### `arun_code` 和 `adelete_sandbox` {#arun_code-and-adelete_sandbox}
 
-`provider`, `container` (a `ContainerHandle` or sandbox id string), and optional `api_key` / `api_base`. `arun_code` also takes `code`.
+`provider`、`container`（`ContainerHandle` 或 sandbox id 字串），以及可選的 `api_key` / `api_base`。`arun_code` 也會接受 `code`。
 
-## Response: `CodeExecutionResult`
+## 回應：`CodeExecutionResult` {#response-codeexecutionresult}
 
-The return shape is a thin pydantic model that preserves whatever the sandbox emitted.
+回傳格式是一個精簡的 pydantic model，會保留 sandbox 輸出的任何內容。
 
-| Field | Type | Description |
+| 欄位 | 類型 | 描述 |
 |-------|------|-------------|
-| `stdout` | string | Captured stdout. Empty string if nothing was printed. |
-| `stderr` | string | Captured stderr. |
-| `results` | list[dict] | Rich outputs such as base64 PNG charts; passed through unchanged. |
-| `error` | dict \| None | `{name, value, traceback}` when the sandboxed code raised, else `None`. |
-| `execution_count` | int \| None | Jupyter-style cell counter for the run. |
-| `object` | string | Always `"code_execution"`. |
+| `stdout` | string | 擷取的 stdout。若未列印任何內容則為空字串。 |
+| `stderr` | string | 擷取的 stderr。 |
+| `results` | list[dict] | 豐富輸出，例如 base64 PNG 圖表；會原樣傳遞。 |
+| `error` | dict \| None | 當 sandboxed 程式碼發生例外時為 `{name, value, traceback}`，否則為 `None`。 |
+| `execution_count` | int \| None | 本次執行的 Jupyter 風格 cell 計數器。 |
+| `object` | string | 一律為 `"code_execution"`。 |
 
-## Provider setup
+## 提供者設定 {#provider-setup}
 
-### e2b
+### e2b {#e2b}
 
-Set `E2B_API_KEY` (or pass `api_key=...` per call). Defaults: template `code-interpreter-v1`, sandbox timeout 300s, internet access on. Override `template` to use any custom e2b template you have published.
+設定 `E2B_API_KEY`（或每次呼叫時傳入 `api_key=...`）。預設值：template `code-interpreter-v1`、sandbox timeout 300s、已開啟網際網路存取。覆寫 `template` 即可使用您已發布的任何自訂 e2b template。
 
 ```python
 result = await litellm.acode_interpreter_tool(
@@ -398,11 +398,11 @@ result = await litellm.acode_interpreter_tool(
 )
 ```
 
-Behind the scenes the call goes directly to e2b's REST API: `POST api.e2b.app/sandboxes` to create, a streamed NDJSON `POST` to the per-sandbox host on port 49999 to execute, and `DELETE api.e2b.app/sandboxes/{id}` to tear down.
+在背後，這個呼叫會直接進入 e2b 的 REST API：先用 `POST api.e2b.app/sandboxes` 建立，再透過傳送到每個 sandbox host、埠 49999 的串流 NDJSON `POST` 執行，最後用 `DELETE api.e2b.app/sandboxes/{id}` 結束。
 
-### opensandbox
+### opensandbox {#opensandbox}
 
-Use [OpenSandbox](https://github.com/opensandboxai/opensandbox) for self-hosted code execution. Set `OPEN_SANDBOX_API_BASE` (or pass `api_base=...` per call) to point at your server; there is no localhost fallback. `OPEN_SANDBOX_API_KEY` is optional, leave it empty for a local no-auth server. Sandboxes are created with egress denied by default; pass `allow_internet_access=True` or an explicit `network_policy` to open it up.
+使用 [OpenSandbox](https://github.com/opensandboxai/opensandbox) 進行自架程式碼執行。設定 `OPEN_SANDBOX_API_BASE`（或每次呼叫時傳入 `api_base=...`）以指向您的伺服器；沒有 localhost 備援。`OPEN_SANDBOX_API_KEY` 為選用項目，若是本機無驗證伺服器可留空。預設會建立禁止 egress 的 sandboxes；傳入 `allow_internet_access=True` 或明確的 `network_policy` 即可開放。
 
 ```python
 import os, litellm
@@ -417,4 +417,4 @@ result = await litellm.acode_interpreter_tool(
 print(result.stdout)  # '45\n'
 ```
 
-The provider drives OpenSandbox's REST lifecycle directly: `POST /v1/sandboxes` to create, resolves the per-sandbox execd endpoint, streams `/code` SSE into a `CodeExecutionResult`, then `DELETE /v1/sandboxes/{id}` to tear down. Other defaults (template, entrypoint, language, polling interval, execd port, default network policy, output cap) live as literals in `litellm/constants.py`.
+此提供者直接驅動 OpenSandbox 的 REST 生命週期：用 `POST /v1/sandboxes` 建立、解析每個 sandbox 的 execd endpoint、將 `/code` SSE 串流到 `CodeExecutionResult`，然後用 `DELETE /v1/sandboxes/{id}` 結束。其他預設值（template、entrypoint、language、polling interval、execd port、預設網路政策、輸出上限）都以常值放在 `litellm/constants.py` 中。

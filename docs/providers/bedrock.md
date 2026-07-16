@@ -1,47 +1,46 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AWS Bedrock
-ALL Bedrock models (Anthropic, Meta, Deepseek, Mistral, Amazon, etc.) are Supported
+# AWS Bedrock {#aws-bedrock}
+所有 Bedrock 模型（Anthropic、Meta、Deepseek、Mistral、Amazon 等）皆支援
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Amazon Bedrock is a fully managed service that offers a choice of high-performing foundation models (FMs). |
-| Provider Route on LiteLLM | `bedrock/`, [`bedrock/converse/`](#set-converse--invoke-route), [`bedrock/invoke/`](#set-invoke-route), [`bedrock/converse_like/`](#calling-via-internal-proxy), [`bedrock/llama/`](#deepseek-not-r1), [`bedrock/deepseek_r1/`](#deepseek-r1), [`bedrock/qwen3/`](#qwen3-imported-models), [`bedrock/qwen2/`](./bedrock_imported.md#qwen2-imported-models), [`bedrock/openai/`](./bedrock_imported.md#openai-compatible-imported-models-qwen-25-vl-etc), [`bedrock/moonshot`](./bedrock_imported.md#moonshot-kimi-k2-thinking) |
-| Provider Doc | [Amazon Bedrock ↗](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html) |
-| Supported OpenAI Endpoints | `/chat/completions`, `/completions`, `/embeddings`, `/images/generations`, `/v1/realtime`|
-| Rerank Endpoint | `/rerank` |
-| Pass-through Endpoint | [Supported](../pass_through/bedrock.md) |
+| 說明 | Amazon Bedrock 是一項全代管服務，提供多種高效能基礎模型（FM）。 |
+| LiteLLM 上的提供者路由 | `bedrock/`, [`bedrock/converse/`](#set-converse--invoke-route), [`bedrock/invoke/`](#set-invoke-route), [`bedrock/converse_like/`](#calling-via-internal-proxy), [`bedrock/llama/`](#deepseek-not-r1), [`bedrock/deepseek_r1/`](#deepseek-r1), [`bedrock/qwen3/`](#qwen3-imported-models), [`bedrock/qwen2/`](./bedrock_imported.md#qwen2-imported-models), [`bedrock/openai/`](./bedrock_imported.md#openai-compatible-imported-models-qwen-25-vl-etc), [`bedrock/moonshot`](./bedrock_imported.md#moonshot-kimi-k2-thinking) |
+| 提供者文件 | [Amazon Bedrock ↗](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html) |
+| 支援的 OpenAI 端點 | `/chat/completions`, `/completions`, `/embeddings`, `/images/generations`, `/v1/realtime`|
+| Rerank 端點 | `/rerank` |
+| 轉發端點 | [支援](../pass_through/bedrock.md) |
 
-
-LiteLLM requires `boto3` to be installed on your system for Bedrock requests
+LiteLLM 需要在您的系統上安裝 `boto3`，才能處理 Bedrock 請求
 ```shell
 uv add boto3>=1.28.57
 ```
 
 :::info
 
-For **Amazon Nova Models**: Bump to v1.53.5+
+針對 **Amazon Nova Models**：請升級至 v1.53.5+
 
 :::
 
-## Authentication
+## 驗證 {#authentication}
 
 :::info
 
-LiteLLM uses boto3 to handle authentication. All these options are supported - https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#credentials.
+LiteLLM 使用 boto3 來處理驗證。所有這些選項皆受支援 - https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#credentials.
 
 :::
  
-LiteLLM supports API key authentication in addition to traditional boto3 authentication methods. For additional API key details, refer to [docs](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html).
+LiteLLM 除了傳統的 boto3 驗證方法外，也支援 API 金鑰驗證。如需進一步了解 API 金鑰，請參閱 [文件](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html)。
 
-Option 1: use the AWS_BEARER_TOKEN_BEDROCK environment variable 
+選項 1：使用 AWS_BEARER_TOKEN_BEDROCK 環境變數 
 
 ```bash
 export AWS_BEARER_TOKEN_BEDROCK="your-api-key"
 ```
 
-Option 2: use the api_key parameter to pass in API key for completion, embedding, image_generation API calls.
+選項 2：使用 api_key 參數傳入 API 金鑰，以供 completion、embedding、image_generation API 呼叫使用。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -64,12 +63,11 @@ model_list:
 </TabItem>
 </Tabs>
 
-## Usage
+## 用法 {#usage}
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_Bedrock.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
-
 
 ```python
 import os
@@ -85,11 +83,11 @@ response = completion(
 )
 ```
 
-## LiteLLM Proxy Usage 
+## LiteLLM Proxy 用法 {#litellm-proxy-usage}
 
-Here's how to call Bedrock with the LiteLLM Proxy Server
+以下說明如何透過 LiteLLM Proxy Server 呼叫 Bedrock
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -101,7 +99,7 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-All possible auth params: 
+所有可能的驗證參數： 
 
 ```
 aws_access_key_id: Optional[str],
@@ -116,16 +114,15 @@ aws_bedrock_runtime_endpoint: Optional[str],
 api_key: Optional[str],
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
-### 3. Test it
-
+### 3. 測試 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -195,7 +192,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Set temperature, top p, etc.
+## 設定 temperature、top p 等 {#set-temperature-top-p-etc}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -218,7 +215,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Set on yaml**
+**在 yaml 中設定**
 
 ```yaml
 model_list:
@@ -229,7 +226,7 @@ model_list:
       top_p: <your-top-p>
 ```
 
-**Set on request**
+**在請求中設定**
 
 ```python
 
@@ -257,9 +254,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Pass provider-specific params 
+## 傳入特定提供者參數 {#pass-provider-specific-params}
 
-If you pass a non-openai param to litellm, we'll assume it's provider-specific and send it as a kwarg in the request body. [See more](../completion/input.md#provider-specific-params)
+如果您傳遞給 litellm 的參數不是 openai 參數，我們會假設它是提供者專屬參數，並將其作為 kwarg 放入請求主體中。[查看更多](../completion/input.md#provider-specific-params)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -281,7 +278,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Set on yaml**
+**在 yaml 中設定**
 
 ```yaml
 model_list:
@@ -291,7 +288,7 @@ model_list:
       top_k: 1 # 👈 PROVIDER-SPECIFIC PARAM
 ```
 
-**Set on request**
+**在請求中設定**
 
 ```python
 
@@ -321,9 +318,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Usage - Request Metadata
+## 用法 - 請求中繼資料 {#usage---request-metadata}
 
-Attach metadata to Bedrock requests for logging and cost attribution.
+將中繼資料附加到 Bedrock 請求，以便進行記錄與成本歸因。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -348,7 +345,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Set on yaml**
+**在 yaml 中設定**
 
 ```yaml
 model_list:
@@ -359,7 +356,7 @@ model_list:
         cost_center: "engineering"
 ```
 
-**Set on request**
+**在請求中設定**
 
 ```python
 import openai
@@ -380,9 +377,9 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-## Usage - Function Calling / Tool calling
+## 用法 - 函式呼叫 / 工具呼叫 {#usage---function-calling--tool-calling}
 
-LiteLLM supports tool calling via Bedrock's Converse and Invoke API's.
+LiteLLM 支援透過 Bedrock 的 Converse 和 Invoke API 進行工具呼叫。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -433,7 +430,7 @@ assert isinstance(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -442,13 +439,13 @@ model_list:
       model: bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0 # for bedrock invoke, specify `bedrock/invoke/<model>`
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -494,8 +491,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-## Usage - Vision 
+## 用法 - 視覺 {#usage---vision}
 
 ```python
 from litellm import completion
@@ -537,22 +533,22 @@ print(f"\nResponse: {resp}")
 ```
 
 
-## Usage - 'thinking' / 'reasoning content'
+## 用法 - 'thinking' / 'reasoning content' {#usage---thinking--reasoning-content}
 
-This is currently only supported for Anthropic's Claude 3.7 Sonnet + Deepseek R1 + GPT-OSS models.
+目前僅支援 Anthropic 的 Claude 3.7 Sonnet + Deepseek R1 + GPT-OSS 模型。
 
-Works on v1.61.20+.
+適用於 v1.61.20+。
 
-Returns 2 new fields in `message` and `delta` object:
-- `reasoning_content` - string - The reasoning content of the response
-- `thinking_blocks` - list of objects (Anthropic only) - The thinking blocks of the response
+在 `message` 和 `delta` 物件中回傳 2 個新欄位：
+- `reasoning_content` - 字串 - 回應的推理內容
+- `thinking_blocks` - 物件列表（僅 Anthropic）- 回應的思考區塊
 
-Each object has the following fields:
-- `type` - Literal["thinking"] - The type of thinking block
-- `thinking` - string - The thinking of the response. Also returned in `reasoning_content`
-- `signature` - string - A base64 encoded string, returned by Anthropic.
+每個物件都有以下欄位：
+- `type` - Literal["thinking"] - 思考區塊的類型
+- `thinking` - 字串 - 回應的思考內容。也會在 `reasoning_content` 中回傳
+- `signature` - 字串 - 由 Anthropic 回傳的 base64 編碼字串。
 
-The `signature` is required by Anthropic on subsequent calls, if 'thinking' content is passed in (only required to use `thinking` with tool calling). [Learn more](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#understanding-thinking-blocks)
+如果傳入 'thinking' 內容，Anthropic 在後續請求中需要 `signature`（僅在搭配工具呼叫使用 `thinking` 時需要）。[深入了解](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#understanding-thinking-blocks)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -577,7 +573,7 @@ print(resp)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -587,13 +583,13 @@ model_list:
       reasoning_effort: "low" # 👈 EITHER HERE OR ON REQUEST
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -609,10 +605,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
+**預期回應**
 
-**Expected Response**
-
-Same as [Anthropic API response](../providers/anthropic#usage---thinking--reasoning_content).
+與 [Anthropic API 回應](../providers/anthropic#usage---thinking--reasoning_content) 相同。
 
 ```python
 {
@@ -651,15 +646,15 @@ Same as [Anthropic API response](../providers/anthropic#usage---thinking--reason
 }
 ```
 
-### Pass `thinking` to Anthropic models
+### 將 `thinking` 傳給 Anthropic 模型 {#pass-thinking-to-anthropic-models}
 
-Same as [Anthropic API response](../providers/anthropic#usage---thinking--reasoning_content).
+與 [Anthropic API 回應](../providers/anthropic#usage---thinking--reasoning_content) 相同。
 
-## Usage - Bedrock search citations in `/chat/completions`
+## 用法 - Bedrock 搜尋引文於 `/chat/completions` {#usage---bedrock-search-citations-in-chatcompletions}
 
-If your tool returns search sources and you want citation metadata in the final assistant response, pass `search_results` on the `role: "tool"` message.
+如果您的工具會回傳搜尋來源，且您希望在最終的 assistant 回應中包含引用中繼資料，請在 `role: "tool"` 訊息上傳遞 `search_results`。
 
-### Request shape
+### 請求形狀 {#request-shape}
 
 ```json
 {
@@ -705,9 +700,9 @@ If your tool returns search sources and you want citation metadata in the final 
 }
 ```
 
-### What you get back
+### 您會收到什麼回應 {#what-you-get-back}
 
-LiteLLM returns regular assistant text in `message.content` and citation metadata in `message.annotations`:
+LiteLLM 會在 `message.content` 中回傳一般 assistant 文字，並在 `message.annotations` 中回傳引用中繼資料：
 
 ```json
 {
@@ -734,36 +729,35 @@ LiteLLM returns regular assistant text in `message.content` and citation metadat
 ```
 
 :::note
-If you only send plain `tool.content` text (without `search_results`), you will still get a normal answer, but no structured citation annotations.
+如果您只傳送純 `tool.content` 文字（沒有 `search_results`），仍然會得到正常回應，但不會有結構化的引用註解。
 :::
 
+## 用法 - Anthropic Beta 功能 {#usage---anthropic-beta-features}
 
-## Usage - Anthropic Beta Features
+LiteLLM 透過 `anthropic-beta` 標頭支援 AWS Bedrock 上 Anthropic 的 beta 功能。這可讓您使用下列實驗性功能：
 
-LiteLLM supports Anthropic's beta features on AWS Bedrock through the `anthropic-beta` header. This enables access to experimental features like:
+- **1M Context Window** - 最多 100 萬個 token 的內容視窗（Claude Opus 4.6、Sonnet 4.5、Sonnet 4）
+- **Computer Use Tools** - 可與電腦介面互動的 AI
+- **Token-Efficient Tools** - 更有效率的工具使用模式  
+- **Extended Output** - 最多 128K 輸出 token
+- **Enhanced Thinking** - 進階推理能力
 
-- **1M Context Window** - Up to 1 million tokens of context (Claude Opus 4.6, Sonnet 4.5, Sonnet 4)
-- **Computer Use Tools** - AI that can interact with computer interfaces
-- **Token-Efficient Tools** - More efficient tool usage patterns  
-- **Extended Output** - Up to 128K output tokens
-- **Enhanced Thinking** - Advanced reasoning capabilities
+### 支援的 Beta 功能 {#supported-beta-features}
 
-### Supported Beta Features
-
-| Beta Feature | Header Value | Compatible Models | Description |
+| Beta 功能 | 標頭值 | 相容模型 | 說明 |
 |--------------|-------------|------------------|-------------|
-| 1M Context Window | `context-1m-2025-08-07` | Claude Opus 4.6, Sonnet 4.5, Sonnet 4 | Enable 1 million token context window |
-| Computer Use (Latest) | `computer-use-2025-01-24` | Claude 3.7 Sonnet | Latest computer use tools |
-| Computer Use (Legacy) | `computer-use-2024-10-22` | Claude 3.5 Sonnet v2 | Computer use tools for Claude 3.5 |
-| Token-Efficient Tools | `token-efficient-tools-2025-02-19` | Claude 3.7 Sonnet | More efficient tool usage |
-| Interleaved Thinking | `interleaved-thinking-2025-05-14` | Claude 4 models | Enhanced thinking capabilities |
-| Extended Output | `output-128k-2025-02-19` | Claude 3.7 Sonnet | Up to 128K output tokens |
-| Developer Thinking | `dev-full-thinking-2025-05-14` | Claude 4 models | Raw thinking mode for developers |
+| 1M Context Window | `context-1m-2025-08-07` | Claude Opus 4.6, Sonnet 4.5, Sonnet 4 | 啟用 100 萬 token 內容視窗 |
+| Computer Use (Latest) | `computer-use-2025-01-24` | Claude 3.7 Sonnet | 最新的 computer use 工具 |
+| Computer Use (Legacy) | `computer-use-2024-10-22` | Claude 3.5 Sonnet v2 | 適用於 Claude 3.5 的 computer use 工具 |
+| Token-Efficient Tools | `token-efficient-tools-2025-02-19` | Claude 3.7 Sonnet | 更有效率的工具使用 |
+| Interleaved Thinking | `interleaved-thinking-2025-05-14` | Claude 4 models | 增強的思考能力 |
+| Extended Output | `output-128k-2025-02-19` | Claude 3.7 Sonnet | 最多 128K 輸出 token |
+| Developer Thinking | `dev-full-thinking-2025-05-14` | Claude 4 models | 供開發者使用的原始思考模式 |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Single Beta Feature**
+**單一 Beta 功能**
 
 ```python
 from litellm import completion
@@ -785,7 +779,7 @@ response = completion(
 )
 ```
 
-**Multiple Beta Features**
+**多個 Beta 功能**
 
 ```python
 from litellm import completion
@@ -801,7 +795,7 @@ response = completion(
 )
 ```
 
-**Computer Use Tools with Beta Features**
+**搭配 Beta 功能的 Computer Use Tools**
 
 ```python
 from litellm import completion
@@ -826,7 +820,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Set on YAML Config**
+**在 YAML 設定中設定**
 
 ```yaml
 model_list:
@@ -846,7 +840,7 @@ general_settings:
   forward_client_headers_to_llm_api: true  # 👈 Required for client-side header forwarding
 ```
 
-**Set on Request**
+**在請求中設定**
 
 ```python
 import openai
@@ -869,7 +863,7 @@ response = client.chat.completions.create(
 ```
 
 :::info
-**For client-side header forwarding**: When using the proxy and sending `anthropic-beta` headers from the client (like the OpenAI SDK), you need to enable `forward_client_headers_to_llm_api: true` in your proxy's `general_settings`. This tells the proxy to extract headers from HTTP requests and forward them to the underlying LLM provider.
+**適用於用戶端標頭轉送**：使用 proxy 並從用戶端（例如 OpenAI SDK）傳送 `anthropic-beta` 標頭時，您需要在 proxy 的 `general_settings` 中啟用 `forward_client_headers_to_llm_api: true`。這會告訴 proxy 從 HTTP 請求中擷取標頭，並將其轉送至底層的 LLM 提供者。
 :::
 
 </TabItem>
@@ -877,12 +871,11 @@ response = client.chat.completions.create(
 
 :::info
 
-Beta features may require special access or permissions in your AWS account. Some features are only available in specific AWS regions. Check the [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html) for availability and access requirements.
+Beta 功能可能需要您 AWS 帳戶中的特殊存取權或權限。某些功能僅在特定的 AWS 區域可用。請查看 [AWS Bedrock 文件](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-request-response.html) 以了解可用性與存取需求。
 
 :::
 
-
-## Usage - Structured Output / JSON mode 
+## 用法 - 結構化輸出 / JSON 模式 {#usage---structured-output--json-mode}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -918,7 +911,7 @@ print(response.choices[0].message.content)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -930,13 +923,13 @@ model_list:
       aws_region_name: os.environ/CUSTOM_AWS_REGION_NAME
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -987,9 +980,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Usage - Latency Optimized Inference
+## 用法 - 低延遲推理 {#usage---latency-optimized-inference}
 
-Valid from v1.65.1+
+自 v1.65.1+ 起有效
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1007,7 +1000,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1017,13 +1010,13 @@ model_list:
       performanceConfig: {"latency": "optimized"} # 👈 EITHER HERE OR ON REQUEST
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -1039,19 +1032,19 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Usage - Service Tier
+## 用法 - 服務層級 {#usage---service-tier}
 
-Control the processing tier for your Bedrock requests using `serviceTier`. Valid values are `priority`, `default`, or `flex`.
+使用 `serviceTier` 控制 Bedrock 請求的處理層級。有效值為 `priority`、`default` 或 `flex`。
 
-- `priority`: Higher priority processing with guaranteed capacity
-- `default`: Standard processing tier
-- `flex`: Cost-optimized processing for batch workloads
+- `priority`：具保證容量的較高優先順序處理
+- `default`：標準處理層級
+- `flex`：適用於批次工作負載的成本最佳化處理
 
-[Bedrock ServiceTier API Reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ServiceTier.html)
+[Bedrock ServiceTier API 參考](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ServiceTier.html)
 
-### OpenAI-compatible `service_tier` parameter
+### OpenAI 相容的 `service_tier` 參數 {#openai-compatible-service_tier-parameter}
 
-LiteLLM also supports the OpenAI-style `service_tier` parameter, which is automatically translated to Bedrock's native `serviceTier` format:
+LiteLLM 也支援 OpenAI 風格的 `service_tier` 參數，會自動轉換為 Bedrock 原生的 `serviceTier` 格式：
 
 | OpenAI `service_tier` | Bedrock `serviceTier` |
 |-----------------------|----------------------|
@@ -1071,7 +1064,7 @@ response = completion(
 )
 ```
 
-### Native Bedrock `serviceTier` parameter
+### 原生 Bedrock `serviceTier` 參數 {#native-bedrock-servicetier-parameter}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1089,7 +1082,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1101,13 +1094,13 @@ model_list:
         type: priority
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -1122,21 +1115,21 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 
 </TabItem>
 </Tabs>
-## Usage - Bedrock Guardrails
+## 用法 - Bedrock 防護欄 {#usage---bedrock-guardrails}
 
-Example of using [Bedrock Guardrails with LiteLLM](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-converse-api.html)
+使用 [LiteLLM 的 Bedrock Guardrails 範例](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-converse-api.html)
 
-### Selective Content Moderation with `guarded_text`
+### 透過 `guarded_text` 進行選擇性內容審核 {#selective-content-moderation-with-guarded_text}
 
-LiteLLM supports selective content moderation using the `guarded_text` content type. This allows you to wrap only specific content that should be moderated by Bedrock Guardrails, rather than evaluating the entire conversation.
+LiteLLM 支援使用 `guarded_text` 內容類型進行選擇性內容審核。這讓您可以只包裝應由 Bedrock Guardrails 審核的特定內容，而不是評估整段對話。
 
-**How it works:**
-- Content with `type: "guarded_text"` gets automatically wrapped in `guardrailConverseContent` blocks
-- Only the wrapped content is evaluated by Bedrock Guardrails
-- Regular content with `type: "text"` bypasses guardrail evaluation
+**運作方式：**
+- 含有 `type: "guarded_text"` 的內容會自動包裝在 `guardrailConverseContent` 區塊中
+- 只有被包裝的內容會由 Bedrock Guardrails 評估
+- 含有 `type: "text"` 的一般內容會略過防護欄評估
 
 :::note
-If `guarded_text` is not used, the entire conversation history will be sent to the guardrail for evaluation, which can increase latency and costs.
+如果未使用 `guarded_text`，整個對話歷史都會傳送到 guardrail 進行評估，這可能會增加延遲與成本。
 :::
 
 <Tabs>
@@ -1185,7 +1178,7 @@ response_guard = completion(
 )
 ```
 </TabItem>
-<TabItem value="proxy" label="Proxy on request">
+<TabItem value="proxy" label="請求時的 Proxy">
 
 ```python
 
@@ -1215,9 +1208,9 @@ extra_body={
 print(response)
 ```
 </TabItem>
-<TabItem value="proxy-config" label="Proxy on config.yaml">
+<TabItem value="proxy-config" label="config.yaml 上的 Proxy">
 
-1. Update config.yaml 
+1. 更新 config.yaml 
 
 ```yaml
 model_list:
@@ -1235,13 +1228,13 @@ model_list:
 
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python
 
@@ -1279,12 +1272,12 @@ print(response_guard)
 </TabItem>
 </Tabs>
 
-## Usage - "Assistant Pre-fill"
+## 用法 - "Assistant Pre-fill" {#usage---assistant-pre-fill}
 
-If you're using Anthropic's Claude with Bedrock, you can "put words in Claude's mouth" by including an `assistant` role message as the last item in the `messages` array.
+如果您在 Bedrock 中使用 Anthropic 的 Claude，您可以透過在 `messages` 陣列中將 `assistant` 角色訊息作為最後一項來「替 Claude 代言」。
 
 > [!IMPORTANT]
-> The returned completion will _**not**_ include your "pre-fill" text, since it is part of the prompt itself. Make sure to prefix Claude's completion with your pre-fill.
+> 傳回的 completion 將 _**不會**_ 包含您的「pre-fill」文字，因為它本身就是 prompt 的一部分。請務必在 Claude 的 completion 前加上您的 pre-fill。
 
 ```python
 import os
@@ -1301,7 +1294,7 @@ messages = [
 response = completion(model="bedrock/anthropic.claude-v2", messages=messages)
 ```
 
-### Example prompt sent to Claude
+### 傳送給 Claude 的提示詞範例 {#example-prompt-sent-to-claude}
 
 ```
 
@@ -1312,8 +1305,8 @@ Human: How do you say 'Hello' in German? Return your answer as a JSON object, li
 Assistant: {
 ```
 
-## Usage - "System" messages
-If you're using Anthropic's Claude 2.1 with Bedrock, `system` role messages are properly formatted for you.
+## 用法 - "System" 訊息 {#usage---system-messages}
+如果您在 Bedrock 中使用 Anthropic 的 Claude 2.1，`system` 角色訊息會為您正確格式化。
 
 ```python
 import os
@@ -1330,7 +1323,7 @@ messages = [
 response = completion(model="bedrock/anthropic.claude-v2:1", messages=messages)
 ```
 
-### Example prompt sent to Claude
+### 傳送給 Claude 的提示詞範例 {#example-prompt-sent-to-claude-1}
 
 ```
 You are a snarky assistant.
@@ -1341,8 +1334,7 @@ Assistant:
 ```
 
 
-
-## Usage - Streaming
+## 用法 - 串流 {#usage---streaming}
 ```python
 import os
 from litellm import completion
@@ -1360,7 +1352,7 @@ for chunk in response:
   print(chunk)
 ```
 
-#### Example Streaming Output Chunk
+#### 範例串流輸出區塊 {#example-streaming-output-chunk}
 ```json
 {
   "choices": [
@@ -1382,9 +1374,9 @@ for chunk in response:
 }
 ```
 
-## Cross-region inferencing 
+## 跨區域推理 {#cross-region-inferencing}
 
-LiteLLM supports Bedrock [cross-region inferencing](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html) across all [supported bedrock models](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html).
+LiteLLM 支援跨所有 [支援的 bedrock 模型](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference-support.html) 的 Bedrock [跨區域 inferencing](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html)。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1414,7 +1406,7 @@ print("Final Response: {}".format(response))
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-#### 1. Setup config.yaml
+#### 1. 設定 config.yaml {#1-setup-configyaml-1}
 
 ```yaml
 model_list:
@@ -1427,14 +1419,13 @@ model_list:
 ```
 
 
-#### 2. Start the proxy 
+#### 2. 啟動 proxy {#2-start-the-proxy-1}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-#### 3. Test it
-
+#### 3. 測試它 {#3-test-it-1}
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -1510,21 +1501,19 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-## Set 'converse' / 'invoke' route 
+## 設定 'converse' / 'invoke' 路由 {#set-converse--invoke-route}
 
 :::info
 
-Supported from LiteLLM Version `v1.53.5`
+自 LiteLLM 版本 `v1.53.5` 起支援
 
 :::
 
-LiteLLM defaults to the `invoke` route. LiteLLM uses the `converse` route for Bedrock models that support it.
+LiteLLM 預設使用 `invoke` 路由。LiteLLM 會對支援的 Bedrock 模型使用 `converse` 路由。
 
-To explicitly set the route, do `bedrock/converse/<model>` or `bedrock/invoke/<model>`.
+若要明確設定路由，請執行 `bedrock/converse/<model>` 或 `bedrock/invoke/<model>`。
 
-
-E.g. 
+例如：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1548,10 +1537,9 @@ model_list:
 </TabItem>
 </Tabs>
 
-## Alternate user/assistant messages
+## 交替的 user/assistant 訊息 {#alternate-userassistant-messages}
 
-Use `user_continue_message` to add a default user message, for cases (e.g. Autogen) where the client might not follow alternating user/assistant messages starting and ending with a user message. 
-
+對於 client 可能不會遵循以 user 訊息開始並以 user 訊息結束的交替 user/assistant 訊息的情況（例如 Autogen），請使用 `user_continue_message` 來新增預設 user 訊息。 
 
 ```yaml
 model_list:
@@ -1561,9 +1549,9 @@ model_list:
       user_continue_message: {"role": "user", "content": "Please continue"}
 ```
 
-OR 
+或
 
-just set `litellm.modify_params=True` and LiteLLM will automatically handle this with a default user_continue_message.
+只要設定 `litellm.modify_params=True`，LiteLLM 就會使用預設的 user_continue_message 自動處理。
 
 ```yaml
 model_list:
@@ -1575,7 +1563,7 @@ litellm_settings:
    modify_params: true
 ```
 
-Test it! 
+測試看看！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -1587,21 +1575,21 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Usage - PDF / Document Understanding
+## 用法 - PDF / 文件理解 {#usage---pdf--document-understanding}
 
-LiteLLM supports Document Understanding for Bedrock models - [AWS Bedrock Docs](https://docs.aws.amazon.com/nova/latest/userguide/modalities-document.html).
+LiteLLM 支援 Bedrock 模型的文件理解 - [AWS Bedrock 文件](https://docs.aws.amazon.com/nova/latest/userguide/modalities-document.html)。
 
 :::info
 
-LiteLLM supports ALL Bedrock document types - 
+LiteLLM 支援所有 Bedrock 文件類型 - 
 
-E.g.: "pdf", "csv", "doc", "docx", "xls", "xlsx", "html", "txt", "md"
+例如："pdf"、"csv"、"doc"、"docx"、"xls"、"xlsx"、"html"、"txt"、"md"
 
-You can also pass these as either `image_url` or `base64`
+您也可以將這些作為 `image_url` 或 `base64` 傳入
 
 :::
 
-### url 
+### url {#url}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1650,7 +1638,7 @@ assert response is not None
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1662,13 +1650,13 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-2. Start the proxy 
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試看看！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -1690,7 +1678,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### base64
+### base64 {#base64}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1736,7 +1724,7 @@ assert response is not None
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1748,13 +1736,13 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-2. Start the proxy 
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試看看！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -1774,13 +1762,12 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+### OpenAI GPT OSS {#openai-gpt-oss}
 
-### OpenAI GPT OSS
-
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `bedrock/converse/openai.gpt-oss-20b-1:0`, `bedrock/converse/openai.gpt-oss-120b-1:0` |
-| Provider Documentation | [Amazon Bedrock ↗](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html) |
+| 提供者路由 | `bedrock/converse/openai.gpt-oss-20b-1:0`、`bedrock/converse/openai.gpt-oss-120b-1:0` |
+| 提供者文件 | [Amazon Bedrock ↗](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html) |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1813,7 +1800,7 @@ print(response.choices[0].message.content)
 
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增到 config**
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -1832,7 +1819,7 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash title="Start LiteLLM Proxy" showLineNumbers
 litellm --config /path/to/config.yaml
@@ -1840,7 +1827,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試看看！**
 
 ```bash title="Test GPT OSS via Proxy" showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1860,24 +1847,24 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## TwelveLabs Pegasus - Video Understanding
+## TwelveLabs Pegasus - 影片理解 {#twelvelabs-pegasus---video-understanding}
 
-TwelveLabs Pegasus 1.2 is a video understanding model that can analyze and describe video content. LiteLLM supports this model through Bedrock's `/invoke` endpoint.
+TwelveLabs Pegasus 1.2 是一個影片理解模型，可以分析並描述影片內容。LiteLLM 透過 Bedrock 的 `/invoke` 端點支援此模型。
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `bedrock/us.twelvelabs.pegasus-1-2-v1:0`, `bedrock/eu.twelvelabs.pegasus-1-2-v1:0` |
-| Provider Documentation | [TwelveLabs Pegasus Docs ↗](https://docs.twelvelabs.io/docs/models/pegasus) |
-| Supported Parameters | `max_tokens`, `temperature`, `response_format` |
-| Media Input | S3 URI or base64-encoded video |
+| 提供者路由 | `bedrock/us.twelvelabs.pegasus-1-2-v1:0`、`bedrock/eu.twelvelabs.pegasus-1-2-v1:0` |
+| 提供者文件 | [TwelveLabs Pegasus 文件 ↗](https://docs.twelvelabs.io/docs/models/pegasus) |
+| 支援的參數 | `max_tokens`、`temperature`、`response_format` |
+| 媒體輸入 | S3 URI 或 base64 編碼的影片 |
 
-### Supported Features
+### 支援的功能 {#supported-features}
 
-- **Video Analysis**: Analyze video content from S3 or base64 input
-- **Structured Output**: Support for JSON schema response format
-- **S3 Integration**: Support for S3 video URLs with bucket owner specification
+- **影片分析**：從 S3 或 base64 輸入分析影片內容
+- **結構化輸出**：支援 JSON schema 回應格式
+- **S3 整合**：支援具有 bucket owner 指定的 S3 影片 URL
 
-### Usage with S3 Video
+### 搭配 S3 影片的用法 {#usage-with-s3-video}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1910,7 +1897,7 @@ print(response.choices[0].message.content)
 
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增到 config**
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -1922,7 +1909,7 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash title="Start LiteLLM Proxy" showLineNumbers
 litellm --config /path/to/config.yaml
@@ -1930,7 +1917,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試看看！**
 
 ```bash title="Test Pegasus via Proxy" showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1957,9 +1944,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Usage with Base64 Video
+### 搭配 Base64 影片的用法 {#usage-with-base64-video}
 
-You can also pass video content directly as base64:
+您也可以直接將影片內容以 base64 傳入：
 
 ```python title="Base64 Video Input" showLineNumbers
 from litellm import completion
@@ -1981,14 +1968,14 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-### Important Notes
+### 重要注意事項 {#important-notes}
 
-- **Response Format**: The model supports structured output via `response_format` with JSON schema
+- **回應格式**：模型透過 `response_format` 支援具結構化輸出，並使用 JSON schema
 
-## Provisioned throughput models
-To use provisioned throughput Bedrock models pass 
-- `model=bedrock/<base-model>`, example `model=bedrock/anthropic.claude-v2`. Set `model` to any of the [Supported AWS models](#supported-aws-bedrock-models)
-- `model_id=provisioned-model-arn` 
+## 已佈建輸送量模型 {#provisioned-throughput-models}
+若要使用 provisioned throughput Bedrock models，請傳入
+- `model=bedrock/<base-model>`，範例 `model=bedrock/anthropic.claude-v2`。將 `model` 設為 [支援的 AWS models](#supported-aws-bedrock-models) 中的任一項
+- `model_id=provisioned-model-arn`
 
 Completion
 ```python
@@ -2011,13 +1998,13 @@ response = litellm.embedding(
 ```
 
 
-## Supported AWS Bedrock Models
+## 支援的 AWS Bedrock 模型 {#supported-aws-bedrock-models}
 
-LiteLLM supports ALL Bedrock models. 
+LiteLLM 支援所有 Bedrock models。
 
-Here's an example of using a bedrock model with LiteLLM. For a complete list, refer to the [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
+以下是使用 LiteLLM 搭配 bedrock model 的範例。完整清單請參閱 [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
 
-| Model Name                 | Command                                                          |
+| 模型名稱                 | 指令                                                          |
 |----------------------------|------------------------------------------------------------------|
 | GPT-OSS 20B | `completion(model='bedrock/converse/openai.gpt-oss-20b-1:0', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | GPT-OSS 120B | `completion(model='bedrock/converse/openai.gpt-oss-120b-1:0', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
@@ -2039,6 +2026,7 @@ Here's an example of using a bedrock model with LiteLLM. For a complete list, re
 | Amazon Titan Express       | `completion(model='bedrock/amazon.titan-text-express-v1', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | Cohere Command             | `completion(model='bedrock/cohere.command-text-v14', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | AI21 J2-Mid                | `completion(model='bedrock/ai21.j2-mid-v1', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
+
 | AI21 J2-Ultra              | `completion(model='bedrock/ai21.j2-ultra-v1', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | AI21 Jamba-Instruct              | `completion(model='bedrock/ai21.jamba-instruct-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | Meta Llama 2 Chat 13b      | `completion(model='bedrock/meta.llama2-13b-chat-v1', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
@@ -2047,13 +2035,12 @@ Here's an example of using a bedrock model with LiteLLM. For a complete list, re
 | Mixtral 8x7B Instruct      | `completion(model='bedrock/mistral.mixtral-8x7b-instruct-v0:1', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | TwelveLabs Pegasus 1.2 (US) | `completion(model='bedrock/us.twelvelabs.pegasus-1-2-v1:0', messages=messages, mediaSource={...})`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | TwelveLabs Pegasus 1.2 (EU) | `completion(model='bedrock/eu.twelvelabs.pegasus-1-2-v1:0', messages=messages, mediaSource={...})`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
-| Moonshot Kimi K2 Thinking | `completion(model='bedrock/moonshot.kimi-k2-thinking', messages=messages)` or `completion(model='bedrock/invoke/moonshot.kimi-k2-thinking', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
+| Moonshot Kimi K2 Thinking | `completion(model='bedrock/moonshot.kimi-k2-thinking', messages=messages)` 或 `completion(model='bedrock/invoke/moonshot.kimi-k2-thinking', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 
+## Bedrock Embedding {#bedrock-embedding}
 
-## Bedrock Embedding
-
-### API keys
-This can be set as env variables or passed as **params to litellm.embedding()**
+### API 金鑰 {#api-keys}
+這可以設定為環境變數，或作為 **傳遞給 litellm.embedding() 的參數**
 ```python
 import os
 os.environ["AWS_ACCESS_KEY_ID"] = ""        # Access key
@@ -2061,7 +2048,7 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = ""    # Secret access key
 os.environ["AWS_REGION_NAME"] = ""           # us-east-1, us-east-2, us-west-1, us-west-2
 ```
 
-### Usage
+### 用法 {#usage-1}
 ```python
 from litellm import embedding
 response = embedding(
@@ -2071,7 +2058,7 @@ response = embedding(
 print(response)
 ```
 
-#### Titan V2 - encoding_format support
+#### Titan V2 - encoding_format 支援 {#titan-v2---encoding_format-support}
 ```python
 from litellm import embedding
 # Float format (default)
@@ -2089,37 +2076,35 @@ response = embedding(
 )
 ```
 
-## Supported AWS Bedrock Embedding Models
+## 支援的 AWS Bedrock Embedding 模型 {#supported-aws-bedrock-embedding-models}
 
-| Model Name           | Usage                               | Supported Additional OpenAI params |
+| 模型名稱           | 用途                               | 支援的額外 OpenAI 參數 |
 |----------------------|---------------------------------------------|-----|
 | Titan Embeddings V2 | `embedding(model="bedrock/amazon.titan-embed-text-v2:0", input=input)` | `dimensions`, `encoding_format` |
-| Titan Embeddings - V1 | `embedding(model="bedrock/amazon.titan-embed-text-v1", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_g1_transformation.py#L53)
-| Titan Multimodal Embeddings | `embedding(model="bedrock/amazon.titan-embed-image-v1", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_multimodal_transformation.py#L28) |
-| Cohere Embeddings - English | `embedding(model="bedrock/cohere.embed-english-v3", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
-| Cohere Embeddings - Multilingual | `embedding(model="bedrock/cohere.embed-multilingual-v3", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
+| Titan Embeddings - V1 | `embedding(model="bedrock/amazon.titan-embed-text-v1", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_g1_transformation.py#L53)
+| Titan Multimodal Embeddings | `embedding(model="bedrock/amazon.titan-embed-image-v1", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_multimodal_transformation.py#L28) |
+| Cohere Embeddings - English | `embedding(model="bedrock/cohere.embed-english-v3", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
+| Cohere Embeddings - Multilingual | `embedding(model="bedrock/cohere.embed-multilingual-v3", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
 
-### Advanced - [Drop Unsupported Params](https://docs.litellm.ai/docs/completion/drop_params#openai-proxy-usage)
+### 進階 - [捨棄不支援的參數](https://docs.litellm.ai/docs/completion/drop_params#openai-proxy-usage) {#advanced---drop-unsupported-paramshttpsdocslitellmaidocscompletiondrop_paramsopenai-proxy-usage}
 
-### Advanced - [Pass model/provider-specific Params](https://docs.litellm.ai/docs/completion/provider_specific_params#proxy-usage)
+### 進階 - [傳遞模型／提供者特定參數](https://docs.litellm.ai/docs/completion/provider_specific_params#proxy-usage) {#advanced---pass-modelprovider-specific-paramshttpsdocslitellmaidocscompletionprovider_specific_paramsproxy-usage}
 
-## Image Generation
+## 影像生成 {#image-generation}
 
-See [Bedrock Image Generation](./bedrock_image_gen) for using Stable Diffusion and Amazon Nova Canvas models on Bedrock.
+請參閱 [Bedrock Image Generation](./bedrock_image_gen)，以在 Bedrock 上使用 Stable Diffusion 和 Amazon Nova Canvas 模型。
 
+## Rerank API {#rerank-api}
 
-## Rerank API
+請參閱 [Bedrock Rerank](./bedrock_rerank)，以在 Cohere `/rerank` 格式中使用 Bedrock 的 Rerank API。
 
-See [Bedrock Rerank](./bedrock_rerank) for using Bedrock's Rerank API in the Cohere `/rerank` format.
+## Bedrock 應用程式推論設定檔 {#bedrock-application-inference-profile}
 
+使用 Bedrock Application Inference Profile 來追蹤 AWS 上專案的成本。
 
-## Bedrock Application Inference Profile 
+您可以將其作為模型名稱的一部分傳入 - `model="bedrock/arn:...`，或作為單獨的 `model_id="arn:..` 參數。
 
-Use Bedrock Application Inference Profile to track costs for projects on AWS. 
-
-You can either pass it in the model name - `model="bedrock/arn:...` or as a separate `model_id="arn:..` param.
-
-### Set via `model_id` 
+### 透過 `model_id` 設定 {#set-via-model_id}
 
 <Tabs>
 <TabItem label="SDK" value="sdk">
@@ -2144,7 +2129,7 @@ print(response)
 </TabItem>
 <TabItem label="PROXY" value="proxy">
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -2155,13 +2140,13 @@ model_list:
       model_id: arn:aws:bedrock:eu-central-1:000000000000:application-inference-profile/a0a0a0a0a0a0
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -2186,10 +2171,10 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Boto3 - Authentication
+## Boto3 - 驗證 {#boto3---authentication}
 
-### Passing credentials as parameters - Completion()
-Pass AWS credentials as parameters to litellm.completion
+### 將憑證作為參數傳遞 - Completion() {#passing-credentials-as-parameters---completion}
+將 AWS 憑證作為參數傳遞給 litellm.completion
 ```python
 import os
 from litellm import completion
@@ -2203,9 +2188,9 @@ response = completion(
 )
 ```
 
-### Passing extra headers + Custom API Endpoints
+### 傳遞額外標頭 + 自訂 Bedrock API 端點 {#passing-extra-headers--custom-api-endpoints}
 
-This can be used to override existing headers (e.g. `Authorization`) when calling custom api endpoints
+這可用來在呼叫自訂 API 端點時覆寫既有標頭（例如 `Authorization`）
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2231,7 +2216,7 @@ response = completion(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -2245,13 +2230,13 @@ model_list:
         extra_headers: {"key": "value"}
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml --detailed_debug
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -2276,9 +2261,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 </Tabs>
 
-### SSO Login (AWS Profile)
-- Set `AWS_PROFILE` environment variable
-- Make bedrock completion call
+### SSO 登入（AWS Profile） {#sso-login-aws-profile}
+- 設定 `AWS_PROFILE` 環境變數
+- 發出 bedrock completion 請求
 
 ```python
 import os
@@ -2290,7 +2275,7 @@ response = completion(
 )
 ```
 
-or pass `aws_profile_name`:
+或傳入 `aws_profile_name`：
 
 ```python
 import os
@@ -2303,23 +2288,22 @@ response = completion(
 )
 ```
 
-### STS (Role-based Auth)
+### STS（基於角色的驗證） {#sts-role-based-auth}
 
-- Set `aws_role_name` and `aws_session_name`
+- 設定 `aws_role_name` 和 `aws_session_name`
 
-
-| LiteLLM Parameter | Boto3 Parameter | Description | Boto3 Documentation |
+| LiteLLM 參數 | Boto3 參數 | 說明 | Boto3 文件 |
 |------------------|-----------------|-------------|-------------------|
-| `aws_access_key_id` | `aws_access_key_id` | AWS access key associated with an IAM user or role | [Credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) |
-| `aws_secret_access_key` | `aws_secret_access_key` | AWS secret key associated with the access key | [Credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) |
-| `aws_role_name` | `RoleArn` | The Amazon Resource Name (ARN) of the role to assume | [AssumeRole API](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sts.html#STS.Client.assume_role) |
-| `aws_session_name` | `RoleSessionName` | An identifier for the assumed role session | [AssumeRole API](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sts.html#STS.Client.assume_role) |
+| `aws_access_key_id` | `aws_access_key_id` | 與 IAM 使用者或角色相關聯的 AWS 存取金鑰 | [Credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) |
+| `aws_secret_access_key` | `aws_secret_access_key` | 與該存取金鑰相關聯的 AWS 密鑰 | [Credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) |
+| `aws_role_name` | `RoleArn` | 要假設的角色之 Amazon Resource Name（ARN） | [AssumeRole API](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sts.html#STS.Client.assume_role) |
+| `aws_session_name` | `RoleSessionName` | 受假設角色工作階段的識別碼 | [AssumeRole API](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sts.html#STS.Client.assume_role) |
 
-### IAM Roles Anywhere (On-Premise / External Workloads)
+### IAM Roles Anywhere（內部部署／外部工作負載） {#iam-roles-anywhere-on-premise--external-workloads}
 
-[IAM Roles Anywhere](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html) extends IAM roles to workloads **outside of AWS** (on-premise servers, edge devices, other clouds). It uses the same STS mechanism as regular IAM roles but authenticates via X.509 certificates instead of AWS credentials.
+[IAM Roles Anywhere](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html) 將 IAM 角色延伸至 **AWS 之外** 的工作負載（內部部署伺服器、邊緣裝置、其他雲端）。它使用與一般 IAM 角色相同的 STS 機制，但改以 X.509 憑證進行驗證，而非 AWS 憑證。
 
-**Setup**: Configure the [AWS Signing Helper](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html) as a credential process in `~/.aws/config`:
+**設定**：將 [AWS Signing Helper](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html) 設定為 `~/.aws/config` 中的 credential process：
 
 ```ini
 [profile litellm-roles-anywhere]
@@ -2331,7 +2315,7 @@ credential_process = aws_signing_helper credential-process \
     --role-arn arn:aws:iam::123456789012:role/MyBedrockRole
 ```
 
-**Usage**: Reference the profile in LiteLLM:
+**用法**：在 LiteLLM 中參照該設定檔：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2360,27 +2344,25 @@ model_list:
 </TabItem>
 </Tabs>
 
-See the [IAM Roles Anywhere Getting Started Guide](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) for trust anchor and profile setup.
+請參閱 [IAM Roles Anywhere Getting Started Guide](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) 了解 trust anchor 與設定檔設定。
 
-
-
-Make the bedrock completion call
+發出 bedrock completion 請求
 
 ---
 
-### Required AWS IAM Policy for AssumeRole
+### AssumeRole 所需的 AWS IAM Policy {#required-aws-iam-policy-for-assumerole}
 
-To use `aws_role_name` (STS AssumeRole) with LiteLLM, your IAM user or role **must** have permission to call `sts:AssumeRole` on the target role. If you see an error like:
+若要在 LiteLLM 中使用 `aws_role_name`（STS AssumeRole），您的 IAM 使用者或角色**必須**具備在目標角色上呼叫 `sts:AssumeRole` 的權限。如果您看到類似以下的錯誤：
 
 ```
 An error occurred (AccessDenied) when calling the AssumeRole operation: User: arn:aws:sts::...:assumed-role/litellm-ecs-task-role/... is not authorized to perform: sts:AssumeRole on resource: arn:aws:iam::...:role/Enterprise/BedrockCrossAccountConsumer
 ```
 
-This means the IAM identity running LiteLLM does **not** have permission to assume the target role. You must update your IAM policy to allow this action.
+這表示執行 LiteLLM 的 IAM 身分**沒有**假設目標角色的權限。您必須更新 IAM policy 以允許此動作。
 
-#### Example IAM Policy
+#### 範例 IAM Policy {#example-iam-policy}
 
-Replace `<TARGET_ROLE_ARN>` with the ARN of the role you want to assume (e.g., `arn:aws:iam::123456789012:role/Enterprise/BedrockCrossAccountConsumer`).
+將 `<TARGET_ROLE_ARN>` 替換為您要假設的角色 ARN（例如，`arn:aws:iam::123456789012:role/Enterprise/BedrockCrossAccountConsumer`）。
 
 ```json
 {
@@ -2395,7 +2377,7 @@ Replace `<TARGET_ROLE_ARN>` with the ARN of the role you want to assume (e.g., `
 }
 ```
 
-**Note:** The target role itself must also trust the calling IAM identity (via its trust policy) for AssumeRole to succeed. See [AWS AssumeRole docs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-api.html) for more details.
+**注意：** 目標角色本身也必須透過其信任 policy 信任呼叫的 IAM 身分，AssumeRole 才能成功。更多細節請參閱 [AWS AssumeRole 文件](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-api.html)。
 
 ---
 
@@ -2415,7 +2397,7 @@ response = completion(
         )
 ```
 
-If you also need to dynamically set the aws user accessing the role, add the additional args in the completion()/embedding() function
+如果您也需要動態設定存取該角色的 aws 使用者，請在 completion()/embedding() 函式中加入額外的 args
 
 ```python
 from litellm import completion
@@ -2452,24 +2434,20 @@ model_list:
 
 </Tabs>
 
-### Passing an external BedrockRuntime.Client as a parameter - Completion()
+### 將外部 BedrockRuntime.Client 作為參數傳遞 - Completion() {#passing-an-external-bedrockruntimeclient-as-a-parameter---completion}
   
-This is a deprecated flow. Boto3 is not async. And boto3.client does not let us make the http call through httpx. Pass in your aws params through the method above 👆. [See Auth Code](https://github.com/BerriAI/litellm/blob/55a20c7cce99a93d36a82bf3ae90ba3baf9a7f89/litellm/llms/bedrock_httpx.py#L284) [Add new auth flow](https://github.com/BerriAI/litellm/issues)
+這是已淘汰的流程。Boto3 不是非同步的，而且 boto3.client 不允許我們透過 httpx 發出 HTTP 呼叫。請透過上方的方法傳入您的 aws 參數 👆。[查看 Auth Code](https://github.com/BerriAI/litellm/blob/55a20c7cce99a93d36a82bf3ae90ba3baf9a7f89/litellm/llms/bedrock_httpx.py#L284) [新增新的 auth flow](https://github.com/BerriAI/litellm/issues)
 
 :::warning
 
-
-
-
-
 Experimental - 2024-Jun-23:
-    `aws_access_key_id`, `aws_secret_access_key`, and `aws_session_token` will be extracted from boto3.client and be passed into the httpx client 
+    `aws_access_key_id`、`aws_secret_access_key` 和 `aws_session_token` 將會從 boto3.client 中擷取，並傳遞給 httpx client 
 
 :::
 
-Pass an external BedrockRuntime.Client object as a parameter to litellm.completion. Useful when using an AWS credentials profile, SSO session, assumed role session, or if environment variables are not available for auth.
+將外部 BedrockRuntime.Client 物件作為參數傳遞給 litellm.completion。當使用 AWS credentials profile、SSO session、assumed role session，或環境變數無法用於驗證時，這會很有用。
 
-Create a client from session credentials:
+從 session credentials 建立 client：
 ```python
 import boto3
 from litellm import completion
@@ -2489,7 +2467,7 @@ response = completion(
 )
 ```
 
-Create a client from AWS profile in `~/.aws/config`:
+從 `~/.aws/config` 中的 AWS profile 建立 client：
 ```python
 import boto3
 from litellm import completion
@@ -2506,9 +2484,9 @@ response = completion(
             aws_bedrock_client=bedrock,
 )
 ```
-## Calling via Internal Proxy (not bedrock url compatible)
+## 透過內部 Proxy 呼叫（與 bedrock URL 不相容） {#calling-via-internal-proxy-not-bedrock-url-compatible}
 
-Use the `bedrock/converse_like/model` endpoint to call bedrock converse model via your internal proxy.
+使用 `bedrock/converse_like/model` endpoint 透過您的內部 proxy 呼叫 bedrock converse model。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2528,7 +2506,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -2538,7 +2516,7 @@ model_list:
         api_base: https://some-api-url/models
 ```
 
-2. Start proxy server
+2. 啟動 proxy server
 
 ```bash
 litellm --config config.yaml
@@ -2546,7 +2524,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -2567,7 +2545,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-**Expected Output URL**
+**預期輸出 URL**
 
 ```bash
 https://some-api-url/models

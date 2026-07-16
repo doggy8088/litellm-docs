@@ -1,37 +1,35 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock Agents
+# Bedrock Agents {#bedrock-agents}
 
-Call Bedrock Agents in the OpenAI Request/Response format.
+以 OpenAI 請求／回應格式呼叫 Bedrock Agents。
 
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Amazon Bedrock Agents use the reasoning of foundation models (FMs), APIs, and data to break down user requests, gather relevant information, and efficiently complete tasks. |
-| Provider Route on LiteLLM | `bedrock/agent/{AGENT_ID}/{ALIAS_ID}` |
-| Provider Doc | [AWS Bedrock Agents ↗](https://aws.amazon.com/bedrock/agents/) |
+| 說明 | Amazon Bedrock Agents 使用基礎模型（FMs）、API 和資料的推理能力，將使用者請求拆解、蒐集相關資訊，並有效率地完成任務。 |
+| LiteLLM 上的提供者路由 | `bedrock/agent/{AGENT_ID}/{ALIAS_ID}` |
+| 提供者文件 | [AWS Bedrock Agents ↗](https://aws.amazon.com/bedrock/agents/) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Model Format to LiteLLM
+### LiteLLM 的模型格式 {#model-format-to-litellm}
 
-To call a bedrock agent through LiteLLM, you need to use the following model format to call the agent.
+若要透過 LiteLLM 呼叫 bedrock agent，您需要使用以下模型格式來呼叫該 agent。
 
-Here the `model=bedrock/agent/` tells LiteLLM to call the bedrock `InvokeAgent` API.
+這裡的 `model=bedrock/agent/` 會告訴 LiteLLM 去呼叫 bedrock `InvokeAgent` API。
 
 ```shell showLineNumbers title="Model Format to LiteLLM"
 bedrock/agent/{AGENT_ID}/{ALIAS_ID}
 ```
 
-**Example:**
+**範例：**
 - `bedrock/agent/L1RT58GYRW/MFPSBCXYTW`
 - `bedrock/agent/ABCD1234/LIVE`
 
-You can find these IDs in your AWS Bedrock console under Agents.
+您可以在 AWS Bedrock 主控台的 Agents 下找到這些 ID。
 
-
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Basic Agent Completion"
 import litellm
@@ -72,9 +70,9 @@ for chunk in response:
 ```
 
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-#### 1. Configure your model in config.yaml
+#### 1. 在 config.yaml 中設定您的模型 {#1-configure-your-model-in-configyaml}
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -99,13 +97,13 @@ model_list:
 </TabItem>
 </Tabs>
 
-#### 2. Start the LiteLLM Proxy
+#### 2. 啟動 LiteLLM Proxy {#2-start-the-litellm-proxy}
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
 ```
 
-#### 3. Make requests to your Bedrock Agents
+#### 3. 向您的 Bedrock Agents 發出請求 {#3-make-requests-to-your-bedrock-agents}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -196,9 +194,9 @@ for chunk in stream:
 </TabItem>
 </Tabs>
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
-Any non-openai parameters will be passed to the agent as custom parameters.
+任何非 openai 參數都會作為自訂參數傳遞給 agent。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -235,12 +233,7 @@ model_list:
 </TabItem>
 </Tabs>
 
+## 延伸閱讀 {#further-reading}
 
-
-
-
-## Further Reading
-
-- [AWS Bedrock Agents Documentation](https://aws.amazon.com/bedrock/agents/)
-- [LiteLLM Authentication to Bedrock](https://docs.litellm.ai/docs/providers/bedrock#boto3---authentication)
-
+- [AWS Bedrock Agents 文件](https://aws.amazon.com/bedrock/agents/)
+- [LiteLLM 驗證至 Bedrock](https://docs.litellm.ai/docs/providers/bedrock#boto3---authentication)

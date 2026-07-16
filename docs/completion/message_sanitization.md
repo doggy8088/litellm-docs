@@ -1,33 +1,33 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Message Sanitization for Tool Calling for anthropic models
+# Anthropic 模型的工具呼叫訊息清理 {#message-sanitization-for-tool-calling-for-anthropic-models}
 
-**Automatically fix common message formatting issues when using tool calling with `modify_params=True`**
+**在使用 `modify_params=True` 的工具呼叫時，自動修正常見的訊息格式問題**
 
-LiteLLM can automatically sanitize messages to handle common issues that occur during tool calling workflows, especially when using OpenAI-compatible clients with providers that have strict message format requirements (like Anthropic Claude).
+LiteLLM 可自動清理訊息，以處理工具呼叫工作流程中常見的問題，尤其是在使用 OpenAI 相容用戶端搭配對訊息格式要求嚴格的提供者（例如 Anthropic Claude）時。
 
-## Overview
+## 總覽 {#overview}
 
-When `litellm.modify_params = True` is enabled, LiteLLM automatically sanitizes messages to fix three common issues:
+當 `litellm.modify_params = True` 啟用時，LiteLLM 會自動清理訊息以修正三個常見問題：
 
-1. **Orphaned Tool Calls** - Assistant messages with tool_calls but missing tool results
-2. **Orphaned Tool Results** - Tool messages that reference non-existent tool_call_ids
-3. **Empty Message Content** - Messages with empty or whitespace-only text content
+1. **孤兒工具呼叫** - 含有 tool_calls 但缺少工具結果的助手訊息
+2. **孤兒工具結果** - 參照不存在 tool_call_ids 的工具訊息
+3. **空白訊息內容** - 內容為空白或僅含空白字元的訊息
 
-This ensures your tool calling workflows work seamlessly across different LLM providers without manual message validation.
+這可確保您的工具呼叫工作流程能在不同 LLM 提供者之間順暢運作，無須手動驗證訊息。
 
-## Why Message Sanitization?
+## 為什麼需要訊息清理？ {#why-message-sanitization}
 
-Different LLM providers have varying requirements for message formats, especially during tool calling:
+不同的 LLM 提供者對訊息格式有不同要求，尤其是在工具呼叫期間：
 
-- **Anthropic Claude** requires every tool_call to have a corresponding tool result
-- Some providers reject messages with empty content
-- OpenAI-compatible clients may not always maintain perfect message consistency
+- **Anthropic Claude** 要求每個 tool_call 都必須有對應的工具結果
+- 某些提供者會拒絕內容為空白的訊息
+- OpenAI 相容用戶端未必總能維持完全一致的訊息
 
-Without sanitization, these issues cause API errors that interrupt your workflows. With `modify_params=True`, LiteLLM handles these edge cases automatically.
+若未進行清理，這些問題會造成 API 錯誤並中斷您的工作流程。啟用 `modify_params=True` 後，LiteLLM 會自動處理這些邊界情況。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -87,15 +87,15 @@ model_list:
 </TabItem>
 </Tabs>
 
-## Sanitization Cases
+## 清理情境 {#sanitization-cases}
 
-### Case A: Orphaned Tool Calls (Missing Tool Results)
+### 情境 A：孤兒工具呼叫（缺少工具結果） {#case-a-orphaned-tool-calls-missing-tool-results}
 
-**Problem:** An assistant message contains `tool_calls`, but no corresponding tool result messages follow.
+**問題：** 助手訊息包含 `tool_calls`，但後續沒有對應的工具結果訊息。
 
-**Solution:** LiteLLM automatically adds dummy tool result messages for any missing tool results.
+**解決方案：** LiteLLM 會自動為任何缺少的工具結果新增假的工具結果訊息。
 
-**Example:**
+**範例：**
 
 ```python
 import litellm
@@ -132,19 +132,19 @@ response = litellm.completion(
 )
 ```
 
-**When this happens:**
-- User interrupts tool execution
-- Client loses tool results due to network issues
-- Conversation flow changes before tool completes
-- Multi-turn conversations where tools are optional
+**這種情況會發生在：**
+- 使用者中斷工具執行
+- 用戶端因網路問題遺失工具結果
+- 在工具完成前，對話流程發生變化
+- 工具為選用的多輪對話
 
-### Case B: Orphaned Tool Results (Invalid tool_call_id)
+### 情境 B：孤兒工具結果（無效的 tool_call_id） {#case-b-orphaned-tool-results-invalid-tool_call_id}
 
-**Problem:** A tool message references a `tool_call_id` that doesn't exist in any previous assistant message.
+**問題：** 工具訊息參照了 `tool_call_id`，但該 ID 並不存在於任何先前的助手訊息中。
 
-**Solution:** LiteLLM automatically removes these orphaned tool result messages.
+**解決方案：** LiteLLM 會自動移除這些孤兒工具結果訊息。
 
-**Example:**
+**範例：**
 
 ```python
 import litellm
@@ -169,19 +169,19 @@ response = litellm.completion(
 )
 ```
 
-**When this happens:**
-- Message history is manually edited
-- Tool results are duplicated or mismatched
-- Conversation state is restored incorrectly
-- Messages are merged from different conversations
+**這種情況會發生在：**
+- 訊息歷史被手動編輯
+- 工具結果重複或不一致
+- 對話狀態還原錯誤
+- 訊息來自不同對話並被合併
 
-### Case C: Empty Message Content
+### 情境 C：空白訊息內容 {#case-c-empty-message-content}
 
-**Problem:** User or assistant messages have empty or whitespace-only content.
+**問題：** 使用者或助手訊息的內容為空白或僅含空白字元。
 
-**Solution:** LiteLLM replaces empty content with a system placeholder message.
+**解決方案：** LiteLLM 會以系統預留訊息取代空白內容。
 
-**Example:**
+**範例：**
 
 ```python
 import litellm
@@ -203,15 +203,15 @@ response = litellm.completion(
 )
 ```
 
-**When this happens:**
-- UI sends empty messages
-- Content is stripped during preprocessing
-- Placeholder messages in conversation history
-- Edge cases in message construction
+**這種情況會發生在：**
+- UI 傳送空白訊息
+- 內容在前處理期間被移除
+- 對話歷史中的預留訊息
+- 訊息建構中的邊界情況
 
-## Configuration
+## 設定 {#configuration}
 
-### Enable Globally
+### 全域啟用 {#enable-globally}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -241,7 +241,7 @@ export LITELLM_MODIFY_PARAMS=True
 </TabItem>
 </Tabs>
 
-### Enable Per-Request
+### 依請求啟用 {#enable-per-request}
 
 ```python
 import litellm
@@ -254,36 +254,36 @@ response = litellm.completion(
 )
 ```
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-Message sanitization currently works with:
+目前訊息清理可用於：
 
-- ✅ Anthropic (Claude)
+- ✅ Anthropic（Claude）
 
-**Note:** While the sanitization logic is provider-agnostic, it is currently only applied in the Anthropic message transformation pipeline. Support for additional providers may be added in future releases.
+**注意：** 雖然清理邏輯與提供者無關，但目前只套用於 Anthropic 的訊息轉換流程。未來版本可能會新增對其他提供者的支援。
 
-## Implementation Details
+## 實作細節 {#implementation-details}
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-The message sanitization process runs **before** messages are converted to provider-specific formats:
+訊息清理流程會在訊息轉換為特定提供者格式之前執行：
 
-1. **Input:** OpenAI-format messages with potential issues
-2. **Sanitization:** Three helper functions process the messages:
-   - `_sanitize_empty_text_content()` - Fixes empty content
-   - `_add_missing_tool_results()` - Adds dummy tool results
-   - `_is_orphaned_tool_result()` - Identifies orphaned results
-3. **Output:** Clean, provider-compatible messages
+1. **輸入：** 可能有問題的 OpenAI 格式訊息
+2. **清理：** 三個輔助函式處理這些訊息：
+   - `_sanitize_empty_text_content()` - 修正空白內容
+   - `_add_missing_tool_results()` - 新增假的工具結果
+   - `_is_orphaned_tool_result()` - 識別孤兒結果
+3. **輸出：** 乾淨、相容於提供者的訊息
 
-### Code Reference
+### 程式碼參考 {#code-reference}
 
-The sanitization logic is implemented in:
+清理邏輯實作於：
 - `litellm/litellm_core_utils/prompt_templates/factory.py`
-- Function: `sanitize_messages_for_tool_calling()`
+- 函式：`sanitize_messages_for_tool_calling()`
 
-### Logging
+### 記錄 {#logging}
 
-When sanitization occurs, LiteLLM logs debug messages:
+當進行清理時，LiteLLM 會記錄除錯訊息：
 
 ```python
 import litellm
@@ -295,9 +295,9 @@ litellm.set_verbose = True  # Enable debug logging
 # "_sanitize_empty_text_content: Replaced empty text content in user message"
 ```
 
-## Best Practices
+## 最佳實務 {#best-practices}
 
-### 1. Enable for Production Workflows
+### 1. 於正式工作流程中啟用 {#1-enable-for-production-workflows}
 
 ```python
 # Recommended for production
@@ -311,9 +311,9 @@ response = litellm.completion(
 )
 ```
 
-### 2. Preserve Tool Results When Possible
+### 2. 盡可能保留工具結果 {#2-preserve-tool-results-when-possible}
 
-While sanitization handles missing tool results, it's better to provide actual results:
+雖然清理可處理缺少的工具結果，但仍建議提供實際結果：
 
 ```python
 # Good: Provide actual tool results
@@ -331,9 +331,9 @@ messages = [
 ]
 ```
 
-### 3. Monitor Sanitization Events
+### 3. 監控清理事件 {#3-monitor-sanitization-events}
 
-Use logging to track when sanitization occurs:
+使用記錄來追蹤何時發生清理：
 
 ```python
 import litellm
@@ -350,9 +350,9 @@ response = litellm.completion(
 )
 ```
 
-### 4. Test Edge Cases
+### 4. 測試邊界情況 {#4-test-edge-cases}
 
-Ensure your application handles sanitized messages correctly:
+確保您的應用程式能正確處理已清理的訊息：
 
 ```python
 import litellm
@@ -374,44 +374,44 @@ response = litellm.completion(
 # Verify the response handles the dummy tool result appropriately
 ```
 
-## Related Features
+## 相關功能 {#related-features}
 
-- **[Drop Params](./drop_params.md)** - Drop unsupported parameters for specific providers
-- **[Message Trimming](./message_trimming.md)** - Trim messages to fit token limits
-- **[Function Calling](./function_call.md)** - Complete guide to tool/function calling
-- **[Reasoning Content](../reasoning_content.md)** - Extended thinking with tool calling
+- **[移除參數](./drop_params.md)** - 移除特定提供者不支援的參數
+- **[訊息截斷](./message_trimming.md)** - 截斷訊息以符合 token 限制
+- **[函式呼叫](./function_call.md)** - 工具/函式呼叫完整指南
+- **[推理內容](../reasoning_content.md)** - 搭配工具呼叫的延伸思考
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Sanitization Not Working
+### 清理未生效 {#sanitization-not-working}
 
-**Issue:** Messages still cause errors despite `modify_params=True`
+**問題：** 儘管 `modify_params=True`，訊息仍然導致錯誤
 
-**Solution:**
-1. Verify `modify_params` is enabled:
+**解決方案：**
+1. 驗證 `modify_params` 已啟用：
    ```python
    import litellm
    print(litellm.modify_params)  # Should be True
    ```
 
-2. Check if the issue is provider-specific:
+2. 檢查問題是否與特定提供者有關：
    ```python
    litellm.set_verbose = True  # Enable debug logging
    ```
 
-3. Ensure you're using a recent version of LiteLLM:
+3. 確保您使用的是較新的 LiteLLM 版本：
    ```bash
    uv add --upgrade-package litellm litellm
    ```
 
-### Unexpected Dummy Tool Results
+### 意外出現假的工具結果 {#unexpected-dummy-tool-results}
 
-**Issue:** Dummy tool results appear when you expect actual results
+**問題：** 當您預期會有實際結果時，卻出現假的工具結果
 
-**Cause:** Tool result messages are missing or have incorrect `tool_call_id`
+**原因：** 工具結果訊息缺失或具有錯誤的 `tool_call_id`
 
-**Solution:**
-1. Verify tool result messages have correct `tool_call_id`:
+**解決方案：**
+1. 驗證工具結果訊息具有正確的 `tool_call_id`：
    ```python
    # Correct
    {"role": "tool", "tool_call_id": "call_123", "content": "result"}
@@ -420,46 +420,46 @@ response = litellm.completion(
    {"role": "tool", "tool_call_id": "wrong_id", "content": "result"}
    ```
 
-2. Ensure tool results immediately follow assistant messages with tool_calls
+2. 確保工具結果立即接在含有 tool_calls 的助手訊息之後
 
-### Performance Impact
+### 效能影響 {#performance-impact}
 
-**Issue:** Concerned about performance overhead
+**問題：** 擔心效能負擔
 
-**Details:** Message sanitization has minimal performance impact:
-- Runs in O(n) time where n = number of messages
-- Only processes messages when `modify_params=True`
-- Typically adds < 1ms to request processing time
+**詳細說明：** 訊息清理對效能的影響極小：
+- 以 O(n) 時間執行，其中 n = 訊息數量
+- 僅在 `modify_params=True` 時處理訊息
+- 通常會為請求處理時間增加 < 1ms
 
-## FAQ
+## 常見問題 {#faq}
 
-**Q: Does sanitization modify my original messages?**
+**Q: 清理會修改我的原始訊息嗎？**
 
-A: No, sanitization creates a new list of messages. Your original messages remain unchanged.
+A: 不會，清理會建立新的訊息清單。您的原始訊息保持不變。
 
-**Q: Can I disable specific sanitization cases?**
+**Q: 我可以停用特定的清理情境嗎？**
 
-A: Currently, all three cases are handled together when `modify_params=True`. To disable sanitization entirely, set `modify_params=False`.
+A: 目前在 `modify_params=True` 時，三種情境會一起處理。若要完全停用清理，請設定 `modify_params=False`。
 
-**Q: What happens to the dummy tool results?**
+**Q: 那些假的工具結果會怎樣？**
 
-A: Dummy tool results are sent to the LLM provider along with other messages. The model sees them as regular tool results with informative error messages.
+A: 假的工具結果會與其他訊息一起送往 LLM 提供者。模型會將其視為帶有資訊性錯誤訊息的正常工具結果。
 
-**Q: Does this work with streaming?**
+**Q: 這支援串流嗎？**
 
-A: Yes, message sanitization works with both streaming and non-streaming requests.
+A: 是的，訊息清理同時支援串流與非串流請求。
 
-**Q: Is this related to `drop_params`?**
+**Q: 這和 `drop_params` 有關嗎？**
 
-A: No, they're separate features:
-- `modify_params` - Modifies/fixes message content and structure
-- `drop_params` - Removes unsupported API parameters
+A: 沒有，這是不同的功能：
+- `modify_params` - 修改/修正訊息內容與結構
+- `drop_params` - 移除不支援的 API 參數
 
-Both can be enabled simultaneously.
+兩者可同時啟用。
 
-## See Also
+## 另請參閱 {#see-also}
 
-- [Reasoning Content with Tool Calling](../reasoning_content.md)
-- [Function Calling Guide](./function_call.md)
-- [Bedrock Provider Documentation](../providers/bedrock.md)
-- [Anthropic Provider Documentation](../providers/anthropic.md)
+- [搭配工具呼叫的推理內容](../reasoning_content.md)
+- [函式呼叫指南](./function_call.md)
+- [Bedrock 提供者文件](../providers/bedrock.md)
+- [Anthropic 提供者文件](../providers/anthropic.md)

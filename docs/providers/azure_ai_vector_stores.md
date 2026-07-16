@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure AI Search - Vector Store (Unified API)
+# Azure AI Search - 向量儲存庫（Unified API） {#azure-ai-search---vector-store-unified-api}
 
-Use this to **search** Azure AI Search Vector Stores, with LiteLLM's unified `/chat/completions` API.
+使用此功能可透過 LiteLLM 的統一 `/chat/completions` API **搜尋** Azure AI Search 向量儲存庫。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-You need three things:
-1. An Azure AI Search service
-2. An embedding model (to convert your queries to vectors)
-3. A search index with vector fields
+您需要三項內容：
+1. Azure AI Search 服務
+2. 嵌入模型（將您的查詢轉換為向量）
+3. 具有向量欄位的搜尋索引
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### Basic Search
+### 基本搜尋 {#basic-search}
 
 ```python
 from litellm import vector_stores
@@ -45,7 +45,7 @@ response = vector_stores.search(
 print(response)
 ```
 
-### Async Search
+### 非同步搜尋 {#async-search}
 
 ```python
 from litellm import vector_stores
@@ -66,7 +66,7 @@ response = await vector_stores.asearch(
 print(response)
 ```
 
-### Advanced Options
+### 進階選項 {#advanced-options}
 
 ```python
 from litellm import vector_stores
@@ -93,9 +93,9 @@ print(response)
 
 <TabItem value="proxy" label="PROXY">
 
-### Setup Config
+### 設定設定檔 {#setup-config}
 
-Add this to your config.yaml:
+將以下內容加入您的 config.yaml：
 
 ```yaml
 vector_store_registry:
@@ -111,13 +111,13 @@ vector_store_registry:
             api_version: "2025-09-01"
 ```
 
-### Start Proxy
+### 啟動 Proxy {#start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### Search via API
+### 透過 API 搜尋 {#search-via-api}
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-vector-index/search' \
@@ -131,30 +131,30 @@ curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-vector-index/search' \
 </TabItem>
 </Tabs>
 
-## Required Parameters
+## 必要參數 {#required-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `vector_store_id` | string | Your Azure AI Search index name |
-| `custom_llm_provider` | string | Set to `"azure_ai"` |
-| `azure_search_service_name` | string | Name of your Azure AI Search service |
-| `litellm_embedding_model` | string | Model to generate query embeddings (e.g., `"azure/text-embedding-3-large"`) |
-| `litellm_embedding_config` | dict | Config for the embedding model (api_base, api_key, api_version) |
-| `api_key` | string | Your Azure AI Search API key |
+| `vector_store_id` | string | 您的 Azure AI Search 索引名稱 |
+| `custom_llm_provider` | string | 設為 `"azure_ai"` |
+| `azure_search_service_name` | string | 您的 Azure AI Search 服務名稱 |
+| `litellm_embedding_model` | string | 用於產生查詢嵌入的模型（例如，`"azure/text-embedding-3-large"`） |
+| `litellm_embedding_config` | dict | 嵌入模型的設定（api_base、api_key、api_version） |
+| `api_key` | string | 您的 Azure AI Search API 金鑰 |
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-| Feature | Status | Notes |
+| 功能 | 狀態 | 備註 |
 |---------|--------|-------|
-| Logging | ✅ Supported | Full logging support available |
-| Guardrails | ❌ Not Yet Supported | Guardrails are not currently supported for vector stores |
-| Cost Tracking | ✅ Supported | Cost is $0 according to Azure |
-| Unified API | ✅ Supported | Call via OpenAI compatible `/v1/vector_stores/search` endpoint |
-| Passthrough | ❌ Not yet supported |  |
+| 記錄 | ✅ 支援 | 提供完整記錄支援 |
+| 防護欄 | ❌ 尚未支援 | 目前向量儲存庫不支援防護欄 |
+| 成本追蹤 | ✅ 支援 | 依 Azure 所述，成本為 $0 |
+| 統一 API | ✅ 支援 | 透過與 OpenAI 相容的 `/v1/vector_stores/search` 端點呼叫 |
+| Passthrough | ❌ 尚未支援 |  |
 
-## Response Format
+## 回應格式 {#response-format}
 
-The response follows the standard LiteLLM vector store format:
+回應遵循標準的 LiteLLM 向量儲存庫格式：
 
 ```json
 {
@@ -179,20 +179,20 @@ The response follows the standard LiteLLM vector store format:
 }
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-When you search:
+當您搜尋時：
 
-1. LiteLLM converts your query to a vector using the embedding model you specified
-2. It sends the vector to Azure AI Search
-3. Azure AI Search finds the most similar documents in your index
-4. Results come back with similarity scores
+1. LiteLLM 使用您指定的嵌入模型將查詢轉換為向量
+2. 它將向量傳送至 Azure AI Search
+3. Azure AI Search 會在您的索引中找出最相似的文件
+4. 結果會附帶相似度分數回傳
 
-The embedding model can be any model supported by LiteLLM - Azure OpenAI, OpenAI, Bedrock, etc.
+嵌入模型可以是 LiteLLM 支援的任何模型 - Azure OpenAI、OpenAI、Bedrock 等。
 
-## Setting Up Your Azure AI Search Index
+## 設定您的 Azure AI Search 索引 {#setting-up-your-azure-ai-search-index}
 
-Your index needs a vector field. Here's what that looks like:
+您的索引需要一個向量欄位。如下所示：
 
 ```json
 {
@@ -218,28 +218,26 @@ Your index needs a vector field. Here's what that looks like:
 }
 ```
 
-The vector dimensions must match your embedding model. For example:
-- `text-embedding-3-large`: 1536 dimensions
-- `text-embedding-3-small`: 1536 dimensions
-- `text-embedding-ada-002`: 1536 dimensions
+向量維度必須與您的嵌入模型相符。例如：
+- `text-embedding-3-large`：1536 維
+- `text-embedding-3-small`：1536 維
+- `text-embedding-ada-002`：1536 維
 
+## 常見問題 {#common-issues}
 
-## Common Issues
+**"無法為查詢產生嵌入"**
 
-**"Failed to generate embedding for query"**
+您的嵌入模型設定有誤。請檢查：
+- `litellm_embedding_config` 是否具有正確的 api_base 和 api_key
+- 嵌入模型名稱是否正確
+- 您的憑證是否可用
 
-Your embedding model config is wrong. Check:
-- `litellm_embedding_config` has the right api_base and api_key
-- The embedding model name is correct
-- Your credentials work
+**"找不到索引"**
 
-**"Index not found"**
+`vector_store_id` 不符合您搜尋服務中的任何索引。請檢查：
+- 索引名稱是否正確
+- 您是否使用正確的搜尋服務名稱
 
-The `vector_store_id` doesn't match any index in your search service. Check:
-- The index name is correct
-- You're using the right search service name
+**"找不到欄位 'contentVector'"**
 
-**"Field 'contentVector' not found"**
-
-Your index uses a different vector field name. Pass it via `azure_search_vector_field`.
-
+您的索引使用不同的向量欄位名稱。請透過 `azure_search_vector_field` 傳入。

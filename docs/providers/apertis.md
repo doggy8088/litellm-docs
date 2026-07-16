@@ -1,37 +1,37 @@
-# Apertis AI (Stima API)
+# Apertis AI（Stima API） {#apertis-ai-stima-api}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Apertis AI (formerly Stima API) is a unified API platform providing access to 430+ AI models through a single interface, with cost savings of up to 50%. |
-| Provider Route on LiteLLM | `apertis/` |
-| Link to Provider Doc | [Apertis AI Website ↗](https://api.stima.tech) |
-| Base URL | `https://api.stima.tech/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 說明 | Apertis AI（原名 Stima API）是一個統一的 API 平台，透過單一介面提供超過 430 個 AI 模型的存取，最高可節省 50% 成本。 |
+| LiteLLM 上的提供者路由 | `apertis/` |
+| 提供者文件連結 | [Apertis AI 網站 ↗](https://api.stima.tech) |
+| 基礎 URL | `https://api.stima.tech/v1` |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 
-## What is Apertis AI?
+## 什麼是 Apertis AI？ {#what-is-apertis-ai}
 
-Apertis AI is a unified API platform that lets developers:
-- **Access 430+ AI Models**: All models through a single API
-- **Save 50% on Costs**: Competitive pricing with significant discounts
-- **Unified Billing**: Single bill for all model usage
-- **Quick Setup**: Start with just $2 registration
-- **GitHub Integration**: Link with your GitHub account
+Apertis AI 是一個統一的 API 平台，可讓開發者：
+- **存取 430+ 個 AI 模型**：透過單一 API 使用所有模型
+- **節省 50% 成本**：具競爭力的定價與大幅折扣
+- **統一計費**：所有模型用量只需一張帳單
+- **快速設定**：只需 $2 註冊即可開始
+- **GitHub 整合**：與您的 GitHub 帳戶連結
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["STIMA_API_KEY"] = ""  # your Apertis AI API key
 ```
 
-Get your Apertis AI API key from [api.stima.tech](https://api.stima.tech).
+請從 [api.stima.tech](https://api.stima.tech) 取得您的 Apertis AI API 金鑰。
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Apertis AI Non-streaming Completion"
 import os
@@ -51,7 +51,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Apertis AI Streaming Completion"
 import os
@@ -73,15 +73,15 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy Server
+## 使用方式 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export STIMA_API_KEY=""
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```yaml
 model_list:
@@ -91,39 +91,39 @@ model_list:
       api_key: os.environ/STIMA_API_KEY
 ```
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-Apertis AI supports all standard OpenAI-compatible parameters:
+Apertis AI 支援所有標準的 OpenAI 相容參數：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `messages` | array | **Required**. Array of message objects with 'role' and 'content' |
-| `model` | string | **Required**. Model ID from 430+ available models |
-| `stream` | boolean | Optional. Enable streaming responses |
-| `temperature` | float | Optional. Sampling temperature |
-| `top_p` | float | Optional. Nucleus sampling parameter |
-| `max_tokens` | integer | Optional. Maximum tokens to generate |
-| `frequency_penalty` | float | Optional. Penalize frequent tokens |
-| `presence_penalty` | float | Optional. Penalize tokens based on presence |
-| `stop` | string/array | Optional. Stop sequences |
-| `tools` | array | Optional. List of available tools/functions |
-| `tool_choice` | string/object | Optional. Control tool/function calling |
+| `messages` | array | **必要**。包含 'role' 和 'content' 的訊息物件陣列 |
+| `model` | string | **必要**。430+ 個可用模型中的模型 ID |
+| `stream` | boolean | 選用。啟用串流回應 |
+| `temperature` | float | 選用。取樣溫度 |
+| `top_p` | float | 選用。核取樣參數 |
+| `max_tokens` | integer | 選用。要產生的最大 tokens 數量 |
+| `frequency_penalty` | float | 選用。懲罰常出現的 tokens |
+| `presence_penalty` | float | 選用。根據出現與否懲罰 tokens |
+| `stop` | string/array | 選用。停止序列 |
+| `tools` | array | 選用。可用工具／函式清單 |
+| `tool_choice` | string/object | 選用。控制工具／函式呼叫 |
 
-## Cost Benefits
+## 成本優勢 {#cost-benefits}
 
-Apertis AI offers significant cost advantages:
-- **50% Cost Savings**: Save money compared to direct provider costs
-- **Unified Billing**: Single invoice for all your AI model usage
-- **Low Entry**: Start with just $2 registration
+Apertis AI 提供顯著的成本優勢：
+- **節省 50% 成本**：與直接向提供者購買相比可省下費用
+- **統一計費**：所有 AI 模型用量只需一張發票
+- **低門檻**：只需 $2 註冊即可開始
 
-## Model Availability
+## 模型可用性 {#model-availability}
 
-With access to 430+ AI models, Apertis AI provides:
-- Multiple providers through one API
-- Latest model releases
-- Various model types (text, image, video)
+透過存取超過 430 個 AI 模型，Apertis AI 提供：
+- 透過單一 API 存取多個提供者
+- 最新模型版本
+- 各種類型的模型（文字、圖片、影片）
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Apertis AI Website](https://api.stima.tech)
-- [Apertis AI Enterprise](https://api.stima.tech/enterprise)
+- [Apertis AI 網站](https://api.stima.tech)
+- [Apertis AI 企業版](https://api.stima.tech/enterprise)

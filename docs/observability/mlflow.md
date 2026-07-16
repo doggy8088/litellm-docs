@@ -1,26 +1,24 @@
 import Image from '@theme/IdealImage';
 
-# MLflow
+# MLflow {#mlflow}
 
-## What is MLflow?
+## 什麼是 MLflow？ {#what-is-mlflow}
 
-**MLflow** is an end-to-end open source MLOps platform for [experiment tracking](https://www.mlflow.org/docs/latest/tracking.html), [model management](https://www.mlflow.org/docs/latest/models.html), [evaluation](https://www.mlflow.org/docs/latest/llms/llm-evaluate/index.html), [observability (tracing)](https://www.mlflow.org/docs/latest/llms/tracing/index.html), and [deployment](https://www.mlflow.org/docs/latest/deployment/index.html). MLflow empowers teams to collaboratively develop and refine LLM applications efficiently.
+**MLflow** 是一個端到端的開源 MLOps 平台，提供 [實驗追蹤](https://www.mlflow.org/docs/latest/tracking.html)、[模型管理](https://www.mlflow.org/docs/latest/models.html)、[評估](https://www.mlflow.org/docs/latest/llms/llm-evaluate/index.html)、[可觀測性（追蹤）](https://www.mlflow.org/docs/latest/llms/tracing/index.html) 以及 [部署](https://www.mlflow.org/docs/latest/deployment/index.html)。MLflow 讓團隊能夠高效率地協作開發與精進 LLM 應用程式。
 
-MLflow’s integration with LiteLLM supports advanced observability compatible with OpenTelemetry.
-
+MLflow 與 LiteLLM 的整合支援與 OpenTelemetry 相容的進階可觀測性。
 
 <Image img={require('../../img/mlflow_tracing.png')} />
 
+## 開始使用 {#getting-started}
 
-## Getting Started
-
-Install MLflow:
+安裝 MLflow：
 
 ```shell
 uv add "litellm[mlflow]"
 ```
 
-To enable MLflow auto tracing for LiteLLM:
+要為 LiteLLM 啟用 MLflow 自動追蹤：
 
 ```python
 import mlflow
@@ -31,7 +29,7 @@ mlflow.litellm.autolog()
 # litellm.callbacks = ["mlflow"]
 ```
 
-Since MLflow is open-source and free, **no sign-up or API key is needed to log traces!**
+由於 MLflow 是開源且免費的，**記錄追蹤時不需要註冊或 API 金鑰！**
 
 ```python
 import litellm
@@ -49,15 +47,15 @@ response = litellm.completion(
 )
 ```
 
-Open the MLflow UI and go to the `Traces` tab to view logged traces:
+開啟 MLflow UI，然後前往 `Traces` 分頁以檢視已記錄的追蹤：
 
 ```bash
 mlflow ui
 ```
 
-## Tracing Tool Calls
+## 追蹤工具呼叫 {#tracing-tool-calls}
 
-MLflow integration with LiteLLM support tracking tool calls in addition to the messages.
+LiteLLM 與 MLflow 的整合除了訊息之外，也支援追蹤工具呼叫。
 
 ```python
 import mlflow
@@ -104,17 +102,15 @@ response = litellm.completion(
 
 <Image img={require('../../img/mlflow_tool_calling_tracing.png')} />
 
+## 評估 {#evaluation}
 
-## Evaluation
+MLflow LiteLLM 整合可讓您對 LLM 執行定性評估，以評估和／或監控您的 GenAI 應用程式。
 
-MLflow LiteLLM integration allow you to run qualitative assessment against LLM to evaluate or/and monitor your GenAI application.
+請造訪 [Evaluate LLMs 教學](../tutorials/eval_suites.md) 以取得如何搭配 LiteLLM 和 MLflow 執行評估套件的完整指南。
 
-Visit [Evaluate LLMs Tutorial](../tutorials/eval_suites.md) for the complete guidance on how to run evaluation suite with LiteLLM and MLflow.
+## 匯出追蹤至 OpenTelemetry 收集器 {#exporting-traces-to-opentelemetry-collectors}
 
-
-## Exporting Traces to OpenTelemetry collectors
-
-MLflow traces are compatible with OpenTelemetry. You can export traces to any OpenTelemetry collector (e.g., Jaeger, Zipkin, Datadog, New Relic) by setting the endpoint URL in the environment variables.
+MLflow 追蹤與 OpenTelemetry 相容。您可以透過在環境變數中設定端點 URL，將追蹤匯出到任何 OpenTelemetry 收集器（例如 Jaeger、Zipkin、Datadog、New Relic）。
 
 ```
 # Set the endpoint of the OpenTelemetry Collector
@@ -123,11 +119,11 @@ os.environ["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"] = "http://localhost:4317/v1/tra
 os.environ["OTEL_SERVICE_NAME"] = "<your-service-name>"
 ```
 
-See [MLflow documentation](https://mlflow.org/docs/latest/llms/tracing/index.html#using-opentelemetry-collector-for-exporting-traces) for more details.
+請參閱 [MLflow 文件](https://mlflow.org/docs/latest/llms/tracing/index.html#using-opentelemetry-collector-for-exporting-traces) 以取得更多詳細資訊。
 
-## Combine LiteLLM Trace with Your Application Trace
+## 將 LiteLLM 追蹤與您的應用程式追蹤合併 {#combine-litellm-trace-with-your-application-trace}
 
-LiteLLM is often part of larger LLM applications, such as agentic models. MLflow Tracing allows you to instrument custom Python code, which can then be combined with LiteLLM traces.
+LiteLLM 通常是較大型 LLM 應用程式的一部分，例如 agentic models。MLflow Tracing 讓您可以為自訂 Python 程式碼加上儀表化，之後可與 LiteLLM 追蹤合併。
 
 ```python
 import litellm
@@ -158,21 +154,21 @@ class CustomAgent:
         ...
 ```
 
-This approach generates a unified trace, combining your custom Python code with LiteLLM calls.
+這種做法會產生一個統一的追蹤，將您的自訂 Python 程式碼與 LiteLLM 呼叫合併在一起。
 
-## LiteLLM Proxy Server 
+## LiteLLM 代理伺服器 {#litellm-proxy-server}
 
-### Dependencies
+### 依賴項 {#dependencies}
 
-For using `mlflow` on LiteLLM Proxy Server, you need to install the `mlflow` package on your docker container.
+若要在 LiteLLM Proxy Server 上使用 `mlflow`，您需要在 docker 容器上安裝 `mlflow` 套件。
 
 ```shell
 uv add "mlflow>=3.1.4"
 ```
 
-### Configuration
+### 設定 {#configuration}
 
-Configure MLflow in your LiteLLM proxy configuration file:
+在您的 LiteLLM proxy 設定檔中設定 MLflow：
 
 ```yaml
 model_list:
@@ -185,9 +181,9 @@ litellm_settings:
   failure_callback: ["mlflow"]
 ```
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
-For MLflow with Databricks service, set these required environment variables:
+若要在 Databricks 服務上使用 MLflow，請設定以下必要的環境變數：
 
 ```shell
 DATABRICKS_TOKEN="dapixxxxx"
@@ -197,9 +193,9 @@ MLFLOW_REGISTRY_URI="databricks-uc"
 MLFLOW_EXPERIMENT_ID="xxxx"
 ```
 
-### Adding Tags for Better Tracing
+### 新增標籤以進行更好的追蹤 {#adding-tags-for-better-tracing}
 
-You can add custom tags to your requests for improved trace organization and filtering in MLflow. Tags help you categorize and search your traces by job ID, task name, or any custom metadata.
+您可以為您的請求新增自訂標籤，以改善 MLflow 中的追蹤組織與篩選。標籤可協助您依作業 ID、任務名稱或任何自訂中繼資料來分類並搜尋您的追蹤。
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -257,7 +253,7 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-## Support
+## 支援 {#support}
 
-* For advanced usage and integrations of tracing, visit the [MLflow Tracing documentation](https://mlflow.org/docs/latest/llms/tracing/index.html).
-* For any question or issue with this integration, please [submit an issue](https://github.com/mlflow/mlflow/issues/new/choose) on our [Github](https://github.com/mlflow/mlflow) repository!
+* 如需追蹤的進階用法與整合，請造訪 [MLflow Tracing 文件](https://mlflow.org/docs/latest/llms/tracing/index.html)。
+* 如對此整合有任何問題或疑問，請在我們的 [Github](https://github.com/mlflow/mlflow) 儲存庫中 [提交 issue](https://github.com/mlflow/mlflow/issues/new/choose)！

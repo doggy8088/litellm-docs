@@ -2,16 +2,13 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Humanloop
+# Humanloop {#humanloop}
 
-[Humanloop](https://humanloop.com/docs/v5/getting-started/overview) enables product teams to build robust AI features with LLMs, using best-in-class tooling for Evaluation, Prompt Management, and Observability.
+[Humanloop](https://humanloop.com/docs/v5/getting-started/overview) 讓產品團隊能使用 LLM 建立穩健的 AI 功能，並採用頂尖工具來進行評估、Prompt 管理與可觀測性。
 
+## 快速開始 {#getting-started}
 
-## Getting Started
-
-Use Humanloop to manage prompts across all LiteLLM Providers.
-
-
+使用 Humanloop 來管理所有 LiteLLM 提供者的 prompts。
 
 <Tabs>
 
@@ -35,11 +32,10 @@ resp = litellm.completion(
 ```
 
 
-
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -50,13 +46,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml --detailed_debug
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 <Tabs>
 <TabItem value="curl" label="CURL">
@@ -113,8 +109,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-**Expected Logs:**
+**預期記錄：**
 
 ```
 POST Request Sent from LiteLLM:
@@ -123,14 +118,13 @@ https://api.openai.com/v1/ \
 -d '{'model': 'gpt-3.5-turbo', 'messages': <YOUR HUMANLOOP PROMPT TEMPLATE>}'
 ```
 
-## How to set model 
+## 如何設定 model  {#how-to-set-model}
 
+## 如何設定 model  {#how-to-set-model-1}
 
-## How to set model 
+### 在 LiteLLM 上設定 model  {#set-the-model-on-litellm}
 
-### Set the model on LiteLLM 
-
-You can do `humanloop/<litellm_model_name>`
+您可以這樣做 `humanloop/<litellm_model_name>`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -157,11 +151,11 @@ model_list:
 </TabItem>
 </Tabs>
 
-### Set the model on Humanloop
+### 在 Humanloop 上設定 model  {#set-the-model-on-humanloop}
 
-LiteLLM will call humanloop's `https://api.humanloop.com/v5/prompts/<your-prompt-id>` endpoint, to get the prompt template.
+LiteLLM 會呼叫 humanloop 的 `https://api.humanloop.com/v5/prompts/<your-prompt-id>` endpoint，以取得 prompt template。
 
-This also returns the template model set on Humanloop.
+這也會回傳在 Humanloop 上設定的 template model。
 
 ```bash
 {
@@ -173,4 +167,3 @@ This also returns the template model set on Humanloop.
   "model": "gpt-3.5-turbo" # your template model
 }
 ```
-

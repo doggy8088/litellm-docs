@@ -1,28 +1,27 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# MiniMax  
+# MiniMax {#minimax}
 
-# MiniMax - v1/messages
+# MiniMax - v1/messages {#minimax---v1messages}
 
-## Overview
+## 總覽 {#overview}
 
-Litellm provides anthropic specs compatible support for minmax
+Litellm 提供與 anthropic 規格相容的 minmax 支援
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-MiniMax offers three models through their Anthropic-compatible API:
+MiniMax 透過其與 Anthropic 相容的 API 提供三種模型：
 
-| Model | Description | Input Cost | Output Cost | Prompt Caching Read | Prompt Caching Write |
+| 模型 | 說明 | 輸入成本 | 輸出成本 | 提示快取讀取 | 提示快取寫入 |
 |-------|-------------|------------|-------------|---------------------|----------------------|
-| **MiniMax-M2.1** | Powerful Multi-Language Programming with Enhanced Programming Experience (~60 tps) | $0.3/M tokens | $1.2/M tokens | $0.03/M tokens | $0.375/M tokens |
-| **MiniMax-M2.1-lightning** | Faster and More Agile (~100 tps) | $0.3/M tokens | $2.4/M tokens | $0.03/M tokens | $0.375/M tokens |
-| **MiniMax-M2** | Agentic capabilities, Advanced reasoning | $0.3/M tokens | $1.2/M tokens | $0.03/M tokens | $0.375/M tokens |
+| **MiniMax-M2.1** | 具強化程式設計體驗的強大多語言程式設計（~60 tps） | $0.3/M tokens | $1.2/M tokens | $0.03/M tokens | $0.375/M tokens |
+| **MiniMax-M2.1-lightning** | 更快且更靈活（~100 tps） | $0.3/M tokens | $2.4/M tokens | $0.03/M tokens | $0.375/M tokens |
+| **MiniMax-M2** | 代理程式能力、進階推理 | $0.3/M tokens | $1.2/M tokens | $0.03/M tokens | $0.375/M tokens |
 
+## 使用範例 {#usage-examples}
 
-## Usage Examples
-
-### Basic Chat Completion
+### 基本聊天完成 {#basic-chat-completion}
 
 ```python
 import litellm
@@ -38,7 +37,7 @@ response = litellm.anthropic.messages.acreate(
 print(response.choices[0].message.content)
 ```
 
-### Using Environment Variables
+### 使用環境變數 {#using-environment-variables}
 
 ```bash
 export MINIMAX_API_KEY="your-minimax-api-key"
@@ -55,7 +54,7 @@ response = litellm.anthropic.messages.acreate(
 )
 ```
 
-### With Thinking (M2.1 Feature)
+### 使用思考（M2.1 功能） {#with-thinking-m21-feature}
 
 ```python
 response = litellm.anthropic.messages.acreate(
@@ -71,7 +70,7 @@ for block in response.choices[0].message.content:
         print(f"Thinking: {block.thinking}")
 ```
 
-### With Tool Calling
+### 使用工具呼叫 {#with-tool-calling}
 
 ```python
 tools = [
@@ -101,20 +100,19 @@ response = litellm.anthropic.messages.acreate(
 ```
 
 
+## 與 LiteLLM Proxy 搭配使用  {#usage-with-litellm-proxy}
 
-## Usage with LiteLLM Proxy 
+您可以透過 LiteLLM Proxy 路由，使用 Anthropic SDK 搭配 MiniMax 模型：
 
-You can use MiniMax models with the Anthropic SDK by routing through LiteLLM Proxy:
-
-| Step | Description |
+| 步驟 | 說明 |
 |------|-------------|
-| **1. Start LiteLLM Proxy** | Configure proxy with MiniMax models in `config.yaml` |
-| **2. Set Environment Variables** | Point Anthropic SDK to proxy endpoint |
-| **3. Use Anthropic SDK** | Call MiniMax models using native Anthropic SDK |
+| **1. 啟動 LiteLLM Proxy** | 在 `config.yaml` 中以 MiniMax 模型設定 proxy |
+| **2. 設定環境變數** | 將 Anthropic SDK 指向 proxy 端點 |
+| **3. 使用 Anthropic SDK** | 使用原生 Anthropic SDK 呼叫 MiniMax 模型 |
 
-### Step 1: Configure LiteLLM Proxy
+### 步驟 1：設定 LiteLLM Proxy {#step-1-configure-litellm-proxy}
 
-Create a `config.yaml`:
+建立一個 `config.yaml`：
 
 ```yaml
 model_list:
@@ -125,13 +123,13 @@ model_list:
       api_base: https://api.minimax.io/anthropic/v1/messages
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config config.yaml
 ```
 
-### Step 2: Use with Anthropic SDK
+### 步驟 2：搭配 Anthropic SDK 使用 {#step-2-use-with-anthropic-sdk}
 
 ```python
 import os
@@ -166,13 +164,13 @@ for block in message.content:
         print(f"Text:\n{block.text}\n")
 ```
 
-# MiniMax - v1/chat/completions
+# MiniMax - v1/chat/completions {#minimax---v1chatcompletions}
 
-## Usage with LiteLLM SDK
+## 與 LiteLLM SDK 搭配使用 {#usage-with-litellm-sdk}
 
-You can use MiniMax's OpenAI-compatible API directly with LiteLLM:
+您可以直接使用 LiteLLM 搭配 MiniMax 的 OpenAI 相容 API：
 
-### Basic Chat Completion
+### 基本聊天完成 {#basic-chat-completion-1}
 
 ```python
 import litellm
@@ -190,7 +188,7 @@ response = litellm.completion(
 print(response.choices[0].message.content)
 ```
 
-### Using Environment Variables
+### 使用環境變數 {#using-environment-variables-1}
 
 ```bash
 export MINIMAX_API_KEY="your-minimax-api-key"
@@ -206,7 +204,7 @@ response = litellm.completion(
 )
 ```
 
-### With Reasoning Split
+### 使用推理拆分 {#with-reasoning-split}
 
 ```python
 response = litellm.completion(
@@ -226,7 +224,7 @@ if hasattr(response.choices[0].message, 'reasoning_details'):
 print(f"Response: {response.choices[0].message.content}")
 ```
 
-### With Tool Calling
+### 使用工具呼叫 {#with-tool-calling-1}
 
 ```python
 tools = [
@@ -255,7 +253,7 @@ response = litellm.completion(
 )
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python
 response = litellm.completion(
@@ -272,19 +270,19 @@ for chunk in response:
 ```
 
 
-## Usage with OpenAI SDK via LiteLLM Proxy
+## 透過 LiteLLM Proxy 與 OpenAI SDK 搭配使用 {#usage-with-openai-sdk-via-litellm-proxy}
 
-You can also use MiniMax models with the OpenAI SDK by routing through LiteLLM Proxy:
+您也可以透過 LiteLLM Proxy 路由，使用 OpenAI SDK 搭配 MiniMax 模型：
 
-| Step | Description |
+| 步驟 | 說明 |
 |------|-------------|
-| **1. Start LiteLLM Proxy** | Configure proxy with MiniMax models in `config.yaml` |
-| **2. Set Environment Variables** | Point OpenAI SDK to proxy endpoint |
-| **3. Use OpenAI SDK** | Call MiniMax models using native OpenAI SDK |
+| **1. 啟動 LiteLLM Proxy** | 在 `config.yaml` 中以 MiniMax 模型設定 proxy |
+| **2. 設定環境變數** | 將 OpenAI SDK 指向 proxy 端點 |
+| **3. 使用 OpenAI SDK** | 使用原生 OpenAI SDK 呼叫 MiniMax 模型 |
 
-### Step 1: Configure LiteLLM Proxy
+### 步驟 1：設定 LiteLLM Proxy {#step-1-configure-litellm-proxy-1}
 
-Create a `config.yaml`:
+建立一個 `config.yaml`：
 
 ```yaml
 model_list:
@@ -295,13 +293,13 @@ model_list:
       api_base: https://api.minimax.io/v1
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config config.yaml
 ```
 
-### Step 2: Use with OpenAI SDK
+### 步驟 2：搭配 OpenAI SDK 使用 {#step-2-use-with-openai-sdk}
 
 ```python
 import os
@@ -328,7 +326,7 @@ if hasattr(response.choices[0].message, 'reasoning_details'):
 print(f"Text:\n{response.choices[0].message.content}\n")
 ```
 
-### Streaming with OpenAI SDK
+### 使用 OpenAI SDK 串流 {#streaming-with-openai-sdk}
 
 ```python
 from openai import OpenAI
@@ -366,11 +364,11 @@ for chunk in stream:
             text_buffer = content_text
 ```
 
-## Cost Calculation
+## 成本計算 {#cost-calculation}
 
-Cost calculation works automatically using the pricing information in `model_prices_and_context_window.json`.
+成本計算會使用 `model_prices_and_context_window.json` 中的定價資訊自動運作。
 
-Example:
+範例：
 ```python
 response = litellm.completion(
     model="minimax/MiniMax-M2.1",
@@ -382,13 +380,13 @@ response = litellm.completion(
 print(f"Cost: ${response._hidden_params.get('response_cost', 0)}")
 ```
 
-# MiniMax - Text-to-Speech
+# MiniMax - 文字轉語音 {#minimax---text-to-speech}
 
-## Quick Start
+## 快速入門 {#quick-start}
 
-## **LiteLLM Python SDK Usage**
+## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
 
-### Basic Usage
+### 基本使用 {#basic-usage}
 
 ```python
 from pathlib import Path
@@ -406,7 +404,7 @@ response = speech(
 response.stream_to_file(speech_file_path)
 ```
 
-### Async Usage
+### 非同步使用 {#async-usage}
 
 ```python
 from litellm import aspeech
@@ -427,9 +425,9 @@ async def test_async_speech():
 asyncio.run(test_async_speech())
 ```
 
-### Voice Selection
+### 聲音選擇 {#voice-selection}
 
-MiniMax supports many voices. LiteLLM provides OpenAI-compatible voice names that map to MiniMax voices:
+MiniMax 支援許多聲音。LiteLLM 提供與 OpenAI 相容的聲音名稱，對應到 MiniMax 聲音：
 
 ```python
 from litellm import speech
@@ -446,7 +444,7 @@ for voice in voices:
     response.stream_to_file(f"speech_{voice}.mp3")
 ```
 
-You can also use MiniMax-native voice IDs directly:
+您也可以直接使用 MiniMax 原生聲音 ID：
 
 ```python
 response = speech(
@@ -456,9 +454,9 @@ response = speech(
 )
 ```
 
-### Custom Parameters
+### 自訂參數 {#custom-parameters}
 
-MiniMax TTS supports additional parameters for fine-tuning audio output:
+MiniMax TTS 支援額外參數以微調音訊輸出：
 
 ```python
 from litellm import speech
@@ -480,7 +478,7 @@ response = speech(
 response.stream_to_file("custom_speech.mp3")
 ```
 
-### Response Formats
+### 回應格式 {#response-formats}
 
 ```python
 from litellm import speech
@@ -518,13 +516,13 @@ response = speech(
 )
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 使用方式** {#litellm-proxy-usage}
 
-LiteLLM provides an OpenAI-compatible `/audio/speech` endpoint for MiniMax TTS.
+LiteLLM 為 MiniMax TTS 提供 OpenAI 相容的 `/audio/speech` 端點。
 
-### Setup
+### 設定 {#setup}
 
-Add MiniMax to your proxy configuration:
+將 MiniMax 新增至您的 proxy 設定：
 
 ```yaml
 model_list:
@@ -539,7 +537,7 @@ model_list:
       api_key: os.environ/MINIMAX_API_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -547,7 +545,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Making Requests
+### 發送請求 {#making-requests}
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -561,7 +559,7 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-With custom parameters:
+使用自訂參數：
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -582,29 +580,28 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output custom_speech.mp3
 ```
 
-## Voice Mappings
+## 聲音對應 {#voice-mappings}
 
-LiteLLM maps OpenAI-compatible voice names to MiniMax voice IDs:
+LiteLLM 會將與 OpenAI 相容的聲音名稱對應到 MiniMax 聲音 ID：
 
-| OpenAI Voice | MiniMax Voice ID | Description |
+| OpenAI 聲音 | MiniMax 聲音 ID | 說明 |
 |--------------|------------------|-------------|
-| alloy | male-qn-qingse | Male voice |
-| echo | male-qn-jingying | Male voice |
-| fable | female-shaonv | Female voice |
-| onyx | male-qn-badao | Male voice |
-| nova | female-yujie | Female voice |
-| shimmer | female-tianmei | Female voice |
+| alloy | male-qn-qingse | 男聲 |
+| echo | male-qn-jingying | 男聲 |
+| fable | female-shaonv | 女聲 |
+| onyx | male-qn-badao | 男聲 |
+| nova | female-yujie | 女聲 |
+| shimmer | female-tianmei | 女聲 |
 
-You can also use any MiniMax-native voice ID directly by passing it as the `voice` parameter.
+您也可以直接傳入任何 MiniMax 原生聲音 ID 作為 `voice` 參數。
 
-
-### Streaming (WebSocket)
+### 串流（WebSocket） {#streaming-websocket}
 
 :::note
-The current implementation uses MiniMax's HTTP endpoint. For WebSocket streaming support, please refer to MiniMax's official documentation at [https://platform.minimax.io/docs](https://platform.minimax.io/docs).
+目前的實作使用 MiniMax 的 HTTP 端點。若要支援 WebSocket 串流，請參閱 MiniMax 官方文件：[https://platform.minimax.io/docs](https://platform.minimax.io/docs)。
 :::
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python
 from litellm import speech
@@ -625,15 +622,15 @@ except Exception as e:
     print(f"Error: {e}")
 ```
 
-### Extra Body Parameters
+### 額外的主體參數 {#extra-body-parameters}
 
-Pass these via `extra_body`:
+透過 `extra_body` 傳入這些參數：
 
-| Parameter | Type | Description | Default |
+| 參數 | 型別 | 說明 | 預設值 |
 |-----------|------|-------------|---------|
-| vol | float | Volume (0.1 to 10) | 1.0 |
-| pitch | int | Pitch adjustment (-12 to 12) | 0 |
-| sample_rate | int | Sample rate: 16000, 24000, 32000 | 32000 |
-| bitrate | int | Bitrate for MP3: 64000, 128000, 192000, 256000 | 128000 |
-| channel | int | Audio channels: 1 (mono) or 2 (stereo) | 1 |
-| output_format | string | Output format: "hex" or "url" (url returns a URL valid for 24 hours) | hex |
+| vol | float | 音量（0.1 到 10） | 1.0 |
+| pitch | int | 音高調整（-12 到 12） | 0 |
+| sample_rate | int | 取樣率：16000、24000、32000 | 32000 |
+| bitrate | int | MP3 位元率：64000、128000、192000、256000 | 128000 |
+| channel | int | 音訊聲道：1（單聲道）或 2（立體聲） | 1 |
+| output_format | string | 輸出格式："hex" 或 "url"（url 會回傳 24 小時有效的 URL） | hex |

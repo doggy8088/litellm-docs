@@ -1,52 +1,50 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /assistants
+# /assistants {#assistants}
 
-:::warning Deprecation Notice
+:::warning 淘汰公告
 
-OpenAI has deprecated the Assistants API. It will shut down on **August 26, 2026**.
+OpenAI 已淘汰 Assistants API。它將於 **2026 年 8 月 26 日** 關閉。
 
-Consider migrating to the [Responses API](/docs/response_api) instead. See [OpenAI's migration guide](https://platform.openai.com/docs/guides/responses-vs-assistants) for details.
+請考慮改為遷移到 [Responses API](/docs/response_api)。詳情請參閱 [OpenAI 的遷移指南](https://platform.openai.com/docs/guides/responses-vs-assistants)。
 
 :::
 
-Covers Threads, Messages, Assistants. 
+涵蓋 Threads、Messages、Assistants。 
 
-LiteLLM currently covers: 
-- Create Assistants 
-- Delete Assistants
-- Get Assistants
-- Create Thread
-- Get Thread
-- Add Messages
-- Get Messages
-- Run Thread
+LiteLLM 目前涵蓋： 
+- 建立 Assistants 
+- 刪除 Assistants
+- 取得 Assistants
+- 建立 Thread
+- 取得 Thread
+- 新增 Messages
+- 取得 Messages
+- 執行 Thread
 
-
-## **Supported Providers**:
+## **支援的提供者**: {#supported-providers}
 - [OpenAI](#quick-start)
 - [Azure OpenAI](#azure-openai)
-- [OpenAI-Compatible APIs](#openai-compatible-apis)
+- [OpenAI 相容 API](#openai-compatible-apis)
 
-## Quick Start 
+## 快速開始  {#quick-start}
 
-Call an existing Assistant. 
+呼叫既有的 Assistant。 
 
-- Get the Assistant 
+- 取得 Assistant 
 
-- Create a Thread when a user starts a conversation.
+- 當使用者開始對話時建立 Thread。
 
-- Add Messages to the Thread as the user asks questions.
+- 當使用者提出問題時，將 Messages 新增至 Thread。
 
-- Run the Assistant on the Thread to generate a response by calling the model and the tools.
+- 在 Thread 上執行 Assistant，透過呼叫模型與工具來產生回應。
 
-### SDK + PROXY
+### SDK + PROXY {#sdk--proxy}
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Create an Assistant**
-
+**建立 Assistant**
 
 ```python
 import litellm
@@ -73,7 +71,7 @@ assistant = litellm.create_assistants(
 # )
 ```
 
-**Get the Assistant**
+**取得 Assistant**
 
 ```python
 from litellm import get_assistants, aget_assistants
@@ -88,7 +86,7 @@ assistants = get_assistants(custom_llm_provider="openai")
 # assistants = await aget_assistants(custom_llm_provider="openai")
 ```
 
-**Create a Thread**
+**建立 Thread**
 
 ```python
 from litellm import create_thread, acreate_thread
@@ -105,7 +103,7 @@ new_thread = create_thread(
 # new_thread = await acreate_thread(custom_llm_provider="openai",messages=[{"role": "user", "content": "Hey, how's it going?"}])
 ```
 
-**Add Messages to the Thread**
+**將 Messages 新增至 Thread**
 
 ```python
 from litellm import create_thread, get_thread, aget_thread, add_message, a_add_message
@@ -138,7 +136,7 @@ added_message = add_message(
 # added_message = await a_add_message(thread_id=_new_thread.id, custom_llm_provider="openai", **message)
 ```
 
-**Run the Assistant on the Thread**
+**在 Thread 上執行 Assistant**
 
 ```python
 from litellm import get_assistants, create_thread, add_message, run_thread, arun_thread
@@ -191,7 +189,7 @@ $ litellm --config /path/to/config.yaml
 ```
 
 
-**Create the Assistant**
+**建立 Assistant**
 
 ```bash
 curl "http://localhost:4000/v1/assistants" \
@@ -206,7 +204,7 @@ curl "http://localhost:4000/v1/assistants" \
 ```
 
 
-**Get the Assistant**
+**取得 Assistant**
 
 ```bash
 curl "http://0.0.0.0:4000/v1/assistants?order=desc&limit=20" \
@@ -214,7 +212,7 @@ curl "http://0.0.0.0:4000/v1/assistants?order=desc&limit=20" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**Create a Thread**
+**建立 Thread**
 
 ```bash
 curl http://0.0.0.0:4000/v1/threads \
@@ -223,7 +221,7 @@ curl http://0.0.0.0:4000/v1/threads \
   -d ''
 ```
 
-**Get a Thread**
+**取得 Thread**
 
 ```bash
 curl http://0.0.0.0:4000/v1/threads/{thread_id} \
@@ -231,7 +229,7 @@ curl http://0.0.0.0:4000/v1/threads/{thread_id} \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**Add Messages to the Thread**
+**將 Messages 新增至 Thread**
 
 ```bash
 curl http://0.0.0.0:4000/v1/threads/{thread_id}/messages \
@@ -243,7 +241,7 @@ curl http://0.0.0.0:4000/v1/threads/{thread_id}/messages \
     }'
 ```
 
-**Run the Assistant on the Thread**
+**在 Thread 上執行 Assistant**
 
 ```bash
 curl http://0.0.0.0:4000/v1/threads/thread_abc123/runs \
@@ -257,7 +255,7 @@ curl http://0.0.0.0:4000/v1/threads/thread_abc123/runs \
 </TabItem>
 </Tabs>
 
-## Streaming 
+## 串流  {#streaming}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -296,12 +294,11 @@ curl -X POST 'http://0.0.0.0:4000/threads/{thread_id}/runs' \
 </TabItem>
 </Tabs>
 
-## [👉 Proxy API Reference](https://litellm-api.up.railway.app/#/assistants)
+## [👉 Proxy API 參考](https://litellm-api.up.railway.app/#/assistants) {#-proxy-api-referencehttpslitellm-apiuprailwayappassistants}
 
+## Azure OpenAI {#azure-openai}
 
-## Azure OpenAI
-
-**config**
+**設定**
 ```yaml
 assistant_settings:
   custom_llm_provider: azure
@@ -324,12 +321,11 @@ curl -X POST "http://localhost:4000/v1/assistants" \
   }'
 ```
 
-## OpenAI-Compatible APIs 
+## OpenAI 相容 API  {#openai-compatible-apis}
 
-To call openai-compatible Assistants API's (eg. Astra Assistants API), just add `openai/` to the model name: 
+若要呼叫相容於 openai 的 Assistants API（例如 Astra Assistants API），只要將 `openai/` 加到模型名稱即可： 
 
-
-**config**
+**設定**
 ```yaml
 assistant_settings:
   custom_llm_provider: openai

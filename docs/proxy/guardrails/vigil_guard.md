@@ -1,64 +1,64 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vigil Guard
+# Vigil Guard {#vigil-guard}
 
-Use [Vigil Guard](https://www.vigilguard.ai) as a LiteLLM proxy guardrail to evaluate chat input and model output before it is returned to your application.
+使用 [Vigil Guard](https://www.vigilguard.ai) 作為 LiteLLM proxy 防護欄，在回傳給您的應用程式之前評估聊天輸入與模型輸出。
 
-**Supported endpoints:** The Vigil Guard integration supports the chat completions endpoint (`/v1/chat/completions`).
+**支援的端點：** Vigil Guard 整合支援 chat completions 端點（`/v1/chat/completions`）。
 
-For Chat Completions, Vigil Guard scans request and response text. On post-call checks, LiteLLM also scans model-generated `tool_calls[].function.arguments`; if Vigil Guard returns `SANITIZED`, LiteLLM replaces the tool call arguments with the sanitized value before returning the response.
+對於 Chat Completions，Vigil Guard 會掃描請求與回應文字。在 post-call 檢查時，LiteLLM 也會掃描模型產生的 `tool_calls[].function.arguments`；如果 Vigil Guard 回傳 `SANITIZED`，LiteLLM 會在回傳回應前以已清理的值取代 tool call 參數。
 
-Static tool schemas and tool descriptions passed in `tools` are not scanned by this integration.
+透過 `tools` 傳入的靜態 tool schema 與 tool description 不會由此整合掃描。
 
-Vigil Guard Enterprise is an AI Detection & Response platform for securing LLM applications at runtime. It gives security and platform teams a policy layer for prompts, responses, and autonomous agent interactions, with support for prompt-injection defense, sensitive data protection, content moderation, semantic drift detection, and SIEM export.
+Vigil Guard Enterprise 是一個 AI Detection & Response 平台，可在執行階段保護 LLM 應用程式。它為 prompts、回應與自主代理程式互動提供一層政策，並支援 prompt-injection 防護、敏感資料保護、內容審核、semantic drift 偵測，以及 SIEM 匯出。
 
-Deploy Vigil Guard Enterprise on-premises, then point LiteLLM at the deployed API. The public installation guide provides a Docker-based deployment flow for Linux x86_64 hosts. See the [Vigil Guard installation guide](https://www.vigilguard.ai/install/) for current requirements and installation steps.
+先將 Vigil Guard Enterprise 部署於內部環境，然後將 LiteLLM 指向已部署的 API。公開安裝指南提供適用於 Linux x86_64 主機的 Docker-based 部署流程。請參閱 [Vigil Guard 安裝指南](https://www.vigilguard.ai/install/) 以取得目前需求與安裝步驟。
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider | [Vigil Guard](https://www.vigilguard.ai) |
-| LiteLLM guardrail value | `vigil_guard` |
-| Supported modes | `pre_call`, `post_call` |
-| Supported behavior | Allow, sanitize, or block content based on your Vigil Guard policy |
-| Default failure behavior | `fail_closed` |
-| Required credentials | Vigil Guard API key and API base URL |
-| Deployment | On-premises Vigil Guard Enterprise instance |
+| 提供者 | [Vigil Guard](https://www.vigilguard.ai) |
+| LiteLLM guardrail 值 | `vigil_guard` |
+| 支援的模式 | `pre_call`, `post_call` |
+| 支援的行為 | 根據您的 Vigil Guard 政策允許、清理或封鎖內容 |
+| 預設失敗行為 | `fail_closed` |
+| 需要的憑證 | Vigil Guard API 金鑰與 API base URL |
+| 部署 | 內部部署的 Vigil Guard Enterprise 執行個體 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Deploy or access Vigil Guard Enterprise
+### 1. 部署或存取 Vigil Guard Enterprise {#1-deploy-or-access-vigil-guard-enterprise}
 
-Use an existing Vigil Guard Enterprise deployment, or install one by following the [Vigil Guard installation guide](https://www.vigilguard.ai/install/).
+使用現有的 Vigil Guard Enterprise 部署，或依照 [Vigil Guard 安裝指南](https://www.vigilguard.ai/install/) 安裝一個。
 
-The public installer flow starts with:
+公開安裝程式流程從以下內容開始：
 
 ```shell
 curl -fsSL https://get.vigilguard.ai -o /tmp/install.sh && sudo bash /tmp/install.sh
 ```
 
-The installation guide lists the current minimum requirements, including Linux x86_64, Docker Engine with Compose v2, `30 GB` RAM, `70 GB` free disk, available ports `80` and `443`, internet access to Docker Hub, and `cosign` for image signature verification.
+安裝指南列出目前的最低需求，包括 Linux x86_64、支援 Compose v2 的 Docker Engine、`30 GB` RAM、`70 GB` 可用磁碟空間、可用的 `80` 與 `443` 連接埠、可存取 Docker Hub 的網際網路，以及用於映像簽章驗證的 `cosign`。
 
-After installation, use the deployed API hostname as `VIGIL_GUARD_URL`. For example, if your deployment hostname is `vge.company.com`, the API URL is typically:
+安裝完成後，請使用已部署的 API 主機名稱作為 `VIGIL_GUARD_URL`。例如，如果您的部署主機名稱是 `vge.company.com`，API URL 通常為：
 
 ```shell
 export VIGIL_GUARD_URL="https://api.vge.company.com"
 ```
 
-### 2. Get Vigil Guard credentials
+### 2. 取得 Vigil Guard 憑證 {#2-get-vigil-guard-credentials}
 
-You need:
+您需要：
 
-- `VIGIL_GUARD_API_KEY`: your Vigil Guard API key
-- `VIGIL_GUARD_URL`: your Vigil Guard API base URL
+- `VIGIL_GUARD_API_KEY`：您的 Vigil Guard API 金鑰
+- `VIGIL_GUARD_URL`：您的 Vigil Guard API base URL
 
-For Vigil Guard product information, visit [https://www.vigilguard.ai](https://www.vigilguard.ai). For support, contact `contact@vigilguard.ai`.
+如需 Vigil Guard 產品資訊，請造訪 [https://www.vigilguard.ai](https://www.vigilguard.ai)。如需支援，請聯絡 `contact@vigilguard.ai`。
 
-### 3. Define the guardrail in `config.yaml`
+### 3. 在 `config.yaml` 中定義防護欄 {#3-define-the-guardrail-in-configyaml}
 
-Define your guardrail under the `guardrails` section.
+請在 `guardrails` 區段下定義您的防護欄。
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -76,12 +76,12 @@ guardrails:
       api_base: os.environ/VIGIL_GUARD_URL
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** the LLM call on **user input**.
-- `post_call` Run **after** the LLM call on **model output**.
+- `pre_call` 在 LLM 呼叫前於**使用者輸入**上執行。
+- `post_call` 在 LLM 呼叫後於**模型輸出**上執行。
 
-### 4. Set environment variables
+### 4. 設定環境變數 {#4-set-environment-variables}
 
 ```shell
 export VIGIL_GUARD_API_KEY="your-vigil-guard-api-key"
@@ -89,18 +89,18 @@ export VIGIL_GUARD_URL="https://api.your-hostname"
 export OPENAI_API_KEY="your-openai-api-key"
 ```
 
-### 5. Start LiteLLM Gateway
+### 5. 啟動 LiteLLM Gateway {#5-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 6. Test a request
+### 6. 測試請求 {#6-test-a-request}
 
-The blocked example assumes your Vigil Guard policy is configured to block prompt-injection attempts. The exact block message can vary based on your policy configuration.
+被封鎖的範例假設您的 Vigil Guard 政策已設定為封鎖 prompt-injection 嘗試。實際的封鎖訊息可能會因您的政策設定而異。
 
 <Tabs>
-<TabItem label="Blocked request" value="blocked">
+<TabItem label="被封鎖的請求" value="blocked">
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -115,7 +115,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure:
+失敗時的預期回應：
 
 ```json
 {
@@ -130,7 +130,7 @@ Expected response on failure:
 
 </TabItem>
 
-<TabItem label="Allowed request" value="allowed">
+<TabItem label="允許的請求" value="allowed">
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -145,7 +145,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -168,11 +168,11 @@ Expected response:
 </TabItem>
 </Tabs>
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Input and Output Guardrails
+### 輸入與輸出防護欄 {#input-and-output-guardrails}
 
-Use separate guardrail entries when you want to scan user input and model output.
+當您想要掃描使用者輸入與模型輸出時，請使用分開的防護欄條目。
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -191,7 +191,7 @@ guardrails:
       api_base: os.environ/VIGIL_GUARD_URL
 ```
 
-Then attach both guardrails to a request:
+然後將這兩個防護欄附加到請求：
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -206,9 +206,9 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-### Run by Default
+### 預設執行 {#run-by-default}
 
-Set `default_on: true` to run the guardrail without requiring clients to pass the guardrail name in every request.
+將 `default_on: true` 設為可在不要求用戶端於每個請求中傳入防護欄名稱的情況下執行該防護欄。
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -221,11 +221,11 @@ guardrails:
       default_on: true
 ```
 
-### Fail-Open Mode
+### Fail-Open 模式 {#fail-open-mode}
 
-By default, Vigil Guard fails closed. If the guardrail backend cannot be reached, LiteLLM returns an error instead of sending unscanned content to the model.
+預設情況下，Vigil Guard 會 fail closed。如果無法連上防護欄後端，LiteLLM 會回傳錯誤，而不是將未掃描的內容傳送給模型。
 
-Set `unreachable_fallback: fail_open` to allow requests to continue when the guardrail backend is unreachable.
+將 `unreachable_fallback: fail_open` 設為在防護欄後端無法連線時仍允許請求繼續。
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -239,10 +239,10 @@ guardrails:
 ```
 
 :::caution
-`unreachable_fallback: fail_open` only applies when the Vigil Guard backend cannot be reached or returns an invalid guardrail response. It does not override a policy block decision.
+`unreachable_fallback: fail_open` 僅適用於 Vigil Guard 後端無法連線或回傳無效的防護欄回應時。它不會覆寫政策封鎖決策。
 :::
 
-## Supported Params
+## 支援的參數 {#supported-params}
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -256,27 +256,27 @@ guardrails:
       unreachable_fallback: fail_closed
 ```
 
-| Parameter | Env Variable | Default | Description |
+| 參數 | 環境變數 | 預設值 | 說明 |
 |-----------|--------------|---------|-------------|
-| `guardrail` | - | required | Must be set to `vigil_guard`. |
-| `mode` | - | required | Supported values: `pre_call`, `post_call`. |
-| `api_key` | `VIGIL_GUARD_API_KEY` | required | Vigil Guard API key. |
-| `api_base` | `VIGIL_GUARD_URL` | required | Vigil Guard API base URL. |
-| `default_on` | - | `false` | When `true`, LiteLLM runs this guardrail on every request without requiring clients to pass the guardrail name. |
-| `unreachable_fallback` | - | `fail_closed` | Use `fail_closed` to block on backend failure, or `fail_open` to allow the request to continue when the backend is unreachable. |
+| `guardrail` | - | 必填 | 必須設為 `vigil_guard`。 |
+| `mode` | - | 必填 | 支援的值：`pre_call`、`post_call`。 |
+| `api_key` | `VIGIL_GUARD_API_KEY` | 必填 | Vigil Guard API 金鑰。 |
+| `api_base` | `VIGIL_GUARD_URL` | 必填 | Vigil Guard API base URL。 |
+| `default_on` | - | `false` | 當 `true` 時，LiteLLM 會在每個請求上執行此防護欄，而不要求用戶端傳入防護欄名稱。 |
+| `unreachable_fallback` | - | `fail_closed` | 使用 `fail_closed` 以在後端失敗時封鎖，或使用 `fail_open` 以在後端無法連線時允許請求繼續。 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-| Scenario | Behavior |
+| 情境 | 行為 |
 |----------|----------|
-| Vigil Guard allows the content | LiteLLM continues the request normally. |
-| Vigil Guard sanitizes the content | LiteLLM forwards the sanitized content. |
-| Vigil Guard blocks the content | LiteLLM returns a guardrail error with HTTP `400`. |
-| Backend failure with `unreachable_fallback: fail_closed` | LiteLLM fails the request instead of sending unscanned content. |
-| Backend failure with `unreachable_fallback: fail_open` | LiteLLM logs the backend failure and allows the request to continue. |
+| Vigil Guard 允許內容 | LiteLLM 會正常繼續請求。 |
+| Vigil Guard 清理內容 | LiteLLM 會轉送已清理的內容。 |
+| Vigil Guard 封鎖內容 | LiteLLM 會回傳帶有 HTTP `400` 的防護欄錯誤。 |
+| `unreachable_fallback: fail_closed` 發生後端失敗 | LiteLLM 會讓請求失敗，而不是傳送未掃描的內容。 |
+| `unreachable_fallback: fail_open` 發生後端失敗 | LiteLLM 會記錄後端失敗並允許請求繼續。 |
 
-## Further Reading
+## 延伸閱讀 {#further-reading}
 
-- [LiteLLM Guardrails Quick Start](./quick_start)
-- [Control Guardrails per API Key](./quick_start#-control-guardrails-per-api-key)
+- [LiteLLM Guardrails 快速開始](./quick_start)
+- [依 API 金鑰控制防護欄](./quick_start#-control-guardrails-per-api-key)
 - [Vigil Guard](https://www.vigilguard.ai)

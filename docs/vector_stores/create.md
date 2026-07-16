@@ -1,31 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /vector_stores - Create Vector Store
+# /vector_stores - 建立向量儲存庫 {#vector_stores---create-vector-store}
 
-Create a vector store which can be used to store and search document chunks for retrieval-augmented generation (RAG) use cases.
+建立可用於儲存與搜尋文件區塊的向量儲存庫，以支援檢索增強生成（RAG）用例。
 
-## Overview
+## 概覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | Tracked per vector store operation |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Support LLM Providers (OpenAI `/vector_stores` API) | **OpenAI** | Full vector stores API support across providers |
-| Support LLM Providers (Passthrough API) | [**Azure AI**](/docs/providers/azure_ai/azure_ai_vector_stores_passthrough) | Full vector stores API support across providers |
-| Support LLM Providers (Dataset Management) | [**RAGFlow**](/docs/providers/ragflow_vector_store.md) | Dataset creation and management (search not supported) |
+| 成本追蹤 | ✅ | 依每個向量儲存庫操作追蹤 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 終端使用者追蹤 | ✅ | |
+| 支援 LLM 提供者（OpenAI `/vector_stores` API） | **OpenAI** | 跨提供者完整支援向量儲存庫 API |
+| 支援 LLM 提供者（Passthrough API） | [**Azure AI**](/docs/providers/azure_ai/azure_ai_vector_stores_passthrough) | 跨提供者完整支援向量儲存庫 API |
+| 支援 LLM 提供者（資料集管理） | [**RAGFlow**](/docs/providers/ragflow_vector_store.md) | 支援資料集建立與管理（不支援搜尋） |
 
-The proxy also supports **retrieve**, **list**, **update**, and **delete** for vector stores (OpenAI-compatible). See [Vector store management and routing on the proxy](#vector-store-management-and-routing-on-the-proxy) for `curl` examples and provider routing.
+此 proxy 也支援向量儲存庫的 **retrieve**、**list**、**update** 與 **delete**（OpenAI 相容）。請參閱 [Proxy 上的向量儲存庫管理與路由](#vector-store-management-and-routing-on-the-proxy) 以取得 `curl` 範例與提供者路由。
 
-## Usage
+## 使用方式 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 <Tabs>
-<TabItem value="basic" label="Basic Usage">
+<TabItem value="basic" label="基本用法">
 
-#### Async example
+#### 非同步範例 {#async-example}
 ```python showLineNumbers title="Create Vector Store - Basic"
 import litellm
 
@@ -36,7 +36,7 @@ response = await litellm.vector_stores.acreate(
 print(response)
 ```
 
-#### Sync example
+#### 同步範例 {#sync-example}
 ```python showLineNumbers title="Create Vector Store - Sync"
 import litellm
 
@@ -49,9 +49,9 @@ print(response)
 
 </TabItem>
 
-<TabItem value="advanced" label="Advanced Configuration">
+<TabItem value="advanced" label="進階設定">
 
-#### With expiration and chunking strategy
+#### 搭配到期與分塊策略 {#with-expiration-and-chunking-strategy}
 ```python showLineNumbers title="Create Vector Store - Advanced"
 import litellm
 
@@ -79,9 +79,9 @@ print(response)
 
 </TabItem>
 
-<TabItem value="openai-provider" label="OpenAI Provider">
+<TabItem value="openai-provider" label="OpenAI 提供者">
 
-#### Using OpenAI provider explicitly
+#### 明確使用 OpenAI 提供者 {#using-openai-provider-explicitly}
 ```python showLineNumbers title="Create Vector Store - OpenAI Provider"
 import litellm
 import os
@@ -100,12 +100,12 @@ print(response)
 </TabItem>
 </Tabs>
 
-### LiteLLM Proxy Server
+### LiteLLM Proxy 伺服器 {#litellm-proxy-server}
 
 <Tabs>
-<TabItem value="proxy-setup" label="Setup & Usage">
+<TabItem value="proxy-setup" label="設定與使用">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -118,13 +118,13 @@ general_settings:
   # Vector store settings can be added here if needed
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it with OpenAI SDK!
+3. 使用 OpenAI SDK 測試！
 
 ```python showLineNumbers title="OpenAI SDK via LiteLLM Proxy"
 from openai import OpenAI
@@ -144,7 +144,7 @@ print(vector_store)
 
 </TabItem>
 
-<TabItem value="curl-proxy" label="curl (create)">
+<TabItem value="curl-proxy" label="curl（建立）">
 
 ```bash showLineNumbers title="Create Vector Store via curl"
 curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores' \
@@ -173,11 +173,11 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores' \
 
 </TabItem>
 
-<TabItem value="curl-management" label="curl (retrieve, list, update, delete)">
+<TabItem value="curl-management" label="curl（retrieve、list、update、delete）">
 
-Use the same base URL and API key as for create. Replace `vs_abc123` with your vector store id.
+建立時使用相同的 base URL 與 API 金鑰。將 `vs_abc123` 替換為您的向量儲存庫 ID。
 
-**Retrieve**
+**擷取**
 
 ```bash
 curl -L 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123' \
@@ -185,7 +185,7 @@ curl -L 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123' \
   -H 'Authorization: Bearer sk-1234'
 ```
 
-**List** (optional query params: `after`, `before`, `limit`, `order`)
+**List**（可選查詢參數：`after`、`before`、`limit`、`order`）
 
 ```bash
 curl -L 'http://0.0.0.0:4000/v1/vector_stores?limit=20&order=desc' \
@@ -193,7 +193,7 @@ curl -L 'http://0.0.0.0:4000/v1/vector_stores?limit=20&order=desc' \
   -H 'Authorization: Bearer sk-1234'
 ```
 
-**Update** (`POST` with JSON body)
+**Update**（使用 `POST` JSON 主體）
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123' \
@@ -202,7 +202,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123' \
   -d '{ "name": "Renamed store", "metadata": { "env": "staging" } }'
 ```
 
-**Delete**
+**刪除**
 
 ```bash
 curl -L -X DELETE 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123' \
@@ -210,15 +210,15 @@ curl -L -X DELETE 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123' \
   -H 'Authorization: Bearer sk-1234'
 ```
 
-See [Vector store management and routing on the proxy](#vector-store-management-and-routing-on-the-proxy) for provider routing details and OpenAI API references.
+請參閱 [Proxy 上的向量儲存庫管理與路由](#vector-store-management-and-routing-on-the-proxy) 以取得提供者路由詳細資訊與 OpenAI API 參考。
 
 </TabItem>
 </Tabs>
 
-### OpenAI SDK (Standalone)
+### OpenAI SDK（獨立） {#openai-sdk-standalone}
 
 <Tabs>
-<TabItem value="openai-direct" label="Direct OpenAI Usage">
+<TabItem value="openai-direct" label="直接使用 OpenAI">
 
 ```python showLineNumbers title="OpenAI SDK Direct"
 from openai import OpenAI
@@ -235,15 +235,15 @@ print(vector_store)
 </TabItem>
 </Tabs>
 
-## Vector store management and routing on the proxy
+## Proxy 上的向量儲存庫管理與路由 {#vector-store-management-and-routing-on-the-proxy}
 
-Besides **create** (`POST /v1/vector_stores` or `/vector_stores`), the LiteLLM proxy exposes OpenAI-compatible **retrieve**, **list**, **update**, and **delete**. Paths work **with or without** the `/v1` prefix (for example `/v1/vector_stores/...` and `/vector_stores/...`).
+除了 **create**（`POST /v1/vector_stores` 或 `/vector_stores`）之外，LiteLLM proxy 也提供相容 OpenAI 的 **retrieve**、**list**、**update** 與 **delete**。路徑可**有或沒有** `/v1` 前綴（例如 `/v1/vector_stores/...` 與 `/vector_stores/...`）。
 
-For **search**, see [Search vector store](./search.md). For **files** on a store, see [Vector store files](../vector_store_files.md).
+關於 **search**，請參閱 [Search vector store](./search.md)。關於儲存庫上的 **files**，請參閱 [Vector store files](../vector_store_files.md)。
 
-### Authentication
+### 驗證 {#authentication}
 
-Use your LiteLLM proxy virtual key with either:
+請使用您的 LiteLLM proxy virtual key，搭配以下任一方式：
 
 ```bash
 -H 'Authorization: Bearer sk-1234'
@@ -251,26 +251,26 @@ Use your LiteLLM proxy virtual key with either:
 -H 'x-litellm-api-key: sk-1234'
 ```
 
-### Provider routing
+### 提供者路由 {#provider-routing}
 
-LiteLLM automatically selects the vector store provider from the request context — no extra query parameters needed:
+LiteLLM 會自動根據請求內容選擇向量儲存庫提供者——不需要額外的查詢參數：
 
-- **LiteLLM-managed stores** — If `vector_store_id` is a LiteLLM-managed store, the proxy resolves the provider from the registry (`litellm_params` stored in the database).
-- **Model-based routing** — If the request includes a `model` matching a configured deployment/model group, credentials come from that deployment.
-- **SDK default** — If neither applies, the LiteLLM SDK default for that call is used (e.g. `openai`).
+- **LiteLLM 管理的儲存庫** — 如果 `vector_store_id` 是 LiteLLM 管理的儲存庫，proxy 會從登錄資料中解析提供者（`litellm_params` 儲存在資料庫中）。
+- **以模型為基礎的路由** — 如果請求包含與已設定的 deployment/model 群組相符的 `model`，認證會來自該 deployment。
+- **SDK 預設值** — 如果上述都不適用，則會使用該次呼叫的 LiteLLM SDK 預設值（例如 `openai`）。
 
-### OpenAI API reference (management operations)
+### OpenAI API 參考（管理操作） {#openai-api-reference-management-operations}
 
 - [Retrieve vector store](https://platform.openai.com/docs/api-reference/vector-stores/retrieve)
 - [List vector stores](https://platform.openai.com/docs/api-reference/vector-stores/list)
-- [Modify vector store](https://platform.openai.com/docs/api-reference/vector-stores/modify) — on the LiteLLM proxy, modify is **`POST`** to `/v1/vector_stores/{vector_store_id}` with a JSON body.
+- [Modify vector store](https://platform.openai.com/docs/api-reference/vector-stores/modify) — 在 LiteLLM proxy 上，modify 會以 **`POST`** 搭配 JSON 主體執行 **`/v1/vector_stores/{vector_store_id}`**。
 - [Delete vector store](https://platform.openai.com/docs/api-reference/vector-stores/delete)
 
-## Request Format
+## 請求格式 {#request-format}
 
-The request body follows OpenAI's vector stores API format.
+請求主體遵循 OpenAI 的向量儲存庫 API 格式。
 
-#### Example request body
+#### 請求主體範例 {#example-request-body}
 
 ```json
 {
@@ -294,22 +294,22 @@ The request body follows OpenAI's vector stores API format.
 }
 ```
 
-#### Optional Fields
-- **name** (string): The name of the vector store.
-- **file_ids** (array of strings): A list of File IDs that the vector store should use. Useful for tools like `file_search` that can access files.
-- **expires_after** (object): The expiration policy for the vector store.
-  - **anchor** (string): Anchor timestamp after which the expiration policy applies. Supported anchors: `last_active_at`.
-  - **days** (integer): The number of days after the anchor time that the vector store will expire.
-- **chunking_strategy** (object): The chunking strategy used to chunk the file(s). If not set, will use the `auto` strategy.
-  - **type** (string): Always `static`.
-  - **static** (object): The static chunking strategy.
-    - **max_chunk_size_tokens** (integer): The maximum number of tokens in each chunk. The default value is `800`. The minimum value is `100` and the maximum value is `4096`.
-    - **chunk_overlap_tokens** (integer): The number of tokens that overlap between chunks. The default value is `400`.
-- **metadata** (object): Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format. Keys can be a maximum of 64 characters long and values can be a maximum of 512 characters long.
+#### 可選欄位 {#optional-fields}
+- **name**（字串）：向量儲存庫的名稱。
+- **file_ids**（字串陣列）：向量儲存庫應使用的 File ID 清單。對可存取檔案的工具（例如 `file_search`）很有用。
+- **expires_after**（物件）：向量儲存庫的到期政策。
+  - **anchor**（字串）：到期政策開始生效的錨點時間戳記。支援的錨點：`last_active_at`。
+  - **days**（整數）：從錨點時間起算，向量儲存庫將到期的天數。
+- **chunking_strategy**（物件）：用於將檔案分塊的分塊策略。若未設定，將使用 `auto` 策略。
+  - **type**（字串）：一律為 `static`。
+  - **static**（物件）：靜態分塊策略。
+    - **max_chunk_size_tokens**（整數）：每個區塊中的最大 token 數。預設值為 `800`。最小值為 `100`，最大值為 `4096`。
+    - **chunk_overlap_tokens**（整數）：區塊之間重疊的 token 數。預設值為 `400`。
+- **metadata**（物件）：可附加到物件上的 16 組鍵值對集合。這對於以結構化格式儲存物件的額外資訊很有用。鍵的最大長度為 64 個字元，值的最大長度為 512 個字元。
 
-## Response Format
+## 回應格式 {#response-format}
 
-#### Example Response
+#### 回應範例 {#example-response}
 
 ```json
 {
@@ -339,28 +339,28 @@ The request body follows OpenAI's vector stores API format.
 }
 ```
 
-#### Response Fields
+#### 回應欄位 {#response-fields}
 
-- **id** (string): The identifier, which can be referenced in API endpoints.
-- **object** (string): The object type, which is always `vector_store`.
-- **created_at** (integer): The Unix timestamp (in seconds) for when the vector store was created.
-- **name** (string): The name of the vector store.
-- **bytes** (integer): The total number of bytes used by the files in the vector store.
-- **file_counts** (object): The file counts for the vector store.
-  - **in_progress** (integer): The number of files that are currently being processed.
-  - **completed** (integer): The number of files that have been successfully processed.
-  - **failed** (integer): The number of files that failed to process.
-  - **cancelled** (integer): The number of files that were cancelled.
-  - **total** (integer): The total number of files.
-- **status** (string): The status of the vector store, which can be either `expired`, `in_progress`, or `completed`. A status of `completed` indicates that the vector store is ready for use.
-- **expires_after** (object or null): The expiration policy for the vector store.
-- **expires_at** (integer or null): The Unix timestamp (in seconds) for when the vector store will expire.
-- **last_active_at** (integer or null): The Unix timestamp (in seconds) for when the vector store was last active.
-- **metadata** (object or null): Set of 16 key-value pairs that can be attached to an object.
+- **id**（字串）：可在 API 端點中參照的識別碼。
+- **object**（字串）：物件類型，一律為 `vector_store`。
+- **created_at**（整數）：建立向量儲存庫時的 Unix 時間戳記（以秒為單位）。
+- **name**（字串）：向量儲存庫的名稱。
+- **bytes**（整數）：向量儲存庫中檔案使用的總位元組數。
+- **file_counts**（物件）：向量儲存庫的檔案數量。
+  - **in_progress**（整數）：目前正在處理中的檔案數量。
+  - **completed**（整數）：已成功處理的檔案數量。
+  - **failed**（整數）：處理失敗的檔案數量。
+  - **cancelled**（整數）：已取消的檔案數量。
+  - **total**（整數）：檔案總數。
+- **status**（字串）：向量儲存庫的狀態，可為 `expired`、`in_progress` 或 `completed`。`completed` 狀態表示向量儲存庫已可使用。
+- **expires_after**（物件或 null）：向量儲存庫的到期政策。
+- **expires_at**（整數或 null）：向量儲存庫到期時的 Unix 時間戳記（以秒為單位）。
+- **last_active_at**（整數或 null）：向量儲存庫最後啟用時的 Unix 時間戳記（以秒為單位）。
+- **metadata**（物件或 null）：可附加到物件上的 16 組鍵值對集合。
 
-## Mock Response Testing
+## 模擬回應測試 {#mock-response-testing}
 
-For testing purposes, you can use mock responses:
+為了測試，您可以使用模擬回應：
 
 ```python showLineNumbers title="Mock Response Example"
 import litellm
@@ -387,4 +387,4 @@ response = await litellm.vector_stores.acreate(
     mock_response=mock_response
 )
 print(response)
-``` 
+```

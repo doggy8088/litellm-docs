@@ -1,15 +1,15 @@
-# LiteLLM - Local Caching
+# LiteLLM - 本機快取 {#litellm---local-caching}
 
-## Caching `completion()` and `embedding()` calls when switched on
+## 啟用時的 `completion()` 與 `embedding()` 呼叫快取 {#caching-completion-and-embedding-calls-when-switched-on}
 
-liteLLM implements exact match caching and supports the following Caching:
-* In-Memory Caching [Default]
-* Redis Caching Local
-* Redis Caching Hosted
+liteLLM 實作精確匹配快取，並支援以下快取：
+* 記憶體內快取 [預設]
+* Redis 本機快取
+* Redis 主機式快取
 
-## Quick Start Usage - Completion
-Caching - cache
-Keys in the cache are `model`, the following example will lead to a cache hit
+## 快速上手使用 - Completion {#quick-start-usage---completion}
+快取 - cache
+快取中的鍵是 `model`，以下範例將會命中快取
 ```python
 import litellm
 from litellm import completion
@@ -31,8 +31,8 @@ response2 = completion(
 # response1 == response2, response 1 is cached
 ```
 
-## Custom Key-Value Pairs 
-Add custom key-value pairs to your cache. 
+## 自訂鍵值對  {#custom-key-value-pairs}
+將自訂鍵值對加入您的快取。 
 
 ```python 
 from litellm.caching.caching import Cache
@@ -43,10 +43,10 @@ cache.add_cache(cache_key="test-key", result="1234")
 cache.get_cache(cache_key="test-key")
 ```
 
-## Caching with Streaming 
-LiteLLM can cache your streamed responses for you
+## 串流快取  {#caching-with-streaming}
+LiteLLM 可以為您快取串流回應
 
-### Usage
+### 使用方式 {#usage}
 ```python
 import litellm
 from litellm import completion
@@ -70,9 +70,9 @@ for chunk in response2:
     print(chunk)
 ```
 
-## Usage - Embedding()
-1. Caching - cache
-Keys in the cache are `model`, the following example will lead to a cache hit
+## 使用方式 - Embedding() {#usage---embedding}
+1. 快取 - cache
+快取中的鍵是 `model`，以下範例將會命中快取
 ```python
 import time
 import litellm

@@ -1,27 +1,27 @@
-# Google Programmable Search Engine (PSE)
+# Google 可程式化搜尋引擎（PSE） {#google-programmable-search-engine-pse}
 
-**Get API Key:** [Google Cloud Console](https://console.cloud.google.com/apis/credentials)  
-**Create Search Engine:** [Programmable Search Engine](https://programmablesearchengine.google.com/)
+**取得 API 金鑰：** [Google Cloud Console](https://console.cloud.google.com/apis/credentials)  
+**建立搜尋引擎：** [Programmable Search Engine](https://programmablesearchengine.google.com/)
 
-## Setup
+## 設定 {#setup}
 
-1. Go to [Google Developers Programmable Search Engine](https://programmablesearchengine.google.com/) and log in or create an account
-2. Click the **Add** button in the control panel
-3. Enter a search engine name and configure properties:
-   - Choose which sites to search (entire web or specific sites)
-   - Set language and other preferences
-   - Verify you're not a robot
-4. Click **Create** button
-5. Once created, you'll see:
-   - **Search engine ID (cx)** - Copy this for `GOOGLE_PSE_ENGINE_ID`
-   - Instructions to get your API key
-6. Generate API key:
-   - Go to [Google Cloud Console - Credentials](https://console.cloud.google.com/apis/credentials)
-   - Create a new API key or use existing one
-   - Enable **Custom Search API** for your project
-   - Copy the API key for `GOOGLE_PSE_API_KEY`
+1. 前往 [Google Developers Programmable Search Engine](https://programmablesearchengine.google.com/) 並登入或建立帳戶
+2. 在控制台中點擊 **Add** 按鈕
+3. 輸入搜尋引擎名稱並設定屬性：
+   - 選擇要搜尋的網站（整個網路或特定網站）
+   - 設定語言及其他偏好設定
+   - 驗證您不是機器人
+4. 點擊 **Create** 按鈕
+5. 建立完成後，您會看到：
+   - **Search engine ID (cx)** - 複製此項供 `GOOGLE_PSE_ENGINE_ID` 使用
+   - 取得 API 金鑰的說明
+6. 產生 API 金鑰：
+   - 前往 [Google Cloud Console - Credentials](https://console.cloud.google.com/apis/credentials)
+   - 建立新的 API 金鑰或使用現有的
+   - 為您的專案啟用 **Custom Search API**
+   - 複製 API 金鑰供 `GOOGLE_PSE_API_KEY` 使用
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Google PSE Search"
 import os
@@ -37,9 +37,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -56,7 +56,7 @@ search_tools:
       search_engine_id: os.environ/GOOGLE_PSE_ENGINE_ID
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -64,7 +64,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/google-search \
@@ -76,7 +76,7 @@ curl http://0.0.0.0:4000/v1/search/google-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 提供者專屬參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Google PSE Search with Provider-specific Parameters"
 import os
@@ -98,4 +98,3 @@ response = search(
     fileType="pdf"                   # File type to restrict results to
 )
 ```
-

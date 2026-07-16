@@ -1,32 +1,32 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# File Search in the Responses API
+# Responses API 中的檔案搜尋 {#file-search-in-the-responses-api}
 
-LiteLLM now supports `file_search` in the Responses API across both:
-- providers that support it natively (like OpenAI / Azure), and
-- providers that do not (like Anthropic, Bedrock, and other non-native providers) via emulation.
+LiteLLM 現在支援 `file_search`，適用於以下兩種 Responses API：
+- 原生支援此功能的提供者（例如 OpenAI / Azure），以及
+- 不原生支援此功能的提供者（例如 Anthropic、Bedrock 及其他非原生提供者），透過模擬方式支援。
 
-## What this is
+## 這是什麼 {#what-this-is}
 
-`file_search` lets models retrieve grounded context from your vector stores and answer with citations.
-LiteLLM keeps one OpenAI-compatible output shape while routing requests through either native passthrough or an emulated fallback.
+`file_search` 可讓模型從您的向量儲存區擷取有依據的內容，並附上引用來回答。
+LiteLLM 會維持單一 OpenAI 相容的輸出格式，同時將請求透過原生轉送或模擬備援路徑進行路由。
 
-Two paths are covered:
+涵蓋兩條路徑：
 
-| Path | When it runs | What LiteLLM does |
+| 路徑 | 執行時機 | LiteLLM 的處理方式 |
 | --- | --- | --- |
-| **Native passthrough** | Provider natively supports `file_search` (OpenAI, Azure) | Decodes unified vector store ID → forwards to provider as-is |
-| **Emulated fallback** | Provider doesn't support `file_search` (Anthropic, Bedrock, etc.) | Converts to a function tool → intercepts tool call → runs vector search → synthesizes OpenAI-format output |
+| **原生轉送** | 提供者原生支援 `file_search`（OpenAI、Azure） | 解碼統一的 vector store ID → 原樣轉發給提供者 |
+| **模擬備援** | 提供者不支援 `file_search`（Anthropic、Bedrock 等） | 轉換為函式工具 → 攔截工具呼叫 → 執行向量搜尋 → 合成 OpenAI 格式輸出 |
 
-In `tools[].vector_store_ids`, LiteLLM accepts both provider-native IDs (e.g. `vs_...`) **and** **managed vector store unified IDs** (URL-safe base64 strings from the proxy managed-vector flow), e.g. `litellm.responses(..., tools=[{"type": "file_search", "vector_store_ids": ["bGl0ZWxsbV9wcm94eT..."]}])`.
+在 `tools[].vector_store_ids` 中，LiteLLM 同時接受提供者原生 ID（例如 `vs_...`）**以及** **受管理向量儲存區統一 ID**（來自 proxy managed-vector 流程的 URL-safe base64 字串），例如 `litellm.responses(..., tools=[{"type": "file_search", "vector_store_ids": ["bGl0ZWxsbV9wcm94eT..."]}])`。
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy" default>
 
-### 1. Setup `config.yaml`
+### 1. 設定 `config.yaml` {#1-setup-configyaml}
 
 ```yaml title="config.yaml"
 model_list:
@@ -41,13 +41,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 3. Call Responses API with `file_search`
+### 3. 使用 `file_search` 呼叫 Responses API {#3-call-responses-api-with-file_search}
 
 ```python title="Proxy call"
 from openai import OpenAI
@@ -70,7 +70,7 @@ print(response.output)
 </TabItem>
 <TabItem value="sdk" label="LiteLLM SDK">
 
-### 1. Install + set keys
+### 1. 安裝 + 設定金鑰 {#1-install--set-keys}
 
 ```bash
 uv add litellm
@@ -78,7 +78,7 @@ export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-### 2. Call Responses API with `file_search`
+### 2. 使用 `file_search` 呼叫 Responses API {#2-call-responses-api-with-file_search}
 
 ```python title="SDK call"
 import litellm
@@ -99,40 +99,36 @@ print(response.output)
 </TabItem>
 </Tabs>
 
-### Behavior Matrix
+### 行為矩陣 {#behavior-matrix}
 
-| Path | SDK model | Proxy model | Behavior |
+| 路徑 | SDK model | Proxy model | 行為 |
 | --- | --- | --- | --- |
-| Native passthrough | `openai/gpt-4.1` | `gpt-4.1` | Provider executes native `file_search` |
-| Emulated fallback | `anthropic/claude-sonnet-4-5` | `claude-sonnet` | LiteLLM converts to function tool and synthesizes OpenAI-format output |
+| 原生轉送 | `openai/gpt-4.1` | `gpt-4.1` | 提供者執行原生 `file_search` |
+| 模擬備援 | `anthropic/claude-sonnet-4-5` | `claude-sonnet` | LiteLLM 轉換為函式工具並合成 OpenAI 格式輸出 |
 
-
-
-## Architecture Diagram
+## 架構圖 {#architecture-diagram}
 
 ```mermaid
 flowchart TD
-    A[Client SDK or Proxy Caller] --> B[LiteLLM Responses API]
-    B --> C{Provider supports native file_search?}
+    A[用戶端 SDK 或 Proxy 呼叫端] --> B[LiteLLM Responses API]
+    B --> C{提供者支援原生 file_search 嗎？}
 
-    C -->|Yes| D[Native passthrough path]
-    D --> D1[Decode unified vector_store_id if needed]
-    D1 --> D2[Forward request to provider unchanged]
-    D2 --> D3[Provider performs file_search]
-    D3 --> Z[OpenAI-compatible output]
+    C -->|是| D[原生轉送路徑]
+    D --> D1[如有需要，解碼統一的 vector_store_id]
+    D1 --> D2[將請求原樣轉發給提供者]
+    D2 --> D3[提供者執行 file_search]
+    D3 --> Z[OpenAI 相容輸出]
 
-    C -->|No| E[Emulated fallback path]
-    E --> E1[Convert file_search to litellm_file_search function tool]
-    E1 --> E2[First model call returns tool call with one or more queries]
-    E2 --> E3[LiteLLM executes vector search for each query]
-    E3 --> E4[Second model call with tool_result context]
-    E4 --> E5[Synthesize file_search_call + message + citations]
-    E5 --> Z[OpenAI-compatible output]
+    C -->|否| E[模擬備援路徑]
+    E --> E1[將 file_search 轉換為 litellm_file_search 函式工具]
+    E1 --> E2[第一次模型呼叫回傳包含一個或多個查詢的工具呼叫]
+    E2 --> E3[LiteLLM 對每個查詢執行向量搜尋]
+    E3 --> E4[帶有 tool_result 內容的第二次模型呼叫]
+    E4 --> E5[合成 file_search_call + message + 引用]
+    E5 --> Z[OpenAI 相容輸出]
 ```
 
-
-
-## Prerequisites
+## 先決條件 {#prerequisites}
 
 ```bash
 uv tool install 'litellm[proxy]'
@@ -141,12 +137,11 @@ export ANTHROPIC_API_KEY="sk-ant-..."  # for emulated path
 ```
 
 
+## 範例回應格式 {#example-response-shape}
 
-## Example response shape
+## 驗證輸出格式 {#validating-the-output-format}
 
-## Validating the Output Format
-
-Regardless of which path ran, the response always follows the OpenAI Responses API format:
+無論執行哪條路徑，回應都會遵循 OpenAI Responses API 格式：
 
 ```json
 {
@@ -180,7 +175,7 @@ Regardless of which path ran, the response always follows the OpenAI Responses A
 }
 ```
 
-**Validation script:**
+**驗證腳本：**
 
 ```python showLineNumbers title="Validate response structure"
 def validate_file_search_response(response):
@@ -217,25 +212,22 @@ validate_file_search_response(response)
 ```
 
 
+## 問答 {#qa}
 
-## Q&A
+- **為什麼我會看到 `UnsupportedParamsError`？** 這通常表示 `file_search` 已傳遞給不原生支援它的提供者，而模擬無法正確路由。請檢查：
+  - model 字串是否有效（例如，`anthropic/claude-sonnet-4-5`）。
+  - `custom_llm_provider` 是否正確解析，讓 LiteLLM 能載入提供者設定。
+- **為什麼向量搜尋沒有回傳結果？** 常見原因：
+  - 向量儲存區 ID 錯誤，或未附加任何檔案。
+  - 在 LiteLLM 管理的儲存區中，檔案擷取尚未完成（`status != completed`）。
+  - 查詢條件太窄；請嘗試更廣泛的查詢。
+- **為什麼我在向量儲存區呼叫時收到 `403 Access denied`？** 呼叫端沒有該向量儲存區的存取權限。
+  - 該儲存區可能屬於其他團隊。
+  - 如果您的設定需要跨團隊存取，請使用管理員/proxy 金鑰。
+- **為什麼在模擬模式下 `annotations` 是空的？** `file_citation` 註解需要搜尋結果中的 `file_id` 中繼資料。如果您的向量後端未回傳檔案層級的中繼資料，答案文字仍會產生，但引用可能為空。
 
-- **Why do I see `UnsupportedParamsError`?** This usually means `file_search` was passed to a provider that does not support it natively and emulation could not route correctly. Check:
-  - The model string is valid (for example, `anthropic/claude-sonnet-4-5`).
-  - `custom_llm_provider` resolves correctly so LiteLLM can load the provider config.
-- **Why does vector search return no results?** Common causes:
-  - The vector store ID is wrong or has no files attached.
-  - In LiteLLM-managed stores, file ingestion is not complete (`status != completed`).
-  - The query is too narrow; try a broader query.
-- **Why am I getting `403 Access denied` on vector store calls?** The caller does not have access to that vector store.
-  - The store may belong to another team.
-  - Use an admin/proxy key if your setup requires cross-team access.
-- **Why are `annotations` empty in emulated mode?** `file_citation` annotations require `file_id` metadata in search results. If your vector backend does not return file-level metadata, the answer text is still generated but citations can be empty.
+## 接下來要檢查什麼 {#what-to-check-next}
 
-
-
-## What to check next
-
-- [File Search reference in Responses API docs](/docs/response_api#file-search-vector-stores) — full API reference
-- [Vector Store management](/docs/vector_store_files) — create and manage vector stores
-- [Managed vector stores](/docs/providers/bedrock_vector_store) — provider-specific setup
+- [Responses API 文件中的 File Search 參考](/docs/response_api#file-search-vector-stores) — 完整 API 參考
+- [向量儲存區管理](/docs/vector_store_files) — 建立並管理向量儲存區
+- [受管理向量儲存區](/docs/providers/bedrock_vector_store) — 提供者特定設定

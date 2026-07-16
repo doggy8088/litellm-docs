@@ -1,18 +1,16 @@
-
 import Image from '@theme/IdealImage';
 
 
-# SCIM with LiteLLM
+# LiteLLM 的 SCIM {#scim-with-litellm}
 
-✨ **Enterprise**: SCIM support requires a premium license.
+✨ **企業版**：SCIM 支援需要進階授權。
 
-Enables identity providers (Okta, Azure AD, OneLogin, etc.) to automate user and team (group) provisioning, updates, and deprovisioning on LiteLLM.
+可讓身分識別提供者（Okta、Azure AD、OneLogin 等）在 LiteLLM 上自動化使用者與團隊（群組）的佈建、更新與取消佈建。
 
+本教學將逐步引導您將您的 IDP 連接到 LiteLLM SCIM 端點。
 
-This tutorial will walk you through the steps to connect your IDP to LiteLLM SCIM Endpoints.
-
-### Supported SSO Providers for SCIM
-Below is a list of supported SSO providers for connecting to LiteLLM SCIM Endpoints.
+### SCIM 支援的 SSO 提供者 {#supported-sso-providers-for-scim}
+以下是可用於連接 LiteLLM SCIM 端點的支援 SSO 提供者清單。
 - Microsoft Entra ID (Azure AD)
 - Okta
 - Google Workspace
@@ -20,59 +18,53 @@ Below is a list of supported SSO providers for connecting to LiteLLM SCIM Endpoi
 - Keycloak
 - Auth0
 
+## 1. 取得您的 SCIM Tenant URL 與 Bearer Token {#1-get-your-scim-tenant-url-and-bearer-token}
 
-## 1. Get your SCIM Tenant URL and Bearer Token
-
-On LiteLLM, navigate to the Settings > Admin Settings > SCIM. On this page you will create a SCIM Token, this allows your IDP to authenticate to litellm `/scim` endpoints.
+在 LiteLLM 中，前往 Settings > Admin Settings > SCIM。您會在此頁面建立一個 SCIM Token，這可讓您的 IDP 對 litellm `/scim` 端點進行驗證。
 
 <Image img={require('../../img/scim_2.png')}  style={{ width: '800px', height: 'auto' }} />
 
-## 2. Connect your IDP to LiteLLM SCIM Endpoints
+## 2. 將您的 IDP 連接到 LiteLLM SCIM 端點 {#2-connect-your-idp-to-litellm-scim-endpoints}
 
-On your IDP provider, navigate to your SSO application and select `Provisioning` > `New provisioning configuration`.
+在您的 IDP 提供者中，前往您的 SSO 應用程式，並選擇 `Provisioning` > `New provisioning configuration`。
 
-On this page, paste in your litellm scim tenant url and bearer token.
+在此頁面中，貼上您的 litellm scim tenant url 與 bearer token。
 
-Once this is pasted in, click on `Test Connection` to ensure your IDP can authenticate to the LiteLLM SCIM endpoints.
+貼上後，點擊 `Test Connection`，以確保您的 IDP 能對 LiteLLM SCIM 端點進行驗證。
 
 <Image img={require('../../img/scim_4.png')}  style={{ width: '800px', height: 'auto' }} />
 
+## 3. 測試 SCIM 連線 {#3-test-scim-connection}
 
-## 3. Test SCIM Connection
+### 3.1 將群組指派給您的 LiteLLM 企業版應用程式 {#31-assign-the-group-to-your-litellm-enterprise-app}
 
-### 3.1 Assign the group to your LiteLLM Enterprise App
-
-On your IDP Portal, navigate to `Enterprise Applications` > Select your litellm app 
+在您的 IDP 入口網站中，前往 `Enterprise Applications` > 選取您的 litellm 應用程式 
 
 <Image img={require('../../img/msft_enterprise_app.png')}  style={{ width: '800px', height: 'auto' }} />
 
 <br />
 <br />
 
-Once you've selected your litellm app, click on `Users and Groups` > `Add user/group` 
+選取您的 litellm 應用程式後，點擊 `Users and Groups` > `Add user/group` 
 
 <Image img={require('../../img/msft_enterprise_assign_group.png')}  style={{ width: '800px', height: 'auto' }} />
 
 <br />
 
-Now select the group you created in step 1.1. And add it to the LiteLLM Enterprise App. At this point we have added `Production LLM Evals Group` to the LiteLLM Enterprise App. The next step is having LiteLLM automatically create the `Production LLM Evals Group` on the LiteLLM DB when a new user signs in.
+現在選取您在步驟 1.1 建立的群組，並將其新增至 LiteLLM 企業版應用程式。此時我們已將 `Production LLM Evals Group` 新增至 LiteLLM 企業版應用程式。下一步是讓 LiteLLM 在有新使用者登入時，自動在 LiteLLM DB 中建立 `Production LLM Evals Group`。
 
 <Image img={require('../../img/msft_enterprise_select_group.png')}  style={{ width: '800px', height: 'auto' }} />
 
+### 3.2 透過 SSO 登入 LiteLLM UI {#32-sign-in-to-litellm-ui-via-sso}
 
-### 3.2 Sign in to LiteLLM UI via SSO
-
-Sign into the LiteLLM UI via SSO. You should be redirected to the Entra ID SSO page. This SSO sign in flow will trigger LiteLLM to fetch the latest Groups and Members from Azure Entra ID.
+透過 SSO 登入 LiteLLM UI。您應該會被重新導向至 Entra ID SSO 頁面。此 SSO 登入流程會觸發 LiteLLM 從 Azure Entra ID 取得最新的群組與成員。
 
 <Image img={require('../../img/msft_sso_sign_in.png')}  style={{ width: '800px', height: 'auto' }} />
 
-### 3.3 Check the new team on LiteLLM UI
+### 3.3 在 LiteLLM UI 中檢查新團隊 {#33-check-the-new-team-on-litellm-ui}
 
-On the LiteLLM UI, Navigate to `Teams`, You should see the new team `Production LLM Evals Group` auto-created on LiteLLM. 
+在 LiteLLM UI 中，前往 `Teams`，您應該會看到新團隊 `Production LLM Evals Group` 已在 LiteLLM 中自動建立。 
 
 <Image img={require('../../img/msft_auto_team.png')}  style={{ width: '900px', height: 'auto' }} />
 
-> **Note:** When a user is removed from your organization via SCIM, all API keys and access tokens associated with that user will be automatically deleted from LiteLLM. This ensures that removed users lose all access immediately and securely.
-
-
-
+> **注意：** 當使用者透過 SCIM 從您的組織中移除時，與該使用者相關聯的所有 API 金鑰與存取權杖都會自動從 LiteLLM 刪除。這可確保被移除的使用者立即且安全地失去所有存取權限。

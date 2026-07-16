@@ -1,17 +1,17 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# [OLD PROXY 👉 [NEW proxy here](./simple_proxy)] Local LiteLLM Proxy Server
+# [舊版 Proxy 👉 [新版 proxy 在這裡](./simple_proxy)] 本機 LiteLLM Proxy Server {#old-proxy--new-proxy-heresimple_proxy-local-litellm-proxy-server}
 
-A fast, and lightweight OpenAI-compatible server to call 100+ LLM APIs. 
+一個快速且輕量、相容 OpenAI 的伺服器，可呼叫 100+ 個 LLM API。 
 
 :::info
 
-Docs outdated. New docs 👉 [here](./simple_proxy)
+文件已過時。新文件 👉 [這裡](./simple_proxy)
 
 :::
 
-## Usage 
+## 使用方式  {#usage}
 ```shell
 uv tool install 'litellm[proxy]'
 ```
@@ -21,13 +21,13 @@ $ litellm --model ollama/codellama
 #INFO: Ollama running on http://0.0.0.0:8000
 ```
 
-### Test
-In a new shell, run: 
+### 測試 {#test}
+在新的 shell 中執行： 
 ```shell
 $ litellm --test
 ``` 
 
-### Replace openai base
+### 取代 openai base {#replace-openai-base}
 
 ```python
 import openai 
@@ -37,10 +37,10 @@ openai.api_base = "http://0.0.0.0:8000"
 print(openai.ChatCompletion.create(model="test", messages=[{"role":"user", "content":"Hey!"}]))
 ```
 
-#### Other supported models:
+#### 其他支援的模型： {#other-supported-models}
 <Tabs>
 <TabItem value="vllm-local" label="VLLM">
-Assuming you're running vllm locally
+假設您正在本機執行 vllm
 
 ```shell
 $ litellm --model vllm/facebook/opt-125m
@@ -136,11 +136,11 @@ $ litellm --model command-nightly
 
 </Tabs>
 
-### Tutorial: Use with Multiple LLMs + LibreChat/Chatbot-UI/Auto-Gen/ChatDev/Langroid,etc. 
+### 教學：搭配 Multiple LLMs + LibreChat/Chatbot-UI/Auto-Gen/ChatDev/Langroid 等使用 {#tutorial-use-with-multiple-llms--librechatchatbot-uiauto-genchatdevlangroidetc}
 <Tabs>
 <TabItem value="multiple-LLMs" label="Multiple LLMs">
 
-Replace openai base: 
+取代 openai base： 
 ```python
 import openai 
 
@@ -160,52 +160,52 @@ print(response)
 </TabItem>
 <TabItem value="librechat" label="LibreChat">
 
-#### 1. Clone the repo
+#### 1. 複製儲存庫 {#1-clone-the-repo}
 
 ```shell
 git clone https://github.com/danny-avila/LibreChat.git
 ```
 
 
-#### 2. Modify `docker-compose.yml`
+#### 2. 修改 `docker-compose.yml` {#2-modify-docker-composeyml}
 ```yaml
 OPENAI_REVERSE_PROXY=http://host.docker.internal:8000/v1/chat/completions
 ```
 
-#### 3. Save fake OpenAI key in `.env`
+#### 3. 將假的 OpenAI key 存入 `.env` {#3-save-fake-openai-key-in-env}
 ```env
 OPENAI_API_KEY=sk-1234
 ```
 
-#### 4. Run LibreChat: 
+#### 4. 執行 LibreChat：  {#4-run-librechat}
 ```shell
 docker compose up
 ```
 </TabItem>
 <TabItem value="smart-chatbot-ui" label="SmartChatbotUI">
 
-#### 1. Clone the repo
+#### 1. 複製儲存庫 {#1-clone-the-repo-1}
 ```shell
 git clone https://github.com/dotneet/smart-chatbot-ui.git
 ```
 
-#### 2. Install Dependencies
+#### 2. 安裝相依性 {#2-install-dependencies}
 ```shell
 npm i
 ```
 
-#### 3. Create your env
+#### 3. 建立您的環境 {#3-create-your-env}
 ```shell
 cp .env.local.example .env.local
 ```
 
-#### 4. Set the API Key and Base
+#### 4. 設定 API 金鑰與 Base {#4-set-the-api-key-and-base}
 ```env
 OPENAI_API_KEY="my-fake-key"
 OPENAI_API_HOST="http://0.0.0.0:8000
 ```
 
-#### 5. Run with docker compose
+#### 5. 使用 docker compose 執行 {#5-run-with-docker-compose}
 ```shell
 docker compose up -d
 ```
@@ -239,10 +239,9 @@ user_proxy = UserProxyAgent("user_proxy")
 user_proxy.initiate_chat(assistant, message="Plot a chart of META and TESLA stock price change YTD.", config_list=config_list)
 ```
 
-Credits [@victordibia](https://github.com/microsoft/autogen/issues/45#issuecomment-1749921972) for this tutorial.
+本教學感謝 [@victordibia](https://github.com/microsoft/autogen/issues/45#issuecomment-1749921972)。
 </TabItem>
 <TabItem value="multi-LLM AutoGen" label="AutoGen Multi-LLM">
-
 
 ```python
 from autogen import AssistantAgent, GroupChatManager, UserProxyAgent
@@ -319,11 +318,11 @@ admin.initiate_chat(
 )
 ```
 
-Credits [@Nathan](https://gist.github.com/CUexter) for this tutorial.
+本教學感謝 [@Nathan](https://gist.github.com/CUexter)。
 </TabItem>
 <TabItem value="chatDev" label="ChatDev">
 
-### Setup ChatDev ([Docs](https://github.com/OpenBMB/ChatDev#%EF%B8%8F-quickstart))
+### 設定 ChatDev ([文件](https://github.com/OpenBMB/ChatDev#%EF%B8%8F-quickstart)) {#setup-chatdev-docshttpsgithubcomopenbmbchatdevefb88f-quickstart}
 ```shell
 git clone https://github.com/OpenBMB/ChatDev.git
 cd ChatDev
@@ -331,7 +330,7 @@ conda create -n ChatDev_conda_env python=3.9 -y
 conda activate ChatDev_conda_env
 uv add -r requirements.txt
 ```
-### Run ChatDev w/ Proxy
+### 使用 Proxy 執行 ChatDev {#run-chatdev-w-proxy}
 ```shell 
 export OPENAI_API_KEY="sk-1234"
 ```
@@ -374,13 +373,13 @@ task = Task(agent, name="my-llm-task")
 task.run() 
 ```
 
-Credits [@pchalasani](https://github.com/pchalasani) and [Langroid](https://github.com/langroid/langroid) for this tutorial.
+本教學感謝 [@pchalasani](https://github.com/pchalasani) 與 [Langroid](https://github.com/langroid/langroid)。
 </TabItem>
 </Tabs>
 
-## Local Proxy
+## 本機 Proxy {#local-proxy}
 
-Here's how to use the local proxy to test codellama/mistral/etc. models for different github repos 
+以下說明如何使用本機 proxy，來測試不同 github repo 的 codellama/mistral 等模型 
 
 ```shell
 uv add litellm
@@ -392,7 +391,7 @@ $ ollama pull codellama # OUR Local CodeLlama
 $ litellm --model ollama/codellama --temperature 0.3 --max_tokens 2048
 ```
 
-### Tutorial: Use with Multiple LLMs + Aider/AutoGen/Langroid/etc.
+### 教學：搭配 Multiple LLMs + Aider/AutoGen/Langroid 等使用 {#tutorial-use-with-multiple-llms--aiderautogenlangroidetc}
 <Tabs>
 <TabItem value="multiple-LLMs" label="Multiple LLMs">
 
@@ -402,7 +401,7 @@ $ litellm
 #INFO: litellm proxy running on http://0.0.0.0:8000
 ```
 
-#### Send a request to your proxy
+#### 將請求送至您的 proxy {#send-a-request-to-your-proxy}
 ```python
 import openai 
 
@@ -423,9 +422,9 @@ print(response)
 </TabItem>
 <TabItem value="continue-dev" label="ContinueDev">
 
-Continue-Dev brings ChatGPT to VSCode. See how to [install it here](https://continue.dev/docs/quickstart).
+Continue-Dev 將 ChatGPT 帶入 VSCode。請參閱[這裡](https://continue.dev/docs/quickstart)的安裝方式。
 
-In the [config.py](https://continue.dev/docs/reference/Models/openai) set this as your default model.
+在 [config.py](https://continue.dev/docs/reference/Models/openai) 中，將其設為您的預設模型。
 ```python
   default=OpenAI(
       api_key="IGNORED",
@@ -435,7 +434,7 @@ In the [config.py](https://continue.dev/docs/reference/Models/openai) set this a
   ),
 ```
 
-Credits [@vividfog](https://github.com/ollama/ollama/issues/305#issuecomment-1751848077) for this tutorial. 
+本教學感謝 [@vividfog](https://github.com/ollama/ollama/issues/305#issuecomment-1751848077)。 
 </TabItem>
 <TabItem value="aider" label="Aider">
 
@@ -474,10 +473,9 @@ user_proxy = UserProxyAgent("user_proxy")
 user_proxy.initiate_chat(assistant, message="Plot a chart of META and TESLA stock price change YTD.", config_list=config_list)
 ```
 
-Credits [@victordibia](https://github.com/microsoft/autogen/issues/45#issuecomment-1749921972) for this tutorial.
+本教學感謝 [@victordibia](https://github.com/microsoft/autogen/issues/45#issuecomment-1749921972)。
 </TabItem>
 <TabItem value="multi-LLM AutoGen" label="AutoGen Multi-LLM">
-
 
 ```python
 from autogen import AssistantAgent, GroupChatManager, UserProxyAgent
@@ -554,11 +552,11 @@ admin.initiate_chat(
 )
 ```
 
-Credits [@Nathan](https://gist.github.com/CUexter) for this tutorial.
+本教學感謝 [@Nathan](https://gist.github.com/CUexter)。
 </TabItem>
 <TabItem value="chatDev" label="ChatDev">
 
-### Setup ChatDev ([Docs](https://github.com/OpenBMB/ChatDev#%EF%B8%8F-quickstart))
+### 設定 ChatDev ([文件](https://github.com/OpenBMB/ChatDev#%EF%B8%8F-quickstart)) {#setup-chatdev-docshttpsgithubcomopenbmbchatdevefb88f-quickstart-1}
 ```shell
 git clone https://github.com/OpenBMB/ChatDev.git
 cd ChatDev
@@ -566,7 +564,7 @@ conda create -n ChatDev_conda_env python=3.9 -y
 conda activate ChatDev_conda_env
 uv add -r requirements.txt
 ```
-### Run ChatDev w/ Proxy
+### 使用 Proxy 執行 ChatDev {#run-chatdev-w-proxy-1}
 ```shell 
 export OPENAI_API_KEY="sk-1234"
 ```
@@ -610,12 +608,12 @@ task = Task(agent, name="my-llm-task")
 task.run() 
 ```
 
-Credits [@pchalasani](https://github.com/pchalasani) and [Langroid](https://github.com/langroid/langroid) for this tutorial.
+本教學感謝 [@pchalasani](https://github.com/pchalasani) 與 [Langroid](https://github.com/langroid/langroid)。
 </TabItem>
 <TabItem value="gpt-pilot" label="GPT-Pilot">
-GPT-Pilot helps you build apps with AI Agents. [For more](https://github.com/Pythagora-io/gpt-pilot)
+GPT-Pilot 協助您使用 AI 代理程式建立應用程式。[更多資訊](https://github.com/Pythagora-io/gpt-pilot)
 
-In your .env set the openai endpoint to your local server. 
+在您的 .env 中，將 openai endpoint 設為您的本機伺服器。 
 
 ```
 OPENAI_ENDPOINT=http://0.0.0.0:8000
@@ -623,12 +621,12 @@ OPENAI_API_KEY=my-fake-key
 ```
 </TabItem>
 <TabItem value="guidance" label="guidance">
-A guidance language for controlling large language models.
+一種用於控制大型語言模型的 guidance language。
 https://github.com/guidance-ai/guidance
 
-**NOTE:** Guidance sends additional params like `stop_sequences` which can cause some models to fail if they don't support it. 
+**注意：** Guidance 會傳送額外參數，例如 `stop_sequences`，若模型不支援，可能會導致某些模型失敗。 
 
-**Fix**: Start your proxy using the `--drop_params` flag
+**修正方式**：使用 `--drop_params` 旗標啟動您的 proxy
 
 ```shell
 litellm --model ollama/codellama --temperature 0.3 --max_tokens 2048 --drop_params
@@ -665,38 +663,38 @@ print(result)
 </Tabs>
 
 :::note
-**Contribute** Using this server with a project? Contribute your tutorial [here!](https://github.com/BerriAI/litellm)
+**貢獻** 您有在專案中使用這個伺服器嗎？請在[這裡！](https://github.com/BerriAI/litellm)貢獻您的教學
 
 ::: 
 
-## Advanced
+## 進階 {#advanced}
 
-### Logs
+### 記錄 {#logs}
 
 ```shell
 $ litellm --logs
 ```
 
-This will return the most recent log (the call that went to the LLM API + the received response).
+這會回傳最新一筆記錄（送往 LLM API 的請求 + 收到的回應）。
 
-All logs are saved to a file called `api_logs.json` in the current directory. 
+所有記錄都會儲存在目前目錄中一個名為 `api_logs.json` 的檔案裡。 
 
-### Configure Proxy
+### 設定 Proxy {#configure-proxy}
 
-If you need to: 
-* save API keys 
-* set litellm params (e.g. drop unmapped params, set fallback models, etc.)
-* set model-specific params (max tokens, temperature, api base, prompt template)
+如果您需要： 
+* 儲存 API 金鑰 
+* 設定 litellm 參數（例如：捨棄未對應的參數、設定 fallback models 等）
+* 設定特定模型參數（max tokens、temperature、api base、prompt template）
 
-You can do set these just for that session (via cli), or persist these across restarts (via config file).
+您可以只為該 session 設定這些內容（透過 cli），或透過設定檔讓這些設定在重新啟動後仍然保留。
 
-#### Save API Keys 
+#### 儲存 API 金鑰  {#save-api-keys}
 ```shell 
 $ litellm --api_key OPENAI_API_KEY=sk-...
 ```
-LiteLLM will save this to a locally stored config file, and persist this across sessions. 
+LiteLLM 會將其儲存到本機儲存的設定檔中，並在各次 session 之間保留。 
 
-LiteLLM Proxy supports all litellm supported api keys. To add keys for a specific provider, check this list:
+LiteLLM Proxy 支援所有 litellm 支援的 api keys。若要為特定提供者新增金鑰，請查看此清單：
 
 <Tabs>
 <TabItem value="huggingface" label="Huggingface">
@@ -782,9 +780,9 @@ $ litellm --add_key COHERE_API_KEY=my-api-key
 
 </Tabs>
 
-E.g.: Set api base, max tokens and temperature. 
+例如：設定 api base、max tokens 和 temperature。 
 
-**For that session**: 
+**針對該 session**： 
 ```shell
 litellm --model ollama/llama2 \
   --api_base http://localhost:11434 \
@@ -794,11 +792,11 @@ litellm --model ollama/llama2 \
 # OpenAI-compatible server running on http://0.0.0.0:8000
 ```
 
-### Performance
+### 效能 {#performance}
 
-We load-tested 500,000 HTTP connections on the FastAPI server for 1 minute, using [wrk](https://github.com/wg/wrk).
+我們使用 [wrk](https://github.com/wg/wrk) 對 FastAPI server 進行了 500,000 個 HTTP 連線、持續 1 分鐘的負載測試。
 
-There are our results: 
+結果如下： 
 
 ```shell
 Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -809,8 +807,8 @@ Thread Stats   Avg      Stdev     Max   +/- Stdev
 ```
 
 
-## Support/ talk with founders
+## 支援／與創辦人聯絡 {#support-talk-with-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

@@ -1,32 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LM Studio
+# LM Studio {#lm-studio}
 
 https://lmstudio.ai/docs/basics/server
 
 :::tip
 
-**We support ALL LM Studio models, just set `model=lm_studio/<any-model-on-lmstudio>` as a prefix when sending litellm requests**
+**我們支援所有 LM Studio 模型，送出 litellm 請求時只需將 `model=lm_studio/<any-model-on-lmstudio>` 設為前綴**
 
 :::
 
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Discover, download, and run local LLMs. |
-| Provider Route on LiteLLM | `lm_studio/` |
-| Provider Doc | [LM Studio ↗](https://lmstudio.ai/docs/api/openai-api) |
-| Supported OpenAI Endpoints | `/chat/completions`, `/embeddings`, `/completions` |
+| 說明 | 探索、下載並執行本機 LLM。 |
+| LiteLLM 上的提供者路由 | `lm_studio/` |
+| 提供者文件 | [LM Studio ↗](https://lmstudio.ai/docs/api/openai-api) |
+| 支援的 OpenAI 端點 | `/chat/completions`, `/embeddings`, `/completions` |
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['LM_STUDIO_API_BASE']
 os.environ['LM_STUDIO_API_KEY'] # optional, default is empty
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -45,7 +44,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -67,11 +66,11 @@ for chunk in response:
 ```
 
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 搭配使用 {#usage-with-litellm-proxy-server}
 
-Here's how to call a LM Studio model with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 LM Studio 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -82,13 +81,13 @@ Here's how to call a LM Studio model with the LiteLLM Proxy Server
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 送出請求
 
   <Tabs>
 
@@ -135,12 +134,11 @@ Here's how to call a LM Studio model with the LiteLLM Proxy Server
 
   </Tabs>
 
+## 支援的參數 {#supported-parameters}
 
-## Supported Parameters
+請參閱[支援的參數](../completion/input.md#translated-openai-params)。
 
-See [Supported Parameters](../completion/input.md#translated-openai-params) for supported parameters.
-
-## Embedding
+## 嵌入 {#embedding}
 
 ```python
 from litellm import embedding
@@ -155,10 +153,10 @@ print(response)
 ```
 
 
-## Structured Output
+## 結構化輸出 {#structured-output}
 
-LM Studio supports structured outputs via JSON Schema. You can pass a pydantic model or a raw schema using `response_format`.
-LiteLLM sends the schema as `{ "type": "json_schema", "json_schema": {"schema": <your schema>} }`.
+LM Studio 透過 JSON Schema 支援結構化輸出。您可以使用 `response_format` 傳入 pydantic 模型或原始 schema。
+LiteLLM 會將 schema 以 `{ "type": "json_schema", "json_schema": {"schema": <your schema>} }` 送出。
 
 ```python
 from pydantic import BaseModel

@@ -3,63 +3,63 @@ import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
 
-# LiteLLM Content Filter (Built-in Guardrails)
+# LiteLLM 內容篩選器（內建防護欄） {#litellm-content-filter-built-in-guardrails}
 
-**Built-in guardrail** for detecting and filtering sensitive information using regex patterns and keyword matching. No external dependencies required.
+**內建防護欄**，使用 regex 模式與關鍵字比對來偵測並篩選敏感資訊。無需外部依賴。
 
-**When to use?** Good for cases which do not require an ML model to detect sensitive information.
+**何時使用？** 適用於不需要 ML 模型來偵測敏感資訊的情況。
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | On-device guardrail for detecting and filtering sensitive information using regex patterns and keyword matching. Built into LiteLLM with no external dependencies. |
-| Guardrail Name | `litellm_content_filter` |
-| Detection Methods | Prebuilt regex patterns, custom regex, keyword matching |
-| Actions | `BLOCK` (reject request), `MASK` (redact content) |
-| Supported Modes | `pre_call`, `post_call`, `during_call` (streaming) |
-| Performance | Fast - runs locally, no external API calls |
+| 說明 | 用於偵測並篩選敏感資訊的裝置端防護欄，使用 regex 模式與關鍵字比對。內建於 LiteLLM，無外部依賴。 |
+| 防護欄名稱 | `litellm_content_filter` |
+| 偵測方法 | 預先建置的 regex 模式、自訂 regex、關鍵字比對 |
+| 動作 | `BLOCK`（拒絕請求）、`MASK`（將內容去識別化） |
+| 支援模式 | `pre_call`、`post_call`、`during_call`（串流） |
+| 效能 | 快速 - 在本地執行，不會呼叫外部 API |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-## LiteLLM UI
+## LiteLLM 使用者介面 {#litellm-ui}
 
-### Step 1: Select LiteLLM Content Filter
+### 步驟 1：選取 LiteLLM 內容篩選器 {#step-1-select-litellm-content-filter}
 
-Click "Add New Guardrail" and select "LiteLLM Content Filter" as your guardrail provider.
+點擊「新增防護欄」並選擇「LiteLLM Content Filter」作為您的防護欄提供者。
 
-<Image img={require('../../../img/create_guard.gif')} alt="Select LiteLLM Content Filter" />
+<Image img={require('../../../img/create_guard.gif')} alt="選取 LiteLLM 內容篩選器" />
 
-### Step 2: Configure Pattern Detection
+### 步驟 2：設定模式偵測 {#step-2-configure-pattern-detection}
 
-Select the prebuilt entities you want to block or mask. In this example, we select "Email" to detect and block email addresses.
+選取您要封鎖或遮罩的預先建置實體。在此範例中，我們選取「Email」來偵測並封鎖電子郵件地址。
 
-If you need to block a custom entity, you can add a custom regex pattern by clicking "Add custom regex".
+如果您需要封鎖自訂實體，可以按一下「Add custom regex」來新增自訂 regex 模式。
 
-<Image img={require('../../../img/add_Guard2.gif')} alt="Select prebuilt entities or add custom regex" />
+<Image img={require('../../../img/add_Guard2.gif')} alt="選取預先建置的實體或新增自訂 regex" />
 
-### Step 3: Add Blocked Keywords
+### 步驟 3：新增被封鎖的關鍵字 {#step-3-add-blocked-keywords}
 
-Enter specific keywords you want to block. This is useful if you have policies to block certain words or phrases.
+輸入您要封鎖的特定關鍵字。若您有封鎖某些字詞或片語的政策，這會很有用。
 
-<Image img={require('../../../img/create_guard3.gif')} alt="Add blocked keywords" />
+<Image img={require('../../../img/create_guard3.gif')} alt="新增被封鎖的關鍵字" />
 
-### Step 4: Test Your Guardrail
+### 步驟 4：測試您的防護欄 {#step-4-test-your-guardrail}
 
-After creating the guardrail, navigate to "Test Playground" to test it. Select the guardrail you just created.
+建立防護欄後，請前往「Test Playground」進行測試。選取您剛建立的防護欄。
 
-Test examples:
-- **Blocked keyword test**: Entering "hi blue" will trigger the block since we set "blue" as a blocked keyword
-- **Pattern detection test**: Entering "Hi ishaan@berri.ai" will trigger the email pattern detector
+測試範例：
+- **被封鎖關鍵字測試**：輸入「hi blue」會觸發封鎖，因為我們將「blue」設定為被封鎖關鍵字
+- **模式偵測測試**：輸入「Hi ishaan@berri.ai」會觸發電子郵件模式偵測器
 
-<Image img={require('../../../img/add_guard5.gif')} alt="Test guardrail in playground" />
+<Image img={require('../../../img/add_guard5.gif')} alt="在 playground 中測試防護欄" />
 
-## LiteLLM Config.yaml Setup
+## LiteLLM Config.yaml 設定 {#litellm-configyaml-setup}
 
-### Step 1: Define Guardrails in config.yaml
+### 步驟 1：在 config.yaml 中定義防護欄 {#step-1-define-guardrails-in-configyaml}
 
 <Tabs>
-<TabItem label="Harmful Content Detection" value="harmful">
+<TabItem label="有害內容偵測" value="harmful">
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -94,7 +94,7 @@ guardrails:
 
 </TabItem>
 
-<TabItem label="PII Protection" value="pii">
+<TabItem label="PII 保護" value="pii">
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -128,7 +128,7 @@ guardrails:
 
 </TabItem>
 
-<TabItem label="Combined" value="combined">
+<TabItem label="組合" value="combined">
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -168,16 +168,16 @@ guardrails:
 </TabItem>
 </Tabs>
 
-### Step 2: Start LiteLLM Gateway
+### 步驟 2：啟動 LiteLLM Gateway {#step-2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml
 ```
 
-### Step 3: Test Request
+### 步驟 3：測試請求 {#step-3-test-request}
 
 <Tabs>
-<TabItem label="SSN Blocked" value="ssn-blocked">
+<TabItem label="SSN 已封鎖" value="ssn-blocked">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -192,7 +192,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 400 Error**
+**回應：HTTP 400 錯誤**
 ```json
 {
   "error": {
@@ -207,7 +207,7 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem label="Email Masked" value="email-masked">
+<TabItem label="Email 已遮罩" value="email-masked">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -222,7 +222,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-The request is sent to the LLM with the email masked:
+請求會在 email 已遮罩的情況下傳送到 LLM：
 ```
 Contact me at [EMAIL_REDACTED]
 ```
@@ -230,36 +230,36 @@ Contact me at [EMAIL_REDACTED]
 </TabItem>
 </Tabs>
 
-## Configuration
+## 設定 {#configuration}
 
-### Supported Modes
+### 支援模式 {#supported-modes}
 
-- **`pre_call`** - Run before LLM call, filters input messages
-- **`post_call`** - Run after LLM call, filters output responses
-- **`during_call`** - Run during streaming, filters each chunk in real-time
+- **`pre_call`** - 在 LLM 呼叫前執行，篩選輸入訊息
+- **`post_call`** - 在 LLM 呼叫後執行，篩選輸出回應
+- **`during_call`** - 在串流期間執行，即時篩選每個區塊
 
-### Actions
+### 動作 {#actions}
 
-- **`BLOCK`** - Reject the request with HTTP 400 error
-- **`MASK`** - Replace sensitive content with redaction tags (e.g., `[EMAIL_REDACTED]`)
+- **`BLOCK`** - 以 HTTP 400 錯誤拒絕請求
+- **`MASK`** - 以去識別化標記取代敏感內容（例如，`[EMAIL_REDACTED]`）
 
-## Prebuilt Patterns
+## 預先建置的模式 {#prebuilt-patterns}
 
-### Available Patterns
+### 可用模式 {#available-patterns}
 
-| Pattern Name | Description | Example |
+| 模式名稱 | 說明 | 範例 |
 |-------------|-------------|---------|
-| `us_ssn` | US Social Security Numbers | `123-45-6789` |
-| `email` | Email addresses | `user@example.com` |
-| `phone` | Phone numbers | `+1-555-123-4567` |
-| `visa` | Visa credit cards | `4532-1234-5678-9010` |
-| `mastercard` | Mastercard credit cards | `5425-2334-3010-9903` |
-| `amex` | American Express cards | `3782-822463-10005` |
-| `aws_access_key` | AWS access keys | `AKIAIOSFODNN7EXAMPLE` |
-| `aws_secret_key` | AWS secret keys | `wJalrXUtnFEMI/K7MDENG/bPxRfi...` |
-| `github_token` | GitHub tokens | `example-github-token-123` |
+| `us_ssn` | 美國社會安全碼 | `123-45-6789` |
+| `email` | 電子郵件地址 | `user@example.com` |
+| `phone` | 電話號碼 | `+1-555-123-4567` |
+| `visa` | Visa 信用卡 | `4532-1234-5678-9010` |
+| `mastercard` | Mastercard 信用卡 | `5425-2334-3010-9903` |
+| `amex` | American Express 卡 | `3782-822463-10005` |
+| `aws_access_key` | AWS 存取金鑰 | `AKIAIOSFODNN7EXAMPLE` |
+| `aws_secret_key` | AWS 密鑰 | `wJalrXUtnFEMI/K7MDENG/bPxRfi...` |
+| `github_token` | GitHub token | `example-github-token-123` |
 
-### Using Prebuilt Patterns
+### 使用預先建置的模式 {#using-prebuilt-patterns}
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -281,9 +281,9 @@ guardrails:
           action: "BLOCK"
 ```
 
-## Custom Regex Patterns
+## 自訂 Regex 模式 {#custom-regex-patterns}
 
-Define your own regex patterns for domain-specific sensitive data:
+定義您自己的 regex 模式以處理特定領域的敏感資料：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -305,9 +305,9 @@ guardrails:
           action: "BLOCK"
 ```
 
-## Keyword Filtering
+## 關鍵字篩選 {#keyword-filtering}
 
-Block or mask specific keywords:
+封鎖或遮罩特定關鍵字：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -328,9 +328,9 @@ guardrails:
           action: "BLOCK"
 ```
 
-### Loading Keywords from File
+### 從檔案載入關鍵字 {#loading-keywords-from-file}
 
-For large keyword lists, use a YAML file:
+若關鍵字清單很大，請使用 YAML 檔案：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -356,9 +356,9 @@ blocked_words:
     description: "Protected database name"
 ```
 
-## Streaming Support
+## 串流支援 {#streaming-support}
 
-Content filter works with streaming responses by checking each chunk:
+內容篩選器會透過檢查每個區塊來處理串流回應：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -392,20 +392,19 @@ for chunk in response:
     # Emails automatically masked in real-time
 ```
 
-## Image Content Filtering
+## 圖片內容篩選 {#image-content-filtering}
 
-Content filter can analyze images by generating descriptions and applying filters to the text descriptions.
+內容篩選器可以透過產生描述並將篩選套用到文字描述上來分析圖片。
 
 :::warning
 
-This can introduce significant latency to the request - depending on the speed of the vision-capable model.
+這可能會為請求帶來顯著延遲——取決於具備視覺能力的模型速度。
 
-This is because, each request containing images will be sent to the vision-capable model to generate a description.
+原因是，每個包含圖片的請求都會傳送到具備視覺能力的模型以產生描述。
 
 :::
 
-### Configuration
-
+### 設定 {#configuration-1}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -434,13 +433,13 @@ guardrails:
           action: "MASK"
 ```
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-1. Image is sent to the vision model to generate a text description
-2. Content filters are applied to the description
-3. If harmful content is detected, request is blocked with context about the image
+1. 圖片會傳送到視覺模型以產生文字描述
+2. 內容篩選會套用到描述上
+3. 如果偵測到有害內容，請求會連同圖片的上下文一起被封鎖
 
-**Example:**
+**範例：**
 
 ```python
 import openai
@@ -463,7 +462,7 @@ response = client.chat.completions.create(
 )
 ```
 
-If the image description contains filtered content, you'll get:
+如果圖片描述包含被篩選的內容，您會得到：
 
 ```json
 {
@@ -471,27 +470,27 @@ If the image description contains filtered content, you'll get:
 }
 ```
 
-## Customizing Redaction Tags
+## 自訂去識別化標記 {#customizing-redaction-tags}
 
-When using the `MASK` action, sensitive content is replaced with redaction tags. You can customize how these tags appear.
+使用 `MASK` 動作時，敏感內容會以去識別化標記取代。您可以自訂這些標記的顯示方式。
 
-### Default Behavior
+### 預設行為 {#default-behavior}
 
-**Patterns:** Each pattern type gets its own tag based on the pattern name
+**模式：** 每種模式類型都會依據模式名稱取得自己的標記
 ```
 Input:  "My email is john@example.com and SSN is 123-45-6789"
 Output: "My email is [EMAIL_REDACTED] and SSN is [US_SSN_REDACTED]"
 ```
 
-**Keywords:** All keywords use the same generic tag
+**關鍵字：** 所有關鍵字都使用相同的通用標記
 ```
 Input:  "This is confidential and proprietary information"
 Output: "This is [KEYWORD_REDACTED] and [KEYWORD_REDACTED] information"
 ```
 
-### Customizing Tags
+### 自訂標記 {#customizing-tags}
 
-Use `pattern_redaction_format` and `keyword_redaction_tag` to change the redaction format:
+使用 `pattern_redaction_format` 和 `keyword_redaction_tag` 來變更去識別化格式：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -513,67 +512,67 @@ guardrails:
           action: "MASK"
 ```
 
-**Output:**
+**輸出：**
 ```
 Input:  "Email john@example.com, SSN 123-45-6789, confidential data"
 Output: "Email ***EMAIL***, SSN ***US_SSN***, ***REDACTED*** data"
 ```
 
-**Key Points:**
-- `pattern_redaction_format` must include `{pattern_name}` placeholder
-- Pattern names are automatically uppercased (e.g., `email` → `EMAIL`)
-- `keyword_redaction_tag` is a fixed string (no placeholders)
+**重點：**
+- `pattern_redaction_format` 必須包含 `{pattern_name}` 佔位符
+- 模式名稱會自動轉為大寫（例如，`email` → `EMAIL`）
+- `keyword_redaction_tag` 是固定字串（沒有佔位符）
 
-## Content Categories
+## 內容類別 {#content-categories}
 
-Prebuilt categories use **keyword matching** to detect harmful content, bias, and inappropriate advice. Keywords are matched with word boundaries (single words) or as substrings (multi-word phrases), case-insensitive.
+預先建置的類別使用**關鍵字比對**來偵測有害內容、偏見與不當建議。關鍵字會以字邊界（單字）或作為子字串（多字片語）進行比對，且不區分大小寫。
 
-### Available Categories
+### 可用類別 {#available-categories}
 
-Reference any category below by name; no `category_file:` is required
+可依名稱參考下列任一類別；不需要 `category_file:`
 
-| Category | Description |
+| 類別 | 描述 |
 |----------|-------------|
-| **Harmful Content** | |
-| `harmful_self_harm` | Self-harm, suicide, eating disorders |
-| `harmful_violence` | Violence, criminal planning, attacks |
-| `harmful_illegal_weapons` | Illegal weapons, explosives, dangerous materials |
-| `harmful_child_safety` | Inappropriate content involving minors |
-| **Bias / Employment Discrimination** | |
-| `bias_gender` | Gender-based discrimination, stereotypes |
-| `bias_sexual_orientation` | LGBTQ+ discrimination, homophobia, transphobia |
-| `bias_racial` | Racial/ethnic discrimination, hate speech |
-| `bias_religious` | Religious discrimination, stereotypes |
-| `age_discrimination` | Age-based employment discrimination |
-| `disability` | Employment discrimination against people with disabilities |
-| `gender_sexual_orientation` | Employment discrimination on gender, sex, or sexual orientation |
-| `military_status` | Employment discrimination against veterans / military personnel |
-| `religion` | Employment discrimination based on religion or religious beliefs |
-| **Denied Advice** | |
-| `denied_financial_advice` | Personalized financial advice, investment recommendations |
-| `denied_medical_advice` | Medical advice, diagnosis, treatment recommendations |
-| `denied_legal_advice` | Legal advice, representation, legal strategy |
-| `denied_insults` | Insults, name-calling, personal attacks |
-| **Prompt Injection** | |
-| `prompt_injection_jailbreak` | Jailbreak attempts (DAN, roleplay attacks, safety bypass) |
-| `prompt_injection_system_prompt` | Attempts to extract, reveal, or override system prompts |
-| `prompt_injection_sql` | SQL injection embedded in prompts |
-| `prompt_injection_malicious_code` | Malicious code injection via prompts |
-| `prompt_injection_data_exfiltration` | Attempts to extract training data or internal information |
-| **Claims Abuse** | |
-| `claims_fraud_coaching` | Coaching on fraudulent insurance claims |
-| `claims_medical_advice` | Medical advice in claims context |
-| `claims_phi_disclosure` | Unauthorized PHI disclosure / HIPAA violations |
-| `claims_prior_auth_gaming` | Prior authorization gaming attempts |
-| `claims_system_override` | Claims system override / role impersonation attempts |
+| **有害內容** | |
+| `harmful_self_harm` | 自我傷害、自殺、飲食失調 |
+| `harmful_violence` | 暴力、犯罪規劃、攻擊 |
+| `harmful_illegal_weapons` | 非法武器、爆裂物、危險材料 |
+| `harmful_child_safety` | 涉及未成年人的不當內容 |
+| **偏見 / 就業歧視** | |
+| `bias_gender` | 基於性別的歧視、刻板印象 |
+| `bias_sexual_orientation` | LGBTQ+ 歧視、恐同、跨性別恐懼 |
+| `bias_racial` | 基於種族／族裔的歧視、仇恨言論 |
+| `bias_religious` | 基於宗教的歧視、刻板印象 |
+| `age_discrimination` | 基於年齡的就業歧視 |
+| `disability` | 對身心障礙者的就業歧視 |
+| `gender_sexual_orientation` | 基於性別、性別認同或性取向的就業歧視 |
+| `military_status` | 對退伍軍人／軍事人員的就業歧視 |
+| `religion` | 基於宗教或宗教信仰的就業歧視 |
+| **拒絕提供建議** | |
+| `denied_financial_advice` | 個人化財務建議、投資建議 |
+| `denied_medical_advice` | 醫療建議、診斷、治療建議 |
+| `denied_legal_advice` | 法律建議、代理、法律策略 |
+| `denied_insults` | 侮辱、罵名、人身攻擊 |
+| **提示注入** | |
+| `prompt_injection_jailbreak` | 越獄嘗試（DAN、角色扮演攻擊、安全繞過） |
+| `prompt_injection_system_prompt` | 嘗試擷取、揭露或覆寫系統提示 |
+| `prompt_injection_sql` | 嵌入於提示中的 SQL 注入 |
+| `prompt_injection_malicious_code` | 透過提示進行的惡意程式碼注入 |
+| `prompt_injection_data_exfiltration` | 嘗試擷取訓練資料或內部資訊 |
+| **濫用聲明** | |
+| `claims_fraud_coaching` | 詐欺性保險理賠的操作指導 |
+| `claims_medical_advice` | 理賠情境中的醫療建議 |
+| `claims_phi_disclosure` | 未經授權的 PHI 揭露／HIPAA 違規 |
+| `claims_prior_auth_gaming` | 事前授權規避嘗試 |
+| `claims_system_override` | 理賠系統覆寫／角色冒充嘗試 |
 
-:::info Bias Detection Considerations
+:::info 偏見偵測考量
 
-Bias detection is **complex and context-dependent**. Rule-based systems catch explicit discriminatory language but may generate false positives on legitimate discussions. Start with **high severity thresholds** and test thoroughly. For mission-critical bias detection, consider combining with AI-based guardrails (e.g., HiddenLayer, Lakera).
+偏見偵測是**複雜且依賴情境**的。基於規則的系統可以捕捉明確的歧視性語言，但在合法討論中可能產生誤判。請從**高嚴重性閾值**開始，並徹底測試。若需執行關鍵任務級的偏見偵測，請考慮結合 AI 型防護欄（例如 HiddenLayer、Lakera）。
 
 :::
 
-### Configuration
+### 設定 {#configuration-2}
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -599,14 +598,14 @@ guardrails:
           severity_threshold: "medium"
 ```
 
-**Severity Thresholds:**
-- `"high"` - Only blocks high severity items
-- `"medium"` - Blocks medium and high severity (default)
-- `"low"` - Blocks all severity levels
+**嚴重性閾值：**
+- `"high"` - 僅封鎖高嚴重性項目
+- `"medium"` - 封鎖中與高嚴重性（預設）
+- `"low"` - 封鎖所有嚴重性等級
 
-### Custom Category Files
+### 自訂類別檔案 {#custom-category-files}
 
-Override a built-in category, or add a brand-new category, with your own keyword list
+使用您自己的關鍵字清單來覆寫內建類別，或新增全新的類別
 
 ```yaml showLineNumbers title="config.yaml"
 categories:
@@ -630,13 +629,13 @@ exceptions:
   - "example exception phrase"
 ```
 
-#### Where to put the file
+#### 檔案放置位置 {#where-to-put-the-file}
 
-Put your YAML in one of these two locations:
+請將您的 YAML 放在以下兩個位置之一：
 
-**Option A: inside the built-in `categories/` directory (recommended)**
+**選項 A：放在內建的 `categories/` 目錄中（建議）**
 
-Mount the file at `<site-packages>/litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/categories/<your-category-name>.yaml` and drop the `category_file:` field. The loader picks it up by category name
+將檔案掛載到 `<site-packages>/litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/categories/<your-category-name>.yaml`，並省略 `category_file:` 欄位。載入器會依類別名稱將其載入
 
 ```yaml title="values.yaml (Helm)"
 extraVolumeMounts:
@@ -665,17 +664,17 @@ guardrails:
           severity_threshold: "high"
 ```
 
-Update `mountPath` if you upgrade to a litellm image built on a different Python minor version
+如果您升級到以不同 Python 次要版本建置的 litellm 映像檔，請更新 `mountPath`
 
-**Option B: any other path, with the env var opt-in**
+**選項 B：任何其他路徑，搭配 env var 明確啟用**
 
-Set
+設定
 
 ```bash
 LITELLM_CONTENT_FILTER_ALLOW_EXTERNAL_PATHS=true
 ```
 
-on the proxy pod, then reference the file by absolute path
+在 proxy pod 上，然後以絕對路徑參照該檔案
 
 ```yaml title="config.yaml"
 categories:
@@ -686,29 +685,29 @@ categories:
     category_file: "/absolute/path/to/<your-category-name>.yaml"
 ```
 
-Only use this when everyone who can write `category_file` (proxy config, DB, Admin UI, team-scoped configs) is trusted; with the flag on, `category_file` can point at any YAML-parseable file on the pod
+僅在所有能寫入 `category_file`（proxy 設定、DB、Admin UI、team 範圍設定）的人都可信任時才使用；啟用此旗標後，`category_file` 可以指向 pod 上任何可被 YAML 解析的檔案
 
-#### Verifying it loaded
+#### 驗證是否已載入 {#verifying-it-loaded}
 
-Check the proxy startup log for either
+檢查 proxy 啟動記錄中是否有以下任一項
 
 ```
 content_filter.py: Loaded category <name>: N keywords, M always-block keywords ...
 ```
 
-or
+或
 
 ```
 content_filter.py: Category <name>: invalid category_file path, skipping. ...
 ```
 
-The second line means the file was rejected and the category is running with zero rules; use one of the two options above to fix it
+第二行表示該檔案被拒絕，而此類別正以零規則執行；請使用上述兩個選項之一修正
 
-## Use Cases
+## 使用案例 {#use-cases}
 
-### 1. Harmful Content Detection
+### 1. 有害內容偵測 {#1-harmful-content-detection}
 
-Block or detect requests containing harmful, illegal, or dangerous content:
+封鎖或偵測包含有害、非法或危險內容的請求：
 
 ```yaml
 categories:
@@ -726,9 +725,9 @@ categories:
     severity_threshold: "medium"
 ```
 
-### 2. Bias and Discrimination Detection
+### 2. 偏見與歧視偵測 {#2-bias-and-discrimination-detection}
 
-Detect and block biased, discriminatory, or hateful content across multiple dimensions:
+偵測並封鎖跨多個面向的偏頗、歧視性或仇恨內容：
 
 ```yaml
 categories:
@@ -757,9 +756,9 @@ categories:
     severity_threshold: "medium"
 ```
 
-**Sensitivity Tuning:**
+**敏感度調整：**
 
-For bias detection, severity thresholds are critical to balance safety and legitimate discourse:
+對於偏見偵測，嚴重性閾值對於平衡安全性與合法論述至關重要：
 
 ```yaml
 # Conservative (low false positives, may miss subtle bias)
@@ -779,9 +778,8 @@ categories:
 ```
 
 
-
-### 3. PII Protection
-Block or mask personally identifiable information before sending to LLMs:
+### 3. PII 保護 {#3-pii-protection}
+在傳送給 LLM 之前封鎖或遮罩個人可識別資訊：
 
 ```yaml
 patterns:
@@ -793,8 +791,8 @@ patterns:
     action: "MASK"
 ```
 
-### 2. Credential Detection
-Prevent API keys and secrets from being exposed:
+### 2. 憑證偵測 {#2-credential-detection}
+防止 API 金鑰與密鑰外洩：
 
 ```yaml
 patterns:
@@ -806,8 +804,8 @@ patterns:
     action: "BLOCK"
 ```
 
-### 3. Sensitive Internal Data Protection
-Block or mask references to confidential internal projects, codenames, or proprietary information:
+### 3. 敏感內部資料保護 {#3-sensitive-internal-data-protection}
+封鎖或遮罩對機密內部專案、代號或專有資訊的提及：
 
 ```yaml
 blocked_words:
@@ -819,14 +817,14 @@ blocked_words:
     description: "Internal system references"
 ```
 
-For large lists of sensitive terms, use a file:
+若有大量敏感詞彙清單，請使用檔案：
 ```yaml
 blocked_words_file: "/path/to/sensitive_terms.yaml"
 ```
 
-### 4. Safe AI for Consumer Applications
+### 4. 面向消費者應用程式的安全 AI {#4-safe-ai-for-consumer-applications}
 
-Combining harmful content and bias detection for consumer-facing AI:
+結合有害內容與偏見偵測，適用於面向消費者的 AI：
 
 ```yaml
 guardrails:
@@ -864,15 +862,15 @@ guardrails:
           severity_threshold: "high"  # Education and news may discuss race
 ```
 
-**Perfect for:**
-- Chatbots and virtual assistants
-- Educational AI tools
-- Customer service AI
-- Content generation platforms
-- Public-facing AI applications
+**非常適合：**
+- 聊天機器人與虛擬助理
+- 教育 AI 工具
+- 客戶服務 AI
+- 內容生成平台
+- 面向大眾的 AI 應用程式
 
-### 5. Compliance
-Ensure regulatory compliance by filtering sensitive data types:
+### 5. 合規性 {#5-compliance}
+透過過濾敏感資料類型來確保符合法規要求：
 
 ```yaml
 # Categories checked first (high priority)
@@ -890,5 +888,3 @@ patterns:
     pattern_name: "us_ssn"
     action: "BLOCK"
 ```
-
-

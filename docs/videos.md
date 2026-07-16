@@ -1,24 +1,24 @@
-# /videos
+# /videos {#videos}
 
-| Feature | Supported | 
+| 功能 | 支援 | 
 |---------|-----------|
-| Cost Tracking | ✅ |
-| Logging | ✅ (Full request/response logging) |
-Fallbacks | ✅ (Between supported models) |
-| Load Balancing | ✅ |
-| Guardrails Support | ✅ Content moderation and safety checks |
-| Proxy Server Support | ✅ Full proxy integration with virtual keys |
-| Spend Management | ✅ Budget tracking and rate limiting |
-| Supported Providers | `openai`, `azure`, `gemini`, `vertex_ai`, `runwayml` |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅（完整請求/回應記錄） |
+備援 | ✅（在受支援的模型之間） |
+| 負載平衡 | ✅ |
+| 防護欄支援 | ✅ 內容審核與安全檢查 |
+| 代理伺服器支援 | ✅ 與虛擬金鑰的完整代理整合 |
+| 支出管理 | ✅ 預算追蹤與速率限制 |
+| 支援的提供者 | `openai`, `azure`, `gemini`, `vertex_ai`, `runwayml` |
 
 :::tip
 
-LiteLLM follows the [OpenAI Video Generation API specification](https://platform.openai.com/docs/guides/video-generation)
+LiteLLM 遵循 [OpenAI 影片生成 API 規範](https://platform.openai.com/docs/guides/video-generation)
 
 :::
 
-## **LiteLLM Python SDK Usage**
-### Quick Start 
+## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
+### 快速開始  {#quick-start}
 
 ```python
 from litellm import video_generation, video_status, video_content
@@ -64,7 +64,7 @@ with open("generated_video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-### Async Usage 
+### 非同步使用  {#async-usage}
 
 ```python
 from litellm import avideo_generation, avideo_status, avideo_content
@@ -111,7 +111,7 @@ async def test_async_video():
 asyncio.run(test_async_video())
 ```
 
-### Video Status Checking
+### 影片狀態檢查 {#video-status-checking}
 
 ```python
 from litellm import video_status
@@ -125,9 +125,9 @@ print(f"Created At: {status_response.created_at}")
 print(f"Model: {status_response.model}")
 ```
 
-### List Videos
+### 列出影片 {#list-videos}
 
-For listing videos, you need to specify the provider since there's no video_id to decode from:
+若要列出影片，您需要指定提供者，因為沒有可供解碼的 video_id：
 
 ```python
 from litellm import video_list
@@ -139,7 +139,7 @@ for video in videos:
     print(f"Video ID: {video['id']}")
 ```
 
-### Video Generation with Reference Image
+### 使用參考圖片進行影片生成 {#video-generation-with-reference-image}
 
 ```python
 from litellm import video_generation
@@ -156,7 +156,7 @@ response = video_generation(
 print(f"Video ID: {response.id}")
 ```
 
-### Video Remix (Video Editing)
+### 影片重混（影片編輯） {#video-remix-video-editing}
 
 ```python
 from litellm import video_remix
@@ -172,7 +172,7 @@ response = video_remix(
 print(f"Video ID: {response.id}")
 ```
 
-### Optional Parameters
+### 可選參數 {#optional-parameters}
 
 ```python
 response = video_generation(
@@ -185,7 +185,7 @@ response = video_generation(
 )
 ```
 
-### Azure Video Generation
+### Azure 影片生成 {#azure-video-generation}
 
 ```python
 from litellm import video_generation
@@ -205,18 +205,18 @@ response = video_generation(
 print(f"Video ID: {response.id}")
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 使用方式** {#litellm-proxy-usage}
 
-LiteLLM provides OpenAI API compatible video endpoints for complete video generation workflow:
+LiteLLM 提供與 OpenAI API 相容的影片端點，以完成完整的影片生成工作流程：
 
-- `/videos` - Generate new videos
-- `/videos/remix` - Edit existing videos with reference images  
-- `/videos/status` - Check video generation status
-- `/videos/retrieval` - Download completed videos
+- `/videos` - 生成新影片
+- `/videos/remix` - 使用參考圖片編輯現有影片  
+- `/videos/status` - 檢查影片生成狀態
+- `/videos/retrieval` - 下載已完成的影片
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -231,7 +231,7 @@ model_list:
       api_base: os.environ/AZURE_OPENAI_API_BASE
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -239,7 +239,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test video generation request
+測試影片生成請求
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos' \
@@ -251,14 +251,14 @@ curl --location 'http://localhost:4000/v1/videos' \
 }'
 ```
 
-Test video status request
+測試影片狀態請求
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/{video_id}' \
 --header 'x-litellm-api-key: sk-1234'
 ```
 
-Test video retrieval request
+測試影片擷取請求
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/{video_id}/content' \
@@ -266,7 +266,7 @@ curl --location 'http://localhost:4000/v1/videos/{video_id}/content' \
 --output video.mp4
 ```
 
-Test video remix request
+測試影片重混請求
 
 ```bash
 curl --location --request POST 'http://localhost:4000/v1/videos/{video_id}/remix' \
@@ -277,7 +277,7 @@ curl --location --request POST 'http://localhost:4000/v1/videos/{video_id}/remix
 }'
 ```
 
-Test video list request (requires custom_llm_provider)
+測試影片列表請求（需要 custom_llm_provider）
 
 ```bash
 # Note: video_list requires custom_llm_provider since there's no video_id to decode from
@@ -290,29 +290,29 @@ curl --location 'http://localhost:4000/v1/videos' \
 --header 'custom-llm-provider: azure'
 ```
 
-### Character, Edit, and Extension Endpoints
+### 角色、編輯與延伸端點 {#character-edit-and-extension-endpoints}
 
-LiteLLM proxy also supports these OpenAI-compatible video routes:
+LiteLLM proxy 也支援以下與 OpenAI 相容的影片路由：
 
 - `POST /v1/videos/characters`
 - `GET /v1/videos/characters/{character_id}`
 - `POST /v1/videos/edits`
 - `POST /v1/videos/extensions`
 
-#### Routing Behavior (`target_model_names`, encoded IDs, and provider overrides)
+#### 路由行為（`target_model_names`、已編碼 ID 與提供者覆寫） {#routing-behavior-target_model_names-encoded-ids-and-provider-overrides}
 
-- `POST /v1/videos/characters` supports `target_model_names` like `POST /v1/videos`.
-- When `target_model_names` is provided on character creation, LiteLLM encodes the returned `character_id` with routing metadata.
-- `GET /v1/videos/characters/{character_id}` accepts encoded character IDs directly. LiteLLM decodes the ID internally and routes with the correct model/provider metadata.
-- `POST /v1/videos/edits` and `POST /v1/videos/extensions` support both:
-  - plain `video.id`
-  - encoded `video.id` values returned by LiteLLM
-- `custom_llm_provider` can be supplied using the same patterns as other proxy endpoints:
-  - header: `custom-llm-provider`
-  - query: `?custom_llm_provider=...`
-  - body: `custom_llm_provider` (or `extra_body.custom_llm_provider` where applicable)
+- `POST /v1/videos/characters` 支援像 `target_model_names` 這樣的 `POST /v1/videos`。
+- 在建立角色時提供 `target_model_names` 時，LiteLLM 會以路由中繼資料編碼回傳的 `character_id`。
+- `GET /v1/videos/characters/{character_id}` 可直接接受已編碼的角色 ID。LiteLLM 會在內部解碼該 ID，並使用正確的模型/提供者中繼資料進行路由。
+- `POST /v1/videos/edits` 和 `POST /v1/videos/extensions` 同時支援：
+  - 純文字 `video.id`
+  - LiteLLM 回傳的已編碼 `video.id` 值
+- `custom_llm_provider` 可使用與其他 proxy 端點相同的模式提供：
+  - 標頭：`custom-llm-provider`
+  - 查詢：`?custom_llm_provider=...`
+  - 主體：`custom_llm_provider`（或適用時的 `extra_body.custom_llm_provider`）
 
-#### Character create with `target_model_names`
+#### 使用 `target_model_names` 建立角色 {#character-create-with-target_model_names}
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/characters' \
@@ -322,7 +322,7 @@ curl --location 'http://localhost:4000/v1/videos/characters' \
 -F 'video=@/path/to/character.mp4'
 ```
 
-Example response (encoded `id`):
+範例回應（已編碼 `id`）：
 
 ```json
 {
@@ -333,14 +333,14 @@ Example response (encoded `id`):
 }
 ```
 
-#### Get character using encoded `character_id`
+#### 使用已編碼 `character_id` 取得角色 {#get-character-using-encoded-character_id}
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/characters/character_...' \
 --header 'Authorization: Bearer sk-1234'
 ```
 
-#### Video edit with encoded `video.id`
+#### 使用已編碼 `video.id` 進行影片編輯 {#video-edit-with-encoded-videoid}
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/edits' \
@@ -352,7 +352,7 @@ curl --location 'http://localhost:4000/v1/videos/edits' \
 }'
 ```
 
-#### Video extension with provider override from `extra_body`
+#### 以來自 `extra_body` 的提供者覆寫進行影片延伸 {#video-extension-with-provider-override-from-extra_body}
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/extensions' \
@@ -366,7 +366,7 @@ curl --location 'http://localhost:4000/v1/videos/extensions' \
 }'
 ```
 
-Test Azure video generation request
+測試 Azure 影片生成請求
 
 ```bash
 curl http://localhost:4000/v1/videos \
@@ -380,13 +380,13 @@ curl http://localhost:4000/v1/videos \
   }'
 ```
 
-## **Using OpenAI Client with LiteLLM Proxy**
+## **搭配 LiteLLM Proxy 使用 OpenAI Client** {#using-openai-client-with-litellm-proxy}
 
-You can use the standard OpenAI Python client to interact with LiteLLM's video endpoints. This provides a familiar interface while leveraging LiteLLM's provider abstraction and proxy features.
+您可以使用標準的 OpenAI Python client 與 LiteLLM 的影片端點互動。這提供了熟悉的介面，同時運用 LiteLLM 的提供者抽象與 proxy 功能。
 
-### Setup
+### 設定 {#setup}
 
-First, configure your OpenAI client to point to your LiteLLM proxy:
+首先，設定您的 OpenAI client 指向您的 LiteLLM proxy：
 
 ```python
 from openai import OpenAI
@@ -398,9 +398,9 @@ client = OpenAI(
 )
 ```
 
-### Video Generation
+### 影片生成 {#video-generation}
 
-Generate a new video using the OpenAI client interface:
+使用 OpenAI client 介面生成新影片：
 
 ```python
 # Basic video generation
@@ -415,9 +415,9 @@ print(f"Video ID: {response.id}")
 print(f"Status: {response.status}")
 ```
 
-### Video Generation with Reference Image
+### 使用參考圖片進行影片生成 {#video-generation-with-reference-image-1}
 
-Create a video using a reference image:
+使用參考圖片建立影片：
 
 ```python
 # Video generation with reference image
@@ -432,9 +432,9 @@ print(f"Video ID: {response.id}")
 print(f"Status: {response.status}")
 ```
 
-### Video Status Checking
+### 影片狀態檢查 {#video-status-checking-1}
 
-Check the status of a video generation:
+檢查影片生成的狀態：
 
 ```python
 # Check video status
@@ -456,9 +456,9 @@ while status_response.status not in ["completed", "failed"]:
     print(f"Current status: {status_response.status}")
 ```
 
-### List Videos
+### 列出影片 {#list-videos-1}
 
-Get a list of your videos:
+取得您的影片清單：
 
 ```python
 # List all videos
@@ -468,9 +468,9 @@ for video in videos.data:
     print(f"Video ID: {video.id}, Status: {video.status}")
 ```
 
-### Download Video Content
+### 下載影片內容 {#download-video-content}
 
-Download the completed video:
+下載已完成的影片：
 
 ```python
 # Download video content
@@ -485,9 +485,9 @@ with open("generated_video.mp4", "wb") as f:
 print("Video downloaded successfully!")
 ```
 
-### Video Remix (Editing)
+### 影片重混（編輯） {#video-remix-editing}
 
-Edit an existing video with new instructions:
+使用新的指令編輯現有影片：
 
 ```python
 # Remix/edit an existing video
@@ -501,9 +501,9 @@ print(f"Remix Video ID: {response.id}")
 print(f"Status: {response.status}")
 ```
 
-### Complete Workflow Example
+### 完整工作流程範例 {#complete-workflow-example}
 
-Here's a complete example showing the full video generation workflow:
+以下是顯示完整影片生成工作流程的完整範例：
 
 ```python
 from openai import OpenAI
@@ -562,17 +562,17 @@ remix_response = client.videos.remix(
 print(f"Remix started. ID: {remix_response.id}")
 ```
 
-## **Request/Response Format**
+## **請求/回應格式** {#requestresponse-format}
 
 :::info
 
-LiteLLM follows the **OpenAI Video Generation API specification**. 
+LiteLLM 遵循 **OpenAI 影片生成 API 規範**。 
 
-See the [official OpenAI Video Generation documentation](https://platform.openai.com/docs/guides/video-generation) for complete details.
+請參閱 [官方 OpenAI 影片生成文件](https://platform.openai.com/docs/guides/video-generation) 以取得完整 विवरण。
 
 :::
 
-### Example Request
+### 請求範例 {#example-request}
 
 ```python
 {
@@ -584,21 +584,21 @@ See the [official OpenAI Video Generation documentation](https://platform.openai
 }
 ```
 
-### Request Parameters
+### 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | The video generation model to use (e.g., `"openai/sora-2"`) |
-| `prompt` | string | Yes | Text description of the desired video |
-| `seconds` | string | No | Video duration in seconds (e.g., "8", "16") |
-| `size` | string | No | Video dimensions (e.g., "720x1280", "1280x720") |
-| `input_reference` | file object | No | Reference image for video generation or editing (both generation and remix) |
-| `user` | string | No | User identifier for tracking |
-| `video_id` | string | Yes (status/retrieval) | Video ID for status checking or retrieval |
+| `model` | string | 是 | 要使用的影片生成模型（例如，`"openai/sora-2"`） |
+| `prompt` | string | 是 | 所需影片的文字描述 |
+| `seconds` | string | 否 | 影片長度（秒）（例如，「8」、「16」） |
+| `size` | string | 否 | 影片尺寸（例如，「720x1280」、「1280x720」） |
+| `input_reference` | file object | 否 | 用於影片生成或編輯的參考圖片（生成與重混皆適用） |
+| `user` | string | 否 | 用於追蹤的使用者識別碼 |
+| `video_id` | string | 是（狀態/擷取） | 用於狀態檢查或擷取的影片 ID |
 
-#### Video Generation Request Example
+#### 影片生成請求範例 {#video-generation-request-example}
 
-**For video generation:**
+**用於影片生成：**
 ```json
 {
   "model": "sora-2",
@@ -608,7 +608,7 @@ See the [official OpenAI Video Generation documentation](https://platform.openai
 }
 ```
 
-**For video generation with reference image:**
+**用於帶有參考圖片的影片生成：**
 ```python
 {
   "model": "sora-2",
@@ -619,7 +619,7 @@ See the [official OpenAI Video Generation documentation](https://platform.openai
 }
 ```
 
-**For video status check:**
+**用於影片狀態檢查：**
 ```json
 {
   "video_id": "video_1234567890",
@@ -627,7 +627,7 @@ See the [official OpenAI Video Generation documentation](https://platform.openai
 }
 ```
 
-**For video retrieval:**
+**用於影片擷取：**
 ```json
 {
   "video_id": "video_1234567890",
@@ -635,9 +635,9 @@ See the [official OpenAI Video Generation documentation](https://platform.openai
 }
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-The response follows OpenAI's video generation format with the following structure:
+回應遵循 OpenAI 的影片生成格式，結構如下：
 
 ```json
 {
@@ -659,26 +659,25 @@ The response follows OpenAI's video generation format with the following structu
 }
 ```
 
-#### Response Fields
+#### 回應欄位 {#response-fields}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `id` | string | Unique identifier for the video |
-| `object` | string | Always `"video"` for video responses |
-| `status` | string | Video processing status (`"queued"`, `"processing"`, `"completed"`) |
-| `created_at` | integer | Unix timestamp when the video was created |
-| `model` | string | The model used for video generation |
-| `size` | string | Video dimensions |
-| `seconds` | string | Video duration in seconds |
-| `usage` | object | Token usage and duration information |
+| `id` | string | 影片的唯一識別碼 |
+| `object` | string | 影片回應一律為 `"video"` |
+| `status` | string | 影片處理狀態（`"queued"`、`"processing"`、`"completed"`） |
+| `created_at` | integer | 建立影片時的 Unix 時間戳記 |
+| `model` | string | 用於影片生成的模型 |
+| `size` | string | 影片尺寸 |
+| `seconds` | string | 影片長度（秒） |
+| `usage` | object | Token 使用量與持續時間資訊 |
 
+## **支援的提供者** {#supported-providers}
 
-## **Supported Providers**
-
-| Provider    | Link to Usage      |
+| 提供者    | 使用方式連結      |
 |-------------|--------------------|
-| OpenAI      |   [Usage](providers/openai/videos)  |
-| Azure       |   [Usage](providers/azure/videos)   |
-| Gemini       |   [Usage](providers/gemini/videos)   |
-| Vertex AI   |   [Usage](providers/vertex_ai/videos) |
-| RunwayML    |   [Usage](providers/runwayml/videos) |
+| OpenAI      |   [使用方式](providers/openai/videos)  |
+| Azure       |   [使用方式](providers/azure/videos)   |
+| Gemini       |   [使用方式](providers/gemini/videos)   |
+| Vertex AI   |   [使用方式](providers/vertex_ai/videos) |
+| RunwayML    |   [使用方式](providers/runwayml/videos) |

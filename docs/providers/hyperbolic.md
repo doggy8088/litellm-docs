@@ -1,54 +1,54 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Hyperbolic
+# Hyperbolic {#hyperbolic}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Hyperbolic provides access to the latest models at a fraction of legacy cloud costs, with OpenAI-compatible APIs for LLMs, image generation, and more. |
-| Provider Route on LiteLLM | `hyperbolic/` |
-| Link to Provider Doc | [Hyperbolic Documentation ↗](https://docs.hyperbolic.xyz) |
+| 說明 | Hyperbolic 讓您以傳統雲端成本的一小部分，存取最新模型，並提供相容 OpenAI 的 LLM、圖像生成等 API。 |
+| LiteLLM 提供者路由 | `hyperbolic/` |
+| 提供者文件連結 | [Hyperbolic 文件 ↗](https://docs.hyperbolic.xyz) |
 | Base URL | `https://api.hyperbolic.xyz/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 <br />
 
 https://docs.hyperbolic.xyz
 
-**We support ALL Hyperbolic models, just set `hyperbolic/` as a prefix when sending completion requests**
+**我們支援所有 Hyperbolic 模型；在送出 completion 請求時，只要將 `hyperbolic/` 設為前綴即可**
 
-## Available Models
+## 可用模型 {#available-models}
 
-### Language Models
+### 語言模型 {#language-models}
 
-| Model | Description | Context Window | Pricing per 1M tokens |
+| 模型 | 說明 | 上下文視窗 | Pricing per 1M tokens |
 |-------|-------------|----------------|----------------------|
-| `hyperbolic/deepseek-ai/DeepSeek-V3` | DeepSeek V3 - Fast and efficient | 131,072 tokens | $0.25 |
-| `hyperbolic/deepseek-ai/DeepSeek-V3-0324` | DeepSeek V3 March 2024 version | 131,072 tokens | $0.25 |
-| `hyperbolic/deepseek-ai/DeepSeek-R1` | DeepSeek R1 - Reasoning model | 131,072 tokens | $2.00 |
-| `hyperbolic/deepseek-ai/DeepSeek-R1-0528` | DeepSeek R1 May 2028 version | 131,072 tokens | $0.25 |
+| `hyperbolic/deepseek-ai/DeepSeek-V3` | DeepSeek V3 - 快速且高效率 | 131,072 tokens | $0.25 |
+| `hyperbolic/deepseek-ai/DeepSeek-V3-0324` | DeepSeek V3 2024 年 3 月版本 | 131,072 tokens | $0.25 |
+| `hyperbolic/deepseek-ai/DeepSeek-R1` | DeepSeek R1 - 推理模型 | 131,072 tokens | $2.00 |
+| `hyperbolic/deepseek-ai/DeepSeek-R1-0528` | DeepSeek R1 2028 年 5 月版本 | 131,072 tokens | $0.25 |
 | `hyperbolic/Qwen/Qwen2.5-72B-Instruct` | Qwen 2.5 72B Instruct | 131,072 tokens | $0.40 |
-| `hyperbolic/Qwen/Qwen2.5-Coder-32B-Instruct` | Qwen 2.5 Coder 32B for code generation | 131,072 tokens | $0.20 |
-| `hyperbolic/Qwen/Qwen3-235B-A22B` | Qwen 3 235B A22B variant | 131,072 tokens | $2.00 |
+| `hyperbolic/Qwen/Qwen2.5-Coder-32B-Instruct` | 用於程式碼生成的 Qwen 2.5 Coder 32B | 131,072 tokens | $0.20 |
+| `hyperbolic/Qwen/Qwen3-235B-A22B` | Qwen 3 235B A22B 變體 | 131,072 tokens | $2.00 |
 | `hyperbolic/Qwen/QwQ-32B` | Qwen QwQ 32B | 131,072 tokens | $0.20 |
 | `hyperbolic/meta-llama/Llama-3.3-70B-Instruct` | Llama 3.3 70B Instruct | 131,072 tokens | $0.80 |
 | `hyperbolic/meta-llama/Meta-Llama-3.1-405B-Instruct` | Llama 3.1 405B Instruct | 131,072 tokens | $5.00 |
 | `hyperbolic/moonshotai/Kimi-K2-Instruct` | Kimi K2 Instruct | 131,072 tokens | $2.00 |
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["HYPERBOLIC_API_KEY"] = ""  # your Hyperbolic API key
 ```
 
-Get your API key from [Hyperbolic dashboard](https://app.hyperbolic.ai).
+從 [Hyperbolic 儀表板](https://app.hyperbolic.ai) 取得您的 API 金鑰。
 
-## Usage - LiteLLM Python SDK
+## 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Hyperbolic Non-streaming Completion"
 import os
@@ -68,7 +68,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Hyperbolic Streaming Completion"
 import os
@@ -90,7 +90,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="Hyperbolic Function Calling"
 import os
@@ -133,9 +133,9 @@ response = completion(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy
+## 用法 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -155,7 +155,7 @@ model_list:
       api_key: os.environ/HYPERBOLIC_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -268,35 +268,35 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For more detailed information on using the LiteLLM Proxy, see the [LiteLLM Proxy documentation](../providers/litellm_proxy).
+如需更詳細的 LiteLLM Proxy 使用資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-Hyperbolic supports the following OpenAI-compatible parameters:
+Hyperbolic 支援以下與 OpenAI 相容的參數：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `messages` | array | **Required**. Array of message objects with 'role' and 'content' |
-| `model` | string | **Required**. Model ID (e.g., deepseek-ai/DeepSeek-V3, Qwen/Qwen2.5-72B-Instruct) |
-| `stream` | boolean | Optional. Enable streaming responses |
-| `temperature` | float | Optional. Sampling temperature (0.0 to 2.0) |
-| `top_p` | float | Optional. Nucleus sampling parameter |
-| `max_tokens` | integer | Optional. Maximum tokens to generate |
-| `frequency_penalty` | float | Optional. Penalize frequent tokens |
-| `presence_penalty` | float | Optional. Penalize tokens based on presence |
-| `stop` | string/array | Optional. Stop sequences |
-| `n` | integer | Optional. Number of completions to generate |
-| `tools` | array | Optional. List of available tools/functions |
-| `tool_choice` | string/object | Optional. Control tool/function calling |
-| `response_format` | object | Optional. Response format specification |
-| `seed` | integer | Optional. Random seed for reproducibility |
-| `user` | string | Optional. User identifier |
+| `messages` | array | **必要**。包含 'role' 和 'content' 的訊息物件陣列 |
+| `model` | string | **必要**。模型 ID（例如 deepseek-ai/DeepSeek-V3、Qwen/Qwen2.5-72B-Instruct） |
+| `stream` | boolean | 選用。啟用串流回應 |
+| `temperature` | float | 選用。採樣溫度（0.0 到 2.0） |
+| `top_p` | float | 選用。核採樣參數 |
+| `max_tokens` | integer | 選用。要生成的最大 token 數 |
+| `frequency_penalty` | float | 選用。對高頻 token 進行懲罰 |
+| `presence_penalty` | float | 選用。根據存在與否對 token 進行懲罰 |
+| `stop` | string/array | 選用。停止序列 |
+| `n` | integer | 選用。要生成的 completion 數量 |
+| `tools` | array | 選用。可用工具/函式清單 |
+| `tool_choice` | string/object | 選用。控制工具/函式呼叫 |
+| `response_format` | object | 選用。回應格式規格 |
+| `seed` | integer | 選用。用於重現性的隨機種子 |
+| `user` | string | 選用。使用者識別碼 |
 
-## Advanced Usage
+## 進階用法 {#advanced-usage}
 
-### Custom API Base
+### 自訂 API Base {#custom-api-base}
 
-If you're using a custom Hyperbolic deployment:
+如果您使用的是自訂 Hyperbolic 部署：
 
 ```python showLineNumbers title="Custom API Base"
 import litellm
@@ -309,23 +309,23 @@ response = litellm.completion(
 )
 ```
 
-### Rate Limits
+### 速率限制 {#rate-limits}
 
-Hyperbolic offers different tiers:
-- **Basic**: 60 requests per minute (RPM)
-- **Pro**: 600 RPM
-- **Enterprise**: Custom limits
+Hyperbolic 提供不同方案：
+- **Basic**：每分鐘 60 次請求（RPM）
+- **Pro**：600 RPM
+- **Enterprise**：自訂限制
 
-## Pricing
+## 定價 {#pricing}
 
-Hyperbolic offers competitive pay-as-you-go pricing with no hidden fees or long-term commitments. See the model table above for specific pricing per million tokens.
+Hyperbolic 提供具競爭力的按用量付費定價，沒有隱藏費用或長期承諾。每百萬 token 的具體價格請參閱上方模型表。
 
-### Precision Options
-- **BF16**: Best precision and performance, suitable for tasks where accuracy is critical
-- **FP8**: Optimized for efficiency and speed, ideal for high-throughput applications at lower cost
+### 精度選項 {#precision-options}
+- **BF16**：最佳精度與效能，適合對準確性要求嚴格的任務
+- **FP8**：針對效率與速度最佳化，適合在較低成本下追求高吞吐量的應用
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Hyperbolic Official Documentation](https://docs.hyperbolic.xyz)
-- [Hyperbolic Dashboard](https://app.hyperbolic.ai)
-- [API Reference](https://docs.hyperbolic.xyz/docs/rest-api)
+- [Hyperbolic 官方文件](https://docs.hyperbolic.xyz)
+- [Hyperbolic 儀表板](https://app.hyperbolic.ai)
+- [API 參考](https://docs.hyperbolic.xyz/docs/rest-api)

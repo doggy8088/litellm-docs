@@ -2,54 +2,52 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Hugging Face
-LiteLLM supports running inference across multiple services for models hosted on the Hugging Face Hub.
+# Hugging Face {#hugging-face}
+LiteLLM 支援在 Hugging Face Hub 上託管的模型，跨多個服務執行推論。
 
-- **Serverless Inference Providers** - Hugging Face offers an easy and unified access to serverless AI inference through multiple inference providers, like [Together AI](https://together.ai) and [Sambanova](https://sambanova.ai). This is the fastest way to integrate AI in your products with a maintenance-free and scalable solution. More details in the [Inference Providers documentation](https://huggingface.co/docs/inference-providers/index).
-- **Dedicated Inference Endpoints** - which is a product to easily deploy models to production. Inference is run by Hugging Face in a dedicated, fully managed infrastructure on a cloud provider of your choice. You can deploy your model on Hugging Face Inference Endpoints by following [these steps](https://huggingface.co/docs/inference-endpoints/guides/create_endpoint).
+- **無伺服器推論提供者** - Hugging Face 提供透過多個推論提供者進行無伺服器 AI 推論的簡單且統一的存取，例如 [Together AI](https://together.ai) 和 [Sambanova](https://sambanova.ai)。這是將 AI 整合到您產品中的最快方式，採用免維護且可擴充的解決方案。更多詳細資訊請參閱 [推論提供者文件](https://huggingface.co/docs/inference-providers/index)。
+- **專用推論端點** - 這是一項可輕鬆將模型部署到正式環境的產品。推論由 Hugging Face 在您選擇的雲端提供者上的專用、全代管基礎架構中執行。您可以依照 [這些步驟](https://huggingface.co/docs/inference-endpoints/guides/create_endpoint) 在 Hugging Face Inference Endpoints 上部署您的模型。
 
+## 支援的模型 {#supported-models}
 
-## Supported Models
+### 無伺服器推論提供者 {#serverless-inference-providers}
+您可以前往 [huggingface.co/models](https://huggingface.co/models)，點擊「Other」篩選分頁，並選取您想要的提供者，以查看推論提供者可用的模型：
 
-### Serverless Inference Providers
-You can check available models for an inference provider by going to [huggingface.co/models](https://huggingface.co/models), clicking the "Other" filter tab, and selecting your desired provider:
+![依推論提供者篩選模型](../../img/hf_filter_inference_providers.png)
 
-![Filter models by Inference Provider](../../img/hf_filter_inference_providers.png)
+例如，您可以在 [這裡](https://huggingface.co/models?inference_provider=fireworks-ai&sort=trending) 找到所有支援 Fireworks 的模型。
 
-For example, you can find all Fireworks supported models [here](https://huggingface.co/models?inference_provider=fireworks-ai&sort=trending).
+### 專用推論端點 {#dedicated-inference-endpoints}
+請參閱 [Inference Endpoints 目錄](https://endpoints.huggingface.co/catalog) 以取得可用模型清單。
 
-
-### Dedicated Inference Endpoints
-Refer to the [Inference Endpoints catalog](https://endpoints.huggingface.co/catalog) for a list of available models.
-
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
-<TabItem value="serverless" label="Serverless Inference Providers">
+<TabItem value="serverless" label="無伺服器推論提供者">
 
-### Authentication
-With a single Hugging Face token, you can access inference through multiple providers. Your calls are routed through Hugging Face and the usage is billed directly to your Hugging Face account at the standard provider API rates.
+### 驗證 {#authentication}
+只要使用單一 Hugging Face token，您就可以透過多個提供者存取推論。您的請求會經由 Hugging Face 路由，且用量會以標準提供者 API 費率直接向您的 Hugging Face 帳戶計費。
 
-Simply set the `HF_TOKEN` environment variable with your Hugging Face token, you can create one here: https://huggingface.co/settings/tokens.
+只需將 `HF_TOKEN` 環境變數設定為您的 Hugging Face token，您可以在這裡建立一個：https://huggingface.co/settings/tokens.
 
 ```bash
 export HF_TOKEN="hf_xxxxxx"
 ```
-or alternatively, you can pass your Hugging Face token as a parameter:
+或者，您也可以將您的 Hugging Face token 作為參數傳入：
 ```python
 completion(..., api_key="hf_xxxxxx")
 ```
 
-### Getting Started
+### 快速開始 {#getting-started}
 
-To use a Hugging Face model, specify both the provider and model you want to use in the following format:
+若要使用 Hugging Face 模型，請以以下格式同時指定您要使用的提供者與模型：
 ```
 huggingface/<provider>/<hf_org_or_user>/<hf_model>
 ```
-Where `<hf_org_or_user>/<hf_model>` is the Hugging Face model ID and `<provider>` is the inference provider.  
-By default, if you don't specify a provider, LiteLLM will use the [HF Inference API](https://huggingface.co/docs/api-inference/en/index).
+其中 `<hf_org_or_user>/<hf_model>` 是 Hugging Face 模型 ID，而 `<provider>` 是推論提供者。  
+預設情況下，如果您未指定提供者，LiteLLM 會使用 [HF Inference API](https://huggingface.co/docs/api-inference/en/index)。
 
-Examples:
+範例：
 
 ```python
 # Run DeepSeek-R1 inference through Together AI
@@ -64,11 +62,11 @@ completion(model="huggingface/meta-llama/Llama-3.3-70B-Instruct",...)
 
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_HuggingFace.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-### Basic Completion
-Here's an example of chat completion using the DeepSeek-R1 model through Together AI:
+### 基本完成 {#basic-completion}
+以下是透過 Together AI 使用 DeepSeek-R1 模型進行聊天完成的範例：
 
 ```python
 import os
@@ -88,8 +86,8 @@ response = completion(
 print(response)
 ```
 
-### Streaming
-Now, let's see what a streaming request looks like.
+### 串流 {#streaming}
+現在，讓我們看看串流請求會長什麼樣子。
 
 ```python
 import os
@@ -113,8 +111,8 @@ for chunk in response:
     print(chunk)
 ```
 
-### Image Input
-You can also pass images when the model supports it. Here is an example using [Llama-3.2-11B-Vision-Instruct](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) model through Sambanova.
+### 圖片輸入 {#image-input}
+當模型支援時，您也可以傳入圖片。以下是使用 [Llama-3.2-11B-Vision-Instruct](https://huggingface.co/meta-llama/Llama-3.2-11B-Vision-Instruct) 模型透過 Sambanova 的範例。
 
 ```python
 from litellm import completion
@@ -144,8 +142,8 @@ response = completion(
 print(response.choices[0])
 ```
 
-### Function Calling
-You can extend the model's capabilities by giving them access to tools. Here is an example with function calling using [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) model through Sambanova.
+### 函式呼叫 {#function-calling}
+您可以透過讓模型存取工具來擴充其能力。以下是使用 [Qwen2.5-72B-Instruct](https://huggingface.co/Qwen/Qwen2.5-72B-Instruct) 模型透過 Sambanova 的函式呼叫範例。
 
 ```python
 import os
@@ -195,11 +193,11 @@ print(response)
 <TabItem value="endpoints" label="Inference Endpoints">
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_HuggingFace.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-### Basic Completion
-After you have [deployed your Hugging Face Inference Endpoint](https://endpoints.huggingface.co/new) on dedicated infrastructure, you can run inference on it by providing the endpoint base URL in `api_base`, and indicating `huggingface/tgi` as the model name.
+### 基本完成 {#basic-completion-1}
+在您已於專用基礎架構上[部署 Hugging Face Inference Endpoint](https://endpoints.huggingface.co/new)之後，您可以透過在 `api_base` 中提供端點基礎 URL，並將 `huggingface/tgi` 指定為模型名稱，來對其執行推論。
 
 ```python
 import os
@@ -215,7 +213,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming-1}
 
 ```python
 import os
@@ -234,7 +232,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Image Input
+### 圖片輸入 {#image-input-1}
 
 ```python
 import os
@@ -264,7 +262,7 @@ response = completion(
 print(response.choices[0])
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling-1}
 
 ```python
 import os
@@ -299,12 +297,12 @@ print(response)
 </TabItem>
 </Tabs>
 
-## LiteLLM Proxy Server with Hugging Face models
-You can set up a [LiteLLM Proxy Server](https://docs.litellm.ai/#litellm-proxy-server-llm-gateway) to serve Hugging Face models through any of the supported Inference Providers. Here's how to do it:
+## 搭配 Hugging Face 模型的 LiteLLM Proxy Server {#litellm-proxy-server-with-hugging-face-models}
+您可以設定 [LiteLLM Proxy Server](https://docs.litellm.ai/#litellm-proxy-server-llm-gateway)，透過任何支援的 Inference Provider 提供 Hugging Face 模型服務。做法如下：
 
-### Step 1. Setup the config file
+### 步驟 1. 設定 config 檔案 {#step-1-setup-the-config-file}
 
-In this case, we are configuring a proxy to serve `DeepSeek R1` from Hugging Face, using Together AI as the backend Inference Provider.
+在此情況下，我們正在設定一個 proxy，使用 Together AI 作為後端 Inference Provider，來提供來自 Hugging Face 的 `DeepSeek R1` 服務。
 
 ```yaml
 model_list:
@@ -314,12 +312,12 @@ model_list:
       api_key: os.environ/HF_TOKEN # ensure you have `HF_TOKEN` in your .env
 ```
 
-### Step 2. Start the server
+### 步驟 2. 啟動伺服器 {#step-2-start-the-server}
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### Step 3. Make a request to the server
+### 步驟 3. 向伺服器發出請求 {#step-3-make-a-request-to-the-server}
 <Tabs>
 <TabItem value="curl" label="curl">
 
@@ -361,10 +359,9 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 嵌入 {#embedding}
 
-## Embedding
-
-LiteLLM supports Hugging Face's [text-embedding-inference](https://github.com/huggingface/text-embeddings-inference) models as well.
+LiteLLM 也支援 Hugging Face 的 [text-embedding-inference](https://github.com/huggingface/text-embeddings-inference) 模型。
 
 ```python
 from litellm import embedding
@@ -376,18 +373,18 @@ response = embedding(
 )
 ```
 
-# FAQ
+# 常見問題 {#faq}
 
-**How does billing work with Hugging Face Inference Providers?**
+**Hugging Face Inference Providers 的計費方式是什麼？**
 
-> Billing is centralized on your Hugging Face account, no matter which providers you are using. You are billed the standard provider API rates with no additional markup - Hugging Face simply passes through the provider costs. Note that [Hugging Face PRO](https://huggingface.co/subscribe/pro) users get $2 worth of Inference credits every month that can be used across providers.
+> 計費會集中在您的 Hugging Face 帳戶上，無論您使用哪個提供者。系統會以標準提供者 API 費率向您收費，不會額外加價 - Hugging Face 只是代為轉付提供者成本。請注意，[Hugging Face PRO](https://huggingface.co/subscribe/pro) 用戶每個月可獲得價值 2 美元的 Inference 點數，可跨提供者使用。
 
-**Do I need to create an account for each Inference Provider?**
+**我需要為每個 Inference Provider 建立一個帳戶嗎？**
 
-> No, you don't need to create separate accounts. All requests are routed through Hugging Face, so you only need your HF token. This allows you to easily benchmark different providers and choose the one that best fits your needs.
+> 不，您不需要建立個別帳戶。所有請求都會經由 Hugging Face 路由，因此您只需要 HF token。這讓您可以輕鬆比較不同提供者的效能，並選擇最符合您需求的方案。
 
-**Will more inference providers be supported by Hugging Face in the future?**
+**Hugging Face 未來會支援更多推論提供者嗎？**
 
-> Yes! New inference providers (and models) are being added gradually.
+> 會！新的推論提供者（以及模型）正在逐步加入。
 
-We welcome any suggestions for improving our Hugging Face integration - Create an [issue](https://github.com/BerriAI/litellm/issues/new/choose)/[Join the Discord](https://discord.com/invite/wuPM9dRgDw)!
+我們歡迎任何能改善 Hugging Face 整合的建議 - 建立一個 [issue](https://github.com/BerriAI/litellm/issues/new/choose)/[加入 Discord](https://discord.com/invite/wuPM9dRgDw)！

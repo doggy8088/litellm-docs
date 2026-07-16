@@ -1,5 +1,5 @@
 ---
-title: "v1.83.7-stable - Per-User MCP OAuth, Team Spend Logs RBAC"
+title: "v1.83.7-stable - 每位使用者的 MCP OAuth、團隊支出記錄 RBAC"
 slug: "v1-83-7-stable"
 date: 2026-04-18T00:00:00
 authors:
@@ -26,7 +26,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -53,172 +53,172 @@ pip install litellm==1.83.7
 
 :::warning
 
-**Breaking change — Prometheus latency histogram buckets reduced.** The default `LATENCY_BUCKETS` set has been reduced from 35 to 18 boundaries to lower Prometheus cardinality. Dashboards and PromQL queries that reference specific `le=` bucket values may stop matching. Review your alerts/dashboards before upgrading and use `LATENCY_BUCKETS` env override to restore the previous boundaries if needed — [PR #25527](https://github.com/BerriAI/litellm/pull/25527).
+**破壞性變更 — Prometheus 延遲直方圖 bucket 已減少。** 預設的 `LATENCY_BUCKETS` 集合已從 35 個邊界減少為 18 個邊界，以降低 Prometheus 的基數。參照特定 `le=` bucket 值的儀表板和 PromQL 查詢可能會停止比對。升級前請檢視您的警示/儀表板，並在需要時使用 `LATENCY_BUCKETS` 環境變數覆寫以還原先前的邊界 — [PR #25527](https://github.com/BerriAI/litellm/pull/25527)。
 
 :::
 
-## Key Highlights
+## 重點摘要 {#key-highlights}
 
-- **Per-User MCP OAuth Tokens** — [Each end-user can now hold their own OAuth tokens for interactive MCP server flows, isolating credentials across users](../../docs/mcp)
-- **Team Spend Logs RBAC** — Teams with the `/spend/logs` permission can view team-wide spend logs from the UI and API
-- **Bulk Team Permissions API** — New `POST /team/permissions_bulk_update` endpoint for updating member permissions across many teams in one call
-- **Azure Container Routing** — Container routing, managed container IDs, and delete-response parsing for Azure Responses API containers
-- **UI E2E Test Suite** — Playwright-based end-to-end tests for proxy admin, team, and key management flows now run in CI
+- **每位使用者的 MCP OAuth Tokens** — [每位終端使用者現在都可以在互動式 MCP 伺服器流程中持有自己的 OAuth tokens，將不同使用者的憑證彼此隔離](../../docs/mcp)
+- **團隊支出記錄 RBAC** — 具有 `/spend/logs` 權限的團隊可從 UI 和 API 檢視整個團隊的支出記錄
+- **批次團隊權限 API** — 新的 `POST /team/permissions_bulk_update` 端點，可在一次呼叫中更新多個團隊的成員權限
+- **Azure 容器路由** — Azure Responses API containers 的容器路由、受管理容器 ID，以及刪除回應解析
+- **UI E2E 測試套件** — 基於 Playwright 的 proxy 管理員、團隊與金鑰管理流程端對端測試 այժմ 在 CI 中執行
 
 ---
 
-## New Models / Updated Models
+## 新模型 / 已更新模型 {#new-models--updated-models}
 
-#### New Model Support (14 new models)
+#### 新模型支援（14 個新模型） {#new-model-support-14-new-models}
 
-| Provider | Model | Context Window | Input ($/1M tokens) | Output ($/1M tokens) | Features |
+| 提供者 | 模型 | 上下文視窗 | 輸入（$/100 萬 tokens） | 輸出（$/100 萬 tokens） | 功能 |
 | -------- | ----- | -------------- | ------------------- | -------------------- | -------- |
-| AWS Bedrock (GovCloud) | `bedrock/us-gov-east-1/anthropic.claude-sonnet-4-5-20250929-v1:0` | 200K | $3.30 | $16.50 | Chat, vision, tool use, prompt caching, reasoning |
-| AWS Bedrock (GovCloud) | `bedrock/us-gov-west-1/anthropic.claude-sonnet-4-5-20250929-v1:0` | 200K | $3.30 | $16.50 | Chat, vision, tool use, prompt caching, reasoning |
-| AWS Bedrock (GovCloud) | `us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0` | 200K | $3.30 | $16.50 | Bedrock Converse, with above-200K tier pricing |
-| Baseten | `baseten/MiniMaxAI/MiniMax-M2.5` | - | $0.30 | $1.20 | Chat |
-| Baseten | `baseten/nvidia/Nemotron-120B-A12B` | - | $0.30 | $0.75 | Chat |
-| Baseten | `baseten/zai-org/GLM-5` | - | $0.95 | $3.15 | Chat |
-| Baseten | `baseten/zai-org/GLM-4.7` | - | $0.60 | $2.20 | Chat |
-| Baseten | `baseten/zai-org/GLM-4.6` | - | $0.60 | $2.20 | Chat |
-| Baseten | `baseten/moonshotai/Kimi-K2.5` | - | $0.60 | $3.00 | Chat |
-| Baseten | `baseten/moonshotai/Kimi-K2-Thinking` | - | $0.60 | $2.50 | Chat |
-| Baseten | `baseten/moonshotai/Kimi-K2-Instruct-0905` | - | $0.60 | $2.50 | Chat |
-| Baseten | `baseten/openai/gpt-oss-120b` | - | $0.10 | $0.50 | Chat |
-| Baseten | `baseten/deepseek-ai/DeepSeek-V3.1` | - | $0.50 | $1.50 | Chat |
-| Baseten | `baseten/deepseek-ai/DeepSeek-V3-0324` | - | $0.77 | $0.77 | Chat |
+| AWS Bedrock（GovCloud） | `bedrock/us-gov-east-1/anthropic.claude-sonnet-4-5-20250929-v1:0` | 200K | $3.30 | $16.50 | 對話、視覺、工具使用、提示快取、推理 |
+| AWS Bedrock（GovCloud） | `bedrock/us-gov-west-1/anthropic.claude-sonnet-4-5-20250929-v1:0` | 200K | $3.30 | $16.50 | 對話、視覺、工具使用、提示快取、推理 |
+| AWS Bedrock（GovCloud） | `us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0` | 200K | $3.30 | $16.50 | Bedrock Converse，並採用 200K 以上級距定價 |
+| Baseten | `baseten/MiniMaxAI/MiniMax-M2.5` | - | $0.30 | $1.20 | 對話 |
+| Baseten | `baseten/nvidia/Nemotron-120B-A12B` | - | $0.30 | $0.75 | 對話 |
+| Baseten | `baseten/zai-org/GLM-5` | - | $0.95 | $3.15 | 對話 |
+| Baseten | `baseten/zai-org/GLM-4.7` | - | $0.60 | $2.20 | 對話 |
+| Baseten | `baseten/zai-org/GLM-4.6` | - | $0.60 | $2.20 | 對話 |
+| Baseten | `baseten/moonshotai/Kimi-K2.5` | - | $0.60 | $3.00 | 對話 |
+| Baseten | `baseten/moonshotai/Kimi-K2-Thinking` | - | $0.60 | $2.50 | 對話 |
+| Baseten | `baseten/moonshotai/Kimi-K2-Instruct-0905` | - | $0.60 | $2.50 | 對話 |
+| Baseten | `baseten/openai/gpt-oss-120b` | - | $0.10 | $0.50 | 對話 |
+| Baseten | `baseten/deepseek-ai/DeepSeek-V3.1` | - | $0.50 | $1.50 | 對話 |
+| Baseten | `baseten/deepseek-ai/DeepSeek-V3-0324` | - | $0.77 | $0.77 | 對話 |
 
-#### Features
+#### 功能 {#features}
 
 - **[AWS Bedrock](../../docs/providers/bedrock)**
-    - AWS GovCloud mode support (`us-gov` prefix routing) - [PR #25254](https://github.com/BerriAI/litellm/pull/25254)
-    - Update GovCloud Claude Sonnet 4.5 pricing, raise `max_tokens` to 8192, and add prompt-caching costs
-    - Skip dummy `user` continue message when assistant prefix prefill is set - [PR #25419](https://github.com/BerriAI/litellm/pull/25419)
-    - Avoid double-counting cache tokens in Anthropic Messages streaming usage - [PR #25517](https://github.com/BerriAI/litellm/pull/25517)
+    - 支援 AWS GovCloud 模式（`us-gov` 前綴 routing） - [PR #25254](https://github.com/BerriAI/litellm/pull/25254)
+    - 更新 GovCloud Claude Sonnet 4.5 定價，將 `max_tokens` 提高至 8192，並新增提示快取成本
+    - 當設定 assistant 前綴 prefill 時，略過 dummy `user` continue 訊息 - [PR #25419](https://github.com/BerriAI/litellm/pull/25419)
+    - 避免在 Anthropic Messages 串流用量中重複計算快取 tokens - [PR #25517](https://github.com/BerriAI/litellm/pull/25517)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Support `advisor_20260301` tool type - [PR #25525](https://github.com/BerriAI/litellm/pull/25525)
+    - 支援 `advisor_20260301` tool type - [PR #25525](https://github.com/BerriAI/litellm/pull/25525)
 - **[Triton](../../docs/providers/triton-inference-server)**
-    - Embedding usage estimation for self-hosted Triton responses - [PR #25345](https://github.com/BerriAI/litellm/pull/25345)
+    - 自架 Triton 回應的 embedding 用量估算 - [PR #25345](https://github.com/BerriAI/litellm/pull/25345)
 - **[Baseten](../../docs/providers/baseten)**
-    - Add pricing entries for 11 new Baseten-hosted models - [PR #25358](https://github.com/BerriAI/litellm/pull/25358)
+    - 新增 11 個 Baseten 託管模型的定價項目 - [PR #25358](https://github.com/BerriAI/litellm/pull/25358)
 - **[Google Gemini / Vertex AI](../../docs/providers/gemini)**
-    - Mark applicable Gemini 2.5/3 models with `supports_service_tier`
+    - 將適用的 Gemini 2.5/3 模型標記為 `supports_service_tier`
 
-### Bug Fixes
+### 錯誤修正 {#bug-fixes}
 
 - **[AWS Bedrock](../../docs/providers/bedrock)**
-    - Pass-through fix for Bedrock JSON body and multipart uploads - [PR #25464](https://github.com/BerriAI/litellm/pull/25464)
+    - Bedrock JSON body 與 multipart uploads 的透傳修正 - [PR #25464](https://github.com/BerriAI/litellm/pull/25464)
 - **[OpenAI](../../docs/providers/openai)**
-    - Mock headers in `test_completion_fine_tuned_model` to stabilize tests - [PR #25444](https://github.com/BerriAI/litellm/pull/25444)
+    - 在 `test_completion_fine_tuned_model` 中模擬標頭以穩定測試 - [PR #25444](https://github.com/BerriAI/litellm/pull/25444)
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Features
+#### 功能 {#features-1}
 
 - **[Responses API](../../docs/response_api)**
-    - Containers: Azure routing, managed container IDs, and delete-response parsing - [PR #25287](https://github.com/BerriAI/litellm/pull/25287)
-    - WebSocket: append `?model=` to backend WebSocket URL so model selection routes correctly - [PR #25437](https://github.com/BerriAI/litellm/pull/25437)
+    - Containers：Azure routing、受管理容器 ID，以及刪除回應解析 - [PR #25287](https://github.com/BerriAI/litellm/pull/25287)
+    - WebSocket：將 `?model=` 附加到後端 WebSocket URL，以便模型選擇正確路由 - [PR #25437](https://github.com/BerriAI/litellm/pull/25437)
 - **[OpenAI / Files API](../../docs/providers/openai)**
-    - Add file content streaming support for OpenAI and related utilities - [PR #25450](https://github.com/BerriAI/litellm/pull/25450)
+    - 為 OpenAI 與相關工具新增檔案內容串流支援 - [PR #25450](https://github.com/BerriAI/litellm/pull/25450)
 - **[A2A](../../docs/mcp)**
-    - Default 60-second timeout when creating an A2A client - [PR #25514](https://github.com/BerriAI/litellm/pull/25514)
+    - 建立 A2A 用戶端時預設 60 秒逾時 - [PR #25514](https://github.com/BerriAI/litellm/pull/25514)
 
-#### Bugs
+#### 錯誤 {#bugs}
 
 - **[Responses API](../../docs/response_api)**
-    - Map refusal `stop_reason` to `incomplete` status in streaming - [PR #25498](https://github.com/BerriAI/litellm/pull/25498)
-    - Fix duplicate keyword argument error in Responses WebSocket path - [PR #25513](https://github.com/BerriAI/litellm/pull/25513)
-- **Router**
-    - Pass `custom_llm_provider` to `get_llm_provider` for unprefixed model names - [PR #25334](https://github.com/BerriAI/litellm/pull/25334)
-    - Fix tag-based routing when `encrypted_content_affinity` is enabled - [PR #25347](https://github.com/BerriAI/litellm/pull/25347)
-- **General**
-    - Ensure spend/cost logging runs when `stream=True` for web-search interception - [PR #25424](https://github.com/BerriAI/litellm/pull/25424)
+    - 在串流中將拒絕 `stop_reason` 對應為 `incomplete` 狀態 - [PR #25498](https://github.com/BerriAI/litellm/pull/25498)
+    - 修正 Responses WebSocket 路徑中的重複關鍵字引數錯誤 - [PR #25513](https://github.com/BerriAI/litellm/pull/25513)
+- **路由器**
+    - 對未加前綴的模型名稱傳遞 `custom_llm_provider` 給 `get_llm_provider` - [PR #25334](https://github.com/BerriAI/litellm/pull/25334)
+    - 啟用 `encrypted_content_affinity` 時修正基於標籤的 routing - [PR #25347](https://github.com/BerriAI/litellm/pull/25347)
+- **一般**
+    - 確保在 web-search 攔截時 `stream=True` 會執行支出/成本記錄 - [PR #25424](https://github.com/BerriAI/litellm/pull/25424)
 
-## Management Endpoints / UI
+## 管理端點 / UI {#management-endpoints--ui}
 
-#### Features
+#### 功能 {#features-2}
 
-- **Teams + Organizations**
-    - New `POST /team/permissions_bulk_update` endpoint for bulk permission updates across teams - [PR #25239](https://github.com/BerriAI/litellm/pull/25239)
-    - Team member permission `/spend/logs` to view team-wide spend logs (UI + RBAC) - [PR #25458](https://github.com/BerriAI/litellm/pull/25458)
-    - Align org and team endpoint permission checks - [PR #25554](https://github.com/BerriAI/litellm/pull/25554)
-- **Virtual Keys**
-    - Align `/v2/key/info` response handling with v1 - [PR #25313](https://github.com/BerriAI/litellm/pull/25313)
-- **Authentication / Routing**
-    - Allow JWT to override OAuth2 routing without requiring global OAuth2 enablement - [PR #25252](https://github.com/BerriAI/litellm/pull/25252)
-    - Consolidate route auth for UI and API tokens - [PR #25473](https://github.com/BerriAI/litellm/pull/25473)
-    - Use parameterized query for `combined_view` token lookup - [PR #25467](https://github.com/BerriAI/litellm/pull/25467)
-- **Provider Credentials**
-    - Per-team / per-project credential overrides via `model_config` metadata - [PR #24438](https://github.com/BerriAI/litellm/pull/24438)
+- **團隊 + 組織**
+    - 新的 `POST /team/permissions_bulk_update` 端點，用於跨團隊批次更新權限 - [PR #25239](https://github.com/BerriAI/litellm/pull/25239)
+    - 團隊成員權限 `/spend/logs` 可檢視整個團隊的支出記錄（UI + RBAC）- [PR #25458](https://github.com/BerriAI/litellm/pull/25458)
+    - 對齊 org 與 team 端點的權限檢查 - [PR #25554](https://github.com/BerriAI/litellm/pull/25554)
+- **虛擬金鑰**
+    - 將 `/v2/key/info` 回應處理與 v1 對齊 - [PR #25313](https://github.com/BerriAI/litellm/pull/25313)
+- **驗證 / 路由**
+    - 允許 JWT 覆寫 OAuth2 routing，而不需要全域啟用 OAuth2 - [PR #25252](https://github.com/BerriAI/litellm/pull/25252)
+    - 將 UI 與 API tokens 的 route auth 整併 - [PR #25473](https://github.com/BerriAI/litellm/pull/25473)
+    - 對 `combined_view` token 查詢使用參數化查詢 - [PR #25467](https://github.com/BerriAI/litellm/pull/25467)
+- **提供者憑證**
+    - 透過 `model_config` metadata 進行每團隊 / 每專案憑證覆寫 - [PR #24438](https://github.com/BerriAI/litellm/pull/24438)
 - **UI**
-    - Improve browser storage handling and Dockerfile consistency - [PR #25384](https://github.com/BerriAI/litellm/pull/25384)
-    - Align v1 guardrail and agent list responses with v2 field handling - [PR #25478](https://github.com/BerriAI/litellm/pull/25478)
-    - Flush Tremor Tooltip timers in `user_edit_view` tests - [PR #25480](https://github.com/BerriAI/litellm/pull/25480)
+    - 改善瀏覽器儲存體處理與 Dockerfile 一致性 - [PR #25384](https://github.com/BerriAI/litellm/pull/25384)
+    - 將 v1 guardrail 與 agent 清單回應的 field 處理與 v2 對齊 - [PR #25478](https://github.com/BerriAI/litellm/pull/25478)
+    - 在 `user_edit_view` 測試中 flush Tremor Tooltip timers - [PR #25480](https://github.com/BerriAI/litellm/pull/25480)
 
-#### Bugs
+#### 錯誤 {#bugs-1}
 
-- Improve input validation on management endpoints - [PR #25445](https://github.com/BerriAI/litellm/pull/25445)
-- Harden file path resolution in skill archive extraction - [PR #25475](https://github.com/BerriAI/litellm/pull/25475)
+- 改善管理端點的輸入驗證 - [PR #25445](https://github.com/BerriAI/litellm/pull/25445)
+- 強化 skill archive 解壓縮中的檔案路徑解析 - [PR #25475](https://github.com/BerriAI/litellm/pull/25475)
 
-## AI Integrations
+## AI 整合 {#ai-integrations}
 
-### Logging
+### 記錄 {#logging}
 
 - **[Ramp](../../docs/proxy/logging)**
-    - Add Ramp as a built-in success callback - [PR #23769](https://github.com/BerriAI/litellm/pull/23769)
+    - 將 Ramp 新增為內建成功回呼 - [PR #23769](https://github.com/BerriAI/litellm/pull/23769)
 - **[Langfuse](../../docs/proxy/logging#langfuse)**
-    - Preserve proxy key-auth metadata on `/v1/messages` Langfuse traces - [PR #25448](https://github.com/BerriAI/litellm/pull/25448)
+    - 保留 `/v1/messages` Langfuse traces 上的 proxy key-auth 中繼資料 - [PR #25448](https://github.com/BerriAI/litellm/pull/25448)
 - **[Prometheus](../../docs/proxy/logging#prometheus)**
-    - Reduce default `LATENCY_BUCKETS` from 35 → 18 boundaries (see breaking-change note above) - [PR #25527](https://github.com/BerriAI/litellm/pull/25527)
-- **General**
-    - S3 logging: retry with exponential backoff for transient 503/500 errors - [PR #25530](https://github.com/BerriAI/litellm/pull/25530)
+    - 將預設 `LATENCY_BUCKETS` 從 35 → 18 個邊界 - [PR #25527](https://github.com/BerriAI/litellm/pull/25527)
+- **一般**
+    - S3 記錄：針對暫時性 503/500 錯誤使用指數退避重試 - [PR #25530](https://github.com/BerriAI/litellm/pull/25530)
 
-### Guardrails
+### 防護欄 {#guardrails}
 
-- Optional skip system message in unified guardrail inputs - [PR #25481](https://github.com/BerriAI/litellm/pull/25481)
-- Inline IAM: apply guardrail support - [PR #25241](https://github.com/BerriAI/litellm/pull/25241)
-- Preserve `dict` `HTTPException.detail` and Bedrock context in guardrail errors - [PR #25558](https://github.com/BerriAI/litellm/pull/25558)
+- 在統一的防護欄輸入中可選擇略過系統訊息 - [PR #25481](https://github.com/BerriAI/litellm/pull/25481)
+- 內嵌 IAM：套用防護欄支援 - [PR #25241](https://github.com/BerriAI/litellm/pull/25241)
+- 在防護欄錯誤中保留 `dict` `HTTPException.detail` 與 Bedrock 背景資訊 - [PR #25558](https://github.com/BerriAI/litellm/pull/25558)
 
-## Spend Tracking, Budgets and Rate Limiting
+## 支出追蹤、預算與速率限制 {#spend-tracking-budgets-and-rate-limiting}
 
-- Session-TZ-independent date filtering for spend / error log queries - [PR #25542](https://github.com/BerriAI/litellm/pull/25542)
-- Batch-limit stale managed-object cleanup to prevent 300K+ row updates - [PR #25258](https://github.com/BerriAI/litellm/pull/25258)
+- 與 Session-TZ 無關的支出／錯誤記錄查詢日期篩選 - [PR #25542](https://github.com/BerriAI/litellm/pull/25542)
+- 批次限制過時受管物件清理，以避免 300K+ 列更新 - [PR #25258](https://github.com/BerriAI/litellm/pull/25258)
 
-## MCP Gateway
+## MCP 閘道 {#mcp-gateway}
 
-- **Per-user OAuth token storage for interactive MCP flows** - [PR #25441](https://github.com/BerriAI/litellm/pull/25441)
-- Block arbitrary command execution via MCP `stdio` transport - [PR #25343](https://github.com/BerriAI/litellm/pull/25343)
-- Restore PKCE-triggering 401 when no stored per-user token exists - [commit e0d5c28](https://github.com/BerriAI/litellm/commit/e0d5c28db02b3219dbd944666a55f49732197922)
-- Document missing MCP per-user token environment variables in `config_settings` - [PR #25471](https://github.com/BerriAI/litellm/pull/25471)
+- **互動式 MCP 流程的每位使用者 OAuth token 儲存** - [PR #25441](https://github.com/BerriAI/litellm/pull/25441)
+- 透過 MCP `stdio` 傳輸阻擋任意命令執行 - [PR #25343](https://github.com/BerriAI/litellm/pull/25343)
+- 在不存在已儲存的每位使用者 token 時，還原觸發 PKCE 的 401 - [commit e0d5c28](https://github.com/BerriAI/litellm/commit/e0d5c28db02b3219dbd944666a55f49732197922)
+- 在 `config_settings` 中說明缺少的 MCP 每位使用者 token 環境變數 - [PR #25471](https://github.com/BerriAI/litellm/pull/25471)
 
-## Performance / Loadbalancing / Reliability improvements
+## 效能 / 負載平衡 / 可靠性改進 {#performance--loadbalancing--reliability-improvements}
 
-- Reduce Prometheus latency histogram cardinality (default buckets 35 → 18) - [PR #25527](https://github.com/BerriAI/litellm/pull/25527)
-- S3 retry with exponential backoff for transient errors - [PR #25530](https://github.com/BerriAI/litellm/pull/25530)
+- 降低 Prometheus 延遲直方圖的基數（預設區間 35 → 18） - [PR #25527](https://github.com/BerriAI/litellm/pull/25527)
+- 針對暫時性錯誤進行 S3 指數退避重試 - [PR #25530](https://github.com/BerriAI/litellm/pull/25530)
 
-## Documentation Updates
+## 文件更新 {#documentation-updates}
 
-- Add Docker Image Security Guide covering cosign verification and deployment best practices - [PR #25439](https://github.com/BerriAI/litellm/pull/25439)
-- Document April townhall announcements - [PR #25537](https://github.com/BerriAI/litellm/pull/25537)
-- Document missing MCP per-user token env vars - [PR #25471](https://github.com/BerriAI/litellm/pull/25471)
-- Add "Screenshots / Proof of Fix" section to PR template - [PR #25564](https://github.com/BerriAI/litellm/pull/25564)
+- 新增涵蓋 cosign 驗證與部署最佳實務的 Docker 映像安全指南 - [PR #25439](https://github.com/BerriAI/litellm/pull/25439)
+- 文件化 4 月 townhall 公告 - [PR #25537](https://github.com/BerriAI/litellm/pull/25537)
+- 文件化缺少的 MCP 每位使用者 token 環境變數 - [PR #25471](https://github.com/BerriAI/litellm/pull/25471)
+- 在 PR 範本中新增「Screenshots / Proof of Fix」章節 - [PR #25564](https://github.com/BerriAI/litellm/pull/25564)
 
-## Infrastructure / Security Notes
+## 基礎架構 / 安全性備註 {#infrastructure--security-notes}
 
-- Pin cosign.pub verification to initial commit hash - [PR #25273](https://github.com/BerriAI/litellm/pull/25273)
-- Fix node-gyp symlink path after npm upgrade in Dockerfile - [PR #25048](https://github.com/BerriAI/litellm/pull/25048)
-- `Dockerfile.non_root`: handle missing `.npmrc` gracefully - [PR #25307](https://github.com/BerriAI/litellm/pull/25307)
-- Add Playwright E2E tests with local PostgreSQL - [PR #25126](https://github.com/BerriAI/litellm/pull/25126)
-- UI E2E tests for proxy admin team and key management - [PR #25365](https://github.com/BerriAI/litellm/pull/25365)
-- Migrate Redis caching tests from GHA to CircleCI - [PR #25354](https://github.com/BerriAI/litellm/pull/25354)
-- Update `check_responses_cost` tests for `_expire_stale_rows` - [PR #25299](https://github.com/BerriAI/litellm/pull/25299)
-- Raise global vitest timeout and remove per-test overrides - [PR #25468](https://github.com/BerriAI/litellm/pull/25468)
-- Version bumps and UI rebuilds: [PR #25316](https://github.com/BerriAI/litellm/pull/25316), [PR #25528](https://github.com/BerriAI/litellm/pull/25528), [PR #25578](https://github.com/BerriAI/litellm/pull/25578), [PR #25571](https://github.com/BerriAI/litellm/pull/25571), [PR #25573](https://github.com/BerriAI/litellm/pull/25573), [PR #25577](https://github.com/BerriAI/litellm/pull/25577)
+- 將 cosign.pub 驗證釘選到初始 commit hash - [PR #25273](https://github.com/BerriAI/litellm/pull/25273)
+- 修正 npm 升級後 Dockerfile 中的 node-gyp symlink 路徑 - [PR #25048](https://github.com/BerriAI/litellm/pull/25048)
+- `Dockerfile.non_root`：妥善處理缺少的 `.npmrc` - [PR #25307](https://github.com/BerriAI/litellm/pull/25307)
+- 新增具備本機 PostgreSQL 的 Playwright E2E 測試 - [PR #25126](https://github.com/BerriAI/litellm/pull/25126)
+- 代理管理員團隊與金鑰管理的 UI E2E 測試 - [PR #25365](https://github.com/BerriAI/litellm/pull/25365)
+- 將 Redis 快取測試從 GHA 遷移至 CircleCI - [PR #25354](https://github.com/BerriAI/litellm/pull/25354)
+- 更新 `check_responses_cost` 的 `_expire_stale_rows` 測試 - [PR #25299](https://github.com/BerriAI/litellm/pull/25299)
+- 提高全域 vitest timeout 並移除每個測試的覆寫 - [PR #25468](https://github.com/BerriAI/litellm/pull/25468)
+- 版本升級與 UI 重建：[PR #25316](https://github.com/BerriAI/litellm/pull/25316), [PR #25528](https://github.com/BerriAI/litellm/pull/25528), [PR #25578](https://github.com/BerriAI/litellm/pull/25578), [PR #25571](https://github.com/BerriAI/litellm/pull/25571), [PR #25573](https://github.com/BerriAI/litellm/pull/25573), [PR #25577](https://github.com/BerriAI/litellm/pull/25577)
 
-## New Contributors
+## 新貢獻者 {#new-contributors}
 
-* @kedarthakkar made their first contribution in https://github.com/BerriAI/litellm/pull/23769
-* @csoni-cweave made their first contribution in https://github.com/BerriAI/litellm/pull/25441
-* @jimmychen-p72 made their first contribution in https://github.com/BerriAI/litellm/pull/25530
+* @kedarthakkar 完成了他們的首次貢獻於 https://github.com/BerriAI/litellm/pull/23769
+* @csoni-cweave 完成了他們的首次貢獻於 https://github.com/BerriAI/litellm/pull/25441
+* @jimmychen-p72 完成了他們的首次貢獻於 https://github.com/BerriAI/litellm/pull/25530
 
-**Full Changelog**: https://github.com/BerriAI/litellm/compare/v1.83.3-stable...v1.83.7-stable
+**完整變更紀錄**：https://github.com/BerriAI/litellm/compare/v1.83.3-stable...v1.83.7-stable

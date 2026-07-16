@@ -1,36 +1,36 @@
-# GMI Cloud
+# GMI Cloud {#gmi-cloud}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | GMI Cloud is a GPU cloud infrastructure provider offering access to top AI models including Claude, GPT, DeepSeek, Gemini, and more through OpenAI-compatible APIs. |
-| Provider Route on LiteLLM | `gmi/` |
-| Link to Provider Doc | [GMI Cloud Docs ↗](https://docs.gmicloud.ai) |
-| Base URL | `https://api.gmi-serving.com/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage), [`/models`](#supported-models) |
+| 說明 | GMI Cloud 是一家 GPU 雲端基礎架構提供者，透過與 OpenAI 相容的 API 提供 Claude、GPT、DeepSeek、Gemini 等頂尖 AI 模型的存取。 |
+| LiteLLM 上的提供者路由 | `gmi/` |
+| 提供者文件連結 | [GMI Cloud 文件 ↗](https://docs.gmicloud.ai) |
+| 基礎 URL | `https://api.gmi-serving.com/v1` |
+| 支援的操作 | [`/chat/completions`](#sample-usage), [`/models`](#supported-models) |
 
 <br />
 
-## What is GMI Cloud?
+## 什麼是 GMI Cloud？ {#what-is-gmi-cloud}
 
-GMI Cloud is a venture-backed digital infrastructure company ($82M+ funding) providing:
-- **Top-tier GPU Access**: NVIDIA H100 GPUs for AI workloads
-- **Multiple AI Models**: Claude, GPT, DeepSeek, Gemini, Kimi, Qwen, and more
-- **OpenAI-Compatible API**: Drop-in replacement for OpenAI SDK
-- **Global Infrastructure**: Data centers in US (Colorado) and APAC (Taiwan)
+GMI Cloud 是一家有創投支持的數位基礎架構公司（募資超過 8,200 萬美元），提供：
+- **頂級 GPU 存取**：用於 AI 工作負載的 NVIDIA H100 GPU
+- **多種 AI 模型**：Claude、GPT、DeepSeek、Gemini、Kimi、Qwen 等
+- **與 OpenAI 相容的 API**：可直接取代 OpenAI SDK
+- **全球基礎架構**：位於美國（科羅拉多）與 APAC（台灣）的資料中心
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["GMI_API_KEY"] = ""  # your GMI Cloud API key
 ```
 
-Get your GMI Cloud API key from [console.gmicloud.ai](https://console.gmicloud.ai).
+請從 [console.gmicloud.ai](https://console.gmicloud.ai) 取得您的 GMI Cloud API 金鑰。
 
-## Usage - LiteLLM Python SDK
+## 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="GMI Cloud Non-streaming Completion"
 import os
@@ -50,7 +50,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="GMI Cloud Streaming Completion"
 import os
@@ -72,15 +72,15 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy Server
+## 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export GMI_API_KEY=""
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```yaml
 model_list:
@@ -94,9 +94,9 @@ model_list:
       api_key: os.environ/GMI_API_KEY
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model | Model ID | Context Length |
+| 模型 | 模型 ID | Context Length |
 |-------|----------|----------------|
 | Claude Opus 4.5 | `gmi/anthropic/claude-opus-4.5` | 409K |
 | Claude Sonnet 4.5 | `gmi/anthropic/claude-sonnet-4.5` | 409K |
@@ -116,25 +116,25 @@ model_list:
 | Qwen3-VL 235B | `gmi/Qwen/Qwen3-VL-235B-A22B-Instruct-FP8` | 262K |
 | GLM-4.7 | `gmi/zai-org/GLM-4.7-FP8` | 202K |
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-GMI Cloud supports all standard OpenAI-compatible parameters:
+GMI Cloud 支援所有標準的 OpenAI 相容參數：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `messages` | array | **Required**. Array of message objects with 'role' and 'content' |
-| `model` | string | **Required**. Model ID from available models |
-| `stream` | boolean | Optional. Enable streaming responses |
-| `temperature` | float | Optional. Sampling temperature |
-| `top_p` | float | Optional. Nucleus sampling parameter |
-| `max_tokens` | integer | Optional. Maximum tokens to generate |
-| `frequency_penalty` | float | Optional. Penalize frequent tokens |
-| `presence_penalty` | float | Optional. Penalize tokens based on presence |
-| `stop` | string/array | Optional. Stop sequences |
-| `response_format` | object | Optional. JSON mode with `{"type": "json_object"}` |
+| `messages` | array | **必要**。包含 'role' 與 'content' 的訊息物件陣列 |
+| `model` | string | **必要**。來自可用模型的 Model ID |
+| `stream` | boolean | 選用。啟用串流回應 |
+| `temperature` | float | 選用。抽樣溫度 |
+| `top_p` | float | 選用。核心抽樣參數 |
+| `max_tokens` | integer | 選用。要產生的最大 token 數量 |
+| `frequency_penalty` | float | 選用。對高頻 token 進行懲罰 |
+| `presence_penalty` | float | 選用。根據存在性對 token 進行懲罰 |
+| `stop` | string/array | 選用。停止序列 |
+| `response_format` | object | 選用。搭配 `{"type": "json_object"}` 的 JSON 模式 |
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [GMI Cloud Website](https://www.gmicloud.ai)
-- [GMI Cloud Documentation](https://docs.gmicloud.ai)
+- [GMI Cloud 網站](https://www.gmicloud.ai)
+- [GMI Cloud 文件](https://docs.gmicloud.ai)
 - [GMI Cloud Console](https://console.gmicloud.ai)

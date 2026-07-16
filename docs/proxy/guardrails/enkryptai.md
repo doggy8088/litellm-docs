@@ -1,15 +1,15 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# EnkryptAI Guardrails
+# EnkryptAI 防護欄 {#enkryptai-guardrails}
 
-LiteLLM supports EnkryptAI guardrails for content moderation and safety checks on LLM inputs and outputs.
+LiteLLM 支援 EnkryptAI 防護欄，用於 LLM 輸入與輸出的內容審核和安全檢查。
 
-## Quick Start
+## 快速入門 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section:
+請在 `guardrails` 區段下定義您的防護欄：
 
 ```yaml
 model_list:
@@ -36,44 +36,44 @@ guardrails:
           enabled: true
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` - Run **before** LLM call, on **input**
-- `post_call` - Run **after** LLM call, on **output**
-- `during_call` - Run **during** LLM call, on **input**. Same as `pre_call` but runs in parallel as LLM call
+- `pre_call` - 在 LLM 請求**之前**執行，針對**輸入**
+- `post_call` - 在 LLM 請求**之後**執行，針對**輸出**
+- `during_call` - 在 LLM 請求**期間**執行，針對**輸入**。與 `pre_call` 相同，但會與 LLM 請求並行執行
 
-#### Available Detectors
+#### 可用偵測器 {#available-detectors}
 
-EnkryptAI supports multiple content detection types:
+EnkryptAI 支援多種內容偵測類型：
 
-- **toxicity** - Detect toxic language
-- **nsfw** - Detect NSFW (Not Safe For Work) content
-- **pii** - Detect personally identifiable information
-  - Configure entities: `["pii", "email", "phone", "secrets", "ip_address", "url"]`
-- **injection_attack** - Detect prompt injection attempts
-- **keyword_detector** - Detect custom keywords/phrases
-- **policy_violation** - Detect policy violations
-- **bias** - Detect biased content
-- **sponge_attack** - Detect sponge attacks
+- **toxicity** - 偵測有害語言
+- **nsfw** - 偵測 NSFW（非工作場合適合）內容
+- **pii** - 偵測可識別個人身分資訊
+  - 設定實體：`["pii", "email", "phone", "secrets", "ip_address", "url"]`
+- **injection_attack** - 偵測提示注入嘗試
+- **keyword_detector** - 偵測自訂關鍵字／片語
+- **policy_violation** - 偵測政策違規
+- **bias** - 偵測帶有偏見的內容
+- **sponge_attack** - 偵測 sponge 攻擊
 
-### 2. Set Environment Variables
+### 2. 設定環境變數 {#2-set-environment-variables}
 
 ```bash
 export ENKRYPTAI_API_KEY="your-api-key"
 ```
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM 閘道 {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test Request
+### 4. 測試請求 {#4-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain, OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Successful Call" value="allowed">
+<TabItem label="成功呼叫" value="allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -88,15 +88,15 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 200 Success**
+**回應：HTTP 200 成功**
 
-Content passes all detector checks and is allowed through.
+內容通過所有偵測器檢查，並被允許通過。
 
 </TabItem>
 
-<TabItem label="Unsuccessful Call" value="not-allowed">
+<TabItem label="失敗呼叫" value="not-allowed">
 
-Expect this to fail if content violates detector policies:
+若內容違反偵測器政策，預期會失敗：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -111,7 +111,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Expected Response on Failure: HTTP 400 Error**
+**失敗時的預期回應：HTTP 400 錯誤**
 
 ```json
 {
@@ -141,15 +141,15 @@ curl -i http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Video Walkthrough
+## 影片導覽 {#video-walkthrough}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/ff222211e0864937aee4aeef0f28c3b7" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Using Custom Policies
+### 使用自訂政策 {#using-custom-policies}
 
-You can specify a custom EnkryptAI policy:
+您可以指定自訂的 EnkryptAI 政策：
 
 ```yaml
 guardrails:
@@ -164,9 +164,9 @@ guardrails:
           enabled: true
 ```
 
-### Using Deployments
+### 使用部署 {#using-deployments}
 
-Specify an EnkryptAI deployment:
+指定 EnkryptAI 部署：
 
 ```yaml
 guardrails:
@@ -181,9 +181,9 @@ guardrails:
           enabled: true
 ```
 
-### Monitor Mode (Logging Without Blocking)
+### 監控模式（記錄但不阻擋） {#monitor-mode-logging-without-blocking}
 
-Set `block_on_violation: false` to log violations without blocking requests:
+將 `block_on_violation: false` 設為在不阻擋請求的情況下記錄違規：
 
 ```yaml
 guardrails:
@@ -200,11 +200,11 @@ guardrails:
           enabled: true
 ```
 
-In monitor mode, all violations are logged but requests are never blocked.
+在監控模式中，所有違規都會被記錄，但請求永遠不會被阻擋。
 
-### Input and Output Guardrails
+### 輸入與輸出防護欄 {#input-and-output-guardrails}
 
-Configure separate guardrails for input and output:
+為輸入與輸出分別設定防護欄：
 
 ```yaml
 guardrails:
@@ -234,43 +234,42 @@ guardrails:
           enabled: true
 ```
 
-## Configuration Options
+## 設定選項 {#configuration-options}
 
-| Parameter | Type | Description | Default |
+| 參數 | 類型 | 說明 | 預設值 |
 |-----------|------|-------------|---------|
-| `api_key` | string | EnkryptAI API key | `ENKRYPTAI_API_KEY` env var |
+| `api_key` | string | EnkryptAI API 金鑰 | `ENKRYPTAI_API_KEY` 環境變數 |
 | `api_base` | string | EnkryptAI API base URL | `https://api.enkryptai.com` |
-| `policy_name` | string | Custom policy name (sent via `x-enkrypt-policy` header) | None |
-| `deployment_name` | string | Deployment name (sent via `X-Enkrypt-Deployment` header) | None |
-| `detectors` | object | Detector configuration | `{}` |
-| `block_on_violation` | boolean | Block requests on violations | `true` |
-| `mode` | string | When to run: `pre_call`, `post_call`, or `during_call` | Required |
+| `policy_name` | string | 自訂政策名稱（透過 `x-enkrypt-policy` 標頭傳送） | None |
+| `deployment_name` | string | 部署名稱（透過 `X-Enkrypt-Deployment` 標頭傳送） | None |
+| `detectors` | object | 偵測器設定 | `{}` |
+| `block_on_violation` | boolean | 在違規時阻擋請求 | `true` |
+| `mode` | string | 執行時機：`pre_call`、`post_call` 或 `during_call` | 必填 |
 
-## Observability
+## 可觀測性 {#observability}
 
-EnkryptAI guardrail logs include:
+EnkryptAI 防護欄記錄包含：
 
-- **guardrail_status**: `success`, `guardrail_intervened`, or `guardrail_failed_to_respond`
-- **guardrail_provider**: `enkryptai`
-- **guardrail_json_response**: Full API response with detection details
-- **duration**: Time taken for guardrail check
-- **start_time** and **end_time**: Timestamps
+- **guardrail_status**：`success`、`guardrail_intervened` 或 `guardrail_failed_to_respond`
+- **guardrail_provider**：`enkryptai`
+- **guardrail_json_response**：包含偵測詳細資訊的完整 API 回應
+- **duration**：防護欄檢查所花費的時間
+- **start_time** 和 **end_time**：時間戳記
 
-These logs are available through your configured LiteLLM logging callbacks.
+這些記錄可透過您設定的 LiteLLM 記錄回呼取得。
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-The guardrail handles errors gracefully:
+此防護欄會妥善處理錯誤：
 
-- **API Failures**: Logs error and raises exception
-- **Rate Limits (429)**: Logs error and raises exception
-- **Invalid Configuration**: Raises `ValueError` on initialization
+- **API 失敗**：記錄錯誤並引發例外
+- **速率限制（429）**：記錄錯誤並引發例外
+- **無效設定**：初始化時引發 `ValueError`
 
-Set `block_on_violation: false` to continue processing even when violations are detected (monitor mode).
+將 `block_on_violation: false` 設為即使偵測到違規也繼續處理（監控模式）。
 
-## Support
+## 支援 {#support}
 
-For more information about EnkryptAI:
-- Documentation: [https://docs.enkryptai.com](https://docs.enkryptai.com)
-- Website: [https://enkryptai.com](https://enkryptai.com)
-
+如需更多關於 EnkryptAI 的資訊：
+- 文件：[https://docs.enkryptai.com](https://docs.enkryptai.com)
+- 網站：[https://enkryptai.com](https://enkryptai.com)

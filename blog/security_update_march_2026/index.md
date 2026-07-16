@@ -1,11 +1,11 @@
 ---
 slug: security-update-march-2026
-title: "Security Update: Suspected Supply Chain Incident"
+title: "安全更新：疑似供應鏈事件"
 date: 2026-03-24T14:00:00
 authors:
   - krrish
   - ishaan-alt
-description: "As of 2:00 PM ET on March 24, 2026"
+description: "截至 2026 年 3 月 24 日下午 2:00（ET）"
 tags: [security, incident-report]
 hide_table_of_contents: false
 ---
@@ -14,81 +14,78 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import VersionVerificationTable from '@site/src/components/VersionVerificationTable';
 
-> **Status:** Active investigation
-> **Last updated:** March 27, 2026
+> **狀態：** 調查進行中
+> **最後更新：** 2026 年 3 月 27 日
 
-> **Update (March 30):** A new **clean** version of LiteLLM is now available (v1.83.0). This was released by our new [CI/CD v2](https://docs.litellm.ai/blog/ci-cd-v2-improvements) pipeline which added isolated environments, stronger security gates, and safer release separation for LiteLLM.
+> **更新（3 月 30 日）：** LiteLLM 的全新**安全**版本現已可用（v1.83.0）。這是由我們新的 [CI/CD v2](https://docs.litellm.ai/blog/ci-cd-v2-improvements) 管線發佈，該管線加入了隔離環境、更強的安全閘道，以及更安全的 LiteLLM 發佈分離機制。
 
-> **Update (March 27):** Review Townhall updates, including explanation of the incident, what we've done, and what comes next. [Learn more](https://docs.litellm.ai/blog/security-townhall-updates)
+> **更新（3 月 27 日）：** 請查看 Townhall 更新，包括事件說明、我們已採取的措施，以及後續內容。[了解更多](https://docs.litellm.ai/blog/security-townhall-updates)
 
-> **Update (March 27):** Added [Verified safe versions](#verified-safe-versions) section with SHA-256 checksums for all audited PyPI and Docker releases.
+> **更新（3 月 27 日）：** 新增 [已驗證的安全版本](#verified-safe-versions) 區段，提供所有經審核的 PyPI 與 Docker 發佈版的 SHA-256 檢查碼。
 
-> **Update (March 26):** Added `checkmarx[.]zone` to [Indicators of compromise](#indicators-of-compromise-iocs)
+> **更新（3 月 26 日）：** 新增 `checkmarx[.]zone` 至 [入侵指標](#indicators-of-compromise-iocs)
 
-> **Update (March 25):** Added community-contributed scripts for scanning GitHub Actions and GitLab CI pipelines for the compromised versions. See [How to check if you are affected](#how-to-check-if-you-are-affected). s/o [@Zach Fury](https://www.linkedin.com/in/fryware/) for these scripts.
+> **更新（3 月 25 日）：** 新增社群貢獻的腳本，用於掃描 GitHub Actions 與 GitLab CI 管線中是否使用了受影響版本。請參閱 [如何檢查您是否受影響](#how-to-check-if-you-are-affected)。感謝 [@Zach Fury](https://www.linkedin.com/in/fryware/) 提供這些腳本。
 
+## 重點摘要； {#tldr}
+- 受影響的 PyPI 套件為 **litellm==1.82.7** 與 **litellm==1.82.8**。這些套件於 2026 年 3 月 24 日 UTC 10:39 起上線，持續約 40 分鐘後遭 PyPI 隔離。
+- 我們相信此入侵源自於我們 CI/CD 安全掃描工作流程中使用的 [Trivy 依賴項](https://www.aquasec.com/blog/trivy-supply-chain-attack-what-you-need-to-know/)。
+- 使用官方 LiteLLM Proxy Docker 映像檔的客戶未受影響。該部署路徑在 requirements.txt 中固定依賴版本，且不依賴受影響的 PyPI 套件。
+- ~~我們已暫停所有新的 LiteLLM 發佈，直到完成更廣泛的供應鏈審查並確認發佈路徑安全。~~ **更新：** 我們現在已透過新的 [CI/CD v2](https://docs.litellm.ai/blog/ci-cd-v2-improvements) 管線發佈了 LiteLLM 的全新**安全**版本（v1.83.0），該管線加入了隔離環境、更強的安全閘道，以及更安全的 LiteLLM 發佈分離機制。我們也已驗證程式碼庫是安全的，且未將惡意程式碼推送到 `main`。
 
-## TLDR; 
-- The compromised PyPI packages were **litellm==1.82.7** and **litellm==1.82.8**. Those packages were live on March 24, 2026 from 10:39 UTC for about 40 minutes before being quarantined by PyPI.
-- We believe that the compromise originated from the [Trivy dependency](https://www.aquasec.com/blog/trivy-supply-chain-attack-what-you-need-to-know/) used in our CI/CD security scanning workflow.
-- Customers running the official LiteLLM Proxy Docker image were not impacted. That deployment path pins dependencies in requirements.txt and does not rely on the compromised PyPI packages.
-- ~~We have paused all new LiteLLM releases until we complete a broader supply-chain review and confirm the release path is safe.~~ **Updated:** We have now released a new **safe** version of LiteLLM (v1.83.0) by our new [CI/CD v2](https://docs.litellm.ai/blog/ci-cd-v2-improvements) pipeline which added isolated environments, stronger security gates, and safer release separation for LiteLLM. We have also verified the codebase is safe and no malicious code was pushed to `main`.
+## 概覽 {#overview}
 
+LiteLLM AI Gateway 正在調查一起疑似供應鏈攻擊，涉及未經授權的 PyPI 套件發佈。目前證據顯示，一名維護者的 PyPI 帳戶可能已遭入侵，並被用來散布惡意程式碼。
 
-## Overview
+目前我們認為此事件可能與更廣泛的 [Trivy 安全入侵](https://www.aquasec.com/blog/trivy-supply-chain-attack-what-you-need-to-know/) 有關；據報導，遭竊的憑證被用來未經授權存取 LiteLLM 發佈管線。
 
-LiteLLM AI Gateway is investigating a suspected supply chain attack involving unauthorized PyPI package publishes. Current evidence suggests a maintainer's PyPI account may have been compromised and used to distribute malicious code.
+此調查仍在進行中。以下細節在我們確認更多發現後可能會變更。
 
-At this time, we believe this incident may be linked to the broader [Trivy security compromise](https://www.aquasec.com/blog/trivy-supply-chain-attack-what-you-need-to-know/), in which stolen credentials were reportedly used to gain unauthorized access to the LiteLLM publishing pipeline.
+## 已確認受影響版本 {#confirmed-affected-versions}
 
-This investigation is ongoing. Details below may change as we confirm additional findings.
+以下發佈到 PyPI 的 LiteLLM 版本受到影響：
 
-## Confirmed affected versions
+- **v1.82.7**：在 LiteLLM AI Gateway `proxy_server.py` 中包含惡意負載
+- **v1.82.8**：包含 `litellm_init.pth`，以及在 LiteLLM AI Gateway `proxy_server.py` 中包含惡意負載
 
-The following LiteLLM versions published to PyPI were impacted:
+如果您安裝或執行了這兩個版本中的任一版本，請立即查看以下建議。
 
-- **v1.82.7**: contained a malicious payload in the LiteLLM AI Gateway `proxy_server.py`
-- **v1.82.8**: contained `litellm_init.pth` and a malicious payload in the LiteLLM AI Gateway `proxy_server.py`
+注意：這些版本已從 PyPI 移除。
 
-If you installed or ran either of these versions, review the recommendations below immediately.
+## 發生了什麼事 {#what-happened}
 
-Note: These versions have already been removed from PyPI.
+初步證據顯示，攻擊者繞過官方 CI/CD 工作流程，直接將惡意套件上傳到 PyPI。
 
-## What happened
+這些受影響版本似乎包含一個憑證竊取程式，設計目的為：
 
-Initial evidence suggests the attacker bypassed official CI/CD workflows and uploaded malicious packages directly to PyPI.
+- 透過掃描以下項目蒐集機密：
+  - 環境變數
+  - SSH 金鑰
+  - 雲端提供者憑證（AWS、GCP、Azure）
+  - Kubernetes 權杖
+  - 資料庫密碼
+- 透過對 `POST` 的 `models.litellm.cloud` 請求加密並外洩資料，該網域**不是**官方 BerriAI / LiteLLM 網域
 
-These compromised versions appear to have included a credential stealer designed to:
+## 受影響對象 {#who-is-affected}
 
-- Harvest secrets by scanning for:
-  - environment variables
-  - SSH keys
-  - cloud provider credentials (AWS, GCP, Azure)
-  - Kubernetes tokens
-  - database passwords
-- Encrypt and exfiltrate data via a `POST` request to `models.litellm.cloud`, which is **not** an official BerriAI / LiteLLM domain
+如果以下**任何**情況為真，您可能受影響：
 
-## Who is affected
+- 您在 **2026 年 3 月 24 日** **UTC 10:39 到 UTC 16:00** 之間，透過 `pip` 安裝或升級 LiteLLM
+- 您執行 `pip install litellm` 時未固定版本，並收到 **v1.82.7** 或 **v1.82.8**
+- 您在此時間窗內建置了一個包含 `pip install litellm` 但未固定版本的 Docker 映像檔
+- 您專案中的依賴項以傳遞方式將 LiteLLM 拉入，且未固定版本
+  （例如透過 AI 代理程式框架、MCP 伺服器或 LLM 協調工具）
 
-You may be affected if **any** of the following are true:
+如果以下**任何**情況為真，您**不**受影響：
 
-- You installed or upgraded LiteLLM via `pip` on **March 24, 2026**, between **10:39 UTC and 16:00 UTC**
-- You ran `pip install litellm` without pinning a version and received **v1.82.7** or **v1.82.8**
-- You built a Docker image during this window that included `pip install litellm` without a pinned version
-- A dependency in your project pulled in LiteLLM as a transitive, unpinned dependency
-  (for example through AI agent frameworks, MCP servers, or LLM orchestration tools)
+**LiteLLM AI Gateway/Proxy 使用者：** 使用官方 LiteLLM Proxy Docker 映像檔的客戶未受影響。該部署路徑在 requirements.txt 中固定依賴版本，且不依賴受影響的 PyPI 套件。
 
-You are **not** affected if any of the following are true:
+- 您正在使用 **LiteLLM Cloud**
+- 您正在使用官方 LiteLLM AI Gateway Docker 映像檔：`ghcr.io/berriai/litellm`
+- 您使用的是 **v1.82.6 或更早版本**，且未在受影響期間升級
+- 您是從 GitHub 儲存庫以原始碼安裝 LiteLLM，而該儲存庫**未**遭入侵
 
-**LiteLLM AI Gateway/Proxy users:** Customers running the official LiteLLM Proxy Docker image were not impacted. That deployment path pins dependencies in requirements.txt and does not rely on the compromised PyPI packages.
-
-- You are using **LiteLLM Cloud**
-- You are using the official LiteLLM AI Gateway Docker image: `ghcr.io/berriai/litellm`
-- You are on **v1.82.6 or earlier** and did not upgrade during the affected window
-- You installed LiteLLM from source via the GitHub repository, which was **not** compromised
-
-
-### How to check if you are affected
+### 如何檢查您是否受影響 {#how-to-check-if-you-are-affected}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -99,34 +96,34 @@ pip show litellm
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-Go to the proxy base url, and check the version of the installed LiteLLM.
+前往 Proxy base url，並檢查已安裝 LiteLLM 的版本。
 
-![Proxy version check](../../img/security_update_march_2026/proxy_version.png)
+![Proxy 版本檢查](../../img/security_update_march_2026/proxy_version.png)
 </TabItem>
 <TabItem value="github" label="GitHub Actions">
 
-Scans all repositories in a GitHub organization for workflow jobs that installed the compromised versions.
+掃描 GitHub 組織中的所有儲存庫，尋找安裝了受影響版本的工作流程作業。
 
-**Requirements:** Python 3 and `requests` (`pip install requests`).
+**需求：** Python 3 與 `requests`（`pip install requests`）。
 
-**Setup:**
+**設定：**
 
 ```bash
 export GITHUB_TOKEN="your-github-pat"
 ```
 
-**Run:**
+**執行：**
 
 ```bash
 python find_litellm_github.py
 ```
 
-Set the `ORG` variable in the script to your GitHub organization name.
+將腳本中的 `ORG` 變數設定為您的 GitHub 組織名稱。
 
-Both scripts default to scanning jobs from **today**. Adjust the `WINDOW_START` and `WINDOW_END` constants to cover **March 24, 2026** (the incident date) if running on a different day.
+兩個腳本預設都只掃描 **今天** 的作業。若在其他日期執行，請調整 `WINDOW_START` 與 `WINDOW_END` 常數，以涵蓋 **2026 年 3 月 24 日**（事件日期）。
 
 <details>
-<summary>View full script (find_litellm_github.py)</summary>
+<summary>查看完整腳本（find_litellm_github.py）</summary>
 
 ```python
 #!/usr/bin/env python3
@@ -376,28 +373,28 @@ if __name__ == "__main__":
 </TabItem>
 <TabItem value="gitlab" label="GitLab CI">
 
-Scans all projects in a GitLab group (including subgroups) for CI/CD jobs that installed the compromised versions.
+掃描 GitLab 群組（包含子群組）中的所有專案，尋找安裝了受影響版本的 CI/CD 作業。
 
-**Requirements:** Python 3 and `requests` (`pip install requests`).
+**需求：** Python 3 與 `requests`（`pip install requests`）。
 
-**Setup:**
+**設定：**
 
 ```bash
 export GITLAB_TOKEN="your-gitlab-pat"
 ```
 
-**Run:**
+**執行：**
 
 ```bash
 python find_litellm_jobs.py
 ```
 
-Set the `GROUP_NAME` variable in the script to your GitLab group name.
+將腳本中的 `GROUP_NAME` 變數設定為您的 GitLab 群組名稱。
 
-Both scripts default to scanning jobs from **today**. Adjust the `WINDOW_START` and `WINDOW_END` constants to cover **March 24, 2026** (the incident date) if running on a different day.
+兩個腳本預設都只掃描 **今天** 的作業。若在其他日期執行，請調整 `WINDOW_START` 與 `WINDOW_END` 常數，以涵蓋 **2026 年 3 月 24 日**（事件日期）。
 
 <details>
-<summary>View full script (find_litellm_jobs.py)</summary>
+<summary>查看完整腳本（find_litellm_jobs.py）</summary>
 
 ```python
 #!/usr/bin/env python3
@@ -642,79 +639,75 @@ if __name__ == "__main__":
 </TabItem>
 </Tabs>
 
-*CI/CD scripts contributed by the community ([original gist](https://gist.github.com/fryz/93ec8d4898ffe5b5ac5706a208823ef3)). Review before running.*
+*由社群貢獻的 CI/CD 腳本（[原始 gist](https://gist.github.com/fryz/93ec8d4898ffe5b5ac5706a208823ef3)）。執行前請先審查。*
 
+## 入侵指標（IoCs） {#indicators-of-compromise-iocs}
 
-## Indicators of compromise (IoCs)
+請檢查受影響系統是否有以下指標：
 
-Review affected systems for the following indicators:
+- 您的 `site-packages` 中存在 `litellm_init.pth`
+- 對 `models.litellm[.]cloud` 的對外流量或請求
+  此網域**不**隸屬於 LiteLLM
+- 對 `checkmarx[.]zone` 的對外流量或請求
+  此網域**不**隸屬於 LiteLLM
 
-- `litellm_init.pth` present in your `site-packages`
-- Outbound traffic or requests to `models.litellm[.]cloud`
-  This domain is **not** affiliated with LiteLLM
-- Outbound traffic or requests to `checkmarx[.]zone`
-  This domain is **not** affiliated with LiteLLM
+## 受影響使用者的立即行動 {#immediate-actions-for-affected-users}
 
+如果您安裝或執行了 **v1.82.7** 或 **v1.82.8**，請立即採取以下行動。
 
-## Immediate actions for affected users
+### 1. 旋轉所有機密 {#1-rotate-all-secrets}
 
-If you installed or ran **v1.82.7** or **v1.82.8**, take the following actions immediately.
+將受影響系統中存在的任何憑證視為已遭入侵，包括：
 
-### 1. Rotate all secrets
+- API 金鑰
+- 雲端存取金鑰
+- 資料庫密碼
+- SSH 金鑰
+- Kubernetes 權杖
+- 儲存在環境變數或組態檔中的任何機密
 
-Treat any credentials present on the affected systems as compromised, including:
+### 2. 檢查您的檔案系統 {#2-inspect-your-filesystem}
 
-- API keys
-- Cloud access keys
-- Database passwords
-- SSH keys
-- Kubernetes tokens
-- Any secrets stored in environment variables or configuration files
-
-### 2. Inspect your filesystem
-
-Check your `site-packages` directory for a file named `litellm_init.pth`:
+檢查您的 `site-packages` 目錄中是否有名為 `litellm_init.pth` 的檔案：
 
 ```bash
 find /usr/lib/python3.13/site-packages/ -name "litellm_init.pth"
 ```
 
-If present:
+如果存在：
 
-- remove it immediately
-- investigate the host for further compromise
-- preserve relevant artifacts if your security team is performing forensics
+- 立即移除
+- 調查主機是否有進一步入侵
+- 若您的資安團隊正在進行鑑識，請保留相關證物
 
-### 3. Audit version history
+### 3. 稽核版本歷史 {#3-audit-version-history}
 
-Review your:
+檢視您的：
 
-- Local environments
-- CI/CD pipelines
-- Docker builds
-- Deployment logs
+- 本機環境
+- CI/CD 管線
+- Docker 建置
+- 部署記錄
 
-Confirm whether **v1.82.7** or **v1.82.8** was installed anywhere.
+確認是否在任何地方安裝了 **v1.82.7** 或 **v1.82.8**。
 
-Pin LiteLLM to a known safe version such as **v1.82.6 or earlier**, or to a later verified release once announced.
+將 LiteLLM 固定到已知安全的版本，例如 **v1.82.6 或更早版本**，或在稍後公告的已驗證版本。
 
+## 回應與修復 {#response-and-remediation}
 
-## Response and remediation
+LiteLLM AI Gateway 團隊已採取以下步驟：
 
-The LiteLLM AI Gateway team has already taken the following steps:
+- 已從 PyPI 移除遭入侵的套件
+- 已輪替維護者憑證並建立新的授權維護者
+- 已邀請 Google 的 Mandiant 安全團隊協助分析建置與發布鏈的鑑識資料
 
-- Removed compromised packages from PyPI
-- Rotated maintainer credentials and established new authorized maintainers
-- Engaged Google's Mandiant security team to assist with forensic analysis of the build and publishing chain
+## 驗證 Docker 映像簽章 {#verify-docker-image-signatures}
 
+自 `v1.83.0-nightly` 起，所有發布到 GHCR 的 LiteLLM Docker 映像都已使用 [cosign](https://docs.sigstore.dev/cosign/overview/) 進行簽署。每個版本都使用在 [commit `0112e53`](https://github.com/BerriAI/litellm/commit/0112e53046018d726492c814b3644b7d376029d0) 中引入的相同金鑰簽署。
 
-## Verify Docker image signatures
+**使用固定的 commit hash 驗證（建議）：**
 
-Starting from `v1.83.0-nightly`, all LiteLLM Docker images published to GHCR are signed with [cosign](https://docs.sigstore.dev/cosign/overview/). Every release is signed with the same key introduced in [commit `0112e53`](https://github.com/BerriAI/litellm/commit/0112e53046018d726492c814b3644b7d376029d0).
-
-**Verify using the pinned commit hash (recommended):**
-
-A commit hash is cryptographically immutable, so this is the strongest way to ensure you are using the original signing key:
+commit hash 在密碼學上不可變，因此這是確認您使用的是原始簽署金鑰的最強方式：
 
 ```bash
 cosign verify \
@@ -722,9 +715,9 @@ cosign verify \
   ghcr.io/berriai/litellm:<release-tag>
 ```
 
-**Verify using a release tag (convenience):**
+**使用 release 標籤驗證（方便）：**
 
-Tags are protected in this repository and resolve to the same key. This option is easier to read but relies on tag protection rules:
+本儲存庫中的標籤受到保護，並會解析為相同的金鑰。此選項較容易閱讀，但仰賴標籤保護規則：
 
 ```bash
 cosign verify \
@@ -732,9 +725,9 @@ cosign verify \
   ghcr.io/berriai/litellm:<release-tag>
 ```
 
-Replace `<release-tag>` with the version you are deploying (e.g. `v1.83.0-stable`).
+請將 `<release-tag>` 替換為您正在部署的版本（例如 `v1.83.0-stable`）。
 
-Expected output:
+預期輸出：
 
 ```
 The following checks were performed on each of these signatures:
@@ -742,18 +735,18 @@ The following checks were performed on each of these signatures:
   - The signatures were verified against the specified public key
 ```
 
-## Verified safe versions
+## 已驗證安全的版本 {#verified-safe-versions}
 
-We have audited every LiteLLM release published between v1.78.0 and v1.82.6 across both PyPI and Docker. Each artifact was verified by:
+我們已審查在 v1.78.0 到 v1.82.6 之間發布的每個 LiteLLM 版本，涵蓋 PyPI 與 Docker。每個構件都已透過以下方式驗證：
 
-1. Downloading the published artifact and computing its SHA-256 digest
-2. Scanning for the known [indicators of compromise](#indicators-of-compromise-iocs) (IOCs)
-3. Comparing the artifact contents against the corresponding Git commit in the BerriAI/litellm repository
+1. 下載已發布的構件並計算其 SHA-256 摘要
+2. 掃描已知的[入侵指標](#indicators-of-compromise-iocs)（IOC）
+3. 將構件內容與 BerriAI/litellm 儲存庫中對應的 Git commit 進行比對
 
-**All versions listed below are confirmed clean.**
+**下列列出的所有版本都已確認乾淨。**
 
 <Tabs>
-<TabItem value="pypi" label="PyPI Releases">
+<TabItem value="pypi" label="PyPI 發布版本">
 
 <VersionVerificationTable entries={[
   { version: "1.82.6", sha256: "164a3ef3e19f309e3cabc199bef3d2045212712fefdfa25fc7f75884a5b5b205", gitCommit: "38d477507dad" },
@@ -779,7 +772,7 @@ We have audited every LiteLLM release published between v1.78.0 and v1.82.6 acro
 ]} />
 
 </TabItem>
-<TabItem value="docker" label="Docker Images">
+<TabItem value="docker" label="Docker 映像">
 
 <VersionVerificationTable entries={[
   { version: "1.82.3", sha256: "0a571da849db5f9c3cf3fead2ffbf1df982eebff7e7b38b46dbec3f640dafdbb", gitCommit: "61409275c8d8" },
@@ -807,14 +800,12 @@ We have audited every LiteLLM release published between v1.78.0 and v1.82.6 acro
 </TabItem>
 </Tabs>
 
+## 問題與支援 {#questions-and-support}
 
-## Questions and support
+如果您認為您的系統可能受到影響，請立即聯絡我們：
 
-If you believe your systems may be affected, contact us immediately:
+- **安全性：** `security@berri.ai`
+- **支援：** `support@berri.ai`
+- **Slack：** 直接聯絡 LiteLLM 團隊
 
-- **Security:** `security@berri.ai`
-- **Support:** `support@berri.ai`
-- **Slack:** Reach out to the LiteLLM team directly
-
-For real-time updates, follow [LiteLLM (YC W23) on X](https://x.com/LiteLLM).
-
+如需即時更新，請追蹤 [X 上的 LiteLLM (YC W23)](https://x.com/LiteLLM)。

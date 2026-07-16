@@ -1,19 +1,19 @@
-# Azure Document Intelligence OCR
+# Azure 文件智慧 OCR {#azure-document-intelligence-ocr}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure Document Intelligence (formerly Form Recognizer) provides advanced document analysis capabilities including text extraction, layout analysis, and structure recognition |
-| Provider Route on LiteLLM | `azure_ai/doc-intelligence/` |
-| Supported Operations | `/ocr` |
-| Link to Provider Doc | [Azure Document Intelligence ↗](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/)
+| 說明 | Azure Document Intelligence（前稱 Form Recognizer）提供進階文件分析功能，包括文字擷取、版面分析與結構辨識 |
+| LiteLLM 上的提供者路由 | `azure_ai/doc-intelligence/` |
+| 支援的操作 | `/ocr` |
+| 提供者文件連結 | [Azure Document Intelligence ↗](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/)
 
-Extract text and analyze document structure using Azure Document Intelligence's powerful prebuilt models.
+使用 Azure Document Intelligence 強大的預建模型擷取文字並分析文件結構。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -38,7 +38,7 @@ for page in response.pages:
     print(page.markdown)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM PROXY** {#litellm-proxy}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -51,12 +51,12 @@ model_list:
       mode: ocr
 ```
 
-**Start Proxy**
+**啟動 Proxy**
 ```bash
 litellm --config proxy_config.yaml
 ```
 
-**Call OCR via Proxy**
+**透過 Proxy 呼叫 OCR**
 ```bash showLineNumbers title="cURL Request"
 curl -X POST http://localhost:4000/ocr \
   -H "Content-Type: application/json" \
@@ -70,11 +70,11 @@ curl -X POST http://localhost:4000/ocr \
   }'
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Azure Document Intelligence uses an asynchronous API pattern. LiteLLM AI Gateway handles the request/response transformation and polling automatically.
+Azure Document Intelligence 使用非同步 API 模式。LiteLLM AI Gateway 會自動處理請求/回應轉換與輪詢。
 
-### Complete Flow Diagram
+### 完整流程圖 {#complete-flow-diagram}
 
 ```mermaid
 sequenceDiagram
@@ -85,12 +85,12 @@ sequenceDiagram
     participant Azure as Azure Document Intelligence
 
     Client->>LiteLLM: POST /ocr (Mistral format)
-    Note over LiteLLM: Transform to Azure format
+    Note over LiteLLM: 轉換為 Azure format
     
     LiteLLM->>Azure: POST :analyze
     Azure-->>LiteLLM: 202 Accepted + polling URL
     
-    Note over LiteLLM: Automatic Polling
+    Note over LiteLLM: 自動輪詢
     loop Every 2-10 seconds
         LiteLLM->>Azure: GET polling URL
         Azure-->>LiteLLM: Status: running
@@ -99,40 +99,40 @@ sequenceDiagram
     LiteLLM->>Azure: GET polling URL
     Azure-->>LiteLLM: Status: succeeded + results
     
-    Note over LiteLLM: Transform to Mistral format
-    LiteLLM-->>Client: OCR Response (Mistral format)
+    Note over LiteLLM: 轉換為 Mistral format
+    LiteLLM-->>Client: OCR 回應 (Mistral format)
 ```
 
-### What LiteLLM Does For You
+### LiteLLM 為您完成的工作 {#what-litellm-does-for-you}
 
-When you call `litellm.ocr()` via SDK or `/ocr` via Proxy:
+當您透過 SDK 呼叫 `litellm.ocr()` 或透過 Proxy 呼叫 `/ocr` 時：
 
-1. **Request Transformation**: Converts Mistral OCR format → Azure Document Intelligence format
-2. **Submits Document**: Sends transformed request to Azure DI API
-3. **Handles 202 Response**: Captures the `Operation-Location` URL from response headers
-4. **Automatic Polling**: 
-   - Polls the operation URL at intervals specified by `retry-after` header (default: 2 seconds)
-   - Continues until status is `succeeded` or `failed`
-   - Respects Azure's rate limiting via `retry-after` headers
-5. **Response Transformation**: Converts Azure DI format → Mistral OCR format
-6. **Returns Result**: Sends unified Mistral format response to client
+1. **請求轉換**：將 Mistral OCR format 轉換 → Azure Document Intelligence format
+2. **提交文件**：將轉換後的請求送至 Azure DI API
+3. **處理 202 回應**：從回應標頭擷取 `Operation-Location` URL
+4. **自動輪詢**： 
+   - 依據 `retry-after` 標頭指定的間隔輪詢 operation URL（預設：2 秒）
+   - 持續直到狀態為 `succeeded` 或 `failed`
+   - 透過 `retry-after` 標頭遵守 Azure 的速率限制
+5. **回應轉換**：將 Azure DI format 轉換 → Mistral OCR format
+6. **返回結果**：將統一的 Mistral format 回應送回用戶端
 
-**Polling Configuration:**
-- Default timeout: 120 seconds
-- Configurable via `AZURE_OPERATION_POLLING_TIMEOUT` environment variable
-- Uses sync (`time.sleep()`) or async (`await asyncio.sleep()`) based on call type
+**輪詢設定：**
+- 預設逾時：120 秒
+- 可透過 `AZURE_OPERATION_POLLING_TIMEOUT` 環境變數設定
+- 依呼叫類型使用 sync（`time.sleep()`）或 async（`await asyncio.sleep()`）
 
 :::info
-**Typical processing time**: 2-10 seconds depending on document size and complexity
+**典型處理時間**：2-10 秒，視文件大小與複雜度而定
 :::
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-Azure Document Intelligence offers several prebuilt models optimized for different use cases:
+Azure Document Intelligence 提供多種針對不同使用情境最佳化的預建模型：
 
-### prebuilt-layout (Recommended)
+### prebuilt-layout（建議） {#prebuilt-layout-recommended}
 
-Best for general document OCR with structure preservation.
+最適合需要保留結構的一般文件 OCR。
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -157,7 +157,7 @@ response = litellm.ocr(
 ```
 
 </TabItem>
-<TabItem value="proxy" label="Proxy Config">
+<TabItem value="proxy" label="Proxy 設定">
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -170,7 +170,7 @@ model_list:
       mode: ocr
 ```
 
-**Usage:**
+**用法：**
 ```bash
 curl -X POST http://localhost:4000/ocr \
   -H "Authorization: Bearer your-api-key" \
@@ -180,17 +180,17 @@ curl -X POST http://localhost:4000/ocr \
 </TabItem>
 </Tabs>
 
-**Features:**
-- Text extraction with markdown formatting
-- Table detection and extraction
-- Document structure analysis
-- Paragraph and section recognition
+**功能：**
+- 具有 markdown 格式的文字擷取
+- 表格偵測與擷取
+- 文件結構分析
+- 段落與章節辨識
 
-**Pricing:** $10 per 1,000 pages
+**價格：** 每 1,000 頁 $10
 
-### prebuilt-read
+### prebuilt-read {#prebuilt-read}
 
-Optimized for reading text from documents - fastest and most cost-effective.
+針對從文件讀取文字進行最佳化——速度最快且成本效益最高。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -212,7 +212,7 @@ response = litellm.ocr(
 ```
 
 </TabItem>
-<TabItem value="proxy" label="Proxy Config">
+<TabItem value="proxy" label="Proxy 設定">
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -225,7 +225,7 @@ model_list:
       mode: ocr
 ```
 
-**Usage:**
+**用法：**
 ```bash
 curl -X POST http://localhost:4000/ocr \
   -H "Authorization: Bearer your-api-key" \
@@ -235,16 +235,16 @@ curl -X POST http://localhost:4000/ocr \
 </TabItem>
 </Tabs>
 
-**Features:**
-- Fast text extraction
-- Optimized for reading-heavy documents
-- Basic structure recognition
+**功能：**
+- 快速文字擷取
+- 針對重度閱讀型文件最佳化
+- 基本結構辨識
 
-**Pricing:** $1.50 per 1,000 pages
+**價格：** 每 1,000 頁 $1.50
 
-### prebuilt-document
+### prebuilt-document {#prebuilt-document}
 
-General-purpose document analysis with key-value pairs.
+具有鍵值組的一般用途文件分析。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -266,7 +266,7 @@ response = litellm.ocr(
 ```
 
 </TabItem>
-<TabItem value="proxy" label="Proxy Config">
+<TabItem value="proxy" label="Proxy 設定">
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -279,7 +279,7 @@ model_list:
       mode: ocr
 ```
 
-**Usage:**
+**用法：**
 ```bash
 curl -X POST http://localhost:4000/ocr \
   -H "Authorization: Bearer your-api-key" \
@@ -289,13 +289,13 @@ curl -X POST http://localhost:4000/ocr \
 </TabItem>
 </Tabs>
 
-**Pricing:** $10 per 1,000 pages
+**價格：** 每 1,000 頁 $10
 
-## Document Types
+## 文件類型 {#document-types}
 
-Azure Document Intelligence supports various document formats.
+Azure Document Intelligence 支援各種文件格式。
 
-### PDF Documents
+### PDF 文件 {#pdf-documents}
 
 ```python showLineNumbers title="PDF OCR"
 response = litellm.ocr(
@@ -307,7 +307,7 @@ response = litellm.ocr(
 )
 ```
 
-### Image Documents
+### 圖片文件 {#image-documents}
 
 ```python showLineNumbers title="Image OCR"
 response = litellm.ocr(
@@ -319,9 +319,9 @@ response = litellm.ocr(
 )
 ```
 
-**Supported image formats:** JPEG, PNG, BMP, TIFF
+**支援的圖片格式：** JPEG、PNG、BMP、TIFF
 
-### Base64 Encoded Documents
+### Base64 編碼文件 {#base64-encoded-documents}
 
 ```python showLineNumbers title="Base64 PDF"
 import base64
@@ -339,7 +339,7 @@ response = litellm.ocr(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
 ```python showLineNumbers title="Response Structure"
 # Response has the following structure
@@ -359,7 +359,7 @@ for page in response.pages:
         print(f"Height: {page.dimensions.height}px")
 ```
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async Usage"
 import litellm
@@ -379,11 +379,11 @@ async def process_document():
 response = asyncio.run(process_document())
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM automatically tracks costs for Azure Document Intelligence OCR:
+LiteLLM 會自動追蹤 Azure Document Intelligence OCR 的成本：
 
-| Model | Cost per 1,000 Pages |
+| 模型 | 每 1,000 頁成本 |
 |-------|---------------------|
 | prebuilt-read | $1.50 |
 | prebuilt-layout | $10.00 |
@@ -399,10 +399,9 @@ response = litellm.ocr(
 print(f"Cost: ${response._hidden_params.get('response_cost', 0)}")
 ```
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Azure Document Intelligence Documentation](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/)
-- [Pricing Details](https://azure.microsoft.com/en-us/pricing/details/ai-document-intelligence/)
-- [Supported File Formats](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-model-overview)
-- [LiteLLM OCR Documentation](https://docs.litellm.ai/docs/ocr)
-
+- [Azure Document Intelligence 文件](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/)
+- [價格詳情](https://azure.microsoft.com/en-us/pricing/details/ai-document-intelligence/)
+- [支援的檔案格式](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept-model-overview)
+- [LiteLLM OCR 文件](https://docs.litellm.ai/docs/ocr)

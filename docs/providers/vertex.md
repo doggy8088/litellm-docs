@@ -2,40 +2,40 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# VertexAI [Gemini]
+# VertexAI [Gemini] {#vertexai-gemini}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Vertex AI is a fully-managed AI development platform for building and using generative AI. |
-| Provider Route on LiteLLM | `vertex_ai/` |
-| Link to Provider Doc | [Vertex AI ↗](https://cloud.google.com/vertex-ai) |
-| Base URL | 1. Regional endpoints<br/>`https://{vertex_location}-aiplatform.googleapis.com/`<br/>2. Global endpoints (limited availability)<br/>`https://aiplatform.googleapis.com/`|
-| Supported Operations | [`/chat/completions`](#sample-usage), `/completions`, [`/embeddings`](#embedding-models), [`/audio/speech`](#text-to-speech-apis), [`/fine_tuning`](#fine-tuning-apis), [`/batches`](#batch-apis), [`/files`](#batch-apis), [`/images`](#image-generation-models), [`/rerank`](#rerank-api) |
+| 說明 | Vertex AI 是一個全代管的 AI 開發平台，用於建置和使用生成式 AI。 |
+| LiteLLM 上的提供者路由 | `vertex_ai/` |
+| 提供者文件連結 | [Vertex AI ↗](https://cloud.google.com/vertex-ai) |
+| 基礎 URL | 1. 區域端點<br/>`https://{vertex_location}-aiplatform.googleapis.com/`<br/>2. 全域端點（可用性有限）<br/>`https://aiplatform.googleapis.com/`|
+| 支援的操作 | [`/chat/completions`](#sample-usage), `/completions`, [`/embeddings`](#embedding-models), [`/audio/speech`](#text-to-speech-apis), [`/fine_tuning`](#fine-tuning-apis), [`/batches`](#batch-apis), [`/files`](#batch-apis), [`/images`](#image-generation-models), [`/rerank`](#rerank-api) |
 
 :::tip Vertex AI vs Gemini API
-| Model Format | Provider | Auth Required |
+| 模型格式 | 提供者 | 需要驗證 |
 |-------------|----------|---------------|
-| `vertex_ai/gemini-2.0-flash` | Vertex AI | GCP credentials + project |
-| `gemini-2.0-flash` (no prefix) | Vertex AI | GCP credentials + project |
-| `gemini/gemini-2.0-flash` | Gemini API | `GEMINI_API_KEY` (simple API key) |
+| `vertex_ai/gemini-2.0-flash` | Vertex AI | GCP 憑證 + 專案 |
+| `gemini-2.0-flash`（無前綴） | Vertex AI | GCP 憑證 + 專案 |
+| `gemini/gemini-2.0-flash` | Gemini API | `GEMINI_API_KEY`（簡單 API 金鑰） |
 
-**If you just want to use an API key** (like OpenAI), use the `gemini/` prefix instead. See [Gemini - Google AI Studio](./gemini.md).
+**如果您只想使用 API 金鑰**（如 OpenAI），請改用 `gemini/` 前綴。請參閱 [Gemini - Google AI Studio](./gemini.md)。
 
-Models without a prefix default to Vertex AI which requires GCP authentication.
+沒有前綴的模型會預設為 Vertex AI，且需要 GCP 驗證。
 :::
 
 <br />
 <br />
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_VertextAI_Example.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-## `vertex_ai/` route 
+## `vertex_ai/` 路由  {#vertex_ai-route}
 
-The `vertex_ai/` route uses uses [VertexAI's REST API](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#syntax).
+`vertex_ai/` 路由會使用 [VertexAI 的 REST API](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference#syntax)。
 
 ```python
 from litellm import completion
@@ -62,7 +62,7 @@ response = completion(
 )
 ```
 
-### **System Message**
+### **系統訊息** {#system-message}
 
 ```python
 from litellm import completion
@@ -86,9 +86,9 @@ response = completion(
 )
 ```
 
-### **Function Calling**
+### **函式呼叫** {#function-calling}
 
-Force Gemini to make tool calls with `tool_choice="required"`.
+使用 `tool_choice="required"` 強制 Gemini 進行工具呼叫。
 
 ```python
 from litellm import completion
@@ -149,11 +149,11 @@ data = {
 print(completion(**data))
 ```
 
-### **JSON Schema**
+### **JSON Schema** {#json-schema}
 
-From v`1.40.1+` LiteLLM supports sending `response_schema` as a param for Gemini-1.5-Pro on Vertex AI. For other models (e.g. `gemini-1.5-flash` or `claude-3-5-sonnet`), LiteLLM adds the schema to the message list with a user-controlled prompt.
+從 v`1.40.1+` 開始，LiteLLM 支援將 `response_schema` 作為參數傳送給 Vertex AI 上的 Gemini-1.5-Pro。對於其他模型（例如 `gemini-1.5-flash` 或 `claude-3-5-sonnet`），LiteLLM 會將 schema 加入訊息清單，並搭配使用者可控制的提示詞。
 
-**Response Schema**
+**回應 Schema**
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -197,7 +197,7 @@ print(json.loads(completion.choices[0].message.content))
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型新增到 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.5-pro
@@ -207,7 +207,7 @@ model_list:
       vertex_location: "us-central1"
       vertex_credentials: "/path/to/service_account.json" # [OPTIONAL] Do this OR `!gcloud auth application-default login` - run this to add vertex credentials to your env
 ```
-or
+或
 ```yaml
 model_list:
  - model_name: gemini-pro
@@ -221,13 +221,13 @@ model_list:
         provider: Vertex
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發送請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -257,9 +257,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-**Validate Schema**
+**驗證 Schema**
 
-To validate the response_schema, set `enforce_validation: true`.
+若要驗證 response_schema，請設定 `enforce_validation: true`。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -283,7 +283,7 @@ except JSONSchemaValidationError as e:
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型新增到 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.5-pro
@@ -294,13 +294,13 @@ model_list:
       vertex_credentials: "/path/to/service_account.json" # [OPTIONAL] Do this OR `!gcloud auth application-default login` - run this to add vertex credentials to your env
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發送請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -332,13 +332,13 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-LiteLLM will validate the response against the schema, and raise a `JSONSchemaValidationError` if the response does not match the schema. 
+LiteLLM 會根據 schema 驗證回應，若回應不符合 schema，將拋出 `JSONSchemaValidationError`。 
 
-JSONSchemaValidationError inherits from `openai.APIError` 
+JSONSchemaValidationError 繼承自 `openai.APIError` 
 
-Access the raw response with `e.raw_response`
+可使用 `e.raw_response` 存取原始回應
 
-**Add to prompt yourself**
+**自行加入到提示詞**
 
 ```python 
 from litellm import completion 
@@ -371,15 +371,15 @@ Return a `list[Recipe]`
 completion(model="vertex_ai/gemini-1.5-flash-preview-0514", messages=messages, response_format={ "type": "json_object" })
 ```
 
-### **Google Hosted Tools (Web Search, Code Execution, etc.)**
+### **Google 託管工具（Web Search、程式碼執行等）** {#google-hosted-tools-web-search-code-execution-etc}
 
-#### **Web Search**
+#### **網頁搜尋** {#web-search}
 
-Add Google Search Result grounding to vertex ai calls. 
+將 Google Search Result grounding 加入 vertex ai 呼叫。 
 
-[**Relevant VertexAI Docs**](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/grounding#examples)
+[**相關 VertexAI 文件**](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/grounding#examples)
 
-See the grounding metadata with `response_obj._hidden_params["vertex_ai_grounding_metadata"]`
+可透過 `response_obj._hidden_params["vertex_ai_grounding_metadata"]` 查看 grounding 中繼資料
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -448,12 +448,12 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-#### **Url Context**
-Using the URL context tool, you can provide Gemini with URLs as additional context for your prompt. The model can then retrieve content from the URLs and use that content to inform and shape its response.
+#### **Url Context** {#url-context}
+使用 URL context 工具，您可以將 URL 作為額外脈絡提供給 Gemini，作為提示詞的補充。接著模型可以從這些 URL 擷取內容，並使用該內容來理解與塑造其回應。
 
-[**Relevant Docs**](https://ai.google.dev/gemini-api/docs/url-context)
+[**相關文件**](https://ai.google.dev/gemini-api/docs/url-context)
 
-See the grounding metadata with `response_obj._hidden_params["vertex_ai_url_context_metadata"]`
+可透過 `response_obj._hidden_params["vertex_ai_url_context_metadata"]` 查看 grounding 中繼資料
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -485,7 +485,7 @@ print(f"Retrieval Status: {urlMetadata['urlRetrievalStatus']}")
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.0-flash
@@ -494,12 +494,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發送請求！
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   -H "Content-Type: application/json" \
@@ -513,9 +513,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-#### **Enterprise Web Search**
+#### **企業 Web Search** {#enterprise-web-search}
 
-You can also use the `enterpriseWebSearch` tool for an [enterprise compliant search](https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/web-grounding-enterprise).
+您也可以使用 `enterpriseWebSearch` 工具進行 [企業合規搜尋](https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/web-grounding-enterprise)。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -584,9 +584,7 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-#### **Code Execution**
-
-
+#### **程式碼執行** {#code-execution}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -628,20 +626,16 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+#### **Google 地圖** {#google-maps}
 
+使用 Google Maps 為您的 Gemini 模型提供以位置為基礎的脈絡。
 
-
-
-#### **Google Maps**
-
-Use Google Maps to provide location-based context to your Gemini models.
-
-[**Relevant Vertex AI Docs**](https://ai.google.dev/gemini-api/docs/grounding#google-maps)
+[**相關 Vertex AI 文件**](https://ai.google.dev/gemini-api/docs/grounding#google-maps)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Basic Usage - Enable Widget Only**
+**基本用法 - 只啟用 Widget**
 
 ```python showLineNumbers
 from litellm import completion
@@ -660,9 +654,9 @@ resp = litellm.completion(
 print(resp)
 ```
 
-**With Location Data**
+**搭配位置資料**
 
-You can specify a location to ground the model's responses with location-specific information:
+您可以指定位置，讓模型的回應以該位置的特定資訊為基礎：
 
 ```python showLineNumbers
 from litellm import completion
@@ -694,7 +688,7 @@ print(resp)
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
 
-**Basic Usage - Enable Widget Only**
+**基本用法 - 只啟用 Widget**
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -713,7 +707,7 @@ response = client.chat.completions.create(
 print(response)
 ```
 
-**With Location Data**
+**搭配位置資料**
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -741,7 +735,7 @@ print(response)
 </TabItem>
 <TabItem value="curl" label="cURL">
 
-**Basic Usage - Enable Widget Only**
+**基本用法 - 只啟用 Widget**
 
 ```bash showLineNumbers
 curl http://localhost:4000/v1/chat/completions \
@@ -760,7 +754,7 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**With Location Data**
+**搭配位置資料**
 
 ```bash showLineNumbers
 curl http://localhost:4000/v1/chat/completions \
@@ -789,10 +783,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-#### **Moving from Vertex AI SDK to LiteLLM (GROUNDING)**
+#### **從 Vertex AI SDK 移轉到 LiteLLM（GROUNDING）** {#moving-from-vertex-ai-sdk-to-litellm-grounding}
 
-
-If this was your initial VertexAI Grounding code,
+如果這是您原本的 VertexAI Grounding 程式碼，
 
 ```python
 import vertexai
@@ -818,7 +811,7 @@ response = model.generate_content(
 print(response)
 ```
 
-then, this is what it looks like now
+那麼現在看起來會是這樣
 
 ```python
 from litellm import completion
@@ -839,18 +832,18 @@ print(resp)
 ```
 
 
-### **Thinking / `reasoning_content`**
+### **Thinking / `reasoning_content`** {#thinking--reasoning_content}
 
-LiteLLM translates OpenAI's `reasoning_effort` to Gemini's `thinking` parameter. [Code](https://github.com/BerriAI/litellm/blob/620664921902d7a9bfb29897a7b27c1a7ef4ddfb/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py#L362)
+LiteLLM 會將 OpenAI 的 `reasoning_effort` 轉換為 Gemini 的 `thinking` 參數。[程式碼](https://github.com/BerriAI/litellm/blob/620664921902d7a9bfb29897a7b27c1a7ef4ddfb/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py#L362)
 
-Added an additional non-OpenAI standard "disable" value for non-reasoning Gemini requests.
+另外，為非 reasoning 的 Gemini 請求新增了一個非 OpenAI 標準的「disable」值。
 
-**Mapping**
+**對應**
 
 | reasoning_effort | thinking |
 | ---------------- | -------- |
 | "disable"        | "budget_tokens": 0    |
-| "low"            | "budget_tokens": 1024 |
+| "low"        | "budget_tokens": 1024 |
 | "medium"         | "budget_tokens": 2048 |
 | "high"           | "budget_tokens": 4096 |
 
@@ -876,7 +869,7 @@ resp = completion(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 - model_name: gemini-2.5-flash
@@ -887,13 +880,13 @@ resp = completion(
     vertex_location: "us-central1"
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -909,8 +902,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-**Expected Response**
+**預期回應**
 
 ```python
 ModelResponse(
@@ -949,11 +941,11 @@ ModelResponse(
 )
 ```
 
-#### Pass `thinking` to Gemini models
+#### 將 `thinking` 傳遞給 Gemini 模型 {#pass-thinking-to-gemini-models}
 
-You can also pass the `thinking` parameter to Gemini models.
+您也可以將 `thinking` 參數傳遞給 Gemini 模型。
 
-This is translated to Gemini's [`thinkingConfig` parameter](https://ai.google.dev/gemini-api/docs/thinking#set-budget).
+這會轉換為 Gemini 的 [`thinkingConfig` 參數](https://ai.google.dev/gemini-api/docs/thinking#set-budget)。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -989,15 +981,13 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
+### **Context Caching** {#context-caching}
 
-### **Context Caching**
+#### 統一端點 {#unified-endpoint}
 
-#### Unified Endpoint
+以與 [**Google AI Studio -  Context Caching**](../providers/gemini.md#context-caching) 相同的方式使用 Vertex AI context caching
 
-Use Vertex AI context caching in the same way as [**Google AI Studio -  Context Caching**](../providers/gemini.md#context-caching)
-
-
-##### Example usage
+##### 範例用法 {#example-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1081,7 +1071,7 @@ print(resp.usage)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1093,13 +1083,13 @@ model_list:
       vertex_credentials: "/path/to/service_account.json"
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
 ```bash
 
@@ -1139,13 +1129,13 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-#### Calling provider api directly
+#### 直接呼叫提供者 API {#calling-provider-api-directly}
 
-[**Go straight to provider**](../pass_through/vertex_ai.md#context-caching)
+[**直接前往提供者**](../pass_through/vertex_ai.md#context-caching)
 
-##### 1. Create the Cache
+##### 1. 建立快取 {#1-create-the-cache}
 
-First, create the cache by sending a `POST` request to the `cachedContents` endpoint via the LiteLLM proxy.
+首先，透過 LiteLLM proxy 向 `cachedContents` 端點送出 `POST` 請求來建立快取。
 
 <Tabs>
 <TabItem value="proxy" label="PROXY">
@@ -1169,9 +1159,9 @@ curl http://0.0.0.0:4000/vertex_ai/v1/projects/{project_id}/locations/{location}
 </TabItem>
 </Tabs>
 
-##### 2. Get the Cache Name from the Response
+##### 2. 從回應中取得快取名稱 {#2-get-the-cache-name-from-the-response}
 
-Vertex AI will return a response containing the `name` of the cached content. This name is the identifier for your cached data.
+Vertex AI 會傳回一個包含已快取內容 `name` 的回應。這個名稱是您快取資料的識別碼。
 
 ```json
 {
@@ -1188,9 +1178,9 @@ Vertex AI will return a response containing the `name` of the cached content. Th
 }
 ```
 
-##### 3. Use the Cached Content
+##### 3. 使用已快取內容 {#3-use-the-cached-content}
 
-Use the `name` from the response as `cachedContent` or `cached_content` in subsequent API calls to reuse the cached information. This is passed in the body of your request to `/chat/completions`.
+在後續 API 呼叫中，使用回應中的 `name` 作為 `cachedContent` 或 `cached_content`，以重複使用已快取的資訊。這會在您的請求本文中傳遞給 `/chat/completions`。
 
 <Tabs>
 <TabItem value="proxy" label="PROXY">
@@ -1215,20 +1205,20 @@ curl http://0.0.0.0:4000/chat/completions \
 </TabItem>
 </Tabs>
 
-## Pre-requisites
-* `uv add google-cloud-aiplatform` (pre-installed on proxy docker image)
-* Authentication: 
-    * run `gcloud auth application-default login` See [Google Cloud Docs](https://cloud.google.com/docs/authentication/external/set-up-adc)
-    * Alternatively you can set `GOOGLE_APPLICATION_CREDENTIALS`
+## 前置需求 {#pre-requisites}
+* `uv add google-cloud-aiplatform`（proxy docker image 已預先安裝）
+* 驗證： 
+    * 執行 `gcloud auth application-default login` 請參閱 [Google Cloud 文件](https://cloud.google.com/docs/authentication/external/set-up-adc)
+    * 或者，您可以設定 `GOOGLE_APPLICATION_CREDENTIALS`
 
-    Here's how: [**Jump to Code**](#extra)
+    操作方式如下：[**跳至程式碼**](#extra)
 
-      - Create a service account on GCP
-      - Export the credentials as a json
-      - load the json and json.dump the json as a string
-      - store the json string in your environment as `GOOGLE_APPLICATION_CREDENTIALS`
+      - 在 GCP 上建立 service account
+      - 將憑證匯出為 json
+      - 載入 json，並將 json.dump 輸出為字串
+      - 將該 json 字串儲存在您的環境中作為 `GOOGLE_APPLICATION_CREDENTIALS`
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 import litellm
 litellm.vertex_project = "hardy-device-38811" # Your Project ID
@@ -1237,17 +1227,17 @@ litellm.vertex_location = "us-central1"  # proj location
 response = litellm.completion(model="gemini-2.5-pro", messages=[{"role": "user", "content": "write code for saying hi from LiteLLM"}])
 ```
 
-## Usage with LiteLLM Proxy Server
+## 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server}
 
-Here's how to use Vertex AI with the LiteLLM Proxy Server
+以下說明如何在 LiteLLM Proxy Server 中使用 Vertex AI
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   <Tabs>
 
-  <TabItem value="completion_param" label="Different location per model">
+  <TabItem value="completion_param" label="每個模型使用不同位置">
 
-  Use this when you need to set a different location for each vertex model
+  當您需要為每個 vertex model 設定不同位置時，請使用此項
 
   ```yaml
   model_list:
@@ -1265,9 +1255,9 @@ Here's how to use Vertex AI with the LiteLLM Proxy Server
 
   </TabItem>
 
-  <TabItem value="litellm_param" label="One location all vertex models">
+  <TabItem value="litellm_param" label="所有 vertex models 共用一個位置">
 
-  Use this when you have one vertex location for all models
+  當您有一個 vertex 位置供所有模型使用時，請使用此項
 
   ```yaml
   litellm_settings: 
@@ -1284,13 +1274,13 @@ Here's how to use Vertex AI with the LiteLLM Proxy Server
 
   </Tabs>
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 送出請求
 
   <Tabs>
 
@@ -1337,23 +1327,21 @@ Here's how to use Vertex AI with the LiteLLM Proxy Server
 
   </Tabs>
 
+## 驗證 - vertex_project、vertex_location 等  {#authentication---vertex_project-vertex_location-etc}
 
-## Authentication - vertex_project, vertex_location, etc. 
+透過以下方式設定您的 vertex 憑證：
+- 動態參數
+或
+- 環境變數 
 
-Set your vertex credentials via:
-- dynamic params
-OR
-- env vars 
+### **動態參數** {#dynamic-params}
 
+您可以設定：
+- `vertex_credentials` (str) - 可以是 json 字串或您的 vertex ai service account.json 檔案路徑
+- `vertex_location` (str) - vertex model 的部署位置（us-central1、asia-southeast1 等）。部分模型支援 global 位置，請參閱 [Vertex AI 文件](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations#supported_models)
+- `vertex_project` Optional[str] - 如果 vertex project 與 vertex_credentials 中的不同，請使用此項
 
-### **Dynamic Params**
-
-You can set:
-- `vertex_credentials` (str) - can be a json string or filepath to your vertex ai service account.json
-- `vertex_location` (str) - place where vertex model is deployed (us-central1, asia-southeast1, etc.). Some models support the global location, please see [Vertex AI documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations#supported_models)
-- `vertex_project` Optional[str] - use if vertex project different from the one in vertex_credentials
-
-as dynamic params for a `litellm.completion` call. 
+作為 `litellm.completion` 呼叫的動態參數。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1398,14 +1386,11 @@ model_list:
 </TabItem>
 </Tabs>
 
+### **Workload Identity Federation** {#workload-identity-federation}
 
+LiteLLM 支援 [Google Cloud Workload Identity Federation (WIF)](https://cloud.google.com/iam/docs/workload-identity-federation)，可讓您在不使用 service account key 的情況下，授予內部部署或多雲工作負載存取 Google Cloud 資源的權限。這是針對在其他雲端環境（AWS、Azure 等）或內部部署中執行的工作負載所建議的方法。
 
-
-### **Workload Identity Federation**
-
-LiteLLM supports [Google Cloud Workload Identity Federation (WIF)](https://cloud.google.com/iam/docs/workload-identity-federation), which allows you to grant on-premises or multi-cloud workloads access to Google Cloud resources without using a service account key. This is the recommended approach for workloads running in other cloud environments (AWS, Azure, etc.) or on-premises.
-
-To use Workload Identity Federation, pass the path to your WIF credentials configuration file via `vertex_credentials`:
+若要使用 Workload Identity Federation，請透過 `vertex_credentials` 傳入您的 WIF 憑證設定檔路徑：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1435,7 +1420,7 @@ model_list:
       vertex_credentials: /path/to/wif-credentials.json  # 👈 WIF credentials file
 ```
 
-Alternatively, you can create credentials in **LLM Credentials** in the LiteLLM UI and use those to authenticate your models:
+或者，您可以在 LiteLLM UI 的 **LLM Credentials** 中建立憑證，並使用它們來驗證您的模型：
 
 ```yaml
 model_list:
@@ -1450,9 +1435,9 @@ model_list:
 </TabItem>
 </Tabs>
 
-**WIF Credentials File Format**
+**WIF 憑證檔案格式**
 
-Your WIF credentials JSON file typically looks like this (for AWS federation):
+您的 WIF 憑證 JSON 檔案通常如下所示（適用於 AWS federation）：
 
 ```json
 {
@@ -1470,15 +1455,15 @@ Your WIF credentials JSON file typically looks like this (for AWS federation):
 }
 ```
 
-For more details on setting up Workload Identity Federation, see [Google Cloud WIF documentation](https://cloud.google.com/iam/docs/workload-identity-federation).
+如需設定 Workload Identity Federation 的更多詳細資訊，請參閱 [Google Cloud WIF 文件](https://cloud.google.com/iam/docs/workload-identity-federation)。
 
-#### Explicit AWS Credentials for WIF
+#### 明確的 AWS 憑證用於 WIF {#explicit-aws-credentials-for-wif}
 
-By default, AWS-based WIF relies on the EC2 instance metadata service to obtain AWS credentials. This works when LiteLLM runs on an EC2 instance or ECS task with an IAM role attached.
+預設情況下，基於 AWS 的 WIF 會依賴 EC2 instance metadata service 來取得 AWS 憑證。當 LiteLLM 執行於附加 IAM role 的 EC2 instance 或 ECS task 上時，這可正常運作。
 
-If your environment **does not have access to the EC2 metadata service** (e.g., running on-premises, in a container without host networking, or in a different cloud with security restrictions), you can provide explicit AWS credentials directly in the WIF credential JSON file. LiteLLM will use these to authenticate to AWS before performing the GCP token exchange.
+如果您的環境**無法存取 EC2 metadata service**（例如：在內部部署環境中執行、在沒有 host networking 的容器中執行，或在具有限制的不同雲端中執行），您可以直接在 WIF 憑證 JSON 檔案中提供明確的 AWS 憑證。LiteLLM 會先使用這些憑證向 AWS 驗證，然後再進行 GCP token exchange。
 
-Add the `aws_*` keys at the **top level** of your WIF credential JSON (alongside `type`, `audience`, etc.):
+請在您的 WIF 憑證 JSON 的**最上層**加入 `aws_*` keys（與 `type`、`audience` 等並列）：
 
 ```json
 {
@@ -1498,22 +1483,22 @@ Add the `aws_*` keys at the **top level** of your WIF credential JSON (alongside
 }
 ```
 
-**Supported `aws_*` parameters:**
+**支援的 `aws_*` 參數：**
 
-| Parameter | Required | Description |
+| 參數 | 必填 | 說明 |
 |---|---|---|
-| `aws_region_name` | Yes | AWS region for credential verification (e.g. `us-east-1`) |
-| `aws_role_name` | No | IAM role ARN for STS AssumeRole |
-| `aws_access_key_id` | No | Static AWS access key ID |
-| `aws_secret_access_key` | No | Static AWS secret access key |
-| `aws_session_token` | No | Temporary session token |
-| `aws_profile_name` | No | AWS CLI profile name |
-| `aws_session_name` | No | Session name for AssumeRole |
-| `aws_web_identity_token` | No | Web identity token for STS |
-| `aws_sts_endpoint` | No | Custom STS endpoint URL |
-| `aws_external_id` | No | External ID for cross-account AssumeRole |
+| `aws_region_name` | 是 | 用於憑證驗證的 AWS region（例如 `us-east-1`） |
+| `aws_role_name` | 否 | 用於 STS AssumeRole 的 IAM role ARN |
+| `aws_access_key_id` | 否 | 靜態 AWS access key ID |
+| `aws_secret_access_key` | 否 | 靜態 AWS secret access key |
+| `aws_session_token` | 否 | 暫時性 session token |
+| `aws_profile_name` | 否 | AWS CLI profile 名稱 |
+| `aws_session_name` | 否 | AssumeRole 的 session 名稱 |
+| `aws_web_identity_token` | 否 | 用於 STS 的 web identity token |
+| `aws_sts_endpoint` | 否 | 自訂 STS endpoint URL |
+| `aws_external_id` | 否 | 跨帳戶 AssumeRole 的 external ID |
 
-`aws_region_name` is always required when using explicit AWS credentials. The other parameters follow the same authentication flows as [Bedrock AWS auth](/docs/providers/bedrock#authentication) -- you can use role assumption, static keys, profiles, or web identity tokens.
+使用明確的 AWS 憑證時，`aws_region_name` 一律必填。其他參數遵循與 [Bedrock AWS 驗證](/docs/providers/bedrock#authentication) 相同的驗證流程——您可以使用角色假設、靜態金鑰、設定檔或 web identity token。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1546,14 +1531,14 @@ model_list:
 </TabItem>
 </Tabs>
 
-When `aws_*` keys are present in the JSON, LiteLLM automatically uses explicit AWS authentication instead of the EC2 metadata service. When they are absent, the standard metadata-based flow is used unchanged.
+當 JSON 中存在 `aws_*` keys 時，LiteLLM 會自動使用明確的 AWS 驗證，而不是 EC2 metadata service。當它們不存在時，會維持使用標準的 metadata-based 流程。
 
-### **Environment Variables**
+### **環境變數** {#environment-variables}
 
-You can set:
-- `GOOGLE_APPLICATION_CREDENTIALS` - store the filepath for your service_account.json in here (used by vertex sdk directly).
-- VERTEXAI_LOCATION - place where vertex model is deployed (us-central1, asia-southeast1, etc.)
-- VERTEXAI_PROJECT - Optional[str] - use if vertex project different from the one in vertex_credentials
+您可以設定：
+- `GOOGLE_APPLICATION_CREDENTIALS` - 在此儲存您的 service_account.json 檔案路徑（由 vertex sdk 直接使用）。
+- VERTEXAI_LOCATION - vertex model 的部署位置（us-central1、asia-southeast1 等）
+- VERTEXAI_PROJECT - Optional[str] - 如果 vertex project 與 vertex_credentials 中的不同，請使用此項
 
 1. GOOGLE_APPLICATION_CREDENTIALS
 
@@ -1574,10 +1559,10 @@ export VERTEXAI_PROJECT="my-test-project" # ONLY use if model project is differe
 ```
 
 
-## Specifying Safety Settings 
-In certain use-cases you may need to make calls to the models and pass [safety settings](https://ai.google.dev/docs/safety_setting_gemini) different from the defaults. To do so, simple pass the `safety_settings` argument to `completion` or `acompletion`. For example:
+## 指定安全性設定  {#specifying-safety-settings}
+在某些使用情境中，您可能需要對模型進行呼叫，並傳入與預設值不同的 [安全性設定](https://ai.google.dev/docs/safety_setting_gemini)。若要這樣做，只要將 `safety_settings` 參數傳給 `completion` 或 `acompletion` 即可。範例如下：
 
-### Set per model/request
+### 依模型／請求設定 {#set-per-modelrequest}
 
 <Tabs>
 
@@ -1610,7 +1595,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**Option 1: Set in config**
+**選項 1：在 config 中設定**
 ```yaml
 model_list:
   - model_name: gemini-experimental
@@ -1629,7 +1614,7 @@ model_list:
         threshold: BLOCK_NONE
 ```
 
-**Option 2: Set on call**
+**選項 2：在呼叫時設定**
 
 ```python
 response = client.chat.completions.create(
@@ -1669,7 +1654,7 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-### Set Globally
+### 全域設定 {#set-globally}
 
 <Tabs>
 
@@ -1728,9 +1713,9 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-## Set Vertex Project & Vertex Location
-All calls using Vertex AI require the following parameters:
-* Your Project ID
+## 設定 Vertex Project 與 Vertex Location {#set-vertex-project--vertex-location}
+所有使用 Vertex AI 的呼叫都需要以下參數：
+* 您的 Project ID
 ```python
 import os, litellm 
 
@@ -1742,7 +1727,7 @@ os.environ["VERTEXAI_PROJECT"] = "hardy-device-38811" # Your Project ID`
 # set directly on module 
 litellm.vertex_project = "hardy-device-38811" # Your Project ID`
 ```
-* Your Project Location
+* 您的 Project Location
 ```python
 import os, litellm 
 
@@ -1755,33 +1740,33 @@ os.environ["VERTEXAI_LOCATION"] = "us-central1 # Your Location
 litellm.vertex_location = "us-central1 # Your Location
 ```
 
-## Gemini Pro
-| Model Name       | Function Call                        |
+## Gemini Pro {#gemini-pro}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | gemini-2.5-pro   | `completion('gemini-2.5-pro', messages)`, `completion('vertex_ai/gemini-2.5-pro', messages)` |
 | gemini-2.5-flash-preview-09-2025   | `completion('gemini-2.5-flash-preview-09-2025', messages)`, `completion('vertex_ai/gemini-2.5-flash-preview-09-2025', messages)` |
 | gemini-2.5-flash-lite-preview-09-2025   | `completion('gemini-2.5-flash-lite-preview-09-2025', messages)`, `completion('vertex_ai/gemini-2.5-flash-lite-preview-09-2025', messages)` |
 | gemini-3.1-flash-lite-preview   | `completion('gemini-3.1-flash-lite-preview', messages)`, `completion('vertex_ai/gemini-3.1-flash-lite-preview', messages)` |
 
-## PayGo / Priority Cost Tracking
+## PayGo / 優先成本追蹤 {#paygo--priority-cost-tracking}
 
-LiteLLM automatically tracks spend for Vertex AI Gemini models using the correct pricing tier based on the response's `usageMetadata.trafficType`:
+LiteLLM 會依據回應的 `usageMetadata.trafficType`，自動使用正確的定價層級追蹤 Vertex AI Gemini 模型的花費：
 
-| Vertex AI `trafficType` | LiteLLM `service_tier` | Pricing applied |
+| Vertex AI `trafficType` | LiteLLM `service_tier` | 套用的定價 |
 |-------------------------|-------------------------|-----------------|
-| `ON_DEMAND_PRIORITY` | `priority` | PayGo / priority pricing (`input_cost_per_token_priority`, `output_cost_per_token_priority`) |
-| `ON_DEMAND` | standard | Default on-demand pricing |
-| `FLEX` / `BATCH` | `flex` | Batch/flex pricing |
+| `ON_DEMAND_PRIORITY` | `priority` | PayGo / 優先定價（`input_cost_per_token_priority`、`output_cost_per_token_priority`） |
+| `ON_DEMAND` | standard | 預設隨選定價 |
+| `FLEX` / `BATCH` | `flex` | 批次/flex 定價 |
 
-When you use [Vertex AI PayGo](https://cloud.google.com/vertex-ai/generative-ai/pricing) (on-demand priority) or batch workloads, LiteLLM reads `trafficType` from the response and applies the matching cost per token from the [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json). No configuration is required — spend tracking works out of the box for both standard and PayGo requests.
+當您使用 [Vertex AI PayGo](https://cloud.google.com/vertex-ai/generative-ai/pricing)（隨選優先）或批次工作負載時，LiteLLM 會從回應中讀取 `trafficType`，並套用 [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中每個 token 對應的成本。無需任何設定——標準與 PayGo 請求都能立即進行花費追蹤。
 
-See [Spend Tracking](../proxy/cost_tracking.md) for general cost tracking setup.
+一般成本追蹤設定請參閱 [Spend Tracking](../proxy/cost_tracking.md)。
 
-## Private Service Connect (PSC) Endpoints
+## Private Service Connect (PSC) 端點 {#private-service-connect-psc-endpoints}
 
-LiteLLM supports Vertex AI models deployed to Private Service Connect (PSC) endpoints, allowing you to use custom `api_base` URLs for private deployments.
+LiteLLM 支援部署到 Private Service Connect (PSC) 端點的 Vertex AI 模型，讓您可以為私有部署使用自訂的 `api_base` URL。
 
-### Usage
+### 用法 {#usage}
 
 ```python
 from litellm import completion
@@ -1797,15 +1782,15 @@ response = completion(
 )
 ```
 
-**Key Features:**
-- Supports both numeric endpoint IDs and custom model names
-- Works with both completion and embedding endpoints
-- Automatically constructs full PSC URL: `{api_base}/v1/projects/{project}/locations/{location}/endpoints/{model}:{endpoint}`
-- Compatible with streaming requests
+**主要功能：**
+- 同時支援數字型端點 ID 與自訂模型名稱
+- 可搭配 completion 與 embedding 端點使用
+- 自動建構完整 PSC URL：`{api_base}/v1/projects/{project}/locations/{location}/endpoints/{model}:{endpoint}`
+- 與串流請求相容
 
-### Configuration
+### 設定 {#configuration}
 
-Add PSC endpoints to your `config.yaml`:
+將 PSC 端點加入您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -1827,17 +1812,17 @@ model_list:
       use_psc_endpoint_format: True
 ```
 
-## Fine-tuned Models
+## 微調模型 {#fine-tuned-models}
 
-You can call fine-tuned Vertex AI Gemini models through LiteLLM
+您可以透過 LiteLLM 呼叫微調後的 Vertex AI Gemini 模型
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `vertex_ai/gemini/{MODEL_ID}` |
-| Vertex Documentation | [Vertex AI - Fine-tuned Gemini Models](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini-use-supervised-tuning#test_the_tuned_model_with_a_prompt)|
-| Supported Operations | `/chat/completions`, `/completions`, `/embeddings`, `/images` |
+| 提供者路由 | `vertex_ai/gemini/{MODEL_ID}` |
+| Vertex 文件 | [Vertex AI - Fine-tuned Gemini Models](https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini-use-supervised-tuning#test_the_tuned_model_with_a_prompt)|
+| 支援的操作 | `/chat/completions`、`/completions`、`/embeddings`、`/images` |
 
-To use a model that follows the `/gemini` request/response format, simply set the model parameter as 
+若要使用遵循 `/gemini` 請求/回應格式的模型，只需將 model 參數設定為
 
 ```python title="Model parameter for calling fine-tuned gemini models"
 model="vertex_ai/gemini/<your-finetuned-model>"
@@ -1863,13 +1848,13 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Add Vertex Credentials to your env 
+1. 將 Vertex 憑證加入您的環境變數 
 
 ```bash title="Authenticate to Vertex AI"
 !gcloud auth application-default login
 ```
 
-2. Setup config.yaml 
+2. 設定 config.yaml 
 
 ```yaml showLineNumbers title="Add to litellm config"
 - model_name: finetuned-gemini
@@ -1879,7 +1864,7 @@ response = litellm.completion(
     vertex_location: <LOCATION>
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -1917,36 +1902,33 @@ curl --location 'https://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Gemini Pro Vision
-| Model Name       | Function Call                        |
+## Gemini Pro Vision {#gemini-pro-vision}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | gemini-2.5-pro-vision   | `completion('gemini-2.5-pro-vision', messages)`, `completion('vertex_ai/gemini-2.5-pro-vision', messages)`|
 
-## Gemini 1.5 Pro (and Vision)
-| Model Name       | Function Call                        |
+## Gemini 1.5 Pro（以及 Vision） {#gemini-15-pro-and-vision}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | gemini-1.5-pro   | `completion('gemini-1.5-pro', messages)`, `completion('vertex_ai/gemini-1.5-pro', messages)` |
 | gemini-1.5-flash-preview-0514   | `completion('gemini-1.5-flash-preview-0514', messages)`, `completion('vertex_ai/gemini-1.5-flash-preview-0514', messages)` |
 | gemini-1.5-pro-preview-0514   | `completion('gemini-1.5-pro-preview-0514', messages)`, `completion('vertex_ai/gemini-1.5-pro-preview-0514', messages)` |
 
+#### 使用 Gemini Pro Vision {#using-gemini-pro-vision}
 
+以與 OpenAI [`gpt-4-vision`](https://docs.litellm.ai/docs/providers/openai#openai-vision-models) 相同的輸入/輸出格式呼叫 `gemini-2.5-pro-vision`
 
+LiteLLM 支援以下透過 `url` 傳入的圖片類型
+- 具有 Cloud Storage URI 的圖片 - gs://cloud-samples-data/generative-ai/image/boats.jpeg
+- 具有直接連結的圖片 - https://storage.googleapis.com/github-repo/img/gemini/intro/landmark3.jpg
+- 具有 Cloud Storage URI 的影片 - https://storage.googleapis.com/github-repo/img/gemini/multimodality_usecases_overview/pixel8.mp4
+- Base64 編碼的本機圖片
 
-#### Using Gemini Pro Vision
-
-Call `gemini-2.5-pro-vision` in the same input/output format as OpenAI [`gpt-4-vision`](https://docs.litellm.ai/docs/providers/openai#openai-vision-models)
-
-LiteLLM Supports the following image types passed in `url`
-- Images with Cloud Storage URIs - gs://cloud-samples-data/generative-ai/image/boats.jpeg
-- Images with direct links - https://storage.googleapis.com/github-repo/img/gemini/intro/landmark3.jpg
-- Videos with Cloud Storage URIs - https://storage.googleapis.com/github-repo/img/gemini/multimodality_usecases_overview/pixel8.mp4
-- Base64 Encoded Local Images
-
-**Example Request - image url**
+**範例請求 - 圖片 URL**
 
 <Tabs>
 
-<TabItem value="direct" label="Images with direct links">
+<TabItem value="direct" label="具有直接連結的圖片">
 
 ```python
 import litellm
@@ -1975,7 +1957,7 @@ print(response)
 ```
 </TabItem>
 
-<TabItem value="base" label="Local Base64 Images">
+<TabItem value="base" label="本機 Base64 圖片">
 
 ```python
 import litellm
@@ -2011,9 +1993,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Usage - Function Calling 
+## 用法 - Function Calling  {#usage---function-calling}
 
-LiteLLM supports Function Calling for Vertex AI gemini models. 
+LiteLLM 支援 Vertex AI gemini 模型的 Function Calling。 
 
 ```python
 from litellm import completion
@@ -2059,21 +2041,21 @@ assert isinstance(
 
 ```
 
-## Media Resolution Control (Images & Videos)
+## 媒體解析度控制（圖片與影片） {#media-resolution-control-images--videos}
 
-LiteLLM supports per-part media resolution control using OpenAI's `detail` parameter for all Gemini models. This allows you to specify different resolution levels for individual images and videos in your request, whether using `image_url` or `file` content types.
+LiteLLM 支援對所有 Gemini 模型使用 OpenAI 的 `detail` 參數，對每個部分進行媒體解析度控制。這讓您可以在請求中為個別圖片與影片指定不同的解析度等級，無論是使用 `image_url` 或 `file` 內容類型。
 
-**Supported `detail` values:**
-- `"low"` - Maps to `media_resolution: "low"` (280 tokens for images, 70 tokens per frame for videos)
-- `"medium"` - Maps to `media_resolution: "medium"`
-- `"high"` - Maps to `media_resolution: "high"` (1120 tokens for images)
-- `"ultra_high"` - Maps to `media_resolution: "ultra_high"`
-- `"auto"` or `None` - Model decides optimal resolution (no `media_resolution` set)
+**支援的 `detail` 值：**
+- `"low"` - 對應至 `media_resolution: "low"`（圖片 280 個 token，影片每個 frame 70 個 token）
+- `"medium"` - 對應至 `media_resolution: "medium"`
+- `"high"` - 對應至 `media_resolution: "high"`（圖片 1120 個 token）
+- `"ultra_high"` - 對應至 `media_resolution: "ultra_high"`
+- `"auto"` 或 `None` - 模型決定最佳解析度（未設定 `media_resolution`）
 
-**Usage Examples:**
+**使用範例：**
 
 <Tabs>
-<TabItem value="images" label="Images">
+<TabItem value="images" label="圖片">
 
 ```python
 from litellm import completion
@@ -2111,7 +2093,7 @@ response = completion(
 ```
 
 </TabItem>
-<TabItem value="videos" label="Videos with Files">
+<TabItem value="videos" label="含檔案的影片">
 
 ```python
 from litellm import completion
@@ -2146,41 +2128,41 @@ response = completion(
 </Tabs>
 
 :::info
-**Per-Part Resolution:** Each image or video in your request can have its own `detail` setting, allowing mixed-resolution requests (e.g., a high-res chart alongside a low-res icon). This feature works with both `image_url` and `file` content types across all Gemini models.
+**每個部分的解析度：** 您請求中的每張圖片或影片都可以有自己的 `detail` 設定，允許混合解析度的請求（例如，高解析度圖表搭配低解析度圖示）。此功能可與所有 Gemini 模型的 `image_url` 與 `file` 內容類型搭配使用。
 :::
 
-## Video Metadata Control
+## 影片中繼資料控制 {#video-metadata-control}
 
-LiteLLM supports fine-grained video processing control through the `video_metadata` field for all Gemini models (1.x, 2.x, 3+). This allows you to specify frame extraction rates and time ranges for video analysis.
+LiteLLM 透過所有 Gemini 模型（1.x、2.x、3+）的 `video_metadata` 欄位，支援細緻的影片處理控制。這讓您可以為影片分析指定影格擷取速率與時間範圍。
 
-**Supported `video_metadata` parameters:**
+**支援的 `video_metadata` 參數：**
 
-| Parameter | Type | Description | Example |
+| 參數 | 類型 | 描述 | 範例 |
 |-----------|------|-------------|---------|
-| `fps` | Number | Frame extraction rate (frames per second) | `5` |
-| `start_offset` | String | Start time for video clip processing | `"10s"` |
-| `end_offset` | String | End time for video clip processing | `"60s"` |
+| `fps` | Number | 影格擷取速率（每秒影格數） | `5` |
+| `start_offset` | String | 影片剪輯處理的開始時間 | `"10s"` |
+| `end_offset` | String | 影片剪輯處理的結束時間 | `"60s"` |
 
 :::note
-**Field Name Conversion:** LiteLLM automatically converts snake_case field names to camelCase for the Gemini API:
+**欄位名稱轉換：** LiteLLM 會自動將 snake_case 欄位名稱轉換為 Gemini API 使用的 camelCase：
 - `start_offset` → `startOffset`
 - `end_offset` → `endOffset`
-- `fps` remains unchanged
+- `fps` 保持不變
 :::
 
 :::tip
-Video clipping (`start_offset`/`end_offset`) and frame rate control (`fps`) are supported by all Gemini models, but analysis quality is significantly higher with the **Gemini 2.5 series** (e.g., `gemini-2.5-flash`, `gemini-2.5-pro`).
+所有 Gemini 模型都支援影片剪輯（`start_offset`/`end_offset`）與影格速率控制（`fps`），但使用 **Gemini 2.5 系列**（例如，`gemini-2.5-flash`、`gemini-2.5-pro`）時，分析品質明顯更高。
 :::
 
 :::warning
-- **Video Files Recommended:** While `video_metadata` is designed for video files, error handling for other media types is delegated to the Vertex AI API
-- **File Formats Supported:** Works with `gs://`, `https://`, and base64-encoded video files
+- **建議使用影片檔案：** 雖然 `video_metadata` 是為影片檔案設計，但其他媒體類型的錯誤處理由 Vertex AI API 負責
+- **支援的檔案格式：** 可搭配 `gs://`、`https://` 與 base64 編碼的影片檔案使用
 :::
 
-**Usage Examples:**
+**使用範例：**
 
 <Tabs>
-<TabItem value="basic" label="Basic Video Metadata">
+<TabItem value="basic" label="基本影片中繼資料">
 
 ```python
 from litellm import completion
@@ -2213,7 +2195,7 @@ print(response.choices[0].message.content)
 ```
 
 </TabItem>
-<TabItem value="combined" label="Combined with Detail">
+<TabItem value="combined" label="結合細節">
 
 ```python
 from litellm import completion
@@ -2249,7 +2231,7 @@ print(response.choices[0].message.content)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -2260,13 +2242,13 @@ model_list:
       vertex_location: us-central1
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Make request
+3. 發出請求
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -2301,13 +2283,13 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Usage - PDF / Videos / Audio etc. Files 
+## 使用 - PDF / 影片 / 音訊等檔案  {#usage---pdf--videos--audio-etc-files}
 
-Pass any file supported by Vertex AI, through LiteLLM. 
+透過 LiteLLM 傳入 Vertex AI 支援的任何檔案。
 
-LiteLLM Supports the following file types passed in url. 
+LiteLLM 支援以下透過 URL 傳入的檔案類型。
 
-Using `file` message type for VertexAI is live from v1.65.1+ 
+自 v1.65.1+ 起，VertexAI 可使用 `file` 訊息類型
 
 ```
 Files with Cloud Storage URIs - gs://cloud-samples-data/generative-ai/image/boats.jpeg
@@ -2319,7 +2301,7 @@ Base64 Encoded Local Files
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### **Using `gs://` or any URL**
+### **使用 `gs://` 或任何 URL** {#using-gs-or-any-url}
 ```python
 from litellm import completion
 
@@ -2346,7 +2328,7 @@ response = completion(
 print(response.choices[0])
 ```
 
-### **using base64**
+### **使用 base64** {#using-base64}
 ```python
 from litellm import completion
 import base64
@@ -2391,7 +2373,7 @@ print(response.choices[0])
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config 
+1. 將模型加入設定
 
 ```yaml
 - model_name: gemini-1.5-flash
@@ -2400,15 +2382,15 @@ print(response.choices[0])
     vertex_credentials: "/path/to/service_account.json"
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！
 
-**Using `gs://`**
+**使用 `gs://`**
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -2476,39 +2458,37 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-## Chat Models
-| Model Name       | Function Call                        |
+## 聊天模型 {#chat-models}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | chat-bison-32k   | `completion('chat-bison-32k', messages)` |
 | chat-bison       | `completion('chat-bison', messages)`     |
 | chat-bison@001   | `completion('chat-bison@001', messages)` |
 
-## Code Chat Models
-| Model Name           | Function Call                              |
+## 程式碼聊天模型 {#code-chat-models}
+| 模型名稱           | 函式呼叫                              |
 |----------------------|--------------------------------------------|
 | codechat-bison       | `completion('codechat-bison', messages)`     |
 | codechat-bison-32k   | `completion('codechat-bison-32k', messages)` |
 | codechat-bison@001   | `completion('codechat-bison@001', messages)` |
 
-## Text Models
-| Model Name       | Function Call                        |
+## 文字模型 {#text-models}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | text-bison       | `completion('text-bison', messages)` |
 | text-bison@001   | `completion('text-bison@001', messages)` |
 
-## Code Text Models
-| Model Name       | Function Call                        |
+## 程式碼文字模型 {#code-text-models}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | code-bison       | `completion('code-bison', messages)` |
 | code-bison@001   | `completion('code-bison@001', messages)` |
 | code-gecko@001   | `completion('code-gecko@001', messages)` |
 | code-gecko@latest| `completion('code-gecko@latest', messages)` |
 
+## **嵌入模型** {#embedding-models}
 
-## **Embedding Models**
-
-#### Usage - Embedding
+#### 使用 - 嵌入 {#usage---embedding}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2529,8 +2509,7 @@ print(response)
 
 <TabItem value="proxy" label="LiteLLM PROXY">
 
-
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: snowflake-arctic-embed-m-long-1731622468876
@@ -2544,13 +2523,13 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request using OpenAI Python SDK, Langchain Python SDK
+3. 使用 OpenAI Python SDK、Langchain Python SDK 發出請求
 
 ```python
 import openai
@@ -2569,10 +2548,10 @@ print(response)
 </TabItem>
 </Tabs>
 
-#### Supported Embedding Models
-All models listed [here](https://github.com/BerriAI/litellm/blob/57f37f743886a0249f630a6792d49dffc2c5d9b7/model_prices_and_context_window.json#L835) are supported
+#### 支援的嵌入模型 {#supported-embedding-models}
+[這裡](https://github.com/BerriAI/litellm/blob/57f37f743886a0249f630a6792d49dffc2c5d9b7/model_prices_and_context_window.json#L835) 列出的所有模型都受支援
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | text-embedding-004 | `embedding(model="vertex_ai/text-embedding-004", input)` | 
 | text-multilingual-embedding-002 | `embedding(model="vertex_ai/text-multilingual-embedding-002", input)` | 
@@ -2583,18 +2562,17 @@ All models listed [here](https://github.com/BerriAI/litellm/blob/57f37f743886a02
 | textembedding-gecko@003 | `embedding(model="vertex_ai/textembedding-gecko@003", input)` | 
 | text-embedding-preview-0409 | `embedding(model="vertex_ai/text-embedding-preview-0409", input)` |
 | text-multilingual-embedding-preview-0409 | `embedding(model="vertex_ai/text-multilingual-embedding-preview-0409", input)` | 
-| Fine-tuned OR Custom Embedding models | `embedding(model="vertex_ai/<your-model-id>", input)` | 
+| 微調或自訂嵌入模型 | `embedding(model="vertex_ai/<your-model-id>", input)` | 
 
-### Supported OpenAI (Unified) Params
+### 支援的 OpenAI（Unified）參數 {#supported-openai-unified-params}
 
-| [param](../embedding/supported_embedding.md#input-params-for-litellmembedding) | type | [vertex equivalent](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api) |
+| [參數](../embedding/supported_embedding.md#input-params-for-litellmembedding) | 型別 | [vertex 對應項](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api) |
 |-------|-------------|--------------------|
-| `input` | **string or List[string]** | `instances` |
+| `input` | **string 或 List[string]** | `instances` |
 | `dimensions` | **int** | `output_dimensionality` |
 | `input_type` | **Literal["RETRIEVAL_QUERY","RETRIEVAL_DOCUMENT", "SEMANTIC_SIMILARITY", "CLASSIFICATION", "CLUSTERING", "QUESTION_ANSWERING", "FACT_VERIFICATION"]** | `task_type` |
 
-#### Usage with OpenAI (Unified) Params
-
+#### 使用 OpenAI（Unified）參數 {#usage-with-openai-unified-params}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2609,7 +2587,6 @@ response = litellm.embedding(
 ```
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY">
-
 
 ```python
 import openai
@@ -2630,20 +2607,19 @@ print(response)
 </TabItem>
 </Tabs>
 
+### 支援的 Vertex 特定參數 {#supported-vertex-specific-params}
 
-### Supported Vertex Specific Params
-
-| param | type |
+| 參數 | 型別 |
 |-------|-------------|
 | `auto_truncate` | **bool** |
 | `task_type` | **Literal["RETRIEVAL_QUERY","RETRIEVAL_DOCUMENT", "SEMANTIC_SIMILARITY", "CLASSIFICATION", "CLUSTERING", "QUESTION_ANSWERING", "FACT_VERIFICATION"]** |
 | `title` | **str** |
 
-#### Usage with Vertex Specific Params  (Use `task_type` and `title`)
+#### 使用 Vertex 特定參數（使用 `task_type` 和 `title`） {#usage-with-vertex-specific-params--use-task_type-and-title}
 
-You can pass any vertex specific params to the embedding model. Just pass them to the embedding function like this: 
+您可以將任何 Vertex 特定參數傳給嵌入模型。只要像這樣將它們傳給 embedding 函式：
 
-[Relevant Vertex AI doc with all embedding params](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api#request_body)
+[相關的 Vertex AI 文件，包含所有嵌入參數](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api#request_body)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2660,7 +2636,6 @@ response = litellm.embedding(
 ```
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY">
-
 
 ```python
 import openai
@@ -2683,19 +2658,18 @@ print(response)
 </TabItem>
 </Tabs>
 
-## **Multi-Modal Embeddings**
+## **多模態嵌入** {#multi-modal-embeddings}
 
+已知限制：
+- 每個請求只支援 1 張圖片 / 影片 / 圖片
+- 僅支援 GCS 或 base64 編碼的圖片 / 影片
 
-Known Limitations:
-- Only supports 1 image / video / image per request
-- Only supports GCS or base64 encoded images / videos
-
-### Usage
+### 使用 {#usage-1}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Using GCS Images
+使用 GCS 圖片
 
 ```python
 response = await litellm.aembedding(
@@ -2704,7 +2678,7 @@ response = await litellm.aembedding(
 )
 ```
 
-Using base 64 encoded images
+使用 base 64 編碼圖片
 
 ```python
 response = await litellm.aembedding(
@@ -2716,7 +2690,7 @@ response = await litellm.aembedding(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY (Unified Endpoint)">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: multimodalembedding@001
@@ -2730,20 +2704,19 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request use OpenAI Python SDK, Langchain Python SDK
-
+3. 使用 OpenAI Python SDK、Langchain Python SDK 發出請求
 
 <Tabs>
 
 <TabItem value="OpenAI SDK" label="OpenAI SDK">
 
-Requests with GCS Image / Video URI
+使用 GCS 圖片 / 影片 URI 的請求
 
 ```python
 import openai
@@ -2759,7 +2732,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Requests with base64 encoded images
+使用 base64 編碼圖片的請求
 
 ```python
 import openai
@@ -2779,7 +2752,7 @@ print(response)
 
 <TabItem value="langchain" label="Langchain">
 
-Requests with GCS Image / Video URI
+使用 GCS 圖片 / 影片 URI 的請求
 ```python
 from langchain_openai import OpenAIEmbeddings
 
@@ -2799,7 +2772,7 @@ print(query_result)
 
 ```
 
-Requests with base64 encoded images
+使用 base64 編碼圖片的請求
 
 ```python
 from langchain_openai import OpenAIEmbeddings
@@ -2825,10 +2798,9 @@ print(query_result)
 </Tabs>
 </TabItem>
 
-
 <TabItem value="proxy-vtx" label="LiteLLM PROXY (Vertex SDK)">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 default_vertex_config:
   vertex_project: "adroit-crow-413218"
@@ -2836,13 +2808,13 @@ default_vertex_config:
   vertex_credentials: adroit-crow-413218-a956eef1a2a8.json 
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request use OpenAI Python SDK
+3. 使用 OpenAI Python SDK 發出請求
 
 ```python
 import vertexai
@@ -2905,13 +2877,12 @@ print(f"Text Embedding: {embeddings.text_embedding}")
 </TabItem>
 </Tabs>
 
-
-### Text + Image + Video Embeddings
+### 文字 + 圖片 + 影片嵌入 {#text--image--video-embeddings}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Text + Image 
+文字 + 圖片
 
 ```python
 response = await litellm.aembedding(
@@ -2920,7 +2891,7 @@ response = await litellm.aembedding(
 )
 ```
 
-Text + Video 
+文字 + 影片
 
 ```python
 response = await litellm.aembedding(
@@ -2929,7 +2900,7 @@ response = await litellm.aembedding(
 )
 ```
 
-Image + Video 
+圖片 + 影片
 
 ```python
 response = await litellm.aembedding(
@@ -2942,7 +2913,7 @@ response = await litellm.aembedding(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY (Unified Endpoint)">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: multimodalembedding@001
@@ -2956,16 +2927,15 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request use OpenAI Python SDK, Langchain Python SDK
+3. 使用 OpenAI Python SDK、Langchain Python SDK 發出請求
 
-
-Text + Image 
+文字 + 圖片
 
 ```python
 import openai
@@ -2981,7 +2951,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Text + Video 
+文字 + 影片 
 ```python
 import openai
 
@@ -2996,7 +2966,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Image + Video 
+圖片 + 影片 
 ```python
 import openai
 
@@ -3014,17 +2984,16 @@ print(response)
 </TabItem>
 </Tabs>
 
-## **Fine Tuning APIs**
+## **微調 API** {#fine-tuning-apis}
 
-
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Description | Create Fine Tuning Jobs in Vertex AI (`/tuningJobs`) using OpenAI Python SDK |
-| Vertex Fine Tuning Documentation | [Vertex Fine Tuning](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#create-tuning) |
+| 說明 | 使用 OpenAI Python SDK 在 Vertex AI（`/tuningJobs`）中建立微調工作 |
+| Vertex 微調文件 | [Vertex Fine Tuning](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#create-tuning) |
 
-### Usage
+### 使用 {#usage-2}
 
-#### 1. Add `finetune_settings` to your config.yaml
+#### 1. 將 `finetune_settings` 加入您的 config.yaml {#1-add-finetune_settings-to-your-configyaml}
 ```yaml
 model_list:
   - model_name: gpt-4
@@ -3041,7 +3010,7 @@ finetune_settings:
     vertex_credentials: "/Users/ishaanjaffer/Downloads/adroit-crow-413218-a956eef1a2a8.json"
 ```
 
-#### 2. Create a Fine Tuning Job
+#### 2. 建立微調工作 {#2-create-a-fine-tuning-job}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -3071,11 +3040,9 @@ curl http://localhost:4000/v1/fine_tuning/jobs \
 
 </Tabs>
 
+**進階使用情境 - 將 `adapter_size` 傳給 Vertex AI API**
 
-**Advanced use case - Passing `adapter_size` to the Vertex AI API**
-
-Set hyper_parameters, such as `n_epochs`, `learning_rate_multiplier` and `adapter_size`. [See Vertex Advanced Hyperparameters](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#advanced_use_case)
-
+設定 hyper_parameters，例如 `n_epochs`、`learning_rate_multiplier` 和 `adapter_size`。[請參閱 Vertex 進階超參數](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/tuning#advanced_use_case)
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -3116,28 +3083,24 @@ curl http://localhost:4000/v1/fine_tuning/jobs \
 
 </Tabs>
 
+## 標籤 {#labels}
 
-## Labels
+Google 讓您可以將自訂中繼資料新增至其 `generateContent` 和 `streamGenerateContent` 呼叫。
+這個機制在 Vertex AI 中很有用，因為它允許跨多個
+不同應用程式或使用者進行成本與使用量追蹤。
 
+### 使用 {#usage-3}
 
-Google enables you to add custom metadata to its `generateContent` and `streamGenerateContent` calls.
-This mechanism is useful in Vertex AI because it allows costs and usage tracking over multiple
-different applications or users.
+您可以透過在請求中傳送 `labels` 或 `metadata` 欄位來透過 LiteLLM 使用該功能。
 
+如果用戶端在請求中將 `labels` 欄位設定給 LiteLLM，
+LiteLLM 會將 `labels` 欄位傳遞給 Vertex AI 後端。
 
-### Usage
+如果用戶端在請求中將 `metadata` 欄位設定給 LiteLLM，且未設定 `labels` 欄位，
+LiteLLM 會建立填入所有字串值之 `labels` 欄位，內容為 `metadata` 鍵/值配對，並
+將其傳遞給 Vertex AI 後端。
 
-You can use that feature through LiteLLM by sending `labels` or `metadata` field in your requests.
-
-If the client sets the `labels` field in the request to the LiteLLM,
-the LiteLLM will pass the `labels` field to the Vertex AI backend.
-
-If the client sets the `metadata` field in the request to the LiteLLM and the `labels` field is not set,
-the LiteLLM will create the `labels` field filled with `metadata` key/value pairs for all string values and
-pass it to the Vertex AI backend.
-
-
-Here is an example JSON request demonstrating the labels usage:
+以下是示範標籤用法的 JSON 請求：
 
 ```json
 {
@@ -3154,12 +3117,10 @@ Here is an example JSON request demonstrating the labels usage:
 ```
 
 
+## 其他 {#extra}
 
-## Extra
-
-### Using `GOOGLE_APPLICATION_CREDENTIALS`
-Here's the code for storing your service account credentials as `GOOGLE_APPLICATION_CREDENTIALS` environment variable:
-
+### 使用 `GOOGLE_APPLICATION_CREDENTIALS` {#using-google_application_credentials}
+以下是將您的服務帳戶憑證儲存為 `GOOGLE_APPLICATION_CREDENTIALS` 環境變數的程式碼：
 
 ```python
 import os 
@@ -3199,48 +3160,47 @@ def load_vertex_ai_credentials():
 ```
 
 
-### Using GCP Service Account 
+### 使用 GCP 服務帳戶  {#using-gcp-service-account}
 
 :::info
 
-Trying to deploy LiteLLM on Google Cloud Run? Tutorial [here](https://docs.litellm.ai/docs/proxy/deploy#deploy-on-google-cloud-run)
+想在 Google Cloud Run 上部署 LiteLLM？教學 [這裡](https://docs.litellm.ai/docs/proxy/deploy#deploy-on-google-cloud-run)
 
 :::
 
-1. Figure out the Service Account bound to the Google Cloud Run service
+1. 找出與 Google Cloud Run 服務繫結的服務帳戶
 
 <Image img={require('../../img/gcp_acc_1.png')} />
 
-2. Get the FULL EMAIL address of the corresponding Service Account
+2. 取得對應服務帳戶的完整電子郵件地址
 
-3. Next, go to IAM & Admin > Manage Resources , select your top-level project that houses your Google Cloud Run Service
+3. 接著，前往 IAM & Admin > Manage Resources，選取承載您 Google Cloud Run 服務的頂層專案
 
-Click `Add Principal`
+點擊 `Add Principal`
 
 <Image img={require('../../img/gcp_acc_2.png')}/>
 
-4. Specify the Service Account as the principal and Vertex AI User as the role
+4. 將服務帳戶指定為 principal，並將 Vertex AI User 指定為角色
 
 <Image img={require('../../img/gcp_acc_3.png')}/>
 
-Once that's done, when you deploy the new container in the Google Cloud Run service, LiteLLM will have automatic access to all Vertex AI endpoints.
+完成後，當您在 Google Cloud Run 服務中部署新的容器時，LiteLLM 將可自動存取所有 Vertex AI 端點。
 
+感謝 @[Darien Kindlund](https://www.linkedin.com/in/kindlund/) 提供這份教學
 
-s/o @[Darien Kindlund](https://www.linkedin.com/in/kindlund/) for this tutorial
+## **Rerank API** {#rerank-api}
 
-## **Rerank API**
+Vertex AI 透過 Discovery Engine API 支援重新排序，為文件檢索提供語意排序功能。
 
-Vertex AI supports reranking through the Discovery Engine API, providing semantic ranking capabilities for document retrieval.
+### 設定 {#setup}
 
-### Setup
-
-Set your Google Cloud project ID:
+設定您的 Google Cloud 專案 ID：
 
 ```bash
 export VERTEXAI_PROJECT="your-project-id"
 ```
 
-### Usage
+### 用法 {#usage-4}
 
 ```python
 from litellm import rerank
@@ -3269,28 +3229,28 @@ response_v003 = rerank(
 print(response.results)
 ```
 
-### Parameters
+### 參數 {#parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `model` | string | Model name (e.g., `vertex_ai/semantic-ranker-default@latest`) |
-| `query` | string | Search query |
-| `documents` | list | Documents to rank |
-| `top_n` | int | Number of top results to return |
-| `return_documents` | bool | Return full content (True) or IDs only (False) |
+| `model` | string | 模型名稱（例如：`vertex_ai/semantic-ranker-default@latest`） |
+| `query` | string | 搜尋查詢 |
+| `documents` | list | 要排序的文件 |
+| `top_n` | int | 要回傳的前幾筆結果數量 |
+| `return_documents` | bool | 回傳完整內容（True）或僅回傳 ID（False） |
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
 - `semantic-ranker-default@latest`
 - `semantic-ranker-fast@latest` 
 - `semantic-ranker-default-003`
 - `semantic-ranker-default-002`
 
-For detailed model specifications, see the [Google Cloud ranking API documentation](https://cloud.google.com/generative-ai-app-builder/docs/ranking#rank_or_rerank_a_set_of_records_according_to_a_query).
+如需詳細的模型規格，請參閱 [Google Cloud ranking API 文件](https://cloud.google.com/generative-ai-app-builder/docs/ranking#rank_or_rerank_a_set_of_records_according_to_a_query)。
 
-### Proxy Usage
+### Proxy 用法 {#proxy-usage}
 
-Add to your `config.yaml`:
+加入到您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -3302,13 +3262,13 @@ model_list:
       vertex_ai_credentials: "path/to/service-account.json" 
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-Test with curl:
+使用 curl 測試：
 
 ```bash
 curl http://0.0.0.0:4000/rerank \

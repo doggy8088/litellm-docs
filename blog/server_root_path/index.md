@@ -1,6 +1,6 @@
 ---
 slug: server-root-path-incident
-title: "Incident Report: SERVER_ROOT_PATH regression broke UI routing"
+title: "事故報告：SERVER_ROOT_PATH 回歸導致 UI 路由失效"
 date: 2026-02-21T10:00:00
 authors:
   - yuneng
@@ -10,50 +10,50 @@ tags: [incident-report, ui, stability]
 hide_table_of_contents: false
 ---
 
-**Date:** January 22, 2026
-**Duration:** ~4 days (until fix merged January 26, 2026)
-**Severity:** High
-**Status:** Resolved
+**日期：** 2026 年 1 月 22 日
+**持續時間：** 約 4 天（直到修正於 2026 年 1 月 26 日合併）
+**嚴重性：** 高
+**狀態：** 已修復
 
-> **Note:** This fix is available starting from LiteLLM `v1.81.3.rc.6` or higher.
+> **注意：** 此修正自 LiteLLM `v1.81.3.rc.6` 或更高版本開始可用。
 
-## Summary
+## 摘要 {#summary}
 
-A PR ([`#19467`](https://github.com/BerriAI/litellm/pull/19467)) accidentally removed the `root_path=server_root_path` parameter from the FastAPI app initialization in `proxy_server.py`. This caused the proxy to ignore the `SERVER_ROOT_PATH` environment variable when serving the UI. Users who deploy LiteLLM behind a reverse proxy with a path prefix (e.g., `/api/v1` or `/llmproxy`) found that all UI pages returned 404 Not Found.
+一個 PR（[`#19467`](https://github.com/BerriAI/litellm/pull/19467)）意外地從 `proxy_server.py` 中的 FastAPI 應用程式初始化移除了 `root_path=server_root_path` 參數。這導致代理程式在提供 UI 時忽略 `SERVER_ROOT_PATH` 環境變數。當 LiteLLM 部署在具有路徑前綴的反向代理之後（例如 `/api/v1` 或 `/llmproxy`）時，使用者發現所有 UI 頁面都回傳 404 Not Found。
 
-- **LLM API calls:** No impact. API routing was unaffected.
-- **UI pages:** All UI pages returned 404 for deployments using `SERVER_ROOT_PATH`.
-- **Swagger/OpenAPI docs:** Broken when accessed through the configured root path.
+- **LLM API 請求：** 無影響。API 路由未受影響。
+- **UI 頁面：** 使用 `SERVER_ROOT_PATH` 的部署中，所有 UI 頁面都回傳 404。
+- **Swagger/OpenAPI 文件：** 透過設定的根路徑存取時無法運作。
 
 {/* truncate */}
 
 ---
 
-## Background
+## 背景 {#background}
 
-Many LiteLLM deployments run behind a reverse proxy (e.g., Nginx, Traefik, AWS ALB) that routes traffic to LiteLLM under a path prefix. FastAPI's `root_path` parameter tells the application about this prefix so it can correctly serve static files, generate URLs, and handle routing.
+許多 LiteLLM 部署都位於反向代理（例如 Nginx、Traefik、AWS ALB）之後，該反向代理會在路徑前綴下將流量路由到 LiteLLM。FastAPI 的 `root_path` 參數會告知應用程式這個前綴，讓它能正確提供靜態檔案、產生 URL，並處理路由。
 
 ```mermaid
 sequenceDiagram
-    participant User as User Browser
-    participant RP as Reverse Proxy
+    participant User as 使用者瀏覽器
+    participant RP as 反向代理
     participant LP as LiteLLM Proxy
 
     User->>RP: GET /llmproxy/ui/
     RP->>LP: GET /ui/ (X-Forwarded-Prefix: /llmproxy)
 
-    Note over LP: Before regression:<br/>FastAPI root_path="/llmproxy"<br/>→ Serves UI correctly
+    Note over LP: 回歸前：<br/>FastAPI root_path="/llmproxy"<br/>→ 正確提供 UI
 
-    Note over LP: After regression:<br/>FastAPI root_path=""<br/>→ UI assets resolve to wrong paths<br/>→ 404 Not Found
+    Note over LP: 回歸後：<br/>FastAPI root_path=""<br/>→ UI 資源解析到錯誤路徑<br/>→ 404 Not Found
 ```
 
-The `root_path` parameter was present in `proxy_server.py` since early versions of LiteLLM. It was removed as a side effect of PR [#19467](https://github.com/BerriAI/litellm/pull/19467), which was intended to fix a different UI 404 issue.
+`root_path` 參數自 LiteLLM 早期版本以來一直存在於 `proxy_server.py` 中。它是 PR [#19467](https://github.com/BerriAI/litellm/pull/19467) 的副作用而被移除，而該 PR 原本是為了修正另一個 UI 404 問題。
 
 ---
 
-## Root cause
+## 根本原因 {#root-cause}
 
-PR [#19467](https://github.com/BerriAI/litellm/pull/19467) (`73d49f8`) removed the `root_path=server_root_path` line from the `FastAPI()` constructor in `proxy_server.py`:
+PR [#19467](https://github.com/BerriAI/litellm/pull/19467)（`73d49f8`）從 `proxy_server.py` 中 `FastAPI()` 建構函式移除了 `root_path=server_root_path` 這一行：
 
 ```diff
  app = FastAPI(
@@ -67,80 +67,80 @@ PR [#19467](https://github.com/BerriAI/litellm/pull/19467) (`73d49f8`) removed t
  )
 ```
 
-Without `root_path`, FastAPI treated all requests as if the application was mounted at `/`, causing path mismatches for any deployment using `SERVER_ROOT_PATH`.
+如果沒有 `root_path`，FastAPI 會將所有請求視為應用程式掛載在 `/`，導致任何使用 `SERVER_ROOT_PATH` 的部署都出現路徑不匹配。
 
-The regression went undetected because:
+這個回歸未被偵測到是因為：
 
-1. **No automated test** verified that `root_path` was set on the FastAPI app.
-2. **No manual test procedure** existed for `SERVER_ROOT_PATH` functionality.
-3. **Default deployments** (without `SERVER_ROOT_PATH`) were unaffected, so most CI tests passed.
+1. **沒有自動化測試** 驗證 FastAPI 應用程式上是否設定了 `root_path`。
+2. **沒有人工測試流程** 可用於 `SERVER_ROOT_PATH` 功能。
+3. **預設部署**（沒有 `SERVER_ROOT_PATH`）不受影響，因此大多數 CI 測試都通過了。
 
 ---
 
-## Remediation
+## 修復措施 {#remediation}
 
-| #   | Action                                                                                            | Status  | Code                                                                                                                       |
+| #   | 動作                                                                                             | 狀態    | 程式碼                                                                                                                      |
 | --- | ------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Restore `root_path=server_root_path` in FastAPI app initialization                                | ✅ Done | [`#19790`](https://github.com/BerriAI/litellm/pull/19790) (`5426b3c`)                                                      |
-| 2   | Add unit tests for `get_server_root_path()` and FastAPI app initialization                        | ✅ Done | [`test_server_root_path.py`](https://github.com/BerriAI/litellm/blob/main/tests/proxy_unit_tests/test_server_root_path.py) |
-| 3   | Add CI workflow that builds Docker image and tests UI routing with `SERVER_ROOT_PATH` on every PR | ✅ Done | [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml)    |
-| 4   | Document manual test procedure for `SERVER_ROOT_PATH`                                             | ✅ Done | [Discussion #8495](https://github.com/BerriAI/litellm/discussions/8495)                                                    |
+| 1   | 在 FastAPI 應用程式初始化中恢復 `root_path=server_root_path`                                | ✅ 完成 | [`#19790`](https://github.com/BerriAI/litellm/pull/19790)（`5426b3c`）                                                      |
+| 2   | 為 `get_server_root_path()` 和 FastAPI 應用程式初始化新增單元測試                        | ✅ 完成 | [`test_server_root_path.py`](https://github.com/BerriAI/litellm/blob/main/tests/proxy_unit_tests/test_server_root_path.py) |
+| 3   | 新增 CI 工作流程，在每個 PR 上建置 Docker 映像並以 `SERVER_ROOT_PATH` 測試 UI 路由 | ✅ 完成 | [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml)    |
+| 4   | 文件化 `SERVER_ROOT_PATH` 的手動測試流程                                            | ✅ 完成 | [Discussion #8495](https://github.com/BerriAI/litellm/discussions/8495)                                                    |
 
 ---
 
-## CI workflow details
+## CI 工作流程詳細資訊 {#ci-workflow-details}
 
-The new [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml) workflow runs on every PR against `main`. It:
+新的 [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml) 工作流程會在每個針對 `main` 的 PR 上執行。它會：
 
-1. Builds the LiteLLM Docker image
-2. Starts a container with `SERVER_ROOT_PATH` set (tests both `/api/v1` and `/llmproxy`)
-3. Verifies the UI returns valid HTML at `{ROOT_PATH}/ui/`
-4. Fails the workflow if the UI is unreachable
+1. 建置 LiteLLM Docker 映像
+2. 啟動一個設置了 `SERVER_ROOT_PATH` 的容器（同時測試 `/api/v1` 與 `/llmproxy`）
+3. 驗證 UI 在 `{ROOT_PATH}/ui/` 可回傳有效的 HTML
+4. 若 UI 無法連線，則使工作流程失敗
 
 ```mermaid
 flowchart TD
-    A["PR opened/updated"] --> B["Build Docker image"]
-    B --> C["Start container with SERVER_ROOT_PATH=/api/v1"]
-    B --> D["Start container with SERVER_ROOT_PATH=/llmproxy"]
-    C --> E["curl {ROOT_PATH}/ui/ → expect HTML"]
-    D --> F["curl {ROOT_PATH}/ui/ → expect HTML"]
-    E -->|"HTML found"| G["✅ Pass"]
-    E -->|"404 or no HTML"| H["❌ Fail Workflow"]
-    F -->|"HTML found"| G
-    F -->|"404 or no HTML"| H
+    A["PR 已開啟/更新"] --> B["建置 Docker 映像"]
+    B --> C["以 SERVER_ROOT_PATH=/api/v1 啟動容器"]
+    B --> D["以 SERVER_ROOT_PATH=/llmproxy 啟動容器"]
+    C --> E["curl {ROOT_PATH}/ui/ → 預期 HTML"]
+    D --> F["curl {ROOT_PATH}/ui/ → 預期 HTML"]
+    E -->|"找到 HTML"| G["✅ 通過"]
+    E -->|"404 或沒有 HTML"| H["❌ 工作流程失敗"]
+    F -->|"找到 HTML"| G
+    F -->|"404 或沒有 HTML"| H
 
     style G fill:#d4edda,stroke:#28a745
     style H fill:#f8d7da,stroke:#dc3545
 ```
 
-This prevents future regressions where changes to `proxy_server.py` accidentally break `SERVER_ROOT_PATH` support.
+這可防止未來在變更 `proxy_server.py` 時意外破壞 `SERVER_ROOT_PATH` 支援的回歸。
 
 ---
 
-## Timeline
+## 時間軸 {#timeline}
 
-| Time (UTC)         | Event                                                                                                                                                        |
+| 時間（UTC）         | 事件                                                                                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Jan 22, 2026 04:20 | PR [#19467](https://github.com/BerriAI/litellm/pull/19467) merged, removing `root_path=server_root_path`                                                     |
-| Jan 22–26          | Users on nightly builds report UI 404 errors when using `SERVER_ROOT_PATH`                                                                                   |
-| Jan 26, 2026 17:48 | Fix PR [#19790](https://github.com/BerriAI/litellm/pull/19790) merged, restoring `root_path=server_root_path`                                                |
-| Feb 18, 2026       | CI workflow [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml) added to run on every PR |
+| 2026 年 1 月 22 日 04:20 | PR [#19467](https://github.com/BerriAI/litellm/pull/19467) 合併，移除 `root_path=server_root_path`                                                     |
+| 1 月 22 日至 26 日          | 使用 nightly builds 的使用者回報在使用 `SERVER_ROOT_PATH` 時出現 UI 404 錯誤                                                                                   |
+| 2026 年 1 月 26 日 17:48 | 修正 PR [#19790](https://github.com/BerriAI/litellm/pull/19790) 合併，恢復 `root_path=server_root_path`                                                |
+| 2026 年 2 月 18 日       | 新增 CI 工作流程 [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml)，在每個 PR 上執行 |
 
 ---
 
-## Resolution steps for users
+## 使用者的修復步驟 {#resolution-steps-for-users}
 
-For users still experiencing issues, update to the latest LiteLLM version:
+對於仍然遇到問題的使用者，請更新至最新的 LiteLLM 版本：
 
 ```bash
 pip install --upgrade litellm
 ```
 
-Verify your `SERVER_ROOT_PATH` is correctly set:
+確認您的 `SERVER_ROOT_PATH` 已正確設定：
 
 ```bash
 # In your environment or docker-compose.yml
 SERVER_ROOT_PATH="/your-prefix"
 ```
 
-Then confirm the UI is accessible at `http://your-host:4000/your-prefix/ui/`.
+然後確認 UI 可透過 `http://your-host:4000/your-prefix/ui/` 存取。

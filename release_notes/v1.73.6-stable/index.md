@@ -20,7 +20,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -44,228 +44,223 @@ pip install litellm==1.73.6.post1
 
 ---
 
-## Key Highlights 
+## 主要重點  {#key-highlights}
 
-
-### Claude on gemini-cli
-
+### gemini-cli 上的 Claude {#claude-on-gemini-cli}
 
 <Image img={require('../../img/release_notes/gemini_cli.png')} />
 
 <br/>
 
-This release brings support for using gemini-cli with LiteLLM. 
+此版本帶來了在 LiteLLM 中使用 gemini-cli 的支援。 
 
-You can use claude-sonnet-4, gemini-2.5-flash (Vertex AI & Google AI Studio), gpt-4.1 and any LiteLLM supported model on gemini-cli.
+您可以在 gemini-cli 上使用 claude-sonnet-4、gemini-2.5-flash（Vertex AI 與 Google AI Studio）、gpt-4.1，以及任何 LiteLLM 支援的模型。
 
-When you use gemini-cli with LiteLLM you get the following benefits:
+當您在 LiteLLM 中使用 gemini-cli 時，您會獲得以下優點：
 
-**Developer Benefits:**
-- Universal Model Access: Use any LiteLLM supported model (Anthropic, OpenAI, Vertex AI, Bedrock, etc.) through the gemini-cli interface.
-- Higher Rate Limits & Reliability: Load balance across multiple models and providers to avoid hitting individual provider limits, with fallbacks to ensure you get responses even if one provider fails.
+**開發者優點：**
+- 通用模型存取：透過 gemini-cli 介面使用任何 LiteLLM 支援的模型（Anthropic、OpenAI、Vertex AI、Bedrock 等）。
+- 更高的速率限制與可靠性：跨多個模型與提供者進行負載平衡，以避免碰到單一提供者的限制，並以備援機制確保即使某個提供者失敗，您仍可取得回應。
 
-**Proxy Admin Benefits:**
-- Centralized Management: Control access to all models through a single LiteLLM proxy instance without giving your developers API Keys to each provider.
-- Budget Controls: Set spending limits and track costs across all gemini-cli usage.
+**Proxy 管理員優點：**
+- 集中管理：透過單一 LiteLLM proxy 執行個體控制所有模型的存取，而無需將每個提供者的 API 金鑰交給您的開發人員。
+- 預算控制：設定支出上限，並追蹤所有 gemini-cli 使用情況的成本。
 
-[Get Started](../../docs/tutorials/litellm_gemini_cli)
+[開始使用](../../docs/tutorials/litellm_gemini_cli)
 
 <br/>
 
-### Batch API Cost Tracking
+### Batch API 成本追蹤 {#batch-api-cost-tracking}
 
 <Image img={require('../../img/release_notes/batch_api_cost_tracking.jpg')}/>
 
 <br/>
 
-v1.73.6 brings cost tracking for [LiteLLM Managed Batch API](../../docs/proxy/managed_batches) calls to LiteLLM. Previously, this was not being done for Batch API calls using LiteLLM Managed Files. Now, LiteLLM will store the status of each batch call in the DB and poll incomplete batch jobs in the background, emitting a spend log for cost tracking once the batch is complete.
+v1.73.6 為 [LiteLLM Managed Batch API](../../docs/proxy/managed_batches) 請求帶來成本追蹤。先前，對於使用 LiteLLM Managed Files 的 Batch API 請求並未進行此項處理。現在，LiteLLM 會將每個 batch 請求的狀態儲存在資料庫中，並在背景輪詢未完成的 batch 作業，在 batch 完成後發出支出記錄以供成本追蹤。
 
-There is no new flag / change needed on your end. Over the next few weeks we hope to extend this to cover batch cost tracking for the Anthropic passthrough as well. 
+您端不需要任何新的旗標／變更。未來幾週內，我們希望將此擴展至涵蓋 Anthropic passthrough 的 batch 成本追蹤。 
 
-
-[Get Started](../../docs/proxy/managed_batches)
+[開始使用](../../docs/proxy/managed_batches)
 
 ---
 
-## New Models / Updated Models
+## 新模型／更新模型 {#new-models--updated-models}
 
-### Pricing / Context Window Updates
+### 定價／上下文視窗更新 {#pricing--context-window-updates}
 
-| Provider    | Model                                  | Context Window | Input ($/1M tokens) | Output ($/1M tokens) | Type |
+| 提供者    | 模型                                  | 上下文視窗 | 輸入（$/100萬 token） | 輸出（$/100萬 token） | 類型 |
 | ----------- | -------------------------------------- | -------------- | ------------------- | -------------------- | ---- |
-| Azure OpenAI | `azure/o3-pro` | 200k | $20.00 | $80.00 | New |
-| OpenRouter | `openrouter/mistralai/mistral-small-3.2-24b-instruct` | 32k | $0.1 | $0.3 | New |
-| OpenAI | `o3-deep-research` | 200k | $10.00 | $40.00 | New |
-| OpenAI | `o3-deep-research-2025-06-26` | 200k | $10.00 | $40.00 | New |
-| OpenAI | `o4-mini-deep-research` | 200k | $2.00 | $8.00 | New |
-| OpenAI | `o4-mini-deep-research-2025-06-26` | 200k | $2.00 | $8.00 | New |
-| Deepseek | `deepseek-r1` | 65k | $0.55 | $2.19 | New |
-| Deepseek | `deepseek-v3` | 65k | $0.27 | $0.07 | New |
+| Azure OpenAI | `azure/o3-pro` | 200k | $20.00 | $80.00 | 新增 |
+| OpenRouter | `openrouter/mistralai/mistral-small-3.2-24b-instruct` | 32k | $0.1 | $0.3 | 新增 |
+| OpenAI | `o3-deep-research` | 200k | $10.00 | $40.00 | 新增 |
+| OpenAI | `o3-deep-research-2025-06-26` | 200k | $10.00 | $40.00 | 新增 |
+| OpenAI | `o4-mini-deep-research` | 200k | $2.00 | $8.00 | 新增 |
+| OpenAI | `o4-mini-deep-research-2025-06-26` | 200k | $2.00 | $8.00 | 新增 |
+| Deepseek | `deepseek-r1` | 65k | $0.55 | $2.19 | 新增 |
+| Deepseek | `deepseek-v3` | 65k | $0.27 | $0.07 | 新增 |
 
-
-### Updated Models
-#### Bugs
+### 更新模型 {#updated-models}
+#### 錯誤 {#bugs}
     - **[Sambanova](../../docs/providers/sambanova)**
-        - Handle float timestamps - [PR](https://github.com/BerriAI/litellm/pull/11971) s/o [@neubig](https://github.com/neubig)
+        - 處理 float 時間戳記 - [PR](https://github.com/BerriAI/litellm/pull/11971) s/o [@neubig](https://github.com/neubig)
     - **[Azure](../../docs/providers/azure)**
-        - support Azure Authentication method (azure ad token, api keys) on Responses API - [PR](https://github.com/BerriAI/litellm/pull/11941) s/o [@hsuyuming](https://github.com/hsuyuming)
-        - Map ‘image_url’ str as nested dict - [PR](https://github.com/BerriAI/litellm/pull/12075) s/o [@davis-featherstone](https://github.com/davis-featherstone)
+        - 在 Responses API 上支援 Azure Authentication 方法（azure ad token、api keys） - [PR](https://github.com/BerriAI/litellm/pull/11941) s/o [@hsuyuming](https://github.com/hsuyuming)
+        - 將 ‘image_url’ 字串對應為巢狀字典 - [PR](https://github.com/BerriAI/litellm/pull/12075) s/o [@davis-featherstone](https://github.com/davis-featherstone)
     - **[Watsonx](../../docs/providers/watsonx)**
-        - Set ‘model’ field to None when model is part of a custom deployment - fixes error raised by WatsonX in those cases - [PR](https://github.com/BerriAI/litellm/pull/11854) s/o [@cbjuan](https://github.com/cbjuan)
+        - 當模型是自訂部署的一部分時，將 ‘model’ 欄位設為 None——修正在這些情況下 WatsonX 拋出的錯誤 - [PR](https://github.com/BerriAI/litellm/pull/11854) s/o [@cbjuan](https://github.com/cbjuan)
     - **[Perplexity](../../docs/providers/perplexity)**
-        - Support web_search_options - [PR](https://github.com/BerriAI/litellm/pull/11983)
-        - Support citation token and search queries cost calculation - [PR](https://github.com/BerriAI/litellm/pull/11938)
+        - 支援 web_search_options - [PR](https://github.com/BerriAI/litellm/pull/11983)
+        - 支援 citation token 與搜尋查詢成本計算 - [PR](https://github.com/BerriAI/litellm/pull/11938)
     - **[Anthropic](../../docs/providers/anthropic)**
-        - Null value in usage block handling - [PR](https://github.com/BerriAI/litellm/pull/12068)
+        - 處理 usage 區塊中的 null 值 - [PR](https://github.com/BerriAI/litellm/pull/12068)
     - **Gemini ([Google AI Studio](../../docs/providers/gemini) + [VertexAI](../../docs/providers/vertex))**
-        - Only use accepted format values (enum and datetime) - else gemini raises errors - [PR](https://github.com/BerriAI/litellm/pull/11989) 
-        - Cache tools if passed alongside cached content (else gemini raises an error) - [PR](https://github.com/BerriAI/litellm/pull/11989)
-        - Json schema translation improvement: Fix unpack_def handling of nested $ref inside anyof items - [PR](https://github.com/BerriAI/litellm/pull/11964)
+        - 只使用可接受的格式值（enum 與 datetime）——否則 gemini 會拋出錯誤 - [PR](https://github.com/BerriAI/litellm/pull/11989) 
+        - 若工具與快取內容一併傳入，則快取工具（否則 gemini 會拋出錯誤） - [PR](https://github.com/BerriAI/litellm/pull/11989)
+        - Json schema 轉換改進：修正 unpack_def 在 anyof 項目內處理巢狀 $ref 的方式 - [PR](https://github.com/BerriAI/litellm/pull/11964)
     - **[Mistral](../../docs/providers/mistral)**
-        - Fix thinking prompt to match hugging face recommendation - [PR](https://github.com/BerriAI/litellm/pull/12007)
-        - Add `supports_response_schema: true` for all mistral models except codestral-mamba - [PR](https://github.com/BerriAI/litellm/pull/12024)
+        - 修正 thinking 提示詞以符合 hugging face 建議 - [PR](https://github.com/BerriAI/litellm/pull/12007)
+        - 為除 codestral-mamba 之外的所有 mistral 模型新增 `supports_response_schema: true` - [PR](https://github.com/BerriAI/litellm/pull/12024)
     - **[Ollama](../../docs/providers/ollama)**
-        - Fix unnecessary await on embedding calls - [PR](https://github.com/BerriAI/litellm/pull/12024)
-#### Features
+        - 修正 embedding 請求上不必要的 await - [PR](https://github.com/BerriAI/litellm/pull/12024)
+#### 功能 {#features}
     - **[Azure OpenAI](../../docs/providers/azure)**
-        - Check if o-series model supports reasoning effort (enables drop_params to work for o1 models) 
-        - Assistant + tool use cost tracking - [PR](https://github.com/BerriAI/litellm/pull/12045)
+        - 檢查 o-series 模型是否支援 reasoning effort（讓 drop_params 可用於 o1 模型） 
+        - Assistant + tool 使用成本追蹤 - [PR](https://github.com/BerriAI/litellm/pull/12045)
     - **[Nvidia Nim](../../docs/providers/nvidia_nim)**
-        - Add ‘response_format’ param support - [PR](https://github.com/BerriAI/litellm/pull/12003) @shagunb-acn 
+        - 新增 ‘response_format’ 參數支援 - [PR](https://github.com/BerriAI/litellm/pull/12003) @shagunb-acn 
     - **[ElevenLabs](../../docs/providers/elevenlabs)**
-        - New STT provider - [PR](https://github.com/BerriAI/litellm/pull/12119)
+        - 新的 STT 提供者 - [PR](https://github.com/BerriAI/litellm/pull/12119)
 
 ---
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Features
+#### 功能 {#features-1}
     - [**/mcp**](../../docs/mcp)
-        - Send appropriate auth string value to `/tool/call` endpoint with `x-mcp-auth` - [PR](https://github.com/BerriAI/litellm/pull/11968) s/o [@wagnerjt](https://github.com/wagnerjt)
+        - 將適當的 auth 字串值傳送至 `/tool/call` 端點，並帶上 `x-mcp-auth` - [PR](https://github.com/BerriAI/litellm/pull/11968) s/o [@wagnerjt](https://github.com/wagnerjt)
     - [**/v1/messages**](../../docs/anthropic_unified)
-        - [Custom LLM](../../docs/providers/custom_llm_server#anthropic-v1messages) support - [PR](https://github.com/BerriAI/litellm/pull/12016)
+        - [自訂 LLM](../../docs/providers/custom_llm_server#anthropic-v1messages) 支援 - [PR](https://github.com/BerriAI/litellm/pull/12016)
     - [**/chat/completions**](../../docs/completion/input)
-        - Azure Responses API via chat completion support - [PR](https://github.com/BerriAI/litellm/pull/12016)
+        - 透過 chat completion 支援 Azure Responses API - [PR](https://github.com/BerriAI/litellm/pull/12016)
     - [**/responses**](../../docs/response_api)
-        - Add reasoning content support for non-openai providers - [PR](https://github.com/BerriAI/litellm/pull/12055)
-    - **[NEW] /generateContent**
-        - New endpoints for gemini cli support - [PR](https://github.com/BerriAI/litellm/pull/12040)
-        - Support calling Google AI Studio / VertexAI Gemini models in their native format - [PR](https://github.com/BerriAI/litellm/pull/12046)
-        - Add logging + cost tracking for stream + non-stream vertex/google ai studio routes - [PR](https://github.com/BerriAI/litellm/pull/12058)
-        - Add Bridge from generateContent to /chat/completions - [PR](https://github.com/BerriAI/litellm/pull/12081)
+        - 為非 openai 提供者新增 reasoning 內容支援 - [PR](https://github.com/BerriAI/litellm/pull/12055)
+    - **[新增] /generateContent**
+        - 為 gemini cli 支援新增端點 - [PR](https://github.com/BerriAI/litellm/pull/12040)
+        - 支援以其原生格式呼叫 Google AI Studio / VertexAI Gemini 模型 - [PR](https://github.com/BerriAI/litellm/pull/12046)
+        - 為串流與非串流 vertex/google ai studio 路由新增記錄 + 成本追蹤 - [PR](https://github.com/BerriAI/litellm/pull/12058)
+        - 新增從 generateContent 到 /chat/completions 的橋接 - [PR](https://github.com/BerriAI/litellm/pull/12081)
     - [**/batches**](../../docs/batches)
-        - Filter deployments to only those where managed file was written to - [PR](https://github.com/BerriAI/litellm/pull/12048)
-        - Save all model / file id mappings in db (previously it was just the first one) - enables ‘true’ loadbalancing - [PR](https://github.com/BerriAI/litellm/pull/12048)
-        - Support List Batches with target model name specified - [PR](https://github.com/BerriAI/litellm/pull/12049)
+        - 篩選部署，只保留已寫入 Managed File 的部署 - [PR](https://github.com/BerriAI/litellm/pull/12048)
+        - 將所有 model / file id 對應儲存在 db 中（先前只有第一個）——啟用「真正的」負載平衡 - [PR](https://github.com/BerriAI/litellm/pull/12048)
+        - 支援指定目標模型名稱的 List Batches - [PR](https://github.com/BerriAI/litellm/pull/12049)
 
 ---
-## Spend Tracking / Budget Improvements
+## 支出追蹤／預算改進 {#spend-tracking--budget-improvements}
 
-#### Features
-    - [**Passthrough**](../../docs/pass_through)
-        - [Bedrock](../../docs/pass_through/bedrock) - cost tracking (`/invoke` + `/converse` routes) on streaming + non-streaming - [PR](https://github.com/BerriAI/litellm/pull/12123)
-        - [VertexAI](../../docs/pass_through/vertex_ai) - anthropic cost calculation support - [PR](https://github.com/BerriAI/litellm/pull/11992)
+#### 功能 {#features-2}
+    - [**直通**](../../docs/pass_through)
+        - [Bedrock](../../docs/pass_through/bedrock) - 串流與非串流皆支援成本追蹤（`/invoke` + `/converse` 路由） - [PR](https://github.com/BerriAI/litellm/pull/12123)
+        - [VertexAI](../../docs/pass_through/vertex_ai) - 支援 anthropic 成本計算 - [PR](https://github.com/BerriAI/litellm/pull/11992)
     - [**Batches**](../../docs/batches)
-        - Background job for cost tracking LiteLLM Managed batches - [PR](https://github.com/BerriAI/litellm/pull/12125)
+        - 用於追蹤 LiteLLM Managed batches 成本的背景作業 - [PR](https://github.com/BerriAI/litellm/pull/12125)
 
 ---
-## Management Endpoints / UI
+## 管理端點／UI {#management-endpoints--ui}
 
-#### Bugs
-    - **General UI**
-        - Fix today selector date mutation in dashboard components - [PR](https://github.com/BerriAI/litellm/pull/12042)
-    - **Usage**
-        - Aggregate usage data across all pages of paginated endpoint - [PR](https://github.com/BerriAI/litellm/pull/12033)
-    - **Teams**
-        - De-duplicate models in team settings dropdown - [PR](https://github.com/BerriAI/litellm/pull/12074)
-    - **Models**
-        - Preserve public model name when selecting ‘test connect’ with azure model (previously would reset) - [PR](https://github.com/BerriAI/litellm/pull/11713)
-    - **Invitation Links**
-        - Ensure Invite links email contain the correct invite id when using tf provider - [PR](https://github.com/BerriAI/litellm/pull/12130)
-#### Features
-    - **Models**
-        - Add ‘last success’ column to health check table - [PR](https://github.com/BerriAI/litellm/pull/11903)
+#### 錯誤 {#bugs-1}
+    - **一般 UI**
+        - 修正儀表板元件中的 today 選擇器日期變更 - [PR](https://github.com/BerriAI/litellm/pull/12042)
+    - **用量**
+        - 彙總分頁端點所有頁面的用量資料 - [PR](https://github.com/BerriAI/litellm/pull/12033)
+    - **團隊**
+        - 在團隊設定下拉選單中去除重複的模型 - [PR](https://github.com/BerriAI/litellm/pull/12074)
+    - **模型**
+        - 在使用 azure model 選取「test connect」時保留公開模型名稱（先前會重設） - [PR](https://github.com/BerriAI/litellm/pull/11713)
+    - **邀請連結**
+        - 確保使用 tf provider 時，Invite links email 內含正確的 invite id - [PR](https://github.com/BerriAI/litellm/pull/12130)
+#### 功能 {#features-3}
+    - **模型**
+        - 在健康檢查表格中新增「最後成功」欄位 - [PR](https://github.com/BerriAI/litellm/pull/11903)
     - **MCP**
-        - New UI component to support auth types: api key, bearer token, basic auth - [PR](https://github.com/BerriAI/litellm/pull/11968) s/o [@wagnerjt](https://github.com/wagnerjt)
-        - Ensure internal users can access /mcp and /mcp/ routes - [PR](https://github.com/BerriAI/litellm/pull/12106)
+        - 新的 UI 元件，支援 auth 類型：api key、bearer token、basic auth - [PR](https://github.com/BerriAI/litellm/pull/11968) s/o [@wagnerjt](https://github.com/wagnerjt)
+        - 確保內部使用者可以存取 /mcp 和 /mcp/ 路由 - [PR](https://github.com/BerriAI/litellm/pull/12106)
     - **SCIM**
-        - Ensure default_internal_user_params are applied for new users - [PR](https://github.com/BerriAI/litellm/pull/12015)
-    - **Team**
-        - Support default key expiry for team member keys - [PR](https://github.com/BerriAI/litellm/pull/12023)
-        - Expand team member add check to cover user email - [PR](https://github.com/BerriAI/litellm/pull/12082)
+        - 確保新使用者會套用 default_internal_user_params - [PR](https://github.com/BerriAI/litellm/pull/12015)
+    - **團隊**
+        - 支援團隊成員金鑰的預設到期時間 - [PR](https://github.com/BerriAI/litellm/pull/12023)
+        - 擴充團隊成員新增檢查以涵蓋使用者電子郵件 - [PR](https://github.com/BerriAI/litellm/pull/12082)
     - **UI**
-        - Restrict UI access by SSO group - [PR](https://github.com/BerriAI/litellm/pull/12023)
-    - **Keys**
-        - Add new new_key param for regenerating key - [PR](https://github.com/BerriAI/litellm/pull/12087)
-    - **Test Keys**
-        - New ‘get code’ button for getting runnable python code snippet based on ui configuration - [PR](https://github.com/BerriAI/litellm/pull/11629)
+        - 依 SSO 群組限制 UI 存取 - [PR](https://github.com/BerriAI/litellm/pull/12023)
+    - **金鑰**
+        - 新增 new_key 參數以重新產生金鑰 - [PR](https://github.com/BerriAI/litellm/pull/12087)
+    - **測試金鑰**
+        - 新的「get code」按鈕，可根據 UI 設定取得可執行的 python 程式碼片段 - [PR](https://github.com/BerriAI/litellm/pull/11629)
 
 --- 
 
-## Logging / Guardrail Integrations
+## Logging / 防護欄 整合 {#logging--guardrail-integrations}
 
-#### Bugs
+#### 錯誤 {#bugs-2}
     - **Braintrust**
-        - Adds model to metadata to enable braintrust cost estimation - [PR](https://github.com/BerriAI/litellm/pull/12022)
-#### Features
-    - **Callbacks**
-        - (Enterprise) - disable logging callbacks in request headers - [PR](https://github.com/BerriAI/litellm/pull/11985)
-        - Add List Callbacks API Endpoint - [PR](https://github.com/BerriAI/litellm/pull/11987)
-    - **Bedrock Guardrail**
-        - Don't raise exception on intervene action - [PR](https://github.com/BerriAI/litellm/pull/11875)
-        - Ensure PII Masking is applied on response streaming or non streaming content when using post call - [PR](https://github.com/BerriAI/litellm/pull/12086)
-    - **[NEW] Palo Alto Networks Prisma AIRS Guardrail**
+        - 將模型加入中繼資料，以啟用 braintrust 成本估算 - [PR](https://github.com/BerriAI/litellm/pull/12022)
+#### 功能 {#features-4}
+    - **回呼**
+        - （企業版）- 停用請求標頭中的記錄回呼 - [PR](https://github.com/BerriAI/litellm/pull/11985)
+        - 新增 List Callbacks API Endpoint - [PR](https://github.com/BerriAI/litellm/pull/11987)
+    - **Bedrock 防護欄**
+        - 在 intervene 動作時不要引發例外 - [PR](https://github.com/BerriAI/litellm/pull/11875)
+        - 使用 post call 時，確保 PII Masking 套用於回應串流或非串流內容 - [PR](https://github.com/BerriAI/litellm/pull/12086)
+    - **[NEW] Palo Alto Networks Prisma AIRS 防護欄**
         - [PR](https://github.com/BerriAI/litellm/pull/12116)
     - **ElasticSearch**
-        - New Elasticsearch Logging Tutorial - [PR](https://github.com/BerriAI/litellm/pull/11761)
-    - **Message Redaction**
-        - Preserve usage / model information  for Embedding redaction - [PR](https://github.com/BerriAI/litellm/pull/12088)
+        - 新的 Elasticsearch Logging 教學 - [PR](https://github.com/BerriAI/litellm/pull/11761)
+    - **訊息去識別化**
+        - 保留 Embedding 去識別化的用量 / 模型資訊 - [PR](https://github.com/BerriAI/litellm/pull/12088)
 
 ---
 
-## Performance / Loadbalancing / Reliability improvements
+## 效能 / 負載平衡 / 可靠性改善 {#performance--loadbalancing--reliability-improvements}
 
-#### Bugs
-    - **Team-only models**
-        - Filter team-only models from routing logic for non-team calls
-    - **Context Window Exceeded error**
-        - Catch anthropic exceptions - [PR](https://github.com/BerriAI/litellm/pull/12113)
-#### Features
-    - **Router**
-        - allow using dynamic cooldown time for a specific deployment - [PR](https://github.com/BerriAI/litellm/pull/12037)
-        - handle cooldown_time = 0 for deployments - [PR](https://github.com/BerriAI/litellm/pull/12108)
+#### 錯誤 {#bugs-3}
+    - **僅限團隊模型**
+        - 在非團隊請求的路由邏輯中過濾僅限團隊模型
+    - **超出 Context Window 的錯誤**
+        - 捕捉 anthropic 例外 - [PR](https://github.com/BerriAI/litellm/pull/12113)
+#### 功能 {#features-5}
+    - **路由器**
+        - 允許為特定部署使用動態冷卻時間 - [PR](https://github.com/BerriAI/litellm/pull/12037)
+        - 處理部署的 cooldown_time = 0 - [PR](https://github.com/BerriAI/litellm/pull/12108)
     - **Redis**
-        - Add better debugging to see what variables are set - [PR](https://github.com/BerriAI/litellm/pull/12073)
+        - 新增更好的偵錯資訊，以查看設定了哪些變數 - [PR](https://github.com/BerriAI/litellm/pull/12073)
 
 ---
 
-## General Proxy Improvements
+## 一般 Proxy 改善 {#general-proxy-improvements}
 
-#### Bugs
+#### 錯誤 {#bugs-4}
     - **aiohttp**
-        - Check HTTP_PROXY vars in networking requests
-        - Allow using HTTP_ Proxy settings with trust_env
+        - 在網路請求中檢查 HTTP_PROXY 變數
+        - 允許在 trust_env 中使用 HTTP_ Proxy 設定
 
-#### Features
-    - **Docs**
-        - Add recommended spec - [PR](https://github.com/BerriAI/litellm/pull/11980)
+#### 功能 {#features-6}
+    - **文件**
+        - 新增建議規格 - [PR](https://github.com/BerriAI/litellm/pull/11980)
     - **Swagger**
-        - Introduce new environment variable NO_REDOC to opt-out Redoc - [PR](https://github.com/BerriAI/litellm/pull/12092)
-
+        - 引入新的環境變數 NO_REDOC 以選擇不使用 Redoc - [PR](https://github.com/BerriAI/litellm/pull/12092)
 
 ---
 
-## New Contributors
-* @mukesh-dream11 made their first contribution in https://github.com/BerriAI/litellm/pull/11969
-* @cbjuan made their first contribution in https://github.com/BerriAI/litellm/pull/11854
-* @ryan-castner made their first contribution in https://github.com/BerriAI/litellm/pull/12055
-* @davis-featherstone made their first contribution in https://github.com/BerriAI/litellm/pull/12075
-* @Gum-Joe made their first contribution in https://github.com/BerriAI/litellm/pull/12068
-* @jroberts2600 made their first contribution in https://github.com/BerriAI/litellm/pull/12116
-* @ohmeow made their first contribution in https://github.com/BerriAI/litellm/pull/12022
-* @amarrella made their first contribution in https://github.com/BerriAI/litellm/pull/11942
-* @zhangyoufu made their first contribution in https://github.com/BerriAI/litellm/pull/12092
-* @bougou made their first contribution in https://github.com/BerriAI/litellm/pull/12088
-* @codeugar made their first contribution in https://github.com/BerriAI/litellm/pull/11972
-* @glgh made their first contribution in https://github.com/BerriAI/litellm/pull/12133
+## 新貢獻者 {#new-contributors}
+* @mukesh-dream11 首次貢獻於 https://github.com/BerriAI/litellm/pull/11969
+* @cbjuan 首次貢獻於 https://github.com/BerriAI/litellm/pull/11854
+* @ryan-castner 首次貢獻於 https://github.com/BerriAI/litellm/pull/12055
+* @davis-featherstone 首次貢獻於 https://github.com/BerriAI/litellm/pull/12075
+* @Gum-Joe 首次貢獻於 https://github.com/BerriAI/litellm/pull/12068
+* @jroberts2600 首次貢獻於 https://github.com/BerriAI/litellm/pull/12116
+* @ohmeow 首次貢獻於 https://github.com/BerriAI/litellm/pull/12022
+* @amarrella 首次貢獻於 https://github.com/BerriAI/litellm/pull/11942
+* @zhangyoufu 首次貢獻於 https://github.com/BerriAI/litellm/pull/12092
+* @bougou 首次貢獻於 https://github.com/BerriAI/litellm/pull/12088
+* @codeugar 首次貢獻於 https://github.com/BerriAI/litellm/pull/11972
+* @glgh 首次貢獻於 https://github.com/BerriAI/litellm/pull/12133
 
-## **[Git Diff](https://github.com/BerriAI/litellm/compare/v1.73.0-stable...v1.73.6.rc-draft)**
+## **[Git Diff](https://github.com/BerriAI/litellm/compare/v1.73.0-stable...v1.73.6.rc-draft)** {#git-diffhttpsgithubcomberriailitellmcomparev1730-stablev1736rc-draft}

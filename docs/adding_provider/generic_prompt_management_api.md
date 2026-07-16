@@ -1,31 +1,31 @@
-# [BETA] Generic Prompt Management API - Integrate Without a PR
+# [BETA] Generic Prompt Management API - 無需 PR 即可整合 {#beta-generic-prompt-management-api---integrate-without-a-pr}
 
-## The Problem
+## 問題 {#the-problem}
 
-As a prompt management provider, integrating with LiteLLM traditionally requires:
-- Making a PR to the LiteLLM repository
-- Waiting for review and merge
-- Maintaining provider-specific code in LiteLLM's codebase
-- Updating the integration for changes to your API
+身為提示管理提供者，傳統上與 LiteLLM 整合需要：
+- 向 LiteLLM 儲存庫提交 PR
+- 等待審查與合併
+- 在 LiteLLM 的程式碼基底中維護特定提供者的程式碼
+- 為您 API 的變更更新整合
 
-## The Solution
+## 解決方案 {#the-solution}
 
-The **Generic Prompt Management API** lets you integrate with LiteLLM **instantly** by implementing a simple API endpoint. No PR required.
+**Generic Prompt Management API** 讓您只要實作一個簡單的 API 端點，就能**立即**與 LiteLLM 整合。無需 PR。
 
-### Key Benefits
+### 主要優點 {#key-benefits}
 
-1. **No PR Needed** - Deploy and integrate immediately
-3. **Simple Contract** - One GET endpoint, standard JSON response
-4. **Variable Substitution** - Support for prompt variables with `{variable}` syntax
-5. **Custom Parameters** - Pass provider-specific query params via config
-6. **Full Control** - You own and maintain your prompt management API
-7. **Model & Parameters Override** - Optionally override model and parameters from your prompts
+1. **無需 PR** - 立即部署並整合
+3. **簡單合約** - 一個 GET 端點，標準 JSON 回應
+4. **變數替換** - 支援使用 `{variable}` 語法的提示變數
+5. **自訂參數** - 透過設定傳遞提供者特定的查詢參數
+6. **完全控制** - 您擁有並維護自己的提示管理 API
+7. **模型與參數覆寫** - 可選擇從您的提示中覆寫模型與參數
 
-## Get Started in 3 Steps
+## 3 步驟快速開始 {#get-started-in-3-steps}
 
-### Step 1: Configure LiteLLM
+### 步驟 1：設定 LiteLLM {#step-1-configure-litellm}
 
-Add to your `config.yaml`:
+加入到您的 `config.yaml`：
 
 ```yaml
 prompts:
@@ -36,7 +36,7 @@ prompts:
       api_key: os.environ/YOUR_API_KEY
 ```
 
-### Step 2: Implement Your API Endpoint
+### 步驟 2：實作您的 API 端點 {#step-2-implement-your-api-endpoint}
 
 ```python
 from fastapi import FastAPI
@@ -57,7 +57,7 @@ async def get_prompt(prompt_id: str):
     }
 ```
 
-### Step 3: Use in Your App
+### 步驟 3：在您的應用程式中使用 {#step-3-use-in-your-app}
 
 ```python
 from litellm import completion
@@ -70,32 +70,32 @@ response = completion(
 )
 ```
 
-That's it! LiteLLM fetches your prompt, applies variables, and makes the request
+就這樣！LiteLLM 會抓取您的提示、套用變數，並送出請求
 
-## API Contract
+## API 合約 {#api-contract}
 
-### Endpoint
+### 端點 {#endpoint}
 
-Implement `GET /beta/litellm_prompt_management`
+實作 `GET /beta/litellm_prompt_management`
 
-### Request Format
+### 請求格式 {#request-format}
 
-Your endpoint will receive a GET request with query parameters:
+您的端點將會收到帶有查詢參數的 GET 請求：
 
 ```
 GET /beta/litellm_prompt_management?prompt_id={prompt_id}&{custom_params}
 ```
 
-**Query Parameters:**
-- `prompt_id` (required): The ID of the prompt to fetch
-- Custom parameters: Any additional parameters you configured in `provider_specific_query_params`
+**查詢參數：**
+- `prompt_id`（必填）：要抓取的提示 ID
+- 自訂參數：您在 `provider_specific_query_params` 中設定的任何額外參數
 
-**Example:**
+**範例：**
 ```
 GET /beta/litellm_prompt_management?prompt_id=hello-world-prompt-2bac&project_name=litellm&slug=hello-world-prompt-2bac
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
 ```json
 {
@@ -119,15 +119,15 @@ GET /beta/litellm_prompt_management?prompt_id=hello-world-prompt-2bac&project_na
 }
 ```
 
-**Response Fields:**
-- `prompt_id` (string, required): The ID of the prompt
-- `prompt_template` (array, required): Array of OpenAI-format messages with optional `{variable}` placeholders
-- `prompt_template_model` (string, optional): Model to use for this prompt (overrides client model unless `ignore_prompt_manager_model: true`)
-- `prompt_template_optional_params` (object, optional): Additional parameters like temperature, max_tokens, etc. (merged with client params unless `ignore_prompt_manager_optional_params: true`)
+**回應欄位：**
+- `prompt_id`（字串，必填）：提示的 ID
+- `prompt_template`（陣列，必填）：OpenAI 格式訊息陣列，可包含 `{variable}` 預留位置
+- `prompt_template_model`（字串，可選）：此提示要使用的模型（除非 `ignore_prompt_manager_model: true`，否則會覆寫用戶端模型）
+- `prompt_template_optional_params`（物件，可選）：其他參數，例如 temperature、max_tokens 等（會與用戶端參數合併，除非 `ignore_prompt_manager_optional_params: true`）
 
-## LiteLLM Configuration
+## LiteLLM 設定 {#litellm-configuration}
 
-Add to `config.yaml`:
+加入到 `config.yaml`：
 
 ```yaml
 model_list:
@@ -149,20 +149,20 @@ prompts:
       ignore_prompt_manager_optional_params: true  # optional, don't merge prompt manager's params (e.g. temperature, max_tokens, etc.)
 ```
 
-### Configuration Parameters
+### 設定參數 {#configuration-parameters}
 
-- `prompt_integration`: Must be `"generic_prompt_management"`
-- `provider_specific_query_params`: Custom query parameters sent to your API (optional)
-- `api_base`: Base URL of your prompt management API
-- `api_key`: Optional API key for authentication (sent as `Bearer` token)
-- `ignore_prompt_manager_model`: If `true`, use the model specified by client instead of prompt's model (default: `false`)
-- `ignore_prompt_manager_optional_params`: If `true`, don't merge prompt's optional params with client params (default: `false`)
+- `prompt_integration`：必須為 `"generic_prompt_management"`
+- `provider_specific_query_params`：傳送到您 API 的自訂查詢參數（可選）
+- `api_base`：您的提示管理 API 基底 URL
+- `api_key`：用於驗證的可選 API 金鑰（以 `Bearer` token 傳送）
+- `ignore_prompt_manager_model`：如果為 `true`，則使用用戶端指定的模型而非提示的模型（預設：`false`）
+- `ignore_prompt_manager_optional_params`：如果為 `true`，則不要將提示的可選參數與用戶端參數合併（預設：`false`）
 
-## Usage
+## 使用方式 {#usage}
 
-### Using with LiteLLM SDK
+### 與 LiteLLM SDK 搭配使用 {#using-with-litellm-sdk}
 
-**Basic usage with prompt ID:**
+**使用提示 ID 的基本用法：**
 
 ```python
 from litellm import completion
@@ -174,7 +174,7 @@ response = completion(
 )
 ```
 
-**With prompt variables:**
+**使用提示變數：**
 
 ```python
 response = completion(
@@ -188,17 +188,17 @@ response = completion(
 )
 ```
 
-The prompt template will have `{domain}` replaced with "data science" and `{task}` replaced with "analyzing customer churn".
+提示範本中的 `{domain}` 會被替換為「data science」，而 `{task}` 會被替換為「analyzing customer churn」。
 
-### Using with LiteLLM Proxy
+### 與 LiteLLM Proxy 搭配使用 {#using-with-litellm-proxy}
 
-**1. Start the proxy with your config:**
+**1. 以您的設定啟動 proxy：**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**2. Make requests with prompt_id:**
+**2. 使用 prompt_id 發出請求：**
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -217,7 +217,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-**3. Using with OpenAI SDK:**
+**3. 與 OpenAI SDK 搭配使用：**
 
 ```python
 from openai import OpenAI
@@ -242,11 +242,11 @@ response = client.chat.completions.create(
 )
 ```
 
-## Implementation Example
+## 實作範例 {#implementation-example}
 
-See [mock_prompt_management_server.py](https://github.com/BerriAI/litellm/blob/main/cookbook/mock_prompt_management_server/mock_prompt_management_server.py) for a complete reference implementation with multiple example prompts, authentication, and convenience endpoints.
+請參閱 [mock_prompt_management_server.py](https://github.com/BerriAI/litellm/blob/main/cookbook/mock_prompt_management_server/mock_prompt_management_server.py) 取得完整的參考實作，內含多個範例提示、驗證，以及便利端點。
 
-**Minimal FastAPI example:**
+**最小 FastAPI 範例：**
 
 ```python
 from fastapi import FastAPI, HTTPException, Header
@@ -374,26 +374,26 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
 ```
 
-### Running the Example Server
+### 執行範例伺服器 {#running-the-example-server}
 
-1. Install dependencies:
+1. 安裝相依套件：
 ```bash
 uv add fastapi uvicorn
 ```
 
-2. Save the code above to `prompt_server.py`
+2. 將上方程式碼儲存至 `prompt_server.py`
 
-3. Run the server:
+3. 執行伺服器：
 ```bash
 python prompt_server.py
 ```
 
-4. Test the endpoint:
+4. 測試端點：
 ```bash
 curl "http://localhost:8080/beta/litellm_prompt_management?prompt_id=hello-world-prompt&project_name=litellm&slug=hello-world-prompt-2bac"
 ```
 
-Expected response:
+預期回應：
 ```json
 {
   "prompt_id": "hello-world-prompt",
@@ -415,13 +415,13 @@ Expected response:
 }
 ```
 
-## Advanced Features
+## 進階功能 {#advanced-features}
 
-### Variable Substitution
+### 變數替換 {#variable-substitution}
 
-LiteLLM automatically substitutes variables in your prompt templates using the `{variable}` syntax. Both `{variable}` and `{{variable}}` formats are supported.
+LiteLLM 會使用 `{variable}` 語法，自動替換您提示範本中的變數。支援 `{variable}` 與 `{{variable}}` 兩種格式。
 
-**Example prompt template:**
+**提示範本範例：**
 ```json
 {
   "prompt_template": [
@@ -433,7 +433,7 @@ LiteLLM automatically substitutes variables in your prompt templates using the `
 }
 ```
 
-**Client request:**
+**用戶端請求：**
 ```python
 completion(
     model="gpt-4",
@@ -445,23 +445,23 @@ completion(
 )
 ```
 
-**Result:**
+**結果：**
 ```
 "You are an expert in machine learning with 10 years of experience."
 ```
 
-### Caching
+### 快取 {#caching}
 
-LiteLLM automatically caches fetched prompts in memory. The cache key includes:
+LiteLLM 會自動將抓取的提示快取在記憶體中。快取鍵包含：
 - `prompt_id`
-- `prompt_label` (if provided)
-- `prompt_version` (if provided)
+- `prompt_label`（如果有提供）
+- `prompt_version`（如果有提供）
 
-This means your API endpoint is only called once per unique prompt configuration.
+這表示您的 API 端點只會針對每個唯一的提示設定呼叫一次。
 
-### Model Override Behavior
+### 模型覆寫行為 {#model-override-behavior}
 
-**Default behavior (without `ignore_prompt_manager_model`):**
+**預設行為（未使用 `ignore_prompt_manager_model`）：**
 ```yaml
 prompts:
   - prompt_id: "my_prompt"
@@ -470,9 +470,9 @@ prompts:
       api_base: http://localhost:8080
 ```
 
-If your API returns `"prompt_template_model": "gpt-4"`, LiteLLM will use `gpt-4` regardless of what the client specified.
+如果您的 API 回傳 `"prompt_template_model": "gpt-4"`，LiteLLM 將會使用 `gpt-4`，不論用戶端指定了什麼。
 
-**With `ignore_prompt_manager_model: true`:**
+**使用 `ignore_prompt_manager_model: true` 時：**
 ```yaml
 prompts:
   - prompt_id: "my_prompt"
@@ -482,95 +482,94 @@ prompts:
       ignore_prompt_manager_model: true
 ```
 
-LiteLLM will use the model specified by the client, ignoring the prompt's model.
+LiteLLM 將會使用用戶端指定的模型，忽略提示的模型。
 
-### Parameter Merging Behavior
+### 參數合併行為 {#parameter-merging-behavior}
 
-**Default behavior (without `ignore_prompt_manager_optional_params`):**
+**預設行為（未使用 `ignore_prompt_manager_optional_params`）：**
 
-Client params are merged with prompt params, with prompt params taking precedence:
+用戶端參數會與提示參數合併，且提示參數優先：
 ```python
 # Prompt returns: {"temperature": 0.7, "max_tokens": 500}
 # Client sends: {"temperature": 0.9, "top_p": 0.95}
 # Final params: {"temperature": 0.7, "max_tokens": 500, "top_p": 0.95}
 ```
 
-**With `ignore_prompt_manager_optional_params: true`:**
+**使用 `ignore_prompt_manager_optional_params: true` 時：**
 
-Only client params are used:
+只會使用用戶端參數：
 ```python
 # Prompt returns: {"temperature": 0.7, "max_tokens": 500}
 # Client sends: {"temperature": 0.9, "top_p": 0.95}
 # Final params: {"temperature": 0.9, "top_p": 0.95}
 ```
 
-## Security Considerations
+## 安全性考量 {#security-considerations}
 
-1. **Authentication**: Use the `api_key` parameter to secure your prompt management API
-2. **Authorization**: Implement team/user-based access control using the custom query parameters
-3. **Rate Limiting**: Add rate limiting to prevent abuse of your API
-4. **Input Validation**: Validate all query parameters before processing
-5. **HTTPS**: Always use HTTPS in production for encrypted communication
-6. **Secrets**: Store API keys in environment variables, not in config files
+1. **驗證**：使用 `api_key` 參數保護您的提示管理 API
+2. **授權**：使用自訂查詢參數實作以團隊/使用者為基礎的存取控制
+3. **速率限制**：加入速率限制以防止您的 API 被濫用
+4. **輸入驗證**：在處理前驗證所有查詢參數
+5. **HTTPS**：在正式環境中一律使用 HTTPS 進行加密通訊
+6. **密鑰**：將 API 金鑰儲存在環境變數中，而不是設定檔中
 
-## Use Cases
+## 使用情境 {#use-cases}
 
-✅ **Use Generic Prompt Management API when:**
-- You want instant integration without waiting for PRs
-- You maintain your own prompt management service
-- You need full control over prompt versioning and updates
-- You want to build custom prompt management features
-- You need to integrate with your internal systems
+✅ **在以下情況使用 Generic Prompt Management API：**
+- 您想要立即整合，不必等待 PR
+- 您維護自己的提示管理服務
+- 您需要完整控制提示版本管理與更新
+- 您想建立自訂提示管理功能
+- 您需要與內部系統整合
 
-✅ **Common scenarios:**
-- Internal prompt management system for your organization
-- Multi-tenant prompt management with team-based access control
-- A/B testing different prompt versions
-- Prompt experimentation and analytics
-- Integration with existing prompt engineering workflows
+✅ **常見情境：**
+- 貴組織的內部提示管理系統
+- 具備以團隊為基礎存取控制的多租戶提示管理
+- 不同提示版本的 A/B 測試
+- 提示實驗與分析
+- 與既有提示工程工作流程整合
 
-## When to Use This
+## 何時使用此功能 {#when-to-use-this}
 
-✅ **Use Generic Prompt Management API when:**
-- You want instant integration without waiting for PRs
-- You maintain your own prompt management service
-- You need full control over updates and features
-- You want custom prompt storage and versioning logic
+✅ **在以下情況使用 Generic Prompt Management API：**
+- 您想要立即整合，不必等待 PR
+- 您維護自己的提示管理服務
+- 您需要完整控制更新與功能
+- 您想要自訂提示儲存與版本管理邏輯
 
-❌ **Make a PR when:**
-- You want deeper integration with LiteLLM internals
-- Your integration requires complex LiteLLM-specific logic
-- You want to be featured as a built-in provider
-- You're building a reusable integration for the community
+❌ **在以下情況提交 PR：**
+- 您想與 LiteLLM 內部實作更深入整合
+- 您的整合需要複雜的 LiteLLM 特定邏輯
+- 您希望成為內建提供者
+- 您正在為社群打造可重用的整合
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Prompt not found
-- Verify the `prompt_id` matches exactly (case-sensitive)
-- Check that your API endpoint is accessible from LiteLLM
-- Verify authentication if using `api_key`
+### 找不到提示 {#prompt-not-found}
+- 驗證 `prompt_id` 是否完全相符（區分大小寫）
+- 檢查您的 API 端點是否可從 LiteLLM 存取
+- 如果使用 `api_key`，請驗證驗證資訊
 
-### Variables not substituted
-- Ensure variables use `{variable}` or `{{variable}}` syntax
-- Check that variable names in `prompt_variables` match template exactly
-- Variables are case-sensitive
+### 變數未被替換 {#variables-not-substituted}
+- 確認變數使用 `{variable}` 或 `{{variable}}` 語法
+- 檢查 `prompt_variables` 中的變數名稱是否與範本完全一致
+- 變數區分大小寫
 
-### Model not being overridden
-- Check if `ignore_prompt_manager_model: true` is set in config
-- Verify your API is returning `prompt_template_model` in the response
+### 模型未被覆寫 {#model-not-being-overridden}
+- 檢查設定中是否有設定 `ignore_prompt_manager_model: true`
+- 驗證您的 API 是否在回應中傳回 `prompt_template_model`
 
-### Parameters not being applied
-- Check if `ignore_prompt_manager_optional_params: true` is set
-- Verify your API is returning `prompt_template_optional_params`
-- Ensure parameter names match OpenAI's parameter names
+### 參數未被套用 {#parameters-not-being-applied}
+- 檢查是否已設定 `ignore_prompt_manager_optional_params: true`
+- 確認您的 API 是否回傳 `prompt_template_optional_params`
+- 確保參數名稱與 OpenAI 的參數名稱相符
 
-## Questions?
+## 有問題嗎？ {#questions}
 
-This is a **beta API**. We're actively improving it based on feedback. Open an issue or PR if you need additional capabilities.
+這是 **beta API**。我們正根據回饋持續改進它。如果您需要額外功能，請開啟 issue 或 PR。
 
-## Related Documentation
+## 相關文件 {#related-documentation}
 
-- [Prompt Management Overview](../proxy/prompt_management.md)
+- [提示管理總覽](../proxy/prompt_management.md)
 - [Generic Guardrail API](./generic_guardrail_api.md)
-- [LiteLLM Proxy Setup](../proxy/quick_start.md)
-
+- [LiteLLM Proxy 設定](../proxy/quick_start.md)

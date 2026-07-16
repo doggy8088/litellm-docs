@@ -1,29 +1,27 @@
 import Image from '@theme/IdealImage';
 
-# Slack
+# Slack {#slack}
 
 <Image img={require('../../img/slack.png')} />
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們希望了解如何讓回呼變得更好！歡迎認識 LiteLLM [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 ::: 
 
-## Pre-Requisites
+## 先決條件 {#pre-requisites}
 
-### Step 1
+### 步驟 1 {#step-1}
 ```shell
 uv add litellm
 ```
 
-### Step 2
-Get a slack webhook url from https://api.slack.com/messaging/webhooks
+### 步驟 2 {#step-2}
+從 https://api.slack.com/messaging/webhooks 取得 slack webhook url
 
-
-
-## Quick Start
-### Create a custom Callback to log to slack
-We create a custom callback, to log to slack webhooks, see [custom callbacks on litellm](https://docs.litellm.ai/docs/observability/custom_callback)
+## 快速開始 {#quick-start}
+### 建立自訂回呼以記錄到 slack {#create-a-custom-callback-to-log-to-slack}
+我們建立一個自訂回呼來記錄到 slack webhooks，請參閱 [litellm 上的自訂回呼](https://docs.litellm.ai/docs/observability/custom_callback)
 ```python
 def send_slack_alert(
         kwargs,
@@ -76,7 +74,7 @@ def send_slack_alert(
         print(response.json())
 ```
 
-### Pass callback to LiteLLM
+### 將回呼傳遞給 LiteLLM {#pass-callback-to-litellm}
 ```python
 litellm.success_callback = [send_slack_alert]
 ```
@@ -97,8 +95,8 @@ response = litellm.completion(
     ]
 )
 ```
-## Support & Talk to Founders
+## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

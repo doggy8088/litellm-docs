@@ -1,40 +1,40 @@
-# Mavvrik
+# Mavvrik {#mavvrik}
 
-LiteLLM can export proxy spend data to [Mavvrik](https://mavvrik.ai) as [FOCUS 1.2](https://focus.finops.org/) formatted cost reports. This lets you track and analyse LLM spend within the Mavvrik cost management platform.
+LiteLLM 可將 proxy 的支出資料匯出至 [Mavvrik](https://mavvrik.ai)，作為 [FOCUS 1.2](https://focus.finops.org/) 格式的成本報表。這讓您能在 Mavvrik 成本管理平台中追蹤並分析 LLM 支出。
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Destination | Export LiteLLM usage data to Mavvrik via signed URL upload |
-| Data format | FOCUS CSV (gzip-compressed, automatically transformed from LiteLLM spend data) |
-| Supported operations | Automatic daily export |
-| Authentication | Mavvrik API key + connection ID |
+| 目的地 | 透過簽署的 URL 上傳，將 LiteLLM 使用資料匯出至 Mavvrik |
+| 資料格式 | FOCUS CSV（gzip 壓縮，從 LiteLLM 支出資料自動轉換） |
+| 支援的操作 | 自動每日匯出 |
+| 驗證 | Mavvrik API 金鑰 + 連線 ID |
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-You need the following from your Mavvrik account:
+您需要從 Mavvrik 帳戶取得以下資訊：
 
-1. **API Key** — available in the Mavvrik dashboard under Settings.
-2. **API Endpoint** — your tenant-specific API URL, e.g. `https://api.mavvrik.ai/<tenant_id>`.
-3. **Connection ID** — the AI cost connection ID configured in your Mavvrik account.
+1. **API Key** — 可在 Mavvrik 儀表板的 Settings 中取得。
+2. **API Endpoint** — 您的租戶專屬 API URL，例如 `https://api.mavvrik.ai/<tenant_id>`。
+3. **Connection ID** — 在您的 Mavvrik 帳戶中設定的 AI 成本連線 ID。
 
-## Setup
+## 設定 {#setup}
 
-### Environment variables
+### 環境變數 {#environment-variables}
 
-| Variable | Required | Description |
+| 變數 | 必填 | 說明 |
 |----------|----------|-------------|
-| `MAVVRIK_API_KEY` | Yes | Mavvrik API key |
-| `MAVVRIK_API_ENDPOINT` | Yes | Tenant API endpoint, e.g. `https://api.mavvrik.ai/<tenant_id>` |
-| `MAVVRIK_CONNECTION_ID` | Yes | AI cost connection identifier |
-| `MAVVRIK_FOCUS_MAX_ROWS` | No | Maximum rows per daily export (default: 500000). Increase for very high-traffic deployments. |
+| `MAVVRIK_API_KEY` | 是 | Mavvrik API 金鑰 |
+| `MAVVRIK_API_ENDPOINT` | 是 | 租戶 API endpoint，例如 `https://api.mavvrik.ai/<tenant_id>` |
+| `MAVVRIK_CONNECTION_ID` | 是 | AI 成本連線識別碼 |
+| `MAVVRIK_FOCUS_MAX_ROWS` | 否 | 每日匯出的最大列數（預設：500000）。高流量部署可提高此值。 |
 
-:::info Daily export only
-Only `daily` frequency is supported. The Mavvrik ingestion protocol stores one file per calendar date (`metrics/YYYY-MM-DD`). Hourly or interval exports would overwrite each other within the same day, producing incomplete data.
+:::info 僅支援每日匯出
+僅支援 `daily` 頻率。Mavvrik 擷取協定會為每個日曆日期（`metrics/YYYY-MM-DD`）儲存一個檔案。每小時或固定間隔匯出會在同一天內彼此覆寫，導致資料不完整。
 :::
 
-### Proxy config
+### Proxy 設定 {#proxy-config}
 
 ```yaml
 model_list:
@@ -54,37 +54,37 @@ export MAVVRIK_CONNECTION_ID="<connection-id>"
 litellm --config /path/to/config.yaml
 ```
 
-The proxy registers a background job that exports FOCUS-formatted spend data once daily.
+proxy 會註冊一個背景工作，於每日一次匯出 FOCUS 格式的支出資料。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-Each daily export cycle:
+每個每日匯出週期：
 
-1. Registers the connector with the Mavvrik backend (`POST /metrics/agent/ai/{connection_id}`)
-2. Requests a GCS signed upload URL for the export date (`GET /metrics/agent/ai/{connection_id}/upload-url`)
-3. Uploads gzip-compressed FOCUS CSV to GCS via the signed URL
+1. 向 Mavvrik 後端註冊連接器（`POST /metrics/agent/ai/{connection_id}`）
+2. 針對匯出日期請求 GCS 簽署上傳 URL（`GET /metrics/agent/ai/{connection_id}/upload-url`）
+3. 透過簽署的 URL 將 gzip 壓縮的 FOCUS CSV 上傳至 GCS
 
-Re-running an export for the same date overwrites the previous file — exports are idempotent. Exports are capped at `MAVVRIK_FOCUS_MAX_ROWS` rows per day (default 500k) to bound memory usage.
+重新執行相同日期的匯出會覆寫先前檔案——匯出具備 idempotent。匯出每日上限為 `MAVVRIK_FOCUS_MAX_ROWS` 列（預設 500k），以限制記憶體用量。
 
-## FOCUS Field Mapping
+## FOCUS 欄位對應 {#focus-field-mapping}
 
-LiteLLM spend data is transformed into the FOCUS 1.2 schema before upload:
+LiteLLM 支出資料會在上傳前轉換為 FOCUS 1.2 結構描述：
 
-| LiteLLM Field | FOCUS Column | Description |
+| LiteLLM 欄位 | FOCUS 欄位 | 說明 |
 |---------------|-------------|-------------|
-| `spend` | BilledCost, EffectiveCost | Cost of the usage |
-| `model` | ChargeDescription, ResourceId | Model identifier |
-| `model_group` | ServiceName | Model group / deployment |
-| `custom_llm_provider` | ProviderName, PublisherName | Provider (openai, anthropic, etc.) |
-| `api_key` | BillingAccountId | Hashed API key |
-| `api_key_alias` | BillingAccountName | Human-readable key alias |
-| `team_id` | SubAccountId | Team identifier |
-| `team_alias` | SubAccountName | Team name |
+| `spend` | BilledCost, EffectiveCost | 使用成本 |
+| `model` | ChargeDescription, ResourceId | 模型識別碼 |
+| `model_group` | ServiceName | 模型群組 / 部署 |
+| `custom_llm_provider` | ProviderName, PublisherName | 提供者（openai、anthropic 等） |
+| `api_key` | BillingAccountId | 雜湊 API 金鑰 |
+| `api_key_alias` | BillingAccountName | 可供人閱讀的金鑰別名 |
+| `team_id` | SubAccountId | 團隊識別碼 |
+| `team_alias` | SubAccountName | 團隊名稱 |
 
-Additional metadata (user_id, model_group, etc.) is included in the `Tags` column as JSON.
+其他中繼資料（user_id、model_group 等）會以 JSON 形式包含在 `Tags` 欄位中。
 
-## Related Links
+## 相關連結 {#related-links}
 
 - [Mavvrik](https://mavvrik.ai)
-- [FOCUS Specification](https://focus.finops.org/)
-- [Focus Export (S3/GCS)](./focus.md)
+- [FOCUS 規格](https://focus.finops.org/)
+- [Focus 匯出（S3/GCS）](./focus.md)

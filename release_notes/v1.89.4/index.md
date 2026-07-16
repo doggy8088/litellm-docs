@@ -1,5 +1,5 @@
 ---
-title: "v1.89.4 - Vertex Batch Uploads & CVE Patches"
+title: "v1.89.4 - Vertex 批次上傳與 CVE 修補"
 slug: "v1-89-4"
 date: 2026-06-25T02:38:49
 authors:
@@ -18,17 +18,17 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info Update: no performance regression found
+:::info 更新：未發現效能回歸
 
-An earlier version of this note flagged a potential throughput regression. We investigated and could not confirm or reproduce any regression in the released version. The one report we received came from a deployment running custom code on top of what we shipped, and our testing points to those changes, not LiteLLM, as the likely cause.
+先前版本的此說明曾標示可能的吞吐量回歸。我們已調查，且無法在已發布版本中確認或重現任何回歸。我們收到的唯一回報來自一個在我們所提供內容之上執行自訂程式碼的部署，而我們的測試顯示，較可能的原因是那些變更，而非 LiteLLM。
 
-Correctness and error rates were never affected. If you're on this version, there's nothing you need to do.
+正確性與錯誤率從未受到影響。如果您正在使用此版本，無需採取任何動作。
 
-We're still monitoring incoming reports and will update this note if anything changes.
+我們仍在持續監控進來的回報，若有任何變化，會更新此說明。
 
 :::
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -53,18 +53,18 @@ pip install litellm==1.89.4
 </TabItem>
 </Tabs>
 
-`v1.89.4` is a patch release on top of [`v1.89.3`](/release_notes/v1.89.3/v1-89-3). It streams OpenAI→Vertex batch JSONL uploads instead of buffering them in memory, backports cost-tracking recovery for interrupted Anthropic streams, adds a `no-mcp-servers` sentinel that scopes a key to zero MCP servers, and clears the remaining OSV-flagged CVEs with OpenSSL and dependency bumps. The bundled `litellm-enterprise` package is bumped to `0.1.42.post2`.
+`v1.89.4` 是建基於 [`v1.89.3`](/release_notes/v1.89.3/v1-89-3) 的修補版本。它會串流 OpenAI→Vertex 批次 JSONL 上傳，而不是將其緩衝在記憶體中，回補中斷的 Anthropic 串流的成本追蹤復原功能，新增一個 `no-mcp-servers` sentinel，將金鑰的範圍限定為零個 MCP 伺服器，並透過更新 OpenSSL 與相依套件版本，清除其餘由 OSV 標記的 CVE。隨附的 `litellm-enterprise` 套件已升級至 `0.1.42.post2`。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(passthrough): recover output tokens for interrupted anthropic streams - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
-- fix(proxy): record partial spend on the failure row for interrupted streams - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
-- feat(mcp): scope a key to zero MCP servers with no-mcp-servers sentinel - [PR #31029](https://github.com/BerriAI/litellm/pull/31029)
-- fix(passthrough,streaming): recover cost on interrupted and agentic Anthropic streams - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
-- fix(vertex/files): stream OpenAI->Vertex batch JSONL uploads - [PR #31036](https://github.com/BerriAI/litellm/pull/31036)
-- fix(deps): bump osv-flagged dependencies to clear known CVEs - [PR #31122](https://github.com/BerriAI/litellm/pull/31122)
-- fix(docker): bump wolfi-base digest to patch openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
+- fix(passthrough): 復原中斷的 anthropic 串流的輸出 token - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
+- fix(proxy): 在失敗列上記錄中斷串流的部分支出 - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
+- feat(mcp): 使用 no-mcp-servers sentinel 將金鑰的範圍限定為零個 MCP 伺服器 - [PR #31029](https://github.com/BerriAI/litellm/pull/31029)
+- fix(passthrough,streaming): 復原中斷與 agentic Anthropic 串流的成本 - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
+- fix(vertex/files): 串流 OpenAI->Vertex 批次 JSONL 上傳 - [PR #31036](https://github.com/BerriAI/litellm/pull/31036)
+- fix(deps): 升級被 OSV 標記的相依套件以清除已知 CVE - [PR #31122](https://github.com/BerriAI/litellm/pull/31122)
+- fix(docker): 升級 wolfi-base digest 以修補 openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.89.3...v1.89.4

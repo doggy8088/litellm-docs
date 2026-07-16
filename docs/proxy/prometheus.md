@@ -2,16 +2,15 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# 📈 Prometheus metrics
+# 📈 Prometheus 指標 {#-prometheus-metrics}
 
+LiteLLM 會提供一個供 Prometheus 輪詢的 `/metrics` 端點
 
-LiteLLM Exposes a `/metrics` endpoint for Prometheus to Poll
+## 快速開始 {#quick-start}
 
-## Quick Start
+如果您使用的是搭配 `litellm --config proxy_config.yaml` 的 LiteLLM CLI，那麼您需要 `uv add prometheus_client==0.20.0`。**這已經預先安裝在 litellm Docker 映像中**
 
-If you're using the LiteLLM CLI with `litellm --config proxy_config.yaml` then you need to `uv add prometheus_client==0.20.0`. **This is already pre-installed on the litellm Docker image**
-
-Add this to your proxy config.yaml 
+將以下內容加入您的 proxy config.yaml 
 ```yaml
 model_list:
   - model_name: gpt-4o
@@ -22,12 +21,12 @@ litellm_settings:
     - prometheus
 ```
 
-Start the proxy
+啟動 proxy
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
     --header 'Content-Type: application/json' \
@@ -42,48 +41,48 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-View Metrics on `/metrics`:
+在 `/metrics` 上檢視指標：
 ```shell
 curl http://localhost:4000/metrics \
   -H "Authorization: Bearer sk-..."
 ```
 
-### Multiple Workers
+### 多個工作程序 {#multiple-workers}
 
-When using LiteLLM with multiple workers, you need to set the `PROMETHEUS_MULTIPROC_DIR` environment variable to enable aggregated metric collection across worker processes.
+當使用 LiteLLM 搭配多個工作程序時，您需要設定 `PROMETHEUS_MULTIPROC_DIR` 環境變數，才能啟用跨工作程序的彙總指標收集。
 
 ```shell
 export PROMETHEUS_MULTIPROC_DIR="/prometheus_multiproc"
 ```
 
-This directory is used by the Prometheus client library to store metric files that can be shared across multiple worker processes. Make sure the directory exists and is writable by your LiteLLM process.
+此目錄供 Prometheus client library 使用，用來儲存可在多個工作程序之間共享的指標檔案。請確定該目錄存在，且 LiteLLM 程序可寫入。
 
-## Virtual Keys, Teams, Internal Users
+## 虛擬金鑰、團隊、內部使用者 {#virtual-keys-teams-internal-users}
 
-Use this for for tracking per [user, key, team, etc.](virtual_keys)
+用於追蹤每個 [user, key, team, etc.](virtual_keys)
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_spend_metric`                | Total Spend, per `"end_user", "hashed_api_key", "api_key_alias", "model", "team", "team_alias", "user"`                 |
-| `litellm_total_tokens_metric`         | input + output tokens per `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model"`     |
-| `litellm_input_tokens_metric`         | input tokens per `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model"`     |
-| `litellm_output_tokens_metric`        | output tokens per `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model"`             |
+| `litellm_spend_metric`                | 總支出，依 `"end_user", "hashed_api_key", "api_key_alias", "model", "team", "team_alias", "user"`                  |
+| `litellm_total_tokens_metric`         | 每個 `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model"` 的輸入 + 輸出 token     |
+| `litellm_input_tokens_metric`         | 每個 `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model"` 的輸入 token     |
+| `litellm_output_tokens_metric`        | 每個 `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model"` 的輸出 token             |
 
-#### Token type detail metrics
+#### Token 類型詳細指標 {#token-type-detail-metrics}
 
-Per-token-type counters that break out the `usage.prompt_tokens_details` and `usage.completion_tokens_details` fields providers report (e.g. OpenAI prompt caching, Anthropic prompt caching, audio I/O, reasoning tokens). These are **additive** to the totals above — the existing `litellm_input_tokens_metric` / `litellm_output_tokens_metric` / `litellm_total_tokens_metric` counters are unchanged.
+按 token 類型拆分的計數器，針對提供者回報的 `usage.prompt_tokens_details` 與 `usage.completion_tokens_details` 欄位（例如 OpenAI prompt 快取、Anthropic prompt 快取、音訊 I/O、推理 token）。這些會**加總**到上方總計之外——既有的 `litellm_input_tokens_metric` / `litellm_output_tokens_metric` / `litellm_total_tokens_metric` 計數器維持不變。
 
-Each detail counter is **sparse**: it is only incremented when the provider reports a non-zero value for the corresponding field, so providers that don't expose a given detail will not produce a series for it. The label set is identical to the parent input / output token counter, so you can join cleanly in PromQL.
+每個詳細計數器都是**稀疏**的：只有當提供者回報對應欄位的非零值時才會遞增，因此未公開某項詳細資訊的提供者不會為其產生序列。標籤集合與父層的輸入 / 輸出 token 計數器相同，因此您可以在 PromQL 中順利進行 join。
 
-| Metric Name                                      | Source field on `usage`                                              | Typical providers                                  |
+| 指標名稱                                      | `usage` 上的來源欄位                                              | 典型提供者                                  |
 |--------------------------------------------------|----------------------------------------------------------------------|----------------------------------------------------|
-| `litellm_input_cached_tokens_metric`             | `prompt_tokens_details.cached_tokens`                                | OpenAI prompt cache, Anthropic `cache_read_input_tokens`, DeepSeek `prompt_cache_hit_tokens` |
-| `litellm_input_cache_creation_tokens_metric`     | `prompt_tokens_details.cache_creation_tokens`                        | Anthropic `cache_creation_input_tokens` (prompt cache writes) |
-| `litellm_input_audio_tokens_metric`              | `prompt_tokens_details.audio_tokens`                                 | OpenAI `gpt-4o-audio-*`, Gemini audio inputs       |
-| `litellm_output_reasoning_tokens_metric`         | `completion_tokens_details.reasoning_tokens`                         | OpenAI `o1-*` / `o3-*`, Anthropic extended thinking |
-| `litellm_output_audio_tokens_metric`             | `completion_tokens_details.audio_tokens`                             | OpenAI `gpt-4o-audio-*` audio outputs              |
+| `litellm_input_cached_tokens_metric`             | `prompt_tokens_details.cached_tokens`                                | OpenAI prompt cache、Anthropic `cache_read_input_tokens`、DeepSeek `prompt_cache_hit_tokens` |
+| `litellm_input_cache_creation_tokens_metric`     | `prompt_tokens_details.cache_creation_tokens`                        | Anthropic `cache_creation_input_tokens`（prompt cache writes） |
+| `litellm_input_audio_tokens_metric`              | `prompt_tokens_details.audio_tokens`                                 | OpenAI `gpt-4o-audio-*`、Gemini 音訊輸入       |
+| `litellm_output_reasoning_tokens_metric`         | `completion_tokens_details.reasoning_tokens`                         | OpenAI `o1-*` / `o3-*`、Anthropic extended thinking |
+| `litellm_output_audio_tokens_metric`             | `completion_tokens_details.audio_tokens`                             | OpenAI `gpt-4o-audio-*` 音訊輸出              |
 
-Example PromQL — cache-hit ratio for a model group:
+範例 PromQL — 某個 model group 的快取命中率：
 
 ```promql
 sum by (requested_model) (rate(litellm_input_cached_tokens_metric_total[5m]))
@@ -91,7 +90,7 @@ sum by (requested_model) (rate(litellm_input_cached_tokens_metric_total[5m]))
 sum by (requested_model) (rate(litellm_input_tokens_metric_total[5m]))
 ```
 
-Example PromQL — reasoning-token share of output:
+範例 PromQL — 輸出中的推理 token 佔比：
 
 ```promql
 sum by (requested_model) (rate(litellm_output_reasoning_tokens_metric_total[5m]))
@@ -100,44 +99,42 @@ sum by (requested_model) (rate(litellm_output_tokens_metric_total[5m]))
 ```
 
 :::info
-`litellm_input_cached_tokens_metric` tracks **provider-side** prompt-cache reads (the provider reports a cached portion of the input). This is different from `litellm_cached_tokens_metric`, which tracks LiteLLM's own response-cache hits (the entire response was served from LiteLLM's cache and no provider request was made).
+`litellm_input_cached_tokens_metric` 會追蹤**提供者端**的 prompt-cache 讀取（提供者回報輸入內容中被快取的部分）。這與 `litellm_cached_tokens_metric` 不同，後者追蹤的是 LiteLLM 自身的回應快取命中（整個回應直接由 LiteLLM 的快取提供，且未發送任何提供者請求）。
 :::
 
-### Team - Budget
+### 團隊 - 預算 {#team---budget}
 
-
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_team_max_budget_metric`                    | Max Budget for Team Labels: `"team", "team_alias"`|
-| `litellm_remaining_team_budget_metric`             | Remaining Budget for Team (A team created on LiteLLM) Labels: `"team", "team_alias"`|
-| `litellm_team_budget_remaining_hours_metric`        | Hours before the team budget is reset Labels: `"team", "team_alias"`|
+| `litellm_team_max_budget_metric`                    | 團隊標籤的最大預算：`"team", "team_alias"`|
+| `litellm_remaining_team_budget_metric`             | 團隊剩餘預算（在 LiteLLM 上建立的團隊）標籤：`"team", "team_alias"`|
+| `litellm_team_budget_remaining_hours_metric`        | 團隊預算重設前的剩餘小時數 標籤：`"team", "team_alias"`|
 
-### Virtual Key - Budget
+### 虛擬金鑰 - 預算 {#virtual-key---budget}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_api_key_max_budget_metric`                 | Max Budget for API Key Labels: `"hashed_api_key", "api_key_alias"`|
-| `litellm_remaining_api_key_budget_metric`                | Remaining Budget for API Key (A key Created on LiteLLM) Labels: `"hashed_api_key", "api_key_alias"`|
-| `litellm_api_key_budget_remaining_hours_metric`          | Hours before the API Key budget is reset Labels: `"hashed_api_key", "api_key_alias"`|
+| `litellm_api_key_max_budget_metric`                 | API 金鑰的最大預算 標籤：`"hashed_api_key", "api_key_alias"`|
+| `litellm_remaining_api_key_budget_metric`                | API 金鑰剩餘預算（在 LiteLLM 上建立的金鑰）標籤：`"hashed_api_key", "api_key_alias"`|
+| `litellm_api_key_budget_remaining_hours_metric`          | API 金鑰預算重設前的剩餘小時數 標籤：`"hashed_api_key", "api_key_alias"`|
 
-### Virtual Key - Rate Limit
+### 虛擬金鑰 - 速率限制 {#virtual-key---rate-limit}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_remaining_api_key_requests_for_model`                | Remaining Requests for a LiteLLM virtual API key, only if a model-specific rate limit (rpm) has been set for that virtual key. Labels: `"hashed_api_key", "api_key_alias", "model"`|
-| `litellm_remaining_api_key_tokens_for_model`                | Remaining Tokens for a LiteLLM virtual API key, only if a model-specific token limit (tpm) has been set for that virtual key. Labels: `"hashed_api_key", "api_key_alias", "model"`|
+| `litellm_remaining_api_key_requests_for_model`                | LiteLLM 虛擬 API 金鑰的剩餘請求數，僅在該虛擬金鑰已設定模型特定速率限制（rpm）時才會顯示。標籤：`"hashed_api_key", "api_key_alias", "model"`|
+| `litellm_remaining_api_key_tokens_for_model`                | LiteLLM 虛擬 API 金鑰的剩餘 token 數，僅在該虛擬金鑰已設定模型特定 token 限制（tpm）時才會顯示。標籤：`"hashed_api_key", "api_key_alias", "model"`|
 
+### 啟動時初始化預算指標 {#initialize-budget-metrics-on-startup}
 
-### Initialize Budget Metrics on Startup
+如果您希望 litellm 無論是否收到請求，都為所有金鑰與團隊發出預算指標，請在 `config.yaml` 中將 `prometheus_initialize_budget_metrics` 設為 `true`
 
-If you want litellm to emit the budget metrics for all keys, teams irrespective of whether they are getting requests or not, set `prometheus_initialize_budget_metrics` to `true` in the `config.yaml`
+**運作方式：**
 
-**How this works:**
-
-- If the `prometheus_initialize_budget_metrics` is set to `true`
-  - Every 5 minutes litellm runs a cron job to read all keys, teams from the database
-  - It then emits the budget metrics for each key, team
-  - This is used to populate the budget metrics on the `/metrics` endpoint
+- 如果 `prometheus_initialize_budget_metrics` 設為 `true`
+  - 每 5 分鐘 litellm 會執行一個 cron job，從資料庫讀取所有金鑰與團隊
+  - 接著為每個金鑰、團隊發出預算指標
+  - 這用於填充 `/metrics` 端點上的預算指標
 
 ```yaml
 litellm_settings:
@@ -146,24 +143,24 @@ litellm_settings:
 ```
 
 
-## Pod Health Metrics
+## Pod 健康指標 {#pod-health-metrics}
 
-Use these to measure per-pod queue depth and diagnose latency that occurs **before** LiteLLM starts processing a request.
+用這些指標來衡量每個 pod 的佇列深度，並診斷在 **LiteLLM 開始處理請求之前** 發生的延遲。
 
-| Metric Name | Type | Description |
+| 指標名稱 | 類型 | 說明 |
 |---|---|---|
-| `litellm_in_flight_requests` | Gauge | Number of HTTP requests currently in-flight on this uvicorn worker. Tracks the pod's queue depth in real time. With multiple workers, values are summed across all live workers (`livesum`). |
+| `litellm_in_flight_requests` | Gauge | 目前在此 uvicorn worker 上進行中的 HTTP 請求數量。即時追蹤 pod 的佇列深度。使用多個 worker 時，數值會在所有存活的 worker 之間加總（`livesum`）。 |
 
-### When to use this
+### 何時使用這個指標 {#when-to-use-this}
 
-LiteLLM measures latency from when its handler starts. If a request waits in uvicorn's event loop before the handler runs, that wait is invisible to LiteLLM's own logs. `litellm_in_flight_requests` shows how loaded the pod was at any point in time.
+LiteLLM 會從處理程序開始時測量延遲。如果請求在 handler 執行前先在 uvicorn 的 event loop 中等待，這段等待對 LiteLLM 自身的記錄是不可見的。`litellm_in_flight_requests` 顯示某個 pod 在任一時間點的負載情況。
 
 ```
 high in_flight_requests + high ALB TargetResponseTime → pod overloaded, scale out
 low  in_flight_requests + high ALB TargetResponseTime → delay is pre-ASGI (event loop blocking)
 ```
 
-You can also check the current value directly without Prometheus:
+您也可以直接查看目前的值，而不必使用 Prometheus：
 
 ```bash
 curl http://localhost:4000/health/backlog \
@@ -171,100 +168,100 @@ curl http://localhost:4000/health/backlog \
 # {"in_flight_requests": 47}
 ```
 
-## Proxy Level Tracking Metrics
+## Proxy 層級追蹤指標 {#proxy-level-tracking-metrics}
 
-Use this to track overall LiteLLM Proxy usage.
-- Track Actual traffic rate to proxy 
-- Number of **client side** requests and failures for requests made to proxy 
+用這些指標來追蹤整體 LiteLLM Proxy 的使用情況。
+- 追蹤傳送到 proxy 的實際流量速率 
+- 針對送往 proxy 的請求，統計**用戶端**請求與失敗數量 
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_proxy_failed_requests_metric`             | Total number of failed responses from proxy - the client did not get a success response from litellm proxy. Labels: `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "user_email", "exception_status", "exception_class", "route", "model_id"`          |
-| `litellm_proxy_total_requests_metric`             | Total number of requests made to the proxy server - track number of client side requests. Labels: `"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "status_code", "user_email", "route", "model_id"`. Optionally includes `"stream"` — see [Emit Stream Label](#emit-stream-label).          |
+| `litellm_proxy_failed_requests_metric`             | proxy 回應失敗的總數 - 用戶端未從 litellm proxy 取得成功回應。標籤：`"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "user_email", "exception_status", "exception_class", "route", "model_id"`          |
+| `litellm_proxy_total_requests_metric`             | 傳送至 proxy server 的請求總數 - 追蹤用戶端請求數量。標籤：`"end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "status_code", "user_email", "route", "model_id"`。可選地包含 `"stream"` — 請參閱 [發出 Stream 標籤](#emit-stream-label)。          |
 
-### Callback Logging Metrics
+### 回呼記錄指標 {#callback-logging-metrics}
 
-Monitor failures while shipping logs to downstream callbacks like `s3_v3` cold storage
+監控將記錄傳送到下游回呼（例如 `s3_v3` 冷儲存）時的失敗
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_callback_logging_failures_metric` | Total number of failed attempts to emit logs to a configured callback. Labels: `"callback_name"`. Use this to alert on callback delivery issues such as repeated failures when writing to `s3_v3`, `langfuse`, or `langfuse_otel` and other otel providers |
+| `litellm_callback_logging_failures_metric` | 針對已設定的 callback 發出 log 失敗的總次數。標籤：`"callback_name"`。可用於針對 callback 傳遞問題發出警示，例如寫入 `s3_v3`、`langfuse` 或 `langfuse_otel` 以及其他 otel provider 時發生的重複失敗 |
 
-**Supported Callbacks:**
-- `S3Logger` - S3 v2 cold storage failures
-- `langfuse` - Langfuse logging failures
-- `otel` -  OpenTelemetry logging failures
+**支援的 Callback：**
+- `S3Logger` - S3 v2 冷儲存失敗
+- `langfuse` - Langfuse 記錄失敗
+- `otel` -  OpenTelemetry 記錄失敗
 
-## LLM Provider Metrics
+## LLM 提供者指標 {#llm-provider-metrics}
 
-Use this for LLM API Error monitoring and tracking remaining rate limits and token limits
+用於 LLM API 錯誤監控，以及追蹤剩餘的 rate limit 與 token limit
 
-### Labels Tracked
+### 追蹤的標籤 {#labels-tracked}
 
-| Label | Description |
+| 標籤 | 說明 |
 |-------|-------------|
-| litellm_model_name | The name of the LLM model used by LiteLLM |
-| requested_model | The model sent in the request |
-| model_id | The model_id of the deployment. Autogenerated by LiteLLM, each deployment has a unique model_id |
-| api_base | The API Base of the deployment |
-| api_provider | The LLM API provider, used for the provider. Example (azure, openai, vertex_ai) |
-| hashed_api_key | The hashed api key of the request |
-| api_key_alias | The alias of the api key used |
-| team | The team of the request |
-| team_alias | The alias of the team used |
-| exception_status | The status of the exception, if any |
-| exception_class | The class of the exception, if any |
+| litellm_model_name | LiteLLM 使用的 LLM 模型名稱 |
+| requested_model | 請求中送出的模型 |
+| model_id | 部署的 model_id。由 LiteLLM 自動產生，每個部署都有唯一的 model_id |
+| api_base | 部署的 API Base |
+| api_provider | LLM API provider，用於提供者。範例（azure、openai、vertex_ai） |
+| hashed_api_key | 請求的雜湊後 API 金鑰 |
+| api_key_alias | 使用的 API 金鑰別名 |
+| team | 請求的團隊 |
+| team_alias | 使用的團隊別名 |
+| exception_status | 例外狀態（如果有） |
+| exception_class | 例外類別（如果有） |
 
-### Success and Failure
+### 成功與失敗 {#success-and-failure}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
- `litellm_deployment_success_responses`              | Total number of successful LLM API calls for deployment. Labels: `"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
-| `litellm_deployment_failure_responses`              | Total number of failed LLM API calls for a specific LLM deployment. Labels: `"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
-| `litellm_deployment_total_requests`                 | Total number of LLM API calls for deployment - success + failure. Labels: `"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
+ `litellm_deployment_success_responses`              | 部署成功的 LLM API 呼叫總次數。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
+| `litellm_deployment_failure_responses`              | 特定 LLM 部署失敗的 LLM API 呼叫總次數。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
+| `litellm_deployment_total_requests`                 | 部署的 LLM API 呼叫總次數－成功 + 失敗。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
 
-### Remaining Requests and Tokens
+### 剩餘請求與 token {#remaining-requests-and-tokens}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_remaining_requests_metric`             | Track `x-ratelimit-remaining-requests` returned from LLM API Deployment. Labels: `"model_group", "api_provider", "api_base", "litellm_model_name", "hashed_api_key", "api_key_alias"` |
-| `litellm_remaining_tokens_metric`                | Track `x-ratelimit-remaining-tokens` return from LLM API Deployment. Labels: `"model_group", "api_provider", "api_base", "litellm_model_name", "hashed_api_key", "api_key_alias"` |
+| `litellm_remaining_requests_metric`             | 追蹤 LLM API Deployment 回傳的 `x-ratelimit-remaining-requests`。標籤：`"model_group", "api_provider", "api_base", "litellm_model_name", "hashed_api_key", "api_key_alias"` |
+| `litellm_remaining_tokens_metric`                | 追蹤 LLM API Deployment 回傳的 `x-ratelimit-remaining-tokens`。標籤：`"model_group", "api_provider", "api_base", "litellm_model_name", "hashed_api_key", "api_key_alias"` |
 
-### Deployment State 
-| Metric Name          | Description                          |
+### 部署狀態  {#deployment-state}
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_deployment_state`             | The state of the deployment: 0 = healthy, 1 = partial outage, 2 = complete outage. Labels: `"litellm_model_name", "model_id", "api_base", "api_provider"` |
-| `litellm_deployment_latency_per_output_token`       | Latency per output token for deployment. Labels: `"litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
+| `litellm_deployment_state`             | 部署狀態：0 = 健康，1 = 部分故障，2 = 完全故障。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider"` |
+| `litellm_deployment_latency_per_output_token`       | 部署每個輸出 token 的延遲。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
 
-#### Fallback (Failover) Metrics
+#### 備援（故障轉移）指標 {#fallback-failover-metrics}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_deployment_cooled_down`             | Number of times a deployment has been cooled down by LiteLLM load balancing logic. Labels: `"litellm_model_name", "model_id", "api_base", "api_provider"` |
-| `litellm_deployment_successful_fallbacks`           | Number of successful fallback requests from primary model -> fallback model. Labels: `"requested_model", "fallback_model", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
-| `litellm_deployment_failed_fallbacks`               | Number of failed fallback requests from primary model -> fallback model. Labels: `"requested_model", "fallback_model", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
+| `litellm_deployment_cooled_down`             | LiteLLM 負載平衡邏輯將某個部署降溫的次數。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider"` |
+| `litellm_deployment_successful_fallbacks`           | 從主要模型 -> 備援模型的備援請求成功次數。標籤：`"requested_model", "fallback_model", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
+| `litellm_deployment_failed_fallbacks`               | 從主要模型 -> 備援模型的備援請求失敗次數。標籤：`"requested_model", "fallback_model", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
 
-## Request Counting Metrics
+## 請求計數指標 {#request-counting-metrics}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_requests_metric`             | Total number of requests tracked per endpoint. Labels: `"end_user", "hashed_api_key", "api_key_alias", "model", "team", "team_alias", "user", "user_email"` |
+| `litellm_requests_metric`             | 依端點追蹤的請求總數。標籤：`"end_user", "hashed_api_key", "api_key_alias", "model", "team", "team_alias", "user", "user_email"` |
 
-## Request Latency Metrics 
+## 請求延遲指標  {#request-latency-metrics}
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_request_total_latency_metric`             | Total latency (seconds) for a request to LiteLLM Proxy Server - tracked for labels "end_user", "hashed_api_key", "api_key_alias", "requested_model", "team", "team_alias", "user", "model", "model_id" |
-| `litellm_overhead_latency_metric`             | Latency overhead (seconds) added by LiteLLM processing - tracked for labels "model_group", "api_provider", "api_base", "litellm_model_name", "hashed_api_key", "api_key_alias" |
-| `litellm_overhead_with_guardrails_latency_metric`             | Latency overhead (seconds) added by LiteLLM processing including pre_call and post_call guardrails - tracked for labels "model_group", "api_provider", "api_base", "litellm_model_name", "hashed_api_key", "api_key_alias". During_call (moderation) guardrails run concurrently with the LLM API call, so they are excluded from this number |
-| `litellm_llm_api_latency_metric`  | Latency (seconds) for just the LLM API call - tracked for labels "model", "hashed_api_key", "api_key_alias", "team", "team_alias", "requested_model", "end_user", "user" |
-| `litellm_llm_api_time_to_first_token_metric`             | Time to first token for LLM API call - tracked for labels `model`, `hashed_api_key`, `api_key_alias`, `team`, `team_alias`, `requested_model`, `end_user`, `user`, `model_id` [Note: only emitted for streaming requests] |
+| `litellm_request_total_latency_metric`             | 傳送到 LiteLLM Proxy Server 的請求總延遲（秒）－針對標籤 "end_user"、"hashed_api_key"、"api_key_alias"、"requested_model"、"team"、"team_alias"、"user"、"model"、"model_id" 追蹤 |
+| `litellm_overhead_latency_metric`             | LiteLLM 處理所增加的延遲負擔（秒）－針對標籤 "model_group"、"api_provider"、"api_base"、"litellm_model_name"、"hashed_api_key"、"api_key_alias" 追蹤 |
+| `litellm_overhead_with_guardrails_latency_metric`             | LiteLLM 處理所增加的延遲負擔（秒），包含 pre_call 與 post_call 防護欄－針對標籤 "model_group"、"api_provider"、"api_base"、"litellm_model_name"、"hashed_api_key"、"api_key_alias" 追蹤。During_call（moderation）防護欄會與 LLM API 呼叫同時執行，因此不包含在此數值中 |
+| `litellm_llm_api_latency_metric`  | 僅 LLM API 呼叫的延遲（秒）－針對標籤 "model"、"hashed_api_key"、"api_key_alias"、"team"、"team_alias"、"requested_model"、"end_user"、"user" 追蹤 |
+| `litellm_llm_api_time_to_first_token_metric`             | LLM API 呼叫的首 token 時間－針對標籤 `model`、`hashed_api_key`、`api_key_alias`、`team`、`team_alias`、`requested_model`、`end_user`、`user`、`model_id` 追蹤 [註：僅針對串流請求發出] |
 
-## Tracking `end_user` on Prometheus
+## 在 Prometheus 上追蹤 `end_user` {#tracking-end_user-on-prometheus}
 
-By default LiteLLM does not track `end_user` on Prometheus. This is done to reduce the cardinality of the metrics from LiteLLM Proxy.
+預設情況下，LiteLLM 不會在 Prometheus 上追蹤 `end_user`。這樣做是為了降低 LiteLLM Proxy 指標的基數。
 
-If you want to track `end_user` on Prometheus, you can do the following:
+如果您想在 Prometheus 上追蹤 `end_user`，可以執行以下操作：
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
@@ -273,9 +270,9 @@ litellm_settings:
 ```
 
 
-### Emit Stream Label
+### 發出串流標籤 {#emit-stream-label}
 
-Add a `stream` label to `litellm_proxy_total_requests_metric` to split requests by streaming vs. non-streaming. Disabled by default.
+將 `stream` 標籤加到 `litellm_proxy_total_requests_metric`，以依串流與非串流來區分請求。預設停用。
 
 ```yaml title="config.yaml"
 litellm_settings:
@@ -283,7 +280,7 @@ litellm_settings:
   prometheus_emit_stream_label: true
 ```
 
-When enabled, `litellm_proxy_total_requests_metric` gains a `stream` label with values `"True"`, `"False"`, or `"None"`.
+啟用後，`litellm_proxy_total_requests_metric` 會新增一個 `stream` 標籤，值為 `"True"`、`"False"` 或 `"None"`。
 
 ```
 litellm_proxy_total_requests_metric{..., stream="True"} 42
@@ -291,17 +288,16 @@ litellm_proxy_total_requests_metric{..., stream="False"} 100
 ```
 
 :::note
-This label is opt-in because adding a new label to an existing metric changes its cardinality and breaks existing Prometheus queries / Grafana dashboards that target this metric. Enable it only on fresh deployments or when you are ready to update your dashboards.
+此標籤採 opt-in，因為在既有指標上新增一個新標籤會改變其基數，並破壞以此指標為目標的現有 Prometheus 查詢 / Grafana 儀表板。僅在全新部署上啟用，或在您準備好更新儀表板時再啟用。
 :::
 
+## [BETA] 自訂指標 {#beta-custom-metrics}
 
-## [BETA] Custom Metrics
+在 prometheus 上追蹤上述所有事件的自訂指標。
 
-Track custom metrics on prometheus on all events mentioned above.
+### 自訂中繼資料標籤 {#custom-metadata-labels}
 
-### Custom Metadata Labels
-
-1. Define the custom metadata labels in the `config.yaml`
+1. 在 `config.yaml` 中定義自訂中繼資料標籤
 
 ```yaml
 model_list:
@@ -315,7 +311,7 @@ litellm_settings:
   custom_prometheus_metadata_labels: ["metadata.foo", "metadata.bar"]
 ```
 
-2. Make a request with the custom metadata labels
+2. 使用自訂中繼資料標籤發出請求
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -371,17 +367,17 @@ curl -L -X POST 'http://0.0.0.0:4000/team/new' \
 </TabItem>
 </Tabs>
 
-3. Check your `/metrics` endpoint for the custom metrics  
+3. 檢查您的 `/metrics` 端點以查看自訂指標  
 
 ```
 ... "metadata_foo": "hello world" ...
 ```
 
-### Custom Tags
+### 自訂標籤 {#custom-tags}
 
-Track specific tags as prometheus labels for better filtering and monitoring.
+將特定標籤追蹤為 prometheus 標籤，以便更好地篩選與監控。
 
-1. Define the custom tags in the `config.yaml`
+1. 在 `config.yaml` 中定義自訂標籤
 
 ```yaml
 model_list:
@@ -401,7 +397,7 @@ litellm_settings:
     - "User-Agent: claude-cli/*"
 ```
 
-2. Make a request with tags
+2. 使用標籤發出請求
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -427,19 +423,19 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-3. Check your `/metrics` endpoint for the custom tag metrics
+3. 檢查您的 `/metrics` 端點以查看自訂標籤指標
 
 ```
 ... "tag_prod": "true", "tag_staging": "false", "tag_batch_job": "false" ...
 ```
 
-**How Custom Tags Work:**
-- Each configured tag becomes a boolean label in prometheus metrics  
-- If a tag matches (exact or wildcard), the label value is `"true"`, otherwise `"false"`
-- Tag names are sanitized for prometheus compatibility (e.g., `"batch-job"` becomes `"tag_batch_job"`)
-- **Wildcard patterns** supported using `*` (e.g., `"User-Agent: RooCode/*"` matches `"User-Agent: RooCode/1.0.0"`)
+**自訂標籤的運作方式：**
+- 每個已設定的標籤在 prometheus 指標中都會成為一個布林標籤  
+- 如果標籤符合（完全相符或萬用字元），標籤值為 `"true"`，否則為 `"false"`
+- 標籤名稱會經過清理以符合 prometheus 相容性（例如，`"batch-job"` 會變成 `"tag_batch_job"`）
+- 支援使用 `*` 的**萬用字元模式**（例如，`"User-Agent: RooCode/*"` 可匹配 `"User-Agent: RooCode/1.0.0"`）
 
-**Example with wildcards:**
+**含萬用字元的範例：**
 ```yaml
 litellm_settings:
   callbacks: ["prometheus"]
@@ -448,21 +444,20 @@ litellm_settings:
     - "User-Agent: claude-cli/*"
 ``` 
 
-**Use Cases:**
-- Environment tracking (`prod`, `staging`, `dev`)
-- Request type classification (`batch-job`, `user-facing`, `background`)
-- Feature flags (`new-feature`, `beta-users`)
-- Team or service identification (`team-a`, `service-xyz`)
-- User-Agent Tracking - use this to track how much Roo Code, Claude Code, Gemini CLI are used (`User-Agent: RooCode/*`, `User-Agent: claude-cli/*`, `User-Agent: gemini-cli/*`)
+**使用案例：**
+- 環境追蹤 (`prod`, `staging`, `dev`)
+- 請求類型分類 (`batch-job`, `user-facing`, `background`)
+- 功能旗標 (`new-feature`, `beta-users`)
+- 團隊或服務識別 (`team-a`, `service-xyz`)
+- User-Agent 追蹤 - 使用此項來追蹤 Roo Code、Claude Code、Gemini CLI 的使用量 (`User-Agent: RooCode/*`, `User-Agent: claude-cli/*`, `User-Agent: gemini-cli/*`)
 
+## 設定指標與標籤 {#configuring-metrics-and-labels}
 
-## Configuring Metrics and Labels
+您可以選擇性地啟用特定指標並控制要包含哪些標籤，以最佳化效能並降低基數。
 
-You can selectively enable specific metrics and control which labels are included to optimize performance and reduce cardinality.
+### 啟用特定指標與標籤 {#enable-specific-metrics-and-labels}
 
-### Enable Specific Metrics and Labels
-
-Configure which metrics to emit by specifying them in `prometheus_metrics_config`. Each configuration group needs a `group` name (for organization) and a list of `metrics` to enable. You can optionally include a list of `include_labels` to filter the labels for the metrics.
+透過在 `prometheus_metrics_config` 中指定它們來設定要發出的指標。每個設定群組都需要一個 `group` 名稱（用於組織）以及一個要啟用的 `metrics` 清單。您也可以選擇性地包含一個 `include_labels` 清單，以篩選這些指標的標籤。
 
 ```yaml
 model_list:
@@ -484,17 +479,16 @@ litellm_settings:
         - "model_group"
 ```
 
-On starting up LiteLLM if your metrics were correctly configured, you should see the following on your container logs
+啟動 LiteLLM 時，如果您的指標已正確設定，您應該會在容器記錄中看到以下內容
 
 <Image 
   img={require('../../img/prom_config.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
+### 依每個指標篩選標籤 {#filter-labels-per-metric}
 
-### Filter Labels Per Metric
-
-Control which labels are included for each metric to reduce cardinality:
+控制每個指標要包含哪些標籤，以降低基數：
 
 ```yaml
 litellm_settings:
@@ -517,9 +511,9 @@ litellm_settings:
         - "requested_model"
 ```
 
-### Advanced Configuration
+### 進階設定 {#advanced-configuration}
 
-You can create multiple configuration groups with different label sets:
+您可以建立多個具有不同標籤集合的設定群組：
 
 ```yaml
 litellm_settings:
@@ -557,16 +551,16 @@ litellm_settings:
         - "requested_model"
 ```
 
-**Configuration Structure:**
-- `group`: A descriptive name for organizing related metrics
-- `metrics`: List of metric names to include in this group  
-- `include_labels`: (Optional) List of labels to include for these metrics
+**設定結構：**
+- `group`：用於組織相關指標的描述性名稱
+- `metrics`：要包含在此群組中的指標名稱清單  
+- `include_labels`： （選用）要為這些指標包含的標籤清單
 
-**Default Behavior**: If no `prometheus_metrics_config` is specified, all metrics are enabled with their default labels (backward compatible).
+**預設行為**：如果未指定 `prometheus_metrics_config`，則所有指標都會以其預設標籤啟用（向後相容）。
 
-## Monitor System Health
+## 監控系統健康狀態 {#monitor-system-health}
 
-To monitor the health of litellm adjacent services (redis / postgres), do:
+若要監控 litellm 相鄰服務（redis / postgres）的健康狀態，請執行：
 
 ```yaml
 model_list:
@@ -577,34 +571,31 @@ litellm_settings:
   service_callback: ["prometheus_system"]
 ```
 
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_redis_latency`         | histogram latency for redis calls     |
-| `litellm_redis_fails`         | Number of failed redis calls    |
-| `litellm_self_latency`         | Histogram latency for successful litellm api call    |
+| `litellm_redis_latency`         | redis 呼叫的直方圖延遲     |
+| `litellm_redis_fails`         | 失敗的 redis 呼叫數量    |
+| `litellm_self_latency`         | 成功的 litellm API 呼叫的直方圖延遲    |
 
-#### DB Transaction Queue Health Metrics
+#### DB Transaction Queue 健康指標 {#db-transaction-queue-health-metrics}
 
-Use these metrics to monitor the health of the DB Transaction Queue. Eg. Monitoring the size of the in-memory and redis buffers. 
+使用這些指標來監控 DB Transaction Queue 的健康狀態。例如：監控記憶體內與 redis 緩衝區的大小。 
 
-| Metric Name                                         | Description                                                                 | Storage Type |
+| 指標名稱                                         | 說明                                                                 | 儲存類型 |
 |-----------------------------------------------------|-----------------------------------------------------------------------------|--------------|
-| `litellm_pod_lock_manager_size`                     | Indicates which pod has the lock to write updates to the database.         | Redis    |
-| `litellm_in_memory_daily_spend_update_queue_size`   | Number of items in the in-memory daily spend update queue. These are the aggregate spend logs for each user.                 | In-Memory    |
-| `litellm_redis_daily_spend_update_queue_size`       | Number of items in the Redis daily spend update queue.  These are the aggregate spend logs for each user.                    | Redis        |
-| `litellm_in_memory_spend_update_queue_size`         | In-memory aggregate spend values for keys, users, teams, team members, etc.| In-Memory    |
-| `litellm_redis_spend_update_queue_size`             | Redis aggregate spend values for keys, users, teams, etc.                  | Redis        |
+| `litellm_pod_lock_manager_size`                     | 表示哪個 pod 持有寫入更新至資料庫的鎖。         | Redis    |
+| `litellm_in_memory_daily_spend_update_queue_size`   | 記憶體內每日支出更新佇列中的項目數量。這些是每個使用者的彙總支出記錄。                 | In-Memory    |
+| `litellm_redis_daily_spend_update_queue_size`       | Redis 每日支出更新佇列中的項目數量。這些是每個使用者的彙總支出記錄。                    | Redis        |
+| `litellm_in_memory_spend_update_queue_size`         | keys、users、teams、team members 等的記憶體內彙總支出值。| In-Memory    |
+| `litellm_redis_spend_update_queue_size`             | keys、users、teams 等的 Redis 彙總支出值。                  | Redis        |
 
+## 🔥 LiteLLM 維護的 Grafana 儀表板  {#-litellm-maintained-grafana-dashboards}
 
-
-## 🔥 LiteLLM Maintained Grafana Dashboards 
-
-Link to Grafana Dashboards maintained by LiteLLM
+連結至由 LiteLLM 維護的 Grafana 儀表板
 
 https://github.com/BerriAI/litellm/tree/main/cookbook/litellm_proxy_server/grafana_dashboard
 
-Here is a screenshot of the metrics you can monitor with the LiteLLM Grafana Dashboard
-
+以下是您可以使用 LiteLLM Grafana Dashboard 監控的指標螢幕截圖
 
 <Image img={require('../../img/grafana_1.png')} />
 
@@ -612,20 +603,17 @@ Here is a screenshot of the metrics you can monitor with the LiteLLM Grafana Das
 
 <Image img={require('../../img/grafana_3.png')} />
 
+## 已棄用的指標  {#deprecated-metrics}
 
-## Deprecated Metrics 
-
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_llm_api_failed_requests_metric`             | **deprecated** use `litellm_proxy_failed_requests_metric` |
+| `litellm_llm_api_failed_requests_metric`             | **已棄用** 請改用 `litellm_proxy_failed_requests_metric` |
 
+## `/metrics` 端點上的驗證 {#authentication-on-metrics-endpoint}
 
+**預設情況下，`/metrics` 需要 LiteLLM API 金鑰驗證**（自 v1.85.0 起）。
 
-## Authentication on `/metrics` endpoint
-
-**By default, `/metrics` requires LiteLLM API key authentication** (since v1.85.0).
-
-For Prometheus, add `authorization` to your scrape config:
+對於 Prometheus，請將 `authorization` 加入您的 scrape config：
 
 ```yaml
 scrape_configs:
@@ -637,18 +625,18 @@ scrape_configs:
       - targets: ['localhost:4000']
 ```
 
-To allow unauthenticated access:
+若要允許未經驗證的存取：
 
 ```yaml
 litellm_settings:
   require_auth_for_metrics_endpoint: false
 ```
 
-## FAQ 
+## 常見問題  {#faq}
 
-### What are `_created` vs. `_total` metrics?
+### `_created` 與 `_total` 指標有何不同？ {#what-are-_created-vs-_total-metrics}
 
-- `_created` metrics are metrics that are created when the proxy starts
-- `_total` metrics are metrics that are incremented for each request
+- `_created` 指標是在代理程式啟動時建立的指標
+- `_total` 指標是每個請求都會遞增的指標
 
-You should consume the `_total` metrics for your counting purposes
+您應該在計數用途上使用 `_total` 指標

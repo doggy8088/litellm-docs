@@ -1,14 +1,14 @@
-# [Beta] Separate ITPM / OTPM Rate Limits
+# [Beta] 分離 ITPM / OTPM 速率限制 {#beta-separate-itpm--otpm-rate-limits}
 
-Enforce **input tokens per minute (ITPM)** and **output tokens per minute (OTPM)** separately on router deployments.
+在路由器部署上分別強制執行 **每分鐘輸入 token 數（ITPM）** 與 **每分鐘輸出 token 數（OTPM）**。
 
-Use this when a provider publishes separate input/output throughput limits (for example Bedrock Mantle model cards), instead of a single combined TPM.
+當提供者公布分開的輸入／輸出吞吐量限制時（例如 Bedrock Mantle model cards），請使用此功能，而不是單一合併的 TPM。
 
 :::info
-This uses the same `enforce_model_rate_limits` pre-call check as [combined TPM/RPM enforcement](./load_balancing#enforce-model-rate-limits). Set `itpm` / `otpm` on a deployment instead of `tpm` / `rpm`.
+這使用與 [合併 TPM/RPM 強制執行](./load_balancing#enforce-model-rate-limits) 相同的 `enforce_model_rate_limits` 請求前檢查。請在部署上設定 `itpm` / `otpm`，而不是 `tpm` / `rpm`。
 :::
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -24,89 +24,89 @@ router_settings:
     - enforce_model_rate_limits
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-Set `itpm` / `otpm` to the values from your provider quota or model card (Service Quotas console for Bedrock Mantle, or your internal capacity plan).
+將 `itpm` / `otpm` 設為您提供者配額或 model card 中的值（Bedrock Mantle 的 Service Quotas console，或您內部的容量規劃）。
 
-## Mantle-style reservation
+## Mantle 風格保留 {#mantle-style-reservation}
 
-LiteLLM follows the same reservation model as the [Bedrock Mantle endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-mantle.html): token limits are enforced **before** the upstream call, then reconciled after the response.
+LiteLLM 遵循與 [Bedrock Mantle endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-mantle.html) 相同的保留模型：token 限制會在**上游請求前**強制執行，然後在回應後重新對帳。
 
-### Pre-call (admission)
+### 請求前（准入） {#pre-call-admission}
 
-Before the request is sent to the provider:
+在請求送出給提供者之前：
 
-1. **Estimate input tokens** from the request body (`messages`, `prompt`, or Responses `input`).
-2. **Resolve an effective output cap** — the stand-in for `max_tokens` when checking quotas:
+1. **估算輸入 token 數**，來源為請求本文（`messages`、`prompt`，或 Responses `input`）。
+2. **決定有效的輸出上限**——在檢查配額時，作為 `max_tokens` 的替代值：
 
-| Priority | Source | Example (`openai.gpt-oss-120b`) |
+| 優先順序 | 來源 | 範例 (`openai.gpt-oss-120b`) |
 | --- | --- | --- |
-| 1 | Request `max_tokens` or `max_completion_tokens` | Client sends `max_tokens: 1024` → use `1024` |
-| 2 | Model map `max_output_tokens` (fallback `max_tokens`) | No client cap → use `32768` from the model card |
-| 3 | Hard default | Unknown model → `4096` |
+| 1 | 請求 `max_tokens` 或 `max_completion_tokens` | 用戶端送出 `max_tokens: 1024` → 使用 `1024` |
+| 2 | Model map `max_output_tokens`（fallback `max_tokens`） | 用戶端未指定上限 → 使用 model card 中的 `32768` |
+| 3 | 硬性預設值 | 未知模型 → `4096` |
 
-3. **ITPM check:** reserve `estimated_input + effective_output_cap` against the deployment ITPM limit. Block with `429` if admission would exceed the limit.
-4. **OTPM check:** ensure `current_otpm + effective_output_cap` fits the OTPM limit. If OTPM would be exceeded, roll back the ITPM reservation and return `429`.
+3. **ITPM 檢查：** 針對部署 ITPM 限制保留 `estimated_input + effective_output_cap`。若准入會超出限制，則以 `429` 阻擋。
+4. **OTPM 檢查：** 確保 `current_otpm + effective_output_cap` 符合 OTPM 限制。若會超出 OTPM，則回滾 ITPM 保留並回傳 `429`。
 
-This mirrors Mantle: when the client omits `max_tokens`, LiteLLM assumes the model's **maximum output capacity**, not its input context window. That is why a missing `max_tokens` on a large model can reserve a lot of ITPM/OTPM headroom.
+這與 Mantle 相同：當用戶端省略 `max_tokens` 時，LiteLLM 會假設 model 的**最大輸出容量**，而不是其輸入 context window。這就是為什麼在大型模型上缺少 `max_tokens`，可能會保留大量 ITPM/OTPM 餘裕。
 
 :::tip
-Set `max_tokens` (or `max_output_tokens` on Responses) close to your expected completion size. Mantle and LiteLLM both reconcile down after the response, but a high default cap still blocks concurrent requests until the call finishes.
+將 `max_tokens`（或 Responses 上的 `max_output_tokens`）設得接近您預期的 completion 大小。Mantle 和 LiteLLM 都會在回應後向下重新對帳，但過高的預設上限仍會在請求完成前阻擋並行請求。
 :::
 
-### Post-call (reconciliation)
+### 請求後（重新對帳） {#post-call-reconciliation}
 
-After a successful response:
+在成功回應後：
 
-| Counter | What gets recorded |
+| 計數器 | 記錄內容 |
 | --- | --- |
-| **ITPM** | Replace the pre-call reservation with `billable_input + completion_tokens`, where `billable_input = prompt_tokens - cached_tokens` |
-| **OTPM** | Add actual `completion_tokens` |
+| **ITPM** | 以 `billable_input + completion_tokens` 取代請求前的保留，其中 `billable_input = prompt_tokens - cached_tokens` |
+| **OTPM** | 加上實際 `completion_tokens` |
 
-If the request **fails** before completion, the ITPM reservation is refunded; OTPM is not charged.
+如果請求在完成前**失敗**，ITPM 保留會退還；OTPM 不會計費。
 
-### Worked example
+### 具體範例 {#worked-example}
 
-Request with no `max_tokens` against `bedrock_mantle/openai.gpt-oss-120b` (`max_output_tokens: 32768`), `itpm: 500000`:
+對 `bedrock_mantle/openai.gpt-oss-120b`（`max_output_tokens: 32768`）的請求，未提供 `max_tokens`，`itpm: 500000`：
 
-| Step | Calculation | ITPM usage |
+| 步驟 | 計算 | ITPM 使用量 |
 | --- | --- | --- |
-| Pre-call reserve | `12` input est. + `32768` output cap | `32780` reserved |
-| Response | `prompt_tokens=10`, `completion_tokens=150`, no cache | — |
-| Post-call reconcile | `10 + 150` | `160` final |
+| 請求前保留 | `12` 輸入估算 + `32768` 輸出上限 | 保留 `32780` |
+| 回應 | `prompt_tokens=10`、`completion_tokens=150`、無快取 | — |
+| 請求後重新對帳 | `10 + 150` | `160` 最終 |
 
-Without an explicit `max_tokens`, the pre-call hold is much larger than the final charge — same behavior Mantle documents for quota reservation.
+如果沒有明確的 `max_tokens`，請求前的保留會比最終計費大得多——這與 Mantle 文件對配額保留的行為相同。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-| Phase | ITPM | OTPM |
+| 階段 | ITPM | OTPM |
 | --- | --- | --- |
-| **Pre-call** | Reserves `estimated_input + effective_output_cap` | Checks `current_otpm + effective_output_cap` |
-| **Post-call** | Reconciles to `billable_input + completion_tokens` | Adds actual `completion_tokens` |
-| **Failure** | Refunds the ITPM reservation | No OTPM charge |
+| **請求前** | 保留 `estimated_input + effective_output_cap` | 檢查 `current_otpm + effective_output_cap` |
+| **請求後** | 重新對帳為 `billable_input + completion_tokens` | 加上實際 `completion_tokens` |
+| **失敗** | 退還 ITPM 保留 | 不收取 OTPM |
 
-**Cached prompt tokens** (`prompt_tokens_details.cached_tokens`) are excluded from ITPM billing after the response.
+**已快取的 prompt tokens**（`prompt_tokens_details.cached_tokens`）在回應後會自 ITPM 計費中排除。
 
-## Response Headers
+## 回應標頭 {#response-headers}
 
-When a model group has `itpm` or `otpm` configured, LiteLLM returns:
+當某個 model group 已設定 `itpm` 或 `otpm` 時，LiteLLM 會回傳：
 
-| Header | Description |
+| 標頭 | 說明 |
 | --- | --- |
-| `x-ratelimit-limit-input-tokens` | ITPM limit for the model group |
-| `x-ratelimit-remaining-input-tokens` | Remaining ITPM capacity this minute |
-| `x-ratelimit-reset-input-tokens` | Seconds until the minute window resets |
-| `x-ratelimit-limit-output-tokens` | OTPM limit for the model group |
-| `x-ratelimit-remaining-output-tokens` | Remaining OTPM capacity this minute |
-| `x-ratelimit-reset-output-tokens` | Seconds until the minute window resets |
+| `x-ratelimit-limit-input-tokens` | 該 model group 的 ITPM 限制 |
+| `x-ratelimit-remaining-input-tokens` | 本分鐘剩餘的 ITPM 容量 |
+| `x-ratelimit-reset-input-tokens` | 直到分鐘視窗重設還有幾秒 |
+| `x-ratelimit-limit-output-tokens` | 該 model group 的 OTPM 限制 |
+| `x-ratelimit-remaining-output-tokens` | 本分鐘剩餘的 OTPM 容量 |
+| `x-ratelimit-reset-output-tokens` | 直到分鐘視窗重設還有幾秒 |
 
-## Error Response
+## 錯誤回應 {#error-response}
 
-When a limit is exceeded before the upstream call:
+當上游請求前超出限制時：
 
 ```json
 {
@@ -118,20 +118,20 @@ When a limit is exceeded before the upstream call:
 }
 ```
 
-The response includes a `retry-after` header (seconds until the current minute window resets).
+回應會包含 `retry-after` 標頭（距離目前分鐘視窗重設還有幾秒）。
 
-## ITPM vs TPM
+## ITPM 與 TPM {#itpm-vs-tpm}
 
-| Setting | What it limits | When to use |
+| 設定 | 限制內容 | 使用時機 |
 | --- | --- | --- |
-| `tpm` | Total tokens per minute (single counter) | Legacy combined throughput limits |
-| `itpm` + `otpm` | Input and output separately | Provider docs with distinct input/output TPM (Bedrock Mantle) |
+| `tpm` | 每分鐘總 token 數（單一計數器） | 舊版合併吞吐量限制 |
+| `itpm` + `otpm` | 分別限制輸入與輸出 | 具有明確輸入／輸出 TPM 的提供者文件（Bedrock Mantle） |
 
-Do **not** set both modes on the same deployment. If `itpm` or `otpm` is present, LiteLLM uses the ITPM/OTPM path and ignores combined TPM tracking for that deployment.
+請**不要**在同一個部署上同時設定兩種模式。如果存在 `itpm` 或 `otpm`，LiteLLM 會使用 ITPM/OTPM 路徑，並忽略該部署的合併 TPM 追蹤。
 
-## Multi-Instance Deployment
+## 多實例部署 {#multi-instance-deployment}
 
-Share counters across proxy replicas with Redis:
+使用 Redis 在 proxy 複本之間共享計數器：
 
 ```yaml showLineNumbers title="config.yaml"
 router_settings:
@@ -142,7 +142,7 @@ router_settings:
   redis_password: your-password
 ```
 
-## SDK Usage
+## SDK 使用方式 {#sdk-usage}
 
 ```python showLineNumbers title="example.py"
 from litellm import Router
@@ -168,8 +168,8 @@ response = await router.acompletion(
 )
 ```
 
-## Related
+## 相關內容 {#related}
 
-- [Load Balancing + combined TPM/RPM enforcement](./load_balancing#enforce-model-rate-limits)
-- [Dynamic TPM/RPM allocation](./dynamic_rate_limit)
-- [Bedrock Mantle quotas (AWS)](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-mantle.html)
+- [負載平衡 + 合併 TPM/RPM 強制執行](./load_balancing#enforce-model-rate-limits)
+- [動態 TPM/RPM 配置](./dynamic_rate_limit)
+- [Bedrock Mantle 配額（AWS）](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-mantle.html)

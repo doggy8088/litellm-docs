@@ -1,7 +1,7 @@
-# Output 
+# 輸出  {#output}
 
-## Format
-Here's the exact json output and type you can expect from all litellm `completion` calls for all models
+## 格式 {#format}
+以下是您可以從所有模型的所有 litellm `completion` 呼叫預期取得的確切 json 輸出與型別
 
 ```python 
 {
@@ -26,13 +26,13 @@ Here's the exact json output and type you can expect from all litellm `completio
 
 ```
 
-You can access the response as a dictionary or as a class object, just as OpenAI allows you
+您可以像 OpenAI 允許的方式一樣，將回應作為字典或類別物件來存取
 ```python
 print(response.choices[0].message.content)
 print(response['choices'][0]['message']['content'])
 ```
 
-Here's what an example response looks like 
+以下是範例回應的樣子 
 ```python
 {
   'choices': [
@@ -51,11 +51,11 @@ Here's what an example response looks like
 }
 ```
 
-## Native Finish Reason
+## 原生結束原因 {#native-finish-reason}
 
-LiteLLM maps all provider-specific `finish_reason` values to OpenAI-compatible values (`stop`, `length`, `tool_calls`, `function_call`, `content_filter`). When the original provider value differs from the mapped value, it is preserved in `provider_specific_fields["native_finish_reason"]`.
+LiteLLM 會將所有特定提供者的 `finish_reason` 值對應為相容 OpenAI 的值（`stop`、`length`、`tool_calls`、`function_call`、`content_filter`）。當原始提供者值與對應後的值不同時，會保留在 `provider_specific_fields["native_finish_reason"]` 中。
 
-This is useful for agent loops that need to distinguish between different stop conditions (e.g., Gemini's `MALFORMED_FUNCTION_CALL` vs a normal `stop`).
+這對需要區分不同停止條件的代理程式迴圈很有用（例如，Gemini 的 `MALFORMED_FUNCTION_CALL` 與一般的 `stop`）。
 
 ```python
 response = completion(model="gemini/gemini-2.0-flash", messages=messages)
@@ -71,11 +71,11 @@ if hasattr(choice, "provider_specific_fields") and choice.provider_specific_fiel
         pass
 ```
 
-When the provider already returns an OpenAI-compatible value (e.g., `stop`), `native_finish_reason` is not set.
+當提供者已經回傳相容 OpenAI 的值（例如，`stop`）時，`native_finish_reason` 不會被設定。
 
-## Additional Attributes
+## 其他屬性 {#additional-attributes}
 
-You can also access information like latency. 
+您也可以存取像延遲時間這類資訊。 
 
 ```python
 from litellm import completion

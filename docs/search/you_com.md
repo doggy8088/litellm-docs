@@ -1,19 +1,19 @@
-# You.com Search
+# You.com 搜尋 {#youcom-search}
 
-**Get API Key (optional, for higher rate limits):** [https://you.com/docs](https://you.com/docs)
+**取得 API 金鑰（選用，用於更高的速率限制）：** [https://you.com/docs](https://you.com/docs)
 
-You.com offers two tiers:
+You.com 提供兩種方案：
 
-| Mode | Endpoint | Auth | Limits |
+| 模式 | 端點 | 驗證 | 限制 |
 |---|---|---|---|
-| **Keyless free tier** (default) | `https://api.you.com/v1/agents/search` | none | IP-throttled, ~100 queries/day |
-| **Keyed tier** | `https://ydc-index.io/v1/search` | `X-API-Key` | higher rate limits |
+| **無金鑰免費方案**（預設） | `https://api.you.com/v1/agents/search` | 無 | 受 IP 節流，約每天 100 次查詢 |
+| **有金鑰方案** | `https://ydc-index.io/v1/search` | `X-API-Key` | 更高的速率限制 |
 
-If `YOUCOM_API_KEY` is not set, the adapter automatically uses the keyless endpoint — no signup required to start.
+如果未設定 `YOUCOM_API_KEY`，適配器會自動使用無金鑰端點 — 開始使用無需註冊。
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
-### Keyless (zero config)
+### 無金鑰（零設定） {#keyless-zero-config}
 
 ```python showLineNumbers title="You.com Search - keyless"
 from litellm import search
@@ -29,7 +29,7 @@ for result in response.results:
     print(f"Snippet: {result.snippet}\n")
 ```
 
-### With API key (higher limits)
+### 使用 API 金鑰（更高限制） {#with-api-key-higher-limits}
 
 ```python showLineNumbers title="You.com Search - keyed"
 import os
@@ -44,9 +44,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -63,7 +63,7 @@ search_tools:
       api_key: os.environ/YOUCOM_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -71,7 +71,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/you-com-search \
@@ -83,9 +83,9 @@ curl http://0.0.0.0:4000/v1/search/you-com-search \
   }'
 ```
 
-## Unified Parameters
+## 統一參數 {#unified-parameters}
 
-You.com supports the standard Perplexity unified spec parameters:
+You.com 支援標準的 Perplexity 統一規格參數：
 
 ```python showLineNumbers title="You.com Search with unified parameters"
 from litellm import search
@@ -99,16 +99,16 @@ response = search(
 )
 ```
 
-| Unified spec parameter | Mapped to You.com parameter |
+| 統一規格參數 | 對應到 You.com 參數 |
 |---|---|
 | `max_results` | `count` |
 | `search_domain_filter` | `include_domains` |
-| `country` | `country` (lowercased) |
-| `max_tokens_per_page` | _ignored (no equivalent)_ |
+| `country` | `country`（轉為小寫） |
+| `max_tokens_per_page` | _忽略（無對應項）_ |
 
-## Provider-specific Parameters
+## 提供者專屬參數 {#provider-specific-parameters}
 
-You can pass any You.com-specific parameter as a keyword argument; unrecognized parameters are forwarded to the upstream request body:
+您可以將任何 You.com 專屬參數作為關鍵字引數傳入；無法辨識的參數會轉送到上游請求本文：
 
 ```python showLineNumbers title="You.com Search with provider-specific parameters"
 from litellm import search
@@ -123,10 +123,10 @@ response = search(
 )
 ```
 
-## Response Notes
+## 回應注意事項 {#response-notes}
 
-You.com's API returns results split into `web` and `news` arrays. The LiteLLM adapter flattens both into a single ordered `results` list (web first, then news) so the response matches the unified [`SearchResponse`](./index#response-format) shape.
+You.com 的 API 會回傳分成 `web` 和 `news` 陣列的結果。LiteLLM 適配器會將兩者攤平成單一有序的 `results` 清單（先網頁，再新聞），使回應符合統一的 [`SearchResponse`](./index#response-format) 格式。
 
-For each result:
-- `snippet` prefers the first entry of the upstream `snippets` array; falls back to `description`.
-- `date` is populated from upstream `page_age` (ISO 8601 datetime).
+針對每個結果：
+- `snippet` 會優先採用上游 `snippets` 陣列中的第一個項目；備援為 `description`。
+- `date` 會從上游 `page_age` 填入（ISO 8601 datetime）。

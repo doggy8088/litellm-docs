@@ -1,5 +1,5 @@
-Prompt2Model - Generate Deployable Models from Instructions
+Prompt2Model - 從指令產生可部署模型
 
 Github: https://github.com/neulab/prompt2model
 
-Prompt2Model is a system that takes a natural language task description (like the prompts used for LLMs such as ChatGPT) to train a small special-purpose model that is conducive for deployment.
+Prompt2Model 是一個系統，會接收自然語言的任務描述（例如用於 ChatGPT 這類 LLM 的提示詞），來訓練一個適合部署的小型專用模型。

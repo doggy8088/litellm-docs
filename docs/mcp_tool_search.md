@@ -1,19 +1,19 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# MCP Tool Search
+# MCP 工具搜尋 {#mcp-tool-search}
 
-Swap the full MCP catalog for a fixed pair of virtual tools (`mcp_tool_search`, `mcp_tool_call`) so a key with hundreds of tools available only ever exposes two on `tools/list`. The LLM searches by keyword, gets back the ranked matches, then calls the discovered tool by name.
+將完整的 MCP 目錄替換為一對固定的虛擬工具（`mcp_tool_search`、`mcp_tool_call`），如此一來，即使某個金鑰可用的工具多達數百個，也只會在 `tools/list` 上暴露兩個。LLM 會以關鍵字進行搜尋，取得排序後的相符項目，然後以名稱呼叫找到的工具。
 
-:::info Related Documentation
-- [MCP Overview](./mcp.md)
-- [MCP Permission Management](./mcp_control.md) for the underlying `object_permission` model
-- [MCP Semantic Filter](./mcp_semantic_filter.md) for the embeddings-based alternative applied at the `/v1/responses` layer
+:::info 相關文件
+- [MCP 總覽](./mcp.md)
+- [MCP 權限管理](./mcp_control.md) 適用於底層的 `object_permission` 模型
+- [MCP 語意篩選器](./mcp_semantic_filter.md) 適用於在 `/v1/responses` 層套用的 embeddings-based 替代方案
 :::
 
-## Quick start
+## 快速開始 {#quick-start}
 
-Generate a key with `mcp_tool_search_enabled: true` under `object_permission`, pair it with `mcp_servers` (or `mcp_access_groups`) so search has something to look through, then discover and call.
+在 `object_permission` 下使用 `mcp_tool_search_enabled: true` 產生一組金鑰，將其與 `mcp_servers`（或 `mcp_access_groups`）配對，讓搜尋有內容可查，接著探索並呼叫。
 
 ```bash title="1. Create a key with tool search enabled" showLineNumbers
 curl -X POST http://localhost:4000/key/generate \
@@ -52,7 +52,7 @@ $ curl -s -X POST http://localhost:4000/mcp-rest/tools/call \
 }
 ```
 
-The same key works over the streamable-http protocol endpoint (`/mcp/`) for real MCP clients:
+同一組金鑰也可透過 streamable-http 協定端點（`/mcp/`）供真正的 MCP 用戶端使用：
 
 ```python title="MCP Python SDK against /mcp/" showLineNumbers
 from mcp import ClientSession
@@ -79,11 +79,11 @@ async with streamablehttp_client(
         print(result.content[0].text)  # "7"
 ```
 
-Keys without the flag get the existing behavior unchanged: `tools/list` returns the full catalog, and the two virtual tool names are rejected with a `forbidden` error.
+未加上該旗標的金鑰會維持既有行為不變：`tools/list` 會回傳完整目錄，而這兩個虛擬工具名稱會因 `forbidden` 錯誤而遭拒。
 
-## Enable as a default for every new key
+## 將其設為每個新金鑰的預設值 {#enable-as-a-default-for-every-new-key}
 
-If you want every new key to opt into tool search without every caller having to remember the flag, put it under `litellm_settings.default_key_generate_params.object_permission` in `config.yaml`. Any `/key/generate` request that omits the field will have the default merged in; a request that sets a partial `object_permission` (say, only `mcp_servers`) keeps its explicit fields and only picks up the ones it left unset.
+如果您希望每個新金鑰都預設啟用工具搜尋，而不必讓每個呼叫端都記得加上旗標，請將其放在 `config.yaml` 中的 `litellm_settings.default_key_generate_params.object_permission` 下。任何省略該欄位的 `/key/generate` 請求都會合併預設值；若請求設定了部分 `object_permission`（例如只設定 `mcp_servers`），則會保留其明確指定的欄位，並只補上未設定的欄位。
 
 ```yaml title="config.yaml" showLineNumbers
 litellm_settings:
@@ -93,35 +93,35 @@ litellm_settings:
       mcp_servers: ["github", "slack"]
 ```
 
-The default is merged **after** the caller-scope validation runs, so it never turns an ordinary non-admin personal-key request into a 403. Team-scoped fields like `mcp_servers` are still checked against the caller's own team when the caller sets them explicitly; the admin-configured default is applied only to the persisted key, not to the request being validated.
+預設值會在呼叫端範圍驗證完成**之後**才合併，因此不會把一般的非管理員個人金鑰請求變成 403。像 `mcp_servers` 這類以團隊為範圍的欄位，當呼叫端明確設定時，仍會以呼叫端自己的團隊進行檢查；管理員設定的預設值只會套用到已儲存的金鑰，而不會套用到正在驗證的請求。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-When `mcp_tool_search_enabled: true` is set on a key's `object_permission`, both the streamable-http endpoint (`/mcp/`) and the REST surface (`/mcp-rest/tools/list`) return exactly two tools regardless of how many MCP servers the key can reach:
+當在金鑰的 `object_permission` 上設定 `mcp_tool_search_enabled: true` 時，不論該金鑰可存取多少個 MCP 伺服器，streamable-http 端點（`/mcp/`）與 REST 介面（`/mcp-rest/tools/list`）都只會回傳 בדיוק兩個工具：
 
-- `mcp_tool_search(query, top_k=5)` returns the ranked list of real tools that match the query.
-- `mcp_tool_call(tool_name, arguments)` executes one of the tools the LLM discovered through search.
+- `mcp_tool_search(query, top_k=5)` 會回傳與查詢相符的真實工具排序清單。
+- `mcp_tool_call(tool_name, arguments)` 會執行 LLM 透過搜尋發現的其中一個工具。
 
-Both handlers run through the same filtered catalog and dispatch path as the normal `/tools/call` route, so search only surfaces tools the key is already allowed to see, and calls still resolve through `_get_allowed_mcp_servers` and `execute_mcp_tool`.
+兩個處理常式都會經過與一般 `/tools/call` 路由相同的已篩選目錄與分派路徑，因此搜尋只會顯示金鑰本來就有權看到的工具，而呼叫仍會透過 `_get_allowed_mcp_servers` 和 `execute_mcp_tool` 進行解析。
 
-### Search algorithm
+### 搜尋演算法 {#search-algorithm}
 
-Ranking is a token-overlap count against the tool's `name` and `description` fields; no embeddings and no extra dependency. For each request the proxy:
+排序是根據工具的 `name` 與 `description` 欄位進行 token 重疊計數；不使用 embeddings，也沒有額外相依性。對於每個請求，proxy 會：
 
-1. Lowercases the query and splits it on whitespace into tokens (`"add numbers"` becomes `["add", "numbers"]`).
-2. For every tool the caller can reach, builds a haystack of `lower(name + " " + description)`.
-3. Scores each tool by the number of query tokens found as a substring of the haystack. A tool that contains both `add` and `numbers` scores 2; a tool that contains only `add` scores 1.
-4. Drops anything with a score of 0, sorts the rest by score descending, and returns the first `top_k` (default 5).
+1. 將查詢轉為小寫，並以空白切分成 tokens（`"add numbers"` 會變成 `["add", "numbers"]`）。
+2. 對呼叫端可存取的每個工具，建立一個由 `lower(name + " " + description)` 組成的 haystack。
+3. 依查詢 tokens 在 haystack 中以子字串形式出現的數量為每個工具評分。若某工具同時包含 `add` 與 `numbers`，則分數為 2；若某工具只包含 `add`，則分數為 1。
+4. 移除分數為 0 的項目，依分數由高到低排序，並回傳前 `top_k` 個（預設 5）。
 
-There is no similarity threshold beyond "score > 0", so a query that lands on only one token still returns matches. Order among tools with the same score follows Python's stable sort of the underlying catalog. Empty queries return an empty list. The `top_k` argument on `mcp_tool_search` is per-call, so an LLM can widen the window itself when the first result set is too narrow.
+除了「分數 > 0」之外沒有其他相似度門檻，因此即使查詢只命中一個 token，也仍會回傳相符結果。分數相同的工具之間，順序遵循 Python 對底層目錄的穩定排序。空查詢會回傳空清單。`mcp_tool_search` 上的 `top_k` 參數是逐次請求設定的，因此當第一輪結果集太窄時，LLM 可以自行擴大窗口。
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-Requires LiteLLM v1.92.x or later.
+需要 LiteLLM v1.92.x 或更新版本。
 
-## Access control
+## 存取控制 {#access-control}
 
-Tool search does not widen the access surface. `mcp_tool_search` walks the same filtered catalog the normal `tools/list` handler uses, so a tool the key cannot reach is invisible to search. `mcp_tool_call` resolves the caller's allowed servers, applies the request-IP-based `filter_server_ids_by_ip` pass, and dispatches through `execute_mcp_tool`, which enforces the server allowlist and per-key `mcp_tool_permissions`. Attempting to route a `mcp_tool_call` at a server outside the key's scope returns a `403` from the same guard that protects direct calls:
+工具搜尋不會擴大存取範圍。`mcp_tool_search` 會走與一般 `tools/list` 處理常式相同的已篩選目錄，因此金鑰無法到達的工具對搜尋而言是不可見的。`mcp_tool_call` 會解析呼叫端被允許的伺服器，套用以請求 IP 為基礎的 `filter_server_ids_by_ip` 檢查，並透過 `execute_mcp_tool` 分派，該機制會強制執行伺服器允許清單與每個金鑰的 `mcp_tool_permissions`。嘗試將 `mcp_tool_call` 路由到超出金鑰範圍的伺服器，會從保護直接呼叫的同一個防護機制返回 `403`：
 
 ```console
 $ curl -s -X POST http://localhost:4000/mcp-rest/tools/call \
@@ -130,7 +130,7 @@ $ curl -s -X POST http://localhost:4000/mcp-rest/tools/call \
 {"detail":"User not allowed to call this tool. Allowed MCP servers: [math]"}
 ```
 
-Inspect the flag on any key with `/key/info`:
+在任何具有 `/key/info` 的金鑰上檢查該旗標：
 
 ```bash
 curl "http://localhost:4000/key/info?key=$KEY" \
@@ -138,6 +138,6 @@ curl "http://localhost:4000/key/info?key=$KEY" \
   | jq '.info.object_permission | {mcp_tool_search_enabled, mcp_servers}'
 ```
 
-## When to use tool search vs. semantic filter
+## 何時使用工具搜尋與語意篩選器 {#when-to-use-tool-search-vs-semantic-filter}
 
-Both features address large-catalog blowout, but they live at different layers. Tool search is an MCP-layer opt-in per key; the LLM sees two tools and drives discovery itself over the MCP protocol, which suits agent frameworks that speak MCP end to end. The [semantic filter](./mcp_semantic_filter.md) sits on `/v1/responses` and `/v1/chat/completions` and rewrites the tool list on each request using embeddings, which suits chat-completion callers that never touch `/mcp/` directly. They can coexist; a key with tool search on will only expose the two virtual tools even when semantic filtering is enabled upstream.
+這兩個功能都用來解決大型目錄爆量問題，但它們位於不同層級。工具搜尋是 MCP 層級、以每個金鑰為單位的選用功能；LLM 會看到兩個工具，並透過 MCP 協定自行驅動探索，適合端到端說 MCP 的代理程式框架。[語意篩選器](./mcp_semantic_filter.md) 位於 `/v1/responses` 與 `/v1/chat/completions`，並在每次請求時使用 embeddings 重寫工具清單，適合從不直接碰觸 `/mcp/` 的 chat-completion 呼叫端。兩者可以並存；啟用工具搜尋的金鑰即使上游啟用了語意篩選，也只會暴露這兩個虛擬工具。

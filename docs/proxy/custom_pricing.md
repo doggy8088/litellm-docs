@@ -1,32 +1,32 @@
 import Image from '@theme/IdealImage';
 
-# Custom LLM Pricing
+# 自訂 LLM 定價 {#custom-llm-pricing}
 
-## Overview
+## 概覽 {#overview}
 
-LiteLLM provides flexible cost tracking and pricing customization for all LLM providers:
+LiteLLM 為所有 LLM 提供者提供彈性的成本追蹤與定價自訂功能：
 
-- **Custom Pricing** - Override default model costs or set pricing for custom models
-- **Cost Per Token** - Track costs based on input/output tokens (most common)
-- **Cost Per Second** - Track costs based on runtime (e.g., Sagemaker)
-- **Zero-Cost Models** - Bypass budget checks for free/on-premises models by setting costs to 0
-- **[Provider Discounts](./provider_discounts.md)** - Apply percentage-based discounts to specific providers
-- **[Provider Margins](./provider_margins.md)** - Add fees/margins to LLM costs for internal billing
-- **Base Model Mapping** - Ensure accurate cost tracking for Azure deployments
+- **自訂定價** - 覆寫預設模型成本或為自訂模型設定定價
+- **每 token 成本** - 根據輸入/輸出 token 追蹤成本（最常見）
+- **每秒成本** - 根據執行時間追蹤成本（例如，Sagemaker）
+- **零成本模型** - 透過將成本設為 0，讓免費/內部部署模型略過預算檢查
+- **[提供者折扣](./provider_discounts.md)** - 對特定提供者套用百分比折扣
+- **[提供者毛利](./provider_margins.md)** - 為 LLM 成本加上費用/毛利，用於內部計費
+- **基礎模型對應** - 確保 Azure 部署的成本追蹤準確
 
-By default, the response cost is accessible in the logging object via `kwargs["response_cost"]` on success (sync + async). [**Learn More**](../observability/custom_callback.md)
+預設情況下，回應成本可在成功（同步 + 非同步）時透過記錄物件中的 `kwargs["response_cost"]` 存取。[**了解更多**](../observability/custom_callback.md)
 
 :::info
 
-LiteLLM already has pricing for 100+ models in our [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json). 
+LiteLLM 的 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 已經包含 100+ 個模型的定價。 
 
 :::
 
-## Cost Per Second (e.g. Sagemaker)
+## 每秒成本（例如：Sagemaker） {#cost-per-second-eg-sagemaker}
 
-#### Usage with LiteLLM Proxy Server
+#### 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server}
 
-**Step 1: Add pricing to config.yaml**
+**步驟 1：將定價加入 config.yaml**
 ```yaml
 model_list:
   - model_name: sagemaker-completion-model
@@ -41,19 +41,19 @@ model_list:
       input_cost_per_second: 0.000420 
 ```
 
-**Step 2: Start proxy**
+**步驟 2：啟動 proxy**
 
 ```bash
 litellm /path/to/config.yaml
 ```
 
-**Step 3: View Spend Logs**
+**步驟 3：檢視支出記錄**
 
 <Image img={require('../../img/spend_logs_table.png')} />
 
-## Cost Per Token (e.g. Azure)
+## 每 token 成本（例如：Azure） {#cost-per-token-eg-azure}
 
-#### Usage with LiteLLM Proxy Server
+#### 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server-1}
 
 ```yaml
 model_list:
@@ -68,13 +68,13 @@ model_list:
       output_cost_per_token: 0.000520 # 👈 ONLY to track cost per token
 ```
 
-## Override Model Cost Map
+## 覆寫模型成本對照表 {#override-model-cost-map}
 
-You can override [our model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) with your own custom pricing for a mapped model.
+您可以使用自己的自訂定價，覆寫對應模型的 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。
 
-Just add a `model_info` key to your model in the config, and override the desired keys.
+只要在設定中為您的模型加入 `model_info` 鍵，並覆寫所需的鍵即可。
 
-Example: Override Anthropic's model cost map for the `prod/claude-3-5-sonnet-20241022` model.
+範例：為 `prod/claude-3-5-sonnet-20241022` 模型覆寫 Anthropic 的模型成本對照表。
 
 ```yaml
 model_list:
@@ -89,48 +89,48 @@ model_list:
       cache_read_input_token_cost: 0.0000006
 ```
 
-### Additional Cost Keys
+### 額外成本鍵 {#additional-cost-keys}
 
-There are other keys you can use to specify costs for different scenarios and modalities:
+您可以使用其他鍵來指定不同情境與模態的成本：
 
-- `input_cost_per_token_above_200k_tokens` - Cost for input tokens when context exceeds 200k tokens
-- `output_cost_per_token_above_200k_tokens` - Cost for output tokens when context exceeds 200k tokens  
-- `cache_creation_input_token_cost_above_200k_tokens` - Cache creation cost for large contexts
-- `cache_read_input_token_cost_above_200k_token` - Cache read cost for large contexts
-- `input_cost_per_image` - Cost per image in multimodal requests
-- `output_cost_per_reasoning_token` - Cost for reasoning tokens (e.g., OpenAI o1 models)
-- `input_cost_per_audio_token` - Cost for audio input tokens
-- `output_cost_per_audio_token` - Cost for audio output tokens
-- `input_cost_per_video_per_second` - Cost per second of video input
-- `input_cost_per_video_per_second_above_128k_tokens` - Video cost for large contexts
-- `input_cost_per_character` - Character-based pricing for some providers
-- `input_cost_per_token_priority` / `output_cost_per_token_priority` - Priority/PayGo pricing (Vertex AI Gemini, Bedrock)
-- `input_cost_per_token_flex` / `output_cost_per_token_flex` - Batch/flex pricing
+- `input_cost_per_token_above_200k_tokens` - 當 context 超過 200k tokens 時的輸入 token 成本
+- `output_cost_per_token_above_200k_tokens` - 當 context 超過 200k tokens 時的輸出 token 成本  
+- `cache_creation_input_token_cost_above_200k_tokens` - 大型 context 的快取建立成本
+- `cache_read_input_token_cost_above_200k_token` - 大型 context 的快取讀取成本
+- `input_cost_per_image` - 多模態請求中每張圖片的成本
+- `output_cost_per_reasoning_token` - 推理 token 的成本（例如，OpenAI o1 models）
+- `input_cost_per_audio_token` - 語音輸入 token 的成本
+- `output_cost_per_audio_token` - 語音輸出 token 的成本
+- `input_cost_per_video_per_second` - 影片輸入每秒成本
+- `input_cost_per_video_per_second_above_128k_tokens` - 大型 context 的影片成本
+- `input_cost_per_character` - 某些提供者採用的以字元為基礎的定價
+- `input_cost_per_token_priority` / `output_cost_per_token_priority` - Priority/PayGo 定價（Vertex AI Gemini、Bedrock）
+- `input_cost_per_token_flex` / `output_cost_per_token_flex` - Batch/flex 定價
 
-These keys evolve based on how new models handle multimodality. The latest version can be found at [https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+這些鍵會隨著新模型處理多模態的方式而演進。最新版本可在 [https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 找到。
 
-### Service Tier / PayGo Pricing (Vertex AI, Bedrock)
+### 服務層級 / PayGo 定價（Vertex AI、Bedrock） {#service-tier--paygo-pricing-vertex-ai-bedrock}
 
-For providers that support multiple pricing tiers (e.g., Vertex AI PayGo, Bedrock service tiers), LiteLLM automatically applies the correct cost based on the response:
+對於支援多種定價層級的提供者（例如：Vertex AI PayGo、Bedrock 服務層級），LiteLLM 會根據回應自動套用正確成本：
 
-- **Vertex AI Gemini**: Uses `usageMetadata.trafficType` (`ON_DEMAND_PRIORITY` → priority, `FLEX`/`BATCH` → flex). See [Vertex AI - PayGo / Priority Cost Tracking](../providers/vertex.md#paygo--priority-cost-tracking).
-- **Bedrock**: Uses `serviceTier` from the response. See [Bedrock - Usage - Service Tier](../providers/bedrock.md#usage---service-tier).
+- **Vertex AI Gemini**：使用回應中的 `usageMetadata.trafficType`（`ON_DEMAND_PRIORITY` → priority，`FLEX`/`BATCH` → flex）。請參閱 [Vertex AI - PayGo / Priority 成本追蹤](../providers/vertex.md#paygo--priority-cost-tracking)。
+- **Bedrock**：使用回應中的 `serviceTier`。請參閱 [Bedrock - 用量 - 服務層級](../providers/bedrock.md#usage---service-tier)。
 
-## Zero-Cost Models (Bypass Budget Checks)
+## 零成本模型（略過預算檢查） {#zero-cost-models-bypass-budget-checks}
 
-**Use Case**: You have on-premises or free models that should be accessible even when users exceed their budget limits.
+**使用情境**：您有應該在使用者超過預算上限時仍可存取的內部部署或免費模型。
 
-**Solution** ✅: Set both `input_cost_per_token` and `output_cost_per_token` to `0` (explicitly) to bypass all budget checks for that model.
+**解決方案** ✅：將 `input_cost_per_token` 和 `output_cost_per_token` 都明確設為 `0`，即可為該模型略過所有預算檢查。
 
 :::info
 
-When a model is configured with zero cost, LiteLLM will automatically skip ALL budget checks (user, team, team member, end-user, organization, and global proxy budget) for requests to that model.
+當模型設定為零成本時，LiteLLM 會自動略過該模型請求的所有預算檢查（使用者、團隊、團隊成員、終端使用者、組織，以及全域 proxy 預算）。
 
-**Important**: Both costs must be **explicitly set to 0**. If costs are `null` or undefined, the model will be treated as having cost and budget checks will apply.
+**重要**：兩個成本都必須**明確設為 0**。如果成本為 `null` 或未定義，該模型會被視為有成本，且預算檢查將會套用。
 
 :::
 
-### Configuration Example
+### 設定範例 {#configuration-example}
 
 ```yaml
 model_list:
@@ -151,25 +151,25 @@ model_list:
     # No model_info - uses default pricing from cost map
 ```
 
-### Behavior
+### 行為 {#behavior}
 
-With the above configuration:
+使用上述設定時：
 
-- **User over budget** → Can still use `on-prem-llama` ✅, but blocked from `gpt-4` ❌
-- **Team over budget** → Can still use `on-prem-llama` ✅, but blocked from `gpt-4` ❌
-- **End-user over budget** → Can still use `on-prem-llama` ✅, but blocked from `gpt-4` ❌
+- **使用者超出預算** → 仍可使用 `on-prem-llama` ✅，但會被禁止使用 `gpt-4` ❌
+- **團隊超出預算** → 仍可使用 `on-prem-llama` ✅，但會被禁止使用 `gpt-4` ❌
+- **終端使用者超出預算** → 仍可使用 `on-prem-llama` ✅，但會被禁止使用 `gpt-4` ❌
 
-This ensures your free/on-premises models remain accessible regardless of budget constraints, while paid models are still properly governed.
+這可確保您的免費/內部部署模型無論預算限制如何都仍可存取，同時付費模型仍能正確受控。
 
-## Set 'base_model' for Cost Tracking (e.g. Azure deployments)
+## 設定 'base_model' 以進行成本追蹤（例如：Azure deployments） {#set-base_model-for-cost-tracking-eg-azure-deployments}
 
-**Problem**: Azure returns `gpt-4` in the response when `azure/gpt-4-1106-preview` is used. This leads to inaccurate cost tracking
+**問題**：當使用 `azure/gpt-4-1106-preview` 時，Azure 會在回應中傳回 `gpt-4`。這會導致成本追蹤不準確
 
-**Solution** ✅ :  Set `base_model` on your config so litellm uses the correct model for calculating azure cost
+**解決方案** ✅：在設定中設定 `base_model`，讓 litellm 使用正確的模型來計算 azure 成本
 
-Get the base model name from [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
+請從[這裡](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)取得 base model 名稱
 
-Example config with `base_model`
+包含 `base_model` 的設定範例
 ```yaml
 model_list:
   - model_name: azure-gpt-3.5
@@ -182,13 +182,13 @@ model_list:
       base_model: azure/gpt-4-1106-preview
 ```
 
-### OpenAI Models with Dated Versions
+### 具有日期版本的 OpenAI 模型 {#openai-models-with-dated-versions}
 
-`base_model` is also useful when OpenAI returns a dated model name in the response that differs from your configured model name.
+當 OpenAI 在回應中傳回與您設定的模型名稱不同的日期版模型名稱時，`base_model` 也很有用。
 
-**Example**: You configure custom pricing for `gpt-4o-mini-audio-preview`, but OpenAI returns `gpt-4o-mini-audio-preview-2024-12-17` in the response. Since LiteLLM uses the response model name for pricing lookup, your custom pricing won't be applied.
+**範例**：您為 `gpt-4o-mini-audio-preview` 設定了自訂定價，但 OpenAI 在回應中傳回 `gpt-4o-mini-audio-preview-2024-12-17`。由於 LiteLLM 會使用回應中的模型名稱進行定價查找，因此您的自訂定價不會被套用。
 
-**Solution** ✅: Set `base_model` to the key you want LiteLLM to use for pricing lookup.
+**解決方案** ✅：將 `base_model` 設為您希望 LiteLLM 用於定價查找的鍵。
 
 ```yaml
 model_list:
@@ -205,23 +205,23 @@ model_list:
 ```
 
 
-## Debugging 
+## 疑難排解 {#debugging}
 
-If you're custom pricing is not being used or you're seeing errors, please check the following:
+如果您的自訂定價沒有被使用，或您看到錯誤，請檢查以下項目：
 
-1. Run the proxy with `LITELLM_LOG="DEBUG"` or the `--detailed_debug` cli flag
+1. 使用 `LITELLM_LOG="DEBUG"` 或 `--detailed_debug` cli 標誌執行 proxy
 
 ```bash
 litellm --config /path/to/config.yaml --detailed_debug
 ```
 
-2. Check logs for this line: 
+2. 檢查是否有這一行記錄： 
 
 ```
 LiteLLM:DEBUG: utils.py:263 - litellm.acompletion
 ```
 
-3. Check if 'input_cost_per_token' and 'output_cost_per_token' are top-level keys in the acompletion function. 
+3. 檢查 `input_cost_per_token` 和 `output_cost_per_token` 是否為 acompletion 函式中的最上層鍵。 
 
 ```bash
 acompletion(
@@ -231,6 +231,6 @@ acompletion(
 )
 ```
 
-If these keys are not present, LiteLLM will not use your custom pricing. 
+如果這些鍵不存在，LiteLLM 將不會使用您的自訂定價。 
 
-If the problem persists, please file an issue on [GitHub](https://github.com/BerriAI/litellm/issues). 
+如果問題仍然存在，請在 [GitHub](https://github.com/BerriAI/litellm/issues) 提交 issue。

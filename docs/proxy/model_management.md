@@ -1,10 +1,10 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Model Management
-Add new models + Get model info without restarting proxy.
+# 模型管理 {#model-management}
+新增模型 + 不重新啟動 proxy 即可取得模型資訊。
 
-## In Config.yaml 
+## 在 Config.yaml  {#in-configyaml}
 
 ```yaml
 model_list:
@@ -15,12 +15,12 @@ model_list:
       metadata: "here's additional metadata on the model" # returned via GET /model/info
 ```
 
-## Get Model Information - `/model/info`
+## 取得模型資訊 - `/model/info` {#get-model-information---modelinfo}
 
-Retrieve detailed information about each model listed in the `/model/info` endpoint, including descriptions from the `config.yaml` file, and additional model info (e.g. max tokens, cost per input token, etc.) pulled from the model_info you set and the [litellm model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json). Sensitive details like API keys are excluded for security purposes.
+取得 `/model/info` 端點中列出的每個模型的詳細資訊，包括來自 `config.yaml` 檔案的說明，以及從您設定的 model_info 和 [litellm model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 擷取的其他模型資訊（例如最大 token 數、每個輸入 token 的成本等）。基於安全考量，API 金鑰等敏感細節會被排除。
 
-:::tip Sync Model Data
-Keep your model pricing data up to date by [syncing models from GitHub](sync_models_github.md).
+:::tip 同步模型資料
+透過[從 GitHub 同步模型](sync_models_github.md)來保持模型定價資料為最新。
 :::
 
 <Tabs
@@ -37,9 +37,9 @@ curl -X GET "http://0.0.0.0:4000/model/info" \
   </TabItem>
 </Tabs>
 
-## Add a New Model
+## 新增模型 {#add-a-new-model}
 
-Add a new model to the proxy via the `/model/new` API, to add models without restarting the proxy.
+透過 `/model/new` API 將新模型加入 proxy，以便在不重新啟動 proxy 的情況下新增模型。
 
 <Tabs>
 <TabItem value="API">
@@ -68,16 +68,15 @@ model_list:
 </TabItem>
 </Tabs>
 
+### 模型參數結構 {#model-parameters-structure}
 
-### Model Parameters Structure
+新增模型時，您的 JSON payload 應符合下列結構：
 
-When adding a new model, your JSON payload should conform to the following structure:
+- `model_name`：新模型的名稱（必填）。
+- `litellm_params`：包含 Litellm 設定專用參數的字典（必填）。
+- `model_info`：提供模型額外資訊的選用字典。
 
-- `model_name`: The name of the new model (required).
-- `litellm_params`: A dictionary containing parameters specific to the Litellm setup (required).
-- `model_info`: An optional dictionary to provide additional information about the model.
-
-Here's an example of how to structure your `ModelParams`:
+以下是如何構造您的 `ModelParams` 的範例：
 
 ```json
 {
@@ -95,31 +94,16 @@ Here's an example of how to structure your `ModelParams`:
 ```
 ---
 
-Keep in mind that as both endpoints are in [BETA], you may need to visit the associated GitHub issues linked in the API descriptions to check for updates or provide feedback:
+請留意，由於這兩個端點都處於 [BETA]，您可能需要前往 API 說明中連結的相關 GitHub issues 以查看更新或提供意見：
 
-- Get Model Information: [Issue #933](https://github.com/BerriAI/litellm/issues/933)
-- Add a New Model: [Issue #964](https://github.com/BerriAI/litellm/issues/964)
+- 取得模型資訊：[Issue #933](https://github.com/BerriAI/litellm/issues/933)
+- 新增模型：[Issue #964](https://github.com/BerriAI/litellm/issues/964)
 
-Feedback on the beta endpoints is valuable and helps improve the API for all users.
+對 beta 端點的意見回饋非常有價值，並有助於改善所有使用者的 API。
 
+## 新增額外模型資訊  {#add-additional-model-information}
 
-## Add Additional Model Information 
-
-If you want the ability to add a display name, description, and labels for models, just use `model_info:` 
-
-```yaml
-model_list:
-  - model_name: "gpt-4"
-    litellm_params:
-      model: "gpt-4"
-      api_key: "os.environ/OPENAI_API_KEY"
-    model_info: # 👈 KEY CHANGE
-      my_custom_key: "my_custom_value"
-```
-
-### Usage
-
-1. Add additional information to model 
+如果您希望能新增模型的顯示名稱、說明與標籤，只要使用 `model_info:` 
 
 ```yaml
 model_list:
@@ -131,23 +115,36 @@ model_list:
       my_custom_key: "my_custom_value"
 ```
 
-2. Call with `/model/info` 
+### 使用方式 {#usage}
 
-Use a key with access to the model `gpt-4`.
+1. 將額外資訊新增至模型 
+
+```yaml
+model_list:
+  - model_name: "gpt-4"
+    litellm_params:
+      model: "gpt-4"
+      api_key: "os.environ/OPENAI_API_KEY"
+    model_info: # 👈 KEY CHANGE
+      my_custom_key: "my_custom_value"
+```
+
+2. 使用 `/model/info` 呼叫 
+
+使用具有模型存取權限的金鑰 `gpt-4`。
 
 ```bash
 curl -L -X GET 'http://0.0.0.0:4000/v1/model/info' \
 -H 'Authorization: Bearer LITELLM_KEY' \
 ```
 
-3. **Expected Response**
+3. **預期回應**
 
-Returned `model_info = Your custom model_info + (if exists) LITELLM MODEL INFO`
+傳回的 `model_info = Your custom model_info + (if exists) LITELLM MODEL INFO`
 
+[**LiteLLM 模型資訊如何被找到**](https://github.com/BerriAI/litellm/blob/9b46ec05b02d36d6e4fb5c32321e51e7f56e4a6e/litellm/proxy/proxy_server.py#L7460) 
 
-[**How LiteLLM Model Info is found**](https://github.com/BerriAI/litellm/blob/9b46ec05b02d36d6e4fb5c32321e51e7f56e4a6e/litellm/proxy/proxy_server.py#L7460) 
-
-[Tell us how this can be improved!](https://github.com/BerriAI/litellm/issues)
+[告訴我們這可以如何改進！](https://github.com/BerriAI/litellm/issues)
 
 ```bash
 {

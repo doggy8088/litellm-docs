@@ -1,19 +1,19 @@
-# Azure AI OCR (Mistral)
+# Azure AI OCR（Mistral） {#azure-ai-ocr-mistral}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure AI OCR provides document intelligence capabilities powered by Mistral, enabling text extraction from PDFs and images |
-| Provider Route on LiteLLM | `azure_ai/` |
-| Supported Operations | `/ocr` |
-| Link to Provider Doc | [Azure AI ↗](https://ai.azure.com/)
+| 說明 | Azure AI OCR 提供由 Mistral 支援的文件智慧功能，可從 PDF 和圖片中擷取文字 |
+| LiteLLM 上的提供者路由 | `azure_ai/` |
+| 支援的操作 | `/ocr` |
+| 提供者文件連結 | [Azure AI ↗](https://ai.azure.com/)
 
-Extract text from documents and images using Azure AI's OCR models, powered by Mistral.
+使用 Azure AI 的 OCR 模型，透過 Mistral 從文件和圖片中擷取文字。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -37,7 +37,7 @@ for page in response.pages:
     print(page.text)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM PROXY** {#litellm-proxy}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -50,11 +50,11 @@ model_list:
       mode: ocr
 ```
 
-## Document Types
+## 文件類型 {#document-types}
 
-Azure AI OCR supports both PDFs and images.
+Azure AI OCR 支援 PDF 和圖片。
 
-### PDF Documents
+### PDF 文件 {#pdf-documents}
 
 ```python showLineNumbers title="PDF OCR"
 response = litellm.ocr(
@@ -66,7 +66,7 @@ response = litellm.ocr(
 )
 ```
 
-### Image Documents
+### 圖片文件 {#image-documents}
 
 ```python showLineNumbers title="Image OCR"
 response = litellm.ocr(
@@ -78,7 +78,7 @@ response = litellm.ocr(
 )
 ```
 
-### Base64 Encoded Documents
+### Base64 編碼文件 {#base64-encoded-documents}
 
 ```python showLineNumbers title="Base64 PDF"
 import base64
@@ -96,7 +96,7 @@ response = litellm.ocr(
 )
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Parameters"
 response = litellm.ocr(
@@ -111,7 +111,7 @@ response = litellm.ocr(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
 ```python showLineNumbers title="Response Structure"
 # Response has the following structure
@@ -126,7 +126,7 @@ for page in response.pages:
     print(page.text)
 ```
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async Usage"
 import litellm
@@ -140,15 +140,14 @@ response = await litellm.aocr(
 )
 ```
 
-## Important Notes
+## 重要注意事項 {#important-notes}
 
-:::info URL Conversion
-Azure AI OCR endpoints don't have internet access. LiteLLM automatically converts public URLs to base64 data URIs before sending requests to Azure AI.
+:::info URL 轉換
+Azure AI OCR 端點沒有網際網路存取權限。LiteLLM 會在將請求傳送至 Azure AI 之前，自動將公開 URL 轉換為 base64 data URI。
 :::
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-- `mistral-document-ai-2505` - Latest Mistral OCR model on Azure AI
+- `mistral-document-ai-2505` - Azure AI 上最新的 Mistral OCR 模型
 
-Use the Azure AI provider prefix: `azure_ai/<model-name>`
-
+使用 Azure AI 提供者前綴：`azure_ai/<model-name>`

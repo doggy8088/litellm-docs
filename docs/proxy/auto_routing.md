@@ -2,30 +2,30 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Auto Routing
+# 自動路由 {#auto-routing}
 
-One router for complexity, semantic, and adaptive routing. Classify each request with heuristics, an LLM classifier, or lexical/semantic keyword rules, then route to a pinned model, a random pool, or a Thompson-sampled pool per tier.
+一個用於複雜度、語意與自適應路由的單一路由器。以啟發式、LLM 分類器，或詞彙／語意關鍵字規則來分類每個請求，然後將其路由到固定模型、隨機池，或依層級使用 Thompson 抽樣的池。
 
-:::info Availability
+:::info 可用性
 
-Ships in **v1.94.x**. The earliest dev release cuts **Tuesday, 2026-07-14**. Suggestions and feedback: [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+隨 **v1.94.x** 發布。最早的開發版釋出時間為 **2026-07-14 星期二**。建議與回饋：[discussion #32168](https://github.com/BerriAI/litellm/discussions/32168)。
 
 :::
 
-## When to use
+## 何時使用 {#when-to-use}
 
-| Feature      | Semantic Auto Router (deprecated) | Auto Routing (this page)                                                   |
-| ------------ | --------------------------------- | -------------------------------------------------------------------------- |
-| Classifier   | Embedding match on utterances     | Heuristic, LLM classifier, or lexical/semantic keyword rules               |
-| Tier value   | One model                         | One model, random pool, or adaptive (Thompson-sampled) pool                |
-| Latency      | ~100-500ms (embedding call)       | Sub-millisecond (heuristic/keyword) or one small classifier call (LLM)     |
-| Session pin  | No                                | Opt-in `session_affinity`, keyed by `session_id` from request metadata     |
-| Log          | No routing-cause signal           | `cause=` marker per decision (scorer, literal, semantic, session_pin, LLM) |
-| Best for     | Intent-based routing              | Cost/quality tiering, hybrid rule + classifier setups, prompt-cache pinning |
+| 功能         | 語意自動路由器（已棄用） | 自動路由（本頁）                                                           |
+| ------------ | ------------------------ | -------------------------------------------------------------------------- |
+| 分類器       | 對語句進行 embedding 比對 | 啟發式、LLM 分類器，或詞彙／語意關鍵字規則                                 |
+| 層級值       | 單一模型                 | 單一模型、隨機池，或自適應（Thompson 抽樣）池                               |
+| 延遲         | ~100-500ms（embedding 呼叫） | 次毫秒級（啟發式／關鍵字）或一次小型分類器呼叫（LLM）                       |
+| 工作階段固定 | 否                       | 可選 `session_affinity`，以請求中繼資料的 `session_id` 為鍵 |
+| 記錄         | 無路由原因訊號           | 每次決策都有 `cause=` 標記（scorer、literal、semantic、session_pin、LLM） |
+| 最適合       | 基於意圖的路由           | 成本／品質分層、混合規則＋分類器設定、prompt cache 固定 |
 
-The [semantic auto router](./auto_routing_semantic.md) is deprecated but still works for existing configs.
+[語意自動路由器](./auto_routing_semantic.md) 已棄用，但既有設定仍可運作。
 
-## Quick start (Proxy)
+## 快速開始（Proxy） {#quick-start-proxy}
 
 ```yaml
 model_list:
@@ -50,7 +50,7 @@ model_list:
       complexity_router_default_model: gpt-4o
 ```
 
-Call it like any other model:
+像其他模型一樣呼叫它：
 
 ```shell
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -58,9 +58,9 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -d '{"model": "smart-router", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
 
-## Full config
+## 完整設定 {#full-config}
 
-Every knob v2 exposes. All fields on `complexity_router_config` are optional except `tiers`.
+v2 暴露的所有設定旋鈕。除了 `tiers` 外，`complexity_router_config` 上的所有欄位皆為可選。
 
 ```yaml
 - model_name: smart-router
@@ -120,25 +120,25 @@ Every knob v2 exposes. All fields on `complexity_router_config` are optional exc
     complexity_router_default_model: claude-sonnet-5
 ```
 
-## Classification
+## 分類 {#classification}
 
-Three ways to pick a tier. Pick one; the router falls back to the heuristic scorer if the LLM classifier errors or if no keyword rule matches.
+三種方式可選取層級。選一種即可；如果 LLM 分類器發生錯誤，或沒有任何關鍵字規則符合，路由器會回退到啟發式評分器。
 
-**Heuristic scorer (default).** Zero API calls, sub-millisecond. Scores each request across seven dimensions and maps the score to a tier.
+**啟發式評分器（預設）。** 零 API 呼叫，次毫秒級。針對七個維度為每個請求評分，並將分數對應到某個層級。
 
-| Dimension          | What it detects                                 |
-| ------------------ | ----------------------------------------------- |
-| tokenCount         | Short (&lt;15) or long (&gt;400) prompts        |
-| codePresence       | "function", "class", "api", "database", etc.    |
-| reasoningMarkers   | "step by step", "think through", "analyze"      |
-| technicalTerms     | "architecture", "distributed", "encryption"     |
-| simpleIndicators   | "what is", "define", greetings                  |
-| multiStepPatterns  | "first...then", numbered steps                  |
-| questionComplexity | Multiple question marks                         |
+| 維度               | 偵測內容                                      |
+| ------------------ | ------------------------------------------- |
+| tokenCount         | 短（&lt;15）或長（&gt;400）提示詞              |
+| codePresence       | "function"、"class"、"api"、"database" 等    |
+| reasoningMarkers   | "step by step"、"think through"、"analyze"    |
+| technicalTerms     | "architecture"、"distributed"、"encryption"   |
+| simpleIndicators   | "what is"、"define"、問候語                  |
+| multiStepPatterns  | "first...then"、編號步驟                    |
+| questionComplexity | 多個問號                                     |
 
-Two or more reasoning markers auto-routes to `REASONING` regardless of the weighted score.
+兩個或以上的 reasoning markers 會自動路由到 `REASONING`，不受加權分數影響。
 
-**LLM classifier.** Uses a small fast model (Haiku, gpt-4o-mini, whatever you point it at) with structured output. Goes through the same `Router` instance, so credentials, budgets, and fallbacks apply. Timeout, empty content, or schema mismatch falls back to the heuristic scorer.
+**LLM 分類器。** 使用小型快速模型（Haiku、gpt-4o-mini，或您指向的任何模型）搭配結構化輸出。會透過相同的 `Router` 執行個體，因此憑證、預算與備援都會套用。逾時、內容為空，或 schema 不符時會回退到啟發式評分器。
 
 ```yaml
 classifier_type: llm
@@ -147,9 +147,9 @@ classifier_llm_config:
   timeout_ms: 2000
 ```
 
-**Keyword rules.** Deterministic short-circuit. Match a keyword, land in that tier. When multiple rules match, routing escalates to the highest tier (`SIMPLE < MEDIUM < COMPLEX < REASONING`) so rule order does not silently change behavior.
+**關鍵字規則。** 決定性短路。匹配到關鍵字，就進入該層級。當多條規則同時符合時，路由會升級到最高層級（`SIMPLE < MEDIUM < COMPLEX < REASONING`），因此規則順序不會悄悄改變行為。
 
-Enable `semantic_keyword_matching` to match paraphrases via embeddings. Semantic scoring uses MAX aggregation so a strong match on one keyword in a tier is not diluted by that tier's other utterances. Query embeddings carry the caller's request metadata, so their spend attributes to the originating key. On embedding failure the router falls back to the scorer.
+啟用 `semantic_keyword_matching` 可透過 embeddings 匹配轉述。語意評分使用 MAX 聚合，因此某層級中單一關鍵字的強烈匹配不會被該層級其他語句稀釋。查詢 embeddings 會帶上呼叫端的請求中繼資料，因此其費用會歸屬到原始金鑰。embedding 失敗時，路由器會回退到評分器。
 
 ```yaml
 keyword_tier_rules:
@@ -162,36 +162,36 @@ embedding_model: voyage-3-5
 match_threshold: 0.5
 ```
 
-## Tier pools
+## 層級池 {#tier-pools}
 
-A tier value can be a single model name or a list.
+層級值可以是單一模型名稱或清單。
 
-- **Single string:** pins the tier to one model.
-- **List:** router random-picks per request (uniform), same idea as simple-shuffle. Empty pools raise at config load rather than falling through to `default_model`.
-- **List + `adaptive: true`:** Thompson-sample across the pool. Cold requests sample only inside the classified tier so cost weights do not collapse initial traffic on the cheapest model. Models configured in multiple tiers use their minimum distance from the classified tier. Feedback from a later turn attributes back to the model that actually served the previous response.
+- **單一字串：** 將該層級固定到單一模型。
+- **清單：** 路由器會對每個請求隨機挑選（均勻分布），概念與 simple-shuffle 相同。空池會在設定載入時直接報錯，而不是落回 `default_model`。
+- **清單 + `adaptive: true`：** 在池中進行 Thompson 抽樣。冷啟動請求只會在已分類的層級內抽樣，因此成本權重不會讓初始流量全都集中到最便宜的模型。多個層級都配置到的模型會使用其與已分類層級之間的最小距離。後續回合的回饋會歸因到實際提供前一個回應的模型。
 
-## Session affinity
+## 工作階段親和性 {#session-affinity}
 
-Opt-in. Pins the first-turn model for a session and skips reclassification on later turns, so provider-side prompt caches keyed to that model do not get invalidated when a follow-up ("thanks!") would otherwise classify into a different tier.
+可選用。會將工作階段的首輪模型固定，並在後續回合略過重新分類，因此若追蹤到該模型的提供者端 prompt cache 以該模型為鍵，後續追問（「謝謝！」）若原本會被分類到其他層級，也不會讓快取失效。
 
 ```yaml
 session_affinity: true
 session_affinity_ttl_seconds: 3600
 ```
 
-`session_id` is read from request metadata. When `adaptive: true` is also set, a pinned turn still stamps the adaptive bandit's chosen-model metadata key so reward feedback keeps working.
+`session_id` 會從請求中繼資料讀取。當 `adaptive: true` 也有設定時，即使是固定的回合，也會為 adaptive bandit 的所選模型中繼資料鍵加上標記，讓獎勵回饋能繼續運作。
 
-## Custom technical keywords
+## 自訂技術關鍵字 {#custom-technical-keywords}
 
-The built-in technical keyword list is generic; it contains "tcp" but not "udp", "api" but not "kafka" or "postgresql". `custom_technical_keywords` appends to the built-in list instead of replacing it.
+內建的技術關鍵字清單很通用；它包含 "tcp"，但不包含 "udp"、"api" 但不包含 "kafka" 或 "postgresql"。`custom_technical_keywords` 會附加到內建清單，而不是取代它。
 
 ```yaml
 custom_technical_keywords: [kafka, redis, postgresql, mongodb, udp, dns, ssl, ssh]
 ```
 
-## Decision log
+## 決策記錄 {#decision-log}
 
-Every routing decision emits one greppable line naming its cause. `cause=` is greppable by decision type in your log pipeline.
+每個路由決策都會輸出一行可供 grep 搜尋的紀錄，標明其原因。`cause=` 可依決策類型在您的記錄管線中被 grep 搜尋。
 
 ```
 ComplexityRouter: routing decision cause=complexity_scorer,      tier=SIMPLE,     score=-0.150, signals=['short (7 tokens)', 'simple (what is)'], routed_model=gpt-4o-mini
@@ -201,9 +201,9 @@ ComplexityRouter: routing decision cause=llm_classifier,         tier=COMPLEX,  
 ComplexityRouter: routing decision cause=session_affinity_pin,                                                                                      routed_model=gpt-5.5
 ```
 
-## Alias `litellm_params` on the router
+## 路由器上的別名 `litellm_params` {#alias-litellm_params-on-the-router}
 
-`drop_params`, `cache_control_injection_points`, and any other `litellm_params` set on the auto router deployment itself are merged into the outbound request when the router picks a tier. Values the caller passes explicitly on a request win over the alias defaults.
+當路由器選出某個層級時，設定在 auto router deployment 本身上的 `drop_params`、`cache_control_injection_points`，以及任何其他 `litellm_params` 都會合併到傳出的請求中。呼叫端在請求中明確傳入的值會優先於別名預設值。
 
 ```yaml
 - model_name: smart-router
@@ -216,7 +216,7 @@ ComplexityRouter: routing decision cause=session_affinity_pin,                  
     complexity_router_config: {...}
 ```
 
-## Python SDK
+## Python SDK {#python-sdk}
 
 ```python
 from litellm import Router
@@ -252,13 +252,13 @@ response = await router.acompletion(
 )
 ```
 
-## UI
+## UI {#ui}
 
-Models + Endpoints > Add Model > Auto Router tab. Router Type defaults to "Auto-Router v2 [Recommended]". Configure the four tier model groups, optionally enable Semantic Keyword Matching, LLM Classifier, or Adaptive, then click **Test Connection**. Test Connection runs a minimal `/v1/chat/completions` or `/v1/embeddings` per distinct tier model group, so a green row means the tier is genuinely reachable and a red row shows the real provider error.
+Models + Endpoints > Add Model > Auto Router 分頁。Router Type 預設為 "Auto-Router v2 [Recommended]"。設定四個層級模型群組，可選擇啟用 Semantic Keyword Matching、LLM Classifier 或 Adaptive，然後按一下 **Test Connection**。Test Connection 會對每個不同的層級模型群組執行最小 `/v1/chat/completions` 或 `/v1/embeddings`，因此綠色列表示該層級確實可達，紅色列則顯示實際的提供者錯誤。
 
-Tier and classifier dropdowns exclude embedding-mode models; the semantic embedding dropdown lists only embedding-mode models. All four tiers are required on submit; missing tiers are flagged inline.
+層級與分類器下拉選單會排除 embedding 模式的模型；語意 embedding 下拉選單只會列出 embedding 模式的模型。提交時四個層級皆為必填；缺少的層級會在同一列中標示。
 
-## See also
+## 另請參閱 {#see-also}
 
-- Announcement post: [Auto Router v2: one router for complexity, semantic, and adaptive routing](/blog/autorouter-v2)
-- Legacy semantic router: [Semantic Auto Router (deprecated)](./auto_routing_semantic.md)
+- 公告文章：[Auto Router v2: one router for complexity, semantic, and adaptive routing](/blog/autorouter-v2)
+- 舊版語意路由器：[Semantic Auto Router (deprecated)](./auto_routing_semantic.md)

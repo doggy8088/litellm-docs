@@ -1,9 +1,9 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex Batch APIs
+# Vertex Batch API {#vertex-batch-apis}
 
-Just add the following Vertex env vars to your environment. 
+只需將下列 Vertex 環境變數加入您的環境。 
 
 ```bash
 # GCS Bucket settings, used to store batch prediction files in
@@ -16,25 +16,25 @@ export VERTEXAI_LOCATION="us-central1" # can be any vertex location
 export VERTEXAI_PROJECT="my-project" 
 ```
 
-### Usage
+### 用法 {#usage}
 
-Follow this complete workflow: create JSONL file → upload file → create batch → retrieve batch status → get file content
+請依照以下完整流程：建立 JSONL 檔案 → 上傳檔案 → 建立 batch → 擷取 batch 狀態 → 取得檔案內容
 
-#### 1. Create a JSONL file of batch requests
+#### 1. 建立 batch 請求的 JSONL 檔案 {#1-create-a-jsonl-file-of-batch-requests}
 
-LiteLLM expects the file to follow the **[OpenAI batches files format](https://platform.openai.com/docs/guides/batch)**.
+LiteLLM 預期檔案需遵循 **[OpenAI 批次檔案格式](https://platform.openai.com/docs/guides/batch)**。
 
-Each `body` in the file should be an **OpenAI API request**.
+檔案中的每個 `body` 都應為 **OpenAI API 請求**。
 
-Create a file called `batch_requests.jsonl` with your requests:
+建立一個名為 `batch_requests.jsonl` 的檔案，內容放入您的請求：
 ```jsonl
 {"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gemini-2.5-flash-lite", "messages": [{"role": "system", "content": "You are a helpful assistant."},{"role": "user", "content": "Hello world!"}],"max_tokens": 10}}
 {"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gemini-2.5-flash-lite", "messages": [{"role": "system", "content": "You are an unhelpful assistant."},{"role": "user", "content": "Hello world!"}],"max_tokens": 10}}
 ```
 
-#### 2. Upload the file
+#### 2. 上傳檔案 {#2-upload-the-file}
 
-Upload your JSONL file. For `vertex_ai`, the file will be stored in your configured GCS bucket provided by `GCS_BUCKET_NAME`.
+上傳您的 JSONL 檔案。以 `vertex_ai` 為例，該檔案將儲存在您由 `GCS_BUCKET_NAME` 提供的設定 GCS bucket 中。
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -71,7 +71,7 @@ curl --request POST \
 </TabItem>
 </Tabs>
 
-**Expected Response:**
+**預期回應：**
 
 ```json
 {
@@ -87,9 +87,9 @@ curl --request POST \
 }
 ```
 
-#### 3. Create a batch
+#### 3. 建立 batch {#3-create-a-batch}
 
-Create a batch job using the uploaded file ID.
+使用已上傳的檔案 ID 建立 batch 工作。
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -124,7 +124,7 @@ curl --request POST \
 </TabItem>
 </Tabs>
 
-**Expected Response:**
+**預期回應：**
 
 ```json
 {
@@ -152,9 +152,9 @@ curl --request POST \
 }
 ```
 
-#### 4. Retrieve batch status
+#### 4. 擷取 batch 狀態 {#4-retrieve-batch-status}
 
-Check the status of your batch job. The batch will progress through states: `validating` → `in_progress` → `completed`.
+檢查您的 batch 工作狀態。batch 會經過以下狀態：`validating` → `in_progress` → `completed`。
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -182,7 +182,7 @@ curl --request GET \
 </TabItem>
 </Tabs>
 
-**Expected Response (when completed):**
+**預期回應（完成時）：**
 
 ```json
 {
@@ -210,11 +210,11 @@ curl --request GET \
 }
 ```
 
-#### 5. Get file content
+#### 5. 取得檔案內容 {#5-get-file-content}
 
-Once the batch is completed, retrieve the results using the `output_file_id` from the batch response.
+batch 完成後，請使用 batch 回應中的 `output_file_id` 來擷取結果。
 
-**Important:** The `output_file_id` must be URL encoded when used in the request path.
+**重要：**在請求路徑中使用 `output_file_id` 時，必須先進行 URL 編碼。
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -254,9 +254,9 @@ curl --request GET \
 </TabItem>
 </Tabs>
 
-**Expected Response:**
+**預期回應：**
 
-The response contains JSONL format with one result per line:
+回應包含 JSONL 格式，每一行一個結果：
 
 ```jsonl
 {"status":"","processed_time":"2025-09-19T21:29:47.352+00:00","request":{"contents":[{"parts":[{"text":"Hello world!"}],"role":"user"}],"generationConfig":{"max_output_tokens":10},"system_instruction":{"parts":[{"text":"You are a helpful assistant."}]}},"response":{"candidates":[{"avgLogprobs":-0.48079710006713866,"content":{"parts":[{"text":"Hello there! It's nice to meet you"}],"role":"model"},"finishReason":"MAX_TOKENS"}],"createTime":"2025-09-19T21:29:47.484619Z","modelVersion":"gemini-2.5-flash-lite","responseId":"S8vNaIvKHdvshMIP_aOtuAg","usageMetadata":{"candidatesTokenCount":10,"candidatesTokensDetails":[{"modality":"TEXT","tokenCount":10}],"promptTokenCount":9,"promptTokensDetails":[{"modality":"TEXT","tokenCount":9}],"totalTokenCount":19,"trafficType":"ON_DEMAND"}}}

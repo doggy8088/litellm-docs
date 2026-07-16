@@ -1,12 +1,12 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# DataRobot
-LiteLLM supports all models from [DataRobot](https://datarobot.com). Select `datarobot` as the provider to route your request through the `datarobot` OpenAI-compatible endpoint using the upstream [official OpenAI Python API library](https://github.com/openai/openai-python/blob/main/README.md).
+# DataRobot {#datarobot}
+LiteLLM 支援來自 [DataRobot](https://datarobot.com) 的所有模型。請選擇 `datarobot` 作為提供者，透過上游 [官方 OpenAI Python API 函式庫](https://github.com/openai/openai-python/blob/main/README.md) 使用 `datarobot` 相容的 OpenAI 端點來路由您的請求。
 
-## Usage 
+## 使用方式  {#usage}
 
-### Environment variables
+### 環境變數 {#environment-variables}
 ```python
 import os
 from litellm import completion
@@ -36,8 +36,7 @@ response = litellm.completion(
 print(response)
 ```
 
-## DataRobot completion models
+## DataRobot 完成模型 {#datarobot-completion-models}
 
-🚨 LiteLLM supports _all_ DataRobot LLM gateway models. To get a list for your installation and user account, send the following CURL command:
+🚨 LiteLLM 支援 _所有_ DataRobot LLM gateway 模型。若要取得您安裝與使用者帳戶可用的清單，請送出以下 CURL 指令：
 `curl -X GET -H "Authorization: Bearer $DATAROBOT_API_TOKEN" "$DATAROBOT_ENDPOINT/genai/llmgw/catalog/" | jq | grep 'model":'DATAROBOT_ENDPOINT/genai/llmgw/catalog/`
-

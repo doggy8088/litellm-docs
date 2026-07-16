@@ -1,53 +1,53 @@
 ---
-title: "Integrate as a Model Provider"
+title: "整合為模型提供者"
 ---
 
-## Quick Start for OpenAI-Compatible Providers
+## OpenAI 相容提供者的快速開始 {#quick-start-for-openai-compatible-providers}
 
-If your API is OpenAI-compatible, you can add support by editing a single JSON file. See [Adding OpenAI-Compatible Providers](/docs/contributing/adding_openai_compatible_providers) for the simple approach.
-
----
-
-This guide focuses on how to setup the classes and configuration necessary to act as a chat provider.
-
-Please see this guide first and look at the existing code in the codebase to understand how to act as a different provider, e.g. handling embeddings or image-generation.
+如果您的 API 與 OpenAI 相容，您可以透過編輯單一 JSON 檔案來新增支援。請參閱 [新增 OpenAI 相容提供者](/docs/contributing/adding_openai_compatible_providers) 了解簡單做法。
 
 ---
 
-### Overview
+本指南著重於如何設定成為聊天提供者所需的類別與設定。
 
-The way liteLLM works from a provider's perspective is simple.
-
-liteLLM acts as a wrapper, it takes openai requests and routes them to your api. It then adapts your output into a standard output.
-
-To integrate as a provider, you need to write a module that slots in the api and acts as an adapter between the liteLLM API and your API.
-
-The module you will be writing acts as both a config and a means to adapt requests and responses.
-
-Your objective is to effectively write this module so that it adapts inputs to your api, and adapts outputs to the calling liteLLM code.
-
-It includes methods that:
-
-- Validate the request
-- Transform (adapt) the requests into requests sent to your api
-- Transform (adapt) responses from your api into responses given back to the calling liteLLM code
-- \+ a few others
+請先閱讀本指南，並查看程式碼庫中的既有程式碼，以了解如何作為其他提供者運作，例如處理 embeddings 或影像生成。
 
 ---
 
-### 1. Create Your Config Class
+### 總覽 {#overview}
 
-Create a new directory with your provider name
+從提供者的角度來看，liteLLM 的運作方式很簡單。
 
-#### `litellm/llms/your_provider_name_here`
+liteLLM 作為一個包裝器，會接收 openai 請求並將它們路由到您的 API。接著，它會將您的輸出調整成標準輸出。
 
-Inside of there, you will want to add a file for your chat configuration
+若要整合為提供者，您需要撰寫一個模組，將 API 接入，並作為 liteLLM API 與您的 API 之間的轉接器。
 
-#### `litellm/llms/your_provider_name_here/chat/transformation.py`
+您要撰寫的模組同時扮演設定與轉換請求及回應的手段。
 
-The `transformation.py` file will contain a configuration class that dictates how your api will slot into the liteLLM api.
+您的目標是有效地撰寫此模組，使其將輸入調整為您的 API，並將輸出調整為呼叫端的 liteLLM 程式碼。
 
-Define your config class extending `BaseConfig`:
+它包含以下方法：
+
+- 驗證請求
+- 將請求轉換（調整）為傳送至您的 API 的請求
+- 將來自您的 API 的回應轉換（調整）為回傳給呼叫端 liteLLM 程式碼的回應
+- 以及其他幾項
+
+---
+
+### 1. 建立您的設定類別 {#1-create-your-config-class}
+
+建立一個以您的提供者名稱命名的新目錄
+
+#### `litellm/llms/your_provider_name_here` {#litellmllmsyour_provider_name_here}
+
+在其中，您會想新增一個用於聊天設定的檔案
+
+#### `litellm/llms/your_provider_name_here/chat/transformation.py` {#litellmllmsyour_provider_name_herechattransformationpy}
+
+`transformation.py` 檔案將包含一個設定類別，決定您的 API 如何接入 liteLLM API。
+
+將您的設定類別定義為繼承 `BaseConfig`：
 
 ```python
 from litellm.llms.base_llm.chat.transformation import BaseConfig
@@ -57,17 +57,17 @@ class MyProviderChatConfig(BaseConfig):
         ...
 ```
 
-We will fill in the abstract methods at a later point.
+我們稍後會補上抽象方法。
 
 ---
 
-### 2. Add Yourself To Various Places In The Code Base
+### 2. 在程式碼庫的各處加入您自己 {#2-add-yourself-to-various-places-in-the-code-base}
 
-liteLLM is working to enhance this process, but currently, what you need to do is the following:
+liteLLM 正在努力改善這個流程，但目前您需要做的是以下幾點：
 
-#### `litellm/__init__.py`
+#### `litellm/__init__.py` {#litellm__init__py}
 
-At the top part of the file, add your key to the list of keys as an option
+在檔案最上方，將您的 key 加入 keys 清單中作為一個選項
 
 ```py
 azure_key: Optional[str] = None
@@ -79,7 +79,7 @@ infinity_key: Optional[str] = None
 clarifai_key: Optional[str] = None
 ```
 
-Import your config
+匯入您的設定
 
 ```
 from .llms.bytez.chat.transformation import BytezChatConfig
@@ -88,9 +88,9 @@ from .llms.bedrock.chat.converse_transformation import AmazonConverseConfig
 from .llms.openai_like.chat.handler import OpenAILikeChatConfig
 ```
 
-#### `litellm/main.py`
+#### `litellm/main.py` {#litellmmainpy}
 
-Add yourself to `main.py` so requests can be routed to your config class
+將您加入 `main.py`，讓請求可以路由到您的設定類別
 
 ```py
 from .llms.bedrock.chat import BedrockConverseLLM, BedrockLLM
@@ -107,7 +107,7 @@ sagemaker_chat_completion = SagemakerChatHandler()
 bytez_transformation = BytezChatConfig()
 ```
 
-Then much lower in the code
+接著在程式碼更下方
 
 ```py
 elif custom_llm_provider == "bytez":
@@ -139,11 +139,11 @@ elif custom_llm_provider == "bytez":
     pass
 ```
 
-NOTE you can rely on liteLLM passing each of the args/kwargs to your config via the .completion() call
+注意：您可以依賴 liteLLM 透過 .completion() 呼叫將每個 args/kwargs 傳遞給您的設定
 
-#### `litellm/constants.py`
+#### `litellm/constants.py` {#litellmconstantspy}
 
-Add yourself to the list of `LITELLM_CHAT_PROVIDERS`
+將您加入 `LITELLM_CHAT_PROVIDERS` 的清單
 
 ```py
 LITELLM_CHAT_PROVIDERS = [
@@ -155,9 +155,9 @@ LITELLM_CHAT_PROVIDERS = [
     "text-completion-openai",
 ```
 
-Add yourself to the if statement chain of providers here
+將您加入這裡提供者的 if 陳述式鏈中
 
-#### `litellm/litellm_core_utils/get_llm_provider_logic.py`
+#### `litellm/litellm_core_utils/get_llm_provider_logic.py` {#litellmlitellm_core_utilsget_llm_provider_logicpy}
 
 ```py
 elif model == "*":
@@ -170,9 +170,9 @@ if not custom_llm_provider:
         print()  # noqa
 ```
 
-#### `litellm/litellm_core_utils/streaming_handler.py`
+#### `litellm/litellm_core_utils/streaming_handler.py` {#litellmlitellm_core_utilsstreaming_handlerpy}
 
-#### If you are doing something custom with streaming, this needs to be updated, e.g.
+#### 如果您對串流做了某些自訂處理，這裡也需要更新，例如 {#if-you-are-doing-something-custom-with-streaming-this-needs-to-be-updated-eg}
 
 ```py
     def handle_bytez_chunk(self, chunk):
@@ -189,7 +189,7 @@ if not custom_llm_provider:
             raise e
 ```
 
-Then lower in the file
+接著在檔案更下方
 
 ```
 elif self.custom_llm_provider and self.custom_llm_provider == "bytez":
@@ -202,11 +202,11 @@ elif self.custom_llm_provider and self.custom_llm_provider == "bytez":
 
 ---
 
-### 3. Write a test file to iterate your code
+### 3. 撰寫測試檔案來迭代您的程式碼 {#3-write-a-test-file-to-iterate-your-code}
 
-Add a test file somewhere in the project, `tests/test_litellm/llms/my_provider/chat/test.py`
+在專案中的某個位置新增一個測試檔案，`tests/test_litellm/llms/my_provider/chat/test.py`
 
-Write to it the following:
+寫入以下內容：
 
 ```python
 import os
@@ -217,7 +217,7 @@ os.environ["MY_PROVIDER_KEY"] = "KEY_GOES_HERE"
 completion(model="my_provider/your-model", messages=[...], api_key="...")
 ```
 
-If you want to run it with the vscode debugger you can do so with this config file (recommended)
+如果您想用 vscode 偵錯工具執行，可以使用這個設定檔（建議）
 
 `.vscode/launch.json`
 
@@ -243,23 +243,23 @@ If you want to run it with the vscode debugger you can do so with this config fi
 }
 ```
 
-If you run with the debugger, after you update `"MY_PROVIDER_API_KEY": "YOUR_API_KEY"` you can remove this from the test script:
+如果您使用偵錯工具執行，在更新 `"MY_PROVIDER_API_KEY": "YOUR_API_KEY"` 之後，可以從測試腳本中移除這段：
 
 `os.environ["MY_PROVIDER_KEY"] = "KEY_GOES_HERE"`
 
 ---
 
-### 4. Implement Required Methods
+### 4. 實作必要的方法 {#4-implement-required-methods}
 
-It's wise to follow `completion()` in `litellm/llms/custom_httpx/llm_http_handler.py`
+最好按照 `completion()` 於 `litellm/llms/custom_httpx/llm_http_handler.py` 中的做法
 
-You will see it calls each of the methods defined in the base class.
+您會看到它會呼叫基底類別中定義的每個方法。
 
-The debugger is your friend.
+偵錯工具是您的好幫手。
 
-###### `validate_environment`
+###### `validate_environment` {#validate_environment}
 
-Setup headers, validate key/model:
+設定 headers，驗證 key/model：
 
 ```python
 def validate_environment(...):
@@ -270,18 +270,18 @@ def validate_environment(...):
     return headers
 ```
 
-###### `get_complete_url`
+###### `get_complete_url` {#get_complete_url}
 
-Return the final request URL:
+回傳最終請求 URL：
 
 ```python
 def get_complete_url(...):
     return f"{api_base}/{model}"
 ```
 
-###### `transform_request`
+###### `transform_request` {#transform_request}
 
-Adapt OpenAI-style input into provider-specific format:
+將 OpenAI 風格的輸入調整為提供者特定格式：
 
 ```python
 def transform_request(...):
@@ -289,9 +289,9 @@ def transform_request(...):
     return data
 ```
 
-###### `transform_response`
+###### `transform_response` {#transform_response}
 
-Process and map the raw provider response:
+處理並映射原始提供者回應：
 
 ```python
 def transform_response(...):
@@ -301,22 +301,22 @@ def transform_response(...):
     return model_response
 ```
 
-###### `get_sync_custom_stream_wrapper` / `get_async_custom_stream_wrapper`
+###### `get_sync_custom_stream_wrapper` / `get_async_custom_stream_wrapper` {#get_sync_custom_stream_wrapper--get_async_custom_stream_wrapper}
 
-If you need to do something these are here for you. See the `litellm/llms/sagemaker/chat/transformation.py` or the `litellm/llms/bytez/chat/transformation.py` implementation to better understand how to use these.
+如果您需要做些什麼，這些都在這裡供您使用。請參閱 `litellm/llms/sagemaker/chat/transformation.py` 或 `litellm/llms/bytez/chat/transformation.py` 的實作，以更了解如何使用這些內容。
 
-Use `CustomStreamWrapper` + `httpx` streaming client to yield content.
-
----
-
-### 🧪 Tests
-
-Create tests in `tests/test_litellm/llms/my_provider/chat/test.py`. Iterate until you are satisfied with the quality!
+使用 `CustomStreamWrapper` + `httpx` 串流用戶端來回傳內容。
 
 ---
 
-### Spare thoughts
+### 🧪 測試 {#-tests}
 
-If you get stuck, see the other provider implementations, `ctrl + shift + f` and `ctrl + p` are your friends!
+在 `tests/test_litellm/llms/my_provider/chat/test.py` 中建立測試。反覆迭代直到您對品質滿意為止！
 
-You can also visit the [discord feedback channel](https://discord.gg/wuPM9dRgDw)
+---
+
+### 其他想法 {#spare-thoughts}
+
+如果您卡住了，請參考其他提供者實作，`ctrl + shift + f` 和 `ctrl + p` 會是您的好幫手！
+
+您也可以造訪 [discord 意見回饋頻道](https://discord.gg/wuPM9dRgDw)

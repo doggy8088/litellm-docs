@@ -17,10 +17,9 @@ hide_table_of_contents: false
 
 import Image from '@theme/IdealImage';
 
-# v1.55.10
+# v1.55.10 {#v15510}
 
 `batches`, `guardrails`, `team management`, `custom auth`
-
 
 <Image img={require('../../img/batches_cost_tracking.png')} />
 
@@ -28,34 +27,28 @@ import Image from '@theme/IdealImage';
 
 :::info
 
-Get a free 7-day LiteLLM Enterprise trial here. [Start here](https://www.litellm.ai/enterprise#trial)
+在此取得 7 天免費 LiteLLM Enterprise 試用。 [從這裡開始](https://www.litellm.ai/enterprise#trial)
 
-**No call needed**
+**無需來電**
 
 :::
 
-## ✨ Cost Tracking, Logging for Batches API (`/batches`)
+## ✨ Batches API 的成本追蹤、記錄 (`/batches`) {#-cost-tracking-logging-for-batches-api-batches}
 
-Track cost, usage for Batch Creation Jobs. [Start here](https://docs.litellm.ai/docs/batches)
+追蹤 Batch Creation Jobs 的成本、用量。 [從這裡開始](https://docs.litellm.ai/docs/batches)
 
-## ✨ `/guardrails/list` endpoint 
+## ✨ `/guardrails/list` 端點  {#-guardrailslist-endpoint}
 
-Show available guardrails to users. [Start here](https://litellm-api.up.railway.app/#/Guardrails)
+向使用者顯示可用的防護欄。 [從這裡開始](https://litellm-api.up.railway.app/#/Guardrails)
 
+## ✨ 允許團隊新增模型 {#-allow-teams-to-add-models}
 
-## ✨ Allow teams to add models
+這可讓團隊管理員透過 litellm proxy 呼叫自己的微調模型。 [從這裡開始](https://docs.litellm.ai/docs/proxy/team_model_add)
 
-This enables team admins to call their own finetuned models via litellm proxy. [Start here](https://docs.litellm.ai/docs/proxy/team_model_add)
+## ✨ 自訂驗證的 common_checks 檢查 {#-common-checks-for-custom-auth}
 
+在自訂驗證中呼叫內部 common_checks 函式現在已強制作為企業功能。這可讓管理員在其自訂驗證實作中使用 litellm 的預設預算／驗證檢查。 [從這裡開始](https://docs.litellm.ai/docs/proxy/virtual_keys#custom-auth)
 
-## ✨ Common checks for custom auth
+## ✨ 指派團隊管理員 {#-assigning-team-admins}
 
-Calling the internal common_checks function in custom auth is now enforced as an enterprise feature. This allows admins to use litellm's default budget/auth checks within their custom auth implementation. [Start here](https://docs.litellm.ai/docs/proxy/virtual_keys#custom-auth)
-
-
-## ✨ Assigning team admins
-
-Team admins is graduating from beta and moving to our enterprise tier. This allows proxy admins to allow others to manage keys/models for their own teams (useful for projects in production). [Start here](https://docs.litellm.ai/docs/proxy/virtual_keys#restricting-key-generation)
-
-
-
+團隊管理員已從 beta 版畢業並移至我們的企業方案。這可讓 proxy 管理員允許其他人管理自己團隊的金鑰／模型（適用於正式環境中的專案）。 [從這裡開始](https://docs.litellm.ai/docs/proxy/virtual_keys#restricting-key-generation)

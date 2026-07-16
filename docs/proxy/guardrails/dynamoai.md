@@ -1,15 +1,15 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# DynamoAI Guardrails
+# DynamoAI 防護欄 {#dynamoai-guardrails}
 
-LiteLLM supports DynamoAI guardrails for content moderation and policy enforcement on LLM inputs and outputs.
+LiteLLM 支援 DynamoAI 防護欄，用於對 LLM 輸入與輸出進行內容審核與政策強制執行。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section:
+請在 `guardrails` 區段下定義您的防護欄：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -26,13 +26,13 @@ guardrails:
       api_key: os.environ/DYNAMOAI_API_KEY
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` - Run **before** LLM call, on **input**
-- `post_call` - Run **after** LLM call, on **output**
-- `during_call` - Run **during** LLM call, on **input**. Same as `pre_call` but runs in parallel as LLM call
+- `pre_call` - 在 LLM 請求**之前**執行，針對**輸入**
+- `post_call` - 在 LLM 請求**之後**執行，針對**輸出**
+- `during_call` - 在 LLM 請求**期間**執行，針對**輸入**。與 `pre_call` 相同，但會與 LLM 請求並行執行
 
-### 2. Set Environment Variables
+### 2. 設定環境變數 {#2-set-environment-variables}
 
 ```bash
 export DYNAMOAI_API_KEY="your-api-key"
@@ -40,18 +40,18 @@ export DYNAMOAI_API_KEY="your-api-key"
 export DYNAMOAI_POLICY_IDS="policy-id-1,policy-id-2,policy-id-3"
 ```
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM 閘道 {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test Request
+### 4. 測試請求 {#4-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Successful Call" value="allowed">
+<TabItem label="成功呼叫" value="allowed">
 
 ```shell showLineNumbers title="Successful Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -66,13 +66,13 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 200 Success**
+**回應：HTTP 200 成功**
 
-Content passes all policy checks and is allowed through.
+內容通過所有政策檢查並允許通過。
 
 </TabItem>
 
-<TabItem label="Blocked Call" value="not-allowed">
+<TabItem label="被封鎖的呼叫" value="not-allowed">
 
 ```shell showLineNumbers title="Blocked Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -87,7 +87,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Expected Response on Block: HTTP 400 Error**
+**封鎖時預期的回應：HTTP 400 錯誤**
 
 ```json showLineNumbers
 {
@@ -103,11 +103,11 @@ curl -i http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Specify Policy IDs
+### 指定政策 ID {#specify-policy-ids}
 
-Configure specific DynamoAI policies to apply:
+設定要套用的特定 DynamoAI 政策：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -122,9 +122,9 @@ guardrails:
         - "policy-id-3"
 ```
 
-### Custom API Base
+### 自訂 API Base {#custom-api-base}
 
-Specify a custom DynamoAI API endpoint:
+指定自訂的 DynamoAI API 端點：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -136,9 +136,9 @@ guardrails:
       api_base: "https://custom.dynamo.ai"
 ```
 
-### Model ID for Tracking
+### 用於追蹤的模型 ID {#model-id-for-tracking}
 
-Add a model ID for tracking and logging purposes:
+新增模型 ID 以供追蹤與記錄用途：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -150,9 +150,9 @@ guardrails:
       model_id: "gpt-4-production"
 ```
 
-### Input and Output Guardrails
+### 輸入與輸出防護欄 {#input-and-output-guardrails}
 
-Configure separate guardrails for input and output:
+為輸入與輸出分別設定防護欄：
 
 ```yaml showLineNumbers title="config.yaml"
 guardrails:
@@ -171,44 +171,43 @@ guardrails:
       api_key: os.environ/DYNAMOAI_API_KEY
 ```
 
-## Configuration Options
+## 設定選項 {#configuration-options}
 
-| Parameter | Type | Description | Default |
+| 參數 | 類型 | 說明 | 預設值 |
 |-----------|------|-------------|---------|
-| `api_key` | string | DynamoAI API key (required) | `DYNAMOAI_API_KEY` env var |
+| `api_key` | string | DynamoAI API 金鑰（必填） | `DYNAMOAI_API_KEY` 環境變數 |
 | `api_base` | string | DynamoAI API base URL | `https://api.dynamo.ai` |
-| `policy_ids` | array | List of DynamoAI policy IDs to apply (optional) | `DYNAMOAI_POLICY_IDS` env var (comma-separated) |
-| `model_id` | string | Model ID for tracking/logging | `DYNAMOAI_MODEL_ID` env var |
-| `mode` | string | When to run: `pre_call`, `post_call`, or `during_call` | Required |
+| `policy_ids` | array | 要套用的 DynamoAI 政策 ID 清單（選填） | `DYNAMOAI_POLICY_IDS` 環境變數（以逗號分隔） |
+| `model_id` | string | 用於追蹤/記錄的模型 ID | `DYNAMOAI_MODEL_ID` 環境變數 |
+| `mode` | string | 執行時機：`pre_call`、`post_call`，或 `during_call` | 必填 |
 
-## Observability
+## 可觀測性 {#observability}
 
-DynamoAI guardrail logs include:
+DynamoAI 防護欄記錄包含：
 
-- **guardrail_status**: `success`, `guardrail_intervened`, or `guardrail_failed_to_respond`
-- **guardrail_provider**: `dynamoai`
-- **guardrail_json_response**: Full API response with policy details
-- **duration**: Time taken for guardrail check
-- **start_time** and **end_time**: Timestamps
+- **guardrail_status**：`success`、`guardrail_intervened`，或 `guardrail_failed_to_respond`
+- **guardrail_provider**：`dynamoai`
+- **guardrail_json_response**：包含政策詳細資訊的完整 API 回應
+- **duration**：防護欄檢查所花費的時間
+- **start_time** 與 **end_time**：時間戳記
 
-These logs are available through your configured LiteLLM logging callbacks.
+這些記錄可透過您已設定的 LiteLLM 記錄回呼使用。
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-The guardrail handles errors gracefully:
+防護欄會優雅地處理錯誤：
 
-- **API Failures**: Logs error and raises exception with status `guardrail_failed_to_respond`
-- **Policy Violations**: Raises `ValueError` with detailed violation information
-- **Invalid Configuration**: Raises `ValueError` on initialization if API key is missing
+- **API 失敗**：記錄錯誤並擲出狀態為 `guardrail_failed_to_respond` 的例外
+- **政策違規**：擲出 `ValueError`，並附上詳細的違規資訊
+- **設定無效**：若缺少 API 金鑰，則在初始化時擲出 `ValueError`
 
-## Current Limitations
+## 目前限制 {#current-limitations}
 
-- Only the `BLOCK` action is currently supported
-- `WARN`, `REDACT`, and `SANITIZE` actions are treated as success (pass through)
+- 目前僅支援 `BLOCK` 動作
+- `WARN`、`REDACT` 與 `SANITIZE` 動作會被視為成功（直接通過）
 
-## Support
+## 支援 {#support}
 
-For more information about DynamoAI:
-- Website: [https://dynamo.ai](https://dynamo.ai)
-- Documentation: Contact DynamoAI for API documentation
-
+如需更多關於 DynamoAI 的資訊：
+- 網站：[https://dynamo.ai](https://dynamo.ai)
+- 文件：請聯絡 DynamoAI 以取得 API 文件

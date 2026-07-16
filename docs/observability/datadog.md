@@ -2,27 +2,26 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Datadog
+# Datadog {#datadog}
 
-LiteLLM Supports logging to the following Datdog Integrations:
+LiteLLM 支援記錄到以下 Datdog 整合：
 - `datadog` [Datadog Logs](https://docs.datadoghq.com/logs/)
 - `datadog_llm_observability` [Datadog LLM Observability](https://www.datadoghq.com/product/llm-observability/)
 - `datadog_metrics` [Datadog Custom Metrics](#datadog-custom-metrics)
 - `datadog_cost_management` [Datadog Cloud Cost Management](#datadog-cloud-cost-management)
 - `ddtrace-run` [Datadog Tracing](#datadog-tracing)
 
-## Datadog Logs
+## Datadog 記錄 {#datadog-logs}
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| **What is logged** | [StandardLoggingPayload](../proxy/logging_spec) |
-| **Events** | Success + Failure |
-| **Product Link** | [Datadog Logs](https://docs.datadoghq.com/logs/) |
+| **記錄內容** | [StandardLoggingPayload](../proxy/logging_spec) |
+| **事件** | 成功 + 失敗 |
+| **產品連結** | [Datadog Logs](https://docs.datadoghq.com/logs/) |
 
+我們將使用 `--config` 來設定 `litellm.callbacks = ["datadog"]`，這會將所有成功的 LLM 呼叫記錄到 DataDog
 
-We will use the `--config` to set `litellm.callbacks = ["datadog"]` this will log all successful LLM calls to DataDog
-
-**Step 1**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 1**：建立 `config.yaml` 檔案並設定 `litellm_settings`：`success_callback`
 
 ```yaml
 model_list:
@@ -35,15 +34,15 @@ litellm_settings:
 ```
 
 
-## Datadog LLM Observability
+## Datadog LLM 可觀測性 {#datadog-llm-observability}
 
-**Overview**
+**概覽**
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| **What is logged** | [StandardLoggingPayload](../proxy/logging_spec) |
-| **Events** | Success + Failure |
-| **Product Link** | [Datadog LLM Observability](https://www.datadoghq.com/product/llm-observability/) |
+| **記錄內容** | [StandardLoggingPayload](../proxy/logging_spec) |
+| **事件** | 成功 + 失敗 |
+| **產品連結** | [Datadog LLM Observability](https://www.datadoghq.com/product/llm-observability/) |
 
 ```yaml
 model_list:
@@ -55,12 +54,11 @@ litellm_settings:
 ```
 
 
+**步驟 2**：為 datadog 設定必要的環境變數
 
-**Step 2**: Set Required env variables for datadog
+#### 直接 API {#direct-api}
 
-#### Direct API
-
-Send logs directly to Datadog API:
+將記錄直接傳送至 Datadog API：
 
 ```shell
 DD_API_KEY="5f2d0f310***********" # your datadog API Key
@@ -68,9 +66,9 @@ DD_SITE="us5.datadoghq.com"       # your datadog base url
 DD_SOURCE="litellm_dev"       # [OPTIONAL] your datadog source. use to differentiate dev vs. prod deployments
 ```
 
-#### Via DataDog Agent
+#### 透過 DataDog Agent {#via-datadog-agent}
 
-Send logs through a local DataDog agent (useful for containerized environments):
+透過本機 DataDog agent 傳送記錄（適用於容器化環境）：
 
 ```shell
 LITELLM_DD_AGENT_HOST="localhost"         # hostname or IP of DataDog agent
@@ -79,25 +77,25 @@ DD_API_KEY="5f2d0f310***********"         # [OPTIONAL] your datadog API Key (Age
 DD_SOURCE="litellm_dev"                   # [OPTIONAL] your datadog source
 ```
 
-When `LITELLM_DD_AGENT_HOST` is set, logs are sent to the agent instead of directly to DataDog API. This is useful for:
-- Centralized log shipping in containerized environments
-- Reducing direct API calls from multiple services
-- Leveraging agent-side processing and filtering
+當設定 `LITELLM_DD_AGENT_HOST` 時，記錄會傳送到 agent，而不是直接傳送到 DataDog API。這對以下情境很有幫助：
+- 在容器化環境中集中傳送記錄
+- 減少來自多個服務的直接 API 呼叫
+- 利用 agent 端處理與篩選
 
-**Note:** We use `LITELLM_DD_AGENT_HOST` instead of `DD_AGENT_HOST` to avoid conflicts with `ddtrace` which automatically sets `DD_AGENT_HOST` for APM tracing.
+**注意：** 我們使用 `LITELLM_DD_AGENT_HOST` 取代 `DD_AGENT_HOST`，以避免與 `ddtrace` 的衝突；後者會自動為 APM tracing 設定 `DD_AGENT_HOST`。
 
 > [!IMPORTANT]
-> **Datadog LLM Observability**: `DD_API_KEY` is **REQUIRED** even when using the Datadog Agent (`LITELLM_DD_AGENT_HOST`). The agent acts as a proxy but the API key header is mandatory for the LLM Observability endpoint.
+> **Datadog LLM Observability**：即使使用 Datadog Agent（`LITELLM_DD_AGENT_HOST`），`DD_API_KEY` 仍然是**必要**的。agent 會充當 proxy，但 LLM Observability endpoint 仍強制要求 API key 標頭。
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發送測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -116,18 +114,17 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-Expected output on Datadog
+Datadog 上的預期輸出
 
 <Image img={require('../../img/dd_small1.png')} />
 
-### Redacting Messages and Responses
+### 遮罩訊息與回應 {#redacting-messages-and-responses}
 
-This section covers how to redact sensitive data from messages and responses in the logged payload on Datadog LLM Observability.
+本節說明如何在 Datadog LLM Observability 的已記錄負載中，從訊息與回應中遮罩敏感資料。
 
+啟用遮罩後，實際的訊息內容與回應文字會從 Datadog 記錄中排除，但仍會保留 token 數量、延遲與模型資訊等中繼資料。
 
-When redaction is enabled, the actual message content and response text will be excluded from Datadog logs while preserving metadata like token counts, latency, and model information.
-
-**Step 1**: Configure redaction in your `config.yaml`
+**步驟 1**：在您的 `config.yaml` 中設定遮罩
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -142,7 +139,7 @@ litellm_settings:
     turn_off_message_logging: true # redacts input messages and output responses
 ```
 
-**Step 2**: Send a chat completion request
+**步驟 2**：送出 chat completion 請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -158,38 +155,35 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Step 3**: Verify redaction in Datadog LLM Observability
+**步驟 3**：在 Datadog LLM Observability 中確認遮罩結果
 
-On the Datadog LLM Observability page, you should see that both input messages and output responses are redacted, while metadata (token counts, timing, model info) remains visible.
-
-<Image img={require('../../img/dd_llm_obs.png')} />
-
-
+在 Datadog LLM Observability 頁面上，您應該會看到輸入訊息與輸出回應都已被遮罩，而中繼資料（token 數量、時間、模型資訊）仍可見。
 
 <Image img={require('../../img/dd_llm_obs.png')} />
 
+<Image img={require('../../img/dd_llm_obs.png')} />
 
-## Datadog Custom Metrics
+## Datadog 自訂指標 {#datadog-custom-metrics}
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| **What is logged** | Latency metrics, request counts by status code |
-| **Events** | Success + Failure |
-| **Product Link** | [Datadog Metrics](https://docs.datadoghq.com/metrics/) |
+| **記錄內容** | 延遲指標、依狀態碼統計的請求數 |
+| **事件** | 成功 + 失敗 |
+| **產品連結** | [Datadog Metrics](https://docs.datadoghq.com/metrics/) |
 
-Publishes the following metrics to Datadog via the `/api/v2/series` endpoint:
+透過 `/api/v2/series` endpoint 將以下指標發佈到 Datadog：
 
-| Metric | Type | Description |
+| 指標 | 類型 | 說明 |
 |--------|------|-------------|
-| `litellm.request.total_latency` | Gauge | End-to-end request latency (seconds) |
-| `litellm.llm_api.latency` | Gauge | Time spent waiting for the LLM provider response (seconds) |
-| `litellm.llm_api.request_count` | Count | Request count, tagged with status code |
+| `litellm.request.total_latency` | Gauge | 端到端請求延遲（秒） |
+| `litellm.llm_api.latency` | Gauge | 等待 LLM 提供者回應所花費的時間（秒） |
+| `litellm.llm_api.request_count` | Count | 請求次數，帶有狀態碼標記 |
 
-Using `total_latency` and `llm_api.latency`, you can derive **internal latency** = `total_latency - llm_api.latency`.
+使用 `total_latency` 和 `llm_api.latency`，您可以推導出**內部延遲** = `total_latency - llm_api.latency`。
 
-All metrics include the following tags: `env`, `service`, `version`, `HOSTNAME`, `POD_NAME`, `provider`, `model_name`, `model_group`, `team`, `status_code`.
+所有指標都包含以下標籤：`env`、`service`、`version`、`HOSTNAME`、`POD_NAME`、`provider`、`model_name`、`model_group`、`team`、`status_code`。
 
-**Step 1**: Create a `config.yaml` file
+**步驟 1**：建立 `config.yaml` 檔案
 
 ```yaml
 model_list:
@@ -201,14 +195,14 @@ litellm_settings:
   failure_callback: ["datadog_metrics"]
 ```
 
-**Step 2**: Set required env variables
+**步驟 2**：設定必要的環境變數
 
 ```shell
 DD_API_KEY="your-api-key"
 DD_SITE="us5.datadoghq.com"  # your datadog site
 ```
 
-**Step 3**: Start the proxy and make a test request
+**步驟 3**：啟動 proxy 並發送測試請求
 
 ```shell
 litellm --config config.yaml
@@ -224,21 +218,21 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Step 4**: View metrics in Datadog Metrics Explorer
+**步驟 4**：在 Datadog Metrics Explorer 中檢視指標
 
-Navigate to **Metrics > Explorer** in Datadog and search for `litellm.request.total_latency`, `litellm.llm_api.latency`, or `litellm.llm_api.request_count`.
+在 Datadog 中導覽至 **Metrics > Explorer**，並搜尋 `litellm.request.total_latency`、`litellm.llm_api.latency` 或 `litellm.llm_api.request_count`。
 
-## Datadog Cloud Cost Management
+## Datadog 雲端成本管理 {#datadog-cloud-cost-management}
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| **What is logged** | Aggregated LLM Costs (FOCUS format) |
-| **Events** | Periodic Uploads of Aggregated Cost Data |
-| **Product Link** | [Datadog Cloud Cost Management](https://docs.datadoghq.com/cost_management/) |
+| **記錄內容** | 彙總的 LLM 成本（FOCUS 格式） |
+| **事件** | 週期性上傳彙總成本資料 |
+| **產品連結** | [Datadog Cloud Cost Management](https://docs.datadoghq.com/cost_management/) |
 
-We will use the `--config` to set `litellm.callbacks = ["datadog_cost_management"]`. This will periodically upload aggregated LLM cost data to Datadog.
+我們將使用 `--config` 來設定 `litellm.callbacks = ["datadog_cost_management"]`。這會定期將彙總的 LLM 成本資料上傳到 Datadog。
 
-**Step 1**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 1**：建立 `config.yaml` 檔案並設定 `litellm_settings`：`success_callback`
 
 ```yaml
 model_list:
@@ -249,7 +243,7 @@ litellm_settings:
   callbacks: ["datadog_cost_management"]
 ```
 
-**Step 2**: Set Required env variables
+**步驟 2**：設定必要的環境變數
 
 ```shell
 DD_API_KEY="your-api-key"
@@ -257,31 +251,29 @@ DD_APP_KEY="your-app-key" # REQUIRED for Cost Management
 DD_SITE="us5.datadoghq.com"
 ```
 
-**Step 3**: Start the proxy
+**步驟 3**：啟動 proxy
 
 ```shell
 litellm --config config.yaml
 ```
 
-**How it works**
-* LiteLLM aggregates costs in-memory by Provider, Model, Date, and Tags.
-* Requires `DD_APP_KEY` for the Custom Costs API.
-* Costs are uploaded periodically (flushed).
+**運作方式**
+* LiteLLM 會依提供者、模型、日期和標籤，在記憶體中彙總成本。
+* Custom Costs API 需要 `DD_APP_KEY`。
+* 成本會定期上傳（flush）。
 
+### Datadog 分散式追蹤 {#datadog-tracing}
 
-### Datadog Tracing
-
-Use `ddtrace-run` to enable [Datadog Tracing](https://ddtrace.readthedocs.io/en/stable/installation_quickstart.html) on litellm proxy
+使用 `ddtrace-run` 在 litellm proxy 上啟用 [Datadog Tracing](https://ddtrace.readthedocs.io/en/stable/installation_quickstart.html)
 
 **DD Tracer**
-Pass `USE_DDTRACE=true` to the docker run command. When `USE_DDTRACE=true`, the proxy will run `ddtrace-run litellm` as the `ENTRYPOINT` instead of just `litellm`
+將 `USE_DDTRACE=true` 傳遞給 docker run 指令。當 `USE_DDTRACE=true` 時，proxy 會將 `ddtrace-run litellm` 作為 `ENTRYPOINT` 執行，而不只是 `litellm`
 
 **DD Profiler**
 
-Pass `USE_DDPROFILER=true` to the docker run command. When `USE_DDPROFILER=true`, the proxy will activate the [Datadog Profiler](https://docs.datadoghq.com/profiler/enabling/python/). This is useful for debugging CPU% and memory usage.
+將 `USE_DDPROFILER=true` 傳遞給 docker run 指令。當 `USE_DDPROFILER=true` 時，proxy 會啟用 [Datadog Profiler](https://docs.datadoghq.com/profiler/enabling/python/)。這對於除錯 CPU% 和記憶體使用量很有幫助。
 
-We don't recommend using `USE_DDPROFILER` in production. It is only recommended for debugging CPU% and memory usage.
-
+我們不建議在正式環境中使用 `USE_DDPROFILER`。它僅建議用於除錯 CPU% 和記憶體使用量。
 
 ```bash
 docker run \
@@ -293,33 +285,32 @@ docker run \
     --config /app/config.yaml --detailed_debug
 ```
 
-## Set DD variables (`DD_SERVICE` etc)
+## 設定 DD 變數（`DD_SERVICE` 等） {#set-dd-variables-dd_service-etc}
 
-LiteLLM supports customizing the following Datadog environment variables
+LiteLLM 支援自訂以下 Datadog 環境變數
 
-| Environment Variable | Description | Default Value | Required |
+| 環境變數 | 說明 | 預設值 | 必要 |
 |---------------------|-------------|---------------|----------|
-| `DD_API_KEY` | Your Datadog API key for authentication (required for direct API, optional for agent) | None | Conditional* |
-| `DD_SITE` | Your Datadog site (e.g., "us5.datadoghq.com") (required for direct API) | None | Conditional* |
-| `LITELLM_DD_AGENT_HOST` | Hostname or IP of DataDog agent (e.g., "localhost"). When set, logs are sent to agent instead of direct API | None | ❌ No |
-| `LITELLM_DD_AGENT_PORT` | Port of DataDog agent for log intake | "10518" | ❌ No |
-| `DD_ENV` | Environment tag for your logs (e.g., "production", "staging") | "unknown" | ❌ No |
-| `DD_SERVICE` | Service name for your logs | "litellm-server" | ❌ No |
-| `DD_LLMOBS_ML_APP` | Default ml_app name for LLM Observability (Application column). Can be overridden per-request via `metadata.ml_app`. | Falls back to `DD_SERVICE` | ❌ No |
-| `DD_SOURCE` | Source name for your logs | "litellm" | ❌ No |
-| `DD_VERSION` | Version tag for your logs | "unknown" | ❌ No |
-| `HOSTNAME` | Hostname tag for your logs | "" | ❌ No |
-| `POD_NAME` | Pod name tag (useful for Kubernetes deployments) | "unknown" | ❌ No |
+| `DD_API_KEY` | 您的 Datadog API key，用於驗證（直接 API 必要，agent 選用） | None | 條件式* |
+| `DD_SITE` | 您的 Datadog site（例如 "us5.datadoghq.com"）（直接 API 必要） | None | 條件式* |
+| `LITELLM_DD_AGENT_HOST` | DataDog agent 的主機名稱或 IP（例如 "localhost"）。設定後，記錄會傳送到 agent 而非直接 API | None | ❌ 否 |
+| `LITELLM_DD_AGENT_PORT` | DataDog agent 的記錄收集埠 | "10518" | ❌ 否 |
+| `DD_ENV` | 您記錄的環境標籤（例如 "production"、"staging"） | "unknown" | ❌ 否 |
+| `DD_SERVICE` | 您記錄的服務名稱 | "litellm-server" | ❌ 否 |
+| `DD_LLMOBS_ML_APP` | LLM Observability 的預設 ml_app 名稱（Application 欄位）。可透過 `metadata.ml_app` 依請求覆寫。 | 預設為 `DD_SERVICE` | ❌ 否 |
+| `DD_SOURCE` | 您記錄的來源名稱 | "litellm" | ❌ 否 |
+| `DD_VERSION` | 您記錄的版本標籤 | "unknown" | ❌ 否 |
+| `HOSTNAME` | 您記錄的主機名稱標籤 | "" | ❌ 否 |
+| `POD_NAME` | Pod 名稱標籤（適用於 Kubernetes 部署） | "unknown" | ❌ 否 |
 
-\* **Required when using Direct API** (default): `DD_API_KEY` and `DD_SITE` are required  
-\* **Optional when using DataDog Agent**: Set `LITELLM_DD_AGENT_HOST` to use agent mode; `DD_API_KEY` and `DD_SITE` are not required for **Datadog Logs**. (**Note: `DD_API_KEY` IS REQUIRED for Datadog LLM Observability**)
+\* **使用 Direct API 時為必填**（預設）：`DD_API_KEY` 和 `DD_SITE` 為必填  
+\* **使用 DataDog Agent 時為選填**：設定 `LITELLM_DD_AGENT_HOST` 以使用代理模式；Datadog Logs 不需要 `DD_API_KEY` 和 `DD_SITE`。（**注意：Datadog LLM Observability 需要 `DD_API_KEY`**）
 
-## Automatic Tags
+## 自動標籤 {#automatic-tags}
 
-LiteLLM automatically adds the following tags to your Datadog logs and metrics if the information is available in the request:
+如果請求中有可用資訊，LiteLLM 會自動將以下標籤加入您的 Datadog 記錄和指標：
 
-| Tag | Description | Source |
+| 標籤 | 說明 | 來源 |
 |-----|-------------|--------|
-| `team` | The team alias or ID associated with the API Key | `user_api_key_team_alias`, `team_alias`, `user_api_key_team_id`, or `team_id` in metadata |
-| `request_tag` | Custom tags passed in the request | `request_tags` in logging payload |
-
+| `team` | 與 API 金鑰相關聯的團隊別名或 ID | 中繼資料中的 `user_api_key_team_alias`、`team_alias`、`user_api_key_team_id` 或 `team_id` |
+| `request_tag` | 在請求中傳遞的自訂標籤 | 記錄負載中的 `request_tags` |

@@ -1,20 +1,20 @@
-# /ocr
+# /ocr {#ocr}
 
-| Feature | Supported | 
+| 功能 | 支援 | 
 |---------|-----------|
-| Cost Tracking | ✅ |
-| Logging | ✅ (Basic Logging not supported) |
-| Load Balancing | ✅ |
-| Supported Providers | `mistral`, `azure_ai`, `vertex_ai` |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅（不支援基本記錄） |
+| 負載平衡 | ✅ |
+| 支援的提供者 | `mistral`, `azure_ai`, `vertex_ai` |
 
 :::tip
 
-LiteLLM follows the [Mistral API request/response for the OCR API](https://docs.mistral.ai/capabilities/vision/#optical-character-recognition-ocr)
+LiteLLM 遵循 [Mistral OCR API 的請求/回應](https://docs.mistral.ai/capabilities/vision/#optical-character-recognition-ocr)
 
 :::
 
-## **LiteLLM Python SDK Usage**
-### Quick Start 
+## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
+### 快速開始  {#quick-start}
 
 ```python
 from litellm import ocr
@@ -36,7 +36,7 @@ for page in response.pages:
     print(page.markdown)
 ```
 
-### Async Usage 
+### 非同步使用方式  {#async-usage}
 
 ```python
 from litellm import aocr
@@ -61,9 +61,9 @@ async def test_async_ocr():
 asyncio.run(test_async_ocr())
 ```
 
-### Using Local Files
+### 使用本機檔案 {#using-local-files}
 
-LiteLLM can read local files directly — no manual base64 encoding needed:
+LiteLLM 可以直接讀取本機檔案 — 不需要手動進行 base64 編碼：
 
 ```python
 from litellm import ocr
@@ -100,14 +100,14 @@ response = ocr(
 )
 ```
 
-The `file` field accepts:
-- **File path** (`str` or `pathlib.Path`) — LiteLLM reads the file and detects the MIME type from the extension
-- **File object** (binary file-like object) — e.g. `open("doc.pdf", "rb")`
-- **Raw bytes** (`bytes`) — use `mime_type` to specify the content type
+`file` 欄位接受：
+- **檔案路徑**（`str` 或 `pathlib.Path`）— LiteLLM 會讀取檔案並依副檔名偵測 MIME 類型
+- **檔案物件**（二進位檔案類檔物件）— 例如 `open("doc.pdf", "rb")`
+- **原始位元組**（`bytes`）— 使用 `mime_type` 來指定內容類型
 
-LiteLLM automatically converts file inputs to base64 data URIs internally, so all providers work seamlessly.
+LiteLLM 會自動在內部將檔案輸入轉換為 base64 data URI，因此所有提供者都能無縫運作。
 
-### Using Base64 Encoded Documents
+### 使用 Base64 編碼文件 {#using-base64-encoded-documents}
 
 ```python
 import base64
@@ -126,7 +126,7 @@ response = ocr(
 )
 ```
 
-### Optional Parameters
+### 可選參數 {#optional-parameters}
 
 ```python
 response = ocr(
@@ -143,13 +143,13 @@ response = ocr(
 )
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 使用方式** {#litellm-proxy-usage}
 
-LiteLLM provides a Mistral API compatible `/ocr` endpoint for OCR calls.
+LiteLLM 提供與 Mistral API 相容的 `/ocr` 端點供 OCR 請求使用。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將這段加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -159,7 +159,7 @@ model_list:
       api_key: os.environ/MISTRAL_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -167,7 +167,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Test request — JSON body**
+**測試請求 — JSON 主體**
 
 ```bash
 curl http://0.0.0.0:4000/v1/ocr \
@@ -182,9 +182,9 @@ curl http://0.0.0.0:4000/v1/ocr \
   }'
 ```
 
-**Test request — multipart file upload**
+**測試請求 — multipart 檔案上傳**
 
-Upload a file directly using multipart form data. No need to base64-encode the file yourself.
+直接使用 multipart form data 上傳檔案。您不需要自行將檔案編碼為 base64。
 
 ```bash
 curl http://0.0.0.0:4000/v1/ocr \
@@ -193,7 +193,7 @@ curl http://0.0.0.0:4000/v1/ocr \
   -F "file=@/path/to/document.pdf"
 ```
 
-You can also pass optional parameters as additional form fields:
+您也可以將可選參數作為額外的表單欄位傳入：
 
 ```bash
 curl http://0.0.0.0:4000/v1/ocr \
@@ -204,17 +204,17 @@ curl http://0.0.0.0:4000/v1/ocr \
   -F "include_image_base64=true"
 ```
 
-## **Request/Response Format**
+## **請求/回應格式** {#requestresponse-format}
 
 :::info
 
-LiteLLM follows the **Mistral OCR API specification**. 
+LiteLLM 遵循 **Mistral OCR API 規格**。 
 
-See the [official Mistral OCR documentation](https://docs.mistral.ai/capabilities/vision/#optical-character-recognition-ocr) for complete details.
+請參閱 [官方 Mistral OCR 文件](https://docs.mistral.ai/capabilities/vision/#optical-character-recognition-ocr) 以取得完整 विवरण。
 
 :::
 
-### Example Request
+### 範例請求 {#example-request}
 
 ```python
 {
@@ -230,25 +230,25 @@ See the [official Mistral OCR documentation](https://docs.mistral.ai/capabilitie
 }
 ```
 
-### Request Parameters
+### 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | The OCR model to use (e.g., `"mistral/mistral-ocr-latest"`) |
-| `document` | object | Yes | Document to process. Must contain `type` and the corresponding field |
-| `document.type` | string | Yes | `"document_url"` for PDFs/docs, `"image_url"` for images, or `"file"` for local files |
-| `document.document_url` | string | Conditional | URL or data URI to the document (required if `type` is `"document_url"`) |
-| `document.image_url` | string | Conditional | URL or data URI to the image (required if `type` is `"image_url"`) |
-| `document.file` | string/bytes/file | Conditional | File path, bytes, or file-like object (required if `type` is `"file"`) |
-| `document.mime_type` | string | No | Explicit MIME type for file inputs (auto-detected from extension if not provided) |
-| `pages` | array | No | List of specific page indices to process (0-indexed) |
-| `include_image_base64` | boolean | No | Whether to include extracted images as base64 strings |
-| `image_limit` | integer | No | Maximum number of images to return |
-| `image_min_size` | integer | No | Minimum size (in pixels) for images to include |
+| `model` | string | 是 | 要使用的 OCR 模型（例如：`"mistral/mistral-ocr-latest"`） |
+| `document` | object | 是 | 要處理的文件。必須包含 `type` 及對應欄位 |
+| `document.type` | string | 是 | `"document_url"` 適用於 PDF/文件，`"image_url"` 適用於圖片，或 `"file"` 適用於本機檔案 |
+| `document.document_url` | string | 條件式 | 文件的 URL 或 data URI（若 `type` 為 `"document_url"`，則為必填） |
+| `document.image_url` | string | 條件式 | 圖片的 URL 或 data URI（若 `type` 為 `"image_url"`，則為必填） |
+| `document.file` | string/bytes/file | 條件式 | 檔案路徑、位元組，或類檔物件（若 `type` 為 `"file"`，則為必填） |
+| `document.mime_type` | string | No | 檔案輸入的明確 MIME 類型（若未提供，則會從副檔名自動偵測） |
+| `pages` | array | No | 要處理的特定頁面索引清單（從 0 開始） |
+| `include_image_base64` | boolean | No | 是否將擷取出的圖片以 base64 字串包含在回應中 |
+| `image_limit` | integer | No | 要回傳的圖片最大數量 |
+| `image_min_size` | integer | No | 要包含的圖片最小尺寸（像素） |
 
-#### Document Format Examples
+#### 文件格式範例 {#document-format-examples}
 
-**For PDFs and documents (URL):**
+**適用於 PDF 和文件（URL）：**
 ```json
 {
   "type": "document_url",
@@ -256,7 +256,7 @@ See the [official Mistral OCR documentation](https://docs.mistral.ai/capabilitie
 }
 ```
 
-**For images (URL):**
+**適用於圖片（URL）：**
 ```json
 {
   "type": "image_url",
@@ -264,7 +264,7 @@ See the [official Mistral OCR documentation](https://docs.mistral.ai/capabilitie
 }
 ```
 
-**For base64-encoded content:**
+**適用於 base64 編碼內容：**
 ```json
 {
   "type": "document_url",
@@ -272,14 +272,14 @@ See the [official Mistral OCR documentation](https://docs.mistral.ai/capabilitie
 }
 ```
 
-**For local files (SDK):**
+**適用於本機檔案（SDK）：**
 ```python
 {"type": "file", "file": "/path/to/document.pdf"}
 {"type": "file", "file": open("image.png", "rb")}
 {"type": "file", "file": pdf_bytes, "mime_type": "application/pdf"}
 ```
 
-**For file uploads (Proxy — multipart form):**
+**適用於檔案上傳（Proxy — multipart form）：**
 ```bash
 curl http://0.0.0.0:4000/v1/ocr \
   -H "Authorization: Bearer sk-1234" \
@@ -287,9 +287,9 @@ curl http://0.0.0.0:4000/v1/ocr \
   -F "file=@document.pdf"
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-The response follows Mistral's OCR format with the following structure:
+回應遵循 Mistral 的 OCR 格式，結構如下：
 
 ```json
 {
@@ -325,26 +325,24 @@ The response follows Mistral's OCR format with the following structure:
 }
 ```
 
-#### Response Fields
+#### 回應欄位 {#response-fields}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `pages` | array | List of processed pages with extracted content |
-| `pages[].index` | integer | Page number (0-indexed) |
-| `pages[].markdown` | string | Extracted text in Markdown format |
-| `pages[].dimensions` | object | Page dimensions (dpi, height, width in pixels) |
-| `pages[].images` | array | Extracted images from the page (if `include_image_base64=true`) |
-| `model` | string | The model used for OCR processing |
-| `usage_info` | object | Processing statistics (pages processed, document size) |
-| `document_annotation` | object | Optional document-level annotations |
-| `object` | string | Always `"ocr"` for OCR responses |
+| `pages` | array | 已處理頁面的清單，包含擷取內容 |
+| `pages[].index` | integer | 頁碼（從 0 開始） |
+| `pages[].markdown` | string | 以 Markdown 格式擷取的文字 |
+| `pages[].dimensions` | object | 頁面尺寸（dpi、height、width，單位為像素） |
+| `pages[].images` | array | 從頁面擷取的圖片（若 `include_image_base64=true`） |
+| `model` | string | 用於 OCR 處理的模型 |
+| `usage_info` | object | 處理統計資料（已處理頁數、文件大小） |
+| `document_annotation` | object | 可選的文件層級註解 |
+| `object` | string | OCR 回應一律為 `"ocr"` |
 
+## **支援的提供者** {#supported-providers}
 
-## **Supported Providers**
-
-| Provider    | Link to Usage      |
+| 提供者    | 使用方式連結      |
 |-------------|--------------------|
-| Mistral AI  |   [Usage](#quick-start)                 |
-| Azure AI    |   [Usage](../docs/providers/azure_ocr)                 |
-| Vertex AI   |   [Usage](../docs/providers/vertex_ocr)                 |
-
+| Mistral AI  |   [使用方式](#quick-start)                 |
+| Azure AI    |   [使用方式](../docs/providers/azure_ocr)                 |
+| Vertex AI   |   [使用方式](../docs/providers/vertex_ocr)                 |

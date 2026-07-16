@@ -1,7 +1,6 @@
-# Rules
+# 規則 {#rules}
 
-Use this to fail a request based on the input or output of an llm api call. 
-
+使用這個來根據 llm api call 的輸入或輸出使請求失敗。 
 
 ```python
 import litellm 
@@ -22,14 +21,13 @@ response = litellm.completion(model="gpt-3.5-turbo", messages=[{"role": "user",
 "content": "Hey, how's it going?"}], fallbacks=["openrouter/gryphe/mythomax-l2-13b"])
 ```
 
-## Available Endpoints 
+## 可用端點  {#available-endpoints}
 
-* `litellm.pre_call_rules = []` - A list of functions to iterate over before making the api call. Each function is expected to return either True (allow call) or False (fail call).
+* `litellm.pre_call_rules = []` - 一個函式列表，在進行 api call 之前會逐一迭代。每個函式都應回傳 True（允許呼叫）或 False（使呼叫失敗）。
 
-* `litellm.post_call_rules = []` - List of functions to iterate over before making the api call. Each function is expected to return either True (allow call) or False (fail call).
+* `litellm.post_call_rules = []` - 一個函式列表，在進行 api call 之前會逐一迭代。每個函式都應回傳 True（允許呼叫）或 False（使呼叫失敗）。
 
-
-## Expected format of rule 
+## 規則的預期格式 {#expected-format-of-rule}
 
 ```python
 def my_custom_rule(input: str) -> bool: # receives the model response 
@@ -38,16 +36,15 @@ def my_custom_rule(input: str) -> bool: # receives the model response
     return True 
 ```
 
-#### Inputs
-* `input`: *str*: The user input or llm response. 
+#### 輸入 {#inputs}
+* `input`: *str*：使用者輸入或 llm 回應。 
 
-#### Outputs
-* `bool`: Return True (allow call) or False (fail call)
+#### 輸出 {#outputs}
+* `bool`: 回傳 True（允許呼叫）或 False（使呼叫失敗）
 
+## 規則範例 {#example-rules}
 
-## Example Rules 
-
-### Example 1: Fail if user input is too long 
+### 範例 1：如果使用者輸入過長則使請求失敗 {#example-1-fail-if-user-input-is-too-long}
 
 ```python
 import litellm 
@@ -66,8 +63,7 @@ litellm.pre_call_rules = [my_custom_rule] # have these be functions that can be 
 response = litellm.completion(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hey, how's it going?"}])
 ```
 
-### Example 2: Fallback to uncensored model if llm refuses to answer
-
+### 範例 2：如果 llm 拒絕回答，則備援到未過濾模型 {#example-2-fallback-to-uncensored-model-if-llm-refuses-to-answer}
 
 ```python
 import litellm 

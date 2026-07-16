@@ -1,5 +1,5 @@
 ---
-title: "v1.90.1 - Vertex Batch Uploads & Key Redaction"
+title: "v1.90.1 - Vertex 批次上傳與金鑰去識別化"
 slug: "v1-90-1"
 date: 2026-06-30T01:40:47
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,14 +43,14 @@ pip install litellm==1.90.1
 </TabItem>
 </Tabs>
 
-`v1.90.1` is a patch release on top of [`v1.90.0`](/release_notes/v1.90.0/v1-90-0). It backports three fixes onto the 1.90.x line: Vertex AI batch-file uploads switch to a single media upload so large uploads no longer fail with 499 errors, OpenAI→Vertex batch JSONL uploads stream instead of buffering in memory, and the API key is redacted from `/key/info` client error messages. The bundled `litellm-enterprise` package is bumped to `0.1.43.post1`.
+`v1.90.1` 是建立在 [`v1.90.0`](/release_notes/v1.90.0/v1-90-0) 之上的修補版本。它將三個修正回補到 1.90.x 版本線：Vertex AI 批次檔案上傳改為單一媒體上傳，因此大型上傳不再會因 499 錯誤而失敗，OpenAI→Vertex 批次 JSONL 上傳改為串流而非在記憶體中緩衝，且 API 金鑰會從 `/key/info` 用戶端錯誤訊息中移除。隨附的 `litellm-enterprise` 套件已升級至 `0.1.43.post1`。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(vertex_ai/files): single media upload for batch files to fix 499s on large uploads - [PR #31653](https://github.com/BerriAI/litellm/pull/31653)
-- fix(vertex/files): stream OpenAI->Vertex batch JSONL uploads - [PR #31036](https://github.com/BerriAI/litellm/pull/31036)
-- fix(proxy/client): redact api key from key/info client error messages - [PR #31342](https://github.com/BerriAI/litellm/pull/31342)
+- fix(vertex_ai/files): batch files 單一媒體上傳以修正大型上傳時的 499 錯誤 - [PR #31653](https://github.com/BerriAI/litellm/pull/31653)
+- fix(vertex/files): 串流 OpenAI->Vertex 批次 JSONL 上傳 - [PR #31036](https://github.com/BerriAI/litellm/pull/31036)
+- fix(proxy/client): 從 key/info 用戶端錯誤訊息中移除 api key - [PR #31342](https://github.com/BerriAI/litellm/pull/31342)
 
-## Full Changelog
+## 完整變更紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.90.0...v1.90.1

@@ -1,5 +1,5 @@
 ---
-title: v1.57.3 - New Base Docker Image
+title: v1.57.3 - 新的 Base Docker Image
 slug: v1.57.3
 date: 2025-01-08T10:00:00
 authors:
@@ -19,24 +19,24 @@ import Image from '@theme/IdealImage';
 
 `docker image`, `security`, `vulnerability`
 
-# 0 Critical/High Vulnerabilities
+# 0 個關鍵/高風險漏洞 {#0-criticalhigh-vulnerabilities}
 
 <Image img={require('../../img/release_notes/security.png')} />
 
-## What changed?
-- LiteLLMBase image now uses `cgr.dev/chainguard/python:latest-dev`
+## 有什麼變更？ {#what-changed}
+- LiteLLMBase 映像現在使用 `cgr.dev/chainguard/python:latest-dev`
 
-## Why the change?
+## 為什麼要變更？ {#why-the-change}
 
-To ensure there are 0 critical/high vulnerabilities on LiteLLM Docker Image
+為了確保 LiteLLM Docker Image 上沒有任何關鍵/高風險漏洞
 
-## Migration Guide
+## 遷移指南 {#migration-guide}
 
-- If you use a custom dockerfile with litellm as a base image + `apt-get`
+- 如果您使用自訂 dockerfile，且以 litellm 作為基底映像 + `apt-get`
 
-Instead of `apt-get` use `apk`, the base litellm image will no longer have `apt-get` installed.
+請不要使用 `apt-get`，改用 `apk`；基底 litellm 映像將不再安裝 `apt-get`。
 
-**You are only impacted if you use `apt-get` in your Dockerfile**
+**只有當您在 Dockerfile 中使用 `apt-get` 時才會受影響**
 ```shell
 # Use the provided base image
 FROM docker.litellm.ai/berriai/litellm:main-latest
@@ -49,18 +49,12 @@ RUN apt-get update && apt-get install -y dumb-init
 ```
 
 
-Before Change
+變更前
 ```
 RUN apt-get update && apt-get install -y dumb-init
 ```
 
-After Change
+變更後
 ```
 RUN apk update && apk add --no-cache dumb-init
 ```
-
-
-
-
-
-

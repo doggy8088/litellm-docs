@@ -1,8 +1,8 @@
-# Hosted Cache - api.litellm.ai
+# 受管理快取 - api.litellm.ai {#hosted-cache---apilitellmai}
 
-Use api.litellm.ai for caching `completion()` and `embedding()` responses
+使用 api.litellm.ai 來快取 `completion()` 和 `embedding()` 回應
 
-## Quick Start Usage - Completion
+## 快速開始使用 - Completion {#quick-start-usage---completion}
 ```python
 import litellm
 from litellm import completion
@@ -25,7 +25,7 @@ response2 = completion(
 ```
 
 
-## Usage - Embedding()
+## 使用方式 - Embedding() {#usage---embedding}
 
 ```python
 import time
@@ -45,10 +45,10 @@ end_time = time.time()
 print(f"Embedding 2 response time: {end_time - start_time} seconds")
 ```
 
-## Caching with Streaming 
-LiteLLM can cache your streamed responses for you
+## 串流快取  {#caching-with-streaming}
+LiteLLM 可以為您快取串流回應
 
-### Usage
+### 使用方式 {#usage}
 ```python
 import litellm
 import time

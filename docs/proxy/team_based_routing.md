@@ -1,18 +1,17 @@
-# [DEPRECATED] Team-based Routing
+# [已淘汰] 依團隊路由 {#deprecated-team-based-routing}
 
 :::info
 
-This is deprecated, please use [Tag Based Routing](./tag_routing.md) instead
+此功能已淘汰，請改用 [依標籤路由](./tag_routing.md)
 
 :::
 
+## 路由 {#routing}
+根據 team-id 將呼叫路由到不同的模型群組
 
-## Routing
-Route calls to different model groups based on the team-id
+### 依模型群組的設定  {#config-with-model-group}
 
-### Config with model group 
-
-Create a config.yaml with 2 model groups + connected postgres db
+建立一個包含 2 個模型群組加上已連線的 postgres db 的 config.yaml
 
 ```yaml
 model_list: 
@@ -34,13 +33,13 @@ general_settings:
     database_url: "postgresql://..." # 👈 Connect proxy to DB
 ```
 
-Start proxy
+啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### Create Team with Model Alias
+### 使用模型別名建立團隊 {#create-team-with-model-alias}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/team/new' \
@@ -54,7 +53,7 @@ curl --location 'http://0.0.0.0:4000/team/new' \
 # Returns team_id: my-team-id
 ```
 
-### Create Team Key 
+### 建立團隊金鑰  {#create-team-key}
 
 ```bash 
 curl --location 'http://localhost:4000/key/generate' \
@@ -65,7 +64,7 @@ curl --location 'http://localhost:4000/key/generate' \
 }'
 ```
 
-### Call Model with alias 
+### 使用別名呼叫模型  {#call-model-with-alias}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -77,4 +76,3 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
   "user": "usha"
 }'
 ```
-

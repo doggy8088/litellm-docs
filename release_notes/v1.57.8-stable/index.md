@@ -17,91 +17,87 @@ hide_table_of_contents: false
 
 `alerting`, `prometheus`, `secret management`, `management endpoints`, `ui`, `prompt management`, `finetuning`, `batch`
 
+## 新增 / 更新模型 {#new--updated-models}
 
-## New / Updated Models
+1. Mistral large 定價 - https://github.com/BerriAI/litellm/pull/7452
+2. Cohere command-r7b-12-2024 定價 - https://github.com/BerriAI/litellm/pull/7553/files
+3. Voyage - 新模型、價格與內容視窗資訊 - https://github.com/BerriAI/litellm/pull/7472
+4. Anthropic - 將 Bedrock claude-3-5-haiku 的 max_output_tokens 調高至 8192
 
-1. Mistral large pricing - https://github.com/BerriAI/litellm/pull/7452
-2. Cohere command-r7b-12-2024 pricing - https://github.com/BerriAI/litellm/pull/7553/files
-3. Voyage - new models, prices and context window information - https://github.com/BerriAI/litellm/pull/7472
-4. Anthropic - bump Bedrock claude-3-5-haiku max_output_tokens to 8192
+## 一般 Proxy 改進 {#general-proxy-improvements}
 
-## General Proxy Improvements
+1. 即時模型支援健康檢查 
+2. 支援透過虛擬金鑰呼叫 Azure 即時路由 
+3. 支援在 `/utils/token_counter` 上使用自訂 tokenizer - 在檢查自架模型的 token 數量時很有用 
+4. 請求優先化 - 也支援在 `/v1/completion` 端點上使用 
 
-1. Health check support for realtime models 
-2. Support calling Azure realtime routes via virtual keys 
-3. Support custom tokenizer on `/utils/token_counter` - useful when checking token count for self-hosted models 
-4. Request Prioritization - support on `/v1/completion` endpoint as well 
+## LLM 翻譯改進 {#llm-translation-improvements}
 
-## LLM Translation Improvements
-
-1. Deepgram STT support. [Start Here](https://docs.litellm.ai/docs/providers/deepgram)
-2. OpenAI Moderations - `omni-moderation-latest` support. [Start Here](https://docs.litellm.ai/docs/moderation)
-3. Azure O1 - fake streaming support. This ensures if a `stream=true` is passed, the response is streamed. [Start Here](https://docs.litellm.ai/docs/providers/azure)
-4. Anthropic - non-whitespace char stop sequence handling - [PR](https://github.com/BerriAI/litellm/pull/7484)
-5. Azure OpenAI - support Entra ID username + password based auth. [Start Here](https://docs.litellm.ai/docs/providers/azure#entra-id---use-tenant_id-client_id-client_secret)
-6. LM Studio - embedding route support. [Start Here](https://docs.litellm.ai/docs/providers/lm-studio)
-7. WatsonX - ZenAPIKeyAuth support. [Start Here](https://docs.litellm.ai/docs/providers/watsonx)
+1. 支援 Deepgram STT。[從這裡開始](https://docs.litellm.ai/docs/providers/deepgram)
+2. OpenAI Moderations - 支援 `omni-moderation-latest`。[從這裡開始](https://docs.litellm.ai/docs/moderation)
+3. Azure O1 - 假串流支援。這可確保如果傳入 `stream=true`，回應就會以串流方式傳送。[從這裡開始](https://docs.litellm.ai/docs/providers/azure)
+4. Anthropic - 非空白字元停止序列處理 - [PR](https://github.com/BerriAI/litellm/pull/7484)
+5. Azure OpenAI - 支援 Entra ID 使用者名稱 + 密碼式驗證。[從這裡開始](https://docs.litellm.ai/docs/providers/azure#entra-id---use-tenant_id-client_id-client_secret)
+6. LM Studio - embedding 路由支援。[從這裡開始](https://docs.litellm.ai/docs/providers/lm-studio)
+7. WatsonX - ZenAPIKeyAuth 支援。[從這裡開始](https://docs.litellm.ai/docs/providers/watsonx)
     
-## Prompt Management Improvements
+## Prompt 管理改進 {#prompt-management-improvements}
 
-1. Langfuse integration
-2. HumanLoop integration 
-3. Support for using load balanced models 
-4. Support for loading optional params from prompt manager 
+1. Langfuse 整合
+2. HumanLoop 整合 
+3. 支援使用負載平衡模型 
+4. 支援從 prompt manager 載入可選參數 
 
-[Start Here](https://docs.litellm.ai/docs/proxy/prompt_management)
+[從這裡開始](https://docs.litellm.ai/docs/proxy/prompt_management)
 
-## Finetuning + Batch APIs Improvements
+## Finetuning + Batch APIs 改進 {#finetuning--batch-apis-improvements}
 
-1. Improved unified endpoint support for Vertex AI finetuning - [PR](https://github.com/BerriAI/litellm/pull/7487)
-2. Add support for retrieving vertex api batch jobs - [PR](https://github.com/BerriAI/litellm/commit/13f364682d28a5beb1eb1b57f07d83d5ef50cbdc)
+1. 改善 Vertex AI finetuning 的統一端點支援 - [PR](https://github.com/BerriAI/litellm/pull/7487)
+2. 新增支援擷取 vertex api 批次工作 - [PR](https://github.com/BerriAI/litellm/commit/13f364682d28a5beb1eb1b57f07d83d5ef50cbdc)
 
-## *NEW* Alerting Integration
+## *新增* 警報整合 {#new-alerting-integration}
 
-PagerDuty Alerting Integration. 
+PagerDuty 警報整合。 
 
-Handles two types of alerts:
+可處理兩種類型的警報：
 
-- High LLM API Failure Rate. Configure X fails in Y seconds to trigger an alert.
-- High Number of Hanging LLM Requests. Configure X hangs in Y seconds to trigger an alert.
+- 高 LLM API 失敗率。設定 X 秒內失敗 X 次以觸發警報。
+- 高數量的 LLM 請求掛起。設定 X 秒內掛起 X 次以觸發警報。
 
+[從這裡開始](https://docs.litellm.ai/docs/proxy/pagerduty)
 
-[Start Here](https://docs.litellm.ai/docs/proxy/pagerduty)
+## Prometheus 改進 {#prometheus-improvements}
 
-## Prometheus Improvements
+新增支援可根據自訂指標追蹤延遲/支出/token。[從這裡開始](https://docs.litellm.ai/docs/proxy/prometheus#beta-custom-metrics)
 
-Added support for tracking latency/spend/tokens based on custom metrics. [Start Here](https://docs.litellm.ai/docs/proxy/prometheus#beta-custom-metrics)
+## *新增* Hashicorp Secret Manager 支援  {#new-hashicorp-secret-manager-support}
 
-## *NEW* Hashicorp Secret Manager Support 
+支援讀取憑證 + 寫入 LLM API 金鑰。[從這裡開始](https://docs.litellm.ai/docs/secret#hashicorp-vault)
 
-Support for reading credentials + writing LLM API keys. [Start Here](https://docs.litellm.ai/docs/secret#hashicorp-vault)
+## 管理端點 / UI 改進 {#management-endpoints--ui-improvements}
 
-## Management Endpoints / UI Improvements
+1. 在 Proxy UI 上建立和檢視組織 + 指派組織管理員
+2. 支援透過 key_alias 刪除金鑰
+3. 允許在 UI 上將團隊指派給組織
+4. 停用在 'test key' 面板中使用 ui session token
+5. 顯示 'test key' 面板中使用的模型 
+6. 支援在 'test key' 面板中輸出 Markdown
 
-1. Create and view organizations + assign org admins on the Proxy UI
-2. Support deleting keys by key_alias
-3. Allow assigning teams to org on UI
-4. Disable using ui session token for 'test key' pane
-5. Show model used in 'test key' pane 
-6. Support markdown output in 'test key' pane
+## Helm 改進 {#helm-improvements}
 
-## Helm Improvements
+1. 防止 db migrations cron job 進行 istio 注入
+2. 允許在 job 內使用 migrationJob.enabled 變數
 
-1. Prevent istio injection for db migrations cron job
-2. allow using migrationJob.enabled variable within job
+## 記錄改進 {#logging-improvements}
 
-## Logging Improvements
+1. braintrust logging: 遵循 project_id，新增更多指標  - https://github.com/BerriAI/litellm/pull/7613
+2. Athina - 支援 base url - `ATHINA_BASE_URL`
+3. Lunary - 允許將自訂 parent run id 傳遞給 LLM Calls 
 
-1. braintrust logging: respect project_id, add more metrics  - https://github.com/BerriAI/litellm/pull/7613
-2. Athina - support base url - `ATHINA_BASE_URL`
-3. Lunary - Allow passing custom parent run id to LLM Calls 
+## Git Diff {#git-diff}
 
+這是 v1.56.3-stable 與 v1.57.8-stable 之間的 diff。 
 
-
-## Git Diff 
-
-This is the diff between v1.56.3-stable and v1.57.8-stable. 
-
-Use this to see the changes in the codebase. 
+請用這個來查看程式碼基底中的變更。 
 
 [Git Diff](https://github.com/BerriAI/litellm/compare/v1.56.3-stable...189b67760011ea313ca58b1f8bd43aa74fbd7f55)

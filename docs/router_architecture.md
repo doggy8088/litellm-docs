@@ -2,23 +2,22 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Router Architecture (Fallbacks / Retries)
+# 路由器架構（備援 / 重試） {#router-architecture-fallbacks--retries}
 
-## High Level architecture
+## 高層級架構 {#high-level-architecture}
 
 <Image img={require('../img/router_architecture.png')} style={{ width: '100%', maxWidth: '4000px' }} />
 
-### Request Flow 
+### 請求流程  {#request-flow}
 
-1. **User Sends Request**: The process begins when a user sends a request to the LiteLLM Router endpoint. All unified endpoints (`.completion`, `.embeddings`, etc) are supported by LiteLLM Router.
+1. **使用者送出請求**：當使用者向 LiteLLM Router 端點送出請求時，流程便開始。LiteLLM Router 支援所有統一端點（`.completion`、`.embeddings` 等）。
 
-2. **function_with_fallbacks**: The initial request is sent to the `function_with_fallbacks` function. This function wraps the initial request in a try-except block, to handle any exceptions - doing fallbacks if needed. This request is then sent to the `function_with_retries` function.
+2. **function_with_fallbacks**：初始請求會傳送至 `function_with_fallbacks` 函式。此函式會以 try-except 區塊包裝初始請求，以處理任何例外狀況——必要時執行備援。接著此請求會傳送至 `function_with_retries` 函式。
 
+3. **function_with_retries**：`function_with_retries` 函式會以 try-except 區塊包裝請求，並將初始請求傳遞給一個基礎的 litellm 統一函式（`litellm.completion`、`litellm.embeddings` 等），以處理 LLM API 呼叫。`function_with_retries` 會處理任何例外狀況——必要時在模型群組上執行重試（也就是說，如果請求失敗，會在模型群組中的可用模型上重試）。
 
-3. **function_with_retries**: The `function_with_retries` function wraps the request in a try-except block and passes the initial request to a base litellm unified function (`litellm.completion`, `litellm.embeddings`, etc) to handle LLM API calling. `function_with_retries` handles any exceptions - doing retries on the model group if needed (i.e. if the request fails, it will retry on an available model within the model group). 
+4. **litellm.completion**：`litellm.completion` 函式是處理 LLM API 呼叫的基礎函式。`function_with_retries` 會使用它來對 LLM API 發出實際請求。
 
-4. **litellm.completion**: The `litellm.completion` function is a base function that handles the LLM API calling. It is used by `function_with_retries` to make the actual request to the LLM API.
+## 圖例  {#legend}
 
-## Legend 
-
-**model_group**: A group of LLM API deployments that share the same `model_name`, are part of the same `model_group`, and can be load balanced across.
+**model_group**：一組共享相同 `model_name`、屬於同一 `model_group`，且可在其上進行負載平衡的 LLM API 部署。

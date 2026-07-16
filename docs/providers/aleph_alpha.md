@@ -1,19 +1,19 @@
-# Aleph Alpha
+# Aleph Alpha {#aleph-alpha}
 
-LiteLLM supports all models from [Aleph Alpha](https://www.aleph-alpha.com/). 
+LiteLLM 支援來自 [Aleph Alpha](https://www.aleph-alpha.com/) 的所有模型。 
 
-Like AI21 and Cohere, you can use these models without a waitlist. 
+如同 AI21 和 Cohere，您可以在沒有候補名單的情況下使用這些模型。 
 
-### API KEYS
+### API 金鑰 {#api-keys}
 ```python
 import os
 os.environ["ALEPHALPHA_API_KEY"] = ""
 ```
 
-### Aleph Alpha Models
+### Aleph Alpha 模型 {#aleph-alpha-models}
 https://www.aleph-alpha.com/
 
-| Model Name       | Function Call                                  | Required OS Variables              |
+| 模型名稱       | 函式呼叫                                  | 必要的作業系統變數              |
 |------------------|--------------------------------------------|------------------------------------|
 | luminous-base       | `completion(model='luminous-base', messages=messages)`         | `os.environ['ALEPHALPHA_API_KEY']`     |
 | luminous-base-control       | `completion(model='luminous-base-control', messages=messages)`         | `os.environ['ALEPHALPHA_API_KEY']`     |

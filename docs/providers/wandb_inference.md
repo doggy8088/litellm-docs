@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Weights & Biases Inference
+# Weights & Biases 推論 {#weights--biases-inference}
 https://weave-docs.wandb.ai/quickstart-inference
 
 :::tip
 
-Litellm provides support to all models from W&B Inference service. To use a model, set `model=wandb/<any-model-on-wandb-inference-dashboard>` as a prefix for litellm requests. The full list of supported models is provided at https://docs.wandb.ai/guides/inference/models/
+LiteLLM 支援 W&B Inference 服務的所有模型。若要使用模型，請將 `model=wandb/<any-model-on-wandb-inference-dashboard>` 設為 litellm 請求的前綴。支援模型的完整清單請見 https://docs.wandb.ai/guides/inference/models/
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 
-You can get an API key for W&B Inference at - https://wandb.ai/authorize
+您可以在 https://wandb.ai/authorize 取得 W&B Inference 的 API 金鑰
 
 ```python
 import os
@@ -20,7 +20,7 @@ import os
 os.environ['WANDB_API_KEY']
 ```
 
-## Sample Usage: Text Generation
+## 範例用法：文字生成 {#sample-usage-text-generation}
 ```python
 from litellm import completion
 import os
@@ -43,7 +43,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -71,15 +71,15 @@ for chunk in response:
 
 :::tip
 
-The above examples may not work if the model has been taken offline. Check the full list of available models at https://docs.wandb.ai/guides/inference/models/.
+如果模型已離線，上述範例可能無法運作。請在 https://docs.wandb.ai/guides/inference/models/. 查看可用模型的完整清單
 
 :::
 
-## Usage with LiteLLM Proxy Server
+## 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server}
 
-Here's how to call a W&B Inference model with the LiteLLM Proxy Server
+以下說明如何透過 LiteLLM Proxy Server 呼叫 W&B Inference 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -88,12 +88,12 @@ Here's how to call a W&B Inference model with the LiteLLM Proxy Server
         model: wandb/<your-model-name>  # add wandb/ prefix to use W&B Inference as provider
         api_key: api-key                 # api key to send your model
   ```
-2. Start the proxy 
+2. 啟動 proxy 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 發送請求
 
   <Tabs>
 
@@ -140,49 +140,47 @@ Here's how to call a W&B Inference model with the LiteLLM Proxy Server
 
   </Tabs>
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-The W&B Inference provider supports the following parameters:
+W&B Inference 提供者支援以下參數：
 
-### Chat Completion Parameters
+### 聊天完成參數 {#chat-completion-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 | --------- | ---- | ----------- |
-| frequency_penalty | number | Penalizes new tokens based on their frequency in the text |
-| function_call | string/object | Controls how the model calls functions |
-| functions | array | List of functions for which the model may generate JSON inputs |
-| logit_bias | map | Modifies the likelihood of specified tokens |
-| max_tokens | integer | Maximum number of tokens to generate |
-| n | integer | Number of completions to generate |
-| presence_penalty | number | Penalizes tokens based on if they appear in the text so far |
-| response_format | object | Format of the response, e.g., `{"type": "json"}` |
-| seed | integer | Sampling seed for deterministic results |
-| stop | string/array | Sequences where the API will stop generating tokens |
-| stream | boolean | Whether to stream the response |
-| temperature | number | Controls randomness (0-2) |
-| top_p | number | Controls nucleus sampling |
+| frequency_penalty | number | 根據文字中出現的頻率來懲罰新 token |
+| function_call | string/object | 控制模型如何呼叫函式 |
+| functions | array | 模型可能會產生 JSON 輸入的函式清單 |
+| logit_bias | map | 修改指定 token 的可能性 |
+| max_tokens | integer | 要生成的最大 token 數 |
+| n | integer | 要生成的完成數量 |
+| presence_penalty | number | 根據 token 到目前為止是否出現在文字中來懲罰它們 |
+| response_format | object | 回應格式，例如 `{"type": "json"}` |
+| seed | integer | 用於決定性結果的取樣種子 |
+| stop | string/array | API 將停止生成 token 的序列 |
+| stream | boolean | 是否串流回應 |
+| temperature | number | 控制隨機性（0-2） |
+| top_p | number | 控制 nucleus sampling |
 
+## 錯誤處理 {#error-handling}
 
-## Error Handling
-
-The integration uses the standard LiteLLM error handling. Further, here's a list of commonly encountered errors with the W&B Inference API - 
+此整合使用標準的 LiteLLM 錯誤處理。此外，以下是 W&B Inference API 常見錯誤清單 - 
 
 | Error Code | Message | Cause | Solution |
 | ---------- | ------- | ----- | -------- |
-| 401 | Authentication failed | Your authentication credentials are incorrect or your W&B project entity and/or name are incorrect. | Ensure you're using the correct API key and that your W&B project name and entity are correct. |
-| 403 | Country, region, or territory not supported | Accessing the API from an unsupported location. | Please see [Geographic restrictions](https://docs.wandb.ai/guides/inference/usage-limits/#geographic-restrictions) |
-| 429 | Concurrency limit reached for requests | Too many concurrent requests. | Reduce the number of concurrent requests or increase your limits. For more information, see [Usage information and limits](https://docs.wandb.ai/guides/inference/usage-limits/). |
-| 429 | You exceeded your current quota, please check your plan and billing details | Out of credits or reached monthly spending cap. | Get more credits or increase your limits. For more information, see [Usage information and limits](https://docs.wandb.ai/guides/inference/usage-limits/). |
-| 429 | W&B Inference isn't available for personal accounts. | Switch to a non-personal account.  | Follow [the instructions below](#error-429-personal-entities-unsupported) for a work around. |
-| 500 | The server had an error while processing your request | Internal server error. | Retry after a brief wait and contact support if it persists. |
-| 503 | The engine is currently overloaded, please try again later | Server is experiencing high traffic. | Retry your request after a short delay. |
+| 401 | 驗證失敗 | 您的驗證憑證不正確，或您的 W&B 專案 entity 和/或名稱不正確。 | 請確保您使用的是正確的 API 金鑰，且您的 W&B 專案名稱與 entity 正確。 |
+| 403 | 不支援的國家、地區或領土 | 從不支援的位置存取 API。 | 請參閱[地理限制](https://docs.wandb.ai/guides/inference/usage-limits/#geographic-restrictions) |
+| 429 | 已達請求的並行限制 | 同時請求過多。 | 減少並行請求數量或提高限制。更多資訊請參閱[使用資訊與限制](https://docs.wandb.ai/guides/inference/usage-limits/)。 |
+| 429 | 您已超出目前配額，請檢查您的方案與帳單詳細資料 | 點數不足或已達每月支出上限。 | 取得更多點數或提高限制。更多資訊請參閱[使用資訊與限制](https://docs.wandb.ai/guides/inference/usage-limits/)。 |
+| 429 | W&B Inference 不適用於個人帳戶。 | 切換至非個人帳戶。  | 請依照[下方指示](#error-429-personal-entities-unsupported)進行變通處理。 |
+| 500 | 伺服器在處理您的請求時發生錯誤 | 內部伺服器錯誤。 | 稍候後重試，若問題持續請聯絡支援。 |
+| 503 | 引擎目前負載過高，請稍後再試 | 伺服器正面臨高流量。 | 稍後再重試您的請求。 |
 
+### 錯誤 429：不支援個人 entity {#error-429-personal-entities-unsupported}
 
-### Error 429: Personal entities unsupported
+使用者使用的是個人帳戶，無法存取 W&B Inference。如果沒有可用的帳戶，請建立 Team 以建立非個人帳戶。 
 
-The user is on a personal account, which doesn't have access to W&B Inference. If one isn't available, create a Team to create a non-personal account. 
-
-Once done, add the `openai-project` header to your request as shown below:
+完成後，請如下所示在您的請求中加入 `openai-project` 標頭：
 
 ```python
 response = completion(
@@ -191,6 +189,6 @@ response = completion(
     ...
 ```
 
-For more information, see [Personal entities unsupported](https://docs.wandb.ai/guides/inference/usage-limits/#personal-entities-unsupported).
+更多資訊請參閱[不支援個人 entity](https://docs.wandb.ai/guides/inference/usage-limits/#personal-entities-unsupported)。
 
-You can find more ways of using custom headers with LiteLLM here - https://docs.litellm.ai/docs/proxy/request_headers.
+您可在此找到更多使用 LiteLLM 自訂標頭的方法 - https://docs.litellm.ai/docs/proxy/request_headers.

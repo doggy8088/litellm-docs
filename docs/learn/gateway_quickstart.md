@@ -1,28 +1,28 @@
 ---
 title: Gateway Quickstart
 sidebar_label: Gateway Quickstart
-description: Start LiteLLM Gateway, add models and keys, then connect applications and SDKs to one shared endpoint.
+description: 啟動 LiteLLM Gateway，新增模型與金鑰，然後將應用程式與 SDK 連接到單一共用端點。
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
-Use this path if you need one shared OpenAI-compatible endpoint for a team or platform.
+如果您需要為團隊或平台提供一個共用的 OpenAI 相容端點，請使用此路徑。
 
-If you need a Docker or database-first setup, use the [Docker + Database tutorial](/docs/proxy/docker_quick_start). Otherwise, use the steps below to get to a working request fast.
+如果您需要以 Docker 或資料庫優先的設定，請使用 [Docker + Database 教學](/docs/proxy/docker_quick_start)。否則，請使用以下步驟快速取得可運作的請求。
 
-## 1. Install The Gateway
+## 1. 安裝閘道 {#1-install-the-gateway}
 
 ```bash
 uv tool install 'litellm[proxy]'
 ```
 
-## 2. Set One Provider Key
+## 2. 設定一個提供者金鑰 {#2-set-one-provider-key}
 
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
 
-## 3. Create `config.yaml`
+## 3. 建立 `config.yaml` {#3-create-configyaml}
 
 ```yaml
 model_list:
@@ -36,15 +36,15 @@ general_settings:
   database_url: postgresql://llmproxy:dbpassword9090@db:5432/litellm
 ```
 
-## 4. Start The Gateway
+## 4. 啟動閘道 {#4-start-the-gateway}
 
 ```bash
 litellm --config config.yaml
 ```
 
-You should see the proxy start on `http://0.0.0.0:4000`.
+您應該會看到 proxy 在 `http://0.0.0.0:4000` 啟動。
 
-## 5. Send Your First Request
+## 5. 傳送您的第一個請求 {#5-send-your-first-request}
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -58,17 +58,17 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-## 6. Check The Response
+## 6. 檢查回應 {#6-check-the-response}
 
-If the request succeeds, the proxy returns `200 OK` with an OpenAI-style response.
+如果請求成功，proxy 會回傳 `200 OK`，並附上 OpenAI 風格的回應。
 
-The assistant text will be in:
+助理文字將位於：
 
 ```json
 choices[0].message.content
 ```
 
-If your gateway is routing to OpenAI, a real response can look like this:
+如果您的閘道路由到 OpenAI，實際回應可能如下所示：
 
 ```json
 {
@@ -109,67 +109,67 @@ If your gateway is routing to OpenAI, a real response can look like this:
 }
 ```
 
-`id`, `created`, the resolved model version, token counts, and message text will vary by request. Other providers may return a smaller or slightly different set of fields, but `choices[0].message.content` is the main field to read.
+`id`、`created`、解析後的模型版本、token 數量與訊息文字都會依請求而有所不同。其他提供者可能會回傳較少或略有不同的一組欄位，但 `choices[0].message.content` 是主要需要讀取的欄位。
 
-## 7. Add Keys And The UI
+## 7. 新增金鑰與 UI {#7-add-keys-and-the-ui}
 
-If you need virtual keys, spend tracking, or the admin UI, add a database next.
+如果您需要虛擬金鑰、支出追蹤或管理 UI，請先新增資料庫。
 
-- Add `database_url` under `general_settings`
-- Use [Virtual keys](/docs/proxy/virtual_keys) for key creation and budgets
-- Use [Admin UI](/docs/proxy/ui) to manage models and keys
-- Use the [Docker + Database tutorial](/docs/proxy/docker_quick_start) if you want a fuller setup
+- 在 `general_settings` 下新增 `database_url`
+- 使用 [Virtual keys](/docs/proxy/virtual_keys) 進行金鑰建立與預算管理
+- 使用 [Admin UI](/docs/proxy/ui) 管理模型與金鑰
+- 如果您想要更完整的設定，請使用 [Docker + Database 教學](/docs/proxy/docker_quick_start)
 
-## 8. Pick Your Next Step
+## 8. 選擇您的下一步 {#8-pick-your-next-step}
 
 <NavigationCards
 columns={3}
 items={[
   {
     icon: "🖥️",
-    title: "Make LLM Requests",
-    description: "Point LiteLLM or OpenAI-compatible clients to the gateway.",
+    title: "進行 LLM 請求",
+    description: "將 LiteLLM 或相容於 OpenAI 的用戶端指向閘道。",
     to: "/docs/proxy/user_keys",
   },
   {
     icon: "🎛️",
-    title: "Model Config",
-    description: "Add more models and gateway settings.",
+    title: "模型設定",
+    description: "新增更多模型與閘道設定。",
     to: "/docs/proxy/configs",
   },
   {
     icon: "🔑",
-    title: "Virtual Keys",
-    description: "Create keys, budgets, and access controls.",
+    title: "虛擬金鑰",
+    description: "建立金鑰、預算與存取控制。",
     to: "/docs/proxy/virtual_keys",
   },
   {
     icon: "📈",
-    title: "Add Logging",
-    description: "Capture logs, spend, and traces.",
+    title: "新增記錄",
+    description: "擷取記錄、支出與追蹤。",
     to: "/docs/proxy/logging",
   },
   {
     icon: "🔀",
-    title: "Load Balance",
-    description: "Route across deployments, regions, or providers.",
+    title: "負載平衡",
+    description: "跨部署、區域或提供者進行路由。",
     to: "/docs/proxy/load_balancing",
   },
   {
     icon: "🛡️",
-    title: "Add Guardrails",
-    description: "Add safety checks and policy enforcement.",
+    title: "新增防護欄",
+    description: "新增安全檢查與政策執行。",
     to: "/docs/proxy/guardrails/quick_start",
   },
   {
     icon: "📊",
-    title: "Reliability",
-    description: "Configure retries, fallbacks, and timeouts.",
+    title: "可靠性",
+    description: "設定重試、備援與逾時。",
     to: "/docs/proxy/reliability",
   },
 ]}
 />
 
-## When To Use The SDK Path Instead
+## 何時改用 SDK 路徑 {#when-to-use-the-sdk-path-instead}
 
-If you only need to call models from one application and do not need centralized auth or shared infrastructure, start with the [SDK Quickstart](/docs/learn/sdk_quickstart) instead.
+如果您只需要從單一應用程式呼叫模型，且不需要集中式驗證或共用基礎架構，請改從 [SDK Quickstart](/docs/learn/sdk_quickstart) 開始。

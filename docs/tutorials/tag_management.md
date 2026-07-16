@@ -2,41 +2,40 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# [Beta] Routing based on request metadata
+# [Beta] 根據請求中繼資料進行路由 {#beta-routing-based-on-request-metadata}
 
-Create routing rules based on request metadata.
+根據請求中繼資料建立路由規則。
 
-## Setup
+## 設定 {#setup}
 
-Add the following to your litellm proxy config yaml file.
+將以下內容加入您的 litellm proxy 設定 yaml 檔案。
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 router_settings:
   enable_tag_filtering: True # 👈 Key Change
 ```
 
-## 1. Create a tag
+## 1. 建立標籤 {#1-create-a-tag}
 
-On the LiteLLM UI, navigate to Experimental > Tag Management > Create Tag.
+在 LiteLLM UI 中，前往 Experimental > Tag Management > Create Tag。
 
-Create a tag called `private-data` and only select the allowed models for requests with this tag. Once created, you will see the tag in the Tag Management page.
+建立一個名為 `private-data` 的標籤，並且只選取具有此標籤的請求允許使用的模型。建立後，您會在 Tag Management 頁面看到該標籤。
 
 <Image img={require('../../img/tag_create.png')}  style={{ width: '800px', height: 'auto' }} />
 
+## 2. 測試標籤路由 {#2-test-tag-routing}
 
-## 2. Test Tag Routing
+現在我們將測試基於標籤的路由規則。
 
-Now we will test the tag based routing rules.
+### 2.1 無效模型 {#21-invalid-model}
 
-### 2.1 Invalid model
-
-This request will fail since we send `tags=private-data` but the model `gpt-4o` is not in the allowed models for the `private-data` tag.
+此請求會失敗，因為我們送出 `tags=private-data`，但模型 `gpt-4o` 不在 `private-data` 標籤允許的模型中。
 
 <Image img={require('../../img/tag_invalid.png')}  style={{ width: '800px', height: 'auto' }} />
 
 <br />
 
-Here is an example sending the same request using the OpenAI Python SDK.
+以下是使用 OpenAI Python SDK 傳送相同請求的範例。
 <Tabs>
 <TabItem value="python" label="OpenAI Python SDK">
 
@@ -83,13 +82,13 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 <br />
 
-### 2.2 Valid model
+### 2.2 有效模型 {#22-valid-model}
 
-This request will succeed since we send `tags=private-data` and the model `us.anthropic.claude-3-7-sonnet-20250219-v1:0` is in the allowed models for the `private-data` tag.
+此請求會成功，因為我們送出 `tags=private-data`，而模型 `us.anthropic.claude-3-7-sonnet-20250219-v1:0` 在 `private-data` 標籤允許的模型中。
 
 <Image img={require('../../img/tag_valid.png')}  style={{ width: '800px', height: 'auto' }} />
 
-Here is an example sending the same request using the OpenAI Python SDK.
+以下是使用 OpenAI Python SDK 傳送相同請求的範例。
 
 <Tabs>
 <TabItem value="python" label="OpenAI Python SDK">
@@ -135,11 +134,8 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-
-## Additional Tag Features
-- [Sending tags in request headers](https://docs.litellm.ai/docs/proxy/tag_routing#calling-via-request-header)
-- [Tag based routing](https://docs.litellm.ai/docs/proxy/tag_routing)
-- [Track spend per tag](cost_tracking#-custom-tags)
-- [Setup Budgets per Virtual Key, Team](users)
-
+## 其他標籤功能 {#additional-tag-features}
+- [在請求標頭中傳送標籤](https://docs.litellm.ai/docs/proxy/tag_routing#calling-via-request-header)
+- [基於標籤的路由](https://docs.litellm.ai/docs/proxy/tag_routing)
+- [依標籤追蹤支出](cost_tracking#-custom-tags)
+- [為虛擬金鑰、團隊設定預算](users)

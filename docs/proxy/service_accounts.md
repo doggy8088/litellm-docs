@@ -2,36 +2,35 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Service Accounts
+# 服務帳戶 {#service-accounts}
 
-Use this if you want to create Virtual Keys that are not owned by a specific user but instead created for production projects
+如果您想建立不屬於特定使用者、而是為正式環境專案建立的 Virtual Keys，請使用此功能
 
-Why use a service account key?
-  - Prevent key from being deleted when user is deleted.
-  - Apply team limits, not team member limits to key.
+為什麼要使用服務帳戶金鑰？
+  - 防止使用者被刪除時，金鑰也被刪除。
+  - 對金鑰套用團隊限制，而不是團隊成員限制。
 
-## Service Account vs Regular Keys
+## 服務帳戶與一般金鑰 {#service-account-vs-regular-keys}
 
-| Feature | Regular Key | Service Account Key |
+| 功能 | 一般金鑰 | 服務帳戶金鑰 |
 |---------|------------|-------------------|
-| `user_id` | Optional | Always `null` |
-| `team_id` | Optional | Required |
-| Applied limits | User + Team limits | Team limits only |
-| Key deleted when user is deleted? | Yes | No — persists |
-| `service_account_id` in metadata | Not set | Immutable once set |
-| `team_member_key_duration` | Inherits | Does not inherit |
+| `user_id` | 選填 | 一律 `null` |
+| `team_id` | 選填 | 必填 |
+| 套用的限制 | 使用者 + 團隊限制 | 僅團隊限制 |
+| 使用者被刪除時，金鑰也會被刪除嗎？ | 是 | 否 — 會保留 |
+| 中的 `service_account_id` metadata | 未設定 | 一旦設定即不可變更 |
+| `team_member_key_duration` | 繼承 | 不繼承 |
 
-## Budgets & Limits
+## 預算與限制 {#budgets--limits}
 
-Service account keys apply budgets and rate limits at the **team level** — not per user or per key member.
+服務帳戶金鑰會在**團隊層級**套用預算與速率限制——不是按使用者或按金鑰成員。
 
-- Set `max_budget`, `tpm_limit`, `rpm_limit` on the key itself, or inherit them from the team.
-- `team_member_key_duration` (an enterprise feature that controls how long team-member keys last) does **not** apply to service account keys.
+- 在金鑰本身上設定 `max_budget`、`tpm_limit`、`rpm_limit`，或從團隊繼承。
+- `team_member_key_duration`（一項控制團隊成員金鑰有效期長度的企業功能）不適用於服務帳戶金鑰。
 
-## Usage
+## 使用方式 {#usage}
 
-Use the `/key/service-account/generate` endpoint to generate a service account key.
-
+使用 `/key/service-account/generate` 端點來產生服務帳戶金鑰。
 
 ```bash
 curl -L -X POST 'http://localhost:4000/key/service-account/generate' \
@@ -42,9 +41,9 @@ curl -L -X POST 'http://localhost:4000/key/service-account/generate' \
 }'
 ```
 
-### `service_account_id` field
+### `service_account_id` 欄位 {#service_account_id-field}
 
-You can optionally provide a `service_account_id` inside `metadata` to give the key a stable, human-readable identifier:
+您可以選擇在 `metadata` 中提供 `service_account_id`，為金鑰提供穩定、可供人類閱讀的識別碼：
 
 ```bash
 curl -L -X POST 'http://localhost:4000/key/service-account/generate' \
@@ -58,22 +57,21 @@ curl -L -X POST 'http://localhost:4000/key/service-account/generate' \
 }'
 ```
 
-**Immutability rules** — once `service_account_id` is set, it cannot be changed:
+**不可變更規則** — 一旦設定 `service_account_id`，就無法變更：
 
-| Operation | Result |
+| 操作 | 結果 |
 |-----------|--------|
-| Overwrite with a different value | `400` error |
-| Set to `null` explicitly | `400` error |
-| Send `metadata: null` (would clear it) | `400` error |
-| Omit `metadata` entirely on update | Safe — existing value is preserved |
-| Resend the same value | Allowed (no-op) |
+| 以不同值覆寫 | `400` 錯誤 |
+| 明確設定為 `null` | `400` 錯誤 |
+| 傳送 `metadata: null`（會將其清除） | `400` 錯誤 |
+| 更新時完全省略 `metadata` | 安全 — 既有值會保留 |
+| 重新傳送相同值 | 允許（無操作） |
 
-## Example - require `user` param for all service account requests
+## 範例 - 針對所有服務帳戶請求要求 `user` 參數 {#example---require-user-param-for-all-service-account-requests}
 
+### 1. 為服務帳戶設定設定 {#1-set-settings-for-service-accounts}
 
-### 1. Set settings for Service Accounts
-
-Set `service_account_settings` if you want to create settings that only apply to service account keys
+如果您想建立只適用於服務帳戶金鑰的設定，請設定 `service_account_settings`
 
 ```yaml
 general_settings:
@@ -81,16 +79,15 @@ general_settings:
         enforced_params: ["user"] # this means the "user" param is enforced for all requests made through any service account keys
 ```
 
-### 2. Create Service Account Key on LiteLLM Proxy Admin UI
+### 2. 在 LiteLLM Proxy Admin UI 建立服務帳戶金鑰 {#2-create-service-account-key-on-litellm-proxy-admin-ui}
 
 <Image img={require('../../img/create_service_account.png')} />
 
-### 3. Test Service Account Key 
+### 3. 測試服務帳戶金鑰  {#3-test-service-account-key}
 
 <Tabs>
 
 <TabItem value="Unsuccessful call" label="Unsuccessful call">
-
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -107,7 +104,7 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```json
 {
@@ -123,7 +120,6 @@ Expected Response
 </TabItem>
 
 <TabItem value="Successful call" label="Successful call">
-
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -141,7 +137,7 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```json
 {
@@ -175,4 +171,3 @@ Expected Response
 </TabItem>
 
 </Tabs>
-

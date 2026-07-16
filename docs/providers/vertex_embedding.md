@@ -2,9 +2,9 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI Embedding
+# Vertex AI 嵌入 {#vertex-ai-embedding}
 
-## Usage - Embedding
+## 用法 - Embedding {#usage---embedding}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -25,8 +25,7 @@ print(response)
 
 <TabItem value="proxy" label="LiteLLM PROXY">
 
-
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: snowflake-arctic-embed-m-long-1731622468876
@@ -40,13 +39,13 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request using OpenAI Python SDK, Langchain Python SDK
+3. 使用 OpenAI Python SDK、Langchain Python SDK 發出請求
 
 ```python
 import openai
@@ -65,10 +64,10 @@ print(response)
 </TabItem>
 </Tabs>
 
-#### Supported Embedding Models
-All models listed [here](https://github.com/BerriAI/litellm/blob/57f37f743886a0249f630a6792d49dffc2c5d9b7/model_prices_and_context_window.json#L835) are supported
+#### 支援的 Embedding 模型 {#supported-embedding-models}
+[這裡](https://github.com/BerriAI/litellm/blob/57f37f743886a0249f630a6792d49dffc2c5d9b7/model_prices_and_context_window.json#L835) 列出的所有模型都受支援
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | text-embedding-004 | `embedding(model="vertex_ai/text-embedding-004", input)` | 
 | text-multilingual-embedding-002 | `embedding(model="vertex_ai/text-multilingual-embedding-002", input)` | 
@@ -79,20 +78,19 @@ All models listed [here](https://github.com/BerriAI/litellm/blob/57f37f743886a02
 | textembedding-gecko@003 | `embedding(model="vertex_ai/textembedding-gecko@003", input)` | 
 | text-embedding-preview-0409 | `embedding(model="vertex_ai/text-embedding-preview-0409", input)` |
 | text-multilingual-embedding-preview-0409 | `embedding(model="vertex_ai/text-multilingual-embedding-preview-0409", input)` | 
-| gemini-embedding-2-preview | `embedding(model="vertex_ai/gemini-embedding-2-preview", input)` | [Multimodal docs](#gemini-embedding-2-preview-multimodal) |
-| gemini-embedding-2 *(GA)* | `embedding(model="vertex_ai/gemini-embedding-2", input)` | [Multimodal docs](#gemini-embedding-2-preview-multimodal) · [GA notes](/blog/gemini_embedding_2_ga) |
+| gemini-embedding-2-preview | `embedding(model="vertex_ai/gemini-embedding-2-preview", input)` | [多模態文件](#gemini-embedding-2-preview-multimodal) |
+| gemini-embedding-2 *(GA)* | `embedding(model="vertex_ai/gemini-embedding-2", input)` | [多模態文件](#gemini-embedding-2-preview-multimodal) · [GA 附註](/blog/gemini_embedding_2_ga) |
 | Fine-tuned OR Custom Embedding models | `embedding(model="vertex_ai/<your-model-id>", input)` | 
 
-### Supported OpenAI (Unified) Params
+### 支援的 OpenAI（Unified）參數 {#supported-openai-unified-params}
 
-| [param](../embedding/supported_embedding.md#input-params-for-litellmembedding) | type | [vertex equivalent](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api) |
+| [參數](../embedding/supported_embedding.md#input-params-for-litellmembedding) | 型別 | [vertex 對應項目](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api) |
 |-------|-------------|--------------------|
 | `input` | **string or List[string]** | `instances` |
 | `dimensions` | **int** | `output_dimensionality` |
 | `input_type` | **Literal["RETRIEVAL_QUERY","RETRIEVAL_DOCUMENT", "SEMANTIC_SIMILARITY", "CLASSIFICATION", "CLUSTERING", "QUESTION_ANSWERING", "FACT_VERIFICATION"]** | `task_type` |
 
-#### Usage with OpenAI (Unified) Params
-
+#### 使用 OpenAI（Unified）參數 {#usage-with-openai-unified-params}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -107,7 +105,6 @@ response = litellm.embedding(
 ```
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY">
-
 
 ```python
 import openai
@@ -128,20 +125,19 @@ print(response)
 </TabItem>
 </Tabs>
 
+### 支援的 Vertex 特定參數 {#supported-vertex-specific-params}
 
-### Supported Vertex Specific Params
-
-| param | type |
+| 參數 | 型別 |
 |-------|-------------|
 | `auto_truncate` | **bool** |
 | `task_type` | **Literal["RETRIEVAL_QUERY","RETRIEVAL_DOCUMENT", "SEMANTIC_SIMILARITY", "CLASSIFICATION", "CLUSTERING", "QUESTION_ANSWERING", "FACT_VERIFICATION"]** |
 | `title` | **str** |
 
-#### Usage with Vertex Specific Params  (Use `task_type` and `title`)
+#### 使用 Vertex 特定參數（使用 `task_type` 和 `title`） {#usage-with-vertex-specific-params--use-task_type-and-title}
 
-You can pass any vertex specific params to the embedding model. Just pass them to the embedding function like this: 
+您可以將任何 Vertex 特定參數傳遞給 embedding 模型。只要像這樣將它們傳遞給 embedding 函式：
 
-[Relevant Vertex AI doc with all embedding params](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api#request_body)
+[相關的 Vertex AI 文件，內含所有 embedding 參數](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api#request_body)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -158,7 +154,6 @@ response = litellm.embedding(
 ```
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY">
-
 
 ```python
 import openai
@@ -181,11 +176,11 @@ print(response)
 </TabItem>
 </Tabs>
 
-## **BGE Embeddings**
+## **BGE 嵌入** {#bge-embeddings}
 
-Use BGE (Baidu General Embedding) models deployed on Vertex AI.
+使用部署在 Vertex AI 上的 BGE（Baidu General Embedding）模型。
 
-### Usage
+### 用法 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -207,7 +202,7 @@ print(response)
 
 <TabItem value="proxy" label="LiteLLM PROXY">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml showLineNumbers title="config.yaml"
 model_list:
   - model_name: bge-embedding
@@ -221,13 +216,13 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request using OpenAI Python SDK
+3. 使用 OpenAI Python SDK 發出請求
 
 ```python showLineNumbers title="Making requests to BGE"
 import openai
@@ -242,7 +237,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Using a Private Service Connect (PSC) endpoint
+使用 Private Service Connect（PSC）端點
 
 ```yaml showLineNumbers title="config.yaml (PSC)"
 model_list:
@@ -257,26 +252,25 @@ model_list:
 </TabItem>
 </Tabs>
 
-## **Multi-Modal Embeddings**
+## **多模態 Embeddings** {#multi-modal-embeddings}
 
-### Gemini Embedding 2 Preview (Multimodal)
+### Gemini Embedding 2 預覽（多模態） {#gemini-embedding-2-preview-multimodal}
 
-`gemini-embedding-2-preview` supports **unified multimodal embeddings**—text, images, audio, video, and PDF in a single request. See [blog post](/blog/gemini_embedding_2_multimodal) for details. The GA model id `gemini-embedding-2` exposes the same behavior—swap the model name in any example below. See [GA blog](/blog/gemini_embedding_2_ga) for cost-map coverage and pricing notes.
+`gemini-embedding-2-preview` 支援 **統一多模態 embeddings**——可在單一請求中處理文字、圖片、音訊、影片和 PDF。詳情請參閱 [部落格文章](/blog/gemini_embedding_2_multimodal)。GA 模型 ID `gemini-embedding-2` 提供相同行為——可在下方任何範例中直接替換模型名稱。請參閱 [GA 部落格](/blog/gemini_embedding_2_ga) 以了解 cost-map 涵蓋範圍與價格說明。
 
-:::warning Response shape — Vertex returns one combined vector
+:::warning 回應格式 — Vertex 只會回傳一個合併向量
 
-Vertex AI's Gemini embedding endpoint only exposes single-content `embedContent` (no `batchEmbedContents`), so passing `N` items in `input=[...]` returns **1 unified embedding** that fuses all parts—not N separate vectors. To get one vector per item, call `embedding(...)` once per input.
+Vertex AI 的 Gemini embedding 端點只提供單一內容 `embedContent`（沒有 `batchEmbedContents`），因此在 `input=[...]` 中傳入 `N` 個項目時，會回傳 **1 個統一 embedding**，將所有部分融合在一起，而不是 N 個獨立向量。若要每個項目各取得一個向量，請對每個輸入各呼叫一次 `embedding(...)`。
 
-This differs from the Gemini API path (`gemini/gemini-embedding-2-preview`), which returns one embedding per input element (OpenAI-compatible). See [Gemini embedding docs](../embedding/supported_embedding#gemini-embedding-2-preview-multimodal).
+這與 Gemini API 路徑（`gemini/gemini-embedding-2-preview`）不同，後者會針對每個輸入元素回傳一個 embedding（OpenAI 相容）。請參閱 [Gemini embedding 文件](../embedding/supported_embedding#gemini-embedding-2-preview-multimodal)。
 
 :::
 
+**輸入格式：**
+- **Data URI：** `data:image/png;base64,<encoded_data>`
+- **GCS URL：** `gs://bucket/path/to/file.png`（MIME 類型會根據副檔名推斷）
 
-**Input formats:**
-- **Data URIs:** `data:image/png;base64,<encoded_data>`
-- **GCS URLs:** `gs://bucket/path/to/file.png` (MIME type inferred from extension)
-
-**Supported MIME types:** `image/png`, `image/jpeg`, `audio/mpeg`, `audio/wav`, `video/mp4`, `video/quicktime`, `application/pdf`
+**支援的 MIME 類型：** `image/png`、`image/jpeg`、`audio/mpeg`、`audio/wav`、`video/mp4`、`video/quicktime`、`application/pdf`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -332,18 +326,18 @@ curl -X POST http://localhost:4000/embeddings \
 </TabItem>
 </Tabs>
 
-### multimodalembedding@001 (Legacy)
+### multimodalembedding@001（舊版） {#multimodalembedding001-legacy}
 
-Known Limitations:
-- Only supports 1 image / video / image per request
-- Only supports GCS or base64 encoded images / videos
+已知限制：
+- 每個請求只支援 1 張圖片 / 影片 / 圖片
+- 僅支援 GCS 或 base64 編碼的圖片 / 影片
 
-### Usage
+### 用法 {#usage-1}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Using GCS Images
+使用 GCS 圖片
 
 ```python
 response = await litellm.aembedding(
@@ -352,7 +346,7 @@ response = await litellm.aembedding(
 )
 ```
 
-Using base 64 encoded images
+使用 base 64 編碼的圖片
 
 ```python
 response = await litellm.aembedding(
@@ -364,7 +358,7 @@ response = await litellm.aembedding(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY (Unified Endpoint)">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: multimodalembedding@001
@@ -378,20 +372,19 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request use OpenAI Python SDK, Langchain Python SDK
-
+3. 使用 OpenAI Python SDK、Langchain Python SDK 發出請求
 
 <Tabs>
 
 <TabItem value="OpenAI SDK" label="OpenAI SDK">
 
-Requests with GCS Image / Video URI
+使用 GCS 圖片 / 影片 URI 的請求
 
 ```python
 import openai
@@ -407,7 +400,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Requests with base64 encoded images
+使用 base64 編碼圖片的請求
 
 ```python
 import openai
@@ -427,7 +420,7 @@ print(response)
 
 <TabItem value="langchain" label="Langchain">
 
-Requests with GCS Image / Video URI
+使用 GCS 圖片 / 影片 URI 的請求
 ```python
 from langchain_openai import OpenAIEmbeddings
 
@@ -447,7 +440,7 @@ print(query_result)
 
 ```
 
-Requests with base64 encoded images
+使用 base64 編碼圖片的請求
 
 ```python
 from langchain_openai import OpenAIEmbeddings
@@ -473,10 +466,9 @@ print(query_result)
 </Tabs>
 </TabItem>
 
-
 <TabItem value="proxy-vtx" label="LiteLLM PROXY (Vertex SDK)">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 default_vertex_config:
   vertex_project: "adroit-crow-413218"
@@ -484,13 +476,13 @@ default_vertex_config:
   vertex_credentials: adroit-crow-413218-a956eef1a2a8.json 
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request use OpenAI Python SDK
+3. 使用 OpenAI Python SDK 發出請求
 
 ```python
 import vertexai
@@ -553,13 +545,12 @@ print(f"Text Embedding: {embeddings.text_embedding}")
 </TabItem>
 </Tabs>
 
-
-### Text + Image + Video Embeddings
+### 文字 + 圖片 + 影片 Embeddings {#text--image--video-embeddings}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-Text + Image 
+文字 + 圖片 
 
 ```python
 response = await litellm.aembedding(
@@ -568,7 +559,7 @@ response = await litellm.aembedding(
 )
 ```
 
-Text + Video 
+文字 + 影片 
 
 ```python
 response = await litellm.aembedding(
@@ -577,7 +568,7 @@ response = await litellm.aembedding(
 )
 ```
 
-Image + Video 
+圖片 + 影片 
 
 ```python
 response = await litellm.aembedding(
@@ -590,7 +581,7 @@ response = await litellm.aembedding(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM PROXY (Unified Endpoint)">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: multimodalembedding@001
@@ -604,16 +595,15 @@ litellm_settings:
   drop_params: True
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request use OpenAI Python SDK, Langchain Python SDK
+3. 使用 OpenAI Python SDK、Langchain Python SDK 發出請求
 
-
-Text + Image 
+文字 + 圖片 
 
 ```python
 import openai
@@ -629,7 +619,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Text + Video 
+文字 + 影片 
 ```python
 import openai
 
@@ -644,7 +634,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-Image + Video 
+圖片 + 影片 
 ```python
 import openai
 

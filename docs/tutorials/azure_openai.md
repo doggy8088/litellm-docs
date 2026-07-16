@@ -1,13 +1,13 @@
-# Replacing OpenAI ChatCompletion with Completion()
+# 以 Completion() 取代 OpenAI ChatCompletion {#replacing-openai-chatcompletion-with-completion}
 
-* [Supported OpenAI LLMs](https://docs.litellm.ai/docs/providers/openai)
-* [Supported Azure OpenAI LLMs](https://docs.litellm.ai/docs/providers/azure)
+* [支援的 OpenAI LLM](https://docs.litellm.ai/docs/providers/openai)
+* [支援的 Azure OpenAI LLM](https://docs.litellm.ai/docs/providers/azure)
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_Azure_and_OpenAI_example.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-## Completion() - Quick Start
+## Completion() - 快速開始 {#completion---quick-start}
 ```python
 import os 
 from litellm import completion
@@ -39,7 +39,7 @@ print("Azure Response\n")
 print(response)
 ```
 
-## Completion() with Streaming
+## 使用串流的 Completion() {#completion-with-streaming}
 ```python
 import os 
 from litellm import completion
@@ -76,7 +76,7 @@ for chunk in response:
 
 ```
 
-## Completion() with Streaming + Async
+## 使用串流 + 非同步的 Completion() {#completion-with-streaming--async}
 ```python
 import os 
 from litellm import acompletion
@@ -107,7 +107,7 @@ response = acompletion(
 
 ```
 
-## Completion() multi-threaded
+## Completion() 多執行緒 {#completion-multi-threaded}
 
 ```python
 import os

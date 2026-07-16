@@ -1,17 +1,17 @@
-# RunwayML - Image Generation
+# RunwayML - 圖像生成 {#runwayml---image-generation}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | RunwayML provides advanced AI-powered image generation with high-quality results |
-| Provider Route on LiteLLM | `runwayml/` |
-| Supported Operations | [`/images/generations`](#quick-start) |
-| Link to Provider Doc | [RunwayML API ↗](https://docs.dev.runwayml.com/) |
+| 說明 | RunwayML 提供先進的 AI 驅動圖像生成，並帶來高品質結果 |
+| LiteLLM 上的提供者路由 | `runwayml/` |
+| 支援的操作 | [`/images/generations`](#quick-start) |
+| 提供者文件連結 | [RunwayML API ↗](https://docs.dev.runwayml.com/) |
 
-LiteLLM supports RunwayML's Gen-4 image generation API, allowing you to generate high-quality images from text prompts.
+LiteLLM 支援 RunwayML 的 Gen-4 圖像生成 API，讓您可以從文字提示生成高品質圖像。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python showLineNumbers title="Basic Image Generation"
 from litellm import image_generation
@@ -28,9 +28,9 @@ response = image_generation(
 print(response.data[0].url)
 ```
 
-## Authentication
+## 驗證 {#authentication}
 
-Set your RunwayML API key:
+設定您的 RunwayML API 金鑰：
 
 ```python showLineNumbers title="Set API Key"
 import os
@@ -38,23 +38,23 @@ import os
 os.environ["RUNWAYML_API_KEY"] = "your-api-key"
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 型別 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | Model to use (e.g., `runwayml/gen4_image`) |
-| `prompt` | string | Yes | Text description for the image |
-| `size` | string | No | Image dimensions (default: `1920x1080`) |
+| `model` | string | Yes | 要使用的模型（例如，`runwayml/gen4_image`） |
+| `prompt` | string | Yes | 圖像的文字描述 |
+| `size` | string | No | 圖像尺寸（預設：`1920x1080`） |
 
-### Supported Sizes
+### 支援的尺寸 {#supported-sizes}
 
 - `1024x1024`
 - `1792x1024`
 - `1024x1792`
-- `1920x1080` (default)
+- `1920x1080`（預設）
 - `1080x1920`
 
-## Async Usage
+## 非同步用法 {#async-usage}
 
 ```python showLineNumbers title="Async Image Generation"
 from litellm import aimage_generation
@@ -75,9 +75,9 @@ async def generate_image():
 asyncio.run(generate_image())
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM Proxy 用法 {#litellm-proxy-usage}
 
-Add RunwayML to your proxy configuration:
+將 RunwayML 新增至您的 proxy 設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -87,13 +87,13 @@ model_list:
       api_key: os.environ/RUNWAYML_API_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-Generate images through the proxy:
+透過 proxy 生成圖像：
 
 ```bash showLineNumbers title="Proxy Request"
 curl --location 'http://localhost:4000/v1/images/generations' \
@@ -106,15 +106,15 @@ curl --location 'http://localhost:4000/v1/images/generations' \
 }'
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model | Description | Default Size |
+| 模型 | 說明 | 預設尺寸 |
 |-------|-------------|--------------|
-| `runwayml/gen4_image` | High-quality image generation | 1920x1080 |
+| `runwayml/gen4_image` | 高品質圖像生成 | 1920x1080 |
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM automatically tracks RunwayML image generation costs:
+LiteLLM 會自動追蹤 RunwayML 圖像生成成本：
 
 ```python showLineNumbers title="Cost Tracking"
 from litellm import image_generation, completion_cost
@@ -129,23 +129,21 @@ cost = completion_cost(completion_response=response)
 print(f"Image generation cost: ${cost}")
 ```
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Image Generation | ✅ |
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Fallbacks | ✅ |
-| Load Balancing | ✅ |
+| 圖像生成 | ✅ |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 備援 | ✅ |
+| 負載平衡 | ✅ |
 
+## 運作方式 {#how-it-works}
 
+RunwayML 使用非同步、基於任務的 API 模式。LiteLLM 會自動處理輪詢與回應轉換。
 
-## How It Works
-
-RunwayML uses an asynchronous task-based API pattern. LiteLLM handles the polling and response transformation automatically.
-
-### Complete Flow Diagram
+### 完整流程圖 {#complete-flow-diagram}
 
 ```mermaid
 sequenceDiagram
@@ -156,43 +154,43 @@ sequenceDiagram
     participant RunwayML as RunwayML API
 
     Client->>LiteLLM: POST /images/generations (OpenAI format)
-    Note over LiteLLM: Transform to RunwayML format
+    Note over LiteLLM: 轉換為 RunwayML 格式
     
     LiteLLM->>RunwayML: POST v1/text_to_image
     RunwayML-->>LiteLLM: 200 OK + task ID
     
-    Note over LiteLLM: Automatic Polling
+    Note over LiteLLM: 自動輪詢
     loop Every 2 seconds
         LiteLLM->>RunwayML: GET v1/tasks/{task_id}
-        RunwayML-->>LiteLLM: Status: RUNNING
+        RunwayML-->>LiteLLM: 狀態：RUNNING
     end
     
     LiteLLM->>RunwayML: GET v1/tasks/{task_id}
-    RunwayML-->>LiteLLM: Status: SUCCEEDED + image URL
+    RunwayML-->>LiteLLM: 狀態：SUCCEEDED + image URL
     
-    Note over LiteLLM: Transform to OpenAI format
-    LiteLLM-->>Client: Image Response (OpenAI format)
+    Note over LiteLLM: 轉換為 OpenAI 格式
+    LiteLLM-->>Client: 圖像回應（OpenAI format）
 ```
 
-### What LiteLLM Does For You
+### LiteLLM 會替您做什麼 {#what-litellm-does-for-you}
 
-When you call `litellm.image_generation()` or `/v1/images/generations`:
+當您呼叫 `litellm.image_generation()` 或 `/v1/images/generations` 時：
 
-1. **Request Transformation**: Converts OpenAI image generation format → RunwayML format
-2. **Submits Task**: Sends transformed request to RunwayML API
-3. **Receives Task ID**: Captures the task ID from the initial response
-4. **Automatic Polling**: 
-   - Polls the task status endpoint every 2 seconds
-   - Continues until status is `SUCCEEDED` or `FAILED`
-   - Default timeout: 10 minutes (configurable via `RUNWAYML_POLLING_TIMEOUT`)
-5. **Response Transformation**: Converts RunwayML format → OpenAI format
-6. **Returns Result**: Sends unified OpenAI format response to client
+1. **請求轉換**：將 OpenAI 圖像生成格式轉換 → RunwayML 格式
+2. **提交任務**：將轉換後的請求送至 RunwayML API
+3. **接收任務 ID**：從初始回應擷取任務 ID
+4. **自動輪詢**： 
+   - 每 2 秒輪詢一次任務狀態端點
+   - 持續直到狀態為 `SUCCEEDED` 或 `FAILED`
+   - 預設逾時：10 分鐘（可透過 `RUNWAYML_POLLING_TIMEOUT` 設定）
+5. **回應轉換**：將 RunwayML 格式轉換 → OpenAI 格式
+6. **返回結果**：將統一的 OpenAI 格式回應傳送給用戶端
 
-**Polling Configuration:**
-- Default timeout: 600 seconds (10 minutes)
-- Configurable via `RUNWAYML_POLLING_TIMEOUT` environment variable
-- Uses sync (`time.sleep()`) or async (`await asyncio.sleep()`) based on call type
+**輪詢設定：**
+- 預設逾時：600 秒（10 分鐘）
+- 可透過 `RUNWAYML_POLLING_TIMEOUT` 環境變數設定
+- 依呼叫類型使用 sync（`time.sleep()`）或 async（`await asyncio.sleep()`）
 
 :::info
-**Typical processing time**: 10-30 seconds depending on image size and complexity
+**一般處理時間**：10-30 秒，視圖像尺寸與複雜度而定
 :::

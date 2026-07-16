@@ -1,5 +1,5 @@
 ---
-title: "v1.90.2 - Realtime Stability & Bounded Logging"
+title: "v1.90.2 - 即時穩定性與受限記錄"
 slug: "v1-90-2"
 date: 2026-07-01T02:09:44
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.90.2
 </TabItem>
 </Tabs>
 
-`v1.90.2` is a patch release on top of [`v1.90.1`](/release_notes/v1.90.1/v1-90-1). It hardens realtime handling by preventing a second Gemini Live setup, retrying a hung handshake, and closing a guardrail bypass, and it routes realtime success logging through the bounded logging worker so it no longer competes with request handling on the event loop.
+`v1.90.2` 是建立在 [`v1.90.1`](/release_notes/v1.90.1/v1-90-1) 之上的修補版發布。它透過防止第二次 Gemini Live 設定、重試卡住的交握，以及關閉防護欄繞過，來加強即時處理，並將即時成功記錄導向受限記錄工作程序，因此不再與事件迴圈上的請求處理競爭。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(realtime): stop second Gemini Live setup, retry hung handshake, close guardrail bypass - [PR #31519](https://github.com/BerriAI/litellm/pull/31519)
-- fix(logging): route realtime success logging through the bounded worker - [PR #31733](https://github.com/BerriAI/litellm/pull/31733)
+- fix(realtime): 停止第二個 Gemini Live 設定，重試卡住的握手，關閉防護欄繞過 - [PR #31519](https://github.com/BerriAI/litellm/pull/31519)
+- fix(logging): 將即時成功記錄路由到有界工作者 - [PR #31733](https://github.com/BerriAI/litellm/pull/31733)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.90.1...v1.90.2

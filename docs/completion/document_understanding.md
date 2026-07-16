@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Using PDF Input
+# 使用 PDF 輸入 {#using-pdf-input}
 
-How to send / receive pdf's (other document types) to a `/chat/completions` endpoint
+如何將 pdf（其他文件類型）傳送／接收至 `/chat/completions` 端點
 
-Works for:
-- Vertex AI models (Gemini + Anthropic)
-- Bedrock Models
-- Anthropic API Models
-- OpenAI API Models
-- Mistral (Only using file ID of already uploaded file, similar to OpenAI file_id input)
+適用於：
+- Vertex AI 模型（Gemini + Anthropic）
+- Bedrock 模型
+- Anthropic API 模型
+- OpenAI API 模型
+- Mistral（僅使用已上傳檔案的 file ID，類似於 OpenAI file_id 輸入）
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### url 
+### URL {#url}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -57,7 +57,7 @@ assert response is not None
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -69,13 +69,13 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -99,7 +99,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### base64
+### base64 {#base64}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -147,7 +147,7 @@ assert response is not None
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -159,13 +159,13 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -189,10 +189,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Specifying format 
+## 指定格式  {#specifying-format}
 
-To specify the format of the document, you can use the `format` parameter. 
-
+若要指定文件的格式，您可以使用 `format` 參數。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -236,7 +235,7 @@ assert response is not None
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -248,13 +247,13 @@ model_list:
       aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -279,11 +278,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## Mistral 範例 {#mistral-example}
 
-## Mistral Example
-
-Here is a sample payload for using the Mistral model for document understanding:
-
+以下是使用 Mistral 模型進行文件理解的範例 payload：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -345,12 +342,12 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Checking if a model supports pdf input
+## 檢查模型是否支援 pdf 輸入 {#checking-if-a-model-supports-pdf-input}
 
 <Tabs>
 <TabItem label="SDK" value="sdk">
 
-Use `litellm.supports_pdf_input(model="bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0")` -> returns `True` if model can accept pdf input
+使用 `litellm.supports_pdf_input(model="bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0")` -> 若模型可接受 pdf 輸入，則回傳 `True`
 
 ```python
 assert litellm.supports_pdf_input(model="bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0") == True
@@ -359,7 +356,7 @@ assert litellm.supports_pdf_input(model="bedrock/us.anthropic.claude-haiku-4-5-2
 
 <TabItem label="PROXY" value="proxy">
 
-1. Define bedrock models on config.yaml
+1. 在 config.yaml 中定義 bedrock 模型
 
 ```yaml
 model_list:
@@ -373,13 +370,13 @@ model_list:
       supports_pdf_input: True
 ```
 
-2. Run proxy server
+2. 執行 proxy 伺服器
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Call `/model_group/info` to check if a model supports `pdf` input
+3. 呼叫 `/model_group/info` 以檢查模型是否支援 `pdf` 輸入
 
 ```shell
 curl -X 'GET' \
@@ -388,7 +385,7 @@ curl -X 'GET' \
   -H 'x-api-key: sk-1234'
 ```
 
-Expected Response 
+預期回應 
 
 ```json
 {

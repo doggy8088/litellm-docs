@@ -1,30 +1,30 @@
 ---
 slug: fastapi-middleware-performance
-title: "Your Middleware Could Be a Bottleneck"
+title: "您的中介軟體可能是瓶頸"
 date: 2026-02-07T10:00:00
 authors:
   - krrish
   - ishaan-alt
   - ryan
-description: "How we improved LiteLLM proxy latency and throughput by replacing a single middleware base class"
+description: "我們如何透過替換單一中介軟體基底類別，改善 LiteLLM proxy 的延遲與吞吐量"
 tags: [performance, fastapi, middleware]
 hide_table_of_contents: false
 ---
 
 import { BaseHTTPMiddlewareAnimation, PureASGIAnimation, BenchmarkVisualization } from '@site/src/components/MiddlewareDiagrams';
 
-> How we improved LiteLLM proxy latency and throughput by replacing a single, simple middleware base class
+> 我們如何透過替換單一、簡單的中介軟體基底類別，改善 LiteLLM proxy 的延遲與吞吐量
 
 ---
 
-## Our Setup
+## 我們的設定 {#our-setup}
 
-The LiteLLM proxy server has two middleware layers. The first is Starlette's `CORSMiddleware` (re-exported by FastAPI), which is a pure ASGI middleware. Then we have a simple BaseHTTPMiddleware called PrometheusAuthMiddleware.
+LiteLLM proxy 伺服器有兩層中介軟體。第一層是 Starlette 的 `CORSMiddleware`（由 FastAPI 重新匯出），這是一個純 ASGI 中介軟體。然後我們還有一個名為 PrometheusAuthMiddleware 的簡單 BaseHTTPMiddleware。
 
-The job of `PrometheusAuthMiddleware` is to authenticate requests to the `/metrics` endpoint. It's not on by default, you enable it with a flag in your proxy config:
+`PrometheusAuthMiddleware` 的工作是驗證對 `/metrics` 端點的請求。它預設不啟用，您可以在 proxy 設定中透過旗標啟用：
 
 <details>
-<summary>Proxy config flag</summary>
+<summary>Proxy 設定旗標</summary>
 
 ```yaml
 litellm_settings:
@@ -33,10 +33,10 @@ litellm_settings:
 
 </details>
 
-The middleware checks two things: is the request hitting `/metrics`, and is auth even enabled? If both checks fail, which they do for the vast majority of requests, it just passes the request through unchanged.
+這個中介軟體會檢查兩件事：請求是否打到 `/metrics`，以及是否已啟用驗證？如果兩項檢查都未通過——而大多數請求都是如此——它就會直接原樣放行請求。
 
 <details>
-<summary>PrometheusAuthMiddleware source</summary>
+<summary>PrometheusAuthMiddleware 原始碼</summary>
 
 ```python
 class PrometheusAuthMiddleware(BaseHTTPMiddleware):
@@ -59,46 +59,46 @@ class PrometheusAuthMiddleware(BaseHTTPMiddleware):
 
 </details>
 
-Looks harmless. Subclass `BaseHTTPMiddleware`, implement `dispatch()`, done. This is what you will see in Starlette's documentation<sup>[1](#footnote-1)</sup>.
+看起來無害。繼承 `BaseHTTPMiddleware`，實作 `dispatch()`，完成。這正是您會在 Starlette 文件<sup>[1](#footnote-1)</sup>中看到的內容。
 
 {/* truncate */}
 
 ---
 
-## What BaseHTTPMiddleware Actually Does
+## BaseHTTPMiddleware 實際做了什麼 {#what-basehttpmiddleware-actually-does}
 
-When you write a `dispatch()` method, you'd expect the request to flow straight through your function and out the other side. What actually happens is much more involved. 
+當您撰寫 `dispatch()` 方法時，您可能會以為請求會直接經過您的函式再離開。實際上，情況要複雜得多。
 
-On every request, even a pure passthrough (meaning nothing happens), `BaseHTTPMiddleware` creates **7 intermediate objects and tasks**:
+對每個請求來說，即使是純轉送（也就是什麼都不發生），`BaseHTTPMiddleware` 都會建立 **7 個中介物件與任務**：
 
 <BaseHTTPMiddlewareAnimation />
 
-It wraps the request in a new object to track body state, creates a synchronization event, allocates an in-memory channel to pass messages between your middleware and the inner app, sets up a task group to manage the lifecycle, and then runs your actual route handler in a *separate background task* when you call `call_next()`. The response body then flows back through that in-memory channel, gets re-wrapped in a streaming response object, and finally reaches the caller. That's a lot.
+它會把請求包裝成一個新物件來追蹤 body 狀態，建立一個同步事件，配置一個記憶體內通道以在您的中介軟體與內層 app 之間傳遞訊息，建立一個 task group 來管理生命週期，然後在您呼叫 `call_next()` 時，於一個*獨立的背景任務*中執行實際的路由處理器。接著 response body 會透過那個記憶體內通道傳回，再重新包裝成串流 response 物件，最後才到達呼叫端。這相當多。
 
-For a middleware that for us, does nothing on 99.9% of requests, paying this cost doesn't make sense.
+對於一個在我們這裡 99.9% 的請求上什麼事都不做的中介軟體來說，付出這樣的成本並不合理。
 
-Compare that to a pure ASGI middleware, which we can have just check the request path and continue along. 
+相比之下，純 ASGI 中介軟體只要檢查請求路徑並繼續往下即可。
 
 <PureASGIAnimation />
 
-Our middleware is doing something really simple. For the vast majority of requests it doesn't need to do anything at all but just let the request pass through. It doesn't need task groups, memory streams, or cancel scopes. It needs a function call.
+我們的中介軟體其實只是在做一件非常簡單的事。對於絕大多數請求，它根本不需要做任何事，只要讓請求通過即可。它不需要 task group、memory stream 或 cancel scope。它只需要一次函式呼叫。
 
 ---
 
-## Comparing Both
+## 比較兩者 {#comparing-both}
 
-We replaced the `BaseHTTPMiddleware` subclass with a pure ASGI middleware. To benchmark the difference, we used Apache Bench<sup>[2](#footnote-2)</sup> to compare both configurations of LiteLLM's middleware stack: the old setup (1 pure ASGI + 1 `BaseHTTPMiddleware`) against the new setup (2 pure ASGI).
+我們將 `BaseHTTPMiddleware` 子類別替換為純 ASGI 中介軟體。為了測量差異，我們使用 Apache Bench<sup>[2](#footnote-2)</sup> 來比較 LiteLLM 中介軟體堆疊的兩種設定：舊設定（1 個純 ASGI + 1 個 `BaseHTTPMiddleware`）與新設定（2 個純 ASGI）。
 
-A minimal FastAPI app serves `GET /health` → `PlainTextResponse("ok")`. The endpoint does zero work to isolate the middleware overhead: any difference between configs is purely the cost of the middleware plumbing itself. Both middlewares are just calling the next layer. Same work, different base class.
+一個最小化的 FastAPI app 服務 `GET /health` → `PlainTextResponse("ok")`。這個端點完全不做任何工作，以便隔離中介軟體的額外負擔：任何設定之間的差異，純粹都是中介軟體管線本身的成本。兩個中介軟體都只是呼叫下一層。相同的工作，不同的基底類別。
 
-Apache Bench (`ab`) fires requests at the server with 1,000 concurrent connections and a single uvicorn worker. One worker means one event loop, so the benchmark directly measures how each middleware design handles concurrent load on a single thread.
+Apache Bench（`ab`）會以 1,000 個並發連線和單一 uvicorn worker 向伺服器送出請求。單一 worker 代表單一 event loop，因此這個基準測試會直接量測每種中介軟體設計如何在單一執行緒上處理並發負載。
 
 <BenchmarkVisualization />
 
 <details>
-<summary>Try it yourself</summary>
+<summary>自己試試看</summary>
 
-Save the script below as `benchmark_middleware.py`, then run:
+將下方腳本儲存為 `benchmark_middleware.py`，然後執行：
 
 ```bash
 # Terminal 1 — start the "before" server (1 ASGI + 1 BaseHTTPMiddleware)
@@ -169,9 +169,9 @@ if __name__ == "__main__":
 
 ---
 
-## Our Change
+## 我們的變更 {#our-change}
 
-Here's what we replaced it with:
+以下是我們將其替換成的內容：
 
 ```python
 class PrometheusAuthMiddleware:
@@ -196,16 +196,16 @@ class PrometheusAuthMiddleware:
         await self.app(scope, receive, send)
 ```
 
-For the 99.9% of requests that aren't hitting `/metrics`, the middleware is now one dict lookup, one string check, and one function call. No objects allocated, no tasks spawned. 
+對於那 99.9% 不會打到 `/metrics` 的請求來說，現在這個中介軟體只需要一次 dict 查找、一次字串檢查，以及一次函式呼叫。沒有配置任何物件，也沒有產生任何任務。
 
-It's important to evaluate if the tools you're using are the right fit for the job as your software grows and handles more responsiblity. We're now putting in a static analysis check to prevent this from happening again with any newly introduced middlewares. If we find the use case is necessary then that's okay and we'll reevalute but for everything LiteLLM needs to do at the moment it's not. 
+隨著您的軟體成長並承擔更多責任，評估您所使用的工具是否真的適合工作內容非常重要。我們現在正加入靜態分析檢查，以防止任何新引入的中介軟體再次發生這種情況。如果我們發現某個使用情境確實有必要，那也沒問題，我們會重新評估；但就目前 LiteLLM 需要處理的一切而言，並非如此。
 
-This middleware change was one part of a broader optimization effort on the LiteLLM proxy. Across all optimizations combined, we've measured about a **30% reduction in proxy overhead** over the past two weeks. 
+這次的中介軟體變更只是 LiteLLM proxy 更廣泛最佳化工作的一部分。把所有最佳化加總起來後，我們在過去兩週已測得約 **30% 的 proxy 額外負擔降低**。
 
 ---
 
 <a id="footnote-1"></a>
-<sup>1</sup> [Starlette Middleware — BaseHTTPMiddleware](https://starlette.dev/middleware/#basehttpmiddleware)
+<sup>1</sup> [Starlette 中介軟體 — BaseHTTPMiddleware](https://starlette.dev/middleware/#basehttpmiddleware)
 
 <a id="footnote-2"></a>
 <sup>2</sup> [Apache HTTP server benchmarking tool (`ab`)](https://httpd.apache.org/docs/2.4/programs/ab.html)

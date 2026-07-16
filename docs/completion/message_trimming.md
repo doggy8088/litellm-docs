@@ -1,7 +1,7 @@
-# Trimming Input Messages
-**Use litellm.trim_messages() to ensure messages does not exceed a model's token limit or specified `max_tokens`**
+# 修剪輸入訊息 {#trimming-input-messages}
+**使用 litellm.trim_messages() 確保訊息不會超過模型的 token 限制或指定的 `max_tokens`**
 
-## Usage 
+## 用法  {#usage}
 ```python
 from litellm import completion
 from litellm.utils import trim_messages
@@ -12,7 +12,7 @@ response = completion(
 ) 
 ```
 
-## Usage - set max_tokens
+## 用法 - 設定 max_tokens {#usage---set-max_tokens}
 ```python
 from litellm import completion
 from litellm.utils import trim_messages
@@ -23,14 +23,14 @@ response = completion(
 ) 
 ```
 
-## Parameters
+## 參數 {#parameters}
 
-The function uses the following parameters:
+此函式使用下列參數：
 
-- `messages`:[Required] This should be a list of input messages 
+- `messages`:[必要] 這應該是一個輸入訊息的清單 
 
-- `model`:[Optional] This is the LiteLLM model being used. This parameter is optional, as you can alternatively specify the `max_tokens` parameter.
+- `model`:[選用] 這是所使用的 LiteLLM 模型。此參數為選用，因為您也可以改為指定 `max_tokens` 參數。
 
-- `max_tokens`:[Optional] This is an int, manually set upper limit on messages
+- `max_tokens`:[選用] 這是一個 int，手動設定訊息的上限
 
-- `trim_ratio`:[Optional] This represents the target ratio of tokens to use following trimming. It's default value is 0.75, which implies that messages will be trimmed to utilise about 75%
+- `trim_ratio`:[選用] 這代表修剪後要使用的 token 目標比例。其預設值為 0.75，這表示訊息將被修剪以使用約 75%

@@ -1,8 +1,8 @@
-# Parallel AI Search
+# 平行 AI 搜尋 {#parallel-ai-search}
 
-**Get API Key:** [https://www.parallel.ai](https://www.parallel.ai)
+**取得 API 金鑰：** [https://www.parallel.ai](https://www.parallel.ai)
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Parallel AI Search"
 import os
@@ -17,9 +17,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -35,7 +35,7 @@ search_tools:
       api_key: os.environ/PARALLEL_AI_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/parallel-search \
@@ -55,7 +55,7 @@ curl http://0.0.0.0:4000/v1/search/parallel-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Parallel AI Search with Provider-specific Parameters"
 import os
@@ -72,4 +72,3 @@ response = search(
     max_chars_per_result=500         # Max characters per result
 )
 ```
-

@@ -1,17 +1,17 @@
-# APISerpent Search
+# APISerpent 搜尋 {#apiserpent-search}
 
-**Get API Key:** [https://apiserpent.com](https://apiserpent.com)
+**取得 API 金鑰：** [https://apiserpent.com](https://apiserpent.com)
 
-[APISerpent](https://apiserpent.com) is a multi-engine SERP API (Google, Bing, Yahoo, DuckDuckGo) with two endpoints, selected with the `deep` flag:
+[APISerpent](https://apiserpent.com) 是一個多引擎 SERP API（Google、Bing、Yahoo、DuckDuckGo），具有兩個端點，並可透過 `deep` 旗標選擇：
 
-| Mode | Endpoint | `deep` | Results |
+| 模式 | 端點 | `deep` | 結果 |
 |---|---|---|---|
-| **Quick search** (default) | `https://apiserpent.com/api/search/quick` | `False` | `num` 1–100 |
-| **Deep search** | `https://apiserpent.com/api/search` | `True` | `num` 10–100 |
+| **快速搜尋**（預設） | `https://apiserpent.com/api/search/quick` | `False` | `num` 1–100 |
+| **深度搜尋** | `https://apiserpent.com/api/search` | `True` | `num` 10–100 |
 
-Both modes are billed at $0.60 per 1k searches.
+兩種模式的計費皆為每 1k 次搜尋 $0.60。
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="APISerpent Search"
 import os
@@ -30,7 +30,7 @@ for result in response.results:
     print(f"Snippet: {result.snippet}\n")
 ```
 
-### Deep search
+### 深度搜尋 {#deep-search}
 
 ```python showLineNumbers title="APISerpent Deep Search"
 from litellm import search
@@ -43,9 +43,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -61,7 +61,7 @@ search_tools:
       api_key: os.environ/APISERPENT_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -69,7 +69,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/apiserpent-search \
@@ -81,9 +81,9 @@ curl http://0.0.0.0:4000/v1/search/apiserpent-search \
   }'
 ```
 
-## Unified Parameters
+## 統一參數 {#unified-parameters}
 
-APISerpent supports the standard Perplexity unified spec parameters:
+APISerpent 支援標準的 Perplexity 統一規格參數：
 
 ```python showLineNumbers title="APISerpent Search with unified parameters"
 from litellm import search
@@ -97,16 +97,16 @@ response = search(
 )
 ```
 
-| Unified spec parameter | Mapped to APISerpent parameter |
+| 統一規格參數 | 對應至 APISerpent 參數 |
 |---|---|
-| `max_results` | `num` (clamped: 1–100 quick, 10–100 deep) |
-| `search_domain_filter` | `site:` clauses appended to `q` |
-| `country` | `country` (lowercased) |
-| `max_tokens_per_page` | _ignored (no equivalent)_ |
+| `max_results` | `num`（限制：快速搜尋 1–100、深度搜尋 10–100） |
+| `search_domain_filter` | 附加至 `q` 的 `site:` 子句 |
+| `country` | `country`（轉為小寫） |
+| `max_tokens_per_page` | _忽略（無對應項）_ |
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
-Pass any APISerpent-specific parameter as a keyword argument:
+可將任何 APISerpent 特定參數作為關鍵字引數傳遞：
 
 ```python showLineNumbers title="APISerpent Search with Provider-specific Parameters"
 import os
@@ -128,19 +128,19 @@ response = search(
 )
 ```
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |---|---|---|
-| `engine` | string | `google` (default), `bing`, `yahoo`, or `ddg` |
-| `country` | string | Country code for localized results (default `us`) |
-| `language` | string | 2-letter ISO language code (e.g. `en`, `es`, `de`) |
-| `freshness` | string | Time filter: `h`, `d`, `7d`, `w`, `m`, `y` |
-| `safe` | string | SafeSearch: `off`, `moderate`, or `strict` |
-| `pages` | integer | Number of pages to scrape (1–10) |
-| `format` | string | `full` (default) or `simple` |
-| `pixel_position` | boolean | Include pixel coordinates (paid tiers only) |
+| `engine` | string | `google`（預設）、`bing`、`yahoo`、或 `ddg` |
+| `country` | string | 本地化結果的國家代碼（預設 `us`） |
+| `language` | string | 2 字母 ISO 語言代碼（例如 `en`、`es`、`de`） |
+| `freshness` | string | 時間篩選器：`h`、`d`、`7d`、`w`、`m`、`y` |
+| `safe` | string | SafeSearch：`off`、`moderate`、或 `strict` |
+| `pages` | integer | 要抓取的頁數（1–10） |
+| `format` | string | `full`（預設）或 `simple` |
+| `pixel_position` | boolean | 包含像素座標（僅限付費方案） |
 
-`num` is clamped to its valid range (1–100 for quick search, 10–100 for deep) and `pages` must be 1–10; out-of-range values raise a `ValueError`.
+`num` 會被限制在其有效範圍內（快速搜尋 1–100、深度搜尋 10–100），且 `pages` 必須為 1–10；超出範圍的值會引發 `ValueError`。
 
-## Response Notes
+## 回應說明 {#response-notes}
 
-APISerpent's full-format response nests results under `results.organic`. The LiteLLM adapter maps each organic result's `title`, `url`, and `snippet` into the unified [`SearchResponse`](./index#response-format) shape.
+APISerpent 的完整格式回應會將結果巢狀放在 `results.organic` 下。LiteLLM adapter 會將每個自然結果的 `title`、`url` 和 `snippet` 對應到統一的 [`SearchResponse`](./index#response-format) 結構。

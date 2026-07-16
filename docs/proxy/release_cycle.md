@@ -1,58 +1,57 @@
-# Release Cycle
+# 發行週期 {#release-cycle}
 
-Litellm Proxy has the following release cycle:
+Litellm Proxy 具有以下發行週期：
 
-- `1.x.x-dev.N` (nightly): Releases which pass ci/cd (no manual review). Published on PyPI as `1.x.x.devN`.
-- `1.x.x-rc.N` (release candidate): Releases which pass ci/cd + [manual review](https://github.com/BerriAI/litellm/discussions/8495#discussioncomment-12180711) + performance testing (pending — being implemented soon) + a 7-day window for early testers to submit issues. Published on PyPI as `1.x.xrcN`.
-- `1.x.x` (stable): An `rc` that has passed everything above, then promoted to stable after a second round of manual testing.
+- `1.x.x-dev.N`（每夜版）：通過 ci/cd 的發行（無需人工審查）。在 PyPI 上發布為 `1.x.x.devN`。
+- `1.x.x-rc.N`（release candidate）：通過 ci/cd + [人工審查](https://github.com/BerriAI/litellm/discussions/8495#discussioncomment-12180711) + 效能測試（待定 — 即將實作）+ 供早期測試者提交議題的 7 天期間的發行。在 PyPI 上發布為 `1.x.xrcN`。
+- `1.x.x`（穩定版）：已通過以上所有流程的 `rc`，之後在第二輪人工測試後升級為穩定版。
 
-In production, we recommend pinning to the latest stable `1.x.x` release.
+在正式環境中，我們建議鎖定到最新的穩定 `1.x.x` 發行。
 
-:::info Versioning changed starting 1.84.0
+:::info 自 1.84.0 起版本編號已變更
 
-The `-stable` and `-nightly` suffixes are gone. Stable releases are now plain PEP 440 / SemVer 2.0 (e.g. `1.84.0`), weekly scheduled releases bump the **MINOR** component, and **PATCH** is reserved for hotfixes. Docker publishes both bare (`1.84.0`) and `v`-prefixed (`v1.84.0`) tags pointing to the same image; PyPI uses the bare PEP 440 form (`1.84.0`, never `v1.84.0`). Releases published under the old naming (`v1.83.x-stable`, etc.) stay available forever.
+`-stable` 與 `-nightly` 後綴已取消。穩定版現在採用純粹的 PEP 440 / SemVer 2.0（例如 `1.84.0`），每週排程發行會增加 **MINOR** 元件，而 **PATCH** 保留給熱修正。Docker 會發布指向同一映像檔的裸版（`1.84.0`）與 `v`-前綴（`v1.84.0`）標籤；PyPI 使用裸版的 PEP 440 格式（`1.84.0`，絕不使用 `v1.84.0`）。以舊命名（`v1.83.x-stable` 等）發布的版本會永久保留。
 
-See [LiteLLM release versioning is changing](/blog/cleaner-release-versions) for the full old → new name mapping.
+請參閱 [LiteLLM 發行版本編號正在變更](/blog/cleaner-release-versions) 以取得完整的舊 → 新名稱對照。
 
 :::
 
-Follow our release notes [here](https://github.com/BerriAI/litellm/releases).
+請在[此處](https://github.com/BerriAI/litellm/releases)查看我們的版本說明。
 
-## Weekly schedule
+## 每週排程 {#weekly-schedule}
 
-Each week runs the same loop against one version line. The first nightly (`dev`) build, typically Tuesday, opens the next minor version (for example `1.86.0`), and that base rides every build until it ships as stable. A second nightly follows midweek, typically Thursday. On Saturday the release candidate is cut (`1.86.0rc1`) and enters a roughly week-long window for early testers and QA. Late the following week, on Friday or Saturday, the prior week's `rc` is promoted to stable with the suffix dropped (`1.85.0rc1` becomes `1.85.0`), identical to that `rc` unless a fix was backported. Each Saturday therefore does double duty: the current week's `rc` is cut while the previous week's `rc` becomes stable.
+每週都會針對同一條版本線執行相同的循環。第一個每夜版（`dev`）建置通常在週二，會開啟下一個次要版本（例如 `1.86.0`），而該基底會沿用所有建置直到以穩定版釋出。第二個每夜版會在週中、通常是週四推出。週六會產生 release candidate（`1.86.0rc1`），並進入大約為期一週、供早期測試者與 QA 使用的期間。到隔週後段、週五或週六，前一週的 `rc` 會移除後綴升級為穩定版（`1.85.0rc1` 變為 `1.85.0`），其內容與該 `rc` 相同，除非有修正被回補。因此每個週六都一兼兩職：當週的 `rc` 會被切出，而前一週的 `rc` 則成為穩定版。
 
-| Day | What ships |
+| 日 | 發布內容 |
 | --- | --- |
-| Tuesday | First nightly `dev` build; opens the next minor (`1.86.0.dev1`) |
-| Thursday | Second nightly `dev` build, cumulative (`1.86.0.dev2`) |
-| Saturday | New `rc` cut (`1.86.0rc1`); prior week's `rc` promoted to stable |
-| Next Tuesday | Next line's first nightly opens (`1.87.0.dev1`); the loop repeats |
+| 週二 | 第一個每夜版 `dev` 建置；開啟下一個次要版（`1.86.0.dev1`） |
+| 週四 | 第二個每夜版 `dev` 建置，累積式（`1.86.0.dev2`） |
+| 週六 | 新的 `rc` 切版（`1.86.0rc1`）；前一週的 `rc` 升級為穩定版 |
+| 下週二 | 下一條版本線的第一個每夜版開啟（`1.87.0.dev1`）；循環重複 |
 
-If a Saturday `rc` fails QA it is not promoted; a fix lands, a follow-up `rc` may be cut, and the schedule picks up from there.
+如果某個週六的 `rc` 未通過 QA，則不會升級；修正會進來，後續的 `rc` 可能會被切出，排程則從那裡繼續。
 
+## 常見問題 {#faq}
 
-## FAQ
+### LiteLLM 穩定版有發行排程嗎？ {#is-there-a-release-schedule-for-litellm-stable-release}
 
-### Is there a release schedule for LiteLLM stable release?
+穩定版每週發布一次（通常是週日）。每次排程中的穩定版都會提升 MINOR 版本：`1.84.0` → `1.85.0` → `1.86.0`。
 
-Stable releases come out every week (typically Sunday). Each scheduled stable bumps the MINOR version: `1.84.0` → `1.85.0` → `1.86.0`.
+### 什麼情況算是 'minor' 版本提升，而什麼情況算是 'patch' 版本提升？ {#what-is-considered-a-minor-bump-vs-patch-bump}
 
-### What is considered a 'minor' bump vs. 'patch' bump?
+自 `1.84.0` 開始（請參閱[版本編號部落格文章](/blog/cleaner-release-versions)）：
 
-Starting with `1.84.0` (see [the versioning blog post](/blog/cleaner-release-versions)):
+- 'minor' 提升：例行每週排程的穩定版發布（`1.84.0` → `1.85.0`）。這是正常節奏，可能包含新的向後相容功能或資料庫表。
+- 'patch' 提升：保留給目前穩定版的熱修正（`1.84.0` → `1.84.1`）。
+- 'major' 提升：會破壞向後相容性（`1.x.x` → `2.x.x`）。
 
-- 'minor' bumps: the regular weekly scheduled stable release (`1.84.0` → `1.85.0`). This is the normal cadence and may include new backward-compatible features or database tables.
-- 'patch' bumps: reserved for hotfixes to the current stable (`1.84.0` → `1.84.1`).
-- 'major' bumps: break backward compatibility (`1.x.x` → `2.x.x`).
+### 企業支援 {#enterprise-support}
 
-### Enterprise Support
+:::info 支援模式變更中 — 2026 年 5 月 18 日
 
-:::info Support model changing — May 18, 2026
-
-As LiteLLM has grown, the current professional support model no longer fits our scale. We're moving to a new model built around clear, predictable communication on when customers can expect support and changes. The model described below is being deprecated, we'll share details on the new system as we finalize it over the next few weeks.
+隨著 LiteLLM 成長，現有的專業支援模式已不再符合我們的規模。我們正在轉向一個以清楚、可預測的溝通為核心的新模式，讓客戶知道何時可以期待支援與變更。下方所描述的模式正在退場，我們會在接下來幾週內完成新系統時分享細節。
 
 :::
 
-- Stable releases come out every week. Once a new one is available, we no longer provide support for an older one. 
-- If there is a MAJOR change (according to semvar conventions - e.g. 1.x.x -> 2.x.x), we can provide support for upto 90 days on the prior stable image. 
+- 穩定版每週發布一次。一旦有新的版本可用，我們將不再為較舊的版本提供支援。
+- 如果有 MAJOR 變更（依照 semvar 慣例，例如 1.x.x -> 2.x.x），我們可針對前一個穩定映像檔提供最長 90 天的支援。

@@ -1,31 +1,31 @@
 ---
 slug: video_characters_api
-title: "New Video Characters, Edit and Extension API support"
+title: "新增 Video Characters、Edit 與 Extension API 支援"
 date: 2026-03-16T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "LiteLLM now supports creating, retrieving, and managing reusable video characters across multiple video generations."
+description: "LiteLLM 現在支援在多次影片生成之間建立、擷取及管理可重複使用的 video characters。"
 tags: [videos, characters, proxy, routing]
 hide_table_of_contents: false
 ---
 
-LiteLLM now supoports videos character, edit and extension apis.
+LiteLLM 現在支援影片 character、edit 與 extension API。
 
 {/* truncate */}
 
-## What's New
+## 有哪些新功能 {#whats-new}
 
-Four new endpoints for video character operations:
-- **Create character** - Upload a video to create a reusable asset
-- **Get character** - Retrieve character metadata
-- **Edit video** - Modify generated videos
-- **Extend video** - Continue clips with character consistency
+四個新的影片 character 作業端點：
+- **建立 character** - 上傳影片以建立可重複使用的資產
+- **取得 character** - 擷取 character 中繼資料
+- **編輯影片** - 修改已生成的影片
+- **延伸影片** - 以 character 一致性延續片段
 
-**Available from:** LiteLLM v1.83.0+
+**可用於：** LiteLLM v1.83.0+
 
-## Quick Example
+## 快速範例 {#quick-example}
 
 ```python
 import litellm
@@ -67,7 +67,7 @@ extended = litellm.avideo_extension(
 )
 ```
 
-## Via Proxy
+## 透過 Proxy {#via-proxy}
 
 ```bash
 # Create character
@@ -100,11 +100,11 @@ curl -X POST "http://localhost:4000/v1/videos/extensions" \
   }'
 ```
 
-## Managed Character IDs
+## 受管理的 Character IDs {#managed-character-ids}
 
-LiteLLM automatically encodes provider and model metadata into character IDs:
+LiteLLM 會自動將提供者與模型中繼資料編碼進 character IDs：
 
-**What happens:**
+**發生什麼事：**
 ```
 Upload character "Luna" with model "sora-2" on OpenAI
   ↓
@@ -115,7 +115,7 @@ When you reference it later, LiteLLM decodes automatically
 Router knows exactly which deployment to use
 ```
 
-**Behind the scenes:**
-- Character ID format: `character_<base64_encoded_metadata>`
-- Metadata includes: provider, model_id, original_character_id
-- Transparent to you - just use the ID, LiteLLM handles routing
+**幕後運作：**
+- Character ID 格式：`character_<base64_encoded_metadata>`
+- 中繼資料包含：provider、model_id、original_character_id
+- 對您而言是透明的 - 只要使用 ID，LiteLLM 會處理路由

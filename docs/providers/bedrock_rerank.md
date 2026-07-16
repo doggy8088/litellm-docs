@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AWS Bedrock - Rerank API
+# AWS Bedrock - Rerank API {#aws-bedrock---rerank-api}
 
-Use Bedrock's Rerank API in the Cohere `/rerank` format.
+使用 Bedrock 的 Rerank API，採用 Cohere `/rerank` 格式。
 
-:::info Cost Tracking
+:::info 成本追蹤
 
-✅ **Cost tracking is supported** for Bedrock Rerank API calls.
+✅ **支援 Bedrock Rerank API 呼叫的成本追蹤**。
 
 :::
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-- `model` - the foundation model ARN
-- `query` - the query to rerank against
-- `documents` - the list of documents to rerank
-- `top_n` - the number of results to return
+- `model` - 基礎模型 ARN
+- `query` - 要據以重新排序的查詢
+- `documents` - 要重新排序的文件清單
+- `top_n` - 要回傳的結果數量
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem label="SDK" value="sdk">
@@ -44,7 +44,7 @@ print(response)
 </TabItem>
 <TabItem label="PROXY" value="proxy">
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -56,7 +56,7 @@ model_list:
         aws_region_name: os.environ/AWS_REGION_NAME
 ```
 
-### 2. Start proxy server
+### 2. 啟動 proxy 伺服器 {#2-start-proxy-server}
 
 ```bash
 litellm --config config.yaml
@@ -64,7 +64,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test it! 
+### 3. 測試看看！  {#3-test-it}
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -88,7 +88,6 @@ curl http://0.0.0.0:4000/rerank \
 </TabItem>
 </Tabs>
 
-## Authentication
+## 驗證 {#authentication}
 
-All standard Bedrock authentication methods are supported for rerank. See [Bedrock Authentication](./bedrock#boto3---authentication) for details.
-
+支援所有標準 Bedrock 驗證方法進行 rerank。詳情請參閱 [Bedrock 驗證](./bedrock#boto3---authentication)。

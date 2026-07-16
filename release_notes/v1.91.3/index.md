@@ -1,5 +1,5 @@
 ---
-title: "v1.91.3 - Responses Guardrail Coverage & OTel Exception Events"
+title: "v1.91.3 - Responses 防護欄涵蓋範圍與 OTel 例外事件"
 slug: "v1-91-3"
 date: 2026-07-11T15:20:47
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.91.3
 </TabItem>
 </Tabs>
 
-`v1.91.3` is a patch release on top of [`v1.91.2`](/release_notes/v1.91.2/v1-91-2). It backports two changes onto the 1.91.x line. The first restores guardrail coverage on the Responses API: shared content helpers now walk the Responses item taxonomy, so text guardrails once again see user and tool-output text on `/v1/responses` instead of scanning an empty payload. The second records a failed LLM call as the GenAI-standard `gen_ai.client.operation.exception` log event, carrying the exception type, message, and stacktrace at WARN severity so observability backends see the full failure.
+`v1.91.3` 是 [`v1.91.2`](/release_notes/v1.91.2/v1-91-2) 之上的修補版本。它將兩項變更回補到 1.91.x 線。第一項恢復了 Responses API 上的防護欄涵蓋範圍：共用內容輔助函式現在會遍歷 Responses item 分類，因此文字防護欄再次能在 `/v1/responses` 上看到使用者與工具輸出文字，而不是掃描空白負載。第二項會將失敗的 LLM 請求記錄為 GenAI 標準的 `gen_ai.client.operation.exception` 記錄事件，並以 WARN 嚴重性帶上例外類型、訊息與堆疊追蹤，讓可觀測性後端能看到完整的失敗資訊。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(guardrails): walk Responses-API text taxonomy in shared content helpers - [PR #32542](https://github.com/BerriAI/litellm/pull/32542)
-- feat(otel): emit the gen_ai.client.operation.exception event on failed LLM calls - [PR #32655](https://github.com/BerriAI/litellm/pull/32655)
+- fix(guardrails): 在共用內容輔助函式中遍歷 Responses-API 文字分類 - [PR #32542](https://github.com/BerriAI/litellm/pull/32542)
+- feat(otel): 在失敗的 LLM 請求上發出 gen_ai.client.operation.exception 事件 - [PR #32655](https://github.com/BerriAI/litellm/pull/32655)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.91.2...v1.91.3

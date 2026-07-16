@@ -1,22 +1,22 @@
-# Claude Code with Bring Your Own Key (BYOK)
+# Claude Code 搭配自帶金鑰（BYOK） {#claude-code-with-bring-your-own-key-byok}
 
-Use Claude Code with your own Anthropic API key through the LiteLLM proxy. When you use Claude's `/login` with your Anthropic account, your API key is sent as `x-api-key`. With BYOK enabled, LiteLLM forwards your key to Anthropic instead of using proxy-configured keys — so you pay Anthropic directly while still benefiting from LiteLLM's routing, logging, and guardrails.
+透過 LiteLLM proxy 使用您自己的 Anthropic API 金鑰搭配 Claude Code。當您使用 Claude 的 `/login` 搭配您的 Anthropic 帳戶時，您的 API 金鑰會以 `x-api-key` 傳送。啟用 BYOK 後，LiteLLM 會將您的金鑰轉送給 Anthropic，而不是使用 proxy 設定的金鑰 — 因此您直接向 Anthropic 付費，同時仍可享有 LiteLLM 的路由、記錄和防護欄。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-1. **Claude Code `/login`** — You sign in with your Anthropic account; Claude Code sends your Anthropic API key as `x-api-key`.
-2. **LiteLLM authentication** — You pass your LiteLLM proxy key via `ANTHROPIC_CUSTOM_HEADERS` so the proxy can authenticate and track your usage.
-3. **Key forwarding** — With `forward_llm_provider_auth_headers: true`, LiteLLM forwards your `x-api-key` to Anthropic, giving it precedence over any proxy-configured keys.
+1. **Claude Code `/login`** — 您使用您的 Anthropic 帳戶登入；Claude Code 會將您的 Anthropic API 金鑰以 `x-api-key` 傳送。
+2. **LiteLLM 驗證** — 您透過 `ANTHROPIC_CUSTOM_HEADERS` 傳入您的 LiteLLM proxy 金鑰，以便 proxy 可以驗證並追蹤您的用量。
+3. **金鑰轉送** — 在 `forward_llm_provider_auth_headers: true` 下，LiteLLM 會將您的 `x-api-key` 轉送給 Anthropic，並讓它優先於任何 proxy 設定的金鑰。
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) installed
-- Anthropic API key (from [console.anthropic.com](https://console.anthropic.com))
-- LiteLLM proxy with a virtual key for authentication
+- 已安裝 [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
+- Anthropic API 金鑰（來自 [console.anthropic.com](https://console.anthropic.com)）
+- 具有用於驗證的虛擬金鑰之 LiteLLM proxy
 
-## Step 1: Configure LiteLLM Proxy
+## 步驟 1：設定 LiteLLM Proxy {#step-1-configure-litellm-proxy}
 
-Enable forwarding of LLM provider auth headers so your Anthropic key takes precedence:
+啟用 LLM 提供者驗證標頭的轉送，讓您的 Anthropic 金鑰優先：
 
 ```yaml title="config.yaml"
 model_list:
@@ -29,26 +29,26 @@ litellm_settings:
   forward_llm_provider_auth_headers: true  # Required for BYOK
 ```
 
-:::info Why `forward_llm_provider_auth_headers`?
+:::info 為什麼 `forward_llm_provider_auth_headers`？
 
-By default, LiteLLM strips `x-api-key` from client requests for security. Setting this to `true` allows client-provided provider keys (like your Anthropic key from `/login`) to be forwarded to Anthropic, overriding any proxy-configured keys.
-
-:::
-
-:::tip Configure via UI instead of config.yaml
-
-You can also complete this setup from the LiteLLM admin UI:
-
-- Add the model via **Models → Add Model**, leaving the **API Key** field blank.
-- Enable the toggle at **Settings → UI Settings → "Forward LLM provider auth headers"**.
-
-Both UI actions write to the database and override `config.yaml` at runtime.
+預設情況下，LiteLLM 會基於安全性從用戶端請求中移除 `x-api-key`。將此設定為 `true` 可讓用戶端提供的提供者金鑰（例如您來自 `/login` 的 Anthropic 金鑰）轉送給 Anthropic，並覆寫任何 proxy 設定的金鑰。
 
 :::
 
-## Step 2: Create a LiteLLM Virtual Key
+:::tip 改用 UI 設定，而非 config.yaml
 
-Create a virtual key in the LiteLLM UI or via API. 
+您也可以從 LiteLLM 管理 UI 完成這項設定：
+
+- 透過 **Models → Add Model** 新增模型，將 **API Key** 欄位留空。
+- 在 **Settings → UI Settings → "Forward LLM provider auth headers"** 啟用切換開關。
+
+這兩個 UI 動作都會寫入資料庫，並在執行時覆寫 `config.yaml`。
+
+:::
+
+## 步驟 2：建立 LiteLLM 虛擬金鑰 {#step-2-create-a-litellm-virtual-key}
+
+在 LiteLLM UI 或透過 API 建立虛擬金鑰。 
 ```bash
 # Example: Create key via API
 curl -X POST "http://localhost:4000/key/generate" \
@@ -57,9 +57,9 @@ curl -X POST "http://localhost:4000/key/generate" \
   -d '{"key_alias": "claude-code-byok", "models": ["claude-sonnet-4-5"]}'
 ```
 
-## Step 3: Configure Claude Code
+## 步驟 3：設定 Claude Code {#step-3-configure-claude-code}
 
-Set environment variables so Claude Code uses LiteLLM and sends your LiteLLM key for proxy auth:
+設定環境變數，讓 Claude Code 使用 LiteLLM，並傳送您的 LiteLLM 金鑰以供 proxy 驗證：
 
 ```bash
 # Point Claude Code to your LiteLLM proxy
@@ -73,11 +73,11 @@ export ANTHROPIC_MODEL="claude-sonnet-4-5"
 export ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: sk-12345"
 ```
 
-Replace `sk-12345` with your actual LiteLLM virtual key.
+將 `sk-12345` 替換為您實際的 LiteLLM 虛擬金鑰。
 
-:::tip Multiple headers
+:::tip 多個標頭
 
-For multiple headers, use newline-separated values:
+若有多個標頭，請使用以換行分隔的值：
 
 ```bash
 export ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: sk-12345
@@ -86,49 +86,49 @@ x-litellm-user-id: my-user-id"
 
 :::
 
-## Step 4: Sign In with Claude Code
+## 步驟 4：使用 Claude Code 登入 {#step-4-sign-in-with-claude-code}
 
-1. Launch Claude Code:
+1. 啟動 Claude Code：
 
    ```bash
    claude
    ```
 
-2. Use **`/login`** and sign in with your Anthropic account (or use your API key directly).
+2. 使用 **`/login`**，並以您的 Anthropic 帳戶登入（或直接使用您的 API 金鑰）。
 
-3. Claude Code will send:
-   - `x-api-key`: Your Anthropic API key (from `/login`)
-   - `x-litellm-api-key`: Your LiteLLM key (from `ANTHROPIC_CUSTOM_HEADERS`)
+3. Claude Code 會傳送：
+   - `x-api-key`：您的 Anthropic API 金鑰（來自 `/login`）
+   - `x-litellm-api-key`：您的 LiteLLM 金鑰（來自 `ANTHROPIC_CUSTOM_HEADERS`）
 
-4. LiteLLM authenticates you via `x-litellm-api-key`, then forwards `x-api-key` to Anthropic. Your Anthropic key takes precedence over any proxy-configured key.
+4. LiteLLM 會透過 `x-litellm-api-key` 驗證您，然後將 `x-api-key` 轉送給 Anthropic。您的 Anthropic 金鑰會優先於任何 proxy 設定的金鑰。
 
-## Summary
+## 摘要 {#summary}
 
-| Header | Source | Purpose |
+| 標頭 | 來源 | 用途 |
 |--------|--------|---------|
-| `x-api-key` | Claude Code `/login` (Anthropic key) | Sent to Anthropic for API calls |
-| `x-litellm-api-key` | `ANTHROPIC_CUSTOM_HEADERS` | Proxy authentication, tracking, rate limits |
+| `x-api-key` | Claude Code `/login`（Anthropic 金鑰） | 傳送給 Anthropic 以供 API 呼叫 |
+| `x-litellm-api-key` | `ANTHROPIC_CUSTOM_HEADERS` | proxy 驗證、追蹤、速率限制 |
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Requests fail with "invalid x-api-key"
+### 請求失敗並出現 "invalid x-api-key" {#requests-fail-with-invalid-x-api-key}
 
-- Ensure `forward_llm_provider_auth_headers: true` is set in `litellm_settings` (or `general_settings`).
-- Restart the LiteLLM proxy after changing the config.
-- Verify you completed `/login` in Claude Code so your Anthropic key is being sent.
+- 確認 `forward_llm_provider_auth_headers: true` 已在 `litellm_settings`（或 `general_settings`）中設定。
+- 在變更設定後重新啟動 LiteLLM proxy。
+- 驗證您已在 Claude Code 中完成 `/login`，以便您的 Anthropic 金鑰正在被傳送。
 
-### Proxy returns 401
+### Proxy 回傳 401 {#proxy-returns-401}
 
-- Check that `ANTHROPIC_CUSTOM_HEADERS` includes `x-litellm-api-key: <your-key>`.
-- Ensure the LiteLLM key is valid and has access to the model.
+- 檢查 `ANTHROPIC_CUSTOM_HEADERS` 是否包含 `x-litellm-api-key: <your-key>`。
+- 確認 LiteLLM 金鑰有效且有權存取該模型。
 
-### Proxy key is used instead of my Anthropic key
+### 使用的是 proxy 金鑰，而不是我的 Anthropic 金鑰 {#proxy-key-is-used-instead-of-my-anthropic-key}
 
-- Confirm `forward_llm_provider_auth_headers: true` is in your config.
-- The setting can be in `litellm_settings` or `general_settings` depending on your config structure.
-- Enable debug logging: `LITELLM_LOG=DEBUG` to see which key is being forwarded.
+- 確認您的設定中有 `forward_llm_provider_auth_headers: true`。
+- 視您的設定結構而定，該設定可能位於 `litellm_settings` 或 `general_settings`。
+- 啟用除錯記錄：`LITELLM_LOG=DEBUG`，以查看正在轉送哪一把金鑰。
 
-## Related
+## 相關內容 {#related}
 
-- [Forward Client Headers](./../proxy/forward_client_headers.md) — Full BYOK and header forwarding docs
-- [Claude Code Max Subscription](./claude_code_max_subscription.md) — Using Claude Code with OAuth/Max subscription through LiteLLM
+- [轉送用戶端標頭](./../proxy/forward_client_headers.md) — BYOK 與標頭轉送的完整文件
+- [Claude Code Max 訂閱](./claude_code_max_subscription.md) — 透過 LiteLLM 搭配 OAuth/Max 訂閱使用 Claude Code

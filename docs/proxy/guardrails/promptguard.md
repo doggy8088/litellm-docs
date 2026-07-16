@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# PromptGuard
+# PromptGuard {#promptguard}
 
-Use [PromptGuard](https://promptguard.co/) to protect your LLM applications with prompt injection detection, PII redaction, topic filtering, entity blocklists, and hallucination detection. PromptGuard is self-hostable with drop-in proxy integration.
+使用 [PromptGuard](https://promptguard.co/) 來透過提示注入偵測、PII 脫敏、主題篩選、實體黑名單與幻覺偵測保護您的 LLM 應用程式。PromptGuard 可自架，並可直接與 proxy 整合。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -25,12 +25,12 @@ guardrails:
       api_base: os.environ/PROMPTGUARD_API_BASE   # Optional
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` – Run **before** the LLM call to validate **user input**
-- `post_call` – Run **after** the LLM call to validate **model output**
+- `pre_call` – 在 LLM 請求**前**執行，以驗證**使用者輸入**
+- `post_call` – 在 LLM 請求**後**執行，以驗證**模型輸出**
 
-### 2. Set Environment Variables
+### 2. 設定環境變數 {#2-set-environment-variables}
 
 ```shell
 export PROMPTGUARD_API_KEY="your-api-key"
@@ -38,18 +38,18 @@ export PROMPTGUARD_API_BASE="https://api.promptguard.co"          # Optional, th
 export PROMPTGUARD_BLOCK_ON_ERROR="true"                          # Optional, fail-closed by default
 ```
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM 閘道 {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test request
+### 4. 測試請求 {#4-test-request}
 
 <Tabs>
 <TabItem label="Blocked Request" value="blocked">
 
-Test input validation with a prompt injection attempt:
+以提示注入嘗試測試輸入驗證：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -63,7 +63,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on policy violation:
+違反政策時的預期回應：
 
 ```json
 {
@@ -80,7 +80,7 @@ Expected response on policy violation:
 
 <TabItem label="Redacted Request" value="redacted">
 
-Test PII redaction — sensitive data is masked before reaching the LLM:
+測試 PII 脫敏——敏感資料會在到達 LLM 之前被遮蔽：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -94,13 +94,13 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-The request proceeds with the SSN redacted. The LLM receives `"My SSN is *********"` instead of the original value.
+請求會在 SSN 被脫敏後繼續進行。LLM 接收到 `"My SSN is *********"`，而不是原始值。
 
 </TabItem>
 
 <TabItem label="Successful Call" value="allowed">
 
-Test with safe content:
+以安全內容進行測試：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -114,7 +114,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -136,7 +136,7 @@ Expected response:
 </TabItem>
 </Tabs>
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```yaml
 guardrails:
@@ -150,25 +150,25 @@ guardrails:
       default_on: true                                 # Optional
 ```
 
-### Required
+### 必填 {#required}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `api_key` | Your PromptGuard API key. Falls back to `PROMPTGUARD_API_KEY` env var. |
+| `api_key` | 您的 PromptGuard API 金鑰。若未設定，則回退至 `PROMPTGUARD_API_KEY` 環境變數。 |
 
-### Optional
+### 選填 {#optional}
 
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |-----------|---------|-------------|
-| `api_base` | `https://api.promptguard.co` | PromptGuard API base URL. Falls back to `PROMPTGUARD_API_BASE` env var. |
-| `block_on_error` | `true` | Fail-closed by default. Set to `false` for fail-open behaviour (requests pass through when the PromptGuard API is unreachable). |
-| `default_on` | `false` | When `true`, the guardrail runs on every request without needing to specify it in the request body. |
+| `api_base` | `https://api.promptguard.co` | PromptGuard API 基礎 URL。若未設定，則回退至 `PROMPTGUARD_API_BASE` 環境變數。 |
+| `block_on_error` | `true` | 預設為 fail-closed。設定為 `false` 可啟用 fail-open 行為（當 PromptGuard API 無法連線時，請求會直接通過）。 |
+| `default_on` | `false` | 當 `true` 時，防護欄會在每個請求上執行，而不需要在請求本文中指定。 |
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Fail-Open Mode
+### Fail-Open 模式 {#fail-open-mode}
 
-By default PromptGuard operates in **fail-closed** mode — if the API is unreachable, the request is blocked. Set `block_on_error: false` to allow requests through when the guardrail API fails:
+預設情況下，PromptGuard 以 **fail-closed** 模式運作——如果 API 無法連線，請求會被阻擋。將 `block_on_error: false` 設為可在防護欄 API 故障時讓請求通過：
 
 ```yaml
 guardrails:
@@ -180,9 +180,9 @@ guardrails:
       block_on_error: false
 ```
 
-### Multiple Guardrails
+### 多個防護欄 {#multiple-guardrails}
 
-Apply different configurations for input and output scanning:
+為輸入與輸出掃描套用不同設定：
 
 ```yaml
 guardrails:
@@ -199,9 +199,9 @@ guardrails:
       api_key: os.environ/PROMPTGUARD_API_KEY
 ```
 
-### Always-On Protection
+### 永遠啟用的保護 {#always-on-protection}
 
-Enable the guardrail for every request without specifying it per-call:
+啟用此防護欄以套用於每個請求，而無需逐次呼叫時指定：
 
 ```yaml
 guardrails:
@@ -213,46 +213,46 @@ guardrails:
       default_on: true
 ```
 
-## Security Features
+## 安全性功能 {#security-features}
 
-PromptGuard provides comprehensive protection against:
+PromptGuard 提供全面保護，以防範：
 
-### Input Threats
-- **Prompt Injection** – Detects attempts to override system instructions
-- **PII in Prompts** – Detects and redacts personally identifiable information
-- **Topic Filtering** – Blocks conversations on prohibited topics
-- **Entity Blocklists** – Prevents references to blocked entities
+### 輸入威脅 {#input-threats}
+- **Prompt Injection** – 偵測試圖覆寫系統指令的行為
+- **PII in Prompts** – 偵測並脫敏個人可識別資訊
+- **Topic Filtering** – 封鎖涉及禁止主題的對話
+- **Entity Blocklists** – 防止提及被封鎖的實體
 
-### Output Threats
-- **Hallucination Detection** – Identifies factually unsupported claims
-- **PII Leakage** – Detects and can redact PII in model outputs
-- **Data Exfiltration** – Prevents sensitive information exposure
+### 輸出威脅 {#output-threats}
+- **Hallucination Detection** – 識別在事實上缺乏依據的主張
+- **PII Leakage** – 偵測並可脫敏模型輸出中的 PII
+- **Data Exfiltration** – 防止敏感資訊外洩
 
-### Actions
+### 動作 {#actions}
 
-The guardrail takes one of three actions:
+此防護欄會採取三種動作之一：
 
-| Action | Behaviour |
+| 動作 | 行為 |
 |--------|-----------|
-| `allow` | Request/response passes through unchanged |
-| `block` | Request/response is rejected with violation details |
-| `redact` | Sensitive content is masked and the request/response proceeds |
+| `allow` | 請求/回應不經修改直接通過 |
+| `block` | 請求/回應會被拒絕，並附帶違規詳細資訊 |
+| `redact` | 敏感內容會被遮蔽，請求/回應繼續進行 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-**Missing API Credentials:**
+**缺少 API 憑證：**
 ```
 PromptGuardMissingCredentials: PromptGuard API key is required.
 Set PROMPTGUARD_API_KEY in the environment or pass api_key in the guardrail config.
 ```
 
-**API Unreachable (fail-closed):**
-The request is blocked and the upstream error is propagated.
+**API 無法連線（fail-closed）：**
+請求會被阻擋，且上游錯誤會被傳遞。
 
-**API Unreachable (fail-open):**
-The request passes through unchanged and a warning is logged.
+**API 無法連線（fail-open）：**
+請求會不經修改直接通過，並記錄警告。
 
-## Need Help?
+## 需要協助嗎？ {#need-help}
 
-- **Website**: [https://promptguard.co](https://promptguard.co)
-- **Documentation**: [https://docs.promptguard.co](https://docs.promptguard.co)
+- **網站**: [https://promptguard.co](https://promptguard.co)
+- **文件**: [https://docs.promptguard.co](https://docs.promptguard.co)

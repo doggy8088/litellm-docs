@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# [BETA] Google AI Studio (Gemini) Files API
+# [BETA] Google AI Studio (Gemini) 檔案 API {#beta-google-ai-studio-gemini-files-api}
 
-Use this to upload files to Google AI Studio (Gemini).
+使用此功能可將檔案上傳至 Google AI Studio (Gemini)。
 
-Useful to pass in large media files to Gemini's `/generateContent` endpoint.
+適合將大型媒體檔案傳遞給 Gemini 的 `/generateContent` 端點。
 
-| Action | Supported | 
+| 動作 | 支援 | 
 |----------|-----------|
-| `create` | Yes |
-| `delete` | No |
-| `retrieve` | No |
-| `list` | No |
+| `create` | 是 |
+| `delete` | 否 |
+| `retrieve` | 否 |
+| `list` | 否 |
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -78,7 +78,7 @@ print(completion.choices[0].message)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -88,13 +88,13 @@ model_list:
         api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```python
 import base64
@@ -154,46 +154,43 @@ print(completion.choices[0].message)
 ```
 
 
-
-
 </TabItem>
 </Tabs>
 
-## Azure Blob Storage Integration
+## Azure Blob Storage 整合 {#azure-blob-storage-integration}
 
-LiteLLM supports using Azure Blob Storage as a target storage backend for Gemini file uploads. This allows you to store files in Azure Data Lake Storage Gen2 instead of Google's managed storage.
+LiteLLM 支援將 Azure Blob Storage 作為 Gemini 檔案上傳的目標儲存後端。這可讓您將檔案儲存在 Azure Data Lake Storage Gen2，而非 Google 的受管理儲存。
 
-### Step 1: Setup Azure Blob Storage
+### 步驟 1：設定 Azure Blob Storage {#step-1-setup-azure-blob-storage}
 
-Configure your Azure Blob Storage account by setting the following environment variables:
+請透過設定下列環境變數來設定您的 Azure Blob Storage 帳戶：
 
-**Required Environment Variables:**
-- `AZURE_STORAGE_ACCOUNT_NAME` - Your Azure Storage account name
-- `AZURE_STORAGE_FILE_SYSTEM` - The container/filesystem name where files will be stored
-- `AZURE_STORAGE_ACCOUNT_KEY` - Your account key
+**必要環境變數：**
+- `AZURE_STORAGE_ACCOUNT_NAME` - 您的 Azure 儲存體帳戶名稱
+- `AZURE_STORAGE_FILE_SYSTEM` - 儲存檔案的容器／檔案系統名稱
+- `AZURE_STORAGE_ACCOUNT_KEY` - 您的帳戶金鑰
 
-### Step 2: Pass Azure Blob Storage as Target Storage
+### 步驟 2：將 Azure Blob Storage 作為目標儲存 {#step-2-pass-azure-blob-storage-as-target-storage}
 
-When uploading files, specify `target_storage: "azure_storage"` to use Azure Blob Storage instead of the default storage.
+上傳檔案時，請指定 `target_storage: "azure_storage"`，以使用 Azure Blob Storage 取代預設儲存。
 
-**Supported File Types:**
+**支援的檔案類型：**
 
-Azure Blob Storage supports all Gemini-compatible file types:
+Azure Blob Storage 支援所有與 Gemini 相容的檔案類型：
 
-- **Images**: PNG, JPEG, WEBP
-- **Audio**: AAC, FLAC, MP3, MPA, MPEG, MPGA, OPUS, PCM, WAV, WEBM
-- **Video**: FLV, MOV, MPEG, MPEGPS, MPG, MP4, WEBM, WMV, 3GPP
-- **Documents**: PDF, TXT
+- **圖片**：PNG、JPEG、WEBP
+- **音訊**：AAC、FLAC、MP3、MPA、MPEG、MPGA、OPUS、PCM、WAV、WEBM
+- **影片**：FLV、MOV、MPEG、MPEGPS、MPG、MP4、WEBM、WMV、3GPP
+- **文件**：PDF、TXT
 
-> **Note:** Only small files can be sent as inline data because the total request size limit is 20 MB.
+> **注意：** 只有小型檔案可以作為內嵌資料傳送，因為總請求大小上限為 20 MB。
 
-
-### Step 3: Upload Files with Azure Blob Storage for Gemini
+### 步驟 3：使用 Azure Blob Storage 上傳 Gemini 檔案 {#step-3-upload-files-with-azure-blob-storage-for-gemini}
 
 <Tabs>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -203,22 +200,22 @@ model_list:
         api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Set environment variables
+2. 設定環境變數
 
 ```bash
 export AZURE_STORAGE_ACCOUNT_NAME="your-storage-account"
 export AZURE_STORAGE_FILE_SYSTEM="your-container-name"
 export AZURE_STORAGE_ACCOUNT_KEY="your-account-key"
 ```
-or add them in your `.env`
+或將它們加入您的 `.env`
 
-3. Start proxy
+3. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-4. Upload file with Azure Blob Storage
+4. 使用 Azure Blob Storage 上傳檔案
 
 ```python
 from openai import OpenAI
@@ -303,6 +300,5 @@ curl -X POST "http://0.0.0.0:4000/v1/chat/completions" \
 </Tabs>
 
 :::info
-Files uploaded to Azure Blob Storage are stored in your Azure account and can be accessed via the returned file ID. The file URL format is: `https://{account}.blob.core.windows.net/{container}/{path}`
+上傳至 Azure Blob Storage 的檔案會儲存在您的 Azure 帳戶中，並可透過回傳的檔案 ID 存取。檔案 URL 格式為：`https://{account}.blob.core.windows.net/{container}/{path}`
 :::
-

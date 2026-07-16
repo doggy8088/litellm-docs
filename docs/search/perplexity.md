@@ -1,8 +1,8 @@
-# Perplexity AI Search
+# Perplexity AI 搜尋 {#perplexity-ai-search}
 
-**Get API Key:** [https://www.perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
+**取得 API 金鑰：** [https://www.perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Perplexity Search"
 import os
@@ -17,9 +17,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -35,7 +35,7 @@ search_tools:
       api_key: os.environ/PERPLEXITYAI_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/perplexity-search \
@@ -54,4 +54,3 @@ curl http://0.0.0.0:4000/v1/search/perplexity-search \
     "max_results": 5
   }'
 ```
-

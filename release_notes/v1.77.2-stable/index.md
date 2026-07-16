@@ -19,7 +19,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -44,113 +44,111 @@ pip install litellm==1.77.2.post1
 
 ---
 
-## Key Highlights
+## 主要亮點 {#key-highlights}
 
-- **Bedrock Batches API** - Support for creating Batch Inference Jobs on Bedrock using LiteLLM's unified batch API (OpenAI compatible)
-- **Qwen API Tiered Pricing** - Cost tracking support for Dashscope (Qwen) models with multiple pricing tiers
+- **Bedrock Batches API** - 支援使用 LiteLLM 的統一 batch API（相容 OpenAI）在 Bedrock 上建立 Batch Inference Jobs
+- **Qwen API 分級定價** - 支援 Dashscope（Qwen）模型的成本追蹤，包含多個定價級距
 
-## New Models / Updated Models
+## 新模型 / 更新模型 {#new-models--updated-models}
 
-#### New Model Support
+#### 新模型支援 {#new-model-support}
 
-| Provider    | Model                           | Context Window | Pricing ($/1M tokens) | Features |
+| 提供者    | 模型                           | 上下文視窗 | Pricing ($/1M tokens) | 功能 |
 | ----------- | ------------------------------- | -------------- | --------------------- | -------- |
-| DeepInfra   | `deepinfra/deepseek-ai/DeepSeek-R1` | 164K | **Input:** $0.70<br/>**Output:** $2.40 | Chat completions, tool calling |
-| Heroku      | `heroku/claude-4-sonnet`        | 8K | Contact provider for pricing | Function calling, tool choice |
-| Heroku      | `heroku/claude-3-7-sonnet`      | 8K | Contact provider for pricing | Function calling, tool choice |
-| Heroku      | `heroku/claude-3-5-sonnet-latest` | 8K | Contact provider for pricing | Function calling, tool choice |
-| Heroku      | `heroku/claude-3-5-haiku`       | 4K | Contact provider for pricing | Function calling, tool choice |
-| Dashscope   | `dashscope/qwen-plus-latest`    | 1M | **Tiered Pricing:**<br/>• 0-256K tokens: $0.40 / $1.20<br/>• 256K-1M tokens: $1.20 / $3.60 | Function calling, reasoning |
-| Dashscope   | `dashscope/qwen3-max-preview`   | 262K | **Tiered Pricing:**<br/>• 0-32K tokens: $1.20 / $6.00<br/>• 32K-128K tokens: $2.40 / $12.00<br/>• 128K-252K tokens: $3.00 / $15.00 | Function calling, reasoning |
-| Dashscope   | `dashscope/qwen-flash`          | 1M | **Tiered Pricing:**<br/>• 0-256K tokens: $0.05 / $0.40<br/>• 256K-1M tokens: $0.25 / $2.00 | Function calling, reasoning |
-| Dashscope   | `dashscope/qwen3-coder-plus`    | 1M | **Tiered Pricing:**<br/>• 0-32K tokens: $1.00 / $5.00<br/>• 32K-128K tokens: $1.80 / $9.00<br/>• 128K-256K tokens: $3.00 / $15.00<br/>• 256K-1M tokens: $6.00 / $60.00 | Function calling, reasoning, caching |
-| Dashscope   | `dashscope/qwen3-coder-flash`   | 1M | **Tiered Pricing:**<br/>• 0-32K tokens: $0.30 / $1.50<br/>• 32K-128K tokens: $0.50 / $2.50<br/>• 128K-256K tokens: $0.80 / $4.00<br/>• 256K-1M tokens: $1.60 / $9.60 | Function calling, reasoning, caching |
+| DeepInfra   | `deepinfra/deepseek-ai/DeepSeek-R1` | 164K | **Input:** $0.70<br/>**Output:** $2.40 | 聊天 completions、工具呼叫 |
+| Heroku      | `heroku/claude-4-sonnet`        | 8K | 請聯絡提供者以取得定價 | 函式呼叫、tool choice |
+| Heroku      | `heroku/claude-3-7-sonnet`      | 8K | 請聯絡提供者以取得定價 | 函式呼叫、tool choice |
+| Heroku      | `heroku/claude-3-5-sonnet-latest` | 8K | 請聯絡提供者以取得定價 | 函式呼叫、tool choice |
+| Heroku      | `heroku/claude-3-5-haiku`       | 4K | 請聯絡提供者以取得定價 | 函式呼叫、tool choice |
+| Dashscope   | `dashscope/qwen-plus-latest`    | 1M | **分級定價：**<br/>• 0-256K tokens: $0.40 / $1.20<br/>• 256K-1M tokens: $1.20 / $3.60 | 函式呼叫、推理 |
+| Dashscope   | `dashscope/qwen3-max-preview`   | 262K | **分級定價：**<br/>• 0-32K tokens: $1.20 / $6.00<br/>• 32K-128K tokens: $2.40 / $12.00<br/>• 128K-252K tokens: $3.00 / $15.00 | 函式呼叫、推理 |
+| Dashscope   | `dashscope/qwen-flash`          | 1M | **分級定價：**<br/>• 0-256K tokens: $0.05 / $0.40<br/>• 256K-1M tokens: $0.25 / $2.00 | 函式呼叫、推理 |
+| Dashscope   | `dashscope/qwen3-coder-plus`    | 1M | **分級定價：**<br/>• 0-32K tokens: $1.00 / $5.00<br/>• 32K-128K tokens: $1.80 / $9.00<br/>• 128K-256K tokens: $3.00 / $15.00<br/>• 256K-1M tokens: $6.00 / $60.00 | 函式呼叫、推理、快取 |
+| Dashscope   | `dashscope/qwen3-coder-flash`   | 1M | **分級定價：**<br/>• 0-32K tokens: $0.30 / $1.50<br/>• 32K-128K tokens: $0.50 / $2.50<br/>• 128K-256K tokens: $0.80 / $4.00<br/>• 256K-1M tokens: $1.60 / $9.60 | 函式呼叫、推理、快取 |
 
 ---
 
-#### Features
+#### 功能 {#features}
 
 - **[Bedrock](../../docs/providers/bedrock_batches)**
-    - Bedrock Batches API - batch processing support with file upload and request transformation - [PR #14518](https://github.com/BerriAI/litellm/pull/14518), [PR #14522](https://github.com/BerriAI/litellm/pull/14522)
+    - Bedrock Batches API - 支援批次處理，包含檔案上傳與請求轉換 - [PR #14518](https://github.com/BerriAI/litellm/pull/14518), [PR #14522](https://github.com/BerriAI/litellm/pull/14522)
 - **[VLLM](../../docs/providers/vllm)**
-    - Added transcription endpoint support - [PR #14523](https://github.com/BerriAI/litellm/pull/14523)
+    - 新增轉錄端點支援 - [PR #14523](https://github.com/BerriAI/litellm/pull/14523)
 - **[Ollama](../../docs/providers/ollama)**
-    - `ollama_chat/` - images, thinking, and content as list handling - [PR #14523](https://github.com/BerriAI/litellm/pull/14523)
-- **General**
-    - New debug flag for detailed request/response logging [PR #14482](https://github.com/BerriAI/litellm/pull/14482)
+    - `ollama_chat/` - 以清單處理 images、thinking 與 content - [PR #14523](https://github.com/BerriAI/litellm/pull/14523)
+- **一般**
+    - 新增詳細請求/回應記錄的 debug 標記 [PR #14482](https://github.com/BerriAI/litellm/pull/14482)
 
-#### Bug Fixes
+#### 錯誤修正 {#bug-fixes}
 
 - **[Azure OpenAI](../../docs/providers/azure)**
-    - Fixed extra_body injection causing payload rejection in image generation - [PR #14475](https://github.com/BerriAI/litellm/pull/14475)
+    - 修正 extra_body 注入導致影像生成時 payload 被拒絕的問題 - [PR #14475](https://github.com/BerriAI/litellm/pull/14475)
 - **[LM Studio](../../docs/providers/lm-studio)**
-    - Resolved illegal Bearer header value issue - [PR #14512](https://github.com/BerriAI/litellm/pull/14512)
+    - 解決非法 Bearer 標頭值問題 - [PR #14512](https://github.com/BerriAI/litellm/pull/14512)
 
 ---
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Bug Fixes
+#### 錯誤修正 {#bug-fixes-1}
 
 - **[/messages](../../docs/anthropic_unified)**
-    - Don't send content block after message w/ finish reason + usage block - [PR #14477](https://github.com/BerriAI/litellm/pull/14477)
+    - 在訊息後不要傳送 content block，若有 finish reason + usage block - [PR #14477](https://github.com/BerriAI/litellm/pull/14477)
 - **[/generateContent](../../docs/generateContent)**
-    - Gemini CLI Integration - Fixed token count errors - [PR #14451](https://github.com/BerriAI/litellm/pull/14451), [PR #14417](https://github.com/BerriAI/litellm/pull/14417)
+    - Gemini CLI 整合 - 修正 token 計數錯誤 - [PR #14451](https://github.com/BerriAI/litellm/pull/14451), [PR #14417](https://github.com/BerriAI/litellm/pull/14417)
 
 ---
 
-## Spend Tracking, Budgets and Rate Limiting
+## 支出追蹤、預算與速率限制 {#spend-tracking-budgets-and-rate-limiting}
 
-#### Features
+#### 功能 {#features-1}
 
-- **[Qwen API Tiered Pricing](../../docs/providers/dashscope)** - Added comprehensive tiered cost tracking for Dashscope/Qwen models - [PR #14471](https://github.com/BerriAI/litellm/pull/14471), [PR #14479](https://github.com/BerriAI/litellm/pull/14479)
+- **[Qwen API 分級定價](../../docs/providers/dashscope)** - 新增 Dashscope/Qwen 模型完整的分級成本追蹤 - [PR #14471](https://github.com/BerriAI/litellm/pull/14471), [PR #14479](https://github.com/BerriAI/litellm/pull/14479)
 
-#### Bug Fixes
+#### 錯誤修正 {#bug-fixes-2}
 
-- **Provider Budgets** - Fixed provider budget calculations - [PR #14459](https://github.com/BerriAI/litellm/pull/14459)
-
----
-
-## Management Endpoints / UI
-
-#### Features
-
-- **User Headers Mapping** - New X-LiteLLM Users mapping feature for enhanced user tracking - [PR #14485](https://github.com/BerriAI/litellm/pull/14485)
-- **Key Unblocking** - Support for hashed tokens in `/key/unblock` endpoint - [PR #14477](https://github.com/BerriAI/litellm/pull/14477)
-- **Model Group Header Forwarding** - Enhanced wildcard model support with documentation - [PR #14528](https://github.com/BerriAI/litellm/pull/14528)
-
-#### Bug Fixes
-
-- **Log Tab Key Alias** - Fixed filtering inaccuracies for failed logs - [PR #14469](https://github.com/BerriAI/litellm/pull/14469), [PR #14529](https://github.com/BerriAI/litellm/pull/14529)
+- **提供者預算** - 修正提供者預算計算 - [PR #14459](https://github.com/BerriAI/litellm/pull/14459)
 
 ---
 
-## Logging / Guardrail Integrations
+## 管理端點 / UI {#management-endpoints--ui}
 
-#### Features
+#### 功能 {#features-2}
 
-- **Noma Integration** - Added non-blocking monitor mode with anonymize input support - [PR #14401](https://github.com/BerriAI/litellm/pull/14401)
+- **使用者標頭對應** - 新增 X-LiteLLM Users 對應功能，以加強使用者追蹤 - [PR #14485](https://github.com/BerriAI/litellm/pull/14485)
+- **金鑰解鎖** - 支援 `/key/unblock` 端點中的雜湊 token - [PR #14477](https://github.com/BerriAI/litellm/pull/14477)
+- **模型群組標頭轉送** - 以文件加強萬用字元模型支援 - [PR #14528](https://github.com/BerriAI/litellm/pull/14528)
 
----
+#### 錯誤修正 {#bug-fixes-3}
 
-## Performance / Loadbalancing / Reliability improvements
-
-#### Performance
-- Removed dynamic creation of static values - [PR #14538](https://github.com/BerriAI/litellm/pull/14538)
-- Using `_PROXY_MaxParallelRequestsHandler_v3` by default for optimal throughput - [PR #14450](https://github.com/BerriAI/litellm/pull/14450)
-- Improved execution context propagation into logging tasks - [PR #14455](https://github.com/BerriAI/litellm/pull/14455)
+- **記錄分頁金鑰別名** - 修正失敗記錄的篩選不準確問題 - [PR #14469](https://github.com/BerriAI/litellm/pull/14469), [PR #14529](https://github.com/BerriAI/litellm/pull/14529)
 
 ---
 
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
 
+#### 功能 {#features-3}
 
-## New Contributors
-* @Sameerlite made their first contribution in [PR #14460](https://github.com/BerriAI/litellm/pull/14460)
-* @holzman made their first contribution in [PR #14459](https://github.com/BerriAI/litellm/pull/14459)
-* @sashank5644 made their first contribution in [PR #14469](https://github.com/BerriAI/litellm/pull/14469)
-* @TomAlon made their first contribution in [PR #14401](https://github.com/BerriAI/litellm/pull/14401)
-* @AlexsanderHamir made their first contribution in [PR #14538](https://github.com/BerriAI/litellm/pull/14538)
+- **Noma 整合** - 新增非阻塞監控模式，支援匿名化輸入 - [PR #14401](https://github.com/BerriAI/litellm/pull/14401)
 
 ---
 
-## **[Full Changelog](https://github.com/BerriAI/litellm/compare/v1.77.1.dev.2...v1.77.2.dev)**
+## 效能 / 負載平衡 / 可靠性改進 {#performance--loadbalancing--reliability-improvements}
+
+#### 效能 {#performance}
+- 移除靜態值的動態建立 - [PR #14538](https://github.com/BerriAI/litellm/pull/14538)
+- 預設使用 `_PROXY_MaxParallelRequestsHandler_v3` 以達到最佳吞吐量 - [PR #14450](https://github.com/BerriAI/litellm/pull/14450)
+- 改善執行內容傳遞至記錄工作 - [PR #14455](https://github.com/BerriAI/litellm/pull/14455)
+
+---
+
+## 新貢獻者 {#new-contributors}
+* @Sameerlite 首次貢獻於 [PR #14460](https://github.com/BerriAI/litellm/pull/14460)
+* @holzman 首次貢獻於 [PR #14459](https://github.com/BerriAI/litellm/pull/14459)
+* @sashank5644 首次貢獻於 [PR #14469](https://github.com/BerriAI/litellm/pull/14469)
+* @TomAlon 首次貢獻於 [PR #14401](https://github.com/BerriAI/litellm/pull/14401)
+* @AlexsanderHamir 首次貢獻於 [PR #14538](https://github.com/BerriAI/litellm/pull/14538)
+
+---
+
+## **[完整變更記錄](https://github.com/BerriAI/litellm/compare/v1.77.1.dev.2...v1.77.2.dev)** {#full-changeloghttpsgithubcomberriailitellmcomparev1771dev2v1772dev}

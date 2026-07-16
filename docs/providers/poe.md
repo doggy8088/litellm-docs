@@ -1,37 +1,37 @@
-# Poe
+# Poe {#poe}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳情 |
 |-------|-------|
-| Description | Poe is Quora's AI platform that provides access to more than 100 models across text, image, video, and voice modalities through a developer-friendly API. |
-| Provider Route on LiteLLM | `poe/` |
-| Link to Provider Doc | [Poe Website ↗](https://poe.com) |
+| 說明 | Poe 是 Quora 的 AI 平台，透過對開發者友善的 API 提供超過 100 種涵蓋文字、圖片、影片與語音模態的模型存取。 |
+| LiteLLM 上的提供者路由 | `poe/` |
+| 提供者文件連結 | [Poe 網站 ↗](https://poe.com) |
 | Base URL | `https://api.poe.com/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 
-## What is Poe?
+## 什麼是 Poe？ {#what-is-poe}
 
-Poe is Quora's comprehensive AI platform that offers:
-- **100+ Models**: Access to a wide variety of AI models
-- **Multiple Modalities**: Text, image, video, and voice AI
-- **Popular Models**: Including OpenAI's GPT series and Anthropic's Claude
-- **Developer API**: Easy integration for applications
-- **Extensive Reach**: Benefits from Quora's 400M monthly unique visitors
+Poe 是 Quora 的完整 AI 平台，提供：
+- **100+ 模型**：存取各式各樣的 AI 模型
+- **多種模態**：文字、圖片、影片與語音 AI
+- **熱門模型**：包含 OpenAI 的 GPT 系列與 Anthropic 的 Claude
+- **開發者 API**：方便應用程式整合
+- **廣泛觸及**：受益於 Quora 每月 4 億名不重複訪客
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["POE_API_KEY"] = ""  # your Poe API key
 ```
 
-Get your Poe API key from the [Poe platform](https://poe.com).
+請從 [Poe 平台](https://poe.com) 取得您的 Poe API 金鑰。
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Poe Non-streaming Completion"
 import os
@@ -51,7 +51,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Poe Streaming Completion"
 import os
@@ -73,15 +73,15 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy Server
+## 使用方式 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export POE_API_KEY=""
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```yaml
 model_list:
@@ -91,49 +91,49 @@ model_list:
       api_key: os.environ/POE_API_KEY
 ```
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-Poe supports all standard OpenAI-compatible parameters:
+Poe 支援所有標準的 OpenAI 相容參數：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `messages` | array | **Required**. Array of message objects with 'role' and 'content' |
-| `model` | string | **Required**. Model ID from 100+ available models |
-| `stream` | boolean | Optional. Enable streaming responses |
-| `temperature` | float | Optional. Sampling temperature |
-| `top_p` | float | Optional. Nucleus sampling parameter |
-| `max_tokens` | integer | Optional. Maximum tokens to generate |
-| `frequency_penalty` | float | Optional. Penalize frequent tokens |
-| `presence_penalty` | float | Optional. Penalize tokens based on presence |
-| `stop` | string/array | Optional. Stop sequences |
-| `tools` | array | Optional. List of available tools/functions |
-| `tool_choice` | string/object | Optional. Control tool/function calling |
-| `response_format` | object | Optional. Response format specification |
-| `user` | string | Optional. User identifier |
+| `messages` | array | **必要**。包含 'role' 與 'content' 的訊息物件陣列 |
+| `model` | string | **必要**。來自 100+ 可用模型的模型 ID |
+| `stream` | boolean | 選用。啟用串流回應 |
+| `temperature` | float | 選用。取樣溫度 |
+| `top_p` | float | 選用。核取樣參數 |
+| `max_tokens` | integer | 選用。要產生的最大 token 數 |
+| `frequency_penalty` | float | 選用。對常見 token 施加懲罰 |
+| `presence_penalty` | float | 選用。根據出現與否對 token 施加懲罰 |
+| `stop` | string/array | 選用。停止序列 |
+| `tools` | array | 選用。可用工具／函式清單 |
+| `tool_choice` | string/object | 選用。控制工具／函式呼叫 |
+| `response_format` | object | 選用。回應格式規格 |
+| `user` | string | 選用。使用者識別碼 |
 
-## Available Model Categories
+## 可用模型類別 {#available-model-categories}
 
-Poe provides access to models across multiple providers:
-- **OpenAI Models**: Including GPT-4, GPT-4 Turbo, GPT-3.5 Turbo
-- **Anthropic Models**: Including Claude 3 Opus, Sonnet, Haiku
-- **Other Popular Models**: Various provider models available
-- **Multi-Modal**: Text, image, video, and voice models
+Poe 提供跨多個提供者的模型存取：
+- **OpenAI 模型**：包含 GPT-4、GPT-4 Turbo、GPT-3.5 Turbo
+- **Anthropic 模型**：包含 Claude 3 Opus、Sonnet、Haiku
+- **其他熱門模型**：提供各種提供者模型
+- **多模態**：文字、圖片、影片與語音模型
 
-## Platform Benefits
+## 平台優點 {#platform-benefits}
 
-Using Poe through LiteLLM offers several advantages:
-- **Unified Access**: Single API for many different models
-- **Quora Integration**: Access to large user base and content ecosystem
-- **Content Sharing**: Capabilities to share model outputs with followers
-- **Content Distribution**: Best AI content distributed to all users
-- **Model Discovery**: Efficient way to explore new AI models
+透過 LiteLLM 使用 Poe 有以下幾項優勢：
+- **統一存取**：單一 API 存取多種不同模型
+- **Quora 整合**：可存取大型使用者基礎與內容生態系
+- **內容分享**：可將模型輸出分享給追蹤者
+- **內容分發**：將最佳 AI 內容分發給所有使用者
+- **模型探索**：探索新 AI 模型的有效方式
 
-## Developer Resources
+## 開發者資源 {#developer-resources}
 
-Poe is actively building developer features and welcomes early access requests for API integration.
+Poe 正積極打造開發者功能，並歡迎 API 整合的早期存取申請。
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Poe Website](https://poe.com)
+- [Poe 網站](https://poe.com)
 - [Poe AI Quora Space](https://poeai.quora.com)
-- [Quora Blog Post about Poe](https://quorablog.quora.com/Poe)
+- [關於 Poe 的 Quora 部落格文章](https://quorablog.quora.com/Poe)

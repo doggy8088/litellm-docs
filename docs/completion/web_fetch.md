@@ -1,35 +1,33 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Web Fetch
+# Web Fetch {#web-fetch}
 
-The web fetch tool allows LLMs to retrieve full content from specified web pages and PDF documents. This enables AI models to access real-time information from the internet and incorporate web content into their responses. 
+Web fetch 工具可讓 LLM 從指定的網頁和 PDF 文件擷取完整內容。這使 AI 模型能從網際網路存取即時資訊，並將網頁內容納入其回應中。 
 
-## Web Fetch vs Web Search
+## Web Fetch 與 Web Search {#web-fetch-vs-web-search}
 
-**Web Fetch** retrieves the full content from specific web pages that you provide URLs for, while **Web Search** performs internet searches to find relevant information based on your queries.
+**Web Fetch** 會從您提供 URL 的特定網頁擷取完整內容，而 **Web Search** 則會進行網際網路搜尋，根據您的查詢尋找相關資訊。
 
-| Feature | Web Fetch | Web Search |
+| 功能 | Web Fetch | Web Search |
 |---------|-----------|------------|
-| **Purpose** | Retrieve content from specific URLs | Search the internet for information |
-| **Input** | You provide exact URLs to fetch | You provide search queries/questions |
-| **Output** | Full page content from specified URLs | Search results with relevant information |
-| **Use Cases** | - Analyzing specific articles<br/>- Comparing content from known websites<br/>- Extracting data from particular pages | - Finding current news/events<br/>- Researching topics<br/>- Getting real-time information |
+| **用途** | 從特定 URL 擷取內容 | 搜尋網際網路上的資訊 |
+| **輸入** | 您提供要擷取的精確 URL | 您提供搜尋查詢／問題 |
+| **輸出** | 來自指定 URL 的完整頁面內容 | 含有相關資訊的搜尋結果 |
+| **使用情境** | - 分析特定文章<br/>- 比較已知網站的內容<br/>- 從特定頁面擷取資料 | - 尋找最新新聞／事件<br/>- 研究主題<br/>- 取得即時資訊 |
 
+**Web Fetch 範例**： "從 https://example.com/pricing 擷取內容並摘要"  
+**Web Search 範例**： "本週最新的 AI 發展有哪些？"
 
-**Example Web Fetch**: "Fetch the content from https://example.com/pricing and summarize it"  
-**Example Web Search**: "What are the latest AI developments this week?"
-
-**Supported Providers:**
+**支援的提供者：**
 - Anthropic API (`anthropic/`)
 
-**Supported Tool Types:**
-- `web_fetch_20250910` - Web content retrieval tool with usage limits, domain filtering, and citation support
+**支援的工具類型：**
+- `web_fetch_20250910` - 具有限制使用量、網域篩選與引用支援的網頁內容擷取工具
 
+## 快速開始 {#quick-start}
 
-## Quick Start
-
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python
 import os 
@@ -62,9 +60,9 @@ response = completion(
 print(response)
 ```
 
-### LiteLLM Proxy
+### LiteLLM 代理閘道 {#litellm-proxy}
 
-1. Define web fetch models on config.yaml
+1. 在 config.yaml 中定義 web fetch 模型
 
 ```yaml
 model_list:
@@ -74,13 +72,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Run proxy server
+2. 執行 proxy 伺服器
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it using the OpenAI Python SDK
+3. 使用 OpenAI Python SDK 進行測試
 
 ```python
 import os 
@@ -111,9 +109,9 @@ response = client.chat.completions.create(
 print(response)
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-Web fetch is available on the following Anthropic API models:
+web fetch 可用於以下 Anthropic API 模型：
 
 - `claude-opus-4-6` (Claude Opus 4.6)
 - `claude-sonnet-4-6` (Claude Sonnet 4.6)
@@ -128,12 +126,12 @@ Web fetch is available on the following Anthropic API models:
 - `claude-3-5-haiku-latest` (Claude Haiku 3.5)
 
 :::note
-The web fetch tool currently does not support websites dynamically rendered via JavaScript.
+目前 web fetch 工具不支援透過 JavaScript 動態渲染的網站。
 :::
 
-## Usage Examples
+## 使用範例 {#usage-examples}
 
-### Basic Web Content Retrieval
+### 基本網頁內容擷取 {#basic-web-content-retrieval}
 
 ```python
 import os 
@@ -165,7 +163,7 @@ response = completion(
 print(response)
 ```
 
-### Research and Analysis
+### 研究與分析 {#research-and-analysis}
 
 ```python
 import os 
@@ -197,7 +195,7 @@ response = completion(
 print(response)
 ```
 
-### Content Comparison
+### 內容比較 {#content-comparison}
 
 ```python
 import os 
@@ -229,9 +227,9 @@ response = completion(
 print(response)
 ```
 
-## Advanced Usage with Multiple Tools
+## 結合多種工具的進階用法 {#advanced-usage-with-multiple-tools}
 
-You can combine web fetch with other tools like computer use or text editor:
+您可以將 web fetch 與其他工具結合，例如 computer use 或 text editor：
 
 ```python
 import os 
@@ -267,11 +265,11 @@ response = completion(
 print(response)
 ```
 
-## Spec
+## 規格 {#spec}
 
-### Web Fetch Tool (`web_fetch_20250910`)
+### Web Fetch 工具 (`web_fetch_20250910`) {#web-fetch-tool-web_fetch_20250910}
 
-The web fetch tool supports the following parameters:
+web fetch 工具支援以下參數：
 
 ```json
 {
@@ -296,4 +294,3 @@ The web fetch tool supports the following parameters:
   "max_content_tokens": 100000
 }
 ```
-

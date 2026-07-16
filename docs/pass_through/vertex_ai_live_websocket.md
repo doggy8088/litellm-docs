@@ -1,21 +1,21 @@
-# Vertex AI Live API WebSocket Passthrough
+# Vertex AI Live API WebSocket 直通 {#vertex-ai-live-api-websocket-passthrough}
 
-LiteLLM now supports WebSocket passthrough for the Vertex AI Live API, enabling real-time bidirectional communication with Gemini models.
+LiteLLM 現在支援 Vertex AI Live API 的 WebSocket 直通，讓您能與 Gemini 模型進行即時雙向通訊。
 
-## Overview
+## 總覽 {#overview}
 
-The Vertex AI Live API WebSocket passthrough allows you to:
-- Connect to Vertex AI Live API through LiteLLM proxy
-- Use existing Vertex AI authentication methods
-- Pass through all WebSocket messages bidirectionally
-- Support text, audio, video, and multimodal interactions
-- Track costs automatically for all usage types
+Vertex AI Live API WebSocket 直通可讓您：
+- 透過 LiteLLM proxy 連線至 Vertex AI Live API
+- 使用既有的 Vertex AI 驗證方法
+- 雙向透過所有 WebSocket 訊息
+- 支援文字、音訊、影片與多模態互動
+- 自動追蹤所有使用類型的成本
 
-## Configuration
+## 設定 {#configuration}
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
-Set the following environment variables for Vertex AI authentication:
+請設定以下環境變數以進行 Vertex AI 驗證：
 
 ```bash
 # Required
@@ -27,9 +27,9 @@ DEFAULT_GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 # OR run: gcloud auth application-default login
 ```
 
-### Configuration File
+### 設定檔 {#configuration-file}
 
-Alternatively, configure in your `config.yaml`:
+或者，請在您的 `config.yaml` 中設定：
 
 ```yaml
 litellm_settings:
@@ -39,19 +39,19 @@ litellm_settings:
     vertex_credentials: "os.environ/GOOGLE_APPLICATION_CREDENTIALS"
 ```
 
-## Usage
+## 用法 {#usage}
 
-### WebSocket Endpoints
+### WebSocket 端點 {#websocket-endpoints}
 
 - `ws://your-proxy-host/v1/vertex-ai/live`
 - `ws://your-proxy-host/vertex-ai/live`
 
-### Query Parameters
+### 查詢參數 {#query-parameters}
 
-- `project_id` (optional): Google Cloud project ID (can be set in config)
-- `location` (optional): Vertex AI location (can be set in config, default: us-central1)
+- `project_id`（選用）：Google Cloud 專案 ID（可在設定中指定）
+- `location`（選用）：Vertex AI 位置（可在設定中指定，預設：us-central1）
 
-### Example Connection
+### 連線範例 {#example-connection}
 
 ```javascript
 // If project_id and location are set in config, you can connect without query params
@@ -61,42 +61,42 @@ const ws = new WebSocket('ws://localhost:4000/v1/vertex-ai/live');
 const ws = new WebSocket('ws://localhost:4000/v1/vertex-ai/live?project_id=your-project-id&location=us-central1');
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-The WebSocket passthrough automatically tracks costs for all usage types based on the [Vertex AI pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing#model-optimizer-pricing):
+WebSocket 直通會根據 [Vertex AI 定價](https://cloud.google.com/vertex-ai/generative-ai/pricing#model-optimizer-pricing) 自動追蹤所有使用類型的成本：
 
-### Supported Cost Tracking
+### 支援的成本追蹤 {#supported-cost-tracking}
 
-- **Text**: Character-based or token-based pricing depending on model
-- **Audio**: Per-second pricing for audio input/output
-- **Video**: Per-second pricing for video input
-- **Images**: Per-image pricing for image input
+- **文字**：依模型而定，按字元計費或按 token 計費
+- **音訊**：音訊輸入/輸出的每秒計費
+- **影片**：影片輸入的每秒計費
+- **圖片**：圖片輸入的每張計費
 
-### Cost Calculation
+### 成本計算 {#cost-calculation}
 
-Costs are calculated using the same methods as other Vertex AI models in LiteLLM:
-- Uses `cost_per_character` for Gemini models
-- Uses `cost_per_token` for partner models (Claude, Llama, etc.)
-- Includes audio, video, and image costs when applicable
+成本計算方式與 LiteLLM 中其他 Vertex AI 模型相同：
+- Gemini 模型使用 `cost_per_character`
+- 合作夥伴模型（Claude、Llama 等）使用 `cost_per_token`
+- 適用時包含音訊、影片與圖片成本
 
-### Cost Logging
+### 成本記錄 {#cost-logging}
 
-Costs are automatically logged to:
-- LiteLLM proxy logs
-- Database (if configured)
-- Spend tracking system
-- Admin dashboard
+成本會自動記錄到：
+- LiteLLM proxy 記錄
+- 資料庫（若已設定）
+- 支出追蹤系統
+- 管理儀表板
 
-Example log output:
+記錄輸出範例：
 ```
 Vertex AI Live WebSocket session cost: $0.001234 (input: $0.000800, output: $0.000434) tokens: 150, characters: 1200, duration: 45.2s
 ```
 
-## API Reference
+## API 參考 {#api-reference}
 
-### Setup Message
+### 設定訊息 {#setup-message}
 
-Send this message first to initialize the session:
+請先傳送此訊息以初始化工作階段：
 
 ```json
 {
@@ -109,7 +109,7 @@ Send this message first to initialize the session:
 }
 ```
 
-### Text Input
+### 文字輸入 {#text-input}
 
 ```json
 {
@@ -125,7 +125,7 @@ Send this message first to initialize the session:
 }
 ```
 
-### Audio Input
+### 音訊輸入 {#audio-input}
 
 ```json
 {
@@ -140,29 +140,29 @@ Send this message first to initialize the session:
 }
 ```
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-### Response Modalities
+### 回應模態 {#response-modalities}
 
-- **TEXT**: Text responses
-- **AUDIO**: Audio responses with voice synthesis
+- **TEXT**：文字回應
+- **AUDIO**：具備語音合成的音訊回應
 
-### Tools
+### 工具 {#tools}
 
-- **Function Calling**: Define and use custom functions
-- **Code Execution**: Execute Python code
-- **Google Search**: Search the web
-- **Voice Activity Detection**: Detect when user is speaking
+- **函式呼叫**：定義並使用自訂函式
+- **程式碼執行**：執行 Python 程式碼
+- **Google 搜尋**：搜尋網路
+- **語音活動偵測**：偵測使用者何時正在說話
 
-### Advanced Features
+### 進階功能 {#advanced-features}
 
-- **Audio Transcription**: Transcribe input and output audio
-- **Proactive Audio**: Model responds only when relevant
-- **Affective Dialog**: Understand emotional expressions
+- **音訊轉錄**：轉錄輸入與輸出音訊
+- **主動式音訊**：模型僅在相關時回應
+- **情感對話**：理解情緒表達
 
-## Examples
+## 範例 {#examples}
 
-### Python Client
+### Python 用戶端 {#python-client}
 
 ```python
 import asyncio
@@ -206,7 +206,7 @@ async def chat_with_gemini():
 asyncio.run(chat_with_gemini())
 ```
 
-### JavaScript Client
+### JavaScript 用戶端 {#javascript-client}
 
 ```javascript
 const ws = new WebSocket('ws://localhost:4000/v1/vertex-ai/live?project_id=your-project-id');
@@ -240,45 +240,45 @@ ws.onmessage = function(event) {
 };
 ```
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-The WebSocket connection may close with these codes:
+WebSocket 連線可能會以這些代碼關閉：
 
-- `4001`: Vertex AI credentials not configured
-- `4002`: Project ID not provided
-- `1011`: Internal server error
+- `4001`：未設定 Vertex AI 憑證
+- `4002`：未提供專案 ID
+- `1011`：內部伺服器錯誤
 
-## Authentication
+## 驗證 {#authentication}
 
-The WebSocket passthrough uses the same authentication as other LiteLLM endpoints:
+WebSocket 直通使用與其他 LiteLLM 端點相同的驗證方式：
 
-1. **API Key**: Pass `Authorization: Bearer your-api-key` header
-2. **Vertex AI Credentials**: Set environment variables or config file
+1. **API Key**：傳遞 `Authorization: Bearer your-api-key` 標頭
+2. **Vertex AI 憑證**：設定環境變數或設定檔
 
-## Limitations
+## 限制 {#limitations}
 
-- Requires valid Google Cloud project with Vertex AI API enabled
-- WebSocket connections are not persistent across server restarts
-- Rate limits apply based on your Google Cloud quotas
+- 需要已啟用 Vertex AI API 的有效 Google Cloud 專案
+- WebSocket 連線在伺服器重新啟動後不會保持持續
+- 速率限制會依據您的 Google Cloud 配額套用
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Common Issues
+### 常見問題 {#common-issues}
 
-1. **Authentication Error**: Ensure Vertex AI credentials are properly configured
-2. **Project Not Found**: Verify the project ID exists and has Vertex AI enabled
-3. **Connection Refused**: Check that the LiteLLM proxy server is running
+1. **驗證錯誤**：請確保 Vertex AI 憑證已正確設定
+2. **找不到專案**：請確認專案 ID 存在且已啟用 Vertex AI
+3. **連線被拒**：請檢查 LiteLLM proxy 伺服器是否正在執行
 
-### Debug Mode
+### 除錯模式 {#debug-mode}
 
-Enable debug logging to see detailed connection information:
+啟用除錯記錄以查看詳細的連線資訊：
 
 ```bash
 export LITELLM_LOG=DEBUG
 ```
 
-## Related Documentation
+## 相關文件 {#related-documentation}
 
-- [Vertex AI Live API Reference](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/multimodal-live)
-- [LiteLLM Proxy Configuration](../proxy/)
-- [Vertex AI Passthrough Endpoints](./vertex_ai.md)
+- [Vertex AI Live API 參考](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/multimodal-live)
+- [LiteLLM Proxy 設定](../proxy/)
+- [Vertex AI 直通端點](./vertex_ai.md)

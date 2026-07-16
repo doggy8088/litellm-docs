@@ -1,18 +1,18 @@
 ---
 slug: april-townhall-announcement
-title: "April Townhall: Security + Product Roadmap"
+title: "四月市政大會：安全性 + 產品藍圖"
 date: 2026-04-02T07:30:00
 authors:
   - krrish
   - ishaan-alt
-description: "Join the LiteLLM April townhall on Friday, 10 April at 7:30 AM to learn about LiteLLM's security and product roadmap."
+description: "歡迎參加 LiteLLM 4 月市政大會，時間為 4 月 10 日星期五上午 7:30，了解 LiteLLM 的安全性與產品藍圖。"
 tags: [announcement, townhall]
 hide_table_of_contents: true
 ---
 
 import Image from '@theme/IdealImage';
 
-We are hosting our April townhall on **Friday, 10 April at 7:30 AM PST**.
+我們將於 **PST 時間 4 月 10 日星期五上午 7:30** 舉辦 4 月市政大會。
 
 <Image
   img={require('../../img/april_townhall_banner.png')}
@@ -21,20 +21,20 @@ We are hosting our April townhall on **Friday, 10 April at 7:30 AM PST**.
 
 {/* truncate */}
 
-## Agenda
+## 議程 {#agenda}
 
-- Product updates and roadmap progress
-- Reliability and security updates
-- Open Q&A with the team
+- 產品更新與藍圖進度
+- 可靠性與安全性更新
+- 與團隊的公開問答
 
-## How to contribute
+## 如何貢獻 {#how-to-contribute}
 
-Add your thoughts to this [ticket](https://github.com/BerriAI/litellm/issues/24825) to help us shape the agenda.
+請在這個 [工單](https://github.com/BerriAI/litellm/issues/24825) 中加入您的想法，協助我們共同規劃議程。
 
-## Register
+## 註冊 {#register}
 
-Register here: [LiteLLM April Townhall Form](https://forms.gle/hvyVXwbFjzJQE7dEA)
+在此註冊：[LiteLLM April Townhall Form](https://forms.gle/hvyVXwbFjzJQE7dEA)
 
-We will hold the townhall from **7:30 AM to 8:30 AM PST on Zoom**.
+我們將於 **PST 時間上午 7:30 至 8:30 透過 Zoom 舉行市政大會**。
 
-For security, attendance is restricted to corporate emails. If you register with a non-corporate email, we will share the townhall slides and accompanying blog post after the event.
+基於安全性考量，僅限公司電子郵件地址的使用者參加。如果您使用非公司電子郵件註冊，我們會在活動後分享市政大會投影片及相關部落格文章。

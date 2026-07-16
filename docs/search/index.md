@@ -1,25 +1,25 @@
-# Overview
+# 總覽 {#overview}
 
-| Feature | Supported | 
+| 功能 | 支援 |
 |---------|-----------|
-| Supported Providers | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent` |
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Load Balancing | ❌ |
+| 支援的提供者 | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent` |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 負載平衡 | ❌ |
 
 :::tip
 
-LiteLLM follows the [Perplexity API request/response for the Search API](https://docs.perplexity.ai/api-reference/search-post)
+LiteLLM 遵循 [Search API 的 Perplexity API 請求/回應](https://docs.perplexity.ai/api-reference/search-post)
 
 :::
 
 :::info
 
-Supported from LiteLLM v1.78.7+
+自 LiteLLM v1.78.7+ 起支援
 :::
 
-## **LiteLLM Python SDK Usage**
-### Quick Start 
+## **LiteLLM Python SDK 用法** {#litellm-python-sdk-usage}
+### 快速開始  {#quick-start}
 
 ```python showLineNumbers title="Basic Search"
 from litellm import search
@@ -39,7 +39,7 @@ for result in response.results:
     print(f"Snippet: {result.snippet}\n")
 ```
 
-### Async Usage 
+### 非同步用法  {#async-usage}
 
 ```python showLineNumbers title="Async Search"
 from litellm import asearch
@@ -63,7 +63,7 @@ async def search_async():
 asyncio.run(search_async())
 ```
 
-### Optional Parameters
+### 選用參數 {#optional-parameters}
 
 ```python showLineNumbers title="Search with Options"
 response = search(
@@ -77,13 +77,13 @@ response = search(
 )
 ```
 
-## **LiteLLM AI Gateway Usage**
+## **LiteLLM AI Gateway 用法** {#litellm-ai-gateway-usage}
 
-LiteLLM provides a Perplexity API compatible `/search` endpoint for search calls.
+LiteLLM 提供與 Perplexity API 相容的 `/search` 端點供搜尋請求使用。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -104,7 +104,7 @@ search_tools:
       api_key: os.environ/TAVILY_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -112,9 +112,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test Request
+### 測試請求 {#test-request}
 
-**Option 1: Search tool name in URL (Recommended - keeps body Perplexity-compatible)**
+**選項 1：URL 中的搜尋工具名稱（建議 - 保持 body 與 Perplexity 相容）**
 
 ```bash showLineNumbers title="cURL Request"
 curl http://0.0.0.0:4000/v1/search/perplexity-search \
@@ -128,7 +128,7 @@ curl http://0.0.0.0:4000/v1/search/perplexity-search \
   }'
 ```
 
-**Option 2: Search tool name in body**
+**選項 2：body 中的搜尋工具名稱**
 
 ```bash showLineNumbers title="cURL Request with search_tool_name in body"
 curl http://0.0.0.0:4000/v1/search \
@@ -141,9 +141,9 @@ curl http://0.0.0.0:4000/v1/search \
   }'
 ```
 
-### Load Balancing
+### 負載平衡 {#load-balancing}
 
-Configure multiple search providers for automatic load balancing and fallbacks:
+設定多個搜尋提供者以進行自動負載平衡和備援：
 
 ```yaml showLineNumbers title="config.yaml with load balancing"
 search_tools:
@@ -171,7 +171,7 @@ router_settings:
   routing_strategy: simple-shuffle  # or 'least-busy', 'latency-based-routing'
 ```
 
-Test with load balancing:
+使用負載平衡進行測試：
 
 ```bash
 curl http://0.0.0.0:4000/v1/search/my-search \
@@ -183,17 +183,17 @@ curl http://0.0.0.0:4000/v1/search/my-search \
   }'
 ```
 
-## **Request/Response Format**
+## **請求/回應格式** {#requestresponse-format}
 
 :::info
 
-LiteLLM follows the **Perplexity Search API specification**. 
+LiteLLM 遵循 **Perplexity Search API 規格**。 
 
-See the [official Perplexity Search documentation](https://docs.perplexity.ai/api-reference/search-post) for complete details.
+請參閱 [Perplexity Search 官方文件](https://docs.perplexity.ai/api-reference/search-post) 以取得完整詳細資訊。
 
 :::
 
-### Example Request
+### 請求範例 {#example-request}
 
 ```json showLineNumbers title="Search Request"
 {
@@ -205,19 +205,19 @@ See the [official Perplexity Search documentation](https://docs.perplexity.ai/ap
 }
 ```
 
-### Request Parameters
+### 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `query` | string or array | Yes | Search query. Can be a single string or array of strings |
-| `search_provider` | string | Yes (SDK) | The search provider to use: `"perplexity"`, `"tavily"`, `"parallel_ai"`, `"exa_ai"`, `"brave"`, `"google_pse"`, `"dataforseo"`, `"firecrawl"`, `"searxng"`, `"linkup"`, `"duckduckgo"`, `"searchapi"`, `"serper"`, or `"you_com"` or `"apiserpent"` |
-| `search_tool_name` | string | Yes (Proxy) | Name of the search tool configured in `config.yaml` |
-| `max_results` | integer | No | Maximum number of results to return (1-20). Default: 10 |
-| `search_domain_filter` | array | No | List of domains to filter results (max 20 domains) |
-| `max_tokens_per_page` | integer | No | Maximum tokens per page to process. Default: 1024 |
-| `country` | string | No | Country code filter (e.g., `"US"`, `"GB"`, `"DE"`) |
+| `query` | string 或 array | 是 | 搜尋查詢。可以是單一字串或字串陣列 |
+| `search_provider` | string | 是（SDK） | 要使用的搜尋提供者：`"perplexity"`、`"tavily"`、`"parallel_ai"`、`"exa_ai"`、`"brave"`、`"google_pse"`、`"dataforseo"`、`"firecrawl"`、`"searxng"`、`"linkup"`、`"duckduckgo"`、`"searchapi"`、`"serper"`，或 `"you_com"` 或 `"apiserpent"` |
+| `search_tool_name` | string | 是（Proxy） | 在 `config.yaml` 中設定的搜尋工具名稱 |
+| `max_results` | integer | 否 | 要回傳的最大結果數量（1-20）。預設：10 |
+| `search_domain_filter` | array | 否 | 用於篩選結果的網域清單（最多 20 個網域） |
+| `max_tokens_per_page` | integer | 否 | 每頁要處理的最大 token 數量。預設：1024 |
+| `country` | string | 否 | 國家/地區代碼篩選器（例如：`"US"`、`"GB"`、`"DE"`） |
 
-**Query Format Examples:**
+**查詢格式範例：**
 
 ```python
 # Single query
@@ -227,9 +227,9 @@ query = "AI developments"
 query = ["AI developments", "machine learning trends"]
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-The response follows Perplexity's search format with the following structure:
+回應遵循 Perplexity 的搜尋格式，結構如下：
 
 ```json showLineNumbers title="Search Response"
 {
@@ -251,20 +251,20 @@ The response follows Perplexity's search format with the following structure:
 }
 ```
 
-#### Response Fields
+#### 回應欄位 {#response-fields}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `object` | string | Always `"search"` for search responses |
-| `results` | array | List of search results |
-| `results[].title` | string | Title of the search result |
-| `results[].url` | string | URL of the search result |
-| `results[].snippet` | string | Text snippet from the result |
-| `results[].date` | string | Optional publication or last updated date |
+| `object` | string | 搜尋回應一律為 `"search"` |
+| `results` | array | 搜尋結果清單 |
+| `results[].title` | string | 搜尋結果標題 |
+| `results[].url` | string | 搜尋結果 URL |
+| `results[].snippet` | string | 結果中的文字片段 |
+| `results[].date` | string | 選用的發佈或最後更新日期 |
 
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-| Provider | Environment Variable | `search_provider` Value |
+| 提供者 | 環境變數 | `search_provider` 值 |
 |----------|---------------------|------------------------|
 | Perplexity AI | `PERPLEXITYAI_API_KEY` | `perplexity` |
 | Tavily | `TAVILY_API_KEY` | `tavily` |
@@ -274,13 +274,12 @@ The response follows Perplexity's search format with the following structure:
 | Google PSE | `GOOGLE_PSE_API_KEY`, `GOOGLE_PSE_ENGINE_ID` | `google_pse` |
 | DataForSEO | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | `dataforseo` |
 | Firecrawl | `FIRECRAWL_API_KEY` | `firecrawl` |
-| SearXNG | `SEARXNG_API_BASE` (required) | `searxng` |
+| SearXNG | `SEARXNG_API_BASE`（必填） | `searxng` |
 | Linkup | `LINKUP_API_KEY` | `linkup` |
 | Serper | `SERPER_API_KEY` | `serper` |
 | DuckDuckGo | `DUCKDUCKGO_API_BASE` | `duckduckgo` |
 | SearchAPI.io | `SEARCHAPI_API_KEY` | `searchapi` |
-| You.com | `YOUCOM_API_KEY` *(optional — omit for keyless free tier)* | `you_com` |
+| You.com | `YOUCOM_API_KEY` *（選用 — 無金鑰免費方案可省略）* | `you_com` |
 | APISerpent | `APISERPENT_API_KEY` | `apiserpent` |
 
-See the individual provider documentation for detailed setup instructions and provider-specific parameters.
-
+請參閱各個提供者的文件，以取得詳細的設定說明與提供者專屬參數。

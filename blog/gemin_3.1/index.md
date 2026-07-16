@@ -1,27 +1,26 @@
 ---
 slug: gemini_3_1_pro
-title: "DAY 0 Support: Gemini 3.1 Pro on LiteLLM"
+title: "DAY 0 支援：LiteLLM 上的 Gemini 3.1 Pro"
 date: 2026-02-19T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Guide to using Gemini 3.1 Pro on LiteLLM Proxy and SDK with day 0 support."
+description: "在 LiteLLM Proxy 和 SDK 上使用 Gemini 3.1 Pro 並提供 day 0 支援的指南。"
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
 
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini 3.1 Pro Day 0 Support 
+# Gemini 3.1 Pro Day 0 支援  {#gemini-31-pro-day-0-support}
 
-LiteLLM now supports `gemini-3.1-pro-preview` and all the new API changes along with it.
+LiteLLM 現在支援 `gemini-3.1-pro-preview` 以及所有隨之而來的新 API 變更。
 
 {/* truncate */}
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -44,37 +43,37 @@ pip install litellm==v1.81.9-stable.gemini.3.1-pro
 </TabItem>
 </Tabs>
 
-## What's New
+## 新增內容 {#whats-new}
 
-### 1. New Thinking Levels: `thinkingLevel` with MINIMAL & MEDIUM
+### 1. 新的思考層級：`thinkingLevel`，支援 MINIMAL 與 MEDIUM {#1-new-thinking-levels-thinkinglevel-with-minimal--medium}
 
-Gemini 3.1 Pro introduces support for **medium** thinking level
+Gemini 3.1 Pro 新增對 **medium** 思考層級的支援
 
-LiteLLM automatically maps the OpenAI `reasoning_effort` parameter to Gemini's `thinkingLevel`, so you can use familiar `reasoning_effort` values (`minimal`, `low`, `medium`, `high`) without changing your code!
+LiteLLM 會自動將 OpenAI `reasoning_effort` 參數映射到 Gemini 的 `thinkingLevel`，因此您可以使用熟悉的 `reasoning_effort` 值（`minimal`、`low`、`medium`、`high`），而無需變更程式碼！
 
 ---
-## Supported Endpoints
+## Gemini 3+ 的支援端點 {#supported-endpoints}
 
-LiteLLM provides **full end-to-end support** for Gemini 3.1 Pro on:
+LiteLLM 為 Gemini 3.1 Pro 提供 **完整端到端支援**，涵蓋：
 
-- ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
-- ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) compatible endpoint 
+- ✅ `/v1/chat/completions` - OpenAI 相容的聊天 completions 端點
+- ✅ `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic 相容的 messages 端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容端點 
 
-All endpoints support:
-- Streaming and non-streaming responses
-- Function calling with thought signatures
-- Multi-turn conversations
-- All Gemini 3-specific features
-- Conversion of provider specific thinking related param to thinkingLevel
+所有端點都支援：
+- 串流與非串流回應
+- 具備 thought signatures 的函式呼叫
+- 多輪對話
+- 所有 Gemini 3 專屬功能
+- 將提供者特定的 thinking 相關參數轉換為 thinkingLevel
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Basic Usage with MEDIUM thinking (NEW)**
+**使用 MEDIUM 思考的基本用法（新）**
 
 ```python
 from litellm import completion
@@ -93,7 +92,7 @@ print(response.choices[0].message.content)
 
 <TabItem value="proxy" label="PROXY">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -106,13 +105,13 @@ model_list:
       model: vertex_ai/gemini-3.1-pro-preview
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Call with MEDIUM thinking**
+**3. 使用 MEDIUM thinking 呼叫**
 
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -130,7 +129,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 
 ---
 
-## `reasoning_effort` Mapping for Gemini 3+
+## `reasoning_effort` 映射表：適用於 Gemini 3+ {#reasoning_effort-mapping-for-gemini-3}
 
 | reasoning_effort | thinking_level | 
 |------------------|----------------|

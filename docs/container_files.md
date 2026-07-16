@@ -3,35 +3,35 @@ id: container_files
 title: /containers/files
 ---
 
-# Container Files API
+# 容器檔案 API {#container-files-api}
 
-Manage files within Code Interpreter containers. Files are created automatically when code interpreter generates outputs (charts, CSVs, images, etc.).
+管理 Code Interpreter 容器中的檔案。當 code interpreter 產生輸出（圖表、CSV、圖片等）時，檔案會自動建立。
 
 :::tip
-Looking for how to use Code Interpreter? See the [Code Interpreter Guide](/docs/guides/code_interpreter).
+想了解如何使用 Code Interpreter 嗎？請參閱 [Code Interpreter 指南](/docs/guides/code_interpreter)。
 :::
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Supported Providers | `openai` |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 支援的提供者 | `openai` |
 
-## Endpoints
+## 端點 {#endpoints}
 
-| Endpoint | Method | Description |
+| 端點 | 方法 | 描述 |
 |----------|--------|-------------|
-| `/v1/containers/{container_id}/files` | POST | Upload file to container |
-| `/v1/containers/{container_id}/files` | GET | List files in container |
-| `/v1/containers/{container_id}/files/{file_id}` | GET | Get file metadata |
-| `/v1/containers/{container_id}/files/{file_id}/content` | GET | Download file content |
-| `/v1/containers/{container_id}/files/{file_id}` | DELETE | Delete file |
+| `/v1/containers/{container_id}/files` | POST | 上傳檔案至容器 |
+| `/v1/containers/{container_id}/files` | GET | 列出容器中的檔案 |
+| `/v1/containers/{container_id}/files/{file_id}` | GET | 取得檔案中繼資料 |
+| `/v1/containers/{container_id}/files/{file_id}/content` | GET | 下載檔案內容 |
+| `/v1/containers/{container_id}/files/{file_id}` | DELETE | 刪除檔案 |
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
-### Upload Container File
+### 上傳容器檔案 {#upload-container-file}
 
-Upload files directly to a container session. This is useful when `/chat/completions` or `/responses` sends files to the container but the input file type is limited to PDF. This endpoint lets you work with other file types like CSV, Excel, Python scripts, etc.
+直接上傳檔案到容器工作階段。當 `/chat/completions` 或 `/responses` 將檔案傳送到容器，但輸入檔案類型僅限於 PDF 時，這會很有用。這個端點可讓您處理其他檔案類型，例如 CSV、Excel、Python 指令碼等。
 
 ```python showLineNumbers title="upload_container_file.py"
 from litellm import upload_container_file
@@ -47,7 +47,7 @@ print(f"Uploaded: {file.id}")
 print(f"Path: {file.path}")
 ```
 
-**Async:**
+**非同步：**
 
 ```python showLineNumbers title="aupload_container_file.py"
 from litellm import aupload_container_file
@@ -59,16 +59,16 @@ file = await aupload_container_file(
 )
 ```
 
-**Supported file formats:**
+**支援的檔案格式：**
 - CSV (`.csv`)
 - Excel (`.xlsx`)
-- Python scripts (`.py`)
+- Python 指令碼 (`.py`)
 - JSON (`.json`)
 - Markdown (`.md`)
-- Text files (`.txt`)
-- And more...
+- 文字檔 (`.txt`)
+- 還有更多...
 
-### List Container Files
+### 列出容器檔案 {#list-container-files}
 
 ```python showLineNumbers title="list_container_files.py"
 from litellm import list_container_files
@@ -82,7 +82,7 @@ for file in files.data:
     print(f"  - {file.id}: {file.filename}")
 ```
 
-**Async:**
+**非同步：**
 
 ```python showLineNumbers title="alist_container_files.py"
 from litellm import alist_container_files
@@ -93,7 +93,7 @@ files = await alist_container_files(
 )
 ```
 
-### Retrieve Container File
+### 取得容器檔案 {#retrieve-container-file}
 
 ```python showLineNumbers title="retrieve_container_file.py"
 from litellm import retrieve_container_file
@@ -108,7 +108,7 @@ print(f"File: {file.filename}")
 print(f"Size: {file.bytes} bytes")
 ```
 
-### Download File Content
+### 下載檔案內容 {#download-file-content}
 
 ```python showLineNumbers title="retrieve_container_file_content.py"
 from litellm import retrieve_container_file_content
@@ -124,7 +124,7 @@ with open("output.png", "wb") as f:
     f.write(content)
 ```
 
-### Delete Container File
+### 刪除容器檔案 {#delete-container-file}
 
 ```python showLineNumbers title="delete_container_file.py"
 from litellm import delete_container_file
@@ -138,12 +138,12 @@ result = delete_container_file(
 print(f"Deleted: {result.deleted}")
 ```
 
-## LiteLLM AI Gateway (Proxy)
+## LiteLLM AI Gateway（Proxy） {#litellm-ai-gateway-proxy}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-### Upload File
+### 上傳檔案 {#upload-file}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -177,7 +177,7 @@ curl "http://localhost:4000/v1/containers/cntr_123.../files" \
 </TabItem>
 </Tabs>
 
-### List Files
+### 列出檔案 {#list-files}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -209,7 +209,7 @@ curl "http://localhost:4000/v1/containers/cntr_123.../files" \
 </TabItem>
 </Tabs>
 
-### Retrieve File Metadata
+### 取得檔案中繼資料 {#retrieve-file-metadata}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -242,7 +242,7 @@ curl "http://localhost:4000/v1/containers/cntr_123.../files/cfile_456..." \
 </TabItem>
 </Tabs>
 
-### Download File Content
+### 下載檔案內容 {#download-file-content-1}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -276,7 +276,7 @@ curl "http://localhost:4000/v1/containers/cntr_123.../files/cfile_456.../content
 </TabItem>
 </Tabs>
 
-### Delete File
+### 刪除檔案 {#delete-file}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -308,34 +308,34 @@ curl -X DELETE "http://localhost:4000/v1/containers/cntr_123.../files/cfile_456.
 </TabItem>
 </Tabs>
 
-## Parameters
+## 參數 {#parameters}
 
-### Upload File
+### 上傳檔案 {#upload-file-1}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 描述 |
 |-----------|------|----------|-------------|
-| `container_id` | string | Yes | Container ID |
-| `file` | FileTypes | Yes | File to upload. Can be a tuple of (filename, content, content_type), file-like object, or bytes |
+| `container_id` | string | Yes | 容器 ID |
+| `file` | FileTypes | Yes | 要上傳的檔案。可以是 (filename, content, content_type) 的 tuple、類檔案物件或 bytes |
 
-### List Files
+### 列出檔案 {#list-files-1}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 描述 |
 |-----------|------|----------|-------------|
-| `container_id` | string | Yes | Container ID |
-| `after` | string | No | Pagination cursor |
-| `limit` | integer | No | Items to return (1-100, default: 20) |
-| `order` | string | No | Sort order: `asc` or `desc` |
+| `container_id` | string | Yes | 容器 ID |
+| `after` | string | No | 分頁游標 |
+| `limit` | integer | No | 要回傳的項目數（1-100，預設：20） |
+| `order` | string | No | 排序順序：`asc` 或 `desc` |
 
-### Retrieve/Delete File
+### 取得/刪除檔案 {#retrievedelete-file}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 描述 |
 |-----------|------|----------|-------------|
-| `container_id` | string | Yes | Container ID |
-| `file_id` | string | Yes | File ID |
+| `container_id` | string | Yes | 容器 ID |
+| `file_id` | string | Yes | 檔案 ID |
 
-## Response Objects
+## 回應物件 {#response-objects}
 
-### ContainerFileObject
+### ContainerFileObject {#containerfileobject}
 
 ```json showLineNumbers title="ContainerFileObject"
 {
@@ -350,7 +350,7 @@ curl -X DELETE "http://localhost:4000/v1/containers/cntr_123.../files/cfile_456.
 }
 ```
 
-### ContainerFileListResponse
+### ContainerFileListResponse {#containerfilelistresponse}
 
 ```json showLineNumbers title="ContainerFileListResponse"
 {
@@ -362,7 +362,7 @@ curl -X DELETE "http://localhost:4000/v1/containers/cntr_123.../files/cfile_456.
 }
 ```
 
-### DeleteContainerFileResponse
+### DeleteContainerFileResponse {#deletecontainerfileresponse}
 
 ```json showLineNumbers title="DeleteContainerFileResponse"
 {
@@ -372,13 +372,13 @@ curl -X DELETE "http://localhost:4000/v1/containers/cntr_123.../files/cfile_456.
 }
 ```
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-| Provider | Status |
+| 提供者 | 狀態 |
 |----------|--------|
-| OpenAI | ✅ Supported |
+| OpenAI | ✅ 支援 |
 
-## Related
+## 相關 {#related}
 
-- [Containers API](/docs/containers) - Manage containers
-- [Code Interpreter Guide](/docs/guides/code_interpreter) - Using Code Interpreter with LiteLLM
+- [Containers API](/docs/containers) - 管理容器
+- [Code Interpreter 指南](/docs/guides/code_interpreter) - 在 LiteLLM 中使用 Code Interpreter

@@ -1,10 +1,10 @@
-# Model Alias
+# 模型別名 {#model-alias}
 
-The model name you show an end-user might be different from the one you pass to LiteLLM - e.g. Displaying `GPT-3.5` while calling `gpt-3.5-turbo-16k` on the backend. 
+您顯示給終端使用者的模型名稱，可能與您傳遞給 LiteLLM 的名稱不同——例如，前端顯示 `GPT-3.5`，而後端呼叫 `gpt-3.5-turbo-16k`。
 
-LiteLLM simplifies this by letting you pass in a model alias mapping. 
+LiteLLM 透過讓您傳入模型別名對應來簡化這件事。
 
-# expected format
+# 預期格式 {#expected-format}
 
 ```python
 litellm.model_alias_map = {
@@ -13,9 +13,9 @@ litellm.model_alias_map = {
 }
 ```
 
-# usage 
+# 用法 {#usage}
 
-### Relevant Code
+### 相關程式碼 {#relevant-code}
 ```python
 model_alias_map = {
     "GPT-3.5": "gpt-3.5-turbo-16k",
@@ -25,7 +25,7 @@ model_alias_map = {
 litellm.model_alias_map = model_alias_map
 ```
 
-### Complete Code
+### 完整程式碼 {#complete-code}
 ```python
 import litellm 
 from litellm import completion 

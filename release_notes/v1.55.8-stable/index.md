@@ -17,37 +17,35 @@ hide_table_of_contents: false
 
 import Image from '@theme/IdealImage';
 
-# v1.55.8-stable
+# v1.55.8-stable {#v1558-stable}
 
-A new LiteLLM Stable release [just went out](https://github.com/BerriAI/litellm/releases/tag/v1.55.8-stable). Here are 5 updates since v1.52.2-stable. 
+LiteLLM 最新穩定版已[正式推出](https://github.com/BerriAI/litellm/releases/tag/v1.55.8-stable)。以下是自 v1.52.2-stable 以來的 5 項更新。
 
 `langfuse`, `fallbacks`, `new models`, `azure_storage`
 
 <Image img={require('../../img/langfuse_prmpt_mgmt.png')} />
 
-## Langfuse Prompt Management
+## Langfuse 提示管理 {#langfuse-prompt-management}
 
-This makes it easy to run experiments or change the specific models `gpt-4o` to `gpt-4o-mini` on Langfuse, instead of making changes in your applications. [Start here](https://docs.litellm.ai/docs/proxy/prompt_management)
+這讓您能輕鬆執行實驗，或在 Langfuse 上變更特定模型 `gpt-4o` 到 `gpt-4o-mini`，而不是在您的應用程式中進行變更。[從這裡開始](https://docs.litellm.ai/docs/proxy/prompt_management)
 
-## Control fallback prompts client-side 
+## 在用戶端控制備援提示詞  {#control-fallback-prompts-client-side}
 
-> Claude prompts are different than OpenAI
+> Claude 提示詞與 OpenAI 不同
 
-Pass in prompts specific to model when doing fallbacks. [Start here](https://docs.litellm.ai/docs/proxy/reliability#control-fallback-prompts)
+在執行備援時，傳入特定於模型的提示詞。[從這裡開始](https://docs.litellm.ai/docs/proxy/reliability#control-fallback-prompts)
 
+## 新的提供者 / 模型 {#new-providers--models}
 
-## New Providers / Models
+- [NVIDIA Triton](https://developer.nvidia.com/triton-inference-server) `/infer` 端點。[從這裡開始](https://docs.litellm.ai/docs/providers/triton-inference-server)
+- [Infinity](https://github.com/michaelfeil/infinity) Rerank 模型 [從這裡開始](https://docs.litellm.ai/docs/providers/infinity)
 
-- [NVIDIA Triton](https://developer.nvidia.com/triton-inference-server) `/infer` endpoint. [Start here](https://docs.litellm.ai/docs/providers/triton-inference-server)
-- [Infinity](https://github.com/michaelfeil/infinity) Rerank Models [Start here](https://docs.litellm.ai/docs/providers/infinity)
+## ✨ Azure Data Lake Storage 支援 {#-azure-data-lake-storage-support}
 
+將 LLM 使用量（支出、tokens）資料傳送至 [Azure Data Lake](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction)。這讓您能更容易在其他服務上使用這些使用量資料（例如 Databricks）
+ [從這裡開始](https://docs.litellm.ai/docs/proxy/logging#azure-blob-storage)
 
-## ✨ Azure Data Lake Storage Support
-
-Send LLM usage (spend, tokens) data to [Azure Data Lake](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction). This makes it easy to consume usage data on other services (eg. Databricks)
- [Start here](https://docs.litellm.ai/docs/proxy/logging#azure-blob-storage)
-
-## Docker Run LiteLLM
+## Docker 執行 LiteLLM {#docker-run-litellm}
 
 ```shell
 docker run \
@@ -56,7 +54,6 @@ docker run \
 docker.litellm.ai/berriai/litellm:litellm_stable_release_branch-v1.55.8-stable
 ```
 
-## Get Daily Updates
+## 取得每日更新 {#get-daily-updates}
 
-LiteLLM ships new releases every day. [Follow us on LinkedIn](https://www.linkedin.com/company/berri-ai/) to get daily updates. 
-
+LiteLLM 每天都會推出新版本。[在 LinkedIn 上追蹤我們](https://www.linkedin.com/company/berri-ai/) 以取得每日更新。

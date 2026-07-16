@@ -1,19 +1,19 @@
-# /evals
+# /evals {#evals}
 
-LiteLLM Proxy supports OpenAI's Evaluations (Evals) API, allowing you to create, manage, and run evaluations to measure model performance against defined testing criteria.
+LiteLLM Proxy 支援 OpenAI 的 Evaluations（Evals）API，讓您可以建立、管理並執行評估，以根據既定的測試標準衡量模型效能。
 
-## What are Evals?
+## 什麼是 Evals？ {#what-are-evals}
 
-OpenAI Evals API provides a structured way to:
-- **Create Evaluations**: Define testing criteria and data sources for evaluating model outputs
-- **Run Evaluations**: Execute evaluations against specific models and datasets
-- **Track Results**: Monitor evaluation progress and review detailed results
+OpenAI Evals API 提供一種結構化方式來：
+- **建立評估**：定義用於評估模型輸出的測試標準與資料來源
+- **執行評估**：針對特定模型與資料集執行評估
+- **追蹤結果**：監控評估進度並檢視詳細結果
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Setup LiteLLM Proxy
+### 設定 LiteLLM Proxy {#setup-litellm-proxy}
 
-First, start your LiteLLM Proxy server:
+首先，啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash
 litellm --config config.yaml
@@ -21,7 +21,7 @@ litellm --config config.yaml
 # Proxy will run on http://localhost:4000
 ```
 
-### Initialize OpenAI Client
+### 初始化 OpenAI 用戶端 {#initialize-openai-client}
 
 ```python
 from openai import OpenAI
@@ -34,7 +34,7 @@ client = OpenAI(
 ```
 
 
-For async operations:
+若要進行非同步操作：
 
 ```python
 from openai import AsyncOpenAI
@@ -47,13 +47,13 @@ client = AsyncOpenAI(
 
 ---
 
-## Evaluation Management
+## 評估管理 {#evaluation-management}
 
-### Create an Evaluation
+### 建立評估 {#create-an-evaluation}
 
-Create an evaluation with testing criteria and data source configuration.
+使用測試標準與資料來源設定來建立評估。
 
-#### Example: Sentiment Classification Eval
+#### 範例：情感分類評估 {#example-sentiment-classification-eval}
 
 ```python
 from openai import OpenAI
@@ -97,9 +97,9 @@ print(f"Created eval: {eval_obj.id}")
 print(f"Eval name: {eval_obj.name}")
 ```
 
-#### Example: Push Notifications Summarizer Monitoring
+#### 範例：推播通知摘要器監控 {#example-push-notifications-summarizer-monitoring}
 
-This example shows how to monitor prompt changes for regressions in a push notifications summarizer:
+此範例示範如何監控提示詞變更是否造成推播通知摘要器的回歸：
 
 ```python
 from openai import AsyncOpenAI
@@ -160,9 +160,9 @@ eval_id = eval_result.id
 print(f"Created eval: {eval_id}")
 ```
 
-### List Evaluations
+### 列出評估 {#list-evaluations}
 
-Retrieve a list of all your evaluations with pagination support.
+擷取所有評估的清單，支援分頁。
 
 ```python
 # List all evaluations
@@ -183,9 +183,9 @@ if evals_response.has_more:
     )
 ```
 
-### Get a Specific Evaluation
+### 取得特定評估 {#get-a-specific-evaluation}
 
-Retrieve details of a specific evaluation by ID.
+依 ID 取得特定評估的詳細資訊。
 
 ```python
 eval = client.evals.retrieve(
@@ -198,9 +198,9 @@ print(f"Data Source: {eval.data_source_config}")
 print(f"Testing Criteria: {eval.testing_criteria}")
 ```
 
-### Update an Evaluation
+### 更新評估 {#update-an-evaluation}
 
-Update evaluation metadata or name.
+更新評估中繼資料或名稱。
 
 ```python
 updated_eval = client.evals.update(
@@ -215,9 +215,9 @@ updated_eval = client.evals.update(
 print(f"Updated eval: {updated_eval.name}")
 ```
 
-### Delete an Evaluation
+### 刪除評估 {#delete-an-evaluation}
 
-Permanently delete an evaluation.
+永久刪除評估。
 
 ```python
 delete_response = client.evals.delete(
@@ -229,15 +229,15 @@ print(f"Deleted: {delete_response.deleted}")  # True
 
 ---
 
-## Evaluation Runs
+## 評估執行 {#evaluation-runs}
 
-### Create a Run
+### 建立執行 {#create-a-run}
 
-Execute an evaluation by creating a run. The run processes your data through the model and applies testing criteria.
+透過建立執行來執行評估。執行會將您的資料透過模型處理，並套用測試標準。
 
-#### Using Stored Completions
+#### 使用已儲存的 completions {#using-stored-completions}
 
-First, generate some test data by making chat completions with metadata:
+首先，透過帶有中繼資料的 chat completions 產生一些測試資料：
 
 ```python
 from openai import AsyncOpenAI
@@ -301,7 +301,7 @@ for notifications in push_notification_data:
 await asyncio.gather(*tasks)
 ```
 
-Now create runs to evaluate different prompt versions:
+接著建立執行來評估不同版本的 prompt：
 
 ```python
 # Grade prompt_version=v1
@@ -342,9 +342,9 @@ print(f"Run ID: {eval_run_result_v2.id}")
 print(f"Report URL: {eval_run_result_v2.report_url}")
 ```
 
-#### Using Completions with Different Models
+#### 使用不同模型的 completions {#using-completions-with-different-models}
 
-Test how different models perform on the same inputs:
+測試不同模型在相同輸入上的表現：
 
 ```python
 # Test with GPT-4o using stored completions as input
@@ -374,9 +374,9 @@ for run in results:
     print(f"Report URL: {run.report_url}")
 ```
 
-### List Runs
+### 列出執行 {#list-runs}
 
-Get all runs for a specific evaluation.
+取得特定評估的所有執行。
 
 ```python
 # List all runs for an evaluation
@@ -394,9 +394,9 @@ for run in runs_response.data:
         print(f"Results: {run.result_counts.passed}/{run.result_counts.total} passed")
 ```
 
-### Get Run Details
+### 取得執行詳細資訊 {#get-run-details}
 
-Retrieve detailed information about a specific run, including results.
+取得特定執行的詳細資訊，包括結果。
 
 ```python
 run = client.evals.runs.retrieve(
@@ -425,9 +425,9 @@ if run.per_testing_criteria_results:
         print(f"  Average Score: {criteria_result.average_score}")
 ```
 
-### Delete a Run
+### 刪除執行 {#delete-a-run}
 
-Permanently delete a run and its results.
+永久刪除執行及其結果。
 
 ```python
 delete_response = await client.evals.runs.delete(
@@ -438,4 +438,3 @@ delete_response = await client.evals.runs.delete(
 print(f"Deleted: {delete_response.deleted}")  # True
 print(f"Run ID: {delete_response.run_id}")
 ```
-

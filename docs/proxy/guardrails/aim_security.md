@@ -2,36 +2,34 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Aim Security
+# Aim Security {#aim-security}
 
-## Quick Start
-### 1. Create a new Aim Guard
+## 快速入門 {#quick-start}
+### 1. 建立新的 Aim Guard {#1-create-a-new-aim-guard}
 
-Go to [Aim Application](https://app.aim.security/inventory/custom-ai-apps) and create a new guard.
+前往 [Aim Application](https://app.aim.security/inventory/custom-ai-apps) 並建立新的 guard。
 
-When prompted, select API option, and name your guard.
-
+在提示時，選擇 API 選項，並為您的 guard 命名。
 
 :::note 
-In case you want to host your guard on-premise, you can enable this option
-by [installing Aim Outpost](https://app.aim.security/settings/on-prem-deployment) prior to creating the guard.
+如果您想在內部部署環境中託管您的 guard，可以在建立 guard 之前先 [安裝 Aim Outpost](https://app.aim.security/settings/on-prem-deployment)，即可啟用此選項。
 :::
 
-### 2. Configure your Aim Guard policies
+### 2. 設定您的 Aim Guard policies {#2-configure-your-aim-guard-policies}
 
-In the newly created guard's page, you can find a reference to the prompt policy center of this guard.
+在新建立的 guard 頁面中，您可以找到此 guard 的 prompt policy center 參考資訊。
 
-You can decide which detections will be enabled, and set the threshold for each detection.
+您可以決定要啟用哪些 detections，並為每個 detection 設定 threshold。
 
 :::info 
-When using LiteLLM with virtual keys, key-specific policies can be set directly in Aim's guards page by specifying the virtual key alias when creating the guard.
+當使用 LiteLLM 搭配 virtual keys 時，可以在 Aim 的 guards 頁面中直接設定特定 key 的 policies，只要在建立 guard 時指定 virtual key alias 即可。
 
-Only the aliases of your virtual keys (and not the actual key secrets) will be sent to Aim.
+傳送給 Aim 的只會是您 virtual keys 的 aliases（而不是實際的 key secrets）。
 :::
 
-### 3. Add Aim Guardrail on your LiteLLM config.yaml 
+### 3. 在您的 LiteLLM config.yaml 中加入 Aim Guardrail  {#3-add-aim-guardrail-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section
+在 `guardrails` 區段下定義您的 guardrails
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -49,28 +47,28 @@ guardrails:
       ssl_verify: False # Optional, set to False to disable SSL verification or a string path to a custom CA bundle
 ```
 
-Under the `api_key`, insert the API key you were issued. The key can be found in the guard's page.
-You can also set `AIM_API_KEY` as an environment variable.
+在 `api_key` 下，填入您獲發的 API key。該 key 可在 guard 的頁面中找到。
+您也可以將 `AIM_API_KEY` 設為環境變數。
 
-By default, the `api_base` is set to `https://api.aim.security`. If you are using a self-hosted Aim Outpost, you can set the `api_base` to your Outpost's URL.
+預設情況下，`api_base` 設為 `https://api.aim.security`。如果您使用的是自架的 Aim Outpost，可以將 `api_base` 設為您 Outpost 的 URL。
 
-### 4. Start LiteLLM Gateway
+### 4. 啟動 LiteLLM Gateway {#4-start-litellm-gateway}
 ```shell
 litellm --config config.yaml
 ```
 
-### 5. Make your first request
+### 5. 發出您的第一個請求 {#5-make-your-first-request}
 
 :::note
-The following example depends on enabling *PII* detection in your guard.
-You can adjust the request content to match different guard's policies.
+以下範例依賴於在您的 guard 中啟用 *PII* detection。
+您可以調整請求內容，以符合不同 guard 的 policies。
 :::
 
 <Tabs>
-<TabItem label="Successfully blocked request" value = "blocked">
+<TabItem label="成功封鎖的請求" value = "blocked">
 
 :::note
-When using LiteLLM with virtual keys, an `Authorization` header with the virtual key is required.
+當使用 LiteLLM 搭配 virtual keys 時，需要帶有 virtual key 的 `Authorization` header。
 :::
 
 ```shell
@@ -85,7 +83,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-If configured correctly, since `ishaan@berri.ai` would be detected by the Aim Guard as PII, you'll receive a response similar to the following with a `400 Bad Request` status code:
+如果設定正確，由於 `ishaan@berri.ai` 會被 Aim Guard 偵測為 PII，您將會收到類似下方的回應，並帶有 `400 Bad Request` 狀態碼：
 
 ```json
 {
@@ -100,10 +98,10 @@ If configured correctly, since `ishaan@berri.ai` would be detected by the Aim Gu
 
 </TabItem>
 
-<TabItem label="Successfully permitted request" value = "allowed">
+<TabItem label="成功允許的請求" value = "allowed">
 
 :::note
-When using LiteLLM with virtual keys, an `Authorization` header with the virtual key is required.
+當使用 LiteLLM 搭配 virtual keys 時，需要帶有 virtual key 的 `Authorization` header。
 :::
 
 ```shell
@@ -118,7 +116,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-The above request should not be blocked, and you should receive a regular LLM response (simplified for brevity):
+上述請求不應被封鎖，您應該會收到一般的 LLM 回應（為求簡潔已簡化）：
 
 ```json
 {
@@ -138,13 +136,12 @@ The above request should not be blocked, and you should receive a regular LLM re
 
 </TabItem>
 
-
 </Tabs>
 
-## Advanced
+## 進階 {#advanced}
 
-Aim Guard provides user-specific Guardrail policies, enabling you to apply tailored policies to individual users.
-To utilize this feature, include the end-user's email in the request payload by setting the `x-aim-user-email` header of your request.
+Aim Guard 提供使用者特定的 Guardrail policies，讓您可以為個別使用者套用量身打造的 policies。
+若要使用此功能，請在請求 payload 中加入終端使用者的電子郵件，方法是將請求的 `x-aim-user-email` header 設定好。
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \

@@ -1,47 +1,47 @@
-# Shared Health Check State Across Pods
+# 跨 Pod 共用 Health Check 狀態 {#shared-health-check-state-across-pods}
 
-This feature enables coordination of health checks across multiple LiteLLM proxy pods to avoid duplicate health checks and reduce costs.
+此功能可讓多個 LiteLLM proxy pod 之間協調 health check，以避免重複 health check 並降低成本。
 
-## Overview
+## 概覽 {#overview}
 
-When running multiple LiteLLM proxy pods (e.g., in Kubernetes), each pod typically runs its own independent health checks on every model. This can result in:
+當執行多個 LiteLLM proxy pod（例如在 Kubernetes 中）時，每個 pod 通常會對每個模型執行各自獨立的 health check。這可能會導致：
 
-- **Duplicate health checks** across pods
-- **Increased costs** for expensive models (e.g., Gemini 2.5-pro)
-- **Redundant monitoring/logging noise**
-- **Inefficient resource usage**
+- **跨 pod 重複 health check**
+- **高成本模型（例如 Gemini 2.5-pro）的成本增加**
+- **多餘的監控/記錄雜訊**
+- **資源使用效率低落**
 
-The shared health check state feature solves this by:
+共用 health check 狀態功能可透過以下方式解決此問題：
 
-- **Coordinating health checks** across pods using Redis
-- **Caching results** with configurable TTL
-- **Using distributed locks** to ensure only one pod runs health checks at a time
-- **Allowing other pods** to read cached results instead of running redundant checks
+- **使用 Redis 協調 health check**
+- **以可設定的 TTL 快取結果**
+- **使用分散式鎖定**，確保同一時間只有一個 pod 執行 health check
+- **允許其他 pod** 讀取快取結果，而不是執行多餘的檢查
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-### 1. Lock Acquisition
-When a pod needs to run health checks:
-- It attempts to acquire a Redis lock
-- If successful, it runs the health checks
-- If failed, it waits briefly and checks for cached results
+### 1. 取得鎖定 {#1-lock-acquisition}
+當 pod 需要執行 health check 時：
+- 它會嘗試取得 Redis 鎖定
+- 若成功，便執行 health check
+- 若失敗，則短暫等待並檢查快取結果
 
-### 2. Result Caching
-After running health checks:
-- Results are cached in Redis with a configurable TTL
-- Other pods can read these cached results
-- Cache includes timestamp and pod ID for tracking
+### 2. 結果快取 {#2-result-caching}
+執行 health check 後：
+- 結果會以可設定的 TTL 快取於 Redis 中
+- 其他 pod 可以讀取這些快取結果
+- 快取包含時間戳記與 pod ID 以供追蹤
 
-### 3. Fallback Behavior
-If Redis is unavailable or cache is expired:
-- Pods fall back to running health checks locally
-- System continues to function normally
+### 3. 備援行為 {#3-fallback-behavior}
+如果 Redis 無法使用或快取已過期：
+- pod 會改為在本機執行 health check
+- 系統會持續正常運作
 
-## Configuration
+## 設定 {#configuration}
 
-### Enable Shared Health Check
+### 啟用共用 Health Check {#enable-shared-health-check}
 
-Add to your `proxy_config.yaml`:
+加入至您的 `proxy_config.yaml`：
 
 ```yaml
 general_settings:
@@ -64,9 +64,9 @@ litellm_settings:
     password: your-redis-password
 ```
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
-You can also configure using environment variables:
+您也可以使用環境變數進行設定：
 
 ```bash
 # Enable shared health check
@@ -79,21 +79,21 @@ export DEFAULT_SHARED_HEALTH_CHECK_TTL=300
 export DEFAULT_SHARED_HEALTH_CHECK_LOCK_TTL=60
 ```
 
-## Requirements
+## 需求 {#requirements}
 
-- **Redis**: Required for shared state coordination
-- **Background Health Checks**: Must be enabled (`background_health_checks: true`)
-- **Multiple Pods**: Most beneficial with 2+ proxy instances
+- **Redis**：共用狀態協調所需
+- **背景 Health Checks**：必須啟用（`background_health_checks: true`）
+- **多個 Pods**：在 2 個以上 proxy 執行個體時最有幫助
 
-## API Endpoints
+## API 端點 {#api-endpoints}
 
-### Check Shared Health Check Status
+### 檢查共用 Health Check 狀態 {#check-shared-health-check-status}
 
 ```bash
 GET /health/shared-status
 ```
 
-Returns information about the shared health check coordination:
+回傳關於共用 health check 協調的資訊：
 
 ```json
 {
@@ -112,20 +112,20 @@ Returns information about the shared health check coordination:
 }
 ```
 
-## Monitoring
+## 監控 {#monitoring}
 
-### Health Check Status
+### Health Check 狀態 {#health-check-status}
 
-Monitor the shared health check status to ensure proper coordination:
+監控共用 health check 狀態以確保正確協調：
 
 ```bash
 curl -H "Authorization: Bearer your-api-key" \
   http://your-proxy-host/health/shared-status
 ```
 
-### Logs
+### 記錄 {#logs}
 
-Look for these log messages:
+請留意以下記錄訊息：
 
 ```
 INFO: Initialized shared health check manager
@@ -135,91 +135,91 @@ INFO: Cached health check results for 5 healthy and 0 unhealthy endpoints
 DEBUG: Using cached health check results
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Common Issues
+### 常見問題 {#common-issues}
 
-#### 1. Shared Health Check Not Working
+#### 1. 共用 Health Check 未正常運作 {#1-shared-health-check-not-working}
 
-**Symptoms**: Each pod still runs independent health checks
+**症狀**：每個 pod 仍然各自執行獨立的 health check
 
-**Solutions**:
-- Verify Redis is configured and accessible
-- Check that `use_shared_health_check: true` is set
-- Ensure `background_health_checks: true` is enabled
-- Check Redis connectivity in logs
+**解決方案**：
+- 驗證 Redis 已設定且可存取
+- 檢查 `use_shared_health_check: true` 是否已設定
+- 確認 `background_health_checks: true` 已啟用
+- 檢查記錄中的 Redis 連線狀態
 
-#### 2. Redis Connection Issues
+#### 2. Redis 連線問題 {#2-redis-connection-issues}
 
-**Symptoms**: Health checks fall back to local execution
+**症狀**：health check 會回退為本機執行
 
-**Solutions**:
-- Verify Redis host, port, and credentials
-- Check network connectivity between pods and Redis
-- Monitor Redis server logs for errors
+**解決方案**：
+- 驗證 Redis 主機、埠與認證資訊
+- 檢查 pod 與 Redis 之間的網路連線
+- 監控 Redis 伺服器記錄中的錯誤
 
-#### 3. Lock Not Released
+#### 3. 鎖定未釋放 {#3-lock-not-released}
 
-**Symptoms**: One pod holds the lock indefinitely
+**症狀**：某個 pod 無限期持有鎖定
 
-**Solutions**:
-- Lock has automatic TTL (default 60 seconds)
-- Check pod logs for lock release messages
-- Verify Redis TTL settings
+**解決方案**：
+- 鎖定具有自動 TTL（預設 60 秒）
+- 檢查 pod 記錄中的鎖定釋放訊息
+- 驗證 Redis TTL 設定
 
-### Debug Mode
+### 除錯模式 {#debug-mode}
 
-Enable debug logging to see detailed coordination:
+啟用除錯記錄以查看詳細協調資訊：
 
 ```yaml
 general_settings:
   set_verbose: true
 ```
 
-## Performance Impact
+## 效能影響 {#performance-impact}
 
-### Benefits
+### 優點 {#benefits}
 
-- **Reduced API calls**: Only one pod runs health checks per interval
-- **Lower costs**: Especially significant for expensive models
-- **Better resource utilization**: Less redundant work across pods
-- **Cleaner monitoring**: Reduced noise in logs and metrics
+- **減少 API 請求**：每個時間間隔只有一個 pod 執行 health check
+- **降低成本**：對高成本模型尤其明顯
+- **更佳的資源利用**：跨 pod 的重複工作更少
+- **更乾淨的監控**：記錄與指標中的雜訊降低
 
-### Overhead
+### 額外負擔 {#overhead}
 
-- **Redis operations**: Minimal overhead for lock/cache operations
-- **Network latency**: Small delay for Redis communication
-- **Memory usage**: Negligible additional memory usage
+- **Redis 操作**：鎖定/快取操作的額外負擔極小
+- **網路延遲**：Redis 通訊造成的些微延遲
+- **記憶體用量**：額外記憶體用量可忽略不計
 
-## Best Practices
+## 最佳做法 {#best-practices}
 
-### 1. Redis Configuration
+### 1. Redis 設定 {#1-redis-configuration}
 
-- Use Redis with persistence enabled
-- Configure appropriate memory limits
-- Set up Redis monitoring and alerts
+- 使用啟用持久化的 Redis
+- 設定適當的記憶體限制
+- 建立 Redis 監控與警示
 
-### 2. TTL Settings
+### 2. TTL 設定 {#2-ttl-settings}
 
-- Set `health_check_interval` to your desired check frequency
-- Use default TTL values unless you have specific requirements
-- Consider model-specific timeouts for expensive models
+- 將 `health_check_interval` 設為您想要的檢查頻率
+- 除非有特定需求，否則使用預設 TTL 值
+- 為高成本模型考慮模型專屬逾時
 
-### 3. Monitoring
+### 3. 監控 {#3-monitoring}
 
-- Monitor shared health check status endpoint
-- Set up alerts for Redis connectivity issues
-- Track health check costs and frequency
+- 監控共用 health check 狀態端點
+- 為 Redis 連線問題設定警示
+- 追蹤 health check 成本與頻率
 
-### 4. Scaling
+### 4. 擴充 {#4-scaling}
 
-- Feature works with any number of pods
-- More pods = better coordination benefits
-- Consider Redis cluster for high availability
+- 此功能可搭配任意數量的 pod 使用
+- pod 越多 = 協調效益越好
+- 高可用性情境可考慮 Redis 叢集
 
-## Example Configuration
+## 範例設定 {#example-configuration}
 
-### Complete Example
+### 完整範例 {#complete-example}
 
 ```yaml
 # proxy_config.yaml
@@ -255,7 +255,7 @@ litellm_settings:
     ssl: true
 ```
 
-### Kubernetes Example
+### Kubernetes 範例 {#kubernetes-example}
 
 ```yaml
 # deployment.yaml
@@ -282,19 +282,19 @@ spec:
               key: password
 ```
 
-## Migration
+## 遷移 {#migration}
 
-### From Independent Health Checks
+### 從獨立 Health Checks 遷移 {#from-independent-health-checks}
 
-1. **Enable Redis**: Ensure Redis is configured and accessible
-2. **Enable Background Health Checks**: Set `background_health_checks: true`
-3. **Enable Shared Health Check**: Set `use_shared_health_check: true`
-4. **Deploy**: Update your proxy configuration
-5. **Monitor**: Check `/health/shared-status` endpoint
+1. **啟用 Redis**：確保 Redis 已設定且可存取
+2. **啟用背景 Health Checks**：設定 `background_health_checks: true`
+3. **啟用共用 Health Check**：設定 `use_shared_health_check: true`
+4. **部署**：更新您的 proxy 設定
+5. **監控**：檢查 `/health/shared-status` 端點
 
-### Rollback
+### 回復 {#rollback}
 
-To disable shared health check:
+若要停用共用 health check：
 
 ```yaml
 general_settings:
@@ -302,9 +302,9 @@ general_settings:
   # background_health_checks can remain true for independent checks
 ```
 
-## Related Features
+## 相關功能 {#related-features}
 
-- [Background Health Checks](./health.md#background-health-checks)
-- [Redis Caching](./caching.md)
-- [High Availability Setup](./db_deadlocks.md)
-- [Health Check Endpoints](./health.md#health-endpoints)
+- [背景 Health Checks](./health.md#background-health-checks)
+- [Redis 快取](./caching.md)
+- [高可用性設定](./db_deadlocks.md)
+- [Health Check 端點](./health.md#health-endpoints)

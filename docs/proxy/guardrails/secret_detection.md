@@ -1,9 +1,9 @@
-# ✨ Secret Detection/Redaction (Enterprise-only)
-❓ Use this to REDACT API Keys, Secrets sent in requests to an LLM. 
+# ✨ Secret Detection/Redaction（僅限 Enterprise） {#-secret-detectionredaction-enterprise-only}
+❓ 使用此功能可將傳送至 LLM 的請求中的 API 金鑰、Secrets 予以遮罩。 
 
-Example if you want to redact the value of `OPENAI_API_KEY` in the following request
+範例：如果您想在下列請求中遮罩 `OPENAI_API_KEY` 的值
 
-#### Incoming Request 
+#### 傳入請求  {#incoming-request}
 
 ```json
 {
@@ -16,7 +16,7 @@ Example if you want to redact the value of `OPENAI_API_KEY` in the following req
 }
 ```
 
-#### Request after Moderation
+#### Moderation 後的請求 {#request-after-moderation}
 
 ```json
 {
@@ -29,9 +29,9 @@ Example if you want to redact the value of `OPENAI_API_KEY` in the following req
 }
 ```
 
-**Usage**
+**使用方式**
 
-**Step 1** Add this to your config.yaml 
+**步驟 1** 將這段加入您的 config.yaml 
 
 ```yaml
 guardrails:
@@ -41,15 +41,15 @@ guardrails:
       mode: "pre_call"
 ```
 
-**Step 2** Run litellm proxy with `--detailed_debug` to see the server logs
+**步驟 2** 以 `--detailed_debug` 執行 litellm proxy 以查看伺服器記錄
 
 ```
 litellm --config config.yaml --detailed_debug
 ```
 
-**Step 3** Test it with request
+**步驟 3** 用請求測試
 
-Send this request
+送出此請求
 ```shell
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -67,14 +67,14 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 ```
 
 
-Expect to see the following warning on your litellm server logs
+預期在您的 litellm 伺服器記錄中看到以下警告
 
 ```shell
 LiteLLM Proxy:WARNING: secret_detection.py:88 - Detected and redacted secrets in message: ['Secret Keyword']
 ```
 
 
-You can also see the raw request sent from litellm to the API Provider with (`--detailed_debug`).
+您也可以看到從 litellm 傳送到 API 提供者的原始請求（`--detailed_debug`）。
 ```json
 POST Request Sent from LiteLLM:
 curl -X POST \
@@ -93,20 +93,19 @@ https://api.groq.com/openai/v1/ \
 }
 ```
 
-## Turn on/off per project (API KEY/Team)
+## 針對每個專案（API 金鑰/團隊）開啟/關閉 {#turn-onoff-per-project-api-keyteam}
 
-[**See Here**](./quick_start.md#-control-guardrails-per-project-api-key)
+[**請見此處**](./quick_start.md#-control-guardrails-per-project-api-key)
 
-## Control secret detectors
+## 控制 secret detectors {#control-secret-detectors}
 
-LiteLLM uses the [`detect-secrets`](https://github.com/Yelp/detect-secrets) library for secret detection. See [all plugins run by default](#default-config-used)
+LiteLLM 使用 [`detect-secrets`](https://github.com/Yelp/detect-secrets) 函式庫進行 secret detection。請參閱[預設執行的所有 plugins](#default-config-used)
 
+### 使用方式 {#usage}
 
-### Usage
+以下說明如何控制每個請求執行哪些 plugins。若開發人員抱怨 secret detection 影響回應品質，這會很有用。
 
-Here's how to control which plugins are run per request. This is useful if developers complain about secret detection impacting response quality.
-
-**1. Set-up config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 guardrails:
@@ -123,15 +122,15 @@ guardrails:
       }
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
-Run with `--detailed_debug` for more detailed logs. Use in dev only. 
+使用 `--detailed_debug` 執行可取得更詳細的記錄。僅限開發環境使用。 
 
 ```bash
 litellm --config /path/to/config.yaml --detailed_debug
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -149,15 +148,15 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-**Expected Logs**
+**預期記錄**
 
-Look for this in your logs, to confirm your changes worked as expected.
+請在您的記錄中尋找這項內容，以確認您的變更如預期般運作。
 
 ```
 No secrets detected on input.
 ```
 
-### Default Config Used 
+### 使用的預設設定 {#default-config-used}
 
 ```
 _default_detect_secrets_config = {

@@ -2,33 +2,32 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /images/edits
+# /images/edits {#imagesedits}
 
-LiteLLM provides image editing functionality that maps to OpenAI's `/images/edits` API endpoint. Now supports both single and multiple image editing.
+LiteLLM 提供影像編輯功能，對應到 OpenAI 的 `/images/edits` API 端點。現在支援單張與多張影像編輯。
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|--------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Supported operations | Create image edits | Single and multiple images supported |
-| Supported LiteLLM SDK Versions | 1.63.8+ | Gemini support requires 1.79.3+ |
-| Supported LiteLLM Proxy Versions | 1.71.1+ | Gemini support requires 1.79.3+ |
-| Supported LLM providers | **OpenAI**, **Gemini (Google AI Studio)**, **Vertex AI**, **OpenRouter**, **Stability AI**, **AWS Bedrock (Stability)**, **Black Forest Labs** | Gemini supports the new `gemini-2.5-flash-image` family. Vertex AI supports both Gemini and Imagen models. OpenRouter routes image edits through chat completions. Stability AI and Bedrock Stability support various image editing operations. Black Forest Labs supports FLUX Kontext models. |
+| 成本追蹤 | ✅ | 適用於所有支援的模型 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 終端使用者追蹤 | ✅ | |
+| 備援 | ✅ | 可在支援的模型之間運作 |
+| 負載平衡 | ✅ | 可在支援的模型之間運作 |
+| 支援的操作 | 建立影像編輯 | 支援單張與多張影像 |
+| 支援的 LiteLLM SDK 版本 | 1.63.8+ | Gemini 支援需要 1.79.3+ |
+| 支援的 LiteLLM Proxy 版本 | 1.71.1+ | Gemini 支援需要 1.79.3+ |
+| 支援的 LLM 提供者 | **OpenAI**, **Gemini (Google AI Studio)**, **Vertex AI**, **OpenRouter**, **Stability AI**, **AWS Bedrock (Stability)**, **Black Forest Labs** | Gemini 支援新的 `gemini-2.5-flash-image` 系列。Vertex AI 同時支援 Gemini 與 Imagen 模型。OpenRouter 透過 chat completions 路由影像編輯。Stability AI 與 Bedrock Stability 支援各種影像編輯操作。Black Forest Labs 支援 FLUX Kontext 模型。 |
 
- #### ⚡️See all supported models and providers at [models.litellm.ai](https://models.litellm.ai/)
+ #### ⚡️請參閱 [models.litellm.ai](https://models.litellm.ai/) 以查看所有支援的模型與提供者
 
+## 使用方式 {#usage}
 
-## Usage
-
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
 
-#### Basic Image Edit
+#### 基本影像編輯 {#basic-image-edit}
 ```python showLineNumbers title="OpenAI Image Edit"
 import litellm
 
@@ -44,7 +43,7 @@ response = litellm.image_edit(
 print(response)
 ```
 
-#### Multiple Images Edit
+#### 多張影像編輯 {#multiple-images-edit}
 ```python showLineNumbers title="OpenAI Multiple Images Edit"
 import litellm
 
@@ -64,7 +63,7 @@ response = litellm.image_edit(
 print(response)
 ```
 
-#### Image Edit with Mask
+#### 含遮罩的影像編輯 {#image-edit-with-mask}
 ```python showLineNumbers title="OpenAI Image Edit with Mask"
 import litellm
 
@@ -82,7 +81,7 @@ response = litellm.image_edit(
 print(response)
 ```
 
-#### Async Image Edit
+#### 非同步影像編輯 {#async-image-edit}
 ```python showLineNumbers title="Async OpenAI Image Edit"
 import litellm
 import asyncio
@@ -103,7 +102,7 @@ response = asyncio.run(edit_image())
 print(response)
 ```
 
-#### Async Multiple Images Edit
+#### 非同步多張影像編輯 {#async-multiple-images-edit}
 ```python showLineNumbers title="Async OpenAI Multiple Images Edit"
 import litellm
 import asyncio
@@ -127,7 +126,7 @@ response = asyncio.run(edit_multiple_images())
 print(response)
 ```
 
-#### Image Edit with Custom Parameters
+#### 含自訂參數的影像編輯 {#image-edit-with-custom-parameters}
 ```python showLineNumbers title="OpenAI Image Edit with Custom Parameters"
 import litellm
 
@@ -149,13 +148,11 @@ for i, image_data in enumerate(response.data):
     print(f"Image {i+1}: {image_data.url}")
 ```
 
-```
-
 </TabItem>
 
 <TabItem value="gemini" label="Gemini">
 
-#### Basic Image Edit
+#### 基本影像編輯 {#basic-image-edit-gemini-tab}
 ```python showLineNumbers title="Gemini Image Edit"
 import base64
 import os
@@ -175,7 +172,7 @@ with open("edited_image.png", "wb") as f:
     f.write(edited_image_bytes)
 ```
 
-#### Multiple Images Edit
+#### 多張影像編輯 {#multiple-images-edit-1}
 ```python showLineNumbers title="Gemini Multiple Images Edit"
 import base64
 import os
@@ -201,7 +198,7 @@ for idx, image_obj in enumerate(response.data):
 
 <TabItem value="bfl" label="Black Forest Labs">
 
-#### Basic Image Edit
+#### 基本影像編輯 {#basic-image-edit-1}
 ```python showLineNumbers title="Black Forest Labs Image Edit"
 import os
 import litellm
@@ -217,7 +214,7 @@ response = litellm.image_edit(
 print(response.data[0].url)
 ```
 
-#### Inpainting with Mask
+#### 以遮罩進行局部重繪 {#inpainting-with-mask}
 ```python showLineNumbers title="Black Forest Labs Inpainting"
 import os
 import litellm
@@ -235,7 +232,7 @@ response = litellm.image_edit(
 print(response.data[0].url)
 ```
 
-#### Outpainting (Expand)
+#### 影像外延（擴展） {#outpainting-expand}
 ```python showLineNumbers title="Black Forest Labs Outpainting"
 import os
 import litellm
@@ -258,7 +255,7 @@ print(response.data[0].url)
 
 <TabItem value="vertex_ai" label="Vertex AI">
 
-#### Basic Image Edit (Gemini)
+#### 基本影像編輯（Gemini） {#basic-image-edit-gemini}
 ```python showLineNumbers title="Vertex AI Gemini Image Edit"
 import os
 import litellm
@@ -278,7 +275,7 @@ response = litellm.image_edit(
 print(response)
 ```
 
-#### Image Edit with Imagen (Supports Masks)
+#### 使用 Imagen 的影像編輯（支援遮罩） {#image-edit-with-imagen-supports-masks}
 ```python showLineNumbers title="Vertex AI Imagen Image Edit"
 import os
 import litellm
@@ -305,7 +302,7 @@ print(response)
 
 <TabItem value="openrouter" label="OpenRouter">
 
-#### Basic Image Edit
+#### 基本影像編輯 {#basic-image-edit-2}
 ```python showLineNumbers title="OpenRouter Image Edit"
 import os
 from litellm import image_edit
@@ -321,7 +318,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Multiple Images Edit
+#### 多張影像編輯 {#multiple-images-edit-2}
 ```python showLineNumbers title="OpenRouter Multiple Images Edit"
 import os
 from litellm import image_edit
@@ -345,13 +342,12 @@ print(response)
 </TabItem>
 </Tabs>
 
-### LiteLLM Proxy with OpenAI SDK
-
+### 搭配 OpenAI SDK 的 LiteLLM Proxy {#litellm-proxy-with-openai-sdk}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
 
-First, add this to your litellm proxy config.yaml:
+首先，將以下內容加入您的 litellm proxy config.yaml：
 ```yaml showLineNumbers title="OpenAI Proxy Configuration"
 model_list:
   - model_name: gpt-image-1
@@ -360,7 +356,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-Start the LiteLLM proxy server:
+啟動 LiteLLM proxy server：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -368,7 +364,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### Basic Image Edit via Proxy
+#### 透過 Proxy 進行基本影像編輯 {#basic-image-edit-via-proxy}
 ```python showLineNumbers title="OpenAI Proxy Image Edit"
 from openai import OpenAI
 
@@ -390,7 +386,7 @@ response = client.images.edit(
 print(response)
 ```
 
-#### cURL Example
+#### cURL 範例 {#curl-example}
 ```bash showLineNumbers title="cURL Image Edit Request"
 curl -X POST "http://localhost:4000/v1/images/edits" \
   -H "Authorization: Bearer your-api-key" \
@@ -403,7 +399,7 @@ curl -X POST "http://localhost:4000/v1/images/edits" \
   -F "response_format=url"
 ```
 
-#### cURL Multiple Images Example
+#### cURL 多張影像範例 {#curl-multiple-images-example}
 ```bash showLineNumbers title="cURL Multiple Images Edit Request"
 curl -X POST "http://localhost:4000/v1/images/edits" \
   -H "Authorization: Bearer your-api-key" \
@@ -432,12 +428,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start the LiteLLM proxy server:
+2. 啟動 LiteLLM proxy server：
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
 ```
 
-3. Make an image edit request (Gemini responses are base64-only):
+3. 發送影像編輯請求（Gemini 回應僅限 base64）：
 ```bash showLineNumbers title="Gemini Proxy Image Edit"
 curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -H "Authorization: Bearer <YOUR-LITELLM-KEY>" \
@@ -451,7 +447,7 @@ curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
 
 <TabItem value="bfl" label="Black Forest Labs">
 
-1. Add Black Forest Labs image edit models to your `config.yaml`:
+1. 將 Black Forest Labs 影像編輯模型加入您的 `config.yaml`：
 ```yaml showLineNumbers title="Black Forest Labs Proxy Configuration"
 model_list:
   - model_name: bfl-kontext-pro
@@ -462,12 +458,12 @@ model_list:
       mode: image_edit
 ```
 
-2. Start the LiteLLM proxy server:
+2. 啟動 LiteLLM proxy server：
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
 ```
 
-3. Make an image edit request:
+3. 發送影像編輯請求：
 ```bash showLineNumbers title="Black Forest Labs Proxy Image Edit"
 curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -H "Authorization: Bearer <YOUR-LITELLM-KEY>" \
@@ -480,7 +476,7 @@ curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
 
 <TabItem value="vertex_ai" label="Vertex AI">
 
-1. Add Vertex AI image edit models to your `config.yaml`:
+1. 將 Vertex AI 影像編輯模型加入您的 `config.yaml`：
 ```yaml showLineNumbers title="Vertex AI Proxy Configuration"
 model_list:
   - model_name: vertex-gemini-image-edit
@@ -498,12 +494,12 @@ model_list:
       vertex_credentials: os.environ/GOOGLE_APPLICATION_CREDENTIALS
 ```
 
-2. Start the LiteLLM proxy server:
+2. 啟動 LiteLLM proxy server：
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
 ```
 
-3. Make an image edit request:
+3. 發送影像編輯請求：
 ```bash showLineNumbers title="Vertex AI Gemini Proxy Image Edit"
 curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -H "Authorization: Bearer <YOUR-LITELLM-KEY>" \
@@ -513,7 +509,7 @@ curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -F "size=1024x1024"
 ```
 
-4. Imagen image edit with mask:
+4. 使用遮罩的 Imagen 影像編輯：
 ```bash showLineNumbers title="Vertex AI Imagen Proxy Image Edit with Mask"
 curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -H "Authorization: Bearer <YOUR-LITELLM-KEY>" \
@@ -529,7 +525,7 @@ curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
 
 <TabItem value="openrouter" label="OpenRouter">
 
-1. Add the OpenRouter image edit model to your `config.yaml`:
+1. 將 OpenRouter 影像編輯模型加入您的 `config.yaml`：
 ```yaml showLineNumbers title="OpenRouter Proxy Configuration"
 model_list:
   - model_name: openrouter-image-edit
@@ -538,12 +534,12 @@ model_list:
       api_key: os.environ/OPENROUTER_API_KEY
 ```
 
-2. Start the LiteLLM proxy server:
+2. 啟動 LiteLLM proxy server：
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
 ```
 
-3. Make an image edit request:
+3. 發送影像編輯請求：
 ```bash showLineNumbers title="OpenRouter Proxy Image Edit"
 curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -H "Authorization: Bearer <YOUR-LITELLM-KEY>" \
@@ -556,23 +552,22 @@ curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
 </TabItem>
 </Tabs>
 
-## Supported Image Edit Parameters
+## 支援的影像編輯參數 {#supported-image-edit-parameters}
 
-| Parameter | Type | Description | Required |
+| 參數 | 類型 | 描述 | 必填 |
 |-----------|------|-------------|----------|
-| `image` | `FileTypes` | The image to edit. Must be a valid PNG file, less than 4MB, and square. | ✅ |
-| `prompt` | `str` | A text description of the desired image edit. | ✅ |
-| `model` | `str` | The model to use for image editing | Optional (defaults to `dall-e-2`) |
-| `mask` | `str` | An additional image whose fully transparent areas indicate where the original image should be edited. Must be a valid PNG file, less than 4MB, and have the same dimensions as `image`. | Optional |
-| `n` | `int` | The number of images to generate. Must be between 1 and 10. | Optional (defaults to 1) |
-| `size` | `str` | The size of the generated images. Must be one of `256x256`, `512x512`, or `1024x1024`. | Optional (defaults to `1024x1024`) |
-| `response_format` | `str` | The format in which the generated images are returned. Must be one of `url` or `b64_json`. | Optional (defaults to `url`) |
-| `user` | `str` | A unique identifier representing your end-user. | Optional |
+| `image` | `FileTypes` | 要編輯的影像。必須是有效的 PNG 檔案，小於 4MB，且為正方形。 | ✅ |
+| `prompt` | `str` | 所需影像編輯的文字描述。 | ✅ |
+| `model` | `str` | 用於影像編輯的模型 | 選填（預設為 `dall-e-2`） |
+| `mask` | `str` | 另一張影像，其完全透明的區域表示原始影像應被編輯的位置。必須是有效的 PNG 檔案，小於 4MB，且尺寸與 `image` 相同。 | 選填 |
+| `n` | `int` | 要產生的影像數量。必須介於 1 到 10 之間。 | 選填（預設為 1） |
+| `size` | `str` | 生成影像的尺寸。必須為 `256x256`、`512x512` 或 `1024x1024` 之一。 | 選填（預設為 `1024x1024`） |
+| `response_format` | `str` | 回傳生成影像的格式。必須為 `url` 或 `b64_json` 之一。 | 選填（預設為 `url`） |
+| `user` | `str` | 代表您的終端使用者的唯一識別碼。 | 選填 |
 
+## 回應格式 {#response-format}
 
-## Response Format
-
-The response follows the OpenAI Images API format:
+回應遵循 OpenAI Images API 格式：
 
 ```python showLineNumbers title="Image Edit Response Structure"
 {
@@ -588,7 +583,7 @@ The response follows the OpenAI Images API format:
 }
 ```
 
-For `b64_json` format:
+對於 `b64_json` 格式：
 ```python showLineNumbers title="Base64 Response Structure"
 {
     "created": 1677649800,

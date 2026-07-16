@@ -1,20 +1,19 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Budget Routing
-LiteLLM Supports setting the following budgets:
-- Provider budget - $100/day for OpenAI, $100/day for Azure.
-- Model budget - $100/day for gpt-4  https://api-base-1, $100/day for gpt-4o https://api-base-2
-- Tag budget - $10/day for tag=`product:chat-bot`, $100/day for tag=`product:chat-bot-2`
+# 預算路由 {#budget-routing}
+LiteLLM 支援設定以下預算：
+- 提供者預算 - OpenAI 每天 $100，Azure 每天 $100。
+- 模型預算 - gpt-4 每天 $100 https://api-base-1, gpt-4o 每天 $100 https://api-base-2
+- 標籤預算 - tag=`product:chat-bot` 每天 $10，tag=`product:chat-bot-2` 每天 $100
 
+## 提供者預算 {#provider-budgets}
+可用來為 LLM 提供者設定預算 - 例如 OpenAI 每天 $100，Azure 每天 $100。
 
-## Provider Budgets
-Use this to set budgets for LLM Providers - example $100/day for OpenAI, $100/day for Azure.
+### 快速開始 {#quick-start}
 
-### Quick Start
-
-Set provider budgets in your `proxy_config.yaml` file
-#### Proxy Config setup
+在您的 `proxy_config.yaml` 檔案中設定提供者預算
+#### 閘道設定 {#proxy-config-setup}
 ```yaml
 model_list:
     - model_name: gpt-3.5-turbo
@@ -49,15 +48,14 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### Make a test request
+#### 發送測試請求 {#make-a-test-request}
 
-We expect the first request to succeed, and the second request to fail since we cross the budget for `openai`
+我們預期第一個請求會成功，而第二個請求會失敗，因為我們已超過 `openai` 的預算
 
-
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain, OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Successful Call " value = "allowed">
+<TabItem label="成功呼叫 " value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -72,9 +70,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 ```
 
 </TabItem>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="失敗的呼叫" value = "not-allowed">
 
-Expect this to fail since since we cross the budget for provider `openai`
+預期這會失敗，因為我們已超過提供者 `openai` 的預算
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -88,7 +86,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```json
 {
@@ -103,41 +101,38 @@ Expected response on failure
 
 </TabItem>
 
-
 </Tabs>
 
+#### 提供者預算路由如何運作 {#how-provider-budget-routing-works}
 
+1. **預算追蹤**： 
+   - 使用 Redis 追蹤每個提供者的支出
+   - 依指定時間區間追蹤支出（例如「1d」、「30d」）
+   - 在時間區間到期後自動重設支出
 
-#### How provider budget routing works
+2. **路由邏輯**：
+   - 將請求路由到仍在預算限制內的提供者
+   - 跳過已超出預算的提供者
+   - 如果所有提供者都超出預算，則回傳錯誤
 
-1. **Budget Tracking**: 
-   - Uses Redis to track spend for each provider
-   - Tracks spend over specified time periods (e.g., "1d", "30d")
-   - Automatically resets spend after time period expires
+3. **支援的時間區間**：
+   - 秒："Xs"（例如 "30s"）
+   - 分鐘："Xm"（例如 "10m"）
+   - 小時："Xh"（例如 "24h"）
+   - 天："Xd"（例如 "1d"、"30d"）
+   - 月："Xmo"（例如 "1mo"、"2mo"）
 
-2. **Routing Logic**:
-   - Routes requests to providers under their budget limits
-   - Skips providers that have exceeded their budget
-   - If all providers exceed budget, raises an error
+4. **需求**：
+   - 需要 Redis 來跨執行個體追蹤支出
+   - 提供者名稱必須是 litellm 的提供者名稱。請參閱 [支援的提供者](https://docs.litellm.ai/docs/providers)
 
-3. **Supported Time Periods**:
-   - Seconds: "Xs" (e.g., "30s")
-   - Minutes: "Xm" (e.g., "10m")
-   - Hours: "Xh" (e.g., "24h")
-   - Days: "Xd" (e.g., "1d", "30d")
-   - Months: "Xmo" (e.g., "1mo", "2mo")
+### 監控提供者剩餘預算 {#monitoring-provider-remaining-budget}
 
-4. **Requirements**:
-   - Redis required for tracking spend across instances
-   - Provider names must be litellm provider names. See [Supported Providers](https://docs.litellm.ai/docs/providers)
+#### 取得預算、支出明細 {#get-budget-spend-details}
 
-### Monitoring Provider Remaining Budget
+使用此端點可檢查提供者目前的預算、支出以及預算重設時間
 
-#### Get Budget, Spend Details
-
-Use this endpoint to check current budget, spend and budget reset time for a provider
-
-Example Request
+請求範例
 
 ```bash
 curl -X GET http://localhost:4000/provider/budgets \
@@ -145,7 +140,7 @@ curl -X GET http://localhost:4000/provider/budgets \
   -H "Authorization: Bearer sk-1234"
 ```
 
-Example Response
+回應範例
 
 ```json
 {
@@ -178,24 +173,24 @@ Example Response
 }
 ```
 
-#### Prometheus Metric
+#### Prometheus 指標 {#prometheus-metric}
 
-LiteLLM will emit the following metric on Prometheus to track the remaining budget for each provider
+LiteLLM 會在 Prometheus 上發出以下指標，用於追蹤每個提供者的剩餘預算
 
-This metric indicates the remaining budget for a provider in dollars (USD)
+此指標表示提供者以美元（USD）計算的剩餘預算
 
 ```
 litellm_provider_remaining_budget_metric{api_provider="openai"} 10
 ```
 
 
-## Model Budgets
+## 模型預算 {#model-budgets}
 
-Use this to set budgets for models - example $10/day for openai/gpt-4o, $100/day for openai/gpt-4o-mini
+可用來為模型設定預算 - 例如 openai/gpt-4o 每天 $10，openai/gpt-4o-mini 每天 $100
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
-Set model budgets in your `proxy_config.yaml` file
+在您的 `proxy_config.yaml` 檔案中設定模型預算
 
 ```yaml
 model_list:
@@ -216,14 +211,14 @@ model_list:
 ```
 
 
-#### Make a test request
+#### 發送測試請求 {#make-a-test-request-1}
 
-We expect the first request to succeed, and the second request to fail since we cross the budget for `openai/gpt-4o`
+我們預期第一個請求會成功，而第二個請求會失敗，因為我們已超過 `openai/gpt-4o` 的預算
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain, OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Successful Call " value = "allowed">
+<TabItem label="成功呼叫 " value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -238,9 +233,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 ```
 
 </TabItem>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="失敗的呼叫" value = "not-allowed">
 
-Expect this to fail since since we cross the budget for `openai/gpt-4o`
+預期這會失敗，因為我們已超過 `openai/gpt-4o` 的預算
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -254,7 +249,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```json
 {
@@ -270,20 +265,19 @@ Expected response on failure
 
 </Tabs>
 
-## ✨ Tag Budgets
+## ✨ 標籤預算 {#-tag-budgets}
 
 :::info
 
-✨ This is an Enterprise only feature [Get Started with Enterprise here](https://www.litellm.ai/#pricing)
+✨ 這是企業版專屬功能 [在此開始使用企業版](https://www.litellm.ai/#pricing)
 
 :::
 
-Use this to set budgets for tags - example $10/day for tag=`product:chat-bot`, $100/day for tag=`product:chat-bot-2`
+可用來為標籤設定預算 - 例如 tag=`product:chat-bot` 每天 $10，tag=`product:chat-bot-2` 每天 $100
 
+### 快速開始 {#quick-start-2}
 
-### Quick Start
-
-Set tag budgets by setting `tag_budget_config` in your `proxy_config.yaml` file
+在您的 `proxy_config.yaml` 檔案中設定 `tag_budget_config` 以設定標籤預算
 
 ```yaml
 model_list:
@@ -302,14 +296,14 @@ litellm_settings:
       budget_duration: 1d # (Duration)
 ```
 
-#### Make a test request
+#### 發送測試請求 {#make-a-test-request-2}
 
-We expect the first request to succeed, and the second request to fail since we cross the budget for `openai/gpt-4o`
+我們預期第一個請求會成功，而第二個請求會失敗，因為我們已超過 `openai/gpt-4o` 的預算
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain, OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Successful Call " value = "allowed">
+<TabItem label="成功呼叫 " value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -325,9 +319,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 ```
 
 </TabItem>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="失敗的呼叫" value = "not-allowed">
 
-Expect this to fail since since we cross the budget for tag=`product:chat-bot`
+預期這會失敗，因為我們已超過 tag=`product:chat-bot` 的預算
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -343,7 +337,7 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```json
 {
@@ -360,9 +354,9 @@ Expected response on failure
 
 </Tabs>
 
-## Multi-instance setup
+## 多執行個體設定 {#multi-instance-setup}
 
-If you are using a multi-instance setup, you will need to set the Redis host, port, and password in the `proxy_config.yaml` file. Redis is used to sync the spend across LiteLLM instances.
+如果您使用多執行個體設定，則需要在 `proxy_config.yaml` 檔案中設定 Redis 主機、連接埠和密碼。Redis 用於在 LiteLLM 執行個體之間同步支出。
 
 ```yaml
 model_list:
@@ -386,20 +380,20 @@ general_settings:
   master_key: sk-1234
 ```
 
-## Spec for provider_budget_config
+## provider_budget_config 規格 {#spec-for-provider_budget_config}
 
-The `provider_budget_config` is a dictionary where:
-- **Key**: Provider name (string) - Must be a valid [LiteLLM provider name](https://docs.litellm.ai/docs/providers)
-- **Value**: Budget configuration object with the following parameters:
-  - `budget_limit`: Float value representing the budget in USD
-  - `time_period`: Duration string in one of the following formats:
-    - Seconds: `"Xs"` (e.g., "30s")
-    - Minutes: `"Xm"` (e.g., "10m")
-    - Hours: `"Xh"` (e.g., "24h")
-    - Days: `"Xd"` (e.g., "1d", "30d")
-    - Months: `"Xmo"` (e.g., "1mo", "2mo")
+`provider_budget_config` 是一個字典，其中：
+- **Key**：提供者名稱（字串）- 必須是有效的 [LiteLLM 提供者名稱](https://docs.litellm.ai/docs/providers)
+- **Value**：包含以下參數的預算設定物件：
+  - `budget_limit`：代表 USD 預算的浮點數值
+  - `time_period`：以下格式之一的持續時間字串：
+    - 秒：`"Xs"`（例如 "30s"）
+    - 分鐘：`"Xm"`（例如 "10m"）
+    - 小時：`"Xh"`（例如 "24h"）
+    - 天：`"Xd"`（例如 "1d"、"30d"）
+    - 月：`"Xmo"`（例如 "1mo"、"2mo"）
 
-Example structure:
+範例結構：
 ```yaml
 provider_budget_config:
   openai:

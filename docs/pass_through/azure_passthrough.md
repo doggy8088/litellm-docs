@@ -1,31 +1,31 @@
-# Azure Passthrough
+# Azure 直通 {#azure-passthrough}
 
-Pass-through endpoints for `/azure`
+`/azure` 的直通端點
 
-## Overview
+## 總覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |-------|-------|-------|
-| Cost Tracking | ❌ | Not supported |
-| Logging | ✅ | Works across all integrations |
-| Streaming | ✅ | Fully supported |
+| 成本追蹤 | ❌ | 不支援 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 串流 | ✅ | 完整支援 |
 
-### When to use this?
+### 什麼時候使用這個？ {#when-to-use-this}
 
-- For most use cases, you should use the [native LiteLLM Azure OpenAI Integration](../providers/azure/azure) (`/chat/completions`, `/embeddings`, `/completions`, `/images`, etc.)
-- Use this passthrough to call newer or less common Azure OpenAI endpoints that LiteLLM doesn't fully support yet, such as `/assistants`, `/threads`, `/vector_stores`
+- 對於大多數使用情境，您應該使用 [原生 LiteLLM Azure OpenAI 整合](../providers/azure/azure) (`/chat/completions`, `/embeddings`, `/completions`, `/images`, 等等)
+- 使用此 passthrough 來呼叫 LiteLLM 尚未完整支援的較新或較少見的 Azure OpenAI 端點，例如 `/assistants`、`/threads`、`/vector_stores`
 
-Simply replace your Azure endpoint (e.g. `https://<your-resource-name>.openai.azure.com`) with `LITELLM_PROXY_BASE_URL/azure`
+只要將您的 Azure 端點（例如 `https://<your-resource-name>.openai.azure.com`）替換為 `LITELLM_PROXY_BASE_URL/azure` 即可
 
-## Usage Examples
+## 使用範例 {#usage-examples}
 
-### Assistants API
+### Assistants API {#assistants-api}
 
-#### Create Azure OpenAI Client
+#### 建立 Azure OpenAI 用戶端 {#create-azure-openai-client}
 
-Make sure you do the following:
-- Point `azure_endpoint` to your `LITELLM_PROXY_BASE_URL/azure`
-- Use your `LITELLM_API_KEY` as the `api_key`
+請確保您執行以下操作：
+- 將 `azure_endpoint` 指向您的 `LITELLM_PROXY_BASE_URL/azure`
+- 將您的 `LITELLM_API_KEY` 作為 `api_key` 使用
 
 ```python
 import openai
@@ -37,7 +37,7 @@ client = openai.AzureOpenAI(
 )
 ```
 
-#### Create an Assistant
+#### 建立 Assistant {#create-an-assistant}
 
 ```python
 assistant = client.beta.assistants.create(
@@ -47,12 +47,12 @@ assistant = client.beta.assistants.create(
 )
 ```
 
-#### Create a Thread
+#### 建立 Thread {#create-a-thread}
 ```python
 thread = client.beta.threads.create()
 ```
 
-#### Add a Message to the Thread
+#### 將訊息新增到 Thread {#add-a-message-to-the-thread}
 ```python
 message = client.beta.threads.messages.create(
     thread_id=thread.id,
@@ -61,7 +61,7 @@ message = client.beta.threads.messages.create(
 )
 ```
 
-#### Run the Assistant
+#### 執行 Assistant {#run-the-assistant}
 ```python
 run = client.beta.threads.runs.create(
     thread_id=thread.id,
@@ -75,14 +75,14 @@ run_status = client.beta.threads.runs.retrieve(
 )
 ```
 
-#### Retrieve Messages
+#### 取回訊息 {#retrieve-messages}
 ```python
 messages = client.beta.threads.messages.list(
     thread_id=thread.id
 )
 ```
 
-#### Delete the Assistant
+#### 刪除 Assistant {#delete-the-assistant}
 
 ```python
 client.beta.assistants.delete(assistant.id)

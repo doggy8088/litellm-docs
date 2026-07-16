@@ -1,36 +1,34 @@
 import Image from '@theme/IdealImage';
 
-# PromptLayer
-
+# PromptLayer {#promptlayer}
 
 :::tip
 
-This is community maintained, Please make an issue if you run into a bug
+這是由社群維護的文件，如果您遇到錯誤，請提出 issue
 https://github.com/BerriAI/litellm
 
 :::
 
-
-Promptlayer is a platform for prompt engineers. Log OpenAI requests. Search usage history. Track performance. Visually manage prompt templates.
+Promptlayer 是一個供提示工程師使用的平台。記錄 OpenAI 請求。搜尋使用歷史。追蹤效能。以視覺化方式管理提示範本。
 
 <Image img={require('../../img/promptlayer.png')} />
 
-## Use Promptlayer to log requests across all LLM Providers (OpenAI, Azure, Anthropic, Cohere, Replicate, PaLM)
+## 使用 Promptlayer 記錄跨所有 LLM 提供者（OpenAI、Azure、Anthropic、Cohere、Replicate、PaLM）的請求 {#use-promptlayer-to-log-requests-across-all-llm-providers-openai-azure-anthropic-cohere-replicate-palm}
 
-liteLLM provides `callbacks`, making it easy for you to log data depending on the status of your responses.
+liteLLM 提供 `callbacks`，讓您能依據回應狀態輕鬆記錄資料。
 
-### Using Callbacks
+### 使用回呼 {#using-callbacks}
 
-Get your PromptLayer API Key from https://promptlayer.com/
+從 https://promptlayer.com/ 取得您的 PromptLayer API 金鑰
 
-Use just 2 lines of code, to instantly log your responses **across all providers** with promptlayer:
+只要 2 行程式碼，就能立即使用 promptlayer 記錄您**跨所有提供者**的回應：
 
 ```python
 litellm.success_callback = ["promptlayer"]
 
 ```
 
-Complete code
+完整程式碼
 
 ```python
 from litellm import completion
@@ -50,16 +48,16 @@ response = completion(model="gpt-3.5-turbo", messages=[{"role": "user", "content
 response = completion(model="command-nightly", messages=[{"role": "user", "content": "Hi 👋 - i'm cohere"}])
 ```
 
-### Logging Metadata 
+### 記錄中繼資料  {#logging-metadata}
 
-You can also log completion call metadata to Promptlayer. 
+您也可以將 completion 呼叫中繼資料記錄到 Promptlayer。 
 
-You can add metadata to a completion call through the metadata param: 
+您可以透過 metadata 參數將中繼資料新增到 completion 呼叫：
 ```python 
 completion(model,messages, metadata={"model": "ai21"})
 ```
 
-**Complete Code**
+**完整程式碼**
 ```python
 from litellm import completion
 
@@ -78,10 +76,10 @@ response = completion(model="gpt-3.5-turbo", messages=[{"role": "user", "content
 response = completion(model="command-nightly", messages=[{"role": "user", "content": "Hi 👋 - i'm cohere"}], metadata={"provider": "cohere"})
 ```
 
-Credits to [Nick Bradford](https://github.com/nsbradford), from [Vim-GPT](https://github.com/nsbradford/VimGPT), for the suggestion. 
+感謝 [Nick Bradford](https://github.com/nsbradford)，來自 [Vim-GPT](https://github.com/nsbradford/VimGPT)，提供這個建議。 
 
-## Support & Talk to Founders
+## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

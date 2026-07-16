@@ -3,37 +3,35 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-# Dynamic Callback Management
+# 動態回呼管理 {#dynamic-callback-management}
 
 :::info
 
-✨ This is an enterprise feature.
+✨ 這是企業功能。
 
-[Get started with LiteLLM Enterprise](https://www.litellm.ai/enterprise)
+[開始使用 LiteLLM Enterprise](https://www.litellm.ai/enterprise)
 
 :::
 
-LiteLLM's dynamic callback management enables teams to control logging behavior on a per-request basis without requiring central infrastructure changes. This is essential for organizations managing large-scale service ecosystems where:
+LiteLLM 的動態回呼管理可讓團隊以每個請求為單位控制記錄行為，而無需變更中央基礎架構。這對於管理大規模服務生態系統的組織而言至關重要，其中：
 
-- **Teams manage their own compliance** - Services can handle sensitive data appropriately without central oversight
-- **Decentralized responsibility** - Each team controls their data handling while using shared infrastructure
+- **團隊自行管理其合規性** - 服務可以在沒有中央監督的情況下適當處理敏感資料
+- **去中心化責任** - 每個團隊在使用共用基礎架構的同時，控制其資料處理方式
 
-You can disable callbacks by passing the `x-litellm-disable-callbacks` header with your requests, giving teams granular control over where their data is logged.
+您可以在請求中傳遞 `x-litellm-disable-callbacks` 標頭來停用回呼，讓團隊能精細控制其資料被記錄的位置。
 
-## Getting Started: List and Disable Callbacks
+## 開始使用：列出與停用回呼 {#getting-started-list-and-disable-callbacks}
 
-Managing callbacks is a two-step process:
+管理回呼是一個兩步驟流程：
 
-1. **First, list your active callbacks** to see what's currently enabled
-2. **Then, disable specific callbacks** as needed for your requests
+1. **先列出您已啟用的回呼**，以查看目前哪些功能已開啟
+2. **接著視需要停用特定回呼**，以符合您的請求需求
 
+## 1. 列出已啟用的回呼 {#1-list-active-callbacks}
 
+先檢視代理程式上目前所有已啟用的回呼，看看有哪些可供停用。
 
-## 1. List Active Callbacks
-
-Start by viewing all currently enabled callbacks on your proxy to see what's available to disable.
-
-#### Request
+#### 請求 {#request}
 
 ```bash
 curl -X 'GET' \
@@ -42,7 +40,7 @@ curl -X 'GET' \
   -H 'x-litellm-api-key: sk-1234'
 ```
 
-#### Response
+#### 回應 {#response}
 
 ```json
 {
@@ -61,25 +59,25 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
+#### 回應欄位 {#response-fields}
 
-The response contains three arrays that categorize your active callbacks:
-- **`success`** - Callbacks that only execute when requests complete successfully. These callbacks receive data from successful LLM responses.
-- **`failure`** - Callbacks that only execute when requests fail or encounter errors. These callbacks receive error information and failed request data.
-- **`success_and_failure`** - Callbacks that execute for both successful and failed requests. These are typically logging/observability tools that need to capture all request data regardless of outcome.
+回應包含三個陣列，用於分類您已啟用的回呼：
+- **`success`** - 只有在請求成功完成時才會執行的回呼。這些回呼會接收來自成功 LLM 回應的資料。
+- **`failure`** - 只有在請求失敗或發生錯誤時才會執行的回呼。這些回呼會接收錯誤資訊與失敗的請求資料。
+- **`success_and_failure`** - 會在請求成功與失敗時都執行的回呼。這些通常是需要無論結果如何都擷取所有請求資料的記錄/可觀測性工具。
 
 ---
 
-## 2. Disable Callbacks
+## 2. 停用回呼 {#2-disable-callbacks}
 
-Now that you know which callbacks are active, you can selectively disable them using the `x-litellm-disable-callbacks` header. You can reference any callback name from the list response above.
+既然您已知道哪些回呼處於啟用狀態，就可以使用 `x-litellm-disable-callbacks` 標頭選擇性地將其停用。您可以引用上方列出回應中的任何回呼名稱。
 
-### Disable a Single Callback
+### 停用單一回呼 {#disable-a-single-callback}
 
-Use the `x-litellm-disable-callbacks` header to disable specific callbacks for individual requests.
+使用 `x-litellm-disable-callbacks` 標頭來停用個別請求的特定回呼。
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -127,12 +125,12 @@ print(response)
 </TabItem>
 </Tabs>
 
-### Disable Multiple Callbacks
+### 停用多個回呼 {#disable-multiple-callbacks}
 
-You can disable multiple callbacks by providing a comma-separated list in the header. Use any combination of callback names from your `/callbacks/list` response.
+您可以在標頭中提供以逗號分隔的清單來停用多個回呼。可使用您 `/callbacks/list` 回應中的任何回呼名稱組合。
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -180,20 +178,20 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Header Format and Case Sensitivity
+## 標頭格式與大小寫敏感性 {#header-format-and-case-sensitivity}
 
-### Expected Header Format
+### 預期的標頭格式 {#expected-header-format}
 
-The `x-litellm-disable-callbacks` header accepts callback names in the following formats (use the exact names returned by `/callbacks/list`):
+`x-litellm-disable-callbacks` 標頭接受下列格式的回呼名稱（使用 `/callbacks/list` 傳回的確切名稱）：
 
-- **Single callback**: `x-litellm-disable-callbacks: langfuse`
-- **Multiple callbacks**: `x-litellm-disable-callbacks: langfuse,datadog,prometheus`
+- **單一回呼**：`x-litellm-disable-callbacks: langfuse`
+- **多個回呼**：`x-litellm-disable-callbacks: langfuse,datadog,prometheus`
 
-When specifying multiple callbacks, use comma-separated values without spaces around the commas.
+指定多個回呼時，請使用以逗號分隔的值，逗號前後不要有空格。
 
-### Case Sensitivity
+### 大小寫敏感性 {#case-sensitivity}
 
-**Callback name checks are case insensitive.** This means all of the following are equivalent:
+**回呼名稱檢查不區分大小寫。** 這表示以下所有寫法都等效：
 
 ```bash
 # These are all equivalent
@@ -203,7 +201,7 @@ x-litellm-disable-callbacks: LangFuse
 x-litellm-disable-callbacks: langFUSE
 ```
 
-This applies to both single and multiple callback specifications:
+這同樣適用於單一與多個回呼的指定方式：
 
 ```bash
 # Case insensitive for multiple callbacks
@@ -213,38 +211,38 @@ x-litellm-disable-callbacks: langfuse,DATADOG,prometheus
 
 ---
 
-## Disabling Dynamic Callback Management (Enterprise)
+## 停用動態回呼管理（企業） {#disabling-dynamic-callback-management-enterprise}
 
-Some organizations have compliance requirements where **all requests must be logged under all circumstances**. For these cases, you can disable dynamic callback management entirely to ensure users cannot disable any logging callbacks.
+某些組織有合規需求，要求**所有請求在任何情況下都必須記錄**。對於這些情境，您可以完全停用動態回呼管理，以確保使用者無法停用任何記錄回呼。
 
-### Use Case
+### 使用情境 {#use-case}
 
-This is designed for enterprise scenarios where:
-- **Compliance requirements** mandate that all API requests must be logged
-- **Audit trails** must be complete with no gaps
-- **Security policies** require all traffic to be monitored
-- **No exceptions** can be made for callback disabling
+這是為下列企業情境所設計：
+- **合規要求** 規定所有 API 請求都必須記錄
+- **稽核軌跡** 必須完整且沒有缺口
+- **安全政策** 要求監控所有流量
+- **不能有任何例外** 允許停用回呼
 
-### How to Disable
+### 如何停用 {#how-to-disable}
 
-Set `allow_dynamic_callback_disabling` to `false` in your config.yaml:
+在您的 config.yaml 中將 `allow_dynamic_callback_disabling` 設為 `false`：
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
   allow_dynamic_callback_disabling: false
 ```
 
-### Effect
+### 效果 {#effect}
 
-When disabled:
-- The `x-litellm-disable-callbacks` header will be **ignored**
-- All configured callbacks will **always execute** for every request
-- Users cannot bypass logging through headers or request metadata
-- All requests are guaranteed to be logged per your proxy configuration
+停用後：
+- `x-litellm-disable-callbacks` 標頭將被**忽略**
+- 所有已設定的回呼都會在每個請求中**一律執行**
+- 使用者無法透過標頭或請求中繼資料繞過記錄
+- 依您的代理程式設定，所有請求都保證會被記錄
 
-### Example: Compliance Logging Setup
+### 範例：合規記錄設定 {#example-compliance-logging-setup}
 
-Here's a complete example for an organization requiring guaranteed logging:
+以下是一個需要保證記錄的組織之完整範例：
 
 ```yaml showLineNumbers title="config.yaml"
 # config.yaml
@@ -260,15 +258,13 @@ litellm_settings:
   allow_dynamic_callback_disabling: false
 ```
 
-With this configuration:
-- All requests will be logged to Langfuse, Datadog, and S3
-- Users cannot disable any of these callbacks via headers
-- Complete audit trail is guaranteed for compliance requirements
+使用此設定：
+- 所有請求都會記錄到 Langfuse、Datadog 和 S3
+- 使用者無法透過標頭停用其中任何回呼
+- 可保證完整稽核軌跡以符合合規需求
 
 :::info
 
-**Default Behavior**: Dynamic callback disabling is **enabled by default** (`allow_dynamic_callback_disabling: true`). You must explicitly set it to `false` to enforce guaranteed logging.
+**預設行為**：動態回呼停用功能預設為**啟用**（`allow_dynamic_callback_disabling: true`）。您必須明確將其設為 `false`，才能強制保證記錄。
 
 :::
-
-

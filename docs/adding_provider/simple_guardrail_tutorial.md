@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Adding a New Guardrail Integration
+# 新增一個新的 Guardrail 整合 {#adding-a-new-guardrail-integration}
 
-You're going to create a class that checks text before it goes to the LLM or after it comes back. If it violates your rules, you block it.
+您將建立一個類別，在文字送往 LLM 之前或傳回之後進行檢查。如果違反您的規則，就會封鎖它。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Request with guardrail:
+帶有 guardrail 的請求：
 
 ```bash
 curl --location 'http://localhost:4000/chat/completions' \
@@ -20,28 +20,28 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Your guardrail checks input, then output. If something's wrong, raise an exception.
+您的 guardrail 會先檢查輸入，再檢查輸出。如果有問題，就拋出例外。
 
-## Build Your Guardrail
+## 建置您的 Guardrail {#build-your-guardrail}
 
-### Create Your Directory
+### 建立您的目錄 {#create-your-directory}
 
 ```bash
 mkdir -p litellm/proxy/guardrails/guardrail_hooks/my_guardrail
 cd litellm/proxy/guardrails/guardrail_hooks/my_guardrail
 ```
 
-Two files: `my_guardrail.py` (main class) and `__init__.py` (initialization).
+兩個檔案：`my_guardrail.py`（主要類別）和 `__init__.py`（初始化）。
 
-### Write the Main Class
+### 撰寫主要類別 {#write-the-main-class}
 
-`my_guardrail.py`:
+`my_guardrail.py`：
 
-Follow from [Custom Guardrail](../proxy/guardrails/custom_guardrail#custom-guardrail) tutorial.
+請參照 [自訂 Guardrail](../proxy/guardrails/custom_guardrail#custom-guardrail) 教學。
 
-### Create the Init File
+### 建立 Init 檔案 {#create-the-init-file}
 
-`__init__.py`:
+`__init__.py`：
 
 ```python
 from typing import TYPE_CHECKING
@@ -78,9 +78,9 @@ guardrail_class_registry = {
 }
 ```
 
-### Register Your Guardrail Type
+### 註冊您的 Guardrail 類型 {#register-your-guardrail-type}
 
-Add to `litellm/types/guardrails.py`:
+加入到 `litellm/types/guardrails.py`：
 
 ```python
 class SupportedGuardrailIntegrations(str, Enum):
@@ -92,9 +92,9 @@ class SupportedGuardrailIntegrations(str, Enum):
     MY_GUARDRAIL = "my_guardrail"
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-### Config File
+### 設定檔 {#config-file}
 
 ```yaml
 model_list:
@@ -112,7 +112,7 @@ guardrails:
         api_base: https://api.myguardrail.com
 ```
 
-### Per-Request
+### 每次請求 {#per-request}
 
 ```bash
 curl --location 'http://localhost:4000/chat/completions' \
@@ -125,9 +125,6 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-## Testing
+## 測試 {#testing}
 
-Add unit tests inside `test_litellm/` folder.
-
-
-
+在 `test_litellm/` 資料夾內加入單元測試。

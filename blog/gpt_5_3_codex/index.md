@@ -1,12 +1,12 @@
 ---
 slug: gpt_5_3_codex
-title: "Day 0 Support: GPT-5.3-Codex"
+title: "Day 0 支援：GPT-5.3-Codex"
 date: 2026-02-24T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Day 0 support for GPT-5.3-Codex on LiteLLM, including phase parameter handling for Responses API."
+description: "LiteLLM 對 GPT-5.3-Codex 的 Day 0 支援，包括 Responses API 的 phase 參數處理。"
 tags: [openai, gpt-5.3-codex, codex, day 0 support]
 hide_table_of_contents: false
 ---
@@ -14,38 +14,38 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM now supports GPT-5.3-Codex on Day 0, including support for the new assistant `phase` metadata on Responses API output items.
+LiteLLM 現在在 Day 0 即支援 GPT-5.3-Codex，並支援 Responses API 輸出項目中的新 assistant `phase` 中繼資料。
 
 {/* truncate */}
 
-## Why `phase` matters for GPT-5.3-Codex
+## 為什麼 `phase` 對 GPT-5.3-Codex 很重要 {#why-phase-matters-for-gpt-53-codex}
 
-`phase` appears on assistant output items and helps distinguish preamble/commentary turns from final closeout responses.
+`phase` 會出現在 assistant 輸出項目上，有助於區分前言／說明回合與最終收尾回應。
 
-Reference: [Phase parameter docs](https://developers.openai.com/api/reference/overview)
+參考：[Phase 參數文件](https://developers.openai.com/api/reference/overview)
 
-Supported values:
+支援的值：
 - `null`
 - `"commentary"`
 - `"final_answer"`
 
-Important:
-- Persist assistant output items with `phase` exactly as returned.
-- Send those assistant items back on the next turn.
-- Do **not** add `phase` to user messages.
+重要：
+- 請將帶有 `phase` 的 assistant 輸出項目依原樣儲存。
+- 在下一輪請將那些 assistant 項目傳回。
+- **不要** 將 `phase` 加到 user 訊息中。
 
-## Docker Image
+## Docker 映像 {#docker-image}
 
 ```bash
 docker pull ghcr.io/berriai/litellm:v1.81.12-stable.gpt-5.3
 ```
 
-## Usage 
+## 使用方式  {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -54,7 +54,7 @@ model_list:
       model: openai/gpt-5.3-codex
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -66,7 +66,7 @@ docker run -d \
 ```
 
 
-**3. Test it**
+**3. 測試它**
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/v1/responses" \
@@ -81,7 +81,7 @@ curl -X POST "http://0.0.0.0:4000/v1/responses" \
 </TabItem>
 </Tabs>
 
-## Python Example: Persist `phase` with OpenAI Client + LiteLLM Base URL
+## Python 範例：使用 OpenAI Client + LiteLLM Base URL 保留 `phase` {#python-example-persist-phase-with-openai-client--litellm-base-url}
 
 ```python
 from openai import OpenAI
@@ -131,8 +131,8 @@ def run_turn(user_text: str):
     return resp, latest_phase
 ```
 
-## Notes
+## 注意事項 {#notes}
 
-- Use `/v1/responses` for GPT Codex models.
-- Preserve full assistant output history for best multi-turn behavior.
-- If `phase` metadata is dropped during history reconstruction, output quality can degrade on long-running tasks.
+- GPT Codex models 請使用 `/v1/responses`。
+- 為獲得最佳多輪行為，請保留完整的 assistant 輸出歷史。
+- 如果在重建歷史時遺失 `phase` 中繼資料，長時間執行的任務中輸出品質可能會下降。

@@ -1,18 +1,18 @@
 ---
-description: "Implement model fallbacks (provider failover) across OpenAI, Anthropic, and Azure with LiteLLM so a failing provider fails over to a backup."
+description: "在 OpenAI、Anthropic 與 Azure 之間實作模型備援（提供者失敗轉移），讓失敗的提供者自動切換到備援。"
 keywords: [fallbacks, failover, provider failover, model failover, OpenAI, Anthropic, Azure, reliability]
 ---
 
-# Model Fallbacks (Provider Failover) w/ LiteLLM
+# 模型備援（提供者失敗轉移）搭配 LiteLLM {#model-fallbacks-provider-failover-w-litellm}
 
-Here's how you can implement model fallbacks (provider failover) across 3 LLM providers (OpenAI, Anthropic, Azure) using LiteLLM. 
+以下說明如何使用 LiteLLM 在 3 個 LLM 提供者（OpenAI、Anthropic、Azure）之間實作模型備援（提供者失敗轉移）。 
 
-## 1. Install LiteLLM
+## 1. 安裝 LiteLLM {#1-install-litellm}
 ```python 
 !uv add litellm
 ```
 
-## 2. Basic Fallbacks Code 
+## 2. 基本備援程式碼  {#2-basic-fallbacks-code}
 ```python 
 import litellm
 from litellm import embedding, completion
@@ -36,12 +36,12 @@ for model in model_fallback_list:
       print(f"error occurred: {traceback.format_exc()}")
 ```
 
-## 3. Context Window Exceptions 
-LiteLLM provides a sub-class of the InvalidRequestError class for Context Window Exceeded errors ([docs](https://docs.litellm.ai/docs/exception_mapping)).
+## 3. Context Window 例外狀況  {#3-context-window-exceptions}
+LiteLLM 針對 Context Window Exceeded 錯誤提供了 InvalidRequestError 類別的子類別（[文件](https://docs.litellm.ai/docs/exception_mapping)）。
 
-Implement model fallbacks based on context window exceptions. 
+根據 context window 例外狀況實作模型備援。 
 
-LiteLLM also exposes a `get_max_tokens()` function, which you can use to identify the context window limit that's been exceeded. 
+LiteLLM 也提供了 `get_max_tokens()` 函式，您可以用它來識別已超出 context window 限制的情況。 
 
 ```python 
 import litellm

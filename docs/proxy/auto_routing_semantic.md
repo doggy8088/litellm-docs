@@ -2,25 +2,25 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Semantic Auto Router (deprecated)
+# 語意自動路由器（已棄用） {#semantic-auto-router-deprecated}
 
-:::warning Deprecated
+:::warning 已棄用
 
-The semantic Auto Router is superseded by [Auto Routing](./auto_routing.md), which folds semantic keyword matching, complexity scoring, and adaptive routing into a single `auto_router/complexity_router`. New deployments should start there; the semantic router page is preserved for existing configs.
+語意 Auto Router 已被 [Auto Routing](./auto_routing.md) 取代，後者將語意關鍵字比對、複雜度評分與自適應路由整合為單一 `auto_router/complexity_router`。新部署應從該處開始；此語意路由器頁面則保留給既有設定使用。
 
 :::
 
-LiteLLM can auto select the best model for a request based on rules you define.
+LiteLLM 可根據您定義的規則，自動選擇最適合請求的模型。
 
-<Image alt="Auto Routing" img={require('../../img/auto_router.png')} style={{ borderRadius: '8px', marginBottom: '1em', maxWidth: '100%' }} />
+<Image alt="自動路由" img={require('../../img/auto_router.png')} style={{ borderRadius: '8px', marginBottom: '1em', maxWidth: '100%' }} />
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
-Auto routing allows you to define routing rules that automatically select the best model for a request based on the input content. This is useful for directing different types of queries to specialized models.
+自動路由可讓您定義路由規則，根據輸入內容自動選擇最適合請求的模型。這對於將不同類型的查詢導向專門模型非常有用。
 
-### Setup
+### 設定 {#setup}
 
-1. **Create a router configuration file** (e.g., `router.json`):
+1. **建立路由設定檔**（例如，`router.json`）：
 
 ```json
 {
@@ -53,7 +53,7 @@ Auto routing allows you to define routing rules that automatically select the be
 }
 ```
 
-2. **Configure the Router with auto routing models**:
+2. **使用自動路由模型設定 Router**：
 
 ```python
 from litellm import Router
@@ -98,9 +98,9 @@ router = Router(
 )
 ```
 
-### Usage
+### 用法 {#usage}
 
-Once configured, use the auto router by calling it with your auto router model name:
+完成設定後，請以您的自動路由模型名稱呼叫它來使用自動路由器：
 
 ```python
 # This request will be routed to gpt-4.1 based on the utterance match
@@ -116,51 +116,50 @@ response = await router.acompletion(
 )
 ```
 
-### Configuration Parameters
+### 設定參數 {#configuration-parameters}
 
-- **auto_router_config_path**: Path to your router.json configuration file
-- **auto_router_default_model**: Fallback model when no route matches
-- **auto_router_embedding_model**: Model used for generating embeddings to match against utterances
+- **auto_router_config_path**：您的 router.json 設定檔路徑
+- **auto_router_default_model**：當沒有路由符合時的備援模型
+- **auto_router_embedding_model**：用於產生 embedding 以比對語句的模型
 
-### Router Configuration Schema
+### Router 設定結構 {#router-configuration-schema}
 
-The `router.json` file supports the following structure:
+`router.json` 檔案支援以下結構：
 
-- **encoder_type**: Type of encoder (e.g., "openai")
-- **encoder_name**: Name of the embedding model
-- **routes**: Array of routing rules with:
-  - **name**: Target model name (must match a model in your model_list)
-  - **utterances**: Example phrases/patterns to match against
-  - **description**: Human-readable description of the route
-  - **score_threshold**: Minimum similarity score to trigger this route (0.0-1.0)
-  - **metadata**: Additional metadata for the route
+- **encoder_type**：encoder 類型（例如，"openai"）
+- **encoder_name**：embedding 模型名稱
+- **routes**：路由規則陣列，包含：
+  - **name**：目標模型名稱（必須與您的 model_list 中的模型相符）
+  - **utterances**：要比對的範例片語／模式
+  - **description**：此路由的易讀說明
+  - **score_threshold**：觸發此路由所需的最低相似度分數（0.0-1.0）
+  - **metadata**：此路由的其他 metadata
 
+## LiteLLM Proxy 伺服器 {#litellm-proxy-server}
 
-## LiteLLM Proxy Server
+### 設定 {#setup-1}
 
-### Setup
+前往 LiteLLM UI，並到 **Models+Endpoints** > **Add Model** > **Auto Router Tab**。
 
-Navigate to the LiteLLM UI and go to **Models+Endpoints** > **Add Model** > **Auto Router Tab**.
+設定以下必要欄位：
 
-Configure the following required fields:
+- **Auto Router Name** - 開發者在向 LiteLLM 發出 LLM API 請求時會使用的模型名稱
+- **Default Model** - 當沒有路由符合時使用的備援模型（例如，若設為 "gpt-4o-mini"，未匹配的請求將路由至 gpt-4o-mini）
+- **Embedding Model** - 用於為輸入訊息產生 embedding 的模型。這些 embedding 會用來在語意上將輸入與您路由中定義的 utterances 進行比對
 
-- **Auto Router Name** - The model name that developers will use when making LLM API requests to LiteLLM
-- **Default Model** - The fallback model used when no route is matched (e.g., if set to "gpt-4o-mini", unmatched requests will be routed to gpt-4o-mini)
-- **Embedding Model** - The model used to generate embeddings for input messages. These embeddings are used to semantically match input against the utterances defined in your routes
+#### 路由設定 {#route-configuration}
 
-#### Route Configuration
-
-<Image alt="Auto Router Setup" img={require('../../img/auto_router2.png')} style={{ borderRadius: '8px', marginBottom: '1em', maxWidth: '100%' }} />
-
-<br />
+<Image alt="自動路由器設定" img={require('../../img/auto_router2.png')} style={{ borderRadius: '8px', marginBottom: '1em', maxWidth: '100%' }} />
 
 <br />
 
-Click **Add Route** to create a new routing rule. Each route consists of utterances that are matched against input messages to determine the target model.
+<br />
 
-Configure each route with:
+點選 **Add Route** 以建立新的路由規則。每個 route 都由若干 utterances 組成，系統會將其與輸入訊息比對，以判定目標模型。
 
-- **Utterances** - Example phrases that will trigger this route. Use placeholders in brackets for variables:
+設定每個 route 的內容：
+
+- **Utterances** - 會觸發此 route 的範例片語。變數請使用方括號中的預留位置：
 
 ```json
 "how to code a program in [language]",
@@ -169,13 +168,12 @@ Configure each route with:
 "can you convert this [language] code to [target_language]"
 ```
 
-- **Description** - A human-readable description of what this route handles
-- **Score Threshold** - The minimum similarity score (0.0-1.0) required to trigger this route
+- **Description** - 此 route 處理內容的易讀說明
+- **Score Threshold** - 觸發此 route 所需的最低相似度分數（0.0-1.0）
 
+### 用法 {#usage-1}
 
-### Usage
-
-Once added developers need to select the model=`auto_router1` in the `model` field of the LLM API request.
+新增後，開發者需要在 LLM API 請求的 `model` 欄位中選取 model=`auto_router1`。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
@@ -216,11 +214,9 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
+## 運作方式 {#how-it-works}
 
-
-## How It Works
-
-1. When a request comes in, LiteLLM generates embeddings for the input message
-2. It compares these embeddings against **all** utterances defined across **all** your routes simultaneously
-3. It identifies the route with the **highest similarity score**. If that score exceeds the route's defined threshold, the request is routed to that model. *(Because the router selects the global maximum score rather than stopping at the first match, the order of routes in your configuration does not affect which route is selected.)*
-4. If no route's maximum score meets its threshold, the request goes to the default model
+1. 當請求進來時，LiteLLM 會為輸入訊息產生 embedding
+2. 它會將這些 embedding 與您所有 routes 中定義的**全部** utterances 同時比對
+3. 它會找出具有**最高相似度分數**的 route。若該分數超過該 route 定義的閾值，請求就會路由至該模型。*(由於路由器會選擇全域最高分，而不是在第一個符合項就停止，因此設定中 routes 的順序不會影響選取哪個 route。)*
+4. 如果沒有任何 route 的最高分數達到其閾值，請求就會送往 default model

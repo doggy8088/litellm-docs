@@ -1,63 +1,62 @@
-# Response Headers
+# 回應標頭 {#response-headers}
 
-When you make a request to the proxy, the proxy will return the following headers:
+當您向 proxy 發出請求時，proxy 會回傳以下標頭：
 
-## Rate Limit Headers
-[OpenAI-compatible headers](https://platform.openai.com/docs/guides/rate-limits/rate-limits-in-headers):
+## 速率限制標頭 {#rate-limit-headers}
+[與 OpenAI 相容的標頭](https://platform.openai.com/docs/guides/rate-limits/rate-limits-in-headers)：
 
-| Header | Type | Description |
+| 標頭 | 類型 | 說明 |
 |--------|------|-------------|
-| `x-ratelimit-remaining-requests` | Optional[int] | The remaining number of requests that are permitted before exhausting the rate limit |
-| `x-ratelimit-remaining-tokens` | Optional[int] | The remaining number of tokens that are permitted before exhausting the rate limit |
-| `x-ratelimit-limit-requests` | Optional[int] | The maximum number of requests that are permitted before exhausting the rate limit |
-| `x-ratelimit-limit-tokens` | Optional[int] | The maximum number of tokens that are permitted before exhausting the rate limit |
-| `x-ratelimit-reset-requests` | Optional[int] | The time at which the rate limit will reset |
-| `x-ratelimit-reset-tokens` | Optional[int] | The time at which the rate limit will reset |
+| `x-ratelimit-remaining-requests` | Optional[int] | 在耗盡速率限制前，仍允許的剩餘請求數 |
+| `x-ratelimit-remaining-tokens` | Optional[int] | 在耗盡速率限制前，仍允許的剩餘 token 數 |
+| `x-ratelimit-limit-requests` | Optional[int] | 在耗盡速率限制前，允許的最大請求數 |
+| `x-ratelimit-limit-tokens` | Optional[int] | 在耗盡速率限制前，允許的最大 token 數 |
+| `x-ratelimit-reset-requests` | Optional[int] | 速率限制將重設的時間 |
+| `x-ratelimit-reset-tokens` | Optional[int] | 速率限制將重設的時間 |
 
-### How Rate Limit Headers work
+### 速率限制標頭的運作方式 {#how-rate-limit-headers-work}
 
-**If key has rate limits set**
+**如果 key 已設定速率限制**
 
-The proxy will return the [remaining rate limits for that key](https://github.com/BerriAI/litellm/blob/bfa95538190575f7f317db2d9598fc9a82275492/litellm/proxy/hooks/parallel_request_limiter.py#L778).
+proxy 會回傳 [該 key 的剩餘速率限制](https://github.com/BerriAI/litellm/blob/bfa95538190575f7f317db2d9598fc9a82275492/litellm/proxy/hooks/parallel_request_limiter.py#L778)。
 
-**If key does not have rate limits set**
+**如果 key 未設定速率限制**
 
-The proxy returns the remaining requests/tokens returned by the backend provider. (LiteLLM will standardize the backend provider's response headers to match the OpenAI format)
+proxy 會回傳後端提供者回傳的剩餘請求／token。（LiteLLM 會將後端提供者的回應標頭標準化，以符合 OpenAI 格式）
 
-If the backend provider does not return these headers, the value will be `None`.
+如果後端提供者未回傳這些標頭，值將為 `None`。
 
-These headers are useful for clients to understand the current rate limit status and adjust their request rate accordingly.
+這些標頭可協助用戶端了解目前的速率限制狀態，並據此調整其請求速率。
 
-
-## Latency Headers
-| Header | Type | Description |
+## 延遲標頭 {#latency-headers}
+| 標頭 | 類型 | 說明 |
 |--------|------|-------------|
-| `x-litellm-response-duration-ms` | float | Total duration from the moment that a request gets to LiteLLM Proxy to the moment it gets returned to the client. |
-| `x-litellm-overhead-duration-ms` | float | LiteLLM processing overhead in milliseconds |
+| `x-litellm-response-duration-ms` | float | 從請求到達 LiteLLM Proxy 的那一刻起，到回傳給用戶端的那一刻止的總耗時。 |
+| `x-litellm-overhead-duration-ms` | float | LiteLLM 處理額外負擔（毫秒） |
 
-## Retry, Fallback Headers
-| Header | Type | Description |
+## 重試、備援標頭 {#retry-fallback-headers}
+| 標頭 | 類型 | 說明 |
 |--------|------|-------------|
-| `x-litellm-attempted-retries` | int | Number of retry attempts made |
-| `x-litellm-attempted-fallbacks` | int | Number of fallback attempts made |
-| `x-litellm-max-fallbacks` | int | Maximum number of fallback attempts allowed |
+| `x-litellm-attempted-retries` | int | 已執行的重試次數 |
+| `x-litellm-attempted-fallbacks` | int | 已執行的備援次數 |
+| `x-litellm-max-fallbacks` | int | 允許的最大備援次數 |
 
-## Cost Tracking Headers
-| Header | Type | Description | Available on Pass-Through Endpoints |
+## 成本追蹤標頭 {#cost-tracking-headers}
+| 標頭 | 類型 | 說明 | 可用於直通端點 |
 |--------|------|-------------|-------------|
-| `x-litellm-response-cost` | float | Cost of the API call | |
-| `x-litellm-key-spend` | float | Total spend for the API key | ✅ |
+| `x-litellm-response-cost` | float | API 呼叫成本 | |
+| `x-litellm-key-spend` | float | 該 API 金鑰的總支出 | ✅ |
 
-## LiteLLM Specific Headers
-| Header | Type | Description | Available on Pass-Through Endpoints |
+## LiteLLM 特定標頭 {#litellm-specific-headers}
+| 標頭 | 類型 | 說明 | 可用於直通端點 |
 |--------|------|-------------|-------------|
-| `x-litellm-call-id` | string | Id for this request | ✅ |
-| `x-litellm-model-id` | string | Deployment id (`model_info.id`) | |
+| `x-litellm-call-id` | string | 此請求的 ID | ✅ |
+| `x-litellm-model-id` | string | 部署 ID (`model_info.id`) | |
 | `x-litellm-model-api-base` | string | API base URL | ✅ |
-| `x-litellm-version` | string | LiteLLM version | |
-| `x-litellm-model-group` | string | Routed `model_list[].model_name` (client `model`) | |
+| `x-litellm-version` | string | LiteLLM 版本 | |
+| `x-litellm-model-group` | string | 已路由的 `model_list[].model_name`（client `model`）| |
 
-### Example
+### 範例 {#example}
 
 ```yaml
 model_list:
@@ -68,35 +67,34 @@ model_list:
       id: "7c9f2a1b3d8e4f0a2c6b5d9e1f3a7b8c"   # optional; auto-generated if omitted
 ```
 
-| Header | Example | Notes |
+| 標頭 | 範例 | 備註 |
 |--------|---------|-------|
-| `x-litellm-model-group` | `my-chat-model` | `model_name` / request `model`; not `litellm_params.model`. |
-| `x-litellm-model-id` | `7c9f2a1b3d8e4f0a2c6b5d9e1f3a7b8c` | Which deployment row; use with `/v1/model/info?litellm_model_id=...`. |
-| Response body `model` | often `my-chat-model` | Often restamped to match the client; upstream id stays in config. |
+| `x-litellm-model-group` | `my-chat-model` | `model_name` / request `model`；不是 `litellm_params.model`。 |
+| `x-litellm-model-id` | `7c9f2a1b3d8e4f0a2c6b5d9e1f3a7b8c` | 哪一列部署；與 `/v1/model/info?litellm_model_id=...` 搭配使用。 |
+| Response body `model` | often `my-chat-model` | 通常會重新標記以符合 client；上游 id 仍保留在設定中。 |
 
-### More examples (illustrative)
+### 更多範例（示意） {#more-examples-illustrative}
 
-| Header | Example | Meaning |
+| 標頭 | 範例 | 含義 |
 |--------|---------|---------|
-| `x-litellm-response-cost` | `0.000214` | This call (USD). |
-| `x-litellm-key-spend` | `12.847` | Key total after this call. |
-| `x-litellm-response-duration-ms` | `842.3` | Proxy end-to-end (ms). |
-| `x-litellm-overhead-duration-ms` | `15.1` | LiteLLM overhead (ms). |
-| `x-litellm-attempted-retries` | `0` | Retries. |
-| `x-litellm-attempted-fallbacks` | `1` | Fallbacks to another deployment. |
-| `x-litellm-call-id` | `019b2c4d-e5f6-7890-abcd-ef1234567890` | Logs / tracing. |
-| `x-litellm-version` | `1.55.3` | Version. |
-| `x-litellm-model-api-base` | `https://api.openai.com/v1` | Provider base (no query string). |
+| `x-litellm-response-cost` | `0.000214` | 此次呼叫（USD）。 |
+| `x-litellm-key-spend` | `12.847` | 此次呼叫後的 key 總計。 |
+| `x-litellm-response-duration-ms` | `842.3` | Proxy 端到端（ms）。 |
+| `x-litellm-overhead-duration-ms` | `15.1` | LiteLLM 額外負擔（ms）。 |
+| `x-litellm-attempted-retries` | `0` | 重試。 |
+| `x-litellm-attempted-fallbacks` | `1` | 備援到另一個部署。 |
+| `x-litellm-call-id` | `019b2c4d-e5f6-7890-abcd-ef1234567890` | 記錄／追蹤。 |
+| `x-litellm-version` | `1.55.3` | 版本。 |
+| `x-litellm-model-api-base` | `https://api.openai.com/v1` | 提供者 base（不含 query string）。 |
 
-## Response headers from LLM providers
+## 來自 LLM 提供者的回應標頭 {#response-headers-from-llm-providers}
 
-LiteLLM also returns the original response headers from the LLM provider. These headers are prefixed with `llm_provider-` to distinguish them from LiteLLM's headers.
+LiteLLM 也會回傳來自 LLM 提供者的原始回應標頭。這些標頭會以前綴 `llm_provider-` 標示，以便與 LiteLLM 的標頭區分。
 
-Example response headers:
+回應標頭範例：
 ```
 llm_provider-openai-processing-ms: 256
 llm_provider-openai-version: 2020-10-01
 llm_provider-x-ratelimit-limit-requests: 30000
 llm_provider-x-ratelimit-limit-tokens: 150000000
 ```
-

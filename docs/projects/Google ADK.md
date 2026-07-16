@@ -1,7 +1,6 @@
+# Google ADK（Agent Development Kit） {#google-adk-agent-development-kit}
 
-# Google ADK (Agent Development Kit)
-
-[Google ADK](https://github.com/google/adk-python) is an open-source, code-first Python framework for building, evaluating, and deploying sophisticated AI agents. While optimized for Gemini, ADK is model-agnostic and supports LiteLLM for using 100+ providers.
+[Google ADK](https://github.com/google/adk-python) 是一個開源、以程式碼為先的 Python 框架，用於建置、評估與部署複雜的 AI 代理程式。雖然針對 Gemini 進行最佳化，ADK 仍具備模型無關性，並支援 LiteLLM 以使用 100+ 提供者。
 
 ```python
 from google.adk.agents.llm_agent import Agent
@@ -17,5 +16,5 @@ root_agent = Agent(
 ```
 
 - [GitHub](https://github.com/google/adk-python)
-- [Documentation](https://google.github.io/adk-docs)
-- [LiteLLM Samples](https://github.com/google/adk-python/tree/main/contributing/samples/hello_world_litellm)
+- [文件](https://google.github.io/adk-docs)
+- [LiteLLM 範例](https://github.com/google/adk-python/tree/main/contributing/samples/hello_world_litellm)

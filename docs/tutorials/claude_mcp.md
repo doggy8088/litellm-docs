@@ -1,27 +1,26 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Use Claude Code with MCPs
+# 使用 Claude Code 搭配 MCP {#use-claude-code-with-mcps}
 
-This tutorial shows how to connect MCP servers to Claude Code via LiteLLM Proxy.
+本教學示範如何透過 LiteLLM Proxy 將 MCP 伺服器連接到 Claude Code。
 
-Note: LiteLLM supports OAuth for MCP servers as well. [Learn more](https://docs.litellm.ai/docs/mcp#mcp-oauth)
+注意：LiteLLM 也支援 MCP 伺服器的 OAuth。[了解更多](https://docs.litellm.ai/docs/mcp#mcp-oauth)
 
-## Demo
+## 示範 {#demo}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/e3721fc44e284c559dc4dca67ba7603a" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-## Connecting MCP Servers
+## 連接 MCP 伺服器 {#connecting-mcp-servers}
 
-You can connect MCP servers to Claude Code via LiteLLM Proxy.
+您可以透過 LiteLLM Proxy 將 MCP 伺服器連接到 Claude Code。
 
-
-1. Add the MCP server to your `config.yaml`
+1. 將 MCP 伺服器加入您的 `config.yaml`
 
 <Tabs>
 <TabItem value="github" label="GitHub MCP">
 
-In this example, we'll add the Github MCP server to our `config.yaml`
+在這個範例中，我們將把 Github MCP 伺服器加入我們的 `config.yaml`
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -37,7 +36,7 @@ mcp_servers:
 </TabItem>
 <TabItem value="atlassian" label="Atlassian MCP">
 
-In this example, we'll add the Atlassian MCP server to our `config.yaml`
+在這個範例中，我們將把 Atlassian MCP 伺服器加入我們的 `config.yaml`
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -52,12 +51,12 @@ mcp_servers:
 </Tabs>
 
 :::important
-The server name under `mcp_servers:` (e.g. `atlassian_mcp`, `github_mcp`) **must match** the name used in the Claude Code URL path (`/<server_name>/mcp`). A mismatch will cause a 404 error during OAuth.
+`mcp_servers:` 下方的伺服器名稱（例如 `atlassian_mcp`、`github_mcp`）**必須與** Claude Code URL 路徑（`/<server_name>/mcp`）中使用的名稱相符。不一致將在 OAuth 期間導致 404 錯誤。
 :::
 
-2. Start LiteLLM Proxy
+2. 啟動 LiteLLM Proxy
 
-Since Claude Code needs a publicly accessible URL for the OAuth callback, expose your proxy via ngrok or a similar tool.
+由於 Claude Code 需要可公開存取的 URL 來進行 OAuth 回呼，請透過 ngrok 或類似工具公開您的 proxy。
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -70,7 +69,7 @@ litellm --config /path/to/config.yaml
 ngrok http 4000
 ```
 
-3. Add the MCP server to Claude Code
+3. 將 MCP 伺服器加入 Claude Code
 
 <Tabs>
 <TabItem value="github" label="GitHub MCP">
@@ -91,38 +90,38 @@ claude mcp add --transport http litellm-atlassian https://your-ngrok-url.ngrok-f
 </TabItem>
 </Tabs>
 
-**Parameter breakdown:**
+**參數說明：**
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `--transport http` | Use HTTP transport for the MCP connection |
-| `litellm-atlassian` | The name for this MCP server **on Claude Code** — can be anything you choose |
-| `https://your-ngrok-url.ngrok-free.dev/atlassian_mcp/mcp` | The LiteLLM proxy URL. Format: `<PROXY_URL>/<server_name_on_litellm>/mcp`. The `atlassian_mcp` part **must match** the key under `mcp_servers:` in your LiteLLM proxy config |
-| `--header "x-litellm-api-key: Bearer sk-1234"` | Your LiteLLM virtual key for authentication to the proxy |
+| `--transport http` | 為 MCP 連線使用 HTTP 傳輸 |
+| `litellm-atlassian` | 這個 MCP 伺服器在 Claude Code 上的名稱——可以是您自行選擇的任何名稱 |
+| `https://your-ngrok-url.ngrok-free.dev/atlassian_mcp/mcp` | LiteLLM proxy URL。格式：`<PROXY_URL>/<server_name_on_litellm>/mcp`。`atlassian_mcp` 部分**必須與** LiteLLM proxy 設定中 `mcp_servers:` 下的鍵相符 |
+| `--header "x-litellm-api-key: Bearer sk-1234"` | 您用於向 proxy 驗證的 LiteLLM 虛擬金鑰 |
 
-You can also add the MCP server directly to your `~/.claude.json` file instead of using `claude mcp add`. [See Claude Code docs](https://docs.anthropic.com/en/docs/claude-code/mcp).
+您也可以直接將 MCP 伺服器加入您的 `~/.claude.json` 檔案，而不是使用 `claude mcp add`。[請參閱 Claude Code 文件](https://docs.anthropic.com/en/docs/claude-code/mcp)。
 
 :::note
-For MCP servers that require OAuth (such as Atlassian), use `x-litellm-api-key` instead of `Authorization` for the LiteLLM virtual key. The `Authorization` header is reserved for the OAuth flow.
+對於需要 OAuth 的 MCP 伺服器（例如 Atlassian），LiteLLM 虛擬金鑰請使用 `x-litellm-api-key`，而不是 `Authorization`。`Authorization` 標頭保留給 OAuth 流程使用。
 :::
 
-4. Authenticate via Claude Code
+4. 透過 Claude Code 進行驗證
 
-a. Start Claude Code
+a. 啟動 Claude Code
 
 ```bash
 claude
 ```
 
-b. Open the MCP menu
+b. 開啟 MCP 選單
 
 ```bash
 /mcp
 ```
 
-c. Select the MCP server (e.g. `litellm-atlassian`)
+c. 選取 MCP 伺服器（例如 `litellm-atlassian`）
 
-d. Start the OAuth flow
+d. 啟動 OAuth 流程
 
 ```bash
 > 1. Authenticate
@@ -130,6 +129,6 @@ d. Start the OAuth flow
  3. Disable
 ```
 
-e. Once completed, you should see this success message:
+e. 完成後，您應該會看到這則成功訊息：
 
-<img src={require('../../img/oauth_2_success.png').default} alt="OAuth 2.0 Success" style={{ width: '500px', height: 'auto' }} />
+<img src={require('../../img/oauth_2_success.png').default} alt="OAuth 2.0 成功" style={{ width: '500px', height: 'auto' }} />

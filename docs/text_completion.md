@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /completions
+# /completions {#completions}
 
-## Overview
+## 總覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Streaming | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Guardrails | ✅ | Applies to input prompts and output text (non-streaming only) |
-| Supported Providers | All Chat Completion Providers | |
+| 成本追蹤 | ✅ | 適用於所有支援的模型 |
+| 記錄 | ✅ | 可跨所有整合使用 |
+| 終端使用者追蹤 | ✅ | |
+| 串流 | ✅ | |
+| 備援 | ✅ | 適用於支援的模型之間 |
+| 負載平衡 | ✅ | 適用於支援的模型之間 |
+| 防護欄 | ✅ | 套用於輸入提示詞與輸出文字（僅限非串流） |
+| 支援的提供者 | 所有 Chat Completion 提供者 | |
 
-### Usage
+### 使用方式 {#usage}
 <Tabs>
 <TabItem value="python" label="LiteLLM Python SDK">
 
@@ -33,7 +33,7 @@ response = text_completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy Server">
 
-1. Define models on config.yaml
+1. 在 config.yaml 中定義模型
 
 ```yaml
 model_list:
@@ -47,7 +47,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start litellm proxy server 
+2. 啟動 litellm proxy server 
 
 ```
 litellm --config config.yaml
@@ -91,42 +91,41 @@ curl --location 'http://0.0.0.0:4000/completions' \
 </TabItem>
 </Tabs>
 
-## Input Params
+## 輸入參數 {#input-params}
 
-LiteLLM accepts and translates the [OpenAI Text Completion params](https://platform.openai.com/docs/api-reference/completions) across all supported providers.
+LiteLLM 接受並轉換跨所有支援提供者的 [OpenAI Text Completion 參數](https://platform.openai.com/docs/api-reference/completions)。
 
-### Required Fields
+### 必填欄位 {#required-fields}
 
-- `model`: *string* - ID of the model to use
-- `prompt`: *string or array* - The prompt(s) to generate completions for
+- `model`: *string* - 要使用的模型 ID
+- `prompt`: *string or array* - 要為其產生 completions 的 prompt
 
-### Optional Fields
+### 選用欄位 {#optional-fields}
 
-- `best_of`: *integer* - Generates best_of completions server-side and returns the "best" one
-- `echo`: *boolean* - Echo back the prompt in addition to the completion.
-- `frequency_penalty`: *number* - Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency.
-- `logit_bias`: *map* - Modify the likelihood of specified tokens appearing in the completion
-- `logprobs`: *integer* - Include the log probabilities on the logprobs most likely tokens. Max value of 5
-- `max_tokens`: *integer* - The maximum number of tokens to generate.
-- `n`: *integer* - How many completions to generate for each prompt.
-- `presence_penalty`: *number* - Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far.
-- `seed`: *integer* - If specified, system will attempt to make deterministic samples
-- `stop`: *string or array* - Up to 4 sequences where the API will stop generating tokens
-- `stream`: *boolean* - Whether to stream back partial progress. Defaults to false
-- `suffix`: *string* - The suffix that comes after a completion of inserted text
-- `temperature`: *number* - What sampling temperature to use, between 0 and 2. 
-- `top_p`: *number* - An alternative to sampling with temperature, called nucleus sampling. 
-- `user`: *string* - A unique identifier representing your end-user
+- `best_of`: *integer* - 在伺服器端產生 best_of completions，並回傳「最佳」的一個
+- `echo`: *boolean* - 除了 completion 之外，也將 prompt 回顯。
+- `frequency_penalty`: *number* - 介於 -2.0 與 2.0 之間的數值。正值會根據新 tokens 的既有出現頻率加以懲罰。
+- `logit_bias`: *map* - 修改指定 tokens 出現在 completion 中的可能性
+- `logprobs`: *integer* - 在 logprobs 中包含最可能 tokens 的對數機率。最大值為 5
+- `max_tokens`: *integer* - 要產生的最大 tokens 數量。
+- `n`: *integer* - 每個 prompt 要產生多少個 completions。
+- `presence_penalty`: *number* - 介於 -2.0 與 2.0 之間的數值。正值會根據 tokens 是否已出現在目前文字中加以懲罰。
+- `seed`: *integer* - 若指定，系統將嘗試產生具決定性的樣本
+- `stop`: *string or array* - 最多 4 個序列，API 將在這些序列處停止產生 tokens
+- `stream`: *boolean* - 是否回傳部分進度串流。預設為 false
+- `suffix`: *string* - 插入文字完成後接續的後綴
+- `temperature`: *number* - 要使用的取樣溫度，介於 0 與 2 之間。 
+- `top_p`: *number* - 取樣溫度的替代方案，稱為 nucleus sampling。 
+- `user`: *string* - 代表您的終端使用者的唯一識別碼
 
-## Output Format
-Here's the exact JSON output format you can expect from completion calls:
+## 輸出格式 {#output-format}
+以下是您可從 completion 呼叫預期得到的確切 JSON 輸出格式：
 
-
-[**Follows OpenAI's output format**](https://platform.openai.com/docs/api-reference/completions/object)
+[**符合 OpenAI 的輸出格式**](https://platform.openai.com/docs/api-reference/completions/object)
 
 <Tabs>
 
-<TabItem value="non-streaming" label="Non-Streaming Response">
+<TabItem value="non-streaming" label="非串流回應">
 
 ```python
 {
@@ -152,7 +151,7 @@ Here's the exact JSON output format you can expect from completion calls:
 
 ```
 </TabItem>
-<TabItem value="streaming" label="Streaming Response">
+<TabItem value="streaming" label="串流回應">
 
 ```python
 {
@@ -176,12 +175,9 @@ Here's the exact JSON output format you can expect from completion calls:
 </TabItem>
 </Tabs>
 
+## **支援的提供者** {#supported-providers}
 
-## **Supported Providers**
-
-| Provider    | Link to Usage      |
+| 提供者    | 使用方式連結      |
 |-------------|--------------------|
-| OpenAI      |   [Usage](../docs/providers/text_completion_openai)                 | 
-| Azure OpenAI|   [Usage](../docs/providers/azure)                 |  
-
-
+| OpenAI      |   [使用方式](../docs/providers/text_completion_openai)                 | 
+| Azure OpenAI|   [使用方式](../docs/providers/azure)                 |

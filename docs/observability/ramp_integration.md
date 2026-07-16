@@ -1,36 +1,36 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Ramp
+# Ramp {#ramp}
 
-Send AI usage and cost data to Ramp for automated spend tracking.
+將 AI 使用量與成本資料傳送至 Ramp，以便自動追蹤支出。
 
-[Ramp](https://ramp.com/) is a finance automation platform that helps businesses manage expenses, corporate cards, and vendor payments. With the Ramp callback integration, your LiteLLM AI usage — including token counts, model costs, and request metadata — is automatically sent to Ramp for real-time spend visibility.
+[Ramp](https://ramp.com/) 是一個財務自動化平台，協助企業管理支出、公司卡與供應商付款。透過 Ramp 回呼整合，您的 LiteLLM AI 使用量——包括 token 數量、模型成本與請求中繼資料——會自動傳送至 Ramp，以即時掌握支出狀況。
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們希望了解如何讓回呼做得更好！歡迎認識 LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 :::
 
-## Pre-Requisites
+## 前置需求 {#pre-requisites}
 
-1. Log in to [Ramp](https://app.ramp.com/) and search for **"LiteLLM"** using the search bar. Click the **LiteLLM** integration result.
+1. 登入 [Ramp](https://app.ramp.com/)，並使用搜尋列搜尋 **"LiteLLM"**。點擊 **LiteLLM** 整合結果。
 
-> **Note:** Only business owners and admins can access and configure integrations.
+> **注意：** 只有業主與管理員可以存取並設定整合。
 
-2. On the LiteLLM integration page, click the **Connect** button in the top right.
+2. 在 LiteLLM 整合頁面右上角點擊 **Connect** 按鈕。
 
-3. In the Connect LiteLLM drawer, click **Generate API Key** to create an API key.
+3. 在 Connect LiteLLM 抽屜中，點擊 **Generate API Key** 以建立 API 金鑰。
 
-> **Important:** Copy the API key immediately — it won't be shown again. If you lose it, you can revoke the existing key and generate a new one from the integration settings.
+> **重要：** 請立即複製 API 金鑰——之後將不會再次顯示。若遺失，您可以從整合設定中撤銷現有金鑰並產生新的金鑰。
 
 ```shell
 pip install litellm
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Set your `RAMP_API_KEY` and add `"ramp"` to your callbacks to start logging LLM usage to Ramp.
+設定您的 `RAMP_API_KEY`，並將 `"ramp"` 加入回呼，以開始將 LLM 使用量記錄至 Ramp。
 
 <Tabs>
 <TabItem value="python" label="SDK">
@@ -64,7 +64,7 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -80,13 +80,13 @@ environment_variables:
   RAMP_API_KEY: os.environ/RAMP_API_KEY
 ```
 
-2. Start LiteLLM Proxy
+2. 啟動 LiteLLM Proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試一下！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -106,26 +106,26 @@ curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## What Data is Logged?
+## 記錄了哪些資料？ {#what-data-is-logged}
 
-LiteLLM sends the [Standard Logging Payload](https://docs.litellm.ai/docs/proxy/logging_spec) to Ramp on successful LLM API calls, which includes:
+LiteLLM 會在成功的 LLM API 請求時，將 [Standard Logging Payload](https://docs.litellm.ai/docs/proxy/logging_spec) 傳送至 Ramp，其中包括：
 
-- **Request details**: Model, messages, parameters
-- **Response details**: Completion text, token usage, latency
-- **Metadata**: User ID, custom metadata, timestamps
-- **Cost tracking**: Response cost based on token usage
+- **請求詳細資料**：模型、訊息、參數
+- **回應詳細資料**：完成文字、token 使用量、延遲
+- **中繼資料**：使用者 ID、自訂中繼資料、時間戳記
+- **成本追蹤**：根據 token 使用量計算的回應成本
 
-## Authentication
+## 驗證 {#authentication}
 
-Set the `RAMP_API_KEY` environment variable with your Ramp API key.
+將 `RAMP_API_KEY` 環境變數設定為您的 Ramp API 金鑰。
 
-| Environment Variable | Description |
+| 環境變數 | 說明 |
 |---|---|
-| `RAMP_API_KEY` | Your Ramp API key (required) |
+| `RAMP_API_KEY` | 您的 Ramp API 金鑰（必填） |
 
-## Support & Talk to Founders
+## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our numbers 📞 +1 (770) 8783-106 / ‭+1 (412) 618-6238‬
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電話 📞 +1 (770) 8783-106 / ‭+1 (412) 618-6238‬
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

@@ -3,21 +3,20 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-# Google AI Studio SDK
+# Google AI Studio SDK {#google-ai-studio-sdk}
 
-Pass-through endpoints for Google AI Studio - call provider-specific endpoint, in native format (no translation).
+Google AI Studio 的穿透式端點 - 以原生格式呼叫提供者特定端點（不進行轉換）。
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | supports all models on `/generateContent` endpoint |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ✅ | |
+| 成本追蹤 | ✅ | 支援 `/generateContent` 端點上的所有模型 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 端用戶追蹤 | ❌ | [如果您需要此功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ✅ | |
 
+只要將 `https://generativelanguage.googleapis.com` 替換為 `LITELLM_PROXY_BASE_URL/gemini`
 
-Just replace `https://generativelanguage.googleapis.com` with `LITELLM_PROXY_BASE_URL/gemini`
-
-#### **Example Usage**
+#### **使用範例** {#example-usage}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -81,21 +80,21 @@ main();
 </TabItem>
 </Tabs>
 
-Supports **ALL** Google AI Studio Endpoints (including streaming).
+支援 **所有** Google AI Studio 端點（包含串流）。
 
-[**See All Google AI Studio Endpoints**](https://ai.google.dev/api)
+[**查看所有 Google AI Studio 端點**](https://ai.google.dev/api)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the Gemini [`/countTokens` endpoint](https://ai.google.dev/api/tokens#method:-models.counttokens)
+我們來呼叫 Gemini [`/countTokens` 端點](https://ai.google.dev/api/tokens#method:-models.counttokens)
 
-1. Add Gemini API Key to your environment 
+1. 將 Gemini API 金鑰加入您的環境變數 
 
 ```bash
 export GEMINI_API_KEY=""
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy 
 
 ```bash
 litellm
@@ -103,9 +102,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試一下！ 
 
-Let's call the Google AI Studio token counting endpoint
+我們來呼叫 Google AI Studio 的 token 計數端點
 
 ```bash
 http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:countTokens?key=anything' \
@@ -120,21 +119,20 @@ http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:countTokens?key=anythi
 ```
 
 
-## Examples
+## 範例 {#examples}
 
-Anything after `http://0.0.0.0:4000/gemini` is treated as a provider-specific route, and handled accordingly.
+`http://0.0.0.0:4000/gemini` 之後的內容都會被視為提供者特定路由，並相應處理。
 
-Key Changes: 
+主要變更： 
 
-| **Original Endpoint**                                | **Replace With**                  |
+| **原始端點**                                | **替換為**                  |
 |------------------------------------------------------|-----------------------------------|
 | `https://generativelanguage.googleapis.com`          | `http://0.0.0.0:4000/gemini` (LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000")      |
-| `key=$GOOGLE_API_KEY`                                 | `key=anything` (use `key=LITELLM_VIRTUAL_KEY` if Virtual Keys are setup on proxy)                    |
+| `key=$GOOGLE_API_KEY`                                 | `key=anything`（如果 proxy 上已設定 Virtual Keys，請使用 `key=LITELLM_VIRTUAL_KEY`）                    |
 
+### **範例 1：計算 token** {#example-1-counting-tokens}
 
-### **Example 1: Counting tokens**
-
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call}
 
 ```bash
 curl http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:countTokens?key=anything \
@@ -149,7 +147,7 @@ curl http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:countTokens?key=a
       }'
 ```
 
-#### Direct Google AI Studio Call 
+#### 直接 Google AI Studio 呼叫  {#direct-google-ai-studio-call}
 
 ```bash
 curl https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:countTokens?key=$GOOGLE_API_KEY \
@@ -164,9 +162,9 @@ curl https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:co
       }'
 ```
 
-### **Example 2: Generate content**
+### **範例 2：產生內容** {#example-2-generate-content}
 
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call-1}
 
 ```bash
 curl "http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:generateContent?key=anything" \
@@ -179,7 +177,7 @@ curl "http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:generateContent?
        }' 2> /dev/null
 ```
 
-#### Direct Google AI Studio Call 
+#### 直接 Google AI Studio 呼叫  {#direct-google-ai-studio-call-1}
 
 ```bash
 curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$GOOGLE_API_KEY" \
@@ -192,8 +190,7 @@ curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:g
        }' 2> /dev/null
 ```
 
-### **Example 3: Caching**
-
+### **範例 3：快取** {#example-3-caching}
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash-001:generateContent?key=anything" \
@@ -211,7 +208,7 @@ curl -X POST "http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash-001:gene
     }'
 ```
 
-#### Direct Google AI Studio Call 
+#### 直接 Google AI Studio 呼叫  {#direct-google-ai-studio-call-2}
 
 ```bash
 curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=$GOOGLE_API_KEY" \
@@ -230,23 +227,22 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5
 ```
 
 
-## **Example 4: Video Generation with Veo**
+## **範例 4：使用 Veo 產生影片** {#example-4-video-generation-with-veo}
 
-Generate videos using Google's Veo model through LiteLLM pass-through routes.
+透過 LiteLLM 穿透式路由，使用 Google 的 Veo 模型產生影片。
 
-[**→ Complete Veo Video Generation Guide**](../proxy/veo_video_generation.md)
+[**→ 完整 Veo 影片產生指南**](../proxy/veo_video_generation.md)
 
+## 進階  {#advanced}
 
-## Advanced 
+前置需求
+- [使用 DB 設定 proxy](../proxy/virtual_keys.md#setup)
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+使用這個方式，避免提供給開發人員原始的 Google AI Studio 金鑰，但仍讓他們可以使用 Google AI Studio 端點。
 
-Use this, to avoid giving developers the raw Google AI Studio key, but still letting them use Google AI Studio endpoints.
+### 搭配 Virtual Keys 使用 {#use-with-virtual-keys}
 
-### Use with Virtual Keys
-
-1. Setup environment
+1. 設定環境
 
 ```bash
 export DATABASE_URL=""
@@ -260,7 +256,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生 virtual key 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -269,7 +265,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -278,8 +274,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試一下！ 
 
 ```bash
 http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:countTokens?key=sk-1234ewknldferwedojwojw' \
@@ -294,11 +289,11 @@ http://0.0.0.0:4000/gemini/v1beta/models/gemini-1.5-flash:countTokens?key=sk-123
 ```
 
 
-### Send `tags` in request headers
+### 在請求標頭中傳送 `tags` {#send-tags-in-request-headers}
 
-Use this if you want `tags` to be tracked in the LiteLLM DB and on logging callbacks.
+如果您希望 `tags` 同時被追蹤於 LiteLLM DB 和記錄回呼中，請使用這個方式。
 
-Pass tags in request headers as a comma separated list. In the example below the following tags will be tracked
+請在請求標頭中以逗號分隔清單傳入標籤。以下範例中，將會追蹤下列標籤
 
 ```
 tags: ["gemini-js-sdk", "pass-through-endpoint"]

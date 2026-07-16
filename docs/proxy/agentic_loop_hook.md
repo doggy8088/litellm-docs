@@ -1,16 +1,16 @@
-# Agentic Loop Hook
+# 代理式迴圈 Hook {#agentic-loop-hook}
 
-Build a `CustomLogger` callback that intercepts a model response, fulfills tool calls server-side, and reruns the model — transparently to the caller.
+建立一個 `CustomLogger` callback，攔截模型回應、在伺服器端完成工具呼叫，並重新執行模型——對呼叫端而言是透明的。
 
-:::info Supported call types
-- `async` only (sync calls do not trigger the hook)
-- Non-streaming only (streaming responses cannot be inspected for tool calls)
-- Works on both `/v1/messages` and `/v1/chat/completions`
+:::info 支援的呼叫類型
+- 僅 `async`（同步呼叫不會觸發此 hook）
+- 僅限非串流（串流回應無法檢查工具呼叫）
+- 適用於 `/v1/messages` 與 `/v1/chat/completions`
 :::
 
-## Implement the callback
+## 實作 callback {#implement-the-callback}
 
-Override two methods on `CustomLogger`:
+在 `CustomLogger` 上覆寫兩個方法：
 
 ```python
 from litellm.integrations.custom_logger import CustomLogger
@@ -56,40 +56,40 @@ class MyToolCallback(CustomLogger):
         )
 ```
 
-For `/v1/chat/completions`, override `async_build_chat_completion_agentic_loop_plan` instead — same idea, `optional_params` replaces `anthropic_messages_optional_request_params`.
+對於 `/v1/chat/completions`，請改為覆寫 `async_build_chat_completion_agentic_loop_plan`——概念相同，`optional_params` 取代 `anthropic_messages_optional_request_params`。
 
-## Register it
+## 註冊它 {#register-it}
 
 ```python
 import litellm
 litellm.callbacks = [MyToolCallback()]
 ```
 
-Or in `config.yaml`:
+或在 `config.yaml` 中：
 
 ```yaml
 litellm_settings:
   callbacks: ["my_module.MyToolCallback"]
 ```
 
-## `AgenticLoopPlan` fields
+## `AgenticLoopPlan` 欄位 {#agenticloopplan-fields}
 
-| Field | Effect |
+| 欄位 | 效果 |
 |---|---|
-| `run_agentic_loop=True` + `request_patch` | Reruns the model with the patched request |
-| `response_override` | Returns this value directly to the caller (no rerun) |
-| `terminate=True` | Stops the loop, returns the current response |
-| `run_agentic_loop=False` (default) | Skips; next callback is checked |
+| `run_agentic_loop=True` + `request_patch` | 使用已修補的請求重新執行模型 |
+| `response_override` | 直接將此值回傳給呼叫端（不重新執行） |
+| `terminate=True` | 停止迴圈，回傳目前回應 |
+| `run_agentic_loop=False`（預設） | 略過；接著檢查下一個 callback |
 
-`AgenticLoopRequestPatch` accepts: `model`, `messages`, `tools`, `max_tokens`, `optional_params`, `kwargs`.
+`AgenticLoopRequestPatch` 接受：`model`、`messages`、`tools`、`max_tokens`、`optional_params`、`kwargs`。
 
-## Loop safety
+## 迴圈安全性 {#loop-safety}
 
-- Default max reruns: `3` — override per-request with `kwargs["max_agentic_loops"]`
-- Identical tool-call fingerprints abort the loop automatically
-- Current depth is in `kwargs["_agentic_loop_depth"]`
+- 預設最大重跑次數：`3`——可透過 `kwargs["max_agentic_loops"]` 針對單一請求覆寫
+- 相同的工具呼叫指紋會自動中止迴圈
+- 目前深度位於 `kwargs["_agentic_loop_depth"]`
 
-## Examples in this repo
+## 本倉庫中的範例 {#examples-in-this-repo}
 
 - `litellm/integrations/compression_interception/handler.py`
 - `litellm/integrations/websearch_interception/handler.py`

@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Milvus - Vector Store
+# Milvus - 向量儲存 {#milvus---vector-store}
 
-Use Milvus as a vector store for RAG.
+使用 Milvus 作為 RAG 的向量儲存。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-You need three things:
-1. A Milvus instance (cloud or self-hosted)
-2. An embedding model (to convert your queries to vectors)
-3. A Milvus collection with vector fields
+您需要三樣東西：
+1. 一個 Milvus 執行個體（雲端或自架）
+2. 一個嵌入模型（將您的查詢轉換為向量）
+3. 一個具有向量欄位的 Milvus 集合
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### Basic Search
+### 基本搜尋 {#basic-search}
 
 ```python
 from litellm import vector_stores
@@ -45,7 +45,7 @@ response = vector_stores.search(
 print(response)
 ```
 
-### Async Search
+### 非同步搜尋 {#async-search}
 
 ```python
 from litellm import vector_stores
@@ -67,7 +67,7 @@ response = await vector_stores.asearch(
 print(response)
 ```
 
-### Advanced Options
+### 進階選項 {#advanced-options}
 
 ```python
 from litellm import vector_stores
@@ -100,9 +100,9 @@ print(response)
 
 <TabItem value="proxy" label="PROXY">
 
-### Setup Config
+### 設定設定檔 {#setup-config}
 
-Add this to your config.yaml:
+將這些加入您的 config.yaml：
 
 ```yaml
 vector_store_registry:
@@ -123,13 +123,13 @@ vector_store_registry:
         limit: 10
 ```
 
-### Start Proxy
+### 啟動 Proxy {#start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### Search via API
+### 透過 API 搜尋 {#search-via-api}
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-collection-name/search' \
@@ -143,46 +143,46 @@ curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-collection-name/search' \
 </TabItem>
 </Tabs>
 
-## Required Parameters
+## 必要參數 {#required-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `vector_store_id` | string | Your Milvus collection name |
-| `custom_llm_provider` | string | Set to `"milvus"` |
-| `litellm_embedding_model` | string | Model to generate query embeddings (e.g., `"azure/text-embedding-3-large"`) |
-| `litellm_embedding_config` | dict | Config for the embedding model (api_base, api_key, api_version) |
-| `milvus_text_field` | string | Field name in your collection that contains text content |
-| `api_key` | string | Your Milvus API key (or set `MILVUS_API_KEY` env var) |
-| `api_base` | string | Your Milvus API base URL (or set `MILVUS_API_BASE` env var) |
+| `vector_store_id` | string | 您的 Milvus 集合名稱 |
+| `custom_llm_provider` | string | 設為 `"milvus"` |
+| `litellm_embedding_model` | string | 用於產生查詢嵌入的模型（例如，`"azure/text-embedding-3-large"`） |
+| `litellm_embedding_config` | dict | 嵌入模型的設定（api_base、api_key、api_version） |
+| `milvus_text_field` | string | 您的集合中包含文字內容的欄位名稱 |
+| `api_key` | string | 您的 Milvus API 金鑰（或設定 `MILVUS_API_KEY` 環境變數） |
+| `api_base` | string | 您的 Milvus API base URL（或設定 `MILVUS_API_BASE` 環境變數） |
 
-## Optional Parameters
+## 選用參數 {#optional-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `dbName` | string | Database name (default: "default") |
-| `annsField` | string | Vector field name to search (default: "book_intro_vector") |
-| `limit` | integer | Maximum number of results to return |
-| `offset` | integer | Pagination offset |
-| `filter` | string | Filter expression for metadata filtering |
-| `groupingField` | string | Field to group results by |
-| `outputFields` | list | List of fields to return in results |
-| `searchParams` | dict | Search parameters like metric type and search parameters |
-| `partitionNames` | list | List of partition names to search |
-| `consistencyLevel` | string | Consistency level for the search |
+| `dbName` | string | 資料庫名稱（預設："default"） |
+| `annsField` | string | 要搜尋的向量欄位名稱（預設："book_intro_vector"） |
+| `limit` | integer | 要回傳的結果最大數量 |
+| `offset` | integer | 分頁偏移量 |
+| `filter` | string | 用於中繼資料篩選的篩選運算式 |
+| `groupingField` | string | 用來對結果分組的欄位 |
+| `outputFields` | list | 要在結果中回傳的欄位清單 |
+| `searchParams` | dict | 搜尋參數，例如 metric type 和 search parameters |
+| `partitionNames` | list | 要搜尋的分區名稱清單 |
+| `consistencyLevel` | string | 搜尋的一致性等級 |
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-| Feature | Status | Notes |
+| 功能 | 狀態 | 備註 |
 |---------|--------|-------|
-| Logging | ✅ Supported | Full logging support available |
-| Guardrails | ❌ Not Yet Supported | Guardrails are not currently supported for vector stores |
-| Cost Tracking | ✅ Supported | Cost is $0 for Milvus searches |
-| Unified API | ✅ Supported | Call via OpenAI compatible `/v1/vector_stores/search` endpoint |
-| Passthrough | ✅ Supported | Use native Milvus API format |
+| 記錄 | ✅ 支援 | 提供完整記錄支援 |
+| 防護欄 | ❌ 尚未支援 | 向量儲存目前不支援防護欄 |
+| 成本追蹤 | ✅ 支援 | Milvus 搜尋的成本為 $0 |
+| 統一 API | ✅ 支援 | 透過與 OpenAI 相容的 `/v1/vector_stores/search` 端點呼叫 |
+| 直通 | ✅ 支援 | 使用原生 Milvus API 格式 |
 
-## Response Format
+## 回應格式 {#response-format}
 
-The response follows the standard LiteLLM vector store format:
+回應遵循標準 LiteLLM 向量儲存格式：
 
 ```json
 {
@@ -208,15 +208,15 @@ The response follows the standard LiteLLM vector store format:
 }
 ```
 
-## Passthrough API (Native Milvus Format)
+## 直通 API（原生 Milvus 格式） {#passthrough-api-native-milvus-format}
 
-Use this to allow developers to **create** and **search** vector stores using the native Milvus API format, without giving them the Milvus credentials.
+使用此功能可讓開發者使用原生 Milvus API 格式**建立**與**搜尋**向量儲存，而不需要提供 Milvus 憑證給他們。
 
-This is for the proxy only.
+這僅適用於 proxy。
 
-### Admin Flow
+### 管理者流程 {#admin-flow}
 
-#### 1. Add the vector store to LiteLLM
+#### 1. 將向量儲存加入 LiteLLM {#1-add-the-vector-store-to-litellm}
 
 ```yaml
 model_list:  
@@ -240,9 +240,9 @@ general_settings:
     master_key: "sk-1234"
 ```
 
-Add your vector store credentials to LiteLLM.
+將您的向量儲存憑證加入 LiteLLM。
 
-#### 2. Start the proxy
+#### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -250,7 +250,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Create a virtual index
+#### 3. 建立虛擬索引 {#3-create-a-virtual-index}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/indexes' \
@@ -265,9 +265,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/indexes' \
 }'
 ```
 
-This is a virtual index, which the developer can use to create and search vector stores.
+這是一個虛擬索引，開發者可用來建立與搜尋向量儲存。
 
-#### 4. Create a key with the vector store permissions
+#### 4. 建立具有向量儲存權限的金鑰 {#4-create-a-key-with-the-vector-store-permissions}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -279,9 +279,9 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-Give the key access to the virtual index and the embedding model.
+讓該金鑰可存取虛擬索引與嵌入模型。
 
-**Expected response**
+**預期回應**
 
 ```json
 {
@@ -289,14 +289,14 @@ Give the key access to the virtual index and the embedding model.
 }
 ```
 
-### Developer Flow
+### 開發者流程 {#developer-flow}
 
-#### MilvusRESTClient
+#### MilvusRESTClient {#milvusrestclient}
 
-To use the passthrough API, you need a simple REST client. Copy this `milvus_rest_client.py` file to your project:
+若要使用直通 API，您需要一個簡單的 REST client。將此 `milvus_rest_client.py` 檔案複製到您的專案中：
 
 <details>
-<summary>Click to expand milvus_rest_client.py</summary>
+<summary>點擊展開 milvus_rest_client.py</summary>
 
 ```python
 """
@@ -544,9 +544,9 @@ class MilvusRESTClient:
 
 </details>
 
-#### 1. Create a collection with schema
+#### 1. 建立具有 schema 的集合 {#1-create-a-collection-with-schema}
 
-Note: Use the `/milvus` endpoint for the passthrough api that uses the `milvus` provider in your config.
+注意：請使用 `/milvus` 端點來進行使用您設定中 `milvus` 提供者的直通 api。
 
 ```python
 from milvus_rest_client import MilvusRESTClient, DataType  # Use the client from above
@@ -595,7 +595,7 @@ collection_property = milvus_client.describe_collection(collection_name)
 print("Collection details: %s" % collection_property)
 ```
 
-#### 2. Insert data into the collection
+#### 2. 將資料插入集合 {#2-insert-data-into-the-collection}
 
 ```python
 # Insert data with customized ids
@@ -628,7 +628,7 @@ end_flush = time.time()
 print(f"Flush completed in {round(end_flush - start_flush, 4)} seconds")
 ```
 
-#### 3. Search the collection
+#### 3. 搜尋集合 {#3-search-the-collection}
 
 ```python
 # Search configuration
@@ -652,9 +652,9 @@ for i in range(5):
     print(f"Search {i} latency: {round(t1-t0, 4)} seconds")
 ```
 
-#### Complete Example
+#### 完整範例 {#complete-example}
 
-Here's a full working example:
+以下是完整可運作的範例：
 
 ```python
 from milvus_rest_client import MilvusRESTClient, DataType  # Use the client from above
@@ -768,14 +768,13 @@ for i in range(5):
     print(f"   Search {i} latency: {round(t1-t0, 4)} seconds")
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-When you search:
+當您進行搜尋時：
 
-1. LiteLLM converts your query to a vector using the embedding model you specified
-2. It sends the vector to your Milvus instance via the `/v2/vectordb/entities/search` endpoint
-3. Milvus finds the most similar documents in your collection using vector similarity search
-4. Results come back with distance scores
+1. LiteLLM 會使用您指定的嵌入模型將查詢轉換為向量
+2. 它會透過 `/v2/vectordb/entities/search` 端點將該向量傳送至您的 Milvus 執行個體
+3. Milvus 會使用向量相似度搜尋，從您的集合中找出最相似的文件
+4. 結果會連同距離分數一起回傳
 
-The embedding model can be any model supported by LiteLLM - Azure OpenAI, OpenAI, Bedrock, etc.
-
+嵌入模型可以是 LiteLLM 支援的任何模型 - Azure OpenAI、OpenAI、Bedrock 等。

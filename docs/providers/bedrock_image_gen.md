@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AWS Bedrock - Image Generation
+# AWS Bedrock - 圖像生成 {#aws-bedrock---image-generation}
 
-Use Bedrock for image generation with Stable Diffusion, Amazon Titan Image Generator, and Amazon Nova Canvas models.
+使用 Bedrock 搭配 Stable Diffusion、Amazon Titan Image Generator 和 Amazon Nova Canvas 模型進行圖像生成。
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name              | Function Call                               | Cost Tracking |
+| 模型名稱 | 函式呼叫 | 成本追蹤 |
 |-------------------------|---------------------------------------------|---------------|
 | Stable Diffusion 3 - v0 | `image_generation(model="bedrock/stability.stability.sd3-large-v1:0", prompt=prompt)` | ✅ |
 | Stable Diffusion - v0   | `image_generation(model="bedrock/stability.stable-diffusion-xl-v0", prompt=prompt)` | ✅ |
@@ -16,12 +16,12 @@ Use Bedrock for image generation with Stable Diffusion, Amazon Titan Image Gener
 | Amazon Titan Image Generator - v2 | `image_generation(model="bedrock/amazon.titan-image-generator-v2:0", prompt=prompt)` | ✅ |
 | Amazon Nova Canvas - v1 | `image_generation(model="bedrock/amazon.nova-canvas-v1:0", prompt=prompt)` | ✅ |
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 ```python
 import os
@@ -38,7 +38,7 @@ response = image_generation(
 print(f"response: {response}")
 ```
 
-### Set Optional Parameters
+### 設定選用參數 {#set-optional-parameters}
 
 ```python
 import os
@@ -62,7 +62,7 @@ print(f"response: {response}")
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -74,15 +74,15 @@ model_list:
       aws_secret_access_id: my-id # OPTIONAL - all boto3 auth params supported
 ```
 
-### 2. Start proxy 
+### 2. 啟動 proxy  {#2-start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Test it! 
+### 3. 測試它！  {#3-test-it}
 
-**Text to Image:**
+**文字轉圖像：**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/images/generations' \
@@ -94,7 +94,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/images/generations' \
 }'
 ```
 
-**Color Guided Generation:**
+**色彩引導生成：**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/images/generations' \
@@ -111,15 +111,15 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/images/generations' \
 </TabItem>
 </Tabs>
 
-## Amazon Nova Canvas - Image Edit
+## Amazon Nova Canvas - 圖像編輯 {#amazon-nova-canvas---image-edit}
 
-Use OpenAI-compatible `image_edit()` with Bedrock Nova Canvas (`amazon.nova-canvas-v1:0`). Requests use the same `InvokeModel` API as generation; LiteLLM maps inputs to [Nova Canvas task types](https://docs.aws.amazon.com/nova/latest/userguide/image-gen-access.html):
+搭配 Bedrock Nova Canvas（`amazon.nova-canvas-v1:0`）使用與 OpenAI 相容的 `image_edit()`。請求使用與生成相同的 `InvokeModel` API；LiteLLM 會將輸入映射到 [Nova Canvas task types](https://docs.aws.amazon.com/nova/latest/userguide/image-gen-access.html)：
 
-| Scenario | `taskType` sent to Bedrock |
+| 情境 | 傳送至 Bedrock 的 `taskType` |
 |----------|----------------------------|
-| Image + prompt (no mask) | `IMAGE_VARIATION` |
-| Image + prompt + mask | `INPAINTING` (`inPaintingParams.image`, `maskImage` or `maskPrompt`) |
-| `taskType: OUTPAINTING` + `mask` or `maskPrompt` | `OUTPAINTING` (Bedrock requires one; LiteLLM raises a clear error if both are missing) |
+| 圖像 + 提示詞（無遮罩） | `IMAGE_VARIATION` |
+| 圖像 + 提示詞 + 遮罩 | `INPAINTING`（`inPaintingParams.image`、`maskImage` 或 `maskPrompt`） |
+| `taskType: OUTPAINTING` + `mask` 或 `maskPrompt` | `OUTPAINTING`（Bedrock 需要其中一個；如果兩者都缺少，LiteLLM 會清楚地報錯） |
 | `taskType: BACKGROUND_REMOVAL` | `BACKGROUND_REMOVAL` |
 
 ```python
@@ -132,11 +132,11 @@ response = image_edit(
 )
 ```
 
-For **`BACKGROUND_REMOVAL`**, the AWS request must not include `imageGenerationConfig`; LiteLLM omits it for that task even if you pass `size`, `n`, `seed`, etc. Additional Nova Canvas inference IDs for image edit should set **`supports_nova_canvas_image_edit`: true** in `model_prices_and_context_window.json` (see `amazon.nova-canvas-v1:0`).
+對於 **`BACKGROUND_REMOVAL`**，AWS 請求不得包含 `imageGenerationConfig`；即使您傳入 `size`、`n`、`seed` 等，LiteLLM 也會在該任務中省略它。用於圖像編輯的其他 Nova Canvas inference IDs 應在 `model_prices_and_context_window.json` 中設定 **`supports_nova_canvas_image_edit`: true**（請參閱 `amazon.nova-canvas-v1:0`）。
 
-## Using Inference Profiles with Image Generation
+## 使用圖像生成的 Inference Profiles {#using-inference-profiles-with-image-generation}
 
-For AWS Bedrock Application Inference Profiles with image generation, use the `model_id` parameter to specify the inference profile ARN:
+對於帶有圖像生成功能的 AWS Bedrock Application Inference Profiles，請使用 `model_id` 參數來指定 inference profile ARN：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -167,6 +167,6 @@ model_list:
 </TabItem>
 </Tabs>
 
-## Authentication
+## 驗證 {#authentication}
 
-All standard Bedrock authentication methods are supported for image generation. See [Bedrock Authentication](./bedrock#boto3---authentication) for details.
+圖像生成支援所有標準 Bedrock 驗證方法。詳情請參閱 [Bedrock Authentication](./bedrock#boto3---authentication)。

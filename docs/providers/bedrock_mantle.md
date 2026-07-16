@@ -1,25 +1,25 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Amazon Bedrock Mantle
+# Amazon Bedrock Mantle {#amazon-bedrock-mantle}
 
-[Amazon Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) is Amazon Bedrock's distributed inference engine (Project Mantle) that exposes an **OpenAI-compatible API** for Bedrock-hosted models.
+[Amazon Bedrock Mantle](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-mantle.html) 是 Amazon Bedrock 的分散式推論引擎（Project Mantle），可為 Bedrock 托管的模型提供 **OpenAI 相容 API**。
 
-Use this provider to call Bedrock Mantle models with accurate **AWS Bedrock pricing** instead of OpenAI pricing.
+請使用此提供者，以正確的 **AWS Bedrock 定價** 而非 OpenAI 定價來呼叫 Bedrock Mantle 模型。
 
 :::tip
 
-**We support ALL Bedrock Mantle models, just set `model=bedrock_mantle/<model-id>` as a prefix when sending litellm requests**
+**我們支援所有 Bedrock Mantle 模型，只要在傳送 litellm 請求時將 `model=bedrock_mantle/<model-id>` 設為前綴即可**
 
 :::
 
-## Claude Mythos
+## Claude Mythos {#claude-mythos}
 
-[Claude Mythos](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-mythos-preview.html) (`anthropic.claude-mythos-preview`) is available on Bedrock Mantle with **1M token input context**, 128K output, and support for reasoning, vision, and tool use.
+[Claude Mythos](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-mythos-preview.html) (`anthropic.claude-mythos-preview`) 可在 Bedrock Mantle 上使用，具備 **1M token 輸入上下文**、128K 輸出，以及推理、視覺和工具使用支援。
 
-Use the `bedrock_mantle/` route prefix with standard AWS credentials.
+請使用 `bedrock_mantle/` 路由前綴搭配標準 AWS 憑證。
 
-### /messages
+### /messages {#messages}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -47,7 +47,7 @@ asyncio.run(main())
 </TabItem>
 <TabItem value="ai-gateway" label="AI Gateway">
 
-**1. Add to config.yaml**
+**1. 新增至 config.yaml**
 
 ```yaml
 model_list:
@@ -57,13 +57,13 @@ model_list:
       aws_region_name: us-east-1
 ```
 
-**2. Start LiteLLM AI Gateway**
+**2. 啟動 LiteLLM AI Gateway**
 
 ```shell
 litellm --config /path/to/config.yaml
 ```
 
-**3. Call `/v1/messages` via curl**
+**3. 透過 curl 呼叫 `/v1/messages`**
 
 ```bash
 curl -X POST http://0.0.0.0:4000/v1/messages \
@@ -81,7 +81,7 @@ curl -X POST http://0.0.0.0:4000/v1/messages \
 </TabItem>
 </Tabs>
 
-### /chat/completions
+### /chat/completions {#chatcompletions}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -104,7 +104,7 @@ print(response)
 </TabItem>
 <TabItem value="ai-gateway-chat" label="AI Gateway">
 
-**1. Add to config.yaml**
+**1. 新增至 config.yaml**
 
 ```yaml
 model_list:
@@ -114,13 +114,13 @@ model_list:
       aws_region_name: us-east-1
 ```
 
-**2. Start LiteLLM AI Gateway**
+**2. 啟動 LiteLLM AI Gateway**
 
 ```shell
 litellm --config /path/to/config.yaml
 ```
 
-**3. Call `/v1/chat/completions` via curl**
+**3. 透過 curl 呼叫 `/v1/chat/completions`**
 
 ```bash
 curl -X POST http://0.0.0.0:4000/v1/chat/completions \
@@ -137,9 +137,9 @@ curl -X POST http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## OpenAI Models (GPT-5.4 / GPT-5.5)
+## OpenAI 模型 (GPT-5.4 / GPT-5.5) {#openai-models-gpt-54--gpt-55}
 
-### /responses
+### /responses {#responses}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -158,7 +158,7 @@ response = litellm.responses(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming}
 
 ```python
 import litellm
@@ -179,7 +179,7 @@ for event in response:
 </TabItem>
 <TabItem value="ai-gateway" label="AI Gateway">
 
-**1. Add to config.yaml**
+**1. 新增至 config.yaml**
 
 ```yaml
 model_list:
@@ -190,13 +190,13 @@ model_list:
       api_base: https://bedrock-mantle.us-east-2.api.aws/v1
 ```
 
-**2. Start LiteLLM AI Gateway**
+**2. 啟動 LiteLLM AI Gateway**
 
 ```shell
 litellm --config /path/to/config.yaml
 ```
 
-**3. Call `/v1/responses` via curl**
+**3. 透過 curl 呼叫 `/v1/responses`**
 
 ```bash
 curl -X POST http://0.0.0.0:4000/v1/responses \
@@ -208,7 +208,7 @@ curl -X POST http://0.0.0.0:4000/v1/responses \
   }'
 ```
 
-**4. Or use the OpenAI SDK**
+**4. 或使用 OpenAI SDK**
 
 ```python
 from openai import OpenAI
@@ -228,7 +228,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python
 # env variable
@@ -238,9 +238,9 @@ os.environ['BEDROCK_MANTLE_API_KEY'] = "your-aws-bedrock-api-key"
 os.environ['BEDROCK_MANTLE_REGION'] = "us-east-1"  # or use AWS_REGION
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model | Endpoint | Context Window | Input (per 1M tokens) | Output (per 1M tokens) |
+| 模型 | 端點 | 上下文視窗 | 輸入（每 1M tokens） | 輸出（每 1M tokens） |
 |-------|----------|---------------|----------------------|------------------------|
 | `openai.gpt-5.5` | `/responses` | 272K | $5.50 | $33.00 |
 | `openai.gpt-5.4` | `/responses` | 272K | $2.75 | $16.50 |
@@ -249,7 +249,7 @@ os.environ['BEDROCK_MANTLE_REGION'] = "us-east-1"  # or use AWS_REGION
 | `openai.gpt-oss-safeguard-120b` | `/chat/completions` | 131K | $0.15 | $0.60 |
 | `openai.gpt-oss-safeguard-20b` | `/chat/completions` | 131K | $0.075 | $0.30 |
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -309,15 +309,15 @@ asyncio.run(main())
 </TabItem>
 </Tabs>
 
-## Region Configuration
+## 區域設定 {#region-configuration}
 
-The API base URL is `https://bedrock-mantle.{region}.api.aws/v1`. Region is resolved in this order:
+API 基礎 URL 為 `https://bedrock-mantle.{region}.api.aws/v1`。區域會依下列順序解析：
 
-1. `BEDROCK_MANTLE_REGION` env var
-2. `AWS_REGION` env var
-3. Default: `us-east-1`
+1. `BEDROCK_MANTLE_REGION` 環境變數
+2. `AWS_REGION` 環境變數
+3. 預設：`us-east-1`
 
-**Supported regions:** `us-east-1`, `us-east-2`, `us-west-2`, `eu-west-1`, `eu-west-2`, `eu-central-1`, `eu-south-1`, `eu-north-1`, `ap-northeast-1`, `ap-south-1`, `ap-southeast-3`, `sa-east-1`
+**支援的區域：** `us-east-1`, `us-east-2`, `us-west-2`, `eu-west-1`, `eu-west-2`, `eu-central-1`, `eu-south-1`, `eu-north-1`, `ap-northeast-1`, `ap-south-1`, `ap-southeast-3`, `sa-east-1`
 
 ```python
 import os
@@ -331,9 +331,9 @@ response = completion(
 )
 ```
 
-## Usage with LiteLLM Proxy
+## 搭配 LiteLLM Proxy 使用 {#usage-with-litellm-proxy}
 
-### 1. Set Bedrock Mantle models on config.yaml
+### 1. 在 config.yaml 上設定 Bedrock Mantle 模型 {#1-set-bedrock-mantle-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -356,13 +356,13 @@ model_list:
       api_key: os.environ/BEDROCK_MANTLE_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```shell
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Send a request
+### 3. 傳送請求 {#3-send-a-request}
 
 ```python
 import openai

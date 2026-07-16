@@ -2,24 +2,24 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure Sentinel
+# Azure Sentinel {#azure-sentinel}
 
 <Image img={require('../../img/sentinel.png')} />
 
-LiteLLM supports logging to Azure Sentinel via the Azure Monitor Logs Ingestion API. Azure Sentinel uses Log Analytics workspaces for data storage, so logs sent to the workspace will be available in Sentinel for security monitoring and analysis.
+LiteLLM 支援透過 Azure Monitor Logs Ingestion API 記錄到 Azure Sentinel。Azure Sentinel 使用 Log Analytics 工作區進行資料儲存，因此傳送到工作區的記錄可在 Sentinel 中用於安全性監控與分析。
 
-## Azure Sentinel Integration
+## Azure Sentinel 整合 {#azure-sentinel-integration}
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| **What is logged** | [StandardLoggingPayload](../proxy/logging_spec) |
-| **Events** | Success + Failure |
-| **Product Link** | [Azure Sentinel](https://learn.microsoft.com/en-us/azure/sentinel/overview) |
-| **API Reference** | [Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview) |
+| **記錄內容** | [StandardLoggingPayload](../proxy/logging_spec) |
+| **事件** | 成功 + 失敗 |
+| **產品連結** | [Azure Sentinel](https://learn.microsoft.com/en-us/azure/sentinel/overview) |
+| **API 參考** | [Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview) |
 
-We will use the `--config` to set `litellm.callbacks = ["azure_sentinel"]` this will log all successful and failed LLM calls to Azure Sentinel.
+我們將使用 `--config` 來設定 `litellm.callbacks = ["azure_sentinel"]`，這會將所有成功與失敗的 LLM 呼叫記錄到 Azure Sentinel。
 
-**Step 1**: Create a `config.yaml` file and set `litellm_settings`: `callbacks`
+**步驟 1**：建立 `config.yaml` 檔案並設定 `litellm_settings`：`callbacks`
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -30,26 +30,26 @@ litellm_settings:
   callbacks: ["azure_sentinel"] # logs llm success + failure logs to Azure Sentinel
 ```
 
-**Step 2**: Set Up Azure Resources
+**步驟 2**：設定 Azure 資源
 
-Before using the Logs Ingestion API, you need to set up the following in Azure:
+在使用 Logs Ingestion API 之前，您需要在 Azure 中設定以下項目：
 
-1. **Create a Log Analytics Workspace** (if you don't have one)
-2. **Create a Custom Table** in your Log Analytics workspace (e.g., `LiteLLM_CL`)
-3. **Create a Data Collection Rule (DCR)** with:
-   - Stream declaration matching your data structure
-   - Transformation to map data to your custom table
-   - Access granted to your app registration
-4. **Register an Application** in Microsoft Entra ID (Azure AD) with:
+1. **建立 Log Analytics 工作區**（如果您還沒有）
+2. **在您的 Log Analytics 工作區中建立自訂資料表**（例如，`LiteLLM_CL`）
+3. **建立資料收集規則（DCR）**，包含：
+   - 與您的資料結構相符的串流宣告
+   - 將資料對應至您的自訂資料表的轉換
+   - 已授予您的應用程式註冊存取權
+4. 在 Microsoft Entra ID（Azure AD）中**註冊應用程式**，包含：
    - Client ID
    - Client Secret
-   - Permissions to write to the DCR
+   - 寫入 DCR 的權限
 
-For detailed setup instructions, see the [Microsoft documentation on Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview).
+如需詳細的設定說明，請參閱 [Microsoft 關於 Logs Ingestion API 的文件](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)。
 
-**Step 3**: Set Required Environment Variables
+**步驟 3**：設定必要的環境變數
 
-Set the following environment variables with your Azure credentials:
+使用您的 Azure 認證設定以下環境變數：
 
 ```shell showLineNumbers title="Environment Variables"
 # Required: Data Collection Rule (DCR) configuration
@@ -64,17 +64,17 @@ AZURE_SENTINEL_CLIENT_SECRET="your-client-secret"                    # Client se
 
 ```
 
-**Note**: The `AZURE_SENTINEL_ENDPOINT` should be the DCR's logs ingestion endpoint (found in the DCR Overview page), NOT the Data Collection Endpoint (DCE). The DCR endpoint is associated with your specific DCR and looks like: `https://your-dcr-endpoint.{region}-1.ingest.monitor.azure.com`
+**注意**：`AZURE_SENTINEL_ENDPOINT` 應該是 DCR 的 logs ingestion endpoint（可在 DCR Overview 頁面找到），**不是** Data Collection Endpoint（DCE）。DCR endpoint 會與您特定的 DCR 關聯，外觀如下：`https://your-dcr-endpoint.{region}-1.ingest.monitor.azure.com`
 
-**Step 4**: Start the proxy and make a test request
+**步驟 4**：啟動 proxy 並發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell showLineNumbers title="Start Proxy"
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```shell showLineNumbers title="Test Request"
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -93,11 +93,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Step 5**: View logs in Azure Sentinel
+**步驟 5**：在 Azure Sentinel 中檢視記錄
 
-1. Navigate to your Azure Sentinel workspace in the Azure portal
-2. Go to "Logs" and query your custom table (e.g., `LiteLLM_CL`)
-3. Run a query like:
+1. 前往 Azure portal 中的 Azure Sentinel 工作區
+2. 進入「Logs」並查詢您的自訂資料表（例如，`LiteLLM_CL`）
+3. 執行如下查詢：
 
 ```kusto showLineNumbers title="KQL Query"
 LiteLLM_CL
@@ -106,133 +106,133 @@ LiteLLM_CL
 | order by TimeGenerated desc
 ```
 
-You should see following logs in Azure Workspace.
+您應該會在 Azure Workspace 中看到以下記錄。
 
 <Image img={require('../../img/sentinel.png')} />
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Environment Variable | Description | Default Value | Required |
+| 環境變數 | 說明 | 預設值 | 必填 |
 |---------------------|-------------|---------------|----------|
-| `AZURE_SENTINEL_DCR_IMMUTABLE_ID` | Data Collection Rule (DCR) Immutable ID | None | ✅ Yes |
-| `AZURE_SENTINEL_ENDPOINT` | DCR logs ingestion endpoint URL (from DCR Overview page) | None | ✅ Yes |
-| `AZURE_SENTINEL_STREAM_NAME` | Stream name from DCR (e.g., "Custom-LiteLLM_CL_CL") | "Custom-LiteLLM" | ❌ No |
-| `AZURE_SENTINEL_TENANT_ID` | Azure Tenant ID for OAuth2 authentication | None (falls back to `AZURE_TENANT_ID`) | ✅ Yes |
-| `AZURE_SENTINEL_CLIENT_ID` | Application (client) ID for OAuth2 authentication | None (falls back to `AZURE_CLIENT_ID`) | ✅ Yes |
-| `AZURE_SENTINEL_CLIENT_SECRET` | Client secret for OAuth2 authentication | None (falls back to `AZURE_CLIENT_SECRET`) | ✅ Yes |
+| `AZURE_SENTINEL_DCR_IMMUTABLE_ID` | Data Collection Rule (DCR) 不可變 ID | 無 | ✅ 是 |
+| `AZURE_SENTINEL_ENDPOINT` | DCR logs ingestion endpoint URL（來自 DCR Overview 頁面） | 無 | ✅ 是 |
+| `AZURE_SENTINEL_STREAM_NAME` | 來自 DCR 的串流名稱（例如，"Custom-LiteLLM_CL_CL"） | "Custom-LiteLLM" | ❌ 否 |
+| `AZURE_SENTINEL_TENANT_ID` | 用於 OAuth2 驗證的 Azure Tenant ID | 無（回退至 `AZURE_TENANT_ID`） | ✅ 是 |
+| `AZURE_SENTINEL_CLIENT_ID` | 用於 OAuth2 驗證的 Application（client）ID | 無（回退至 `AZURE_CLIENT_ID`） | ✅ 是 |
+| `AZURE_SENTINEL_CLIENT_SECRET` | 用於 OAuth2 驗證的 Client secret | 無（回退至 `AZURE_CLIENT_SECRET`） | ✅ 是 |
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-The Azure Sentinel integration uses the [Azure Monitor Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview) to send logs to your Log Analytics workspace. The integration:
+Azure Sentinel 整合使用 [Azure Monitor Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview) 將記錄傳送到您的 Log Analytics 工作區。此整合：
 
-- Authenticates using OAuth2 client credentials flow with your app registration
-- Sends logs to the Data Collection Rule (DCR) endpoint
-- Batches logs for efficient transmission
-- Sends logs in the [StandardLoggingPayload](../proxy/logging_spec) format
-- Automatically handles both success and failure events
-- Caches OAuth2 tokens and refreshes them automatically
+- 使用 OAuth2 client credentials flow 搭配您的應用程式註冊進行驗證
+- 將記錄傳送到 Data Collection Rule (DCR) endpoint
+- 批次處理記錄以提升傳輸效率
+- 以 [StandardLoggingPayload](../proxy/logging_spec) 格式傳送記錄
+- 自動處理成功與失敗事件
+- 快取 OAuth2 token 並自動重新整理
 
-Logs sent to the Log Analytics workspace are automatically available in Azure Sentinel for security monitoring, threat detection, and analysis.
+傳送到 Log Analytics 工作區的記錄會自動在 Azure Sentinel 中可用，以進行安全性監控、威脅偵測與分析。
 
-## Azure Sentinel Setup Guide
+## Azure Sentinel 設定指南 {#azure-sentinel-setup-guide}
 
-Follow this step-by-step guide to set up Azure Sentinel with LiteLLM.
+依照此逐步指南，使用 LiteLLM 設定 Azure Sentinel。
 
-### Step 1: Create a Log Analytics Workspace
+### 步驟 1：建立 Log Analytics 工作區 {#step-1-create-a-log-analytics-workspace}
 
-1. Navigate to [https://portal.azure.com/#home](https://portal.azure.com/#home)
+1. 前往 [https://portal.azure.com/#home](https://portal.azure.com/#home)
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/5659f6f5-a166-4b26-a991-73352274e3bb/ascreenshot.jpeg?tl_px=0,210&br_px=2618,1673&force_format=jpeg&q=100&width=1120.0)
 
-2. Search for "Log Analytics workspaces" and click "Create"
+2. 搜尋「Log Analytics workspaces」並點選「Create」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/a827ba10-a391-486a-a36a-51816c6255de/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=21,106)
 
-3. Enter a name for your workspace (e.g., "litellm-sentinel-prod")
+3. 為您的工作區輸入名稱（例如，「litellm-sentinel-prod」）
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/943458f1-fd4c-47dd-a273-ea5a04734ed9/ascreenshot.jpeg?tl_px=0,420&br_px=2618,1884&force_format=jpeg&q=100&width=1120.0)
 
-4. Click "Review + Create"
+4. 點選「Review + Create」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/c54828fb-f895-4eb7-b810-cacf437617bd/ascreenshot.jpeg?tl_px=0,420&br_px=2618,1884&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=40,564)
 
-### Step 2: Create a Custom Table
+### 步驟 2：建立自訂資料表 {#step-2-create-a-custom-table}
 
-1. Go to your Log Analytics workspace and click "Tables"
+1. 前往您的 Log Analytics 工作區並點選「Tables」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/72d65f70-75c0-471f-95e9-947c72e173cc/ascreenshot.jpeg?tl_px=0,142&br_px=2618,1605&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=330,277)
 
-2. Click "Create" → "New custom log (Direct Ingest)"
+2. 點選「Create」→「New custom log (Direct Ingest)」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/863ad29b-2c3a-4b7c-9a6b-36d3a76c9f32/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=526,146)
 
-3. Enter a table name (e.g., "LITELLM_PROD_CL")
+3. 輸入資料表名稱（例如，「LITELLM_PROD_CL」）
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/ef2f1c52-aa36-46a1-91e6-9bd868891b15/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0)
 
-### Step 3: Create a Data Collection Rule (DCR)
+### 步驟 3：建立資料收集規則（DCR） {#step-3-create-a-data-collection-rule-dcr}
 
-1. Click "Create a new data collection rule"
+1. 點選「Create a new data collection rule」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/f2abc0d3-8be8-4057-9290-946d10cfd183/ascreenshot.jpeg?tl_px=0,420&br_px=2618,1884&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=264,404)
 
-2. Enter a name for the DCR (e.g., "litellm-prod")
+2. 為 DCR 輸入名稱（例如，「litellm-prod」）
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/79bbebdc-e4d9-46ff-a270-1930619050a1/ascreenshot.jpeg?tl_px=0,8&br_px=2618,1471&force_format=jpeg&q=100&width=1120.0)
 
-3. Select a Data Collection Endpoint
+3. 選取 Data Collection Endpoint
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/f3112e9a-551e-415c-a7f9-55aad801bc8a/ascreenshot.jpeg?tl_px=0,420&br_px=2618,1884&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=332,480)
 
-4. Upload the sample JSON file for schema (use the [example_standard_logging_payload.json](https://github.com/BerriAI/litellm/blob/main/litellm/integrations/azure_sentinel/example_standard_logging_payload.json) file)
+4. 上傳用於結構描述的範例 JSON 檔案（使用 [example_standard_logging_payload.json](https://github.com/BerriAI/litellm/blob/main/litellm/integrations/azure_sentinel/example_standard_logging_payload.json) 檔案）
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/703c0762-840a-4f1f-a60f-876dc24b7a03/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=518,272)
 
-5. Click "Next" and then "Create"
+5. 點選「Next」，然後點選「Create」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/0bca0200-5c64-4fbd-8061-9308aa6656b8/ascreenshot.jpeg?tl_px=0,420&br_px=2618,1884&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=128,560)
 
-### Step 4: Get the DCR Immutable ID and Logs Ingestion Endpoint
+### 步驟 4：取得 DCR 不可變 ID 與 Logs Ingestion Endpoint {#step-4-get-the-dcr-immutable-id-and-logs-ingestion-endpoint}
 
-1. Go to "Data Collection Rules" and select your DCR
+1. 前往「Data Collection Rules」並選取您的 DCR
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/11c06a0d-584f-4d22-b36e-9c338d43812c/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=94,258)
 
-2. Copy the **DCR Immutable ID** (starts with `dcr-`)
+2. 複製 **DCR 不可變 ID**（以 `dcr-` 開頭）
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/cd0ad69a-4d95-4b6a-9533-7720908ba809/ascreenshot.jpeg?tl_px=1160,92&br_px=2618,907&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=530,277)
 
-3. Copy the **Logs Ingestion Endpoint** URL
+3. 複製 **Logs Ingestion Endpoint** URL
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/3d3752ed-08ea-4490-8c98-a97d33947ea7/ascreenshot.jpeg?tl_px=1160,464&br_px=2618,1279&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=532,277)
 
-### Step 5: Get the Stream Name
+### 步驟 5：取得串流名稱 {#step-5-get-the-stream-name}
 
-1. Click "JSON View" in the DCR
+1. 在 DCR 中點選「JSON View」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/fd8a5504-4769-4f23-983e-520f256ee308/ascreenshot.jpeg?tl_px=1160,0&br_px=2618,814&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=965,257)
 
-2. Find the **Stream Name** in the `streamDeclarations` section (e.g., "Custom-LITELLM_PROD_CL_CL")
+2. 在 `streamDeclarations` 區段中找到 **Stream Name**（例如，「Custom-LITELLM_PROD_CL_CL」）
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/a4052b32-2028-4d12-8930-bfcdf6f47652/ascreenshot.jpeg?tl_px=405,270&br_px=2115,1225&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=523,277)
 
-### Step 6: Register an App and Grant Permissions
+### 步驟 6：註冊應用程式並授予權限 {#step-6-register-an-app-and-grant-permissions}
 
-1. Go to **Microsoft Entra ID** → **App registrations** → **New registration**
-2. Create a new app and note the **Client ID** and **Tenant ID**
-3. Go to **Certificates & secrets** → Create a new client secret and copy the **Secret Value**
-4. Go back to your DCR → **Access Control (IAM)** → **Add role assignment**
-5. Assign the **"Monitoring Metrics Publisher"** role to your app registration
+1. 前往 **Microsoft Entra ID** → **App registrations** → **New registration**
+2. 建立新的應用程式並記下 **Client ID** 與 **Tenant ID**
+3. 前往 **Certificates & secrets** → 建立新的 client secret 並複製 **Secret Value**
+4. 返回您的 DCR → **Access Control (IAM)** → **Add role assignment**
+5. 將 **"Monitoring Metrics Publisher"** 角色指派給您的應用程式註冊
 
-### Summary: Where to Find Each Value
+### 摘要：各值的查找位置 {#summary-where-to-find-each-value}
 
-| Environment Variable | Where to Find It |
+| 環境變數 | 查找位置 |
 |---------------------|------------------|
-| `AZURE_SENTINEL_DCR_IMMUTABLE_ID` | DCR Overview page → Immutable ID (starts with `dcr-`) |
-| `AZURE_SENTINEL_ENDPOINT` | DCR Overview page → Logs Ingestion Endpoint |
-| `AZURE_SENTINEL_STREAM_NAME` | DCR JSON View → `streamDeclarations` section |
+| `AZURE_SENTINEL_DCR_IMMUTABLE_ID` | DCR Overview 頁面 → Immutable ID（以 `dcr-` 開頭） |
+| `AZURE_SENTINEL_ENDPOINT` | DCR Overview 頁面 → Logs Ingestion Endpoint |
+| `AZURE_SENTINEL_STREAM_NAME` | DCR JSON View → `streamDeclarations` 區段 |
 | `AZURE_SENTINEL_TENANT_ID` | App Registration → Overview → Directory (tenant) ID |
 | `AZURE_SENTINEL_CLIENT_ID` | App Registration → Overview → Application (client) ID |
 | `AZURE_SENTINEL_CLIENT_SECRET` | App Registration → Certificates & secrets → Secret Value |
 
-For more details, refer to the [Microsoft Logs Ingestion API documentation](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview).
+如需更多詳細資訊，請參閱 [Microsoft Logs Ingestion API 文件](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview)。

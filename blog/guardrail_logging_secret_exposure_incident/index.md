@@ -1,6 +1,6 @@
 ---
 slug: guardrail-logging-secret-exposure-incident
-title: "Incident Report: Guardrail logging exposed secret headers in spend logs and traces"
+title: "事件報告：Guardrail 記錄將秘密標頭暴露於 spend logs 和 traces 中"
 date: 2026-03-18T10:00:00
 authors:
   - litellm
@@ -8,71 +8,71 @@ tags: [incident-report, security, guardrails]
 hide_table_of_contents: false
 ---
 
-**Date:** March 18, 2026
-**Duration:** Unknown
-**Severity:** High
-**Status:** Resolved
+**日期：** 2026 年 3 月 18 日
+**持續時間：** 不明
+**嚴重性：** 高
+**狀態：** 已修復
 
-## Summary
+## 摘要 {#summary}
 
-When a custom guardrail returned the full LiteLLM request/data dictionary, the guardrail response logged by LiteLLM could include `secret_fields.raw_headers`, including plaintext `Authorization` headers containing API keys or other credentials.
+當自訂 guardrail 傳回完整的 LiteLLM request/data dictionary 時，LiteLLM 記錄的 guardrail 回應可能包含 `secret_fields.raw_headers`，其中包括含有 API 金鑰或其他憑證的明文 `Authorization` 標頭。
 
-This information could then propagate to logging and observability surfaces that consume guardrail metadata, including:
+這些資訊接著可能傳播到會消耗 guardrail 中繼資料的記錄與可觀測性表面，包括：
 
-- **Spend logs in the LiteLLM UI:** visible to admins with access to spend-log data
-- **OpenTelemetry traces:** visible to anyone with access to the relevant telemetry backend
+- **LiteLLM UI 中的 spend logs：** 對可存取 spend-log 資料的管理員可見
+- **OpenTelemetry traces：** 對任何可存取相關 telemetry 後端的人可見
 
-LLM calls, proxy routing, and provider execution were not blocked by this bug. The impact was exposure of sensitive request headers in observability and logging paths.
+LLM 呼叫、proxy 路由，以及提供者執行都不會因這個 bug 而被阻擋。影響是敏感請求標頭在可觀測性與記錄路徑中被暴露。
 
 {/* truncate */}
 
 ---
 
-## Background
+## 背景 {#background}
 
-LiteLLM keeps internal request data (including request headers) for use during the call. That data is not meant to be written to logs or telemetry.
+LiteLLM 會保留內部請求資料（包括請求標頭）以供呼叫期間使用。這些資料不應寫入記錄或 telemetry。
 
-When custom guardrails run, their outcomes are logged so they can appear in spend logs, OpenTelemetry traces, and other observability backends. If a guardrail returned the full request payload instead of a minimal result, that internal request data could be included in what was logged. Before the fix, the guardrail logging path did not strip that data before sending it to those systems.
+當自訂 guardrail 執行時，其結果會被記錄，以便出現在 spend logs、OpenTelemetry traces，以及其他可觀測性後端中。如果 guardrail 傳回完整的請求負載，而不是最小化結果，該內部請求資料就可能被包含在記錄內容中。在修正之前，guardrail 記錄路徑在把資料送往那些系統前，並未先移除這些資料。
 
 ```mermaid
 flowchart TD
-    inboundRequest["1. Incoming proxy request"] --> storeSecrets["2. Store internal request data"]
-    storeSecrets --> guardrailRuns["3. Custom guardrail runs"]
-    guardrailRuns --> fullDataReturn["4. Guardrail returns full request payload"]
-    fullDataReturn --> loggingBuild["5. Build guardrail log payload"]
-    loggingBuild --> spendLogs["6a. Persist to spend logs / UI"]
-    loggingBuild --> otelTraces["6b. Attach to OTEL guardrail spans"]
+    inboundRequest["1. 傳入的 proxy 請求"] --> storeSecrets["2. 儲存內部請求資料"]
+    storeSecrets --> guardrailRuns["3. 自訂 guardrail 執行"]
+    guardrailRuns --> fullDataReturn["4. Guardrail 傳回完整請求負載"]
+    fullDataReturn --> loggingBuild["5. 建立 guardrail 記錄負載"]
+    loggingBuild --> spendLogs["6a. 持久化到 spend logs / UI"]
+    loggingBuild --> otelTraces["6b. 附加到 OTEL guardrail spans"]
 ```
 
 ---
 
-## Root Cause
+## 根本原因 {#root-cause}
 
-The root cause was incomplete sanitization in the guardrail logging path. When building the payload that gets sent to spend logs and traces, LiteLLM prepared guardrail responses for logging but did not strip internal request data (such as headers) from them. If a guardrail returned a response that included that data, it was passed through to the logging and observability systems unchanged.
-
----
-
-## Impact
-
-This issue required all of the following:
-
-1. A custom guardrail returned the full LiteLLM request/data dictionary, or another response object containing `secret_fields`.
-2. LiteLLM logged that guardrail response through the standard guardrail logging path.
-3. An operator, admin, or telemetry consumer had access to the resulting logs or traces.
-
-When those conditions were met, sensitive values could become visible through:
-
-- **Spend logs / UI responses:** guardrail metadata could be included in spend-log payloads rendered in the admin UI.
-- **OpenTelemetry traces:** `guardrail_response` could be written as a span attribute on guardrail spans.
-- **Other downstream observability backends:** any integration consuming the same guardrail metadata could receive the leaked values.
-
-This was a logging and telemetry exposure bug. It did not let callers bypass auth, access other tenants directly, or change model behavior, but it could expose plaintext credentials to people with access to those observability systems.
+根本原因是 guardrail 記錄路徑中的清理不完整。當建立要送往 spend logs 與 traces 的負載時，LiteLLM 會為記錄準備 guardrail 回應，但沒有從中移除內部請求資料（例如標頭）。如果 guardrail 傳回的回應包含該資料，它就會在未變更的情況下被傳遞到記錄與可觀測性系統。
 
 ---
 
-## Guidance For Users
+## 影響 {#impact}
 
-- Upgrade to LiteLLM 1.82.3+.
-- If you operated custom guardrails that return the full request/data dict, review whether spend logs or telemetry traces were retained during the affected period.
-- Rotate any credentials that may have appeared in `Authorization` or other forwarded request headers in those systems.
-- Apply least-privilege access controls to spend-log views and telemetry backends that may contain request-derived metadata.
+此問題需要同時滿足以下所有條件：
+
+1. 自訂 guardrail 傳回完整的 LiteLLM request/data dictionary，或其他包含 `secret_fields` 的回應物件。
+2. LiteLLM 透過標準 guardrail 記錄路徑記錄了該 guardrail 回應。
+3. 操作人員、管理員，或 telemetry 消費者可存取產生的記錄或 traces。
+
+當符合這些條件時，敏感值可能會透過以下方式被看見：
+
+- **Spend logs / UI 回應：** guardrail 中繼資料可能會包含在管理 UI 中呈現的 spend-log 負載內。
+- **OpenTelemetry traces：** `guardrail_response` 可能會作為 guardrail spans 的 span 屬性被寫入。
+- **其他下游可觀測性後端：** 消費相同 guardrail 中繼資料的任何整合都可能收到外洩的值。
+
+這是一個記錄與 telemetry 暴露 bug。它不會讓呼叫者繞過驗證、直接存取其他租戶，或變更模型行為，但可能會將明文憑證暴露給可存取那些可觀測性系統的人。
+
+---
+
+## 使用者指引 {#guidance-for-users}
+
+- 升級至 LiteLLM 1.82.3+。
+- 如果您操作過會傳回完整 request/data dict 的自訂 guardrail，請檢查受影響期間是否保留了 spend logs 或 telemetry traces。
+- 請輪替任何可能出現在 `Authorization` 或那些系統中其他轉送的請求標頭裡的憑證。
+- 對可能包含源自請求中繼資料的 spend-log 檢視與 telemetry 後端套用最小權限存取控制。

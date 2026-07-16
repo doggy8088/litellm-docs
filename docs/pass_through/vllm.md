@@ -1,17 +1,17 @@
-# VLLM
+# VLLM {#vllm}
 
-Pass-through endpoints for VLLM - call provider-specific endpoint, in native format (no translation).
+VLLM 的通過端點 - 呼叫提供者專屬端點，使用原生格式（不進行轉換）。
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ❌ | Not supported |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ✅ | |
+| 成本追蹤 | ❌ | 不支援 |
+| 記錄 | ✅ | 可在所有整合中運作 |
+| 終端使用者追蹤 | ❌ | [如果您需要這個功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ✅ | |
 
-Just replace `https://my-vllm-server.com` with `LITELLM_PROXY_BASE_URL/vllm` 🚀
+只要將 `https://my-vllm-server.com` 換成 `LITELLM_PROXY_BASE_URL/vllm` 🚀
 
-#### **Example Usage**
+#### **範例用法** {#example-usage}
 
 ```bash
 curl -L -X GET 'http://0.0.0.0:4000/vllm/metrics' \
@@ -19,17 +19,17 @@ curl -L -X GET 'http://0.0.0.0:4000/vllm/metrics' \
 -H 'Authorization: Bearer sk-1234' \
 ```
 
-Supports **ALL** VLLM Endpoints (including streaming).
+支援 **所有** VLLM 端點（包含串流）。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the VLLM [`/score` endpoint](https://vllm.readthedocs.io/en/latest/api_reference/api_reference.html)
+我們來呼叫 VLLM [`/score` 端點](https://vllm.readthedocs.io/en/latest/api_reference/api_reference.html)
 
-1. Add a VLLM hosted model to your LiteLLM Proxy 
+1. 將一個由 VLLM 主機代管的模型新增至您的 LiteLLM Proxy 
 
 :::info
 
-Works with LiteLLM v1.72.0+. 
+適用 LiteLLM v1.72.0+。 
 
 :::
 
@@ -41,7 +41,7 @@ model_list:
       api_base: https://my-vllm-server.com
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy 
 
 ```bash
 litellm
@@ -49,9 +49,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
-Let's call the VLLM `/score` endpoint
+我們來呼叫 VLLM `/score` 端點
 
 ```bash
 curl -X 'POST' \
@@ -67,21 +67,20 @@ curl -X 'POST' \
 ```
 
 
-## Examples
+## 範例 {#examples}
 
-Anything after `http://0.0.0.0:4000/vllm` is treated as a provider-specific route, and handled accordingly.
+`http://0.0.0.0:4000/vllm` 之後的任何內容都會被視為提供者專屬路由，並據此處理。
 
-Key Changes: 
+主要變更： 
 
-| **Original Endpoint**                                | **Replace With**                  |
+| **原始端點**                                | **替換為**                  |
 |------------------------------------------------------|-----------------------------------|
 | `https://my-vllm-server.com`          | `http://0.0.0.0:4000/vllm` (LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000")      |
-| `bearer $VLLM_API_KEY`                                 | `bearer anything` (use `bearer LITELLM_VIRTUAL_KEY` if Virtual Keys are setup on proxy)                    |
+| `bearer $VLLM_API_KEY`                                 | `bearer anything`（如果在 proxy 上設定了 Virtual Keys，請使用 `bearer LITELLM_VIRTUAL_KEY`）                    |
 
+### **範例 1：指標端點** {#example-1-metrics-endpoint}
 
-### **Example 1: Metrics endpoint**
-
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call}
 
 ```bash
 curl -L -X GET 'http://0.0.0.0:4000/vllm/metrics' \
@@ -90,16 +89,16 @@ curl -L -X GET 'http://0.0.0.0:4000/vllm/metrics' \
 ```
 
 
-#### Direct VLLM API Call 
+#### 直接 VLLM API 呼叫  {#direct-vllm-api-call}
 
 ```bash
 curl -L -X GET 'https://my-vllm-server.com/metrics' \
 -H 'Content-Type: application/json' \
 ```
 
-### **Example 2: Chat API**
+### **範例 2：聊天 API** {#example-2-chat-api}
 
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call-1}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/vllm/chat/completions' \
@@ -119,7 +118,7 @@ curl -L -X POST 'http://0.0.0.0:4000/vllm/chat/completions' \
 }'
 ```
 
-#### Direct VLLM API Call 
+#### 直接 VLLM API 呼叫  {#direct-vllm-api-call-1}
 
 ```bash
 curl -L -X POST 'https://my-vllm-server.com/chat/completions' \
@@ -139,16 +138,16 @@ curl -L -X POST 'https://my-vllm-server.com/chat/completions' \
 ```
 
 
-## Advanced - Use with Virtual Keys 
+## 進階 - 搭配 Virtual Keys 使用  {#advanced---use-with-virtual-keys}
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+先決條件
+- [使用 DB 設定 proxy](../proxy/virtual_keys.md#setup)
 
-Use this, to avoid giving developers the raw Cohere API key, but still letting them use Cohere endpoints.
+請使用這個方式，避免將原始的 Cohere API 金鑰提供給開發人員，但仍可讓他們使用 Cohere 端點。
 
-### Usage
+### 用法 {#usage}
 
-1. Setup environment
+1. 設定環境
 
 ```bash
 export DATABASE_URL=""
@@ -162,7 +161,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生虛擬金鑰 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -171,7 +170,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -180,8 +179,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試看看！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/vllm/chat/completions' \

@@ -1,26 +1,26 @@
 import Image from '@theme/IdealImage';
 
-# Code Interpreter
+# 程式碼解譯器 {#code-interpreter}
 
-Use OpenAI's Code Interpreter tool to execute Python code in a secure, sandboxed environment.
+使用 OpenAI 的 Code Interpreter 工具，在安全且隔離的環境中執行 Python 程式碼。
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
 | LiteLLM Python SDK | ✅ |
 | LiteLLM AI Gateway | ✅ |
-| Supported Providers | `openai` |
+| 支援的提供者 | `openai` |
 
-:::tip Route code interpreter to your own sandbox
+:::tip 將 code interpreter 路由到您自己的 sandbox
 
-The proxy can intercept `code_interpreter` on `/v1/responses` and run the code in a configured sandbox (e2b today) instead of OpenAI's container, with no change to the client request. The response shape stays identical (`code_interpreter_call` next to `message`). See [Code Interpreter Sandbox Interception](/docs/sandbox#litellm-proxy-responses-api-code-interpreter-interceptor).
+proxy 可以在 `code_interpreter` 攔截 `/v1/responses`，並在已設定的 sandbox（目前為 e2b）中執行程式碼，而不必使用 OpenAI 的 container，且不需變更 client request。回應格式保持完全一致（`code_interpreter_call` 在 `message` 旁邊）。請參閱 [Code Interpreter Sandbox Interception](/docs/sandbox#litellm-proxy-responses-api-code-interpreter-interceptor)。
 
 :::
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### API (OpenAI SDK)
+### API（OpenAI SDK） {#api-openai-sdk}
 
-Use the OpenAI SDK pointed at your LiteLLM Gateway:
+將 OpenAI SDK 指向您的 LiteLLM Gateway：
 
 ```python showLineNumbers title="code_interpreter_gateway.py"
 from openai import OpenAI
@@ -39,7 +39,7 @@ response = client.responses.create(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming}
 
 ```python showLineNumbers title="code_interpreter_streaming.py"
 from openai import OpenAI
@@ -60,7 +60,7 @@ for event in stream:
     print(event)
 ```
 
-#### Get Generated File Content
+#### 取得產生的檔案內容 {#get-generated-file-content}
 
 ```python showLineNumbers title="get_file_content_gateway.py"
 from openai import OpenAI
@@ -95,28 +95,28 @@ for file in files.data:
     print(f"Downloaded: {file.filename}")
 ```
 
-### AI Gateway UI
+### AI Gateway UI {#ai-gateway-ui}
 
-The LiteLLM Admin UI includes built-in Code Interpreter support.
+LiteLLM Admin UI 內建支援 Code Interpreter。
 
 <Image img={require('../../img/code_interp.png')} />
 
-**Steps:**
+**步驟：**
 
-1. Go to **Playground** in the LiteLLM UI
-2. Select an **OpenAI model** (e.g., `openai/gpt-4o`)
-3. Select `/v1/responses` as the endpoint under **Endpoint Type**
-4. Toggle **Code Interpreter** in the left panel
-5. Send a prompt requesting code execution or file generation
+1. 前往 LiteLLM UI 中的 **Playground**
+2. 選取一個 **OpenAI model**（例如，`openai/gpt-4o`）
+3. 在 **Endpoint Type** 下方，將 `/v1/responses` 選為 endpoint
+4. 在左側面板切換 **Code Interpreter**
+5. 傳送要求執行程式碼或產生檔案的 prompt
 
-The UI will display:
-- Executed Python code (collapsible)
-- Generated images inline
-- Download links for files (CSVs, etc.)
+UI 會顯示：
+- 執行的 Python 程式碼（可收合）
+- 內嵌顯示產生的圖片
+- 檔案（CSV 等）的下載連結
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
-### Run Code Interpreter
+### 執行 Code Interpreter {#run-code-interpreter}
 
 ```python showLineNumbers title="code_interpreter.py"
 import litellm
@@ -130,9 +130,9 @@ response = litellm.responses(
 print(response)
 ```
 
-### Get Generated File Content
+### 取得產生的檔案內容 {#get-generated-file-content-1}
 
-After Code Interpreter runs, retrieve the generated files:
+在 Code Interpreter 執行後，擷取產生的檔案：
 
 ```python showLineNumbers title="get_file_content.py"
 import litellm
@@ -167,8 +167,8 @@ for file in files.data:
 ```
 
 
-## Related
+## 相關 {#related}
 
-- [Containers API](/docs/containers) - Manage containers
-- [Container Files API](/docs/container_files) - Manage files within containers
-- [OpenAI Code Interpreter Docs](https://platform.openai.com/docs/guides/tools-code-interpreter) - Official OpenAI documentation
+- [Containers API](/docs/containers) - 管理 containers
+- [Container Files API](/docs/container_files) - 管理 containers 內的檔案
+- [OpenAI Code Interpreter Docs](https://platform.openai.com/docs/guides/tools-code-interpreter) - OpenAI 官方文件

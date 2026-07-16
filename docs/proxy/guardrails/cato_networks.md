@@ -2,29 +2,29 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cato Networks
+# Cato Networks {#cato-networks}
 
-## Quick Start
-### 1. Create a new Cato Networks AI Security Guard
+## 快速開始 {#quick-start}
+### 1. 建立新的 Cato Networks AI Security Guard {#1-create-a-new-cato-networks-ai-security-guard}
 
-Go to [Cato Networks CMA](https://cc.catonetworks.com/) and create a new AI Security guard.
+前往 [Cato Networks CMA](https://cc.catonetworks.com/) 並建立新的 AI Security guard。
 
-Name your guard and select the AI Gateway option.
+為您的 guard 命名，並選取 AI Gateway 選項。
 
 :::info
-When using LiteLLM with virtual keys, use the virtual key alias as the name of the guard to be able to set key-specific policies.
+當使用 LiteLLM 搭配虛擬金鑰時，請使用虛擬金鑰別名作為 guard 的名稱，才能設定特定金鑰的政策。
 
-Only the aliases of your virtual keys (and not the actual key secrets) will be sent to Cato Networks.
+只有您的虛擬金鑰別名（而非實際金鑰密鑰）會傳送給 Cato Networks。
 :::
 
-### 2. Configure your Cato Networks AI Security Guard policies
+### 2. 設定您的 Cato Networks AI Security Guard 政策 {#2-configure-your-cato-networks-ai-security-guard-policies}
 
-Create an Engine Profile, selecting which detections to enable.
-Create a Guard Policy rule that references this Engine Profile and your Guard, then configure the action to apply.
+建立一個 Engine Profile，選擇要啟用哪些偵測。
+建立一條引用此 Engine Profile 與您的 Guard 的 Guard Policy 規則，然後設定要套用的動作。
 
-### 3. Add Cato Networks Guardrail on your LiteLLM config.yaml 
+### 3. 在您的 LiteLLM config.yaml 中新增 Cato Networks Guardrail {#3-add-cato-networks-guardrail-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section
+在 `guardrails` 區段下定義您的 guardrails
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -42,29 +42,29 @@ guardrails:
       ssl_verify: False # Optional, set to False to disable SSL verification or a string path to a custom CA bundle
 ```
 
-Under the `api_key`, insert the API key you were issued. The key can be found in the guard's page.
-You can also set `CATO_API_KEY` as an environment variable.
+在 `api_key` 下方，填入您獲發的 API 金鑰。該金鑰可在 guard 的頁面中找到。
+您也可以將 `CATO_API_KEY` 設為環境變數。
 
-By default, the `api_base` is set to `https://api.aisec.catonetworks.com`. Set the correct url for your region.
-If you are using a self-hosted Outpost, you can set the `api_base` to your Outpost's URL.
+預設情況下，`api_base` 設為 `https://api.aisec.catonetworks.com`。請為您的區域設定正確的 URL。
+如果您使用的是自架的 Outpost，您可以將 `api_base` 設為您的 Outpost URL。
 
-### 4. Start LiteLLM Gateway
+### 4. 啟動 LiteLLM Gateway {#4-start-litellm-gateway}
 ```shell
 litellm --config config.yaml
 ```
 
-### 5. Make your first request
+### 5. 發出您的第一個請求 {#5-make-your-first-request}
 
 :::note
-The following example depends on enabling *PII* detection in your policy.
-You can adjust the request content to match different guard's policies.
+以下範例取決於在您的政策中啟用 *PII* 偵測。
+您可以調整請求內容，以符合不同 guard 的政策。
 :::
 
 <Tabs>
-<TabItem label="Successfully blocked request" value = "blocked">
+<TabItem label="成功封鎖的請求" value = "blocked">
 
 :::note
-When using LiteLLM with virtual keys, an `Authorization` header with the virtual key is required.
+當使用 LiteLLM 搭配虛擬金鑰時，需要帶有虛擬金鑰的 `Authorization` 標頭。
 :::
 
 ```shell
@@ -80,7 +80,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-If configured correctly, since `ishaan@berri.ai` would be detected by the Cato Networks AI Security Guard as PII, you'll receive a response similar to the following with a `400 Bad Request` status code:
+如果設定正確，由於 `ishaan@berri.ai` 會被 Cato Networks AI Security Guard 偵測為 PII，您將會收到類似以下內容、狀態碼為 `400 Bad Request` 的回應：
 
 ```json
 {
@@ -95,10 +95,10 @@ If configured correctly, since `ishaan@berri.ai` would be detected by the Cato N
 
 </TabItem>
 
-<TabItem label="Successfully permitted request" value = "allowed">
+<TabItem label="成功允許的請求" value = "allowed">
 
 :::note
-When using LiteLLM with virtual keys, an `Authorization` header with the virtual key is required.
+當使用 LiteLLM 搭配虛擬金鑰時，需要帶有虛擬金鑰的 `Authorization` 標頭。
 :::
 
 ```shell
@@ -113,7 +113,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-The above request should not be blocked, and you should receive a regular LLM response (simplified for brevity):
+上述請求不應被封鎖，您應該會收到一般的 LLM 回應（為了簡潔起見已簡化）：
 
 ```json
 {
@@ -132,6 +132,5 @@ The above request should not be blocked, and you should receive a regular LLM re
 ```
 
 </TabItem>
-
 
 </Tabs>

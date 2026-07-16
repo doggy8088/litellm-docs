@@ -1,14 +1,14 @@
-# Oobabooga Text Web API Tutorial
+# Oobabooga Text Web API 教學 {#oobabooga-text-web-api-tutorial}
 
-### Install + Import LiteLLM 
+### 安裝 + 匯入 LiteLLM  {#install--import-litellm}
 ```python 
 !uv add litellm
 from litellm import completion 
 import os
 ```
 
-### Call your oobabooga model
-Remember to set your api_base
+### 呼叫您的 oobabooga 模型 {#call-your-oobabooga-model}
+請記得設定您的 api_base
 ```python
 response = completion(
   model="oobabooga/WizardCoder-Python-7B-V1.0-GPTQ",
@@ -18,9 +18,9 @@ response = completion(
 )
 ```
 
-### See your response 
+### 查看您的回應  {#see-your-response}
 ```python 
 print(response)
 ```
 
-Credits to [Shuai Shao](https://www.linkedin.com/in/shuai-sh/), for this tutorial. 
+感謝 [Shuai Shao](https://www.linkedin.com/in/shuai-sh/) 提供本教學。

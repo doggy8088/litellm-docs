@@ -1,11 +1,11 @@
 ---
 slug: june-townhall-updates
-title: "June Townhall Updates: 94 Bug Fixes, OCR + Realtime are in Rust, and a Zero-Regression Commitment"
+title: "6 月 Townhall 更新：94 個 Bug 修正、OCR + Realtime 已採用 Rust，以及零回歸承諾"
 date: 2026-06-26T12:00:00
 authors:
   - krrish
   - ishaan-alt
-description: "A recap of the June LiteLLM town hall covering security hardening, our zero-regression commitment, 78 feature commits, and the gradual migration of the gateway to Rust."
+description: "June LiteLLM town hall 的回顧，涵蓋安全性強化、我們的零回歸承諾、78 個功能提交，以及 gateway 逐步遷移到 Rust。"
 tags: [townhall, security, reliability, product]
 hide_table_of_contents: false
 ---
@@ -17,83 +17,83 @@ import Image from '@theme/IdealImage';
   style={{width: '100%', height: 'auto', display: 'block', borderRadius: '12px'}}
 />
 
-Thank you to everyone who joined our June town hall.
+感謝所有參加我們 6 月 town hall 的人。
 
-Three numbers capture the month: **24 security fixes**, **94 bug fixes**, and **78 feature commits**. The sections below break each one down, alongside our public commitment to zero reported regressions and the gradual migration of the LiteLLM gateway to Rust.
+三個數字概括了這個月：**24 個安全性修正**、**94 個 bug 修正**，以及**78 個功能提交**。以下各節將逐一拆解，並說明我們對零已回報回歸的公開承諾，以及 LiteLLM gateway 逐步遷移到 Rust 的進程。
 
 {/* truncate */}
 
-## Security updates
+## 安全性更新 {#security-updates}
 
-### Last 4 weeks: by the numbers
+### 過去 4 週：以數字來看 {#last-4-weeks-by-the-numbers}
 
-| Metric | Count |
+| 指標 | 數量 |
 |---|---|
-| Vulnerabilities patched | **24** |
+| 已修補的漏洞 | **24** |
 
-### Bug bounty — now live
+### Bug bounty — 現已上線 {#bug-bounty--now-live}
 
-We pay for security reports.
+我們會為安全性回報付費。
 
-- **Scope** — the LiteLLM gateway and SDK.
-- **Submit** via [private vulnerability report on GitHub](https://github.com/BerriAI/litellm/security).
-- **Triaged** by maintainers and the Veria Labs security team.
+- **範圍** — LiteLLM gateway 和 SDK。
+- **提交方式**：透過 [GitHub 上的私人漏洞回報](https://github.com/BerriAI/litellm/security)。
+- **分流處理**：由維護者與 Veria Labs 安全團隊負責。
 
-### Automated review on every PR
+### 每個 PR 都會進行自動化審查 {#automated-review-on-every-pr}
 
-Every PR gets a security pass. Look for the **Veria scan** — it's a required check on every PR, built on Veria AI + zizmor + semgrep. False positives are flagged, never blocking.
+每個 PR 都會經過安全性檢查。請留意 **Veria scan** — 這是每個 PR 的必要檢查，建立於 Veria AI + zizmor + semgrep 之上。誤判會被標記，但不會阻擋。
 
-### What's next for security
+### 安全性的下一步 {#whats-next-for-security}
 
-- Invest more in the bug bounty program.
-- Improve code patterns during the stability sprint.
+- 加大對 bug bounty 計畫的投入。
+- 在穩定性衝刺期間改善程式碼模式。
 
-## Stability updates
+## 穩定性更新 {#stability-updates}
 
-### The commitment: zero reported regressions by August 29th
+### 承諾：到 8 月 29 日前達成零已回報回歸 {#the-commitment-zero-reported-regressions-by-august-29th}
 
-The goal:
+目標：
 
-- Close 20 reported bugs in core functionality.
-- Fix root causes in 3 high-impact components.
-- Ship a public progress report alongside the August 29 release.
+- 關閉核心功能中的 20 個已回報 bug。
+- 修正 3 個高影響元件的根本原因。
+- 隨 8 月 29 日版本一併發布公開進度報告。
 
-### 94 bug fixes done
+### 已完成 94 個 bug 修正 {#94-bug-fixes-done}
 
-Fixes shipped across five areas:
+修正分布於五個領域：
 
-- Proxy core & resilience — 22 fixes
-- UI + Auth / SSO — 22 fixes
-- Cost, Budgets & Observability — 21 fixes
-- MCP Gateway — 15 fixes
-- Streaming / Realtime APIs — 14 fixes
+- Proxy 核心與韌性 — 22 項修正
+- UI + Auth / SSO — 22 項修正
+- 成本、預算與可觀測性 — 21 項修正
+- MCP Gateway — 15 項修正
+- Streaming / Realtime APIs — 14 項修正
 
-**What kinds of fixes shipped:**
+**這些修正涵蓋哪些類型：**
 
-- **Billing accuracy.** Closed the gaps where spend slipped through — virtual-key limits are now enforced, and cached and tiered usage on Anthropic and Bedrock is priced correctly.
-- **Identity & access.** Caller identity now resolves once into a single record, so team IDs and spend attribution stay correct and auth no longer fails open on DB errors.
-- **MCP reliability.** Tools now list and call consistently across every auth method, with per-user credentials and proper OAuth token refresh.
-- **Resource leaks.** Guardrails no longer re-initialize on every request, eliminating the runner leaks, latency spikes, and OOMs they caused.
-- **Resilience.** Streaming requests recover cost on interruption, the proxy self-heals on dropped DB connections, and OTEL metrics no longer overload Splunk.
+- **計費準確性。** 補上了支出漏掉的缺口 — 現在會強制執行 virtual-key 限制，而且 Anthropic 和 Bedrock 上的快取與分層使用量也已正確計價。
+- **身分與存取。** 呼叫端身分現在只會解析一次成單一紀錄，因此 team IDs 與支出歸因能保持正確，而在資料庫錯誤時認證也不再失敗開放。
+- **MCP 可靠性。** 工具現在會在每一種認證方法下以一致方式列出與呼叫，並具備每位使用者的憑證與正確的 OAuth token refresh。
+- **資源洩漏。** guardrails 不再會在每次請求時重新初始化，消除了它們造成的 runner 洩漏、延遲尖峰與 OOM。
+- **韌性。** Streaming 請求在中斷時會恢復成本，proxy 在資料庫連線中斷時可自我修復，而 OTEL 指標也不再讓 Splunk 負荷過重。
 
-**Root causes, not just symptoms:**
+**根本原因，而不只是症狀：**
 
-- **MCP authentication** — 5 separate code paths, one per auth method, caused inconsistent tool listing and calling. Fix: a single unified code path resolves credentials across all auth methods.
-- **AI gateway auth** — 5+ DB lookups per request to resolve key/user/team identity. Fix: caller identity resolves once into a single record — lookups cut roughly in half.
-- **UI forms** — saving a form could overwrite unrelated fields. Fix: frontend and backend types are 100% in sync from a shared source, so only edited fields change on save.
+- **MCP 認證** — 5 條獨立程式路徑，每種認證方法各一條，導致工具列出與呼叫不一致。修正：單一統一程式路徑可跨所有認證方法解析憑證。
+- **AI gateway 認證** — 每個請求需要 5 次以上的資料庫查詢來解析 key/user/team 身分。修正：呼叫端身分只解析一次成單一紀錄 — 查詢次數大約減半。
+- **UI 表單** — 儲存表單時可能覆寫無關欄位。修正：前端與後端型別 100% 由共享來源同步，因此儲存時只會變更已編輯欄位。
 
-### Public timeline
+### 公開時程 {#public-timeline}
 
-Bug triage is open and active on [GitHub issue #30484](https://github.com/BerriAI/litellm/issues/30484).
+Bug 分流處理已在 [GitHub issue #30484](https://github.com/BerriAI/litellm/issues/30484) 開放且持續進行。
 
-- **NOW** — 20 bugs open in core. Triage active.
-- **JULY** — MCP auth unified to a single code path. AI gateway identity lookups cut in half.
-- **AUGUST** — UI form types synced end-to-end. No more silent field overwrites on save.
-- **AUG 29** — Public progress report ships with the release. Zero-regression target date.
+- **現在** — 核心功能中有 20 個 bug 待處理。分流處理進行中。
+- **7 月** — MCP 認證統一為單一程式路徑。AI gateway 的身分查詢減半。
+- **8 月** — UI 表單型別端到端同步。儲存時不再默默覆寫欄位。
+- **8 月 29 日** — 公開進度報告隨版本發布。零回歸目標日期。
 
-## Product updates
+## 產品更新 {#product-updates}
 
-### 78 feature commits in June
+### 6 月的 78 個功能提交 {#78-feature-commits-in-june}
 
 **Rust**
 
@@ -105,42 +105,42 @@ Bug triage is open and active on [GitHub issue #30484](https://github.com/BerriA
 - E2B + OpenSandbox
 - Unified code execution API
 
-**New models/providers**
+**新模型/提供者**
 
 - TinyFish · Fal.ai · Fireworks AI
 - Cloudflare Workers AI · MAI-Image-2.5
 
-### Performance: moving LiteLLM to Rust
+### 效能：將 LiteLLM 移至 Rust {#performance-moving-litellm-to-rust}
 
-We're migrating the LiteLLM gateway to Rust, and the early numbers make the case:
+我們正在將 LiteLLM gateway 遷移到 Rust，而初期數據已經說明了這項選擇：
 
-| Metric | Rust gateway | LiteLLM (Python) | Improvement |
+| 指標 | Rust gateway | LiteLLM (Python) | 改善 |
 |---|---|---|---|
-| Per-request overhead | 0.05ms | 7.5ms | ~150x lower |
-| Throughput under load | 6,782 req/s | 453 req/s | 15x |
-| Peak memory under load | 32MB | 359MB | 11x lighter |
+| 每次請求額外負擔 | 0.05ms | 7.5ms | 約低 150 倍 |
+| 負載下的吞吐量 | 6,782 req/s | 453 req/s | 15 倍 |
+| 負載下的峰值記憶體 | 32MB | 359MB | 輕 11 倍 |
 
-*Per-request overhead measured at 10 concurrent clients vs. a local mock upstream; throughput and memory under sustained load at 50 concurrent clients. Reproducible harness checked in.*
+*每次請求額外負擔是在 10 個並行用戶端、相對於本機模擬 upstream 測得；吞吐量與記憶體則是在 50 個並行用戶端的持續負載下測得。重現用的 harness 已檢入。*
 
-**How the migration works:** a staged rollout, moving piece by piece from a pure Python SDK + FastAPI proxy, to Python driving Rust transforms via PyO3, to a FastAPI shell with pure Rust on the hot path, to an all-Rust async server (axum).
+**遷移方式：** 分階段 rollout，逐步從純 Python SDK + FastAPI proxy，轉為由 Python 透過 PyO3 驅動 Rust transforms，再到以純 Rust 處理 hot path 的 FastAPI 外殼，最後到全 Rust 的 async server（axum）。
 
-**A gradual rollout** — one route at a time, proven in production before the next begins. Same config, database, and API: nothing for you to change.
+**漸進式 rollout** — 一次一條路由，在進入下一條之前先於 production 驗證。相同的設定、資料庫與 API：您無需變更任何內容。
 
-- **Aug 15** — OCR routes: Mistral first, then all OCR.
-- **Sep 1** — `/messages`, then `/chat/completions`.
-- **Sep 15** — The router: load balancing, fallbacks, retries, cooldowns.
-- **Dec 1** — The full server: FastAPI thin shell, then pure Rust (axum).
+- **8 月 15 日** — OCR routes：先 Mistral，再全部 OCR。
+- **9 月 1 日** — `/messages`，然後 `/chat/completions`。
+- **9 月 15 日** — 路由器：負載平衡、備援、重試、冷卻。
+- **12 月 1 日** — 完整伺服器：FastAPI 輕量外殼，接著是純 Rust（axum）。
 
-### Announcing our version policy
+### 宣布我們的版本政策 {#announcing-our-version-policy}
 
-Going forward, we'll maintain only the four most recent stable minor releases. This takes effect **next Monday, June 29th**. Our focus is ensuring stability on the most up-to-date product offerings — bookmark our [Release Notes](https://docs.litellm.ai/release_notes) to stay current.
+從現在起，我們只會維護最近的四個穩定次要版本。此政策將於**下週一，6 月 29 日**生效。我們的重點是確保最新產品供應項目的穩定性 — 請將我們的 [Release Notes](https://docs.litellm.ai/release_notes) 加入書籤以掌握最新資訊。
 
-## What's next
+## 接下來 {#whats-next}
 
-Thank you again for all the questions and feedback. We'll keep sharing concrete progress updates as these efforts ship — especially as we approach the August 29 zero-regression milestone.
+再次感謝所有提問與回饋。隨著這些工作逐步交付，我們會持續分享具體進度更新 — 特別是在接近 8 月 29 日零回歸里程碑時。
 
-## Hiring
+## 招募 {#hiring}
 
-We are actively hiring across several roles — apply [here](https://jobs.ashbyhq.com/litellm) if you're interested!
+我們目前積極招募多個職位 — 如果您有興趣，請[在此](https://jobs.ashbyhq.com/litellm)申請！
 
-Thank you for using LiteLLM - Krrish & Ishaan
+感謝您使用 LiteLLM - Krrish 與 Ishaan

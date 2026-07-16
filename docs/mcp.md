@@ -2,53 +2,53 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# MCP Overview
+# MCP 總覽 {#mcp-overview}
 
-LiteLLM Proxy provides an MCP Gateway that allows you to use a fixed endpoint for all MCP tools and control MCP access by Key, Team. 
+LiteLLM Proxy 提供一個 MCP 閘道，讓您能為所有 MCP 工具使用固定端點，並依 API 金鑰、團隊來控管 MCP 存取。 
 
 <Image 
   img={require('../img/mcp_2.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 <p style={{textAlign: 'left', color: '#666'}}>
-  LiteLLM MCP Architecture: Use MCP tools with all LiteLLM supported models
+  LiteLLM MCP 架構：使用所有 LiteLLM 支援的模型搭配 MCP 工具
 </p>
 
-## Overview
-| Feature | Description |
+## 總覽 {#overview}
+| 功能 | 說明 |
 |---------|-------------|
-| MCP Operations | • List Tools<br/>• Call Tools <br/>• Prompts <br/>• Resources |
-| Direct REST API | [`/mcp-rest/tools/list` and `/mcp-rest/tools/call`](./mcp_rest_api.md) — call tools with curl without an LLM |
-| Supported MCP Transports | • Streamable HTTP<br/>• SSE<br/>• Standard Input/Output (stdio) |
-| LiteLLM Permission Management | • By Key<br/>• By Team<br/>• By Organization |
+| MCP Operations | • 列出工具<br/>• 呼叫工具 <br/>• 提示詞 <br/>• 資源 |
+| Direct REST API | [`/mcp-rest/tools/list` 與 `/mcp-rest/tools/call`](./mcp_rest_api.md) — 不需 LLM 即可用 curl 呼叫工具 |
+| Supported MCP Transports | • Streamable HTTP<br/>• SSE<br/>• 標準輸入/輸出 (stdio) |
+| LiteLLM Permission Management | • 依 API 金鑰<br/>• 依團隊<br/>• 依組織 |
 
 :::caution MCP protocol update
-Starting in LiteLLM v1.80.18, the LiteLLM MCP protocol version is `2025-11-25`.<br/> 
-LiteLLM namespaces multiple MCP servers by prefixing each tool name with its MCP server name, so newly created servers now must use names that comply with SEP-986—noncompliant names cannot be added anymore. Existing servers that still violate SEP-986 only emit warnings today, but future MCP-side rollouts may block those names entirely, so we recommend updating any legacy server names proactively before MCP enforcement makes them unusable.
+從 LiteLLM v1.80.18 開始，LiteLLM MCP 協定版本為 `2025-11-25`。<br/> 
+LiteLLM 會透過在每個工具名稱前加上其 MCP 伺服器名稱來為多個 MCP 伺服器命名空間，因此新建立的伺服器現在必須使用符合 SEP-986 的名稱——不符合規範的名稱將無法再新增。現有仍違反 SEP-986 的伺服器目前只會發出警告，但未來 MCP 端的推出可能會完全封鎖這些名稱，因此建議您在 MCP 強制限制使其無法使用之前，主動更新任何舊版伺服器名稱。
 :::
 
-## Adding your MCP
+## 新增您的 MCP {#adding-your-mcp}
 
-### Prerequisites
+### 前置需求 {#prerequisites}
 
-To store MCP servers in the database, you need to enable database storage:
+若要將 MCP 伺服器儲存在資料庫中，您需要啟用資料庫儲存：
 
-**Environment Variable:**
+**環境變數：**
 ```bash
 export STORE_MODEL_IN_DB=True
 ```
 
-**OR in config.yaml:**
+**或在 config.yaml 中：**
 ```yaml
 general_settings:
   store_model_in_db: true
 ```
 
-#### Fine-grained Database Storage Control
+#### 細粒度資料庫儲存控制 {#fine-grained-database-storage-control}
 
-By default, when `store_model_in_db` is `true`, all object types (models, MCPs, guardrails, vector stores, etc.) are stored in the database. If you want to store only specific object types, use the `supported_db_objects` setting.
+預設情況下，當 `store_model_in_db` 為 `true` 時，所有物件類型（models、MCP、guardrails、vector stores 等）都會儲存在資料庫中。如果您只想儲存特定物件類型，請使用 `supported_db_objects` 設定。
 
-**Example: Store only MCP servers in the database**
+**範例：只將 MCP 伺服器儲存在資料庫中**
 
 ```yaml title="config.yaml" showLineNumbers
 general_settings:
@@ -62,23 +62,23 @@ model_list:
       api_key: sk-xxxxxxx
 ```
 
-**See all available object types:** [Config Settings - supported_db_objects](./proxy/config_settings.md#general_settings---reference)
+**查看所有可用的物件類型：** [Config Settings - supported_db_objects](./proxy/config_settings.md#general_settings---reference)
 
-If `supported_db_objects` is not set, all object types are loaded from the database (default behavior).
+如果未設定 `supported_db_objects`，所有物件類型都會從資料庫載入（預設行為）。
 
-For diagnosing connectivity problems after setup, see the [MCP Troubleshooting Guide](./mcp_troubleshoot.md).
+若要診斷設定後的連線問題，請參閱 [MCP 疑難排解指南](./mcp_troubleshoot.md)。
 
 <Tabs>
 <TabItem value="ui" label="LiteLLM UI">
 
-On the LiteLLM UI, Navigate to "MCP Servers" and click "Add New MCP Server".
+在 LiteLLM UI 中，前往「MCP Servers」，然後點選「Add New MCP Server」。
 
-On this form, you should enter your MCP Server URL and the transport you want to use.
+在此表單中，您應輸入 MCP Server URL 與要使用的傳輸方式。
 
-LiteLLM supports the following MCP transports:
+LiteLLM 支援下列 MCP 傳輸：
 - Streamable HTTP
 - SSE (Server-Sent Events)
-- Standard Input/Output (stdio)
+- 標準輸入/輸出 (stdio)
 
 <Image 
   img={require('../img/add_mcp.png')}
@@ -88,27 +88,27 @@ LiteLLM supports the following MCP transports:
 <br/>
 <br/>
 
-### Add HTTP MCP Server
+### 新增 HTTP MCP Server {#add-http-mcp-server}
 
-This video walks through adding and using an HTTP MCP server on LiteLLM UI and using it in Cursor IDE.
+此影片示範如何在 LiteLLM UI 中新增與使用 HTTP MCP server，並在 Cursor IDE 中使用它。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/e2aebce78e8d46beafeb4bacdde31f14" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 <br/>
 <br/>
 
-### Add SSE MCP Server
+### 新增 SSE MCP Server {#add-sse-mcp-server}
 
-This video walks through adding and using an SSE MCP server on LiteLLM UI and using it in Cursor IDE.
+此影片示範如何在 LiteLLM UI 中新增與使用 SSE MCP server，並在 Cursor IDE 中使用它。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/07e04e27f5e74475b9cf8ef8247d2c3e" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 <br/>
 <br/>
 
-### Add STDIO MCP Server
+### 新增 STDIO MCP Server {#add-stdio-mcp-server}
 
-For stdio MCP servers, select "Standard Input/Output (stdio)" as the transport type and provide the stdio configuration in JSON format:
+對於 stdio MCP 伺服器，請將「Standard Input/Output (stdio)」選為傳輸類型，並以 JSON 格式提供 stdio 設定：
 
 <Image 
   img={require('../img/add_stdio_mcp.png')}
@@ -118,69 +118,68 @@ For stdio MCP servers, select "Standard Input/Output (stdio)" as the transport t
 <br/>
 <br/>
 
-### OAuth Configuration & Overrides
+### OAuth 設定與覆寫 {#oauth-configuration--overrides}
 
-LiteLLM attempts [OAuth 2.0 Authorization Server Discovery](https://datatracker.ietf.org/doc/html/rfc8414) by default. When you create an MCP server in the UI and set `Authentication: OAuth`, LiteLLM will locate the provider metadata, dynamically register a client, and perform PKCE-based authorization without you providing any additional details.
+LiteLLM 預設會嘗試 [OAuth 2.0 Authorization Server Discovery](https://datatracker.ietf.org/doc/html/rfc8414)。當您在 UI 中建立 MCP 伺服器並設定 `Authentication: OAuth` 時，LiteLLM 會定位提供者中繼資料、動態註冊用戶端，並以 PKCE 為基礎執行授權，而您無需提供任何額外細節。
 
-**Customize the OAuth flow when needed:**
+**需要時可自訂 OAuth 流程：**
 
 <Image 
   img={require('../img/mcp_oauth.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-- **Provide explicit client credentials** – If the MCP provider does not offer dynamic client registration or you prefer to manage the client yourself, fill in `client_id`, `client_secret`, and the desired `scopes`.
-- **Override discovery URLs** – In some environments, LiteLLM might not be able to reach the provider's metadata endpoints. Use the optional `authorization_url`, `token_url`, and `registration_url` fields to point LiteLLM directly to the correct endpoints.
+- **提供明確的用戶端憑證** – 如果 MCP 提供者不支援動態用戶端註冊，或您希望自行管理用戶端，請填入 `client_id`、`client_secret`，以及所需的 `scopes`。
+- **覆寫探索 URL** – 在某些環境中，LiteLLM 可能無法連線到提供者的中繼資料端點。請使用可選的 `authorization_url`、`token_url` 與 `registration_url` 欄位，將 LiteLLM 直接指向正確的端點。
 
 <br/>
 
-### AWS SigV4 Authentication
+### AWS SigV4 驗證 {#aws-sigv4-authentication}
 
-For MCP servers hosted on [AWS Bedrock AgentCore](https://docs.aws.amazon.com/bedrock/latest/userguide/agentcore.html), select **AWS SigV4** as the authentication type. LiteLLM will sign every outgoing MCP request with your AWS credentials using [Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
+對於託管於 [AWS Bedrock AgentCore](https://docs.aws.amazon.com/bedrock/latest/userguide/agentcore.html) 的 MCP 伺服器，請將驗證類型選為 **AWS SigV4**。LiteLLM 會使用您的 AWS 憑證，並透過 [Signature Version 4](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) 為每個外送的 MCP 請求簽章。
 
 <Image
   img={require('../img/mcp_aws_sigv4_ui.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-Fill in your AWS region, service name (defaults to `bedrock-agentcore`), and optionally your AWS access key and secret. If credentials are omitted, LiteLLM falls back to the boto3 credential chain (IAM roles, environment variables, etc.).
+填入您的 AWS 區域、服務名稱（預設為 `bedrock-agentcore`），並可選擇填入您的 AWS access key 與 secret。若省略憑證，LiteLLM 會回退到 boto3 憑證鏈（IAM roles、環境變數等）。
 
-[**See full SigV4 setup guide**](./mcp_aws_sigv4.md)
+[**查看完整 SigV4 設定指南**](./mcp_aws_sigv4.md)
 
 <br/>
 
-### Static Headers
+### 靜態標頭 {#static-headers}
 
-Sometimes your MCP server needs specific headers on every request. Maybe it's an API key, maybe it's a custom header the server expects. Instead of configuring auth, you can just set them directly.
+有時您的 MCP 伺服器需要每個請求都帶有特定標頭。可能是 API key，也可能是伺服器所預期的自訂標頭。與其設定驗證，不如直接設定它們。
 
 <Image 
   img={require('../img/static_headers.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-These headers get sent with every request to the server. That's it.
+這些標頭會隨每個請求送到伺服器。就是這樣。
 
+**何時使用此功能：**
+- 您的伺服器需要不符合標準驗證模式的自訂標頭
+- 您希望完全掌控實際送出的標頭內容
+- 您正在除錯，且需要在不變更驗證設定的情況下快速新增標頭
 
-**When to use this:**
-- Your server needs custom headers that don't fit the standard auth patterns
-- You want full control over exactly what headers are sent
-- You're debugging and need to quickly add headers without changing auth configuration
+### 伺服器變數 {#server-variables}
 
-### Server Variables
-
-Store credentials on the server and reference them in static headers or authentication with `${VAR_NAME}` (e.g. `${DB_PROTOCOL}://${CORP_USERNAME}:${CORP_PASSWORD}@${DB_HOSTNAME}`). Scope each variable as **Instance** (shared) or **Per-user** (each user supplies their own).
+將憑證儲存在伺服器上，並透過 `${VAR_NAME}` 在靜態標頭或驗證中引用它們（例如 `${DB_PROTOCOL}://${CORP_USERNAME}:${CORP_PASSWORD}@${DB_HOSTNAME}`）。將每個變數的範圍設為 **Instance**（共享）或 **Per-user**（每位使用者各自提供自己的值）。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/12878e2be19140069170c3a270b50d1c" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-**When to use this:**
-- Each user needs to connect with their own static credentials
-- You want to reuse certain shared details (e.g., DB url) across users
+**何時使用此功能：**
+- 每位使用者都需要使用自己的靜態憑證連線
+- 您希望在不同使用者之間重複使用某些共享資訊（例如 DB url）
 
 </TabItem>
 
 <TabItem value="config" label="config.yaml">
 
-Add your MCP servers directly in your `config.yaml` file:
+直接在您的 `config.yaml` 檔案中新增 MCP 伺服器：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -222,40 +221,40 @@ mcp_servers:
     auth_value: "abc123"
 ```
 
-**Configuration Options:**
-- **Server Name**: Use any descriptive name for your MCP server (e.g., `zapier_mcp`, `deepwiki_mcp`, `circleci_mcp`)
-- **Alias**: This name will be prefilled with the server name with "_" replacing spaces, else edit it to be the prefix in tool names
-- **URL**: The endpoint URL for your MCP server (required for HTTP/SSE transports)
-- **Transport**: Optional transport type (defaults to `sse`)
-  - `sse` - SSE (Server-Sent Events) transport
-  - `http` - Streamable HTTP transport
-  - `stdio` - Standard Input/Output transport
-- **Command**: The command to execute for stdio transport (required for stdio)
-- **allow_all_keys**: Set to `true` to make the server available to every LiteLLM API key, even if the key/team doesn't list the server in its MCP permissions.
-- **Args**: Array of arguments to pass to the command (optional for stdio)
-- **Env**: Environment variables to set for the stdio process (optional for stdio)
-- **Description**: Optional description for the server
-- **Auth Type**: Optional authentication type. Supported values:
+**設定選項：**
+- **Server Name**：為您的 MCP 伺服器使用任何具描述性的名稱（例如 `zapier_mcp`、`deepwiki_mcp`、`circleci_mcp`）
+- **Alias**：此名稱將預先填入伺服器名稱，並以 "_" 取代空格；否則可將其編輯為工具名稱中的前綴
+- **URL**：您的 MCP 伺服器端點 URL（HTTP/SSE 傳輸必填）
+- **Transport**：可選的傳輸類型（預設為 `sse`）
+  - `sse` - SSE (Server-Sent Events) 傳輸
+  - `http` - Streamable HTTP 傳輸
+  - `stdio` - 標準輸入/輸出傳輸
+- **Command**：執行 stdio 傳輸的命令（stdio 必填）
+- **allow_all_keys**：設為 `true`，即可讓所有 LiteLLM API 金鑰都能使用此伺服器，即使該金鑰/團隊未在其 MCP 權限中列出此伺服器。
+- **Args**：要傳給命令的引數陣列（stdio 可選）
+- **Env**：為 stdio 程序設定的環境變數（stdio 可選）
+- **Description**：伺服器的可選描述
+- **Auth Type**：可選的驗證類型。支援值：
 
-  | Value | Header sent (managed SSE/HTTP transport) |
+| 值 | 傳送的標頭（受管 SSE/HTTP 傳輸） |
   |-------|-------------|
-  | `none` | No auth header added |
+  | `none` | 未新增驗證標頭 |
   | `api_key` | `X-API-Key: <auth_value>` |
   | `bearer_token` | `Authorization: Bearer <auth_value>` |
   | `basic` | `Authorization: Basic <auth_value>` |
-  | `authorization` | `Authorization: <auth_value>` (verbatim, no prefix) |
-  | `token` | `Authorization: token <auth_value>` (GitHub-style) |
-  | `oauth2` | `Authorization: Bearer <resolved_token>` — PKCE or M2M `client_credentials`. See [MCP OAuth](./mcp_oauth.md) |
-  | `oauth2_token_exchange` | `Authorization: Bearer <exchanged_token>` — RFC 8693 On-Behalf-Of. See [MCP OBO Auth](./mcp_obo_auth.md) |
-  | `aws_sigv4` | Per-request AWS SigV4 signature. See [MCP AWS SigV4](./mcp_aws_sigv4.md) |
+  | `authorization` | `Authorization: <auth_value>`（逐字，無前綴） |
+  | `token` | `Authorization: token <auth_value>`（GitHub 風格） |
+  | `oauth2` | `Authorization: Bearer <resolved_token>` — PKCE 或 M2M `client_credentials`。請參閱 [MCP OAuth](./mcp_oauth.md) |
+  | `oauth2_token_exchange` | `Authorization: Bearer <exchanged_token>` — RFC 8693 On-Behalf-Of。請參閱 [MCP OBO Auth](./mcp_obo_auth.md) |
+  | `aws_sigv4` | 每次請求的 AWS SigV4 簽章。請參閱 [MCP AWS SigV4](./mcp_aws_sigv4.md) |
 
-  Note: the header table above describes the managed SSE/HTTP transport path. The OpenAPI-tool path emits `Authorization: ApiKey <value>` instead of `X-API-Key` for `auth_type: api_key`; the deprecated `x-mcp-auth` broadcast header also uses the `ApiKey` form.
+  注意：上方的標頭表格描述的是受管 SSE/HTTP 傳輸路徑。OpenAPI 工具路徑會對 `auth_type: api_key` 傳送 `Authorization: ApiKey <value>` 而不是 `X-API-Key`；已棄用的 `x-mcp-auth` broadcast 標頭也使用 `ApiKey` 形式。
 
-- **Extra Headers**: Optional list of additional header names that should be forwarded from client to the MCP server
-- **Static Headers**: Optional map of header key/value pairs to include every request to the MCP server.
-- **Spec Version**: Optional MCP specification version (defaults to `2025-06-18`)
+- **額外標頭**：可選的額外標頭名稱清單，應從用戶端轉送至 MCP 伺服器
+- **靜態標頭**：要包含於每次傳送至 MCP 伺服器請求中的可選標頭鍵/值配對對映。
+- **規格版本**：可選的 MCP 規格版本（預設為 `2025-06-18`）
 
-Examples for each auth type:
+各種驗證類型的範例：
 
 ```yaml title="MCP auth examples (config.yaml)" showLineNumbers
 mcp_servers:
@@ -316,11 +315,11 @@ mcp_servers:
       X-Custom-Header: "some-value"
 ```
 
-### MCP Walkthroughs
+### MCP 逐步導覽 {#mcp-walkthroughs}
 
-- **Strands (STDIO)** – [watch tutorial](https://screen.studio/share/ruv4D73F)
+- **Strands (STDIO)** – [觀看教學](https://screen.studio/share/ruv4D73F)
 
-> Add it from the UI
+> 從 UI 新增
 
 ```json title="strands-mcp" showLineNumbers
 {
@@ -351,15 +350,15 @@ mcp_servers:
 ```
 
 
-### MCP Aliases
+### MCP 別名 {#mcp-aliases}
 
-You can define aliases for your MCP servers in the `litellm_settings` section. This allows you to:
+您可以在 `litellm_settings` 區段中為您的 MCP 伺服器定義別名。這可讓您：
 
-1. **Map friendly names to server names**: Use shorter, more memorable aliases
-2. **Override server aliases**: If a server doesn't have an alias defined, the system will use the first matching alias from `mcp_aliases`
-3. **Ensure uniqueness**: Only the first alias for each server is used, preventing conflicts
+1. **將友善名稱對應至伺服器名稱**：使用較短、更容易記憶的別名
+2. **覆寫伺服器別名**：如果某個伺服器未定義別名，系統會使用 `mcp_aliases` 中第一個符合的別名
+3. **確保唯一性**：每個伺服器只會使用第一個別名，避免衝突
 
-**Example:**
+**範例：**
 ```yaml
 litellm_settings:
   mcp_aliases:
@@ -369,33 +368,32 @@ litellm_settings:
     "github_alt": "github_mcp_server"  # This will be ignored since "github" already maps to this server
 ```
 
-**Benefits:**
-- **Simplified tool access**: Use `github_create_issue` instead of `github_mcp_server_create_issue`
-- **Consistent naming**: Standardize alias patterns across your organization
-- **Easy migration**: Change server names without breaking existing tool references
+**優點：**
+- **簡化工具存取**：使用 `github_create_issue` 取代 `github_mcp_server_create_issue`
+- **一致的命名**：在您的組織中標準化別名模式
+- **輕鬆遷移**：變更伺服器名稱而不破壞既有的工具參照
 
 </TabItem>
 </Tabs>
 
+## 將 OpenAPI 規格轉換為 MCP 伺服器 {#converting-openapi-specs-to-mcp-servers}
 
-## Converting OpenAPI Specs to MCP Servers
+LiteLLM 可以將 OpenAPI 規格轉換為 MCP 伺服器，將任何 REST API 以 MCP 工具形式暴露，而無需撰寫自訂伺服器程式碼。
 
-LiteLLM can convert OpenAPI specifications into MCP servers, exposing any REST API as MCP tools without writing custom server code.
+請參閱 **[從 OpenAPI 規格產生 MCP 的指南](./mcp_openapi.md)** 以取得完整設定、使用範例，以及如何覆寫工具名稱與描述。
 
-See the **[MCP from OpenAPI Specs guide](./mcp_openapi.md)** for full setup, usage examples, and how to override tool names and descriptions.
+## MCP OAuth {#mcp-oauth}
 
-## MCP OAuth
+LiteLLM 支援 MCP 伺服器的 OAuth 2.0——同時支援面向使用者用戶端的互動式（PKCE）流程，以及供後端服務使用的機器對機器（M2M）`client_credentials`。
 
-LiteLLM supports OAuth 2.0 for MCP servers -- both interactive (PKCE) flows for user-facing clients and machine-to-machine (M2M) `client_credentials` for backend services.
-
-See the **[MCP OAuth guide](./mcp_oauth.md)** for setup instructions, sequence diagrams, and a test server.
+請參閱 **[MCP OAuth 指南](./mcp_oauth.md)** 以取得設定說明、序列圖與測試伺服器。
 
 <details>
-<summary>Detailed OAuth reference (click to expand)</summary>
+<summary>詳細 OAuth 參考資料（按一下展開）</summary>
 
-LiteLLM v 1.77.6 added support for OAuth 2.0 Client Credentials for MCP servers.
+LiteLLM v 1.77.6 新增了對 MCP 伺服器 OAuth 2.0 Client Credentials 的支援。
 
-You can configure this either in `config.yaml` or directly from the LiteLLM UI (MCP Servers → Authentication → OAuth). Every `auth_type: oauth2` server must declare its flow via `oauth2_flow`: `authorization_code` for interactive browser sign-in (shown below) or `client_credentials` for machine-to-machine tokens.
+您可以在 `config.yaml` 中設定，或直接從 LiteLLM UI（MCP Servers → Authentication → OAuth）進行設定。每個 `auth_type: oauth2` 伺服器都必須透過 `oauth2_flow` 宣告其流程：互動式瀏覽器登入使用 `authorization_code`（如下所示），而機器對機器權杖則使用 `client_credentials`。
 
 ```yaml
 mcp_servers:
@@ -407,86 +405,84 @@ mcp_servers:
     client_secret: os.environ/GITHUB_OAUTH_CLIENT_SECRET
 ```
 
-[**See Claude Code Tutorial**](./tutorials/claude_responses_api#connecting-mcp-servers)
+[**請參閱 Claude Code 教學**](./tutorials/claude_responses_api#connecting-mcp-servers)
 
-### How It Works
+### 運作方式 {#how-it-works}
 
 ```mermaid
 sequenceDiagram
-    participant Browser as User-Agent (Browser)
-    participant Client as Client
+    participant Browser as 使用者代理程式（瀏覽器）
+    participant Client as 用戶端
     participant LiteLLM as LiteLLM Proxy
-    participant MCP as MCP Server (Resource Server)
-    participant Auth as Authorization Server
+    participant MCP as MCP 伺服器（資源伺服器）
+    participant Auth as 授權伺服器
 
-    Note over Client,LiteLLM: Step 1 – Resource discovery
+    Note over Client,LiteLLM: 步驟 1 – 資源探索
     Client->>LiteLLM: GET /.well-known/oauth-protected-resource/{mcp_server_name}/mcp
-    LiteLLM->>Client: Return resource metadata
+    LiteLLM->>Client: 回傳資源中繼資料
 
-    Note over Client,LiteLLM: Step 2 – Authorization server discovery
+    Note over Client,LiteLLM: 步驟 2 – 授權伺服器探索
     Client->>LiteLLM: GET /.well-known/oauth-authorization-server/{mcp_server_name}
-    LiteLLM->>Client: Return authorization server metadata
+    LiteLLM->>Client: 回傳授權伺服器中繼資料
 
-    Note over Client,Auth: Step 3 – Dynamic client registration
+    Note over Client,Auth: 步驟 3 – 動態用戶端註冊
     Client->>LiteLLM: POST /{mcp_server_name}/register
-    LiteLLM->>Auth: Forward registration request
-    Auth->>LiteLLM: Issue client credentials
-    LiteLLM->>Client: Return client credentials
+    LiteLLM->>Auth: 轉送註冊請求
+    Auth->>LiteLLM: 發出用戶端憑證
+    LiteLLM->>Client: 回傳用戶端憑證
 
-    Note over Client,Browser: Step 4 – User authorization (PKCE)
-    Client->>Browser: Open authorization URL + code_challenge + resource
-    Browser->>Auth: Authorization request
-    Note over Auth: User authorizes
-    Auth->>Browser: Redirect with authorization code
-    Browser->>LiteLLM: Callback to LiteLLM with code
-    LiteLLM->>Browser: Redirect back with authorization code
-    Browser->>Client: Callback with authorization code
+    Note over Client,Browser: 步驟 4 – 使用者授權（PKCE）
+    Client->>Browser: 開啟授權 URL + code_challenge + resource
+    Browser->>Auth: 授權請求
+    Note over Auth: 使用者授權
+    Auth->>Browser: 以授權碼重新導向
+    Browser->>LiteLLM: 透過 code 呼叫 LiteLLM 的回呼
+    LiteLLM->>Browser: 以授權碼重新導向回傳
+    Browser->>Client: 透過授權碼回呼
 
-    Note over Client,Auth: Step 5 – Token exchange
-    Client->>LiteLLM: Token request + code_verifier + resource
-    LiteLLM->>Auth: Forward token request
-    Auth->>LiteLLM: Access (and refresh) token
-    LiteLLM->>Client: Return tokens
+    Note over Client,Auth: 步驟 5 – 權杖交換
+    Client->>LiteLLM: 權杖請求 + code_verifier + resource
+    LiteLLM->>Auth: 轉送權杖請求
+    Auth->>LiteLLM: 存取（以及重新整理）權杖
+    LiteLLM->>Client: 回傳權杖
 
-    Note over Client,MCP: Step 6 – Authenticated MCP call
-    Client->>LiteLLM: MCP request with access token + LiteLLM API key
-    LiteLLM->>MCP: MCP request with Bearer token
-    MCP-->>LiteLLM: MCP response
-    LiteLLM-->>Client: Return MCP response
+    Note over Client,MCP: 步驟 6 – 已驗證的 MCP 呼叫
+    Client->>LiteLLM: 夾帶存取權杖 + LiteLLM API 金鑰的 MCP 請求
+    LiteLLM->>MCP: 夾帶 Bearer 權杖的 MCP 請求
+    MCP-->>LiteLLM: MCP 回應
+    LiteLLM-->>Client: 回傳 MCP 回應
 ```
 
-**Participants**
+**參與者**
 
-- **Client** – The MCP-capable AI agent (e.g., Claude Code, Cursor, or another IDE/agent) that initiates OAuth discovery, authorization, and tool invocations on behalf of the user.
-- **LiteLLM Proxy** – Mediates all OAuth discovery, registration, token exchange, and MCP traffic while protecting stored credentials.
-- **Authorization Server** – Issues OAuth 2.0 tokens via dynamic client registration, PKCE authorization, and token endpoints.
-- **MCP Server (Resource Server)** – The protected MCP endpoint that receives LiteLLM’s authenticated JSON-RPC requests.
-- **User-Agent (Browser)** – Temporarily involved so the end user can grant consent during the authorization step.
+- **Client** – 具備 MCP 能力的 AI 代理程式（例如 Claude Code、Cursor，或其他 IDE/代理程式），代表使用者啟動 OAuth 探索、授權與工具呼叫。
+- **LiteLLM Proxy** – 在保護已儲存憑證的同時，處理所有 OAuth 探索、註冊、權杖交換與 MCP 流量。
+- **Authorization Server** – 透過動態用戶端註冊、PKCE 授權與權杖端點發行 OAuth 2.0 權杖。
+- **MCP Server (Resource Server)** – 接收 LiteLLM 已驗證 JSON-RPC 請求的受保護 MCP 端點。
+- **User-Agent (Browser)** – 暫時參與，以便最終使用者在授權步驟中授予同意。
 
-**Flow Steps**
+**流程步驟**
 
-1. **Resource Discovery**: The client fetches MCP resource metadata from LiteLLM’s `.well-known/oauth-protected-resource` endpoint to understand scopes and capabilities.
-2. **Authorization Server Discovery**: The client retrieves the OAuth server metadata (token endpoint, authorization endpoint, supported PKCE methods) through LiteLLM’s `.well-known/oauth-authorization-server` endpoint.
-3. **Dynamic Client Registration**: The client registers through LiteLLM, which forwards the request to the authorization server (RFC 7591). If the provider doesn’t support dynamic registration, you can pre-store `client_id`/`client_secret` in LiteLLM (e.g., GitHub MCP) and the flow proceeds the same way.
-4. **User Authorization**: The client launches a browser session (with code challenge and resource hints). The user approves access, the authorization server sends the code through LiteLLM back to the client.
-5. **Token Exchange**: The client calls LiteLLM with the authorization code, code verifier, and resource. LiteLLM exchanges them with the authorization server and returns the issued access/refresh tokens.
-6. **MCP Invocation**: With a valid token, the client sends the MCP JSON-RPC request (plus LiteLLM API key) to LiteLLM, which forwards it to the MCP server and relays the tool response.
+1. **資源探索**：用戶端從 LiteLLM 的 `.well-known/oauth-protected-resource` 端點擷取 MCP 資源中繼資料，以了解權限範圍與能力。
+2. **授權伺服器探索**：用戶端透過 LiteLLM 的 `.well-known/oauth-authorization-server` 端點取得 OAuth 伺服器中繼資料（權杖端點、授權端點、支援的 PKCE 方法）。
+3. **動態用戶端註冊**：用戶端透過 LiteLLM 註冊，LiteLLM 再將請求轉送至授權伺服器（RFC 7591）。如果提供者不支援動態註冊，您可以在 LiteLLM 中預先儲存 `client_id`/`client_secret`（例如 GitHub MCP），流程會以相同方式進行。
+4. **使用者授權**：用戶端啟動瀏覽器工作階段（含 code challenge 與 resource 提示）。使用者核准存取後，授權伺服器會經由 LiteLLM 將 code 傳回給用戶端。
+5. **權杖交換**：用戶端以授權碼、code verifier 與 resource 呼叫 LiteLLM。LiteLLM 與授權伺服器交換這些資訊，並回傳所發出的存取/重新整理權杖。
+6. **MCP 呼叫**：在持有有效權杖時，用戶端將 MCP JSON-RPC 請求（加上 LiteLLM API 金鑰）送至 LiteLLM，LiteLLM 再將其轉送至 MCP 伺服器並轉遞工具回應。
 
-See the official [MCP Authorization Flow](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-flow-steps) for additional reference.
+另請參閱官方 [MCP 授權流程](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-flow-steps) 以取得更多參考資料。
 
 </details>
 
+## 將自訂標頭轉送至 MCP 伺服器 {#forwarding-custom-headers-to-mcp-servers}
 
-## Forwarding Custom Headers to MCP Servers
+LiteLLM 支援使用 `extra_headers` 設定參數，將額外的自訂標頭從 MCP 用戶端轉送至後端 MCP 伺服器。這可讓您傳遞 MCP 伺服器所需的自訂驗證權杖、API 金鑰或其他標頭。
 
-LiteLLM supports forwarding additional custom headers from MCP clients to backend MCP servers using the `extra_headers` configuration parameter. This allows you to pass custom authentication tokens, API keys, or other headers that your MCP server requires.
-
-**Configuration**
-
+**組態**
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
-Configure `extra_headers` in your MCP server configuration to specify which header names should be forwarded:
+在 MCP 伺服器組態中設定 `extra_headers`，以指定應轉送哪些標頭名稱：
 
 ```yaml title="config.yaml with extra_headers" showLineNumbers
 mcp_servers:
@@ -498,19 +494,18 @@ mcp_servers:
     description: "GitHub MCP server with custom header forwarding"
 ```
 </TabItem>
-<TabItem value="clientside" label="Dynamically on Client Side">
+<TabItem value="clientside" label="在用戶端動態設定">
 
-Use this when giving users access to a [group of MCP servers](#grouping-mcps-access-groups).
+當您要讓使用者存取 [一組 MCP 伺服器](#grouping-mcps-access-groups) 時，請使用此方式。
 
-**Format:** `x-mcp-{server_alias}-{header_name}: value`
+**格式：** `x-mcp-{server_alias}-{header_name}: value`
 
-This allows you to use different authentication for different MCP servers.
+這可讓您對不同的 MCP 伺服器使用不同的驗證方式。
 
-
-**Examples:**
-- `x-mcp-github-authorization: Bearer ghp_xxxxxxxxx` - GitHub MCP server with Bearer token
-- `x-mcp-zapier-x-api-key: sk-xxxxxxxxx` - Zapier MCP server with API key
-- `x-mcp-deepwiki-authorization: Basic base64_encoded_creds` - DeepWiki MCP server with Basic auth
+**範例：**
+- `x-mcp-github-authorization: Bearer ghp_xxxxxxxxx` - 使用 Bearer token 的 GitHub MCP server
+- `x-mcp-zapier-x-api-key: sk-xxxxxxxxx` - 使用 API key 的 Zapier MCP server
+- `x-mcp-deepwiki-authorization: Basic base64_encoded_creds` - 使用 Basic auth 的 DeepWiki MCP server
 
 ```python title="Python Client with Server-Specific Auth" showLineNumbers
 from fastmcp import Client
@@ -554,22 +549,18 @@ if __name__ == "__main__":
 ```
 
 
-
-**Benefits:**
-- **Server-specific authentication**: Each MCP server can use different auth methods
-- **Better security**: No need to share the same auth token across all servers
-- **Flexible header names**: Support for different auth header types (authorization, x-api-key, etc.)
-- **Clean separation**: Each server's auth is clearly identified
-
-
+**優點：**
+- **特定伺服器驗證**：每個 MCP server 可使用不同的驗證方法
+- **更好的安全性**：不需要在所有 server 之間共享相同的驗證 token
+- **彈性的標頭名稱**：支援不同的驗證標頭類型（authorization、x-api-key 等）
+- **清楚的分離**：每個 server 的驗證都能明確識別
 
 </TabItem>
 </Tabs>
 
+#### 用戶端使用 {#client-usage}
 
-#### Client Usage
-
-When connecting from MCP clients, include the custom headers that match the `extra_headers` configuration:
+從 MCP 用戶端連線時，請加入與 `extra_headers` 設定相符的自訂標頭：
 
 <Tabs>
 <TabItem value="fastmcp" label="Python FastMCP">
@@ -652,17 +643,16 @@ curl --location 'http://localhost:4000/github_mcp/mcp' \
 </TabItem>
 </Tabs>
 
-#### How It Works
+#### 運作方式 {#how-it-works-1}
 
-1. **Configuration**: Define `extra_headers` in your MCP server config with the header names you want to forward
-2. **Client Headers**: Include the corresponding headers in your MCP client requests
-3. **Header Forwarding**: LiteLLM automatically forwards matching headers to the backend MCP server
-4. **Authentication**: The backend MCP server receives both the configured auth headers and the custom headers
+1. **設定**：在您的 MCP server 設定中定義 `extra_headers`，並填入您要轉送的標頭名稱
+2. **用戶端標頭**：在您的 MCP 用戶端請求中包含對應的標頭
+3. **標頭轉送**：LiteLLM 會自動將符合的標頭轉送到後端 MCP server
+4. **驗證**：後端 MCP server 會同時接收已設定的驗證標頭與自訂標頭
 
+### 將請求標頭傳遞到 STDIO 環境變數 {#passing-request-headers-to-stdio-env-vars}
 
-### Passing Request Headers to STDIO env Vars
-
-If your stdio MCP server needs per-request credentials, you can map HTTP headers from the client request directly into the environment for the launched stdio process. Reference the header name in the env value using the `${X-HEADER_NAME}` syntax. LiteLLM will read that header from the incoming request and set the env var before starting the command.
+如果您的 stdio MCP server 需要每次請求的憑證，您可以將用戶端請求中的 HTTP 標頭直接對應到啟動的 stdio 程序環境中。請使用 `${X-HEADER_NAME}` 語法在 env 值中引用標頭名稱。LiteLLM 會從傳入請求中讀取該標頭，並在啟動命令前設定 env var。
 
 ```json title="Forward X-GITHUB_PERSONAL_ACCESS_TOKEN header to stdio env" showLineNumbers
 {
@@ -685,16 +675,16 @@ If your stdio MCP server needs per-request credentials, you can map HTTP headers
 }
 ```
 
-In this example, when a client makes a request with the `X-GITHUB_PERSONAL_ACCESS_TOKEN` header, the proxy forwards that value into the stdio process as the `GITHUB_PERSONAL_ACCESS_TOKEN` environment variable.
+在此範例中，當用戶端以 `X-GITHUB_PERSONAL_ACCESS_TOKEN` 標頭發出請求時，proxy 會將該值以 `GITHUB_PERSONAL_ACCESS_TOKEN` 環境變數的形式轉送到 stdio 程序。
 
-## Control MCP Access for End Users
+## 控制最終使用者的 MCP 存取 {#control-mcp-access-for-end-users}
 
-Control which MCP servers end users of your AI application can access (e.g. users of an internal chat UI). Pass the customer ID in the `x-litellm-end-user-id` header to:
-- Enforce object permissions (limit which MCP servers they can access)
-- Apply customer-specific budgets
-- Track spend per customer
+控制您的 AI 應用程式最終使用者可以存取哪些 MCP server（例如，內部聊天 UI 的使用者）。將客戶 ID 傳入 `x-litellm-end-user-id` 標頭，以便：
+- 強制執行物件權限（限制可存取的 MCP server）
+- 套用客戶專屬預算
+- 追蹤每位客戶的支出
 
-**FastMCP Client Example:**
+**FastMCP 用戶端範例：**
 
 ```python title="Track customer spend with x-litellm-end-user-id" showLineNumbers
 from fastmcp import Client
@@ -726,7 +716,7 @@ async def main():
 asyncio.run(main())
 ```
 
-**Cursor IDE Example:**
+**Cursor IDE 範例：**
 
 ```json title="Cursor config with customer tracking" showLineNumbers
 {
@@ -742,19 +732,19 @@ asyncio.run(main())
 }
 ```
 
-**What happens:**
-- Customer-specific object permissions are enforced (only allowed MCP servers are accessible)
-- Customer budgets are applied
-- All tool calls are tracked under `customer_123`
+**會發生什麼：**
+- 會強制執行客戶專屬的物件權限（只能存取允許的 MCP server）
+- 會套用客戶預算
+- 所有工具呼叫都會以 `customer_123` 進行追蹤
 
-[Learn more about customer management →](./proxy/customers)
+[深入了解客戶管理 →](./proxy/customers)
 
-## Calling the Proxy's /v1/responses Endpoint
+## 呼叫 Proxy 的 /v1/responses 端點 {#calling-the-proxys-v1responses-endpoint}
 
-When calling your LiteLLM Proxy's `/v1/responses` endpoint to use MCP tools, **always use `server_url: "litellm_proxy"`** in the tools array. This tells the proxy to use its configured MCP servers.
+當您呼叫 LiteLLM Proxy 的 `/v1/responses` 端點來使用 MCP 工具時，**一律請在 tools 陣列中使用 `server_url: "litellm_proxy"`**。這會告訴 proxy 使用其已設定的 MCP servers。
 
-:::important Do not use the full proxy URL
-Using `server_url: "https://your-proxy.com/mcp"` is incorrect when the request is already going to the proxy. The proxy needs the literal value `litellm_proxy` to route to its configured MCP servers.
+:::important 不要使用完整的 proxy URL
+如果請求已經送到 proxy，使用 `server_url: "https://your-proxy.com/mcp"` 是不正確的。proxy 需要文字值 `litellm_proxy`，才能路由到其已設定的 MCP servers。
 :::
 
 ```bash title="Correct: Using litellm_proxy" showLineNumbers
@@ -776,11 +766,11 @@ curl --location 'https://your-proxy.com/v1/responses' \
 }'
 ```
 
-### Sending Custom Headers to MCP Servers
+### 將自訂標頭傳送到 MCP servers {#sending-custom-headers-to-mcp-servers}
 
-To pass custom headers (e.g., API keys, auth tokens) to specific MCP servers, use either:
+若要將自訂標頭（例如 API 金鑰、驗證 token）傳遞給特定的 MCP server，請使用以下任一方式：
 
-**Option 1: Request headers** – Add `x-mcp-{server_alias}-{header_name}` to your request headers. The proxy forwards these to the matching MCP server.
+**選項 1：請求標頭** – 將 `x-mcp-{server_alias}-{header_name}` 加入您的請求標頭。proxy 會將這些標頭轉送到對應的 MCP server。
 
 ```bash
 # Send Authorization header to the "weather2" MCP server
@@ -790,7 +780,7 @@ To pass custom headers (e.g., API keys, auth tokens) to specific MCP servers, us
 --header 'x-mcp-github-x-api-key: your-api-key'
 ```
 
-**Option 2: Headers in tool config** – Include a `headers` object in the tool definition. These are merged with request headers.
+**選項 2：tool config 中的標頭** – 在工具定義中包含 `headers` 物件。這些會與請求標頭合併。
 
 ```json
 {
@@ -806,31 +796,30 @@ To pass custom headers (e.g., API keys, auth tokens) to specific MCP servers, us
 }
 ```
 
-## Using your MCP with client side credentials
+## 使用具備用戶端端憑證的 MCP {#using-your-mcp-with-client-side-credentials}
 
-Use this if you want to pass a client side authentication token to LiteLLM to then pass to your MCP to auth to your MCP.
+如果您想將用戶端端的驗證 token 傳給 LiteLLM，再由 LiteLLM 傳給您的 MCP 進行驗證，就使用這個方式。
 
+### 新的特定伺服器驗證標頭（建議） {#new-server-specific-auth-headers-recommended}
 
-### New Server-Specific Auth Headers (Recommended)
+您可以使用格式為 `x-mcp-{server_alias}-{header_name}` 的特定伺服器標頭來指定 MCP 驗證 token。這可讓您對不同的 MCP server 使用不同的驗證方式。
 
-You can specify MCP auth tokens using server-specific headers in the format `x-mcp-{server_alias}-{header_name}`. This allows you to use different authentication for different MCP servers.
+**優點：**
+- **特定伺服器驗證**：每個 MCP server 可使用不同的驗證方法
+- **更好的安全性**：不需要在所有 server 之間共享相同的驗證 token
+- **彈性的標頭名稱**：支援不同的驗證標頭類型（authorization、x-api-key 等）
+- **清楚的分離**：每個 server 的驗證都能明確識別
 
-**Benefits:**
-- **Server-specific authentication**: Each MCP server can use different auth methods
-- **Better security**: No need to share the same auth token across all servers
-- **Flexible header names**: Support for different auth header types (authorization, x-api-key, etc.)
-- **Clean separation**: Each server's auth is clearly identified
+### 舊版驗證標頭（已棄用） {#legacy-auth-header-deprecated}
 
-### Legacy Auth Header (Deprecated)
-
-You can also specify your MCP auth token using the header `x-mcp-auth`. This will be forwarded to all MCP servers and is deprecated in favor of server-specific headers.
+您也可以使用 `x-mcp-auth` 標頭來指定 MCP 驗證 token。這會轉送到所有 MCP server，且已改以特定伺服器標頭為建議做法。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI API">
 
-#### Connect via OpenAI Responses API with Server-Specific Auth
+#### 透過 OpenAI Responses API 以特定伺服器驗證連線 {#connect-via-openai-responses-api-with-server-specific-auth}
 
-Use the OpenAI Responses API and include server-specific auth headers:
+使用 OpenAI Responses API，並包含特定伺服器驗證標頭：
 
 ```bash title="cURL Example with Server-Specific Auth" showLineNumbers
 curl --location 'https://api.openai.com/v1/responses' \
@@ -856,9 +845,9 @@ curl --location 'https://api.openai.com/v1/responses' \
 }'
 ```
 
-#### Connect via OpenAI Responses API with Legacy Auth
+#### 透過 OpenAI Responses API 以舊版驗證連線 {#connect-via-openai-responses-api-with-legacy-auth}
 
-Use the OpenAI Responses API and include the `x-mcp-auth` header for your MCP server authentication:
+使用 OpenAI Responses API，並為您的 MCP server 驗證包含 `x-mcp-auth` 標頭：
 
 ```bash title="cURL Example with Legacy MCP Auth" showLineNumbers
 curl --location 'https://api.openai.com/v1/responses' \
@@ -887,9 +876,9 @@ curl --location 'https://api.openai.com/v1/responses' \
 
 <TabItem value="litellm" label="LiteLLM Proxy">
 
-#### Connect via LiteLLM Proxy Responses API with Server-Specific Auth
+#### 透過 LiteLLM Proxy Responses API 以特定伺服器驗證連線 {#connect-via-litellm-proxy-responses-api-with-server-specific-auth}
 
-Use this when calling LiteLLM Proxy for LLM API requests to `/v1/responses` endpoint with server-specific authentication:
+當您呼叫 LiteLLM Proxy 以透過特定伺服器驗證對 `/v1/responses` 端點進行 LLM API 請求時，請使用此方式：
 
 ```bash title="cURL Example with Server-Specific Auth" showLineNumbers
 curl --location '<your-litellm-proxy-base-url>/v1/responses' \
@@ -915,9 +904,9 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 }'
 ```
 
-#### Connect via LiteLLM Proxy Responses API with Legacy Auth
+#### 透過 LiteLLM Proxy Responses API 以舊版驗證連線 {#connect-via-litellm-proxy-responses-api-with-legacy-auth}
 
-Use this when calling LiteLLM Proxy for LLM API requests to `/v1/responses` endpoint with MCP authentication:
+當您呼叫 LiteLLM Proxy 以透過 MCP 驗證對 `/v1/responses` 端點進行 LLM API 請求時，請使用此方式：
 
 ```bash title="cURL Example with Legacy MCP Auth" showLineNumbers
 curl --location '<your-litellm-proxy-base-url>/v1/responses' \
@@ -946,15 +935,15 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 
 <TabItem value="cursor" label="Cursor IDE">
 
-#### Connect via Cursor IDE with Server-Specific Auth
+#### 透過 Cursor IDE 以特定伺服器驗證連線 {#connect-via-cursor-ide-with-server-specific-auth}
 
-Use tools directly from Cursor IDE with LiteLLM MCP and include server-specific authentication:
+直接從 Cursor IDE 搭配 LiteLLM MCP 使用工具，並包含特定伺服器驗證：
 
-**Setup Instructions:**
+**設定說明：**
 
-1. **Open Cursor Settings**: Use `⇧+⌘+J` (Mac) or `Ctrl+Shift+J` (Windows/Linux)
-2. **Navigate to MCP Tools**: Go to the "MCP Tools" tab and click "New MCP Server"
-3. **Add Configuration**: Copy and paste the JSON configuration below, then save with `Cmd+S` or `Ctrl+S`
+1. **開啟 Cursor 設定**：使用 `⇧+⌘+J`（Mac）或 `Ctrl+Shift+J`（Windows/Linux）
+2. **前往 MCP Tools**：進入「MCP Tools」分頁並點擊「New MCP Server」
+3. **新增設定**：複製並貼上以下 JSON 設定，然後使用 `Cmd+S` 或 `Ctrl+S` 儲存
 
 ```json title="Cursor MCP Configuration with Server-Specific Auth" showLineNumbers
 {
@@ -971,15 +960,15 @@ Use tools directly from Cursor IDE with LiteLLM MCP and include server-specific 
 }
 ```
 
-#### Connect via Cursor IDE with Legacy Auth
+#### 透過 Cursor IDE 以舊版驗證連線 {#connect-via-cursor-ide-with-legacy-auth}
 
-Use tools directly from Cursor IDE with LiteLLM MCP and include your MCP authentication token:
+直接從 Cursor IDE 搭配 LiteLLM MCP 使用工具，並包含您的 MCP 驗證 token：
 
-**Setup Instructions:**
+**設定說明：**
 
-1. **Open Cursor Settings**: Use `⇧+⌘+J` (Mac) or `Ctrl+Shift+J` (Windows/Linux)
-2. **Navigate to MCP Tools**: Go to the "MCP Tools" tab and click "New MCP Server"
-3. **Add Configuration**: Copy and paste the JSON configuration below, then save with `Cmd+S` or `Ctrl+S`
+1. **開啟 Cursor 設定**：使用 `⇧+⌘+J`（Mac）或 `Ctrl+Shift+J`（Windows/Linux）
+2. **前往 MCP Tools**：進入「MCP Tools」分頁並點擊「New MCP Server」
+3. **新增設定**：複製並貼上以下 JSON 設定，然後使用 `Cmd+S` 或 `Ctrl+S` 儲存
 
 ```json title="Cursor MCP Configuration with Legacy Auth" showLineNumbers
 {
@@ -999,46 +988,46 @@ Use tools directly from Cursor IDE with LiteLLM MCP and include your MCP authent
 
 <TabItem value="http" label="Streamable HTTP">
 
-#### Connect via Streamable HTTP Transport with Server-Specific Auth
+#### 透過 Streamable HTTP Transport 以特定伺服器驗證連線 {#connect-via-streamable-http-transport-with-server-specific-auth}
 
-Connect to LiteLLM MCP using HTTP transport with server-specific authentication:
+使用 HTTP transport 連線到 LiteLLM MCP，並採用特定伺服器驗證：
 
-**Server URL:**
+**Server URL：**
 ```text showLineNumbers
 litellm_proxy
 ```
 
-**Headers:**
+**標頭：**
 ```text showLineNumbers
 x-litellm-api-key: Bearer YOUR_LITELLM_API_KEY
 x-mcp-github-authorization: Bearer YOUR_GITHUB_TOKEN
 x-mcp-zapier-x-api-key: YOUR_ZAPIER_API_KEY
 ```
 
-#### Connect via Streamable HTTP Transport with Legacy Auth
+#### 透過 Streamable HTTP Transport 以舊版驗證連線 {#connect-via-streamable-http-transport-with-legacy-auth}
 
-Connect to LiteLLM MCP using HTTP transport with MCP authentication:
+使用 HTTP transport 連線到 LiteLLM MCP，並採用 MCP 驗證：
 
-**Server URL:**
+**Server URL：**
 ```text showLineNumbers
 litellm_proxy
 ```
 
-**Headers:**
+**標頭：**
 ```text showLineNumbers
 x-litellm-api-key: Bearer YOUR_LITELLM_API_KEY
 x-mcp-auth: Bearer YOUR_MCP_AUTH_TOKEN
 ```
 
-This URL can be used with any MCP client that supports HTTP transport. The `x-mcp-auth` header will be forwarded to your MCP server for authentication.
+此 URL 可與任何支援 HTTP transport 的 MCP 用戶端搭配使用。`x-mcp-auth` 標頭會被轉送到您的 MCP server 進行驗證。
 
 </TabItem>
 
 <TabItem value="fastmcp" label="Python FastMCP">
 
-#### Connect via Python FastMCP Client with Server-Specific Auth
+#### 透過 Python FastMCP 用戶端以特定伺服器驗證連線 {#connect-via-python-fastmcp-client-with-server-specific-auth}
 
-Use the Python FastMCP client to connect to your LiteLLM MCP server with server-specific authentication:
+使用 Python FastMCP 用戶端連線到您的 LiteLLM MCP server，並採用特定伺服器驗證：
 
 ```python title="Python FastMCP Example with Server-Specific Auth" showLineNumbers
 import asyncio
@@ -1089,9 +1078,9 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-#### Connect via Python FastMCP Client with Legacy Auth
+#### 透過 Python FastMCP 用戶端以舊版驗證連線 {#connect-via-python-fastmcp-client-with-legacy-auth}
 
-Use the Python FastMCP client to connect to your LiteLLM MCP server with MCP authentication:
+使用 Python FastMCP 用戶端連線到您的 LiteLLM MCP server，並採用 MCP 驗證：
 
 ```python title="Python FastMCP Example with Legacy MCP Auth" showLineNumbers
 import asyncio
@@ -1144,17 +1133,17 @@ if __name__ == "__main__":
 </TabItem>
 </Tabs>
 
-### Customize the MCP Auth Header Name
+### 自訂 MCP 驗證標頭名稱 {#customize-the-mcp-auth-header-name}
 
-By default, LiteLLM uses `x-mcp-auth` to pass your credentials to MCP servers. You can change this header name in one of the following ways:
-1. Set the `LITELLM_MCP_CLIENT_SIDE_AUTH_HEADER_NAME` environment variable
+預設情況下，LiteLLM 會使用 `x-mcp-auth` 將您的憑證傳遞給 MCP server。您可以透過以下方式之一變更此標頭名稱：
+1. 設定 `LITELLM_MCP_CLIENT_SIDE_AUTH_HEADER_NAME` 環境變數
 
 ```bash title="Environment Variable" showLineNumbers
 export LITELLM_MCP_CLIENT_SIDE_AUTH_HEADER_NAME="authorization"
 ```
 
 
-2. Set the `mcp_client_side_auth_header_name` in the general settings on the config.yaml file
+2. 在 config.yaml 檔案的一般設定中設定 `mcp_client_side_auth_header_name`
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -1167,9 +1156,9 @@ general_settings:
   mcp_client_side_auth_header_name: "authorization"
 ```
 
-#### Using the authorization header
+#### 使用授權標頭 {#using-the-authorization-header}
 
-In this example the `authorization` header will be passed to the MCP server for authentication.
+在此範例中，`authorization` 標頭將會傳遞給 MCP 伺服器進行驗證。
 
 ```bash title="cURL with authorization header" showLineNumbers
 curl --location '<your-litellm-proxy-base-url>/v1/responses' \
@@ -1194,13 +1183,13 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 }'
 ```
 
-## Use MCP tools with `/chat/completions`
+## 使用 MCP 工具搭配 `/chat/completions` {#use-mcp-tools-with-chatcompletions}
 
-:::tip Works with all providers
-This flow is **provider-agnostic**: the same MCP tool definition works for _every_ LLM backend behind LiteLLM (OpenAI, Azure OpenAI, Anthropic, Amazon Bedrock, Vertex, self-hosted deployments, etc.).
+:::tip 適用於所有提供者
+此流程是**與提供者無關**的：相同的 MCP 工具定義可適用於 LiteLLM 後方的_每一個_ LLM 後端（OpenAI、Azure OpenAI、Anthropic、Amazon Bedrock、Vertex、自架部署等）。
 :::
 
-LiteLLM Proxy also supports MCP-aware tooling on the classic `/v1/chat/completions` endpoint. Provide the MCP tool definition directly in the `tools` array and LiteLLM will fetch and transform the MCP server's tools into OpenAI-compatible function calls. When `require_approval` is set to `"never"`, the proxy automatically executes the returned tool calls and feeds the results back into the model before returning the assistant response.
+LiteLLM Proxy 也支援在傳統的 `/v1/chat/completions` 端點上使用感知 MCP 的工具。直接在 `tools` 陣列中提供 MCP 工具定義，LiteLLM 就會擷取並將 MCP 伺服器的工具轉換為與 OpenAI 相容的函式呼叫。當 `require_approval` 設為 `"never"` 時，proxy 會自動執行回傳的工具呼叫，並在回傳助理回應前將結果回饋給模型。
 
 ```bash title="Chat Completions with MCP Tools" showLineNumbers
 curl --location '<your-litellm-proxy-base-url>/v1/chat/completions' \
@@ -1222,37 +1211,35 @@ curl --location '<your-litellm-proxy-base-url>/v1/chat/completions' \
 }'
 ```
 
-If you omit `require_approval` or set it to any value other than `"never"`, the MCP tool calls are returned to the client so that you can review and execute them manually, matching the upstream OpenAI behavior.
+如果您省略 `require_approval`，或將其設為任何非 `"never"` 的值，MCP 工具呼叫就會回傳給用戶端，讓您可以手動檢閱並執行它們，這與上游 OpenAI 行為一致。
 
+## LiteLLM Proxy - MCP Gateway 導覽 {#litellm-proxy---walk-through-mcp-gateway}
+LiteLLM 提供 MCP Gateway，讓管理員可將所有 MCP 伺服器加入 LiteLLM。搭配 MCP 使用 LiteLLM Proxy 的主要優點如下：
 
-## LiteLLM Proxy - Walk through MCP Gateway
-LiteLLM exposes an MCP Gateway for admins to add all their MCP servers to LiteLLM. The key benefits of using LiteLLM Proxy with MCP are:
+1. 為所有 MCP 工具使用固定端點
+2. 依金鑰、團隊或使用者進行 MCP 權限管理
 
-1. Use a fixed endpoint for all MCP tools
-2. MCP Permission management by Key, Team, or User
-
-This video demonstrates how you can onboard an MCP server to LiteLLM Proxy, use it and set access controls.
+這段影片示範如何將 MCP 伺服器上線到 LiteLLM Proxy、使用它，以及設定存取控制。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/f7aa8d217879430987f3e64291757bfc" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-## LiteLLM Python SDK MCP Bridge
+## LiteLLM Python SDK MCP 橋接 {#litellm-python-sdk-mcp-bridge}
 
-LiteLLM Python SDK acts as a MCP bridge to utilize MCP tools with all LiteLLM supported models. LiteLLM offers the following features for using MCP
+LiteLLM Python SDK 可作為 MCP 橋接，讓所有 LiteLLM 支援的模型都能使用 MCP 工具。LiteLLM 提供以下使用 MCP 的功能
 
-- **List** Available MCP Tools: OpenAI clients can view all available MCP tools
-  - `litellm.experimental_mcp_client.load_mcp_tools` to list all available MCP tools
-- **Call** MCP Tools: OpenAI clients can call MCP tools
-  - `litellm.experimental_mcp_client.call_openai_tool` to call an OpenAI tool on an MCP server
+- **列出** 可用的 MCP 工具：OpenAI 用戶端可以檢視所有可用的 MCP 工具
+  - `litellm.experimental_mcp_client.load_mcp_tools` 以列出所有可用的 MCP 工具
+- **呼叫** MCP 工具：OpenAI 用戶端可以呼叫 MCP 工具
+  - `litellm.experimental_mcp_client.call_openai_tool` 以在 MCP 伺服器上呼叫 OpenAI 工具
 
+### 1. 列出可用的 MCP 工具 {#1-list-available-mcp-tools}
 
-### 1. List Available MCP Tools
+在此範例中，我們將使用 `litellm.experimental_mcp_client.load_mcp_tools` 來列出任何 MCP 伺服器上的所有可用 MCP 工具。這個方法可用兩種方式：
 
-In this example we'll use `litellm.experimental_mcp_client.load_mcp_tools` to list all available MCP tools on any MCP server. This method can be used in two ways:
-
-- `format="mcp"` - (default) Return MCP tools 
-  - Returns: `mcp.types.Tool`
-- `format="openai"` - Return MCP tools converted to OpenAI API compatible tools. Allows using with OpenAI endpoints.
-  - Returns: `openai.types.chat.ChatCompletionToolParam`
+- `format="mcp"` - （預設）回傳 MCP 工具
+  - 回傳：`mcp.types.Tool`
+- `format="openai"` - 將 MCP 工具回傳為與 OpenAI API 相容的工具。可用於 OpenAI 端點。
+  - 回傳：`openai.types.chat.ChatCompletionToolParam`
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -1295,7 +1282,7 @@ async with stdio_client(server_params) as (read, write):
 
 <TabItem value="openai" label="OpenAI SDK + LiteLLM Proxy">
 
-In this example we'll walk through how you can use the OpenAI SDK pointed to the LiteLLM proxy to call MCP tools. The key difference here is we use the OpenAI SDK to make the LLM API request
+在此範例中，我們將逐步說明如何使用指向 LiteLLM proxy 的 OpenAI SDK 來呼叫 MCP 工具。這裡的關鍵差異是我們使用 OpenAI SDK 來發出 LLM API 請求
 
 ```python title="MCP Client List Tools" showLineNumbers
 # Create server parameters for stdio connection
@@ -1337,21 +1324,20 @@ async with stdio_client(server_params) as (read, write):
 </TabItem>
 </Tabs>
 
+### 2. 列出並呼叫 MCP 工具 {#2-list-and-call-mcp-tools}
 
-### 2. List and Call MCP Tools
+在此範例中，我們將使用 
+- `litellm.experimental_mcp_client.load_mcp_tools` 來列出任何 MCP 伺服器上的所有可用 MCP 工具
+- `litellm.experimental_mcp_client.call_openai_tool` 來在 MCP 伺服器上呼叫 OpenAI 工具
 
-In this example we'll use 
-- `litellm.experimental_mcp_client.load_mcp_tools` to list all available MCP tools on any MCP server
-- `litellm.experimental_mcp_client.call_openai_tool` to call an OpenAI tool on an MCP server
+第一個 llm 回應會回傳 OpenAI 工具清單。我們從 LLM 回應中取出第一個工具呼叫，並將其傳遞給 `litellm.experimental_mcp_client.call_openai_tool`，以在 MCP 伺服器上呼叫該工具。
 
-The first llm response returns a list of OpenAI tools. We take the first tool call from the LLM response and pass it to `litellm.experimental_mcp_client.call_openai_tool` to call the tool on the MCP server.
+#### `litellm.experimental_mcp_client.call_openai_tool` 的運作方式 {#how-litellmexperimental_mcp_clientcall_openai_tool-works}
 
-#### How `litellm.experimental_mcp_client.call_openai_tool` works
-
-- Accepts an OpenAI Tool Call from the LLM response
-- Converts the OpenAI Tool Call to an MCP Tool
-- Calls the MCP Tool on the MCP server
-- Returns the result of the MCP Tool call
+- 接受來自 LLM 回應的 OpenAI 工具呼叫
+- 將 OpenAI 工具呼叫轉換為 MCP 工具
+- 在 MCP 伺服器上呼叫 MCP 工具
+- 回傳 MCP 工具呼叫的結果
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -1421,7 +1407,7 @@ async with stdio_client(server_params) as (read, write):
 </TabItem>
 <TabItem value="proxy" label="OpenAI SDK + LiteLLM Proxy">
 
-In this example we'll walk through how you can use the OpenAI SDK pointed to the LiteLLM proxy to call MCP tools. The key difference here is we use the OpenAI SDK to make the LLM API request
+在此範例中，我們將逐步說明如何使用指向 LiteLLM proxy 的 OpenAI SDK 來呼叫 MCP 工具。這裡的關鍵差異是我們使用 OpenAI SDK 來發出 LLM API 請求
 
 ```python title="MCP Client with OpenAI SDK" showLineNumbers
 # Create server parameters for stdio connection
@@ -1489,16 +1475,16 @@ async with stdio_client(server_params) as (read, write):
 </TabItem>
 </Tabs>
 
-## FAQ
+## 常見問題 {#faq}
 
-**Q: How do I use OAuth2 client_credentials (machine-to-machine) with MCP servers behind LiteLLM?**
+**問：如何在 LiteLLM 後方的 MCP 伺服器上使用 OAuth2 client_credentials（機器對機器）？**
 
-LiteLLM supports automatic token management for the `client_credentials` grant. Configure `client_id`, `client_secret`, and `token_url` on your MCP server and LiteLLM will fetch, cache, and refresh tokens automatically. See the [MCP OAuth M2M guide](./mcp_oauth.md#machine-to-machine-m2m-auth) for setup instructions.
+LiteLLM 支援對 `client_credentials` 授權類型進行自動權杖管理。在您的 MCP 伺服器上設定 `client_id`、`client_secret` 和 `token_url`，LiteLLM 就會自動擷取、快取並更新權杖。設定說明請參閱 [MCP OAuth M2M 指南](./mcp_oauth.md#machine-to-machine-m2m-auth)。
 
-**Q: When I fetch an OAuth token from the LiteLLM UI, where is it stored?**
+**問：我從 LiteLLM UI 擷取 OAuth 權杖時，它儲存在哪裡？**
 
-The UI keeps only transient state in `sessionStorage` so the OAuth redirect flow can finish; the token is not persisted in the server or database.
+UI 只會在 `sessionStorage` 中保留暫時狀態，以便 OAuth 重新導向流程可以完成；權杖不會持久化儲存在伺服器或資料庫中。
 
-**Q: I'm seeing MCP connection errors—what should I check?**
+**問：我看到 MCP 連線錯誤——我應該檢查什麼？**
 
-Walk through the [MCP Troubleshooting Guide](./mcp_troubleshoot.md) for step-by-step isolation (Client → LiteLLM vs. LiteLLM → MCP), log examples, and verification methods like MCP Inspector and `curl`.
+請逐步參考 [MCP 疑難排解指南](./mcp_troubleshoot.md) 進行隔離（Client → LiteLLM 與 LiteLLM → MCP）、記錄範例，以及使用 MCP Inspector 和 `curl` 等驗證方法。

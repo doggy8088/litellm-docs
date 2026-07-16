@@ -1,32 +1,32 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Letta Integration
+# Letta 整合 {#letta-integration}
 
-[Letta](https://github.com/letta-ai/letta) (formerly MemGPT) is a framework for building stateful LLM agents with persistent memory. This guide shows how to integrate both LiteLLM SDK and LiteLLM Proxy with Letta to leverage multiple LLM providers while building memory-enabled agents.
+[Letta](https://github.com/letta-ai/letta)（前稱 MemGPT）是一個用於建構具備持久記憶之有狀態 LLM 代理程式的框架。本指南說明如何將 LiteLLM SDK 與 LiteLLM Proxy 皆整合至 Letta，以便在建構具備記憶功能的代理程式時運用多個 LLM 提供者。
 
-## What is Letta?
+## 什麼是 Letta？ {#what-is-letta}
 
-Letta allows you to build LLM agents that can:
-- Maintain long-term memory across conversations
-- Use function calling for tool interactions
-- Handle large context windows efficiently
-- Persist agent state and memory
+Letta 可讓您建構能夠：
+- 在對話之間保留長期記憶
+- 使用函式呼叫進行工具互動
+- 有效率地處理大型上下文視窗
+- 持久化代理程式狀態與記憶
 
-## Prerequisites
+## 前置需求 {#prerequisites}
 
 ```bash
 uv add letta litellm
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-### 1. Start LiteLLM Proxy
+### 1. 啟動 LiteLLM Proxy {#1-start-litellm-proxy}
 
-First, create a configuration file for your LiteLLM proxy:
+首先，為您的 LiteLLM proxy 建立設定檔：
 
 ```yaml
 # config.yaml
@@ -49,15 +49,15 @@ model_list:
       api_version: "2023-07-01-preview"
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-### 2. Configure Letta with LiteLLM Proxy
+### 2. 將 Letta 設定為使用 LiteLLM Proxy {#2-configure-letta-with-litellm-proxy}
 
-Configure Letta to use your LiteLLM proxy endpoint:
+設定 Letta 使用您的 LiteLLM proxy 端點：
 
 ```python
 import letta
@@ -85,9 +85,9 @@ client.set_default_embedding_config(
 </TabItem>
 <TabItem value="sdk" label="LiteLLM SDK">
 
-### 1. Configure LiteLLM SDK
+### 1. 設定 LiteLLM SDK {#1-configure-litellm-sdk}
 
-Set up your API keys and configure LiteLLM:
+設定您的 API 金鑰與 LiteLLM：
 
 ```python
 import os
@@ -101,9 +101,9 @@ os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key"
 litellm.set_verbose = True  # For debugging
 ```
 
-### 2. Create Custom LLM Wrapper for Letta
+### 2. 為 Letta 建立自訂 LLM 包裝器 {#2-create-custom-llm-wrapper-for-letta}
 
-Create a custom LLM wrapper that uses LiteLLM SDK:
+建立一個使用 LiteLLM SDK 的自訂 LLM 包裝器：
 
 ```python
 import letta
@@ -141,10 +141,10 @@ client.set_default_llm_config(llm_config)
 </TabItem>
 </Tabs>
 
-### 3. Create and Use a Letta Agent
+### 3. 建立並使用 Letta 代理程式 {#3-create-and-use-a-letta-agent}
 
 <Tabs>
-<TabItem value="proxy" label="Using LiteLLM Proxy">
+<TabItem value="proxy" label="使用 LiteLLM Proxy">
 
 ```python
 import letta
@@ -179,7 +179,7 @@ print(f"Agent response: {response.messages[-1].text}")
 ```
 
 </TabItem>
-<TabItem value="sdk" label="Using LiteLLM SDK">
+<TabItem value="sdk" label="使用 LiteLLM SDK">
 
 ```python
 import letta
@@ -221,9 +221,9 @@ print(f"Agent response: {response.messages[-1].text}")
 </TabItem>
 </Tabs>
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Using Different Models for Different Agents
+### 為不同代理程式使用不同模型 {#using-different-models-for-different-agents}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
@@ -302,7 +302,7 @@ creative_agent = client.create_agent(
 </TabItem>
 </Tabs>
 
-### Function Calling with Tools
+### 搭配工具使用函式呼叫 {#function-calling-with-tools}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
@@ -379,12 +379,12 @@ response = client.user_message(
 </TabItem>
 </Tabs>
 
-## Authentication
+## 驗證 {#authentication}
 
 <Tabs>
-<TabItem value="proxy" label="LiteLLM Proxy Authentication">
+<TabItem value="proxy" label="LiteLLM Proxy 驗證">
 
-If your LiteLLM proxy requires authentication:
+如果您的 LiteLLM proxy 需要驗證：
 
 ```python
 import os
@@ -406,7 +406,7 @@ client = create_client()
 client.set_default_llm_config(llm_config)
 ```
 
-For proxy with authentication enabled:
+對於已啟用驗證的 proxy：
 
 ```yaml
 # config.yaml with auth
@@ -432,9 +432,9 @@ llm_config = LLMConfig(
 ```
 
 </TabItem>
-<TabItem value="sdk" label="LiteLLM SDK Authentication">
+<TabItem value="sdk" label="LiteLLM SDK 驗證">
 
-With LiteLLM SDK, set up your provider API keys directly:
+使用 LiteLLM SDK 時，直接設定您的提供者 API 金鑰：
 
 ```python
 import os
@@ -471,12 +471,12 @@ azure_config = LLMConfig(
 </TabItem>
 </Tabs>
 
-## Load Balancing and Fallbacks
+## 負載平衡與備援 {#load-balancing-and-fallbacks}
 
 <Tabs>
-<TabItem value="proxy" label="LiteLLM Proxy Features">
+<TabItem value="proxy" label="LiteLLM Proxy 功能">
 
-LiteLLM proxy's load balancing and fallback features work seamlessly with Letta:
+LiteLLM proxy 的負載平衡與備援功能可與 Letta 無縫搭配：
 
 ```yaml
 # config.yaml with fallbacks
@@ -502,12 +502,12 @@ router_settings:
   fallbacks: [{"gpt-4": ["azure/gpt-4"]}]
 ```
 
-The proxy handles all routing, load balancing, and fallbacks transparently for Letta.
+proxy 會為 Letta 透明地處理所有路由、負載平衡與備援。
 
 </TabItem>
-<TabItem value="sdk" label="LiteLLM SDK Router">
+<TabItem value="sdk" label="LiteLLM SDK 路由器">
 
-With LiteLLM SDK, you can set up routing and fallbacks programmatically:
+使用 LiteLLM SDK，您可以以程式方式設定路由與備援：
 
 ```python
 import litellm
@@ -556,12 +556,12 @@ litellm.completion = custom_completion
 </TabItem>
 </Tabs>
 
-## Monitoring and Observability
+## 監控與可觀測性 {#monitoring-and-observability}
 
 <Tabs>
-<TabItem value="proxy" label="LiteLLM Proxy Monitoring">
+<TabItem value="proxy" label="LiteLLM Proxy 監控">
 
-Enable logging to track your Letta agents' LLM usage through the proxy:
+啟用記錄，以透過 proxy 追蹤您的 Letta 代理程式的 LLM 使用情況：
 
 ```yaml
 # config.yaml with logging
@@ -576,16 +576,16 @@ environment_variables:
   LANGFUSE_SECRET_KEY: "your-secret"
 ```
 
-View metrics in the proxy dashboard:
+在 proxy 儀表板中檢視指標：
 ```bash
 # Start proxy with UI
 litellm --config config.yaml --port 4000 --detailed_debug
 ```
 
 </TabItem>
-<TabItem value="sdk" label="LiteLLM SDK Monitoring">
+<TabItem value="sdk" label="LiteLLM SDK 監控">
 
-Set up observability directly in your SDK integration:
+直接在您的 SDK 整合中設定可觀測性：
 
 ```python
 import litellm
@@ -624,10 +624,10 @@ litellm.completion = logged_completion
 </TabItem>
 </Tabs>
 
-## Example: Multi-Agent System
+## 範例：多代理程式系統 {#example-multi-agent-system}
 
 <Tabs>
-<TabItem value="proxy" label="Using LiteLLM Proxy">
+<TabItem value="proxy" label="使用 LiteLLM Proxy">
 
 ```python
 import letta
@@ -684,7 +684,7 @@ print(article)
 ```
 
 </TabItem>
-<TabItem value="sdk" label="Using LiteLLM SDK">
+<TabItem value="sdk" label="使用 LiteLLM SDK">
 
 ```python
 import letta
@@ -765,39 +765,39 @@ print(article)
 </TabItem>
 </Tabs>
 
-## Best Practices
+## 最佳做法 {#best-practices}
 
 <Tabs>
-<TabItem value="proxy" label="LiteLLM Proxy Best Practices">
+<TabItem value="proxy" label="LiteLLM Proxy 最佳做法">
 
-1. **Model Selection**: Use appropriate models for different tasks:
-   - Claude for analysis and reasoning
-   - GPT-4 for creative tasks
-   - GPT-3.5-turbo for simple interactions
+1. **模型選擇**：針對不同任務使用適當的模型：
+   - 用 Claude 進行分析與推理
+   - 用 GPT-4 進行創意任務
+   - 用 GPT-3.5-turbo 處理簡單互動
 
-2. **Proxy Configuration**:
-   - Set appropriate rate limits and timeouts
-   - Use fallbacks for reliability
-   - Enable authentication for production
+2. **Proxy 設定**：
+   - 設定適當的速率限制與逾時
+   - 使用備援以提升可靠性
+   - 為正式環境啟用驗證
 
-3. **Memory Management**: Letta handles memory automatically, but monitor usage with large contexts
+3. **記憶管理**：Letta 會自動處理記憶，但在大型上下文時請監控使用量
 
-4. **Cost Optimization**: 
-   - Use the proxy's budgeting features to control costs
-   - Set up rate limiting per user/team
-   - Monitor token usage through proxy dashboard
+4. **成本優化**：
+   - 使用 proxy 的預算功能來控制成本
+   - 針對每位使用者／團隊設定速率限制
+   - 透過 proxy 儀表板監控 token 使用量
 
-5. **Monitoring**: Enable observability to track agent performance and token usage
+5. **監控**：啟用可觀測性以追蹤代理程式效能與 token 使用量
 
 </TabItem>
-<TabItem value="sdk" label="LiteLLM SDK Best Practices">
+<TabItem value="sdk" label="LiteLLM SDK 最佳做法">
 
-1. **Model Selection**: Choose models based on task requirements:
-   - Use `openai/gpt-4` for complex reasoning
-   - Use `anthropic/claude-3-sonnet-20240229` for analysis
-   - Use `openai/gpt-3.5-turbo` for cost-effective simple tasks
+1. **模型選擇**：根據任務需求選擇模型：
+   - 使用 `openai/gpt-4` 進行複雜推理
+   - 使用 `anthropic/claude-3-sonnet-20240229` 進行分析
+   - 使用 `openai/gpt-3.5-turbo` 處理具成本效益的簡單任務
 
-2. **Error Handling**: Implement robust error handling with retries:
+2. **錯誤處理**：實作具重試功能的健全錯誤處理：
    ```python
    import litellm
    from litellm import completion
@@ -816,30 +816,30 @@ print(article)
            return completion(model="openai/gpt-3.5-turbo", **kwargs)
    ```
 
-3. **Cost Management**:
-   - Use cheaper models for non-critical tasks
-   - Implement token counting and budgets
-   - Cache responses when appropriate
+3. **成本管理**：
+   - 對非關鍵任務使用較便宜的模型
+   - 實作 token 計數與預算
+   - 在適當情況下快取回應
 
-4. **Performance**:
-   - Use async operations for concurrent requests
-   - Implement connection pooling
-   - Monitor response times
+4. **效能**：
+   - 使用非同步操作處理並行請求
+   - 實作連線池
+   - 監控回應時間
 
-5. **Security**:
-   - Store API keys securely (environment variables)
-   - Rotate keys regularly
-   - Implement rate limiting
+5. **安全性**：
+   - 安全地儲存 API 金鑰（環境變數）
+   - 定期輪換金鑰
+   - 實作速率限制
 
 </TabItem>
 </Tabs>
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
 <Tabs>
-<TabItem value="proxy" label="LiteLLM Proxy Issues">
+<TabItem value="proxy" label="LiteLLM Proxy 問題">
 
-### Connection Issues
+### 連線問題 {#connection-issues}
 ```bash
 # Test your LiteLLM proxy
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -850,7 +850,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-### Configuration Debugging
+### 設定除錯 {#configuration-debugging}
 ```python
 # Enable verbose logging
 import logging
@@ -861,16 +861,16 @@ client = create_client()
 print(client.get_default_llm_config())
 ```
 
-### Common Proxy Issues
-- **Port conflicts**: Make sure port 4000 isn't in use
-- **Model not found**: Verify model names match your config.yaml
-- **Authentication errors**: Check master key configuration
-- **Rate limiting**: Monitor proxy logs for rate limit hits
+### 常見 Proxy 問題 {#common-proxy-issues}
+- **連接埠衝突**：請確認 4000 連接埠未被使用
+- **找不到模型**：驗證模型名稱是否與您的 config.yaml 相符
+- **驗證錯誤**：檢查 master key 設定
+- **速率限制**：監控 proxy 記錄中是否有觸發 rate limit
 
 </TabItem>
-<TabItem value="sdk" label="LiteLLM SDK Issues">
+<TabItem value="sdk" label="LiteLLM SDK 問題">
 
-### API Key Issues
+### API 金鑰問題 {#api-key-issues}
 ```python
 import os
 import litellm
@@ -890,7 +890,7 @@ except Exception as e:
     print("LiteLLM error:", e)
 ```
 
-### Configuration Debugging
+### 設定除錯 {#configuration-debugging-1}
 ```python
 # Enable verbose logging
 litellm.set_verbose = True
@@ -909,20 +909,20 @@ for model in models:
         print(f"✗ {model} failed: {e}")
 ```
 
-### Common SDK Issues
-- **Import errors**: Ensure `uv add litellm letta` is run
-- **Model format**: Use `provider/model` format (e.g., `openai/gpt-4`)
-- **API key format**: Different providers have different key formats
-- **Rate limits**: Implement exponential backoff for retries
+### 常見 SDK 問題 {#common-sdk-issues}
+- **匯入錯誤**：請確保已執行 `uv add litellm letta`
+- **模型格式**：使用 `provider/model` 格式（例如，`openai/gpt-4`）
+- **API 金鑰格式**：不同提供者有不同的金鑰格式
+- **速率限制**：為重試實作指數退避
 
 </TabItem>
 </Tabs>
 
-## Resources
+## 資源 {#resources}
 
-- [Letta Documentation](https://docs.letta.com/)
-- [LiteLLM Proxy Documentation](/docs/simple_proxy)
-- [LiteLLM SDK Documentation](/docs/#litellm-python-sdk)
-- [Function Calling Guide](/docs/completion/function_call)
-- [Observability Setup](/docs/integrations/observability_integrations)
-- [Router Configuration](/docs/routing)
+- [Letta 文件](https://docs.letta.com/)
+- [LiteLLM Proxy 文件](/docs/simple_proxy)
+- [LiteLLM SDK 文件](/docs/#litellm-python-sdk)
+- [函式呼叫指南](/docs/completion/function_call)
+- [可觀測性設定](/docs/integrations/observability_integrations)
+- [路由設定](/docs/routing)

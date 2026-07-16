@@ -1,90 +1,90 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteLLM AI Gateway Prompt Management
+# LiteLLM AI Gateway 提示管理 {#litellm-ai-gateway-prompt-management}
 
-Use the LiteLLM AI Gateway to create, manage and version your prompts.
+使用 LiteLLM AI Gateway 來建立、管理並為您的提示進行版本控管。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Accessing the Prompts Interface
+### 存取提示介面 {#accessing-the-prompts-interface}
 
-1. Navigate to **Experimental > Prompts** in your LiteLLM dashboard
-2. You'll see a table displaying all your existing prompts with the following columns:
-   - **Prompt ID**: Unique identifier for each prompt
-   - **Model**: The LLM model configured for the prompt
-   - **Created At**: Timestamp when the prompt was created
-   - **Updated At**: Timestamp of the last update
-   - **Type**: Prompt type (e.g., db)
-   - **Actions**: Delete and manage prompt options (admin only)
+1. 在您的 LiteLLM 儀表板中前往 **Experimental > Prompts**
+2. 您會看到一個表格，顯示您所有現有的提示，包含以下欄位：
+   - **Prompt ID**：每個提示的唯一識別碼
+   - **Model**：為提示設定的 LLM 模型
+   - **Created At**：提示建立時的時間戳記
+   - **Updated At**：最後更新的時間戳記
+   - **Type**：提示類型（例如，db）
+   - **Actions**：刪除與管理提示選項（僅限管理員）
 
-![Prompt Table](../../img/prompt_table.png)
+![提示表格](../../img/prompt_table.png)
 
-## Create a Prompt
+## 建立提示 {#create-a-prompt}
 
-Click the **+ Add New Prompt** button to create a new prompt.
+按一下 **+ Add New Prompt** 按鈕以建立新提示。
 
-### Step 1: Select Your Model
+### 步驟 1：選擇您的模型 {#step-1-select-your-model}
 
-Choose the LLM model you want to use from the dropdown menu at the top. You can select from any of your configured models (e.g., `aws/anthropic/bedrock-claude-3-5-sonnet`, `gpt-4o`, etc.).
+從頂部的下拉式選單中選擇您要使用的 LLM 模型。您可以從所有已設定的模型中選取（例如，`aws/anthropic/bedrock-claude-3-5-sonnet`、`gpt-4o` 等）。
 
-### Step 2: Set the Developer Message 
+### 步驟 2：設定開發者訊息  {#step-2-set-the-developer-message}
 
-The **Developer message** section allows you to set optional system instructions for the model. This acts as the system prompt that guides the model's behavior.
+**Developer message** 區段可讓您為模型設定選用的系統指令。這會作為引導模型行為的系統提示。
 
-For example:
+範例：
 
 ```
 Respond as jack sparrow would
 ```
 
-This will instruct the model to respond in the style of Captain Jack Sparrow from Pirates of the Caribbean.
+這會指示模型以《神鬼奇航》中傑克船長的風格回應。
 
-![Add Prompt with Developer Message](../../img/add_prompt.png)
+![新增含開發者訊息的提示](../../img/add_prompt.png)
 
-### Step 3: Add Prompt Messages
+### 步驟 3：新增提示訊息 {#step-3-add-prompt-messages}
 
-In the **Prompt messages** section, you can add the actual prompt content. Click **+ Add message** to add additional messages to your prompt template.
+在 **Prompt messages** 區段中，您可以新增實際的提示內容。按一下 **+ Add message** 以將額外訊息新增至您的提示範本。
 
-### Step 4: Use Variables in Your Prompts
+### 步驟 4：在您的提示中使用變數 {#step-4-use-variables-in-your-prompts}
 
-Variables allow you to create dynamic prompts that can be customized at runtime. Use the `{{variable_name}}` syntax to insert variables into your prompts.
+變數可讓您建立可在執行時自訂的動態提示。使用 `{{variable_name}}` 語法將變數插入您的提示中。
 
-For example:
+範例：
 
 ```
 Give me a recipe for {{dish}}
 ```
 
-The UI will automatically detect variables in your prompt and display them in the **Detected variables** section.
+UI 會自動偵測您提示中的變數，並將它們顯示在 **Detected variables** 區段。
 
-![Add Prompt with Variables](../../img/add_prompt_var.png)
+![新增含變數的提示](../../img/add_prompt_var.png)
 
-### Step 5: Test Your Prompt
+### 步驟 5：測試您的提示 {#step-5-test-your-prompt}
 
-Before saving, you can test your prompt directly in the UI:
+在儲存之前，您可以直接在 UI 中測試您的提示：
 
-1. Fill in the template variables in the right panel (e.g., set `dish` to `cookies`)
-2. Type a message in the chat interface to test the prompt
-3. The assistant will respond using your configured model, developer message, and substituted variables
+1. 在右側面板中填入範本變數（例如，將 `dish` 設為 `cookies`）
+2. 在聊天介面中輸入訊息以測試提示
+3. 助理將使用您設定的模型、開發者訊息與替換後的變數回應
 
-![Test Prompt with Variables](../../img/add_prompt_use_var1.png)
+![使用變數測試提示](../../img/add_prompt_use_var1.png)
 
-The result will show the model's response with your variables substituted:
+結果將顯示模型使用您替換後變數的回應：
 
-![Prompt Test Results](../../img/add_prompt_use_var.png)
+![提示測試結果](../../img/add_prompt_use_var.png)
 
-### Step 6: Save Your Prompt
+### 步驟 6：儲存您的提示 {#step-6-save-your-prompt}
 
-Once you're satisfied with your prompt, click the **Save** button in the top right corner to save it to your prompt library.
+當您對提示感到滿意後，按一下右上角的 **Save** 按鈕，將其儲存到您的提示資料庫。
 
-## Using Your Prompts
+## 使用您的提示 {#using-your-prompts}
 
-Now that your prompt is published, you can use it in your application via the LiteLLM proxy API. Click the **Get Code** button in the UI to view code snippets customized for your prompt.
+現在您的提示已發佈，您可以透過 LiteLLM proxy API 在應用程式中使用它。按一下 UI 中的 **Get Code** 按鈕，即可檢視為您的提示自訂的程式碼片段。
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
-Call a prompt using just the prompt ID and model:
+只要使用提示 ID 和模型即可呼叫提示：
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -146,9 +146,9 @@ main();
 </TabItem>
 </Tabs>
 
-### With Custom Messages
+### 使用自訂訊息 {#with-custom-messages}
 
-Add custom messages to your prompt:
+將自訂訊息新增至您的提示：
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -222,9 +222,9 @@ main();
 </TabItem>
 </Tabs>
 
-### With Prompt Variables
+### 使用提示變數 {#with-prompt-variables}
 
-Pass variables to your prompt template using `prompt_variables`:
+使用 `prompt_variables` 將變數傳遞給您的提示範本：
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -295,80 +295,80 @@ main();
 </TabItem>
 </Tabs>
 
-## Prompt Versioning
+## 提示版本控管 {#prompt-versioning}
 
-LiteLLM automatically versions your prompts each time you update them. This allows you to maintain a complete history of changes and roll back to previous versions if needed.
+LiteLLM 會在每次您更新提示時自動為其建立版本。這讓您能保留完整的變更歷史，並在需要時回復到先前版本。
 
-### View Prompt Details
+### 檢視提示詳細資料 {#view-prompt-details}
 
-Click on any prompt ID in the prompts table to view its details page. This page shows:
-- **Prompt ID**: The unique identifier for your prompt
-- **Version**: The current version number (e.g., v4)
-- **Prompt Type**: The storage type (e.g., db)
-- **Created At**: When the prompt was first created
-- **Last Updated**: Timestamp of the most recent update
-- **LiteLLM Parameters**: The raw JSON configuration
+在提示表格中按一下任何提示 ID，即可檢視其詳細資料頁面。此頁面會顯示：
+- **Prompt ID**：您提示的唯一識別碼
+- **Version**：目前版本號碼（例如，v4）
+- **Prompt Type**：儲存類型（例如，db）
+- **Created At**：提示首次建立的時間
+- **Last Updated**：最近一次更新的時間戳記
+- **LiteLLM Parameters**：原始 JSON 設定
 
-![Prompt Details](../../img/edit_prompt.png)
+![提示詳細資料](../../img/edit_prompt.png)
 
-### Update a Prompt
+### 更新提示 {#update-a-prompt}
 
-To update an existing prompt:
+若要更新現有提示：
 
-1. Click on the prompt you want to update from the prompts table
-2. Click the **Prompt Studio** button in the top right
-3. Make your changes to:
-   - Model selection
-   - Developer message (system instructions)
-   - Prompt messages
-   - Variables
-4. Test your changes in the chat interface on the right
-5. Click the **Update** button to save the new version
+1. 在提示表格中按一下您要更新的提示
+2. 按一下右上角的 **Prompt Studio** 按鈕
+3. 對以下項目進行變更：
+   - 模型選擇
+   - 開發者訊息（系統指令）
+   - 提示訊息
+   - 變數
+4. 在右側聊天介面中測試您的變更
+5. 按一下 **Update** 按鈕以儲存新版本
 
-![Edit Prompt in Studio](../../img/edit_prompt2.png)
+![在 Studio 中編輯提示](../../img/edit_prompt2.png)
 
-Each time you click **Update**, a new version is created (v1 → v2 → v3, etc.) while maintaining the same prompt ID.
+每次按一下 **Update**，都會建立一個新版本（v1 → v2 → v3 等），同時維持相同的提示 ID。
 
-### View Version History
+### 檢視版本歷史 {#view-version-history}
 
-To view all versions of a prompt:
+若要檢視提示的所有版本：
 
-1. Open the prompt in **Prompt Studio**
-2. Click the **History** button in the top right
-3. A **Version History** panel will open on the right side
+1. 在 **Prompt Studio** 中開啟提示
+2. 按一下右上角的 **History** 按鈕
+3. 右側會開啟 **Version History** 面板
 
-![Version History Panel](../../img/edit_prompt3.png)
+![版本歷史面板](../../img/edit_prompt3.png)
 
-The version history panel displays:
-- **Latest version** (marked with a "Latest" badge and "Active" status)
-- All previous versions (v4, v3, v2, v1, etc.)
-- Timestamps for each version
-- Database save status ("Saved to Database")
+版本歷史面板會顯示：
+- **Latest version**（以「Latest」徽章與「Active」狀態標示）
+- 所有先前版本（v4、v3、v2、v1 等）
+- 每個版本的時間戳記
+- 資料庫儲存狀態（"Saved to Database"）
 
-### View and Restore Older Versions
+### 檢視並還原較舊版本 {#view-and-restore-older-versions}
 
-To view or restore an older version:
+若要檢視或還原較舊版本：
 
-1. In the **Version History** panel, click on any previous version (e.g., v2)
-2. The prompt studio will load that version's configuration
-3. You can see:
-   - The developer message from that version
-   - The prompt messages from that version
-   - The model and parameters used
-   - All variables defined at that time
+1. 在 **Version History** 面板中，按一下任何先前版本（例如，v2）
+2. prompt studio 會載入該版本的設定
+3. 您可以看到：
+   - 該版本的開發者訊息
+   - 該版本的提示訊息
+   - 使用的模型與參數
+   - 當時定義的所有變數
 
-![View Older Version](../../img/edit_prompt4.png)
+![檢視較舊版本](../../img/edit_prompt4.png)
 
-The selected version will be highlighted with an "Active" badge in the version history panel.
+所選版本會在版本歷史面板中以「Active」徽章醒目標示。
 
-To restore an older version:
-1. View the older version you want to restore
-2. Click the **Update** button
-3. This will create a new version with the content from the older version
+若要還原較舊版本：
+1. 檢視您要還原的較舊版本
+2. 按一下 **Update** 按鈕
+3. 這會以較舊版本的內容建立一個新版本
 
-### Use Specific Versions in API Calls
+### 在 API 請求中使用特定版本 {#use-specific-versions-in-api-calls}
 
-By default, API calls use the latest version of a prompt. To use a specific version, pass the `prompt_version` parameter:
+預設情況下，API 請求會使用提示的最新版本。若要使用特定版本，請傳遞 `prompt_version` 參數：
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -444,8 +444,3 @@ main();
 
 </TabItem>
 </Tabs>
-
-
-
-
-

@@ -1,8 +1,8 @@
-# Serper Search
+# Serper 搜尋 {#serper-search}
 
-**Get API Key:** [https://serper.dev](https://serper.dev)
+**取得 API 金鑰：** [https://serper.dev](https://serper.dev)
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Serper Search"
 import os
@@ -17,9 +17,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -35,7 +35,7 @@ search_tools:
       api_key: os.environ/SERPER_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動代理伺服器 {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/serper-search \
@@ -55,7 +55,7 @@ curl http://0.0.0.0:4000/v1/search/serper-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Serper Search with Provider-specific Parameters"
 import os

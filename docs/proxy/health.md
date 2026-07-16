@@ -1,58 +1,58 @@
-# Health Checks
-Use this to health check all LLMs defined in your config.yaml
+# 健康檢查 {#health-checks}
+使用此功能可檢查您 config.yaml 中定義的所有 LLM 的健康狀態
 
-## When to Use Each Endpoint
+## 何時使用各個端點 {#when-to-use-each-endpoint}
 
-| Endpoint | Use Case | Purpose |
+| 端點 | 使用情境 | 目的 |
 |----------|----------|---------|
-| `/health/liveliness` | **Container liveness probes** | Basic alive check - use for container restart decisions |
-| `/health/readiness` | **Load balancer health checks** | Ready to accept traffic - includes DB connection status |
-| `/health` | **Model health monitoring** | Comprehensive LLM model health - makes actual API calls |
-| `/health/services` | **Service debugging** | Check specific integrations (datadog, langfuse, etc.) |
-| `/health/shared-status` | **Multi-pod coordination** | Monitor shared health check state across pods |
+| `/health/liveliness` | **容器存活探測** | 基本存活檢查 - 用於容器重新啟動決策 |
+| `/health/readiness` | **負載平衡器健康檢查** | 可接受流量 - 包含資料庫連線狀態 |
+| `/health` | **模型健康監控** | 全面的 LLM 模型健康狀態 - 會實際呼叫 API |
+| `/health/services` | **服務偵錯** | 檢查特定整合（datadog、langfuse 等） |
+| `/health/shared-status` | **多個 pod 協調** | 監控跨 pod 的共享健康檢查狀態 |
 
-## Summary 
+## 摘要  {#summary}
 
-The proxy exposes: 
-* a /health endpoint which returns the health of the LLM APIs  
-* a /health/readiness endpoint for returning if the proxy is ready to accept requests 
-* a /health/liveliness endpoint for returning if the proxy is alive
-* a /health/shared-status endpoint for monitoring shared health check coordination across pods
+proxy 會提供： 
+* /health 端點，回傳 LLM API 的健康狀態  
+* /health/readiness 端點，回傳 proxy 是否已準備好接受請求 
+* /health/liveliness 端點，回傳 proxy 是否存活
+* /health/shared-status 端點，用於監控跨 pod 的共享健康檢查協調
 
-## Shared Health Check State
+## 共享健康檢查狀態 {#shared-health-check-state}
 
-When running multiple LiteLLM proxy pods, you can enable shared health check state to coordinate health checks across pods and avoid duplicate API calls. This is especially beneficial for expensive models like Gemini 2.5-pro.
+當執行多個 LiteLLM proxy pod 時，您可以啟用共享健康檢查狀態，以協調跨 pod 的健康檢查並避免重複的 API 呼叫。這對 Gemini 2.5-pro 這類昂貴模型特別有幫助。
 
-**Key Benefits:**
-- Reduces duplicate health checks across pods
-- Saves costs on expensive model API calls
-- Reduces monitoring noise and logging
-- Improves resource efficiency
+**主要優點：**
+- 減少跨 pod 的重複健康檢查
+- 節省昂貴模型 API 呼叫的成本
+- 減少監控雜訊與記錄
+- 提升資源效率
 
-**Requirements:**
-- Redis for shared state coordination
-- Background health checks enabled
-- Multiple proxy pods
+**需求：**
+- 用於共享狀態協調的 Redis
+- 已啟用背景健康檢查
+- 多個 proxy pod
 
-For detailed configuration and usage, see [Shared Health Check State](./shared_health_check.md). 
+如需詳細設定與使用方式，請參閱 [共享健康檢查狀態](./shared_health_check.md)。 
 
-## `/health`
-#### Request
-Make a GET Request to `/health` on the proxy 
+## `/health` {#health}
+#### 請求 {#request}
+對 proxy 發出 `/health` 請求
 
 :::info
-**This endpoint makes an LLM API call to each model to check if it is healthy.**
+**此端點會對每個模型發出 LLM API 呼叫，以檢查其是否健康。**
 :::
 
 ```shell
 curl --location 'http://0.0.0.0:4000/health' -H "Authorization: Bearer sk-1234"
 ```
 
-You can also run `litellm -health` it makes a `get` request to `http://0.0.0.0:4000/health` for you
+您也可以執行 `litellm -health`，它會替您向 `http://0.0.0.0:4000/health` 發出 `get` 請求
 ```
 litellm --health
 ```
-#### Response
+#### 回應 {#response}
 ```shell
 {
     "healthy_endpoints": [
@@ -74,9 +74,9 @@ litellm --health
 }
 ```
 
-### Embedding Models 
+### 嵌入模型  {#embedding-models}
 
-To run embedding health checks, specify the mode as "embedding" in your config for the relevant model.
+若要執行嵌入健康檢查，請在相關模型的設定中將模式指定為 "embedding"。
 
 ```yaml
 model_list:
@@ -90,9 +90,9 @@ model_list:
       mode: embedding # 👈 ADD THIS
 ```
 
-### Image Generation Models 
+### 圖像生成模型  {#image-generation-models}
 
-To run image generation health checks, specify the mode as "image_generation" in your config for the relevant model.
+若要執行圖像生成健康檢查，請在相關模型的設定中將模式指定為 "image_generation"。
 
 ```yaml
 model_list:
@@ -106,18 +106,17 @@ model_list:
       mode: image_generation # 👈 ADD THIS
 ```
 
-#### Custom Health Check Prompt
+#### 自訂健康檢查提示詞 {#custom-health-check-prompt}
 
-By default, health checks use the prompt `"test from litellm"`. You can customize this prompt globally by setting an environment variable, or per-model via config:
+預設情況下，健康檢查會使用提示詞 `"test from litellm"`。您可以透過設定環境變數全域自訂此提示詞，或透過設定檔針對單一模型自訂：
 
 ```bash
 DEFAULT_HEALTH_CHECK_PROMPT="this is a test prompt"
 ```
 
-### Text Completion Models 
+### 文字完成模型  {#text-completion-models}
 
-
-To run `/completions` health checks, specify the mode as "completion" in your config for the relevant model.
+若要執行 `/completions` 健康檢查，請在相關模型的設定中將模式指定為 "completion"。
 
 ```yaml
 model_list:
@@ -131,7 +130,7 @@ model_list:
       mode: completion # 👈 ADD THIS
 ```
 
-### Speech to Text Models 
+### 語音轉文字模型  {#speech-to-text-models}
 
 ```yaml
 model_list:
@@ -144,7 +143,7 @@ model_list:
 ```
 
 
-### Text to Speech Models 
+### 文字轉語音模型  {#text-to-speech-models}
 
 ```yaml
 # OpenAI Text to Speech Models
@@ -157,11 +156,11 @@ model_list:
       health_check_voice: alloy
 ```
 
-You can specify a `health_check_voice` if you need to use a voice other than "alloy".
+如果您需要使用 "alloy" 以外的聲音，可以指定 `health_check_voice`。
 
-### Rerank Models 
+### 重新排序模型  {#rerank-models}
 
-To run rerank health checks, specify the mode as "rerank" in your config for the relevant model.
+若要執行重新排序健康檢查，請在相關模型的設定中將模式指定為 "rerank"。
 
 ```yaml
 model_list:
@@ -173,9 +172,9 @@ model_list:
       mode: rerank
 ```
 
-### Batch Models (Azure Only)
+### 批次模型（僅 Azure） {#batch-models-azure-only}
 
-For Azure models deployed as 'batch' models, set `mode: batch`. 
+對於部署為 'batch' 模型的 Azure 模型，請設定 `mode: batch`。 
 
 ```yaml
 model_list:
@@ -188,8 +187,7 @@ model_list:
       mode: batch
 ```
 
-Expected Response 
-
+預期回應 
 
 ```bash
 {
@@ -206,9 +204,9 @@ Expected Response
 }
 ```
 
-### Realtime Models 
+### 即時模型  {#realtime-models}
 
-To run realtime health checks, specify the mode as "realtime" in your config for the relevant model.
+若要執行即時健康檢查，請在相關模型的設定中將模式指定為 "realtime"。
 
 ```yaml
 model_list:
@@ -220,9 +218,9 @@ model_list:
       mode: realtime
 ```
 
-### OCR Models 
+### OCR 模型  {#ocr-models}
 
-To run OCR health checks, specify the mode as "ocr" in your config for the relevant model.
+若要執行 OCR 健康檢查，請在相關模型的設定中將模式指定為 "ocr"。
 
 ```yaml
 model_list:
@@ -234,11 +232,11 @@ model_list:
       mode: ocr
 ```
 
-### Wildcard Routes
+### 萬用字元路由 {#wildcard-routes}
 
-For wildcard routes, you can specify a `health_check_model` in your config.yaml. This model will be used for health checks for that wildcard route.
+對於萬用字元路由，您可以在 config.yaml 中指定 `health_check_model`。此模型將用於該萬用字元路由的健康檢查。
 
-In this example, when running a health check for `openai/*`, the health check will make a `/chat/completions` request to `openai/gpt-4o-mini`.
+在此範例中，當執行 `openai/*` 的健康檢查時，健康檢查將對 `openai/gpt-4o-mini` 發出 `/chat/completions` 請求。
 
 ```yaml
 model_list:
@@ -256,40 +254,39 @@ model_list:
       health_check_model: anthropic/claude-3-5-sonnet-20240620
 ```
 
-## Background Health Checks 
+## 背景健康檢查  {#background-health-checks}
 
-You can enable model health checks being run in the background, to prevent each model from being queried too frequently via `/health`. 
+您可以啟用在背景執行的模型健康檢查，以避免透過 `/health` 過於頻繁地查詢每個模型。 
 
 :::info
 
-**This makes an LLM API call to each model to check if it is healthy.**
+**這會對每個模型發出 LLM API 呼叫，以檢查其是否健康。**
 
 :::
 
-Here's how to use it: 
-1. in the config.yaml add:
+使用方式如下： 
+1. 在 config.yaml 中加入：
 ```
 general_settings: 
   background_health_checks: True # enable background health checks
  health_check_interval: 300 # frequency of background health checks
 ```
 
-2. Start server 
+2. 啟動伺服器 
 ```
 $ litellm /path/to/config.yaml
 ```
 
-3. Query health endpoint: 
+3. 查詢健康端點： 
 ```
  curl --location 'http://0.0.0.0:4000/health'
 ```
 
-### Disable Background Health Checks For Specific Models
+### 停用特定模型的背景健康檢查 {#disable-background-health-checks-for-specific-models}
 
-Use this if you want to disable background health checks for specific models.
+如果您想停用特定模型的背景健康檢查，請使用此選項。
 
-If `background_health_checks` is enabled you can skip individual models by
-setting `disable_background_health_check: true` in the model's `model_info`.
+如果 `background_health_checks` 已啟用，您可以在模型的 `model_info` 中設定 `disable_background_health_check: true`，以略過個別模型。
 
 ```yaml
 model_list:
@@ -301,41 +298,39 @@ model_list:
       disable_background_health_check: true
 ```
 
-### Skip the same models on `GET /health`
+### 在 `GET /health` 上略過相同模型 {#skip-the-same-models-on-get-health}
 
-By default, `disable_background_health_check: true` only skips those deployments in the **background** health loop. On-demand `GET /health` still probes them unless you enable this global flag:
+預設情況下，`disable_background_health_check: true` 只會略過背景健康迴圈中的那些部署。按需 `GET /health` 仍會探測它們，除非您啟用這個全域旗標：
 
 ```yaml
 general_settings:
   health_check_skip_disabled_background_models: true
 ```
 
-When `true`, deployments with `model_info.disable_background_health_check: true` are omitted from on-demand `GET /health` (including `?model=` / `?model_id=`) and from health-check runs that honor `general_settings` (including Redis-backed shared health checks).
+當 `true` 時，具有 `model_info.disable_background_health_check: true` 的部署會從按需 `GET /health` 中省略（包括 `?model=` / `?model_id=`），也會從符合 `general_settings` 的健康檢查執行中省略（包括 Redis 支援的共享健康檢查）。
 
-### Hide details
+### 隱藏詳細資訊 {#hide-details}
 
-The health check response contains details like endpoint URLs, error messages,
-and other LiteLLM params. While this is useful for debugging, it can be
-problematic when exposing the proxy server to a broad audience.
+健康檢查回應包含端點 URL、錯誤訊息，以及其他 LiteLLM 參數等詳細資訊。雖然這對偵錯很有幫助，但當 proxy 伺服器對廣大受眾公開時，這可能會造成問題。
 
-You can hide these details by setting the `health_check_details` setting to `False`.
+您可以將 `health_check_details` 設定為 `False` 來隱藏這些詳細資訊。
 
 ```yaml
 general_settings: 
   health_check_details: False
 ```
 
-## Health Check Driven Routing
+## 健康檢查驅動的路由 {#health-check-driven-routing}
 
-Route traffic away from unhealthy deployments proactively — before user requests hit them. Supports per-error-type failure thresholds, transient error suppression, and automatic safety nets.
+主動將流量導離不健康的部署——在使用者請求命中之前。支援依錯誤類型設定失敗閾值、暫時性錯誤抑制，以及自動安全機制。
 
-See the full guide: [Health Check Driven Routing](./health_check_routing.md)
+請參閱完整指南：[健康檢查驅動的路由](./health_check_routing.md)
 
-## Health Check Timeout
+## 健康檢查逾時 {#health-check-timeout}
 
-The health check timeout is set in `litellm/constants.py` and defaults to 60 seconds.
+健康檢查逾時設定於 `litellm/constants.py`，預設為 60 秒。
 
-This can be overridden in the config.yaml by setting `health_check_timeout` in the model_info section.
+您可以在 config.yaml 的 model_info 區段中設定 `health_check_timeout` 來覆寫此值。
 
 ```yaml
 model_list:
@@ -347,11 +342,11 @@ model_list:
       health_check_timeout: 10 # 👈 OVERRIDE HEALTH CHECK TIMEOUT
 ```
 
-## Health Check Max Tokens
+## 健康檢查最大 token 數 {#health-check-max-tokens}
 
-By default, health checks use `max_tokens=5` to balance reliability with low cost and latency. For wildcard models, the default is `max_tokens=10`.
+預設情況下，健康檢查會使用 `max_tokens=5`，以在可靠性與低成本及低延遲之間取得平衡。對於萬用字元模型，預設值為 `max_tokens=10`。
 
-You can override this per-model by setting `health_check_max_tokens` in the `model_info` section of your config.yaml.
+您可以在 config.yaml 的 `model_info` 區段中設定 `health_check_max_tokens`，以針對單一模型覆寫此值。
 
 ```yaml
 model_list:
@@ -363,11 +358,11 @@ model_list:
       health_check_max_tokens: 5 # 👈 OVERRIDE HEALTH CHECK MAX TOKENS
 ```
 
-### Reasoning vs non-reasoning defaults
+### 推理與非推理預設值 {#reasoning-vs-non-reasoning-defaults}
 
-Reasoning models (per `supports_reasoning` in the model map) often need a higher health-check `max_tokens` because providers count reasoning tokens toward the completion budget. You can set **separate** limits without listing every model:
+推理模型（依 model map 中的 `supports_reasoning`）通常需要較高的健康檢查 `max_tokens`，因為提供者會將推理 token 計入完成預算。您可以設定**分開的**限制，而不必列出每個模型：
 
-**Per deployment (`model_info`)** — used when `health_check_max_tokens` is not set. Ignored for wildcard routes (`*` in `litellm_params.model`, i.e. the deployment model string; not `health_check_model`).
+**每個部署（`model_info`）**—當 `health_check_max_tokens` 未設定時使用。對萬用字元路由（`*` 位於 `litellm_params.model` 中，也就是部署模型字串；不是 `health_check_model`）會被忽略。
 
 ```yaml
 model_list:
@@ -380,18 +375,18 @@ model_list:
       health_check_max_tokens_non_reasoning: 1
 ```
 
-**Global (environment)**:
+**全域（環境）**：
 
-- `BACKGROUND_HEALTH_CHECK_MAX_TOKENS_REASONING` — for non-wildcard reasoning models, this value takes precedence when set
-- `BACKGROUND_HEALTH_CHECK_MAX_TOKENS` — global fallback for all models (including wildcard routes)
+- `BACKGROUND_HEALTH_CHECK_MAX_TOKENS_REASONING` — 針對非萬用字元推理模型，設定後此值優先
+- `BACKGROUND_HEALTH_CHECK_MAX_TOKENS` — 所有模型的全域備援（包含萬用字元路由）
 
-If neither is set, non-wildcard models default to `5` and wildcard routes omit `max_tokens`.
+如果兩者都未設定，非萬用字元模型預設為 `5`，而萬用字元路由則不指定 `max_tokens`。
 
-## Health check reasoning effort
+## 健康檢查推理努力程度 {#health-check-reasoning-effort}
 
-For reasoning models (e.g. GPT-5, o-series), you can set **only for the health-check request** how much reasoning to use via `health_check_reasoning_effort` in `model_info`. This is forwarded as `reasoning_effort` on the underlying completion call so you can use a minimal level (for example `none` or `minimal`) to reduce latency and cost during probes.
+對於推理模型（例如 GPT-5、o-series），您可以僅針對**健康檢查請求**，透過 `health_check_reasoning_effort` 在 `model_info` 中設定要使用多少推理量。這會在底層的 completion 呼叫中作為 `reasoning_effort` 傳遞，因此您可以使用最小等級（例如 `none` 或 `minimal`）來降低探測期間的延遲與成本。
 
-Applies when `mode` is unset (chat), or explicitly `chat`, `completion`, `batch`, or `responses`. It is not applied for `embedding`, `audio_*`, `rerank`, etc.
+適用於 `mode` 未設定（chat），或明確設為 `chat`、`completion`、`batch`，或 `responses`。不會套用於 `embedding`、`audio_*`、`rerank` 等。
 
 ```yaml
 model_list:
@@ -403,11 +398,11 @@ model_list:
       health_check_reasoning_effort: none # options depend on provider/model map
 ```
 
-### Checking which `reasoning_effort` values your model supports
+### 檢查您的模型支援哪些 `reasoning_effort` 值 {#checking-which-reasoning_effort-values-your-model-supports}
 
-LiteLLM reads per-model flags from [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json). For reasoning effort, entries may include `supports_none_reasoning_effort`, `supports_minimal_reasoning_effort`, `supports_low_reasoning_effort`, `supports_xhigh_reasoning_effort`, `supports_max_reasoning_effort`, and similar keys. When a key is **`true`**, LiteLLM treats that level as supported for that model.
+LiteLLM 會從 [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 讀取每個模型的旗標。對於 reasoning effort，條目可能包含 `supports_none_reasoning_effort`、`supports_minimal_reasoning_effort`、`supports_low_reasoning_effort`、`supports_xhigh_reasoning_effort`、`supports_max_reasoning_effort` 等類似鍵。當某個鍵為 **`true`** 時，LiteLLM 會將該等級視為此模型支援。
 
-Call **`litellm.get_model_info()`** with the **same model string** you use under `litellm_params.model` (including a provider prefix such as `azure/` when you use one), then inspect the returned `supports_*_reasoning_effort` fields:
+使用與 `litellm_params.model` 下相同的模型字串（包含您使用的提供者前綴，例如 `azure/`）呼叫 **`litellm.get_model_info()`**，然後檢查回傳的 `supports_*_reasoning_effort` 欄位：
 
 ```python
 import litellm
@@ -418,19 +413,19 @@ for name in sorted(dir(info)):
         print(name, getattr(info, name))
 ```
 
-If the model is not present in the LiteLLM model map, `get_model_info` may raise. In that case add or fix the entry in the JSON, or confirm allowed values from your provider’s API documentation (Azure OpenAI, OpenAI, Anthropic, etc.)—provider docs are the final authority when the map has not caught up to a new SKU.
+如果該模型不在 LiteLLM model map 中，`get_model_info` 可能會擲出錯誤。在這種情況下，請在 JSON 中新增或修正該項目，或從您提供者的 API 文件（Azure OpenAI、OpenAI、Anthropic 等）確認允許的值——當 map 尚未跟上新的 SKU 時，以提供者文件為準。
 
-## `/health/readiness`
+## `/health/readiness` {#healthreadiness}
 
-Unprotected endpoint for checking if proxy is ready to accept requests
+用於檢查 proxy 是否已準備好接收請求的未保護端點
 
-Example Request: 
+範例請求：
 
 ```bash
 curl http://0.0.0.0:4000/health/readiness
 ```
 
-Example Response:  
+範例回應：
 
 ```json
 {
@@ -451,15 +446,13 @@ Example Response:
 }
 ```
 
-If the proxy is not connected to a database, then the `"db"` field will be `"Not
-connected"` instead of `"connected"` and the `"last_updated"` field will not be present.
+如果 proxy 未連接到資料庫，則 `"db"` 欄位會是 `"Not connected"`，而 `` instead of ``、`connected`、`` and the ``、`last_updated"` 欄位將不會出現。
 
-## `/health/liveliness`
+## `/health/liveliness` {#healthliveliness}
 
-Unprotected endpoint for checking if proxy is alive
+用於檢查 proxy 是否存活的未保護端點
 
-
-Example Request: 
+範例請求：
 
 ```
 curl -X 'GET' \
@@ -467,35 +460,34 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-Example Response: 
+範例回應：
 
 ```json
 "I'm alive!"
 ```
 
-## `/health/services`
+## `/health/services` {#healthservices}
 
-Use this admin-only endpoint to check if a connected service (datadog/slack/langfuse/etc.) is healthy.
+使用此僅供管理員使用的端點來檢查已連接的服務（datadog/slack/langfuse/etc.）是否健康。
 
 ```bash
 curl -L -X GET 'http://0.0.0.0:4000/health/services?service=datadog'     -H 'Authorization: Bearer sk-1234'
 ```
 
-[**API Reference**](https://litellm-api.up.railway.app/#/health/health_services_endpoint_health_services_get)
+[**API 參考**](https://litellm-api.up.railway.app/#/health/health_services_endpoint_health_services_get)
 
+## 進階 - 呼叫特定模型 {#advanced---call-specific-models}
 
-## Advanced - Call specific models 
+若要檢查特定模型的健康狀態，以下是呼叫方式：
 
-To check health of specific models, here's how to call them: 
-
-### 1. Get model id via `/model/info` 
+### 1. 透過 `/model/info` 取得模型 id {#1-get-model-id-via-modelinfo}
 
 ```bash
 curl -X GET 'http://0.0.0.0:4000/v1/model/info' \
 --header 'Authorization: Bearer sk-1234' \
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -508,7 +500,7 @@ curl -X GET 'http://0.0.0.0:4000/v1/model/info' \
 }
 ```
 
-### 2. Call specific model via `/chat/completions` 
+### 2. 透過 `/chat/completions` 呼叫特定模型 {#2-call-specific-model-via-chatcompletions}
 
 ```bash
 curl -X POST 'http://localhost:4000/chat/completions' \
@@ -525,4 +517,3 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 }
 '
 ```
-

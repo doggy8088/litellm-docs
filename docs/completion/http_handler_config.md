@@ -1,18 +1,18 @@
-# Custom HTTP Handler
+# 自訂 HTTP 處理器 {#custom-http-handler}
 
-Configure custom aiohttp sessions for better performance and control in LiteLLM completions.
+為 LiteLLM completions 設定自訂 aiohttp sessions，以提升效能與控制能力。
 
-## Overview
+## 總覽 {#overview}
 
-You can now inject custom `aiohttp.ClientSession` instances into LiteLLM for:
-- Custom connection pooling and timeouts
-- Corporate proxy and SSL configurations  
-- Performance optimization
-- Request monitoring
+您現在可以將自訂 `aiohttp.ClientSession` 實例注入 LiteLLM，用於：
+- 自訂連線池與逾時
+- 企業代理與 SSL 設定  
+- 效能最佳化
+- 請求監控
 
-## Basic Usage
+## 基本用法 {#basic-usage}
 
-### Default (No Changes Required)
+### 預設（無需變更） {#default-no-changes-required}
 ```python
 import litellm
 
@@ -23,7 +23,7 @@ response = await litellm.acompletion(
 )
 ```
 
-### Custom Session
+### 自訂 Session {#custom-session}
 ```python
 import aiohttp
 import litellm
@@ -42,9 +42,9 @@ litellm.base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler(client_session=session)
 response = await litellm.acompletion(model="gpt-3.5-turbo", messages=[...])
 ```
 
-## Common Patterns
+## 常見模式 {#common-patterns}
 
-### FastAPI Integration
+### FastAPI 整合 {#fastapi-integration}
 ```python
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -72,7 +72,7 @@ async def chat(messages: list[dict]):
     return await litellm.acompletion(model="gpt-3.5-turbo", messages=messages)
 ```
 
-### Corporate Proxy
+### 企業代理 {#corporate-proxy}
 ```python
 import ssl
 
@@ -89,7 +89,7 @@ session = aiohttp.ClientSession(
 litellm.base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler(client_session=session)
 ```
 
-### High Performance
+### 高效能 {#high-performance}
 ```python
 # Optimized for high throughput
 session = aiohttp.ClientSession(
@@ -106,7 +106,7 @@ session = aiohttp.ClientSession(
 litellm.base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler(client_session=session)
 ```
 
-## Constructor Options
+## 建構式選項 {#constructor-options}
 
 ```python
 BaseLLMAIOHTTPHandler(
@@ -116,15 +116,15 @@ BaseLLMAIOHTTPHandler(
 )
 ```
 
-## Resource Management
+## 資源管理 {#resource-management}
 
-- **User sessions**: You manage the lifecycle (call `await session.close()`)
-- **Auto-created sessions**: Automatically cleaned up by the handler
-- **100% backward compatible**: Existing code works unchanged
+- **使用者 sessions**：由您管理生命週期（呼叫 `await session.close()`）
+- **自動建立的 sessions**：由處理器自動清理
+- **100% 向後相容**：既有程式碼可原樣運作
 
-## Configuration Tips
+## 設定提示 {#configuration-tips}
 
-### Development
+### 開發 {#development}
 ```python
 session = aiohttp.ClientSession(
     timeout=aiohttp.ClientTimeout(total=60),
@@ -132,7 +132,7 @@ session = aiohttp.ClientSession(
 )
 ```
 
-### Production
+### 生產環境 {#production}
 ```python
 session = aiohttp.ClientSession(
     timeout=aiohttp.ClientTimeout(total=300),

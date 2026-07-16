@@ -1,10 +1,10 @@
 ---
 slug: gemini_embedding_2_ga
-title: "Gemini Embedding 2 (GA): Multimodal Embeddings on LiteLLM"
+title: "Gemini Embedding 2 (GA)：LiteLLM 上的多模態嵌入"
 date: 2026-04-24T10:00:00
 authors:
   - sameer
-description: "Use generally available gemini-embedding-2 for multimodal embeddings on LiteLLM via Gemini API and Vertex AI—the same flows as preview, stable model id."
+description: "透過 Gemini API 和 Vertex AI 在 LiteLLM 上使用正式可用的 gemini-embedding-2 進行多模態嵌入——與預覽版相同的流程，且模型 ID 穩定。"
 tags: [gemini, embeddings, multimodal, vertex ai]
 hide_table_of_contents: false
 ---
@@ -12,35 +12,35 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini Embedding 2 (GA): Multimodal Embeddings
+# Gemini Embedding 2 (GA): 多模態嵌入 {#gemini-embedding-2-ga-multimodal-embeddings}
 
-Litellm now fully supports Gemini Embedding 2 GA.
+Litellm 現在已完全支援 Gemini Embedding 2 GA。
 
 :::info
-For end-to-end behavior, input shapes, and MIME types, see the [Gemini Embedding 2 Preview walkthrough](/blog/gemini_embedding_2_multimodal). This post focuses on **GA naming**, **cost map** coverage.
+如需端到端行為、輸入形狀與 MIME 類型，請參閱 [Gemini Embedding 2 預覽版導覽](/blog/gemini_embedding_2_multimodal)。本篇文章著重於 **GA 命名**、**成本對照表** 的涵蓋範圍。
 :::
 
 {/* truncate */}
 
-## Supported Input Types
+## 支援的輸入類型 {#supported-input-types}
 
-| Modality | Supported Formats |
+| 模態 | 支援格式 |
 |----------|-------------------|
-| **Text** | Plain text |
-| **Image** | PNG, JPEG |
-| **Audio** | MP3, WAV |
-| **Video** | MP4, MOV |
-| **Documents** | PDF |
+| **文字** | 純文字 |
+| **圖片** | PNG, JPEG |
+| **音訊** | MP3, WAV |
+| **影片** | MP4, MOV |
+| **文件** | PDF |
 
-## Input Formats
+## 輸入格式 {#input-formats}
 
-LiteLLM accepts three input formats for multimodal content:
+LiteLLM 接受三種多模態內容輸入格式：
 
-1. **Data URIs** – Base64-encoded inline: `data:image/png;base64,<encoded_data>`
-2. **GCS URLs** – Cloud Storage paths (Vertex AI): `gs://bucket/path/to/file.png`
-3. **Gemini File References** – Pre-uploaded files (Gemini API): `files/abc123`
+1. **Data URI** – Base64 編碼內嵌：`data:image/png;base64,<encoded_data>`
+2. **GCS URLs** – 雲端儲存路徑（Vertex AI）：`gs://bucket/path/to/file.png`
+3. **Gemini File References** – 預先上傳的檔案（Gemini API）：`files/abc123`
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="gemini" label="Gemini API">
@@ -88,7 +88,7 @@ print(response)
 
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Config (config.yaml)**
+**1. 設定（config.yaml）**
 
 ```yaml
 model_list:
@@ -106,13 +106,13 @@ general_settings:
   master_key: sk-1234
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config config.yaml
 ```
 
-**3. Call embeddings** (OpenAI-compatible **`POST /v1/embeddings`** on the proxy)
+**3. 呼叫 embeddings**（proxy 上相容 OpenAI 的 **`POST /v1/embeddings`**）
 
 ```bash
 curl -sS -X POST http://localhost:4000/v1/embeddings \
@@ -130,24 +130,24 @@ curl -sS -X POST http://localhost:4000/v1/embeddings \
 </TabItem>
 </Tabs>
 
-## Input Format Examples
+## 輸入格式範例 {#input-format-examples}
 
-| Format | Example | Provider |
+| 格式 | 範例 | 提供者 |
 |--------|---------|----------|
 | **Data URI** | `data:image/png;base64,...` | Gemini, Vertex AI |
 | **GCS URL** | `gs://bucket/path/image.png` | Vertex AI |
-| **File reference** | `files/abc123` | Gemini API only |
+| **檔案參照** | `files/abc123` | 僅限 Gemini API |
 
-### Supported MIME Types for Data URIs
+### Data URI 支援的 MIME 類型 {#supported-mime-types-for-data-uris}
 
-- **Images:** `image/png`, `image/jpeg`
-- **Audio:** `audio/mpeg`, `audio/wav`
-- **Video:** `video/mp4`, `video/quicktime`
-- **Documents:** `application/pdf`
+- **圖片：** `image/png`, `image/jpeg`
+- **音訊：** `audio/mpeg`, `audio/wav`
+- **影片：** `video/mp4`, `video/quicktime`
+- **文件：** `application/pdf`
 
-### GCS URL MIME Inference
+### GCS URL MIME 推斷 {#gcs-url-mime-inference}
 
-For Vertex AI, MIME types are inferred from file extensions:
+對於 Vertex AI，MIME 類型會根據檔案副檔名推斷：
 
 - `.png` → `image/png`
 - `.jpg` / `.jpeg` → `image/jpeg`
@@ -157,11 +157,11 @@ For Vertex AI, MIME types are inferred from file extensions:
 - `.mov` → `video/quicktime`
 - `.pdf` → `application/pdf`
 
-## Optional Parameters
+## 選用參數 {#optional-parameters}
 
-| Parameter | Description | Maps to |
+| 參數 | 說明 | 對應至 |
 |-----------|-------------|---------|
-| `dimensions` | Output embedding size | `outputDimensionality` |
+| `dimensions` | 輸出嵌入大小 | `outputDimensionality` |
 
 ```python
 response = embedding(

@@ -2,39 +2,36 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Aporia Guardrails with LiteLLM Gateway
+# 使用 LiteLLM Gateway 的 Aporia 防護欄 {#aporia-guardrails-with-litellm-gateway}
 
-In this tutorial we will use LiteLLM AI Gateway with Aporia to detect PII in requests and profanity in responses
+在本教學中，我們將使用 LiteLLM AI Gateway 搭配 Aporia 來偵測請求中的 PII，以及回應中的不雅字眼
 
-## 1. Setup guardrails on Aporia
+## 1. 在 Aporia 上設定防護欄 {#1-setup-guardrails-on-aporia}
 
-### Create Aporia Projects
+### 建立 Aporia 專案 {#create-aporia-projects}
 
-Create two projects on [Aporia](https://guardrails.aporia.com/)
+在 [Aporia](https://guardrails.aporia.com/) 上建立兩個專案
 
-1. Pre LLM API Call - Set all the policies you want to run on pre LLM API call 
-2. Post LLM API Call - Set all the policies you want to run post LLM API call
-
+1. Pre LLM API Call - 設定您要在 pre LLM API call 之前執行的所有政策 
+2. Post LLM API Call - 設定您要在 post LLM API call 之後執行的所有政策
 
 <Image img={require('../../img/aporia_projs.png')} />
 
+### 呼叫前：偵測 PII {#pre-call-detect-pii}
 
-### Pre-Call: Detect PII
-
-Add the `PII - Prompt` to your Pre LLM API Call project
+將 `PII - Prompt` 新增到您的 Pre LLM API Call 專案
 
 <Image img={require('../../img/aporia_pre.png')} />
 
-### Post-Call: Detect Profanity in Responses
+### 呼叫後：偵測回應中的不雅字眼 {#post-call-detect-profanity-in-responses}
 
-Add the `Toxicity - Response` to your Post LLM API Call project
+將 `Toxicity - Response` 新增到您的 Post LLM API Call 專案
 
 <Image img={require('../../img/aporia_post.png')} />
 
+## 2. 在您的 LiteLLM config.yaml 中定義防護欄  {#2-define-guardrails-on-your-litellm-configyaml}
 
-## 2. Define Guardrails on your LiteLLM config.yaml 
-
-- Define your guardrails under the `guardrails` section and set `pre_call_guardrails` and `post_call_guardrails`
+- 在 `guardrails` 區段下定義您的防護欄，並設定 `pre_call_guardrails` 和 `post_call_guardrails`
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -57,27 +54,26 @@ guardrails:
       api_base: os.environ/APORIA_API_BASE_2
 ```
 
-### Supported values for `mode`
+### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
-- `during_call` Run **during** LLM call, on **input** Same as `pre_call` but runs in parallel as LLM call.  Response not returned until guardrail check completes
+- `pre_call` 在 LLM 呼叫之前執行，針對**輸入**
+- `post_call` 在 LLM 呼叫之後執行，針對**輸入與輸出**
+- `during_call` 在 LLM 呼叫期間執行，針對**輸入**，與 `pre_call` 相同，但會與 LLM 呼叫平行執行。回應在防護欄檢查完成前不會傳回
 
-## 3. Start LiteLLM Gateway 
-
+## 3. 啟動 LiteLLM Gateway  {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-## 4. Test request 
+## 4. 測試請求  {#4-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="不成功的呼叫" value = "not-allowed">
 
-Expect this to fail since since `ishaan@berri.ai` in the request is PII
+預期這會失敗，因為請求中的 `ishaan@berri.ai` 是 PII
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -92,7 +88,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```shell
 {
@@ -116,7 +112,7 @@ Expected response on failure
 
 </TabItem>
 
-<TabItem label="Successful Call " value = "allowed">
+<TabItem label="成功的呼叫 " value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -133,15 +129,14 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-
 </Tabs>
 
-## 5. Control Guardrails per Project (API Key)
+## 5. 依專案（API 金鑰）控制防護欄 {#5-control-guardrails-per-project-api-key}
 
-Use this to control what guardrails run per project. In this tutorial we only want the following guardrails to run for 1 project (API Key)
+使用此功能可控制每個專案要執行哪些防護欄。在本教學中，我們只希望以下防護欄針對 1 個專案（API 金鑰）執行
 - `guardrails`: ["aporia-pre-guard", "aporia-post-guard"]
 
-**Step 1** Create Key with guardrail settings
+**步驟 1** 建立具有防護欄設定的金鑰
 
 <Tabs>
 <TabItem value="/key/generate" label="/key/generate">
@@ -173,7 +168,7 @@ curl --location 'http://0.0.0.0:4000/key/update' \
 </TabItem>
 </Tabs>
 
-**Step 2** Test it with new key
+**步驟 2** 使用新金鑰測試
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -189,6 +184,3 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     ]
 }'
 ```
-
-
-

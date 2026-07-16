@@ -1,5 +1,5 @@
 ---
-title: "v1.84.9 - Anthropic Cache-Control Cap"
+title: "v1.84.9 - Anthropic 快取控制上限"
 slug: "v1-84-9"
 date: 2026-06-16T18:19:59
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,12 +43,12 @@ pip install litellm==1.84.9
 </TabItem>
 </Tabs>
 
-`v1.84.9` is a patch release on top of [`v1.84.8`](/release_notes/v1.84.8/v1-84-8). It caps Anthropic `cache_control` injection at the 4-block API limit so prompt-caching requests no longer fail when more blocks are eligible.
+`v1.84.9` 是 [`v1.84.8`](/release_notes/v1.84.8/v1-84-8) 之上的修補版本。它將 Anthropic `cache_control` 注入上限設為 4 個區塊的 API 限制，因此當符合條件的區塊超過時，提示快取請求不會再失敗。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(integrations): cap Anthropic cache_control injection at 4 blocks - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
+- fix(integrations): 將 Anthropic cache_control 注入上限設為 4 個區塊 - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.8...v1.84.9

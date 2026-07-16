@@ -1,13 +1,13 @@
 import Image from '@theme/IdealImage';
 
-# Retool Assist
+# Retool Assist {#retool-assist}
 
-This guide walks you through connecting [Retool Assist](https://docs.retool.com/apps/guides/assist/) to LiteLLM Proxy. Retool Assist uses AI to generate and edit apps from within the Retool app IDE. Using LiteLLM with Retool Assist allows you to:
+本指南將引導您完成將 [Retool Assist](https://docs.retool.com/apps/guides/assist/) 連接到 LiteLLM Proxy 的步驟。Retool Assist 使用 AI 從 Retool app IDE 內生成並編輯應用程式。搭配 LiteLLM 與 Retool Assist，您可以：
 
-- Access 100+ LLMs through Retool Assist
-- Track spend and usage, set budget limits per virtual key
-- Control which models Retool Assist can access
-- Use your own LLM providers via a unified OpenAI-compatible API
+- 透過 Retool Assist 存取 100+ 個 LLM
+- 追蹤支出與用量，為每個虛擬金鑰設定預算上限
+- 控制 Retool Assist 可存取哪些模型
+- 透過統一的 OpenAI 相容 API 使用您自己的 LLM 提供者
 
 <div style={{ maxWidth: '100%', overflow: 'hidden', paddingBottom: '59.52%', position: 'relative', height: 0 }}>
   <iframe 
@@ -23,121 +23,120 @@ This guide walks you through connecting [Retool Assist](https://docs.retool.com/
 ---
 
 :::info
-**Hosted Retool requires a public URL.** Retool Cloud runs on Retool's servers, so `localhost` will not work. You must expose your LiteLLM proxy via ngrok, Cloudflare Tunnel, or by deploying to a cloud provider.
+**託管版 Retool 需要公開 URL。** Retool Cloud 執行於 Retool 的伺服器上，因此 `localhost` 將無法運作。您必須透過 ngrok、Cloudflare Tunnel，或部署到雲端提供者來公開您的 LiteLLM proxy。
 :::
 
-## Quick Reference
+## 快速參考 {#quick-reference}
 
-| Setting | Value |
+| 設定 | 值 |
 |---------|-------|
-| Provider Schema | OpenAI |
-| Base URL | Your ngrok URL (e.g. `https://abc123.ngrok-free.app`) or deployed proxy URL |
-| API Key | Your LiteLLM Virtual Key |
-| Model | Public model name from LiteLLM (e.g. `openai/gpt-4o-mini`, `openai/gpt-5.2-2025-12-11`) |
+| 提供者結構描述 | OpenAI |
+| Base URL | 您的 ngrok URL（例如 `https://abc123.ngrok-free.app`）或已部署的 proxy URL |
+| API Key | 您的 LiteLLM 虛擬金鑰 |
+| 模型 | 來自 LiteLLM 的公開模型名稱（例如 `openai/gpt-4o-mini`、`openai/gpt-5.2-2025-12-11`） |
 
 ---
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-- LiteLLM Proxy running locally or deployed
-- [ngrok](https://ngrok.com/download) (or similar tunnel) for local development with hosted Retool
-- A [Retool](https://retool.com) account (Cloud or self-hosted)
+- LiteLLM Proxy 在本機執行或已部署
+- [ngrok](https://ngrok.com/download)（或類似隧道）用於搭配託管版 Retool 進行本機開發
+- 一個 [Retool](https://retool.com) 帳戶（Cloud 或自架）
 
-## 1. Start LiteLLM Proxy
+## 1. 啟動 LiteLLM Proxy {#1-start-litellm-proxy}
 
-Set up LiteLLM Proxy following the [Getting Started Guide](https://docs.litellm.ai/docs/proxy/docker_quick_start). Ensure your proxy is running on port 4000.
+依照 [Getting Started Guide](https://docs.litellm.ai/docs/proxy/docker_quick_start) 設定 LiteLLM Proxy。請確保您的 proxy 在 4000 埠上執行。
 
-## 2. Expose LiteLLM with a Public URL
+## 2. 使用公開 URL 公開 LiteLLM {#2-expose-litellm-with-a-public-url}
 
 <Image img={require('../../img/ngrok_public_url.gif')} />
 
-Retool Cloud runs on Retool's servers. You must expose your local LiteLLM proxy with a public URL.
+Retool Cloud 執行於 Retool 的伺服器上。您必須使用公開 URL 來公開本機 LiteLLM proxy。
 
-### Using ngrok
+### 使用 ngrok {#using-ngrok}
 
-- Install [ngrok](https://ngrok.com/download)
-- In a separate terminal, run:
+- 安裝 [ngrok](https://ngrok.com/download)
+- 在另一個終端機中執行：
   
 ```bash
 ngrok http 4000
 ```
-- Copy the generated HTTPS URL (e.g. `https://abc123.ngrok-free.app`). This is your **Base URL** for Retool.
+- 複製產生的 HTTPS URL（例如 `https://abc123.ngrok-free.app`）。這就是 Retool 的 **Base URL**。
 
+### 替代方案 {#alternative}
 
-### Alternative
+如果您將 LiteLLM 部署到 Railway、Render、Fly.io 或其他雲端提供者，請使用該公開 URL 作為 Base URL。詳情請參閱 [Deploy guide](https://docs.litellm.ai/docs/proxy/deploy)。
 
-If you deploy LiteLLM to Railway, Render, Fly.io, or another cloud provider, use that public URL as your Base URL. See the [Deploy guide](https://docs.litellm.ai/docs/proxy/deploy) for details.
-
-## 3. Generate a Virtual Key
+## 3. 產生虛擬金鑰 {#3-generate-a-virtual-key}
 
 <Image img={require('../../img/litellm_virtual_key.gif')} />
 
-Create a virtual key that Retool Assist will use to authenticate with LiteLLM. The key must have access to the models you want to use (e.g. `openai/*` for all OpenAI models).
+建立一個 Retool Assist 將用來向 LiteLLM 驗證的虛擬金鑰。此金鑰必須能存取您想使用的模型（例如 `openai/*` 可用於所有 OpenAI 模型）。
 
-### Via LiteLLM UI
+### 透過 LiteLLM UI {#via-litellm-ui}
 
-- Navigate to [http://localhost:4000/ui](http://localhost:4000/ui)
-- Go to **Virtual Keys** → **+ Create New Key**
-- Select the models you need (or `openai/*` for all OpenAI models)
-- Copy the key
+- 前往 [http://localhost:4000/ui](http://localhost:4000/ui)
+- 前往 **Virtual Keys** → **+ Create New Key**
+- 選取您需要的模型（或 `openai/*`，適用於所有 OpenAI 模型）
+- 複製該金鑰
 
-## 4. Add LiteLLM as a Custom Provider in Retool
+## 4. 在 Retool 中將 LiteLLM 新增為自訂提供者 {#4-add-litellm-as-a-custom-provider-in-retool}
 
-Inside your Retool dashboard, configure LiteLLM as a custom AI resource:
+在您的 Retool 儀表板中，將 LiteLLM 設定為自訂 AI 資源：
 
 <Image img={require('../../img/retool_resource_setup.gif')} />
 
-1. Go to **Resources**
+1. 前往 **Resources**
 
-2. Under the **AI** category, select **Custom Provider**
+2. 在 **AI** 類別下，選取 **Custom Provider**
 
-3. Fill in the form:
+3. 填寫表單：
    - **Name:** `LiteLLM`
-   - **Description:** (optional) e.g. `LiteLLM Proxy - 100+ LLMs`
+   - **Description:**（選填）例如 `LiteLLM Proxy - 100+ LLMs`
    - **Provider Schema:** `OpenAI`
-   - **Base URL:** Your ngrok-generated URL (e.g. `https://abc123.ngrok-free.app`) or deployed proxy URL—do not add `/v1` unless Retool requires it
-   - **API Key:** Your LiteLLM virtual key from Step 3
-4. **Add model names** from your LiteLLM proxy (e.g. `openai/gpt-4o-mini`, `openai/gpt-5.2-2025-12-11`).
-5. Click **Create Resource**
+   - **Base URL:** 您透過 ngrok 產生的 URL（例如 `https://abc123.ngrok-free.app`）或已部署的 proxy URL——除非 Retool 要求，否則請勿加入 `/v1`
+   - **API Key:** 您在步驟 3 中取得的 LiteLLM 虛擬金鑰
+4. **新增 model names** 來自您的 LiteLLM proxy（例如 `openai/gpt-4o-mini`、`openai/gpt-5.2-2025-12-11`）。
+5. 點選 **Create Resource**
 
 <Image img={require('../../img/retool_llm_setup.gif')} />
 
-## 5. Test the Connection
+## 5. 測試連線 {#5-test-the-connection}
 
 <Image img={require('../../img/retool_litellm_connection.gif')} />
 
-- Open an app in Retool and enable **Assist** (if not already enabled in your organization)
-- Use Assist to generate or edit app elements, it will route requests through LiteLLM
-- Use the code option from the Sidebar to add a resource query, select the LiteLLM resource, and run it to test the setup.
-- Check the LiteLLM **Logs** section to verify requests and track usage
+- 在 Retool 中開啟一個 app，並啟用 **Assist**（如果您的組織尚未啟用）
+- 使用 Assist 生成或編輯 app 元素，請求會經由 LiteLLM 路由
+- 使用 Sidebar 中的 code 選項新增 resource query，選取 LiteLLM resource，然後執行以測試設定。
+- 檢查 LiteLLM **Logs** 區段以驗證請求並追蹤用量
 
 <Image img={require('../../img/retool_litellm_logs.gif')} />
 
 ---
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### 401 Unauthorized
+### 401 未經授權 {#401-unauthorized}
 
-- Ensure the **API Key** in Retool matches your LiteLLM virtual key exactly
-- Verify the key is not expired or blocked in LiteLLM
+- 確認 Retool 中的 **API Key** 與您的 LiteLLM 虛擬金鑰完全相符
+- 驗證該金鑰在 LiteLLM 中未過期或未被封鎖
 
-### 401 "key not allowed to access model"
+### 401 "key 不允許存取模型" {#401-key-not-allowed-to-access-model}
 
-Your virtual key is restricted to specific models. Generate a new key with `openai/*` or include the model you need (e.g. `openai/gpt-5.2-2025-12-11`) in the key's allowed models list.
+您的虛擬金鑰僅限於特定模型。請產生一個具有 `openai/*` 的新金鑰，或將您需要的模型（例如 `openai/gpt-5.2-2025-12-11`）加入該金鑰的允許模型清單。
 
-### 500 "api_key client option must be set"
+### 500 "api_key client option must be set" {#500-api_key-client-option-must-be-set}
 
-LiteLLM could not use your OpenAI API key to call the provider. Ensure `OPENAI_API_KEY` is set in your LiteLLM environment (e.g. in `.env` or `docker-compose.yml`) when using `openai/*` models.
+LiteLLM 無法使用您的 OpenAI API 金鑰呼叫該提供者。當使用 `openai/*` 模型時，請確認在您的 LiteLLM 環境中已設定 `OPENAI_API_KEY`（例如在 `.env` 或 `docker-compose.yml` 中）。
 
-### localhost does not work
+### localhost 無法運作 {#localhost-does-not-work}
 
-Retool Cloud cannot reach `localhost` it points to Retool's servers. Use ngrok or deploy LiteLLM to a public URL.
+Retool Cloud 無法連線到 `localhost`，因為它指向 Retool 的伺服器。請使用 ngrok 或將 LiteLLM 部署到公開 URL。
 
 ---
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Virtual Keys](https://docs.litellm.ai/docs/proxy/virtual_keys) – Create and manage API keys
-- [Deploy LiteLLM](https://docs.litellm.ai/docs/proxy/deploy) – Production deployment options
-- [Retool Assist Documentation](https://docs.retool.com/apps/guides/assist/) – Configure Assist and prompting guides
+- [Virtual Keys](https://docs.litellm.ai/docs/proxy/virtual_keys) – 建立與管理 API 金鑰
+- [Deploy LiteLLM](https://docs.litellm.ai/docs/proxy/deploy) – 正式環境部署選項
+- [Retool Assist Documentation](https://docs.retool.com/apps/guides/assist/) – 設定 Assist 與提示指南

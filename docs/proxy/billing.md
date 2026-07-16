@@ -2,25 +2,25 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Billing
+# 計費 {#billing}
 
-Bill internal teams, external customers for their usage
+向內部團隊、外部客戶依其用量收費
 
-**🚨 Requirements**
-- [Setup Lago](https://docs.getlago.com/guide/self-hosted/docker#run-the-app), for usage-based billing. We recommend following [their Stripe tutorial](https://docs.getlago.com/templates/per-transaction/stripe#step-1-create-billable-metrics-for-transaction)
+**🚨 必要條件**
+- [設定 Lago](https://docs.getlago.com/guide/self-hosted/docker#run-the-app)，用於依用量計費。我們建議遵循 [他們的 Stripe 教學](https://docs.getlago.com/templates/per-transaction/stripe#step-1-create-billable-metrics-for-transaction)
 
-Steps:
-- Connect the proxy to Lago
-- Set the id you want to bill for (customers, internal users, teams)
-- Start! 
+步驟：
+- 將 proxy 連接到 Lago
+- 設定您要計費的 id（客戶、內部使用者、團隊）
+- 開始！ 
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Bill internal teams for their usage
+向內部團隊依其用量收費
 
-### 1. Connect proxy to Lago 
+### 1. 將 proxy 連接到 Lago  {#1-connect-proxy-to-lago}
 
-Set 'lago' as a callback on your proxy config.yaml
+在您的 proxy config.yaml 中將 'lago' 設為 callback
 
 ```yaml
 model_list:
@@ -37,7 +37,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-Add your Lago keys to the environment
+將您的 Lago 金鑰新增到環境變數
 
 ```bash
 export LAGO_API_BASE="http://localhost:3000" # self-host - https://docs.getlago.com/guide/self-hosted/docker#run-the-app
@@ -46,13 +46,13 @@ export LAGO_API_EVENT_CODE="openai_tokens" # name of lago billing code
 export LAGO_API_CHARGE_BY="team_id" # 👈 Charges 'team_id' attached to proxy key
 ```
 
-Start proxy 
+啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 2. Create Key for Internal Team 
+### 2. 為內部團隊建立 Key  {#2-create-key-for-internal-team}
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -61,7 +61,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 --data-raw '{"team_id": "my-unique-id"}' # 👈 Internal Team's ID
 ```
 
-Response Object:
+回應物件：
 
 ```bash
 {
@@ -70,7 +70,7 @@ Response Object:
 ```
 
 
-### 3. Start billing! 
+### 3. 開始計費！  {#3-start-billing}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -146,14 +146,13 @@ print(response)
 </TabItem>
 </Tabs>
 
-**See Results on Lago**
-
+**在 Lago 上查看結果**
 
 <Image img={require('../../img/lago_2.png')}  style={{ width: '500px', height: 'auto' }} />
 
-## Advanced - Lago Logging object 
+## 進階 - Lago 記錄物件  {#advanced---lago-logging-object}
 
-This is what LiteLLM will log to Lagos
+這就是 LiteLLM 會記錄到 Lagos 的內容
 
 ```
 {
@@ -171,25 +170,23 @@ This is what LiteLLM will log to Lagos
 }
 ```
 
-## Advanced - Bill Customers, Internal Users 
+## 進階 - 向客戶、內部使用者收費  {#advanced---bill-customers-internal-users}
 
-For:
-- Customers (id passed via 'user' param in /chat/completion call) = 'end_user_id'
-- Internal Users (id set when [creating keys](https://docs.litellm.ai/docs/proxy/virtual_keys#advanced---spend-tracking)) = 'user_id' 
-- Teams (id set when [creating keys](https://docs.litellm.ai/docs/proxy/virtual_keys#advanced---spend-tracking)) = 'team_id' 
-
-
+適用於：
+- 客戶（透過 /chat/completion 呼叫中的 'user' 參數傳入的 id）= 'end_user_id'
+- 內部使用者（在 [建立金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys#advanced---spend-tracking) 時設定的 id）= 'user_id' 
+- 團隊（在 [建立金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys#advanced---spend-tracking) 時設定的 id）= 'team_id' 
 
 <Tabs>
-<TabItem value="customers" label="Customer Billing">
+<TabItem value="customers" label="客戶計費">
 
-1. Set 'LAGO_API_CHARGE_BY' to 'end_user_id'
+1. 將 'LAGO_API_CHARGE_BY' 設為 'end_user_id'
 
   ```bash
   export LAGO_API_CHARGE_BY="end_user_id"
   ```
 
-2. Test it!
+2. 測試看看！
 
   <Tabs>
   <TabItem value="curl" label="Curl">
@@ -271,15 +268,15 @@ For:
   </Tabs>
 
 </TabItem>
-<TabItem value="users" label="Internal User Billing">
+<TabItem value="users" label="內部使用者計費">
 
-1. Set 'LAGO_API_CHARGE_BY' to 'user_id'
+1. 將 'LAGO_API_CHARGE_BY' 設為 'user_id'
 
 ```bash
 export LAGO_API_CHARGE_BY="user_id"
 ```
 
-2. Create a key for that user 
+2. 為該使用者建立一個 key 
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -288,7 +285,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 --data-raw '{"user_id": "my-unique-id"}' # 👈 Internal User's id
 ```
 
-Response Object:
+回應物件：
 
 ```bash
 {
@@ -296,7 +293,7 @@ Response Object:
 }
 ```
 
-3. Make API Calls with that Key 
+3. 使用該 Key 發出 API 請求 
 
 ```python
 import openai

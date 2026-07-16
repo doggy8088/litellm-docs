@@ -1,15 +1,15 @@
-# Gradio Chatbot + LiteLLM Tutorial
-Simple tutorial for integrating LiteLLM completion calls with streaming Gradio chatbot demos
+# Gradio 聊天機器人 + LiteLLM 教學 {#gradio-chatbot--litellm-tutorial}
+將 LiteLLM completion 請求與串流 Gradio 聊天機器人示範整合的簡易教學
 
-### Install & Import Dependencies
+### 安裝與匯入依賴項 {#install--import-dependencies}
 ```python
 !uv add gradio litellm
 import gradio
 import litellm
 ```
 
-### Define Inference Function
-Remember to set `model` and `api_base` as expected by the server hosting your LLM.
+### 定義推論函式 {#define-inference-function}
+請記得依照託管您 LLM 的伺服器預期，設定 `model` 與 `api_base`。
 ```python
 def inference(message, history):
     try:
@@ -33,7 +33,7 @@ def inference(message, history):
         yield f"An Error occurred please 'Clear' the error and try your question again"
 ```
 
-### Define Chat Interface
+### 定義聊天介面 {#define-chat-interface}
 ```python
 gr.ChatInterface(
     inference,
@@ -51,12 +51,12 @@ gr.ChatInterface(
     theme=theme,
 ).queue().launch()
 ```
-### Launch Gradio App
-1. From command line: `python app.py` or `gradio app.py` (latter enables live deployment updates)
-2. Visit provided hyperlink in your browser.
-3. Enjoy prompt-agnostic interaction with remote LLM server.
+### 啟動 Gradio 應用程式 {#launch-gradio-app}
+1. 從命令列：`python app.py` 或 `gradio app.py`（後者可啟用即時部署更新）
+2. 在瀏覽器中造訪提供的超連結。
+3. 享受與遠端 LLM 伺服器進行不受 prompt 限制的互動。
 
-### Recommended Extensions:
-* Add command line arguments to define target model & inference endpoints
+### 建議的擴充功能： {#recommended-extensions}
+* 新增命令列引數以定義目標模型與推論端點
 
-Credits to [ZQ](https://x.com/ZQ_Dev), for this tutorial.
+本教學感謝 [ZQ](https://x.com/ZQ_Dev)。

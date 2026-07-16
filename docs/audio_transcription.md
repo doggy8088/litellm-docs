@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /audio/transcriptions
+# /audio/transcriptions {#audiotranscriptions}
 
-## Overview 
+## 總覽  {#overview}
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Guardrails | ✅ | Applies to output transcribed text (non-streaming only) |
-| Supported Providers | `openai`, `azure`, `vertex_ai`, `gemini`, `deepgram`, `groq`, `fireworks_ai`, `ovhcloud`, `mistral` | |
+| 成本追蹤 | ✅ | 可與所有支援的模型搭配運作 |
+| 記錄 | ✅ | 可跨所有整合搭配運作 |
+| 終端使用者追蹤 | ✅ | |
+| 備援 | ✅ | 可在支援的模型之間運作 |
+| 負載平衡 | ✅ | 可在支援的模型之間運作 |
+| 防護欄 | ✅ | 套用至輸出的轉錄文字（僅限非串流） |
+| 支援的提供者 | `openai`, `azure`, `vertex_ai`, `gemini`, `deepgram`, `groq`, `fireworks_ai`, `ovhcloud`, `mistral` | |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Python SDK Example"
 from litellm import transcription
@@ -32,10 +32,9 @@ response = transcription(model="whisper", file=audio_file)
 print(f"response: {response}")
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-### Add model to config 
-
+### 將模型加入設定  {#add-model-to-config}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -79,7 +78,7 @@ general_settings:
 </TabItem>
 </Tabs>
 
-### Start proxy 
+### 啟動 Proxy  {#start-proxy}
 
 ```bash showLineNumbers title="Start Proxy Server"
 litellm --config /path/to/config.yaml 
@@ -87,7 +86,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:8000
 ```
 
-### Test 
+### 測試  {#test}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -119,7 +118,7 @@ transcript = client.audio.transcriptions.create(
 </TabItem>
 </Tabs>
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
 - OpenAI
 - Azure
@@ -131,9 +130,9 @@ transcript = client.audio.transcriptions.create(
 
 ---
 
-## Fallbacks
+## 備援 {#fallbacks}
 
-You can configure fallbacks for audio transcription to automatically retry with different models if the primary model fails.
+您可以為音訊轉錄設定備援，讓系統在主要模型失敗時自動改用不同模型重試。
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -168,9 +167,9 @@ transcript = client.audio.transcriptions.create(
 </TabItem>
 </Tabs>
 
-### Testing Fallbacks
+### 測試備援 {#testing-fallbacks}
 
-You can test your fallback configuration using `mock_testing_fallbacks=true` to simulate failures:
+您可以使用 `mock_testing_fallbacks=true` 來模擬失敗，以測試您的備援設定：
 
 <Tabs>
 <TabItem value="curl" label="Curl">

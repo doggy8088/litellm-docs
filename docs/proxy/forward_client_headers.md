@@ -1,73 +1,73 @@
-# Forward Client Headers to LLM API
+# 將用戶端標頭轉送至 LLM API {#forward-client-headers-to-llm-api}
 
-Control which model groups can forward client headers to the underlying LLM provider APIs.
+控制哪些模型群組可以將用戶端標頭轉送至底層 LLM 提供者 API。
 
-## Overview
+## 概覽 {#overview}
 
-By default, LiteLLM does not forward client headers to LLM provider APIs for security reasons. However, you can selectively enable header forwarding for specific model groups using the `forward_client_headers_to_llm_api` setting.
+預設情況下，LiteLLM 基於安全考量，不會將用戶端標頭轉送至 LLM 提供者 API。不過，您可以使用 `forward_client_headers_to_llm_api` 設定，針對特定模型群組選擇性啟用標頭轉送。
 
-## How it Works
+## 運作方式 {#how-it-works}
 
-LiteLLM does **not** forward all client headers to the LLM provider. Instead, it uses an **allowlist** approach — only headers matching specific rules are forwarded. This ensures sensitive headers (like your LiteLLM API key) are never accidentally sent to upstream providers.
+LiteLLM **不會**將所有用戶端標頭轉送至 LLM 提供者。相反地，它採用 **allowlist** 方法——只有符合特定規則的標頭才會被轉送。這可確保敏感標頭（例如您的 LiteLLM API 金鑰）絕不會意外送往上游提供者。
 
 ```mermaid
 sequenceDiagram
-    participant Client as Client (SDK / curl)
+    participant Client as 用戶端（SDK / curl）
     participant Proxy as LiteLLM Proxy
-    participant Filter as Header Filter (Allowlist)
-    participant LLM as LLM Provider (OpenAI, Anthropic, etc.)
+    participant Filter as 標頭篩選器（Allowlist）
+    participant LLM as LLM 提供者（OpenAI、Anthropic 等）
 
-    Client->>Proxy: Request with all headers<br/>(Authorization, x-trace-id,<br/>x-custom-header, anthropic-beta, etc.)
+    Client->>Proxy: 請求包含所有標頭<br/>(Authorization, x-trace-id,<br/>x-custom-header, anthropic-beta, etc.)
     
-    Proxy->>Filter: Check forward_client_headers_to_llm_api<br/>setting for this model group
+    Proxy->>Filter: 檢查此模型群組的<br/>forward_client_headers_to_llm_api 設定
 
-    Note over Filter: Allowlist rules:<br/>1. Headers starting with "x-" ✅<br/>2. "anthropic-beta" ✅<br/>3. "x-stainless-*" ❌ (blocked)<br/>4. All other headers ❌ (blocked)
+    Note over Filter: Allowlist 規則：<br/>1. 以 "x-" 開頭的標頭 ✅<br/>2. "anthropic-beta" ✅<br/>3. "x-stainless-*" ❌（已封鎖）<br/>4. 其他所有標頭 ❌（已封鎖）
 
-    Filter-->>Proxy: Return only allowed headers
+    Filter-->>Proxy: 只回傳允許的標頭
 
-    Proxy->>LLM: Request with filtered headers<br/>(x-trace-id, x-custom-header,<br/>anthropic-beta)
+    Proxy->>LLM: 使用篩選後標頭的請求<br/>(x-trace-id, x-custom-header,<br/>anthropic-beta)
     
-    LLM-->>Proxy: Response
-    Proxy-->>Client: Response
+    LLM-->>Proxy: 回應
+    Proxy-->>Client: 回應
 ```
 
-### Header Allowlist Rules
+### 標頭 Allowlist 規則 {#header-allowlist-rules}
 
-The following rules determine which headers are forwarded (see [`_get_forwardable_headers`](https://github.com/litellm/litellm/blob/main/litellm/proxy/litellm_pre_call_utils.py) in `litellm/proxy/litellm_pre_call_utils.py`):
+以下規則決定哪些標頭會被轉送（請參閱 [`_get_forwardable_headers`](https://github.com/litellm/litellm/blob/main/litellm/proxy/litellm_pre_call_utils.py) 於 `litellm/proxy/litellm_pre_call_utils.py`）：
 
-| Rule | Example | Forwarded? |
+| 規則 | 範例 | 轉送？ |
 |---|---|---|
-| Headers starting with `x-` | `x-trace-id`, `x-custom-header`, `x-request-source` |  Yes |
-| `anthropic-beta` header | `anthropic-beta: prompt-caching-2024-07-31` |  Yes |
-| Headers starting with `x-stainless-*` | `x-stainless-lang`, `x-stainless-arch` |  No (causes OpenAI SDK issues) |
-| Standard HTTP headers | `Authorization`, `Content-Type`, `Host` |  No |
-| Other provider headers | `Accept`, `User-Agent` |  No |
+| 以 `x-` 開頭的標頭 | `x-trace-id`, `x-custom-header`, `x-request-source` |  是 |
+| `anthropic-beta` 標頭 | `anthropic-beta: prompt-caching-2024-07-31` |  是 |
+| 以 `x-stainless-*` 開頭的標頭 | `x-stainless-lang`, `x-stainless-arch` |  否（會造成 OpenAI SDK 問題） |
+| 標準 HTTP 標頭 | `Authorization`, `Content-Type`, `Host` |  否 |
+| 其他提供者標頭 | `Accept`, `User-Agent` |  否 |
 
-### Additional Header Mechanisms
+### 其他標頭機制 {#additional-header-mechanisms}
 
-| Mechanism | Description | Reference |
+| 機制 | 說明 | 參考 |
 |---|---|---|
-| **`x-pass-` prefix** | Headers prefixed with `x-pass-` are always forwarded with the prefix stripped, regardless of settings. E.g., `x-pass-anthropic-beta: value` → `anthropic-beta: value`. Works for all pass-through endpoints. | [Source code](https://github.com/litellm/litellm/blob/main/litellm/passthrough/utils.py) |
-| **`openai-organization`** | Forwarded only when `forward_openai_org_id: true` is set in `general_settings`. | [Forward OpenAI Org ID](#enable-globally) |
-| **User information headers** | When `add_user_information_to_llm_headers: true`, LiteLLM adds `x-litellm-user-id`, `x-litellm-org-id`, etc. | [User Information Headers](#user-information-headers-optional) |
-| **Vertex AI pass-through** | Uses a separate, stricter allowlist: only `anthropic-beta` and `content-type`. | [Source code](https://github.com/litellm/litellm/blob/main/litellm/constants.py) |
+| **`x-pass-` 前綴** | 以 `x-pass-` 為前綴的標頭，無論設定為何，都會一律轉送且會移除前綴。例如：`x-pass-anthropic-beta: value` → `anthropic-beta: value`。適用於所有 pass-through 端點。 | [原始碼](https://github.com/litellm/litellm/blob/main/litellm/passthrough/utils.py) |
+| **`openai-organization`** | 只有在 `general_settings` 中設定 `forward_openai_org_id: true` 時才會轉送。 | [轉送 OpenAI Org ID](#enable-globally) |
+| **使用者資訊標頭** | 當 `add_user_information_to_llm_headers: true` 時，LiteLLM 會加入 `x-litellm-user-id`、`x-litellm-org-id` 等。 | [使用者資訊標頭](#user-information-headers-optional) |
+| **Vertex AI pass-through** | 使用獨立且更嚴格的 allowlist：只有 `anthropic-beta` 與 `content-type`。 | [原始碼](https://github.com/litellm/litellm/blob/main/litellm/constants.py) |
 
-## Configuration
+## 設定 {#configuration}
 
-## Enable Globally
+## 全域啟用 {#enable-globally}
 
 ```yaml
 general_settings:
   forward_client_headers_to_llm_api: true
 ```
 
-## Forward LLM Provider Authentication Headers
+## 轉送 LLM 提供者驗證標頭 {#forward-llm-provider-authentication-headers}
 
-**New in v1.82+**: By default, LiteLLM strips authentication headers like `x-api-key`, `x-goog-api-key`, and `api-key` from client requests for security (these are typically used to authenticate with the proxy itself). However, you can enable forwarding of these LLM provider authentication headers to allow **Bring Your Own Key (BYOK)** scenarios where clients send their own API keys to the LLM provider.
+**v1.82+ 新功能**：預設情況下，LiteLLM 會基於安全考量，從用戶端請求中移除 `x-api-key`、`x-goog-api-key` 和 `api-key` 等驗證標頭（這些通常用於向 proxy 本身驗證）。不過，您可以啟用這些 LLM 提供者驗證標頭的轉送，以支援 **Bring Your Own Key (BYOK)** 情境，讓用戶端將自己的 API 金鑰送到 LLM 提供者。
 
-### Configuration
+### 設定 {#configuration-1}
 
-Add `forward_llm_provider_auth_headers: true` to your `general_settings`:
+將 `forward_llm_provider_auth_headers: true` 加入您的 `general_settings`：
 
 ```yaml
 general_settings:
@@ -75,29 +75,29 @@ general_settings:
   forward_llm_provider_auth_headers: true  # 👈 Enable BYOK
 ```
 
-### Which Headers Are Forwarded
+### 哪些標頭會被轉送 {#which-headers-are-forwarded}
 
-When `forward_llm_provider_auth_headers: true`, the following LLM provider authentication headers are preserved and forwarded:
+當 `forward_llm_provider_auth_headers: true` 時，下列 LLM 提供者驗證標頭會被保留並轉送：
 
-| Header | Provider | Example |
+| 標頭 | 提供者 | 範例 |
 |--------|----------|---------|
-| `x-api-key` | Anthropic, Azure AI, Databricks | `x-api-key: sk-ant-api03-...` |
+| `x-api-key` | Anthropic、Azure AI、Databricks | `x-api-key: sk-ant-api03-...` |
 | `x-goog-api-key` | Google AI Studio | `x-goog-api-key: AIza...` |
 | `api-key` | Azure OpenAI | `api-key: your-azure-key` |
 | `ocp-apim-subscription-key` | Azure APIM | `ocp-apim-subscription-key: your-key` |
 
-:::warning Important Security Note
-The proxy's `Authorization` header (used for proxy authentication) is **never** forwarded to LLM providers, even with this setting enabled. This ensures your proxy authentication remains secure.
+:::warning 重要安全注意事項
+proxy 的 `Authorization` 標頭（用於 proxy 驗證）**絕不會**轉送至 LLM 提供者，即使啟用此設定也是如此。這可確保您的 proxy 驗證維持安全。
 :::
 
-### Use Case: Client-Side API Keys (BYOK)
+### 使用情境：用戶端 API 金鑰（BYOK） {#use-case-client-side-api-keys-byok}
 
-This feature enables scenarios where:
-1. **Clients bring their own LLM provider API keys** instead of using keys configured in the proxy
-2. **Multi-tenant applications** where each tenant has their own Anthropic/OpenAI account
-3. **Development environments** where developers use their personal API keys through a shared proxy
+此功能可支援以下情境：
+1. **用戶端使用自己的 LLM 提供者 API 金鑰**，而非使用在 proxy 中設定的金鑰
+2. **多租戶應用程式**，每個租戶都有自己的 Anthropic/OpenAI 帳戶
+3. **開發環境**，開發者透過共用 proxy 使用個人 API 金鑰
 
-#### Example: Anthropic BYOK
+#### 範例：Anthropic BYOK {#example-anthropic-byok}
 
 ```yaml
 # proxy_config.yaml
@@ -112,9 +112,9 @@ general_settings:
   forward_llm_provider_auth_headers: true  # Enable BYOK
 ```
 
-For **Claude Code** with `/login` and your own Anthropic key, see [Claude Code BYOK](../tutorials/claude_code_byok.md). Use `ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: sk-12345"` to pass your LiteLLM key while your Anthropic key (from `/login`) is forwarded as `x-api-key`.
+對於搭配 `/login` 與您自己的 Anthropic 金鑰的 **Claude Code**，請參閱 [Claude Code BYOK](../tutorials/claude_code_byok.md)。使用 `ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: sk-12345"` 傳遞您的 LiteLLM 金鑰，同時您的 Anthropic 金鑰（來自 `/login`）會作為 `x-api-key` 被轉送。
 
-Client request:
+用戶端請求：
 ```bash
 curl -X POST "http://localhost:4000/v1/messages" \
   -H "Authorization: Bearer sk-proxy-auth-123" \     # Proxy authentication (stripped)
@@ -127,7 +127,7 @@ curl -X POST "http://localhost:4000/v1/messages" \
   }'
 ```
 
-#### Example: Google AI Studio BYOK
+#### 範例：Google AI Studio BYOK {#example-google-ai-studio-byok}
 
 ```yaml
 model_list:
@@ -141,7 +141,7 @@ general_settings:
   forward_llm_provider_auth_headers: true
 ```
 
-Client request:
+用戶端請求：
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
   -H "Authorization: Bearer sk-proxy-auth-123" \
@@ -152,24 +152,24 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-### Security Considerations
+### 安全性考量 {#security-considerations}
 
-**When to Use This Feature:**
--  Internal tools where you trust all clients
--  Development/testing environments
--  Multi-tenant apps with proper client authentication
--  Scenarios where you want clients to use their own API keys
+**何時使用此功能：**
+-  您信任所有用戶端的內部工具
+-  開發／測試環境
+-  具有適當用戶端驗證的多租戶應用程式
+-  希望用戶端使用自己的 API 金鑰的情境
 
-**When NOT to Use:**
--  Public APIs where you don't trust all clients
--  When you want centralized billing/cost control
--  When you need to enforce rate limits at the proxy level
+**何時不要使用：**
+-  您不信任所有用戶端的公開 API
+-  您希望集中式計費／成本控制
+-  您需要在 proxy 層級強制速率限制時
 
-### Backward Compatibility
+### 向後相容性 {#backward-compatibility}
 
-For backward compatibility, if you have `forward_client_headers_to_llm_api: true` but don't explicitly set `forward_llm_provider_auth_headers`, the behavior is:
-- **Default**: LLM provider auth headers are **NOT** forwarded (safe default)
-- **Explicit `true`**: LLM provider auth headers **ARE** forwarded (BYOK enabled)
+為了向後相容，若您有 `forward_client_headers_to_llm_api: true` 但沒有明確設定 `forward_llm_provider_auth_headers`，其行為如下：
+- **預設**：LLM 提供者驗證標頭**不會**被轉送（安全預設）
+- **明確設定 `true`**：LLM 提供者驗證標頭**會**被轉送（已啟用 BYOK）
 
 ```yaml
 # Safe default - auth headers NOT forwarded
@@ -182,9 +182,9 @@ general_settings:
   forward_llm_provider_auth_headers: true  # 👈 Opt-in required
 ```
 
-## Enable for a Model Group
+## 對特定模型群組啟用 {#enable-for-a-model-group}
 
-Add the `forward_client_headers_to_llm_api` setting under `model_group_settings` in your configuration:
+在您的設定中，於 `model_group_settings` 下新增 `forward_client_headers_to_llm_api` 設定：
 
 ```yaml
 model_list:
@@ -204,18 +204,18 @@ litellm_settings:
       - wildcard-models/*
 ```
 
-## Supported Model Patterns
+## 支援的模型模式 {#supported-model-patterns}
 
-The configuration supports various model matching patterns:
+此設定支援多種模型比對模式：
 
-### 1. Exact Model Names
+### 1. 精確模型名稱 {#1-exact-model-names}
 ```yaml
 forward_client_headers_to_llm_api:
   - gpt-4o-mini
   - claude-3-sonnet
 ```
 
-### 2. Wildcard Patterns
+### 2. 萬用字元模式 {#2-wildcard-patterns}
 ```yaml
 forward_client_headers_to_llm_api:
   - "openai/*"          # All OpenAI models
@@ -223,40 +223,40 @@ forward_client_headers_to_llm_api:
   - "wildcard-group/*"  # All models in wildcard-group
 ```
 
-### 3. Team Model Aliases
-If your team has model aliases configured, the forwarding will work with both the original model name and the alias.
+### 3. 團隊模型別名 {#3-team-model-aliases}
+如果您的團隊已設定模型別名，轉送功能對原始模型名稱與別名都可正常運作。
 
-## Forwarded Headers
+## 轉送的標頭 {#forwarded-headers}
 
-When enabled for a model group, LiteLLM forwards the following types of headers:
+當針對模型群組啟用時，LiteLLM 會轉送以下類型的標頭：
 
-### Custom Headers (x- prefix)
-- Any header starting with `x-` (except `x-stainless-*` which can cause OpenAI SDK issues)
-- Examples: `x-custom-header`, `x-request-id`, `x-trace-id`
+### 自訂標頭（x- 前綴） {#custom-headers-x--prefix}
+- 任何以 `x-` 開頭的標頭（除了 `x-stainless-*`，它可能造成 OpenAI SDK 問題）
+- 範例：`x-custom-header`、`x-request-id`、`x-trace-id`
 
-### Provider-Specific Headers
-- **Anthropic**: `anthropic-beta` headers
-- **OpenAI**: `openai-organization` (when enabled via `forward_openai_org_id: true`)
+### 提供者特定標頭 {#provider-specific-headers}
+- **Anthropic**：`anthropic-beta` 標頭
+- **OpenAI**：`openai-organization`（透過 `forward_openai_org_id: true` 啟用時）
 
-### User Information Headers (Optional)
-When `add_user_information_to_llm_headers` is enabled, LiteLLM adds:
+### 使用者資訊標頭（選用） {#user-information-headers-optional}
+當 `add_user_information_to_llm_headers` 啟用時，LiteLLM 會加入：
 - `x-litellm-user-id`
 - `x-litellm-org-id`
-- Other user metadata as `x-litellm-*` headers
+- 其他使用者中繼資料作為 `x-litellm-*` 標頭
 
-## Security Considerations
+## 安全性考量 {#security-considerations-1}
 
-⚠️ **Important Security Notes:**
+⚠️ **重要安全注意事項：**
 
-1. **Sensitive Data**: Only enable header forwarding for trusted model groups, as headers may contain sensitive information
-2. **API Keys**: Never include API keys or secrets in forwarded headers
-3. **PII**: Be cautious about forwarding headers that might contain personally identifiable information
-4. **Provider Limits**: Some providers have restrictions on custom headers
+1. **敏感資料**：僅對可信任的模型群組啟用標頭轉送，因為標頭可能包含敏感資訊
+2. **API 金鑰**：切勿在轉送的標頭中包含 API 金鑰或密鑰
+3. **PII**：請謹慎轉送可能包含個人識別資訊的標頭
+4. **提供者限制**：某些提供者對自訂標頭有限制
 
-## Example Use Cases
+## 範例使用情境 {#example-use-cases}
 
-### 1. Request Tracing
-Forward tracing headers to track requests across your system:
+### 1. 請求追蹤 {#1-request-tracing}
+轉送追蹤標頭以追蹤您系統中的請求：
 
 ```bash
 curl -X POST "https://your-proxy.com/v1/chat/completions" \
@@ -269,8 +269,8 @@ curl -X POST "https://your-proxy.com/v1/chat/completions" \
   }'
 ```
 
-### 2. Custom Metadata
-Pass custom metadata to your LLM provider:
+### 2. 自訂中繼資料 {#2-custom-metadata}
+將自訂中繼資料傳遞給您的 LLM 提供者：
 
 ```bash
 curl -X POST "https://your-proxy.com/v1/chat/completions" \
@@ -283,8 +283,8 @@ curl -X POST "https://your-proxy.com/v1/chat/completions" \
   }'
 ```
 
-### 3. Anthropic Beta Features
-Enable beta features for Anthropic models:
+### 3. Anthropic Beta 功能 {#3-anthropic-beta-features}
+為 Anthropic 模型啟用 beta 功能：
 
 ```bash
 curl -X POST "https://your-proxy.com/v1/chat/completions" \
@@ -296,7 +296,7 @@ curl -X POST "https://your-proxy.com/v1/chat/completions" \
   }'
 ```
 
-## Complete Configuration Example
+## 完整組態範例 {#complete-configuration-example}
 
 ```yaml
 model_list:
@@ -335,45 +335,45 @@ general_settings:
   forward_openai_org_id: true
 ```
 
-## Testing Header Forwarding
+## 測試標頭轉送 {#testing-header-forwarding}
 
-To test if headers are being forwarded:
+若要測試標頭是否正在轉送：
 
-1. **Enable Debug Logging**: Set `set_verbose: true` in your config
-2. **Check Provider Logs**: Monitor your LLM provider's request logs
-3. **Use Webhook Sites**: For testing, you can use webhook.site URLs as api_base to see forwarded headers
+1. **啟用除錯記錄**：在您的設定中將 `set_verbose: true` 設為
+2. **檢查提供者記錄**：監控您的 LLM 提供者的請求記錄
+3. **使用 Webhook 網站**：為了測試，您可以將 webhook.site URL 作為 api_base 使用，以查看轉送的標頭
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Headers Not Being Forwarded
+### 標頭未被轉送 {#headers-not-being-forwarded}
 
-1. **Check Model Name**: Ensure the model name in your request matches the configuration
-2. **Verify Pattern Matching**: Wildcard patterns must match exactly
-3. **Review Logs**: Enable verbose logging to see header processing
+1. **檢查模型名稱**：確認您請求中的模型名稱與組態相符
+2. **驗證模式比對**：萬用字元模式必須完全相符
+3. **檢視記錄**：啟用詳細記錄以查看標頭處理
 
-### Provider Errors
+### 提供者錯誤 {#provider-errors}
 
-1. **Invalid Headers**: Some providers reject unknown headers
-2. **Header Limits**: Providers may have limits on header count/size
-3. **Authentication**: Ensure forwarded headers don't conflict with authentication
+1. **無效的標頭**：某些提供者會拒絕未知標頭
+2. **標頭限制**：提供者可能對標頭數量／大小有限制
+3. **驗證**：確保轉送的標頭不會與驗證衝突
 
-## Related Features
+## 相關功能 {#related-features}
 
-- [Request Headers](./request_headers.md) - Complete list of supported request headers
-- [Response Headers](./response_headers.md) - Headers returned by LiteLLM
-- [Team Model Aliases](./team_model_add.md) - Configure model aliases for teams
-- [Model Access Control](./model_access.md) - Control which users can access which models
+- [請求標頭](./request_headers.md) - 支援的請求標頭完整清單
+- [回應標頭](./response_headers.md) - LiteLLM 傳回的標頭
+- [團隊模型別名](./team_model_add.md) - 為團隊設定模型別名
+- [模型存取控制](./model_access.md) - 控制哪些使用者可以存取哪些模型
 
-## API Reference
+## API 參考 {#api-reference}
 
-The header forwarding is controlled by the `ModelGroupSettings` configuration:
+標頭轉送由 `ModelGroupSettings` 組態控制：
 
 ```python
 class ModelGroupSettings(BaseModel):
     forward_client_headers_to_llm_api: Optional[List[str]] = None
 ```
 
-Where each string in the list can be:
-- An exact model name (e.g., `"gpt-4o-mini"`)
-- A wildcard pattern (e.g., `"openai/*"`)
-- A model group name (e.g., `"my-model-group/*"`)
+其中清單中的每個字串都可以是：
+- 精確的模型名稱（例如，`"gpt-4o-mini"`）
+- 萬用字元模式（例如，`"openai/*"`）
+- 模型群組名稱（例如，`"my-model-group/*"`）

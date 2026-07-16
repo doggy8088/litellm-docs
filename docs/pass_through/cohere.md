@@ -1,17 +1,17 @@
-# Cohere SDK
+# Cohere SDK {#cohere-sdk}
 
-Pass-through endpoints for Cohere - call provider-specific endpoint, in native format (no translation).
+Cohere 的直通端點 - 以原生格式呼叫提供者專屬端點（不進行轉換）。
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | Supported for `/v1/chat`, and `/v2/chat` |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ✅ | |
+| 成本追蹤 | ✅ | 支援 `/v1/chat` 和 `/v2/chat` |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 端使用者追蹤 | ❌ | [如果您需要，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ✅ | |
 
-Just replace `https://api.cohere.com` with `LITELLM_PROXY_BASE_URL/cohere` 🚀
+只要將 `https://api.cohere.com` 替換為 `LITELLM_PROXY_BASE_URL/cohere` 🚀
 
-#### **Example Usage**
+#### **使用範例** {#example-usage}
 ```bash
 curl --request POST \
   --url http://0.0.0.0:4000/cohere/v1/chat \
@@ -28,21 +28,21 @@ curl --request POST \
   }'
 ```
 
-Supports **ALL** Cohere Endpoints (including streaming).
+支援 **所有** Cohere 端點（包括串流）。
 
-[**See All Cohere Endpoints**](https://docs.cohere.com/reference/chat)
+[**查看所有 Cohere 端點**](https://docs.cohere.com/reference/chat)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the Cohere [`/rerank` endpoint](https://docs.cohere.com/reference/rerank)
+讓我們呼叫 Cohere 的 [`/rerank` 端點](https://docs.cohere.com/reference/rerank)
 
-1. Add Cohere API Key to your environment 
+1. 將 Cohere API 金鑰加入您的環境 
 
 ```bash
 export COHERE_API_KEY=""
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy 
 
 ```bash
 litellm
@@ -50,9 +50,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
-Let's call the Cohere /rerank endpoint
+讓我們呼叫 Cohere 的 /rerank 端點
 
 ```bash
 curl --request POST \
@@ -73,21 +73,20 @@ curl --request POST \
 ```
 
 
-## Examples
+## 範例 {#examples}
 
-Anything after `http://0.0.0.0:4000/cohere` is treated as a provider-specific route, and handled accordingly.
+`http://0.0.0.0:4000/cohere` 之後的所有內容都會被視為提供者專屬路由，並依此處理。
 
-Key Changes: 
+主要變更： 
 
-| **Original Endpoint**                                | **Replace With**                  |
+| **原始端點**                                | **替換為**                  |
 |------------------------------------------------------|-----------------------------------|
 | `https://api.cohere.com`          | `http://0.0.0.0:4000/cohere` (LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000")      |
-| `bearer $CO_API_KEY`                                 | `bearer anything` (use `bearer LITELLM_VIRTUAL_KEY` if Virtual Keys are setup on proxy)                    |
+| `bearer $CO_API_KEY`                                 | `bearer anything`（若 proxy 上已設定 Virtual Keys，請使用 `bearer LITELLM_VIRTUAL_KEY`）                    |
 
+### **範例 1：Rerank 端點** {#example-1-rerank-endpoint}
 
-### **Example 1: Rerank endpoint**
-
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call}
 
 ```bash
 curl --request POST \
@@ -107,7 +106,7 @@ curl --request POST \
   }'
 ```
 
-#### Direct Cohere API Call 
+#### 直接 Cohere API 呼叫  {#direct-cohere-api-call}
 
 ```bash
 curl --request POST \
@@ -127,9 +126,9 @@ curl --request POST \
   }'
 ```
 
-### **Example 2: Chat API**
+### **範例 2：Chat API** {#example-2-chat-api}
 
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call-1}
 
 ```bash
 curl --request POST \
@@ -147,7 +146,7 @@ curl --request POST \
   }'
 ```
 
-#### Direct Cohere API Call 
+#### 直接 Cohere API 呼叫  {#direct-cohere-api-call-1}
 
 ```bash
 curl --request POST \
@@ -165,8 +164,7 @@ curl --request POST \
   }'
 ```
 
-### **Example 3: Embedding**
-
+### **範例 3：Embedding** {#example-3-embedding}
 
 ```bash
 curl --request POST \
@@ -181,7 +179,7 @@ curl --request POST \
   }'
 ```
 
-#### Direct Cohere API Call 
+#### 直接 Cohere API 呼叫  {#direct-cohere-api-call-2}
 
 ```bash
 curl --request POST \
@@ -197,16 +195,16 @@ curl --request POST \
 ```
 
 
-## Advanced - Use with Virtual Keys 
+## 進階 - 搭配 Virtual Keys 使用  {#advanced---use-with-virtual-keys}
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+先決條件
+- [以資料庫設定 proxy](../proxy/virtual_keys.md#setup)
 
-Use this, to avoid giving developers the raw Cohere API key, but still letting them use Cohere endpoints.
+使用這個方式可避免直接提供開發者原始 Cohere API 金鑰，但仍可讓他們使用 Cohere 端點。
 
-### Usage
+### 使用方式 {#usage}
 
-1. Setup environment
+1. 設定環境
 
 ```bash
 export DATABASE_URL=""
@@ -220,7 +218,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生虛擬金鑰 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -229,7 +227,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -238,8 +236,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試它！ 
 
 ```bash
 curl --request POST \

@@ -1,22 +1,22 @@
 ---
-title: SDK Quickstart
-sidebar_label: SDK Quickstart
-description: Make your first LiteLLM SDK call, then jump to the right docs for the next feature you need.
+title: SDK 快速入門
+sidebar_label: SDK 快速入門
+description: 進行您的第一次 LiteLLM SDK 呼叫，然後跳到您接下來需要的功能之對應文件。
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
-Use this path if you are integrating LiteLLM directly into application code.
+如果您要將 LiteLLM 直接整合到應用程式程式碼中，請使用此路徑。
 
-## 1. Install LiteLLM
+## 1. 安裝 LiteLLM {#1-install-litellm}
 
 ```bash
 uv add 'litellm==1.82.6'
 ```
 
-## 2. Set Provider Credentials
+## 2. 設定提供者憑證 {#2-set-provider-credentials}
 
-Start with one provider and set its environment variables.
+先從一個提供者開始，並設定其環境變數。
 
 - OpenAI: `OPENAI_API_KEY`
 - Anthropic: `ANTHROPIC_API_KEY`
@@ -24,9 +24,9 @@ Start with one provider and set its environment variables.
 - Bedrock: standard AWS credentials
 - Vertex AI: `VERTEXAI_PROJECT`, `VERTEXAI_LOCATION`
 
-If you have not picked a provider yet, browse [all supported providers](/docs/providers).
+如果您還沒有選定提供者，請瀏覽[所有支援的提供者](/docs/providers)。
 
-## 3. Make Your First Call
+## 3. 進行您的第一次呼叫 {#3-make-your-first-call}
 
 ```python
 from litellm import completion
@@ -42,27 +42,27 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-## 4. Check The Response
+## 4. 檢查回應 {#4-check-the-response}
 
-The line below:
+下面這行：
 
 ```python
 print(response.choices[0].message.content)
 ```
 
-prints the assistant text, for example:
+會印出助理文字，例如：
 
 ```text
 Hello! I'm doing well, thanks for asking.
 ```
 
-If you print the full object with:
+如果您列印完整物件：
 
 ```python
 print(response)
 ```
 
-you will see a Python `ModelResponse(...)` object. For an OpenAI-backed model, it can look like this:
+您會看到一個 Python `ModelResponse(...)` 物件。對於以 OpenAI 為後端的模型，可能會像這樣：
 
 ```python
 ModelResponse(
@@ -97,7 +97,7 @@ ModelResponse(
 )
 ```
 
-The same response follows an OpenAI-style shape. Conceptually, it looks like this:
+相同的回應會遵循 OpenAI 風格的結構。概念上，它看起來會像這樣：
 
 ```json
 {
@@ -123,52 +123,52 @@ The same response follows an OpenAI-style shape. Conceptually, it looks like thi
 }
 ```
 
-`id`, `created`, token counts, and message text will vary by request.
+`id`、`created`、token 數量，以及訊息文字都會因請求而異。
 
-If you call an OpenAI-backed model, you may also see extra fields such as `system_fingerprint`, `service_tier`, `tool_calls`, `function_call`, `annotations`, `provider_specific_fields`, and detailed token usage. For the full output reference, see [completion output](/docs/completion/output).
+如果您呼叫的是以 OpenAI 為後端的模型，您也可能會看到其他欄位，例如 `system_fingerprint`、`service_tier`、`tool_calls`、`function_call`、`annotations`、`provider_specific_fields`，以及詳細的 token 使用量。完整輸出參考請見[completion output](/docs/completion/output)。
 
-Need more provider examples? See the main [Getting Started](/docs/#quick-start) page.
+需要更多提供者範例嗎？請參閱主要的[Getting Started](/docs/#quick-start)頁面。
 
-## 5. Pick Your Next Step
+## 5. 選擇您的下一步 {#5-pick-your-next-step}
 
 <NavigationCards
 columns={3}
 items={[
 {
 icon: "⚡",
-title: "Stream Responses",
-description: "Receive tokens incrementally with stream=True.",
+title: "串流回應",
+description: "使用 stream=True 逐步接收 token。",
 to: "/docs/completion/stream",
 },
 {
 icon: "🧰",
-title: "Use Tools",
-description: "Add function calling in a provider-agnostic way.",
+title: "使用工具",
+description: "以與提供者無關的方式加入函式呼叫。",
 to: "/docs/completion/function_call",
 },
 {
 icon: "📦",
-title: "Return JSON",
-description: "Constrain responses to structured JSON output.",
+title: "回傳 JSON",
+description: "將回應限制為結構化 JSON 輸出。",
 to: "/docs/completion/json_mode",
 },
 {
 icon: "🔀",
-title: "Add Routing",
-description: "Use retries, fallbacks, and load balancing in app code.",
+title: "加入路由",
+description: "在應用程式程式碼中使用重試、備援與負載平衡。",
 to: "/docs/routing",
 },
 {
 icon: "🌐",
-title: "Choose A Provider",
-description: "Find provider-specific auth, model naming, and params.",
+title: "選擇提供者",
+description: "尋找特定提供者的驗證、模型命名與參數。",
 to: "/docs/providers",
 },
 ]}
 />
 
-## When To Use Gateway Instead
+## 何時改用 Gateway {#when-to-use-gateway-instead}
 
-Use LiteLLM Gateway if you need centralized auth, virtual keys, spend tracking, shared logging, or one OpenAI-compatible endpoint for multiple apps.
+如果您需要集中式驗證、虛擬金鑰、支出追蹤、共用記錄，或為多個應用程式提供單一相容 OpenAI 的端點，請使用 LiteLLM Gateway。
 
-[Go to Gateway Quickstart →](/docs/learn/gateway_quickstart)
+[前往 Gateway 快速入門 →](/docs/learn/gateway_quickstart)

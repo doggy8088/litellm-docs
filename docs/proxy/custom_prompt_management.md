@@ -2,30 +2,28 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Custom Prompt Management
+# 自訂提示管理 {#custom-prompt-management}
 
-Connect LiteLLM to your prompt management system with custom hooks.
+使用自訂掛鉤將 LiteLLM 連接至您的提示管理系統。
 
-## Overview
-
+## 總覽 {#overview}
 
 <Image 
   img={require('../../img/custom_prompt_management.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
+## 運作方式 {#how-it-works}
 
-## How it works
+## 快速開始 {#quick-start}
 
-## Quick Start
+### 1. 建立您的自訂提示管理器 {#1-create-your-custom-prompt-manager}
 
-### 1. Create Your Custom Prompt Manager
+建立一個繼承自 `CustomPromptManagement` 的類別，以處理提示擷取與格式化：
 
-Create a class that inherits from `CustomPromptManagement` to handle prompt retrieval and formatting:
+**範例實作**
 
-**Example Implementation**
-
-Create a new file called `custom_prompt.py` and add this code. The key method here is `get_chat_completion_prompt` you can implement custom logic to retrieve and format prompts based on the `prompt_id` and `prompt_variables`.
+建立一個名為 `custom_prompt.py` 的新檔案並加入這段程式碼。這裡的關鍵方法是 `get_chat_completion_prompt`，您可以實作自訂邏輯，根據 `prompt_id` 和 `prompt_variables` 擷取並格式化提示。
 
 ```python
 from typing import List, Tuple, Optional
@@ -65,7 +63,7 @@ class MyCustomPromptManagement(CustomPromptManagement):
 prompt_management = MyCustomPromptManagement()
 ```
 
-### 2. Configure Your Prompt Manager in LiteLLM `config.yaml`
+### 2. 在 LiteLLM 中設定您的提示管理器 `config.yaml` {#2-configure-your-prompt-manager-in-litellm-configyaml}
 
 ```yaml
 model_list:
@@ -78,12 +76,12 @@ litellm_settings:
   callbacks: custom_prompt.prompt_management  # sets litellm.callbacks = [prompt_management]
 ```
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM 閘道 {#3-start-litellm-gateway}
 
 <Tabs>
-<TabItem value="docker" label="Docker Run">
+<TabItem value="docker" label="Docker 執行">
 
-Mount your `custom_logger.py` on the LiteLLM Docker container.
+將您的 `custom_logger.py` 掛載到 LiteLLM Docker 容器中。
 
 ```shell
 docker run -d \
@@ -109,9 +107,9 @@ litellm --config config.yaml --detailed_debug
 </TabItem>
 </Tabs>
 
-### 4. Test Your Custom Prompt Manager
+### 4. 測試您的自訂提示管理器 {#4-test-your-custom-prompt-manager}
 
-When you pass `prompt_id="1234"`, the custom prompt manager will add a system message "Be a good Bot!" to your conversation:
+當您傳入 `prompt_id="1234"` 時，自訂提示管理器會在您的對話中加入一則系統訊息 "Be a good Bot!"：
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
@@ -173,9 +171,9 @@ curl -X POST http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### Using the LiteLLM SDK Directly
+### 直接使用 LiteLLM SDK {#using-the-litellm-sdk-directly}
 
-If you call `litellm.completion()` from a Python script (without going through the proxy), register your custom prompt manager before making the request:
+如果您從 Python 腳本中呼叫 `litellm.completion()`（而不透過 proxy），請先註冊您的自訂提示管理器，再送出請求：
 
 ```python
 
@@ -193,9 +191,9 @@ response = litellm.completion(
 )
 ```
 
-> **Note:** `litellm.callbacks = [prompt_management]` (or equivalently `litellm.logging_callback_manager.add_litellm_callback(prompt_management)`) is required in SDK scripts. The proxy reads `callbacks` from `config.yaml` automatically, but standalone scripts do not.
+> **注意：** SDK 腳本中需要 `litellm.callbacks = [prompt_management]`（或等效的 `litellm.logging_callback_manager.add_litellm_callback(prompt_management)`）。proxy 會自動從 `config.yaml` 讀取 `callbacks`，但獨立腳本不會。
 
-The request will be transformed from:
+請求將從以下內容轉換為：
 ```json
 {
     "model": "gemini-1.5-pro",
@@ -204,7 +202,7 @@ The request will be transformed from:
 }
 ```
 
-To:
+變為：
 ```json
 {
     "model": "gemini-1.5-pro",
@@ -214,5 +212,3 @@ To:
     ]
 }
 ```
-
-

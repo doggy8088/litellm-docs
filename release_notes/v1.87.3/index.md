@@ -1,5 +1,5 @@
 ---
-title: "v1.87.3 - DB Resilience & Passthrough Hardening"
+title: "v1.87.3 - DB 彈性與 Passthrough 強化"
 slug: "v1-87-3"
 date: 2026-06-13T17:37:18
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,19 +43,19 @@ pip install litellm==1.87.3
 </TabItem>
 </Tabs>
 
-`v1.87.3` is a patch release on top of [`v1.87.2`](/release_notes/v1.87.2/v1-87-2). It brings the 1.84.8 database-resilience set onto the 1.87 line, adds the budget-reservation toggle, hardens Anthropic streaming logging, and refreshes dependencies.
+`v1.87.3` 是建立在 [`v1.87.2`](/release_notes/v1.87.2/v1-87-2) 之上的修補版本。它將 1.84.8 的資料庫彈性套件帶到 1.87 系列，新增預算保留切換，強化 Anthropic 串流記錄，並更新相依性。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- feat(proxy): add `disable_budget_reservation` general setting - [PR #29493](https://github.com/BerriAI/litellm/pull/29493)
-- fix(proxy): recover from cached-plan errors by reconnecting the Prisma client - [PR #29983](https://github.com/BerriAI/litellm/pull/29983)
-- feat(proxy): add option to disable server-side prepared statements for DB lookups - [PR #29984](https://github.com/BerriAI/litellm/pull/29984)
-- fix(proxy): return 5xx on DB infra errors during auth; reserve 401 for genuine auth failures - [PR #29986](https://github.com/BerriAI/litellm/pull/29986)
-- fix(passthrough): resolve costing model when body model is unknown - [PR #30160](https://github.com/BerriAI/litellm/pull/30160)
-- fix(passthrough): skip `[DONE]` sentinels and non-JSON SSE frames in Anthropic streaming logging - [PR #30202](https://github.com/BerriAI/litellm/pull/30202)
-- fix(proxy): return deprecated-key lookup result directly in get_data combined view - [PR #30327](https://github.com/BerriAI/litellm/pull/30327)
-- chore(deps): bump pypdf, tornado, the aiohttp constraint, vitest, and brace-expansion - [PR #30220](https://github.com/BerriAI/litellm/pull/30220)
+- feat(proxy): 新增 `disable_budget_reservation` 一般設定 - [PR #29493](https://github.com/BerriAI/litellm/pull/29493)
+- fix(proxy): 透過重新連線 Prisma client 從快取方案錯誤中復原 - [PR #29983](https://github.com/BerriAI/litellm/pull/29983)
+- feat(proxy): 新增選項以停用資料庫查詢的伺服器端預備敘述句 - [PR #29984](https://github.com/BerriAI/litellm/pull/29984)
+- fix(proxy): 在驗證期間的 DB 基礎架構錯誤回傳 5xx；僅將真正的驗證失敗保留為 401 - [PR #29986](https://github.com/BerriAI/litellm/pull/29986)
+- fix(passthrough): 當 body model 未知時解析計價模型 - [PR #30160](https://github.com/BerriAI/litellm/pull/30160)
+- fix(passthrough): 在 Anthropic 串流記錄中跳過 `[DONE]` sentinel 與非 JSON SSE frame - [PR #30202](https://github.com/BerriAI/litellm/pull/30202)
+- fix(proxy): 在 get_data combined view 中直接回傳已棄用金鑰查詢結果 - [PR #30327](https://github.com/BerriAI/litellm/pull/30327)
+- chore(deps): 升級 pypdf、tornado、aiohttp 限制、vitest 與 brace-expansion - [PR #30220](https://github.com/BerriAI/litellm/pull/30220)
 
-## Full Changelog
+## 完整變更紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.87.2...v1.87.3

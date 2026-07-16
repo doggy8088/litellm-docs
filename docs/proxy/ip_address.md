@@ -1,20 +1,19 @@
-
-# ✨ IP Address Filtering
+# ✨ IP 位址篩選 {#-ip-address-filtering}
 
 :::info
 
-You need a LiteLLM License to unlock this feature. [Grab time](https://enterprise.litellm.ai/demo), to get one today!
+您需要 LiteLLM 授權才能啟用此功能。[Grab time](https://enterprise.litellm.ai/demo)，立即取得一個！
 
 :::
 
-Restrict which IP's can call the proxy endpoints.
+限制哪些 IP 可以呼叫 proxy 端點。
 
 ```yaml
 general_settings:
   allowed_ips: ["192.168.1.1"]
 ```
 
-**Expected Response** (if IP not listed)
+**預期回應**（如果 IP 未列出）
 
 ```bash
 {

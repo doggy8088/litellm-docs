@@ -1,8 +1,8 @@
-# Function Calling 
+# 函式呼叫 {#function-calling}
 
-## Checking if a model supports function calling 
+## 檢查模型是否支援函式呼叫 {#checking-if-a-model-supports-function-calling}
 
-Use `litellm.supports_function_calling(model="")` -> returns `True` if model supports Function calling, `False` if not
+使用 `litellm.supports_function_calling(model="")` -> 如果模型支援函式呼叫則回傳 `True`，否則回傳 `False`
 
 ```python
 assert litellm.supports_function_calling(model="gpt-3.5-turbo") == True
@@ -13,30 +13,29 @@ assert litellm.supports_function_calling(model="ollama/llama2") == False
 ```
 
 
-## Checking if a model supports parallel function calling 
+## 檢查模型是否支援平行函式呼叫 {#checking-if-a-model-supports-parallel-function-calling}
 
-Use `litellm.supports_parallel_function_calling(model="")` -> returns `True` if model supports parallel function calling, `False` if not
+使用 `litellm.supports_parallel_function_calling(model="")` -> 如果模型支援平行函式呼叫則回傳 `True`，否則回傳 `False`
 
 ```python
 assert litellm.supports_parallel_function_calling(model="gpt-4-turbo-preview") == True
 assert litellm.supports_parallel_function_calling(model="gpt-4") == False
 ```
-## Parallel Function calling
-Parallel function calling is the model's ability to perform multiple function calls together, allowing the effects and results of these function calls to be resolved in parallel
+## 平行函式呼叫 {#parallel-function-calling}
+平行函式呼叫是模型同時執行多個函式呼叫的能力，讓這些函式呼叫的影響與結果能夠平行解析
 
-## Quick Start - gpt-3.5-turbo-1106
+## 快速開始 - gpt-3.5-turbo-1106 {#quick-start---gpt-35-turbo-1106}
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/Parallel_function_calling.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-In this example we define a single function `get_current_weather`. 
+在此範例中，我們定義了一個單一函式 `get_current_weather`。 
 
-- Step 1: Send the model the `get_current_weather` with the user question
-- Step 2: Parse the output from the model response - Execute the `get_current_weather` with the model provided args
-- Step 3: Send the model the output from running the `get_current_weather` function
+- 步驟 1：將 `get_current_weather` 與使用者問題傳送給模型
+- 步驟 2：解析模型回應中的輸出 - 使用模型提供的參數執行 `get_current_weather`
+- 步驟 3：將執行 `get_current_weather` 函式的輸出傳送給模型
 
-
-### Full Code - Parallel function calling with `gpt-3.5-turbo-1106`
+### 完整程式碼 - 使用 `gpt-3.5-turbo-1106` 的平行函式呼叫 {#full-code---parallel-function-calling-with-gpt-35-turbo-1106}
 
 ```python
 import litellm
@@ -133,9 +132,9 @@ def test_parallel_function_call():
 test_parallel_function_call()
 ```
 
-### Explanation - Parallel function calling
-Below is an explanation of what is happening in the code snippet above for Parallel function calling with `gpt-3.5-turbo-1106`
-### Step1: litellm.completion() with `tools` set to `get_current_weather`
+### 說明 - 平行函式呼叫 {#explanation---parallel-function-calling}
+以下是上述程式碼片段中，使用 `gpt-3.5-turbo-1106` 進行平行函式呼叫時所發生內容的說明
+### 步驟 1：`tools` 設定為 `get_current_weather` 的 litellm.completion() {#step1-litellmcompletion-with-tools-set-to-get_current_weather}
 ```python
 import litellm
 import json
@@ -188,8 +187,8 @@ response_message = response.choices[0].message
 tool_calls = response.choices[0].message.tool_calls
 ```
 
-##### Expected output
-In the output you can see the model calls the function multiple times - for San Francisco, Tokyo, Paris
+##### 預期輸出 {#expected-output}
+在輸出中，您可以看到模型多次呼叫該函式——針對舊金山、東京、巴黎
 ```json
 ModelResponse(
   id='chatcmpl-8MHBKZ9t6bXuhBvUMzoKsfmmlv7xq', 
@@ -214,8 +213,8 @@ ModelResponse(
 )
 ```
 
-### Step 2 -  Parse the Model Response and Execute Functions
-After sending the initial request, parse the model response to identify the function calls it wants to make. In this example, we expect three tool calls, each corresponding to a location (San Francisco, Tokyo, and Paris). 
+### 步驟 2 - 解析模型回應並執行函式 {#step-2----parse-the-model-response-and-execute-functions}
+傳送初始請求後，解析模型回應以識別它想要進行的函式呼叫。在此範例中，我們預期有三個工具呼叫，每個都對應一個地點（舊金山、東京和巴黎）。 
 
 ```python
 # Check if the model wants to call a function
@@ -251,8 +250,8 @@ if tool_calls:
 
 ```
 
-### Step 3 - Second litellm.completion() call 
-Once the functions are executed, send the model the information for each function call and its response. This allows the model to generate a new response considering the effects of the function calls.
+### 步驟 3 - 第二次 litellm.completion() 呼叫 {#step-3---second-litellmcompletion-call}
+函式執行完成後，將每個函式呼叫及其回應的資訊傳送給模型。這讓模型能夠在考量函式呼叫影響的情況下產生新的回應。
 ```python
 second_response = litellm.completion(
     model="gpt-3.5-turbo-1106",
@@ -261,7 +260,7 @@ second_response = litellm.completion(
 print("Second Response\n", second_response)
 ```
 
-#### Expected output
+#### 預期輸出 {#expected-output-1}
 ```json
 ModelResponse(
   id='chatcmpl-8MHBLh1ldADBP71OrifKap6YfAd4w', 
@@ -278,7 +277,7 @@ ModelResponse(
 )
 ```
 
-## Parallel Function Calling - Azure OpenAI
+## 平行函式呼叫 - Azure OpenAI {#parallel-function-calling---azure-openai}
 ```python
 # set Azure env variables
 import os
@@ -377,7 +376,7 @@ print("Second Response Message\n", second_response.choices[0].message.content)
 
 ```
 
-## Deprecated - Function Calling with `completion(functions=functions)`
+## 已棄用 - 使用 `completion(functions=functions)` 的函式呼叫 {#deprecated---function-calling-with-completionfunctionsfunctions}
 ```python
 import os, litellm
 from litellm import completion
@@ -419,13 +418,13 @@ response = completion(model="gpt-3.5-turbo-0613", messages=messages, functions=f
 print(response)
 ```
 
-## litellm.function_to_dict - Convert Functions to dictionary for OpenAI function calling
-`function_to_dict` allows you to pass a function docstring and produce a dictionary usable for OpenAI function calling
+## litellm.function_to_dict - 將函式轉換為供 OpenAI 函式呼叫使用的字典 {#litellmfunction_to_dict---convert-functions-to-dictionary-for-openai-function-calling}
+`function_to_dict` 可讓您傳入函式 docstring，並產生可供 OpenAI 函式呼叫使用的字典
 
-### Using `function_to_dict`
-1. Define your function `get_current_weather`
-2. Add a docstring to your function `get_current_weather`
-3. Pass the function to `litellm.utils.function_to_dict` to get the dictionary for OpenAI function calling
+### 使用 `function_to_dict` {#using-function_to_dict}
+1. 定義您的函式 `get_current_weather`
+2. 為您的函式加入 docstring `get_current_weather`
+3. 將函式傳入 `litellm.utils.function_to_dict`，以取得供 OpenAI 函式呼叫使用的字典
 
 ```python
 # function with docstring
@@ -452,7 +451,7 @@ function_json = litellm.utils.function_to_dict(get_current_weather)
 print(function_json)
 ```
 
-#### Output from function_to_dict
+#### function_to_dict 的輸出 {#output-from-function_to_dict}
 ```json
 {
     'name': 'get_current_weather', 
@@ -468,7 +467,7 @@ print(function_json)
 }
 ```
 
-### Using function_to_dict with Function calling
+### 搭配函式呼叫使用 function_to_dict {#using-function_to_dict-with-function-calling}
 ```python
 import os, litellm
 from litellm import completion
@@ -503,12 +502,12 @@ response = completion(model="gpt-3.5-turbo-0613", messages=messages, functions=f
 print(response)
 ```
 
-## Function calling for Models w/out function-calling support
+## 適用於不支援函式呼叫的模型之函式呼叫 {#function-calling-for-models-wout-function-calling-support}
 
-### Adding Function to prompt
-For Models/providers without function calling support, LiteLLM allows you to add the function to the prompt set: `litellm.add_function_to_prompt = True`
+### 將函式加入提示詞 {#adding-function-to-prompt}
+對於不支援函式呼叫的模型／提供者，LiteLLM 讓您可以將函式加入提示詞集合：`litellm.add_function_to_prompt = True`
 
-#### Usage
+#### 用法 {#usage}
 ```python
 import os, litellm
 from litellm import completion
@@ -550,4 +549,3 @@ functions = [
 response = completion(model="claude-2", messages=messages, functions=functions)
 print(response)
 ```
-

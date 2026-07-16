@@ -1,29 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Control Public & Private Routes
+# 控制公開與私人路由 {#control-public--private-routes}
 
 :::info
 
-Requires a LiteLLM Enterprise License. [Get a free trial](https://enterprise.litellm.ai/demo).
+需要 LiteLLM Enterprise 授權。 [取得免費試用](https://enterprise.litellm.ai/demo)。
 
 :::
 
-Control which routes require authentication and which routes are publicly accessible.
+控制哪些路由需要驗證，以及哪些路由可公開存取。
 
-## Route Types
+## 路由類型 {#route-types}
 
-| Route Type | Requires Auth | Description |
+| 路由類型 | 需要驗證 | 說明 |
 |------------|---------------|-------------|
-| `public_routes` | No | Routes accessible without any authentication |
-| `admin_only_routes` | Yes (Admin only) | Routes only accessible by [Proxy Admin](./self_serve#available-roles) |
-| `allowed_routes` | Yes | Routes exposed on the proxy. If not set, all routes are exposed |
+| `public_routes` | 否 | 無需任何驗證即可存取的路由 |
+| `admin_only_routes` | 是（僅限管理員） | 僅能由 [Proxy 管理員](./self_serve#available-roles) 存取的路由 |
+| `allowed_routes` | 是 | 在 proxy 上公開的路由。若未設定，則所有路由都會公開 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Make Routes Public
+### 將路由設為公開 {#make-routes-public}
 
-Allow specific routes to be accessed without authentication:
+允許特定路由在未經驗證的情況下存取：
 
 ```yaml
 general_settings:
@@ -31,9 +31,9 @@ general_settings:
   public_routes: ["LiteLLMRoutes.public_routes", "/spend/calculate"]
 ```
 
-### Restrict Routes to Admin Only
+### 將路由限制為僅限管理員 {#restrict-routes-to-admin-only}
 
-Restrict certain routes to only be accessible by Proxy Admin:
+將某些路由限制為僅能由 Proxy 管理員存取：
 
 ```yaml
 general_settings:
@@ -41,9 +41,9 @@ general_settings:
   admin_only_routes: ["/key/generate", "/key/delete"]
 ```
 
-### Limit Available Routes
+### 限制可用路由 {#limit-available-routes}
 
-Only expose specific routes on the proxy:
+只在 proxy 上公開特定路由：
 
 ```yaml
 general_settings:
@@ -51,9 +51,9 @@ general_settings:
   allowed_routes: ["/chat/completions", "/embeddings", "LiteLLMRoutes.public_routes"]
 ```
 
-## Usage Examples
+## 使用範例 {#usage-examples}
 
-### Define Public, Admin Only, and Allowed Routes
+### 定義公開、僅限管理員與允許的路由 {#define-public-admin-only-and-allowed-routes}
 
 ```yaml
 general_settings:
@@ -63,13 +63,13 @@ general_settings:
   allowed_routes: ["/chat/completions", "/spend/calculate", "LiteLLMRoutes.public_routes"]
 ```
 
-`LiteLLMRoutes.public_routes` is an ENUM corresponding to the default public routes on LiteLLM. [View the source](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/_types.py).
+`LiteLLMRoutes.public_routes` 是對應 LiteLLM 預設公開路由的 ENUM。 [檢視原始碼](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/_types.py)。
 
-### Testing
+### 測試 {#testing}
 
 <Tabs>
 
-<TabItem value="public" label="Test public_routes">
+<TabItem value="public" label="測試 public_routes">
 
 ```shell
 curl --request POST \
@@ -81,13 +81,13 @@ curl --request POST \
   }'
 ```
 
-This endpoint works without an `Authorization` header.
+此端點可在沒有 `Authorization` 標頭的情況下運作。
 
 </TabItem>
 
-<TabItem value="admin_only_routes" label="Test admin_only_routes">
+<TabItem value="admin_only_routes" label="測試 admin_only_routes">
 
-**Successful Request (Admin)**
+**成功的請求（管理員）**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -96,7 +96,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{}'
 ```
 
-**Unsuccessful Request (Non-Admin)**
+**不成功的請求（非管理員）**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -105,7 +105,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{"user_role": "internal_user"}'
 ```
 
-**Expected Response**
+**預期回應**
 
 ```json
 {
@@ -120,9 +120,9 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 
 </TabItem>
 
-<TabItem value="allowed_routes" label="Test allowed_routes">
+<TabItem value="allowed_routes" label="測試 allowed_routes">
 
-**Successful Request**
+**成功的請求**
 
 ```shell
 curl http://localhost:4000/chat/completions \
@@ -136,7 +136,7 @@ curl http://localhost:4000/chat/completions \
 }'
 ```
 
-**Unsuccessful Request (Route Not Allowed)**
+**不成功的請求（路由不允許）**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/embeddings' \
@@ -148,7 +148,7 @@ curl --location 'http://0.0.0.0:4000/embeddings' \
 }'
 ```
 
-**Expected Response**
+**預期回應**
 
 ```json
 {
@@ -165,20 +165,19 @@ curl --location 'http://0.0.0.0:4000/embeddings' \
 
 </Tabs>
 
-## Advanced: Wildcard Patterns
+## 進階：萬用字元模式 {#advanced-wildcard-patterns}
 
-Use wildcard patterns to match multiple routes at once.
+使用萬用字元模式一次比對多個路由。
 
-### Syntax
+### 語法 {#syntax}
 
-| Pattern | Description | Example |
+| 模式 | 說明 | 範例 |
 |---------|-------------|---------|
-| `/path/*` | Matches any route starting with `/path/` | `/api/*` matches `/api/users`, `/api/users/123` |
+| `/path/*` | 比對任何以 `/path/` 開頭的路由 | `/api/*` 比對 `/api/users`、`/api/users/123` |
 
+### 範例 {#examples}
 
-### Examples
-
-#### Make All Routes Under a Path Public
+#### 將某一路徑下的所有路由設為公開 {#make-all-routes-under-a-path-public}
 
 ```yaml
 general_settings:
@@ -189,7 +188,7 @@ general_settings:
     - "/health/*"       # All health check routes
 ```
 
-#### Restrict Admin Routes with Wildcards
+#### 使用萬用字元限制管理員路由 {#restrict-admin-routes-with-wildcards}
 
 ```yaml
 general_settings:
@@ -199,9 +198,9 @@ general_settings:
     - "/internal/*"     # All internal routes
 ```
 
-### Testing Wildcard Routes
+### 測試萬用字元路由 {#testing-wildcard-routes}
 
-**Config:**
+**設定：**
 ```yaml
 general_settings:
   master_key: sk-1234
@@ -209,7 +208,7 @@ general_settings:
     - "/public/*"
 ```
 
-**Test:**
+**測試：**
 ```shell
 # This works without auth (matches /public/*)
 curl http://localhost:4000/public/status
@@ -220,4 +219,3 @@ curl http://localhost:4000/public/health/detailed
 # This requires auth (doesn't match /public/*)
 curl http://localhost:4000/private/data
 ```
-

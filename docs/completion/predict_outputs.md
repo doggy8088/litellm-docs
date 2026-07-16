@@ -1,23 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Predicted Outputs
+# 預測輸出 {#predicted-outputs}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Use this when most of the output of the LLM is known ahead of time. For instance, if you are asking the model to rewrite some text or code with only minor changes, you can reduce your latency significantly by using Predicted Outputs, passing in the existing content as your prediction. |
-| Supported providers | `openai` |
-| Link to OpenAI doc on Predicted Outputs | [Predicted Outputs ↗](https://platform.openai.com/docs/guides/latency-optimization#use-predicted-outputs) |
-| Supported from LiteLLM Version | `v1.51.4` |
+| 說明 | 當 LLM 的大部分輸出可事先得知時，請使用此功能。例如，如果您要請模型僅做少量修改來重寫某段文字或程式碼，您可以將既有內容作為預測輸入，藉由 Predicted Outputs 大幅降低延遲。 |
+| 支援的提供者 | `openai` |
+| OpenAI 關於 Predicted Outputs 的文件連結 | [Predicted Outputs ↗](https://platform.openai.com/docs/guides/latency-optimization#use-predicted-outputs) |
+| LiteLLM 版本起支援 | `v1.51.4` |
 
-
-
-## Using Predicted Outputs
+## 使用 Predicted Outputs {#using-predicted-outputs}
 
 <Tabs>
 <TabItem label="LiteLLM Python SDK" value="Python">
 
-In this example we want to refactor a piece of C# code, and convert the Username property to Email instead:
+在此範例中，我們要重構一段 C# 程式碼，並將 Username 屬性改為 Email：
 ```python
 import litellm
 os.environ["OPENAI_API_KEY"] = "your-api-key"
@@ -62,7 +60,7 @@ print(completion)
 </TabItem>
 <TabItem label="LiteLLM Proxy Server" value="proxy">
 
-1. Define models on config.yaml
+1. 在 config.yaml 中定義模型
 
 ```yaml
 model_list:
@@ -73,14 +71,13 @@ model_list:
 
 ```
 
-2. Run proxy server
+2. 執行 proxy server
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it using the OpenAI Python SDK
-
+3. 使用 OpenAI Python SDK 進行測試
 
 ```python
 from openai import OpenAI

@@ -1,8 +1,8 @@
-# Generic API
+# 通用 API {#generic-api}
 
-Send LiteLLM logs to any HTTP endpoint.
+將 LiteLLM 記錄傳送至任何 HTTP 端點。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```yaml
 model_list:
@@ -22,9 +22,9 @@ callback_settings:
       Authorization: Bearer sk-1234
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-### Basic Setup
+### 基本設定 {#basic-setup}
 
 ```yaml
 callback_settings:
@@ -39,19 +39,19 @@ callback_settings:
       - llm_api_failure
 ```
 
-### Parameters
+### 參數 {#parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `callback_type` | string | Yes | Must be `generic_api` |
-| `endpoint` | string | Yes | HTTP endpoint to send logs to |
-| `headers` | dict | No | Custom headers for the request |
-| `event_types` | list | No | Filter events: `llm_api_success`, `llm_api_failure`. Defaults to all events. |
-| `log_format` | string | No | Output format: `json_array` (default), `ndjson`, or `single`. Controls how logs are batched and sent. |
+| `callback_type` | string | 是 | 必須為 `generic_api` |
+| `endpoint` | string | 是 | 要傳送記錄的 HTTP 端點 |
+| `headers` | dict | 否 | 此請求的自訂標頭 |
+| `event_types` | list | 否 | 篩選事件：`llm_api_success`、`llm_api_failure`。預設為所有事件。 |
+| `log_format` | string | 否 | 輸出格式：`json_array`（預設）、`ndjson`，或 `single`。控制記錄如何分批並傳送。 |
 
-## Pre-configured Callbacks
+## 預先設定的回呼 {#pre-configured-callbacks}
 
-Use built-in configurations from `generic_api_compatible_callbacks.json`:
+使用來自 `generic_api_compatible_callbacks.json` 的內建設定：
 
 ```yaml
 litellm_settings:
@@ -65,9 +65,9 @@ callback_settings:
       Authorization: Bearer ${RUBRIK_API_KEY}
 ```
 
-## Payload Format
+## 有效負載格式 {#payload-format}
 
-Logs are sent as `StandardLoggingPayload` [objects](https://docs.litellm.ai/docs/proxy/logging_spec) in JSON format:
+記錄會以 JSON 格式傳送為 `StandardLoggingPayload` [物件](https://docs.litellm.ai/docs/proxy/logging_spec)：
 
 ```json
 [
@@ -86,18 +86,18 @@ Logs are sent as `StandardLoggingPayload` [objects](https://docs.litellm.ai/docs
 ]
 ```
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-Set via environment variables instead of config:
+改為透過環境變數設定：
 
 ```bash
 export GENERIC_LOGGER_ENDPOINT=https://your-endpoint.com
 export GENERIC_LOGGER_HEADERS="Authorization=Bearer token,Custom-Header=value"
 ```
 
-## Batch Settings
+## 批次設定 {#batch-settings}
 
-Control batching behavior (inherits from `CustomBatchLogger`):
+控制批次處理行為（繼承自 `CustomBatchLogger`）：
 
 ```yaml
 callback_settings:
@@ -108,11 +108,11 @@ callback_settings:
     flush_interval: 60     # seconds, default: 60
 ```
 
-## Log Format Options
+## 記錄格式選項 {#log-format-options}
 
-Control how logs are formatted and sent to your endpoint.
+控制記錄的格式化方式以及傳送至您的端點的方式。
 
-### JSON Array (Default)
+### JSON 陣列（預設） {#json-array-default}
 
 ```yaml
 callback_settings:
@@ -122,11 +122,11 @@ callback_settings:
     log_format: json_array  # default if not specified
 ```
 
-Sends all logs in a batch as a single JSON array `[{log1}, {log2}, ...]`. This is the default behavior and maintains backward compatibility.
+將所有記錄以單一 JSON 陣列 `[{log1}, {log2}, ...]` 的形式在一個批次中傳送。這是預設行為，並維持向下相容性。
 
-**When to use**: Most HTTP endpoints expecting batched JSON data.
+**使用時機**：大多數預期批次 JSON 資料的 HTTP 端點。
 
-### NDJSON (Newline-Delimited JSON)
+### NDJSON（換行分隔 JSON） {#ndjson-newline-delimited-json}
 
 ```yaml
 callback_settings:
@@ -136,21 +136,21 @@ callback_settings:
     log_format: ndjson
 ```
 
-Sends logs as newline-delimited JSON (one record per line):
+將記錄以換行分隔 JSON（每行一筆記錄）的形式傳送：
 ```
 {log1}
 {log2}
 {log3}
 ```
 
-**When to use**: Log aggregation services like Sumo Logic, Splunk, or Datadog that support field extraction on individual records.
+**使用時機**：支援對個別記錄進行欄位擷取的記錄彙整服務，例如 Sumo Logic、Splunk 或 Datadog。
 
-**Benefits**:
-- Each log is ingested as a separate message
-- Field Extraction Rules work at ingest time
-- Better parsing and querying performance
+**優點**：
+- 每筆記錄都會以獨立訊息擷取
+- 欄位擷取規則會在擷取時生效
+- 更好的剖析與查詢效能
 
-### Single
+### 單一 {#single}
 
 ```yaml
 callback_settings:
@@ -160,10 +160,8 @@ callback_settings:
     log_format: single
 ```
 
-Sends each log as an individual HTTP request in parallel when the batch is flushed.
+在批次被 flush 時，將每筆記錄以平行方式作為個別 HTTP 請求傳送。
 
-**When to use**: Endpoints that expect individual records, or when you need maximum compatibility.
+**使用時機**：預期個別記錄的端點，或當您需要最高相容性時。
 
-**Note**: This mode sends N HTTP requests per batch (more overhead). Consider using `ndjson` instead if your endpoint supports it.
-
-
+**注意**：此模式每個批次會傳送 N 個 HTTP 請求（額外負擔較高）。如果您的端點支援，建議改用 `ndjson`。

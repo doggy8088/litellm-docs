@@ -1,25 +1,24 @@
-
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Image Generations
+# 影像生成 {#image-generations}
 
-## Overview
+## 總覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Guardrails | ✅ | Applies to input prompts (non-streaming only) |
-| Supported Providers | OpenAI, Azure, Google AI Studio, Vertex AI, AWS Bedrock, Black Forest Labs, Recraft, OpenRouter, Xinference, Nscale | |
+| 成本追蹤 | ✅ | 適用於所有支援的模型 |
+| 記錄 | ✅ | 可跨所有整合使用 |
+| 終端使用者追蹤 | ✅ | |
+| 備援 | ✅ | 可於支援的模型之間運作 |
+| 負載平衡 | ✅ | 可於支援的模型之間運作 |
+| 防護欄 | ✅ | 套用於輸入提示詞（僅限非串流） |
+| 支援的提供者 | OpenAI, Azure, Google AI Studio, Vertex AI, AWS Bedrock, Black Forest Labs, Recraft, OpenRouter, Xinference, Nscale | |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -33,9 +32,9 @@ response = image_generation(prompt="A cute baby sea otter", model="dall-e-3")
 print(f"response: {response}")
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-### Setup config.yaml 
+### 設定 config.yaml  {#setup-configyaml}
 
 ```yaml showLineNumbers
 model_list:
@@ -47,7 +46,7 @@ model_list:
 
 ```
 
-### Start proxy 
+### 啟動 proxy  {#start-proxy}
 
 ```bash showLineNumbers
 litellm --config /path/to/config.yaml 
@@ -55,7 +54,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test 
+### 測試  {#test}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -93,20 +92,20 @@ print(image)
 </TabItem>
 </Tabs>
 
-## Input Params for `litellm.image_generation()`
+## `litellm.image_generation()` 的輸入參數 {#input-params-for-litellmimage_generation}
 
 :::info
 
-Any non-openai params, will be treated as provider-specific params, and sent in the request body as kwargs to the provider.
+任何非 openai 參數都會被視為特定於提供者的參數，並作為 kwargs 在請求主體中傳送給提供者。
 
-[**See Reserved Params**](https://github.com/BerriAI/litellm/blob/2f5f85cb52f36448d1f8bbfbd3b8af8167d0c4c8/litellm/main.py#L4082)
+[**查看保留參數**](https://github.com/BerriAI/litellm/blob/2f5f85cb52f36448d1f8bbfbd3b8af8167d0c4c8/litellm/main.py#L4082)
 :::
 
-### Required Fields
+### 必填欄位 {#required-fields}
 
-- `prompt`: *string* - A text description of the desired image(s).  
+- `prompt`: *string* - 期望影像的文字描述。  
 
-### Optional LiteLLM Fields
+### LiteLLM 選用欄位 {#optional-litellm-fields}
 
     model: Optional[str] = None,
     n: Optional[int] = None,
@@ -115,40 +114,40 @@ Any non-openai params, will be treated as provider-specific params, and sent in 
     size: Optional[str] = None,
     style: Optional[str] = None,
     user: Optional[str] = None,
-    timeout=600,  # default to 10 minutes
+    timeout=600,  # 預設為 10 分鐘
     api_key: Optional[str] = None,
     api_base: Optional[str] = None,
     api_version: Optional[str] = None,
     litellm_logging_obj=None,
     custom_llm_provider=None,
 
-- `model`: *string (optional)* The model to use for image generation. Defaults to openai/gpt-image-1
+- `model`: *string (optional)* 用於影像生成的模型。預設為 openai/gpt-image-1
 
-- `n`: *int (optional)* The number of images to generate. Must be between 1 and 10. For dall-e-3, only n=1 is supported.
+- `n`: *int (optional)* 要生成的影像數量。必須介於 1 到 10 之間。對於 dall-e-3，只支援 n=1。
 
-- `quality`: *string (optional)* The quality of the image that will be generated.
-  *   `auto` (default value) will automatically select the best quality for the given model.
-  *   `high`, `medium` and `low` are supported for `gpt-image-1`.
-  *   `hd` and `standard` are supported for `dall-e-3`.
-  *   `standard` is the only option for `dall-e-2`.
+- `quality`: *string (optional)* 將生成的影像品質。
+  *   `auto`（預設值）會自動為指定的模型選擇最佳品質。
+  *   `high`、`medium` 和 `low` 支援 `gpt-image-1`。
+  *   `hd` 和 `standard` 支援 `dall-e-3`。
+  *   `standard` 是 `dall-e-2` 的唯一選項。
   
-- `response_format`: *string (optional)* The format in which the generated images are returned. Must be one of url or b64_json.
+- `response_format`: *string (optional)* 生成的影像回傳格式。必須是 url 或 b64_json 其中之一。
 
-- `size`: *string (optional)* The size of the generated images. Must be one of `1024x1024`, `1536x1024` (landscape), `1024x1536` (portrait), or `auto` (default value) for `gpt-image-1`, one of `256x256`, `512x512`, or `1024x1024` for `dall-e-2`, and one of `1024x1024`, `1792x1024`, or `1024x1792` for `dall-e-3`.
+- `size`: *string (optional)* 生成的影像尺寸。必須是 `1024x1024`、`1536x1024`（橫向）、`1024x1536`（直向），或 `auto`（預設值，適用於 `gpt-image-1`）；對於 `256x256`、`512x512` 或 `1024x1024` 其中之一，適用於 `dall-e-2`；以及對於 `1024x1024`、`1792x1024` 或 `1024x1792` 其中之一，適用於 `dall-e-3`。
 
-- `timeout`: *integer* - The maximum time, in seconds, to wait for the API to respond. Defaults to 600 seconds (10 minutes).
+- `timeout`: *integer* - 等待 API 回應的最長時間（秒）。預設為 600 秒（10 分鐘）。
 
-- `user`: *string (optional)* A unique identifier representing your end-user, 
+- `user`: *string (optional)* 代表您終端使用者的唯一識別碼， 
 
-- `api_base`: *string (optional)* - The api endpoint you want to call the model with
+- `api_base`: *string (optional)* - 您要用來呼叫模型的 api 端點
 
-- `api_version`: *string (optional)* - (Azure-specific) the api version for the call; required for dall-e-3 on Azure
+- `api_version`: *string (optional)* - （Azure 專用）此次呼叫的 api 版本；在 Azure 上使用 dall-e-3 時為必要
 
-- `api_key`: *string (optional)* - The API key to authenticate and authorize requests. If not provided, the default API key is used.
+- `api_key`: *string (optional)* - 用於驗證與授權請求的 API 金鑰。若未提供，將使用預設 API 金鑰。
 
-- `api_type`: *string (optional)* - The type of API to use.
+- `api_type`: *string (optional)* - 要使用的 API 類型。
 
-### Output from `litellm.image_generation()`
+### `litellm.image_generation()` 的輸出 {#output-from-litellmimage_generation}
 
 ```json
 
@@ -163,9 +162,9 @@ Any non-openai params, will be treated as provider-specific params, and sent in 
 }
 ```
 
-## OpenAI Image Generation Models
+## OpenAI 影像生成模型 {#openai-image-generation-models}
 
-### Usage
+### 用法 {#usage}
 ```python showLineNumbers
 from litellm import image_generation
 import os
@@ -173,16 +172,16 @@ os.environ['OPENAI_API_KEY'] = ""
 response = image_generation(model='gpt-image-1', prompt="cute baby otter")
 ```
 
-| Model Name           | Function Call                               | Required OS Variables                |
+| 模型名稱           | 函式呼叫                               | 必要 OS 變數                |
 |----------------------|---------------------------------------------|--------------------------------------|
 | gpt-image-1 | `image_generation(model='gpt-image-1', prompt="cute baby otter")` | `os.environ['OPENAI_API_KEY']`       |
 | dall-e-3 | `image_generation(model='dall-e-3', prompt="cute baby otter")` | `os.environ['OPENAI_API_KEY']`       |
 | dall-e-2 | `image_generation(model='dall-e-2', prompt="cute baby otter")` | `os.environ['OPENAI_API_KEY']`       |
 
-## Azure OpenAI Image Generation Models
+## Azure OpenAI 影像生成模型 {#azure-openai-image-generation-models}
 
-### API keys
-This can be set as env variables or passed as **params to litellm.image_generation()**
+### API 金鑰 {#api-keys}
+這可以設為環境變數，或作為 **params 傳入 litellm.image_generation()**
 ```python showLineNumbers
 import os
 os.environ['AZURE_API_KEY'] = 
@@ -190,7 +189,7 @@ os.environ['AZURE_API_BASE'] =
 os.environ['AZURE_API_VERSION'] = 
 ```
 
-### Usage
+### 用法 {#usage-1}
 ```python showLineNumbers
 from litellm import embedding
 response = embedding(
@@ -203,25 +202,25 @@ response = embedding(
 print(response)
 ```
 
-| Model Name           | Function Call                               |
+| 模型名稱           | 函式呼叫                               |
 |----------------------|---------------------------------------------|
 | gpt-image-1 | `image_generation(model="azure/<your deployment name>", prompt="cute baby otter")` |
 | dall-e-3 | `image_generation(model="azure/<your deployment name>", prompt="cute baby otter")` |
 | dall-e-2 | `image_generation(model="azure/<your deployment name>", prompt="cute baby otter")` |
 
-## Xinference Image Generation Models
+## Xinference 影像生成模型 {#xinference-image-generation-models}
 
-Use this for Stable Diffusion models hosted on Xinference
+請將此用於託管在 Xinference 上的 Stable Diffusion 模型
 
-#### Usage
+#### 用法 {#usage-2}
 
-See Xinference usage with LiteLLM [here](./providers/xinference.md#image-generation)
+請參閱 LiteLLM 與 Xinference 的用法 [這裡](./providers/xinference.md#image-generation)
 
-## Recraft Image Generation Models
+## Recraft 影像生成模型 {#recraft-image-generation-models}
 
-Use this for AI-powered design and image generation with Recraft
+請將此用於使用 Recraft 的 AI 驅動設計與影像生成
 
-#### Usage
+#### 用法 {#usage-3}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -236,13 +235,13 @@ response = image_generation(
 print(response)
 ```
 
-See Recraft usage with LiteLLM [here](./providers/recraft.md#image-generation)
+請參閱 LiteLLM 與 Recraft 的用法 [這裡](./providers/recraft.md#image-generation)
 
-## OpenRouter Image Generation Models
+## OpenRouter 影像生成模型 {#openrouter-image-generation-models}
 
-Use this for image generation models available through OpenRouter (e.g., Google Gemini image generation models)
+請將此用於透過 OpenRouter 提供的影像生成模型（例如：Google Gemini 影像生成模型）
 
-#### Usage
+#### 用法 {#usage-4}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -259,12 +258,12 @@ response = image_generation(
 print(response)
 ```
 
-## OpenAI Compatible Image Generation Models
-Use this for calling `/image_generation` endpoints on OpenAI Compatible Servers, example https://github.com/xorbitsai/inference
+## OpenAI 相容影像生成模型 {#openai-compatible-image-generation-models}
+請將此用於在 OpenAI 相容伺服器上呼叫 `/image_generation` 端點，例如 https://github.com/xorbitsai/inference
 
-**Note add `openai/` prefix to model so litellm knows to route to OpenAI**
+**注意：請為模型加上 `openai/` 前綴，以便 litellm 知道要路由到 OpenAI**
 
-### Usage
+### 用法 {#usage-5}
 ```python showLineNumbers
 from litellm import image_generation
 response = image_generation(
@@ -274,11 +273,10 @@ response = image_generation(
 )
 ```
 
-## Bedrock - Stable Diffusion
-Use this for stable diffusion on bedrock
+## Bedrock - Stable Diffusion {#bedrock---stable-diffusion}
+請將此用於 bedrock 上的 stable diffusion
 
-
-### Usage
+### 用法 {#usage-6}
 ```python showLineNumbers
 import os
 from litellm import image_generation
@@ -294,11 +292,11 @@ response = image_generation(
 print(f"response: {response}")
 ```
 
-## VertexAI - Image Generation Models
+## VertexAI - 影像生成模型 {#vertexai---image-generation-models}
 
-### Usage 
+### 用法  {#usage-7}
 
-Use this for image generation models on VertexAI
+請將此用於 VertexAI 上的影像生成模型
 
 ```python showLineNumbers
 response = litellm.image_generation(
@@ -310,18 +308,18 @@ response = litellm.image_generation(
 print(f"response: {response}")
 ```
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-#### ⚡️See all supported models and providers at [models.litellm.ai](https://models.litellm.ai/)
+#### ⚡️請在 [models.litellm.ai](https://models.litellm.ai/) 查看所有支援的模型與提供者 {#️see-all-supported-models-and-providers-at-modelslitellmaihttpsmodelslitellmai}
 
-| Provider | Documentation Link |
+| 提供者 | 文件連結 |
 |----------|-------------------|
-| OpenAI | [OpenAI Image Generation →](./providers/openai) |
-| Azure OpenAI | [Azure OpenAI Image Generation →](./providers/azure/azure) |
-| Google AI Studio | [Google AI Studio Image Generation →](./providers/google_ai_studio/image_gen) |
-| Vertex AI | [Vertex AI Image Generation →](./providers/vertex_image) |
-| AWS Bedrock | [Bedrock Image Generation →](./providers/bedrock) |
-| Recraft | [Recraft Image Generation →](./providers/recraft#image-generation) |
-| OpenRouter | [OpenRouter Image Generation →](./providers/openrouter#image-generation) |
-| Xinference | [Xinference Image Generation →](./providers/xinference#image-generation) |
-| Nscale | [Nscale Image Generation →](./providers/nscale#image-generation) | 
+| OpenAI | [OpenAI 影像生成 →](./providers/openai) |
+| Azure OpenAI | [Azure OpenAI 影像生成 →](./providers/azure/azure) |
+| Google AI Studio | [Google AI Studio 影像生成 →](./providers/google_ai_studio/image_gen) |
+| Vertex AI | [Vertex AI 影像生成 →](./providers/vertex_image) |
+| AWS Bedrock | [Bedrock 影像生成 →](./providers/bedrock) |
+| Recraft | [Recraft 影像生成 →](./providers/recraft#image-generation) |
+| OpenRouter | [OpenRouter 影像生成 →](./providers/openrouter#image-generation) |
+| Xinference | [Xinference 影像生成 →](./providers/xinference#image-generation) |
+| Nscale | [Nscale 影像生成 →](./providers/nscale#image-generation) |

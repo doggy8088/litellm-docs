@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Custom Code Guardrail
+# 自訂程式碼防護欄 {#custom-code-guardrail}
 
-Write custom guardrail logic using Python-like code that runs in a sandboxed environment.
+使用在沙盒化環境中執行的類 Python 程式碼撰寫自訂防護欄邏輯。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define the guardrail in config
+### 1. 在設定中定義防護欄 {#1-define-the-guardrail-in-config}
 
 ```yaml
 model_list:
@@ -29,13 +29,13 @@ guardrails:
                 return allow()
 ```
 
-### 2. Start proxy
+### 2. 啟動 proxy {#2-start-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 3. Test
+### 3. 測試 {#3-test}
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -48,20 +48,20 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `guardrail` | string | ✅ | Must be `custom_code` |
-| `mode` | string | ✅ | When to run: `pre_call`, `post_call`, `during_call` |
-| `custom_code` | string | ✅ | Python-like code with `apply_guardrail` function |
-| `default_on` | bool | ❌ | Run on all requests (default: `false`) |
+| `guardrail` | string | ✅ | 必須是 `custom_code` |
+| `mode` | string | ✅ | 執行時機：`pre_call`、`post_call`、`during_call` |
+| `custom_code` | string | ✅ | 含有 `apply_guardrail` 函式的類 Python 程式碼 |
+| `default_on` | bool | ❌ | 在所有請求上執行（預設：`false`） |
 
-## Writing Custom Code
+## 撰寫自訂程式碼 {#writing-custom-code}
 
-### Function Signature
+### 函式簽章 {#function-signature}
 
-Your code must define an `apply_guardrail` function. It can be either sync or async:
+您的程式碼必須定義一個 `apply_guardrail` 函式。它可以是同步或非同步：
 
 ```python
 # Sync version
@@ -80,90 +80,90 @@ async def apply_guardrail(inputs, request_data, input_type):
     return allow()
 ```
 
-### `inputs` Parameter
+### `inputs` 參數 {#inputs-parameter}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `texts` | `List[str]` | Extracted text from the request/response |
-| `images` | `List[str]` | Extracted images (for image guardrails) |
-| `tools` | `List[dict]` | Tools sent to the LLM |
-| `tool_calls` | `List[dict]` | Tool calls returned from the LLM |
-| `structured_messages` | `List[dict]` | Full messages with role info (system/user/assistant) |
-| `model` | `str` | The model being used |
+| `texts` | `List[str]` | 從請求/回應中擷取的文字 |
+| `images` | `List[str]` | 擷取的圖片（用於圖片防護欄） |
+| `tools` | `List[dict]` | 傳送給 LLM 的工具 |
+| `tool_calls` | `List[dict]` | 從 LLM 傳回的工具呼叫 |
+| `structured_messages` | `List[dict]` | 含有角色資訊（system/user/assistant）的完整訊息 |
+| `model` | `str` | 正在使用的模型 |
 
-### `request_data` Parameter
+### `request_data` 參數 {#request_data-parameter}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `model` | `str` | Model name |
-| `user_id` | `str` | User ID from API key |
-| `team_id` | `str` | Team ID from API key |
-| `end_user_id` | `str` | End user ID |
-| `metadata` | `dict` | Request metadata |
+| `model` | `str` | 模型名稱 |
+| `user_id` | `str` | 來自 API 金鑰的使用者 ID |
+| `team_id` | `str` | 來自 API 金鑰的團隊 ID |
+| `end_user_id` | `str` | 終端使用者 ID |
+| `metadata` | `dict` | 請求中繼資料 |
 
-### Return Values
+### 回傳值 {#return-values}
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `allow()` | Let request/response through |
-| `block(reason)` | Reject with message |
-| `modify(texts=[], images=[], tool_calls=[])` | Transform content |
+| `allow()` | 讓請求/回應通過 |
+| `block(reason)` | 以訊息拒絕 |
+| `modify(texts=[], images=[], tool_calls=[])` | 轉換內容 |
 
-## Built-in Primitives
+## 內建原語 {#built-in-primitives}
 
-### Regex
+### Regex {#regex}
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `regex_match(text, pattern)` | Returns `True` if pattern found |
-| `regex_replace(text, pattern, replacement)` | Replace all matches |
-| `regex_find_all(text, pattern)` | Return list of matches |
+| `regex_match(text, pattern)` | 如果找到模式則回傳 `True` |
+| `regex_replace(text, pattern, replacement)` | 取代所有符合項 |
+| `regex_find_all(text, pattern)` | 回傳符合項目清單 |
 
-### JSON
+### JSON {#json}
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `json_parse(text)` | Parse JSON string, returns `None` on error |
-| `json_stringify(obj)` | Convert to JSON string |
-| `json_schema_valid(obj, schema)` | Validate against JSON schema |
+| `json_parse(text)` | 解析 JSON 字串，發生錯誤時回傳 `None` |
+| `json_stringify(obj)` | 轉換為 JSON 字串 |
+| `json_schema_valid(obj, schema)` | 驗證是否符合 JSON schema |
 
-### URL
+### URL {#url}
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `extract_urls(text)` | Extract all URLs from text |
-| `is_valid_url(url)` | Check if URL is valid |
-| `all_urls_valid(text)` | Check all URLs in text are valid |
+| `extract_urls(text)` | 從文字中擷取所有 URL |
+| `is_valid_url(url)` | 檢查 URL 是否有效 |
+| `all_urls_valid(text)` | 檢查文字中的所有 URL 是否有效 |
 
-### Code Detection
+### 程式碼偵測 {#code-detection}
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `detect_code(text)` | Returns `True` if code detected |
-| `detect_code_languages(text)` | Returns list of detected languages |
-| `contains_code_language(text, ["sql", "python"])` | Check for specific languages |
+| `detect_code(text)` | 如果偵測到程式碼則回傳 `True` |
+| `detect_code_languages(text)` | 回傳偵測到的語言清單 |
+| `contains_code_language(text, ["sql", "python"])` | 檢查特定語言 |
 
-### Text Utilities
+### 文字工具 {#text-utilities}
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `contains(text, substring)` | Check if substring exists |
-| `contains_any(text, [substr1, substr2])` | Check if any substring exists |
-| `word_count(text)` | Count words |
-| `char_count(text)` | Count characters |
-| `lower(text)` / `upper(text)` / `trim(text)` | String transforms |
+| `contains(text, substring)` | 檢查是否存在子字串 |
+| `contains_any(text, [substr1, substr2])` | 檢查是否存在任一子字串 |
+| `word_count(text)` | 計算字數 |
+| `char_count(text)` | 計算字元數 |
+| `lower(text)` / `upper(text)` / `trim(text)` | 字串轉換 |
 
-### HTTP Requests (Async)
+### HTTP 請求（非同步） {#http-requests-async}
 
-Make async HTTP requests to external APIs for additional validation or content moderation.
+對外部 API 發出非同步 HTTP 請求，以進行額外驗證或內容審核。
 
-| Function | Description |
+| 函式 | 說明 |
 |----------|-------------|
-| `await http_request(url, method, headers, body, timeout)` | General async HTTP request |
-| `await http_get(url, headers, timeout)` | Async GET request |
-| `await http_post(url, body, headers, timeout)` | Async POST request |
+| `await http_request(url, method, headers, body, timeout)` | 一般非同步 HTTP 請求 |
+| `await http_get(url, headers, timeout)` | 非同步 GET 請求 |
+| `await http_post(url, body, headers, timeout)` | 非同步 POST 請求 |
 
-**Response format:**
+**回應格式：**
 ```python
 {
     "status_code": 200,        # HTTP status code
@@ -174,11 +174,11 @@ Make async HTTP requests to external APIs for additional validation or content m
 }
 ```
 
-**Note:** When using HTTP primitives, define your function as `async def apply_guardrail(...)` for non-blocking execution.
+**注意：** 使用 HTTP 原語時，請將您的函式定義為 `async def apply_guardrail(...)`，以進行非阻塞執行。
 
-## Examples
+## 範例 {#examples}
 
-### Block PII (SSN)
+### 封鎖 PII（SSN） {#block-pii-ssn}
 
 ```python
 def apply_guardrail(inputs, request_data, input_type):
@@ -188,7 +188,7 @@ def apply_guardrail(inputs, request_data, input_type):
     return allow()
 ```
 
-### Redact Email Addresses
+### 遮罩電子郵件地址 {#redact-email-addresses}
 
 ```python
 def apply_guardrail(inputs, request_data, input_type):
@@ -199,7 +199,7 @@ def apply_guardrail(inputs, request_data, input_type):
     return modify(texts=modified)
 ```
 
-### Block SQL Injection
+### 封鎖 SQL Injection {#block-sql-injection}
 
 ```python
 def apply_guardrail(inputs, request_data, input_type):
@@ -211,7 +211,7 @@ def apply_guardrail(inputs, request_data, input_type):
     return allow()
 ```
 
-### Validate JSON Response
+### 驗證 JSON 回應 {#validate-json-response}
 
 ```python
 def apply_guardrail(inputs, request_data, input_type):
@@ -232,7 +232,7 @@ def apply_guardrail(inputs, request_data, input_type):
     return allow()
 ```
 
-### Check URLs in Response
+### 檢查回應中的 URL {#check-urls-in-response}
 
 ```python
 def apply_guardrail(inputs, request_data, input_type):
@@ -244,7 +244,7 @@ def apply_guardrail(inputs, request_data, input_type):
     return allow()
 ```
 
-### Call External Moderation API (Async)
+### 呼叫外部審核 API（非同步） {#call-external-moderation-api-async}
 
 ```python
 async def apply_guardrail(inputs, request_data, input_type):
@@ -267,7 +267,7 @@ async def apply_guardrail(inputs, request_data, input_type):
     return allow()
 ```
 
-### Combine Multiple Checks
+### 結合多個檢查 {#combine-multiple-checks}
 
 ```python
 def apply_guardrail(inputs, request_data, input_type):
@@ -289,19 +289,19 @@ def apply_guardrail(inputs, request_data, input_type):
     return modify(texts=modified)
 ```
 
-## Sandbox Restrictions
+## 沙盒限制 {#sandbox-restrictions}
 
-Custom code runs in a restricted environment:
+自訂程式碼會在受限環境中執行：
 
-- ❌ No `import` statements
-- ❌ No file I/O
-- ❌ No `exec()` or `eval()`
-- ✅ HTTP requests via built-in `http_request`, `http_get`, `http_post` primitives
-- ✅ Only LiteLLM-provided primitives available
+- ❌ 不可使用 `import` 陳述式
+- ❌ 不可進行檔案 I/O
+- ❌ 不可使用 `exec()` 或 `eval()`
+- ✅ 可透過內建 `http_request`、`http_get`、`http_post` 原語發出 HTTP 請求
+- ✅ 只能使用 LiteLLM 提供的原語
 
-## Per-Request Usage
+## 每次請求使用 {#per-request-usage}
 
-Enable guardrail per request:
+為每次請求啟用防護欄：
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -314,9 +314,9 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-## Default On
+## 預設啟用 {#default-on}
 
-Run guardrail on all requests:
+在所有請求上執行防護欄：
 
 ```yaml
 litellm_settings:

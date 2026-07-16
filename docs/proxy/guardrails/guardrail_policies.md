@@ -2,17 +2,17 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# [Beta] Guardrail Policies
+# [Beta] 防護欄政策 {#beta-guardrail-policies}
 
-Use policies to group guardrails and control which ones run for specific teams, keys, or models.
+使用政策來分組防護欄，並控制哪些防護欄會針對特定團隊、金鑰或模型執行。
 
-## Why use policies?
+## 為什麼要使用政策？ {#why-use-policies}
 
-- Enable/disable specific guardrails for teams, keys, or models
-- Group guardrails into a single policy
-- Inherit from existing policies and override what you need
+- 針對團隊、金鑰或模型啟用/停用特定防護欄
+- 將防護欄分組成單一政策
+- 繼承現有政策，並覆寫您需要的部分
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -53,37 +53,37 @@ policy_attachments:
 </TabItem>
 <TabItem value="ui" label="UI (LiteLLM Dashboard)">
 
-**Step 1: Create a Policy**
+**步驟 1：建立政策**
 
-Go to **Policies** tab and click **+ Create New Policy**. Fill in the policy name, description, and select guardrails to add.
+前往 **Policies** 分頁並點擊 **+ Create New Policy**。填入政策名稱、描述，並選擇要新增的防護欄。
 
-![Enter policy name](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/4ba62cc8-d2c4-4af1-a526-686295466928/ascreenshot_401eab3e2081466e8f4d4ffa3bf7bff4_text_export.jpeg)
+![輸入政策名稱](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/4ba62cc8-d2c4-4af1-a526-686295466928/ascreenshot_401eab3e2081466e8f4d4ffa3bf7bff4_text_export.jpeg)
 
-![Add a description for the policy](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/51685e47-1d94-4d9c-acb0-3c88dce9f938/ascreenshot_a5cd40066ff34afbb1e4089a3c93d889_text_export.jpeg)
+![為政策新增描述](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/51685e47-1d94-4d9c-acb0-3c88dce9f938/ascreenshot_a5cd40066ff34afbb1e4089a3c93d889_text_export.jpeg)
 
-![Select a parent policy to inherit from](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/1d96c3d3-187a-4f7c-97d2-6ac1f093d51e/ascreenshot_8a3af3b2210547dca3d4709df920d005_text_export.jpeg)
+![選擇要繼承的父政策](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/1d96c3d3-187a-4f7c-97d2-6ac1f093d51e/ascreenshot_8a3af3b2210547dca3d4709df920d005_text_export.jpeg)
 
-![Select guardrails to add to the policy](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/23781274-e600-4d5f-a8a6-4a2a977a166c/ascreenshot_a2a45d2c5d064c77ab7cb47b569ad9e9_text_export.jpeg)
+![選擇要新增到政策中的防護欄](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/23781274-e600-4d5f-a8a6-4a2a977a166c/ascreenshot_a2a45d2c5d064c77ab7cb47b569ad9e9_text_export.jpeg)
 
-![Click Create Policy to save](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/1d1ae8a8-daa5-451b-9fa2-c5b607ff6220/ascreenshot_218c2dd259714be4aa3c4e1894c96878_text_export.jpeg)
+![點擊 Create Policy 以儲存](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/1d1ae8a8-daa5-451b-9fa2-c5b607ff6220/ascreenshot_218c2dd259714be4aa3c4e1894c96878_text_export.jpeg)
 
 </TabItem>
 </Tabs>
 
-Response headers show what ran:
+回應標頭會顯示哪些內容已執行：
 
 ```
 x-litellm-applied-policies: my-policy
 x-litellm-applied-guardrails: pii_masking,prompt_injection
 ```
 
-## Add guardrails for a specific team
+## 為特定團隊新增防護欄 {#add-guardrails-for-a-specific-team}
 
 :::info
-✨ Enterprise only feature for team/key-based policy attachments. [Get a free trial](https://www.litellm.ai/enterprise#trial)
+✨ 僅限企業版功能，適用於基於團隊/金鑰的政策附加。 [取得免費試用](https://www.litellm.ai/enterprise#trial)
 :::
 
-You have a global baseline, but want to add extra guardrails for a specific team.
+您有一個全域基準，但想為特定團隊新增額外的防護欄。
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -114,36 +114,36 @@ policy_attachments:
 </TabItem>
 <TabItem value="ui" label="UI (LiteLLM Dashboard)">
 
-**Option 1: Create a team-scoped attachment**
+**選項 1：建立以團隊為範圍的附加項目**
 
-Go to **Policies** > **Attachments** tab and click **+ Create New Attachment**. Select the policy and the teams to scope it to.
+前往 **Policies** > **Attachments** 分頁並點擊 **+ Create New Attachment**。選擇政策以及要套用的團隊範圍。
 
-![Select teams for the attachment](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/50e58f54-3bc3-477e-a106-e58cb65fde7e/ascreenshot_85d2e3d9d8d24842baced92fea170427_text_export.jpeg)
+![選擇附加項目的團隊](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/50e58f54-3bc3-477e-a106-e58cb65fde7e/ascreenshot_85d2e3d9d8d24842baced92fea170427_text_export.jpeg)
 
-![Select the teams to attach the policy to](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/f24066bb-0a73-49fb-87b6-c65ad3ca5b2f/ascreenshot_242476fbdac447309f65de78b0ed9fdd_text_export.jpeg)
+![選擇要將政策附加到的團隊](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/f24066bb-0a73-49fb-87b6-c65ad3ca5b2f/ascreenshot_242476fbdac447309f65de78b0ed9fdd_text_export.jpeg)
 
-**Option 2: Attach from team settings**
+**選項 2：從團隊設定中附加**
 
-Go to **Teams** > click on a team > **Settings** tab > under **Policies**, select the policies to attach.
+前往 **Teams** > 點擊某個團隊 > **Settings** 分頁 > 在 **Policies** 下方，選擇要附加的政策。
 
-![Open team settings and click Edit Settings](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/c31c3735-4f9d-4c6a-896b-186e97296940/ascreenshot_4749bb24ce5942cca462acc958fd3822_text_export.jpeg)
+![開啟團隊設定並點擊 Edit Settings](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/c31c3735-4f9d-4c6a-896b-186e97296940/ascreenshot_4749bb24ce5942cca462acc958fd3822_text_export.jpeg)
 
-![Select policies to attach to this team](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/da8d5d7a-d975-4bfe-acd2-f41dcea29520/ascreenshot_835a33b6cec545cbb2987f017fbaff90_text_export.jpeg)
+![選擇要附加到此團隊的政策](https://colony-recorder.s3.amazonaws.com/files/2026-02-11/da8d5d7a-d975-4bfe-acd2-f41dcea29520/ascreenshot_835a33b6cec545cbb2987f017fbaff90_text_export.jpeg)
 
 <Image img={require('../../../img/policy_team_attach.png')} />
 
 </TabItem>
 </Tabs>
 
-Now the `finance` team gets `pii_masking` + `strict_compliance_check` + `audit_logger`, while everyone else just gets `pii_masking`.
+現在 `finance` 團隊會取得 `pii_masking` + `strict_compliance_check` + `audit_logger`，而其他所有人只會取得 `pii_masking`。
 
-## Remove guardrails for a specific team
+## 移除特定團隊的防護欄 {#remove-guardrails-for-a-specific-team}
 
 :::info
-✨ Enterprise only feature for team/key-based policy attachments. [Get a free trial](https://www.litellm.ai/enterprise#trial)
+✨ 僅限企業版功能，適用於基於團隊/金鑰的政策附加。 [取得免費試用](https://www.litellm.ai/enterprise#trial)
 :::
 
-You have guardrails running globally, but want to disable some for a specific team (e.g., internal testing).
+您有全域執行的防護欄，但想為特定團隊停用其中一些（例如：內部測試）。
 
 ```yaml showLineNumbers title="config.yaml"
 policies:
@@ -168,11 +168,11 @@ policy_attachments:
       - internal-testing  # team alias from /team/new
 ```
 
-Now the `internal-testing` team only gets `prompt_injection`, while everyone else gets both guardrails.
+現在 `internal-testing` 團隊只會取得 `prompt_injection`，而其他所有人會取得兩個防護欄。
 
-## Inheritance
+## 繼承 {#inheritance}
 
-Start with a base policy and build on it:
+從基礎政策開始，並在其上擴充：
 
 ```yaml showLineNumbers title="config.yaml"
 policies:
@@ -195,14 +195,14 @@ policies:
         - toxicity_filter
 ```
 
-What you get:
+您會得到：
 - `base` → `[pii_masking, toxicity_filter]`
 - `strict` → `[pii_masking, toxicity_filter, prompt_injection]`
 - `relaxed` → `[pii_masking]`
 
-## Model Conditions
+## 模型條件 {#model-conditions}
 
-Run guardrails only for specific models:
+僅針對特定模型執行防護欄：
 
 ```yaml showLineNumbers title="config.yaml"
 policies:
@@ -223,11 +223,11 @@ policies:
         - bedrock/claude-2
 ```
 
-## Attachments
+## 附加項目 {#attachments}
 
-Policies don't do anything until you attach them. Attachments tell LiteLLM *where* to apply each policy.
+在您附加之前，政策不會發揮任何作用。附加項目會告訴 LiteLLM 要在何處套用每個政策。
 
-**Global** - runs on every request:
+**全域** - 會在每個請求上執行：
 
 ```yaml showLineNumbers title="config.yaml"
 policy_attachments:
@@ -235,7 +235,7 @@ policy_attachments:
     scope: "*"
 ```
 
-**Team-specific** (uses team alias from `/team/new`):
+**特定團隊**（使用來自 `/team/new` 的團隊別名）：
 
 ```yaml showLineNumbers title="config.yaml"
 policy_attachments:
@@ -245,7 +245,7 @@ policy_attachments:
       - medical-research  # team alias
 ```
 
-**Key-specific** (uses key alias from `/key/generate`, wildcards supported):
+**特定金鑰**（使用來自 `/key/generate` 的金鑰別名，支援萬用字元）：
 
 ```yaml showLineNumbers title="config.yaml"
 policy_attachments:
@@ -255,7 +255,7 @@ policy_attachments:
       - "test-*"  # key alias pattern
 ```
 
-**Tag-based** (matches keys/teams by metadata tags, wildcards supported):
+**基於標籤**（依據中繼資料標籤比對金鑰/團隊，支援萬用字元）：
 
 ```yaml showLineNumbers title="config.yaml"
 policy_attachments:
@@ -265,16 +265,16 @@ policy_attachments:
       - "health-*"  # wildcard - matches health-team, health-dev, etc.
 ```
 
-Tags are read from key and team `metadata.tags`. For example, a key created with `metadata: {"tags": ["healthcare"]}` would match the attachment above.
+標籤會從金鑰和團隊 `metadata.tags` 讀取。範例來說，以 `metadata: {"tags": ["healthcare"]}` 建立的金鑰會符合上方的附加項目。
 
-## Test Policy Matching
+## 測試政策比對 {#test-policy-matching}
 
-Debug which policies and guardrails apply for a given context. Use this to verify your policy configuration before deploying.
+除錯哪些政策和防護欄會套用到給定情境。請在部署之前使用此功能驗證您的政策設定。
 
 <Tabs>
 <TabItem value="ui" label="UI (LiteLLM Dashboard)">
 
-Go to **Policies** > **Test** tab. Enter a team alias, key alias, model, or tags and click **Test** to see which policies match and what guardrails would be applied.
+前往 **Policies** > **Test** 分頁。輸入團隊別名、金鑰別名、模型或標籤，然後點擊 **Test**，查看哪些政策會比對以及會套用哪些防護欄。
 
 <Image img={require('../../../img/policy_test_matching.png')} />
 
@@ -291,7 +291,7 @@ curl -X POST "http://localhost:4000/policies/resolve" \
     }'
 ```
 
-Response:
+回應：
 
 ```json
 {
@@ -309,13 +309,13 @@ Response:
 </TabItem>
 </Tabs>
 
-## Policy Flow Builder
+## 政策流程建構器 {#policy-flow-builder}
 
-For conditional execution (e.g., run a second guardrail only if the first fails), use the [Policy Flow Builder](./policy_flow_builder) to define pipelines with per-step **pass**, **fail**, and optional **error** actions (`on_pass`, `on_fail`, `on_error`).
+若要進行條件式執行（例如：只有在第一個防護欄失敗時才執行第二個防護欄），請使用 [Policy Flow Builder](./policy_flow_builder) 來定義具有每一步 **通過**、**失敗** 與可選 **錯誤** 動作的管線（`on_pass`、`on_fail`、可選的 `on_error`）。
 
-## Config Reference
+## 設定參考 {#config-reference}
 
-### `policies`
+### `policies` {#policies}
 
 ```yaml
 policies:
@@ -330,16 +330,16 @@ policies:
     pipeline: ...  # optional; see Policy Flow Builder
 ```
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `description` | `string` | Optional. What this policy does. |
-| `inherit` | `string` | Optional. Parent policy to inherit guardrails from. |
-| `guardrails.add` | `list[string]` | Guardrails to enable. |
-| `guardrails.remove` | `list[string]` | Guardrails to disable (useful with inheritance). |
-| `condition.model` | `string` or `list[string]` | Optional. Only apply when model matches. Supports regex. |
-| `pipeline` | `object` | Optional. Ordered guardrail execution with per-step actions (`on_pass`, `on_fail`, optional `on_error`). See [Policy Flow Builder](./policy_flow_builder). |
+| `description` | `string` | 選填。此政策的作用。 |
+| `inherit` | `string` | 選填。要從中繼承防護欄的父政策。 |
+| `guardrails.add` | `list[string]` | 要啟用的防護欄。 |
+| `guardrails.remove` | `list[string]` | 要停用的防護欄（在繼承時很有用）。 |
+| `condition.model` | `string` 或 `list[string]` | 選填。僅在模型符合時套用。支援 regex。 |
+| `pipeline` | `object` | 選填。依序執行防護欄，並對每一步設定動作（`on_pass`、`on_fail`、可選的 `on_error`）。請參閱 [Policy Flow Builder](./policy_flow_builder)。 |
 
-### `policy_attachments`
+### `policy_attachments` {#policy_attachments}
 
 ```yaml
 policy_attachments:
@@ -351,26 +351,26 @@ policy_attachments:
     tags: [...]
 ```
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `policy` | `string` | **Required.** Name of the policy to attach. |
-| `scope` | `string` | Use `"*"` to apply globally. |
-| `teams` | `list[string]` | Team aliases (from `/team/new`). Supports `*` wildcard. |
-| `keys` | `list[string]` | Key aliases (from `/key/generate`). Supports `*` wildcard. |
-| `models` | `list[string]` | Model names. Supports `*` wildcard. |
-| `tags` | `list[string]` | Tag patterns (from key/team `metadata.tags`). Supports `*` wildcard. |
+| `policy` | `string` | **必要。** 要附加的政策名稱。 |
+| `scope` | `string` | 使用 `"*"` 來全域套用。 |
+| `teams` | `list[string]` | 團隊別名（來自 `/team/new`）。支援 `*` 萬用字元。 |
+| `keys` | `list[string]` | 金鑰別名（來自 `/key/generate`）。支援 `*` 萬用字元。 |
+| `models` | `list[string]` | 模型名稱。支援 `*` 萬用字元。 |
+| `tags` | `list[string]` | 標籤樣式（來自金鑰/團隊 `metadata.tags`）。支援 `*` 萬用字元。 |
 
-### Response Headers
+### 回應標頭 {#response-headers}
 
-| Header | Description |
+| 標頭 | 說明 |
 |--------|-------------|
-| `x-litellm-applied-policies` | Policies that matched this request |
-| `x-litellm-applied-guardrails` | Guardrails that actually ran |
-| `x-litellm-policy-sources` | Why each policy matched (e.g., `hipaa=tag:healthcare; baseline=scope:*`) |
+| `x-litellm-applied-policies` | 與此請求比對成功的政策 |
+| `x-litellm-applied-guardrails` | 實際執行的防護欄 |
+| `x-litellm-policy-sources` | 每個政策為何比對成功（例如：`hipaa=tag:healthcare; baseline=scope:*`） |
 
-## How it works
+## 運作方式 {#how-it-works}
 
-Example config:
+設定範例：
 
 ```yaml showLineNumbers title="config.yaml"
 policies:
@@ -392,11 +392,11 @@ policy_attachments:
 
 ```mermaid
 flowchart TD
-    A["Request with team_alias='finance'"] --> B["Matches policies: base, finance-policy"]
-    B --> C["Resolves guardrails: pii_masking, audit_logger"]
+    A["具有 team_alias='finance' 的請求"] --> B["比對到政策：base、finance-policy"]
+    B --> C["解析防護欄：pii_masking、audit_logger"]
 ```
 
-1. Request comes in with `team_alias='finance'`
-2. Matches `base` (via `scope: "*"`) and `finance-policy` (via `teams: [finance]`)
-3. Resolves guardrails: `base` adds `pii_masking`, `finance-policy` inherits and adds `audit_logger`
-4. Final guardrails: `pii_masking`, `audit_logger`
+1. 請求以 `team_alias='finance'` 進來
+2. 比對到 `base`（透過 `scope: "*"`）以及 `finance-policy`（透過 `teams: [finance]`）
+3. 解析防護欄：`base` 新增 `pii_masking`，`finance-policy` 繼承並新增 `audit_logger`
+4. 最終防護欄：`pii_masking`、`audit_logger`

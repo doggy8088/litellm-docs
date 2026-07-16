@@ -1,58 +1,58 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Benchmark LLMs - LM Harness, FastEval, Flask
+# 使用 LM Harness、FastEval、Flask 進行 LLM 基準測試 {#benchmark-llms---lm-harness-fasteval-flask}
 
-## LM Harness Benchmarks
-Evaluate LLMs 20x faster with TGI via litellm proxy's `/completions` endpoint. 
+## LM Harness 基準測試 {#lm-harness-benchmarks}
+透過 litellm proxy 的 `/completions` 端點，以快 20 倍的速度評估 LLM。 
 
-This tutorial assumes you're using the `big-refactor` branch of [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness/tree/big-refactor)
+本教學假設您使用的是 [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness/tree/big-refactor) 的 `big-refactor` 分支
 
-NOTE: LM Harness has not updated to using `openai 1.0.0+`, in order to deal with this we will run lm harness in a venv
+注意：LM Harness 尚未更新為使用 `openai 1.0.0+`；為了處理這個問題，我們會在虛擬環境中執行 lm harness
 
-**Step 1: Start the local proxy**
-see supported models [here](https://docs.litellm.ai/docs/simple_proxy)
+**步驟 1：啟動本機 proxy**
+請參閱支援的模型 [這裡](https://docs.litellm.ai/docs/simple_proxy)
 ```shell
 $ litellm --model huggingface/bigcode/starcoder
 ```
 
-Using a custom api base
+使用自訂 API base
 
 ```shell
 $ export HUGGINGFACE_API_KEY=my-api-key #[OPTIONAL]
 $ litellm --model huggingface/tinyllama --api_base https://k58ory32yinf1ly0.us-east-1.aws.endpoints.huggingface.cloud
 ```
-OpenAI Compatible Endpoint at http://0.0.0.0:8000
+OpenAI 相容端點於 http://0.0.0.0:8000
 
-**Step 2: Create a Virtual Env for LM Harness + Use OpenAI 0.28.1**
-We will now run lm harness with a new virtual env with openai==0.28.1
+**步驟 2：為 LM Harness 建立虛擬環境 + 使用 OpenAI 0.28.1**
+接著我們會在新的虛擬環境中執行 lm harness，並使用 openai==0.28.1
 
 ```shell
 python3 -m venv lmharness 
 source lmharness/bin/activate
 ```
 
-Pip install openai==0.28.01 in the venv
+在虛擬環境中安裝 openai==0.28.01
 ```shell
 uv add openai==0.28.01
 ```
 
-**Step 3: Set OpenAI API Base & Key**
+**步驟 3：設定 OpenAI API Base 與金鑰**
 ```shell
 $ export OPENAI_BASE_URL=http://0.0.0.0:8000
 ```
 
-LM Harness requires you to set an OpenAI API key `OPENAI_API_SECRET_KEY` for running benchmarks
+LM Harness 需要您設定一組 OpenAI API 金鑰 `OPENAI_API_SECRET_KEY` 以執行基準測試
 ```shell
 export OPENAI_API_SECRET_KEY=anything
 ```
 
-**Step 4: Run LM-Eval-Harness**
+**步驟 4：執行 LM-Eval-Harness**
 ```shell
 cd lm-evaluation-harness
 ```
 
-uv add lm harness dependencies in venv
+在虛擬環境中使用 uv 新增 lm harness 依賴項
 ```
 uv sync
 ```
@@ -64,36 +64,36 @@ python3 -m lm_eval \
   --task crows_pairs_english_age
 
 ```
-## FastEval
+## FastEval {#fasteval}
 
-**Step 1: Start the local proxy**
-see supported models [here](https://docs.litellm.ai/docs/simple_proxy)
+**步驟 1：啟動本機 proxy**
+請參閱支援的模型 [這裡](https://docs.litellm.ai/docs/simple_proxy)
 ```shell
 $ litellm --model huggingface/bigcode/starcoder
 ```
 
-**Step 2: Set OpenAI API Base & Key**
+**步驟 2：設定 OpenAI API Base 與金鑰**
 ```shell
 $ export OPENAI_BASE_URL=http://0.0.0.0:8000
 ```
 
-Set this to anything since the proxy has the credentials
+由於 proxy 已具備憑證，這裡可設定為任何值
 ```shell
 export OPENAI_API_KEY=anything
 ```
 
-**Step 3 Run with FastEval** 
+**步驟 3：使用 FastEval 執行** 
 
-**Clone FastEval**
+**複製 FastEval**
 ```shell
 # Clone this repository, make it the current working directory
 git clone --depth 1 https://github.com/FastEval/FastEval.git
 cd FastEval
 ```
 
-**Set API Base on FastEval**
+**在 FastEval 上設定 API Base**
 
-On FastEval make the following **2 line code change** to set `OPENAI_BASE_URL`
+在 FastEval 上，請進行以下 **2 行程式碼變更** 以設定 `OPENAI_BASE_URL`
 
 https://github.com/FastEval/FastEval/pull/90/files
 ```python
@@ -109,31 +109,31 @@ try:
         max_new_tokens=max_new_tokens,
 ```
 
-**Run FastEval**
-Set `-b` to the benchmark you want to run. Possible values are `mt-bench`, `human-eval-plus`, `ds1000`, `cot`, `cot/gsm8k`, `cot/math`, `cot/bbh`, `cot/mmlu` and `custom-test-data`
+**執行 FastEval**
+將 `-b` 設定為您要執行的基準測試。可用值為 `mt-bench`、`human-eval-plus`、`ds1000`、`cot`、`cot/gsm8k`、`cot/math`、`cot/bbh`、`cot/mmlu` 和 `custom-test-data`
 
-Since LiteLLM provides an OpenAI compatible proxy `-t` and `-m` don't need to change
-`-t` will remain openai
-`-m` will remain gpt-3.5
+由於 LiteLLM 提供相容於 OpenAI 的 proxy `-t` 和 `-m` 不需要變更
+`-t` 將維持為 openai
+`-m` 將維持為 gpt-3.5
 
 ```shell
 ./fasteval -b human-eval-plus -t openai -m gpt-3.5-turbo
 ```
 
-## FLASK - Fine-grained Language Model Evaluation 
-Use litellm to evaluate any LLM on FLASK https://github.com/kaistAI/FLASK 
+## FLASK - 細粒度語言模型評估  {#flask---fine-grained-language-model-evaluation}
+使用 litellm 在 FLASK 上評估任何 LLM https://github.com/kaistAI/FLASK 
 
-**Step 1: Start the local proxy**
+**步驟 1：啟動本機 proxy**
 ```shell
 $ litellm --model huggingface/bigcode/starcoder
 ```
 
-**Step 2: Set OpenAI API Base & Key**
+**步驟 2：設定 OpenAI API Base 與金鑰**
 ```shell
 $ export OPENAI_BASE_URL=http://0.0.0.0:8000
 ```
 
-**Step 3 Run with FLASK** 
+**步驟 3：使用 FLASK 執行** 
 
 ```shell
 git clone https://github.com/kaistAI/FLASK
@@ -142,15 +142,15 @@ git clone https://github.com/kaistAI/FLASK
 cd FLASK/gpt_review
 ```
 
-Run the eval 
+執行評估 
 ```shell
 python gpt4_eval.py -q '../evaluation_set/flask_evaluation.jsonl'
 ```
 
-## Debugging 
+## 除錯  {#debugging}
 
-### Making a test request to your proxy
-This command makes a test Completion, ChatCompletion request to your proxy server
+### 對您的 proxy 發出測試請求 {#making-a-test-request-to-your-proxy}
+此命令會向您的 proxy 伺服器發出測試 Completion、ChatCompletion 請求
 ```shell
 litellm --test
 ```

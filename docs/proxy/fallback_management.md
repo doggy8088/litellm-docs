@@ -1,23 +1,23 @@
-# [New] Fallback Management Endpoints
+# [New] 備援管理端點 {#new-fallback-management-endpoints}
 
-Dedicated endpoints for managing model fallbacks separately from the general configuration.
+專門用於將模型備援與一般組態分開管理的端點。
 
-## Overview
+## 概覽 {#overview}
 
-These endpoints allow you to configure, retrieve, and delete fallback models without modifying the entire proxy configuration. This provides a cleaner and safer way to manage fallbacks compared to using the `/config/update` endpoint.
+這些端點可讓您設定、擷取與刪除備援模型，而不需修改整個代理伺服器組態。相較於使用 `/config/update` 端點，這提供了更乾淨且更安全的備援管理方式。
 
-## Prerequisites
+## 前置條件 {#prerequisites}
 
-- Database storage must be enabled: Set `STORE_MODEL_IN_DB=True` in your environment
-- Models must exist in the router before configuring fallbacks
+- 必須啟用資料庫儲存：請在您的環境中設定 `STORE_MODEL_IN_DB=True`
+- 在設定備援之前，模型必須已存在於路由器中
 
-## Endpoints
+## 端點 {#endpoints}
 
-### POST /fallback
+### POST /fallback {#post-fallback}
 
-Create or update fallbacks for a specific model.
+為特定模型建立或更新備援。
 
-**Request Body:**
+**請求本文：**
 ```json
 {
   "model": "gpt-3.5-turbo",
@@ -26,15 +26,15 @@ Create or update fallbacks for a specific model.
 }
 ```
 
-**Parameters:**
-- `model` (string, required): The primary model name to configure fallbacks for
-- `fallback_models` (array of strings, required): List of fallback model names in priority order
-- `fallback_type` (string, optional): Type of fallback. Options:
-  - `"general"` (default): Standard fallbacks for any error
-  - `"context_window"`: Fallbacks for context window exceeded errors
-  - `"content_policy"`: Fallbacks for content policy violations
+**參數：**
+- `model`（string，必填）：要為其設定備援的主要模型名稱
+- `fallback_models`（string 陣列，必填）：依優先順序排列的備援模型名稱清單
+- `fallback_type`（string，選填）：備援類型。選項：
+  - `"general"`（預設）：適用於任何錯誤的標準備援
+  - `"context_window"`：適用於超出內容視窗錯誤的備援
+  - `"content_policy"`：適用於內容政策違規的備援
 
-**Response:**
+**回應：**
 ```json
 {
   "model": "gpt-3.5-turbo",
@@ -44,7 +44,7 @@ Create or update fallbacks for a specific model.
 }
 ```
 
-**Example using cURL:**
+**使用 cURL 的範例：**
 ```bash
 curl -X POST "http://localhost:4000/fallback" \
   -H "Authorization: Bearer sk-1234" \
@@ -56,7 +56,7 @@ curl -X POST "http://localhost:4000/fallback" \
   }'
 ```
 
-**Example using Python:**
+**使用 Python 的範例：**
 ```python
 import requests
 
@@ -76,15 +76,15 @@ response = requests.post(
 print(response.json())
 ```
 
-### GET /fallback/\{model\}
+### GET /fallback/\{model\} {#get-fallbackmodel}
 
-Get fallback configuration for a specific model.
+取得特定模型的備援組態。
 
-**Parameters:**
-- `model` (path parameter, required): The model name to get fallbacks for
-- `fallback_type` (query parameter, optional): Type of fallback to retrieve (default: "general")
+**參數：**
+- `model`（path parameter，必填）：要取得備援的模型名稱
+- `fallback_type`（query parameter，選填）：要擷取的備援類型（預設："general"）
 
-**Response:**
+**回應：**
 ```json
 {
   "model": "gpt-3.5-turbo",
@@ -93,13 +93,13 @@ Get fallback configuration for a specific model.
 }
 ```
 
-**Example using cURL:**
+**使用 cURL 的範例：**
 ```bash
 curl -X GET "http://localhost:4000/fallback/gpt-3.5-turbo?fallback_type=general" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**Example using Python:**
+**使用 Python 的範例：**
 ```python
 import requests
 
@@ -112,15 +112,15 @@ response = requests.get(
 print(response.json())
 ```
 
-### DELETE /fallback/\{model\}
+### DELETE /fallback/\{model\} {#delete-fallbackmodel}
 
-Delete fallback configuration for a specific model.
+刪除特定模型的備援組態。
 
-**Parameters:**
-- `model` (path parameter, required): The model name to delete fallbacks for
-- `fallback_type` (query parameter, optional): Type of fallback to delete (default: "general")
+**參數：**
+- `model`（path parameter，必填）：要刪除備援的模型名稱
+- `fallback_type`（query parameter，選填）：要刪除的備援類型（預設："general"）
 
-**Response:**
+**回應：**
 ```json
 {
   "model": "gpt-3.5-turbo",
@@ -129,13 +129,13 @@ Delete fallback configuration for a specific model.
 }
 ```
 
-**Example using cURL:**
+**使用 cURL 的範例：**
 ```bash
 curl -X DELETE "http://localhost:4000/fallback/gpt-3.5-turbo?fallback_type=general" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**Example using Python:**
+**使用 Python 的範例：**
 ```python
 import requests
 
@@ -148,7 +148,7 @@ response = requests.delete(
 print(response.json())
 ```
 
-### Test fallback
+### 測試備援 {#test-fallback}
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -168,20 +168,19 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
+## 驗證 {#validation}
 
-## Validation
+這些端點會執行以下驗證：
 
-The endpoints perform the following validations:
+1. **模型存在性**：驗證主要模型是否存在於路由器中
+2. **備援模型存在性**：確保所有備援模型都存在於路由器中
+3. **不可自我備援**：防止模型成為自己的備援
+4. **不得重複**：確保備援清單中沒有重複的模型
+5. **已啟用資料庫**：需要設定 `STORE_MODEL_IN_DB=True`
 
-1. **Model Existence**: Verifies that the primary model exists in the router
-2. **Fallback Model Existence**: Ensures all fallback models exist in the router
-3. **No Self-Fallback**: Prevents a model from being its own fallback
-4. **No Duplicates**: Ensures no duplicate models in the fallback list
-5. **Database Enabled**: Requires `STORE_MODEL_IN_DB=True` to be set
+## 錯誤回應 {#error-responses}
 
-## Error Responses
-
-### 400 Bad Request
+### 400 錯誤的請求 {#400-bad-request}
 ```json
 {
   "detail": {
@@ -191,7 +190,7 @@ The endpoints perform the following validations:
 }
 ```
 
-### 404 Not Found
+### 404 找不到 {#404-not-found}
 ```json
 {
   "detail": {
@@ -201,7 +200,7 @@ The endpoints perform the following validations:
 }
 ```
 
-### 500 Internal Server Error
+### 500 內部伺服器錯誤 {#500-internal-server-error}
 ```json
 {
   "detail": {
@@ -210,12 +209,12 @@ The endpoints perform the following validations:
 }
 ```
 
-## Fallback Types Explained
+## 備援類型說明 {#fallback-types-explained}
 
-### General Fallbacks
-Used for any type of error that occurs during model invocation. This is the most common type of fallback.
+### 一般備援 {#general-fallbacks}
+用於模型呼叫期間發生的任何類型錯誤。這是最常見的備援類型。
 
-**Use Case:** When a model is unavailable, rate-limited, or returns an error.
+**使用情境：** 當模型無法使用、受到速率限制，或回傳錯誤時。
 
 ```json
 {
@@ -225,10 +224,10 @@ Used for any type of error that occurs during model invocation. This is the most
 }
 ```
 
-### Context Window Fallbacks
-Specifically triggered when a context window exceeded error occurs.
+### 內容視窗備援 {#context-window-fallbacks}
+當發生超出內容視窗錯誤時會特別觸發。
 
-**Use Case:** When the input is too long for the primary model, fallback to a model with a larger context window.
+**使用情境：** 當輸入對主要模型而言太長時，備援到具有更大內容視窗的模型。
 
 ```json
 {
@@ -238,10 +237,10 @@ Specifically triggered when a context window exceeded error occurs.
 }
 ```
 
-### Content Policy Fallbacks
-Specifically triggered when content policy violations occur.
+### 內容政策備援 {#content-policy-fallbacks}
+當發生內容政策違規時會特別觸發。
 
-**Use Case:** When the primary model rejects content due to safety filters, fallback to a model with different content policies.
+**使用情境：** 當主要模型因安全篩選而拒絕內容時，備援到具有不同內容政策的模型。
 
 ```json
 {
@@ -251,21 +250,21 @@ Specifically triggered when content policy violations occur.
 }
 ```
 
-## Benefits Over /config/update
+## 相較於 /config/update 的優點 {#benefits-over-configupdate}
 
-1. **Safety**: Only modifies fallback configuration, won't accidentally change other settings
-2. **Simplicity**: Focused API with clear validation messages
-3. **Granularity**: Manage fallbacks per model and per type
-4. **Validation**: Comprehensive checks ensure configuration is valid before applying
-5. **Clarity**: Clear error messages with available models listed
+1. **安全性**：只會修改備援組態，不會意外變更其他設定
+2. **簡潔性**：專注的 API，搭配清楚的驗證訊息
+3. **細緻度**：可依模型與類型管理備援
+4. **驗證**：全面檢查可確保在套用前組態有效
+5. **清晰度**：顯示可用模型的清楚錯誤訊息
 
-## Notes
+## 注意事項 {#notes}
 
-- Fallbacks are triggered after the configured number of retries fails
-- Fallbacks are attempted in the order specified in `fallback_models`
-- The maximum number of fallbacks attempted is controlled by the router's `max_fallbacks` setting
-- Changes take effect immediately and are persisted to the database
+- 備援會在已設定的重試次數失敗後觸發
+- 備援會依據 `fallback_models` 中指定的順序嘗試
+- 嘗試的備援最大數量由路由器的 `max_fallbacks` 設定控制
+- 變更會立即生效並持久化到資料庫
 
-## Budget Fallbacks
+## 預算備援 {#budget-fallbacks}
 
-- [Budget Fallbacks](./budget_fallbacks): reroute a request to another model when a per-key `model_max_budget` is exceeded, instead of returning `budget_exceeded`.
+- [預算備援](./budget_fallbacks)：當每個金鑰的 `model_max_budget` 超出時，將請求重新路由到其他模型，而不是回傳 `budget_exceeded`。

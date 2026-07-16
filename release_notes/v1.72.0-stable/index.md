@@ -19,7 +19,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -40,48 +40,45 @@ pip install litellm==1.72.0
 </TabItem>
 </Tabs>
 
+## 主要亮點 {#key-highlights}
 
-## Key Highlights
+LiteLLM v1.72.0-stable.rc 現已上線。以下是此版本的主要亮點：
 
-LiteLLM v1.72.0-stable.rc is live now. Here are the key highlights of this release:
-
-- **Vector Store Permissions**: Control Vector Store access at the Key, Team, and Organization level.
-- **Rate Limiting Sliding Window support**: Improved accuracy for Key/Team/User rate limits with request tracking across minutes.
-- **Aiohttp Transport used by default**: Aiohttp transport is now the default transport for LiteLLM networking requests. This gives users 2x higher RPS per instance with a 40ms median latency overhead.
-- **Bedrock Agents**: Call Bedrock Agents with `/chat/completions`, `/response` endpoints.
-- **Anthropic File API**: Upload and analyze CSV files with Claude-4 on Anthropic via LiteLLM.
-- **Prometheus**: End users (`end_user`) will no longer be tracked by default on Prometheus. Tracking end_users on prometheus is now opt-in. This is done to prevent the response from `/metrics` from  becoming too large. [Read More](../../docs/proxy/prometheus#tracking-end_user-on-prometheus)
-
+- **Vector Store 權限**：在 Key、Team 與 Organization 層級控管 Vector Store 存取。
+- **支援 Rate Limiting Sliding Window**：透過跨分鐘的請求追蹤，提升 Key/Team/User rate limits 的準確度。
+- **預設使用 Aiohttp Transport**：Aiohttp transport 現在是 LiteLLM 網路請求的預設 transport。這可讓每個 instance 的 RPS 提升 2 倍，且 median latency 額外增加 40ms。
+- **Bedrock Agents**：使用 `/chat/completions`、`/response` endpoints 呼叫 Bedrock Agents。
+- **Anthropic File API**：透過 LiteLLM，使用 Claude-4 在 Anthropic 上上傳並分析 CSV 檔案。
+- **Prometheus**：預設情況下，end users（`end_user`）將不再被追蹤。現在在 Prometheus 上追蹤 end_users 改為 opt-in。這樣做是為了避免來自 `/metrics` 的回應變得過大。[閱讀更多](../../docs/proxy/prometheus#tracking-end_user-on-prometheus)
 
 ---
 
-## Vector Store Permissions
+## Vector Store 權限 {#vector-store-permissions}
 
-This release brings support for managing permissions for vector stores by Keys, Teams, Organizations (entities) on LiteLLM. When a request attempts to query a vector store, LiteLLM will block it if the requesting entity lacks the proper permissions.
+此版本新增支援在 LiteLLM 上依 Keys、Teams、Organizations（實體）管理 vector stores 的權限。當請求嘗試查詢 vector store 時，若請求實體缺少適當權限，LiteLLM 會將其阻擋。
 
-This is great for use cases that require access to restricted data that you don't want everyone to use. 
+這非常適合需要存取受限資料、且不希望所有人都能使用的情境。
 
-Over the next week we plan on adding permission management for MCP Servers.
+接下來一週，我們計劃為 MCP Servers 新增權限管理。
 
 ---
-## Aiohttp Transport used by default
+## 預設使用 Aiohttp Transport {#aiohttp-transport-used-by-default}
 
-Aiohttp transport is now the default transport for LiteLLM networking requests. This gives users 2x higher RPS per instance with a 40ms median latency overhead. This has been live on LiteLLM Cloud for a week + gone through alpha users testing for a week.
+Aiohttp transport 現在是 LiteLLM 網路請求的預設 transport。這可讓每個 instance 的 RPS 提升 2 倍，且 median latency 額外增加 40ms。這已在 LiteLLM Cloud 上上線一週，並經過 alpha users 一週的測試。
 
+如果您遇到任何問題，可以透過以下方式停用 aiohttp transport：
 
-If you encounter any issues, you can disable using the aiohttp transport in the following ways:
+**在 LiteLLM Proxy 上**
 
-**On LiteLLM Proxy**
-
-Set the `DISABLE_AIOHTTP_TRANSPORT=True` in the environment variables. 
+在環境變數中設定 `DISABLE_AIOHTTP_TRANSPORT=True`。 
 
 ```yaml showLineNumbers title="Environment Variable"
 export DISABLE_AIOHTTP_TRANSPORT="True"
 ```
 
-**On LiteLLM Python SDK**
+**在 LiteLLM Python SDK 上**
 
-Set the `disable_aiohttp_transport=True` to disable aiohttp transport. 
+設定 `disable_aiohttp_transport=True` 以停用 aiohttp transport。 
 
 ```python showLineNumbers title="Python SDK"
 import litellm
@@ -96,139 +93,135 @@ print(result)
 
 ---
 
-
-## New Models / Updated Models
+## 新模型 / 更新模型 {#new-models--updated-models}
 
 - **[Bedrock](../../docs/providers/bedrock)**
-    - Video support for Bedrock Converse - [PR](https://github.com/BerriAI/litellm/pull/11166)
-    - InvokeAgents support as /chat/completions route - [PR](https://github.com/BerriAI/litellm/pull/11239), [Get Started](../../docs/providers/bedrock_agents)
-    - AI21 Jamba models compatibility fixes - [PR](https://github.com/BerriAI/litellm/pull/11233)
-    - Fixed duplicate maxTokens parameter for Claude with thinking - [PR](https://github.com/BerriAI/litellm/pull/11181)
-- **[Gemini (Google AI Studio + Vertex AI)](https://docs.litellm.ai/docs/providers/gemini)**
-    - Parallel tool calling support with `parallel_tool_calls` parameter - [PR](https://github.com/BerriAI/litellm/pull/11125)
-    - All Gemini models now support parallel function calling - [PR](https://github.com/BerriAI/litellm/pull/11225)
+    - 支援 Bedrock Converse 的影片功能 - [PR](https://github.com/BerriAI/litellm/pull/11166)
+    - 將 InvokeAgents 支援作為 /chat/completions 路由 - [PR](https://github.com/BerriAI/litellm/pull/11239), [開始使用](../../docs/providers/bedrock_agents)
+    - AI21 Jamba 模型相容性修正 - [PR](https://github.com/BerriAI/litellm/pull/11233)
+    - 修正 Claude with thinking 的重複 maxTokens 參數 - [PR](https://github.com/BerriAI/litellm/pull/11181)
+- **[Gemini（Google AI Studio + Vertex AI）](https://docs.litellm.ai/docs/providers/gemini)**
+    - 使用 `parallel_tool_calls` 參數支援平行工具呼叫 - [PR](https://github.com/BerriAI/litellm/pull/11125)
+    - 所有 Gemini 模型現在都支援平行 function calling - [PR](https://github.com/BerriAI/litellm/pull/11225)
 - **[VertexAI](../../docs/providers/vertex)**
-    - codeExecution tool support and anyOf handling - [PR](https://github.com/BerriAI/litellm/pull/11195)
-    - Vertex AI Anthropic support on /v1/messages - [PR](https://github.com/BerriAI/litellm/pull/11246)
-    - Thinking, global regions, and parallel tool calling improvements - [PR](https://github.com/BerriAI/litellm/pull/11194)
-    - Web Search Support [PR](https://github.com/BerriAI/litellm/commit/06484f6e5a7a2f4e45c490266782ed28b51b7db6)
+    - codeExecution 工具支援與 anyOf 處理 - [PR](https://github.com/BerriAI/litellm/pull/11195)
+    - Vertex AI Anthropic 支援 /v1/messages - [PR](https://github.com/BerriAI/litellm/pull/11246)
+    - Thinking、global regions 與平行工具呼叫改進 - [PR](https://github.com/BerriAI/litellm/pull/11194)
+    - Web Search 支援 [PR](https://github.com/BerriAI/litellm/commit/06484f6e5a7a2f4e45c490266782ed28b51b7db6)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Thinking blocks on streaming support - [PR](https://github.com/BerriAI/litellm/pull/11194)
-    - Files API with form-data support on passthrough - [PR](https://github.com/BerriAI/litellm/pull/11256)
-    - File ID support on /chat/completion - [PR](https://github.com/BerriAI/litellm/pull/11256)
+    - 支援串流中的 Thinking blocks - [PR](https://github.com/BerriAI/litellm/pull/11194)
+    - 在 passthrough 上支援 form-data 的 Files API - [PR](https://github.com/BerriAI/litellm/pull/11256)
+    - 支援 /chat/completion 的 File ID - [PR](https://github.com/BerriAI/litellm/pull/11256)
 - **[xAI](../../docs/providers/xai)**
-    - Web Search Support [PR](https://github.com/BerriAI/litellm/commit/06484f6e5a7a2f4e45c490266782ed28b51b7db6)
+    - Web Search 支援 [PR](https://github.com/BerriAI/litellm/commit/06484f6e5a7a2f4e45c490266782ed28b51b7db6)
 - **[Google AI Studio](../../docs/providers/gemini)**
-    - Web Search Support [PR](https://github.com/BerriAI/litellm/commit/06484f6e5a7a2f4e45c490266782ed28b51b7db6)
+    - Web Search 支援 [PR](https://github.com/BerriAI/litellm/commit/06484f6e5a7a2f4e45c490266782ed28b51b7db6)
 - **[Mistral](../../docs/providers/mistral)**
-    - Updated mistral-medium prices and context sizes - [PR](https://github.com/BerriAI/litellm/pull/10729)
+    - 更新 mistral-medium 價格與 context sizes - [PR](https://github.com/BerriAI/litellm/pull/10729)
 - **[Ollama](../../docs/providers/ollama)**
-    - Tool calls parsing on streaming - [PR](https://github.com/BerriAI/litellm/pull/11171)
+    - 串流中的工具呼叫解析 - [PR](https://github.com/BerriAI/litellm/pull/11171)
 - **[Cohere](../../docs/providers/cohere)**
-    - Swapped Cohere and Cohere Chat provider positioning - [PR](https://github.com/BerriAI/litellm/pull/11173)
+    - 對調 Cohere 與 Cohere Chat provider 的位置 - [PR](https://github.com/BerriAI/litellm/pull/11173)
 - **[Nebius AI Studio](../../docs/providers/nebius)**
-    - New provider integration - [PR](https://github.com/BerriAI/litellm/pull/11143)
+    - 新的 provider 整合 - [PR](https://github.com/BerriAI/litellm/pull/11143)
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
 - **[Image Edits API](../../docs/image_generation)**
-    - Azure support for /v1/images/edits - [PR](https://github.com/BerriAI/litellm/pull/11160)
-    - Cost tracking for image edits endpoint (OpenAI, Azure) - [PR](https://github.com/BerriAI/litellm/pull/11186)
+    - Azure 支援 /v1/images/edits - [PR](https://github.com/BerriAI/litellm/pull/11160)
+    - image edits endpoint 的成本追蹤（OpenAI、Azure）- [PR](https://github.com/BerriAI/litellm/pull/11186)
 - **[Completions API](../../docs/completion/chat)**
-    - Codestral latency overhead tracking on /v1/completions - [PR](https://github.com/BerriAI/litellm/pull/10879)
+    - /v1/completions 上的 Codestral latency overhead 追蹤 - [PR](https://github.com/BerriAI/litellm/pull/10879)
 - **[Audio Transcriptions API](../../docs/audio/speech)**
-    - GPT-4o mini audio preview pricing without date - [PR](https://github.com/BerriAI/litellm/pull/11207)
-    - Non-default params support for audio transcription - [PR](https://github.com/BerriAI/litellm/pull/11212)
+    - 無日期的 GPT-4o mini audio preview 定價 - [PR](https://github.com/BerriAI/litellm/pull/11207)
+    - 音訊轉錄支援非預設參數 - [PR](https://github.com/BerriAI/litellm/pull/11212)
 - **[Responses API](../../docs/response_api)**
-    - Session management fixes for using Non-OpenAI models - [PR](https://github.com/BerriAI/litellm/pull/11254)
+    - 使用 Non-OpenAI models 的 session 管理修正 - [PR](https://github.com/BerriAI/litellm/pull/11254)
 
-## Management Endpoints / UI
+## 管理端點 / UI {#management-endpoints--ui}
 
-- **Vector Stores**
-    - Permission management for LiteLLM Keys, Teams, and Organizations - [PR](https://github.com/BerriAI/litellm/pull/11213)
-    - UI display of vector store permissions - [PR](https://github.com/BerriAI/litellm/pull/11277)
-    - Vector store access controls enforcement - [PR](https://github.com/BerriAI/litellm/pull/11281)
-    - Object permissions fixes and QA improvements - [PR](https://github.com/BerriAI/litellm/pull/11291)
-- **Teams**
-    - "All proxy models" display when no models selected - [PR](https://github.com/BerriAI/litellm/pull/11187)
-    - Removed redundant teamInfo call, using existing teamsList - [PR](https://github.com/BerriAI/litellm/pull/11051)
-    - Improved model tags display on Keys, Teams and Org pages - [PR](https://github.com/BerriAI/litellm/pull/11022)
+- **向量儲存**
+    - LiteLLM Keys、Teams 與 Organizations 的權限管理 - [PR](https://github.com/BerriAI/litellm/pull/11213)
+    - Vector store 權限的 UI 顯示 - [PR](https://github.com/BerriAI/litellm/pull/11277)
+    - Vector store 存取控制強制執行 - [PR](https://github.com/BerriAI/litellm/pull/11281)
+    - Object permissions 修正與 QA 改進 - [PR](https://github.com/BerriAI/litellm/pull/11291)
+- **團隊**
+    - 未選擇 models 時顯示「All proxy models」- [PR](https://github.com/BerriAI/litellm/pull/11187)
+    - 移除多餘的 teamInfo 呼叫，改用既有的 teamsList - [PR](https://github.com/BerriAI/litellm/pull/11051)
+    - 改進 Keys、Teams 與 Org 頁面的 model tags 顯示 - [PR](https://github.com/BerriAI/litellm/pull/11022)
 - **SSO/SCIM**
-    - Bug fixes for showing SCIM token on UI - [PR](https://github.com/BerriAI/litellm/pull/11220)
-- **General UI**
-    - Fix "UI Session Expired. Logging out" - [PR](https://github.com/BerriAI/litellm/pull/11279)
-    - Support for forwarding /sso/key/generate to server root path URL - [PR](https://github.com/BerriAI/litellm/pull/11165)
+    - UI 顯示 SCIM token 的錯誤修正 - [PR](https://github.com/BerriAI/litellm/pull/11220)
+- **一般 UI**
+    - 修正「UI Session Expired. Logging out」- [PR](https://github.com/BerriAI/litellm/pull/11279)
+    - 支援將 /sso/key/generate 轉送至 server root path URL - [PR](https://github.com/BerriAI/litellm/pull/11165)
 
+## Logging / Guardrails 整合 {#logging--guardrails-integrations}
 
-## Logging / Guardrails Integrations
-
-#### Logging
+#### 記錄 {#logging}
 - **[Prometheus](../../docs/proxy/prometheus)**
-    - End users will no longer be tracked by default on Prometheus. Tracking end_users on prometheus is now opt-in. [PR](https://github.com/BerriAI/litellm/pull/11192)
+    - 預設情況下，end users 將不再在 Prometheus 上被追蹤。現在在 prometheus 上追蹤 end_users 改為 opt-in。 [PR](https://github.com/BerriAI/litellm/pull/11192)
 - **[Langfuse](../../docs/proxy/logging#langfuse)**
-    - Performance improvements: Fixed "Max langfuse clients reached" issue - [PR](https://github.com/BerriAI/litellm/pull/11285)
+    - 效能改進：修正「Max langfuse clients reached」問題 - [PR](https://github.com/BerriAI/litellm/pull/11285)
 - **[Helicone](../../docs/observability/helicone_integration)**
-    - Base URL support - [PR](https://github.com/BerriAI/litellm/pull/11211)
+    - 支援 Base URL - [PR](https://github.com/BerriAI/litellm/pull/11211)
 - **[Sentry](../../docs/proxy/logging#sentry)**
-    - Added sentry sample rate configuration - [PR](https://github.com/BerriAI/litellm/pull/10283)
+    - 新增 sentry sample rate 設定 - [PR](https://github.com/BerriAI/litellm/pull/10283)
 
-#### Guardrails
+#### 防護欄 {#guardrails}
 - **[Bedrock Guardrails](../../docs/proxy/guardrails/bedrock)**
-    - Streaming support for bedrock post guard - [PR](https://github.com/BerriAI/litellm/pull/11247)
-    - Auth parameter persistence fixes - [PR](https://github.com/BerriAI/litellm/pull/11270)
+    - 支援 bedrock post guard 的串流 - [PR](https://github.com/BerriAI/litellm/pull/11247)
+    - Auth 參數持久化修正 - [PR](https://github.com/BerriAI/litellm/pull/11270)
 - **[Pangea Guardrails](../../docs/proxy/guardrails/pangea)**
-    - Added Pangea provider to Guardrails hook - [PR](https://github.com/BerriAI/litellm/pull/10775)
+    - 在 Guardrails hook 中新增 Pangea provider - [PR](https://github.com/BerriAI/litellm/pull/10775)
 
-
-## Performance / Reliability Improvements
+## 效能 / 可靠性改進 {#performance--reliability-improvements}
 - **aiohttp Transport**
-    - Handling for aiohttp.ClientPayloadError - [PR](https://github.com/BerriAI/litellm/pull/11162)
-    - SSL verification settings support - [PR](https://github.com/BerriAI/litellm/pull/11162)
-    - Rollback to httpx==0.27.0 for stability - [PR](https://github.com/BerriAI/litellm/pull/11146)
-- **Request Limiting**
-    - Sliding window logic for parallel request limiter v2 - [PR](https://github.com/BerriAI/litellm/pull/11283)
+    - 處理 aiohttp.ClientPayloadError - [PR](https://github.com/BerriAI/litellm/pull/11162)
+    - SSL 驗證設定支援 - [PR](https://github.com/BerriAI/litellm/pull/11162)
+    - 為了穩定性回退至 httpx==0.27.0 - [PR](https://github.com/BerriAI/litellm/pull/11146)
+- **請求限制**
+    - 平行請求限制器 v2 的 sliding window 邏輯 - [PR](https://github.com/BerriAI/litellm/pull/11283)
 
+## 錯誤修正 {#bug-fixes}
 
-## Bug Fixes
+- **LLM API 修正**
+    - 在 get_available_deployment 呼叫中新增缺少的 request_kwargs - [PR](https://github.com/BerriAI/litellm/pull/11202)
+    - 修正呼叫 Azure O-series models - [PR](https://github.com/BerriAI/litellm/pull/11212)
+    - 支援透過 additional_drop_params 捨棄非 OpenAI 參數 - [PR](https://github.com/BerriAI/litellm/pull/11246)
+    - 修正 frequency_penalty 到 repeat_penalty 參數對應 - [PR](https://github.com/BerriAI/litellm/pull/11284)
+    - 修正字串輸入的 embedding 快取命中 - [PR](https://github.com/BerriAI/litellm/pull/11211)
+- **一般**
+    - OIDC 提供者改善與 audience 錯誤修正 - [PR](https://github.com/BerriAI/litellm/pull/10054)
+    - 移除 AZURE_CREDENTIAL 上的 AzureCredentialType 限制 - [PR](https://github.com/BerriAI/litellm/pull/11272)
+    - 防止敏感金鑰外洩至 Langfuse - [PR](https://github.com/BerriAI/litellm/pull/11165)
+    - 修正 healthcheck 測試在 curl 未包含於映像檔時仍使用 curl 的問題 - [PR](https://github.com/BerriAI/litellm/pull/9737)
 
-- **LLM API Fixes**
-    - Added missing request_kwargs to get_available_deployment call - [PR](https://github.com/BerriAI/litellm/pull/11202)
-    - Fixed calling Azure O-series models - [PR](https://github.com/BerriAI/litellm/pull/11212)
-    - Support for dropping non-OpenAI params via additional_drop_params - [PR](https://github.com/BerriAI/litellm/pull/11246)
-    - Fixed frequency_penalty to repeat_penalty parameter mapping - [PR](https://github.com/BerriAI/litellm/pull/11284)
-    - Fix for embedding cache hits on string input - [PR](https://github.com/BerriAI/litellm/pull/11211)
-- **General**
-    - OIDC provider improvements and audience bug fix - [PR](https://github.com/BerriAI/litellm/pull/10054)
-    - Removed AzureCredentialType restriction on AZURE_CREDENTIAL - [PR](https://github.com/BerriAI/litellm/pull/11272)
-    - Prevention of sensitive key leakage to Langfuse - [PR](https://github.com/BerriAI/litellm/pull/11165)
-    - Fixed healthcheck test using curl when curl not in image - [PR](https://github.com/BerriAI/litellm/pull/9737)
+## 新貢獻者 {#new-contributors}
+* [@agajdosi](https://github.com/agajdosi) 在 [#9737](https://github.com/BerriAI/litellm/pull/9737) 完成首次貢獻
+* [@ketangangal](https://github.com/ketangangal) 在 [#11161](https://github.com/BerriAI/litellm/pull/11161) 完成首次貢獻
+* [@Aktsvigun](https://github.com/Aktsvigun) 在 [#11143](https://github.com/BerriAI/litellm/pull/11143) 完成首次貢獻
+* [@ryanmeans](https://github.com/ryanmeans) 在 [#10775](https://github.com/BerriAI/litellm/pull/10775) 完成首次貢獻
+* [@nikoizs](https://github.com/nikoizs) 在 [#10054](https://github.com/BerriAI/litellm/pull/10054) 完成首次貢獻
+* [@Nitro963](https://github.com/Nitro963) 在 [#11202](https://github.com/BerriAI/litellm/pull/11202) 完成首次貢獻
+* [@Jacobh2](https://github.com/Jacobh2) 在 [#11207](https://github.com/BerriAI/litellm/pull/11207) 完成首次貢獻
+* [@regismesquita](https://github.com/regismesquita) 在 [#10729](https://github.com/BerriAI/litellm/pull/10729) 完成首次貢獻
+* [@Vinnie-Singleton-NN](https://github.com/Vinnie-Singleton-NN) 在 [#10283](https://github.com/BerriAI/litellm/pull/10283) 完成首次貢獻
+* [@trashhalo](https://github.com/trashhalo) 在 [#11219](https://github.com/BerriAI/litellm/pull/11219) 完成首次貢獻
+* [@VigneshwarRajasekaran](https://github.com/VigneshwarRajasekaran) 在 [#11223](https://github.com/BerriAI/litellm/pull/11223) 完成首次貢獻
+* [@AnilAren](https://github.com/AnilAren) 在 [#11233](https://github.com/BerriAI/litellm/pull/11233) 完成首次貢獻
+* [@fadil4u](https://github.com/fadil4u) 在 [#11242](https://github.com/BerriAI/litellm/pull/11242) 完成首次貢獻
+* [@whitfin](https://github.com/whitfin) 在 [#11279](https://github.com/BerriAI/litellm/pull/11279) 完成首次貢獻
+* [@hcoona](https://github.com/hcoona) 在 [#11272](https://github.com/BerriAI/litellm/pull/11272) 完成首次貢獻
+* [@keyute](https://github.com/keyute) 在 [#11173](https://github.com/BerriAI/litellm/pull/11173) 完成首次貢獻
+* [@emmanuel-ferdman](https://github.com/emmanuel-ferdman) 在 [#11230](https://github.com/BerriAI/litellm/pull/11230) 完成首次貢獻
 
-## New Contributors
-* [@agajdosi](https://github.com/agajdosi) made their first contribution in [#9737](https://github.com/BerriAI/litellm/pull/9737)
-* [@ketangangal](https://github.com/ketangangal) made their first contribution in [#11161](https://github.com/BerriAI/litellm/pull/11161)
-* [@Aktsvigun](https://github.com/Aktsvigun) made their first contribution in [#11143](https://github.com/BerriAI/litellm/pull/11143)
-* [@ryanmeans](https://github.com/ryanmeans) made their first contribution in [#10775](https://github.com/BerriAI/litellm/pull/10775)
-* [@nikoizs](https://github.com/nikoizs) made their first contribution in [#10054](https://github.com/BerriAI/litellm/pull/10054)
-* [@Nitro963](https://github.com/Nitro963) made their first contribution in [#11202](https://github.com/BerriAI/litellm/pull/11202)
-* [@Jacobh2](https://github.com/Jacobh2) made their first contribution in [#11207](https://github.com/BerriAI/litellm/pull/11207)
-* [@regismesquita](https://github.com/regismesquita) made their first contribution in [#10729](https://github.com/BerriAI/litellm/pull/10729)
-* [@Vinnie-Singleton-NN](https://github.com/Vinnie-Singleton-NN) made their first contribution in [#10283](https://github.com/BerriAI/litellm/pull/10283)
-* [@trashhalo](https://github.com/trashhalo) made their first contribution in [#11219](https://github.com/BerriAI/litellm/pull/11219)
-* [@VigneshwarRajasekaran](https://github.com/VigneshwarRajasekaran) made their first contribution in [#11223](https://github.com/BerriAI/litellm/pull/11223)
-* [@AnilAren](https://github.com/AnilAren) made their first contribution in [#11233](https://github.com/BerriAI/litellm/pull/11233)
-* [@fadil4u](https://github.com/fadil4u) made their first contribution in [#11242](https://github.com/BerriAI/litellm/pull/11242)
-* [@whitfin](https://github.com/whitfin) made their first contribution in [#11279](https://github.com/BerriAI/litellm/pull/11279)
-* [@hcoona](https://github.com/hcoona) made their first contribution in [#11272](https://github.com/BerriAI/litellm/pull/11272)
-* [@keyute](https://github.com/keyute) made their first contribution in [#11173](https://github.com/BerriAI/litellm/pull/11173)
-* [@emmanuel-ferdman](https://github.com/emmanuel-ferdman) made their first contribution in [#11230](https://github.com/BerriAI/litellm/pull/11230)
+## 示範執行個體 {#demo-instance}
 
-## Demo Instance
+這裡有一個可用來測試變更的示範執行個體：
 
-Here's a Demo Instance to test changes:
+- 執行個體：https://demo.litellm.ai/
+- 登入憑證：
+    - 使用者名稱：admin
+    - 密碼：sk-1234
 
-- Instance: https://demo.litellm.ai/
-- Login Credentials:
-    - Username: admin
-    - Password: sk-1234
-
-## [Git Diff](https://github.com/BerriAI/litellm/releases)
+## [Git Diff](https://github.com/BerriAI/litellm/releases) {#git-diffhttpsgithubcomberriailitellmreleases}

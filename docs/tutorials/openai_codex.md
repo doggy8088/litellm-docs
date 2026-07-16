@@ -2,30 +2,29 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI Codex
+# OpenAI Codex {#openai-codex}
 
-This guide walks you through connecting OpenAI Codex to LiteLLM. Using LiteLLM with Codex allows teams to:
-- Access 100+ LLMs through the Codex interface
-- Use powerful models like Gemini through a familiar interface
-- Track spend and usage with LiteLLM's built-in analytics
-- Control model access with virtual keys
+本指南將帶您逐步完成將 OpenAI Codex 連接到 LiteLLM。將 LiteLLM 與 Codex 搭配使用可讓團隊：
+- 透過 Codex 介面存取 100+ 個 LLM
+- 透過熟悉的介面使用像 Gemini 這類強大的模型
+- 透過 LiteLLM 內建分析追蹤支出與用量
+- 使用虛擬金鑰控管模型存取
 
 <Image img={require('../../img/litellm_codex.gif')} />
 
-## Quickstart
+## 快速開始 {#quickstart}
 
 :::info
 
-Requires LiteLLM v1.66.3.dev5 and higher
+需要 LiteLLM v1.66.3.dev5 以上版本
 
 :::
 
+請先依照 [LiteLLM 入門指南](../proxy/docker_quick_start.md) 設定 LiteLLM。
 
-Make sure to set up LiteLLM with the [LiteLLM Getting Started Guide](../proxy/docker_quick_start.md).
+## 1. 安裝 OpenAI Codex {#1-install-openai-codex}
 
-## 1. Install OpenAI Codex
-
-Install the OpenAI Codex CLI tool globally using npm:
+使用 npm 全域安裝 OpenAI Codex CLI 工具：
 
 <Tabs>
 <TabItem value="npm" label="npm">
@@ -44,7 +43,7 @@ yarn global add @openai/codex
 </TabItem>
 </Tabs>
 
-## 2. Start LiteLLM Proxy
+## 2. 啟動 LiteLLM Proxy {#2-start-litellm-proxy}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -67,11 +66,11 @@ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-LiteLLM should now be running on [http://localhost:4000](http://localhost:4000)
+LiteLLM 現在應該已在 [http://localhost:4000](http://localhost:4000) 上執行
 
-## 3. Configure LiteLLM for Model Routing
+## 3. 設定 LiteLLM 以進行模型路由 {#3-configure-litellm-for-model-routing}
 
-Ensure your LiteLLM Proxy is properly configured to route to your desired models. Create a `litellm_config.yaml` file with the following content:
+請確保您的 LiteLLM Proxy 已正確設定為路由到您想要的模型。建立一個 `litellm_config.yaml` 檔案，內容如下：
 
 ```yaml showLineNumbers
 model_list:
@@ -92,11 +91,11 @@ litellm_settings:
   drop_params: true
 ```
 
-This configuration enables routing to specific OpenAI, Anthropic, and Gemini models with explicit names.
+此設定可透過明確名稱啟用對特定 OpenAI、Anthropic 與 Gemini 模型的路由。
 
-## 4. Configure Codex to Use LiteLLM Proxy
+## 4. 設定 Codex 使用 LiteLLM Proxy {#4-configure-codex-to-use-litellm-proxy}
 
-Set the required environment variables to point Codex to your LiteLLM Proxy:
+設定必要的環境變數，將 Codex 指向您的 LiteLLM Proxy：
 
 ```bash
 # Point to your LiteLLM Proxy server
@@ -106,9 +105,9 @@ export OPENAI_BASE_URL=http://0.0.0.0:4000
 export OPENAI_API_KEY="sk-1234"
 ```
 
-## 5. Run Codex with Gemini
+## 5. 使用 Gemini 執行 Codex {#5-run-codex-with-gemini}
 
-With everything configured, you can now run Codex with Gemini:
+完成所有設定後，您現在可以使用 Gemini 執行 Codex：
 
 ```bash showLineNumbers
 codex --model gemini-2.0-flash --full-auto
@@ -116,13 +115,13 @@ codex --model gemini-2.0-flash --full-auto
 
 <Image img={require('../../img/litellm_codex.gif')} />
 
-The `--full-auto` flag allows Codex to automatically generate code without additional prompting.
+`--full-auto` 旗標可讓 Codex 自動產生程式碼，而無需額外提示。
 
-## 6. Advanced Options
+## 6. 進階選項 {#6-advanced-options}
 
-### Using Different Models
+### 使用不同模型 {#using-different-models}
 
-You can use any model configured in your LiteLLM proxy:
+您可以使用 LiteLLM proxy 中設定的任何模型：
 
 ```bash
 # Use Claude models
@@ -132,15 +131,15 @@ codex --model claude-3-7-sonnet-latest
 codex --model gemini/gemini-2.0-flash
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-- If you encounter connection issues, ensure your LiteLLM Proxy is running and accessible at the specified URL
-- Verify your LiteLLM API key is valid if you're using authentication
-- Check that your model routing configuration is correct
-- For model-specific errors, ensure the model is properly configured in your LiteLLM setup
+- 如果您遇到連線問題，請確認您的 LiteLLM Proxy 正在執行，且可透過指定的 URL 存取
+- 如果您使用驗證，請確認您的 LiteLLM API 金鑰有效
+- 檢查您的模型路由設定是否正確
+- 若為特定模型錯誤，請確認該模型已在您的 LiteLLM 設定中正確設定
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [LiteLLM Docker Quick Start Guide](../proxy/docker_quick_start.md)
+- [LiteLLM Docker 快速開始指南](../proxy/docker_quick_start.md)
 - [OpenAI Codex GitHub Repository](https://github.com/openai/codex)
-- [LiteLLM Virtual Keys and Authentication](../proxy/virtual_keys.md)
+- [LiteLLM 虛擬金鑰與驗證](../proxy/virtual_keys.md)

@@ -1,5 +1,5 @@
 ---
-title: v1.67.0-stable - SCIM Integration
+title: v1.67.0-stable - SCIM 整合
 slug: v1.67.0-stable
 date: 2025-04-19T10:00:00
 authors:
@@ -19,135 +19,129 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Key Highlights
+## 主要亮點 {#key-highlights}
 
-- **SCIM Integration**: Enables identity providers (Okta, Azure AD, OneLogin, etc.) to automate user and team (group) provisioning, updates, and deprovisioning
-- **Team and Tag based usage tracking**: You can now see usage and spend by team and tag at 1M+ spend logs.
-- **Unified Responses API**: Support for calling Anthropic, Gemini, Groq, etc. via OpenAI's new Responses API.
+- **SCIM 整合**：可讓身分提供者（Okta、Azure AD、OneLogin 等）自動化使用者與團隊（群組）的佈建、更新與停用
+- **依團隊與標籤的用量追蹤**：您現在可以在 1M+ spend logs 中查看依團隊與標籤區分的用量與支出。
+- **統一的 Responses API**：支援透過 OpenAI 新的 Responses API 呼叫 Anthropic、Gemini、Groq 等。
 
-Let's dive in.
+讓我們開始深入了解。
 
-## SCIM Integration
+## SCIM 整合 {#scim-integration}
 
 <Image img={require('../../img/scim_integration.png')}/>
 
-This release adds SCIM support to LiteLLM. This allows your SSO provider (Okta, Azure AD, etc) to automatically create/delete users, teams, and memberships on LiteLLM. This means that when you remove a team on your SSO provider, your SSO provider will automatically delete the corresponding team on LiteLLM. 
+此版本為 LiteLLM 新增 SCIM 支援。這可讓您的 SSO 提供者（Okta、Azure AD 等）自動在 LiteLLM 上建立／刪除使用者、團隊與成員關係。這表示當您在 SSO 提供者中移除某個團隊時，SSO 提供者會自動刪除 LiteLLM 上對應的團隊。 
 
-[Read more](../../docs/tutorials/scim_litellm)
-## Team and Tag based usage tracking
+[閱讀更多](../../docs/tutorials/scim_litellm)
+## 依團隊與標籤的用量追蹤 {#team-and-tag-based-usage-tracking}
 
 <Image img={require('../../img/release_notes/new_team_usage_highlight.jpg')}/>
 
+此版本改善了 1m+ spend logs 的依團隊與標籤用量追蹤，讓您更容易在正式環境監控 LLM API 支出。這包含：
 
-This release improves team and tag based usage tracking at 1m+ spend logs, making it easy to monitor your LLM API Spend in production. This covers:
+- 檢視依 **每日支出** 的團隊 + 標籤
+- 在團隊內檢視依 **金鑰的用量 / 支出**
+- 檢視依 **多個標籤的支出**
+- 允許 **內部使用者** 檢視其所屬團隊的支出
 
-- View **daily spend** by teams + tags
-- View **usage / spend by key**, within teams
-- View **spend by multiple tags**
-- Allow **internal users** to view spend of teams they're a member of
+[閱讀更多](#management-endpoints--ui)
 
-[Read more](#management-endpoints--ui)
+## 統一的 Responses API {#unified-responses-api}
 
-## Unified Responses API
-
-This release allows you to call Azure OpenAI, Anthropic, AWS Bedrock, and Google Vertex AI models via the POST /v1/responses endpoint on LiteLLM. This means you can now use popular tools like [OpenAI Codex](https://docs.litellm.ai/docs/tutorials/openai_codex) with your own models. 
+此版本可讓您透過 LiteLLM 上的 POST /v1/responses 端點呼叫 Azure OpenAI、Anthropic、AWS Bedrock 與 Google Vertex AI 模型。這表示您現在可以搭配自己的模型使用 [OpenAI Codex](https://docs.litellm.ai/docs/tutorials/openai_codex) 等熱門工具。 
 
 <Image img={require('../../img/release_notes/unified_responses_api_rn.png')}/>
 
+[閱讀更多](https://docs.litellm.ai/docs/response_api)
 
-[Read more](https://docs.litellm.ai/docs/response_api)
-
-
-## New Models / Updated Models
+## 新模型／更新模型 {#new-models--updated-models}
 
 - **OpenAI**
-    1. gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, o3, o3-mini, o4-mini pricing - [Get Started](../../docs/providers/openai#usage), [PR](https://github.com/BerriAI/litellm/pull/9990)
-    2. o4 - correctly map o4 to openai o_series model
+    1. gpt-4.1、gpt-4.1-mini、gpt-4.1-nano、o3、o3-mini、o4-mini 定價 - [開始使用](../../docs/providers/openai#usage)、[PR](https://github.com/BerriAI/litellm/pull/9990)
+    2. o4 - 正確將 o4 對應到 openai o_series model
 - **Azure AI**
-    1. Phi-4 output cost per token fix - [PR](https://github.com/BerriAI/litellm/pull/9880)
-    2. Responses API support [Get Started](../../docs/providers/azure#azure-responses-api),[PR](https://github.com/BerriAI/litellm/pull/10116)
+    1. Phi-4 輸出每 token 成本修正 - [PR](https://github.com/BerriAI/litellm/pull/9880)
+    2. Responses API 支援 [開始使用](../../docs/providers/azure#azure-responses-api)、[PR](https://github.com/BerriAI/litellm/pull/10116)
 - **Anthropic**
-    1. redacted message thinking support - [Get Started](../../docs/providers/anthropic#usage---thinking--reasoning_content),[PR](https://github.com/BerriAI/litellm/pull/10129)
+    1. 遮罩訊息 thinking 支援 - [開始使用](../../docs/providers/anthropic#usage---thinking--reasoning_content)、[PR](https://github.com/BerriAI/litellm/pull/10129)
 - **Cohere**
-    1. `/v2/chat` Passthrough endpoint support w/ cost tracking - [Get Started](../../docs/pass_through/cohere), [PR](https://github.com/BerriAI/litellm/pull/9997)
+    1. `/v2/chat` Passthrough 端點支援與成本追蹤 - [開始使用](../../docs/pass_through/cohere)、[PR](https://github.com/BerriAI/litellm/pull/9997)
 - **Azure**
-    1. Support azure tenant_id/client_id env vars - [Get Started](../../docs/providers/azure#entra-id---use-tenant_id-client_id-client_secret), [PR](https://github.com/BerriAI/litellm/pull/9993)
-    2. Fix response_format check for 2025+ api versions - [PR](https://github.com/BerriAI/litellm/pull/9993)
-    3. Add gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, o3, o3-mini, o4-mini pricing
+    1. 支援 azure tenant_id/client_id 環境變數 - [開始使用](../../docs/providers/azure#entra-id---use-tenant_id-client_id-client_secret)、[PR](https://github.com/BerriAI/litellm/pull/9993)
+    2. 修正 2025+ api versions 的 response_format 檢查 - [PR](https://github.com/BerriAI/litellm/pull/9993)
+    3. 新增 gpt-4.1、gpt-4.1-mini、gpt-4.1-nano、o3、o3-mini、o4-mini 定價
 - **VLLM**
-    1. Files - Support 'file' message type for VLLM video url's - [Get Started](../../docs/providers/vllm#send-video-url-to-vllm), [PR](https://github.com/BerriAI/litellm/pull/10129)
-    2. Passthrough - new `/vllm/` passthrough endpoint support [Get Started](../../docs/pass_through/vllm), [PR](https://github.com/BerriAI/litellm/pull/10002)
+    1. Files - 支援 VLLM 影片 URL 的 'file' 訊息類型 - [開始使用](../../docs/providers/vllm#send-video-url-to-vllm)、[PR](https://github.com/BerriAI/litellm/pull/10129)
+    2. Passthrough - 新的 `/vllm/` passthrough 端點支援 [開始使用](../../docs/pass_through/vllm)、[PR](https://github.com/BerriAI/litellm/pull/10002)
 - **Mistral**
-    1. new `/mistral` passthrough endpoint support [Get Started](../../docs/pass_through/mistral), [PR](https://github.com/BerriAI/litellm/pull/10002)
+    1. 新的 `/mistral` passthrough 端點支援 [開始使用](../../docs/pass_through/mistral)、[PR](https://github.com/BerriAI/litellm/pull/10002)
 - **AWS**
-    1. New mapped bedrock regions - [PR](https://github.com/BerriAI/litellm/pull/9430)
+    1. 新的已對應 bedrock regions - [PR](https://github.com/BerriAI/litellm/pull/9430)
 - **VertexAI / Google AI Studio**
-    1. Gemini - Response format - Retain schema field ordering for google gemini and vertex by specifying propertyOrdering - [Get Started](../../docs/providers/vertex#json-schema), [PR](https://github.com/BerriAI/litellm/pull/9828)
-    2. Gemini-2.5-flash - return reasoning content [Google AI Studio](../../docs/providers/gemini#usage---thinking--reasoning_content), [Vertex AI](../../docs/providers/vertex#thinking--reasoning_content)
-    3. Gemini-2.5-flash - pricing + model information [PR](https://github.com/BerriAI/litellm/pull/10125)
-    4. Passthrough - new `/vertex_ai/discovery` route - enables calling AgentBuilder API routes [Get Started](../../docs/pass_through/vertex_ai#supported-api-endpoints), [PR](https://github.com/BerriAI/litellm/pull/10084)
+    1. Gemini - 回應格式 - 透過指定 propertyOrdering 保留 google gemini 與 vertex 的 schema 欄位順序 - [開始使用](../../docs/providers/vertex#json-schema)、[PR](https://github.com/BerriAI/litellm/pull/9828)
+    2. Gemini-2.5-flash - 回傳推理內容 [Google AI Studio](../../docs/providers/gemini#usage---thinking--reasoning_content)、[Vertex AI](../../docs/providers/vertex#thinking--reasoning_content)
+    3. Gemini-2.5-flash - 定價 + 模型資訊 [PR](https://github.com/BerriAI/litellm/pull/10125)
+    4. Passthrough - 新的 `/vertex_ai/discovery` 路由 - 可呼叫 AgentBuilder API 路由 [開始使用](../../docs/pass_through/vertex_ai#supported-api-endpoints)、[PR](https://github.com/BerriAI/litellm/pull/10084)
 - **Fireworks AI**
-    1. return tool calling responses in `tool_calls` field (fireworks incorrectly returns this as a json str in content) [PR](https://github.com/BerriAI/litellm/pull/10130)
+    1. 在 `tool_calls` 欄位回傳 tool calling 回應（fireworks 會錯誤地將其以 content 中的 json 字串回傳） [PR](https://github.com/BerriAI/litellm/pull/10130)
 - **Triton**
-    1. Remove fixed remove bad_words / stop words from `/generate` call - [Get Started](../../docs/providers/triton-inference-server#triton-generate---chat-completion), [PR](https://github.com/BerriAI/litellm/pull/10163)
-- **Other**
-    1. Support for all litellm providers on Responses API (works with Codex) - [Get Started](../../docs/tutorials/openai_codex), [PR](https://github.com/BerriAI/litellm/pull/10132)
-    2. Fix combining multiple tool calls in streaming response - [Get Started](../../docs/completion/stream#helper-function), [PR](https://github.com/BerriAI/litellm/pull/10040)
+    1. 移除從 `/generate` 呼叫中固定移除 bad_words / stop words - [開始使用](../../docs/providers/triton-inference-server#triton-generate---chat-completion)、[PR](https://github.com/BerriAI/litellm/pull/10163)
+- **其他**
+    1. 支援 Responses API 上所有 litellm 提供者（可搭配 Codex 使用） - [開始使用](../../docs/tutorials/openai_codex)、[PR](https://github.com/BerriAI/litellm/pull/10132)
+    2. 修正串流回應中合併多個 tool call 的問題 - [開始使用](../../docs/completion/stream#helper-function)、[PR](https://github.com/BerriAI/litellm/pull/10040)
 
+## 支出追蹤改善 {#spend-tracking-improvements}
 
-## Spend Tracking Improvements
+- **成本控制** - 在提示中注入快取控制點以降低成本 [開始使用](../../docs/tutorials/prompt_caching)、[PR](https://github.com/BerriAI/litellm/pull/10000)
+- **支出標籤** - 標頭中的支出標籤 - 即使未啟用基於標籤的路由，也支援 x-litellm-tags [開始使用](../../docs/proxy/request_headers#litellm-headers)、[PR](https://github.com/BerriAI/litellm/pull/10000)
+- **Gemini-2.5-flash** - 支援推理 token 的成本計算 [PR](https://github.com/BerriAI/litellm/pull/10141)
 
-- **Cost Control** - inject cache control points in prompt for cost reduction [Get Started](../../docs/tutorials/prompt_caching), [PR](https://github.com/BerriAI/litellm/pull/10000)
-- **Spend Tags** - spend tags in headers - support x-litellm-tags even if tag based routing not enabled [Get Started](../../docs/proxy/request_headers#litellm-headers), [PR](https://github.com/BerriAI/litellm/pull/10000)
-- **Gemini-2.5-flash** - support cost calculation for reasoning tokens [PR](https://github.com/BerriAI/litellm/pull/10141)
+## 管理端點／UI {#management-endpoints--ui}
+- **使用者**
+    1. 在使用者頁面顯示 created_at 與 updated_at - [PR](https://github.com/BerriAI/litellm/pull/10033)
+- **虛擬金鑰**
+    1. 依金鑰別名篩選 - https://github.com/BerriAI/litellm/pull/10085
+- **用量分頁**
 
-## Management Endpoints / UI
-- **Users**
-    1. Show created_at and updated_at on users page - [PR](https://github.com/BerriAI/litellm/pull/10033)
-- **Virtual Keys**
-    1. Filter by key alias - https://github.com/BerriAI/litellm/pull/10085
-- **Usage Tab**
-
-    1. Team based usage
+    1. 依團隊的用量
         
-        - New `LiteLLM_DailyTeamSpend` Table for aggregate team based usage logging - [PR](https://github.com/BerriAI/litellm/pull/10039)
+        - 用於彙總團隊用量記錄的新 `LiteLLM_DailyTeamSpend` Table - [PR](https://github.com/BerriAI/litellm/pull/10039)
         
-        - New Team based usage dashboard + new `/team/daily/activity` API - [PR](https://github.com/BerriAI/litellm/pull/10081)
-        - Return team alias on /team/daily/activity API - [PR](https://github.com/BerriAI/litellm/pull/10157)
-        - allow internal user view spend for teams they belong to - [PR](https://github.com/BerriAI/litellm/pull/10157)
-        - allow viewing top keys by team - [PR](https://github.com/BerriAI/litellm/pull/10157)
+        - 新的依團隊用量儀表板 + 新 `/team/daily/activity` API - [PR](https://github.com/BerriAI/litellm/pull/10081)
+        - 在 /team/daily/activity API 回傳團隊別名 - [PR](https://github.com/BerriAI/litellm/pull/10157)
+        - 允許內部使用者檢視其所屬團隊的支出 - [PR](https://github.com/BerriAI/litellm/pull/10157)
+        - 允許檢視依團隊分類的前幾個金鑰 - [PR](https://github.com/BerriAI/litellm/pull/10157)
 
         <Image img={require('../../img/release_notes/new_team_usage.png')}/>
 
-    2. Tag Based Usage
-        - New `LiteLLM_DailyTagSpend` Table for aggregate tag based usage logging - [PR](https://github.com/BerriAI/litellm/pull/10071)
-        - Restrict to only Proxy Admins - [PR](https://github.com/BerriAI/litellm/pull/10157)
-        - allow viewing top keys by tag
-        - Return tags passed in request (i.e. dynamic tags) on `/tag/list` API - [PR](https://github.com/BerriAI/litellm/pull/10157)
+    2. 依標籤的用量
+        - 用於彙總標籤用量記錄的新 `LiteLLM_DailyTagSpend` Table - [PR](https://github.com/BerriAI/litellm/pull/10071)
+        - 限制僅供 Proxy 管理員使用 - [PR](https://github.com/BerriAI/litellm/pull/10157)
+        - 允許檢視依標籤分類的前幾個金鑰
+        - 在 `/tag/list` API 回傳請求中傳入的標籤（亦即動態標籤） - [PR](https://github.com/BerriAI/litellm/pull/10157)
         <Image img={require('../../img/release_notes/new_tag_usage.png')}/>
-    3. Track prompt caching metrics in daily user, team, tag tables - [PR](https://github.com/BerriAI/litellm/pull/10029)
-    4. Show usage by key (on all up, team, and tag usage dashboards) - [PR](https://github.com/BerriAI/litellm/pull/10157)
-    5. swap old usage with new usage tab
-- **Models**
-    1. Make columns resizable/hideable - [PR](https://github.com/BerriAI/litellm/pull/10119)
+    3. 在每日使用者、團隊、標籤資料表中追蹤提示快取指標 - [PR](https://github.com/BerriAI/litellm/pull/10029)
+    4. 顯示依金鑰的用量（在所有總覽、團隊與標籤用量儀表板上） - [PR](https://github.com/BerriAI/litellm/pull/10157)
+    5. 以新的用量分頁取代舊用量
+- **模型**
+    1. 讓欄位可調整大小／可隱藏 - [PR](https://github.com/BerriAI/litellm/pull/10119)
 - **API Playground**
-    1. Allow internal user to call api playground - [PR](https://github.com/BerriAI/litellm/pull/10157)
+    1. 允許內部使用者呼叫 api playground - [PR](https://github.com/BerriAI/litellm/pull/10157)
 - **SCIM**
-    1. Add LiteLLM SCIM Integration for Team and User management - [Get Started](../../docs/tutorials/scim_litellm), [PR](https://github.com/BerriAI/litellm/pull/10072)
+    1. 為團隊與使用者管理新增 LiteLLM SCIM 整合 - [開始使用](../../docs/tutorials/scim_litellm)、[PR](https://github.com/BerriAI/litellm/pull/10072)
 
-
-## Logging / Guardrail Integrations
+## 記錄／防護欄整合 {#logging--guardrail-integrations}
 - **GCS**
-    1. Fix gcs pub sub logging with env var GCS_PROJECT_ID - [Get Started](../../docs/observability/gcs_bucket_integration#usage), [PR](https://github.com/BerriAI/litellm/pull/10042)
+    1. 修正使用環境變數 GCS_PROJECT_ID 的 gcs pub sub 記錄 - [開始使用](../../docs/observability/gcs_bucket_integration#usage)、[PR](https://github.com/BerriAI/litellm/pull/10042)
 - **AIM**
-    1. Add litellm call id passing to Aim guardrails on pre and post-hooks calls - [Get Started](../../docs/proxy/guardrails/aim_security), [PR](https://github.com/BerriAI/litellm/pull/10021)
-- **Azure blob storage**
-    1. Ensure logging works in high throughput scenarios - [Get Started](../../docs/proxy/logging#azure-blob-storage), [PR](https://github.com/BerriAI/litellm/pull/9962)
+    1. 在 pre 與 post-hooks 呼叫中，將 litellm call id 傳遞到 Aim 防護欄 - [開始使用](../../docs/proxy/guardrails/aim_security)、[PR](https://github.com/BerriAI/litellm/pull/10021)
+- **Azure Blob 儲存體**
+    1. 確保在高吞吐量情境下記錄可正常運作 - [開始使用](../../docs/proxy/logging#azure-blob-storage)、[PR](https://github.com/BerriAI/litellm/pull/9962)
 
-## General Proxy Improvements
+## 一般 Proxy 改善 {#general-proxy-improvements}
 
-- **Support setting `litellm.modify_params` via env var** [PR](https://github.com/BerriAI/litellm/pull/9964)
-- **Model Discovery** - Check provider’s `/models` endpoints when calling proxy’s `/v1/models` endpoint - [Get Started](../../docs/proxy/model_discovery), [PR](https://github.com/BerriAI/litellm/pull/9958)
-- **`/utils/token_counter`** - fix retrieving custom tokenizer for db models - [Get Started](../../docs/proxy/configs#set-custom-tokenizer), [PR](https://github.com/BerriAI/litellm/pull/10047)
-- **Prisma migrate** - handle existing columns in db table - [PR](https://github.com/BerriAI/litellm/pull/10138)
-
+- **支援透過環境變數設定 `litellm.modify_params`** [PR](https://github.com/BerriAI/litellm/pull/9964)
+- **模型探索** - 在呼叫 proxy 的 `/v1/models` 端點時，檢查提供者的 `/models` 端點 - [開始使用](../../docs/proxy/model_discovery)、[PR](https://github.com/BerriAI/litellm/pull/9958)
+- **`/utils/token_counter`** - 修正從 db models 取得自訂 tokenizer - [開始使用](../../docs/proxy/configs#set-custom-tokenizer)、[PR](https://github.com/BerriAI/litellm/pull/10047)
+- **Prisma migrate** - 處理 db table 中既有欄位 - [PR](https://github.com/BerriAI/litellm/pull/10138)

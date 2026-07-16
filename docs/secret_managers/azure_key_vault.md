@@ -1,23 +1,23 @@
-# Azure Key Vault
+# Azure Key Vault {#azure-key-vault}
 
 :::info
 
-✨ **This is an Enterprise Feature**
+✨ **這是企業版功能**
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業版價格](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[點此聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 搭配使用 {#usage-with-litellm-proxy-server}
 
-1. Install Proxy dependencies 
+1. 安裝 Proxy 依賴項目 
 ```bash
 uv tool install 'litellm[proxy]' 'litellm[extra_proxy]'
 ```
 
-2. Save Azure details in your environment
+2. 將 Azure 詳細資料儲存在您的環境中
 ```bash 
 export["AZURE_CLIENT_ID"]="your-azure-app-client-id"
 export["AZURE_CLIENT_SECRET"]="your-azure-app-client-secret"
@@ -25,7 +25,7 @@ export["AZURE_TENANT_ID"]="your-azure-tenant-id"
 export["AZURE_KEY_VAULT_URI"]="your-azure-key-vault-uri"
 ```
 
-3. Add to proxy config.yaml 
+3. 加入 proxy config.yaml 
 ```yaml
 model_list: 
     - model_name: "my-azure-models" # model alias 
@@ -38,10 +38,9 @@ general_settings:
   key_management_system: "azure_key_vault"
 ```
 
-You can now test this by starting your proxy: 
+您現在可以透過啟動您的 proxy 來測試這項功能： 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-[Quick Test Proxy](../proxy/quick_start#using-litellm-proxy---curl-request-openai-package-langchain-langchain-js)
-
+[快速測試 Proxy](../proxy/quick_start#using-litellm-proxy---curl-request-openai-package-langchain-langchain-js)

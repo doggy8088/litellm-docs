@@ -1,9 +1,9 @@
-# Local Debugging
-There's 2 ways to do local debugging - `litellm._turn_on_debug()` and by passing in a custom function `completion(...logger_fn=<your_local_function>)`. Warning: Make sure to not use `_turn_on_debug()` in production. It logs API keys, which might end up in log files.
+# 本機除錯 {#local-debugging}
+有 2 種方式可以進行本機除錯 - `litellm._turn_on_debug()` 以及傳入自訂函式 `completion(...logger_fn=<your_local_function>)`。警告：請確保不要在正式環境中使用 `_turn_on_debug()`。它會記錄 API 金鑰，這些金鑰可能會出現在記錄檔中。
 
-## Set Verbose 
+## 設定詳細  {#set-verbose}
 
-This is good for getting print statements for everything litellm is doing.
+這很適合用來取得 litellm 正在執行的所有內容的 print 陳述式。
 ```python
 import litellm
 from litellm import completion
@@ -23,29 +23,29 @@ response = completion(model="gpt-3.5-turbo", messages=messages)
 response = completion("command-nightly", messages)
 ```
 
-## JSON Logs 
+## JSON 記錄  {#json-logs}
 
-If you need to store the logs as JSON, just set the `litellm.json_logs = True`.
+如果您需要將記錄儲存為 JSON，只要設定 `litellm.json_logs = True`。
 
-We currently just log the raw POST request from litellm as a JSON - [**See Code**]. 
+我們目前只是將來自 litellm 的原始 POST 請求以 JSON 形式記錄 - [**查看程式碼**]。 
 
-[Share feedback here](https://github.com/BerriAI/litellm/issues)
+[在這裡分享回饋](https://github.com/BerriAI/litellm/issues)
 
-## Logger Function 
-But sometimes all you care about is seeing exactly what's getting sent to your api call and what's being returned - e.g. if the api call is failing, why is that happening? what are the exact params being set? 
+## 記錄器函式  {#logger-function}
+但有時候，您真正關心的是 دقیق知道傳送到您的 API 請求中的是什麼，以及回傳了什麼——例如，如果 API 請求失敗了，為什麼會那樣？正在設定的確切參數是什麼？
 
-In that case, LiteLLM allows you to pass in a custom logging function to see / modify the model call Input/Outputs. 
+在這種情況下，LiteLLM 允許您傳入自訂的記錄函式，以查看／修改 model 呼叫的輸入／輸出。 
 
-**Note**: We expect you to accept a dict object. 
+**注意**：我們預期您接受一個 dict 物件。 
 
-Your custom function 
+您的自訂函式 
 
 ```python
 def my_custom_logging_fn(model_call_dict):
     print(f"model call details: {model_call_dict}")
 ```
 
-### Complete Example
+### 完整範例 {#complete-example}
 ```python
 from litellm import completion
 
@@ -65,8 +65,8 @@ response = completion(model="gpt-3.5-turbo", messages=messages, logger_fn=my_cus
 response = completion("command-nightly", messages, logger_fn=my_custom_logging_fn)
 ```
 
-## Still Seeing Issues? 
+## 仍然遇到問題？  {#still-seeing-issues}
 
-Join the [Discord](https://discord.com/invite/wuPM9dRgDw). 
+加入 [Discord](https://discord.com/invite/wuPM9dRgDw)。 
 
-We promise to help you in `lite`ning speed ❤️
+我們保證會以閃電般的速度協助您 `lite` ❤️

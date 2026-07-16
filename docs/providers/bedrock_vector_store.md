@@ -2,19 +2,19 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Bedrock Knowledge Bases
+# Bedrock 知識庫 {#bedrock-knowledge-bases}
 
-AWS Bedrock Knowledge Bases allows you to connect your LLM's to your organization's data, letting your models retrieve and reference information specific to your business.
+AWS Bedrock Knowledge Bases 可讓您將 LLM 連接至您組織的資料，讓模型擷取並參照與您業務相關的資訊。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Bedrock Knowledge Bases connects your data to LLM's, enabling them to retrieve and reference your organization's information in their responses. |
-| Provider Route on LiteLLM | `bedrock` in the litellm vector_store_registry |
-| Provider Doc | [AWS Bedrock Knowledge Bases ↗](https://aws.amazon.com/bedrock/knowledge-bases/) |
+| 說明 | Bedrock Knowledge Bases 將您的資料連接至 LLM，讓它們能在回應中擷取並參照您組織的資訊。 |
+| LiteLLM 提供者路由 | `bedrock` 於 litellm vector_store_registry 中 |
+| 提供者文件 | [AWS Bedrock Knowledge Bases ↗](https://aws.amazon.com/bedrock/knowledge-bases/) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Example using LiteLLM Python SDK"
 import os
@@ -47,9 +47,9 @@ response = await litellm.acompletion(
 print(response.choices[0].message.content)
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-#### 1. Configure your vector_store_registry
+#### 1. 設定您的 vector_store_registry {#1-configure-your-vector_store_registry}
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -75,7 +75,7 @@ vector_store_registry:
 
 <TabItem value="litellm-ui" label="LiteLLM UI">
 
-On the LiteLLM UI, Navigate to Experimental > Vector Stores > Create Vector Store. On this page you can create a vector store with a name, vector store id and credentials.
+在 LiteLLM UI 中，前往 Experimental > Vector Stores > Create Vector Store。在此頁面中，您可以建立具有名稱、vector store id 和憑證的 vector store。
 
 <Image 
   img={require('../../img/kb_2.png')}
@@ -85,7 +85,7 @@ On the LiteLLM UI, Navigate to Experimental > Vector Stores > Create Vector Stor
 </TabItem>
 </Tabs>
 
-#### 2. Make a request with vector_store_ids parameter
+#### 2. 使用 vector_store_ids 參數發出請求 {#2-make-a-request-with-vector_store_ids-parameter}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -137,19 +137,18 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
+## 篩選結果 {#filter-results}
 
-## Filter Results
+依中繼資料屬性篩選。
 
-Filter by metadata attributes.
-
-**Operators** (OpenAI-style, auto-translated):
+**運算子**（OpenAI 樣式，自動轉譯）：
 - `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `nin`
 
-**AWS operators** (use directly):
+**AWS 運算子**（直接使用）：
 - `equals`, `notEquals`, `greaterThan`, `greaterThanOrEquals`, `lessThan`, `lessThanOrEquals`, `in`, `notIn`, `startsWith`, `listContains`, `stringContains`
 
 <Tabs>
-<TabItem value="single-filter" label="Single Filter">
+<TabItem value="single-filter" label="單一篩選器">
 
 ```python
 response = await litellm.acompletion(
@@ -211,7 +210,7 @@ response = await litellm.acompletion(
 
 </TabItem>
 
-<TabItem value="advanced-filters" label="AWS Operators">
+<TabItem value="advanced-filters" label="AWS 運算子">
 
 ```python
 response = await litellm.acompletion(
@@ -257,14 +256,14 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Accessing Search Results
+## 存取搜尋結果 {#accessing-search-results}
 
-See how to access vector store search results in your response:
-- [Accessing Search Results (Non-Streaming & Streaming)](../completion/knowledgebase#accessing-search-results-citations)
+了解如何在回應中存取 vector store 搜尋結果：
+- [存取搜尋結果（非串流與串流）](../completion/knowledgebase#accessing-search-results-citations)
 
-## Further Reading
+## 延伸閱讀 {#further-reading}
 
-Vector Stores:
+Vector Stores：
 - [Always on Vector Stores](https://docs.litellm.ai/docs/completion/knowledgebase#always-on-for-a-model)
-- [Listing available vector stores on litellm proxy](https://docs.litellm.ai/docs/completion/knowledgebase#listing-available-vector-stores)
-- [How LiteLLM Vector Stores Work](https://docs.litellm.ai/docs/completion/knowledgebase#how-it-works)
+- [在 litellm proxy 上列出可用的 vector stores](https://docs.litellm.ai/docs/completion/knowledgebase#listing-available-vector-stores)
+- [LiteLLM Vector Stores 的運作方式](https://docs.litellm.ai/docs/completion/knowledgebase#how-it-works)

@@ -1,10 +1,10 @@
 ---
 slug: swap_openai_code_interpreter
-title: "Swap OpenAI Code Interpreter for E2B/OpenSandbox"
+title: "將 OpenAI Code Interpreter 換成 E2B/OpenSandbox"
 date: 2026-06-23T10:00:00
 authors:
   - krrish
-description: "Keep the OpenAI code_interpreter tool in your requests, run the code in your own sandbox. LiteLLM intercepts the tool call and routes it to E2B or OpenSandbox; no client changes."
+description: "在您的請求中保留 OpenAI code_interpreter tool，並在您自己的 sandbox 中執行程式碼。LiteLLM 會攔截 tool 呼叫並將其路由到 E2B 或 OpenSandbox；無需變更用戶端。"
 image: ./hero.png
 tags: [code interpreter, sandbox, e2b, opensandbox, agents]
 hide_table_of_contents: false
@@ -13,21 +13,21 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-![Swap OpenAI Code Interpreter with E2B](./hero.png)
+![使用 E2B 取代 OpenAI Code Interpreter](./hero.png)
 
-The OpenAI Responses and Chat Completions APIs let you declare a `code_interpreter` tool and the model runs Python inside an OpenAI-hosted container. That container is opaque, billed by OpenAI, and the code (often customer data) leaves your perimeter. LiteLLM now let's you intercept that tool call and runs it in a sandbox you control. The client request is unchanged.
+OpenAI Responses 和 Chat Completions API 讓您可以宣告 `code_interpreter` tool，而模型會在 OpenAI 託管的容器中執行 Python。該容器是封閉的、由 OpenAI 計費，而程式碼（通常是客戶資料）會離開您的邊界。LiteLLM 現在讓您攔截該 tool 呼叫，並在您可控制的 sandbox 中執行。用戶端請求維持不變。
 
-Available starting `LiteLLM v1.91.0.dev1`. Check here for [releases](https://github.com/BerriAI/litellm/releases).
+自 `LiteLLM v1.91.0.dev1` 起可用。請在這裡查看 [版本發佈](https://github.com/BerriAI/litellm/releases)。
 
 {/* truncate */}
 
-## How the swap works
+## 交換如何運作 {#how-the-swap-works}
 
-Register a sandbox tool, enable the interceptor, then call the model the way you already do. When the model emits a `code_interpreter` tool call, LiteLLM creates a sandbox (E2B or OpenSandbox), executes the generated code, feeds the result back into the loop, and tears the sandbox down on completion. The response shape stays compatible with OpenAI's native `code_interpreter_call`.
+註冊一個 sandbox tool，啟用攔截器，然後照您一貫的方式呼叫模型。當模型發出 `code_interpreter` tool 呼叫時，LiteLLM 會建立一個 sandbox（E2B 或 OpenSandbox）、執行產生的程式碼、將結果回傳到迴圈中，並在完成時銷毀 sandbox。回應格式仍與 OpenAI 的原生 `code_interpreter_call` 相容。
 
-Two backends are supported today: [E2B](https://e2b.dev/) for a managed sandbox, and [OpenSandbox](https://github.com/opensandboxai/opensandbox) for self-hosted Docker-backed execution when the code or data cannot leave your network.
+目前支援兩種後端：[E2B](https://e2b.dev/) 用於受管理的 sandbox，以及 [OpenSandbox](https://github.com/opensandboxai/opensandbox) 用於在程式碼或資料不能離開您的網路時，採用自架 Docker 支援的執行。
 
-## SDK
+## SDK {#sdk}
 
 <Tabs>
 <TabItem value="responses" label="Responses API">
@@ -103,11 +103,11 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-The native `code_interpreter` tool is rewritten before it reaches OpenAI; on the chat path it becomes a `litellm_code_execution` function tool and LiteLLM appends each sandbox result as a `role: tool` message until the model returns a final answer.
+原生 `code_interpreter` tool 會在傳到 OpenAI 之前被重新寫入；在 chat 路徑上，它會變成 `litellm_code_execution` function tool，而 LiteLLM 會將每個 sandbox 結果附加為 `role: tool` 訊息，直到模型回傳最終答案為止。
 
-## Proxy
+## Proxy {#proxy}
 
-Same swap behind the AI gateway, with no client-side change.
+在 AI gateway 後方進行相同的交換，且用戶端無需變更。
 
 ```yaml title="config.yaml"
 model_list:
@@ -128,7 +128,7 @@ litellm_settings:
     sandbox_tool_name: my-e2b
 ```
 
-The OpenAI SDK keeps working unchanged. Point it at the proxy, declare `code_interpreter`, and the gateway handles the rest.
+OpenAI SDK 會維持不變並正常運作。將它指向 proxy、宣告 `code_interpreter`，其餘部分由 gateway 處理。
 
 ```python
 from openai import OpenAI
@@ -143,7 +143,7 @@ response = client.responses.create(
 print(response.output_text)
 ```
 
-To run fully on-prem, swap the `sandbox_tools` entry to OpenSandbox:
+若要完全在地端執行，請將 `sandbox_tools` 項目切換為 OpenSandbox：
 
 ```yaml
 sandbox_tools:
@@ -154,10 +154,10 @@ sandbox_tools:
       api_key: os.environ/OPEN_SANDBOX_API_KEY
 ```
 
-OpenSandbox runs sandboxes locally with egress denied by default; flip `allow_internet_access=True` or pass an explicit `network_policy` when the code needs the network.
+OpenSandbox 會在本機執行 sandbox，預設拒絕 egress；當程式碼需要網路時，請切換 `allow_internet_access=True` 或傳入明確的 `network_policy`。
 
-## Why route it through your own sandbox
+## 為什麼要透過您自己的 sandbox 路由 {#why-route-it-through-your-own-sandbox}
 
-You keep the OpenAI client contract while owning the execution layer. The generated code and any uploaded data stay inside the sandbox you operate, billing for execution stops going to OpenAI, and the same setup works for Responses and Chat Completions across any model the gateway routes to. Streaming, forced `tool_choice`, and concurrent requests are isolated per request and cleaned up on completion.
+您可在擁有執行層的同時，保留 OpenAI client contract。產生的程式碼與任何上傳的資料都會留在您操作的 sandbox 中，執行計費不再流向 OpenAI，而且相同設定可適用於 Responses 與 Chat Completions，涵蓋 gateway 路由到的任何模型。串流、強制 `tool_choice` 與並行請求都會在每個請求間隔離，並在完成時清理。
 
-Full reference is in the [sandbox docs](/docs/sandbox).
+完整參考請見 [sandbox 文件](/docs/sandbox)。

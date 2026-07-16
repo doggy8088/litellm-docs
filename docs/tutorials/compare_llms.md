@@ -1,35 +1,36 @@
 import Image from '@theme/IdealImage';
 
-# Benchmark LLMs
-Easily benchmark LLMs for a given question by viewing 
-* Responses 
-* Response Cost
-* Response Time
+# 基準測試 LLM {#benchmark-llms}
+輕鬆透過檢視以下項目，對特定問題為 LLM 做基準測試：
+* 回應
+* 回應成本
+* 回應時間
 
-### Benchmark Output
+### 基準測試輸出 {#benchmark-output}
+
 <Image img={require('../../img/bench_llm.png')} />
 
-## Setup:
+## 設定： {#setup}
 ```
 git clone https://github.com/BerriAI/litellm
 ```
-cd to `litellm/cookbook/benchmark` dir
+cd 到 `litellm/cookbook/benchmark` 目錄
 
-Located here: 
+位置如下：
 https://github.com/BerriAI/litellm/tree/main/cookbook/benchmark
 ```
 cd litellm/cookbook/benchmark
 ```
 
-### Install Dependencies
+### 安裝相依套件 {#install-dependencies}
 ```
 uv add litellm click tqdm tabulate termcolor
 ```
 
-### Configuration - Set LLM API Keys + LLMs in benchmark.py
-In `benchmark/benchmark.py` select your LLMs, LLM API Key and questions
+### 設定 - 在 benchmark.py 中設定 LLM API 金鑰 + LLM {#configuration---set-llm-api-keys--llms-in-benchmarkpy}
+在 `benchmark/benchmark.py` 中選擇您的 LLM、LLM API 金鑰與問題
 
-Supported LLMs: https://docs.litellm.ai/docs/providers
+支援的 LLM：https://docs.litellm.ai/docs/providers
 
 ```python
 # Define the list of models to benchmark
@@ -47,12 +48,12 @@ questions = [
 
 ```
 
-## Run benchmark.py
+## 執行 benchmark.py {#run-benchmarkpy}
 ```
 python3 benchmark.py
 ```
 
-## Expected Output
+## 預期輸出 {#expected-output}
 ```
 Running question: When will BerriAI IPO? for model: claude-2: 100%|████████████████████████████████████████████████████████████████████████████████████| 3/3 [00:13<00:00,  4.41s/it]
 
@@ -81,19 +82,18 @@ Benchmark Results for 'When will BerriAI IPO?':
 |                 | plans or strategies.                                                             |                           |            |
 +-----------------+----------------------------------------------------------------------------------+---------------------------+------------+
 ```
-## Support
-**🤝 Schedule a 1-on-1 Session:** Book a [1-on-1 session](https://enterprise.litellm.ai/demo) with Krrish and Ishaan, the founders, to discuss any issues, provide feedback, or explore how we can improve LiteLLM for you.
-
+## 支援 {#support}
+**🤝 預約 1 對 1 會議：** 與創辦人 Krrish 和 Ishaan 預約一場 [1 對 1 會議](https://enterprise.litellm.ai/demo)，討論任何問題、提供意見回饋，或探索我們如何為您改進 LiteLLM。
 
 <!-- 
-## Pre-requisites:
+## 前置需求： {#pre-requisites}
 ``` python
 !uv add litellm
 ```
 
-## Example Use Case 1 - Code Generator
+## 範例使用情境 1 - 程式碼產生器 {#example-use-case-1---code-generator}
 
-### Enter your system prompt and questions
+### 輸入您的系統提示詞與問題 {#enter-your-system-prompt-and-questions}
 ```` python
 # enter your system prompt if you have one
 system_prompt = """
@@ -126,9 +126,9 @@ questions = [
 ]
 ````
 
-### Running questions
+### 執行問題 {#running-questions}
 
-### Select from 100+ LLMs here: <https://docs.litellm.ai/docs/providers> {#select-from-100-llms-here-httpsdocslitellmaidocsproviders}
+### 從這裡的 100+ 個 LLM 中選擇： <https://docs.litellm.ai/docs/providers> {#select-from-100-llms-here-httpsdocslitellmaidocsproviders}
 
 ``` python
 import litellm
@@ -189,7 +189,7 @@ for question in questions: # group by question
         })
 ```
 
-### View Benchmarks for LLMs
+### 檢視 LLM 的基準測試 {#view-benchmarks-for-llms}
 ``` python
 from IPython.display import display
 from IPython.core.interactiveshell import InteractiveShell
@@ -244,7 +244,7 @@ for question, group_data in grouped_by_question:
   </tbody>
 </table>
 
-## Example Use Case 2 - Rewrite user input concisely
+## 範例使用情境 2 - 將使用者輸入精簡改寫 {#example-use-case-2---rewrite-user-input-concisely}
 
 ``` python
 # enter your system prompt if you have one
@@ -260,7 +260,7 @@ questions = [
 ]
 ```
 
-### Run Questions
+### 執行問題 {#run-questions}
 
 ``` python
 import litellm
@@ -315,7 +315,7 @@ for question in questions: # group by question
 
 
 ```
-### View Logs - Group by Question
+### 檢視記錄 - 依問題分組 {#view-logs---group-by-question}
 ``` python
 from IPython.display import display
 from IPython.core.interactiveshell import InteractiveShell
@@ -331,9 +331,9 @@ for question, group_data in grouped_by_question:
     HTML(group_data.to_html())
 ```
 
-#### User Question
+#### 使用者問題 {#user-question}
     Question: Hi everyone! I'm [your name] and I'm currently working on [your project/role involving LLMs]. I came across LiteLLM and was really excited by how it simplifies working with different LLM providers. I'm hoping to use LiteLLM to [build an app/simplify my code/test different models etc]. Before finding LiteLLM, I was struggling with [describe any issues you faced working with multiple LLMs]. With LiteLLM's unified API and automatic translation between providers, I think it will really help me to [goals you have for using LiteLLM]. Looking forward to being part of this community and learning more about how I can build impactful applications powered by LLMs!Let me know if you would like me to modify or expand on any part of this suggested intro. I'm happy to provide any clarification or additional details you need!
-#### Logs
+#### 記錄 {#logs}
 <table border="1" class="dataframe">
   <thead>
     <tr>

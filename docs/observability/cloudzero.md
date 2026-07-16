@@ -1,39 +1,39 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CloudZero
+# CloudZero {#cloudzero}
 
-LiteLLM provides an integration with CloudZero's AnyCost API, allowing you to export your LLM usage data to CloudZero for cost tracking analysis.
+LiteLLM 提供與 CloudZero 的 AnyCost API 整合，讓您可以將 LLM 使用資料匯出到 CloudZero 進行成本追蹤分析。
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Export LiteLLM usage data to CloudZero AnyCost API for cost tracking and analysis |
+| 說明 | 將 LiteLLM 使用資料匯出到 CloudZero AnyCost API，以進行成本追蹤與分析 |
 | callback name | `cloudzero`|
-| Supported Operations | • Automatic hourly data export<br/>• Manual data export<br/>• Dry run testing<br/>• Cost and token usage tracking |
-| Data Format | CloudZero Billing Format (CBF) with proper resource tagging |
-| Export Frequency | Hourly (configurable via `CLOUDZERO_EXPORT_INTERVAL_MINUTES`) |
+| 支援的操作 | • 自動每小時資料匯出<br/>• 手動資料匯出<br/>• 乾跑測試<br/>• 成本與 token 使用追蹤 |
+| 資料格式 | 具備正確資源標記的 CloudZero Billing Format (CBF) |
+| 匯出頻率 | 每小時（可透過 `CLOUDZERO_EXPORT_INTERVAL_MINUTES` 設定） |
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `CLOUDZERO_API_KEY` | Yes | Your CloudZero API key | `cz_api_xxxxxxxxxx` |
-| `CLOUDZERO_CONNECTION_ID` | Yes | CloudZero connection ID for data submission | `conn_xxxxxxxxxx` |
-| `CLOUDZERO_TIMEZONE` | No | Timezone for date handling (default: UTC) | `America/New_York` |
-| `CLOUDZERO_EXPORT_INTERVAL_MINUTES` | No | Export frequency in minutes (default: 60) | `60` |
+| 變數 | 必填 | 說明 | 範例 |
+|----------|------|-------------|---------|
+| `CLOUDZERO_API_KEY` | 是 | 您的 CloudZero API 金鑰 | `cz_api_xxxxxxxxxx` |
+| `CLOUDZERO_CONNECTION_ID` | 是 | 用於資料提交的 CloudZero 連線 ID | `conn_xxxxxxxxxx` |
+| `CLOUDZERO_TIMEZONE` | 否 | 用於日期處理的時區（預設：UTC） | `America/New_York` |
+| `CLOUDZERO_EXPORT_INTERVAL_MINUTES` | 否 | 以分鐘為單位的匯出頻率（預設：60） | `60` |
 
-## Setup
+## 設定 {#setup}
 
-### End to End Video Walkthrough
-This video walks through the entire process of setting up LiteLLM with CloudZero integration and viewing LiteLLM exported usage data in CloudZero.
+### 端到端影片導覽 {#end-to-end-video-walkthrough}
+此影片會逐步說明如何設定 LiteLLM 與 CloudZero 整合，並在 CloudZero 中檢視 LiteLLM 匯出的使用資料。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/59b57593183f4cc3b1c05a2dd3277f92" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-### Step 1: Configure Environment Variables
+### 步驟 1：設定環境變數 {#step-1-configure-environment-variables}
 
-Set your CloudZero credentials in your environment:
+在您的環境中設定 CloudZero 憑證：
 
 ```bash
 export CLOUDZERO_API_KEY="cz_api_xxxxxxxxxx"
@@ -41,10 +41,9 @@ export CLOUDZERO_CONNECTION_ID="conn_xxxxxxxxxx"
 export CLOUDZERO_TIMEZONE="UTC"  # Optional, defaults to UTC
 ```
 
-### Step 2: Enable CloudZero Integration
+### 步驟 2：啟用 CloudZero 整合 {#step-2-enable-cloudzero-integration}
 
-Add the CloudZero callback to your LiteLLM configuration YAML file:
-
+將 CloudZero callback 加入您的 LiteLLM 設定 YAML 檔案：
 
 ```yaml
 model_list:
@@ -57,65 +56,57 @@ litellm_settings:
   callbacks: ["cloudzero"]  # Enable CloudZero integration
 ```
 
-### Step 3: Start LiteLLM Proxy
+### 步驟 3：啟動 LiteLLM Proxy {#step-3-start-litellm-proxy}
 
-Start your LiteLLM proxy with the configuration:
+使用以下設定啟動您的 LiteLLM proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-## Setup on UI
+## 在 UI 上設定 {#setup-on-ui}
 
-1\. Click "Settings"
+1\. 點選「Settings」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/5ac36280-c688-41a3-8d0e-23e19c6a470b/ascreenshot.jpeg?tl_px=0,332&br_px=1308,1064&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=119,444)
 
-
-2\. Click "Logging & Alerts"
+2\. 點選「Logging & Alerts」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/13f76b09-e0c4-4738-ba05-2d5111c6ad3e/ascreenshot.jpeg?tl_px=0,332&br_px=1308,1064&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=58,507)
 
-
-3\. Click "CloudZero Cost Tracking"
+3\. 點選「CloudZero Cost Tracking」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/f96cc1e5-7bc0-4d7c-9aeb-5cbbec549b12/ascreenshot.jpeg?tl_px=0,0&br_px=1308,731&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=389,56)
 
-
-4\. Click "Add CloudZero Integration"
+4\. 點選「Add CloudZero Integration」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/04fbc748-0e6f-43bb-8a57-dd2e83dbfcb5/ascreenshot.jpeg?tl_px=0,90&br_px=1308,821&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=616,277)
 
-
-5\. Enter your CloudZero API Key.
+5\. 輸入您的 CloudZero API 金鑰。
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/080e82f1-f94f-4ed7-8014-e495380336f3/ascreenshot.jpeg?tl_px=0,0&br_px=1308,731&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=506,129)
 
-
-6\. Enter your CloudZero Connection ID.
+6\. 輸入您的 CloudZero 連線 ID。
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/af417aa2-67a8-4dee-a014-84b1892dc07e/ascreenshot.jpeg?tl_px=0,0&br_px=1308,731&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=488,213)
 
-
-7\. Click "Create"
+7\. 點選「Create」
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/647e672f-9a4a-4754-a7b0-abf1397abad4/ascreenshot.jpeg?tl_px=0,88&br_px=1308,819&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=711,277)
 
-
-8\. Test your payload with "Run Dry Run Simulation" 
+8\. 使用「Run Dry Run Simulation」測試您的負載
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/7447cbe0-3450-4be5-bdc4-37fb8280aa58/ascreenshot.jpeg?tl_px=0,125&br_px=1308,856&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=334,277)
 
-
-10\. Click "Export Data Now" to export to CLoudZero
+10\. 點選「Export Data Now」以匯出到 CLoudZero
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-22/7be9bd48-6e27-4c68-bc75-946f3ab593d9/ascreenshot.jpeg?tl_px=0,130&br_px=1308,861&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=518,277)
 
-## Testing Your Setup
+## 測試您的設定 {#testing-your-setup}
 
-### Dry Run Export
+### 乾跑匯出 {#dry-run-export}
 
-Call the dry run endpoint to test your CloudZero configuration without sending data to CloudZero. This endpoint will not send any data to CloudZero, but will return the data that would be exported.
+呼叫乾跑端點，以在不將資料傳送到 CloudZero 的情況下測試您的 CloudZero 設定。此端點不會將任何資料傳送到 CloudZero，但會回傳將被匯出的資料。
 
 ```bash
 curl -X POST "http://localhost:4000/cloudzero/dry-run" \
@@ -126,7 +117,7 @@ curl -X POST "http://localhost:4000/cloudzero/dry-run" \
   }' | jq
 ```
 
-**Expected Response:**
+**預期回應：**
 ```json
 {
   "message": "CloudZero dry run export completed successfully.",
@@ -143,9 +134,9 @@ curl -X POST "http://localhost:4000/cloudzero/dry-run" \
 }
 ```
 
-### Manual Export
+### 手動匯出 {#manual-export}
 
-Call the export endpoint to send data immediately to CloudZero. We suggest setting a small `limit` to test the export. This will only export the last 10 records to CloudZero. Note: Cloudzero can take up to 15 minutes to process the exported data.
+呼叫匯出端點，立即將資料傳送到 CloudZero。我們建議設定較小的 `limit` 來測試匯出。這只會將最後 10 筆記錄匯出到 CloudZero。注意：Cloudzero 可能需要最多 15 分鐘來處理已匯出的資料。
 
 ```bash
 curl -X POST "http://localhost:4000/cloudzero/export" \
@@ -156,7 +147,7 @@ curl -X POST "http://localhost:4000/cloudzero/export" \
   }' | jq
 ```
 
-**Expected Response:**
+**預期回應：**
 ```json
 {
   "message": "CloudZero export completed successfully",
@@ -164,17 +155,17 @@ curl -X POST "http://localhost:4000/cloudzero/export" \
 }
 ```
 
-## Data Export Details
+## 資料匯出詳細資訊 {#data-export-details}
 
-### Automatic Export Schedule
+### 自動匯出排程 {#automatic-export-schedule}
 
-- **Frequency**: Every 60 minutes (configurable via `CLOUDZERO_EXPORT_INTERVAL_MINUTES`)
-- **Data Processing**: LiteLLM automatically processes and exports usage data hourly
-- **CloudZero Processing**: CloudZero typically takes 10-15 minutes to process data from LiteLLM
+- **頻率**：每 60 分鐘一次（可透過 `CLOUDZERO_EXPORT_INTERVAL_MINUTES` 設定）
+- **資料處理**：LiteLLM 會自動每小時處理並匯出使用資料
+- **CloudZero 處理**：CloudZero 通常需要 10-15 分鐘來處理來自 LiteLLM 的資料
 
-### Data Format
+### 資料格式 {#data-format}
 
-LiteLLM exports data in CloudZero Billing Format (CBF) with the following structure:
+LiteLLM 以 CloudZero Billing Format (CBF) 匯出資料，結構如下：
 
 ```json
 {
@@ -194,29 +185,29 @@ LiteLLM exports data in CloudZero Billing Format (CBF) with the following struct
 }
 ```
 
-### Resource Tagging
+### 資源標記 {#resource-tagging}
 
-LiteLLM automatically creates comprehensive resource tags for cost attribution:
+LiteLLM 會自動建立完整的資源標記，以進行成本歸因：
 
-- **Provider Tags**: `openai`, `anthropic`, `azure`, etc.
-- **Model Tags**: Specific model names like `gpt-4o`, `claude-3-sonnet`
-- **Team/User Tags**: Team IDs and user IDs for cost allocation
-- **Token Breakdown**: Separate tracking of prompt and completion tokens
-- **Usage Metrics**: Total tokens consumed per request
+- **提供者標記**：`openai`、`anthropic`、`azure` 等
+- **模型標記**：特定模型名稱，例如 `gpt-4o`、`claude-3-sonnet`
+- **團隊/使用者標記**：用於成本分配的團隊 ID 與使用者 ID
+- **Token 明細**：分別追蹤 prompt 與 completion tokens
+- **使用指標**：每個請求消耗的總 token 數
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Custom Export Frequency
+### 自訂匯出頻率 {#custom-export-frequency}
 
-Change the export frequency (not recommended to go below 60 minutes):
+變更匯出頻率（不建議低於 60 分鐘）：
 
 ```bash
 export CLOUDZERO_EXPORT_INTERVAL_MINUTES=120  # Export every 2 hours
 ```
 
-### Custom Time Range Export
+### 自訂時間範圍匯出 {#custom-time-range-export}
 
-Export data for a specific time range:
+匯出特定時間範圍的資料：
 
 ```bash
 curl -X POST "http://localhost:4000/cloudzero/export" \
@@ -229,27 +220,27 @@ curl -X POST "http://localhost:4000/cloudzero/export" \
   }' | jq
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Common Issues
+### 常見問題 {#common-issues}
 
-1. **Missing Credentials Error**
+1. **缺少憑證錯誤**
    ```
    CloudZero configuration missing. Please set CLOUDZERO_API_KEY and CLOUDZERO_CONNECTION_ID environment variables.
    ```
-   **Solution**: Ensure both environment variables are set with valid values.
+   **解決方案**：請確保已設定兩個環境變數，且值有效。
 
-2. **Connection Issues**
-   - Verify your CloudZero API key is valid
-   - Check that the connection ID exists in your CloudZero account
-   - Ensure your proxy has internet access to reach CloudZero's API
+2. **連線問題**
+   - 確認您的 CloudZero API 金鑰有效
+   - 檢查連線 ID 是否存在於您的 CloudZero 帳戶中
+   - 確保您的 proxy 可透過網際網路存取 CloudZero 的 API
 
-3. **No Data in CloudZero**
-   - CloudZero can take 10-15 minutes to process data
-   - Check that your LiteLLM proxy is generating usage data
-   - Use the dry-run endpoint to verify data is being formatted correctly
+3. **CloudZero 中沒有資料**
+   - CloudZero 可能需要 10-15 分鐘來處理資料
+   - 檢查您的 LiteLLM proxy 是否正在產生使用資料
+   - 使用乾跑端點確認資料格式是否正確
 
-## Related Links
+## 相關連結 {#related-links}
 
-- [CloudZero Documentation](https://docs.cloudzero.com/)
+- [CloudZero 文件](https://docs.cloudzero.com/)
 - [CloudZero AnyCost API](https://docs.cloudzero.com/reference/anycost-api)

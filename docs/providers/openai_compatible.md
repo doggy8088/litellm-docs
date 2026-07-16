@@ -1,31 +1,27 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI-Compatible Endpoints
+# OpenAI 相容端點 {#openai-compatible-endpoints}
 
 :::info
 
-Selecting `openai` as the provider routes your request to an OpenAI-compatible endpoint using the upstream  
-[official OpenAI Python API library](https://github.com/openai/openai-python/blob/main/README.md).
+將 `openai` 選為提供者，會透過上游的 [官方 OpenAI Python API 函式庫](https://github.com/openai/openai-python/blob/main/README.md) 將您的請求路由到 OpenAI 相容端點。
 
-This library **requires** an API key for all requests, either through the `api_key` parameter 
-or the `OPENAI_API_KEY` environment variable.
+此函式庫對所有請求都**需要** API 金鑰，可透過 `api_key` 參數或 `OPENAI_API_KEY` 環境變數提供。
 
-If you don't want to provide a fake API key in each request, consider using a provider that directly matches your 
-OpenAI-compatible endpoint, such as [`hosted_vllm`](/docs/providers/vllm) or [`llamafile`](/docs/providers/llamafile).
+如果您不想在每個請求中提供假的 API 金鑰，請考慮使用與您的 OpenAI 相容端點直接匹配的提供者，例如 [`hosted_vllm`](/docs/providers/vllm) 或 [`llamafile`](/docs/providers/llamafile)。
 
 :::
 
-To call models hosted behind an openai proxy, make 2 changes:
+若要呼叫託管在 openai proxy 後方的模型，請做 2 項變更：
 
-1. For `/chat/completions`: Put `openai/` in front of your model name, so litellm knows you're trying to call an openai `/chat/completions` endpoint. 
+1. 對 `/chat/completions`：在模型名稱前加上 `openai/`，讓 litellm 知道您正在嘗試呼叫 openai `/chat/completions` 端點。 
 
-1. For `/completions`: Put `text-completion-openai/` in front of your model name, so litellm knows you're trying to call an openai `/completions` endpoint. [NOT REQUIRED for `openai/` endpoints called via `/v1/completions` route].
+1. 對 `/completions`：在模型名稱前加上 `text-completion-openai/`，讓 litellm 知道您正在嘗試呼叫 openai `/completions` 端點。[對透過 `/v1/completions` 路由呼叫的 `openai/` 端點**不需要**。]
 
-1. **Do NOT** add anything additional to the base url e.g. `/v1/embedding`. LiteLLM uses the openai-client to make these calls, and that automatically adds the relevant endpoints. 
+1. **請勿**在 base url 後額外加上任何內容，例如 `/v1/embedding`。LiteLLM 會使用 openai-client 進行這些呼叫，而它會自動加入相關端點。 
 
-
-## Usage - completion
+## 使用方式 - completion {#usage---completion}
 ```python
 import litellm
 import os
@@ -44,7 +40,7 @@ response = litellm.completion(
 print(response)
 ```
 
-## Usage - embedding
+## 使用方式 - embedding {#usage---embedding}
 
 ```python
 import litellm
@@ -60,12 +56,11 @@ print(response)
 ```
 
 
+## 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server}
 
-## Usage with LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 OpenAI 相容端點
 
-Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
-
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -78,19 +73,19 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
 
   :::info
 
-  If you see `Not Found Error` when testing make sure your `api_base` has the `/v1` postfix
+  如果測試時看到 `Not Found Error`，請確認您的 `api_base` 具有 `/v1` 後綴
 
-  Example: `http://vllm-endpoint.xyz/v1`
+  範例：`http://vllm-endpoint.xyz/v1`
 
   :::
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -137,10 +132,9 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
 
   </Tabs>
 
+### 進階 - 停用系統訊息 {#advanced---disable-system-messages}
 
-### Advanced - Disable System Messages
-
-Some VLLM models (e.g. gemma) don't support system messages. To map those requests to 'user' messages, use the `supports_system_message` flag. 
+某些 VLLM 模型（例如 gemma）不支援系統訊息。若要將這些請求對應為 'user' 訊息，請使用 `supports_system_message` 旗標。 
 
 ```yaml
 model_list:

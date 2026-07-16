@@ -2,10 +2,10 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure OpenAI Embeddings
+# Azure OpenAI Embeddings {#azure-openai-embeddings}
 
-### API keys
-This can be set as env variables or passed as **params to litellm.embedding()**
+### API 金鑰 {#api-keys}
+這可以設定為環境變數，或作為 **傳遞給 litellm.embedding() 的參數**
 ```python
 import os
 os.environ['AZURE_API_KEY'] = 
@@ -13,7 +13,7 @@ os.environ['AZURE_API_BASE'] =
 os.environ['AZURE_API_VERSION'] = 
 ```
 
-### Usage
+### 用法 {#usage}
 ```python
 from litellm import embedding
 response = embedding(
@@ -26,24 +26,23 @@ response = embedding(
 print(response)
 ```
 
-| Model Name           | Function Call                               |
+| 模型名稱           | 函式呼叫                               |
 |----------------------|---------------------------------------------|
 | text-embedding-ada-002 | `embedding(model="azure/<your deployment name>", input=input)` |
 
-h/t to [Mikko](https://www.linkedin.com/in/mikkolehtimaki/) for this integration
+感謝 [Mikko](https://www.linkedin.com/in/mikkolehtimaki/) 協助整合
 
+## **用法 - LiteLLM Proxy Server** {#usage---litellm-proxy-server}
 
-## **Usage - LiteLLM Proxy Server**
+以下說明如何使用 LiteLLM Proxy Server 呼叫 Azure OpenAI 模型
 
-Here's how to call Azure OpenAI models with the LiteLLM Proxy Server
-
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export AZURE_API_KEY=""
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy  {#2-start-the-proxy}
 
 ```yaml
 model_list:
@@ -55,10 +54,10 @@ model_list:
       api_key: os.environ/AZURE_API_KEY # The `os.environ/` prefix tells litellm to read this from the env.
 ```
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/embeddings' \
@@ -89,5 +88,3 @@ print(response)
 ```
 </TabItem>
 </Tabs>
-
-

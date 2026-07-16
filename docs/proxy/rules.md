@@ -1,10 +1,10 @@
-# Post-Call Rules 
+# 呼叫後規則  {#post-call-rules}
 
-Use this to fail a request based on the output of an llm api call.
+使用此功能可根據 llm api call 的輸出來使請求失敗。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Step 1: Create a file (e.g. post_call_rules.py)
+### 步驟 1：建立檔案（例如 post_call_rules.py） {#step-1-create-a-file-eg-post_call_rulespy}
 
 ```python
 def my_custom_rule(input): # receives the model response 
@@ -16,14 +16,14 @@ def my_custom_rule(input): # receives the model response
     return {"decision": True}   # message not required since, request will pass
 ```
 
-### Step 2. Point it to your proxy
+### 步驟 2：將其指向您的 proxy {#step-2-point-it-to-your-proxy}
 
 ```python
 litellm_settings:
   post_call_rules: post_call_rules.my_custom_rule
 ```
 
-### Step 3. Start + test your proxy
+### 步驟 3：啟動並測試您的 proxy {#step-3-start--test-your-proxy}
 
 ```bash
 $ litellm /path/to/config.yaml
@@ -42,11 +42,11 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 ```
 ---
 
-This will now check if a response is > len 5, and if it fails, it'll retry a call 3 times before failing.
+這樣現在會檢查回應是否 > len 5，若失敗，則會在失敗前重試呼叫 3 次。
 
-### Response that fail the rule
+### 觸發規則失敗的回應 {#response-that-fail-the-rule}
 
-This is the response from LiteLLM Proxy on failing a rule
+這是 LiteLLM Proxy 在規則失敗時傳回的回應
 
 ```json
 {

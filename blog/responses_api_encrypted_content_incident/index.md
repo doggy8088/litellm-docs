@@ -1,6 +1,6 @@
 ---
 slug: responses-api-encrypted-content-incident
-title: "Incident Report: Encrypted Content Failures in Multi-Region Responses API Load Balancing"
+title: "事件報告：多區域 Responses API 負載平衡中的加密內容失敗"
 date: 2026-02-24T10:00:00
 authors:
   - sameer
@@ -10,14 +10,14 @@ tags: [incident-report, proxy, responses-api, load-balancing]
 hide_table_of_contents: false
 ---
 
-**Date:** Feb 24, 2026  
-**Duration:** Ongoing (until fix deployed)  
-**Severity:** High (for users load balancing Responses API across different API keys)  
-**Status:** Resolved
+**日期：** 2026 年 2 月 24 日  
+**期間：** 持續進行中（直到修正部署）  
+**嚴重性：** 高（適用於在不同 API 金鑰之間對 Responses API 進行負載平衡的使用者）  
+**狀態：** 已解決
 
-## Summary
+## 摘要 {#summary}
 
-When load balancing OpenAI's Responses API across deployments with **different API keys** (e.g., different Azure regions or OpenAI organizations), follow-up requests containing encrypted content items (like `rs_...` reasoning items) would fail with:
+當在具有**不同 API 金鑰**的部署之間對 OpenAI 的 Responses API 進行負載平衡時（例如，不同的 Azure 區域或 OpenAI 組織），包含加密內容項目（例如 `rs_...` reasoning items）的後續請求會失敗，錯誤如下：
 
 ```json
 {
@@ -29,42 +29,42 @@ When load balancing OpenAI's Responses API across deployments with **different A
 }
 ```
 
-Encrypted content items are cryptographically tied to the API key's organization that created them. When the router load balanced a follow-up request to a deployment with a different API key, decryption failed.
+加密內容項目在密碼學上與建立它們的 API 金鑰所屬組織綁定。當路由器將後續請求負載平衡到使用不同 API 金鑰的部署時，解密就會失敗。
 
-- **Responses API calls with encrypted content:** Complete failure when routed to wrong deployment
-- **Initial requests:** Unaffected — only follow-up requests containing encrypted items failed
-- **Other API endpoints:** No impact — chat completions, embeddings, etc. functioned normally
+- **含加密內容的 Responses API 請求：** 路由到錯誤部署時完全失敗
+- **初始請求：** 不受影響 — 只有包含加密項目的後續請求會失敗
+- **其他 API 端點：** 無影響 — chat completions、embeddings 等功能正常
 
 {/* truncate */}
 
 ---
 
-## Background
+## 背景 {#background}
 
-OpenAI's Responses API can return encrypted "reasoning items" (with IDs like `rs_...`) that contain intermediate reasoning steps. These items are encrypted with the organization's key and can only be decrypted by the same organization's API key.
+OpenAI 的 Responses API 可回傳加密的「reasoning items」（ID 例如 `rs_...`），其中包含中間推理步驟。這些項目使用該組織的金鑰加密，只有同一組織的 API 金鑰才能解密。
 
-When load balancing across deployments with different API keys, the existing affinity mechanisms were insufficient:
+在不同 API 金鑰的部署之間進行負載平衡時，現有的 affinity 機制不足：
 
-- **`responses_api_deployment_check`**: Requires `previous_response_id` which some clients (like Codex) don't provide
-- **`deployment_affinity`**: Too broad — pins *all* requests from a user to one deployment, reducing effective quota by the number of users
-- **`session_affinity`**: Requires explicit session IDs and still reduces quota
+- **`responses_api_deployment_check`**：需要 `previous_response_id`，但某些用戶端（如 Codex）未提供
+- **`deployment_affinity`**：範圍太大 — 會將使用者的*所有*請求固定到單一部署，依使用者數量降低有效配額
+- **`session_affinity`**：需要明確的 session IDs，且仍會降低配額
 
 ```mermaid
 flowchart TD
-    A["1. Initial request to Responses API
-    router.aresponses()"] --> B["2. Router load balances to Deployment A
-    (API Key 1, Azure East US)"]
-    B --> C["3. Response contains encrypted item
-    rs_abc123 (encrypted with Org 1 key)"]
-    C --> D["4. Follow-up request includes rs_abc123 in input"]
-    D --> E["5. Router load balances to Deployment B
-    (API Key 2, Azure West Europe)"]
-    E -->|"Different API key"| F["6. ❌ Deployment B cannot decrypt rs_abc123
-    Error: invalid_encrypted_content"]
+    A["1. 對 Responses API 的初始請求
+    router.aresponses()"] --> B["2. 路由器將請求負載平衡到 Deployment A
+    （API Key 1，Azure East US）"]
+    B --> C["3. 回應包含加密項目
+    rs_abc123（使用 Org 1 的金鑰加密）"]
+    C --> D["4. 後續請求在輸入中包含 rs_abc123"]
+    D --> E["5. 路由器將請求負載平衡到 Deployment B
+    （API Key 2，Azure West Europe）"]
+    E -->|"不同的 API 金鑰"| F["6. ❌ Deployment B 無法解密 rs_abc123
+    錯誤：invalid_encrypted_content"]
     
-    D -.->|"With encrypted_content_affinity"| G["5b. Router detects rs_abc123 was created by Deployment A"]
-    G --> H["6b. ✅ Routes to Deployment A (bypasses rate limits)
-    Request succeeds"]
+    D -.->|"啟用 encrypted_content_affinity 時"| G["5b. 路由器偵測到 rs_abc123 是由 Deployment A 建立"]
+    G --> H["6b. ✅ 路由到 Deployment A（繞過速率限制）
+    請求成功"]
 
     style F fill:#f8d7da,stroke:#dc3545
     style H fill:#d4edda,stroke:#28a745
@@ -74,48 +74,48 @@ flowchart TD
 
 ---
 
-## Root Cause
+## 根本原因 {#root-cause}
 
-LiteLLM's router had no mechanism to track which deployment created specific encrypted content items and route follow-up requests accordingly. The router treated all deployments as interchangeable, leading to decryption failures when encrypted content crossed organizational boundaries.
+LiteLLM 的路由器沒有機制追蹤哪些部署建立了特定的加密內容項目，並據此路由後續請求。路由器將所有部署視為可互換，導致當加密內容跨越組織邊界時發生解密失敗。
 
-**The Problem Flow:**
+**問題流程：**
 
-1. User calls `router.aresponses()` with model `gpt-5.1-codex`
-2. Router load balances to Deployment A (Azure East US, API Key 1)
-3. Response contains encrypted reasoning item `rs_abc123` (encrypted with Org 1's key)
-4. User makes follow-up request with `rs_abc123` in the input
-5. Router load balances to Deployment B (Azure West Europe, API Key 2)
-6. Deployment B tries to decrypt `rs_abc123` with Org 2's key → **fails**
+1. 使用者以模型 `router.aresponses()` 呼叫 `gpt-5.1-codex`
+2. 路由器將請求負載平衡到 Deployment A（Azure East US，API Key 1）
+3. 回應包含加密的 reasoning item `rs_abc123`（使用 Org 1 的金鑰加密）
+4. 使用者在輸入中加入 `rs_abc123` 發出後續請求
+5. 路由器將請求負載平衡到 Deployment B（Azure West Europe，API Key 2）
+6. Deployment B 嘗試使用 Org 2 的金鑰解密 `rs_abc123` → **失敗**
 
-**Why Existing Solutions Didn't Work:**
+**既有解決方案為何無效：**
 
-- **`previous_response_id`**: Not provided by all clients (e.g., Codex)
-- **`deployment_affinity`**: Pins *all* user requests to one deployment → reduces quota to 1/N where N = number of deployments
-- **`session_affinity`**: Requires explicit session management and still reduces quota
+- **`previous_response_id`**：並非所有用戶端都提供（例如 Codex）
+- **`deployment_affinity`**：會將*所有*使用者請求固定到單一部署 → 配額降低為 1/N，其中 N = 部署數量
+- **`session_affinity`**：需要明確的 session 管理，且仍會降低配額
 
-**Timeline:**
+**時間線：**
 
-1. Users configured multi-region Responses API load balancing with different API keys
-2. Initial requests succeeded, but follow-up requests with encrypted content failed intermittently
-3. Error rate correlated with number of deployments (more deployments = higher chance of routing to wrong one)
-4. Investigation revealed encrypted content was organization-bound
-5. Existing affinity mechanisms deemed unsuitable (quota reduction, missing `previous_response_id`)
-6. New solution designed and implemented: `encrypted_content_affinity`
+1. 使用者設定了使用不同 API 金鑰的多區域 Responses API 負載平衡
+2. 初始請求成功，但含加密內容的後續請求間歇性失敗
+3. 錯誤率與部署數量相關（部署越多 = 路由到錯誤部署的機率越高）
+4. 調查發現加密內容與組織綁定
+5. 現有 affinity 機制被認定不適用（配額降低、缺少 `previous_response_id`）
+6. 設計並實作了新解法：`encrypted_content_affinity`
 
 ---
 
-## The Fix
+## 修正 {#the-fix}
 
-Implemented a new `encrypted_content_affinity` pre-call check that intelligently tracks encrypted content and routes follow-up requests **only when necessary**.
+實作了一個新的 `encrypted_content_affinity` pre-call 檢查，可智慧追蹤加密內容，並且**僅在必要時**將後續請求路由到特定部署。
 
-### Implementation
+### 實作 {#implementation}
 
-**1. Encoding `model_id` into output items** ([`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/utils.py))
+**1. 將 `model_id` 編碼到輸出項目中**（[`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/utils.py)）
 
-The same approach used for `previous_response_id` affinity — no cache needed. When a response contains output items with `encrypted_content`, LiteLLM encodes the originating deployment's `model_id` in **two places** for redundancy:
+與 `previous_response_id` affinity 相同的方法 — 不需要快取。當回應包含帶有 `encrypted_content` 的輸出項目時，LiteLLM 會將來源部署的 `model_id` 以**兩個位置**編碼以提高冗餘：
 
-1. **Into the item ID** (if present): `rs_abc123` → `encitem_{base64("litellm:model_id:{model_id};item_id:rs_abc123")}`
-2. **Into the encrypted_content itself**: Wraps the content with `litellm_enc:{base64("model_id:{model_id}")};{original_encrypted_content}`
+1. **編碼到 item ID 中**（若存在）：`rs_abc123` → `encitem_{base64("litellm:model_id:{model_id};item_id:rs_abc123")}`
+2. **編碼到 encrypted_content 本身**：使用 `litellm_enc:{base64("model_id:{model_id}")};{original_encrypted_content}` 包裹內容
 
 ```python
 # Encoding item IDs (when present)
@@ -131,24 +131,24 @@ def _wrap_encrypted_content_with_model_id(encrypted_content: str, model_id: str)
     return f"litellm_enc:{encoded_metadata};{encrypted_content}"
 ```
 
-**Why wrap encrypted_content directly?** Some clients (like Codex) don't consistently send item IDs in follow-up requests, but they always send the `encrypted_content` itself. By embedding `model_id` into the content, affinity works even when IDs are missing.
+**為什麼直接包裹 encrypted_content？** 某些用戶端（如 Codex）在後續請求中不會穩定傳送 item ID，但它們一定會傳送 `encrypted_content` 本身。透過將 `model_id` 嵌入內容，即使缺少 ID，affinity 也能運作。
 
-**Streaming responses:** The wrapping logic is applied to both:
-- Final response objects (non-streaming)
-- Individual streaming events (`response.output_item.added`, `response.output_item.done`)
+**串流回應：** 包裹邏輯會套用於兩者：
+- 最終回應物件（非串流）
+- 個別串流事件（`response.output_item.added`、`response.output_item.done`）
 
-This ensures clients receiving streaming responses get wrapped content they can send back.
+這可確保接收串流回應的用戶端取得包裹後的內容，並可將其送回。
 
-Before forwarding to the upstream provider, LiteLLM restores the original item IDs and unwraps encrypted_content so the provider never sees the encoded form:
+在轉送至上游提供者之前，LiteLLM 會還原原始 item ID 並解開 encrypted_content，因此提供者永遠看不到編碼後的形式：
 
 ```python
 # In responses/main.py — before calling the handler
 input = ResponsesAPIRequestUtils._restore_encrypted_content_item_ids_in_input(input)
 ```
 
-**2. `EncryptedContentAffinityCheck` — routing only** ([`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py))
+**2. `EncryptedContentAffinityCheck` — 僅用於路由**（[`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py))
 
-No `async_log_success_event` or cache lookups — the `model_id` is decoded directly from the item ID or encrypted_content:
+沒有 `async_log_success_event` 或快取查詢 — `model_id` 會直接從 item ID 或 encrypted_content 解碼：
 
 ```python
 class EncryptedContentAffinityCheck(CustomLogger):
@@ -187,9 +187,9 @@ class EncryptedContentAffinityCheck(CustomLogger):
         return None
 ```
 
-**3. Rate Limit Bypass** ([`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router.py))
+**3. 速率限制繞過**（[`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router.py)）
 
-When encrypted content requires a specific deployment, RPM/TPM limits are bypassed (the request would fail on any other deployment anyway):
+當加密內容需要特定部署時，會繞過 RPM/TPM 限制（反正請求在其他任何部署上都會失敗）：
 
 ```python
 # In async_get_available_deployment, after filtering healthy deployments:
@@ -200,7 +200,7 @@ if (
     return healthy_deployments[0]  # Bypass routing strategy (RPM/TPM checks)
 ```
 
-**3. Configuration**
+**3. 設定**
 
 ```yaml
 router_settings:
@@ -211,50 +211,50 @@ router_settings:
   deployment_affinity_ttl_seconds: 86400  # 24 hours
 ```
 
-### Key Benefits
+### 主要優點 {#key-benefits}
 
-✅ **No quota reduction**: Only pins requests containing encrypted items  
-✅ **Bypasses rate limits**: When encrypted content requires a specific deployment, RPM/TPM limits don't block it  
-✅ **No `previous_response_id` required**: Works by encoding `model_id` directly into the item ID  
-✅ **No cache required**: `model_id` is decoded on-the-fly from the item ID — no Redis, no TTL  
-✅ **Globally safe**: Can be enabled for all models; non-Responses-API calls are unaffected  
-✅ **Surgical precision**: Normal requests continue to load balance freely
+✅ **不降低配額**：只會固定包含加密項目的請求  
+✅ **繞過速率限制**：當加密內容需要特定部署時，RPM/TPM 限制不會阻擋它  
+✅ **不需要 `previous_response_id`**：直接將 `model_id` 編碼進 item ID 即可運作  
+✅ **不需要快取**：`model_id` 會即時從 item ID 解碼 — 不需要 Redis，不需要 TTL  
+✅ **全域安全**：可對所有模型啟用；非 Responses API 呼叫不受影響  
+✅ **精準處理**：一般請求仍可自由進行負載平衡
 
 ---
 
-## Remediation
+## 修復措施 {#remediation}
 
-| # | Action | Status | Code |
+| # | 動作 | 狀態 | 程式碼 |
 |---|---|---|---|
-| 1 | Encode `model_id` into encrypted-content item IDs on response | ✅ Done | [`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/utils.py) |
-| 2 | Restore original item IDs before forwarding to upstream provider | ✅ Done | [`responses/main.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/main.py) |
-| 3 | `EncryptedContentAffinityCheck`: decode item IDs to route (no cache) | ✅ Done | [`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py) |
-| 4 | Add `encrypted_content_affinity` to `OptionalPreCallChecks` type | ✅ Done | [`types/router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/types/router.py) |
-| 5 | Implement rate limit bypass for affinity-pinned requests | ✅ Done | [`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router.py) |
-| 6 | Unit tests: encoding/decoding utilities, routing, RPM bypass | ✅ Done | [`test_encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/tests/test_litellm/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py) |
-| 7 | Documentation: Responses API guide, load balancing guide, config reference | ✅ Done | [Docs](https://docs.litellm.ai/docs/response_api#encrypted-content-affinity-multi-region-load-balancing) |
-| 8 | **[Mar 3]** Fix streaming events to wrap encrypted_content | ✅ Done | [`responses/streaming_iterator.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/streaming_iterator.py) |
+| 1 | 在回應時將 `model_id` 編碼到加密內容 item ID 中 | ✅ 完成 | [`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/utils.py) |
+| 2 | 在轉送至上游提供者前還原原始 item ID | ✅ 完成 | [`responses/main.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/main.py) |
+| 3 | `EncryptedContentAffinityCheck`：解碼 item ID 以進行路由（不使用快取） | ✅ 完成 | [`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py) |
+| 4 | 將 `encrypted_content_affinity` 新增至 `OptionalPreCallChecks` 型別 | ✅ 完成 | [`types/router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/types/router.py) |
+| 5 | 為固定到 affinity 的請求實作速率限制繞過 | ✅ 完成 | [`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router.py) |
+| 6 | 單元測試：編碼/解碼工具、路由、RPM 繞過 | ✅ 完成 | [`test_encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/tests/test_litellm/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py) |
+| 7 | 文件：Responses API 指南、負載平衡指南、設定參考 | ✅ 完成 | [Docs](https://docs.litellm.ai/docs/response_api#encrypted-content-affinity-multi-region-load-balancing) |
+| 8 | **[3 月 3 日]** 修正串流事件以包裹 encrypted_content | ✅ 完成 | [`responses/streaming_iterator.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/streaming_iterator.py) |
 
 ---
 
-## Follow-up Fix: Streaming Responses (Mar 3, 2026)
+## 後續修正：串流回應（2026 年 3 月 3 日） {#follow-up-fix-streaming-responses-mar-3-2026}
 
-### The Issue
+### 問題 {#the-issue}
 
-After the initial fix was deployed, users reported that the `invalid_encrypted_content` error **still occurred** when using streaming responses with clients like Codex. Investigation revealed:
+在初始修正部署後，使用者回報，當使用 Codex 這類用戶端進行串流回應時，`invalid_encrypted_content` 錯誤**仍然會發生**。調查顯示：
 
-- ✅ Non-streaming responses: `encrypted_content` was correctly wrapped with `litellm_enc:` prefix
-- ❌ Streaming responses: Individual `response.output_item.added` and `response.output_item.done` events contained **raw, unwrapped** `encrypted_content`
+- ✅ 非串流回應：`encrypted_content` 已正確包裝上 `litellm_enc:` 前綴
+- ❌ 串流回應：個別 `response.output_item.added` 與 `response.output_item.done` 事件包含**原始、未包裝**的 `encrypted_content`
 
-Since Codex and other clients consume responses as streams, they received unwrapped content in these events and sent it back in follow-up requests, causing the affinity check to fail.
+由於 Codex 與其他用戶端是以串流方式接收回應，因此它們在這些事件中收到了未包裝的內容，並在後續請求中將其傳回，導致親和性檢查失敗。
 
-### The Root Cause
+### 根本原因 {#the-root-cause}
 
-The `_update_encrypted_content_item_ids_in_response` function only modified the **final** response object, which is used for non-streaming responses. For streaming responses, individual chunks are processed by `ResponsesAPIStreamingIterator._process_chunk`, which was **not** applying the wrapping logic to streaming events.
+`_update_encrypted_content_item_ids_in_response` 函式只修改了**最終**回應物件，而該物件僅用於非串流回應。對於串流回應，個別區塊會由 `ResponsesAPIStreamingIterator._process_chunk` 處理，而它**沒有**將包裝邏輯套用到串流事件。
 
-### The Fix
+### 修正 {#the-fix-1}
 
-Modified `litellm/litellm/responses/streaming_iterator.py` to wrap `encrypted_content` in streaming events:
+已修改 `litellm/litellm/responses/streaming_iterator.py`，以在串流事件中包裝 `encrypted_content`：
 
 ```python
 # In ResponsesAPIStreamingIterator._process_chunk
@@ -283,13 +283,13 @@ if (
                     setattr(item, "encrypted_content", wrapped_content)
 ```
 
-This ensures that **all** `encrypted_content` sent to clients (streaming or non-streaming) is wrapped with `model_id` metadata, enabling consistent affinity routing.
+這可確保傳送給用戶端的**所有** `encrypted_content`（串流或非串流）都會以 `model_id` 中繼資料包裝，從而啟用一致的親和性路由。
 
 ---
 
-## Migration Guide
+## 遷移指南 {#migration-guide}
 
-### Before (Using `deployment_affinity`)
+### 之前（使用 `deployment_affinity`） {#before-using-deployment_affinity}
 
 ```yaml
 router_settings:
@@ -297,9 +297,9 @@ router_settings:
     - deployment_affinity  # ❌ Reduces quota by number of users
 ```
 
-**Problem:** All requests from a user pin to one deployment, reducing effective quota to 1/N.
+**問題：** 來自同一使用者的所有請求都會固定到單一部署，使有效配額降為 1/N。
 
-### After (Using `encrypted_content_affinity`)
+### 之後（使用 `encrypted_content_affinity`） {#after-using-encrypted_content_affinity}
 
 ```yaml
 router_settings:
@@ -307,6 +307,4 @@ router_settings:
     - encrypted_content_affinity  # ✅ Only pins requests with encrypted content
 ```
 
-**Benefit:** Normal requests load balance freely, only encrypted content requests pin when necessary.
-
----
+**好處：** 一般請求可自由進行負載平衡，只有在必要時，已加密內容請求才會固定。

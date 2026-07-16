@@ -2,21 +2,19 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Setting Team Budgets
+# 設定團隊預算 {#setting-team-budgets}
 
+# 前置需求 {#pre-requisites}
 
-# Pre-Requisites
+- 您必須設定一個 Postgres 資料庫（例如 Supabase、Neon 等）
 
-- You must set up a Postgres database (e.g. Supabase, Neon, etc.)
+## 自動產生的 JWT 團隊的預設預算 {#default-budget-for-auto-generated-jwt-teams}
 
+使用 `team_id_upsert: true` 的 JWT 驗證時，您可以自動為任何新建立的團隊指派預設預算。
 
-## Default Budget for Auto-Generated JWT Teams
+這是在您的 `config.yaml` 中的 `default_team_settings` 設定。
 
-When using JWT authentication with `team_id_upsert: true`, you can automatically assign a default budget to any newly created team.
-
-This is configured in `default_team_settings` in your `config.yaml`.
-
-**Example:**
+**範例：**
 ```yaml
 # in your config.yaml
 
@@ -30,20 +28,19 @@ litellm_settings:
     - team_id: "default-settings"
       max_budget: 100.0
 ```
-Track spend, set budgets for your Internal Team
+追蹤支出，為您的內部團隊設定預算
 
+## 設定每月團隊預算 {#setting-monthly-team-budgets}
 
-## Setting Monthly Team Budgets
-
-### 1. Create a team 
-- Set `max_budget=000000001` ($ value the team is allowed to spend)
-- Set `budget_duration="1d"` (How frequently the budget should update)
+### 1. 建立團隊  {#1-create-a-team}
+- 設定 `max_budget=000000001`（團隊允許花費的 $ 金額）
+- 設定 `budget_duration="1d"`（預算應該多久更新一次）
 
 <Tabs>
 
 <TabItem value="API" label="API">
 
-Create a new team and set `max_budget` and `budget_duration`
+建立新團隊並設定 `max_budget` 與 `budget_duration`
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/new' \
      -H 'Authorization: Bearer sk-1234' \
@@ -55,7 +52,7 @@ curl -X POST 'http://0.0.0.0:4000/team/new' \
         }' 
 ```
 
-Response
+回應
 ```shell
 {
  "team_alias": "QA Prod Bot",
@@ -67,34 +64,32 @@ Response
 ```
 </TabItem>
 
-<TabItem value="UI" label="Admin UI">
+<TabItem value="UI" label="管理介面">
 <Image img={require('../../img/create_team_gif_good.gif')} />
 
 </TabItem>
 
-
 </Tabs>
 
-Possible values for `budget_duration`
+`budget_duration` 的可用值
 
-| `budget_duration` | When Budget will reset |
+| `budget_duration` | 預算何時重設 |
 | --- | --- |
-| `budget_duration="1s"` | every 1 second |
-| `budget_duration="1m"` | every 1 min |
-| `budget_duration="1h"` | every 1 hour |
-| `budget_duration="1d"` | every 1 day |
-| `budget_duration="30d"` | every 1 month |
+| `budget_duration="1s"` | 每 1 秒 |
+| `budget_duration="1m"` | 每 1 分鐘 |
+| `budget_duration="1h"` | 每 1 小時 |
+| `budget_duration="1d"` | 每 1 天 |
+| `budget_duration="30d"` | 每 1 個月 |
 
+### 2. 為 `team` 建立金鑰 {#2-create-a-key-for-the-team}
 
-### 2. Create a key for the `team`
-
-Create a key for Team=`QA Prod Bot` and `team_id="de35b29e-6ca8-4f47-b804-2b79d07aa99a"` from Step 1 
+為團隊=`QA Prod Bot` 建立一把金鑰，並使用步驟 1 中的 `team_id="de35b29e-6ca8-4f47-b804-2b79d07aa99a"`
 
 <Tabs>
 
 <TabItem value="api" label="API">
 
-💡 **The Budget for Team="QA Prod Bot" budget will apply to this team**
+💡 **團隊="QA Prod Bot" 的預算將套用到此團隊**
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -103,22 +98,22 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
      -d '{"team_id": "de35b29e-6ca8-4f47-b804-2b79d07aa99a"}'
 ```
 
-Response
+回應
 
 ```shell
 {"team_id":"de35b29e-6ca8-4f47-b804-2b79d07aa99a", "key":"sk-5qtncoYjzRcxMM4bDRktNQ"}
 ```
 </TabItem>
 
-<TabItem value="UI" label="Admin UI">
+<TabItem value="UI" label="管理介面">
 <Image img={require('../../img/create_key_in_team.gif')} />
 </TabItem>
 
 </Tabs>
 
-### 3. Test It
+### 3. 測試它 {#3-test-it}
 
-Use the key from step 2 and run this Request twice
+使用步驟 2 的金鑰並執行此請求兩次
 <Tabs>
 
 <TabItem value="api" label="API">
@@ -138,7 +133,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
          }'
 ```
 
-On the 2nd response - expect to see the following exception
+在第 2 次回應中 - 預期會看到以下例外
 
 ```shell
 {
@@ -153,18 +148,18 @@ On the 2nd response - expect to see the following exception
 
 </TabItem>
 
-<TabItem value="UI" label="Admin UI">
+<TabItem value="UI" label="管理介面">
 <Image img={require('../../img/test_key_budget.gif')} />
 </TabItem>
 </Tabs>
 
-## Advanced
+## 進階 {#advanced}
 
-### Prometheus metrics for `remaining_budget`
+### `remaining_budget` 的 Prometheus 指標 {#prometheus-metrics-for-remaining_budget}
 
-[More info about Prometheus metrics here](https://docs.litellm.ai/docs/proxy/prometheus)
+[關於 Prometheus 指標的更多資訊請見此處](https://docs.litellm.ai/docs/proxy/prometheus)
 
-You'll need the following in your proxy config.yaml
+您需要在 proxy config.yaml 中加入以下內容
 
 ```yaml
 litellm_settings:
@@ -172,12 +167,12 @@ litellm_settings:
   failure_callback: ["prometheus"]
 ```
 
-Expect to see this metric on prometheus to track the Remaining Budget for the team
+預期在 prometheus 上看到此指標，以追蹤該團隊的剩餘預算
 
 ```shell
 litellm_remaining_team_budget_metric{team_alias="QA Prod Bot",team_id="de35b29e-6ca8-4f47-b804-2b79d07aa99a"} 9.699999999999992e-06
 ```
 
-## See Also
+## 另請參閱 {#see-also}
 
-- [Per-model TPM/RPM for teams](./users.md#per-team-model) - Set rate limits per model for all keys in a team
+- [團隊的每個模型 TPM/RPM](./users.md#per-team-model) - 為團隊中的所有金鑰設定每個模型的速率限制

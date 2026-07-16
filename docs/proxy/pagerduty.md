@@ -1,31 +1,30 @@
 import Image from '@theme/IdealImage';
 
-# PagerDuty Alerting
+# PagerDuty 警示 {#pagerduty-alerting}
 
 :::info
 
-✨ PagerDuty Alerting is on LiteLLM Enterprise
+✨ PagerDuty 警示僅適用於 LiteLLM Enterprise
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[Enterprise 定價](https://www.litellm.ai/#pricing)
 
-[Get free 7-day trial key](https://www.litellm.ai/enterprise#trial)
+[取得免費 7 天試用金鑰](https://www.litellm.ai/enterprise#trial)
 
 :::
 
-Handles two types of alerts:
-- High LLM API Failure Rate. Configure X fails in Y seconds to trigger an alert.
-- High Number of Hanging LLM Requests. Configure X hangs in Y seconds to trigger an alert.
+處理兩種類型的警示：
+- 高 LLM API 失敗率。設定在 Y 秒內發生 X 次失敗以觸發警示。
+- 高數量的 LLM 請求掛起。設定在 Y 秒內掛起 X 次以觸發警示。
 
+## 快速入門 {#quick-start}
 
-## Quick Start
-
-1. Set `PAGERDUTY_API_KEY="d8bxxxxx"` in your environment variables.
+1. 在您的環境變數中設定 `PAGERDUTY_API_KEY="d8bxxxxx"`。
 
 ```
 PAGERDUTY_API_KEY="d8bxxxxx"
 ```
 
-2. Set PagerDuty Alerting in your config file.
+2. 在您的設定檔中設定 PagerDuty 警示。
 
 ```yaml
 model_list:
@@ -46,17 +45,16 @@ general_settings:
 ```
 
 
-3. Test it 
+3. 測試它
 
-
-Start LiteLLM Proxy
+啟動 LiteLLM Proxy
 
 ```shell
 litellm --config config.yaml
 ```
 
-### LLM API Failure Alert
-Try sending a bad request to proxy 
+### LLM API 失敗警示 {#llm-api-failure-alert}
+嘗試向 proxy 傳送錯誤請求
 
 ```shell
 curl -i --location 'http://0.0.0.0:4000/chat/completions' \
@@ -77,11 +75,11 @@ curl -i --location 'http://0.0.0.0:4000/chat/completions' \
 
 <Image img={require('../../img/pagerduty_fail.png')} />
 
-### LLM Hanging Alert
+### LLM 掛起警示 {#llm-hanging-alert}
 
-Try sending a hanging request to proxy 
+嘗試向 proxy 傳送掛起請求
 
-Since our hanging threshold is 0.0000001 seconds, you should see an alert.
+由於我們的掛起閾值是 0.0000001 秒，您應該會看到一則警示。
 
 ```shell
 curl -i --location 'http://0.0.0.0:4000/chat/completions' \
@@ -101,6 +99,3 @@ curl -i --location 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 <Image img={require('../../img/pagerduty_hanging.png')} />
-
-
-

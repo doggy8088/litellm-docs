@@ -1,47 +1,47 @@
 import Image from '@theme/IdealImage';
 
-# Claude Code - Managing Anthropic Beta Headers
+# Claude Code - 管理 Anthropic Beta 標頭 {#claude-code---managing-anthropic-beta-headers}
 
-When using Claude Code with LiteLLM and non-Anthropic providers (Bedrock, Azure AI, Vertex AI), you need to ensure that only supported beta headers are sent to each provider. This guide explains how to add support for new beta headers or fix invalid beta header errors.
+當您在 LiteLLM 中將 Claude Code 與非 Anthropic 提供者（Bedrock、Azure AI、Vertex AI）搭配使用時，您需要確保只會將各提供者支援的 beta 標頭傳送給對應的提供者。本指南說明如何新增對新 beta 標頭的支援，或修正無效 beta 標頭錯誤。
 
-## What Are Beta Headers?
+## 什麼是 Beta 標頭？ {#what-are-beta-headers}
 
-Anthropic uses beta headers to enable experimental features in Claude. When you use Claude Code, it may send beta headers like:
+Anthropic 使用 beta 標頭來啟用 Claude 中的實驗性功能。當您使用 Claude Code 時，可能會傳送如下的 beta 標頭：
 
 ```
 anthropic-beta: prompt-caching-scope-2026-01-05,advanced-tool-use-2025-11-20
 ```
 
-However, not all providers support all Anthropic beta features. LiteLLM uses `anthropic_beta_headers_config.json` to manage which beta headers are supported by each provider.
+不過，並非所有提供者都支援所有 Anthropic beta 功能。LiteLLM 使用 `anthropic_beta_headers_config.json` 來管理各提供者支援哪些 beta 標頭。
 
-## Common Error Message
+## 常見錯誤訊息 {#common-error-message}
 
 ```bash
 Error: The model returned the following errors: invalid beta flag
 ```
 
-## How LiteLLM Handles Beta Headers
+## LiteLLM 如何處理 Beta 標頭 {#how-litellm-handles-beta-headers}
 
-LiteLLM uses a strict validation approach with a configuration file:
+LiteLLM 使用嚴格的驗證方式搭配設定檔：
 
 ```
 litellm/litellm/anthropic_beta_headers_config.json
 ```
 
-This JSON file contains a **mapping** of beta headers for each provider:
-- **Keys**: Input beta header names (from Anthropic)
-- **Values**: Provider-specific header names (or `null` if unsupported)
-- **Validation**: Only headers present in the mapping with non-null values are forwarded
+此 JSON 檔案包含各提供者 beta 標頭的**對應**：
+- **Keys**：輸入的 beta 標頭名稱（來自 Anthropic）
+- **Values**：提供者特定的標頭名稱（或 `null`，若不支援）
+- **驗證**：只有對應中存在且值非 null 的標頭才會被轉送
 
-This enforces stricter validation than just filtering unsupported headers - headers must be explicitly defined to be allowed.
+這比單純過濾不支援的標頭更嚴格——標頭必須明確定義才會被允許。
 
-## Adding Support for a New Beta Header
+## 新增對 Beta 標頭的支援 {#adding-support-for-a-new-beta-header}
 
-When Anthropic releases a new beta feature, you need to add it to the configuration file for each provider.
+當 Anthropic 釋出新的 beta 功能時，您需要將其加入各提供者的設定檔中。
 
-### Step 1: Locate the Config File
+### 步驟 1：找到設定檔 {#step-1-locate-the-config-file}
 
-Find the file in your LiteLLM installation:
+在您的 LiteLLM 安裝中找到此檔案：
 
 ```bash
 # If installed via pip
@@ -51,9 +51,9 @@ cd $(python -c "import litellm; import os; print(os.path.dirname(litellm.__file_
 # litellm/anthropic_beta_headers_config.json
 ```
 
-### Step 2: Add the New Beta Header
+### 步驟 2：新增新的 Beta 標頭 {#step-2-add-the-new-beta-header}
 
-Open `anthropic_beta_headers_config.json` and add the new header to each provider's mapping:
+開啟 `anthropic_beta_headers_config.json` 並將新的標頭加入每個提供者的對應中：
 
 ```json title="anthropic_beta_headers_config.json"
 {
@@ -86,17 +86,17 @@ Open `anthropic_beta_headers_config.json` and add the new header to each provide
 }
 ```
 
-**Key Points:**
-- **Supported headers**: Set the value to the provider-specific header name (often the same as the key)
-- **Unsupported headers**: Set the value to `null`
-- **Header transformations**: Some providers use different header names (e.g., Bedrock maps `advanced-tool-use-2025-11-20` to `tool-search-tool-2025-10-19`)
-- **Alphabetical order**: Keep headers sorted alphabetically for maintainability
+**重點：**
+- **支援的標頭**：將值設為提供者特定的標頭名稱（通常與 key 相同）
+- **不支援的標頭**：將值設為 `null`
+- **標頭轉換**：有些提供者會使用不同的標頭名稱（例如，Bedrock 會將 `advanced-tool-use-2025-11-20` 對應到 `tool-search-tool-2025-10-19`）
+- **字母順序**：請將標頭依字母順序排序，以利維護
 
-### Step 3: Reload Configuration (No Restart Required!)
+### 步驟 3：重新載入設定（不需要重新啟動！） {#step-3-reload-configuration-no-restart-required}
 
-**Option 1: Dynamic Reload Without Restart** 
+**選項 1：不重新啟動即可動態重新載入** 
 
-Instead of restarting your application, you can dynamically reload the beta headers configuration using environment variables and API endpoints:
+您可以使用環境變數和 API 端點動態重新載入 beta 標頭設定，而不必重新啟動應用程式：
 
 ```bash
 # Set environment variable to fetch from remote URL (Do this if you want to point it to some other URL)
@@ -107,9 +107,9 @@ curl -X POST "https://your-proxy-url/reload/anthropic_beta_headers" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
-**Option 2: Schedule Automatic Reloads** 
+**選項 2：排程自動重新載入** 
 
-Set up automatic reloading to always stay up-to-date with the latest beta headers:
+設定自動重新載入，確保永遠使用最新的 beta 標頭：
 
 ```bash
 # Reload configuration every 24 hours
@@ -117,9 +117,9 @@ curl -X POST "https://your-proxy-url/schedule/anthropic_beta_headers_reload?hour
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
-**Option 3: Traditional Restart**
+**選項 3：傳統重新啟動**
 
-If you prefer the traditional approach, restart your LiteLLM proxy or application:
+如果您偏好傳統方式，請重新啟動您的 LiteLLM proxy 或應用程式：
 
 ```bash
 # If using LiteLLM proxy
@@ -129,27 +129,27 @@ litellm --config config.yaml
 # Just restart your Python application
 ```
 
-:::tip Zero-Downtime Updates
-With dynamic reloading, you can fix invalid beta header errors **without restarting your service**! This is especially useful in production environments where downtime is costly.
+:::tip 零停機更新
+使用動態重新載入，您可以在**不重新啟動服務**的情況下修正無效 beta 標頭錯誤！這在停機代價高昂的正式環境中特別有用。
 
-See [Auto Sync Anthropic Beta Headers](../proxy/sync_anthropic_beta_headers.md) for complete documentation.
+請參閱 [自動同步 Anthropic Beta 標頭](../proxy/sync_anthropic_beta_headers.md) 以取得完整文件。
 :::
 
-## Fixing Invalid Beta Header Errors
+## 修正無效 Beta 標頭錯誤 {#fixing-invalid-beta-header-errors}
 
-If you encounter an "invalid beta flag" error, it means a beta header is being sent that the provider doesn't support.
+如果您遇到「invalid beta flag」錯誤，表示有一個該提供者不支援的 beta 標頭正在被傳送。
 
-### Step 1: Identify the Problematic Header
+### 步驟 1：找出有問題的標頭 {#step-1-identify-the-problematic-header}
 
-Check your logs to see which header is causing the issue:
+檢查您的記錄，查看是哪個標頭造成問題：
 
 ```bash
 Error: The model returned the following errors: invalid beta flag: new-feature-2026-03-01
 ```
 
-### Step 2: Update the Config
+### 步驟 2：更新設定 {#step-2-update-the-config}
 
-Set the header value to `null` for that provider:
+將該提供者的標頭值設為 `null`：
 
 ```json title="anthropic_beta_headers_config.json"
 {
@@ -159,21 +159,21 @@ Set the header value to `null` for that provider:
 }
 ```
 
-### Step 3: Restart and Test
+### 步驟 3：重新啟動並測試 {#step-3-restart-and-test}
 
-Restart your application and verify the header is now filtered out.
+重新啟動您的應用程式並確認該標頭現在已被過濾掉。
 
-## Contributing a Fix to LiteLLM
+## 將修正貢獻給 LiteLLM {#contributing-a-fix-to-litellm}
 
-Help the community by contributing your fix!
+透過貢獻您的修正來幫助社群！
 
-### What to Include in Your PR
+### 您的 PR 需要包含什麼 {#what-to-include-in-your-pr}
 
-1. **Update the config file**: Add the new beta header to `litellm/anthropic_beta_headers_config.json`
-2. **Test your changes**: Verify the header is correctly filtered/mapped for each provider
-3. **Documentation**: Include provider documentation links showing which headers are supported
+1. **更新設定檔**：將新的 beta 標頭加入 `litellm/anthropic_beta_headers_config.json`
+2. **測試您的變更**：確認該標頭能正確地針對每個提供者被過濾/對應
+3. **文件**：附上提供者文件連結，說明哪些標頭受支援
 
-### Example PR Description
+### PR 說明範例 {#example-pr-description}
 
 ```markdown
 ## Add support for new-feature-2026-03-01 beta header
@@ -195,9 +195,9 @@ Tested with:
 ```
 
 
-## How Beta Header Filtering Works
+## Beta 標頭過濾的運作方式 {#how-beta-header-filtering-works}
 
-When you make a request through LiteLLM:
+當您透過 LiteLLM 發出請求時：
 
 ```mermaid
 sequenceDiagram
@@ -206,74 +206,74 @@ sequenceDiagram
     participant Config as Beta Headers Config
     participant Provider as Provider (Bedrock/Azure/etc)
 
-    CC->>LP: Request with beta headers
+    CC->>LP: 請求包含 beta 標頭
     Note over CC,LP: anthropic-beta: header1,header2,header3
     
-    LP->>Config: Load header mapping for provider
-    Config-->>LP: Returns mapping (header→value or null)
+    LP->>Config: 載入提供者的標頭對應
+    Config-->>LP: 傳回對應（header→value 或 null）
     
-    Note over LP: Validate & Transform:<br/>1. Check if header exists in mapping<br/>2. Filter out null values<br/>3. Map to provider-specific names
+    Note over LP: 驗證與轉換：<br/>1. 檢查標頭是否存在於對應中<br/>2. 過濾掉 null 值<br/>3. 對應為提供者特定名稱
     
-    LP->>Provider: Request with filtered & mapped headers
+    LP->>Provider: 請求包含已過濾且已對應的標頭
     Note over LP,Provider: anthropic-beta: mapped-header2<br/>(header1, header3 filtered out)
     
-    Provider-->>LP: Success response
-    LP-->>CC: Response
+    Provider-->>LP: 成功回應
+    LP-->>CC: 回應
 ```
 
-### Filtering Rules
+### 過濾規則 {#filtering-rules}
 
-1. **Header must exist in mapping**: Unknown headers are filtered out
-2. **Header must have non-null value**: Headers with `null` values are filtered out
-3. **Header transformation**: Headers are mapped to provider-specific names (e.g., `advanced-tool-use-2025-11-20` → `tool-search-tool-2025-10-19` for Bedrock)
+1. **標頭必須存在於對應中**：未知標頭會被過濾掉
+2. **標頭必須有非 null 值**：值為 `null` 的標頭會被過濾掉
+3. **標頭轉換**：標頭會對應為提供者特定名稱（例如，Bedrock 會將 `advanced-tool-use-2025-11-20` → `tool-search-tool-2025-10-19`）
 
-### Example
+### 範例 {#example}
 
-Request with headers:
+包含以下標頭的請求：
 ```
 anthropic-beta: advanced-tool-use-2025-11-20,computer-use-2025-01-24,unknown-header
 ```
 
-For Bedrock Converse:
-- ✅ `computer-use-2025-01-24` → `computer-use-2025-01-24` (supported, passed through)
-- ❌ `advanced-tool-use-2025-11-20` → filtered out (null value in config)
-- ❌ `unknown-header` → filtered out (not in config)
+對於 Bedrock Converse：
+- ✅ `computer-use-2025-01-24` → `computer-use-2025-01-24`（支援，直接傳遞）
+- ❌ `advanced-tool-use-2025-11-20` → 過濾掉（設定中為 null 值）
+- ❌ `unknown-header` → 過濾掉（不在設定中）
 
-Result sent to Bedrock:
+傳送給 Bedrock 的結果：
 ```
 anthropic-beta: computer-use-2025-01-24
 ```
 
-## Dynamic Configuration Management (No Restart Required!)
+## 動態設定管理（不需要重新啟動！） {#dynamic-configuration-management-no-restart-required}
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
-Control how LiteLLM loads the beta headers configuration:
+控制 LiteLLM 如何載入 beta 標頭設定：
 
-| Variable | Description | Default |
+| 變數 | 說明 | 預設值 |
 |----------|-------------|---------|
-| `LITELLM_ANTHROPIC_BETA_HEADERS_URL` | URL to fetch config from | GitHub main branch |
-| `LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS` | Set to `True` to use local config only | `False` |
+| `LITELLM_ANTHROPIC_BETA_HEADERS_URL` | 用來擷取設定的 URL | GitHub main branch |
+| `LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS` | 設為 `True` 以僅使用本機設定 | `False` |
 
-**Example: Use Custom Config URL**
+**範例：使用自訂設定 URL**
 ```bash
 export LITELLM_ANTHROPIC_BETA_HEADERS_URL="https://your-company.com/custom-beta-headers.json"
 ```
 
-**Example: Use Local Config Only (No Remote Fetching)**
+**範例：僅使用本機設定（不從遠端擷取）**
 ```bash
 export LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS=True
 ```
-## Provider-Specific Notes
+## 提供者特定說明 {#provider-specific-notes}
 
-### Bedrock
-- Beta headers appear in both HTTP headers AND request body (`additionalModelRequestFields.anthropic_beta`)
-- Some headers are transformed (e.g., `advanced-tool-use` → `tool-search-tool`)
+### Bedrock {#bedrock}
+- Beta 標頭同時會出現在 HTTP 標頭和請求主體中（`additionalModelRequestFields.anthropic_beta`）
+- 某些標頭會被轉換（例如，`advanced-tool-use` → `tool-search-tool`）
 
-### Azure AI
-- Uses same header names as Anthropic
-- Some features not yet supported (check config for null values)
+### Azure AI {#azure-ai}
+- 使用與 Anthropic 相同的標頭名稱
+- 某些功能尚未支援（請檢查設定中的 null 值）
 
-### Vertex AI
-- Some headers are transformed to match Vertex AI's implementation
-- Limited beta feature support compared to Anthropic
+### Vertex AI {#vertex-ai}
+- 某些標頭會被轉換以符合 Vertex AI 的實作
+- 與 Anthropic 相比，beta 功能支援有限

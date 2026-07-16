@@ -1,17 +1,17 @@
 ---
-title: Integrations
-sidebar_label: Overview
+title: 整合
+sidebar_label: 總覽
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
-This section covers integrations with various tools and services that can be used with LiteLLM (either Proxy or SDK).
+本節涵蓋可與 LiteLLM（Proxy 或 SDK）搭配使用的各種工具與服務整合。
 
 ---
 
-## Observability
+## 可觀測性 {#observability}
 
-Track, debug, and analyze LLM calls with observability platforms.
+使用可觀測性平台追蹤、除錯並分析 LLM 請求。
 
 <NavigationCards
 columns={3}
@@ -19,67 +19,67 @@ items={[
   {
     icon: "🪢",
     title: "Langfuse",
-    description: "LLM observability and analytics.",
+    description: "LLM 可觀測性與分析。",
     to: "/docs/observability/langfuse_integration",
   },
   {
     icon: "🐶",
     title: "Datadog",
-    description: "Metrics, traces, and dashboards.",
+    description: "指標、追蹤與儀表板。",
     to: "/docs/observability/datadog",
   },
   {
     icon: "📡",
     title: "OpenTelemetry",
-    description: "Vendor-neutral tracing.",
+    description: "提供者中立的追蹤。",
     to: "/docs/observability/opentelemetry_integration",
   },
   {
     icon: "🔗",
     title: "LangSmith",
-    description: "LLM debugging and evaluation.",
+    description: "LLM 除錯與評估。",
     to: "/docs/observability/langsmith_integration",
   },
   {
     icon: "🔥",
     title: "Arize / Phoenix",
-    description: "ML observability and evaluation.",
+    description: "ML 可觀測性與評估。",
     to: "/docs/observability/opentelemetry_v2",
   },
   {
     icon: "🌀",
     title: "Helicone",
-    description: "LLM request logging and analytics.",
+    description: "LLM 請求記錄與分析。",
     to: "/docs/observability/helicone_integration",
   },
   {
     icon: "📊",
     title: "MLflow",
-    description: "Experiment tracking.",
+    description: "實驗追蹤。",
     to: "/docs/observability/mlflow",
   },
   {
     icon: "🏋️",
     title: "Weights & Biases",
-    description: "ML experiment tracking.",
+    description: "ML 實驗追蹤。",
     to: "/docs/observability/wandb_integration",
   },
   {
     icon: "📉",
     title: "PostHog",
-    description: "Product analytics.",
+    description: "產品分析。",
     to: "/docs/observability/posthog_integration",
   },
 ]}
 />
 
-[View all observability integrations →](/docs/integrations/observability_integrations)
+[查看所有可觀測性整合 →](/docs/integrations/observability_integrations)
 
 ---
 
-## Alerting & Monitoring
+## 告警與監控 {#alerting--monitoring}
 
-Set up alerts, metrics collection, and infrastructure monitoring.
+設定告警、指標蒐集與基礎架構監控。
 
 <NavigationCards
 columns={2}
@@ -87,25 +87,25 @@ items={[
   {
     icon: "📈",
     title: "Prometheus",
-    description: "Metrics collection and monitoring.",
+    description: "指標蒐集與監控。",
     to: "../proxy/prometheus",
   },
   {
     icon: "🚨",
     title: "PagerDuty",
-    description: "Incident response and alerting.",
+    description: "事件回應與告警。",
     to: "../proxy/pagerduty",
   },
   {
     icon: "🔔",
-    title: "Alerting",
-    description: "Slack, Teams, and webhook alerts.",
+    title: "告警",
+    description: "Slack、Teams 與 webhook 告警。",
     to: "../proxy/alerting",
   },
   {
     icon: "🔍",
     title: "Pyroscope",
-    description: "Continuous profiling.",
+    description: "持續效能剖析。",
     to: "../proxy/pyroscope_profiling",
   },
 ]}
@@ -113,9 +113,9 @@ items={[
 
 ---
 
-## Guardrail Providers
+## 防護欄提供者 {#guardrail-providers}
 
-Add safety and content filtering to LLM calls.
+為 LLM 請求新增安全性與內容過濾。
 
 <NavigationCards
 columns={3}
@@ -123,49 +123,49 @@ items={[
   {
     icon: "🛡️",
     title: "Lakera AI",
-    description: "Prompt injection detection.",
+    description: "提示詞注入偵測。",
     to: "/docs/proxy/guardrails/lakera_ai",
   },
   {
     icon: "☁️",
     title: "Azure Content Safety",
-    description: "Content moderation.",
+    description: "內容審核。",
     to: "/docs/proxy/guardrails/azure_content_guardrail",
   },
   {
     icon: "🛏️",
     title: "Bedrock Guardrails",
-    description: "AWS Bedrock safety.",
+    description: "AWS Bedrock 安全性。",
     to: "/docs/proxy/guardrails/bedrock",
   },
   {
     icon: "🤖",
     title: "OpenAI Moderation",
-    description: "OpenAI content policy.",
+    description: "OpenAI 內容政策。",
     to: "/docs/proxy/guardrails/openai_moderation",
   },
   {
     icon: "🔐",
     title: "Secret Detection",
-    description: "Prevent credential leaks.",
+    description: "防止憑證外洩。",
     to: "/docs/proxy/guardrails/secret_detection",
   },
   {
     icon: "🕵️",
     title: "PII Masking",
-    description: "Mask sensitive data.",
+    description: "遮罩敏感資料。",
     to: "/docs/proxy/guardrails/pii_masking_v2",
   },
 ]}
 />
 
-[View all guardrail providers →](/docs/guardrail_providers)
+[查看所有防護欄提供者 →](/docs/guardrail_providers)
 
 ---
 
-## Policies
+## 政策 {#policies}
 
-Define and enforce usage policies across your LLM deployment.
+定義並強制執行跨 LLM 部署的使用政策。
 
 <NavigationCards
 columns={3}
@@ -173,19 +173,19 @@ items={[
   {
     icon: "📋",
     title: "Guardrail Policies",
-    description: "Policy-based guardrail rules.",
+    description: "基於政策的防護欄規則。",
     to: "../proxy/guardrails/guardrail_policies",
   },
   {
     icon: "🔀",
     title: "Policy Flow Builder",
-    description: "Visual policy configuration.",
+    description: "視覺化政策設定。",
     to: "../proxy/guardrails/policy_flow_builder",
   },
   {
     icon: "📄",
     title: "Policy Templates",
-    description: "Pre-built policy templates.",
+    description: "預先建立的政策範本。",
     to: "../proxy/guardrails/policy_templates",
   },
 ]}
@@ -193,9 +193,9 @@ items={[
 
 ---
 
-## AI Tools
+## AI 工具 {#ai-tools}
 
-Connect LiteLLM to AI-powered coding and productivity tools.
+將 LiteLLM 連接到 AI 驅動的程式碼與生產力工具。
 
 <NavigationCards
 columns={3}
@@ -203,37 +203,37 @@ items={[
   {
     icon: "💬",
     title: "OpenWebUI",
-    description: "Self-hosted ChatGPT-style interface.",
+    description: "自架的 ChatGPT 風格介面。",
     to: "../tutorials/openweb_ui",
   },
   {
     icon: "🤖",
     title: "Claude Code",
-    description: "Use LiteLLM with Claude Code.",
+    description: "將 LiteLLM 與 Claude Code 搭配使用。",
     to: "../tutorials/claude_responses_api",
   },
   {
     icon: "🖱️",
     title: "Cursor",
-    description: "AI code editor integration.",
+    description: "AI 程式碼編輯器整合。",
     to: "../tutorials/cursor_integration",
   },
   {
     icon: "🐙",
     title: "GitHub Copilot",
-    description: "GitHub Copilot integration.",
+    description: "GitHub Copilot 整合。",
     to: "../tutorials/github_copilot_integration",
   },
   {
     icon: "💻",
     title: "OpenCode",
-    description: "Open source coding assistant.",
+    description: "開源程式碼助理。",
     to: "../tutorials/opencode_integration",
   },
   {
     icon: "🔧",
     title: "Retool Assist",
-    description: "Retool AI assistant.",
+    description: "Retool AI 助理。",
     to: "../tutorials/retool_assist",
   },
 ]}
@@ -241,9 +241,9 @@ items={[
 
 ---
 
-## Agent SDKs
+## 代理程式 SDK {#agent-sdks}
 
-Use LiteLLM with agent frameworks and SDKs.
+將 LiteLLM 與代理程式框架和 SDK 搭配使用。
 
 <NavigationCards
 columns={3}
@@ -251,37 +251,37 @@ items={[
   {
     icon: "🤖",
     title: "OpenAI Agents SDK",
-    description: "Build agents with OpenAI's SDK.",
+    description: "使用 OpenAI 的 SDK 建立代理程式。",
     to: "../tutorials/openai_agents_sdk",
   },
   {
     icon: "🧠",
     title: "Claude Agent SDK",
-    description: "Build agents with Anthropic's SDK.",
+    description: "使用 Anthropic 的 SDK 建立代理程式。",
     to: "../tutorials/claude_agent_sdk",
   },
   {
     icon: "🌐",
     title: "Google ADK",
-    description: "Google Agent Development Kit.",
+    description: "Google Agent Development Kit。",
     to: "../tutorials/google_adk",
   },
   {
     icon: "🚀",
     title: "CopilotKit",
-    description: "In-app AI copilots.",
+    description: "應用程式內 AI 副駕。",
     to: "../tutorials/copilotkit_sdk",
   },
   {
     icon: "🧬",
     title: "Letta",
-    description: "Build stateful LLM agents with persistent memory.",
+    description: "使用具持久記憶的狀態式 LLM 代理程式建立。",
     to: "./letta",
   },
   {
     icon: "🎙️",
     title: "LiveKit",
-    description: "Real-time voice and video AI agents.",
+    description: "即時語音與視訊 AI 代理程式。",
     to: "../tutorials/livekit_xai_realtime",
   },
 ]}
@@ -289,9 +289,9 @@ items={[
 
 ---
 
-## Prompt Management
+## 提示詞管理 {#prompt-management}
 
-Manage, version, and deploy prompts.
+管理、版本控制並部署提示詞。
 
 <NavigationCards
 columns={3}
@@ -299,19 +299,19 @@ items={[
   {
     icon: "📝",
     title: "LiteLLM Prompt Management",
-    description: "Built-in prompt management.",
+    description: "內建提示詞管理。",
     to: "../proxy/litellm_prompt_management",
   },
   {
     icon: "🔌",
     title: "Custom Prompt Management",
-    description: "Bring your own prompt store.",
+    description: "使用您自己的提示詞儲存區。",
     to: "../proxy/custom_prompt_management",
   },
   {
     icon: "🔥",
     title: "Arize Phoenix Prompts",
-    description: "Prompt management with Phoenix.",
+    description: "使用 Phoenix 進行提示詞管理。",
     to: "../proxy/arize_phoenix_prompts",
   },
 ]}
@@ -319,9 +319,9 @@ items={[
 
 ---
 
-## Manage with AI Agents
+## 使用 AI 代理程式管理 {#manage-with-ai-agents}
 
-Use AI agents to manage your LiteLLM deployment — create users, teams, keys, models, and more via natural language.
+使用 AI 代理程式管理您的 LiteLLM 部署 — 透過自然語言建立使用者、團隊、金鑰、模型等。
 
 <NavigationCards
 columns={1}
@@ -329,7 +329,7 @@ items={[
   {
     icon: "🤖",
     title: "LiteLLM Skills",
-    description: "Manage LiteLLM via Claude Code — create keys, teams, models, and more using natural language commands.",
+    description: "透過 Claude Code 管理 LiteLLM — 使用自然語言命令建立金鑰、團隊、模型等。",
     to: "../tutorials/claude_code_skills",
   },
 ]}

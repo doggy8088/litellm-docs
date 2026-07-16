@@ -1,40 +1,40 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Invoking A2A Agents
+# 呼叫 A2A 代理程式 {#invoking-a2a-agents}
 
-Learn how to invoke A2A agents through LiteLLM using different methods.
+了解如何透過 LiteLLM 使用不同方法來呼叫 A2A 代理程式。
 
-:::tip Deploy Your Own A2A Agent
+:::tip 部署您自己的 A2A 代理程式
 
-Want to test with your own agent? Deploy this template A2A agent powered by Google Gemini:
+想要用您自己的代理程式測試嗎？部署這個由 Google Gemini 驅動的範本 A2A 代理程式：
 
-[**shin-bot-litellm/a2a-gemini-agent**](https://github.com/shin-bot-litellm/a2a-gemini-agent) - Simple deployable A2A agent with streaming support
+[**shin-bot-litellm/a2a-gemini-agent**](https://github.com/shin-bot-litellm/a2a-gemini-agent) - 可直接部署、支援串流的簡單 A2A 代理程式
 
 :::
 
-## A2A SDK
+## A2A SDK {#a2a-sdk}
 
-Use the [A2A Python SDK](https://pypi.org/project/a2a-sdk) (**>= 1.1.0**) to invoke agents through LiteLLM using the A2A protocol.
+使用 [A2A Python SDK](https://pypi.org/project/a2a-sdk)（**>= 1.1.0**）透過 A2A 協定呼叫代理程式。
 
 ```bash
 pip install "a2a-sdk>=1.1.0,<2.0" httpx
 ```
 
-Pin `protocolVersion: "1.0"` on the agent (recommended) so responses match the 1.x SDK. For legacy `0.3` wire format, pin `"0.3"` instead — see [Protocol versioning](./a2a#protocol-versioning).
+在代理程式上固定 `protocolVersion: "1.0"`（建議）以使回應符合 1.x SDK。若要使用舊版 `0.3` wire format，改為固定 `"0.3"`——請參閱[協定版本控管](./a2a#protocol-versioning)。
 
-:::info Migration from a2a-sdk 0.3.x
+:::info 從 a2a-sdk 0.3.x 遷移
 
-a2a-sdk 1.x replaces `A2AClient` + dict `MessageSendParams` with `ClientFactory`, protobuf `Message` / `Part` types, and `send_message` as an async generator of stream events. See the examples below.
+a2a-sdk 1.x 以 `A2AClient` + dict `MessageSendParams`、protobuf `Message` / `Part` 類型，以及 `send_message` 作為串流事件的 async generator 取代 `ClientFactory`。請參閱下方範例。
 
 :::
 
-### Non-Streaming
+### 非串流 {#non-streaming}
 
-This example shows how to:
-1. **List available agents** - Query `/v1/agents` to see which agents your key can access
-2. **Select an agent** - Pick an agent from the list
-3. **Invoke via A2A** - Use the A2A protocol to send messages to the agent
+此範例說明如何：
+1. **列出可用的代理程式** - 查詢 `/v1/agents` 以查看您的金鑰可存取哪些代理程式
+2. **選取一個代理程式** - 從清單中挑選一個代理程式
+3. **透過 A2A 呼叫** - 使用 A2A 協定將訊息傳送給代理程式
 
 ```python showLineNumbers title="invoke_a2a_agent.py"
 import asyncio
@@ -117,9 +117,9 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### Streaming
+### 串流 {#streaming}
 
-In a2a-sdk 1.x, set `streaming=True` on `ClientConfig` and iterate `send_message` — the same API handles streaming and non-streaming:
+在 a2a-sdk 1.x 中，將 `streaming=True` 設定在 `ClientConfig` 上，並疊代 `send_message`——同一個 API 同時處理串流與非串流：
 
 ```python showLineNumbers title="invoke_a2a_agent_streaming.py"
 import asyncio
@@ -176,11 +176,11 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## /chat/completions API (OpenAI SDK)
+## /chat/completions API（OpenAI SDK） {#chatcompletions-api-openai-sdk}
 
-You can also invoke A2A agents using the familiar OpenAI SDK by using the `a2a/` model prefix.
+您也可以使用熟悉的 OpenAI SDK，透過 `a2a/` 模型前綴來呼叫 A2A 代理程式。
 
-### Non-Streaming
+### 非串流 {#non-streaming-1}
 
 <Tabs>
 <TabItem value="python" label="Python" default>
@@ -242,7 +242,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### Streaming
+### 串流 {#streaming-1}
 
 <Tabs>
 <TabItem value="python" label="Python" default>
@@ -314,9 +314,9 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Task APIs (`tasks/get`, `tasks/list`, …)
+## 任務 API（`tasks/get`、`tasks/list`、…） {#task-apis-tasksget-taskslist-}
 
-Agents that return a `submitted` task from `message/send` expect clients to poll with `tasks/get`. Call the same LiteLLM base URL with JSON-RPC:
+從 `message/send` 傳回 `submitted` 任務的代理程式，會預期用戶端以 `tasks/get` 輪詢。請以 JSON-RPC 呼叫相同的 LiteLLM 基礎 URL：
 
 ```bash showLineNumbers title="tasks_get.sh"
 curl -X POST "http://localhost:4000/a2a/${AGENT_ID}" \
@@ -330,17 +330,17 @@ curl -X POST "http://localhost:4000/a2a/${AGENT_ID}" \
   }'
 ```
 
-LiteLLM forwards `tasks/get`, `tasks/list`, `tasks/cancel`, push-notification methods, and `agent/getAuthenticatedExtendedCard` to the upstream agent URL. See the full method list in [Supported A2A methods](./a2a_agent_card#supported-a2a-methods).
+LiteLLM 會將 `tasks/get`、`tasks/list`、`tasks/cancel`、推播通知方法，以及 `agent/getAuthenticatedExtendedCard` 轉送至上游代理程式 URL。完整的方法清單請參閱[支援的 A2A 方法](./a2a_agent_card#supported-a2a-methods)。
 
-## Key Differences
+## 主要差異 {#key-differences}
 
-| Method | Use Case | Advantages |
+| 方法 | 使用情境 | 優點 |
 |--------|----------|------------|
-| **A2A SDK** | Native A2A protocol integration | • Full A2A protocol support<br/>• Access to task states and artifacts<br/>• Context management |
-| **OpenAI SDK** | Familiar OpenAI-style interface | • Drop-in replacement for OpenAI calls<br/>• Easier migration from LLM to agent workflows<br/>• Works with existing OpenAI tooling |
+| **A2A SDK** | 原生 A2A 協定整合 | • 完整支援 A2A 協定<br/>• 可存取任務狀態與產物<br/>• 上下文管理 |
+| **OpenAI SDK** | 熟悉的 OpenAI 風格介面 | • 可直接替換 OpenAI 呼叫<br/>• 從 LLM 更容易遷移到代理程式工作流程<br/>• 可搭配既有的 OpenAI 工具鏈使用 |
 
-:::tip Model Prefix
+:::tip 模型前綴
 
-When using the OpenAI SDK, always prefix your agent name with `a2a/` (e.g., `a2a/my-agent`) to route requests to the A2A agent instead of an LLM provider.
+使用 OpenAI SDK 時，請務必在代理程式名稱前加上 `a2a/`（例如 `a2a/my-agent`），以便將請求路由至 A2A 代理程式，而不是 LLM 提供者。
 
 :::

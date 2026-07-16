@@ -1,35 +1,35 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Google GenAI SDK with LiteLLM
+# 搭配 LiteLLM 的 Google GenAI SDK {#google-genai-sdk-with-litellm}
 
-Use Google's official GenAI SDK (JavaScript/TypeScript and Python) with any LLM provider through LiteLLM Proxy.
+透過 LiteLLM Proxy，使用 Google 的官方 GenAI SDK（JavaScript/TypeScript 和 Python）搭配任何 LLM 提供者。
 
-The Google GenAI SDK (`@google/genai` for JS, `google-genai` for Python) provides a native interface for calling Gemini models. By pointing it to LiteLLM, you can use the same SDK with OpenAI, Anthropic, Bedrock, Azure, Vertex AI, or any other provider — while keeping the native Gemini request/response format.
+Google GenAI SDK（JS 使用 `@google/genai`，Python 使用 `google-genai`）提供呼叫 Gemini 模型的原生介面。只要將其指向 LiteLLM，您就能用同一套 SDK 搭配 OpenAI、Anthropic、Bedrock、Azure、Vertex AI，或任何其他提供者，同時保留原生的 Gemini 請求／回應格式。
 
-## Why Use LiteLLM with Google GenAI SDK?
+## 為什麼要將 LiteLLM 與 Google GenAI SDK 搭配使用？ {#why-use-litellm-with-google-genai-sdk}
 
-**Developer Benefits:**
-- **Universal Model Access**: Use any LiteLLM-supported model (Anthropic, OpenAI, Vertex AI, Bedrock, etc.) through the Google GenAI SDK interface
-- **Higher Rate Limits & Reliability**: Load balance across multiple models and providers to avoid hitting individual provider limits, with fallbacks to ensure you get responses even if one provider fails
+**開發者優勢：**
+- **通用模型存取**：透過 Google GenAI SDK 介面使用任何 LiteLLM 支援的模型（Anthropic、OpenAI、Vertex AI、Bedrock 等）
+- **更高的速率限制與可靠性**：在多個模型與提供者之間進行負載平衡，以避免碰到單一提供者的限制，並以備援機制確保即使某個提供者失敗，您仍可取得回應
 
-**Proxy Admin Benefits:**
-- **Centralized Management**: Control access to all models through a single LiteLLM proxy instance without giving developers API keys to each provider
-- **Budget Controls**: Set spending limits and track costs across all SDK usage
-- **Logging & Observability**: Track all requests with cost tracking, logging, and analytics
+**Proxy 管理員優勢：**
+- **集中管理**：透過單一 LiteLLM proxy 執行個體控制所有模型的存取，而不需要提供開發者各個提供者的 API 金鑰
+- **預算控制**：設定支出上限並追蹤所有 SDK 使用量的成本
+- **記錄與可觀測性**：以成本追蹤、記錄與分析功能追蹤所有請求
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | All models on `/generateContent` endpoint |
-| Logging | ✅ | Works across all integrations |
-| Streaming | ✅ | `streamGenerateContent` supported |
-| Virtual Keys | ✅ | Use LiteLLM keys instead of Google keys |
-| Load Balancing | ✅ | Via native router endpoints |
-| Fallbacks | ✅ | Via native router endpoints |
+| 成本追蹤 | ✅ | `/generateContent` 端點上的所有模型 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 串流 | ✅ | 支援 `streamGenerateContent` |
+| 虛擬金鑰 | ✅ | 使用 LiteLLM 金鑰而非 Google 金鑰 |
+| 負載平衡 | ✅ | 透過原生路由端點 |
+| 備援 | ✅ | 透過原生路由端點 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Install the SDK
+### 1. 安裝 SDK {#1-install-the-sdk}
 
 <Tabs>
 <TabItem value="js" label="JavaScript/TypeScript">
@@ -48,7 +48,7 @@ uv add google-genai
 </TabItem>
 </Tabs>
 
-### 2. Start LiteLLM Proxy
+### 2. 啟動 LiteLLM Proxy {#2-start-litellm-proxy}
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -62,7 +62,7 @@ model_list:
 litellm --config config.yaml
 ```
 
-### 3. Call the SDK through LiteLLM
+### 3. 透過 LiteLLM 呼叫 SDK {#3-call-the-sdk-through-litellm}
 
 <Tabs>
 <TabItem value="js" label="JavaScript/TypeScript">
@@ -123,7 +123,7 @@ curl "http://localhost:4000/gemini/v1beta/models/gemini-2.5-flash:generateConten
 </TabItem>
 </Tabs>
 
-## Streaming
+## 串流 {#streaming}
 
 <Tabs>
 <TabItem value="js" label="JavaScript/TypeScript">
@@ -175,7 +175,7 @@ for chunk in response:
 </TabItem>
 </Tabs>
 
-## Multi-turn Chat
+## 多輪對話 {#multi-turn-chat}
 
 <Tabs>
 <TabItem value="js" label="JavaScript/TypeScript">
@@ -228,23 +228,22 @@ print(response2.text)
 </TabItem>
 </Tabs>
 
+## 進階：在 GenAI SDK 中使用任何模型 {#advanced-use-any-model-with-the-genai-sdk}
 
-## Advanced: Use Any Model with the GenAI SDK
+預設情況下，GenAI SDK 會與 Gemini 模型通訊。但透過 LiteLLM 的路由器，您可以將 GenAI SDK 請求路由到**任何提供者**——Anthropic、OpenAI、Bedrock 等。
 
-By default, the GenAI SDK talks to Gemini models. But with LiteLLM's router, you can route GenAI SDK requests to **any provider** — Anthropic, OpenAI, Bedrock, etc.
-
-This works by using `model_group_alias` to map Gemini model names to your desired provider models. LiteLLM handles the format translation internally.
+這是透過使用 `model_group_alias`，將 Gemini 模型名稱對應到您想要的提供者模型來運作。LiteLLM 會在內部處理格式轉換。
 
 :::info
 
-For this to work, point the SDK `baseUrl` to `http://localhost:4000` (without `/gemini`). This routes requests through LiteLLM's native Google endpoints, which go through the router and support model aliasing.
+若要讓這項功能運作，請將 SDK `baseUrl` 指向 `http://localhost:4000`（不含 `/gemini`）。這會將請求路由經由 LiteLLM 的原生 Google 端點，再通過路由器並支援模型別名。
 
 :::
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-Route `gemini-2.5-flash` requests to Claude Sonnet:
+將 `gemini-2.5-flash` 請求路由到 Claude Sonnet：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -260,7 +259,7 @@ router_settings:
 </TabItem>
 <TabItem value="openai" label="OpenAI">
 
-Route `gemini-2.5-flash` requests to GPT-4o:
+將 `gemini-2.5-flash` 請求路由到 GPT-4o：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -276,7 +275,7 @@ router_settings:
 </TabItem>
 <TabItem value="bedrock" label="Bedrock">
 
-Route `gemini-2.5-flash` requests to Claude on Bedrock:
+將 `gemini-2.5-flash` 請求路由到 Bedrock 上的 Claude：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -294,7 +293,7 @@ router_settings:
 </TabItem>
 <TabItem value="multi" label="Multi-Provider Load Balancing">
 
-Load balance across Anthropic and OpenAI:
+在 Anthropic 與 OpenAI 之間進行負載平衡：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -314,7 +313,7 @@ router_settings:
 </TabItem>
 </Tabs>
 
-Then use the SDK with `baseUrl` pointing to LiteLLM (without `/gemini`):
+接著使用 SDK，並將 `baseUrl` 指向 LiteLLM（不含 `/gemini`）：
 
 <Tabs>
 <TabItem value="js" label="JavaScript/TypeScript">
@@ -363,25 +362,24 @@ print(response.text)
 </TabItem>
 </Tabs>
 
+## 轉送 vs 原生路由端點 {#pass-through-vs-native-router-endpoints}
 
-## Pass-through vs Native Router Endpoints
+LiteLLM 提供兩種處理 GenAI SDK 請求的方式：
 
-LiteLLM offers two ways to handle GenAI SDK requests:
-
-| | Pass-through (`/gemini`) | Native Router (`/`) |
+| | 轉送（`/gemini`） | 原生路由（`/`） |
 |---|---|---|
 | **baseUrl** | `http://localhost:4000/gemini` | `http://localhost:4000` |
-| **Models** | Gemini only | Any provider via `model_group_alias` |
-| **Translation** | None — proxies directly to Google | Translates internally |
-| **Cost Tracking** | ✅ | ✅ |
-| **Virtual Keys** | ✅ | ✅ |
-| **Load Balancing** | ❌ | ✅ |
-| **Fallbacks** | ❌ | ✅ |
-| **Best for** | Simple Gemini proxy | Multi-provider routing |
+| **模型** | 僅 Gemini | 透過 `model_group_alias` 使用任何提供者 |
+| **轉換** | 無——直接代理到 Google | 在內部轉換 |
+| **成本追蹤** | ✅ | ✅ |
+| **虛擬金鑰** | ✅ | ✅ |
+| **負載平衡** | ❌ | ✅ |
+| **備援** | ❌ | ✅ |
+| **最適合** | 簡單的 Gemini 代理 | 多提供者路由 |
 
-## Environment Variable Configuration
+## 環境變數設定 {#environment-variable-configuration}
 
-You can also configure the SDK via environment variables instead of code:
+您也可以透過環境變數而非程式碼來設定 SDK：
 
 ```bash
 # For JavaScript SDK (@google/genai)
@@ -394,13 +392,13 @@ export GEMINI_API_KEY="sk-1234"
 export GEMINI_API_KEY="sk-1234"
 ```
 
-This is especially useful for tools built on top of the GenAI SDK (like [Gemini CLI](./litellm_gemini_cli.md)).
+這對於建立在 GenAI SDK 之上的工具特別有用（例如 [Gemini CLI](./litellm_gemini_cli.md)）。
 
-## Related Resources
+## 相關資源 {#related-resources}
 
-- [Gemini CLI with LiteLLM](./litellm_gemini_cli.md)
-- [Google AI Studio Pass-Through](../pass_through/google_ai_studio)
-- [Google ADK with LiteLLM](./google_adk.md)
-- [LiteLLM Proxy Quick Start](../proxy/quick_start)
-- [`@google/genai` npm package](https://www.npmjs.com/package/@google/genai)
-- [`google-genai` PyPI package](https://pypi.org/project/google-genai/)
+- [搭配 LiteLLM 的 Gemini CLI](./litellm_gemini_cli.md)
+- [Google AI Studio 轉送](../pass_through/google_ai_studio)
+- [搭配 LiteLLM 的 Google ADK](./google_adk.md)
+- [LiteLLM Proxy 快速開始](../proxy/quick_start)
+- [`@google/genai` npm 套件](https://www.npmjs.com/package/@google/genai)
+- [`google-genai` PyPI 套件](https://pypi.org/project/google-genai/)

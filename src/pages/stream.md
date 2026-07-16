@@ -1,11 +1,11 @@
-# Streaming Responses & Async Completion
+# 串流回應與非同步完成 {#streaming-responses--async-completion}
 
-- [Streaming Responses](#streaming-responses)
-- [Async Completion](#async-completion)
+- [串流回應](#streaming-responses)
+- [非同步完成](#async-completion)
 
-## Streaming Responses
-LiteLLM supports streaming the model response back by passing `stream=True` as an argument to the completion function
-### Usage
+## 串流回應 {#streaming-responses}
+LiteLLM 支援將模型回應以串流方式傳回，只要將 `stream=True` 作為 completion 函式的參數傳入即可
+### 用法 {#usage}
 ```python
 response = completion(model="gpt-3.5-turbo", messages=messages, stream=True)
 for chunk in response:
@@ -13,10 +13,10 @@ for chunk in response:
 
 ```
 
-## Async Completion
-Asynchronous Completion with LiteLLM
-LiteLLM provides an asynchronous version of the completion function called `acompletion`
-### Usage
+## 非同步完成 {#async-completion}
+使用 LiteLLM 進行非同步完成
+LiteLLM 提供名為 `acompletion` 的 completion 函式非同步版本
+### 用法 {#usage-1}
 ```
 from litellm import acompletion
 import asyncio
@@ -32,15 +32,15 @@ print(response)
 
 ```
 
-## Streaming Token Usage 
+## 串流 Token 用量  {#streaming-token-usage}
 
-Supported across all providers. Works the same as openai. 
+適用於所有提供者。運作方式與 openai 相同。
 
 `stream_options={"include_usage": True}`
 
-If set, an additional chunk will be streamed before the data: [DONE] message. The usage field on this chunk shows the token usage statistics for the entire request, and the choices field will always be an empty array. All other chunks will also include a usage field, but with a null value.
+如果有設定，在 data: [DONE] 訊息之前會額外串流一個 chunk。此 chunk 上的 usage 欄位會顯示整個請求的 token 用量統計，而 choices 欄位一律會是空陣列。所有其他 chunk 也會包含 usage 欄位，但其值為 null。
 
-### SDK 
+### SDK {#sdk}
 ```python 
 from litellm import completion 
 import os
@@ -52,7 +52,7 @@ for chunk in response:
     print(chunk['choices'][0]['delta'])
 ```
 
-### PROXY
+### PROXY {#proxy}
 
 ```bash 
 curl https://0.0.0.0:4000/v1/chat/completions \

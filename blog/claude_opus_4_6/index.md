@@ -1,12 +1,12 @@
 ---
 slug: claude_opus_4_6
-title: "Day 0 Support: Claude Opus 4.6"
+title: "第 0 天支援：Claude Opus 4.6"
 date: 2026-02-05T10:00:00
 authors:
   - sameer
   - ishaan-alt
   - krrish
-description: "Day 0 support for Claude Opus 4.6 on LiteLLM AI Gateway - use across Anthropic, Azure, Vertex AI, and Bedrock."
+description: "LiteLLM AI Gateway 對 Claude Opus 4.6 的第 0 天支援 - 可跨 Anthropic、Azure、Vertex AI 和 Bedrock 使用。"
 tags: [anthropic, claude, opus 4.6]
 hide_table_of_contents: false
 ---
@@ -14,22 +14,22 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM now supports Claude Opus 4.6 on Day 0. Use it across Anthropic, Azure, Vertex AI, and Bedrock through the LiteLLM AI Gateway.
+LiteLLM 現在於第 0 天支援 Claude Opus 4.6。您可透過 LiteLLM AI Gateway 在 Anthropic、Azure、Vertex AI 和 Bedrock 上使用它。
 
 {/* truncate */}
 
-## Docker Image
+## Docker 映像 {#docker-image}
 
 ```bash
 docker pull ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.80.0-stable.opus-4-6
 ```
 
-## Usage - Anthropic
+## 用法 - Anthropic {#usage---anthropic}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -39,7 +39,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -50,7 +50,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -70,12 +70,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Usage - Azure
+## 用法 - Azure {#usage---azure}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -86,7 +86,7 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE  # https://<resource>.services.ai.azure.com
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -98,7 +98,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -118,12 +118,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Usage - Vertex AI
+## 用法 - Vertex AI {#usage---vertex-ai}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -134,7 +134,7 @@ model_list:
       vertex_location: us-east5
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -147,7 +147,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -167,12 +167,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Usage - Bedrock
+## 用法 - Bedrock {#usage---bedrock}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -184,7 +184,7 @@ model_list:
       aws_region_name: us-east-1
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -196,7 +196,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -216,18 +216,18 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Advanced Features
+## 進階功能 {#advanced-features}
 
-### Compaction
+### 壓縮 {#compaction}
 
 <Tabs>
 <TabItem value="completions" label="/chat/completions">
 
-Litellm supports enabling compaction for the new claude-opus-4-6.
+Litellm 支援為新的 claude-opus-4-6 啟用壓縮。
 
-**Enabling Compaction**
+**啟用壓縮**
 
-To enable compaction, add the `context_management` parameter with the `compact_20260112` edit type:
+若要啟用壓縮，請使用 `context_management` 參數與 `compact_20260112` 編輯類型：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -251,15 +251,15 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
   "max_tokens": 100
 }'
 ```
-All the parameters supported for context_management by anthropic are supported and can be directly added. Litellm automatically adds the `compact-2026-01-12` beta header in the request.
+Anthropic 支援的所有 context_management 參數都受到支援，且可直接加入。Litellm 會自動在請求中加入 `compact-2026-01-12` beta 標頭。
 
 </TabItem>
 <TabItem value="messages" label="/v1/messages">
 
-Enable compaction to reduce context size while preserving key information. LiteLLM automatically adds the `compact-2026-01-12` beta header when compaction is enabled.
+啟用壓縮可在保留關鍵資訊的同時縮減 context 大小。啟用壓縮時，LiteLLM 會自動加入 `compact-2026-01-12` beta 標頭。
 
 :::info
-**Provider Support:** Compaction is supported on Anthropic, Azure AI, and Vertex AI. It is **not supported** on Bedrock (Invoke or Converse APIs).
+**提供者支援：** 壓縮支援 Anthropic、Azure AI 和 Vertex AI。不支援 Bedrock（Invoke 或 Converse APIs）。
 :::
 
 ```bash
@@ -288,10 +288,9 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
+**含壓縮區塊的回應**
 
-**Response with Compaction Block**
-
-The response will include the compaction summary in `provider_specific_fields.compaction_blocks`:
+回應將在 `provider_specific_fields.compaction_blocks` 中包含壓縮摘要：
 
 ```json
 {
@@ -325,9 +324,9 @@ The response will include the compaction summary in `provider_specific_fields.co
 }
 ```
 
-**Using Compaction Blocks in Follow-up Requests**
+**在後續請求中使用壓縮區塊**
 
-To continue the conversation with compaction, include the compaction block in the assistant message's `provider_specific_fields`:
+若要使用壓縮繼續對話，請在 assistant 訊息的 `provider_specific_fields` 中包含壓縮區塊：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -373,23 +372,23 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Streaming Support**
+**串流支援**
 
-Compaction blocks are also supported in streaming mode. You'll receive:
-- `compaction_start` event when a compaction block begins
-- `compaction_delta` events with the compaction content
-- The accumulated `compaction_blocks` in `provider_specific_fields`
+串流模式也支援壓縮區塊。您將收到：
+- 壓縮區塊開始時的 `compaction_start` 事件
+- 含有壓縮內容的 `compaction_delta` 事件
+- 累積的 `compaction_blocks`，位於 `provider_specific_fields` 中
 
-### Adaptive Thinking
+### 自適應思考 {#adaptive-thinking}
 
 :::note
-When using `reasoning_effort` with Claude Opus 4.6, all values (`low`, `medium`, `high`, `max`) are mapped to `thinking: {type: "adaptive"}`. Explicit budgets via `thinking: {type: "enabled", budget_tokens: ...}` still work on Opus 4.6 but are deprecated and no longer recommended; prefer adaptive thinking with `output_config.effort` (see [Effort Levels](#effort-levels) below) to control thinking depth.
+使用 `reasoning_effort` 搭配 Claude Opus 4.6 時，所有值（`low`、`medium`、`high`、`max`）都會對應到 `thinking: {type: "adaptive"}`。透過 `thinking: {type: "enabled", budget_tokens: ...}` 設定的明確預算在 Opus 4.6 上仍可運作，但已棄用且不再建議；請改用帶有 `output_config.effort` 的自適應思考（請參閱下方的 [Effort Levels](#effort-levels)）來控制思考深度。
 :::
 
 <Tabs>
 <TabItem value="completions" label="/chat/completions">
 
-LiteLLM supports adaptive thinking through the `reasoning_effort` parameter:
+LiteLLM 透過 `reasoning_effort` 參數支援自適應思考：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -410,7 +409,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 <TabItem value="messages" label="/v1/messages">
 
-Use the `thinking` parameter with `type: "adaptive"` to enable adaptive thinking mode:
+使用 `thinking` 參數搭配 `type: "adaptive"` 以啟用自適應思考模式：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -434,7 +433,7 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 <TabItem value="native" label="Native thinking param">
 
-Use the `thinking` parameter directly for adaptive thinking via the SDK:
+直接使用 `thinking` 參數，透過 SDK 啟用自適應思考：
 
 ```python
 import litellm
@@ -449,12 +448,12 @@ response = litellm.completion(
 </TabItem>
 </Tabs>
 
-### Effort Levels
+### 努力等級 {#effort-levels}
 
 <Tabs>
 <TabItem value="completions" label="/chat/completions">
 
-Four effort levels available: `low`, `medium`, `high` (default), and `max`. Pass directly via the `output_config` parameter:
+可用的四個 effort levels：`low`、`medium`、`high`（預設）以及 `max`。請直接透過 `output_config` 參數傳入：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -474,12 +473,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-You can use reasoning effort plus output_config to have more control on the model.
+您可以使用 reasoning effort 搭配 output_config，以便更精細地控制模型。
 
 </TabItem>
 <TabItem value="messages" label="/v1/messages">
 
-Four effort levels available: `low`, `medium`, `high` (default), and `max`. Pass directly via the `output_config` parameter:
+可用的四個 effort levels：`low`、`medium`、`high`（預設）以及 `max`。請直接透過 `output_config` 參數傳入：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -503,23 +502,23 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
-### 1M Token Context (Beta)
+### 1M Token 上下文（Beta） {#1m-token-context-beta}
 
-Opus 4.6 supports 1M token context. Premium pricing applies for prompts exceeding 200k tokens ($10/$37.50 per million input/output tokens). LiteLLM supports cost calculations for 1M token contexts.
+Opus 4.6 支援 1M token context。超過 200k tokens 的提示詞將適用進階定價（每百萬 input/output tokens 為 $10/$37.50）。LiteLLM 支援 1M token contexts 的成本計算。
 
 <Tabs>
 <TabItem value="completions" label="/chat/completions">
 
-To use the 1M token context window, you need to forward the `anthropic-beta` header from your client to the LLM provider.
+若要使用 1M token context 視窗，您需要將來自用戶端的 `anthropic-beta` 標頭轉送到 LLM 提供者。
 
-**Step 1: Enable header forwarding in your config**
+**步驟 1：在您的設定中啟用標頭轉送**
 
 ```yaml
 general_settings:
   forward_client_headers_to_llm_api: true
 ```
 
-**Step 2: Send requests with the beta header**
+**步驟 2：使用 beta 標頭傳送請求**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -540,16 +539,16 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 <TabItem value="messages" label="/v1/messages">
 
-To use the 1M token context window, you need to forward the `anthropic-beta` header from your client to the LLM provider.
+若要使用 1M token context 視窗，您需要將來自用戶端的 `anthropic-beta` 標頭轉送到 LLM 提供者。
 
-**Step 1: Enable header forwarding in your config**
+**步驟 1：在您的設定中啟用標頭轉送**
 
 ```yaml
 general_settings:
   forward_client_headers_to_llm_api: true
 ```
 
-**Step 2: Send requests with the beta header**
+**步驟 2：使用 beta 標頭傳送請求**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -569,7 +568,7 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 ```
 
 :::tip
-You can combine multiple beta headers by separating them with commas:
+您可以透過逗號分隔來合併多個 beta 標頭：
 ```bash
 --header 'anthropic-beta: context-1m-2025-08-07,compact-2026-01-12'
 ```
@@ -578,14 +577,14 @@ You can combine multiple beta headers by separating them with commas:
 </TabItem>
 </Tabs>
 
-### US-Only Inference
+### 僅限美國推論 {#us-only-inference}
 
-Available at 1.1× token pricing. LiteLLM automatically tracks costs for US-only inference.
+可用價格為 token 價格的 1.1×。LiteLLM 會自動追蹤僅限美國推論的成本。
 
 <Tabs>
 <TabItem value="completions" label="/chat/completions">
 
-Use the `inference_geo` parameter to specify US-only inference:
+使用 `inference_geo` 參數來指定僅限美國推論：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -603,12 +602,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-LiteLLM will automatically apply the 1.1× pricing multiplier for US-only inference in cost tracking.
+LiteLLM 會在成本追蹤中自動套用僅限美國推論的 1.1× 價格乘數。
 
 </TabItem>
 <TabItem value="messages" label="/v1/messages">
 
-Use the `inference_geo` parameter to specify US-only inference:
+使用 `inference_geo` 參數來指定僅限美國推論：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -627,20 +626,20 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 }'
 ```
 
-LiteLLM will automatically apply the 1.1× pricing multiplier for US-only inference in cost tracking.
+LiteLLM 會在成本追蹤中自動套用僅限美國推論的 1.1× 價格乘數。
 
 </TabItem>
 </Tabs>
 
-### Fast Mode
+### 快速模式 {#fast-mode}
 
 :::info
-Fast mode is **only supported on the Anthropic provider** (`anthropic/claude-opus-4-6`). It is not available on Azure AI, Vertex AI, or Bedrock.
+快速模式**僅支援 Anthropic 提供者**（`anthropic/claude-opus-4-6`）。Azure AI、Vertex AI 或 Bedrock 上均不可用。
 :::
 
-**Pricing:**
-- Standard: $5 input / $25 output per MTok
-- Fast: $30 input / $150 output per MTok (6× premium)
+**定價：**
+- 標準：每 MTok $5 input / $25 output
+- 快速：每 MTok $30 input / $150 output（6× premium）
 
 <Tabs>
 <TabItem value="completions" label="/chat/completions">
@@ -662,7 +661,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Using OpenAI SDK:**
+**使用 OpenAI SDK：**
 
 ```python
 import openai
@@ -680,7 +679,7 @@ response = client.chat.completions.create(
 )
 ```
 
-**Using LiteLLM SDK:**
+**使用 LiteLLM SDK：**
 
 ```python
 from litellm import completion
@@ -693,7 +692,7 @@ response = completion(
 )
 ```
 
-LiteLLM automatically tracks the higher costs for fast mode in usage and cost calculations.
+LiteLLM 會在使用量與成本計算中自動追蹤快速模式較高的成本。
 
 </TabItem>
 <TabItem value="messages" label="/v1/messages">
@@ -715,9 +714,9 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 }'
 ```
 
-LiteLLM automatically:
-- Adds the `fast-mode-2026-02-01` beta header
-- Tracks the 6× premium pricing in cost calculations
+LiteLLM 會自動：
+- 加入 `fast-mode-2026-02-01` beta 標頭
+- 在成本計算中追蹤 6× premium 定價
 
 </TabItem>
 </Tabs>

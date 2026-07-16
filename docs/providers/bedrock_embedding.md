@@ -1,38 +1,38 @@
-# Bedrock Embedding
+# Bedrock 嵌入 {#bedrock-embedding}
 
-## Supported Embedding Models
+## 支援的嵌入模型 {#supported-embedding-models}
 
-| Provider | LiteLLM Route | AWS Documentation | Cost Tracking |
+| 提供者 | LiteLLM 路由 | AWS 文件 | 成本追蹤 |
 |----------|---------------|-------------------|---------------|
 | Amazon Titan | `bedrock/amazon.titan-*` | [Amazon Titan Embeddings](https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html) | ✅ |
 | Amazon Nova | `bedrock/amazon.nova-*` | [Amazon Nova Embeddings](https://docs.aws.amazon.com/bedrock/latest/userguide/nova-embed.html) | ✅ |
 | Cohere | `bedrock/cohere.*` | [Cohere Embeddings](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-cohere-embed.html) | ✅ |
 | TwelveLabs | `bedrock/us.twelvelabs.*` | [TwelveLabs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-twelvelabs.html) | ✅ |
 
-## Async Invoke Support
+## 非同步 Invoke 支援 {#async-invoke-support}
 
-LiteLLM supports AWS Bedrock's async-invoke feature for embedding models that require asynchronous processing, particularly useful for large media files (video, audio) or when you need to process embeddings in the background.
+LiteLLM 支援 AWS Bedrock 的 async-invoke 功能，適用於需要非同步處理的嵌入模型，特別適合大型媒體檔案（影片、音訊），或當您需要在背景處理嵌入時使用。
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-| Provider | Async Invoke Route | Use Case |
+| 提供者 | 非同步 Invoke 路由 | 使用情境 |
 |----------|-------------------|----------|
-| Amazon Nova | `bedrock/async_invoke/amazon.nova-2-multimodal-embeddings-v1:0` | Multimodal embeddings with segmentation for long text, video, and audio |
-| TwelveLabs Marengo | `bedrock/async_invoke/us.twelvelabs.marengo-embed-2-7-v1:0` | Video, audio, image, and text embeddings |
+| Amazon Nova | `bedrock/async_invoke/amazon.nova-2-multimodal-embeddings-v1:0` | 具分段功能的多模態嵌入，適用於長文本、影片與音訊 |
+| TwelveLabs Marengo | `bedrock/async_invoke/us.twelvelabs.marengo-embed-2-7-v1:0` | 影片、音訊、圖片與文字嵌入 |
 
-### Required Parameters
+### 必要參數 {#required-parameters}
 
-When using async-invoke, you must provide:
+使用 async-invoke 時，您必須提供：
 
-| Parameter | Description | Required |
+| 參數 | 說明 | 必填 |
 |-----------|-------------|----------|
-| `output_s3_uri` | S3 URI where the embedding results will be stored | ✅ Yes |
-| `input_type` | Type of input: `"text"`, `"image"`, `"video"`, or `"audio"` | ✅ Yes |
-| `aws_region_name` | AWS region for the request | ✅ Yes |
+| `output_s3_uri` | 儲存嵌入結果的 S3 URI | ✅ 是 |
+| `input_type` | 輸入類型：`"text"`、`"image"`、`"video"`，或 `"audio"` | ✅ 是 |
+| `aws_region_name` | 此請求的 AWS 區域 | ✅ 是 |
 
-### Usage
+### 使用方式 {#usage}
 
-#### Basic Async Invoke
+#### 基本非同步 Invoke {#basic-async-invoke}
 
 ```python
 from litellm import embedding
@@ -49,7 +49,7 @@ response = embedding(
 print(f"Job submitted! Invocation ARN: {response._hidden_params._invocation_arn}")
 ```
 
-#### Video/Audio Embedding
+#### 影片/音訊嵌入 {#videoaudio-embedding}
 
 ```python
 # Video embedding (requires async-invoke)
@@ -64,7 +64,7 @@ response = embedding(
 print(f"Video embedding job submitted! ARN: {response._hidden_params._invocation_arn}")
 ```
 
-#### Image Embedding with Base64
+#### 以 Base64 進行圖片嵌入 {#image-embedding-with-base64}
 
 ```python
 import base64
@@ -83,11 +83,11 @@ response = embedding(
 )
 ```
 
-### Retrieving Job Information
+### 取得工作資訊 {#retrieving-job-information}
 
-#### Getting Job ID and Invocation ARN
+#### 取得 Job ID 與 Invocation ARN {#getting-job-id-and-invocation-arn}
 
-The async-invoke response includes the invocation ARN in the hidden parameters:
+async-invoke 回應會在隱藏參數中包含 invocation ARN：
 
 ```python
 response = embedding(
@@ -107,9 +107,9 @@ job_id = invocation_arn.split("/")[-1]
 print(f"Job ID: {job_id}")
 ```
 
-#### Checking Job Status
+#### 檢查工作狀態 {#checking-job-status}
 
-Use LiteLLM's `retrieve_batch` function to check if your job is still processing:
+使用 LiteLLM 的 `retrieve_batch` 函式來檢查您的工作是否仍在處理中：
 
 ```python
 from litellm import retrieve_batch
@@ -134,9 +134,9 @@ if status:
     print(f"Output Location: {status.metadata['output_file_id']}")  # S3 URI where results are stored
 ```
 
-#### Polling Until Complete
+#### 透過輪詢直到完成 {#polling-until-complete}
 
-Here's a complete example of polling for job completion:
+以下是一個完整的工作完成輪詢範例：
 
 ```python
 def wait_for_async_job(invocation_arn, aws_region_name="us-east-1", max_wait=3600):
@@ -170,18 +170,18 @@ output_s3_uri = completed_status.metadata['output_file_id']
 print(f"Results available at: {output_s3_uri}")
 ```
 
-**Note:** The actual embedding results are stored in S3. When the job is completed, download the results from the S3 location specified in `status.metadata['output_file_id']`. The results will be in JSON/JSONL format containing the embedding vectors.
+**注意：** 實際的嵌入結果會儲存在 S3 中。工作完成後，請從 `status.metadata['output_file_id']` 中指定的 S3 位置下載結果。結果將採用 JSON/JSONL 格式，並包含嵌入向量。
 
-## Amazon Nova Multimodal Embeddings
+## Amazon Nova 多模態嵌入 {#amazon-nova-multimodal-embeddings}
 
-Amazon Nova supports multimodal embeddings for text, images, video, and audio. It offers flexible embedding dimensions and purposes optimized for different use cases.
+Amazon Nova 支援文字、圖片、影片與音訊的多模態嵌入。它提供彈性的嵌入維度與用途，針對不同使用情境最佳化。
 
-### Supported Features
+### 支援的功能 {#supported-features}
 
-- **Modalities**: Text, Image, Video, Audio
-- **Dimensions**: 256, 384, 1024, 3072 (default: 3072)
-- **Embedding Purposes**: 
-  - `GENERIC_INDEX` (default)
+- **模態**：文字、圖片、影片、音訊
+- **維度**：256、384、1024、3072（預設：3072）
+- **嵌入用途**： 
+  - `GENERIC_INDEX`（預設）
   - `GENERIC_RETRIEVAL`
   - `TEXT_RETRIEVAL`
   - `IMAGE_RETRIEVAL`
@@ -190,7 +190,7 @@ Amazon Nova supports multimodal embeddings for text, images, video, and audio. I
   - `CLASSIFICATION`
   - `CLUSTERING`
 
-### Text Embedding
+### 文字嵌入 {#text-embedding}
 
 ```python
 from litellm import embedding
@@ -205,9 +205,9 @@ response = embedding(
 print(response.data[0].embedding)
 ```
 
-### Image Embedding with Base64
+### 以 Base64 進行圖片嵌入 {#image-embedding-with-base64-1}
 
-Amazon Nova accepts images in base64 format using the standard data URL format:
+Amazon Nova 可使用標準 data URL 格式接受 base64 格式的圖片：
 
 ```python
 import base64
@@ -229,15 +229,15 @@ response = embedding(
 print(f"Image embedding: {response.data[0].embedding[:10]}...")  # First 10 dimensions
 ```
 
-#### Supported Image Formats
+#### 支援的圖片格式 {#supported-image-formats}
 
-Nova supports the following image formats:
+Nova 支援以下圖片格式：
 - JPEG: `data:image/jpeg;base64,...`
 - PNG: `data:image/png;base64,...`
 - GIF: `data:image/gif;base64,...`
 - WebP: `data:image/webp;base64,...`
 
-#### Complete Example with Error Handling
+#### 含錯誤處理的完整範例 {#complete-example-with-error-handling}
 
 ```python
 import base64
@@ -291,17 +291,17 @@ image_embedding = get_image_embedding("photo.jpg", dimensions=1024)
 print(f"Got embedding with {len(image_embedding)} dimensions")
 ```
 
-### Error Handling
+### 錯誤處理 {#error-handling}
 
-#### Common Errors
+#### 常見錯誤 {#common-errors}
 
-| Error | Cause | Solution |
+| 錯誤 | 原因 | 解決方案 |
 |-------|-------|----------|
-| `ValueError: output_s3_uri cannot be empty` | Missing S3 output URI | Provide a valid S3 URI |
-| `ValueError: Input type 'video' requires async_invoke route` | Using video/audio without async-invoke | Use `bedrock/async_invoke/` model prefix |
-| `ValueError: input_type is required` | Missing input type parameter | Specify `input_type` parameter |
+| `ValueError: output_s3_uri cannot be empty` | 缺少 S3 輸出 URI | 提供有效的 S3 URI |
+| `ValueError: Input type 'video' requires async_invoke route` | 在未使用 async-invoke 的情況下使用影片/音訊 | 使用 `bedrock/async_invoke/` 模型前綴 |
+| `ValueError: input_type is required` | 缺少輸入類型參數 | 指定 `input_type` 參數 |
 
-#### Example Error Handling
+#### 錯誤處理範例 {#example-error-handling}
 
 ```python
 try:
@@ -325,24 +325,24 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
-### Best Practices
+### 最佳做法 {#best-practices}
 
-1. **Use async-invoke for large files**: Video and audio files are better processed asynchronously
-2. **Use LiteLLM batch API**: Use `retrieve_batch()` instead of direct Bedrock API calls for status checking
-3. **Monitor job status**: Check job status periodically using the batch API to know when results are ready
-4. **Handle errors gracefully**: Implement proper error handling for network issues and job failures
-5. **Set appropriate timeouts**: Consider the processing time for large files
-6. **Use S3 for large inputs**: For video/audio, use S3 URLs instead of base64 encoding
+1. **大型檔案使用 async-invoke**：影片與音訊檔案更適合以非同步方式處理
+2. **使用 LiteLLM batch API**：狀態檢查請使用 `retrieve_batch()`，而非直接呼叫 Bedrock API
+3. **監控工作狀態**：定期使用 batch API 檢查工作狀態，以知道結果何時就緒
+4. **妥善處理錯誤**：針對網路問題與工作失敗實作正確的錯誤處理
+5. **設定適當的逾時時間**：考量大型檔案的處理時間
+6. **大型輸入使用 S3**：對於影片/音訊，請使用 S3 URL，而非 base64 編碼
 
-### Limitations
+### 限制 {#limitations}
 
-- Async-invoke is supported for TwelveLabs Marengo and Amazon Nova models
-- Results are stored in S3 and must be retrieved separately using the output file ID
-- Job status checking requires using LiteLLM's `retrieve_batch()` function
-- No built-in polling mechanism in LiteLLM (must implement your own status checking loop)
+- TwelveLabs Marengo 與 Amazon Nova 模型支援 async-invoke
+- 結果會儲存在 S3，且必須使用輸出檔案 ID 另外擷取
+- 工作狀態檢查需要使用 LiteLLM 的 `retrieve_batch()` 函式
+- LiteLLM 沒有內建輪詢機制（必須自行實作狀態檢查迴圈）
 
-### API keys
-This can be set as env variables or passed as **params to litellm.embedding()**
+### API 金鑰 {#api-keys}
+這可以設定為環境變數，或作為 **params to litellm.embedding()** 傳入
 ```python
 import os
 os.environ["AWS_ACCESS_KEY_ID"] = ""        # Access key
@@ -350,8 +350,8 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = ""    # Secret access key
 os.environ["AWS_REGION_NAME"] = ""           # us-east-1, us-east-2, us-west-1, us-west-2
 ```
 
-## Usage
-### LiteLLM Python SDK
+## 使用方式 {#usage-1}
+### LiteLLM Python SDK {#litellm-python-sdk}
 ```python
 from litellm import embedding
 response = embedding(
@@ -361,9 +361,9 @@ response = embedding(
 print(response)
 ```
 
-### LiteLLM Proxy Server
+### LiteLLM Proxy Server {#litellm-proxy-server}
 
-#### 1. Setup config.yaml
+#### 1. 設定 config.yaml {#1-setup-configyaml}
 ```yaml
 model_list:
   - model_name: titan-embed-v1
@@ -380,12 +380,12 @@ model_list:
       aws_region_name: us-east-1
 ```
 
-#### 2. Start Proxy 
+#### 2. 啟動 Proxy  {#2-start-proxy}
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-#### 3. Use with OpenAI Python SDK
+#### 3. 與 OpenAI Python SDK 搭配使用 {#3-use-with-openai-python-sdk}
 ```python
 import openai
 client = openai.OpenAI(
@@ -400,7 +400,7 @@ response = client.embeddings.create(
 print(response)
 ```
 
-#### 4. Use with LiteLLM Python SDK
+#### 4. 與 LiteLLM Python SDK 搭配使用 {#4-use-with-litellm-python-sdk}
 ```python
 import litellm
 response = litellm.embedding(
@@ -412,19 +412,19 @@ response = litellm.embedding(
 print(response)
 ```
 
-## Supported AWS Bedrock Embedding Models
+## 支援的 AWS Bedrock 嵌入模型 {#supported-aws-bedrock-embedding-models}
 
-| Model Name           | Usage                               | Supported Additional OpenAI params |
+| 模型名稱           | 用途                               | 支援的額外 OpenAI 參數 |
 |----------------------|---------------------------------------------|-----|
-| **Amazon Nova Multimodal Embeddings** | `embedding(model="bedrock/amazon.nova-2-multimodal-embeddings-v1:0", input=input)` | Supports multimodal input (text, image, video, audio), multiple purposes, dimensions (256, 384, 1024, 3072) |
-| Titan Embeddings V2 | `embedding(model="bedrock/amazon.titan-embed-text-v2:0", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_v2_transformation.py#L59) |
-| Titan Embeddings - V1 | `embedding(model="bedrock/amazon.titan-embed-text-v1", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_g1_transformation.py#L53)
-| Titan Multimodal Embeddings | `embedding(model="bedrock/amazon.titan-embed-image-v1", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_multimodal_transformation.py#L28) |
-| TwelveLabs Marengo Embed 2.7 | `embedding(model="bedrock/us.twelvelabs.marengo-embed-2-7-v1:0", input=input)` | Supports multimodal input (text, video, audio, image) |
-| Cohere Embeddings - English | `embedding(model="bedrock/cohere.embed-english-v3", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
-| Cohere Embeddings - Multilingual | `embedding(model="bedrock/cohere.embed-multilingual-v3", input=input)` | [here](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
-| Cohere Embed v4 | `embedding(model="bedrock/cohere.embed-v4:0", input=input)` | Supports text and image input, configurable dimensions (256, 512, 1024, 1536), 128k context length |
+| **Amazon Nova Multimodal Embeddings** | `embedding(model="bedrock/amazon.nova-2-multimodal-embeddings-v1:0", input=input)` | 支援多模態輸入（文字、圖片、影片、音訊）、多種用途、維度（256、384、1024、3072） |
+| Titan Embeddings V2 | `embedding(model="bedrock/amazon.titan-embed-text-v2:0", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_v2_transformation.py#L59) |
+| Titan Embeddings - V1 | `embedding(model="bedrock/amazon.titan-embed-text-v1", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_g1_transformation.py#L53)
+| Titan Multimodal Embeddings | `embedding(model="bedrock/amazon.titan-embed-image-v1", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/amazon_titan_multimodal_transformation.py#L28) |
+| TwelveLabs Marengo Embed 2.7 | `embedding(model="bedrock/us.twelvelabs.marengo-embed-2-7-v1:0", input=input)` | 支援多模態輸入（文字、影片、音訊、圖片） |
+| Cohere Embeddings - English | `embedding(model="bedrock/cohere.embed-english-v3", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
+| Cohere Embeddings - Multilingual | `embedding(model="bedrock/cohere.embed-multilingual-v3", input=input)` | [這裡](https://github.com/BerriAI/litellm/blob/f5905e100068e7a4d61441d7453d7cf5609c2121/litellm/llms/bedrock/embed/cohere_transformation.py#L18)
+| Cohere Embed v4 | `embedding(model="bedrock/cohere.embed-v4:0", input=input)` | 支援文字與圖片輸入，可設定維度（256、512、1024、1536），128k context length |
 
-### Advanced - [Drop Unsupported Params](https://docs.litellm.ai/docs/completion/drop_params#openai-proxy-usage)
+### 進階 - [捨棄不支援的參數](https://docs.litellm.ai/docs/completion/drop_params#openai-proxy-usage) {#advanced---drop-unsupported-paramshttpsdocslitellmaidocscompletiondrop_paramsopenai-proxy-usage}
 
-### Advanced - [Pass model/provider-specific Params](https://docs.litellm.ai/docs/completion/provider_specific_params#proxy-usage)
+### 進階 - [傳遞模型/提供者專屬參數](https://docs.litellm.ai/docs/completion/provider_specific_params#proxy-usage) {#advanced---pass-modelprovider-specific-paramshttpsdocslitellmaidocscompletionprovider_specific_paramsproxy-usage}

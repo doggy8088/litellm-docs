@@ -1,135 +1,126 @@
 import Image from '@theme/IdealImage';
 
-# Microsoft SSO: Sync Groups, Members with LiteLLM
+# Microsoft SSO：使用 LiteLLM 同步群組、成員 {#microsoft-sso-sync-groups-members-with-litellm}
 
-Sync Microsoft SSO Groups, Members with LiteLLM Teams. 
+使用 LiteLLM Teams 同步 Microsoft SSO 群組、成員。 
 
 <Image img={require('../../img/litellm_entra_id.png')}  style={{ width: '800px', height: 'auto' }} />
 
 <br />
 <br />
 
+## 先決條件 {#prerequisites}
 
-## Prerequisites
+- 具備管理權限的 Azure Entra ID 帳戶
+- 已在您的 Azure 入口網站中設定好的 LiteLLM Enterprise App
+- 可存取 Microsoft Entra ID（Azure AD）
 
-- An Azure Entra ID account with administrative access
-- A LiteLLM Enterprise App set up in your Azure Portal
-- Access to Microsoft Entra ID (Azure AD)
+## 本教學概覽 {#overview-of-this-tutorial}
 
+1. 在 LiteLLM Teams 上自動建立 Entra ID 群組
+2. 同步 Entra ID 團隊成員資格
+3. 為 LiteLLM 上自動建立的新團隊與使用者設定預設參數
 
-## Overview of this tutorial
+## 1. 在 LiteLLM Teams 上自動建立 Entra ID 群組  {#1-auto-create-entra-id-groups-on-litellm-teams}
 
-1. Auto-Create Entra ID Groups on LiteLLM Teams 
-2. Sync Entra ID Team Memberships
-3. Set default params for new teams and users auto-created on LiteLLM
+在這一步中，我們的目標是：當 Azure Entra ID 中的 LiteLLM Enterprise App 新增了群組時，讓 LiteLLM 自動在 LiteLLM DB 中建立一個新團隊。
 
-## 1. Auto-Create Entra ID Groups on LiteLLM Teams 
+### 1.1 在 Entra ID 中建立新群組 {#11-create-a-new-group-in-entra-id}
 
-In this step, our goal is to have LiteLLM automatically create a new team on the LiteLLM DB when there is a new Group Added to the LiteLLM Enterprise App on Azure Entra ID.
-
-### 1.1 Create a new group in Entra ID
-
-
-Navigate to [your Azure Portal](https://portal.azure.com/) > Groups > New Group. Create a new group. 
+前往 [您的 Azure 入口網站](https://portal.azure.com/) > 群組 > 新增群組。建立一個新群組。 
 
 <Image img={require('../../img/entra_create_team.png')}  style={{ width: '800px', height: 'auto' }} />
 
-### 1.2 Assign the group to your LiteLLM Enterprise App
+### 1.2 將群組指派給您的 LiteLLM Enterprise App {#12-assign-the-group-to-your-litellm-enterprise-app}
 
-On your Azure Portal, navigate to `Enterprise Applications` > Select your litellm app 
+在您的 Azure 入口網站中，前往 `Enterprise Applications` > 選取您的 litellm app 
 
 <Image img={require('../../img/msft_enterprise_app.png')}  style={{ width: '800px', height: 'auto' }} />
 
 <br />
 <br />
 
-Once you've selected your litellm app, click on `Users and Groups` > `Add user/group` 
+選取您的 litellm app 後，點擊 `Users and Groups` > `Add user/group` 
 
 <Image img={require('../../img/msft_enterprise_assign_group.png')}  style={{ width: '800px', height: 'auto' }} />
 
 <br />
 
-Now select the group you created in step 1.1. And add it to the LiteLLM Enterprise App. At this point we have added `Production LLM Evals Group` to the LiteLLM Enterprise App. The next steps is having LiteLLM automatically create the `Production LLM Evals Group` on the LiteLLM DB when a new user signs in.
+現在選取您在步驟 1.1 建立的群組，並將其新增至 LiteLLM Enterprise App。此時我們已將 `Production LLM Evals Group` 新增至 LiteLLM Enterprise App。接下來的步驟是讓 LiteLLM 在新使用者登入時，自動在 LiteLLM DB 中建立 `Production LLM Evals Group`。
 
 <Image img={require('../../img/msft_enterprise_select_group.png')}  style={{ width: '800px', height: 'auto' }} />
 
+### 1.3 透過 SSO 登入 LiteLLM UI {#13-sign-in-to-litellm-ui-via-sso}
 
-### 1.3 Sign in to LiteLLM UI via SSO
-
-Sign into the LiteLLM UI via SSO. You should be redirected to the Entra ID SSO page. This SSO sign in flow will trigger LiteLLM to fetch the latest Groups and Members from Azure Entra ID.
+透過 SSO 登入 LiteLLM UI。您應該會被重新導向至 Entra ID SSO 頁面。這個 SSO 登入流程會觸發 LiteLLM 從 Azure Entra ID 取得最新的群組與成員。
 
 <Image img={require('../../img/msft_sso_sign_in.png')}  style={{ width: '800px', height: 'auto' }} />
 
-### 1.4 Check the new team on LiteLLM UI
+### 1.4 在 LiteLLM UI 上查看新團隊 {#14-check-the-new-team-on-litellm-ui}
 
-On the LiteLLM UI, Navigate to `Teams`, You should see the new team `Production LLM Evals Group` auto-created on LiteLLM. 
+在 LiteLLM UI 中，前往 `Teams`，您應該會看到新團隊 `Production LLM Evals Group` 已由 LiteLLM 自動建立。 
 
 <Image img={require('../../img/msft_auto_team.png')}  style={{ width: '900px', height: 'auto' }} />
 
-#### How this works
+#### 這是如何運作的 {#how-this-works}
 
-When a SSO user signs in to LiteLLM:
-- LiteLLM automatically fetches the Groups under the LiteLLM Enterprise App
-- It finds the Production LLM Evals Group assigned to the LiteLLM Enterprise App
-- LiteLLM checks if this group's ID exists in the LiteLLM Teams Table
-- Since the ID doesn't exist, LiteLLM automatically creates a new team with:
-  - Name: Production LLM Evals Group
-  - ID: Same as the Entra ID group's ID
+當 SSO 使用者登入 LiteLLM 時：
+- LiteLLM 會自動擷取 LiteLLM Enterprise App 底下的群組
+- 它會找出指派給 LiteLLM Enterprise App 的 Production LLM Evals Group
+- LiteLLM 會檢查這個群組的 ID 是否存在於 LiteLLM Teams Table 中
+- 由於該 ID 不存在，LiteLLM 會自動建立一個新團隊，包含：
+  - 名稱：Production LLM Evals Group
+  - ID：與 Entra ID 群組的 ID 相同
 
-## 2. Sync Entra ID Team Memberships
+## 2. 同步 Entra ID 團隊成員資格 {#2-sync-entra-id-team-memberships}
 
-In this step, we will have LiteLLM automatically add a user to the `Production LLM Evals` Team on the LiteLLM DB when a new user is added to the `Production LLM Evals` Group in Entra ID.
+在這一步中，當 Entra ID 中的 `Production LLM Evals` 群組新增使用者時，LiteLLM 會自動將使用者加入 LiteLLM DB 中的 `Production LLM Evals` 團隊。
 
-### 2.1 Navigate to the `Production LLM Evals` Group in Entra ID
+### 2.1 前往 Entra ID 中的 `Production LLM Evals` 群組 {#21-navigate-to-the-production-llm-evals-group-in-entra-id}
 
-Navigate to the `Production LLM Evals` Group in Entra ID.
+前往 Entra ID 中的 `Production LLM Evals` 群組。
 
 <Image img={require('../../img/msft_member_1.png')}  style={{ width: '800px', height: 'auto' }} />
 
+### 2.2 在 Entra ID 中將成員加入群組 {#22-add-a-member-to-the-group-in-entra-id}
 
-### 2.2 Add a member to the group in Entra ID
+選取 `Members` > `Add members`
 
-Select `Members` > `Add members`
-
-In this stage you should add the user you want to add to the `Production LLM Evals` Team.
+在這個階段，您應該加入您想要新增至 `Production LLM Evals` 團隊的使用者。
 
 <Image img={require('../../img/msft_member_2.png')}  style={{ width: '800px', height: 'auto' }} />
 
+### 2.3 以新使用者身分登入 LiteLLM UI {#23-sign-in-as-the-new-user-on-litellm-ui}
 
-
-### 2.3 Sign in as the new user on LiteLLM UI
-
-Sign in as the new user on LiteLLM UI. You should be redirected to the Entra ID SSO page. This SSO sign in flow will trigger LiteLLM to fetch the latest Groups and Members from Azure Entra ID. During this step LiteLLM sync it's teams, team members with what is available from Entra ID
+以新使用者身分登入 LiteLLM UI。您應該會被重新導向至 Entra ID SSO 頁面。這個 SSO 登入流程會觸發 LiteLLM 從 Azure Entra ID 取得最新的群組與成員。在這個步驟中，LiteLLM 會將其團隊、團隊成員與 Entra ID 中可用的內容進行同步
 
 <Image img={require('../../img/msft_sso_sign_in.png')}  style={{ width: '800px', height: 'auto' }} />
 
+### 2.4 在 LiteLLM UI 上查看團隊成員資格 {#24-check-the-team-membership-on-litellm-ui}
 
-
-### 2.4 Check the team membership on LiteLLM UI
-
-On the LiteLLM UI, Navigate to `Teams`, You should see the new team `Production LLM Evals Group`. Since your are now a member of the `Production LLM Evals Group` in Entra ID, you should see the new team `Production LLM Evals Group` on the LiteLLM UI.
+在 LiteLLM UI 中，前往 `Teams`，您應該會看到新團隊 `Production LLM Evals Group`。由於您現在是 Entra ID 中 `Production LLM Evals Group` 的成員，因此您應該會在 LiteLLM UI 上看到新團隊 `Production LLM Evals Group`。
 
 <Image img={require('../../img/msft_member_3.png')}  style={{ width: '900px', height: 'auto' }} />
 
-### 2.5 Azure Government Cloud (GCC High)
+### 2.5 Azure 政府雲端（GCC High） {#25-azure-government-cloud-gcc-high}
 
-By default LiteLLM syncs group memberships from the commercial Microsoft Graph endpoint at `https://graph.microsoft.com/v1.0`. Azure Government Cloud GCC High serves Graph from a different host, so set `MICROSOFT_GRAPH_ENDPOINT` to point LiteLLM at the sovereign cloud endpoint.
+預設情況下，LiteLLM 會從商業版 Microsoft Graph 端點 `https://graph.microsoft.com/v1.0` 同步群組成員資格。Azure Government Cloud GCC High 會從不同的主機提供 Graph，因此請設定 `MICROSOFT_GRAPH_ENDPOINT`，將 LiteLLM 指向主權雲端端點。
 
 ```bash showLineNumbers title="GCC High Graph endpoint"
 export MICROSOFT_GRAPH_ENDPOINT="https://graph.microsoft.us/v1.0"
 ```
 
-When unset, LiteLLM uses `https://graph.microsoft.com/v1.0`, so commercial-cloud deployments need no change. This endpoint is used for the `/me/memberOf` group lookup and the Enterprise Application service-principal group lookup during SSO sign-in. You will likely also want to override the authorization, token, and userinfo endpoints for GCC High via `MICROSOFT_AUTHORIZATION_ENDPOINT`, `MICROSOFT_TOKEN_ENDPOINT`, and `MICROSOFT_USERINFO_ENDPOINT`.
+未設定時，LiteLLM 會使用 `https://graph.microsoft.com/v1.0`，因此商業雲端部署不需要變更。此端點會在 SSO 登入期間用於 `/me/memberOf` 群組查詢，以及 Enterprise Application service principal 群組查詢。您可能也會想透過 `MICROSOFT_AUTHORIZATION_ENDPOINT`、`MICROSOFT_TOKEN_ENDPOINT` 和 `MICROSOFT_USERINFO_ENDPOINT` 來覆寫 GCC High 的授權、權杖與 userinfo 端點。
 
-## 3. Set default params for new teams auto-created on LiteLLM
+## 3. 為 LiteLLM 上自動建立的新團隊設定預設參數 {#3-set-default-params-for-new-teams-auto-created-on-litellm}
 
-Since litellm auto creates a new team on the LiteLLM DB when there is a new Group Added to the LiteLLM Enterprise App on Azure Entra ID, we can set default params for new teams created. 
+由於當 Azure Entra ID 中的 LiteLLM Enterprise App 新增群組時，litellm 會自動在 LiteLLM DB 中建立新團隊，因此我們可以為新建立的團隊設定預設參數。 
 
-This allows you to set a default budget, models, etc for new teams created. 
+這可讓您為新建立的團隊設定預設預算、模型等。 
 
-### 3.1 Set `default_team_params` on litellm 
+### 3.1 在 litellm 上設定 `default_team_params`  {#31-set-default_team_params-on-litellm}
 
-Navigate to your litellm config file and set the following params 
+前往您的 litellm 設定檔並設定下列參數 
 
 ```yaml showLineNumbers title="litellm config with default_team_params"
 litellm_settings:
@@ -141,82 +132,66 @@ litellm_settings:
       - "/team/daily/activity"     # Allow members to view team usage
 ```
 
-### 3.2 Auto-create a new team on LiteLLM
+### 3.2 在 LiteLLM 上自動建立新團隊 {#32-auto-create-a-new-team-on-litellm}
 
-- In this step you should add a new group to the LiteLLM Enterprise App on Azure Entra ID (like we did in step 1.1). We will call this group `Default LiteLLM Prod Team` on Azure Entra ID.
-- Start litellm proxy server with your config
-- Sign into LiteLLM UI via SSO
-- Navigate to `Teams` and you should see the new team `Default LiteLLM Prod Team` auto-created on LiteLLM
-- Note LiteLLM will set the default params for this new team. 
+- 在這一步中，您應該在 Azure Entra ID 的 LiteLLM Enterprise App 新增一個新群組（就像我們在步驟 1.1 所做的）。我們將在 Azure Entra ID 中稱這個群組為 `Default LiteLLM Prod Team`。
+- 使用您的設定啟動 litellm proxy server
+- 透過 SSO 登入 LiteLLM UI
+- 前往 `Teams`，您應該會看到新團隊 `Default LiteLLM Prod Team` 已由 LiteLLM 自動建立
+- 請注意，LiteLLM 會為這個新團隊設定預設參數。 
 
 <Image img={require('../../img/msft_default_settings.png')}  style={{ width: '900px', height: 'auto' }} />
 
+## 4. 使用 Entra ID App Roles 進行使用者權限設定 {#4-using-entra-id-app-roles-for-user-permissions}
 
-## 4. Using Entra ID App Roles for User Permissions
+您可以直接使用 App Roles 從 Entra ID 指派使用者角色。LiteLLM 會在 SSO 登入期間自動從 JWT token 讀取 app role，並將對應的角色指派給使用者。
 
-You can assign user roles directly from Entra ID using App Roles. LiteLLM will automatically read the app roles from the JWT token during SSO sign-in and assign the corresponding role to the user.
+### 4.1 支援的角色 {#41-supported-roles}
 
-### 4.1 Supported Roles
+LiteLLM 支援以下 app roles（不區分大小寫）：
 
-LiteLLM supports the following app roles (case-insensitive):
+- `proxy_admin` - 整個 LiteLLM 平台的管理員
+- `proxy_admin_viewer` - 唯讀管理員存取權（可檢視所有金鑰與支出）
+- `org_admin` - 特定組織的管理員（可在其組織內建立團隊與使用者）
+- `internal_user` - 標準使用者（可建立/檢視/刪除自己的金鑰，並檢視自己的支出）
 
-- `proxy_admin` - Admin over the entire LiteLLM platform
-- `proxy_admin_viewer` - Read-only admin access (can view all keys and spend)
-- `org_admin` - Admin over a specific organization (can create teams and users within their org)
-- `internal_user` - Standard user (can create/view/delete their own keys and view their own spend)
+### 4.2 在 Entra ID 中建立 App Roles {#42-create-app-roles-in-entra-id}
 
-### 4.2 Create App Roles in Entra ID
+1. 前往 https://portal.azure.com/ 上的 App Registration
+2. 前往 **App roles** > **Create app role**
 
-1. Navigate to your App Registration on https://portal.azure.com/
-2. Go to **App roles** > **Create app role**
-
-3. Configure the app role:
-   - **Display name**: Proxy Admin (or your preferred display name)
-   - **Value**: `proxy_admin` (use one of the supported role values above)
-   - **Description**: Administrator access to LiteLLM proxy
+3. 設定 app role：
+   - **Display name**: Proxy Admin（或您偏好的顯示名稱）
+   - **Value**: `proxy_admin`（使用上述其中一個支援的角色值）
+   - **Description**: LiteLLM proxy 的管理員存取權
    - **Allowed member types**: Users/Groups
 
+4. 點擊 **Apply** 以儲存角色
 
-4. Click **Apply** to save the role
+### 4.3 將使用者指派給 App Roles {#43-assign-users-to-app-roles}
 
-### 4.3 Assign Users to App Roles
+1. 前往 https://portal.azure.com/ 上的 **Enterprise Applications**
+2. 選取您的 LiteLLM 應用程式
+3. 前往 **Users and groups** > **Add user/group**
+4. 選取使用者並將其指派給您建立的其中一個 app role
 
-1. Navigate to **Enterprise Applications** on https://portal.azure.com/
-2. Select your LiteLLM application
-3. Go to **Users and groups** > **Add user/group**
-4. Select the user and assign them to one of the app roles you created
+### 4.4 測試角色指派 {#44-test-the-role-assignment}
 
+1. 以已指派 app role 的使用者身分透過 SSO 登入 LiteLLM UI
+2. LiteLLM 會自動從 JWT token 中擷取 app role
+3. 該使用者會在資料庫中被指派對應的 LiteLLM 角色
+4. 使用者的權限會反映其被指派的角色
 
-### 4.4 Test the Role Assignment
+**運作方式：**
+- 當使用者透過 Microsoft SSO 登入時，LiteLLM 會從 JWT `id_token` 中擷取 `roles` 聲明
+- 如果任何角色符合有效的 LiteLLM 角色（不區分大小寫），就會將該角色指派給使用者
+- 如果存在多個角色，LiteLLM 會使用找到的第一個有效角色
+- 此角色指派會保留在 LiteLLM 資料庫中，並決定使用者的存取層級
 
-1. Sign in to LiteLLM UI via SSO as a user with an assigned app role
-2. LiteLLM will automatically extract the app role from the JWT token
-3. The user will be assigned the corresponding LiteLLM role in the database
-4. The user's permissions will reflect their assigned role
+## 影片逐步說明 {#video-walkthrough}
 
-**How it works:**
-- When a user signs in via Microsoft SSO, LiteLLM extracts the `roles` claim from the JWT `id_token`
-- If any of the roles match a valid LiteLLM role (case-insensitive), that role is assigned to the user
-- If multiple roles are present, LiteLLM uses the first valid role it finds
-- This role assignment persists in the LiteLLM database and determines the user's access level
+此內容說明如何設定 sso 自動新增以支援 **Microsoft Entra ID**
 
-## Video Walkthrough
-
-This walks through setting up sso auto-add for **Microsoft Entra ID**
-
-Follow along this video for a walkthrough of how to set this up with Microsoft Entra ID
+請跟著這段影片了解如何使用 Microsoft Entra ID 設定此功能
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/ea711323aa9a496d84a01fd7b2a12f54?sid=c53e238c-5bfd-4135-b8fb-b5b1a08632cf" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
-
-
-
-
-
-
-
-
-
-
-
-

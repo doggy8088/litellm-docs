@@ -1,50 +1,48 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CrowdStrike AIDR
+# CrowdStrike AIDR {#crowdstrike-aidr}
 
-The CrowdStrike AIDR guardrail uses configurable detection policies to identify
-and mitigate risks in AI application traffic, including:
+CrowdStrike AIDR 防護欄使用可設定的偵測政策來識別並緩解 AI 應用程式流量中的風險，包括：
 
-- Prompt injection attacks (with over 99% efficacy)
-- 50+ types of PII and sensitive content, with support for custom patterns
-- Toxicity, violence, self-harm, and other unwanted content
-- Malicious links, IPs, and domains
-- 100+ spoken languages, with allowlist and denylist controls
+- Prompt injection 攻擊（效能超過 99%）
+- 50+ 種 PII 和敏感內容，並支援自訂模式
+- 毒性、暴力、自我傷害及其他不需要的內容
+- 惡意連結、IP 和網域
+- 100+ 種口語語言，並提供允許清單與拒絕清單控制
 
-All detections are logged for analysis, attribution, and incident response.
+所有偵測都會記錄以供分析、歸因與事件回應使用。
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-- CrowdStrike Falcon account with AIDR enabled
+- 已啟用 AIDR 的 CrowdStrike Falcon 帳戶
 
-  For detailed information about CrowdStrike AIDR features, policy configuration, and advanced usage, see the [official CrowdStrike AIDR documentation](https://aidr-docs.crowdstrike.com/docs/aidr/).
+  有關 CrowdStrike AIDR 功能、政策組態與進階用法的詳細資訊，請參閱 [CrowdStrike AIDR 官方文件](https://aidr-docs.crowdstrike.com/docs/aidr/)。
 
-- LiteLLM installed (via pip or Docker)
-- API key for your LLM provider
+- 已安裝 LiteLLM（透過 pip 或 Docker）
+- 您的 LLM 提供者的 API 金鑰
 
-  To follow examples in this guide, you need an OpenAI API key.
+  若要跟隨本指南中的範例，您需要一組 OpenAI API 金鑰。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-In the Falcon console, click **Open menu** (**☰**) and go to **AI detection and response** > **Collectors**.
+在 Falcon 主控台中，按一下 **Open menu** (**☰**) 並前往 **AI detection and response** > **Collectors**。
 
-### 1. Register LiteLLM collector
+### 1. 註冊 LiteLLM 收集器 {#1-register-litellm-collector}
 
-1. On the **Collectors** page, click **+ Collector**.
-1. Choose **Gateway** as the collector type, then select **LiteLLM** and click **Next**.
-1. On the **Add a Collector** screen:
-   - **Collector Name** - Enter a descriptive name for the collector to appear in dashboards and reports.
-   - **Logging** - Select whether to log incoming (prompt) data and model responses, or only metadata submitted to AIDR.
-   - **Policy** (optional) - Assign a policy to apply to incoming data and model responses.
-     - Policies detect malicious activity, sensitive data exposure, topic violations, and other risks in AI traffic.
-     - When no policy is assigned, AIDR records activity for visibility and analysis, but does not apply detection rules to the data.
-1. Click **Save** to complete collector registration.
+1. 在 **Collectors** 頁面中，按一下 **+ Collector**。
+1. 將 **Gateway** 選為收集器類型，然後選取 **LiteLLM** 並按一下 **Next**。
+1. 在 **Add a Collector** 畫面中：
+   - **Collector Name** - 輸入具描述性的收集器名稱，以便在儀表板和報告中顯示。
+   - **Logging** - 選擇是否記錄傳入（prompt）資料和模型回應，或僅記錄提交給 AIDR 的中繼資料。
+   - **Policy**（選用）- 指派一項政策以套用至傳入資料和模型回應。
+     - 政策會偵測 AI 流量中的惡意活動、敏感資料暴露、主題違規及其他風險。
+     - 若未指派政策，AIDR 會記錄活動以供可視性與分析，但不會將偵測規則套用至資料。
+1. 按一下 **Save** 完成收集器註冊。
 
-### 2. Add CrowdStrike AIDR to your LiteLLM config.yaml
+### 2. 將 CrowdStrike AIDR 新增至您的 LiteLLM config.yaml {#2-add-crowdstrike-aidr-to-your-litellm-configyaml}
 
-Define the CrowdStrike AIDR guardrail under the `guardrails` section of your
-configuration file.
+在您組態檔的 `guardrails` 區段下定義 CrowdStrike AIDR 防護欄。
 
 ```yaml title="config.yaml - Example LiteLLM configuration with CrowdStrike AIDR guardrail"
 model_list:
@@ -65,10 +63,10 @@ guardrails:
       api_base: os.environ/CS_AIDR_BASE_URL  # CrowdStrike AIDR base URL
 ```
 
-### 3. Start LiteLLM Proxy (AI Gateway)
+### 3. 啟動 LiteLLM Proxy（AI Gateway） {#3-start-litellm-proxy-ai-gateway}
 
-Export the AIDR token and base URL as environment variables, along with the provider API key.
-You can find your AIDR token and base URL on the collector details page under the **Config** tab.
+將 AIDR token 與 base URL 匯出為環境變數，並同時設定提供者 API 金鑰。
+您可以在收集器詳細資料頁面的 **Config** 標籤下找到您的 AIDR token 和 base URL。
 
 ```bash title="Set environment variables"
 export CS_AIDR_TOKEN="pts_5i47n5...m2zbdt"
@@ -77,14 +75,14 @@ export OPENAI_API_KEY="sk-proj-54bgCI...jX6GMA"
 ```
 
 <Tabs>
-<TabItem label="LiteLLM CLI (pip package)" value="litellm-cli">
+<TabItem label="LiteLLM CLI（pip 套件）" value="litellm-cli">
 
 ```shell
 litellm --config config.yaml
 ```
 
 </TabItem>
-<TabItem label="LiteLLM Docker (container)" value="litellm-docker">
+<TabItem label="LiteLLM Docker（容器）" value="litellm-docker">
 
 ```shell
 docker run --rm \
@@ -101,12 +99,12 @@ docker run --rm \
 </TabItem>
 </Tabs>
 
-### 4. Make request
+### 4. 發出請求 {#4-make-request}
 
-This example requires the **Malicious Prompt** detector to be enabled in your collector's policy input rules.
+此範例需要在您收集器的政策輸入規則中啟用 **Malicious Prompt** 偵測器。
 
 <Tabs>
-<TabItem label="Blocked request" value = "blocked">
+<TabItem label="已封鎖的請求" value = "blocked">
 
 ```shell
 curl -sSLX POST 'http://localhost:4000/v1/chat/completions' \
@@ -139,14 +137,14 @@ curl -sSLX POST 'http://localhost:4000/v1/chat/completions' \
 
 </TabItem>
 
-<TabItem label="Redacted response" value="redacted">
+<TabItem label="已去識別化的回應" value="redacted">
 
-In this example, we simulate a response from a privately hosted LLM that inadvertently includes information that should not be exposed by the AI assistant.
-This example requires the **Confidential and PII** detector enabled in your collector's policy output rules and its **US Social Security Number** rule set to use a redact method.
+在此範例中，我們模擬來自私有代管 LLM 的回應，該回應不慎包含不應由 AI 助理揭露的資訊。
+此範例需要在您收集器的政策輸出規則中啟用 **Confidential and PII** 偵測器，並將其 **US Social Security Number** 規則集設定為使用 redact 方法。
 
 :::note
 
-If the policy input rules redact a sensitive value, you will not see redaction applied by the output rules in this test.
+如果政策輸入規則已將敏感值去識別化，您將不會在此測試中看到輸出規則套用的去識別化。
 
 :::
 
@@ -169,7 +167,7 @@ curl -sSLX POST 'http://localhost:4000/v1/chat/completions' \
 -w "%{http_code}"
 ```
 
-When the guardrail detects PII, it redacts the sensitive content before returning the response to the user:
+當防護欄偵測到 PII 時，會在將回應傳回給使用者之前先將敏感內容去識別化：
 
 ```json
 {
@@ -190,7 +188,7 @@ When the guardrail detects PII, it redacts the sensitive content before returnin
 
 </TabItem>
 
-<TabItem label="Allowed request and response" value = "allowed">
+<TabItem label="已允許的請求與回應" value = "allowed">
 
 ```shell
 curl -sSLX POST http://localhost:4000/v1/chat/completions \
@@ -204,7 +202,7 @@ curl -sSLX POST http://localhost:4000/v1/chat/completions \
 -w "%{http_code}"
 ```
 
-The above request should not be blocked, and you should receive a regular LLM response (simplified for brevity):
+上述請求不應被封鎖，您應該會收到一般的 LLM 回應（為求簡潔已簡化）：
 
 ```json
 {
@@ -227,6 +225,6 @@ The above request should not be blocked, and you should receive a regular LLM re
 
 </Tabs>
 
-## Next Steps
+## 後續步驟 {#next-steps}
 
-For more details, see the [CrowdStrike AIDR LiteLLM integration guide](https://aidr-docs.crowdstrike.com/docs/aidr/collectors/gateway/litellm).
+如需更多詳細資訊，請參閱 [CrowdStrike AIDR LiteLLM 整合指南](https://aidr-docs.crowdstrike.com/docs/aidr/collectors/gateway/litellm)。

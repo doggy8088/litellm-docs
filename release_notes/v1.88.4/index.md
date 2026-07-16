@@ -1,5 +1,5 @@
 ---
-title: "v1.88.4 - Proxy Exception & Guardrails Fixes"
+title: "v1.88.4 - Proxy Exception 與防護欄修正"
 slug: "v1-88-4"
 date: 2026-06-20T14:44:42
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,16 +43,16 @@ pip install litellm==1.88.4
 </TabItem>
 </Tabs>
 
-`v1.88.4` is a patch release on top of [`v1.88.3`](/release_notes/v1.88.3/v1-88-3). It restores readable `ProxyException` messages, returns 400 instead of 500 when AIM guardrails block a request, caps Anthropic cache-control injection, and corrects Datadog batch splitting and a chat-completions flag leak.
+`v1.88.4` 是建立在 [`v1.88.3`](/release_notes/v1.88.3/v1-88-3) 之上的修補版發行。它會還原可讀的 `ProxyException` 訊息、在 AIM 防護欄封鎖請求時回傳 400 而非 500、限制 Anthropic cache-control 注入，並修正 Datadog 批次分割以及 chat-completions 旗標外洩問題。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(proxy): populate Exception.args so str(ProxyException) returns message - [PR #29015](https://github.com/BerriAI/litellm/pull/29015)
-- fix(datadog): split oversized batches on 413 instead of re-queueing forever - [PR #29444](https://github.com/BerriAI/litellm/pull/29444)
-- fix: stop use_chat_completions_api flag from leaking into provider request body - [PR #29447](https://github.com/BerriAI/litellm/pull/29447)
-- fix(integrations): cap Anthropic cache_control injection at 4 blocks - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
-- fix(guardrails): return 400 not 500 when AIM blocks a request - [PR #30573](https://github.com/BerriAI/litellm/pull/30573)
+- fix(proxy): 填入 Exception.args，使 str(ProxyException) 回傳訊息 - [PR #29015](https://github.com/BerriAI/litellm/pull/29015)
+- fix(datadog): 在 413 時分割過大的批次，而不是永遠重新佇列 - [PR #29444](https://github.com/BerriAI/litellm/pull/29444)
+- fix: 阻止 use_chat_completions_api 旗標外洩到提供者請求主體中 - [PR #29447](https://github.com/BerriAI/litellm/pull/29447)
+- fix(integrations): 將 Anthropic cache_control 注入上限設為 4 個區塊 - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
+- fix(guardrails): 當 AIM 封鎖請求時回傳 400 而非 500 - [PR #30573](https://github.com/BerriAI/litellm/pull/30573)
 
-## Full Changelog
+## 完整更新紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.88.3...v1.88.4

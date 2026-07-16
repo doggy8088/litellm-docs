@@ -2,47 +2,47 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Presidio PII Masking with LiteLLM - Complete Tutorial
+# 使用 LiteLLM 進行 Presidio PII 遮罩 - 完整教學 {#presidio-pii-masking-with-litellm---complete-tutorial}
 
-This tutorial will guide you through setting up PII (Personally Identifiable Information) masking with Microsoft Presidio and LiteLLM Gateway. By the end of this tutorial, you'll have a production-ready setup that automatically detects and masks sensitive information in your LLM requests.
+本教學將引導您使用 Microsoft Presidio 和 LiteLLM Gateway 設定 PII（Personally Identifiable Information，個人可識別資訊）遮罩。完成本教學後，您將具備可直接上線的設定，可自動偵測並遮罩 LLM 請求中的敏感資訊。
 
-## What You'll Learn
+## 您將學到什麼 {#what-youll-learn}
 
-- Deploy Presidio containers for PII detection
-- Configure LiteLLM to automatically mask sensitive data
-- Test PII masking with real examples
-- Monitor and trace guardrail execution
-- Configure advanced features like output parsing and language support
+- 部署用於 PII 偵測的 Presidio 容器
+- 設定 LiteLLM 以自動遮罩敏感資料
+- 以實際範例測試 PII 遮罩
+- 監控並追蹤防護欄執行
+- 設定進階功能，例如輸出解析與語言支援
 
-## Why Use PII Masking?
+## 為什麼要使用 PII 遮罩？ {#why-use-pii-masking}
 
-When working with LLMs, users may inadvertently share sensitive information like:
-- Credit card numbers
-- Email addresses
-- Phone numbers
-- Social Security Numbers
-- Medical information (PHI)
-- Personal names and addresses
+在使用 LLM 時，使用者可能會不小心分享以下敏感資訊：
+- 信用卡號碼
+- 電子郵件地址
+- 電話號碼
+- 社會安全號碼
+- 醫療資訊（PHI）
+- 個人姓名與地址
 
-PII masking automatically detects and redacts this information before it reaches the LLM, protecting user privacy and helping you comply with regulations like GDPR, HIPAA, and CCPA.
+PII 遮罩會在這些資訊到達 LLM 之前自動偵測並遮蔽，保護使用者隱私，並協助您遵循 GDPR、HIPAA 和 CCPA 等法規。
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-Before starting this tutorial, ensure you have:
-- Docker installed on your machine
-- A LiteLLM API key or OpenAI API key for testing
-- Basic familiarity with YAML configuration
-- `curl` or a similar HTTP client for testing
+在開始本教學之前，請確認您已具備：
+- 已在您的電腦上安裝 Docker
+- 可用於測試的 LiteLLM API 金鑰或 OpenAI API 金鑰
+- 對 YAML 設定的基本熟悉度
+- `curl` 或類似的 HTTP 用戶端可供測試
 
-## Part 1: Deploy Presidio Containers
+## 第 1 部分：部署 Presidio 容器 {#part-1-deploy-presidio-containers}
 
-Presidio consists of two main services:
-1. **Presidio Analyzer**: Detects PII in text
-2. **Presidio Anonymizer**: Masks or redacts the detected PII
+Presidio 由兩個主要服務組成：
+1. **Presidio Analyzer**：偵測文字中的 PII
+2. **Presidio Anonymizer**：遮罩或隱去偵測到的 PII
 
-### Step 1.1: Deploy with Docker
+### 步驟 1.1：使用 Docker 部署 {#step-11-deploy-with-docker}
 
-Create a `docker-compose.yml` file for Presidio:
+為 Presidio 建立一個 `docker-compose.yml` 檔案：
 
 ```yaml
 version: '3.8'
@@ -69,15 +69,15 @@ networks:
     driver: bridge
 ```
 
-### Step 1.2: Start the Containers
+### 步驟 1.2：啟動容器 {#step-12-start-the-containers}
 
 ```bash
 docker-compose up -d
 ```
 
-### Step 1.3: Verify Presidio is Running
+### 步驟 1.3：驗證 Presidio 是否正在執行 {#step-13-verify-presidio-is-running}
 
-Test the analyzer endpoint:
+測試 analyzer 端點：
 
 ```bash
 curl -X POST http://localhost:5002/analyze \
@@ -88,7 +88,7 @@ curl -X POST http://localhost:5002/analyze \
   }'
 ```
 
-You should see a response like:
+您應該會看到類似以下的回應：
 
 ```json
 [
@@ -101,15 +101,15 @@ You should see a response like:
 ]
 ```
 
-✅ **Checkpoint**: Your Presidio containers are now running and ready!
+✅ **檢查點**：您的 Presidio 容器現在已在執行中，且已可使用！
 
-## Part 2: Configure LiteLLM Gateway
+## 第 2 部分：設定 LiteLLM Gateway {#part-2-configure-litellm-gateway}
 
-Now let's configure LiteLLM to use Presidio for automatic PII masking.
+現在讓我們將 LiteLLM 設定為使用 Presidio 來自動進行 PII 遮罩。
 
-### Step 2.1: Create LiteLLM Configuration
+### 步驟 2.1：建立 LiteLLM 設定 {#step-21-create-litellm-configuration}
 
-Create a `config.yaml` file:
+建立一個 `config.yaml` 檔案：
 
 ```yaml
 model_list:
@@ -134,7 +134,7 @@ guardrails:
         US_SSN: "MASK"
 ```
 
-### Step 2.2: Set Environment Variables
+### 步驟 2.2：設定環境變數 {#step-22-set-environment-variables}
 
 ```bash
 export OPENAI_API_KEY="your-openai-key"
@@ -142,28 +142,28 @@ export PRESIDIO_ANALYZER_API_BASE="http://localhost:5002"
 export PRESIDIO_ANONYMIZER_API_BASE="http://localhost:5001"
 ```
 
-### Step 2.3: Start LiteLLM Gateway
+### 步驟 2.3：啟動 LiteLLM Gateway {#step-23-start-litellm-gateway}
 
 ```bash
 litellm --config config.yaml --port 4000 --detailed_debug
 ```
 
-You should see output indicating the guardrails are loaded:
+您應該會看到指出已載入防護欄的輸出：
 
 ```
 Loaded guardrails: ['presidio-pii-guard']
 ```
 
-✅ **Checkpoint**: LiteLLM Gateway is running with PII masking enabled!
+✅ **檢查點**：LiteLLM Gateway 已啟動，且已啟用 PII 遮罩！
 
-## Part 3: Test PII Masking
+## 第 3 部分：測試 PII 遮罩 {#part-3-test-pii-masking}
 
-Let's test the PII masking with various types of sensitive data.
+讓我們使用各種不同類型的敏感資料來測試 PII 遮罩。
 
-### Test 1: Basic PII Detection
+### 測試 1：基本 PII 偵測 {#test-1-basic-pii-detection}
 
 <Tabs>
-<TabItem label="Request with PII" value="pii-request">
+<TabItem label="含 PII 的請求" value="pii-request">
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -183,9 +183,9 @@ curl -X POST http://localhost:4000/chat/completions \
 
 </TabItem>
 
-<TabItem label="What LLM Receives" value="masked">
+<TabItem label="LLM 會收到什麼" value="masked">
 
-The LLM will receive the masked version:
+LLM 將收到已遮罩的版本：
 
 ```
 My name is <PERSON>, my email is <EMAIL_ADDRESS>, and my credit card is <CREDIT_CARD>
@@ -193,7 +193,7 @@ My name is <PERSON>, my email is <EMAIL_ADDRESS>, and my credit card is <CREDIT_
 
 </TabItem>
 
-<TabItem label="Response" value="response">
+<TabItem label="回應" value="response">
 
 ```json
 {
@@ -214,7 +214,7 @@ My name is <PERSON>, my email is <EMAIL_ADDRESS>, and my credit card is <CREDIT_
 </TabItem>
 </Tabs>
 
-### Test 2: Medical Information (PHI)
+### 測試 2：醫療資訊（PHI） {#test-2-medical-information-phi}
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -232,9 +232,9 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-The patient name and medical record number will be automatically masked.
+病患姓名與病歷號碼將會自動遮罩。
 
-### Test 3: No PII (Normal Request)
+### 測試 3：沒有 PII（一般請求） {#test-3-no-pii-normal-request}
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -252,15 +252,15 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-This request passes through unchanged since there's no PII detected.
+這個請求會原樣通過，因為未偵測到 PII。
 
-✅ **Checkpoint**: You've successfully tested PII masking!
+✅ **檢查點**：您已成功測試 PII 遮罩！
 
-## Part 4: Advanced Configurations
+## 第 4 部分：進階設定 {#part-4-advanced-configurations}
 
-### Blocking Sensitive Entities
+### 封鎖敏感實體 {#blocking-sensitive-entities}
 
-Instead of masking, you can completely block requests containing specific PII types:
+除了遮罩之外，您也可以完全封鎖包含特定 PII 類型的請求：
 
 ```yaml
 guardrails:
@@ -274,7 +274,7 @@ guardrails:
         MEDICAL_LICENSE: "BLOCK"
 ```
 
-Test the blocking behavior:
+測試封鎖行為：
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -289,7 +289,7 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -299,9 +299,9 @@ Expected response:
 }
 ```
 
-### Output Parsing (Unmasking)
+### 輸出解析（解除遮罩） {#output-parsing-unmasking}
 
-Enable output parsing to automatically replace masked tokens in LLM responses with original values:
+啟用輸出解析後，會自動將 LLM 回應中的遮罩標記替換回原始值：
 
 ```yaml
 guardrails:
@@ -315,16 +315,16 @@ guardrails:
         PHONE_NUMBER: "MASK"
 ```
 
-**How it works:**
+**運作方式：**
 
-1. **User Input**: "Hello, my name is Jane Doe. My number is 555-1234"
-2. **LLM Receives**: "Hello, my name is `<PERSON>`. My number is `<PHONE_NUMBER>`"
-3. **LLM Response**: "Nice to meet you, `<PERSON>`!"
-4. **User Receives**: "Nice to meet you, Jane Doe!" ✨
+1. **使用者輸入**： "Hello, my name is Jane Doe. My number is 555-1234"
+2. **LLM 會收到**： "Hello, my name is `<PERSON>`. My number is `<PHONE_NUMBER>`"
+3. **LLM 回應**： "Nice to meet you, `<PERSON>`!"
+4. **使用者收到**： "Nice to meet you, Jane Doe!" ✨
 
-### Multi-language Support
+### 多語言支援 {#multi-language-support}
 
-Configure PII detection for different languages:
+為不同語言設定 PII 偵測：
 
 ```yaml
 guardrails:
@@ -347,7 +347,7 @@ guardrails:
         PERSON: "MASK"
 ```
 
-You can also override language per request:
+您也可以針對每個請求覆寫語言：
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -363,9 +363,9 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-### Logging-Only Mode
+### 僅記錄模式 {#logging-only-mode}
 
-Apply PII masking only to logs (not to actual LLM requests):
+只將 PII 遮罩套用到記錄（不套用到實際的 LLM 請求）：
 
 ```yaml
 guardrails:
@@ -378,33 +378,33 @@ guardrails:
         EMAIL_ADDRESS: "MASK"
 ```
 
-This is useful when:
-- You want to allow PII in production requests
-- But need to comply with logging regulations
-- Integrating with Langfuse, Datadog, etc.
+這在以下情況很有用：
+- 您希望在正式環境請求中允許 PII
+- 但需要符合記錄相關法規
+- 與 Langfuse、Datadog 等整合
 
-## Part 5: Monitoring and Tracing
+## 第 5 部分：監控與追蹤 {#part-5-monitoring-and-tracing}
 
-### View Guardrail Execution on LiteLLM UI
+### 在 LiteLLM UI 上查看防護欄執行 {#view-guardrail-execution-on-litellm-ui}
 
-If you're using the LiteLLM Admin UI, you can see detailed guardrail traces:
+如果您使用 LiteLLM 管理 UI，您可以看到詳細的防護欄追蹤：
 
-1. Navigate to the **Logs** page
-2. Click on any request that used the guardrail
-3. View detailed information:
-   - Which entities were detected
-   - Confidence scores for each detection
-   - Guardrail execution duration
-   - Original vs. masked content
+1. 前往 **Logs** 頁面
+2. 點擊任何使用了防護欄的請求
+3. 查看詳細資訊：
+   - 偵測到哪些實體
+   - 每項偵測的信心分數
+   - 防護欄執行時間
+   - 原始內容與遮罩後內容
 
 <Image 
   img={require('../../img/presidio_4.png')}
   style={{width: '60%', display: 'block', margin: '0'}}
 />
 
-### Integration with Langfuse
+### 與 Langfuse 整合 {#integration-with-langfuse}
 
-If you're logging to Langfuse, guardrail information is automatically included:
+如果您將記錄送到 Langfuse，防護欄資訊會自動包含在內：
 
 ```yaml
 litellm_settings:
@@ -420,9 +420,9 @@ environment_variables:
   style={{width: '60%', display: 'block', margin: '0'}}
 />
 
-### Programmatic Access to Guardrail Metadata
+### 以程式存取防護欄中繼資料 {#programmatic-access-to-guardrail-metadata}
 
-You can access guardrail metadata in custom callbacks:
+您可以在自訂回呼中存取防護欄中繼資料：
 
 ```python
 import litellm
@@ -437,11 +437,11 @@ def custom_callback(kwargs, result, **callback_kwargs):
 litellm.callbacks = [custom_callback]
 ```
 
-## Part 6: Production Best Practices
+## 第 6 部分：正式環境最佳實務 {#part-6-production-best-practices}
 
-### 1. Performance Optimization
+### 1. 效能最佳化 {#1-performance-optimization}
 
-**Use parallel execution for pre-call guardrails:**
+**對前置呼叫防護欄使用平行執行：**
 
 ```yaml
 guardrails:
@@ -451,9 +451,9 @@ guardrails:
       mode: "during_call"  # Runs in parallel with LLM call
 ```
 
-### 2. Configure Entity Types by Use Case
+### 2. 依使用案例設定實體類型 {#2-configure-entity-types-by-use-case}
 
-**Healthcare Application:**
+**醫療應用：**
 
 ```yaml
 pii_entities_config:
@@ -465,7 +465,7 @@ pii_entities_config:
   DATE_TIME: "MASK"  # May contain appointment dates
 ```
 
-**Financial Application:**
+**金融應用：**
 
 ```yaml
 pii_entities_config:
@@ -477,7 +477,7 @@ pii_entities_config:
   PERSON: "MASK"
 ```
 
-**Customer Support Application:**
+**客戶支援應用：**
 
 ```yaml
 pii_entities_config:
@@ -487,9 +487,9 @@ pii_entities_config:
   CREDIT_CARD: "BLOCK"  # Should never be shared
 ```
 
-### 3. High Availability Setup
+### 3. 高可用性設定 {#3-high-availability-setup}
 
-For production deployments, run multiple Presidio instances:
+對於正式環境部署，請執行多個 Presidio 執行個體：
 
 ```yaml
 version: '3.8'
@@ -510,13 +510,13 @@ services:
       replicas: 3
 ```
 
-Use a load balancer (nginx, HAProxy) to distribute requests.
+使用負載平衡器（nginx、HAProxy）來分配請求。
 
-### 4. Custom Entity Recognition
+### 4. 自訂實體識別 {#4-custom-entity-recognition}
 
-For domain-specific PII (e.g., internal employee IDs), create custom recognizers:
+針對特定領域的 PII（例如內部員工 ID），建立自訂識別器：
 
-Create `custom_recognizers.json`:
+建立 `custom_recognizers.json`：
 
 ```json
 [
@@ -534,7 +534,7 @@ Create `custom_recognizers.json`:
 ]
 ```
 
-Configure in LiteLLM:
+在 LiteLLM 中設定：
 
 ```yaml
 guardrails:
@@ -547,9 +547,9 @@ guardrails:
         EMPLOYEE_ID: "MASK"
 ```
 
-### 5. Testing Strategy
+### 5. 測試策略 {#5-testing-strategy}
 
-Create test cases for your PII masking:
+為您的 PII 遮罩建立測試案例：
 
 ```python
 import pytest
@@ -590,26 +590,26 @@ def test_pii_masking_allows_normal_text():
     assert response.choices[0].message.content is not None
 ```
 
-## Part 7: Troubleshooting
+## 第 7 部分：疑難排解 {#part-7-troubleshooting}
 
-### Issue: Guardrail failure: non-JSON response from Presidio
+### 問題：防護欄失敗：來自 Presidio 的非 JSON 回應 {#issue-guardrail-failure-non-json-response-from-presidio}
 
-**Symptom:** You receive an error indicating `expected application/json Content-Type but received text/html` or similar.
+**症狀：** 您收到一則錯誤，指出 `expected application/json Content-Type but received text/html` 或類似訊息。
 
-**Root cause:** Your ingress controller or reverse proxy might be routing the `/analyze` or `/anonymize` POST request to a health endpoint (like `/health` or `/presidio-analyzer/health`) which returns plain text instead of JSON.
+**根本原因：** 您的 ingress controller 或反向代理可能正在將 `/analyze` 或 `/anonymize` POST 請求路由到健康狀態端點（例如 `/health` 或 `/presidio-analyzer/health`），而該端點回傳的是純文字而非 JSON。
 
-**Fix:** Ensure your `PRESIDIO_ANALYZER_API_BASE` and `PRESIDIO_ANONYMIZER_API_BASE` are correctly pointing directly to the Presidio API endpoints, or that your ingress routes the path correctly without stripping it and inadvertently forwarding to a plain-text health check endpoint.
+**修正方式：** 請確保您的 `PRESIDIO_ANALYZER_API_BASE` 和 `PRESIDIO_ANONYMIZER_API_BASE` 已正確直接指向 Presidio API 端點，或確保您的 ingress 正確路由該路徑而不會移除路徑，並意外轉送到純文字的健康檢查端點。
 
-**Verification:** You can verify your endpoints using `curl`. It should return a JSON array, not `text/html`:
+**驗證：** 您可以使用 `curl` 驗證您的端點。它應該回傳 JSON 陣列，而不是 `text/html`：
 ```bash
 curl -sv -X POST http://your-analyzer-endpoint/analyze \
   -H "Content-Type: application/json" \
   -d '{"text":"test","language":"en"}'
 ```
 
-### Issue: Presidio Not Detecting PII
+### 問題：Presidio 無法偵測 PII {#issue-presidio-not-detecting-pii}
 
-**Check 1: Language Configuration**
+**檢查 1：語言設定**
 
 ```bash
 # Verify language is set correctly
@@ -621,9 +621,9 @@ curl -X POST http://localhost:5002/analyze \
   }'
 ```
 
-**Check 2: Entity Types**
+**檢查 2：實體類型**
 
-Ensure the entity types you're looking for are in your config:
+請確保您要找的實體類型已包含在您的設定中：
 
 ```yaml
 pii_entities_config:
@@ -631,38 +631,38 @@ pii_entities_config:
   # Add all entity types you need
 ```
 
-[View all supported entity types](https://microsoft.github.io/presidio/supported_entities/)
+[查看所有支援的實體類型](https://microsoft.github.io/presidio/supported_entities/)
 
-### Issue: Presidio Containers Not Starting
+### 問題：Presidio 容器無法啟動 {#issue-presidio-containers-not-starting}
 
-**Check logs:**
+**檢查記錄：**
 
 ```bash
 docker-compose logs presidio-analyzer
 docker-compose logs presidio-anonymizer
 ```
 
-**Common issues:**
-- Port conflicts (5001, 5002 already in use)
-- Insufficient memory allocation
-- Docker network issues
+**常見問題：**
+- 埠衝突（5001、5002 已被使用）
+- 記憶體分配不足
+- Docker 網路問題
 
-### Issue: High Latency
+### 問題：延遲過高 {#issue-high-latency}
 
-**Solution 1: Use `during_call` mode**
+**解決方案 1：使用 `during_call` 模式**
 
 ```yaml
 mode: "during_call"  # Runs in parallel
 ```
 
-**Solution 2: Scale Presidio containers**
+**解決方案 2：擴充 Presidio 容器**
 
 ```yaml
 deploy:
   replicas: 3
 ```
 
-**Solution 3: Enable caching**
+**解決方案 3：啟用快取**
 
 ```yaml
 litellm_settings:
@@ -671,41 +671,41 @@ litellm_settings:
     type: "redis"
 ```
 
-## Conclusion
+## 結論 {#conclusion}
 
-Congratulations! 🎉 You've successfully set up PII masking with Presidio and LiteLLM. You now have:
+恭喜！🎉 您已成功使用 Presidio 和 LiteLLM 設定 PII 遮罩。您現在擁有：
 
-✅ A production-ready PII masking solution  
-✅ Automatic detection of sensitive information  
-✅ Multiple configuration options (masking vs. blocking)  
-✅ Monitoring and tracing capabilities  
-✅ Multi-language support  
-✅ Best practices for production deployment  
+✅ 可用於正式環境的 PII 遮罩解決方案  
+✅ 自動偵測敏感資訊  
+✅ 多種設定選項（遮罩 vs. 封鎖）  
+✅ 監控與追蹤能力  
+✅ 多語言支援  
+✅ 正式環境部署的最佳實務  
 
-## Next Steps
+## 下一步 {#next-steps}
 
-- **[View all supported PII entity types](https://microsoft.github.io/presidio/supported_entities/)**
-- **[Explore other LiteLLM guardrails](../proxy/guardrails/quick_start)**
-- **[Set up multiple guardrails](../proxy/guardrails/quick_start#combining-multiple-guardrails)**
-- **[Configure per-key guardrails](../proxy/virtual_keys#guardrails)**
-- **[Learn about custom guardrails](../proxy/guardrails/custom_guardrail)**
+- **[查看所有支援的 PII 實體類型](https://microsoft.github.io/presidio/supported_entities/)**
+- **[探索其他 LiteLLM 防護欄](../proxy/guardrails/quick_start)**
+- **[設定多個防護欄](../proxy/guardrails/quick_start#combining-multiple-guardrails)**
+- **[設定每個金鑰的防護欄](../proxy/virtual_keys#guardrails)**
+- **[了解自訂防護欄](../proxy/guardrails/custom_guardrail)**
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Presidio Documentation](https://microsoft.github.io/presidio/)
-- [LiteLLM Guardrails Reference](../proxy/guardrails/pii_masking_v2)
+- [Presidio 文件](https://microsoft.github.io/presidio/)
+- [LiteLLM 防護欄參考文件](../proxy/guardrails/pii_masking_v2)
 - [LiteLLM GitHub Repository](https://github.com/BerriAI/litellm)
-- [Report Issues](https://github.com/BerriAI/litellm/issues)
+- [回報問題](https://github.com/BerriAI/litellm/issues)
 
 ---
 
-**Need help?** Join our [Discord community](https://discord.com/invite/wuPM9dRgDw) or open an issue on GitHub!
+**需要協助嗎？** 加入我們的 [Discord 社群](https://discord.com/invite/wuPM9dRgDw) 或在 GitHub 上開啟 issue！
 
-### Suppressing False Positives
+### 抑制誤判 {#suppressing-false-positives}
 
-Presidio can sometimes trigger false positive detections. For example, short alphanumeric strings might be incorrectly flagged as `US_DRIVER_LICENSE`.
+Presidio 有時可能會觸發誤判偵測。範例來說，較短的英數字串可能會被錯誤標記為 `US_DRIVER_LICENSE`。
 
-You can suppress these false positives using `presidio_score_thresholds` or `presidio_entities_deny_list`.
+您可以使用 `presidio_score_thresholds` 或 `presidio_entities_deny_list` 來抑制這些誤判。
 
 ```yaml
 guardrails:

@@ -5,6 +5,7 @@ import {useDoc} from '@docusaurus/plugin-content-docs/client';
 import Heading from '@theme/Heading';
 import MDXContent from '@theme/MDXContent';
 import styles from './styles.module.css';
+import useLocaleText from '@site/src/utils/useLocaleText';
 
 const CopyIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -20,6 +21,7 @@ const CheckIcon = () => (
 );
 
 function CopyMarkdownButton({rawMarkdownB64}) {
+  const t = useLocaleText();
   const [copied, setCopied] = useState(false);
 
   async function handleClick() {
@@ -37,11 +39,11 @@ function CopyMarkdownButton({rawMarkdownB64}) {
     <button
       className={clsx(styles.copyBtn, copied && styles.success)}
       onClick={handleClick}
-      title="Copy page as Markdown"
+      title={t('將頁面複製為 Markdown', 'Copy page as Markdown')}
     >
       <span className={styles.copyBtnInner}>
         {copied ? <CheckIcon /> : <CopyIcon />}
-        <span>{copied ? 'Copied' : 'Copy as Markdown'}</span>
+        <span>{copied ? t('已複製', 'Copied') : t('複製為 Markdown', 'Copy as Markdown')}</span>
       </span>
     </button>
   );

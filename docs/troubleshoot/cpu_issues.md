@@ -1,31 +1,31 @@
-# CPU Issue Classification & Reproduction
+# CPU 問題分類與重現 {#cpu-issue-classification--reproduction}
 
-## 1. Classify the CPU Issue
+## 1. 分類 CPU 問題 {#1-classify-the-cpu-issue}
 
-Select the options that best describes the CPU behavior observed.
+請選擇最能描述所觀察到 CPU 行為的選項。
 
-- [ ] CPU scales with traffic (RPS-driven)
-- [ ] CPU increases without a traffic increase
-- [ ] CPU increases after a LiteLLM upgrade
+- [ ] CPU 隨流量擴增（受 RPS 驅動）
+- [ ] CPU 在沒有流量增加的情況下增加
+- [ ] CPU 在 LiteLLM 升級後增加
 
-## 2. Can you reproduce the issue?
+## 2. 您能重現此問題嗎？ {#2-can-you-reproduce-the-issue}
 
-Before escalating, verify whether the CPU issue can be reproduced in a test environment that mirrors your production setup.  
+在升級處理前，請確認 CPU 問題是否可在與生產環境相符的測試環境中重現。  
 
-If reproducible, provide **detailed reproduction steps** along with any relevant requests or configuration used.  
-For guidance on the type of information we're looking for, see the [LiteLLM Troubleshooting Guide](../troubleshoot).
+如果可以重現，請提供**詳細的重現步驟**，以及任何相關請求或所使用的設定。  
+關於我們需要哪些資訊的指引，請參閱 [LiteLLM 疑難排解指南](../troubleshoot)。
 
-## 3. Issue Cannot Be Reproduced
+## 3. 問題無法重現 {#3-issue-cannot-be-reproduced}
 
-If the CPU issue cannot be reproduced in a test environment that mirrors your production setup, please provide:
+如果 CPU 問題無法在與生產環境相符的測試環境中重現，請提供：
 
-1. **Information from Section 1 and 2**  
-   - CPU classification (Section 1)  
-   - Reproduction attempts and environment details (Section 2)  
+1. **第 1 與第 2 節中的資訊**  
+   - CPU 分類（第 1 節）  
+   - 重現嘗試與環境細節（第 2 節）  
 
-2. **Additional context** to help investigate:  
-   - **Workload:** A realistic sample of requests processed before and during the spike, including any recent configuration changes.  
-   - **Metrics:** CPU usage, P50/P99 latency, memory usage. Please include **screenshots** of the metrics whenever possible.  
-   - **Logs / Alerts:** Any relevant logs or alerts captured **before and during the spike**.
+2. **其他背景資訊**，以協助調查：  
+   - **工作負載：** 在尖峰前與尖峰期間處理的具體請求範例，包括任何近期的設定變更。  
+   - **指標：** CPU 使用率、P50/P99 延遲、記憶體使用量。請盡可能提供指標的**截圖**。  
+   - **記錄 / 警示：** 在**尖峰前與尖峰期間**擷取到的任何相關記錄或警示。
 
-> Providing this information allows the team to analyze patterns, correlate spikes with traffic or configuration, and attempt to reproduce the issue internally. Without it, our engineers won't have enough information to look into the problem.
+> 提供這些資訊可讓團隊分析模式、將尖峰與流量或設定關聯起來，並嘗試在內部重現此問題。若沒有這些資訊，我們的工程師將沒有足夠的資訊來調查問題。

@@ -1,30 +1,30 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LangGraph
+# LangGraph {#langgraph}
 
-Call LangGraph agents through LiteLLM using the OpenAI chat completions format.
+透過 LiteLLM 使用 OpenAI chat completions 格式呼叫 LangGraph 代理程式。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | LangGraph is a framework for building stateful, multi-actor applications with LLMs. LiteLLM supports calling LangGraph agents via their streaming and non-streaming endpoints. |
-| Provider Route on LiteLLM | `langgraph/{agent_id}` |
-| Provider Doc | [LangGraph Platform ↗](https://langchain-ai.github.io/langgraph/cloud/quick_start/) |
+| 說明 | LangGraph 是一個用於建構具狀態、多角色應用程式的框架，搭配 LLMs。LiteLLM 支援透過串流與非串流端點呼叫 LangGraph 代理程式。 |
+| LiteLLM 上的提供者路由 | `langgraph/{agent_id}` |
+| 提供者文件 | [LangGraph Platform ↗](https://langchain-ai.github.io/langgraph/cloud/quick_start/) |
 
-**Prerequisites:** You need a running LangGraph server. See [Setting Up a Local LangGraph Server](#setting-up-a-local-langgraph-server) below.
+**先決條件：** 您需要一個正在執行的 LangGraph 伺服器。請參閱下方的 [設定本機 LangGraph 伺服器](#setting-up-a-local-langgraph-server)。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Model Format
+### 模型格式 {#model-format}
 
 ```shell showLineNumbers title="Model Format"
 langgraph/{agent_id}
 ```
 
-**Example:**
-- `langgraph/agent` - calls the default agent
+**範例：**
+- `langgraph/agent` - 呼叫預設代理程式
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Basic LangGraph Completion"
 import litellm
@@ -57,9 +57,9 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-#### 1. Configure your model in config.yaml
+#### 1. 在 config.yaml 中設定您的模型 {#1-configure-your-model-in-configyaml}
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -75,13 +75,13 @@ model_list:
 </TabItem>
 </Tabs>
 
-#### 2. Start the LiteLLM Proxy
+#### 2. 啟動 LiteLLM Proxy {#2-start-the-litellm-proxy}
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
 ```
 
-#### 3. Make requests to your LangGraph agent
+#### 3. 向您的 LangGraph 代理程式發出請求 {#3-make-requests-to-your-langgraph-agent}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -157,67 +157,66 @@ for chunk in stream:
 </TabItem>
 </Tabs>
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Description |
+| 變數 | 說明 |
 |----------|-------------|
-| `LANGGRAPH_API_BASE` | Base URL of your LangGraph server (default: `http://localhost:2024`) |
-| `LANGGRAPH_API_KEY` | Optional API key for authentication |
+| `LANGGRAPH_API_BASE` | 您的 LangGraph 伺服器基礎 URL（預設：`http://localhost:2024`） |
+| `LANGGRAPH_API_KEY` | 用於驗證的可選 API 金鑰 |
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 型別 | 說明 |
 |-----------|------|-------------|
-| `model` | string | The agent ID in format `langgraph/{agent_id}` |
-| `messages` | array | Chat messages in OpenAI format |
-| `stream` | boolean | Enable streaming responses |
-| `api_base` | string | LangGraph server URL |
-| `api_key` | string | Optional API key |
+| `model` | string | 格式為 `langgraph/{agent_id}` 的代理程式 ID |
+| `messages` | array | OpenAI 格式的聊天訊息 |
+| `stream` | boolean | 啟用串流回應 |
+| `api_base` | string | LangGraph 伺服器 URL |
+| `api_key` | string | 可選 API 金鑰 |
 
+## 設定本機 LangGraph 伺服器 {#setting-up-a-local-langgraph-server}
 
-## Setting Up a Local LangGraph Server
+在將 LiteLLM 與 LangGraph 搭配使用之前，您需要一個正在執行的 LangGraph 伺服器。
 
-Before using LiteLLM with LangGraph, you need a running LangGraph server.
-
-### Prerequisites
+### 先決條件 {#prerequisites}
 
 - Python 3.11+
-- An LLM API key (OpenAI or Google Gemini)
+- 一個 LLM API 金鑰（OpenAI 或 Google Gemini）
 
-### 1. Install the LangGraph CLI
+### 1. 安裝 LangGraph CLI {#1-install-the-langgraph-cli}
 
 ```bash
 uv add "langgraph-cli[inmem]"
 ```
 
-### 2. Create a new LangGraph project
+### 2. 建立新的 LangGraph 專案 {#2-create-a-new-langgraph-project}
 
 ```bash
 langgraph new my-agent --template new-langgraph-project-python
 cd my-agent
 ```
 
-### 3. Install dependencies
+### 3. 安裝相依套件 {#3-install-dependencies}
 
 ```bash
 uv add -e .
 ```
 
-### 4. Set your API key
+### 4. 設定您的 API 金鑰 {#4-set-your-api-key}
 
 ```bash
 echo "OPENAI_API_KEY=your_key_here" > .env
 ```
 
-### 5. Start the server
+### 5. 啟動伺服器 {#5-start-the-server}
 
 ```bash
 langgraph dev
 ```
 
-The server will start at `http://localhost:2024`.
+伺服器將會在 `http://localhost:2024` 啟動。
 
-### Verify the server is running
+### 驗證伺服器正在執行 {#verify-the-server-is-running}
 
 ```bash
 curl -s --request POST \
@@ -232,94 +231,93 @@ curl -s --request POST \
 ```
 
 
+## LiteLLM A2A Gateway {#litellm-a2a-gateway}
 
-## LiteLLM A2A Gateway
+您可以在 LiteLLM 的 [A2A（Agent-to-Agent）Gateway](../a2a.md) 中註冊 LangGraph 代理程式，探索其上游 agent card，策展技能與能力，並透過 LiteLLM proxy 呼叫它們。
 
-You can register LangGraph agents in LiteLLM's [A2A (Agent-to-Agent) Gateway](../a2a.md), discover their upstream agent card, curate skills and capabilities, and invoke them through the LiteLLM proxy.
+### 1. 前往 Agents {#1-navigate-to-agents}
 
-### 1. Navigate to Agents
+從側邊欄點擊「Agents」以開啟代理程式管理頁面，然後點擊「+ Add New Agent」。
 
-From the sidebar, click "Agents" to open the agent management page, then click "+ Add New Agent".
+![前往 Agents](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/27429cae-f743-440a-a6aa-29fa7ee013db/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=211,114)
 
-![Navigate to Agents](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/27429cae-f743-440a-a6aa-29fa7ee013db/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=211,114)
+### 2. 選擇 LangGraph Agent 類型 {#2-select-langgraph-agent-type}
 
-### 2. Select LangGraph Agent Type
+點擊「A2A Standard」以查看可用的代理程式類型，然後搜尋「langgraph」並選取「Connect to LangGraph agents via the LangGraph Platform API」。
 
-Click "A2A Standard" to see available agent types, then search for "langgraph" and select "Connect to LangGraph agents via the LangGraph Platform API".
+![選擇 A2A Standard](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/4add4088-683d-49ca-9374-23fd65dddf8e/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=511,139)
 
-![Select A2A Standard](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/4add4088-683d-49ca-9374-23fd65dddf8e/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=511,139)
+![選擇 LangGraph](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/fd197907-47c7-4e05-959c-c0d42264263c/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=431,246)
 
-![Select LangGraph](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/fd197907-47c7-4e05-959c-c0d42264263c/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=431,246)
+### 3. 設定代理程式 {#3-configure-the-agent}
 
-### 3. Configure the Agent
+填入以下欄位：
 
-Fill in the following fields:
+- **Agent Name** - 唯一識別碼（例如，`lan-agent`）
+- **LangGraph API Base** - 您的 LangGraph 伺服器 URL，通常為 `http://127.0.0.1:2024/`
+- **API Key** - 可選。LangGraph 預設不需要 API 金鑰
+- **Assistant ID** - LangGraph 不會使用，您可以在此輸入任何字串
 
-- **Agent Name** - A unique identifier (e.g., `lan-agent`)
-- **LangGraph API Base** - Your LangGraph server URL, typically `http://127.0.0.1:2024/`
-- **API Key** - Optional. LangGraph doesn't require an API key by default
-- **Assistant ID** - Not used by LangGraph, you can enter any string here
+![輸入 Agent Name](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/adce3df9-a67c-4d23-b2b5-05120738bc46/ascreenshot.jpeg?tl_px=0,0&br_px=2617,1463&force_format=jpeg&q=100&width=1120.0)
 
-![Enter Agent Name](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/adce3df9-a67c-4d23-b2b5-05120738bc46/ascreenshot.jpeg?tl_px=0,0&br_px=2617,1463&force_format=jpeg&q=100&width=1120.0)
+![輸入 API Base](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/6a6a03a7-f235-41db-b4ba-d32ced330f25/ascreenshot.jpeg?tl_px=0,251&br_px=2617,1714&force_format=jpeg&q=100&width=1120.0)
 
-![Enter API Base](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/6a6a03a7-f235-41db-b4ba-d32ced330f25/ascreenshot.jpeg?tl_px=0,251&br_px=2617,1714&force_format=jpeg&q=100&width=1120.0)
+### 4：探索 agent card {#4-discover-the-agent-card}
 
-### 4: Discover the agent card
+一旦填入 base URL 和 assistant ID，探索就會自動執行。您也可以從探索面板手動觸發。
 
-Discovery runs automatically once the base URL and assistant ID are filled in. You can also trigger it manually from the discovery panel. 
+預覽是一個表單。您可以：
 
-The preview is a form. You can:
+- **編輯** 名稱、說明、provider、icon URL，以及文件 URL。
+- **新增、移除或重新排序技能**，並編輯每個技能的名稱、說明、標籤、範例，以及輸入/輸出模式。
+- **切換 LiteLLM 支援的能力**。
 
-- **Edit** the name, description, provider, icon URL, and documentation URL.
-- **Add, remove, or reorder skills**, and edit each skill's name, description, tags, examples, and input/output modes.
-- **Toggle capabilities** that LiteLLM supports.
+在儲存前選取或取消選取技能與能力。LiteLLM 只會保留您在表單中保留的內容。
 
-Select or deselect skills and capabilities before saving. LiteLLM only persists what you keep in the form.
+LiteLLM 不會代理的欄位不會顯示。如需完整支援矩陣，請參閱 [Agent card support](../a2a_agent_card.md#agent-card-support)。
 
-Fields LiteLLM does not proxy are not shown. For the full support matrix, see [Agent card support](../a2a_agent_card.md#agent-card-support).
+![UI 上的 Agent Card 欄位](../../img/providers/langgraph/agent-card-fields-on-ui.png)
 
-![Agent Card Fields on UI](../../img/providers/langgraph/agent-card-fields-on-ui.png)
+### 5：儲存代理程式 {#5-save-the-agent}
 
-### 5: Save the agent
+點擊 Next 以儲存，並完成其餘步驟
 
-Click on Next to save. And complete the rest of the steps
+![點擊 Next](../../img/providers/langgraph/click-on-next.png)
 
-![Click on Next](../../img/providers/langgraph/click-on-next.png)
+### 6：驗證已提供的 card {#6-verify-the-served-card}
 
-### 6: Verify the served card
-
-From your terminal, fetch the agent card LiteLLM is serving:
+從您的終端機擷取 LiteLLM 正在提供的 agent card：
 
 ```bash
 curl -H "Authorization: Bearer sk-1234" \
   http://localhost:4000/a2a/{agent_id}/.well-known/agent.json | jq
 ```
 
-You should see the card you saved, with:
+您應該會看到您儲存的 card，其中：
 
-- `supportedInterfaces[0].url` pointing at LiteLLM, not the upstream
-- `securitySchemes` showing `LiteLLMKey` (HTTP bearer)
-- The skills you kept during registration
+- 指向 LiteLLM 而非上游的 `supportedInterfaces[0].url`
+- 顯示 `securitySchemes` 為 `LiteLLMKey`（HTTP bearer）
+- 您在註冊期間保留的技能
 
-### 7. Test in Playground
-Go to "Playground" in the sidebar to test your agent. Change the endpoint type to `/v1/a2a/message/send`.
+### 7. 在 Playground 中測試 {#7-test-in-playground}
+前往側邊欄的「Playground」來測試您的代理程式。將端點類型改為 `/v1/a2a/message/send`。
 
-![Go to Playground](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/c4262189-95ac-4fbc-b5af-8aba8126e4f7/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=41,104)
+![前往 Playground](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/c4262189-95ac-4fbc-b5af-8aba8126e4f7/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=41,104)
 
-![Select A2A Endpoint](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/6cbc8e93-7d0c-47fc-9ad4-562663f759d5/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=324,265)
+![選擇 A2A 端點](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/6cbc8e93-7d0c-47fc-9ad4-562663f759d5/ascreenshot.jpeg?tl_px=0,0&br_px=2201,1230&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=324,265)
 
-### 8. Select Your Agent and Send a Message
-Pick your LangGraph agent from the dropdown and send a test message.
+### 8. 選擇您的代理程式並傳送訊息 {#8-select-your-agent-and-send-a-message}
+從下拉選單選取您的 LangGraph 代理程式並傳送測試訊息。
 
-![Select Agent](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/d01da2f1-3b89-47d7-ba95-de2dd8efbc1e/ascreenshot.jpeg?tl_px=0,92&br_px=2201,1323&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=348,277)
+![選擇代理程式](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/d01da2f1-3b89-47d7-ba95-de2dd8efbc1e/ascreenshot.jpeg?tl_px=0,92&br_px=2201,1323&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=348,277)
 
-![Send Message](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/79db724e-a99e-493a-9747-dc91cb398370/ascreenshot.jpeg?tl_px=51,653&br_px=2252,1883&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=524,444)
+![傳送訊息](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/79db724e-a99e-493a-9747-dc91cb398370/ascreenshot.jpeg?tl_px=51,653&br_px=2252,1883&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=524,444)
 
-![Agent Response](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/82aa546a-0eb5-4836-b986-9aefcfe09e10/ascreenshot.jpeg?tl_px=295,28&br_px=2496,1259&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=524,277)
+![代理程式回應](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-13/82aa546a-0eb5-4836-b986-9aefcfe09e10/ascreenshot.jpeg?tl_px=295,28&br_px=2496,1259&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=524,277)
 
-### 9: Invoke the agent manually
+### 9：手動呼叫代理程式 {#9-invoke-the-agent-manually}
 
-Send an A2A `message/send` request to the LiteLLM proxy URL:
+向 LiteLLM proxy URL 傳送一個 A2A `message/send` 請求：
 
 ```bash
 curl -X POST http://localhost:4000/a2a/{agent_id} \
@@ -341,12 +339,11 @@ curl -X POST http://localhost:4000/a2a/{agent_id} \
   }'
 ```
 
-For streaming, use `message/stream` and add `-N -H "Accept: text/event-stream"` to the curl.
+若要串流，請使用 `message/stream` 並在 curl 中加入 `-N -H "Accept: text/event-stream"`。
 
-See also [Invoking A2A Agents](../a2a_invoking_agents.md) for SDK examples.
+另請參閱 [Invoking A2A Agents](../a2a_invoking_agents.md) 以取得 SDK 範例。
 
-
-## Further Reading
+## 延伸閱讀 {#further-reading}
 
 - [LangGraph Platform Documentation](https://langchain-ai.github.io/langgraph/cloud/quick_start/)
 - [LangGraph A2A endpoint docs](https://docs.langchain.com/langsmith/server-a2a)
@@ -355,4 +352,3 @@ See also [Invoking A2A Agents](../a2a_invoking_agents.md) for SDK examples.
 - [A2A Agent Card on LiteLLM](../a2a_agent_card.md)
 - [A2A Cost Tracking](../a2a_cost_tracking.md)
 - [A2A Protocol Specification](https://a2a-protocol.org/latest/specification/)
-

@@ -1,9 +1,9 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Langchain, OpenAI SDK, LlamaIndex, Instructor, Curl examples
+# Langchain, OpenAI SDK, LlamaIndex, Instructor, Curl 範例 {#langchain-openai-sdk-llamaindex-instructor-curl-examples}
 
-LiteLLM Proxy is **OpenAI-Compatible**, and supports:
+LiteLLM Proxy 是 **與 OpenAI 相容**，並支援：
 * /chat/completions 
 * /embeddings
 * /completions 
@@ -11,52 +11,49 @@ LiteLLM Proxy is **OpenAI-Compatible**, and supports:
 * /moderations 
 * /audio/transcriptions
 * /audio/speech
-* [Assistants API endpoints](https://docs.litellm.ai/docs/assistants)
-* [Batches API endpoints](https://docs.litellm.ai/docs/batches)
-* [Fine-Tuning API endpoints](https://docs.litellm.ai/docs/fine_tuning)
+* [Assistants API 端點](https://docs.litellm.ai/docs/assistants)
+* [Batches API 端點](https://docs.litellm.ai/docs/batches)
+* [Fine-Tuning API 端點](https://docs.litellm.ai/docs/fine_tuning)
 
-LiteLLM Proxy is **Azure OpenAI-compatible**:
+LiteLLM Proxy 是 **與 Azure OpenAI 相容**：
 * /chat/completions
 * /completions
 * /embeddings 
 
-LiteLLM Proxy is **Anthropic-compatible**: 
+LiteLLM Proxy 是 **與 Anthropic 相容**： 
 * /messages 
 
-LiteLLM Proxy is **Vertex AI compatible**:
-- [Supports ALL Vertex Endpoints](../vertex_ai)
+LiteLLM Proxy 是 **與 Vertex AI 相容**：
+- [支援所有 Vertex 端點](../vertex_ai)
 
-This doc covers:
+本文件涵蓋：
 
 *   /chat/completion
 *   /embedding
 
+這些是**選定的範例**。LiteLLM Proxy 是**與 OpenAI 相容**的，適用於任何呼叫 OpenAI 的專案。只要變更 `base_url`、`api_key` 和 `model` 即可。
 
-These are **selected examples**. LiteLLM Proxy is **OpenAI-Compatible**, it works with any project that calls OpenAI. Just change the `base_url`, `api_key` and `model`.
+如需傳遞特定提供者的引數，請[前往此處](https://docs.litellm.ai/docs/completion/provider_specific_params#proxy-usage)
 
-To pass provider-specific args, [go here](https://docs.litellm.ai/docs/completion/provider_specific_params#proxy-usage)
-
-To drop unsupported params (E.g. frequency_penalty for bedrock with librechat), [go here](https://docs.litellm.ai/docs/completion/drop_params#openai-proxy-usage)
-
+如需捨棄不支援的參數（例如：bedrock 搭配 librechat 時的 frequency_penalty），請[前往此處](https://docs.litellm.ai/docs/completion/drop_params#openai-proxy-usage)
 
 :::info
 
-**Input, Output, Exceptions are mapped to the OpenAI format for all supported models**
+**所有支援的模型都會將輸入、輸出與例外對應為 OpenAI 格式**
 
 :::
 
-How to send requests to the proxy, pass metadata, allow users to pass in their OpenAI API key
+如何將請求傳送至 proxy、傳遞中繼資料、允許使用者傳入自己的 OpenAI API 金鑰
 
-## `/chat/completions`
+## `/chat/completions` {#chatcompletions}
 
-### Request Format
+### 請求格式 {#request-format}
 
 <Tabs>
 
-
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-Set `extra_body={"metadata": { }}` to `metadata` you want to pass
+將您想傳遞的 `extra_body={"metadata": { }}` 設定為 `metadata`
 
 ```python
 import openai
@@ -89,12 +86,12 @@ print(response)
 </TabItem>
 <TabItem value="litellm_sdk" label="LiteLLM Python SDK">
 
-[**👉 Go Here**](../providers/litellm_proxy#send-all-sdk-requests-to-litellm-proxy)
+[**👉 前往此處**](../providers/litellm_proxy#send-all-sdk-requests-to-litellm-proxy)
 
 </TabItem>
 <TabItem value="azureopenai" label="AzureOpenAI Python">
 
-Set `extra_body={"metadata": { }}` to `metadata` you want to pass
+將您想傳遞的 `extra_body={"metadata": { }}` 設定為 `metadata`
 
 ```python
 import openai
@@ -163,7 +160,7 @@ print(response)
 
 <TabItem value="Curl" label="Curl Request">
 
-Pass `metadata` as part of the request body
+將 `metadata` 作為請求主體的一部分傳入
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -357,9 +354,9 @@ assert user.age == 25
 </TabItem>
 </Tabs>
 
-## Using Tags for Categorization and Tracking
+## 使用標籤進行分類與追蹤 {#using-tags-for-categorization-and-tracking}
 
-Tags allow you to categorize, filter, and track your LLM requests. Add tags to your metadata for better organization and analytics.
+標籤可讓您分類、篩選並追蹤您的 LLM 請求。將標籤加入中繼資料，以便更好地組織與分析。
 
 <Tabs>
 <TabItem value="openai-python" label="OpenAI Python">
@@ -450,14 +447,14 @@ async function main() {
 </TabItem>
 </Tabs>
 
-### Tag Benefits
+### 標籤的優點 {#tag-benefits}
 
-- **Cost Tracking**: Monitor spending by project/team/feature
-- **Analytics**: Filter requests by tags in logs and dashboards  
-- **Routing**: Use tags for conditional model routing
-- **Debugging**: Easier troubleshooting with categorized requests
+- **成本追蹤**：依專案／團隊／功能監控支出
+- **分析**：在記錄與儀表板中依標籤篩選請求  
+- **路由**：使用標籤進行條件式模型路由
+- **除錯**：以分類過的請求更容易排查問題
 
-### Response Format
+### 回應格式 {#response-format}
 
 ```json
 {
@@ -486,8 +483,7 @@ async function main() {
 
 ```
 
-### **Streaming**
-
+### **串流** {#streaming}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -530,12 +526,11 @@ print(completion)
 </TabItem>
 </Tabs>
 
+### 函式呼叫  {#function-calling}
 
-### Function Calling 
+這裡有一些透過 proxy 進行函式呼叫的範例。 
 
-Here's some examples of doing function calling with the proxy. 
-
-You can use the proxy for function calling with **any** openai-compatible project. 
+您可以將 proxy 用於**任何**與 openai 相容的專案進行函式呼叫。 
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -622,10 +617,10 @@ print(completion)
 </TabItem>
 </Tabs>
 
-## `/embeddings`
+## `/embeddings` {#embeddings}
 
-### Request Format
-Input, Output and Exceptions are mapped to the OpenAI format for all supported models
+### 請求格式 {#request-format-1}
+所有支援的模型都會將輸入、輸出與例外對應為 OpenAI 格式
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
@@ -695,8 +690,7 @@ print(query_result[:5])
 </TabItem>
 </Tabs>
 
-
-### Response Format
+### 回應格式 {#response-format-1}
 
 ```json
 {
@@ -722,11 +716,10 @@ print(query_result[:5])
 
 ```
 
-## `/moderations`
+## `/moderations` {#moderations}
 
-
-### Request Format
-Input, Output and Exceptions are mapped to the OpenAI format for all supported models
+### 請求格式 {#request-format-2}
+所有支援的模型都會將輸入、輸出與例外對應為 OpenAI 格式
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
@@ -759,8 +752,7 @@ curl --location 'http://0.0.0.0:4000/moderations' \
 </TabItem>
 </Tabs>
 
-
-### Response Format
+### 回應格式 {#response-format-2}
 
 ```json
 {
@@ -801,8 +793,8 @@ curl --location 'http://0.0.0.0:4000/moderations' \
 ```
 
 
-## Using with OpenAI compatible projects
-Set `base_url` to the LiteLLM Proxy server
+## 與 OpenAI 相容的專案搭配使用 {#using-with-openai-compatible-projects}
+將 `base_url` 設定為 LiteLLM Proxy 伺服器
 
 <Tabs>
 <TabItem value="openai" label="OpenAI v1.0.0+">
@@ -828,34 +820,34 @@ print(response)
 </TabItem>
 <TabItem value="librechat" label="LibreChat">
 
-#### Start the LiteLLM proxy
+#### 啟動 LiteLLM proxy {#start-the-litellm-proxy}
 ```shell
 litellm --model gpt-3.5-turbo
 
 #INFO: Proxy running on http://0.0.0.0:4000
 ```
 
-#### 1. Clone the repo
+#### 1. 複製 repo {#1-clone-the-repo}
 
 ```shell
 git clone https://github.com/danny-avila/LibreChat.git
 ```
 
 
-#### 2. Modify Librechat's `docker-compose.yml`
-LiteLLM Proxy is running on port `4000`, set `4000` as the proxy below
+#### 2. 修改 Librechat 的 `docker-compose.yml` {#2-modify-librechats-docker-composeyml}
+LiteLLM Proxy 執行於 `4000` 連接埠，請將下方的 `4000` 設定為 proxy
 ```yaml
 OPENAI_REVERSE_PROXY=http://host.docker.internal:4000/v1/chat/completions
 ```
 
-#### 3. Save fake OpenAI key in Librechat's `.env` 
+#### 3. 在 Librechat 的 `.env` 中儲存假的 OpenAI 金鑰  {#3-save-fake-openai-key-in-librechats-env}
 
-Copy Librechat's `.env.example` to `.env` and overwrite the default OPENAI_API_KEY (by default it requires the user to pass a key).
+將 Librechat 的 `.env.example` 複製到 `.env`，並覆寫預設的 OPENAI_API_KEY（預設情況下需要使用者提供金鑰）。
 ```env
 OPENAI_API_KEY=sk-1234
 ```
 
-#### 4. Run LibreChat: 
+#### 4. 執行 LibreChat：  {#4-run-librechat}
 ```shell
 docker compose up
 ```
@@ -863,9 +855,9 @@ docker compose up
 
 <TabItem value="continue-dev" label="ContinueDev">
 
-Continue-Dev brings ChatGPT to VSCode. See how to [install it here](https://continue.dev/docs/quickstart).
+Continue-Dev 將 ChatGPT 帶入 VSCode。請參閱[如何在此安裝](https://continue.dev/docs/quickstart)。
 
-In the [config.py](https://continue.dev/docs/reference/Models/openai) set this as your default model.
+在 [config.py](https://continue.dev/docs/reference/Models/openai) 中，將此設定為您的預設模型。
 ```python
   default=OpenAI(
       api_key="IGNORED",
@@ -875,7 +867,7 @@ In the [config.py](https://continue.dev/docs/reference/Models/openai) set this a
   ),
 ```
 
-Credits [@vividfog](https://github.com/ollama/ollama/issues/305#issuecomment-1751848077) for this tutorial. 
+本教學感謝 [@vividfog](https://github.com/ollama/ollama/issues/305#issuecomment-1751848077)。
 </TabItem>
 
 <TabItem value="aider" label="Aider">
@@ -915,16 +907,16 @@ user_proxy = UserProxyAgent("user_proxy")
 user_proxy.initiate_chat(assistant, message="Plot a chart of META and TESLA stock price change YTD.", config_list=config_list)
 ```
 
-Credits [@victordibia](https://github.com/microsoft/autogen/issues/45#issuecomment-1749921972) for this tutorial.
+本教學感謝 [@victordibia](https://github.com/microsoft/autogen/issues/45#issuecomment-1749921972)。
 </TabItem>
 
 <TabItem value="guidance" label="guidance">
-A guidance language for controlling large language models.
+一種用於控制大型語言模型的 guidance 語言。
 https://github.com/guidance-ai/guidance
 
-**NOTE:** Guidance sends additional params like `stop_sequences` which can cause some models to fail if they don't support it. 
+**注意：** Guidance 會傳送額外參數，例如 `stop_sequences`，如果某些模型不支援，可能會導致失敗。 
 
-**Fix**: Start your proxy using the `--drop_params` flag
+**修正方式**：使用 `--drop_params` 旗標啟動您的 proxy
 
 ```shell
 litellm --model ollama/codellama --temperature 0.3 --max_tokens 2048 --drop_params
@@ -960,28 +952,27 @@ print(result)
 </TabItem>
 </Tabs>
 
-## Using with Vertex, Boto3, Anthropic SDK (Native format)
+## 與 Vertex、Boto3、Anthropic SDK 搭配使用（原生格式） {#using-with-vertex-boto3-anthropic-sdk-native-format}
 
-👉 **[Here's how to use litellm proxy with Vertex, boto3, Anthropic SDK - in the native format](../pass_through/vertex_ai.md)**
+👉 **[以下是在原生格式中將 litellm proxy 與 Vertex、boto3、Anthropic SDK 搭配使用的方法](../pass_through/vertex_ai.md)**
 
-## Advanced
+## 進階 {#advanced}
 
-### (BETA) Batch Completions - pass multiple models
+### （BETA）批次完成 - 傳遞多個模型 {#beta-batch-completions---pass-multiple-models}
 
-Use this when you want to send 1 request to N Models
+當您想對 N 個模型送出 1 個請求時，請使用此功能
 
-#### Expected Request Format
+#### 預期的請求格式 {#expected-request-format}
 
-Pass model as a string of comma separated value of models. Example `"model"="llama3,gpt-3.5-turbo"`
+將 model 以逗號分隔的模型字串傳入。範例 `"model"="llama3,gpt-3.5-turbo"`
 
-This same request will be sent to the following model groups on the [litellm proxy config.yaml](https://docs.litellm.ai/docs/proxy/configs)
+同一個請求會傳送到 [litellm proxy config.yaml](https://docs.litellm.ai/docs/proxy/configs) 上的下列模型群組
 - `model_name="llama3"`
 - `model_name="gpt-3.5-turbo"` 
 
 <Tabs>
 
 <TabItem value="openai-py" label="OpenAI Python SDK">
-
 
 ```python
 import openai
@@ -999,10 +990,9 @@ print(response)
 ```
 
 
+#### 預期的回應格式 {#expected-response-format}
 
-#### Expected Response Format
-
-Get a list of responses when `model` is passed as a list
+當 `model` 以清單形式傳入時，會取得回應清單
 
 ```python
 [
@@ -1064,9 +1054,6 @@ Get a list of responses when `model` is passed as a list
 
 <TabItem value="curl" label="Curl">
 
-
-
-
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
     --header 'Authorization: Bearer sk-1234' \
@@ -1085,11 +1072,9 @@ curl --location 'http://localhost:4000/chat/completions' \
 ```
 
 
+#### 預期的回應格式 {#expected-response-format-1}
 
-
-#### Expected Response Format
-
-Get a list of responses when `model` is passed as a list
+當 `model` 以清單形式傳入時，會取得回應清單
 
 ```json
 [
@@ -1143,6 +1128,3 @@ Get a list of responses when `model` is passed as a list
 
 </TabItem>
 </Tabs>
-
-
-

@@ -2,15 +2,15 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Elasticsearch Logging with LiteLLM
+# 使用 LiteLLM 將記錄寫入 Elasticsearch {#elasticsearch-logging-with-litellm}
 
-Send your LLM requests, responses, costs, and performance data to Elasticsearch for analytics and monitoring using OpenTelemetry.
+使用 OpenTelemetry 將您的 LLM 請求、回應、成本與效能資料傳送到 Elasticsearch 進行分析與監控。
 
 <Image img={require('../../img/elasticsearch_demo.png')} />
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Start Elasticsearch
+### 1. 啟動 Elasticsearch {#1-start-elasticsearch}
 
 ```bash
 # Using Docker (simplest)
@@ -22,9 +22,9 @@ docker run -d \
   docker.elastic.co/elasticsearch/elasticsearch:8.18.2
 ```
 
-### 2. Set up OpenTelemetry Collector
+### 2. 設定 OpenTelemetry Collector {#2-set-up-opentelemetry-collector}
 
-Create an OTEL collector configuration file `otel_config.yaml`:
+建立 OTEL collector 設定檔 `otel_config.yaml`：
 
 ```yaml
 receivers:
@@ -61,7 +61,7 @@ service:
       exporters: [debug, otlphttp/elastic]
 ```
 
-Start the OpenTelemetry collector:
+啟動 OpenTelemetry collector：
 ```bash
 docker run -p 4317:4317 -p 4318:4318 \
     -v $(pwd)/otel_config.yaml:/etc/otel-collector-config.yaml \
@@ -69,18 +69,18 @@ docker run -p 4317:4317 -p 4318:4318 \
     --config=/etc/otel-collector-config.yaml
 ```
 
-### 3. Install OpenTelemetry Dependencies
+### 3. 安裝 OpenTelemetry 依賴項 {#3-install-opentelemetry-dependencies}
 
 ```bash
 uv add opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp
 ```
 
-### 4. Configure LiteLLM
+### 4. 設定 LiteLLM {#4-configure-litellm}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-Create a `config.yaml` file:
+建立 `config.yaml` 檔案：
 
 ```yaml
 model_list:
@@ -96,7 +96,7 @@ general_settings:
   otel: true
 ```
 
-Set environment variables and start the proxy:
+設定環境變數並啟動 proxy：
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
 litellm --config config.yaml
@@ -105,7 +105,7 @@ litellm --config config.yaml
 </TabItem>
 <TabItem value="python-sdk" label="Python SDK">
 
-Configure OpenTelemetry in your Python code:
+在您的 Python 程式碼中設定 OpenTelemetry：
 
 ```python
 import litellm
@@ -127,12 +127,12 @@ response = litellm.completion(
 </TabItem>
 </Tabs>
 
-### 5. Test the Integration
+### 5. 測試整合 {#5-test-the-integration}
 
-Make a test request to verify logging is working:
+發出測試請求以驗證記錄是否正常運作：
 
 <Tabs>
-<TabItem value="curl-proxy" label="Test Proxy">
+<TabItem value="curl-proxy" label="測試 Proxy">
 
 ```bash
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -145,7 +145,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
 ```
 
 </TabItem>
-<TabItem value="python-test" label="Test Python SDK">
+<TabItem value="python-test" label="測試 Python SDK">
 
 ```python
 import litellm
@@ -161,32 +161,32 @@ print("Response:", response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-### 6. Verify It's Working
+### 6. 驗證是否正常運作 {#6-verify-its-working}
 
 ```bash
 # Check if traces are being created in Elasticsearch
 curl "localhost:9200/_search?pretty&size=1"
 ```
 
-You should see OpenTelemetry trace data with structured fields for your LLM requests.
+您應該會看到帶有結構化欄位的 OpenTelemetry trace 資料，對應您的 LLM 請求。
 
-### 7. Visualize in Kibana
+### 7. 在 Kibana 中視覺化 {#7-visualize-in-kibana}
 
-Start Kibana to visualize your LLM telemetry data:
+啟動 Kibana 以視覺化您的 LLM telemetry 資料：
 
 ```bash
 docker run -d --name kibana --link elasticsearch:elasticsearch -p 5601:5601 docker.elastic.co/kibana/kibana:8.18.2
 ```
 
-Open Kibana at http://localhost:5601 and create an index pattern for your LiteLLM traces:
+在 http://localhost:5601 開啟 Kibana，並為您的 LiteLLM traces 建立 index pattern：
 
 <Image img={require('../../img/elasticsearch_demo.png')} />
 
-## Production Setup
+## 生產環境設定 {#production-setup}
 
-**With Elasticsearch Cloud:**
+**使用 Elasticsearch Cloud：**
 
-Update your `otel_config.yaml`:
+更新您的 `otel_config.yaml`：
 ```yaml
 exporters:
   otlphttp/elastic:
@@ -196,7 +196,7 @@ exporters:
       "Content-Type": "application/json"
 ```
 
-**Docker Compose (Full Stack):**
+**Docker Compose（完整堆疊）：**
 ```yaml
 # docker-compose.yml
 version: '3.8'
@@ -234,7 +234,7 @@ services:
       - otel-collector
 ```
 
-**config.yaml:**
+**config.yaml：**
 ```yaml
 model_list:
   - model_name: gpt-4.1

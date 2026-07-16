@@ -1,31 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# MCP Deployment Guide
+# MCP 部署指南 {#mcp-deployment-guide}
 
-How to deploy LiteLLM as a central gateway for LLMs, MCP servers, and agents.
+如何將 LiteLLM 部署為 LLM、MCP 伺服器與代理程式的中央閘道。
 
 ---
 
-## The core idea
+## 核心概念 {#the-core-idea}
 
-LiteLLM is a single control plane for three resource types:
+LiteLLM 是三種資源類型的單一控制平面：
 
-| Resource | Registered as |
+| 資源 | 註冊為 |
 |----------|--------------|
-| **LLM** | `model_list` in config or via API |
-| **MCP Server** | `mcp_servers` in config or via UI |
-| **Agent** | A2A routes |
+| **LLM** | `model_list`，可在設定檔中或透過 API |
+| **MCP Server** | `mcp_servers`，可在設定檔中或透過 UI |
+| **Agent** | A2A 路由 |
 
-All three share the same auth (LiteLLM API key), rate limiting, and usage dashboard — a central catalog without separate registries.
+三者共用相同的驗證（LiteLLM API 金鑰）、速率限制與用量儀表板——一個不需分開註冊的中央目錄。
 
 ---
 
-## Deployment topologies
+## 部署拓樸 {#deployment-topologies}
 
-### Option A: Single gateway (recommended)
+### 選項 A：單一閘道（建議） {#option-a-single-gateway-recommended}
 
-One LiteLLM instance handles LLM routing, MCP tool calls, and A2A agent invocations.
+一個 LiteLLM 執行個體處理 LLM 路由、MCP 工具呼叫與 A2A 代理程式呼叫。
 
 ```
 Agents / AI clients
@@ -43,7 +43,7 @@ Agents / AI clients
    Azure    (public)
 ```
 
-One service, one config, one set of API keys. Use the [public internet filter](./mcp_public_internet.md) to control which MCP servers are visible to external callers (Claude Desktop, ChatGPT) vs. internal-only.
+一個服務、一份設定、一組 API 金鑰。使用[公網過濾器](./mcp_public_internet.md)來控制哪些 MCP 伺服器對外部呼叫者（Claude Desktop、ChatGPT）可見，以及哪些僅限內部使用。
 
 ```yaml title="config.yaml" showLineNumbers
 general_settings:
@@ -75,9 +75,9 @@ mcp_servers:
 
 ---
 
-### Option B: Separate LLM gateway and MCP gateway
+### 選項 B：分離的 LLM 閘道與 MCP 閘道 {#option-b-separate-llm-gateway-and-mcp-gateway}
 
-Split into two LiteLLM deployments: one for LLM routing (no internet exposure), one for MCP serving (optionally internet-facing).
+分成兩個 LiteLLM 部署：一個用於 LLM 路由（不對外網暴露），一個用於 MCP 服務（可選擇對外網開放）。
 
 ```
 Internal AI clients             External AI clients
@@ -94,22 +94,22 @@ Internal AI clients             External AI clients
     (OpenAI, Bedrock, …)       (internal + public)
 ```
 
-LLM API keys stay behind the firewall. A compromise of the MCP gateway does not expose them. Use this when external MCP access is needed but LLM credentials must stay fully private.
+LLM API 金鑰保留在防火牆之後。即使 MCP 閘道遭到入侵，也不會暴露這些金鑰。當需要外部 MCP 存取，但 LLM 憑證必須完全保持私密時，請使用此選項。
 
 ---
 
-## Central catalog
+## 中央目錄 {#central-catalog}
 
-LiteLLM exposes all resource types through standard endpoints:
+LiteLLM 透過標準端點公開所有資源類型：
 
-| Endpoint | Returns |
+| 端點 | 回傳 |
 |----------|---------|
-| `GET /v1/models` | All registered LLMs |
-| `GET /v1/mcp/server` | All MCP servers |
-| `GET /mcp` | All MCP tools (across all servers) |
-| `GET /.well-known/agent.json` | A2A agent card |
+| `GET /v1/models` | 所有已註冊的 LLM |
+| `GET /v1/mcp/server` | 所有 MCP 伺服器 |
+| `GET /mcp` | 所有 MCP 工具（跨所有伺服器） |
+| `GET /.well-known/agent.json` | A2A 代理程式卡片 |
 
-**MCP registry** (opt-in) — expose a discovery endpoint for Claude Desktop / Cursor:
+**MCP 註冊表**（選用）——為 Claude Desktop / Cursor 提供探索端點：
 
 ```yaml title="config.yaml"
 general_settings:
@@ -129,41 +129,41 @@ general_settings:
 
 ---
 
-## Security considerations
+## 安全性考量 {#security-considerations}
 
-### The open-port problem
+### 開放埠問題 {#the-open-port-problem}
 
-If you expose LiteLLM's port to the internet (for Claude Desktop / ChatGPT), `/v1/chat/completions` is also reachable externally. LLM credentials stay protected by key auth, but be deliberate about this.
+如果您將 LiteLLM 的連接埠暴露到網際網路（供 Claude Desktop / ChatGPT 使用），`/v1/chat/completions` 也會對外可達。LLM 憑證仍由金鑰驗證保護，但請審慎處理。
 
-**Mitigations:**
-1. **Separate deployments** (Option B) — the LLM gateway never gets a public port
-2. **Firewall** — block `/v1/chat/completions` from public IPs at the network layer
-3. **Short-lived scoped keys** — limit blast radius if a key leaks
+**緩解方式：**
+1. **分離部署**（選項 B）— LLM 閘道永遠不會有公開埠
+2. **防火牆** — 在網路層阻擋來自公用 IP 的 `/v1/chat/completions`
+3. **短效範圍化金鑰** — 若金鑰外洩，可限制影響範圍
 
-### MCP servers can reach the public internet
+### MCP 伺服器可以連到公網 {#mcp-servers-can-reach-the-public-internet}
 
-When you register an external MCP URL (e.g. `https://mcp.exa.ai/mcp`), LiteLLM makes outbound requests to it on every tool call. Check that your network policy allows it and that your security team is comfortable with data leaving the perimeter.
+當您註冊外部 MCP URL（例如 `https://mcp.exa.ai/mcp`）時，LiteLLM 會在每次工具呼叫時對其發出外向請求。請確認您的網路政策允許此操作，且您的資安團隊對資料離開邊界感到放心。
 
-For air-gapped networks: only register MCP servers inside your perimeter and leave `available_on_public_internet: false` (the default).
+對於隔離網路：只在您的邊界內註冊 MCP 伺服器，並保留 `available_on_public_internet: false`（預設值）。
 
-### Access controls
+### 存取控制 {#access-controls}
 
-By default all authenticated callers can call all MCP tools. Use these to restrict:
+預設情況下，所有已驗證的呼叫者都可以呼叫所有 MCP 工具。使用以下方式進行限制：
 
-| Control | Where |
+| 控制項 | 位置 |
 |---------|-------|
-| Per-key tool access | [Key-level MCP permissions](./mcp_control.md) |
-| Per-team tool access | [Team-level MCP permissions](./mcp_control.md) |
-| Hide internal servers from external callers | [available_on_public_internet](./mcp_public_internet.md) |
-| Verify requests came through LiteLLM | [MCP Zero Trust (JWT)](./mcp_zero_trust.md) |
-| Block sensitive data in responses | [MCP Guardrails](./mcp_guardrail.md) |
+| 每個金鑰的工具存取 | [金鑰層級 MCP 權限](./mcp_control.md) |
+| 每個團隊的工具存取 | [團隊層級 MCP 權限](./mcp_control.md) |
+| 對外部呼叫者隱藏內部伺服器 | [available_on_public_internet](./mcp_public_internet.md) |
+| 驗證請求是否經由 LiteLLM 傳入 | [MCP Zero Trust (JWT)](./mcp_zero_trust.md) |
+| 在回應中阻擋敏感資料 | [MCP 防護欄](./mcp_guardrail.md) |
 
 ---
 
-## Related
+## 相關內容 {#related}
 
-- [MCP Overview](./mcp.md)
-- [Public Internet Filter](./mcp_public_internet.md)
-- [MCP Access Control](./mcp_control.md)
+- [MCP 總覽](./mcp.md)
+- [公網過濾器](./mcp_public_internet.md)
+- [MCP 存取控制](./mcp_control.md)
 - [MCP Zero Trust](./mcp_zero_trust.md)
-- [MCP Guardrails](./mcp_guardrail.md)
+- [MCP 防護欄](./mcp_guardrail.md)

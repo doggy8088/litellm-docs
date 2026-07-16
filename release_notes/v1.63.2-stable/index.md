@@ -18,95 +18,92 @@ hide_table_of_contents: false
 import Image from '@theme/IdealImage';
 
 
-These are the changes since `v1.61.20-stable`.
+自 `v1.61.20-stable` 以來的變更如下。
 
-This release is primarily focused on:
-- LLM Translation improvements (more `thinking` content improvements)
-- UI improvements (Error logs now shown on UI)
-
+此版本主要聚焦於：
+- LLM 翻譯改進（更多 `thinking` 內容改進）
+- UI 改進（錯誤記錄現在會顯示在 UI 上）
 
 :::info
 
-This release will be live on 03/09/2025
+此版本將於 03/09/2025 上線
 
 ::: 
 
 <Image img={require('../../img/release_notes/v1632_release.jpg')} />
 
+## 示範執行個體 {#demo-instance}
 
-## Demo Instance
-
-Here's a Demo Instance to test changes:
+以下是用來測試變更的 Demo Instance：
 - Instance: https://demo.litellm.ai/
-- Login Credentials:
-    - Username: admin
-    - Password: sk-1234
+- 登入憑證：
+    - 使用者名稱：admin
+    - 密碼：sk-1234
 
+## 新模型 / 更新模型 {#new-models--updated-models}
 
-## New Models / Updated Models
+1. 為特定 Bedrock Claude 模型新增 `supports_pdf_input` [PR](https://github.com/BerriAI/litellm/commit/f63cf0030679fe1a43d03fb196e815a0f28dae92)
+2. 為 amazon `eu` 模型新增定價 [PR](https://github.com/BerriAI/litellm/commits/main/model_prices_and_context_window.json)
+3. 修正 Azure O1 mini 定價 [PR](https://github.com/BerriAI/litellm/commit/52de1949ef2f76b8572df751f9c868a016d4832c)
 
-1. Add `supports_pdf_input` for specific Bedrock Claude models [PR](https://github.com/BerriAI/litellm/commit/f63cf0030679fe1a43d03fb196e815a0f28dae92)
-2. Add pricing for amazon `eu` models [PR](https://github.com/BerriAI/litellm/commits/main/model_prices_and_context_window.json)
-3. Fix Azure O1 mini pricing [PR](https://github.com/BerriAI/litellm/commit/52de1949ef2f76b8572df751f9c868a016d4832c)
-
-## LLM Translation
+## LLM 翻譯 {#llm-translation}
 
 <Image img={require('../../img/release_notes/anthropic_thinking.jpg')}/>
 
-1. Support `/openai/` passthrough for Assistant endpoints. [Get Started](https://docs.litellm.ai/docs/pass_through/openai_passthrough)
-2. Bedrock Claude - fix tool calling transformation on invoke route. [Get Started](../../docs/providers/bedrock#usage---function-calling--tool-calling)
-3. Bedrock Claude - response_format support for claude on invoke route. [Get Started](../../docs/providers/bedrock#usage---structured-output--json-mode)
-4. Bedrock - pass `description` if set in response_format. [Get Started](../../docs/providers/bedrock#usage---structured-output--json-mode)
-5. Bedrock - Fix passing response_format: `{"type": "text"}`. [PR](https://github.com/BerriAI/litellm/commit/c84b489d5897755139aa7d4e9e54727ebe0fa540)
-6. OpenAI - Handle sending image_url as str to openai. [Get Started](https://docs.litellm.ai/docs/completion/vision)
-7. Deepseek - return 'reasoning_content' missing on streaming. [Get Started](https://docs.litellm.ai/docs/reasoning_content)
-8. Caching - Support caching on reasoning content. [Get Started](https://docs.litellm.ai/docs/proxy/caching)
-9. Bedrock - handle thinking blocks in assistant message. [Get Started](https://docs.litellm.ai/docs/providers/bedrock#usage---thinking--reasoning-content)
-10. Anthropic - Return `signature` on streaming. [Get Started](https://docs.litellm.ai/docs/providers/bedrock#usage---thinking--reasoning-content)
-- Note: We've also migrated from `signature_delta` to `signature`. [Read more](https://docs.litellm.ai/release_notes/v1.63.0)
-11. Support format param for specifying image type. [Get Started](../../docs/completion/vision#explicitly-specify-image-type)
-12. Anthropic - `/v1/messages` endpoint - `thinking` param support. [Get Started](../../docs/anthropic_unified)
-- Note: this refactors the [BETA] unified `/v1/messages` endpoint, to just work for the Anthropic API. 
-13. Vertex AI - handle $id in response schema when calling vertex ai. [Get Started](https://docs.litellm.ai/docs/providers/vertex#json-schema)
+1. 支援 Assistant endpoints 的 `/openai/` passthrough。[開始使用](https://docs.litellm.ai/docs/pass_through/openai_passthrough)
+2. Bedrock Claude - 修正在 invoke route 上的 tool calling transformation。[開始使用](../../docs/providers/bedrock#usage---function-calling--tool-calling)
+3. Bedrock Claude - 在 invoke route 上支援 claude 的 response_format。[開始使用](../../docs/providers/bedrock#usage---structured-output--json-mode)
+4. Bedrock - 如果 response_format 中有設定，傳遞 `description`。[開始使用](../../docs/providers/bedrock#usage---structured-output--json-mode)
+5. Bedrock - 修正傳遞 response_format: `{"type": "text"}`。[PR](https://github.com/BerriAI/litellm/commit/c84b489d5897755139aa7d4e9e54727ebe0fa540)
+6. OpenAI - 處理將 image_url 以字串形式傳送給 openai。[開始使用](https://docs.litellm.ai/docs/completion/vision)
+7. Deepseek - 在串流時回傳缺少的 'reasoning_content'。[開始使用](https://docs.litellm.ai/docs/reasoning_content)
+8. 快取 - 支援 reasoning content 的快取。[開始使用](https://docs.litellm.ai/docs/proxy/caching)
+9. Bedrock - 處理 assistant 訊息中的 thinking blocks。[開始使用](https://docs.litellm.ai/docs/providers/bedrock#usage---thinking--reasoning-content)
+10. Anthropic - 在串流時回傳 `signature`。[開始使用](https://docs.litellm.ai/docs/providers/bedrock#usage---thinking--reasoning-content)
+- 注意：我們也已從 `signature_delta` 遷移到 `signature`。[閱讀更多](https://docs.litellm.ai/release_notes/v1.63.0)
+11. 支援用於指定圖片類型的 format 參數。[開始使用](../../docs/completion/vision#explicitly-specify-image-type)
+12. Anthropic - `/v1/messages` endpoint - 支援 `thinking` 參數。[開始使用](../../docs/anthropic_unified)
+- 注意：這會重構 [BETA] 統一 `/v1/messages` endpoint，使其僅適用於 Anthropic API。
+13. Vertex AI - 在呼叫 vertex ai 時處理回應 schema 中的 $id。[開始使用](https://docs.litellm.ai/docs/providers/vertex#json-schema)
 
-## Spend Tracking Improvements
+## 支出追蹤改進 {#spend-tracking-improvements}
 
-1. Batches API - Fix cost calculation to run on retrieve_batch. [Get Started](https://docs.litellm.ai/docs/batches)
-2. Batches API - Log batch models in spend logs / standard logging payload. [Get Started](../../docs/proxy/logging_spec#standardlogginghiddenparams)
+1. Batches API - 修正 cost calculation，使其在 retrieve_batch 時執行。[開始使用](https://docs.litellm.ai/docs/batches)
+2. Batches API - 在支出記錄 / 標準記錄 payload 中記錄 batch models。[開始使用](../../docs/proxy/logging_spec#standardlogginghiddenparams)
 
-## Management Endpoints / UI
+## 管理端點 / UI {#management-endpoints--ui}
 
 <Image img={require('../../img/release_notes/error_logs.jpg')} />
 
-1. Virtual Keys Page
-    - Allow team/org filters to be searchable on the Create Key Page
-    - Add created_by and updated_by fields to Keys table
-    - Show 'user_email' on key table
-    - Show 100 Keys Per Page, Use full height, increase width of key alias
-2. Logs Page
-    - Show Error Logs on LiteLLM UI
-    - Allow Internal Users to View their own logs
-3. Internal Users Page 
-    - Allow admin to control default model access for internal users
-7. Fix session handling with cookies
+1. Virtual Keys 頁面
+    - 允許在 Create Key 頁面中搜尋 team/org 篩選條件
+    - 在 Keys 表格新增 created_by 和 updated_by 欄位
+    - 在 key 表格顯示 'user_email'
+    - 每頁顯示 100 個 Keys、使用完整高度、增加 key alias 寬度
+2. Logs 頁面
+    - 在 LiteLLM UI 顯示錯誤記錄
+    - 允許 Internal Users 檢視自己的記錄
+3. Internal Users 頁面 
+    - 允許 admin 控制 internal users 的預設模型存取權限
+7. 修正使用 cookies 的 session 處理
 
-## Logging / Guardrail Integrations
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
 
-1. Fix prometheus metrics w/ custom metrics, when keys containing team_id make requests. [PR](https://github.com/BerriAI/litellm/pull/8935)
+1. 修正在 keys 含有 team_id 且發出請求時，自訂 metrics 的 prometheus metrics。[PR](https://github.com/BerriAI/litellm/pull/8935)
 
-## Performance / Loadbalancing / Reliability improvements
+## 效能 / 負載平衡 / 可靠性改進 {#performance--loadbalancing--reliability-improvements}
 
-1. Cooldowns - Support cooldowns on models called with client side credentials. [Get Started](https://docs.litellm.ai/docs/proxy/clientside_auth#pass-user-llm-api-keys--api-base)
-2. Tag-based Routing - ensures tag-based routing across all endpoints (`/embeddings`, `/image_generation`, etc.). [Get Started](https://docs.litellm.ai/docs/proxy/tag_routing)
+1. Cooldowns - 支援對使用 client side credentials 呼叫的 models 設定 cooldowns。[開始使用](https://docs.litellm.ai/docs/proxy/clientside_auth#pass-user-llm-api-keys--api-base)
+2. 基於標籤的路由 - 確保跨所有 endpoints 的基於標籤的路由（`/embeddings`、`/image_generation` 等）。[開始使用](https://docs.litellm.ai/docs/proxy/tag_routing)
 
-## General Proxy Improvements
+## 一般 Proxy 改進 {#general-proxy-improvements}
 
-1. Raise BadRequestError when unknown model passed in request
-2. Enforce model access restrictions on Azure OpenAI proxy route
-3. Reliability fix - Handle emoji’s in text - fix orjson error
-4. Model Access Patch - don't overwrite litellm.anthropic_models when running auth checks
-5. Enable setting timezone information in docker image 
+1. 當請求中傳入未知 model 時，拋出 BadRequestError
+2. 在 Azure OpenAI proxy route 上強制執行 model access 限制
+3. 可靠性修正 - 處理文字中的 emoji - 修正 orjson 錯誤
+4. Model Access 修補 - 在執行 auth checks 時不要覆寫 litellm.anthropic_models
+5. 啟用在 docker image 中設定時區資訊
 
-## Complete Git Diff
+## 完整 Git Diff {#complete-git-diff}
 
-[Here's the complete git diff](https://github.com/BerriAI/litellm/compare/v1.61.20-stable...v1.63.2-stable)
+[這裡是完整的 git diff](https://github.com/BerriAI/litellm/compare/v1.61.20-stable...v1.63.2-stable)

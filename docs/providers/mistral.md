@@ -1,16 +1,16 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Mistral AI API
+# Mistral AI API {#mistral-ai-api}
 https://docs.mistral.ai/api/
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['MISTRAL_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -25,7 +25,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -44,10 +44,9 @@ for chunk in response:
 ```
 
 
+## 搭配 LiteLLM Proxy 使用  {#usage-with-litellm-proxy}
 
-## Usage with LiteLLM Proxy 
-
-### 1. Set Mistral Models on config.yaml
+### 1. 在 config.yaml 中設定 Mistral 模型 {#1-set-mistral-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -57,14 +56,13 @@ model_list:
       api_key: "os.environ/MISTRAL_API_KEY" # ensure you have `MISTRAL_API_KEY` in your .env
 ```
 
-### 2. Start Proxy 
+### 2. 啟動 Proxy  {#2-start-proxy}
 
 ```
 litellm --config config.yaml
 ```
 
-### 3. Test it
-
+### 3. 測試 {#3-test-it}
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -136,32 +134,31 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
 :::info
-All models listed here https://docs.mistral.ai/platform/endpoints are supported. We actively maintain the list of models, pricing, token window, etc. [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+此處列出的所有模型 https://docs.mistral.ai/platform/endpoints 都支援。我們持續維護模型清單、定價、token 視窗等資訊。[請見此處](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。
 
 :::
 
-
-| Model Name     | Function Call                                                | Reasoning Support |
+| 模型名稱     | 函式呼叫                                                | 推理支援 |
 |----------------|--------------------------------------------------------------|-------------------|
-| Mistral Small  | `completion(model="mistral/mistral-small-latest", messages)` | No |
-| Mistral Medium | `completion(model="mistral/mistral-medium-latest", messages)`| No |
-| Mistral Large 2  | `completion(model="mistral/mistral-large-2407", messages)` | No |
-| Mistral Large Latest  | `completion(model="mistral/mistral-large-latest", messages)` | No |
-| **Magistral Small**  | `completion(model="mistral/magistral-small-2506", messages)` | Yes |
-| **Magistral Medium** | `completion(model="mistral/magistral-medium-2506", messages)`| Yes |
-| Mistral 7B     | `completion(model="mistral/open-mistral-7b", messages)`      | No |
-| Mixtral 8x7B   | `completion(model="mistral/open-mixtral-8x7b", messages)`    | No |
-| Mixtral 8x22B  | `completion(model="mistral/open-mixtral-8x22b", messages)`   | No |
-| Codestral      | `completion(model="mistral/codestral-latest", messages)`     | No |
-| Mistral NeMo      | `completion(model="mistral/open-mistral-nemo", messages)`     | No |
-| Mistral NeMo 2407      | `completion(model="mistral/open-mistral-nemo-2407", messages)`     | No |
-| Codestral Mamba      | `completion(model="mistral/open-codestral-mamba", messages)`     | No |
-| Codestral Mamba    | `completion(model="mistral/codestral-mamba-latest"", messages)`     | No |
+| Mistral Small  | `completion(model="mistral/mistral-small-latest", messages)` | 否 |
+| Mistral Medium | `completion(model="mistral/mistral-medium-latest", messages)`| 否 |
+| Mistral Large 2  | `completion(model="mistral/mistral-large-2407", messages)` | 否 |
+| Mistral Large Latest  | `completion(model="mistral/mistral-large-latest", messages)` | 否 |
+| **Magistral Small**  | `completion(model="mistral/magistral-small-2506", messages)` | 是 |
+| **Magistral Medium** | `completion(model="mistral/magistral-medium-2506", messages)`| 是 |
+| Mistral 7B     | `completion(model="mistral/open-mistral-7b", messages)`      | 否 |
+| Mixtral 8x7B   | `completion(model="mistral/open-mixtral-8x7b", messages)`    | 否 |
+| Mixtral 8x22B  | `completion(model="mistral/open-mixtral-8x22b", messages)`   | 否 |
+| Codestral      | `completion(model="mistral/codestral-latest", messages)`     | 否 |
+| Mistral NeMo      | `completion(model="mistral/open-mistral-nemo", messages)`     | 否 |
+| Mistral NeMo 2407      | `completion(model="mistral/open-mistral-nemo-2407", messages)`     | 否 |
+| Codestral Mamba      | `completion(model="mistral/open-codestral-mamba", messages)`     | 否 |
+| Codestral Mamba    | `completion(model="mistral/codestral-mamba-latest"", messages)`     | 否 |
 
-## Function Calling 
+## 函式呼叫 {#function-calling}
 
 ```python
 from litellm import completion
@@ -205,22 +202,22 @@ assert isinstance(
 )
 ```
 
-## Reasoning
+## 推理 {#reasoning}
 
-Mistral does not directly support reasoning, instead it recommends a specific [system prompt](https://docs.mistral.ai/capabilities/reasoning/) to use with their magistral models. By setting the `reasoning_effort` parameter, LiteLLM will prepend the system prompt to the request. 
+Mistral 不直接支援推理，而是建議在其 magistral 模型中使用特定的 [system prompt](https://docs.mistral.ai/capabilities/reasoning/)。設定 `reasoning_effort` 參數後，LiteLLM 會將 system prompt 前置到請求中。 
 
-If an existing system message is provided, LiteLLM will send both as a list of system messages (you can verify this by enabling `litellm._turn_on_debug()`).
+如果已提供現有的 system message，LiteLLM 會將兩者以 system messages 清單形式傳送（您可以透過啟用 `litellm._turn_on_debug()` 來驗證）。
 
-### Supported Models
+### 支援的模型 {#supported-models-1}
 
-| Model Name     | Function Call                                                |
+| 模型名稱     | 函式呼叫                                                |
 |----------------|--------------------------------------------------------------|
 | Magistral Small  | `completion(model="mistral/magistral-small-2506", messages)` |
 | Magistral Medium | `completion(model="mistral/magistral-medium-2506", messages)`|
 
-### Using Reasoning Effort
+### 使用 Reasoning Effort {#using-reasoning-effort}
 
-The `reasoning_effort` parameter controls how much effort the model puts into reasoning. When used with magistral models.
+`reasoning_effort` 參數可控制模型在推理上投入的努力程度。搭配 magistral 模型使用時。
 
 ```python
 from litellm import completion
@@ -239,9 +236,9 @@ response = completion(
 print(response)
 ```
 
-### Example with System Message
+### System Message 範例 {#example-with-system-message}
 
-If you already have a system message, LiteLLM will prepend the reasoning instructions:
+如果您已經有 system message，LiteLLM 會將推理指示前置：
 
 ```python
 response = completion(
@@ -259,9 +256,9 @@ response = completion(
 #  You are a helpful math tutor."
 ```
 
-### Usage with LiteLLM Proxy
+### 搭配 LiteLLM Proxy 使用 {#usage-with-litellm-proxy-1}
 
-You can also use reasoning capabilities through the LiteLLM proxy:
+您也可以透過 LiteLLM proxy 使用推理功能：
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -306,16 +303,16 @@ print(response)
 </TabItem>
 </Tabs>
 
-### Important Notes
+### 重要注意事項 {#important-notes}
 
-- **Model Compatibility**: Reasoning parameters only work with magistral models
-- **Backward Compatibility**: Non-magistral models will ignore reasoning parameters and work normally
+- **模型相容性**：推理參數僅適用於 magistral 模型
+- **回溯相容性**：非 magistral 模型會忽略推理參數並正常運作
 
-## Audio Transcription
+## 音訊轉錄 {#audio-transcription}
 
-Use Mistral's Voxtral models for audio transcription via `litellm.transcription()`.
+透過 `litellm.transcription()` 使用 Mistral 的 Voxtral 模型進行音訊轉錄。
 
-### SDK Usage
+### SDK 用法 {#sdk-usage}
 
 ```python
 from litellm import transcription
@@ -333,7 +330,7 @@ response = transcription(
 print(response.text)
 ```
 
-### With Optional Parameters
+### 含可選參數 {#with-optional-parameters}
 
 ```python
 response = transcription(
@@ -345,13 +342,13 @@ response = transcription(
 )
 ```
 
-### Mistral-Specific Parameters
+### Mistral 專屬參數 {#mistral-specific-parameters}
 
-Mistral supports additional parameters beyond the OpenAI-compatible ones:
+Mistral 除了相容 OpenAI 的參數之外，還支援其他額外參數：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `diarize` | `bool` | Enable speaker diarization |
+| `diarize` | `bool` | 啟用說話者分離 |
 
 ```python
 response = transcription(
@@ -361,7 +358,7 @@ response = transcription(
 )
 ```
 
-### Usage with LiteLLM Proxy
+### 搭配 LiteLLM Proxy 使用 {#usage-with-litellm-proxy-2}
 
 ```yaml
 model_list:
@@ -384,7 +381,7 @@ curl --location 'http://0.0.0.0:4000/v1/audio/transcriptions' \
 --form 'model="voxtral"'
 ```
 
-## Sample Usage - Embedding
+## 範例用法 - 嵌入 {#sample-usage---embedding}
 ```python
 from litellm import embedding
 import os
@@ -398,11 +395,9 @@ print(response)
 ```
 
 
-## Supported Models
-All models listed here https://docs.mistral.ai/platform/endpoints are supported
+## 支援的模型 {#supported-models-2}
+此處列出的所有模型 https://docs.mistral.ai/platform/endpoints 都支援
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Mistral Embeddings | `embedding(model="mistral/mistral-embed", input)` | 
-
-
+| Mistral Embeddings | `embedding(model="mistral/mistral-embed", input)` |

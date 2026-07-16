@@ -1,27 +1,27 @@
-# ✨ Maximum Retention Period for Spend Logs
+# ✨ Spend Logs 的最大保留期限 {#-maximum-retention-period-for-spend-logs}
 
-This walks through how to set the maximum retention period for spend logs. This helps manage database size by deleting old logs automatically.
+這會說明如何設定 spend logs 的最大保留期限。這有助於透過自動刪除舊記錄來管理資料庫大小。
 
 :::info
 
-✨ This is on LiteLLM Enterprise
+✨ 這適用於 LiteLLM Enterprise
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[Enterprise 定價](https://www.litellm.ai/#pricing)
 
-[Get free 7-day trial key](https://www.litellm.ai/enterprise#trial)
+[取得免費 7 天試用金鑰](https://www.litellm.ai/enterprise#trial)
 
 :::
 
-### Requirements
+### 需求 {#requirements}
 
-- **Postgres** (for log storage)
-- **Redis** *(optional)* — required only if you're running multiple proxy instances and want to enable distributed locking
+- **Postgres**（用於記錄儲存）
+- **Redis** *(選用)* — 只有在您執行多個 proxy instance 並希望啟用分散式鎖定時才需要
 
-## Usage
+## 用法 {#usage}
 
-### Setup
+### 設定 {#setup}
 
-Add this to your `proxy_config.yaml` under `general_settings`:
+將以下內容加入您的 `proxy_config.yaml` 中的 `general_settings`：
 
 ```yaml title="proxy_config.yaml"
 general_settings:
@@ -39,59 +39,59 @@ litellm_settings:
     type: redis
 ```
 
-### Configuration Options
+### 設定選項 {#configuration-options}
 
-#### `maximum_spend_logs_retention_period` (required)
+#### `maximum_spend_logs_retention_period`（必填） {#maximum_spend_logs_retention_period-required}
 
-How long logs should be kept before deletion. Supported formats:
+記錄在刪除前應保留多久。支援的格式：
 
-- `"7d"` – 7 days
-- `"24h"` – 24 hours
-- `"60m"` – 60 minutes
-- `"3600s"` – 3600 seconds
+- `"7d"` – 7 天
+- `"24h"` – 24 小時
+- `"60m"` – 60 分鐘
+- `"3600s"` – 3600 秒
 
-#### `maximum_spend_logs_retention_interval` (optional)
+#### `maximum_spend_logs_retention_interval`（選填） {#maximum_spend_logs_retention_interval-optional}
 
-How often the cleanup job should run. Uses the same format as above. If not set, cleanup will run every 24 hours if and only if `maximum_spend_logs_retention_period` is set.
+清理工作應多久執行一次。使用與上述相同的格式。若未設定，且只有在 `maximum_spend_logs_retention_period` 有設定時，清理將每 24 小時執行一次。
 
-#### `maximum_spend_logs_cleanup_cron` (optional)
+#### `maximum_spend_logs_cleanup_cron`（選填） {#maximum_spend_logs_cleanup_cron-optional}
 
-Schedule the cleanup using standard cron syntax. This takes precedence over `maximum_spend_logs_retention_interval`.
+使用標準 cron 語法排程清理。這會優先於 `maximum_spend_logs_retention_interval`。
 
-Examples:
-- `"0 4 * * *"` – Run at 04:00 AM daily
-- `"0 0 * * 0"` – Run at midnight every Sunday
-- `"*/30 * * * *"` – Run every 30 minutes
+範例：
+- `"0 4 * * *"` – 每日早上 04:00 執行
+- `"0 0 * * 0"` – 每週日午夜執行
+- `"*/30 * * * *"` – 每 30 分鐘執行一次
 
-## How it works
+## 運作方式 {#how-it-works}
 
-### Step 1. Lock Acquisition (Optional with Redis)
+### 步驟 1. 取得鎖定（使用 Redis 為選用） {#step-1-lock-acquisition-optional-with-redis}
 
-If Redis is enabled, LiteLLM uses it to make sure only one instance runs the cleanup at a time.
+如果啟用 Redis，LiteLLM 會使用它來確保一次只有一個 instance 執行清理。
 
-- If the lock is acquired:
-  - This instance proceeds with cleanup
-  - Others skip it
-- If no lock is present:
-  - Cleanup still runs (useful for single-node setups)
+- 如果取得鎖定：
+  - 此 instance 會繼續清理
+  - 其他 instance 會略過
+- 如果沒有鎖定：
+  - 清理仍會執行（適用於單一節點設定）
 
-![Working of spend log deletions](../../img/spend_log_deletion_working.png)  
-*Working of spend log deletions*
+![Spend log 刪除的運作方式](../../img/spend_log_deletion_working.png)  
+*Spend log 刪除的運作方式*
 
-### Step 2. Batch Deletion
+### 步驟 2. 批次刪除 {#step-2-batch-deletion}
 
-Once cleanup starts:
+一旦清理開始：
 
-- It calculates the cutoff date using the configured retention period
-- Deletes logs older than the cutoff in batches (default size `1000`)
-- Adds a short delay between batches to avoid overloading the database
+- 會使用已設定的保留期限計算截止日期
+- 以批次刪除早於截止日期的記錄（預設大小 `1000`）
+- 在批次之間加入短暫延遲，以避免資料庫過載
 
-### Default settings:
-- **Batch size**: 1000 logs (configurable via `SPEND_LOG_CLEANUP_BATCH_SIZE`)
-- **Max batches per run**: 500
-- **Max deletions per run**: 500,000 logs
+### 預設設定： {#default-settings}
+- **批次大小**：1000 筆記錄（可透過 `SPEND_LOG_CLEANUP_BATCH_SIZE` 設定）
+- **每次執行的最大批次數**：500
+- **每次執行的最大刪除數**：500,000 筆記錄
 
-You can change the cleanup parameters using environment variables:
+您可以使用環境變數變更清理參數：
 
 ```bash
 SPEND_LOG_RUN_LOOPS=200
@@ -99,32 +99,32 @@ SPEND_LOG_RUN_LOOPS=200
 SPEND_LOG_CLEANUP_BATCH_SIZE=2000
 ```
 
-This would allow up to 200,000 logs to be deleted in one run.
+這將允許在一次執行中最多刪除 200,000 筆記錄。
 
-![Batch deletion of old logs](../../img/spend_log_deletion_multi_pod.jpg)  
-*Batch deletion of old logs*
+![舊記錄的批次刪除](../../img/spend_log_deletion_multi_pod.jpg)  
+*舊記錄的批次刪除*
 
-## Partitioning for high-volume deployments
+## 高流量部署的分區 {#partitioning-for-high-volume-deployments}
 
-At high request volume (millions of rows per day), retention via `DELETE` becomes a problem. Deleting rows does not return disk to the operating system; it leaves dead tuples ("tombstones") that autovacuum has to reclaim later. When writes outpace autovacuum, the table keeps growing on disk even though the logical row count is bounded, and `LiteLLM_SpendLogs` can reach hundreds of GB in a month.
+在高請求量（每天數百萬列）的情況下，透過 `DELETE` 進行保留會變成問題。刪除列不會將磁碟空間還給作業系統；它會留下 dead tuples（「tombstones」），之後必須由 autovacuum 回收。當寫入速度超過 autovacuum 時，即使邏輯列數有上限，資料表在磁碟上的大小仍會持續成長，而 `LiteLLM_SpendLogs` 一個月內就可能達到數百 GB。
 
-The fix is native Postgres range partitioning on `startTime`. With a partitioned table, retention drops whole partitions with `DROP TABLE`, an instant metadata operation that frees disk immediately, with no tombstones and no vacuum. When LiteLLM detects that `LiteLLM_SpendLogs` is partitioned, the same cleanup job automatically switches from batched deletes to dropping expired partitions, and it pre-creates upcoming partitions on each run so writes always have a partition to land in.
+解法是在 `startTime` 上使用原生 Postgres 範圍分區。有了分區資料表，保留會透過 `DROP TABLE` 丟棄整個分區，這是即時的中繼資料操作，可立即釋放磁碟，不會有 tombstones，也不需要 vacuum。當 LiteLLM 偵測到 `LiteLLM_SpendLogs` 已分區時，相同的清理工作會自動從批次刪除切換為刪除過期分區，並且會在每次執行時預先建立即將到來的分區，讓寫入總是有可落地的分區。
 
-This is opt-in. The default schema is not partitioned, so existing deployments are unaffected until you convert the table.
+這是選擇性啟用。預設 schema 不會分區，因此現有部署不會受到影響，直到您將資料表轉換為止。
 
-### Converting the table
+### 轉換資料表 {#converting-the-table}
 
-Partitioning a populated table cannot be done in place, so the conversion renames the existing table aside and creates a fresh partitioned table. The partition key must be part of the primary key, so the primary key becomes the composite `("request_id", "startTime")`; LiteLLM's spend-log write path uses `INSERT ... ON CONFLICT DO NOTHING`, which is compatible with this.
+無法直接對已填充的資料表進行分區，因此轉換會先將現有資料表改名移開，然後建立新的分區資料表。分區鍵必須是主鍵的一部分，因此主鍵會變成複合 `("request_id", "startTime")`；LiteLLM 的 spend-log 寫入路徑使用 `INSERT ... ON CONFLICT DO NOTHING`，這與此相容。
 
-Run the runbook in [`db_scripts/partition_spend_logs.sql`](https://github.com/BerriAI/litellm/blob/main/db_scripts/partition_spend_logs.sql) against your database (test on a staging copy and take a backup first). It creates the partitioned parent, the composite primary key, the `startTime` index, and a `DEFAULT` partition as a safety net for any out-of-range rows.
+在您的資料庫上執行 [`db_scripts/partition_spend_logs.sql`](https://github.com/BerriAI/litellm/blob/main/db_scripts/partition_spend_logs.sql) 中的 runbook（請先在 staging 副本上測試並先備份）。它會建立分區 parent、複合主鍵、`startTime` 索引，以及一個 `DEFAULT` 分區，作為任何超出範圍列的安全網。
 
-After converting, set a retention period as shown above and the cleanup job manages partitions for you.
+轉換完成後，請如上所示設定保留期限，清理工作就會替您管理分區。
 
-### Tuning
+### 調校 {#tuning}
 
-| Environment variable | Default | Description |
+| 環境變數 | 預設值 | 說明 |
 | --- | --- | --- |
-| `SPEND_LOG_PARTITION_INTERVAL` | `day` | Partition granularity: `day`, `week`, or `month`. Use `day` for high-volume tables so retention is precise and individual partitions stay manageable. |
-| `SPEND_LOG_PARTITION_PRECREATE_AHEAD` | `7` | How many future partitions to pre-create on each cleanup run. |
+| `SPEND_LOG_PARTITION_INTERVAL` | `day` | 分區粒度：`day`、`week` 或 `month`。高流量資料表請使用 `day`，以便精確保留且單一分區維持可管理。 |
+| `SPEND_LOG_PARTITION_PRECREATE_AHEAD` | `7` | 每次清理執行要預先建立多少個未來分區。 |
 
-A partition is only dropped once its entire time range is older than the retention cutoff, so effective retention is rounded up to the partition granularity.
+只有在整個時間範圍都早於保留截止點時，分區才會被刪除，因此實際保留時間會向上取整到分區粒度。

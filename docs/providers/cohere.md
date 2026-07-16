@@ -1,21 +1,20 @@
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cohere
+# Cohere {#cohere}
 
-## API KEYS
+## API 金鑰 {#api-keys}
 
 ```python
 import os 
 os.environ["COHERE_API_KEY"] = ""
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
-#### Cohere v2 API (Default)
+#### Cohere v2 API（預設） {#cohere-v2-api-default}
 
 ```python showLineNumbers
 from litellm import completion
@@ -30,9 +29,9 @@ response = completion(
 )
 ```
 
-#### Cohere v1 API
+#### Cohere v1 API {#cohere-v1-api}
 
-To use the Cohere v1/chat API, prefix your model name with `cohere_chat/v1/`:
+若要使用 Cohere v1/chat API，請在您的模型名稱前加上 `cohere_chat/v1/`：
 
 ```python showLineNumbers
 from litellm import completion
@@ -47,9 +46,9 @@ response = completion(
 )
 ```
 
-#### Streaming
+#### 串流 {#streaming}
 
-**Cohere v2 Streaming:**
+**Cohere v2 串流：**
 
 ```python showLineNumbers
 from litellm import completion
@@ -69,7 +68,7 @@ for chunk in response:
 ```
 
 
-**Cohere v1 Streaming:**
+**Cohere v1 串流：**
 
 ```python showLineNumbers
 from litellm import completion
@@ -89,21 +88,21 @@ for chunk in response:
 ```
 
 
-## Usage with LiteLLM Proxy 
+## 與 LiteLLM Proxy 一起使用  {#usage-with-litellm-proxy}
 
-Here's how to call Cohere with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 Cohere
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export COHERE_API_KEY="your-api-key"
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy  {#2-start-the-proxy}
 
-Define the cohere models you want to use in the config.yaml
+在 config.yaml 中定義您要使用的 cohere 模型
 
-**For Cohere v1 models:**
+**適用於 Cohere v1 模型：**
 ```yaml showLineNumbers
 model_list:
   - model_name: command-a-03-2025 
@@ -112,7 +111,7 @@ model_list:
       api_key: "os.environ/COHERE_API_KEY"
 ```
 
-**For Cohere v2 models:**
+**適用於 Cohere v2 模型：**
 ```yaml showLineNumbers
 model_list:
   - model_name: command-a-03-2025-v2
@@ -126,10 +125,10 @@ litellm --config /path/to/config.yaml
 ```
 
 
-### 3. Test it
+### 3. 測試它 {#3-test-it}
 
 <Tabs>
-<TabItem value="v1-curl" label="Cohere v1 - Curl Request">
+<TabItem value="v1-curl" label="Cohere v1 - Curl 請求">
 
 ```shell showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -147,7 +146,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 </TabItem>
-<TabItem value="v2-curl" label="Cohere v2 - Curl Request">
+<TabItem value="v2-curl" label="Cohere v2 - Curl 請求">
 
 ```shell showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -207,9 +206,8 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-## Supported Models
-| Model Name | Function Call |
+## 支援的模型 {#supported-models}
+| 模型名稱 | 函式呼叫 |
 |------------|----------------|
 | command-a-03-2025 | `litellm.completion('command-a-03-2025', messages)` |
 | command-r-plus-08-2024 | `litellm.completion('command-r-plus-08-2024', messages)` |  
@@ -219,8 +217,7 @@ print(response)
 | command-light | `litellm.completion('command-light', messages)` |  
 | command-nightly | `litellm.completion('command-nightly', messages)` |
 
-
-## Embedding
+## 嵌入 {#embedding}
 
 ```python
 from litellm import embedding
@@ -233,16 +230,15 @@ response = embedding(
 )
 ```
 
-### Setting - Input Type for v3 models
-v3 Models have a required parameter: `input_type`. LiteLLM defaults to `search_document`. It can be one of the following four values:
+### 設定 - v3 模型的輸入類型 {#setting---input-type-for-v3-models}
+v3 模型有一個必要參數：`input_type`。LiteLLM 預設為 `search_document`。它可以是以下四個值之一：
 
-- `input_type="search_document"`: (default) Use this for texts (documents) you want to store in your vector database
-- `input_type="search_query"`: Use this for search queries to find the most relevant documents in your vector database
-- `input_type="classification"`: Use this if you use the embeddings as an input for a classification system
-- `input_type="clustering"`: Use this if you use the embeddings for text clustering
+- `input_type="search_document"`：（預設）用於您要儲存在向量資料庫中的文字（文件）
+- `input_type="search_query"`：用於搜尋查詢，以在您的向量資料庫中找出最相關的文件
+- `input_type="classification"`：當您將嵌入作為分類系統的輸入時使用
+- `input_type="clustering"`：當您將嵌入用於文字分群時使用
 
 https://txt.cohere.com/introducing-embed-v3/
-
 
 ```python
 from litellm import embedding
@@ -256,8 +252,8 @@ response = embedding(
 )
 ```
 
-### Supported Embedding Models
-| Model Name               | Function Call                                                |
+### 支援的嵌入模型 {#supported-embedding-models}
+| 模型名稱               | 函式呼叫                                                |
 |--------------------------|--------------------------------------------------------------|
 | embed-english-v3.0       | `embedding(model="embed-english-v3.0", input=["good morning from litellm", "this is another item"])` |
 | embed-english-light-v3.0 | `embedding(model="embed-english-light-v3.0", input=["good morning from litellm", "this is another item"])` |
@@ -267,14 +263,14 @@ response = embedding(
 | embed-english-light-v2.0 | `embedding(model="embed-english-light-v2.0", input=["good morning from litellm", "this is another item"])` |
 | embed-multilingual-v2.0  | `embedding(model="embed-multilingual-v2.0", input=["good morning from litellm", "this is another item"])` |
 
-## Rerank 
+## 重新排序  {#rerank}
 
-### Usage
+### 使用方式 {#usage-1}
 
-LiteLLM supports the v1 and v2 clients for Cohere rerank. By default, the `rerank` endpoint uses the v2 client, but you can specify the v1 client by explicitly calling `v1/rerank`
+LiteLLM 支援 Cohere rerank 的 v1 與 v2 用戶端。預設情況下，`rerank` 端點使用 v2 用戶端，但您可以透過明確呼叫 `v1/rerank` 來指定 v1 用戶端
 
 <Tabs>
-<TabItem value="sdk" label="LiteLLM SDK Usage">
+<TabItem value="sdk" label="LiteLLM SDK 使用方式">
 
 ```python
 from litellm import rerank
@@ -300,13 +296,13 @@ print(response)
 ```
 </TabItem>
 
-<TabItem value="proxy" label="LiteLLM Proxy Usage">
+<TabItem value="proxy" label="LiteLLM Proxy 使用方式">
 
-LiteLLM provides an cohere api compatible `/rerank` endpoint for Rerank calls.
+LiteLLM 提供與 cohere api 相容的 `/rerank` 端點供 Rerank 呼叫。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -320,7 +316,7 @@ model_list:
       api_key: os.environ/COHERE_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -328,7 +324,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test request
+測試請求
 
 ```bash
 curl http://0.0.0.0:4000/rerank \

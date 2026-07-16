@@ -1,34 +1,34 @@
-# Troubleshooting Prisma Migration Errors
+# 疑難排解 Prisma Migration 錯誤 {#troubleshooting-prisma-migration-errors}
 
-Common Prisma migration issues encountered when upgrading or downgrading LiteLLM proxy versions, and how to fix them.
+在升級或降級 LiteLLM proxy 版本時遇到的常見 Prisma migration 問題，以及如何修復。
 
-For a full guide on safely reverting your LiteLLM version, see the **[Safe Rollback Guide](rollback)**.
+如需完整指南，了解如何安全地還原您的 LiteLLM 版本，請參閱 **[安全還原指南](rollback)**。
 
-## How Prisma Migrations Work in LiteLLM
+## LiteLLM 中的 Prisma Migration 如何運作 {#how-prisma-migrations-work-in-litellm}
 
-- LiteLLM uses [Prisma](https://www.prisma.io/) to manage its PostgreSQL database schema.
-- Migration history is tracked in the `_prisma_migrations` table in your database.
-- When LiteLLM starts, it runs `prisma migrate deploy` to apply any new migrations.
-- Upgrading LiteLLM applies all migrations added since your last applied version.
+- LiteLLM 使用 [Prisma](https://www.prisma.io/) 來管理其 PostgreSQL 資料庫結構。
+- migration 歷史會記錄在資料庫中的 `_prisma_migrations` 資料表。
+- 當 LiteLLM 啟動時，會執行 `prisma migrate deploy` 來套用任何新的 migrations。
+- 升級 LiteLLM 時，會套用自您上次套用版本以來新增的所有 migrations。
 
-## Common Errors
+## 常見錯誤 {#common-errors}
 
-### 1. `relation "X" does not exist`
+### 1. `relation "X" does not exist` {#1-relation-x-does-not-exist}
 
-**Example error:**
+**錯誤範例：**
 
 ```
 ERROR: relation "LiteLLM_DeletedTeamTable" does not exist
 Migration: 20260116142756_update_deleted_keys_teams_table_routing_settings
 ```
 
-**Cause:** This typically happens after a version rollback. The `_prisma_migrations` table still records migrations from the newer version as "applied," but the underlying database tables were modified, dropped, or never fully created.
+**原因：** 這通常發生在版本回滾之後。`_prisma_migrations` 資料表仍將較新版本的 migrations 記錄為「已套用」，但底層資料庫資料表已被修改、刪除，或從未完整建立。
 
-**How to fix:**
+**如何修復：**
 
-#### Step 1 — Delete the failed migration entry and restart
+#### 步驟 1 — 刪除失敗的 migration 項目並重新啟動 {#step-1--delete-the-failed-migration-entry-and-restart}
 
-Remove the problematic migration from the history so it can be re-applied:
+從歷史記錄中移除有問題的 migration，以便重新套用：
 
 ```sql
 -- View recent migrations
@@ -42,29 +42,29 @@ DELETE FROM "_prisma_migrations"
 WHERE migration_name = '<failed_migration_name>';
 ```
 
-After deleting the entry, restart LiteLLM — it will re-apply the migration on startup.
+刪除項目後，重新啟動 LiteLLM — 它會在啟動時重新套用該 migration。
 
-#### Step 2 — If that doesn't work, use `prisma db push`
+#### 步驟 2 — 如果仍無法解決，請使用 `prisma db push` {#step-2--if-that-doesnt-work-use-prisma-db-push}
 
-If deleting the migration entry and restarting doesn't resolve the issue, sync the schema directly:
+如果刪除 migration 項目並重新啟動仍無法解決問題，請直接同步結構描述：
 
-> **Warning:** `prisma db push` can cause **data loss** if the Prisma schema removes columns or tables that exist in your database. Only use this as a last resort and ensure you have a database backup first.
+> **警告：** `prisma db push` 若 Prisma schema 移除了您資料庫中存在的欄位或資料表，可能會造成 **資料遺失**。僅在萬不得已時使用，並且請先確認您已有資料庫備份。
 
 ```bash
 DATABASE_URL="<your_database_url>" prisma db push
 ```
 
-This bypasses migration history and forces the database schema to match the Prisma schema.
+這會略過 migration 歷史，並強制資料庫結構描述與 Prisma schema 一致。
 
 ---
 
-### 2. `New migrations cannot be applied before the error is recovered from`
+### 2. `New migrations cannot be applied before the error is recovered from` {#2-new-migrations-cannot-be-applied-before-the-error-is-recovered-from}
 
-**Cause:** A previous migration failed (recorded with an error in `_prisma_migrations`), and Prisma refuses to apply any new migrations until the failure is resolved.
+**原因：** 先前的 migration 失敗（在 `_prisma_migrations` 中記錄了錯誤），而 Prisma 會拒絕套用任何新的 migrations，直到該失敗問題被解決。
 
-**How to fix:**
+**如何修復：**
 
-1. Find the failed migration:
+1. 找出失敗的 migration：
 
 ```sql
 SELECT migration_name, finished_at, rolled_back_at, logs
@@ -73,14 +73,14 @@ WHERE finished_at IS NULL OR rolled_back_at IS NOT NULL
 ORDER BY started_at DESC;
 ```
 
-2. Delete the failed entry and restart LiteLLM:
+2. 刪除失敗的項目並重新啟動 LiteLLM：
 
 ```sql
 DELETE FROM "_prisma_migrations"
 WHERE migration_name = '<failed_migration_name>';
 ```
 
-3. If that doesn't work, use `prisma db push` (see [warning above](#step-2--if-that-doesnt-work-use-prisma-db-push) — back up your database first):
+3. 如果仍無法解決，請使用 `prisma db push`（請參閱上方的 [警告](#step-2--if-that-doesnt-work-use-prisma-db-push) — 請先備份您的資料庫）：
 
 ```bash
 DATABASE_URL="<your_database_url>" prisma db push
@@ -88,13 +88,13 @@ DATABASE_URL="<your_database_url>" prisma db push
 
 ---
 
-### 3. Migration state mismatch after version rollback
+### 3. 版本回滾後 migration 狀態不一致 {#3-migration-state-mismatch-after-version-rollback}
 
-**Cause:** You upgraded to version X (new migrations applied), rolled back to version Y, then upgraded again. The `_prisma_migrations` table has stale entries for migrations that were partially applied or correspond to a schema state that no longer exists.
+**原因：** 您升級到版本 X（套用了新的 migrations），然後回滾到版本 Y，接著又再次升級。`_prisma_migrations` 資料表對於部分已套用的 migrations，或對於不再存在的結構描述狀態，保留了過時的項目。
 
-**Fix:**
+**修復：**
 
-1. Inspect the migration table for problematic entries:
+1. 檢查 migration 資料表中是否有有問題的項目：
 
 ```sql
 SELECT migration_name, started_at, finished_at, rolled_back_at, logs
@@ -103,14 +103,14 @@ ORDER BY started_at DESC
 LIMIT 20;
 ```
 
-2. For each migration that shouldn't be there (i.e., from the version you rolled back from), delete the entry:
+2. 對於不應存在的每個 migration（也就是您回滾來源的版本中的 migration），刪除該項目：
      ```sql
      DELETE FROM "_prisma_migrations" WHERE migration_name = '<migration_name>';
      ```
 
-3. Restart LiteLLM to re-run migrations.
+3. 重新啟動 LiteLLM 以重新執行 migrations。
 
-4. If that doesn't work, use `prisma db push` (see [warning above](#step-2--if-that-doesnt-work-use-prisma-db-push) — back up your database first):
+4. 如果仍無法解決，請使用 `prisma db push`（請參閱上方的 [警告](#step-2--if-that-doesnt-work-use-prisma-db-push) — 請先備份您的資料庫）：
 
 ```bash
 DATABASE_URL="<your_database_url>" prisma db push

@@ -1,15 +1,15 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Custom Secret Manager
+# 自訂祕密管理器 {#custom-secret-manager}
 
-Integrate your custom secret management system with LiteLLM.
+將您的自訂祕密管理系統與 LiteLLM 整合。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Create Your Secret Manager Class
+### 1. 建立您的祕密管理器類別 {#1-create-your-secret-manager-class}
 
-Create a new file `my_secret_manager.py` with an in-memory secret store:
+建立一個新檔案 `my_secret_manager.py`，並使用記憶體內祕密儲存：
 
 ```python showLineNumbers title="my_secret_manager.py"
 from typing import Optional, Union
@@ -44,9 +44,9 @@ class InMemorySecretManager(CustomSecretManager):
         return self.secrets.get(secret_name)
 ```
 
-### 2. Configure Proxy
+### 2. 設定 Proxy {#2-configure-proxy}
 
-Reference your custom secret manager in `config.yaml`:
+在 `config.yaml` 中參照您的自訂祕密管理器：
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
@@ -62,12 +62,12 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY  # Read from custom secret manager
 ```
 
-### 3. Start LiteLLM Proxy
+### 3. 啟動 LiteLLM Proxy {#3-start-litellm-proxy}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
 
-Mount your custom secret manager file on the container:
+將您的自訂祕密管理器檔案掛載到容器上：
 
 ```bash showLineNumbers
 docker run -d \
@@ -84,7 +84,7 @@ docker run -d \
 
 </TabItem>
 
-<TabItem value="pip" label="Python Package">
+<TabItem value="pip" label="Python 套件">
 
 ```bash
 litellm --config config.yaml --detailed_debug
@@ -93,12 +93,12 @@ litellm --config config.yaml --detailed_debug
 </TabItem>
 </Tabs>
 
-## Configuration Options
+## 設定選項 {#configuration-options}
 
-Customize secret manager behavior in your `config.yaml`:
+在您的 `config.yaml` 中自訂祕密管理器行為：
 
 <Tabs>
-<TabItem value="read_only" label="Read Keys Only">
+<TabItem value="read_only" label="僅讀取金鑰">
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
@@ -110,9 +110,9 @@ general_settings:
 
 </TabItem>
 
-<TabItem value="write_only" label="Store Virtual Keys">
+<TabItem value="write_only" label="儲存虛擬金鑰">
 
-Store LiteLLM proxy virtual keys in your secret manager:
+將 LiteLLM proxy 虛擬金鑰儲存在您的祕密管理器中：
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
@@ -130,7 +130,7 @@ general_settings:
 
 </TabItem>
 
-<TabItem value="read_and_write" label="Read + Write">
+<TabItem value="read_and_write" label="讀取 + 寫入">
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
@@ -146,23 +146,23 @@ general_settings:
 </TabItem>
 </Tabs>
 
-### Available Settings
+### 可用設定 {#available-settings}
 
-| Setting | Description | Default |
+| 設定 | 說明 | 預設值 |
 |---------|-------------|---------|
-| `custom_secret_manager` | Path to your custom secret manager class | Required |
-| `access_mode` | `"read_only"`, `"write_only"`, or `"read_and_write"` | `"read_only"` |
-| `hosted_keys` | List of specific keys to check in secret manager | All keys |
-| `store_virtual_keys` | Store LiteLLM virtual keys in secret manager | `false` |
-| `prefix_for_stored_virtual_keys` | Prefix for stored virtual keys | `"litellm/"` |
-| `description` | Description for stored secrets | `None` |
-| `tags` | Tags to apply to stored secrets | `None` |
+| `custom_secret_manager` | 自訂祕密管理器類別的路徑 | 必要 |
+| `access_mode` | `"read_only"`、`"write_only"`，或 `"read_and_write"` | `"read_only"` |
+| `hosted_keys` | 要在祕密管理器中檢查的特定金鑰清單 | 所有金鑰 |
+| `store_virtual_keys` | 是否將 LiteLLM 虛擬金鑰儲存在祕密管理器中 | `false` |
+| `prefix_for_stored_virtual_keys` | 已儲存虛擬金鑰的前綴 | `"litellm/"` |
+| `description` | 已儲存祕密的說明 | `None` |
+| `tags` | 要套用到已儲存祕密的標籤 | `None` |
 
-## Required Methods
+## 必要方法 {#required-methods}
 
-Your custom secret manager **must** implement these two methods:
+您的自訂祕密管理器**必須**實作這兩個方法：
 
-### `async_read_secret()`
+### `async_read_secret()` {#async_read_secret}
 
 ```python showLineNumbers
 async def async_read_secret(
@@ -180,7 +180,7 @@ async def async_read_secret(
     pass
 ```
 
-### `sync_read_secret()`
+### `sync_read_secret()` {#sync_read_secret}
 
 ```python showLineNumbers
 def sync_read_secret(
@@ -198,11 +198,11 @@ def sync_read_secret(
     pass
 ```
 
-## Optional Methods
+## 選用方法 {#optional-methods}
 
-Implement these for additional functionality:
+請實作這些方法以提供額外功能：
 
-### `async_write_secret()`
+### `async_write_secret()` {#async_write_secret}
 
 ```python showLineNumbers
 async def async_write_secret(
@@ -218,7 +218,7 @@ async def async_write_secret(
     pass
 ```
 
-### `async_delete_secret()`
+### `async_delete_secret()` {#async_delete_secret}
 
 ```python showLineNumbers
 async def async_delete_secret(
@@ -232,21 +232,20 @@ async def async_delete_secret(
     pass
 ```
 
-## Use Cases
+## 使用情境 {#use-cases}
 
-✅ Proprietary vault systems  
-✅ Custom authentication (mTLS, OAuth)  
-✅ Organization-specific security policies  
-✅ Legacy secret storage systems  
-✅ Multi-region secret replication  
-✅ Secret versioning and rotation  
-✅ Compliance requirements (HIPAA, SOC2)  
+✅ 專有保管庫系統  
+✅ 自訂驗證（mTLS、OAuth）  
+✅ 組織專屬安全性政策  
+✅ 傳統祕密儲存系統  
+✅ 多區域祕密複寫  
+✅ 祕密版本控制與輪替  
+✅ 合規性需求（HIPAA、SOC2）  
 
-## Example
+## 範例 {#example}
 
-See [cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py](https://github.com/BerriAI/litellm/blob/main/cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py) for a complete working example with:
+請參閱 [cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py](https://github.com/BerriAI/litellm/blob/main/cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py) 以取得完整可運作範例，包含：
 
-- In-memory secret manager implementation  
-- Integration with LiteLLM Proxy  
-- Read, write, and delete operations
-
+- 記憶體內祕密管理器實作  
+- 與 LiteLLM Proxy 整合  
+- 讀取、寫入與刪除作業

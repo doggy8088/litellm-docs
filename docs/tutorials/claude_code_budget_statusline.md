@@ -1,33 +1,33 @@
 import Image from '@theme/IdealImage';
 
-# Claude Code - Budget Status Line
+# Claude Code - 預算狀態列 {#claude-code---budget-status-line}
 
-Show a user's remaining LiteLLM budget in the Claude Code status line. The status line calls [`/user/info`](../proxy/virtual_keys.md#spend-tracking) with the user's virtual key and displays the difference between `user_info.max_budget` and `user_info.spend`.
+在 Claude Code 狀態列中顯示使用者剩餘的 LiteLLM 預算。狀態列會以使用者的虛擬金鑰呼叫 [`/user/info`](../proxy/virtual_keys.md#spend-tracking)，並顯示 `user_info.max_budget` 與 `user_info.spend` 之間的差額。
 
-If the user does not have a `max_budget`, the script prints nothing.
+如果使用者沒有 `max_budget`，腳本不會輸出任何內容。
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-- Claude Code is configured to use LiteLLM
-- The Claude Code virtual key belongs to a user with a [`max_budget`](../proxy/users.md#internal-user)
-- `curl` and `jq` are installed
+- Claude Code 已設定為使用 LiteLLM
+- Claude Code 虛擬金鑰屬於具有 [`max_budget`](../proxy/users.md#internal-user) 的使用者
+- 已安裝 `curl` 和 `jq`
 
-Use a user virtual key rather than the proxy master key. Calling `/user/info` without a `user_id` returns the user associated with the authenticated key.
+請使用使用者虛擬金鑰，而不是 proxy master key。未提供 `user_id` 就呼叫 `/user/info` 時，會回傳與已驗證金鑰關聯的使用者。
 
-## 1. Set LiteLLM environment variables
+## 1. 設定 LiteLLM 環境變數 {#1-set-litellm-environment-variables}
 
-Set the proxy root URL and the same virtual key that Claude Code uses:
+設定 proxy 根 URL 與 Claude Code 使用的相同虛擬金鑰：
 
 ```bash
 export LITELLM_BASE_URL="http://localhost:4000"
 export LITELLM_API_KEY="$ANTHROPIC_AUTH_TOKEN"
 ```
 
-`LITELLM_BASE_URL` must point to the proxy root, not the `/anthropic` pass-through endpoint.
+`LITELLM_BASE_URL` 必須指向 proxy 根，而不是 `/anthropic` 轉發端點。
 
-## 2. Create the status line script
+## 2. 建立狀態列腳本 {#2-create-the-status-line-script}
 
-Save this script as `~/.claude/litellm-budget-statusline.sh`:
+將此腳本儲存為 `~/.claude/litellm-budget-statusline.sh`：
 
 ```bash
 #!/bin/bash
@@ -64,17 +64,17 @@ awk -v max="$MAX_BUDGET" -v spend="$SPEND" 'BEGIN {
 }'
 ```
 
-Make the script executable:
+讓腳本可執行：
 
 ```bash
 chmod +x ~/.claude/litellm-budget-statusline.sh
 ```
 
-The two-second timeout prevents a slow or unavailable proxy from delaying Claude Code. API errors and users without a configured budget leave the status line empty.
+兩秒逾時可避免緩慢或無法使用的 proxy 延遲 Claude Code。API 錯誤以及未設定預算的使用者會讓狀態列保持空白。
 
-## 3. Configure Claude Code
+## 3. 設定 Claude Code {#3-configure-claude-code}
 
-Add the script to `~/.claude/settings.json`:
+將腳本加入 `~/.claude/settings.json`：
 
 ```json
 {
@@ -85,16 +85,16 @@ Add the script to `~/.claude/settings.json`:
 }
 ```
 
-Claude Code refreshes the status line after each assistant response. For more customization options, see the [Claude Code status line documentation](https://code.claude.com/docs/en/statusline).
+Claude Code 會在每次助理回應後重新整理狀態列。如需更多自訂選項，請參閱 [Claude Code 狀態列文件](https://code.claude.com/docs/en/statusline)。
 
-## Example
+## 範例 {#example}
 
-For a user with a `$100` maximum budget and `$24.35` in tracked spend, the status line displays:
+對於最大預算為 `$100` 且已追蹤支出為 `$24.35` 的使用者，狀態列會顯示：
 
 ```text
 LiteLLM budget: $75.65 remaining of $100.00
 ```
 
-The remaining budget appears beneath the Claude Code prompt:
+剩餘預算會顯示在 Claude Code 提示字元下方：
 
 <Image img={require('../../img/claude_code_budget_statusline.png')} style={{ width: '100%', maxWidth: '900px', height: 'auto' }} />

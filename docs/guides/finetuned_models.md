@@ -2,12 +2,11 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-# Calling Finetuned Models
+# 呼叫微調模型 {#calling-finetuned-models}
 
-## OpenAI
+## OpenAI {#openai}
 
-
-| Model Name                | Function Call                                                          |
+| 模型名稱                | 函式呼叫                                                          |
 |---------------------------|-----------------------------------------------------------------|
 | fine tuned `gpt-4-0613`    | `response = completion(model="ft:gpt-4-0613", messages=messages)`     |
 | fine tuned `gpt-4o-2024-05-13` | `response = completion(model="ft:gpt-4o-2024-05-13", messages=messages)` |
@@ -15,10 +14,9 @@ import TabItem from '@theme/TabItem';
 | fine tuned `gpt-3.5-turbo-1106` | `response = completion(model="ft:gpt-3.5-turbo-1106", messages=messages)` |
 | fine tuned `gpt-3.5-turbo-0613` | `response = completion(model="ft:gpt-3.5-turbo-0613", messages=messages)` |
 
+## Vertex AI {#vertex-ai}
 
-## Vertex AI
-
-Fine tuned models on vertex have a numerical model/endpoint id. 
+Vertex 上的微調模型具有數字型的 model/endpoint id。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -41,13 +39,13 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add Vertex Credentials to your env 
+1. 將 Vertex 憑證加入您的環境變數 
 
 ```bash
 !gcloud auth application-default login
 ```
 
-2. Setup config.yaml 
+2. 設定 config.yaml 
 
 ```yaml
 - model_name: finetuned-gemini
@@ -59,7 +57,7 @@ response = completion(
     base_model: vertex_ai/gemini-1.5-pro # IMPORTANT
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl --location 'https://0.0.0.0:4000/v1/chat/completions' \
@@ -70,5 +68,3 @@ curl --location 'https://0.0.0.0:4000/v1/chat/completions' \
 
 </TabItem>
 </Tabs>
-
-

@@ -18,19 +18,18 @@ hide_table_of_contents: false
 
 import Image from '@theme/IdealImage';
 
-These are the changes since `v1.63.2-stable`.
+這些是自 `v1.63.2-stable` 以來的變更。
 
-This release is primarily focused on:
-- [Beta] Responses API Support
-- Snowflake Cortex Support, Amazon Nova Image Generation
-- UI - Credential Management, re-use credentials when adding new models
-- UI - Test Connection to LLM Provider before adding a model
+此版本主要聚焦於：
+- [Beta] 回應 API 支援
+- Snowflake Cortex 支援、Amazon Nova 圖片生成
+- UI - 憑證管理，在新增模型時重複使用憑證
+- UI - 在新增模型前測試與 LLM 提供者的連線
 
-## Known Issues
-- 🚨 Known issue on Azure OpenAI - We don't recommend upgrading if you use Azure OpenAI. This version failed our Azure OpenAI load test
+## 已知問題 {#known-issues}
+- 🚨 Azure OpenAI 已知問題 - 如果您使用 Azure OpenAI，我們不建議升級。此版本未通過我們的 Azure OpenAI 負載測試
 
-
-## Docker Run LiteLLM Proxy
+## Docker 執行 LiteLLM Proxy {#docker-run-litellm-proxy}
 
 ```
 docker run
@@ -39,134 +38,121 @@ docker run
 docker.litellm.ai/berriai/litellm:main-v1.63.11-stable
 ```
 
-## Demo Instance
+## 示範執行個體 {#demo-instance}
 
-Here's a Demo Instance to test changes:
-- Instance: https://demo.litellm.ai/
-- Login Credentials:
-    - Username: admin
-    - Password: sk-1234
+以下是用來測試變更的示範執行個體：
+- 執行個體：https://demo.litellm.ai/
+- 登入憑證：
+    - 使用者名稱：admin
+    - 密碼：sk-1234
 
+## 新模型 / 更新模型 {#new-models--updated-models}
 
+- Amazon Nova Canvas 的圖片生成支援 [Getting Started](https://docs.litellm.ai/docs/providers/bedrock#image-generation)
+- 為 Jamba 新模型新增定價 [PR](https://github.com/BerriAI/litellm/pull/9032/files)
+- 為 Amazon EU 模型新增定價 [PR](https://github.com/BerriAI/litellm/pull/9056/files)
+- 新增 Bedrock Deepseek R1 模型定價 [PR](https://github.com/BerriAI/litellm/pull/9108/files)
+- 更新 Gemini 定價：Gemma 3、Flash 2 thinking 更新、LearnLM [PR](https://github.com/BerriAI/litellm/pull/9190/files)
+- 將 Cohere Embedding 3 模型標記為多模態 [PR](https://github.com/BerriAI/litellm/pull/9176/commits/c9a576ce4221fc6e50dc47cdf64ab62736c9da41)
+- 新增 Azure Data Zone 定價 [PR](https://github.com/BerriAI/litellm/pull/9185/files#diff-19ad91c53996e178c1921cbacadf6f3bae20cfe062bd03ee6bfffb72f847ee37)
+   - LiteLLM 會追蹤 `azure/eu` 與 `azure/us` 模型的成本
 
-## New Models / Updated Models
-
-- Image Generation support for Amazon Nova Canvas [Getting Started](https://docs.litellm.ai/docs/providers/bedrock#image-generation)
-- Add pricing for Jamba new models [PR](https://github.com/BerriAI/litellm/pull/9032/files)
-- Add pricing for Amazon EU models [PR](https://github.com/BerriAI/litellm/pull/9056/files)
-- Add Bedrock Deepseek R1 model pricing [PR](https://github.com/BerriAI/litellm/pull/9108/files)
-- Update Gemini pricing: Gemma 3, Flash 2 thinking update, LearnLM [PR](https://github.com/BerriAI/litellm/pull/9190/files)
-- Mark Cohere Embedding 3 models as Multimodal [PR](https://github.com/BerriAI/litellm/pull/9176/commits/c9a576ce4221fc6e50dc47cdf64ab62736c9da41)
-- Add Azure Data Zone pricing [PR](https://github.com/BerriAI/litellm/pull/9185/files#diff-19ad91c53996e178c1921cbacadf6f3bae20cfe062bd03ee6bfffb72f847ee37)
-   - LiteLLM Tracks cost for `azure/eu` and `azure/us` models
-
-
-
-## LLM Translation
+## LLM 翻譯 {#llm-translation}
 
 <Image img={require('../../img/release_notes/responses_api.png')} />
 
-1. **New Endpoints**
+1. **新端點**
 - [Beta] POST `/responses` API. [Getting Started](https://docs.litellm.ai/docs/response_api)
 
-2. **New LLM Providers**
+2. **新的 LLM 提供者**
 - Snowflake Cortex [Getting Started](https://docs.litellm.ai/docs/providers/snowflake)
 
-3. **New LLM Features**
+3. **新的 LLM 功能**
 
-- Support OpenRouter `reasoning_content` on streaming [Getting Started](https://docs.litellm.ai/docs/reasoning_content)
+- 支援在串流時透過 OpenRouter `reasoning_content` [Getting Started](https://docs.litellm.ai/docs/reasoning_content)
 
-4. **Bug Fixes**
+4. **錯誤修正**
 
-- OpenAI: Return `code`, `param` and `type` on bad request error [More information on litellm exceptions](https://docs.litellm.ai/docs/exception_mapping)
-- Bedrock: Fix converse chunk parsing to only return empty dict on tool use [PR](https://github.com/BerriAI/litellm/pull/9166)
-- Bedrock: Support extra_headers [PR](https://github.com/BerriAI/litellm/pull/9113)
-- Azure: Fix Function Calling Bug & Update Default API Version to `2025-02-01-preview` [PR](https://github.com/BerriAI/litellm/pull/9191)
-- Azure: Fix AI services URL [PR](https://github.com/BerriAI/litellm/pull/9185)
-- Vertex AI: Handle HTTP 201 status code in response [PR](https://github.com/BerriAI/litellm/pull/9193)
-- Perplexity: Fix incorrect streaming response [PR](https://github.com/BerriAI/litellm/pull/9081)
-- Triton: Fix streaming completions bug [PR](https://github.com/BerriAI/litellm/pull/8386)
-- Deepgram: Support bytes.IO when handling audio files for transcription [PR](https://github.com/BerriAI/litellm/pull/9071)
-- Ollama: Fix "system" role has become unacceptable [PR](https://github.com/BerriAI/litellm/pull/9261)
-- All Providers (Streaming): Fix String `data:` stripped from entire content in streamed responses [PR](https://github.com/BerriAI/litellm/pull/9070)
+- OpenAI：在錯誤請求錯誤時回傳 `code`、`param` 和 `type` [More information on litellm exceptions](https://docs.litellm.ai/docs/exception_mapping)
+- Bedrock：修正 converse chunk 解析，僅在工具使用時回傳空字典 [PR](https://github.com/BerriAI/litellm/pull/9166)
+- Bedrock：支援 extra_headers [PR](https://github.com/BerriAI/litellm/pull/9113)
+- Azure：修正 Function Calling 錯誤並將預設 API Version 更新為 `2025-02-01-preview` [PR](https://github.com/BerriAI/litellm/pull/9191)
+- Azure：修正 AI services URL [PR](https://github.com/BerriAI/litellm/pull/9185)
+- Vertex AI：處理回應中的 HTTP 201 狀態碼 [PR](https://github.com/BerriAI/litellm/pull/9193)
+- Perplexity：修正不正確的串流回應 [PR](https://github.com/BerriAI/litellm/pull/9081)
+- Triton：修正串流 completions 錯誤 [PR](https://github.com/BerriAI/litellm/pull/8386)
+- Deepgram：在處理用於轉錄的音訊檔案時支援 bytes.IO [PR](https://github.com/BerriAI/litellm/pull/9071)
+- Ollama：修正「system」角色已變得不可接受 [PR](https://github.com/BerriAI/litellm/pull/9261)
+- 所有提供者（串流）：修正從串流回應的整個內容中移除 String `data:` 的問題 [PR](https://github.com/BerriAI/litellm/pull/9070)
 
+## 支出追蹤改善 {#spend-tracking-improvements}
 
+1. 支援 Bedrock converse 快取 token 追蹤 [Getting Started](https://docs.litellm.ai/docs/completion/prompt_caching)
+2. Responses API 的成本追蹤 [Getting Started](https://docs.litellm.ai/docs/response_api)
+3. 修正 Azure Whisper 成本追蹤 [Getting Started](https://docs.litellm.ai/docs/audio_transcription)
 
-## Spend Tracking Improvements
+## UI {#ui}
 
-1. Support Bedrock converse cache token tracking [Getting Started](https://docs.litellm.ai/docs/completion/prompt_caching)
-2. Cost Tracking for Responses API [Getting Started](https://docs.litellm.ai/docs/response_api)
-3. Fix Azure Whisper cost tracking [Getting Started](https://docs.litellm.ai/docs/audio_transcription)
+### 在 UI 上重複使用憑證 {#re-use-credentials-on-ui}
 
-
-## UI
-
-### Re-Use Credentials on UI
-
-You can now onboard LLM provider credentials on LiteLLM UI. Once these credentials are added you can re-use them when adding new models [Getting Started](https://docs.litellm.ai/docs/proxy/ui_credentials)
+您現在可以在 LiteLLM UI 上上線 LLM 提供者憑證。這些憑證一旦新增後，您便可在新增新模型時重複使用它們 [Getting Started](https://docs.litellm.ai/docs/proxy/ui_credentials)
 
 <Image img={require('../../img/release_notes/credentials.jpg')} />
 
+### 在新增模型前測試連線 {#test-connections-before-adding-models}
 
-### Test Connections before adding models
-
-Before adding a model you can test the connection to the LLM provider to verify you have setup your API Base + API Key correctly
+在新增模型之前，您可以測試與 LLM 提供者的連線，以驗證您已正確設定 API Base + API Key
 
 <Image img={require('../../img/release_notes/litellm_test_connection.gif')} />
 
-### General UI Improvements
-1. Add Models Page
-   - Allow adding Cerebras, Sambanova, Perplexity, Fireworks, Openrouter, TogetherAI Models, Text-Completion OpenAI on Admin UI
-   - Allow adding EU OpenAI models
-   - Fix: Instantly show edit + deletes to models
-2. Keys Page
-   - Fix: Instantly show newly created keys on Admin UI (don't require refresh)
-   - Fix: Allow clicking into Top Keys when showing users Top API Key
-   - Fix: Allow Filter Keys by Team Alias, Key Alias and Org
-   - UI Improvements: Show 100 Keys Per Page, Use full height, increase width of key alias
-3. Users Page
-   - Fix: Show correct count of internal user keys on Users Page
-   - Fix: Metadata not updating in Team UI
-4. Logs Page
-   - UI Improvements: Keep expanded log in focus on LiteLLM UI
-   - UI Improvements: Minor improvements to logs page
-   - Fix: Allow internal user to query their own logs
-   - Allow switching off storing Error Logs in DB [Getting Started](https://docs.litellm.ai/docs/proxy/ui_logs)
-5. Sign In/Sign Out
-   - Fix: Correctly use `PROXY_LOGOUT_URL` when set [Getting Started](https://docs.litellm.ai/docs/proxy/self_serve#setting-custom-logout-urls)
+### 一般 UI 改善 {#general-ui-improvements}
+1. 新增模型頁面
+   - 允許在 Admin UI 新增 Cerebras、Sambanova、Perplexity、Fireworks、Openrouter、TogetherAI Models、Text-Completion OpenAI 模型
+   - 允許新增 EU OpenAI 模型
+   - 修正：即時顯示模型的編輯與刪除
+2. 金鑰頁面
+   - 修正：在 Admin UI 即時顯示新建立的金鑰（不需要重新整理）
+   - 修正：在顯示使用者 Top API Key 時，允許點進 Top Keys
+   - 修正：允許依 Team Alias、Key Alias 與 Org 篩選金鑰
+   - UI 改善：每頁顯示 100 個金鑰、使用全高、增加 key alias 寬度
+3. 使用者頁面
+   - 修正：在 Users Page 顯示正確的內部使用者金鑰數量
+   - 修正：Team UI 中的中繼資料未更新
+4. 記錄頁面
+   - UI 改善：在 LiteLLM UI 中保持展開的記錄聚焦
+   - UI 改善：記錄頁面的細微改善
+   - 修正：允許內部使用者查詢自己的記錄
+   - 允許關閉將錯誤記錄儲存在 DB [Getting Started](https://docs.litellm.ai/docs/proxy/ui_logs)
+5. 登入/登出
+   - 修正：在設定時正確使用 `PROXY_LOGOUT_URL` [Getting Started](https://docs.litellm.ai/docs/proxy/self_serve#setting-custom-logout-urls)
 
+## 安全性 {#security}
 
-## Security
-
-1. Support for Rotating Master Keys [Getting Started](https://docs.litellm.ai/docs/proxy/master_key_rotations)
-2. Fix: Internal User Viewer Permissions, don't allow `internal_user_viewer` role to see `Test Key Page` or `Create Key Button` [More information on role based access controls](https://docs.litellm.ai/docs/proxy/access_control)
-3. Emit audit logs on All user + model Create/Update/Delete endpoints [Getting Started](https://docs.litellm.ai/docs/proxy/multiple_admins)
+1. 支援輪替 Master Keys [Getting Started](https://docs.litellm.ai/docs/proxy/master_key_rotations)
+2. 修正：Internal User Viewer 權限，不允許 `internal_user_viewer` 角色查看 `Test Key Page` 或 `Create Key Button` [More information on role based access controls](https://docs.litellm.ai/docs/proxy/access_control)
+3. 在所有使用者 + 模型建立/更新/刪除端點發出稽核記錄 [Getting Started](https://docs.litellm.ai/docs/proxy/multiple_admins)
 4. JWT
-    - Support multiple JWT OIDC providers [Getting Started](https://docs.litellm.ai/docs/proxy/token_auth)
-    - Fix JWT access with Groups not working when team is assigned All Proxy Models access
-5. Using K/V pairs in 1 AWS Secret [Getting Started](https://docs.litellm.ai/docs/secret#using-kv-pairs-in-1-aws-secret)
+    - 支援多個 JWT OIDC 提供者 [Getting Started](https://docs.litellm.ai/docs/proxy/token_auth)
+    - 修正當 team 被指派 All Proxy Models 存取權時，Groups 的 JWT 存取無法運作的問題
+5. 在 1 個 AWS Secret 中使用 K/V 配對 [Getting Started](https://docs.litellm.ai/docs/secret#using-kv-pairs-in-1-aws-secret)
 
+## 記錄整合 {#logging-integrations}
 
-## Logging Integrations
+1. Prometheus：追蹤 Azure LLM API 延遲指標 [Getting Started](https://docs.litellm.ai/docs/proxy/prometheus#request-latency-metrics)
+2. Athina：將 tags、user_feedback 與 model_options 新增到可傳送給 Athina 的 additional_keys [Getting Started](https://docs.litellm.ai/docs/observability/athina_integration)
 
-1. Prometheus: Track Azure LLM API latency metric [Getting Started](https://docs.litellm.ai/docs/proxy/prometheus#request-latency-metrics)
-2. Athina: Added tags, user_feedback and model_options to additional_keys which can be sent to Athina [Getting Started](https://docs.litellm.ai/docs/observability/athina_integration)
+## 效能 / 可靠性改善 {#performance--reliability-improvements}
 
+1. Redis + litellm router - 修正 litellm router 的 Redis 叢集模式 [PR](https://github.com/BerriAI/litellm/pull/9010)
 
-## Performance / Reliability improvements
+## 一般改善 {#general-improvements}
 
-1. Redis + litellm router - Fix Redis cluster mode for litellm router [PR](https://github.com/BerriAI/litellm/pull/9010)
-
-
-## General Improvements
-
-1. OpenWebUI Integration - display `thinking` tokens
-- Guide on getting started with LiteLLM x OpenWebUI. [Getting Started](https://docs.litellm.ai/docs/tutorials/openweb_ui)
-- Display `thinking` tokens on OpenWebUI (Bedrock, Anthropic, Deepseek) [Getting Started](https://docs.litellm.ai/docs/tutorials/openweb_ui#render-thinking-content-on-openweb-ui)
+1. OpenWebUI 整合 - 顯示 `thinking` tokens
+- LiteLLM x OpenWebUI 入門指南。 [Getting Started](https://docs.litellm.ai/docs/tutorials/openweb_ui)
+- 在 OpenWebUI 顯示 `thinking` tokens（Bedrock、Anthropic、Deepseek）[Getting Started](https://docs.litellm.ai/docs/tutorials/openweb_ui#render-thinking-content-on-openweb-ui)
 
 <Image img={require('../../img/litellm_thinking_openweb.gif')} />
 
+## 完整 Git Diff {#complete-git-diff}
 
-## Complete Git Diff
-
-[Here's the complete git diff](https://github.com/BerriAI/litellm/compare/v1.63.2-stable...v1.63.11-stable)
+[這裡是完整的 git diff](https://github.com/BerriAI/litellm/compare/v1.63.2-stable...v1.63.11-stable)

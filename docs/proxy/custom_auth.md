@@ -1,37 +1,37 @@
-# Custom Auth 
+# 自訂驗證  {#custom-auth}
 
-You can now override the default api key auth.
+您現在可以覆寫預設的 api key 驗證。
 
-:::warning Enforcement with custom auth
+:::warning 使用自訂驗證的強制執行
 
-By default, custom auth enforces only the rate limits you set on the returned object. Budgets and model-access require a flag. The table below shows, for each control, where to configure it and which flags it needs.
+預設情況下，自訂驗證只會強制執行您在回傳物件上設定的速率限制。預算與模型存取需要旗標。下表顯示每個控制項要在哪裡設定，以及需要哪些旗標。
 
 :::
 
-## What gets enforced
+## 會被強制執行的項目 {#what-gets-enforced}
 
-| Goal | Set it on | Flags required |
+| 目標 | 設定位置 | 需要的旗標 |
 | --- | --- | --- |
-| Key / user / team / end-user rate limits | returned object (`rpm_limit`, `team_tpm_limit`, …) | none |
-| Per-model rate limits, key / team scoped | `metadata` / `team_metadata` on the returned object | none |
-| Per-model rate limits, project scoped | the project record (`model_tpm_limit` / `model_rpm_limit`) | `custom_auth_run_common_checks` |
-| Team / user / project budget | the team / user / project record | `custom_auth_run_common_checks` |
-| Team / user / project model allowlist | the team / user / project record | `custom_auth_run_common_checks` |
-| End-user budget | the end-user record | `custom_auth_run_common_checks` or `enable_post_custom_auth_checks` |
-| Key model allowlist (`models`) | returned object | both flags |
-| Key per-model budget (`model_max_budget`) | returned object | `enable_post_custom_auth_checks` |
-| Key expiry (`expires`) | returned object | `enable_post_custom_auth_checks` |
-| Key scalar budget (`max_budget` / `soft_budget`) | not supported; use a per-scope budget | n/a |
+| key / user / team / end-user 速率限制 | 回傳物件（`rpm_limit`、`team_tpm_limit`、…） | 無 |
+| 每個模型的速率限制，key / team 範圍 | 回傳物件上的 `metadata` / `team_metadata` | 無 |
+| 每個模型的速率限制，project 範圍 | project 記錄（`model_tpm_limit` / `model_rpm_limit`） | `custom_auth_run_common_checks` |
+| team / user / project 預算 | team / user / project 記錄 | `custom_auth_run_common_checks` |
+| team / user / project 模型允許清單 | team / user / project 記錄 | `custom_auth_run_common_checks` |
+| end-user 預算 | end-user 記錄 | `custom_auth_run_common_checks` 或 `enable_post_custom_auth_checks` |
+| key 模型允許清單（`models`） | 回傳物件 | 兩個旗標都要 |
+| key 每個模型的預算（`model_max_budget`） | 回傳物件 | `enable_post_custom_auth_checks` |
+| key 到期（`expires`） | 回傳物件 | `enable_post_custom_auth_checks` |
+| key 純量預算（`max_budget` / `soft_budget`） | 不支援；請使用每個範圍的預算 | 不適用 |
 
-**Note:** Project per-model limits go on the object's `project_metadata` with the flag off, but the DB project record overrides it once the flag is on, so set them there. (Team per-model via `team_metadata` always stays on the object.)
+**附註：** project 的每個模型限制在關閉旗標時會放在物件的 `project_metadata` 上，但一旦旗標開啟，DB 的 project 記錄會覆寫它，所以請在那裡設定。（透過 `team_metadata` 的 team 每個模型設定則一律保留在物件上。）
 
-See [Enforce budgets and model access](#enforce-budgets-and-model-access) and [Key-level enforcement](#key-level-enforcement) for examples.
+請參閱 [強制執行預算與模型存取](#enforce-budgets-and-model-access) 與 [key 層級強制執行](#key-level-enforcement) 以查看範例。
 
-## Usage
+## 使用方式 {#usage}
 
-#### 1. Create a custom auth file. 
+#### 1. 建立自訂驗證檔案。  {#1-create-a-custom-auth-file}
 
-Make sure the response type follows the `UserAPIKeyAuth` pydantic object. This is used by for logging usage specific to that user key.
+請確認回應型別符合 `UserAPIKeyAuth` pydantic 物件。這會用於記錄該使用者 key 的使用量。
 
 ```python
 from fastapi import Request
@@ -47,11 +47,11 @@ async def user_api_key_auth(request: Request, api_key: str) -> UserAPIKeyAuth:
         raise Exception
 ```
 
-#### 2. Pass the filepath (relative to the config.yaml)
+#### 2. 傳入檔案路徑（相對於 config.yaml） {#2-pass-the-filepath-relative-to-the-configyaml}
 
-Pass the filepath to the config.yaml 
+將檔案路徑傳給 config.yaml 
 
-e.g. if they're both in the same dir - `./config.yaml` and `./custom_auth.py`, this is what it looks like:
+例如，如果兩者都在同一個目錄中 - `./config.yaml` 和 `./custom_auth.py`，會長這樣：
 ```yaml 
 model_list: 
   - model_name: "openai-model"
@@ -66,20 +66,20 @@ general_settings:
   custom_auth: custom_auth.user_api_key_auth
 ```
 
-[**Implementation Code**](https://github.com/BerriAI/litellm/blob/caf2a6b279ddbe89ebd1d8f4499f65715d684851/litellm/proxy/utils.py#L122)
+[**實作程式碼**](https://github.com/BerriAI/litellm/blob/caf2a6b279ddbe89ebd1d8f4499f65715d684851/litellm/proxy/utils.py#L122)
 
-#### 3. Start the proxy
+#### 3. 啟動 proxy {#3-start-the-proxy}
 ```shell
 $ litellm --config /path/to/config.yaml 
 ```
 
-## UserAPIKeyAuth Fields Reference
+## UserAPIKeyAuth 欄位參考 {#userapikeyauth-fields-reference}
 
-These fields are read straight off the returned object and enforced with no flag. Budgets and model-access are enforced behind flags (see below).
+這些欄位會直接從回傳物件讀取，並在不需要旗標的情況下強制執行。預算與模型存取則會在旗標後方強制執行（見下方）。
 
-### Identity
+### 身分 {#identity}
 
-Who the request belongs to. The `*_id` fields also tell LiteLLM which DB records to load when `custom_auth_run_common_checks: true`.
+請求屬於誰。`*_id` 欄位也會告訴 LiteLLM 在 `custom_auth_run_common_checks: true` 時要載入哪些 DB 記錄。
 
 ```python
 UserAPIKeyAuth(
@@ -95,9 +95,9 @@ UserAPIKeyAuth(
 )
 ```
 
-### Rate limits
+### 速率限制 {#rate-limits}
 
-All scopes below are enforced directly off the returned object, with no flag.
+下方所有範圍都會直接從回傳物件強制執行，不需要旗標。
 
 ```python
 UserAPIKeyAuth(
@@ -124,13 +124,13 @@ UserAPIKeyAuth(
 
 :::note
 
-Per-model rate limits are read from `metadata` (key) and `team_metadata` (team), keyed by model name. The model key must equal the request's `model` string exactly, or the limit is skipped silently.
+每個模型的速率限制是從 `metadata`（key）與 `team_metadata`（team）讀取，並以模型名稱作為索引。模型 key 必須與請求的 `model` 字串完全相同，否則會靜默略過該限制。
 
-`rpm_limit_per_model` / `tpm_limit_per_model` exist on the object but are inert; use `metadata` / `team_metadata` instead, or the project record (see below).
+`rpm_limit_per_model` / `tpm_limit_per_model` 存在於物件上，但不會生效；請改用 `metadata` / `team_metadata`，或使用 project 記錄（見下方）。
 
 :::
 
-### Advanced
+### 進階 {#advanced}
 
 ```python
 UserAPIKeyAuth(
@@ -141,7 +141,7 @@ UserAPIKeyAuth(
 )
 ```
 
-### Object permission (MCP, agents, etc.)
+### 物件權限（MCP、agent 等） {#object-permission-mcp-agents-etc}
 
 ```python
 from litellm.proxy._experimental.mcp_server.mcp_server_manager import (
@@ -164,9 +164,9 @@ UserAPIKeyAuth(
 )
 ```
 
-## Enforce budgets and model access
+## 強制執行預算與模型存取 {#enforce-budgets-and-model-access}
 
-Set `custom_auth_run_common_checks: true` to enforce budgets and model-access alongside custom auth:
+設定 `custom_auth_run_common_checks: true` 以在自訂驗證之外一併強制執行預算與模型存取：
 
 ```yaml
 general_settings:
@@ -174,9 +174,9 @@ general_settings:
   custom_auth_run_common_checks: true
 ```
 
-Your handler returns the IDs; the budgets and allowlists live on the matching DB records (`/team/new`, `/user/new`, `/project/new`, `/customer/new`, or the UI), which LiteLLM loads and enforces.
+您的處理常式會回傳這些 ID；預算與允許清單會存在對應的 DB 記錄（`/team/new`、`/user/new`、`/project/new`、`/customer/new`，或 UI）上，LiteLLM 會載入並強制執行。
 
-For example, a team with a budget and model allowlist:
+例如，一個具有預算與模型允許清單的 team：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/team/new' \
@@ -194,7 +194,7 @@ curl -X POST 'http://0.0.0.0:4000/team/new' \
 return UserAPIKeyAuth(api_key=api_key, team_id="eng-team")
 ```
 
-For project per-model rate limits, set `model_tpm_limit` / `model_rpm_limit` on the project record (keyed by model name) and return that `project_id`:
+若要設定 project 的每個模型速率限制，請在 project 記錄上設定 `model_tpm_limit` / `model_rpm_limit`（以模型名稱作為索引），並回傳該 `project_id`：
 
 ```python
 # On the project record (via /project/new or the UI):
@@ -204,25 +204,25 @@ For project per-model rate limits, set `model_tpm_limit` / `model_rpm_limit` on 
 
 :::note
 
-- The project record's metadata replaces any `project_metadata` you set on the returned object, so configure project per-model limits on the project record, not on the object.
-- For per-model rate limits, the model key must equal the request's `model` string exactly, or the limit is skipped silently. This was the actual Expedia failure mode.
+- project 記錄的 metadata 會取代您在回傳物件上設定的任何 `project_metadata`，因此請將 project 的每個模型限制設定在 project 記錄上，而不是物件上。
+- 對於每個模型的速率限制，模型 key 必須與請求的 `model` 字串完全相同，否則會靜默略過該限制。這正是 Expedia 當時的實際失敗模式。
 
 :::
 
-### Key `models` vs project `models`
+### Key `models` 與 project `models` {#key-models-vs-project-models}
 
-These are separate controls:
+這些是不同的控制項：
 
-| Field | Where it is enforced | Source of truth |
+| 欄位 | 強制執行位置 | 真實來源 |
 | --- | --- | --- |
-| `models` on `UserAPIKeyAuth` | Key-level allowlist | Value you return from custom auth |
-| `project_id` on `UserAPIKeyAuth` | Project-level allowlist | `models` on the **project record in LiteLLM's DB** |
+| `models` 於 `UserAPIKeyAuth` 上 | key 層級允許清單 | 您從自訂驗證回傳的值 |
+| `project_id` 於 `UserAPIKeyAuth` 上 | project 層級允許清單 | LiteLLM 的 **DB 中 project 記錄** 上的 `models` |
 
-An empty `models` list (`[]`) means no restriction. Names must match the model group in your config (wildcards supported). See [Project Management](./project_management) and [Config Settings](./config_settings#all-settings).
+空的 `models` 清單（`[]`）表示不限制。名稱必須與您設定中的 model group 完全一致（支援萬用字元）。請參閱 [Project Management](./project_management) 與 [Config Settings](./config_settings#all-settings)。
 
-## Key-level enforcement
+## Key 層級強制執行 {#key-level-enforcement}
 
-The following are enforced from the returned object, but only when `litellm.enable_post_custom_auth_checks: true` is also set:
+以下項目會根據回傳物件強制執行，但只有在 `litellm.enable_post_custom_auth_checks: true` 也設定時才會生效：
 
 ```yaml
 general_settings:
@@ -244,24 +244,24 @@ return UserAPIKeyAuth(
 )
 ```
 
-This path also enforces end-user budgets and per-model end-user budgets when `end_user_id` is set.
+當 `end_user_id` 已設定時，這條路徑也會強制執行 end-user 預算與每個模型的 end-user 預算。
 
-## ✨ Support LiteLLM Virtual Keys + Custom Auth
+## ✨ 支援 LiteLLM Virtual Keys + 自訂驗證 {#-support-litellm-virtual-keys--custom-auth}
 
-Supported from v1.72.2+
+自 v1.72.2+ 起支援
 
 :::info 
 
-✨ Supporting Custom Auth + LiteLLM Virtual Keys is on LiteLLM Enterprise
+✨ 支援 Custom Auth + LiteLLM Virtual Keys 是 LiteLLM Enterprise 的功能
 
 [Enterprise Pricing](https://www.litellm.ai/#pricing)
 
-[Get free 7-day trial key](https://www.litellm.ai/enterprise#trial)
+[取得 7 天免費試用 key](https://www.litellm.ai/enterprise#trial)
 :::
 
-### Usage
+### 使用方式 {#usage-1}
 
-1. Setup custom auth file
+1. 設定自訂驗證檔案
 
 ```python
 """
@@ -289,9 +289,9 @@ async def user_api_key_auth(
 
 ```
 
-2. Setup config.yaml
+2. 設定 config.yaml
 
-Key change set `mode: auto`. This will check both litellm api key auth + custom auth.
+Key 變更集 `mode: auto`。這會同時檢查 litellm api key 驗證 + 自訂驗證。
 
 ```yaml
 model_list: 
@@ -306,13 +306,12 @@ general_settings:
     mode: "auto" # can be 'on', 'off', 'auto' - 'auto' checks both litellm api key auth + custom auth
 ```
 
-Flow:
-1. Checks custom auth first
-2. If custom auth fails, checks litellm api key auth
-3. If both fail, returns 401
+流程：
+1. 先檢查自訂驗證
+2. 如果自訂驗證失敗，則檢查 litellm api key 驗證
+3. 如果兩者都失敗，回傳 401
 
-
-3. Test it! 
+3. 測試它！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -330,11 +329,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 ```
 
 
+#### 向上拋出自訂例外 {#bubble-up-custom-exceptions}
 
-
-#### Bubble up custom exceptions
-
-If you want to bubble up custom exceptions, you can do so by raising a `ProxyException`.
+如果您想要向上拋出自訂例外，可以透過擲出 `ProxyException` 來達成。
 
 ```python
 """

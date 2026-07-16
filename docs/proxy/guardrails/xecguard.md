@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# XecGuard
+# XecGuard {#xecguard}
 
-Use [XecGuard](https://www.cycraft.com/) (CyCraft) to protect your LLM applications with multi-policy scanning (prompt injection, harmful content, PII, system-prompt enforcement, skills protection) and RAG context grounding validation. XecGuard is a cloud-hosted AI security gateway — there are no self-hosting requirements.
+使用 [XecGuard](https://www.cycraft.com/)（CyCraft）透過多重政策掃描（prompt injection、harmful content、PII、system-prompt enforcement、skills protection）以及 RAG context grounding 驗證，來保護您的 LLM 應用程式。XecGuard 是雲端代管的 AI 安全閘道——沒有自我代管需求。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -28,14 +28,14 @@ guardrails:
         - Default_Policy_HarmfulContentProtection
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` — Run **before** the LLM call to validate **user input**
-- `post_call` — Run **after** the LLM call to validate **model output** (also runs context grounding when RAG documents are provided)
-- `during_call` — Run **in parallel** with the LLM call for input validation
-- `logging_only` — Run as an **observe-only** callback; records scan decisions without blocking
+- `pre_call` — 在 **LLM 請求前** 執行，以驗證 **使用者輸入**
+- `post_call` — 在 **LLM 請求後** 執行，以驗證 **模型輸出**（當提供 RAG 文件時也會執行 context grounding）
+- `during_call` — 與 LLM 請求 **並行** 執行，以進行輸入驗證
+- `logging_only` — 作為 **僅觀察** 回呼執行；記錄掃描決策但不阻擋
 
-### 2. Set Environment Variables
+### 2. 設定環境變數 {#2-set-environment-variables}
 
 ```shell
 export XECGUARD_API_KEY="xgs_<your-service-token>"
@@ -43,18 +43,18 @@ export XECGUARD_API_BASE="https://api-xecguard.cycraft.ai"   # Optional, this is
 export XECGUARD_BLOCK_ON_ERROR="true"                        # Optional, fail-closed by default
 ```
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM Gateway {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test request
+### 4. 測試請求 {#4-test-request}
 
 <Tabs>
-<TabItem label="Blocked Request" value="blocked">
+<TabItem label="遭阻擋的請求" value="blocked">
 
-Test input validation with a prompt-injection / system-prompt bypass attempt:
+以 prompt-injection / system-prompt bypass 嘗試測試輸入驗證：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -69,7 +69,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on policy violation:
+違反政策時的預期回應：
 
 ```json
 {
@@ -84,9 +84,9 @@ Expected response on policy violation:
 
 </TabItem>
 
-<TabItem label="Successful Call" value="allowed">
+<TabItem label="成功的呼叫" value="allowed">
 
-Test with safe content:
+使用安全內容測試：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -100,7 +100,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -122,7 +122,7 @@ Expected response:
 </TabItem>
 </Tabs>
 
-## Supported Parameters
+## 支援參數 {#supported-parameters}
 
 ```yaml
 guardrails:
@@ -141,45 +141,45 @@ guardrails:
       default_on: true                              # Optional
 ```
 
-### Required
+### 必填 {#required}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `api_key` | XecGuard **Service Token** (prefix `xgs_`). Falls back to `XECGUARD_API_KEY` env var. |
+| `api_key` | XecGuard **Service Token**（前綴 `xgs_`）。若未設定，則回退至 `XECGUARD_API_KEY` 環境變數。 |
 
-### Optional
+### 選填 {#optional}
 
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |-----------|---------|-------------|
-| `api_base` | `https://api-xecguard.cycraft.ai` | XecGuard API base URL. Falls back to `XECGUARD_API_BASE` env var. |
-| `xecguard_model` | `xecguard_v2` | XecGuard scanning model identifier. |
-| `policy_names` | `["Default_Policy_SystemPromptEnforcement", "Default_Policy_HarmfulContentProtection"]` | Policies applied on each scan. See [Available Policies](#available-policies) below. |
-| `block_on_error` | `true` | Fail-closed by default. Set to `false` for fail-open behaviour (requests pass through when the XecGuard API is unreachable). |
-| `grounding_strictness` | `BALANCED` | Either `BALANCED` or `STRICT`. Controls how strictly the `/grounding` endpoint evaluates response fidelity to supplied context documents. |
-| `default_on` | `false` | When `true`, the guardrail runs on every request without needing to specify it in the request body. |
+| `api_base` | `https://api-xecguard.cycraft.ai` | XecGuard API base URL。若未設定，則回退至 `XECGUARD_API_BASE` 環境變數。 |
+| `xecguard_model` | `xecguard_v2` | XecGuard 掃描模型識別碼。 |
+| `policy_names` | `["Default_Policy_SystemPromptEnforcement", "Default_Policy_HarmfulContentProtection"]` | 每次掃描套用的政策。請參閱下方的 [可用政策](#available-policies)。 |
+| `block_on_error` | `true` | 預設為 fail-closed。設定為 `false` 可使用 fail-open 行為（當 XecGuard API 無法連線時，請求會直接通過）。 |
+| `grounding_strictness` | `BALANCED` | `/grounding` 端點對回應與提供內容文件的一致性驗證嚴格程度的控制值，可為 `BALANCED` 或 `STRICT`。 |
+| `default_on` | `false` | 當為 `true` 時，防護欄會在每個請求上執行，而不需要在請求主體中指定。 |
 
-## Available Policies
+## 可用政策 {#available-policies}
 
-XecGuard ships with six built-in default policies. Select one or more via `policy_names`:
+XecGuard 內建六種預設政策。請透過 `policy_names` 選擇一個或多個：
 
-| Policy Name | Purpose |
+| 政策名稱 | 目的 |
 |-------------|---------|
-| `Default_Policy_SystemPromptEnforcement` | Ensures the user prompt stays within the tasks defined by the system prompt |
-| `Default_Policy_GeneralPromptAttackProtection` | Detects prompt injection, prompt extraction, encoded bypass attempts |
-| `Default_Policy_ContentBiasProtection` | Detects discrimination, harassment, harmful stereotypes |
-| `Default_Policy_HarmfulContentProtection` | Detects harmful speech/semantics violating public order and good morals |
-| `Default_Policy_SkillsProtection` | Detects malicious content in AI-agent skill files |
-| `Default_Policy_PIISensitiveDataProtection` | Detects personally identifiable information (PII) |
+| `Default_Policy_SystemPromptEnforcement` | 確保使用者提示詞維持在系統提示詞所定義的任務範圍內 |
+| `Default_Policy_GeneralPromptAttackProtection` | 偵測 prompt injection、prompt extraction、編碼後的 bypass 嘗試 |
+| `Default_Policy_ContentBiasProtection` | 偵測歧視、騷擾、有害刻板印象 |
+| `Default_Policy_HarmfulContentProtection` | 偵測違反善良風俗與公共秩序之有害語句／語意 |
+| `Default_Policy_SkillsProtection` | 偵測 AI agent skill 檔案中的惡意內容 |
+| `Default_Policy_PIISensitiveDataProtection` | 偵測個人可識別資訊（PII） |
 
 :::info
-The wildcard form `policy_names: ["*"]` is supported by the XecGuard API but requires your Service Token to be pre-bound to at least one policy in the XecGuard console.
+XecGuard API 支援萬用字元形式 `policy_names: ["*"]`，但您的 Service Token 必須先在 XecGuard console 中預先綁定至少一個政策。
 :::
 
-## Context Grounding (RAG)
+## 情境錨定（RAG） {#context-grounding-rag}
 
-When scanning in `post_call` mode, XecGuard can additionally validate the assistant's response against reference documents via the `/grounding` endpoint. This catches hallucinations and factual drift in RAG applications.
+在 `post_call` 模式下掃描時，XecGuard 也可以透過 `/grounding` 端點，將助理的回應與參考文件進行驗證。這可在 RAG 應用程式中攔截 hallucinations 與 factual drift。
 
-Supply grounding documents at request time via the `metadata.xecguard_grounding_documents` field. Each document is `{document_id, context}`:
+可在請求時透過 `metadata.xecguard_grounding_documents` 欄位提供 grounding 文件。每份文件為 `{document_id, context}`：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -201,7 +201,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-If the assistant's response contradicts or is unsupported by the provided documents, the request is blocked with a grounding violation (`CONFLICT`, `BASELESS`, or `INCOMPLETE`):
+如果助理的回應與提供的文件相矛盾或缺乏依據，請求將因 grounding violation（`CONFLICT`、`BASELESS` 或 `INCOMPLETE`）而被阻擋：
 
 ```json
 {
@@ -214,16 +214,16 @@ If the assistant's response contradicts or is unsupported by the provided docume
 }
 ```
 
-Grounding only runs when:
-- `mode` includes `post_call`
-- `metadata.xecguard_grounding_documents` is a non-empty list
-- The messages contain both a user prompt and an assistant response
+只有在以下條件成立時，grounding 才會執行：
+- `mode` 包含 `post_call`
+- `metadata.xecguard_grounding_documents` 是非空清單
+- 訊息同時包含使用者提示詞與助理回應
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Fail-Open Mode
+### Fail-Open 模式 {#fail-open-mode}
 
-By default XecGuard operates in **fail-closed** mode — if the API is unreachable, the request is blocked. Set `block_on_error: false` to allow requests through when the guardrail API fails:
+預設情況下，XecGuard 以 **fail-closed** 模式運作——如果 API 無法連線，請求會被阻擋。設定 `block_on_error: false` 可在防護欄 API 故障時允許請求通過：
 
 ```yaml
 guardrails:
@@ -235,9 +235,9 @@ guardrails:
       block_on_error: false
 ```
 
-### Input + Output Pipeline
+### 輸入 + 輸出管線 {#input--output-pipeline}
 
-Apply one guardrail for input validation and another for output scanning + grounding:
+套用一個防護欄進行輸入驗證，另一個進行輸出掃描 + grounding：
 
 ```yaml
 guardrails:
@@ -261,9 +261,9 @@ guardrails:
       grounding_strictness: "STRICT"
 ```
 
-### Always-On Protection
+### 永遠啟用的防護 {#always-on-protection}
 
-Enable the guardrail for every request without specifying it per-call:
+為每個請求啟用防護欄，而不需要逐次請求指定：
 
 ```yaml
 guardrails:
@@ -275,9 +275,9 @@ guardrails:
       default_on: true
 ```
 
-### Logging-Only Mode
+### 僅記錄模式 {#logging-only-mode}
 
-Observe scan decisions without blocking — useful for shadow-mode deployment before enforcement:
+觀察掃描決策但不阻擋——適合在強制執行前進行 shadow-mode 部署：
 
 ```yaml
 guardrails:
@@ -288,27 +288,27 @@ guardrails:
       api_key: os.environ/XECGUARD_API_KEY
 ```
 
-Scan results are attached to the standard logging payload (`standard_logging_guardrail_information`) and surface in Langfuse / DataDog / OTEL without ever blocking a request.
+掃描結果會附加到標準記錄負載（`standard_logging_guardrail_information`），並可在 Langfuse / DataDog / OTEL 中顯示，而不會阻擋任何請求。
 
-## Full Conversation History
+## 完整對話歷史 {#full-conversation-history}
 
-XecGuard always receives the **full conversation history** — system, user, and assistant messages — for both input and response scans. This is required for policies such as `Default_Policy_SystemPromptEnforcement` to work correctly. There is no configuration option to disable this behaviour; the framework-wide `skip_system_message_in_guardrail` setting is intentionally ignored for XecGuard.
+XecGuard 一律會接收 **完整對話歷史**——系統、使用者與助理訊息——用於輸入與回應掃描。這是讓 `Default_Policy_SystemPromptEnforcement` 等政策正確運作所必需的。沒有任何設定選項可停用此行為；框架層級的 `skip_system_message_in_guardrail` 設定會在 XecGuard 中被刻意忽略。
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-**Missing API Credentials:**
+**缺少 API 憑證：**
 ```
 XecGuardMissingCredentials: XecGuard API key is required.
 Set XECGUARD_API_KEY in the environment or pass api_key in the guardrail config.
 ```
 
-**API Unreachable (fail-closed, default):**
-The request is blocked and a `GuardrailRaisedException` is raised.
+**API 無法連線（fail-closed，預設）：**
+請求會被阻擋，並引發 `GuardrailRaisedException`。
 
-**API Unreachable (fail-open, `block_on_error: false`):**
-The request passes through unchanged and a warning is logged.
+**API 無法連線（fail-open，`block_on_error: false`）：**
+請求會原樣通過，並記錄警告。
 
-## Need Help?
+## 需要協助嗎？ {#need-help}
 
-- **Website**: [https://www.cycraft.com/](https://www.cycraft.com/)
-- **API host**: `https://api-xecguard.cycraft.ai`
+- **網站**: [https://www.cycraft.com/](https://www.cycraft.com/)
+- **API 主機**: `https://api-xecguard.cycraft.ai`

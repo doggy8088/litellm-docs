@@ -1,5 +1,5 @@
 ---
-title: "v1.86.1 - Non-Root Docker Build Fix"
+title: "v1.86.1 - 非 root Docker 建置修正"
 slug: "v1-86-1"
 date: 2026-05-26T00:00:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.86.1
 </TabItem>
 </Tabs>
 
-`v1.86.1` is a Dockerfile-only patch on top of [`v1.86.0`](/release_notes/v1.86.0/v1-86-0). The application code is unchanged.
+`v1.86.1` 是在 [`v1.86.0`](/release_notes/v1.86.0/v1-86-0) 之上的僅限 Dockerfile 修補程式。應用程式程式碼未變更。
 
-### Infrastructure
+### 基礎設施 {#infrastructure}
 
 - **Docker**
-    - Restore `npm` to the `Dockerfile.non_root` builder stage so `prisma-python` resolves Node and no longer falls back to a `nodeenv`-bootstrapped runtime - [PR #28519](https://github.com/BerriAI/litellm/pull/28519)
+    - 將 `npm` 還原到 `Dockerfile.non_root` 建置階段，讓 `prisma-python` 能解析 Node，並且不再回退到由 `nodeenv` 啟動的執行階段 - [PR #28519](https://github.com/BerriAI/litellm/pull/28519)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.86.0...v1.86.1

@@ -1,21 +1,20 @@
-# Reliability - Retries, Fallbacks
+# 可靠性 - 重試、備援 {#reliability---retries-fallbacks}
 
-LiteLLM helps prevent failed requests in 2 ways: 
-- Retries
-- Fallbacks: Context Window + General
+LiteLLM 可透過 2 種方式防止請求失敗： 
+- 重試
+- 備援：Context Window + General
 
-## Helper utils 
-LiteLLM supports the following functions for reliability:
-* `litellm.longer_context_model_fallback_dict`: Dictionary which has a mapping for those models which have larger equivalents  
-* `num_retries`: use tenacity retries
-* `completion()` with fallbacks: switch between models/keys/api bases in case of errors. 
+## 輔助工具 {#helper-utils}
+LiteLLM 支援以下用於可靠性的函式：
+* `litellm.longer_context_model_fallback_dict`：具有對應關係的字典，對應於那些有更大等效模型的模型  
+* `num_retries`：使用 tenacity 重試
+* `completion()` 搭配備援：在發生錯誤時，在模型／金鑰／API base 之間切換。 
 
-## Retry failed requests
+## 重試失敗的請求 {#retry-failed-requests}
 
-Call it in completion like this `completion(..num_retries=2)`.
+像這樣在 completion 中呼叫它 `completion(..num_retries=2)`。
 
-
-Here's a quick look at how you can use it: 
+以下簡單看看您可以如何使用它： 
 
 ```python 
 from litellm import completion
@@ -31,15 +30,15 @@ response = completion(
         )
 ```
 
-## Fallbacks (SDK)
+## 備援（SDK） {#fallbacks-sdk}
 
 :::info
 
-[See how to do on PROXY](../proxy/reliability.md)
+[查看如何在 PROXY 上操作](../proxy/reliability.md)
 
 :::
 
-### Context Window Fallbacks (SDK)
+### Context Window 備援（SDK） {#context-window-fallbacks-sdk}
 ```python 
 from litellm import completion
 
@@ -49,23 +48,23 @@ messages = [{"content": "how does a court case get to the Supreme Court?" * 500,
 completion(model="gpt-3.5-turbo", messages=messages, context_window_fallback_dict=fallback_dict)
 ```
 
-### Fallbacks - Switch Models/API Keys/API Bases (SDK)
+### 備援 - 切換模型／API 金鑰／API Bases（SDK） {#fallbacks---switch-modelsapi-keysapi-bases-sdk}
 
-LLM APIs can be unstable, completion() with fallbacks ensures you'll always get a response from your calls
+LLM APIs 可能不穩定，帶有備援的 completion() 可確保您從請求中始終取得回應
 
-#### Usage 
-To use fallback models with `completion()`, specify a list of models in the `fallbacks` parameter. 
+#### 用法 {#usage}
+若要搭配 `completion()` 使用備援模型，請在 `fallbacks` 參數中指定模型清單。 
 
-The `fallbacks` list should include the primary model you want to use, followed by additional models that can be used as backups in case the primary model fails to provide a response.
+`fallbacks` 清單應包含您要使用的主要模型，接著是其他可在主要模型無法提供回應時作為備份使用的模型。
 
-#### switch models 
+#### 切換模型 {#switch-models}
 ```python
 response = completion(model="bad-model", messages=messages, 
     fallbacks=["gpt-3.5-turbo" "command-nightly"])
 ```
 
-#### switch api keys/bases (E.g. azure deployment)
-Switch between different keys for the same azure deployment, or use another deployment as well. 
+#### 切換 api keys/bases（例如 Azure deployment） {#switch-api-keysbases-eg-azure-deployment}
+在同一個 Azure deployment 之間切換不同的金鑰，或也使用另一個 deployment。 
 
 ```python
 api_key="bad-key"
@@ -73,12 +72,12 @@ response = completion(model="azure/gpt-4", messages=messages, api_key=api_key,
     fallbacks=[{"api_key": "good-key-1"}, {"api_key": "good-key-2", "api_base": "good-api-base-2"}])
 ```
 
-[Check out this section for implementation details](#fallbacks-1)
+[查看此區段以取得實作細節](#fallbacks-1)
 
-## Implementation Details (SDK)
+## 實作細節（SDK） {#implementation-details-sdk}
 
-### Fallbacks
-#### Output from calls
+### 備援 {#fallbacks}
+#### 呼叫的回應 {#output-from-calls}
 ```
 Completion with 'bad-model': got exception Unable to map your input to a model. Check your input - {'model': 'bad-model'
 
@@ -109,24 +108,23 @@ completion call gpt-3.5-turbo
 
 ```
 
-#### How does fallbacks work
+#### 備援如何運作 {#how-does-fallbacks-work}
 
-When you pass `fallbacks` to `completion`, it makes the first `completion` call using the primary model specified as `model` in `completion(model=model)`. If the primary model fails or encounters an error, it automatically tries the `fallbacks` models in the specified order. This ensures a response even if the primary model is unavailable.
+當您將 `fallbacks` 傳入 `completion` 時，它會先使用在 `completion(model=model)` 中指定為 `model` 的主要模型，進行第一次 `completion` 呼叫。如果主要模型失敗或發生錯誤，它會依指定順序自動嘗試 `fallbacks` 模型。這可確保即使主要模型無法使用，仍能取得回應。
 
+#### Model Fallbacks 實作的關鍵元件： {#key-components-of-model-fallbacks-implementation}
+* 依序遍歷 `fallbacks`
+* 速率限制模型的冷卻時間
 
-#### Key components of Model Fallbacks implementation:
-* Looping through `fallbacks`
-* Cool-Downs for rate-limited models
-
-#### Looping through `fallbacks`
-Allow `45seconds` for each request. In the 45s this function tries calling the primary model set as `model`. If model fails it loops through the backup `fallbacks` models and attempts to get a response in the allocated `45s` time set here: 
+#### 依序遍歷 `fallbacks` {#looping-through-fallbacks}
+允許每個請求有 `45seconds`。在這 45 秒內，此函式會嘗試呼叫設定為 `model` 的主要模型。若模型失敗，它會依序遍歷備份的 `fallbacks` 模型，並嘗試在此處設定的分配 `45s` 時間內取得回應： 
 ```python
 while response == None and time.time() - start_time < 45:
         for model in fallbacks:
 ```
 
-#### Cool-Downs for rate-limited models
-If a model API call leads to an error - allow it to cooldown for `60s`
+#### 速率限制模型的冷卻時間 {#cool-downs-for-rate-limited-models}
+如果某次模型 API 呼叫導致錯誤，則允許其冷卻 `60s`
 ```python
 except Exception as e:
   print(f"got exception {e} for model {model}")
@@ -137,7 +135,7 @@ except Exception as e:
   pass
 ```
 
-Before making an LLM API call we check if the selected model is in `rate_limited_models`, if so skip making the API call
+在進行 LLM API 呼叫之前，我們會檢查所選模型是否位於 `rate_limited_models` 中，若是則略過 API 呼叫
 ```python
 if (
   model in rate_limited_models
@@ -154,7 +152,7 @@ if (
 
 ```
 
-#### Full code of completion with fallbacks()
+#### 具有備援的 completion() 完整程式碼 {#full-code-of-completion-with-fallbacks}
 ```python
 
     response = None

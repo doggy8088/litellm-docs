@@ -1,31 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Nvidia NIM
+# Nvidia NIM {#nvidia-nim}
 https://docs.api.nvidia.com/nim/reference/
 
 :::tip
 
-**We support ALL Nvidia NIM models, just set `model=nvidia_nim/<any-model-on-nvidia_nim>` as a prefix when sending litellm requests**
+**我們支援所有 Nvidia NIM 模型，只要在傳送 litellm 請求時將 `model=nvidia_nim/<any-model-on-nvidia_nim>` 設為前綴**
 
 :::
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Nvidia NIM is a platform that provides a simple API for deploying and using AI models. LiteLLM supports all models from [Nvidia NIM](https://developer.nvidia.com/nim/) |
-| Provider Route on LiteLLM | `nvidia_nim/` |
-| Provider Doc | [Nvidia NIM Docs ↗](https://developer.nvidia.com/nim/) |
-| API Endpoint for Provider | https://integrate.api.nvidia.com/v1/ (chat/embeddings), https://ai.api.nvidia.com/v1/ (rerank) |
-| Supported OpenAI Endpoints | `/chat/completions`, `/completions`, `/responses`, `/embeddings`, `/rerank` |
+| 說明 | Nvidia NIM 是一個提供簡單 API 以部署和使用 AI 模型的平台。LiteLLM 支援來自 [Nvidia NIM](https://developer.nvidia.com/nim/) 的所有模型 |
+| LiteLLM 上的提供者路由 | `nvidia_nim/` |
+| 提供者文件 | [Nvidia NIM 文件 ↗](https://developer.nvidia.com/nim/) |
+| 提供者的 API 端點 | https://integrate.api.nvidia.com/v1/（chat/embeddings）、https://ai.api.nvidia.com/v1/（rerank） |
+| 支援的 OpenAI 端點 | `/chat/completions`、`/completions`、`/responses`、`/embeddings`、`/rerank` |
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['NVIDIA_NIM_API_KEY'] = ""
 os.environ['NVIDIA_NIM_API_BASE'] = "" # [OPTIONAL] - default is https://integrate.api.nvidia.com/v1/
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -49,7 +49,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -77,7 +77,7 @@ for chunk in response:
 ```
 
 
-## Usage - embedding
+## 用法 - embedding {#usage---embedding}
 
 ```python
 import litellm
@@ -97,11 +97,11 @@ print(response)
 ```
 
 
-## **Usage - LiteLLM Proxy Server**
+## **用法 - LiteLLM Proxy Server** {#usage---litellm-proxy-server}
 
-Here's how to call an Nvidia NIM Endpoint with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 Nvidia NIM 端點
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -113,13 +113,13 @@ Here's how to call an Nvidia NIM Endpoint with the LiteLLM Proxy Server
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -166,12 +166,10 @@ Here's how to call an Nvidia NIM Endpoint with the LiteLLM Proxy Server
 
   </Tabs>
 
+## 支援的模型 - 💥 支援所有 Nvidia NIM 模型！ {#supported-models----all-nvidia-nim-models-supported}
+我們支援所有 `nvidia_nim` 模型，只要在傳送 completion 請求時將 `nvidia_nim/` 設為前綴
 
-
-## Supported Models - 💥 ALL Nvidia NIM Models Supported!
-We support ALL `nvidia_nim` models, just set `nvidia_nim/` as a prefix when sending completion requests
-
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | nvidia/nemotron-4-340b-reward | `completion(model="nvidia_nim/nvidia/nemotron-4-340b-reward", messages)` |
 | 01-ai/yi-large | `completion(model="nvidia_nim/01-ai/yi-large", messages)` |

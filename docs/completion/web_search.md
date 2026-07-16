@@ -1,66 +1,66 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Web Search
+# 網頁搜尋 {#web-search}
 
-Use web search with litellm
+在 litellm 中使用網路搜尋
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| Supported Endpoints | - `/chat/completions` <br/> - `/responses` <br/> - `/images/generations` (Gemini image models only) |
-| Supported Providers | `openai`, `xai`, `vertex_ai`, `anthropic`, `gemini`, `perplexity` |
-| LiteLLM Cost Tracking | ✅ Supported |
-| LiteLLM Version | `v1.71.0+` |
+| 支援的端點 | - `/chat/completions` <br/> - `/responses` <br/> - `/images/generations`（僅限 Gemini 圖像模型） |
+| 支援的提供者 | `openai`、`xai`、`vertex_ai`、`anthropic`、`gemini`、`perplexity` |
+| LiteLLM 成本追蹤 | ✅ 支援 |
+| LiteLLM 版本 | `v1.71.0+` |
 
-## Which Search Engine is Used?
+## 使用的是哪個搜尋引擎？ {#which-search-engine-is-used}
 
-Each provider uses their own search backend:
+每個提供者都使用自己的搜尋後端：
 
-| Provider | Search Engine | Notes |
+| 提供者 | 搜尋引擎 | 備註 |
 |----------|---------------|-------|
-| **OpenAI** (`gpt-5-search-api`, `gpt-4o-search-preview`, `gpt-4o-mini-search-preview`) | OpenAI's internal search | Real-time web data |
-| **xAI** (`grok-3`) | xAI's search + X/Twitter | Real-time social media data |
-| **Google AI/Vertex** (`gemini-2.0-flash`) | **Google Search** | Uses actual Google search results |
-| **Anthropic** (`claude-3-5-sonnet`) | Anthropic's web search | Real-time web data |
-| **Perplexity** | Perplexity's search engine | AI-powered search and reasoning |
+| **OpenAI** (`gpt-5-search-api`、`gpt-4o-search-preview`、`gpt-4o-mini-search-preview`) | OpenAI 的內部搜尋 | 即時網路資料 |
+| **xAI** (`grok-3`) | xAI 的搜尋 + X/Twitter | 即時社群媒體資料 |
+| **Google AI/Vertex** (`gemini-2.0-flash`) | **Google 搜尋** | 使用實際的 Google 搜尋結果 |
+| **Anthropic** (`claude-3-5-sonnet`) | Anthropic 的網路搜尋 | 即時網路資料 |
+| **Perplexity** | Perplexity 的搜尋引擎 | AI 驅動的搜尋與推理 |
 
-:::warning Important: Only Search Models Support `web_search_options`
-For OpenAI, only dedicated search models support the `web_search_options` parameter:
+:::warning 重要：只有搜尋模型支援 `web_search_options`
+對於 OpenAI，只有專用搜尋模型支援 `web_search_options` 參數：
 - `gpt-4o-search-preview`
 - `gpt-4o-mini-search-preview`
 - `gpt-5-search-api`
 
-**Regular models like `gpt-5`, `gpt-4.1`, `gpt-4o` do not support `web_search_options`**
+**像 `gpt-5`、`gpt-4.1`、`gpt-4o` 這類一般模型不支援 `web_search_options`**
 :::
 
-:::tip The `web_search_options` parameter is optional
-Search models (like `gpt-4o-search-preview`) **automatically search the web** even without the `web_search_options` parameter.
+:::tip `web_search_options` 參數為選用
+搜尋模型（如 `gpt-4o-search-preview`）即使沒有 `web_search_options` 參數，也會**自動搜尋網路**。
 
-Use `web_search_options` when you need to:
-- Adjust `search_context_size` (`"low"`, `"medium"`, `"high"`)
-- Specify `user_location` for localized results
+當您需要以下功能時，請使用 `web_search_options`：
+- 調整 `search_context_size`（`"low"`、`"medium"`、`"high"`）
+- 為在地化結果指定 `user_location`
 :::
 
 :::info
-**Anthropic Web Search Models**: Claude models that support web search: `claude-3-5-sonnet-latest`, `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-latest`, `claude-3-5-haiku-20241022`, `claude-3-7-sonnet-20250219`
+**Anthropic 網路搜尋模型**：支援網路搜尋的 Claude 模型：`claude-3-5-sonnet-latest`、`claude-3-5-sonnet-20241022`、`claude-3-5-haiku-latest`、`claude-3-5-haiku-20241022`、`claude-3-7-sonnet-20250219`
 :::
 
-## OpenAI Web Search: Two Approaches
+## OpenAI 網路搜尋：兩種方式 {#openai-web-search-two-approaches}
 
-OpenAI offers two distinct ways to use web search depending on the endpoint and model:
+OpenAI 依端點與模型提供兩種不同的網路搜尋使用方式：
 
-| Approach | Endpoint | Models | How to enable |
+| 方式 | 端點 | 模型 | 啟用方式 |
 |----------|----------|--------|---------------|
-| **Search Models** | `/chat/completions` | `gpt-5-search-api`, `gpt-4o-search-preview`, `gpt-4o-mini-search-preview` | Pass `web_search_options` parameter |
-| **Web Search Tool** | `/responses` | `gpt-5`, `gpt-4.1`, `gpt-4o`, and other regular models | Pass `web_search_preview` tool |
+| **搜尋模型** | `/chat/completions` | `gpt-5-search-api`、`gpt-4o-search-preview`、`gpt-4o-mini-search-preview` | 傳入 `web_search_options` 參數 |
+| **網路搜尋工具** | `/responses` | `gpt-5`、`gpt-4.1`、`gpt-4o`，以及其他一般模型 | 傳入 `web_search_preview` 工具 |
 
-:::tip Search models search automatically
-Search models like `gpt-5-search-api` **automatically search the web** even without the `web_search_options` parameter. Use `web_search_options` to set `search_context_size` (`"low"`, `"medium"`, `"high"`) or specify `user_location` for localized results.
+:::tip 搜尋模型會自動搜尋
+像 `gpt-5-search-api` 這類搜尋模型，即使沒有 `web_search_options` 參數，也會**自動搜尋網路**。使用 `web_search_options` 設定 `search_context_size`（`"low"`、`"medium"`、`"high"`），或指定 `user_location` 以取得在地化結果。
 :::
 
-## `/chat/completions` (litellm.completion)
+## `/chat/completions`（litellm.completion） {#chatcompletions-litellmcompletion}
 
-### Quick Start
+### 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -85,7 +85,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -126,13 +126,13 @@ model_list:
       api_key: os.environ/GOOGLE_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -161,12 +161,12 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-### Search context size
+### 搜尋內容大小 {#search-context-size}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**OpenAI (using web_search_options)**
+**OpenAI（使用 web_search_options）**
 ```python showLineNumbers
 from litellm import completion
 
@@ -185,7 +185,7 @@ response = completion(
 )
 ```
 
-**xAI (using web_search_options)**
+**xAI（使用 web_search_options）**
 ```python showLineNumbers
 from litellm import completion
 
@@ -204,7 +204,7 @@ response = completion(
 )
 ```
 
-**Anthropic (using web_search_options)**
+**Anthropic（使用 web_search_options）**
 ```python showLineNumbers
 from litellm import completion
 
@@ -229,7 +229,7 @@ response = completion(
 )
 ```
 
-**VertexAI/Gemini (using web_search_options)**
+**VertexAI/Gemini（使用 web_search_options）**
 ```python showLineNumbers
 from litellm import completion
 
@@ -248,7 +248,7 @@ response = completion(
 )
 ```
 
-**Gemini image generation (using web_search_options on `/images/generations`)**
+**Gemini 圖像生成（在 `/images/generations` 上使用 web_search_options）**
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -260,7 +260,7 @@ response = image_generation(
 )
 ```
 
-Works with `vertex_ai/gemini-3.1-flash-image-preview` and other Gemini image models. See [Vertex AI Image Generation](../providers/vertex_image.md) and [Google AI Studio Image Generation](../providers/google_ai_studio/image_gen.md).
+可與 `vertex_ai/gemini-3.1-flash-image-preview` 及其他 Gemini 圖像模型搭配使用。請參閱 [Vertex AI Image Generation](../providers/vertex_image.md) 與 [Google AI Studio Image Generation](../providers/google_ai_studio/image_gen.md)。
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
@@ -290,17 +290,15 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
+## `/responses`（litellm.responses） {#responses-litellmresponses}
 
-
-## `/responses` (litellm.responses)
-
-Use the `web_search_preview` tool with models like `gpt-5`, `gpt-4.1`, `gpt-4o`, etc.
+將 `web_search_preview` 工具與 `gpt-5`、`gpt-4.1`、`gpt-4o` 等模型搭配使用。
 
 :::info
-Search-dedicated models like `gpt-5-search-api` and `gpt-4o-search-preview` do **not** support the `/responses` endpoint. Use them with `/chat/completions` + `web_search_options` instead (see above).
+像 `gpt-5-search-api` 和 `gpt-4o-search-preview` 這類專用搜尋模型**不**支援 `/responses` 端點。請改搭配 `/chat/completions` + `web_search_options` 使用（見上文）。
 :::
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -320,7 +318,7 @@ response = responses(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -335,13 +333,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -365,7 +363,7 @@ print(response.output_text)
 </TabItem>
 </Tabs>
 
-### Search context size
+### 搜尋內容大小 {#search-context-size-1}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -410,9 +408,9 @@ print(response.output_text)
 </TabItem>
 </Tabs>
 
-## Configuring Web Search in config.yaml
+## 在 config.yaml 中設定網路搜尋 {#configuring-web-search-in-configyaml}
 
-You can set default web search options directly in your proxy config file:
+您可以直接在 proxy 設定檔中設定預設的網路搜尋選項：
 
 <Tabs>
 <TabItem value="default" label="Default Web Search">
@@ -427,8 +425,8 @@ model_list:
       web_search_options: {}  # Enables web search with default settings
 ```
 
-### Advanced
-You can configure LiteLLM's router to optionally drop models that do not support WebSearch, for example
+### 進階 {#advanced}
+您可以將 LiteLLM 的 router 設定為可選擇性地捨棄不支援 WebSearch 的模型，例如
 ```yaml
   - model_name: gpt-4.1
     litellm_params:
@@ -441,7 +439,7 @@ You can configure LiteLLM's router to optionally drop models that do not support
     model_info:
       supports_web_search: False <---- KEY CHANGE!
 ```
-In this example, LiteLLM will still route LLM requests to both deployments, but for WebSearch, will solely route to OpenAI.
+在此範例中，LiteLLM 仍會將 LLM 請求路由到兩個部署，但對於 WebSearch，則只會路由到 OpenAI。
 
 </TabItem>
 <TabItem value="custom" label="Custom Search Context">
@@ -477,14 +475,14 @@ model_list:
 </TabItem>
 </Tabs>
 
-**Note:** When `web_search_options` is set in the config, it applies to all requests to that model. Users can still override these settings by passing `web_search_options` in their API requests.
+**注意：**當 `web_search_options` 在設定中有指定時，它會套用至該模型的所有請求。使用者仍可在 API 請求中傳入 `web_search_options` 來覆寫這些設定。
 
-## Checking if a model supports web search
+## 檢查模型是否支援網路搜尋 {#checking-if-a-model-supports-web-search}
 
 <Tabs>
 <TabItem label="SDK" value="sdk">
 
-Use `litellm.supports_web_search(model="model_name")` -> returns `True` if model can perform web searches
+使用 `litellm.supports_web_search(model="model_name")` -> 若模型可執行網路搜尋，則回傳 `True`
 
 ```python showLineNumbers
 # Check OpenAI models
@@ -507,7 +505,7 @@ assert litellm.supports_web_search(model="gemini/gemini-2.0-flash") == True
 
 <TabItem label="PROXY" value="proxy">
 
-1. Define models in config.yaml
+1. 在 config.yaml 中定義模型
 
 ```yaml
 model_list:
@@ -560,13 +558,13 @@ model_list:
       supports_web_search: True
 ```
 
-2. Run proxy server
+2. 執行 proxy 伺服器
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Call `/model_group/info` to check if a model supports web search
+3. 呼叫 `/model_group/info` 以檢查模型是否支援網路搜尋
 
 ```shell
 curl -X 'GET' \
@@ -575,7 +573,7 @@ curl -X 'GET' \
   -H 'x-api-key: sk-1234'
 ```
 
-Expected Response 
+預期回應 
 
 ```json showLineNumbers
 {
@@ -611,26 +609,26 @@ Expected Response
 </TabItem>
 </Tabs>
 
-## Web Search Cost Tracking
+## 網路搜尋成本追蹤 {#web-search-cost-tracking}
 
-LiteLLM tracks web search costs automatically based on provider-specific billing models. The cost is added on top of the standard token-based pricing.
+LiteLLM 會根據各提供者的計費模式自動追蹤網路搜尋成本。此成本會加在標準的 token 計價之上。
 
-### How providers charge for web search
+### 各提供者如何收取網路搜尋費用 {#how-providers-charge-for-web-search}
 
-| Provider | Billing Unit | How it works |
+| 提供者 | 計費單位 | 運作方式 |
 |----------|-------------|--------------|
-| **Gemini 3.x** (3-flash, 3-pro, 3.1-*) | Per search query | Each internal search query is billed individually. One prompt may trigger multiple queries. |
-| **Gemini 2.x** (2.0-flash, 2.5-flash, 2.5-pro) | Per grounded prompt | Flat fee per API call that uses grounding, regardless of how many queries are executed internally. |
-| **OpenAI** (gpt-4o-search, gpt-5-search) | Per search context size | Cost varies by `search_context_size` (`low`, `medium`, `high`). |
-| **Anthropic** (Claude with web search) | Per search request | Fixed cost per web search tool invocation. |
-| **Perplexity** (sonar, sonar-pro) | Per search context size | Cost varies by `search_context_size`. |
+| **Gemini 3.x** (3-flash、3-pro、3.1-*) | 每次搜尋查詢 | 每個內部搜尋查詢都會單獨計費。一個 prompt 可能會觸發多個查詢。 |
+| **Gemini 2.x** (2.0-flash、2.5-flash、2.5-pro) | 每個 grounded prompt | 只要 API 呼叫使用 grounding，就按次收取固定費用，不論內部執行了多少查詢。 |
+| **OpenAI** (gpt-4o-search、gpt-5-search) | 每個搜尋內容大小 | 費用會依 `search_context_size`（`low`、`medium`、`high`）而變動。 |
+| **Anthropic**（支援網路搜尋的 Claude） | 每次搜尋請求 | 每次呼叫網路搜尋工具的固定費用。 |
+| **Perplexity** (sonar、sonar-pro) | 每個搜尋內容大小 | 費用會依 `search_context_size` 而變動。 |
 
-### Pricing configuration
+### 定價設定 {#pricing-configuration}
 
-Web search costs are defined in `model_prices_and_context_window.json` using two fields:
+網路搜尋成本是在 `model_prices_and_context_window.json` 中使用兩個欄位定義：
 
-- **`search_context_cost_per_query`**: the cost per billable unit (per search context size tier).
-- **`web_search_billing_unit`** *(on Gemini models)*: `"per_query"` (each search query is billed individually) or `"per_prompt"` (default — flat fee per API call that uses search).
+- **`search_context_cost_per_query`**：每個可計費單位的成本（每個搜尋內容大小層級）。
+- **`web_search_billing_unit`**（適用於 Gemini 模型）：`"per_query"`（每個搜尋查詢都會單獨計費）或 `"per_prompt"`（預設 — 只要 API 呼叫使用搜尋，就收取固定費用）。
 
 ```json
 {
@@ -653,10 +651,10 @@ Web search costs are defined in `model_prices_and_context_window.json` using two
 ```
 
 :::info
-Models without `web_search_billing_unit` default to `"per_prompt"` — one flat charge per API call that uses web search, regardless of how many internal queries the model executes.
+未設定 `web_search_billing_unit` 的模型預設為 `"per_prompt"` — 每次使用 web search 的 API 呼叫只收取一筆固定費用，不論模型執行了多少內部查詢。
 :::
 
-You can override these in your proxy config using `model_info`:
+您可以使用 `model_info` 在 proxy 設定中覆寫這些值：
 
 ```yaml
 model_list:
@@ -671,14 +669,14 @@ model_list:
         search_context_size_high: 0.014
 ```
 
-### How LiteLLM tracks search usage
+### LiteLLM 如何追蹤搜尋用量 {#how-litellm-tracks-search-usage}
 
-The number of web search requests is stored in `usage.prompt_tokens_details.web_search_requests`. LiteLLM extracts this from each provider's response:
+web search 請求數量會儲存在 `usage.prompt_tokens_details.web_search_requests` 中。LiteLLM 會從各提供者的回應中擷取這個資訊：
 
-- **Gemini**: Extracted from `groundingMetadata.webSearchQueries` in the response. For Gemini 2.x, clamped to 1 (per-prompt billing).
-- **OpenAI**: Reported directly in the usage metadata.
-- **Anthropic**: Reported via `server_tool_use.web_search_requests`.
-- **xAI**: Mapped from `num_sources_used` in the response.
+- **Gemini**：從回應中的 `groundingMetadata.webSearchQueries` 擷取。對於 Gemini 2.x，會限制為 1（每個提示計費）。
+- **OpenAI**：直接在用量中繼資料中回報。
+- **Anthropic**：透過 `server_tool_use.web_search_requests` 回報。
+- **xAI**：從回應中的 `num_sources_used` 對應而來。
 
 ```python
 response = litellm.completion(

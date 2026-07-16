@@ -1,19 +1,19 @@
-# DataForSEO Search
+# DataForSEO 搜尋 {#dataforseo-search}
 
-**Get API Access:** [DataForSEO](https://dataforseo.com/)
+**取得 API 存取權：** [DataForSEO](https://dataforseo.com/)
 
-## Setup
+## 設定 {#setup}
 
-1. Go to [DataForSEO](https://dataforseo.com/) and create an account
-2. Navigate to your account dashboard
-3. Generate API credentials:
-   - You'll receive a **login** (username)
-   - You'll receive a **password**
-4. Set up your environment variables:
-   - `DATAFORSEO_LOGIN` - Your DataForSEO login/username
-   - `DATAFORSEO_PASSWORD` - Your DataForSEO password
+1. 前往 [DataForSEO](https://dataforseo.com/) 並建立帳號
+2. 前往您的帳戶儀表板
+3. 產生 API 憑證：
+   - 您將收到 **登入名稱**（使用者名稱）
+   - 您將收到 **密碼**
+4. 設定您的環境變數：
+   - `DATAFORSEO_LOGIN` - 您的 DataForSEO 登入名稱/使用者名稱
+   - `DATAFORSEO_PASSWORD` - 您的 DataForSEO 密碼
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="DataForSEO Search"
 import os
@@ -29,9 +29,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -47,7 +47,7 @@ search_tools:
       api_key: "os.environ/DATAFORSEO_LOGIN:os.environ/DATAFORSEO_PASSWORD"
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -55,7 +55,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/dataforseo-search \
@@ -67,7 +67,7 @@ curl http://0.0.0.0:4000/v1/search/dataforseo-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 供應者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="DataForSEO Search with Provider-specific Parameters"
 import os
@@ -88,4 +88,3 @@ response = search(
     os="windows"                   # Operating system
 )
 ```
-

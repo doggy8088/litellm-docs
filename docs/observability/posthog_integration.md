@@ -1,12 +1,12 @@
-# PostHog
+# PostHog {#posthog}
 
-## What is PostHog?
+## PostHog 是什麼？ {#what-is-posthog}
 
-PostHog is an open-source product analytics platform that helps you track and analyze how users interact with your product. For LLM applications, PostHog provides specialized AI features to track model usage, performance, and user interactions with your AI features.
+PostHog 是一個開源的產品分析平台，可協助您追蹤並分析使用者如何與您的產品互動。對於 LLM 應用程式，PostHog 提供專門的 AI 功能，可追蹤模型使用情況、效能以及使用者與您的 AI 功能的互動。
 
-## Usage with LiteLLM Proxy (LLM Gateway)
+## 與 LiteLLM Proxy（LLM 閘道）搭配使用 {#usage-with-litellm-proxy-llm-gateway}
 
-**Step 1**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 1**：建立一個 `config.yaml` 檔案並設定 `litellm_settings`： `success_callback`
 
 ```yaml
 model_list:
@@ -19,7 +19,7 @@ litellm_settings:
   failure_callback: ["posthog"]
 ```
 
-**Step 2**: Set required environment variables
+**步驟 2**：設定必要的環境變數
 
 ```shell
 export POSTHOG_API_KEY="your-posthog-api-key"
@@ -27,15 +27,15 @@ export POSTHOG_API_KEY="your-posthog-api-key"
 export POSTHOG_API_URL="https://app.posthog.com" # optional
 ```
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -55,9 +55,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-### Team-Based Logging
+### 基於團隊的記錄 {#team-based-logging}
 
-Configure different PostHog credentials per team using the team callback settings:
+使用團隊回呼設定，為每個團隊設定不同的 PostHog 憑證：
 
 ```bash
 curl -X POST 'http://localhost:4000/team/{team_id}/callback' \
@@ -73,13 +73,13 @@ curl -X POST 'http://localhost:4000/team/{team_id}/callback' \
   }'
 ```
 
-Now all requests from that team will be logged to their specific PostHog project.
+現在來自該團隊的所有請求都會記錄到其專屬的 PostHog 專案。
 
-## Usage with LiteLLM Python SDK
+## 與 LiteLLM Python SDK 搭配使用 {#usage-with-litellm-python-sdk}
 
-### Quick Start
+### 快速開始 {#quick-start}
 
-Use just 2 lines of code, to instantly log your responses **across all providers** with PostHog:
+只需 2 行程式碼，即可透過 PostHog 立即記錄您在**所有提供者**上的回應：
 
 ```python
 litellm.success_callback = ["posthog"]
@@ -112,13 +112,13 @@ response = litellm.completion(
 )
 ```
 
-### Advanced
+### 進階 {#advanced}
 
-#### Set User ID and Custom Metadata
+#### 設定使用者 ID 與自訂中繼資料 {#set-user-id-and-custom-metadata}
 
-Pass `user_id` in `metadata` to associate events with specific users in PostHog:
+在 `metadata` 中傳入 `user_id`，即可在 PostHog 中將事件與特定使用者關聯：
 
-**With LiteLLM Python SDK:**
+**使用 LiteLLM Python SDK：**
 
 ```python
 import litellm
@@ -137,7 +137,7 @@ response = litellm.completion(
 )
 ```
 
-**With LiteLLM Proxy using OpenAI Python SDK:**
+**使用 OpenAI Python SDK 搭配 LiteLLM Proxy：**
 
 ```python
 import openai
@@ -162,9 +162,9 @@ response = client.chat.completions.create(
 )
 ```
 
-#### Per-Request Credentials
+#### 每次請求的憑證 {#per-request-credentials}
 
-You can override PostHog credentials on a per-request basis:
+您可以針對每次請求覆寫 PostHog 憑證：
 
 ```python
 import litellm
@@ -182,14 +182,14 @@ response = litellm.completion(
 )
 ```
 
-This is useful when you need to:
-- Log different teams/projects to separate PostHog instances
-- Use different PostHog projects for staging vs production
-- Route logs based on customer or tenant
+這在您需要以下情況時很有用：
+- 將不同團隊/專案的記錄分送到不同的 PostHog 執行個體
+- 為測試環境與正式環境使用不同的 PostHog 專案
+- 根據客戶或租戶路由記錄
 
-#### Disable Logging for Specific Calls
+#### 停用特定呼叫的記錄 {#disable-logging-for-specific-calls}
 
-Use the `no-log` flag to prevent logging for specific calls:
+使用 `no-log` 旗標可防止特定呼叫被記錄：
 
 ```python
 import litellm
@@ -205,57 +205,57 @@ response = litellm.completion(
 )
 ```
 
-## What's Logged to PostHog?
+## PostHog 會記錄什麼？ {#whats-logged-to-posthog}
 
-When LiteLLM logs to PostHog, it captures detailed information about your LLM usage:
+當 LiteLLM 記錄到 PostHog 時，會擷取有關您 LLM 使用情況的詳細資訊：
 
-### For Completion Calls
-- **Model Information**: Provider, model name, model parameters
-- **Usage Metrics**: Input tokens, output tokens, total cost
-- **Performance**: Latency, completion time
-- **Content**: Input messages, model responses (respects privacy settings)
-- **Metadata**: Custom fields, user ID, trace information
+### 針對完成請求 {#for-completion-calls}
+- **模型資訊**：提供者、模型名稱、模型參數
+- **使用指標**：輸入 token、輸出 token、總成本
+- **效能**：延遲、完成時間
+- **內容**：輸入訊息、模型回應（遵循隱私設定）
+- **中繼資料**：自訂欄位、使用者 ID、追蹤資訊
 
-### For Embedding Calls
-- **Model Information**: Provider, model name
-- **Usage Metrics**: Input tokens, total cost
-- **Performance**: Latency
-- **Content**: Input text (respects privacy settings)
-- **Metadata**: Custom fields, user ID, trace information
+### 針對嵌入請求 {#for-embedding-calls}
+- **模型資訊**：提供者、模型名稱
+- **使用指標**：輸入 token、總成本
+- **效能**：延遲
+- **內容**：輸入文字（遵循隱私設定）
+- **中繼資料**：自訂欄位、使用者 ID、追蹤資訊
 
-### For Errors
-- **Error Details**: Error type, error message, stack trace
-- **Context**: Model, provider, input that caused the error
-- **Timing**: When the error occurred, request duration
+### 針對錯誤 {#for-errors}
+- **錯誤詳細資訊**：錯誤類型、錯誤訊息、堆疊追蹤
+- **內容**：造成錯誤的模型、提供者、輸入
+- **時間**：錯誤發生時間、請求持續時間
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Required | Description |
+| 變數 | 必填 | 說明 |
 |----------|----------|-------------|
-| `POSTHOG_API_KEY` | Yes | Your PostHog project API key |
-| `POSTHOG_API_URL` | No | PostHog API URL (defaults to https://app.posthog.com) |
+| `POSTHOG_API_KEY` | 是 | 您的 PostHog 專案 API 金鑰 |
+| `POSTHOG_API_URL` | 否 | PostHog API URL（預設為 https://app.posthog.com） |
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### 1. Missing API Key
+### 1. 缺少 API 金鑰 {#1-missing-api-key}
 ```
 Error: POSTHOG_API_KEY is not set
 ```
 
-Set your PostHog API key:
+設定您的 PostHog API 金鑰：
 ```python
 import os
 os.environ["POSTHOG_API_KEY"] = "your-api-key"
 ```
 
-### 2. Custom PostHog Instance
-If you're using a self-hosted PostHog instance:
+### 2. 自訂 PostHog 執行個體 {#2-custom-posthog-instance}
+如果您使用的是自架的 PostHog 執行個體：
 ```python
 import os
 os.environ["POSTHOG_API_URL"] = "https://your-posthog-instance.com"
 ```
 
-### 3. Events Not Appearing
-- Check that your API key is correct
-- Verify network connectivity to PostHog
-- Events may take a few minutes to appear in PostHog dashboard
+### 3. 事件未顯示 {#3-events-not-appearing}
+- 檢查您的 API 金鑰是否正確
+- 驗證與 PostHog 的網路連線是否正常
+- 事件可能需要幾分鐘才會出現在 PostHog 儀表板中

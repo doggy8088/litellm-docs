@@ -1,37 +1,34 @@
-# [BETA] LiteLLM Managed Files with Batches
+# [BETA] 使用 LiteLLM Managed Files 搭配 Batches {#beta-litellm-managed-files-with-batches}
 
 :::info
 
-This is a free LiteLLM Enterprise feature.
+這是一項免費的 LiteLLM Enterprise 功能。
 
-Available via the `litellm[proxy]` package or any `litellm` docker image.
+可透過 `litellm[proxy]` 套件或任何 `litellm` docker 映像檔取得。
 
 :::
 
-
-| Feature | Description | Comments |
+| 功能 | 說明 | 備註 |
 | --- | --- | --- |
 | Proxy | ✅ |  |
-| SDK | ❌ | Requires postgres DB for storing file ids |
-| Available across all [Batch providers](../batches#supported-providers) | ✅ |  |
+| SDK | ❌ | 需要 postgres DB 來儲存 file ids |
+| 可跨所有 [Batch 提供者](../batches#supported-providers) 使用 | ✅ |  |
 
+## 概觀 {#overview}
 
-## Overview
+可用於：
 
-Use this to:
+- 在多個 Azure Batch deployment 之間進行負載平衡
+- 依 key/user/team 控制 batch model 存取權（與 chat completion models 相同）
 
-- Loadbalance across multiple Azure Batch deployments
-- Control batch model access by key/user/team (same as chat completion models)
+## （Proxy 管理員）使用方式 {#proxy-admin-usage}
 
+以下說明如何讓開發者存取您的 Batch models。
 
-## (Proxy Admin) Usage
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
-Here's how to give developers access to your Batch models.
-
-### 1. Setup config.yaml
-
-- specify `mode: batch` for each model: Allows developers to know this is a batch model.
-- optionally skip pre-read of batch input files for specific batch providers/models (useful for large files on custom vLLM batch deployments).
+- 為每個 model 指定 `mode: batch`：讓開發者知道這是一個 batch model。
+- 可選擇針對特定 batch providers/models 跳過 batch input files 的預先讀取（對自訂 vLLM batch deployments 上的大型檔案很有用）。
 
 ```yaml showLineNumbers title="litellm_config.yaml"
 model_list:
@@ -68,7 +65,7 @@ litellm_settings:
 
 ```
 
-### 2. Create Virtual Key
+### 2. 建立 Virtual Key {#2-create-virtual-key}
 
 ```bash showLineNumbers title="create_virtual_key.sh"
 curl -L -X POST 'https://{PROXY_BASE_URL}/key/generate' \
@@ -78,32 +75,32 @@ curl -L -X POST 'https://{PROXY_BASE_URL}/key/generate' \
 ```
 
 
-You can now use the virtual key to access the batch models (See Developer flow).
+現在您可以使用 virtual key 存取 batch models（請參閱開發者流程）。
 
-## (Developer) Usage
+## （開發者）使用方式 {#developer-usage}
 
-Here's how to create a LiteLLM managed file and execute Batch CRUD operations with the file. 
+以下說明如何建立 LiteLLM managed file，並使用該檔案執行 Batch CRUD 操作。 
 
-### 1. Create request.jsonl 
+### 1. 建立 request.jsonl  {#1-create-requestjsonl}
 
-- Check models available via `/model_group/info`
-- See all models with `mode: batch`
-- Set `model` in .jsonl to the model from `/model_group/info`
+- 透過 `/model_group/info` 查看可用模型
+- 使用 `mode: batch` 查看所有模型
+- 在 .jsonl 中將 `model` 設定為來自 `/model_group/info` 的 model
 
 ```json showLineNumbers title="request.jsonl"
 {"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o-batch", "messages": [{"role": "system", "content": "You are a helpful assistant."},{"role": "user", "content": "Hello world!"}],"max_tokens": 1000}}
 {"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o-batch", "messages": [{"role": "system", "content": "You are an unhelpful assistant."},{"role": "user", "content": "Hello world!"}],"max_tokens": 1000}}
 ```
 
-Expectation:
+預期結果：
 
-- LiteLLM translates this to the azure deployment specific value (e.g. `gpt-4o-mini-general-deployment`)
+- LiteLLM 會將其轉換為 azure deployment 的特定值（例如 `gpt-4o-mini-general-deployment`）
 
-### 2. Upload File 
+### 2. 上傳檔案  {#2-upload-file}
 
-Specify `target_model_names: "<model-name>"` to enable LiteLLM managed files and request validation.
+指定 `target_model_names: "<model-name>"` 以啟用 LiteLLM managed files 與請求驗證。
 
-model-name should be the same as the model-name in the request.jsonl
+model-name 應與 request.jsonl 中的 model-name 相同
 
 ```python showLineNumbers title="create_batch.py"
 from openai import OpenAI
@@ -123,11 +120,11 @@ print(batch_input_file)
 ```
 
 
-**Where is the file written?**:
+**檔案會寫入哪裡？**：
 
-All gpt-4o-batch deployments (gpt-4o-mini-general-deployment, gpt-4o-mini-special-deployment) will be written to. This enables loadbalancing across all gpt-4o-batch deployments in Step 3.
+會寫入所有 gpt-4o-batch deployments（gpt-4o-mini-general-deployment、gpt-4o-mini-special-deployment）。這可在步驟 3 中對所有 gpt-4o-batch deployments 啟用負載平衡。
 
-### 3. Create + Retrieve the batch
+### 3. 建立 + 取得 batch {#3-create--retrieve-the-batch}
 
 ```python showLineNumbers title="create_batch.py"
 ...
@@ -148,7 +145,7 @@ batch_response = client.batches.retrieve(
 status = batch_response.status
 ```
 
-You can also skip input-file pre-read per request:
+您也可以針對每個請求跳過 input-file 預先讀取：
 
 ```python showLineNumbers title="create_batch.py"
 batch = client.batches.create(
@@ -159,7 +156,7 @@ batch = client.batches.create(
 )
 ```
 
-### 4. Retrieve Batch Content 
+### 4. 取得 Batch 內容  {#4-retrieve-batch-content}
 
 ```python showLineNumbers title="create_batch.py"
 ...
@@ -170,7 +167,7 @@ file_response = client.files.content(file_id)
 print(file_response.text)
 ```
 
-### 5. List batches
+### 5. 列出 batches {#5-list-batches}
 
 ```python showLineNumbers title="create_batch.py"
 ...
@@ -178,7 +175,7 @@ print(file_response.text)
 client.batches.list(limit=10, extra_query={"target_model_names": "gpt-4o-batch"})
 ```
 
-### [Coming Soon] Cancel a batch
+### [即將推出] 取消 batch {#coming-soon-cancel-a-batch}
 
 ```python showLineNumbers title="create_batch.py"
 ...
@@ -187,8 +184,7 @@ client.batches.cancel(batch_id)
 ```
 
 
-
-## E2E Example
+## E2E 範例 {#e2e-example}
 
 ```python showLineNumbers title="create_batch.py"
 import json
@@ -282,21 +278,14 @@ status = batch_response.status
 print(f"status: {status}")
 ```
 
-## FAQ
+## 常見問題 {#faq}
 
-### Where are my files written?
+### 我的檔案會寫到哪裡？ {#where-are-my-files-written}
 
-When a `target_model_names` is specified, the file is written to all deployments that match the `target_model_names`.
+當指定 `target_model_names` 時，檔案會寫入所有符合 `target_model_names` 的 deployments。
 
-No additional infrastructure is required.
+不需要額外的基礎架構。
 
-## Could the batch be created at the eastus-01 deployment but a subsequent get of the batch could be routed to (a different) eastus2-01 deployment ?
+## batch 可以先建立於 eastus-01 deployment，但之後對 batch 的 get 會被路由到（不同的）eastus2-01 deployment 嗎？ {#could-the-batch-be-created-at-the-eastus-01-deployment-but-a-subsequent-get-of-the-batch-could-be-routed-to-a-different-eastus2-01-deployment-}
 
-**A.** You can loadbalance b/w multiple models for the initial create batch. Once that's created - we return a file id, which encodes the model deployment used, so it's sticky and only sends any get/delete to that deployment. 
-
-
-
-
-
-
-
+**A.** 您可以在初始建立 batch 時，於多個 models 之間進行負載平衡。建立完成後，我們會回傳一個 file id，其中編碼了所使用的 model deployment，因此它具有黏性，且只會將任何 get/delete 請求送到該 deployment。

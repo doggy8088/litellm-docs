@@ -1,12 +1,12 @@
-# Shared Session Support
+# 共用 Session 支援 {#shared-session-support}
 
-## Overview
+## 概觀 {#overview}
 
-LiteLLM now supports sharing `aiohttp.ClientSession` instances across multiple API calls to avoid creating unnecessary new sessions. This improves performance and resource utilization.
+LiteLLM 現在支援在多個 API 請求之間共用 `aiohttp.ClientSession` 實例，以避免建立不必要的新 session。這可提升效能與資源使用效率。
 
-## Usage
+## 用法 {#usage}
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 ```python
 import asyncio
@@ -34,7 +34,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### Without Shared Session (Default)
+### 不使用共用 Session（預設） {#without-shared-session-default}
 
 ```python
 import asyncio
@@ -56,16 +56,16 @@ async def main():
 asyncio.run(main())
 ```
 
-## Benefits
+## 優點 {#benefits}
 
-- **Performance**: Reuse HTTP connections across multiple calls
-- **Resource Efficiency**: Reduce memory and connection overhead
-- **Better Control**: Manage session lifecycle explicitly
-- **Debugging**: Easy to trace which calls use which sessions
+- **效能**：在多次呼叫之間重用 HTTP 連線
+- **資源效率**：降低記憶體與連線額外負擔
+- **更好的控制**：明確管理 session 生命週期
+- **除錯**：容易追蹤哪些呼叫使用了哪些 session
 
-## Debug Logging
+## 除錯記錄 {#debug-logging}
 
-Enable debug logging to see session reuse in action:
+啟用除錯記錄以查看 session 重用的實際運作：
 
 ```python
 import os
@@ -79,9 +79,9 @@ os.environ['LITELLM_LOG'] = 'DEBUG'
 # ✅ SHARED SESSION: Reusing existing ClientSession (ID: 12345)
 ```
 
-## Common Patterns
+## 常見模式 {#common-patterns}
 
-### FastAPI Integration
+### FastAPI 整合 {#fastapi-integration}
 
 ```python
 from fastapi import FastAPI
@@ -101,7 +101,7 @@ async def chat(messages: list[dict]):
         )
 ```
 
-### Batch Processing
+### 批次處理 {#batch-processing}
 
 ```python
 import asyncio
@@ -124,7 +124,7 @@ async def process_batch(messages_list):
         return results
 ```
 
-### Custom Session Configuration
+### 自訂 Session 設定 {#custom-session-configuration}
 
 ```python
 import aiohttp
@@ -143,24 +143,24 @@ async with aiohttp.ClientSession(
     )
 ```
 
-## Implementation Details
+## 實作細節 {#implementation-details}
 
-The `shared_session` parameter is threaded through the entire LiteLLM call chain:
+`shared_session` 參數會貫穿整個 LiteLLM 呼叫鏈：
 
-1. **`acompletion()`** - Accepts `shared_session` parameter
-2. **`BaseLLMHTTPHandler`** - Passes session to HTTP client creation
-3. **`AsyncHTTPHandler`** - Uses existing session if provided
-4. **`LiteLLMAiohttpTransport`** - Reuses the session for HTTP requests
+1. **`acompletion()`** - 接受 `shared_session` 參數
+2. **`BaseLLMHTTPHandler`** - 將 session 傳遞給 HTTP 用戶端建立
+3. **`AsyncHTTPHandler`** - 若有提供則使用既有 session
+4. **`LiteLLMAiohttpTransport`** - 針對 HTTP 請求重用該 session
 
-## Backward Compatibility
+## 向後相容性 {#backward-compatibility}
 
-- **100% backward compatible** - Existing code works unchanged
-- **Optional parameter** - `shared_session=None` by default
-- **No breaking changes** - All existing functionality preserved
+- **100% 向後相容** - 既有程式碼可不修改直接運作
+- **可選參數** - 預設為 `shared_session=None`
+- **無破壞性變更** - 保留所有既有功能
 
-## Testing
+## 測試 {#testing}
 
-Test the shared session functionality:
+測試共用 session 功能：
 
 ```python
 import asyncio
@@ -187,27 +187,27 @@ async def test_shared_session():
 asyncio.run(test_shared_session())
 ```
 
-## Files Modified
+## 已修改檔案 {#files-modified}
 
-The shared session functionality was added to these files:
+共用 session 功能已新增至以下檔案：
 
-- `litellm/main.py` - Added `shared_session` parameter to `acompletion()` and `completion()`
-- `litellm/llms/custom_httpx/http_handler.py` - Core session reuse logic
-- `litellm/llms/custom_httpx/llm_http_handler.py` - HTTP handler integration
-- `litellm/llms/openai/openai.py` - OpenAI provider integration
-- `litellm/llms/openai/common_utils.py` - OpenAI client creation
-- `litellm/llms/azure/chat/o_series_handler.py` - Azure O Series handler
+- `litellm/main.py` - 已將 `shared_session` 參數新增至 `acompletion()` 與 `completion()`
+- `litellm/llms/custom_httpx/http_handler.py` - 核心 session 重用邏輯
+- `litellm/llms/custom_httpx/llm_http_handler.py` - HTTP 處理常式整合
+- `litellm/llms/openai/openai.py` - OpenAI 提供者整合
+- `litellm/llms/openai/common_utils.py` - OpenAI 用戶端建立
+- `litellm/llms/azure/chat/o_series_handler.py` - Azure O Series 處理常式
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Session Not Being Reused
+### Session 未被重用 {#session-not-being-reused}
 
-1. **Check debug logs**: Enable `LITELLM_LOG=DEBUG` to see session reuse messages
-2. **Verify session is not closed**: Ensure the session is still active when making calls
-3. **Check parameter passing**: Make sure `shared_session` is passed to all `acompletion()` calls
+1. **檢查除錯記錄**：啟用 `LITELLM_LOG=DEBUG` 以查看 session 重用訊息
+2. **確認 session 未關閉**：進行請求時，請確保 session 仍處於啟用狀態
+3. **檢查參數傳遞**：請確認 `shared_session` 已傳遞給所有 `acompletion()` 呼叫
 
-### Performance Issues
+### 效能問題 {#performance-issues}
 
-1. **Session configuration**: Tune `aiohttp.ClientSession` parameters for your use case
-2. **Connection limits**: Adjust `limit` and `limit_per_host` in `TCPConnector`
-3. **Timeout settings**: Configure appropriate timeouts for your environment
+1. **Session 設定**：依您的使用情境調整 `aiohttp.ClientSession` 參數
+2. **連線限制**：在 `TCPConnector` 中調整 `limit` 與 `limit_per_host`
+3. **逾時設定**：為您的環境設定適當的逾時時間

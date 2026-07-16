@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI
-LiteLLM supports OpenAI Chat + Embedding calls.
+# OpenAI {#openai}
+LiteLLM 支援 OpenAI Chat + Embedding 請求。
 
 :::tip
-**We recommend using `litellm.responses()` / Responses API** for the latest OpenAI models (GPT-5, gpt-5-codex, o3-mini, etc.)
+**我們建議對最新的 OpenAI 模型（GPT-5、gpt-5-codex、o3-mini 等）使用 `litellm.responses()` / Responses API** 
 :::
 
-### Required API Keys
+### 必要的 API 金鑰 {#required-api-keys}
 
 ```python
 import os 
 os.environ["OPENAI_API_KEY"] = "your-api-key"
 ```
 
-### Usage
+### 使用方式 {#usage}
 ```python
 import os 
 from litellm import completion
@@ -29,8 +29,8 @@ response = completion(
 )
 ```
 
-:::info Metadata passthrough (preview)
-When `litellm.enable_preview_features = True`, LiteLLM forwards only the values inside `metadata` to OpenAI.
+:::info Metadata passthrough（預覽）
+當 `litellm.enable_preview_features = True` 時，LiteLLM 只會將 `metadata` 內的值轉送給 OpenAI。
 
 ```python
 completion(
@@ -41,17 +41,17 @@ completion(
 ```
 :::
 
-### Usage - LiteLLM Proxy Server
+### 使用方式 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-Here's how to call OpenAI models with the LiteLLM Proxy Server
+以下是使用 LiteLLM Proxy Server 呼叫 OpenAI 模型的方法
 
-### 1. Save key in your environment
+### 1. 在您的環境中儲存金鑰 {#1-save-key-in-your-environment}
 
 ```bash
 export OPENAI_API_KEY=""
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -68,10 +68,10 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 </TabItem>
-<TabItem value="config-*" label="config.yaml - proxy all OpenAI models">
+<TabItem value="config-*" label="config.yaml - 代理所有 OpenAI 模型">
 
-Use this to add all openai models with one API Key. **WARNING: This will not do any load balancing**
-This means requests to `gpt-4`, `gpt-3.5-turbo` , `gpt-4-turbo-preview` will all go through this route 
+使用這個可用一個 API 金鑰新增所有 openai 模型。**警告：這不會進行任何負載平衡**
+這表示對 `gpt-4`、`gpt-3.5-turbo`、`gpt-4-turbo-preview` 的請求都會經由這條路由 
 
 ```yaml
 model_list:
@@ -92,11 +92,10 @@ $ litellm --model gpt-3.5-turbo
 
 </Tabs>
 
-### 3. Test it
-
+### 3. 測試它 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -166,8 +165,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-### Optional Keys - OpenAI Organization, OpenAI API Base
+### 選用金鑰 - OpenAI Organization、OpenAI API Base {#optional-keys---openai-organization-openai-api-base}
 
 ```python
 import os 
@@ -175,9 +173,9 @@ os.environ["OPENAI_ORGANIZATION"] = "your-org-id"       # OPTIONAL
 os.environ["OPENAI_BASE_URL"] = "https://your_host/v1"     # OPTIONAL
 ```
 
-### OpenAI Chat Completion Models
+### OpenAI Chat Completion 模型 {#openai-chat-completion-models}
 
-| Model Name            | Function Call                                                   |
+| 模型名稱            | 函式呼叫                                                   |
 |-----------------------|-----------------------------------------------------------------|
 | gpt-5 | `response = completion(model="gpt-5", messages=messages)` |
 | gpt-5-mini | `response = completion(model="gpt-5-mini", messages=messages)` |
@@ -233,20 +231,20 @@ os.environ["OPENAI_BASE_URL"] = "https://your_host/v1"     # OPTIONAL
 | gpt-4-0314            | `response = completion(model="gpt-4-0314", messages=messages)` |
 | gpt-4-0613            | `response = completion(model="gpt-4-0613", messages=messages)` |
 | gpt-4-32k             | `response = completion(model="gpt-4-32k", messages=messages)` |
+
 | gpt-4-32k-0314        | `response = completion(model="gpt-4-32k-0314", messages=messages)` |
 | gpt-4-32k-0613        | `response = completion(model="gpt-4-32k-0613", messages=messages)` |
 
+這些也支援 `OPENAI_BASE_URL` 環境變數，可用來指定自訂 API 端點。
 
-These also support the `OPENAI_BASE_URL` environment variable, which can be used to specify a custom API endpoint.
+### OpenAI Web Search 模型 {#openai-web-search-models}
 
-### OpenAI Web Search Models
+OpenAI 有兩種使用網頁搜尋的方式，取決於端點：
 
-OpenAI has two ways to use web search, depending on the endpoint:
-
-| Approach | Endpoint | Models | How to enable |
+| 方法 | 端點 | 模型 | 啟用方式 |
 |----------|----------|--------|---------------|
-| **Search Models** | `/chat/completions` | `gpt-5-search-api`, `gpt-4o-search-preview`, `gpt-4o-mini-search-preview` | Pass `web_search_options` parameter |
-| **Web Search Tool** | `/responses` | `gpt-5`, `gpt-4.1`, `gpt-4o`, and other regular models | Pass `web_search_preview` tool |
+| **搜尋模型** | `/chat/completions` | `gpt-5-search-api`、`gpt-4o-search-preview`、`gpt-4o-mini-search-preview` | 傳入 `web_search_options` 參數 |
+| **網頁搜尋工具** | `/responses` | `gpt-5`、`gpt-4.1`、`gpt-4o`，以及其他一般模型 | 傳入 `web_search_preview` 工具 |
 
 <Tabs>
 <TabItem value="sdk-completion" label="SDK - /chat/completions">
@@ -300,16 +298,16 @@ model_list:
 </TabItem>
 </Tabs>
 
-For full details, see the [Web Search guide](../completion/web_search.md).
+完整細節請參閱[網頁搜尋指南](../completion/web_search.md)。
 
-## OpenAI Vision Models
-| Model Name            | Function Call                                                   |
+## OpenAI Vision 模型 {#openai-vision-models}
+| 模型名稱            | 函式呼叫                                                   |
 |-----------------------|-----------------------------------------------------------------|
 | gpt-4o   | `response = completion(model="gpt-4o", messages=messages)` |
 | gpt-4-turbo    | `response = completion(model="gpt-4-turbo", messages=messages)` |
 | gpt-4-vision-preview    | `response = completion(model="gpt-4-vision-preview", messages=messages)` |
 
-#### Usage
+#### 使用方式 {#usage-1}
 ```python
 import os 
 from litellm import completion
@@ -340,9 +338,9 @@ response = completion(
 
 ```
 
-## PDF File Parsing
+## PDF 檔案解析 {#pdf-file-parsing}
 
-OpenAI has a new `file` message type that allows you to pass in a PDF file and have it parsed into a structured output. [Read more](https://platform.openai.com/docs/guides/pdf-files?api-mode=chat&lang=python)
+OpenAI 有一種新的 `file` 訊息類型，可讓您傳入 PDF 檔案，並將其剖析為結構化輸出。[閱讀更多](https://platform.openai.com/docs/guides/pdf-files?api-mode=chat&lang=python)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -385,7 +383,7 @@ print(completion.choices[0].message.content)
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -395,13 +393,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -426,9 +424,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## OpenAI Fine Tuned Models
+## OpenAI Fine Tuned 模型 {#openai-fine-tuned-models}
 
-| Model Name                | Function Call                                                          |
+| 模型名稱                | 函式呼叫                                                          |
 |---------------------------|-----------------------------------------------------------------|
 | fine tuned `gpt-4-0613`    | `response = completion(model="ft:gpt-4-0613", messages=messages)`     |
 | fine tuned `gpt-4o-2024-05-13` | `response = completion(model="ft:gpt-4o-2024-05-13", messages=messages)` |
@@ -436,17 +434,17 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 | fine tuned `gpt-3.5-turbo-1106` | `response = completion(model="ft:gpt-3.5-turbo-1106", messages=messages)` |
 | fine tuned `gpt-3.5-turbo-0613` | `response = completion(model="ft:gpt-3.5-turbo-0613", messages=messages)` |
 
-## [BETA] Route all .completions requests to Responses API (better quality)
- When enabled, LiteLLM sends OpenAI traffic from `litellm.completion()` and the proxy `/chat/completions` endpoint through the [Responses API](https://platform.openai.com/docs/api-reference/responses) instead of Chat Completions. That path generally matches OpenAI’s latest model behavior and quality (for example, reasoning output on GPT‑5 class models).
+## [BETA] 將所有 .completions 請求路由至 Responses API（更佳品質） {#beta-route-all-completions-requests-to-responses-api-better-quality}
+ 啟用後，LiteLLM 會將來自 `litellm.completion()` 與 proxy `/chat/completions` 端點的 OpenAI 流量，透過 [Responses API](https://platform.openai.com/docs/api-reference/responses) 而非 Chat Completions 傳送。該路徑通常更符合 OpenAI 最新的模型行為與品質（例如，GPT‑5 類模型的 reasoning 輸出）。
 
-You can opt in globally or per request:
+您可以全域或按請求選擇啟用：
 
-**Option A — per-request prefix:** Use the `openai/responses/` model prefix.
+**選項 A — 依請求前綴：** 使用 `openai/responses/` model 前綴。
 
-**Option B — global flag (recommended):** Set `route_all_chat_openai_to_responses = True` to automatically route all OpenAI `/chat/completions` requests through the Responses API, no model prefix needed.
+**選項 B — 全域旗標（建議）：** 設定 `route_all_chat_openai_to_responses = True`，即可自動將所有 OpenAI `/chat/completions` 請求路由至 Responses API，無需 model 前綴。
 
 <Tabs>
-<TabItem value="sdk-global" label="SDK - Global Flag">
+<TabItem value="sdk-global" label="SDK - 全域旗標">
 
 ```python
 import litellm
@@ -461,15 +459,15 @@ response = litellm.completion(
 ```
 
 </TabItem>
-<TabItem value="proxy-global" label="PROXY - Global Flag">
+<TabItem value="proxy-global" label="PROXY - 全域旗標">
 
-Set in your proxy config:
+在您的 proxy 設定中設定：
 ```yaml
 litellm_settings:
   route_all_chat_openai_to_responses: true
 ```
 
-Then call normally — no model prefix needed:
+接著正常呼叫即可 — 無需 model 前綴：
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -485,10 +483,10 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </Tabs>
 
 :::note
-`route_all_chat_openai_to_responses` only applies to the `openai` provider. Azure OpenAI is unaffected. You can also set it via env var: `LITELLM_ROUTE_ALL_CHAT_OPENAI_TO_RESPONSES=true`.
+`route_all_chat_openai_to_responses` 只適用於 `openai` 提供者。Azure OpenAI 不受影響。您也可以透過環境變數設定：`LITELLM_ROUTE_ALL_CHAT_OPENAI_TO_RESPONSES=true`。
 :::
 
-**Option A — per-request prefix:** You can also prefix individual model names with `openai/responses/` to route just that call through the Responses API.
+**選項 A — 依請求前綴：** 您也可以在個別 model 名稱前加上 `openai/responses/`，只將該次呼叫路由至 Responses API。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -515,7 +513,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-Expected Response:
+預期回應：
 ```json
 {
   "id": "chatcmpl-6382a222-43c9-40c4-856b-22e105d88075",
@@ -553,11 +551,11 @@ Expected Response:
 
 ```
 
-### Advanced: Using `reasoning_effort` with `summary` field
+### 進階：搭配 `reasoning_effort` 與 `summary` 欄位使用 {#advanced-using-reasoning_effort-with-summary-field}
 
-By default, `reasoning_effort` accepts a string value (`"none"`, `"minimal"`, `"low"`, `"medium"`, `"high"`, `"xhigh"`—`"xhigh"` is only supported on `gpt-5.1-codex-max` and `gpt-5.2` models) and only sets the effort level without including a reasoning summary.
+預設情況下，`reasoning_effort` 接受字串值（`"none"`、`"minimal"`、`"low"`、`"medium"`、`"high"`、`"xhigh"`—`"xhigh"` 僅支援於 `gpt-5.1-codex-max` 和 `gpt-5.2` models），且只會設定 effort level，不會包含 reasoning summary。
 
-To opt-in to the `summary` feature, you can pass `reasoning_effort` as a dictionary. **Note:** The `summary` field requires your OpenAI organization to have verification status. Using `summary` without verification will result in a 400 error from OpenAI.
+若要啟用 `summary` 功能，您可以將 `reasoning_effort` 以字典形式傳入。**注意：** `summary` 欄位需要您的 OpenAI organization 具有驗證狀態。未通過驗證而使用 `summary` 將會收到 OpenAI 返回的 400 error。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -604,45 +602,45 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-**Summary field options:**
-- `"auto"`: System automatically determines the appropriate summary level based on the model
-- `"concise"`: Provides a shorter summary (not supported by GPT-5 series models)
-- `"detailed"`: Offers a comprehensive reasoning summary
+**Summary 欄位選項：**
+- `"auto"`：系統會根據模型自動判定適當的 summary level
+- `"concise"`：提供較短的 summary（GPT-5 系列 models 不支援）
+- `"detailed"`：提供完整的 reasoning summary
 
-**Note:** GPT-5 series models support `"auto"` and `"detailed"`, but do not support `"concise"`. O-series models (o3-pro, o4-mini, o3) support all three options. Some models like o3-mini and o1 do not support reasoning summaries at all.
+**注意：** GPT-5 系列模型支援 `"auto"` 和 `"detailed"`，但不支援 `"concise"`。O 系列模型（o3-pro、o4-mini、o3）支援這三個選項。某些模型如 o3-mini 和 o1 完全不支援 reasoning summaries。
 
-**Supported `reasoning_effort` values by model:**
+**依模型支援的 `reasoning_effort` 值：**
 
-| Model | Default (when not set) | Supported Values |
+| 模型 | 預設值（未設定時） | 支援的值 |
 |-------|----------------------|------------------|
-| `gpt-5.1` | `none` | `none`, `low`, `medium`, `high` |
-| `gpt-5` | `medium` | `minimal`, `low`, `medium`, `high` |
-| `gpt-5-mini` | `medium` | `minimal`, `low`, `medium`, `high` |
-| `gpt-5-nano` | `none` | `none`, `low`, `medium`, `high` |
-| `gpt-5-codex` | `adaptive` | `low`, `medium`, `high` (no `minimal`) |
-| `gpt-5.1-codex` | `adaptive` | `low`, `medium`, `high` (no `minimal`) |
-| `gpt-5.1-codex-mini` | `adaptive` | `low`, `medium`, `high` (no `minimal`) |
-| `gpt-5.1-codex-max` | `adaptive` | `low`, `medium`, `high`, `xhigh` (no `minimal`) |
-| `gpt-5.2` | `medium` | `none`, `low`, `medium`, `high`, `xhigh` |
-| `gpt-5.2-pro` | `high` | `low`, `medium`, `high`, `xhigh` |
-| `gpt-5.5` | `medium` | `none`, `minimal`, `low`, `medium`, `high`, `xhigh` |
-| `gpt-5.5-pro` | `high` | `minimal`, `low`, `medium`, `high`, `xhigh` |
-| `gpt-5-pro` | `high` | `high` only |
+| `gpt-5.1` | `none` | `none`、`low`、`medium`、`high` |
+| `gpt-5` | `medium` | `minimal`、`low`、`medium`、`high` |
+| `gpt-5-mini` | `medium` | `minimal`、`low`、`medium`、`high` |
+| `gpt-5-nano` | `none` | `none`、`low`、`medium`、`high` |
+| `gpt-5-codex` | `adaptive` | `low`、`medium`、`high`（無 `minimal`） |
+| `gpt-5.1-codex` | `adaptive` | `low`、`medium`、`high`（無 `minimal`） |
+| `gpt-5.1-codex-mini` | `adaptive` | `low`、`medium`、`high`（無 `minimal`） |
+| `gpt-5.1-codex-max` | `adaptive` | `low`、`medium`、`high`、`xhigh`（無 `minimal`） |
+| `gpt-5.2` | `medium` | `none`、`low`、`medium`、`high`、`xhigh` |
+| `gpt-5.2-pro` | `high` | `low`、`medium`、`high`、`xhigh` |
+| `gpt-5.5` | `medium` | `none`、`minimal`、`low`、`medium`、`high`、`xhigh` |
+| `gpt-5.5-pro` | `high` | `minimal`、`low`、`medium`、`high`、`xhigh` |
+| `gpt-5-pro` | `high` |  միայն `high` |
 
-**Note:**
-- GPT-5.1 introduced a new `reasoning_effort="none"` setting for faster, lower-latency responses. This replaces the `"minimal"` setting from GPT-5.
-- `gpt-5.1-codex-max`, `gpt-5.2`, `gpt-5.2-pro`, `gpt-5.5`, and `gpt-5.5-pro` support `reasoning_effort="xhigh"`. Models outside this set will reject the value.
-- `gpt-5-pro` only accepts `reasoning_effort="high"`. Other values will return an error.
-- When `reasoning_effort` is not set (None), OpenAI defaults to the value shown in the "Default" column.
+**注意：**
+- GPT-5.1 推出了一個新的 `reasoning_effort="none"` 設定，可提供更快、延遲更低的回應。這取代了 GPT-5 中的 `"minimal"` 設定。
+- `gpt-5.1-codex-max`、`gpt-5.2`、`gpt-5.2-pro`、`gpt-5.5` 和 `gpt-5.5-pro` 支援 `reasoning_effort="xhigh"`。此集合之外的模型會拒絕該值。
+- `gpt-5-pro` 只接受 `reasoning_effort="high"`。其他值將會回傳錯誤。
+- 當 `reasoning_effort` 未設定（None）時，OpenAI 會預設使用「Default」欄中顯示的值。
 
-See [OpenAI Reasoning documentation](https://platform.openai.com/docs/guides/reasoning) for more details on organization verification requirements.
+請參閱 [OpenAI Reasoning 文件](https://platform.openai.com/docs/guides/reasoning) 以了解組織驗證需求的更多詳細資訊。
 
-### Multi-turn Conversations with `reasoning_items`
+### 使用 `reasoning_items` 的多輪對話 {#multi-turn-conversations-with-reasoning_items}
 
-For multi-turn conversations you need `reasoning_items`: structured blocks that include the `encrypted_content` token OpenAI uses to restore reasoning state on the next request. Pass `include=["reasoning.encrypted_content"]` on every call where you want that token returned.
+對於多輪對話，您需要 `reasoning_items`：也就是包含 `encrypted_content` token 的結構化區塊，OpenAI 會使用該 token 在下一次請求中還原 reasoning 狀態。請在每次希望回傳該 token 的呼叫中傳入 `include=["reasoning.encrypted_content"]`。
 
 <Tabs>
-<TabItem value="non-streaming" label="Non-Streaming">
+<TabItem value="non-streaming" label="非串流">
 
 ```python showLineNumbers title="Non-streaming: round-trip reasoning_items"
 import litellm
@@ -676,9 +674,9 @@ response2 = litellm.completion(
 ```
 
 </TabItem>
-<TabItem value="streaming" label="Streaming">
+<TabItem value="streaming" label="串流">
 
-`reasoning_items` (with `encrypted_content`) arrive on the final chunk when the full response completes:
+當完整回應完成時，`reasoning_items`（搭配 `encrypted_content`）會在最後一個 chunk 到達：
 
 ```python showLineNumbers title="Streaming: collect and round-trip reasoning_items"
 import litellm
@@ -721,18 +719,18 @@ response2 = litellm.completion(
 </TabItem>
 </Tabs>
 
-### Verbosity Control for GPT-5 Models
+### GPT-5 模型的詳盡程度控制 {#verbosity-control-for-gpt-5-models}
 
-The `verbosity` parameter controls the length and detail of responses from GPT-5 family models. It accepts three values: `"low"`, `"medium"`, or `"high"`.
+`verbosity` 參數可控制 GPT-5 系列模型回應的長度與細節。它接受三個值：`"low"`、`"medium"`，或 `"high"`。
 
-**Supported models:** `gpt-5`, `gpt-5.1`, `gpt-5-mini`, `gpt-5-nano`, `gpt-5-pro`
+**支援的模型：** `gpt-5`、`gpt-5.1`、`gpt-5-mini`、`gpt-5-nano`、`gpt-5-pro`
 
-**Note:** GPT-5-Codex models (`gpt-5-codex`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`, `gpt-5.1-codex-max`) do **not** support the `verbosity` parameter.
+**注意：** GPT-5-Codex 模型（`gpt-5-codex`、`gpt-5.1-codex`、`gpt-5.1-codex-mini`、`gpt-5.1-codex-max`）**不**支援 `verbosity` 參數。
 
-**Use cases:**
-- **`"low"`**: Best for concise answers or simple code generation (e.g., SQL queries)
-- **`"medium"`**: Default - balanced output length
-- **`"high"`**: Use when you need thorough explanations or extensive code refactoring
+**使用情境：**
+- **`"low"`**：最適合簡潔的回答或簡單的程式碼產生（例如：SQL 查詢）
+- **`"medium"`**：預設值－輸出長度與內容取得平衡
+- **`"high"`**：當您需要詳盡說明或大幅程式碼重構時使用
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -769,18 +767,17 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## OpenAI Chat Completion 到 Responses API 橋接 {#openai-chat-completion-to-responses-api-bridge}
 
-## OpenAI Chat Completion to Responses API Bridge
+LiteLLM 提供 chat completion 到 Responses API 的橋接。這可讓您在底層呼叫 Responses API 的同時，使用 completion 介面。
 
-LiteLLM offers a chat completion to Responses API bridge. This lets you use the completion interface while calling the Responses API under the hood.
-
-This is useful when you want to use [Responses API](https://platform.openai.com/docs/api-reference/responses) specific features (like built-in tools, web search preview, or code interpreter).
+當您想使用 [Responses API](https://platform.openai.com/docs/api-reference/responses) 的特定功能（例如內建工具、web search preview，或 code interpreter）時，這會很有用。
 
 :::tip gpt-5.4+ + reasoning_effort + function tools
 
-LiteLLM drops `reasoning_effort` from `gpt-5.4` and newer (`gpt-5.4`, `gpt-5.5`, future 5.x releases) requests to `litellm.completion()` that include tools, since that combination is only supported in the Responses API.
+LiteLLM 會將 `reasoning_effort` 自 `gpt-5.4` 及更新版本（`gpt-5.4`、`gpt-5.5`、未來 5.x 版本）中包含 tools 的請求，降級為 `litellm.completion()`，因為這種組合僅支援於 Responses API。
 
-If you need reasoning **and** tools together, use the responses bridge instead (LiteLLM also auto-routes these requests to `/v1/responses` when both `tools` and `reasoning_effort` are set):
+如果您需要 reasoning **和** tools 同時使用，請改用 responses bridge（當 `tools` 和 `reasoning_effort` 都設定時，LiteLLM 也會自動將這些請求路由到 `/v1/responses`）：
 
 ```python
 response = litellm.completion(
@@ -793,25 +790,25 @@ response = litellm.completion(
 
 :::
 
-### When to use the `openai/responses/` prefix
+### 何時使用 `openai/responses/` 前綴 {#when-to-use-the-openairesponses-prefix}
 
-Each model has a `mode` property defined in [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) that determines which API endpoint it uses by default:
+每個模型都有在 [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中定義的 `mode` 屬性，用來決定預設使用哪個 API 端點：
 
-- **`mode: responses`** - Model automatically uses the Responses API
-- **`mode: chat`** - Model defaults to the Chat Completions API
+- **`mode: responses`** - 模型會自動使用 Responses API
+- **`mode: chat`** - 模型預設使用 Chat Completions API
 
-**Models with `mode: responses`** (automatic Responses API):
-- `o3-deep-research`, `o4-mini-deep-research`
-- `o1-pro`, `o3-pro`
-- `gpt-5.1-codex`, `gpt-5.1-codex-mini`, `gpt-5.1-codex-max`
+**具有 `mode: responses` 的模型**（自動使用 Responses API）：
+- `o3-deep-research`、`o4-mini-deep-research`
+- `o1-pro`、`o3-pro`
+- `gpt-5.1-codex`、`gpt-5.1-codex-mini`、`gpt-5.1-codex-max`
 - `codex-mini-latest`
 
-**Models with `mode: chat`** (require `openai/responses/` prefix for built-in tools):
-- `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, `gpt-4.1-mini`
-- `gpt-5`, `gpt-5-mini`
-- `o3`, `o4-mini`
+**具有 `mode: chat` 的模型**（內建工具需要 `openai/responses/` 前綴）：
+- `gpt-4o`、`gpt-4o-mini`、`gpt-4.1`、`gpt-4.1-mini`
+- `gpt-5`、`gpt-5-mini`
+- `o3`、`o4-mini`
 
-To use built-in tools like `web_search_preview` with `mode: chat` models, add the `openai/responses/` prefix:
+若要在 `mode: chat` 模型中使用像 `web_search_preview` 這類內建工具，請加上 `openai/responses/` 前綴：
 
 ```python
 # This will FAIL - gpt-4o has mode: chat, uses Chat Completions API
@@ -831,12 +828,12 @@ response = litellm.completion(
 )
 ```
 
-### Examples
+### 範例 {#examples}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-**Using a model with `mode: responses` (automatic):**
+**使用具有 `mode: responses` 的模型（自動）：**
 
 ```python
 import litellm
@@ -855,7 +852,7 @@ response = litellm.completion(
 print(response)
 ```
 
-**Using a model with `mode: chat` (requires prefix):**
+**使用具有 `mode: chat` 的模型（需要前綴）：**
 
 ```python
 import litellm
@@ -877,7 +874,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -894,13 +891,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -920,14 +917,13 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## OpenAI 音訊轉錄 {#openai-audio-transcription}
 
-## OpenAI Audio Transcription
+LiteLLM 支援 OpenAI Audio Transcription 端點。
 
-LiteLLM supports OpenAI Audio Transcription endpoint.
+支援的模型：
 
-Supported models:
-
-| Model Name                | Function Call                                                          |
+| 模型名稱                | 函式呼叫                                                          |
 |---------------------------|-----------------------------------------------------------------|
 | `whisper-1`    | `response = completion(model="whisper-1", file=audio_file)`     |
 | `gpt-4o-transcribe` | `response = completion(model="gpt-4o-transcribe", file=audio_file)` |
@@ -952,7 +948,7 @@ print(f"response: {response}")
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -967,13 +963,13 @@ general_settings:
   master_key: sk-1234
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl --location 'http://0.0.0.0:8000/v1/audio/transcriptions' \
@@ -983,19 +979,16 @@ curl --location 'http://0.0.0.0:8000/v1/audio/transcriptions' \
 ```
 
 
-
 </TabItem>
 </Tabs>
 
+## 進階 {#advanced}
 
+### 取得 OpenAI API 回應標頭 {#getting-openai-api-response-headers}
 
-## Advanced
+設定 `litellm.return_response_headers = True` 以從 OpenAI 取得原始回應標頭
 
-### Getting OpenAI API Response Headers 
-
-Set `litellm.return_response_headers = True` to get raw response headers from OpenAI
-
-You can expect to always get the `_response_headers` field from `litellm.completion()`, `litellm.embedding()` functions
+您可以預期會一直從 `litellm.completion()`、`litellm.embedding()` 函式取得 `_response_headers` 欄位
 
 <Tabs>
 <TabItem value="litellm.completion" label="litellm.completion">
@@ -1058,7 +1051,7 @@ print("embedding_response_headers=", embedding_response_headers)
 
 </TabItem>
 </Tabs>
-Expected Response Headers from OpenAI
+預期來自 OpenAI 的回應標頭
 
 ```json
 {
@@ -1089,8 +1082,8 @@ Expected Response Headers from OpenAI
 }
 ```
 
-### Parallel Function calling
-See a detailed walthrough of parallel function calling with litellm [here](https://docs.litellm.ai/docs/completion/function_call)
+### 平行函式呼叫 {#parallel-function-calling}
+請參閱使用 litellm 進行平行函式呼叫的詳細說明 [這裡](https://docs.litellm.ai/docs/completion/function_call)
 ```python
 import litellm
 import json
@@ -1143,7 +1136,7 @@ response_message = response.choices[0].message
 tool_calls = response.choices[0].message.tool_calls
 ```
 
-### Setting `extra_headers` for completion calls
+### 為 completion 呼叫設定 `extra_headers` {#setting-extra_headers-for-completion-calls}
 ```python
 import os 
 from litellm import completion
@@ -1157,11 +1150,11 @@ response = completion(
 )
 ```
 
-### Setting Organization-ID for completion calls
-This can be set in one of the following ways:
-- Environment Variable `OPENAI_ORGANIZATION`
-- Params to `litellm.completion(model=model, organization="your-organization-id")`
-- Set as `litellm.organization="your-organization-id"`
+### 為 completion 呼叫設定 Organization-ID {#setting-organization-id-for-completion-calls}
+可透過以下其中一種方式設定：
+- 環境變數 `OPENAI_ORGANIZATION`
+- 傳給 `litellm.completion(model=model, organization="your-organization-id")` 的參數
+- 設為 `litellm.organization="your-organization-id"`
 ```python
 import os 
 from litellm import completion
@@ -1175,12 +1168,12 @@ response = completion(
 )
 ```
 
-### Set `ssl_verify=False`
+### 設定 `ssl_verify=False` {#set-ssl_verifyfalse}
 
-This is done by setting your own `httpx.Client` 
+這是透過設定您自己的 `httpx.Client` 來完成
 
-- For `litellm.completion` set `litellm.client_session=httpx.Client(verify=False)`
-- For `litellm.acompletion` set `litellm.aclient_session=AsyncClient.Client(verify=False)`
+- 對於 `litellm.completion`，設定 `litellm.client_session=httpx.Client(verify=False)`
+- 對於 `litellm.acompletion`，設定 `litellm.aclient_session=AsyncClient.Client(verify=False)`
 ```python
 import litellm, httpx
 
@@ -1200,7 +1193,7 @@ response = litellm.acompletion(
 ```
 
 
-### Using OpenAI Proxy with LiteLLM
+### 搭配 LiteLLM 使用 OpenAI Proxy {#using-openai-proxy-with-litellm}
 ```python
 import os 
 import litellm
@@ -1220,15 +1213,15 @@ messages = [{ "content": "Hello, how are you?","role": "user"}]
 response = completion("openai/your-model-name", messages)
 ```
 
-If you need to set api_base dynamically, just pass it in completions instead - `completions(...,api_base="your-proxy-api-base")`
+如果您需要動態設定 api_base，只要改為在 completions 中傳入即可 - `completions(...,api_base="your-proxy-api-base")`
 
-For more check out [setting API Base/Keys](../set_keys.md)
+更多內容請參閱 [設定 API Base/Keys](../set_keys.md)
 
-### Forwarding Org ID for Proxy requests
+### 為 Proxy 請求轉送 Org ID {#forwarding-org-id-for-proxy-requests}
 
-Forward openai Org ID's from the client to OpenAI with `forward_openai_org_id` param. 
+使用 `forward_openai_org_id` 參數將 openai Org ID 從用戶端轉送到 OpenAI。
 
-1. Setup config.yaml 
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1241,7 +1234,7 @@ general_settings:
     forward_openai_org_id: true # 👈 KEY CHANGE
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```bash
 litellm --config config.yaml --detailed_debug
@@ -1249,7 +1242,7 @@ litellm --config config.yaml --detailed_debug
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Make OpenAI call
+3. 發出 OpenAI 呼叫
 
 ```python
 from openai import OpenAI
@@ -1262,24 +1255,24 @@ client = OpenAI(
 client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello world"}])
 ```
 
-In your logs you should see the forwarded org id
+在記錄中您應該會看到已轉送的 org id
 
 ```bash
 LiteLLM:DEBUG: utils.py:255 - Request to litellm:
 LiteLLM:DEBUG: utils.py:255 - litellm.acompletion(... organization='my-special-org',)
 ```
 
-## GPT-5 Pro Special Notes
+## GPT-5 Pro 特殊注意事項 {#gpt-5-pro-special-notes}
 
-GPT-5 Pro is OpenAI's most advanced reasoning model with unique characteristics:
+GPT-5 Pro 是 OpenAI 最先進的推理模型，具有獨特特性：
 
-- **Responses API Only**: GPT-5 Pro is only available through the `/v1/responses` endpoint
-- **No Streaming**: Does not support streaming responses
-- **High Reasoning**: Designed for complex reasoning tasks with highest effort reasoning
-- **Context Window**: 400,000 tokens input, 272,000 tokens output
-- **Pricing**: $15.00 input / $120.00 output per 1M tokens (Standard), $7.50 input / $60.00 output (Batch)
-- **Tools**: Supports Web Search, File Search, Image Generation, MCP (but not Code Interpreter or Computer Use)
-- **Modalities**: Text and Image input, Text output only
+- **僅限 Responses API**：GPT-5 Pro 僅可透過 `/v1/responses` 端點使用
+- **不支援串流**：不支援串流回應
+- **高推理能力**：專為複雜推理任務設計，具備最高 effort 推理
+- **上下文視窗**：400,000 個 tokens 輸入，272,000 個 tokens 輸出
+- **定價**：每 100 萬 tokens 輸入 $15.00 / 輸出 $120.00（標準），輸入 $7.50 / 輸出 $60.00（批次）
+- **工具**：支援 Web Search、File Search、Image Generation、MCP（但不支援 Code Interpreter 或 Computer Use）
+- **模態**：僅支援文字與圖片輸入、文字輸出
 
 ```python
 # GPT-5 Pro usage example
@@ -1289,8 +1282,8 @@ response = completion(
 )
 ```
 
-## Video Generation
+## 影片生成 {#video-generation}
 
-LiteLLM supports OpenAI's video generation models including Sora.
+LiteLLM 支援 OpenAI 的影片生成模型，包括 Sora。
 
-For detailed documentation on video generation, see [OpenAI Video Generation →](./openai/videos.md)
+如需影片生成的詳細文件，請參閱 [OpenAI Video Generation →](./openai/videos.md)

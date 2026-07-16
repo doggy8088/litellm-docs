@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Black Forest Labs Image Editing
+# Black Forest Labs 圖像編輯 {#black-forest-labs-image-editing}
 
-Black Forest Labs provides powerful image editing capabilities using their FLUX models to modify existing images based on text descriptions.
+Black Forest Labs 使用其 FLUX 模型提供強大的圖像編輯功能，可根據文字描述修改既有圖片。
 
-## Overview
+## 概觀 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Black Forest Labs Image Editing uses FLUX Kontext and other models to modify, inpaint, and expand images based on text prompts. |
-| Provider Route on LiteLLM | `black_forest_labs/` |
-| Provider Doc | [Black Forest Labs API ↗](https://docs.bfl.ai/) |
-| Supported Operations | [`/images/edits`](#image-editing) |
+| 說明 | Black Forest Labs Image Editing 使用 FLUX Kontext 與其他模型，根據文字提示修改、修補與擴展圖像。 |
+| LiteLLM 上的提供者路由 | `black_forest_labs/` |
+| 提供者文件 | [Black Forest Labs API ↗](https://docs.bfl.ai/) |
+| 支援的操作 | [`/images/edits`](#image-editing) |
 
-## Setup
+## 設定 {#setup}
 
-### API Key
+### API 金鑰 {#api-key}
 
 ```python showLineNumbers
 import os
@@ -25,23 +25,23 @@ import os
 os.environ["BFL_API_KEY"] = "your-api-key-here"
 ```
 
-Get your API key from [Black Forest Labs](https://blackforestlabs.ai/).
+請從 [Black Forest Labs](https://blackforestlabs.ai/) 取得您的 API 金鑰。
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Description | Use Case |
+| 模型名稱 | 說明 | 使用情境 |
 |------------|-------------|----------|
-| `black_forest_labs/flux-kontext-pro` | FLUX Kontext Pro - General image editing with prompts | General editing, style transfer |
-| `black_forest_labs/flux-kontext-max` | FLUX Kontext Max - Premium quality editing | High-quality edits |
-| `black_forest_labs/flux-pro-1.0-fill` | FLUX Pro Fill - Inpainting with mask | Remove/replace objects |
-| `black_forest_labs/flux-pro-1.0-expand` | FLUX Pro Expand - Outpainting | Expand image borders |
+| `black_forest_labs/flux-kontext-pro` | FLUX Kontext Pro - 透過提示進行一般圖像編輯 | 一般編輯、風格轉換 |
+| `black_forest_labs/flux-kontext-max` | FLUX Kontext Max - 高品質編輯 | 高品質修改 |
+| `black_forest_labs/flux-pro-1.0-fill` | FLUX Pro Fill - 使用遮罩進行修補 | 移除／替換物件 |
+| `black_forest_labs/flux-pro-1.0-expand` | FLUX Pro Expand - 外延繪製 | 擴展圖像邊界 |
 
-## Image Editing
+## 圖像編輯 {#image-editing}
 
-### Usage - LiteLLM Python SDK
+### 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
 <Tabs>
-<TabItem value="basic-edit" label="Basic Usage">
+<TabItem value="basic-edit" label="基本用法">
 
 ```python showLineNumbers title="Basic Image Editing"
 import os
@@ -63,7 +63,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="async-edit" label="Async Usage">
+<TabItem value="async-edit" label="非同步用法">
 
 ```python showLineNumbers title="Async Image Editing"
 import os
@@ -87,7 +87,7 @@ asyncio.run(edit_image())
 
 </TabItem>
 
-<TabItem value="inpainting" label="Inpainting (Fill)">
+<TabItem value="inpainting" label="修補（填補）">
 
 ```python showLineNumbers title="Inpainting with Mask"
 import os
@@ -111,7 +111,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="outpainting" label="Outpainting (Expand)">
+<TabItem value="outpainting" label="外延繪製（擴展）">
 
 ```python showLineNumbers title="Outpainting - Expand Image Borders"
 import os
@@ -136,7 +136,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="advanced" label="Advanced Parameters">
+<TabItem value="advanced" label="進階參數">
 
 ```python showLineNumbers title="Advanced Image Editing with BFL Parameters"
 import os
@@ -162,9 +162,9 @@ print(response.data[0].url)
 </TabItem>
 </Tabs>
 
-### Usage - LiteLLM Proxy Server
+### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-#### 1. Configure your config.yaml
+#### 1. 設定您的 config.yaml {#1-configure-your-configyaml}
 
 ```yaml showLineNumbers title="Black Forest Labs Image Editing Configuration"
 model_list:
@@ -200,7 +200,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start LiteLLM Proxy Server
+#### 2. 啟動 LiteLLM Proxy Server {#2-start-litellm-proxy-server}
 
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -208,7 +208,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Make image editing requests
+#### 3. 發出圖像編輯請求 {#3-make-image-editing-requests}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -247,55 +247,55 @@ curl --location 'http://localhost:4000/v1/images/edits' \
 </TabItem>
 </Tabs>
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-### OpenAI-Compatible Parameters
+### OpenAI 相容參數 {#openai-compatible-parameters}
 
-| Parameter | Type | Description | Default |
+| 參數 | 類型 | 說明 | 預設值 |
 |-----------|------|-------------|---------|
-| `image` | file | The image file to edit | Required |
-| `prompt` | string | Text description of the desired changes | Required |
-| `model` | string | The FLUX model to use | Required |
-| `mask` | file | Mask image for inpainting (flux-pro-1.0-fill) | Optional |
-| `n` | integer | Number of images (BFL returns 1 per request) | `1` |
-| `size` | string | Maps to aspect_ratio | Optional |
-| `response_format` | string | `url` or `b64_json` | `url` |
+| `image` | 檔案 | 要編輯的圖像檔案 | 必填 |
+| `prompt` | string | 所需變更的文字描述 | 必填 |
+| `model` | string | 要使用的 FLUX 模型 | 必填 |
+| `mask` | 檔案 | 用於修補的遮罩圖像（flux-pro-1.0-fill） | 選用 |
+| `n` | integer | 圖像數量（BFL 每次請求回傳 1 張） | `1` |
+| `size` | string | 對應至 aspect_ratio | 選用 |
+| `response_format` | string | `url` 或 `b64_json` | `url` |
 
-### Black Forest Labs Specific Parameters
+### Black Forest Labs 特定參數 {#black-forest-labs-specific-parameters}
 
-| Parameter | Type | Description | Default | Models |
+| 參數 | 類型 | 說明 | 預設值 | 模型 |
 |-----------|------|-------------|---------|--------|
-| `seed` | integer | Seed for reproducible results | Random | All |
-| `output_format` | string | Output format: `png` or `jpeg` | `png` | All |
-| `safety_tolerance` | integer | Safety filter tolerance (0-6) | 2 | All |
-| `aspect_ratio` | string | Output aspect ratio (e.g., `16:9`, `1:1`) | Original | Kontext models |
-| `steps` | integer | Number of inference steps | Model default | Fill |
-| `guidance` | float | Guidance scale | Model default | Fill |
-| `grow_mask` | integer | Pixels to grow mask | 0 | Fill |
-| `top` | integer | Pixels to expand at top | 0 | Expand |
-| `bottom` | integer | Pixels to expand at bottom | 0 | Expand |
-| `left` | integer | Pixels to expand at left | 0 | Expand |
-| `right` | integer | Pixels to expand at right | 0 | Expand |
+| `seed` | integer | 用於可重現結果的種子 | 隨機 | 全部 |
+| `output_format` | string | 輸出格式：`png` 或 `jpeg` | `png` | 全部 |
+| `safety_tolerance` | integer | 安全過濾器容忍度（0-6） | 2 | 全部 |
+| `aspect_ratio` | string | 輸出長寬比（例如：`16:9`、`1:1`） | 原始 | Kontext models |
+| `steps` | integer | 推理步數 | 模型預設值 | Fill |
+| `guidance` | float | 引導比例 | 模型預設值 | Fill |
+| `grow_mask` | integer | 遮罩擴張像素數 | 0 | Fill |
+| `top` | integer | 頂部擴展像素數 | 0 | 展開 |
+| `bottom` | integer | 底部擴展像素數 | 0 | 展開 |
+| `left` | integer | 左側擴展像素數 | 0 | 展開 |
+| `right` | integer | 右側擴展像素數 | 0 | 展開 |
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Black Forest Labs uses a polling-based API:
+Black Forest Labs 使用以輪詢為基礎的 API：
 
-1. **Submit Request**: LiteLLM sends your image and prompt to BFL
-2. **Get Task ID**: BFL returns a task ID and polling URL
-3. **Poll for Result**: LiteLLM automatically polls until the image is ready
-4. **Return Result**: The generated image URL is returned
+1. **提交請求**：LiteLLM 將您的圖像與提示送出至 BFL
+2. **取得任務 ID**：BFL 會回傳任務 ID 與輪詢 URL
+3. **輪詢結果**：LiteLLM 會自動輪詢，直到圖像準備完成
+4. **回傳結果**：回傳產生的圖像 URL
 
-This polling is handled automatically by LiteLLM - you just call `image_edit()` and get the result.
+這個輪詢流程由 LiteLLM 自動處理 - 您只需呼叫 `image_edit()` 並取得結果。
 
-## Getting Started
+## 快速開始 {#getting-started}
 
-1. Create an account at [Black Forest Labs](https://blackforestlabs.ai/)
-2. Get your API key from the dashboard
-3. Set your `BFL_API_KEY` environment variable
-4. Use `litellm.image_edit()` with any supported model
+1. 在 [Black Forest Labs](https://blackforestlabs.ai/) 建立帳號
+2. 從儀表板取得您的 API 金鑰
+3. 設定您的 `BFL_API_KEY` 環境變數
+4. 搭配任何支援的模型使用 `litellm.image_edit()`
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Black Forest Labs Documentation](https://docs.bfl.ai/)
-- [FLUX Model Information](https://blackforestlabs.ai/)
+- [Black Forest Labs 文件](https://docs.bfl.ai/)
+- [FLUX 模型資訊](https://blackforestlabs.ai/)

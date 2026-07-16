@@ -1,12 +1,12 @@
-# Azure AI Search - Vector Store (Passthrough API)
+# Azure AI Search - 向量儲存區（Passthrough API） {#azure-ai-search---vector-store-passthrough-api}
 
-Use this to allow developers to **create** and **search** vector stores using the Azure AI Search API in the **native** Azure AI Search API format, without giving them the Azure AI credentials.
+使用此功能可讓開發人員使用 Azure AI Search API，以 **原生** Azure AI Search API 格式來 **建立** 與 **搜尋** 向量儲存區，而無需提供 Azure AI 憑證。
 
-This is for the proxy only. 
+這僅供 proxy 使用。 
 
-## Admin Flow
+## 管理流程 {#admin-flow}
 
-### 1. Add the vector store to LiteLLM 
+### 1. 將向量儲存區新增至 LiteLLM  {#1-add-the-vector-store-to-litellm}
 
 ```yaml
 model_list:  
@@ -33,9 +33,9 @@ general_settings:
     master_key: "sk-1234"
 ```
 
-Add your vector store credentials to LiteLLM. 
+將您的向量儲存區憑證加入 LiteLLM。 
 
-### 2. Start the proxy. 
+### 2. 啟動 proxy。  {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Create a virtual index. 
+### 3. 建立虛擬索引。  {#3-create-a-virtual-index}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/indexes' \
@@ -59,9 +59,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/indexes' \
 }'
 ```
 
-This is a virtual index, which the developer can use to create and search vector stores.
+這是虛擬索引，開發人員可以使用它來建立與搜尋向量儲存區。
 
-### 4. Create a key with the vector store permissions. 
+### 4. 建立具備向量儲存區權限的金鑰。  {#4-create-a-key-with-the-vector-store-permissions}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -73,9 +73,9 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-Give the key access to the virtual index and the embedding model.
+讓此金鑰可存取虛擬索引與嵌入模型。
 
-**Expected response**
+**預期回應**
 
 ```json
 {
@@ -83,11 +83,11 @@ Give the key access to the virtual index and the embedding model.
 }
 ```
 
-## Developer Flow
+## 開發人員流程 {#developer-flow}
 
-### 1. Create a vector store with some documents. 
+### 1. 使用一些文件建立向量儲存區。  {#1-create-a-vector-store-with-some-documents}
 
-Note: Use the '/azure_ai' endpoint for the passthrough api that uses the `azure_ai` provider in your `_new_secret_config.yaml` file. 
+注意：請對使用 `azure_ai` 提供者的 passthrough api 使用 '/azure_ai' 端點，該提供者位於您的 `_new_secret_config.yaml` 檔案中。 
 
 ```python
 import requests
@@ -256,8 +256,7 @@ else:
 ```
 
 
-### 2. Search the vector store. 
-
+### 2. 搜尋向量儲存區。  {#2-search-the-vector-store}
 
 ```python
 import requests

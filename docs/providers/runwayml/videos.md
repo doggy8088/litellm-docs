@@ -1,8 +1,8 @@
-# RunwayML - Video Generation
+# RunwayML - 影片生成 {#runwayml---video-generation}
 
-LiteLLM supports RunwayML's Gen-4 video generation API, allowing you to generate videos from text prompts and images.
+LiteLLM 支援 RunwayML 的 Gen-4 影片生成 API，讓您可以從文字提示與圖片生成影片。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python showLineNumbers title="Basic Video Generation"
 from litellm import video_generation
@@ -23,9 +23,9 @@ print(f"Video ID: {response.id}")
 print(f"Status: {response.status}")
 ```
 
-## Authentication
+## 驗證 {#authentication}
 
-Set your RunwayML API key:
+設定您的 RunwayML API 金鑰：
 
 ```python showLineNumbers title="Set API Key"
 import os
@@ -33,17 +33,17 @@ import os
 os.environ["RUNWAYML_API_KEY"] = "your-api-key"
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | Model to use (e.g., `runwayml/gen4_turbo`) |
-| `prompt` | string | Yes | Text description for the video |
-| `input_reference` | string/file | Yes | URL or file path to reference image |
-| `seconds` | int | No | Video duration (5 or 10 seconds) |
-| `size` | string | No | Video dimensions (`1280x720` or `720x1280`). Can also use `ratio` format (`1280:720`) |
+| `model` | string | 是 | 要使用的模型（例如 `runwayml/gen4_turbo`） |
+| `prompt` | string | 是 | 影片的文字描述 |
+| `input_reference` | string/file | 是 | 參考圖片的 URL 或檔案路徑 |
+| `seconds` | int | 否 | 影片長度（5 或 10 秒） |
+| `size` | string | 否 | 影片尺寸（`1280x720` 或 `720x1280`）。也可使用 `ratio` 格式（`1280:720`） |
 
-## Complete Workflow
+## 完整工作流程 {#complete-workflow}
 
 ```python showLineNumbers title="Complete Video Generation Workflow"
 from litellm import video_generation, video_status, video_content
@@ -88,7 +88,7 @@ with open("generated_video.mp4", "wb") as f:
 print("Video saved successfully!")
 ```
 
-## Async Usage
+## 非同步使用 {#async-usage}
 
 ```python showLineNumbers title="Async Video Generation"
 from litellm import avideo_generation, avideo_status, avideo_content
@@ -135,9 +135,9 @@ async def generate_video():
 asyncio.run(generate_video())
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM Proxy 使用方式 {#litellm-proxy-usage}
 
-Add RunwayML to your proxy configuration:
+將 RunwayML 新增至您的 proxy 設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -147,13 +147,13 @@ model_list:
       api_key: os.environ/RUNWAYML_API_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-Generate videos through the proxy:
+透過 proxy 生成影片：
 
 ```bash showLineNumbers title="Proxy Request"
 curl --location 'http://localhost:4000/v1/videos' \
@@ -167,14 +167,14 @@ curl --location 'http://localhost:4000/v1/videos' \
 }'
 ```
 
-Check video status:
+檢查影片狀態：
 
 ```bash showLineNumbers title="Check Status"
 curl --location 'http://localhost:4000/v1/videos/{video_id}' \
 --header 'x-litellm-api-key: sk-1234'
 ```
 
-Download video content:
+下載影片內容：
 
 ```bash showLineNumbers title="Download Video"
 curl --location 'http://localhost:4000/v1/videos/{video_id}/content' \
@@ -182,13 +182,13 @@ curl --location 'http://localhost:4000/v1/videos/{video_id}/content' \
 --output video.mp4
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model | Description | Duration | Aspect Ratios |
+| 模型 | 說明 | 長度 | 長寬比 |
 |-------|-------------|----------|---------------|
-| `runwayml/gen4_turbo` | Fast video generation | 5-10s | 1280x720, 720x1280 |
+| `runwayml/gen4_turbo` | 快速影片生成 | 5-10 秒 | 1280x720, 720x1280 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python showLineNumbers title="Error Handling"
 from litellm import video_generation, video_status
@@ -227,9 +227,9 @@ except Exception as e:
     print(f"Error: {str(e)}")
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM automatically tracks RunwayML video generation costs:
+LiteLLM 會自動追蹤 RunwayML 影片生成成本：
 
 ```python showLineNumbers title="Cost Tracking"
 from litellm import video_generation, completion_cost
@@ -247,20 +247,19 @@ cost = completion_cost(completion_response=response)
 print(f"Video generation cost: ${cost}")
 ```
 
-## API Reference
+## API 參考 {#api-reference}
 
-For complete API details, see the [OpenAI Video Generation API specification](https://platform.openai.com/docs/guides/video-generation) which LiteLLM follows.
+如需完整 API 詳情，請參閱 LiteLLM 所遵循的 [OpenAI Video Generation API specification](https://platform.openai.com/docs/guides/video-generation)。
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Video Generation | ✅ |
-| Image-to-Video | ✅ |
-| Status Checking | ✅ |
-| Content Download | ✅ |
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Fallbacks | ✅ |
-| Load Balancing | ✅ |
-
+| 影片生成 | ✅ |
+| 圖片轉影片 | ✅ |
+| 狀態檢查 | ✅ |
+| 內容下載 | ✅ |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 備援 | ✅ |
+| 負載平衡 | ✅ |

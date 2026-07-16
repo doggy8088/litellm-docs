@@ -1,49 +1,49 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Anthropic Effort Parameter
+# Anthropic Effort 參數 {#anthropic-effort-parameter}
 
-Control how many tokens Claude uses when responding with the `effort` parameter, trading off between response thoroughness and token efficiency.
+透過 `effort` 參數控制 Claude 在回應時使用多少 token，在回應完整性與 token 效率之間取得取捨。
 
-## Overview
+## 概觀 {#overview}
 
-The `effort` parameter allows you to control how eager Claude is about spending tokens when responding to requests. This gives you the ability to trade off between response thoroughness and token efficiency, all with a single model.
+`effort` 參數可讓您控制 Claude 在回應請求時願意花費多少 token。這使您能夠僅使用單一模型，在回應完整性與 token 效率之間做取捨。
 
-**Supported models:**
-- **Claude 4.6** (Opus 4.6, Sonnet 4.6) — `output_config` is a stable API feature, no beta header needed. Opus 4.6 also supports `effort="max"`.
-- **Claude Opus 4.5** — requires the `effort-2025-11-24` beta header (automatically added by LiteLLM).
+**支援的模型：**
+- **Claude 4.6**（Opus 4.6、Sonnet 4.6）— `output_config` 是穩定版 API 功能，不需要 beta 標頭。Opus 4.6 也支援 `effort="max"`。
+- **Claude Opus 4.5** — 需要 `effort-2025-11-24` beta 標頭（LiteLLM 會自動加入）。
 
-LiteLLM automatically maps `reasoning_effort` → `output_config={"effort": ...}` for all supported models.
+LiteLLM 會自動將所有支援模型的 `reasoning_effort` → `output_config={"effort": ...}`。
 
-## How Effort Works
+## Effort 的運作方式 {#how-effort-works}
 
-By default, Claude uses maximum effort—spending as many tokens as needed for the best possible outcome. By lowering the effort level, you can instruct Claude to be more conservative with token usage, optimizing for speed and cost while accepting some reduction in capability.
+預設情況下，Claude 會使用最大 effort——在最佳可能結果所需的範圍內盡可能花費最多 token。降低 effort 等級後，您可以指示 Claude 在 token 使用上更保守，進而以部分能力降低為代價，最佳化速度與成本。
 
-**Tip**: Setting `effort` to `"high"` produces exactly the same behavior as omitting the `effort` parameter entirely.
+**提示**：將 `effort` 設為 `"high"`，產生的行為與完全省略 `effort` 參數相同。
 
-The effort parameter affects **all tokens** in the response, including:
-- Text responses and explanations
-- Tool calls and function arguments
-- Extended thinking (when enabled)
+effort 參數會影響回應中的**所有 token**，包括：
+- 文字回應與說明
+- 工具呼叫與函式引數
+- 延伸思考（啟用時）
 
-This approach has two major advantages:
-1. It doesn't require thinking to be enabled in order to use it.
-2. It can affect all token spend including tool calls. For example, lower effort would mean Claude makes fewer tool calls.
+這種做法有兩大優點：
+1. 不需要啟用 thinking 也能使用。
+2. 它可以影響所有 token 花費，包括工具呼叫。例如，較低的 effort 代表 Claude 會發出較少的工具呼叫。
 
-This gives a much greater degree of control over efficiency.
+這提供了更高程度的效率控制。
 
-## Effort Levels
+## Effort 等級 {#effort-levels}
 
-| Level | Description | Typical use case |
+| 等級 | 說明 | 典型使用情境 |
 |-------|-------------|------------------|
-| `max` | Maximum capability beyond high — Claude uses even more tokens for the most thorough outcome. **Only supported by Claude Opus 4.6.** | The hardest reasoning problems, complex multi-step research |
-| `high` | Maximum capability—Claude uses as many tokens as needed for the best possible outcome. Equivalent to not setting the parameter. | Complex reasoning, difficult coding problems, agentic tasks |
-| `medium` | Balanced approach with moderate token savings. | Agentic tasks that require a balance of speed, cost, and performance |
-| `low` | Most efficient—significant token savings with some capability reduction. | Simpler tasks that need the best speed and lowest costs, such as subagents |
+| `max` | 超越 high 的最大能力 — Claude 會使用更多 token 以獲得最完整的結果。**僅支援 Claude Opus 4.6。** | 最困難的推理問題、複雜的多步驟研究 |
+| `high` | 最大能力—Claude 會在最佳可能結果所需的範圍內盡可能使用最多 token。等同於未設定此參數。 | 複雜推理、困難的程式設計問題、代理式任務 |
+| `medium` | 兼顧效能與適度 token 節省的平衡做法。 | 需要在速度、成本與效能之間取得平衡的代理式任務 |
+| `low` | 最有效率—在部分能力降低下可大幅節省 token。 | 需要最佳速度與最低成本的較簡單任務，例如子代理 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Using LiteLLM SDK
+### 使用 LiteLLM SDK {#using-litellm-sdk}
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -105,7 +105,7 @@ console.log(response.content[0].text);
 </TabItem>
 </Tabs>
 
-### Using LiteLLM Proxy
+### 使用 LiteLLM Proxy {#using-litellm-proxy}
 
 ```bash
 curl http://localhost:4000/v1/chat/completions \
@@ -121,10 +121,10 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-### Direct Anthropic API Call
+### 直接呼叫 Anthropic API {#direct-anthropic-api-call}
 
 <Tabs>
-<TabItem value="46" label="Claude 4.6 (stable)">
+<TabItem value="46" label="Claude 4.6（穩定版）">
 
 ```bash
 # Claude 4.6 — no beta header needed
@@ -146,7 +146,7 @@ curl https://api.anthropic.com/v1/messages \
 ```
 
 </TabItem>
-<TabItem value="45" label="Claude Opus 4.5 (beta)">
+<TabItem value="45" label="Claude Opus 4.5（beta）">
 
 ```bash
 # Claude Opus 4.5 — requires beta header
@@ -171,33 +171,33 @@ curl https://api.anthropic.com/v1/messages \
 </TabItem>
 </Tabs>
 
-## Model Compatibility
+## 模型相容性 {#model-compatibility}
 
-The effort parameter is supported by:
-- **Claude Opus 4.6** (`claude-opus-4-6`) — supports `high`, `medium`, `low`, and `max`
-- **Claude Sonnet 4.6** (`claude-sonnet-4-6`) — supports `high`, `medium`, `low`
-- **Claude Opus 4.5** (`claude-opus-4-5-20251101`) — supports `high`, `medium`, `low`
+effort 參數支援：
+- **Claude Opus 4.6**（`claude-opus-4-6`）— 支援 `high`、`medium`、`low`，以及 `max`
+- **Claude Sonnet 4.6**（`claude-sonnet-4-6`）— 支援 `high`、`medium`、`low`
+- **Claude Opus 4.5**（`claude-opus-4-5-20251101`）— 支援 `high`、`medium`、`low`
 
 :::info
-`effort="max"` is only available on Claude Opus 4.6. Using it with other models will raise a validation error.
+`effort="max"` 僅可在 Claude Opus 4.6 上使用。與其他模型一起使用時，會引發驗證錯誤。
 :::
 
-## When Should I Adjust the Effort Parameter?
+## 我應該何時調整 Effort 參數？ {#when-should-i-adjust-the-effort-parameter}
 
-- Use **high effort** (the default) when you need Claude's best work—complex reasoning, nuanced analysis, difficult coding problems, or any task where quality is the top priority.
+- 當您需要 Claude 的最佳表現時，使用**高 effort**（預設值）——例如複雜推理、細膩分析、困難的程式設計問題，或任何品質最重要的任務。
 
-- Use **medium effort** as a balanced option when you want solid performance without the full token expenditure of high effort.
+- 當您希望在不完全達到高 effort 的 token 花費下仍保有穩定效能時，使用**中等 effort**作為平衡選項。
 
-- Use **low effort** when you're optimizing for speed (because Claude answers with fewer tokens) or cost—for example, simple classification tasks, quick lookups, or high-volume use cases where marginal quality improvements don't justify additional latency or spend.
+- 當您優先考量速度（因為 Claude 會以較少的 token 回應）或成本時，使用**低 effort**——例如簡單分類任務、快速查詢，或大量使用情境，且額外延遲或花費無法合理化邊際品質提升時。
 
-## Effort with Tool Use
+## 與工具使用搭配的 Effort {#effort-with-tool-use}
 
-When using tools, the effort parameter affects both the explanations around tool calls and the tool calls themselves. Lower effort levels tend to:
-- Combine multiple operations into fewer tool calls
-- Make fewer tool calls
-- Proceed directly to action
+使用工具時，effort 參數會同時影響工具呼叫周圍的說明以及工具呼叫本身。較低的 effort 等級通常會：
+- 將多個操作合併成較少的工具呼叫
+- 發出較少的工具呼叫
+- 直接採取行動
 
-Example with tools:
+工具使用範例：
 
 ```python
 import litellm
@@ -226,9 +226,9 @@ response = litellm.completion(
 )
 ```
 
-## Effort with Extended Thinking
+## 與延伸思考搭配的 Effort {#effort-with-extended-thinking}
 
-The effort parameter works seamlessly with extended thinking. When both are enabled, effort controls the token budget across all response types:
+effort 參數可與延伸思考無縫搭配運作。當兩者都啟用時，effort 會控制所有回應類型的 token 預算：
 
 ```python
 import litellm
@@ -243,34 +243,34 @@ response = litellm.completion(
 )
 ```
 
-## Best Practices
+## 最佳實務 {#best-practices}
 
-1. **Start with the default (high)** for new tasks, then experiment with lower effort levels if you're looking to optimize costs.
+1. **新任務先從預設值（高）開始**，如果您想最佳化成本，再嘗試較低的 effort 等級。
 
-2. **Use medium effort for production agentic workflows** where you need a balance of quality and efficiency.
+2. **生產環境的代理式工作流程使用中等 effort**，以便在品質與效率之間取得平衡。
 
-3. **Reserve low effort for high-volume, simple tasks** like classification, routing, or data extraction where speed matters more than nuanced responses.
+3. **低 effort 保留給大量、簡單的任務**，例如分類、路由或資料擷取，因為速度比細膩回應更重要。
 
-4. **Monitor token usage** to understand the actual savings from different effort levels for your specific use cases.
+4. **監控 token 使用量**，以了解不同 effort 等級在您的特定使用情境下所帶來的實際節省。
 
-5. **Test with your specific prompts** as the impact of effort levels can vary based on task complexity.
+5. **使用您的特定 prompts 進行測試**，因為 effort 等級的影響會依任務複雜度而有所不同。
 
-## Provider Support
+## 提供者支援 {#provider-support}
 
-The effort parameter is supported across all Anthropic-compatible providers:
+effort 參數可跨所有相容 Anthropic 的提供者使用：
 
-- **Standard Anthropic API**: ✅ Supported (Claude 4.6, Opus 4.5)
-- **Azure Anthropic / Microsoft Foundry**: ✅ Supported (Claude 4.6, Opus 4.5)
-- **Amazon Bedrock**: ✅ Supported (Claude 4.6, Opus 4.5)
-- **Google Cloud Vertex AI**: ✅ Supported (Claude 4.6, Opus 4.5)
+- **Standard Anthropic API**：✅ 支援（Claude 4.6、Opus 4.5）
+- **Azure Anthropic / Microsoft Foundry**：✅ 支援（Claude 4.6、Opus 4.5）
+- **Amazon Bedrock**：✅ 支援（Claude 4.6、Opus 4.5）
+- **Google Cloud Vertex AI**：✅ 支援（Claude 4.6、Opus 4.5）
 
-LiteLLM automatically handles:
-- Parameter mapping: `reasoning_effort` → `output_config={"effort": ...}` for all supported models
-- Beta header injection (`effort-2025-11-24`) only for Claude Opus 4.5 (not needed for 4.6 models)
+LiteLLM 會自動處理：
+- 參數對應：`reasoning_effort` → `output_config={"effort": ...}`，適用於所有支援模型
+- beta 標頭注入（`effort-2025-11-24`）僅適用於 Claude Opus 4.5（4.6 模型不需要）
 
-## Usage and Pricing
+## 使用方式與計價 {#usage-and-pricing}
 
-Token usage with different effort levels is tracked in the standard usage object. Lower effort levels result in fewer output tokens, which directly reduces costs:
+不同 effort 等級的 token 使用量會記錄在標準用量物件中。較低的 effort 等級會產生較少的輸出 token，進而直接降低成本：
 
 ```python
 response = litellm.completion(
@@ -283,23 +283,23 @@ print(f"Output tokens: {response.usage.completion_tokens}")
 print(f"Total tokens: {response.usage.total_tokens}")
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Beta header not being added (Claude Opus 4.5)
+### 未加入 beta 標頭（Claude Opus 4.5） {#beta-header-not-being-added-claude-opus-45}
 
-LiteLLM automatically adds the `effort-2025-11-24` beta header for Claude Opus 4.5 when `reasoning_effort` or `output_config` is provided.
+當提供 `reasoning_effort` 或 `output_config` 時，LiteLLM 會自動為 Claude Opus 4.5 加入 `effort-2025-11-24` beta 標頭。
 
-**Note:** Claude 4.6 models do NOT need a beta header — `output_config` is a stable API feature for these models.
+**注意：** Claude 4.6 模型不需要 beta 標頭——`output_config` 是這些模型的穩定版 API 功能。
 
-If you're not seeing the header for Opus 4.5:
+如果您在 Opus 4.5 看不到此標頭：
 
-1. Ensure you're using `reasoning_effort` parameter
-2. Verify the model is Claude Opus 4.5
-3. Check that LiteLLM version supports this feature
+1. 確認您使用的是 `reasoning_effort` 參數
+2. 驗證模型是否為 Claude Opus 4.5
+3. 檢查 LiteLLM 版本是否支援此功能
 
-### Invalid effort value error
+### 無效的 effort 值錯誤 {#invalid-effort-value-error}
 
-Accepted values: `"high"`, `"medium"`, `"low"`, and `"max"` (Opus 4.6 only). Any other value will raise a validation error:
+可接受的值：`"high"`、`"medium"`、`"low"`，以及 `"max"`（僅限 Opus 4.6）。任何其他值都會引發驗證錯誤：
 
 ```python
 # ❌ This will raise an error
@@ -315,20 +315,19 @@ litellm.completion(model="anthropic/claude-sonnet-4-6", reasoning_effort="max", 
 litellm.completion(model="anthropic/claude-opus-4-6", reasoning_effort="max", ...)
 ```
 
-### Model not supported
+### 不支援的模型 {#model-not-supported}
 
-The effort parameter is supported by Claude Opus 4.6, Sonnet 4.6, and Opus 4.5. Using it with other models may result in the parameter being ignored or an error.
+Claude Opus 4.6、Sonnet 4.6，以及 Opus 4.5 都支援 effort 參數。與其他模型一起使用時，可能會導致該參數被忽略或產生錯誤。
 
-## Related Features
+## 相關功能 {#related-features}
 
-- [Extended Thinking](/docs/providers/anthropic_extended_thinking) - Control Claude's reasoning process
-- [Tool Use](/docs/providers/anthropic_tools) - Enable Claude to use tools and functions
-- [Programmatic Tool Calling](/docs/providers/anthropic_programmatic_tool_calling) - Let Claude write code that calls tools
-- [Prompt Caching](/docs/providers/anthropic_prompt_caching) - Cache prompts to reduce costs
+- [延伸思考](/docs/providers/anthropic_extended_thinking) - 控制 Claude 的推理流程
+- [工具使用](/docs/providers/anthropic_tools) - 讓 Claude 使用工具與函式
+- [程式化工具呼叫](/docs/providers/anthropic_programmatic_tool_calling) - 讓 Claude 撰寫可呼叫工具的程式碼
+- [Prompt 快取](/docs/providers/anthropic_prompt_caching) - 快取 prompts 以降低成本
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Anthropic Effort Documentation](https://docs.anthropic.com/en/docs/build-with-claude/effort)
-- [LiteLLM Anthropic Provider Guide](/docs/providers/anthropic)
-- [Cost Optimization Best Practices](/docs/guides/cost_optimization)
-
+- [Anthropic Effort 文件](https://docs.anthropic.com/en/docs/build-with-claude/effort)
+- [LiteLLM Anthropic 提供者指南](/docs/providers/anthropic)
+- [成本最佳化最佳實務](/docs/guides/cost_optimization)

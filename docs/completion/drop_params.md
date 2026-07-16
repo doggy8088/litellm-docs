@@ -1,19 +1,19 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Drop Unsupported Params 
+# 移除不支援的參數  {#drop-unsupported-params}
 
-Drop unsupported OpenAI params by your LLM Provider.
+依據您的 LLM 提供者移除不支援的 OpenAI 參數。
 
-## Default Behavior
+## 預設行為 {#default-behavior}
 
-**By default, LiteLLM raises an exception** if you send a parameter to a model that doesn't support it. 
+**預設情況下，LiteLLM 會擲回例外**，如果您將某個參數傳給不支援該參數的模型。 
 
-For example, if you send `temperature=0.2` to a model that doesn't support the `temperature` parameter, LiteLLM will raise an exception.
+例如，如果您將 `temperature=0.2` 傳給不支援 `temperature` 參數的模型，LiteLLM 會擲回例外。
 
-**When `drop_params=True` is set**, LiteLLM will drop the unsupported parameter instead of raising an exception. This allows your code to work seamlessly across different providers without having to customize parameters for each one.
+**當 `drop_params=True` 已設定時**，LiteLLM 會移除不支援的參數，而不是擲回例外。這讓您的程式碼能在不同提供者之間順暢運作，而不需要為每個提供者自訂參數。
 
-## Quick Start 
+## 快速開始  {#quick-start}
 
 ```python 
 import litellm 
@@ -32,22 +32,22 @@ response = litellm.completion(
 ```
 
 
-LiteLLM maps all supported openai params by provider + model (e.g. function calling is supported by anthropic on bedrock but not titan). 
+LiteLLM 會依據提供者 + 模型對應所有支援的 openai 參數（例如，function calling 在 bedrock 上的 anthropic 支援，但 titan 不支援）。 
 
-See `litellm.get_supported_openai_params("command-r")` [**Code**](https://github.com/BerriAI/litellm/blob/main/litellm/utils.py#L3584)
+請參閱 `litellm.get_supported_openai_params("command-r")` [**程式碼**](https://github.com/BerriAI/litellm/blob/main/litellm/utils.py#L3584)
 
-If a provider/model doesn't support a particular param, you can drop it. 
+如果某個提供者/模型不支援特定參數，您可以將其移除。 
 
-## OpenAI Proxy Usage
+## OpenAI Proxy 使用方式 {#openai-proxy-usage}
 
 ```yaml
 litellm_settings:
     drop_params: true
 ```
 
-## Pass drop_params in `completion(..)`
+## 在 `completion(..)` 中傳入 drop_params {#pass-drop_params-in-completion}
 
-Just drop_params when calling specific models 
+在呼叫特定模型時直接傳入 drop_params 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -79,11 +79,11 @@ response = litellm.completion(
 </TabItem>
 </Tabs>
 
-## Specify params to drop 
+## 指定要移除的參數  {#specify-params-to-drop}
 
-To drop specific params when calling a provider (E.g. 'logit_bias' for vllm)
+在呼叫提供者時移除特定參數（例如 vllm 的 'logit_bias'）
 
-Use `additional_drop_params`
+使用 `additional_drop_params`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -115,11 +115,11 @@ response = litellm.completion(
 </TabItem>
 </Tabs>
 
-**additional_drop_params**: List or null - Is a list of openai params you want to drop when making a call to the model.
+**additional_drop_params**：List 或 null - 這是一個您希望在呼叫模型時移除的 openai 參數清單。
 
-### Nested Field Removal
+### 巢狀欄位移除 {#nested-field-removal}
 
-Drop nested fields within complex objects using JSONPath-like notation:
+使用類似 JSONPath 的表示法，移除複雜物件中的巢狀欄位：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -154,29 +154,27 @@ model_list:
 </TabItem>
 </Tabs>
 
-**Supported syntax:**
-- `field` - Top-level field
-- `parent.child` - Nested object field
-- `array[*]` - All array elements
-- `array[0]` - Specific array index
-- `tools[*].input_examples` - Field in all array elements
-- `tools[0].metadata.field` - Specific index + nested field
+**支援的語法：**
+- `field` - 頂層欄位
+- `parent.child` - 巢狀物件欄位
+- `array[*]` - 所有陣列元素
+- `array[0]` - 特定陣列索引
+- `tools[*].input_examples` - 所有陣列元素中的欄位
+- `tools[0].metadata.field` - 特定索引 + 巢狀欄位
 
-**Example use cases:**
-- Remove `input_examples` from tool definitions (Claude Code + AWS Bedrock)
-- Drop provider-specific fields from nested structures
-- Clean up nested parameters before sending to LLM
+**使用範例：**
+- 從工具定義中移除 `input_examples`（Claude Code + AWS Bedrock）
+- 移除巢狀結構中的提供者特定欄位
+- 在傳送給 LLM 之前清理巢狀參數
 
-## Specify allowed openai params in a request
+## 在請求中指定允許的 openai 參數 {#specify-allowed-openai-params-in-a-request}
 
-Tell litellm to allow specific openai params in a request. Use this if you get a `litellm.UnsupportedParamsError` and want to allow a param. LiteLLM will pass the param as is to the model.
-
-
+告訴 litellm 在請求中允許特定的 openai 參數。如果您收到 `litellm.UnsupportedParamsError` 並希望允許某個參數，請使用此功能。LiteLLM 會原樣將該參數傳遞給模型。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
 
-In this example we pass `allowed_openai_params=["tools"]` to allow the `tools` param.
+在此範例中，我們傳入 `allowed_openai_params=["tools"]`，以允許 `tools` 參數。
 
 ```python showLineNumbers title="Pass allowed_openai_params to LiteLLM Python SDK"
 await litellm.acompletion(
@@ -191,13 +189,13 @@ await litellm.acompletion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-When using litellm proxy you can pass `allowed_openai_params` in two ways:
+使用 litellm proxy 時，您可以透過兩種方式傳入 `allowed_openai_params`：
 
-1. Dynamically pass `allowed_openai_params` in a request
-2. Set `allowed_openai_params` on the config.yaml file for a specific model
+1. 在請求中動態傳入 `allowed_openai_params`
+2. 在特定模型的 config.yaml 檔案中設定 `allowed_openai_params`
 
-#### Dynamically pass allowed_openai_params in a request
-In this example we pass `allowed_openai_params=["tools"]` to allow the `tools` param for a request sent to the model set on the proxy.
+#### 在請求中動態傳入 allowed_openai_params {#dynamically-pass-allowed_openai_params-in-a-request}
+在此範例中，我們傳入 `allowed_openai_params=["tools"]`，以允許送往 proxy 上設定之模型的請求使用 `tools` 參數。
 
 ```python showLineNumbers title="Dynamically pass allowed_openai_params in a request"
 import openai
@@ -223,9 +221,9 @@ response = client.chat.completions.create(
 )
 ```
 
-#### Set allowed_openai_params on config.yaml
+#### 在 config.yaml 中設定 allowed_openai_params {#set-allowed_openai_params-on-configyaml}
 
-You can also set `allowed_openai_params` on the config.yaml file for a specific model. This means that all requests to this deployment are allowed to pass in the `tools` param.
+您也可以在特定模型的 config.yaml 檔案中設定 `allowed_openai_params`。這表示所有對此部署的請求都允許傳入 `tools` 參數。
 
 ```yaml showLineNumbers title="Set allowed_openai_params on config.yaml"
 model_list:

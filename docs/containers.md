@@ -1,31 +1,31 @@
-# /containers
+# /containers {#containers}
 
-Manage OpenAI code interpreter containers (sessions) for executing code in isolated environments.
+管理用於在隔離環境中執行程式碼的 OpenAI code interpreter containers（sessions）。
 
 :::tip
-Looking for how to use Code Interpreter? See the [Code Interpreter Guide](/docs/guides/code_interpreter).
+想了解如何使用 Code Interpreter？請參閱 [Code Interpreter 指南](/docs/guides/code_interpreter)。
 :::
 
-| Feature | Supported | 
+| 功能 | 支援情況 | 
 |---------|-----------|
-| Cost Tracking | ✅ |
-| Logging | ✅ (Full request/response logging) |
-| Load Balancing | ✅ |
-| Proxy Server Support | ✅ Full proxy integration with virtual keys |
-| Spend Management | ✅ Budget tracking and rate limiting |
-| Supported Providers | `openai`|
+| 成本追蹤 | ✅ |
+| 記錄 | ✅（完整請求/回應記錄） |
+| 負載平衡 | ✅ |
+| Proxy Server 支援 | ✅ 與虛擬金鑰的完整 proxy 整合 |
+| 支出管理 | ✅ 預算追蹤與速率限制 |
+| 支援的提供者 | `openai`|
 
 :::tip
 
-Containers provide isolated execution environments for code interpreter sessions. You can create, list, retrieve, and delete containers.
+containers 提供 code interpreter sessions 的隔離執行環境。您可以建立、列出、擷取與刪除 containers。
 
 :::
 
-## **LiteLLM Python SDK Usage**
+## **LiteLLM Python SDK 用法** {#litellm-python-sdk-usage}
 
-### Quick Start
+### 快速開始 {#quick-start}
 
-**Create a Container**
+**建立 Container**
 
 ```python
 import litellm
@@ -47,7 +47,7 @@ print(f"Container ID: {container.id}")
 print(f"Container Name: {container.name}")
 ```
 
-### Async Usage
+### 非同步用法 {#async-usage}
 
 ```python
 from litellm import acreate_container
@@ -68,7 +68,7 @@ print(f"Container ID: {container.id}")
 print(f"Container Name: {container.name}")
 ```
 
-### List Containers
+### 列出 Containers {#list-containers}
 
 ```python
 from litellm import list_containers
@@ -87,7 +87,7 @@ for container in containers.data:
     print(f"  - {container.id}: {container.name}")
 ```
 
-**Async Usage:**
+**非同步用法：**
 
 ```python
 from litellm import alist_containers
@@ -103,7 +103,7 @@ for container in containers.data:
     print(f"  - {container.id}: {container.name}")
 ```
 
-### Retrieve a Container
+### 擷取 Container {#retrieve-a-container}
 
 ```python
 from litellm import retrieve_container
@@ -121,7 +121,7 @@ print(f"Status: {container.status}")
 print(f"Created: {container.created_at}")
 ```
 
-**Async Usage:**
+**非同步用法：**
 
 ```python
 from litellm import aretrieve_container
@@ -136,7 +136,7 @@ print(f"Status: {container.status}")
 print(f"Created: {container.created_at}")
 ```
 
-### Delete a Container
+### 刪除 Container {#delete-a-container}
 
 ```python
 from litellm import delete_container
@@ -153,7 +153,7 @@ print(f"Deleted: {result.deleted}")
 print(f"Container ID: {result.id}")
 ```
 
-**Async Usage:**
+**非同步用法：**
 
 ```python
 from litellm import adelete_container
@@ -167,14 +167,14 @@ print(f"Deleted: {result.deleted}")
 print(f"Container ID: {result.id}")
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 用法** {#litellm-proxy-usage}
 
-LiteLLM provides OpenAI API compatible container endpoints for managing code interpreter sessions:
+LiteLLM 提供與 OpenAI API 相容的 container 端點，用於管理 code interpreter sessions：
 
-- `/v1/containers` - Create and list containers
-- `/v1/containers/{container_id}` - Retrieve and delete containers
+- `/v1/containers` - 建立與列出 containers
+- `/v1/containers/{container_id}` - 擷取與刪除 containers
 
-**Setup**
+**設定**
 
 ```bash
 $ export OPENAI_API_KEY="sk-..."
@@ -184,15 +184,15 @@ $ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Custom Provider Specification**
+**自訂提供者規格**
 
-You can specify the custom LLM provider in multiple ways (priority order):
-1. Header: `-H "custom-llm-provider: openai"`
-2. Query param: `?custom_llm_provider=openai`
-3. Request body: `{"custom_llm_provider": "openai", ...}`
-4. Defaults to "openai" if not specified
+您可以用多種方式指定自訂 LLM 提供者（優先順序）：
+1. 標頭：`-H "custom-llm-provider: openai"`
+2. 查詢參數：`?custom_llm_provider=openai`
+3. 請求本文：`{"custom_llm_provider": "openai", ...}`
+4. 若未指定，預設為 "openai"
 
-**Create a Container**
+**建立 Container**
 
 ```bash
 # Default provider (openai)
@@ -229,34 +229,34 @@ curl -X POST "http://localhost:4000/v1/containers?custom_llm_provider=openai" \
     }'
 ```
 
-**List Containers**
+**列出 Containers**
 
 ```bash
 curl "http://localhost:4000/v1/containers?limit=20&order=desc" \
     -H "Authorization: Bearer sk-1234"
 ```
 
-**Retrieve a Container**
+**擷取 Container**
 
 ```bash
 curl "http://localhost:4000/v1/containers/cntr_123..." \
     -H "Authorization: Bearer sk-1234"
 ```
 
-**Delete a Container**
+**刪除 Container**
 
 ```bash
 curl -X DELETE "http://localhost:4000/v1/containers/cntr_123..." \
     -H "Authorization: Bearer sk-1234"
 ```
 
-## **Using OpenAI Client with LiteLLM Proxy**
+## **在 LiteLLM Proxy 中使用 OpenAI Client** {#using-openai-client-with-litellm-proxy}
 
-You can use the standard OpenAI Python client to interact with LiteLLM's container endpoints. This provides a familiar interface while leveraging LiteLLM's proxy features.
+您可以使用標準的 OpenAI Python client 與 LiteLLM 的 container 端點互動。這提供了熟悉的介面，同時運用 LiteLLM 的 proxy 功能。
 
-### Setup
+### 設定 {#setup}
 
-First, configure your OpenAI client to point to your LiteLLM proxy:
+首先，將您的 OpenAI client 設定為指向您的 LiteLLM proxy：
 
 ```python
 from openai import OpenAI
@@ -267,7 +267,7 @@ client = OpenAI(
 )
 ```
 
-### Create a Container
+### 建立 Container {#create-a-container}
 
 ```python
 container = client.containers.create(
@@ -284,7 +284,7 @@ print(f"Container Name: {container.name}")
 print(f"Created at: {container.created_at}")
 ```
 
-### List Containers
+### 列出 Containers {#list-containers-1}
 
 ```python
 containers = client.containers.list(
@@ -297,7 +297,7 @@ for container in containers.data:
     print(f"  - {container.id}: {container.name}")
 ```
 
-### Retrieve a Container
+### 擷取 Container {#retrieve-a-container-1}
 
 ```python
 container = client.containers.retrieve(
@@ -310,7 +310,7 @@ print(f"Status: {container.status}")
 print(f"Last active: {container.last_active_at}")
 ```
 
-### Delete a Container
+### 刪除 Container {#delete-a-container-1}
 
 ```python
 result = client.containers.delete(
@@ -322,9 +322,9 @@ print(f"Deleted: {result.deleted}")
 print(f"Container ID: {result.id}")
 ```
 
-### Complete Workflow Example
+### 完整工作流程範例 {#complete-workflow-example}
 
-Here's a complete example showing the full container management workflow:
+以下是一個展示完整 container 管理工作流程的完整範例：
 
 ```python
 from openai import OpenAI
@@ -379,38 +379,38 @@ result = client.containers.delete(
 print(f"Deleted: {result.deleted}")
 ```
 
-## Container Parameters
+## Container 參數 {#container-parameters}
 
-### Create Container Parameters
+### 建立 Container 參數 {#create-container-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `name` | string | Yes | Name of the container |
-| `expires_after` | object | No | Container expiration settings |
-| `expires_after.anchor` | string | No | Anchor point for expiration (e.g., "last_active_at") |
-| `expires_after.minutes` | integer | No | Minutes until expiration from anchor |
-| `file_ids` | array | No | List of file IDs to include in the container |
-| `custom_llm_provider` | string | No | LLM provider to use (default: "openai") |
+| `name` | string | 是 | container 的名稱 |
+| `expires_after` | object | 否 | container 到期設定 |
+| `expires_after.anchor` | string | 否 | 到期的錨點（例如 "last_active_at"） |
+| `expires_after.minutes` | integer | 否 | 從錨點算起到到期的分鐘數 |
+| `file_ids` | array | 否 | 要包含在 container 中的檔案 ID 清單 |
+| `custom_llm_provider` | string | 否 | 要使用的 LLM 提供者（預設："openai"） |
 
-### List Container Parameters
+### 列出 Container 參數 {#list-container-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `after` | string | No | Cursor for pagination |
-| `limit` | integer | No | Number of items to return (1-100, default: 20) |
-| `order` | string | No | Sort order: "asc" or "desc" (default: "desc") |
-| `custom_llm_provider` | string | No | LLM provider to use (default: "openai") |
+| `after` | string | 否 | 分頁游標 |
+| `limit` | integer | 否 | 要回傳的項目數量（1-100，預設：20） |
+| `order` | string | 否 | 排序順序："asc" 或 "desc"（預設："desc"） |
+| `custom_llm_provider` | string | 否 | 要使用的 LLM 提供者（預設："openai"） |
 
-### Retrieve/Delete Container Parameters
+### 擷取/刪除 Container 參數 {#retrievedelete-container-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `container_id` | string | Yes | ID of the container to retrieve/delete |
-| `custom_llm_provider` | string | No | LLM provider to use (default: "openai") |
+| `container_id` | string | 是 | 要擷取/刪除的 container ID |
+| `custom_llm_provider` | string | 否 | 要使用的 LLM 提供者（預設："openai"） |
 
-## Response Objects
+## 回應物件 {#response-objects}
 
-### ContainerObject
+### 容器物件 {#containerobject}
 
 ```json
 {
@@ -425,7 +425,7 @@ print(f"Deleted: {result.deleted}")
 }
 ```
 
-### ContainerListResponse
+### 容器清單回應 {#containerlistresponse}
 
 ```json
 {
@@ -445,7 +445,7 @@ print(f"Deleted: {result.deleted}")
 }
 ```
 
-### DeleteContainerResult
+### 刪除容器結果 {#deletecontainerresult}
 
 ```json
 {
@@ -455,20 +455,19 @@ print(f"Deleted: {result.deleted}")
 }
 ```
 
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-| Provider    | Support Status | Notes |
+| 提供者    | 支援狀態 | 備註 |
 |-------------|----------------|-------|
-| OpenAI      | ✅ Supported   | Full support for all container operations |
+| OpenAI      | ✅ 支援   | 完整支援所有 container 操作 |
 
 :::info
 
-Currently, only OpenAI supports container management for code interpreter sessions. Support for additional providers may be added in the future.
+目前，只有 OpenAI 支援用於 code interpreter sessions 的 container 管理。未來可能會新增對其他提供者的支援。
 
 :::
 
-## Related
+## 相關內容 {#related}
 
-- [Container Files API](/docs/container_files) - Manage files within containers
-- [Code Interpreter Guide](/docs/guides/code_interpreter) - Using Code Interpreter with LiteLLM
-
+- [Container Files API](/docs/container_files) - 管理 containers 內的檔案
+- [Code Interpreter 指南](/docs/guides/code_interpreter) - 在 LiteLLM 中使用 Code Interpreter

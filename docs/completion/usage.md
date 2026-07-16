@@ -1,6 +1,6 @@
-# Usage 
+# 使用 {#usage}
 
-LiteLLM returns the OpenAI compatible usage object across all providers.
+LiteLLM 會在所有提供者之間回傳與 OpenAI 相容的 usage 物件。
 
 ```bash
 "usage": {
@@ -10,7 +10,7 @@ LiteLLM returns the OpenAI compatible usage object across all providers.
   }
 ```
 
-## Quick Start 
+## 快速開始 {#quick-start}
 
 ```python
 from litellm import completion
@@ -26,12 +26,11 @@ response = completion(
 
 print(response.usage)
 ```
-> **Note:** LiteLLM supports endpoint bridging—if a model does not natively support a requested endpoint, LiteLLM will automatically route the call to the correct supported endpoint (such as bridging `/chat/completions` to `/responses` or vice versa) based on the model's `mode`set in `model_prices_and_context_window`.
+> **注意：** LiteLLM 支援 endpoint bridge——如果某個模型原生不支援請求的 endpoint，LiteLLM 會根據模型在 `model_prices_and_context_window` 中設定的 `mode`，自動將呼叫路由到正確支援的 endpoint（例如將 `/chat/completions` bridge 到 `/responses`，或反之）。
 
-## Streaming Usage
+## 串流使用量 {#streaming-usage}
 
-if `stream_options={"include_usage": True}` is set, an additional chunk will be streamed before the data: [DONE] message. The usage field on this chunk shows the token usage statistics for the entire request, and the choices field will always be an empty array. All other chunks will also include a usage field, but with a null value.
-
+如果 `stream_options={"include_usage": True}` 已設定，在 data: [DONE] 訊息之前還會額外串流一個 chunk。這個 chunk 上的 usage 欄位會顯示整個請求的 token 使用統計，而 choices 欄位一律會是空陣列。所有其他 chunk 也會包含 usage 欄位，但其值為 null。
 
 ```python
 from litellm import completion 
@@ -51,38 +50,38 @@ for chunk in completion:
 
 ```
 
-### Proxy: Always Include Streaming Usage
+### Proxy：一律包含串流使用量 {#proxy-always-include-streaming-usage}
 
-When using the LiteLLM Proxy, you can configure it to automatically include usage information in all streaming responses, even if the client doesn't send `stream_options={"include_usage": True}`.
+使用 LiteLLM Proxy 時，您可以將其設定為在所有串流回應中自動包含 usage 資訊，即使用戶端沒有送出 `stream_options={"include_usage": True}` 也是如此。
 
-#### Configuration
+#### 設定 {#configuration}
 
-Add the following to your config.yaml:
+將下列內容加入您的 config.yaml：
 
 ```yaml
 general_settings:
   always_include_stream_usage: true
 ```
 
-Alternatively, configure it through the UI:
+或者，也可以透過 UI 進行設定：
 
-1. Navigate to the LiteLLM Proxy UI
-2. Go to `Settings` >  `Router Settings` > `General`
-3. Find the `always_include_stream_usage` setting
-4. Toggle it to `true`
-5. Click `Update` to save
+1. 前往 LiteLLM Proxy UI
+2. 進入 `Settings` >  `Router Settings` > `General`
+3. 找到 `always_include_stream_usage` 設定
+4. 將其切換為 `true`
+5. 點擊 `Update` 以儲存
 
-#### How it works
+#### 運作方式 {#how-it-works}
 
-When `always_include_stream_usage` is enabled:
-- All streaming requests will automatically have `stream_options={"include_usage": True}` added
-- Clients will receive usage information in the final chunk, even if they didn't explicitly request it
-- If a client already provides `stream_options`, `include_usage: True` will be added without overwriting other options
-- Non-streaming requests are not affected
+當 `always_include_stream_usage` 啟用時：
+- 所有串流請求都會自動加入 `stream_options={"include_usage": True}`
+- 用戶端會在最後一個 chunk 中收到 usage 資訊，即使他們沒有明確請求
+- 如果用戶端已經提供 `stream_options`，`include_usage: True` 也會被加入，而不會覆寫其他選項
+- 非串流請求不受影響
 
-#### Example
+#### 範例 {#example}
 
-With this setting enabled, a simple streaming request like:
+啟用此設定後，像這樣簡單的串流請求：
 
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -95,6 +94,6 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Will automatically receive usage information in the response, without needing to explicitly include `stream_options`.
+將會自動在回應中收到 usage 資訊，而無需明確包含 `stream_options`。
 
 ```

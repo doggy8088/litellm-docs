@@ -1,8 +1,8 @@
-# Firecrawl Search
+# Firecrawl 搜尋 {#firecrawl-search}
 
-**Get API Key:** [https://firecrawl.dev](https://firecrawl.dev)
+**取得 API 金鑰：** [https://firecrawl.dev](https://firecrawl.dev)
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Firecrawl Search"
 import os
@@ -17,9 +17,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -35,7 +35,7 @@ search_tools:
       api_key: os.environ/FIRECRAWL_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/firecrawl-search \
@@ -55,7 +55,7 @@ curl http://0.0.0.0:4000/v1/search/firecrawl-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Firecrawl Search with Provider-specific Parameters"
 import os
@@ -82,35 +82,35 @@ response = search(
 )
 ```
 
-## Features
+## 功能 {#features}
 
-Firecrawl combines web search with powerful scraping capabilities:
+Firecrawl 結合了網頁搜尋與強大的擷取能力：
 
-### Multiple Sources
-Search across different sources simultaneously:
-- `web` - Web search results (default)
-- `images` - Image search results
-- `news` - News search results with dates
+### 多重來源 {#multiple-sources}
+同時跨不同來源搜尋：
+- `web` - 網頁搜尋結果（預設）
+- `images` - 圖片搜尋結果
+- `news` - 附日期的新聞搜尋結果
 
-### Category Filtering
-Filter results by specific categories:
-- `github` - Search within GitHub repositories, code, issues, and documentation
-- `research` - Search academic and research websites (arXiv, Nature, IEEE, PubMed, etc.)
-- `pdf` - Search for PDFs
+### 類別篩選 {#category-filtering}
+依特定類別篩選結果：
+- `github` - 在 GitHub repositories、code、issues 與文件中搜尋
+- `research` - 搜尋學術與研究網站（arXiv、Nature、IEEE、PubMed 等）
+- `pdf` - 搜尋 PDF
 
-### Time-Based Search
-Use the `tbs` parameter to filter by time periods:
-- `qdr:h` - Past hour
-- `qdr:d` - Past day
-- `qdr:w` - Past week
-- `qdr:m` - Past month
-- `qdr:y` - Past year
+### 依時間搜尋 {#time-based-search}
+使用 `tbs` 參數依時間區間篩選：
+- `qdr:h` - 過去一小時
+- `qdr:d` - 過去一天
+- `qdr:w` - 過去一週
+- `qdr:m` - 過去一個月
+- `qdr:y` - 過去一年
 
-### Content Scraping
-Firecrawl automatically scrapes full page content for search results when `scrapeOptions` is specified. By default, LiteLLM requests markdown format with main content only.
+### 內容擷取 {#content-scraping}
+當指定 `scrapeOptions` 時，Firecrawl 會自動為搜尋結果擷取完整頁面內容。預設情況下，LiteLLM 會請求僅包含主要內容的 markdown 格式。
 
-### Geo-Targeting
-Combine `location` and `country` parameters for geo-targeted results:
+### 地理定位 {#geo-targeting}
+結合 `location` 和 `country` 參數以取得地理定位結果：
 ```python
 response = search(
     query="restaurants",
@@ -120,18 +120,17 @@ response = search(
 )
 ```
 
-## Supported Query Operators
+## 支援的查詢運算子 {#supported-query-operators}
 
-Firecrawl supports advanced search operators:
+Firecrawl 支援進階搜尋運算子：
 
-| Operator    | Functionality                                             | Example                         |
-| ----------- | --------------------------------------------------------- | ------------------------------- |
-| ""          | Non-fuzzy matches a string of text                        | "Firecrawl"                     |
-| \-          | Excludes certain keywords                                 | \-bad, \-site:example.com       |
-| site:       | Only returns results from a specified website             | site:firecrawl.dev              |
-| inurl:      | Only returns results that include a word in the URL       | inurl:firecrawl                 |
-| allinurl:   | Only returns results that include multiple words in URL   | allinurl:git firecrawl          |
-| intitle:    | Only returns results with a word in the title             | intitle:Firecrawl               |
-| allintitle: | Only returns results with multiple words in the title     | allintitle:firecrawl playground |
-| related:    | Only returns results related to a specific domain         | related:firecrawl.dev           |
-
+| 運算子    | 功能                                                   | 範例                            |
+| --------- | ------------------------------------------------------ | ------------------------------- |
+| ""        | 不使用模糊比對，精確比對一段文字                         | "Firecrawl"                     |
+| \-        | 排除特定關鍵字                                          | \-bad, \-site:example.com       |
+| site:      | 僅傳回來自指定網站的結果                                 | site:firecrawl.dev              |
+| inurl:     | 僅傳回 URL 中包含某個字詞的結果                           | inurl:firecrawl                 |
+| allinurl:   | 僅傳回 URL 中包含多個字詞的結果                           | allinurl:git firecrawl          |
+| intitle:    | 僅傳回標題中包含某個字詞的結果                           | intitle:Firecrawl               |
+| allintitle: | 僅傳回標題中包含多個字詞的結果                           | allintitle:firecrawl playground |
+| related:    | 僅傳回與特定網域相關的結果                               | related:firecrawl.dev           |

@@ -1,32 +1,32 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock Batches
+# Bedrock 批次 {#bedrock-batches}
 
-Use Amazon Bedrock Batch Inference API through LiteLLM.
+透過 LiteLLM 使用 Amazon Bedrock Batch Inference API。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Amazon Bedrock Batch Inference allows you to run inference on large datasets asynchronously |
-| Provider Doc | [AWS Bedrock Batch Inference ↗](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html) |
-| Cost Tracking | ✅ Supported |
+| 說明 | Amazon Bedrock Batch Inference 可讓您非同步地對大型資料集執行推論 |
+| 提供者文件 | [AWS Bedrock Batch Inference ↗](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html) |
+| 成本追蹤 | ✅ 支援 |
 
-## Overview
+## 概覽 {#overview}
 
-Use this to:
+可將其用於：
 
-- Run batch inference on large datasets with Bedrock models
-- Control batch model access by key/user/team (same as chat completion models)
-- Manage S3 storage for batch input/output files
+- 使用 Bedrock 模型對大型資料集執行批次推論
+- 依金鑰／使用者／團隊控制批次模型存取權（與聊天補全模型相同）
+- 管理批次輸入／輸出檔案的 S3 儲存空間
 
-## (Proxy Admin) Usage
+## （Proxy 管理員）用法 {#proxy-admin-usage}
 
-Here's how to give developers access to your Bedrock Batch models.
+以下說明如何讓開發者存取您的 Bedrock Batch 模型。
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
-- Specify `mode: batch` for each model: Allows developers to know this is a batch model
-- Configure S3 bucket and AWS credentials for batch operations
+- 為每個模型指定 `mode: batch`：讓開發者知道這是批次模型
+- 設定 S3 儲存貯體與 AWS 憑證以進行批次作業
 
 ```yaml showLineNumbers title="litellm_config.yaml"
 model_list:
@@ -46,24 +46,24 @@ model_list:
       mode: batch # 👈 SPECIFY MODE AS BATCH, to tell user this is a batch model
 ```
 
-**Required Parameters:**
+**必要參數：**
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `s3_bucket_name` | S3 bucket for batch input/output files |
-| `s3_region_name` | AWS region for S3 bucket |
-| `s3_access_key_id` | AWS access key for S3 bucket |
-| `s3_secret_access_key` | AWS secret key for S3 bucket |
-| `aws_batch_role_arn` | IAM role ARN for Bedrock batch operations. Bedrock Batch APIs require an IAM role ARN to be set. |
-| `mode: batch` | Indicates to LiteLLM this is a batch model |
+| `s3_bucket_name` | 用於批次輸入／輸出檔案的 S3 儲存貯體 |
+| `s3_region_name` | S3 儲存貯體的 AWS 區域 |
+| `s3_access_key_id` | S3 儲存貯體的 AWS 存取金鑰 |
+| `s3_secret_access_key` | S3 儲存貯體的 AWS 密鑰 |
+| `aws_batch_role_arn` | Bedrock 批次作業的 IAM role ARN。Bedrock Batch API 需要設定 IAM role ARN。 |
+| `mode: batch` | 表示這是批次模型，供 LiteLLM 辨識 |
 
-**Optional Parameters:**
+**選用參數：**
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `s3_encryption_key_id` | Custom KMS encryption key ID for S3 output data. If not specified, Bedrock uses AWS managed encryption keys. |
+| `s3_encryption_key_id` | S3 輸出資料的自訂 KMS 加密金鑰 ID。若未指定，Bedrock 會使用 AWS 管理的加密金鑰。 |
 
-### 2. Create Virtual Key
+### 2. 建立虛擬金鑰 {#2-create-virtual-key}
 
 ```bash showLineNumbers title="create_virtual_key.sh"
 curl -L -X POST 'https://{PROXY_BASE_URL}/key/generate' \
@@ -72,32 +72,32 @@ curl -L -X POST 'https://{PROXY_BASE_URL}/key/generate' \
 -d '{"models": ["bedrock-batch-claude"]}'
 ```
 
-You can now use the virtual key to access the batch models (See Developer flow).
+您現在可以使用虛擬金鑰存取批次模型（請參閱開發者流程）。
 
-## (Developer) Usage
+## （開發者）用法 {#developer-usage}
 
-Here's how to create a LiteLLM managed file and execute Bedrock Batch CRUD operations with the file.
+以下說明如何建立 LiteLLM 管理的檔案，並使用該檔案執行 Bedrock Batch CRUD 作業。
 
-### 1. Create request.jsonl
+### 1. 建立 request.jsonl {#1-create-requestjsonl}
 
-- Check models available via `/model_group/info`
-- See all models with `mode: batch`
-- Set `model` in .jsonl to the model from `/model_group/info`
+- 透過 `/model_group/info` 檢查可用模型
+- 使用 `mode: batch` 查看所有模型
+- 在 .jsonl 中將 `model` 設為來自 `/model_group/info` 的模型
 
 ```json showLineNumbers title="bedrock_batch_completions.jsonl"
 {"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "bedrock-batch-claude", "messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_tokens": 1000}}
 {"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "bedrock-batch-claude", "messages": [{"role": "system", "content": "You are an unhelpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_tokens": 1000}}
 ```
 
-Expectation:
+預期：
 
-- LiteLLM translates this to the bedrock deployment specific value (e.g. `bedrock/us.anthropic.claude-3-5-sonnet-20240620-v1:0`)
+- LiteLLM 會將其轉換為 bedrock 部署專用值（例如 `bedrock/us.anthropic.claude-3-5-sonnet-20240620-v1:0`）
 
-### 2. Upload File
+### 2. 上傳檔案 {#2-upload-file}
 
-Specify `target_model_names: "<model-name>"` to enable LiteLLM managed files and request validation.
+指定 `target_model_names: "<model-name>"` 以啟用 LiteLLM 管理的檔案與請求驗證。
 
-model-name should be the same as the model-name in the request.jsonl
+model-name 應與 request.jsonl 中的 model-name 相同
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -133,11 +133,11 @@ curl http://localhost:4000/v1/files \
 </TabItem>
 </Tabs>
 
-**Where is the file written?**:
+**檔案會寫到哪裡？**：
 
-The file is written to S3 bucket specified in your config and prepared for Bedrock batch inference.
+檔案會寫入您在 config 中指定的 S3 儲存貯體，並為 Bedrock 批次推論做好準備。
 
-### 3. Create the batch
+### 3. 建立批次 {#3-create-the-batch}
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -172,9 +172,9 @@ curl http://localhost:4000/v1/batches \
 </TabItem>
 </Tabs>
 
-### 4. Retrieve batch results
+### 4. 取得批次結果 {#4-retrieve-batch-results}
 
-Once the batch job is completed, download the results from S3:
+批次工作完成後，請從 S3 下載結果：
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -238,9 +238,9 @@ print(result.text)
 </TabItem>
 </Tabs>
 
-**Output Format:**
+**輸出格式：**
 
-The batch output file is in JSONL format with each line containing:
+批次輸出檔案為 JSONL 格式，每一行包含：
 
 ```json
 {
@@ -263,23 +263,23 @@ The batch output file is in JSONL format with each line containing:
 }
 ```
 
-## FAQ
+## 常見問題 {#faq}
 
-### Where are my files written?
+### 我的檔案會寫到哪裡？ {#where-are-my-files-written}
 
-When a `target_model_names` is specified, the file is written to the S3 bucket configured in your Bedrock batch model configuration.
+當指定 `target_model_names` 時，檔案會寫入您在 Bedrock 批次模型組態中設定的 S3 儲存貯體。
 
-### What models are supported?
+### 支援哪些模型？ {#what-models-are-supported}
 
-LiteLLM only supports Bedrock Anthropic Models for Batch API. If you want other bedrock models file an issue [here](https://github.com/BerriAI/litellm/issues/new/choose).
+LiteLLM 目前僅支援 Bedrock Anthropic 模型的 Batch API。如果您想要其他 bedrock 模型，請在 [這裡](https://github.com/BerriAI/litellm/issues/new/choose) 提出 issue。
 
-### How do I use a custom KMS encryption key?
+### 我要如何使用自訂 KMS 加密金鑰？ {#how-do-i-use-a-custom-kms-encryption-key}
 
-If your S3 bucket requires a custom KMS encryption key, you can specify it in your configuration using `s3_encryption_key_id`. This is useful for enterprise customers with specific encryption requirements.
+如果您的 S3 儲存貯體需要自訂 KMS 加密金鑰，您可以在設定中使用 `s3_encryption_key_id` 指定。這對於有特定加密需求的企業客戶很有用。
 
-You can set the encryption key in 2 ways:
+您可以用 2 種方式設定加密金鑰：
 
-1. **In config.yaml** (recommended):
+1. **在 config.yaml 中**（建議）：
 ```yaml
 model_list:
   - model_name: "bedrock-batch-claude"
@@ -289,15 +289,14 @@ model_list:
       # ... other params
 ```
 
-2. **As an environment variable**:
+2. **作為環境變數**：
 ```bash
 export AWS_S3_ENCRYPTION_KEY_ID=arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012
 ```
 
 
+## 延伸閱讀 {#further-reading}
 
-## Further Reading
-
-- [AWS Bedrock Batch Inference Documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html)
-- [LiteLLM Managed Batches](../proxy/managed_batches)
-- [LiteLLM Authentication to Bedrock](https://docs.litellm.ai/docs/providers/bedrock#boto3---authentication)
+- [AWS Bedrock Batch Inference 文件](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html)
+- [LiteLLM 管理的批次](../proxy/managed_batches)
+- [LiteLLM 對 Bedrock 的驗證](https://docs.litellm.ai/docs/providers/bedrock#boto3---authentication)

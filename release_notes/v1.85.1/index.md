@@ -1,5 +1,5 @@
 ---
-title: "v1.85.1 - Gemini 3.5 Flash & Reliability Fixes"
+title: "v1.85.1 - Gemini 3.5 Flash 與可靠性修正"
 slug: "v1-85-1"
 date: 2026-05-20T00:00:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,30 +43,30 @@ pip install litellm==1.85.1
 </TabItem>
 </Tabs>
 
-`v1.85.1` is a patch release on top of [`v1.85.0`](/release_notes/v1.85.0/v1-85-0). It adds day-0 support for Gemini 3.5 Flash and ships two reliability fixes — cross-pod spend accuracy and Vertex AI tool calling.
+`v1.85.1` 是建立在 [`v1.85.0`](/release_notes/v1.85.0/v1-85-0) 之上的修補版發行。它為 Gemini 3.5 Flash 新增 day-0 支援，並提供兩項可靠性修正——跨叢集節點支出準確性與 Vertex AI 工具呼叫。
 
-## New Models / Updated Models
+## 新模型 / 更新模型 {#new-models--updated-models}
 
-#### New Model Support (1 new model)
+#### 新模型支援（1 個新模型） {#new-model-support-1-new-model}
 
-| Provider | Model | Context Window | Input ($/1M tokens) | Output ($/1M tokens) | Features |
+| 提供者 | 模型 | 上下文視窗 | 輸入（$/百萬 tokens） | 輸出（$/百萬 tokens） | 功能 |
 | --- | --- | --- | --- | --- | --- |
-| Gemini / Vertex AI | `gemini/gemini-3.5-flash`, `vertex_ai/gemini-3.5-flash` | 1M | $1.50 | $9.00 | Reasoning, vision, audio input, PDF input, prompt caching, web search, function calling, response schema |
+| Gemini / Vertex AI | `gemini/gemini-3.5-flash`, `vertex_ai/gemini-3.5-flash` | 1M | $1.50 | $9.00 | Reasoning、vision、audio input、PDF input、prompt caching、web search、function calling、response schema |
 
-#### Features
+#### 功能 {#features}
 
 - **[Gemini](../../docs/providers/gemini)** / **[Vertex AI](../../docs/providers/vertex)**
-    - Day-0 support for Gemini 3.5 Flash on both Google AI Studio and Vertex AI - [PR #28268](https://github.com/BerriAI/litellm/pull/28268)
+    - Gemini 3.5 Flash 於 Google AI Studio 與 Vertex AI 皆提供 day-0 支援 - [PR #28268](https://github.com/BerriAI/litellm/pull/28268)
 
-### Bug Fixes
+### 錯誤修正 {#bug-fixes}
 
 - **[Vertex AI](../../docs/providers/vertex)**
-    - Omit the `function_call` / `function_response` `id` on Vertex Gemini 3.5+ tool turns, fixing HTTP 400 `Unknown name "id"` errors. Google AI Studio (`gemini` provider) still forwards the `id` on Gemini 3.5+ for strict tool-call matching - [PR #28324](https://github.com/BerriAI/litellm/pull/28324)
+    - 在 Vertex Gemini 3.5+ 的工具回合中省略 `function_call` / `function_response` `id`，修正 HTTP 400 `Unknown name "id"` 錯誤。Google AI Studio（`gemini` 提供者）仍會在 Gemini 3.5+ 上轉送 `id`，以符合嚴格的工具呼叫比對 - [PR #28324](https://github.com/BerriAI/litellm/pull/28324)
 
-## Spend Tracking, Budgets and Rate Limiting
+## 支出追蹤、預算與速率限制 {#spend-tracking-budgets-and-rate-limiting}
 
-- Seed the Redis spend counter via `SET NX` instead of `INCRBYFLOAT` to prevent cross-pod double-seeding. On multi-pod deployments this previously caused team `spend` to jump to ~Nx the pod count after a Redis cache miss / TTL expiry, triggering false "Budget Crossed" alerts - [PR #27854](https://github.com/BerriAI/litellm/pull/27854)
+- 透過 `SET NX` 而非 `INCRBYFLOAT` 來初始化 Redis 支出計數器，以防止跨叢集節點重複初始化。在多節點部署中，這過去會在 Redis 快取失敗 / TTL 到期後，導致團隊 `spend` 飆升至約節點數的 Nx，進而觸發錯誤的「Budget Crossed」警示 - [PR #27854](https://github.com/BerriAI/litellm/pull/27854)
 
-## Full Changelog
+## 完整變更紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.85.0...v1.85.1

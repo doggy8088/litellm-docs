@@ -2,21 +2,21 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Control Model Access with OIDC (Azure AD/Keycloak/etc.)
+# 使用 OIDC（Azure AD/Keycloak/etc.）控管模型存取 {#control-model-access-with-oidc-azure-adkeycloaketc}
 
 :::info
 
-✨ JWT Auth is on LiteLLM Enterprise
+✨ JWT Auth 僅適用於 LiteLLM Enterprise
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業價格](https://www.litellm.ai/#pricing)
 
-[Get free 7-day trial key](https://www.litellm.ai/enterprise#trial)
+[取得 7 天免費試用金鑰](https://www.litellm.ai/enterprise#trial)
 
 :::
 
 <Image img={require('../../img/control_model_access_jwt.png')} style={{ width: '100%', maxWidth: '4000px' }} />
 
-## Example Token 
+## 範例 Token  {#example-token}
 
 <Tabs>
 <TabItem value="Azure AD">
@@ -47,7 +47,7 @@ import TabItem from '@theme/TabItem';
 </TabItem>
 </Tabs>
 
-## Proxy Configuration
+## Proxy 設定 {#proxy-configuration}
 
 <Tabs>
 <TabItem value="Azure AD">
@@ -100,17 +100,16 @@ model_list:
 </TabItem>
 </Tabs>
 
+## 運作方式 {#how-it-works}
 
-## How it works
+1. 指定 JWT_PUBLIC_KEY_URL - 這是您的 OpenID 提供者的公開金鑰端點。對於 Azure AD，為 `https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys`。對於 Keycloak，為 `{keycloak_base_url}/realms/{your-realm}/protocol/openid-connect/certs`。
 
-1. Specify JWT_PUBLIC_KEY_URL - This is the public keys endpoint of your OpenID provider. For Azure AD it's `https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys`. For Keycloak it's `{keycloak_base_url}/realms/{your-realm}/protocol/openid-connect/certs`.
+1. 將 JWT 角色對應至 LiteLLM 角色 - 透過 `user_roles_jwt_field` 和 `user_allowed_roles` 完成
+    -  目前僅支援 `internal_user` 進行角色對應。 
+2. 指定模型存取： 
+    - `role_permissions`：控管每個角色可允許使用的模型。 
+        - `role`：用來控管存取權的 LiteLLM 角色。允許的角色 = ["internal_user", "proxy_admin", "team"]
+        - `models`：該角色允許存取的模型清單。 
+    - `model_list`：proxy 上的父層模型清單。[了解更多](./configs.md#llm-configs-model_list)
 
-1. Map JWT roles to LiteLLM roles - Done via `user_roles_jwt_field` and `user_allowed_roles`
-    -  Currently just `internal_user` is supported for role mapping. 
-2. Specify model access: 
-    - `role_permissions`: control what models are allowed for each role. 
-        - `role`: the LiteLLM role to control access for. Allowed roles = ["internal_user", "proxy_admin", "team"]
-        - `models`: list of models that the role is allowed to access. 
-    - `model_list`: parent list of models on the proxy. [Learn more](./configs.md#llm-configs-model_list)
-
-3. Model Checks: The proxy will run validation checks on the received JWT. [Code](https://github.com/BerriAI/litellm/blob/3a4f5b23b5025b87b6d969f2485cc9bc741f9ba6/litellm/proxy/auth/user_api_key_auth.py#L284)
+3. 模型檢查：proxy 會對接收到的 JWT 執行驗證檢查。[程式碼](https://github.com/BerriAI/litellm/blob/3a4f5b23b5025b87b6d969f2485cc9bc741f9ba6/litellm/proxy/auth/user_api_key_auth.py#L284)

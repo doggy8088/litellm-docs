@@ -1,34 +1,34 @@
 import Image from '@theme/IdealImage';
 
-# Qualifire
+# Qualifire {#qualifire}
 
-[Qualifire](https://qualifire.ai/) provides real-time Agentic evaluations, guardrails and observability for production AI applications.
+[Qualifire](https://qualifire.ai/) 提供即時的 Agentic 評估、防護欄與可觀測性，適用於正式環境的 AI 應用程式。
 
-**Key Features:**
+**主要功能：**
 
-- **Evaluation** - Systematically assess AI behavior to detect hallucinations, jailbreaks, policy breaches, and other vulnerabilities
-- **Guardrails** - Real-time interventions to prevent risks like brand damage, data leaks, and compliance breaches
-- **Observability** - Complete tracing and logging for RAG pipelines, chatbots, and AI agents
-- **Prompt Management** - Centralized prompt management with versioning and no-code studio
+- **評估** - 系統性地評估 AI 行為，以偵測幻覺、越獄、政策違規及其他漏洞
+- **防護欄** - 即時介入以防止品牌損害、資料外洩與合規性違規等風險
+- **可觀測性** - 為 RAG pipeline、聊天機器人與 AI 代理程式提供完整的追蹤與記錄
+- **Prompt 管理** - 集中式 prompt 管理，具備版本控管與無程式碼工作室
 
 :::tip
 
-Looking for Qualifire Guardrails? Check out the [Qualifire Guardrails Integration](../proxy/guardrails/qualifire.md) for real-time content moderation, prompt injection detection, PII checks, and more.
+在找 Qualifire Guardrails 嗎？請查看 [Qualifire Guardrails 整合](../proxy/guardrails/qualifire.md)，以取得即時內容審核、prompt injection 偵測、PII 檢查等功能。
 
 :::
 
-## Pre-Requisites
+## 先決條件 {#pre-requisites}
 
-1. Create an account on [Qualifire](https://app.qualifire.ai/)
-2. Get your API key and webhook URL from the Qualifire dashboard
+1. 在 [Qualifire](https://app.qualifire.ai/) 建立帳戶
+2. 從 Qualifire 儀表板取得您的 API 金鑰與 webhook URL
 
 ```bash
 uv add litellm
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Use just 2 lines of code to instantly log your responses **across all providers** with Qualifire.
+只需 2 行程式碼，即可使用 Qualifire 立即記錄您的回應，**涵蓋所有提供者**。
 
 ```python
 litellm.callbacks = ["qualifire_eval"]
@@ -57,9 +57,9 @@ response = litellm.completion(
 )
 ```
 
-## Using with LiteLLM Proxy
+## 搭配 LiteLLM Proxy 使用 {#using-with-litellm-proxy}
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -79,13 +79,13 @@ environment_variables:
   QUALIFIRE_WEBHOOK_URL: "https://app.qualifire.ai/api/v1/webhooks/evaluations"
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -94,29 +94,29 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -d '{ "model": "gpt-4o", "messages": [{"role": "user", "content": "Hi 👋 - i'm openai"}]}'
 ```
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable                | Description                                            |
+| 變數                | 說明                                            |
 | ----------------------- | ------------------------------------------------------ |
-| `QUALIFIRE_API_KEY`     | Your Qualifire API key for authentication              |
-| `QUALIFIRE_WEBHOOK_URL` | The Qualifire webhook endpoint URL from your dashboard |
+| `QUALIFIRE_API_KEY`     | 您用於驗證的 Qualifire API 金鑰              |
+| `QUALIFIRE_WEBHOOK_URL` | 來自您儀表板的 Qualifire webhook 端點 URL |
 
-## What Gets Logged?
+## 會記錄什麼？ {#what-gets-logged}
 
-The [LiteLLM Standard Logging Payload](https://docs.litellm.ai/docs/proxy/logging_spec) is sent to your Qualifire endpoint on each successful LLM API call.
+[LiteLLM 標準記錄負載](https://docs.litellm.ai/docs/proxy/logging_spec) 會在每次成功的 LLM API 請求時送至您的 Qualifire 端點。
 
-This includes:
+這包括：
 
-- Request messages and parameters
-- Response content and metadata
-- Token usage statistics
-- Latency metrics
-- Model information
-- Cost data
+- 請求訊息與參數
+- 回應內容與中繼資料
+- token 使用統計
+- 延遲指標
+- 模型資訊
+- 成本資料
 
-Once data is in Qualifire, you can:
+資料進入 Qualifire 後，您可以：
 
-- Run evaluations to detect hallucinations, toxicity, and policy violations
-- Set up guardrails to block or modify responses in real-time
-- View traces across your entire AI pipeline
-- Track performance and quality metrics over time
+- 執行評估以偵測幻覺、毒性與政策違規
+- 設定防護欄以即時封鎖或修改回應
+- 檢視整個 AI pipeline 的追蹤
+- 隨時間追蹤效能與品質指標

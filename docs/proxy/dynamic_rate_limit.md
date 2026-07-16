@@ -1,15 +1,14 @@
+# 動態 TPM/RPM 分配  {#dynamic-tpmrpm-allocation}
 
-# Dynamic TPM/RPM Allocation 
+防止專案吞掉過多的 tpm/rpm。
 
-Prevent projects from gobbling too much tpm/rpm.
+**另請參閱：** [請求優先順序](../scheduler.md) - 透過將 LLM API 請求加入優先佇列，讓高流量時優先處理。
 
-**See Also:** [Request Prioritization](../scheduler.md) - Prioritize LLM API requests in high-traffic by adding them to a priority queue.
+根據該分鐘內的啟用金鑰，動態分配給 API 金鑰的 TPM/RPM 配額。[**查看程式碼**](https://github.com/BerriAI/litellm/blob/9bffa9a48e610cc6886fc2dce5c1815aeae2ad46/litellm/proxy/hooks/dynamic_rate_limiter.py#L125)
 
-Dynamically allocate TPM/RPM quota to api keys, based on active keys in that minute. [**See Code**](https://github.com/BerriAI/litellm/blob/9bffa9a48e610cc6886fc2dce5c1815aeae2ad46/litellm/proxy/hooks/dynamic_rate_limiter.py#L125)
+## 快速開始使用 {#quick-start-usage}
 
-## Quick Start Usage
-
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml showLineNumbers title="config.yaml"
 model_list: 
@@ -28,13 +27,13 @@ general_settings:
   database_url: postgres://.. # OR set `DATABASE_URL=".."` in your .env
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試一下！ 
 
 ```python showLineNumbers title="test.py"
 """
@@ -94,39 +93,39 @@ except RateLimitError as e:
 
 ```
 
-**Expected Response**
+**預期回應**
 
 ```
 This was rate limited b/c - Error code: 429 - {'error': {'message': {'error': 'Key=<hashed_token> over available TPM=0. Model TPM=0, Active keys=2'}, 'type': 'None', 'param': 'None', 'code': 429}}
 ```
 
 
-## [BETA] Set Priority / Reserve Quota
+## [BETA] 設定優先順序 / 保留配額 {#beta-set-priority--reserve-quota}
 
-Reserve TPM/RPM capacity for different environments or use cases. This ensures critical production workloads always have guaranteed capacity, while development or lower-priority tasks use remaining quota.
+為不同環境或使用情境保留 TPM/RPM 容量。這可確保關鍵的正式環境工作負載始終擁有保證容量，而開發或較低優先順序的任務則使用剩餘配額。
 
-**Use Cases:**
-- Production vs Development environments
-- Real-time applications vs batch processing
-- Critical services vs experimental features
+**使用情境：**
+- 正式環境與開發環境
+- 即時應用程式與批次處理
+- 關鍵服務與實驗性功能
 
 :::tip
 
-Reserving TPM/RPM on keys based on priority is a premium feature. Please [get an enterprise license](./enterprise.md) for it. 
+依優先順序為金鑰保留 TPM/RPM 是付費功能。請為此 [取得企業授權](./enterprise.md)。 
 :::
 
-### How Priority Reservation Works
+### 優先順序保留的運作方式 {#how-priority-reservation-works}
 
-Priority reservation allocates a percentage of your model's total TPM/RPM to specific priority levels. Keys with higher priority get guaranteed access to their reserved quota first.
+優先順序保留會將模型總 TPM/RPM 的一部分分配給特定優先等級。較高優先順序的金鑰會先獲得其保留配額的保證存取權。
 
-**Example Scenario:**
-- Model has 10 RPM total capacity
-- Priority reservation: `{"prod": 0.9, "dev": 0.1}`
-- Result: Production keys get 9 RPM guaranteed, Development keys get 1 RPM guaranteed
+**範例情境：**
+- 模型總容量為 10 RPM
+- 優先順序保留：`{"prod": 0.9, "dev": 0.1}`
+- 結果：正式環境金鑰保證 9 RPM，開發金鑰保證 1 RPM
 
-### Configuration
+### 設定 {#configuration}
 
-#### 1. Setup config.yaml
+#### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -158,35 +157,35 @@ general_settings:
   database_url: postgres://.. # OR set `DATABASE_URL=".."` in your.env
 ```
 
-**Configuration Details:**
+**設定 विवरण：**
 
 `priority_reservation`: Dict[str, Union[float, PriorityReservationDict]]
-- **Key (str)**: Priority level name (can be any string like "prod", "dev", "critical", etc.)
-- **Value**: Either a float (0.0-1.0) or dict with `type` and `value`
-  - Float: `0.9` = 90% of capacity
-  - Dict: `{"type": "rpm", "value": 9}` = 9 requests/min
-  - Supported types: `"percent"`, `"rpm"`, `"tpm"`
+- **Key (str)**: 優先等級名稱（可以是任何字串，例如 "prod"、"dev"、"critical" 等）
+- **Value**: 浮點數（0.0-1.0）或包含 `type` 和 `value` 的字典
+  - 浮點數：`0.9` = 90% 的容量
+  - 字典：`{"type": "rpm", "value": 9}` = 9 個請求/分鐘
+  - 支援的型別：`"percent"`、`"rpm"`、`"tpm"`
 
-`priority_reservation_settings`: Object (Optional)
-- **default_priority (float)**: Weight/percentage (0.0 to 1.0) assigned to API keys that have no priority metadata set (defaults to 0.5)
-- **saturation_threshold (float)**: Saturation level (0.0 to 1.0) at which strict priority enforcement begins for a model. Saturation is calculated as `max(current_rpm/max_rpm, current_tpm/max_tpm)`. Below this threshold, generous mode allows priority borrowing from unused capacity. Above this threshold, strict mode enforces normalized priority limits.
-  - Example: When model usage is low, keys can use more than their allocated share. When model usage is high, keys are strictly limited to their allocated share.
-- **saturation_check_cache_ttl (int)**: TTL in seconds for local cache when reading saturation values from Redis (defaults to 60). In multi-node deployments, this controls how quickly nodes converge on the same saturation state. Lower values mean faster convergence but more Redis reads.
-  - Example: Set to `5` for faster multi-node consistency, or `0` to always read directly from Redis.
+`priority_reservation_settings`: Object（選填）
+- **default_priority (float)**: 指派給未設定任何優先順序中繼資料的 API 金鑰之權重/百分比（0.0 到 1.0，預設為 0.5）
+- **saturation_threshold (float)**: 模型開始嚴格執行優先順序的飽和門檻（0.0 到 1.0）。飽和度的計算方式為 `max(current_rpm/max_rpm, current_tpm/max_tpm)`。低於此門檻時，寬鬆模式允許優先順序從未使用的容量借用；高於此門檻時，嚴格模式會強制執行標準化的優先順序限制。
+  - 範例：當模型使用量較低時，金鑰可使用超過其分配份額的容量；當模型使用量較高時，金鑰會被嚴格限制在其分配份額內。
+- **saturation_check_cache_ttl (int)**: 從 Redis 讀取飽和度值時，本機快取的 TTL（秒）（預設為 60）。在多節點部署中，這會控制各節點收斂到相同飽和狀態的速度。數值越低表示收斂越快，但 Redis 讀取次數也越多。
+  - 範例：將其設為 `5` 以獲得更快的多節點一致性，或設為 `0` 以始終直接從 Redis 讀取。
 
-**Start Proxy**
+**啟動 Proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### Set priority on either a team or a key
+### 在 team 或 key 上設定優先順序 {#set-priority-on-either-a-team-or-a-key}
 
-Priority can be set at either the **team level** or **key level**. Team-level priority takes precedence over key-level priority.
+優先順序可以設定在 **team 層級** 或 **key 層級**。team 層級的優先順序優先於 key 層級的優先順序。
 
-**Option A: Set Priority on Team (Recommended)**
+**選項 A：在 Team 上設定優先順序（建議）**
 
-All keys within a team will inherit the team's priority. This is useful when you want all keys for a specific environment or project to have the same priority.
+同一 team 內的所有金鑰都會繼承該 team 的優先順序。當您希望特定環境或專案的所有金鑰具有相同優先順序時，這很有用。
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/team/new' \
@@ -198,7 +197,7 @@ curl -X POST 'http://0.0.0.0:4000/team/new' \
 }'
 ```
 
-Create a key for this team:
+為此 team 建立一個金鑰：
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -H 'Authorization: Bearer sk-1234' \
@@ -208,11 +207,11 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-**Option B: Set Priority on Individual Keys**
+**選項 B：在個別金鑰上設定優先順序**
 
-Set priority directly on the key. This is useful when you need fine-grained control per key.
+直接在金鑰上設定優先順序。當您需要對每個金鑰進行精細控制時，這很有用。
 
-**Production Key:**
+**正式環境金鑰：**
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -H 'Authorization: Bearer sk-1234' \
@@ -222,7 +221,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-**Development Key:**
+**開發金鑰：**
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -H 'Authorization: Bearer sk-1234' \
@@ -232,7 +231,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-**Key Without Priority (uses default_priority weight):**
+**沒有優先順序的金鑰（使用 default_priority 權重）：**
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -H 'Authorization: Bearer sk-1234' \
@@ -240,7 +239,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-**Expected Response:**
+**預期回應：**
 ```json
 {
   "key": "sk-...",
@@ -249,14 +248,14 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 }
 ```
 
-**Priority Resolution Order:**
-1. If key belongs to a team with `metadata.priority` set → use team priority
-2. Else if key has `metadata.priority` set → use key priority  
-3. Else → use `default_priority` from config
+**優先順序解析順序：**
+1. 如果金鑰屬於已設定 `metadata.priority` 的 team → 使用 team 優先順序
+2. 否則如果金鑰已設定 `metadata.priority` → 使用金鑰優先順序  
+3. 否則 → 使用 config 中的 `default_priority`
 
-#### 3. Test Priority Allocation
+#### 3. 測試優先順序分配 {#3-test-priority-allocation}
 
-**Test Production Key (should get 9 RPM):**
+**測試正式環境金鑰（應獲得 9 RPM）：**
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   -H 'Content-Type: application/json' \
@@ -267,7 +266,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-**Test Development Key (should get 1 RPM):**
+**測試開發金鑰（應獲得 1 RPM）：**
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   -H 'Content-Type: application/json' \
@@ -278,16 +277,16 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-### Expected Behavior
+### 預期行為 {#expected-behavior}
 
-With the configuration above:
+採用上述設定時：
 
-1. **Production keys** can make up to 9 requests per minute (90% of 10 RPM)
-2. **Development keys** can make up to 1 request per minute (10% of 10 RPM)
-3. **Keys without explicit priority** get the default_priority weight (0 = 0%), which allocates 0 requests per minute (0% of 10 RPM)
-4. Named priorities in `priority_reservation` and keys with `default_priority` operate independently
+1. **正式環境金鑰** 每分鐘最多可發出 9 個請求（10 RPM 的 90%）
+2. **開發金鑰** 每分鐘最多可發出 1 個請求（10 RPM 的 10%）
+3. **未明確設定優先順序的金鑰** 會取得 default_priority 權重（0 = 0%），因此每分鐘分配 0 個請求（10 RPM 的 0%）
+4. `priority_reservation` 中的命名優先順序與具有 `default_priority` 的金鑰獨立運作
 
-**Rate Limit Error Example:**
+**速率限制錯誤範例：**
 ```json
 {
   "error": {
@@ -298,10 +297,9 @@ With the configuration above:
 }
 ```
 
-### Demo Video
+### 示範影片 {#demo-video}
 
-This video walks through setting up dynamic rate limiting with priority reservation and locust tests to validate the behavior.
+此影片將示範如何設定具備優先順序保留的動態速率限制，以及如何使用 locust 測試來驗證其行為。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/1b54b93139ee415d959402cc0629f3f7
 " frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-

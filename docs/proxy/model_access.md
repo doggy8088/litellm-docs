@@ -1,12 +1,11 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Restrict Model Access
+# 限制模型存取 {#restrict-model-access}
 
-## **Restrict models by Virtual Key**
+## **依 Virtual Key 限制模型** {#restrict-models-by-virtual-key}
 
-Set allowed models for a key using the `models` param
-
+使用 `models` 參數為金鑰設定允許的模型
 
 ```shell
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -17,14 +16,14 @@ curl 'http://0.0.0.0:4000/key/generate' \
 
 :::info
 
-This key can only make requests to `models` that are `gpt-3.5-turbo` or `gpt-4`
+此金鑰只能對 `models` 發出 `gpt-3.5-turbo` 或 `gpt-4` 的請求
 
 :::
 
-Verify this is set correctly by 
+請透過以下方式確認設定正確
 
 <Tabs>
-<TabItem label="Allowed Access" value = "allowed">
+<TabItem label="允許的存取" value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -40,11 +39,11 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem label="Disallowed Access" value = "not-allowed">
+<TabItem label="不允許的存取" value = "not-allowed">
 
 :::info
 
-Expect this to fail since gpt-4o is not in the `models` for the key generated
+預期這會失敗，因為 gpt-4o 不在為所產生的金鑰設定的 `models` 中
 
 :::
 
@@ -64,13 +63,12 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
+### [API 參考](https://litellm-api.up.railway.app/#/key%20management/generate_key_fn_key_generate_post) {#api-referencehttpslitellm-apiuprailwayappkey20managementgenerate_key_fn_key_generate_post}
 
-### [API Reference](https://litellm-api.up.railway.app/#/key%20management/generate_key_fn_key_generate_post)
+## **依 `team_id` 限制模型** {#restrict-models-by-team_id}
+`litellm-dev` 只能存取 `azure-gpt-3.5`
 
-## **Restrict models by `team_id`**
-`litellm-dev` can only access `azure-gpt-3.5`
-
-**1. Create a team via `/team/new`**
+**1. 透過 `/team/new` 建立團隊**
 ```shell
 curl --location 'http://localhost:4000/team/new' \
 --header 'Authorization: Bearer <your-master-key>' \
@@ -83,7 +81,7 @@ curl --location 'http://localhost:4000/team/new' \
 # returns {...,"team_id": "my-unique-id"}
 ```
 
-**2. Create a key for team**
+**2. 為團隊建立金鑰**
 ```shell
 curl --location 'http://localhost:4000/key/generate' \
 --header 'Authorization: Bearer sk-1234' \
@@ -91,7 +89,7 @@ curl --location 'http://localhost:4000/key/generate' \
 --data-raw '{"team_id": "my-unique-id"}'
 ```
 
-**3. Test it**
+**3. 測試**
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
     --header 'Content-Type: application/json' \
@@ -111,80 +109,79 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 {"error":{"message":"Invalid model for team litellm-dev: BEDROCK_GROUP.  Valid models for team are: ['azure-gpt-3.5']\n\n\nTraceback (most recent call last):\n  File \"/Users/ishaanjaffer/Github/litellm/litellm/proxy/proxy_server.py\", line 2298, in chat_completion\n    _is_valid_team_configs(\n  File \"/Users/ishaanjaffer/Github/litellm/litellm/proxy/utils.py\", line 1296, in _is_valid_team_configs\n    raise Exception(\nException: Invalid model for team litellm-dev: BEDROCK_GROUP.  Valid models for team are: ['azure-gpt-3.5']\n\n","type":"None","param":"None","code":500}}%            
 ```         
 
-### [API Reference](https://litellm-api.up.railway.app/#/team%20management/new_team_team_new_post)
+### [API 參考](https://litellm-api.up.railway.app/#/team%20management/new_team_team_new_post) {#api-referencehttpslitellm-apiuprailwayappteam20managementnew_team_team_new_post}
 
+## **檢視可用的備援模型** {#view-available-fallback-models}
 
-## **View Available Fallback Models**
+使用 `/v1/models` 端點來探索給定模型可用的備援模型。這有助於您了解當主要模型無法使用或受到限制時，可用哪些備援模型。
 
-Use the `/v1/models` endpoint to discover available fallback models for a given model. This helps you understand which backup models are available when your primary model is unavailable or restricted.
+:::info 擴充點
 
-:::info Extension Point
-
-The `include_metadata` parameter serves as an extension point for exposing additional model metadata in the future. While currently focused on fallback models, this approach will be expanded to include other model metadata such as pricing information, capabilities, rate limits, and more.
+`include_metadata` 參數可作為未來公開其他模型中繼資料的擴充點。目前重點在備援模型，但此作法將擴充以納入其他模型中繼資料，例如定價資訊、功能、速率限制等。
 
 :::
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
-Get all available models:
+取得所有可用模型：
 
 ```shell
 curl -X GET 'http://localhost:4000/v1/models' \
   -H 'Authorization: Bearer <your-api-key>'
 ```
 
-### Get Fallback Models with Metadata
+### 取得含中繼資料的備援模型 {#get-fallback-models-with-metadata}
 
-Include metadata to see fallback model information:
+加入中繼資料以查看備援模型資訊：
 
 ```shell
 curl -X GET 'http://localhost:4000/v1/models?include_metadata=true' \
   -H 'Authorization: Bearer <your-api-key>'
 ```
 
-### Get Specific Fallback Types
+### 取得特定類型的備援 {#get-specific-fallback-types}
 
-You can specify the type of fallbacks you want to see:
+您可以指定想查看的備援類型：
 
 <Tabs>
-<TabItem value="general" label="General Fallbacks">
+<TabItem value="general" label="一般備援">
 
 ```shell
 curl -X GET 'http://localhost:4000/v1/models?include_metadata=true&fallback_type=general' \
   -H 'Authorization: Bearer <your-api-key>'
 ```
 
-General fallbacks are alternative models that can handle the same types of requests.
+一般備援是可處理相同類型請求的替代模型。
 
 </TabItem>
 
-<TabItem value="context_window" label="Context Window Fallbacks">
+<TabItem value="context_window" label="上下文視窗備援">
 
 ```shell
 curl -X GET 'http://localhost:4000/v1/models?include_metadata=true&fallback_type=context_window' \
   -H 'Authorization: Bearer <your-api-key>'
 ```
 
-Context window fallbacks are models with larger context windows that can handle requests when the primary model's context limit is exceeded.
+上下文視窗備援是具有更大上下文視窗的模型，當主要模型的上下文限制被超出時可處理請求。
 
 </TabItem>
 
-<TabItem value="content_policy" label="Content Policy Fallbacks">
+<TabItem value="content_policy" label="內容政策備援">
 
 ```shell
 curl -X GET 'http://localhost:4000/v1/models?include_metadata=true&fallback_type=content_policy' \
   -H 'Authorization: Bearer <your-api-key>'
 ```
 
-Content policy fallbacks are models that can handle requests when the primary model rejects content due to safety policies.
+內容政策備援是可在主要模型因安全政策而拒絕內容時處理請求的模型。
 
 </TabItem>
 
 </Tabs>
 
-### Example Response
+### 範例回應 {#example-response}
 
-When `include_metadata=true` is specified, the response includes fallback information:
+當指定 `include_metadata=true` 時，回應會包含備援資訊：
 
 ```json
 {
@@ -204,23 +201,23 @@ When `include_metadata=true` is specified, the response includes fallback inform
 }
 ```
 
-### Use Cases
+### 使用案例 {#use-cases}
 
-- **High Availability**: Identify backup models to ensure service continuity
-- **Cost Optimization**: Find cheaper alternatives when primary models are expensive
-- **Content Filtering**: Discover models with different content policies
-- **Context Length**: Find models that can handle larger inputs
-- **Load Balancing**: Distribute requests across multiple compatible models
+- **高可用性**：找出備援模型以確保服務持續性
+- **成本最佳化**：在主要模型價格較高時尋找更便宜的替代方案
+- **內容篩選**：探索具有不同內容政策的模型
+- **上下文長度**：尋找可處理更大輸入的模型
+- **負載平衡**：將請求分散到多個相容模型
 
-### API Parameters
+### API 參數 {#api-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `include_metadata` | boolean | Include additional model metadata including fallbacks |
-| `fallback_type` | string | Filter fallbacks by type: `general`, `context_window`, or `content_policy` |
+| `include_metadata` | boolean | 包含額外模型中繼資料，包括備援 |
+| `fallback_type` | string | 依類型篩選備援：`general`、`context_window` 或 `content_policy` |
 
-## Advanced: Model Access Groups
+## 進階：模型存取群組 {#advanced-model-access-groups}
 
-For advanced use cases, use [Model Access Groups](./model_access_groups) to dynamically group multiple models and manage access without restarting the proxy.
+對於進階使用案例，請使用 [模型存取群組](./model_access_groups) 動態分組多個模型，並在不重新啟動 proxy 的情況下管理存取。
 
-## [Role Based Access Control (RBAC)](./jwt_auth_arch)
+## [基於角色的存取控制（RBAC）](./jwt_auth_arch) {#role-based-access-control-rbacjwt_auth_arch}

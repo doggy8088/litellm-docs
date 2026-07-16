@@ -1,40 +1,40 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Meta Model API
+# Meta 模型 API {#meta-model-api}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Meta's Model API provides access to Meta's Muse Spark family of reasoning models. |
-| Provider Route on LiteLLM | `meta/` |
-| Supported Endpoints | `/chat/completions`, `/responses`, `/v1/messages` |
-| API Reference | [Meta Model API Reference ↗](https://dev.meta.ai/docs) |
+| 說明 | Meta 的 Model API 可存取 Meta 的 Muse Spark 系列推理模型。 |
+| LiteLLM 上的提供者路由 | `meta/` |
+| 支援的端點 | `/chat/completions`, `/responses`, `/v1/messages` |
+| API 參考 | [Meta Model API 參考 ↗](https://dev.meta.ai/docs) |
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["META_API_KEY"] = ""  # your Meta Model API key
 ```
 
-Requests go to `https://api.meta.ai/v1` by default. Set `META_API_BASE` to override the API base.
+請求預設會送至 `https://api.meta.ai/v1`。設定 `META_API_BASE` 以覆寫 API 基底位址。
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
 :::info
-We actively maintain the list of models, pricing, token window, etc. [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+我們會持續維護模型、價格、token 視窗等清單。[請見此處](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。
 :::
 
-| Model ID | Input context length | Input Modalities | Output Modalities |
+| 模型 ID | 輸入上下文長度 | 輸入多模態 | 輸出多模態 |
 | --- | --- | --- | --- |
-| `muse-spark-1.1` | 1M | Text, Image, Video, PDF | Text |
+| `muse-spark-1.1` | 1M | 文字、圖片、影片、PDF | 文字 |
 
-`muse-spark-1.1` supports function calling, parallel function calling, structured outputs, prompt caching, web search grounding, and reasoning via `reasoning_effort` (`"minimal"` through `"xhigh"`).
+`muse-spark-1.1` 支援 function calling、parallel function calling、structured outputs、prompt caching、web search grounding，以及透過 `reasoning_effort`（`"minimal"` 到 `"xhigh"`）進行 reasoning。
 
-The API also natively exposes the Anthropic Messages format, so LiteLLM forwards `/v1/messages` requests to `https://api.meta.ai/v1/messages` untranslated, preserving Anthropic-only features like thinking blocks.
+此 API 也原生公開 Anthropic Messages 格式，因此 LiteLLM 會將 `/v1/messages` 請求未經翻譯地轉送至 `https://api.meta.ai/v1/messages`，並保留 Anthropic 專屬功能，例如 thinking blocks。
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Meta Model API Non-streaming Completion"
 import os
@@ -48,7 +48,7 @@ messages = [{"content": "Hello, how are you?", "role": "user"}]
 response = completion(model="meta/muse-spark-1.1", messages=messages)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Meta Model API Streaming Completion"
 import os
@@ -69,9 +69,9 @@ for chunk in response:
     print(chunk)
 ```
 
-### Reasoning Effort
+### 推理努力程度 {#reasoning-effort}
 
-`muse-spark-1.1` accepts `reasoning_effort` values `"minimal"`, `"low"`, `"medium"`, `"high"`, and `"xhigh"`.
+`muse-spark-1.1` 接受 `reasoning_effort` 值 `"minimal"`、`"low"`、`"medium"`、`"high"`，以及 `"xhigh"`。
 
 ```python showLineNumbers title="Meta Model API Reasoning Effort"
 import os
@@ -92,7 +92,7 @@ print(response.choices[0].message.content)
 print(response.usage.completion_tokens_details.reasoning_tokens)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="Meta Model API Function Calling"
 import os
@@ -137,9 +137,9 @@ response = completion(
 print(response.choices[0].message.tool_calls)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+請將以下內容加入您的 LiteLLM Proxy 設定文件：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -149,7 +149,7 @@ model_list:
       api_key: os.environ/META_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -231,9 +231,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### Anthropic Messages API
+### Anthropic 訊息 API {#anthropic-messages-api}
 
-The proxy's `/v1/messages` route forwards requests for `meta/` models to Meta's native Anthropic-compatible endpoint without translation.
+Proxy 的 `/v1/messages` 路由會將 `meta/` 模型的請求轉送至 Meta 原生相容 Anthropic 的端點，且不經翻譯。
 
 ```bash showLineNumbers title="Meta Model API via Proxy - /v1/messages"
 curl http://localhost:4000/v1/messages \

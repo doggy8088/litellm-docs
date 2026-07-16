@@ -1,5 +1,5 @@
 ---
-title: "v1.85.2 - Path-Handling Hardening Backport"
+title: "v1.85.2 - 路徑處理強化回補"
 slug: "v1-85-2"
 date: 2026-05-27T00:00:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,18 +43,18 @@ pip install litellm==1.85.2
 </TabItem>
 </Tabs>
 
-`v1.85.2` is a patch release on top of [`v1.85.1`](/release_notes/v1.85.1/v1-85-1). It backports the path-handling hardening covered in the [host-header authentication bypass advisory](/blog/host-header-auth-bypass) and restores `npm` to the non-root Docker builder.
+`v1.85.2` 是基於 [`v1.85.1`](/release_notes/v1.85.1/v1-85-1) 的修補版版本。它回補了 [host-header authentication bypass advisory](/blog/host-header-auth-bypass) 中涵蓋的路徑處理強化，並將 `npm` 還原到非 root 的 Docker 建構器。
 
-### Bug Fixes
+### 錯誤修正 {#bug-fixes}
 
-- **Proxy auth / routing**
-    - Route the proxy's path-dependent call sites through `get_request_route()` so they all derive the request route from the ASGI scope rather than the `Host`-reconstructed URL - [PR #28547](https://github.com/BerriAI/litellm/pull/28547)
+- **Proxy 驗證 / 路由**
+    - 將 proxy 中與路徑相關的呼叫站點透過 `get_request_route()` 路由處理，使其全部從 ASGI scope 而非 `Host` 重建的 URL 推導請求路由 - [PR #28547](https://github.com/BerriAI/litellm/pull/28547)
 
-### Infrastructure
+### 基礎架構 {#infrastructure}
 
 - **Docker**
-    - Restore `npm` to the `Dockerfile.non_root` builder stage so `prisma-python` no longer falls back to a `nodeenv`-bootstrapped Node runtime - [PR #28519](https://github.com/BerriAI/litellm/pull/28519)
+    - 將 `npm` 還原到 `Dockerfile.non_root` 建構階段，讓 `prisma-python` 不再回退到由 `nodeenv` 開機初始化的 Node runtime - [PR #28519](https://github.com/BerriAI/litellm/pull/28519)
 
-## Full Changelog
+## 完整變更紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.85.1...v1.85.2

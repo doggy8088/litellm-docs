@@ -3,29 +3,29 @@ import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 import { CloudArchitectureSelector } from '@site/src/components/CloudArchitecture';
 
-# Deploy to Cloud (AWS, GCP, Azure)
+# 部署到雲端（AWS、GCP、Azure） {#deploy-to-cloud-aws-gcp-azure}
 
-Step-by-step guides for running LiteLLM proxy in production on AWS, Google Cloud, or Azure. There are two supported paths. If you run Kubernetes, [deploy with Helm](#deploy-with-helm) on EKS, GKE, or AKS; the install is the same on every cloud, only the data stores and ingress differ. If you do not run Kubernetes, AWS and GCP have [official Terraform modules](#deploy-with-terraform-aws-and-gcp) that stand up the entire stack; Azure has no Terraform module, so AKS with Helm is the supported path there.
+在 AWS、Google Cloud 或 Azure 上於正式環境執行 LiteLLM proxy 的逐步指南。共有兩條支援路徑。如果您使用 Kubernetes，請在 EKS、GKE 或 AKS 上[透過 Helm 部署](#deploy-with-helm)；各雲端上的安裝方式相同，只有資料儲存與 ingress 不同。如果您不使用 Kubernetes，AWS 與 GCP 提供可建立完整堆疊的[官方 Terraform 模組](#deploy-with-terraform-aws-and-gcp)；Azure 沒有 Terraform 模組，因此在那裡支援的路徑是搭配 Helm 的 AKS。
 
-## Architecture
+## 架構 {#architecture}
 
 <CloudArchitectureSelector />
 
-LiteLLM provides two deployment modes:
+LiteLLM 提供兩種部署模式：
 
-- **Monolithic**: one `litellm` image serves LLM traffic, management APIs, and the UI. This is what the `litellm-helm` chart runs, and the simplest to operate.
-- **Microservices**: a `gateway` (LLM traffic, port 4000), `backend` (management APIs and UI backend, port 4001), and `ui` (port 3000), each deployed and scaled independently. This is what the componentized `litellm` chart and both Terraform modules run; see [Microservices Helm](./microservices_helm.md) for the full reference.
+- **單體式**：單一 `litellm` 映像提供 LLM 流量、管理 API 與 UI。這是 `litellm-helm` chart 的執行方式，也是最容易操作的方式。
+- **微服務式**：`gateway`（LLM 流量，port 4000）、`backend`（管理 API 與 UI 後端，port 4001）以及 `ui`（port 3000），各自獨立部署與擴展。這是元件化 `litellm` chart 與兩個 Terraform 模組的執行方式；請參閱[Microservices Helm](./microservices_helm.md) 取得完整參考。
 
-The supporting infrastructure is identical in either mode:
+支援基礎設施在任一模式下都相同：
 
-| Component | Purpose | Notes |
+| 元件 | 用途 | 備註 |
 |---|---|---|
-| LiteLLM services | One proxy deployment (monolithic) or gateway + backend + ui (microservices) | Stateless; run 2+ replicas behind a load balancer |
-| PostgreSQL | Keys, teams, users, spend logs, config | Required for the proxy's auth and tracking features |
-| Redis | Rate limiting, router state, caching across instances | Required once you run more than one instance |
-| Migrations job | Applies schema migrations against Postgres | Runs once per upgrade; proxy instances set `DISABLE_SCHEMA_UPDATE=true` |
+| LiteLLM 服務 | 單一 proxy deployment（單體式）或 gateway + backend + ui（微服務式） | 無狀態；在負載平衡器後方執行 2 個以上副本 |
+| PostgreSQL | 金鑰、團隊、使用者、支出記錄、設定 | proxy 的驗證與追蹤功能所必需 |
+| Redis | 速率限制、路由器狀態、跨執行個體快取 | 當您執行超過一個執行個體時就需要 |
+| Migration job | 對 Postgres 套用 schema migration | 每次升級執行一次；proxy 執行個體設定 `DISABLE_SCHEMA_UPDATE=true` |
 
-## Core configuration
+## 核心設定 {#core-configuration}
 
 ```bash
 DATABASE_URL="postgresql://user:password@host:5432/litellm"
@@ -35,23 +35,23 @@ DISABLE_SCHEMA_UPDATE="true"  # proxy instances never run migrations; the migrat
 STORE_MODEL_IN_DB="True"      # manage models from the Admin UI instead of config files
 ```
 
-`LITELLM_SALT_KEY` cannot be rotated after you add models: it encrypts the provider credentials stored in your database, and changing it makes them unreadable. Generate a strong random value and store both keys in your cloud's secret manager.
+`LITELLM_SALT_KEY` 在您新增模型之後無法輪替：它會加密儲存在資料庫中的提供者憑證，而變更它會使這些憑證無法讀取。請產生強度足夠的隨機值，並將兩個金鑰都儲存在雲端的秘密管理服務中。
 
-Official images are published to `ghcr.io/berriai` and mirrored at `docker.litellm.ai/berriai`. Use `ghcr.io/berriai/litellm-database` for monolithic deployments with Postgres (it bundles the Prisma toolchain), and pin a version tag rather than `latest` or a moving tag, so rollbacks are deterministic.
+官方映像發布於 `ghcr.io/berriai`，並鏡像到 `docker.litellm.ai/berriai`。對於使用 Postgres 的單體式部署，請使用 `ghcr.io/berriai/litellm-database`（它內含 Prisma 工具鏈），並固定版本標籤，而不是 `latest` 或會變動的標籤，如此回復才具確定性。
 
-## Provision the data stores
+## 佈建資料儲存 {#provision-the-data-stores}
 
-The Helm path needs a PostgreSQL database and a Redis reachable from your cluster. Use the managed services:
+Helm 路徑需要一個 PostgreSQL 資料庫與一個可從您的叢集連線的 Redis。請使用受管理服務：
 
 <Tabs>
 <TabItem value="aws" label="AWS">
 
-Provision [RDS PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) and [ElastiCache Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html) in the same VPC as your EKS cluster, with security groups permitting the cluster's nodes on ports 5432 and 6379.
+在與您的 EKS 叢集相同的 VPC 中佈建 [RDS PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) 與 [ElastiCache Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html)，並設定安全群組允許叢集節點透過 5432 與 6379 連線。
 
 </TabItem>
 <TabItem value="gcp" label="Google Cloud">
 
-Provision [Cloud SQL PostgreSQL](https://cloud.google.com/sql/docs/postgres) and [Memorystore Redis](https://cloud.google.com/memorystore/docs/redis) with private IPs on the VPC your GKE cluster uses (Cloud SQL needs [Private Services Access](https://cloud.google.com/vpc/docs/private-services-access)). Use the instances' private IPs as the endpoints below.
+在您的 GKE 叢集所使用的 VPC 上，使用私有 IP 佈建 [Cloud SQL PostgreSQL](https://cloud.google.com/sql/docs/postgres) 與 [Memorystore Redis](https://cloud.google.com/memorystore/docs/redis)（Cloud SQL 需要 [Private Services Access](https://cloud.google.com/vpc/docs/private-services-access)）。將這些執行個體的私有 IP 作為下方的端點。
 
 </TabItem>
 <TabItem value="azure" label="Azure">
@@ -70,14 +70,14 @@ az redis create --resource-group litellm-prod --name litellm-redis \
   --location eastus --sku Standard --vm-size c1
 ```
 
-Docs: [AKS](https://learn.microsoft.com/en-us/azure/aks/what-is-aks), [Azure Database for PostgreSQL Flexible Server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/overview), [Azure Cache for Redis](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview). Azure Cache for Redis serves TLS on port 6380, and TLS is enabled through the URL scheme: instead of `redis_host` and `redis_port`, set `redis_url: "rediss://:<access-key>@litellm-redis.redis.cache.windows.net:6380"` under `router_settings` (the `rediss://` scheme turns TLS on).
+文件：[AKS](https://learn.microsoft.com/en-us/azure/aks/what-is-aks)、[Azure Database for PostgreSQL Flexible Server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/overview)、[Azure Cache for Redis](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview)。Azure Cache for Redis 在 6380 埠提供 TLS，且 TLS 透過 URL scheme 啟用：不要使用 `redis_host` 與 `redis_port`，而是在 `router_settings` 下設定 `redis_url: "rediss://:<access-key>@litellm-redis.redis.cache.windows.net:6380"`（`rediss://` scheme 會開啟 TLS）。
 
 </TabItem>
 </Tabs>
 
-## Deploy with Helm
+## 使用 Helm 部署 {#deploy-with-helm}
 
-First create the secrets both charts consume:
+先建立兩個 chart 都會消耗的秘密：
 
 ```bash
 kubectl create secret generic litellm-masterkey \
@@ -93,10 +93,10 @@ kubectl create secret generic litellm-env \
   --from-literal=OPENAI_API_KEY="<provider-key>"
 ```
 
-Then pick a deployment mode:
+接著選擇部署模式：
 
 <Tabs>
-<TabItem value="monolith" label="Monolithic (litellm-helm)">
+<TabItem value="monolith" label="單體式（litellm-helm）">
 
 ```yaml title="values.yaml"
 replicaCount: 3
@@ -137,10 +137,10 @@ proxy_config:
 helm install litellm oci://ghcr.io/berriai/litellm-helm -f values.yaml
 ```
 
-The chart lives at [`deploy/charts/litellm-helm`](https://github.com/BerriAI/litellm/tree/main/deploy/charts/litellm-helm); the published chart versions carry LiteLLM release numbers (for example `1.90.2`), and `helm show values oci://ghcr.io/berriai/litellm-helm` lists every knob. Beyond the values above it supports autoscaling (`autoscaling.*` or `keda.*`), PodDisruptionBudgets (`pdb.*`), a Prometheus ServiceMonitor (`serviceMonitor.*`), read replica routing (`db.readReplicaUrl`, see [Database Read Replica](./db_read_replica.md)), graceful drain on shutdown (`lifecycle`), and ArgoCD or Helm hooks for the migrations job (`migrationJob.hooks.*`, see [Helm PreSync hooks](./prod.md#7-use-helm-presync-hook-for-database-migrations-beta)).
+此 chart 位於 [`deploy/charts/litellm-helm`](https://github.com/BerriAI/litellm/tree/main/deploy/charts/litellm-helm)；已發布的 chart 版本會帶有 LiteLLM 版本號（例如 `1.90.2`），而 `helm show values oci://ghcr.io/berriai/litellm-helm` 列出所有設定項。除了上述值之外，它也支援自動擴縮（`autoscaling.*` 或 `keda.*`）、PodDisruptionBudgets（`pdb.*`）、Prometheus ServiceMonitor（`serviceMonitor.*`）、讀取副本路由（`db.readReplicaUrl`，請參閱 [Database Read Replica](./db_read_replica.md)）、關閉時優雅排空（`lifecycle`），以及用於 migration job 的 ArgoCD 或 Helm hooks（`migrationJob.hooks.*`，請參閱 [Helm PreSync hooks](./prod.md#7-use-helm-presync-hook-for-database-migrations-beta)）。
 
 </TabItem>
-<TabItem value="micro" label="Microservices (litellm)">
+<TabItem value="micro" label="微服務式（litellm）">
 
 ```yaml title="values.yaml"
 masterKey:
@@ -179,16 +179,16 @@ helm upgrade --install litellm \
   -f values.yaml
 ```
 
-This deploys `gateway`, `backend`, and `ui` as separate services with per-component autoscaling, so you can run many gateway replicas against a small fixed backend. It requires external Postgres and Redis (no bundled subcharts) and supports reader/writer database splits, IAM database auth, and Redis Cluster mode. See [Microservices Helm](./microservices_helm.md) for the full values reference.
+這會將 `gateway`、`backend` 與 `ui` 以分離服務方式部署，並可針對各元件自動擴縮，因此您可以讓許多 gateway 副本對接一個小型固定 backend。這需要外部 Postgres 與 Redis（不含內建子 chart），並支援讀取/寫入資料庫分割、IAM 資料庫驗證，以及 Redis Cluster 模式。完整 values 參考請見 [Microservices Helm](./microservices_helm.md)。
 
 </TabItem>
 </Tabs>
 
-Both charts run the migrations job automatically and keep `DISABLE_SCHEMA_UPDATE=true` on the proxy pods. Expose the service through your cloud's ingress: the [AWS Load Balancer Controller](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html) on EKS, [GKE Ingress](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress) on GKE, or [Application Gateway Ingress (AGIC)](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview) on AKS, with health checks on `/health/readiness`, then point your DNS record at the resulting load balancer. For secrets, prefer your cloud's secret manager over plain Kubernetes secrets ([Key Vault CSI driver](https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver) on AKS, for example); the charts consume whatever secret you mount.
+兩個 chart 都會自動執行 migrations job，並讓 `DISABLE_SCHEMA_UPDATE=true` 保持在 proxy pod 上。透過您雲端的 ingress 來公開服務：EKS 上使用 [AWS Load Balancer Controller](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html)、GKE 上使用 [GKE Ingress](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)，或 AKS 上使用 [Application Gateway Ingress (AGIC)](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview)，並將健康檢查設在 `/health/readiness`，然後把您的 DNS 記錄指向產生的負載平衡器。關於秘密，請優先使用雲端的秘密管理服務，而不是純 Kubernetes secrets（例如 AKS 上的 [Key Vault CSI driver](https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver)）；chart 會消耗您掛載的任何 secret。
 
-## Deploy with Terraform (AWS and GCP)
+## 使用 Terraform 部署（AWS 與 GCP） {#deploy-with-terraform-aws-and-gcp}
 
-The official modules deploy the full microservices stack (network, database, Redis, object storage, secrets, compute, load balancer, and a migrations job that runs before the services start) and are published to the Terraform Registry:
+官方模組會部署完整的微服務堆疊（網路、資料庫、Redis、物件儲存、秘密、運算、負載平衡器，以及在服務啟動前執行的 migrations job），並發布到 Terraform Registry：
 
 - [`BerriAI/litellm/aws`](https://registry.terraform.io/modules/BerriAI/litellm/aws/latest)
 - [`BerriAI/litellm/google`](https://registry.terraform.io/modules/BerriAI/litellm/google/latest)
@@ -196,7 +196,7 @@ The official modules deploy the full microservices stack (network, database, Red
 <Tabs>
 <TabItem value="aws" label="AWS (ECS Fargate)">
 
-Provisions a VPC with public and private subnets, an Aurora PostgreSQL cluster (writer plus reader, IAM database auth), ElastiCache Redis (multi-AZ, encrypted), an S3 bucket, Secrets Manager entries, an Application Load Balancer, and ECS Fargate services.
+佈建一個包含公用與私有子網路的 VPC、一個 Aurora PostgreSQL 叢集（writer 加 reader，IAM 資料庫驗證）、ElastiCache Redis（multi-AZ、加密）、一個 S3 bucket、Secrets Manager 項目、Application Load Balancer，以及 ECS Fargate 服務。
 
 ```hcl title="main.tf"
 module "litellm" {
@@ -227,14 +227,14 @@ module "litellm" {
 }
 ```
 
-Before you apply: provision the TLS certificate in [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) (the module refuses a plaintext ALB unless you explicitly set `allow_plaintext_alb = true`), and create any provider-key secrets in [Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) first, since `gateway_extra_secrets` takes their ARNs. After apply, point your DNS record at the ALB hostname.
+在您套用之前：請先在 [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) 佈建 TLS 憑證（若您未明確設定 `allow_plaintext_alb = true`，此模組會拒絕純文字 ALB），並先在 [Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) 建立任何提供者金鑰秘密，因為 `gateway_extra_secrets` 會取得它們的 ARN。套用後，請將您的 DNS 記錄指向 ALB 主機名稱。
 
-The module auto-generates the master key into Secrets Manager if you do not supply one. The application connects to Aurora with short-lived IAM tokens, so its `DATABASE_URL` carries no password (the database master password itself is generated into Secrets Manager and never touches the application). Every resource is named `<tenant>-litellm-<env>`, and the module declares no provider, so you can `for_each` it to run one stack per tenant.
+若您未提供 master key，模組會自動將其產生到 Secrets Manager。應用程式透過短效 IAM token 連線到 Aurora，因此其 `DATABASE_URL` 不含密碼（資料庫 master password 本身會產生到 Secrets Manager，且絕不會傳入應用程式）。每個資源都以 `<tenant>-litellm-<env>` 命名，而模組未宣告任何 provider，因此您可以將其 `for_each` 來為每個租戶執行一個堆疊。
 
 </TabItem>
 <TabItem value="gcp" label="Google Cloud (Cloud Run)">
 
-Provisions a VPC with Private Services Access, Cloud SQL PostgreSQL (primary plus read replica), Memorystore Redis with TLS, a GCS bucket, Secret Manager entries, Cloud Run services, and a global HTTPS load balancer with serverless NEGs.
+佈建一個包含 Private Services Access 的 VPC、Cloud SQL PostgreSQL（主節點加讀取副本）、支援 TLS 的 Memorystore Redis、一個 GCS bucket、Secret Manager 項目、Cloud Run 服務，以及具備 serverless NEG 的全球 HTTPS 負載平衡器。
 
 ```hcl title="main.tf"
 module "litellm" {
@@ -264,33 +264,33 @@ module "litellm" {
 }
 ```
 
-Three GCP-specific caveats. First, always override `image_registry`: it defaults to `ghcr.io/berriai`, which Cloud Run cannot pull from, so the apply succeeds but the services fail at image pull. Point it at an [Artifact Registry remote repository](https://cloud.google.com/artifact-registry/docs/repositories/remote-overview) that proxies `ghcr.io`. Second, the database uses password authentication through Secret Manager rather than IAM auth; LiteLLM's IAM token support is AWS RDS specific. Third, create the DNS record for `lb_domains` pointing at the load balancer IP after apply; the [Google-managed certificate](https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs) will not finish provisioning until the domain resolves to it.
+關於 GCP 有三點注意事項。第一，務必覆寫 `image_registry`：其預設為 `ghcr.io/berriai`，而 Cloud Run 無法從該位置拉取，因此 apply 會成功，但服務會在映像拉取時失敗。請將其指向一個可代理 `ghcr.io` 的 [Artifact Registry 遠端儲存庫](https://cloud.google.com/artifact-registry/docs/repositories/remote-overview)。第二，資料庫使用透過 Secret Manager 的密碼驗證，而非 IAM 驗證；LiteLLM 的 IAM token 支援是 AWS RDS 專用。第三，apply 完成後，請為 `lb_domains` 建立 DNS 記錄並指向負載平衡器 IP；在網域解析到該 IP 之前，[Google 管理的憑證](https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs) 不會完成佈建。
 
 </TabItem>
 </Tabs>
 
-## Verify the deployment
+## 驗證部署 {#verify-the-deployment}
 
-Confirm the proxy is up and can reach its database:
+確認 proxy 已啟動且可連線到其資料庫：
 
 ```bash
 curl -s https://llm.example.com/health/readiness
 ```
 
-Then open the Admin UI at `https://llm.example.com/ui` and log in with your master key.
+接著前往 `https://llm.example.com/ui` 的 Admin UI，並使用您的 master key 登入。
 
-1. **Add a model.** Go to **Models + Endpoints** and click **Add Model**: pick the provider, the model, and enter the provider credentials. With `STORE_MODEL_IN_DB=True` the model is saved to your database, so you manage models here rather than in config files.
+1. **新增模型。** 前往 **Models + Endpoints** 並點擊 **Add Model**：選擇提供者、模型，並輸入提供者憑證。使用 `STORE_MODEL_IN_DB=True` 時，模型會儲存到您的資料庫，因此您會在這裡而非在設定檔中管理模型。
 
-<Image img={require('../../img/ui_add_model_form.png')} alt="Adding a model in the LiteLLM Admin UI" />
+<Image img={require('../../img/ui_add_model_form.png')} alt="在 LiteLLM Admin UI 中新增模型" />
 
-2. **Create a key.** Go to **Virtual Keys** and click **Create New Key**, scoping it to the model you just added.
+2. **建立金鑰。** 前往 **Virtual Keys** 並點擊 **Create New Key**，將範圍限定為您剛新增的模型。
 
-<Image img={require('../../img/ui_create_key_modal.png')} alt="Creating a virtual key in the LiteLLM Admin UI" />
+<Image img={require('../../img/ui_create_key_modal.png')} alt="在 LiteLLM Admin UI 中建立虛擬金鑰" />
 
-3. **Send a request.** Go to the **Test Key** playground, select your key and model, and send a message. A response here proves the full path: load balancer, proxy, database, and provider credentials.
+3. **送出請求。** 前往 **Test Key** playground，選擇您的金鑰與模型，並傳送訊息。此處的回應證明完整路徑：負載平衡器、proxy、資料庫，以及提供者憑證。
 
-<Image img={require('../../img/ui_playground_navigation.png')} alt="Test Key playground in the LiteLLM Admin UI" />
+<Image img={require('../../img/ui_playground_navigation.png')} alt="LiteLLM Admin UI 中的 Test Key playground" />
 
-## Next steps
+## 下一步 {#next-steps}
 
-Harden the deployment with the [production checklist](./prod.md) (worker counts, machine sizing, Redis settings, graceful degradation). Add regions with [Multi-Region Deployment](./multi_region.md). For very high throughput (1000+ RPS), see [resolving DB deadlocks](./db_deadlocks.md).
+使用 [production checklist](./prod.md)（worker 數量、機器大小、Redis 設定、優雅降級）來強化部署。使用 [Multi-Region Deployment](./multi_region.md) 新增區域。若吞吐量非常高（1000+ RPS），請參閱 [resolving DB deadlocks](./db_deadlocks.md)。

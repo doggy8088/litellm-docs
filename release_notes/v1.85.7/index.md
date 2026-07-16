@@ -1,5 +1,5 @@
 ---
-title: "v1.85.7 - Stream Cost Recovery & Cache-Control Cap"
+title: "v1.85.7 - 串流成本復原與 Cache-Control 上限"
 slug: "v1-85-7"
 date: 2026-06-24T04:58:06
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,17 +43,17 @@ pip install litellm==1.85.7
 </TabItem>
 </Tabs>
 
-`v1.85.7` is a patch release on top of [`v1.85.6`](/release_notes/v1.85.6/v1-85-6). It backports cost-tracking recovery for interrupted Anthropic streams, caps Anthropic `cache_control` injection at the 4-block API limit, and pulls in OpenSSL and OSV-flagged dependency bumps for CVE coverage. It also hardens usage parsing by coercing a dict `server_tool_use` into a typed `ServerToolUse` object.
+`v1.85.7` 是建立在 [`v1.85.6`](/release_notes/v1.85.6/v1-85-6) 之上的修補版發行。它回補了中斷的 Anthropic 串流的成本追蹤復原，將 Anthropic `cache_control` 注入上限設為 4 個區塊的 API 限制，並納入 OpenSSL 與 OSV 標記的相依性升級以涵蓋 CVE。此外，也透過將 dict `server_tool_use` 強制轉型為具型別的 `ServerToolUse` 物件來強化使用量解析。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(integrations): cap Anthropic cache_control injection at 4 blocks - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
-- fix(passthrough): recover output tokens for interrupted anthropic streams - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
-- fix(proxy): record partial spend on the failure row for interrupted streams - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
-- fix(passthrough,streaming): recover cost on interrupted and agentic Anthropic streams - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
-- fix(deps): bump osv-flagged dependencies to clear known CVEs - [PR #31122](https://github.com/BerriAI/litellm/pull/31122)
-- fix(docker): bump wolfi-base digest to patch openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
+- fix(integrations): 將 Anthropic cache_control 注入上限設為 4 個區塊 - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
+- fix(passthrough): 復原中斷的 anthropic 串流之輸出 token - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
+- fix(proxy): 在失敗列中記錄中斷串流的部分支出 - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
+- fix(passthrough,streaming): 復原中斷與 agentic Anthropic 串流的成本 - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
+- fix(deps): 升級 osv 標記的相依性以清除已知 CVE - [PR #31122](https://github.com/BerriAI/litellm/pull/31122)
+- fix(docker): 升級 wolfi-base digest 以修補 openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.85.6...v1.85.7

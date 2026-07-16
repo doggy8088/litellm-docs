@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Deepgram 
+# Deepgram {#deepgram}
 
-LiteLLM supports Deepgram's `/listen` endpoint.
+LiteLLM 支援 Deepgram 的 `/listen` 端點。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Deepgram's voice AI platform provides APIs for speech-to-text, text-to-speech, and language understanding. |
-| Provider Route on LiteLLM | `deepgram/` |
-| Provider Doc | [Deepgram ↗](https://developers.deepgram.com/docs/introduction) |
-| Supported OpenAI Endpoints | `/audio/transcriptions` |
+| 說明 | Deepgram 的語音 AI 平台提供語音轉文字、文字轉語音，以及語言理解的 API。 |
+| LiteLLM 上的提供者路由 | `deepgram/` |
+| 提供者文件 | [Deepgram ↗](https://developers.deepgram.com/docs/introduction) |
+| 支援的 OpenAI 端點 | `/audio/transcriptions` |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python
 from litellm import transcription
@@ -27,11 +27,11 @@ response = transcription(model="deepgram/nova-2", file=audio_file)
 print(f"response: {response}")
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM Proxy 使用方式 {#litellm-proxy-usage}
 
-### Add model to config 
+### 將模型加入設定  {#add-model-to-config}
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 
 ```yaml
 model_list:
@@ -46,7 +46,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-### Start proxy 
+### 啟動 proxy  {#start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml 
@@ -54,7 +54,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test 
+### 測試 {#test}
 
 <Tabs>
 <TabItem value="curl" label="Curl">

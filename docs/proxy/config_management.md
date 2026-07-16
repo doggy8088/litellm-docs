@@ -1,14 +1,14 @@
-# File Management
+# 檔案管理 {#file-management}
 
-## `include` external YAML files in a config.yaml 
+## `include` config.yaml 中的外部 YAML 檔案 {#include-external-yaml-files-in-a-configyaml}
 
-You can use `include` to include external YAML files in a config.yaml. 
+您可以使用 `include` 將外部 YAML 檔案包含到 config.yaml 中。 
 
-**Quick Start Usage:**
+**快速上手用法：**
 
-To include a config file, use `include` with either a single file or a list of files. 
+若要包含設定檔，請使用 `include`，可搭配單一檔案或檔案清單。 
 
-Contents of `parent_config.yaml`:
+`parent_config.yaml` 的內容：
 ```yaml
 include:
   - model_config.yaml # 👈 Key change, will include the contents of model_config.yaml
@@ -18,7 +18,7 @@ litellm_settings:
 ```
 
 
-Contents of `model_config.yaml`:
+`model_config.yaml` 的內容：
 ```yaml
 model_list:
   - model_name: gpt-4o
@@ -32,26 +32,23 @@ model_list:
 
 ```
 
-Start proxy server 
+啟動 proxy server 
 
-This will start the proxy server with config `parent_config.yaml`. Since the `include` directive is used, the server will also include the contents of `model_config.yaml`.
+這會使用設定 `parent_config.yaml` 啟動 proxy server。由於使用了 `include` 指令，server 也會包含 `model_config.yaml` 的內容。
 ```
 litellm --config parent_config.yaml --detailed_debug
 ```
 
 
+## 使用 `include` 的範例 {#examples-using-include}
 
-
-
-## Examples using `include`
-
-Include a single file:
+包含單一檔案：
 ```yaml
 include:
   - model_config.yaml
 ```
 
-Include multiple files:
+包含多個檔案：
 ```yaml
 include:
   - model_config.yaml

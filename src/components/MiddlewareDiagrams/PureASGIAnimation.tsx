@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './styles.module.css';
+import useLocaleText from '@site/src/utils/useLocaleText';
+
+const STAGE_LABELS_ZH: Record<string, string> = {
+  'Scope Check': '範圍檢查',
+  'Direct Call': '直接呼叫',
+};
 
 interface Stage {
   label: string;
@@ -15,6 +21,7 @@ const INTERVAL_MS = 1200;
 const PAUSE_MS = 600;
 
 export default function PureASGIAnimation() {
+  const t = useLocaleText();
   const [activeStage, setActiveStage] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -46,7 +53,7 @@ export default function PureASGIAnimation() {
 
   return (
     <div className={styles.pipelineWrapper}>
-      <div className={styles.pipelineLabel}>2 steps per request</div>
+      <div className={styles.pipelineLabel}>{t('每個請求需 2 個步驟', '2 steps per request')}</div>
       <div className={`${styles.pipeline} ${styles.pipelineTwoCol}`}>
         {STAGES.map((stage, i) => (
           <div className={styles.stageWrapper} key={i}>
@@ -56,7 +63,7 @@ export default function PureASGIAnimation() {
               }`}
             >
               <div className={styles.stageNumber}>{i + 1}</div>
-              <div className={styles.stageLabel}>{stage.label}</div>
+              <div className={styles.stageLabel}>{t(STAGE_LABELS_ZH[stage.label], stage.label)}</div>
               <div className={styles.stageSubtitle}>{stage.subtitle}</div>
             </div>
           </div>

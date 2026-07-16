@@ -1,16 +1,16 @@
-# Adding OpenAI-Compatible Providers
+# 新增與 OpenAI 相容的提供者 {#adding-openai-compatible-providers}
 
-For simple OpenAI-compatible providers (like Hyperbolic, Nscale, etc.), you can add support by editing a single JSON file.
+對於簡單的 OpenAI 相容提供者（例如 Hyperbolic、Nscale 等），您可以透過編輯單一 JSON 檔案來新增支援。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-1. Edit `litellm/llms/openai_like/providers.json`
-2. Add your provider configuration
-3. Test with: `litellm.completion(model="your_provider/model-name", ...)`
+1. 編輯 `litellm/llms/openai_like/providers.json`
+2. 新增您的提供者設定
+3. 使用以下指令測試： `litellm.completion(model="your_provider/model-name", ...)`
 
-## Basic Configuration
+## 基本設定 {#basic-configuration}
 
-For a fully OpenAI-compatible provider:
+對於完全相容 OpenAI 的提供者：
 
 ```json
 {
@@ -21,26 +21,26 @@ For a fully OpenAI-compatible provider:
 }
 ```
 
-That's it! The provider is now available.
+就是這樣！此提供者現在已可使用。
 
-## Configuration Options
+## 設定選項 {#configuration-options}
 
-### Required Fields
+### 必要欄位 {#required-fields}
 
-- `base_url` - API endpoint (e.g., `https://api.provider.com/v1`)
-- `api_key_env` - Environment variable name for API key (e.g., `PROVIDER_API_KEY`)
+- `base_url` - API 端點（例如：`https://api.provider.com/v1`）
+- `api_key_env` - API 金鑰的環境變數名稱（例如：`PROVIDER_API_KEY`）
 
-### Optional Fields
+### 選用欄位 {#optional-fields}
 
-- `api_base_env` - Environment variable to override `base_url`
-- `base_class` - Use `"openai_gpt"` (default) or `"openai_like"`
-- `param_mappings` - Map OpenAI parameter names to provider-specific names
-- `constraints` - Parameter value constraints (min/max)
-- `special_handling` - Special behaviors like content format conversion
+- `api_base_env` - 用來覆寫 `base_url` 的環境變數
+- `base_class` - 使用 `"openai_gpt"`（預設）或 `"openai_like"`
+- `param_mappings` - 將 OpenAI 參數名稱對應至提供者特定名稱
+- `constraints` - 參數值限制（最小/最大）
+- `special_handling` - 特殊行為，例如內容格式轉換
 
-## Examples
+## 範例 {#examples}
 
-### Simple Provider (Fully Compatible)
+### 簡單提供者（完全相容） {#simple-provider-fully-compatible}
 
 ```json
 {
@@ -51,7 +51,7 @@ That's it! The provider is now available.
 }
 ```
 
-### Provider with Parameter Mapping
+### 具有參數對應的提供者 {#provider-with-parameter-mapping}
 
 ```json
 {
@@ -65,7 +65,7 @@ That's it! The provider is now available.
 }
 ```
 
-### Provider with Constraints
+### 具有限制的提供者 {#provider-with-constraints}
 
 ```json
 {
@@ -80,9 +80,9 @@ That's it! The provider is now available.
 }
 ```
 
-## Responses API Support
+## Responses API 支援 {#responses-api-support}
 
-If your provider also supports the OpenAI Responses API (`/v1/responses`), add `supported_endpoints`:
+如果您的提供者也支援 OpenAI Responses API（`/v1/responses`），請新增 `supported_endpoints`：
 
 ```json
 {
@@ -94,7 +94,7 @@ If your provider also supports the OpenAI Responses API (`/v1/responses`), add `
 }
 ```
 
-This enables `litellm.responses()` with zero additional code:
+這可在完全不需要額外程式碼的情況下啟用 `litellm.responses()`：
 
 ```python
 import litellm
@@ -106,11 +106,11 @@ response = litellm.responses(
 print(response.output)
 ```
 
-If `supported_endpoints` is omitted, it defaults to `[]`. Chat completions is always enabled for JSON providers regardless of this field.
+如果省略 `supported_endpoints`，預設為 `[]`。無論此欄位為何，JSON 提供者一律會啟用 chat completions。
 
-The provider inherits all request/response handling from OpenAI's Responses API — streaming, tools, and all standard parameters work out of the box.
+此提供者會沿用 OpenAI Responses API 的所有請求/回應處理——串流、工具，以及所有標準參數都可直接運作。
 
-## Usage
+## 使用方式 {#usage}
 
 ```python
 import litellm
@@ -132,22 +132,22 @@ response = litellm.responses(
 )
 ```
 
-## When to Use Python Instead
+## 何時改用 Python {#when-to-use-python-instead}
 
-Use a Python config class if you need:
+如果您需要以下項目，請使用 Python 設定類別：
 
-- Custom authentication flows (OAuth, JWT, etc.)
-- Complex request/response transformations
-- Provider-specific streaming logic
-- Advanced tool calling modifications
+- 自訂驗證流程（OAuth、JWT 等）
+- 複雜的請求/回應轉換
+- 提供者特定的串流邏輯
+- 進階工具呼叫修改
 
-For chat completions, create a config class in `litellm/llms/your_provider/chat/transformation.py` that inherits from `OpenAIGPTConfig` or `OpenAILikeChatConfig`.
+對於 chat completions，請在 `litellm/llms/your_provider/chat/transformation.py` 中建立繼承自 `OpenAIGPTConfig` 或 `OpenAILikeChatConfig` 的設定類別。
 
-For responses API with small overrides, inherit from `OpenAIResponsesAPIConfig` and override only what's needed. See `litellm/llms/perplexity/responses/transformation.py` for a minimal example (~40 lines vs 400+).
+對於只需少量覆寫的 responses API，請繼承 `OpenAIResponsesAPIConfig`，並僅覆寫需要的部分。請參閱 `litellm/llms/perplexity/responses/transformation.py` 取得最小範例（約 40 行，相較於 400+ 行）。
 
-## Testing
+## 測試 {#testing}
 
-Test your provider:
+測試您的提供者：
 
 ```bash
 # Quick test
@@ -163,6 +163,6 @@ print(response.choices[0].message.content)
 "
 ```
 
-## Reference
+## 參考資料 {#reference}
 
-See existing providers in `litellm/llms/openai_like/providers.json` for examples.
+請參閱 `litellm/llms/openai_like/providers.json` 中的現有提供者作為範例。

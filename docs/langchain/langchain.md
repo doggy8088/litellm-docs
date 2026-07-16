@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Using ChatLiteLLM() - Langchain
+# 使用 ChatLiteLLM() - Langchain {#using-chatlitellm---langchain}
 
-## Pre-Requisites
+## 先決條件 {#pre-requisites}
 ```shell
 !uv add litellm langchain
 ```
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -111,11 +111,11 @@ chat.invoke(messages)
 </TabItem>
 </Tabs>
 
-## Use Langchain ChatLiteLLM with MLflow
+## 使用 Langchain ChatLiteLLM 搭配 MLflow {#use-langchain-chatlitellm-with-mlflow}
 
-MLflow provides open-source observability solution for ChatLiteLLM.
+MLflow 為 ChatLiteLLM 提供開源可觀測性解決方案。
 
-To enable the integration, simply call `mlflow.litellm.autolog()` before in your code. No other setup is necessary.
+若要啟用整合，只要先在程式碼中呼叫 `mlflow.litellm.autolog()` 即可。無需其他設定。
 
 ```python
 import mlflow
@@ -123,7 +123,7 @@ import mlflow
 mlflow.litellm.autolog()
 ```
 
-Once the auto-tracing is enabled, you can invoke `ChatLiteLLM` and see recorded traces in MLflow.
+啟用自動追蹤後，您可以呼叫 `ChatLiteLLM`，並在 MLflow 中查看已記錄的追蹤。
 
 ```python
 import os
@@ -135,7 +135,7 @@ chat = ChatLiteLLM(model="gpt-4o-mini")
 chat.invoke("Hi!")
 ```
 
-## Use Langchain ChatLiteLLM with Lunary
+## 使用 Langchain ChatLiteLLM 搭配 Lunary {#use-langchain-chatlitellm-with-lunary}
 ```python
 import os
 from langchain.chat_models import ChatLiteLLM
@@ -158,16 +158,16 @@ chat = ChatLiteLLM(
 chat(messages)
 ```
 
-Get more details [here](../observability/lunary_integration.md)
+更多詳細資訊請見[此處](../observability/lunary_integration.md)
 
-## Use LangChain ChatLiteLLM + Langfuse
-Checkout this section [here](../observability/langfuse_integration#use-langchain-chatlitellm--langfuse) for more details on how to integrate Langfuse with ChatLiteLLM.
+## 使用 LangChain ChatLiteLLM + Langfuse {#use-langchain-chatlitellm--langfuse}
+請查看[此處](../observability/langfuse_integration#use-langchain-chatlitellm--langfuse)這個章節，以了解更多關於如何將 Langfuse 與 ChatLiteLLM 整合的資訊。
 
-## Using Tags with LangChain and LiteLLM
+## 在 LangChain 和 LiteLLM 中使用標籤 {#using-tags-with-langchain-and-litellm}
 
-Tags are a powerful feature in LiteLLM that allow you to categorize, filter, and track your LLM requests. When using LangChain with LiteLLM, you can pass tags through the `extra_body` parameter in the metadata.
+標籤是 LiteLLM 中一項強大的功能，可讓您將 LLM 請求分類、篩選並追蹤。當搭配 LiteLLM 使用 LangChain 時，您可以透過中繼資料中的 `extra_body` 參數傳遞標籤。
 
-### Basic Tag Usage
+### 基本標籤用法 {#basic-tag-usage}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -263,9 +263,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-### Advanced Tag Patterns
+### 進階標籤模式 {#advanced-tag-patterns}
 
-#### Dynamic Tags Based on Context
+#### 根據內容動態標籤 {#dynamic-tags-based-on-context}
 
 ```python
 import os
@@ -313,7 +313,7 @@ messages = [HumanMessage(content="Help me with this task")]
 response = premium_chat.invoke(messages)
 ```
 
-#### Tags for Cost Tracking and Analytics
+#### 用於成本追蹤與分析的標籤 {#tags-for-cost-tracking-and-analytics}
 
 ```python
 import os
@@ -348,7 +348,7 @@ messages = [
 response = cost_tracking_chat.invoke(messages)
 ```
 
-#### Tags for A/B Testing
+#### 用於 A/B 測試的標籤 {#tags-for-ab-testing}
 
 ```python
 import os
@@ -391,9 +391,9 @@ response_a = variant_a_chat.invoke(test_message)
 response_b = variant_b_chat.invoke(test_message)
 ```
 
-### Tag Best Practices
+### 標籤最佳實務 {#tag-best-practices}
 
-#### 1. **Consistent Naming Convention**
+#### 1. **一致的命名慣例** {#1-consistent-naming-convention}
 ```python
 # ✅ Good: Consistent, descriptive tags
 tags = ["production", "api-v2", "customer-support", "urgent"]
@@ -402,7 +402,7 @@ tags = ["production", "api-v2", "customer-support", "urgent"]
 tags = ["prod", "v2", "support", "urgent123"]
 ```
 
-#### 2. **Hierarchical Tags**
+#### 2. **階層式標籤** {#2-hierarchical-tags}
 ```python
 # ✅ Good: Hierarchical structure
 tags = ["env:production", "team:backend", "service:api", "priority:high"]
@@ -410,7 +410,7 @@ tags = ["env:production", "team:backend", "service:api", "priority:high"]
 # This allows for easy filtering and grouping
 ```
 
-#### 3. **Include Context Information**
+#### 3. **包含內容資訊** {#3-include-context-information}
 ```python
 extra_body={
     "metadata": {
@@ -423,24 +423,24 @@ extra_body={
 }
 ```
 
-#### 4. **Tag Categories**
-Consider organizing tags into categories:
-- **Environment**: `production`, `staging`, `development`
-- **Team/Service**: `backend`, `frontend`, `api`, `worker`
-- **Feature**: `authentication`, `payment`, `notification`
-- **Priority**: `critical`, `high`, `medium`, `low`
-- **User Type**: `premium`, `enterprise`, `free`
+#### 4. **標籤類別** {#4-tag-categories}
+考慮將標籤整理成以下類別：
+- **環境**：`production`, `staging`, `development`
+- **團隊/服務**：`backend`, `frontend`, `api`, `worker`
+- **功能**：`authentication`, `payment`, `notification`
+- **優先順序**：`critical`, `high`, `medium`, `low`
+- **使用者類型**：`premium`, `enterprise`, `free`
 
-### Using Tags with LiteLLM Proxy
+### 在 LiteLLM Proxy 中使用標籤 {#using-tags-with-litellm-proxy}
 
-When using tags with LiteLLM Proxy, you can:
+使用 LiteLLM Proxy 搭配標籤時，您可以：
 
-1. **Filter requests** based on tags
-2. **Track costs** by tags in spend reports
-3. **Apply routing rules** based on tags
-4. **Monitor usage** with tag-based analytics
+1. **根據標籤篩選請求**
+2. **依標籤追蹤成本**，顯示於支出報表中
+3. **根據標籤套用路由規則**
+4. **使用基於標籤的分析監控用量**
 
-#### Example Proxy Configuration with Tags
+#### 含標籤的範例 Proxy 設定 {#example-proxy-configuration-with-tags}
 
 ```yaml
 # config.yaml
@@ -458,9 +458,9 @@ tag_routing:
     models: ["gpt-3.5-turbo", "claude-3-haiku"]
 ```
 
-### Monitoring and Analytics
+### 監控與分析 {#monitoring-and-analytics}
 
-Tags enable powerful analytics capabilities:
+標籤可啟用強大的分析功能：
 
 ```python
 # Example: Get spend reports by tags
@@ -479,4 +479,4 @@ response = requests.get(
 spend_by_tags = response.json()
 ```
 
-This documentation covers the essential patterns for using tags effectively with LangChain and LiteLLM, enabling better organization, tracking, and analytics of your LLM requests.
+本文件涵蓋了在 LangChain 和 LiteLLM 中有效使用標籤的核心模式，讓您能更好地組織、追蹤並分析您的 LLM 請求。

@@ -1,6 +1,6 @@
 ---
 slug: claude-code-beta-headers-incident
-title: "Incident Report: Invalid beta headers with Claude Code"
+title: "Claude Code 無效 beta 標頭事件報告"
 date: 2026-02-16T10:00:00
 authors:
   - sameer
@@ -10,97 +10,97 @@ tags: [incident-report, anthropic, stability]
 hide_table_of_contents: false
 ---
 
-**Date:** February 13, 2026
-**Duration:** ~3 hours
-**Severity:** High
-**Status:** Resolved
+**日期：** 2026 年 2 月 13 日
+**持續時間：** 約 3 小時
+**嚴重性：** 高
+**狀態：** 已解決
 
-> **Note:** This fix will be available starting from `v1.81.13-nightly` or higher of LiteLLM.
+> **注意：** 此修正將自 LiteLLM 的 `v1.81.13-nightly` 或更高版本開始提供。
 
-## Summary
+## 摘要 {#summary}
 
-Claude Code began sending unsupported Anthropic beta headers to non-Anthropic providers (Bedrock, Azure AI, Vertex AI), causing `invalid beta flag` errors. LiteLLM was forwarding all beta headers without provider-specific validation. Users experienced request failures when routing Claude Code requests through LiteLLM to these providers.
+Claude Code 開始將不受支援的 Anthropic beta 標頭傳送給非 Anthropic 提供者（Bedrock、Azure AI、Vertex AI），造成 `invalid beta flag` 錯誤。LiteLLM 在未進行提供者特定驗證的情況下轉送了所有 beta 標頭。當透過 LiteLLM 將 Claude Code 請求路由至這些提供者時，使用者會遇到請求失敗。
 
-- **LLM calls to Anthropic:** No impact.
-- **LLM calls to Bedrock/Azure/Vertex:** Failed with `invalid beta flag` errors when unsupported headers were present.
-- **Cost tracking and routing:** No impact.
+- **對 Anthropic 的 LLM 請求：** 無影響。
+- **對 Bedrock/Azure/Vertex 的 LLM 請求：** 在出現不受支援的標頭時，會以 `invalid beta flag` 錯誤失敗。
+- **成本追蹤與路由：** 無影響。
 
 {/* truncate */}
 
 ---
 
-## Background
+## 背景 {#background}
 
-Anthropic uses beta headers to enable experimental features in Claude. When Claude Code makes API requests, it includes headers like `anthropic-beta: prompt-caching-scope-2026-01-05,advanced-tool-use-2025-11-20`. However, not all providers support all Anthropic beta features.
+Anthropic 使用 beta 標頭來啟用 Claude 的實驗性功能。當 Claude Code 發出 API 請求時，會包含例如 `anthropic-beta: prompt-caching-scope-2026-01-05,advanced-tool-use-2025-11-20` 之類的標頭。然而，並非所有提供者都支援所有 Anthropic beta 功能。
 
-Before this incident, LiteLLM forwarded all beta headers to all providers without validation:
+在這次事件之前，LiteLLM 會在未驗證的情況下，將所有 beta 標頭轉送給所有提供者：
 
 ```mermaid
 sequenceDiagram
     participant CC as Claude Code
-    participant LP as LiteLLM (old behavior)
-    participant Provider as Provider (Bedrock/Azure/Vertex)
+    participant LP as LiteLLM（舊行為）
+    participant Provider as 提供者（Bedrock/Azure/Vertex）
 
-    CC->>LP: Request with beta headers
+    CC->>LP: 含 beta 標頭的請求
     Note over CC,LP: anthropic-beta: header1,header2,header3
 
-    LP->>Provider: Forward ALL headers (no validation)
+    LP->>Provider: 轉送所有標頭（未驗證）
     Note over LP,Provider: anthropic-beta: header1,header2,header3
 
-    Provider-->>LP: ❌ Error: invalid beta flag
-    LP-->>CC: Request fails
+    Provider-->>LP: ❌ 錯誤：無效的 beta 標記
+    LP-->>CC: 請求失敗
 ```
 
-Requests succeeded for Anthropic (native support) but failed for other providers when Claude Code sent headers those providers didn't support.
+當 Claude Code 傳送這些提供者不支援的標頭時，對 Anthropic（原生支援）的請求會成功，但對其他提供者會失敗。
 
 ---
 
-## Root cause
+## 根本原因 {#root-cause}
 
-LiteLLM lacked provider-specific beta header validation. When Claude Code introduced new beta features or sent headers that specific providers didn't support, those headers were blindly forwarded, causing provider API errors.
+LiteLLM 缺少提供者特定的 beta 標頭驗證。當 Claude Code 引入新的 beta 功能，或傳送特定提供者不支援的標頭時，這些標頭會被直接轉送，導致提供者 API 錯誤。
 
 ---
 
-## Remediation
+## 修正措施 {#remediation}
 
-| # | Action | Status | Code |
+| # | 動作 | 狀態 | 程式碼 |
 |---|---|---|---|
-| 1 | Create `anthropic_beta_headers_config.json` with provider-specific mappings | ✅ Done | [`anthropic_beta_headers_config.json`](https://github.com/BerriAI/litellm/blob/main/litellm/anthropic_beta_headers_config.json) |
-| 2 | Implement strict validation: headers must be explicitly mapped to be forwarded | ✅ Done | [`litellm_logging.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm_core_utils/litellm_logging.py) |
-| 3 | Add `/reload/anthropic_beta_headers` endpoint for dynamic config updates | ✅ Done | Proxy management endpoints |
-| 4 | Add `/schedule/anthropic_beta_headers_reload` for automatic periodic updates | ✅ Done | Proxy management endpoints |
-| 5 | Support `LITELLM_ANTHROPIC_BETA_HEADERS_URL` for custom config sources | ✅ Done | Environment configuration |
-| 6 | Support `LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS` for air-gapped deployments | ✅ Done | Environment configuration |
+| 1 | 建立具備提供者特定對應的 `anthropic_beta_headers_config.json` | ✅ 完成 | [`anthropic_beta_headers_config.json`](https://github.com/BerriAI/litellm/blob/main/litellm/anthropic_beta_headers_config.json) |
+| 2 | 實作嚴格驗證：標頭必須明確對應後才能轉送 | ✅ 完成 | [`litellm_logging.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm_core_utils/litellm_logging.py) |
+| 3 | 新增 `/reload/anthropic_beta_headers` 端點以動態更新設定 | ✅ 完成 | Proxy 管理端點 |
+| 4 | 新增 `/schedule/anthropic_beta_headers_reload` 以自動週期性更新 | ✅ 完成 | Proxy 管理端點 |
+| 5 | 支援 `LITELLM_ANTHROPIC_BETA_HEADERS_URL` 作為自訂設定來源 | ✅ 完成 | 環境設定 |
+| 6 | 支援 `LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS` 以供隔離網路部署使用 | ✅ 完成 | 環境設定 |
 
-Now LiteLLM validates and transforms headers per-provider:
+現在 LiteLLM 會依提供者驗證並轉換標頭：
 
 ```mermaid
 sequenceDiagram
     participant CC as Claude Code
-    participant LP as LiteLLM (new behavior)
+    participant LP as LiteLLM（新行為）
     participant Config as Beta Headers Config
-    participant Provider as Provider (Bedrock/Azure/Vertex)
+    participant Provider as 提供者（Bedrock/Azure/Vertex）
 
-    CC->>LP: Request with beta headers
+    CC->>LP: 含 beta 標頭的請求
     Note over CC,LP: anthropic-beta: header1,header2,header3
 
-    LP->>Config: Load header mapping for provider
-    Config-->>LP: Returns mapping (header→value or null)
+    LP->>Config: 載入該提供者的標頭對應
+    Config-->>LP: 回傳對應（header→value 或 null）
 
-    Note over LP: Validate & Transform:<br/>1. Check if header exists in mapping<br/>2. Filter out null values<br/>3. Map to provider-specific names
+    Note over LP: 驗證與轉換：<br/>1. 檢查標頭是否存在於對應中<br/>2. 過濾 null 值<br/>3. 對應為提供者特定名稱
 
-    LP->>Provider: Request with filtered & mapped headers
-    Note over LP,Provider: anthropic-beta: mapped-header2<br/>(header1, header3 filtered out)
+    LP->>Provider: 使用過濾與對應後的標頭發送請求
+    Note over LP,Provider: anthropic-beta: mapped-header2<br/>(header1, header3 已過濾)
 
-    Provider-->>LP: ✅ Success response
-    LP-->>CC: Response
+    Provider-->>LP: ✅ 成功回應
+    LP-->>CC: 回應
 ```
 
 ---
 
-## Dynamic configuration updates
+## 動態設定更新 {#dynamic-configuration-updates}
 
-A key improvement is zero-downtime configuration updates. When Anthropic releases new beta features, users can update their configuration without restarting:
+一項關鍵改進是零停機設定更新。當 Anthropic 發布新的 beta 功能時，使用者可以在不重新啟動的情況下更新設定：
 
 ```bash
 # Manually trigger reload (no restart needed)
@@ -112,13 +112,13 @@ curl -X POST "https://your-proxy-url/schedule/anthropic_beta_headers_reload?hour
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
-This prevents future incidents where Claude Code introduces new headers before LiteLLM configuration is updated.
+這可防止未來 Claude Code 在 LiteLLM 設定尚未更新前先引入新標頭而發生類似事件。
 
 ---
 
-## Configuration format
+## 設定格式 {#configuration-format}
 
-The `anthropic_beta_headers_config.json` file maps input headers to provider-specific output headers:
+`anthropic_beta_headers_config.json` 檔案會將輸入標頭對應到提供者特定的輸出標頭：
 
 ```json
 {
@@ -138,22 +138,22 @@ The `anthropic_beta_headers_config.json` file maps input headers to provider-spe
 }
 ```
 
-**Validation rules:**
-1. Headers must exist in the mapping for the target provider
-2. Headers with `null` values are filtered out (unsupported)
-3. Header names can be transformed per-provider (e.g., Bedrock uses different names for some features)
+**驗證規則：**
+1. 標頭必須存在於目標提供者的對應中
+2. 具有 `null` 值的標頭會被過濾掉（不支援）
+3. 標頭名稱可依提供者轉換（例如，Bedrock 對某些功能使用不同名稱）
 
 ---
 
-## Resolution steps for users
+## 使用者的解決步驟 {#resolution-steps-for-users}
 
-For users still experiencing issues, update to the latest LiteLLM version if < v1.81.11-nightly:
+若您仍遇到問題，請更新至最新的 LiteLLM 版本（若 < v1.81.11-nightly）：
 
 ```bash
 pip install --upgrade litellm
 ```
 
-Or manually reload the configuration without restarting:
+或者，在不重新啟動的情況下手動重新載入設定：
 
 ```bash
 curl -X POST "https://your-proxy-url/reload/anthropic_beta_headers" \
@@ -162,7 +162,7 @@ curl -X POST "https://your-proxy-url/reload/anthropic_beta_headers" \
 
 ---
 
-## Related documentation
+## 相關文件 {#related-documentation}
 
-- [Managing Anthropic Beta Headers](../../docs/proxy/sync_anthropic_beta_headers) - Complete configuration guide
-- [`anthropic_beta_headers_config.json`](https://github.com/BerriAI/litellm/blob/main/litellm/anthropic_beta_headers_config.json) - Current configuration file
+- [管理 Anthropic Beta 標頭](../../docs/proxy/sync_anthropic_beta_headers) - 完整設定指南
+- [`anthropic_beta_headers_config.json`](https://github.com/BerriAI/litellm/blob/main/litellm/anthropic_beta_headers_config.json) - 目前的設定檔

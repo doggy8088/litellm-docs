@@ -1,5 +1,5 @@
 ---
-title: "v1.75.5-stable - Redis latency improvements"
+title: "v1.75.5-stable - Redis 延遲改善"
 slug: "v1-75-5"
 date: 2025-08-10T10:00:00
 authors:
@@ -19,7 +19,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -43,24 +43,24 @@ pip install litellm==1.75.5.post2
 
 ---
 
-## Key Highlights
+## 主要亮點 {#key-highlights}
 
-- **Redis - Latency Improvements** - Reduces P99 latency by 50% with Redis enabled. 
-- **Responses API Session Management** - Support for managing responses API sessions with images.
-- **Oracle Cloud Infrastructure** - New LLM provider for calling models on Oracle Cloud Infrastructure.
-- **Digital Ocean's Gradient AI** - New LLM provider for calling models on Digital Ocean's Gradient AI platform.
-
----
-
-### Risk of Upgrade
-
-If you build the proxy from the pip package, you should hold off on upgrading. This version makes `prisma migrate deploy` our default for managing the DB. This is safer, as it doesn't reset the DB, but it requires a manual `prisma generate` step. 
-
-Users of our Docker image, are **not** affected by this change. 
+- **Redis - 延遲改善** - 在啟用 Redis 時將 P99 延遲降低 50%。 
+- **Responses API 工作階段管理** - 支援管理含圖片的 responses API 工作階段。
+- **Oracle Cloud Infrastructure** - 用於在 Oracle Cloud Infrastructure 上呼叫模型的新 LLM 提供者。
+- **Digital Ocean's Gradient AI** - 用於在 Digital Ocean's Gradient AI 平台上呼叫模型的新 LLM 提供者。
 
 ---
 
-## Redis Latency Improvements
+### 升級風險 {#risk-of-upgrade}
+
+如果您是從 pip 套件建置 proxy，應該暫緩升級。這個版本會讓 `prisma migrate deploy` 成為我們管理 DB 的預設值。這樣更安全，因為不會重設 DB，但需要手動 `prisma generate` 步驟。 
+
+Docker 映像的使用者不會受到此變更影響。 
+
+---
+
+## Redis 延遲改善 {#redis-latency-improvements}
 
 <Image 
   img={require('../../img/release_notes/faster_caching_calls.png')}
@@ -69,11 +69,11 @@ Users of our Docker image, are **not** affected by this change.
 
 <br/>
 
-This release adds in-memory caching for Redis requests, enabling faster response times in high-traffic. Now, LiteLLM instances will check their in-memory cache for a cache hit, before checking Redis. This reduces caching-related latency from 100ms for LLM API calls to sub-1ms, on cache hits. 
+這個版本為 Redis 請求新增了記憶體內快取，讓高流量情境下的回應時間更快。現在，LiteLLM 實例會先檢查其記憶體內快取是否命中，然後才檢查 Redis。這將 LLM API 呼叫的快取相關延遲從 100ms 降低到命中快取時的 1ms 以下。 
 
 ---
 
-## Responses API Session Management w/ Images
+## 含圖片的 Responses API 工作階段管理 {#responses-api-session-management-w-images}
 
 <Image 
   img={require('../../img/release_notes/responses_api_session_mgt_images.jpg')}
@@ -82,16 +82,15 @@ This release adds in-memory caching for Redis requests, enabling faster response
 
 <br/>
 
-LiteLLM now supports session management for Responses API requests with images. This is great for use-cases like chatbots, that are using the Responses API to track the state of a conversation. LiteLLM session management works across **ALL** LLM API's (including Anthropic, Bedrock, OpenAI, etc). LiteLLM session management works by storing the request and response content in an s3 bucket, you can specify. 
+LiteLLM 現在支援含圖片的 Responses API 請求的工作階段管理。這對於像聊天機器人這類使用 Responses API 追蹤對話狀態的使用情境非常有幫助。LiteLLM 工作階段管理可跨 **所有** LLM API 運作（包括 Anthropic、Bedrock、OpenAI 等）。LiteLLM 工作階段管理的運作方式是將您可指定的請求與回應內容儲存在 s3 bucket 中。 
 
 ---
 
+## 新模型 / 更新模型 {#new-models--updated-models}
 
-## New Models / Updated Models
+#### 新模型支援 {#new-model-support}
 
-#### New Model Support
-
-| Provider    | Model                                  | Context Window | Input ($/1M tokens) | Output ($/1M tokens) |
+| 提供者    | 模型                                  | 上下文視窗 | 輸入（$/100萬 tokens） | 輸出（$/100萬 tokens） |
 | ----------- | -------------------------------------- | -------------- | ------------------- | -------------------- | 
 | Bedrock | `bedrock/us.anthropic.claude-opus-4-1-20250805-v1:0` | 200k | $15 | $75 |
 | Bedrock | `bedrock/openai.gpt-oss-20b-1:0` | 200k | 0.07 | 0.3 |
@@ -119,182 +118,179 @@ LiteLLM now supports session management for Responses API requests with images. 
 | Azure | `azure/gpt-5-chat` | 400k | 1.25 | 10 | 
 | Azure | `azure/gpt-5-chat-latest` | 400k | 1.25 | 10 | 
 
-#### Features
+#### 功能 {#features}
 
 - **[OCI](../../docs/providers/oci)**
-    - New LLM provider - [PR #13206](https://github.com/BerriAI/litellm/pull/13206)
+    - 新 LLM 提供者 - [PR #13206](https://github.com/BerriAI/litellm/pull/13206)
 - **[JinaAI](../../docs/providers/jina_ai)**
-    - support multimodal embedding models - [PR #13181](https://github.com/BerriAI/litellm/pull/13181)
+    - 支援多模態 embedding 模型 - [PR #13181](https://github.com/BerriAI/litellm/pull/13181)
 - **GPT-5 ([OpenAI](../../docs/providers/openai)/[Azure](../../docs/providers/azure))**
-    - Support drop_params for temperature - [PR #13390](https://github.com/BerriAI/litellm/pull/13390)
-    - Map max_tokens to max_completion_tokens - [PR #13390](https://github.com/BerriAI/litellm/pull/13390)
+    - 支援 temperature 的 drop_params - [PR #13390](https://github.com/BerriAI/litellm/pull/13390)
+    - 將 max_tokens 對應到 max_completion_tokens - [PR #13390](https://github.com/BerriAI/litellm/pull/13390)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Add claude-opus-4-1 on model cost map - [PR #13384](https://github.com/BerriAI/litellm/pull/13384)
+    - 在 model cost map 中新增 claude-opus-4-1 - [PR #13384](https://github.com/BerriAI/litellm/pull/13384)
 - **[OpenRouter](../../docs/providers/openrouter)**
-    - Add gpt-oss to model cost map - [PR #13442](https://github.com/BerriAI/litellm/pull/13442)
+    - 在 model cost map 中新增 gpt-oss - [PR #13442](https://github.com/BerriAI/litellm/pull/13442)
 - **[Cerebras](../../docs/providers/cerebras)**
-    - Add gpt-oss to model cost map - [PR #13442](https://github.com/BerriAI/litellm/pull/13442)
+    - 在 model cost map 中新增 gpt-oss - [PR #13442](https://github.com/BerriAI/litellm/pull/13442)
 - **[Azure](../../docs/providers/azure)**
-    - Support drop params for ‘temperature’ on o-series models - [PR #13353](https://github.com/BerriAI/litellm/pull/13353)
+    - 支援 o-series 模型的 ‘temperature’ drop params - [PR #13353](https://github.com/BerriAI/litellm/pull/13353)
 - **[GradientAI](../../docs/providers/gradient_ai)**
-    - New LLM Provider - [PR #12169](https://github.com/BerriAI/litellm/pull/12169)
+    - 新 LLM 提供者 - [PR #12169](https://github.com/BerriAI/litellm/pull/12169)
 
-#### Bugs
+#### 錯誤 {#bugs}
 
 - **[OpenAI](../../docs/providers/openai)**
-    - Add ‘service_tier’ and ‘safety_identifier’ as supported responses api params - [PR #13258](https://github.com/BerriAI/litellm/pull/13258)
-    - Correct pricing for web search on 4o-mini - [PR #13269](https://github.com/BerriAI/litellm/pull/13269)
+    - 將 ‘service_tier’ 和 ‘safety_identifier’ 新增為受支援的 responses api 參數 - [PR #13258](https://github.com/BerriAI/litellm/pull/13258)
+    - 修正 4o-mini 的 web search 定價 - [PR #13269](https://github.com/BerriAI/litellm/pull/13269)
 - **[Mistral](../../docs/providers/mistral)**
-    - Handle $id and $schema fields when calling mistral - [PR #13389](https://github.com/BerriAI/litellm/pull/13389)
+    - 呼叫 mistral 時處理 $id 與 $schema 欄位 - [PR #13389](https://github.com/BerriAI/litellm/pull/13389)
 ---
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Features
+#### 功能 {#features-1}
 
 - `/responses` 
-    - Responses API Session Handling w/ support for images - [PR #13347](https://github.com/BerriAI/litellm/pull/13347)
-    - failed if input containing ResponseReasoningItem - [PR #13465](https://github.com/BerriAI/litellm/pull/13465)
-    - Support custom tools - [PR #13418](https://github.com/BerriAI/litellm/pull/13418)
+    - 支援圖片的 Responses API 工作階段處理 - [PR #13347](https://github.com/BerriAI/litellm/pull/13347)
+    - 若輸入包含 ResponseReasoningItem 則失敗 - [PR #13465](https://github.com/BerriAI/litellm/pull/13465)
+    - 支援自訂工具 - [PR #13418](https://github.com/BerriAI/litellm/pull/13418)
 
-#### Bugs
+#### 錯誤 {#bugs-1}
 
 - `/chat/completions` 
-    - Fix completion_token_details usage object missing ‘text’ tokens - [PR #13234](https://github.com/BerriAI/litellm/pull/13234)
-    - (SDK) handle tool being a pydantic object - [PR #13274](https://github.com/BerriAI/litellm/pull/13274)
-    - include cost in streaming usage object - [PR #13418](https://github.com/BerriAI/litellm/pull/13418)
-    - Exclude none fields on /chat/completion - allows usage with n8n - [PR #13320](https://github.com/BerriAI/litellm/pull/13320)
+    - 修正 completion_token_details usage 物件缺少 ‘text’ tokens - [PR #13234](https://github.com/BerriAI/litellm/pull/13234)
+    - （SDK）處理工具為 pydantic 物件 - [PR #13274](https://github.com/BerriAI/litellm/pull/13274)
+    - 在串流 usage 物件中包含成本 - [PR #13418](https://github.com/BerriAI/litellm/pull/13418)
+    - 在 /chat/completion 排除 none 欄位 - 允許與 n8n 搭配使用 - [PR #13320](https://github.com/BerriAI/litellm/pull/13320)
 - `/responses` 
-    - Transform function call in response for non-openai models (gemini/anthropic) - [PR #13260](https://github.com/BerriAI/litellm/pull/13260)
-    - Fix unsupported operand error with model groups - [PR #13293](https://github.com/BerriAI/litellm/pull/13293)
-    - Responses api session management for streaming responses - [PR #13396](https://github.com/BerriAI/litellm/pull/13396)
+    - 轉換非 OpenAI 模型（gemini/anthropic）回應中的 function call - [PR #13260](https://github.com/BerriAI/litellm/pull/13260)
+    - 修正 model groups 的不支援運算元錯誤 - [PR #13293](https://github.com/BerriAI/litellm/pull/13293)
+    - 串流回應的 responses api 工作階段管理 - [PR #13396](https://github.com/BerriAI/litellm/pull/13396)
 - `/v1/messages`
-    - Added litellm claude code count tokens - [PR #13261](https://github.com/BerriAI/litellm/pull/13261)
+    - 新增 litellm claude code count tokens - [PR #13261](https://github.com/BerriAI/litellm/pull/13261)
 - `/vector_stores`
-    - Fix create/search vector store errors - [PR #13285](https://github.com/BerriAI/litellm/pull/13285)
+    - 修正建立/搜尋 vector store 錯誤 - [PR #13285](https://github.com/BerriAI/litellm/pull/13285)
 ---
 
-## [MCP Gateway](../../docs/mcp)
+## [MCP 閘道](../../docs/mcp) {#mcp-gatewaydocsmcp}
 
-#### Features
+#### 功能 {#features-2}
 
-- Add route check for internal users - [PR #13350](https://github.com/BerriAI/litellm/pull/13350)
-- MCP Guardrails - docs - [PR #13392](https://github.com/BerriAI/litellm/pull/13392)
+- 新增內部使用者的路由檢查 - [PR #13350](https://github.com/BerriAI/litellm/pull/13350)
+- MCP 防護欄 - 文件 - [PR #13392](https://github.com/BerriAI/litellm/pull/13392)
 
+#### 錯誤 {#bugs-2}
 
-#### Bugs
-
-- Fix auth on UI for bearer token servers - [PR #13312](https://github.com/BerriAI/litellm/pull/13312)
-- allow access group on mcp tool retrieval - [PR #13425](https://github.com/BerriAI/litellm/pull/13425)
-
+- 修正 bearer token servers 的 UI 驗證 - [PR #13312](https://github.com/BerriAI/litellm/pull/13312)
+- 允許在 mcp tool 擷取時使用存取群組 - [PR #13425](https://github.com/BerriAI/litellm/pull/13425)
 
 ---
 
-## Management Endpoints / UI
+## 管理端點 / UI {#management-endpoints--ui}
 
-#### Features
+#### 功能 {#features-3}
 
-- **Teams**
-    - Add team deletion check for teams with keys - [PR #12953](https://github.com/BerriAI/litellm/pull/12953)
-- **Models**
-    - Add ability to set model alias per key/team - [PR #13276](https://github.com/BerriAI/litellm/pull/13276)
-    - New button to reload model pricing from model cost map - [PR #13464](https://github.com/BerriAI/litellm/pull/13464), [PR #13470](https://github.com/BerriAI/litellm/pull/13470)
-- **Keys**
-    - Make ‘team’ field required when creating service account keys - [PR #13302](https://github.com/BerriAI/litellm/pull/13302)
-    - Gray out key-based logging settings for non-enterprise users - prevents confusion on if ‘logging’ all up is supported - [PR #13431](https://github.com/BerriAI/litellm/pull/13431)
-- **Navbar**
-    - Add logo customization for LiteLLM admin UI - [PR #12958](https://github.com/BerriAI/litellm/pull/12958)
-- **Logs**
-    - Add token breakdowns on logs + session page - [PR #13357](https://github.com/BerriAI/litellm/pull/13357)
-- **Usage**
-    - Ensure Usage Page loads after the DB has large entries - [PR #13400](https://github.com/BerriAI/litellm/pull/13400)
-- **Test Key Page**
-    - allow uploading images for /chat/completions and /responses - [PR #13445](https://github.com/BerriAI/litellm/pull/13445)
+- **團隊**
+    - 新增對含有金鑰之團隊的刪除檢查 - [PR #12953](https://github.com/BerriAI/litellm/pull/12953)
+- **模型**
+    - 新增可為每個金鑰/團隊設定模型別名的功能 - [PR #13276](https://github.com/BerriAI/litellm/pull/13276)
+    - 新增從 model cost map 重新載入模型定價的按鈕 - [PR #13464](https://github.com/BerriAI/litellm/pull/13464), [PR #13470](https://github.com/BerriAI/litellm/pull/13470)
+- **金鑰**
+    - 建立服務帳戶金鑰時，將 ‘team’ 欄位設為必填 - [PR #13302](https://github.com/BerriAI/litellm/pull/13302)
+    - 將非企業版使用者的以金鑰為基礎的記錄設定設為灰色不可用 - 可避免對是否支援整體 ‘logging’ 造成混淆 - [PR #13431](https://github.com/BerriAI/litellm/pull/13431)
+- **導覽列**
+    - 為 LiteLLM 管理介面新增 Logo 自訂功能 - [PR #12958](https://github.com/BerriAI/litellm/pull/12958)
+- **記錄**
+    - 在記錄與 session 頁面新增 token 拆分資訊 - [PR #13357](https://github.com/BerriAI/litellm/pull/13357)
+- **用量**
+    - 確保用量頁面在資料庫有大型項目後仍可載入 - [PR #13400](https://github.com/BerriAI/litellm/pull/13400)
+- **測試金鑰頁面**
+    - 允許為 /chat/completions 和 /responses 上傳圖片 - [PR #13445](https://github.com/BerriAI/litellm/pull/13445)
 - **MCP**
-    - Add auth tokens to local storage auth - [PR #13473](https://github.com/BerriAI/litellm/pull/13473)
+    - 將認證 token 新增至本機儲存的驗證 - [PR #13473](https://github.com/BerriAI/litellm/pull/13473)
 
-#### Bugs
+#### 錯誤 {#bugs-3}
 
-- **Custom Root Path**
-    - Fix login route when SSO is enabled - [PR #13267](https://github.com/BerriAI/litellm/pull/13267)
-- **Customers/End-users**
-    - Allow calling /v1/models when end user over budget - allows model listing to work on OpenWebUI when customer over budget - [PR #13320](https://github.com/BerriAI/litellm/pull/13320)
-- **Teams**
-    - Remove user - team membership, when user removed from team - [PR #13433](https://github.com/BerriAI/litellm/pull/13433)
-- **Errors**
-    - Bubble up network errors to user for Logging and Alerts page - [PR #13427](https://github.com/BerriAI/litellm/pull/13427)
-- **Model Hub**
-    - Show pricing for azure models, when base model is set - [PR #13418](https://github.com/BerriAI/litellm/pull/13418)
+- **自訂根路徑**
+    - 在啟用 SSO 時修正登入路由 - [PR #13267](https://github.com/BerriAI/litellm/pull/13267)
+- **客戶/終端使用者**
+    - 允許在終端使用者超出預算時呼叫 /v1/models - 可讓客戶超出預算時，OpenWebUI 上的模型清單功能正常運作 - [PR #13320](https://github.com/BerriAI/litellm/pull/13320)
+- **團隊**
+    - 從團隊移除使用者時，同步移除使用者 - 團隊成員資格 - [PR #13433](https://github.com/BerriAI/litellm/pull/13433)
+- **錯誤**
+    - 將網路錯誤回傳給 Logging 與 Alerts 頁面的使用者 - [PR #13427](https://github.com/BerriAI/litellm/pull/13427)
+- **模型中樞**
+    - 在設定 base model 時顯示 azure 模型的定價 - [PR #13418](https://github.com/BerriAI/litellm/pull/13418)
 ---
 
-## Logging / Guardrail Integrations
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
 
-#### Features
+#### 功能 {#features-4}
 
-- **Bedrock Guardrails**
-    - Redacted sensitive information in bedrock guardrails error message - [PR #13356](https://github.com/BerriAI/litellm/pull/13356)
-- **Standard Logging Payload**
-    - Fix ‘can’t register atextexit’ bug - [PR #13436](https://github.com/BerriAI/litellm/pull/13436)
+- **Bedrock 防護欄**
+    - 在 bedrock guardrails 錯誤訊息中移除敏感資訊 - [PR #13356](https://github.com/BerriAI/litellm/pull/13356)
+- **標準記錄負載**
+    - 修正 ‘can’t register atextexit’ 錯誤 - [PR #13436](https://github.com/BerriAI/litellm/pull/13436)
 
-#### Bugs
+#### 錯誤 {#bugs-4}
 
 - **Braintrust**
-    - Allow setting of braintrust callback base url - [PR #13368](https://github.com/BerriAI/litellm/pull/13368)
+    - 允許設定 braintrust callback base url - [PR #13368](https://github.com/BerriAI/litellm/pull/13368)
 - **OTEL**
-    - Track pre_call hook latency  - [PR #13362](https://github.com/BerriAI/litellm/pull/13362)
+    - 追蹤 pre_call hook 延遲 - [PR #13362](https://github.com/BerriAI/litellm/pull/13362)
 
 ---
 
-## Performance / Loadbalancing / Reliability improvements
+## 效能 / 負載平衡 / 可靠性改善 {#performance--loadbalancing--reliability-improvements}
 
-#### Features
+#### 功能 {#features-5}
 
-- **Team-BYOK models**
-    - Add wildcard model support - [PR #13278](https://github.com/BerriAI/litellm/pull/13278)
-- **Caching**
-    - GCP IAM auth support for caching - [PR #13275](https://github.com/BerriAI/litellm/pull/13275)
-- **Latency**
-    - reduce p99 latency w/ redis enabled by 50% - only updates model usage if tpm/rpm limits set - [PR #13362](https://github.com/BerriAI/litellm/pull/13362)
+- **團隊 BYOK 模型**
+    - 新增萬用字元 model 支援 - [PR #13278](https://github.com/BerriAI/litellm/pull/13278)
+- **快取**
+    - 支援用於快取的 GCP IAM 驗證 - [PR #13275](https://github.com/BerriAI/litellm/pull/13275)
+- **延遲**
+    - 在啟用 redis 時將 p99 延遲降低 50% - 僅在設定 tpm/rpm 限制時更新模型用量 - [PR #13362](https://github.com/BerriAI/litellm/pull/13362)
 
 ---
 
-## General Proxy Improvements
+## 一般 Proxy 改進 {#general-proxy-improvements}
 
-#### Features
+#### 功能 {#features-6}
 
-- **Models**
-    - Support /v1/models/\{model_id\} retrieval - [PR #13268](https://github.com/BerriAI/litellm/pull/13268)
-- **Multi-instance**
-    - Ensure disable_llm_api_endpoints works - [PR #13278](https://github.com/BerriAI/litellm/pull/13278)
-- **Logs**
-    - Add apscheduler log suppress - [PR #13299](https://github.com/BerriAI/litellm/pull/13299)
+- **模型**
+    - 支援 /v1/models/\{model_id\} 擷取 - [PR #13268](https://github.com/BerriAI/litellm/pull/13268)
+- **多執行個體**
+    - 確保 disable_llm_api_endpoints 可正常運作 - [PR #13278](https://github.com/BerriAI/litellm/pull/13278)
+- **記錄**
+    - 新增 apscheduler 記錄抑制 - [PR #13299](https://github.com/BerriAI/litellm/pull/13299)
 - **Helm**
-    - Add labels to migrations job template - [PR #13343](https://github.com/BerriAI/litellm/pull/13343) s/o [@unique-jakub](https://github.com/unique-jakub)
+    - 在 migrations 工作範本中新增標籤 - [PR #13343](https://github.com/BerriAI/litellm/pull/13343) 感謝 [@unique-jakub](https://github.com/unique-jakub)
 
-#### Bugs
+#### 錯誤 {#bugs-5}
 
-- **Non-root image**
-    - Fix non-root image for migration - [PR #13379](https://github.com/BerriAI/litellm/pull/13379)
-- **Get Routes**
-    - Load get routes when using fastapi-offline - [PR #13466](https://github.com/BerriAI/litellm/pull/13466)
-- **Health checks**
-    - Generate unique trace IDs for Langfuse health checks - [PR #13468](https://github.com/BerriAI/litellm/pull/13468)
+- **非 root 映像**
+    - 修正 migration 的非 root 映像 - [PR #13379](https://github.com/BerriAI/litellm/pull/13379)
+- **取得路由**
+    - 在使用 fastapi-offline 時載入 get routes - [PR #13466](https://github.com/BerriAI/litellm/pull/13466)
+- **健康檢查**
+    - 為 Langfuse 健康檢查產生唯一的 trace ID - [PR #13468](https://github.com/BerriAI/litellm/pull/13468)
 - **Swagger**
-    - Allow using Swagger for /chat/completions - [PR #13469](https://github.com/BerriAI/litellm/pull/13469)
-- **Auth**
-    - Fix JWTs access not working with model access groups - [PR #13474](https://github.com/BerriAI/litellm/pull/13474)
+    - 允許將 Swagger 用於 /chat/completions - [PR #13469](https://github.com/BerriAI/litellm/pull/13469)
+- **驗證**
+    - 修正 JWTs access 與 model access groups 搭配時無法運作的問題 - [PR #13474](https://github.com/BerriAI/litellm/pull/13474)
     
 ---
 
-## New Contributors
+## 新貢獻者 {#new-contributors}
 
-* @bbartels made their first contribution in https://github.com/BerriAI/litellm/pull/13244
-* @breno-aumo made their first contribution in https://github.com/BerriAI/litellm/pull/13206
-* @pascalwhoop made their first contribution in https://github.com/BerriAI/litellm/pull/13122
-* @ZPerling made their first contribution in https://github.com/BerriAI/litellm/pull/13045
-* @zjx20 made their first contribution in https://github.com/BerriAI/litellm/pull/13181
-* @edwarddamato made their first contribution in https://github.com/BerriAI/litellm/pull/13368
-* @msannan2 made their first contribution in https://github.com/BerriAI/litellm/pull/12169
+* @bbartels 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/13244
+* @breno-aumo 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/13206
+* @pascalwhoop 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/13122
+* @ZPerling 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/13045
+* @zjx20 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/13181
+* @edwarddamato 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/13368
+* @msannan2 完成了他們的首次貢獻，於 https://github.com/BerriAI/litellm/pull/12169
 
-
-## **[Full Changelog](https://github.com/BerriAI/litellm/compare/v1.74.15-stable...v1.75.5-stable.rc-draft)**
+## **[完整變更紀錄](https://github.com/BerriAI/litellm/compare/v1.74.15-stable...v1.75.5-stable.rc-draft)** {#full-changeloghttpsgithubcomberriailitellmcomparev17415-stablev1755-stablerc-draft}

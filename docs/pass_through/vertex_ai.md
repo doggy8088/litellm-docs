@@ -2,42 +2,41 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI SDK
+# Vertex AI SDK {#vertex-ai-sdk}
 
-Pass-through endpoints for Vertex AI - call provider-specific endpoint, in native format (no translation).
+Vertex AI 的 pass-through 端點 - 以原生格式呼叫特定提供者端點（不進行轉換）。
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | supports all models on `/generateContent` endpoint |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ✅ | |
+| 成本追蹤 | ✅ | 支援 `/generateContent` 端點上的所有模型 |
+| 記錄 | ✅ | 可跨所有整合使用 |
+| 端使用者追蹤 | ❌ | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ✅ | |
 
-## Supported Endpoints
+## 支援的端點 {#supported-endpoints}
 
-LiteLLM supports 3 vertex ai passthrough routes:
+LiteLLM 支援 3 個 vertex ai passthrough 路由：
 
-1. `/vertex_ai` → routes to `https://{vertex_location}-aiplatform.googleapis.com/`
-2. `/vertex_ai/discovery` → routes to [`https://discoveryengine.googleapis.com`](https://discoveryengine.googleapis.com/) - [See Search Datastores Guide](./vertex_ai_search_datastores.md)
-3. `/vertex_ai/live` → upgrades to the Vertex AI Live API WebSocket (`google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent`) - [See Live WebSocket Guide](./vertex_ai_live_websocket.md)
+1. `/vertex_ai` → 路由至 `https://{vertex_location}-aiplatform.googleapis.com/`
+2. `/vertex_ai/discovery` → 路由至 [`https://discoveryengine.googleapis.com`](https://discoveryengine.googleapis.com/) - [請參閱 Search Datastores 指南](./vertex_ai_search_datastores.md)
+3. `/vertex_ai/live` → 升級至 Vertex AI Live API WebSocket（`google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent`）- [請參閱 Live WebSocket 指南](./vertex_ai_live_websocket.md)
 
-## How to use
+## 如何使用 {#how-to-use}
 
-Just replace `https://REGION-aiplatform.googleapis.com` with `LITELLM_PROXY_BASE_URL/vertex_ai`
+只要將 `https://REGION-aiplatform.googleapis.com` 替換為 `LITELLM_PROXY_BASE_URL/vertex_ai`
 
-LiteLLM supports 3 flows for calling Vertex AI endpoints via pass-through:
+LiteLLM 支援透過 pass-through 呼叫 Vertex AI 端點的 3 種流程：
 
-1. **Specific Credentials**: Admin sets passthrough credentials for a specific project/region.
+1. **特定憑證**：管理員為特定專案/區域設定 passthrough 憑證。
 
-2. **Default Credentials**: Admin sets default credentials.
+2. **預設憑證**：管理員設定預設憑證。
 
-3. **Client-Side Credentials**: User can send client-side credentials through to Vertex AI (default behavior - if no default or mapped credentials are found, the request is passed through directly).
+3. **用戶端憑證**：使用者可將用戶端憑證傳送至 Vertex AI（預設行為 - 如果找不到預設或對應的憑證，請求會直接 pass-through）。
 
-
-## Example Usage
+## 範例用法 {#example-usage}
 
 <Tabs>
-<TabItem value="specific_credentials" label="Specific Project/Region">
+<TabItem value="specific_credentials" label="特定專案/區域">
 
 ```yaml
 model_list:
@@ -51,10 +50,10 @@ model_list:
 ```
 
 </TabItem>
-<TabItem value="default_credentials" label="Default Credentials">
+<TabItem value="default_credentials" label="預設憑證">
 
 <Tabs>
-<TabItem value="yaml" label="Set in config.yaml">
+<TabItem value="yaml" label="在 config.yaml 中設定">
 
 ```yaml
 default_vertex_config:
@@ -63,7 +62,7 @@ default_vertex_config:
   vertex_credentials: /path/to/credentials.json
 ```
 </TabItem>
-<TabItem value="env_var" label="Set in environment variables">
+<TabItem value="env_var" label="在環境變數中設定">
 
 ```bash
 export DEFAULT_VERTEXAI_PROJECT="adroit-crow-413218"
@@ -74,9 +73,9 @@ export DEFAULT_GOOGLE_APPLICATION_CREDENTIALS="/path/to/credentials.json"
 </TabItem>
 </Tabs>
 </TabItem>
-<TabItem value="client_credentials" label="Client Credentials">
+<TabItem value="client_credentials" label="用戶端憑證">
 
-Try Gemini 2.0 Flash (curl)
+試試 Gemini 2.0 Flash（curl）
 
 ```
 MODEL_ID="gemini-2.0-flash-001"
@@ -110,8 +109,7 @@ curl \
 </TabItem>
 </Tabs>
 
-
-#### **Example Usage**
+#### **範例用法** {#example-usage-1}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -170,14 +168,13 @@ generateContent();
 </TabItem>
 </Tabs>
 
+## Vertex AI Live API WebSocket {#vertex-ai-live-api-websocket}
 
-## Vertex AI Live API WebSocket
+LiteLLM 現在可以代理 Vertex AI Live API，協助您在不向用戶端暴露 Google 憑證的情況下，試驗來自 Gemini Live models 的串流音訊/文字。
 
-LiteLLM can now proxy the Vertex AI Live API to help you experiment with streaming audio/text from Gemini Live models without exposing Google credentials to clients.
-
-- Configure default Vertex credentials via `default_vertex_config` or environment variables (see examples above).
-- Connect to `wss://<PROXY_URL>/vertex_ai/live`. LiteLLM will exchange your saved credentials for a short-lived access token and forward messages bidirectionally.
-- Optional query params `vertex_project`, `vertex_location`, and `model` let you override defaults for multi-project setups or global-only models.
+- 透過 `default_vertex_config` 或環境變數設定預設的 Vertex 憑證（請參閱上方範例）。
+- 連線至 `wss://<PROXY_URL>/vertex_ai/live`。LiteLLM 會將您儲存的憑證交換為短效存取權杖，並雙向轉送訊息。
+- 可選的查詢參數 `vertex_project`、`vertex_location` 和 `model` 可讓您在多專案設定或僅全域模型中覆寫預設值。
 
 ```python title="client.py"
 import asyncio
@@ -215,11 +212,11 @@ if __name__ == "__main__":
 ```
 
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the Vertex AI [`/generateContent` endpoint](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference)
+我們來呼叫 Vertex AI [`/generateContent` 端點](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/inference)
 
-1. Add Vertex AI Credentials to your environment 
+1. 將 Vertex AI 憑證加入您的環境 
 
 ```bash
 export DEFAULT_VERTEXAI_PROJECT="" # "adroit-crow-413218"
@@ -227,7 +224,7 @@ export DEFAULT_VERTEXAI_LOCATION="" # "us-central1"
 export DEFAULT_GOOGLE_APPLICATION_CREDENTIALS="" # "/Users/Downloads/adroit-crow-413218-a956eef1a2a8.json"
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy 
 
 ```bash
 litellm
@@ -235,9 +232,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
-Let's call the Google AI Studio token counting endpoint
+我們來呼叫 Google AI Studio token counting 端點
 
 ```bash
 curl http://localhost:4000/vertex-ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.0-pro:generateContent \
@@ -252,8 +249,7 @@ curl http://localhost:4000/vertex-ai/v1/projects/${PROJECT_ID}/locations/us-cent
 ```
 
 
-
-## Supported API Endpoints
+## 支援的 API 端點 {#supported-api-endpoints}
 
 - Gemini API
 - Embeddings API
@@ -263,20 +259,17 @@ curl http://localhost:4000/vertex-ai/v1/projects/${PROJECT_ID}/locations/us-cent
 - Tuning API
 - CountTokens API
 
-#### Authentication to Vertex AI
+#### Vertex AI 的驗證 {#authentication-to-vertex-ai}
 
-LiteLLM Proxy Server supports two methods of authentication to Vertex AI:
+LiteLLM Proxy Server 支援兩種對 Vertex AI 的驗證方法：
 
-1. Pass Vertex Credentials client side to proxy server
+1. 將 Vertex 憑證從用戶端傳遞到 proxy server
 
-2. Set Vertex AI credentials on proxy server
+2. 在 proxy server 上設定 Vertex AI 憑證
 
+## 使用範例 {#usage-examples}
 
-## Usage Examples
-
-### Gemini API (Generate Content)
-
-
+### Gemini API（產生內容） {#gemini-api-generate-content}
 
 ```shell
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.5-flash-001:generateContent \
@@ -286,9 +279,7 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-cent
 ```
 
 
-
-### Embeddings API
-
+### Embeddings API {#embeddings-api}
 
 ```shell
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/textembedding-gecko@001:predict \
@@ -298,7 +289,7 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-cent
 ```
 
 
-### Imagen API
+### Imagen API {#imagen-api}
 
 ```shell
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/imagen-3.0-generate-001:predict \
@@ -308,7 +299,7 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-cent
 ```
 
 
-### Count Tokens API
+### Count Tokens API {#count-tokens-api}
 
 ```shell
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.5-flash-001:countTokens \
@@ -316,10 +307,9 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-cent
   -H "x-litellm-api-key: Bearer sk-1234" \
   -d '{"contents":[{"role": "user", "parts":[{"text": "hi"}]}]}'
 ```
-### Tuning API 
+### Tuning API {#tuning-api}
 
-Create Fine Tuning Job
-
+建立 Fine Tuning Job
 
 ```shell
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.5-flash-001:tuningJobs \
@@ -333,16 +323,16 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-cent
 }'
 ```
 
-## Advanced
+## 進階 {#advanced}
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+先決條件
+- [使用 DB 設定 proxy](../proxy/virtual_keys.md#setup)
 
-Use this, to avoid giving developers the raw Anthropic API key, but still letting them use Anthropic endpoints.
+使用這個方式，可避免將原始的 Anthropic API 金鑰提供給開發人員，但仍可讓他們使用 Anthropic 端點。
 
-### Use with Virtual Keys 
+### 搭配虛擬金鑰使用 {#use-with-virtual-keys}
 
-1. Setup environment
+1. 設定環境
 
 ```bash
 export DATABASE_URL=""
@@ -360,7 +350,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生虛擬金鑰 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -369,7 +359,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -378,8 +368,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試它！ 
 
 ```bash
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-1.0-pro:generateContent \
@@ -393,11 +382,11 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-cent
   }'
 ```
 
-### Send `tags` in request headers
+### 在請求標頭中傳送 `tags` {#send-tags-in-request-headers}
 
-Use this if you wants `tags` to be tracked in the LiteLLM DB and on logging callbacks
+如果您希望將 `tags` 追蹤到 LiteLLM DB 和記錄回呼中，請使用這個方式
 
-Pass `tags` in request headers as a comma separated list. In the example below the following tags will be tracked 
+將 `tags` 以逗號分隔清單的形式傳入請求標頭。在下方範例中，將會追蹤以下標籤 
 
 ```
 tags: ["vertex-js-sdk", "pass-through-endpoint"]
@@ -462,11 +451,11 @@ generateContent();
 </TabItem>
 </Tabs>
 
-### Using Anthropic Beta Features on Vertex AI
+### 在 Vertex AI 上使用 Anthropic Beta 功能 {#using-anthropic-beta-features-on-vertex-ai}
 
-When using Anthropic models via Vertex AI passthrough (e.g., Claude on Vertex), you can enable Anthropic beta features like extended context windows.
+當透過 Vertex AI passthrough 使用 Anthropic models（例如 Vertex 上的 Claude）時，您可以啟用 Anthropic beta 功能，例如延伸的 context windows。
 
-The `anthropic-beta` header is automatically forwarded to Vertex AI when calling Anthropic models.
+在呼叫 Anthropic models 時，`anthropic-beta` 標頭會自動轉送到 Vertex AI。
 
 ```bash
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-east5/publishers/anthropic/models/claude-3-5-sonnet:rawPredict \
@@ -480,15 +469,15 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-east
   }'
 ```
 
-### Forwarding Custom Headers with `x-pass-` Prefix
+### 透過 `x-pass-` 前綴轉送自訂標頭 {#forwarding-custom-headers-with-x-pass--prefix}
 
-You can forward any custom header to the provider by prefixing it with `x-pass-`. The prefix is stripped before the header is sent to the provider.
+您可以透過在任意自訂標頭前加上 `x-pass-`，將其轉送給提供者。該前綴會在標頭送出給提供者之前被移除。
 
-For example:
-- `x-pass-anthropic-beta: value` becomes `anthropic-beta: value`
-- `x-pass-custom-header: value` becomes `custom-header: value`
+例如：
+- `x-pass-anthropic-beta: value` 會變成 `anthropic-beta: value`
+- `x-pass-custom-header: value` 會變成 `custom-header: value`
 
-This is useful when you need to send provider-specific headers that aren't in the default allowlist.
+當您需要傳送不在預設允許清單中的提供者特定標頭時，這很有用。
 
 ```bash
 curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-east5/publishers/anthropic/models/claude-3-5-sonnet:rawPredict \
@@ -504,5 +493,5 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-east
 ```
 
 :::info
-The `x-pass-` prefix works for all LLM pass-through endpoints, not just Vertex AI.
+`x-pass-` 前綴適用於所有 LLM pass-through 端點，不僅限於 Vertex AI。
 :::

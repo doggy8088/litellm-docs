@@ -1,31 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini File Search
+# Gemini 檔案搜尋 {#gemini-file-search}
 
-Use Google Gemini's File Search for Retrieval Augmented Generation (RAG) with LiteLLM.
+使用 Google Gemini 的檔案搜尋搭配 LiteLLM 進行檢索增強生成（RAG）。
 
-Gemini File Search imports, chunks, and indexes your data to enable fast retrieval of relevant information based on user prompts. This information is then provided as context to the model for more accurate and relevant answers.
+Gemini File Search 會匯入、分塊並建立資料索引，以便根據使用者提示詞快速檢索相關資訊。接著，這些資訊會作為上下文提供給模型，以獲得更準確且更相關的回答。
 
-[Official Gemini File Search Documentation](https://ai.google.dev/gemini-api/docs/file-search)
+[官方 Gemini File Search 文件](https://ai.google.dev/gemini-api/docs/file-search)
 
-## Features
+## 功能 {#features}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ❌ | Cost calculation not yet implemented |
-| Logging | ✅ | Full request/response logging |
-| RAG Ingest API | ✅ | Upload → Chunk → Embed → Store |
-| Vector Store Search | ✅ | Search with metadata filters |
-| Custom Chunking | ✅ | Configure chunk size and overlap |
-| Metadata Filtering | ✅ | Filter by custom metadata |
-| Citations | ✅ | Extract from grounding metadata |
+| 成本追蹤 | ❌ | 尚未實作成本計算 |
+| 記錄 | ✅ | 完整請求/回應記錄 |
+| RAG 擷取 API | ✅ | 上傳 → 分塊 → 嵌入 → 儲存 |
+| 向量儲存區搜尋 | ✅ | 使用中繼資料篩選條件搜尋 |
+| 自訂分塊 | ✅ | 設定分塊大小與重疊 |
+| 中繼資料篩選 | ✅ | 依自訂中繼資料篩選 |
+| 引用 | ✅ | 從 grounding 中繼資料擷取 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Setup
+### 設定 {#setup}
 
-Set your Gemini API key:
+設定您的 Gemini API 金鑰：
 
 ```bash
 export GEMINI_API_KEY="your-api-key"
@@ -33,7 +33,7 @@ export GEMINI_API_KEY="your-api-key"
 export GOOGLE_API_KEY="your-api-key"
 ```
 
-### Basic RAG Ingest
+### 基本 RAG 擷取 {#basic-rag-ingest}
 
 <Tabs>
 <TabItem value="python" label="Python SDK">
@@ -82,7 +82,7 @@ curl -X POST "http://localhost:4000/v1/rag/ingest" \
 </TabItem>
 </Tabs>
 
-### Search Vector Store
+### 搜尋向量儲存區 {#search-vector-store}
 
 <Tabs>
 <TabItem value="python" label="Python SDK">
@@ -121,11 +121,11 @@ curl -X POST "http://localhost:4000/v1/vector_stores/fileSearchStores/your-store
 </TabItem>
 </Tabs>
 
-## Advanced Features
+## 進階功能 {#advanced-features}
 
-### Custom Chunking Configuration
+### 自訂分塊設定 {#custom-chunking-configuration}
 
-Control how documents are split into chunks:
+控制文件如何被切分成分塊：
 
 ```python
 import litellm
@@ -147,15 +147,15 @@ response = await litellm.aingest(
 )
 ```
 
-**Chunking Parameters:**
-- `max_tokens_per_chunk`: Maximum tokens per chunk (default: 800, min: 100, max: 4096)
-- `max_overlap_tokens`: Overlap between chunks (default: 400)
+**分塊參數：**
+- `max_tokens_per_chunk`：每個分塊的最大 token 數（預設：800，最小：100，最大：4096）
+- `max_overlap_tokens`：分塊之間的重疊（預設：400）
 
-### Metadata Filtering
+### 中繼資料篩選 {#metadata-filtering}
 
-Attach custom metadata to files and filter searches:
+將自訂中繼資料附加到檔案並篩選搜尋：
 
-#### Attach Metadata During Ingest
+#### 在擷取期間附加中繼資料 {#attach-metadata-during-ingest}
 
 ```python
 import litellm
@@ -176,7 +176,7 @@ response = await litellm.aingest(
 )
 ```
 
-#### Search with Metadata Filter
+#### 使用中繼資料篩選條件搜尋 {#search-with-metadata-filter}
 
 ```python
 import litellm
@@ -189,14 +189,14 @@ response = await litellm.vector_stores.asearch(
 )
 ```
 
-**Filter Syntax:**
-- Simple equality: `{"key": "value"}`
-- Gemini converts to: `key="value"`
-- Multiple filters combined with AND
+**篩選語法：**
+- 簡單相等：`{"key": "value"}`
+- Gemini 轉換為：`key="value"`
+- 可用 AND 組合多個篩選條件
 
-### Using Existing Vector Store
+### 使用既有向量儲存區 {#using-existing-vector-store}
 
-Ingest into an existing File Search store:
+擷取到既有的 File Search 儲存區：
 
 ```python
 import litellm
@@ -221,9 +221,9 @@ for doc in documents:
     )
 ```
 
-### Citation Extraction
+### 引用擷取 {#citation-extraction}
 
-Gemini provides grounding metadata with citations:
+Gemini 會提供包含引用的 grounding 中繼資料：
 
 ```python
 import litellm
@@ -245,9 +245,9 @@ for result in response["data"]:
     print(f"Text: {result['content'][0]['text']}")
 ```
 
-## Complete Example
+## 完整範例 {#complete-example}
 
-End-to-end workflow:
+端到端工作流程：
 
 ```python
 import litellm
@@ -317,49 +317,49 @@ for i, result in enumerate(search_response["data"]):
     print(f"  Content: {result['content'][0]['text'][:100]}...")
 ```
 
-## Supported File Types
+## 支援的檔案類型 {#supported-file-types}
 
-Gemini File Search supports a wide range of file formats:
+Gemini File Search 支援多種檔案格式：
 
-### Documents
+### 文件 {#documents}
 - PDF (`application/pdf`)
 - Microsoft Word (`.docx`, `.doc`)
 - Microsoft Excel (`.xlsx`, `.xls`)
 - Microsoft PowerPoint (`.pptx`)
-- OpenDocument formats (`.odt`, `.ods`, `.odp`)
+- OpenDocument 格式 (`.odt`, `.ods`, `.odp`)
 
-### Text Files
-- Plain text (`text/plain`)
+### 文字檔 {#text-files}
+- 純文字 (`text/plain`)
 - Markdown (`text/markdown`)
 - HTML (`text/html`)
 - CSV (`text/csv`)
 - JSON (`application/json`)
 - XML (`application/xml`)
 
-### Code Files
-- Python, JavaScript, TypeScript, Java, C/C++, Go, Rust, etc.
-- Most common programming languages supported
+### 程式碼檔 {#code-files}
+- Python、JavaScript、TypeScript、Java、C/C++、Go、Rust 等。
+- 支援大多數常見程式語言
 
-See [Gemini's full list of supported file types](https://ai.google.dev/gemini-api/docs/file-search#supported-file-types).
+請參閱 [Gemini 支援的完整檔案類型清單](https://ai.google.dev/gemini-api/docs/file-search#supported-file-types)。
 
-## Pricing
+## 定價 {#pricing}
 
-- **Indexing**: $0.15 per 1M tokens (embedding pricing)
-- **Storage**: Free
-- **Query embeddings**: Free
-- **Retrieved tokens**: Charged as regular context tokens
+- **索引**：每 100 萬 token $0.15（嵌入定價）
+- **儲存**：免費
+- **查詢嵌入**：免費
+- **擷取的 token**：依一般上下文 token 計費
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-File Search works with:
+File Search 可搭配：
 - `gemini-3-pro-preview`
 - `gemini-2.5-pro`
-- `gemini-2.5-flash` (and preview versions)
-- `gemini-2.5-flash-lite` (and preview versions)
+- `gemini-2.5-flash`（以及預覽版本）
+- `gemini-2.5-flash-lite`（以及預覽版本）
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Authentication Errors
+### 驗證錯誤 {#authentication-errors}
 
 ```python
 # Ensure API key is set
@@ -378,19 +378,19 @@ response = await litellm.aingest(
 )
 ```
 
-### Store Not Found
+### 找不到儲存區 {#store-not-found}
 
-Ensure you're using the full store name format:
+請確保您使用完整的儲存區名稱格式：
 - ✅ `fileSearchStores/abc123`
 - ❌ `abc123`
 
-### Large Files
+### 大型檔案 {#large-files}
 
-For files >100MB, split them into smaller chunks before ingestion.
+對於大於 100MB 的檔案，請在擷取前先將其分割成較小的分塊。
 
-### Slow Indexing
+### 索引速度緩慢 {#slow-indexing}
 
-After ingestion, Gemini may need time to index documents. Wait a few seconds before searching:
+擷取後，Gemini 可能需要一些時間來為文件建立索引。搜尋前請等待幾秒：
 
 ```python
 import time
@@ -405,10 +405,9 @@ time.sleep(5)
 await litellm.vector_stores.asearch(...)
 ```
 
-## Related Resources
+## 相關資源 {#related-resources}
 
-- [Gemini File Search Official Docs](https://ai.google.dev/gemini-api/docs/file-search)
-- [LiteLLM RAG Ingest API](/docs/rag_ingest)
-- [LiteLLM Vector Store Search](/docs/vector_stores/search)
-- [Using Vector Stores with Chat](/docs/completion/knowledgebase)
-
+- [Gemini File Search 官方文件](https://ai.google.dev/gemini-api/docs/file-search)
+- [LiteLLM RAG 擷取 API](/docs/rag_ingest)
+- [LiteLLM 向量儲存區搜尋](/docs/vector_stores/search)
+- [在 Chat 中使用向量儲存區](/docs/completion/knowledgebase)

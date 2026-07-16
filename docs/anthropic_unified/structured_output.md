@@ -1,27 +1,27 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Structured Output /v1/messages
+# 結構化輸出 /v1/messages {#structured-output-v1messages}
 
-Use LiteLLM to call Anthropic's structured output feature via the `/v1/messages` endpoint.
+使用 LiteLLM 透過 `/v1/messages` 端點呼叫 Anthropic 的結構化輸出功能。
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-| Provider | Supported | Notes |
+| 提供者 | 支援 | 備註 |
 |----------|-----------|-------|
-| Anthropic | ✅ | Native support |
-| Azure AI (Anthropic models) | ✅ | Claude models on Azure AI |
-| Bedrock (Converse Anthropic models) | ✅ | Claude models via Bedrock Converse API |
-| Bedrock (Invoke Anthropic models) | ✅ | Claude models via Bedrock Invoke API |
+| Anthropic | ✅ | 原生支援 |
+| Azure AI（Anthropic models） | ✅ | Azure AI 上的 Claude models |
+| Bedrock（Converse Anthropic models） | ✅ | 透過 Bedrock Converse API 的 Claude models |
+| Bedrock（Invoke Anthropic models） | ✅ | 透過 Bedrock Invoke API 的 Claude models |
 
-## Usage
+## 用法 {#usage}
 
-### LiteLLM Proxy Server
+### LiteLLM Proxy 伺服器 {#litellm-proxy-server}
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -31,13 +31,13 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://localhost:4000/v1/messages \
@@ -74,7 +74,7 @@ curl http://localhost:4000/v1/messages \
 
 <TabItem value="azure_ai" label="Azure AI (Anthropic)">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -85,13 +85,13 @@ model_list:
       api_base: https://your-endpoint.inference.ai.azure.com
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://localhost:4000/v1/messages \
@@ -128,7 +128,7 @@ curl http://localhost:4000/v1/messages \
 
 <TabItem value="bedrock" label="Bedrock (Converse)">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -140,13 +140,13 @@ model_list:
       aws_region_name: us-west-2
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://localhost:4000/v1/messages \
@@ -183,7 +183,7 @@ curl http://localhost:4000/v1/messages \
 
 <TabItem value="bedrock_invoke" label="Bedrock (Invoke)">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -195,13 +195,13 @@ model_list:
       aws_region_name: us-west-2
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://localhost:4000/v1/messages \
@@ -238,7 +238,7 @@ curl http://localhost:4000/v1/messages \
 </TabItem>
 </Tabs>
 
-## Example Response
+## 範例回應 {#example-response}
 
 ```json
 {
@@ -261,11 +261,11 @@ curl http://localhost:4000/v1/messages \
 }
 ```
 
-## Request Format
+## 請求格式 {#request-format}
 
-### output_format
+### output_format {#output_format}
 
-The `output_format` parameter specifies the structured output format.
+`output_format` 參數指定結構化輸出格式。
 
 ```json
 {
@@ -284,11 +284,11 @@ The `output_format` parameter specifies the structured output format.
 }
 ```
 
-#### Fields
+#### 欄位 {#fields}
 
-- **type** (string): Must be `"json_schema"`
-- **schema** (object): A JSON Schema object defining the expected output structure
-  - **type** (string): The root type, typically `"object"`
-  - **properties** (object): Defines the fields and their types
-  - **required** (array): List of required field names
-  - **additionalProperties** (boolean): Set to `false` to enforce strict schema adherence
+- **type** (string): 必須是 `"json_schema"`
+- **schema** (object): 定義預期輸出結構的 JSON Schema 物件
+  - **type** (string): 根類型，通常是 `"object"`
+  - **properties** (object): 定義欄位及其型別
+  - **required** (array): 必填欄位名稱清單
+  - **additionalProperties** (boolean): 設為 `false` 以強制嚴格遵循 schema

@@ -1,20 +1,20 @@
 import Image from '@theme/IdealImage';
 
-# Secret Managers Overview
+# Secret Managers 總覽 {#secret-managers-overview}
 
 :::info
 
-✨ **This is an Enterprise Feature**
+✨ **這是一項企業版功能**
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業版定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[請在此聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-LiteLLM supports **reading secrets (eg. `OPENAI_API_KEY`)** and **writing secrets (eg. Virtual Keys)** from Azure Key Vault, Google Secret Manager, Hashicorp Vault, CyberArk Conjur, and AWS Secret Manager.
+LiteLLM 支援從 Azure Key Vault、Google Secret Manager、Hashicorp Vault、CyberArk Conjur，以及 AWS Secret Manager **讀取密鑰（例如 `OPENAI_API_KEY`）**，以及**寫入密鑰（例如虛擬金鑰）**。
 
-## Supported Secret Managers
+## 支援的 Secret Manager {#supported-secret-managers}
 
 - [AWS Key Management Service](./aws_kms)
 - [AWS Secret Manager](./aws_secret_manager)
@@ -24,9 +24,9 @@ LiteLLM supports **reading secrets (eg. `OPENAI_API_KEY`)** and **writing secret
 - [Google Key Management Service](./google_kms)
 - [Hashicorp Vault](./hashicorp_vault)
 
-## All Secret Manager Settings
+## 所有 Secret Manager 設定 {#all-secret-manager-settings}
 
-All settings related to secret management
+所有與密鑰管理相關的設定
 
 ```yaml
 general_settings:
@@ -47,30 +47,30 @@ general_settings:
     primary_secret_name: "litellm_secrets" # OPTIONAL. Read multiple keys from one JSON secret on AWS Secret Manager
 ```
 
-## Team-Level Secret Manager Settings
+## 團隊層級 Secret Manager 設定 {#team-level-secret-manager-settings}
 
-Team-level secret manager settings let every team bring their own key-management configuration. These settings are used when creating virtual keys tied to the team.
+團隊層級的 secret manager 設定可讓每個團隊帶入自己的金鑰管理設定。這些設定會在建立與該團隊綁定的虛擬金鑰時使用。
 
-Follow these steps to configure it:
+請依照以下步驟進行設定：
 
-1. **Create a team**  
-   Open the Teams page and click `Create Team` to launch the modal.  
+1. **建立團隊**  
+   開啟 Teams 頁面並點擊 `Create Team` 以開啟對話框。  
 
    <Image img={require('../../img/secret_manager_settings_create_team.png')} />
 
-2. **Expand Additional Settings**  
-   Use the `Additional Settings` toggle to reveal the advanced configuration panel.  
+2. **展開進階設定**  
+   使用 `Additional Settings` 切換開關來顯示進階設定面板。  
    
   <Image img={require('../../img/secret_manager_settings_additional_settings.png')} />
 
-3. **Configure the Secret Manager**  
-   In the `Secret Manager Settings` panel, paste the provider-specific JSON. Refer to each provider page (AWS, Azure, Google, Hashicorp, etc.) for the supported keys/values. JSON is required today, but we plan to add a more UI-friendly editor.  
+3. **設定 Secret Manager**  
+   在 `Secret Manager Settings` 面板中，貼上特定提供者的 JSON。請參考各提供者頁面（AWS、Azure、Google、Hashicorp 等）以了解支援的鍵／值。現階段必須使用 JSON，但我們計畫新增更符合 UI 使用習慣的編輯器。  
    
    <Image img={require('../../img/secret_manager_settings.png')} />
 
-4. **Create the team**  
-   Review the inputs and click `Create Team` to save.  
+4. **建立團隊**  
+   檢查輸入內容並點擊 `Create Team` 以儲存。  
    
    <Image img={require('../../img/secret_manager_settings_create_button.png')} />
 
-Once saved, LiteLLM will use this configuration.
+儲存後，LiteLLM 會使用此設定。

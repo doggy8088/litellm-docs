@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI (Text Completion)
+# OpenAI（文字完成） {#openai-text-completion}
 
-LiteLLM supports OpenAI text completion models
+LiteLLM 支援 OpenAI 文字完成模型
 
-### Required API Keys
+### 必要的 API 金鑰 {#required-api-keys}
 
 ```python
 import os 
 os.environ["OPENAI_API_KEY"] = "your-api-key"
 ```
 
-### Usage
+### 用法 {#usage}
 ```python
 import os 
 from litellm import completion
@@ -26,17 +26,17 @@ response = completion(
 )
 ```
 
-### Usage - LiteLLM Proxy Server
+### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-Here's how to call OpenAI models with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 OpenAI 模型
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export OPENAI_API_KEY=""
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy  {#2-start-the-proxy}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -53,10 +53,10 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 </TabItem>
-<TabItem value="config-*" label="config.yaml - proxy all OpenAI models">
+<TabItem value="config-*" label="config.yaml - 代理所有 OpenAI 模型">
 
-Use this to add all openai models with one API Key. **WARNING: This will not do any load balancing**
-This means requests to `gpt-4`, `gpt-3.5-turbo` , `gpt-4-turbo-preview` will all go through this route 
+使用此方式可用一組 API 金鑰加入所有 openai 模型。**警告：這不會進行負載平衡**
+這表示對 `gpt-4`、`gpt-3.5-turbo` 、`gpt-4-turbo-preview` 的請求都會經由此路由
 
 ```yaml
 model_list:
@@ -77,11 +77,10 @@ $ litellm --model gpt-3.5-turbo-instruct
 
 </Tabs>
 
-### 3. Test it
-
+### 3. 測試它 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -151,10 +150,9 @@ print(response)
 </TabItem>
 </Tabs>
 
+## OpenAI 文字完成模型 / Instruct 模型 {#openai-text-completion-models--instruct-models}
 
-## OpenAI Text Completion Models / Instruct Models
-
-| Model Name          | Function Call                                      |
+| 模型名稱          | 函式呼叫                                      |
 |---------------------|----------------------------------------------------|
 | gpt-3.5-turbo-instruct | `response = completion(model="gpt-3.5-turbo-instruct", messages=messages)` |
 | gpt-3.5-turbo-instruct-0914 | `response = completion(model="gpt-3.5-turbo-instruct-0914", messages=messages)` |

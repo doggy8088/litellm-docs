@@ -1,27 +1,27 @@
-# ✨ [Beta] Project Management
+# ✨ [Beta] 專案管理 {#-beta-project-management}
 
 :::info
 
-This is an Enterprise feature.
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+這是企業版功能。
+[企業定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[請點此聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-Projects in LiteLLM sit between teams and keys in the organizational hierarchy, enabling fine-grained access control and budget management for specific use cases or applications.
+LiteLLM 中的專案位於組織階層中的團隊與金鑰之間，能夠針對特定使用情境或應用程式進行精細的存取控制與預算管理。
 
 ```mermaid
 graph TD
-    A[Organization] --> B[Team 1]
-    A --> C[Team 2]
-    B --> D[Project A]
-    B --> E[Project B]
-    C --> F[Project C]
-    D --> G[API Key 1]
-    D --> H[API Key 2]
-    E --> I[API Key 3]
-    F --> J[API Key 4]
+    A[組織] --> B[團隊 1]
+    A --> C[團隊 2]
+    B --> D[專案 A]
+    B --> E[專案 B]
+    C --> F[專案 C]
+    D --> G[API 金鑰 1]
+    D --> H[API 金鑰 2]
+    E --> I[API 金鑰 3]
+    F --> J[API 金鑰 4]
     
     style A fill:#e1f5ff
     style B fill:#fff4e6
@@ -35,13 +35,13 @@ graph TD
     style J fill:#e8f5e9
 ```
 
-**Hierarchy**: `Organizations > Teams > Projects > Keys`
+**階層**: `Organizations > Teams > Projects > Keys`
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-This walkthrough shows how to create a project, generate an API key, make requests, and view project-level spend tracking in the UI.
+本導覽將示範如何建立專案、產生 API 金鑰、發出請求，以及在 UI 中查看專案層級的支出追蹤。
 
-### Step 1: Create a Project
+### 步驟 1：建立專案 {#step-1-create-a-project}
 
 ```bash showLineNumbers
 curl --location 'http://0.0.0.0:4000/project/new' \
@@ -59,7 +59,7 @@ curl --location 'http://0.0.0.0:4000/project/new' \
 }' | jq
 ```
 
-**Response:**
+**回應：**
 ```json
 {
   "project_id": "e402a141-725a-4437-bff5-d47459189716",
@@ -71,7 +71,7 @@ curl --location 'http://0.0.0.0:4000/project/new' \
 }
 ```
 
-### Step 2: Generate API Key for Project
+### 步驟 2：為專案產生 API 金鑰 {#step-2-generate-api-key-for-project}
 
 ```bash showLineNumbers
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -84,7 +84,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 }' | jq
 ```
 
-**Response:**
+**回應：**
 ```json
 {
   "key": "sk-W8VbscpfuyvHm5TkxRYiXA",
@@ -94,7 +94,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 }
 ```
 
-### Step 3: Use API Key in Chat Completions
+### 步驟 3：在 Chat Completions 中使用 API 金鑰 {#step-3-use-api-key-in-chat-completions}
 
 ```bash showLineNumbers
 curl http://localhost:4000/v1/chat/completions \
@@ -106,37 +106,37 @@ curl http://localhost:4000/v1/chat/completions \
 }' | jq
 ```
 
-### Step 4: View Project Spend in UI
+### 步驟 4：在 UI 中查看專案支出 {#step-4-view-project-spend-in-ui}
 
-Navigate to the **Logs** page in the LiteLLM Admin UI. You'll see the `user_api_key_project_id` tracked in the request metadata:
+前往 LiteLLM Admin UI 的 **Logs** 頁面。您會在請求中繼資料中看到 `user_api_key_project_id` 已被追蹤：
 
-![Project Spend Tracking](/img/project_spend.png)
+![專案支出追蹤](/img/project_spend.png)
 
-As shown above, the spend logs metadata includes:
-- `"user_api_key_project_id": "e402a141-725a-4437-bff5-d47459189716"` - Links the request to your project
-- All costs and token usage are automatically attributed to the project
-- You can query and filter logs by project ID for detailed reporting
+如上所示，支出記錄中繼資料包含：
+- `"user_api_key_project_id": "e402a141-725a-4437-bff5-d47459189716"` - 將請求連結到您的專案
+- 所有成本與 token 使用量都會自動歸屬到該專案
+- 您可以依專案 ID 查詢與篩選記錄，以取得詳細報表
 
-## API Endpoints
+## API 端點 {#api-endpoints}
 
-### POST /project/new
+### POST /project/new {#post-projectnew}
 
-Create a new project.
+建立新的專案。
 
-**Who can call**: Admins or Team Admins
+**可呼叫者**：管理員或團隊管理員
 
-**Parameters**:
-- `project_alias` (string, optional): Human-readable name for the project
-- `team_id` (string, required): The team this project belongs to
-- `models` (array, optional): List of models the project can access
-- `max_budget` (float, optional): Maximum spend budget for the project
-- `tpm_limit` (int, optional): Tokens per minute limit
-- `rpm_limit` (int, optional): Requests per minute limit
-- `budget_duration` (string, optional): Budget reset period (e.g., "30d", "1mo")
-- `metadata` (object, optional): Custom metadata for the project
-- `blocked` (boolean, optional): Block all API calls for this project
+**參數**：
+- `project_alias` (string, optional): 專案的人類可讀名稱
+- `team_id` (string, required): 此專案所屬的團隊
+- `models` (array, optional): 專案可存取的模型清單
+- `max_budget` (float, optional): 專案的最大支出預算
+- `tpm_limit` (int, optional): 每分鐘 token 限制
+- `rpm_limit` (int, optional): 每分鐘請求限制
+- `budget_duration` (string, optional): 預算重設週期（例如 "30d"、"1mo"）
+- `metadata` (object, optional): 專案的自訂中繼資料
+- `blocked` (boolean, optional): 封鎖此專案的所有 API 呼叫
 
-**Example**:
+**範例**：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/project/new' \
@@ -155,7 +155,7 @@ curl --location 'http://0.0.0.0:4000/project/new' \
 }'
 ```
 
-**Response**:
+**回應**：
 
 ```json
 {
@@ -174,24 +174,24 @@ curl --location 'http://0.0.0.0:4000/project/new' \
 }
 ```
 
-### POST /project/update
+### POST /project/update {#post-projectupdate}
 
-Update an existing project.
+更新現有專案。
 
-**Who can call**: Admins or Team Admins
+**可呼叫者**：管理員或團隊管理員
 
-**Parameters**:
-- `project_id` (string, required): The project to update
-- `project_alias` (string, optional): Updated project name
-- `team_id` (string, optional): Move project to different team
-- `models` (array, optional): Updated list of allowed models
-- `max_budget` (float, optional): Updated budget
-- `tpm_limit` (int, optional): Updated TPM limit
-- `rpm_limit` (int, optional): Updated RPM limit
-- `metadata` (object, optional): Updated metadata
-- `blocked` (boolean, optional): Updated blocked status
+**參數**：
+- `project_id` (string, required): 要更新的專案
+- `project_alias` (string, optional): 更新後的專案名稱
+- `team_id` (string, optional): 將專案移至不同的團隊
+- `models` (array, optional): 更新後的允許模型清單
+- `max_budget` (float, optional): 更新後的預算
+- `tpm_limit` (int, optional): 更新後的 TPM 限制
+- `rpm_limit` (int, optional): 更新後的 RPM 限制
+- `metadata` (object, optional): 更新後的中繼資料
+- `blocked` (boolean, optional): 更新後的封鎖狀態
 
-**Example**:
+**範例**：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/project/update' \
@@ -207,21 +207,21 @@ curl --location 'http://0.0.0.0:4000/project/update' \
 }'
 ```
 
-### GET /project/info
+### GET /project/info {#get-projectinfo}
 
-Get information about a specific project.
+取得特定專案的資訊。
 
-**Parameters**:
-- `project_id` (string, required): Query parameter
+**參數**：
+- `project_id` (string, required): 查詢參數
 
-**Example**:
+**範例**：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/project/info?project_id=project-abc' \
 --header 'Authorization: Bearer sk-1234'
 ```
 
-**Response**:
+**回應**：
 
 ```json
 {
@@ -246,18 +246,18 @@ curl --location 'http://0.0.0.0:4000/project/info?project_id=project-abc' \
 }
 ```
 
-### GET /project/list
+### GET /project/list {#get-projectlist}
 
-List all projects the user has access to.
+列出使用者有權存取的所有專案。
 
-**Example**:
+**範例**：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/project/list' \
 --header 'Authorization: Bearer sk-1234'
 ```
 
-**Response**:
+**回應**：
 
 ```json
 [
@@ -276,16 +276,16 @@ curl --location 'http://0.0.0.0:4000/project/list' \
 ]
 ```
 
-### DELETE /project/delete
+### DELETE /project/delete {#delete-projectdelete}
 
-Delete one or more projects.
+刪除一或多個專案。
 
-**Who can call**: Admins only
+**可呼叫者**：僅限管理員
 
-**Parameters**:
-- `project_ids` (array, required): List of project IDs to delete
+**參數**：
+- `project_ids` (array, required): 要刪除的專案 ID 清單
 
-**Example**:
+**範例**：
 
 ```bash
 curl --location --request DELETE 'http://0.0.0.0:4000/project/delete' \
@@ -296,11 +296,11 @@ curl --location --request DELETE 'http://0.0.0.0:4000/project/delete' \
 }'
 ```
 
-**Note**: Projects with associated API keys cannot be deleted. Delete or reassign the keys first.
+**注意**：具有相關聯 API 金鑰的專案無法刪除。請先刪除或重新指派這些金鑰。
 
-## Model-Specific Quotas
+## 模型特定配額 {#model-specific-quotas}
 
-You can set different quotas for different models within a project:
+您可以在專案內為不同模型設定不同的配額：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/project/new' \

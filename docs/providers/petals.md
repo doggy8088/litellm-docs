@@ -1,18 +1,18 @@
-# Petals
+# Petals {#petals}
 Petals: https://github.com/bigscience-workshop/petals
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_Petals.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-## Pre-Requisites
-Ensure you have `petals` installed
+## 前置需求 {#pre-requisites}
+請確認您已安裝 `petals`
 ```shell
 uv add git+https://github.com/bigscience-workshop/petals
 ```
 
-## Usage
-Ensure you add `petals/` as a prefix for all petals LLMs. This sets the custom_llm_provider to petals
+## 用法 {#usage}
+請確認您將 `petals/` 加為所有 petals LLM 的前綴。這會將 custom_llm_provider 設為 petals
 
 ```python
 from litellm import completion
@@ -25,7 +25,7 @@ response = completion(
 print(response)
 ```
 
-## Usage with Streaming
+## 串流用法 {#usage-with-streaming}
 
 ```python
 response = completion(
@@ -39,11 +39,9 @@ for chunk in response:
   print(chunk)
 ```
 
-### Model Details
+### 模型詳細資料 {#model-details}
 
-| Model Name       | Function Call                              |
+| 模型名稱       | 函式呼叫                              |
 |------------------|--------------------------------------------|
 | petals-team/StableBeluga | `completion('petals/petals-team/StableBeluga2', messages)` | 
-| huggyllama/llama-65b | `completion('petals/huggyllama/llama-65b', messages)` | 
-
-
+| huggyllama/llama-65b | `completion('petals/huggyllama/llama-65b', messages)` |

@@ -1,19 +1,19 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Request Tags for Spend Tracking
+# 用於支出追蹤的請求標籤 {#request-tags-for-spend-tracking}
 
-Add tags to model deployments to track spend by environment, AWS account, or any custom label.
+在模型部署上新增標籤，以依環境、AWS 帳戶或任何自訂標籤來追蹤支出。
 
-Tags appear in the `request_tags` field of LiteLLM spend logs.
+標籤會出現在 LiteLLM 支出記錄的 `request_tags` 欄位中。
 
-:::info Requirements
-Virtual Keys & a database should be set up. See [Virtual Keys Setup](./virtual_keys.md).
+:::info 需求
+必須先設定 Virtual Keys 與資料庫。請參閱 [Virtual Keys 設定](./virtual_keys.md)。
 :::
 
-## Config Setup
+## 設定 {#config-setup}
 
-Set tags on model deployments in `config.yaml`:
+在 `config.yaml` 中為模型部署設定標籤：
 
 ```yaml title="config.yaml"
 model_list:
@@ -32,11 +32,11 @@ model_list:
       tags: ["AWS_IAM_DEV"]  # 👈 Tag for development
 ```
 
-## Make Request
+## 發出請求 {#make-request}
 
-### Option 1: Use Config Tags (Automatic)
+### 選項 1：使用設定標籤（自動） {#option-1-use-config-tags-automatic}
 
-Requests just specify the model - tags are automatically applied from config:
+請求只需指定模型——標籤會自動從設定套用：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -48,9 +48,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-### Option 2: Use `x-litellm-tags` Header
+### 選項 2：使用 `x-litellm-tags` 標頭 {#option-2-use-x-litellm-tags-header}
 
-Pass tags dynamically via the `x-litellm-tags` header as a comma-separated string:
+透過 `x-litellm-tags` 標頭動態傳入標籤，以逗號分隔字串表示：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -63,14 +63,14 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-Format: Comma-separated string (spaces are automatically trimmed): `"tag1,tag2,tag3"`
+格式：逗號分隔字串（空白會自動去除）： `"tag1,tag2,tag3"`
 
-### Option 3: Use Request Body `tags`
+### 選項 3：使用請求本文 `tags` {#option-3-use-request-body-tags}
 
-Pass tags directly in the request body. Both formats are supported:
+直接在請求本文中傳入標籤。支援兩種格式：
 
 <Tabs>
-<TabItem value="direct" label="Direct tags Field">
+<TabItem value="direct" label="直接 tags 欄位">
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -85,7 +85,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 
-<TabItem value="metadata" label="Metadata Nested">
+<TabItem value="metadata" label="巢狀中繼資料">
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -103,18 +103,18 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-The `tags` field must be an array of strings.
+`tags` 欄位必須是字串陣列。
 
 :::info
-When tags are provided via header or request body, they override any tags configured in the model deployment. If both header and body tags are provided, body tags take precedence.
+當透過標頭或請求本文提供標籤時，會覆寫模型部署中設定的任何標籤。如果同時提供標頭與本文標籤，會以本文標籤為優先。
 :::
 
-## Set Tags on Keys or Teams
+## 在金鑰或團隊上設定標籤 {#set-tags-on-keys-or-teams}
 
-You can also set default tags at the API key or team level:
+您也可以在 API 金鑰或團隊層級設定預設標籤：
 
 <Tabs>
-<TabItem value="key" label="Set on Key">
+<TabItem value="key" label="在金鑰上設定">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -128,7 +128,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 ```
 
 </TabItem>
-<TabItem value="team" label="Set on Team">
+<TabItem value="team" label="在團隊上設定">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/team/new' \
@@ -144,9 +144,9 @@ curl -L -X POST 'http://0.0.0.0:4000/team/new' \
 </TabItem>
 </Tabs>
 
-## Advanced: Custom Header Tracking
+## 進階：自訂標頭追蹤 {#advanced-custom-header-tracking}
 
-Track spend using any custom header by adding it to your config:
+只要將任何自訂標頭加入設定，即可用來追蹤支出：
 
 ```yaml
 litellm_settings:
@@ -155,16 +155,16 @@ litellm_settings:
     - "x-customer-id"
 ```
 
-**Disable User-Agent tracking:**
+**停用 User-Agent 追蹤：**
 
 ```yaml
 litellm_settings:
   disable_add_user_agent_to_request_tags: true
 ```
 
-## Spend Logs
+## 支出記錄 {#spend-logs}
 
-The tag from the model config appears in `LiteLLM_SpendLogs`:
+模型設定中的標籤會出現在 `LiteLLM_SpendLogs`：
 
 ```json
 {
@@ -175,8 +175,8 @@ The tag from the model config appears in `LiteLLM_SpendLogs`:
 }
 ```
 
-## Related
+## 相關內容 {#related}
 
-- [Spend Tracking Overview](cost_tracking.md) - Complete tutorial on tracking spend with tags
-- [Tag Budgets](tag_budgets.md) - Set budget limits per tag
-- [Virtual Keys Setup](virtual_keys.md) - Required for tag tracking
+- [支出追蹤總覽](cost_tracking.md) - 使用標籤追蹤支出的完整教學
+- [標籤預算](tag_budgets.md) - 依標籤設定預算上限
+- [Virtual Keys 設定](virtual_keys.md) - 標籤追蹤所需

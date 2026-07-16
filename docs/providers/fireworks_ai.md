@@ -1,37 +1,34 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Fireworks AI
-
+# Fireworks AI {#fireworks-ai}
 
 :::info
-**We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when sending completion requests**
+**我們支援所有 Fireworks AI 模型，只要在傳送 completion 請求時將 `fireworks_ai/` 設為前綴即可**
 :::
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | The fastest and most efficient inference engine to build production-ready, compound AI systems. |
-| Provider Route on LiteLLM | `fireworks_ai/` |
-| Provider Doc | [Fireworks AI ↗](https://docs.fireworks.ai/getting-started/introduction) |
-| Supported OpenAI Endpoints | `/chat/completions`, `/embeddings`, `/completions`, `/audio/transcriptions`, `/rerank` |
+| 說明 | 用於建置可上線、複合式 AI 系統的最快且最有效率的推論引擎。 |
+| LiteLLM 提供者路由 | `fireworks_ai/` |
+| 提供者文件 | [Fireworks AI ↗](https://docs.fireworks.ai/getting-started/introduction) |
+| 支援的 OpenAI 端點 | `/chat/completions`, `/embeddings`, `/completions`, `/audio/transcriptions`, `/rerank` |
 
+## 概覽 {#overview}
 
-## Overview
+本指南說明如何將 LiteLLM 與 Fireworks AI 整合。您可以透過三種主要方式連接到 Fireworks AI：
 
-This guide explains how to integrate LiteLLM with Fireworks AI. You can connect to Fireworks AI in three main ways:
+1. <b> 使用 Fireworks AI 無伺服器模型 </b> – 可輕鬆連接到由 Fireworks 管理的模型。
+2. <b> 連接到您自己的 Fireworks 帳戶中的模型 </b> – 存取託管於您 Fireworks 帳戶內的模型。
+3. <b> 透過直接路由部署連接 </b> – 以更彈性、可自訂的方式連接到特定 Fireworks 執行個體。
 
-1. <b> Using Fireworks AI serverless models </b> – Easy connection to Fireworks-managed models.
-2. <b> Connecting to a model in your own Fireworks account </b> – Access models that are hosted within your Fireworks account.
-3. <b> Connecting via a direct-route deployment </b> – A more flexible, customizable connection to a specific Fireworks instance.
-
-
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['FIREWORKS_AI_API_KEY']
 ```
 
-## Sample Usage - Serverless Models
+## 範例用法 - 無伺服器模型 {#sample-usage---serverless-models}
 ```python
 from litellm import completion
 import os
@@ -46,7 +43,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Serverless Models - Streaming
+## 範例用法 - 無伺服器模型 - 串流 {#sample-usage---serverless-models---streaming}
 ```python
 from litellm import completion
 import os
@@ -64,7 +61,7 @@ for chunk in response:
     print(chunk)
 ```
 
-## Sample Usage -  Models in Your Own Fireworks Account 
+## 範例用法 - 您自己的 Fireworks 帳戶中的模型  {#sample-usage----models-in-your-own-fireworks-account}
 ```python
 from litellm import completion
 import os
@@ -79,7 +76,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Direct-Route Deployment
+## 範例用法 - 直接路由部署 {#sample-usage---direct-route-deployment}
 ```python
 from litellm import completion
 import os
@@ -95,12 +92,11 @@ response = completion(
 print(response)
 ```
 
-> **Note:** The above is for the chat interface, if you want to use the text completion interface it's model="text-completion-openai/accounts/fireworks/models/qwen2p5-coder-7b#accounts/gitlab/deployments/2fb7764c"
+> **注意：** 以上內容適用於聊天介面；如果您想使用文字 completion 介面，則為 model="text-completion-openai/accounts/fireworks/models/qwen2p5-coder-7b#accounts/gitlab/deployments/2fb7764c"
 
+## 搭配 LiteLLM Proxy 使用  {#usage-with-litellm-proxy}
 
-## Usage with LiteLLM Proxy 
-
-### 1. Set Fireworks AI Models on config.yaml
+### 1. 在 config.yaml 中設定 Fireworks AI 模型 {#1-set-fireworks-ai-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -110,17 +106,16 @@ model_list:
       api_key: "os.environ/FIREWORKS_AI_API_KEY"
 ```
 
-### 2. Start Proxy 
+### 2. 啟動 Proxy  {#2-start-proxy}
 
 ```
 litellm --config config.yaml
 ```
 
-### 3. Test it
-
+### 3. 測試 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -190,11 +185,11 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Document Inlining 
+## 文件內嵌  {#document-inlining}
 
-LiteLLM supports document inlining for Fireworks AI models. This is useful for models that are not vision models, but still need to parse documents/images/etc.
+LiteLLM 支援 Fireworks AI 模型的文件內嵌。這對於不是視覺模型、但仍需要解析文件/圖片等內容的模型很有用。
 
-LiteLLM will add `#transform=inline` to the url of the image_url, if the model is not a vision model.[**See Code**](https://github.com/BerriAI/litellm/blob/1ae9d45798bdaf8450f2dfdec703369f3d2212b7/litellm/llms/fireworks_ai/chat/transformation.py#L114)
+如果模型不是視覺模型，LiteLLM 會將 `#transform=inline` 加到 image_url 的網址中。[**查看程式碼**](https://github.com/BerriAI/litellm/blob/1ae9d45798bdaf8450f2dfdec703369f3d2212b7/litellm/llms/fireworks_ai/chat/transformation.py#L114)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -232,7 +227,7 @@ print(completion)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -243,13 +238,13 @@ model_list:
     #   api_base: os.environ/FIREWORKS_AI_API_BASE [OPTIONAL], defaults to "https://api.fireworks.ai/inference/v1"
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -278,9 +273,9 @@ curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Disable Auto-add
+### 停用自動新增 {#disable-auto-add}
 
-If you want to disable the auto-add of `#transform=inline` to the url of the image_url, you can set the `auto_add_transform_inline` to `False` in the `FireworksAIConfig` class.
+如果您想停用自動將 `#transform=inline` 加到 image_url 的網址中，可以在 `FireworksAIConfig` 類別中將 `auto_add_transform_inline` 設為 `False`。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -300,9 +295,9 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-## Reasoning Effort
+## 推理努力 {#reasoning-effort}
 
-The `reasoning_effort` parameter is supported on select Fireworks AI models. Supported models include:
+`reasoning_effort` 參數支援於部分 Fireworks AI 模型。支援的模型包括：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -345,13 +340,13 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Supported Models - ALL Fireworks AI Models Supported!
+## 支援的模型 - 支援所有 Fireworks AI 模型！ {#supported-models---all-fireworks-ai-models-supported}
 
 :::info
-We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when sending completion requests
+我們支援所有 Fireworks AI 模型，只要在傳送 completion 請求時將 `fireworks_ai/` 設為前綴即可
 :::
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | llama-v3p2-1b-instruct | `completion(model="fireworks_ai/llama-v3p2-1b-instruct", messages)` |
 | llama-v3p2-3b-instruct | `completion(model="fireworks_ai/llama-v3p2-3b-instruct", messages)` |
@@ -361,13 +356,13 @@ We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when se
 | firefunction-v1 | `completion(model="fireworks_ai/firefunction-v1", messages)` |
 | llama-v2-70b-chat | `completion(model="fireworks_ai/llama-v2-70b-chat", messages)` |  
 
-## Supported Embedding Models
+## 支援的嵌入模型 {#supported-embedding-models}
 
 :::info
-We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when sending embedding requests
+我們支援所有 Fireworks AI 模型，只要在傳送 embedding 請求時將 `fireworks_ai/` 設為前綴即可
 :::
 
-| Model Name            | Function Call                                                   |
+| 模型名稱            | 函式呼叫                                                   |
 |-----------------------|-----------------------------------------------------------------|
 | fireworks_ai/nomic-ai/nomic-embed-text-v1.5 | `response = litellm.embedding(model="fireworks_ai/nomic-ai/nomic-embed-text-v1.5", input=input_text)` |
 | fireworks_ai/nomic-ai/nomic-embed-text-v1 | `response = litellm.embedding(model="fireworks_ai/nomic-ai/nomic-embed-text-v1", input=input_text)` |
@@ -375,10 +370,9 @@ We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when se
 | fireworks_ai/thenlper/gte-large | `response = litellm.embedding(model="fireworks_ai/thenlper/gte-large", input=input_text)` |
 | fireworks_ai/thenlper/gte-base | `response = litellm.embedding(model="fireworks_ai/thenlper/gte-base", input=input_text)` |
 
+## 音訊轉錄 {#audio-transcription}
 
-## Audio Transcription
-
-### Quick Start
+### 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -396,12 +390,12 @@ response = transcription(
 )
 ```
 
-[Pass API Key/API Base in `.transcription`](../set_keys.md#passing-args-to-completion)
+[在 `.transcription` 中傳入 API 金鑰/API Base](../set_keys.md#passing-args-to-completion)
 
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -414,13 +408,13 @@ model_list:
       mode: audio_transcription
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/audio/transcriptions' \
@@ -433,9 +427,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/audio/transcriptions' \
 </TabItem>
 </Tabs>
 
-## Rerank
+## 重新排序 {#rerank}
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -464,12 +458,12 @@ response = rerank(
 print(response)
 ```
 
-[Pass API Key/API Base in `.rerank`](../set_keys.md#passing-args-to-completion)
+[在 `.rerank` 中傳入 API 金鑰/API Base](../set_keys.md#passing-args-to-completion)
 
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -481,13 +475,13 @@ model_list:
       mode: rerank
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -510,8 +504,8 @@ curl http://0.0.0.0:4000/rerank \
 </TabItem>
 </Tabs>
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | fireworks/qwen3-reranker-8b | `rerank(model="fireworks_ai/fireworks/qwen3-reranker-8b", query=query, documents=documents)` |

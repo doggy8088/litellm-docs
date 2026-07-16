@@ -1,10 +1,10 @@
-# Provider Discounts
+# 提供者折扣 {#provider-discounts}
 
-Apply percentage-based discounts to specific providers. This is useful for negotiated enterprise pricing with providers.
+將百分比折扣套用至特定提供者。這對於與提供者協商企業定價很有幫助。
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 一起使用 {#usage-with-litellm-proxy-server}
 
-**Step 1: Add discount config to config.yaml**
+**步驟 1：將折扣設定加入 config.yaml**
 
 ```yaml
 # Apply 5% discount to all Vertex AI and Gemini costs
@@ -16,29 +16,28 @@ litellm_settings:
     # openai: 0.10   # 10% discount (example)
 ```
 
-**Step 2: Start proxy**
+**步驟 2：啟動 proxy**
 
 ```bash
 litellm /path/to/config.yaml
 ```
 
-The discount will be automatically applied to all cost calculations for the configured providers.
+折扣將自動套用至已設定提供者的所有成本計算。
 
+## 折扣運作方式 {#how-discounts-work}
 
-## How Discounts Work
+- 折扣會在所有其他成本計算（tokens、快取、tools 等）**之後**套用
+- 折扣為百分比（0.05 = 5%，0.10 = 10%，依此類推）
+- 折扣只會套用至已設定的提供者
+- 原始成本、折扣金額與最終成本都會記錄在成本明細 logs 中
+- 折扣資訊會在回應標頭中傳回：
+  - `x-litellm-response-cost` - 折扣後的最終成本
+  - `x-litellm-response-cost-original` - 折扣前的成本
+  - `x-litellm-response-cost-discount-amount` - 美元計價的折扣金額
 
-- Discounts are applied **after** all other cost calculations (tokens, caching, tools, etc.)
-- The discount is a percentage (0.05 = 5%, 0.10 = 10%, etc.)
-- Discounts only apply to the configured providers
-- Original cost, discount amount, and final cost are tracked in cost breakdown logs
-- Discount information is returned in response headers:
-  - `x-litellm-response-cost` - Final cost after discount
-  - `x-litellm-response-cost-original` - Cost before discount
-  - `x-litellm-response-cost-discount-amount` - Discount amount in USD
+## 支援的提供者 {#supported-providers}
 
-## Supported Providers
-
-You can apply discounts to all LiteLLM supported providers. Common examples:
+您可以將折扣套用至所有 LiteLLM 支援的提供者。常見範例：
 
 - `vertex_ai` - Google Vertex AI
 - `gemini` - Google Gemini
@@ -49,5 +48,4 @@ You can apply discounts to all LiteLLM supported providers. Common examples:
 - `cohere` - Cohere
 - `openrouter` - OpenRouter
 
-See the full list of providers in the [LlmProviders](https://github.com/BerriAI/litellm/blob/main/litellm/types/utils.py) enum.
-
+請參閱 [LlmProviders](https://github.com/BerriAI/litellm/blob/main/litellm/types/utils.py) enum 中的完整提供者清單。

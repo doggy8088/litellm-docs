@@ -1,15 +1,15 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Realtime API Guardrails
+# 即時 API 防護欄 {#realtime-api-guardrails}
 
-Guard voice conversations in the [Realtime API](/docs/realtime) — intercept speech transcriptions **before** the LLM responds.
+保護 [Realtime API](/docs/realtime) 中的語音對話——在 LLM 回應之前攔截語音轉錄。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-The Realtime API is a long-lived WebSocket session. Unlike `/chat/completions` where a guardrail runs once per HTTP request, a voice session has many turns — each one needs to be checked individually.
+Realtime API 是一個長連線的 WebSocket 工作階段。不同於 `/chat/completions` 中防護欄每個 HTTP 請求只執行一次，語音工作階段有許多輪次——每一輪都需要單獨檢查。
 
-LiteLLM intercepts each turn at the transcription event, after Whisper converts speech to text but before the LLM generates a response:
+LiteLLM 會在轉錄事件時攔截每一輪：先由 Whisper 將語音轉成文字，接著在 LLM 產生回應之前：
 
 ```
 User speaks into mic
@@ -44,19 +44,19 @@ User speaks into mic
 └───────────────────────────────────────────┘
 ```
 
-**Key detail**: LiteLLM also injects `create_response: false` into the session on connect, so the LLM never auto-responds before the guardrail has run.
+**重點**：LiteLLM 也會在連線時將 `create_response: false` 注入工作階段，因此 LLM 不會在防護欄執行前自動回應。
 
-## Supported guardrail mode
+## 支援的防護欄模式 {#supported-guardrail-mode}
 
-| Mode | Description |
+| 模式 | 說明 |
 |------|-------------|
-| `realtime_input_transcription` | Runs after each voice turn is transcribed, before LLM responds |
+| `realtime_input_transcription` | 在每次語音輪次轉錄後、LLM 回應前執行 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Step 1: Configure proxy
+### 步驟 1：設定 proxy {#step-1-configure-proxy}
 
-Add a guardrail with `mode: realtime_input_transcription` to your proxy config:
+在您的 proxy 設定中新增一個使用 `mode: realtime_input_transcription` 的防護欄：
 
 ```yaml
 model_list:
@@ -86,15 +86,15 @@ general_settings:
   master_key: sk-1234
 ```
 
-### Step 2: Start proxy
+### 步驟 2：啟動 proxy {#step-2-start-proxy}
 
 ```bash
 litellm --config proxy_config.yaml --port 4000
 ```
 
-### Step 3: Connect a Realtime client
+### 步驟 3：連接 Realtime 用戶端 {#step-3-connect-a-realtime-client}
 
-Connect your client to the proxy instead of directly to OpenAI:
+將您的用戶端連線到 proxy，而不是直接連到 OpenAI：
 
 <Tabs>
 <TabItem value="js" label="JavaScript">
@@ -159,19 +159,19 @@ asyncio.run(main())
 </TabItem>
 </Tabs>
 
-### What happens when a turn is blocked
+### 當一個輪次被阻擋時會發生什麼事 {#what-happens-when-a-turn-is-blocked}
 
-When the guardrail fires, the proxy:
+當防護欄觸發時，proxy 會：
 
-1. Sends `response.cancel` to kill any in-flight LLM response
-2. Sends `response.create` with the block message as forced instructions
-3. OpenAI's TTS **speaks the warning** back to the user — e.g. *"Content blocked: keyword 'system update' detected (Prompt injection attempt)"*
+1. 傳送 `response.cancel` 以終止任何進行中的 LLM 回應
+2. 傳送 `response.create`，並將封鎖訊息作為強制指令
+3. OpenAI 的 TTS **會將警告朗讀** 回給使用者——例如 *"Content blocked: keyword 'system update' detected (Prompt injection attempt)"*
 
-The LLM never processes the injected instruction.
+LLM 永遠不會處理注入的指令。
 
-## Using with any guardrail provider
+## 與任何防護欄提供者搭配使用 {#using-with-any-guardrail-provider}
 
-`realtime_input_transcription` mode works with any guardrail that implements `apply_guardrail`. Just swap `litellm_content_filter` for your provider:
+`realtime_input_transcription` 模式可與任何實作 `apply_guardrail` 的防護欄搭配使用。只要將 `litellm_content_filter` 替換為您的提供者即可：
 
 ```yaml
 guardrails:
@@ -183,9 +183,9 @@ guardrails:
       api_key: os.environ/LAKERA_API_KEY
 ```
 
-## Per-key guardrail control
+## 每個金鑰的防護欄控制 {#per-key-guardrail-control}
 
-To enable realtime guardrails only for specific API keys, set `default_on: false` and pass the guardrail name in the request metadata:
+若要僅針對特定 API 金鑰啟用即時防護欄，請設定 `default_on: false`，並在請求中繼資料中傳入防護欄名稱：
 
 ```yaml
 guardrails:
@@ -196,4 +196,4 @@ guardrails:
       default_on: false   # off by default
 ```
 
-Then the client opts in per-connection by passing it in the initial metadata (enterprise feature).
+接著，用戶端可在初始中繼資料中傳入該名稱，以每個連線選擇啟用（企業功能）。

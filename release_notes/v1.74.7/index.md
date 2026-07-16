@@ -19,7 +19,7 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -43,72 +43,66 @@ pip install litellm==1.74.7.post2
 
 ---
 
-## Key Highlights 
+## 主要亮點  {#key-highlights}
 
-
-- **Vector Stores** - Support for Vertex RAG Engine, PG Vector, OpenAI & Azure OpenAI Vector Stores.
-- **Bulk Editing Users** - Bulk editing users on the UI.
-- **Health Check Improvements** - Prevent unnecessary pod restarts during high traffic.
-- **New LLM Providers** - Added Moonshot AI and Vercel v0 provider support.
+- **向量儲存** - 支援 Vertex RAG Engine、PG Vector、OpenAI 與 Azure OpenAI Vector Stores。
+- **大量編輯使用者** - 在 UI 上大量編輯使用者。
+- **健康檢查改進** - 避免在高流量期間不必要的 pod 重新啟動。
+- **新的 LLM 提供者** - 新增 Moonshot AI 與 Vercel v0 提供者支援。
 
 ---
 
-## Vector Stores API
+## 向量儲存 API {#vector-stores-api}
 
 <Image img={require('../../img/release_notes/vector_stores.png')} />
 
+此版本新增支援可將 VertexAI RAG Engine、PG Vector、Bedrock Knowledge Bases 與 OpenAI Vector Stores 與 LiteLLM 搭配使用。
 
-This release introduces support for using VertexAI RAG Engine, PG Vector, Bedrock Knowledge Bases, and OpenAI Vector Stores with LiteLLM.
+這非常適合需要搭配 LLM 使用外部知識來源的使用案例。
 
-This is ideal for use cases requiring external knowledge sources with LLMs.
+這為 LiteLLM 使用者帶來以下優點：
 
-This brings the following benefits for LiteLLM users:
+**Proxy 管理員優點：**
+- 細粒度存取控制：決定哪些 Keys 與 Teams 可以存取特定的 Vector Stores
+- 跨所有向量儲存作業的完整使用追蹤與監控
 
-**Proxy Admin Benefits:**
-- Fine-grained access control: determine which Keys and Teams can access specific Vector Stores
-- Complete usage tracking and monitoring across all vector store operations
+**開發者優點：**
+- 用於查詢向量儲存並將其與 LLM API 請求搭配使用的簡單、統一介面
+- 在所有受支援的向量儲存提供者之間提供一致的 API 體驗
 
-**Developer Benefits:**
-- Simple, unified interface for querying vector stores and using them with LLM API requests
-- Consistent API experience across all supported vector store providers 
-
-
-
-[Get started](../../docs/completion/knowledgebase)
-
+[開始使用](../../docs/completion/knowledgebase)
 
 ---
 
-## Bulk Editing Users
+## 大量編輯使用者 {#bulk-editing-users}
 
 <Image img={require('../../img/bulk_edit_graphic.png')} />
 
-v1.74.7-stable introduces Bulk Editing Users on the UI. This is useful for:
-- granting all existing users to a default team (useful for controlling access / tracking spend by team)
-- controlling personal model access for existing users
+v1.74.7-stable 在 UI 中引入大量編輯使用者。這對以下情境很有用：
+- 將所有現有使用者授予預設團隊（對於控管存取權／依團隊追蹤支出很有用）
+- 控管現有使用者的個人模型存取權
 
-[Read more](https://docs.litellm.ai/docs/proxy/ui/bulk_edit_users)
+[閱讀更多](https://docs.litellm.ai/docs/proxy/ui/bulk_edit_users)
 
 ---
 
-## Health Check Server
+## 健康檢查伺服器 {#health-check-server}
 
-<Image alt="Separate Health App Architecture" img={require('../../img/separate_health_app_architecture.png')} style={{ borderRadius: '8px', marginBottom: '1em', maxWidth: '100%' }} />
+<Image alt="分離式健康應用程式架構" img={require('../../img/separate_health_app_architecture.png')} style={{ borderRadius: '8px', marginBottom: '1em', maxWidth: '100%' }} />
 
-This release brings reliability improvements that prevent unnecessary pod restarts during high traffic. Previously, when the main LiteLLM app was busy serving traffic, health endpoints would timeout even when pods were healthy. 
+此版本帶來可靠性改進，可避免在高流量期間不必要的 pod 重新啟動。先前，當主要 LiteLLM 應用程式忙於處理流量時，即使 pod 狀態正常，健康端點仍會逾時。
  
-Starting with this release, you can run health endpoints on an isolated process with a dedicated port. This ensures liveness and readiness probes remain responsive even when the main LiteLLM app is under heavy load.
+從此版本開始，您可以在具備專用埠的隔離程序上執行健康端點。這可確保即使主要 LiteLLM 應用程式處於高負載狀態，存活與就緒探測仍能保持回應。
 
-[Read More](https://docs.litellm.ai/docs/proxy/prod#10-use-a-separate-health-check-app)
-
+[閱讀更多](https://docs.litellm.ai/docs/proxy/prod#10-use-a-separate-health-check-app)
 
 ---
 
-## New Models / Updated Models
+## 新模型／更新模型 {#new-models--updated-models}
 
-#### Pricing / Context Window Updates
+#### 定價／上下文視窗更新 {#pricing--context-window-updates}
 
-| Provider    | Model                                  | Context Window | Input ($/1M tokens) | Output ($/1M tokens) |
+| 提供者    | 模型                                  | 上下文視窗 | 輸入（$/100 萬 tokens） | 輸出（$/100 萬 tokens） |
 | ----------- | -------------------------------------- | -------------- | ------------------- | -------------------- |
 | Azure AI | `azure_ai/grok-3` | 131k | $3.30 | $16.50 |
 | Azure AI | `azure_ai/global/grok-3` | 131k | $3.00 | $15.00 |
@@ -139,206 +133,203 @@ Starting with this release, you can run health endpoints on an isolated process 
 | Moonshot | `moonshot/moonshot-v1-32k-vision-preview` | 32k | $1.00 | $3.00 |
 | Moonshot | `moonshot/moonshot-v1-128k-vision-preview` | 131k | $2.00 | $5.00 |
 
-
-#### Features
+#### 功能 {#features}
 
 - **[🆕 Moonshot API (Kimi)](../../docs/providers/moonshot)**
-    - New LLM API integration for accessing Kimi models - [PR #12592](https://github.com/BerriAI/litellm/pull/12592), [Get Started](../../docs/providers/moonshot)
-- **[🆕 v0 Provider](../../docs/providers/v0)**
-    - New provider integration for v0.dev - [PR #12751](https://github.com/BerriAI/litellm/pull/12751), [Get Started](../../docs/providers/v0)
+    - 用於存取 Kimi 模型的新 LLM API 整合 - [PR #12592](https://github.com/BerriAI/litellm/pull/12592), [開始使用](../../docs/providers/moonshot)
+- **[🆕 v0 提供者](../../docs/providers/v0)**
+    - 針對 v0.dev 的新提供者整合 - [PR #12751](https://github.com/BerriAI/litellm/pull/12751), [開始使用](../../docs/providers/v0)
 - **[OpenAI](../../docs/providers/openai)**
-    - Use OpenAI DeepResearch models with `litellm.completion` (`/chat/completions`) - [PR #12627](https://github.com/BerriAI/litellm/pull/12627) **DOC NEEDED**
+    - 將 OpenAI DeepResearch 模型與 `litellm.completion`（`/chat/completions`）搭配使用 - [PR #12627](https://github.com/BerriAI/litellm/pull/12627) **需要文件**
 - **[Azure OpenAI](../../docs/providers/azure_openai)**
-    - Use Azure OpenAI DeepResearch models with `litellm.completion` (`/chat/completions`) - [PR #12627](https://github.com/BerriAI/litellm/pull/12627) **DOC NEEDED**
-    - Added `response_format` support for openai gpt-4.1 models - [PR #12745](https://github.com/BerriAI/litellm/pull/12745)
+    - 將 Azure OpenAI DeepResearch 模型與 `litellm.completion`（`/chat/completions`）搭配使用 - [PR #12627](https://github.com/BerriAI/litellm/pull/12627) **需要文件**
+    - 新增 `response_format` 對 openai gpt-4.1 模型的支援 - [PR #12745](https://github.com/BerriAI/litellm/pull/12745)
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Tool cache control support - [PR #12668](https://github.com/BerriAI/litellm/pull/12668)
+    - 支援工具快取控制 - [PR #12668](https://github.com/BerriAI/litellm/pull/12668)
 - **[Bedrock](../../docs/providers/bedrock)**
-    - Claude 4 /invoke route support - [PR #12599](https://github.com/BerriAI/litellm/pull/12599), [Get Started](../../docs/providers/bedrock)
-    - Application inference profile tool choice support - [PR #12599](https://github.com/BerriAI/litellm/pull/12599)
+    - 支援 Claude 4 /invoke 路由 - [PR #12599](https://github.com/BerriAI/litellm/pull/12599), [開始使用](../../docs/providers/bedrock)
+    - 支援應用程式推論設定檔工具選擇 - [PR #12599](https://github.com/BerriAI/litellm/pull/12599)
 - **[Gemini](../../docs/providers/gemini)**
-    - Custom TTL support for context caching - [PR #12541](https://github.com/BerriAI/litellm/pull/12541)
-    - Fix implicit caching cost calculation for Gemini 2.x models - [PR #12585](https://github.com/BerriAI/litellm/pull/12585)
+    - 為上下文快取新增自訂 TTL 支援 - [PR #12541](https://github.com/BerriAI/litellm/pull/12541)
+    - 修正 Gemini 2.x 模型的隱式快取成本計算 - [PR #12585](https://github.com/BerriAI/litellm/pull/12585)
 - **[VertexAI](../../docs/providers/vertex)**
-    - Added Vertex AI RAG Engine support (use with OpenAI compatible `/vector_stores` API) - [PR #12752](https://github.com/BerriAI/litellm/pull/12595), [Get Started](../../docs/completion/knowledgebase)
+    - 新增 Vertex AI RAG Engine 支援（與 OpenAI 相容 `/vector_stores` API 搭配使用）- [PR #12752](https://github.com/BerriAI/litellm/pull/12595), [開始使用](../../docs/completion/knowledgebase)
 - **[vLLM](../../docs/providers/vllm)**
-    - Added support for using Rerank endpoints with vLLM - [PR #12738](https://github.com/BerriAI/litellm/pull/12738), [Get Started](../../docs/providers/vllm#rerank)
+    - 新增使用 Rerank 端點與 vLLM 搭配使用的支援 - [PR #12738](https://github.com/BerriAI/litellm/pull/12738), [開始使用](../../docs/providers/vllm#rerank)
 - **[AI21](../../docs/providers/ai21)**
-    - Added ai21/jamba-1.7 model family pricing - [PR #12593](https://github.com/BerriAI/litellm/pull/12593), [Get Started](../../docs/providers/ai21)
+    - 新增 ai21/jamba-1.7 模型系列定價 - [PR #12593](https://github.com/BerriAI/litellm/pull/12593), [開始使用](../../docs/providers/ai21)
 - **[Together.ai](../../docs/providers/together_ai)**
-    - [New Model] add together_ai/moonshotai/Kimi-K2-Instruct - [PR #12645](https://github.com/BerriAI/litellm/pull/12645), [Get Started](../../docs/providers/together_ai)
+    - [新模型] 新增 together_ai/moonshotai/Kimi-K2-Instruct - [PR #12645](https://github.com/BerriAI/litellm/pull/12645), [開始使用](../../docs/providers/together_ai)
 - **[Groq](../../docs/providers/groq)**
-    - Add groq/moonshotai-kimi-k2-instruct model configuration - [PR #12648](https://github.com/BerriAI/litellm/pull/12648), [Get Started](../../docs/providers/groq)
+    - 新增 groq/moonshotai-kimi-k2-instruct 模型組態 - [PR #12648](https://github.com/BerriAI/litellm/pull/12648), [開始使用](../../docs/providers/groq)
 - **[Github Copilot](../../docs/providers/github_copilot)**
-    - Change System prompts to assistant prompts for GH Copilot - [PR #12742](https://github.com/BerriAI/litellm/pull/12742), [Get Started](../../docs/providers/github_copilot)
+    - 將 GH Copilot 的 System prompts 改為 assistant prompts - [PR #12742](https://github.com/BerriAI/litellm/pull/12742), [開始使用](../../docs/providers/github_copilot)
 
-
-#### Bugs
+#### 錯誤 {#bugs}
 - **[Anthropic](../../docs/providers/anthropic)**
-    - Fix streaming + response_format + tools bug - [PR #12463](https://github.com/BerriAI/litellm/pull/12463)
+    - 修正 streaming + response_format + tools 錯誤 - [PR #12463](https://github.com/BerriAI/litellm/pull/12463)
 - **[XAI](../../docs/providers/xai)**
-    - grok-4 does not support the `stop` param - [PR #12646](https://github.com/BerriAI/litellm/pull/12646)
+    - grok-4 不支援 `stop` 參數 - [PR #12646](https://github.com/BerriAI/litellm/pull/12646)
 - **[AWS](../../docs/providers/bedrock)**
-    - Role chaining with web authentication for AWS Bedrock - [PR #12607](https://github.com/BerriAI/litellm/pull/12607)
+    - AWS Bedrock 的角色鏈結與 web 驗證 - [PR #12607](https://github.com/BerriAI/litellm/pull/12607)
 - **[VertexAI](../../docs/providers/vertex)**
-    - Add project_id to cached credentials - [PR #12661](https://github.com/BerriAI/litellm/pull/12661)
+    - 將 project_id 新增至快取憑證 - [PR #12661](https://github.com/BerriAI/litellm/pull/12661)
 - **[Bedrock](../../docs/providers/bedrock)**
-    - Fix bedrock nova micro and nova lite context window info in [PR #12619](https://github.com/BerriAI/litellm/pull/12619)
+    - 修正 [PR #12619](https://github.com/BerriAI/litellm/pull/12619) 中 bedrock nova micro 與 nova lite 的上下文視窗資訊
 
 ---
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 
-#### Features
+#### 功能 {#features-1}
 - **[/chat/completions](../../docs/completion/input)** 
-    - Include tool calls in output of trim_messages - [PR #11517](https://github.com/BerriAI/litellm/pull/11517)
+    - 在 trim_messages 的輸出中包含工具呼叫 - [PR #11517](https://github.com/BerriAI/litellm/pull/11517)
 - **[/v1/vector_stores](../../docs/vector_stores/search)**
-    - New OpenAI-compatible vector store endpoints - [PR #12699](https://github.com/BerriAI/litellm/pull/12699), [Get Started](../../docs/vector_stores/search)
-    - Vector store search endpoint - [PR #12749](https://github.com/BerriAI/litellm/pull/12749), [Get Started](../../docs/vector_stores/search)
-    - Support for using PG Vector as a vector store - [PR #12667](https://github.com/BerriAI/litellm/pull/12667), [Get Started](../../docs/completion/knowledgebase)
+    - 新的相容於 OpenAI 的向量儲存端點 - [PR #12699](https://github.com/BerriAI/litellm/pull/12699), [開始使用](../../docs/vector_stores/search)
+    - 向量儲存搜尋端點 - [PR #12749](https://github.com/BerriAI/litellm/pull/12749), [開始使用](../../docs/vector_stores/search)
+    - 支援使用 PG Vector 作為向量儲存 - [PR #12667](https://github.com/BerriAI/litellm/pull/12667), [開始使用](../../docs/completion/knowledgebase)
 - **[/streamGenerateContent](../../docs/generateContent)**
-    - Non-gemini model support - [PR #12647](https://github.com/BerriAI/litellm/pull/12647)
+    - 非 gemini 模型支援 - [PR #12647](https://github.com/BerriAI/litellm/pull/12647)
 
-#### Bugs
+#### 錯誤 {#bugs-1}
 - **[/vector_stores](../../docs/vector_stores/search)**
-    - Knowledge Base Call returning error when passing as `tools` - [PR #12628](https://github.com/BerriAI/litellm/pull/12628)
+    - 傳入 `tools` 時，Knowledge Base Call 會回傳錯誤 - [PR #12628](https://github.com/BerriAI/litellm/pull/12628)
 
 ---
 
-## [MCP Gateway](../../docs/mcp)
+## [MCP Gateway](../../docs/mcp) {#mcp-gatewaydocsmcp}
 
-#### Features
-- **[Access Groups](../../docs/mcp#grouping-mcps-access-groups)**
-    - Allow MCP access groups to be added via litellm proxy config.yaml - [PR #12654](https://github.com/BerriAI/litellm/pull/12654)
-    - List tools from access list for keys - [PR #12657](https://github.com/BerriAI/litellm/pull/12657)
-- **[Namespacing](../../docs/mcp#mcp-namespacing)**
-    - URL-based namespacing for better segregation - [PR #12658](https://github.com/BerriAI/litellm/pull/12658)
-    - Make MCP_TOOL_PREFIX_SEPARATOR configurable from env - [PR #12603](https://github.com/BerriAI/litellm/pull/12603)
-- **[Gateway Features](../../docs/mcp#mcp-gateway-features)**
-    - Allow using MCPs with all LLM APIs (VertexAI, Gemini, Groq, etc.) when using /responses - [PR #12546](https://github.com/BerriAI/litellm/pull/12546)
+#### 功能 {#features-2}
+- **[存取群組](../../docs/mcp#grouping-mcps-access-groups)**
+    - 允許透過 litellm proxy config.yaml 新增 MCP access groups - [PR #12654](https://github.com/BerriAI/litellm/pull/12654)
+    - 從 key 的存取清單列出工具 - [PR #12657](https://github.com/BerriAI/litellm/pull/12657)
+- **[命名空間](../../docs/mcp#mcp-namespacing)**
+    - 以 URL 為基礎的命名空間，以更好地區隔 - [PR #12658](https://github.com/BerriAI/litellm/pull/12658)
+    - 讓 MCP_TOOL_PREFIX_SEPARATOR 可從 env 設定 - [PR #12603](https://github.com/BerriAI/litellm/pull/12603)
+- **[閘道功能](../../docs/mcp#mcp-gateway-features)**
+    - 在使用 /responses 時，允許 MCP 與所有 LLM APIs（VertexAI、Gemini、Groq 等）搭配使用 - [PR #12546](https://github.com/BerriAI/litellm/pull/12546)
 
-#### Bugs
-    - Fix to update object permission on update/delete key/team - [PR #12701](https://github.com/BerriAI/litellm/pull/12701)
-    - Include /mcp in list of available routes on proxy - [PR #12612](https://github.com/BerriAI/litellm/pull/12612)
+#### 錯誤 {#bugs-2}
+    - 修正更新 key/team 時更新物件權限 - [PR #12701](https://github.com/BerriAI/litellm/pull/12701)
+    - 在 proxy 的可用路由清單中包含 /mcp - [PR #12612](https://github.com/BerriAI/litellm/pull/12612)
 
 ---
 
-## Management Endpoints / UI
+## 管理端點 / UI {#management-endpoints--ui}
 
-#### Features
-- **Keys**
-    - Regenerate Key State Management improvements - [PR #12729](https://github.com/BerriAI/litellm/pull/12729)
-- **Models**
-    - Wildcard model filter support - [PR #12597](https://github.com/BerriAI/litellm/pull/12597)
-    - Fixes for handling team only models on UI - [PR #12632](https://github.com/BerriAI/litellm/pull/12632)
-- **Usage Page**
-    - Fix Y-axis labels overlap on Spend per Tag chart - [PR #12754](https://github.com/BerriAI/litellm/pull/12754)
-- **Teams**
-    - Allow setting custom key duration + show key creation stats - [PR #12722](https://github.com/BerriAI/litellm/pull/12722)
-    - Enable team admins to update member roles - [PR #12629](https://github.com/BerriAI/litellm/pull/12629)
-- **Users**
-    - New `/user/bulk_update` endpoint - [PR #12720](https://github.com/BerriAI/litellm/pull/12720)
-- **Logs Page**
-    - Add `end_user` filter on UI Logs Page - [PR #12663](https://github.com/BerriAI/litellm/pull/12663)
-- **MCP Servers**
-    - Copy MCP Server name functionality - [PR #12760](https://github.com/BerriAI/litellm/pull/12760)
-- **Vector Stores**
-    - UI support for clicking into Vector Stores - [PR #12741](https://github.com/BerriAI/litellm/pull/12741)
-    - Allow adding Vertex RAG Engine, OpenAI, Azure through UI - [PR #12752](https://github.com/BerriAI/litellm/pull/12752)
-- **General**
-    - Add Copy-on-Click for all IDs (Key, Team, Organization, MCP Server) - [PR #12615](https://github.com/BerriAI/litellm/pull/12615)
+#### 功能 {#features-3}
+- **金鑰**
+    - 改進重新產生 Key 狀態管理 - [PR #12729](https://github.com/BerriAI/litellm/pull/12729)
+- **模型**
+    - 萬用字元模型篩選支援 - [PR #12597](https://github.com/BerriAI/litellm/pull/12597)
+    - 修正 UI 上處理僅團隊模型的問題 - [PR #12632](https://github.com/BerriAI/litellm/pull/12632)
+- **用量頁面**
+    - 修正 Spend per Tag 圖表上 Y 軸標籤重疊 - [PR #12754](https://github.com/BerriAI/litellm/pull/12754)
+- **團隊**
+    - 允許設定自訂 key 期間 + 顯示 key 建立統計資料 - [PR #12722](https://github.com/BerriAI/litellm/pull/12722)
+    - 讓團隊管理員可更新成員角色 - [PR #12629](https://github.com/BerriAI/litellm/pull/12629)
+- **使用者**
+    - 新的 `/user/bulk_update` 端點 - [PR #12720](https://github.com/BerriAI/litellm/pull/12720)
+- **記錄頁面**
+    - 在 UI Logs Page 新增 `end_user` 篩選器 - [PR #12663](https://github.com/BerriAI/litellm/pull/12663)
+- **MCP 伺服器**
+    - 複製 MCP Server 名稱功能 - [PR #12760](https://github.com/BerriAI/litellm/pull/12760)
+- **向量儲存庫**
+    - UI 支援點選進入 Vector Stores - [PR #12741](https://github.com/BerriAI/litellm/pull/12741)
+    - 允許透過 UI 新增 Vertex RAG Engine、OpenAI、Azure - [PR #12752](https://github.com/BerriAI/litellm/pull/12752)
+- **一般**
+    - 為所有 ID（Key、Team、Organization、MCP Server）新增點擊即複製 - [PR #12615](https://github.com/BerriAI/litellm/pull/12615)
 - **[SCIM](../../docs/proxy/scim)**
-    - Add GET /ServiceProviderConfig endpoint - [PR #12664](https://github.com/BerriAI/litellm/pull/12664)
+    - 新增 GET /ServiceProviderConfig 端點 - [PR #12664](https://github.com/BerriAI/litellm/pull/12664)
 
-#### Bugs
-- **Teams**
-    - Ensure user id correctly added when creating new teams - [PR #12719](https://github.com/BerriAI/litellm/pull/12719)
-    - Fixes for handling team-only models on UI - [PR #12632](https://github.com/BerriAI/litellm/pull/12632)
+#### 錯誤 {#bugs-3}
+- **團隊**
+    - 建立新 team 時，確保正確加入 user id - [PR #12719](https://github.com/BerriAI/litellm/pull/12719)
+    - 修正 UI 上處理僅團隊模型的問題 - [PR #12632](https://github.com/BerriAI/litellm/pull/12632)
 
 ---
 
-## Logging / Guardrail Integrations
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
 
-#### Features
+#### 功能 {#features-4}
 - **[Google Cloud Model Armor](../../docs/proxy/guardrails/google_cloud_model_armor)**
-    - New guardrails integration - [PR #12492](https://github.com/BerriAI/litellm/pull/12492)
-- **[Bedrock Guardrails](../../docs/proxy/guardrails/bedrock)**
-    - Allow disabling exception on 'BLOCKED' action - [PR #12693](https://github.com/BerriAI/litellm/pull/12693)
+    - 新的防護欄整合 - [PR #12492](https://github.com/BerriAI/litellm/pull/12492)
+- **[Bedrock 防護欄](../../docs/proxy/guardrails/bedrock)**
+    - 允許停用對 'BLOCKED' 動作的例外 - [PR #12693](https://github.com/BerriAI/litellm/pull/12693)
 - **[Guardrails AI](../../docs/proxy/guardrails/guardrails_ai)**
-    - Support `llmOutput` based guardrails as pre-call hooks - [PR #12674](https://github.com/BerriAI/litellm/pull/12674)
-- **[DataDog LLM Observability](../../docs/proxy/logging#datadog)**
-    - Add support for tracking the correct span type based on LLM Endpoint used - [PR #12652](https://github.com/BerriAI/litellm/pull/12652)
-- **[Custom Logging](../../docs/proxy/logging)**
-    - Allow reading custom logger python scripts from S3 or GCS Bucket - [PR #12623](https://github.com/BerriAI/litellm/pull/12623)
+    - 支援以 `llmOutput` 為基礎的防護欄作為 pre-call hooks - [PR #12674](https://github.com/BerriAI/litellm/pull/12674)
+- **[DataDog LLM 可觀測性](../../docs/proxy/logging#datadog)**
+    - 新增根據所使用的 LLM Endpoint 追蹤正確 span type 的支援 - [PR #12652](https://github.com/BerriAI/litellm/pull/12652)
+- **[自訂記錄](../../docs/proxy/logging)**
+    - 允許從 S3 或 GCS Bucket 讀取自訂 logger python scripts - [PR #12623](https://github.com/BerriAI/litellm/pull/12623)
 
-#### Bugs
-- **[General Logging](../../docs/proxy/logging)**
-    - StandardLoggingPayload on cache_hits should track custom llm provider - [PR #12652](https://github.com/BerriAI/litellm/pull/12652)
+#### 錯誤 {#bugs-4}
+- **[一般記錄](../../docs/proxy/logging)**
+    - cache_hits 上的 StandardLoggingPayload 應追蹤自訂 llm provider - [PR #12652](https://github.com/BerriAI/litellm/pull/12652)
 - **[S3 Buckets](../../docs/proxy/logging#s3-buckets)**
-    - S3 v2 log uploader crashes when using with guardrails - [PR #12733](https://github.com/BerriAI/litellm/pull/12733)
+    - 與 guardrails 一起使用時，S3 v2 log uploader 會當掉 - [PR #12733](https://github.com/BerriAI/litellm/pull/12733)
 
 ---
 
-## Performance / Loadbalancing / Reliability improvements
+## 效能 / 負載平衡 / 可靠性改進 {#performance--loadbalancing--reliability-improvements}
 
-#### Features
-- **Health Checks**
-    - Separate health app for liveness probes - [PR #12669](https://github.com/BerriAI/litellm/pull/12669)
-    - Health check app on separate port - [PR #12718](https://github.com/BerriAI/litellm/pull/12718)
-- **Caching**
-    - Add Azure Blob cache support - [PR #12587](https://github.com/BerriAI/litellm/pull/12587)
-- **Router**
-    - Handle ZeroDivisionError with zero completion tokens in lowest_latency strategy - [PR #12734](https://github.com/BerriAI/litellm/pull/12734)
+#### 功能 {#features-5}
+- **健康檢查**
+    - 為 liveness probes 分離的 health app - [PR #12669](https://github.com/BerriAI/litellm/pull/12669)
+    - 位於獨立連接埠的 health check app - [PR #12718](https://github.com/BerriAI/litellm/pull/12718)
+- **快取**
+    - 新增 Azure Blob cache 支援 - [PR #12587](https://github.com/BerriAI/litellm/pull/12587)
+- **路由器**
+    - 在 lowest_latency 策略中處理 completion tokens 為零時的 ZeroDivisionError - [PR #12734](https://github.com/BerriAI/litellm/pull/12734)
 
-#### Bugs
-- **Database**
-    - Use upsert for managed object table to avoid UniqueViolationError - [PR #11795](https://github.com/BerriAI/litellm/pull/11795)
-    - Refactor to support use_prisma_migrate for helm hook - [PR #12600](https://github.com/BerriAI/litellm/pull/12600)
-- **Cache**
-    - Fix: redis caching for embedding response models - [PR #12750](https://github.com/BerriAI/litellm/pull/12750)
+#### 錯誤 {#bugs-5}
+- **資料庫**
+    - 對 managed object table 使用 upsert，以避免 UniqueViolationError - [PR #11795](https://github.com/BerriAI/litellm/pull/11795)
+    - 重構以支援 helm hook 的 use_prisma_migrate - [PR #12600](https://github.com/BerriAI/litellm/pull/12600)
+- **快取**
+    - 修正：embedding response models 的 redis 快取 - [PR #12750](https://github.com/BerriAI/litellm/pull/12750)
 
 ---
 
-## Helm Chart
+## Helm Chart {#helm-chart}
 
-- DB Migration Hook: refactor to support use_prisma_migrate - for helm hook [PR](https://github.com/BerriAI/litellm/pull/12600)
-- Add envVars and extraEnvVars support to Helm migrations job - [PR #12591](https://github.com/BerriAI/litellm/pull/12591)
+- DB Migration Hook：重構以支援 use_prisma_migrate - for helm hook [PR](https://github.com/BerriAI/litellm/pull/12600)
+- 在 Helm migrations job 中新增 envVars 與 extraEnvVars 支援 - [PR #12591](https://github.com/BerriAI/litellm/pull/12591)
 
-## General Proxy Improvements
+## 一般 Proxy 改進 {#general-proxy-improvements}
 
-#### Features
-- **Control Plane + Data Plane Architecture**
-    - Control Plane + Data Plane support - [PR #12601](https://github.com/BerriAI/litellm/pull/12601)
+#### 功能 {#features-6}
+- **控制平面 + 資料平面架構**
+    - Control Plane + Data Plane 支援 - [PR #12601](https://github.com/BerriAI/litellm/pull/12601)
 - **Proxy CLI**
-    - Add "keys import" command to CLI - [PR #12620](https://github.com/BerriAI/litellm/pull/12620)
-- **Swagger Documentation**
-    - Add swagger docs for LiteLLM /chat/completions, /embeddings, /responses - [PR #12618](https://github.com/BerriAI/litellm/pull/12618)
-- **Dependencies**
-    - Loosen rich version from ==13.7.1 to >=13.7.1 - [PR #12704](https://github.com/BerriAI/litellm/pull/12704)
+    - 在 CLI 新增 "keys import" 命令 - [PR #12620](https://github.com/BerriAI/litellm/pull/12620)
+- **Swagger 文件**
+    - 為 LiteLLM /chat/completions、/embeddings、/responses 新增 swagger 文件 - [PR #12618](https://github.com/BerriAI/litellm/pull/12618)
+- **相依套件**
+    - 將 rich 版本從 ==13.7.1 放寬為 >=13.7.1 - [PR #12704](https://github.com/BerriAI/litellm/pull/12704)
 
+#### 錯誤 {#bugs-6}
 
-#### Bugs
+- 預設啟用 verbose log 的修正 - [PR #12596](https://github.com/BerriAI/litellm/pull/12596)
 
-- Verbose log is enabled by default fix - [PR #12596](https://github.com/BerriAI/litellm/pull/12596)
-
-- Add support for disabling callbacks in request body - [PR #12762](https://github.com/BerriAI/litellm/pull/12762)
-- Handle circular references in spend tracking metadata JSON serialization - [PR #12643](https://github.com/BerriAI/litellm/pull/12643)
+- 新增在 request body 中停用 callbacks 的支援 - [PR #12762](https://github.com/BerriAI/litellm/pull/12762)
+- 處理 spend tracking metadata JSON 序列化中的循環參照 - [PR #12643](https://github.com/BerriAI/litellm/pull/12643)
 
 ---
 
-## New Contributors
-* @AntonioKL made their first contribution in https://github.com/BerriAI/litellm/pull/12591
-* @marcelodiaz558 made their first contribution in https://github.com/BerriAI/litellm/pull/12541
-* @dmcaulay made their first contribution in https://github.com/BerriAI/litellm/pull/12463
-* @demoray made their first contribution in https://github.com/BerriAI/litellm/pull/12587
-* @staeiou made their first contribution in https://github.com/BerriAI/litellm/pull/12631
-* @stefanc-ai2 made their first contribution in https://github.com/BerriAI/litellm/pull/12622
-* @RichardoC made their first contribution in https://github.com/BerriAI/litellm/pull/12607
-* @yeahyung made their first contribution in https://github.com/BerriAI/litellm/pull/11795
-* @mnguyen96 made their first contribution in https://github.com/BerriAI/litellm/pull/12619
-* @rgambee made their first contribution in https://github.com/BerriAI/litellm/pull/11517
-* @jvanmelckebeke made their first contribution in https://github.com/BerriAI/litellm/pull/12725
-* @jlaurendi made their first contribution in https://github.com/BerriAI/litellm/pull/12704
-* @doublerr made their first contribution in https://github.com/BerriAI/litellm/pull/12661
+## 新貢獻者 {#new-contributors}
+* @AntonioKL 首次貢獻於 https://github.com/BerriAI/litellm/pull/12591
+* @marcelodiaz558 首次貢獻於 https://github.com/BerriAI/litellm/pull/12541
+* @dmcaulay 首次貢獻於 https://github.com/BerriAI/litellm/pull/12463
+* @demoray 首次貢獻於 https://github.com/BerriAI/litellm/pull/12587
+* @staeiou 首次貢獻於 https://github.com/BerriAI/litellm/pull/12631
+* @stefanc-ai2 首次貢獻於 https://github.com/BerriAI/litellm/pull/12622
+* @RichardoC 首次貢獻於 https://github.com/BerriAI/litellm/pull/12607
+* @yeahyung 首次貢獻於 https://github.com/BerriAI/litellm/pull/11795
+* @mnguyen96 首次貢獻於 https://github.com/BerriAI/litellm/pull/12619
+* @rgambee 首次貢獻於 https://github.com/BerriAI/litellm/pull/11517
+* @jvanmelckebeke 首次貢獻於 https://github.com/BerriAI/litellm/pull/12725
+* @jlaurendi 首次貢獻於 https://github.com/BerriAI/litellm/pull/12704
+* @doublerr 首次貢獻於 https://github.com/BerriAI/litellm/pull/12661
 
-## **[Full Changelog](https://github.com/BerriAI/litellm/compare/v1.74.3-stable...v1.74.7-stable)**
+## **[完整變更記錄](https://github.com/BerriAI/litellm/compare/v1.74.3-stable...v1.74.7-stable)** {#full-changeloghttpsgithubcomberriailitellmcomparev1743-stablev1747-stable}

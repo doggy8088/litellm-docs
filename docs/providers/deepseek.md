@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Deepseek
+# Deepseek {#deepseek}
 https://deepseek.com/
 
-**We support ALL Deepseek models, just set `deepseek/` as a prefix when sending completion requests**
+**我們支援所有 Deepseek 模型，送出 completion 請求時只要將 `deepseek/` 作為前綴即可**
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['DEEPSEEK_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -27,7 +27,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -46,26 +46,25 @@ for chunk in response:
 ```
 
 
-## Supported Models - ALL Deepseek Models Supported!
-We support ALL Deepseek models, just set `deepseek/` as a prefix when sending completion requests
+## 支援的模型 - 支援所有 Deepseek 模型！ {#supported-models---all-deepseek-models-supported}
+我們支援所有 Deepseek 模型，送出 completion 請求時只要將 `deepseek/` 作為前綴即可
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | deepseek-chat | `completion(model="deepseek/deepseek-chat", messages)` | 
 | deepseek-coder | `completion(model="deepseek/deepseek-coder", messages)` | 
 
-
-## Reasoning Models
-| Model Name               | Function Call                                                                                                                                                      |
+## 推理模型 {#reasoning-models}
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | deepseek-reasoner | `completion(model="deepseek/deepseek-reasoner", messages)` |
 
-### Thinking / Reasoning Mode
+### 思考 / 推理模式 {#thinking--reasoning-mode}
 
-Enable thinking mode for DeepSeek reasoner models using `thinking` or `reasoning_effort` parameters:
+使用 `thinking` 或 `reasoning_effort` 參數，為 DeepSeek reasoner 模型啟用思考模式：
 
 <Tabs>
-<TabItem value="thinking" label="thinking param">
+<TabItem value="thinking" label="thinking 參數">
 
 ```python
 from litellm import completion
@@ -83,7 +82,7 @@ print(resp.choices[0].message.content)  # Final answer
 ```
 
 </TabItem>
-<TabItem value="reasoning_effort" label="reasoning_effort param">
+<TabItem value="reasoning_effort" label="reasoning_effort 參數">
 
 ```python
 from litellm import completion
@@ -104,10 +103,10 @@ print(resp.choices[0].message.content)  # Final answer
 </Tabs>
 
 :::note
-DeepSeek only supports `{"type": "enabled"}` - unlike Anthropic, it doesn't support `budget_tokens`. Any `reasoning_effort` value other than `"none"` enables thinking mode.
+DeepSeek 只支援 `{"type": "enabled"}` - 不像 Anthropic，它不支援 `budget_tokens`。任何不是 `"none"` 的 `reasoning_effort` 值都會啟用思考模式。
 :::
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -130,7 +129,7 @@ print(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -140,13 +139,13 @@ model_list:
         api_key: os.environ/DEEPSEEK_API_KEY
 ```
 
-2. Run proxy
+2. 執行 proxy
 
 ```bash
 python litellm/proxy/main.py
 ```
 
-3. Test it!
+3. 測試！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \

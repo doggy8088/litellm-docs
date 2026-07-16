@@ -1,38 +1,38 @@
-# NanoGPT
+# NanoGPT {#nanogpt}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | NanoGPT is a pay-per-prompt and subscription based AI service providing instant access to over 200+ powerful AI models with no subscriptions or registration required. |
-| Provider Route on LiteLLM | `nano-gpt/` |
-| Link to Provider Doc | [NanoGPT Website ↗](https://nano-gpt.com) |
-| Base URL | `https://nano-gpt.com/api/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage), [`/completions`](#text-completion), [`/embeddings`](#embeddings) |
+| 說明 | NanoGPT 是一項按提示付費與訂閱制的 AI 服務，提供即時存取超過 200+ 個強大的 AI 模型，且無需訂閱或註冊。 |
+| LiteLLM 上的提供者路由 | `nano-gpt/` |
+| 提供者文件連結 | [NanoGPT 網站 ↗](https://nano-gpt.com) |
+| 基礎 URL | `https://nano-gpt.com/api/v1` |
+| 支援的操作 | [`/chat/completions`](#sample-usage), [`/completions`](#text-completion), [`/embeddings`](#embeddings) |
 
 <br />
 
-## What is NanoGPT?
+## 什麼是 NanoGPT？ {#what-is-nanogpt}
 
-NanoGPT is a flexible AI API service that offers:
-- **Pay-Per-Prompt Pricing**: No subscriptions, pay only for what you use
-- **200+ AI Models**: Access to text, image, and video generation models
-- **No Registration Required**: Get started instantly
-- **OpenAI-Compatible API**: Easy integration with existing code
-- **Streaming Support**: Real-time response streaming
-- **Tool Calling**: Support for function calling
+NanoGPT 是一個彈性的 AI API 服務，提供：
+- **按提示付費計價**：無需訂閱，只需為您實際使用的部分付費
+- **200+ 個 AI 模型**：可存取文字、圖片與影片生成模型
+- **無需註冊**：立即開始使用
+- **相容 OpenAI 的 API**：可輕鬆與既有程式碼整合
+- **串流支援**：即時回應串流
+- **工具呼叫**：支援函式呼叫
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["NANOGPT_API_KEY"] = ""  # your NanoGPT API key
 ```
 
-Get your NanoGPT API key from [nano-gpt.com](https://nano-gpt.com).
+請從 [nano-gpt.com](https://nano-gpt.com) 取得您的 NanoGPT API 金鑰。
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="NanoGPT Non-streaming Completion"
 import os
@@ -52,7 +52,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="NanoGPT Streaming Completion"
 import os
@@ -74,7 +74,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Tool Calling
+### 工具呼叫 {#tool-calling}
 
 ```python showLineNumbers title="NanoGPT Tool Calling"
 import os
@@ -105,15 +105,15 @@ response = litellm.completion(
 )
 ```
 
-## Usage - LiteLLM Proxy Server
+## 使用方式 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export NANOGPT_API_KEY=""
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```yaml
 model_list:
@@ -123,48 +123,48 @@ model_list:
       api_key: os.environ/NANOGPT_API_KEY
 ```
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-NanoGPT supports all standard OpenAI-compatible parameters:
+NanoGPT 支援所有標準的 OpenAI 相容參數：
 
-| Parameter | Type | Description |
+| 參數 | 型別 | 說明 |
 |-----------|------|-------------|
-| `messages` | array | **Required**. Array of message objects with 'role' and 'content' |
-| `model` | string | **Required**. Model ID from 200+ available models |
-| `stream` | boolean | Optional. Enable streaming responses |
-| `temperature` | float | Optional. Sampling temperature |
-| `top_p` | float | Optional. Nucleus sampling parameter |
-| `max_tokens` | integer | Optional. Maximum tokens to generate |
-| `frequency_penalty` | float | Optional. Penalize frequent tokens |
-| `presence_penalty` | float | Optional. Penalize tokens based on presence |
-| `stop` | string/array | Optional. Stop sequences |
-| `n` | integer | Optional. Number of completions to generate |
-| `tools` | array | Optional. List of available tools/functions |
-| `tool_choice` | string/object | Optional. Control tool/function calling |
-| `response_format` | object | Optional. Response format specification |
-| `user` | string | Optional. User identifier |
+| `messages` | array | **必要**。包含 'role' 與 'content' 的訊息物件陣列 |
+| `model` | string | **必要**。來自 200+ 個可用模型的模型 ID |
+| `stream` | boolean | 選用。啟用串流回應 |
+| `temperature` | float | 選用。取樣溫度 |
+| `top_p` | float | 選用。核心取樣參數 |
+| `max_tokens` | integer | 選用。要生成的最大 token 數 |
+| `frequency_penalty` | float | 選用。對常見 token 進行懲罰 |
+| `presence_penalty` | float | 選用。根據出現情況對 token 進行懲罰 |
+| `stop` | string/array | 選用。停止序列 |
+| `n` | integer | 選用。要生成的完成數量 |
+| `tools` | array | 選用。可用工具/函式清單 |
+| `tool_choice` | string/object | 選用。控制工具/函式呼叫 |
+| `response_format` | object | 選用。回應格式規格 |
+| `user` | string | 選用。使用者識別碼 |
 
-## Model Categories
+## 模型類別 {#model-categories}
 
-NanoGPT provides access to multiple model categories:
-- **Text Generation**: 200+ LLMs for chat, completion, and analysis
-- **Image Generation**: AI models for creating images
-- **Video Generation**: AI models for video creation
-- **Embedding Models**: Text embedding models for vector search
+NanoGPT 提供多種模型類別的存取：
+- **文字生成**：200+ 個用於聊天、補全與分析的 LLM
+- **圖片生成**：用於建立圖片的 AI 模型
+- **影片生成**：用於建立影片的 AI 模型
+- **Embedding 模型**：用於向量搜尋的文字嵌入模型
 
-## Pricing Model
+## 計價模式 {#pricing-model}
 
-NanoGPT offers a flexible pricing structure:
-- **Pay-Per-Prompt**: No subscription required
-- **No Registration**: Get started immediately
-- **Transparent Pricing**: Pay only for what you use
+NanoGPT 提供彈性的計價結構：
+- **按提示付費**：無需訂閱
+- **無需註冊**：立即開始使用
+- **透明計價**：只需為您實際使用的部分付費
 
-## API Documentation
+## API 文件 {#api-documentation}
 
-For detailed API documentation, visit [docs.nano-gpt.com](https://docs.nano-gpt.com).
+如需詳細 API 文件，請造訪 [docs.nano-gpt.com](https://docs.nano-gpt.com)。
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [NanoGPT Website](https://nano-gpt.com)
-- [NanoGPT API Documentation](https://nano-gpt.com/api)
-- [NanoGPT Model List](https://docs.nano-gpt.com/api-reference/endpoint/models)
+- [NanoGPT 網站](https://nano-gpt.com)
+- [NanoGPT API 文件](https://nano-gpt.com/api)
+- [NanoGPT 模型清單](https://docs.nano-gpt.com/api-reference/endpoint/models)

@@ -1,203 +1,201 @@
 import Image from '@theme/IdealImage';
 
-# Role-based Access Controls (RBAC)
+# 以角色為基礎的存取控制（RBAC） {#role-based-access-controls-rbac}
 
-Role-based access control (RBAC) is based on Organizations, Teams and Internal User Roles
+以角色為基礎的存取控制（RBAC）是建立在 Organizations、Teams 和 Internal User Roles 之上
 
-### Video Walkthrough
+### 影片導覽 {#video-walkthrough}
 
 <iframe width="100%" height="415" src="https://www.loom.com/embed/a980e25027ad4ecc9e8db1af2777b2a2" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 <Image img={require('../../img/litellm_user_heirarchy.png')} style={{ width: '100%', maxWidth: '4000px' }} />
 
+- `Organizations` 是包含 Teams 的最上層實體。
+- `Team` - Team 是多個 `Internal Users` 的集合
+- `Internal Users` - 可建立金鑰、進行 LLM API 請求、在 LiteLLM 上檢視用量的使用者。使用者可以同時屬於多個 Team。
+- `Virtual Keys` - 金鑰用於對 LiteLLM API 進行驗證。每個金鑰可選擇性地關聯至 `user_id`、`team_id`，或兩者皆是：
+  - **僅使用者金鑰**：具有 `user_id`，但沒有 `team_id`。會個別追蹤，且在使用者刪除時一併刪除。
+  - **Team 金鑰（服務帳號）**：具有 `team_id`，但沒有 `user_id`。由 Team 共用，當使用者被移除時不會刪除。[深入了解服務帳號金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys#service-account-keys)。
+  - **使用者 + Team 金鑰**：同時具有 `user_id` 和 `team_id`。屬於 Team 情境中的特定使用者。
 
-- `Organizations` are the top-level entities that contain Teams.
-- `Team` - A Team is a collection of multiple `Internal Users`
-- `Internal Users` - users that can create keys, make LLM API calls, view usage on LiteLLM. Users can be on multiple teams.
-- `Virtual Keys` - Keys are used for authentication to the LiteLLM API. Each key can optionally be associated with a `user_id`, a `team_id`, or both:
-  - **User-only key**: Has a `user_id` but no `team_id`. Tracked individually, deleted when the user is deleted.
-  - **Team key (Service Account)**: Has a `team_id` but no `user_id`. Shared by the team, not deleted when users are removed. [Learn more about service account keys](https://docs.litellm.ai/docs/proxy/virtual_keys#service-account-keys).
-  - **User + Team key**: Has both `user_id` and `team_id`. Belongs to a specific user within a team context.
+### 何時使用每種金鑰類型 {#when-to-use-each-key-type}
 
-### When to Use Each Key Type
-
-| Key Type | Use Case | Spend Tracking | Lifecycle |
+| 金鑰類型 | 使用情境 | 支出追蹤 | 生命週期 |
 |----------|----------|----------------|-----------|
-| **User-only** | Personal API keys for individual developers | Tracked to the user | Deleted when user is deleted |
-| **Team (Service Account)** | Production apps, CI/CD pipelines, shared services | Tracked to the team only | Persists even when team members leave |
-| **User + Team** | User working within a team context | Tracked to both user and team | Deleted when user is deleted |
+| **僅使用者** | 個別開發者的個人 API 金鑰 | 追蹤到使用者 | 使用者刪除時刪除 |
+| **Team（服務帳號）** | 生產環境應用程式、CI/CD 管線、共用服務 | 僅追蹤到 Team | 即使 Team 成員離開仍會保留 |
+| **使用者 + Team** | 在 Team 情境中工作的使用者 | 同時追蹤到使用者與 Team | 使用者刪除時刪除 |
 
-**Example scenarios:**
-- Use **user-only keys** for developers testing locally
-- Use **team service account keys** for your production application that shouldn't break when employees leave
-- Use **user + team keys** when you want individual accountability within a team budget
+**範例情境：**
+- 為在本機測試的開發者使用 **僅使用者金鑰**
+- 為不應因員工離職而中斷的生產應用程式使用 **Team 服務帳號金鑰**
+- 當您希望在 Team 預算內保有個人責任歸屬時，使用 **使用者 + Team 金鑰**
 
 ---
 
-## User Roles
+## 使用者角色 {#user-roles}
 
-LiteLLM has two types of roles:
+LiteLLM 有兩種類型的角色：
 
-1. **Global Proxy Roles** - Platform-wide roles that apply across all organizations and teams
-2. **Organization/Team Specific Roles** - Roles scoped to specific organizations or teams (**Premium Feature**)
+1. **全域 Proxy 角色** - 套用於所有 Organizations 和 Teams 的平台層級角色
+2. **Organization/Team 特定角色** - 範圍限定於特定 Organizations 或 Teams 的角色（**進階功能**）
 
-### Global Proxy Roles
+### 全域 Proxy 角色 {#global-proxy-roles}
 
-| Role Name | Permissions |
+| 角色名稱 | 權限 |
 |-----------|-------------|
-| `proxy_admin` | Admin over the entire platform. Full control over all organizations, teams, and users |
-| `proxy_admin_viewer` | Can login, view all keys, view all spend across the platform. **Cannot** create keys/delete keys/add new users |
-| `internal_user` | Can login, view/create (when allowed by team-specific permissions)/delete their own keys, view their spend. **Cannot** add new users |
-| `internal_user_viewer` | ⚠️ **DEPRECATED** - Use team/org specific roles instead. Can login, view their own keys, view their own spend. **Cannot** create/delete keys, add new users |
+| `proxy_admin` | 整個平台的管理員。對所有 Organizations、Teams 和使用者擁有完整控制權 |
+| `proxy_admin_viewer` | 可以登入、檢視所有金鑰、檢視整個平台的所有支出。**無法**建立金鑰／刪除金鑰／新增使用者 |
+| `internal_user` | 可以登入、檢視／建立（當 team-specific 權限允許時）／刪除自己的金鑰，檢視自己的支出。**無法**新增使用者 |
+| `internal_user_viewer` | ⚠️ **已淘汰** - 請改用 team/org specific 角色。可以登入、檢視自己的金鑰、檢視自己的支出。**無法**建立／刪除金鑰、 新增使用者 |
 
-### Organization/Team Specific Roles
+### Organization/Team 特定角色 {#organizationteam-specific-roles}
 
-| Role Name | Permissions |
+| 角色名稱 | 權限 |
 |-----------|-------------|
-| `org_admin` | Admin over a specific organization. Can create teams and users within their organization ✨ **Premium Feature** |
-| `team_admin` | Admin over a specific team. Can manage team members, update team member permissions, and create keys for their team. ✨ **Premium Feature** |
+| `org_admin` | 特定 Organization 的管理員。可在其 Organization 內建立 Teams 和使用者 ✨ **進階功能** |
+| `team_admin` | 特定 Team 的管理員。可管理 Team 成員、更新 Team 成員權限，並為其 Team 建立金鑰。✨ **進階功能** |
 
-## What Can Each Role Do?
+## 每個角色可以做什麼？ {#what-can-each-role-do}
 
-Here's what each role can actually do. Think of it like levels of access.
-
----
-
-## Global Proxy Roles
-
-These roles apply across the entire LiteLLM platform, regardless of organization or team boundaries.
-
-### Proxy Admin - Full Access
-
-The proxy admin controls everything. They're like the owner of the whole platform.
-
-**What they can do:**
-- Create and manage all organizations
-- Create and manage all teams (across all organizations)
-- Create and manage all users
-- View all spend and usage across the platform
-- Create and delete keys for anyone
-- Update team budgets, rate limits, and models
-- Manage team members and assign roles
-
-**Who should be a proxy admin:** Only the people running the LiteLLM instance.
+以下說明每個角色實際可執行的操作。可以把它想成不同的存取層級。
 
 ---
 
-### Proxy Admin Viewer - Platform-Wide Read Access
+## 全域 Proxy 角色 {#global-proxy-roles-1}
 
-The proxy admin viewer can see everything across the platform but cannot make changes.
+這些角色適用於整個 LiteLLM 平台，不受 Organization 或 Team 邊界限制。
 
-**What they can do:**
-- View all organizations, teams, and users
-- View all spend and usage across the platform
-- View all API keys
-- Login to the admin dashboard
+### Proxy Admin - 完整存取權 {#proxy-admin---full-access}
 
-**What they cannot do:**
-- Create or delete keys
-- Add or remove users
-- Modify budgets, rate limits, or settings
-- Make any changes to the platform
+Proxy admin 可控制一切。他們就像整個平台的擁有者。
 
-**Who should be a proxy admin viewer:** Finance teams, auditors, or stakeholders who need platform-wide visibility without modification rights.
+**他們可以做什麼：**
+- 建立與管理所有 Organizations
+- 建立與管理所有 Teams（跨所有 Organizations）
+- 建立與管理所有使用者
+- 檢視整個平台的所有支出與用量
+- 為任何人建立與刪除金鑰
+- 更新 Team 預算、速率限制與模型
+- 管理 Team 成員並指派角色
 
----
-
-### Internal User
-
-An internal user can create API keys (when allowed by team-specific permissions) and make calls. They see their own stuff only. They can become a team admin or org admin if they are assigned the respective roles.
-
-**What they can do:**
-- Create API keys for themselves
-- Delete their own API keys
-- View their own spend and usage
-- Make API calls using their keys
-
-
-**Who should be an internal user:** Anyone who needs UI access for team/org specific operations **OR** for developers you plan to give multiple keys to.
+**誰應該擔任 proxy admin：** 只有負責營運 LiteLLM instance 的人員。
 
 ---
 
-### Internal User Viewer - Read-Only Access
+### Proxy Admin Viewer - 平台層級唯讀存取 {#proxy-admin-viewer---platform-wide-read-access}
 
-:::warning DEPRECATED
-This role is deprecated in favor of team/org specific roles. Use `org_admin` or `team_admin` roles for better granular control over user permissions within organizations and teams.
+Proxy admin viewer 可以看到平台上的所有內容，但不能進行變更。
+
+**他們可以做什麼：**
+- 檢視所有 Organizations、Teams 和使用者
+- 檢視整個平台的所有支出與用量
+- 檢視所有 API 金鑰
+- 登入管理儀表板
+
+**他們不能做什麼：**
+- 建立或刪除金鑰
+- 新增或移除使用者
+- 修改預算、速率限制或設定
+- 對平台進行任何變更
+
+**誰應該擔任 proxy admin viewer：** 需要平台層級可視性但沒有修改權限的財務團隊、稽核人員或利害關係人。
+
+---
+
+### 內部使用者 {#internal-user}
+
+Internal user 可以建立 API 金鑰（當 team-specific 權限允許時）並進行請求。他們只會看到自己的內容。如果被指派相應角色，也可以成為 team admin 或 org admin。
+
+**他們可以做什麼：**
+- 為自己建立 API 金鑰
+- 刪除自己的 API 金鑰
+- 檢視自己的支出與用量
+- 使用自己的金鑰進行 API 請求
+
+**誰應該是 internal user：** 任何需要 UI 存取以執行 team/org 特定操作的人員 **或** 您打算提供多把金鑰的開發者。
+
+---
+
+### Internal User Viewer - 唯讀存取 {#internal-user-viewer---read-only-access}
+
+:::warning 已淘汰
+此角色已淘汰，建議改用 team/org specific 角色。請使用 `org_admin` 或 `team_admin` 角色，以便更精細地控制組織與 Team 內的使用者權限。
 :::
 
-An internal user viewer can view their own information but cannot create or delete keys.
+Internal user viewer 可以檢視自己的資訊，但不能建立或刪除金鑰。
 
-**What they can do:**
-- View their own API keys
-- View their own spend and usage
-- Login to see their dashboard
+**他們可以做什麼：**
+- 檢視自己的 API 金鑰
+- 檢視自己的支出與用量
+- 登入以查看自己的儀表板
 
-**What they cannot do:**
-- Create or delete API keys
-- Make changes to any settings
-- Create teams or add users
-- View other people's information
+**他們不能做什麼：**
+- 建立或刪除 API 金鑰
+- 對任何設定進行變更
+- 建立 Teams 或新增使用者
+- 檢視其他人的資訊
 
-**Who should be an internal user viewer (deprecated):** Consider using team/org specific roles instead for better access control.
+**誰應該是 internal user viewer（已淘汰）：** 建議改用 team/org specific 角色，以獲得更好的存取控制。
 
 ---
 
-## Organization/Team Specific Roles
+## Organization/Team 特定角色 {#organizationteam-specific-roles-1}
 
 :::info 
-Organization/Team specific roles are premium features. You need to be a LiteLLM Enterprise user to use them. [Get a 7 day trial here](https://www.litellm.ai/#trial).
+Organization/Team specific 角色是進階功能。您需要是 LiteLLM Enterprise 使用者才能使用它們。[在此取得 7 天試用](https://www.litellm.ai/#trial)。
 :::
 
-These roles are scoped to specific organizations or teams. Users with these roles can only manage resources within their assigned organization or team.
+這些角色的範圍限定於特定 Organizations 或 Teams。具有這些角色的使用者只能管理其所指派的 Organization 或 Team 內的資源。
 
-### Org Admin - Organization Level Access
+### Org Admin - Organization 層級存取 {#org-admin---organization-level-access}
 
-An org admin manages one or more organizations. They can create teams within their organization but can't touch other organizations.
+Org admin 管理一個或多個 Organizations。他們可以在自己的 Organization 內建立 Teams，但不能碰觸其他 Organizations。
 
-**What they can do:**
-- Create teams within their organization
-- Add users to teams in their organization
-- View spend for their organization
-- Create keys for users in their organization
+**他們可以做什麼：**
+- 在自己的 Organization 內建立 Teams
+- 將使用者新增到其 Organization 中的 Teams
+- 檢視其 Organization 的支出
+- 為其 Organization 中的使用者建立金鑰
 
-**What they cannot do:**
-- Create or manage other organizations
-- Modify org budgets / rate limits
-- Modify org allowed models (e.g. adding a proxy-level model to the org)
+**他們不能做什麼：**
+- 建立或管理其他 Organizations
+- 修改 org 預算／速率限制
+- 修改 org 允許的模型（例如，將 proxy-level 模型新增到 org）
 
-**Who should be an org admin:** Department leads or managers who need to manage multiple teams.
+**誰應該是 org admin：** 需要管理多個 Teams 的部門主管或經理。
 
 ---
 
-### Team Admin - Team Level Access
+### Team Admin - Team 層級存取 {#team-admin---team-level-access}
 
-✨ **This is a Premium Feature**
+✨ **這是進階功能**
 
-A team admin manages a specific team. They're like a team lead who can add people, update settings, but only for their team.
+Team admin 管理特定的 Team。他們就像 Team lead，可以新增人員、更新設定，但僅限於自己的 Team。
 
-**What they can do:**
-- Add or remove team members from their team
-- Update team members' budgets and rate limits within the team
-- Change team rate limits (TPM/RPM) and allowed models
-- Keep or lower the team's `max_budget`
-- Create and delete keys for team members
-- Onboard a [team-BYOK](./team_model_add) model to LiteLLM (e.g. onboarding a team's finetuned model)
-- Configure [team member permissions](#team-member-permissions) to control what regular team members can do
+**他們可以做什麼：**
+- 從自己的 Team 新增或移除 Team 成員
+- 更新 Team 成員在該 Team 內的預算與速率限制
+- 變更 Team 速率限制（TPM/RPM）與允許的模型
+- 保留或降低 Team 的 `max_budget`
+- 為 Team 成員建立與刪除金鑰
+- 將 [team-BYOK](./team_model_add) 模型導入 LiteLLM（例如導入某個 Team 的微調模型）
+- 設定 [team member permissions](#team-member-permissions) 以控制一般 Team 成員可執行的操作
 
-**What they cannot do:**
-- Create new teams
-- Raise the team's `max_budget` above its current value, or remove the budget cap (`max_budget: null`) — only a proxy admin can do this
-- Add/remove global proxy models to their team
+**他們不能做什麼：**
+- 建立新 Teams
+- 將 Team 的 `max_budget` 提高到目前值以上，或移除預算上限（`max_budget: null`）— 只有 proxy admin 可以做到這一點
+- 將全域 proxy 模型新增／移除到其 Team
 
-:::info Team budget raises
-On `/team/update`, team admins may keep or lower `max_budget`. Raising it (or clearing the cap) is reserved for proxy admins so a team admin cannot grow spend authority on their own. Org-scoped teams must also stay within the organization budget.
+:::info 團隊預算提高
+在 `/team/update` 上，團隊管理員可以維持或降低 `max_budget`。提高它（或清除上限）僅保留給 proxy 管理員，因此團隊管理員無法自行增加支出權限。組織範圍內的團隊也必須維持在組織預算之內。
 :::
 
-**Who should be a team admin:** Team leads who need to manage their team's API access without bothering IT.
+**誰應該擔任團隊管理員：** 需要管理其團隊 API 存取權、但不想麻煩 IT 的團隊負責人。
 
-:::info How to create a team admin
+:::info 如何建立團隊管理員
 
-You need to be a LiteLLM Enterprise user to assign team admins. [Get a 7 day trial here](https://www.litellm.ai/#trial).
+您必須是 LiteLLM Enterprise 使用者才能指派團隊管理員。[在此取得 7 天試用](https://www.litellm.ai/#trial)。
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/member_add' \
@@ -210,67 +208,67 @@ curl -X POST 'http://0.0.0.0:4000/team/member_add' \
 
 ---
 
-## Team Member Permissions
+## 團隊成員權限 {#team-member-permissions}
 
-✨ **This is a Premium Feature**
+✨ **這是一項進階功能**
 
-Team member permissions allow you to control what regular team members (with role=`user`) can do with API keys in their team. By default, team members can only view key information, but you can grant them additional permissions to create, update, or delete keys.
+團隊成員權限可讓您控制一般團隊成員（role=`user`）能對其團隊中的 API 金鑰執行哪些操作。預設情況下，團隊成員只能檢視金鑰資訊，但您可以授予他們額外權限，以建立、更新或刪除金鑰。
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-- **Applies to**: Team members with role=`user` (not team admins or org admins)
-- **Scope**: Permissions only apply to keys belonging to their team
-- **Configuration**: Set at the team level using `team_member_permissions`
-- **Override**: Team admins and org admins always have full permissions regardless of these settings
+- **適用對象**：role=`user` 的團隊成員（非團隊管理員或組織管理員）
+- **範圍**：權限僅適用於屬於其團隊的金鑰
+- **設定**：在團隊層級使用 `team_member_permissions` 設定
+- **覆寫**：無論這些設定為何，團隊管理員與組織管理員一律擁有完整權限
 
-### Available Permissions
+### 可用權限 {#available-permissions}
 
-| Permission | Method | Description |
+| 權限 | 方法 | 說明 |
 |-----------|--------|-------------|
-| `/key/info` | GET | View information about virtual keys in the team |
-| `/key/health` | GET | Check health status of virtual keys in the team |
-| `/key/list` | GET | List all virtual keys belonging to the team |
-| `/key/generate` | POST | Create new virtual keys for the team |
-| `/key/service-account/generate` | POST | Create service account keys (not tied to a specific user) for the team |
-| `/key/update` | POST | Modify existing virtual keys in the team |
-| `/key/delete` | POST | Delete virtual keys belonging to the team |
-| `/key/regenerate` | POST | Regenerate virtual keys in the team |
-| `/key/block` | POST | Block virtual keys in the team |
-| `/key/unblock` | POST | Unblock virtual keys in the team |
+| `/key/info` | GET | 檢視團隊中虛擬金鑰的資訊 |
+| `/key/health` | GET | 檢查團隊中虛擬金鑰的健康狀態 |
+| `/key/list` | GET | 列出屬於該團隊的所有虛擬金鑰 |
+| `/key/generate` | POST | 為團隊建立新的虛擬金鑰 |
+| `/key/service-account/generate` | POST | 為團隊建立服務帳戶金鑰（不綁定特定使用者） |
+| `/key/update` | POST | 修改團隊中現有的虛擬金鑰 |
+| `/key/delete` | POST | 刪除屬於該團隊的虛擬金鑰 |
+| `/key/regenerate` | POST | 重新產生團隊中的虛擬金鑰 |
+| `/key/block` | POST | 封鎖團隊中的虛擬金鑰 |
+| `/key/unblock` | POST | 解除團隊中的虛擬金鑰封鎖 |
 
-### Default Permissions
+### 預設權限 {#default-permissions}
 
-By default, team members can only:
-- `/key/info` - View key information
-- `/key/health` - Check key health
+預設情況下，團隊成員只能：
+- `/key/info` - 檢視金鑰資訊
+- `/key/health` - 檢查金鑰健康狀態
 
-### Common Permission Scenarios
+### 常見權限情境 {#common-permission-scenarios}
 
-**Read-only access** (default):
+**唯讀存取**（預設）：
 ```json
 ["/key/info", "/key/health"]
 ```
 
-**Allow key creation but not deletion**:
+**允許建立金鑰但不允許刪除**：
 ```json
 ["/key/info", "/key/health", "/key/generate", "/key/update"]
 ```
 
-**Full key management**:
+**完整金鑰管理**：
 ```json
 ["/key/info", "/key/health", "/key/generate", "/key/update", "/key/delete", "/key/regenerate", "/key/block", "/key/unblock", "/key/list"]
 ```
 
-### How to Configure Team Member Permissions
+### 如何設定團隊成員權限 {#how-to-configure-team-member-permissions}
 
-#### View Current Permissions
+#### 檢視目前權限 {#view-current-permissions}
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/permissions_list?team_id=team-123' \
     --header 'Authorization: Bearer sk-1234'
 ```
 
-Expected Response:
+預期回應：
 ```json
 {
   "team_id": "team-123",
@@ -279,7 +277,7 @@ Expected Response:
 }
 ```
 
-#### Update Team Member Permissions
+#### 更新團隊成員權限 {#update-team-member-permissions}
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/update' \
@@ -291,69 +289,69 @@ curl --location 'http://0.0.0.0:4000/team/update' \
     }'
 ```
 
-This allows team members to:
-- View key information
-- Create new keys
-- Update existing keys
-- But NOT delete keys
+這可讓團隊成員：
+- 檢視金鑰資訊
+- 建立新的金鑰
+- 更新現有金鑰
+- 但**不能**刪除金鑰
 
-### Who Can Configure These Permissions?
+### 誰可以設定這些權限？ {#who-can-configure-these-permissions}
 
-- **Proxy Admin**: Can configure permissions for any team
-- **Org Admin**: Can configure permissions for teams in their organization
-- **Team Admin**: Can configure permissions for their own team
+- **Proxy 管理員**：可以設定任何團隊的權限
+- **組織管理員**：可以設定其組織內團隊的權限
+- **團隊管理員**：可以設定自己團隊的權限
 
 ---
 
-## Quick Comparison
+## 快速比較 {#quick-comparison}
 
-Here's the quick version:
+以下是快速版：
 
-### Global Proxy Roles
+### 全域 Proxy 角色 {#global-proxy-roles-2}
 
-| Action | Proxy Admin | Proxy Admin Viewer | Internal User | Internal User Viewer ⚠️ (Deprecated) |
+| 動作 | Proxy 管理員 | Proxy 管理員檢視者 | 內部使用者 | 內部使用者檢視者 ⚠️（已棄用） |
 |--------|-------------|-------------------|---------------|-------------------------------------|
-| Create organizations | ✅ | ❌ | ❌ | ❌ |
-| Create teams | ✅ | ❌ | ❌ | ❌ |
-| Manage all teams | ✅ | ❌ | ❌ | ❌ |
-| Create/delete any keys | ✅ | ❌ | ❌ | ❌ |
-| Create/delete own keys | ✅ | ❌ | ✅ | ❌ |
-| View all platform spend | ✅ | ✅ | ❌ | ❌ |
-| View own spend | ✅ | ✅ | ✅ | ✅ |
-| View all keys | ✅ | ✅ | ❌ | ❌ |
-| View own keys | ✅ | ✅ | ✅ | ✅ |
-| Add/remove users | ✅ | ❌ | ❌ | ❌ |
+| 建立組織 | ✅ | ❌ | ❌ | ❌ |
+| 建立團隊 | ✅ | ❌ | ❌ | ❌ |
+| 管理所有團隊 | ✅ | ❌ | ❌ | ❌ |
+| 建立/刪除任何金鑰 | ✅ | ❌ | ❌ | ❌ |
+| 建立/刪除自己的金鑰 | ✅ | ❌ | ✅ | ❌ |
+| 檢視所有平台支出 | ✅ | ✅ | ❌ | ❌ |
+| 檢視自己的支出 | ✅ | ✅ | ✅ | ✅ |
+| 檢視所有金鑰 | ✅ | ✅ | ❌ | ❌ |
+| 檢視自己的金鑰 | ✅ | ✅ | ✅ | ✅ |
+| 新增/移除使用者 | ✅ | ❌ | ❌ | ❌ |
 
-> **Note:** The `internal_user_viewer` role is deprecated. Use team/org specific roles for better granular access control.
+> **附註：** `internal_user_viewer` 角色已棄用。請使用團隊/組織特定角色，以獲得更細緻的存取控制。
 
-### Organization/Team Specific Roles
+### 組織/團隊特定角色 {#organizationteam-specific-roles-2}
 
-| Action | Org Admin | Team Admin |
+| 動作 | 組織管理員 | 團隊管理員 |
 |--------|-----------|------------|
-| Create teams (in their org) | ✅ | ❌ |
-| Manage teams in their org | ✅ | ❌ |
-| Manage their specific team | ✅ | ✅ |
-| Add/remove team members | ✅ (in their org) | ✅ (their team only) |
-| Keep / lower team `max_budget` | ✅ (in their org) | ✅ (their team only) |
-| Raise team `max_budget` | ✅ within org limits (org-scoped); proxy admin for standalone | ❌ (proxy admin only) |
-| Update team rate limits | ✅ (in their org) | ✅ (their team only) |
-| Create keys for team members | ✅ (in their org) | ✅ (their team only) |
-| View organization spend | ✅ (their org) | ❌ |
-| View team spend | ✅ (in their org) | ✅ (their team) |
-| Create organizations | ❌ | ❌ |
-| View all platform spend | ❌ | ❌ |
+| 建立團隊（在其組織內） | ✅ | ❌ |
+| 管理其組織內的團隊 | ✅ | ❌ |
+| 管理其特定團隊 | ✅ | ✅ |
+| 新增/移除團隊成員 | ✅（在其組織內） | ✅（僅其團隊） |
+| 維持 / 降低團隊 `max_budget` | ✅（在其組織內） | ✅（僅其團隊） |
+| 提高團隊 `max_budget` | ✅ 在組織限制內（組織範圍）；獨立部署則由 proxy 管理員處理 | ❌（僅限 proxy 管理員） |
+| 更新團隊速率限制 | ✅（在其組織內） | ✅（僅其團隊） |
+| 為團隊成員建立金鑰 | ✅（在其組織內） | ✅（僅其團隊） |
+| 檢視組織支出 | ✅（其組織） | ❌ |
+| 檢視團隊支出 | ✅（在其組織內） | ✅（其團隊） |
+| 建立組織 | ❌ | ❌ |
+| 檢視所有平台支出 | ❌ | ❌ |
 
-## Onboarding Organizations 
+## 組織導入  {#onboarding-organizations}
 
-✨ **This is a Premium Feature**
+✨ **這是一項進階功能**
 
-### 1. Creating a new Organization
+### 1. 建立新組織 {#1-creating-a-new-organization}
 
-Any user with role=`proxy_admin` can create a new organization
+任何 role=`proxy_admin` 的使用者都可以建立新組織
 
-**Usage**
+**用法**
 
-[**API Reference for /organization/new**](https://litellm-api.up.railway.app/#/organization%20management/new_organization_organization_new_post)
+[**/organization/new 的 API 參考**](https://litellm-api.up.railway.app/#/organization%20management/new_organization_organization_new_post)
 
 ```shell
 curl --location 'http://0.0.0.0:4000/organization/new' \
@@ -366,7 +364,7 @@ curl --location 'http://0.0.0.0:4000/organization/new' \
     }'
 ```
 
-Expected Response 
+預期回應 
 
 ```json
 {
@@ -385,13 +383,13 @@ Expected Response
 ```
 
 
-### 2. Adding an `org_admin` to an Organization
+### 2. 將 `org_admin` 新增至組織 {#2-adding-an-org_admin-to-an-organization}
 
-Create a user (ishaan@berri.ai) as an `org_admin` for the `marketing_department` Organization (from [step 1](#1-creating-a-new-organization))
+將使用者（ishaan@berri.ai）建立為 `org_admin`，加入 `marketing_department` Organization（從[步驟 1](#1-creating-a-new-organization)）
 
-Users with the following roles can call `/organization/member_add`
+以下角色的使用者可以呼叫 `/organization/member_add`
 - `proxy_admin`
-- `org_admin` only within their own organization
+- 僅限其所屬組織內的 `org_admin`
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/organization/member_add' \
@@ -400,9 +398,9 @@ curl -X POST 'http://0.0.0.0:4000/organization/member_add' \
     -d '{"organization_id": "ad15e8ca-12ae-46f4-8659-d02debef1b23", "member": {"role": "org_admin", "user_id": "ishaan@berri.ai"}}'
 ```
 
-Now a user with user_id = `ishaan@berri.ai` and role = `org_admin` has been created in the `marketing_department` Organization
+現在 user_id = `ishaan@berri.ai` 且 role = `org_admin` 的使用者已在 `marketing_department` Organization 中建立
 
-Create a Virtual Key for user_id = `ishaan@berri.ai`. The User can then use the Virtual key for their Organization Admin Operations
+為 user_id = `ishaan@berri.ai` 建立一個 Virtual Key。之後，該使用者即可使用該 Virtual key 執行其組織管理員操作
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -413,7 +411,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
     }'
 ```
 
-Expected Response 
+預期回應 
 
 ```json
 {
@@ -424,9 +422,9 @@ Expected Response
 }
 ```
 
-### 3. `Organization Admin` - Create a Team
+### 3. `Organization Admin` - 建立團隊 {#3-organization-admin---create-a-team}
 
-The organization admin will use the virtual key created in [step 2](#2-adding-an-org_admin-to-an-organization) to create a `Team` within the `marketing_department` Organization
+組織管理員將使用在[步驟 2](#2-adding-an-org_admin-to-an-organization)中建立的虛擬金鑰，在 `marketing_department` Organization 內建立 `Team`
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/new' \
@@ -438,9 +436,9 @@ curl --location 'http://0.0.0.0:4000/team/new' \
     }'
 ```
 
-This will create the team `engineering_team` within the `marketing_department` Organization
+這將在 `marketing_department` Organization 內建立團隊 `engineering_team`
 
-Expected Response 
+預期回應 
 
 ```json
 {
@@ -451,14 +449,14 @@ Expected Response
 ```
 
 
-### 4. `Organization Admin` - Add a Team Admin
+### 4. `Organization Admin` - 新增團隊管理員 {#4-organization-admin---add-a-team-admin}
 
-✨ **This is a Premium Feature**
+✨ **這是一項進階功能**
 
-The organization admin can now add a team admin who will manage the `engineering_team`. 
+組織管理員現在可以新增一位團隊管理員，負責管理 `engineering_team`。 
 
-- We assign role=`admin` to make them a team admin for this specific team
-- `team_id` is from [step 3](#3-organization-admin---create-a-team)
+- 我們會指派 role=`admin`，讓其成為此特定團隊的團隊管理員
+- `team_id` 來自[步驟 3](#3-organization-admin---create-a-team)
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/member_add' \
@@ -467,9 +465,9 @@ curl -X POST 'http://0.0.0.0:4000/team/member_add' \
     -d '{"team_id": "01044ee8-441b-45f4-be7d-c70e002722d8", "member": {"role": "admin", "user_id": "john@company.com"}}'
 ```
 
-Now `john@company.com` is a team admin. They can manage the `engineering_team` — add members, update rate limits, keep or lower the team budget, create keys — but they can't touch other teams or raise the team budget above its current cap.
+現在 `john@company.com` 是團隊管理員。他們可以管理 `engineering_team` — 新增成員、更新速率限制、維持或降低團隊預算、建立金鑰 — 但無法處理其他團隊，也無法將團隊預算提高到目前上限以上。
 
-Create a Virtual Key for the team admin:
+為團隊管理員建立一個 Virtual Key：
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -478,7 +476,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
     --data '{"user_id": "john@company.com"}'
 ```
 
-Expected Response:
+預期回應：
 
 ```json
 {
@@ -489,9 +487,9 @@ Expected Response:
 }
 ```
 
-### 5. `Team Admin` - Add Team Members
+### 5. `Team Admin` - 新增團隊成員 {#5-team-admin---add-team-members}
 
-Now the team admin can use their key to add team members without needing to ask the org admin.
+現在團隊管理員可以使用自己的金鑰新增團隊成員，而無需詢問組織管理員。
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/member_add' \
@@ -500,7 +498,7 @@ curl -X POST 'http://0.0.0.0:4000/team/member_add' \
     -d '{"team_id": "01044ee8-441b-45f4-be7d-c70e002722d8", "member": {"role": "user", "user_id": "krrish@berri.ai"}}'
 ```
 
-The team admin can also create keys for their team members:
+團隊管理員也可以為其團隊成員建立金鑰：
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -512,9 +510,9 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
     }'
 ```
 
-### 6. `Team Admin` - Update Team Settings
+### 6. `Team Admin` - 更新團隊設定 {#6-team-admin---update-team-settings}
 
-The team admin can update rate limits and keep or lower the team budget. Raising `max_budget` above the team's current value requires a proxy admin.
+團隊管理員可以更新速率限制，並維持或降低團隊預算。將 `max_budget` 提高到團隊目前值以上需要 proxy 管理員。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/update' \
@@ -527,5 +525,4 @@ curl --location 'http://0.0.0.0:4000/team/update' \
     }'
 ```
 
-In this example, `max_budget: 100` succeeds only if the team's current budget is already `100` or higher (keep / lower). To raise the team budget, use a proxy admin key.
-
+在此範例中，僅當團隊目前預算已是 `100` 或更高（維持 / 降低）時，`max_budget: 100` 才會成功。若要提高團隊預算，請使用 proxy 管理員金鑰。

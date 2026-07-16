@@ -1,5 +1,5 @@
 ---
-title: v1.69.0-stable - Loadbalance Batch API Models
+title: v1.69.0-stable - 負載平衡批次 API 模型
 slug: v1.69.0-stable
 date: 2025-05-10T10:00:00
 authors:
@@ -19,8 +19,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -41,160 +40,155 @@ pip install litellm==1.69.0.post1
 </TabItem>
 </Tabs>
 
-## Key Highlights
+## 重點摘要 {#key-highlights}
 
-LiteLLM v1.69.0-stable brings the following key improvements:
+LiteLLM v1.69.0-stable 帶來以下主要改進：
 
-- **Loadbalance Batch API Models**: Easily loadbalance across multiple azure batch deployments using LiteLLM Managed Files
-- **Email Invites 2.0**: Send new users onboarded to LiteLLM an email invite.
-- **Nscale**: LLM API for compliance with European regulations.
-- **Bedrock /v1/messages**: Use Bedrock Anthropic models with Anthropic's /v1/messages.
+- **負載平衡批次 API 模型**：使用 LiteLLM Managed Files，輕鬆在多個 azure batch 部署之間進行負載平衡
+- **Email 邀請 2.0**：向新加入 LiteLLM 的使用者傳送 email 邀請。
+- **Nscale**：符合歐洲法規的 LLM API。
+- **Bedrock /v1/messages**：使用 Anthropic 的 /v1/messages 搭配 Bedrock Anthropic 模型。
 
-## Batch API Load Balancing
+## 批次 API 負載平衡 {#batch-api-load-balancing}
 
 <Image 
 img={require('../../img/release_notes/lb_batch.png')}
   style={{width: '100%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
+此版本為 Batch 帶來 LiteLLM Managed File 支援。這對以下情境很有幫助：
 
-This release brings LiteLLM Managed File support to Batches. This is great for:
+- Proxy 管理員：您現在可以控制使用者可呼叫哪些 Batch 模型。
+- 開發者：在建立 batch .jsonl 檔案時，您不再需要知道 Azure 部署名稱，只要指定您的 LiteLLM 金鑰可存取的模型即可。 
 
-- Proxy Admins: You can now control which Batch models users can call.
-- Developers: You no longer need to know the Azure deployment name when creating your batch .jsonl files - just specify the model your LiteLLM key has access to. 
+隨著時間推移，我們預期 LiteLLM Managed Files 會成為大多數團隊在 `/chat/completions`、`/batch`、`/fine_tuning` 端點中使用 Files 的方式。 
 
-Over time, we expect LiteLLM Managed Files to be the way most teams use Files across `/chat/completions`, `/batch`, `/fine_tuning` endpoints. 
+[在此閱讀更多](https://docs.litellm.ai/docs/proxy/managed_batches)
 
-[Read more here](https://docs.litellm.ai/docs/proxy/managed_batches)
-
-
-## Email Invites
+## Email 邀請 {#email-invites}
 
 <Image 
   img={require('../../img/email_2_0.png')}
   style={{width: '100%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-This release brings the following improvements to our email invite integration:
-- New templates for user invited and key created events.
-- Fixes for using SMTP email providers.
-- Native support for Resend API.
-- Ability for Proxy Admins to control email events. 
+此版本為我們的 email 邀請整合帶來以下改進：
+- 新增使用者受邀與金鑰建立事件的新範本。
+- 修正使用 SMTP email 提供者時的問題。
+- 原生支援 Resend API。
+- 讓 Proxy 管理員能控制 email 事件。 
 
-For LiteLLM Cloud Users, please reach out to us if you want this enabled for your instance. 
+對於 LiteLLM Cloud 使用者，如果您希望在您的執行個體啟用此功能，請與我們聯絡。 
 
-[Read more here](https://docs.litellm.ai/docs/proxy/email)
+[在此閱讀更多](https://docs.litellm.ai/docs/proxy/email)
 
-
-## New Models / Updated Models
+## 新模型 / 更新模型 {#new-models--updated-models}
 - **Gemini ([VertexAI](https://docs.litellm.ai/docs/providers/vertex#usage-with-litellm-proxy-server) + [Google AI Studio](https://docs.litellm.ai/docs/providers/gemini))**
-    - Added `gemini-2.5-pro-preview-05-06` models with pricing and context window info - [PR](https://github.com/BerriAI/litellm/pull/10597)
-    - Set correct context window length for all Gemini 2.5 variants - [PR](https://github.com/BerriAI/litellm/pull/10690)
+    - 新增 `gemini-2.5-pro-preview-05-06` 模型的定價與 context window 資訊 - [PR](https://github.com/BerriAI/litellm/pull/10597)
+    - 為所有 Gemini 2.5 變體設定正確的 context window 長度 - [PR](https://github.com/BerriAI/litellm/pull/10690)
 - **[Perplexity](../../docs/providers/perplexity)**: 
-    - Added new Perplexity models - [PR](https://github.com/BerriAI/litellm/pull/10652) 
-    - Added sonar-deep-research model pricing - [PR](https://github.com/BerriAI/litellm/pull/10537)
+    - 新增 Perplexity 模型 - [PR](https://github.com/BerriAI/litellm/pull/10652) 
+    - 新增 sonar-deep-research 模型定價 - [PR](https://github.com/BerriAI/litellm/pull/10537)
 - **[Azure OpenAI](../../docs/providers/azure)**: 
-  - Fixed passing through of azure_ad_token_provider parameter - [PR](https://github.com/BerriAI/litellm/pull/10694)
+  - 修正 azure_ad_token_provider 參數的傳遞 - [PR](https://github.com/BerriAI/litellm/pull/10694)
 - **[OpenAI](../../docs/providers/openai)**:
-    - Added support for pdf url's in 'file' parameter - [PR](https://github.com/BerriAI/litellm/pull/10640)
+    - 新增在 'file' 參數中支援 pdf 網址 - [PR](https://github.com/BerriAI/litellm/pull/10640)
 - **[Sagemaker](../../docs/providers/aws_sagemaker)**:
-    - Fix content length for `sagemaker_chat` provider - [PR](https://github.com/BerriAI/litellm/pull/10607)
+    - 修正 `sagemaker_chat` 提供者的內容長度 - [PR](https://github.com/BerriAI/litellm/pull/10607)
 - **[Azure AI Foundry](../../docs/providers/azure_ai)**: 
-    - Added cost tracking for the following models [PR](https://github.com/BerriAI/litellm/pull/9956)
+    - 新增以下模型的成本追蹤 [PR](https://github.com/BerriAI/litellm/pull/9956)
         - DeepSeek V3 0324
         - Llama 4 Scout
         - Llama 4 Maverick
 - **[Bedrock](../../docs/providers/bedrock)**: 
-    - Added cost tracking for Bedrock Llama 4 models - [PR](https://github.com/BerriAI/litellm/pull/10582)
-    - Fixed template conversion for Llama 4 models in Bedrock - [PR](https://github.com/BerriAI/litellm/pull/10582)
-    - Added support for using Bedrock Anthropic models with /v1/messages format - [PR](https://github.com/BerriAI/litellm/pull/10681)
-    - Added streaming support for Bedrock Anthropic models with /v1/messages format - [PR](https://github.com/BerriAI/litellm/pull/10710)
-- **[OpenAI](../../docs/providers/openai)**: Added `reasoning_effort` support for `o3` models - [PR](https://github.com/BerriAI/litellm/pull/10591)
+    - 新增 Bedrock Llama 4 模型的成本追蹤 - [PR](https://github.com/BerriAI/litellm/pull/10582)
+    - 修正 Bedrock 中 Llama 4 模型的範本轉換 - [PR](https://github.com/BerriAI/litellm/pull/10582)
+    - 新增支援使用 Bedrock Anthropic 模型搭配 /v1/messages 格式 - [PR](https://github.com/BerriAI/litellm/pull/10681)
+    - 新增 Bedrock Anthropic 模型搭配 /v1/messages 格式的串流支援 - [PR](https://github.com/BerriAI/litellm/pull/10710)
+- **[OpenAI](../../docs/providers/openai)**: 新增 `reasoning_effort` 對 `o3` 模型的支援 - [PR](https://github.com/BerriAI/litellm/pull/10591)
 - **[Databricks](../../docs/providers/databricks)**:
-    - Fixed issue when Databricks uses external model and delta could be empty - [PR](https://github.com/BerriAI/litellm/pull/10540)
-- **[Cerebras](../../docs/providers/cerebras)**: Fixed Llama-3.1-70b model pricing and context window - [PR](https://github.com/BerriAI/litellm/pull/10648)
+    - 修正 Databricks 使用外部模型且 delta 可能為空時的問題 - [PR](https://github.com/BerriAI/litellm/pull/10540)
+- **[Cerebras](../../docs/providers/cerebras)**: 修正 Llama-3.1-70b 模型定價與 context window - [PR](https://github.com/BerriAI/litellm/pull/10648)
 - **[Ollama](../../docs/providers/ollama)**: 
-    - Fixed custom price cost tracking and added 'max_completion_token' support - [PR](https://github.com/BerriAI/litellm/pull/10636)
-    - Fixed KeyError when using JSON response format - [PR](https://github.com/BerriAI/litellm/pull/10611)
+    - 修正自訂價格成本追蹤，並新增 'max_completion_token' 支援 - [PR](https://github.com/BerriAI/litellm/pull/10636)
+    - 修正使用 JSON 回應格式時的 KeyError - [PR](https://github.com/BerriAI/litellm/pull/10611)
 - 🆕 **[Nscale](../../docs/providers/nscale)**: 
-    - Added support for chat, image generation endpoints - [PR](https://github.com/BerriAI/litellm/pull/10638)
+    - 新增對 chat、image generation 端點的支援 - [PR](https://github.com/BerriAI/litellm/pull/10638)
 
-## LLM API Endpoints
+## LLM API 端點 {#llm-api-endpoints}
 - **[Messages API](../../docs/anthropic_unified)**: 
-    - 🆕 Added support for using Bedrock Anthropic models with /v1/messages format - [PR](https://github.com/BerriAI/litellm/pull/10681) and streaming support - [PR](https://github.com/BerriAI/litellm/pull/10710)
+    - 🆕 新增支援使用 Bedrock Anthropic 模型搭配 /v1/messages 格式 - [PR](https://github.com/BerriAI/litellm/pull/10681) 以及串流支援 - [PR](https://github.com/BerriAI/litellm/pull/10710)
 - **[Moderations API](../../docs/moderations)**: 
-    - Fixed bug to allow using LiteLLM UI credentials for /moderations API - [PR](https://github.com/BerriAI/litellm/pull/10723)  
+    - 修正允許在 /moderations API 使用 LiteLLM UI 憑證的錯誤 - [PR](https://github.com/BerriAI/litellm/pull/10723)  
 - **[Realtime API](../../docs/realtime)**: 
-    - Fixed setting 'headers' in scope for websocket auth requests and infinite loop issues - [PR](https://github.com/BerriAI/litellm/pull/10679)
+    - 修正 websocket 驗證請求中作用域內的 'headers' 設定，以及無限迴圈問題 - [PR](https://github.com/BerriAI/litellm/pull/10679)
 - **[Files API](../../docs/proxy/litellm_managed_files)**:
-    - Unified File ID output support - [PR](https://github.com/BerriAI/litellm/pull/10713)
-    - Support for writing files to all deployments - [PR](https://github.com/BerriAI/litellm/pull/10708)
-    - Added target model name validation - [PR](https://github.com/BerriAI/litellm/pull/10722)
+    - 統一的 File ID 輸出支援 - [PR](https://github.com/BerriAI/litellm/pull/10713)
+    - 支援將檔案寫入所有部署 - [PR](https://github.com/BerriAI/litellm/pull/10708)
+    - 新增目標模型名稱驗證 - [PR](https://github.com/BerriAI/litellm/pull/10722)
 - **[Batches API](../../docs/batches)**:
-    - Complete unified batch ID support - replacing model in jsonl to be deployment model name - [PR](https://github.com/BerriAI/litellm/pull/10719)
-  - Beta support for unified file ID (managed files) for batches - [PR](https://github.com/BerriAI/litellm/pull/10650)
+    - 完整的統一 batch ID 支援 - 將 jsonl 中的模型替換為部署模型名稱 - [PR](https://github.com/BerriAI/litellm/pull/10719)
+  - Batch 的統一檔案 ID（managed files）提供 Beta 支援 - [PR](https://github.com/BerriAI/litellm/pull/10650)
 
+## 支出追蹤 / 預算改進 {#spend-tracking--budget-improvements}
+- 錯誤修正 - DB 支出追蹤中的 PostgreSQL Integer Overflow 錯誤 - [PR](https://github.com/BerriAI/litellm/pull/10697)
 
-## Spend Tracking / Budget Improvements
-- Bug Fix - PostgreSQL Integer Overflow Error in DB Spend Tracking - [PR](https://github.com/BerriAI/litellm/pull/10697)
-
-## Management Endpoints / UI
-- **Models**
-    - Fixed model info overwriting when editing a model on UI - [PR](https://github.com/BerriAI/litellm/pull/10726)
-    - Fixed team admin model updates and organization creation with specific models - [PR](https://github.com/BerriAI/litellm/pull/10539)
-- **Logs**:
-  - Bug Fix -  copying Request/Response on Logs Page - [PR](https://github.com/BerriAI/litellm/pull/10720)
-  - Bug Fix -  log did not remain in focus on QA Logs page + text overflow on error logs - [PR](https://github.com/BerriAI/litellm/pull/10725)
-  - Added index for session_id on LiteLLM_SpendLogs for better query performance - [PR](https://github.com/BerriAI/litellm/pull/10727)
+## 管理端點 / UI {#management-endpoints--ui}
+- **模型**
+    - 修正透過 UI 編輯模型時的模型資訊覆寫問題 - [PR](https://github.com/BerriAI/litellm/pull/10726)
+    - 修正以特定模型進行團隊管理員模型更新與組織建立的問題 - [PR](https://github.com/BerriAI/litellm/pull/10539)
+- **記錄**:
+  - 錯誤修正 -  在 Logs 頁面複製 Request/Response - [PR](https://github.com/BerriAI/litellm/pull/10720)
+  - 錯誤修正 -  QA Logs 頁面上的 log 未維持焦點，以及錯誤 logs 的文字溢出 - [PR](https://github.com/BerriAI/litellm/pull/10725)
+  - 為 LiteLLM_SpendLogs 新增 session_id 索引，以提升查詢效能 - [PR](https://github.com/BerriAI/litellm/pull/10727)
 - **User Management**:
-  - Added user management functionality to Python client library & CLI - [PR](https://github.com/BerriAI/litellm/pull/10627)
-  - Bug Fix - Fixed SCIM token creation on Admin UI - [PR](https://github.com/BerriAI/litellm/pull/10628)
-  - Bug Fix - Added 404 response when trying to delete verification tokens that don't exist - [PR](https://github.com/BerriAI/litellm/pull/10605)
+  - 為 Python 用戶端函式庫與 CLI 新增使用者管理功能 - [PR](https://github.com/BerriAI/litellm/pull/10627)
+  - 錯誤修正 - 修正 Admin UI 上的 SCIM token 建立 - [PR](https://github.com/BerriAI/litellm/pull/10628)
+  - 錯誤修正 - 在嘗試刪除不存在的驗證 token 時新增 404 回應 - [PR](https://github.com/BerriAI/litellm/pull/10605)
 
-## Logging / Guardrail Integrations
-- **Custom Logger API**: v2 Custom Callback API (send llm logs to custom api) - [PR](https://github.com/BerriAI/litellm/pull/10575), [Get Started](https://docs.litellm.ai/docs/proxy/logging#custom-callback-apis-async)
+## 記錄 / 防護欄整合 {#logging--guardrail-integrations}
+- **Custom Logger API**: v2 自訂回呼 API（將 llm logs 傳送至自訂 api） - [PR](https://github.com/BerriAI/litellm/pull/10575), [開始使用](https://docs.litellm.ai/docs/proxy/logging#custom-callback-apis-async)
 - **OpenTelemetry**:
-  - Fixed OpenTelemetry to follow genai semantic conventions + support for 'instructions' param for TTS - [PR](https://github.com/BerriAI/litellm/pull/10608)
+  - 修正 OpenTelemetry 以遵循 genai semantic conventions + 支援 TTS 的 'instructions' 參數 - [PR](https://github.com/BerriAI/litellm/pull/10608)
 - ** Bedrock PII**:
-  - Add support for PII Masking with bedrock guardrails - [Get Started](https://docs.litellm.ai/docs/proxy/guardrails/bedrock#pii-masking-with-bedrock-guardrails), [PR](https://github.com/BerriAI/litellm/pull/10608)
-- **Documentation**:
-  - Added documentation for StandardLoggingVectorStoreRequest - [PR](https://github.com/BerriAI/litellm/pull/10535)
+  - 新增支援使用 bedrock guardrails 進行 PII 遮罩 - [開始使用](https://docs.litellm.ai/docs/proxy/guardrails/bedrock#pii-masking-with-bedrock-guardrails), [PR](https://github.com/BerriAI/litellm/pull/10608)
+- **文件**:
+  - 新增 StandardLoggingVectorStoreRequest 文件 - [PR](https://github.com/BerriAI/litellm/pull/10535)
 
-## Performance / Reliability Improvements
-- **Python Compatibility**:
-  - Added support for Python 3.11- (fixed datetime UTC handling) - [PR](https://github.com/BerriAI/litellm/pull/10701)
-  - Fixed UnicodeDecodeError: 'charmap' on Windows during litellm import - [PR](https://github.com/BerriAI/litellm/pull/10542)
-- **Caching**:
-  - Fixed embedding string caching result - [PR](https://github.com/BerriAI/litellm/pull/10700)
-  - Fixed cache miss for Gemini models with response_format - [PR](https://github.com/BerriAI/litellm/pull/10635)
+## 效能 / 可靠性改進 {#performance--reliability-improvements}
+- **Python 相容性**：
+  - 新增支援 Python 3.11-（修正 datetime UTC 處理） - [PR](https://github.com/BerriAI/litellm/pull/10701)
+  - 修正 Windows 上在 litellm 匯入期間的 UnicodeDecodeError: 'charmap' - [PR](https://github.com/BerriAI/litellm/pull/10542)
+- **快取**：
+  - 修正 embedding 字串快取結果 - [PR](https://github.com/BerriAI/litellm/pull/10700)
+  - 修正 Gemini 模型在 response_format 下的快取遺漏 - [PR](https://github.com/BerriAI/litellm/pull/10635)
 
-## General Proxy Improvements
-- **Proxy CLI**:
-  - Added `--version` flag to `litellm-proxy` CLI - [PR](https://github.com/BerriAI/litellm/pull/10704)
-  - Added dedicated `litellm-proxy` CLI - [PR](https://github.com/BerriAI/litellm/pull/10578)
-- **Alerting**:
-  - Fixed Slack alerting not working when using a DB - [PR](https://github.com/BerriAI/litellm/pull/10370)
-- **Email Invites**:
-  - Added V2 Emails with fixes for sending emails when creating keys + Resend API support - [PR](https://github.com/BerriAI/litellm/pull/10602)
-  - Added user invitation emails - [PR](https://github.com/BerriAI/litellm/pull/10615)
-  - Added endpoints to manage email settings - [PR](https://github.com/BerriAI/litellm/pull/10646)
-- **General**:
-  - Fixed bug where duplicate JSON logs were getting emitted - [PR](https://github.com/BerriAI/litellm/pull/10580)
+## 一般代理閘道改進 {#general-proxy-improvements}
+- **Proxy CLI**：
+  - 新增 `--version` 標誌至 `litellm-proxy` CLI - [PR](https://github.com/BerriAI/litellm/pull/10704)
+  - 新增專用的 `litellm-proxy` CLI - [PR](https://github.com/BerriAI/litellm/pull/10578)
+- **警示**：
+  - 修正使用資料庫時 Slack 警示無法運作的問題 - [PR](https://github.com/BerriAI/litellm/pull/10370)
+- **電子郵件邀請**：
+  - 新增 V2 電子郵件，修正建立金鑰時寄送電子郵件的問題，並支援 Resend API - [PR](https://github.com/BerriAI/litellm/pull/10602)
+  - 新增使用者邀請電子郵件 - [PR](https://github.com/BerriAI/litellm/pull/10615)
+  - 新增管理電子郵件設定的端點 - [PR](https://github.com/BerriAI/litellm/pull/10646)
+- **一般**：
+  - 修正重複 JSON 記錄被輸出的錯誤 - [PR](https://github.com/BerriAI/litellm/pull/10580)
 
-
-## New Contributors
-- [@zoltan-ongithub](https://github.com/zoltan-ongithub) made their first contribution in [PR #10568](https://github.com/BerriAI/litellm/pull/10568)
-- [@mkavinkumar1](https://github.com/mkavinkumar1) made their first contribution in [PR #10548](https://github.com/BerriAI/litellm/pull/10548)
-- [@thomelane](https://github.com/thomelane) made their first contribution in [PR #10549](https://github.com/BerriAI/litellm/pull/10549)
-- [@frankzye](https://github.com/frankzye) made their first contribution in [PR #10540](https://github.com/BerriAI/litellm/pull/10540)
-- [@aholmberg](https://github.com/aholmberg) made their first contribution in [PR #10591](https://github.com/BerriAI/litellm/pull/10591)
-- [@aravindkarnam](https://github.com/aravindkarnam) made their first contribution in [PR #10611](https://github.com/BerriAI/litellm/pull/10611)
-- [@xsg22](https://github.com/xsg22) made their first contribution in [PR #10648](https://github.com/BerriAI/litellm/pull/10648)
-- [@casparhsws](https://github.com/casparhsws) made their first contribution in [PR #10635](https://github.com/BerriAI/litellm/pull/10635)
-- [@hypermoose](https://github.com/hypermoose) made their first contribution in [PR #10370](https://github.com/BerriAI/litellm/pull/10370)
-- [@tomukmatthews](https://github.com/tomukmatthews) made their first contribution in [PR #10638](https://github.com/BerriAI/litellm/pull/10638)
-- [@keyute](https://github.com/keyute) made their first contribution in [PR #10652](https://github.com/BerriAI/litellm/pull/10652)
-- [@GPTLocalhost](https://github.com/GPTLocalhost) made their first contribution in [PR #10687](https://github.com/BerriAI/litellm/pull/10687)
-- [@husnain7766](https://github.com/husnain7766) made their first contribution in [PR #10697](https://github.com/BerriAI/litellm/pull/10697)
-- [@claralp](https://github.com/claralp) made their first contribution in [PR #10694](https://github.com/BerriAI/litellm/pull/10694)
-- [@mollux](https://github.com/mollux) made their first contribution in [PR #10690](https://github.com/BerriAI/litellm/pull/10690)
+## 新貢獻者 {#new-contributors}
+- [@zoltan-ongithub](https://github.com/zoltan-ongithub) 在 [PR #10568](https://github.com/BerriAI/litellm/pull/10568) 做出了他的第一次貢獻
+- [@mkavinkumar1](https://github.com/mkavinkumar1) 在 [PR #10548](https://github.com/BerriAI/litellm/pull/10548) 做出了他的第一次貢獻
+- [@thomelane](https://github.com/thomelane) 在 [PR #10549](https://github.com/BerriAI/litellm/pull/10549) 做出了他的第一次貢獻
+- [@frankzye](https://github.com/frankzye) 在 [PR #10540](https://github.com/BerriAI/litellm/pull/10540) 做出了他的第一次貢獻
+- [@aholmberg](https://github.com/aholmberg) 在 [PR #10591](https://github.com/BerriAI/litellm/pull/10591) 做出了他的第一次貢獻
+- [@aravindkarnam](https://github.com/aravindkarnam) 在 [PR #10611](https://github.com/BerriAI/litellm/pull/10611) 做出了他的第一次貢獻
+- [@xsg22](https://github.com/xsg22) 在 [PR #10648](https://github.com/BerriAI/litellm/pull/10648) 做出了他的第一次貢獻
+- [@casparhsws](https://github.com/casparhsws) 在 [PR #10635](https://github.com/BerriAI/litellm/pull/10635) 做出了他的第一次貢獻
+- [@hypermoose](https://github.com/hypermoose) 在 [PR #10370](https://github.com/BerriAI/litellm/pull/10370) 做出了他的第一次貢獻
+- [@tomukmatthews](https://github.com/tomukmatthews) 在 [PR #10638](https://github.com/BerriAI/litellm/pull/10638) 做出了他的第一次貢獻
+- [@keyute](https://github.com/keyute) 在 [PR #10652](https://github.com/BerriAI/litellm/pull/10652) 做出了他的第一次貢獻
+- [@GPTLocalhost](https://github.com/GPTLocalhost) 在 [PR #10687](https://github.com/BerriAI/litellm/pull/10687) 做出了他的第一次貢獻
+- [@husnain7766](https://github.com/husnain7766) 在 [PR #10697](https://github.com/BerriAI/litellm/pull/10697) 做出了他的第一次貢獻
+- [@claralp](https://github.com/claralp) 在 [PR #10694](https://github.com/BerriAI/litellm/pull/10694) 做出了他的第一次貢獻
+- [@mollux](https://github.com/mollux) 在 [PR #10690](https://github.com/BerriAI/litellm/pull/10690) 做出了他的第一次貢獻

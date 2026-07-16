@@ -1,7 +1,6 @@
 ---
 slug: stability
-title: "June Stability Update: We're Making Stability a First-Class Citizen at
-LiteLLM"
+title: "六月穩定性更新：我們正讓穩定性成為 LiteLLM 的一等公民"
 date: 2026-06-15T10:00:00
 authors:
   - ishaan-alt
@@ -11,43 +10,43 @@ tags: []
 hide_table_of_contents: false
 ---
 
-Over the past few months, we've heard our users report more bugs and regressions. We take that feedback seriously, and today we're sharing exactly what we're doing about it.
+在過去幾個月裡，我們聽到使用者回報更多錯誤與回歸問題。我們非常重視這些回饋，今天我們要 دقیق分享我們正在為此做些什麼。
 
-We're kicking off a stability sprint for LiteLLM with one bar in mind: 0 reported regressions by our next release on August 29th. The sprint has 2 goals:
+我們正在為 LiteLLM 啟動一場穩定性衝刺，目標很明確：在 8 月 29 日下一次發佈前達成 0 個已回報回歸問題。這場衝刺有 2 個目標：
 
-- Close 20 reported bugs in core functionality - [here](https://github.com/BerriAI/litellm/issues/30484)
-- Address the root cause of underlying bugs in 3 core components - MCP, Gateway, and UI
+- 在核心功能中修復 20 個已回報錯誤 - [這裡](https://github.com/BerriAI/litellm/issues/30484)
+- 解決 3 個核心元件中潛在錯誤的根本原因 - MCP、Gateway，以及 UI
 
-## What class of bugs are we driving down?
+## 我們正在降低哪一類錯誤？ {#what-class-of-bugs-are-we-driving-down}
 
-Over this sprint we're driving down 3 classes of bugs:
+在這次衝刺中，我們正在降低 3 類錯誤：
 
-- **MCP Authentication:** View/List Tools did not consistently work across all our supported MCP auth methods.
-- **Gateway Authentication:** Team IDs are not reliably on every request trace. As a result, some requests and budgets are not accurately tracked to a team.
-- **UI Forms:** Today when users hit save on a form, it can accidentally wipe out other fields on the form, across keys, teams, and users.
+- **MCP 驗證：** View/List Tools 無法在我們所有支援的 MCP 驗證方法中穩定運作。
+- **Gateway 驗證：** Team IDs 並未可靠地出現在每一個請求追蹤中。因此，有些請求與預算無法準確地追蹤到某個團隊。
+- **UI 表單：** 如今當使用者在表單上按下儲存時，可能會意外清除表單上的其他欄位，跨越 keys、teams 和 users。
 
-## MCP Authentication: Consistent behavior across all MCP Authentication Methods
+## MCP 驗證：在所有 MCP 驗證方法中保持一致的行為 {#mcp-authentication-consistent-behavior-across-all-mcp-authentication-methods}
 
-Solution: We've identified that the root cause of bugs across MCPs is that we maintain 5 different code paths, one per authentication method. To fix this and restore connection reliability, we're refactoring this into one code path that resolves MCP credentials across all supported authentication methods. The result: tools list and call reliably, no matter which auth method you use.
+解決方案：我們已確認，跨 MCP 的錯誤根本原因在於我們維護了 5 條不同的程式碼路徑，每種驗證方法各一條。為了解決這個問題並恢復連線可靠性，我們正在將其重構為單一程式碼路徑，以便在所有支援的驗證方法中解析 MCP 憑證。結果：不論您使用哪種驗證方法，工具列表與呼叫都能可靠運作。
 
-## AI Gateway Authentication: Spend is always attributed to the right team
+## AI Gateway 驗證：花費永遠歸屬於正確的團隊 {#ai-gateway-authentication-spend-is-always-attributed-to-the-right-team}
 
-Solution: We identified that the authentication layer makes 5+ DB lookups to resolve the exact key, user, team, and team member making a request. To fix this, we're resolving caller identity once, into a single record that every check and log reads from. This cuts identity lookups roughly in half, and means spend is always attributed to the team that made the request.
+解決方案：我們發現，驗證層會進行 5 次以上的資料庫查詢，以解析發出請求的確切金鑰、使用者、團隊與團隊成員。為了解決這個問題，我們只會解析一次呼叫者身分，並將其放入單一記錄中，供每一次檢查與記錄讀取。這將身分查詢次數大約減半，並且代表花費永遠會歸屬於發出請求的團隊。
 
-## UI: Edits change only what you touched
+## UI：編輯只會變更您觸碰到的內容 {#ui-edits-change-only-what-you-touched}
 
-Solution: One of the root causes of UI bugs on form save is that our data shapes across the frontend and backend are not consistent. To fix this, we're refactoring so frontend and backend types are 100% in sync and read from the same source of truth. The result: a save changes only the field you edited, nothing else.
+解決方案：UI 錯誤在表單儲存時的根本原因之一，是我們在前端與後端之間的資料形狀不一致。為了解決這個問題，我們正在重構，讓前端與後端型別 100% 同步，並從相同的唯一事實來源讀取。結果：一次儲存只會變更您編輯過的欄位，不會影響其他任何內容。
 
-## How you'll know it worked
+## 您會如何知道它已生效 {#how-youll-know-it-worked}
 
-We'll report back at the August 29th release on exactly where each of these stands. You shouldn't have to take our word for it.
+我們會在 8 月 29 日的發佈時回報每一項目前的進度。您不需要只憑我們的話來相信。
 
-## Why now
+## 為什麼是現在 {#why-now}
 
-We've grown fast. And fast growth in a complex system means bugs accumulate if you're not deliberate about paying them down. This sprint is us being deliberate.
+我們成長得很快。而在一個複雜系統中的快速成長，意味著如果您不刻意地逐步清除錯誤，它們就會累積。這次衝刺就是我們刻意為之的行動。
 
-We're also being public about it because you deserve to know what's being fixed and when. Stability is infrastructure. We're treating it that way.
+我們也公開說明這件事，因為您有權知道正在修復什麼，以及何時修復。穩定性就是基礎設施。我們正以這樣的方式對待它。
 
-## Want us to fix something?
+## 想要我們修復什麼嗎？ {#want-us-to-fix-something}
 
-Every item above came from real user reports. If there's a bug affecting you that isn't on this list, comment on the [GitHub issue](https://github.com/BerriAI/litellm/issues/30484). We're actively triaging!
+上面每一項都來自真實的使用者回報。如果有影響您的錯誤不在這份清單上，請在 [GitHub issue](https://github.com/BerriAI/litellm/issues/30484) 留言。我們正在積極分流！

@@ -1,63 +1,63 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Docker Model Runner
+# Docker Model Runner {#docker-model-runner}
 
-## Overview
+## 概觀 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | Docker Model Runner allows you to run large language models locally using Docker Desktop. |
-| Provider Route on LiteLLM | `docker_model_runner/` |
-| Link to Provider Doc | [Docker Model Runner ↗](https://docs.docker.com/ai/model-runner/) |
-| Base URL | `http://localhost:22088` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 說明 | Docker Model Runner 可讓您使用 Docker Desktop 在本機執行大型語言模型。 |
+| LiteLLM 上的提供者路由 | `docker_model_runner/` |
+| 提供者文件連結 | [Docker Model Runner ↗](https://docs.docker.com/ai/model-runner/) |
+| 基礎 URL | `http://localhost:22088` |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 <br />
 
 https://docs.docker.com/ai/model-runner/
 
-**We support ALL Docker Model Runner models, just set `docker_model_runner/` as a prefix when sending completion requests**
+**我們支援所有 Docker Model Runner 模型，送出 completion 請求時只要將 `docker_model_runner/` 設為前綴即可**
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Docker Model Runner is a Docker Desktop feature that lets you run AI models locally. It provides better performance than other local solutions while maintaining OpenAI compatibility.
+Docker Model Runner 是一項 Docker Desktop 功能，可讓您在本機執行 AI 模型。它在維持 OpenAI 相容性的同時，提供比其他本機解決方案更好的效能。
 
-### Installation
+### 安裝 {#installation}
 
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-2. Enable Docker Model Runner in Docker Desktop settings
-3. Download your preferred model through Docker Desktop
+1. 安裝 [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+2. 在 Docker Desktop 設定中啟用 Docker Model Runner
+3. 透過 Docker Desktop 下載您偏好的模型
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["DOCKER_MODEL_RUNNER_API_BASE"] = "http://localhost:22088/engines/llama.cpp"  # Optional - defaults to this
 os.environ["DOCKER_MODEL_RUNNER_API_KEY"] = "dummy-key"  # Optional - Docker Model Runner may not require auth for local instances
 ```
 
-**Note:** 
-- Docker Model Runner typically runs locally and may not require authentication. LiteLLM will use a dummy key by default if no key is provided.
-- The API base should include the engine path (e.g., `/engines/llama.cpp`)
+**注意：** 
+- Docker Model Runner 通常在本機執行，可能不需要驗證。如果未提供金鑰，LiteLLM 預設會使用虛擬金鑰。
+- API 基礎位址應包含 engine 路徑（例如，`/engines/llama.cpp`）
 
-## API Base Structure
+## API 基礎位址結構 {#api-base-structure}
 
-Docker Model Runner uses a unique URL structure:
+Docker Model Runner 使用獨特的 URL 結構：
 
 ```
 http://model-runner.docker.internal/engines/{engine}/v1/chat/completions
 ```
 
-Where `{engine}` is the engine you want to use (typically `llama.cpp`). 
+其中 `{engine}` 是您要使用的 engine（通常為 `llama.cpp`）。 
 
-**Important:** Specify the engine in your `api_base` URL, not in the model name:
-- ✅ Correct: `api_base="http://localhost:22088/engines/llama.cpp"`, `model="docker_model_runner/llama-3.1"`
-- ❌ Incorrect: `api_base="http://localhost:22088"`, `model="docker_model_runner/llama.cpp/llama-3.1"`
+**重要：** 請在您的 `api_base` URL 中指定 engine，而不是在模型名稱中：
+- ✅ 正確：`api_base="http://localhost:22088/engines/llama.cpp"`、`model="docker_model_runner/llama-3.1"`
+- ❌ 錯誤：`api_base="http://localhost:22088"`、`model="docker_model_runner/llama.cpp/llama-3.1"`
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Docker Model Runner Non-streaming Completion"
 import os
@@ -78,7 +78,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Docker Model Runner Streaming Completion"
 import os
@@ -101,7 +101,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Custom API Base and Engine
+### 自訂 API 基礎位址與 Engine {#custom-api-base-and-engine}
 
 ```python showLineNumbers title="Custom API Base with Different Engine"
 import litellm
@@ -120,7 +120,7 @@ response = completion(
 print(response)
 ```
 
-### Using Different Engines
+### 使用不同的 Engine {#using-different-engines}
 
 ```python showLineNumbers title="Using a Different Engine"
 import litellm
@@ -139,9 +139,9 @@ response = completion(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+請將下列內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -156,7 +156,7 @@ model_list:
       api_base: http://localhost:22088/engines/llama.cpp
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -269,9 +269,8 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For more detailed information on using the LiteLLM Proxy, see the [LiteLLM Proxy documentation](../providers/litellm_proxy).
+如需關於使用 LiteLLM Proxy 的更詳細資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。
 
-## API Reference
+## API 參考 {#api-reference}
 
-For detailed API information, see the [Docker Model Runner API Reference](https://docs.docker.com/ai/model-runner/api-reference/).
-
+如需詳細的 API 資訊，請參閱 [Docker Model Runner API 參考](https://docs.docker.com/ai/model-runner/api-reference/)。

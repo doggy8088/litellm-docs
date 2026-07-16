@@ -2,27 +2,27 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Novita AI
+# Novita AI {#novita-ai}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | Novita AI is an AI cloud platform that helps developers easily deploy AI models through a simple API, backed by affordable and reliable GPU cloud infrastructure. LiteLLM supports all models from [Novita AI](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link) |
-| Provider Route on LiteLLM | `novita/` |
-| Provider Doc | [Novita AI Docs ↗](https://novita.ai/docs/guides/introduction) |
-| API Endpoint for Provider | https://api.novita.ai/v3/openai |
-| Supported OpenAI Endpoints | `/chat/completions`, `/completions` |
+| 說明 | Novita AI 是一個 AI 雲端平台，協助開發者透過簡單的 API 輕鬆部署 AI 模型，並以價格實惠且可靠的 GPU 雲端基礎架構為後盾。LiteLLM 支援來自 [Novita AI](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link) 的所有模型 |
+| LiteLLM 上的提供者路由 | `novita/` |
+| 提供者文件 | [Novita AI 文件 ↗](https://novita.ai/docs/guides/introduction) |
+| 提供者的 API 端點 | https://api.novita.ai/v3/openai |
+| 支援的 OpenAI 端點 | `/chat/completions`, `/completions` |
 
 <br />
 
-## API Keys
+## API 金鑰 {#api-keys}
 
-Get your API key [here](https://novita.ai/settings/key-management)
+在[這裡](https://novita.ai/settings/key-management)取得您的 API 金鑰
 ```python
 import os
 os.environ["NOVITA_API_KEY"] = "your-api-key"
 ```
 
-## Supported OpenAI Params
+## 支援的 OpenAI 參數 {#supported-openai-params}
 - max_tokens
 - stream
 - stream_options
@@ -43,8 +43,7 @@ os.environ["NOVITA_API_KEY"] = "your-api-key"
 - response_format
 - separate_reasoning
 
-
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -66,7 +65,7 @@ print(content)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型新增至 config.yaml
 ```yaml
 model_list:
   - model_name: deepseek-r1-turbo
@@ -75,13 +74,13 @@ model_list:
       api_key: os.environ/NOVITA_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發送請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -99,8 +98,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-## Tool Calling
+## 工具呼叫 {#tool-calling}
 
 ```python
 from litellm import completion
@@ -144,7 +142,7 @@ assert isinstance(
 
 ```
 
-## JSON Mode
+## JSON 模式 {#json-mode}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -175,7 +173,7 @@ print(json.loads(completion.choices[0].message.content))
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型新增至 config.yaml
 ```yaml
 model_list:
   - model_name: deepseek-r1-turbo
@@ -184,13 +182,13 @@ model_list:
       api_key: os.environ/NOVITA_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發送請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -209,12 +207,11 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## 聊天模型 {#chat-models}
 
-## Chat Models
+🚨 LiteLLM 支援所有 Novita AI 模型，請送出 `model=novita/<your-novita-model>` 以將其傳送至 Novita AI。請在[這裡](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link)查看所有 Novita AI 模型
 
-🚨 LiteLLM supports ALL Novita AI models, send `model=novita/<your-novita-model>` to send it to Novita AI. See all Novita AI models [here](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link)
-
-| Model Name                | Function Call                                       |
+| 模型名稱                | 函式呼叫                                       |
 |---------------------------|-----------------------------------------------------|
 | novita/deepseek/deepseek-r1-turbo | `completion('novita/deepseek/deepseek-r1-turbo', messages)` | `os.environ['NOVITA_API_KEY']` |
 | novita/deepseek/deepseek-v3-turbo | `completion('novita/deepseek/deepseek-v3-turbo', messages)` | `os.environ['NOVITA_API_KEY']` |

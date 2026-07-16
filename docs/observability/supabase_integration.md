@@ -1,25 +1,25 @@
-# Supabase
+# Supabase {#supabase}
 
 :::tip
 
-This is community maintained, Please make an issue if you run into a bug
+這是由社群維護的文件，如果您遇到 bug，請提出 issue
 https://github.com/BerriAI/litellm
 
 :::
 
-[Supabase](https://supabase.com/) is an open source Firebase alternative.
-Start your project with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime subscriptions, Storage, and Vector embeddings.
+[Supabase](https://supabase.com/) 是開源的 Firebase 替代方案。
+從 Postgres 資料庫、Authentication、即時 API、Edge Functions、Realtime subscriptions、Storage 和 Vector embeddings 開始您的專案。
 
-## Use Supabase to log requests and see total spend across all LLM Providers (OpenAI, Azure, Anthropic, Cohere, Replicate, PaLM)
-liteLLM provides `success_callbacks` and `failure_callbacks`, making it easy for you to send data to a particular provider depending on the status of your responses. 
+## 使用 Supabase 記錄請求，並查看所有 LLM 提供者（OpenAI、Azure、Anthropic、Cohere、Replicate、PaLM）的總支出 {#use-supabase-to-log-requests-and-see-total-spend-across-all-llm-providers-openai-azure-anthropic-cohere-replicate-palm}
+liteLLM 提供 `success_callbacks` 和 `failure_callbacks`，讓您可以根據回應的狀態，輕鬆將資料傳送到特定提供者。 
 
-In this case, we want to log requests to Supabase in both scenarios - when it succeeds and fails. 
+在這個情況下，我們希望在兩種情境下都將請求記錄到 Supabase——成功與失敗時。 
 
-### Create a supabase table 
+### 建立 supabase 資料表  {#create-a-supabase-table}
 
-Go to your Supabase project > go to the [Supabase SQL Editor](https://supabase.com/dashboard/projects) and create a new table with this configuration.
+前往您的 Supabase 專案 > 前往 [Supabase SQL Editor](https://supabase.com/dashboard/projects) 並依照此設定建立新的資料表。
 
-Note: You can change the table name. Just don't change the column names. 
+注意：您可以變更資料表名稱，但不要變更欄位名稱。 
 
 ```sql
 create table
@@ -40,15 +40,15 @@ create table
   ) tablespace pg_default;
 ```
 
-### Use Callbacks 
-Use just 2 lines of code, to instantly see costs and log your responses **across all providers** with Supabase: 
+### 使用回呼  {#use-callbacks}
+只要 2 行程式碼，就能立即透過 Supabase 查看成本並記錄您的回應，**涵蓋所有提供者**： 
 
 ```python
 litellm.success_callback=["supabase"]
 litellm.failure_callback=["supabase"]
 ```
 
-Complete code
+完整程式碼
 ```python
 from litellm import completion
 
@@ -79,11 +79,11 @@ response = completion(
  
 ```
 
-### Additional Controls 
+### 其他控制項  {#additional-controls}
 
-**Identify end-user**
+**識別終端使用者**
 
-Pass `user` to `litellm.completion` to map your llm call to an end-user 
+傳入 `user` 至 `litellm.completion`，即可將您的 llm 呼叫對應到終端使用者。 
 
 ```python
 response = completion(
@@ -93,16 +93,16 @@ response = completion(
 ) 
 ```
 
-**Different Table name**
+**不同的資料表名稱**
 
-If you modified your table name, here's how to pass the new name.
+如果您修改了資料表名稱，以下是傳入新名稱的方式。
 
 ```python 
 litellm.modify_integration("supabase",{"table_name": "litellm_logs"})
 ```
 
-## Support & Talk to Founders
+## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

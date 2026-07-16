@@ -2,40 +2,40 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini - Google AI Studio
+# Gemini - Google AI Studio {#gemini---google-ai-studio}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Google AI Studio is a fully-managed AI development platform for building and using generative AI. |
-| Provider Route on LiteLLM | `gemini/` |
-| Provider Doc | [Google AI Studio ↗](https://aistudio.google.com/) |
-| API Endpoint for Provider | https://generativelanguage.googleapis.com |
-| Supported OpenAI Endpoints | `/chat/completions`, [`/embeddings`](../embedding/supported_embedding#gemini-ai-embedding-models), `/completions`, [`/videos`](./gemini/videos.md), [`/images/edits`](../image_edits.md) |
+| 說明 | Google AI Studio 是一個全代管的 AI 開發平台，用於建置與使用生成式 AI。 |
+| LiteLLM 提供者路由 | `gemini/` |
+| 提供者文件 | [Google AI Studio ↗](https://aistudio.google.com/) |
+| 提供者 API 端點 | https://generativelanguage.googleapis.com |
+| 支援的 OpenAI 端點 | `/chat/completions`, [`/embeddings`](../embedding/supported_embedding#gemini-ai-embedding-models), `/completions`, [`/videos`](./gemini/videos.md), [`/images/edits`](../image_edits.md) |
 | Lyria (music) | [Cost map & notes](./gemini/music.md) |
-| Pass-through Endpoint | [Supported](../pass_through/google_ai_studio.md) |
+| 直通端點 | [Supported](../pass_through/google_ai_studio.md) |
 
 <br />
 
-:::tip Gemini API vs Vertex AI
-| Model Format | Provider | Auth Required |
+:::tip Gemini API 與 Vertex AI
+| 模型格式 | 提供者 | Auth Required |
 |-------------|----------|---------------|
-| `gemini/gemini-2.0-flash` | Gemini API | `GEMINI_API_KEY` (simple API key) |
-| `vertex_ai/gemini-2.0-flash` | Vertex AI | GCP credentials + project |
-| `gemini-2.0-flash` (no prefix) | Vertex AI | GCP credentials + project |
+| `gemini/gemini-2.0-flash` | Gemini API | `GEMINI_API_KEY`（簡易 API 金鑰） |
+| `vertex_ai/gemini-2.0-flash` | Vertex AI | GCP 憑證 + 專案 |
+| `gemini-2.0-flash`（no prefix） | Vertex AI | GCP 憑證 + 專案 |
 
-**If you just want to use an API key** (like OpenAI), use the `gemini/` prefix.
+**如果您只是想使用 API 金鑰**（像 OpenAI 一樣），請使用 `gemini/` 前綴。
 
-Models without a prefix default to Vertex AI which requires full GCP authentication.
+沒有前綴的模型預設為 Vertex AI，且需要完整的 GCP 驗證。
 :::
 
-## API Keys
+## API 金鑰 {#api-keys}
 
 ```python
 import os
 os.environ["GEMINI_API_KEY"] = "your-api-key"
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -47,7 +47,7 @@ response = completion(
 )
 ```
 
-## Supported OpenAI Params
+## 支援的 OpenAI 參數 {#supported-openai-params}
 - temperature
 - top_p
 - max_tokens
@@ -64,52 +64,52 @@ response = completion(
 - frequency_penalty
 - modalities
 - reasoning_content
-- audio (for TTS models only)
+- audio（僅適用於 TTS 模型）
 - service_tier
 
-**Anthropic Params**
-- thinking (used to set max budget tokens across anthropic/gemini models)
+**Anthropic 參數**
+- thinking（用於在 anthropic/gemini 模型之間設定最大 budget tokens）
 
-[**See Updated List**](https://github.com/BerriAI/litellm/blob/main/litellm/llms/gemini/chat/transformation.py#L70)
+[**查看更新後的清單**](https://github.com/BerriAI/litellm/blob/main/litellm/llms/gemini/chat/transformation.py#L70)
 
-## Usage - Thinking / `reasoning_content`
+## 用法 - Thinking / `reasoning_content` {#usage---thinking--reasoning_content}
 
-LiteLLM translates OpenAI's `reasoning_effort` to Gemini's `thinking` parameter. [Code](https://github.com/BerriAI/litellm/blob/620664921902d7a9bfb29897a7b27c1a7ef4ddfb/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py#L362)
+LiteLLM 會將 OpenAI 的 `reasoning_effort` 轉換為 Gemini 的 `thinking` 參數。[程式碼](https://github.com/BerriAI/litellm/blob/620664921902d7a9bfb29897a7b27c1a7ef4ddfb/litellm/llms/vertex_ai/gemini/vertex_and_google_ai_studio_gemini.py#L362)
 
-**Cost Optimization:** Use `reasoning_effort="none"` (OpenAI standard) for significant cost savings - up to 96% cheaper. [Google's docs](https://ai.google.dev/gemini-api/docs/openai)
+**成本最佳化：**使用 `reasoning_effort="none"`（OpenAI 標準）可大幅節省成本——最多便宜 96%。[Google 的文件](https://ai.google.dev/gemini-api/docs/openai)
 
 :::info
-Note: Reasoning cannot be turned off on Gemini 2.5 Pro models.
+注意：在 Gemini 2.5 Pro 模型上無法關閉 Reasoning。
 :::
 
-:::tip Gemini 3 Models
-For **Gemini 3+ models** (e.g., `gemini-3-pro-preview`), LiteLLM maps `reasoning_effort` to the `thinking_level` field instead of `thinking_budget` when you set it. Supported levels depend on the model (Flash-family models also support `minimal` and `medium`). If you omit `reasoning_effort`, LiteLLM does **not** send a default `thinking_level` — the request uses the **Gemini API defaults** (Gemini 3 Flash defaults to `high` on the API).
+:::tip Gemini 3 模型
+對於 **Gemini 3+ 模型**（例如 `gemini-3-pro-preview`），當您設定 `reasoning_effort` 時，LiteLLM 會將其對應到 `thinking_level` 欄位，而不是 `thinking_budget`。支援等級取決於模型（Flash 系列模型也支援 `minimal` 和 `medium`）。如果您省略 `reasoning_effort`，LiteLLM **不會**傳送預設 `thinking_level`——請求會使用**Gemini API 預設值**（Gemini 3 Flash 在 API 上預設為 `high`）。
 :::
 
-:::warning Image Models
-**Gemini image models** (e.g., `gemini-3-pro-image-preview`, `gemini-2.0-flash-exp-image-generation`) do **not** support the `thinking_level` parameter. LiteLLM automatically excludes image models from receiving thinking configuration to prevent API errors.
+:::warning 圖片模型
+**Gemini 圖片模型**（例如 `gemini-3-pro-image-preview`、`gemini-2.0-flash-exp-image-generation`）**不**支援 `thinking_level` 參數。LiteLLM 會自動將圖片模型排除在接收 thinking 設定之外，以避免 API 錯誤。
 :::
 
-**Mapping for Gemini 2.5 and earlier models**
+**Gemini 2.5 及更早模型的對應**
 
-| reasoning_effort | thinking | Notes |
+| reasoning_effort | thinking | 備註 |
 | ---------------- | -------- | ----- |
-| "none"           | "budget_tokens": 0, "includeThoughts": false | 💰 **Recommended for cost optimization** - OpenAI-compatible, always 0 |
-| "disable"        | "budget_tokens": DEFAULT (0), "includeThoughts": false | LiteLLM-specific, configurable via env var |
+| "none"           | "budget_tokens": 0, "includeThoughts": false | 💰 **建議用於成本最佳化** - 相容 OpenAI，永遠為 0 |
+| "disable"        | "budget_tokens": DEFAULT (0), "includeThoughts": false | LiteLLM 特定，可透過環境變數設定 |
 | "low"            | "budget_tokens": 1024 | |
 | "medium"         | "budget_tokens": 2048 | |
 | "high"           | "budget_tokens": 4096 | |
 
-**Mapping for Gemini 3+ models**
+**Gemini 3+ 模型的對應**
 
-| reasoning_effort | thinking_level | Notes |
+| reasoning_effort | thinking_level | 備註 |
 | ---------------- | -------------- | ----- |
-| "minimal"        | `"minimal"` (Flash / some 3.1) or `"low"` | Flash-family IDs use `minimal` when supported |
-| "low"            | "low" | Best for simple instruction following or chat |
-| "medium"         | `"medium"` or `"high"` | `"medium"` where the API supports it; otherwise `"high"` |
-| "high"           | "high" | Maximizes reasoning depth |
-| "disable"        | `"minimal"` (Flash) or `"low"` | Cannot fully disable thinking in Gemini 3 |
-| "none"           | `"minimal"` (Flash) or `"low"` | Cannot fully disable thinking in Gemini 3 |
+| "minimal"        | `"minimal"`（Flash / 某些 3.1）或 `"low"` | 支援時 Flash 系列 ID 會使用 `minimal` |
+| "low"            | "low" | 最適合簡單的指令遵循或聊天 |
+| "medium"         | `"medium"` 或 `"high"` | 在 API 支援時使用 `"medium"`；否則使用 `"high"` |
+| "high"           | "high" | 最大化推理深度 |
+| "disable"        | `"minimal"`（Flash）或 `"low"` | 無法在 Gemini 3 中完全停用 thinking |
+| "none"           | `"minimal"`（Flash）或 `"low"` | 無法在 Gemini 3 中完全停用 thinking |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -137,7 +137,7 @@ resp = completion(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 - model_name: gemini-2.5-flash
@@ -146,13 +146,13 @@ resp = completion(
     api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -168,9 +168,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### Gemini 3+ Models - `thinking_level` Parameter
+### Gemini 3+ 模型 - `thinking_level` 參數 {#gemini-3-models---thinking_level-parameter}
 
-For Gemini 3+ models (e.g., `gemini-3-pro-preview`), you can use the new `thinking_level` parameter directly:
+對於 Gemini 3+ 模型（例如 `gemini-3-pro-preview`），您可以直接使用新的 `thinking_level` 參數：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -212,17 +212,17 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </Tabs>
 
 :::warning
-**Temperature Recommendation for Gemini 3 Models**
+**Gemini 3 模型的 Temperature 建議**
 
-For Gemini 3 models, LiteLLM defaults `temperature` to `1.0` and strongly recommends keeping it at this default. Setting `temperature < 1.0` can cause:
-- Infinite loops
-- Degraded reasoning performance
-- Failure on complex tasks
+對於 Gemini 3 模型，LiteLLM 預設將 `temperature` 設為 `1.0`，並強烈建議維持此預設值。將 `temperature < 1.0` 設為其他值可能導致：
+- 無限迴圈
+- 推理效能下降
+- 複雜任務失敗
 
-LiteLLM will automatically set `temperature=1.0` if not specified for Gemini 3+ models.
+若未為 Gemini 3+ 模型指定，LiteLLM 會自動設定 `temperature=1.0`。
 :::
 
-**Expected Response**
+**預期回應**
 
 ```python
 ModelResponse(
@@ -261,11 +261,11 @@ ModelResponse(
 )
 ```
 
-### Pass `thinking` to Gemini models
+### 將 `thinking` 傳遞給 Gemini 模型 {#pass-thinking-to-gemini-models}
 
-You can also pass the `thinking` parameter to Gemini models.
+您也可以將 `thinking` 參數傳遞給 Gemini 模型。
 
-This is translated to Gemini's [`thinkingConfig` parameter](https://ai.google.dev/gemini-api/docs/thinking#set-budget).
+這會轉換為 Gemini 的 [`thinkingConfig` 參數](https://ai.google.dev/gemini-api/docs/thinking#set-budget)。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -295,9 +295,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For **Gemini 3+ models**, LiteLLM now follows provider defaults by default and does **not** force `thinkingLevel` when you pass Anthropic-style `thinking={"type":"enabled","budget_tokens":...}`.
+對於 **Gemini 3+ 模型**，LiteLLM 現在預設遵循提供者預設值，當您傳遞 Anthropic 風格的 `thinking={"type":"enabled","budget_tokens":...}` 時，**不**會強制 `thinkingLevel`。
 
-If you want the legacy LiteLLM behavior (force `thinkingLevel="low"` for Pro and `thinkingLevel="minimal"` for Flash), enable:
+如果您想要舊版 LiteLLM 行為（對 Pro 強制 `thinkingLevel="low"`，對 Flash 強制 `thinkingLevel="minimal"`），請啟用：
 
 ```python
 import litellm
@@ -305,45 +305,44 @@ import litellm
 litellm.enable_gemini_default_thinking_level_low = True
 ```
 
-## Usage - `service_tier`
+## 用法 - `service_tier` {#usage---service_tier}
 
-LiteLLM propagates OpenAI's `service_tier` parameter to Gemini, and also extracts it from the response headers (`x-gemini-service-tier`) into `model_response.service_tier`.
+LiteLLM 會將 OpenAI 的 `service_tier` 參數傳遞給 Gemini，並且也會將其從回應標頭（`x-gemini-service-tier`）擷取到 `model_response.service_tier`。
 
-| OpenAI `service_tier` | Gemini `service_tier` | Notes |
+| OpenAI `service_tier` | Gemini `service_tier` | 備註 |
 | --------------------- | --------------------- | ----- |
-| `"auto"`              | `"priority"`          | LiteLLM maps OpenAI's `"auto"` to Gemini's `"priority"` tier, as `priority` will fall back on Gemini. |
-| `"flex"`              | `"flex"`              | Direct mapping. |
-| `"priority"`          | `"priority"`          | Direct mapping. |
-| `"default"`           | `"standard"`          | LiteLLM maps `"default"` to `"standard"`. |
-| Any other value       | Passed as-is (lowercased) | Values are case-insensitive and normalized to lowercase. |
+| `"auto"`              | `"priority"`          | LiteLLM 會將 OpenAI 的 `"auto"` 對應到 Gemini 的 `"priority"` 階層，因為 `priority` 會在 Gemini 上回退。 |
+| `"flex"`              | `"flex"`              | 直接對應。 |
+| `"priority"`          | `"priority"`          | 直接對應。 |
+| `"default"`           | `"standard"`          | LiteLLM 會將 `"default"` 對應到 `"standard"`。 |
+| Any other value       | Passed as-is (lowercased) | 值不區分大小寫，並會正規化為小寫。 |
 
-On the response, LiteLLM maps `"standard"` back to `"default"` for the Gemini API.
+在回應中，LiteLLM 會將 `"standard"` 對應回 Gemini API 的 `"default"`。
 
-
-## Text-to-Speech (TTS) Audio Output
+## 文字轉語音（TTS）音訊輸出 {#text-to-speech-tts-audio-output}
 
 :::info
 
-LiteLLM supports Gemini TTS models that can generate audio responses using the OpenAI-compatible `audio` parameter format.
+LiteLLM 支援 Gemini TTS 模型，可使用相容 OpenAI 的 `audio` 參數格式產生音訊回應。
 
 :::
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-LiteLLM supports Gemini TTS models with audio capabilities (e.g. `gemini-2.5-flash-preview-tts` and `gemini-2.5-pro-preview-tts`). For the complete list of available TTS models and voices, see the [official Gemini TTS documentation](https://ai.google.dev/gemini-api/docs/speech-generation).
+LiteLLM 支援具有音訊功能的 Gemini TTS 模型（例如 `gemini-2.5-flash-preview-tts` 和 `gemini-2.5-pro-preview-tts`）。如需可用 TTS 模型與語音的完整清單，請參閱 [官方 Gemini TTS 文件](https://ai.google.dev/gemini-api/docs/speech-generation)。
 
-### Limitations
+### 限制 {#limitations}
 
 :::warning
 
-**Important Limitations**:
-- Gemini TTS models only support the `pcm16` audio format
-- **Streaming support has not been added** to TTS models yet
-- The `modalities` parameter must be set to `['audio']` for TTS requests
+**重要限制**：
+- Gemini TTS 模型只支援 `pcm16` 音訊格式
+- **尚未加入串流支援** 到 TTS 模型
+- TTS 請求必須將 `modalities` 參數設為 `['audio']`
 
 :::
 
-### Quick Start
+### 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -370,7 +369,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -384,13 +383,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Make TTS request
+3. 發出 TTS 請求
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -410,9 +409,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### Advanced Usage
+### 進階用法 {#advanced-usage}
 
-You can combine TTS with other Gemini features:
+您可以將 TTS 與其他 Gemini 功能結合：
 
 ```python
 response = completion(
@@ -431,13 +430,13 @@ response = completion(
 )
 ```
 
-For more information about Gemini's TTS capabilities and available voices, see the [official Gemini TTS documentation](https://ai.google.dev/gemini-api/docs/speech-generation).
+如需更多關於 Gemini 的 TTS 功能與可用語音資訊，請參閱 [Gemini 官方 TTS 文件](https://ai.google.dev/gemini-api/docs/speech-generation)。
 
-## Passing Gemini Specific Params
-### Response schema 
-LiteLLM supports sending `response_schema` as a param for Gemini-1.5-Pro on Google AI Studio. 
+## 傳遞 Gemini 特定參數 {#passing-gemini-specific-params}
+### 回應結構 {#response-schema}
+LiteLLM 支援將 `response_schema` 作為 Gemini-1.5-Pro 在 Google AI Studio 的參數傳送。 
 
-**Response Schema**
+**回應結構**
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -481,7 +480,7 @@ print(json.loads(completion.choices[0].message.content))
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-pro
@@ -490,13 +489,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -526,9 +525,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-**Validate Schema**
+**驗證結構**
 
-To validate the response_schema, set `enforce_validation: true`.
+若要驗證 response_schema，請設定 `enforce_validation: true`。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -552,7 +551,7 @@ except JSONSchemaValidationError as e:
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-pro
@@ -561,13 +560,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -599,19 +598,17 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-LiteLLM will validate the response against the schema, and raise a `JSONSchemaValidationError` if the response does not match the schema. 
+LiteLLM 會根據結構驗證回應，若回應不符合結構，則會拋出 `JSONSchemaValidationError`。 
 
-JSONSchemaValidationError inherits from `openai.APIError` 
+JSONSchemaValidationError 繼承自 `openai.APIError` 
 
-Access the raw response with `e.raw_response`
+使用 `e.raw_response` 存取原始回應
 
+### GenerationConfig 參數 {#generationconfig-params}
 
+若要傳遞額外的 GenerationConfig 參數 - 例如 `topK`，只要將其傳入該呼叫的 request body，LiteLLM 就會將其直接以鍵值組的形式傳遞到 request body 中。 
 
-### GenerationConfig Params 
-
-To pass additional GenerationConfig params - e.g. `topK`, just pass it in the request body of the call, and LiteLLM will pass it straight through as a key-value pair in the request body. 
-
-[**See Gemini GenerationConfigParams**](https://ai.google.dev/api/generate-content#v1beta.GenerationConfig)
+[**查看 Gemini GenerationConfigParams**](https://ai.google.dev/api/generate-content#v1beta.GenerationConfig)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -642,7 +639,7 @@ print(json.loads(completion.choices[0].message.content))
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-pro
@@ -651,13 +648,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -676,9 +673,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-**Validate Schema**
+**驗證結構**
 
-To validate the response_schema, set `enforce_validation: true`.
+若要驗證 response_schema，請設定 `enforce_validation: true`。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -702,7 +699,7 @@ except JSONSchemaValidationError as e:
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-pro
@@ -711,13 +708,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -749,8 +746,8 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Specifying Safety Settings 
-In certain use-cases you may need to make calls to the models and pass [safety settings](https://ai.google.dev/docs/safety_setting_gemini) different from the defaults. To do so, simple pass the `safety_settings` argument to `completion` or `acompletion`. For example:
+## 指定安全設定 {#specifying-safety-settings}
+在某些使用情境中，您可能需要呼叫模型並傳入不同於預設值的[safety settings](https://ai.google.dev/docs/safety_setting_gemini)。若要這麼做，直接將 `safety_settings` 引數傳給 `completion` 或 `acompletion` 即可。範例如下：
 
 ```python
 response = completion(
@@ -777,7 +774,7 @@ response = completion(
 )
 ```
 
-## Tool Calling 
+## 工具呼叫 {#tool-calling}
 
 ```python
 from litellm import completion
@@ -823,7 +820,7 @@ assert isinstance(
 ```
 
 
-### Google Search Tool
+### Google Search 工具 {#google-search-tool}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -848,7 +845,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.0-flash
@@ -857,12 +854,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -878,17 +875,17 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Context Circulation (Server-Side Tool Combination)
+### 上下文循環（伺服器端工具組合） {#context-circulation-server-side-tool-combination}
 
-Context circulation allows Gemini 3+ models to combine **built-in tools** (like Google Search) with **your custom functions** in the same request. Without it, Gemini returns an error if you try to use both.
+上下文循環可讓 Gemini 3+ 模型在同一個請求中結合**內建工具**（例如 Google Search）與**您自訂的函式**。若未啟用，當您嘗試同時使用兩者時，Gemini 會回傳錯誤。
 
-When enabled, Gemini can execute Google Search server-side, use those results to decide whether to call your custom functions, and return the full chain of reasoning.
+啟用後，Gemini 可以在伺服器端執行 Google Search，利用這些結果判斷是否要呼叫您的自訂函式，並回傳完整的推理鏈。
 
-**How it works:**
-1. You pass `include_server_side_tool_invocations=True` along with both Google Search and your function tools
-2. Gemini executes server-side tools internally and returns `toolCall`/`toolResponse` parts alongside any `functionCall` parts
-3. LiteLLM extracts the server-side invocations into `provider_specific_fields["server_side_tool_invocations"]`
-4. On subsequent turns, include the full assistant message in your conversation history — LiteLLM re-injects the server-side parts automatically
+**運作方式：**
+1. 您傳入 `include_server_side_tool_invocations=True`，同時包含 Google Search 與您的函式工具
+2. Gemini 在內部執行伺服器端工具，並回傳 `toolCall`/`toolResponse` 部分，以及任何 `functionCall` 部分
+3. LiteLLM 將伺服器端呼叫擷取到 `provider_specific_fields["server_side_tool_invocations"]` 中
+4. 在後續回合中，請在對話歷史中包含完整的 assistant 訊息 — LiteLLM 會自動重新注入伺服器端部分
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -942,7 +939,7 @@ response2 = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-3-flash
@@ -951,12 +948,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request
+3. 發出請求
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -977,13 +974,13 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 :::info
 
-- Context circulation requires **Gemini 3+** models
-- Server-side tool invocations (`toolCall`/`toolResponse`) are **not** included in `tool_calls` — they are in `provider_specific_fields["server_side_tool_invocations"]` because they were already executed by Google, not by your code
-- `thought_signatures` are automatically preserved alongside server-side invocations for multi-turn coherence
+- 上下文循環需要 **Gemini 3+** 模型
+- 伺服器端工具呼叫（`toolCall`/`toolResponse`）**不**會包含在 `tool_calls` 中 — 它們位於 `provider_specific_fields["server_side_tool_invocations"]`，因為它們已經由 Google 執行，而非由您的程式碼執行
+- `thought_signatures` 會自動與伺服器端呼叫一起保留，以維持多輪對話的一致性
 
 :::
 
-### URL Context
+### URL Context {#url-context}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1015,7 +1012,7 @@ print(f"Retrieval Status: {urlMetadata['urlRetrievalStatus']}")
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.0-flash
@@ -1024,12 +1021,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   -H "Content-Type: application/json" \
@@ -1043,8 +1040,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Google Search Retrieval
-
+### Google Search 擷取 {#google-search-retrieval}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1069,7 +1065,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.0-flash
@@ -1078,12 +1074,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -1099,9 +1095,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-### Code Execution Tool
-
+### 程式碼執行工具 {#code-execution-tool}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1126,7 +1120,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-2.0-flash
@@ -1135,12 +1129,12 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發出請求！
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -1156,8 +1150,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-### Computer Use Tool
+### 電腦使用工具 {#computer-use-tool}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -1238,7 +1231,7 @@ if response.choices[0].message.tool_calls:
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy Server">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 
 ```yaml
 model_list:
@@ -1248,13 +1241,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Make request
+3. 發出請求
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -1288,9 +1281,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-**Tool Response Format:**
+**工具回應格式：**
 
-When responding to Computer Use tool calls, include the URL and screenshot:
+回應 Computer Use 工具呼叫時，請包含 URL 與螢幕截圖：
 
 ```json
 {
@@ -1312,36 +1305,32 @@ When responding to Computer Use tool calls, include the URL and screenshot:
 </TabItem>
 </Tabs>
 
-### Environment Mapping
+### 環境對應 {#environment-mapping}
 
-| LiteLLM Input | Gemini API Value |
+| LiteLLM 輸入 | Gemini API 值 |
 |--------------|------------------|
 | `"browser"` | `ENVIRONMENT_BROWSER` |
 | `"unspecified"` | `ENVIRONMENT_UNSPECIFIED` |
-| `ENVIRONMENT_BROWSER` | `ENVIRONMENT_BROWSER` (passed through) |
-| `ENVIRONMENT_UNSPECIFIED` | `ENVIRONMENT_UNSPECIFIED` (passed through) |
+| `ENVIRONMENT_BROWSER` | `ENVIRONMENT_BROWSER` （原樣傳遞） |
+| `ENVIRONMENT_UNSPECIFIED` | `ENVIRONMENT_UNSPECIFIED` （原樣傳遞） |
 
+## 思考簽章 {#thought-signatures}
 
+思考簽章是模型在對話中某一回合內部推理流程的加密表示。透過在後續請求中將思考簽章回傳給模型，您可以讓模型取得先前思考的上下文，使其能夠建立在既有推理之上，並維持一致的探究脈絡。
 
+思考簽章對於多輪函式呼叫情境特別重要，因為模型需要在多次工具呼叫之間維持上下文。
 
+### 思考簽章如何運作 {#how-thought-signatures-work}
 
-## Thought Signatures
+- **帶有簽章的函式呼叫**：當 Gemini 回傳函式呼叫時，會在回應中包含 `thought_signature`
+- **保留**：LiteLLM 會自動擷取並將思考簽章儲存在工具呼叫的 `provider_specific_fields` 中
+- **在對話歷史中回傳**：當您在後續請求中包含帶有工具呼叫的 assistant 訊息時，LiteLLM 會自動保留並將思考簽章回傳給 Gemini
+- **平行函式呼叫**：在平行的一組呼叫中，只有第一個函式呼叫具有思考簽章
+- **序列式函式呼叫**：多步驟序列中的每個函式呼叫都有自己的簽章
 
-Thought signatures are encrypted representations of the model's internal reasoning process for a given turn in a conversation. By passing thought signatures back to the model in subsequent requests, you provide it with the context of its previous thoughts, allowing it to build upon its reasoning and maintain a coherent line of inquiry.
+### 啟用思考簽章 {#enabling-thought-signatures}
 
-Thought signatures are particularly important for multi-turn function calling scenarios where the model needs to maintain context across multiple tool invocations.
-
-### How Thought Signatures Work
-
-- **Function calls with signatures**: When Gemini returns a function call, it includes a `thought_signature` in the response
-- **Preservation**: LiteLLM automatically extracts and stores thought signatures in `provider_specific_fields` of tool calls
-- **Return in conversation history**: When you include the assistant's message with tool calls in subsequent requests, LiteLLM automatically preserves and returns the thought signatures to Gemini
-- **Parallel function calls**: Only the first function call in a parallel set has a thought signature
-- **Sequential function calls**: Each function call in a multi-step sequence has its own signature
-
-### Enabling Thought Signatures
-
-To enable thought signatures, you need to enable thinking/reasoning:
+若要啟用思考簽章，您需要啟用 thinking/reasoning：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1375,12 +1364,12 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### Multi-Turn Function Calling with Thought Signatures
+### 使用思考簽章進行多輪函式呼叫 {#multi-turn-function-calling-with-thought-signatures}
 
-When building conversation history for multi-turn function calling, you must include the thought signatures from previous responses. LiteLLM handles this automatically when you append the full assistant message to your conversation history.
+在為多輪 function calling 建立對話歷史時，您必須包含前一個回應中的 thought signatures。當您將完整的 assistant 訊息附加到對話歷史時，LiteLLM 會自動處理這件事。
 
 <Tabs>
-<TabItem value="sdk" label="OpenAI Client">
+<TabItem value="sdk" label="OpenAI 用戶端">
 
 ```python
 from openai import OpenAI
@@ -1503,7 +1492,7 @@ curl --location 'http://localhost:4000/v1/chat/completions' \
   }'
 ```
 
-The response will include tool calls with thought signatures in `provider_specific_fields`:
+回應將包含帶有 `provider_specific_fields` 中 thought signatures 的工具呼叫：
 
 ```json
 {
@@ -1602,21 +1591,21 @@ curl --location 'http://localhost:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Important Notes
+### 重要說明 {#important-notes}
 
-1. **Automatic Handling**: LiteLLM automatically extracts thought signatures from Gemini responses and preserves them when you include assistant messages in conversation history. You don't need to manually extract or manage them.
+1. **自動處理**：LiteLLM 會自動從 Gemini 回應中擷取 thought signatures，並在您將 assistant 訊息包含到對話歷史時予以保留。您不需要手動擷取或管理它們。
 
-2. **Parallel Function Calls**: When the model makes parallel function calls, only the first function call will have a thought signature. Subsequent parallel calls won't have signatures.
+2. **平行 Function Calls**：當模型進行平行 function calls 時，只有第一個 function call 會有 thought signature。後續的平行呼叫不會有 signatures。
 
-3. **Sequential Function Calls**: In multi-step function calling scenarios, each step's first function call will have its own thought signature that must be preserved.
+3. **序列化 Function Calls**：在多步驟 function calling 情境中，每個步驟的第一個 function call 都會有自己的 thought signature，且必須保留。
 
-4. **Required for Context**: Thought signatures are essential for maintaining reasoning context across multi-turn conversations with function calling. Without them, the model may lose context of its previous reasoning.
+4. **上下文所需**：thought signatures 對於在多輪、搭配 function calling 的對話中維持推理上下文至關重要。沒有它們，模型可能會失去先前推理的上下文。
 
-5. **Format**: Thought signatures are stored in `provider_specific_fields.thought_signature` of tool calls in the response, and are automatically included when you append the assistant message to your conversation history.
+5. **格式**：thought signatures 會儲存在回應中工具呼叫的 `provider_specific_fields.thought_signature` 中，並在您將 assistant 訊息附加到對話歷史時自動包含。
 
-6. **Chat Completions Clients**: With chat completions clients where you cannot control whether or not the previous assistant message is included as-is (ex langchain's ChatOpenAI), LiteLLM also preserves the thought signature by appending it to the tool call id (`call_123__thought__<thought-signature>`) and extracting it back out before sending the outbound request to Gemini. 
+6. **Chat Completions 用戶端**：對於您無法控制前一個 assistant 訊息是否原樣包含的 chat completions 用戶端（例如 langchain 的 ChatOpenAI），LiteLLM 也會透過將 thought signature 附加到工具呼叫 id（`call_123__thought__<thought-signature>`）來保留它，並在將外發請求送往 Gemini 之前將其再次擷取出來。 
 
-## JSON Mode
+## JSON 模式 {#json-mode}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1649,7 +1638,7 @@ print(json.loads(completion.choices[0].message.content))
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add model to config.yaml
+1. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: gemini-pro
@@ -1658,13 +1647,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start Proxy 
+2. 啟動 Proxy 
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Make Request!
+3. 發送請求！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -1682,31 +1671,31 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 </Tabs>
-# Gemini-Pro-Vision
-LiteLLM Supports the following image types passed in `url`
-- Images with direct links - https://storage.googleapis.com/github-repo/img/gemini/intro/landmark3.jpg
-- Image in local storage - ./localimage.jpeg
+# Gemini-Pro-Vision {#gemini-pro-vision}
+LiteLLM 支援以下在 `url` 中傳入的影像類型
+- 具有直接連結的圖片 - https://storage.googleapis.com/github-repo/img/gemini/intro/landmark3.jpg
+- 本機儲存中的圖片 - ./localimage.jpeg
 
-## Media Resolution Control (Images & Videos)
+## 媒體解析度控制（圖片與影片） {#media-resolution-control-images--videos}
 
-LiteLLM supports OpenAI's `detail` parameter for specifying the image resolution when using Gemini models. The behavior differs between Gemini versions:
+LiteLLM 支援 OpenAI 的 `detail` 參數，用於在使用 Gemini 模型時指定圖片解析度。其行為會因 Gemini 版本而異：
 
-| Gemini Version | Resolution Control | Behavior |
+| Gemini 版本 | 解析度控制 | 行為 |
 |----------------|-------------------|----------|
-| Gemini 3+ | Per-part | Each image/video can have its own `detail` setting |
-| Gemini 2.x (2.0, 2.5) | Global | The highest `detail` from all images is applied globally via `mediaResolution` in `generationConfig` |
+| Gemini 3+ | 逐部分 | 每個圖片/影片都可以有自己的 `detail` 設定 |
+| Gemini 2.x (2.0, 2.5) | 全域 | 所有圖片中最高的 `detail` 會透過 `mediaResolution` 套用到 `generationConfig` 中 |
 
-**Supported `detail` values:**
-- `"low"` - Maps to `MEDIA_RESOLUTION_LOW` (280 tokens for images, 70 tokens per frame for videos)
-- `"medium"` - Maps to `MEDIA_RESOLUTION_MEDIUM`
-- `"high"` - Maps to `MEDIA_RESOLUTION_HIGH` (1120 tokens for images)
-- `"ultra_high"` - Maps to `MEDIA_RESOLUTION_ULTRA_HIGH`
-- `"auto"` or `None` - Model decides optimal resolution (no `media_resolution` set)
+**支援的 `detail` 值：**
+- `"low"` - 對應至 `MEDIA_RESOLUTION_LOW`（圖片 280 個 token，影片每幀 70 個 token）
+- `"medium"` - 對應至 `MEDIA_RESOLUTION_MEDIUM`
+- `"high"` - 對應至 `MEDIA_RESOLUTION_HIGH`（圖片 1120 個 token）
+- `"ultra_high"` - 對應至 `MEDIA_RESOLUTION_ULTRA_HIGH`
+- `"auto"` 或 `None` - 模型決定最佳解析度（未設定 `media_resolution`）
 
-**Usage Examples:**
+**使用範例：**
 
 <Tabs>
-<TabItem value="images" label="Images">
+<TabItem value="images" label="圖片">
 
 ```python
 from litellm import completion
@@ -1745,7 +1734,7 @@ response = completion(
 ```
 
 </TabItem>
-<TabItem value="videos" label="Videos with Files">
+<TabItem value="videos" label="含檔案的影片">
 
 ```python
 from litellm import completion
@@ -1780,40 +1769,40 @@ response = completion(
 </Tabs>
 
 :::info
-**Gemini 3+ Per-Part Resolution:** Each image or video can have its own `detail` setting, allowing mixed-resolution requests (e.g., a high-res chart alongside a low-res icon). This works with both `image_url` and `file` content types.
+**Gemini 3+ 逐部分解析度：** 每個圖片或影片都可以有自己的 `detail` 設定，讓您能夠混合解析度請求（例如，高解析度圖表搭配低解析度圖示）。這同時適用於 `image_url` 和 `file` 內容類型。
 
-**Gemini 2.x Global Resolution:** When multiple images have different `detail` values, LiteLLM uses the highest resolution found and applies it globally via `mediaResolution` in `generationConfig` (e.g., if one image has `"low"` and another has `"high"`, all images will use `"high"`).
+**Gemini 2.x 全域解析度：** 當多張圖片具有不同的 `detail` 值時，LiteLLM 會採用找到的最高解析度，並透過 `mediaResolution` 套用到 `generationConfig` 中（例如，如果一張圖片是 `"low"`，另一張是 `"high"`，所有圖片都會使用 `"high"`）。
 :::
 
-## Video Metadata Control
+## 影片中繼資料控制 {#video-metadata-control}
 
-For Gemini 3+ models, LiteLLM supports fine-grained video processing control through the `video_metadata` field. This allows you to specify frame extraction rates and time ranges for video analysis.
+對於 Gemini 3+ 模型，LiteLLM 透過 `video_metadata` 欄位支援細粒度的影片處理控制。這讓您可以為影片分析指定影格擷取速率與時間範圍。
 
-**Supported `video_metadata` parameters:**
+**支援的 `video_metadata` 參數：**
 
-| Parameter | Type | Description | Example |
+| 參數 | 類型 | 說明 | 範例 |
 |-----------|------|-------------|---------|
-| `fps` | Number | Frame extraction rate (frames per second) | `5` |
-| `start_offset` | String | Start time for video clip processing | `"10s"` |
-| `end_offset` | String | End time for video clip processing | `"60s"` |
+| `fps` | 數值 | 影格擷取速率（每秒影格數） | `5` |
+| `start_offset` | 字串 | 影片片段處理的開始時間 | `"10s"` |
+| `end_offset` | 字串 | 影片片段處理的結束時間 | `"60s"` |
 
 :::note
-**Field Name Conversion:** LiteLLM automatically converts snake_case field names to camelCase for the Gemini API:
+**欄位名稱轉換：** LiteLLM 會自動將 snake_case 欄位名稱轉換為 Gemini API 使用的 camelCase：
 - `start_offset` → `startOffset`
 - `end_offset` → `endOffset`
-- `fps` remains unchanged
+- `fps` 保持不變
 :::
 
 :::warning
-- **Gemini 3+ Only:** This feature is only available for Gemini 3.0 and newer models
-- **Video Files Recommended:** While `video_metadata` is designed for video files, error handling for other media types is delegated to the Vertex AI API
-- **File Formats Supported:** Works with `gs://`, `https://`, and base64-encoded video files
+- **僅限 Gemini 3+：** 此功能僅適用於 Gemini 3.0 及更新的模型
+- **建議使用影片檔案：** 雖然 `video_metadata` 是為影片檔案設計，但其他媒體類型的錯誤處理由 Vertex AI API 負責
+- **支援的檔案格式：** 可搭配 `gs://`、`https://` 與 base64 編碼的影片檔案使用
 :::
 
-**Usage Examples:**
+**使用範例：**
 
 <Tabs>
-<TabItem value="basic" label="Basic Video Metadata">
+<TabItem value="basic" label="基本影片中繼資料">
 
 ```python
 from litellm import completion
@@ -1846,7 +1835,7 @@ print(response.choices[0].message.content)
 ```
 
 </TabItem>
-<TabItem value="combined" label="Combined with Detail">
+<TabItem value="combined" label="與詳細程度結合">
 
 ```python
 from litellm import completion
@@ -1882,7 +1871,7 @@ print(response.choices[0].message.content)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -1892,13 +1881,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Make request
+3. 發送請求
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -1933,7 +1922,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Sample Usage
+## 範例用法 {#sample-usage-1}
 ```python
 import os
 import litellm
@@ -1977,7 +1966,7 @@ content = response.get('choices', [{}])[0].get('message', {}).get('content')
 print(content)
 ```
 
-## gemini-robotics-er-1.5-preview Usage
+## gemini-robotics-er-1.5-preview 用法 {#gemini-robotics-er-15-preview-usage}
 
 ```python
 from litellm import api_base
@@ -2028,13 +2017,13 @@ except Exception as e:
     print("Response content:", content)
 ```
 
-## Usage - PDF / Videos / etc. Files
+## 用法 - PDF / 影片 / 等等檔案 {#usage---pdf--videos--etc-files}
 
-### Inline Data (e.g. audio stream)
+### 內嵌資料（例如音訊串流） {#inline-data-eg-audio-stream}
 
-LiteLLM follows the OpenAI format and accepts sending inline data as an encoded base64 string. 
+LiteLLM 遵循 OpenAI 格式，並接受將內嵌資料以編碼後的 base64 字串形式傳送。 
 
-The format to follow is 
+應遵循的格式如下 
 
 ```python
 data:<mime_type>;base64,<encoded_data>
@@ -2075,7 +2064,7 @@ response = litellm.completion(
 )
 ```
 
-** Equivalent GOOGLE API CALL ** 
+** 等效的 GOOGLE API CALL ** 
 
 ```python
 # Initialize a Gemini model appropriate for your use case.
@@ -2098,7 +2087,7 @@ response = model.generate_content([
 print(response.text)
 ```
 
-### https:// file 
+### https:// 檔案  {#https-file}
 
 ```python
 import litellm
@@ -2129,7 +2118,7 @@ response = litellm.completion(
 )
 ```
 
-### gs:// file 
+### gs:// 檔案  {#gs-file}
 
 ```python
 import litellm
@@ -2161,13 +2150,13 @@ response = litellm.completion(
 ```
 
 
-## Chat Models
+## 聊天模型 {#chat-models}
 :::tip
 
-**We support ALL Gemini models, just set `model=gemini/<any-model-on-gemini>` as a prefix when sending litellm requests**
+**我們支援所有 Gemini 模型，只要在傳送 litellm 請求時將 `model=gemini/<any-model-on-gemini>` 設為前綴即可**
 
 :::
-| Model Name            | Function Call                                          | Required OS Variables          |
+| 模型名稱            | 函式呼叫                                          | 必要 OS 變數          |
 |-----------------------|--------------------------------------------------------|--------------------------------|
 | gemini-pro            | `completion(model='gemini/gemini-pro', messages)`            | `os.environ['GEMINI_API_KEY']` |
 | gemini-1.5-pro-latest | `completion(model='gemini/gemini-1.5-pro-latest', messages)` | `os.environ['GEMINI_API_KEY']` |
@@ -2180,11 +2169,9 @@ response = litellm.completion(
 | gemini-flash-latest     | `completion(model='gemini/gemini-flash-latest', messages)`     | `os.environ['GEMINI_API_KEY']` |
 | gemini-flash-lite-latest     | `completion(model='gemini/gemini-flash-lite-latest', messages)`     | `os.environ['GEMINI_API_KEY']` |
 
+## 快取上下文 {#context-caching}
 
-
-## Context Caching
-
-Use Google AI Studio context caching is supported by
+使用 Google AI Studio 快取上下文的支援方式如下：
 
 ```bash
 {
@@ -2197,11 +2184,11 @@ Use Google AI Studio context caching is supported by
 }
 ```
 
-in your message content block.
+在您的訊息內容區塊中。
 
-### Custom TTL Support
+### 自訂 TTL 支援 {#custom-ttl-support}
 
-You can now specify a custom Time-To-Live (TTL) for your cached content using the `ttl` parameter:
+您現在可以使用 `ttl` 參數，為您快取的內容指定自訂存留時間（TTL）：
 
 ```bash
 {
@@ -2217,29 +2204,29 @@ You can now specify a custom Time-To-Live (TTL) for your cached content using th
 }
 ```
 
-**TTL Format Requirements:**
-- Must be a string ending with 's' for seconds
-- Must contain a positive number (can be decimal)
-- Examples: `"3600s"` (1 hour), `"7200s"` (2 hours), `"1800s"` (30 minutes), `"1.5s"` (1.5 seconds)
+**TTL 格式需求：**
+- 必須是以 's' 結尾表示秒數的字串
+- 必須包含正數（可為小數）
+- 範例：`"3600s"`（1 小時）、`"7200s"`（2 小時）、`"1800s"`（30 分鐘）、`"1.5s"`（1.5 秒）
 
-**TTL Behavior:**
-- If multiple cached messages have different TTLs, the first valid TTL encountered will be used
-- Invalid TTL formats are ignored and the cache will use Google's default expiration time
-- If no TTL is specified, Google's default cache expiration (approximately 1 hour) applies
+**TTL 行為：**
+- 如果多個快取訊息具有不同的 TTL，將使用遇到的第一個有效 TTL
+- 無效的 TTL 格式會被忽略，快取將使用 Google 的預設到期時間
+- 如果未指定 TTL，則適用 Google 的預設快取到期時間（約 1 小時）
 
-### Architecture Diagram
+### 架構圖 {#architecture-diagram}
 
 <Image img={require('../../img/gemini_context_caching.png')} />
 
-**Notes:**
+**注意：**
 
-- [Relevant code](https://github.com/BerriAI/litellm/blob/main/litellm/llms/vertex_ai/context_caching/vertex_ai_context_caching.py#L255)
+- [相關程式碼](https://github.com/BerriAI/litellm/blob/main/litellm/llms/vertex_ai/context_caching/vertex_ai_context_caching.py#L255)
 
-- Gemini Context Caching only allows 1 block of continuous messages to be cached. 
+- Gemini Context Caching 只允許快取 1 個連續訊息區塊。 
 
-- If multiple non-continuous blocks contain `cache_control` - the first continuous block will be used. (sent to `/cachedContent` in the [Gemini format](https://ai.google.dev/api/caching#cache_create-SHELL))
+- 如果多個非連續區塊包含 `cache_control` - 將使用第一個連續區塊。（以 [Gemini 格式](https://ai.google.dev/api/caching#cache_create-SHELL) 傳送至 `/cachedContent`）
 
-- The raw request to Gemini's `/generateContent` endpoint looks like this: 
+- 傳送到 Gemini 的 `/generateContent` 端點的原始請求如下： 
 
 ```bash
 curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=$GOOGLE_API_KEY" \
@@ -2258,7 +2245,7 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5
 
 ```
 
-### Example Usage
+### 使用範例 {#example-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2298,7 +2285,7 @@ for _ in range(2):
 ```
 
 </TabItem>
-<TabItem value="sdk-ttl" label="SDK with Custom TTL">
+<TabItem value="sdk-ttl" label="具有自訂 TTL 的 SDK">
 
 ```python
 from litellm import completion 
@@ -2342,7 +2329,7 @@ print(resp.usage)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -2352,15 +2339,15 @@ model_list:
         api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！
 
-[**See Langchain, OpenAI JS, Llamaindex, etc. examples**](../proxy/user_keys.md#request-format)
+[**查看 Langchain、OpenAI JS、Llamaindex 等範例**](../proxy/user_keys.md#request-format)
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -2396,7 +2383,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 </TabItem>
-<TabItem value="curl-ttl" label="Curl with Custom TTL">
+<TabItem value="curl-ttl" label="具有自訂 TTL 的 Curl">
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2467,7 +2454,7 @@ response = await client.chat.completions.create(
 ```
 
 </TabItem>
-<TabItem value="openai-python-ttl" label="OpenAI Python SDK with TTL">
+<TabItem value="openai-python-ttl" label="具有 TTL 的 OpenAI Python SDK">
 
 ```python 
 import openai
@@ -2506,7 +2493,7 @@ response = await client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-## Image Generation
+## 影像生成 {#image-generation}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -2524,7 +2511,7 @@ assert response.choices[0].message.content is not None # "data:image/png;base64,
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -2534,13 +2521,13 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試！
 
 ```bash
 curl -L -X POST 'http://localhost:4000/v1/chat/completions' \
@@ -2556,25 +2543,25 @@ curl -L -X POST 'http://localhost:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Image Generation Pricing
+### 影像生成定價 {#image-generation-pricing}
 
-Gemini image generation models (like `gemini-3-pro-image-preview`) return `image_tokens` in the response usage. These tokens are priced differently from text tokens:
+Gemini 影像生成模型（例如 `gemini-3-pro-image-preview`）會在回應用量中回傳 `image_tokens`。這些 tokens 的計價方式與文字 tokens 不同：
 
-| Token Type | Price per 1M tokens | Price per token |
+| Token 類型 | 每 1M tokens 價格 | 每個 token 價格 |
 |------------|---------------------|-----------------|
-| Text output | $12 | $0.000012 |
-| Image output | $120 | $0.00012 |
+| 文字輸出 | $12 | $0.000012 |
+| 影像輸出 | $120 | $0.00012 |
 
-The number of image tokens depends on the output resolution:
+影像 tokens 的數量取決於輸出解析度：
 
-| Resolution | Tokens per image | Cost per image |
+| 解析度 | 每張影像的 tokens | 每張影像成本 |
 |------------|------------------|----------------|
-| 1K-2K (1024x1024 to 2048x2048) | 1,120 | $0.134 |
-| 4K (4096x4096) | 2,000 | $0.24 |
+| 1K-2K（1024x1024 到 2048x2048） | 1,120 | $0.134 |
+| 4K（4096x4096） | 2,000 | $0.24 |
 
-LiteLLM automatically calculates costs using `output_cost_per_image_token` from the model pricing configuration.
+LiteLLM 會使用模型定價設定中的 `output_cost_per_image_token` 自動計算成本。
 
-**Example response usage:**
+**範例回應用量：**
 ```json
 {
     "completion_tokens_details": {
@@ -2585,5 +2572,4 @@ LiteLLM automatically calculates costs using `output_cost_per_image_token` from 
 }
 ```
 
-For more details, see [Google's Gemini pricing documentation](https://ai.google.dev/gemini-api/docs/pricing).
-
+更多詳細資訊，請參閱 [Google 的 Gemini 定價文件](https://ai.google.dev/gemini-api/docs/pricing)。

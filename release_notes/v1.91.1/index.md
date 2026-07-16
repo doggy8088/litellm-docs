@@ -1,5 +1,5 @@
 ---
-title: "v1.91.1 - DB Model Config Consistency & OTel Error Spans"
+title: "v1.91.1 - DB Model Config 一致性與 OTel 錯誤 span"
 slug: "v1-91-1"
 date: 2026-07-08T23:01:36
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.91.1
 </TabItem>
 </Tabs>
 
-`v1.91.1` is a patch release on top of [`v1.91.0`](/release_notes/v1.91.0/v1-91-0). It backports three fixes onto the 1.91.x line. Two improve configuration handling for models stored in the database so it stays consistent with models defined in the YAML config. The third restores the full `error.*` attribute set on OpenTelemetry v2 error spans, so observability backends once again see the complete error shape rather than only the error type.
+`v1.91.1` 是建立在 [`v1.91.0`](/release_notes/v1.91.0/v1-91-0) 之上的修補版本。它將三個修正回補到 1.91.x 系列。前兩個改善儲存在資料庫中的模型之設定處理，使其與 YAML 設定中定義的模型保持一致。第三個則恢復 OpenTelemetry v2 錯誤 span 上完整的 `error.*` 屬性集合，因此可觀測性後端能再次看到完整的錯誤形狀，而不只是錯誤類型。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(proxy): improve configuration handling for database-stored models - [PR #32256](https://github.com/BerriAI/litellm/pull/32256), [PR #32405](https://github.com/BerriAI/litellm/pull/32405)
-- fix(otel): restore error.* span attributes on v2 error spans - [PR #32524](https://github.com/BerriAI/litellm/pull/32524)
+- fix(proxy): 改善資料庫儲存模型的設定處理 - [PR #32256](https://github.com/BerriAI/litellm/pull/32256), [PR #32405](https://github.com/BerriAI/litellm/pull/32405)
+- fix(otel): 還原 v2 錯誤 span 上的 error.* span 屬性 - [PR #32524](https://github.com/BerriAI/litellm/pull/32524)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.91.0...v1.91.1

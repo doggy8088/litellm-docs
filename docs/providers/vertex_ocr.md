@@ -1,19 +1,19 @@
-# Vertex AI OCR
+# Vertex AI OCR {#vertex-ai-ocr}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Vertex AI OCR provides document intelligence capabilities powered by Mistral, enabling text extraction from PDFs and images |
-| Provider Route on LiteLLM | `vertex_ai/` |
-| Supported Operations | `/ocr` |
-| Link to Provider Doc | [Vertex AI ↗](https://cloud.google.com/vertex-ai)
+| 說明 | Vertex AI OCR 由 Mistral 驅動，提供文件智慧能力，可從 PDF 與圖片中擷取文字 |
+| LiteLLM 上的提供者路由 | `vertex_ai/` |
+| 支援的操作 | `/ocr` |
+| 提供者文件連結 | [Vertex AI ↗](https://cloud.google.com/vertex-ai)
 
-Extract text from documents and images using Vertex AI's OCR models, powered by Mistral.
+使用由 Mistral 提供支援的 Vertex AI OCR 模型，從文件與圖片中擷取文字。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -37,7 +37,7 @@ for page in response.pages:
     print(page.text)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM PROXY** {#litellm-proxy}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -51,12 +51,12 @@ model_list:
       mode: ocr
 ```
 
-**Start Proxy**
+**啟動 Proxy**
 ```bash
 litellm --config proxy_config.yaml
 ```
 
-**Call OCR via Proxy**
+**透過 Proxy 呼叫 OCR**
 ```bash showLineNumbers title="cURL Request"
 curl -X POST http://localhost:4000/ocr \
   -H "Content-Type: application/json" \
@@ -70,11 +70,11 @@ curl -X POST http://localhost:4000/ocr \
   }'
 ```
 
-## Authentication
+## 驗證 {#authentication}
 
-Vertex AI OCR supports multiple authentication methods:
+Vertex AI OCR 支援多種驗證方式：
 
-### Service Account JSON
+### 服務帳戶 JSON {#service-account-json}
 
 ```python showLineNumbers title="Service Account Auth"
 response = litellm.ocr(
@@ -86,7 +86,7 @@ response = litellm.ocr(
 )
 ```
 
-### Application Default Credentials
+### 應用程式預設憑證 {#application-default-credentials}
 
 ```python showLineNumbers title="Default Credentials"
 # Relies on GOOGLE_APPLICATION_CREDENTIALS environment variable
@@ -98,11 +98,11 @@ response = litellm.ocr(
 )
 ```
 
-## Document Types
+## 文件類型 {#document-types}
 
-Vertex AI OCR supports both PDFs and images.
+Vertex AI OCR 同時支援 PDF 與圖片。
 
-### PDF Documents
+### PDF 文件 {#pdf-documents}
 
 ```python showLineNumbers title="PDF OCR"
 response = litellm.ocr(
@@ -116,7 +116,7 @@ response = litellm.ocr(
 )
 ```
 
-### Image Documents
+### 圖片文件 {#image-documents}
 
 ```python showLineNumbers title="Image OCR"
 response = litellm.ocr(
@@ -130,7 +130,7 @@ response = litellm.ocr(
 )
 ```
 
-### Base64 Encoded Documents
+### Base64 編碼文件 {#base64-encoded-documents}
 
 ```python showLineNumbers title="Base64 PDF"
 import base64
@@ -150,7 +150,7 @@ response = litellm.ocr(
 )
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Parameters"
 response = litellm.ocr(
@@ -168,7 +168,7 @@ response = litellm.ocr(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
 ```python showLineNumbers title="Response Structure"
 # Response has the following structure
@@ -183,7 +183,7 @@ for page in response.pages:
     print(page.text)
 ```
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async Usage"
 import litellm
@@ -199,11 +199,11 @@ response = await litellm.aocr(
 )
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM automatically tracks costs for Vertex AI OCR:
+LiteLLM 會自動追蹤 Vertex AI OCR 的成本：
 
-- **Cost per page**: $0.0005 (based on $1.50 per 1,000 pages)
+- **每頁成本**：$0.0005（以每 1,000 頁 $1.50 計算）
 
 ```python showLineNumbers title="View Cost"
 response = litellm.ocr(
@@ -216,25 +216,24 @@ response = litellm.ocr(
 print(f"Cost: ${response._hidden_params.get('response_cost', 0)}")
 ```
 
-## Important Notes
+## 重要注意事項 {#important-notes}
 
-:::info URL Conversion
-Vertex AI Mistral OCR endpoints don't have internet access. LiteLLM automatically converts public URLs to base64 data URIs before sending requests to Vertex AI.
+:::info URL 轉換
+Vertex AI Mistral OCR 端點沒有網際網路存取。LiteLLM 會在將請求傳送至 Vertex AI 之前，自動將公開 URL 轉換為 base64 data URI。
 :::
 
-:::tip Regional Availability
-Mistral OCR is available in multiple regions. Specify `vertex_location` to use a region closer to your data:
-- `us-central1` (default)
+:::tip 區域可用性
+Mistral OCR 可在多個區域使用。指定 `vertex_location` 以使用更接近您資料的區域：
+- `us-central1`（預設）
 - `europe-west1`
 - `asia-southeast1`
 
-Deepseek OCR is only available in global region.
+Deepseek OCR 僅可在 global 區域使用。
 :::
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-- `mistral-ocr-2505` - Latest Mistral OCR model on Vertex AI
-- `deepseek-ocr-maas` - Lates Deepseek OCR model on Vertex AI
+- `mistral-ocr-2505` - Vertex AI 上最新的 Mistral OCR 模型
+- `deepseek-ocr-maas` - Vertex AI 上最新的 Deepseek OCR 模型
 
-Use the Vertex AI provider prefix: `vertex_ai/<model-name>`
-
+使用 Vertex AI 提供者前綴：`vertex_ai/<model-name>`

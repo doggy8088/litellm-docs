@@ -1,30 +1,30 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Clarifai
-Anthropic, OpenAI, Qwen, xAI, Gemini and most of Open soured LLMs are Supported on Clarifai.
+# Clarifai {#clarifai}
+Anthropic、OpenAI、Qwen、xAI、Gemini 以及大多數開源 LLM 都支援 Clarifai。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Clarifai is a powerful AI platform that provides access to a wide range of LLMs through a unified API. LiteLLM enables seamless integration with Clarifai's models using an OpenAI-compatible interface. |
-| Provider Doc | [Clarifai ↗](https://docs.clarifai.com/) |
+| 說明 | Clarifai 是一個強大的 AI 平台，透過統一 API 提供存取多種 LLM 的能力。LiteLLM 使用相容 OpenAI 的介面，讓您能無縫整合 Clarifai 的模型。 |
+| 提供者文件 | [Clarifai ↗](https://docs.clarifai.com/) |
 |OpenAI compatible Endpoint for Provider | `https://api.clarifai.com/v2/ext/openai/v1` |
-| Supported Endpoints | `/chat/completions` |
+| 支援的端點 | `/chat/completions` |
 
-## Pre-Requisites
+## 先決條件 {#pre-requisites}
 
 ```bash
 uv add litellm
 ```
 
-## Required Environment Variables
-To obtain your Clarifai Personal access token follow this [link](https://docs.clarifai.com/clarifai-basics/authentication/personal-access-tokens/).
+## 必要環境變數 {#required-environment-variables}
+若要取得您的 Clarifai Personal access token，請依照這個 [連結](https://docs.clarifai.com/clarifai-basics/authentication/personal-access-tokens/)。
 
 ```python
 os.environ["CLARIFAI_PAT"] = "CLARIFAI_API_KEY"  # CLARIFAI_PAT
 ```
 
-## Usage
+## 用法 {#usage}
 
 ```python
 import os
@@ -37,9 +37,9 @@ response = completion(
   messages=[{ "content": "Tell me a joke about physics?","role": "user"}]
 )
 ```
-## Streaming Support
+## 串流支援 {#streaming-support}
 
-LiteLLM supports streaming responses with Clarifai models:
+LiteLLM 支援與 Clarifai 模型的串流回應：
 
 ```python
 import litellm
@@ -55,9 +55,9 @@ for chunk in litellm.completion(
     print(chunk.choices[0].delta)
 ```
 
-## Tool Calling (Function Calling)
+## 工具呼叫（函式呼叫） {#tool-calling-function-calling}
 
-Clarifai models accessed via LiteLLM support function calling:
+透過 LiteLLM 存取的 Clarifai 模型支援函式呼叫：
 
 ```python
 import litellm
@@ -92,10 +92,10 @@ response = litellm.completion(
 print(response.choices[0].message.tool_calls)
 ```
 
-## Clarifai models
-liteLLM supports all models on [Clarifai community](https://clarifai.com/explore/models?filterData=%5B%7B%22field%22%3A%22use_cases%22%2C%22value%22%3A%5B%22llm%22%5D%7D%5D&page=1&perPage=24)
+## Clarifai 模型 {#clarifai-models}
+liteLLM 支援 [Clarifai community](https://clarifai.com/explore/models?filterData=%5B%7B%22field%22%3A%22use_cases%22%2C%22value%22%3A%5B%22llm%22%5D%7D%5D&page=1&perPage=24) 上的所有模型
 
-### 🧠 OpenAI Models
+### 🧠 OpenAI 模型 {#-openai-models}
 - [gpt-oss-20b](https://clarifai.com/openai/chat-completion/models/gpt-oss-20b)
 - [gpt-oss-120b](https://clarifai.com/openai/chat-completion/models/gpt-oss-120b)
 - [gpt-5-nano](https://clarifai.com/openai/chat-completion/models/gpt-5-nano)
@@ -103,77 +103,69 @@ liteLLM supports all models on [Clarifai community](https://clarifai.com/explore
 - [gpt-5](https://clarifai.com/openai/chat-completion/models/gpt-5)
 - [gpt-4o](https://clarifai.com/openai/chat-completion/models/gpt-4o)
 - [o3](https://clarifai.com/openai/chat-completion/models/o3)
-- Many more...
+- 更多...
 
-
-### 🤖 Anthropic Models
+### 🤖 Anthropic 模型 {#-anthropic-models}
 - [claude-sonnet-4](https://clarifai.com/anthropic/completion/models/claude-sonnet-4)
 - [claude-opus-4](https://clarifai.com/anthropic/completion/models/claude-opus-4)
 - [claude-3_5-haiku](https://clarifai.com/anthropic/completion/models/claude-3_5-haiku)
 - [claude-3_7-sonnet](https://clarifai.com/anthropic/completion/models/claude-3_7-sonnet)
-- Many more...
+- 更多...
 
-
-### 🪄 xAI Models
+### 🪄 xAI 模型 {#-xai-models}
 - [grok-3](https://clarifai.com/xai/chat-completion/models/grok-3)
 - [grok-2-vision-1212](https://clarifai.com/xai/chat-completion/models/grok-2-vision-1212)
 - [grok-2-1212](https://clarifai.com/xai/chat-completion/models/grok-2-1212)
 - [grok-code-fast-1](https://clarifai.com/xai/chat-completion/models/grok-code-fast-1)
 - [grok-2-image-1212](https://clarifai.com/xai/image-generation/models/grok-2-image-1212)
-- Many more...
+- 更多...
 
-
-### 🔷 Google Gemini Models
+### 🔷 Google Gemini 模型 {#-google-gemini-models}
 - [gemini-2_5-pro](https://clarifai.com/gcp/generate/models/gemini-2_5-pro)
 - [gemini-2_5-flash-lite](https://clarifai.com/gcp/generate/models/gemini-2_5-flash-lite)
 - [gemini-2_0-flash](https://clarifai.com/gcp/generate/models/gemini-2_0-flash)
 - [gemini-2_0-flash-lite](https://clarifai.com/gcp/generate/models/gemini-2_0-flash-lite)
-- Many more...
+- 更多...
 
-
-### 🧩 Qwen Models
+### 🧩 Qwen 模型 {#-qwen-models}
 - [Qwen3-30B-A3B-Instruct-2507](https://clarifai.com/qwen/qwenLM/models/Qwen3-30B-A3B-Instruct-2507)
 - [Qwen3-30B-A3B-Thinking-2507](https://clarifai.com/qwen/qwenLM/models/Qwen3-30B-A3B-Thinking-2507)
 - [Qwen3-14B](https://clarifai.com/qwen/qwenLM/models/Qwen3-14B)
 - [QwQ-32B-AWQ](https://clarifai.com/qwen/qwenLM/models/QwQ-32B-AWQ)
 - [Qwen2_5-VL-7B-Instruct](https://clarifai.com/qwen/qwen-VL/models/Qwen2_5-VL-7B-Instruct)
 - [Qwen3-Coder-30B-A3B-Instruct](https://clarifai.com/qwen/qwenCoder/models/Qwen3-Coder-30B-A3B-Instruct)
-- Many more...
+- 更多...
 
-
-### 💡 MiniCPM (OpenBMB) Models
+### 💡 MiniCPM（OpenBMB）模型 {#-minicpm-openbmb-models}
 - [MiniCPM-o-2_6-language](https://clarifai.com/openbmb/miniCPM/models/MiniCPM-o-2_6-language)
 - [MiniCPM3-4B](https://clarifai.com/openbmb/miniCPM/models/MiniCPM3-4B)
 - [MiniCPM4-8B](https://clarifai.com/openbmb/miniCPM/models/MiniCPM4-8B)
-- Many more...
+- 更多...
 
-
-### 🧬 Microsoft Phi Models
+### 🧬 Microsoft Phi 模型 {#-microsoft-phi-models}
 - [Phi-4-reasoning-plus](https://clarifai.com/microsoft/text-generation/models/Phi-4-reasoning-plus)
 - [phi-4](https://clarifai.com/microsoft/text-generation/models/phi-4)
-- Many more...
+- 更多...
 
-
-### 🦙 Meta Llama Models
+### 🦙 Meta Llama 模型 {#-meta-llama-models}
 - [Llama-3_2-3B-Instruct](https://clarifai.com/meta/Llama-3/models/Llama-3_2-3B-Instruct)
-- Many more...
+- 更多...
 
-
-### 🔍 DeepSeek Models
+### 🔍 DeepSeek 模型 {#-deepseek-models}
 - [DeepSeek-R1-0528-Qwen3-8B](https://clarifai.com/deepseek-ai/deepseek-chat/models/DeepSeek-R1-0528-Qwen3-8B)
-- Many more...
+- 更多...
 
-## Usage with LiteLLM Proxy
+## 搭配 LiteLLM Proxy 的用法 {#usage-with-litellm-proxy}
 
-Here's how to call Clarifai with the LiteLLM Proxy Server
+以下是如何使用 LiteLLM Proxy Server 呼叫 Clarifai
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export CLARIFAI_PAT="CLARIFAI_API_KEY"
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -194,7 +186,7 @@ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -238,26 +230,25 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Important Notes
+## 重要說明 {#important-notes}
 
-- Always prefix Clarifai model IDs with `clarifai/` when specifying the model name
-- Use your Clarifai Personal Access Token (PAT) as the API key
-- Usage is tracked and billed through Clarifai
-- API rate limits are subject to your Clarifai account settings
-- Most OpenAI parameters are supported, but some advanced features may vary by model
+- 指定模型名稱時，請務必在 Clarifai 模型 ID 前加上 `clarifai/`
+- 使用您的 Clarifai Personal Access Token（PAT）作為 API 金鑰
+- 使用量會透過 Clarifai 進行追蹤與計費
+- API 速率限制受您的 Clarifai 帳戶設定影響
+- 大多數 OpenAI 參數都支援，但某些進階功能可能因模型而異
 
-
-## FAQs
+## 常見問題 {#faqs}
 
 | Question | Answer |
 |----------|---------|
-| Can I use all Clarifai models with LiteLLM? | Most chat-completion models are supported. Use the Clarifai model URL as the `model`. |
-| Do I need a separate Clarifai PAT? | Yes, you must use a valid Clarifai Personal Access Token. |
-| Is tool calling supported? | Yes, provided the underlying Clarifai model supports function/tool calling. |
-| How is billing handled? | Clarifai usage is billed independently via Clarifai. |
+| Can I use all Clarifai models with LiteLLM? | 大多數聊天完成模型都支援。請使用 Clarifai 模型 URL 作為 `model`。 |
+| Do I need a separate Clarifai PAT? | 是，您必須使用有效的 Clarifai Personal Access Token。 |
+| Is tool calling supported? | 是，前提是底層的 Clarifai 模型支援函式／工具呼叫。 |
+| How is billing handled? | Clarifai 的使用量會透過 Clarifai 個別計費。 |
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Clarifai Documentation](https://docs.clarifai.com/)
+- [Clarifai 文件](https://docs.clarifai.com/)
 - [LiteLLM GitHub](https://github.com/BerriAI/litellm)
-- [Clarifai Runners Examples](https://github.com/Clarifai/runners-examples)
+- [Clarifai Runners 範例](https://github.com/Clarifai/runners-examples)

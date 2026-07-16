@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Helicone
+# Helicone {#helicone}
 
 :::tip
 
-This is community maintained. Please make an issue if you run into a bug:
+這是由社群維護的。若您遇到錯誤，請提出 issue：
 https://github.com/BerriAI/litellm
 
 :::
 
-[Helicone](https://helicone.ai/) is an open sourced observability platform providing key insights into your usage, spend, latency and more.
+[Helicone](https://helicone.ai/) 是一個開源的可觀測性平台，可提供您使用量、支出、延遲等關鍵洞察。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="Python SDK">
 
-Use just 1 line of code to instantly log your responses **across all providers** with Helicone:
+只要 1 行程式碼，就能立即透過 Helicone 記錄您**跨所有提供者**的回應：
 
 ```python
 import os
@@ -38,7 +38,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-Add Helicone to your LiteLLM proxy configuration:
+將 Helicone 加入您的 LiteLLM proxy 設定：
 
 ```yaml title="config.yaml"
 model_list:
@@ -56,7 +56,7 @@ environment_variables:
   HELICONE_API_KEY: "your-helicone-key"
 ```
 
-Start the proxy:
+啟動 proxy：
 ```bash
 litellm --config config.yaml
 ```
@@ -64,16 +64,16 @@ litellm --config config.yaml
 </TabItem>
 </Tabs>
 
-## Integration Methods
+## 整合方式 {#integration-methods}
 
-There are two main approaches to integrate Helicone with LiteLLM:
+將 Helicone 與 LiteLLM 整合主要有兩種方式：
 
-1. **As a Provider**: Use Helicone to log requests for [all models supported ](../providers/helicone)
-2. **Callbacks**: Log to Helicone while using any provider
+1. **作為提供者**：使用 Helicone 記錄 [所有支援的模型 ](../providers/helicone) 的請求
+2. **回呼**：在使用任何提供者時將記錄送至 Helicone
 
-### Supported LLM Providers
+### 支援的 LLM 提供者 {#supported-llm-providers}
 
-Helicone can log requests across [all major LLM providers](https://helicone.ai/models), including:
+Helicone 可以跨 [所有主要的 LLM 提供者](https://helicone.ai/models) 記錄請求，包括：
 
 - OpenAI
 - Azure
@@ -82,16 +82,16 @@ Helicone can log requests across [all major LLM providers](https://helicone.ai/m
 - Groq
 - Cohere
 - Replicate
-- And more
+- 以及更多
 
-## Method 1: Using Helicone as a Provider
+## 方式 1：將 Helicone 作為提供者使用 {#method-1-using-helicone-as-a-provider}
 
-Helicone's AI Gateway provides [advanced functionality](https://docs.helicone.ai) like caching, rate limiting, LLM security, and more.
+Helicone 的 AI Gateway 提供 [進階功能](https://docs.helicone.ai)，例如快取、速率限制、LLM 安全性等。
 
 <Tabs>
   <TabItem value="sdk" label="Python SDK">
 
-  Set Helicone as your base URL and pass authentication headers:
+  將 Helicone 設為您的 base URL，並傳入驗證標頭：
 
   ```python
   import os
@@ -111,9 +111,9 @@ Helicone's AI Gateway provides [advanced functionality](https://docs.helicone.ai
   print(response)
   ```
 
-  ### Advanced Usage
+  ### 進階用法
 
-  You can add custom metadata and properties to your requests using Helicone headers. Here are some examples:
+  您可以使用 Helicone 標頭為請求新增自訂中繼資料與屬性。以下是一些範例：
 
   ```python
   litellm.metadata = {
@@ -137,9 +137,9 @@ Helicone's AI Gateway provides [advanced functionality](https://docs.helicone.ai
   }
   ```
 
-  ### Caching and Rate Limiting
+  ### 快取與速率限制
 
-  Enable caching and set up rate limiting policies:
+  啟用快取並設定速率限制政策：
 
   ```python
   litellm.metadata = {
@@ -152,9 +152,9 @@ Helicone's AI Gateway provides [advanced functionality](https://docs.helicone.ai
   </TabItem>
 </Tabs>
 
-## Method 2: Using Callbacks
+## 方式 2：使用回呼 {#method-2-using-callbacks}
 
-Log requests to Helicone while using any LLM provider directly.
+在直接使用任何 LLM 提供者時，將請求記錄到 Helicone。
 
 <Tabs>
   <TabItem value="sdk" label="Python SDK">
@@ -206,12 +206,12 @@ Log requests to Helicone while using any LLM provider directly.
     ANTHROPIC_API_KEY: "your-anthropic-key"
   ```
 
-  Start the proxy:
+  啟動 proxy：
   ```bash
   litellm --config config.yaml
   ```
 
-  Make requests to your proxy:
+  向您的 proxy 發出請求：
   ```python
   import openai
 
@@ -229,9 +229,9 @@ Log requests to Helicone while using any LLM provider directly.
   </TabItem>
 </Tabs>
 
-## Session Tracking and Tracing
+## 工作階段追蹤與追蹤 {#session-tracking-and-tracing}
 
-Track multi-step and agentic LLM interactions using session IDs and paths:
+使用工作階段 ID 與路徑追蹤多步驟與 agentic LLM 互動：
 
 <Tabs>
   <TabItem value="sdk" label="Python SDK">
@@ -292,10 +292,10 @@ Track multi-step and agentic LLM interactions using session IDs and paths:
   </TabItem>
 </Tabs>
 
-- `Helicone-Session-Id`: Unique identifier for the session to group related requests
-- `Helicone-Session-Path`: Hierarchical path to represent parent/child traces (e.g., "parent/child")
+- `Helicone-Session-Id`：工作階段的唯一識別碼，用於將相關請求分組
+- `Helicone-Session-Path`：用來表示父/子追蹤的階層式路徑（例如「parent/child」）
 
-## Retry and Fallback Mechanisms
+## 重試與備援機制 {#retry-and-fallback-mechanisms}
 
 <Tabs>
   <TabItem value="sdk" label="Python SDK">
@@ -343,5 +343,5 @@ Track multi-step and agentic LLM interactions using session IDs and paths:
   </TabItem>
 </Tabs>
 
-> **Supported Headers** - For a full list of supported Helicone headers and their descriptions, please refer to the [Helicone documentation](https://docs.helicone.ai/features/advanced-usage/custom-properties).
-> By utilizing these headers and metadata options, you can gain deeper insights into your LLM usage, optimize performance, and better manage your AI workflows with Helicone and LiteLLM.
+> **支援的標頭** - 如需完整的支援 Helicone 標頭及其描述清單，請參閱 [Helicone 文件](https://docs.helicone.ai/features/advanced-usage/custom-properties)。
+> 透過運用這些標頭與中繼資料選項，您可以更深入了解您的 LLM 使用情況、最佳化效能，並透過 Helicone 與 LiteLLM 更妥善地管理您的 AI 工作流程。

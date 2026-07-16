@@ -11,7 +11,15 @@
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
-    "write-heading-ids": "docusaurus write-heading-ids"
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "translate:zh-tw:prepare": "node scripts/translate-zh-tw.mjs prepare",
+    "translate:zh-tw": "node scripts/translate-zh-tw.mjs translate",
+    "translate:zh-tw:repair-headings": "node scripts/translate-zh-tw.mjs repair-headings",
+    "translate:zh-tw:repair-release-commits": "node scripts/translate-zh-tw.mjs repair-release-commits",
+    "translate:zh-tw:repair-alt-text": "node scripts/translate-zh-tw.mjs repair-alt-text",
+    "translate:zh-tw:repair-bold-labels": "node scripts/translate-zh-tw.mjs repair-bold-labels",
+    "translate:zh-tw:verify": "node scripts/translate-zh-tw.mjs verify",
+    "translate:zh-tw:status": "node scripts/translate-zh-tw.mjs status"
   },
   "dependencies": {
     "@docusaurus/core": "3.8.1",

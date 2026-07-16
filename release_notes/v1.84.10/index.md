@@ -1,5 +1,5 @@
 ---
-title: "v1.84.10 - Interrupted-Stream Cost Recovery"
+title: "v1.84.10 - 中斷串流成本回收"
 slug: "v1-84-10"
 date: 2026-06-24T04:00:54
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,16 +43,16 @@ pip install litellm==1.84.10
 </TabItem>
 </Tabs>
 
-`v1.84.10` is a patch release on top of [`v1.84.9`](/release_notes/v1.84.9/v1-84-9). It backports cost-tracking recovery for interrupted Anthropic streams — recovering output tokens, recording partial spend on the failure row, and costing interrupted and agentic streams — alongside OpenSSL and OSV-flagged dependency bumps for CVE coverage.
+`v1.84.10` 是建構在 [`v1.84.9`](/release_notes/v1.84.9/v1-84-9) 之上的修補版本。它回補了針對中斷的 Anthropic 串流之成本追蹤回復——回收輸出 token、在失敗列記錄部分支出，以及為中斷與 agentic 串流計費——同時也包含為了涵蓋 CVE 而更新的 OpenSSL 與 OSV 標記依賴套件。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(passthrough): recover output tokens for interrupted anthropic streams - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
-- fix(proxy): record partial spend on the failure row for interrupted streams - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
-- fix(passthrough,streaming): recover cost on interrupted and agentic Anthropic streams - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
-- fix(deps): bump osv-flagged dependencies to clear known CVEs - [PR #31122](https://github.com/BerriAI/litellm/pull/31122)
-- fix(docker): bump wolfi-base digest to patch openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
+- fix(passthrough): 修復中斷的 Anthropic 串流之輸出 token - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
+- fix(proxy): 將中斷串流的部分支出記錄在失敗列 - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
+- fix(passthrough,streaming): 復原中斷及 agentic Anthropic 串流的成本 - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
+- fix(deps): 升級有 OSV 標記的相依套件以清除已知 CVE - [PR #31122](https://github.com/BerriAI/litellm/pull/31122)
+- fix(docker): 更新 wolfi-base digest 以修補 openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.9...v1.84.10

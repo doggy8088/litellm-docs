@@ -2,15 +2,15 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Qualifire
+# Qualifire {#qualifire}
 
-Use [Qualifire](https://qualifire.ai) to evaluate LLM outputs for quality, safety, and reliability. Detect prompt injections, hallucinations, PII, harmful content, and validate that your AI follows instructions.
+使用 [Qualifire](https://qualifire.ai) 來評估 LLM 回應的品質、安全性與可靠性。偵測 prompt injection、hallucination、PII、有害內容，並驗證您的 AI 是否遵循指示。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section:
+請在 `guardrails` 區段下定義您的防護欄：
 
 ```yaml showLineNumbers title="litellm config.yaml"
 model_list:
@@ -49,26 +49,26 @@ guardrails:
       prompt_injections: true
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
-- `during_call` Run **during** LLM call, on **input**. Same as `pre_call` but runs in parallel as LLM call. Response not returned until guardrail check completes
+- `pre_call` 在 LLM 呼叫前執行，針對 **輸入**
+- `post_call` 在 LLM 呼叫後執行，針對 **輸入與輸出**
+- `during_call` 在 LLM 呼叫期間執行，針對 **輸入**。與 `pre_call` 相同，但會與 LLM 呼叫平行執行。直到防護欄檢查完成前不會回傳回應
 
-### 2. Start LiteLLM Gateway
+### 2. 啟動 LiteLLM Gateway {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request
+### 3. 測試請求 {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="未成功的呼叫" value = "not-allowed">
 
-Expect this to fail since it contains a prompt injection attempt:
+預期此項會失敗，因為其中包含 prompt injection 嘗試：
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -83,7 +83,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure:
+失敗時的預期回應：
 
 ```json
 {
@@ -104,7 +104,7 @@ Expected response on failure:
 
 </TabItem>
 
-<TabItem label="Successful Call" value = "allowed">
+<TabItem label="成功的呼叫" value = "allowed">
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -122,9 +122,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Using Pre-configured Evaluations
+## 使用預先設定的評估 {#using-pre-configured-evaluations}
 
-You can use evaluations pre-configured in the [Qualifire Dashboard](https://app.qualifire.ai) by specifying the `evaluation_id`:
+您可以透過指定 `evaluation_id`，使用 [Qualifire 儀表板](https://app.qualifire.ai) 中預先設定的評估：
 
 ```yaml showLineNumbers title="litellm config.yaml"
 guardrails:
@@ -136,23 +136,23 @@ guardrails:
       evaluation_id: eval_abc123 # Your evaluation ID from Qualifire dashboard
 ```
 
-When `evaluation_id` is provided, LiteLLM will use the invoke evaluation API endpoint instead of the evaluate endpoint, running the pre-configured evaluation from your dashboard.
+當提供 `evaluation_id` 時，LiteLLM 會使用 invoke evaluation API endpoint，而不是 evaluate endpoint，執行來自儀表板的預先設定評估。
 
-## Available Checks
+## 可用檢查 {#available-checks}
 
-Qualifire supports the following evaluation checks:
+Qualifire 支援以下評估檢查：
 
-| Check                  | Parameter                            | Description                                               |
+| 檢查                  | 參數                            | 說明                                               |
 | ---------------------- | ------------------------------------ | --------------------------------------------------------- |
-| Prompt Injections      | `prompt_injections: true`            | Identify prompt injection attempts                        |
-| Hallucinations         | `hallucinations_check: true`         | Detect factual inaccuracies or hallucinations             |
-| Grounding              | `grounding_check: true`              | Verify output is grounded in provided context             |
-| PII Detection          | `pii_check: true`                    | Detect personally identifiable information                |
-| Content Moderation     | `content_moderation_check: true`     | Check for harmful content (harassment, hate speech, etc.) |
-| Tool Selection Quality | `tool_selection_quality_check: true` | Evaluate quality of tool/function calls                   |
-| Custom Assertions      | `assertions: [...]`                  | Custom assertions to validate against the output          |
+| Prompt Injections      | `prompt_injections: true`            | 辨識 prompt injection 嘗試                        |
+| Hallucinations         | `hallucinations_check: true`         | 偵測事實不準確或 hallucination             |
+| Grounding              | `grounding_check: true`              | 驗證輸出是否以所提供的上下文為基礎             |
+| PII Detection          | `pii_check: true`                    | 偵測可識別個人身分的資訊                |
+| Content Moderation     | `content_moderation_check: true`     | 檢查有害內容（騷擾、仇恨言論等） |
+| Tool Selection Quality | `tool_selection_quality_check: true` | 評估工具／函式呼叫的品質                   |
+| Custom Assertions      | `assertions: [...]`                  | 用於驗證輸出的自訂斷言          |
 
-### Example with Multiple Checks
+### 多項檢查範例 {#example-with-multiple-checks}
 
 ```yaml
 guardrails:
@@ -168,7 +168,7 @@ guardrails:
       content_moderation_check: true
 ```
 
-### Example with Custom Assertions
+### 自訂斷言範例 {#example-with-custom-assertions}
 
 ```yaml
 guardrails:
@@ -183,7 +183,7 @@ guardrails:
         - "The answer must be under 100 words"
 ```
 
-## Supported Params
+## 支援的參數 {#supported-params}
 
 ```yaml
 guardrails:
@@ -205,32 +205,32 @@ guardrails:
       # on_flagged: "block"  # "block" or "monitor"
 ```
 
-### Parameter Reference
+### 參數參考 {#parameter-reference}
 
-| Parameter                      | Type        | Default                      | Description                                              |
+| 參數                      | 類型        | 預設值                      | 說明                                              |
 | ------------------------------ | ----------- | ---------------------------- | -------------------------------------------------------- |
-| `api_key`                      | `str`       | `QUALIFIRE_API_KEY` env var  | Your Qualifire API key                                   |
-| `api_base`                     | `str`       | `https://proxy.qualifire.ai` | Custom API base URL (optional)                           |
-| `evaluation_id`                | `str`       | `None`                       | Pre-configured evaluation ID from Qualifire dashboard    |
-| `prompt_injections`            | `bool`      | `true` (if no other checks)  | Enable prompt injection detection                        |
-| `hallucinations_check`         | `bool`      | `None`                       | Enable hallucination detection                           |
-| `grounding_check`              | `bool`      | `None`                       | Enable grounding verification                            |
-| `pii_check`                    | `bool`      | `None`                       | Enable PII detection                                     |
-| `content_moderation_check`     | `bool`      | `None`                       | Enable content moderation                                |
-| `tool_selection_quality_check` | `bool`      | `None`                       | Enable tool selection quality check                      |
-| `assertions`                   | `List[str]` | `None`                       | Custom assertions to validate                            |
-| `on_flagged`                   | `str`       | `"block"`                    | Action when content is flagged: `"block"` or `"monitor"` |
+| `api_key`                      | `str`       | `QUALIFIRE_API_KEY` 環境變數  | 您的 Qualifire API 金鑰                                   |
+| `api_base`                     | `str`       | `https://proxy.qualifire.ai` | 自訂 API base URL（選用）                           |
+| `evaluation_id`                | `str`       | `None`                       | 來自 Qualifire 儀表板的預先設定評估 ID    |
+| `prompt_injections`            | `bool`      | `true`（若沒有其他檢查）  | 啟用 prompt injection 偵測                        |
+| `hallucinations_check`         | `bool`      | `None`                       | 啟用 hallucination 偵測                           |
+| `grounding_check`              | `bool`      | `None`                       | 啟用 grounding 驗證                            |
+| `pii_check`                    | `bool`      | `None`                       | 啟用 PII 偵測                                     |
+| `content_moderation_check`     | `bool`      | `None`                       | 啟用內容審核                                |
+| `tool_selection_quality_check` | `bool`      | `None`                       | 啟用工具選擇品質檢查                      |
+| `assertions`                   | `List[str]` | `None`                       | 自訂斷言以進行驗證                            |
+| `on_flagged`                   | `str`       | `"block"`                    | 內容被標記時的動作：`"block"` 或 `"monitor"` |
 
-### Default Behavior
+### 預設行為 {#default-behavior}
 
-- If no `evaluation_id` is provided and no checks are explicitly enabled, `prompt_injections` defaults to `true`
-- When `evaluation_id` is provided, it takes precedence and individual check flags are ignored
-- `on_flagged: "block"` raises an HTTP 400 exception when violations are detected
-- `on_flagged: "monitor"` logs violations but allows the request to proceed
+- 如果未提供 `evaluation_id` 且未明確啟用任何檢查，`prompt_injections` 預設為 `true`
+- 當提供 `evaluation_id` 時，會以此為優先，且會忽略各別檢查旗標
+- `on_flagged: "block"` 會在偵測到違規時引發 HTTP 400 例外
+- `on_flagged: "monitor"` 會記錄違規，但允許請求繼續
 
-## Tool Call Support
+## 工具呼叫支援 {#tool-call-support}
 
-Qualifire supports evaluating tool/function calls. When using `tool_selection_quality_check`, the guardrail will analyze tool calls in assistant messages:
+Qualifire 支援評估工具／函式呼叫。使用 `tool_selection_quality_check` 時，防護欄會分析 assistant 訊息中的工具呼叫：
 
 ```yaml
 guardrails:
@@ -242,16 +242,16 @@ guardrails:
       tool_selection_quality_check: true
 ```
 
-This evaluates whether the LLM selected the appropriate tools and provided correct arguments.
+這會評估 LLM 是否選擇了適當的工具並提供正確的引數。
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable             | Description                    |
+| 變數             | 說明                    |
 | -------------------- | ------------------------------ |
-| `QUALIFIRE_API_KEY`  | Your Qualifire API key         |
-| `QUALIFIRE_BASE_URL` | Custom API base URL (optional) |
+| `QUALIFIRE_API_KEY`  | 您的 Qualifire API 金鑰         |
+| `QUALIFIRE_BASE_URL` | 自訂 API base URL（選用） |
 
-## Links
+## 連結 {#links}
 
-- [Qualifire Documentation](https://docs.qualifire.ai)
-- [Qualifire Dashboard](https://app.qualifire.ai)
+- [Qualifire 文件](https://docs.qualifire.ai)
+- [Qualifire 儀表板](https://app.qualifire.ai)

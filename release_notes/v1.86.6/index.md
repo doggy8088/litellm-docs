@@ -1,5 +1,5 @@
 ---
-title: "v1.86.6 - DB Resilience, Passthrough & Dependency Backports"
+title: "v1.86.6 - DB 復原能力、Passthrough 與相依性回補"
 slug: "v1-86-6"
 date: 2026-06-13T17:37:03
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,21 +43,21 @@ pip install litellm==1.86.6
 </TabItem>
 </Tabs>
 
-`v1.86.6` is a patch release on top of [`v1.86.5`](/release_notes/v1.86.5/v1-86-5). It brings the 1.84.8 database-resilience and passthrough set onto the 1.86 line, adds the budget-reservation toggle, hardens Anthropic streaming logging, and refreshes dependencies.
+`v1.86.6` 是建立在 [`v1.86.5`](/release_notes/v1.86.5/v1-86-5) 之上的修補版本。它將 1.84.8 的資料庫復原能力與 passthrough 功能集帶入 1.86 系列，新增預算保留切換，強化 Anthropic 串流記錄，並更新相依性。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(router): use forwarded model_id for native Azure container IDs - [PR #27921](https://github.com/BerriAI/litellm/pull/27921)
-- fix(proxy): expose Prisma idle/connect timeout and extra DB URL params - [PR #28395](https://github.com/BerriAI/litellm/pull/28395)
-- feat(proxy): add `disable_budget_reservation` general setting - [PR #29493](https://github.com/BerriAI/litellm/pull/29493)
-- fix(proxy): recover from cached-plan errors by reconnecting the Prisma client - [PR #29983](https://github.com/BerriAI/litellm/pull/29983)
-- feat(proxy): add option to disable server-side prepared statements for DB lookups - [PR #29984](https://github.com/BerriAI/litellm/pull/29984)
-- fix(proxy): return 5xx on DB infra errors during auth; reserve 401 for genuine auth failures - [PR #29986](https://github.com/BerriAI/litellm/pull/29986)
-- fix(passthrough): resolve costing model when body model is unknown - [PR #30160](https://github.com/BerriAI/litellm/pull/30160)
-- fix(passthrough): skip `[DONE]` sentinels and non-JSON SSE frames in Anthropic streaming logging - [PR #30202](https://github.com/BerriAI/litellm/pull/30202)
-- fix(proxy): return deprecated-key lookup result directly in get_data combined view - [PR #30327](https://github.com/BerriAI/litellm/pull/30327)
-- chore(deps): bump pypdf, tornado, the aiohttp constraint, vitest, and brace-expansion - [PR #30220](https://github.com/BerriAI/litellm/pull/30220)
+- fix(router): 使用轉送的 model_id 來處理原生 Azure container IDs - [PR #27921](https://github.com/BerriAI/litellm/pull/27921)
+- fix(proxy): 暴露 Prisma 閒置/連線逾時與額外 DB URL 參數 - [PR #28395](https://github.com/BerriAI/litellm/pull/28395)
+- feat(proxy): 新增 `disable_budget_reservation` 全域設定 - [PR #29493](https://github.com/BerriAI/litellm/pull/29493)
+- fix(proxy): 透過重新連線 Prisma client 來從快取的規劃錯誤中復原 - [PR #29983](https://github.com/BerriAI/litellm/pull/29983)
+- feat(proxy): 新增停用 DB 查詢伺服器端預備陳述式的選項 - [PR #29984](https://github.com/BerriAI/litellm/pull/29984)
+- fix(proxy): 在驗證期間發生 DB 基礎設施錯誤時回傳 5xx；401 保留給真正的驗證失敗 - [PR #29986](https://github.com/BerriAI/litellm/pull/29986)
+- fix(passthrough): 在 body model 不明時解析成本模型 - [PR #30160](https://github.com/BerriAI/litellm/pull/30160)
+- fix(passthrough): 在 Anthropic 串流記錄中略過 `[DONE]` sentinels 與非 JSON SSE frames - [PR #30202](https://github.com/BerriAI/litellm/pull/30202)
+- fix(proxy): 在 get_data combined view 中直接回傳已棄用金鑰查詢結果 - [PR #30327](https://github.com/BerriAI/litellm/pull/30327)
+- chore(deps): 提升 pypdf、tornado、aiohttp 約束、vitest 與 brace-expansion 版本 - [PR #30220](https://github.com/BerriAI/litellm/pull/30220)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.86.5...v1.86.6

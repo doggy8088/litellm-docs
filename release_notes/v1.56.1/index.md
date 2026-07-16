@@ -17,25 +17,25 @@ hide_table_of_contents: false
 
 import Image from '@theme/IdealImage';
 
-# v1.56.1
+# v1.56.1 {#v1561}
 
 `key management`, `budgets/rate limits`, `logging`, `guardrails`
 
 :::info
 
-Get a 7 day free trial for LiteLLM Enterprise [here](https://litellm.ai/#trial).
+在此取得 LiteLLM Enterprise 7 天免費試用 [here](https://litellm.ai/#trial)。
 
-**no call needed**
+**不需要來電**
 
 :::
 
-## ✨ Budget / Rate Limit Tiers
+## ✨ 預算 / 費率限制層級 {#-budget--rate-limit-tiers}
 
-Define tiers with rate limits. Assign them to keys. 
+定義具有速率限制的層級。將它們指派給金鑰。 
 
-Use this to control access and budgets across a lot of keys.
+可用於在大量金鑰之間控管存取與預算。
 
-**[Start here](https://docs.litellm.ai/docs/proxy/rate_limit_tiers)**
+**[從這裡開始](https://docs.litellm.ai/docs/proxy/rate_limit_tiers)**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/budget/new' \
@@ -50,41 +50,28 @@ curl -L -X POST 'http://0.0.0.0:4000/budget/new' \
 ```
 
 
-## OTEL Bug Fix
+## OTEL 錯誤修正 {#otel-bug-fix}
 
-LiteLLM was double logging litellm_request span. This is now fixed.
+LiteLLM 先前會對 litellm_request span 重複記錄。這個問題現在已修正。
 
-[Relevant PR](https://github.com/BerriAI/litellm/pull/7435)
+[相關 PR](https://github.com/BerriAI/litellm/pull/7435)
 
-## Logging for Finetuning Endpoints 
+## 微調端點記錄  {#logging-for-finetuning-endpoints}
 
-Logs for finetuning requests are now available on all logging providers (e.g. Datadog). 
+現在所有記錄提供者（例如 Datadog）都可取得微調請求的記錄。 
 
-What's logged per request:
+每個請求記錄的內容：
 
 - file_id
 - finetuning_job_id
-- any key/team metadata
+- 任何金鑰／團隊中繼資料
 
+**從這裡開始：**
+- [設定微調](https://docs.litellm.ai/docs/fine_tuning)
+- [設定記錄](https://docs.litellm.ai/docs/proxy/logging#datadog)
 
-**Start Here:**
-- [Setup Finetuning](https://docs.litellm.ai/docs/fine_tuning)
-- [Setup Logging](https://docs.litellm.ai/docs/proxy/logging#datadog)
+## 防護欄的動態參數  {#dynamic-params-for-guardrails}
 
-## Dynamic Params for Guardrails 
+現在您可以在每個請求中為防護欄設定自訂參數（例如成功閾值）。
 
-You can now set custom parameters (like success threshold) for your guardrails in each request.
-
-[See guardrails spec for more details](https://docs.litellm.ai/docs/proxy/guardrails/custom_guardrail#-pass-additional-parameters-to-guardrail)
-
-
-
-
-
-
-
-
-
-
-
-
+[請參閱 guardrails 規格以取得更多詳細資訊](https://docs.litellm.ai/docs/proxy/guardrails/custom_guardrail#-pass-additional-parameters-to-guardrail)

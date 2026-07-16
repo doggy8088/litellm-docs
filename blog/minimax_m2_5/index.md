@@ -1,12 +1,12 @@
 ---
 slug: minimax_m2_5
-title: "Day 0 Support: MiniMax-M2.5"
+title: "Day 0 支援：MiniMax-M2.5"
 date: 2026-02-12T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Day 0 support for MiniMax-M2.5 on LiteLLM"
+description: "LiteLLM 對 MiniMax-M2.5 的 Day 0 支援"
 tags: [minimax, M2.5, llm]
 hide_table_of_contents: false
 ---
@@ -14,39 +14,39 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM now supports MiniMax-M2.5 on Day 0. Use it across OpenAI-compatible and Anthropic-compatible APIs through the LiteLLM AI Gateway.
+LiteLLM 現在在 Day 0 支援 MiniMax-M2.5。可透過 LiteLLM AI Gateway，在 OpenAI 相容與 Anthropic 相容的 API 中使用它。
 
 {/* truncate */}
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-LiteLLM supports the following MiniMax models:
+LiteLLM 支援以下 MiniMax 模型：
 
-| Model | Description | Input Cost | Output Cost | Context Window |
+| 模型 | 說明 | 輸入成本 | 輸出成本 | 上下文視窗 |
 |-------|-------------|------------|-------------|----------------|
-| **MiniMax-M2.5** | Advanced reasoning, Agentic capabilities | $0.3/M tokens | $1.2/M tokens | 1M tokens |
-| **MiniMax-M2.5-lightning** | Faster and More Agile (~100 tps) | $0.3/M tokens | $2.4/M tokens | 1M tokens |
+| **MiniMax-M2.5** | 進階推理、代理式能力 | $0.3/M tokens | $1.2/M tokens | 1M tokens |
+| **MiniMax-M2.5-lightning** | 更快且更敏捷（約 100 tps） | $0.3/M tokens | $2.4/M tokens | 1M tokens |
 
-## Features Supported
+## 支援的功能 {#features-supported}
 
-- **Prompt Caching**: Reduce costs with cached prompts ($0.03/M tokens for cache read, $0.375/M tokens for cache write)
-- **Function Calling**: Built-in tool calling support
-- **Reasoning**: Advanced reasoning capabilities with thinking support
-- **System Messages**: Full system message support
-- **Cost Tracking**: Automatic cost calculation for all requests
+- **Prompt 快取**：使用快取的 prompts 降低成本（cache read 為 $0.03/M tokens，cache write 為 $0.375/M tokens）
+- **Function Calling**：內建工具呼叫支援
+- **推理**：支援 thinking 的進階推理能力
+- **System Messages**：完整支援 system message
+- **成本追蹤**：自動計算所有請求的成本
 
-## Docker Image
+## Docker 映像檔 {#docker-image}
 
 ```bash
 docker pull litellm/litellm:v1.81.3-stable
 ```
 
-## Usage - OpenAI Compatible API (/v1/chat/completions)
+## 使用方式 - OpenAI 相容 API (/v1/chat/completions) {#usage---openai-compatible-api-v1chatcompletions}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -57,7 +57,7 @@ model_list:
       api_base: https://api.minimax.io/v1
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -68,7 +68,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -88,7 +88,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### With Reasoning Split
+### 搭配 Reasoning Split {#with-reasoning-split}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -108,12 +108,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Usage - Anthropic Compatible API (/v1/messages)
+## 使用方式 - Anthropic 相容 API (/v1/messages) {#usage---anthropic-compatible-api-v1messages}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -124,7 +124,7 @@ model_list:
       api_base: https://api.minimax.io/anthropic/v1/messages
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -135,7 +135,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -156,7 +156,7 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
-### With Thinking
+### 搭配 Thinking {#with-thinking}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -178,9 +178,9 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 }'
 ```
 
-## Usage - LiteLLM SDK
+## 使用方式 - LiteLLM SDK {#usage---litellm-sdk}
 
-### OpenAI-compatible API
+### OpenAI 相容 API {#openai-compatible-api}
 
 ```python
 import litellm
@@ -197,7 +197,7 @@ response = litellm.completion(
 print(response.choices[0].message.content)
 ```
 
-### Anthropic-compatible API
+### Anthropic 相容 API {#anthropic-compatible-api}
 
 ```python
 import litellm
@@ -213,7 +213,7 @@ response = litellm.anthropic.messages.acreate(
 print(response.choices[0].message.content)
 ```
 
-### With Thinking
+### 搭配 Thinking {#with-thinking-1}
 
 ```python
 response = litellm.anthropic.messages.acreate(
@@ -229,7 +229,7 @@ for block in response.choices[0].message.content:
         print(f"Thinking: {block.thinking}")
 ```
 
-### With Reasoning Split (OpenAI API)
+### 搭配 Reasoning Split（OpenAI API） {#with-reasoning-split-openai-api}
 
 ```python
 response = litellm.completion(
@@ -248,16 +248,16 @@ if hasattr(response.choices[0].message, 'reasoning_details'):
 print(f"Response: {response.choices[0].message.content}")
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM automatically tracks costs for MiniMax-M2.5 requests. The pricing is:
+LiteLLM 會自動追蹤 MiniMax-M2.5 請求的成本。定價如下：
 
-- **Input**: $0.3 per 1M tokens
-- **Output**: $1.2 per 1M tokens
-- **Cache Read**: $0.03 per 1M tokens
-- **Cache Write**: $0.375 per 1M tokens
+- **輸入**：$0.3 / 1M tokens
+- **輸出**：$1.2 / 1M tokens
+- **Cache Read**：$0.03 / 1M tokens
+- **Cache Write**：$0.375 / 1M tokens
 
-### Accessing Cost Information
+### 存取成本資訊 {#accessing-cost-information}
 
 ```python
 response = litellm.completion(
@@ -270,9 +270,9 @@ response = litellm.completion(
 print(f"Cost: ${response._hidden_params.get('response_cost', 0)}")
 ```
 
-## Streaming Support
+## 串流支援 {#streaming-support}
 
-### OpenAI API
+### OpenAI API {#openai-api}
 
 ```python
 response = litellm.completion(
@@ -288,7 +288,7 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-### Streaming with Reasoning Split
+### 搭配 Reasoning Split 的串流 {#streaming-with-reasoning-split}
 
 ```python
 stream = litellm.completion(
@@ -323,9 +323,9 @@ for chunk in stream:
             text_buffer = content_text
 ```
 
-## Using with Native SDKs
+## 搭配原生 SDK 使用 {#using-with-native-sdks}
 
-### Anthropic SDK via LiteLLM Proxy
+### 透過 LiteLLM Proxy 使用 Anthropic SDK {#anthropic-sdk-via-litellm-proxy}
 
 ```python
 import os
@@ -360,7 +360,7 @@ for block in message.content:
         print(f"Text:\n{block.text}\n")
 ```
 
-### OpenAI SDK via LiteLLM Proxy
+### 透過 LiteLLM Proxy 使用 OpenAI SDK {#openai-sdk-via-litellm-proxy}
 
 ```python
 import os

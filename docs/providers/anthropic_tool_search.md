@@ -1,44 +1,43 @@
-# Tool Search
+# 工具搜尋 {#tool-search}
 
-Tool search enables Claude to dynamically discover and load tools on-demand from large tool catalogs (10,000+ tools). Instead of loading all tool definitions into the context window upfront, Claude searches your tool catalog and loads only the tools it needs.
+工具搜尋可讓 Claude 依需求從大型工具目錄（10,000+ 工具）中動態探索並載入工具。Claude 不會一開始就將所有工具定義載入到內容視窗中，而是會搜尋您的工具目錄，僅載入所需的工具。
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-| Provider | Chat Completions API | Messages API |
+| 提供者 | Chat Completions API | Messages API |
 |----------|---------------------|--------------|
 | **Anthropic API** | ✅ | ✅ |
-| **Azure Anthropic** (Microsoft Foundry) | ✅ | ✅ |
+| **Azure Anthropic**（Microsoft Foundry） | ✅ | ✅ |
 | **Google Cloud Vertex AI** | ✅ | ✅ |
-| **Amazon Bedrock** | ✅ (Invoke API only, Opus 4.5 only) | ✅ (Invoke API only, Opus 4.5 only) |
+| **Amazon Bedrock** | ✅（僅 Invoke API，僅 Opus 4.5） | ✅（僅 Invoke API，僅 Opus 4.5） |
 
+## 優點 {#benefits}
 
-## Benefits
+- **內容效率**：避免工具定義大量消耗內容視窗
+- **更佳的工具選擇**：Claude 的工具選擇準確度在超過 30-50 個工具時會下降。工具搜尋即使面對數千個工具也能維持準確度
+- **依需求載入**：只有在 Claude 需要時才會載入工具
 
-- **Context efficiency**: Avoid consuming massive portions of your context window with tool definitions
-- **Better tool selection**: Claude's tool selection accuracy degrades with more than 30-50 tools. Tool search maintains accuracy even with thousands of tools
-- **On-demand loading**: Tools are only loaded when Claude needs them
+## 工具搜尋變體 {#tool-search-variants}
 
-## Tool Search Variants
+LiteLLM 支援兩種工具搜尋變體：
 
-LiteLLM supports both tool search variants:
+### 1. Regex 工具搜尋 (`tool_search_tool_regex_20251119`) {#1-regex-tool-search-tool_search_tool_regex_20251119}
 
-### 1. Regex Tool Search (`tool_search_tool_regex_20251119`)
+Claude 會建構 regex 模式來搜尋工具。最適合精確模式比對（更快）。
 
-Claude constructs regex patterns to search for tools. Best for exact pattern matching (faster).
+### 2. BM25 工具搜尋 (`tool_search_tool_bm25_20251119`) {#2-bm25-tool-search-tool_search_tool_bm25_20251119}
 
-### 2. BM25 Tool Search (`tool_search_tool_bm25_20251119`)
+Claude 使用自然語言查詢透過 BM25 演算法搜尋工具。最適合自然語言語意搜尋。
 
-Claude uses natural language queries to search for tools using the BM25 algorithm. Best for natural language semantic search.
-
-**Note**: BM25 variant is not supported on Bedrock.
+**注意**：Bedrock 不支援 BM25 變體。
 
 ---
 
-## Chat Completions API
+## Chat Completions API {#chat-completions-api}
 
-### SDK Usage
+### SDK 使用方式 {#sdk-usage}
 
-#### Basic Example with Regex Tool Search
+#### Regex 工具搜尋基本範例 {#basic-example-with-regex-tool-search}
 
 ```python showLineNumbers title="Basic Tool Search Example"
 import litellm
@@ -80,7 +79,7 @@ response = litellm.completion(
 print(response.choices[0].message.content)
 ```
 
-#### BM25 Tool Search Example
+#### BM25 工具搜尋範例 {#bm25-tool-search-example}
 
 ```python showLineNumbers title="BM25 Tool Search"
 import litellm
@@ -117,7 +116,7 @@ response = litellm.completion(
 )
 ```
 
-#### Azure Anthropic Example
+#### Azure Anthropic 範例 {#azure-anthropic-example}
 
 ```python showLineNumbers title="Azure Anthropic Tool Search"
 import litellm
@@ -153,7 +152,7 @@ response = litellm.completion(
 )
 ```
 
-#### Vertex AI Example
+#### Vertex AI 範例 {#vertex-ai-example}
 
 ```python showLineNumbers title="Vertex AI Tool Search"
 import litellm
@@ -175,7 +174,7 @@ response = litellm.completion(
 )
 ```
 
-#### Streaming Support
+#### 串流支援 {#streaming-support}
 
 ```python showLineNumbers title="Streaming with Tool Search"
 import litellm
@@ -214,11 +213,11 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-### AI Gateway Usage
+### AI Gateway 使用方式 {#ai-gateway-usage}
 
-Tool search works automatically through the LiteLLM proxy.
+透過 LiteLLM proxy，工具搜尋會自動運作。
 
-#### Proxy Configuration
+#### Proxy 設定 {#proxy-configuration}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -228,7 +227,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-#### Client Request
+#### 用戶端請求 {#client-request}
 
 ```python showLineNumbers title="Client Request via Proxy"
 from anthropic import Anthropic
@@ -267,13 +266,13 @@ response = client.messages.create(
 
 ---
 
-## Messages API
+## Messages API {#messages-api}
 
-The Messages API provides native Anthropic-style tool search support via the `litellm.anthropic.messages` interface.
+Messages API 透過 `litellm.anthropic.messages` 介面提供原生 Anthropic 風格的工具搜尋支援。
 
-### SDK Usage
+### SDK 使用方式 {#sdk-usage-1}
 
-#### Basic Example
+#### 基本範例 {#basic-example}
 
 ```python showLineNumbers title="Messages API - Basic Tool Search"
 import litellm
@@ -314,7 +313,7 @@ response = await litellm.anthropic.messages.acreate(
 print(response)
 ```
 
-#### Azure Anthropic Messages Example
+#### Azure Anthropic Messages 範例 {#azure-anthropic-messages-example}
 
 ```python showLineNumbers title="Azure Anthropic Messages API"
 import litellm
@@ -353,7 +352,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Vertex AI Messages Example
+#### Vertex AI Messages 範例 {#vertex-ai-messages-example}
 
 ```python showLineNumbers title="Vertex AI Messages API"
 import litellm
@@ -392,7 +391,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Bedrock Messages Example
+#### Bedrock Messages 範例 {#bedrock-messages-example}
 
 ```python showLineNumbers title="Bedrock Messages API (Invoke)"
 import litellm
@@ -428,7 +427,7 @@ response = await litellm.anthropic.messages.acreate(
 )
 ```
 
-#### Streaming Support
+#### 串流支援 {#streaming-support-1}
 
 ```python showLineNumbers title="Messages API - Streaming"
 import litellm
@@ -477,11 +476,11 @@ async for chunk in response:
                     pass
 ```
 
-### AI Gateway Usage
+### AI Gateway 使用方式 {#ai-gateway-usage-1}
 
-Configure the proxy to use Messages API endpoints.
+設定 proxy 使用 Messages API 端點。
 
-#### Proxy Configuration
+#### Proxy 設定 {#proxy-configuration-1}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -491,7 +490,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-#### Client Request
+#### 用戶端請求 {#client-request-1}
 
 ```python showLineNumbers title="Client Request via Proxy (Messages API)"
 from anthropic import Anthropic
@@ -536,7 +535,7 @@ print(response)
 
 ---
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Anthropic Tool Search Documentation](https://docs.anthropic.com/en/docs/build-with-claude/tool-use/tool-search)
-- [LiteLLM Tool Calling Guide](https://docs.litellm.ai/docs/completion/function_call)
+- [Anthropic 工具搜尋文件](https://docs.anthropic.com/en/docs/build-with-claude/tool-use/tool-search)
+- [LiteLLM 工具呼叫指南](https://docs.litellm.ai/docs/completion/function_call)

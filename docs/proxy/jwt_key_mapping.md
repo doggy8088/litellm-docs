@@ -1,64 +1,64 @@
-# JWT → Virtual Key Mapping
+# JWT → 虛擬金鑰對應 {#jwt--virtual-key-mapping}
 
 :::info Enterprise
 
-JWT → Virtual Key Mapping is an Enterprise feature.
+JWT → 虛擬金鑰對應是 Enterprise 功能。
 
-[Get a free trial](https://enterprise.litellm.ai/demo)
+[取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
-Map JWT tokens to LiteLLM virtual keys — so every JWT client gets the same granular controls as a virtual key: model restrictions, spend limits, rate limits, guardrails, and full spend tracking.
+將 JWT token 對應到 LiteLLM 虛擬金鑰——如此一來，每個 JWT 用戶端都能獲得與虛擬金鑰相同的細緻控管：模型限制、花費上限、速率限制、防護欄與完整花費追蹤。
 
-**Why this matters:** Standard JWT auth maps a JWT to a *team*. That's a shared boundary — all clients under a team share the same limits. With JWT → Virtual Key Mapping, each individual JWT client (identified by a claim like `client_id`, `azp`, or `sub`) maps to its own virtual key. You get per-client accountability without issuing API keys to your users.
+**這很重要的原因：** 標準 JWT 驗證會將 JWT 對應到一個 *team*。那是一個共享邊界——同一 team 下的所有用戶端都共享相同限制。透過 JWT → 虛擬金鑰對應，每個個別 JWT 用戶端（由 `client_id`、`azp` 或 `sub` 等 claim 識別）都會對應到自己的虛擬金鑰。您可以對每位用戶端進行責任追蹤，而不必把 API 金鑰發給使用者。
 
-**Common use case:** Your company uses SSO/OIDC. Developers use Claude Code with their identity tokens. You want to enforce per-developer model access and spend limits without giving each person a LiteLLM API key.
+**常見使用情境：** 您的公司使用 SSO/OIDC。開發者使用 Claude Code 搭配自己的身分 token。您希望在不為每個人發放 LiteLLM API 金鑰的情況下，強制執行每位開發者的模型存取與花費上限。
 
 ---
 
-## How It Works
+## 運作方式 {#how-it-works}
 
 ```mermaid
 sequenceDiagram
-    participant Client as Client (Claude Code / API)
+    participant Client as 用戶端 (Claude Code / API)
     participant Proxy as LiteLLM Proxy
-    participant OIDC as OIDC Provider
-    participant DB as Mapping Table
+    participant OIDC as OIDC 提供者
+    participant DB as 對應表
 
     Client->>Proxy: POST /v1/chat/completions<br/>Authorization: Bearer <JWT>
 
-    Proxy->>OIDC: Verify JWT signature
-    OIDC-->>Proxy: Valid ✓
+    Proxy->>OIDC: 驗證 JWT 簽章
+    OIDC-->>Proxy: 有效 ✓
 
-    Proxy->>Proxy: Extract claim<br/>(e.g. client_id = "alice@corp.com")
+    Proxy->>Proxy: 擷取 claim<br/>(例如 client_id = "alice@corp.com")
 
-    Proxy->>DB: Look up (claim_name, claim_value)
-    alt Mapping found
+    Proxy->>DB: 查找 (claim_name, claim_value)
+    alt 找到對應
         DB-->>Proxy: key = sk-abc123
-        Proxy->>Proxy: Apply virtual key permissions<br/>(models, budget, rate limits)
+        Proxy->>Proxy: 套用虛擬金鑰權限<br/>(models, budget, rate limits)
         Proxy-->>Client: 200 OK
-    else No mapping — fallback_team_mapping
-        Proxy->>Proxy: Fall through to team JWT auth
+    else 未找到對應 — fallback_team_mapping
+        Proxy->>Proxy: 繼續使用 team-based JWT 驗證
         Proxy-->>Client: 200 OK
-    else No mapping — reject
+    else 未找到對應 — 拒絕
         Proxy-->>Client: 403 Forbidden
-    else No mapping — auto_register
-        Proxy->>DB: Create new virtual key + mapping
+    else 未找到對應 — auto_register
+        Proxy->>DB: 建立新的虛擬金鑰 + 對應
         Proxy-->>Client: 200 OK
     end
 ```
 
 ---
 
-## Setup
+## 設定 {#setup}
 
-### Prerequisites
+### 先決條件 {#prerequisites}
 
-Complete [OIDC JWT Auth setup](./token_auth.md) first — you need `JWT_PUBLIC_KEY_URL` configured and `enable_jwt_auth: True` in your proxy config.
+請先完成 [OIDC JWT 驗證設定](./token_auth.md)——您需要先設定好 `JWT_PUBLIC_KEY_URL`，並在您的 proxy 設定中啟用 `enable_jwt_auth: True`。
 
-### Step 1. Configure the JWT claim to map on
+### 步驟 1. 設定要用來對應的 JWT claim {#step-1-configure-the-jwt-claim-to-map-on}
 
-Add `virtual_key_claim_field` to your `litellm_jwtauth` config. This is the JWT claim LiteLLM uses as the lookup key:
+將 `virtual_key_claim_field` 加入您的 `litellm_jwtauth` 設定。這是 LiteLLM 用來作為查找鍵的 JWT claim：
 
 ```yaml
 general_settings:
@@ -71,23 +71,23 @@ general_settings:
     unregistered_jwt_client_behavior: "fallback_team_mapping"  # see below
 ```
 
-`virtual_key_claim_field` was previously named `jwt_client_id_field`; the old name still works as a backward-compatible alias.
+`virtual_key_claim_field` 先前名為 `jwt_client_id_field`；舊名稱仍可作為向後相容別名使用。
 
-**`unregistered_jwt_client_behavior`** controls what happens when a JWT has no registered mapping:
+**`unregistered_jwt_client_behavior`** 控制當 JWT 沒有已註冊對應時會發生什麼事：
 
-| Value | Behavior |
+| Value | 行為 |
 |-------|----------|
-| `fallback_team_mapping` | Fall through to team-based JWT auth (default — backward compatible) |
-| `reject` | Return 403 if no mapping found |
-| `auto_register` | Auto-create a virtual key + mapping on first encounter |
+| `fallback_team_mapping` | 直接回退到以 team 為基礎的 JWT 驗證（預設值 — 向後相容） |
+| `reject` | 若找不到對應則回傳 403 |
+| `auto_register` | 首次遇到時自動建立虛擬金鑰 + 對應 |
 
-With `auto_register`, the first request carrying a new claim value provisions a virtual key and mapping on the fly, with no admin call. The key is created only after the JWT clears full policy (signature, RBAC/scope, `custom_validate`, and `user_allowed_email_domain`); if the token fails any check the request is rejected and nothing is created. The new key inherits the team, user, and org resolved from the validated JWT, so make sure those claims are configured. A token that resolves to a proxy admin is not auto-registered, since admins already have full access. `auto_register` requires a database connection
+使用 `auto_register` 時，第一個帶有新 claim 值的請求會即時建立一把虛擬金鑰與對應，無需管理員呼叫。只有在 JWT 通過完整政策檢查（簽章、RBAC/scope、`custom_validate` 與 `user_allowed_email_domain`）後才會建立金鑰；如果 token 未通過任一檢查，請求會被拒絕且不會建立任何內容。新金鑰會繼承從已驗證 JWT 解析出的 team、user 與 org，因此請確保這些 claim 已設定完成。若 token 解析為 proxy 管理員，則不會自動註冊，因為管理員本來就擁有完整存取權。`auto_register` 需要資料庫連線
 
-### Step 2. Register a JWT client → virtual key mapping
+### 步驟 2. 註冊 JWT 用戶端 → 虛擬金鑰對應 {#step-2-register-a-jwt-client--virtual-key-mapping}
 
-**Recommended: let `auto_register` do it.** Set `unregistered_jwt_client_behavior: "auto_register"` in Step 1 and the first request from each new claim value provisions its own key automatically, with no admin call. Use this when every client should start from the same defaults.
+**建議：讓 `auto_register` 自動處理。** 在步驟 1 設定 `unregistered_jwt_client_behavior: "auto_register"`，之後每個新的 claim 值第一次發送請求時，就會自動建立自己的金鑰，無需管理員呼叫。當每位用戶端都應從相同預設值開始時，請使用此方式。
 
-**Manual: register a key with specific limits.** When a client needs its own budget or model set, create the virtual key first, then map a claim value to it. There is no single atomic endpoint; it is two calls.
+**手動：註冊一把具有特定限制的金鑰。** 當某位用戶端需要自己的預算或模型集合時，先建立虛擬金鑰，再將某個 claim 值對應到該金鑰。沒有單一原子化端點；需要兩次呼叫。
 
 ```bash
 # 1. Create a virtual key with the limits you want
@@ -116,7 +116,7 @@ curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/new' \
   }'
 ```
 
-### Step 3. Test it
+### 步驟 3. 測試 {#step-3-test-it}
 
 ```bash
 # Get a JWT from your OIDC provider (must have client_id: dev-alice)
@@ -131,17 +131,17 @@ curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
   }'
 ```
 
-The request is now tracked against `dev-alice`'s virtual key — spend, rate limits, and model access enforced per-client.
+此請求現在會以 `dev-alice` 的虛擬金鑰進行追蹤——花費、速率限制與模型存取都會套用到每位用戶端。
 
 ---
 
-## Walkthrough: Admin grants granular access, team uses Claude Code
+## 範例流程：管理員授予細緻存取權，team 使用 Claude Code {#walkthrough-admin-grants-granular-access-team-uses-claude-code}
 
-This is the full flow for an engineering team using Claude Code with company SSO.
+這是工程團隊使用 Claude Code 搭配公司 SSO 的完整流程。
 
-### Admin setup
+### 管理員設定 {#admin-setup}
 
-**1. Create a team for engineering**
+**1. 為工程團隊建立一個 team**
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/team/new' \
@@ -153,9 +153,9 @@ curl -X POST 'http://0.0.0.0:4000/team/new' \
   }'
 ```
 
-**2. Register each developer with their own key and spend limit**
+**2. 為每位開發者註冊自己的金鑰與花費上限**
 
-Each developer is a virtual key plus a mapping from their JWT claim to that key. Create the key with `/key/generate`, then map the claim value with `/jwt/key/mapping/new`.
+每位開發者都是一個虛擬金鑰，再加上從其 JWT claim 到該金鑰的對應。先使用 `/key/generate` 建立金鑰，再使用 `/jwt/key/mapping/new` 將 claim 值對應上去。
 
 ```bash
 # Alice: senior eng, higher budget
@@ -179,11 +179,11 @@ curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/new' \
   -d "{\"jwt_claim_name\": \"client_id\", \"jwt_claim_value\": \"bob@contractor.com\", \"key\": \"$BOB_KEY\", \"description\": \"bob@contractor.com\"}"
 ```
 
-For teams where everyone starts from the same defaults, skip the per-developer calls and set `unregistered_jwt_client_behavior: "auto_register"` instead.
+對於所有人都從相同預設值開始的團隊，請略過每位開發者各自呼叫，改為設定 `unregistered_jwt_client_behavior: "auto_register"`。
 
-**3. Configure Claude Code to use the proxy**
+**3. 設定 Claude Code 使用 proxy**
 
-Set the proxy as the API base in your team's Claude Code config:
+在團隊的 Claude Code 設定中，將 proxy 設為 API base：
 
 ```bash
 # Point Claude Code at the LiteLLM proxy instead of Anthropic directly.
@@ -193,7 +193,7 @@ export ANTHROPIC_API_KEY="<user-sso-jwt-token>"
 export ANTHROPIC_BASE_URL="http://your-litellm-proxy:4000"
 ```
 
-Or in `~/.claude/settings.json`:
+或者在 `~/.claude/settings.json` 中：
 
 ```json
 {
@@ -203,39 +203,39 @@ Or in `~/.claude/settings.json`:
 }
 ```
 
-**4. Developers authenticate with SSO as usual**
+**4. 開發者照常使用 SSO 驗證**
 
-When Alice runs Claude Code, her JWT (issued by your IdP with `client_id: alice@corp.com`) goes to the proxy. LiteLLM looks up the mapping, finds her virtual key, and enforces her specific limits — her $200/month budget, 200 RPM cap, and access to Sonnet and Haiku only.
+當 Alice 執行 Claude Code 時，她的 JWT（由您的 IdP 發出，且帶有 `client_id: alice@corp.com`）會送到 proxy。LiteLLM 會查找對應、找到她的虛擬金鑰，並強制執行她的特定限制——每月 $200 預算、200 RPM 上限，以及僅能存取 Sonnet 和 Haiku。
 
-Bob's token maps to his own key — $20/month, Haiku only, 30 RPM.
+Bob 的 token 會對應到他自己的金鑰——每月 $20、僅限 Haiku、30 RPM。
 
-No API keys distributed. No shared limits. Full per-developer spend visibility in the LiteLLM dashboard.
+不需要分發 API 金鑰。沒有共享限制。LiteLLM dashboard 中可完整查看每位開發者的花費。
 
 ---
 
-## Managing mappings
+## 管理對應 {#managing-mappings}
 
-Every mapping has an `id` (returned when you create it). The `info`, `update`, and `delete` endpoints key off that `id`, so start from `list` to find it.
+每個對應都有一個 `id`（建立時會回傳）。`info`、`update` 和 `delete` 端點都以該 `id` 為索引，因此請先從 `list` 開始找出它。
 
-**List mappings**
+**列出對應**
 
 ```bash
 curl 'http://0.0.0.0:4000/jwt/key/mapping/list?page=1&size=50' \
   -H 'Authorization: Bearer <MASTER_KEY>'
 ```
 
-**View one mapping by id**
+**依 id 檢視單一對應**
 
 ```bash
 curl 'http://0.0.0.0:4000/jwt/key/mapping/info?id=<mapping-id>' \
   -H 'Authorization: Bearer <MASTER_KEY>'
 ```
 
-The response is the mapping's own metadata: claim name and value, description, `is_active`, timestamps, and who created or last updated it. It does not include the linked key or its settings, and the hashed key is never returned. To inspect the key's models, budget, or spend, use `/key/info`.
+回應是該對應本身的中繼資料：claim 名稱和值、描述、`is_active`、時間戳記，以及建立或最後更新者。它不包含關聯的金鑰或其設定，而且雜湊金鑰永遠不會回傳。若要檢查該金鑰的模型、預算或花費，請使用 `/key/info`。
 
-**Update a mapping**
+**更新對應**
 
-`update` changes the mapping itself: point it at a different key, edit the description, or toggle `is_active`. To change budgets or model access, update the underlying key with `/key/update`; the mapping only stores the claim, the linked key, a description, and an active flag.
+`update` 會變更對應本身：將它指向另一把金鑰、編輯描述，或切換 `is_active`。若要變更預算或模型存取權，請使用 `/key/update` 更新底層金鑰；對應只會儲存 claim、連結的金鑰、描述與啟用旗標。
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/update' \
@@ -249,7 +249,7 @@ curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/update' \
   }'
 ```
 
-**Delete a mapping**
+**刪除對應**
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/delete' \
@@ -260,39 +260,39 @@ curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/delete' \
 
 ---
 
-## Security
+## 安全性 {#security}
 
-- Creating, updating, and deleting mappings is restricted to proxy admins; listing and inspecting them also allows the admin viewer role. All `/jwt/key/mapping/*` routes reject other callers with 403.
-- The mapping endpoints never return the underlying key or its hashed token; responses carry only the mapping's metadata.
-- A mapped or auto-registered key is a standard virtual key. It enforces exactly the models, budgets, rate limits, team, and guardrail settings configured on that key, and like any non-admin key it can call LLM routes but cannot manage other keys or admin resources.
-
----
-
-## Multiple identity providers
-
-Mappings are keyed on `(jwt_claim_name, jwt_claim_value)` only; there is no per-issuer dimension. If two identity providers can emit the same claim value (for example both send `sub: user-123`), those tokens resolve to the same mapping and collide. Map on a claim that is globally unique across your providers, such as `email`, or configure per-issuer validation with [issuer-bound JWT rules](./token_auth.md) so each provider's identities land on distinct claim values.
+- 建立、更新與刪除對應僅限 proxy 管理員；列出與檢視也允許 admin viewer 角色。所有 `/jwt/key/mapping/*` 路由都會以 403 拒絕其他呼叫者。
+- 對應端點永遠不會回傳底層金鑰或其雜湊 token；回應僅包含對應的中繼資料。
+- 已對應或自動註冊的金鑰就是標準虛擬金鑰。它會精確套用該金鑰上設定的模型、預算、速率限制、team 與防護欄設定，而且如同任何非管理員金鑰一樣，它可以呼叫 LLM 路由，但不能管理其他金鑰或管理資源。
 
 ---
 
-## What JWT clients can and can't do vs virtual keys
+## 多個身分提供者 {#multiple-identity-providers}
 
-| Capability | Virtual Key | JWT → Key Mapping |
+對應只會以 `(jwt_claim_name, jwt_claim_value)` 為索引；沒有按 issuer 區分的維度。若兩個身分提供者可以送出相同的 claim 值（例如兩者都送出 `sub: user-123`），那些 token 會解析到同一個對應並發生衝突。請對全域唯一的 claim 進行對應，例如 `email`，或使用 [issuer 綁定的 JWT 規則](./token_auth.md) 設定每個 issuer 的驗證，讓各提供者的身分落在不同的 claim 值上。
+
+---
+
+## JWT 用戶端相較於虛擬金鑰可以與不能做的事 {#what-jwt-clients-can-and-cant-do-vs-virtual-keys}
+
+| 功能 | 虛擬金鑰 | JWT → 金鑰對應 |
 |---|---|---|
-| Per-client model access | ✅ | ✅ |
-| Per-client spend budget | ✅ | ✅ |
-| Per-client RPM/TPM limits | ✅ | ✅ |
-| Team membership | ✅ | ✅ |
-| Spend tracking in dashboard | ✅ | ✅ |
-| Guardrails | ✅ | ✅ |
-| Key rotation | ✅ | ✅ (admin only) |
-| Key expiry | ✅ | ✅ |
-| No API key distribution needed | ❌ | ✅ |
-| Works with existing SSO/OIDC | ❌ | ✅ |
+| 每位用戶端的模型存取 | ✅ | ✅ |
+| 每位用戶端的花費預算 | ✅ | ✅ |
+| 每位用戶端的 RPM/TPM 限制 | ✅ | ✅ |
+| team 成員資格 | ✅ | ✅ |
+| 儀表板中的花費追蹤 | ✅ | ✅ |
+| 防護欄 | ✅ | ✅ |
+| 金鑰輪替 | ✅ | ✅（僅限管理員） |
+| 金鑰到期 | ✅ | ✅ |
+| 無需分發 API 金鑰 | ❌ | ✅ |
+| 可與現有 SSO/OIDC 搭配使用 | ❌ | ✅ |
 
 ---
 
-## Related
+## 相關 {#related}
 
-- [OIDC JWT Auth](./token_auth.md) — base JWT auth setup required before using this feature
-- [Virtual Keys](./virtual_keys.md) — full virtual key documentation
-- [Access Control](./access_control.md) — model and team access control
+- [OIDC JWT 驗證](./token_auth.md) — 使用此功能前所需的基礎 JWT 驗證設定
+- [虛擬金鑰](./virtual_keys.md) — 完整的虛擬金鑰文件
+- [存取控制](./access_control.md) — 模型與團隊存取控制

@@ -1,36 +1,35 @@
 import Image from '@theme/IdealImage';
 
 
-# LiteLLM Proxy - 1K RPS Load test on locust 
+# LiteLLM Proxy - 在 locust 上進行 1K RPS 負載測試  {#litellm-proxy---1k-rps-load-test-on-locust}
 
-Tutorial on how to get to 1K+ RPS with LiteLLM Proxy on locust
+關於如何在 locust 上透過 LiteLLM Proxy 達到 1K+ RPS 的教學
 
-
-## Pre-Testing Checklist
-- [ ] Ensure you're using the **latest `-stable` version** of litellm
-    - [Github releases](https://github.com/BerriAI/litellm/releases)
+## 測試前檢查清單 {#pre-testing-checklist}
+- [ ] 確保您使用的是 litellm 的 **最新 `-stable` 版本** 
+    - [Github 發行版](https://github.com/BerriAI/litellm/releases)
     - [litellm docker containers](https://github.com/BerriAI/litellm/pkgs/container/litellm)
     - [litellm database docker container](https://github.com/BerriAI/litellm/pkgs/container/litellm-database)
-- [ ] Ensure you're following **ALL** [best practices for production](./proxy/prod.md)
-- [ ] Locust - Ensure you're Locust instance can create 1K+ requests per second
-    - 👉 You can use our **[maintained locust instance here](https://locust-load-tester-production.up.railway.app/)**
-    - If you're self hosting locust
-        - [here's the spec used for our locust machine](#machine-specifications-for-running-locust)
-        - [here  is the locustfile.py used for our tests](#locust-file-used-for-testing)
-- [ ] Use this [**machine specification for running litellm proxy**](#machine-specifications-for-running-litellm-proxy)
-- [ ] **Enterprise LiteLLM** - Use `prometheus` as a callback in your `proxy_config.yaml` to get metrics on your load test
-    Set `litellm_settings.callbacks` to monitor success/failures/all types of errors
+- [ ] 確保您遵循了適用於正式環境的 **所有** [最佳做法](./proxy/prod.md)
+- [ ] Locust - 確保您的 Locust 執行個體可以每秒建立 1K+ 個請求
+    - 👉 您可以使用我們 **[此處維護的 locust 執行個體](https://locust-load-tester-production.up.railway.app/)**
+    - 如果您是自行代管 locust
+        - [這是我們的 locust 機器所使用的規格](#machine-specifications-for-running-locust)
+        - [這裡是我們測試所使用的 locustfile.py](#locust-file-used-for-testing)
+- [ ] 使用這份 [**執行 litellm proxy 的機器規格**](#machine-specifications-for-running-litellm-proxy)
+- [ ] **Enterprise LiteLLM** - 在您的 `proxy_config.yaml` 中將 `prometheus` 用作回呼，以取得負載測試的指標
+    將 `litellm_settings.callbacks` 設為監控成功／失敗／所有類型的錯誤
     ```yaml
     litellm_settings:
         callbacks: ["prometheus"] # Enterprise LiteLLM Only - use prometheus to get metrics on your load test
     ```
 
-**Use this config for testing:**
+**使用此設定進行測試：**
 
-**Note:**  we're currently migrating to aiohttp which has 10x higher throughput. We recommend using the `openai/` provider for load testing.
+**注意：** 我們目前正在遷移到 aiohttp，其吞吐量高出 10 倍。我們建議在負載測試中使用 `openai/` 提供者。
 
-:::tip Setting Up a Fake OpenAI Endpoint
-You can use our hosted fake endpoint or self-host your own using [github.com/BerriAI/example_openai_endpoint](https://github.com/BerriAI/example_openai_endpoint).
+:::tip 設定假的 OpenAI 端點
+您可以使用我們代管的假端點，或自行代管，使用 [github.com/BerriAI/example_openai_endpoint](https://github.com/BerriAI/example_openai_endpoint)。
 :::
 
 ```yaml
@@ -43,20 +42,20 @@ model_list:
 ```
 
 
-## Load Test - Fake OpenAI Endpoint
+## 負載測試 - 假 OpenAI 端點 {#load-test---fake-openai-endpoint}
 
-### Expected Performance
+### 預期效能 {#expected-performance}
 
-| Metric | Value |
+| 指標 | 數值 |
 |--------|-------|
-| Requests per Second | 1174+ |
-| Median Response Time | `96ms` |
-| Average Response Time | `142.18ms` |
+| 每秒請求數 | 1174+ |
+| 回應時間中位數 | `96ms` |
+| 平均回應時間 | `142.18ms` |
 
-### Run Test
+### 執行測試 {#run-test}
 
-1. Add `fake-openai-endpoint` to your proxy config.yaml and start your litellm proxy
-litellm provides a hosted `fake-openai-endpoint` you can load test against
+1. 將 `fake-openai-endpoint` 加入您的 proxy config.yaml，並啟動您的 litellm proxy
+litellm 提供了一個代管的 `fake-openai-endpoint`，您可以對其進行負載測試
 
 ```yaml
 model_list:
@@ -72,48 +71,48 @@ litellm_settings:
 
 2. `uv add locust`
 
-3. Create a file called `locustfile.py` on your local machine. Copy the contents from the litellm load test located [here](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
+3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 litellm 負載測試的內容複製到此處，來源可見 [這裡](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
 
-4. Start locust
-  Run `locust` in the same directory as your `locustfile.py` from step 2
+4. 啟動 locust
+  在與步驟 2 的 `locustfile.py` 相同目錄中執行 `locust`
 
   ```shell
   locust -f locustfile.py --processes 4
   ```
 
-5. Run Load test on locust
+5. 在 locust 上執行負載測試
 
-  Head to the locust UI on http://0.0.0.0:8089
+  前往 http://0.0.0.0:8089 上的 locust UI
 
-  Set **Users=1000, Ramp Up Users=1000**, Host=Base URL of your LiteLLM Proxy
+  將 **Users=1000, Ramp Up Users=1000**，Host=您的 LiteLLM Proxy 基礎 URL
 
-6. Expected results 
+6. 預期結果 
 
   <Image img={require('../img/locust_load_test1.png')} />
 
-## Load test - Endpoints with Rate Limits
+## 負載測試 - 具有速率限制的端點 {#load-test---endpoints-with-rate-limits}
 
-Run a load test on 2 LLM deployments each with 10K RPM Quota. Expect to see ~20K RPM
+對 2 個 LLM 部署執行負載測試，每個都有 10K RPM 配額。預期會看到約 20K RPM
 
-### Expected Performance
+### 預期效能 {#expected-performance-1}
 
-- We expect to see 20,000+ successful responses in 1 minute
-- The remaining requests **fail because the endpoint exceeds it's 10K RPM quota limit - from the LLM API provider**
+- 我們預期在 1 分鐘內看到 20,000+ 個成功回應
+- 剩餘請求**失敗，因為該端點超過了其 10K RPM 配額限制 - 來自 LLM API 提供者**
 
-| Metric | Value |
+| 指標 | 數值 |
 |--------|-------|
-| Successful Responses in 1 minute | 20,000+ |
-| Requests per Second | ~1170+ |
-| Median Response Time | `70ms` |
-| Average Response Time | `640.18ms` |
+| 1 分鐘內成功回應數 | 20,000+ |
+| 每秒請求數 | ~1170+ |
+| 回應時間中位數 | `70ms` |
+| 平均回應時間 | `640.18ms` |
 
-### Run Test
+### 執行測試 {#run-test-1}
 
-1. Add 2 `gemini-vision` deployments on your config.yaml. Each deployment can handle 10K RPM. (We setup a fake endpoint with a rate limit of 1000 RPM on the `/v1/projects/bad-adroit-crow` route below )
+1. 在您的 config.yaml 上加入 2 個 `gemini-vision` 部署。每個部署可處理 10K RPM。（我們在下方 `/v1/projects/bad-adroit-crow` 路由上設定了一個速率限制為 1000 RPM 的假端點）
 
 :::info
 
-All requests with `model="gemini-vision"` will be load balanced equally across the 2 deployments.
+所有帶有 `model="gemini-vision"` 的請求都會在這 2 個部署之間平均進行負載平衡。
 
 :::
 
@@ -140,60 +139,56 @@ litellm_settings:
 
 2. `uv add locust`
 
-3. Create a file called `locustfile.py` on your local machine. Copy the contents from the litellm load test located [here](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
+3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 litellm 負載測試的內容複製到此處，來源可見 [這裡](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
 
-4. Start locust
-  Run `locust` in the same directory as your `locustfile.py` from step 2
+4. 啟動 locust
+  在與步驟 2 的 `locustfile.py` 相同目錄中執行 `locust`
 
   ```shell
   locust -f locustfile.py --processes 4 -t 60
   ```
 
-5. Run Load test on locust
+5. 在 locust 上執行負載測試
 
-  Head to the locust UI on http://0.0.0.0:8089 and use the following settings
+  前往 http://0.0.0.0:8089 上的 locust UI，並使用以下設定
 
   <Image img={require('../img/locust_load_test2_setup.png')} />
 
-6. Expected results
-    - Successful responses in 1 minute = 19,800 = (69415 - 49615)
-    - Requests per second = 1170
-    - Median response time = 70ms
-    - Average response time = 640ms
+6. 預期結果
+    - 1 分鐘內成功回應 = 19,800 = (69415 - 49615)
+    - 每秒請求數 = 1170
+    - 回應時間中位數 = 70ms
+    - 平均回應時間 = 640ms
 
   <Image img={require('../img/locust_load_test2.png')} />
 
+## 用於除錯負載測試的 Prometheus 指標 {#prometheus-metrics-for-debugging-load-tests}
 
-## Prometheus Metrics for debugging load tests
+使用以下 [prometheus 指標來除錯您的負載測試／失敗](./proxy/prometheus)
 
-Use the following [prometheus metrics to debug your load tests / failures](./proxy/prometheus)
-
-| Metric Name          | Description                          |
+| 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
-| `litellm_deployment_failure_responses`              | Total number of failed LLM API calls for a specific LLM deployment. Labels: `"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
-| `litellm_deployment_cooled_down`             | Number of times a deployment has been cooled down by LiteLLM load balancing logic. Labels: `"litellm_model_name", "model_id", "api_base", "api_provider", "exception_status"` |
+| `litellm_deployment_failure_responses`              | 特定 LLM 部署的 LLM API 呼叫失敗總數。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "exception_status", "exception_class"` |
+| `litellm_deployment_cooled_down`             | LiteLLM 負載平衡邏輯將部署降溫的次數。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider", "exception_status"` |
 
+## 執行 Locust 的機器規格 {#machine-specifications-for-running-locust}
 
-
-## Machine Specifications for Running Locust
-
-| Metric | Value |
+| 指標 | 數值 |
 |--------|-------|
 | `locust --processes 4`  | 4|
-| `vCPUs` on Load Testing Machine | 2.0 vCPUs |
-| `Memory` on Load Testing Machine | 450 MB |
-| `Replicas` of Load Testing Machine | 1 |
+| 負載測試機器上的 `vCPUs` | 2.0 vCPUs |
+| 負載測試機器上的 `Memory` | 450 MB |
+| 負載測試機器的 `Replicas` | 1 |
 
-## Machine Specifications for Running LiteLLM Proxy
+## 執行 LiteLLM Proxy 的機器規格 {#machine-specifications-for-running-litellm-proxy}
 
-👉 **Number of Replicas of LiteLLM Proxy=4** for getting 1K+ RPS
+👉 為了取得 1K+ RPS，**LiteLLM Proxy 的副本數量=4**
 
-| Service | Spec | CPUs | Memory | Architecture | Version|
+| 服務 | 規格 | CPU | 記憶體 | 架構 | 版本|
 | --- | --- | --- | --- | --- | --- | 
-| Server | `t2.large`. | `2vCPUs` | `8GB` | `x86` |
+| 伺服器 | `t2.large`. | `2vCPUs` | `8GB` | `x86` |
 
-
-## Locust file used for testing 
+## 測試所使用的 Locust 檔案  {#locust-file-used-for-testing}
 
 ```python
 import os

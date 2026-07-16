@@ -1,24 +1,22 @@
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Using your MCP
+# 使用您的 MCP {#using-your-mcp}
 
-This document covers how to use LiteLLM as an MCP Gateway. You can see how to use it with Responses API, Cursor IDE, and OpenAI SDK.
+本文說明如何將 LiteLLM 作為 MCP 閘道使用。您可以了解如何搭配 Responses API、Cursor IDE 和 OpenAI SDK 使用。
 
-### Use on LiteLLM UI 
+### 在 LiteLLM UI 上使用  {#use-on-litellm-ui}
 
-Follow this walkthrough to use your MCP on LiteLLM UI
+請依照此逐步示範，將您的 MCP 用於 LiteLLM UI
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/57e0763267254bc79dbe6658d0b8758c" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-### Use with Responses API
+### 搭配 Responses API 使用 {#use-with-responses-api}
 
-Replace `http://localhost:4000` with your LiteLLM Proxy base URL.
+將 `http://localhost:4000` 替換為您的 LiteLLM Proxy base URL。
 
-Demo Video Using Responses API with LiteLLM Proxy: [Demo video here](https://www.loom.com/share/34587e618c5c47c0b0d67b4e4d02718f?sid=2caf3d45-ead4-4490-bcc1-8d6dd6041c02)
-
+使用 LiteLLM Proxy 搭配 Responses API 的示範影片：[點此觀看示範影片](https://www.loom.com/share/34587e618c5c47c0b0d67b4e4d02718f?sid=2caf3d45-ead4-4490-bcc1-8d6dd6041c02)
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -94,11 +92,11 @@ for chunk in response:
 </TabItem>
 </Tabs>
 
-#### Specifying MCP Tools
+#### 指定 MCP 工具 {#specifying-mcp-tools}
 
-You can specify which MCP tools are available by using the `allowed_tools` parameter. This allows you to restrict access to specific tools within an MCP server.
+您可以使用 `allowed_tools` 參數來指定可用的 MCP 工具。這可讓您限制對 MCP 伺服器中特定工具的存取。
 
-To get the list of allowed tools when using LiteLLM MCP Gateway, you can naigate to the LiteLLM UI on MCP Servers > MCP Tools > Click the Tool > Copy Tool Name.
+若要在使用 LiteLLM MCP 閘道時取得允許的工具清單，您可以前往 LiteLLM UI 中的 MCP Servers > MCP Tools > 點選該 Tool > Copy Tool Name。
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -169,15 +167,15 @@ print(response)
 </TabItem>
 </Tabs>
 
-### Use with Cursor IDE
+### 搭配 Cursor IDE 使用 {#use-with-cursor-ide}
 
-Use tools directly from Cursor IDE with LiteLLM MCP:
+直接從 Cursor IDE 搭配 LiteLLM MCP 使用工具：
 
-**Setup Instructions:**
+**設定說明：**
 
-1. **Open Cursor Settings**: Use `⇧+⌘+J` (Mac) or `Ctrl+Shift+J` (Windows/Linux)
-2. **Navigate to MCP Tools**: Go to the "MCP Tools" tab and click "New MCP Server"
-3. **Add Configuration**: Copy and paste the JSON configuration below, then save with `Cmd+S` or `Ctrl+S`
+1. **開啟 Cursor Settings**：使用 `⇧+⌘+J`（Mac）或 `Ctrl+Shift+J`（Windows/Linux）
+2. **前往 MCP Tools**：進入「MCP Tools」分頁，然後點選「New MCP Server」
+3. **新增設定**：複製並貼上以下 JSON 設定，接著使用 `Cmd+S` 或 `Ctrl+S` 儲存
 
 ```json title="Basic Cursor MCP Configuration" showLineNumbers
 {
@@ -192,18 +190,18 @@ Use tools directly from Cursor IDE with LiteLLM MCP:
 }
 ```
 
-#### How it works when server_url="litellm_proxy"
+#### server_url="litellm_proxy" 時的運作方式 {#how-it-works-when-server_urllitellm_proxy}
 
-When server_url="litellm_proxy", LiteLLM bridges non-MCP providers to your MCP tools.
+當 server_url="litellm_proxy" 時，LiteLLM 會將非 MCP 提供者橋接到您的 MCP 工具。
 
-- Tool Discovery: LiteLLM fetches MCP tools and converts them to OpenAI-compatible definitions
-- LLM Call: Tools are sent to the LLM with your input; LLM selects which tools to call
-- Tool Execution: LiteLLM automatically parses arguments, routes calls to MCP servers, executes tools, and retrieves results
-- Response Integration: Tool results are sent back to LLM for final response generation
-- Output: Complete response combining LLM reasoning with tool execution results
+- 工具探索：LiteLLM 會取得 MCP 工具，並將其轉換為與 OpenAI 相容的定義
+- LLM 呼叫：工具會隨著您的輸入傳送給 LLM；LLM 會選擇要呼叫哪些工具
+- 工具執行：LiteLLM 會自動解析引數、將請求路由到 MCP 伺服器、執行工具，並擷取結果
+- 回應整合：工具結果會傳回 LLM，以產生最終回應
+- 輸出：結合 LLM 推理與工具執行結果的完整回應
 
-This enables MCP tool usage with any LiteLLM-supported provider, regardless of native MCP support.
+這可讓任何 LiteLLM 支援的提供者都能使用 MCP 工具，不受原生 MCP 支援與否限制。
 
-#### Auto-execution for require_approval: "never"
+#### require_approval: "never" 的自動執行 {#auto-execution-for-require_approval-never}
 
-Setting require_approval: "never" triggers automatic tool execution, returning the final response in a single API call without additional user interaction.
+設定 require_approval: "never" 會觸發自動工具執行，並在單一 API 請求中傳回最終回應，不需額外使用者互動。

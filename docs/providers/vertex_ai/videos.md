@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI Video Generation (Veo)
+# Vertex AI 影片生成（Veo） {#vertex-ai-video-generation-veo}
 
-LiteLLM supports Vertex AI's Veo video generation models using the unified OpenAI video API surface.
+LiteLLM 支援 Vertex AI 的 Veo 影片生成模型，使用統一的 OpenAI 影片 API 介面。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Google Cloud Vertex AI Veo video generation models |
-| Provider Route on LiteLLM | `vertex_ai/` |
-| Supported Models | `veo-2.0-generate-001`, `veo-3.0-generate-preview`, `veo-3.0-fast-generate-preview`, `veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview` |
-| Cost Tracking | ✅ Duration-based pricing |
-| Logging Support | ✅ Full request/response logging |
-| Proxy Server Support | ✅ Full proxy integration with virtual keys |
-| Spend Management | ✅ Budget tracking and rate limiting |
-| Link to Provider Doc | [Vertex AI Veo Documentation ↗](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation) |
+| 說明 | Google Cloud Vertex AI Veo 影片生成模型 |
+| LiteLLM 上的提供者路由 | `vertex_ai/` |
+| 支援的模型 | `veo-2.0-generate-001`, `veo-3.0-generate-preview`, `veo-3.0-fast-generate-preview`, `veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview` |
+| 成本追蹤 | ✅ 依期間計費 |
+| 記錄支援 | ✅ 完整的請求/回應記錄 |
+| 代理伺服器支援 | ✅ 完整的代理整合，支援虛擬金鑰 |
+| 支出管理 | ✅ 預算追蹤與速率限制 |
+| 提供者文件連結 | [Vertex AI Veo 文件 ↗](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Required Environment Setup
+### 必要的環境設定 {#required-environment-setup}
 
 ```python
 import json
@@ -35,7 +35,7 @@ with open("/path/to/service_account.json", "r", encoding="utf-8") as f:
     os.environ["VERTEXAI_CREDENTIALS"] = f.read()
 ```
 
-### Basic Usage
+### 基本使用方式 {#basic-usage}
 
 ```python
 from litellm import video_generation, video_status, video_content
@@ -89,35 +89,35 @@ with open("generated_video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Description | Max Duration | Status |
+| 模型名稱 | 說明 | 最長時間 | 狀態 |
 |------------|-------------|--------------|--------|
-| veo-2.0-generate-001 | Veo 2.0 video generation | 5 seconds | GA |
-| veo-3.0-generate-preview | Veo 3.0 high quality | 8 seconds | Preview |
-| veo-3.0-fast-generate-preview | Veo 3.0 fast generation | 8 seconds | Preview |
-| veo-3.1-generate-preview | Veo 3.1 high quality | 10 seconds | Preview |
-| veo-3.1-fast-generate-preview | Veo 3.1 fast | 10 seconds | Preview |
+| veo-2.0-generate-001 | Veo 2.0 影片生成 | 5 秒 | GA |
+| veo-3.0-generate-preview | Veo 3.0 高品質 | 8 秒 | 預覽 |
+| veo-3.0-fast-generate-preview | Veo 3.0 快速生成 | 8 秒 | 預覽 |
+| veo-3.1-generate-preview | Veo 3.1 高品質 | 10 秒 | 預覽 |
+| veo-3.1-fast-generate-preview | Veo 3.1 快速 | 10 秒 | 預覽 |
 
-## Video Generation Parameters
+## 影片生成參數 {#video-generation-parameters}
 
-LiteLLM converts OpenAI-style parameters to Veo's API shape automatically:
+LiteLLM 會自動將 OpenAI 風格的參數轉換為 Veo 的 API 格式：
 
-| OpenAI Parameter | Vertex AI Parameter | Description | Example |
+| OpenAI 參數 | Vertex AI 參數 | 說明 | 範例 |
 |------------------|---------------------|-------------|---------|
-| `prompt` | `instances[].prompt` | Text description of the video | "A cat playing" |
-| `size` | `parameters.aspectRatio` | Converted to `16:9` or `9:16` | "1280x720" → `16:9` |
-| `seconds` | `parameters.durationSeconds` | Clip length in seconds | "8" → `8` |
-| `input_reference` | `instances[].image` | Reference image for animation | `open("image.jpg", "rb")` |
-| Provider-specific params | `extra_body` | Forwarded to Vertex API | `{"negativePrompt": "blurry"}` |
+| `prompt` | `instances[].prompt` | 影片的文字描述 | "A cat playing" |
+| `size` | `parameters.aspectRatio` | 轉換為 `16:9` 或 `9:16` | "1280x720" → `16:9` |
+| `seconds` | `parameters.durationSeconds` | 片長（秒） | "8" → `8` |
+| `input_reference` | `instances[].image` | 用於動畫的參考圖片 | `open("image.jpg", "rb")` |
+| 特定於提供者的參數 | `extra_body` | 轉送至 Vertex API | `{"negativePrompt": "blurry"}` |
 
-### Size to Aspect Ratio Mapping
+### 尺寸到長寬比對應 {#size-to-aspect-ratio-mapping}
 
 - `1280x720`, `1920x1080` → `16:9`
 - `720x1280`, `1080x1920` → `9:16`
-- Unknown sizes default to `16:9`
+- 未知尺寸預設為 `16:9`
 
-## Async Usage
+## 非同步使用方式 {#async-usage}
 
 ```python
 from litellm import avideo_generation, avideo_status, avideo_content
@@ -166,9 +166,9 @@ async def workflow():
 asyncio.run(workflow())
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM 代理使用方式 {#litellm-proxy-usage}
 
-Add Veo models to your `config.yaml`:
+將 Veo 模型加入您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -180,7 +180,7 @@ model_list:
       vertex_credentials: os.environ/VERTEXAI_CREDENTIALS
 ```
 
-Start the proxy and make requests:
+啟動代理並發出請求：
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -233,9 +233,9 @@ if status.status == "completed":
 </TabItem>
 </Tabs>
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM records the duration returned by Veo so you can apply duration-based pricing.
+LiteLLM 會記錄 Veo 回傳的期間，讓您可以套用依期間計費。
 
 ```python
 with open("/path/to/service_account.json", "r", encoding="utf-8") as f:
@@ -253,16 +253,15 @@ response = video_generation(
 print(response.usage)  # {"duration_seconds": 5.0}
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-- **`vertex_project is required`**: set `VERTEXAI_PROJECT` env var or pass `vertex_project` in the request.
-- **`Permission denied`**: ensure the service account has the `Vertex AI User` role and the correct region enabled.
-- **Video stuck in `processing`**: Veo operations are long-running. Continue polling every 10–15 seconds up to ~10 minutes.
+- **`vertex_project is required`**：設定 `VERTEXAI_PROJECT` 環境變數，或在請求中傳入 `vertex_project`。
+- **`Permission denied`**：請確認服務帳戶具有 `Vertex AI User` 角色，且已啟用正確的區域。
+- **影片卡在 `processing`**：Veo 作業屬於長時間執行。請持續每 10–15 秒輪詢一次，最長約 10 分鐘。
 
-## See Also
+## 另請參見 {#see-also}
 
-- [OpenAI Video Generation](../openai/videos.md)
-- [Azure Video Generation](../azure/videos.md)
-- [Gemini Video Generation](../gemini/videos.md)
-- [Video Generation API Reference](/docs/videos)
-
+- [OpenAI 影片生成](../openai/videos.md)
+- [Azure 影片生成](../azure/videos.md)
+- [Gemini 影片生成](../gemini/videos.md)
+- [影片生成 API 參考](/docs/videos)

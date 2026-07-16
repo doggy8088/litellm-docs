@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Databricks
+# Databricks {#databricks}
 
-LiteLLM supports all models on Databricks
+LiteLLM 支援 Databricks 上的所有模型
 
 :::tip
 
-**We support ALL Databricks models, just set `model=databricks/<any-model-on-databricks>` as a prefix when sending litellm requests**
+**我們支援所有 Databricks 模型；在傳送 litellm 請求時，只要將 `model=databricks/<any-model-on-databricks>` 設為前綴即可**
 
 :::
 
-## Authentication
+## 驗證 {#authentication}
 
-LiteLLM supports multiple authentication methods for Databricks, listed in order of preference:
+LiteLLM 依偏好順序支援 Databricks 的多種驗證方法：
 
-### OAuth M2M (Recommended for Production)
+### OAuth M2M（建議用於正式環境） {#oauth-m2m-recommended-for-production}
 
-OAuth Machine-to-Machine authentication using Service Principal credentials is the **recommended method for production** deployments per Databricks Partner requirements.
+使用 Service Principal 憑證的 OAuth 機器對機器驗證，是依 Databricks Partner 要求，正式環境部署的**建議方法**。
 
 ```python
 import os
@@ -34,9 +34,9 @@ response = completion(
 )
 ```
 
-### Personal Access Token (PAT)
+### 個人存取權杖（PAT） {#personal-access-token-pat}
 
-PAT authentication is supported for development and testing scenarios.
+支援 PAT 驗證，用於開發與測試情境。
 
 ```python
 import os
@@ -51,9 +51,9 @@ response = completion(
 )
 ```
 
-### Databricks SDK Authentication (Automatic)
+### Databricks SDK 驗證（自動） {#databricks-sdk-authentication-automatic}
 
-If no credentials are provided, LiteLLM will use the Databricks SDK for automatic authentication. This supports OAuth, Azure AD, and other unified auth methods configured in your environment.
+如果未提供任何憑證，LiteLLM 會使用 Databricks SDK 進行自動驗證。這支援您環境中設定的 OAuth、Azure AD 及其他統一驗證方法。
 
 ```python
 from litellm import completion
@@ -66,11 +66,11 @@ response = completion(
 )
 ```
 
-## Custom User-Agent for Partner Attribution
+## 用於合作夥伴歸因的自訂 User-Agent {#custom-user-agent-for-partner-attribution}
 
-If you're building a product on top of LiteLLM that integrates with Databricks, you can pass your own partner identifier for proper attribution in Databricks telemetry.
+如果您正在以 LiteLLM 為基礎建立一個與 Databricks 整合的產品，您可以傳遞自己的合作夥伴識別碼，以便在 Databricks telemetry 中正確歸因。
 
-The partner name will be prefixed to the LiteLLM user agent:
+合作夥伴名稱會以前綴形式加到 LiteLLM user agent 之前：
 
 ```python
 # Via parameter
@@ -86,37 +86,37 @@ os.environ["DATABRICKS_USER_AGENT"] = "mycompany/1.0.0"
 # Resulting User-Agent: mycompany_litellm/1.79.1
 ```
 
-| Input | Resulting User-Agent |
+| 輸入 | 產生的 User-Agent |
 |-------|---------------------|
-| (none) | `litellm/1.79.1` |
+| （無） | `litellm/1.79.1` |
 | `mycompany/1.0.0` | `mycompany_litellm/1.79.1` |
 | `partner_product/2.5.0` | `partner_product_litellm/1.79.1` |
 | `acme` | `acme_litellm/1.79.1` |
 
-**Note:** The version from your custom user agent is ignored; LiteLLM's version is always used.
+**注意：** 來自您自訂 user agent 的版本會被忽略；LiteLLM 一律使用自己的版本。
 
-## Security
+## 安全性 {#security}
 
-LiteLLM automatically redacts sensitive information (tokens, secrets, API keys) from all debug logs to prevent credential leakage. This includes:
+LiteLLM 會自動從所有除錯記錄中遮罩敏感資訊（權杖、密鑰、API 金鑰），以防止憑證外洩。這包括：
 
-- Authorization headers
-- API keys and tokens
-- Client secrets
-- Personal access tokens (PATs)
+- Authorization 標頭
+- API 金鑰與權杖
+- 用戶端密鑰
+- 個人存取權杖（PATs）
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### ENV VAR
+### 環境變數 {#env-var}
 ```python
 import os 
 os.environ["DATABRICKS_API_KEY"] = ""
 os.environ["DATABRICKS_API_BASE"] = ""
 ```
 
-### Example Call
+### 範例呼叫 {#example-call}
 
 ```python
 from litellm import completion
@@ -135,7 +135,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型加入您的 config.yaml
 
   ```yaml
   model_list:
@@ -148,14 +148,13 @@ response = completion(
   ```
 
 
-
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 傳送請求
 
   <Tabs>
 
@@ -211,13 +210,12 @@ response = completion(
 
   </Tabs>
 
-
 </TabItem>
 
 </Tabs>
 
-## Passing additional params - max_tokens, temperature 
-See all litellm.completion supported params [here](../completion/input.md#translated-openai-params)
+## 傳遞額外參數 - max_tokens、temperature  {#passing-additional-params---max_tokens-temperature}
+請參閱所有 litellm.completion 支援的參數 [此處](../completion/input.md#translated-openai-params)
 
 ```python
 # !uv add litellm
@@ -236,7 +234,7 @@ response = completion(
 )
 ```
 
-**proxy**
+**代理**
 
 ```yaml
   model_list:
@@ -249,9 +247,9 @@ response = completion(
 ```
 
 
-## Usage - Thinking / `reasoning_content`
+## 使用方式 - Thinking / `reasoning_content` {#usage---thinking--reasoning_content}
 
-LiteLLM translates OpenAI's `reasoning_effort` to Anthropic's `thinking` parameter. [Code](https://github.com/BerriAI/litellm/blob/23051d89dd3611a81617d84277059cd88b2df511/litellm/llms/anthropic/chat/transformation.py#L298)
+LiteLLM 會將 OpenAI 的 `reasoning_effort` 轉換為 Anthropic 的 `thinking` 參數。[程式碼](https://github.com/BerriAI/litellm/blob/23051d89dd3611a81617d84277059cd88b2df511/litellm/llms/anthropic/chat/transformation.py#L298)
 
 | reasoning_effort | thinking |
 | ---------------- | -------- |
@@ -259,9 +257,8 @@ LiteLLM translates OpenAI's `reasoning_effort` to Anthropic's `thinking` paramet
 | "medium"         | "budget_tokens": 2048 |
 | "high"           | "budget_tokens": 4096 |
 
-
-Known Limitations:
-- Support for passing thinking blocks back to Claude [Issue](https://github.com/BerriAI/litellm/issues/9790)
+已知限制：
+- 支援將 thinking 區塊回傳給 Claude [Issue](https://github.com/BerriAI/litellm/issues/9790)
  
 
 <Tabs>
@@ -287,7 +284,7 @@ resp = completion(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 - model_name: claude-3-7-sonnet
@@ -297,13 +294,13 @@ resp = completion(
     api_base: os.environ/DATABRICKS_API_BASE
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -319,8 +316,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-**Expected Response**
+**預期回應**
 
 ```python
 ModelResponse(
@@ -376,17 +372,15 @@ ModelResponse(
 )
 ```
 
-### Citations
+### 引用 {#citations}
 
-Anthropic models served through Databricks can return citation metadata. LiteLLM
-exposes these via `response.choices[0].message.provider_specific_fields["citations"]`.
+透過 Databricks 提供的 Anthropic 模型可以回傳引用中繼資料。LiteLLM 會透過 `response.choices[0].message.provider_specific_fields["citations"]` 提供這些資料。
 
-### Pass `thinking` to Anthropic models
+### 傳遞 `thinking` 給 Anthropic 模型 {#pass-thinking-to-anthropic-models}
 
-You can also pass the `thinking` parameter to Anthropic models.
+您也可以將 `thinking` 參數傳遞給 Anthropic 模型。
 
-
-You can also pass the `thinking` parameter to Anthropic models.
+您也可以將 `thinking` 參數傳遞給 Anthropic 模型。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -423,20 +417,15 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-
-
-
-## Supported Databricks Chat Completion Models 
+## 支援的 Databricks Chat Completion 模型  {#supported-databricks-chat-completion-models}
 
 :::tip
 
-**We support ALL Databricks models, just set `model=databricks/<any-model-on-databricks>` as a prefix when sending litellm requests**
+**我們支援所有 Databricks 模型；在傳送 litellm 請求時，只要將 `model=databricks/<any-model-on-databricks>` 設為前綴即可**
 
 :::
 
-
-| Model Name                 | Command                                                          |
+| 模型名稱                 | 指令                                                          |
 |----------------------------|------------------------------------------------------------------|
 | databricks/databricks-claude-3-7-sonnet    | `completion(model='databricks/databricks/databricks-claude-3-7-sonnet', messages=messages)`   | 
 | databricks-meta-llama-3-1-70b-instruct    | `completion(model='databricks/databricks-meta-llama-3-1-70b-instruct', messages=messages)`   | 
@@ -448,13 +437,11 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 | databricks-mpt-30b-instruct    | `completion(model='databricks/databricks-mpt-30b-instruct', messages=messages)`   | 
 | databricks-mpt-7b-instruct    | `completion(model='databricks/databricks-mpt-7b-instruct', messages=messages)`   | 
 
+## 嵌入模型 {#embedding-models}
 
-## Embedding Models
+### 傳遞 Databricks 特定參數 - 'instruction' {#passing-databricks-specific-params---instruction}
 
-### Passing Databricks specific params - 'instruction'
-
-For embedding models, databricks lets you pass in an additional param 'instruction'. [Full Spec](https://github.com/BerriAI/litellm/blob/43353c28b341df0d9992b45c6ce464222ebd7984/litellm/llms/databricks.py#L164)
-
+對於嵌入模型，databricks 允許您傳入額外參數 'instruction'. [完整規格](https://github.com/BerriAI/litellm/blob/43353c28b341df0d9992b45c6ce464222ebd7984/litellm/llms/databricks.py#L164)
 
 ```python
 # !uv add litellm
@@ -472,7 +459,7 @@ response = litellm.embedding(
   )
 ```
 
-**proxy**
+**代理**
 
 ```yaml
   model_list:
@@ -484,16 +471,15 @@ response = litellm.embedding(
         instruction: "Represent this sentence for searching relevant passages:"
 ```
 
-## Supported Databricks Embedding Models 
+## 支援的 Databricks 嵌入模型  {#supported-databricks-embedding-models}
 
 :::tip
 
-**We support ALL Databricks models, just set `model=databricks/<any-model-on-databricks>` as a prefix when sending litellm requests**
+**我們支援所有 Databricks 模型；在傳送 litellm 請求時，只要將 `model=databricks/<any-model-on-databricks>` 設為前綴即可**
 
 :::
 
-
-| Model Name                 | Command                                                          |
+| 模型名稱                 | 指令                                                          |
 |----------------------------|------------------------------------------------------------------|
 | databricks-bge-large-en    | `embedding(model='databricks/databricks-bge-large-en', messages=messages)`   |
 | databricks-gte-large-en    | `embedding(model='databricks/databricks-gte-large-en', messages=messages)`   |

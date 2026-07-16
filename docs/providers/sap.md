@@ -1,35 +1,35 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# SAP Generative AI Hub
+# SAP Generative AI Hub {#sap-generative-ai-hub}
 
-LiteLLM supports SAP Generative AI Hub's Orchestration Service.
+LiteLLM 支援 SAP Generative AI Hub 的 Orchestration Service。
 
-| Property | Details                                                                                                                                                |
+| 屬性 | 詳細資訊                                                                                                                                                |
 |-------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Description | SAP's Generative AI Hub provides access to OpenAI, Anthropic, Gemini, Mistral, NVIDIA, Amazon, and SAP LLMs through the AI Core orchestration service. |
-| Provider Route on LiteLLM | `sap/`                                                                                                                                                 |
-| Supported Endpoints | `/chat/completions`, `/embeddings`                                                                                                                                  |
-| API Reference | [SAP AI Core Documentation](https://help.sap.com/docs/sap-ai-core)                                                                                     |
+| 說明 | SAP 的 Generative AI Hub 透過 AI Core orchestration service 提供 OpenAI、Anthropic、Gemini、Mistral、NVIDIA、Amazon 和 SAP LLM 的存取。 |
+| LiteLLM 提供者路由 | `sap/`                                                                                                                                                 |
+| 支援的端點 | `/chat/completions`, `/embeddings`                                                                                                                                  |
+| API Reference | [SAP AI Core 文件](https://help.sap.com/docs/sap-ai-core)                                                                                     |
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-Before you begin, ensure you have:
+開始之前，請確保您具備：
 
-1. **SAP BTP Account** with access to SAP AI Core
-2. **AI Core Service Instance** provisioned in your subaccount
-3. **Service Key** created for your AI Core instance (this contains your credentials)
-4. **Resource Group** with deployed AI models (check with your SAP administrator)
+1. **SAP BTP 帳號**，且可存取 SAP AI Core
+2. **AI Core Service Instance** 已在您的 subaccount 中佈建
+3. 為您的 AI Core instance 建立的 **Service Key**（其中包含您的憑證）
+4. 已部署 AI models 的 **Resource Group**（請向您的 SAP 管理員確認）
 
-:::tip Where to Find Your Credentials
-Your credentials come from the **Service Key** you create in SAP BTP Cockpit:
+:::tip 在哪裡找到您的憑證
+您的憑證來自您在 SAP BTP Cockpit 中建立的 **Service Key**：
 
-1. Navigate to your **Subaccount** → **Instances and Subscriptions**
-2. Find your **AI Core** instance and click on it
-3. Go to **Service Keys** and create one (or use existing)
-4. The JSON contains all values needed below
+1. 前往您的 **Subaccount** → **Instances and Subscriptions**
+2. 找到您的 **AI Core** instance 並點擊它
+3. 前往 **Service Keys** 並建立一個（或使用既有的）
+4. JSON 內含下方所需的所有值
 
-The service key JSON looks like this:
+service key 的 JSON 如下所示：
 
 ```json
 {
@@ -43,36 +43,36 @@ The service key JSON looks like this:
 ```
 
 :::info Resource Group
-The resource group is typically configured separately in your AI Core deployment, not in the service key itself. You can set it via the `AICORE_RESOURCE_GROUP` environment variable (defaults to "default").
+resource group 通常是在您的 AI Core deployment 中另外設定，而不是在 service key 本身。您可以透過 `AICORE_RESOURCE_GROUP` 環境變數設定（預設為 "default"）。
 :::
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Step 1: Install LiteLLM
+### 步驟 1：安裝 LiteLLM {#step-1-install-litellm}
 
 ```bash
 uv add litellm
 ```
 
-### Step 2: Set Your Credentials
+### 步驟 2：設定您的憑證 {#step-2-set-your-credentials}
  
- Choose **one** of these authentication methods:
+ 請選擇以下 **一種** 驗證方法：
  
-> **Breaking change**: credential resolution is "first-source-wins" 
+> **Breaking change**：憑證解析採用「先來源優先」 
 > 
-> Credential resolution no longer merges individual fields across sources.
+> 憑證解析不再跨來源合併個別欄位。
 > 
-> Resolution order is:
+> 解析順序為：
 `kwargs` → `service key` → `env (AICORE_*)` → `config` → `VCAP service`
 >
-> **Important behavior:** once LiteLLM finds *any* credential value in a source, it takes **all** credentials from that source exclusively (except `resource_group`, which may still be resolved separately).
+> **重要行為：** 一旦 LiteLLM 在某個來源找到 *任何* 憑證值，就會專屬採用該來源的 **所有** 憑證（除了 `resource_group`，它仍可能會獨立解析）。
 
  <Tabs>
- <TabItem value="service-key" label="Service Key JSON (Recommended)">
+ <TabItem value="service-key" label="Service Key JSON（建議）">
 
-The simplest approach - paste your entire service key as a single environment variable. 
+最簡單的方式 - 將您的整個 service key 貼為單一環境變數。 
 
-> **Note:** the service key no more needs to be wrapped in a "credentials" key.
+> **注意：** service key 不再需要包在 "credentials" key 中。
 
 ```bash
 export AICORE_SERVICE_KEY='{
@@ -89,7 +89,7 @@ export AICORE_RESOURCE_GROUP="default"
 </TabItem>
 <TabItem value="individual" label="Individual Variables">
 
-Alternatively, instead of using the service key above, you could set each credential separately:
+或者，不使用上方的 service key，您可以分別設定每個憑證：
 
 ```bash
 export AICORE_AUTH_URL="https://<your-instance>.authentication.sap.hana.ondemand.com/oauth/token"
@@ -102,7 +102,7 @@ export AICORE_BASE_URL="https://api.ai.<your-region>.aws.ml.hana.ondemand.com/v2
 </TabItem>
 </Tabs>
 
-### Step 3: Make Your First Request
+### 步驟 3：發出您的第一個請求 {#step-3-make-your-first-request}
 
 ```python title="test_sap.py"
 from litellm import completion
@@ -114,21 +114,21 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-Run it:
+執行它：
 
 ```bash
 python test_sap.py
 ```
 
-**Expected output:**
+**預期輸出：**
 
 ```text
 Hello! How can I assist you today?
 ```
 
-### Step 4: Verify Your Setup (Optional)
+### 步驟 4：驗證您的設定（選用） {#step-4-verify-your-setup-optional}
 
-Test that everything is working with this diagnostic script:
+使用此診斷腳本測試一切是否正常運作：
 
 ```python title="verify_sap_setup.py"
 import os
@@ -174,13 +174,13 @@ except Exception as e:
     print("  3. Ensure your SAP AI Core instance is running")
 ```
 
-Run the verification:
+執行驗證：
 
 ```bash
 python verify_sap_setup.py
 ```
 
-**Expected output on success:**
+**成功時的預期輸出：**
 
 ```text
 === SAP Gen AI Hub Setup Verification ===
@@ -195,30 +195,30 @@ python verify_sap_setup.py
 🎉 Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.
 ```
 
-## Authentication
+## 驗證 {#authentication}
 
-SAP Generative AI Hub uses OAuth2 service keys for authentication. See [Quick Start](#quick-start) for setup instructions.
+SAP Generative AI Hub 使用 OAuth2 service key 進行驗證。請參閱 [快速開始](#quick-start) 取得設定說明。
 
-### Environment Variables Reference
+### 環境變數參考 {#environment-variables-reference}
 
-| Variable | Required | Description |
+| 變數 | 必要 | 說明 |
 |----------|----------|-------------|
-| `AICORE_SERVICE_KEY` | Yes* | Complete service key JSON (recommended method) |
-| `AICORE_RESOURCE_GROUP` | Yes | Your AI Core resource group name |
-| `AICORE_AUTH_URL` | Yes* | OAuth token URL (alternative to service key) |
-| `AICORE_CLIENT_ID` | Yes* | OAuth client ID (alternative to service key) |
-| `AICORE_CLIENT_SECRET` | Yes* | OAuth client secret (alternative to service key) |
-| `AICORE_BASE_URL` | Yes* | AI Core API base URL (alternative to service key) |
+| `AICORE_SERVICE_KEY` | 是* | 完整的 service key JSON（建議方法） |
+| `AICORE_RESOURCE_GROUP` | 是 | 您的 AI Core resource group 名稱 |
+| `AICORE_AUTH_URL` | 是* | OAuth token URL（service key 的替代方式） |
+| `AICORE_CLIENT_ID` | 是* | OAuth client ID（service key 的替代方式） |
+| `AICORE_CLIENT_SECRET` | 是* | OAuth client secret（service key 的替代方式） |
+| `AICORE_BASE_URL` | 是* | AI Core API base URL（service key 的替代方式） |
 
-*Choose either `AICORE_SERVICE_KEY` OR the individual variables (`AICORE_AUTH_URL`, `AICORE_CLIENT_ID`, `AICORE_CLIENT_SECRET`, `AICORE_BASE_URL`).
+*請選擇 `AICORE_SERVICE_KEY` 或個別變數（`AICORE_AUTH_URL`、`AICORE_CLIENT_ID`、`AICORE_CLIENT_SECRET`、`AICORE_BASE_URL`）。
 
-## Model Naming Conventions
+## 模型命名慣例 {#model-naming-conventions}
 
-Understanding model naming is crucial for using SAP Gen AI Hub correctly. The naming pattern differs depending on whether you're using the SDK directly or through the proxy.
+了解模型命名對於正確使用 SAP Gen AI Hub 至關重要。命名模式會依您是直接使用 SDK 還是透過 proxy 而有所不同。
 
-### Direct SDK Usage
+### 直接使用 SDK {#direct-sdk-usage}
 
-When calling LiteLLM's SDK directly, you **must** include the `sap/` prefix in the model name:
+直接呼叫 LiteLLM 的 SDK 時，您**必須**在模型名稱中包含 `sap/` 前綴：
 
 ```python
 # Correct - includes sap/ prefix
@@ -229,7 +229,7 @@ model="sap/gemini-2.5-pro"
 # Incorrect - missing prefix
 model="gpt-4o"  # ❌ Won't work
 ```
-3. **Environment variables** - Set the following list of credentials in .env file
+3. **環境變數** - 在 .env 檔案中設定以下憑證清單
 <pre>
 AICORE_AUTH_URL = "https://* * * .authentication.sap.hana.ondemand.com/oauth/token",
 AICORE_CLIENT_ID  = " *** ",
@@ -238,12 +238,12 @@ AICORE_RESOURCE_GROUP = " *** ",
 AICORE_BASE_URL = "https://api.ai.***.cfapps.sap.hana.ondemand.com/v2"
 </pre>
 
-Other credential configuration options are also available. For more information, see the [SAP AI Core Documentation](https://help.sap.com/doc/generative-ai-hub-sdk/CLOUD/en-US/_reference/README_sphynx.html#configuration).
-## Usage - LiteLLM Python SDK
+也提供其他憑證設定選項。如需更多資訊，請參閱 [SAP AI Core 文件](https://help.sap.com/doc/generative-ai-hub-sdk/CLOUD/en-US/_reference/README_sphynx.html#configuration)。
+## 使用 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Proxy Usage
+### Proxy 使用 {#proxy-usage}
 
-When using the LiteLLM Proxy, you use the **friendly `model_name`** defined in your configuration. The proxy automatically handles the `sap/` prefix routing.
+使用 LiteLLM Proxy 時，您會使用在設定中定義的 **friendly `model_name`**。proxy 會自動處理 `sap/` 前綴路由。
 
 ```yaml
 # In config.yaml, define the mapping
@@ -261,28 +261,28 @@ client.chat.completions.create(
 )
 ```
 
-### Anthropic Models Special Syntax
+### Anthropic 模型特殊語法 {#anthropic-models-special-syntax}
 
-Anthropic models use a double-dash (`--`) prefix convention:
+Anthropic 模型使用雙連字號（`--`）前綴慣例：
 
-| Provider | Model Example | LiteLLM Format |
+| 提供者 | 模型範例 | LiteLLM 格式 |
 |----------|---------------|----------------|
 | OpenAI | GPT-4o | `sap/gpt-4o` |
 | Anthropic | Claude 4.5 Sonnet | `sap/anthropic--claude-4.5-sonnet` |
 | Google | Gemini 2.5 Pro | `sap/gemini-2.5-pro` |
 | Mistral | Mistral Large | `sap/mistral-large` |
 
-### Quick Reference Table
+### 快速參考表 {#quick-reference-table}
 
-| Usage Type | Model Format | Example |
+| 使用類型 | 模型格式 | 範例 |
 |------------|--------------|---------|
 | Direct SDK | `sap/<model-name>` | `sap/gpt-4o` |
 | Direct SDK (Anthropic) | `sap/anthropic--<model>` | `sap/anthropic--claude-4.5-sonnet` |
 | Proxy Client | `<friendly-name>` | `gpt-4o` or `claude-sonnet` |
 
-## Using the Python SDK
+## 使用 Python SDK {#using-the-python-sdk}
 
-The LiteLLM Python SDK automatically detects your authentication method. Simply set your environment variables and make requests.
+LiteLLM Python SDK 會自動偵測您的驗證方法。只要設定您的環境變數並發出請求即可。
 
 ```python showLineNumbers title="Basic Completion"
 from litellm import completion
@@ -295,15 +295,15 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-Both authentication methods (individual variables or service key JSON) work automatically - no code changes required.
+兩種驗證方法（個別變數或 service key JSON）都能自動運作 - 不需要變更程式碼。
 
-## Using the Proxy Server
+## 使用 Proxy Server {#using-the-proxy-server}
 
-The LiteLLM Proxy provides a unified OpenAI-compatible API for your SAP models.
+LiteLLM Proxy 為您的 SAP models 提供統一且相容 OpenAI 的 API。
 
-### Configuration
+### 設定 {#configuration}
 
-Create a `config.yaml` file in your project directory with your model mappings and credentials:
+在您的專案目錄中建立一個 `config.yaml` 檔案，內含您的 model mappings 和憑證：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -347,15 +347,15 @@ environment_variables:
   AICORE_RESOURCE_GROUP: "default"
 ```
 
-### Starting the Proxy
+### 啟動 Proxy {#starting-the-proxy}
 
 ```bash showLineNumbers title="Start Proxy"
 litellm --config config.yaml
 ```
 
-The proxy will start on `http://localhost:4000` by default.
+proxy 預設會在 `http://localhost:4000` 上啟動。
 
-### Making Requests
+### 發出請求 {#making-requests}
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -410,11 +410,11 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Features
+## 功能 {#features}
 
-### Streaming Responses
+### 串流回應 {#streaming-responses}
 
-Stream responses in real-time for better user experience:
+即時串流回應，以提供更好的使用者體驗：
 
 ```python showLineNumbers title="Streaming Chat Completion"
 from litellm import completion
@@ -430,11 +430,11 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="", flush=True)
 ```
 
-### Structured Output
+### 結構化輸出 {#structured-output}
 
-#### JSON Schema (Recommended)
+#### JSON Schema（建議） {#json-schema-recommended}
 
-Use JSON Schema for structured output with strict validation:
+使用 JSON Schema 進行具備嚴格驗證的結構化輸出：
 
 ```python showLineNumbers title="JSON Schema Response"
 from litellm import completion
@@ -468,9 +468,9 @@ print(response.choices[0].message.content)
 # Output: {"name":"Tokyo","population":37000000,"country":"Japan"}
 ```
 
-#### JSON Object Format
+#### JSON Object 格式 {#json-object-format}
 
-For flexible JSON output without schema validation:
+適用於不需要 schema 驗證的彈性 JSON 輸出：
 
 ```python showLineNumbers title="JSON Object Response"
 from litellm import completion
@@ -487,13 +487,13 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-:::note SAP Platform Requirement
-When using `json_object` type, SAP's orchestration service requires the word "json" to appear in your prompt. This ensures explicit intent for JSON formatting. For schema-validated output without this requirement, use `json_schema` instead (recommended).
+:::note SAP 平台需求
+當使用 `json_object` 類型時，SAP 的協調服務要求您的提示中必須出現「json」一詞。這可確保對 JSON 格式化有明確意圖。若要在沒有此要求的情況下輸出經 Schema 驗證的內容，請改用 `json_schema`（建議）。
 :::
 
-### Multi-turn Conversations
+### 多輪對話 {#multi-turn-conversations}
 
-Maintain conversation context across multiple turns:
+在多個輪次之間維持對話上下文：
 
 ```python showLineNumbers title="Multi-turn Conversation"
 from litellm import completion
@@ -511,9 +511,9 @@ print(response.choices[0].message.content)
 # Output: Your name is Alice.
 ```
 
-### Embeddings
+### 嵌入 {#embeddings}
 
-Generate vector embeddings for semantic search and retrieval:
+為語意搜尋與擷取產生向量嵌入：
 
 ```python showLineNumbers title="Create Embeddings"
 from litellm import embedding
@@ -526,25 +526,25 @@ response = embedding(
 print(response.data[0]["embedding"])  # Vector representation
 ```
 
-### Additional Modules
-The SAP Gen AI Hub includes additional modules for advanced use cases:
+### 其他模組 {#additional-modules}
+SAP Gen AI Hub 包含適用於進階使用情境的其他模組：
 - [Grounding](https://help.sap.com/docs/sap-ai-core/generative-ai/grounding-035c455a5a424697b60f4a24b6d791fe?locale=en-US)
 - [Translation](https://help.sap.com/docs/sap-ai-core/generative-ai/translation?locale=en-US)
 - [Data Masking](https://help.sap.com/docs/sap-ai-core/generative-ai/data-masking-d9a54d9ca54b40beacbd24e1663ec3b4?locale=en-US)
 - [Content Filtering](https://help.sap.com/docs/sap-ai-core/generative-ai/content-filtering?locale=en-US)
 
-#### Grounding
-Grounding is a service designed to handle data-related tasks, such as grounding and retrieval, using vector databases. It provides specialized data retrieval through these databases, grounding the retrieval process with your own external and context-relevant data. Grounding combines generative AI capabilities with the ability to use real-time, precise data to improve decision-making and business operations for specific AI-driven business solutions.
-##### Prerequisites
-To use the Grounding module in the orchestration pipeline, you need to prepare the knowledge base in advance.
+#### 基礎依據 {#grounding}
+Grounding 是一項專為處理資料相關任務而設計的服務，例如使用向量資料庫進行 grounding 與擷取。它透過這些資料庫提供專門的資料擷取，並以您自己的外部且與情境相關的資料來為擷取建立 grounding。Grounding 結合生成式 AI 功能與使用即時、精確資料的能力，以改善特定 AI 驅動商業解決方案的決策與業務營運。
+##### 必要條件 {#prerequisites-1}
+若要在協調流程中使用 Grounding 模組，您需要事先準備知識庫。
 
-Generative AI hub offers multiple options for users to provide data (prepare a knowledge base):
-- For Option 1: Upload the documents to a supported data repository and run the data pipeline to vectorize the documents.
-- For Option 2: Provide the chunks of document via Vector API directly. 
+Generative AI hub 為使用者提供多種提供資料（準備知識庫）的選項：
+- 選項 1：將文件上傳至支援的資料儲存庫，並執行資料管線以將文件向量化。
+- 選項 2：直接透過 Vector API 提供文件區塊。 
 
-To use grounding, choose from one of the following options.
+若要使用 grounding，請從下列選項中擇一。
 
-Usage example:
+使用範例：
 ```python showLineNumbers title="Grounding Example"
 from litellm import completion
 
@@ -580,10 +580,10 @@ response = completion(model="sap/gpt-4o",
                       )
 print(response.choices[0].message.content)
 ```
-For more information about all available grounding configurations, see the [documentation](https://help.sap.com/docs/sap-ai-core/generative-ai/using-grounding-module-e1c4dd100dfb42ab890e1d95f3516187?locale=en-US).
+如需所有可用 grounding 設定的詳細資訊，請參閱[文件](https://help.sap.com/docs/sap-ai-core/generative-ai/using-grounding-module-e1c4dd100dfb42ab890e1d95f3516187?locale=en-US)。
 
-#### Translation
-The translation module allows you to translate LLM text prompts into a chosen target language.
+#### 翻譯 {#translation}
+Translation 模組可讓您將 LLM 文字提示翻譯成所選的目標語言。
 
 ```python showLineNumbers title="Translation Example"
 from litellm import completion
@@ -609,10 +609,10 @@ response = completion(model="sap/gpt-4o",
 
 print(response.choices[0].message.content)
 ```
-For more information about all available translation configurations, see the [documentation](https://help.sap.com/docs/sap-ai-core/generative-ai/translation?locale=en-US)
+如需所有可用 translation 設定的詳細資訊，請參閱[文件](https://help.sap.com/docs/sap-ai-core/generative-ai/translation?locale=en-US)
 
-#### Data Masking
-The data masking module serves to anonymize or pseudonymize personally identifiable information from the input for selected entities.
+#### 資料遮罩 {#data-masking}
+Data masking 模組可將輸入中針對選定實體的個人識別資訊去識別化或假名化。
 
 ```python showLineNumbers title="Data Masking Example"
 from litellm import completion, embedding
@@ -647,16 +647,12 @@ response = embedding(model="sap/text-embedding-3-small",
                       masking=masking_config)
 print(response.data[0])
 ```
-For more information about all available data masking configurations, see the [documentation](https://help.sap.com/docs/sap-ai-core/generative-ai/enhancing-model-consumption-with-data-masking-66ad6f469afc4c2cbaa91a27a33f7b21?locale=en-US)
+如需所有可用 data masking 設定的詳細資訊，請參閱[文件](https://help.sap.com/docs/sap-ai-core/generative-ai/enhancing-model-consumption-with-data-masking-66ad6f469afc4c2cbaa91a27a33f7b21?locale=en-US)
 
+#### 內容篩選 {#content-filtering}
+Content filtering 模組可讓您根據內容安全標準過濾輸入與輸出。 
 
-
-
-
-#### Content Filtering
-The content filtering module allows you to filter input and output based on content safety criteria. 
-
-The module supports two services:
+此模組支援兩項服務：
 * Azure Content Safety
 * Llama Guard 3
 
@@ -708,24 +704,23 @@ except Exception as e:
     # The service raises an error:
     # "Input Filter: Content filtered due to safety violations. Please modify the prompt and try again."
 ```
-For more information about all available content filtering configurations, see the [documentation](https://help.sap.com/docs/sap-ai-core/generative-ai/content-filtering?locale=en-US)
+如需所有可用 content filtering 設定的詳細資訊，請參閱[文件](https://help.sap.com/docs/sap-ai-core/generative-ai/content-filtering?locale=en-US)
 
-#### List of modules configuration for fallback
-SAP GEN AI Hub supports a fallback mechanism for handling errors. This mechanism allows you to specify a list of fallback modules to use in case of errors. The fallback modules should contain all parameters that are required for configuring the request.
+#### 模組備援設定清單 {#list-of-modules-configuration-for-fallback}
+SAP GEN AI Hub 支援用於處理錯誤的備援機制。此機制可讓您指定在發生錯誤時要使用的備援模組清單。備援模組應包含設定請求所需的所有參數。
 
-Required parameters:
+必要參數：
 - `model` 
 - `messages`
 
-Optional parameters: 
+選用參數： 
 - `filtering`
 - `grounding`
 - `translation`
 - `masking`
 - `tools`
 
-- and any of model's specific parameters.
-
+- 以及模型的任何特定參數。
 
 ```python showLineNumbers title="Fallback Example"
 from litellm import completion
@@ -761,54 +756,54 @@ print(response.choices[0].message.content)
 ```
 
 
-## Reference
+## 參考資料 {#reference}
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `model` | string | Model identifier (with `sap/` prefix for SDK) |
-| `messages` | array | Conversation messages |
-| `temperature` | float | Controls randomness (0-2) |
-| `max_tokens` | integer | Maximum tokens in response |
-| `top_p` | float | Nucleus sampling threshold |
-| `stream` | boolean | Enable streaming responses |
-| `response_format` | object | Output format (`json_object`, `json_schema`) |
-| `tools` | array | Function calling tool definitions |
-| `tool_choice` | string/object | Tool selection behavior |
+| `model` | string | 模型識別碼（SDK 使用時帶有 `sap/` 前綴） |
+| `messages` | array | 對話訊息 |
+| `temperature` | float | 控制隨機性（0-2） |
+| `max_tokens` | integer | 回應中的最大 token 數 |
+| `top_p` | float | 核取樣閾值 |
+| `stream` | boolean | 啟用串流回應 |
+| `response_format` | object | 輸出格式（`json_object`、`json_schema`） |
+| `tools` | array | 函式呼叫工具定義 |
+| `tool_choice` | string/object | 工具選擇行為 |
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-For the complete and up-to-date list of available models provided by SAP Gen AI Hub, please refer to the [SAP AI Core Generative AI Hub documentation](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/models-and-scenarios-in-generative-ai-hub).
+如需 SAP Gen AI Hub 提供之可用模型的完整且最新清單，請參閱[SAP AI Core Generative AI Hub 文件](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/models-and-scenarios-in-generative-ai-hub)。
 
-:::info Model Availability
-Model availability varies by SAP deployment region and your subscription. Contact your SAP administrator to confirm which models are available in your environment.
+:::info 模型可用性
+模型可用性會因 SAP 部署區域與您的訂閱而異。請聯絡您的 SAP 管理員以確認您環境中可用的模型。
 :::
 
-### Troubleshooting
+### 疑難排解 {#troubleshooting}
 
-**Authentication Errors**
+**驗證錯誤**
 
-If you receive authentication errors:
+如果您收到驗證錯誤：
 
-1. Verify all required environment variables are set correctly
-2. Check that your service key hasn't expired
-3. Confirm your resource group has access to the desired models
-4. Ensure the `AICORE_AUTH_URL` and `AICORE_BASE_URL` match your SAP region
+1. 確認所有必要的環境變數都已正確設定
+2. 檢查您的服務金鑰是否已過期
+3. 確認您的資源群組有權存取所需的模型
+4. 確保 `AICORE_AUTH_URL` 與 `AICORE_BASE_URL` 與您的 SAP 區域相符
 
-**Model Not Found**
+**找不到模型**
 
-If a model returns "not found":
+如果模型回傳「not found」：
 
-1. Verify the model is available in your SAP deployment
-2. Check you're using the correct model name format (`sap/` prefix for SDK)
-3. Confirm your resource group has access to that specific model
-4. For Anthropic models, ensure you're using the `anthropic--` double-dash prefix
+1. 確認該模型在您的 SAP 部署中可用
+2. 檢查您是否使用正確的模型名稱格式（SDK 使用 `sap/` 前綴）
+3. 確認您的資源群組有權存取該特定模型
+4. 若為 Anthropic 模型，請確保您使用 `anthropic--` 雙連字號前綴
 
-**Rate Limiting**
+**速率限制**
 
-SAP Gen AI Hub enforces rate limits based on your subscription. If you hit limits:
+SAP Gen AI Hub 會依您的訂閱強制執行速率限制。如果您遇到限制：
 
-1. Implement exponential backoff retry logic
-2. Consider using the proxy's built-in rate limiting features
-3. Contact your SAP administrator to review quota allocations
+1. 實作指數退避重試邏輯
+2. 考慮使用 proxy 內建的速率限制功能
+3. 聯絡您的 SAP 管理員以檢視配額分配

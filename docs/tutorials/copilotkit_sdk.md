@@ -1,16 +1,15 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CopilotKit SDK with LiteLLM
+# 搭配 LiteLLM 的 CopilotKit SDK {#copilotkit-sdk-with-litellm}
 
-Use CopilotKit SDK with any LLM provider through LiteLLM Proxy.
+透過 LiteLLM Proxy 使用 CopilotKit SDK 搭配任何 LLM 提供者。
 
-> **Note:** CopilotKit SDK integration with LiteLLM Proxy works with LiteLLM v1.81.7-nightly or higher.
+> **注意：** CopilotKit SDK 與 LiteLLM Proxy 的整合可搭配 LiteLLM v1.81.7-nightly 或更高版本使用。
 
+## 快速開始 {#quick-start}
 
-## Quick Start
-
-### 1. Add Model to Config
+### 1. 將模型新增至設定 {#1-add-model-to-config}
 
 ```yaml title="config.yaml"
 model_list:
@@ -20,13 +19,13 @@ model_list:
       api_key: "os.environ/ANTHROPIC_API_KEY"
 ```
 
-### 2. Start LiteLLM Proxy
+### 2. 啟動 LiteLLM Proxy {#2-start-litellm-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 3. Use CopilotKit SDK
+### 3. 使用 CopilotKit SDK {#3-use-copilotkit-sdk}
 
 ```typescript
 import OpenAI from "openai";
@@ -57,7 +56,7 @@ export const POST = async (req: NextRequest) => {
 };
 ```
 
-### 4. Test
+### 4. 測試 {#4-test}
 
 ```bash
 curl -X POST http://localhost:3000/api/copilotkit \
@@ -85,15 +84,14 @@ curl -X POST http://localhost:3000/api/copilotkit \
 }'
 ```
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Value | Description |
+| 變數 | 值 | 說明 |
 |----------|-------|-------------|
-| `OPENAI_API_KEY` | `sk-12345` | Your LiteLLM API key |
+| `OPENAI_API_KEY` | `sk-12345` | 您的 LiteLLM API 金鑰 |
 | `OPENAI_BASE_URL` | `http://localhost:4000/v1` | LiteLLM proxy URL |
 
+## 相關資源 {#related-resources}
 
-## Related Resources
-
-- [CopilotKit Documentation](https://docs.copilotkit.ai)
-- [LiteLLM Proxy Quick Start](../proxy/quick_start)
+- [CopilotKit 文件](https://docs.copilotkit.ai)
+- [LiteLLM Proxy 快速開始](../proxy/quick_start)

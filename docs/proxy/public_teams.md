@@ -1,13 +1,12 @@
-# [BETA] Public Teams
+# [BETA] 公開團隊 {#beta-public-teams}
 
-Expose available teams to your users to join on signup.
+將可用的團隊提供給您的使用者，讓他們在註冊時加入。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/7871ea15035a48d2a118b7486c2f7598?sid=267cd0ab-d92b-42fa-b97a-9f385ef8930c" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
+## 快速開始 {#quick-start}
 
-## Quick Start
-
-1. Create a team on LiteLLM
+1. 在 LiteLLM 上建立一個團隊
 
 ```bash
 curl -X POST '<PROXY_BASE_URL>/team/new' \
@@ -16,7 +15,7 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 -d '{"name": "My Team", "team_id": "team_id_1"}'
 ```
 
-2. Expose the team to your users
+2. 將該團隊公開給您的使用者
 
 ```yaml
 litellm_settings:
@@ -24,7 +23,7 @@ litellm_settings:
         available_teams: ["team_id_1"] # 👈 Make team available to new SSO users
 ```
 
-3. Test it! 
+3. 測試看看！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/team/member_add' \
@@ -35,6 +34,3 @@ curl -L -X POST 'http://0.0.0.0:4000/team/member_add' \
     "member": [{"role": "user", "user_id": "my-test-user"}]
 }'
 ```
-
-
-

@@ -1,8 +1,8 @@
-# NLP Cloud
+# NLP Cloud {#nlp-cloud}
 
-LiteLLM supports all LLMs on NLP Cloud.
+LiteLLM 支援 NLP Cloud 上的所有 LLM。
 
-## API Keys
+## API 金鑰 {#api-keys}
 
 ```python 
 import os 
@@ -10,7 +10,7 @@ import os
 os.environ["NLP_CLOUD_API_KEY"] = "your-api-key"
 ```
 
-## Sample Usage
+## 使用範例 {#sample-usage}
 
 ```python
 import os
@@ -24,8 +24,8 @@ response = completion(model="dolphin", messages=messages)
 print(response)
 ```
 
-## streaming 
-Just set `stream=True` when calling completion.
+## 串流  {#streaming}
+呼叫 completion 時，只要設定 `stream=True`。
 
 ```python
 import os
@@ -40,12 +40,11 @@ for chunk in response:
     print(chunk["choices"][0]["delta"]["content"])  # same as openai format
 ```
 
-## non-dolphin models 
+## 非 dolphin 模型  {#non-dolphin-models}
 
-By default, LiteLLM will map `dolphin` and `chatdolphin` to nlp cloud. 
+預設情況下，LiteLLM 會將 `dolphin` 和 `chatdolphin` 對應到 nlp cloud。
 
-If you're trying to call any other model (e.g. GPT-J, Llama-2, etc.) with nlp cloud, just set it as your custom llm provider. 
-
+如果您要嘗試透過 nlp cloud 呼叫其他任何模型（例如 GPT-J、Llama-2 等），只要將其設為您的自訂 llm provider 即可。
 
 ```python
 import os

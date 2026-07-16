@@ -1,25 +1,25 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure Video Generation
+# Azure 影片生成 {#azure-video-generation}
 
-LiteLLM supports Azure OpenAI's video generation models including Sora with full end-to-end integration.
+LiteLLM 支援 Azure OpenAI 的影片生成模型，包括 Sora，並提供完整的端到端整合。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure OpenAI's video generation models including Sora-2 |
-| Provider Route on LiteLLM | `azure/` |
-| Supported Models | `sora-2` |
-| Cost Tracking | ✅ Duration-based pricing ($0.10/second) |
-| Logging Support | ✅ Full request/response logging |
-| Guardrails Support | ✅ Content moderation and safety checks |
-| Proxy Server Support | ✅ Full proxy integration with virtual keys |
-| Spend Management | ✅ Budget tracking and rate limiting |
-| Link to Provider Doc | [Azure OpenAI Video Generation ↗](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/video-generation) |
+| 說明 | Azure OpenAI 的影片生成模型，包括 Sora-2 |
+| LiteLLM 提供者路由 | `azure/` |
+| 支援的模型 | `sora-2` |
+| Cost Tracking | ✅ 依時長計價（$0.10/秒） |
+| Logging Support | ✅ 完整的請求/回應記錄 |
+| Guardrails Support | ✅ 內容審核與安全檢查 |
+| Proxy Server Support | ✅ 與虛擬金鑰的完整代理整合 |
+| Spend Management | ✅ 預算追蹤與速率限制 |
+| 提供者文件連結 | [Azure OpenAI Video Generation ↗](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/video-generation) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Required API Keys
+### 必要的 API 金鑰 {#required-api-keys}
 
 ```python
 import os 
@@ -27,7 +27,7 @@ os.environ["AZURE_OPENAI_API_KEY"] = "your-azure-api-key"
 os.environ["AZURE_OPENAI_API_BASE"] = "https://your-resource.openai.azure.com/"
 ```
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 ```python
 from litellm import video_generation, video_status, video_content
@@ -74,18 +74,18 @@ with open("generated_video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-## Usage - LiteLLM Proxy Server
+## 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-Here's how to call Azure video generation models with the LiteLLM Proxy Server
+以下說明如何搭配 LiteLLM Proxy Server 呼叫 Azure 影片生成模型
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export AZURE_OPENAI_API_KEY="your-azure-api-key"
 export AZURE_OPENAI_API_BASE="https://your-resource.openai.azure.com/"
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy  {#2-start-the-proxy}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -112,7 +112,7 @@ $ litellm --model azure/sora-2
 
 </Tabs>
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
 <Tabs>
 <TabItem value="Curl" label="Curl Request">
@@ -153,36 +153,35 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | 
+| 模型名稱 | 
 |------------|
 | sora-2 | 
 |sora-2-pro |
 |sora-2-pro-high-res|
 
+## 記錄與可觀測性 {#logging--observability}
 
-## Logging & Observability
+### 請求/回應記錄 {#requestresponse-logging}
 
-### Request/Response Logging
+所有影片生成請求都會自動記錄以下內容：
 
-All video generation requests are automatically logged with:
+- **請求詳細資訊**：prompt、model、duration、size
+- **回應詳細資訊**：video ID、status、creation time
+- **成本追蹤**：依時長計價計算
+- **效能指標**：請求延遲、處理時間
 
-- **Request details**: prompt, model, duration, size
-- **Response details**: video ID, status, creation time
-- **Cost tracking**: duration-based pricing calculation
-- **Performance metrics**: request latency, processing time
+### 記錄提供者 {#logging-providers}
 
-### Logging Providers
+影片生成可與所有 LiteLLM 記錄提供者搭配使用：
 
-Video generation works with all LiteLLM logging providers:
+- **Datadog**：即時監控與警示
+- **Helicone**：請求追蹤與除錯
+- **LangSmith**：LangChain 整合與追蹤
+- **自訂 webhook**：將記錄傳送到您自己的端點
 
-- **Datadog**: Real-time monitoring and alerting
-- **Helicone**: Request tracing and debugging
-- **LangSmith**: LangChain integration and tracing
-- **Custom webhooks**: Send logs to your own endpoints
-
-**Example: Enable Datadog logging**
+**範例：啟用 Datadog 記錄**
 
 ```yaml
 general_settings:
@@ -191,16 +190,16 @@ general_settings:
 ```
 
 
-## Video Generation Parameters
+## 影片生成參數 {#video-generation-parameters}
 
-- `prompt` (required): Text description of the desired video
-- `model` (optional): Model to use, defaults to "azure/sora-2"
-- `seconds` (optional): Video duration in seconds (e.g., "8", "16")
-- `size` (optional): Video dimensions (e.g., "720x1280", "1280x720")
-- `input_reference` (optional): Reference image for video editing
-- `user` (optional): User identifier for tracking
+- `prompt`（必填）：所需影片的文字描述
+- `model`（選填）：要使用的模型，預設為 "azure/sora-2"
+- `seconds`（選填）：影片長度（秒），例如 "8"、"16"
+- `size`（選填）：影片尺寸，例如 "720x1280"、"1280x720"
+- `input_reference`（選填）：供影片編輯使用的參考圖片
+- `user`（選填）：用於追蹤的使用者識別碼
 
-## Video Content Retrieval
+## 影片內容擷取 {#video-content-retrieval}
 
 ```python
 # Download video content
@@ -213,7 +212,7 @@ with open("video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-## Complete Workflow
+## 完整工作流程 {#complete-workflow}
 
 ```python
 import litellm
@@ -251,7 +250,7 @@ video_file = generate_and_download_video(
 )
 ```
 
-## Video Remix (Video Editing)
+## 影片重混（影片編輯） {#video-remix-video-editing}
 
 ```python
 # Video editing with reference image
@@ -265,7 +264,7 @@ response = litellm.video_remix(
 print(f"Video ID: {response.id}")
 ```
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python
 from litellm.exceptions import BadRequestError, AuthenticationError

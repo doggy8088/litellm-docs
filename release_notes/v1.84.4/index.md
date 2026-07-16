@@ -1,5 +1,5 @@
 ---
-title: "v1.84.4 - Reset-Budget & Observability Fixes"
+title: "v1.84.4 - 重設預算與可觀測性修正"
 slug: "v1-84-4"
 date: 2026-05-31T00:00:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,19 +43,19 @@ pip install litellm==1.84.4
 </TabItem>
 </Tabs>
 
-`v1.84.4` is a patch release on top of [`v1.84.3`](/release_notes/v1.84.3/v1-84-3). It fixes a `ResetBudgetJob` regression that affected UI-created keys on the `v1.84` line, removes duplicate observability exports for Claude Code streams, and tightens a Bearer-prefix edge case in the proxy auth metric labels.
+`v1.84.4` 是建立在 [`v1.84.3`](/release_notes/v1.84.3/v1-84-3) 之上的修補版發布。它修正了影響 `v1.84` 這一行上 UI 建立金鑰的 `ResetBudgetJob` 回歸問題，移除了 Claude Code 串流重複的可觀測性匯出，並且收緊了代理程式驗證指標標籤中的 Bearer-prefix 邊界情況。
 
-### Bug Fixes
+### 錯誤修正 {#bug-fixes}
 
-- **Spend Tracking, Budgets and Rate Limiting**
-    - `ResetBudgetJob` no longer pre-zeroes the spend counter and only writes `{spend, budget_reset_at}` on cycle rollover. On `v1.84.0+` this previously silently failed for every UI-created key, leaving spend frozen at the cycle boundary and opening a brief budget-enforcement bypass window on every scheduler tick - [PR #29358](https://github.com/BerriAI/litellm/pull/29358)
+- **消費追蹤、預算與速率限制**
+    - `ResetBudgetJob` 不再預先將消費計數器歸零，且只會在週期回轉時寫入 `{spend, budget_reset_at}`。在 `v1.84.0+` 上，這先前會對每個 UI 建立的金鑰靜默失敗，導致在週期邊界消費量被凍結，並在每次排程器 tick 時開啟一個短暫的預算執行旁路視窗 - [PR #29358](https://github.com/BerriAI/litellm/pull/29358)
 
-- **Logging / Observability**
-    - Stop emitting duplicate Datadog logs and OTLP traces (Arize Phoenix, Langfuse, etc.) on completed streams by dispatching the success handler exactly once instead of running both `async_success_handler` and `success_handler` - [PR #29311](https://github.com/BerriAI/litellm/pull/29311) (originally [PR #29089](https://github.com/BerriAI/litellm/pull/29089))
+- **記錄 / 可觀測性**
+    - 透過僅精確執行一次 success handler，而不是同時執行 `async_success_handler` 和 `success_handler`，停止在已完成的串流上傳送重複的 Datadog 記錄與 OTLP traces（Arize Phoenix、Langfuse 等）- [PR #29311](https://github.com/BerriAI/litellm/pull/29311)（原始為 [PR #29089](https://github.com/BerriAI/litellm/pull/29089)）
 
-- **Proxy auth**
-    - Normalize the `Bearer ` prefix in the safe-hash helper so the failure-metric label is hashed identically whether or not the caller stripped the prefix - [PR #29343](https://github.com/BerriAI/litellm/pull/29343)
+- **代理程式驗證**
+    - 在 safe-hash helper 中將 `Bearer ` 前綴正規化，讓失敗指標標籤不論呼叫端是否移除了前綴，都會以相同方式進行雜湊 - [PR #29343](https://github.com/BerriAI/litellm/pull/29343)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.3...v1.84.4

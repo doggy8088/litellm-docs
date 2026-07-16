@@ -1,5 +1,5 @@
 ---
-title: "v1.87.5 - Web Search Costing & MCP Key Scoping"
+title: "v1.87.5 - Web Search 成本計算與 MCP 金鑰範圍"
 slug: "v1-87-5"
 date: 2026-06-24T18:28:54
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,17 +43,17 @@ pip install litellm==1.87.5
 </TabItem>
 </Tabs>
 
-`v1.87.5` is a patch release on top of [`v1.87.4`](/release_notes/v1.87.4/v1-87-4). It backports cost-tracking recovery for interrupted Anthropic streams, fixes a `completion_cost` `AttributeError` on streaming Anthropic web-search responses, adds a `no-mcp-servers` sentinel that scopes a key to zero MCP servers, and bumps the wolfi-base image to patch the OpenSSL CVE.
+`v1.87.5` 是建構於 [`v1.87.4`](/release_notes/v1.87.4/v1-87-4) 之上的修補版本。它回補了中斷的 Anthropic 串流之成本追蹤復原，修正了串流 Anthropic web-search 回應中的 `completion_cost` `AttributeError`，新增了可將金鑰範圍限定為零個 MCP 伺服器的 `no-mcp-servers` sentinel，並將 wolfi-base 映像檔升級以修補 OpenSSL CVE。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(passthrough): recover output tokens for interrupted anthropic streams - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
-- fix(proxy): record partial spend on the failure row for interrupted streams - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
-- feat(mcp): scope a key to zero MCP servers with no-mcp-servers sentinel - [PR #31029](https://github.com/BerriAI/litellm/pull/31029)
-- fix(passthrough,streaming): recover cost on interrupted and agentic Anthropic streams - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
-- fix: completion_cost AttributeError on streaming Anthropic web_search responses - [PR #27346](https://github.com/BerriAI/litellm/pull/27346)
-- fix(docker): bump wolfi-base digest to patch openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
+- fix(passthrough): 為中斷的 Anthropic 串流恢復輸出 tokens - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
+- fix(proxy): 在中斷串流的失敗列上記錄部分支出 - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
+- feat(mcp): 將 key 範圍限定為零個 MCP servers，使用 no-mcp-servers sentinel - [PR #31029](https://github.com/BerriAI/litellm/pull/31029)
+- fix(passthrough,streaming): 在中斷的與 agentic Anthropic 串流上恢復成本 - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
+- fix: 串流 Anthropic web_search 回應上的 completion_cost AttributeError - [PR #27346](https://github.com/BerriAI/litellm/pull/27346)
+- fix(docker): 將 wolfi-base digest 升級以修補 openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.87.4...v1.87.5

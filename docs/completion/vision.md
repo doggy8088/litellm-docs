@@ -1,11 +1,10 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Using Vision Models
+# 使用 Vision 模型 {#using-vision-models}
 
-## Quick Start
-Example passing images to a model 
-
+## 快速入門 {#quick-start}
+將圖片傳遞給模型的範例
 
 <Tabs>
 
@@ -44,7 +43,7 @@ response = completion(
 </TabItem>
 <TabItem label="LiteLLM Proxy Server" value="proxy">
 
-1. Define vision models on config.yaml
+1. 在 config.yaml 上定義 vision 模型
 
 ```yaml
 model_list:
@@ -62,14 +61,13 @@ model_list:
 
 ```
 
-2. Run proxy server
+2. 執行 proxy server
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it using the OpenAI Python SDK
-
+3. 使用 OpenAI Python SDK 測試它
 
 ```python
 import os 
@@ -103,19 +101,15 @@ response = client.chat.completions.create(
 ```
 
 
-
-
 </TabItem>
 </Tabs>
 
-
-
-## Checking if a model supports `vision`
+## 檢查模型是否支援 `vision` {#checking-if-a-model-supports-vision}
 
 <Tabs>
 <TabItem label="LiteLLM Python SDK" value="Python">
 
-Use `litellm.supports_vision(model="")` -> returns `True` if model supports `vision` and `False` if not
+使用 `litellm.supports_vision(model="")` -> 若模型支援 `vision` 則回傳 `True`，若不支援則回傳 `False`
 
 ```python
 assert litellm.supports_vision(model="openai/gpt-4-vision-preview") == True
@@ -128,8 +122,7 @@ assert litellm.supports_vision(model="xai/grok-2-latest") == False
 
 <TabItem label="LiteLLM Proxy Server" value="proxy">
 
-
-1. Define vision models on config.yaml
+1. 在 config.yaml 上定義 vision 模型
 
 ```yaml
 model_list:
@@ -146,13 +139,13 @@ model_list:
       supports_vision: True        # set supports_vision to True so /model/info returns this attribute as True
 ```
 
-2. Run proxy server
+2. 執行 proxy server
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Call `/model_group/info` to check if your model supports `vision`
+3. 呼叫 `/model_group/info` 以檢查您的模型是否支援 `vision`
 
 ```shell
 curl -X 'GET' \
@@ -161,7 +154,7 @@ curl -X 'GET' \
   -H 'x-api-key: sk-1234'
 ```
 
-Expected Response 
+預期回應
 
 ```json
 {
@@ -191,10 +184,9 @@ Expected Response
 </TabItem>
 </Tabs>
 
+## 明確指定影像類型  {#explicitly-specify-image-type}
 
-## Explicitly specify image type 
-
-If you have images without a mime-type, or if litellm is incorrectly inferring the mime type of your image (e.g. calling `gs://` url's with vertex ai), you can set this explicitly via the `format` param. 
+如果您有沒有 mime-type 的圖片，或是 litellm 錯誤地推斷了您圖片的 mime type（例如在 vertex ai 中呼叫 `gs://` 的網址），您可以透過 `format` 參數明確設定。 
 
 ```python
 "image_url": {
@@ -203,9 +195,9 @@ If you have images without a mime-type, or if litellm is incorrectly inferring t
 }
 ```
 
-LiteLLM will use this for any API endpoint, which supports specifying mime-type (e.g. anthropic/bedrock/vertex ai). 
+LiteLLM 會將其用於任何支援指定 mime-type 的 API 端點（例如 anthropic/bedrock/vertex ai）。 
 
-For others (e.g. openai), it will be ignored. 
+對於其他端點（例如 openai），則會忽略。 
 
 <Tabs>
 <TabItem label="SDK" value="sdk">
@@ -244,7 +236,7 @@ response = completion(
 </TabItem>
 <TabItem label="PROXY" value="proxy">
 
-1. Define vision models on config.yaml
+1. 在 config.yaml 上定義 vision 模型
 
 ```yaml
 model_list:
@@ -262,14 +254,13 @@ model_list:
 
 ```
 
-2. Run proxy server
+2. 執行 proxy server
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it using the OpenAI Python SDK
-
+3. 使用 OpenAI Python SDK 測試它
 
 ```python
 import os 
@@ -304,14 +295,10 @@ response = client.chat.completions.create(
 ```
 
 
-
-
 </TabItem>
 </Tabs>
 
-
-
-## Spec 
+## 規格  {#spec}
 
 ```
 "image_url": str

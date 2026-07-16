@@ -2,19 +2,18 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Google Cloud Model Armor
+# Google Cloud Model Armor {#google-cloud-model-armor}
 
-LiteLLM supports Google Cloud Model Armor guardrails via the [Model Armor API](https://cloud.google.com/security-command-center/docs/model-armor-overview). 
+LiteLLM 透過 [Model Armor API](https://cloud.google.com/security-command-center/docs/model-armor-overview) 支援 Google Cloud Model Armor 防護欄。 
 
+## 支援的防護欄 {#supported-guardrails}
 
-## Supported Guardrails
+- [Model Armor Templates](https://cloud.google.com/security-command-center/docs/manage-model-armor-templates) - 根據已設定的範本進行內容清理與封鎖
 
-- [Model Armor Templates](https://cloud.google.com/security-command-center/docs/manage-model-armor-templates) - Content sanitization and blocking based on configured templates
+## 快速開始 {#quick-start}
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄  {#1-define-guardrails-on-your-litellm-configyaml}
 
-## Quick Start
-### 1. Define Guardrails on your LiteLLM config.yaml 
-
-Define your guardrails under the `guardrails` section
+在 `guardrails` 區段下定義您的防護欄
 
 ```yaml
 model_list:
@@ -38,22 +37,21 @@ guardrails:
       default_on: true                # Run by default for all requests
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `during_call` Run **in parallel** with LLM call, on **input**
-- `post_call` Run **after** LLM call, on **output**
+- `pre_call` 在 **LLM 呼叫之前** 執行，於 **輸入** 上
+- `during_call` 與 LLM 呼叫 **平行** 執行，於 **輸入** 上
+- `post_call` 在 LLM 呼叫 **之後** 執行，於 **輸出** 上
 
-### 2. Start LiteLLM Gateway 
-
+### 2. 啟動 LiteLLM 閘道  {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求  {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain, OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -68,11 +66,11 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## Document and File Scanning
+## 文件與檔案掃描 {#document-and-file-scanning}
 
-As of v1.92.0, Model Armor scans inline document attachments in addition to message text. On `pre_call` and `during_call`, LiteLLM resolves each attachment in the request messages to bytes and submits it to Model Armor's [byte API](https://cloud.google.com/security-command-center/docs/sanitize-prompts-responses) before the request reaches the LLM.
+自 v1.92.0 起，Model Armor 除了訊息文字之外，也會掃描內嵌文件附件。在 `pre_call` 和 `during_call` 上，LiteLLM 會將請求訊息中的每個附件解析為位元組，並在請求到達 LLM 之前將其提交給 Model Armor 的 [byte API](https://cloud.google.com/security-command-center/docs/sanitize-prompts-responses)。
 
-LiteLLM recognizes OpenAI `type: file` content blocks with inline `file_data` (a base64 data URI or raw base64) and Anthropic `type: document` blocks with an inline base64 `source`. The attachment's MIME type, declared `format`, or filename extension is mapped to a Model Armor `byteDataType`; PDF, Word, Excel, PowerPoint, CSV, and plain text documents are scanned. Inline content of types the byte API does not support, such as images, is not scanned and passes through.
+LiteLLM 會辨識含有內嵌 `type: file` 的 OpenAI `file_data` 內容區塊（base64 data URI 或原始 base64），以及含有內嵌 base64 `type: document` 的 Anthropic `source` 區塊。附件的 MIME 類型、宣告的 `format`，或檔名副檔名會對應到 Model Armor `byteDataType`；PDF、Word、Excel、PowerPoint、CSV 及純文字文件都會被掃描。byte API 不支援的類型之內嵌內容，例如圖片，不會被掃描，會直接通過。
 
 ```json
 {
@@ -84,53 +82,52 @@ LiteLLM recognizes OpenAI `type: file` content blocks with inline `file_data` (a
 }
 ```
 
-A Model Armor finding on a document always blocks the request with an HTTP 400:
+文件上的 Model Armor 發現一律會以 HTTP 400 封鎖請求：
 
 ```json
 {"error": "Content blocked by Model Armor", "model_armor_response": {"sanitizationResult": {"filterMatchState": "MATCH_FOUND"}}}
 ```
 
-Masking never applies to documents. Model Armor returns findings for a document rather than a sanitized copy, so a match blocks even when `mask_request_content` is enabled.
+遮罩永遠不會套用到文件。Model Armor 會針對文件回傳發現結果，而不是清理後的副本，因此即使啟用了 `mask_request_content`，只要有符合項目就會封鎖。
 
-### Attachments That Cannot Be Scanned
+### 無法掃描的附件 {#attachments-that-cannot-be-scanned}
 
-An attachment LiteLLM recognizes as a document but cannot submit for scanning fails closed: the request is blocked with an HTTP 400 unless you set `fail_on_error: false`.
+LiteLLM 辨識為文件但無法提交掃描的附件會採取封閉失敗：除非您設定 `fail_on_error: false`，否則請求會以 HTTP 400 被封鎖。
 
-| Case | Default (`fail_on_error: true`) | With `fail_on_error: false` |
+| 情況 | 預設（`fail_on_error: true`） | 啟用 `fail_on_error: false` 時 |
 |------|--------------------------------|------------------------------|
-| `file_id` or remote URL reference (`http://`, `https://`, `gs://`) with no inline bytes | Blocked | Passes through unscanned |
-| Document larger than Model Armor's 4 MB limit | Blocked | Passes through unscanned |
-| More than 10 attachments in one request | Blocked | First 10 scanned, rest pass through unscanned |
-| Inline base64 that fails to decode | Blocked | Passes through unscanned |
-| Model Armor API error while scanning an attachment | Blocked | Attachment skipped, remaining attachments still scanned |
+| `file_id` 或沒有內嵌位元組的遠端 URL 參照（`http://`、`https://`、`gs://`） | 封鎖 | 直接通過且不掃描 |
+| 大於 Model Armor 4 MB 上限的文件 | 封鎖 | 直接通過且不掃描 |
+| 一個請求中超過 10 個附件 | 封鎖 | 前 10 個會掃描，其餘直接通過且不掃描 |
+| 無法解碼的內嵌 base64 | 封鎖 | 直接通過且不掃描 |
+| 掃描附件時 Model Armor API 發生錯誤 | 封鎖 | 跳過該附件，剩餘附件仍會掃描 |
 
-Blocked requests return the reason:
+被封鎖的請求會回傳原因：
 
 ```json
 {"error": "Model Armor could not scan an attachment and blocked the request: attachment of 5242880 bytes exceeds Model Armor's 4194304 byte scan limit"}
 ```
 
-## Supported Params 
+## 支援的參數  {#supported-params}
 
-### Common Params
+### 常見參數 {#common-params}
 
-- `api_key` - str - Google Cloud service account credentials (optional if using ADC)
-- `api_base` - str - Custom Model Armor API endpoint (optional)
-- `default_on` - bool - Whether to run the guardrail by default. Default is `false`.
-- `mode` - Union[str, list[str]] - Mode to run the guardrail. Supported values: `pre_call`, `during_call`, `post_call`. Default is `pre_call`.
+- `api_key` - str - Google Cloud 服務帳戶憑證（若使用 ADC 則為選用）
+- `api_base` - str - 自訂 Model Armor API 端點（選用）
+- `default_on` - bool - 是否預設執行此防護欄。預設值為 `false`。
+- `mode` - Union[str, list[str]] - 執行此防護欄的模式。支援的值：`pre_call`、`during_call`、`post_call`。預設值為 `pre_call`。
 
-### Model Armor Specific
+### Model Armor 特定 {#model-armor-specific}
 
-- `template_id` - str - The ID of your Model Armor template (required)
-- `project_id` - str - Google Cloud project ID (defaults to credentials project)
-- `location` - str - Google Cloud location/region. Default is `us-central1`
-- `credentials` - Union[str, dict] - Path to service account JSON file or credentials dictionary
-- `api_endpoint` - str - Custom API endpoint for Model Armor (optional)
-- `fail_on_error` - bool - Whether to fail requests if Model Armor encounters errors, including attachments it cannot scan (see [Document and File Scanning](#document-and-file-scanning)). Default is `true`
-- `mask_request_content` - bool - Enable masking of sensitive content in requests. Default is `false`
-- `mask_response_content` - bool - Enable masking of sensitive content in responses. Default is `false`
+- `template_id` - str - 您的 Model Armor 範本 ID（必填）
+- `project_id` - str - Google Cloud 專案 ID（預設為憑證專案）
+- `location` - str - Google Cloud 位置／區域。預設值為 `us-central1`
+- `credentials` - Union[str, dict] - 服務帳戶 JSON 檔案路徑或憑證字典
+- `api_endpoint` - str - Model Armor 的自訂 API 端點（選用）
+- `fail_on_error` - bool - 當 Model Armor 遇到錯誤時是否使請求失敗，包括其無法掃描的附件（請參閱 [文件與檔案掃描](#document-and-file-scanning)）。預設值為 `true`
+- `mask_request_content` - bool - 啟用請求中敏感內容的遮罩。預設值為 `false`
+- `mask_response_content` - bool - 啟用回應中敏感內容的遮罩。預設值為 `false`
 
+## 延伸閱讀 {#further-reading}
 
-## Further Reading
-
-- [Control Guardrails per API Key](./quick_start#-control-guardrails-per-api-key)
+- [依 API 金鑰控制防護欄](./quick_start#-control-guardrails-per-api-key)

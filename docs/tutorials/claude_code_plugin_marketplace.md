@@ -2,67 +2,67 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Claude Code Plugin Marketplace (Managed Skills)
+# Claude Code 外掛程式市集（Managed Skills） {#claude-code-plugin-marketplace-managed-skills}
 
-LiteLLM AI Gateway acts as a central registry for Claude Code plugins. Admins can govern which plugins are available across the organization, and engineers can discover and install approved plugins from a single source.
+LiteLLM AI Gateway 可作為 Claude Code 外掛程式的中央登錄中心。管理員可以治理組織內可用的外掛程式，而工程師則可以從單一來源探索並安裝已核准的外掛程式。
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-- LiteLLM Proxy running with database connected
-- Admin access to LiteLLM UI
-- Plugins hosted on GitHub, GitLab, or any git-accessible URL
+- LiteLLM Proxy 正在執行且已連接資料庫
+- 可存取 LiteLLM UI 的管理員權限
+- 外掛程式託管於 GitHub、GitLab，或任何可透過 git 存取的 URL
 
-## Admin Guide: Managing the Marketplace
+## 管理員指南：管理 Marketplace {#admin-guide-managing-the-marketplace}
 
-### Step 1: Navigate to Claude Code Plugins
+### 步驟 1：前往 Claude Code Plugins {#step-1-navigate-to-claude-code-plugins}
 
-In the LiteLLM Admin UI, click on **Claude Code Plugins** in the left navigation menu.
+在 LiteLLM Admin UI 中，點擊左側導覽選單的 **Claude Code Plugins**。
 
 <Image img={require('../../img/claude_code_marketplace/step1_navigate_plugins.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 2: View the Plugins List
+### 步驟 2：檢視外掛程式清單 {#step-2-view-the-plugins-list}
 
-You'll see the list of all registered plugins. From here you can add, enable, disable, or delete plugins.
+您會看到所有已註冊外掛程式的清單。您可以在此新增、啟用、停用或刪除外掛程式。
 
 <Image img={require('../../img/claude_code_marketplace/step3_plugins_list.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 3: Add a New Plugin
+### 步驟 3：新增外掛程式 {#step-3-add-a-new-plugin}
 
-Click **+ Add New Plugin** to register a plugin in your marketplace.
+點擊 **+ Add New Plugin** 以在您的 marketplace 中註冊外掛程式。
 
 <Image img={require('../../img/claude_code_marketplace/step4_add_plugin.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 4: Fill in Plugin Details
+### 步驟 4：填入外掛程式詳細資訊 {#step-4-fill-in-plugin-details}
 
-Enter the plugin information:
+輸入外掛程式資訊：
 
-- **Name**: Plugin identifier (kebab-case, e.g., `my-plugin`)
-- **Source Type**: Choose GitHub, Git URL, or Git Subdir
-- **Repository/URL**: The git source (e.g., `org/repo` for GitHub)
-- **Version**: Semantic version (optional)
-- **Description**: What the plugin does
-- **Category**: Plugin category for organization
-- **Keywords**: Search terms
+- **Name**：外掛程式識別碼（kebab-case，例如 `my-plugin`）
+- **Source Type**：選擇 GitHub、Git URL 或 Git Subdir
+- **Repository/URL**：git 來源（例如 GitHub 的 `org/repo`）
+- **Version**：語意化版本（選用）
+- **Description**：外掛程式的功能
+- **Category**：用於組織的外掛程式分類
+- **Keywords**：搜尋詞彙
 
 <Image img={require('../../img/claude_code_marketplace/step5_plugin_form.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 5: Submit the Plugin
+### 步驟 5：提交外掛程式 {#step-5-submit-the-plugin}
 
-After filling in the details, click **Add Plugin** to register it.
+填寫完詳細資訊後，點擊 **Add Plugin** 來註冊它。
 
 <Image img={require('../../img/claude_code_marketplace/step9_submit.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 6: Enable/Disable Plugins
+### 步驟 6：啟用/停用外掛程式 {#step-6-enabledisable-plugins}
 
-Toggle plugins on or off to control what appears in the public marketplace. Only **enabled** plugins are visible to engineers.
+切換外掛程式的開啟或關閉狀態，以控制 public marketplace 中顯示的內容。只有**已啟用**的外掛程式對工程師可見。
 
 <Image img={require('../../img/claude_code_marketplace/step11_enable_plugin.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-## Engineer Guide: Installing Plugins
+## 工程師指南：安裝外掛程式 {#engineer-guide-installing-plugins}
 
-### Step 1: Add the LiteLLM Marketplace
+### 步驟 1：新增 LiteLLM Marketplace {#step-1-add-the-litellm-marketplace}
 
-Add your company's LiteLLM marketplace to Claude Code:
+將您公司的 LiteLLM marketplace 新增到 Claude Code：
 
 ```bash
 claude plugin marketplace add http://your-litellm-proxy:4000/claude-code/marketplace.json
@@ -70,17 +70,17 @@ claude plugin marketplace add http://your-litellm-proxy:4000/claude-code/marketp
 
 <Image img={require('../../img/claude_code_marketplace/step12_cli_marketplace.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 2: Browse Available Plugins
+### 步驟 2：瀏覽可用外掛程式 {#step-2-browse-available-plugins}
 
-List all available plugins from the marketplace:
+列出 marketplace 中所有可用的外掛程式：
 
 ```bash
 claude plugin search @litellm
 ```
 
-### Step 3: Install a Plugin
+### 步驟 3：安裝外掛程式 {#step-3-install-a-plugin}
 
-Install any plugin from the marketplace:
+從 marketplace 安裝任何外掛程式：
 
 ```bash
 claude plugin install my-plugin@litellm
@@ -88,25 +88,25 @@ claude plugin install my-plugin@litellm
 
 <Image img={require('../../img/claude_code_marketplace/step15_cli_paste.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-### Step 4: Verify Installation
+### 步驟 4：驗證安裝 {#step-4-verify-installation}
 
-The plugin is now installed and ready to use:
+外掛程式現已安裝完成並可使用：
 
 <Image img={require('../../img/claude_code_marketplace/step16_cli_complete.jpeg')} style={{ width: '800px', height: 'auto' }} />
 
-## API Reference
+## API 參考 {#api-reference}
 
-### Public Endpoint (No Auth Required)
+### 公開端點（不需要驗證） {#public-endpoint-no-auth-required}
 
-#### GET `/claude-code/marketplace.json`
+#### GET `/claude-code/marketplace.json` {#get-claude-codemarketplacejson}
 
-Returns the marketplace catalog for Claude Code discovery.
+回傳 Claude Code 探索用的 marketplace 目錄。
 
 ```bash
 curl http://localhost:4000/claude-code/marketplace.json
 ```
 
-**Response:**
+**回應：**
 ```json
 {
   "name": "litellm",
@@ -130,11 +130,11 @@ curl http://localhost:4000/claude-code/marketplace.json
 }
 ```
 
-### Admin Endpoints (Auth Required)
+### 管理員端點（需要驗證） {#admin-endpoints-auth-required}
 
-#### POST `/claude-code/plugins`
+#### POST `/claude-code/plugins` {#post-claude-codeplugins}
 
-Register a new plugin.
+註冊新的外掛程式。
 
 ```bash
 curl -X POST http://localhost:4000/claude-code/plugins \
@@ -150,43 +150,43 @@ curl -X POST http://localhost:4000/claude-code/plugins \
   }'
 ```
 
-#### GET `/claude-code/plugins`
+#### GET `/claude-code/plugins` {#get-claude-codeplugins}
 
-List all registered plugins.
+列出所有已註冊的外掛程式。
 
 ```bash
 curl http://localhost:4000/claude-code/plugins \
   -H "Authorization: Bearer sk-..."
 ```
 
-#### POST `/claude-code/plugins/{name}/enable`
+#### POST `/claude-code/plugins/{name}/enable` {#post-claude-codepluginsnameenable}
 
-Enable a plugin.
+啟用外掛程式。
 
 ```bash
 curl -X POST http://localhost:4000/claude-code/plugins/my-plugin/enable \
   -H "Authorization: Bearer sk-..."
 ```
 
-#### POST `/claude-code/plugins/{name}/disable`
+#### POST `/claude-code/plugins/{name}/disable` {#post-claude-codepluginsnamedisable}
 
-Disable a plugin.
+停用外掛程式。
 
 ```bash
 curl -X POST http://localhost:4000/claude-code/plugins/my-plugin/disable \
   -H "Authorization: Bearer sk-..."
 ```
 
-#### DELETE `/claude-code/plugins/{name}`
+#### DELETE `/claude-code/plugins/{name}` {#delete-claude-codepluginsname}
 
-Delete a plugin.
+刪除外掛程式。
 
 ```bash
 curl -X DELETE http://localhost:4000/claude-code/plugins/my-plugin \
   -H "Authorization: Bearer sk-..."
 ```
 
-## Plugin Source Formats
+## 外掛程式來源格式 {#plugin-source-formats}
 
 <Tabs>
 <TabItem value="github" label="GitHub">
@@ -214,7 +214,7 @@ curl -X DELETE http://localhost:4000/claude-code/plugins/my-plugin \
 }
 ```
 
-Use this format for GitLab, Bitbucket, or self-hosted git repositories.
+GitLab、Bitbucket 或自架 git 儲存庫請使用此格式。
 
 </TabItem>
 <TabItem value="git-subdir" label="Git Subdir">
@@ -230,16 +230,16 @@ Use this format for GitLab, Bitbucket, or self-hosted git repositories.
 }
 ```
 
-Use this format when your plugin lives in a subdirectory of a git repository. The `path` field must be a relative path of slash-separated segments (alphanumeric, dots, hyphens, underscores only).
+當您的外掛程式位於 git 儲存庫的子目錄時，請使用此格式。`path` 欄位必須是以斜線分隔的相對路徑片段（僅限英數字元、點、連字號、底線）。
 
 </TabItem>
 </Tabs>
 
-## Example: Setting Up an Internal Plugin Marketplace
+## 範例：設定內部外掛程式 Marketplace {#example-setting-up-an-internal-plugin-marketplace}
 
-### 1. Create Internal Plugins
+### 1. 建立內部外掛程式 {#1-create-internal-plugins}
 
-Structure your plugin repository:
+建立您的外掛程式儲存庫結構：
 
 ```
 my-company-plugin/
@@ -250,7 +250,7 @@ my-company-plugin/
 └── README.md
 ```
 
-### 2. Register Plugins via API
+### 2. 透過 API 註冊外掛程式 {#2-register-plugins-via-api}
 
 ```bash
 # Register your internal tools plugin
@@ -268,9 +268,9 @@ curl -X POST http://localhost:4000/claude-code/plugins \
   }'
 ```
 
-### 3. Use in Claude Code
+### 3. 在 Claude Code 中使用 {#3-use-in-claude-code}
 
-Send engineers the marketplace URL:
+將 marketplace URL 傳送給工程師：
 
 ```bash
 # One-time setup for each engineer
@@ -280,16 +280,16 @@ claude plugin marketplace add http://litellm.internal.company.com/claude-code/ma
 claude plugin install internal-tools@litellm
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**Plugin not appearing in marketplace:**
-- Verify the plugin is **enabled** in the admin UI
-- Check that the plugin has a valid `source` field
+**外掛程式未顯示在 marketplace 中：**
+- 確認外掛程式在 admin UI 中已**啟用**
+- 檢查外掛程式是否具有有效的 `source` 欄位
 
-**Installation fails:**
-- Ensure the git repository is accessible from the engineer's machine
-- For private repos, engineers need appropriate git credentials configured
+**安裝失敗：**
+- 確認工程師的電腦可以存取該 git 儲存庫
+- 對於私人儲存庫，工程師需要設定適當的 git 認證
 
-**Database errors:**
-- Verify LiteLLM proxy is connected to the database
-- Check proxy logs for detailed error messages
+**資料庫錯誤：**
+- 驗證 LiteLLM proxy 已連接到資料庫
+- 檢查 proxy 記錄以取得詳細錯誤訊息

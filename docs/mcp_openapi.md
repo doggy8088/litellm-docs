@@ -2,13 +2,13 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# MCP from OpenAPI Specs
+# 從 OpenAPI 規格建立 MCP {#mcp-from-openapi-specs}
 
-LiteLLM can convert any OpenAPI/Swagger spec into an MCP server — no custom MCP server code required.
+LiteLLM 可以將任何 OpenAPI/Swagger 規格轉換成 MCP 伺服器——不需要自訂 MCP 伺服器程式碼。
 
-## Step 1 — Add the MCP Server
+## 步驟 1 — 新增 MCP 伺服器 {#step-1--add-the-mcp-server}
 
-Add your OpenAPI-based server in `config.yaml`:
+將您的 OpenAPI 型伺服器新增至 `config.yaml`：
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -30,32 +30,32 @@ mcp_servers:
     auth_value: "your-bearer-token"
 ```
 
-Or from the UI: go to **MCP Servers → Add New MCP Server**, fill in the URL and spec path, and LiteLLM will fetch the spec and load all endpoints as tools.
+或者從 UI：前往 **MCP Servers → Add New MCP Server**，填入 URL 與規格路徑，LiteLLM 會擷取規格並將所有端點載入為工具。
 
-**Configuration parameters:**
+**設定參數：**
 
-| Parameter | Required | Description |
+| 參數 | 必填 | 說明 |
 |-----------|----------|-------------|
-| `url` | Yes | Base URL of your API |
-| `spec_path` | Yes | Path or URL to your OpenAPI spec (JSON or YAML) |
-| `auth_type` | No | `none`, `api_key`, `bearer_token`, `basic`, `authorization`, `oauth2` |
-| `auth_value` | No | Auth value (required if `auth_type` is set) |
-| `description` | No | Optional description |
-| `allowed_tools` | No | Allowlist of specific tools |
-| `disallowed_tools` | No | Blocklist of specific tools |
+| `url` | 是 | 您的 API 基底 URL |
+| `spec_path` | 是 | OpenAPI 規格的路徑或 URL（JSON 或 YAML） |
+| `auth_type` | 否 | `none`、`api_key`、`bearer_token`、`basic`、`authorization`、`oauth2` |
+| `auth_value` | 否 | 驗證值（若已設定 `auth_type` 則為必填） |
+| `description` | 否 | 可選說明 |
+| `allowed_tools` | 否 | 特定工具的允許清單 |
+| `disallowed_tools` | 否 | 特定工具的封鎖清單 |
 
-**Supported spec versions:** OpenAPI 3.0.x, 3.1.x, Swagger 2.0. Each operation's `operationId` becomes the tool name — make sure they're unique.
+**支援的規格版本：** OpenAPI 3.0.x、3.1.x、Swagger 2.0。每個操作的 `operationId` 都會成為工具名稱——請確保它們是唯一的。
 
-## Internal spec URLs (SSRF)
+## 內部規格 URL（SSRF） {#internal-spec-urls-ssrf}
 
-When `spec_path` is an `http://` or `https://` URL, the LiteLLM proxy fetches it with **SSRF protection** enabled by default: the hostname is resolved and the request is **rejected** if any resolved address is not globally routable (e.g. `10.x`, `192.168.x`, `127.0.0.1`), unless you allowlist the **hostname from the URL** (not the resolved IP).
+當 `spec_path` 是 `http://` 或 `https://` URL 時，LiteLLM proxy 預設會啟用 **SSRF 保護** 來擷取它：系統會解析主機名稱，且若任何解析出的位址不是全球可路由（例如 `10.x`、`192.168.x`、`127.0.0.1`），則請求會被 **拒絕**，除非您將 **URL 中的主機名稱** 加入允許清單（不是解析後的 IP）。
 
-Typical cases:
+常見情況：
 
-- Spec URL uses `https://api.example.com/...` but DNS inside your network returns a private IP — add `api.example.com` to the allowlist (or `api.example.com:443` if you pin the port).
-- Spec URL is `http://127.0.0.1:8080/openapi.json` — add `127.0.0.1` or `127.0.0.1:8080`.
+- 規格 URL 使用 `https://api.example.com/...`，但您網路內的 DNS 回傳私有 IP — 請將 `api.example.com` 加入允許清單（如果您固定了埠，則使用 `api.example.com:443`）。
+- 規格 URL 是 `http://127.0.0.1:8080/openapi.json` — 請加入 `127.0.0.1` 或 `127.0.0.1:8080`。
 
-Configure under **`litellm_settings`** in your proxy `config.yaml` (this is **not** read from `general_settings`):
+請在您的 proxy `config.yaml` 中的 **`litellm_settings`** 下進行設定（這 **不是** 從 `general_settings` 讀取）：
 
 ```yaml title="config.yaml" showLineNumbers
 litellm_settings:
@@ -66,9 +66,9 @@ litellm_settings:
     - "127.0.0.1:8080"
 ```
 
-For a full reference of these fields, see [config settings — `litellm_settings`](./proxy/config_settings.md#litellm_settings---reference).
+這些欄位的完整參考，請參閱 [config settings — `litellm_settings`](./proxy/config_settings.md#litellm_settings---reference)。
 
-Once tools are loaded, you'll see them in the Tool Configuration section:
+工具載入完成後，您會在工具設定區段看到它們：
 
 <Image
   img={require('../img/mcp_openapi_tools_loaded.png')}
@@ -77,13 +77,13 @@ Once tools are loaded, you'll see them in the Tool Configuration section:
 
 <br/>
 
-## Step 2 — Optionally Override Tool Names and Descriptions
+## 步驟 2 — 選擇性覆寫工具名稱與說明 {#step-2--optionally-override-tool-names-and-descriptions}
 
-By default, tool names and descriptions come from the `operationId` and description fields in your spec. You can rename or rewrite them so MCP clients see something cleaner — without touching the upstream spec.
+預設情況下，工具名稱與說明會來自規格中的 `operationId` 與說明欄位。您可以重新命名或改寫它們，讓 MCP 用戶端看到更乾淨的內容——而不必修改上游規格。
 
-### From the UI
+### 從 UI {#from-the-ui}
 
-Each tool card has a pencil icon. Click it to open the inline editor:
+每個工具卡片都有一個鉛筆圖示。按一下即可開啟內嵌編輯器：
 
 <Image
   img={require('../img/mcp_openapi_tool_edit_panel.png')}
@@ -92,11 +92,11 @@ Each tool card has a pencil icon. Click it to open the inline editor:
 
 <br/>
 
-- **Display Name** — overrides the name MCP clients see
-- **Description** — overrides the description MCP clients see
-- Leave a field blank to keep the original from the spec
+- **顯示名稱** — 覆寫 MCP 用戶端看到的名稱
+- **說明** — 覆寫 MCP 用戶端看到的說明
+- 將欄位留空可保留規格中的原始值
 
-After setting overrides, a purple **Custom name** badge appears on the tool card:
+設定覆寫後，工具卡片上會出現紫色的 **自訂名稱** 徽章：
 
 <Image
   img={require('../img/mcp_openapi_custom_name_badge.png')}
@@ -105,9 +105,9 @@ After setting overrides, a purple **Custom name** badge appears on the tool card
 
 <br/>
 
-### From the API
+### 從 API {#from-the-api}
 
-Pass `tool_name_to_display_name` and `tool_name_to_description` in the create or update request:
+在建立或更新請求中傳遞 `tool_name_to_display_name` 和 `tool_name_to_description`：
 
 ```bash title="Create server with tool name overrides" showLineNumbers
 curl -X POST http://localhost:4000/v1/mcp/server \
@@ -142,11 +142,11 @@ curl -X PUT http://localhost:4000/v1/mcp/server/{server_id} \
   }'
 ```
 
-The map key is the **original `operationId`** from the spec — not the prefixed tool name. LiteLLM strips the server prefix before doing the lookup.
+對應的 map key 是規格中的 **原始 `operationId`**——不是加上前綴的工具名稱。LiteLLM 在查找前會先移除伺服器前綴。
 
-For example, if your server is `petstore_mcp`, the tool is exposed as `petstore_mcp-getPetById`. The map key is still `getPetById`.
+例如，如果您的伺服器是 `petstore_mcp`，工具會以 `petstore_mcp-getPetById` 的形式公開。map key 仍然是 `getPetById`。
 
-**Before and after:**
+**前後對照：**
 
 ```
 # Without overrides
@@ -164,7 +164,7 @@ Tool: "List Available Pets"
 Description: "Returns all pets matching a given status (available, pending, sold)"
 ```
 
-## Using the Server
+## 使用伺服器 {#using-the-server}
 
 <Tabs>
 <TabItem value="fastmcp" label="Python FastMCP">

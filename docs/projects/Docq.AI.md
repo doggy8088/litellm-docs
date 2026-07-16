@@ -1,10 +1,10 @@
-**A private and secure ChatGPT alternative that knows your business.**
+**一個私密且安全、了解您業務的 ChatGPT 替代方案。**
 
-Upload docs, ask questions --> get answers.
+上傳文件、提出問題 --> 取得答案。
 
-Leverage GenAI with your confidential documents to increase efficiency and collaboration.
+運用 GenAI 搭配您的機密文件來提升效率與協作。
 
-OSS core, everything can run in your environment. An extensible platform you can build your GenAI strategy on. Support a variety of popular LLMs including embedded for air gap use cases.
+OSS 核心，所有內容都可在您的環境中執行。一個可擴充的平台，您可以在其上建立您的 GenAI 策略。支援多種熱門 LLM，包括可內嵌版本，適用於 air gap 使用情境。
 
 [![Static Badge][docs-shield]][docs-url]
 [![Static Badge][github-shield]][github-url]

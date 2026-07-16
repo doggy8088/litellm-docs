@@ -2,44 +2,44 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Create Pass Through Endpoints 
+# 建立直通端點  {#create-pass-through-endpoints}
 
-Route requests from your LiteLLM proxy to any external API. Perfect for custom models, image generation APIs, or any service you want to proxy through LiteLLM.
+將請求從您的 LiteLLM proxy 路由到任何外部 API。非常適合自訂模型、圖像生成 API，或任何您想透過 LiteLLM 代理的服務。
 
-**Key Benefits:**
-- Onboard third-party endpoints like Bria API and Mistral OCR
-- Set custom pricing per request
-- Proxy Admins don't need to give developers api keys to upstream llm providers like Bria, Mistral OCR, etc.
-- Maintain centralized authentication, spend tracking, budgeting
+**主要優點：**
+- 上線 Bria API 和 Mistral OCR 等第三方端點
+- 設定每次請求的自訂定價
+- Proxy 管理員無需提供開發者對上游 LLM 提供者（如 Bria、Mistral OCR 等）的 API 金鑰
+- 維持集中式驗證、支出追蹤、預算控管
 
-## Quick Start with UI (Recommended)
+## 使用 UI 快速開始（建議） {#quick-start-with-ui-recommended}
 
-The easiest way to create pass through endpoints is through the LiteLLM UI. In this example, we'll onboard the [Bria API](https://docs.bria.ai/image-generation/endpoints/text-to-image-base) and set a cost per request.
+建立直通端點最簡單的方式是透過 LiteLLM UI。在此範例中，我們將上線 [Bria API](https://docs.bria.ai/image-generation/endpoints/text-to-image-base) 並設定每次請求的成本。
 
-### Step 1: Create Route Mappings
+### 步驟 1：建立路由對應 {#step-1-create-route-mappings}
 
-To create a pass through endpoint:
+若要建立直通端點：
 
-1. Navigate to the LiteLLM Proxy UI
-2. Go to the `Models + Endpoints` tab
-3. Click on `Pass Through Endpoints`
-4. Click "Add Pass Through Endpoint"
-5. Enter the following details:
+1. 前往 LiteLLM Proxy UI
+2. 前往 `Models + Endpoints` 分頁
+3. 點擊 `Pass Through Endpoints`
+4. 點擊「Add Pass Through Endpoint」
+5. 輸入以下詳細資訊：
 
-**Required Fields:**
-- `Path Prefix`: The route clients will use when calling LiteLLM Proxy (e.g., `/bria`, `/mistral-ocr`)
-- `Target URL`: The URL where requests will be forwarded
+**必要欄位：**
+- `Path Prefix`：用戶端在呼叫 LiteLLM Proxy 時使用的路由（例如：`/bria`、`/mistral-ocr`）
+- `Target URL`：請求將被轉送至的 URL
 
 <Image 
   img={require('../../img/pt_1.png')}
   style={{width: '60%', display: 'block', margin: '2rem auto'}}
 />
 
-**Route Mapping Example:**
+**路由對應範例：**
 
-The above configuration creates these route mappings:
+上述設定會建立以下路由對應：
 
-| LiteLLM Proxy Route | Target URL |
+| LiteLLM Proxy 路由 | 目標 URL |
 |-------------------|------------|
 | `/bria` | `https://engine.prod.bria-api.com` |
 | `/bria/v1/text-to-image/base/model` | `https://engine.prod.bria-api.com/v1/text-to-image/base/model` |
@@ -47,47 +47,47 @@ The above configuration creates these route mappings:
 | `/bria/<any-sub-path>` | `https://engine.prod.bria-api.com/<any-sub-path>` |
 
 :::info
-All routes are prefixed with your LiteLLM proxy base URL: `https://<litellm-proxy-base-url>`
+所有路由都會以您的 LiteLLM proxy 基礎 URL 作為前綴：`https://<litellm-proxy-base-url>`
 :::
 
-### Step 2: Configure Headers and Pricing
+### 步驟 2：設定標頭與定價 {#step-2-configure-headers-and-pricing}
 
-Configure the required authentication and pricing:
+設定所需的驗證與定價：
 
-**Authentication Setup:**
-- The Bria API requires an `api_token` header
-- Enter your Bria API key as the value for the `api_token` header
+**驗證設定：**
+- Bria API 需要 `api_token` 標頭
+- 輸入您的 Bria API 金鑰作為 `api_token` 標頭的值
 
-**Default Query Parameters (Optional):**
-- Add query parameters that will be automatically sent with every request
-- Perfect for API versioning, format specifications, or default configurations
-- Clients can override these parameters by providing their own values
-- Example: `version=v1`, `format=json`, `timeout=30`
+**預設查詢參數（選用）：**
+- 新增將隨每個請求自動送出的查詢參數
+- 非常適合 API 版本控管、格式規格或預設設定
+- 用戶端可透過提供自己的值來覆寫這些參數
+- 範例：`version=v1`、`format=json`、`timeout=30`
 
 <Image 
   img={require('../../img/passthrough_query_default.png')}
   style={{width: '60%', display: 'block', margin: '2rem auto'}}
 />
 
-**Pricing Configuration:**
-- Set a cost per request (e.g., $12.00 in this example)
-- This enables cost tracking and billing for your users
+**定價設定：**
+- 設定每次請求的成本（例如：此範例中為 $12.00）
+- 這可為您的使用者啟用成本追蹤與計費
 
 <Image 
   img={require('../../img/pt_2.png')}
   style={{width: '60%', display: 'block', margin: '2rem auto'}}
 />
 
-### Step 3: Save Your Endpoint 
+### 步驟 3：儲存您的端點  {#step-3-save-your-endpoint}
 
-Once you've completed the configuration:
-1. Review your settings
-2. Click "Add Pass Through Endpoint"
-3. Your endpoint will be created and immediately available
+完成設定後：
+1. 檢視您的設定
+2. 點擊「Add Pass Through Endpoint」
+3. 您的端點將被建立並立即可用
 
-### Step 4: Test Your Endpoint
+### 步驟 4：測試您的端點 {#step-4-test-your-endpoint}
 
-Verify your setup by making a test request to the Bria API through your LiteLLM Proxy:
+透過您的 LiteLLM Proxy 對 Bria API 發送測試請求，以驗證您的設定：
 
 ```shell
 curl -i -X POST \
@@ -101,16 +101,16 @@ curl -i -X POST \
   }'
 ```
 
-**Expected Response:**
-If everything is configured correctly, you should receive a response from the Bria API containing the generated image data.
+**預期回應：**
+如果一切都設定正確，您應該會收到來自 Bria API 的回應，其中包含生成的圖像資料。
 
 ---
 
-## Config.yaml Setup
+## Config.yaml 設定 {#configyaml-setup}
 
-You can also create pass through endpoints using the `config.yaml` file. Here's how to add a `/v1/rerank` route that forwards to Cohere's API:
+您也可以使用 `config.yaml` 檔案建立直通端點。以下說明如何新增一個將請求轉送至 Cohere API 的 `/v1/rerank` 路由：
 
-### Example Configuration
+### 設定範例 {#example-configuration}
 
 ```yaml
 general_settings:
@@ -128,14 +128,14 @@ general_settings:
         format: "json"                                    # Default format (can be overridden)
 ```
 
-### Start and Test
+### 啟動與測試 {#start-and-test}
 
-1. **Start the proxy:**
+1. **啟動 proxy：**
    ```shell
    litellm --config config.yaml --detailed_debug
    ```
 
-2. **Make a test request:**
+2. **發送測試請求：**
    ```shell
    curl --request POST \
      --url http://localhost:4000/v1/rerank \
@@ -149,7 +149,7 @@ general_settings:
      }'
    ```
 
-### Expected Response
+### 預期回應 {#expected-response}
 ```json
 {
   "id": "37103a5b-8cfb-48d3-87c7-da288bedd429",
@@ -168,9 +168,9 @@ general_settings:
 
 ---
 
-## Configuration Reference
+## 設定參考 {#configuration-reference}
 
-### Complete Specification
+### 完整規格 {#complete-specification}
 
 ```yaml
 general_settings:
@@ -194,26 +194,26 @@ general_settings:
         <custom-header>: string      # Any custom header
 ```
 
-### Request timeouts
+### 請求逾時 {#request-timeouts}
 
-Pass-through routes default to a **600 second** upstream timeout. Set `general_settings.pass_through_request_timeout` for a global override, or `timeout` on a custom endpoint (per-endpoint wins). Applies to custom pass-through endpoints and native provider passthrough routes (e.g. Bedrock `/converse`).
+直通路由預設的上游逾時為 **600 秒**。設定 `general_settings.pass_through_request_timeout` 可作為全域覆寫，或在自訂端點上設定 `timeout`（以每個端點為準）。適用於自訂直通端點與原生提供者 passthrough 路由（例如 Bedrock `/converse`）。
 
-### Header Options
-- **Authorization**: Authentication for the target API
-- **content-type**: Request body format specification
-- **accept**: Expected response format
-- **LANGFUSE_PUBLIC_KEY/SECRET_KEY**: For Langfuse integration
-- **Custom headers**: Any additional key-value pairs
+### 標頭選項 {#header-options}
+- **Authorization**：目標 API 的驗證
+- **content-type**：請求主體格式規格
+- **accept**：預期的回應格式
+- **LANGFUSE_PUBLIC_KEY/SECRET_KEY**：用於 Langfuse 整合
+- **自訂標頭**：任何額外的鍵值配對
 
-### Default Query Parameters
-- **Parameter precedence**: Client params > URL params > default params
-- **Use cases**: API versioning, authentication tokens, format control, feature flags
-- **Override capability**: Clients can override any default parameter
-- **Examples**: `version: "v1"`, `format: "json"`, `timeout: "30"`
+### 預設查詢參數 {#default-query-parameters}
+- **參數優先順序**：用戶端參數 > URL 參數 > 預設參數
+- **使用情境**：API 版本控管、驗證權杖、格式控制、功能旗標
+- **覆寫能力**：用戶端可覆寫任何預設參數
+- **範例**：`version: "v1"`、`format: "json"`、`timeout: "30"`
 
-### Sub-path Routing
+### 子路徑路由 {#sub-path-routing}
 
-By default, pass-through endpoints only match the **exact path** specified. To forward requests to sub-paths, set `include_subpath: true`:
+預設情況下，直通端點只會比對指定的**完全相同路徑**。若要將請求轉送至子路徑，請設定 `include_subpath: true`：
 
 ```yaml
 general_settings:
@@ -223,25 +223,25 @@ general_settings:
       include_subpath: true  # Forward /custom-api/*, not just /custom-api
 ```
 
-| Setting | Behavior |
+| 設定 | 行為 |
 |---------|----------|
-| `include_subpath: false` (default) | Only `/custom-api` is forwarded |
-| `include_subpath: true` | `/custom-api`, `/custom-api/v1/chat`, `/custom-api/anything` are all forwarded |
+| `include_subpath: false`（預設） | 只會轉送 `/custom-api` |
+| `include_subpath: true` | `/custom-api`、`/custom-api/v1/chat`、`/custom-api/anything` 都會被轉送 |
 
 ---
 
-### Default Query Parameters
+### 預設查詢參數 {#default-query-parameters-1}
 
-Pass-through endpoints support default query parameters that are automatically added to every request. This is useful for API versioning, format specifications, authentication tokens, or any default configuration.
+直通端點支援預設查詢參數，這些參數會自動新增到每個請求中。這對 API 版本控管、格式規格、驗證權杖或任何預設設定都很有用。
 
-#### How It Works
+#### 運作方式 {#how-it-works}
 
-**Parameter Precedence (highest to lowest priority):**
-1. **Client-provided parameters** (in the request URL)
-2. **URL parameters** (from the target URL)
-3. **Default parameters** (from configuration)
+**參數優先順序（由高到低）：**
+1. **用戶端提供的參數**（在請求 URL 中）
+2. **URL 參數**（來自目標 URL）
+3. **預設參數**（來自設定）
 
-#### Example Configuration
+#### 設定範例 {#example-configuration-1}
 
 ```yaml
 general_settings:
@@ -254,29 +254,29 @@ general_settings:
         auth_level: "basic"    # Always add auth_level=basic
 ```
 
-#### Request Examples
+#### 請求範例 {#request-examples}
 
-**Client Request:** `GET /api/v1/users`
-**Actual Backend Call:** `https://external-api.com/service?version=v1&format=json&auth_level=basic&timeout=60`
+**用戶端請求：** `GET /api/v1/users`
+**實際後端呼叫：** `https://external-api.com/service?version=v1&format=json&auth_level=basic&timeout=60`
 
-**Client Request:** `GET /api/v1/users?format=xml&custom=value`
-**Actual Backend Call:** `https://external-api.com/service?version=v1&auth_level=basic&timeout=60&format=xml&custom=value`
-- Client `format=xml` overrides default `format=json`
-- Default `version=v1` and `auth_level=basic` are preserved
-- URL `timeout=60` is preserved
-- Client `custom=value` is added
+**用戶端請求：** `GET /api/v1/users?format=xml&custom=value`
+**實際後端呼叫：** `https://external-api.com/service?version=v1&auth_level=basic&timeout=60&format=xml&custom=value`
+- 用戶端 `format=xml` 會覆寫預設的 `format=json`
+- 預設的 `version=v1` 與 `auth_level=basic` 會被保留
+- URL `timeout=60` 會被保留
+- 用戶端 `custom=value` 會被新增
 
-#### Use Cases
+#### 使用情境 {#use-cases}
 
-- **API Versioning**: Always send `version=v2` to maintain compatibility
-- **Authentication**: Add authentication tokens like `api_key=default_key`
-- **Format Control**: Default to `format=json` but allow client override
-- **Rate Limiting**: Set `rate_limit=standard` as default
-- **Feature Flags**: Enable `experimental=false` by default
+- **API 版本控管**：一律傳送 `version=v2` 以維持相容性
+- **驗證**：新增如 `api_key=default_key` 的驗證權杖
+- **格式控制**：預設為 `format=json`，但允許用戶端覆寫
+- **速率限制**：將 `rate_limit=standard` 設為預設
+- **功能旗標**：預設啟用 `experimental=false`
 
 ---
 
-You can configure different target URLs for the same path using different HTTP methods. This is useful when different backends handle different operations:
+您可以使用不同的 HTTP 方法，為相同路徑設定不同的目標 URL。當不同的後端處理不同操作時，這很有用：
 
 <Image 
   img={require('../../img/passthrough_method_setup.png')}
@@ -308,19 +308,19 @@ general_settings:
         Authorization: "bearer os.environ/UPDATE_API_KEY"
 ```
 
-**Key Points:**
-- If `methods` is not specified, the endpoint supports all HTTP methods (GET, POST, PUT, DELETE, PATCH)
-- Multiple endpoints can share the same path as long as they have different methods
-- You can specify multiple methods for a single endpoint: `methods: ["GET", "POST"]`
-- This allows you to route to different backends based on the operation type
+**重點：**
+- 如果未指定 `methods`，該端點支援所有 HTTP 方法（GET、POST、PUT、DELETE、PATCH）
+- 只要方法不同，多個端點可以共用相同路徑
+- 您可以為單一端點指定多個方法：`methods: ["GET", "POST"]`
+- 這讓您可以依據操作類型路由到不同的後端
 
 ---
 
-## Advanced: Custom Adapters
+## 進階：自訂 Adapter {#advanced-custom-adapters}
 
-For complex integrations (like Anthropic/Bedrock clients), you can create custom adapters that translate between different API schemas.
+對於複雜整合（例如 Anthropic/Bedrock 用戶端），您可以建立自訂 adapter，在不同的 API schema 之間進行轉換。
 
-### 1. Create an Adapter
+### 1. 建立 Adapter {#1-create-an-adapter}
 
 ```python
 from litellm import adapter_completion
@@ -344,7 +344,7 @@ class AnthropicAdapter(CustomLogger):
 anthropic_adapter = AnthropicAdapter()
 ```
 
-### 2. Configure the Endpoint
+### 2. 設定端點 {#2-configure-the-endpoint}
 
 ```yaml
 model_list:
@@ -362,7 +362,7 @@ general_settings:
         litellm_user_api_key: "x-api-key"
 ```
 
-### 3. Test Custom Endpoint
+### 3. 測試自訂端點 {#3-test-custom-endpoint}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/messages' \
@@ -378,41 +378,40 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 
 ---
 
-## Tutorial - Add Azure OpenAI Assistants API as a Pass Through Endpoint
+## 教學 - 將 Azure OpenAI Assistants API 加入為直通端點 {#tutorial---add-azure-openai-assistants-api-as-a-pass-through-endpoint}
 
-In this video, we'll add the Azure OpenAI Assistants API as a pass through endpoint to LiteLLM Proxy.
+在這部影片中，我們將把 Azure OpenAI Assistants API 加入為 LiteLLM Proxy 的直通端點。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/12965cb299d24fc0bd7b6b413ab6d0ad" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 <br/>
 <br/>
 
-
 ---
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Common Issues
+### 常見問題 {#common-issues}
 
-**Authentication Errors:**
-- Verify API keys are correctly set in headers
-- Ensure the target API accepts the provided authentication method
+**驗證錯誤：**
+- 確認 API 金鑰已正確設定在標頭中
+- 確認目標 API 接受所提供的驗證方法
 
-**Routing Issues:**
-- Confirm the path prefix matches your request URL
-- Verify the target URL is accessible
-- Check for trailing slashes in configuration
+**路由問題：**
+- 確認路徑前綴與您的請求 URL 相符
+- 確認可存取目標 URL
+- 檢查設定中是否有尾端斜線
 
-**Response Errors:**
-- Enable detailed debugging with `--detailed_debug`
-- Check LiteLLM proxy logs for error details
-- Verify the target API's expected request format
+**回應錯誤：**
+- 使用 `--detailed_debug` 啟用詳細除錯
+- 檢查 LiteLLM proxy 記錄中的錯誤詳細資訊
+- 確認目標 API 預期的請求格式
 
-### Allowing Team JWTs to use pass-through routes
+### 允許 Team JWT 使用 pass-through 路由 {#allowing-team-jwts-to-use-pass-through-routes}
 
-If you are using pass-through provider routes (e.g., `/anthropic/*`) and want your JWT team tokens to access these routes, add `mapped_pass_through_routes` to the `team_allowed_routes` in `litellm_jwtauth` or explicitly add the relevant route(s).
+如果您使用 pass-through provider 路由（例如 `/anthropic/*`），並希望您的 JWT team token 可存取這些路由，請將 `mapped_pass_through_routes` 加入 `team_allowed_routes` 中的 `litellm_jwtauth`，或明確新增相關路由。
 
-Example (`proxy_server_config.yaml`):
+範例（`proxy_server_config.yaml`）：
 
 ```yaml
 general_settings:
@@ -422,11 +421,10 @@ general_settings:
     team_allowed_routes: ["openai_routes","info_routes","mapped_pass_through_routes"]
 ```
 
-### Getting Help
+### 取得協助 {#getting-help}
 
-[Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+[預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
 
-[Community Discord 💭](https://discord.gg/wuPM9dRgDw)
+[社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
 
-
-Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

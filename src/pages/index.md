@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteLLM - Getting Started
+# LiteLLM - 開始使用 {#litellm---getting-started}
 
 https://github.com/BerriAI/litellm
 
-## **Call 100+ LLMs using the OpenAI Input/Output Format**
+## **使用 OpenAI 輸入/輸出格式呼叫 100+ 個 LLM** {#call-100-llms-using-the-openai-inputoutput-format}
 
-- Translate inputs to provider's endpoints (`/chat/completions`, `/responses`, `/embeddings`, `/images`, `/audio`, `/batches`, and more)
-- [Consistent output](https://docs.litellm.ai/docs/supported_endpoints) - same response format regardless of which provider you use
-- Retry/fallback logic across multiple deployments (e.g. Azure/OpenAI) - [Router](https://docs.litellm.ai/docs/routing)
-- Track spend & set budgets per project [LiteLLM Proxy Server](https://docs.litellm.ai/docs/simple_proxy)
+- 將輸入轉換為提供者的端點（`/chat/completions`, `/responses`, `/embeddings`, `/images`, `/audio`, `/batches`, 以及更多）
+- [一致的輸出](https://docs.litellm.ai/docs/supported_endpoints) - 無論使用哪個提供者，回應格式都相同
+- 跨多個部署（例如 Azure/OpenAI）的重試/備援邏輯 - [Router](https://docs.litellm.ai/docs/routing)
+- 追蹤支出並為每個專案設定預算 [LiteLLM Proxy Server](https://docs.litellm.ai/docs/simple_proxy)
 
-## How to use LiteLLM
+## 如何使用 LiteLLM {#how-to-use-litellm}
 
-You can use LiteLLM through either the Proxy Server or Python SDK. Both gives you a unified interface to access multiple LLMs (100+ LLMs). Choose the option that best fits your needs:
+您可以透過 Proxy Server 或 Python SDK 使用 LiteLLM。兩者都提供統一介面，讓您存取多個 LLM（100+ 個 LLM）。請選擇最符合您需求的選項：
 
 <table style={{width: '100%', tableLayout: 'fixed'}}>
 <thead>
@@ -26,29 +26,29 @@ You can use LiteLLM through either the Proxy Server or Python SDK. Both gives yo
 </thead>
 <tbody>
 <tr>
-<td style={{width: '14%'}}><strong>Use Case</strong></td>
-<td style={{width: '43%'}}>Central service (LLM Gateway) to access multiple LLMs</td>
-<td style={{width: '43%'}}>Use LiteLLM directly in your Python code</td>
+<td style={{width: '14%'}}><strong>使用情境</strong></td>
+<td style={{width: '43%'}}>存取多個 LLM 的中央服務（LLM 閘道）</td>
+<td style={{width: '43%'}}>直接在您的 Python 程式碼中使用 LiteLLM</td>
 </tr>
 <tr>
-<td style={{width: '14%'}}><strong>Who Uses It?</strong></td>
-<td style={{width: '43%'}}>Gen AI Enablement / ML Platform Teams</td>
-<td style={{width: '43%'}}>Developers building LLM projects</td>
+<td style={{width: '14%'}}><strong>誰會使用？</strong></td>
+<td style={{width: '43%'}}>生成式 AI 賦能 / ML 平台團隊</td>
+<td style={{width: '43%'}}>建置 LLM 專案的開發者</td>
 </tr>
 <tr>
-<td style={{width: '14%'}}><strong>Key Features</strong></td>
-<td style={{width: '43%'}}>• Centralized API gateway with authentication & authorization<br />• Multi-tenant cost tracking and spend management per project/user<br />• Per-project customization (logging, guardrails, caching)<br />• Virtual keys for secure access control<br />• Admin dashboard UI for monitoring and management</td>
-<td style={{width: '43%'}}>• Direct Python library integration in your codebase<br />• Router with retry/fallback logic across multiple deployments (e.g. Azure/OpenAI) - <a href="https://docs.litellm.ai/docs/routing">Router</a><br />• Application-level load balancing and cost tracking<br />• Exception handling with OpenAI-compatible errors<br />• Observability callbacks (Lunary, MLflow, Langfuse, etc.)</td>
+<td style={{width: '14%'}}><strong>主要功能</strong></td>
+<td style={{width: '43%'}}>• 具備驗證與授權的集中式 API 閘道<br />• 每個專案/使用者的多租戶成本追蹤與支出管理<br />• 每個專案的自訂化（記錄、防護欄、快取）<br />• 用於安全存取控制的虛擬金鑰<br />• 用於監控與管理的管理員儀表板 UI</td>
+<td style={{width: '43%'}}>• 直接在您的程式碼基底中整合 Python 函式庫<br />• 跨多個部署（例如 Azure/OpenAI）具備重試/備援邏輯的 Router - <a href="https://docs.litellm.ai/docs/routing">Router</a><br />• 應用程式層級的負載平衡與成本追蹤<br />• 具備與 OpenAI 相容錯誤的例外處理<br />• 可觀測性回呼（Lunary、MLflow、Langfuse 等）</td>
 </tr>
 </tbody>
 </table>
 
-## **LiteLLM Python SDK**
+## **LiteLLM Python SDK** {#litellm-python-sdk}
 
-### Basic usage 
+### 基本使用  {#basic-usage}
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_Getting_Started.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
 ```shell
@@ -244,7 +244,7 @@ response = completion(
 
 </Tabs>
 
-### Response Format (OpenAI Chat Completions Format)
+### 回應格式（OpenAI Chat Completions 格式） {#response-format-openai-chat-completions-format}
 
 ```json
 {
@@ -280,9 +280,9 @@ response = completion(
 }
 ```
 
-### Responses API
+### 回應 API {#responses-api}
 
-Use `litellm.responses()` for advanced models that support reasoning content like GPT-5, o3, etc.
+對於支援 reasoning content 的進階模型，請使用 `litellm.responses()`，例如 GPT-5、o3 等。
 
 <Tabs>
 <TabItem value="openai-responses" label="OpenAI">
@@ -366,8 +366,8 @@ print(response)
 
 </Tabs>
 
-### Streaming
-Set `stream=True` in the `completion` args. 
+### 串流 {#streaming}
+請在 `completion` 引數中設定 `stream=True`。 
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -568,7 +568,7 @@ response = completion(
 
 </Tabs>
 
-### Streaming Response Format (OpenAI Format)
+### 串流回應格式（OpenAI 格式） {#streaming-response-format-openai-format}
 
 ```json
 {
@@ -594,9 +594,9 @@ response = completion(
 }
 ```
 
-### Exception handling 
+### 例外處理  {#exception-handling}
 
-LiteLLM maps exceptions across all supported providers to the OpenAI exceptions. All our exceptions inherit from OpenAI's exception types, so any error-handling you have for that, should work out of the box with LiteLLM.
+LiteLLM 會將所有支援的提供者例外對應到 OpenAI 例外。所有例外都繼承自 OpenAI 的例外型別，因此您針對該部分所做的任何錯誤處理，都應可在 LiteLLM 中直接使用。
 
 ```python
 import litellm
@@ -617,8 +617,8 @@ except litellm.APIError as e:
     print(f"API error: {e}")
 ```
 
-### Logging Observability - Log LLM Input/Output ([Docs](https://docs.litellm.ai/docs/observability/callbacks))
-LiteLLM exposes pre defined callbacks to send data to MLflow, Lunary, Langfuse, Helicone, Promptlayer, Traceloop, Slack
+### 記錄可觀測性 - 記錄 LLM 輸入/輸出 ([文件](https://docs.litellm.ai/docs/observability/callbacks)) {#logging-observability---log-llm-inputoutput-docshttpsdocslitellmaidocsobservabilitycallbacks}
+LiteLLM 提供預先定義的回呼，可將資料傳送至 MLflow、Lunary、Langfuse、Helicone、Promptlayer、Traceloop、Slack
 
 ```python
 from litellm import completion
@@ -638,8 +638,8 @@ litellm.success_callback = ["lunary", "mlflow", "langfuse", "helicone"] # log in
 response = completion(model="openai/gpt-5", messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}])
 ```
 
-### Track Costs, Usage, Latency for streaming
-Use a callback function for this - more info on custom callbacks: https://docs.litellm.ai/docs/observability/custom_callback
+### 在串流中追蹤成本、用量、延遲 {#track-costs-usage-latency-for-streaming}
+請使用回呼函式來達成此目的 - 更多自訂回呼資訊：https://docs.litellm.ai/docs/observability/custom_callback
 
 ```python
 import litellm
@@ -671,30 +671,30 @@ response = completion(
 )
 ```
 
-## **LiteLLM Proxy Server (LLM Gateway)**
+## **LiteLLM Proxy Server（LLM 閘道）** {#litellm-proxy-server-llm-gateway}
 
-Track spend across multiple projects/people
+跨多個專案/人員追蹤支出
 
 ![ui_3](https://github.com/BerriAI/litellm/assets/29436595/47c97d5e-b9be-4839-b28c-43d7f4f10033)
 
-The proxy provides:
+proxy 提供：
 
-1. [Hooks for auth](https://docs.litellm.ai/docs/proxy/virtual_keys#custom-auth)
-2. [Hooks for logging](https://docs.litellm.ai/docs/proxy/logging#step-1---create-your-custom-litellm-callback-class)
-3. [Cost tracking](https://docs.litellm.ai/docs/proxy/virtual_keys#tracking-spend)
-4. [Rate Limiting](https://docs.litellm.ai/docs/proxy/users#set-rate-limits)
+1. [驗證用 Hook](https://docs.litellm.ai/docs/proxy/virtual_keys#custom-auth)
+2. [記錄用 Hook](https://docs.litellm.ai/docs/proxy/logging#step-1---create-your-custom-litellm-callback-class)
+3. [成本追蹤](https://docs.litellm.ai/docs/proxy/virtual_keys#tracking-spend)
+4. [速率限制](https://docs.litellm.ai/docs/proxy/users#set-rate-limits)
 
-### 📖 Proxy Endpoints - [Swagger Docs](https://litellm-api.up.railway.app/)
+### 📖 Proxy 端點 - [Swagger 文件](https://litellm-api.up.railway.app/) {#-proxy-endpoints---swagger-docshttpslitellm-apiuprailwayapp}
 
-Go here for a complete tutorial with keys + rate limits - [**here**](https://docs.litellm.ai/docs/proxy/docker_quick_start)
+完整教學請見此處，包含金鑰與速率限制 - [**這裡**](https://docs.litellm.ai/docs/proxy/docker_quick_start)
 
-### Quick Start Proxy - CLI
+### 快速開始 Proxy - CLI {#quick-start-proxy---cli}
 
 ```shell
 uv tool install 'litellm[proxy]'
 ```
 
-#### Step 1: Start litellm proxy
+#### 步驟 1：啟動 litellm proxy {#step-1-start-litellm-proxy}
 
 <Tabs>
 
@@ -710,10 +710,9 @@ $ litellm --model huggingface/bigcode/starcoder
 
 <TabItem label="Docker container" value="docker">
 
+### 步驟 1. 建立 config.yaml  {#step-1-create-configyaml}
 
-### Step 1. CREATE config.yaml 
-
-Example `litellm_config.yaml` 
+範例 `litellm_config.yaml` 
 
 ```yaml
 model_list:
@@ -729,7 +728,7 @@ litellm_settings:
   database_url: postgres://
 ```
 
-### Step 2. RUN Docker Image
+### 步驟 2. 執行 Docker 映像檔 {#step-2-run-docker-image}
 
 ```shell
 docker run \
@@ -745,7 +744,7 @@ docker run \
 
 </Tabs>
 
-#### Step 2: Make ChatCompletions Request to Proxy
+#### 步驟 2：對 Proxy 發出 ChatCompletions 請求 {#step-2-make-chatcompletions-request-to-proxy}
 
 <Tabs>
 <TabItem value="chat-completions" label="Chat Completions">
@@ -786,8 +785,8 @@ print(response)
 </TabItem>
 </Tabs>
 
-## More details
+## 更多詳細資訊 {#more-details}
 
-- [exception mapping](../../docs/exception_mapping)
-- [E2E Tutorial for LiteLLM Proxy Server](../../docs/proxy/docker_quick_start)
-- [proxy virtual keys & spend management](../../docs/proxy/virtual_keys)
+- [例外對應](../../docs/exception_mapping)
+- [LiteLLM Proxy Server 的端到端教學](../../docs/proxy/docker_quick_start)
+- [proxy 虛擬金鑰與支出管理](../../docs/proxy/virtual_keys)

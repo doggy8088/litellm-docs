@@ -2,41 +2,40 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Virtual Keys
-Track Spend, and control model access via virtual keys for the proxy
+# 虛擬金鑰 {#virtual-keys}
+透過閘道的虛擬金鑰追蹤支出並控制模型存取
 
 :::info
 
-- 🔑 [UI to Generate, Edit, Delete Keys (with SSO)](https://docs.litellm.ai/docs/proxy/ui)
-- [Deploy LiteLLM Proxy with Key Management](https://docs.litellm.ai/docs/proxy/deploy#deploy-with-database)
-- [Dockerfile.database for LiteLLM Proxy + Key Management](https://github.com/BerriAI/litellm/blob/main/docker/Dockerfile.database)
-
+- 🔑 [用於產生、編輯、刪除金鑰的 UI（含 SSO）](https://docs.litellm.ai/docs/proxy/ui)
+- [使用金鑰管理部署 LiteLLM Proxy](https://docs.litellm.ai/docs/proxy/deploy#deploy-with-database)
+- [LiteLLM Proxy + 金鑰管理的 Dockerfile.database](https://github.com/BerriAI/litellm/blob/main/docker/Dockerfile.database)
 
 :::
 
-## Setup
+## 設定 {#setup}
 
-Requirements: 
+需求：
 
-- Need a postgres database (e.g. [Supabase](https://supabase.com/), [Neon](https://neon.tech/), etc)
-- Set `DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname>` in your env 
-- Set a `master key`, this is your Proxy Admin key - you can use this to create other keys (🚨 must start with `sk-`).
-  - ** Set on config.yaml** set your master key under `general_settings:master_key`, example below
-  - ** Set env variable** set `LITELLM_MASTER_KEY`
+- 需要一個 postgres 資料庫（例如 [Supabase](https://supabase.com/)、[Neon](https://neon.tech/) 等）
+- 在您的 env 中設定 `DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname>`
+- 設定一個 `master key`，這是您的 Proxy 管理員金鑰 - 您可以用它來建立其他金鑰（🚨 必須以 `sk-` 開頭）。
+  - ** 在 config.yaml 中設定**：將您的 master key 設在 `general_settings:master_key`，如下方範例
+  - ** 設定環境變數**：設定 `LITELLM_MASTER_KEY`
 
-(the proxy Dockerfile checks if the `DATABASE_URL` is set and then initializes the DB connection)
+（proxy Dockerfile 會檢查是否已設定 `DATABASE_URL`，然後初始化 DB 連線）
 
 ```shell
 export DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname>
 ```
 
 
-You can then generate keys by hitting the `/key/generate` endpoint.
+接著，您可以透過呼叫 `/key/generate` 端點來產生金鑰。
 
-[**See code**](https://github.com/BerriAI/litellm/blob/7a669a36d2689c7f7890bc9c93e04ff3c2641299/litellm/proxy/proxy_server.py#L672)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/7a669a36d2689c7f7890bc9c93e04ff3c2641299/litellm/proxy/proxy_server.py#L672)
 
-## **Quick Start - Generate a Key**
-**Step 1: Save postgres db url**
+## **快速入門 - 產生金鑰** {#quick-start---generate-a-key}
+**步驟 1：儲存 postgres db url**
 
 ```yaml
 model_list:
@@ -52,13 +51,13 @@ general_settings:
   database_url: "postgresql://<user>:<password>@<host>:<port>/<dbname>" # 👈 KEY CHANGE
 ```
 
-**Step 2: Start litellm**
+**步驟 2：啟動 litellm**
 
 ```shell
 litellm --config /path/to/config.yaml
 ```
 
-**Step 3: Generate keys**
+**步驟 3：產生金鑰**
 
 ```shell 
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -67,26 +66,26 @@ curl 'http://0.0.0.0:4000/key/generate' \
 --data-raw '{"models": ["gpt-3.5-turbo", "gpt-4"], "metadata": {"user": "ishaan@berri.ai"}}'
 ```
 
-## Spend Tracking 
+## 消費追蹤 {#spend-tracking}
 
-Get spend per:
-- key - via `/key/info` [Swagger](https://litellm-api.up.railway.app/#/key%20management/info_key_fn_key_info_get)
-- user - via `/user/info` [Swagger](https://litellm-api.up.railway.app/#/user%20management/user_info_user_info_get)
-- team - via `/team/info` [Swagger](https://litellm-api.up.railway.app/#/team%20management/team_info_team_info_get)  
-- ⏳ end-users - via `/end_user/info` - [Comment on this issue for end-user cost tracking](https://github.com/BerriAI/litellm/issues/2633)
+取得支出依據：
+- 金鑰 - 透過 `/key/info` [Swagger](https://litellm-api.up.railway.app/#/key%20management/info_key_fn_key_info_get)
+- 使用者 - 透過 `/user/info` [Swagger](https://litellm-api.up.railway.app/#/user%20management/user_info_user_info_get)
+- 團隊 - 透過 `/team/info` [Swagger](https://litellm-api.up.railway.app/#/team%20management/team_info_team_info_get)  
+- ⏳ 最終使用者 - 透過 `/end_user/info` - [在此 issue 留言以進行最終使用者成本追蹤](https://github.com/BerriAI/litellm/issues/2633)
 
-**How is it calculated?**
+**它是如何計算的？**
 
-The cost per model is stored [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) and calculated by the [`completion_cost`](https://github.com/BerriAI/litellm/blob/db7974f9f216ee50b53c53120d1e3fc064173b60/litellm/utils.py#L3771) function.
+每個模型的成本儲存在[這裡](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)，並由 [`completion_cost`](https://github.com/BerriAI/litellm/blob/db7974f9f216ee50b53c53120d1e3fc064173b60/litellm/utils.py#L3771) 函式計算。
 
-**How is it tracking?**
+**它是如何追蹤的？**
 
-Spend is automatically tracked for the key in the "LiteLLM_VerificationTokenTable". If the key has an attached 'user_id' or 'team_id', the spend for that user is tracked in the "LiteLLM_UserTable", and team in the "LiteLLM_TeamTable".
+支出會針對 "LiteLLM_VerificationTokenTable" 中的金鑰自動追蹤。如果金鑰附帶 'user_id' 或 'team_id'，則該使用者的支出會記錄在 "LiteLLM_UserTable" 中，而團隊的支出會記錄在 "LiteLLM_TeamTable" 中。
 
 <Tabs>
-<TabItem value="key-info" label="Key Spend">
+<TabItem value="key-info" label="金鑰支出">
 
-You can get spend for a key by using the `/key/info` endpoint. 
+您可以使用 `/key/info` 端點取得某個金鑰的支出。
 
 ```bash
 curl 'http://0.0.0.0:4000/key/info?key=<user-key>' \
@@ -94,9 +93,9 @@ curl 'http://0.0.0.0:4000/key/info?key=<user-key>' \
      -H 'Authorization: Bearer <your-master-key>'
 ```
 
-This is automatically updated (in USD) when calls are made to /completions, /chat/completions, /embeddings using litellm's completion_cost() function. [**See Code**](https://github.com/BerriAI/litellm/blob/1a6ea20a0bb66491968907c2bfaabb7fe45fc064/litellm/utils.py#L1654). 
+當使用 litellm 的 completion_cost() 函式對 /completions、/chat/completions、/embeddings 發出請求時，這會自動更新（以 USD 計）。 [**查看程式碼**](https://github.com/BerriAI/litellm/blob/1a6ea20a0bb66491968907c2bfaabb7fe45fc064/litellm/utils.py#L1654)。
 
-**Sample response**
+**範例回應**
 
 ```python
 {
@@ -119,9 +118,9 @@ This is automatically updated (in USD) when calls are made to /completions, /cha
 ```
 
 </TabItem>
-<TabItem value="user-info" label="User Spend">
+<TabItem value="user-info" label="使用者支出">
 
-**1. Create a user**
+**1. 建立使用者**
 
 ```bash
 curl --location 'http://localhost:4000/user/new' \
@@ -130,7 +129,7 @@ curl --location 'http://localhost:4000/user/new' \
 --data-raw '{user_email: "krrish@berri.ai"}' 
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -141,7 +140,7 @@ curl --location 'http://localhost:4000/user/new' \
 }
 ```
 
-**2. Create a key for that user**
+**2. 為該使用者建立金鑰**
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -150,9 +149,9 @@ curl 'http://0.0.0.0:4000/key/generate' \
 --data-raw '{"models": ["gpt-3.5-turbo", "gpt-4"], "user_id": "my-unique-id"}'
 ```
 
-Returns a key - `sk-...`.
+回傳一組金鑰 - `sk-...`。
 
-**3. See spend for user**
+**3. 查看使用者的支出**
 
 ```bash
 curl 'http://0.0.0.0:4000/user/info?user_id=my-unique-id' \
@@ -160,7 +159,7 @@ curl 'http://0.0.0.0:4000/user/info?user_id=my-unique-id' \
      -H 'Authorization: Bearer <your-master-key>'
 ```
 
-Expected Response
+預期回應
 
 ```bash
 {
@@ -170,11 +169,11 @@ Expected Response
 ```
 
 </TabItem>
-<TabItem value="team-info" label="Team Spend">
+<TabItem value="team-info" label="團隊支出">
 
-Use teams, if you want keys to be owned by multiple people (e.g. for a production app).
+如果您希望金鑰可由多人擁有，請使用團隊（例如用於正式環境應用程式）。
 
-**1. Create a team**
+**1. 建立團隊**
 
 ```bash
 curl --location 'http://localhost:4000/team/new' \
@@ -183,7 +182,7 @@ curl --location 'http://localhost:4000/team/new' \
 --data-raw '{"team_alias": "my-awesome-team"}' 
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -194,7 +193,7 @@ curl --location 'http://localhost:4000/team/new' \
 }
 ```
 
-**2. Create a key for that team**
+**2. 為該團隊建立金鑰**
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -203,9 +202,9 @@ curl 'http://0.0.0.0:4000/key/generate' \
 --data-raw '{"models": ["gpt-3.5-turbo", "gpt-4"], "team_id": "my-unique-id"}'
 ```
 
-Returns a key - `sk-...`.
+回傳一組金鑰 - `sk-...`。
 
-**3. See spend for team**
+**3. 查看團隊的支出**
 
 ```bash
 curl 'http://0.0.0.0:4000/team/info?team_id=my-unique-id' \
@@ -213,7 +212,7 @@ curl 'http://0.0.0.0:4000/team/info?team_id=my-unique-id' \
      -H 'Authorization: Bearer <your-master-key>'
 ```
 
-Expected Response
+預期回應
 
 ```bash
 {
@@ -225,17 +224,16 @@ Expected Response
 </TabItem>
 </Tabs>
 
+## 模型別名 {#model-aliases}
 
-## Model Aliases
+如果預期使用者會使用指定模型（即 gpt3-5），而您想要：
 
-If a user is expected to use a given model (i.e. gpt3-5), and you want to:
+- 嘗試將請求升級（即 GPT4）
+- 或將其降級（即 Mistral）
 
-- try to upgrade the request (i.e. GPT4)
-- or downgrade it (i.e. Mistral)
+您可以這樣做：
 
-Here's how you can do that: 
-
-**Step 1: Create a model group in config.yaml (save model name, api keys, etc.)**
+**步驟 1：在 config.yaml 中建立模型群組（儲存模型名稱、API 金鑰等）**
 
 ```yaml
 model_list:
@@ -257,7 +255,7 @@ model_list:
         api_key: my-api-key
 ```
 
-**Step 2: Generate a key**
+**步驟 2：產生金鑰**
 
 ```bash
 curl -X POST "https://0.0.0.0:4000/key/generate" \
@@ -270,9 +268,9 @@ curl -X POST "https://0.0.0.0:4000/key/generate" \
 }'
 ```
 
-- **How to upgrade / downgrade request?** Change the alias mapping
+- **如何升級 / 降級請求？** 變更別名對應
 
-**Step 3: Test the key**
+**步驟 3：測試金鑰**
 
 ```bash
 curl -X POST "https://0.0.0.0:4000/key/generate" \
@@ -290,13 +288,13 @@ curl -X POST "https://0.0.0.0:4000/key/generate" \
 ```
 
 
-## Advanced
+## 進階 {#advanced}
 
-### Pass LiteLLM Key in custom header
+### 在自訂標頭中傳遞 LiteLLM 金鑰 {#pass-litellm-key-in-custom-header}
 
-Use this to make LiteLLM proxy look for the virtual key in a custom header instead of the default `"Authorization"` header
+使用這個可讓 LiteLLM proxy 改為在自訂標頭中尋找虛擬金鑰，而不是預設的 `"Authorization"` 標頭
 
-**Step 1** Define `litellm_key_header_name` name on litellm config.yaml
+**步驟 1** 在 litellm config.yaml 上定義 `litellm_key_header_name` 名稱
 
 ```yaml
 model_list:
@@ -312,9 +310,9 @@ general_settings:
 
 ```
 
-**Step 2** Test it
+**步驟 2** 測試它
 
-In this request, litellm will use the Virtual key in the `X-Litellm-Key` header
+在此請求中，litellm 會使用 `X-Litellm-Key` 標頭中的虛擬金鑰
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -332,9 +330,9 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Expected Response**
+**預期回應**
 
-Expect to see a successful response from the litellm proxy since the key passed in `X-Litellm-Key` is valid
+預期會從 litellm proxy 收到成功回應，因為在 `X-Litellm-Key` 中傳入的金鑰是有效的
 ```shell
 {"id":"chatcmpl-f9b2b79a7c30477ab93cd0e717d1773e","choices":[{"finish_reason":"stop","index":0,"message":{"content":"\n\nHello there, how may I assist you today?","role":"assistant","tool_calls":null,"function_call":null}}],"created":1677652288,"model":"gpt-3.5-turbo-0125","object":"chat.completion","system_fingerprint":"fp_44709d6fcb","usage":{"completion_tokens":12,"prompt_tokens":9,"total_tokens":21}
 ```
@@ -356,9 +354,9 @@ client = openai.OpenAI(
 </TabItem>
 </Tabs>
 
-### Enable/Disable Virtual Keys
+### 啟用/停用虛擬金鑰 {#enabledisable-virtual-keys}
 
-**Disable Keys**
+**停用金鑰**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/block' \
@@ -367,7 +365,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/block' \
 -d '{"key": "KEY-TO-BLOCK"}'
 ```
 
-Expected Response: 
+預期回應： 
 
 ```bash
 {
@@ -376,7 +374,7 @@ Expected Response:
 }
 ```
 
-**Enable Keys**
+**啟用金鑰**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/unblock' \
@@ -394,16 +392,15 @@ curl -L -X POST 'http://0.0.0.0:4000/key/unblock' \
 ```
 
 
-### Custom /key/generate
+### 自訂 /key/generate {#custom-keygenerate}
 
-If you need to add custom logic before generating a Proxy API Key (Example Validating `team_id`)
+如果您需要在產生 Proxy API 金鑰之前加入自訂邏輯（範例：驗證 `team_id`）
 
-#### 1. Write a custom `custom_generate_key_fn`
+#### 1. 編寫自訂 `custom_generate_key_fn` {#1-write-a-custom-custom_generate_key_fn}
 
+custom_generate_key_fn 函式的輸入是一個單一參數：`data` [(型別：GenerateKeyRequest)](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/_types.py#L125)
 
-The input to the custom_generate_key_fn function is a single parameter: `data` [(Type: GenerateKeyRequest)](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/_types.py#L125)
-
-The output of your `custom_generate_key_fn` should be a dictionary with the following structure
+您的 `custom_generate_key_fn` 輸出應為具有以下結構的字典
 ```python
 {
     "decision": False,
@@ -412,10 +409,9 @@ The output of your `custom_generate_key_fn` should be a dictionary with the foll
 
 ```
 
-- decision (Type: bool): A boolean value indicating whether the key generation is allowed (True) or not (False).
+- decision（型別：bool）：布林值，表示是否允許產生金鑰（True）或不允許（False）。
 
-- message (Type: str, Optional): An optional message providing additional information about the decision. This field is included when the decision is False.
-
+- message（型別：str，選填）：選用訊息，提供關於該決策的額外資訊。當 decision 為 False 時會包含此欄位。
 
 ```python
 async def custom_generate_key_fn(data: GenerateKeyRequest)-> dict:
@@ -464,11 +460,11 @@ async def custom_generate_key_fn(data: GenerateKeyRequest)-> dict:
 ```
 
 
-#### 2. Pass the filepath (relative to the config.yaml)
+#### 2. 傳遞檔案路徑（相對於 config.yaml） {#2-pass-the-filepath-relative-to-the-configyaml}
 
-Pass the filepath to the config.yaml 
+將 config.yaml 的檔案路徑傳入
 
-e.g. if they're both in the same dir - `./config.yaml` and `./custom_auth.py`, this is what it looks like:
+例如，如果它們都在同一個目錄中 - `./config.yaml` 和 `./custom_auth.py`，會是這樣：
 ```yaml 
 model_list: 
   - model_name: "openai-model"
@@ -484,10 +480,10 @@ general_settings:
 ```
 
 
-### Upperbound /key/generate params
-Use this, if you need to set default upperbounds for `max_budget`, `budget_duration` or any `key/generate` param per key. 
+### /key/generate 參數上限 {#upperbound-keygenerate-params}
+如果您需要為每個 key 設定 `max_budget`、`budget_duration` 或任何 `key/generate` 參數的預設上限，請使用這個。 
 
-Set `litellm_settings:upperbound_key_generate_params`:
+設定 `litellm_settings:upperbound_key_generate_params`：
 ```yaml
 litellm_settings:
   upperbound_key_generate_params:
@@ -499,17 +495,17 @@ litellm_settings:
     rpm_limit: 1000 #(Optional[int], optional): Rpm limit. Defaults to None.
 ```
 
-** Expected Behavior **
+** 預期行為 **
 
-- Send a `/key/generate` request with `max_budget=200`
-- Key will be created with `max_budget=100` since 100 is the upper bound
+- 送出一個帶有 `/key/generate` 的 `max_budget=200` 請求
+- 由於 100 是上限，key 會以 `max_budget=100` 建立
 
-### Default /key/generate params
-Use this, if you need to control the default `max_budget` or any `key/generate` param per key. 
+### /key/generate 預設參數 {#default-keygenerate-params}
+如果您需要控制每個 key 的預設 `max_budget` 或任何 `key/generate` 參數，請使用這個。 
 
-When a `/key/generate` request does not specify `max_budget`, it will use the `max_budget` specified in `default_key_generate_params`
+當 `/key/generate` 請求未指定 `max_budget` 時，將會使用 `default_key_generate_params` 中指定的 `max_budget`
 
-Set `litellm_settings:default_key_generate_params`:
+設定 `litellm_settings:default_key_generate_params`：
 ```yaml
 litellm_settings:
   default_key_generate_params:
@@ -520,20 +516,19 @@ litellm_settings:
     team_id: "core-infra"
 ```
 
-### ✨ Key Rotations 
+### ✨ 金鑰輪替 {#-key-rotations}
 
 :::info
 
-This is an Enterprise feature.
+這是企業版功能。
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業版定價](https://www.litellm.ai/#pricing)
 
-[Get free 7-day trial key](https://www.litellm.ai/enterprise#trial)
-
+[取得免費 7 天試用金鑰](https://www.litellm.ai/enterprise#trial)
 
 :::
 
-Rotate an existing API Key, while optionally updating its parameters.
+可選擇在更新其參數的同時，輪替現有的 API 金鑰。
 
 ```bash
 
@@ -555,34 +550,33 @@ curl 'http://localhost:4000/key/sk-1234/regenerate' \
 
 ```
 
-**Grace period (optional)**: Set `grace_period` (e.g. `"24h"`, `"2d"`, `"1w"`) to keep the old key valid for a transitional period. Both old and new keys work until the grace period elapses, enabling seamless cutover without production downtime. Omitted or empty = immediate revoke. Can also be set via `LITELLM_KEY_ROTATION_GRACE_PERIOD` env var for scheduled rotations.
+**寬限期（可選）**：設定 `grace_period`（例如 `"24h"`、`"2d"`、`"1w"`），以在過渡期間讓舊金鑰保持有效。舊金鑰與新金鑰在寬限期結束前都能使用，可在不中斷正式環境的情況下順利切換。省略或留空 = 立即撤銷。也可透過 `LITELLM_KEY_ROTATION_GRACE_PERIOD` 環境變數設定，用於排程輪替。
 
-**Read More**
+**閱讀更多**
 
-- [Write rotated keys to secrets manager](https://docs.litellm.ai/docs/secret#aws-secret-manager)
+- [將輪替後的金鑰寫入 secrets manager](https://docs.litellm.ai/docs/secret#aws-secret-manager)
 
-[**👉 API REFERENCE DOCS**](https://litellm-api.up.railway.app/#/key%20management/regenerate_key_fn_key__key__regenerate_post)
+[**👉 API 參考文件**](https://litellm-api.up.railway.app/#/key%20management/regenerate_key_fn_key__key__regenerate_post)
 
+### 排程金鑰輪替 {#scheduled-key-rotations}
 
-### Scheduled Key Rotations
+LiteLLM 可以依據您定義的時間間隔自動輪替 **virtual keys**。
 
-LiteLLM can rotate **virtual keys automatically** based on time intervals you define.
+#### 必要條件 {#prerequisites}
 
-#### Prerequisites
+1. **需要資料庫連線** - 金鑰輪替需要連線中的資料庫來追蹤輪替排程
+2. **啟用輪替工作程序** - 設定環境變數 `LITELLM_KEY_ROTATION_ENABLED=true`
+3. **設定檢查間隔** - 可選擇設定 `LITELLM_KEY_ROTATION_CHECK_INTERVAL_SECONDS`（預設：86400 秒 / 24 小時）
 
-1. **Database connection required** - Key rotation requires a connected database to track rotation schedules
-2. **Enable the rotation worker** - Set environment variable `LITELLM_KEY_ROTATION_ENABLED=true`
-3. **Configure check interval** - Optionally set `LITELLM_KEY_ROTATION_CHECK_INTERVAL_SECONDS` (default: 86400 seconds / 24 hours)
+#### 運作方式 {#how-it-works}
 
-#### How it works
+1. 建立 virtual key 時，設定 `auto_rotate: true` 和 `rotation_interval`（持續時間字串）
+2. LiteLLM 會將下一次輪替時間計算為 `now + rotation_interval`，並儲存在資料庫中
+3. 背景工作會定期檢查已超過輪替時間的 keys
+4. 當 key 到達輪替時機時，LiteLLM 會自動重新產生它，並使舊的 key 字串失效
+5. 會重新計算新的輪替時間，並持續此循環
 
-1. When creating a virtual key, set `auto_rotate: true` and `rotation_interval` (duration string)
-2. LiteLLM calculates the next rotation time as `now + rotation_interval` and stores it in the database
-3. A background job periodically checks for keys where the rotation time has passed
-4. When a key is due for rotation, LiteLLM automatically regenerates it and invalidates the old key string
-5. The new rotation time is calculated and the cycle continues
-
-#### Create a key with auto rotation
+#### 建立具有自動輪替的金鑰 {#create-a-key-with-auto-rotation}
 
 **API**
 ```bash
@@ -598,20 +592,20 @@ curl 'http://0.0.0.0:4000/key/generate' \
 
 **LiteLLM UI**
 
-On the LiteLLM UI, Navigate to the Keys page and click on `Generate Key` > `Key Lifecycle` > `Enable Auto Rotation`
+在 LiteLLM UI 上，前往 Keys 頁面並點選 `Generate Key` > `Key Lifecycle` > `Enable Auto Rotation`
 <Image 
   img={require('../../img/key_r.png')}
   style={{width: '30%', display: 'block', margin: '0'}}
 />
 
-**Valid rotation_interval formats:**
-- `"30s"` - 30 seconds
-- `"30m"` - 30 minutes
-- `"30h"` - 30 hours
-- `"30d"` - 30 days
-- `"90d"` - 90 days
+**有效的 rotation_interval 格式：**
+- `"30s"` - 30 秒
+- `"30m"` - 30 分鐘
+- `"30h"` - 30 小時
+- `"30d"` - 30 天
+- `"90d"` - 90 天
 
-#### Update existing key to enable rotation
+#### 更新既有金鑰以啟用輪替 {#update-existing-key-to-enable-rotation}
 
 **API**
 
@@ -628,24 +622,24 @@ curl 'http://0.0.0.0:4000/key/update' \
 
 **LiteLLM UI**
 
-On the LiteLLM UI, Navigate to the Keys page. Select the key you want to update and click on `Edit Settings` > `Auto-Rotation Settings`
+在 LiteLLM UI 上，前往 Keys 頁面。選取您要更新的金鑰，然後點選 `Edit Settings` > `Auto-Rotation Settings`
 
 <Image 
   img={require('../../img/key_u.png')}
   style={{width: '30%', display: 'block', margin: '0'}}
 />
 
-#### Environment variables
+#### 環境變數 {#environment-variables}
 
-Set these environment variables when starting the proxy:
+在啟動 proxy 時設定這些環境變數：
 
-| Variable | Description | Default |
+| 變數 | 說明 | 預設值 |
 |----------|-------------|---------|
-| `LITELLM_KEY_ROTATION_ENABLED` | Enable the rotation worker | `false` |
-| `LITELLM_KEY_ROTATION_CHECK_INTERVAL_SECONDS` | How often to scan for keys to rotate (in seconds) | `86400` (24 hours) |
-| `LITELLM_KEY_ROTATION_GRACE_PERIOD` | Duration to keep old key valid after rotation (e.g. `24h`, `2d`) | `""` (immediate revoke) |
+| `LITELLM_KEY_ROTATION_ENABLED` | 啟用 rotation worker | `false` |
+| `LITELLM_KEY_ROTATION_CHECK_INTERVAL_SECONDS` | 掃描要輪替的金鑰的頻率（以秒為單位） | `86400`（24 小時） |
+| `LITELLM_KEY_ROTATION_GRACE_PERIOD` | 輪替後保留舊金鑰有效的持續時間（例如 `24h`、`2d`） | `""`（立即撤銷） |
 
-**Example:**
+**範例：**
 ```bash
 export LITELLM_KEY_ROTATION_ENABLED=true
 export LITELLM_KEY_ROTATION_CHECK_INTERVAL_SECONDS=3600  # Check every hour
@@ -654,9 +648,9 @@ export LITELLM_KEY_ROTATION_GRACE_PERIOD=48h  # Keep old key valid for 48h durin
 litellm --config config.yaml
 ```
 
-### Temporary Budget Increase
+### 暫時增加預算 {#temporary-budget-increase}
 
-Use the `/key/update` endpoint to increase the budget of an existing key. 
+使用 `/key/update` 端點來增加既有金鑰的預算。 
 
 ```bash
 curl -L -X POST 'http://localhost:4000/key/update' \
@@ -665,12 +659,11 @@ curl -L -X POST 'http://localhost:4000/key/update' \
 -d '{"key": "sk-b3Z3Lqdb_detHXSUp4ol4Q", "temp_budget_increase": 100, "temp_budget_expiry": "10d"}'
 ```
 
-[API Reference](https://litellm-api.up.railway.app/#/key%20management/update_key_fn_key_update_post)
+[API 參考](https://litellm-api.up.railway.app/#/key%20management/update_key_fn_key_update_post)
 
+### 限制金鑰產生 {#restricting-key-generation}
 
-### Restricting Key Generation
-
-Use this to control who can generate keys. Useful when letting others create keys on the UI. 
+用來控制誰可以產生金鑰。當讓其他人在 UI 上建立金鑰時很有用。 
 
 ```yaml
 litellm_settings:
@@ -682,13 +675,13 @@ litellm_settings:
       allowed_user_roles: ["proxy_admin"]
 ```
 
-#### Spec 
+#### 規格 {#spec}
 
 ```python
 key_generation_settings: Optional[StandardKeyGenerationConfig] = None
 ```
 
-#### Types
+#### 類型 {#types}
 
 ```python
 class StandardKeyGenerationConfig(TypedDict, total=False):
@@ -745,25 +738,20 @@ class LitellmUserRoles(str, enum.Enum):
 ```
 
 
-## **Next Steps - Set Budgets, Rate Limits per Virtual Key**
+## **後續步驟 - 設定每個虛擬金鑰的預算、速率限制** {#next-steps---set-budgets-rate-limits-per-virtual-key}
 
-[Follow this doc to set budgets, rate limiters per virtual key with LiteLLM](users)
+[請依照這份文件，使用 LiteLLM 為虛擬金鑰設定預算、每個虛擬金鑰的速率限制器](users)
 
-## Endpoint Reference (Spec)
+## 端點參考（規格） {#endpoint-reference-spec}
 
-### Keys 
+### 金鑰 {#keys}
 
-#### [**👉 API REFERENCE DOCS**](https://litellm-api.up.railway.app/#/key%20management/)
+#### [**👉 API 參考文件**](https://litellm-api.up.railway.app/#/key%20management/) {#-api-reference-docshttpslitellm-apiuprailwayappkey20management}
 
-### Users
+### 使用者 {#users}
 
-#### [**👉 API REFERENCE DOCS**](https://litellm-api.up.railway.app/#/user%20management/)
+#### [**👉 API 參考文件**](https://litellm-api.up.railway.app/#/user%20management/) {#-api-reference-docshttpslitellm-apiuprailwayappuser20management}
 
+### 團隊 {#teams}
 
-### Teams
-
-#### [**👉 API REFERENCE DOCS**](https://litellm-api.up.railway.app/#/team%20management)
-
-
-
-
+#### [**👉 API 參考文件**](https://litellm-api.up.railway.app/#/team%20management) {#-api-reference-docshttpslitellm-apiuprailwayappteam20management}

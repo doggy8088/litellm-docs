@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# SambaNova
+# SambaNova {#sambanova}
 [https://cloud.sambanova.ai/](http://cloud.sambanova.ai?utm_source=litellm&utm_medium=external&utm_campaign=cloud_signup)
 
 :::tip
 
-**We support ALL Sambanova models, just set `model=sambanova/<any-model-on-sambanova>` as a prefix when sending litellm requests. For the complete supported model list, visit https://docs.sambanova.ai/cloud/docs/get-started/supported-models **
+**我們支援所有 Sambanova 模型，只要在傳送 litellm 請求時將 `model=sambanova/<any-model-on-sambanova>` 設為前綴即可。完整支援的模型清單請參閱 https://docs.sambanova.ai/cloud/docs/get-started/supported-models **
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['SAMBANOVA_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -39,7 +39,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -69,11 +69,11 @@ for chunk in response:
 ```
 
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 搭配使用 {#usage-with-litellm-proxy-server}
 
-Here's how to call a Sambanova model with the LiteLLM Proxy Server
+以下示範如何使用 LiteLLM Proxy Server 呼叫 Sambanova 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -84,13 +84,13 @@ Here's how to call a Sambanova model with the LiteLLM Proxy Server
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 傳送請求
 
   <Tabs>
 
@@ -137,7 +137,7 @@ Here's how to call a Sambanova model with the LiteLLM Proxy Server
 
   </Tabs>
 
-## SambaNova - Tool Calling
+## SambaNova - 工具呼叫 {#sambanova---tool-calling}
 
 ```python
 import litellm
@@ -220,7 +220,7 @@ if tool_calls:
     print("second response\n", second_response)
 ```
 
-## SambaNova - Vision Example
+## SambaNova - 視覺範例 {#sambanova---vision-example}
 
 ```python
 import litellm
@@ -264,7 +264,7 @@ print(response.choices[0].message.content)
 ```
 
 
-## SambaNova - Structured Output
+## SambaNova - 結構化輸出 {#sambanova---structured-output}
 
 ```python
 import litellm
@@ -308,7 +308,7 @@ response = litellm.completion(
 print(response.choices[0].message.content))
 ```
 
-## SambaNova - Embeddings
+## SambaNova - 嵌入 {#sambanova---embeddings}
 
 ```python
 import litellm

@@ -1,5 +1,5 @@
 ---
-title: "v1.88.3 - Guardrail Polling & Hook Fixes"
+title: "v1.88.3 - 防護欄輪詢與 Hook 修正"
 slug: "v1-88-3"
 date: 2026-06-17T12:44:42
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.88.3
 </TabItem>
 </Tabs>
 
-`v1.88.3` is a patch release on top of [`v1.88.2`](/release_notes/v1.88.2/v1-88-2). It fixes two guardrail regressions: database-backed guardrails were being re-initialized on every poll, and model-level guardrails ran their pre-call hook more than once.
+`v1.88.3` 是基於 [`v1.88.2`](/release_notes/v1.88.2/v1-88-2) 的修補版本。此版本修正了兩個防護欄回歸問題：以資料庫為後端的防護欄在每次輪詢時都會重新初始化，以及模型層級防護欄的 pre-call hook 會執行不只一次。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(guardrails): stop re-initializing DB guardrails on every poll - [PR #30542](https://github.com/BerriAI/litellm/pull/30542)
-- fix(guardrails): run the `pre_call` hook once for model-level guardrails - [PR #30543](https://github.com/BerriAI/litellm/pull/30543)
+- fix(guardrails): 不要在每次輪詢時重新初始化 DB 防護欄 - [PR #30542](https://github.com/BerriAI/litellm/pull/30542)
+- fix(guardrails): 針對模型層級防護欄執行一次 `pre_call` hook - [PR #30543](https://github.com/BerriAI/litellm/pull/30543)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.88.2...v1.88.3

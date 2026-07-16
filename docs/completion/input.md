@@ -1,12 +1,12 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Input Params
+# 輸入參數 {#input-params}
 
-## Common Params 
-LiteLLM accepts and translates the [OpenAI Chat Completion params](https://platform.openai.com/docs/api-reference/chat/create) across all providers. 
+## 常見參數  {#common-params}
+LiteLLM 接受並轉譯跨所有提供者的 [OpenAI Chat Completion 參數](https://platform.openai.com/docs/api-reference/chat/create)。 
 
-### Usage
+### 用法 {#usage}
 ```python
 import litellm
 
@@ -23,9 +23,9 @@ response = litellm.completion(
 print(response)
 ```
 
-### Translated OpenAI params
+### 已轉譯的 OpenAI 參數 {#translated-openai-params}
 
-Use this function to get an up-to-date list of supported openai params for any model + provider. 
+使用此函式可取得任何 model + provider 的最新支援 openai 參數清單。 
 
 ```python
 from litellm import get_supported_openai_params
@@ -35,11 +35,11 @@ response = get_supported_openai_params(model="anthropic.claude-3", custom_llm_pr
 print(response) # ["max_tokens", "tools", "tool_choice", "stream"]
 ```
 
-This is a list of openai params we translate across providers.
+這是我們跨提供者轉譯的 openai 參數清單。
 
-Use `litellm.get_supported_openai_params()` for an updated list of params for each model + provider 
+請使用 `litellm.get_supported_openai_params()` 以取得每個 model + provider 的最新參數清單 
 
-| Provider | temperature | max_completion_tokens | max_tokens | top_p | stream | stream_options | stop | n | presence_penalty | frequency_penalty | functions | function_call | logit_bias | user | response_format | seed| tools | tool_choice | logprobs | top_logprobs | extra_headers |
+| 提供者 | temperature | max_completion_tokens | max_tokens | top_p | stream | stream_options | stop | n | presence_penalty | frequency_penalty | functions | function_call | logit_bias | user | response_format | seed| tools | tool_choice | logprobs | top_logprobs | extra_headers |
 |--------------|-------------|------------------------|------------|-------|--------|----------------|------|-----|------------------|-------------------|-----------|----------------|-------------|------|------------------|-------------------|--------|--------------|----------|---------------|----------------------|
 | Anthropic| ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | || | || | ✅ | ✅ | | ✅ | ✅ || | ✅|
 | OpenAI | ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | ✅| ✅ | ✅| ✅| ✅ | ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | ✅| ✅|
@@ -52,7 +52,7 @@ Use `litellm.get_supported_openai_params()` for an updated list of params for ea
 | Openrouter | ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | ✅| ✅ | ✅| ✅|| ||| ✅| ✅ ||| ||
 | AI21 | ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | ✅|| | || ||| |||| ||
 | VertexAI | ✅| ✅ | ✅ | | ✅ | ✅ || || | || || ✅ | ✅|||| ||
-| Bedrock| ✅| ✅ | ✅ | ✅| ✅ | ✅ || || | || || ✅ (model dependent) | |||| ||
+| Bedrock| ✅| ✅ | ✅ | ✅| ✅ | ✅ || || | || || ✅（依模型而定） | |||| ||
 | Sagemaker| ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | || | || ||| |||| ||
 | TogetherAI | ✅| ✅ | ✅ | ✅| ✅ | ✅ || || | ✅|| || ✅ | | ✅ | ✅ || ||
 | Sambanova| ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | || | || || ✅ | | ✅ | ✅ || ||
@@ -62,24 +62,24 @@ Use `litellm.get_supported_openai_params()` for an updated list of params for ea
 | Ollama | ✅| ✅ | ✅ | ✅| ✅ | ✅ || ✅|| | || ✅||| | ✅ ||| ||
 | Databricks | ✅| ✅ | ✅ | ✅| ✅ | ✅ || || | || ||| |||| ||
 | ClarifAI | ✅| ✅ | ✅ | | ✅ | ✅ || || | || ||| |||| ||
-| Github | ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | ✅| ✅ | ✅| ✅|| || ✅ | ✅ (model dependent) | ✅ (model dependent) || ||
+| Github | ✅| ✅ | ✅ | ✅| ✅ | ✅ | ✅ | ✅| ✅ | ✅| ✅|| || ✅ | ✅（依模型而定） | ✅（依模型而定） || ||
 | Novita AI| ✅| ✅ || ✅| ✅ | ✅ | ✅ | ✅| ✅ | ✅| || ✅||| |||| ||
 | Bytez | ✅| ✅ || ✅| ✅ | | | ✅|| || || || || || ||
 | OVHCloud AI Endpoints | ✅ | | ✅ | ✅ | ✅ | ✅ | ✅ | | | | | | | | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 
 :::note
 
-By default, LiteLLM raises an exception if the openai param being passed in isn't supported. 
+預設情況下，若傳入的 openai 參數不受支援，LiteLLM 會擲出例外。 
 
-To drop the param instead, set `litellm.drop_params = True` or `completion(..drop_params=True)`.
+若要改為丟棄該參數，請設定 `litellm.drop_params = True` 或 `completion(..drop_params=True)`。
 
-This **ONLY DROPS UNSUPPORTED OPENAI PARAMS**. 
+這**只會丟棄不受支援的 OPENAI 參數**。 
 
-LiteLLM assumes any non-openai param is provider specific and passes it in as a kwarg in the request body
+LiteLLM 假設任何非 openai 參數都是特定於提供者，並在請求主體中以 kwarg 形式傳入
 
 ::: 
 
-## Input Params
+## 輸入參數 {#input-params-1}
 
 ```python
 def completion(
@@ -122,42 +122,41 @@ def completion(
 
 ) -> ModelResponse:
 ```
-### Required Fields
+### 必填欄位 {#required-fields}
 
-- `model`: *string* - ID of the model to use. Refer to the model endpoint compatibility table for details on which models work with the Chat API.
+- `model`: *string* - 要使用的模型 ID。請參閱 model endpoint 相容性表，了解哪些模型可與 Chat API 搭配使用。
   
-- `messages`: *array* - A list of messages comprising the conversation so far.
+- `messages`: *array* - 由截至目前為止對話所構成的訊息清單。
 
-#### Properties of `messages`
-*Note* - Each message in the array contains the following properties:
+#### `messages` 的屬性 {#properties-of-messages}
+*注意* - 陣列中的每則訊息都包含以下屬性：
 
-- `role`: *string* - The role of the message's author. Roles can be: system, user, assistant, function or tool.
+- `role`: *string* - 訊息作者的角色。角色可以是：system、user、assistant、function 或 tool。
 
-- `content`: *string or list[dict] or null* - The contents of the message. It is required for all messages, but may be null for assistant messages with function calls.
+- `content`: *string or list[dict] or null* - 訊息內容。所有訊息都必填，但若 assistant 訊息帶有 function 呼叫，則可為 null。
 
-- `name`: *string (optional)* - The name of the author of the message. It is required if the role is "function". The name should match the name of the function represented in the content. It can contain characters (a-z, A-Z, 0-9), and underscores, with a maximum length of 64 characters.
+- `name`: *string (optional)* - 訊息作者的名稱。若 role 為 "function"，則為必填。名稱應與 content 中所表示的 function 名稱相符。可包含字元（a-z、A-Z、0-9）與底線，最大長度為 64 個字元。
 
-- `function_call`: *object (optional)* - The name and arguments of a function that should be called, as generated by the model.
+- `function_call`: *object (optional)* - 由模型產生、應該被呼叫的 function 名稱與引數。
 
-- `tool_call_id`: *str (optional)* - Tool call that this message is responding to.
+- `tool_call_id`: *str (optional)* - 此訊息所回應的 tool 呼叫。
 
+[**查看所有訊息值**](https://github.com/BerriAI/litellm/blob/main/litellm/types/llms/openai.py#L664)
 
-[**See All Message Values**](https://github.com/BerriAI/litellm/blob/main/litellm/types/llms/openai.py#L664)
+#### 內容類型 {#content-types}
 
-#### Content Types
+`content` 可以是字串（僅文字）或內容區塊清單（多模態）：
 
-`content` can be a string (text only) or a list of content blocks (multimodal):
-
-| Type | Description | Docs |
+| 類型 | 說明 | 文件 |
 |------|-------------|------|
-| `text` | Text content | [Type Definition](https://github.com/BerriAI/litellm/blob/main/litellm/types/llms/openai.py#L598) |
-| `image_url` | Images | [Vision](./vision.md) |
-| `input_audio` | Audio input | [Audio](./audio.md) |
-| `video_url` | Video input | [Type Definition](https://github.com/BerriAI/litellm/blob/main/litellm/types/llms/openai.py#L625) |
-| `file` | Files | [Document Understanding](./document_understanding.md) |
-| `document` | Documents/PDFs | [Document Understanding](./document_understanding.md) |
+| `text` | 文字內容 | [型別定義](https://github.com/BerriAI/litellm/blob/main/litellm/types/llms/openai.py#L598) |
+| `image_url` | 圖片 | [Vision](./vision.md) |
+| `input_audio` | 音訊輸入 | [Audio](./audio.md) |
+| `video_url` | 影片輸入 | [型別定義](https://github.com/BerriAI/litellm/blob/main/litellm/types/llms/openai.py#L625) |
+| `file` | 檔案 | [文件理解](./document_understanding.md) |
+| `document` | 文件/PDF | [文件理解](./document_understanding.md) |
 
-**Examples:**
+**範例：**
 ```python
 # Text
 messages=[{"role": "user", "content": [{"type": "text", "text": "Hello!"}]}]
@@ -184,108 +183,107 @@ messages=[{"role": "user", "content": [
 ]}]
 ```
 
-## Optional Fields
+## 選填欄位 {#optional-fields}
 
-- `temperature`: *number or null (optional)* - The sampling temperature to be used, between 0 and 2. Higher values like 0.8 produce more random outputs, while lower values like 0.2 make outputs more focused and deterministic. 
+- `temperature`: *number or null (optional)* - 要使用的取樣 temperature，範圍介於 0 到 2。較高的值（如 0.8）會產生較隨機的輸出，而較低的值（如 0.2）會讓輸出更聚焦且更具決定性。 
 
-- `top_p`: *number or null (optional)* - An alternative to sampling with temperature. It instructs the model to consider the results of the tokens with top_p probability. For example, 0.1 means only the tokens comprising the top 10% probability mass are considered.
+- `top_p`: *number or null (optional)* - temperature 取樣的替代方案。它會指示模型考量 top_p 機率的 tokens 結果。例如，0.1 表示只會考量構成前 10% 機率品質的 tokens。
 
-- `n`: *integer or null (optional)* - The number of chat completion choices to generate for each input message.
+- `n`: *integer or null (optional)* - 要為每個輸入訊息產生的 chat completion 選項數量。
 
-- `stream`: *boolean or null (optional)* - If set to true, it sends partial message deltas. Tokens will be sent as they become available, with the stream terminated by a [DONE] message.
+- `stream`: *boolean or null (optional)* - 若設為 true，會傳送部分訊息 deltas。tokens 會在可用時送出，並以 [DONE] 訊息結束 stream。
 
-- `stream_options` *dict or null (optional)* - Options for streaming response. Only set this when you set `stream: true`
+- `stream_options` *dict or null (optional)* - 進行回應串流的選項。只有在設定 `stream: true` 時才設定此項
 
-    - `include_usage` *boolean (optional)* - If set, an additional chunk will be streamed before the data: [DONE] message. The usage field on this chunk shows the token usage statistics for the entire request, and the choices field will always be an empty array. All other chunks will also include a usage field, but with a null value. 
+    - `include_usage` *boolean (optional)* - 若設定，會在 data: [DONE] 訊息之前另外串流一個區塊。此區塊上的 usage 欄位會顯示整個請求的 token 使用統計，而 choices 欄位一律會是空陣列。所有其他區塊也會包含 usage 欄位，但其值為 null。 
 
-- `stop`: *string/ array/ null (optional)* - Up to 4 sequences where the API will stop generating further tokens.
+- `stop`: *string/ array/ null (optional)* - 最多 4 個序列，API 會在此處停止產生後續 tokens。
   
-  **Note**: OpenAI supports a maximum of 4 stop sequences. If you provide more than 4, LiteLLM will automatically truncate the list to the first 4 elements. To disable this automatic truncation, set `litellm.disable_stop_sequence_limit = True`.
+  **注意**：OpenAI 支援最多 4 個 stop 序列。若您提供超過 4 個，LiteLLM 會自動將清單截斷為前 4 個元素。若要停用此自動截斷，請設定 `litellm.disable_stop_sequence_limit = True`。
 
-- `max_completion_tokens`: *integer (optional)* -  An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.
+- `max_completion_tokens`: *integer (optional)* - 可為一次 completion 產生的 token 數上限，包括可見輸出 tokens 與推理 tokens。
 
-- `max_tokens`: *integer (optional)* - The maximum number of tokens to generate in the chat completion.
+- `max_tokens`: *integer (optional)* - chat completion 中要產生的最大 token 數量。
 
-- `presence_penalty`: *number or null (optional)* - It is used to penalize new tokens based on their existence in the text so far.
+- `presence_penalty`: *number or null (optional)* - 用來根據 tokens 在至今文字中的存在情況，對新 tokens 施加懲罰。
 
-- `response_format`: *object (optional)* - An object specifying the format that the model must output.
+- `response_format`: *object (optional)* - 指定模型必須輸出格式的物件。
 
-    - Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
+    - 設為 `{ "type": "json_object" }` 可啟用 JSON mode，確保模型產生的訊息是有效的 JSON。
     
-    - Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if finish_reason="length", which indicates the generation exceeded max_tokens or the conversation exceeded the max context length.
+    - 重要：使用 JSON mode 時，您也必須透過 system 或 user 訊息自行指示模型產生 JSON。否則，模型可能會產生無止盡的空白字元串流，直到產生達到 token 上限，導致請求長時間執行且看似「卡住」。另請注意，若 finish_reason="length"，訊息內容可能會被部分截斷，這表示產生已超過 max_tokens 或對話已超過最大上下文長度。
 
-- `seed`: *integer or null (optional)* - This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the `system_fingerprint` response parameter to monitor changes in the backend.
+- `seed`: *integer or null (optional)* - 此功能目前為 Beta 版。若有指定，我們的系統會盡最大努力以決定性方式取樣，使得以相同 seed 與參數重複請求時應會傳回相同結果。決定性不保證成立，您應參考 `system_fingerprint` 回應參數來監控後端中的變更。
 
-- `tools`: *array (optional)* - A list of tools the model may call. Use this to provide a list of functions the model may generate JSON inputs for.
+- `tools`: *array (optional)* - 模型可呼叫的工具清單。請使用此項提供模型可產生 JSON 輸入的函式清單。
 
-    - `type`: *string* - The type of the tool. You can set this to `"function"` or `"mcp"` (matching the `/responses` schema) to call LiteLLM-registered MCP servers directly from `/chat/completions`.
+    - `type`: *string* - 工具的類型。您可以將此設定為 `"function"` 或 `"mcp"`（與 `/responses` 結構描述相符），以直接從 `/chat/completions` 呼叫 LiteLLM 註冊的 MCP 伺服器。
 
-    - `function`: *object* - Required for function tools.
+    - `function`: *object* - 函式工具必填。
 
-- `tool_choice`: *string or object (optional)* - Controls which (if any) function is called by the model. none means the model will not call a function and instead generates a message. auto means the model can pick between generating a message or calling a function. Specifying a particular function via `{"type": "function", "function": {"name": "my_function"}}` forces the model to call that function.
+- `tool_choice`: *string or object (optional)* - 控制模型會呼叫哪個函式（如果有的話）。none 表示模型不會呼叫函式，而是產生訊息。auto 表示模型可在產生訊息或呼叫函式之間選擇。透過 `{"type": "function", "function": {"name": "my_function"}}` 指定特定函式會強制模型呼叫該函式。
 
-    - `none` is the default when no functions are present. `auto` is the default if functions are present.
+    - `none` 是在沒有 functions 時的預設值。若有 functions，`auto` 為預設值。
 
-- `parallel_tool_calls`: *boolean (optional)* - Whether to enable parallel function calling during tool use. OpenAI default is true.
+- `parallel_tool_calls`: *boolean (optional)* - 是否在工具使用期間啟用平行函式呼叫。OpenAI 預設為 true。
 
-- `frequency_penalty`: *number or null (optional)* - It is used to penalize new tokens based on their frequency in the text so far.
+- `frequency_penalty`: *number or null (optional)* - 用於依據至今文本中的出現頻率，對新 token 施加懲罰。
 
-- `logit_bias`: *map (optional)* - Used to modify the probability of specific tokens appearing in the completion.
+- `logit_bias`: *map (optional)* - 用於修改特定 token 出現在 completion 中的機率。
 
-- `user`: *string (optional)* - A unique identifier representing your end-user. This can help OpenAI to monitor and detect abuse.
+- `user`: *string (optional)* - 代表您最終使用者的唯一識別碼。這有助於 OpenAI 監控並偵測濫用。
 
-- `timeout`: *int (optional)* - Timeout in seconds for completion requests (Defaults to 600 seconds)
+- `timeout`: *int (optional)* - completion 請求的逾時秒數（預設為 600 秒）
 
-- `logprobs`: * bool (optional)* - Whether to return log probabilities of the output tokens or not. If true returns the log probabilities of each output token returned in the content of message
+- `logprobs`: * bool (optional)* - 是否傳回輸出 token 的機率對數。若為 true，則會傳回訊息內容中每個輸出 token 的機率對數
         
-- `top_logprobs`: *int (optional)* - An integer between 0 and 5 specifying the number of most likely tokens to return at each token position, each with an associated log probability. `logprobs` must be set to true if this parameter is used.
+- `top_logprobs`: *int (optional)* - 介於 0 到 5 之間的整數，指定在每個 token 位置要傳回最可能的 token 數量，每個 token 都會附帶相關聯的機率對數。若使用此參數，則必須將 `logprobs` 設為 true。
 
-- `safety_identifier`: *string (optional)* - A unique identifier for tracking and managing safety-related requests. This parameter helps with safety monitoring and compliance tracking.
+- `safety_identifier`: *string (optional)* - 用於追蹤與管理安全相關請求的唯一識別碼。此參數有助於安全監控與合規追蹤。
 
-- `headers`: *dict (optional)* - A dictionary of headers to be sent with the request.
+- `headers`: *dict (optional)* - 要隨請求送出的標頭字典。
 
-- `extra_headers`: *dict (optional)* - Alternative to `headers`, used to send extra headers in LLM API request. 
+- `extra_headers`: *dict (optional)* - `headers` 的替代方案，用於在 LLM API 請求中傳送額外標頭。 
 
-#### Deprecated Params
-- `functions`: *array* - A list of functions that the model may use to generate JSON inputs. Each function should have the following properties:
+#### 已棄用的參數 {#deprecated-params}
+- `functions`: *array* - 模型可用來產生 JSON 輸入的函式清單。每個函式應具有以下屬性：
 
-    - `name`: *string* - The name of the function to be called. It should contain a-z, A-Z, 0-9, underscores and dashes, with a maximum length of 64 characters.
+    - `name`: *string* - 要呼叫的函式名稱。名稱應包含 a-z、A-Z、0-9、底線與連字號，且長度上限為 64 個字元。
     
-    - `description`: *string (optional)* - A description explaining what the function does. It helps the model to decide when and how to call the function.
+    - `description`: *string (optional)* - 說明此函式用途的描述。它有助於模型決定何時以及如何呼叫函式。
     
-    - `parameters`: *object* - The parameters that the function accepts, described as a JSON Schema object.
+    - `parameters`: *object* - 函式接受的參數，以 JSON Schema 物件描述。
     
-- `function_call`: *string or object (optional)* - Controls how the model responds to function calls.
+- `function_call`: *string or object (optional)* - 控制模型如何回應函式呼叫。
 
+#### litellm 專屬參數  {#litellm-specific-params}
 
-#### litellm-specific params 
+- `api_base`: *string (optional)* - 您要用來呼叫模型的 api endpoint
 
-- `api_base`: *string (optional)* - The api endpoint you want to call the model with
+- `api_version`: *string (optional)* - （Azure 專屬）此次呼叫的 api version
 
-- `api_version`: *string (optional)* - (Azure-specific) the api version for the call
+- `num_retries`: *int (optional)* - 若發生 APIError、TimeoutError 或 ServiceUnavailableError，API 呼叫的重試次數 
 
-- `num_retries`: *int (optional)* - The number of times to retry the API call if an APIError, TimeoutError or ServiceUnavailableError occurs 
+- `context_window_fallback_dict`: *dict (optional)* - 若因 context window 錯誤導致呼叫失敗時，要使用的 model 對應
 
-- `context_window_fallback_dict`: *dict (optional)* - A mapping of model to use if call fails due to context window error
+- `fallbacks`: *list (optional)* - 初次呼叫失敗時要使用的 model 名稱與參數清單
 
-- `fallbacks`: *list (optional)* - A list of model names + params to be used, in case the initial call fails
+- `metadata`: *dict (optional)* - 呼叫時您希望額外記錄的任何資料（會傳送至 logging 整合，例如 promptlayer，並可透過自訂 callback function 存取）
 
-- `metadata`: *dict (optional)* - Any additional data you want to be logged when the call is made (sent to logging integrations, eg. promptlayer and accessible via custom callback function)
+**自訂 model 成本** 
+- `input_cost_per_token`: *float (optional)* - completion 呼叫的每個 input token 成本 
 
-**CUSTOM MODEL COST** 
-- `input_cost_per_token`: *float (optional)* - The cost per input token for the completion call 
+- `output_cost_per_token`: *float (optional)* - completion 呼叫的每個 output token 成本 
 
-- `output_cost_per_token`: *float (optional)* - The cost per output token for the completion call 
+**自訂 prompt template**（更多資訊請參閱 [prompt formatting](./prompt_formatting.md#format-prompt-yourself)）
+- `initial_prompt_value`: *string (optional)* - 套用於 input messages 開頭的初始字串
 
-**CUSTOM PROMPT TEMPLATE** (See [prompt formatting for more info](./prompt_formatting.md#format-prompt-yourself))
-- `initial_prompt_value`: *string (optional)* - Initial string applied at the start of the input messages
+- `roles`: *dict (optional)* - 指定如何根據透過 `messages` 傳入的 role + message 來格式化 prompt 的字典。 
 
-- `roles`: *dict (optional)* - Dictionary specifying how to format the prompt based on the role + message passed in via `messages`. 
+- `final_prompt_value`: *string (optional)* - 套用於 input messages 結尾的最終字串
 
-- `final_prompt_value`: *string (optional)* - Final string applied at the end of the input messages
+- `bos_token`: *string (optional)* - 套用於序列開頭的初始字串
 
-- `bos_token`: *string (optional)* - Initial string applied at the start of a sequence
+- `eos_token`: *string (optional)* - 套用於序列結尾的初始字串
 
-- `eos_token`: *string (optional)* - Initial string applied at the end of a sequence
-
-- `hf_model_name`: *string (optional)* - [Sagemaker Only] The corresponding huggingface name of the model, used to pull the right chat template for the model. 
+- `hf_model_name`: *string (optional)* - [僅限 Sagemaker] 模型對應的 huggingface 名稱，用於為該模型載入正確的 chat template。

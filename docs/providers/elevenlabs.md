@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# ElevenLabs
+# ElevenLabs {#elevenlabs}
 
-ElevenLabs provides high-quality AI voice technology, including speech-to-text capabilities through their transcription API.
+ElevenLabs 提供高品質的 AI 語音技術，包括透過其轉錄 API 提供的語音轉文字功能。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | ElevenLabs offers advanced AI voice technology with speech-to-text transcription and text-to-speech capabilities that support multiple languages and speaker diarization. |
-| Provider Route on LiteLLM | `elevenlabs/` |
-| Provider Doc | [ElevenLabs API ↗](https://elevenlabs.io/docs/api-reference) |
-| Supported Endpoints | `/audio/transcriptions`, `/audio/speech` |
+| 說明 | ElevenLabs 提供先進的 AI 語音技術，具備語音轉文字轉錄與文字轉語音功能，支援多種語言與說話者分離。 |
+| LiteLLM 上的提供者路由 | `elevenlabs/` |
+| 提供者文件 | [ElevenLabs API ↗](https://elevenlabs.io/docs/api-reference) |
+| 支援的端點 | `/audio/transcriptions`, `/audio/speech` |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 <Tabs>
-<TabItem value="basic" label="Basic Usage">
+<TabItem value="basic" label="基本用法">
 
 ```python showLineNumbers title="Basic audio transcription with ElevenLabs"
 import litellm
@@ -35,7 +35,7 @@ print(response.text)
 
 </TabItem>
 
-<TabItem value="advanced" label="Advanced Features">
+<TabItem value="advanced" label="進階功能">
 
 ```python showLineNumbers title="Audio transcription with advanced features"
 import litellm
@@ -62,7 +62,7 @@ if hasattr(response, 'words') and response.words:
 
 </TabItem>
 
-<TabItem value="async" label="Async Usage">
+<TabItem value="async" label="非同步用法">
 
 ```python showLineNumbers title="Async audio transcription"
 import litellm
@@ -86,9 +86,9 @@ print(result)
 </TabItem>
 </Tabs>
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-#### 1. Configure your proxy
+#### 1. 設定您的 proxy {#1-configure-your-proxy}
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -106,7 +106,7 @@ general_settings:
 
 </TabItem>
 
-<TabItem value="env-vars" label="Environment Variables">
+<TabItem value="env-vars" label="環境變數">
 
 ```bash showLineNumbers title="Required environment variables"
 export ELEVENLABS_API_KEY="your-elevenlabs-api-key"
@@ -116,7 +116,7 @@ export LITELLM_MASTER_KEY="your-master-key"
 </TabItem>
 </Tabs>
 
-#### 2. Start the proxy
+#### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash showLineNumbers title="Start LiteLLM proxy server"
 litellm --config config.yaml
@@ -124,7 +124,7 @@ litellm --config config.yaml
 # Proxy will be available at http://localhost:4000
 ```
 
-#### 3. Make transcription requests
+#### 3. 發出轉錄請求 {#3-make-transcription-requests}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -200,9 +200,9 @@ transcribeAudio();
 </TabItem>
 </Tabs>
 
-## Response Format
+## 回應格式 {#response-format}
 
-ElevenLabs returns transcription responses in OpenAI-compatible format:
+ElevenLabs 會以 OpenAI 相容格式回傳轉錄回應：
 
 ```json showLineNumbers title="Example transcription response"
 {
@@ -224,35 +224,35 @@ ElevenLabs returns transcription responses in OpenAI-compatible format:
 }
 ```
 
-### Common Issues
+### 常見問題 {#common-issues}
 
-1. **Invalid API Key**: Ensure `ELEVENLABS_API_KEY` is set correctly
+1. **無效的 API 金鑰**：請確保 `ELEVENLABS_API_KEY` 已正確設定
 
 ---
 
-## Text-to-Speech (TTS)
+## 文字轉語音（TTS） {#text-to-speech-tts}
 
-ElevenLabs provides high-quality text-to-speech capabilities through their TTS API, supporting multiple voices, languages, and audio formats.
+ElevenLabs 透過其 TTS API 提供高品質的文字轉語音功能，支援多種聲音、語言與音訊格式。
 
-### Overview
+### 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Convert text to natural-sounding speech using ElevenLabs' advanced TTS models |
-| Provider Route on LiteLLM | `elevenlabs/` |
-| Supported Operations | `/audio/speech` |
-| Link to Provider Doc | [ElevenLabs TTS API ↗](https://elevenlabs.io/docs/api-reference/text-to-speech) |
+| 說明 | 使用 ElevenLabs 的進階 TTS 模型將文字轉換為自然發聲的語音 |
+| LiteLLM 上的提供者路由 | `elevenlabs/` |
+| 支援的操作 | `/audio/speech` |
+| 提供者文件連結 | [ElevenLabs TTS API ↗](https://elevenlabs.io/docs/api-reference/text-to-speech) |
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-| Model | Route | Description |
+| 模型 | 路由 | 說明 |
 |-------|-------|-------------|
-| Eleven v3 | `elevenlabs/eleven_v3` | Most expressive model. 70+ languages, audio tags support for sound effects and pauses. |
-| Eleven Multilingual v2 | `elevenlabs/eleven_multilingual_v2` | Default TTS model. 29 languages, stable and production-ready. |
+| Eleven v3 | `elevenlabs/eleven_v3` | 最具表現力的模型。支援 70+ 種語言，並可透過 audio tags 支援音效與停頓。 |
+| Eleven Multilingual v2 | `elevenlabs/eleven_multilingual_v2` | 預設 TTS 模型。支援 29 種語言，穩定且可用於正式環境。 |
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
-#### LiteLLM Python SDK
+#### LiteLLM Python SDK {#litellm-python-sdk-1}
 
 ```python showLineNumbers title="ElevenLabs Text-to-Speech with SDK"
 import litellm
@@ -272,9 +272,9 @@ with open("test_output.mp3", "wb") as f:
     f.write(audio.read())
 ```
 
-#### Using Eleven v3 with Audio Tags
+#### 使用帶有 Audio Tags 的 Eleven v3 {#using-eleven-v3-with-audio-tags}
 
-Eleven v3 supports [audio tags](https://elevenlabs.io/docs/overview/capabilities/text-to-speech#audio-tags) for adding sound effects and pauses directly in the text:
+Eleven v3 支援 [audio tags](https://elevenlabs.io/docs/overview/capabilities/text-to-speech#audio-tags)，可直接在文字中加入音效與停頓：
 
 ```python showLineNumbers title="Eleven v3 with audio tags"
 import litellm
@@ -292,7 +292,7 @@ with open("eleven_v3_output.mp3", "wb") as f:
     f.write(audio.read())
 ```
 
-#### Advanced Usage: Overriding Parameters and ElevenLabs-Specific Features
+#### 進階用法：覆寫參數與 ElevenLabs 專屬功能 {#advanced-usage-overriding-parameters-and-elevenlabs-specific-features}
 
 ```python showLineNumbers title="Advanced TTS with custom parameters"
 import litellm
@@ -319,24 +319,24 @@ with open("test_output.mp3", "wb") as f:
     f.write(audio.read())
 ```
 
-### Voice Mapping
+### 聲音對應 {#voice-mapping}
 
-LiteLLM automatically maps common OpenAI voice names to ElevenLabs voice IDs:
+LiteLLM 會自動將常見的 OpenAI 聲音名稱對應到 ElevenLabs 的聲音 ID：
 
-| OpenAI Voice | ElevenLabs Voice ID | Description |
+| OpenAI 聲音 | ElevenLabs 聲音 ID | 說明 |
 |--------------|---------------------|-------------|
-| `alloy` | `21m00Tcm4TlvDq8ikWAM` | Rachel - Neutral and balanced |
-| `amber` | `5Q0t7uMcjvnagumLfvZi` | Paul - Warm and friendly |
-| `ash` | `AZnzlk1XvdvUeBnXmlld` | Domi - Energetic |
-| `august` | `D38z5RcWu1voky8WS1ja` | Fin - Professional |
-| `blue` | `2EiwWnXFnvU5JabPnv8n` | Clyde - Deep and authoritative |
-| `coral` | `9BWtsMINqrJLrRacOk9x` | Aria - Expressive |
-| `lily` | `EXAVITQu4vr4xnSDxMaL` | Sarah - Friendly |
-| `onyx` | `29vD33N1CtxCmqQRPOHJ` | Drew - Strong |
-| `sage` | `CwhRBWXzGAHq8TQ4Fs17` | Roger - Calm |
-| `verse` | `CYw3kZ02Hs0563khs1Fj` | Dave - Conversational |
+| `alloy` | `21m00Tcm4TlvDq8ikWAM` | Rachel - 中性且平衡 |
+| `amber` | `5Q0t7uMcjvnagumLfvZi` | Paul - 溫暖且友善 |
+| `ash` | `AZnzlk1XvdvUeBnXmlld` | Domi - 有活力 |
+| `august` | `D38z5RcWu1voky8WS1ja` | Fin - 專業 |
+| `blue` | `2EiwWnXFnvU5JabPnv8n` | Clyde - 深沉且權威 |
+| `coral` | `9BWtsMINqrJLrRacOk9x` | Aria - 富有表現力 |
+| `lily` | `EXAVITQu4vr4xnSDxMaL` | Sarah - 友善 |
+| `onyx` | `29vD33N1CtxCmqQRPOHJ` | Drew - 強而有力 |
+| `sage` | `CwhRBWXzGAHq8TQ4Fs17` | Roger - 平靜 |
+| `verse` | `CYw3kZ02Hs0563khs1Fj` | Dave - 對話式 |
 
-**Using Custom Voice IDs**: You can also pass any ElevenLabs voice ID directly. If the voice name is not in the mapping, LiteLLM will use it as-is:
+**使用自訂聲音 ID**：您也可以直接傳入任何 ElevenLabs 的聲音 ID。如果聲音名稱不在對應表中，LiteLLM 會原樣使用：
 
 ```python showLineNumbers title="Using custom ElevenLabs voice ID"
 audio = litellm.speech(
@@ -346,19 +346,19 @@ audio = litellm.speech(
 )
 ```
 
-### Response Format Mapping
+### 回應格式對應 {#response-format-mapping}
 
-LiteLLM maps OpenAI response formats to ElevenLabs output formats:
+LiteLLM 會將 OpenAI 的回應格式對應到 ElevenLabs 的輸出格式：
 
-| OpenAI Format | ElevenLabs Format |
+| OpenAI 格式 | ElevenLabs 格式 |
 |---------------|-------------------|
 | `mp3` | `mp3_44100_128` |
 | `pcm` | `pcm_44100` |
 | `opus` | `opus_48000_128` |
 
-You can also pass ElevenLabs-specific output formats directly using the `output_format` parameter.
+您也可以直接使用 `output_format` 參數傳入 ElevenLabs 專屬的輸出格式。
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Supported Parameters"
 audio = litellm.speech(
@@ -380,9 +380,9 @@ audio = litellm.speech(
 )
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy-1}
 
-#### 1. Configure your proxy
+#### 1. 設定您的 proxy {#1-configure-your-proxy-1}
 
 ```yaml showLineNumbers title="ElevenLabs TTS configuration in config.yaml"
 model_list:
@@ -395,11 +395,11 @@ general_settings:
   master_key: your-master-key
 ```
 
-#### 2. Make TTS requests
+#### 2. 發出 TTS 請求 {#2-make-tts-requests}
 
-##### Simple Usage (OpenAI Parameters)
+##### 簡單用法（OpenAI 參數） {#simple-usage-openai-parameters}
 
-You can use standard OpenAI-compatible parameters without any provider-specific configuration:
+您可以使用標準的 OpenAI 相容參數，而無需任何提供者專屬設定：
 
 ```bash showLineNumbers title="Simple TTS request with curl"
 curl http://localhost:4000/v1/audio/speech \
@@ -434,9 +434,9 @@ with open("speech.mp3", "wb") as f:
     f.write(response.content)
 ```
 
-##### Advanced Usage (ElevenLabs-Specific Parameters)
+##### 進階用法（ElevenLabs 專屬參數） {#advanced-usage-elevenlabs-specific-parameters}
 
-**Note**: When using the proxy, provider-specific parameters (like `pronunciation_dictionary_locators`, `voice_settings`, etc.) must be passed in the `extra_body` field.
+**注意**：使用 proxy 時，提供者專屬參數（例如 `pronunciation_dictionary_locators`、`voice_settings` 等）必須傳入 `extra_body` 欄位。
 
 ```bash showLineNumbers title="Advanced TTS request with curl"
 curl http://localhost:4000/v1/audio/speech \
@@ -490,6 +490,3 @@ response = client.audio.speech.create(
 with open("speech.mp3", "wb") as f:
     f.write(response.content)
 ```
-
-
-

@@ -1,34 +1,34 @@
-# Anthropic Tool Input Examples
+# Anthropic 工具輸入範例 {#anthropic-tool-input-examples}
 
-Provide concrete examples of valid tool inputs to help Claude understand how to use your tools more effectively. This is particularly useful for complex tools with nested objects, optional parameters, or format-sensitive inputs.
+提供具體的有效工具輸入範例，幫助 Claude 更有效地理解如何使用您的工具。這對於具有巢狀物件、可選參數或對格式敏感的輸入之複雜工具特別有用。
 
 :::info
-Tool input examples is a beta feature. LiteLLM automatically detects tools with the `input_examples` field and adds the appropriate beta header based on your provider:
+工具輸入範例是 beta 功能。LiteLLM 會自動偵測具有 `input_examples` 欄位的工具，並依據您的提供者加入適當的 beta 標頭：
 
-- **Anthropic API & Microsoft Foundry**: `advanced-tool-use-2025-11-20`
-- **Amazon Bedrock**: `advanced-tool-use-2025-11-20` (Claude Opus 4.5 only)
-- **Google Cloud Vertex AI**: Not supported
+- **Anthropic API 與 Microsoft Foundry**：`advanced-tool-use-2025-11-20`
+- **Amazon Bedrock**：`advanced-tool-use-2025-11-20`（僅 Claude Opus 4.5）
+- **Google Cloud Vertex AI**：不支援
 
-You don't need to manually specify beta headers—LiteLLM handles this automatically.
+您不需要手動指定 beta 標頭——LiteLLM 會自動處理。
 :::
 
-## When to Use Input Examples
+## 何時使用輸入範例 {#when-to-use-input-examples}
 
-Input examples are most helpful for:
+輸入範例在以下情況最有幫助：
 
-- **Complex nested objects**: Tools with deeply nested parameter structures
-- **Optional parameters**: Showing when optional parameters should be included
-- **Format-sensitive inputs**: Demonstrating expected formats (dates, addresses, etc.)
-- **Enum values**: Illustrating valid enum choices in context
-- **Edge cases**: Showing how to handle special cases
+- **複雜的巢狀物件**：具有深度巢狀參數結構的工具
+- **可選參數**：展示何時應包含可選參數
+- **對格式敏感的輸入**：示範預期格式（日期、地址等）
+- **列舉值**：在情境中說明有效的列舉選項
+- **邊緣情況**：展示如何處理特殊情況
 
 :::tip
-**Prioritize descriptions first!** Clear, detailed tool descriptions are more important than examples. Use `input_examples` as a supplement for complex tools where descriptions alone may not be sufficient.
+**優先描述！** 清楚且詳細的工具描述比範例更重要。對於僅靠描述可能不足以說明的複雜工具，請將 `input_examples` 作為補充。
 :::
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Add an `input_examples` field to your tool definition with an array of example input objects:
+在您的工具定義中新增一個 `input_examples` 欄位，並使用示範輸入物件陣列：
 
 ```python
 import litellm
@@ -80,19 +80,19 @@ response = litellm.completion(
 print(response)
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-When you provide `input_examples`:
+當您提供 `input_examples` 時：
 
-1. **LiteLLM detects** the `input_examples` field in your tool definition
-2. **Beta header added automatically**: The `advanced-tool-use-2025-11-20` header is injected
-3. **Examples included in prompt**: Anthropic includes the examples alongside your tool schema
-4. **Claude learns patterns**: The model uses examples to understand proper tool usage
-5. **Better tool calls**: Claude makes more accurate tool calls with correct parameter formats
+1. **LiteLLM 偵測** 您工具定義中的 `input_examples` 欄位
+2. **自動加入 beta 標頭**：注入 `advanced-tool-use-2025-11-20` 標頭
+3. **範例納入提示詞**：Anthropic 會將範例與您的工具 schema 一併納入
+4. **Claude 學習模式**：模型使用範例來理解正確的工具用法
+5. **更好的工具呼叫**：Claude 以正確的參數格式進行更精準的工具呼叫
 
-## Example Formats
+## 範例格式 {#example-formats}
 
-### Simple Tool with Examples
+### 含範例的簡單工具 {#simple-tool-with-examples}
 
 ```python
 {
@@ -125,7 +125,7 @@ When you provide `input_examples`:
 }
 ```
 
-### Complex Nested Objects
+### 複雜的巢狀物件 {#complex-nested-objects}
 
 ```python
 {
@@ -182,7 +182,7 @@ When you provide `input_examples`:
 }
 ```
 
-### Format-Sensitive Parameters
+### 對格式敏感的參數 {#format-sensitive-parameters}
 
 ```python
 {
@@ -218,49 +218,49 @@ When you provide `input_examples`:
 }
 ```
 
-## Requirements and Limitations
+## 要求與限制 {#requirements-and-limitations}
 
-### Schema Validation
+### Schema 驗證 {#schema-validation}
 
-- Each example **must be valid** according to the tool's `input_schema`
-- Invalid examples will return a **400 error** from Anthropic
-- Validation happens server-side (LiteLLM passes examples through)
+- 每個範例**都必須有效**，且符合工具的 `input_schema`
+- 無效範例會從 Anthropic 傳回 **400 錯誤**
+- 驗證在伺服器端進行（LiteLLM 會將範例傳遞過去）
 
-### Server-Side Tools Not Supported
+### 不支援伺服器端工具 {#server-side-tools-not-supported}
 
-Input examples are **only supported for user-defined tools**. The following server-side tools do NOT support `input_examples`:
+輸入範例**僅支援使用者定義的工具**。以下伺服器端工具**不**支援 `input_examples`：
 
-- `web_search` (web search tool)
-- `code_execution` (code execution tool)
-- `computer_use` (computer use tool)
-- `bash_tool` (bash execution tool)
-- `text_editor` (text editor tool)
+- `web_search`（網頁搜尋工具）
+- `code_execution`（程式碼執行工具）
+- `computer_use`（電腦使用工具）
+- `bash_tool`（bash 執行工具）
+- `text_editor`（文字編輯器工具）
 
-### Token Costs
+### Token 成本 {#token-costs}
 
-Examples add to your prompt tokens:
+範例會增加您的提示詞 token：
 
-- **Simple examples**: ~20-50 tokens per example
-- **Complex nested objects**: ~100-200 tokens per example
-- **Trade-off**: Higher token cost for better tool call accuracy
+- **簡單範例**：每個範例約 20-50 個 token
+- **複雜的巢狀物件**：每個範例約 100-200 個 token
+- **取捨**：較高的 token 成本換取更好的工具呼叫準確度
 
-### Model Compatibility
+### 模型相容性 {#model-compatibility}
 
-Input examples work with all Claude models that support the `advanced-tool-use-2025-11-20` beta header:
+輸入範例可與所有支援 `advanced-tool-use-2025-11-20` beta 標頭的 Claude 模型搭配使用：
 
-- Claude Opus 4.5 (`claude-opus-4-5-20251101`)
-- Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`)
-- Claude Opus 4.1 (`claude-opus-4-1-20250805`)
+- Claude Opus 4.5（`claude-opus-4-5-20251101`）
+- Claude Sonnet 4.5（`claude-sonnet-4-5-20250929`）
+- Claude Opus 4.1（`claude-opus-4-1-20250805`）
 
 :::note
-On Google Cloud's Vertex AI and Amazon Bedrock, only Claude Opus 4.5 supports tool input examples.
+在 Google Cloud 的 Vertex AI 與 Amazon Bedrock 上，只有 Claude Opus 4.5 支援工具輸入範例。
 :::
 
-## Best Practices
+## 最佳實務 {#best-practices}
 
-### 1. Show Diverse Examples
+### 1. 顯示多樣化範例 {#1-show-diverse-examples}
 
-Include examples that demonstrate different use cases:
+包含能示範不同使用情境的範例：
 
 ```python
 "input_examples": [
@@ -270,9 +270,9 @@ Include examples that demonstrate different use cases:
 ]
 ```
 
-### 2. Demonstrate Optional Parameters
+### 2. 示範可選參數 {#2-demonstrate-optional-parameters}
 
-Show when optional parameters should and shouldn't be included:
+展示何時應該與不應該包含可選參數：
 
 ```python
 "input_examples": [
@@ -286,9 +286,9 @@ Show when optional parameters should and shouldn't be included:
 ]
 ```
 
-### 3. Illustrate Format Requirements
+### 3. 說明格式要求 {#3-illustrate-format-requirements}
 
-Make format expectations clear through examples:
+透過範例讓格式期望更清楚：
 
 ```python
 "input_examples": [
@@ -300,9 +300,9 @@ Make format expectations clear through examples:
 ]
 ```
 
-### 4. Keep Examples Realistic
+### 4. 保持範例貼近實際 {#4-keep-examples-realistic}
 
-Use realistic, production-like examples rather than placeholder data:
+使用真實、接近生產環境的範例，而非替代資料：
 
 ```python
 # ✅ Good - realistic examples
@@ -318,19 +318,19 @@ Use realistic, production-like examples rather than placeholder data:
 ]
 ```
 
-### 5. Limit Example Count
+### 5. 限制範例數量 {#5-limit-example-count}
 
-Provide 2-5 examples per tool:
+每個工具提供 2-5 個範例：
 
-- **Too few** (1): May not show enough variation
-- **Just right** (2-5): Demonstrates patterns without bloating tokens
-- **Too many** (10+): Wastes tokens, diminishing returns
+- **太少**（1 個）：可能無法呈現足夠的變化
+- **剛剛好**（2-5 個）：在不膨脹 token 的情況下展示模式
+- **太多**（10+ 個）：浪費 token，邊際效益遞減
 
-## Integration with Other Features
+## 與其他功能整合 {#integration-with-other-features}
 
-Input examples work seamlessly with other Anthropic tool features:
+輸入範例可與其他 Anthropic 工具功能無縫搭配：
 
-### With Tool Search
+### 搭配工具搜尋 {#with-tool-search}
 
 ```python
 {
@@ -347,7 +347,7 @@ Input examples work seamlessly with other Anthropic tool features:
 }
 ```
 
-### With Programmatic Tool Calling
+### 搭配程式化工具呼叫 {#with-programmatic-tool-calling}
 
 ```python
 {
@@ -364,7 +364,7 @@ Input examples work seamlessly with other Anthropic tool features:
 }
 ```
 
-### All Features Combined
+### 全部功能合併 {#all-features-combined}
 
 ```python
 {
@@ -382,24 +382,24 @@ Input examples work seamlessly with other Anthropic tool features:
 }
 ```
 
-## Provider Support
+## 提供者支援 {#provider-support}
 
-LiteLLM supports input examples across the following Anthropic-compatible providers:
+LiteLLM 支援以下相容 Anthropic 的提供者之輸入範例：
 
-- **Standard Anthropic API** (`anthropic/claude-sonnet-4-5-20250929`) ✅
-- **Azure Anthropic / Microsoft Foundry** (`azure/claude-sonnet-4-5-20250929`) ✅
-- **Amazon Bedrock** (`bedrock/invoke/anthropic.claude-opus-4-5-20251101-v1:0`) ✅ (Opus 4.5 only)
-- **Google Cloud Vertex AI** (`vertex_ai/claude-sonnet-4-5-20250929`) ❌ Not supported
+- **標準 Anthropic API**（`anthropic/claude-sonnet-4-5-20250929`）✅
+- **Azure Anthropic / Microsoft Foundry**（`azure/claude-sonnet-4-5-20250929`）✅
+- **Amazon Bedrock**（`bedrock/invoke/anthropic.claude-opus-4-5-20251101-v1:0`）✅（僅 Opus 4.5）
+- **Google Cloud Vertex AI**（`vertex_ai/claude-sonnet-4-5-20250929`）❌ 不支援
 
-The beta header (`advanced-tool-use-2025-11-20`) is automatically added when LiteLLM detects tools with the `input_examples` field.
+當 LiteLLM 偵測到具有 `input_examples` 欄位的工具時，會自動加入 beta 標頭（`advanced-tool-use-2025-11-20`）。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### "Invalid request" error with examples
+### 使用範例時出現「無效請求」錯誤 {#invalid-request-error-with-examples}
 
-**Problem**: Receiving 400 error when using input examples
+**問題**：使用輸入範例時收到 400 錯誤
 
-**Solution**: Ensure each example is valid according to your `input_schema`:
+**解決方案**：請確保每個範例都依據您的 `input_schema` 為有效：
 
 ```python
 # Check that:
@@ -409,37 +409,36 @@ The beta header (`advanced-tool-use-2025-11-20`) is automatically added when Lit
 # 4. Nested objects follow the schema structure
 ```
 
-### Examples not improving tool calls
+### 範例未改善工具呼叫 {#examples-not-improving-tool-calls}
 
-**Problem**: Adding examples doesn't seem to help
+**問題**：新增範例似乎沒有幫助
 
-**Solution**:
-1. **Check descriptions first**: Ensure tool descriptions are detailed and clear
-2. **Review example quality**: Make sure examples are realistic and diverse
-3. **Verify schema**: Confirm examples actually match your schema
-4. **Add more variation**: Include examples showing different use cases
+**解決方案**：
+1. **先檢查描述**：確保工具描述詳細且清楚
+2. **檢視範例品質**：確認範例真實且多樣
+3. **驗證 schema**：確認範例 वास्तव上符合您的 schema
+4. **增加變化**：加入展示不同使用情境的範例
 
-### Token usage too high
+### Token 使用量過高 {#token-usage-too-high}
 
-**Problem**: Input examples consuming too many tokens
+**問題**：輸入範例消耗太多 token
 
-**Solution**:
-1. **Reduce example count**: Use 2-3 examples instead of 5+
-2. **Simplify examples**: Remove unnecessary fields from examples
-3. **Consider descriptions**: If descriptions are clear, examples may not be needed
+**解決方案**：
+1. **減少範例數量**：使用 2-3 個範例，而非 5 個以上
+2. **簡化範例**：移除範例中不必要的欄位
+3. **考慮描述**：如果描述已清楚，可能不需要範例
 
-## When NOT to Use Input Examples
+## 何時不要使用輸入範例 {#when-not-to-use-input-examples}
 
-Skip input examples if:
+在以下情況下請略過輸入範例：
 
-- **Tool is simple**: Single parameter tools with clear descriptions
-- **Schema is self-explanatory**: Well-structured schema with good descriptions
-- **Token budget is tight**: Examples add 20-200 tokens each
-- **Server-side tools**: web_search, code_execution, etc. don't support examples
+- **工具很簡單**：單一參數且描述清楚的工具
+- **Schema 已自我說明**：結構良好且說明完善的 schema
+- **Token 預算緊縮**：每個範例會增加 20-200 個 token
+- **伺服器端工具**：web_search、code_execution 等不支援範例
 
-## Related Features
+## 相關功能 {#related-features}
 
-- [Anthropic Tool Search](./anthropic_tool_search.md) - Dynamically discover and load tools on-demand
-- [Anthropic Programmatic Tool Calling](./anthropic_programmatic_tool_calling.md) - Call tools from code execution
-- [Anthropic Provider](./anthropic.md) - General Anthropic provider documentation
-
+- [Anthropic 工具搜尋](./anthropic_tool_search.md) - 動態探索並按需載入工具
+- [Anthropic 程式化工具呼叫](./anthropic_programmatic_tool_calling.md) - 從程式碼執行中呼叫工具
+- [Anthropic 提供者](./anthropic.md) - Anthropic 提供者的一般文件

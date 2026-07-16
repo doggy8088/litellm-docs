@@ -1,9 +1,9 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /embeddings
+# /embeddings {#embeddings}
 
-## Quick Start
+## 快速開始 {#quick-start}
 ```python
 from litellm import embedding
 import os
@@ -11,9 +11,9 @@ os.environ['OPENAI_API_KEY'] = ""
 response = embedding(model='text-embedding-ada-002', input=["good morning from litellm"])
 ```
 
-## Async Usage - `aembedding()`
+## 非同步用法 - `aembedding()` {#async-usage---aembedding}
 
-LiteLLM provides an asynchronous version of the `embedding` function called `aembedding`:
+LiteLLM 提供 `embedding` 函式的非同步版本，稱為 `aembedding`：
 
 ```python
 from litellm import aembedding
@@ -30,15 +30,15 @@ response = asyncio.run(get_embedding())
 print(response)
 ```
 
-## Proxy Usage 
+## Proxy 用法 {#proxy-usage}
 
-**NOTE**
-For `vertex_ai`,
+**注意**
+對於 `vertex_ai`，
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS="absolute/path/to/service_account.json"
 ```
 
-### Add model to config 
+### 將模型加入設定 {#add-model-to-config}
 
 ```yaml
 model_list:
@@ -50,7 +50,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-### Start proxy 
+### 啟動 proxy {#start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml 
@@ -58,7 +58,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test 
+### 測試 {#test}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -104,10 +104,9 @@ print(query_result[:5])
 </TabItem>
 </Tabs>
 
+## 圖片嵌入 {#image-embeddings}
 
-## Image Embeddings
-
-For models that support image embeddings, you can pass in a base64 encoded image string to the `input` param.
+對於支援影像嵌入的模型，您可以將 base64 編碼的影像字串傳入 `input` 參數。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -125,7 +124,7 @@ response = embedding(model="cohere/embed-english-v3.0", input=["<base64 encoded 
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -136,7 +135,7 @@ model_list:
 ```
 
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml 
@@ -144,7 +143,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/embeddings' \
@@ -158,46 +157,45 @@ curl -X POST 'http://0.0.0.0:4000/v1/embeddings' \
 </TabItem>
 </Tabs>
 
-## Input Params for `litellm.embedding()`
-
+## `litellm.embedding()` 的輸入參數 {#input-params-for-litellmembedding}
 
 :::info
 
-Any non-openai params, will be treated as provider-specific params, and sent in the request body as kwargs to the provider.
+任何非 openai 參數都會被視為特定提供者的參數，並以 kwargs 的形式在請求本文中傳送給提供者。
 
-[**See Reserved Params**](https://github.com/BerriAI/litellm/blob/2f5f85cb52f36448d1f8bbfbd3b8af8167d0c4c8/litellm/main.py#L3130)
+[**查看保留參數**](https://github.com/BerriAI/litellm/blob/2f5f85cb52f36448d1f8bbfbd3b8af8167d0c4c8/litellm/main.py#L3130)
 
-[**See Example**](#example)
+[**查看範例**](#example)
 :::
 
-### Required Fields
+### 必要欄位 {#required-fields}
 
-- `model`: *string* - ID of the model to use. `model='text-embedding-ada-002'`
+- `model`: *字串* - 要使用的模型 ID。 `model='text-embedding-ada-002'`
 
-- `input`: *string or array* - Input text to embed, encoded as a string or array of tokens. To embed multiple inputs in a single request, pass an array of strings or array of token arrays. The input must not exceed the max input tokens for the model (8192 tokens for text-embedding-ada-002), cannot be an empty string, and any array must be 2048 dimensions or less. 
+- `input`: *字串或陣列* - 要嵌入的輸入文字，編碼為字串或 token 陣列。若要在單一請求中嵌入多個輸入，請傳入字串陣列或 token 陣列的陣列。輸入不得超過該模型的最大輸入 token 數（text-embedding-ada-002 為 8192 tokens），不得為空字串，且任何陣列必須為 2048 維度或以下。 
 ```python
 input=["good morning from litellm"]
 ```
 
-### Optional LiteLLM Fields
+### LiteLLM 選用欄位 {#optional-litellm-fields}
 
-- `user`: *string (optional)* A unique identifier representing your end-user, 
+- `user`: *字串（可選）* 代表您終端使用者的唯一識別碼， 
 
-- `dimensions`: *integer (Optional)* The number of dimensions the resulting output embeddings should have. Only supported in OpenAI/Azure text-embedding-3 and later models.
+- `dimensions`: *整數（可選）* 產生的輸出嵌入應具有的維度數。僅支援 OpenAI/Azure text-embedding-3 及更新的模型。
 
-- `encoding_format`: *string (Optional)* The format to return the embeddings in. Can be either `"float"` or `"base64"`. Defaults to `encoding_format="float"`
+- `encoding_format`: *字串（可選）* 回傳嵌入的格式。可以是 `"float"` 或 `"base64"`。預設為 `encoding_format="float"`
 
-- `timeout`: *integer (Optional)* - The maximum time, in seconds, to wait for the API to respond. Defaults to 600 seconds (10 minutes).
+- `timeout`: *整數（可選）* - 等待 API 回應的最長時間（以秒為單位）。預設為 600 秒（10 分鐘）。
 
-- `api_base`: *string (optional)* - The api endpoint you want to call the model with
+- `api_base`: *字串（可選）* - 您想用來呼叫模型的 API 端點
 
-- `api_version`: *string (optional)* - (Azure-specific) the api version for the call
+- `api_version`: *string (optional)* -（Azure 特定）呼叫的 api version
 
-- `api_key`: *string (optional)* - The API key to authenticate and authorize requests. If not provided, the default API key is used.
+- `api_key`: *string (optional)* - 用於驗證與授權請求的 API 金鑰。若未提供，則使用預設 API 金鑰。
 
-- `api_type`: *string (optional)* - The type of API to use.
+- `api_type`: *string (optional)* - 要使用的 API 類型。
 
-### Output from `litellm.embedding()`
+### `litellm.embedding()` 的輸出 {#output-from-litellmembedding}
 
 ```json
 {
@@ -224,9 +222,9 @@ input=["good morning from litellm"]
 }
 ```
 
-## OpenAI Embedding Models
+## OpenAI 嵌入模型 {#openai-embedding-models}
 
-### Usage
+### 用法 {#usage}
 ```python
 from litellm import embedding
 import os
@@ -239,18 +237,18 @@ response = embedding(
 )
 ```
 
-| Model Name           | Function Call                               | Required OS Variables                |
+| 模型名稱           | 函式呼叫                               | 必要 OS 變數                |
 |----------------------|---------------------------------------------|--------------------------------------|
 | text-embedding-3-small | `embedding('text-embedding-3-small', input)` | `os.environ['OPENAI_API_KEY']`       |
 | text-embedding-3-large | `embedding('text-embedding-3-large', input)` | `os.environ['OPENAI_API_KEY']`       |
 | text-embedding-ada-002 | `embedding('text-embedding-ada-002', input)` | `os.environ['OPENAI_API_KEY']`       |
 
-## OpenAI Compatible Embedding Models
-Use this for calling `/embedding` endpoints on OpenAI Compatible Servers, example https://github.com/xorbitsai/inference
+## OpenAI 相容的嵌入模型 {#openai-compatible-embedding-models}
+用於呼叫 OpenAI Compatible Servers 上的 `/embedding` 端點，例如 https://github.com/xorbitsai/inference
 
-**Note add `openai/` prefix to model so litellm knows to route to OpenAI**
+**注意：將 `openai/` 前綴加到模型名稱，這樣 litellm 才知道要路由到 OpenAI**
 
-### Usage
+### 用法 {#usage-1}
 ```python
 from litellm import embedding
 response = embedding(
@@ -260,10 +258,10 @@ response = embedding(
 )
 ```
 
-## Bedrock Embedding
+## Bedrock 嵌入 {#bedrock-embedding}
 
-### API keys
-This can be set as env variables or passed as **params to litellm.embedding()**
+### API 金鑰 {#api-keys}
+這可以設為環境變數，或作為 **litellm.embedding() 的參數** 傳入
 ```python
 import os
 os.environ["AWS_ACCESS_KEY_ID"] = ""  # Access key
@@ -271,7 +269,7 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = "" # Secret access key
 os.environ["AWS_REGION_NAME"] = "" # us-east-1, us-east-2, us-west-1, us-west-2
 ```
 
-### Usage
+### 用法 {#usage-2}
 ```python
 from litellm import embedding
 response = embedding(
@@ -281,20 +279,20 @@ response = embedding(
 print(response)
 ```
 
-| Model Name           | Function Call                               |
+| 模型名稱           | 函式呼叫                               |
 |----------------------|---------------------------------------------|
-| Amazon Nova Multimodal Embeddings | `embedding(model="bedrock/amazon.nova-2-multimodal-embeddings-v1:0", input=input)` | [Nova Docs](../providers/bedrock_embedding#amazon-nova-multimodal-embeddings) |
-| Amazon Nova (Async) | `embedding(model="bedrock/async_invoke/amazon.nova-2-multimodal-embeddings-v1:0", input=input, input_type="text", output_s3_uri="s3://bucket/")` | [Nova Async Docs](../providers/bedrock_embedding#asynchronous-embeddings-with-segmentation) |
+| Amazon Nova 多模態嵌入 | `embedding(model="bedrock/amazon.nova-2-multimodal-embeddings-v1:0", input=input)` | [Nova 文件](../providers/bedrock_embedding#amazon-nova-multimodal-embeddings) |
+| Amazon Nova（非同步） | `embedding(model="bedrock/async_invoke/amazon.nova-2-multimodal-embeddings-v1:0", input=input, input_type="text", output_s3_uri="s3://bucket/")` | [Nova 非同步文件](../providers/bedrock_embedding#asynchronous-embeddings-with-segmentation) |
 | Titan Embeddings - G1 | `embedding(model="amazon.titan-embed-text-v1", input=input)` |
 | Cohere Embeddings - English | `embedding(model="cohere.embed-english-v3", input=input)` |
 | Cohere Embeddings - Multilingual | `embedding(model="cohere.embed-multilingual-v3", input=input)` |
-| TwelveLabs Marengo (Async) | `embedding(model="bedrock/async_invoke/us.twelvelabs.marengo-embed-2-7-v1:0", input=input, input_type="text")` | [Async Invoke Docs](../providers/bedrock_embedding#async-invoke-embedding) |
+| TwelveLabs Marengo（非同步） | `embedding(model="bedrock/async_invoke/us.twelvelabs.marengo-embed-2-7-v1:0", input=input, input_type="text")` | [非同步 Invoke 文件](../providers/bedrock_embedding#async-invoke-embedding) |
 
-## TwelveLabs Bedrock Embedding Models
+## TwelveLabs Bedrock 嵌入模型 {#twelvelabs-bedrock-embedding-models}
 
-TwelveLabs Marengo models support multimodal embeddings (text, image, video, audio) and require the `input_type` parameter to specify the input format.
+TwelveLabs Marengo 模型支援多模態嵌入（文字、圖片、影片、音訊），並需要 `input_type` 參數來指定輸入格式。
 
-### Usage
+### 用法 {#usage-3}
 
 ```python
 from litellm import embedding
@@ -329,23 +327,23 @@ response = embedding(
 )
 ```
 
-### Required Parameters
+### 必要參數 {#required-parameters}
 
-| Parameter | Description | Values |
+| 參數 | 說明 | 值 |
 |-----------|-------------|--------|
-| `input_type` | Type of input content | `"text"`, `"image"`, `"video"`, `"audio"` |
+| `input_type` | 輸入內容類型 | `"text"`, `"image"`, `"video"`, `"audio"` |
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-| Model Name | Function Call | Notes |
+| 模型名稱 | 函式呼叫 | 備註 |
 |------------|---------------|-------|
-| TwelveLabs Marengo 2.7 (Sync) | `embedding(model="bedrock/us.twelvelabs.marengo-embed-2-7-v1:0", input=input, input_type="text")` | Text embeddings only |
-| TwelveLabs Marengo 2.7 (Async) | `embedding(model="bedrock/async_invoke/us.twelvelabs.marengo-embed-2-7-v1:0", input=input, input_type="text/image/video/audio")` | All input types, requires `output_s3_uri` |
+| TwelveLabs Marengo 2.7 (Sync) | `embedding(model="bedrock/us.twelvelabs.marengo-embed-2-7-v1:0", input=input, input_type="text")` | 僅支援文字嵌入 |
+| TwelveLabs Marengo 2.7 (Async) | `embedding(model="bedrock/async_invoke/us.twelvelabs.marengo-embed-2-7-v1:0", input=input, input_type="text/image/video/audio")` | 支援所有輸入類型，需要 `output_s3_uri` |
 
-## Cohere Embedding Models
+## Cohere 嵌入模型 {#cohere-embedding-models}
 https://docs.cohere.com/reference/embed
 
-### Usage
+### 用法 {#usage-4}
 ```python
 from litellm import embedding
 os.environ["COHERE_API_KEY"] = "cohere key"
@@ -357,7 +355,7 @@ response = embedding(
     input_type="search_document" # optional param for v3 llms
 )
 ```
-| Model Name               | Function Call                                                |
+| 模型名稱               | 函式呼叫                                                |
 |--------------------------|--------------------------------------------------------------|
 | embed-english-v3.0       | `embedding(model="embed-english-v3.0", input=["good morning from litellm", "this is another item"])` |
 | embed-english-light-v3.0 | `embedding(model="embed-english-light-v3.0", input=["good morning from litellm", "this is another item"])` |
@@ -367,17 +365,17 @@ response = embedding(
 | embed-english-light-v2.0 | `embedding(model="embed-english-light-v2.0", input=["good morning from litellm", "this is another item"])` |
 | embed-multilingual-v2.0  | `embedding(model="embed-multilingual-v2.0", input=["good morning from litellm", "this is another item"])` |
 
-## NVIDIA NIM Embedding Models
+## NVIDIA NIM 嵌入模型 {#nvidia-nim-embedding-models}
 
-### API keys
-This can be set as env variables or passed as **params to litellm.embedding()**
+### API 金鑰 {#api-keys-1}
+這可以設定為環境變數，或作為 **參數傳遞給 litellm.embedding()**
 ```python
 import os
 os.environ["NVIDIA_NIM_API_KEY"] = ""  # api key
 os.environ["NVIDIA_NIM_API_BASE"] = "" # nim endpoint url
 ```
 
-### Usage
+### 用法 {#usage-5}
 ```python
 from litellm import embedding
 import os
@@ -388,24 +386,22 @@ response = embedding(
     input_type="query"
 )
 ```
-## `input_type` Parameter for Embedding Models
+## `input_type` 用於嵌入模型的參數 {#input_type-parameter-for-embedding-models}
 
-Certain embedding models, such as `nvidia/embed-qa-4` and the E5 family, operate in **dual modes**—one for **indexing documents (passages)** and another for **querying**. To maintain high retrieval accuracy, it's essential to specify how the input text is being used by setting the `input_type` parameter correctly.
+某些嵌入模型，例如 `nvidia/embed-qa-4` 和 E5 系列，具有**雙模式**運作——一種用於**索引文件（passages）**，另一種用於**查詢**。為了維持高檢索準確度，必須透過正確設定 `input_type` 參數，來指定輸入文字的用途。
 
-### Usage
+### 用法 {#usage-6}
 
-Set the `input_type` parameter to one of the following values:
+將 `input_type` 參數設定為以下其中一個值：
 
-- `"passage"` – for embedding content during **indexing** (e.g., documents).
-- `"query"` – for embedding content during **retrieval** (e.g., user queries).
+- `"passage"` – 用於在**索引**期間嵌入內容（例如，文件）。
+- `"query"` – 用於在**檢索**期間嵌入內容（例如，使用者查詢）。
 
-> **Warning:** Incorrect usage of `input_type` can lead to a significant drop in retrieval performance.
+> **警告：** `input_type` 使用不正確，可能會導致檢索效能大幅下降。
 
+[這裡](https://build.nvidia.com/explore/retrieval)列出的所有模型都受支援：
 
-
-All models listed [here](https://build.nvidia.com/explore/retrieval) are supported:
-
-| Model Name         | Function Call                                         |
+| 模型名稱         | 函式呼叫                                         |
 | :---               | :---                                                  |
 | NV-Embed-QA | `embedding(model="nvidia_nim/NV-Embed-QA", input)` |
 | nvidia/nv-embed-v1 | `embedding(model="nvidia_nim/nvidia/nv-embed-v1", input)` |
@@ -417,11 +413,10 @@ All models listed [here](https://build.nvidia.com/explore/retrieval) are support
 | snowflake/arctic-embed-l | `embedding(model="nvidia_nim/snowflake/arctic-embed-l", input)` |
 | baai/bge-m3 | `embedding(model="nvidia_nim/baai/bge-m3", input)` |
 
+## HuggingFace 嵌入模型 {#huggingface-embedding-models}
+LiteLLM 支援所有 Feature-Extraction + Sentence Similarity 嵌入模型：https://huggingface.co/models?pipeline_tag=feature-extraction
 
-## HuggingFace Embedding Models
-LiteLLM supports all Feature-Extraction + Sentence Similarity Embedding models: https://huggingface.co/models?pipeline_tag=feature-extraction
-
-### Usage
+### 用法 {#usage-7}
 ```python
 from litellm import embedding
 import os
@@ -432,11 +427,11 @@ response = embedding(
 )
 ```
 
-### Usage - Set input_type
+### 用法 - 設定 input_type {#usage---set-input_type}
 
-LiteLLM infers input type (feature-extraction or sentence-similarity) by making a GET request to the api base. 
+LiteLLM 會透過向 api base 發出 GET 請求來推斷輸入類型（feature-extraction 或 sentence-similarity）。
 
-Override this, by setting the `input_type` yourself.
+您可以自行設定 `input_type` 來覆寫此行為。
 
 ```python
 from litellm import embedding
@@ -450,7 +445,7 @@ response = embedding(
 )
 ```
 
-### Usage - Custom API Base
+### 用法 - 自訂 API Base {#usage---custom-api-base}
 ```python
 from litellm import embedding
 import os
@@ -462,17 +457,16 @@ response = embedding(
 )
 ```
 
-| Model Name            | Function Call | Required OS Variables                        |
+| 模型名稱            | 函式呼叫 | 需要的 OS 變數                        |
 |-----------------------|--------------------------------------------------------------|-------------------------------------------------|
 | microsoft/codebert-base    | `embedding('huggingface/microsoft/codebert-base', input=input)`               | `os.environ['HUGGINGFACE_API_KEY']`                                             |
 | BAAI/bge-large-zh | `embedding('huggingface/BAAI/bge-large-zh', input=input)`         | `os.environ['HUGGINGFACE_API_KEY']`                                             |
 | any-hf-embedding-model | `embedding('huggingface/hf-embedding-model', input=input)`         | `os.environ['HUGGINGFACE_API_KEY']`                                             |
 
+## Mistral AI 嵌入模型 {#mistral-ai-embedding-models}
+此處列出的所有模型 https://docs.mistral.ai/platform/endpoints 都支援
 
-## Mistral AI Embedding Models
-All models listed here https://docs.mistral.ai/platform/endpoints are supported
-
-### Usage
+### 用法 {#usage-8}
 ```python
 from litellm import embedding
 import os
@@ -485,21 +479,21 @@ response = embedding(
 print(response)
 ```
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | mistral-embed | `embedding(model="mistral/mistral-embed", input)` | 
 
-## Gemini AI Embedding Models
+## Gemini AI 嵌入模型 {#gemini-ai-embedding-models}
 
-### API keys
+### API 金鑰 {#api-keys-2}
 
-This can be set as env variables or passed as **params to litellm.embedding()**
+這可以設定為環境變數，或作為 **傳遞給 litellm.embedding() 的參數**
 ```python
 import os
 os.environ["GEMINI_API_KEY"] = ""
 ```
 
-### Usage - Embedding
+### 用法 - 嵌入 {#usage---embedding}
 ```python
 from litellm import embedding
 response = embedding(
@@ -509,30 +503,29 @@ response = embedding(
 print(response)
 ```
 
-All models listed [here](https://ai.google.dev/gemini-api/docs/models/gemini) are supported:
+[此處](https://ai.google.dev/gemini-api/docs/models/gemini) 列出的所有模型都支援：
 
-| Model Name         | Function Call                                         |
+| 模型名稱         | 函式呼叫                                         |
 | :---               | :---                                                  |
 | text-embedding-004 | `embedding(model="gemini/text-embedding-004", input)` |
-| gemini-embedding-2-preview | `embedding(model="gemini/gemini-embedding-2-preview", input)` | [Multimodal docs](#gemini-embedding-2-preview-multimodal) |
-| gemini-embedding-2 *(GA)* | `embedding(model="gemini/gemini-embedding-2", input)` | [Multimodal docs](#gemini-embedding-2-preview-multimodal) · [GA notes](/blog/gemini_embedding_2_ga) |
+| gemini-embedding-2-preview | `embedding(model="gemini/gemini-embedding-2-preview", input)` | [多模態文件](#gemini-embedding-2-preview-multimodal) |
+| gemini-embedding-2 *(GA)* | `embedding(model="gemini/gemini-embedding-2", input)` | [多模態文件](#gemini-embedding-2-preview-multimodal) · [GA 備註](/blog/gemini_embedding_2_ga) |
 
-### Gemini Embedding 2 Preview (Multimodal)
+### Gemini Embedding 2 Preview（多模態） {#gemini-embedding-2-preview-multimodal}
 
-`gemini-embedding-2-preview` supports **multimodal embeddings**—text, images, audio, video, and PDF in a single request. See [blog post](/blog/gemini_embedding_2_multimodal) for details. The GA model id `gemini-embedding-2` exposes the same behavior—swap the model name in any example below. See [GA blog](/blog/gemini_embedding_2_ga) for cost-map coverage and pricing notes.
+`gemini-embedding-2-preview` 支援**多模態嵌入**——在單一請求中處理文字、圖片、音訊、影片和 PDF。詳情請參閱[部落格文章](/blog/gemini_embedding_2_multimodal)。GA 模型 ID `gemini-embedding-2` 提供相同的行為——在下方任何範例中將模型名稱替換即可。關於 cost-map 涵蓋範圍與定價說明，請參閱[GA 部落格](/blog/gemini_embedding_2_ga)。
 
-:::info Response shape
+:::info 回應格式
 
-For the Gemini API path (`gemini/gemini-embedding-2-preview`), each input element returns its **own** embedding (indexed `0..N-1`)—same semantics as OpenAI's `/embeddings`. LiteLLM routes to Gemini's `batchEmbedContents` endpoint with one `EmbedContentRequest` per input. This differs from the Vertex AI path, which combines all parts into a single unified vector—see [Vertex AI embeddings docs](../providers/vertex_embedding#gemini-embedding-2-preview-multimodal).
+針對 Gemini API 路徑（`gemini/gemini-embedding-2-preview`），每個輸入元素都會回傳**各自的** embedding（以 `0..N-1` 編號）——語意與 OpenAI 的 `/embeddings` 相同。LiteLLM 會將請求路由到 Gemini 的 `batchEmbedContents` 端點，且每個輸入對應一個 `EmbedContentRequest`。這與 Vertex AI 路徑不同，後者會將所有部分合併成單一的統一向量——請參閱 [Vertex AI embeddings 文件](../providers/vertex_embedding#gemini-embedding-2-preview-multimodal)。
 
 :::
 
+**輸入格式：**
+- **Data URI：** `data:image/png;base64,<encoded_data>`
+- **Gemini 檔案參照：** `files/abc123`（透過 Gemini Files API 預先上傳）
 
-**Input formats:**
-- **Data URIs:** `data:image/png;base64,<encoded_data>`
-- **Gemini file references:** `files/abc123` (pre-uploaded via Gemini Files API)
-
-**Supported MIME types:** `image/png`, `image/jpeg`, `audio/mpeg`, `audio/wav`, `video/mp4`, `video/quicktime`, `application/pdf`
+**支援的 MIME 類型：** `image/png`、`image/jpeg`、`audio/mpeg`、`audio/wav`、`video/mp4`、`video/quicktime`、`application/pdf`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -572,11 +565,11 @@ curl -X POST http://localhost:4000/embeddings \
 </TabItem>
 </Tabs>
 
-**Optional:** `dimensions` maps to Gemini's `outputDimensionality`.
+**選用：** `dimensions` 會對應到 Gemini 的 `outputDimensionality`。
 
-#### Combined Multimodal Embeddings
+#### 合併的多模態嵌入 {#combined-multimodal-embeddings}
 
-By default, each element in the `input` list produces a **separate** embedding (OpenAI-compatible). To combine multiple inputs into a **single** embedding (e.g., text + image representing one entity), wrap them in a nested list:
+預設情況下，`input` 清單中的每個元素都會產生**獨立的** embedding（與 OpenAI 相容）。若要將多個輸入合併成**單一** embedding（例如：代表同一實體的文字 + 圖片），請將它們包在巢狀清單中：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -622,12 +615,11 @@ curl -X POST http://localhost:4000/embeddings \
 </TabItem>
 </Tabs>
 
-This is useful for representing multi-modal entities (e.g., a product with a name + photo) as a single vector for search and retrieval. Gemini API only — Vertex AI always returns a single combined vector regardless of input shape (see [Vertex AI embeddings docs](../providers/vertex_embedding#gemini-embedding-2-preview-multimodal)).
+這對於將多模態實體（例如：具有名稱 + 照片的產品）表示為單一向量，以便進行搜尋與檢索非常有用。僅限 Gemini API —— Vertex AI 一律會傳回單一的合併向量，無論輸入形狀為何（請參閱 [Vertex AI embeddings 文件](../providers/vertex_embedding#gemini-embedding-2-preview-multimodal)）。
 
+## Vertex AI 嵌入模型 {#vertex-ai-embedding-models}
 
-## Vertex AI Embedding Models
-
-### Usage - Embedding
+### 用法 - 嵌入 {#usage---embedding-1}
 ```python
 import litellm
 from litellm import embedding
@@ -641,10 +633,10 @@ response = embedding(
 print(response)
 ```
 
-### Supported Models
-All models listed [here](https://github.com/BerriAI/litellm/blob/57f37f743886a0249f630a6792d49dffc2c5d9b7/model_prices_and_context_window.json#L835) are supported
+### 支援的模型 {#supported-models-1}
+所有在[此處](https://github.com/BerriAI/litellm/blob/57f37f743886a0249f630a6792d49dffc2c5d9b7/model_prices_and_context_window.json#L835)列出的模型皆支援
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | textembedding-gecko | `embedding(model="vertex_ai/textembedding-gecko", input)` | 
 | textembedding-gecko-multilingual | `embedding(model="vertex_ai/textembedding-gecko-multilingual", input)` | 
@@ -654,9 +646,9 @@ All models listed [here](https://github.com/BerriAI/litellm/blob/57f37f743886a02
 | text-embedding-preview-0409 | `embedding(model="vertex_ai/text-embedding-preview-0409", input)` |
 | text-multilingual-embedding-preview-0409 | `embedding(model="vertex_ai/text-multilingual-embedding-preview-0409", input)` | 
 
-## Voyage AI Embedding Models
+## Voyage AI 嵌入模型 {#voyage-ai-embedding-models}
 
-### Usage - Embedding
+### 用法 - 嵌入 {#usage---embedding-2}
 ```python
 from litellm import embedding
 import os
@@ -669,33 +661,32 @@ response = embedding(
 print(response)
 ```
 
-### Supported Models
-All models listed here https://docs.voyageai.com/embeddings/#models-and-specifics are supported
+### 支援的模型 {#supported-models-2}
+此處列出的所有模型 https://docs.voyageai.com/embeddings/#models-and-specifics 均受支援
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | voyage-01 | `embedding(model="voyage/voyage-01", input)` | 
 | voyage-lite-01 | `embedding(model="voyage/voyage-lite-01", input)` | 
 | voyage-lite-01-instruct | `embedding(model="voyage/voyage-lite-01-instruct", input)` | 
 
-### Provider-specific Params
-
+### 提供者專屬參數 {#provider-specific-params}
 
 :::info
 
-Any non-openai params, will be treated as provider-specific params, and sent in the request body as kwargs to the provider.
+任何非 openai 的參數都會被視為提供者專屬參數，並以 kwargs 形式作為請求本文傳送給提供者。
 
-[**See Reserved Params**](https://github.com/BerriAI/litellm/blob/2f5f85cb52f36448d1f8bbfbd3b8af8167d0c4c8/litellm/main.py#L3130)
+[**請參閱保留參數**](https://github.com/BerriAI/litellm/blob/2f5f85cb52f36448d1f8bbfbd3b8af8167d0c4c8/litellm/main.py#L3130)
 :::
 
-### **Example**
+### **範例** {#example}
 
-Cohere v3 Models have a required parameter: `input_type`, it can be one of the following four values:
+Cohere v3 模型有一個必要參數：`input_type`，它可以是以下四個值之一：
 
-- `input_type="search_document"`: (default) Use this for texts (documents) you want to store in your vector database
-- `input_type="search_query"`: Use this for search queries to find the most relevant documents in your vector database
-- `input_type="classification"`: Use this if you use the embeddings as an input for a classification system
-- `input_type="clustering"`: Use this if you use the embeddings for text clustering
+- `input_type="search_document"`： （預設）當您要將文字（文件）儲存在向量資料庫中時使用
+- `input_type="search_query"`：用於搜尋查詢，以在您的向量資料庫中找出最相關的文件
+- `input_type="classification"`：當您將嵌入向量作為分類系統的輸入時使用
+- `input_type="clustering"`：當您將嵌入向量用於文字叢集時使用
 
 https://txt.cohere.com/introducing-embed-v3/
 
@@ -716,7 +707,7 @@ response = embedding(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**via config**
+**透過設定**
 
 ```yaml
 model_list:
@@ -726,7 +717,7 @@ model_list:
       input_type: search_document # 👈 PROVIDER-SPECIFIC PARAM
 ```
 
-**via request**
+**透過請求**
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/embeddings' \
@@ -741,9 +732,9 @@ curl -X POST 'http://0.0.0.0:4000/v1/embeddings' \
 </TabItem>
 </Tabs>
 
-## Nebius AI Studio Embedding Models
+## Nebius AI Studio 嵌入模型 {#nebius-ai-studio-embedding-models}
 
-### Usage - Embedding
+### 用法 - 嵌入 {#usage---embedding-3}
 ```python
 from litellm import embedding
 import os
@@ -756,12 +747,11 @@ response = embedding(
 print(response)
 ```
 
-### Supported Models
-All supported models can be found here: https://studio.nebius.ai/models/embedding
+### 支援的模型 {#supported-models-3}
+所有受支援的模型可在此處找到：https://studio.nebius.ai/models/embedding
 
-| Model Name               | Function Call                                                   |
+| 模型名稱               | 函式呼叫                                                   |
 |--------------------------|-----------------------------------------------------------------|
 | BAAI/bge-en-icl | `embedding(model="nebius/BAAI/bge-en-icl", input)`              | 
 | BAAI/bge-multilingual-gemma2 | `embedding(model="nebius/BAAI/bge-multilingual-gemma2", input)` | 
-| intfloat/e5-mistral-7b-instruct | `embedding(model="nebius/intfloat/e5-mistral-7b-instruct", input)`      | 
-
+| intfloat/e5-mistral-7b-instruct | `embedding(model="nebius/intfloat/e5-mistral-7b-instruct", input)`      |

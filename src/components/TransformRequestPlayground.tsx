@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './transform_request.module.css';
+import useLocaleText from '@site/src/utils/useLocaleText';
 
 const DEFAULT_REQUEST = {
   "model": "bedrock/gpt-4",
@@ -21,6 +22,7 @@ const DEFAULT_REQUEST = {
 type ViewMode = 'split' | 'request' | 'transformed';
 
 const TransformRequestPlayground: React.FC = () => {
+  const t = useLocaleText();
   const [request, setRequest] = useState(JSON.stringify(DEFAULT_REQUEST, null, 2));
   const [transformedRequest, setTransformedRequest] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('split');
@@ -59,8 +61,8 @@ const TransformRequestPlayground: React.FC = () => {
         return (
           <div className={styles.panel}>
             <div className={styles['panel-header']}>
-              <h2>Original Request</h2>
-              <p>The request you would send to LiteLLM /chat/completions endpoint.</p>
+              <h2>{t('原始請求', 'Original Request')}</h2>
+              <p>{t('您會傳送至 LiteLLM /chat/completions 端點的請求。', 'The request you would send to LiteLLM /chat/completions endpoint.')}</p>
             </div>
             <textarea
               className={styles['code-input']}
@@ -70,7 +72,7 @@ const TransformRequestPlayground: React.FC = () => {
             />
             <div className={styles['panel-footer']}>
               <button className={styles['transform-button']} onClick={handleTransform}>
-                Transform →
+                {t('轉換 →', 'Transform →')}
               </button>
             </div>
           </div>
@@ -79,14 +81,14 @@ const TransformRequestPlayground: React.FC = () => {
         return (
           <div className={styles.panel}>
             <div className={styles['panel-header']}>
-              <h2>Transformed Request</h2>
-              <p>How LiteLLM transforms your request for the specified provider.</p>
-              <p className={styles.note}>Note: Sensitive headers are not shown.</p>
+              <h2>{t('轉換後的請求', 'Transformed Request')}</h2>
+              <p>{t('LiteLLM 如何針對指定提供者轉換請求。', 'How LiteLLM transforms your request for the specified provider.')}</p>
+              <p className={styles.note}>{t('注意：不會顯示敏感標頭。', 'Note: Sensitive headers are not shown.')}</p>
             </div>
             <div className={styles['code-output-container']}>
               <pre className={styles['code-output']}>{transformedRequest}</pre>
               <button className={styles['copy-button']} onClick={handleCopy}>
-                Copy
+                {t('複製', 'Copy')}
               </button>
             </div>
           </div>
@@ -96,8 +98,8 @@ const TransformRequestPlayground: React.FC = () => {
           <>
             <div className={styles.panel}>
               <div className={styles['panel-header']}>
-                <h2>Original Request</h2>
-                <p>The request you would send to LiteLLM /chat/completions endpoint.</p>
+                <h2>{t('原始請求', 'Original Request')}</h2>
+                <p>{t('您會傳送至 LiteLLM /chat/completions 端點的請求。', 'The request you would send to LiteLLM /chat/completions endpoint.')}</p>
               </div>
               <textarea
                 className={styles['code-input']}
@@ -107,20 +109,20 @@ const TransformRequestPlayground: React.FC = () => {
               />
               <div className={styles['panel-footer']}>
                 <button className={styles['transform-button']} onClick={handleTransform}>
-                  Transform →
+                  {t('轉換 →', 'Transform →')}
                 </button>
               </div>
             </div>
             <div className={styles.panel}>
               <div className={styles['panel-header']}>
-                <h2>Transformed Request</h2>
-                <p>How LiteLLM transforms your request for the specified provider.</p>
-                <p className={styles.note}>Note: Sensitive headers are not shown.</p>
+                <h2>{t('轉換後的請求', 'Transformed Request')}</h2>
+                <p>{t('LiteLLM 如何針對指定提供者轉換請求。', 'How LiteLLM transforms your request for the specified provider.')}</p>
+                <p className={styles.note}>{t('注意：不會顯示敏感標頭。', 'Note: Sensitive headers are not shown.')}</p>
               </div>
               <div className={styles['code-output-container']}>
                 <pre className={styles['code-output']}>{transformedRequest}</pre>
                 <button className={styles['copy-button']} onClick={handleCopy}>
-                  Copy
+                  {t('複製', 'Copy')}
                 </button>
               </div>
             </div>
@@ -136,19 +138,19 @@ const TransformRequestPlayground: React.FC = () => {
           className={viewMode === 'split' ? styles.active : ''}
           onClick={() => setViewMode('split')}
         >
-          Split View
+          {t('分割檢視', 'Split View')}
         </button>
         <button
           className={viewMode === 'request' ? styles.active : ''}
           onClick={() => setViewMode('request')}
         >
-          Request
+          {t('請求', 'Request')}
         </button>
         <button
           className={viewMode === 'transformed' ? styles.active : ''}
           onClick={() => setViewMode('transformed')}
         >
-          Transformed
+          {t('轉換後', 'Transformed')}
         </button>
       </div>
       <div className={styles['playground-container']}>
@@ -158,4 +160,4 @@ const TransformRequestPlayground: React.FC = () => {
   );
 };
 
-export default TransformRequestPlayground; 
+export default TransformRequestPlayground;

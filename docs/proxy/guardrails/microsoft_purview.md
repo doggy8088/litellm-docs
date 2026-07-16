@@ -1,32 +1,32 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Microsoft Purview Guardrail
+# Microsoft Purview 防護欄 {#microsoft-purview-guardrail}
 
-LiteLLM supports [Microsoft Purview](https://learn.microsoft.com/en-us/purview/purview) DLP policies via the [Microsoft Graph `processContent` API](https://learn.microsoft.com/en-us/graph/api/dataSecurityAndGovernance-processContent).
+LiteLLM 支援透過 [Microsoft Graph `processContent` API](https://learn.microsoft.com/en-us/graph/api/dataSecurityAndGovernance-processContent) 的 [Microsoft Purview](https://learn.microsoft.com/en-us/purview/purview) DLP 政策。
 
-## Supported modes
+## 支援的模式 {#supported-modes}
 
-| Mode | What it does |
+| 模式 | 功能 |
 |------|-------------|
-| `pre_call` | Evaluates the user prompt against DLP policies before the LLM call. Blocks if a `restrictAccess/block` policy action fires. |
-| `post_call` | Evaluates the LLM response against DLP policies. Blocks if a `restrictAccess/block` policy action fires. |
-| `logging_only` | Sends both prompt and response to Purview for audit. Never blocks the request. |
+| `pre_call` | 在 LLM 請求前，將使用者提示詞與 DLP 政策比對。若有 `restrictAccess/block` 政策動作觸發，則封鎖。 |
+| `post_call` | 將 LLM 回應與 DLP 政策比對。若有 `restrictAccess/block` 政策動作觸發，則封鎖。 |
+| `logging_only` | 將提示詞與回應都傳送到 Purview 以供稽核。絕不封鎖請求。 |
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-1. **An Entra app registration** with the following Microsoft Graph application permissions:
+1. **一個 Entra 應用程式註冊**，並具備以下 Microsoft Graph 應用程式權限：
    - `InformationProtectionPolicy.Read.All`
    - `ProtectionScopes.Compute.User`
    - `Content.Process.User`
 
-2. **A DLP policy in Microsoft Purview** targeting your app registration's `client_id` as a Protected App. Without an active policy, `policyActions` in the API response will always be empty.
+2. **Microsoft Purview 中的一項 DLP 政策**，將您應用程式註冊的 `client_id` 作為受保護應用程式。若沒有啟用中的政策，API 回應中的 `policyActions` 永遠會是空的。
 
-3. **Entra user object IDs** — each request must carry the Entra object ID of the end-user (not a username or email). The guardrail skips the DLP check and logs a warning when no user ID can be resolved.
+3. **Entra 使用者物件 ID** — 每個請求都必須帶有終端使用者的 Entra 物件 ID（不是使用者名稱或電子郵件）。當無法解析出使用者 ID 時，防護欄會略過 DLP 檢查並記錄警告。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Register your app in Entra
+### 1. 在 Entra 中註冊您的應用程式 {#1-register-your-app-in-entra}
 
 ```bash
 # Create app registration and note the appId (client_id) and tenantId
@@ -37,9 +37,9 @@ az ad sp create --id <appId>
 az ad app credential reset --id <appId> --append
 ```
 
-Grant the permissions listed above in the Azure portal under **App registrations → API permissions**, then **Grant admin consent**.
+在 Azure 入口網站的 **App registrations → API permissions** 下授與上述權限，然後按 **Grant admin consent**。
 
-### 2. Define the guardrail in `config.yaml`
+### 2. 在 `config.yaml` 中定義防護欄 {#2-define-the-guardrail-in-configyaml}
 
 <Tabs>
 <TabItem value="pre_call" label="pre_call">
@@ -95,15 +95,15 @@ guardrails:
 </TabItem>
 </Tabs>
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM Gateway {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test request
+### 4. 測試請求 {#4-test-request}
 
-Pass the Entra object ID of the end-user in `metadata`:
+在 `metadata` 中傳入終端使用者的 Entra 物件 ID：
 
 ```shell
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -116,7 +116,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**When a DLP policy blocks the request**, LiteLLM returns:
+**當 DLP 政策封鎖請求時**，LiteLLM 會回傳：
 
 ```json
 {
@@ -130,35 +130,35 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 }
 ```
 
-## Supported Params
+## 支援的參數 {#supported-params}
 
-| Param | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-------|------|----------|-------------|
-| `guardrail` | `str` | Yes | Must be `"microsoft_purview"` |
-| `mode` | `str` | Yes | `pre_call`, `post_call`, or `logging_only` |
-| `api_key` | `str` | Yes | Entra app client secret (can use `os.environ/VAR`) |
-| `tenant_id` | `str` | Yes | Entra tenant ID |
-| `client_id` | `str` | Yes | Entra app registration client ID (also used as the Protected App identifier in Purview) |
-| `default_on` | `bool` | No | Run this guardrail for every request. Default: `false` |
-| `purview_app_name` | `str` | No | App name reported to Purview in `processContent`. Default: `"LiteLLM"` |
-| `user_id_field` | `str` | No | Metadata field used **only when** no stronger identity exists (see User ID resolution). Default: `"user_id"` |
+| `guardrail` | `str` | 是 | 必須是 `"microsoft_purview"` |
+| `mode` | `str` | 是 | `pre_call`、`post_call`，或 `logging_only` |
+| `api_key` | `str` | 是 | Entra 應用程式 client secret（可使用 `os.environ/VAR`） |
+| `tenant_id` | `str` | 是 | Entra 租用戶 ID |
+| `client_id` | `str` | 是 | Entra 應用程式註冊 client ID（在 Purview 中也作為受保護應用程式識別碼使用） |
+| `default_on` | `bool` | 否 | 讓此防護欄套用於每個請求。預設值：`false` |
+| `purview_app_name` | `str` | 否 | 在 `processContent` 中回報給 Purview 的應用程式名稱。預設值：`"LiteLLM"` |
+| `user_id_field` | `str` | 否 | 僅在沒有更強的身分存在時才使用的中繼資料欄位（請見使用者 ID 解析）。預設值：`"user_id"` |
 
-## User ID resolution
+## 使用者 ID 解析 {#user-id-resolution}
 
-The Entra object ID used for Purview `protectionScopes` / `processContent` is resolved in **trust order** (strongest first) so a client cannot override the authenticated LiteLLM user by setting `metadata[user_id_field]`:
+用於 Purview `protectionScopes` / `processContent` 的 Entra 物件 ID 會依照**信任順序**（最強優先）解析，因此用戶端不能透過設定 `metadata[user_id_field]` 來覆寫已驗證的 LiteLLM 使用者：
 
-1. `user_api_key_dict.user_id` — user tied to the LiteLLM API key
-2. `user_api_key_dict.end_user_id` — end-user on the key
-3. `metadata["user_api_key_user_id"]` — value the proxy injects from the key (when present)
-4. `metadata[user_id_field]` — caller-supplied (e.g. default `metadata["user_id"]`); used only when none of the above are set
+1. `user_api_key_dict.user_id` — 與 LiteLLM API 金鑰繫結的使用者
+2. `user_api_key_dict.end_user_id` — 該金鑰上的終端使用者
+3. `metadata["user_api_key_user_id"]` — 閘道從金鑰注入的值（若有）
+4. `metadata[user_id_field]` — 呼叫端提供（例如預設 `metadata["user_id"]`）；僅在上述皆未設定時使用
 
-If none of these resolve to a value, the DLP check is **skipped** and a warning is logged.
+如果這些都無法解析出值，DLP 檢查就會**略過**，並記錄警告。
 
-The **logging-only** hook uses the same order via proxy metadata (`litellm_params.metadata`).
+**僅記錄** 回呼使用相同順序，透過 proxy 中繼資料（`litellm_params.metadata`）。
 
-## Enabling per request
+## 依請求啟用 {#enabling-per-request}
 
-When `default_on: false`, you can opt individual requests in or out:
+當 `default_on: false` 時，您可以針對個別請求選擇啟用或停用：
 
 ```shell
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -172,20 +172,20 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## How it works
+## 運作方式 {#how-it-works}
 
-1. **Token acquisition** — The guardrail uses the OAuth2 client credentials grant to get a Microsoft Graph bearer token. Tokens are cached until 60 seconds before expiry.
+1. **Token 取得** — 防護欄使用 OAuth2 client credentials grant 取得 Microsoft Graph bearer token。Token 會快取到到期前 60 秒。
 
-2. **Protection scope computation** — Before each DLP check, the guardrail calls `protectionScopes/compute` for the user to retrieve the ETag representing current policy state. Results are cached per user for 1 hour (per Microsoft's recommendation). If the `processContent` response indicates policies have changed (`protectionScopeState: modified`), the cache is invalidated.
+2. **保護範圍計算** — 在每次 DLP 檢查前，防護欄會呼叫 `protectionScopes/compute` 來取得代表目前政策狀態的 ETag。結果會依使用者快取 1 小時（依 Microsoft 的建議）。如果 `processContent` 回應表示政策已變更（`protectionScopeState: modified`），則會使快取失效。
 
-3. **Content evaluation** — The guardrail calls `processContent` with the text and an `activityMetadata.activity` of `uploadText` (prompts) or `downloadText` (responses). **Chat** (`/v1/chat/completions`): pre-call concatenates string content from **every** message (all roles); post-call uses assistant `message.content` from **every** chat choice when `n > 1`. **Legacy text completions** (`/v1/completions`): pre-call uses the `prompt` field (string or list of strings; token-id-only prompts are skipped); post-call uses `text` from **every** `TextChoices` entry.
+3. **內容評估** — 防護欄會呼叫 `processContent`，並帶入文字以及 `activityMetadata.activity` 的 `uploadText`（提示詞）或 `downloadText`（回應）。**Chat**（`/v1/chat/completions`）：pre-call 會串接**每個**訊息中的字串內容（所有角色）；post-call 會在 `n > 1` 時，使用**每個**聊天選項中的 assistant `message.content`。**傳統 text completions**（`/v1/completions`）：pre-call 會使用 `prompt` 欄位（字串或字串清單；僅 token-id 的提示詞會被略過）；post-call 會使用**每個** `TextChoices` 項目中的 `text`。
 
-4. **Block decision** — If any `policyActions` entry has `@odata.type` containing `restrictAccessAction` and `restrictionAction: "block"`, the guardrail raises an HTTP 400.
+4. **封鎖決策** — 如果任何 `policyActions` 項目的 `@odata.type` 包含 `restrictAccessAction` 和 `restrictionAction: "block"`，防護欄會拋出 HTTP 400。
 
-5. **Audit logging** — In all modes, guardrail results are recorded in `metadata.standard_logging_guardrail_information` and flow to configured observability backends (Langfuse, Datadog, OTEL, etc.).
+5. **稽核記錄** — 在所有模式下，防護欄結果都會記錄到 `metadata.standard_logging_guardrail_information`，並流向已設定的可觀測性後端（Langfuse、Datadog、OTEL 等）。
 
-## Further Reading
+## 延伸閱讀 {#further-reading}
 
 - [Microsoft Graph processContent API](https://learn.microsoft.com/en-us/graph/api/dataSecurityAndGovernance-processContent)
-- [Microsoft Purview DLP overview](https://learn.microsoft.com/en-us/purview/dlp-learn-about-dlp)
-- [Control Guardrails per API Key](./quick_start#-control-guardrails-per-api-key)
+- [Microsoft Purview DLP 概觀](https://learn.microsoft.com/en-us/purview/dlp-learn-about-dlp)
+- [依 API 金鑰控制防護欄](./quick_start#-control-guardrails-per-api-key)

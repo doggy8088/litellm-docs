@@ -1,10 +1,10 @@
-# Azure Model Router
+# Azure 模型路由器 {#azure-model-router}
 
-Azure Model Router is a feature in Azure AI Foundry that automatically routes your requests to the best available model based on your requirements. This allows you to use a single endpoint that intelligently selects the optimal model for each request.
+Azure Model Router 是 Azure AI Foundry 中的一項功能，會根據您的需求，自動將您的請求路由到可用的最佳模型。這讓您可以使用單一端點，為每個請求智慧地選擇最佳模型。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-**Model pattern**: `azure_ai/model_router/<deployment-name>`
+**模型模式**: `azure_ai/model_router/<deployment-name>`
 
 ```python
 import litellm
@@ -17,7 +17,7 @@ response = litellm.completion(
 )
 ```
 
-**Proxy config** (`config.yaml`):
+**Proxy 設定** (`config.yaml`):
 
 ```yaml
 model_list:
@@ -28,34 +28,34 @@ model_list:
       api_key: your-api-key
 ```
 
-## Key Features
+## 主要功能 {#key-features}
 
-- **Automatic Model Selection**: Azure Model Router dynamically selects the best model for your request
-- **Cost Tracking**: LiteLLM automatically tracks costs based on the actual model used (e.g., `gpt-4.1-nano`), plus the Model Router infrastructure fee
-- **Streaming Support**: Full support for streaming responses with accurate cost calculation
-- **Simple Configuration**: Easy to set up via UI or config file
+- **自動模型選擇**：Azure Model Router 會動態為您的請求選擇最佳模型
+- **成本追蹤**：LiteLLM 會根據實際使用的模型（例如，`gpt-4.1-nano`）以及 Model Router 基礎架構費用，自動追蹤成本
+- **串流支援**：完整支援串流回應並可精確計算成本
+- **簡單設定**：可透過 UI 或設定檔輕鬆完成設定
 
-## Model Naming Pattern
+## 模型命名模式 {#model-naming-pattern}
 
-Use the pattern: `azure_ai/model_router/<deployment-name>`
+使用以下模式：`azure_ai/model_router/<deployment-name>`
 
-**Components:**
-- `azure_ai` - The provider identifier
-- `model_router` - Indicates this is a Model Router deployment
-- `<deployment-name>` - Your actual deployment name from Azure AI Foundry (e.g., `azure-model-router`)
+**元件：**
+- `azure_ai` - 提供者識別碼
+- `model_router` - 表示這是 Model Router 部署
+- `<deployment-name>` - 您在 Azure AI Foundry 中的實際部署名稱（例如，`azure-model-router`）
 
-**Example:** `azure_ai/model_router/azure-model-router`
+**範例：** `azure_ai/model_router/azure-model-router`
 
-**How it works:**
-- LiteLLM automatically strips the `model_router/` prefix when sending requests to Azure
-- Only your deployment name (e.g., `azure-model-router`) is sent to the Azure API
-- The full path is preserved in responses and logs for proper cost tracking
+**運作方式：**
+- LiteLLM 在傳送請求到 Azure 時，會自動移除 `model_router/` 前綴
+- 只會將您的部署名稱（例如，`azure-model-router`）傳送到 Azure API
+- 完整路徑會保留在回應與記錄中，以便正確追蹤成本
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
-Use the pattern `azure_ai/model_router/<deployment-name>` where `<deployment-name>` is your Azure deployment name:
+使用 `azure_ai/model_router/<deployment-name>` 模式，其中 `<deployment-name>` 是您的 Azure 部署名稱：
 
 ```python
 import litellm
@@ -71,14 +71,14 @@ response = litellm.completion(
 print(response)
 ```
 
-**Pattern Explanation:**
-- `azure_ai` - The provider
-- `model_router` - Indicates this is a model router deployment
-- `azure-model-router` - Your actual deployment name from Azure AI Foundry
+**模式說明：**
+- `azure_ai` - 提供者
+- `model_router` - 表示這是 model router 部署
+- `azure-model-router` - 您在 Azure AI Foundry 中的實際部署名稱
 
-LiteLLM will automatically strip the `model_router/` prefix when sending the request to Azure, so only `azure-model-router` is sent to the API.
+LiteLLM 在將請求傳送至 Azure 時，會自動移除 `model_router/` 前綴，因此只會將 `azure-model-router` 傳送到 API。
 
-### Streaming with Usage Tracking
+### 帶有用量追蹤的串流 {#streaming-with-usage-tracking}
 
 ```python
 import litellm
@@ -97,9 +97,9 @@ async for chunk in response:
     print(chunk)
 ```
 
-## LiteLLM Proxy (AI Gateway)
+## LiteLLM Proxy（AI Gateway） {#litellm-proxy-ai-gateway}
 
-### config.yaml
+### config.yaml {#configyaml}
 
 ```yaml
 model_list:
@@ -110,15 +110,15 @@ model_list:
       api_key: os.environ/AZURE_MODEL_ROUTER_API_KEY
 ```
 
-**Note:** Replace `azure-model-router` in the model path with your actual deployment name from Azure AI Foundry.
+**注意：** 請將模型路徑中的 `azure-model-router` 替換為您在 Azure AI Foundry 中的實際部署名稱。
 
-### Start Proxy
+### 啟動 Proxy {#start-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### Test Request
+### 測試請求 {#test-request}
 
 ```bash
 curl -X POST http://localhost:4000/chat/completions \
@@ -130,160 +130,160 @@ curl -X POST http://localhost:4000/chat/completions \
   }'
 ```
 
-## Add Azure Model Router via LiteLLM UI
+## 透過 LiteLLM UI 新增 Azure Model Router {#add-azure-model-router-via-litellm-ui}
 
-This walkthrough shows how to add an Azure Model Router endpoint to LiteLLM using the Admin Dashboard.
+本流程說明如何使用 Admin Dashboard 將 Azure Model Router 端點新增至 LiteLLM。
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
-1. Navigate to the **Models** page in the LiteLLM UI
-2. Select **"Azure AI Foundry (Studio)"** as the provider
-3. Enter your deployment name (e.g., `azure-model-router`)
-4. LiteLLM will automatically format it as `azure_ai/model_router/azure-model-router`
-5. Add your API base URL and API key
-6. Test and save
+1. 前往 LiteLLM UI 中的 **Models** 頁面
+2. 將 **"Azure AI Foundry (Studio)"** 選為提供者
+3. 輸入您的部署名稱（例如，`azure-model-router`）
+4. LiteLLM 會自動將其格式化為 `azure_ai/model_router/azure-model-router`
+5. 新增您的 API base URL 與 API 金鑰
+6. 測試並儲存
 
-### Detailed Walkthrough
+### 詳細操作說明 {#detailed-walkthrough}
 
-#### Step 1: Select Provider
+#### 步驟 1：選擇提供者 {#step-1-select-provider}
 
-Navigate to the Models page and select "Azure AI Foundry (Studio)" as the provider.
+前往 Models 頁面，並將「Azure AI Foundry (Studio)」選為提供者。
 
-##### Navigate to Models Page
+##### 前往 Models 頁面 {#navigate-to-models-page}
 
-![Navigate to Models](./img/azure_model_router_01.jpeg)
+![前往 Models](./img/azure_model_router_01.jpeg)
 
-##### Click Provider Dropdown
+##### 點擊提供者下拉選單 {#click-provider-dropdown}
 
-![Click Provider](./img/azure_model_router_02.jpeg)
+![點擊提供者](./img/azure_model_router_02.jpeg)
 
-##### Choose Azure AI Foundry
+##### 選擇 Azure AI Foundry {#choose-azure-ai-foundry}
 
-![Select Azure AI Foundry](./img/azure_model_router_03.jpeg)
+![選取 Azure AI Foundry](./img/azure_model_router_03.jpeg)
 
-#### Step 2: Enter Deployment Name
+#### 步驟 2：輸入部署名稱 {#step-2-enter-deployment-name}
 
-**New Simplified Method:** Just enter your deployment name directly in the text field. If your deployment name contains "model-router" or "model_router", LiteLLM will automatically format it as `azure_ai/model_router/<deployment-name>`.
+**新的簡化方式：** 直接在文字欄位輸入您的部署名稱即可。如果您的部署名稱包含「model-router」或「model_router」，LiteLLM 會自動將其格式化為 `azure_ai/model_router/<deployment-name>`。
 
-**Example:**
-- Enter: `azure-model-router`
-- LiteLLM creates: `azure_ai/model_router/azure-model-router`
+**範例：**
+- 輸入：`azure-model-router`
+- LiteLLM 建立：`azure_ai/model_router/azure-model-router`
 
-##### Copy Deployment Name from Azure Portal
+##### 從 Azure 入口網站複製部署名稱 {#copy-deployment-name-from-azure-portal}
 
-Switch to Azure AI Foundry and copy your model router deployment name.
+切換到 Azure AI Foundry，並複製您的 model router 部署名稱。
 
-![Azure Portal Model Name](./img/azure_model_router_09.jpeg)
+![Azure 入口網站模型名稱](./img/azure_model_router_09.jpeg)
 
-![Copy Model Name](./img/azure_model_router_10.jpeg)
+![複製模型名稱](./img/azure_model_router_10.jpeg)
 
-##### Enter Deployment Name in LiteLLM
+##### 在 LiteLLM 中輸入部署名稱 {#enter-deployment-name-in-litellm}
 
-Paste your deployment name (e.g., `azure-model-router`) directly into the text field.
+將您的部署名稱（例如，`azure-model-router`）直接貼到文字欄位中。
 
-![Enter Deployment Name](./img/azure_model_router_04.jpeg)
+![輸入部署名稱](./img/azure_model_router_04.jpeg)
 
-**What happens behind the scenes:**
-- You enter: `azure-model-router`
-- LiteLLM automatically detects this is a model router deployment
-- The full model path becomes: `azure_ai/model_router/azure-model-router`
-- When making API calls, only `azure-model-router` is sent to Azure
+**幕後發生的事：**
+- 您輸入：`azure-model-router`
+- LiteLLM 會自動偵測這是 model router 部署
+- 完整模型路徑會變成：`azure_ai/model_router/azure-model-router`
+- 發出 API 呼叫時，只會將 `azure-model-router` 傳送到 Azure
 
-#### Step 3: Configure API Base and Key
+#### 步驟 3：設定 API Base 與金鑰 {#step-3-configure-api-base-and-key}
 
-Copy the endpoint URL and API key from Azure portal.
+從 Azure 入口網站複製端點 URL 與 API 金鑰。
 
-##### Copy API Base URL from Azure
+##### 從 Azure 複製 API Base URL {#copy-api-base-url-from-azure}
 
-![Copy API Base](./img/azure_model_router_12.jpeg)
+![複製 API Base](./img/azure_model_router_12.jpeg)
 
-##### Enter API Base in LiteLLM
+##### 在 LiteLLM 中輸入 API Base {#enter-api-base-in-litellm}
 
-![Click API Base Field](./img/azure_model_router_13.jpeg)
+![點擊 API Base 欄位](./img/azure_model_router_13.jpeg)
 
-![Paste API Base](./img/azure_model_router_14.jpeg)
+![貼上 API Base](./img/azure_model_router_14.jpeg)
 
-##### Copy API Key from Azure
+##### 從 Azure 複製 API 金鑰 {#copy-api-key-from-azure}
 
-![Copy API Key](./img/azure_model_router_15.jpeg)
+![複製 API 金鑰](./img/azure_model_router_15.jpeg)
 
-##### Enter API Key in LiteLLM
+##### 在 LiteLLM 中輸入 API 金鑰 {#enter-api-key-in-litellm}
 
-![Enter API Key](./img/azure_model_router_16.jpeg)
+![輸入 API 金鑰](./img/azure_model_router_16.jpeg)
 
-#### Step 4: Test and Add Model
+#### 步驟 4：測試並新增模型 {#step-4-test-and-add-model}
 
-Verify your configuration works and save the model.
+驗證您的設定可正常運作，然後儲存模型。
 
-##### Test Connection
+##### 測試連線 {#test-connection}
 
-![Test Connection](./img/azure_model_router_17.jpeg)
+![測試連線](./img/azure_model_router_17.jpeg)
 
-##### Close Test Dialog
+##### 關閉測試對話框 {#close-test-dialog}
 
-![Close Dialog](./img/azure_model_router_18.jpeg)
+![關閉對話框](./img/azure_model_router_18.jpeg)
 
-##### Add Model
+##### 新增模型 {#add-model}
 
-![Add Model](./img/azure_model_router_19.jpeg)
+![新增模型](./img/azure_model_router_19.jpeg)
 
-#### Step 5: Verify in Playground
+#### 步驟 5：在 Playground 中驗證 {#step-5-verify-in-playground}
 
-Test your model and verify cost tracking is working.
+測試您的模型並確認成本追蹤運作正常。
 
-##### Open Playground
+##### 開啟 Playground {#open-playground}
 
-![Go to Playground](./img/azure_model_router_20.jpeg)
+![前往 Playground](./img/azure_model_router_20.jpeg)
 
-##### Select Model
+##### 選取模型 {#select-model}
 
-![Select Model](./img/azure_model_router_21.jpeg)
+![選取模型](./img/azure_model_router_21.jpeg)
 
-##### Send Test Message
+##### 傳送測試訊息 {#send-test-message}
 
-![Send Message](./img/azure_model_router_22.jpeg)
+![傳送訊息](./img/azure_model_router_22.jpeg)
 
-##### View Logs
+##### 檢視記錄 {#view-logs}
 
-![View Logs](./img/azure_model_router_23.jpeg)
+![檢視記錄](./img/azure_model_router_23.jpeg)
 
-##### Verify Cost Tracking
+##### 驗證成本追蹤 {#verify-cost-tracking}
 
-Cost is tracked based on the actual model used (e.g., `gpt-4.1-nano`), plus a flat infrastructure cost of $0.14 per million input tokens for using the Model Router.
+成本會根據實際使用的模型（例如，`gpt-4.1-nano`）進行追蹤，另外還會針對使用 Model Router 收取每百萬個輸入 token $0.14 的固定基礎架構成本。
 
-![Verify Cost](./img/azure_model_router_24.jpeg)
+![驗證成本](./img/azure_model_router_24.jpeg)
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM automatically handles cost tracking for Azure Model Router. Understanding how this works helps you interpret spend and debug billing.
+LiteLLM 會自動處理 Azure Model Router 的成本追蹤。了解其運作方式有助於您解讀支出並除錯計費問題。
 
-### How LiteLLM Calculates Cost
+### LiteLLM 如何計算成本 {#how-litellm-calculates-cost}
 
-When you use Azure Model Router, LiteLLM computes **two cost components**:
+當您使用 Azure Model Router 時，LiteLLM 會計算 **兩個成本組成**：
 
-| Component | Description | When Applied |
+| 組成 | 說明 | 套用時機 |
 |-----------|-------------|--------------|
-| **Model Cost** | Token-based cost for the actual model that handled the request (e.g., `gpt-5-nano`, `gpt-4.1-nano`) | Always, when Azure returns the model in the response |
-| **Router Flat Cost** | $0.14 per million input tokens (Azure AI Foundry infrastructure fee) | When the **request** was made via a model router endpoint |
+| **模型成本** | 由實際處理請求的模型所產生的 token 型成本（例如，`gpt-5-nano`、`gpt-4.1-nano`） | 每次 Azure 在回應中回傳模型時都會套用 |
+| **Router 固定成本** | 每百萬個輸入 token $0.14（Azure AI Foundry 基礎架構費） | 當 **請求** 是透過 model router 端點發出時 |
 
-### Cost Calculation Flow
+### 成本計算流程 {#cost-calculation-flow}
 
-1. **Request model detection**: LiteLLM records the model you requested (e.g., `azure_ai/model_router/model-router`). If it contains `model_router` or `model-router`, the request is treated as a router request.
+1. **請求模型偵測**：LiteLLM 會記錄您所請求的模型（例如，`azure_ai/model_router/model-router`）。如果其中包含 `model_router` 或 `model-router`，則該請求會被視為 router 請求。
 
-2. **Response model extraction**: Azure returns the actual model used in the response (e.g., `gpt-5-nano-2025-08-07`). LiteLLM uses this for the model cost lookup.
+2. **回應模型擷取**：Azure 會在回應中回傳實際使用的模型（例如，`gpt-5-nano-2025-08-07`）。LiteLLM 會使用此模型查詢模型成本。
 
-3. **Model cost**: LiteLLM looks up the response model in its pricing table and computes cost from prompt tokens and completion tokens.
+3. **模型成本**：LiteLLM 會在其定價表中查詢回應模型，並根據提示詞 token 與完成 token 計算成本。
 
-4. **Router flat cost**: Because the original request was to a model router, LiteLLM adds the flat cost ($0.14 per M input tokens) on top of the model cost.
+4. **Router 固定成本**：因為原始請求是送往 model router，所以 LiteLLM 會在模型成本之外，加上固定成本（每百萬輸入 token $0.14）。
 
-5. **Total cost**: `Total = Model Cost + Router Flat Cost`
+5. **總成本**：`Total = Model Cost + Router Flat Cost`
 
-### Configuration Requirements
+### 設定需求 {#configuration-requirements}
 
-For cost tracking to work correctly:
+為了讓成本追蹤正確運作：
 
-- **Use the full pattern**: `azure_ai/model_router/<deployment-name>` (e.g., `azure_ai/model_router/model-router`)
-- **Proxy config**: When using the LiteLLM proxy, set `model` in `litellm_params` to the full pattern so the request model is correctly identified as a router
+- **使用完整模式**：`azure_ai/model_router/<deployment-name>`（例如，`azure_ai/model_router/model-router`）
+- **Proxy 設定**：使用 LiteLLM proxy 時，請將 `model` 在 `litellm_params` 中設定為完整模式，讓請求模型能正確識別為 router
 
 ```yaml
 # proxy_server_config.yaml
@@ -295,14 +295,14 @@ model_list:
       api_key: your-api-key
 ```
 
-### Cost Breakdown
+### 成本明細 {#cost-breakdown}
 
-When you use Azure Model Router, the total cost includes:
+當您使用 Azure Model Router 時，總成本包含：
 
-- **Model Cost**: Based on the actual model that handled your request (e.g., `gpt-5-nano`, `gpt-4.1-nano`)
-- **Router Flat Cost**: $0.14 per million input tokens (Azure AI Foundry infrastructure fee)
+- **模型成本**：根據實際處理您請求的模型（例如，`gpt-5-nano`、`gpt-4.1-nano`）
+- **路由器固定成本**：每百萬輸入 token $0.14（Azure AI Foundry 基礎架構費用）
 
-### Example Response with Cost
+### 含成本的範例回應 {#example-response-with-cost}
 
 ```python
 import litellm
@@ -327,13 +327,11 @@ if hasattr(response, '_hidden_params') and 'response_cost' in response._hidden_p
     print(f"Response cost: ${response._hidden_params['response_cost']}")
 ```
 
-### Viewing Cost Breakdown in UI
+### 在 UI 中查看成本明細 {#viewing-cost-breakdown-in-ui}
 
-When viewing logs in the LiteLLM UI, you'll see:
-- **Model Cost**: The cost for the actual model used
-- **Azure Model Router Flat Cost**: The $0.14/M input tokens infrastructure fee
-- **Total Cost**: Sum of both costs
+在 LiteLLM UI 中查看記錄時，您會看到：
+- **模型成本**：實際使用模型的成本
+- **Azure Model Router 固定成本**：每百萬輸入 token $0.14 的基礎架構費用
+- **總成本**：兩者成本總和
 
-This breakdown helps you understand exactly what you're paying for when using the Model Router.
-
-
+這個明細可協助您 دقیق了解使用 Model Router 時實際支付的費用。

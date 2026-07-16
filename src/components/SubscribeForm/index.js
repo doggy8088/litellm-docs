@@ -1,9 +1,11 @@
 import React from 'react';
 import {LOOPS_FORM_URL} from '@site/src/config';
 import styles from './styles.module.css';
+import useLocaleText from '@site/src/utils/useLocaleText';
 
 
 export default function SubscribeForm() {
+  const t = useLocaleText();
   const [email, setEmail] = React.useState('');
   const [honeypot, setHoneypot] = React.useState('');
   const [status, setStatus] = React.useState('idle'); // idle | loading | success | error
@@ -30,7 +32,7 @@ export default function SubscribeForm() {
   }
 
   if (status === 'success') {
-    return <p className={`${styles.feedback} ${styles.success}`}>We'll keep you posted!</p>;
+    return <p className={`${styles.feedback} ${styles.success}`}>{t('訂閱成功，我們會寄送最新消息。', "We'll keep you posted!")}</p>;
   }
 
   return (
@@ -56,11 +58,11 @@ export default function SubscribeForm() {
           className={styles.input}
         />
         <button type="submit" disabled={status === 'loading'} className={styles.btn}>
-          {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+          {status === 'loading' ? t('訂閱中…', 'Subscribing…') : t('訂閱', 'Subscribe')}
         </button>
       </div>
       {status === 'error' && (
-        <p className={`${styles.feedback} ${styles.error}`}>Something went wrong. Try again.</p>
+        <p className={`${styles.feedback} ${styles.error}`}>{t('發生錯誤，請再試一次。', 'Something went wrong. Try again.')}</p>
       )}
     </form>
   );

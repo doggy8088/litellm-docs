@@ -1,34 +1,32 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Caching - In-Memory, Redis, s3, gcs, Redis Semantic Cache, Disk
+# 快取 - 記憶體內、Redis、s3、gcs、Redis 語意快取、磁碟 {#caching---in-memory-redis-s3-gcs-redis-semantic-cache-disk}
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/main/litellm/caching/caching.py)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/main/litellm/caching/caching.py)
 
 :::info
 
-- For Proxy Server? Doc here: [Caching Proxy Server](https://docs.litellm.ai/docs/proxy/caching)
+- Proxy Server 的文件在這裡：[快取 Proxy Server](https://docs.litellm.ai/docs/proxy/caching)
 
-- For OpenAI/Anthropic Prompt Caching, go [here](../completion/prompt_caching.md)
-
+- OpenAI/Anthropic Prompt Caching 請前往 [這裡](../completion/prompt_caching.md)
 
 :::
 
-## Initialize Cache - In Memory, Redis, s3 Bucket, gcs Bucket, Redis Semantic, Disk Cache, Qdrant Semantic
-
+## 初始化快取 - 記憶體內、Redis、s3 Bucket、gcs Bucket、Redis 語意、磁碟快取、Qdrant 語意 {#initialize-cache---in-memory-redis-s3-bucket-gcs-bucket-redis-semantic-disk-cache-qdrant-semantic}
 
 <Tabs>
 
 <TabItem value="redis" label="redis-cache">
 
-Install redis
+安裝 redis
 ```shell
 uv add redis
 ```
 
-For the hosted version you can setup your own Redis DB here: https://redis.io/try-free/
+託管版本中，您可以在這裡設定您自己的 Redis DB：https://redis.io/try-free/
 
-**Basic Redis Cache**
+**基本 Redis 快取**
 
 ```python
 import litellm
@@ -50,9 +48,9 @@ response2 = completion(
 # response1 == response2, response 1 is cached
 ```
 
-**GCP IAM Redis Authentication**
+**GCP IAM Redis 驗證**
 
-For GCP Memorystore Redis with IAM authentication:
+適用於使用 IAM 驗證的 GCP Memorystore Redis：
 
 ```shell
 uv add google-cloud-iam
@@ -88,9 +86,9 @@ response2 = completion(
 # response1 == response2, response 1 is cached
 ```
 
-**Environment Variables for GCP IAM Redis**
+**GCP IAM Redis 的環境變數**
 
-You can also set these as environment variables:
+您也可以將這些設定為環境變數：
 
 ```shell
 export REDIS_HOST="10.128.0.2"
@@ -99,25 +97,25 @@ export REDIS_GCP_SERVICE_ACCOUNT="projects/-/serviceAccounts/your-sa@project.iam
 export REDIS_SSL="False"
 ```
 
-Then simply initialize:
+接著只要初始化：
 
 ```python
 litellm.cache = Cache(type="redis")
 ```
 
 :::info
-Use `REDIS_*` environment variables as the primary mechanism for configuring all Redis client library parameters. This approach automatically maps environment variables to Redis client kwargs and is the suggested way to toggle Redis settings.
+請使用 `REDIS_*` 環境變數作為設定所有 Redis 用戶端程式庫參數的主要機制。此方法會自動將環境變數對應到 Redis 用戶端 kwargs，且是切換 Redis 設定的建議方式。
 :::
 
 :::warning
-If you need to pass non-string Redis parameters (integers, booleans, complex objects), avoid `REDIS_*` environment variables as they may fail during Redis client initialization. Instead, pass them directly as kwargs to the `Cache()` constructor.
+如果您需要傳入非字串的 Redis 參數（整數、布林值、複雜物件），請避免使用 `REDIS_*` 環境變數，因為它們在 Redis 用戶端初始化期間可能會失敗。請改為直接將它們作為 kwargs 傳入 `Cache()` 建構子。
 :::
 
 </TabItem>
 
 <TabItem value="gcs" label="gcs-cache">
 
-Set environment variables
+設定環境變數
 
 ```shell
 GCS_BUCKET_NAME="my-cache-bucket"
@@ -145,15 +143,14 @@ response2 = completion(
 
 </TabItem>
 
-
 <TabItem value="s3" label="s3-cache">
 
-Install boto3
+安裝 boto3
 ```shell
 uv add boto3
 ```
 
-Set AWS environment variables
+設定 AWS 環境變數
 
 ```shell
 AWS_ACCESS_KEY_ID = "AKI*******"
@@ -185,7 +182,7 @@ response2 = completion(
 
 <TabItem value="azureblob" label="azure-blob-cache">
 
-Install azure-storage-blob and azure-identity
+安裝 azure-storage-blob 和 azure-identity
 ```shell
 uv add azure-storage-blob azure-identity
 ```
@@ -214,15 +211,14 @@ response2 = completion(
 
 </TabItem>
 
-
 <TabItem value="redis-sem" label="redis-semantic cache">
 
-Install redisvl client
+安裝 redisvl 用戶端
 ```shell
 uv add redisvl==0.4.1
 ```
 
-For the hosted version you can setup your own Redis DB here: https://redis.io/try-free/
+託管版本中，您可以在這裡設定您自己的 Redis DB：https://redis.io/try-free/
 
 ```python
 import litellm
@@ -276,9 +272,9 @@ assert response1.id == response2.id
 
 <TabItem value="qdrant-sem" label="qdrant-semantic cache">
 
-You can set up your own cloud Qdrant cluster by following this: https://qdrant.tech/documentation/quickstart-cloud/
+您可以依照這裡的說明設定您自己的雲端 Qdrant 叢集：https://qdrant.tech/documentation/quickstart-cloud/
 
-To set up a Qdrant cluster locally follow: https://qdrant.tech/documentation/quickstart/
+若要在本機設定 Qdrant 叢集，請依照：https://qdrant.tech/documentation/quickstart/
 ```python
 import litellm
 from litellm import completion
@@ -333,15 +329,15 @@ assert response1.id == response2.id
 
 <TabItem value="valkey-sem" label="valkey-semantic cache">
 
-Use this when your vector store is a Valkey instance running the [valkey-search](https://github.com/valkey-io/valkey-search) module, for example [AWS ElastiCache for Valkey](https://aws.amazon.com/elasticache/). RediSearch and RedisVL are not required; LiteLLM drives valkey-search directly over the Redis protocol.
+當您的向量儲存是執行 [valkey-search](https://github.com/valkey-io/valkey-search) 模組的 Valkey 執行個體時請使用，例如 [AWS ElastiCache for Valkey](https://aws.amazon.com/elasticache/)。不需要 RediSearch 和 RedisVL；LiteLLM 會直接透過 Redis 協定驅動 valkey-search。
 
 :::info Requirements
 
-The `valkey-search` module must be loaded on the server (run `MODULE LIST` and look for `search`, or `FT._LIST`). On AWS ElastiCache, vector search is available on **node-based Valkey 8.2+ clusters**; a cluster-mode-disabled node group is supported and is the recommended target, and a primary with read replicas is fine since only horizontal sharding is unsupported. ElastiCache **Serverless does not support vector search**, so a serverless endpoint will not work here. Multi-shard (cluster-mode-enabled) endpoints are not supported by this backend, since the async client cannot route the `FT.*` search commands across shards; scale vertically instead.
+伺服器上必須已載入 `valkey-search` 模組（執行 `MODULE LIST` 並查看是否有 `search`，或 `FT._LIST`）。在 AWS ElastiCache 上，向量搜尋可用於**基於節點的 Valkey 8.2+ 叢集**；支援 cluster-mode-disabled 的節點群組，且是建議的目標，而具有讀取複本的主要節點也可以，因為只有水平分片不受支援。ElastiCache **Serverless 不支援向量搜尋**，因此 serverless 端點在此無法使用。此後端不支援多分片（cluster-mode-enabled）端點，因為非同步用戶端無法跨分片路由 `FT.*` 搜尋命令；請改為垂直擴充。
 
 :::
 
-To run a Valkey instance with valkey-search locally, the `valkey/valkey-bundle` image ships the module:
+若要在本機執行具備 valkey-search 的 Valkey 執行個體，`valkey/valkey-bundle` 映像檔已隨附該模組：
 
 ```shell
 docker run -d -p 6379:6379 valkey/valkey-bundle:8.1
@@ -396,13 +392,13 @@ assert response1.id == response2.id
 # response1 == response2, response 1 is cached
 ```
 
-`VALKEY_HOST`, `VALKEY_PORT`, and `VALKEY_PASSWORD` fall back to `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD` if they are not set. For ElastiCache with encryption in transit (TLS), either pass `ssl=True` alongside host and port, or pass a full `redis_url="rediss://..."`.
+`VALKEY_HOST`、`VALKEY_PORT` 和 `VALKEY_PASSWORD` 會在未設定時回退為 `REDIS_HOST`、`REDIS_PORT` 和 `REDIS_PASSWORD`。對於啟用傳輸中加密（TLS）的 ElastiCache，請同時傳入 `ssl=True` 與 host 和 port，或傳入完整的 `redis_url="rediss://..."`。
 
 </TabItem>
 
 <TabItem value="in-mem" label="in memory cache">
 
-### Quick Start
+### 快速入門 {#quick-start}
 
 ```python
 import litellm
@@ -430,15 +426,15 @@ response2 = completion(
 
 <TabItem value="disk" label="disk cache">
 
-### Quick Start
+### 快速入門 {#quick-start-1}
 
-Install the disk caching extra:
+安裝 disk caching 額外套件：
 
 ```shell
 uv add "litellm[caching]"
 ```
 
-Then you can use the disk cache as follows.
+接著您可以如下使用磁碟快取。
 
 ```python
 import litellm
@@ -462,26 +458,26 @@ response2 = completion(
 
 ```
 
-If you run the code two times, response1 will use the cache from the first run that was stored in a cache file.
+如果您將程式碼執行兩次，response1 將會使用第一次執行時儲存在快取檔案中的快取。
 
 </TabItem>
 
 </Tabs>
 
-## Switch Cache On / Off Per LiteLLM Call 
+## 針對每次 LiteLLM 請求切換快取開啟 / 關閉  {#switch-cache-on--off-per-litellm-call}
 
-LiteLLM supports 4 cache-controls:
+LiteLLM 支援 4 種快取控制：
 
-- `no-cache`: *Optional(bool)* When `True`, Will not return a cached response, but instead call the actual endpoint. 
-- `no-store`: *Optional(bool)* When `True`, Will not cache the response. 
-- `ttl`: *Optional(int)* - Will cache the response for the user-defined amount of time (in seconds).
-- `s-maxage`: *Optional(int)* Will only accept cached responses that are within user-defined range (in seconds).
+- `no-cache`：*Optional(bool)* 當 `True` 時，不會回傳快取回應，而是呼叫實際端點。 
+- `no-store`：*Optional(bool)* 當 `True` 時，不會快取回應。 
+- `ttl`：*Optional(int)* - 會將回應快取使用者自訂的時間長度（以秒為單位）。
+- `s-maxage`：*Optional(int)* 只會接受在使用者自訂範圍內（以秒為單位）的快取回應。
 
-[Let us know if you need more](https://github.com/BerriAI/litellm/issues/1218)
+[如果您需要更多，請告訴我們](https://github.com/BerriAI/litellm/issues/1218)
 <Tabs>
 <TabItem value="no-cache" label="No-Cache">
 
-Example usage `no-cache` - When `True`, Will not return a cached response
+使用範例 `no-cache` - 當 `True` 時，不會回傳快取回應
 
 ```python
 response = litellm.completion(
@@ -500,7 +496,7 @@ response = litellm.completion(
 
 <TabItem value="no-store" label="No-Store">
 
-Example usage `no-store` - When `True`, Will not cache the response. 
+使用範例 `no-store` - 當 `True` 時，不會快取回應。 
 
 ```python
 response = litellm.completion(
@@ -518,7 +514,7 @@ response = litellm.completion(
 </TabItem>
 
 <TabItem value="ttl" label="ttl">
-Example usage `ttl` - cache the response for 10 seconds
+使用範例 `ttl` - 將回應快取 10 秒
 
 ```python
 response = litellm.completion(
@@ -536,7 +532,7 @@ response = litellm.completion(
 </TabItem>
 
 <TabItem value="s-maxage" label="s-maxage">
-Example usage `s-maxage` - Will only accept cached responses for 60 seconds
+使用範例 `s-maxage` - 只會接受快取回應 60 秒
 
 ```python
 response = litellm.completion(
@@ -553,20 +549,19 @@ response = litellm.completion(
 
 </TabItem>
 
-
 </Tabs>
 
-## Cache Context Manager - Enable, Disable, Update Cache
-Use the context manager for easily enabling, disabling & updating the litellm cache 
+## 快取 Context Manager - 啟用、停用、更新快取 {#cache-context-manager---enable-disable-update-cache}
+使用 context manager 以輕鬆啟用、停用與更新 litellm cache 
 
-### Enabling Cache
+### 啟用快取 {#enabling-cache}
 
-Quick Start Enable
+快速入門啟用
 ```python
 litellm.enable_cache()
 ```
 
-Advanced Params
+進階參數
 
 ```python
 litellm.enable_cache(
@@ -581,16 +576,16 @@ litellm.enable_cache(
 )
 ```
 
-### Disabling Cache
+### 停用快取 {#disabling-cache}
 
-Switch caching off 
+關閉快取 
 ```python
 litellm.disable_cache()
 ```
 
-### Updating Cache Params (Redis Host, Port etc)
+### 更新快取參數（Redis Host、Port 等） {#updating-cache-params-redis-host-port-etc}
 
-Update the Cache params
+更新快取參數
 
 ```python
 litellm.update_cache(
@@ -605,8 +600,8 @@ litellm.update_cache(
 )
 ```
 
-## Custom Cache Keys:
-Define function to return cache key
+## 自訂快取金鑰： {#custom-cache-keys}
+定義函式以回傳快取金鑰
 ```python
 # this function takes in *args, **kwargs and returns the key you want to use for caching
 def custom_get_cache_key(*args, **kwargs):
@@ -617,7 +612,7 @@ def custom_get_cache_key(*args, **kwargs):
 
 ```
 
-Set your function as litellm.cache.get_cache_key
+將您的函式設為 litellm.cache.get_cache_key
 ```python
 from litellm.caching.caching import Cache
 
@@ -628,14 +623,14 @@ cache.get_cache_key = custom_get_cache_key # set get_cache_key function for your
 litellm.cache = cache # set litellm.cache to your cache 
 
 ```
-## How to write custom add/get cache functions 
-### 1. Init Cache 
+## 如何撰寫自訂 add/get cache 函式 {#how-to-write-custom-addget-cache-functions}
+### 1. 初始化快取  {#1-init-cache}
 ```python
 from litellm.caching.caching import Cache
 cache = Cache()
 ``` 
 
-### 2. Define custom add/get cache functions 
+### 2. 定義自訂 add/get cache 函式  {#2-define-custom-addget-cache-functions}
 ```python
 def add_cache(self, result, *args, **kwargs):
   your logic
@@ -644,13 +639,13 @@ def get_cache(self, *args, **kwargs):
   your logic
 ```
 
-### 3. Point cache add/get functions to your add/get functions 
+### 3. 將 cache add/get 函式指向您的 add/get 函式  {#3-point-cache-addget-functions-to-your-addget-functions}
 ```python
 cache.add_cache = add_cache
 cache.get_cache = get_cache
 ```
 
-## Cache Initialization Parameters
+## 快取初始化參數 {#cache-initialization-parameters}
 
 ```python
 def __init__(
@@ -714,11 +709,11 @@ def __init__(
 ):
 ```
 
-## Logging 
+## 記錄  {#logging}
 
-Cache hits are logged in success events as `kwarg["cache_hit"]`. 
+快取命中會以 `kwarg["cache_hit"]` 的形式記錄在成功事件中。 
 
-Here's an example of accessing it: 
+以下是存取它的範例： 
 
   ```python
   import litellm

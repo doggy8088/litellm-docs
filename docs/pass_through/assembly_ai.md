@@ -1,36 +1,34 @@
-# AssemblyAI
+# AssemblyAI {#assemblyai}
 
-Pass-through endpoints for AssemblyAI - call AssemblyAI endpoints, in native format (no translation).
+AssemblyAI 的穿透端點 - 以原生格式（不轉換）呼叫 AssemblyAI 端點。
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |-------|-------|-------|
-| Cost Tracking | ✅ | works across all integrations |
-| Logging | ✅ | works across all integrations |
+| 成本追蹤 | ✅ | 適用於所有整合 |
+| 記錄 | ✅ | 適用於所有整合 |
 
+支援 **所有** AssemblyAI 端點
 
-Supports **ALL** AssemblyAI Endpoints
+[**查看所有 AssemblyAI 端點**](https://www.assemblyai.com/docs/api-reference)
 
-[**See All AssemblyAI Endpoints**](https://www.assemblyai.com/docs/api-reference)
+## 支援的路由 {#supported-routes}
 
-
-## Supported Routes
-
-| AssemblyAI Service | LiteLLM Route | AssemblyAI Base URL |
+| AssemblyAI 服務 | LiteLLM 路由 | AssemblyAI 基礎 URL |
 |-------------------|---------------|---------------------|
-| Speech-to-Text (US) | `/assemblyai/*` | `api.assemblyai.com` |
-| Speech-to-Text (EU) | `/eu.assemblyai/*` | `eu.api.assemblyai.com` |
+| 語音轉文字（US） | `/assemblyai/*` | `api.assemblyai.com` |
+| 語音轉文字（EU） | `/eu.assemblyai/*` | `eu.api.assemblyai.com` |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the AssemblyAI [`/v2/transcripts` endpoint](https://www.assemblyai.com/docs/api-reference/transcripts)
+讓我們呼叫 AssemblyAI 的 [`/v2/transcripts` 端點](https://www.assemblyai.com/docs/api-reference/transcripts)
 
-1. Add AssemblyAI API Key to your environment
+1. 將 AssemblyAI API 金鑰加入您的環境
 
 ```bash
 export ASSEMBLYAI_API_KEY=""
 ```
 
-2. Start LiteLLM Proxy
+2. 啟動 LiteLLM Proxy
 
 ```bash
 litellm
@@ -38,9 +36,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試看看！
 
-Let's call the AssemblyAI [`/v2/transcripts` endpoint](https://www.assemblyai.com/docs/api-reference/transcripts). Includes commented-out [Speech Understanding](https://www.assemblyai.com/docs/speech-understanding) features you can toggle on.
+讓我們呼叫 AssemblyAI 的 [`/v2/transcripts` 端點](https://www.assemblyai.com/docs/api-reference/transcripts)。包含已註解掉、可切換啟用的 [語音理解](https://www.assemblyai.com/docs/speech-understanding) 功能。
 
 ```python
 import assemblyai as aai
@@ -80,7 +78,7 @@ print(f"\nFull Transcript:\n\n{transcript.text}")
 #     print(f"Speaker {utterance.speaker}: {utterance.text}")
 ```
 
-4. [Prompting with Universal-3 Pro](https://www.assemblyai.com/docs/speech-to-text/prompting) (optional)
+4. [使用 Universal-3 Pro 進行提示](https://www.assemblyai.com/docs/speech-to-text/prompting)（選用）
 
 ```python
 import assemblyai as aai
@@ -101,10 +99,9 @@ transcript = aai.Transcriber().transcribe(audio_file, config)
 print(transcript.text)
 ```
 
-## Calling AssemblyAI EU endpoints
+## 呼叫 AssemblyAI EU 端點 {#calling-assemblyai-eu-endpoints}
 
-If you want to send your request to the AssemblyAI EU endpoint, you can do so by setting the `LITELLM_PROXY_BASE_URL` to `<your-proxy-base-url>/eu.assemblyai`
-
+如果您想將請求傳送到 AssemblyAI EU 端點，可以透過將 `LITELLM_PROXY_BASE_URL` 設定為 `<your-proxy-base-url>/eu.assemblyai` 來達成
 
 ```python
 import assemblyai as aai
@@ -124,15 +121,15 @@ print(transcript)
 print(transcript.id)
 ```
 
-## LLM Gateway
+## LLM Gateway {#llm-gateway}
 
-Use AssemblyAI's [LLM Gateway](https://www.assemblyai.com/docs/llm-gateway) as an OpenAI-compatible provider — a unified API for Claude, GPT, and Gemini models with full LiteLLM logging, guardrails, and cost tracking support.
+將 AssemblyAI 的 [LLM Gateway](https://www.assemblyai.com/docs/llm-gateway) 作為相容 OpenAI 的提供者來使用——一個統一的 API，適用於 Claude、GPT 與 Gemini 模型，完整支援 LiteLLM 記錄、防護欄與成本追蹤。
 
-[**See Available Models**](https://www.assemblyai.com/docs/llm-gateway#available-models)
+[**查看可用模型**](https://www.assemblyai.com/docs/llm-gateway#available-models)
 
-### Usage
+### 使用方式 {#usage}
 
-#### LiteLLM Python SDK
+#### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python
 import litellm
@@ -148,9 +145,9 @@ response = litellm.completion(
 print(response.choices[0].message.content)
 ```
 
-#### LiteLLM Proxy
+#### LiteLLM Proxy {#litellm-proxy}
 
-1. Config
+1. 設定
 
 ```yaml
 model_list:
@@ -160,7 +157,7 @@ model_list:
       api_key: os.environ/ASSEMBLYAI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config config.yaml
@@ -168,7 +165,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試看看！
 
 ```python
 import requests

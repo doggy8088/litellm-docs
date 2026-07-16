@@ -1,10 +1,10 @@
 ---
 slug: agents-are-the-new-llms
-title: "A Unified Agent Control Plane"
+title: "統一的代理程式控制平面"
 date: 2026-06-10T09:00:00
 authors:
 - krrish
-description: "The AI Gateway is moving up the stack: from routing model calls to routing agent work."
+description: "AI 閘道正往上層移動：從路由模型請求，走向路由代理程式工作。"
 tags: [ideas, harnesses, ai-gateway, agents]
 hide_table_of_contents: true
 ---
@@ -13,77 +13,77 @@ import { StackComparison, ConvergenceHero } from './diagrams';
 
 <ConvergenceHero />
 
-*Last updated: June 2026*
+*最後更新：2026 年 6 月*
 
-Agent infrastructure is already separating into three layers: models, harnesses, and runtimes. We believe a fourth layer will emerge: the unified agent control plane. This will allow calling agents living in different agent runtimes, all from 1 place. 
+代理程式基礎架構已經開始分成三層：模型、harnesses，以及 runtime。我們認為第四層即將出現：統一的代理程式控制平面。這將能從一個地方呼叫存在於不同代理程式 runtime 中的代理程式。
 
-The reason is that companies will not run every agent on one runtime. Coding agents may run on Bedrock AgentCore or Claude Managed Agents. Data agents may run inside Elastic, Databricks, or Snowflake. Internal workflow agents may run on custom infrastructure. The control plane emerges because companies want one place where all of these agents can be used, regardless of where they were built or run.
+原因在於，公司不會把每個代理程式都執行在同一個 runtime 上。程式碼代理程式可能會執行在 Bedrock AgentCore 或 Claude Managed Agents 上。資料代理程式可能會在 Elastic、Databricks，或 Snowflake 內執行。內部工作流程代理程式可能會執行在自建基礎架構上。控制平面之所以浮現，是因為公司希望有一個地方可以使用所有這些代理程式，不論它們是在何處建置或執行。
 
-But a registry alone is not enough. Anyone can build a list of agents.
+但只有登錄系統還不夠。任何人都可以建立一份代理程式清單。
 
-The harder problem is invocation. Agent runtimes expose similar primitives — agents, sessions, events, tools — but they do not expose them through the same APIs. So if you want one place to actually use these agents, not just list them, the control plane has to manage agent runtimes, schedules, memory, and sessions.
+更難的問題是呼叫。代理程式 runtime 會暴露類似的基本元素——代理程式、session、事件、工具——但它們不是透過相同的 API 暴露這些元素。所以如果您想要一個地方真正使用這些代理程式，而不只是列出它們，控制平面就必須管理代理程式 runtime、排程、記憶體，以及 session。
 
-This is the same pattern LiteLLM saw with models. Companies did not just need a catalog of models. They needed one interface to call them. The only change, is that the primitive is now the agent session, not the model call.
+這和 LiteLLM 在模型上看到的模式相同。公司不只需要模型目錄，他們需要一個介面來呼叫它們。唯一的變化是，現在的基本元素是代理程式 session，而不是模型請求。
 
-## The Stack of the Future
+## 未來的堆疊 {#the-stack-of-the-future}
 
 <StackComparison />
 
-The important shift is that the gateway is no longer just routing model calls. It is routing agent work.
+重要的轉變是，閘道不再只是路由模型請求。它正在路由代理程式工作。
 
-With LLMs, the stack became:
+有了 LLM，堆疊變成了：
 
-* **Models:** GPT, Claude, Gemini, Llama
-* **Inference providers:** OpenAI, Anthropic, Bedrock, Vertex, Azure, vLLM
-* **Gateway:** routing, fallbacks, logging, spend tracking, auth, billing
-* **Applications:** copilots, workflows, internal tools, products
+* **模型：** GPT、Claude、Gemini、Llama
+* **推論提供者：** OpenAI、Anthropic、Bedrock、Vertex、Azure、vLLM
+* **閘道：** 路由、備援、記錄、支出追蹤、驗證、計費
+* **應用程式：** copilot、工作流程、內部工具、產品
 
-With agents, we think the stack becomes:
+有了代理程式，我們認為堆疊會變成：
 
-* **Models:** Claude, GPT, Gemini, open-source models
-* **Harnesses:** Claude Code, Codex, OpenCode, Hermes, DeepAgents
-* **Agent runtimes:** Claude Managed Agents, Bedrock AgentCore, Gemini Enterprise Agent Platform, self-hosted runtimes
-* **Agent control plane:** multi-runtime platform where teams manage agent runtimes, schedules, memory, and sessions.
-* **Applications:** coding agents, support agents, data agents, security agents
+* **模型：** Claude、GPT、Gemini、開源模型
+* **harnesses：** Claude Code、Codex、OpenCode、Hermes、DeepAgents
+* **代理程式 runtime：** Claude Managed Agents、Bedrock AgentCore、Gemini Enterprise Agent Platform、自架 runtime
+* **代理程式控制平面：** 多 runtime 平台，讓團隊管理代理程式 runtime、排程、記憶體，以及 session。
+* **應用程式：** 程式碼代理程式、支援代理程式、資料代理程式、安全代理程式
 
-## Why companies will need this
+## 為什麼公司會需要這個 {#why-companies-will-need-this}
 
-At LiteLLM, we are already seeing our team work across multiple agent runtimes. Some people are building on Claude Managed Agents, others are on N8N or Cursor. 
+在 LiteLLM，我們已經看到團隊在多個代理程式 runtime 之間協作。有些人正在 Claude Managed Agents 上開發，其他人則在 N8N 或 Cursor 上。
 
-This fragmentation makes it hard for agents built on these platforms to be shareable, and everyone to benefit from the work done so far. 
+這種碎片化使得在這些平台上建立的代理程式很難被共享，也讓每個人都能受益於到目前為止所做的工作變得困難。
 
-By having the agents live in 1 place, everyone can leverage these agents - even if the PR Babysitter Agent was written in Claude Managed Agents, which not everyone has direct access to. 
+只要讓代理程式存在於一個地方，所有人都可以利用這些代理程式——即使 PR Babysitter Agent 是寫在 Claude Managed Agents 上，而不是每個人都能直接存取。
 
-That is the control plane problem.
+這就是控制平面問題。
 
-This is also why we think the AI Gateway moves up the stack. The gateway starts by managing model calls. But as agents become the dominant use-case for AI, the gateway has to manage agent sessions too.
+這也是我們認為 AI 閘道會往上層移動的原因。閘道一開始是管理模型請求。但當代理程式成為 AI 的主流使用案例時，閘道也必須管理代理程式 session。
 
-## What we are building
+## 我們正在打造什麼 {#what-we-are-building}
 
-[LiteLLM Agent Platform](https://github.com/LiteLLM-Labs/litellm-agent-platform) is our experiment in this direction.
+[LiteLLM Agent Platform](https://github.com/LiteLLM-Labs/litellm-agent-platform) 是我們在這個方向上的實驗。
 
-LiteLLM Agent Platform is a Rust-based AI Gateway and Agent Control Plane. The goal is to let teams register, invoke, observe, and govern agents across multiple runtimes.
+LiteLLM Agent Platform 是一個以 Rust 為基礎的 AI 閘道與代理程式控制平面。目標是讓團隊能跨多個 runtime 註冊、呼叫、觀察並治理代理程式。
 
-We are starting with coding agents because the need is obvious. They are long-running, stateful, tool-heavy, and expensive enough to require real infrastructure.
+我們先從程式碼代理程式開始，因為需求非常明顯。它們是長時間執行、有狀態、工具密集，而且成本高到需要真正的基礎架構。
 
-We are already seeing early users resonate with this pattern. Some companies want LAP to act as a central control plane for agents built by different teams on different runtimes. For example, one team might build an agent on Elastic’s runtime to analyze Kibana logs, but the company may want to expose that agent internally through a common gateway.
+我們已經看到早期使用者對這種模式有共鳴。有些公司希望 LAP 作為不同團隊在不同 runtime 上建立的代理程式的中央控制平面。範例來說，一個團隊可能會在 Elastic 的 runtime 上建立一個代理程式來分析 Kibana 記錄，但公司可能希望透過共用閘道在內部公開這個代理程式。
 
-This is the architecture we believe is coming: models become interchangeable, harnesses become specialized, runtimes become managed, and the gateway becomes the control plane for agent work.
+這是我們認為即將到來的架構：模型變得可互換，harnesses 變得專門化，runtime 變得受管理，而閘道則成為代理程式工作的控制平面。
 
-If this matches what you are seeing, we would love feedback on LiteLLM Agent Platform:
+如果這和您看到的情況一致，我們很希望收到對 LiteLLM Agent Platform 的回饋：
 
 https://github.com/LiteLLM-Labs/litellm-agent-platform
 
-## Frequently Asked Questions
+## 常見問題 {#frequently-asked-questions}
 
-### Is LiteLLM building a second product?
+### LiteLLM 會打造第二個產品嗎？ {#is-litellm-building-a-second-product}
 
-No. LAP is an experimental project. The goal is to learn quickly and bring the right pieces into LiteLLM over time.
+不會。LAP 是一個實驗性專案。目標是快速學習，並隨著時間把合適的部分帶回 LiteLLM。
 
-### Is LAP production-ready?
+### LAP 已可用於正式環境嗎？ {#is-lap-production-ready}
 
-No. LAP is pre-v0. APIs may change as we work with early users and contributors.
+不行。LAP 仍處於 pre-v0。隨著我們和早期使用者及貢獻者合作，API 可能會變動。
 
-If you want to contribute, file an issue or join our Discord:
+如果您想要貢獻，請提出 issue 或加入我們的 Discord：
 
 https://discord.gg/Nkxw3rm3EE

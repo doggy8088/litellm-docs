@@ -1,45 +1,45 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Agent Iteration Budgets
+# 代理程式迭代預算 {#agent-iteration-budgets}
 
-Control runaway costs from agentic loops with per-session iteration and budget caps.
+透過每個工作階段的迭代與預算上限，控制代理程式迴圈失控的成本。
 
-## Overview
+## 總覽 {#overview}
 
-When agents run agentic loops, they can make unbounded LLM calls, causing unexpected costs. LiteLLM provides two controls:
+當代理程式執行代理程式迴圈時，可能會進行無限制的 LLM 請求，造成非預期成本。LiteLLM 提供兩項控制：
 
-| Control | Description |
+| 控制 | 說明 |
 |---------|-------------|
-| **Max Iterations** | Hard cap on the number of LLM calls per session |
-| **Max Budget Per Session** | Dollar cap per session (identified by `x-litellm-trace-id`) |
+| **最大迭代次數** | 每個工作階段的 LLM 請求次數硬性上限 |
+| **每個工作階段的最大預算** | 每個工作階段的美元上限（由 `x-litellm-trace-id` 識別） |
 
-Both controls require a `session_id` (sent via `x-litellm-trace-id` header or `metadata.session_id`) to track calls within a session.
+這兩項控制都需要 `session_id`（透過 `x-litellm-trace-id` 標頭或 `metadata.session_id` 傳送），以便追蹤工作階段內的請求。
 
-## Trace-ID Enforcement
+## Trace-ID 強制 {#trace-id-enforcement}
 
-LiteLLM supports two independent trace-id flags, configured in `litellm_params` on the agent:
+LiteLLM 支援兩個獨立的 trace-id 標記，並在代理程式上於 `litellm_params` 中設定：
 
-| Flag | Description |
+| 標記 | 說明 |
 |------|-------------|
-| `require_trace_id_on_calls_to_agent` | Requires callers invoking this agent to include `x-litellm-trace-id`. Use when the agent should only be called as a sub-agent with a trace context. Returns **400** if missing. |
-| `require_trace_id_on_calls_by_agent` | Requires all LLM/MCP calls made **by** this agent (via its virtual key) to include `x-litellm-trace-id`. This is what enables `max_iterations` and `max_budget_per_session` tracking. Returns **400** if missing. |
+| `require_trace_id_on_calls_to_agent` | 要求呼叫此代理程式的呼叫端包含 `x-litellm-trace-id`。當代理程式只能作為具有追蹤內容的子代理程式被呼叫時使用。若缺少則回傳 **400**。 |
+| `require_trace_id_on_calls_by_agent` | 要求此代理程式**透過其虛擬金鑰**所發出的所有 LLM/MCP 請求都包含 `x-litellm-trace-id`。這可啟用 `max_iterations` 與 `max_budget_per_session` 追蹤。若缺少則回傳 **400**。 |
 
-## Configuring via UI
+## 透過 UI 設定 {#configuring-via-ui}
 
-When creating an agent in the LiteLLM Admin UI:
+在 LiteLLM 管理員 UI 中建立代理程式時：
 
-1. Navigate to the **Agents** tab and click **Add Agent**
-2. In the **Agent Settings** step, expand the **Tracing** section
-3. Toggle **Require x-litellm-trace-id on calls BY this agent** to enable session tracking
-4. Set **Max Iterations** to cap the number of LLM calls per session
-5. Set **Max Budget Per Session ($)** to cap spend per session
+1. 前往 **Agents** 分頁並點選 **Add Agent**
+2. 在 **Agent Settings** 步驟中，展開 **Tracing** 區段
+3. 開啟 **Require x-litellm-trace-id on calls BY this agent** 以啟用工作階段追蹤
+4. 設定 **Max Iterations** 以限制每個工作階段的 LLM 請求次數
+5. 設定 **Max Budget Per Session ($)** 以限制每個工作階段的支出
 
-The trace-id flags are stored on the agent's `litellm_params`. Budget controls (`max_iterations`, `max_budget_per_session`) are stored in the virtual key's metadata.
+trace-id 標記會儲存在代理程式的 `litellm_params` 上。預算控制（`max_iterations`、`max_budget_per_session`）則儲存在虛擬金鑰的中繼資料中。
 
-## Configuring via API
+## 透過 API 設定 {#configuring-via-api}
 
-Set trace-id enforcement on the agent itself:
+在代理程式本身上設定 trace-id 強制：
 
 ```bash
 curl -X POST 'http://localhost:4000/v1/agents' \
@@ -60,7 +60,7 @@ curl -X POST 'http://localhost:4000/v1/agents' \
   }'
 ```
 
-Budget controls are set on the agent's `litellm_params` (not on individual keys), so they apply across all keys for the agent:
+預算控制是設定在代理程式的 `litellm_params` 上（不是個別金鑰），因此會套用到該代理程式的所有金鑰：
 
 ```bash
 curl -X POST 'http://localhost:4000/v1/agents' \
@@ -82,47 +82,47 @@ curl -X POST 'http://localhost:4000/v1/agents' \
   }'
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-### Session Tracking
+### 工作階段追蹤 {#session-tracking}
 
-Callers identify their session by including a `session_id` in one of these ways:
-- **Header**: `x-litellm-trace-id: my-session-123`
-- **Metadata**: `{"metadata": {"session_id": "my-session-123"}}`
+呼叫端可透過以下任一方式包含 `session_id` 來識別其工作階段：
+- **標頭**：`x-litellm-trace-id: my-session-123`
+- **中繼資料**：`{"metadata": {"session_id": "my-session-123"}}`
 
-### Max Iterations
+### 最大迭代次數 {#max-iterations}
 
-When `max_iterations` is set in agent `litellm_params`:
-- Each LLM call for a session increments a counter
-- When the counter exceeds `max_iterations`, the request receives a **429 Too Many Requests**
-- Counters expire after 1 hour by default (configurable via `LITELLM_MAX_ITERATIONS_TTL` env var)
+當在代理程式 `litellm_params` 中設定 `max_iterations` 時：
+- 每次針對某個工作階段的 LLM 請求都會使計數器加 1
+- 當計數器超過 `max_iterations` 時，請求會收到 **429 Too Many Requests**
+- 計數器預設會在 1 小時後過期（可透過 `LITELLM_MAX_ITERATIONS_TTL` 環境變數設定）
 
-### Max Budget Per Session
+### 每個工作階段的最大預算 {#max-budget-per-session}
 
-When `max_budget_per_session` is set in agent `litellm_params`:
-- After each successful LLM call, the response cost is accumulated for the session
-- Before each call, the accumulated spend is checked against the budget
-- When spend exceeds the budget, the request receives a **429 Too Many Requests**
-- Session spend counters expire after 1 hour by default (configurable via `LITELLM_MAX_BUDGET_PER_SESSION_TTL` env var)
+當在代理程式 `litellm_params` 中設定 `max_budget_per_session` 時：
+- 每次成功的 LLM 請求後，該回應成本會累計到工作階段
+- 每次請求前，都會檢查累計支出是否超過預算
+- 當支出超過預算時，請求會收到 **429 Too Many Requests**
+- 工作階段支出計數器預設會在 1 小時後過期（可透過 `LITELLM_MAX_BUDGET_PER_SESSION_TTL` 環境變數設定）
 
-## Example
+## 範例 {#example}
 
-Create an agent with max 25 iterations and a $5 budget cap:
+建立一個最多 25 次迭代且預算上限為 5 美元的代理程式：
 
 <Tabs>
-<TabItem value="ui" label="Via UI">
+<TabItem value="ui" label="透過 UI">
 
-1. Go to **Agents** → **Add Agent**
-2. Configure your agent (name, model, etc.)
-3. In **Agent Settings**, expand the **Tracing** section
-4. Toggle on **Require x-litellm-trace-id on calls BY this agent**
-5. Set **Max Iterations** to `25`
-6. Set **Max Budget Per Session** to `5.00`
-7. Proceed to create a new key for the agent
-8. Click **Create Agent**
+1. 前往 **Agents** → **Add Agent**
+2. 設定您的代理程式（名稱、模型等）
+3. 在 **Agent Settings** 中，展開 **Tracing** 區段
+4. 開啟 **Require x-litellm-trace-id on calls BY this agent**
+5. 將 **Max Iterations** 設為 `25`
+6. 將 **Max Budget Per Session** 設為 `5.00`
+7. 接著為代理程式建立新的金鑰
+8. 點選 **Create Agent**
 
 </TabItem>
-<TabItem value="api" label="Via API">
+<TabItem value="api" label="透過 API">
 
 ```bash
 # 1. Create the agent with trace-id enforcement
@@ -155,7 +155,7 @@ curl -X POST 'http://localhost:4000/key/generate' \
 </TabItem>
 </Tabs>
 
-### Making Calls with Session Tracking
+### 使用工作階段追蹤進行請求 {#making-calls-with-session-tracking}
 
 ```bash
 curl -X POST 'http://localhost:4000/chat/completions' \
@@ -168,7 +168,7 @@ curl -X POST 'http://localhost:4000/chat/completions' \
   }'
 ```
 
-After 25 calls or $5 spent within this session, subsequent requests will receive:
+在此工作階段內使用 25 次請求或支出 5 美元之後，後續請求將收到：
 
 ```json
 {
@@ -180,9 +180,9 @@ After 25 calls or $5 spent within this session, subsequent requests will receive
 }
 ```
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Default | Description |
+| 變數 | 預設值 | 說明 |
 |----------|---------|-------------|
-| `LITELLM_MAX_ITERATIONS_TTL` | `3600` (1 hour) | TTL in seconds for session iteration counters |
-| `LITELLM_MAX_BUDGET_PER_SESSION_TTL` | `3600` (1 hour) | TTL in seconds for session budget counters |
+| `LITELLM_MAX_ITERATIONS_TTL` | `3600`（1 小時） | 工作階段迭代計數器的 TTL（秒） |
+| `LITELLM_MAX_BUDGET_PER_SESSION_TTL` | `3600`（1 小時） | 工作階段預算計數器的 TTL（秒） |

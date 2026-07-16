@@ -1,18 +1,18 @@
-# Prompt Compression (`compress()`)
+# 提示壓縮 (`compress()`) {#prompt-compression-compress}
 
 :::info Beta
 
-This feature is in beta. APIs and behavior may change before general availability.
+此功能目前為 beta 版。在正式可用之前，API 與行為可能會變更。
 
 :::
 
-Use `litellm.compress()` to shrink long conversation history before calling `completion()`.
+在呼叫 `completion()` 之前，使用 `litellm.compress()` 來縮減冗長的對話歷史。
 
-The function keeps high-relevance and recent context, replaces low-relevance content with lightweight stubs, and returns a retrieval tool so the model can request full content only when needed.
+此函式會保留高相關性與最近的內容，以輕量級 stub 取代低相關性內容，並回傳一個檢索工具，讓模型僅在需要時才可要求完整內容。
 
-For proxy users who want compression handled server-side by an external service instead of an in-process call, see [Headroom](/docs/proxy/headroom).
+對於希望由外部服務在伺服器端處理壓縮，而不是透過進程內呼叫處理的 proxy 使用者，請參閱 [Headroom](/docs/proxy/headroom)。
 
-## Quickstart
+## 快速入門 {#quickstart}
 
 ```python
 import litellm
@@ -40,38 +40,38 @@ response = litellm.completion(
 )
 ```
 
-## What It Returns
+## 它會回傳什麼 {#what-it-returns}
 
-`compress()` returns a dictionary with:
+`compress()` 會回傳一個字典，包含：
 
-- `messages`: compressed conversation messages
-- `original_tokens`: token count before compression
-- `compressed_tokens`: token count after compression
-- `compression_ratio`: fraction of tokens removed
-- `cache`: key-value mapping of stub key -> original full content
-- `tools`: retrieval tool definition (`litellm_content_retrieve`) for on-demand restoration
+- `messages`：壓縮後的對話訊息
+- `original_tokens`：壓縮前的 token 數
+- `compressed_tokens`：壓縮後的 token 數
+- `compression_ratio`：移除的 token 比例
+- `cache`：stub key -> 原始完整內容的鍵值對映
+- `tools`：用於按需還原的檢索工具定義（`litellm_content_retrieve`）
 
-## Parameters
+## 參數 {#parameters}
 
-- `messages` (`List[dict]`, required): input conversation messages
-- `model` (`str`, required): model name used for token counting
-- `call_type` (`CallTypes`, default `CallTypes.completion`): the LiteLLM call type whose message schema these messages follow. Supported values: `CallTypes.completion` / `CallTypes.acompletion` (OpenAI chat-completions shape) and `CallTypes.anthropic_messages` (Anthropic Messages shape)
-- `compression_trigger` (`int`, default `200000`): compress only if input token count exceeds this
-- `compression_target` (`Optional[int]`, default `70% of compression_trigger`): desired post-compression token budget
-- `embedding_model` (`Optional[str]`): if set, combines BM25 + embedding relevance scoring
-- `embedding_model_params` (`Optional[dict]`): additional kwargs passed to `litellm.embedding()`
-- `compression_cache` (`Optional[DualCache]`): optional cache used by embedding scoring
+- `messages`（`List[dict]`，必填）：輸入的對話訊息
+- `model`（`str`，必填）：用於 token 計數的模型名稱
+- `call_type`（`CallTypes`，預設 `CallTypes.completion`）：這些訊息所遵循的 LiteLLM 呼叫類型，其訊息 schema。支援的值：`CallTypes.completion` / `CallTypes.acompletion`（OpenAI chat-completions 形狀）以及 `CallTypes.anthropic_messages`（Anthropic Messages 形狀）
+- `compression_trigger`（`int`，預設 `200000`）：只有在輸入 token 數超過此值時才進行壓縮
+- `compression_target`（`Optional[int]`，預設 `70% of compression_trigger`）：期望的壓縮後 token 預算
+- `embedding_model`（`Optional[str]`）：若設定，則結合 BM25 + embedding 相關性評分
+- `embedding_model_params`（`Optional[dict]`）：傳遞給 `litellm.embedding()` 的額外 kwargs
+- `compression_cache`（`Optional[DualCache]`）：embedding 評分使用的選用快取
 
-## Behavior Notes
+## 行為注意事項 {#behavior-notes}
 
-- Messages below `compression_trigger` are passed through unchanged.
-- System messages, the last user message, and the last assistant message are always preserved.
-- If a relevant message does not fully fit the remaining budget, `compress()` may keep a truncated version of it.
-- Compressed-out content is never lost; it is stored in `cache` and addressable by `litellm_content_retrieve`.
+- 低於 `compression_trigger` 的訊息會原樣通過。
+- 系統訊息、最後一則使用者訊息，以及最後一則 assistant 訊息一律保留。
+- 如果相關訊息無法完全符合剩餘預算，`compress()` 可能會保留其截斷版本。
+- 被壓縮移除的內容不會遺失；它會儲存在 `cache` 中，並可透過 `litellm_content_retrieve` 存取。
 
-## Handling Retrieval Tool Calls
+## 處理檢索工具呼叫 {#handling-retrieval-tool-calls}
 
-If the model calls `litellm_content_retrieve`, look up the requested key in `compressed["cache"]` and return that value as tool output.
+如果模型呼叫 `litellm_content_retrieve`，請在 `compressed["cache"]` 中查找所請求的 key，並將該值作為工具輸出回傳。
 
 ```python
 import json
@@ -81,10 +81,10 @@ args = json.loads(tool_call.function.arguments)
 full_content = compressed["cache"][args["key"]]
 ```
 
-## Server-side Callback Loop (`/v1/messages`)
+## 伺服器端回呼迴圈 (`/v1/messages`) {#server-side-callback-loop-v1messages}
 
-You can enable callback-based compression interception to make retrieval loops
-transparent for Anthropic Messages calls:
+您可以啟用基於回呼的壓縮攔截，讓檢索迴圈
+對 Anthropic Messages 呼叫而言是透明的：
 
 ```yaml
 litellm_settings:
@@ -95,46 +95,46 @@ litellm_settings:
     compression_target: 7000
 ```
 
-With this enabled, LiteLLM runs the following server-side flow:
+啟用後，LiteLLM 會執行以下伺服器端流程：
 
-1. Compresses inbound messages before the first provider call.
-2. Injects the `litellm_content_retrieve` tool.
-3. Detects retrieval `tool_use` blocks in the model response.
-4. Resolves retrieval keys from the compression cache.
-5. Reruns the model via agentic loop and returns the final answer.
+1. 在第一次提供者呼叫前壓縮傳入訊息。
+2. 注入 `litellm_content_retrieve` 工具。
+3. 偵測模型回應中的檢索 `tool_use` 區塊。
+4. 從壓縮快取中解析檢索 keys。
+5. 透過代理式迴圈重新執行模型並回傳最終答案。
 
-## Performance
+## 效能 {#performance}
 
-Benchmarked on [SWE-bench Lite](https://huggingface.co/datasets/princeton-nlp/SWE-bench_Lite_bm25_27K) (real GitHub issues with ~27k tokens of BM25-retrieved repo context per problem).
+以 [SWE-bench Lite](https://huggingface.co/datasets/princeton-nlp/SWE-bench_Lite_bm25_27K) 進行基準測試（真實 GitHub 問題，每個問題約有 27k tokens 的由 BM25 檢索的 repo 上下文）。
 
-### Claude Opus — 5 problems, trigger=10k
+### Claude Opus — 5 個問題，trigger=10k {#claude-opus--5-problems-trigger10k}
 
-| Metric | Baseline | Compressed | Delta |
+| 指標 | 基準值 | 壓縮後 | 差異 |
 |---|---|---|---|
-| File overlap | 1.000 | 1.000 | +0.000 |
-| Exact file match | 100% | 100% | +0.0% |
-| Hunk overlap | 0.582 | 0.361 | -0.221 |
-| Content similarity | 0.367 | 0.373 | +0.006 |
-| Avg prompt tokens | 30,828 | 6,890 | -77.7% |
-| Avg cost/problem | $0.488 | $0.136 | **-72.0%** |
+| 檔案重疊 | 1.000 | 1.000 | +0.000 |
+| 完全相符的檔案 | 100% | 100% | +0.0% |
+| Hunk 重疊 | 0.582 | 0.361 | -0.221 |
+| 內容相似度 | 0.367 | 0.373 | +0.006 |
+| 平均 prompt tokens | 30,828 | 6,890 | -77.7% |
+| 平均成本/問題 | $0.488 | $0.136 | **-72.0%** |
 
-**Key takeaways:**
+**重點結論：**
 
-- **File-level targeting is fully preserved** — the model edits the same files with or without compression.
-- **Content similarity matches baseline** — the actual lines changed are comparable.
-- **Hunk overlap drops modestly** (-0.221) — the model targets the right files but may edit slightly different line ranges with less surrounding context.
-- **72% cost savings** with 78% token reduction.
+- **檔案層級的定位完全保留** — 無論是否壓縮，模型都會編輯相同的檔案。
+- **內容相似度與基準值一致** — 實際變更的行內容具有可比性。
+- **Hunk 重疊小幅下降**（-0.221）— 模型會定位到正確的檔案，但在較少上下文下，可能會編輯稍有不同的行區間。
+- **72% 成本節省**，token 減少 78%。
 
-### Metrics explained
+### 指標說明 {#metrics-explained}
 
-| Metric | What it measures |
+| 指標 | 衡量內容 |
 |---|---|
-| **File overlap** | Fraction of gold-patch files present in the generated patch |
-| **Exact file match** | Whether the generated patch touches exactly the same set of files |
-| **Hunk overlap** | Fraction of gold hunk line ranges covered by generated hunks |
-| **Content similarity** | Jaccard similarity of changed lines (added/removed) between gold and generated patches |
+| **檔案重疊** | gold-patch 檔案中出現在生成 patch 的比例 |
+| **完全相符的檔案** | 生成的 patch 是否剛好觸及同一組檔案 |
+| **Hunk 重疊** | gold hunk 行範圍中被生成 hunks 涵蓋的比例 |
+| **內容相似度** | gold 與生成 patch 之間變更行（新增/刪除）的 Jaccard 相似度 |
 
-### Running the SWE-bench eval
+### 執行 SWE-bench 評估 {#running-the-swe-bench-eval}
 
 ```bash
 # 5-problem quick check
@@ -149,7 +149,7 @@ python tests/eval_swe_bench.py --model gpt-4o --problems 10 \
     --embedding-model text-embedding-3-small
 ```
 
-### Running the HumanEval-style eval
+### 執行 HumanEval 風格評估 {#running-the-humaneval-style-eval}
 
 ```bash
 python scripts/eval_compression.py --model gpt-4o --problems 5

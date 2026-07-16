@@ -1,23 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Replicate
+# Replicate {#replicate}
 
-LiteLLM supports all models on Replicate
+LiteLLM 支援 Replicate 上的所有模型
 
-
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### API KEYS
+### API 金鑰 {#api-keys}
 ```python
 import os 
 os.environ["REPLICATE_API_KEY"] = ""
 ```
 
-### Example Call
+### 範例呼叫 {#example-call}
 
 ```python
 from litellm import completion
@@ -35,7 +34,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型加入您的 config.yaml
 
   ```yaml
   model_list:
@@ -46,14 +45,13 @@ response = completion(
   ```
 
 
-
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -109,10 +107,9 @@ response = completion(
 
   </Tabs>
 
+### 預期的 Replicate 呼叫  {#expected-replicate-call}
 
-### Expected Replicate Call 
-
-This is the call litellm will make to replicate, from the above example: 
+這是 litellm 將向 replicate 發出的呼叫，來自上述範例： 
 
 ```bash
 
@@ -127,11 +124,11 @@ https://api.replicate.com/v1/models/meta/meta-llama-3-8b-instruct \
 
 </Tabs>
 
-## Advanced Usage - Prompt Formatting 
+## 進階用法 - Prompt 格式化  {#advanced-usage---prompt-formatting}
 
-LiteLLM has prompt template mappings for all `meta-llama` llama3 instruct models. [**See Code**](https://github.com/BerriAI/litellm/blob/4f46b4c3975cd0f72b8c5acb2cb429d23580c18a/litellm/llms/prompt_templates/factory.py#L1360)
+LiteLLM 針對所有 `meta-llama` llama3 instruct 模型都有 prompt 範本對應。[**請見程式碼**](https://github.com/BerriAI/litellm/blob/4f46b4c3975cd0f72b8c5acb2cb429d23580c18a/litellm/llms/prompt_templates/factory.py#L1360)
 
-To apply a custom prompt template: 
+若要套用自訂 prompt 範本： 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -193,9 +190,9 @@ model_list:
 
 </Tabs>
 
-## Advanced Usage - Calling Replicate Deployments
-Calling a [deployed replicate LLM](https://replicate.com/deployments)
-Add the `replicate/deployments/` prefix to your model, so litellm will call the `deployments` endpoint. This will call `ishaan-jaff/ishaan-mistral` deployment on replicate
+## 進階用法 - 呼叫 Replicate 部署 {#advanced-usage---calling-replicate-deployments}
+呼叫 [已部署的 replicate LLM](https://replicate.com/deployments)
+將 `replicate/deployments/` 前綴加到您的 model，讓 litellm 會呼叫 `deployments` endpoint。這會呼叫 replicate 上的 `ishaan-jaff/ishaan-mistral` 部署
 
 ```python
 response = completion(
@@ -204,20 +201,20 @@ response = completion(
 )
 ```
 
-:::warning Replicate Cold Boots
+:::warning Replicate 冷啟動
 
-Replicate responses can take 3-5 mins due to replicate cold boots, if you're trying to debug try making the request with `litellm.set_verbose=True`. [More info on replicate cold boots](https://replicate.com/docs/how-does-replicate-work#cold-boots)
+由於 replicate 冷啟動，Replicate 回應可能需要 3-5 分鐘；如果您想除錯，請嘗試使用 `litellm.set_verbose=True` 發出請求。[更多關於 replicate 冷啟動的資訊](https://replicate.com/docs/how-does-replicate-work#cold-boots)
 
 :::
 
-## Replicate Models
-liteLLM supports all replicate LLMs
+## Replicate 模型 {#replicate-models}
+liteLLM 支援所有 replicate LLM
 
-For replicate models ensure to add a `replicate/` prefix to the `model` arg. liteLLM detects it using this arg. 
+對於 replicate 模型，請務必在 `model` 引數加上 `replicate/` 前綴。liteLLM 會使用此引數偵測它。 
 
-Below are examples on how to call replicate LLMs using liteLLM 
+以下是使用 liteLLM 呼叫 replicate LLM 的範例 
 
-Model Name                  | Function Call                                                  | Required OS Variables                |
+模型名稱                  | 函式呼叫                                                  | 必要的作業系統環境變數                |
 -----------------------------|----------------------------------------------------------------|--------------------------------------|
  replicate/llama-2-70b-chat | `completion(model='replicate/llama-2-70b-chat:2796ee9483c3fd7aa2e171d38f4ca12251a30609463dcfd4cd76703f22e96cdf', messages)` | `os.environ['REPLICATE_API_KEY']`    |
  a16z-infra/llama-2-13b-chat| `completion(model='replicate/a16z-infra/llama-2-13b-chat:2a7f981751ec7fdf87b5b91ad4db53683a98082e9ff7bfd12c8cd5ea85980a52', messages)`| `os.environ['REPLICATE_API_KEY']`    |
@@ -226,9 +223,8 @@ Model Name                  | Function Call                                     
  custom-llm    | `completion(model='replicate/custom-llm-version-id', messages)`    | `os.environ['REPLICATE_API_KEY']`    |
   replicate deployment    | `completion(model='replicate/deployments/ishaan-jaff/ishaan-mistral', messages)`    | `os.environ['REPLICATE_API_KEY']`    |
 
-
-## Passing additional params - max_tokens, temperature 
-See all litellm.completion supported params [here](https://docs.litellm.ai/docs/completion/input)
+## 傳遞額外參數 - max_tokens, temperature  {#passing-additional-params---max_tokens-temperature}
+查看所有 litellm.completion 支援的參數 [請見此處](https://docs.litellm.ai/docs/completion/input)
 
 ```python
 # !uv add litellm
@@ -258,10 +254,10 @@ response = completion(
         temperature: 0.5
 ```
 
-## Passings Replicate specific params
-Send params [not supported by `litellm.completion()`](https://docs.litellm.ai/docs/completion/input) but supported by Replicate by passing them to `litellm.completion`
+## 傳遞 Replicate 特定參數 {#passings-replicate-specific-params}
+透過將參數傳給 `litellm.completion`，傳送 [`litellm.completion()` 不支援的](https://docs.litellm.ai/docs/completion/input) 但 Replicate 支援的參數
 
-Example `seed`, `min_tokens` are Replicate specific param
+範例 `seed`、`min_tokens` 是 Replicate 特定參數
 
 ```python
 # !uv add litellm

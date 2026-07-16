@@ -2,84 +2,83 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Track Usage for Coding Tools
+# 追蹤程式設計工具的使用量 {#track-usage-for-coding-tools}
 
-Track usage and costs for AI-powered coding tools like Claude Code, Roo Code, Gemini CLI, and OpenAI Codex through LiteLLM.
+透過 LiteLLM 追蹤像 Claude Code、Roo Code、Gemini CLI 和 OpenAI Codex 這類 AI 驅動的程式設計工具之使用量與成本。
 
-Monitor requests, costs, and user engagement metrics for each coding tool using User-Agent headers.
+使用 User-Agent 標頭監控每個程式設計工具的請求、成本與使用者參與指標。
 
 <Image 
   img={require('../../img/agent_1.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
+## 適用對象 {#who-this-is-for}
 
-## Who This Is For
+透過 LiteLLM 為開發人員提供程式設計工具存取權的中央 AI 平台團隊。監控工具參與度並追蹤個別使用者的使用模式。
 
-Central AI Platform teams providing developers access to coding tools through LiteLLM. Monitor tool engagement and track individual user usage patterns.
+## 您可以追蹤的內容 {#what-you-can-track}
 
-## What You Can Track
+### 摘要指標 {#summary-metrics}
+- 每個程式設計工具的成本
+- 每個工具的成功請求與 token 使用量
 
-### Summary Metrics
-- Cost per coding tool
-- Successful requests and token usage per tool
+### 使用者參與指標 {#user-engagement-metrics}
+- 每個 User-Agent 的每日、每週與每月活躍使用者數
 
-### User Engagement Metrics
-- Daily, weekly, and monthly active users for each User-Agent 
+## 快速開始 {#quick-start}
 
-## Quick Start
+### 1. 將您的程式設計工具連接到 LiteLLM {#1-connect-your-coding-tool-to-litellm}
 
-### 1. Connect Your Coding Tool to LiteLLM
+設定您的程式設計工具，透過 LiteLLM proxy 並搭配適當的 User-Agent 標頭送出請求。
 
-Configure your coding tool to send requests through the LiteLLM proxy with appropriate User-Agent headers.
+**設定指南：**
+- [將 LiteLLM 與 Claude Code 搭配使用](../../docs/tutorials/claude_responses_api)
+- [將 LiteLLM 與 Gemini CLI 搭配使用](../../docs/tutorials/litellm_gemini_cli)
+- [將 LiteLLM 與 OpenAI Codex 搭配使用](../../docs/tutorials/openai_codex)
 
-**Setup guides:**
-- [Use LiteLLM with Claude Code](../../docs/tutorials/claude_responses_api)
-- [Use LiteLLM with Gemini CLI](../../docs/tutorials/litellm_gemini_cli)
-- [Use LiteLLM with OpenAI Codex](../../docs/tutorials/openai_codex)
+### 2. 使用 User-Agent 標頭送出請求 {#2-send-requests-with-user-agent-headers}
 
-### 2. Send Requests with User-Agent Headers
+請確保您的程式設計工具在 API 請求中包含可識別的 User-Agent 標頭。
 
-Ensure your coding tool includes identifying User-Agent headers in API requests.
+### 3. 在 LiteLLM 記錄中驗證追蹤 {#3-verify-tracking-in-litellm-logs}
 
-### 3. Verify Tracking in LiteLLM Logs
-
-Confirm LiteLLM is properly tracking requests by checking logs for the expected User-Agent values.
+透過檢查記錄中預期的 User-Agent 值，確認 LiteLLM 已正確追蹤請求。
 
 <Image 
   img={require('../../img/agent_2.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
-### 4. View Usage Dashboard
+### 4. 檢視使用量儀表板 {#4-view-usage-dashboard}
 
-Access the LiteLLM dashboard to view aggregated usage metrics and user engagement data.
+存取 LiteLLM 儀表板以檢視彙總的使用量指標與使用者參與資料。
 
-#### Summary Metrics
+#### 摘要指標 {#summary-metrics-1}
 
-View total cost and successful requests for each coding tool.
+檢視每個程式設計工具的總成本與成功請求數。
 
 <Image 
   img={require('../../img/agent_3.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
-#### Daily, Weekly, and Monthly Active Users
+#### 每日、每週與每月活躍使用者 {#daily-weekly-and-monthly-active-users}
 
-View active user metrics for each coding tool.
+檢視每個程式設計工具的活躍使用者指標。
 
 <Image 
   img={require('../../img/agent_4.png')}
   style={{width: '80%', display: 'block', margin: '2rem auto'}}
 />
 
-## How LiteLLM Identifies Coding Tools
+## LiteLLM 如何識別程式設計工具 {#how-litellm-identifies-coding-tools}
 
-LiteLLM tracks coding tools by monitoring the `User-Agent` header in incoming API requests (`/chat/completions`, `/responses`, etc.). Each unique User-Agent is tracked separately for usage analytics.
+LiteLLM 透過監控傳入 API 請求中的 `User-Agent` 標頭來追蹤程式設計工具（`/chat/completions`、`/responses` 等）。每個獨特的 User-Agent 都會被分開追蹤，以進行使用量分析。
 
-### Example Request
+### 請求範例 {#example-request}
 
-Example using `claude-cli` as the User-Agent:
+以 `claude-cli` 作為 User-Agent 的範例：
 
 ```shell
 curl -X POST \

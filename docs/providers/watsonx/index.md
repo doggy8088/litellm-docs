@@ -1,11 +1,11 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# IBM watsonx.ai
+# IBM watsonx.ai {#ibm-watsonxai}
 
-LiteLLM supports all IBM [watsonx.ai](https://watsonx.ai/) foundational models and embeddings.
+LiteLLM 支援所有 IBM [watsonx.ai](https://watsonx.ai/) 基礎模型與 embeddings。
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 ```python
 os.environ["WATSONX_URL"] = ""  # (required) Base URL of your WatsonX instance
 # (required) either one of the following:
@@ -17,12 +17,12 @@ os.environ["WATSONX_DEPLOYMENT_SPACE_ID"] = "" # ID of your deployment space to 
 os.environ["WATSONX_ZENAPIKEY"] = "" # Zen API key (use for long-term api token)
 ```
 
-See [here](https://cloud.ibm.com/apidocs/watsonx-ai#api-authentication) for more information on how to get an access token to authenticate to watsonx.ai.
+請參閱[此處](https://cloud.ibm.com/apidocs/watsonx-ai#api-authentication)以了解更多關於如何取得存取權杖以驗證 watsonx.ai 的資訊。
 
-## Usage
+## 使用方式 {#usage}
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_IBM_Watsonx.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
 ```python showLineNumbers title="Chat Completion"
@@ -39,7 +39,7 @@ response = completion(
 )
 ```
 
-## Usage - Streaming
+## 使用方式 - 串流 {#usage---streaming}
 ```python showLineNumbers title="Streaming"
 import os
 from litellm import completion
@@ -57,9 +57,9 @@ for chunk in response:
   print(chunk)
 ```
 
-## Usage - Models in deployment spaces
+## 使用方式 - 部署空間中的模型 {#usage---models-in-deployment-spaces}
 
-Models deployed to a deployment space (e.g.: tuned models) can be called using the `deployment/<deployment_id>` format.
+部署到部署空間中的模型（例如：調校後模型）可使用 `deployment/<deployment_id>` 格式來呼叫。
 
 ```python showLineNumbers title="Deployment Space"
 import litellm
@@ -71,7 +71,7 @@ response = litellm.completion(
 )
 ```
 
-## Usage - Embeddings
+## 使用方式 - Embeddings {#usage---embeddings}
 
 ```python showLineNumbers title="Embeddings"
 from litellm import embedding
@@ -83,9 +83,9 @@ response = embedding(
 )
 ```
 
-## LiteLLM Proxy Usage 
+## LiteLLM Proxy 使用方式  {#litellm-proxy-usage}
 
-### 1. Save keys in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-keys-in-your-environment}
 
 ```bash
 export WATSONX_URL=""
@@ -93,7 +93,7 @@ export WATSONX_APIKEY=""
 export WATSONX_PROJECT_ID=""
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy  {#2-start-the-proxy}
 
 <Tabs>
 <TabItem value="cli" label="CLI">
@@ -115,11 +115,10 @@ model_list:
 </TabItem>
 </Tabs>
 
-### 3. Test it
-
+### 3. 測試它 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -154,33 +153,31 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 支援的模型 {#supported-models}
 
-## Supported Models
-
-| Model Name                         | Command                                                                                  |
+| 模型名稱                         | 指令                                                                                  |
 |------------------------------------|------------------------------------------------------------------------------------------|
 | Llama 3.1 8B Instruct              | `completion(model="watsonx/meta-llama/llama-3-1-8b-instruct", messages=messages)`        |
 | Llama 2 70B Chat                   | `completion(model="watsonx/meta-llama/llama-2-70b-chat", messages=messages)`             |
 | Granite 13B Chat V2                | `completion(model="watsonx/ibm/granite-13b-chat-v2", messages=messages)`                 |
 | Mixtral 8X7B Instruct              | `completion(model="watsonx/ibm-mistralai/mixtral-8x7b-instruct-v01-q", messages=messages)` |
 
-For all available models, see [watsonx.ai documentation](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models.html?context=wx).
+如需所有可用模型，請參閱 [watsonx.ai 文件](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models.html?context=wx)。
 
-## Supported Embedding Models
+## 支援的 Embedding 模型 {#supported-embedding-models}
 
-| Model Name | Function Call                                                          |
+| 模型名稱 | 函式呼叫                                                          |
 |------------|------------------------------------------------------------------------|
 | Slate 30m  | `embedding(model="watsonx/ibm/slate-30m-english-rtrvr", input=input)`  |
 | Slate 125m | `embedding(model="watsonx/ibm/slate-125m-english-rtrvr", input=input)` |
 
-For all available embedding models, see [watsonx.ai embedding documentation](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models-embed.html?context=wx).
+如需所有可用的 embedding 模型，請參閱 [watsonx.ai embedding 文件](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models-embed.html?context=wx)。
 
+## 進階 {#advanced}
 
-## Advanced
+### 使用 Zen API 金鑰 {#using-zen-api-key}
 
-### Using Zen API Key
-
-You can use a Zen API key for long-term authentication instead of generating IAM tokens. Pass it either as an environment variable or as a parameter:
+您可以使用 Zen API 金鑰進行長期驗證，而不是產生 IAM token。請將其作為環境變數或參數傳入：
 
 ```python
 import os
@@ -204,7 +201,7 @@ response = completion(
 )
 ```
 
-**Using with LiteLLM Proxy via OpenAI client:**
+**透過 OpenAI client 搭配 LiteLLM Proxy 使用：**
 
 ```python
 import openai
@@ -225,6 +222,4 @@ response = client.chat.completions.create(
 )
 ```
 
-See [IBM documentation](https://www.ibm.com/docs/en/watsonx/w-and-w/2.2.0?topic=keys-generating-zenapikey-authorization-tokens) for more information on generating Zen API keys.
-
-
+請參閱 [IBM 文件](https://www.ibm.com/docs/en/watsonx/w-and-w/2.2.0?topic=keys-generating-zenapikey-authorization-tokens)以了解更多關於產生 Zen API 金鑰的資訊。

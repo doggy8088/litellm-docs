@@ -1,21 +1,21 @@
-# Dashscope API (Qwen models)
+# Dashscope API（Qwen 模型） {#dashscope-api-qwen-models}
 https://dashscope.console.aliyun.com/
 
-**We support ALL Qwen models (from Alibaba Cloud), just set `dashscope/` as a prefix when sending completion requests**
+**我們支援所有 Qwen models（來自 Alibaba Cloud），在送出 completion 請求時只要將 `dashscope/` 設為前綴即可**
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['DASHSCOPE_API_KEY']
 ```
 
-## API Base
-You can optionally specify the API base URL depending on your region:
+## API 基底 {#api-base}
+您可以依據所在區域選擇性指定 API base URL：
 
-| Region | API Base |
+| 區域 | API Base |
 |--------|----------|
-| **International** | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
-| **China/Beijing** | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| **國際** | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
+| **中國/北京** | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
 
 ```python
 # Set via environment variable
@@ -29,7 +29,7 @@ response = completion(
 )
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -44,7 +44,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -63,11 +63,11 @@ for chunk in response:
 ```
 
 
-## All supported Models
+## 所有支援的 Models {#all-supported-models}
 
 [DashScope Model List](https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope?spm=a2c4g.11186623.help-menu-2400256.d_2_8_0.1efd516e2tTXBn&scm=20140722.H_2833609._.OR_help-T_cn~zh-V_1#7f9c78ae99pwz)
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | qwen-turbo | `completion(model="dashscope/qwen-turbo", messages)` | 
 | qwen-plus | `completion(model="dashscope/qwen-plus", messages)` | 

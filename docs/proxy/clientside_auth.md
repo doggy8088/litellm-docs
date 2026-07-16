@@ -2,17 +2,16 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Clientside LLM Credentials 
+# 用戶端 LLM 認證  {#clientside-llm-credentials}
 
+### 傳遞使用者 LLM API 金鑰、備援 {#pass-user-llm-api-keys-fallbacks}
+讓您的終端使用者傳遞其模型清單、api base、OpenAI API 金鑰（任何 LiteLLM 支援的提供者）以發出請求
 
-### Pass User LLM API Keys, Fallbacks
-Allow your end-users to pass their model list, api base, OpenAI API key (any LiteLLM supported provider) to make requests 
-
-**Note** This is not related to [virtual keys](./virtual_keys.md). This is for when you want to pass in your users actual LLM API keys. 
+**注意** 這與 [虛擬金鑰](./virtual_keys.md) 無關。這是用於您想要傳入使用者實際的 LLM API 金鑰時。
 
 :::info
 
-**You can pass a litellm.RouterConfig as `user_config`, See all supported params here https://github.com/BerriAI/litellm/blob/main/litellm/types/router.py **
+**您可以將 litellm.RouterConfig 作為 `user_config` 傳遞，請在此查看所有支援的參數 https://github.com/BerriAI/litellm/blob/main/litellm/types/router.py **
 
 :::
 
@@ -20,7 +19,7 @@ Allow your end-users to pass their model list, api base, OpenAI API key (any Lit
 
 <TabItem value="openai-py" label="OpenAI Python">
 
-#### Step 1: Define user model list & config
+#### 步驟 1：定義使用者模型清單與設定 {#step-1-define-user-model-list--config}
 ```python
 import os
 
@@ -61,7 +60,7 @@ user_config = {
 
 ```
 
-#### Step 2: Send user_config in `extra_body`
+#### 步驟 2：在 `extra_body` 中傳送 user_config {#step-2-send-user_config-in-extra_body}
 ```python
 import openai
 client = openai.OpenAI(
@@ -88,7 +87,7 @@ print(response)
 
 <TabItem value="openai-js" label="OpenAI JS">
 
-#### Step 1: Define user model list & config
+#### 步驟 1：定義使用者模型清單與設定 {#step-1-define-user-model-list--config-1}
 ```javascript
 const os = require('os');
 
@@ -127,7 +126,7 @@ const userConfig = {
 };
 ```
 
-#### Step 2: Send `user_config` as a param to `openai.chat.completions.create`
+#### 步驟 2：將 `user_config` 作為參數傳遞給 `openai.chat.completions.create` {#step-2-send-user_config-as-a-param-to-openaichatcompletionscreate}
 
 ```javascript
 const { OpenAI } = require('openai');
@@ -152,12 +151,12 @@ main();
 
 </Tabs>
 
-### Pass User LLM API Keys / API Base
-Allows your users to pass in their OpenAI API key/API base (any LiteLLM supported provider) to make requests 
+### 傳遞使用者 LLM API 金鑰 / API Base {#pass-user-llm-api-keys--api-base}
+允許您的使用者傳入其 OpenAI API 金鑰/API base（任何 LiteLLM 支援的提供者）以發出請求
 
-Here's how to do it: 
+操作如下：
 
-#### 1. Enable configurable clientside auth credentials for a provider
+#### 1. 為提供者啟用可設定的用戶端認證 {#1-enable-configurable-clientside-auth-credentials-for-a-provider}
 
 ```yaml
 model_list:
@@ -169,16 +168,15 @@ model_list:
       configurable_clientside_auth_params: [{"api_base": "^https://litellm.*direct\.fireworks\.ai/v1$"}] # 👈 regex
 ```
 
-Specify any/all auth params you want the user to be able to configure:
+指定您希望使用者能夠設定的任何／所有認證參數：
 
-- api_base (✅ regex supported)
+- api_base（✅ 支援 regex）
 - api_key
 - base_url 
 
-(check [provider docs](../providers/) for provider-specific auth params - e.g. `vertex_project`)
+（請查看 [提供者文件](../providers/) 以了解提供者特定的認證參數 - 例如 `vertex_project`）
 
-
-#### 2. Test it!
+#### 2. 測試看看！ {#2-test-it}
 
 ```python
 import openai
@@ -199,11 +197,11 @@ response = client.chat.completions.create(model="gpt-3.5-turbo", messages = [
 print(response)
 ```
 
-More examples: 
+更多範例：
 <Tabs>
-<TabItem value="openai-py" label="Azure Credentials">
+<TabItem value="openai-py" label="Azure 認證">
 
-Pass in the litellm_params (E.g. api_key, api_base, etc.) via the `extra_body` parameter in the OpenAI client. 
+透過 OpenAI client 中的 `extra_body` 參數傳入 litellm_params（例如 api_key、api_base 等）。
 
 ```python
 import openai
@@ -232,7 +230,7 @@ print(response)
 </TabItem>
 <TabItem value="openai-js" label="OpenAI JS">
 
-For JS, the OpenAI client accepts passing params in the `create(..)` body as normal.
+對於 JS，OpenAI client 可正常接受在 `create(..)` 主體中傳遞參數。
 
 ```javascript
 const { OpenAI } = require('openai');
@@ -255,13 +253,13 @@ main();
 </TabItem>
 </Tabs>
 
-### Pass provider-specific params (e.g. Region, Project ID, etc.)
+### 傳遞提供者特定參數（例如 Region、Project ID 等） {#pass-provider-specific-params-eg-region-project-id-etc}
 
-Specify the region, project id, etc. to use for making requests to Vertex AI on the clientside.
+指定要在用戶端用於對 Vertex AI 發出請求的 region、project id 等。
 
-Any value passed in the Proxy's request body, will be checked by LiteLLM against the mapped openai / litellm auth params. 
+在 Proxy 的請求主體中傳入的任何值，都會由 LiteLLM 針對對應的 openai / litellm 認證參數進行檢查。
 
-Unmapped params, will be assumed to be provider-specific params, and will be passed through to the provider in the LLM API's request body.
+未對應的參數會被視為提供者特定參數，並會在 LLM API 的請求主體中原樣傳遞給提供者。
 
 ```bash
 import openai

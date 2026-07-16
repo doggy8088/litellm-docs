@@ -1,24 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Llamafile
+# Llamafile {#llamafile}
 
-LiteLLM supports all models on Llamafile.
+LiteLLM 支援 Llamafile 上的所有模型。
 
-| Property                  | Details                                                                                                                              |
+| 屬性                  | 詳細資訊                                                                                                                              |
 |---------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| Description               | llamafile lets you distribute and run LLMs with a single file. [Docs](https://github.com/Mozilla-Ocho/llamafile/blob/main/README.md) |
-| Provider Route on LiteLLM | `llamafile/` (for OpenAI compatible server)                                                                                          |
-| Provider Doc              | [llamafile ↗](https://github.com/Mozilla-Ocho/llamafile/blob/main/llama.cpp/server/README.md#api-endpoints)                          |
-| Supported Endpoints       | `/chat/completions`, `/embeddings`, `/completions`                                                                                   |
+| 說明               | llamafile 可讓您使用單一檔案來散佈並執行 LLM。 [文件](https://github.com/Mozilla-Ocho/llamafile/blob/main/README.md) |
+| LiteLLM 提供者路由 | `llamafile/`（適用於 OpenAI 相容伺服器）                                                                                          |
+| 提供者文件              | [llamafile ↗](https://github.com/Mozilla-Ocho/llamafile/blob/main/llama.cpp/server/README.md#api-endpoints)                          |
+| 支援的端點       | `/chat/completions`, `/embeddings`, `/completions`                                                                                   |
 
+# 快速開始 {#quick-start}
 
-# Quick Start
+## 使用方式 - litellm.completion（呼叫 OpenAI 相容端點） {#usage---litellmcompletion-calling-openai-compatible-endpoint}
+llamafile 提供 OpenAI 相容的聊天完成端點——以下是如何使用 LiteLLM 呼叫它
 
-## Usage - litellm.completion (calling OpenAI compatible endpoint)
-llamafile Provides an OpenAI compatible endpoint for chat completions - here's how to call it with LiteLLM
-
-To use litellm to call llamafile add the following to your completion call
+若要使用 litellm 呼叫 llamafile，請將下列內容加入您的 completion 呼叫中
 
 * `model="llamafile/<your-llamafile-model-name>"` 
 * `api_base = "your-hosted-llamafile"`
@@ -37,11 +36,11 @@ print(response)
 ```
 
 
-## Usage -  LiteLLM Proxy Server (calling OpenAI compatible endpoint)
+## 使用方式 -  LiteLLM Proxy Server（呼叫 OpenAI 相容端點） {#usage----litellm-proxy-server-calling-openai-compatible-endpoint}
 
-Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
+以下是如何使用 LiteLLM Proxy Server 呼叫 OpenAI 相容端點
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -51,13 +50,13 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
         api_base: http://localhost:8080/v1 # add api base for OpenAI compatible provider
   ```
 
-1. Start the proxy 
+1. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-1. Send Request to LiteLLM Proxy Server
+1. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -104,8 +103,7 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
 
   </Tabs>
 
-
-## Embeddings
+## 嵌入向量 {#embeddings}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -125,7 +123,7 @@ print(embedding)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -135,7 +133,7 @@ model_list:
         api_base: http://localhost:8080/v1 # add api base for OpenAI compatible provider
 ```
 
-1. Start the proxy 
+1. 啟動 proxy 
 
 ```bash
 $ litellm --config /path/to/config.yaml
@@ -143,7 +141,7 @@ $ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-1. Test it! 
+1. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/embeddings' \
@@ -152,7 +150,7 @@ curl -L -X POST 'http://0.0.0.0:4000/embeddings' \
 -d '{"input": ["hello world"], "model": "my-model"}'
 ```
 
-[See OpenAI SDK/Langchain/etc. examples](../proxy/user_keys.md#embeddings)
+[查看 OpenAI SDK/Langchain/etc. 範例](../proxy/user_keys.md#embeddings)
 
 </TabItem>
 </Tabs>

@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Provider specific Wildcard routing 
+# 依提供者的萬用字元路由  {#provider-specific-wildcard-routing}
 
-**Proxy all models from a provider**
+**代理來自提供者的所有模型**
 
-Use this if you want to **proxy all models from a specific provider without defining them on the config.yaml**
+如果您想要**代理來自特定提供者的所有模型，而不在 config.yaml 中定義它們**，請使用此功能
 
-## Step 1. Define provider specific routing 
+## 步驟 1. 定義依提供者的路由  {#step-1-define-provider-specific-routing}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -45,7 +45,7 @@ router = Router(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Step 1** - define provider specific routing on config.yaml
+**步驟 1** - 在 config.yaml 上定義依提供者的路由
 ```yaml
 model_list:
   # provider specific wildcard routing
@@ -65,13 +65,13 @@ model_list:
 </TabItem>
 </Tabs>
 
-## [PROXY-Only] Step 2 - Run litellm proxy 
+## [僅限 PROXY] 步驟 2 - 執行 litellm proxy  {#proxy-only-step-2---run-litellm-proxy}
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-## Step 3 - Test it 
+## 步驟 3 - 測試它  {#step-3---test-it}
 
 <Tabs>  
 <TabItem value="sdk" label="SDK">
@@ -97,7 +97,7 @@ print(resp)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-Test with `anthropic/` - all models with `anthropic/` prefix will get routed to `anthropic/*`
+使用 `anthropic/` 進行測試 - 所有帶有 `anthropic/` 前綴的模型都會被路由到 `anthropic/*`
 ```bash
 curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -110,7 +110,7 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Test with `groq/` - all models with `groq/` prefix will get routed to `groq/*`
+使用 `groq/` 進行測試 - 所有帶有 `groq/` 前綴的模型都會被路由到 `groq/*`
 ```shell
 curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -123,7 +123,7 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Test with `fo::*::static::*` - all requests matching this pattern will be routed to `openai/fo::*:static::*`
+使用 `fo::*::static::*` 進行測試 - 所有符合此模式的請求都會被路由到 `openai/fo::*:static::*`
 ```shell
 curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -139,5 +139,4 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-## [[PROXY-Only] Control Wildcard Model Access](./proxy/model_access#-control-access-on-wildcard-models)
+## [[僅限 PROXY] 控制萬用字元模型存取](./proxy/model_access#-control-access-on-wildcard-models) {#proxy-only-control-wildcard-model-accessproxymodel_access-control-access-on-wildcard-models}

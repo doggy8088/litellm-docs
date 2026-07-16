@@ -1,38 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /memory
+# /memory {#memory}
 
-CRUD endpoints for storing and retrieving user/team-scoped memory entries on the LiteLLM proxy. Use these to persist conversation context, agent memory, team playbooks, or any key-value data scoped to users and teams.
+用於在 LiteLLM proxy 上儲存與擷取使用者／團隊範圍記憶項目的 CRUD 端點。請使用這些端點來儲存對話上下文、代理程式記憶、團隊作業手冊，或任何以使用者與團隊為範圍的鍵值資料。
 
-## Overview
+## 概覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Create memory | ✅ | `POST /v1/memory` |
-| List memories | ✅ | `GET /v1/memory` with optional filtering |
-| Get memory by key | ✅ | `GET /v1/memory/{key}` |
-| Upsert memory | ✅ | `PUT /v1/memory/{key}` |
-| Delete memory | ✅ | `DELETE /v1/memory/{key}` |
-| User-scoped access | ✅ | Entries scoped to `user_id` |
-| Team-scoped access | ✅ | Entries scoped to `team_id` |
-| JSON metadata | ✅ | Arbitrary JSON metadata per entry |
-| Pagination | ✅ | Page-based with configurable page size |
-| Key prefix filtering | ✅ | Redis-style namespace scanning |
-| Audit trail | ✅ | `created_by`, `updated_by` with timestamps |
-| Supported LiteLLM Versions | `v1.83.10+` | |
+| 建立記憶 | ✅ | `POST /v1/memory` |
+| 列出記憶 | ✅ | `GET /v1/memory`，並可選擇性篩選 |
+| 依鍵取得記憶 | ✅ | `GET /v1/memory/{key}` |
+| 更新或插入記憶 | ✅ | `PUT /v1/memory/{key}` |
+| 刪除記憶 | ✅ | `DELETE /v1/memory/{key}` |
+| 使用者範圍存取 | ✅ | 項目範圍限定於 `user_id` |
+| 團隊範圍存取 | ✅ | 項目範圍限定於 `team_id` |
+| JSON 中繼資料 | ✅ | 每個項目可使用任意 JSON 中繼資料 |
+| 分頁 | ✅ | 以頁面為單位，頁面大小可設定 |
+| 鍵前綴篩選 | ✅ | 類似 Redis 的命名空間掃描 |
+| 稽核軌跡 | ✅ | `created_by`、`updated_by`，含時間戳記 |
+| 支援的 LiteLLM 版本 | `v1.83.10+` | |
 
-## Prerequisites
+## 前置需求 {#prerequisites}
 
-- LiteLLM Proxy running with a **PostgreSQL** database connected
-- Database migrations applied (the `LiteLLM_MemoryTable` is created automatically)
-- Valid API key for authentication
+- LiteLLM Proxy 已執行且已連接 **PostgreSQL** 資料庫
+- 已套用資料庫遷移（會自動建立 `LiteLLM_MemoryTable`）
+- 用於驗證的有效 API 金鑰
 
-No additional `config.yaml` entries required. Endpoints are available automatically once the proxy starts with a connected database.
+不需要額外的 `config.yaml` 項目。只要 proxy 在連接資料庫後啟動，端點就會自動可用。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Create a Memory Entry
+### 建立記憶項目 {#create-a-memory-entry}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -70,7 +70,7 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-**Response:**
+**回應：**
 
 ```json
 {
@@ -87,7 +87,7 @@ print(response.json())
 }
 ```
 
-### List Memories
+### 列出記憶 {#list-memories}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -127,7 +127,7 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-**Response:**
+**回應：**
 
 ```json
 {
@@ -149,7 +149,7 @@ print(response.json())
 }
 ```
 
-### Get a Memory by Key
+### 依鍵取得記憶 {#get-a-memory-by-key}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -170,9 +170,9 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-### Update (Upsert) a Memory
+### 更新（Upsert）記憶 {#update-upsert-a-memory}
 
-If the key exists, updates it. If not, creates a new entry.
+如果鍵已存在，則更新它；如果不存在，則建立新項目。
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -201,7 +201,7 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-### Delete a Memory
+### 刪除記憶 {#delete-a-memory}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -222,7 +222,7 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-**Response:**
+**回應：**
 
 ```json
 {
@@ -231,95 +231,95 @@ print(response.json())
 }
 ```
 
-## API Reference
+## API 參考 {#api-reference}
 
-### POST `/v1/memory`
+### POST `/v1/memory` {#post-v1memory}
 
-Create a new memory entry.
+建立新的記憶項目。
 
-**Request Body:**
+**請求主體：**
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `key` | string | ✅ | Globally unique key. Use namespaced keys (e.g., `user:123:notes`). |
-| `value` | string | ✅ | Memory content. Typically markdown or plain text. |
-| `metadata` | any (JSON) | ❌ | Optional JSON metadata (dicts, lists, scalars). |
-| `user_id` | string | ❌ | Scope to a user. Defaults to caller's `user_id`. Admin-only override. |
-| `team_id` | string | ❌ | Scope to a team. Defaults to caller's `team_id`. Admin-only override. |
+| `key` | string | ✅ | 全域唯一鍵。請使用具命名空間的鍵（例如，`user:123:notes`）。 |
+| `value` | string | ✅ | 記憶內容。通常為 markdown 或純文字。 |
+| `metadata` | any (JSON) | ❌ | 選用的 JSON 中繼資料（dict、list、純量）。 |
+| `user_id` | string | ❌ | 範圍限定到單一使用者。預設為呼叫者的 `user_id`。僅管理員可覆寫。 |
+| `team_id` | string | ❌ | 範圍限定到單一團隊。預設為呼叫者的 `team_id`。僅管理員可覆寫。 |
 
-**Response:** `201` — Returns the created `LiteLLM_MemoryRow`.
+**回應：** `201` — 傳回建立的 `LiteLLM_MemoryRow`。
 
 ---
 
-### GET `/v1/memory`
+### GET `/v1/memory` {#get-v1memory}
 
-List memory entries visible to the caller.
+列出呼叫者可見的記憶項目。
 
-**Query Parameters:**
+**查詢參數：**
 
-| Parameter | Type | Default | Description |
+| 參數 | 類型 | 預設值 | 說明 |
 |-----------|------|---------|-------------|
-| `key` | string | — | Filter by exact key match. |
-| `key_prefix` | string | — | Filter by key prefix (e.g., `user:123:`). Takes precedence over `key`. |
-| `page` | int | 1 | Page number (1-indexed). |
-| `page_size` | int | 50 | Items per page (max 500). |
+| `key` | string | — | 依完全相符的鍵篩選。 |
+| `key_prefix` | string | — | 依鍵前綴篩選（例如，`user:123:`）。優先於 `key`。 |
+| `page` | int | 1 | 頁碼（從 1 開始）。 |
+| `page_size` | int | 50 | 每頁項目數（最大 500）。 |
 
-**Response:** `200` — Returns `MemoryListResponse` with `memories` array and `total` count.
-
----
-
-### GET `/v1/memory/{key}`
-
-Get a single memory entry by key.
-
-**Path Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `key` | string | The memory key to retrieve. |
-
-**Response:** `200` — Returns the `LiteLLM_MemoryRow`.
+**回應：** `200` — 傳回包含 `MemoryListResponse` 陣列與 `memories` 計數的 `total`。
 
 ---
 
-### PUT `/v1/memory/{key}`
+### GET `/v1/memory/{key}` {#get-v1memorykey}
 
-Upsert a memory entry. Creates the entry if the key doesn't exist; updates it if it does.
+依鍵取得單一記憶項目。
 
-**Path Parameters:**
+**路徑參數：**
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `key` | string | The memory key to create or update. |
+| `key` | string | 要擷取的記憶鍵。 |
 
-**Request Body:**
+**回應：** `200` — 傳回該 `LiteLLM_MemoryRow`。
 
-| Parameter | Type | Required | Description |
+---
+
+### PUT `/v1/memory/{key}` {#put-v1memorykey}
+
+更新或插入記憶項目。若鍵不存在則建立；若已存在則更新。
+
+**路徑參數：**
+
+| 參數 | 類型 | 說明 |
+|-----------|------|-------------|
+| `key` | string | 要建立或更新的記憶鍵。 |
+
+**請求主體：**
+
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `value` | string | ✅ (on create) | Memory content. Required when creating, optional when updating. |
-| `metadata` | any (JSON) | ❌ | Updated metadata. Omit to preserve existing value. Set to `null` to clear. |
-| `user_id` | string | ❌ | Only used on create. Admin-only override. |
-| `team_id` | string | ❌ | Only used on create. Admin-only override. |
+| `value` | string | ✅（建立時） | 記憶內容。建立時必填，更新時選填。 |
+| `metadata` | any (JSON) | ❌ | 更新後的中繼資料。略過可保留現有值。設為 `null` 可清除。 |
+| `user_id` | string | ❌ | 僅於建立時使用。僅管理員可覆寫。 |
+| `team_id` | string | ❌ | 僅於建立時使用。僅管理員可覆寫。 |
 
-**Response:** `200` — Returns the created/updated `LiteLLM_MemoryRow`.
+**回應：** `200` — 傳回建立／更新後的 `LiteLLM_MemoryRow`。
 
 ---
 
-### DELETE `/v1/memory/{key}`
+### DELETE `/v1/memory/{key}` {#delete-v1memorykey}
 
-Delete a memory entry by key.
+依鍵刪除記憶項目。
 
-**Path Parameters:**
+**路徑參數：**
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `key` | string | The memory key to delete. |
+| `key` | string | 要刪除的記憶鍵。 |
 
-**Response:** `200` — Returns `{"key": "...", "deleted": true}`.
+**回應：** `200` — 傳回 `{"key": "...", "deleted": true}`。
 
-## Response Object
+## 回應物件 {#response-object}
 
-All endpoints that return a memory entry use this schema:
+所有會回傳記憶項目的端點都使用此結構：
 
 ```json
 {
@@ -336,40 +336,40 @@ All endpoints that return a memory entry use this schema:
 }
 ```
 
-## Access Control
+## 存取控制 {#access-control}
 
-Memory entries are scoped by `user_id` and `team_id`, with role-based visibility and write access.
+記憶項目會依 `user_id` 與 `team_id` 劃分範圍，並具有以角色為基礎的可見性與寫入權限。
 
-### Visibility (Read)
+### 可見性（讀取） {#visibility-read}
 
-| Role | Can See |
+| 角色 | 可查看內容 |
 |------|---------|
-| **Proxy Admin** | All memory entries |
-| **Regular User** | Entries where `user_id` matches their own OR `team_id` matches their own |
+| **Proxy 管理員** | 所有記憶項目 |
+| **一般使用者** | `user_id` 與其自身相符，或 `team_id` 與其自身相符的項目 |
 
-### Write Access (Update / Delete)
+### 寫入權限（更新／刪除） {#write-access-update--delete}
 
-| Scenario | Who Can Write |
+| 情境 | 可寫入者 |
 |----------|---------------|
-| Entry has `user_id` matching caller | Owner can update/delete |
-| Entry is team-scoped only (no `user_id`) | Team admins and org admins only |
-| Any entry | Proxy admins |
+| 項目具有與呼叫者相符的 `user_id` | 擁有者可更新／刪除 |
+| 項目僅為團隊範圍（沒有 `user_id`） | 僅團隊管理員與組織管理員 |
+| 任何項目 | Proxy 管理員 |
 
 :::info
 
-Team members can **read** team-scoped entries but only **team admins** can modify or delete them. This prevents teammates from overwriting each other's entries.
+團隊成員可以**讀取**團隊範圍項目，但只有**團隊管理員**可以修改或刪除它們。這可避免隊友覆寫彼此的項目。
 
 :::
 
-### Scoping on Create
+### 建立時的範圍設定 {#scoping-on-create}
 
-- `user_id` and `team_id` default to the caller's identity from their API key
-- **Proxy admins** can override `user_id` / `team_id` to create entries for other users or teams
-- Non-admin callers cannot create entries without at least one of `user_id` or `team_id`
+- `user_id` 與 `team_id` 預設使用來自其 API 金鑰的呼叫者身分
+- **Proxy 管理員**可以覆寫 `user_id` / `team_id`，以替其他使用者或團隊建立項目
+- 非管理員呼叫者若沒有至少一個 `user_id` 或 `team_id`，則不能建立項目
 
-## Key Naming Conventions
+## 鍵命名慣例 {#key-naming-conventions}
 
-Keys are globally unique. Use namespaced keys to organize entries:
+鍵在全域必須唯一。請使用具命名空間的鍵來組織項目：
 
 ```
 user:{user_id}:preferences      # User preferences
@@ -379,7 +379,7 @@ agent:{agent_id}:memory         # Agent memory
 project:{project_id}:config     # Project configuration
 ```
 
-Use `key_prefix` in the list endpoint to scan all entries in a namespace:
+請在列表端點中使用 `key_prefix` 來掃描命名空間中的所有項目：
 
 ```shell
 # Get all entries for a user
@@ -387,14 +387,14 @@ curl "http://localhost:4000/v1/memory?key_prefix=user:123:" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-## Error Codes
+## 錯誤代碼 {#error-codes}
 
-| Status Code | Meaning |
+| 狀態碼 | 含義 |
 |-------------|---------|
-| `200` | Success (GET, PUT, DELETE) |
-| `201` | Created (POST) |
-| `400` | Invalid input (missing required fields, empty PUT body, orphan row) |
-| `403` | Permission denied (write access violation, scope override by non-admin) |
-| `404` | Key not found or not visible to caller |
-| `409` | Duplicate key on creation |
-| `500` | Internal server error (database issues) |
+| `200` | 成功（GET、PUT、DELETE） |
+| `201` | 已建立（POST） |
+| `400` | 無效輸入（缺少必要欄位、空的 PUT 主體、孤立列） |
+| `403` | 權限被拒（寫入權限違規、非管理員覆寫範圍） |
+| `404` | 找不到鍵或對呼叫者不可見 |
+| `409` | 建立時鍵重複 |
+| `500` | 伺服器內部錯誤（資料庫問題） |

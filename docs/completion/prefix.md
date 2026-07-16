@@ -1,9 +1,9 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Pre-fix Assistant Messages
+# 前置助手訊息 {#pre-fix-assistant-messages}
 
-Supported by:
+支援：
 - Deepseek
 - Mistral
 - Anthropic
@@ -17,7 +17,7 @@ Supported by:
 }
 ```
 
-## Quick Start 
+## 快速開始  {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -61,7 +61,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -91,9 +91,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 }
 ```
 
-## Check Model Support 
+## 檢查模型支援  {#check-model-support}
 
-Call `litellm.get_model_info` to check if a model/provider supports `prefix`. 
+呼叫 `litellm.get_model_info` 以檢查某個模型/提供者是否支援 `prefix`。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -109,7 +109,7 @@ assert params["supports_assistant_prefill"] is True
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-Call the `/model/info` endpoint to get a list of models + their supported params.
+呼叫 `/model/info` 端點以取得模型清單及其支援的參數。
 
 ```bash
 curl -X GET 'http://0.0.0.0:4000/v1/model/info' \

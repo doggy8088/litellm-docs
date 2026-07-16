@@ -2,35 +2,35 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# PII, PHI Masking - Presidio
+# PII、PHI 遮罩 - Presidio {#pii-phi-masking---presidio}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Use this guardrail to mask PII (Personally Identifiable Information), PHI (Protected Health Information), and other sensitive data.  |
-| Provider | [Microsoft Presidio](https://github.com/microsoft/presidio/) |
-| Supported Entity Types | All Presidio Entity Types |
-| Supported Actions | `MASK`, `BLOCK` |
-| Supported Modes | `pre_call`, `during_call`, `post_call`, `logging_only`, `pre_mcp_call` |
-| Language Support | Configurable via `presidio_language` parameter (supports multiple languages including English, Spanish, German, etc.) |
+| 說明 | 使用此防護欄來遮罩 PII（Personally Identifiable Information，個人識別資訊）、PHI（Protected Health Information，受保護健康資訊）及其他敏感資料。  |
+| 提供者 | [Microsoft Presidio](https://github.com/microsoft/presidio/) |
+| 支援的實體類型 | 所有 Presidio 實體類型 |
+| 支援的動作 | `MASK`, `BLOCK` |
+| 支援的模式 | `pre_call`, `during_call`, `post_call`, `logging_only`, `pre_mcp_call` |
+| 語言支援 | 可透過 `presidio_language` 參數設定（支援多種語言，包括英文、西班牙文、德文等） |
 
-## Deployment options
+## 部署選項 {#deployment-options}
 
-For this guardrail you need a deployed Presidio Analyzer and Presido Anonymizer containers. 
+此防護欄需要已部署的 Presidio Analyzer 和 Presido Anonymizer 容器。 
 
-| Deployment Option | Details |
+| 部署選項 | 詳細資訊 |
 |------------------|----------|
-| Deploy Presidio Docker Containers | - [Presidio Analyzer Docker Container](https://hub.docker.com/r/microsoft/presidio-analyzer)<br/>- [Presidio Anonymizer Docker Container](https://hub.docker.com/r/microsoft/presidio-anonymizer) |
+| 部署 Presidio Docker 容器 | - [Presidio Analyzer Docker Container](https://hub.docker.com/r/microsoft/presidio-analyzer)<br/>- [Presidio Anonymizer Docker Container](https://hub.docker.com/r/microsoft/presidio-anonymizer) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="ui" label="LiteLLM UI">
 
-### 1. Create a PII, PHI Masking Guardrail 
+### 1. 建立 PII、PHI 遮罩防護欄  {#1-create-a-pii-phi-masking-guardrail}
 
-On the LiteLLM UI, navigate to Guardrails. Click "Add Guardrail". On this dropdown select "Presidio PII" and enter your presidio analyzer and anonymizer endpoints. 
+在 LiteLLM UI 中，前往 Guardrails。點擊「Add Guardrail」。在此下拉選單中選擇「Presidio PII」，並輸入您的 presidio analyzer 與 anonymizer 端點。 
 
 <Image 
   img={require('../../../img/presidio_1.png')}
@@ -40,33 +40,31 @@ On the LiteLLM UI, navigate to Guardrails. Click "Add Guardrail". On this dropdo
 <br/>
 <br/>
 
-#### 1.2 Configure Entity Types
+#### 1.2 設定實體類型 {#12-configure-entity-types}
 
-Now select the entity types you want to mask. See the [supported actions here](#supported-actions)
+現在選擇您要遮罩的實體類型。請參閱[支援的動作此處](#supported-actions)
 
 <Image 
   img={require('../../../img/presidio_2.png')}
   style={{width: '50%', display: 'block', margin: '0'}}
 />
 
-#### 1.3 Set Default Language (Optional)
+#### 1.3 設定預設語言（選填） {#13-set-default-language-optional}
 
-You can also configure a default language for PII analysis using the `presidio_language` field in the UI. This sets the default language that will be used for all requests unless overridden by a per-request language setting. 
+您也可以在 UI 中使用 `presidio_language` 欄位，為 PII 分析設定預設語言。這會設定所有請求預設使用的語言，除非由每個請求的語言設定覆寫。 
 
-**Supported language codes include:**
-- `en` - English (default)
-- `es` - Spanish  
-- `de` - German
+**支援的語言代碼包括：**
+- `en` - 英文（預設）
+- `es` - 西班牙文  
+- `de` - 德文
 
-
-If not specified, English (`en`) will be used as the default language.
+若未指定，將使用英文（`en`）作為預設語言。
 
 </TabItem>
 
-
 <TabItem value="config" label="Config.yaml">
 
-Define your guardrails under the `guardrails` section
+在 `guardrails` 區段下定義您的防護欄
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -83,20 +81,20 @@ guardrails:
       presidio_language: "en"  # optional: set default language for PII analysis
 ```
 
-Set the following env vars 
+設定以下 env vars 
 
 ```bash title="Setup Environment Variables" showLineNumbers
 export PRESIDIO_ANALYZER_API_BASE="http://localhost:5002"
 export PRESIDIO_ANONYMIZER_API_BASE="http://localhost:5001"
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
-- `logging_only` Run **after** LLM call, only apply PII Masking before logging to Langfuse, etc. Not on the actual llm api request / response.
+- `pre_call` 在 LLM 呼叫前執行，於 **輸入**
+- `post_call` 在 LLM 呼叫後執行，於 **輸入與輸出**
+- `logging_only` 在 LLM 呼叫後執行，僅在記錄到 Langfuse 等之前套用 PII 遮罩。不套用於實際的 llm api request / response。
 
-### 2. Start LiteLLM Gateway 
+### 2. 啟動 LiteLLM 閘道  {#2-start-litellm-gateway}
 
 ```shell title="Start Gateway" showLineNumbers
 litellm --config config.yaml --detailed_debug
@@ -105,12 +103,11 @@ litellm --config config.yaml --detailed_debug
 </TabItem>
 </Tabs>
 
+### 3. 測試看看！  {#3-test-it}
 
-### 3. Test it! 
+#### 3.1 LiteLLM UI {#31-litellm-ui}
 
-#### 3.1 LiteLLM UI 
-
-On the litellm UI, navigate to the 'Test Keys' page, select the guardrail you created and send the following messaged filled with PII data. 
+在 litellm UI 中，前往「Test Keys」頁面，選取您建立的防護欄，並傳送以下包含 PII 資料的訊息。 
 
 ```text title="PII Request" showLineNumbers
 My credit card is 4111-1111-1111-1111 and my email is test@example.com.
@@ -123,16 +120,16 @@ My credit card is 4111-1111-1111-1111 and my email is test@example.com.
 
 <br/>
 
-#### 3.2 Test in code
+#### 3.2 在程式碼中測試 {#32-test-in-code}
 
-In order to apply a guardrail for a request send `guardrails=["presidio-pii"]` in the request body. 
+若要為請求套用防護欄，請在 request body 中傳送 `guardrails=["presidio-pii"]`。 
 
-**[Langchain, OpenAI SDK Usage Examples](../proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
 <TabItem label="Masked PII call" value = "not-allowed">
 
-Expect this to mask `Jane Doe` since it's PII
+預期這會遮罩 `Jane Doe`，因為它是 PII
 
 ```shell title="Masked PII Request" showLineNumbers
 curl http://localhost:4000/chat/completions \
@@ -147,7 +144,7 @@ curl http://localhost:4000/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```shell title="Response with Masked PII" showLineNumbers
 {
@@ -197,53 +194,52 @@ curl http://localhost:4000/chat/completions \
 </TabItem>
 </Tabs>
 
+## 追蹤防護欄請求 {#tracing-guardrail-requests}
 
-## Tracing Guardrail requests
+一旦您的防護欄在正式環境中啟用，您也可以在 LiteLLM Logs、Langfuse、Arize Phoenix 等所有 LiteLLM 記錄整合中追蹤您的防護欄。 
 
-Once your guardrail is live in production, you will also be able to trace your guardrail on LiteLLM Logs, Langfuse, Arize Phoenix, etc, all LiteLLM logging integrations. 
+### LiteLLM UI {#litellm-ui}
 
-### LiteLLM UI 
-
-On the LiteLLM logs page you can see that the PII content was masked for this specific request. And you can see detailed tracing for the guardrail. This allows you to monitor entity types masked with their corresponding confidence score and the duration of the guardrail execution.  
+在 LiteLLM logs 頁面中，您可以看到此特定請求的 PII 內容已被遮罩。您也可以看到防護欄的詳細追蹤資訊。這可讓您監控被遮罩的實體類型、其對應的信心分數，以及防護欄執行時間。  
 
 <Image 
   img={require('../../../img/presidio_4.png')}
   style={{width: '60%', display: 'block', margin: '0'}}
 />
 
-### Langfuse 
+### Langfuse {#langfuse}
 
-When connecting Litellm to Langfuse, you can see the guardrail information on the Langfuse Trace. 
+將 Litellm 連接至 Langfuse 時，您可以在 Langfuse Trace 中看到防護欄資訊。 
 
 <Image 
   img={require('../../../img/presidio_5.png')}
   style={{width: '60%', display: 'block', margin: '0'}}
 />
 
-## Entity Types, Detection Confidence Score Threshold, and Scope Configuration
+## 實體類型、偵測信心分數閾值與範圍設定 {#entity-types-detection-confidence-score-threshold-and-scope-configuration}
 
-- **Entity Types**
-  - You can configure specific entity types for PII detection and decide how to handle each entity type (mask or block).
-- **Detection Confidence Score Threshold**
-  - You can also provide an optional confidence score threshold at which detections will be passed to the anonymizer. Entities without an entry in `presidio_score_thresholds` keep all detections (no minimum score).
-- **Scope**
-  - Use the optional `presidio_filter_scope` to choose where checks run:
+- **實體類型**
+  - 您可以設定用於 PII 偵測的特定實體類型，並決定如何處理每個實體類型（遮罩或阻擋）。
+- **偵測信心分數閾值**
+  - 您也可以提供可選的信心分數閾值，讓偵測結果在達到該值時傳送到 anonymizer。`presidio_score_thresholds` 中沒有項目的實體會保留所有偵測結果（無最低分數）。
+- **範圍**
+  - 使用可選的 `presidio_filter_scope` 來選擇檢查執行的位置：
 
-      - `input`: only user → model content is scanned
-      - `output`: only model → user content is scanned
-      - `both` (default): scan both directions
+      - `input`：僅掃描 user → model 內容
+      - `output`：僅掃描 model → user 內容
+      - `both`（預設）：雙向都掃描
 
-    **What about `output_parse_pii`?**  
-    This flag only un-masks tokens back to the originals after the model call; it does not run Presidio detection on outputs. Use `presidio_filter_scope: output` (or `both`) when you want Presidio to actively scan and mask the model’s response before it reaches the user.
+    **那 `output_parse_pii` 呢？**  
+    此旗標只會在 model call 之後將 token 還原回原始值；它不會對輸出執行 Presidio 偵測。當您希望 Presidio 在模型回應到達使用者前主動掃描並遮罩該回應時，請使用 `presidio_filter_scope: output`（或 `both`）。
 
-    **When to pick input vs output:**
-    - `input`: Protect upstream providers; strip PII before it leaves your boundary.
-    - `output`: Catch PII the model might generate or leak back to users.
-    - `both`: End-to-end protection in both directions.
+    **何時選擇 input 與 output：**
+    - `input`：保護上游提供者；在 PII 離開您的邊界前將其移除。
+    - `output`：攔截模型可能生成或回傳給使用者的 PII。
+    - `both`：雙向端到端保護。
 
-### Configure Entity Types, Detection Confidence Score Threshold, and Scope in `config.yaml`
+### 在 `config.yaml` 中設定實體類型、偵測信心分數閾值與範圍 {#configure-entity-types-detection-confidence-score-threshold-and-scope-in-configyaml}
 
-Define your guardrails with specific entity type configuration:
+使用特定的實體類型設定來定義您的防護欄：
 
 ```yaml title="config.yaml with Entity Types" showLineNumbers
 model_list:
@@ -277,29 +273,29 @@ guardrails:
         CREDIT_CARD: "BLOCK"  # Will block requests containing credit card numbers
 ```
 
-#### Confidence threshold behavior:
-- No `presidio_score_thresholds`: keep all detections (no thresholds applied)
-- `presidio_score_thresholds.ALL`: apply this confidence threshold to every detection
-- `presidio_score_thresholds.<ENTITY>`: apply only to that entity
-- If both `ALL` and an entity override exist, `ALL` applies globally and the entity override takes precedence for that entity
+#### 信心閾值行為： {#confidence-threshold-behavior}
+- 無 `presidio_score_thresholds`：保留所有偵測結果（不套用閾值）
+- `presidio_score_thresholds.ALL`：將此信心閾值套用至每個偵測結果
+- `presidio_score_thresholds.<ENTITY>`：僅套用於該實體
+- 若同時存在 `ALL` 與實體覆寫，則 `ALL` 會全域套用，而該實體則以實體覆寫為優先
 
-### Supported Entity Types
+### 支援的實體類型 {#supported-entity-types}
 
-LiteLLM Supports all Presidio entity types. See the complete list of presidio entity types [here](https://microsoft.github.io/presidio/supported_entities/).
+LiteLLM 支援所有 Presidio 實體類型。請參閱完整的 presidio 實體類型清單[此處](https://microsoft.github.io/presidio/supported_entities/)。
 
-### Supported Actions
+### 支援的動作 {#supported-actions}
 
-For each entity type, you can specify one of the following actions:
+對於每個實體類型，您可以指定以下其中一個動作：
 
-- `MASK`: Replace the entity with a placeholder (e.g., `<PERSON>`)
-- `BLOCK`: Block the request entirely if this entity type is detected
+- `MASK`：將實體替換為預留位置（例如，`<PERSON>`）
+- `BLOCK`：若偵測到此實體類型，則完全阻擋請求
 
-### Test request with Entity Type Configuration
+### 具有實體類型設定的測試請求 {#test-request-with-entity-type-configuration}
 
 <Tabs>
-<TabItem label="Masking PII entities" value="masked-entities">
+<TabItem label="遮罩 PII 實體" value="masked-entities">
 
-When using the masking configuration, entities will be replaced with placeholders:
+使用遮罩設定時，實體會被預留位置取代：
 
 ```shell title="Masking PII Request" showLineNumbers
 curl http://localhost:4000/chat/completions \
@@ -314,7 +310,7 @@ curl http://localhost:4000/chat/completions \
   }'
 ```
 
-Example response with masked entities:
+含遮罩後實體的範例回應：
 
 ```json
 {
@@ -335,9 +331,9 @@ Example response with masked entities:
 
 </TabItem>
 
-<TabItem label="Blocking PII entities" value="blocked-entity">
+<TabItem label="阻擋 PII 實體" value="blocked-entity">
 
-When using the blocking configuration, requests containing the configured entity types will be blocked completely with an exception:
+使用阻擋設定時，包含已設定實體類型的請求將以例外狀況完全被阻擋：
 
 ```shell title="Blocking PII Request" showLineNumbers
 curl http://localhost:4000/chat/completions \
@@ -352,7 +348,7 @@ curl http://localhost:4000/chat/completions \
   }'
 ```
 
-When running this request, the proxy will raise a `BlockedPiiEntityError` exception.
+執行此請求時，proxy 將引發 `BlockedPiiEntityError` 例外狀況。
 
 ```json
 {
@@ -362,25 +358,25 @@ When running this request, the proxy will raise a `BlockedPiiEntityError` except
 }
 ```
 
-The exception includes the entity type that was blocked (`CREDIT_CARD` in this case) and the guardrail name that caused the blocking.
+此例外狀況包含被阻擋的實體類型（此案例中的 `CREDIT_CARD`）以及導致阻擋的防護欄名稱。
 
 </TabItem>
 </Tabs>
 
-## Advanced
+## 進階 {#advanced}
 
-### Supported Modes
+### 支援的模式 {#supported-modes}
 
-The Presidio guardrail supports the following modes:
+Presidio 防護欄支援以下模式：
 
-- `pre_call`: Run **before** LLM call, on **input**
-- `post_call`: Run **after** LLM call, on **input & output**
-- `logging_only`: Run **after** LLM call, only apply PII Masking before logging to Langfuse, etc. Not on the actual llm api request / response
-- `pre_mcp_call`: Run **before** MCP call, on **input**. Use this mode when you want to apply PII masking/blocking for MCP requests
+- `pre_call`：在 **LLM 請求之前** 執行，作用於 **輸入**
+- `post_call`：在 **LLM 請求之後** 執行，作用於 **輸入與輸出**
+- `logging_only`：在 **LLM 請求之後** 執行，只在記錄到 Langfuse 等之前套用 PII 遮罩。**不**作用於實際的 llm api 請求 / 回應
+- `pre_mcp_call`：在 **MCP 請求之前** 執行，作用於 **輸入**。當您想要對 MCP 請求套用 PII 遮罩／阻擋時，使用此模式
 
-### MCP Usage Example
+### MCP 使用範例 {#mcp-usage-example}
 
-Here's how to use Presidio guardrails with MCP:
+以下說明如何將 Presidio guardrails 與 MCP 搭配使用：
 
 ```yaml title="MCP Configuration Example" showLineNumbers
 guardrails:
@@ -400,7 +396,7 @@ guardrails:
       default_on: true
 ```
 
-Test the MCP guardrail with a request:
+使用請求測試 MCP guardrail：
 
 ```shell title="Test MCP Guardrail" showLineNumbers
 curl http://localhost:4000/chat/completions \
@@ -415,13 +411,13 @@ curl http://localhost:4000/chat/completions \
   }'
 ```
 
-The request will be processed as follows:
-1. Credit card number will be masked (e.g., replaced with `<CREDIT_CARD>`)
-2. If a medical license is detected, the request will be blocked with a `BlockedPiiEntityError`
+請求將如下處理：
+1. 信用卡號碼會被遮罩（例如，取代為 `<CREDIT_CARD>`）
+2. 如果偵測到醫療執照，該請求將被以 `BlockedPiiEntityError` 阻擋
 
-###  Set `language` per request
+###  依每個請求設定 `language` {#set-language-per-request}
 
-The Presidio API [supports passing the `language` param](https://microsoft.github.io/presidio/api-docs/api-docs.html#tag/Analyzer/paths/~1analyze/post). Here is how to set the `language` per request
+Presidio API [支援傳遞 `language` 參數](https://microsoft.github.io/presidio/api-docs/api-docs.html#tag/Analyzer/paths/~1analyze/post)。以下是如何為每個請求設定 `language`
 
 <Tabs>
 <TabItem label="curl" value = "curl">
@@ -441,7 +437,6 @@ curl http://localhost:4000/chat/completions \
 ```
 
 </TabItem>
-
 
 <TabItem label="OpenAI Python SDK" value = "python">
 
@@ -475,9 +470,9 @@ print(response)
 
 </Tabs>
 
-###  Set default `language` in config.yaml
+###  在 config.yaml 中設定預設 `language` {#set-default-language-in-configyaml}
 
-You can configure a default language for PII analysis in your YAML configuration using the `presidio_language` parameter. This language will be used for all requests unless overridden by a per-request language setting.
+您可以在 YAML 設定中使用 `presidio_language` 參數，為 PII 分析設定預設語言。除非透過每個請求的語言設定覆寫，否則此語言將用於所有請求。
 
 ```yaml title="Default Language Configuration" showLineNumbers
 model_list:
@@ -507,25 +502,25 @@ guardrails:
         PHONE_NUMBER: "MASK"
 ```
 
-#### Supported Language Codes
+#### 支援的語言代碼 {#supported-language-codes}
 
-Presidio supports multiple languages for PII detection. Common language codes include:
+Presidio 支援多種語言進行 PII 偵測。常見的語言代碼包括：
 
-- `en` - English (default)
-- `es` - Spanish
-- `de` - German  
+- `en` - 英文（預設）
+- `es` - 西班牙文
+- `de` - 德文  
 
-For a complete list of supported languages, refer to the [Presidio documentation](https://microsoft.github.io/presidio/analyzer/languages/).
+如需完整的支援語言清單，請參閱 [Presidio 文件](https://microsoft.github.io/presidio/analyzer/languages/)。
 
-#### Language Precedence
+#### 語言優先順序 {#language-precedence}
 
-The language setting follows this precedence order:
+語言設定遵循以下優先順序：
 
-1. **Per-request language** (via `guardrail_config.language`) - highest priority
-2. **YAML config language** (via `presidio_language`) - medium priority  
-3. **Default language** (`en`) - lowest priority
+1. **每個請求的語言**（透過 `guardrail_config.language`）- 最高優先順序
+2. **YAML 設定語言**（透過 `presidio_language`）- 中等優先順序  
+3. **預設語言**（`en`）- 最低優先順序
 
-**Example with mixed languages:**
+**混合語言範例：**
 
 ```yaml title="Mixed Language Configuration" showLineNumbers
 guardrails:
@@ -553,16 +548,15 @@ curl http://localhost:4000/chat/completions \
   }'
 ```
 
-In this example, the request will use Spanish (`es`) for PII detection even though the guardrail is configured with German (`de`) as the default language.
+在此範例中，儘管 guardrail 的預設語言設定為德文（`de`），請求仍會使用西班牙文（`es`）進行 PII 偵測。
 
-### Output parsing 
+### 輸出解析  {#output-parsing}
 
+LLM 回應有時可能包含已遮罩的 token。 
 
-LLM responses can sometimes contain the masked tokens. 
+對於 presidio 的 'replace' 操作，LiteLLM 可以檢查 LLM 回應，並將已遮罩的 token 以使用者提交的值取代。 
 
-For presidio 'replace' operations, LiteLLM can check the LLM response and replace the masked token with the user-submitted values. 
-
-Define your guardrails under the `guardrails` section
+請在 `guardrails` 區段下定義您的 guardrails
 ```yaml title="Output Parsing Config" showLineNumbers
 model_list:
   - model_name: gpt-3.5-turbo
@@ -578,26 +572,25 @@ guardrails:
       output_parse_pii: True
 ```
 
-**Expected Flow: **
+**預期流程： **
 
-1. User Input: "hello world, my name is Jane Doe. My number is: 034453334"
+1. 使用者輸入："hello world, my name is Jane Doe. My number is: 034453334"
 
-2. LLM Input: "hello world, my name is [PERSON]. My number is: [PHONE_NUMBER]"
+2. LLM 輸入："hello world, my name is [PERSON]. My number is: [PHONE_NUMBER]"
 
-3. LLM Response: "Hey [PERSON], nice to meet you!"
+3. LLM 回應："Hey [PERSON], nice to meet you!"
 
-4. User Response: "Hey Jane Doe, nice to meet you!"
+4. 使用者回應："Hey Jane Doe, nice to meet you!"
 
-### Ad Hoc Recognizers
+### 臨時識別器 {#ad-hoc-recognizers}
 
+透過將 json 檔案傳遞給 proxy，將臨時識別器傳送至 presidio `/analyze` 
 
-Send ad-hoc recognizers to presidio `/analyze` by passing a json file to the proxy 
+[**範例** 臨時識別器](https://github.com/BerriAI/litellm/blob/b69b7503db5aa039a49b7ca96ae5b34db0d25a3d/litellm/proxy/hooks/example_presidio_ad_hoc_recognizer.json)
 
-[**Example** ad-hoc recognizer](https://github.com/BerriAI/litellm/blob/b69b7503db5aa039a49b7ca96ae5b34db0d25a3d/litellm/proxy/hooks/example_presidio_ad_hoc_recognizer.json)
+#### 在您的 LiteLLM config.yaml 上定義臨時識別器  {#define-ad-hoc-recognizer-on-your-litellm-configyaml}
 
-#### Define ad-hoc recognizer on your LiteLLM config.yaml 
-
-Define your guardrails under the `guardrails` section
+請在 `guardrails` 區段下定義您的 guardrails
 ```yaml title="Ad Hoc Recognizers Config" showLineNumbers
 model_list:
   - model_name: gpt-3.5-turbo
@@ -613,7 +606,7 @@ guardrails:
       presidio_ad_hoc_recognizers: "./hooks/example_presidio_ad_hoc_recognizer.json"
 ```
 
-Set the following env vars 
+設定以下 env vars 
 
 ```bash title="Ad Hoc Recognizers Environment Variables" showLineNumbers
 export PRESIDIO_ANALYZER_API_BASE="http://localhost:5002"
@@ -621,13 +614,13 @@ export PRESIDIO_ANONYMIZER_API_BASE="http://localhost:5001"
 ```
 
 
-You can see this working, when you run the proxy: 
+當您執行 proxy 時，可以看到這項功能運作： 
 
 ```bash title="Run Proxy with Debug" showLineNumbers
 litellm --config /path/to/config.yaml --debug
 ```
 
-Make a chat completions request, example:
+發出一個 chat completions 請求，範例：
 
 ```json title="Custom PII Request" showLineNumbers
 {
@@ -636,28 +629,27 @@ Make a chat completions request, example:
 }
 ```
 
-And search for any log starting with `Presidio PII Masking`, example:
+並搜尋任何以 `Presidio PII Masking` 開頭的記錄，範例：
 ```text title="PII Masking Log" showLineNumbers
 Presidio PII Masking: Redacted pii message: <PERSON> AHV number is <AHV_NUMBER>. Zip code: <US_DRIVER_LICENSE>
 ```
 
-### Logging Only
+### 僅記錄 {#logging-only}
 
+只在記錄到 Langfuse 等之前套用 PII 遮罩。
 
-Only apply PII Masking before logging to Langfuse, etc.
-
-Not on the actual llm api request / response.
+不適用於實際的 llm api 請求 / 回應。
 
 :::note
-This is currently only applied for 
-- `/chat/completion` requests
-- on 'success' logging
+這目前僅適用於 
+- `/chat/completion` 請求
+- 以及 'success' 記錄
 
 :::
 
-1. Define mode: `logging_only` on your LiteLLM config.yaml 
+1. 定義模式：在您的 LiteLLM config.yaml 上使用 `logging_only`
 
-Define your guardrails under the `guardrails` section
+請在 `guardrails` 區段下定義您的 guardrails
 ```yaml title="Logging Only Config" showLineNumbers
 model_list:
   - model_name: gpt-3.5-turbo
@@ -672,7 +664,7 @@ guardrails:
       mode: "logging_only"
 ```
 
-Set the following env vars 
+設定以下 env vars 
 
 ```bash title="Logging Only Environment Variables" showLineNumbers
 export PRESIDIO_ANALYZER_API_BASE="http://localhost:5002"
@@ -680,13 +672,13 @@ export PRESIDIO_ANONYMIZER_API_BASE="http://localhost:5001"
 ```
 
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash title="Start Proxy" showLineNumbers
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash title="Test Logging Only" showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -704,7 +696,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
-**Expected Logged Response**
+**預期記錄的回應**
 
 ```text title="Logged Response with Masked PII" showLineNumbers
 Hi, my name is <PERSON>!

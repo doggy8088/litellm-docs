@@ -1,27 +1,27 @@
-# Recraft
+# Recraft {#recraft}
 https://www.recraft.ai/
 
-## Overview
+## 概述 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Recraft is an AI-powered design tool that generates high-quality images with precise control over style and content. |
-| Provider Route on LiteLLM | `recraft/` |
-| Link to Provider Doc | [Recraft ↗](https://www.recraft.ai/docs) |
-| Supported Operations | [`/images/generations`](#image-generation), [`/images/edits`](#image-edit) |
+| 說明 | Recraft 是一款由 AI 驅動的設計工具，可生成高品質圖像，並能精準控制風格與內容。 |
+| LiteLLM 提供者路由 | `recraft/` |
+| 提供者文件連結 | [Recraft ↗](https://www.recraft.ai/docs) |
+| 支援的操作 | [`/images/generations`](#image-generation), [`/images/edits`](#image-edit) |
 
-LiteLLM supports Recraft Image Generation and Image Edit calls.
+LiteLLM 支援 Recraft 圖像生成與圖像編輯呼叫。
 
-## API Base, Key
+## API 基底、金鑰 {#api-base-key}
 ```python
 # env variable
 os.environ['RECRAFT_API_KEY'] = "your-api-key"
 os.environ['RECRAFT_API_BASE'] = "https://external.api.recraft.ai"  # [optional] 
 ```
 
-## Image Generation
+## 圖像生成 {#image-generation}
 
-### Usage - LiteLLM Python SDK
+### 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -37,9 +37,9 @@ response = image_generation(
 print(response)
 ```
 
-### Usage - LiteLLM Proxy Server
+### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-#### 1. Setup config.yaml
+#### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers
 model_list:
@@ -54,7 +54,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start the proxy
+#### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -62,7 +62,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Test it
+#### 3. 測試 {#3-test-it}
 
 ```bash showLineNumbers
 curl --location 'http://0.0.0.0:4000/v1/images/generations' \
@@ -74,7 +74,7 @@ curl --location 'http://0.0.0.0:4000/v1/images/generations' \
 }'
 ```
 
-### Advanced Usage - With Additional Parameters
+### 進階用法 - 使用額外參數 {#advanced-usage---with-additional-parameters}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -89,24 +89,24 @@ response = image_generation(
 print(response)
 ```
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
-Recraft supports the following OpenAI-compatible parameters:
+Recraft 支援以下相容 OpenAI 的參數：
 
-| Parameter | Type | Description | Example |
+| 參數 | 類型 | 說明 | 範例 |
 |-----------|------|-------------|---------|
-| `n` | integer | Number of images to generate (1-4) | `1` |
-| `response_format` | string | Format of response (`url` or `b64_json`) | `"url"` |
-| `size` | string | Image dimensions | `"1024x1024"` |
-| `style` | string | Image style/artistic direction | `"realistic"` |
+| `n` | integer | 要生成的圖像數量 (1-4) | `1` |
+| `response_format` | string | 回應格式 (`url` 或 `b64_json`) | `"url"` |
+| `size` | string | 圖像尺寸 | `"1024x1024"` |
+| `style` | string | 圖像風格／藝術指導方向 | `"realistic"` |
 
-### Using Non-OpenAI Parameters
+### 使用非 OpenAI 參數 {#using-non-openai-parameters}
 
-If you want to pass parameters that are not supported by OpenAI, you can pass them in your request body, LiteLLM will automatically route it to recraft.
+如果您想傳遞 OpenAI 不支援的參數，可以將它們放入請求本文中，LiteLLM 會自動將其路由至 recraft。
 
-In this example we will pass `style_id` parameter to the recraft image generation call.
+在這個範例中，我們會在 recraft 圖像生成呼叫中傳遞 `style_id` 參數。
 
-**Usage with LiteLLM Python SDK**
+**使用 LiteLLM Python SDK**
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -121,7 +121,7 @@ response = image_generation(
 )
 ```
 
-**Usage with LiteLLM Proxy Server + OpenAI Python SDK**
+**使用 LiteLLM Proxy Server + OpenAI Python SDK**
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -141,20 +141,20 @@ response = client.images.generate(
 print(response)
 ```
 
-### Supported Image Generation Models
+### 支援的圖像生成模型 {#supported-image-generation-models}
 
-**Note: All recraft models are supported by LiteLLM** Just pass the model name with `recraft/<model_name>` and litellm will route it to recraft.
+**注意：LiteLLM 支援所有 recraft 模型** 只要以 `recraft/<model_name>` 傳入模型名稱，litellm 就會將其路由至 recraft。
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | recraftv3 | `image_generation(model="recraft/recraftv3", prompt="...")` |
 | recraftv2 | `image_generation(model="recraft/recraftv2", prompt="...")` |
 
-For more details on available models and features, see: https://www.recraft.ai/docs
+如需可用模型與功能的更多詳細資訊，請參閱：https://www.recraft.ai/docs
 
-## Image Edit
+## 圖像編輯 {#image-edit}
 
-### Usage - LiteLLM Python SDK
+### 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk-1}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -173,9 +173,9 @@ with open("reference_image.png", "rb") as image_file:
 print(response)
 ```
 
-### Usage - LiteLLM Proxy Server
+### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server-1}
 
-#### 1. Setup config.yaml
+#### 1. 設定 config.yaml {#1-setup-configyaml-1}
 
 ```yaml showLineNumbers
 model_list:
@@ -190,7 +190,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start the proxy
+#### 2. 啟動 proxy {#2-start-the-proxy-1}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -198,7 +198,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Test it
+#### 3. 測試 {#3-test-it-1}
 
 ```bash showLineNumbers
 curl --location 'http://0.0.0.0:4000/v1/images/edits' \
@@ -208,7 +208,7 @@ curl --location 'http://0.0.0.0:4000/v1/images/edits' \
 --form 'image=@"reference_image.png"'
 ```
 
-### Advanced Usage - With Additional Parameters
+### 進階用法 - 使用額外參數 {#advanced-usage---with-additional-parameters-1}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -229,22 +229,22 @@ with open("reference_image.png", "rb") as image_file:
 print(response)
 ```
 
-### Supported Image Edit Parameters
+### 支援的圖像編輯參數 {#supported-image-edit-parameters}
 
-Recraft supports the following OpenAI-compatible parameters for image editing:
+Recraft 支援以下用於圖像編輯的相容 OpenAI 參數：
 
-| Parameter | Type | Description | Default | Example |
+| 參數 | 類型 | 說明 | 預設值 | 範例 |
 |-----------|------|-------------|---------|---------|
-| `n` | integer | Number of images to generate (1-4) | `1` | `2` |
-| `response_format` | string | Format of response (`url` or `b64_json`) | `"url"` | `"b64_json"` |
-| `style` | string | Image style/artistic direction | - | `"realistic_image"` |
-| `strength` | float | Controls how much to transform the image (0.0-1.0) | `0.2` | `0.5` |
+| `n` | integer | 要生成的圖像數量 (1-4) | `1` | `2` |
+| `response_format` | string | 回應格式 (`url` 或 `b64_json`) | `"url"` | `"b64_json"` |
+| `style` | string | 圖像風格／藝術指導方向 | - | `"realistic_image"` |
+| `strength` | float | 控制圖像轉換的程度 (0.0-1.0) | `0.2` | `0.5` |
 
-### Using Non-OpenAI Parameters
+### 使用非 OpenAI 參數 {#using-non-openai-parameters-1}
 
-You can pass Recraft-specific parameters that are not part of the OpenAI API by including them in your request:
+您可以在請求中加入 Recraft 專屬參數，這些參數不屬於 OpenAI API：
 
-**Usage with LiteLLM Python SDK**
+**使用 LiteLLM Python SDK**
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -262,7 +262,7 @@ with open("reference_image.png", "rb") as image_file:
     )
 ```
 
-**Usage with LiteLLM Proxy Server + OpenAI Python SDK**
+**使用 LiteLLM Proxy Server + OpenAI Python SDK**
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -286,17 +286,17 @@ with open("reference_image.png", "rb") as image_file:
 print(response)
 ```
 
-### Supported Image Edit Models
+### 支援的圖像編輯模型 {#supported-image-edit-models}
 
-**Note: All recraft models are supported by LiteLLM** Just pass the model name with `recraft/<model_name>` and litellm will route it to recraft.
+**注意：LiteLLM 支援所有 recraft 模型** 只要以 `recraft/<model_name>` 傳入模型名稱，litellm 就會將其路由至 recraft。
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | recraftv3 | `image_edit(model="recraft/recraftv3", ...)` |
 
-## API Key Setup
+## API 金鑰設定 {#api-key-setup}
 
-Get your API key from [Recraft's website](https://www.recraft.ai/) and set it as an environment variable:
+請從 [Recraft 的網站](https://www.recraft.ai/) 取得您的 API 金鑰，並將其設為環境變數：
 
 ```bash
 export RECRAFT_API_KEY="your-api-key"

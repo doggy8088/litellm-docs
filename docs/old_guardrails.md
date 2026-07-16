@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 🛡️ [Beta] Guardrails
+# 🛡️ [Beta] 防護欄 {#️-beta-guardrails}
 
-Setup Prompt Injection Detection, Secret Detection on LiteLLM Proxy
+在 LiteLLM Proxy 上設定提示注入偵測、秘密偵測
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Setup guardrails on litellm proxy config.yaml
+### 1. 在 litellm proxy config.yaml 上設定防護欄 {#1-setup-guardrails-on-litellm-proxy-configyaml}
 
 ```yaml
 model_list:
@@ -34,22 +34,21 @@ litellm_settings:
 
 :::info
 
-Since `pii_masking` is default Off for all requests, [you can switch it on per API Key](#switch-guardrails-onoff-per-api-key)
+由於 `pii_masking` 預設對所有請求都是關閉的，您可以[針對每個 API 金鑰將其開啟](#switch-guardrails-onoff-per-api-key)
 
 :::
 
-### 2. Test it
+### 2. 測試它 {#2-test-it}
 
-Run litellm proxy
+執行 litellm proxy
 
 ```shell
 litellm --config config.yaml
 ```
 
-Make LLM API request
+發出 LLM API 請求
 
-
-Test it with this request -> expect it to get rejected by LiteLLM Proxy
+使用此請求測試 -> 預期會被 LiteLLM Proxy 拒絕
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -66,22 +65,21 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-## Control Guardrails On/Off per Request
+## 依請求控制防護欄開/關 {#control-guardrails-onoff-per-request}
 
-You can switch off/on any guardrail on the config.yaml by passing 
+您可以透過傳遞下列內容，在 config.yaml 上將任何防護欄關閉/開啟
 
 ```shell
 "metadata": {"guardrails": {"<guardrail_name>": false}}
 ```
 
-example - we defined `prompt_injection`, `hide_secrets_guard` [on step 1](#1-setup-guardrails-on-litellm-proxy-configyaml)
-This will 
-- switch **off** `prompt_injection` checks running on this request
-- switch **on** `hide_secrets_guard` checks on this request
+範例 - 我們在[步驟 1](#1-setup-guardrails-on-litellm-proxy-configyaml) 定義了 `prompt_injection`、`hide_secrets_guard`
+這會
+- 將此請求上執行的 **關閉** `prompt_injection` 檢查
+- 將此請求上的 `hide_secrets_guard` 檢查 **開啟**
 ```shell
 "metadata": {"guardrails": {"prompt_injection": false, "hide_secrets_guard": true}}
 ```
-
 
 
 <Tabs>
@@ -183,27 +181,25 @@ print(response)
 ```
 </TabItem>
 
-
 </Tabs>
 
-## Switch Guardrails On/Off Per API Key
+## 依 API 金鑰開/關防護欄 {#switch-guardrails-onoff-per-api-key}
 
-❓ Use this when you need to switch guardrails on/off per API Key
+❓ 當您需要依 API 金鑰開/關防護欄時，請使用此功能
 
-**Step 1** Create Key with `pii_masking` On 
+**步驟 1** 建立開啟 `pii_masking` 的金鑰
 
-**NOTE:** We defined `pii_masking` [on step 1](#1-setup-guardrails-on-litellm-proxy-configyaml)
+**注意：** 我們在[步驟 1](#1-setup-guardrails-on-litellm-proxy-configyaml) 定義了 `pii_masking`
 
-👉 Set `"permissions": {"pii_masking": true}` with either `/key/generate` or `/key/update`
+👉 將 `"permissions": {"pii_masking": true}` 設定為 `/key/generate` 或 `/key/update` 其中之一
 
-This means the `pii_masking` guardrail is on for all requests from this API Key
+這表示對此 API 金鑰的所有請求，`pii_masking` 防護欄都已開啟
 
 :::info
 
-If you need to switch `pii_masking` off for an API Key set `"permissions": {"pii_masking": false}` with either `/key/generate` or `/key/update`
+如果您需要針對 API 金鑰將 `pii_masking` 關閉，請將 `"permissions": {"pii_masking": false}` 設定為 `/key/generate` 或 `/key/update` 其中之一
 
 :::
-
 
 <Tabs>
 <TabItem value="/key/generate" label="/key/generate">
@@ -241,7 +237,7 @@ curl --location 'http://0.0.0.0:4000/key/update' \
 </TabItem>
 </Tabs>
 
-**Step 2** Test it with new key
+**步驟 2** 使用新金鑰測試
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -258,10 +254,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Disable team from turning on/off guardrails
+## 阻止團隊開啟/關閉防護欄 {#disable-team-from-turning-onoff-guardrails}
 
-
-### 1. Disable team from modifying guardrails 
+### 1. 停止團隊修改防護欄  {#1-disable-team-from-modifying-guardrails}
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/team/update' \
@@ -273,7 +268,7 @@ curl -X POST 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-### 2. Try to disable guardrails for a call 
+### 2. 嘗試為一次呼叫關閉防護欄  {#2-try-to-disable-guardrails-for-a-call}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -291,7 +286,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-### 3. Get 403 Error
+### 3. 取得 403 錯誤 {#3-get-403-error}
 
 ```
 {
@@ -306,16 +301,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }
 ```
 
-Expect to NOT see `+1 412-612-9992` in your server logs on your callback. 
+預期在您的回呼的伺服器記錄中**不要**看到 `+1 412-612-9992`。 
 
 :::info
-The `pii_masking` guardrail ran on this request because api key=sk-jNm1Zar7XfNdZXp49Z1kSQ has `"permissions": {"pii_masking": true}`
+`pii_masking` 防護欄已在這次請求上執行，因為 api key=sk-jNm1Zar7XfNdZXp49Z1kSQ 具有 `"permissions": {"pii_masking": true}`
 :::
 
-
-
-
-## Spec for `guardrails` on litellm config
+## litellm config 上 `guardrails` 的規格 {#spec-for-guardrails-on-litellm-config}
 
 ```yaml
 litellm_settings:
@@ -323,16 +315,16 @@ litellm_settings:
     - string: GuardrailItemSpec
 ```
 
-- `string` - Your custom guardrail name
+- `string` - 您的自訂防護欄名稱
 
 - `GuardrailItemSpec`:
-    - `callbacks`: List[str], list of supported guardrail callbacks.
-        - Full List: presidio, lakera_prompt_injection, hide_secrets, llmguard_moderations, llamaguard_moderations, google_text_moderation
-    - `default_on`: bool,  will run on all llm requests when true
-    - `logging_only`: Optional[bool], if true, run guardrail only on logged output, not on the actual LLM API call. Currently only supported for presidio pii masking. Requires `default_on` to be True as well.
-    - `callback_args`: Optional[Dict[str, Dict]]: If set, pass in init args for that specific guardrail
+    - `callbacks`: List[str]，支援的防護欄回呼清單。
+        - 完整清單：presidio, lakera_prompt_injection, hide_secrets, llmguard_moderations, llamaguard_moderations, google_text_moderation
+    - `default_on`: bool，當為 true 時，會在所有 llm 請求上執行
+    - `logging_only`: Optional[bool]，若為 true，則只在已記錄的輸出上執行防護欄，而不在實際的 LLM API 呼叫上執行。目前僅支援 presidio pii masking。也需要 `default_on` 為 True。
+    - `callback_args`: Optional[Dict[str, Dict]]：如果有設定，請傳入該特定防護欄的 init 引數
 
-Example: 
+範例： 
 
 ```yaml
 litellm_settings:
@@ -352,4 +344,3 @@ litellm_settings:
         callbacks: [hide_secrets]
         default_on: false
 ```
-

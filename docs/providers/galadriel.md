@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Galadriel
+# Galadriel {#galadriel}
 https://docs.galadriel.com/api-reference/chat-completion-API
 
-LiteLLM supports all models on Galadriel.
+LiteLLM 支援 Galadriel 上的所有模型。
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 import os 
 os.environ['GALADRIEL_API_KEY'] = "your-api-key"
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -27,7 +27,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -46,18 +46,17 @@ for chunk in response:
 ```
 
 
-## Supported Models
-### Serverless Endpoints
-We support ALL Galadriel AI models, just set `galadriel/` as a prefix when sending completion requests
+## 支援的模型 {#supported-models}
+### 無伺服器端點 {#serverless-endpoints}
+我們支援所有 Galadriel AI 模型，只要在傳送 completion 請求時將 `galadriel/` 設為前綴即可
 
-We support both the complete model name and the simplified name match. 
+我們同時支援完整模型名稱與簡化名稱比對。 
 
-You can specify the model name either with the full name or with a simplified version e.g. `llama3.1:70b` 
+您可以使用完整名稱或簡化版本指定模型名稱，例如 `llama3.1:70b` 
 
-| Model Name                                               | Simplified Name                  | Function Call                                           |
-| -------------------------------------------------------- | -------------------------------- | ------------------------------------------------------- |
+| 模型名稱                                               | 簡化名稱                  | 函式呼叫                                           |
+| ------------------------------------------------------ | -------------------------------- | ------------------------------------------------------- |
 | neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8               | llama3.1 or llama3.1:8b          | `completion(model="galadriel/llama3.1", messages)`      |
 | neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w4a16  | llama3.1:70b                     | `completion(model="galadriel/llama3.1:70b", messages)`  |
 | neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16 | llama3.1:405b                    | `completion(model="galadriel/llama3.1:405b", messages)` |
 | neuralmagic/Mistral-Nemo-Instruct-2407-quantized.w4a16   | mistral-nemo or mistral-nemo:12b | `completion(model="galadriel/mistral-nemo", messages)`  |
-

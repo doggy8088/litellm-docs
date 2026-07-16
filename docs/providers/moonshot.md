@@ -1,46 +1,46 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Moonshot AI
+# Moonshot AI {#moonshot-ai}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Moonshot AI provides large language models including the moonshot-v1 series and kimi models. |
-| Provider Route on LiteLLM | `moonshot/` |
-| Link to Provider Doc | [Moonshot AI ↗](https://platform.moonshot.ai/) |
+| 說明 | Moonshot AI 提供大型語言模型，包括 moonshot-v1 系列和 kimi 模型。 |
+| LiteLLM 上的提供者路由 | `moonshot/` |
+| 提供者文件連結 | [Moonshot AI ↗](https://platform.moonshot.ai/) |
 | Base URL | `https://api.moonshot.ai/` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 <br />
 
 https://platform.moonshot.ai/
 
-**We support ALL Moonshot AI models, just set `moonshot/` as a prefix when sending completion requests**
+**我們支援所有 Moonshot AI 模型，只要在送出 completion 請求時將 `moonshot/` 設為前綴即可**
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["MOONSHOT_API_KEY"] = ""  # your Moonshot AI API key
 ```
 
-**ATTENTION:**
+**注意：**
 
-Moonshot AI offers two distinct API endpoints: a global one and a China-specific one.
-- Global API Base URL: `https://api.moonshot.ai/v1` (This is the one currently implemented)
-- China API Base URL: `https://api.moonshot.cn/v1`
+Moonshot AI 提供兩個不同的 API 端點：全球端點與中國專用端點。
+- 全球 API Base URL: `https://api.moonshot.ai/v1`（這是目前實作的端點）
+- 中國 API Base URL: `https://api.moonshot.cn/v1`
 
-You can overwrite the base url with:
+您可以用以下方式覆寫 base url：
 
 ```
 os.environ["MOONSHOT_API_BASE"] = "https://api.moonshot.cn/v1"
 ```
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Moonshot Non-streaming Completion"
 import os
@@ -60,7 +60,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Moonshot Streaming Completion"
 import os
@@ -82,9 +82,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -104,7 +104,7 @@ model_list:
       api_key: os.environ/MOONSHOT_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -217,13 +217,13 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For more detailed information on using the LiteLLM Proxy, see the [LiteLLM Proxy documentation](../providers/litellm_proxy).
+如需更詳細的 LiteLLM Proxy 使用資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。
 
-## Image / Vision Support
+## 圖片 / 視覺支援 {#image--vision-support}
 
-Moonshot vision models (`kimi-k2.5`, `kimi-latest`, `moonshot-v1-*-vision-preview`, etc.) accept the standard OpenAI content array with `image_url` blocks.
+Moonshot 視覺模型（`kimi-k2.5`、`kimi-latest`、`moonshot-v1-*-vision-preview` 等）接受標準 OpenAI content array，並支援 `image_url` blocks。
 
-LiteLLM automatically detects when your messages contain images and preserves the content array so the image payload reaches the Moonshot API. For text-only requests the content is flattened to a plain string, as required by Moonshot text models.
+LiteLLM 會自動偵測您的訊息何時包含圖片，並保留 content array，讓圖片 payload 能送達 Moonshot API。對於純文字請求，content 會依 Moonshot 文字模型的需求攤平成一般字串。
 
 ```python showLineNumbers title="Moonshot Vision Example"
 import os
@@ -250,20 +250,20 @@ response = litellm.completion(
 print(response.choices[0].message.content)
 ```
 
-## Moonshot AI Limitations & LiteLLM Handling
+## Moonshot AI 限制與 LiteLLM 處理方式 {#moonshot-ai-limitations--litellm-handling}
 
-LiteLLM automatically handles the following [Moonshot AI limitations](https://platform.moonshot.ai/docs/guide/migrating-from-openai-to-kimi#about-api-compatibility) to provide seamless OpenAI compatibility:
+LiteLLM 會自動處理以下 [Moonshot AI 限制](https://platform.moonshot.ai/docs/guide/migrating-from-openai-to-kimi#about-api-compatibility)，以提供無縫的 OpenAI 相容性：
 
-### Temperature Range Limitation
-**Limitation**: Moonshot AI only supports temperature range [0, 1] (vs OpenAI's [0, 2])  
-**LiteLLM Handling**: Automatically clamps any temperature > 1 to 1
+### Temperature 範圍限制 {#temperature-range-limitation}
+**限制**：Moonshot AI 只支援 temperature 範圍 [0, 1]（相較於 OpenAI 的 [0, 2]）  
+**LiteLLM 處理方式**：自動將任何大於 1 的 temperature 限制為 1
 
-### Temperature + Multiple Outputs Limitation  
-**Limitation**: If temperature < 0.3 and n > 1, Moonshot AI raises an exception  
-**LiteLLM Handling**: Automatically sets temperature to 0.3 when this condition is detected
+### Temperature + 多重輸出限制   {#temperature--multiple-outputs-limitation}
+**限制**：如果 temperature < 0.3 且 n > 1，Moonshot AI 會拋出例外  
+**LiteLLM 處理方式**：在偵測到此條件時，自動將 temperature 設為 0.3
 
-### Tool Choice "Required" Not Supported
-**Limitation**: Moonshot AI doesn't support `tool_choice="required"`  
-**LiteLLM Handling**: Converts this by:
-- Adding message: "Please select a tool to handle the current issue."
-- Removing the `tool_choice` parameter from the request
+### 不支援 Tool Choice「Required」 {#tool-choice-required-not-supported}
+**限制**：Moonshot AI 不支援 `tool_choice="required"`  
+**LiteLLM 處理方式**：透過以下方式轉換：
+- 新增訊息："Please select a tool to handle the current issue."
+- 從請求中移除 `tool_choice` 參數

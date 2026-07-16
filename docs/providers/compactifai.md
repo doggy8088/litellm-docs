@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CompactifAI
+# CompactifAI {#compactifai}
 https://docs.compactif.ai/
 
-CompactifAI offers highly compressed versions of leading language models, delivering up to **70% lower inference costs**, **4x throughput gains**, and **low-latency inference** with minimal quality loss (under 5%). CompactifAI's OpenAI-compatible API makes integration straightforward, enabling developers to build ultra-efficient, scalable AI applications with superior concurrency and resource efficiency.
+CompactifAI 提供領先語言模型的高壓縮版本，可帶來**最多降低 70% 的推論成本**、**4 倍吞吐量提升**，以及**低延遲推論**，且品質損失極小（低於 5%）。CompactifAI 的 OpenAI 相容 API 讓整合變得直接，協助開發者打造超高效率、可擴展、具優異並行能力與資源效率的 AI 應用程式。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | CompactifAI offers compressed versions of leading language models with up to 70% cost reduction and 4x throughput gains |
-| Provider Route on LiteLLM | `compactifai/` (add this prefix to the model name - e.g. `compactifai/cai-llama-3-1-8b-slim`) |
-| Provider Doc | [CompactifAI ↗](https://docs.compactif.ai/) |
-| API Endpoint for Provider | https://api.compactif.ai/v1 |
-| Supported Endpoints | `/chat/completions`, `/completions` |
+| 說明 | CompactifAI 提供領先語言模型的壓縮版本，最多可降低 70% 成本並提升 4 倍吞吐量 |
+| LiteLLM 上的提供者路由 | `compactifai/`（請將此前綴加到模型名稱前—例如 `compactifai/cai-llama-3-1-8b-slim`） |
+| 提供者文件 | [CompactifAI ↗](https://docs.compactif.ai/) |
+| 提供者 API 端點 | https://api.compactif.ai/v1 |
+| 支援的端點 | `/chat/completions`, `/completions` |
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-CompactifAI is fully OpenAI-compatible and supports the following parameters:
+CompactifAI 完全相容 OpenAI，並支援以下參數：
 
 ```
 "stream",
@@ -36,14 +36,14 @@ CompactifAI is fully OpenAI-compatible and supports the following parameters:
 "extra_headers"
 ```
 
-## API Key Setup
+## API 金鑰設定 {#api-key-setup}
 
-CompactifAI API keys are available through AWS Marketplace subscription:
+CompactifAI API 金鑰可透過 AWS Marketplace 訂閱取得：
 
-1. Subscribe via [AWS Marketplace](https://aws.amazon.com/marketplace)
-2. Complete subscription verification (24-hour review process)
-3. Access MultiverseIAM dashboard with provided credentials
-4. Retrieve your API key from the dashboard
+1. 透過 [AWS Marketplace](https://aws.amazon.com/marketplace) 訂閱
+2. 完成訂閱驗證（24 小時審核流程）
+3. 使用提供的憑證存取 MultiverseIAM 儀表板
+4. 從儀表板擷取您的 API 金鑰
 
 ```python
 import os
@@ -51,7 +51,7 @@ import os
 os.environ["COMPACTIFAI_API_KEY"] = "your-api-key"
 ```
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -85,7 +85,7 @@ model_list:
 </TabItem>
 </Tabs>
 
-## Streaming
+## 串流 {#streaming}
 
 ```python
 from litellm import completion
@@ -105,9 +105,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Advanced Usage
+## 進階使用方式 {#advanced-usage}
 
-### Custom Parameters
+### 自訂參數 {#custom-parameters}
 
 ```python
 from litellm import completion
@@ -122,9 +122,9 @@ response = completion(
 )
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
-CompactifAI supports OpenAI-compatible function calling:
+CompactifAI 支援與 OpenAI 相容的函式呼叫：
 
 ```python
 from litellm import completion
@@ -154,7 +154,7 @@ response = completion(
 )
 ```
 
-### Async Usage
+### 非同步使用方式 {#async-usage}
 
 ```python
 import asyncio
@@ -172,9 +172,9 @@ response = asyncio.run(async_call())
 print(response)
 ```
 
-## Available Models
+## 可用模型 {#available-models}
 
-CompactifAI offers compressed versions of popular models. Use the `/models` endpoint to get the latest list:
+CompactifAI 提供熱門模型的壓縮版本。請使用 `/models` 端點取得最新清單：
 
 ```python
 import httpx
@@ -184,22 +184,22 @@ response = httpx.get("https://api.compactif.ai/v1/models", headers=headers)
 models = response.json()
 ```
 
-Common model formats:
+常見模型格式：
 - `compactifai/cai-llama-3-1-8b-slim`
 - `compactifai/mistral-7b-compressed`
 - `compactifai/codellama-7b-compressed`
 
-## Benefits
+## 優點 {#benefits}
 
-- **Cost Efficient**: Up to 70% lower inference costs compared to standard models
-- **High Performance**: 4x throughput gains with minimal quality loss (under 5%)
-- **Low Latency**: Optimized for fast response times
-- **Drop-in Replacement**: Full OpenAI API compatibility
-- **Scalable**: Superior concurrency and resource efficiency
+- **成本效益高**：相較於標準模型，推論成本最多可降低 70%
+- **高效能**：在品質損失極小（低於 5%）的情況下，吞吐量提升 4 倍
+- **低延遲**：針對快速回應時間最佳化
+- **即插即用替代**：完整相容 OpenAI API
+- **可擴展**：具優異並行能力與資源效率
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-CompactifAI returns standard OpenAI-compatible error responses:
+CompactifAI 會回傳標準的 OpenAI 相容錯誤回應：
 
 ```python
 from litellm import completion
@@ -216,8 +216,8 @@ except RateLimitError:
     print("Rate limit exceeded")
 ```
 
-## Support
+## 支援 {#support}
 
-- Documentation: https://docs.compactif.ai/
-- LinkedIn: [MultiverseComputing](https://www.linkedin.com/company/multiversecomputing)
-- Analysis: [Artificial Analysis Provider Comparison](https://artificialanalysis.ai/providers/compactifai)
+- 文件：https://docs.compactif.ai/
+- LinkedIn：[MultiverseComputing](https://www.linkedin.com/company/multiversecomputing)
+- 分析：[Artificial Analysis 提供者比較](https://artificialanalysis.ai/providers/compactifai)

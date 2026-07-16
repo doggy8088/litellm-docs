@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Ollama 
-LiteLLM supports all models from [Ollama](https://github.com/ollama/ollama)
+# Ollama {#ollama}
+LiteLLM 支援來自 [Ollama](https://github.com/ollama/ollama) 的所有模型
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_Ollama.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
 :::info 
 
-We recommend using [ollama_chat](#using-ollama-apichat) for better responses.
+我們建議使用 [ollama_chat](#using-ollama-apichat) 以獲得更好的回應。
 
 :::
 
-## Pre-requisites
-Ensure you have your ollama server running
+## 前置條件 {#pre-requisites}
+請確保您的 ollama 伺服器正在執行
 
-## Example usage
+## 使用範例 {#example-usage}
 ```python
 from litellm import completion
 
@@ -30,7 +30,7 @@ print(response)
 
 ```
 
-## Example usage - Streaming
+## 使用範例 - 串流 {#example-usage---streaming}
 ```python
 from litellm import completion
 
@@ -46,8 +46,8 @@ for chunk in response:
 
 ```
 
-## Example usage - Streaming + Acompletion
-Ensure you have async_generator installed for using ollama acompletion with streaming
+## 使用範例 - 串流 + Acompletion {#example-usage---streaming--acompletion}
+使用 ollama acompletion 搭配串流時，請確保已安裝 async_generator
 ```shell
 uv add async_generator
 ```
@@ -69,8 +69,8 @@ asyncio.run(async_ollama())
 
 ```
 
-## Example Usage - JSON Mode
-To use ollama JSON Mode pass `format="json"` to `litellm.completion()`
+## 使用範例 - JSON 模式 {#example-usage---json-mode}
+若要使用 ollama JSON 模式，請將 `format="json"` 傳入 `litellm.completion()`
 
 ```python
 from litellm import completion
@@ -87,9 +87,9 @@ response = completion(
 )
 ```
 
-## Example Usage - Tool Calling 
+## 使用範例 - 工具呼叫  {#example-usage---tool-calling}
 
-To use ollama tool calling, pass `tools=[{..}]` to `litellm.completion()` 
+若要使用 ollama 工具呼叫，請將 `tools=[{..}]` 傳入 `litellm.completion()` 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -140,7 +140,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -152,13 +152,13 @@ model_list:
       supports_function_calling: true
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -202,10 +202,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## 在 `/v1/completions` 上使用 Ollama FIM {#using-ollama-fim-on-v1completions}
 
-## Using Ollama FIM on `/v1/completions`
-
-LiteLLM supports calling Ollama's `/api/generate` endpoint on `/v1/completions` requests. 
+LiteLLM 支援在 `/v1/completions` 請求上呼叫 Ollama 的 `/api/generate` 端點。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -225,7 +224,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -235,7 +234,7 @@ model_list:
       api_base: "http://localhost:11434"
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml --detailed_debug
@@ -243,7 +242,7 @@ litellm --config /path/to/config.yaml --detailed_debug
 # RUNNING ON http://0.0.0.0:4000 
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python
 from openai import OpenAI
@@ -263,8 +262,8 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Using ollama `api/chat` 
-In order to send ollama requests to `POST /api/chat` on your ollama server, set the model prefix to `ollama_chat`
+## 使用 ollama `api/chat`  {#using-ollama-apichat}
+若要將 ollama 請求傳送至您 ollama 伺服器上的 `POST /api/chat`，請將模型前綴設為 `ollama_chat`
 
 ```python
 from litellm import completion
@@ -275,10 +274,10 @@ response = completion(
 )
 print(response)
 ```
-## Ollama Models
-Ollama supported models: https://github.com/ollama/ollama
+## Ollama 模型 {#ollama-models}
+Ollama 支援的模型：https://github.com/ollama/ollama
 
-| Model Name           | Function Call                                                                     |
+| 模型名稱           | 函式呼叫                                                                     |
 |----------------------|-----------------------------------------------------------------------------------
 | Mistral    | `completion(model='ollama/mistral', messages, api_base="http://localhost:11434", stream=True)` |
 | Mistral-7B-Instruct-v0.1 | `completion(model='ollama/mistral-7B-Instruct-v0.1', messages, api_base="http://localhost:11434", stream=False)` |
@@ -299,8 +298,7 @@ Ollama supported models: https://github.com/ollama/ollama
 | Nous-Hermes 13B     | `completion(model='ollama/nous-hermes:13b', messages, api_base="http://localhost:11434", stream=True)` | 
 | Wizard Vicuna Uncensored | `completion(model='ollama/wizard-vicuna', messages, api_base="http://localhost:11434", stream=True)` |
 
-
-### JSON Schema support 
+### JSON Schema 支援  {#json-schema-support}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -318,7 +316,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -328,7 +326,7 @@ model_list:
       api_base: "http://localhost:11434"
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -336,7 +334,7 @@ litellm --config /path/to/config.yaml
 # RUNNING ON http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```python
 from pydantic import BaseModel
@@ -369,19 +367,19 @@ math_reasoning = completion.choices[0].message.parsed
 </TabItem>
 </Tabs>
 
-## Ollama Vision Models
-| Model Name       | Function Call                        |
+## Ollama 視覺模型 {#ollama-vision-models}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 |  llava  | `completion('ollama/llava', messages)` |
 
-#### Using Ollama Vision Models
+#### 使用 Ollama 視覺模型 {#using-ollama-vision-models}
 
-Call `ollama/llava` in the same input/output format as OpenAI [`gpt-4-vision`](https://docs.litellm.ai/docs/providers/openai#openai-vision-models)
+以與 OpenAI [`gpt-4-vision`](https://docs.litellm.ai/docs/providers/openai#openai-vision-models) 相同的輸入/輸出格式呼叫 `ollama/llava`
 
-LiteLLM Supports the following image types passed in `url`
-- Base64 encoded svgs
+LiteLLM 支援以下傳入 `url` 的影像類型
+- Base64 編碼的 svgs
 
-**Example Request**
+**範例請求**
 ```python
 import litellm
 
@@ -409,19 +407,17 @@ print(response)
 ```
 
 
+## LiteLLM/Ollama Docker 映像檔  {#litellmollama-docker-image}
 
-## LiteLLM/Ollama Docker Image 
+對於 Ollama，LiteLLM 提供一個 Docker 映像檔，用於本地 LLM 的 OpenAI API 相容伺服器 - llama2、mistral、codellama
 
-For Ollama LiteLLM Provides a Docker Image for an OpenAI API compatible server for local LLMs - llama2, mistral, codellama
+[![在 WhatsApp 上聊天](https://img.shields.io/static/v1?label=Chat%20on&message=WhatsApp&color=success&logo=WhatsApp&style=flat-square)](https://wa.link/huol9n) [![在 Discord 上聊天](https://img.shields.io/static/v1?label=Chat%20on&message=Discord&color=blue&logo=Discord&style=flat-square)](https://discord.gg/wuPM9dRgDw) 
+### 適用於本地 LLM 的 OpenAI API 相容伺服器 - llama2、mistral、codellama {#an-openai-api-compatible-server-for-local-llms---llama2-mistral-codellama}
 
-
-[![Chat on WhatsApp](https://img.shields.io/static/v1?label=Chat%20on&message=WhatsApp&color=success&logo=WhatsApp&style=flat-square)](https://wa.link/huol9n) [![Chat on Discord](https://img.shields.io/static/v1?label=Chat%20on&message=Discord&color=blue&logo=Discord&style=flat-square)](https://discord.gg/wuPM9dRgDw) 
-### An OpenAI API compatible server for local LLMs - llama2, mistral, codellama
-
-### Quick Start:
-Docker Hub: 
-For ARM Processors: https://hub.docker.com/repository/docker/litellm/ollama/general
-For Intel/AMD Processors: to be added
+### 快速開始： {#quick-start}
+Docker Hub： 
+適用於 ARM 處理器：https://hub.docker.com/repository/docker/litellm/ollama/general
+適用於 Intel/AMD 處理器：待補充
 ```shell
 docker pull litellm/ollama
 ```
@@ -430,11 +426,10 @@ docker pull litellm/ollama
 docker run --name ollama litellm/ollama
 ```
 
-#### Test the server container
-On the docker container run the `test.py` file using `python3 test.py`
+#### 測試伺服器容器 {#test-the-server-container}
+在 docker 容器中使用 `python3 test.py` 執行 `test.py` 檔案
 
-
-### Making a request to this server
+### 向此伺服器發出請求 {#making-a-request-to-this-server}
 ```python
 import openai
 
@@ -461,7 +456,7 @@ for chunk in response:
     print(f'LiteLLM: streaming response from proxy {chunk}')
 ```
 
-### Responses from this server 
+### 來自此伺服器的回應  {#responses-from-this-server}
 ```json
 {
   "object": "chat.completion",
@@ -487,6 +482,6 @@ for chunk in response:
 }
 ```
 
-## Calling Docker Container (host.docker.internal)
+## 呼叫 Docker 容器 (host.docker.internal) {#calling-docker-container-hostdockerinternal}
 
-[Follow these instructions](https://github.com/BerriAI/litellm/issues/1517#issuecomment-1922022209/)
+[請依照這些說明](https://github.com/BerriAI/litellm/issues/1517#issuecomment-1922022209/)

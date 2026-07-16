@@ -1,20 +1,19 @@
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# MCP Cost Tracking
+# MCP 成本追蹤 {#mcp-cost-tracking}
 
-LiteLLM provides two ways to track costs for MCP tool calls:
+LiteLLM 提供兩種方式來追蹤 MCP 工具請求的成本：
 
-| Method | When to Use | What It Does |
+| 方法 | 使用時機 | 功能 |
 |--------|-------------|--------------|
-| **Config-based Cost Tracking** | Simple cost tracking with fixed costs per tool/server | Automatically tracks costs based on configuration |
-| **Custom Post-MCP Hook** | Dynamic cost tracking with custom logic | Allows custom cost calculations and response modifications |
+| **以設定為基礎的成本追蹤** | 針對每個工具／伺服器設定固定成本的簡單成本追蹤 | 依據設定自動追蹤成本 |
+| **自訂 Post-MCP Hook** | 具備自訂邏輯的動態成本追蹤 | 可進行自訂成本計算與回應修改 |
 
-### Config-based Cost Tracking
+### 以設定為基礎的成本追蹤 {#config-based-cost-tracking}
 
-Configure fixed costs for MCP servers directly in your config.yaml:
+直接在您的 config.yaml 中為 MCP 伺服器設定固定成本：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -42,11 +41,11 @@ mcp_servers:
         default_cost_per_query: 1.50
 ```
 
-### Custom Post-MCP Hook
+### 自訂 Post-MCP Hook {#custom-post-mcp-hook}
 
-Use this when you need dynamic cost calculation or want to modify the MCP response before it's returned to the user.
+當您需要動態成本計算，或想在 MCP 回應回傳給使用者前先修改它時，請使用此方式。
 
-#### 1. Create a custom MCP hook file
+#### 1. 建立自訂 MCP hook 檔案 {#1-create-a-custom-mcp-hook-file}
 
 ```python title="custom_mcp_hook.py" showLineNumbers
 from typing import Optional
@@ -90,7 +89,7 @@ class CustomMCPCostTracker(CustomLogger):
 custom_mcp_cost_tracker = CustomMCPCostTracker()
 ```
 
-#### 2. Configure in config.yaml
+#### 2. 在 config.yaml 中設定 {#2-configure-in-configyaml}
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -108,14 +107,13 @@ mcp_servers:
     url: "https://actions.zapier.com/mcp/sk-xxxxx/sse"
 ```
 
-#### 3. Start the proxy
+#### 3. 啟動 proxy {#3-start-the-proxy}
 
 ```shell
 $ litellm --config /path/to/config.yaml 
 ```
 
-When MCP tools are called, your custom hook will:
-1. Calculate costs based on your custom logic
-2. Modify the response if needed
-3. Track costs in LiteLLM's logging system
-
+當 MCP 工具被呼叫時，您的自訂 hook 會：
+1. 依據您的自訂邏輯計算成本
+2. 視需要修改回應
+3. 在 LiteLLM 的記錄系統中追蹤成本

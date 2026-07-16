@@ -1,17 +1,17 @@
-# Azure Text to Speech (tts)
+# Azure 文字轉語音 (tts) {#azure-text-to-speech-tts}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Convert text to natural-sounding speech using Azure OpenAI's Text to Speech models |
-| Provider Route on LiteLLM | `azure/` |
-| Supported Operations | `/audio/speech` |
-| Link to Provider Doc | [Azure OpenAI TTS ↗](https://learn.microsoft.com/en-us/azure/ai-services/openai/text-to-speech-quickstart)
+| 說明 | 使用 Azure OpenAI 的 Text to Speech 模型將文字轉換為自然聽感的語音 |
+| LiteLLM 提供者路由 | `azure/` |
+| 支援的操作 | `/audio/speech` |
+| 提供者文件連結 | [Azure OpenAI TTS ↗](https://learn.microsoft.com/en-us/azure/ai-services/openai/text-to-speech-quickstart)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 from litellm import speech
@@ -33,7 +33,7 @@ response = speech(
 response.stream_to_file(speech_file_path)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM PROXY** {#litellm-proxy}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -45,17 +45,17 @@ model_list:
       api_version: "os.environ/AZURE_API_VERSION" 
 ```
 
-## Available Voices
+## 可用語音 {#available-voices}
 
-Azure OpenAI supports the following voices:
-- `alloy` - Neutral and balanced
-- `echo` - Warm and upbeat
-- `fable` - Expressive and dramatic
-- `onyx` - Deep and authoritative
-- `nova` - Friendly and conversational
-- `shimmer` - Bright and cheerful
+Azure OpenAI 支援以下語音：
+- `alloy` - 中性且平衡
+- `echo` - 溫暖且活潑
+- `fable` - 富有表現力且戲劇化
+- `onyx` - 深沉且具權威感
+- `nova` - 友善且對話感強
+- `shimmer` - 明亮且愉悅
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Parameters"
 response = speech(
@@ -67,9 +67,9 @@ response = speech(
 )
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-- `tts-1` - Standard quality, optimized for speed
-- `tts-1-hd` - High definition, optimized for quality
+- `tts-1` - 標準品質，針對速度最佳化
+- `tts-1-hd` - 高解析度，針對品質最佳化
 
-Use your Azure deployment name: `azure/<your-deployment-name>`
+使用您的 Azure 部署名稱：`azure/<your-deployment-name>`

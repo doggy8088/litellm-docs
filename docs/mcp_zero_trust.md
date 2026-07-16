@@ -1,19 +1,19 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# MCP Zero Trust Auth (JWT Signer)
+# MCP 零信任驗證（JWT 簽署者） {#mcp-zero-trust-auth-jwt-signer}
 
-![Zero Trust MCP Gateway](/img/mcp_zero_trust_gateway.png)
+![零信任 MCP 閘道](/img/mcp_zero_trust_gateway.png)
 
-MCP servers have no built-in way to verify that a request actually came through LiteLLM. Without this guardrail, any client that can reach your MCP server directly can call tools — bypassing your access controls entirely.
+MCP 伺服器沒有內建方式可驗證請求確實是透過 LiteLLM 傳來的。沒有這道防護欄，任何能直接連上您的 MCP 伺服器的用戶端都可以呼叫工具——完全繞過您的存取控制。
 
-`MCPJWTSigner` fixes this. It signs every outbound tool call with a short-lived RS256 JWT. Your MCP server verifies the signature against LiteLLM's public key. Requests that didn't go through LiteLLM have no valid signature and are rejected.
+`MCPJWTSigner` 修正了這個問題。它會用短效的 RS256 JWT 為每個對外工具呼叫簽署。您的 MCP 伺服器會以 LiteLLM 的公開金鑰驗證簽章。沒有經過 LiteLLM 的請求不會有有效簽章，因此會被拒絕。
 
 ---
 
-## Basic setup
+## 基本設定 {#basic-setup}
 
-Add the guardrail to your config and point your MCP server at LiteLLM's JWKS endpoint. Every tool call gets a signed JWT automatically — no changes needed on the client side.
+將防護欄加入您的設定，並將您的 MCP 伺服器指向 LiteLLM 的 JWKS 端點。每次工具呼叫都會自動取得已簽署的 JWT——用戶端端無需變更。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -32,7 +32,7 @@ guardrails:
       ttl_seconds: 300                           # default: 300
 ```
 
-**Bring your own signing key** — recommended for production. Auto-generated keys are lost on restart.
+**使用您自己的簽署金鑰**——建議用於正式環境。自動產生的金鑰會在重新啟動時遺失。
 
 ```bash
 export MCP_JWT_SIGNING_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
@@ -40,7 +40,7 @@ export MCP_JWT_SIGNING_KEY="-----BEGIN RSA PRIVATE KEY-----\n..."
 export MCP_JWT_SIGNING_KEY="file:///secrets/mcp-signing-key.pem"
 ```
 
-**Build a verified MCP server with [FastMCP](https://gofastmcp.com):**
+**使用 [FastMCP](https://gofastmcp.com 建置已驗證的 MCP 伺服器：**
 
 ```python title="weather_server.py"
 from fastmcp import FastMCP, Context
@@ -64,24 +64,24 @@ if __name__ == "__main__":
     mcp.run(transport="http", host="0.0.0.0", port=8000)
 ```
 
-FastMCP fetches the JWKS automatically and re-fetches when the signing key changes.
+FastMCP 會自動擷取 JWKS，並在簽署金鑰變更時重新擷取。
 
-LiteLLM publishes OIDC discovery so MCP servers find the key without any manual configuration:
+LiteLLM 會公開 OIDC discovery，因此 MCP 伺服器無需任何手動設定即可找到金鑰：
 
 ```
 GET /.well-known/openid-configuration  →  { "jwks_uri": "https://<litellm>/.well-known/jwks.json" }
 GET /.well-known/jwks.json             →  { "keys": [{ "kty": "RSA", "alg": "RS256", ... }] }
 ```
 
-> **Read further only if you need to:** thread a corporate IdP identity into the JWT, enforce specific claims on callers, add custom metadata, use AWS Bedrock AgentCore Gateway, or debug JWT rejections.
+> **只有在您需要時才繼續閱讀：** 將企業 IdP 身分串接進 JWT、在呼叫端強制特定 claims、新增自訂 metadata、使用 AWS Bedrock AgentCore Gateway，或除錯 JWT 拒絕。
 
 ---
 
-## Thread IdP identity into MCP JWTs
+## 將 IdP 身分串接進 MCP JWT {#thread-idp-identity-into-mcp-jwts}
 
-By default the outbound JWT `sub` is LiteLLM's internal `user_id`. If your users authenticate with Okta, Azure AD, or another IdP, the MCP server sees a LiteLLM-internal ID — not the user's email or employee ID.
+預設情況下，對外 JWT `sub` 是 LiteLLM 的內部 `user_id`。如果您的使用者使用 Okta、Azure AD 或其他 IdP 進行驗證，MCP 伺服器看到的是 LiteLLM 內部 ID——而不是使用者的電子郵件或員工編號。
 
-With verify+re-sign, LiteLLM validates the incoming IdP token first, then builds the outbound JWT using the real identity claims from that token. The MCP server gets the user's actual identity without ever having to trust the original IdP directly.
+使用 verify+re-sign 時，LiteLLM 會先驗證傳入的 IdP token，然後使用該 token 中的真實身分 claims 建立對外 JWT。MCP 伺服器可以取得使用者的實際身分，而無需直接信任原始 IdP。
 
 ```yaml title="config.yaml"
 guardrails:
@@ -104,29 +104,29 @@ guardrails:
         - "litellm:user_id" # last resort: LiteLLM's internal user_id
 ```
 
-If the incoming token is **opaque** (not a JWT — some IdPs issue these), add an introspection endpoint. LiteLLM will POST the token to it (RFC 7662) and use the returned claims:
+如果傳入的 token 是 **opaque**（不是 JWT——有些 IdP 會發出這類 token），請新增 introspection endpoint。LiteLLM 會將 token 以 POST 送至該端點（RFC 7662），並使用回傳的 claims：
 
 ```yaml
       token_introspection_endpoint: "https://idp.example.com/oauth2/introspect"
 ```
 
-**Supported `end_user_claim_sources` values:**
+**支援的 `end_user_claim_sources` 值：**
 
-| Source | Resolves to |
+| 來源 | 解析為 |
 |--------|-------------|
-| `token:<claim>` | Any claim from the verified incoming JWT (e.g. `token:sub`, `token:email`, `token:oid`) |
-| `litellm:user_id` | LiteLLM's internal user ID |
-| `litellm:email` | User email from LiteLLM auth context |
-| `litellm:end_user_id` | End-user ID if set separately |
-| `litellm:team_id` | Team ID from LiteLLM auth context |
+| `token:<claim>` | 已驗證傳入 JWT 中的任何 claim（例如 `token:sub`、`token:email`、`token:oid`） |
+| `litellm:user_id` | LiteLLM 的內部使用者 ID |
+| `litellm:email` | LiteLLM 驗證內容中的使用者電子郵件 |
+| `litellm:end_user_id` | 若另行設定，則為終端使用者 ID |
+| `litellm:team_id` | LiteLLM 驗證內容中的團隊 ID |
 
 ---
 
-## Block callers missing required attributes
+## 封鎖缺少必要屬性的呼叫端 {#block-callers-missing-required-attributes}
 
-Some MCP servers expose sensitive operations that should only be reachable by verified employees — not service accounts, not external API keys. You can enforce this at the LiteLLM layer so the MCP server never receives the request at all.
+有些 MCP 伺服器提供的敏感操作應該只能由已驗證員工存取——不能是服務帳號，也不能是外部 API 金鑰。您可以在 LiteLLM 層強制執行這點，讓 MCP 伺服器根本收不到請求。
 
-`required_claims` rejects with `403` if the incoming token is missing any listed claim. `optional_claims` forwards claims that are useful but not mandatory.
+`required_claims` 會在傳入 token 缺少任何列出的 claim 時以 `403` 拒絕。`optional_claims` 會轉送有用但非必要的 claims。
 
 ```yaml title="config.yaml"
 guardrails:
@@ -149,7 +149,7 @@ guardrails:
         - "department"
 ```
 
-**What the client sees when blocked:**
+**被封鎖時用戶端會看到：**
 ```json
 HTTP 403
 { "error": "MCPJWTSigner: incoming token is missing required claims: ['employee_id']. Configure the IdP to include these claims." }
@@ -157,9 +157,9 @@ HTTP 403
 
 ---
 
-## Add custom metadata to every JWT
+## 將自訂 metadata 加入每個 JWT {#add-custom-metadata-to-every-jwt}
 
-Your MCP server may need context that LiteLLM doesn't carry natively — which deployment sent the request, a tenant ID, an environment tag. Use claim operations to inject, override, or strip claims from the outbound JWT.
+您的 MCP 伺服器可能需要 LiteLLM 原生不包含的上下文——例如哪個部署送出請求、租戶 ID、環境標籤。請使用 claim 操作將 claims 注入、覆寫或移除於對外 JWT 中。
 
 ```yaml title="config.yaml"
 guardrails:
@@ -183,15 +183,15 @@ guardrails:
         - "nbf"   # some validators reject nbf; remove it if yours does
 ```
 
-Operations run in order — `add_claims` → `set_claims` → `remove_claims`. `set_claims` always wins over `add_claims`; `remove_claims` beats both.
+操作會依序執行——`add_claims` → `set_claims` → `remove_claims`。`set_claims` 永遠優先於 `add_claims`；`remove_claims` 會勝過兩者。
 
 ---
 
-## AWS Bedrock AgentCore Gateway
+## AWS Bedrock AgentCore Gateway {#aws-bedrock-agentcore-gateway}
 
-Bedrock AgentCore Gateway uses two separate JWTs: one to authenticate the transport connection and another to authorize tool calls. They need different `aud` values and TTLs — a single JWT won't work for both.
+Bedrock AgentCore Gateway 使用兩個分開的 JWT：一個用於驗證傳輸連線，另一個用於授權工具呼叫。它們需要不同的 `aud` 值與 TTL——單一 JWT 無法同時滿足兩者。
 
-LiteLLM can issue both in one hook and inject them into separate headers:
+LiteLLM 可以在一個 hook 中同時發出兩者，並將它們注入不同的標頭：
 
 ```yaml title="config.yaml"
 guardrails:
@@ -209,21 +209,21 @@ guardrails:
       channel_token_ttl: 60      # transport tokens should be short-lived
 ```
 
-LiteLLM injects two headers on every tool call:
-- `Authorization: Bearer <resource-token>` — audience `mcp-resource`, TTL 300s
-- `x-mcp-channel-token: Bearer <channel-token>` — audience `bedrock-agentcore-gateway`, TTL 60s
+LiteLLM 會在每次工具呼叫時注入兩個標頭：
+- `Authorization: Bearer <resource-token>` — audience `mcp-resource`，TTL 300s
+- `x-mcp-channel-token: Bearer <channel-token>` — audience `bedrock-agentcore-gateway`，TTL 60s
 
-Both tokens are signed with the same LiteLLM key, so your MCP server only needs to trust one JWKS endpoint.
+兩個 token 都使用相同的 LiteLLM 金鑰簽署，因此您的 MCP 伺服器只需要信任一個 JWKS 端點。
 
 ---
 
-## Control which scopes go into the JWT
+## 控制哪些 scopes 進入 JWT {#control-which-scopes-go-into-the-jwt}
 
-By default LiteLLM generates least-privilege scopes per request:
-- Tool call → `mcp:tools/call mcp:tools/{name}:call`
-- List tools → `mcp:tools/call mcp:tools/list`
+預設情況下，LiteLLM 會為每個請求產生最小權限 scopes：
+- 工具呼叫 → `mcp:tools/call mcp:tools/{name}:call`
+- 列出工具 → `mcp:tools/call mcp:tools/list`
 
-If your MCP server does its own scope enforcement and needs a specific format, set `allowed_scopes` to replace auto-generation entirely:
+如果您的 MCP 伺服器有自己的 scope 強制執行機制，且需要特定格式，請將 `allowed_scopes` 設定為完全取代自動產生：
 
 ```yaml title="config.yaml"
 guardrails:
@@ -239,13 +239,13 @@ guardrails:
         - "mcp:admin"
 ```
 
-Every JWT carries exactly those scopes regardless of which tool is being called.
+每個 JWT 都會攜帶完全相同的 scopes，不論呼叫的是哪個工具。
 
 ---
 
-## Debug JWT rejections
+## 除錯 JWT 拒絕 {#debug-jwt-rejections}
 
-Your MCP server is returning 401 and you're not sure what's in the JWT. Enable `debug_headers` and LiteLLM adds a `x-litellm-mcp-debug` response header with the key claims that were signed:
+您的 MCP 伺服器回傳 401，而且您不確定 JWT 裡有哪些內容。啟用 `debug_headers` 後，LiteLLM 會新增一個 `x-litellm-mcp-debug` 回應標頭，內含已簽署的關鍵 claims：
 
 ```yaml title="config.yaml"
 guardrails:
@@ -257,38 +257,38 @@ guardrails:
       debug_headers: true
 ```
 
-Response header:
+回應標頭：
 ```
 x-litellm-mcp-debug: v=1; kid=a3f1b2c4d5e6f708; sub=alice@corp.com; iss=https://my-litellm.example.com; exp=1712345678; scope=mcp:tools/call mcp:tools/get_weather:call
 ```
 
-Check that `kid` matches what the MCP server fetched from JWKS, `iss`/`aud` match your server's expected values, and `exp` hasn't passed. Disable in production — the header leaks claim metadata.
+請確認 `kid` 與 MCP 伺服器從 JWKS 擷取到的內容一致，`iss`/`aud` 符合伺服器預期值，且 `exp` 尚未過期。正式環境請停用——此標頭會洩漏 claim metadata。
 
 ---
 
-## JWT claims reference
+## JWT claims 參考 {#jwt-claims-reference}
 
-| Claim | Value |
+| Claim | 值 |
 |-------|-------|
-| `iss` | `issuer` config value (or request base URL) |
-| `aud` | `audience` config value (default: `"mcp"`) |
-| `sub` | Resolved via `end_user_claim_sources` (default: `user_id` → api-key hash → `"litellm-proxy"`) |
-| `act.sub` | `team_id` → `org_id` → `"litellm-proxy"` (RFC 8693 delegation) |
-| `email` | `user_email` from LiteLLM auth context (when available) |
-| `scope` | Auto-generated per tool call, or `allowed_scopes` when set |
-| `iat`, `exp`, `nbf` | Standard timing claims (RFC 7519) |
+| `iss` | `issuer` 設定值（或請求 base URL） |
+| `aud` | `audience` 設定值（預設：`"mcp"`） |
+| `sub` | 透過 `end_user_claim_sources` 解析（預設：`user_id` → api-key hash → `"litellm-proxy"`） |
+| `act.sub` | `team_id` → `org_id` → `"litellm-proxy"`（RFC 8693 delegation） |
+| `email` | LiteLLM 驗證內容中的 `user_email`（可用時） |
+| `scope` | 每次工具呼叫自動產生，或在設定時為 `allowed_scopes` |
+| `iat`, `exp`, `nbf` | 標準時間 claim（RFC 7519） |
 
 ---
 
-## Limitations
+## 限制 {#limitations}
 
-- **OpenAPI-backed MCP servers** (`spec_path` set) do not support JWT injection. LiteLLM logs a warning and skips the header. Use SSE/HTTP transport servers to get full JWT injection.
-- The keypair is **in-memory by default** and rotated on each restart unless `MCP_JWT_SIGNING_KEY` is set. FastMCP's `JWTVerifier` handles key rotation transparently via JWKS key ID matching.
+- **以 OpenAPI 為基礎的 MCP 伺服器**（已設定 `spec_path`）不支援 JWT 注入。LiteLLM 會記錄警告並略過標頭。請使用 SSE/HTTP 傳輸伺服器以獲得完整的 JWT 注入。
+- 金鑰對預設為**記憶體內**，且除非設定 `MCP_JWT_SIGNING_KEY`，否則每次重新啟動都會輪換。FastMCP 的 `JWTVerifier` 會透過 JWKS key ID 比對透明處理金鑰輪換。
 
 ---
 
-## Related
+## 相關內容 {#related}
 
-- [MCP Guardrails](./mcp_guardrail) — PII masking and blocking for MCP calls
-- [MCP OAuth](./mcp_oauth) — upstream OAuth2 for MCP server access
-- [MCP AWS SigV4](./mcp_aws_sigv4) — AWS-signed requests to MCP servers
+- [MCP 防護欄](./mcp_guardrail) — MCP 呼叫的 PII 遮罩與封鎖
+- [MCP OAuth](./mcp_oauth) — MCP 伺服器存取的上游 OAuth2
+- [MCP AWS SigV4](./mcp_aws_sigv4) — 對 MCP 伺服器的 AWS 簽署請求

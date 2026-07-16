@@ -1,11 +1,11 @@
 import Image from '@theme/IdealImage';
 
-# LiteLLM Proxy Performance
+# LiteLLM 代理效能 {#litellm-proxy-performance}
 
-### Throughput - 30% Increase
-LiteLLM proxy + Load Balancer gives **30% increase** in throughput compared to Raw OpenAI API
+### 吞吐量 - 提升 30% {#throughput---30-increase}
+LiteLLM 代理程式 + 負載平衡器與原始 OpenAI API 相比，可使吞吐量**提升 30%**
 <Image img={require('../../img/throughput.png')} />
 
-### Latency Added - 0.00325 seconds
-LiteLLM proxy adds **0.00325 seconds** latency as compared to using the Raw OpenAI API
+### 額外延遲 - 0.00325 秒 {#latency-added---000325-seconds}
+與使用原始 OpenAI API 相比，LiteLLM 代理程式會增加**0.00325 秒**延遲
 <Image img={require('../../img/latency.png')} />

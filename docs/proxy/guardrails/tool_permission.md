@@ -1,38 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteLLM Tool Permission Guardrail
+# LiteLLM 工具權限防護欄 {#litellm-tool-permission-guardrail}
 
-LiteLLM provides the LiteLLM Tool Permission Guardrail that lets you control which **tool calls** a model is allowed to invoke, using configurable allow/deny rules. This offers fine-grained, provider-agnostic control over tool execution (e.g., OpenAI Chat Completions `tool_calls`, Anthropic Messages `tool_use`, MCP tools).
+LiteLLM 提供 LiteLLM 工具權限防護欄，讓您透過可設定的允許／拒絕規則，控制模型可被允許呼叫哪些 **工具呼叫**。這可針對工具執行提供細緻且與提供者無關的控制（例如，OpenAI Chat Completions `tool_calls`、Anthropic Messages `tool_use`、MCP tools）。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM UI
+### LiteLLM UI {#litellm-ui}
 
-#### Step 1: Select Tool Permission Guardrail
+#### 步驟 1：選取工具權限防護欄 {#step-1-select-tool-permission-guardrail}
 
-Open the LiteLLM Dashboard, click **Add New Guardrail**, and choose **LiteLLM Tool Permission Guardrail**. This loads the rule builder UI.
+開啟 LiteLLM 儀表板，點擊 **Add New Guardrail**，然後選擇 **LiteLLM Tool Permission Guardrail**。這會載入規則建構 UI。
 
-#### Step 2: Define Regex Rules
+#### 步驟 2：定義 Regex 規則 {#step-2-define-regex-rules}
 
-1. Click **Add Rule**.
-2. Enter a unique Rule ID.
-3. Provide a regex for the tool name (e.g., `^mcp__github_.*$`).
-4. Optionally add a regex for tool type (e.g., `^function$`).
-5. Pick **Allow** or **Deny**.
+1. 點擊 **Add Rule**。
+2. 輸入唯一的 Rule ID。
+3. 提供工具名稱的 regex（例如，`^mcp__github_.*$`）。
+4. 選擇性地為工具類型新增 regex（例如，`^function$`）。
+5. 選擇 **Allow** 或 **Deny**。
 
-#### Step 3: Restrict Tool Arguments (Optional)
+#### 步驟 3：限制工具引數（選用） {#step-3-restrict-tool-arguments-optional}
 
-Select **+ Restrict tool arguments** to attach regex validations to nested paths (dot + `[]` notation). This enforces that sensitive parameters (such as `arguments.to[]`) conform to pre-approved formats.
+選取 **+ Restrict tool arguments**，以將 regex 驗證附加到巢狀路徑（點號 + `[]` 記法）。這可強制敏感參數（例如 `arguments.to[]`）符合預先核准的格式。
 
-#### Step 4: Choose Defaults & Actions
+#### 步驟 4：選擇預設值與動作 {#step-4-choose-defaults--actions}
 
-- Set the fallback decision (`default_action`) for tools that do not hit any rule.
-- Decide how disallowed tools behave: **Block** halts the request, **Rewrite** strips forbidden tools and returns an error message inside the response.
-- Customize `violation_message_template` if you want branded error copy.
-- Save the guardrail.
+- 設定未命中任何規則的工具之備援決策（`default_action`）。
+- 決定不允許工具的行為：**Block** 會停止請求，**Rewrite** 會移除被禁止的工具，並在回應中傳回錯誤訊息。
+- 如果您想要品牌化的錯誤文案，可自訂 `violation_message_template`。
+- 儲存防護欄。
 
-### LiteLLM Config.yaml Setup
+### LiteLLM Config.yaml 設定 {#litellm-configyaml-setup}
 
 ```yaml
 guardrails:
@@ -65,7 +65,7 @@ guardrails:
       on_disallowed_action: "block"  # How to handle disallowed tools: "block" or "rewrite"
 ```
 
-#### Rule Structure
+#### 規則結構 {#rule-structure}
 
 ```yaml
 - id: "unique_rule_id"           # Unique identifier for the rule
@@ -76,27 +76,27 @@ guardrails:
     "path.to[].field": "^regex$"
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
+- `pre_call` 在 **LLM 呼叫前** 執行，針對 **input**
+- `post_call` 在 **LLM 呼叫後** 執行，針對 **input & output**
 
-### `on_disallowed_action` behavior
+### `on_disallowed_action` 行為 {#on_disallowed_action-behavior}
 
-| Value | What happens |
+| 值 | 會發生什麼事 |
 | --- | --- |
-| `block` | The request is immediately rejected. Pre-call checks raise a `400` HTTP error. Post-call checks raise `GuardrailRaisedException`, so the proxy responds with an error instead of the model output. Use when invoking the forbidden tool must halt the workflow. |
-| `rewrite` | LiteLLM silently strips disallowed tools from the payload before it reaches the model (pre-call) or rewrites the model response/tool calls after the fact. The guardrail inserts error text into `message.content`/`tool_result` entries so the client learns the tool was blocked while the rest of the completion continues. Use when you want graceful degradation instead of hard failures. |
+| `block` | 請求會立即被拒絕。呼叫前檢查會引發 `400` HTTP 錯誤。呼叫後檢查會引發 `GuardrailRaisedException`，因此 proxy 會回傳錯誤而不是模型輸出。當呼叫被禁止的工具時必須中止工作流程時，請使用此項。 |
+| `rewrite` | LiteLLM 會在請求到達模型前（呼叫前）悄悄地從負載中移除不允許的工具，或在事後重寫模型回應／工具呼叫。防護欄會將錯誤文字插入 `message.content`/`tool_result` 項目中，讓用戶端知道該工具已被阻擋，而其餘的 completion 會繼續。當您想要優雅降級而非硬性失敗時，請使用此項。 |
 
-### Custom denial message
+### 自訂拒絕訊息 {#custom-denial-message}
 
-Set `violation_message_template` when you want the guardrail to return a branded error (e.g., “this violates our org policy…”). LiteLLM replaces placeholders from the denied tool:
+當您希望防護欄回傳品牌化錯誤（例如：「這違反了我們的組織政策…」）時，請設定 `violation_message_template`。LiteLLM 會用來自被拒絕工具的占位符取代：
 
-- `{tool_name}` – the tool/function name (e.g., `Read`)
-- `{rule_id}` – the matching rule ID (or `None` when the default action kicks in)
-- `{default_message}` – the original LiteLLM message if you need to append it
+- `{tool_name}` – 工具／函式名稱（例如，`Read`）
+- `{rule_id}` – 符合的規則 ID（或在預設動作啟動時為 `None`）
+- `{default_message}` – 如果您需要附加，則為原始 LiteLLM 訊息
 
-Example:
+範例：
 
 ```yaml
 guardrails:
@@ -116,20 +116,20 @@ guardrails:
       on_disallowed_action: "block"
 ```
 
-If a request tries to invoke `Read`, the proxy now returns “this violates our org policy, we don't support executing Read commands” instead of the stock error text. Omit the field to keep the default messaging.
+如果請求嘗試呼叫 `Read`，proxy 現在會回傳「這違反了我們的組織政策，我們不支援執行 Read commands」而不是預設錯誤文字。若省略此欄位，則保留預設訊息。
 
-### 2. Start the Proxy
+### 2. 啟動 Proxy {#2-start-the-proxy}
 
 ```shell
 litellm --config config.yaml --port 4000
 ```
 
-## Examples
+## 範例 {#examples}
 
 <Tabs>
-<TabItem value="block" label="Block Request">
+<TabItem value="block" label="阻擋請求">
 
-**Block request (`on_disallowed_action: block`)**
+**阻擋請求（`on_disallowed_action: block`）**
 
 ```bash
 # Test
@@ -151,7 +151,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-**Expected response (Denied):**
+**預期回應（已拒絕）：**
 
 ```json
 {
@@ -166,9 +166,9 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
 ```
 
 </TabItem>
-<TabItem value="rewrite" label="Rewrite Request">
+<TabItem value="rewrite" label="重寫請求">
 
-**Rewrite request (`on_disallowed_action: rewrite`)**
+**重寫請求（`on_disallowed_action: rewrite`）**
 
 ```bash
 # Test
@@ -190,7 +190,7 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
   }'
 ```
 
-**Expected response (tool removed, completion continues):**
+**預期回應（工具已移除，completion 繼續）：**
 
 ```json
 {
@@ -224,9 +224,9 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
 </TabItem>
 </Tabs>
 
-### Constrain Tool Arguments
+### 限制工具引數 {#constrain-tool-arguments}
 
-Sometimes you want to allow a tool but still restrict **how** it can be used. Add `allowed_param_patterns` to a rule to enforce regex patterns on specific argument paths (dot notation with `[]` for arrays).
+有時您會想允許某個工具，但仍限制其使用方式。將 `allowed_param_patterns` 加入規則，可針對特定引數路徑強制套用 regex 模式（陣列使用點號記法與 `[]`）。
 
 ```yaml title="Only allow mail_mcp to mail @berri.ai addresses"
 guardrails:
@@ -246,4 +246,4 @@ guardrails:
       on_disallowed_action: "block"
 ```
 
-In this example the LLM can still call `send_email`, but the guardrail blocks the invocation (or rewrites it, depending on `on_disallowed_action`) if it tries to email anyone outside `@berri.ai` or produce a subject that fails the regex. Use this pattern for any tool where argument values matter—mail senders, escalation workflows, ticket creation, etc.
+在此範例中，LLM 仍可呼叫 `send_email`，但如果它嘗試寄信給 `@berri.ai` 以外的任何人，或產生不符合 regex 的主旨，防護欄就會阻擋該次呼叫（或依 `on_disallowed_action` 進行重寫）。只要是引數值很重要的工具，都可使用此模式——郵件寄送器、升級工作流程、工單建立等。

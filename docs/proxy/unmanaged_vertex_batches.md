@@ -1,14 +1,14 @@
-# Unmanaged Vertex AI Batches
+# 未管理的 Vertex AI 批次 {#unmanaged-vertex-ai-batches}
 
 :::info
 
-This is a LiteLLM Enterprise feature.
+這是 LiteLLM Enterprise 功能。
 
 :::
 
-LiteLLM supports two paths for Vertex AI batch jobs. The managed path handles file upload and format conversion automatically. The unmanaged path lets you upload batch files directly to GCS in Vertex AI's native format; LiteLLM skips transformation but tracks cost when enabled.
+LiteLLM 支援 Vertex AI 批次工作的兩種路徑。受管理路徑會自動處理檔案上傳與格式轉換。未管理路徑則讓您直接以上傳批次檔案到 GCS，並使用 Vertex AI 的原生格式；LiteLLM 會略過轉換，但在啟用時會追蹤成本。
 
-## How it works
+## 運作方式 {#how-it-works}
 
 ```mermaid
 sequenceDiagram
@@ -18,27 +18,27 @@ sequenceDiagram
     participant G as GCS
     participant C as CheckBatchCost (poller)
 
-    U->>G: Upload JSONL in Vertex AI native format
+    U->>G: 上傳 Vertex AI 原生格式的 JSONL
     U->>P: POST /v1/batches (input_file_id: gs://...)
-    P->>V: Create batch job
-    V-->>P: Numeric job ID (e.g. 8823717160934178816)
-    P-->>U: Batch ID
-    V->>G: Write output when complete
-    C->>P: Poll LiteLLM_ManagedObjectTable
-    C->>V: Retrieve batch status + usage
-    C->>P: Log cost, mark batch_processed=true
+    P->>V: 建立批次工作
+    V-->>P: 數字工作 ID（例如 8823717160934178816）
+    P-->>U: 批次 ID
+    V->>G: 完成時寫入輸出
+    C->>P: 輪詢 LiteLLM_ManagedObjectTable
+    C->>V: 取得批次狀態 + 使用量
+    C->>P: 記錄成本，標記 batch_processed=true
 ```
 
-## Setup
+## 設定 {#setup}
 
-Enable cost tracking in your proxy config:
+在您的 proxy 設定中啟用成本追蹤：
 
 ```yaml
 general_settings:
   track_unmanaged_vertex_batch_cost: true  # Default: false
 ```
 
-Configure a `vertex_ai` deployment for the model you want to batch. The poller uses this deployment's credentials to poll Vertex and compute cost:
+為您要批次處理的模型設定 `vertex_ai` 部署。poller 會使用此部署的憑證來輪詢 Vertex 並計算成本：
 
 ```yaml
 model_list:
@@ -50,36 +50,36 @@ model_list:
       vertex_credentials: /path/to/service-account.json
 ```
 
-## GCS path requirement
+## GCS 路徑需求 {#gcs-path-requirement}
 
-The GCS path must include `publishers/google/models/<model-name>/` so LiteLLM can derive the model name for credential lookup.
+GCS 路徑必須包含 `publishers/google/models/<model-name>/`，如此 LiteLLM 才能推導出用於憑證查找的模型名稱。
 
 ```
 gs://my-bucket/<any-prefix>/publishers/google/models/gemini-2.5-flash/<filename>.jsonl
 ```
 
-The bucket name and any prefix before `publishers/` can be anything.
+儲存桶名稱以及 `publishers/` 之前的任何前綴都可以是任意值。
 
-## Batch file format
+## 批次檔案格式 {#batch-file-format}
 
-Unmanaged batches must be in Vertex AI native JSONL format. The managed path accepts OpenAI format and converts it; the unmanaged path skips conversion entirely, so you must provide Vertex AI format directly:
+未管理批次必須使用 Vertex AI 原生 JSONL 格式。受管理路徑接受 OpenAI 格式並加以轉換；未管理路徑則完全略過轉換，因此您必須直接提供 Vertex AI 格式：
 
 ```json
 {"custom_id": "1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gemini-2.5-flash", "messages": [{"role": "user", "content": "What is 2+2?"}]}}
 {"custom_id": "2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gemini-2.5-flash", "messages": [{"role": "user", "content": "What is 3+3?"}]}}
 ```
 
-## Usage
+## 用法 {#usage}
 
-### 1. Upload to GCS
+### 1. 上傳到 GCS {#1-upload-to-gcs}
 
 ```bash
 gsutil cp batch.jsonl gs://my-bucket/batches/publishers/google/models/gemini-2.5-flash/batch.jsonl
 ```
 
-### 2. Create batch
+### 2. 建立批次 {#2-create-batch}
 
-Pass the GCS URI as `input_file_id`:
+將 GCS URI 作為 `input_file_id` 傳入：
 
 ```bash
 curl -X POST http://localhost:4000/v1/batches \
@@ -93,58 +93,58 @@ curl -X POST http://localhost:4000/v1/batches \
   }'
 ```
 
-The response contains a raw Vertex numeric job ID (e.g., `8823717160934178816`).
+回應會包含原始的 Vertex 數字工作 ID（例如，`8823717160934178816`）。
 
-### 3. Monitor status
+### 3. 監控狀態 {#3-monitor-status}
 
-Pass `custom_llm_provider=vertex_ai` so the proxy routes to Vertex instead of OpenAI:
+傳入 `custom_llm_provider=vertex_ai`，讓 proxy 路由到 Vertex 而非 OpenAI：
 
 ```bash
 curl -X GET "http://localhost:4000/v1/batches/8823717160934178816?custom_llm_provider=vertex_ai" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-### 4. Retrieve results
+### 4. 取得結果 {#4-retrieve-results}
 
-When `status` is `completed`, the output file location is in `output_file_id`. Download it from GCS:
+當 `status` 為 `completed` 時，輸出檔案位置會在 `output_file_id` 中。從 GCS 下載：
 
 ```bash
 gsutil cp gs://my-bucket/output/batch-results.jsonl .
 ```
 
-Each line is a Vertex AI response object:
+每一行都是一個 Vertex AI 回應物件：
 
 ```json
 {"custom_id": "1", "response": {"status_code": 200, "body": {"choices": [{"message": {"content": "2 + 2 = 4"}}]}}}
 ```
 
-## Cost tracking
+## 成本追蹤 {#cost-tracking}
 
-With `track_unmanaged_vertex_batch_cost: true`, the CheckBatchCost poller handles cost tracking automatically. It extracts the model from the GCS path, uses the configured `vertex_ai` deployment to poll Vertex for results, computes token cost, and marks the batch as processed. Cost appears in the proxy logs UI at `http://localhost:4000/ui/?page=logs`.
+啟用 `track_unmanaged_vertex_batch_cost: true` 後，CheckBatchCost poller 會自動處理成本追蹤。它會從 GCS 路徑擷取模型，使用已設定的 `vertex_ai` 部署來輪詢 Vertex 取得結果，計算 token 成本，並將批次標記為已處理。成本會顯示在 proxy 記錄 UI 的 `http://localhost:4000/ui/?page=logs`。
 
-The polling interval is controlled by `proxy_batch_polling_interval` in `general_settings` (base seconds; the poller adds 0-30s jitter). Set it to `10` for faster feedback during testing.
+輪詢間隔由 `proxy_batch_polling_interval` 在 `general_settings` 中控制（基礎秒數；poller 會加入 0-30 秒抖動）。在測試期間可將其設為 `10` 以獲得更快的回饋。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**Batch not costed.** Check that `track_unmanaged_vertex_batch_cost: true` is set, that your GCS path contains `publishers/google/models/<model>/`, and that you have a `vertex_ai` deployment configured. Look for log lines like:
+**未計成本。** 請檢查 `track_unmanaged_vertex_batch_cost: true` 是否已設定、您的 GCS 路徑是否包含 `publishers/google/models/<model>/`，以及您是否已設定 `vertex_ai` 部署。請留意如下記錄行：
 
 ```
 Skipping unmanaged vertex batch 8823717160934178816: no vertex_ai deployment configured for model gemini-2.5-flash
 ```
 
-**Cost is zero.** Vertex AI includes token usage in the response body only after the batch fully completes. If status is `completed` but cost is zero, manually download the output file to verify it contains response data with usage fields.
+**成本為零。** 只有在批次完全完成後，Vertex AI 才會在回應本文中包含 token 使用量。如果狀態是 `completed` 但成本為零，請手動下載輸出檔案以確認其中包含帶有 usage 欄位的回應資料。
 
-## Managed vs unmanaged
+## 受管理 vs 未管理 {#managed-vs-unmanaged}
 
-| | Managed | Unmanaged |
+| | 受管理 | 未管理 |
 |---|---|---|
-| Input format | OpenAI chat completion | Vertex AI native |
-| File upload | Via proxy | Direct to GCS |
-| Format conversion | Automatic | None |
-| Batch ID format | Base64-encoded unified ID | Raw Vertex numeric ID |
-| Cost tracking | On by default | Opt-in flag |
+| 輸入格式 | OpenAI 聊天完成 | Vertex AI 原生 |
+| 檔案上傳 | 透過 proxy | 直接到 GCS |
+| 格式轉換 | 自動 | 無 |
+| 批次 ID 格式 | Base64 編碼的統一 ID | 原始 Vertex 數字 ID |
+| 成本追蹤 | 預設啟用 | opt-in 標記 |
 
-## See also
+## 另請參閱 {#see-also}
 
-- [Managed Batches](/docs/proxy/managed_batches)
-- [Vertex AI Batch Prediction](https://cloud.google.com/vertex-ai/docs/batch-prediction/batch-prediction)
+- [受管理批次](/docs/proxy/managed_batches)
+- [Vertex AI 批次預測](https://cloud.google.com/vertex-ai/docs/batch-prediction/batch-prediction)

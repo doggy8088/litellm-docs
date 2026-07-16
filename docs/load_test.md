@@ -1,12 +1,12 @@
 import Image from '@theme/IdealImage';
 
-# LiteLLM Proxy - Locust Load Test
+# LiteLLM Proxy - Locust 負載測試 {#litellm-proxy---locust-load-test}
 
-## Locust Load Test LiteLLM Proxy 
+## Locust 負載測試 LiteLLM Proxy  {#locust-load-test-litellm-proxy}
 
-1. Add `fake-openai-endpoint` to your proxy config.yaml and start your litellm proxy.
+1. 將 `fake-openai-endpoint` 加入您的 proxy config.yaml，並啟動您的 litellm proxy。
 
-LiteLLM provides a free hosted `fake-openai-endpoint` you can load test against. You can also self-host your own fake OpenAI proxy server using [github.com/BerriAI/example_openai_endpoint](https://github.com/BerriAI/example_openai_endpoint).
+LiteLLM 提供一個免費託管的 `fake-openai-endpoint`，您可以對其進行負載測試。您也可以使用 [github.com/BerriAI/example_openai_endpoint](https://github.com/BerriAI/example_openai_endpoint) 自行架設您的假 OpenAI proxy server。
 
 ```yaml
 model_list:
@@ -19,35 +19,34 @@ model_list:
 
 2. `uv add locust`
 
-3. Create a file called `locustfile.py` on your local machine. Copy the contents from the litellm load test located [here](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
+3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 [這裡](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py) 的 litellm 負載測試內容複製過來
 
-4. Start locust
-  Run `locust` in the same directory as your `locustfile.py` from step 2
+4. 啟動 locust
+  在與步驟 2 中的 `locustfile.py` 相同目錄下執行 `locust`
 
   ```shell
   locust
   ```
 
-  Output on terminal 
+  終端機輸出
   ```
   [2024-03-15 07:19:58,893] Starting web interface at http://0.0.0.0:8089
   [2024-03-15 07:19:58,898] Starting Locust 2.24.0
   ```
 
-5. Run Load test on locust
+5. 在 locust 上執行負載測試
 
-  Head to the locust UI on http://0.0.0.0:8089
+  前往 http://0.0.0.0:8089 的 locust UI
 
-  Set Users=100, Ramp Up Users=10, Host=Base URL of your LiteLLM Proxy
+  設定 Users=100、Ramp Up Users=10、Host=您的 LiteLLM Proxy 的 Base URL
 
   <Image img={require('../img/locust_load_test.png')} />
 
-6. Expected Results
+6. 預期結果
 
-  Expect to see the following response times for `/health/readiness` 
-  Median → /health/readiness is `150ms`
+  預期會看到 `/health/readiness` 的以下回應時間
+  中位數 → /health/readiness 為 `150ms`
 
-  Avg →  /health/readiness is `219ms`
+  平均值 →  /health/readiness 為 `219ms`
 
   <Image img={require('../img/litellm_load_test.png')} />
-

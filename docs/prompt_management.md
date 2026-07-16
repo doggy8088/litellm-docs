@@ -1,12 +1,12 @@
 ---
-title: Prompt Management with Responses API
+title: Responses API 的提示詞管理
 ---
 
-# Prompt Management with Responses API
+# 搭配 Responses API 的提示詞管理 {#prompt-management-with-responses-api}
 
-Use LiteLLM Prompt Management with `/v1/responses` by passing `prompt_id` and optional `prompt_variables`.
+透過傳入 `prompt_id` 與可選的 `prompt_variables`，使用 LiteLLM Prompt Management 搭配 `/v1/responses`。
 
-## Basic Usage
+## 基本用法 {#basic-usage}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/responses" \
@@ -20,9 +20,9 @@ curl -X POST "http://localhost:4000/v1/responses" \
   }'
 ```
 
-## Multi-turn Follow-up in `input`
+## 在 `input` 中的多輪後續追問 {#multi-turn-follow-up-in-input}
 
-To send follow-up turns in one request, pass message history in `input`.
+若要在一次請求中送出後續輪次，請將訊息歷史傳入 `input`。
 
 ```bash
 curl -X POST "http://localhost:4000/v1/responses" \
@@ -40,9 +40,9 @@ curl -X POST "http://localhost:4000/v1/responses" \
   }'
 ```
 
-## Notes
+## 注意事項 {#notes}
 
-- Prompt template messages are merged with your `input` messages.
-- Prompt variable substitution applies to prompt message content.
-- Tool call payload fields are not substituted by prompt variables.
-- For follow-ups with `previous_response_id`, include `prompt_id` again if you want prompt management applied on that turn.
+- 提示詞範本訊息會與您的 `input` 訊息合併。
+- 提示詞變數替換會套用於提示詞訊息內容。
+- 工具呼叫酬載欄位不會由提示詞變數替換。
+- 若要對 `previous_response_id` 的後續追問套用提示詞管理，請再次包含 `prompt_id`。

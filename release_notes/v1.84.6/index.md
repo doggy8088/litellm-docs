@@ -1,5 +1,5 @@
 ---
-title: "v1.84.6 - CrowdStrike AIDR Identity Capture"
+title: "v1.84.6 - CrowdStrike AIDR 身分擷取"
 slug: "v1-84-6"
 date: 2026-06-08T18:25:32
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.84.6
 </TabItem>
 </Tabs>
 
-`v1.84.6` is a patch release on top of [`v1.84.5`](/release_notes/v1.84.5/v1-84-5). It backports CrowdStrike AIDR user and model metadata capture, plus a follow-up fix so identity is read from both metadata bags rather than being dropped when a request carries `litellm_metadata`.
+`v1.84.6` 是基於 [`v1.84.5`](/release_notes/v1.84.5/v1-84-5) 的修補版發行。它回補了 CrowdStrike AIDR 使用者與模型中繼資料擷取，並加入後續修正，讓身分可從兩個中繼資料區塊讀取，而不是在請求帶有 `litellm_metadata` 時被捨棄。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- feat(guardrails): capture CrowdStrike AIDR user and model metadata - [PR #29517](https://github.com/BerriAI/litellm/pull/29517)
-- fix(guardrails): read CrowdStrike AIDR identity from both metadata bags - [PR #29991](https://github.com/BerriAI/litellm/pull/29991)
+- feat(guardrails): 擷取 CrowdStrike AIDR 使用者與模型中繼資料 - [PR #29517](https://github.com/BerriAI/litellm/pull/29517)
+- fix(guardrails): 從兩個中繼資料區塊讀取 CrowdStrike AIDR 身分 - [PR #29991](https://github.com/BerriAI/litellm/pull/29991)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.5...v1.84.6

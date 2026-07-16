@@ -2,42 +2,39 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Alerting / Webhooks
+# 警示 / Webhooks {#alerting--webhooks}
 
-Get alerts for:
+取得以下項目的警示：
 
-| Category | Alert Type |
+| 類別 | 警示類型 |
 |----------|------------|
-| **LLM Performance** | Hanging API calls, Slow API calls, Failed API calls, Model outage alerting |
-| **Budget & Spend** | Budget tracking per key/user, Soft budget alerts, Weekly & Monthly spend reports per Team/Tag |
-| **System Health** | Failed database read/writes |
-| **Daily Reports** | Top 5 slowest LLM deployments, Top 5 LLM deployments with most failed requests, Weekly & Monthly spend per Team/Tag |
+| **LLM 效能** | 卡住的 API 請求、緩慢的 API 請求、失敗的 API 請求、模型故障警示 |
+| **預算與支出** | 每個金鑰/使用者的預算追蹤、軟性預算警示、每個團隊/標籤的每週與每月支出報表 |
+| **系統健康狀態** | 資料庫讀取/寫入失敗 |
+| **每日報表** | 最慢的 5 個 LLM 部署、失敗請求最多的 5 個 LLM 部署、每個團隊/標籤的每週與每月支出 |
 
-
-
-Works across: 
+適用於： 
 - [Slack](#quick-start)
 - [Discord](#advanced---using-discord-webhooks)
 - [Microsoft Teams](#advanced---using-ms-teams-webhooks)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Set up a slack alert channel to receive alerts from proxy.
+設定 Slack 警示頻道以接收來自 proxy 的警示。
 
-### Step 1: Add a Slack Webhook URL to env
+### 步驟 1：將 Slack Webhook URL 加入 env {#step-1-add-a-slack-webhook-url-to-env}
 
-Get a slack webhook url from https://api.slack.com/messaging/webhooks
+從 https://api.slack.com/messaging/webhooks 取得 Slack webhook URL
 
-You can also use Discord Webhooks, see [here](#using-discord-webhooks)
+您也可以使用 Discord Webhooks，請參閱[此處](#using-discord-webhooks)
 
-
-Set `SLACK_WEBHOOK_URL` in your proxy env to enable Slack alerts.
+在 proxy env 中設定 `SLACK_WEBHOOK_URL`，以啟用 Slack 警示。
 
 ```bash
 export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/<>/<>/<>"
 ```
 
-### Step 2: Setup Proxy
+### 步驟 2：設定 Proxy {#step-2-setup-proxy}
 
 ```yaml
 general_settings: 
@@ -59,26 +56,24 @@ general_settings:
     
 ```
 
-Start proxy 
+啟動 proxy 
 ```bash
 $ litellm --config /path/to/config.yaml
 ```
 
 
-### Step 3: Test it!
-
+### 步驟 3：測試！ {#step-3-test-it}
 
 ```bash
 curl -X GET 'http://0.0.0.0:4000/health/services?service=slack' \
 -H 'Authorization: Bearer sk-1234'
 ```
 
-## Advanced
+## 進階 {#advanced}
 
-### Redacting Messages from Alerts
+### 自警示中移除訊息內容 {#redacting-messages-from-alerts}
 
-By default alerts show the `messages/input` passed to the LLM. If you want to redact this from slack alerting set the following setting on your config
-
+預設情況下，警示會顯示傳遞給 LLM 的 `messages/input`。如果您想從 Slack 警示中移除此內容，請在設定中設定以下項目
 
 ```shell
 general_settings:
@@ -89,13 +84,13 @@ litellm_settings:
   redact_messages_in_exceptions: True
 ```
 
-### Soft Budget Alerts for Virtual Keys
+### 虛擬金鑰的軟性預算警示 {#soft-budget-alerts-for-virtual-keys}
 
-Use this to send an alert when a key/team is close to it's budget running out
+用於在金鑰/團隊即將耗盡預算時傳送警示
 
-Step 1. Create a virtual key with a soft budget
+步驟 1. 建立具有軟性預算的虛擬金鑰
 
-Set the `soft_budget` to 0.001
+將 `soft_budget` 設為 0.001
 
 ```shell
 curl -X 'POST' \
@@ -110,7 +105,7 @@ curl -X 'POST' \
 }'
 ```
 
-Step 2. Send a request to the proxy with the virtual key
+步驟 2. 使用該虛擬金鑰向 proxy 發送請求
 
 ```shell
 curl http://0.0.0.0:4000/chat/completions \
@@ -128,16 +123,13 @@ curl http://0.0.0.0:4000/chat/completions \
 
 ```
 
-Step 3. Check slack for Expected Alert
+步驟 3. 在 Slack 中查看預期警示
 
 <Image img={require('../../img/soft_budget_alert.png')}/>
 
+### 將中繼資料加入警示  {#add-metadata-to-alerts}
 
-
-
-### Add Metadata to alerts 
-
-Add alerting metadata to proxy calls for debugging. 
+為 proxy 請求加入警示中繼資料以便除錯。 
 
 ```python
 import openai
@@ -160,15 +152,15 @@ response = client.chat.completions.create(
 )
 ```
 
-**Expected Response**
+**預期回應**
 
 <Image img={require('../../img/alerting_metadata.png')}/>
 
-### Select specific alert types
+### 選取特定警示類型 {#select-specific-alert-types}
 
-Set `alert_types` if you want to Opt into only specific alert types. When alert_types is not set, all Default Alert Types are enabled.
+如果您只想採用特定警示類型，請設定 `alert_types`。當未設定 alert_types 時，所有預設警示類型都會啟用。
 
-👉 [**See all alert types here**](#all-possible-alert-types)
+👉 [**在此查看所有警示類型**](#all-possible-alert-types)
 
 ```shell
 general_settings:
@@ -186,21 +178,21 @@ general_settings:
   ] 
 ```
 
-### Map slack channels to alert type
+### 將 Slack 頻道對應到警示類型 {#map-slack-channels-to-alert-type}
 
-Use this if you want to set specific channels per alert type
+如果您想為每種警示類型設定特定頻道，請使用此功能
 
-**This allows you to do the following**
+**這可讓您執行以下操作**
 ```
 llm_exceptions -> go to slack channel #llm-exceptions
 spend_reports -> go to slack channel #llm-spend-reports
 ```
 
-Set `alert_to_webhook_url` on your config.yaml
+在您的 config.yaml 中設定 `alert_to_webhook_url`
 
 <Tabs>
 
-<TabItem label="1 channel per alert" value="1">
+<TabItem label="每個警示 1 個頻道" value="1">
 
 ```yaml
 model_list:
@@ -232,9 +224,9 @@ litellm_settings:
 ```
 </TabItem>
 
-<TabItem label="multiple channels per alert" value="2">
+<TabItem label="每個警示多個頻道" value="2">
 
-Provide multiple slack channels for a given alert type
+為給定的警示類型提供多個 Slack 頻道
 
 ```yaml
 model_list:
@@ -269,7 +261,7 @@ litellm_settings:
 
 </Tabs>
 
-Test it - send a valid llm request - expect to see a `llm_too_slow` alert in it's own slack channel
+測試一下 - 傳送一個有效的 llm 請求 - 預期會在其自己的 Slack 頻道中看到一則 `llm_too_slow` 警示
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -284,21 +276,21 @@ curl -i http://localhost:4000/v1/chat/completions \
 ```
 
 
-### MS Teams Webhooks
+### MS Teams Webhooks {#ms-teams-webhooks}
 
-MS Teams provides a slack compatible webhook url that you can use for alerting
+MS Teams 提供與 Slack 相容的 webhook URL，您可以用來進行警示
 
-##### Quick Start
+##### 快速開始 {#quick-start-1}
 
-1. [Get a webhook url](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?tabs=newteams%2Cdotnet#create-an-incoming-webhook) for your Microsoft Teams channel 
+1. [取得 webhook URL](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?tabs=newteams%2Cdotnet#create-an-incoming-webhook) 供您的 Microsoft Teams 頻道使用 
 
-2. Add it to your .env
+2. 將其加入您的 .env
 
 ```bash
 SLACK_WEBHOOK_URL="https://berriai.webhook.office.com/webhookb2/...6901/IncomingWebhook/b55fa0c2a48647be8e6effedcd540266/e04b1092-4a3e-44a2-ab6b-29a0a4854d1d"
 ```
 
-3. Add it to your litellm config 
+3. 將其加入您的 litellm 設定 
 
 ```yaml
 model_list: 
@@ -312,9 +304,9 @@ general_settings:
     alerting_threshold: 300 # sends alerts if requests hang for 5min+ and responses take 5min+ 
 ```
 
-4. Run health check!
+4. 執行健康檢查！
 
-Call the proxy `/health/services` endpoint to test if your alerting connection is correctly setup.
+呼叫 proxy 的 `/health/services` 端點，以測試您的警示連線是否已正確設定。
 
 ```bash
 curl --location 'http://0.0.0.0:4000/health/services?service=slack' \
@@ -322,25 +314,25 @@ curl --location 'http://0.0.0.0:4000/health/services?service=slack' \
 ```
 
 
-**Expected Response**
+**預期回應**
 
 <Image img={require('../../img/ms_teams_alerting.png')}/>
 
-### Discord Webhooks
+### Discord Webhooks {#discord-webhooks}
 
-Discord provides a slack compatible webhook url that you can use for alerting
+Discord 提供與 Slack 相容的 webhook URL，您可以用來進行警示
 
-##### Quick Start
+##### 快速開始 {#quick-start-2}
 
-1. Get a webhook url for your discord channel 
+1. 取得 Discord 頻道的 webhook URL 
 
-2. Append `/slack` to your discord webhook - it should look like
+2. 在您的 Discord webhook 後附加 `/slack` - 它應該看起來像這樣
 
 ```
 "https://discord.com/api/webhooks/1240030362193760286/cTLWt5ATn1gKmcy_982rl5xmYHsrM1IWJdmCL1AyOmU9JdQXazrp8L1_PYgUtgxj8x4f/slack"
 ```
 
-3. Add it to your litellm config 
+3. 將其加入您的 litellm 設定 
 
 ```yaml
 model_list: 
@@ -358,27 +350,27 @@ environment_variables:
 ```
 
 
-##  [BETA] Webhooks for Budget Alerts
+##  [BETA] 用於預算警示的 Webhooks {#beta-webhooks-for-budget-alerts}
 
-**Note**: This is a beta feature, so the spec might change.
+**注意**：這是 beta 功能，因此規格可能會變更。
 
-Set a webhook to get notified for budget alerts. 
+設定 webhook 以接收預算警示通知。 
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
-Add url to your environment, for testing you can use a link from [here](https://webhook.site/)
+將 URL 加入您的環境，測試時您可以使用[此處](https://webhook.site/)的連結
 
 ```bash
 export WEBHOOK_URL="https://webhook.site/6ab090e8-c55f-4a23-b075-3209f5c57906"
 ```
 
-Add 'webhook' to config.yaml
+在 config.yaml 中加入 'webhook'
 ```yaml
 general_settings: 
   alerting: ["webhook"] # 👈 KEY CHANGE
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -386,14 +378,14 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -X GET --location 'http://0.0.0.0:4000/health/services?service=webhook' \
 --header 'Authorization: Bearer sk-1234'
 ```
 
-**Expected Response**
+**預期回應**
 
 ```bash
 {
@@ -412,41 +404,41 @@ curl -X GET --location 'http://0.0.0.0:4000/health/services?service=webhook' \
 }
 ```
 
-### API Spec for Webhook Event
+### Webhook Event 的 API 規格 {#api-spec-for-webhook-event}
 
-- `spend` *float*: The current spend amount for the 'event_group'.
-- `max_budget` *float or null*: The maximum allowed budget for the 'event_group'. null if not set. 
-- `token` *str*: A hashed value of the key, used for authentication or identification purposes.
-- `customer_id` *str or null*: The ID of the customer associated with the event (optional).
-- `internal_user_id` *str or null*: The ID of the internal user associated with the event (optional).
-- `team_id` *str or null*: The ID of the team associated with the event (optional).
-- `user_email` *str or null*: The email of the internal user associated with the event (optional).
-- `key_alias` *str or null*: An alias for the key associated with the event (optional).
-- `projected_exceeded_date` *str or null*: The date when the budget is projected to be exceeded, returned when 'soft_budget' is set for key (optional).
-- `projected_spend` *float or null*: The projected spend amount, returned when 'soft_budget' is set for key (optional).
-- `event` *Literal["budget_crossed", "threshold_crossed", "projected_limit_exceeded"]*: The type of event that triggered the webhook. Possible values are:
-    * "spend_tracked": Emitted whenever spend is tracked for a customer id. 
-    * "budget_crossed": Indicates that the spend has exceeded the max budget.
-    * "threshold_crossed": Indicates that spend has crossed a threshold (currently sent when 85% and 95% of budget is reached).
-    * "projected_limit_exceeded": For "key" only - Indicates that the projected spend is expected to exceed the soft budget threshold.
-- `event_group` *Literal["customer", "internal_user", "key", "team", "proxy"]*: The group associated with the event. Possible values are:
-    * "customer": The event is related to a specific customer
-    * "internal_user": The event is related to a specific internal user.
-    * "key": The event is related to a specific key.
-    * "team": The event is related to a team.
-    * "proxy": The event is related to a proxy.
+- `spend` *float*：'event_group' 的目前支出金額。
+- `max_budget` *float or null*：'event_group' 允許的最高預算。若未設定則為 null。 
+- `token` *str*：金鑰的雜湊值，用於驗證或識別用途。
+- `customer_id` *str or null*：與該事件相關聯的客戶 ID（選用）。
+- `internal_user_id` *str or null*：與該事件相關聯的內部使用者 ID（選用）。
+- `team_id` *str or null*：與該事件相關聯的團隊 ID（選用）。
+- `user_email` *str or null*：與該事件相關聯的內部使用者電子郵件（選用）。
+- `key_alias` *str or null*：與該事件相關聯的金鑰別名（選用）。
+- `projected_exceeded_date` *str or null*：預算預計超出之日期；當 key 設定了 'soft_budget' 時會回傳（選用）。
+- `projected_spend` *float or null*：預估支出金額；當 key 設定了 'soft_budget' 時會回傳（選用）。
+- `event` *Literal["budget_crossed", "threshold_crossed", "projected_limit_exceeded"]*：觸發 webhook 的事件類型。可能的值如下：
+    * "spend_tracked"：每次針對 customer id 追蹤支出時發出。 
+    * "budget_crossed"：表示支出已超過最高預算。
+    * "threshold_crossed"：表示支出已跨過門檻（目前在達到預算的 85% 和 95% 時送出）。
+    * "projected_limit_exceeded"：僅限 "key" - 表示預估支出預期會超過軟性預算門檻。
+- `event_group` *Literal["customer", "internal_user", "key", "team", "proxy"]*：與事件相關聯的群組。可能的值如下：
+    * "customer"：該事件與特定客戶相關
+    * "internal_user"：該事件與特定內部使用者相關。
+    * "key"：該事件與特定金鑰相關。
+    * "team"：該事件與團隊相關。
+    * "proxy"：該事件與 proxy 相關。
 
-- `event_message` *str*: A human-readable description of the event.
+- `event_message` *str*：事件的人類可讀描述。
 
-### Digest Mode (Reducing Alert Noise)
+### 彙總模式（減少警示雜訊） {#digest-mode-reducing-alert-noise}
 
-By default, LiteLLM sends a separate Slack message for **every** alert event. For high-frequency alert types like `llm_requests_hanging` or `llm_too_slow`, this can produce hundreds of duplicate messages per day.
+預設情況下，LiteLLM 會為**每一個**警示事件各自傳送一則 Slack 訊息。對於像 `llm_requests_hanging` 或 `llm_too_slow` 這類高頻率警示類型，這可能每天產生數百則重複訊息。
 
-**Digest mode** aggregates duplicate alerts within a configurable time window and emits a single summary message with the total count and time range.
+**彙總模式**會在可設定的時間視窗內彙整重複警示，並輸出一則包含總數與時間範圍的摘要訊息。
 
-#### Configuration
+#### 設定 {#configuration}
 
-Use `alert_type_config` in `general_settings` to enable digest mode per alert type:
+使用 `alert_type_config` 在 `general_settings` 中，為每種警示類型啟用彙總模式：
 
 ```yaml
 general_settings:
@@ -463,16 +455,16 @@ general_settings:
       # uses default interval (86400 seconds / 24 hours)
 ```
 
-| Parameter | Type | Default | Description |
+| 參數 | 類型 | 預設值 | 說明 |
 |-----------|------|---------|-------------|
-| `digest` | bool | `false` | Enable digest mode for this alert type |
-| `digest_interval` | int | `86400` (24h) | Time window in seconds. Alerts are aggregated within this interval. |
+| `digest` | bool | `false` | 為此警示類型啟用彙總模式 |
+| `digest_interval` | int | `86400` (24h) | 以秒為單位的時間視窗。警示會在此間隔內彙整。 |
 
-#### How It Works
+#### 運作方式 {#how-it-works}
 
-1. When an alert fires for a digest-enabled type, it is **grouped** by `(alert_type, request_model, api_base)` instead of being sent immediately
-2. A counter tracks how many times the alert fires within the interval
-3. When the interval expires, a **single summary message** is sent:
+1. 當某個已啟用彙總的類型觸發警示時，系統會依 `(alert_type, request_model, api_base)` **分組**，而不是立即傳送
+2. 計數器會追蹤該間隔內警示觸發的次數
+3. 當間隔到期時，會傳送一則**單一摘要訊息**：
 
 ```
 Alert type: `llm_requests_hanging` (Digest)
@@ -486,18 +478,18 @@ Request Model: `gemini-2.5-flash`
 API Base: `None`
 ```
 
-#### Limitations
+#### 限制 {#limitations}
 
-- **Per-instance**: Digest state is held in memory per proxy instance. If you run multiple instances (e.g., Cloud Run with autoscaling), each instance maintains its own digest and emits its own summary.
-- **Not durable**: If an instance is terminated before the digest interval expires, the aggregated alerts for that instance are lost.
+- **每個執行個體**：彙總狀態會以記憶體方式保留於每個 proxy 執行個體中。如果您執行多個執行個體（例如，Cloud Run 搭配自動擴縮），每個執行個體都會維護自己的彙總並輸出自己的摘要。
+- **非持久化**：如果某個執行個體在彙總間隔到期前終止，該執行個體彙整的警示將會遺失。
 
-## Region-outage alerting (✨ Enterprise feature)
+## 區域故障警示（✨ 企業功能） {#region-outage-alerting--enterprise-feature}
 
 :::info
-[Get a free 2-week license](https://forms.gle/P518LXsAZ7PhXpDn8)
+[取得免費 2 週授權](https://forms.gle/P518LXsAZ7PhXpDn8)
 :::
 
-Setup alerts if a provider region is having an outage. 
+如果提供者區域發生中斷，請設定警示。 
 
 ```yaml
 general_settings:
@@ -505,9 +497,9 @@ general_settings:
     alert_types: ["region_outage_alerts"] 
 ```
 
-By default this will trigger if multiple models in a region fail 5+ requests in 1 minute. '400' status code errors are not counted (i.e. BadRequestErrors).
+預設情況下，當某個區域中的多個模型在 1 分鐘內失敗 5 次以上請求時，便會觸發。`400` 狀態碼錯誤不計入（亦即 BadRequestErrors）。
 
-Control thresholds with: 
+可透過以下方式控制門檻： 
 
 ```yaml
 general_settings:
@@ -519,63 +511,62 @@ general_settings:
         major_outage_alert_threshold: 10 # number of errors to trigger a major alert
 ```
 
-## **All Possible Alert Types**
+## **所有可能的警示類型** {#all-possible-alert-types}
 
-👉 [**Here is how you can set specific alert types**](#opting-into-specific-alert-types)
+👉 [**以下是如何設定特定警示類型**](#opting-into-specific-alert-types)
 
-LLM-related Alerts
+與 LLM 相關的警示
 
-| Alert Type | Description | Default On |
+| 警示類型 | 說明 | 預設啟用 |
 |------------|-------------|---------|
-| `llm_exceptions` | Alerts for LLM API exceptions | ✅ |
-| `llm_too_slow` | Notifications for LLM responses slower than the set threshold | ✅ |
-| `llm_requests_hanging` | Alerts for LLM requests that are not completing | ✅ |
-| `cooldown_deployment` | Alerts when a deployment is put into cooldown | ✅ |
-| `new_model_added` | Notifications when a new model is added to litellm proxy through /model/new| ✅ |
-| `outage_alerts` | Alerts when a specific LLM deployment is facing an outage | ✅ |
-| `region_outage_alerts` | Alerts when a specific LLM region is facing an outage. Example us-east-1 | ✅ |
+| `llm_exceptions` | LLM API 例外的警示 | ✅ |
+| `llm_too_slow` | 針對慢於所設定門檻的 LLM 回應的通知 | ✅ |
+| `llm_requests_hanging` | 針對未完成的 LLM 請求的警示 | ✅ |
+| `cooldown_deployment` | 部署進入冷卻時間時的警示 | ✅ |
+| `new_model_added` | 透過 /model/new 將新模型新增至 litellm proxy 時的通知 | ✅ |
+| `outage_alerts` | 某個特定 LLM 部署發生中斷時的警示 | ✅ |
+| `region_outage_alerts` | 某個特定 LLM 區域發生中斷時的警示。範例如 us-east-1 | ✅ |
 
-Budget and Spend Alerts
+預算與支出警示
 
-| Alert Type | Description | Default On|
+| 警示類型 | 說明 | 預設啟用|
 |------------|-------------|---------|
-| `budget_alerts` | Notifications related to budget limits or thresholds | ✅ |
-| `spend_reports` | Periodic reports on spending across teams or tags | ✅ |
-| `failed_tracking_spend` | Alerts when spend tracking fails | ✅ |
-| `daily_reports` | Daily Spend reports | ✅ |
-| `fallback_reports` | Weekly Reports on LLM fallback occurrences | ✅ |
+| `budget_alerts` | 與預算上限或門檻相關的通知 | ✅ |
+| `spend_reports` | 針對團隊或標籤支出的週期性報告 | ✅ |
+| `failed_tracking_spend` | 支出追蹤失敗時的警示 | ✅ |
+| `daily_reports` | 每日支出報告 | ✅ |
+| `fallback_reports` | LLM 備援發生情況的每週報告 | ✅ |
 
-Database Alerts
+資料庫警示
 
-| Alert Type | Description | Default On |
+| 警示類型 | 說明 | 預設啟用 |
 |------------|-------------|---------|
-| `db_exceptions` | Notifications for database-related exceptions | ✅ |
+| `db_exceptions` | 與資料庫相關例外的通知 | ✅ |
 
-Management Endpoint Alerts - Virtual Key, Team, Internal User
+管理端點警示 - 虛擬金鑰、團隊、內部使用者
 
-| Alert Type | Description | Default On |
+| 警示類型 | 說明 | 預設啟用 |
 |------------|-------------|---------|
-| `new_virtual_key_created` | Notifications when a new virtual key is created | ❌ |
-| `virtual_key_updated` | Alerts when a virtual key is modified | ❌ |
-| `virtual_key_deleted` | Notifications when a virtual key is removed | ❌ |
-| `new_team_created` | Alerts for the creation of a new team | ❌ |
-| `team_updated` | Notifications when team details are modified | ❌ |
-| `team_deleted` | Alerts when a team is deleted | ❌ |
-| `new_internal_user_created` | Notifications for new internal user accounts | ❌ |
-| `internal_user_updated` | Alerts when an internal user's details are changed | ❌ |
-| `internal_user_deleted` | Notifications when an internal user account is removed | ❌ |
+| `new_virtual_key_created` | 建立新虛擬金鑰時的通知 | ❌ |
+| `virtual_key_updated` | 虛擬金鑰被修改時的警示 | ❌ |
+| `virtual_key_deleted` | 虛擬金鑰被移除時的通知 | ❌ |
+| `new_team_created` | 建立新團隊時的警示 | ❌ |
+| `team_updated` | 團隊詳細資料被修改時的通知 | ❌ |
+| `team_deleted` | 團隊被刪除時的警示 | ❌ |
+| `new_internal_user_created` | 新內部使用者帳號的通知 | ❌ |
+| `internal_user_updated` | 內部使用者詳細資料變更時的警示 | ❌ |
+| `internal_user_deleted` | 內部使用者帳號被移除時的通知 | ❌ |
 
+## `alerting_args` 規格 {#alerting_args-specification}
 
-## `alerting_args` Specification
-
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |-----------|---------|-------------|
-| `daily_report_frequency` | 43200 (12 hours) | Frequency of receiving deployment latency/failure reports in seconds |
-| `report_check_interval` | 3600 (1 hour) | How often to check if a report should be sent (background process) in seconds |
-| `budget_alert_ttl` | 86400 (24 hours) | Cache TTL for budget alerts to prevent spam when budget is crossed |
-| `outage_alert_ttl` | 60 (1 minute) | Time window for collecting model outage errors in seconds |
-| `region_outage_alert_ttl` | 60 (1 minute) | Time window for collecting region-based outage errors in seconds |
-| `minor_outage_alert_threshold` | 5 | Number of errors that trigger a minor outage alert (400 errors not counted) |
-| `major_outage_alert_threshold` | 10 | Number of errors that trigger a major outage alert (400 errors not counted) |
-| `max_outage_alert_list_size` | 1000 | Maximum number of errors to store in cache per model/region |
-| `log_to_console` | false | If true, prints alerting payload to console as a `.warning` log. |
+| `daily_report_frequency` | 43200（12 小時） | 接收部署延遲／失敗報告的頻率（秒） |
+| `report_check_interval` | 3600（1 小時） | 檢查是否應送出報告的頻率（背景程序）（秒） |
+| `budget_alert_ttl` | 86400（24 小時） | 預算警示的快取 TTL，用以防止預算超過時造成洗版 |
+| `outage_alert_ttl` | 60（1 分鐘） | 收集模型中斷錯誤的時間窗（秒） |
+| `region_outage_alert_ttl` | 60（1 分鐘） | 收集以區域為基礎的中斷錯誤的時間窗（秒） |
+| `minor_outage_alert_threshold` | 5 | 觸發輕微中斷警示的錯誤數量（不計入 400 錯誤） |
+| `major_outage_alert_threshold` | 10 | 觸發重大中斷警示的錯誤數量（不計入 400 錯誤） |
+| `max_outage_alert_list_size` | 1000 | 每個模型／區域在快取中可儲存的最大錯誤數量 |
+| `log_to_console` | false | 若為 true，會將警示負載以 `.warning` 記錄列印到主控台。 |

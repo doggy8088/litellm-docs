@@ -1,34 +1,33 @@
-
 import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
 
-# Provider Files Endpoints
+# 提供者檔案端點 {#provider-files-endpoints}
 
-Files are used to upload documents that can be used with features like Assistants, Fine-tuning, and Batch API.
+檔案用於上傳文件，可搭配 Assistants、Fine-tuning 和 Batch API 等功能使用。
 
-Use this to call the provider's `/files` endpoints directly, in the OpenAI format. 
+可用於直接呼叫提供者的 `/files` 端點，採用 OpenAI 格式。 
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-- Upload a File
-- List Files
-- Retrieve File Information
-- Delete File
-- Get File Content
+- 上傳檔案
+- 列出檔案
+- 取得檔案資訊
+- 刪除檔案
+- 取得檔案內容
 
-## Multi-Account Support (Multiple OpenAI Keys)
+## 多帳戶支援（多個 OpenAI 金鑰） {#multi-account-support-multiple-openai-keys}
 
-Use different OpenAI API keys for files and batches by specifying a `model` parameter that references entries in your `model_list`. This approach works **without requiring a database** and allows you to route files/batches to different OpenAI accounts.
+可透過指定一個參照您 `model_list` 中項目的 `model` 參數，為檔案與批次使用不同的 OpenAI API 金鑰。這種做法**不需要資料庫**，並可讓您將檔案/批次路由到不同的 OpenAI 帳戶。
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-1. Define models in `model_list` with different API keys
-2. Pass `model` parameter when creating files
-3. LiteLLM returns encoded IDs that contain routing information
-4. Use encoded IDs for all subsequent operations (retrieve, delete, batches)
-5. No need to specify model again - routing info is in the ID
+1. 在 `model_list` 中使用不同的 API 金鑰定義模型
+2. 建立檔案時傳入 `model` 參數
+3. LiteLLM 回傳包含路由資訊的編碼 ID
+4. 後續所有操作（取得、刪除、批次）都使用編碼 ID
+5. 不需要再次指定模型 - 路由資訊已在 ID 中
 
-### Setup
+### 設定 {#setup}
 
 ```yaml
 model_list:
@@ -45,7 +44,7 @@ model_list:
       api_key: os.environ/OPENAI_FREE_API_KEY
 ```
 
-### Usage Example
+### 使用範例 {#usage-example}
 
 ```python
 from openai import OpenAI
@@ -89,35 +88,35 @@ batches = client.batches.list(
 )
 ```
 
-### Parameter Options
+### 參數選項 {#parameter-options}
 
-You can pass the `model` parameter via:
-- **Request body**: `extra_body={"model": "gpt-4o-litellm"}`
-- **Query parameter**: `?model=gpt-4o-litellm`
-- **Header**: `x-litellm-model: gpt-4o-litellm`
+您可以透過以下方式傳入 `model` 參數：
+- **請求本文**：`extra_body={"model": "gpt-4o-litellm"}`
+- **查詢參數**：`?model=gpt-4o-litellm`
+- **標頭**：`x-litellm-model: gpt-4o-litellm`
 
-### How Encoded IDs Work
+### 編碼 ID 的運作方式 {#how-encoded-ids-work}
 
-- When you create a file/batch with a `model` parameter, LiteLLM encodes the model name into the returned ID
-- The encoded ID is base64-encoded and looks like: `file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxncHQtNG8taWZvb2Q`
-- When you use this ID in subsequent operations (retrieve, delete, batch create), LiteLLM automatically:
-  1. Decodes the ID
-  2. Extracts the model name
-  3. Looks up the credentials
-  4. Routes the request to the correct OpenAI account
-- The original provider file/batch ID is preserved internally
+- 當您使用 `model` 參數建立檔案/批次時，LiteLLM 會將模型名稱編碼進回傳的 ID 中
+- 編碼後的 ID 會以 base64 編碼，看起來像：`file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxncHQtNG8taWZvb2Q`
+- 當您在後續操作（取得、刪除、建立批次）中使用此 ID 時，LiteLLM 會自動：
+  1. 解碼 ID
+  2. 擷取模型名稱
+  3. 查找認證資訊
+  4. 將請求路由到正確的 OpenAI 帳戶
+- 原始的提供者檔案/批次 ID 會在內部保留
 
-### Benefits
+### 優點 {#benefits}
 
-✅ **No Database Required** - All routing info stored in the ID  
-✅ **Stateless** - Works across proxy restarts  
-✅ **Simple** - Just pass the ID around like normal  
-✅ **Backward Compatible** - Existing `custom_llm_provider` and `files_settings` still work  
-✅ **Future-Proof** - Aligns with managed batches approach  
+✅ **不需要資料庫** - 所有路由資訊都儲存在 ID 中  
+✅ **無狀態** - 可跨 proxy 重新啟動運作  
+✅ **簡單** - 只要像平常一樣傳遞 ID 即可  
+✅ **向後相容** - 現有的 `custom_llm_provider` 和 `files_settings` 仍可運作  
+✅ **面向未來** - 與受管理的批次做法一致  
 
-### Migration from files_settings
+### 從 files_settings 移轉 {#migration-from-files_settings}
 
-**Old approach (still works):**
+**舊做法（仍可運作）：**
 ```yaml
 files_settings:
   - custom_llm_provider: openai
@@ -130,7 +129,7 @@ client.files.create(..., extra_headers={"custom-llm-provider": "openai"})
 client.files.retrieve(file_id, extra_headers={"custom-llm-provider": "openai"})
 ```
 
-**New approach (recommended):**
+**新做法（建議）：**
 ```yaml
 model_list:
   - model_name: "gpt-4o-account1"
@@ -151,7 +150,7 @@ client.batches.create(input_file_id=file.id)  # Routes correctly
 <Tabs>
 <TabItem value="proxy" label="LiteLLM PROXY Server">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```
 # for /files endpoints
@@ -164,7 +163,7 @@ files_settings:
     api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start LiteLLM PROXY Server
+2. 啟動 LiteLLM PROXY Server
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -172,9 +171,9 @@ litellm --config /path/to/config.yaml
 ## RUNNING on http://0.0.0.0:4000
 ```
 
-3. Use OpenAI's /files endpoints
+3. 使用 OpenAI 的 /files 端點
 
-Upload a File
+上傳檔案
 
 ```python
 from openai import OpenAI
@@ -191,7 +190,7 @@ client.files.create(
 )
 ```
 
-List Files
+列出檔案
 
 ```python
 from openai import OpenAI
@@ -205,7 +204,7 @@ files = client.files.list(extra_headers={"custom-llm-provider": "openai"})
 print("files=", files)
 ```
 
-Retrieve File Information
+取得檔案資訊
 
 ```python
 from openai import OpenAI
@@ -219,7 +218,7 @@ file = client.files.retrieve(file_id="file-abc123", extra_headers={"custom-llm-p
 print("file=", file)
 ```
 
-Delete File
+刪除檔案
 
 ```python
 from openai import OpenAI
@@ -233,7 +232,7 @@ response = client.files.delete(file_id="file-abc123", extra_headers={"custom-llm
 print("delete response=", response)
 ```
 
-Get File Content
+取得檔案內容
 
 ```python
 from openai import OpenAI
@@ -250,7 +249,7 @@ print("content=", content)
 </TabItem>
 <TabItem value="sdk" label="SDK">
 
-**Upload a File**
+**上傳檔案**
 ```python
 from litellm
 import os 
@@ -265,7 +264,7 @@ file_obj = await litellm.acreate_file(
 print("Response from creating file=", file_obj)
 ```
 
-**List Files**
+**列出檔案**
 ```python
 files = await litellm.alist_files(
     custom_llm_provider="openai",
@@ -274,7 +273,7 @@ files = await litellm.alist_files(
 print("files=", files)
 ```
 
-**Retrieve File Information**
+**取得檔案資訊**
 ```python
 file = await litellm.aretrieve_file(
     file_id="file-abc123",
@@ -283,7 +282,7 @@ file = await litellm.aretrieve_file(
 print("file=", file)
 ```
 
-**Delete File**
+**刪除檔案**
 ```python
 response = await litellm.adelete_file(
     file_id="file-abc123",
@@ -292,7 +291,7 @@ response = await litellm.adelete_file(
 print("delete response=", response)
 ```
 
-**Get File Content**
+**取得檔案內容**
 ```python
 content = await litellm.afile_content(
     file_id="file-abc123",
@@ -301,7 +300,7 @@ content = await litellm.afile_content(
 print("file content=", content)
 ```
 
-**Get File Content (Bedrock)**
+**取得檔案內容（Bedrock）**
 ```python
 # For Bedrock batch output files stored in S3
 content = await litellm.afile_content(
@@ -315,21 +314,20 @@ print("file content=", content.text)
 </TabItem>
 </Tabs>
 
+## **支援的提供者**： {#supported-providers}
 
-## **Supported Providers**:
+### [OpenAI](#quick-start) {#openaiquick-start}
 
-### [OpenAI](#quick-start)
+### [Azure OpenAI](./providers/azure#azure-batches-api) {#azure-openaiprovidersazureazure-batches-api}
 
-### [Azure OpenAI](./providers/azure#azure-batches-api)
+### [Vertex AI](./providers/vertex#batch-apis) {#vertex-aiprovidersvertexbatch-apis}
 
-### [Vertex AI](./providers/vertex#batch-apis)
+### [Bedrock](./providers/bedrock_batches#4-retrieve-batch-results) {#bedrockprovidersbedrock_batches4-retrieve-batch-results}
 
-### [Bedrock](./providers/bedrock_batches#4-retrieve-batch-results)
-
-### [Anthropic](./providers/anthropic#files-api)
+### [Anthropic](./providers/anthropic#files-api) {#anthropicprovidersanthropicfiles-api}
 
 :::note
-Anthropic Files API has a different purpose than OpenAI's. It's **not** for Batches or Fine-tuning—it's for uploading files once and referencing them by `file_id` in multiple messages, avoiding re-uploads. File API operations are free — file content used in Messages requests is priced as input tokens.
+Anthropic Files API 的用途與 OpenAI 的不同。它**不是**用於 Batches 或 Fine-tuning——而是用來一次上傳檔案，並在多則訊息中透過 `file_id` 參照它們，以避免重複上傳。檔案 API 操作是免費的 — 在 Messages 請求中使用的檔案內容會以輸入 token 計費。
 :::
 
-## [Swagger API Reference](https://litellm-api.up.railway.app/#/files)
+## [Swagger API 參考](https://litellm-api.up.railway.app/#/files) {#swagger-api-referencehttpslitellm-apiuprailwayappfiles}

@@ -2,44 +2,43 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# UI - Custom Root Path 
+# UI - 自訂根路徑  {#ui---custom-root-path}
 
-💥 Use this when you want to serve LiteLLM on a custom base url path like `https://localhost:4000/api/v1` 
+💥 當您想要以自訂的基礎 URL 路徑提供 LiteLLM 時，請使用這個，例如 `https://localhost:4000/api/v1` 
 
 :::info
 
-Requires v1.72.3 or higher.
+需要 v1.72.3 或更高版本。
 
 :::
 
-Limitations:
-- This does not work in [litellm non-root](./deploy#non-root---without-internet-connection) images, as it requires write access to the UI files.
+限制：
+- 這在 [litellm non-root](./deploy#non-root---without-internet-connection) 映像檔中無法運作，因為它需要對 UI 檔案具有寫入權限。
 
-## Usage
+## 使用方式 {#usage}
 
-### 1. Set `SERVER_ROOT_PATH` in your .env
+### 1. 在您的 .env 中設定 `SERVER_ROOT_PATH` {#1-set-server_root_path-in-your-env}
 
-👉 Set `SERVER_ROOT_PATH` in your .env and this will be set as your server root path
+👉 在您的 .env 中設定 `SERVER_ROOT_PATH`，這會被設定為您的伺服器根路徑
 
 ```
 export SERVER_ROOT_PATH="/api/v1"
 ```
 
-### 2. Run the Proxy
+### 2. 執行 Proxy {#2-run-the-proxy}
 
 ```shell
 litellm proxy --config /path/to/config.yaml
 ```
 
-After running the proxy you can access it on `http://0.0.0.0:4000/api/v1/` (since we set `SERVER_ROOT_PATH="/api/v1"`)
+執行 proxy 後，您可以在 `http://0.0.0.0:4000/api/v1/` 存取它（因為我們已設定 `SERVER_ROOT_PATH="/api/v1"`）
 
-### 3. Verify Running on correct path
+### 3. 驗證是否在正確的路徑上執行 {#3-verify-running-on-correct-path}
 
 <Image img={require('../../img/custom_root_path.png')} />
 
-**That's it**, that's all you need to run the proxy on a custom root path
+**就是這樣**，這就是在自訂根路徑上執行 proxy 所需的一切
 
+## 示範 {#demo}
 
-## Demo
-
-[Here's a demo video](https://drive.google.com/file/d/1zqAxI0lmzNp7IJH1dxlLuKqX2xi3F_R3/view?usp=sharing) of running the proxy on a custom root path
+[這裡有一段示範影片](https://drive.google.com/file/d/1zqAxI0lmzNp7IJH1dxlLuKqX2xi3F_R3/view?usp=sharing)，展示在自訂根路徑上執行 proxy

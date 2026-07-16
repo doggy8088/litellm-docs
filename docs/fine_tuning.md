@@ -1,26 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /fine_tuning
-
+# /fine_tuning {#fine_tuning}
 
 :::info
 
-This is an Enterprise only endpoint [Get Started with Enterprise here](https://enterprise.litellm.ai/demo)
+這是僅限 Enterprise 的端點 [在此開始使用 Enterprise](https://enterprise.litellm.ai/demo)
 
 :::
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Supported Providers | OpenAI, Azure OpenAI, Vertex AI | - |
+| 支援的提供者 | OpenAI, Azure OpenAI, Vertex AI | - |
 
-#### ⚡️See an exhaustive list of supported models and providers at [models.litellm.ai](https://models.litellm.ai/)
-| Cost Tracking | 🟡 | [Let us know if you need this](https://github.com/BerriAI/litellm/issues) |
-| Logging | ✅ | Works across all logging integrations |
+#### ⚡️請參閱在 [models.litellm.ai](https://models.litellm.ai/) 的支援模型與提供者完整清單 {#️see-an-exhaustive-list-of-supported-models-and-providers-at-modelslitellmaihttpsmodelslitellmai}
+| 成本追蹤 | 🟡 | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues) |
+| 記錄 | ✅ | 可跨所有記錄整合運作 |
 
-
-Add `finetune_settings` and `files_settings` to your litellm config.yaml to use the fine-tuning endpoints.
-## Example config.yaml for `finetune_settings` and `files_settings`
+將 `finetune_settings` 和 `files_settings` 加入您的 litellm config.yaml，即可使用 fine-tuning 端點。
+## `finetune_settings` 與 `files_settings` 的 config.yaml 範例 {#example-configyaml-for-finetune_settings-and-files_settings}
 ```yaml
 model_list:
   - model_name: gpt-4
@@ -52,7 +50,7 @@ files_settings:
     api_key: os.environ/OPENAI_API_KEY
 ```
 
-## Create File for fine-tuning
+## 建立 fine-tuning 檔案 {#create-file-for-fine-tuning}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -80,7 +78,7 @@ curl http://localhost:4000/v1/files \
 </TabItem>
 </Tabs>
 
-## Create fine-tuning job
+## 建立 fine-tuning 工作 {#create-fine-tuning-job}
 
 <Tabs>
 <TabItem value="azure" label="Azure OpenAI">
@@ -116,78 +114,77 @@ curl http://localhost:4000/v1/fine_tuning/jobs \
 
 </Tabs>
 
-### Request Body
+### 請求內文 {#request-body}
 
 <Tabs>
-<TabItem value="params" label="Supported Params">
+<TabItem value="params" label="支援的參數">
 
 * `model`
 
-    **Type:** string  
-    **Required:** Yes  
-    The name of the model to fine-tune
+    **型別：** string  
+    **必要：** 是  
+    要 fine-tune 的模型名稱
 
 * `custom_llm_provider`
 
-    **Type:** `Literal["azure", "openai", "vertex_ai"]`
+    **型別：** `Literal["azure", "openai", "vertex_ai"]`
 
-    **Required:** Yes
-    The name of the model to fine-tune. You can select one of the [**supported providers**](#supported-providers)
+    **必要：** 是
+    要 fine-tune 的模型名稱。您可以從 [**支援的提供者**](#supported-providers) 中選擇其中之一
 
 * `training_file`
 
-    **Type:** string  
-    **Required:** Yes  
-    The ID of an uploaded file that contains training data.
-    - See **upload file** for how to upload a file.
-    - Your dataset must be formatted as a JSONL file.
+    **型別：** string  
+    **必要：** 是  
+    包含訓練資料的已上傳檔案 ID。
+    - 關於如何上傳檔案，請參閱 **upload file**。
+    - 您的資料集必須格式化為 JSONL 檔案。
 
 * `hyperparameters`
 
-    **Type:** object  
-    **Required:** No  
-    The hyperparameters used for the fine-tuning job.
-    > #### Supported `hyperparameters`
+    **型別：** object  
+    **必要：** 否  
+    fine-tuning 工作使用的超參數。
+    > #### 支援的 `hyperparameters`
     > #### batch_size
-    **Type:** string or integer  
-    **Required:** No  
-    Number of examples in each batch. A larger batch size means that model parameters are updated less frequently, but with lower variance.
+    **型別：** string or integer  
+    **必要：** 否  
+    每個批次中的範例數。較大的批次大小代表模型參數更新頻率較低，但變異較小。
     > #### learning_rate_multiplier
-    **Type:** string or number  
-    **Required:** No  
-    Scaling factor for the learning rate. A smaller learning rate may be useful to avoid overfitting.
+    **型別：** string or number  
+    **必要：** 否  
+    學習率的縮放係數。較小的學習率有助於避免過度擬合。
 
     > #### n_epochs
-    **Type:** string or integer  
-    **Required:** No  
-    The number of epochs to train the model for. An epoch refers to one full cycle through the training dataset.
+    **型別：** string or integer  
+    **必要：** 否  
+    訓練模型的 epoch 數量。epoch 是指完整遍歷一次訓練資料集的週期。
 
 * `suffix`
-    **Type:** string or null  
-    **Required:** No  
-    **Default:** null  
-    A string of up to 18 characters that will be added to your fine-tuned model name.
-    Example: A `suffix` of "custom-model-name" would produce a model name like `ft:gpt-4o-mini:openai:custom-model-name:7p4lURel`.
+    **型別：** string or null  
+    **必要：** 否  
+    **預設值：** null  
+    最多 18 個字元的字串，會附加到您的 fine-tuned 模型名稱中。
+    範例：`custom-model-name` 的 `suffix` 會產生像 `ft:gpt-4o-mini:openai:custom-model-name:7p4lURel` 這樣的模型名稱。
 
 * `validation_file`
-    **Type:** string or null  
-    **Required:** No  
-    The ID of an uploaded file that contains validation data.
-    - If provided, this data is used to generate validation metrics periodically during fine-tuning.
-
+    **型別：** string or null  
+    **必要：** 否  
+    包含驗證資料的已上傳檔案 ID。
+    - 如果提供，這些資料會在 fine-tuning 期間定期用來產生驗證指標。
 
 * `integrations`
-    **Type:** array or null  
-    **Required:** No  
-    A list of integrations to enable for your fine-tuning job.
+    **型別：** array or null  
+    **必要：** 否  
+    要為您的 fine-tuning 工作啟用的整合清單。
 
 * `seed`
-    **Type:** integer or null  
-    **Required:** No  
-    The seed controls the reproducibility of the job. Passing in the same seed and job parameters should produce the same results, but may differ in rare cases. If a seed is not specified, one will be generated for you.
+    **型別：** integer or null  
+    **必要：** 否  
+    seed 會控制工作可重現性。傳入相同的 seed 與工作參數應可產生相同結果，但在少數情況下可能不同。如果未指定 seed，系統會為您產生一個。
 
 </TabItem>
-<TabItem value="example" label="Example Request Body">
+<TabItem value="example" label="請求內文範例">
 
 ```json
 {
@@ -206,7 +203,7 @@ curl http://localhost:4000/v1/fine_tuning/jobs \
 </TabItem>
 </Tabs>
 
-## Cancel fine-tuning job
+## 取消 fine-tuning 工作 {#cancel-fine-tuning-job}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -234,7 +231,7 @@ curl -X POST http://localhost:4000/v1/fine_tuning/jobs/ftjob-abc123/cancel \
 
 </Tabs>
 
-## List fine-tuning jobs
+## 列出 fine-tuning 工作 {#list-fine-tuning-jobs}
 
 <Tabs>
 
@@ -261,6 +258,4 @@ curl -X GET 'http://localhost:4000/v1/fine_tuning/jobs' \
 
 </Tabs>
 
-
-
-## [👉 Proxy API Reference](https://litellm-api.up.railway.app/#/fine-tuning)
+## [👉 Proxy API 參考文件](https://litellm-api.up.railway.app/#/fine-tuning) {#-proxy-api-referencehttpslitellm-apiuprailwayappfine-tuning}

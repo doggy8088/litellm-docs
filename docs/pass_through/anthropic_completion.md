@@ -1,21 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Anthropic Passthrough
+# Anthropic 通透傳遞 {#anthropic-passthrough}
 
-Pass-through endpoints for Anthropic - call provider-specific endpoint, in native format (no translation).
+Anthropic 的通透傳遞端點 - 以原生格式呼叫特定提供者端點（不進行轉換）。
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ✅ | supports all models on `/messages`, `/v1/messages/batches` endpoint |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ✅ | Prometheus `end_user` label is off by default; enable via `litellm.enable_end_user_cost_tracking_prometheus_only`|
-| Streaming | ✅ | |
+| 成本追蹤 | ✅ | 支援 `/messages` 上的所有模型、`/v1/messages/batches` 端點 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 最終使用者追蹤 | ✅ | Prometheus `end_user` 標籤預設為關閉；可透過 `litellm.enable_end_user_cost_tracking_prometheus_only` 啟用 |
+| 串流 | ✅ | |
 
-Just replace `https://api.anthropic.com` with `LITELLM_PROXY_BASE_URL/anthropic`
+只要將 `https://api.anthropic.com` 替換為 `LITELLM_PROXY_BASE_URL/anthropic`
 
-#### **Example Usage**
-
+#### **使用範例** {#example-usage}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -62,21 +61,21 @@ print(response)
 </TabItem>
 </Tabs>
 
-Supports **ALL** Anthropic Endpoints (including streaming).
+支援 **所有** Anthropic 端點（包括串流）。
 
-[**See All Anthropic Endpoints**](https://docs.anthropic.com/en/api/messages)
+[**查看所有 Anthropic 端點**](https://docs.anthropic.com/en/api/messages)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's call the Anthropic [`/messages` endpoint](https://docs.anthropic.com/en/api/messages)
+我們來呼叫 Anthropic [`/messages` 端點](https://docs.anthropic.com/en/api/messages)
 
-1. Add Anthropic API Key to your environment 
+1. 將 Anthropic API 金鑰加入您的環境
 
 ```bash
 export ANTHROPIC_API_KEY=""
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy
 
 ```bash
 litellm
@@ -84,9 +83,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試一下！
 
-Let's call the Anthropic /messages endpoint
+我們來呼叫 Anthropic /messages 端點
 
 ```bash
 curl http://0.0.0.0:4000/anthropic/v1/messages \
@@ -104,21 +103,21 @@ curl http://0.0.0.0:4000/anthropic/v1/messages \
 ```
 
 
-## Examples
+## 範例 {#examples}
 
-Anything after `http://0.0.0.0:4000/anthropic` is treated as a provider-specific route, and handled accordingly.
+`http://0.0.0.0:4000/anthropic` 之後的內容都會被視為特定提供者路由，並依此處理。
 
-Key Changes: 
+主要變更：
 
-| **Original Endpoint**                                | **Replace With**                  |
+| **原始端點**                                | **替換為**                  |
 |------------------------------------------------------|-----------------------------------|
 | `https://api.anthropic.com`          | `http://0.0.0.0:4000/anthropic` (LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000")      |
-| `bearer $ANTHROPIC_API_KEY`                                 | `bearer anything` (use `bearer LITELLM_VIRTUAL_KEY` if Virtual Keys are setup on proxy)                    |
+| `bearer $ANTHROPIC_API_KEY`                                 | `bearer anything` (如果 Proxy 上已設定 Virtual Keys，請使用 `bearer LITELLM_VIRTUAL_KEY`)                    |
     
 
-### **Example 1: Messages endpoint**
+### **範例 1：Messages 端點** {#example-1-messages-endpoint}
 
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call}
 
 ```bash
 curl --request POST \
@@ -135,7 +134,7 @@ curl --request POST \
   }'
 ```
 
-#### Direct Anthropic API Call 
+#### 直接 Anthropic API 呼叫  {#direct-anthropic-api-call}
 
 ```bash
 curl https://api.anthropic.com/v1/messages \
@@ -152,9 +151,9 @@ curl https://api.anthropic.com/v1/messages \
     }'
 ```
 
-### **Example 2: Token Counting API**
+### **範例 2：Token 計數 API** {#example-2-token-counting-api}
 
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call-1}
 
 ```bash
 curl --request POST \
@@ -172,7 +171,7 @@ curl --request POST \
     }'
 ```
 
-#### Direct Anthropic API Call 
+#### 直接 Anthropic API 呼叫  {#direct-anthropic-api-call-1}
 
 ```bash
 curl https://api.anthropic.com/v1/messages/count_tokens \
@@ -189,10 +188,9 @@ curl https://api.anthropic.com/v1/messages/count_tokens \
 }'
 ```
 
-### **Example 3: Batch Messages**
+### **範例 3：批次 Messages** {#example-3-batch-messages}
 
-
-#### LiteLLM Proxy Call 
+#### LiteLLM Proxy 呼叫  {#litellm-proxy-call-2}
 
 ```bash
 curl --request POST \
@@ -228,7 +226,7 @@ curl --request POST \
 }'
 ```
 
-#### Direct Anthropic API Call 
+#### 直接 Anthropic API 呼叫  {#direct-anthropic-api-call-2}
 
 ```bash
 curl https://api.anthropic.com/v1/messages/batches \
@@ -263,8 +261,8 @@ curl https://api.anthropic.com/v1/messages/batches \
 }'
 ```
 
-:::note Configuration Required for Batch Cost Tracking
-For batch passthrough cost tracking to work properly, you need to define the Anthropic model in your `proxy_config.yaml`:
+:::note 批次成本追蹤需要設定
+若要讓批次通透傳遞成本追蹤正常運作，您需要在 `proxy_config.yaml` 中定義 Anthropic 模型：
 
 ```yaml
 model_list:
@@ -274,19 +272,19 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-This ensures the polling mechanism can correctly identify the provider and retrieve batch status for cost calculation.
+這可確保輪詢機制能正確識別提供者，並擷取批次狀態以進行成本計算。
 :::
 
-## Advanced
+## 進階 {#advanced}
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+先決條件
+- [使用 DB 設定 Proxy](../proxy/virtual_keys.md#setup)
 
-Use this, to avoid giving developers the raw Anthropic API key, but still letting them use Anthropic endpoints.
+請使用此方式，避免將原始 Anthropic API 金鑰提供給開發人員，同時仍讓他們能使用 Anthropic 端點。
 
-### Use with Virtual Keys 
+### 搭配 Virtual Keys 使用  {#use-with-virtual-keys}
 
-1. Setup environment
+1. 設定環境
 
 ```bash
 export DATABASE_URL=""
@@ -300,7 +298,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生 virtual key
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -309,7 +307,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應
 
 ```bash
 {
@@ -318,8 +316,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試一下！
 
 ```bash
 curl --request POST \
@@ -337,7 +334,7 @@ curl --request POST \
 ```
 
 
-### Send `litellm_metadata` (tags, end-user cost tracking)
+### 傳送 `litellm_metadata`（tags、最終使用者成本追蹤） {#send-litellm_metadata-tags-end-user-cost-tracking}
 
 <Tabs>
 <TabItem value="curl" label="curl">

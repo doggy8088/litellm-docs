@@ -1,26 +1,25 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /batches
+# /batches {#batches}
 
-Covers Batches, Files
+涵蓋 Batches、Files
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Supported Providers | OpenAI, Azure, Vertex, Bedrock, vLLM | - |
-| ✨ Cost Tracking | ✅ | LiteLLM Enterprise only |
-| Logging | ✅ | Works across all logging integrations |
+| 支援的提供者 | OpenAI、Azure、Vertex、Bedrock、vLLM | - |
+| ✨ 成本追蹤 | ✅ | 僅限 LiteLLM Enterprise |
+| 記錄 | ✅ | 可跨所有記錄整合運作 |
 
-## Quick Start 
+## 快速入門 {#quick-start}
 
-- Create File for Batch Completion
+- 建立用於 Batch Completion 的檔案
 
-- Create Batch Request
+- 建立 Batch 請求
 
-- List Batches
+- 列出 Batches
 
-- Retrieve the Specific Batch and File Content
-
+- 擷取特定的 Batch 與檔案內容
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM PROXY Server">
@@ -33,7 +32,7 @@ $ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Create File for Batch Completion**
+**建立用於 Batch Completion 的檔案**
 
 ```shell
 curl http://localhost:4000/v1/files \
@@ -42,7 +41,7 @@ curl http://localhost:4000/v1/files \
     -F file="@mydata.jsonl"
 ```
 
-**Create Batch Request**
+**建立 Batch 請求**
 
 ```bash
 curl http://localhost:4000/v1/batches \
@@ -55,7 +54,7 @@ curl http://localhost:4000/v1/batches \
     }'
 ```
 
-**Retrieve the Specific Batch**
+**擷取特定的 Batch**
 
 ```bash
 curl http://localhost:4000/v1/batches/batch_abc123 \
@@ -64,7 +63,7 @@ curl http://localhost:4000/v1/batches/batch_abc123 \
 ```
 
 
-**List Batches**
+**列出 Batches**
 
 ```bash
 curl http://localhost:4000/v1/batches \
@@ -75,7 +74,7 @@ curl http://localhost:4000/v1/batches \
 </TabItem>
 <TabItem value="sdk" label="SDK">
 
-**Create File for Batch Completion**
+**建立用於 Batch Completion 的檔案**
 
 ```python
 import litellm
@@ -95,7 +94,7 @@ file_obj = await litellm.acreate_file(
 print("Response from creating file=", file_obj)
 ```
 
-**Create Batch Request**
+**建立 Batch 請求**
 
 ```python
 import litellm
@@ -113,7 +112,7 @@ create_batch_response = await litellm.acreate_batch(
 print("response from litellm.create_batch=", create_batch_response)
 ```
 
-**Retrieve the Specific Batch and File Content**
+**擷取特定的 Batch 與檔案內容**
 
 ```python
     # Maximum wait time before we give up
@@ -162,7 +161,7 @@ file_content = await litellm.afile_content(
 print("file content = ", file_content)
 ```
 
-**List Batches**
+**列出 Batches**
 
 ```python
 list_batches_response = litellm.list_batches(custom_llm_provider="openai", limit=2)
@@ -173,19 +172,18 @@ print("list_batches_response=", list_batches_response)
 
 </Tabs>
 
+## 多帳戶／基於模型的路由 {#multi-account--model-based-routing}
 
-## Multi-Account / Model-Based Routing
+使用來自您的 `config.yaml` 中模型特定憑證，將 batch 作業路由到不同的提供者帳戶。這消除了對環境變數的需求，並可啟用多租戶 batch 處理。
 
-Route batch operations to different provider accounts using model-specific credentials from your `config.yaml`. This eliminates the need for environment variables and enables multi-tenant batch processing.
+### 運作方式 {#how-it-works}
 
-### How It Works
+**優先順序：**
+1. **編碼的 Batch/File ID**（最高）- 模型資訊內嵌於 ID 中
+2. **模型參數** - 透過標頭（`x-litellm-model`）、查詢參數，或請求本文
+3. **自訂提供者**（備援）- 使用環境變數
 
-**Priority Order:**
-1. **Encoded Batch/File ID** (highest) - Model info embedded in the ID
-2. **Model Parameter** - Via header (`x-litellm-model`), query param, or request body
-3. **Custom Provider** (fallback) - Uses environment variables
-
-### Configuration
+### 組態 {#configuration}
 
 ```yaml
 model_list:
@@ -209,11 +207,11 @@ model_list:
       api_version: "2024-02-01"
 ```
 
-### Usage Examples
+### 使用範例 {#usage-examples}
 
-#### Scenario 1: Encoded File ID with Model
+#### 情境 1：帶有模型的編碼檔案 ID {#scenario-1-encoded-file-id-with-model}
 
-When you upload a file with a model parameter, LiteLLM encodes the model information in the file ID. All subsequent operations automatically use those credentials.
+當您上傳含有模型參數的檔案時，LiteLLM 會將模型資訊編碼到檔案 ID 中。所有後續作業都會自動使用那些憑證。
 
 ```bash
 # Step 1: Upload file with model
@@ -251,14 +249,14 @@ curl http://localhost:4000/v1/batches/batch_bGl0ZWxsbTpiYXRjaF82OTIwM2IzNjg0MDQ4
   -H "Authorization: Bearer sk-1234"
 ```
 
-**✅ Benefits:**
-- No need to specify model on every request
-- File and batch IDs "remember" which account created them
-- Automatic routing for retrieve, cancel, and file content operations
+**✅ 好處：**
+- 無需在每個請求中都指定模型
+- 檔案與 batch ID 會「記住」是由哪個帳戶建立
+- 擷取、取消與檔案內容作業會自動路由
 
-#### Scenario 2: Model via Header/Query Parameter
+#### 情境 2：透過標頭／查詢參數提供模型 {#scenario-2-model-via-headerquery-parameter}
 
-Specify the model for each request without encoding it in the ID.
+在 ID 中不編碼模型資訊，而是在每個請求中指定模型。
 
 ```bash
 # Create batch with model header
@@ -287,14 +285,14 @@ curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2" \
   -H "Authorization: Bearer sk-1234"
 ```
 
-**✅ Use Case:**
-- One-off batch operations
-- Different models for different operations
-- Explicit control over routing
+**✅ 使用情境：**
+- 一次性的 batch 作業
+- 不同作業使用不同模型
+- 對路由進行明確控制
 
-#### Scenario 3: Environment Variables (Fallback)
+#### 情境 3：環境變數（備援） {#scenario-3-environment-variables-fallback}
 
-Traditional approach using environment variables when no model is specified.
+在未指定模型時，使用環境變數的傳統方式。
 
 ```bash
 export OPENAI_API_KEY="sk-env-key"
@@ -309,12 +307,12 @@ curl http://localhost:4000/v1/batches \
   }'
 ```
 
-**✅ Use Case:**
-- Backward compatibility
-- Simple single-account setups
-- Quick prototyping
+**✅ 使用情境：**
+- 向後相容
+- 簡單的單一帳戶設定
+- 快速原型開發
 
-### Complete Multi-Account Example
+### 完整多帳戶範例 {#complete-multi-account-example}
 
 ```bash
 # Upload file to Account 1
@@ -346,7 +344,7 @@ curl "http://localhost:4000/v1/batches?model=gpt-4o-account-1"
 curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2"
 ```
 
-### SDK Usage with Model Routing
+### 使用 SDK 與模型路由 {#sdk-usage-with-model-routing}
 
 ```python
 import litellm
@@ -388,9 +386,9 @@ batch2 = await litellm.acreate_batch(
 )
 ```
 
-### How ID Encoding Works
+### ID 編碼如何運作 {#how-id-encoding-works}
 
-LiteLLM encodes model information into file and batch IDs using base64:
+LiteLLM 使用 base64 將模型資訊編碼到檔案與 batch ID 中：
 
 ```
 Original:  file-abc123
@@ -404,52 +402,47 @@ Encoded:   batch_bGl0ZWxsbTpiYXRjaF94eXo3ODk7bW9kZWwsZ3B0LTRvLXRlc3Q
            prefix       base64(litellm:batch_xyz789;model,gpt-4o-test)
 ```
 
-The encoding:
-- ✅ Preserves OpenAI-compatible prefixes (`file-`, `batch_`)
-- ✅ Is transparent to clients
-- ✅ Enables automatic routing without additional parameters
-- ✅ Works across all batch and file endpoints
+編碼方式：
+- ✅ 保留與 OpenAI 相容的前綴（`file-`、`batch_`）
+- ✅ 對用戶端是透明的
+- ✅ 無需額外參數即可啟用自動路由
+- ✅ 可跨所有 batch 與 file 端點運作
 
-### Supported Endpoints
+### 支援的端點 {#supported-endpoints}
 
-All batch and file endpoints support model-based routing:
+所有 batch 與 file 端點都支援以 model 為基礎的路由：
 
-| Endpoint | Method | Model Routing |
+| 端點 | 方法 | Model 路由 |
 |----------|--------|---------------|
-| `/v1/files` | POST | ✅ Via header/query/body |
-| `/v1/files/{file_id}` | GET | ✅ Auto from encoded ID + header/query |
-| `/v1/files/{file_id}/content` | GET | ✅ Auto from encoded ID + header/query |
-| `/v1/files/{file_id}` | DELETE | ✅ Auto from encoded ID |
-| `/v1/batches` | POST | ✅ Auto from file ID + header/query/body |
-| `/v1/batches` | GET | ✅ Via header/query |
-| `/v1/batches/{batch_id}` | GET | ✅ Auto from encoded ID |
-| `/v1/batches/{batch_id}/cancel` | POST | ✅ Auto from encoded ID |
+| `/v1/files` | POST | ✅ 透過標頭/查詢/本文 |
+| `/v1/files/{file_id}` | GET | ✅ 由編碼後的 ID + 標頭/查詢自動判定 |
+| `/v1/files/{file_id}/content` | GET | ✅ 由編碼後的 ID + 標頭/查詢自動判定 |
+| `/v1/files/{file_id}` | DELETE | ✅ 由編碼後的 ID 自動判定 |
+| `/v1/batches` | POST | ✅ 由 file ID + 標頭/查詢/本文自動判定 |
+| `/v1/batches` | GET | ✅ 透過標頭/查詢 |
+| `/v1/batches/{batch_id}` | GET | ✅ 由編碼後的 ID 自動判定 |
+| `/v1/batches/{batch_id}/cancel` | POST | ✅ 由編碼後的 ID 自動判定 |
 
-## **Supported Providers**:
-### [Azure OpenAI](./providers/azure#azure-batches-api)
-### [OpenAI](#quick-start)
-### [Vertex AI](./providers/vertex#batch-apis)
-### [Bedrock](./providers/bedrock_batches)
-### [vLLM](./providers/vllm_batches)
+## **支援的提供者**: {#supported-providers}
+### [Azure OpenAI](./providers/azure#azure-batches-api) {#azure-openaiprovidersazureazure-batches-api}
+### [OpenAI](#quick-start) {#openaiquick-start}
+### [Vertex AI](./providers/vertex#batch-apis) {#vertex-aiprovidersvertexbatch-apis}
+### [Bedrock](./providers/bedrock_batches) {#bedrockprovidersbedrock_batches}
+### [vLLM](./providers/vllm_batches) {#vllmprovidersvllm_batches}
 
+## Batches API 的成本追蹤如何運作 {#how-cost-tracking-for-batches-api-works}
 
-## How Cost Tracking for Batches API Works
+LiteLLM 透過記錄兩個關鍵事件來追蹤 batch 處理成本：
 
-LiteLLM tracks batch processing costs by logging two key events:
-
-| Event Type | Description | When it's Logged |
+| 事件類型 | 說明 | 記錄時間 |
 |------------|-------------|------------------|
-| `acreate_batch` | Initial batch creation | When batch request is submitted |
-| `batch_success` | Final usage and cost | When batch processing completes |
+| `acreate_batch` | 初始 batch 建立 | 當 batch 請求被提交時 |
+| `batch_success` | 最終用量與成本 | 當 batch 處理完成時 |
 
-Cost calculation:
+成本計算：
 
-- LiteLLM polls the batch status until completion
-- Upon completion, it aggregates usage and costs from all responses in the output file
-- Total `token` and `response_cost` reflect the combined metrics across all batch responses
+- LiteLLM 會輪詢 batch 狀態直到完成
+- 完成後，會彙總輸出檔案中所有回應的用量與成本
+- 總 `token` 與 `response_cost` 會反映所有 batch 回應的合併指標
 
-
-
-
-
-## [Swagger API Reference](https://litellm-api.up.railway.app/#/batch)
+## [Swagger API 參考](https://litellm-api.up.railway.app/#/batch) {#swagger-api-referencehttpslitellm-apiuprailwayappbatch}

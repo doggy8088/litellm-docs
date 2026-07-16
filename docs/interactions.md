@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /interactions
+# /interactions {#interactions}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Logging | ✅ | Works across all integrations |
-| Streaming | ✅ | |
-| Loadbalancing | ✅ | Between supported models |
-| Supported LLM providers | **All LiteLLM supported CHAT COMPLETION providers** | `openai`, `anthropic`, `bedrock`, `vertex_ai`, `gemini`, `azure`, `azure_ai` etc. |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 串流 | ✅ | |
+| 負載平衡 | ✅ | 介於受支援的模型之間 |
+| 支援的 LLM 提供者 | **所有 LiteLLM 支援的 CHAT COMPLETION 提供者** | `openai`, `anthropic`, `bedrock`, `vertex_ai`, `gemini`, `azure`, `azure_ai` 等。 |
 
-## **LiteLLM Python SDK Usage**
+## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
 
-### Quick Start
+### 快速開始 {#quick-start}
 
 ```python showLineNumbers title="Create Interaction"
 from litellm import create_interaction
@@ -28,7 +28,7 @@ response = create_interaction(
 print(response.outputs[-1].text)
 ```
 
-### Async Usage
+### 非同步使用方式 {#async-usage}
 
 ```python showLineNumbers title="Async Create Interaction"
 from litellm import acreate_interaction
@@ -47,7 +47,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Streaming Interaction"
 from litellm import create_interaction
@@ -65,11 +65,11 @@ for chunk in response:
     print(chunk)
 ```
 
-## **LiteLLM AI Gateway (Proxy) Usage**
+## **LiteLLM AI Gateway（Proxy）使用方式** {#litellm-ai-gateway-proxy-usage}
 
-### Setup
+### 設定 {#setup}
 
-Add this to your litellm proxy config.yaml:
+將以下內容加入您的 litellm proxy config.yaml：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -79,7 +79,7 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-Start litellm:
+啟動 litellm：
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -87,7 +87,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test Request
+### 測試請求 {#test-request}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -102,7 +102,7 @@ curl -X POST "http://localhost:4000/v1beta/interactions" \
   }'
 ```
 
-**Streaming:**
+**串流：**
 
 ```bash showLineNumbers title="Streaming Interaction"
 curl -N -X POST "http://localhost:4000/v1beta/interactions" \
@@ -115,7 +115,7 @@ curl -N -X POST "http://localhost:4000/v1beta/interactions" \
   }'
 ```
 
-**Get Interaction:**
+**取得互動：**
 
 ```bash showLineNumbers title="Get Interaction by ID"
 curl "http://localhost:4000/v1beta/interactions/{interaction_id}" \
@@ -126,7 +126,7 @@ curl "http://localhost:4000/v1beta/interactions/{interaction_id}" \
 
 <TabItem value="google-sdk" label="Google GenAI SDK">
 
-Point the Google GenAI SDK to LiteLLM Proxy:
+將 Google GenAI SDK 指向 LiteLLM Proxy：
 
 ```python showLineNumbers title="Google GenAI SDK with LiteLLM Proxy"
 from google import genai
@@ -146,7 +146,7 @@ interaction = client.interactions.create(
 print(interaction.outputs[-1].text)
 ```
 
-**Streaming:**
+**串流：**
 
 ```python showLineNumbers title="Google GenAI SDK Streaming"
 from google import genai
@@ -166,21 +166,21 @@ for chunk in client.interactions.create_stream(
 </TabItem>
 </Tabs>
 
-## **Request/Response Format**
+## **請求/回應格式** {#requestresponse-format}
 
-### Request Parameters
+### 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | Model to use (e.g., `gemini/gemini-2.5-flash`) |
-| `input` | string | Yes | The input text for the interaction |
-| `stream` | boolean | No | Enable streaming responses |
-| `tools` | array | No | Tools available to the model |
-| `system_instruction` | string | No | System instructions for the model |
-| `generation_config` | object | No | Generation configuration |
-| `previous_interaction_id` | string | No | ID of previous interaction for context |
+| `model` | string | Yes | 要使用的模型（例如：`gemini/gemini-2.5-flash`） |
+| `input` | string | Yes | 互動的輸入文字 |
+| `stream` | boolean | No | 啟用串流回應 |
+| `tools` | array | No | 模型可用的工具 |
+| `system_instruction` | string | No | 模型的系統指示 |
+| `generation_config` | object | No | 生成設定 |
+| `previous_interaction_id` | string | No | 前一個互動的 ID，用於內容脈絡 |
 
-### Response Format
+### 回應格式 {#response-format}
 
 ```json
 {
@@ -205,11 +205,11 @@ for chunk in client.interactions.create_stream(
 }
 ```
 
-## **Calling non-Interactions API endpoints (`/interactions` to `/responses` Bridge)**
+## **呼叫非 Interactions API 端點（`/interactions` 到 `/responses` 橋接）** {#calling-non-interactions-api-endpoints-interactions-to-responses-bridge}
 
-LiteLLM allows you to call non-Interactions API models via a bridge to LiteLLM's `/responses` endpoint. This is useful for calling OpenAI, Anthropic, and other providers that don't natively support the Interactions API.
+LiteLLM 讓您可以透過連到 LiteLLM 的 `/responses` 端點的橋接，呼叫非 Interactions API 模型。這對於呼叫 OpenAI、Anthropic，以及其他原生不支援 Interactions API 的提供者很有用。
 
-#### Python SDK Usage
+#### Python SDK 使用方式 {#python-sdk-usage}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -227,9 +227,9 @@ response = litellm.interactions.create(
 print(response.outputs[-1].text)
 ```
 
-#### LiteLLM Proxy Usage
+#### LiteLLM Proxy 使用方式 {#litellm-proxy-usage}
 
-**Setup Config:**
+**設定組態：**
 
 ```yaml showLineNumbers title="Example Configuration"
 model_list:
@@ -239,7 +239,7 @@ model_list:
     api_key: os.environ/OPENAI_API_KEY
 ```
 
-**Start Proxy:**
+**啟動 Proxy：**
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config /path/to/config.yaml
@@ -247,7 +247,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Make Request:**
+**發送請求：**
 
 ```bash showLineNumbers title="non-Interactions API Model Request"
 curl http://localhost:4000/v1beta/interactions \
@@ -259,9 +259,9 @@ curl http://localhost:4000/v1beta/interactions \
   }'
 ```
 
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-| Provider | Link to Usage |
+| 提供者 | 使用方式連結 |
 |----------|---------------|
-| Google AI Studio | [Usage](#quick-start) |
-| All other LiteLLM providers | [Bridge Usage](#calling-non-interactions-api-endpoints-interactions-to-responses-bridge) |
+| Google AI Studio | [使用方式](#quick-start) |
+| 其他所有 LiteLLM 提供者 | [橋接使用方式](#calling-non-interactions-api-endpoints-interactions-to-responses-bridge) |

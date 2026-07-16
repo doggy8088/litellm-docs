@@ -3,25 +3,25 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 
-# Vertex AI - Anthropic, DeepSeek, Model Garden, xAI
+# Vertex AI - Anthropic、DeepSeek、Model Garden、xAI {#vertex-ai---anthropic-deepseek-model-garden-xai}
 
-## Supported Partner Providers
+## 支援的合作夥伴提供者 {#supported-partner-providers}
 
-| Provider | LiteLLM Route | Vertex Documentation |
+| 提供者 | LiteLLM 路由 | Vertex 文件 |
 |----------|---------------|---------------|
-| Anthropic (Claude) | `vertex_ai/claude-*` | [Vertex AI - Anthropic Models](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude) |
-| DeepSeek | `vertex_ai/deepseek-ai/{MODEL}` | [Vertex AI - DeepSeek Models](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/deepseek) |
-| ZAI (GLM) | `vertex_ai/zai-org/{MODEL}` | [Vertex AI - GLM Models](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/zaiorg/glm-47) |
-| Meta/Llama | `vertex_ai/meta/{MODEL}` | [Vertex AI - Meta Models](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/llama) |
-| Mistral | `vertex_ai/mistral-*` | [Vertex AI - Mistral Models](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/mistral) |
-| AI21 (Jamba) | `vertex_ai/jamba-*` | [Vertex AI - AI21 Models](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/ai21) |
-| Qwen | `vertex_ai/qwen/*` | [Vertex AI - Qwen Models](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen) |
-| OpenAI (GPT-OSS) | `vertex_ai/openai/gpt-oss-*` | [Vertex AI - GPT-OSS Models](https://console.cloud.google.com/vertex-ai/publishers/openai/model-garden/) |
-| xAI (Grok) | `vertex_ai/xai/{MODEL}` | [xAI models (incl. Vertex)](https://docs.x.ai/docs/models), [Vertex AI Model Garden](https://cloud.google.com/vertex-ai/generative-ai/docs/model-garden/explore-models) |
+| Anthropic (Claude) | `vertex_ai/claude-*` | [Vertex AI - Anthropic 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude) |
+| DeepSeek | `vertex_ai/deepseek-ai/{MODEL}` | [Vertex AI - DeepSeek 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/deepseek) |
+| ZAI (GLM) | `vertex_ai/zai-org/{MODEL}` | [Vertex AI - GLM 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/zaiorg/glm-47) |
+| Meta/Llama | `vertex_ai/meta/{MODEL}` | [Vertex AI - Meta 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/llama) |
+| Mistral | `vertex_ai/mistral-*` | [Vertex AI - Mistral 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/mistral) |
+| AI21 (Jamba) | `vertex_ai/jamba-*` | [Vertex AI - AI21 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/ai21) |
+| Qwen | `vertex_ai/qwen/*` | [Vertex AI - Qwen 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen) |
+| OpenAI (GPT-OSS) | `vertex_ai/openai/gpt-oss-*` | [Vertex AI - GPT-OSS 模型](https://console.cloud.google.com/vertex-ai/publishers/openai/model-garden/) |
+| xAI (Grok) | `vertex_ai/xai/{MODEL}` | [xAI 模型（含 Vertex）](https://docs.x.ai/docs/models), [Vertex AI Model Garden](https://cloud.google.com/vertex-ai/generative-ai/docs/model-garden/explore-models) |
 
-## Vertex AI - Anthropic (Claude)
+## Vertex AI - Anthropic (Claude) {#vertex-ai---anthropic-claude}
 
-| Model Name       | Function Call                        |
+| 模型名稱 | 函式呼叫 |
 |------------------|--------------------------------------|
 | claude-3-opus@20240229   | `completion('vertex_ai/claude-3-opus@20240229', messages)` |
 | claude-3-5-sonnet@20240620  | `completion('vertex_ai/claude-3-5-sonnet@20240620', messages)` |
@@ -29,7 +29,7 @@ import TabItem from '@theme/TabItem';
 | claude-3-haiku@20240307   | `completion('vertex_ai/claude-3-haiku@20240307', messages)` |
 | claude-3-7-sonnet@20250219   | `completion('vertex_ai/claude-3-7-sonnet@20250219', messages)` |
 
-#### Usage
+#### 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -57,7 +57,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -73,7 +73,7 @@ model_list:
         vertex_ai_location: "us-west-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -81,7 +81,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -101,10 +101,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-
-#### Usage - `thinking` / `reasoning_content`
-
+#### 使用方式 - `thinking` / `reasoning_content` {#usage---thinking--reasoning_content}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -124,7 +121,7 @@ resp = completion(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 - model_name: claude-3-7-sonnet-20250219
@@ -134,13 +131,13 @@ resp = completion(
     vertex_ai_location: "us-west-1"
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -156,8 +153,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-
-**Expected Response**
+**預期回應**
 
 ```python
 ModelResponse(
@@ -213,35 +209,35 @@ ModelResponse(
 )
 ```
 
-## VertexAI DeepSeek
+## VertexAI DeepSeek {#vertexai-deepseek}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/deepseek-ai/{MODEL}` |
-| Vertex Documentation | [Vertex AI - DeepSeek Models](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/deepseek) |
+| 提供者路由 | `vertex_ai/deepseek-ai/{MODEL}` |
+| Vertex 文件 | [Vertex AI - DeepSeek 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/deepseek) |
 
-#### Usage
+#### 使用方式 {#usage-1}
 
-**LiteLLM Supports all Vertex AI DeepSeek Models.** Ensure you use the `vertex_ai/deepseek-ai/` prefix for all Vertex AI DeepSeek models.
+**LiteLLM 支援所有 Vertex AI DeepSeek 模型。** 請確保您對所有 Vertex AI DeepSeek 模型使用 `vertex_ai/deepseek-ai/` 前綴。
 
-| Model Name       | Usage                        |
+| 模型名稱 | 使用方式 |
 |------------------|------------------------------|
 | vertex_ai/deepseek-ai/deepseek-r1-0528-maas | `completion('vertex_ai/deepseek-ai/deepseek-r1-0528-maas', messages)` |
 
-## VertexAI ZAI (GLM)
+## VertexAI ZAI (GLM) {#vertexai-zai-glm}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/zai-org/{MODEL}` |
-| Vertex Documentation | [Vertex AI - GLM Models](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/zaiorg/glm-47) |
+| 提供者路由 | `vertex_ai/zai-org/{MODEL}` |
+| Vertex 文件 | [Vertex AI - GLM 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/zaiorg/glm-47) |
 
-**LiteLLM Supports all Vertex AI GLM Models.** Ensure you use the `vertex_ai/zai-org/` prefix for all Vertex AI GLM models.
+**LiteLLM 支援所有 Vertex AI GLM 模型。** 請確保您對所有 Vertex AI GLM 模型使用 `vertex_ai/zai-org/` 前綴。
 
-| Model Name | Usage |
+| 模型名稱 | 使用方式 |
 |------------|-------|
 | vertex_ai/zai-org/glm-4.7-maas | `completion('vertex_ai/zai-org/glm-4.7-maas', messages)` |
 
-#### Usage
+#### 使用方式 {#usage-2}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -263,7 +259,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -274,7 +270,7 @@ model_list:
       # vertex_location routes to "global"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -282,7 +278,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -302,9 +298,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## VertexAI Meta/Llama API
+## VertexAI Meta/Llama API {#vertexai-metallama-api}
  
-| Model Name       | Function Call                        |
+| 模型名稱 | 函式呼叫 |
 |------------------|--------------------------------------|
 | meta/llama-3.2-90b-vision-instruct-maas | `completion('vertex_ai/meta/llama-3.2-90b-vision-instruct-maas', messages)` |
 | meta/llama3-8b-instruct-maas | `completion('vertex_ai/meta/llama3-8b-instruct-maas', messages)` |
@@ -315,7 +311,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 | meta/llama-4-maverick-17b-128e-instruct-maas | `completion('vertex_ai/meta/llama-4-maverick-17b-128e-instruct-maas',messages)` |
 | meta/llama-4-maverick-17b-16e-instruct-maas | `completion('vertex_ai/meta/llama-4-maverick-17b-16e-instruct-maas',messages)` |
 
-#### Usage
+#### 使用方式 {#usage-3}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -342,7 +338,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -358,7 +354,7 @@ model_list:
         vertex_ai_location: "us-west-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -366,7 +362,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -386,20 +382,20 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## VertexAI Mistral API
+## VertexAI Mistral API {#vertexai-mistral-api}
 
-[**Supported OpenAI Params**](https://github.com/BerriAI/litellm/blob/e0f3cd580cb85066f7d36241a03c30aa50a8a31d/litellm/llms/openai.py#L137)
+[**支援的 OpenAI 參數**](https://github.com/BerriAI/litellm/blob/e0f3cd580cb85066f7d36241a03c30aa50a8a31d/litellm/llms/openai.py#L137)
 
-**LiteLLM Supports all Vertex AI Mistral Models.** Ensure you use the `vertex_ai/mistral-` prefix for all Vertex AI Mistral models.
+**LiteLLM 支援所有 Vertex AI Mistral 模型。** 請確保您對所有 Vertex AI Mistral 模型使用 `vertex_ai/mistral-` 前綴。
 
-Overview
+概觀
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/mistral-{MODEL}` |
-| Vertex Documentation | [Vertex AI - Mistral Models](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/mistral) |
+| 提供者路由 | `vertex_ai/mistral-{MODEL}` |
+| Vertex 文件 | [Vertex AI - Mistral 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/mistral) |
  
-| Model Name       | Function Call                        |
+| 模型名稱 | 函式呼叫 |
 |------------------|--------------------------------------|
 | mistral-large@latest   | `completion('vertex_ai/mistral-large@latest', messages)` |
 | mistral-large@2407   | `completion('vertex_ai/mistral-large@2407', messages)` |
@@ -409,7 +405,7 @@ Overview
 | codestral@latest   | `completion('vertex_ai/codestral@latest', messages)` |
 | codestral@@2405   | `completion('vertex_ai/codestral@2405', messages)` |
 
-#### Usage
+#### 使用方式 {#usage-4}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -436,7 +432,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -452,7 +448,7 @@ model_list:
         vertex_ai_location: "us-west-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -460,7 +456,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -480,12 +476,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+#### 使用方式 - Codestral FIM {#usage---codestral-fim}
 
-#### Usage - Codestral FIM
+透過 OpenAI [`/v1/completion`](https://platform.openai.com/docs/api-reference/completions/create) 端點在 VertexAI 上呼叫 Codestral 以執行 FIM 任務。 
 
-Call Codestral on VertexAI via the OpenAI [`/v1/completion`](https://platform.openai.com/docs/api-reference/completions/create) endpoint for FIM tasks. 
-
-Note: You can also call Codestral via `/chat/completion`.
+注意：您也可以透過 `/chat/completion` 呼叫 Codestral。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -521,7 +516,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -537,7 +532,7 @@ model_list:
         vertex_ai_location: "us-west-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -545,7 +540,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/completions' \
@@ -567,15 +562,14 @@ curl -X POST 'http://0.0.0.0:4000/completions' \
 </TabItem>
 </Tabs>
 
-
-## VertexAI AI21 Models
+## VertexAI AI21 Models {#vertexai-ai21-models}
  
-| Model Name       | Function Call                        |
+| 模型名稱 | 函式呼叫 |
 |------------------|--------------------------------------|
 | jamba-1.5-mini@001   | `completion(model='vertex_ai/jamba-1.5-mini@001', messages)` |
 | jamba-1.5-large@001   | `completion(model='vertex_ai/jamba-1.5-large@001', messages)` |
 
-#### Usage
+#### 使用方式 {#usage-5}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -602,7 +596,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -618,7 +612,7 @@ model_list:
         vertex_ai_location: "us-west-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -626,7 +620,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -646,22 +640,21 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## VertexAI Qwen API {#vertexai-qwen-api}
 
-## VertexAI Qwen API
-
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/qwen/{MODEL}` |
-| Vertex Documentation | [Vertex AI - Qwen Models](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen) |
+| 提供者路由 | `vertex_ai/qwen/{MODEL}` |
+| Vertex 文件 | [Vertex AI - Qwen 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen) |
 
-**LiteLLM Supports all Vertex AI Qwen Models.** Ensure you use the `vertex_ai/qwen/` prefix for all Vertex AI Qwen models.
+**LiteLLM 支援所有 Vertex AI Qwen 模型。** 請確保您對所有 Vertex AI Qwen 模型使用 `vertex_ai/qwen/` 前綴。
 
-| Model Name       | Usage                        |
+| 模型名稱 | 使用方式 |
 |------------------|------------------------------|
 | vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas | `completion('vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas', messages)` |
 | vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas | `completion('vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas', messages)` |
 
-#### Usage
+#### 使用方式 {#usage-6}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -688,7 +681,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 加入設定**
 
 ```yaml
 model_list:
@@ -704,7 +697,7 @@ model_list:
         vertex_ai_location: "us-west-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -712,7 +705,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -732,21 +725,20 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## VertexAI GPT-OSS Models {#vertexai-gpt-oss-models}
 
-## VertexAI GPT-OSS Models
-
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/openai/{MODEL}` |
-| Vertex Documentation | [Vertex AI - GPT-OSS Models](https://console.cloud.google.com/vertex-ai/publishers/openai/model-garden/) |
+| 提供者路由 | `vertex_ai/openai/{MODEL}` |
+| Vertex 文件 | [Vertex AI - GPT-OSS 模型](https://console.cloud.google.com/vertex-ai/publishers/openai/model-garden/) |
 
-**LiteLLM Supports all Vertex AI GPT-OSS Models.** Ensure you use the `vertex_ai/openai/` prefix for all Vertex AI GPT-OSS models.
+**LiteLLM 支援所有 Vertex AI GPT-OSS 模型。** 請確保您對所有 Vertex AI GPT-OSS 模型使用 `vertex_ai/openai/` 前綴。
 
-| Model Name       | Usage                        |
+| 模型名稱       | 用量                        |
 |------------------|------------------------------|
 | vertex_ai/openai/gpt-oss-20b-maas | `completion('vertex_ai/openai/gpt-oss-20b-maas', messages)` |
 
-#### Usage
+#### 用量 {#usage-7}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -773,7 +765,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -784,7 +776,7 @@ model_list:
         vertex_ai_location: "us-central1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -792,7 +784,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -812,9 +804,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-#### Usage - `reasoning_effort`
+#### 用量 - `reasoning_effort` {#usage---reasoning_effort}
 
-GPT-OSS models support the `reasoning_effort` parameter for enhanced reasoning capabilities.
+GPT-OSS 模型支援 `reasoning_effort` 參數，以提供增強的推理能力。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -835,7 +827,7 @@ response = completion(
 
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -846,13 +838,13 @@ model_list:
     vertex_ai_location: "us-central1"
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！ 
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -870,21 +862,21 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 
 ## VertexAI xAI (Grok) {#vertexai-xai-grok}
 
-xAI Grok models available in **Vertex AI Model Garden** use the same OpenAI-compatible chat-completions path as other Model Garden publisher models. Use the `vertex_ai/xai/` prefix (not `xai/`, which is the direct xAI API with `XAI_API_KEY`). See also [xAI provider](./xai.md).
+Vertex AI Model Garden 中可用的 xAI Grok 模型，使用與其他 Model Garden 發佈者模型相同的 OpenAI 相容 chat-completions 路徑。請使用 `vertex_ai/xai/` 前綴（不是 `xai/`，後者是帶有 `XAI_API_KEY` 的直接 xAI API）。另請參閱 [xAI provider](./xai.md)。
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/xai/{MODEL}` |
-| Vertex / xAI docs | [xAI models](https://docs.x.ai/docs/models), [Model Garden](https://cloud.google.com/vertex-ai/generative-ai/docs/model-garden/explore-models) |
+| 提供者路由 | `vertex_ai/xai/{MODEL}` |
+| Vertex / xAI 文件 | [xAI models](https://docs.x.ai/docs/models), [Model Garden](https://cloud.google.com/vertex-ai/generative-ai/docs/model-garden/explore-models) |
 
-| Model Name | Usage |
+| 模型名稱 | 用量 |
 |------------|--------|
 | `vertex_ai/xai/grok-4.1-fast-non-reasoning` | `completion('vertex_ai/xai/grok-4.1-fast-non-reasoning', messages)` |
 | `vertex_ai/xai/grok-4.1-fast-reasoning` | `completion('vertex_ai/xai/grok-4.1-fast-reasoning', messages)` |
 | `vertex_ai/xai/grok-4.20-non-reasoning` | `completion('vertex_ai/xai/grok-4.20-non-reasoning', messages)` |
 | `vertex_ai/xai/grok-4.20-reasoning` | `completion('vertex_ai/xai/grok-4.20-reasoning', messages)` |
 
-#### Usage
+#### 用量 {#usage-8}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -910,7 +902,7 @@ print("\nModel Response", response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -921,7 +913,7 @@ model_list:
         vertex_ai_location: "us-central1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -929,7 +921,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \

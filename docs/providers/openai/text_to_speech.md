@@ -2,22 +2,22 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI - Text-to-speech
+# OpenAI - 文字轉語音 {#openai---text-to-speech}
 
-## Overview
+## 總覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Guardrails | ✅ | Applies to input text |
-| Supported Models | tts-1, tts-1-hd, gpt-4o-mini-tts | |
+| 成本追蹤 | ✅ | 適用於所有支援的模型 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 終端使用者追蹤 | ✅ | |
+| 備援 | ✅ | 可在支援的模型之間運作 |
+| 負載平衡 | ✅ | 可在支援的模型之間運作 |
+| 防護欄 | ✅ | 套用於輸入文字 |
+| 支援的模型 | tts-1, tts-1-hd, gpt-4o-mini-tts | |
 
-## **LiteLLM Python SDK Usage**
-### Quick Start 
+## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
+### 快速開始  {#quick-start}
 
 ```python
 from pathlib import Path
@@ -35,7 +35,7 @@ response = speech(
 response.stream_to_file(speech_file_path)
 ```
 
-### Async Usage 
+### 非同步使用方式  {#async-usage}
 
 ```python
 from litellm import aspeech
@@ -64,9 +64,9 @@ async def test_async_speech():
 asyncio.run(test_async_speech())
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 使用方式** {#litellm-proxy-usage}
 
-LiteLLM provides an openai-compatible `/audio/speech` endpoint for Text-to-speech calls.
+LiteLLM 提供一個與 openai 相容的 `/audio/speech` 端點，用於文字轉語音請求。
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -80,7 +80,7 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-**Setup**
+**設定**
 
 ```bash
 - model_name: tts
@@ -95,18 +95,17 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-## Supported Models 
+## 支援的模型  {#supported-models}
 
-| Model | Example |
+| 模型 | 範例 |
 |-------|-------------|
 | tts-1 | speech(model="tts-1", voice="alloy", input="Hello, world!") |
 | tts-1-hd | speech(model="tts-1-hd", voice="alloy", input="Hello, world!") |
 | gpt-4o-mini-tts | speech(model="gpt-4o-mini-tts", voice="alloy", input="Hello, world!") |
 
+## ✨ Enterprise LiteLLM Proxy - 設定最大請求檔案大小  {#-enterprise-litellm-proxy---set-max-request-file-size}
 
-## ✨ Enterprise LiteLLM Proxy - Set Max Request File Size 
-
-Use this when you want to limit the file size for requests sent to `audio/transcriptions`
+當您想限制傳送至 `audio/transcriptions` 的請求檔案大小時，請使用此設定
 
 ```yaml
 - model_name: whisper
@@ -118,7 +117,7 @@ Use this when you want to limit the file size for requests sent to `audio/transc
     mode: audio_transcription
 ```
 
-Make a test Request with a valid file
+使用有效檔案進行測試請求
 ```shell
 curl --location 'http://localhost:4000/v1/audio/transcriptions' \
 --header 'Authorization: Bearer sk-1234' \
@@ -127,7 +126,7 @@ curl --location 'http://localhost:4000/v1/audio/transcriptions' \
 ```
 
 
-Expect to see the follow response 
+預期會看到以下回應
 
 ```shell
 {"error":{"message":"File size is too large. Please check your file size. Passed file size: 0.7392807006835938 MB. Max file size: 0.0001 MB","type":"bad_request","param":"file","code":500}}%  

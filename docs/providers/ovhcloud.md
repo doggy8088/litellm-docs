@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 🆕 OVHCloud AI Endpoints
-Leading French Cloud provider in Europe with data sovereignty and privacy.
+# 🆕 OVHCloud AI 端點 {#-ovhcloud-ai-endpoints}
+歐洲領先的法國雲端提供者，具備資料主權與隱私保護。
 
-You can explore the last models we made available in our [catalog](https://endpoints.ai.cloud.ovh.net/catalog).
+您可以在我們的 [catalog](https://endpoints.ai.cloud.ovh.net/catalog) 中探索我們最新提供的模型。
 
 :::tip
 
-We support ALL OVHCloud AI Endpoints models, just set `model=ovhcloud/<any-model-on-ai-endpoints>` as a prefix when sending litellm requests.
-For the complete models catalog, visit https://endpoints.ai.cloud.ovh.net/catalog. **
+我們支援所有 OVHCloud AI Endpoints 模型，只要在發送 litellm 請求時將 `model=ovhcloud/<any-model-on-ai-endpoints>` 設為前綴即可。
+完整的模型目錄請參閱 https://endpoints.ai.cloud.ovh.net/catalog. **
 
 :::
 
-## Sample usage
-### Chat completion
-You can define your API key by setting the `OVHCLOUD_API_KEY` environment variable or by overriding the `api_key` parameter. You can generate a key on the [OVHCloud Manager](https://www.ovh.com/manager).
+## 範例用法 {#sample-usage}
+### 聊天完成 {#chat-completion}
+您可以透過設定 `OVHCLOUD_API_KEY` 環境變數，或覆寫 `api_key` 參數來定義您的 API 金鑰。您可以在 [OVHCloud Manager](https://www.ovh.com/manager) 上產生金鑰。
 
 ```python
 from litellm import completion
@@ -43,8 +43,8 @@ response = completion(
 print(response)
 ```
 
-### Streaming
-Set the parameter `stream` to `True` to stream a response.
+### 串流 {#streaming}
+將參數 `stream` 設為 `True` 以串流回應。
 ```python
 from litellm import completion
 import os
@@ -72,7 +72,7 @@ for part in response:
     print(response)
 ```
 
-### Tool Calling
+### 工具呼叫 {#tool-calling}
 
 ```python
 from litellm import completion
@@ -205,7 +205,7 @@ else:
     print_message("assistant", response_message.content)
 ```
 
-### Vision Example
+### 視覺範例 {#vision-example}
 
 ```python
 from base64 import b64encode
@@ -251,7 +251,7 @@ print(response.choices[0].message.content)
 ```
 
 
-### Structured Output
+### 結構化輸出 {#structured-output}
 
 ```python
 from litellm import completion
@@ -298,7 +298,7 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-### Embeddings
+### 嵌入 {#embeddings}
 
 ```python
 from litellm import embedding
@@ -311,7 +311,7 @@ response = embedding(
 print(response.data)
 ```
 
-### Audio Transcription
+### 音訊轉錄 {#audio-transcription}
 
 ```python
 from litellm import transcription
@@ -326,11 +326,11 @@ response = transcription(
 print(response.text)
 ```
 
-## Usage with LiteLLM Proxy Server
+## 搭配 LiteLLM Proxy Server 的用法 {#usage-with-litellm-proxy-server}
 
-Here's how to call a OVHCloud AI Endpoints model with the LiteLLM Proxy Server
+以下說明如何透過 LiteLLM Proxy Server 呼叫 OVHCloud AI Endpoints 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -341,13 +341,13 @@ Here's how to call a OVHCloud AI Endpoints model with the LiteLLM Proxy Server
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 發送請求
 
   <Tabs>
 

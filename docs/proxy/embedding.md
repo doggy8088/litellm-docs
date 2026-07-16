@@ -2,25 +2,25 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Embeddings - `/embeddings`
+# 嵌入 - `/embeddings` {#embeddings---embeddings}
 
-See supported Embedding Providers & Models [here](https://docs.litellm.ai/docs/embedding/supported_embedding)
+請參閱支援的 Embedding 提供者與模型 [這裡](https://docs.litellm.ai/docs/embedding/supported_embedding)
 
-## Supported Input Formats
+## 支援的輸入格式 {#supported-input-formats}
 
-The `/v1/embeddings` endpoint follows the [OpenAI embeddings API specification](https://platform.openai.com/docs/api-reference/embeddings/create). The following input formats are supported:
+`/v1/embeddings` 端點遵循 [OpenAI embeddings API 規格](https://platform.openai.com/docs/api-reference/embeddings/create)。支援以下輸入格式：
 
-| Format | Example |
+| 格式 | 範例 |
 |--------|---------|
-| String | `"input": "Hello"` |
-| Array of strings | `"input": ["Hello", "World"]` |
-| Array of tokens (integers) | `"input": [1234, 5678, 9012]` |
-| Array of token arrays | `"input": [[1234, 5678], [9012, 3456]]` |
+| 字串 | `"input": "Hello"` |
+| 字串陣列 | `"input": ["Hello", "World"]` |
+| token 陣列（整數） | `"input": [1234, 5678, 9012]` |
+| token 陣列的陣列 | `"input": [[1234, 5678], [9012, 3456]]` |
 
-## Quick start
-Here's how to route between GPT-J embedding (sagemaker endpoint), Amazon Titan embedding (Bedrock) and Azure OpenAI embedding on the proxy server: 
+## 快速開始 {#quick-start}
+以下示範如何在 proxy 伺服器上於 GPT-J embedding（sagemaker endpoint）、Amazon Titan embedding（Bedrock）與 Azure OpenAI embedding 之間進行路由： 
 
-1. Set models in your config.yaml
+1. 在您的 config.yaml 中設定 models
 ```yaml
 model_list:
   - model_name: sagemaker-embeddings
@@ -40,12 +40,12 @@ general_settings:
   master_key: sk-1234 # [OPTIONAL] if set all calls to proxy will require either this key or a valid generated token
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-3. Test the embedding call
+3. 測試 embedding 請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/v1/embeddings' \
@@ -56,18 +56,18 @@ curl --location 'http://0.0.0.0:4000/v1/embeddings' \
     "model": "sagemaker-embeddings",
 }'
 ```
-## Default `encoding_format` {#embedding-encoding-format}
+## 預設 `encoding_format` {#embedding-encoding-format}
 
-For embeddings routed through LiteLLM’s **OpenAI-compatible embedding path** (for example OpenAI models, `openai/...` with a custom `api_base`, or the proxy `/v1/embeddings` route that forwards to that path), LiteLLM sends an explicit `encoding_format` when the caller omits it.
+對於透過 LiteLLM 的 **OpenAI 相容 embedding 路徑** 路由的 embeddings（例如 OpenAI models、`openai/...` 搭配自訂 `api_base`，或是將請求轉送至該路徑的 proxy `/v1/embeddings` 路由），當呼叫端省略時，LiteLLM 會傳送明確的 `encoding_format`。
 
-**Resolution order** (first match wins):
+**解析順序**（先符合者優先）：
 
-1. Value in the embedding request body (`encoding_format` in JSON).
-2. Per-model default from `litellm_params.encoding_format` in `config.yaml`.
-3. Process environment variable **`LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT`** (e.g. `float` or `base64`).
-4. Fallback **`float`**.
+1. embedding 請求本文中的值（JSON 中的 `encoding_format`）。
+2. 來自 `litellm_params.encoding_format` 於 `config.yaml` 的每個模型預設值。
+3. 程序環境變數 **`LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT`**（例如 `float` 或 `base64`）。
+4. 備援 **`float`**。
 
-You can still override per request from any OpenAI-compatible client:
+您仍然可以從任何 OpenAI 相容用戶端針對每個請求進行覆寫：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/embeddings' \
@@ -76,5 +76,4 @@ curl --location 'http://0.0.0.0:4000/v1/embeddings' \
   --data '{"model": "my-embedding-model", "input": "hello", "encoding_format": "base64"}'
 ```
 
-See also: [Config settings](./config_settings.md) (`LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT`).
-
+另請參閱：[設定選項](./config_settings.md)（`LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT`）。

@@ -1,97 +1,97 @@
-# Upgrading LiteLLM Proxy (uv/venv)
+# 升級 LiteLLM Proxy (uv/venv) {#upgrading-litellm-proxy-uvvenv}
 
-Guide for upgrading LiteLLM Proxy when installed via uv in a virtual environment.
+在虛擬環境中透過 uv 安裝時，用於升級 LiteLLM Proxy 的指南。
 
-:::info Important
-Always activate your virtual environment before running any `litellm` or `prisma` commands. All commands in this guide assume you're working inside an activated venv.
+:::info 重要
+在執行任何 `litellm` 或 `prisma` 指令之前，請務必先啟用您的虛擬環境。本指南中的所有指令都假設您是在已啟用的 venv 中操作。
 :::
 
-## How uv/venv Upgrades Work
+## uv/venv 升級的運作方式 {#how-uvvenv-upgrades-work}
 
-There are two pieces that need to stay in sync:
+有兩個部分需要保持同步：
 
-1. **Prisma client** - Generated Python code that talks to the DB
-2. **DB schema** - Tables/columns in PostgreSQL
+1. **Prisma client** - 與 DB 溝通的 Python 產生程式碼
+2. **DB schema** - PostgreSQL 中的資料表/欄位
 
-When you upgrade via uv, the `litellm-proxy-extras` package ships with a new `schema.prisma` and a `migrations/` directory. But unlike the Docker image, `uv add` does not automatically regenerate the Prisma client or run migrations. You have to do both manually.
+當您透過 uv 升級時，`litellm-proxy-extras` 套件會附帶新的 `schema.prisma` 和 `migrations/` 目錄。但與 Docker 映像不同，`uv add` 不會自動重新產生 Prisma client 或執行 migrations。您必須手動完成這兩件事。
 
-## Upgrade Workflow (uv/venv)
+## 升級流程 (uv/venv) {#upgrade-workflow-uvvenv}
 
-### 1. Stop the proxy
+### 1. 停止 proxy {#1-stop-the-proxy}
 
-Stop your running LiteLLM proxy instance.
+停止正在執行的 LiteLLM proxy 執行個體。
 
-### 2. (Optional) Back up your DB
+### 2. （選用）備份您的 DB {#2-optional-back-up-your-db}
 
 ```bash
 pg_dump -h <host> -U <user> -d <db> -F c -f backup_$(date +%Y%m%d).dump
 ```
 
-### 3. Upgrade the package
+### 3. 升級套件 {#3-upgrade-the-package}
 
 ```bash
 uv add 'litellm[proxy]==<version>'
 ```
 
-### 4. Regenerate the Prisma client
+### 4. 重新產生 Prisma client {#4-regenerate-the-prisma-client}
 
 ```bash
 prisma generate --schema <venv>/lib/python<version>/site-packages/litellm_proxy_extras/schema.prisma
 ```
 
-Replace `<venv>` with your virtual environment path and `<version>` with your Python version (e.g., `python3.11`, `python3.12`, `python3.13`).
+請將 `<venv>` 替換為您的虛擬環境路徑，並將 `<version>` 替換為您的 Python 版本（例如，`python3.11`、`python3.12`、`python3.13`）。
 
-### 5. Apply DB migrations
+### 5. 套用 DB migrations {#5-apply-db-migrations}
 
-You have two options:
+您有兩個選項：
 
-**Option A: Just start the proxy** (simplest)
+**選項 A：直接啟動 proxy**（最簡單）
 
-The proxy automatically runs `prisma migrate deploy` on startup, which applies any new migrations.
+proxy 會在啟動時自動執行 `prisma migrate deploy`，並套用任何新的 migrations。
 
-First, activate your virtual environment:
+首先，啟用您的虛擬環境：
 
 ```bash
 source <venv>/bin/activate
 ```
 
-Then start the proxy:
+接著啟動 proxy：
 
 ```bash
 litellm --config your_config.yaml --port 4000
 ```
 
-**Option B: Run manually before starting**
+**選項 B：在啟動前手動執行**
 
-Activate your virtual environment first:
+請先啟用您的虛擬環境：
 
 ```bash
 source <venv>/bin/activate
 ```
 
-Then run the migration with the explicit schema path:
+接著使用明確的 schema 路徑執行 migration：
 
 ```bash
 prisma migrate deploy --schema <venv>/lib/python<version>/site-packages/litellm_proxy_extras/schema.prisma
 ```
 
-Replace `<venv>` with your virtual environment path and `<version>` with your Python version (e.g., `python3.11`, `python3.12`, `python3.13`).
+請將 `<venv>` 替換為您的虛擬環境路徑，並將 `<version>` 替換為您的 Python 版本（例如，`python3.11`、`python3.12`、`python3.13`）。
 
-### 6. Start the proxy
+### 6. 啟動 proxy {#6-start-the-proxy}
 
-If you used Option B above, now start the proxy (with venv still activated):
+如果您使用了上面的選項 B，現在請啟動 proxy（同時保持 venv 已啟用）：
 
 ```bash
 litellm --config your_config.yaml --port 4000
 ```
 
-## How to Verify Migrations
+## 如何驗證 migrations {#how-to-verify-migrations}
 
-> **Note:** `<schema-path>` = `<venv>/lib/python<version>/site-packages/litellm_proxy_extras/schema.prisma`
+> **注意：** `<schema-path>` = `<venv>/lib/python<version>/site-packages/litellm_proxy_extras/schema.prisma`
 
-### Before applying migrations: Preview what will change
+### 套用 migrations 前：預覽將會變更的內容 {#before-applying-migrations-preview-what-will-change}
 
-Run `uv add 'litellm[proxy]==<version>'` first (Step 3) so the new `schema.prisma` is available.
+請先執行 `uv add 'litellm[proxy]==<version>'`（步驟 3），讓新的 `schema.prisma` 可用。
 
 ```bash
 prisma migrate diff \
@@ -100,22 +100,22 @@ prisma migrate diff \
   --script
 ```
 
-### After applying migrations: Check status
+### 套用 migrations 後：檢查狀態 {#after-applying-migrations-check-status}
 
 ```bash
 prisma migrate status --schema <schema-path>
 ```
 
-All migrations should have a `finished_at` timestamp and no `rolled_back_at`.
+所有 migrations 都應該有 `finished_at` 時間戳記，且不應有 `rolled_back_at`。
 
-## Key Things to Know
+## 需要知道的重點 {#key-things-to-know}
 
-- **`DISABLE_SCHEMA_UPDATE=true`** env var prevents auto-migration on startup - useful if you want full manual control
+- **`DISABLE_SCHEMA_UPDATE=true`** 環境變數可防止啟動時自動 migration——如果您希望完全手動控制，這會很有用
 
-- **`prisma db push`** is the nuclear option: force-syncs the DB to match the schema, bypassing migration history. Safe when all changes are additive (new columns/tables), but always have a backup.
+- **`prisma db push`** 是最後手段：會強制同步 DB 以符合 schema，並略過 migration 歷史。當所有變更都是追加式（新增欄位/資料表）時是安全的，但務必先備份。
 
-- **The `schema.prisma` inside `litellm_proxy_extras` is the source of truth** - always use that one, not one from a different version or from the git repo
+- **`schema.prisma` 內的 `litellm_proxy_extras` 是唯一的真實來源**——務必使用那一份，而不是來自其他版本或 git repo 的版本
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-If you encounter migration errors, see the [Prisma Migration Troubleshooting Guide](./prisma_migrations).
+如果您遇到 migration 錯誤，請參閱 [Prisma Migration 疑難排解指南](./prisma_migrations)。

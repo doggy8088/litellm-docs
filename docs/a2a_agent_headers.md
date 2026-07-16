@@ -1,35 +1,35 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# A2A Agent Authentication Headers
+# A2A 代理程式驗證標頭 {#a2a-agent-authentication-headers}
 
-Forward authentication credentials (Bearer tokens, API keys, etc.) from clients to backend A2A agents.
+將驗證憑證（Bearer tokens、API 金鑰等）從用戶端轉送到後端 A2A 代理程式。
 
-## Overview
+## 總覽 {#overview}
 
-When LiteLLM proxies a request to a backend A2A agent, the agent may require its own authentication headers. There are three ways to supply them:
+當 LiteLLM 將請求代理到後端 A2A 代理程式時，該代理程式可能需要自己的驗證標頭。提供這些標頭有三種方式：
 
-| Method | Who configures | How it works |
+| 方法 | 由誰設定 | 運作方式 |
 |---|---|---|
-| **Static headers** | Admin (UI / API) | Always sent, regardless of client request |
-| **Forward client headers** | Admin (UI / API) | Header names to extract from client request and forward |
-| **Convention-based** | Client (no admin config) | Client sends `x-a2a-{agent_name}-{header}` — automatically routed |
+| **靜態標頭** | 管理員（UI / API） | 一律傳送，不論用戶端請求為何 |
+| **轉送用戶端標頭** | 管理員（UI / API） | 擷取自用戶端請求並轉送的標頭名稱 |
+| **慣例式** | 用戶端（無需管理員設定） | 用戶端傳送 `x-a2a-{agent_name}-{header}` — 自動路由 |
 
-All three methods can be combined. **Static headers always win** on key conflicts.
+三種方式可以組合使用。**靜態標頭在衝突時一律優先**。
 
 ---
 
-## Method 1 — Static Headers
+## 方法 1 — 靜態標頭 {#method-1--static-headers}
 
-Admin-configured headers that are always sent to the backend agent. Use this for server-to-server tokens or internal credentials that clients should never see or override.
+由管理員設定的標頭，會一律傳送到後端代理程式。適用於伺服器對伺服器的 token 或內部憑證，且用戶端不應看到或覆寫。
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-1. Go to **Agents** in the LiteLLM dashboard.
-2. Create or edit an agent.
-3. Open the **Authentication Headers** panel.
-4. Under **Static Headers**, click **Add Static Header** and fill in the header name and value.
+1. 在 LiteLLM 儀表板中前往 **Agents**。
+2. 建立或編輯代理程式。
+3. 開啟 **Authentication Headers** 面板。
+4. 在 **Static Headers** 下方，點擊 **Add Static Header** 並填入標頭名稱和值。
 
 </TabItem>
 <TabItem value="api" label="REST API">
@@ -48,7 +48,7 @@ curl -X POST http://localhost:4000/v1/agents \
   }'
 ```
 
-To update an existing agent:
+若要更新既有代理程式：
 
 ```bash
 curl -X PATCH http://localhost:4000/v1/agents/{agent_id} \
@@ -64,7 +64,7 @@ curl -X PATCH http://localhost:4000/v1/agents/{agent_id} \
 </TabItem>
 </Tabs>
 
-**Client call — no special headers needed:**
+**用戶端呼叫 — 不需要特殊標頭：**
 
 ```bash
 curl -X POST http://localhost:4000/a2a/my-agent \
@@ -76,21 +76,21 @@ curl -X POST http://localhost:4000/a2a/my-agent \
   }'
 ```
 
-The backend agent receives `Authorization: Bearer internal-server-token` without the client ever knowing the value.
+後端代理程式會收到 `Authorization: Bearer internal-server-token`，而用戶端從未得知其值。
 
 ---
 
-## Method 2 — Forward Client Headers
+## 方法 2 — 轉送用戶端標頭 {#method-2--forward-client-headers}
 
-Admin specifies a list of header **names**. When the client sends a request that includes those headers, LiteLLM extracts their values and forwards them to the backend agent. The client controls the values; the admin controls which headers are eligible to be forwarded.
+管理員指定一組標頭**名稱**。當用戶端送出的請求包含這些標頭時，LiteLLM 會擷取其值並轉送到後端代理程式。值由用戶端控制；管理員控制哪些標頭可以被轉送。
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-1. Go to **Agents** in the LiteLLM dashboard.
-2. Create or edit an agent.
-3. Open the **Authentication Headers** panel.
-4. Under **Forward Client Headers**, type header names and press **Enter** (e.g. `x-api-key`, `Authorization`).
+1. 在 LiteLLM 儀表板中前往 **Agents**。
+2. 建立或編輯代理程式。
+3. 開啟 **Authentication Headers** 面板。
+4. 在 **Forward Client Headers** 下方，輸入標頭名稱並按 **Enter**（例如 `x-api-key`、`Authorization`）。
 
 </TabItem>
 <TabItem value="api" label="REST API">
@@ -109,7 +109,7 @@ curl -X POST http://localhost:4000/v1/agents \
 </TabItem>
 </Tabs>
 
-**Client call — include the forwarded headers:**
+**用戶端呼叫 — 包含要轉送的標頭：**
 
 ```bash
 curl -X POST http://localhost:4000/a2a/my-agent \
@@ -119,27 +119,27 @@ curl -X POST http://localhost:4000/a2a/my-agent \
   -d '{ ... }'
 ```
 
-The backend agent receives `x-api-key: user-secret-value`.
+後端代理程式會收到 `x-api-key: user-secret-value`。
 
 :::note
-Header name matching is **case-insensitive**. If the client sends `X-API-Key` and `extra_headers` lists `x-api-key`, they match.
+標頭名稱比對是**不分大小寫**的。如果用戶端送出 `X-API-Key`，而 `extra_headers` 列出 `x-api-key`，兩者會相符。
 :::
 
 ---
 
-## Method 3 — Convention-Based Forwarding
+## 方法 3 — 基於慣例的轉送 {#method-3--convention-based-forwarding}
 
-Clients can forward headers to a specific agent without any admin pre-configuration by using the naming convention:
+用戶端可以使用下列命名慣例，將標頭轉送到特定代理程式，而無需任何管理員預先設定：
 
 ```
 x-a2a-{agent_name_or_id}-{header_name}: value
 ```
 
-LiteLLM parses these headers automatically and routes them to the matching agent only.
+LiteLLM 會自動解析這些標頭，並只將其路由到相符的代理程式。
 
-**Examples:**
+**範例：**
 
-| Client header sent | Agent name/ID | Forwarded as |
+| 用戶端送出的標頭 | 代理程式名稱/ID | 轉送後作為 |
 |---|---|---|
 | `x-a2a-my-agent-authorization: Bearer tok` | `my-agent` | `authorization: Bearer tok` |
 | `x-a2a-my-agent-x-api-key: secret` | `my-agent` | `x-api-key: secret` |
@@ -153,35 +153,35 @@ curl -X POST http://localhost:4000/a2a/my-agent \
   -d '{ ... }'
 ```
 
-The `x-a2a-other-agent-authorization` header sent in the same request is **not** forwarded to `my-agent` — it is silently ignored.
+同一請求中送出的 `x-a2a-other-agent-authorization` 標頭**不會**轉送到 `my-agent` — 它會被靜默忽略。
 
-:::tip Matches both agent name and agent ID
-Both the human-readable name (e.g. `my-agent`) and the UUID (e.g. `abc123-...`) are valid. Use whichever is convenient for the client.
+:::tip 同時比對代理程式名稱與代理程式 ID
+人類可讀的名稱（例如 `my-agent`）以及 UUID（例如 `abc123-...`）都有效。請依用戶端方便性選用。
 :::
 
 ---
 
-## Merge Precedence
+## 合併優先順序 {#merge-precedence}
 
-When multiple methods supply the same header name, **static headers win**:
+當多種方法提供相同的標頭名稱時，**靜態標頭優先**：
 
 ```
 dynamic (forwarded/convention)  →  merged  ←  static (overlays, wins)
 ```
 
-Example:
+範例：
 
-| Source | `Authorization` value |
+| 來源 | `Authorization` 值 |
 |---|---|
-| Client sends (via `extra_headers` or convention) | `Bearer client-token` |
-| Admin-configured `static_headers` | `Bearer server-token` |
-| **What the backend agent receives** | **`Bearer server-token`** |
+| 用戶端送出（透過 `extra_headers` 或慣例） | `Bearer client-token` |
+| 管理員設定的 `static_headers` | `Bearer server-token` |
+| **後端代理程式實際收到的內容** | **`Bearer server-token`** |
 
-This ensures admin-controlled credentials cannot be overridden by client requests.
+這可確保由管理員控制的憑證不會被用戶端請求覆寫。
 
 ---
 
-## Combining All Three Methods
+## 組合三種方法 {#combining-all-three-methods}
 
 ```bash
 # Register agent with static + forwarded headers
@@ -206,7 +206,7 @@ curl -X POST http://localhost:4000/a2a/my-agent \
   -d '{ ... }'
 ```
 
-The backend agent receives:
+後端代理程式會收到：
 
 ```
 X-Internal-Token: secret123          ← static header (always)
@@ -218,24 +218,24 @@ X-LiteLLM-Agent-Id: <agent-id>       ← LiteLLM internal
 
 ---
 
-## Header Isolation
+## 標頭隔離 {#header-isolation}
 
-Each agent invocation uses an isolated HTTP connection. Headers configured for agent A are **never** sent to agent B, even if both agents are running and receiving requests simultaneously.
+每次代理程式呼叫都會使用隔離的 HTTP 連線。為代理程式 A 設定的標頭**絕不會**傳送給代理程式 B，即使兩個代理程式都在執行並同時接收請求也是如此。
 
 ---
 
-## API Reference
+## API 參考 {#api-reference}
 
-### `POST /v1/agents` / `PATCH /v1/agents/{agent_id}`
+### `POST /v1/agents` / `PATCH /v1/agents/{agent_id}` {#post-v1agents--patch-v1agentsagent_id}
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |---|---|---|
-| `static_headers` | `object` | `{"Header-Name": "value"}` — always forwarded |
-| `extra_headers` | `string[]` | Header names to extract from client request and forward |
+| `static_headers` | `object` | `{"Header-Name": "value"}` — 一律轉送 |
+| `extra_headers` | `string[]` | 要從用戶端請求擷取並轉送的標頭名稱 |
 
-### Agent Response
+### 代理程式回應 {#agent-response}
 
-Both fields are returned in `GET /v1/agents` and `GET /v1/agents/{agent_id}`:
+這兩個欄位會以 `GET /v1/agents` 和 `GET /v1/agents/{agent_id}` 傳回：
 
 ```json
 {
@@ -248,5 +248,5 @@ Both fields are returned in `GET /v1/agents` and `GET /v1/agents/{agent_id}`:
 ```
 
 :::caution
-`static_headers` values are stored in the database and returned by the API. Treat them as you would any credential — do not store sensitive long-lived tokens here if your API is publicly accessible. Consider using short-lived tokens or environment-injected secrets instead.
+`static_headers` 值會儲存在資料庫中並由 API 傳回。請像對待任何憑證一樣對待它們——如果您的 API 可公開存取，請勿將敏感且長效的 token 儲存在此處。請改用短效 token 或透過環境注入的密鑰。
 :::

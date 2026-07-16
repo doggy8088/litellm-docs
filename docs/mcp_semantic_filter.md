@@ -1,52 +1,52 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# MCP Semantic Tool Filter
+# MCP 語意工具篩選器 {#mcp-semantic-tool-filter}
 
-Automatically filter MCP tools by semantic relevance. When you have many MCP tools registered, LiteLLM semantically matches the user's query against tool descriptions and sends only the most relevant tools to the LLM.
+根據語意相關性自動篩選 MCP 工具。當您註冊了許多 MCP 工具時，LiteLLM 會依據語意將使用者的查詢與工具描述進行比對，並只將最相關的工具傳送給 LLM。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Tool search shifts tool selection from a prompt-engineering problem to a retrieval problem. Instead of injecting a large static list of tools into every prompt, the semantic filter:
+工具搜尋將工具選擇從提示工程問題轉變為檢索問題。語意篩選器不再將大型靜態工具清單注入每個提示，而是：
 
-1. Builds a semantic index of all available MCP tools on startup
-2. On each request, semantically matches the user's query against tool descriptions
-3. Returns only the top-K most relevant tools to the LLM
+1. 在啟動時為所有可用的 MCP 工具建立語意索引
+2. 在每次請求時，將使用者的查詢與工具描述進行語意比對
+3. 只將最相關的前 K 個工具回傳給 LLM
 
-This approach improves context efficiency, increases reliability by reducing tool confusion, and enables scalability to ecosystems with hundreds or thousands of MCP tools.
+此方法可提升上下文效率、透過減少工具混淆來提高可靠性，並使其能擴展到包含數百或數千個 MCP 工具的生態系統。
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant LiteLLM as LiteLLM Proxy
-    participant SemanticFilter as Semantic Filter
+    participant SemanticFilter as 語意篩選器
     participant MCP as MCP Registry
-    participant LLM as LLM Provider
+    participant LLM as LLM 提供者
 
-    Note over LiteLLM,MCP: Startup: Build Semantic Index
-    LiteLLM->>MCP: Fetch all registered MCP tools
-    MCP->>LiteLLM: Return all tools (e.g., 50 tools)
-    LiteLLM->>SemanticFilter: Build semantic router with embeddings
-    SemanticFilter->>LLM: Generate embeddings for tool descriptions
-    LLM->>SemanticFilter: Return embeddings
-    Note over SemanticFilter: Index ready for fast lookup
+    Note over LiteLLM,MCP: 啟動：建立語意索引
+    LiteLLM->>MCP: 取得所有已註冊的 MCP 工具
+    MCP->>LiteLLM: 回傳所有工具（例如：50 個工具）
+    LiteLLM->>SemanticFilter: 使用 embeddings 建立語意路由器
+    SemanticFilter->>LLM: 為工具描述產生 embeddings
+    LLM->>SemanticFilter: 回傳 embeddings
+    Note over SemanticFilter: 索引已就緒，可快速查找
 
-    Note over Client,LLM: Request: Semantic Tool Filtering
-    Client->>LiteLLM: POST /v1/responses with MCP tools
-    LiteLLM->>SemanticFilter: Expand MCP references (50 tools available)
-    SemanticFilter->>SemanticFilter: Extract user query from request
-    SemanticFilter->>LLM: Generate query embedding
-    LLM->>SemanticFilter: Return query embedding
-    SemanticFilter->>SemanticFilter: Match query against tool embeddings
-    SemanticFilter->>LiteLLM: Return top-K tools (e.g., 3 most relevant)
-    LiteLLM->>LLM: Forward request with filtered tools (3 tools)
-    LLM->>LiteLLM: Return response
-    LiteLLM->>Client: Response with headers<br/>x-litellm-semantic-filter: 50->3<br/>x-litellm-semantic-filter-tools: tool1,tool2,tool3
+    Note over Client,LLM: 請求：語意工具篩選
+    Client->>LiteLLM: POST /v1/responses 並附上 MCP 工具
+    LiteLLM->>SemanticFilter: 展開 MCP 參照（可用 50 個工具）
+    SemanticFilter->>SemanticFilter: 從請求中擷取使用者查詢
+    SemanticFilter->>LLM: 產生查詢 embedding
+    LLM->>SemanticFilter: 回傳查詢 embedding
+    SemanticFilter->>SemanticFilter: 將查詢與工具 embeddings 比對
+    SemanticFilter->>LiteLLM: 回傳前 K 個工具（例如：3 個最相關的工具）
+    LiteLLM->>LLM: 轉送附帶已篩選工具的請求（3 個工具）
+    LLM->>LiteLLM: 回傳回應
+    LiteLLM->>Client: 帶有標頭的回應<br/>x-litellm-semantic-filter: 50->3<br/>x-litellm-semantic-filter-tools: tool1,tool2,tool3
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-Enable semantic filtering in your LiteLLM config:
+在您的 LiteLLM 設定中啟用語意篩選：
 
 ```yaml title="config.yaml" showLineNumbers
 litellm_settings:
@@ -57,15 +57,15 @@ litellm_settings:
     similarity_threshold: 0.3                   # Min similarity score
 ```
 
-**Configuration Options:**
-- `enabled` - Enable/disable semantic filtering (default: `false`)
-- `embedding_model` - Model for generating embeddings (default: `"text-embedding-3-small"`)
-- `top_k` - Maximum number of tools to return (default: `10`)
-- `similarity_threshold` - Minimum similarity score for matches (default: `0.3`)
+**設定選項：**
+- `enabled` - 啟用／停用語意篩選（預設：`false`）
+- `embedding_model` - 用於產生 embeddings 的模型（預設：`"text-embedding-3-small"`）
+- `top_k` - 要回傳的工具數量上限（預設：`10`）
+- `similarity_threshold` - 比對所需的最低相似度分數（預設：`0.3`）
 
-## Usage
+## 使用方式 {#usage}
 
-Use MCP tools normally with the Responses API or Chat Completions. The semantic filter runs automatically:
+照常透過 Responses API 或 Chat Completions 使用 MCP 工具。語意篩選器會自動執行：
 
 <Tabs>
 <TabItem value="responses" label="Responses API">
@@ -118,41 +118,41 @@ curl --location 'http://localhost:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Response Headers
+## 回應標頭 {#response-headers}
 
-The semantic filter adds diagnostic headers to every response:
+語意篩選器會為每個回應新增診斷標頭：
 
 ```
 x-litellm-semantic-filter: 10->3
 x-litellm-semantic-filter-tools: wikipedia-fetch,github-search,slack-post
 ```
 
-- **`x-litellm-semantic-filter`** - Shows before→after tool count (e.g., `10->3` means 10 tools were filtered down to 3)
-- **`x-litellm-semantic-filter-tools`** - CSV list of the filtered tool names (max 150 chars, clipped with `...` if longer)
+- **`x-litellm-semantic-filter`** - 顯示工具數量的前→後變化（例如：`10->3` 代表 10 個工具被篩選為 3 個）
+- **`x-litellm-semantic-filter-tools`** - 已篩選工具名稱的 CSV 清單（最多 150 個字元，若更長則以 `...` 截斷）
 
-These headers help you understand which tools were selected for each request and verify the filter is working correctly.
+這些標頭可幫助您了解每個請求選用了哪些工具，並驗證篩選器是否正常運作。
 
-## Example
+## 範例 {#example}
 
-If you have 50 MCP tools registered and make a request asking about Wikipedia, the semantic filter will:
+如果您註冊了 50 個 MCP 工具，並提出一個詢問 Wikipedia 的請求，語意篩選器會：
 
-1. Semantically match your query `"Search Wikipedia for LiteLLM"` against all 50 tool descriptions
-2. Select the top 5 most relevant tools (e.g., `wikipedia-fetch`, `wikipedia-search`, etc.)
-3. Pass only those 5 tools to the LLM
-4. Add headers showing `x-litellm-semantic-filter: 50->5`
+1. 將您的查詢 `"Search Wikipedia for LiteLLM"` 與全部 50 個工具描述進行語意比對
+2. 選取最相關的前 5 個工具（例如：`wikipedia-fetch`、`wikipedia-search` 等）
+3. 只將這 5 個工具傳送給 LLM
+4. 新增顯示 `x-litellm-semantic-filter: 50->5` 的標頭
 
-This dramatically reduces prompt size while ensuring the LLM has access to the right tools for the task.
+這可大幅減少提示大小，同時確保 LLM 能存取執行該任務所需的正確工具。
 
-## Performance
+## 效能 {#performance}
 
-The semantic filter is optimized for production:
-- Router builds once on startup (no per-request overhead)
-- Semantic matching typically takes under 50ms
-- Fails gracefully - returns all tools if filtering fails
-- No impact on latency for requests without MCP tools
+語意篩選器針對正式環境進行最佳化：
+- 路由器只在啟動時建構一次（每次請求沒有額外負擔）
+- 語意比對通常少於 50ms
+- 失敗時會優雅降級 - 若篩選失敗則回傳所有工具
+- 對沒有 MCP 工具的請求沒有延遲影響
 
-## Related
+## 相關內容 {#related}
 
-- [MCP Overview](./mcp.md) - Learn about MCP in LiteLLM
-- [MCP Permission Management](./mcp_control.md) - Control tool access by key/team
-- [Using MCP](./mcp_usage.md) - Complete MCP usage guide
+- [MCP 概觀](./mcp.md) - 了解 LiteLLM 中的 MCP
+- [MCP 權限管理](./mcp_control.md) - 依金鑰／團隊控制工具存取權
+- [使用 MCP](./mcp_usage.md) - 完整的 MCP 使用指南

@@ -1,16 +1,16 @@
-# SearXNG Search
+# SearXNG 搜尋 {#searxng-search}
 
-**Open Source:** [https://github.com/searxng/searxng](https://github.com/searxng/searxng)
+**開放原始碼：** [https://github.com/searxng/searxng](https://github.com/searxng/searxng)
 
-**Public Instances:** [https://searx.space/](https://searx.space/)
+**公開執行個體：** [https://searx.space/](https://searx.space/)
 
-## Overview
+## 總覽 {#overview}
 
-SearXNG is a free, open-source metasearch engine that aggregates results from multiple search engines while protecting user privacy. It can be self-hosted or used via public instances.
+SearXNG 是一個免費、開放原始碼的 metasearch 引擎，會彙整來自多個搜尋引擎的結果，同時保護使用者隱私。它可以自我託管，或透過公開執行個體使用。
 
-**Note:** SearXNG returns a fixed number of results per page (~20 by default) and does not support limiting results via the API. The `max_results` parameter is not directly supported by SearXNG.
+**注意：** SearXNG 每頁會回傳固定數量的結果（預設約 20 筆），且不支援透過 API 限制結果數量。`max_results` 參數不受 SearXNG 直接支援。
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="SearXNG Search"
 import os
@@ -26,9 +26,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -44,7 +44,7 @@ search_tools:
       api_base: https://serxng-deployment-production.up.railway.app
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -52,7 +52,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/searxng-search \
@@ -64,7 +64,7 @@ curl http://0.0.0.0:4000/v1/search/searxng-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="SearXNG Search with Provider-specific Parameters"
 import os
@@ -86,65 +86,65 @@ response = search(
 )
 ```
 
-## Features
+## 功能 {#features}
 
-SearXNG provides powerful metasearch capabilities:
+SearXNG 提供強大的 metasearch 功能：
 
-### Multiple Search Engines
-Aggregate results from multiple search engines simultaneously:
-- Google, DuckDuckGo, Bing, Brave
-- Wikipedia, Startpage
-- And many more
+### 多個搜尋引擎 {#multiple-search-engines}
+同時彙整來自多個搜尋引擎的結果：
+- Google、DuckDuckGo、Bing、Brave
+- Wikipedia、Startpage
+- 以及更多
 
-### Categories
-Search within specific categories:
-- `general` - General web search
-- `science` - Scientific articles and papers
-- `images` - Image search
-- `news` - News articles
-- `videos` - Video content
-- `music` - Music and audio
-- `files` - File search
-- `it` - IT and technology
-- `map` - Maps and location
+### 分類 {#categories}
+在特定分類中搜尋：
+- `general` - 一般網頁搜尋
+- `science` - 科學文章與論文
+- `images` - 圖片搜尋
+- `news` - 新聞文章
+- `videos` - 影片內容
+- `music` - 音樂與音訊
+- `files` - 檔案搜尋
+- `it` - IT 與技術
+- `map` - 地圖與位置
 
-### Time-Based Filtering
-Filter results by time range:
-- `day` - Past day
-- `month` - Past month
-- `year` - Past year
+### 依時間篩選 {#time-based-filtering}
+依時間範圍篩選結果：
+- `day` - 過去一天
+- `month` - 過去一個月
+- `year` - 過去一年
 
-### Privacy-Focused
-- No user tracking
-- No cookies required
-- No profiling
-- No ads
+### 注重隱私 {#privacy-focused}
+- 不追蹤使用者
+- 不需要 Cookie
+- 不進行個人檔案分析
+- 無廣告
 
-### Language Support
-Support for 60+ languages with the `language` parameter.
+### 語言支援 {#language-support}
+支援 60+ 種語言，並可使用 `language` 參數。
 
-## Self-Hosting
+## 自我託管 {#self-hosting}
 
-SearXNG can be self-hosted for complete control.
+SearXNG 可自我託管以獲得完整控制權。
 
-### Quick Deploy
+### 快速部署 {#quick-deploy}
 
-Use our pre-configured deployment repository for easy setup:
+使用我們預先設定好的部署儲存庫，輕鬆完成設定：
 
-**[Fork and Deploy: github.com/BerriAI/serxng-deployment](https://github.com/BerriAI/serxng-deployment)**
+**[Fork 並部署：github.com/BerriAI/serxng-deployment](https://github.com/BerriAI/serxng-deployment)**
 
-This repository includes:
-- Docker and Docker Compose setup
-- JSON API format pre-configured
-- Ready to deploy
+此儲存庫包含：
+- Docker 與 Docker Compose 設定
+- 已預先設定好的 JSON API 格式
+- 可直接部署
 
-### Manual Installation
+### 手動安裝 {#manual-installation}
 
-See the [official SearXNG installation instructions](https://docs.searxng.org/admin/installation.html) for detailed setup.
+請參閱[官方 SearXNG 安裝說明](https://docs.searxng.org/admin/installation.html)以進行詳細設定。
 
-**Important:** When you install SearXNG, the only active output format by default is the HTML format. You need to activate the JSON format to use the API.
+**重要：** 安裝 SearXNG 時，預設唯一啟用的輸出格式是 HTML 格式。您需要啟用 JSON 格式才能使用 API。
 
-Add the following to your `settings.yml` file:
+將下列內容新增到您的 `settings.yml` 檔案：
 
 ```yaml
 search:
@@ -153,7 +153,7 @@ search:
     - json
 ```
 
-Then restart SearXNG:
+接著重新啟動 SearXNG：
 
 ```bash
 # Using Docker
@@ -166,11 +166,11 @@ docker run -d -p 8080:8080 \
 export SEARXNG_API_BASE=http://localhost:8080
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-### Setting API Base URL (Required)
+### 設定 API Base URL（必要） {#setting-api-base-url-required}
 
-You **must** specify a SearXNG instance URL either via environment variable or in the search call:
+您**必須**透過環境變數或在搜尋請求中指定 SearXNG 執行個體 URL：
 
 ```python
 # Option 1: Environment variable (Recommended)
@@ -190,11 +190,11 @@ response = search(
 )
 ```
 
-**Note:** There is no default instance URL. You must choose either a [public instance](https://searx.space/) or self-host your own.
+**注意：** 沒有預設的執行個體 URL。您必須選擇[公開執行個體](https://searx.space/)或自我託管自己的執行個體。
 
-### Optional Authentication
+### 可選驗證 {#optional-authentication}
 
-Some SearXNG instances may require authentication:
+某些 SearXNG 執行個體可能需要驗證：
 
 ```python
 import os
@@ -208,16 +208,16 @@ response = search(
 )
 ```
 
-## Cost
+## 成本 {#cost}
 
-SearXNG is completely free:
-- **Open source** - No licensing costs
-- **Self-hosted** - Only infrastructure costs
-- **Public instances** - Usually free, check instance policies
+SearXNG 完全免費：
+- **開放原始碼** - 無授權成本
+- **自我託管** - 僅有基礎設施成本
+- **公開執行個體** - 通常免費，請查看執行個體政策
 
-## Advanced Usage
+## 進階用法 {#advanced-usage}
 
-### Custom Engine Selection
+### 自訂引擎選擇 {#custom-engine-selection}
 
 ```python
 response = search(
@@ -228,7 +228,7 @@ response = search(
 )
 ```
 
-### Multi-Category Search
+### 多分類搜尋 {#multi-category-search}
 
 ```python
 response = search(
@@ -239,7 +239,7 @@ response = search(
 )
 ```
 
-### Pagination
+### 分頁 {#pagination}
 
 ```python
 # Get page 1
@@ -257,9 +257,9 @@ page2 = search(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
-SearXNG returns results in the standard LiteLLM search format:
+SearXNG 會以標準 LiteLLM 搜尋格式回傳結果：
 
 ```json
 {
@@ -276,11 +276,11 @@ SearXNG returns results in the standard LiteLLM search format:
 }
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Test Your Instance First
+### 先測試您的執行個體 {#test-your-instance-first}
 
-If LiteLLM with searxng search provider is not working, test your SearXNG instance directly with curl:
+如果 LiteLLM 搭配 searxng 搜尋提供者無法運作，請使用 curl 直接測試您的 SearXNG 執行個體：
 
 ```bash
 # Test if JSON API is working
@@ -290,29 +290,28 @@ curl -s "https://your-searxng-instance.com/search?q=test&format=json" | head -50
 curl -s "https://serxng-deployment-production.up.railway.app/search?q=test&format=json" | head -50
 ```
 
-**Expected response**: JSON with search results  
-**If you get HTML**: JSON format is not enabled in the instance's `settings.yml`
+**預期回應**：包含搜尋結果的 JSON  
+**如果您得到 HTML**：該執行個體的 `settings.yml` 未啟用 JSON 格式
 
-### No Results
+### 沒有結果 {#no-results}
 
-If you get no results:
+如果您沒有得到結果：
 
-1. **Try different engines**: Specify `engines` parameter
-2. **Broaden categories**: Use multiple categories
-3. **Adjust language**: Set appropriate `language` parameter
+1. **嘗試不同的引擎**：指定 `engines` 參數
+2. **擴大分類範圍**：使用多個分類
+3. **調整語言**：設定適當的 `language` 參數
 
-### JSON Format Not Enabled
+### 未啟用 JSON 格式 {#json-format-not-enabled}
 
-If you get HTML instead of JSON:
+如果您得到的是 HTML 而不是 JSON：
 
-1. **Test with curl**: Use the curl command above to verify JSON output
-2. **Self-host your own instance**: Use [our deployment repo](https://github.com/BerriAI/serxng-deployment) with JSON pre-configured
-3. **Check instance configuration**: Not all public instances have JSON enabled
-4. **Enable JSON manually**: Add to `settings.yml`:
+1. **使用 curl 測試**：使用上方的 curl 指令來驗證 JSON 輸出
+2. **自我託管您自己的執行個體**：使用[我們的部署儲存庫](https://github.com/BerriAI/serxng-deployment)，其中已預先設定 JSON
+3. **檢查執行個體設定**：並非所有公開執行個體都已啟用 JSON
+4. **手動啟用 JSON**：新增到 `settings.yml`：
    ```yaml
    search:
      formats:
        - html
        - json
    ```
-

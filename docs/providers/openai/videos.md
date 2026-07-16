@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI Video Generation
+# OpenAI 影片生成 {#openai-video-generation}
 
-LiteLLM supports OpenAI's video generation models including Sora.
+LiteLLM 支援 OpenAI 的影片生成模型，包括 Sora。
 
-## Quick Start
+## 快速入門 {#quick-start}
 
-### Required API Keys
+### 所需 API 金鑰 {#required-api-keys}
 
 ```python
 import os 
 os.environ["OPENAI_API_KEY"] = "your-api-key"
 ```
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 ```python
 from litellm import video_generation, video_content
@@ -43,18 +43,18 @@ with open("generated_video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 用法** {#litellm-proxy-usage}
 
-LiteLLM provides OpenAI API compatible video endpoints for complete video generation workflow:
+LiteLLM 提供與 OpenAI API 相容的影片端點，涵蓋完整的影片生成工作流程：
 
-- `/videos/generations` - Generate new videos
-- `/videos/remix` - Edit existing videos with reference images  
-- `/videos/status` - Check video generation status
-- `/videos/retrieval` - Download completed videos
+- `/videos/generations` - 生成新影片
+- `/videos/remix` - 使用參考圖片編輯既有影片  
+- `/videos/status` - 檢查影片生成狀態
+- `/videos/retrieval` - 下載完成的影片
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -64,7 +64,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -72,7 +72,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test video generation request
+測試影片生成請求
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos' \
@@ -84,7 +84,7 @@ curl --location 'http://localhost:4000/v1/videos' \
 }'
 ```
 
-Test video status request
+測試影片狀態請求
 
 ```bash
 # Using custom-llm-provider header
@@ -94,7 +94,7 @@ curl --location 'http://localhost:4000/v1/videos/video_id' \
 --header 'custom-llm-provider: openai'
 ```
 
-Test video retrieval request
+測試影片擷取請求
 
 ```bash
 # Using custom-llm-provider header
@@ -111,7 +111,7 @@ curl --location 'http://localhost:4000/v1/videos/video_id/content?custom_llm_pro
 --output video.mp4
 ```
 
-Test video remix request
+測試影片 remix 請求
 
 ```bash
 # Using custom_llm_provider in request body
@@ -135,18 +135,18 @@ curl --location --request POST 'http://localhost:4000/v1/videos/video_id/remix' 
 }'
 ```
 
-### Character, Edit, and Extension Routes
+### Character、Edit 與 Extension 路由 {#character-edit-and-extension-routes}
 
-OpenAI video routes supported by LiteLLM proxy:
+LiteLLM proxy 支援的 OpenAI 影片路由：
 
 - `POST /v1/videos/characters`
 - `GET /v1/videos/characters/{character_id}`
 - `POST /v1/videos/edits`
 - `POST /v1/videos/extensions`
 
-#### `target_model_names` support on character creation
+#### `target_model_names` 在建立 character 時的支援 {#target_model_names-support-on-character-creation}
 
-`POST /v1/videos/characters` supports `target_model_names` for model-based routing (same behavior as video create).
+`POST /v1/videos/characters` 支援 `target_model_names`，用於基於模型的路由（與 video create 的行為相同）。
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/characters' \
@@ -156,7 +156,7 @@ curl --location 'http://localhost:4000/v1/videos/characters' \
 -F 'video=@/path/to/character.mp4'
 ```
 
-When `target_model_names` is used, LiteLLM returns an encoded character ID:
+當使用 `target_model_names` 時，LiteLLM 會回傳一個已編碼的 character ID：
 
 ```json
 {
@@ -167,16 +167,16 @@ When `target_model_names` is used, LiteLLM returns an encoded character ID:
 }
 ```
 
-Use that encoded ID directly on get:
+在 get 時直接使用該已編碼 ID：
 
 ```bash
 curl --location 'http://localhost:4000/v1/videos/characters/character_...' \
 --header 'Authorization: Bearer sk-1234'
 ```
 
-#### Encoded and non-encoded video IDs for edit/extension
+#### edit/extension 的已編碼與未編碼影片 ID {#encoded-and-non-encoded-video-ids-for-editextension}
 
-Both routes accept either plain or encoded `video.id`:
+這兩個路由都接受純文字或已編碼的 `video.id`：
 
 - `POST /v1/videos/edits`
 - `POST /v1/videos/extensions`
@@ -202,15 +202,15 @@ curl --location 'http://localhost:4000/v1/videos/extensions' \
 }'
 ```
 
-#### `custom_llm_provider` input sources
+#### `custom_llm_provider` 輸入來源 {#custom_llm_provider-input-sources}
 
-For these routes, `custom_llm_provider` may be supplied via:
+對於這些路由，`custom_llm_provider` 可透過以下方式提供：
 
-- header: `custom-llm-provider`
-- query: `?custom_llm_provider=...`
-- body: `custom_llm_provider` (and `extra_body.custom_llm_provider` where supported)
+- 標頭：`custom-llm-provider`
+- 查詢：`?custom_llm_provider=...`
+- 主體：`custom_llm_provider`（以及 `extra_body.custom_llm_provider`，若支援）
 
-Test OpenAI video generation request
+測試 OpenAI 影片生成請求
 
 ```bash
 curl http://localhost:4000/v1/videos \
@@ -225,22 +225,22 @@ curl http://localhost:4000/v1/videos \
 ```
 
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Description | Max Duration | Supported Sizes |
+| 模型名稱 | 說明 | 最長持續時間 | 支援尺寸 |
 |------------|-------------|--------------|-----------------|
-| sora-2 | OpenAI's latest video generation model | 8 seconds | 720x1280, 1280x720 |
+| sora-2 | OpenAI 最新的影片生成模型 | 8 秒 | 720x1280, 1280x720 |
 
-## Video Generation Parameters
+## 影片生成參數 {#video-generation-parameters}
 
-- `prompt` (required): Text description of the desired video
-- `model` (optional): Model to use, defaults to "sora-2"
-- `seconds` (optional): Video duration in seconds (e.g., "8", "16")
-- `size` (optional): Video dimensions (e.g., "720x1280", "1280x720")
-- `input_reference` (optional): Reference image for video editing
-- `user` (optional): User identifier for tracking
+- `prompt`（必填）：所需影片的文字描述
+- `model`（選填）：要使用的模型，預設為 "sora-2"
+- `seconds`（選填）：影片長度（秒）（例如："8"、"16"）
+- `size`（選填）：影片尺寸（例如："720x1280"、"1280x720"）
+- `input_reference`（選填）：用於影片編輯的參考圖片
+- `user`（選填）：用於追蹤的使用者識別碼
 
-## Video Content Retrieval
+## 影片內容擷取 {#video-content-retrieval}
 
 ```python
 # Download video content
@@ -253,7 +253,7 @@ with open("video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-## Complete Workflow
+## 完整工作流程 {#complete-workflow}
 
 ```python
 import litellm
@@ -292,7 +292,7 @@ video_file = generate_and_download_video(
 ```
 
 
-## Video Editing with Reference Images
+## 使用參考圖片進行影片編輯 {#video-editing-with-reference-images}
 
 ```python
 # Video editing with reference image
@@ -306,7 +306,7 @@ response = litellm.video_generation(
 print(f"Video ID: {response.id}")
 ```
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python
 from litellm.exceptions import BadRequestError, AuthenticationError

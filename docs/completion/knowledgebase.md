@@ -2,38 +2,37 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Using Vector Stores (Knowledge Bases)
+# 使用向量儲存區（知識庫） {#using-vector-stores-knowledge-bases}
 
 <Image 
   img={require('../../img/kb.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 <p style={{textAlign: 'left', color: '#666'}}>
-  Use Vector Stores with any LiteLLM supported model
+  與任何 LiteLLM 支援的模型搭配使用向量儲存區
 </p>
 
+LiteLLM 與向量儲存區整合，讓您的模型能存取您組織的資料，以提供更準確且更符合情境的回應。
 
-LiteLLM integrates with vector stores, allowing your models to access your organization's data for more accurate and contextually relevant responses.
-
-## Supported Vector Stores
+## 支援的向量儲存區 {#supported-vector-stores}
 - [Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/)
 - [OpenAI Vector Stores](https://platform.openai.com/docs/api-reference/vector-stores/search)
-- [Azure Vector Stores](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/file-search?tabs=python#vector-stores) (Cannot be directly queried. Only available for calling in Assistants messages.)
-- [Azure AI Search](/docs/providers/azure_ai_vector_stores) (Vector search with Azure AI Search indexes)
+- [Azure Vector Stores](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/file-search?tabs=python#vector-stores)（無法直接查詢。僅可在 Assistants 訊息中呼叫。）
+- [Azure AI Search](/docs/providers/azure_ai_vector_stores)（使用 Azure AI Search 索引的向量搜尋）
 - [Vertex AI RAG API](https://cloud.google.com/vertex-ai/generative-ai/docs/rag-overview)
 - [Gemini File Search](https://ai.google.dev/gemini-api/docs/file-search)
-- [RAGFlow Datasets](/docs/providers/ragflow_vector_store.md) (Dataset management only, search not supported)
+- [RAGFlow Datasets](/docs/providers/ragflow_vector_store.md)（僅支援資料集管理，不支援搜尋）
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-In order to use a vector store with LiteLLM, you need to 
+若要在 LiteLLM 中使用向量儲存區，您需要
 
-- Initialize litellm.vector_store_registry
-- Pass tools with vector_store_ids to the completion request. Where `vector_store_ids` is a list of vector store ids you initialized in litellm.vector_store_registry
+- 初始化 litellm.vector_store_registry
+- 在 completion 請求中傳遞帶有 vector_store_ids 的 tools。此處 `vector_store_ids` 是您在 litellm.vector_store_registry 中初始化的向量儲存區 ID 清單
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
-LiteLLM's allows you to use vector stores in the [OpenAI API spec](https://platform.openai.com/docs/api-reference/chat/create) by passing a tool with vector_store_ids you want to use
+LiteLLM 可讓您透過傳遞包含您要使用之 vector_store_ids 的 tool，在 [OpenAI API 規格](https://platform.openai.com/docs/api-reference/chat/create) 中使用向量儲存區
 
 ```python showLineNumbers title="Basic Bedrock Knowledge Base Usage"
 import os
@@ -67,11 +66,11 @@ response = await litellm.acompletion(
 print(response.choices[0].message.content)
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-#### 1. Configure your vector_store_registry
+#### 1. 設定您的 vector_store_registry {#1-configure-your-vector_store_registry}
 
-In order to use a vector store with LiteLLM, you need to configure your vector_store_registry. This tells litellm which vector stores to use and api provider to use for the vector store.
+若要在 LiteLLM 中使用向量儲存區，您需要設定您的 vector_store_registry。這會告訴 litellm 要使用哪些向量儲存區，以及要為該向量儲存區使用哪個 API 提供者。
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -98,20 +97,17 @@ vector_store_registry:
 
 <TabItem value="litellm-ui" label="LiteLLM UI">
 
-On the LiteLLM UI, Navigate to Experimental > Vector Stores > Create Vector Store. On this page you can create a vector store with a name, vector store id and credentials.
+在 LiteLLM UI 上，請前往 Experimental > Vector Stores > Create Vector Store。您可以在此頁面建立包含名稱、向量儲存區 ID 和憑證的向量儲存區。
 <Image 
   img={require('../../img/kb_2.png')}
   style={{width: '50%'}}
 />
 
-
-
-
 </TabItem>
 
 </Tabs>
 
-#### 2. Make a request with vector_store_ids parameter
+#### 2. 使用 vector_store_ids 參數發出請求 {#2-make-a-request-with-vector_store_ids-parameter}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -163,34 +159,33 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Provider Specific Guides
+## 提供者特定指南 {#provider-specific-guides}
 
-This section covers how to add your vector stores to LiteLLM. If you want support for a new provider, please file an issue [here](https://github.com/BerriAI/litellm/issues).
+本節說明如何將您的向量儲存區新增至 LiteLLM。若您想要支援新的提供者，請在[此處](https://github.com/BerriAI/litellm/issues)提交 issue。
 
-### Bedrock Knowledge Bases
+### Bedrock Knowledge Bases {#bedrock-knowledge-bases}
 
-**1. Set up your Bedrock Knowledge Base**
+**1. 設定您的 Bedrock Knowledge Base**
 
-Ensure you have a Bedrock Knowledge Base created in your AWS account with the appropriate permissions configured.
+請確保您已在 AWS 帳戶中建立 Bedrock Knowledge Base，並已設定適當的權限。
 
-**2. Add to LiteLLM UI**
+**2. 新增至 LiteLLM UI**
 
-1. Navigate to **Tools > Vector Stores > "Add new vector store"**
-2. Select **"Bedrock"** as the provider
-3. Enter your Bedrock Knowledge Base ID in the **"Vector Store ID"** field
+1. 前往 **Tools > Vector Stores > "Add new vector store"**
+2. 將 **"Bedrock"** 選為提供者
+3. 在 **"Vector Store ID"** 欄位輸入您的 Bedrock Knowledge Base ID
 
 <Image 
   img={require('../../img/kb_2.png')}
   style={{width: '60%', display: 'block'}}
 />
 
+### Vertex AI RAG Engine {#vertex-ai-rag-engine}
 
-### Vertex AI RAG Engine
+**1. 取得您的 Vertex AI RAG Engine ID**
 
-**1. Get your Vertex AI RAG Engine ID**
-
-1. Navigate to your RAG Engine Corpus in the [Google Cloud Console](https://console.cloud.google.com/vertex-ai/rag/corpus)
-2. Select the **RAG Engine** you want to integrate with LiteLLM
+1. 前往 [Google Cloud Console](https://console.cloud.google.com/vertex-ai/rag/corpus) 中的 RAG Engine Corpus
+2. 選取您要與 LiteLLM 整合的 **RAG Engine**
 
 <div style={{margin: '20px 0', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
 <Image 
@@ -199,8 +194,8 @@ Ensure you have a Bedrock Knowledge Base created in your AWS account with the ap
 />
 </div>
 
-3. Click the **"Details"** button and copy the UUID for the RAG Engine
-4. The ID should look like: `6917529027641081856`
+3. 按一下 **"Details"** 按鈕並複製 RAG Engine 的 UUID
+4. ID 應如下所示：`6917529027641081856`
 
 <div style={{margin: '20px 0', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
 <Image 
@@ -209,11 +204,11 @@ Ensure you have a Bedrock Knowledge Base created in your AWS account with the ap
 />
 </div>
 
-**2. Add to LiteLLM UI**
+**2. 新增至 LiteLLM UI**
 
-1. Navigate to **Tools > Vector Stores > "Add new vector store"**
-2. Select **"Vertex AI RAG Engine"** as the provider
-3. Enter your Vertex AI RAG Engine ID in the **"Vector Store ID"** field
+1. 前往 **Tools > Vector Stores > "Add new vector store"**
+2. 將 **"Vertex AI RAG Engine"** 選為提供者
+3. 在 **"Vector Store ID"** 欄位輸入您的 Vertex AI RAG Engine ID
 
 <div style={{margin: '20px 0', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
 <Image 
@@ -222,16 +217,16 @@ Ensure you have a Bedrock Knowledge Base created in your AWS account with the ap
 />
 </div>
 
-### PG Vector
+### PG Vector {#pg-vector}
 
-**1. Deploy the litellm-pg-vector-store connector**
+**1. 部署 litellm-pg-vector-store 連接器**
 
-LiteLLM provides a server that exposes OpenAI-compatible `vector_store` endpoints for PG Vector. The LiteLLM Proxy server connects to your deployed service and uses it as a vector store when querying.
+LiteLLM 提供一個伺服器，為 PG Vector 提供相容 OpenAI 的 `vector_store` 端點。LiteLLM Proxy 伺服器會連接到您已部署的服務，並在查詢時將其用作向量儲存區。
 
-1. Follow the deployment instructions for the litellm-pg-vector-store connector [here](https://github.com/BerriAI/litellm-pgvector)
-2. For detailed configuration options, see the [configuration guide](https://github.com/BerriAI/litellm-pgvector?tab=readme-ov-file#configuration)
+1. 請依照此處的 litellm-pg-vector-store 連接器部署說明[https://github.com/BerriAI/litellm-pgvector]
+2. 如需詳細設定選項，請參閱[設定指南](https://github.com/BerriAI/litellm-pgvector?tab=readme-ov-file#configuration)
 
-**Example .env configuration for deploying litellm-pg-vector-store:**
+**部署 litellm-pg-vector-store 的 .env 設定範例：**
 
 ```env
 DATABASE_URL="postgresql://neondb_owner:xxxx"
@@ -250,14 +245,14 @@ DB_FIELDS__VECTOR_STORE_ID_FIELD="vector_store_id"
 DB_FIELDS__CREATED_AT_FIELD="created_at"
 ```
 
-**2. Add to LiteLLM UI**
+**2. 新增至 LiteLLM UI**
 
-Once your litellm-pg-vector-store is deployed:
+一旦您的 litellm-pg-vector-store 已部署：
 
-1. Navigate to **Tools > Vector Stores > "Add new vector store"**
-2. Select **"PG Vector"** as the provider
-3. Enter your **API Base URL** and **API Key** for your `litellm-pg-vector-store` container
-   - The API Key field corresponds to the `SERVER_API_KEY` from your .env configuration
+1. 前往 **Tools > Vector Stores > "Add new vector store"**
+2. 將 **"PG Vector"** 選為提供者
+3. 輸入您 `litellm-pg-vector-store` 容器的 **API Base URL** 和 **API Key**
+   - API Key 欄位對應於您 .env 設定中的 `SERVER_API_KEY`
 
 <div style={{margin: '20px 0', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
 <Image 
@@ -266,19 +261,19 @@ Once your litellm-pg-vector-store is deployed:
 />
 </div>
 
-### OpenAI Vector Stores
+### OpenAI Vector Stores {#openai-vector-stores}
 
-**1. Set up your OpenAI Vector Store**
+**1. 設定您的 OpenAI Vector Store**
 
-1. Create your Vector Store on the [OpenAI platform](https://platform.openai.com/storage/vector_stores)
-2. Note your Vector Store ID (format: `vs_687ae3b2439881918b433cb99d10662e`)
+1. 在 [OpenAI 平台](https://platform.openai.com/storage/vector_stores) 上建立您的 Vector Store
+2. 記下您的 Vector Store ID（格式：`vs_687ae3b2439881918b433cb99d10662e`）
 
-**2. Add to LiteLLM UI**
+**2. 新增至 LiteLLM UI**
 
-1. Navigate to **Tools > Vector Stores > "Add new vector store"**
-2. Select **"OpenAI"** as the provider
-3. Enter your **Vector Store ID** in the corresponding field
-4. Enter your **OpenAI API Key** in the API Key field
+1. 前往 **Tools > Vector Stores > "Add new vector store"**
+2. 將 **"OpenAI"** 選為提供者
+3. 在對應欄位輸入您的 **Vector Store ID**
+4. 在 API Key 欄位輸入您的 **OpenAI API Key**
 
 <div style={{margin: '20px 0', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', display: 'inline-block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
 <Image 
@@ -287,38 +282,35 @@ Once your litellm-pg-vector-store is deployed:
 />
 </div>
 
+## 進階 {#advanced}
 
+### 記錄向量儲存區使用情況 {#logging-vector-store-usage}
 
-## Advanced
+LiteLLM 可讓您在 LiteLLM UI 的 `Logs` 頁面查看向量儲存區使用情況。
 
-### Logging Vector Store Usage
-
-LiteLLM allows you to view your vector store usage in the LiteLLM UI on the `Logs` page.
-
-After completing a request with a vector store, navigate to the `Logs` page on LiteLLM. Here you should be able to see the query sent to the vector store and corresponding response with scores.
+完成帶有向量儲存區的請求後，請前往 LiteLLM 的 `Logs` 頁面。在此您應可看到傳送至向量儲存區的查詢，以及附帶分數的對應回應。
 
 <Image 
   img={require('../../img/kb_4.png')}
   style={{width: '80%'}}
 />
 <p style={{textAlign: 'left', color: '#666'}}>
-  LiteLLM Logs Page: Vector Store Usage
+  LiteLLM 記錄頁面：向量儲存區使用情況
 </p>
 
+### 列出可用的向量儲存區 {#listing-available-vector-stores}
 
-### Listing available vector stores
+您可以使用 /vector_store/list 端點列出所有可用的向量儲存區
 
-You can list all available vector stores using the /vector_store/list endpoint
-
-**Request:**
+**請求：**
 ```bash showLineNumbers title="List all available vector stores"
 curl -X GET "http://localhost:4000/vector_store/list" \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Response:**
+**回應：**
 
-The response will be a list of all vector stores that are available to use with LiteLLM.
+回應將是一份可供 LiteLLM 使用的所有向量儲存區清單。
 
 ```json
 {
@@ -344,11 +336,11 @@ The response will be a list of all vector stores that are available to use with 
 ```
 
 
-### Always on for a model
+### 始終對某個模型啟用 {#always-on-for-a-model}
 
-**Use this if you want vector stores to be used by default for a specific model.**
+**如果您希望預設對特定模型使用向量儲存區，請使用此項。**
 
-In this config, we add `vector_store_ids` to the claude-3-5-sonnet-with-vector-store model. This means that any request to the claude-3-5-sonnet-with-vector-store model will always use the vector store with the id `T37J8R4WTM` defined in the `vector_store_registry`.
+在此設定中，我們將 `vector_store_ids` 新增至 claude-3-5-sonnet-with-vector-store 模型。這表示對 claude-3-5-sonnet-with-vector-store 模型的任何請求，都將一律使用在 `vector_store_registry` 中定義、ID 為 `T37J8R4WTM` 的向量儲存區。
 
 ```yaml showLineNumbers title="Always on for a model"
 model_list:
@@ -367,21 +359,21 @@ vector_store_registry:
         source: "https://www.litellm.com/docs"
 ```
 
-## How It Works
+## 其運作方式 {#how-it-works}
 
-If your request includes a `vector_store_ids` parameter where any of the vector store ids are found in the `vector_store_registry`, LiteLLM will automatically use the vector store for the request.
+如果您的請求包含一個 `vector_store_ids` 參數，且任何向量儲存區 ID 都可在 `vector_store_registry` 中找到，LiteLLM 會自動在該請求中使用該向量儲存區。
 
-1. You make a completion request with the `vector_store_ids` parameter and any of the vector store ids are found in the `litellm.vector_store_registry`
-2. LiteLLM automatically:
-   - Uses your last message as the query to retrieve relevant information from the Knowledge Base
-   - Adds the retrieved context to your conversation
-   - Sends the augmented messages to the model
+1. 您發出一個帶有 `vector_store_ids` 參數的 completion 請求，且任何向量儲存區 ID 都可在 `litellm.vector_store_registry` 中找到
+2. LiteLLM 會自動：
+   - 使用您的最後一則訊息作為查詢，從 Knowledge Base 擷取相關資訊
+   - 將擷取到的上下文加入您的對話
+   - 將增強後的訊息傳送給模型
 
-#### Example Transformation
+#### 範例轉換 {#example-transformation}
 
-When you pass `vector_store_ids=["YOUR_KNOWLEDGE_BASE_ID"]`, your request flows through these steps:
+當您傳遞 `vector_store_ids=["YOUR_KNOWLEDGE_BASE_ID"]` 時，您的請求會經過以下步驟：
 
-**1. Original Request to LiteLLM:**
+**1. 原始請求到 LiteLLM：**
 ```json
 {
     "model": "anthropic/claude-3-5-sonnet",
@@ -392,7 +384,7 @@ When you pass `vector_store_ids=["YOUR_KNOWLEDGE_BASE_ID"]`, your request flows 
 }
 ```
 
-**2. Request to AWS Bedrock Knowledge Base:**
+**2. 請求到 AWS Bedrock Knowledge Base：**
 ```json
 {
     "retrievalQuery": {
@@ -400,9 +392,9 @@ When you pass `vector_store_ids=["YOUR_KNOWLEDGE_BASE_ID"]`, your request flows 
     }
 }
 ```
-This is sent to: `https://bedrock-agent-runtime.{aws_region}.amazonaws.com/knowledgebases/YOUR_KNOWLEDGE_BASE_ID/retrieve`
+這會傳送到：`https://bedrock-agent-runtime.{aws_region}.amazonaws.com/knowledgebases/YOUR_KNOWLEDGE_BASE_ID/retrieve`
 
-**3. Final Request to LiteLLM:**
+**3. 傳回 LiteLLM 的最終請求：**
 ```json
 {
     "model": "anthropic/claude-3-5-sonnet",
@@ -413,22 +405,21 @@ This is sent to: `https://bedrock-agent-runtime.{aws_region}.amazonaws.com/knowl
 }
 ```
 
-This process happens automatically whenever you include the `vector_store_ids` parameter in your request.
+當您在請求中加入 `vector_store_ids` 參數時，這個流程會自動發生。
 
-## Accessing Search Results (Citations)
+## 存取搜尋結果（引用） {#accessing-search-results-citations}
 
-When using vector stores, LiteLLM automatically returns search results in `provider_specific_fields`. This allows you to show users citations for the AI's response.
+使用向量儲存時，LiteLLM 會自動以 `provider_specific_fields` 傳回搜尋結果。這可讓您向使用者顯示 AI 回應的引用來源。
 
-### Key Concept
+### 關鍵概念 {#key-concept}
 
-Search results are always in: `response.choices[0].message.provider_specific_fields["search_results"]`
+搜尋結果一律位於：`response.choices[0].message.provider_specific_fields["search_results"]`
 
-For streaming: Results appear in the **final chunk** when `finish_reason == "stop"`
+串流時：當 `finish_reason == "stop"` 時，結果會出現在**最後一個 chunk**中
 
-### Non-Streaming Example
+### 非串流範例 {#non-streaming-example}
 
-
-**Non-Streaming Response with search results:**
+**含搜尋結果的非串流回應：**
 
 ```json
 {
@@ -518,9 +509,9 @@ searchResults.forEach((page: any) => {
 </TabItem>
 </Tabs>
 
-### Streaming Example
+### 串流範例 {#streaming-example}
 
-**Streaming Response with search results (final chunk):**
+**含搜尋結果的串流回應（最後一個 chunk）：**
 
 ```json
 {
@@ -616,40 +607,40 @@ for await (const chunk of stream) {
 </TabItem>
 </Tabs>
 
-### Search Result Fields
+### 搜尋結果欄位 {#search-result-fields}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `search_query` | string | The query used to search the vector store |
-| `data` | array | Array of search results |
-| `data[].score` | float | Relevance score (0-1, higher is more relevant) |
-| `data[].content` | array | Content chunks with `text` and `type` |
-| `data[].filename` | string | Name of the source file (optional) |
-| `data[].file_id` | string | Identifier for the source file (optional) |
-| `data[].attributes` | object | Provider-specific metadata (optional) |
+| `search_query` | string | 用於搜尋向量儲存的查詢 |
+| `data` | array | 搜尋結果陣列 |
+| `data[].score` | float | 相關性分數（0-1，越高越相關） |
+| `data[].content` | array | 含 `text` 與 `type` 的內容區塊 |
+| `data[].filename` | string | 來源檔案名稱（選用） |
+| `data[].file_id` | string | 來源檔案的識別碼（選用） |
+| `data[].attributes` | object | 提供者特定的中繼資料（選用） |
 
-## API Reference
+## API 參考 {#api-reference}
 
-### LiteLLM Completion Knowledge Base Parameters
+### LiteLLM Completion Knowledge Base 參數 {#litellm-completion-knowledge-base-parameters}
 
-When using the Knowledge Base integration with LiteLLM, you can include the following parameters:
+使用 LiteLLM 的 Knowledge Base 整合時，您可以包含以下參數：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `vector_store_ids` | List[str] | List of Knowledge Base IDs to query |
+| `vector_store_ids` | List[str] | 要查詢的 Knowledge Base ID 清單 |
 
-### VectorStoreRegistry
+### VectorStoreRegistry {#vectorstoreregistry}
 
-The `VectorStoreRegistry` is a central component for managing vector stores in LiteLLM. It acts as a registry where you can configure and access your vector stores.
+`VectorStoreRegistry` 是 LiteLLM 中用於管理向量儲存的核心元件。它的作用類似註冊表，讓您可以設定與存取您的向量儲存。
 
-#### What is VectorStoreRegistry?
+#### 什麼是 VectorStoreRegistry？ {#what-is-vectorstoreregistry}
 
-`VectorStoreRegistry` is a class that:
-- Maintains a collection of vector stores that LiteLLM can use
-- Allows you to register vector stores with their credentials and metadata
-- Makes vector stores accessible via their IDs in your completion requests
+`VectorStoreRegistry` 是一個類別，會：
+- 維護 LiteLLM 可使用的向量儲存集合
+- 讓您可以用其憑證與中繼資料註冊向量儲存
+- 透過完成請求中的 ID 讓向量儲存可被存取
 
-#### Using VectorStoreRegistry in Python
+#### 在 Python 中使用 VectorStoreRegistry {#using-vectorstoreregistry-in-python}
 
 ```python
 from litellm.vector_stores.vector_store_registry import VectorStoreRegistry, LiteLLM_ManagedVectorStore
@@ -665,22 +656,22 @@ litellm.vector_store_registry = VectorStoreRegistry(
 )
 ```
 
-#### LiteLLM_ManagedVectorStore Parameters
+#### LiteLLM_ManagedVectorStore 參數 {#litellm_managedvectorstore-parameters}
 
-Each vector store in the registry is configured using a `LiteLLM_ManagedVectorStore` object with these parameters:
+註冊表中的每個向量儲存都會使用具有以下參數的 `LiteLLM_ManagedVectorStore` 物件進行設定：
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `vector_store_id` | str | Yes | Unique identifier for the vector store |
-| `custom_llm_provider` | str | Yes | The provider of the vector store (e.g., "bedrock") |
-| `vector_store_name` | str | No | A friendly name for the vector store |
-| `vector_store_description` | str | No | Description of what the vector store contains |
-| `vector_store_metadata` | dict or str | No | Additional metadata about the vector store |
-| `litellm_credential_name` | str | No | Name of the credentials to use for this vector store |
+| `vector_store_id` | str | 是 | 向量儲存的唯一識別碼 |
+| `custom_llm_provider` | str | 是 | 向量儲存的提供者（例如「bedrock」） |
+| `vector_store_name` | str | 否 | 向量儲存的易讀名稱 |
+| `vector_store_description` | str | 否 | 向量儲存內容的說明 |
+| `vector_store_metadata` | dict or str | 否 | 關於向量儲存的其他中繼資料 |
+| `litellm_credential_name` | str | 否 | 要用於此向量儲存的憑證名稱 |
 
-#### Configuring VectorStoreRegistry in config.yaml
+#### 在 config.yaml 中設定 VectorStoreRegistry {#configuring-vectorstoreregistry-in-configyaml}
 
-For the LiteLLM Proxy, you can configure the same registry in your `config.yaml` file:
+對於 LiteLLM Proxy，您可以在您的 `config.yaml` 檔案中設定相同的註冊表：
 
 ```yaml showLineNumbers title="Vector store configuration in config.yaml"
 vector_store_registry:
@@ -693,6 +684,4 @@ vector_store_registry:
         source: "https://www.litellm.com/docs"
 ```
 
-The `litellm_params` section accepts all the same parameters as the `LiteLLM_ManagedVectorStore` constructor in the Python SDK.
-
-
+`litellm_params` 區段接受與 Python SDK 中 `LiteLLM_ManagedVectorStore` 建構子相同的所有參數。

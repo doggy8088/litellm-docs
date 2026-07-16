@@ -2,27 +2,25 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LangSmith
+# LangSmith {#langsmith}
 
-
-
-An all-in-one developer platform for every step of the application lifecycle
+一站式開發者平台，涵蓋應用程式生命週期的每個步驟
 https://smith.langchain.com/
 
 <Image img={require('../../img/langsmith_new.png')} />
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們想了解如何讓回呼變得更好！歡迎認識 LiteLLM 的 [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 ::: 
 
-## Pre-Requisites
+## 前置需求 {#pre-requisites}
 ```shell
 uv add litellm
 ```
 
-## Quick Start
-Use just 2 lines of code, to instantly log your responses **across all providers** with Langsmith
+## 快速開始 {#quick-start}
+只要 2 行程式碼，就能立即透過 Langsmith 記錄您的回應，**適用於所有提供者**
 
 <Tabs>
 <TabItem value="python" label="SDK">
@@ -55,7 +53,7 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -67,12 +65,12 @@ litellm_settings:
   callbacks: ["langsmith"]
 ```
 
-2. Start LiteLLM Proxy
+2. 啟動 LiteLLM Proxy
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試看看！
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -91,15 +89,13 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
+## 進階 {#advanced}
 
+### 本機測試 - 控制批次大小 {#local-testing---control-batch-size}
 
-## Advanced
+設定 Langsmith 一次處理的批次大小，預設為 512。 
 
-### Local Testing - Control Batch Size
-
-Set the size of the batch that Langsmith will process at a time, default is 512. 
-
-Set `langsmith_batch_size=1` when testing locally, to see logs land quickly.
+在本機測試時設定 `langsmith_batch_size=1`，以便更快看到記錄送達。
 
 <Tabs>
 <TabItem value="python" label="SDK">
@@ -127,7 +123,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 ```yaml
 model_list:
   - model_name: gpt-3.5-turbo
@@ -140,12 +136,12 @@ litellm_settings:
   callbacks: ["langsmith"]
 ```
 
-2. Start LiteLLM Proxy
+2. 啟動 LiteLLM Proxy
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試看看！
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -163,14 +159,10 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 ```
 
 
-
 </TabItem>
 </Tabs>
 
-
-
-
-### Set Langsmith fields
+### 設定 Langsmith 欄位 {#set-langsmith-fields}
 
 ```python
 import litellm
@@ -205,12 +197,11 @@ response = litellm.completion(
 print(response)
 ```
 
-### Make LiteLLM Proxy use Custom `LANGSMITH_BASE_URL`
+### 讓 LiteLLM Proxy 使用自訂 `LANGSMITH_BASE_URL` {#make-litellm-proxy-use-custom-langsmith_base_url}
 
-If you're using a custom LangSmith instance, you can set the
-`LANGSMITH_BASE_URL` environment variable to point to your instance.
-For example, you can make LiteLLM Proxy log to a local LangSmith instance with
-this config:
+如果您使用自訂的 LangSmith 執行個體，可以設定
+`LANGSMITH_BASE_URL` 環境變數，指向您的執行個體。
+例如，您可以透過這個設定，讓 LiteLLM Proxy 將記錄送到本機的 LangSmith 執行個體：
 
 ```yaml
 litellm_settings:
@@ -221,8 +212,8 @@ environment_variables:
   LANGSMITH_PROJECT: "litellm-proxy"
 ```
 
-## Support & Talk to Founders
+## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

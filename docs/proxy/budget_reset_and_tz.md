@@ -1,20 +1,20 @@
-# Budget Reset Times and Timezones
+# 預算重設時間與時區 {#budget-reset-times-and-timezones}
 
-LiteLLM supports predictable budget reset times that align with natural calendar boundaries.
+LiteLLM 支援可預測的預算重設時間，可與自然的日曆邊界對齊。
 
-## How Budget Resets Work
+## 預算重設運作方式 {#how-budget-resets-work}
 
-All budgets reset at midnight (00:00:00) in the configured timezone with special handling for common durations:
+所有預算都會在設定的時區午夜（00:00:00）重設，針對常見期間有特殊處理：
 
-| Duration | Reset Behavior |
+| 期間 | 重設行為 |
 | --- | --- |
-| Daily (24h/1d) | Resets at midnight every day |
-| Weekly (7d) | Resets on Monday at midnight |
-| Monthly (30d) | Resets on the 1st of each month at midnight |
+| 每日（24h/1d） | 每天午夜重設 |
+| 每週（7d） | 每週一午夜重設 |
+| 每月（30d） | 每月 1 日午夜重設 |
 
-## Configuring the Timezone
+## 設定時區 {#configuring-the-timezone}
 
-Specify the timezone for all budget resets in your configuration file:
+請在設定檔中指定所有預算重設所使用的時區：
 
 ```yaml
 litellm_settings:
@@ -23,21 +23,21 @@ litellm_settings:
   timezone: "US/Eastern" # Any valid timezone string
 ```
 
-This ensures that all budget resets happen at midnight in your specified timezone rather than in UTC. If no timezone is specified, UTC will be used by default.
+這可確保所有預算重設都會在您指定的時區午夜發生，而不是在 UTC。若未指定時區，預設會使用 UTC。
 
-## Supported Timezones
+## 支援的時區 {#supported-timezones}
 
-Any valid [IANA timezone string](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) is supported (powered by Python's `zoneinfo` module). DST transitions are handled automatically.
+支援任何有效的 [IANA 時區字串](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)（由 Python 的 `zoneinfo` 模組提供支援）。DST 轉換會自動處理。
 
-**Common timezone values:**
+**常見的時區值：**
 
-| Timezone | Description |
+| 時區 | 說明 |
 | --- | --- |
-| `UTC` | Coordinated Universal Time |
-| `US/Eastern` | Eastern Time |
-| `US/Pacific` | Pacific Time |
-| `Europe/London` | UK Time |
-| `Asia/Kolkata` | Indian Standard Time (IST) |
-| `Asia/Bangkok` | Indochina Time (ICT) |
-| `Asia/Tokyo` | Japan Standard Time |
-| `Australia/Sydney` | Australian Eastern Time |
+| `UTC` | 世界協調時間 |
+| `US/Eastern` | 東部時間 |
+| `US/Pacific` | 太平洋時間 |
+| `Europe/London` | 英國時間 |
+| `Asia/Kolkata` | 印度標準時間（IST） |
+| `Asia/Bangkok` | 中南半島時間（ICT） |
+| `Asia/Tokyo` | 日本標準時間 |
+| `Australia/Sydney` | 澳洲東部時間 |

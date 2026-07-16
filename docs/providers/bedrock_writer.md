@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock - Writer Palmyra
+# Bedrock - Writer Palmyra {#bedrock---writer-palmyra}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Writer Palmyra X5 and X4 foundation models on Amazon Bedrock, offering advanced reasoning, tool calling, and document processing capabilities |
-| Provider Route on LiteLLM | `bedrock/` |
-| Supported Operations | `/chat/completions` |
-| Link to Provider Doc | [Writer on AWS Bedrock ↗](https://aws.amazon.com/bedrock/writer/) |
+| 說明 | Amazon Bedrock 上的 Writer Palmyra X5 與 X4 基礎模型，提供進階推理、工具呼叫與文件處理功能 |
+| LiteLLM 上的提供者路由 | `bedrock/` |
+| 支援的操作 | `/chat/completions` |
+| 提供者文件連結 | [AWS Bedrock 上的 Writer ↗](https://aws.amazon.com/bedrock/writer/) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### LiteLLM SDK
+### LiteLLM SDK {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -32,9 +32,9 @@ response = litellm.completion(
 print(response.choices[0].message.content)
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -46,13 +46,13 @@ model_list:
       aws_region_name: us-west-2
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash showLineNumbers title="Start Proxy"
 litellm --config config.yaml
 ```
 
-**3. Call the proxy**
+**3. 呼叫 proxy**
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -89,11 +89,11 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Tool Calling
+## 工具呼叫 {#tool-calling}
 
-Writer Palmyra models support multi-step tool calling for complex workflows.
+Writer Palmyra 模型支援多步驟工具呼叫，適用於複雜工作流程。
 
-### LiteLLM SDK
+### LiteLLM SDK {#litellm-sdk-1}
 
 ```python showLineNumbers title="Tool Calling - SDK"
 import litellm
@@ -125,7 +125,7 @@ response = litellm.completion(
 )
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy-1}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -195,11 +195,11 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-## Document Input
+## 文件輸入 {#document-input}
 
-Writer Palmyra models support document inputs including PDFs.
+Writer Palmyra 模型支援文件輸入，包括 PDF。
 
-### LiteLLM SDK
+### LiteLLM SDK {#litellm-sdk-2}
 
 ```python showLineNumbers title="PDF Document Input - SDK"
 import litellm
@@ -231,7 +231,7 @@ response = litellm.completion(
 )
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy-2}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -302,15 +302,15 @@ response = client.chat.completions.create(
 </TabItem>
 </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model ID | Context Window | Input Cost (per 1K tokens) | Output Cost (per 1K tokens) |
+| 模型 ID | 上下文視窗 | 輸入成本（每 1K tokens） | 輸出成本（每 1K tokens） |
 |----------|---------------|---------------------------|----------------------------|
 | `bedrock/us.writer.palmyra-x5-v1:0` | 1M tokens | $0.0006 | $0.006 |
 | `bedrock/us.writer.palmyra-x4-v1:0` | 128K tokens | $0.0025 | $0.010 |
 | `bedrock/writer.palmyra-x5-v1:0` | 1M tokens | $0.0006 | $0.006 |
 | `bedrock/writer.palmyra-x4-v1:0` | 128K tokens | $0.0025 | $0.010 |
 
-:::info Cross-Region Inference
-The `us.writer.*` model IDs use cross-region inference profiles. Use these for production workloads.
+:::info 跨區域推理
+`us.writer.*` 模型 ID 使用跨區域推理設定檔。請將這些用於正式工作負載。
 :::

@@ -1,11 +1,11 @@
-# Custom Callbacks
+# 自訂回呼 {#custom-callbacks}
 
 :::info
-**For PROXY** [Go Here](../proxy/logging.md#custom-callback-class-async)
+**適用於 PROXY** [前往此處](../proxy/logging.md#custom-callback-class-async)
 ::: 
 
-## Callback Class
-You can create a custom callback class to precisely log events as they occur in litellm. 
+## 回呼類別 {#callback-class}
+您可以建立自訂回呼類別，以精確地記錄 litellm 中發生的事件。 
 
 ```python
 import litellm
@@ -56,20 +56,20 @@ def async completion():
 asyncio.run(completion())
 ```
 
-## Common Hooks
+## 常見 Hook {#common-hooks}
 
-- `async_log_success_event` - Log successful API calls
-- `async_log_failure_event` - Log failed API calls  
-- `log_pre_api_call` - Log before API call
-- `log_post_api_call` - Log after API call
+- `async_log_success_event` - 記錄成功的 API 呼叫
+- `async_log_failure_event` - 記錄失敗的 API 呼叫  
+- `log_pre_api_call` - 在 API 呼叫前記錄
+- `log_post_api_call` - 在 API 呼叫後記錄
 
-**Proxy-only hooks** (only work with LiteLLM Proxy):
-- `async_post_call_success_hook` - Access user data + modify responses
-- `async_pre_call_hook` - Modify requests before sending
+**僅限 Proxy 的 hooks**（僅適用於 LiteLLM Proxy）：
+- `async_post_call_success_hook` - 存取使用者資料 + 修改回應
+- `async_pre_call_hook` - 在送出前修改請求
 
-### Example: Modifying the Response in async_post_call_success_hook
+### 範例：在 async_post_call_success_hook 中修改回應 {#example-modifying-the-response-in-async_post_call_success_hook}
 
-You can use `async_post_call_success_hook` to add custom headers or metadata to the response before it is returned to the client. For example:
+您可以使用 `async_post_call_success_hook` 在回應傳回給用戶端之前，為其新增自訂標頭或中繼資料。範例如下：
 
 ```python
 async def async_post_call_success_hook(data, user_api_key_dict, response):
@@ -82,18 +82,18 @@ async def async_post_call_success_hook(data, user_api_key_dict, response):
     return response
 ```
 
-This allows you to inject custom metadata or headers into the response for downstream consumers. You can use this pattern to pass information to clients, proxies, or observability tools.
+這可讓您將自訂中繼資料或標頭注入回應中，供下游消費者使用。您可以使用此模式將資訊傳遞給用戶端、Proxy 或可觀測性工具。
 
-## Callback Functions
-If you just want to log on a specific event (e.g. on input) - you can use callback functions. 
+## 回呼函式 {#callback-functions}
+如果您只想在特定事件（例如輸入時）記錄，則可以使用回呼函式。 
 
-You can set custom callbacks to trigger for:
-- `litellm.input_callback`   - Track inputs/transformed inputs before making the LLM API call
-- `litellm.success_callback` - Track inputs/outputs after making LLM API call
-- `litellm.failure_callback` - Track inputs/outputs + exceptions for litellm calls
+您可以設定在以下情況觸發的自訂回呼：
+- `litellm.input_callback`   - 在執行 LLM API 請求前追蹤輸入/轉換後的輸入
+- `litellm.success_callback` - 在執行 LLM API 請求後追蹤輸入/輸出
+- `litellm.failure_callback` - 追蹤 litellm 呼叫的輸入/輸出 + 例外狀況
 
-## Defining a Custom Callback Function
-Create a custom callback function that takes specific arguments:
+## 定義自訂回呼函式 {#defining-a-custom-callback-function}
+建立一個接受特定引數的自訂回呼函式：
 
 ```python
 def custom_callback(
@@ -109,13 +109,13 @@ def custom_callback(
     print("end_time", end_time)
 ```
 
-### Setting the custom callback function
+### 設定自訂回呼函式 {#setting-the-custom-callback-function}
 ```python
 import litellm
 litellm.success_callback = [custom_callback]
 ```
 
-## Using Your Custom Callback Function
+## 使用您的自訂回呼函式 {#using-your-custom-callback-function}
 
 ```python
 import litellm
@@ -138,9 +138,9 @@ print(response)
 
 ```
 
-## Async Callback Functions 
+## 非同步回呼函式  {#async-callback-functions}
 
-We recommend using the Custom Logger class for async.
+我們建議在非同步情境使用 Custom Logger 類別。
 
 ```python
 from litellm.integrations.custom_logger import CustomLogger
@@ -170,11 +170,11 @@ def async completion():
 asyncio.run(completion())
 ```
 
-**Functions**
+**函式**
 
-If you just want to pass in an async function for logging. 
+如果您只想傳入一個非同步函式來進行記錄。 
 
-LiteLLM currently supports just async success callback functions for async completion/embedding calls. 
+LiteLLM 目前僅支援用於非同步 completion/embedding 呼叫的非同步成功回呼函式。 
 
 ```python
 import asyncio, litellm 
@@ -201,12 +201,12 @@ async def test_chat_openai():
 asyncio.run(test_chat_openai())
 ```
 
-## What's Available in kwargs?
+## kwargs 中有哪些可用內容？ {#whats-available-in-kwargs}
 
-The kwargs dictionary contains all the details about your API call.
+kwargs 字典包含您 API 呼叫的所有詳細資訊。
 
 :::info
-For the complete logging payload specification, see the [Standard Logging Payload Spec](https://docs.litellm.ai/docs/proxy/logging_spec).
+如需完整的記錄負載規格，請參閱 [標準記錄負載規格](https://docs.litellm.ai/docs/proxy/logging_spec)。
 :::
 
 ```python
@@ -221,16 +221,16 @@ def custom_callback(kwargs, completion_response, start_time, end_time):
     metadata = kwargs.get("litellm_params", {}).get("metadata", {})
 ```
 
-**Key fields in kwargs:**
-- `model` - The model name
-- `messages` - Input messages  
-- `response_cost` - Calculated cost
-- `cache_hit` - Whether response was cached
-- `litellm_params.metadata` - Your custom metadata
+**kwargs 中的關鍵欄位：**
+- `model` - 模型名稱
+- `messages` - 輸入訊息  
+- `response_cost` - 計算成本
+- `cache_hit` - 回應是否已被快取
+- `litellm_params.metadata` - 您的自訂中繼資料
 
-## Practical Examples
+## 實用範例 {#practical-examples}
 
-### Track API Costs
+### 追蹤 API 成本 {#track-api-costs}
 ```python
 def track_cost_callback(kwargs, completion_response, start_time, end_time):
     cost = kwargs["response_cost"] # litellm calculates this for you
@@ -241,7 +241,7 @@ litellm.success_callback = [track_cost_callback]
 response = completion(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello"}])
 ```
 
-### Log Inputs to LLMs
+### 記錄輸入到 LLM {#log-inputs-to-llms}
 ```python
 def get_transformed_inputs(kwargs):
     params_to_model = kwargs["additional_args"]["complete_input_dict"]
@@ -252,7 +252,7 @@ litellm.input_callback = [get_transformed_inputs]
 response = completion(model="claude-2", messages=[{"role": "user", "content": "Hello"}])
 ```
 
-### Send to External Service
+### 傳送至外部服務 {#send-to-external-service}
 ```python
 import requests
 
@@ -267,18 +267,18 @@ def send_to_analytics(kwargs, completion_response, start_time, end_time):
 litellm.success_callback = [send_to_analytics]
 ```
 
-## Common Issues
+## 常見問題 {#common-issues}
 
-### Callback Not Called
-Make sure you:
-1. Register callbacks correctly: `litellm.callbacks = [MyHandler()]`
-2. Use the right hook names (check spelling)
-3. Don't use proxy-only hooks in library mode
+### 未呼叫回呼 {#callback-not-called}
+請確認您已：
+1. 正確註冊回呼：`litellm.callbacks = [MyHandler()]`
+2. 使用正確的 hook 名稱（檢查拼字）
+3. 不要在函式庫模式中使用僅限 Proxy 的 hooks
 
-### Performance Issues  
-- Use async hooks for I/O operations
-- Don't block in callback functions
-- Handle exceptions properly:
+### 效能問題   {#performance-issues}
+- 對 I/O 作業使用非同步 hooks
+- 不要在回呼函式中阻塞
+- 正確處理例外狀況：
 
 ```python
 class SafeHandler(CustomLogger):
@@ -288,4 +288,3 @@ class SafeHandler(CustomLogger):
         except Exception as e:
             print(f"Callback error: {e}")  # Log but don't break the flow
 ```
-

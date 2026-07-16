@@ -2,13 +2,13 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Auto-Inject Prompt Caching Checkpoints
+# 自動注入提示快取檢查點 {#auto-inject-prompt-caching-checkpoints}
 
-Reduce costs by up to 90% by using LiteLLM to auto-inject prompt caching checkpoints.
+透過使用 LiteLLM 自動注入提示快取檢查點，最多可將成本降低 90%。
 
 <Image img={require('../../img/auto_prompt_caching.png')}  style={{ width: '800px', height: 'auto' }} />
 
-Supported Providers (`cache_control` marker):
+支援的提供者（`cache_control` 標記）：
 - Anthropic API (`anthropic/`)
 - AWS Bedrock - Claude (`bedrock/`)
 - Vertex AI - Claude and Gemini (`vertex_ai/`)
@@ -20,25 +20,25 @@ Supported Providers (`cache_control` marker):
 - MiniMax (`minimax/`)
 - Z.ai / GLM (`zai/`)
 
-Provider Managed (automatic, no marker needed):
+提供者代管（自動，無需標記）：
 - OpenAI (`openai/`)
 - DeepSeek (`deepseek/`)
 - xAI (`xai/`)
 
-## How it works
+## 運作方式 {#how-it-works}
 
-LiteLLM can automatically inject prompt caching checkpoints into your requests to LLM providers. This allows:
+LiteLLM 可自動將提示快取檢查點注入到您對 LLM 提供者的請求中。這可帶來：
 
-- **Cost Reduction**: Long, static parts of your prompts can be cached to avoid repeated processing
-- **No need to modify your application code**: You can configure the auto-caching behavior in the LiteLLM UI or in the `litellm config.yaml` file.
+- **降低成本**：提示中長且靜態的部分可被快取，以避免重複處理
+- **無需修改應用程式程式碼**：您可以在 LiteLLM UI 或 `litellm config.yaml` 檔案中設定自動快取行為。
 
-## Configuration
+## 設定 {#configuration}
 
-You need to specify `cache_control_injection_points` in your model configuration. This tells LiteLLM:
-1. Where to add the caching directive (`location`)
-2. Which message to target (`role`)
+您需要在模型設定中指定 `cache_control_injection_points`。這會告訴 LiteLLM：
+1. 要在哪裡加入快取指令（`location`）
+2. 要針對哪則訊息（`role`）
 
-LiteLLM will then automatically add a `cache_control` directive to the specified messages in your requests:
+接著，LiteLLM 會自動將 `cache_control` 指令加入您請求中指定的訊息：
 
 ```json showLineNumbers title="cache_control_directive.json"
 "cache_control": {
@@ -46,11 +46,11 @@ LiteLLM will then automatically add a `cache_control` directive to the specified
 }
 ```
 
-## LiteLLM Python SDK Usage
+## LiteLLM Python SDK 使用方式 {#litellm-python-sdk-usage}
 
-Use the `cache_control_injection_points` parameter in your completion calls to automatically inject caching directives.
+在您的 completion 呼叫中使用 `cache_control_injection_points` 參數，即可自動注入快取指令。
 
-#### Basic Example - Cache System Messages
+#### 基本範例 - 快取系統訊息 {#basic-example---cache-system-messages}
 
 ```python showLineNumbers title="cache_system_messages.py"
 from litellm import completion
@@ -91,15 +91,15 @@ response = completion(
 print(response.usage)
 ```
 
-**Key Points:**
-- Use `cache_control_injection_points` parameter to specify where to inject caching
-- `location: "message"` targets messages in the conversation
-- `role: "system"` targets all system messages
-- LiteLLM automatically adds `cache_control` to the **last content block** of matching messages (per Anthropic's API specification)
+**重點：**
+- 使用 `cache_control_injection_points` 參數指定要注入快取的位置
+- `location: "message"` 目標為對話中的訊息
+- `role: "system"` 目標為所有系統訊息
+- LiteLLM 會自動將 `cache_control` 加入符合條件訊息的**最後一個內容區塊**（依 Anthropic 的 API 規格）
 
-**LiteLLM's Modified Request:**
+**LiteLLM 修改後的請求：**
 
-LiteLLM automatically transforms your request by adding `cache_control` to the last content block of the system message:
+LiteLLM 會自動將您的請求轉換為，在系統訊息的最後一個內容區塊加入 `cache_control`：
 
 ```json showLineNumbers title="modified_request_system.json"
 {
@@ -126,9 +126,9 @@ LiteLLM automatically transforms your request by adding `cache_control` to the l
 }
 ```
 
-#### Target Specific Messages by Index
+#### 依索引指定特定訊息 {#target-specific-messages-by-index}
 
-You can target specific messages by their index in the messages array. Use negative indices to target from the end.
+您可以依 messages 陣列中的索引來指定特定訊息。使用負索引可從尾端開始指定。
 
 ```python showLineNumbers title="cache_by_index.py"
 from litellm import completion
@@ -167,14 +167,14 @@ response = completion(
 print(response.usage)
 ```
 
-**Important Notes:**
-- When a message has multiple content blocks (like images or multiple text blocks), `cache_control` is only added to the **last content block**
-- This follows [Anthropic's API specification](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching#continuing-a-multi-turn-conversation) which requires: "When using multiple content blocks, only the last content block can have cache_control"
-- Anthropic has a maximum of 4 blocks with `cache_control` per request
+**重要說明：**
+- 當一則訊息有多個內容區塊（例如圖片或多個文字區塊）時，`cache_control` 只會加入到**最後一個內容區塊**
+- 這遵循 [Anthropic 的 API 規格](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching#continuing-a-multi-turn-conversation)，其要求：「當使用多個內容區塊時，只有最後一個內容區塊可以有 cache_control」
+- Anthropic 每個請求最多可有 4 個帶有 `cache_control` 的區塊
 
-**LiteLLM's Modified Request:**
+**LiteLLM 修改後的請求：**
 
-LiteLLM adds `cache_control` to the last content block of the targeted message (index -1 = last message):
+LiteLLM 會將 `cache_control` 加入目標訊息的最後一個內容區塊（index -1 = 最後一則訊息）：
 
 ```json showLineNumbers title="modified_request_index.json"
 {
@@ -205,9 +205,9 @@ LiteLLM adds `cache_control` to the last content block of the targeted message (
 }
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM Proxy 使用方式 {#litellm-proxy-usage}
 
-You can configure cache control injection in the proxy configuration file.
+您可以在 proxy 設定檔中設定 cache control 注入。
 
 <Tabs>
 <TabItem value="litellm config.yaml" label="litellm config.yaml">
@@ -226,18 +226,17 @@ model_list:
 
 <TabItem value="UI" label="LiteLLM UI">
 
-On the LiteLLM UI, you can specify the `cache_control_injection_points` in the `Advanced Settings` tab when adding a model.
+在 LiteLLM UI 上，您可以在新增模型時於 `Advanced Settings` 分頁中指定 `cache_control_injection_points`。
 <Image img={require('../../img/ui_auto_prompt_caching.png')}/>
 
 </TabItem>
 </Tabs>
 
+## 詳細範例 {#detailed-example}
 
-## Detailed Example
+### 1. 傳送至 LiteLLM 的原始請求  {#1-original-request-to-litellm}
 
-### 1. Original Request to LiteLLM 
-
-In this example, we have a very long, static system message and a varying user message. It's efficient to cache the system message since it rarely changes.
+在這個範例中，我們有一段非常長且靜態的 system message，以及一段變動的 user message。由於 system message 幾乎不會變更，因此將其快取會更有效率。
 
 ```json showLineNumbers title="original_request.json"
 {
@@ -264,9 +263,9 @@ In this example, we have a very long, static system message and a varying user m
 }
 ```
 
-### 2. LiteLLM's Modified Request
+### 2. LiteLLM 修改後的請求 {#2-litellms-modified-request}
 
-LiteLLM auto-injects the caching directive into the system message based on our configuration:
+LiteLLM 會根據我們的設定，自動將快取指令注入 system message：
 
 ```json showLineNumbers title="modified_request.json"
 {
@@ -294,11 +293,8 @@ LiteLLM auto-injects the caching directive into the system message based on our 
 }
 ```
 
-When the model provider processes this request, it will recognize the caching directive and only process the system message once, caching it for subsequent requests.
+當模型提供者處理這個請求時，會辨識快取指令，並且只處理一次 system message，將其快取供後續請求使用。
 
-## Related Documentation
+## 相關文件 {#related-documentation}
 
-- [Manual Prompt Caching](../completion/prompt_caching.md) - Learn how to manually add `cache_control` directives to your messages
-
-
-
+- [手動提示快取](../completion/prompt_caching.md) - 了解如何手動將 `cache_control` 指令加入您的訊息

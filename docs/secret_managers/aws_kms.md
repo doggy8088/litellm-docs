@@ -1,22 +1,22 @@
-# AWS Key Management V1
+# AWS 金鑰管理 V1 {#aws-key-management-v1}
 
 :::info
 
-✨ **This is an Enterprise Feature**
+✨ **這是企業版功能**
 
-[Enterprise Pricing](https://www.litellm.ai/#pricing)
+[企業定價](https://www.litellm.ai/#pricing)
 
-[Contact us here to get a free trial](https://enterprise.litellm.ai/demo)
+[在此聯絡我們以取得免費試用](https://enterprise.litellm.ai/demo)
 
 :::
 
 :::tip
 
-[BETA] AWS Key Management v2 is on the enterprise tier. Go [here for docs](../enterprise.md#beta-aws-key-manager---key-decryption)
+[BETA] AWS 金鑰管理 v2 位於企業方案。請 [前往此處查看文件](../enterprise.md#beta-aws-key-manager---key-decryption)
 
 :::
 
-Use AWS KMS to storing a hashed copy of your Proxy Master Key in the environment. 
+使用 AWS KMS 在環境中儲存您的 Proxy Master Key 的雜湊副本。 
 
 ```bash
 export LITELLM_MASTER_KEY="djZ9xjVaZ..." # 👈 ENCRYPTED KEY
@@ -30,5 +30,4 @@ general_settings:
     hosted_keys: ["LITELLM_MASTER_KEY"] # 👈 WHICH KEYS ARE STORED ON KMS
 ```
 
-[**See Decryption Code**](https://github.com/BerriAI/litellm/blob/a2da2a8f168d45648b61279d4795d647d94f90c9/litellm/utils.py#L10182)
-
+[**查看解密程式碼**](https://github.com/BerriAI/litellm/blob/a2da2a8f168d45648b61279d4795d647d94f90c9/litellm/utils.py#L10182)

@@ -1,67 +1,67 @@
-# Policy Templates
+# 政策範本 {#policy-templates}
 
-Policy templates provide pre-configured guardrail policies that you can use as a starting point for your organization. Instead of manually creating policies and guardrails, you can select a template that matches your use case and deploy it with one click.
+政策範本提供預先設定的防護欄政策，您可以將其作為組織的起點。您不必手動建立政策和防護欄，只要選擇符合您使用案例的範本，並一鍵部署即可。
 
-## Using Policy Templates
+## 使用政策範本 {#using-policy-templates}
 
-### In the UI
+### 在 UI 中 {#in-the-ui}
 
-1. Navigate to **Policies → Templates** tab in the LiteLLM Admin UI
-2. Browse available templates (e.g., "PII Protection", "Cost Control", "HR Compliance")
-3. Click **"Use Template"** on any template
-4. Review the guardrails that will be created:
-   - Existing guardrails are marked with a green checkmark
-   - New guardrails can be selected/deselected
-5. Click **"Create X Guardrails & Use Template"**
-6. Review and customize the pre-filled policy form
-7. Click **"Create Policy"** to save
+1. 在 LiteLLM Admin UI 中導覽至 **Policies → Templates** 分頁
+2. 瀏覽可用範本（例如：「PII Protection」、「Cost Control」、「HR Compliance」）
+3. 在任一範本上按一下 **"Use Template"**
+4. 檢閱將會建立的防護欄：
+   - 現有防護欄會以綠色勾號標示
+   - 新防護欄可以選取／取消選取
+5. 按一下 **"Create X Guardrails & Use Template"**
+6. 檢閱並自訂預先填入的政策表單
+7. 按一下 **"Create Policy"** 以儲存
 
-### Workflow
+### 工作流程 {#workflow}
 
 ```
 Select Template → Review Guardrails → Create Selected → Edit Policy → Save
 ```
 
-The system automatically:
-- ✅ Detects which guardrails already exist
-- ✅ Creates only the missing guardrails you select
-- ✅ Pre-fills the policy form with template data
-- ✅ Lets you customize before saving
+系統會自動：
+- ✅ 偵測哪些防護欄已經存在
+- ✅ 只建立您選取的缺少防護欄
+- ✅ 以範本資料預先填入政策表單
+- ✅ 讓您在儲存前自訂
 
-## Available Templates
+## 可用範本 {#available-templates}
 
-Templates are fetched from [GitHub](https://raw.githubusercontent.com/BerriAI/litellm/main/policy_templates.json) with automatic fallback to local backup.
+範本會從 [GitHub](https://raw.githubusercontent.com/BerriAI/litellm/main/policy_templates.json) 取得，並自動回退至本機備份。
 
-### Current Templates
+### 目前範本 {#current-templates}
 
-#### 1. Advanced PII Protection (Australia)
-- **Complexity:** High
-- **Use Case:** Comprehensive PII detection for Australian organizations
-- **Guardrails:**
-  - Australian tax identifiers (TFN, ABN, Medicare)
-  - Australian passports
-  - International PII (SSN, passports, national IDs)
-  - Contact information (email, phone, address)
-  - Financial data (credit cards, IBAN)
-  - API credentials (AWS, GitHub, Slack) - **BLOCKS** requests
-  - Network infrastructure (IP addresses)
-  - Protected class information (gender, race, religion, disability, etc.)
+#### 1. 進階 PII 保護（澳洲） {#1-advanced-pii-protection-australia}
+- **複雜度：** 高
+- **使用案例：** 為澳洲組織提供完整的 PII 偵測
+- **防護欄：**
+  - 澳洲稅務識別碼（TFN、ABN、Medicare）
+  - 澳洲護照
+  - 國際 PII（SSN、護照、國民身分證）
+  - 聯絡資訊（電子郵件、電話、地址）
+  - 金融資料（信用卡、IBAN）
+  - API 憑證（AWS、GitHub、Slack）- **封鎖** 請求
+  - 網路基礎架構（IP 位址）
+  - 受保護族群資訊（性別、種族、宗教、身心障礙等）
 
-#### 2. Baseline PII Protection
-- **Complexity:** Low
-- **Use Case:** Basic protection for internal tools and testing
-- **Guardrails:**
-  - Australian tax identifiers
-  - API credentials
-  - Financial data
+#### 2. 基準 PII 保護 {#2-baseline-pii-protection}
+- **複雜度：** 低
+- **使用案例：** 供內部工具與測試使用的基本保護
+- **防護欄：**
+  - 澳洲稅務識別碼
+  - API 憑證
+  - 金融資料
 
-## Creating Your Own Policy Templates
+## 建立您自己的政策範本 {#creating-your-own-policy-templates}
 
-You can contribute policy templates for the entire LiteLLM community to use.
+您可以提供政策範本，供整個 LiteLLM 社群使用。
 
-### Template Structure
+### 範本結構 {#template-structure}
 
-Templates are defined in JSON format with the following structure:
+範本以 JSON 格式定義，結構如下：
 
 ```json
 {
@@ -105,35 +105,35 @@ Templates are defined in JSON format with the following structure:
 }
 ```
 
-### Field Descriptions
+### 欄位說明 {#field-descriptions}
 
-#### Display Fields
-- **id**: Unique identifier (lowercase with hyphens)
-- **title**: User-facing name shown in UI
-- **description**: Detailed explanation of what the template protects
-- **icon**: Icon name (must be available in UI icon map)
-- **iconColor**: Tailwind CSS text color class
-- **iconBg**: Tailwind CSS background color class
-- **guardrails**: Array of guardrail names (for display only)
-- **complexity**: Badge showing difficulty ("Low", "Medium", or "High")
+#### 顯示欄位 {#display-fields}
+- **id**：唯一識別碼（小寫並以連字號分隔）
+- **title**：在 UI 中顯示給使用者的名稱
+- **description**：詳細說明此範本所保護的內容
+- **icon**：圖示名稱（必須可在 UI 圖示對應中使用）
+- **iconColor**：Tailwind CSS 文字顏色類別
+- **iconBg**：Tailwind CSS 背景顏色類別
+- **guardrails**：防護欄名稱陣列（僅供顯示）
+- **complexity**：顯示難度的徽章（"Low"、"Medium" 或 "High"）
 
-#### Guardrail Definitions
-- **guardrailDefinitions**: Array of complete guardrail configurations
-  - Each must be a valid guardrail object that can be sent to `/guardrails` POST endpoint
-  - If a guardrail already exists, it will be skipped
-  - Can be empty `[]` if template uses only existing guardrails
+#### 防護欄定義 {#guardrail-definitions}
+- **guardrailDefinitions**：完整防護欄組態的陣列
+  - 每一項都必須是可傳送至 `/guardrails` POST 端點的有效防護欄物件
+  - 如果某個防護欄已經存在，將會略過
+  - 如果範本只使用既有防護欄，則可以為空 `[]`
 
-#### Policy Configuration
-- **templateData**: Object that pre-fills the policy form
-  - **policy_name**: Suggested name (user can edit)
-  - **description**: Policy description
-  - **guardrails_add**: Array of guardrail names to include
-  - **guardrails_remove**: Array to remove (usually `[]` for templates)
-  - **inherit**: (Optional) Parent policy name for inheritance
+#### 政策設定 {#policy-configuration}
+- **templateData**：預先填入政策表單的物件
+  - **policy_name**：建議名稱（使用者可編輯）
+  - **description**：政策描述
+  - **guardrails_add**：要包含的防護欄名稱陣列
+  - **guardrails_remove**：要移除的陣列（通常範本為 `[]`）
+  - **inherit**：（選用）繼承所用的父政策名稱
 
-### Example Template
+### 範本範例 {#example-template}
 
-Here's a complete example for a HIPAA compliance template:
+以下是一個 HIPAA 合規範本的完整範例：
 
 ```json
 {
@@ -192,91 +192,91 @@ Here's a complete example for a HIPAA compliance template:
 }
 ```
 
-## Contributing Templates
+## 貢獻範本 {#contributing-templates}
 
-To contribute a policy template for everyone to use:
+若要提供一個供所有人使用的政策範本：
 
-### Step 1: Create Your Template JSON
+### 步驟 1：建立您的範本 JSON {#step-1-create-your-template-json}
 
-1. Create a JSON file following the structure above
-2. Test it locally by adding it to your local `policy_templates.json`
-3. Verify all guardrails work correctly
-4. Ensure descriptions are clear and helpful
+1. 依照上述結構建立 JSON 檔案
+2. 透過將其新增至您的本機 `policy_templates.json` 進行本機測試
+3. 驗證所有防護欄都能正確運作
+4. 確保描述清楚且有幫助
 
-### Step 2: Submit a Pull Request
+### 步驟 2：提交 Pull Request {#step-2-submit-a-pull-request}
 
-1. Fork the [LiteLLM repository](https://github.com/BerriAI/litellm)
-2. Add your template to `policy_templates.json` at the root
-3. Add your template to `litellm/policy_templates_backup.json` (keep both in sync)
-4. Create a pull request with:
-   - Clear description of what the template protects
-   - Use case examples
-   - Any relevant compliance frameworks (HIPAA, GDPR, SOC 2, etc.)
+1. Fork [LiteLLM repository](https://github.com/BerriAI/litellm)
+2. 將您的範本新增至根目錄的 `policy_templates.json`
+3. 將您的範本新增至 `litellm/policy_templates_backup.json`（保持兩者同步）
+4. 建立包含以下內容的 pull request：
+   - 清楚描述此範本所保護的內容
+   - 使用案例範例
+   - 任何相關的合規框架（HIPAA、GDPR、SOC 2 等）
 
-### Guidelines
+### 指引 {#guidelines}
 
-**DO:**
-- ✅ Use clear, descriptive names
-- ✅ Include comprehensive descriptions
-- ✅ Test all guardrails thoroughly
-- ✅ Document pattern sources (e.g., "Based on NIST guidelines")
-- ✅ Group related guardrails logically
-- ✅ Consider different complexity levels
+**要：**
+- ✅ 使用清楚、具描述性的名稱
+- ✅ 包含完整的描述
+- ✅ 徹底測試所有防護欄
+- ✅ 記錄模式來源（例如：「根據 NIST 指引」）
+- ✅ 以邏輯方式將相關防護欄分組
+- ✅ 考量不同的複雜度層級
 
-**DON'T:**
-- ❌ Include credentials or secrets
-- ❌ Use overly broad patterns that may have false positives
-- ❌ Duplicate existing templates
-- ❌ Use custom code without thorough testing
+**不要：**
+- ❌ 不要包含憑證或機密
+- ❌ 不要使用過於廣泛、可能造成誤判的模式
+- ❌ 不要重複既有範本
+- ❌ 不要在未徹底測試下使用自訂程式碼
 
-## Using Templates Offline
+## 離線使用範本 {#using-templates-offline}
 
-For air-gapped or offline deployments, set the environment variable:
+對於隔離網路或離線部署，請設定環境變數：
 
 ```bash
 export LITELLM_LOCAL_POLICY_TEMPLATES=true
 ```
 
-This forces the system to use the local backup (`litellm/policy_templates_backup.json`) instead of fetching from GitHub.
+這會強制系統使用本機備份（`litellm/policy_templates_backup.json`），而不是從 GitHub 取得。
 
-## Template Sources
+## 範本來源 {#template-sources}
 
-- **GitHub (default):** https://raw.githubusercontent.com/BerriAI/litellm/main/policy_templates.json
-- **Local backup:** `litellm/policy_templates_backup.json`
+- **GitHub（預設）：** https://raw.githubusercontent.com/BerriAI/litellm/main/policy_templates.json
+- **本機備份：** `litellm/policy_templates_backup.json`
 
-Templates are automatically fetched from GitHub on each request, with fallback to local backup on any failure.
+範本會在每次請求時自動從 GitHub 取得，若任何步驟失敗則回退至本機備份。
 
-## Available Pattern Types
+## 可用的模式類型 {#available-pattern-types}
 
-When creating guardrails for templates, you can use these prebuilt patterns:
+建立範本用的防護欄時，您可以使用這些預建模式：
 
-### Identity Documents
-- `passport_australia`, `passport_us`, `passport_uk`, `passport_germany`, etc.
-- `us_ssn`, `us_ssn_no_dash`
-- `au_tfn`, `au_abn`, `au_medicare`
+### 身分證件 {#identity-documents}
+- `passport_australia`、`passport_us`、`passport_uk`、`passport_germany` 等
+- `us_ssn`、`us_ssn_no_dash`
+- `au_tfn`、`au_abn`、`au_medicare`
 - `nl_bsn_contextual`
-- `br_cpf`, `br_rg`, `br_cnpj`
+- `br_cpf`、`br_rg`、`br_cnpj`
 
-### Financial
-- `visa`, `mastercard`, `amex`, `discover`, `credit_card`
+### 金融 {#financial}
+- `visa`、`mastercard`、`amex`、`discover`、`credit_card`
 - `iban`
 
-### Contact Information
+### 聯絡資訊 {#contact-information}
 - `email`
-- `us_phone`, `br_phone_landline`, `br_phone_mobile`
+- `us_phone`、`br_phone_landline`、`br_phone_mobile`
 - `street_address`
-- `br_cep` (Brazilian postal code)
+- `br_cep`（巴西郵遞區號）
 
-### Credentials
-- `aws_access_key`, `aws_secret_key`
+### 憑證 {#credentials}
+- `aws_access_key`、`aws_secret_key`
 - `github_token`
 - `slack_token`
 - `generic_api_key`
 
-### Network
-- `ipv4`, `ipv6`
+### 網路 {#network}
+- `ipv4`、`ipv6`
 
-### Protected Class
+### 受保護族群 {#protected-class}
 - `gender_sexual_orientation`
 - `race_ethnicity_national_origin`
 - `religion`
@@ -286,11 +286,11 @@ When creating guardrails for templates, you can use these prebuilt patterns:
 - `military_status`
 - `public_assistance`
 
-See the [full patterns list](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/patterns.json) for all available patterns.
+請參閱[完整模式清單](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/patterns.json)以查看所有可用模式。
 
-## Related Docs
+## 相關文件 {#related-docs}
 
-- [Guardrail Policies](./guardrail_policies)
-- [Policy Tags](./policy_tags)
-- [Content Filter Patterns](../hooks/content_filter)
-- [Custom Code Guardrails](../hooks/custom_code)
+- [防護欄政策](./guardrail_policies)
+- [政策標籤](./policy_tags)
+- [內容過濾模式](../hooks/content_filter)
+- [自訂程式碼防護欄](../hooks/custom_code)

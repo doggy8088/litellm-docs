@@ -1,31 +1,31 @@
-# ChatGPT Subscription
+# ChatGPT 訂閱 {#chatgpt-subscription}
 
-Use ChatGPT Pro/Max subscription models through LiteLLM with OAuth device flow authentication.
+透過 LiteLLM 與 OAuth 裝置流程驗證使用 ChatGPT Pro/Max 訂閱模型。
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | ChatGPT subscription access (Codex + GPT-5.3/5.4 family) via ChatGPT backend API |
-| Provider Route on LiteLLM | `chatgpt/` |
-| Supported Endpoints | `/responses`, `/chat/completions` (bridged to Responses for supported models) |
-| API Reference | https://chatgpt.com |
+| 描述 | 透過 ChatGPT 後端 API 存取 ChatGPT 訂閱（Codex + GPT-5.3/5.4 系列） |
+| LiteLLM 上的提供者路由 | `chatgpt/` |
+| 支援的端點 | `/responses`、`/chat/completions`（對支援的模型橋接至 Responses） |
+| API 參考 | https://chatgpt.com |
 
-ChatGPT subscription access is native to the Responses API. Chat Completions requests are bridged to Responses for supported models (for example `chatgpt/gpt-5.4`).
+ChatGPT 訂閱存取原生支援 Responses API。Chat Completions 請求會針對支援的模型橋接至 Responses（例如 `chatgpt/gpt-5.4`）。
 
-Notes:
-- The ChatGPT subscription backend rejects token limit fields (`max_tokens`, `max_output_tokens`, `max_completion_tokens`) and `metadata`. LiteLLM strips these fields for this provider.
-- `/v1/chat/completions` honors `stream`. When `stream` is false (default), LiteLLM aggregates the Responses stream into a single JSON response.
+備註：
+- ChatGPT 訂閱後端會拒絕 token 限制欄位（`max_tokens`、`max_output_tokens`、`max_completion_tokens`）以及 `metadata`。LiteLLM 會為此提供者移除這些欄位。
+- `/v1/chat/completions` 會遵循 `stream`。當 `stream` 為 false（預設）時，LiteLLM 會將 Responses 串流彙整為單一 JSON 回應。
 
-## Authentication
+## 驗證 {#authentication}
 
-ChatGPT subscription access uses an OAuth device code flow:
+ChatGPT 訂閱存取使用 OAuth 裝置代碼流程：
 
-1. LiteLLM prints a device code and verification URL
-2. Open the URL, sign in, and enter the code
-3. Tokens are stored locally for reuse
+1. LiteLLM 會列印裝置代碼與驗證 URL
+2. 開啟 URL、登入，然後輸入代碼
+3. 權杖會儲存在本機以供重複使用
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Responses (recommended for Codex models)
+### Responses（Codex 模型建議使用） {#responses-recommended-for-codex-models}
 
 ```python showLineNumbers title="ChatGPT Responses"
 import litellm
@@ -38,7 +38,7 @@ response = litellm.responses(
 print(response)
 ```
 
-### Chat Completions (bridged to Responses)
+### Chat Completions（橋接至 Responses） {#chat-completions-bridged-to-responses}
 
 ```python showLineNumbers title="ChatGPT Chat Completions"
 import litellm
@@ -51,7 +51,7 @@ response = litellm.completion(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -91,14 +91,14 @@ model_list:
 litellm --config config.yaml
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
-- `CHATGPT_TOKEN_DIR`: Custom token storage directory
-- `CHATGPT_AUTH_FILE`: Auth file name (default: `auth.json`)
-- `CHATGPT_API_BASE`: Override API base (default: `https://chatgpt.com/backend-api/codex`)
-- `OPENAI_CHATGPT_API_BASE`: Alias for `CHATGPT_API_BASE`
-- `CHATGPT_ORIGINATOR`: Override the `originator` header value
-- `CHATGPT_USER_AGENT`: Override the `User-Agent` header value
-- `CHATGPT_USER_AGENT_SUFFIX`: Optional suffix appended to the `User-Agent` header
+- `CHATGPT_TOKEN_DIR`：自訂權杖儲存目錄
+- `CHATGPT_AUTH_FILE`：驗證檔案名稱（預設：`auth.json`）
+- `CHATGPT_API_BASE`：覆寫 API base（預設：`https://chatgpt.com/backend-api/codex`）
+- `OPENAI_CHATGPT_API_BASE`：`CHATGPT_API_BASE` 的別名
+- `CHATGPT_ORIGINATOR`：覆寫 `originator` 標頭值
+- `CHATGPT_USER_AGENT`：覆寫 `User-Agent` 標頭值
+- `CHATGPT_USER_AGENT_SUFFIX`：附加到 `User-Agent` 標頭的選用尾碼

@@ -1,17 +1,17 @@
-# /realtime - WebRTC Support
+# /realtime - WebRTC 支援 {#realtime---webrtc-support}
 
-Connect to the Realtime API via WebRTC from browser/mobile clients. LiteLLM handles auth; audio streams directly to OpenAI/Azure.
+透過 WebRTC 從瀏覽器/行動用戶端連線到 Realtime API。LiteLLM 處理驗證；音訊直接串流到 OpenAI/Azure。
 
-**Providers:** OpenAI · Azure
+**提供者：** OpenAI · Azure
 
-:::info **WebRTC vs WebSocket**
-- **WebSocket** (`/v1/realtime`) — server-to-server
-- **WebRTC** (`/v1/realtime/client_secrets` + `/v1/realtime/calls`) — browser/mobile, lower latency
+:::info **WebRTC 與 WebSocket**
+- **WebSocket** (`/v1/realtime`) — 伺服器對伺服器
+- **WebRTC** (`/v1/realtime/client_secrets` + `/v1/realtime/calls`) — 瀏覽器/行動裝置，延遲較低
 :::
 
-## How it works
+## 運作方式 {#how-it-works}
 
-LiteLLM issues tokens and relays SDP; audio never passes through the proxy.
+LiteLLM 核發權杖並轉送 SDP；音訊不會經過代理。
 
 ```
 Browser                  LiteLLM Proxy              OpenAI/Azure
@@ -23,7 +23,7 @@ Browser                  LiteLLM Proxy              OpenAI/Azure
   |===== audio P2P direct ===============================>|
 ```
 
-## Proxy Setup
+## 代理設定 {#proxy-setup}
 
 ```yaml
 model_list:
@@ -35,17 +35,17 @@ model_list:
       mode: realtime
 ```
 
-**Azure:** `model: azure/gpt-4o-realtime-preview`, `api_key`, `api_base`.
+**Azure：** `model: azure/gpt-4o-realtime-preview`、`api_key`、`api_base`。
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-## Client Usage
+## 用戶端使用方式 {#client-usage}
 
-1. **Token** — `POST /v1/realtime/client_secrets` with LiteLLM key and `{ model }`.
-2. **WebRTC** — Create `RTCPeerConnection`, add mic, data channel `oai-events`, send SDP offer to `POST /v1/realtime/calls` with `Authorization: Bearer <token>`, `Content-Type: application/sdp`.
-3. **Events** — Use data channel for `session.update` and other events.
+1. **權杖** — `POST /v1/realtime/client_secrets`，使用 LiteLLM 金鑰與 `{ model }`。
+2. **WebRTC** — 建立 `RTCPeerConnection`，加入麥克風、資料通道 `oai-events`，將 SDP offer 傳送至 `POST /v1/realtime/calls`，並附上 `Authorization: Bearer <token>`、`Content-Type: application/sdp`。
+3. **事件** — 使用資料通道處理 `session.update` 與其他事件。
 
 ```javascript
 const r = await fetch("http://proxy:4000/v1/realtime/client_secrets", {
@@ -75,10 +75,10 @@ await pc.setRemoteDescription({ type: "answer", sdp: await sdpRes.text() });
 dc.send(JSON.stringify({ type: "session.update", session: { instructions: "..." } }));
 ```
 
-## FAQ
+## 常見問題 {#faq}
 
-- **401 Token expired** — Get a fresh token right before creating the WebRTC offer.
-- **Which key for `/calls`?** — Encrypted token from `client_secrets`, not raw key.
-- **Pass `model`?** — No. Token encodes routing.
-- **Azure `api-version`** — Set `api_version` in `litellm_params` and correct `api_base`.
-- **No audio** — Grant mic; ensure `pc.ontrack` sets autoplay audio; check firewall/WebRTC; inspect console.
+- **401 權杖已過期** — 在建立 WebRTC offer 之前立即取得新的權杖。
+- **`/calls` 要用哪個金鑰？** — 使用來自 `client_secrets` 的加密權杖，不是原始金鑰。
+- **要傳入 `model` 嗎？** — 不需要。權杖會編碼路由。
+- **Azure `api-version`** — 在 `litellm_params` 中設定 `api_version`，並使用正確的 `api_base`。
+- **沒有音訊** — 允許麥克風；確認 `pc.ontrack` 設定自動播放音訊；檢查防火牆/WebRTC；檢視主控台。

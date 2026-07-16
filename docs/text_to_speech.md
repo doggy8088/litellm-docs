@@ -2,22 +2,22 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /audio/speech
+# /audio/speech {#audiospeech}
 
-## Overview
+## 總覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | Works with all supported models |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Fallbacks | ✅ | Works between supported models |
-| Loadbalancing | ✅ | Works between supported models |
-| Guardrails | ✅ | Applies to input text (non-streaming only) |
-| Supported Providers | OpenAI, Azure OpenAI, Vertex AI, AWS Polly, ElevenLabs , MiniMax |
+| 成本追蹤 | ✅ | 可與所有支援的模型搭配使用 |
+| 記錄 | ✅ | 可跨所有整合使用 |
+| 端使用者追蹤 | ✅ | |
+| 備援 | ✅ | 可在支援的模型之間運作 |
+| 負載平衡 | ✅ | 可在支援的模型之間運作 |
+| 防護欄 | ✅ | 套用於輸入文字（僅限非串流） |
+| 支援的提供者 | OpenAI, Azure OpenAI, Vertex AI, AWS Polly, ElevenLabs , MiniMax |
 
-## **LiteLLM Python SDK Usage**
-### Quick Start 
+## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
+### 快速開始  {#quick-start}
 
 ```python
 from pathlib import Path
@@ -35,7 +35,7 @@ response = speech(
 response.stream_to_file(speech_file_path)
 ```
 
-### Async Usage 
+### 非同步使用方式  {#async-usage}
 
 ```python
 from litellm import aspeech
@@ -64,9 +64,9 @@ async def test_async_speech():
 asyncio.run(test_async_speech())
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 使用方式** {#litellm-proxy-usage}
 
-LiteLLM provides an openai-compatible `/audio/speech` endpoint for Text-to-speech calls.
+LiteLLM 提供一個與 openai 相容的 `/audio/speech` 端點，用於文字轉語音請求。
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -80,7 +80,7 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-**Setup**
+**設定**
 
 ```bash
 - model_name: tts
@@ -94,26 +94,26 @@ litellm --config /path/to/config.yaml
 
 # RUNNING on http://0.0.0.0:4000
 ```
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-| Provider    | Link to Usage      |
+| 提供者    | 使用方式連結      |
 |-------------|--------------------|
-| OpenAI      |   [Usage](#quick-start)                 |
-| Azure OpenAI|   [Usage](../docs/providers/azure#azure-text-to-speech-tts)                 |
-| Azure AI Speech Service (AVA)|   [Usage](../docs/providers/azure_ai_speech)                 |
-| AWS Polly   |   [Usage](#aws-polly-text-to-speech)                 |
-| Vertex AI   |   [Usage](../docs/providers/vertex#text-to-speech-apis)                 |
-| Gemini      |   [Usage](#gemini-text-to-speech)                 |
-| ElevenLabs  |   [Usage](../docs/providers/elevenlabs#text-to-speech-tts)                 |
-| MiniMax     |   [Usage](../docs/providers/minimax#minimax---text-to-speech)                 |
+| OpenAI      |   [使用方式](#quick-start)                 |
+| Azure OpenAI|   [使用方式](../docs/providers/azure#azure-text-to-speech-tts)                 |
+| Azure AI Speech Service (AVA)|   [使用方式](../docs/providers/azure_ai_speech)                 |
+| AWS Polly   |   [使用方式](#aws-polly-text-to-speech)                 |
+| Vertex AI   |   [使用方式](../docs/providers/vertex#text-to-speech-apis)                 |
+| Gemini      |   [使用方式](#gemini-text-to-speech)                 |
+| ElevenLabs  |   [使用方式](../docs/providers/elevenlabs#text-to-speech-tts)                 |
+| MiniMax     |   [使用方式](../docs/providers/minimax#minimax---text-to-speech)                 |
 
-## `/audio/speech` to `/chat/completions` Bridge
+## `/audio/speech` 到 `/chat/completions` 橋接 {#audiospeech-to-chatcompletions-bridge}
 
-LiteLLM allows you to use `/chat/completions` models to generate speech through the `/audio/speech` endpoint. This is useful for models like Gemini's TTS-enabled models that are only accessible via `/chat/completions`.
+LiteLLM 讓您可以使用 `/chat/completions` 模型透過 `/audio/speech` 端點來產生語音。這對於像 Gemini 的已啟用 TTS 的模型特別有用，這類模型只能透過 `/chat/completions` 存取。
 
-### Gemini Text-to-Speech
+### Gemini 文字轉語音 {#gemini-text-to-speech}
 
-#### Python SDK Usage
+#### Python SDK 使用方式 {#python-sdk-usage}
 
 ```python showLineNumbers title="Gemini Text-to-Speech SDK Usage"
 import litellm
@@ -138,7 +138,7 @@ def test_audio_speech_gemini():
 test_audio_speech_gemini()
 ```
 
-#### Async Usage
+#### 非同步使用方式 {#async-usage-1}
 
 ```python showLineNumbers title="Gemini Text-to-Speech Async Usage"
 import litellm
@@ -161,9 +161,9 @@ async def test_async_gemini_speech():
 asyncio.run(test_async_gemini_speech())
 ```
 
-#### LiteLLM Proxy Usage
+#### LiteLLM Proxy 使用方式 {#litellm-proxy-usage-1}
 
-**Setup Config:**
+**設定組態：**
 
 ```yaml showLineNumbers title="Gemini Proxy Configuration"
 model_list:
@@ -173,7 +173,7 @@ model_list:
     api_key: os.environ/GEMINI_API_KEY
 ```
 
-**Start Proxy:**
+**啟動 Proxy：**
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config /path/to/config.yaml
@@ -181,7 +181,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Make Request:**
+**送出請求：**
 
 ```bash showLineNumbers title="Gemini TTS Request"
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -195,9 +195,9 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output gemini_speech.mp3
 ```
 
-### Vertex AI Text-to-Speech
+### Vertex AI 文字轉語音 {#vertex-ai-text-to-speech}
 
-#### Python SDK Usage
+#### Python SDK 使用方式 {#python-sdk-usage-1}
 
 ```python showLineNumbers title="Vertex AI Text-to-Speech SDK Usage"
 import litellm
@@ -221,9 +221,9 @@ def test_audio_speech_vertex():
 test_audio_speech_vertex()
 ```
 
-#### LiteLLM Proxy Usage
+#### LiteLLM Proxy 使用方式 {#litellm-proxy-usage-2}
 
-**Setup Config:**
+**設定組態：**
 
 ```yaml showLineNumbers title="Vertex AI Proxy Configuration"
 model_list:
@@ -234,7 +234,7 @@ model_list:
     vertex_location: us-central1
 ```
 
-**Make Request:**
+**送出請求：**
 
 ```bash showLineNumbers title="Vertex AI TTS Request"
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -248,15 +248,15 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output vertex_speech.mp3
 ```
 
-### AWS Polly Text-to-Speech
+### AWS Polly 文字轉語音 {#aws-polly-text-to-speech}
 
-AWS Polly provides neural and standard text-to-speech engines with support for multiple voices and languages.
+AWS Polly 提供神經式與標準文字轉語音引擎，支援多種語音與語言。
 
-See the [AWS Polly provider documentation](../docs/providers/aws_polly) for detailed usage examples.
+請參閱 [AWS Polly 提供者文件](../docs/providers/aws_polly) 以取得詳細的使用範例。
 
-## ✨ Enterprise LiteLLM Proxy - Set Max Request File Size 
+## ✨ Enterprise LiteLLM Proxy - 設定最大請求檔案大小  {#-enterprise-litellm-proxy---set-max-request-file-size}
 
-Use this when you want to limit the file size for requests sent to `audio/transcriptions`
+當您想要限制送往 `audio/transcriptions` 的請求檔案大小時，請使用此功能
 
 ```yaml
 - model_name: whisper
@@ -268,7 +268,7 @@ Use this when you want to limit the file size for requests sent to `audio/transc
     mode: audio_transcription
 ```
 
-Make a test Request with a valid file
+使用有效檔案送出測試請求
 ```shell
 curl --location 'http://localhost:4000/v1/audio/transcriptions' \
 --header 'Authorization: Bearer sk-1234' \
@@ -277,7 +277,7 @@ curl --location 'http://localhost:4000/v1/audio/transcriptions' \
 ```
 
 
-Expect to see the follow response 
+預期會看到以下回應 
 
 ```shell
 {"error":{"message":"File size is too large. Please check your file size. Passed file size: 0.7392807006835938 MB. Max file size: 0.0001 MB","type":"bad_request","param":"file","code":500}}%  

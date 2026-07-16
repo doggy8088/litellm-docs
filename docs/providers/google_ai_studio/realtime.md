@@ -1,14 +1,13 @@
-# Gemini Realtime API - Google AI Studio
+# Gemini 即時 API - Google AI Studio {#gemini-realtime-api---google-ai-studio}
 
-| Feature | Description | Comments |
+| 功能 | 說明 | 備註 |
 | --- | --- | --- |
 | Proxy | ✅ |  |
-| SDK | ⌛️ | Experimental access via `litellm._arealtime`. |
+| SDK | ⌛️ | 可透過 `litellm._arealtime` 進行實驗性存取。 |
 
+## Proxy 使用方式 {#proxy-usage}
 
-## Proxy Usage
-
-### Add model to config 
+### 將模型加入設定檔 {#add-model-to-config}
 
 ```yaml
 model_list:
@@ -19,7 +18,7 @@ model_list:
       mode: realtime
 ```
 
-### Start proxy 
+### 啟動 Proxy {#start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml 
@@ -27,9 +26,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:8000
 ```
 
-### Test 
+### 測試 {#test}
 
-Run this script using node - `node test.js`
+使用 node 執行此腳本 - `node test.js`
 
 ```js
 // test.js
@@ -65,7 +64,7 @@ ws.on("error", function handleError(error) {
 ```
 
 
-## Tool Calling
+## 工具呼叫 {#tool-calling}
 
 ```python
 import asyncio
@@ -182,7 +181,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### Config + run
+### 設定 + 執行 {#config--run}
 
 ```yaml
 model_list:
@@ -202,18 +201,18 @@ litellm --config config.yaml --port 4000
 python test_realtime_tool_calling.py
 ```
 
-## Limitations 
+## 限制 {#limitations}
 
-- Does not support audio transcription.
-- Session config updates after the first `session.update` are ignored (Gemini setup is one-time per connection).
+- 不支援音訊轉錄。
+- 在第一次 `session.update` 之後的工作階段設定更新會被忽略（Gemini 設定在每個連線中僅能設定一次）。
 
-## Precaution
+## 注意事項 {#precaution}
 
-- Tool calling will not work unless you send `session.update` first with your `tools`.
-- Send it as the first config message for that websocket session.
-- `gemini_live_defer_setup` defaults to `false` for backward compatibility.
+- 若未先送出 `session.update` 與您的 `tools`，工具呼叫將無法運作。
+- 請將其作為該 websocket 工作階段的第一則設定訊息送出。
+- 為了向後相容，`gemini_live_defer_setup` 預設為 `false`。
 
-## Supported OpenAI Realtime Events
+## 支援的 OpenAI Realtime 事件 {#supported-openai-realtime-events}
 
 - `session.created`
 - `response.created`
@@ -228,9 +227,7 @@ python test_realtime_tool_calling.py
 - `response.output_item.done`
 - `response.done`
 
+## [支援的工作階段參數](https://github.com/BerriAI/litellm/blob/e87b536d038f77c2a2206fd7433e275c487179ee/litellm/llms/gemini/realtime/transformation.py#L155) {#supported-session-paramshttpsgithubcomberriailitellmblobe87b536d038f77c2a2206fd7433e275c487179eelitellmllmsgeminirealtimetransformationpyl155}
 
-
-## [Supported Session Params](https://github.com/BerriAI/litellm/blob/e87b536d038f77c2a2206fd7433e275c487179ee/litellm/llms/gemini/realtime/transformation.py#L155)
-
-## More Examples
-### [Gemini Realtime API with Audio Input/Output](../../../docs/tutorials/gemini_realtime_with_audio)
+## 更多範例 {#more-examples}
+### [具備音訊輸入/輸出的 Gemini Realtime API](../../../docs/tutorials/gemini_realtime_with_audio) {#gemini-realtime-api-with-audio-inputoutputdocstutorialsgemini_realtime_with_audio}

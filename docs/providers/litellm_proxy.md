@@ -1,19 +1,16 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteLLM Proxy (LLM Gateway)
+# LiteLLM Proxy（LLM 閘道） {#litellm-proxy-llm-gateway}
 
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | LiteLLM Proxy is an OpenAI-compatible gateway that allows you to interact with multiple LLM providers through a unified API. Simply use the `litellm_proxy/` prefix before the model name to route your requests through the proxy. |
-| Provider Route on LiteLLM | `litellm_proxy/` (add this prefix to the model name, to route any requests to litellm_proxy - e.g. `litellm_proxy/your-model-name`) |
-| Setup LiteLLM Gateway | [LiteLLM Gateway ↗](../simple_proxy) |
-| Supported Endpoints |`/chat/completions`, `/completions`, `/embeddings`, `/audio/speech`, `/audio/transcriptions`, `/images`, `/images/edits`, `/rerank` |
+| 說明 | LiteLLM Proxy 是一個與 OpenAI 相容的閘道，可讓您透過統一 API 與多個 LLM 提供者互動。只要在模型名稱前加上 `litellm_proxy/` 前綴，即可將您的請求路由ผ่าน proxy。 |
+| LiteLLM 上的提供者路由 | `litellm_proxy/`（將此前綴加到模型名稱前，以將任何請求路由到 litellm_proxy - 例如 `litellm_proxy/your-model-name`） |
+| 設定 LiteLLM Gateway | [LiteLLM Gateway ↗](../simple_proxy) |
+| 支援的端點 |`/chat/completions`、`/completions`、`/embeddings`、`/audio/speech`、`/audio/transcriptions`、`/images`、`/images/edits`、`/rerank` |
 
-
-
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python
 os.environ["LITELLM_PROXY_API_KEY"] = "" # "sk-1234" your litellm proxy api key 
@@ -21,7 +18,7 @@ os.environ["LITELLM_PROXY_API_BASE"] = "" # "http://localhost:4000" your litellm
 ```
 
 
-## Usage (Non Streaming)
+## 使用方式（非串流） {#usage-non-streaming}
 ```python
 import os 
 import litellm
@@ -41,9 +38,9 @@ messages = [{ "content": "Hello, how are you?","role": "user"}]
 response = completion(model="litellm_proxy/your-model-name", messages)
 ```
 
-## Usage - passing `api_base`, `api_key` per request
+## 使用方式 - 每個請求傳遞 `api_base`、`api_key` {#usage---passing-api_base-api_key-per-request}
 
-If you need to set api_base dynamically, just pass it in completions instead - completions(...,api_base="your-proxy-api-base")
+如果您需要動態設定 api_base，請直接在 completions 中傳入即可 - completions(...,api_base="your-proxy-api-base")
 
 ```python
 import os 
@@ -62,7 +59,7 @@ response = completion(
     api_key = "your-litellm-proxy-api-key"
 )
 ```
-## Usage - Streaming
+## 使用方式 - 串流 {#usage---streaming}
 
 ```python
 import os 
@@ -85,7 +82,7 @@ for chunk in response:
     print(chunk)
 ```
 
-## Embeddings
+## 嵌入 {#embeddings}
 
 ```python
 import litellm
@@ -98,7 +95,7 @@ response = litellm.embedding(
 )
 ```
 
-## Image Generation
+## 影像生成 {#image-generation}
 
 ```python
 import litellm
@@ -111,7 +108,7 @@ response = litellm.image_generation(
 )
 ```
 
-## Image Edit
+## 影像編輯 {#image-edit}
 
 ```python
 import litellm
@@ -126,7 +123,7 @@ with open("your-image.png", "rb") as f:
     )
 ```
 
-## Audio Transcription
+## 音訊轉錄 {#audio-transcription}
 
 ```python
 import litellm
@@ -139,7 +136,7 @@ response = litellm.transcription(
 )
 ```
 
-## Text to Speech
+## 文字轉語音 {#text-to-speech}
 
 ```python
 import litellm
@@ -152,7 +149,7 @@ response = litellm.speech(
 )
 ``` 
 
-## Rerank
+## 重新排序 {#rerank}
 
 ```python
 import litellm
@@ -172,27 +169,27 @@ response = litellm.rerank(
 ```
 
 
-## Integration with Other Libraries
+## 與其他程式庫整合 {#integration-with-other-libraries}
 
-LiteLLM Proxy works seamlessly with Langchain, LlamaIndex, OpenAI JS, Anthropic SDK, Instructor, and more.
+LiteLLM Proxy 可與 Langchain、LlamaIndex、OpenAI JS、Anthropic SDK、Instructor 等順暢搭配使用。
 
-[Learn how to use LiteLLM proxy with these libraries →](../proxy/user_keys)
+[了解如何使用 LiteLLM proxy 搭配這些程式庫 →](../proxy/user_keys)
 
-## Send all SDK requests to LiteLLM Proxy
+## 將所有 SDK 請求送至 LiteLLM Proxy {#send-all-sdk-requests-to-litellm-proxy}
 
 :::info
 
-Requires v1.72.1 or higher.
+需要 v1.72.1 或更高版本。
 
 :::
 
-Use this when calling LiteLLM Proxy from any library / codebase already using the LiteLLM SDK.
+當您從任何已使用 LiteLLM SDK 的程式庫／程式碼庫呼叫 LiteLLM Proxy 時，請使用此功能。
 
-These flags will route all requests through your LiteLLM proxy, regardless of the model specified.
+啟用這些旗標後，所有請求都會透過您的 LiteLLM proxy 路由，不論指定的模型為何。
 
-When enabled, requests will use `LITELLM_PROXY_API_BASE` with `LITELLM_PROXY_API_KEY` as the authentication.
+啟用後，請求將使用 `LITELLM_PROXY_API_BASE` 作為驗證，並使用 `LITELLM_PROXY_API_KEY`。
 
-### Option 1: Set Globally in Code
+### 選項 1：在程式碼中全域設定 {#option-1-set-globally-in-code}
 
 ```python
 # Set the flag globally for all requests
@@ -204,7 +201,7 @@ response = litellm.completion(
 )
 ```
 
-### Option 2: Control via Environment Variable
+### 選項 2：透過環境變數控制 {#option-2-control-via-environment-variable}
 
 ```python
 # Control proxy usage through environment variable
@@ -216,7 +213,7 @@ response = litellm.completion(
 )
 ```
 
-### Option 3: Set Per Request
+### 選項 3：每個請求設定 {#option-3-set-per-request}
 
 ```python
 # Enable proxy for specific requests only
@@ -227,9 +224,9 @@ response = litellm.completion(
 )
 ```
 
-## OAuth2/JWT Authentication
+## OAuth2/JWT 驗證 {#oauth2jwt-authentication}
 
-If your LiteLLM Proxy requires OAuth2/JWT authentication (e.g., Azure AD, Keycloak, Okta), the SDK can automatically obtain and refresh tokens for you.
+如果您的 LiteLLM Proxy 需要 OAuth2/JWT 驗證（例如 Azure AD、Keycloak、Okta），SDK 可以自動為您取得並重新整理權杖。
 
 ```python
 import litellm
@@ -247,15 +244,15 @@ response = litellm.completion(
 )
 ```
 
-[Learn more about SDK Proxy Authentication (OAuth2/JWT Auto-Refresh) →](../proxy_auth)
+[進一步了解 SDK Proxy 驗證（OAuth2/JWT 自動更新） →](../proxy_auth)
 
-## Sending `tags` to LiteLLM Proxy
+## 傳送 `tags` 到 LiteLLM Proxy {#sending-tags-to-litellm-proxy}
 
-Tags allow you to categorize and track your API requests for monitoring, debugging, and analytics purposes. You can send tags as a list of strings to the LiteLLM Proxy using the `extra_body` parameter.
+標籤可讓您為 API 請求分類並追蹤，以進行監控、除錯與分析。您可以使用 `extra_body` 參數，將標籤以字串清單的形式傳送至 LiteLLM Proxy。
 
-### Usage
+### 使用方式 {#usage}
 
-Send tags by including them in the `extra_body` parameter of your completion request:
+在您的 completion 請求中，透過 `extra_body` 參數加入標籤即可傳送：
 
 ```python showLineNumbers title="Usage"
 import litellm
@@ -269,7 +266,7 @@ response = litellm.completion(
 )
 ```
 
-### Async Usage
+### 非同步使用方式 {#async-usage}
 
 ```python showLineNumbers title="Async Usage"
 import litellm
@@ -282,4 +279,3 @@ response = await litellm.acompletion(
     extra_body={"tags": ["user:ishaan", "department:engineering"]}
 )
 ```
-

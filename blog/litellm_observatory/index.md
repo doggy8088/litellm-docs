@@ -1,128 +1,126 @@
 ---
 slug: litellm-observatory
-title: "Improve release stability with 24 hour load tests"
+title: "透過 24 小時負載測試提升發佈穩定性"
 date: 2026-02-06T10:00:00
 authors:
   - alexsander
   - krrish
   - ishaan-alt
-description: "How we built a long-running, release-validation system to catch regressions before they reach users."
+description: "我們如何打造一套長時間執行的發佈驗證系統，在回歸問題到達使用者之前就將其攔截。"
 tags: [testing, observability, reliability, releases]
 hide_table_of_contents: false
 ---
 
-![LiteLLM Observatory](https://raw.githubusercontent.com/AlexsanderHamir/assets/main/Screenshot%202026-01-31%20175355.png)
+![LiteLLM 觀測平台](https://raw.githubusercontent.com/AlexsanderHamir/assets/main/Screenshot%202026-01-31%20175355.png)
 
-# Improve release stability with 24 hour load tests
+# 透過 24 小時負載測試提升發佈穩定性 {#improve-release-stability-with-24-hour-load-tests}
 
-As LiteLLM adoption has grown, so have expectations around reliability, performance, and operational safety. Meeting those expectations requires more than correctness-focused tests, it requires validating how the system behaves over time, under real-world conditions.
+隨著 LiteLLM 的採用持續成長，外界對可靠性、效能與營運安全性的期待也隨之提高。要滿足這些期待，不能只靠以正確性為中心的測試，還需要驗證系統在真實世界條件下，隨時間推移會如何表現。
 
-This post introduces **LiteLLM Observatory**, a long-running release-validation system we built to catch regressions before they reach users.
+這篇文章介紹 **LiteLLM Observatory**，這是我們打造的一套長時間執行的發佈驗證系統，用來在回歸問題到達使用者之前將其攔截。
 
 {/* truncate */}
 
 ---
 
-## Why We Built the Observatory
+## 我們為何打造 Observatory {#why-we-built-the-observatory}
 
-LiteLLM operates at the intersection of external providers, long-lived network connections, and high-throughput workloads. While our unit and integration tests do an excellent job validating correctness, they are not designed to surface issues that only appear after extended operation.
+LiteLLM 處於外部提供者、長時間存活的網路連線，以及高吞吐量工作負載的交會點。雖然我們的單元測試與整合測試在驗證正確性方面表現非常出色，但它們並不是為了找出只有在長時間運作後才會出現的問題而設計的。
 
-A subtle lifecycle edge case discovered in v1.81.3 reinforced the need for stronger release validation in this area.
+在 v1.81.3 中發現的一個微妙生命週期邊界案例，強化了我們對這個領域需要更強發佈驗證的認知。
 
 ---
 
-## A Real-World Lifecycle Edge Case
+## 一個真實世界的生命週期邊界案例 {#a-real-world-lifecycle-edge-case}
 
-In v1.81.3, we shipped a fix for an HTTP client memory leak. The change passed unit and integration tests and behaved correctly in short-lived runs.
+在 v1.81.3 中，我們釋出了一個針對 HTTP 用戶端記憶體洩漏的修正。這項變更通過了單元測試與整合測試，並且在短時間執行時表現正確。
 
-The issue that surfaced was not caused by a single incorrect line of logic, but by how multiple components interacted over time:
+浮現出的問題不是由某一行錯誤的邏輯所造成，而是由多個元件隨著時間互動的方式所導致：
 
-- A cached `httpx` client was configured with a 1-hour TTL
-- When the cache expired, the underlying HTTP connection was closed as expected
-- A higher-level client continued to hold a reference to that connection
-- Subsequent requests failed with:
+- 快取的 `httpx` 用戶端被設定為 1 小時 TTL
+- 當快取過期時，底層 HTTP 連線如預期般被關閉
+- 較高層級的用戶端持續保留該連線的參照
+- 後續請求失敗並出現：
 
 ```
 Cannot send a request, as the client has been closed
 ```
 
-**Before (with bug):**
+**變更前（含 bug）：**
 
-| Provider | Requests | Success | Failures | Fail % |
+| 提供者 | 請求數 | 成功 | 失敗 | 失敗率 |
 |----------|----------|---------|----------|--------|
 | OpenAI   | 720,000  | 432,000 | 288,000  | 40%    |
 | Azure    | 692,000  | 415,200 | 276,800  | 40%    |
 
-**After (fixed):**
+**變更後（已修正）：**
 
-| Provider | Requests   | Success   | Failures | Fail %  |
+| 提供者 | 請求數   | 成功   | 失敗 | 失敗率  |
 |----------|------------|-----------|----------|---------|
 | OpenAI   | 1,200,000  | 1,199,988 | 12       | 0.001%  |
 | Azure    | 1,150,000  | 1,149,982 | 18       | 0.002%  |
 
-Our focus moving forward is on being the first to detect issues, even when they aren’t covered by unit tests. LiteLLM Observatory is designed to surface latency regressions, OOMs, and failure modes that only appear under real traffic patterns in **our own production deployments** during release validation.
-
-
----
-
-### How the Observatory Works
-
-[LiteLLM Observatory](https://github.com/BerriAI/litellm-observatory) is a testing service that runs long-running tests against our LiteLLM deployments. We trigger tests by sending API requests, and results are automatically sent to Slack when tests complete.
-
-#### How Tests Run
-
-1. **Start a Test**: We send a request to the Observatory API with:
-   - Which LiteLLM deployment to test (URL and API key)
-   - Which test to run (e.g., `TestOAIAzureRelease`)
-   - Test settings (which models to test, how long to run, failure thresholds)
-
-2. **Smart Queueing**:
-   - The system checks whether we are attempting to run the exact same test more than once
-   - If a duplicate test is already running or queued, we receive an error to avoid wasting resources
-   - Otherwise, the test is added to a queue and runs when capacity is available (up to 5 tests can run concurrently by default)
-
-3. **Instant Response**: The API responds immediately—we do not wait for the test to finish. Tests may run for hours, but the request itself completes in milliseconds.
-
-4. **Background Execution**:
-   - The test runs in the background, issuing requests against our LiteLLM deployment
-   - It tracks request success and failure rates over time
-   - When the test completes, results are automatically posted to our Slack channel
-
-#### Example: The OpenAI / Azure Reliability Test
-
-The `TestOAIAzureRelease` test is designed to catch a class of bugs that only surface after sustained runtime:
-
-- **Duration**: Runs continuously for 3 hours
-- **Behavior**: Cycles through specified models (such as `gpt-4` and `gpt-3.5-turbo`), issuing requests continuously
-- **Why 3 Hours**: This helps catch issues where HTTP clients degrade or fail after extended use (for example, a bug observed in LiteLLM v1.81.3)
-- **Pass / Fail Criteria**: The test passes if fewer than 1% of requests fail. If the failure rate exceeds 1%, the test fails and we are notified in Slack
-- **Key Detail**: The same HTTP client is reused for the entire run, allowing us to detect lifecycle-related bugs that only appear under prolonged reuse
-
-#### When We Use It
-
-- **Before Deployments**: Run tests before promoting a new LiteLLM version to production
-- **Routine Validation**: Schedule regular runs (daily or weekly) to catch regressions early
-- **Issue Investigation**: Run tests on demand when we suspect a deployment issue
-- **Long-Running Failure Detection**: Identify bugs that only appear under sustained load, beyond what short smoke tests can reveal
-
-
-### Complementing Unit Tests
-
-Unit tests remain a foundational part of our development process. They are fast and precise, but they don’t cover:
-
-- Real provider behavior
-- Long-lived network interactions
-- Resource lifecycle edge cases
-- Time-dependent regressions
-
-LiteLLM Observatory complements unit tests by validating the system as it actually runs in production-like environments.
+我們接下來的重點，是要成為第一個偵測到問題的一方，即使這些問題沒有被單元測試涵蓋。LiteLLM Observatory 的設計目標，是在發佈驗證期間，針對**我們自己正式環境部署**中的真實流量模式，找出只有在這些情境下才會出現的延遲回歸、OOM，以及失敗模式。
 
 ---
 
-### Looking Ahead
+### Observatory 如何運作 {#how-the-observatory-works}
 
-Reliability is an ongoing investment.
+[LiteLLM Observatory](https://github.com/BerriAI/litellm-observatory) 是一項測試服務，會對我們的 LiteLLM 部署執行長時間測試。我們透過傳送 API 請求來觸發測試，而在測試完成後，結果會自動傳送到 Slack。
 
-LiteLLM Observatory is one of several systems we’re building to continuously raise the bar on release quality and operational safety. As LiteLLM evolves, so will our validation tooling, informed by real-world usage and lessons learned.
+#### 測試如何執行 {#how-tests-run}
 
-We’ll continue to share those improvements openly as we go.
+1. **開始測試**：我們向 Observatory API 傳送請求，內容包括：
+   - 要測試哪個 LiteLLM 部署（URL 和 API 金鑰）
+   - 要執行哪個測試（例如，`TestOAIAzureRelease`）
+   - 測試設定（要測試哪些模型、執行多久、失敗門檻）
+
+2. **智慧排隊**：
+   - 系統會檢查我們是否正嘗試執行完全相同的測試超過一次
+   - 如果已經有重複的測試正在執行或排隊中，我們會收到錯誤，以避免浪費資源
+   - 否則，測試會加入佇列，並在有可用容量時執行（預設最多可同時執行 5 個測試）
+
+3. **即時回應**：API 會立即回應——我們不會等待測試完成。測試可能會執行數小時，但請求本身會在毫秒內完成。
+
+4. **背景執行**：
+   - 測試會在背景中執行，對我們的 LiteLLM 部署發出請求
+   - 它會追蹤請求成功率與失敗率的變化
+   - 測試完成時，結果會自動貼到我們的 Slack 頻道
+
+#### 範例：OpenAI / Azure 可靠性測試 {#example-the-openai--azure-reliability-test}
+
+`TestOAIAzureRelease` 測試的設計目的是找出一類只會在長時間執行後才浮現的 bug：
+
+- **持續時間**：連續執行 3 小時
+- **行為**：在指定模型之間輪替（例如 `gpt-4` 和 `gpt-3.5-turbo`），持續發出請求
+- **為什麼是 3 小時**：這有助於找出 HTTP 用戶端在長時間使用後退化或失效的問題（例如在 LiteLLM v1.81.3 中觀察到的 bug）
+- **通過 / 失敗標準**：如果失敗請求少於 1%，測試即通過；如果失敗率超過 1%，測試即失敗，且我們會在 Slack 中收到通知
+- **關鍵細節**：整個執行期間都重複使用同一個 HTTP 用戶端，讓我們能偵測只會在長時間重複使用下才會出現的生命週期相關 bug
+
+#### 我們何時使用它 {#when-we-use-it}
+
+- **部署前**：在將新的 LiteLLM 版本推進到正式環境之前執行測試
+- **例行驗證**：定期排程執行（每日或每週），及早找出回歸問題
+- **問題調查**：當我們懷疑有部署問題時，按需執行測試
+- **長時間失敗偵測**：找出只有在持續負載下才會出現的 bug，超出短暫冒煙測試所能揭露的範圍
+
+### 與單元測試互補 {#complementing-unit-tests}
+
+單元測試仍然是我們開發流程的基礎部分。它們快速且精確，但無法涵蓋：
+
+- 真實的提供者行為
+- 長時間存活的網路互動
+- 資源生命週期邊界案例
+- 與時間相關的回歸問題
+
+LiteLLM Observatory 透過在類似正式環境的實際運作情境中驗證系統，來補足單元測試的不足。
+
+---
+
+### 展望未來 {#looking-ahead}
+
+可靠性是一項持續的投資。
+
+LiteLLM Observatory 是我們正在打造的多個系統之一，目的是持續提高發佈品質與營運安全性的標準。隨著 LiteLLM 演進，我們的驗證工具也會跟著演進，並從真實世界的使用情況與所學到的經驗中獲得指引。
+
+我們會在前進的同時，持續公開分享這些改進。

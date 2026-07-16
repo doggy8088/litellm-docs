@@ -1,37 +1,37 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Per-Team/Project Credential Routing
+# 每個團隊/專案的憑證路由 {#per-teamproject-credential-routing}
 
-Route the same model to different LLM provider endpoints (e.g. different Azure instances) based on which team or project makes the request.
+根據提出請求的團隊或專案，將相同模型路由到不同的 LLM 提供者端點（例如不同的 Azure 執行個體）。
 
-## Overview
+## 概覽 {#overview}
 
-In multi-tenant deployments, different teams often need the same model name (e.g., `gpt-4`) to hit different provider endpoints — for example, separate Azure OpenAI instances per business unit for cost isolation, data residency, or rate limit separation.
+在多租戶部署中，不同團隊通常需要相同的模型名稱（例如 `gpt-4`）命中不同的提供者端點——例如，為了成本隔離、資料落地，或分隔速率限制，針對各事業單位使用獨立的 Azure OpenAI 執行個體。
 
-**Credential routing** lets you configure this in team/project metadata using the existing [credentials table](./ui_credentials.md), without duplicating model definitions or creating separate model groups per team.
+**憑證路由** 可讓您透過現有的 [credentials table](./ui_credentials.md) 在團隊/專案中繼資料中進行這項設定，而不需要重複定義模型或為每個團隊建立獨立的模型群組。
 
 ```
 Hotel Team → gpt-4 → https://hotel-eastus.openai.azure.com/
 Flight Team → gpt-4 → https://flight-centralus.openai.azure.com/
 ```
 
-### Precedence Chain
+### 優先順序鏈 {#precedence-chain}
 
-When a request comes in, the system walks this precedence chain (first match wins):
+當請求進來時，系統會依照這個優先順序鏈逐一查找（第一個符合者優先）：
 
-1. **Clientside credentials** — `api_base`/`api_key` passed in the request body ([docs](./clientside_auth.md))
-2. **Project model-specific** — override for this exact model in the project's `model_config`
-3. **Project default** — `defaultconfig` in the project's `model_config`
-4. **Team model-specific** — override for this exact model in the team's `model_config`
-5. **Team default** — `defaultconfig` in the team's `model_config`
-6. **Deployment default** — the model's `litellm_params` as configured in `config.yaml`
+1. **用戶端憑證** — 在請求本文中傳入的 `api_base`/`api_key`（[文件](./clientside_auth.md)）
+2. **專案模型特定** — 專案的 `model_config` 中針對此確切模型的覆寫
+3. **專案預設** — 專案的 `model_config` 中的 `defaultconfig`
+4. **團隊模型特定** — 團隊的 `model_config` 中針對此確切模型的覆寫
+5. **團隊預設** — 團隊的 `model_config` 中的 `defaultconfig`
+6. **部署預設** — 在 `config.yaml` 中設定的模型 `litellm_params`
 
-## Quick Start
+## 快速入門 {#quick-start}
 
-### Step 1: Create Credentials
+### 步驟 1：建立憑證 {#step-1-create-credentials}
 
-Store your Azure endpoint credentials in the credentials table. You can do this via the [UI](./ui_credentials.md) or API:
+將您的 Azure 端點憑證儲存在憑證表中。您可以透過 [UI](./ui_credentials.md) 或 API 來完成：
 
 ```bash showLineNumbers
 # Create credential for Hotel team's Azure endpoint
@@ -61,9 +61,9 @@ curl -X POST 'http://0.0.0.0:4000/credentials' \
 }'
 ```
 
-### Step 2: Set `model_config` on Teams
+### 步驟 2：在團隊上設定 `model_config` {#step-2-set-model_config-on-teams}
 
-Add a `model_config` key to the team's metadata referencing the credential by name:
+在團隊的中繼資料中新增一個 `model_config` 金鑰，並以名稱參照該憑證：
 
 ```bash showLineNumbers
 # Hotel team — default Azure endpoint for all models
@@ -103,9 +103,9 @@ curl -X PATCH 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-### Step 3: Make Requests
+### 步驟 3：發出請求 {#step-3-make-requests}
 
-Requests are automatically routed to the correct Azure endpoint based on the API key's team:
+請求會根據 API 金鑰所屬的團隊，自動路由到正確的 Azure 端點：
 
 ```bash showLineNumbers
 # Request using Hotel team's API key → routes to hotel-eastus.openai.azure.com
@@ -121,9 +121,9 @@ curl http://localhost:4000/v1/chat/completions \
 -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
-## Per-Model Overrides
+## 模型層級覆寫 {#per-model-overrides}
 
-You can set different credentials for specific models while keeping a default for everything else:
+您可以為特定模型設定不同的憑證，同時保留其他所有項目的預設值：
 
 ```bash showLineNumbers
 curl -X PATCH 'http://0.0.0.0:4000/team/update' \
@@ -148,13 +148,13 @@ curl -X PATCH 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-With this config:
-- `gpt-4` requests → `hotel-azure-westus` credential (model-specific)
-- All other models → `hotel-azure-eastus` credential (default)
+有了這個設定：
+- `gpt-4` 請求 → `hotel-azure-westus` 憑證（模型特定）
+- 其他所有模型 → `hotel-azure-eastus` 憑證（預設）
 
-## Project-Level Overrides
+## 專案層級覆寫 {#project-level-overrides}
 
-Projects inherit their team's `model_config` but can override at the project level. Project overrides take precedence over team overrides.
+專案會繼承其團隊的 `model_config`，但可以在專案層級覆寫。專案覆寫的優先順序高於團隊覆寫。
 
 ```bash showLineNumbers
 # Project overrides the team default for all models
@@ -180,25 +180,25 @@ curl -X PATCH 'http://0.0.0.0:4000/project/update' \
 }'
 ```
 
-### Full Example: Hotel Team with Two Projects
+### 完整範例：具有兩個專案的飯店團隊 {#full-example-hotel-team-with-two-projects}
 
-**Setup:**
-- **Hotel Team**: default `hotel-azure-eastus`, GPT-4 override to `hotel-azure-westus`
-- **Hotel Rec App** (project): default `hotel-rec-azure`, GPT-4-Vision override to `hotel-rec-vision`
-- **Hotel Review App** (project): no overrides — inherits team config
+**設定：**
+- **Hotel Team**：預設 `hotel-azure-eastus`，GPT-4 覆寫為 `hotel-azure-westus`
+- **Hotel Rec App**（專案）：預設 `hotel-rec-azure`，GPT-4-Vision 覆寫為 `hotel-rec-vision`
+- **Hotel Review App**（專案）：沒有覆寫——繼承團隊設定
 
-**Resolution:**
+**解析：**
 
-| Request | Resolved Credential | Why |
+| 請求 | 解析後的憑證 | 原因 |
 |---|---|---|
-| Hotel Rec App → `gpt-4` | `hotel-rec-azure` | Project default (no project model-specific match for gpt-4) |
-| Hotel Rec App → `gpt-4-vision` | `hotel-rec-vision` | Project model-specific |
-| Hotel Review App → `gpt-3.5` | `hotel-azure-eastus` | Team default (no project config) |
-| Hotel Review App → `gpt-4` | `hotel-azure-westus` | Team model-specific |
+| Hotel Rec App → `gpt-4` | `hotel-rec-azure` | 專案預設（沒有與 gpt-4 相符的專案模型特定設定） |
+| Hotel Rec App → `gpt-4-vision` | `hotel-rec-vision` | 專案模型特定 |
+| Hotel Review App → `gpt-3.5` | `hotel-azure-eastus` | 團隊預設（沒有專案設定） |
+| Hotel Review App → `gpt-4` | `hotel-azure-westus` | 團隊模型特定 |
 
-## `model_config` Schema
+## `model_config` 結構 {#model_config-schema}
 
-The `model_config` key is a JSON object in team/project `metadata`:
+`model_config` 金鑰是團隊/專案 `metadata` 中的一個 JSON 物件：
 
 ```json
 {
@@ -217,28 +217,28 @@ The `model_config` key is a JSON object in team/project `metadata`:
 }
 ```
 
-| Field | Description |
+| 欄位 | 說明 |
 |---|---|
-| `defaultconfig` | Fallback credential for any model not explicitly listed |
-| `<model-name>` | Model-specific override — must match the LiteLLM model group name |
-| `<provider>` | Provider key (e.g. `azure`, `openai`, `bedrock`). When the model name includes a provider prefix (e.g. `azure/gpt-4`), the system prefers the matching provider key |
-| `litellm_credentials` | Name of a credential in the [credentials table](./ui_credentials.md) |
+| `defaultconfig` | 未明確列出的任何模型的備援憑證 |
+| `<model-name>` | 模型特定覆寫——必須與 LiteLLM 模型群組名稱相符 |
+| `<provider>` | 提供者金鑰（例如 `azure`、`openai`、`bedrock`）。當模型名稱包含提供者前綴時（例如 `azure/gpt-4`），系統會優先使用相符的提供者金鑰 |
+| `litellm_credentials` | [credentials table](./ui_credentials.md) 中某個憑證的名稱 |
 
-### Credential Values
+### 憑證值 {#credential-values}
 
-The referenced credential can contain any combination of:
+被參照的憑證可以包含以下任意組合：
 
-| Key | Description |
+| 金鑰 | 說明 |
 |---|---|
-| `api_base` | Provider endpoint URL |
-| `api_key` | API key for the provider |
-| `api_version` | API version (e.g. for Azure) |
+| `api_base` | 提供者端點 URL |
+| `api_key` | 提供者的 API 金鑰 |
+| `api_version` | API 版本（例如 Azure） |
 
-Only keys present in the credential are applied. Keys already in the request (e.g. clientside `api_version`) are never overwritten.
+只會套用憑證中存在的金鑰。請求中已存在的金鑰（例如用戶端 `api_version`）絕不會被覆寫。
 
-## Enabling the Feature
+## 啟用此功能 {#enabling-the-feature}
 
-This feature is **disabled by default** and must be explicitly enabled. To enable it:
+此功能預設為**停用**，必須明確啟用。若要啟用：
 
 <Tabs>
 
@@ -262,13 +262,13 @@ export LITELLM_ENABLE_MODEL_CONFIG_CREDENTIAL_OVERRIDES=true
 </Tabs>
 
 :::info
-The feature flag must be enabled before `model_config` entries in team/project metadata take effect. Without it, credential routing is completely inert — no metadata is read, no credentials are resolved.
+必須先啟用功能旗標，團隊/專案中繼資料中的 `model_config` 項目才會生效。若未啟用，憑證路由完全不會運作——不會讀取任何中繼資料，也不會解析任何憑證。
 :::
 
-## Related Documentation
+## 相關文件 {#related-documentation}
 
-- [Adding LLM Credentials](./ui_credentials.md) — Create and manage reusable credentials
-- [Project Management](./project_management.md) — Project hierarchy and API
-- [Team Budgets](./team_budgets.md) — Team-level budget management
-- [Clientside LLM Credentials](./clientside_auth.md) — Passing credentials in the request body
-- [Credential Usage Tracking](./credential_usage_tracking.md) — Track spend by credential
+- [新增 LLM 憑證](./ui_credentials.md) — 建立並管理可重複使用的憑證
+- [專案管理](./project_management.md) — 專案階層與 API
+- [團隊預算](./team_budgets.md) — 團隊層級的預算管理
+- [用戶端 LLM 憑證](./clientside_auth.md) — 在請求本文中傳遞憑證
+- [憑證使用追蹤](./credential_usage_tracking.md) — 依憑證追蹤支出

@@ -1,32 +1,32 @@
-# Vertex AI Gemini Live - Realtime API
+# Vertex AI Gemini Live - 即時 API {#vertex-ai-gemini-live---realtime-api}
 
-Use Vertex AI's Gemini Live API (BidiGenerateContent) through LiteLLM's unified `/realtime` endpoint, which speaks the OpenAI Realtime protocol.
+透過 LiteLLM 的統一 `/realtime` 端點使用 Vertex AI 的 Gemini Live API（BidiGenerateContent），其採用 OpenAI Realtime 通訊協定。
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
 | Proxy (`/realtime`) | ✅ |
-| Voice in / Voice out | ✅ |
-| Text in / Text out | ✅ |
-| Server VAD | ✅ |
-| Output transcription | ✅ |
+| 語音輸入 / 語音輸出 | ✅ |
+| 文字輸入 / 文字輸出 | ✅ |
+| 伺服器端 VAD | ✅ |
+| 輸出轉錄 | ✅ |
 
-## Setup
+## 設定 {#setup}
 
-### 1. Auth
+### 1. 驗證 {#1-auth}
 
-LiteLLM uses your Google Cloud credentials (OAuth2 Bearer token), not an API key.
+LiteLLM 使用您的 Google Cloud 認證（OAuth2 Bearer token），而不是 API key。
 
 ```bash
 gcloud auth application-default login
 ```
 
-Or set a service-account key file:
+或者設定 service-account 金鑰檔案：
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa-key.json
 ```
 
-### 2. Proxy config
+### 2. Proxy 設定 {#2-proxy-config}
 
 ```yaml
 model_list:
@@ -40,15 +40,15 @@ general_settings:
   master_key: sk-your-key
 ```
 
-### 3. Start the proxy
+### 3. 啟動 Proxy {#3-start-the-proxy}
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-### Python (websockets)
+### Python（websockets） {#python-websockets}
 
 ```python
 import asyncio
@@ -90,7 +90,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### Node.js
+### Node.js {#nodejs}
 
 ```js
 const WebSocket = require("ws");
@@ -118,7 +118,7 @@ ws.on("message", (data) => {
 });
 ```
 
-### OpenAI SDK (Python)
+### OpenAI SDK（Python） {#openai-sdk-python}
 
 ```python
 import asyncio
@@ -153,14 +153,14 @@ async def main():
 asyncio.run(main())
 ```
 
-## Voice in / Voice out
+## 語音輸入 / 語音輸出 {#voice-in--voice-out}
 
-For a complete voice example see [`voice_realtime_test.py`](https://github.com/BerriAI/litellm/blob/main/voice_realtime_test.py).
+完整的語音範例請參閱 [`voice_realtime_test.py`](https://github.com/BerriAI/litellm/blob/main/voice_realtime_test.py)。
 
-Key settings for audio:
-- Microphone input: **16 kHz** PCM16 (`audio/pcm;rate=16000`)
-- Speaker output: **24 kHz** PCM16 (Vertex AI returns audio at 24 kHz)
-- Server VAD is enabled by default with 800 ms silence threshold
+音訊的關鍵設定：
+- 麥克風輸入：**16 kHz** PCM16 (`audio/pcm;rate=16000`)
+- 喇叭輸出：**24 kHz** PCM16（Vertex AI 會以 24 kHz 回傳音訊）
+- 預設啟用伺服器端 VAD，靜音閾值為 800 ms
 
 ```python
 # session.update with server VAD — the proxy ignores this for Vertex AI
@@ -174,7 +174,7 @@ await ws.send(json.dumps({
 }))
 ```
 
-## Tool Calling
+## 工具呼叫 {#tool-calling}
 
 ```python
 import asyncio
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### Config + run
+### 設定 + 執行 {#config--run}
 
 ```yaml
 model_list:
@@ -312,35 +312,35 @@ litellm --config config.yaml --port 4000
 python test_realtime_tool_calling.py
 ```
 
-## Supported OpenAI Realtime Events
+## 支援的 OpenAI Realtime 事件 {#supported-openai-realtime-events}
 
-**Client → Proxy (→ Vertex AI)**
+**用戶端 → Proxy（→ Vertex AI）**
 
-| OpenAI event | Notes |
+| OpenAI 事件 | 備註 |
 |---|---|
-| `input_audio_buffer.append` | Forwarded as `realtime_input.audio` |
-| `conversation.item.create` | Forwarded as `realtime_input.text` |
-| `session.update` | Silently ignored — Vertex AI does not support mid-session reconfiguration |
-| `response.create` | Silently ignored — Vertex AI responds automatically after each turn |
+| `input_audio_buffer.append` | 轉送為 `realtime_input.audio` |
+| `conversation.item.create` | 轉送為 `realtime_input.text` |
+| `session.update` | 靜默忽略 — Vertex AI 不支援會話中途重新設定 |
+| `response.create` | 靜默忽略 — Vertex AI 會在每個回合後自動回應 |
 
-**Vertex AI → Proxy (→ Client)**
+**Vertex AI → Proxy（→ 用戶端）**
 
-| OpenAI event emitted | Vertex AI source |
+| 發出的 OpenAI 事件 | Vertex AI 來源 |
 |---|---|
-| `session.created` | Synthesized after `setupComplete` |
+| `session.created` | 在 `setupComplete` 後合成 |
 | `response.text.delta` | `serverContent.modelTurn.parts[].text` |
 | `response.audio.delta` | `serverContent.modelTurn.parts[].inlineData` |
 | `response.audio_transcript.delta` | `serverContent.outputTranscription.text` |
 | `conversation.item.input_audio_transcription.completed` | `serverContent.inputTranscription.text` |
 | `response.done` | `serverContent.turnComplete` |
 
-## Limitations
+## 限制 {#limitations}
 
-- `session.update` is not forwarded (Vertex AI only accepts one setup message per connection).
-- Audio transcription requires `outputAudioTranscription: {}` to be set in the initial setup (done automatically by LiteLLM).
+- `session.update` 不會被轉送（Vertex AI 每個連線只接受一則設定訊息）。
+- 音訊轉錄需要在初始設定中設定 `outputAudioTranscription: {}`（LiteLLM 會自動完成）。
 
-## Precaution
+## 注意事項 {#precaution}
 
-- Tool calling depends on `session.update` with `tools`.
-- If you skip `session.update`, tool calls will not be triggered.
-- `gemini_live_defer_setup` defaults to `false` for backward compatibility.
+- 工具呼叫取決於搭配 `tools` 的 `session.update`。
+- 如果您略過 `session.update`，就不會觸發工具呼叫。
+- 為了向後相容，`gemini_live_defer_setup` 預設為 `false`。

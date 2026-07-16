@@ -1,49 +1,49 @@
-# OpenAI Passthrough
+# OpenAI 直通 {#openai-passthrough}
 
-Pass-through endpoints for direct OpenAI API access
+直接存取 OpenAI API 的轉送端點
 
-## Overview
+## 概觀 {#overview}
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Cost Tracking | ❌ | Not supported |
-| Logging | ✅ | Works across all integrations |
-| Streaming | ✅ | Fully supported |
+| 成本追蹤 | ❌ | 不支援 |
+| 記錄 | ✅ | 可在所有整合中運作 |
+| 串流 | ✅ | 完全支援 |
 
-## Available Endpoints
+## 可用端點 {#available-endpoints}
 
-### `/openai_passthrough` - Recommended
-Dedicated passthrough endpoint that guarantees direct routing to OpenAI without conflicts.
+### `/openai_passthrough` - 建議 {#openai_passthrough---recommended}
+專用轉送端點，可保證直接路由到 OpenAI，且不會發生衝突。
 
-**Use this for:**
+**適用於：**
 - OpenAI Responses API (`/v1/responses`)
-- Any endpoint where you need guaranteed passthrough
-- When `/openai` routes are conflicting with LiteLLM's native implementations
+- 任何您需要保證轉送的端點
+- 當 `/openai` 路由與 LiteLLM 的原生實作衝突時
 
-### `/openai` - Legacy
-Standard passthrough endpoint that may conflict with LiteLLM's native implementations.
+### `/openai` - 舊版 {#openai---legacy}
+標準轉送端點，可能會與 LiteLLM 的原生實作衝突。
 
-**Note:** Some endpoints like `/openai/v1/responses` will be routed to LiteLLM's native implementation instead of OpenAI.
+**注意：** 某些端點例如 `/openai/v1/responses`，會改為路由到 LiteLLM 的原生實作，而不是 OpenAI。
 
-## When to use this?
+## 何時使用這個？ {#when-to-use-this}
 
-- For 90% of your use cases, you should use the [native LiteLLM OpenAI Integration](https://docs.litellm.ai/docs/providers/openai) (`/chat/completions`, `/embeddings`, `/completions`, `/images`, `/batches`, etc.)
-- Use `/openai_passthrough` to call less popular or newer OpenAI endpoints that LiteLLM doesn't fully support yet, such as `/assistants`, `/threads`, `/vector_stores`, `/responses`
+- 對於 90% 的使用情境，您應該使用 [原生 LiteLLM OpenAI 整合](https://docs.litellm.ai/docs/providers/openai)（`/chat/completions`、`/embeddings`、`/completions`、`/images`、`/batches` 等）
+- 使用 `/openai_passthrough` 來呼叫 LiteLLM 尚未完整支援、較不熱門或較新的 OpenAI 端點，例如 `/assistants`、`/threads`、`/vector_stores`、`/responses`
 
-Simply replace `https://api.openai.com` with `LITELLM_PROXY_BASE_URL/openai_passthrough`
+只要將 `https://api.openai.com` 替換為 `LITELLM_PROXY_BASE_URL/openai_passthrough` 即可
 
-## Usage Examples
+## 使用範例 {#usage-examples}
 
-Requirements:
-Set `OPENAI_API_KEY` in your environment variables.
+需求：
+請在您的環境變數中設定 `OPENAI_API_KEY`。
 
-### Assistants API
+### Assistants API {#assistants-api}
 
-#### Create OpenAI Client
+#### 建立 OpenAI 用戶端 {#create-openai-client}
 
-Make sure you do the following:
-- Point `base_url` to your `LITELLM_PROXY_BASE_URL/openai`
-- Use your `LITELLM_API_KEY` as the `api_key`
+請確保您執行以下事項：
+- 將 `base_url` 指向您的 `LITELLM_PROXY_BASE_URL/openai`
+- 將您的 `LITELLM_API_KEY` 用作 `api_key`
 
 ```python
 import openai
@@ -54,7 +54,7 @@ client = openai.OpenAI(
 )
 ```
 
-#### Create an Assistant
+#### 建立 Assistant {#create-an-assistant}
 
 ```python
 # Create an assistant
@@ -65,13 +65,13 @@ assistant = client.beta.assistants.create(
 )
 ```
 
-#### Create a Thread
+#### 建立 Thread {#create-a-thread}
 ```python
 # Create a thread
 thread = client.beta.threads.create()
 ```
 
-#### Add a Message to the Thread
+#### 將訊息新增至 Thread {#add-a-message-to-the-thread}
 ```python
 # Add a message
 message = client.beta.threads.messages.create(
@@ -81,7 +81,7 @@ message = client.beta.threads.messages.create(
 )
 ```
 
-#### Run the Assistant
+#### 執行 Assistant {#run-the-assistant}
 ```python
 # Create a run to get the assistant's response
 run = client.beta.threads.runs.create(
@@ -96,7 +96,7 @@ run_status = client.beta.threads.runs.retrieve(
 )
 ```
 
-#### Retrieve Messages
+#### 取得訊息 {#retrieve-messages}
 ```python
 # List messages after the run completes
 messages = client.beta.threads.messages.list(
@@ -104,10 +104,9 @@ messages = client.beta.threads.messages.list(
 )
 ```
 
-#### Delete the Assistant
+#### 刪除 Assistant {#delete-the-assistant}
 
 ```python
 # Delete the assistant when done
 client.beta.assistants.delete(assistant.id)
 ```
-

@@ -1,15 +1,15 @@
-# /rag/query
+# /rag/query {#ragquery}
 
-RAG Query endpoint: **Search Vector Store → (Rerank) → LLM Completion**
+RAG 查詢端點：**搜尋向量儲存 →（重新排序）→ LLM 完成**
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Logging | Yes |
-| Streaming | Yes |
-| Reranking | Yes (optional) |
-| Supported Providers | `openai`, `bedrock`, `vertex_ai` |
+| 記錄 | 是 |
+| 串流 | 是 |
+| 重新排序 | 是（可選） |
+| 支援的提供者 | `openai`, `bedrock`, `vertex_ai` |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```bash showLineNumbers title="RAG Query with OpenAI"
 curl -X POST "http://localhost:4000/v1/rag/query" \
@@ -26,18 +26,18 @@ curl -X POST "http://localhost:4000/v1/rag/query" \
     }'
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-The RAG query endpoint performs the following steps:
+RAG 查詢端點會執行以下步驟：
 
-1. **Extract Query**: Extracts the query text from the last user message
-2. **Search Vector Store**: Searches the specified vector store for relevant context
-3. **Rerank (Optional)**: Reranks the search results using a reranking model
-4. **Generate Response**: Calls the LLM with the retrieved context prepended to the messages
+1. **擷取查詢**：從最後一則使用者訊息擷取查詢文字
+2. **搜尋向量儲存**：在指定的向量儲存中搜尋相關內容
+3. **重新排序（可選）**：使用重新排序模型對搜尋結果重新排序
+4. **產生回應**：以擷取到的內容前置於訊息之前呼叫 LLM
 
-## Response
+## 回應 {#response}
 
-The response follows the standard OpenAI chat completion format, with additional search metadata:
+回應遵循標準 OpenAI 聊天完成格式，並包含額外的搜尋中繼資料：
 
 ```json
 {
@@ -67,9 +67,9 @@ The response follows the standard OpenAI chat completion format, with additional
 }
 ```
 
-## With Reranking
+## 搭配重新排序 {#with-reranking}
 
-Add a `rerank` configuration to improve result quality:
+加入 `rerank` 設定以提升結果品質：
 
 ```bash showLineNumbers title="RAG Query with Reranking"
 curl -X POST "http://localhost:4000/v1/rag/query" \
@@ -91,9 +91,9 @@ curl -X POST "http://localhost:4000/v1/rag/query" \
     }'
 ```
 
-## Streaming
+## 串流 {#streaming}
 
-Enable streaming for real-time responses:
+啟用串流以取得即時回應：
 
 ```bash showLineNumbers title="RAG Query with Streaming"
 curl -X POST "http://localhost:4000/v1/rag/query" \
@@ -110,39 +110,39 @@ curl -X POST "http://localhost:4000/v1/rag/query" \
     }'
 ```
 
-## Request Parameters
+## 請求參數 {#request-parameters}
 
-### Top-Level
+### 頂層 {#top-level}
 
-| Parameter | Type | Required | Description |
+| 參數 | 型別 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | The LLM model to use for generation |
-| `messages` | array | Yes | Array of chat messages (OpenAI format) |
-| `retrieval_config` | object | Yes | Vector store search configuration |
-| `rerank` | object | No | Reranking configuration |
-| `stream` | boolean | No | Enable streaming (default: `false`) |
+| `model` | string | Yes | 用於生成的 LLM 模型 |
+| `messages` | array | Yes | 聊天訊息陣列（OpenAI 格式） |
+| `retrieval_config` | object | Yes | 向量儲存搜尋設定 |
+| `rerank` | object | No | 重新排序設定 |
+| `stream` | boolean | No | 啟用串流（預設：`false`） |
 
-### retrieval_config
+### retrieval_config {#retrieval_config}
 
-| Parameter | Type | Default | Description |
+| 參數 | 型別 | 預設 | 說明 |
 |-----------|------|---------|-------------|
-| `vector_store_id` | string | **required** | ID of the vector store to search |
-| `custom_llm_provider` | string | `"openai"` | Vector store provider |
-| `top_k` | integer | `10` | Number of results to retrieve |
+| `vector_store_id` | string | **必填** | 要搜尋的向量儲存 ID |
+| `custom_llm_provider` | string | `"openai"` | 向量儲存提供者 |
+| `top_k` | integer | `10` | 要擷取的結果數量 |
 
-### rerank
+### rerank {#rerank}
 
-| Parameter | Type | Default | Description |
+| 參數 | 型別 | 預設 | 說明 |
 |-----------|------|---------|-------------|
-| `enabled` | boolean | `false` | Enable reranking |
-| `model` | string | - | Reranking model (e.g., `cohere/rerank-english-v3.0`) |
-| `top_n` | integer | `5` | Number of results after reranking |
+| `enabled` | boolean | `false` | 啟用重新排序 |
+| `model` | string | - | 重新排序模型（例如：`cohere/rerank-english-v3.0`） |
+| `top_n` | integer | `5` | 重新排序後的結果數量 |
 
-## End-to-End Example
+## 端到端範例 {#end-to-end-example}
 
-### 1. Ingest a Document
+### 1. 匯入文件 {#1-ingest-a-document}
 
-First, ingest a document using the [/rag/ingest](./rag_ingest.md) endpoint:
+首先，使用 [/rag/ingest](./rag_ingest.md) 端點匯入文件：
 
 ```bash showLineNumbers title="Step 1: Ingest"
 curl -X POST "http://localhost:4000/v1/rag/ingest" \
@@ -162,7 +162,7 @@ curl -X POST "http://localhost:4000/v1/rag/ingest" \
     }"
 ```
 
-Response:
+回應：
 ```json
 {
   "id": "ingest_abc123",
@@ -172,9 +172,9 @@ Response:
 }
 ```
 
-### 2. Query with RAG
+### 2. 使用 RAG 查詢 {#2-query-with-rag}
 
-Now query the ingested documents:
+現在查詢已匯入的文件：
 
 ```bash showLineNumbers title="Step 2: Query"
 curl -X POST "http://localhost:4000/v1/rag/query" \
@@ -193,7 +193,7 @@ curl -X POST "http://localhost:4000/v1/rag/query" \
     }'
 ```
 
-Response:
+回應：
 ```json
 {
   "id": "chatcmpl-abc123",
@@ -212,9 +212,9 @@ Response:
 }
 ```
 
-## Provider Examples
+## 提供者範例 {#provider-examples}
 
-### Bedrock
+### Bedrock {#bedrock}
 
 ```bash showLineNumbers title="RAG Query with Bedrock"
 curl -X POST "http://localhost:4000/v1/rag/query" \
@@ -231,7 +231,7 @@ curl -X POST "http://localhost:4000/v1/rag/query" \
     }'
 ```
 
-### Vertex AI
+### Vertex AI {#vertex-ai}
 
 ```bash showLineNumbers title="RAG Query with Vertex AI"
 curl -X POST "http://localhost:4000/v1/rag/query" \
@@ -248,7 +248,7 @@ curl -X POST "http://localhost:4000/v1/rag/query" \
     }'
 ```
 
-## Python SDK
+## Python SDK {#python-sdk}
 
 ```python showLineNumbers title="Using litellm.aquery()"
 import litellm
@@ -270,4 +270,3 @@ response = await litellm.aquery(
 
 print(response.choices[0].message.content)
 ```
-

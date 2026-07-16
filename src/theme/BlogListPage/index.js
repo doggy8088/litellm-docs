@@ -2,14 +2,15 @@ import React, {useState} from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import SubscribeForm from '@site/src/components/SubscribeForm';
+import useLocaleText, {useIsZhTw} from '@site/src/utils/useLocaleText';
 import styles from './styles.module.css';
 
 const TABS = [
-  {id: 'all', label: 'All'},
-  {id: 'engineering', label: 'Engineering'},
-  {id: 'ideas', label: 'Ideas'},
-  {id: 'security', label: 'Security'},
-  {id: 'infrastructure', label: 'Performance / Reliability'},
+  {id: 'all', label: 'All', zhLabel: '全部'},
+  {id: 'engineering', label: 'Engineering', zhLabel: '工程'},
+  {id: 'ideas', label: 'Ideas', zhLabel: '觀點'},
+  {id: 'security', label: 'Security', zhLabel: '安全性'},
+  {id: 'infrastructure', label: 'Performance / Reliability', zhLabel: '效能／可靠性'},
 ];
 
 const SECURITY_TAGS = ['security', 'incident-report'];
@@ -54,9 +55,10 @@ const PROVIDERS = [
 const DOUBLED = [...PROVIDERS, ...PROVIDERS];
 
 function ProviderMarquee() {
+  const t = useLocaleText();
   return (
     <div className={styles.marqueeWrap}>
-      <p className={styles.marqueeLabel}>Routing to 100+ providers</p>
+      <p className={styles.marqueeLabel}>{t('路由至超過 100 個提供者', 'Routing to 100+ providers')}</p>
       <div className={styles.marqueeOuter}>
         <div className={styles.fadeLeft} />
         <div className={styles.fadeRight} />
@@ -75,8 +77,8 @@ function ProviderMarquee() {
 }
 
 // ── Post row ──────────────────────────────────────────────────────────────
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+function formatDate(dateStr, isZhTw) {
+  return new Date(dateStr).toLocaleDateString(isZhTw ? 'zh-TW' : 'en-US', {
     month: 'long', day: 'numeric', year: 'numeric',
   });
 }
@@ -99,7 +101,7 @@ function AuthorList({authors}) {
   );
 }
 
-function PostRow({post}) {
+function PostRow({post, isZhTw}) {
   const {title, permalink, date, description, authors} = post;
   return (
     <article className={styles.post}>
@@ -110,25 +112,28 @@ function PostRow({post}) {
       <div className={styles.meta}>
         <AuthorList authors={authors} />
         {authors && authors.length > 0 && <span className={styles.metaDash}> — </span>}
-        <time className={styles.date} dateTime={date}>{formatDate(date)}</time>
+        <time className={styles.date} dateTime={date}>{formatDate(date, isZhTw)}</time>
       </div>
     </article>
   );
 }
 
 function Pagination({metadata}) {
+  const t = useLocaleText();
   const {previousPage, nextPage} = metadata;
   if (!previousPage && !nextPage) return null;
   return (
-    <nav className={styles.pagination} aria-label="Blog list pagination">
-      {previousPage ? <Link to={previousPage} className={styles.pageLink}>&larr; Newer posts</Link> : <span />}
-      {nextPage ? <Link to={nextPage} className={styles.pageLink}>Older posts &rarr;</Link> : <span />}
+    <nav className={styles.pagination} aria-label={t('部落格分頁', 'Blog list pagination')}>
+      {previousPage ? <Link to={previousPage} className={styles.pageLink}>&larr; {t('較新的文章', 'Newer posts')}</Link> : <span />}
+      {nextPage ? <Link to={nextPage} className={styles.pageLink}>{t('較舊的文章', 'Older posts')} &rarr;</Link> : <span />}
     </nav>
   );
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────
 export default function BlogListPage(props) {
+  const t = useLocaleText();
+  const isZhTw = useIsZhTw();
   const items = props.items || [];
   const metadata = props.metadata || {};
   const [activeTab, setActiveTab] = useState('all');
@@ -136,23 +141,28 @@ export default function BlogListPage(props) {
 
   return (
     <Layout
-      title="Engineering Blog"
-      description="How we build the world's most widely used open-source AI Gateway. Routing, reliability, observability, and what we learn along the way."
+      title={t('工程部落格', 'Engineering Blog')}
+      description={t(
+        '我們如何打造全球使用最廣泛的開放原始碼 AI 閘道，以及在路由、可靠性與可觀測性方面的實務心得。',
+        "How we build the world's most widely used open-source AI Gateway. Routing, reliability, observability, and what we learn along the way.",
+      )}
     >
       <div className={styles.page}>
         {/* Hero */}
         <header className={styles.hero}>
           <p className={styles.eyebrow}>AI Gateway</p>
-          <h1 className={styles.heroTitle}>Engineering</h1>
+          <h1 className={styles.heroTitle}>{t('工程', 'Engineering')}</h1>
           <p className={styles.heroSub}>
-            How we build the world's most widely used open-source AI Gateway.
-            Routing, reliability, observability, and what we learn along the way.
+            {t(
+              '我們如何打造全球使用最廣泛的開放原始碼 AI 閘道，以及在路由、可靠性與可觀測性方面的實務心得。',
+              "How we build the world's most widely used open-source AI Gateway. Routing, reliability, observability, and what we learn along the way.",
+            )}
           </p>
           <a href="https://jobs.ashbyhq.com/litellm" target="_blank" rel="noopener noreferrer" className={styles.hiringBtn}>
-            We're hiring!
+            {t('人才招募中', "We're hiring!")}
           </a>
           <div className={styles.subscribeSection}>
-            <p className={styles.subscribeLabel}>Get new posts in your inbox</p>
+            <p className={styles.subscribeLabel}>{t('將最新文章寄到您的信箱', 'Get new posts in your inbox')}</p>
             <SubscribeForm />
           </div>
         </header>
@@ -160,7 +170,7 @@ export default function BlogListPage(props) {
         <ProviderMarquee />
 
         {/* Tabs */}
-        <nav className={styles.tabs} aria-label="Filter posts by category">
+        <nav className={styles.tabs} aria-label={t('依分類篩選文章', 'Filter posts by category')}>
           {TABS.map(tab => (
             <button
               key={tab.id}
@@ -168,7 +178,7 @@ export default function BlogListPage(props) {
               onClick={() => setActiveTab(tab.id)}
               aria-pressed={activeTab === tab.id}
             >
-              {tab.label}
+              {t(tab.zhLabel, tab.label)}
             </button>
           ))}
         </nav>
@@ -176,10 +186,10 @@ export default function BlogListPage(props) {
         {/* Post list */}
         <main className={styles.list}>
           {filtered.length === 0 && (
-            <p className={styles.emptyMsg}>No posts on this page match the selected filter.</p>
+            <p className={styles.emptyMsg}>{t('此頁沒有符合目前篩選條件的文章。', 'No posts on this page match the selected filter.')}</p>
           )}
           {filtered.map(({content}) => (
-            <PostRow key={content.metadata.permalink} post={content.metadata} />
+            <PostRow key={content.metadata.permalink} post={content.metadata} isZhTw={isZhTw} />
           ))}
         </main>
 

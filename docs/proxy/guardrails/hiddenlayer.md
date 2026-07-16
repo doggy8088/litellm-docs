@@ -2,19 +2,19 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# HiddenLayer Guardrails
+# HiddenLayer 防護欄 {#hiddenlayer-guardrails}
 
-LiteLLM ships with a native integration for [HiddenLayer](https://hiddenlayer.com/). The proxy sends every request/response to HiddenLayer’s `/detection/v1/interactions` endpoint so you can block or redact unsafe content before it reaches your users.
+LiteLLM 內建與 [HiddenLayer](https://hiddenlayer.com/) 的整合。此 proxy 會將每個請求/回應傳送至 HiddenLayer 的 `/detection/v1/interactions` 端點，讓您可以在不安全內容到達使用者之前加以封鎖或移除。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Create a HiddenLayer project & API credentials
+### 1. 建立 HiddenLayer 專案與 API 憑證 {#1-create-a-hiddenlayer-project--api-credentials}
 
 **SaaS (`*.hiddenlayer.ai`)**
 
-1. Sign in to the HiddenLayer console and create (or select) a project with policies enabled.
-2. Generate a **Client ID** and **Client Secret** for the project.
-3. Export them as environment variables in your LiteLLM deployment:
+1. 登入 HiddenLayer 主控台，建立（或選取）已啟用政策的專案。
+2. 針對該專案產生 **Client ID** 與 **Client Secret**。
+3. 在您的 LiteLLM 部署中將它們匯出為環境變數：
 
 ```shell
 export HIDDENLAYER_CLIENT_ID="hl_client_id"
@@ -25,15 +25,15 @@ export HIDDENLAYER_CLIENT_SECRET="hl_client_secret"
 # export HL_AUTH_URL="https://auth.hiddenlayer.ai"
 ```
 
-**Self-hosted HiddenLayer**
+**自架 HiddenLayer**
 
-If you run HiddenLayer on-prem, just expose the endpoint and set:
+如果您在內部部署執行 HiddenLayer，只要公開該端點並設定：
 
 ```shell
 export HIDDENLAYER_API_BASE="https://hiddenlayer.your-domain.com"
 ```
 
-### 2. Add the hiddenlayer guardrail to `config.yaml`
+### 2. 將 hiddenlayer 防護欄加入 `config.yaml` {#2-add-the-hiddenlayer-guardrail-to-configyaml}
 
 ```yaml showLineNumbers title="litellm config.yaml"
 model_list:
@@ -53,25 +53,25 @@ guardrails:
       api_key: os.environ/HIDDENLAYER_CLIENT_SECRET # only needed for SaaS
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** the LLM call on **input**.
-- `post_call` Run **after** the LLM call on **input & output**.
-- `during_call` Run **during** the LLM call on **input**. LiteLLM sends the request to the model and HiddenLayer in parallel. The response waits for the guardrail result before returning.
+- `pre_call` 在 **輸入** 上於 LLM 呼叫**之前**執行。
+- `post_call` 在 **輸入與輸出** 上於 LLM 呼叫**之後**執行。
+- `during_call` 在 LLM 呼叫**期間**於 **輸入** 上執行。LiteLLM 會平行將請求傳送至模型與 HiddenLayer。回應會先等待防護欄結果，再返回。
 
-### 3. Start LiteLLM Gateway
+### 3. 啟動 LiteLLM Gateway {#3-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 4. Test a request
+### 4. 測試請求 {#4-test-a-request}
 
-You can tag requests with `hl-project-id` (maps to the HiddenLayer project) and `hl-requester-id` (auditing metadata). LiteLLM forwards both headers to your detector.
+您可以使用 `hl-project-id`（對應到 HiddenLayer 專案）和 `hl-requester-id`（稽核中繼資料）為請求加上標記。LiteLLM 會將這兩個標頭都轉送至您的偵測器。
 
 <Tabs>
-<TabItem label="Blocked request" value="not-allowed">
-This request leaks system instructions and should be blocked when prompt-injection detection is enabled in HiddenLayer.
+<TabItem label="已封鎖的請求" value="not-allowed">
+這個請求會洩漏系統指示，且在 HiddenLayer 啟用提示注入偵測時應被封鎖。
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -86,7 +86,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```json
 {
@@ -104,7 +104,7 @@ Expected response on failure
 
 </TabItem>
 
-<TabItem label="Allowed request" value="allowed">
+<TabItem label="允許的請求" value="allowed">
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -118,7 +118,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response
+預期回應
 
 ```json
 {
@@ -147,9 +147,9 @@ Expected response
 </TabItem>
 </Tabs>
 
-If HiddenLayer responds with `action: "Redact"`, the proxy automatically rewrites the offending input/output before continuing, so your application receives a sanitized payload.
+如果 HiddenLayer 回應 `action: "Redact"`，proxy 會在繼續之前自動重寫有問題的輸入/輸出，因此您的應用程式會收到已清理的有效負載。
 
-## Supported Params
+## 支援的參數 {#supported-params}
 
 ```yaml
 guardrails:
@@ -162,21 +162,21 @@ guardrails:
       default_on: true
 ```
 
-### Required parameters
+### 必要參數 {#required-parameters}
 
-- **`guardrail`**: Must be set to `hiddenlayer` so LiteLLM loads the HiddenLayer hook.
+- **`guardrail`**：必須設為 `hiddenlayer`，這樣 LiteLLM 才會載入 HiddenLayer hook。
 
-### Optional parameters
+### 選用參數 {#optional-parameters}
 
-- **`api_base`**: HiddenLayer REST endpoint. Defaults to `https://api.hiddenlayer.ai`, but point it at your self-hosted instance if you have one.
-- **`auth_url`**: Authentication url for hiddenlayer. Defaults to `https;//auth.hiddenlayer.ai`.
-- **`mode`**: Control when the guardrail runs (`pre_call`, `post_call`, `during_call`).
-- **`default_on`**: Automatically attach the guardrail to every request unless the client opts out.
-- **`hl-project-id` header**: Routes scans to a specific HiddenLayer project.
-- **`hl-requester-id` header**: Sets `metadata.requester_id` for auditing.
-- **`hl-session-id` header**: Groups related requests into a session for contextual analysis and tracing in the HiddenLayer console.
+- **`api_base`**：HiddenLayer REST 端點。預設為 `https://api.hiddenlayer.ai`，但如果您有自架執行個體，請指向該處。
+- **`auth_url`**：hiddenlayer 的驗證網址。預設為 `https;//auth.hiddenlayer.ai`。
+- **`mode`**：控制防護欄執行時機（`pre_call`、`post_call`、`during_call`）。
+- **`default_on`**：自動將防護欄附加到每個請求，除非用戶端選擇退出。
+- **`hl-project-id` 標頭**：將掃描路由至特定的 HiddenLayer 專案。
+- **`hl-requester-id` 標頭**：設定 `metadata.requester_id` 以供稽核。
+- **`hl-session-id` 標頭**：將相關請求分組為一個工作階段，以便在 HiddenLayer 主控台中進行情境分析與追蹤。
 
-## Environment variables
+## 環境變數 {#environment-variables}
 
 ```shell
 # SaaS
@@ -187,4 +187,4 @@ export HIDDENLAYER_CLIENT_SECRET="hl_client_secret"
 export HIDDENLAYER_API_BASE="https://api.hiddenlayer.ai"
 ```
 
-Set only the variables you need, self-hosted installs can leave the client ID/secret unset and just configure `HIDDENLAYER_API_BASE`.
+只設定您需要的變數；自架安裝可以不設定 client ID/secret，只要設定 `HIDDENLAYER_API_BASE` 即可。

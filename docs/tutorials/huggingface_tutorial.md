@@ -1,20 +1,20 @@
-# Llama2 - Huggingface Tutorial 
-[Huggingface](https://huggingface.co/) is an open source platform to deploy machine-learnings models. 
+# Llama2 - Huggingface 教學  {#llama2---huggingface-tutorial}
+[Huggingface](https://huggingface.co/) 是一個用來部署機器學習模型的開源平台。 
 
-## Call Llama2 with Huggingface Inference Endpoints 
-LiteLLM makes it easy to call your public, private or the default huggingface endpoints. 
+## 使用 Huggingface Inference Endpoints 呼叫 Llama2  {#call-llama2-with-huggingface-inference-endpoints}
+LiteLLM 可讓您輕鬆呼叫公開、私有或預設的 huggingface 端點。 
 
-In this case, let's try and call 3 models:  
+在這個案例中，我們來試著呼叫 3 個模型：  
 
-| Model                                   | Type of Endpoint |
+| 模型                                   | 端點類型 |
 | --------------------------------------- | ---------------- |
-| deepset/deberta-v3-large-squad2         | [Default Huggingface Endpoint](#case-1-call-default-huggingface-endpoint) |
-| meta-llama/Llama-2-7b-hf                | [Public Endpoint](#case-2-call-llama2-public-huggingface-endpoint)              |
-| meta-llama/Llama-2-7b-chat-hf           | [Private Endpoint](#case-3-call-llama2-private-huggingface-endpoint)             |
+| deepset/deberta-v3-large-squad2         | [預設 Huggingface 端點](#case-1-call-default-huggingface-endpoint) |
+| meta-llama/Llama-2-7b-hf                | [公開端點](#case-2-call-llama2-public-huggingface-endpoint)              |
+| meta-llama/Llama-2-7b-chat-hf           | [私有端點](#case-3-call-llama2-private-huggingface-endpoint)             |
 
-### Case 1: Call default huggingface endpoint
+### 情境 1：呼叫預設的 huggingface 端點 {#case-1-call-default-huggingface-endpoint}
 
-Here's the complete example:
+完整範例如下：
 
 ```python
 from litellm import completion 
@@ -26,16 +26,16 @@ messages = [{"role": "user", "content": "Hey, how's it going?"}] # LiteLLM follo
 completion(model=model, messages=messages, custom_llm_provider="huggingface")
 ```
 
-What's happening? 
-- model: This is the name of the deployed model on huggingface 
-- messages: This is the input. We accept the OpenAI chat format. For huggingface, by default we iterate through the list and add the message["content"] to the prompt. [Relevant Code](https://github.com/BerriAI/litellm/blob/6aff47083be659b80e00cb81eb783cb24db2e183/litellm/llms/huggingface_restapi.py#L46)
-- custom_llm_provider: Optional param. This is an optional flag, needed only for Azure, Replicate, Huggingface and Together-ai (platforms where you deploy your own models). This enables litellm to route to the right provider, for your model. 
+這裡發生了什麼？ 
+- model：這是 Huggingface 上已部署模型的名稱 
+- messages：這是輸入。我們接受 OpenAI chat 格式。對於 huggingface，預設會逐一迭代清單，並將 message["content"] 加入 prompt。[相關程式碼](https://github.com/BerriAI/litellm/blob/6aff47083be659b80e00cb81eb783cb24db2e183/litellm/llms/huggingface_restapi.py#L46)
+- custom_llm_provider：選用參數。這是選用旗標，僅在 Azure、Replicate、Huggingface 和 Together-ai（您部署自己模型的平台）時需要。這可讓 litellm 將路由導向正確的提供者，以對應您的模型。 
 
-### Case 2: Call Llama2 public Huggingface endpoint
+### 情境 2：呼叫 Llama2 公開 Huggingface 端點 {#case-2-call-llama2-public-huggingface-endpoint}
 
-We've deployed `meta-llama/Llama-2-7b-hf` behind a public endpoint - `https://ag3dkq4zui5nu8g3.us-east-1.aws.endpoints.huggingface.cloud`.
+我們已將 `meta-llama/Llama-2-7b-hf` 部署在一個公開端點後方 - `https://ag3dkq4zui5nu8g3.us-east-1.aws.endpoints.huggingface.cloud`。
 
-Let's try it out: 
+讓我們來試試： 
 ```python
 from litellm import completion 
 
@@ -47,24 +47,24 @@ api_base = "https://ag3dkq4zui5nu8g3.us-east-1.aws.endpoints.huggingface.cloud"
 completion(model=model, messages=messages, custom_llm_provider="huggingface", api_base=api_base)
 ```
 
-What's happening? 
-- api_base: Optional param. Since this uses a deployed endpoint (not the [default huggingface inference endpoint](https://github.com/BerriAI/litellm/blob/6aff47083be659b80e00cb81eb783cb24db2e183/litellm/llms/huggingface_restapi.py#L35)), we pass that to LiteLLM. 
+這裡發生了什麼？ 
+- api_base：選用參數。由於這裡使用的是已部署端點（不是 [預設的 huggingface inference endpoint](https://github.com/BerriAI/litellm/blob/6aff47083be659b80e00cb81eb783cb24db2e183/litellm/llms/huggingface_restapi.py#L35)），因此我們將它傳給 LiteLLM。 
 
-### Case 3: Call Llama2 private Huggingface endpoint
+### 情境 3：呼叫 Llama2 私有 Huggingface 端點 {#case-3-call-llama2-private-huggingface-endpoint}
 
-The only difference between this and the public endpoint, is that you need an `api_key` for this. 
+這與公開端點唯一的差別在於，您需要一個 `api_key`。 
 
-On LiteLLM there's 3 ways you can pass in an api_key. 
+在 LiteLLM 上，您可以透過 3 種方式傳入 api_key。 
 
-Either via environment variables, by setting it as a package variable or when calling `completion()`. 
+可透過環境變數、將其設為套件變數，或在呼叫 `completion()` 時傳入。 
 
-**Setting via environment variables**  
-Here's the 1 line of code you need to add 
+**透過環境變數設定**  
+以下是您需要加入的 1 行程式碼 
 ```python
 os.environ["HF_TOKEN"] = "..."
 ```
 
-Here's the full code: 
+以下是完整程式碼： 
 ```python
 from litellm import completion 
 
@@ -78,13 +78,13 @@ api_base = "https://ag3dkq4zui5nu8g3.us-east-1.aws.endpoints.huggingface.cloud"
 completion(model=model, messages=messages, custom_llm_provider="huggingface", api_base=api_base)
 ```
 
-**Setting it as package variable**  
-Here's the 1 line of code you need to add 
+**將其設為套件變數**  
+以下是您需要加入的 1 行程式碼 
 ```python
 litellm.huggingface_key = "..."
 ```
 
-Here's the full code: 
+以下是完整程式碼： 
 ```python
 import litellm
 from litellm import completion 
@@ -99,12 +99,12 @@ api_base = "https://ag3dkq4zui5nu8g3.us-east-1.aws.endpoints.huggingface.cloud"
 completion(model=model, messages=messages, custom_llm_provider="huggingface", api_base=api_base)
 ```
 
-**Passed in during completion call**  
+**在 completion 呼叫時傳入**  
 ```python
 completion(..., api_key="...")
 ```
 
-Here's the full code: 
+以下是完整程式碼： 
 
 ```python
 from litellm import completion 

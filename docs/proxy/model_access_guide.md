@@ -1,12 +1,12 @@
-# How Model Access Works
+# 模型存取運作方式 {#how-model-access-works}
 
-## Concept 
+## 概念  {#concept}
 
-Each model onboarded is a "model deployment" in LiteLLM. 
+在 LiteLLM 中，每個已上線的模型都是一個「model deployment」。
 
-These model deployments are assigned to a "model group", via the "model_name" field in the config.yaml. 
+這些模型部署會透過 config.yaml 中的「model_name」欄位，指派到一個「model group」。
 
-## Example
+## 範例 {#example}
 
 ```yaml
 model_list:
@@ -16,11 +16,11 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-In here, we onboard a model deployment for the model `gpt-4o` and assign it to the model group `my-custom-model`.
+在這裡，我們為模型 `gpt-4o` 上線一個模型部署，並將其指派到模型群組 `my-custom-model`。
 
-## Client-side request
+## 用戶端請求 {#client-side-request}
 
-Here's what a client-side request looks like:
+用戶端請求如下所示：
 
 ```bash
 curl --location 'http://localhost:4000/chat/completions' \
@@ -30,10 +30,10 @@ curl --location 'http://localhost:4000/chat/completions' \
 
 ```
 
-## Access Control
-When you give access to a key/user/team, you are giving them access to a "model group". 
+## 存取控制 {#access-control}
+當您將存取權授予金鑰／使用者／團隊時，您其實是在授予他們對「model group」的存取權。
 
-Example:
+範例：
 
 ```bash
 curl --location 'http://localhost:4000/key/generate' \
@@ -42,11 +42,11 @@ curl --location 'http://localhost:4000/key/generate' \
 --data-raw '{"models": ["my-custom-model"]}'
 ```
 
-## Loadbalancing 
+## 負載平衡  {#loadbalancing}
 
-You can add multiple model deployments to a single "model group". LiteLLM will automatically load balance requests across the model deployments in the group.
+您可以將多個模型部署加入單一「model group」。LiteLLM 會自動在該群組中的模型部署之間進行請求負載平衡。
 
-Example:
+範例：
 
 ```yaml
 model_list:
@@ -62,13 +62,13 @@ model_list:
       api_version: os.environ/AZURE_API_VERSION
 ```
 
-This way, you can maximize your rate limits across multiple model deployments. 
+如此一來，您可以在多個模型部署之間最大化您的速率限制。
 
-## Fallbacks 
+## 備援  {#fallbacks}
 
-You can fallback across model groups. This is useful, if all "model deployments" in a "model group" are down (e.g. raising 429 errors).
+您可以在不同 model group 之間進行備援。如果一個「model group」中的所有「model deployments」都無法使用（例如回傳 429 錯誤），這會很有用。
 
-Example:
+範例：
 
 ```yaml
 model_list:
@@ -85,9 +85,8 @@ litellm_settings:
   fallbacks: [{"my-custom-model": ["my-other-model"]}]
 ```
 
-Fallbacks are done sequentially, so the first model group in the list will be tried first. If it fails, the next model group will be tried.
+備援會依序進行，因此清單中的第一個 model group 會先被嘗試。如果失敗，就會嘗試下一個 model group。
 
+## 進階：Model Access Groups {#advanced-model-access-groups}
 
-## Advanced: Model Access Groups
-
-For advanced use cases, use [Model Access Groups](./model_access_groups) to dynamically group multiple models and manage access without restarting the proxy.
+針對進階使用情境，請使用 [Model Access Groups](./model_access_groups) 動態分組多個模型，並在不重新啟動 proxy 的情況下管理存取權。

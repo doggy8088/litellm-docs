@@ -1,24 +1,24 @@
-# Abliteration
+# Abliteration {#abliteration}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Abliteration provides an OpenAI-compatible `/chat/completions` endpoint. |
-| Provider Route on LiteLLM | `abliteration/` |
-| Link to Provider Doc | [Abliteration](https://abliteration.ai) |
+| 說明 | Abliteration 提供 OpenAI 相容的 `/chat/completions` 端點。 |
+| LiteLLM 提供者路由 | `abliteration/` |
+| 提供者文件連結 | [Abliteration](https://abliteration.ai) |
 | Base URL | `https://api.abliteration.ai/v1` |
-| Supported Operations | [`/chat/completions`](#sample-usage) |
+| 支援的操作 | [`/chat/completions`](#sample-usage) |
 
 <br />
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["ABLITERATION_API_KEY"] = ""  # your Abliteration API key
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 ```python showLineNumbers title="Abliteration Completion"
 import os
@@ -34,7 +34,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 
 ```python showLineNumbers title="Abliteration Streaming Completion"
 import os
@@ -52,9 +52,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 搭配使用 {#usage-with-litellm-proxy-server}
 
-1. Add the model to your proxy config:
+1. 將模型加入您的 proxy 設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -64,16 +64,16 @@ model_list:
       api_key: os.environ/ABLITERATION_API_KEY
 ```
 
-2. Start the proxy:
+2. 啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-## Direct API Usage (Bearer Token)
+## 直接 API 用法（Bearer Token） {#direct-api-usage-bearer-token}
 
-Use the environment variable as a Bearer token against the OpenAI-compatible endpoint:
-`https://api.abliteration.ai/v1/chat/completions`.
+使用環境變數作為 Bearer token，對 OpenAI 相容端點：
+`https://api.abliteration.ai/v1/chat/completions`。
 
 ```bash showLineNumbers title="cURL"
 export ABLITERATION_API_KEY=""

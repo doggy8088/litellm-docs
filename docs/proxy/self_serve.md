@@ -2,23 +2,23 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Internal User Self-Serve
+# 內部使用者自助服務 {#internal-user-self-serve}
 
-## Allow users to create their own keys on [Proxy UI](./ui.md).
+## 允許使用者在 [Proxy UI](./ui.md) 上建立自己的金鑰。 {#allow-users-to-create-their-own-keys-on-proxy-uiuimd}
 
-1. Add user with permissions to a team on proxy 
+1. 將具有權限的使用者新增至 proxy 的團隊
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-Go to `Internal Users` -> `+New User`
+前往 `Internal Users` -> `+New User`
 
 <Image img={require('../../img/add_internal_user.png')}  style={{ width: '800px', height: 'auto' }} />
 
 </TabItem>
 <TabItem value="api" label="API">
 
-Create a new Internal User on LiteLLM and assign them the role `internal_user`.
+在 LiteLLM 中建立一個新的內部使用者，並將其指派角色 `internal_user`。
 
 ```bash
 curl -X POST '<PROXY_BASE_URL>/user/new' \
@@ -30,7 +30,7 @@ curl -X POST '<PROXY_BASE_URL>/user/new' \
 }'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -41,25 +41,25 @@ Expected Response
 }
 ```
 
-Here's the available UI roles for a LiteLLM Internal User: 
+以下是 LiteLLM 內部使用者可用的 UI 角色： 
 
-Admin Roles:
-  - `proxy_admin`: admin over the platform
-  - `proxy_admin_viewer`: can login, view all keys, view all spend. **Cannot** create/delete keys, add new users.
+管理員角色：
+  - `proxy_admin`：平台管理員
+  - `proxy_admin_viewer`：可登入、檢視所有金鑰、檢視所有支出。**不能**建立/刪除金鑰、加入新使用者。
 
-Internal User Roles:
-  - `internal_user`: can login, view/create/delete their own keys, view their spend. **Cannot** add new users.
-  - `internal_user_viewer`: can login, view their own keys, view their own spend. **Cannot** create/delete keys, add new users.
+內部使用者角色：
+  - `internal_user`：可登入、檢視/建立/刪除自己的金鑰、檢視自己的支出。**不能**加入新使用者。
+  - `internal_user_viewer`：可登入、檢視自己的金鑰、檢視自己的支出。**不能**建立/刪除金鑰、加入新使用者。
 
 </TabItem>
 </Tabs>
 
-2. Share invitation link with user 
+2. 與使用者分享邀請連結 
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-Copy the invitation link with the user 
+將邀請連結複製給使用者 
 
 <Image img={require('../../img/invitation_link.png')}  style={{ width: '800px', height: 'auto' }} />
 
@@ -75,7 +75,7 @@ curl -X POST '<PROXY_BASE_URL>/invitation/new' \
 }'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -91,7 +91,7 @@ Expected Response
 }
 ```
 
-Invitation Link: 
+邀請連結： 
 
 ```bash
 http://0.0.0.0:4000/ui/onboarding?id=a2f0918f-43b0-4770-a664-96ddd192966e
@@ -104,75 +104,69 @@ http://0.0.0.0:4000/ui/onboarding?id=a2f0918f-43b0-4770-a664-96ddd192966e
 
 :::info
 
-Use [Email Notifications](./email.md) to email users onboarding links 
+使用 [電子郵件通知](./email.md) 將上線連結寄送給使用者 
 
 :::
 
-3. User logs in via email + password auth
+3. 使用者透過電子郵件 + 密碼驗證登入
 
 <Image img={require('../../img/ui_clean_login.png')}  style={{ width: '500px', height: 'auto' }} />
 
-
-
 :::info 
 
-LiteLLM Enterprise: Enable [SSO login](./ui.md#setup-ssoauth-for-ui)
+LiteLLM Enterprise：啟用 [SSO 登入](./ui.md#setup-ssoauth-for-ui)
 
 :::
 
-4. User can now create their own keys
-
+4. 使用者現在可以建立自己的金鑰
 
 <Image img={require('../../img/ui_self_serve_create_key.png')}  style={{ width: '800px', height: 'auto' }} />
 
-## Allow users to View Usage, Caching Analytics
+## 允許使用者檢視使用量、快取分析 {#allow-users-to-view-usage-caching-analytics}
 
-1. Go to Internal Users -> +Invite User
+1. 前往 Internal Users -> +Invite User
 
-Set their role to `Admin Viewer` - this means they can only view usage, caching analytics
+將其角色設定為 `Admin Viewer` - 這表示他們只能檢視使用量、快取分析
 
 <Image img={require('../../img/ui_invite_user.png')}  style={{ width: '800px', height: 'auto' }} />
 <br />
 
-2. Share invitation link with user
-
+2. 與使用者分享邀請連結
 
 <Image img={require('../../img/ui_invite_link.png')}  style={{ width: '800px', height: 'auto' }} />
 <br />
 
-3. User logs in via email + password auth
+3. 使用者透過電子郵件 + 密碼驗證登入
 
 <Image img={require('../../img/ui_clean_login.png')}  style={{ width: '500px', height: 'auto' }} />
 <br />
 
-4. User can now view Usage, Caching Analytics
+4. 使用者現在可以檢視使用量、快取分析
 
 <Image img={require('../../img/ui_usage.png')}  style={{ width: '800px', height: 'auto' }} />
 
+## 可用角色 {#available-roles}
+以下是 LiteLLM 內部使用者可用的 UI 角色： 
 
-## Available Roles
-Here's the available UI roles for a LiteLLM Internal User: 
+**管理員角色：**
+  - `proxy_admin`：平台管理員
+  - `proxy_admin_viewer`：可登入、檢視所有金鑰、檢視所有支出。**不能**建立/刪除金鑰、加入新使用者。
 
-**Admin Roles:**
-  - `proxy_admin`: admin over the platform
-  - `proxy_admin_viewer`: can login, view all keys, view all spend. **Cannot** create/delete keys, add new users.
+**內部使用者角色：**
+  - `internal_user`：可登入、檢視/建立/刪除自己的金鑰、檢視自己的支出。**不能**加入新使用者。
+  - `internal_user_viewer`：可登入、檢視自己的金鑰、檢視自己的支出。**不能**建立/刪除金鑰、加入新使用者。
 
-**Internal User Roles:**
-  - `internal_user`: can login, view/create/delete their own keys, view their spend. **Cannot** add new users.
-  - `internal_user_viewer`: can login, view their own keys, view their own spend. **Cannot** create/delete keys, add new users.
+**團隊角色：**
+  - `admin`：可將新成員加入團隊、可控制團隊權限、可新增僅限團隊的模型（適合用於讓團隊的微調模型完成上線）。
+  - `user`：可登入、檢視自己的金鑰、檢視自己的支出。**不能**建立/刪除金鑰（可透過團隊權限控制）、加入新使用者。
 
-**Team Roles:**
-  - `admin`: can add new members to the team, can control Team Permissions, can add team-only models (useful for onboarding a team's finetuned models).
-  - `user`: can login, view their own keys, view their own spend. **Cannot** create/delete keys (controllable via Team Permissions), add new users.
+## 自動將 SSO 使用者加入團隊 {#auto-add-sso-users-to-teams}
 
+本節說明如何為 **Okta、Google SSO** 設定 SSO 自動加入
 
-## Auto-add SSO users to teams
+### Okta、Google SSO {#okta-google-sso}
 
-This walks through setting up sso auto-add for **Okta, Google SSO**
-
-### Okta, Google SSO 
-
-1. Specify the JWT field that contains the team ids, that the user belongs to. 
+1. 指定包含使用者所屬團隊 id 的 JWT 欄位。 
 
 ```yaml
 general_settings:
@@ -181,7 +175,7 @@ general_settings:
     team_ids_jwt_field: "groups" # 👈 CAN BE ANY FIELD
 ```
 
-This is assuming your SSO token looks like this. **If you need to inspect the JWT fields received from your SSO provider by LiteLLM, follow these instructions [here](#debugging-sso-jwt-fields)**
+這是假設您的 SSO token 看起來像這樣。**如果您需要檢查 LiteLLM 從您的 SSO 提供者收到的 JWT 欄位，請依照這裡的說明操作 [這裡](#debugging-sso-jwt-fields)**
 
 ```
 {
@@ -190,7 +184,7 @@ This is assuming your SSO token looks like this. **If you need to inspect the JW
 }
 ```
 
-2. Create the teams on LiteLLM 
+2. 在 LiteLLM 上建立團隊 
 
 ```bash
 curl -X POST '<PROXY_BASE_URL>/team/new' \
@@ -202,23 +196,22 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 }'
 ```
 
-3. Test the SSO flow
+3. 測試 SSO 流程
 
-Here's a walkthrough of [how it works](https://www.loom.com/share/8959be458edf41fd85937452c29a33f3?sid=7ebd6d37-569a-4023-866e-e0cde67cb23e)
+這裡有一個關於 [其運作方式](https://www.loom.com/share/8959be458edf41fd85937452c29a33f3?sid=7ebd6d37-569a-4023-866e-e0cde67cb23e) 的導覽
 
-### Microsoft Entra ID SSO group assignment
+### Microsoft Entra ID SSO 群組指派 {#microsoft-entra-id-sso-group-assignment}
 
-Follow this [tutorial for auto-adding sso users to teams with Microsoft Entra ID](https://docs.litellm.ai/docs/tutorials/msft_sso)
+請參閱這份 [使用 Microsoft Entra ID 自動將 sso 使用者新增至團隊的教學](https://docs.litellm.ai/docs/tutorials/msft_sso)
 
-### Debugging SSO JWT fields 
+### 偵錯 SSO JWT 欄位  {#debugging-sso-jwt-fields}
 
-[**Go Here**](./admin_ui_sso.md#debugging-sso-jwt-fields)
+[**前往這裡**](./admin_ui_sso.md#debugging-sso-jwt-fields)
 
+## 進階 {#advanced}
+### 設定自訂登出 URL {#setting-custom-logout-urls}
 
-## Advanced
-### Setting custom logout URLs
-
-Set `PROXY_LOGOUT_URL` in your .env if you want users to get redirected to a specific URL when they click logout
+如果您希望使用者按一下登出時重新導向到特定 URL，請在您的 .env 中設定 `PROXY_LOGOUT_URL`
 
 ```
 export PROXY_LOGOUT_URL="https://www.google.com"
@@ -226,10 +219,9 @@ export PROXY_LOGOUT_URL="https://www.google.com"
 
 <Image img={require('../../img/ui_logout.png')}  style={{ width: '400px', height: 'auto' }} />
 
+### 為內部使用者設定預設最大預算  {#set-default-max-budget-for-internal-users}
 
-### Set default max budget for internal users 
-
-Automatically apply budget per internal user when they sign up. By default the table will be checked every 10 minutes, for users to reset. To modify this, [see this](./users.md#reset-budgets)
+在內部使用者註冊時，自動套用每位使用者的預算。預設情況下，系統會每 10 分鐘檢查一次表格，以便讓使用者重設。若要修改此設定，請 [參閱這裡](./users.md#reset-budgets)
 
 ```yaml
 litellm_settings:
@@ -237,31 +229,30 @@ litellm_settings:
   internal_user_budget_duration: "1mo" # reset every month
 ```
 
-This sets a max budget of $10 USD for internal users when they sign up. 
+這會在內部使用者註冊時，為其設定 10 美元的最大預算。 
 
-You can also manage these settings visually in the UI:
+您也可以在 UI 中以視覺化方式管理這些設定：
 
 <Image img={require('../../img/default_user_settings_admin_ui.png')}  style={{ width: '700px', height: 'auto' }} />
 
-This budget only applies to personal keys created by that user - seen under `Default Team` on the UI. 
+此預算僅適用於該使用者建立的個人金鑰 - 在 UI 上可於 `Default Team` 下看到。 
 
 <Image img={require('../../img/max_budget_for_internal_users.png')}  style={{ width: '500px', height: 'auto' }} />
 
-This budget does not apply to keys created under non-default teams.
+此預算不適用於在非預設團隊下建立的金鑰。
 
+### 為團隊設定最大預算 {#set-max-budget-for-teams}
 
-### Set max budget for teams
+[**前往這裡**](./team_budgets.md)
 
-[**Go Here**](./team_budgets.md)
-
-### Default Team
+### 預設團隊 {#default-team}
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-Go to `Internal Users` -> `Default User Settings` and set the default team to the team you just created. 
+前往 `Internal Users` -> `Default User Settings`，並將預設團隊設定為您剛建立的團隊。 
 
-Let's also set the default models to `no-default-models`. This means a user can only create keys within a team.
+我們也來將預設模型設定為 `no-default-models`。這表示使用者只能在團隊內建立金鑰。
 
 <Image img={require('../../img/default_user_settings_with_default_team.png')}  style={{ width: '1000px', height: 'auto' }} />
 
@@ -269,7 +260,7 @@ Let's also set the default models to `no-default-models`. This means a user can 
 <TabItem value="yaml" label="YAML">
 
 :::info
-Team must be created before setting it as the default team. 
+必須先建立團隊，才能將其設定為預設團隊。 
 :::
 
 ```yaml
@@ -285,11 +276,11 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-### Team Member Budgets
+### 團隊成員預算 {#team-member-budgets}
 
-Set a max budget for a team member. 
+為團隊成員設定最大預算。 
 
-You can do this when creating a new team, or by updating an existing team. 
+您可以在建立新團隊時設定，或透過更新現有團隊來設定。 
 
 <Tabs>
 <TabItem value="ui" label="UI">
@@ -313,12 +304,11 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 </TabItem>
 </Tabs>
 
-### Team Member Rate Limits
+### 團隊成員速率限制 {#team-member-rate-limits}
 
-Set a default tpm/rpm limit for an individual team member. 
+為單一團隊成員設定預設 tpm/rpm 限制。 
 
-You can do this when creating a new team, or by updating an existing team. 
-
+您可以在建立新團隊時設定，或透過更新現有團隊來設定。 
 
 <Tabs>
 <TabItem value="ui" label="UI">
@@ -342,19 +332,17 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 </TabItem>
 </Tabs>
 
+### 為新團隊設定預設參數 {#set-default-params-for-new-teams}
 
+當您將 litellm 連接到您的 SSO 提供者時，litellm 可以自動建立團隊。請使用此功能為這些自動建立的團隊設定預設的 `models`、`max_budget`、`budget_duration`。 
 
-### Set default params for new teams
+**運作方式**
 
-When you connect litellm to your SSO provider, litellm can auto-create teams. Use this to set the default `models`, `max_budget`, `budget_duration` for these auto-created teams. 
+1. 當 litellm 從您的 SSO 提供者擷取 `groups` 時，它會檢查對應的 group_id 是否存在於 litellm 中，作為 `team_id`。 
+2. 如果 team_id 不存在，litellm 會使用您設定的預設參數自動建立團隊。 
+3. 如果 team_id 已存在，litellm 不會對該團隊套用任何設定。 
 
-**How it works**
-
-1. When litellm fetches `groups` from your SSO provider, it will check if the corresponding group_id exists as a `team_id` in litellm. 
-2. If the team_id does not exist, litellm will auto-create a team with the default params you've set. 
-3. If the team_id already exist, litellm will not apply any settings on the team. 
-
-**Usage**
+**使用方式**
 
 ```yaml showLineNumbers title="Default Params for new teams"
 litellm_settings:
@@ -370,15 +358,15 @@ litellm_settings:
 ```
 
 
-### Restrict Users from creating personal keys 
+### 限制使用者建立個人金鑰  {#restrict-users-from-creating-personal-keys}
 
-This is useful if you only want users to create keys under a specific team. 
+如果您只想讓使用者在特定團隊下建立金鑰，這會很有用。 
 
-This will also prevent users from using their session tokens on the test keys chat pane. 
+這也會防止使用者在測試金鑰聊天窗格中使用其 session token。 
 
-👉 [**See this**](./virtual_keys.md#restricting-key-generation)
+👉 [**看這裡**](./virtual_keys.md#restricting-key-generation)
 
-## **All Settings for Self Serve / SSO Flow**
+## **所有自助服務 / SSO 流程設定** {#all-settings-for-self-serve--sso-flow}
 
 ```yaml showLineNumbers title="All Settings for Self Serve / SSO Flow"
 litellm_settings:
@@ -420,6 +408,6 @@ litellm_settings:
       allowed_user_roles: ["proxy_admin"]
 ```
 
-## Further Reading
+## 進一步閱讀 {#further-reading}
 
-- [Onboard Users for AI Exploration](../tutorials/default_team_self_serve)
+- [為 AI 探索進行使用者上線](../tutorials/default_team_self_serve)

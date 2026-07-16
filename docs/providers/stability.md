@@ -1,29 +1,29 @@
-# Stability AI
+# Stability AI {#stability-ai}
 https://stability.ai/
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Stability AI creates open AI models for image, video, audio, and 3D generation. Known for Stable Diffusion. |
-| Provider Route on LiteLLM | `stability/` |
-| Link to Provider Doc | [Stability AI API ↗](https://platform.stability.ai/docs/api-reference) |
-| Supported Operations | [`/images/generations`](#image-generation), [`/images/edits`](#image-editing) |
+| 說明 | Stability AI 會為圖像、影片、音訊與 3D 生成建立開放 AI 模型。以 Stable Diffusion 聞名。 |
+| LiteLLM 上的提供者路由 | `stability/` |
+| 提供者文件連結 | [Stability AI API ↗](https://platform.stability.ai/docs/api-reference) |
+| 支援的操作 | [`/images/generations`](#image-generation), [`/images/edits`](#image-editing) |
 
-LiteLLM supports Stability AI Image Generation calls via the Stability AI REST API (not via Bedrock).
+LiteLLM 支援透過 Stability AI REST API（不是透過 Bedrock）進行 Stability AI 圖像生成請求。
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python
 # env variable
 os.environ['STABILITY_API_KEY'] = "your-api-key"
 ```
 
-Get your API key from the [Stability AI Platform](https://platform.stability.ai/).
+請從 [Stability AI Platform](https://platform.stability.ai/) 取得您的 API 金鑰。
 
-## Image Generation
+## 圖像生成 {#image-generation}
 
-### Usage - LiteLLM Python SDK
+### 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -39,9 +39,9 @@ response = image_generation(
 print(response)
 ```
 
-### Usage - LiteLLM Proxy Server
+### 使用方式 - LiteLLM Proxy 伺服器 {#usage---litellm-proxy-server}
 
-#### 1. Setup config.yaml
+#### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers
 model_list:
@@ -56,7 +56,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start the proxy
+#### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -64,7 +64,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Test it
+#### 3. 測試它 {#3-test-it}
 
 ```bash showLineNumbers
 curl --location 'http://0.0.0.0:4000/v1/images/generations' \
@@ -76,7 +76,7 @@ curl --location 'http://0.0.0.0:4000/v1/images/generations' \
 }'
 ```
 
-### Advanced Usage - With Additional Parameters
+### 進階使用方式 - 搭配額外參數 {#advanced-usage---with-additional-parameters}
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -94,21 +94,21 @@ response = image_generation(
 print(response)
 ```
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
-Stability AI supports the following OpenAI-compatible parameters:
+Stability AI 支援以下 OpenAI 相容參數：
 
-| Parameter | Type | Description | Example |
+| 參數 | 型別 | 說明 | 範例 |
 |-----------|------|-------------|---------|
-| `size` | string | Image dimensions (mapped to aspect_ratio) | `"1024x1024"` |
-| `n` | integer | Number of images (note: Stability returns 1 per request) | `1` |
-| `response_format` | string | Format of response (`b64_json` only for Stability) | `"b64_json"` |
+| `size` | string | 圖像尺寸（對應到 aspect_ratio） | `"1024x1024"` |
+| `n` | integer | 圖像數量（注意：Stability 每次請求只回傳 1 張） | `1` |
+| `response_format` | string | 回應格式（僅 Stability 的 `b64_json`） | `"b64_json"` |
 
-### Size to Aspect Ratio Mapping
+### 尺寸到長寬比對應 {#size-to-aspect-ratio-mapping}
 
-The `size` parameter is automatically mapped to Stability's `aspect_ratio`:
+`size` 參數會自動對應到 Stability 的 `aspect_ratio`：
 
-| OpenAI Size | Stability Aspect Ratio |
+| OpenAI 尺寸 | Stability 長寬比 |
 |-------------|----------------------|
 | `1024x1024` | `1:1` |
 | `1792x1024` | `16:9` |
@@ -116,9 +116,9 @@ The `size` parameter is automatically mapped to Stability's `aspect_ratio`:
 | `512x512` | `1:1` |
 | `256x256` | `1:1` |
 
-### Using Stability-Specific Parameters
+### 使用 Stability 特定參數 {#using-stability-specific-parameters}
 
-You can pass parameters that are specific to Stability AI directly in your request:
+您可以在請求中直接傳遞 Stability AI 專屬參數：
 
 ```python showLineNumbers
 from litellm import image_generation
@@ -138,25 +138,25 @@ response = image_generation(
 print(response)
 ```
 
-### Supported Image Generation Models
+### 支援的圖像生成模型 {#supported-image-generation-models}
 
-| Model Name | Function Call | Description |
+| 模型名稱 | 函式呼叫 | 說明 |
 |------------|---------------|-------------|
 | sd3 | `image_generation(model="stability/sd3", ...)` | Stable Diffusion 3 |
 | sd3-large | `image_generation(model="stability/sd3-large", ...)` | SD3 Large |
-| sd3-large-turbo | `image_generation(model="stability/sd3-large-turbo", ...)` | SD3 Large Turbo (faster) |
+| sd3-large-turbo | `image_generation(model="stability/sd3-large-turbo", ...)` | SD3 Large Turbo（較快） |
 | sd3-medium | `image_generation(model="stability/sd3-medium", ...)` | SD3 Medium |
-| sd3.5-large | `image_generation(model="stability/sd3.5-large", ...)` | SD 3.5 Large (recommended) |
+| sd3.5-large | `image_generation(model="stability/sd3.5-large", ...)` | SD 3.5 Large（建議） |
 | sd3.5-large-turbo | `image_generation(model="stability/sd3.5-large-turbo", ...)` | SD 3.5 Large Turbo |
 | sd3.5-medium | `image_generation(model="stability/sd3.5-medium", ...)` | SD 3.5 Medium |
 | stable-image-ultra | `image_generation(model="stability/stable-image-ultra", ...)` | Stable Image Ultra |
 | stable-image-core | `image_generation(model="stability/stable-image-core", ...)` | Stable Image Core |
 
-For more details on available models and features, see: https://platform.stability.ai/docs/api-reference
+如需更多可用模型與功能的詳細資訊，請參閱：https://platform.stability.ai/docs/api-reference
 
-## Response Format
+## 回應格式 {#response-format}
 
-Stability AI returns images in base64 format. The response is OpenAI-compatible:
+Stability AI 會以 base64 格式回傳圖像。回應與 OpenAI 相容：
 
 ```python
 {
@@ -169,21 +169,21 @@ Stability AI returns images in base64 format. The response is OpenAI-compatible:
 }
 ```
 
-## Image Editing
+## 圖像編輯 {#image-editing}
 
-Stability AI supports various image editing operations including inpainting, upscaling, outpainting, background removal, and more.
+Stability AI 支援各種圖像編輯操作，包括 inpainting、upscaling、outpainting、背景移除等。
 
-:::info Optional Parameters
-**Important:** Different Stability models have different parameter requirements:
-- Some models don't require a `prompt` (e.g., upscaling, background removal)
-- The `style-transfer` model uses `init_image` and `style_image` instead of `image`
-- The `outpaint` model requires numeric parameters (`left`, `right`, `up`, `down`)
-LiteLLM automatically handles these differences for you.
+:::info 選用參數
+**重要：** 不同的 Stability 模型有不同的參數需求：
+- 有些模型不需要 `prompt`（例如：upscaling、背景移除）
+- `style-transfer` 模型使用 `init_image` 和 `style_image`，而不是 `image`
+- `outpaint` 模型需要數值參數（`left`、`right`、`up`、`down`）
+LiteLLM 會自動為您處理這些差異。
 :::
 
-### Usage - LiteLLM Python SDK
+### 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk-1}
 
-#### Inpainting (Edit with Mask)
+#### Inpainting（使用遮罩編輯） {#inpainting-edit-with-mask}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -202,7 +202,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Image Upscaling
+#### 圖像放大 {#image-upscaling}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -234,7 +234,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Image Outpainting
+#### 圖像外擴 {#image-outpainting}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -255,7 +255,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Background Removal
+#### 背景移除 {#background-removal}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -272,7 +272,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Search and Replace
+#### 搜尋並取代 {#search-and-replace}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -298,7 +298,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Image Control (Sketch/Structure)
+#### 圖像控制（草圖/結構） {#image-control-sketchstructure}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -324,7 +324,7 @@ response = image_edit(
 print(response)
 ```
 
-#### Erase Objects
+#### 擦除物件 {#erase-objects}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -341,7 +341,7 @@ response = image_edit(
 )
 print(response)
 ```
-#### Style Transfer
+#### 風格轉換 {#style-transfer}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -403,7 +403,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start the proxy
+#### 2. 啟動 proxy {#2-start-the-proxy-1}
 
 ```bash showLineNumbers
 litellm --config config.yaml
@@ -411,7 +411,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Test it
+#### 3. 測試它 {#3-test-it-1}
 
 ```bash showLineNumbers
 curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
@@ -422,11 +422,11 @@ curl -X POST "http://0.0.0.0:4000/v1/images/edits" \
   -F "prompt=Add a beautiful garden in the masked area"
 ```
 
-## AWS Bedrock (Stability)
+## AWS Bedrock（Stability） {#aws-bedrock-stability}
 
-LiteLLM also supports Stability AI models via AWS Bedrock. This is useful if you're already using AWS infrastructure.
+LiteLLM 也支援透過 AWS Bedrock 使用 Stability AI 模型。如果您已經在使用 AWS 基礎架構，這會很有用。
 
-### Usage - Bedrock Stability
+### 使用方式 - Bedrock Stability {#usage---bedrock-stability}
 
 ```python showLineNumbers
 from litellm import image_edit
@@ -446,17 +446,17 @@ response = image_edit(
 )
 print(response)
 ```
-# Fast upscale without prompt
+# 無需提示詞的快速放大 {#fast-upscale-without-prompt}
 response = image_edit(
     model="bedrock/stability.stable-fast-upscale-v1:0",
     image=open("low_res_image.png", "rb"),
 )
 
-# Outpaint with numeric parameters
+# 使用數值參數進行外擴 {#outpaint-with-numeric-parameters}
 response = image_edit(
     model="bedrock/stability.stable-outpaint-v1:0",
     image=open("original_image.png", "rb"),
-    left=100,   # Automatically converted to int
+    left=100,   # 自動轉換為 int
     right=100,
     up=50,
     down=50,
@@ -464,33 +464,33 @@ response = image_edit(
 
 print(response)
 
-### Supported Bedrock Stability Models
+### 支援的 Bedrock Stability 模型 {#supported-bedrock-stability-models}
 
-All Stability AI image edit models are available via Bedrock with the `bedrock/` prefix:
+所有 Stability AI 圖像編輯模型都可透過 Bedrock 使用，並帶有 `bedrock/` 前綴：
 
-| Direct API Model | Bedrock Model | Description |
+| 直接 API 模型 | Bedrock 模型 | 說明 |
 |------------------|---------------|-------------|
 | stability/stable-image-inpaint-v1:0 | bedrock/us.stability.stable-image-inpaint-v1:0 | Inpainting |
-| stability/stable-conservative-upscale-v1:0 | bedrock/stability.stable-conservative-upscale-v1:0 | Conservative upscaling |
-| stability/stable-creative-upscale-v1:0 | bedrock/stability.stable-creative-upscale-v1:0 | Creative upscaling |
-| stability/stable-fast-upscale-v1:0 | bedrock/stability.stable-fast-upscale-v1:0 | Fast upscaling |
-| stability/stable-outpaint-v1:0 | bedrock/stability.stable-outpaint-v1:0 | Outpainting |
-| stability/stable-image-remove-background-v1:0 | bedrock/stability.stable-image-remove-background-v1:0 | Remove background |
-| stability/stable-image-search-replace-v1:0 | bedrock/stability.stable-image-search-replace-v1:0 | Search and replace |
-| stability/stable-image-search-recolor-v1:0 | bedrock/stability.stable-image-search-recolor-v1:0 | Search and recolor |
-| stability/stable-image-control-sketch-v1:0 | bedrock/stability.stable-image-control-sketch-v1:0 | Control with sketch |
-| stability/stable-image-control-structure-v1:0 | bedrock/stability.stable-image-control-structure-v1:0 | Control with structure |
-| stability/stable-image-erase-object-v1:0 | bedrock/stability.stable-image-erase-object-v1:0 | Erase objects |
+| stability/stable-conservative-upscale-v1:0 | bedrock/stability.stable-conservative-upscale-v1:0 | 保守式放大 |
+| stability/stable-creative-upscale-v1:0 | bedrock/stability.stable-creative-upscale-v1:0 | 創意式放大 |
+| stability/stable-fast-upscale-v1:0 | bedrock/stability.stable-fast-upscale-v1:0 | 快速放大 |
+| stability/stable-outpaint-v1:0 | bedrock/stability.stable-outpaint-v1:0 | 外擴 |
+| stability/stable-image-remove-background-v1:0 | bedrock/stability.stable-image-remove-background-v1:0 | 移除背景 |
+| stability/stable-image-search-replace-v1:0 | bedrock/stability.stable-image-search-replace-v1:0 | 搜尋並取代 |
+| stability/stable-image-search-recolor-v1:0 | bedrock/stability.stable-image-search-recolor-v1:0 | 搜尋並重新著色 |
+| stability/stable-image-control-sketch-v1:0 | bedrock/stability.stable-image-control-sketch-v1:0 | 使用草圖控制 |
+| stability/stable-image-control-structure-v1:0 | bedrock/stability.stable-image-control-structure-v1:0 | 使用結構控制 |
+| stability/stable-image-erase-object-v1:0 | bedrock/stability.stable-image-erase-object-v1:0 | 擦除物件 |
 
-**Note:** Bedrock model IDs may use `us.stability.*` or `stability.*` prefix depending on the region and model.
+**注意：** Bedrock 模型 ID 可能會使用 `us.stability.*` 或 `stability.*` 前綴，視區域與模型而定。
 
-## Comparing Routes
+## 比較路由 {#comparing-routes}
 
-LiteLLM supports Stability AI models via two routes:
+LiteLLM 透過兩種路由支援 Stability AI 模型：
 
-| Route | Provider | Use Case | Image Generation | Image Editing |
+| 路由 | 提供者 | 使用情境 | 圖像生成 | 圖像編輯 |
 |-------|----------|----------|------------------|---------------|
-| `stability/` | Stability AI Direct API | Direct access, all latest models | ✅ | ✅ |
-| `bedrock/stability.*` | AWS Bedrock | AWS integration, enterprise features | ✅ | ✅ |
+| `stability/` | Stability AI Direct API | 直接存取、所有最新模型 | ✅ | ✅ |
+| `bedrock/stability.*` | AWS Bedrock | AWS 整合、企業功能 | ✅ | ✅ |
 
-Use `stability/` for direct API access. Use `bedrock/stability.*` if you're already using AWS Bedrock.
+直接 API 存取請使用 `stability/`。如果您已經在使用 AWS Bedrock，請使用 `bedrock/stability.*`。

@@ -1,29 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Manus
+# Manus {#manus}
 
-Use Manus AI agents through LiteLLM's OpenAI-compatible Responses API.
+透過 LiteLLM 相容於 OpenAI 的 Responses API 使用 Manus AI 代理程式。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Manus is an AI agent platform for complex reasoning tasks, document analysis, and multi-step workflows with asynchronous task execution. |
-| Provider Route on LiteLLM | `manus/{agent_profile}` |
-| Supported Operations | `/responses` (Responses API), `/files` (Files API) |
-| Provider Doc | [Manus API ↗](https://open.manus.im/docs/openai-compatibility) |
+| 說明 | Manus 是一個 AI 代理程式平台，適用於複雜推理任務、文件分析，以及具備非同步任務執行的多步驟工作流程。 |
+| LiteLLM 上的提供者路由 | `manus/{agent_profile}` |
+| 支援的操作 | `/responses`（Responses API）、`/files`（Files API） |
+| 提供者文件 | [Manus API ↗](https://open.manus.im/docs/openai-compatibility) |
 
-## Model Format
+## 模型格式 {#model-format}
 
 ```shell
 manus/{agent_profile}
 ```
 
-**Examples:**
-- `manus/manus-1.6` - General purpose agent
-- `manus/manus-1.6-lite` - Lightweight agent for simple tasks
-- `manus/manus-1.6-max` - Advanced agent for complex analysis
+**範例：**
+- `manus/manus-1.6` - 通用代理程式
+- `manus/manus-1.6-lite` - 適用於簡單任務的輕量型代理程式
+- `manus/manus-1.6-max` - 適用於複雜分析的進階代理程式
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Basic Usage"
 import litellm
@@ -59,9 +59,9 @@ if response.status == "completed":
             print(message.content[0].text)
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### Setup
+### 設定 {#setup}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -75,7 +75,7 @@ model_list:
 litellm --config config.yaml
 ```
 
-### Usage
+### 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -160,39 +160,39 @@ if response.status == "completed":
 </TabItem>
 </Tabs>
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Manus operates as an **asynchronous agent API**:
+Manus 以**非同步代理程式 API**運作：
 
-1. **Create Task**: When you call `litellm.responses()`, Manus creates a task and returns immediately with `status: "running"`
-2. **Task Executes**: The agent works on your request in the background
-3. **Poll for Completion**: You must repeatedly call `litellm.get_response()` or `client.responses.retrieve()` until the status changes to `"completed"`
-4. **Get Results**: Once completed, the `output` field contains the full conversation
+1. **建立任務**：當您呼叫 `litellm.responses()` 時，Manus 會建立一個任務並立即回傳 `status: "running"`
+2. **任務執行**：代理程式在背景中處理您的請求
+3. **輪詢完成狀態**：您必須持續呼叫 `litellm.get_response()` 或 `client.responses.retrieve()`，直到狀態變更為 `"completed"`
+4. **取得結果**：完成後，`output` 欄位會包含完整對話
 
-**Task Statuses:**
-- `running` - Agent is actively working
-- `pending` - Agent is waiting for input
-- `completed` - Task finished successfully
-- `error` - Task failed
+**任務狀態：**
+- `running` - 代理程式正在積極處理
+- `pending` - 代理程式正在等待輸入
+- `completed` - 任務已成功完成
+- `error` - 任務失敗
 
 :::tip Production Usage
-For production applications, use [webhooks](https://open.manus.im/docs/webhooks) instead of polling to get notified when tasks complete.
+對於正式環境應用程式，請改用 [webhooks](https://open.manus.im/docs/webhooks) 來接收任務完成通知，而非輪詢。
 :::
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-| Parameter | Supported | Notes |
+| 參數 | 支援 | 備註 |
 |-----------|-----------|-------|
-| `input` | ✅ | Text, images, or structured content |
-| `stream` | ✅ | Fake streaming (task runs async) |
-| `max_output_tokens` | ✅ | Limits response length |
-| `previous_response_id` | ✅ | For multi-turn conversations |
+| `input` | ✅ | 文字、圖片或結構化內容 |
+| `stream` | ✅ | 假串流（任務以非同步方式執行） |
+| `max_output_tokens` | ✅ | 限制回應長度 |
+| `previous_response_id` | ✅ | 用於多輪對話 |
 
-## Files API
+## Files API {#files-api}
 
-Manus supports file uploads for document analysis and processing. Files can be uploaded and then referenced in Responses API calls.
+Manus 支援用於文件分析與處理的檔案上傳。檔案可以先上傳，再於 Responses API 呼叫中參照。
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk-1}
 
 ```python showLineNumbers title="Upload, Use, Retrieve, and Delete Files"
 import litellm
@@ -241,7 +241,7 @@ deleted_file = await litellm.afile_delete(
 print(f"Deleted: {deleted_file.deleted}")
 ```
 
-### LiteLLM AI Gateway
+### LiteLLM AI Gateway {#litellm-ai-gateway-1}
 
 <Tabs>
 <TabItem value="curl" label="cURL">
@@ -362,7 +362,7 @@ print(f"Deleted: {deleted_file.deleted}")
 </TabItem>
 </Tabs>
 
-## Related Documentation
+## 相關文件 {#related-documentation}
 
 - [LiteLLM Responses API](/docs/response_api)
 - [LiteLLM Files API](/docs/proxy/litellm_managed_files)

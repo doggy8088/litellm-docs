@@ -2,24 +2,24 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI Moderation
+# OpenAI Moderation {#openai-moderation}
 
-## Overview
+## 概觀 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Use OpenAI's built-in Moderation API to detect and block harmful content including hate speech, harassment, self-harm, sexual content, and violence. |
-| Provider | [OpenAI Moderation API](https://platform.openai.com/docs/guides/moderation) |
-| Supported Actions | `BLOCK` (raises HTTP 400 exception when violations detected) |
-| Supported Modes | `pre_call`, `during_call`, `post_call` |
-| Streaming Support | ✅ Full support for streaming responses |
-| API Requirements | OpenAI API key |
+| 說明 | 使用 OpenAI 內建的 Moderation API 偵測並封鎖有害內容，包括仇恨言論、騷擾、自殘、性內容與暴力。 |
+| 提供者 | [OpenAI Moderation API](https://platform.openai.com/docs/guides/moderation) |
+| Supported Actions | `BLOCK`（偵測到違規時會擲出 HTTP 400 例外） |
+| 支援的模式 | `pre_call`、`during_call`、`post_call` |
+| Streaming Support | ✅ 完整支援串流回應 |
+| API Requirements | OpenAI API 金鑰 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml 
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section:
+在 `guardrails` 區段下定義您的防護欄：
 
 <Tabs>
 <TabItem value="config" label="Config.yaml">
@@ -41,22 +41,22 @@ guardrails:
       api_base: "https://api.openai.com/v1"  # Optional, defaults to OpenAI API
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **user input**
-- `during_call` Run **during** LLM call, on **user input**. Same as `pre_call` but runs in parallel as LLM call. Response not returned until guardrail check completes.
-- `post_call` Run **after** LLM call, on **LLM response**
+- `pre_call` 在 **LLM 呼叫前** 執行，針對 **使用者輸入**
+- `during_call` 在 **LLM 呼叫期間** 執行，針對 **使用者輸入**。與 `pre_call` 相同，但會與 LLM 呼叫平行執行。直到防護欄檢查完成前不會回傳回應。
+- `post_call` 在 **LLM 呼叫後** 執行，針對 **LLM 回應**
 
-#### Supported OpenAI Moderation Models
+#### 支援的 OpenAI Moderation 模型 {#supported-openai-moderation-models}
 
-- `omni-moderation-latest` (default) - Latest multimodal moderation model
-- `text-moderation-latest` - Latest text-only moderation model
+- `omni-moderation-latest`（預設）- 最新多模態 moderation 模型
+- `text-moderation-latest` - 最新純文字 moderation 模型
 
 </TabItem>
 
-<TabItem value="env" label="Environment Variables">
+<TabItem value="env" label="環境變數">
 
-Set your OpenAI API key:
+設定您的 OpenAI API 金鑰：
 
 ```bash title="Setup Environment Variables"
 export OPENAI_API_KEY="your-openai-api-key"
@@ -65,18 +65,18 @@ export OPENAI_API_KEY="your-openai-api-key"
 </TabItem>
 </Tabs>
 
-### 2. Start LiteLLM Gateway 
+### 2. 啟動 LiteLLM 閘道 {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求 {#3-test-request}
 
 <Tabs>
-<TabItem label="Blocked Request" value="blocked">
+<TabItem label="被封鎖的請求" value="blocked">
 
-Expect this to fail since the request contains harmful content:
+由於請求包含有害內容，預期這會失敗：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -91,7 +91,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure:
+失敗時的預期回應：
 
 ```json
 {
@@ -118,7 +118,7 @@ Expected response on failure:
 
 </TabItem>
 
-<TabItem label="Successful Call" value="allowed">
+<TabItem label="成功的呼叫" value="allowed">
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -133,7 +133,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -162,11 +162,11 @@ Expected response:
 </TabItem>
 </Tabs>
 
-## Advanced Configuration
+## 進階組態 {#advanced-configuration}
 
-### Multiple Guardrails for Input and Output
+### 輸入與輸出的多重防護欄 {#multiple-guardrails-for-input-and-output}
 
-You can configure separate guardrails for user input and LLM responses:
+您可以為使用者輸入與 LLM 回應分別設定防護欄：
 
 ```yaml showLineNumbers title="Multiple Guardrails Config"
 guardrails:
@@ -183,9 +183,9 @@ guardrails:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-### Custom API Configuration
+### 自訂 API 組態 {#custom-api-configuration}
 
-Configure custom OpenAI API endpoints or different models:
+設定自訂 OpenAI API 端點或不同模型：
 
 ```yaml showLineNumbers title="Custom API Config"
 guardrails:
@@ -198,15 +198,15 @@ guardrails:
       model: "text-moderation-latest"
 ```
 
-## Streaming Support
+## 串流支援 {#streaming-support}
 
-The OpenAI Moderation guardrail fully supports streaming responses. When used in `post_call` mode, it will:
+OpenAI Moderation 防護欄完整支援串流回應。當以 `post_call` 模式使用時，將會：
 
-1. Collect all streaming chunks
-2. Assemble the complete response
-3. Apply moderation to the full content
-4. Block the entire stream if violations are detected
-5. Return the original stream if content is safe
+1. 收集所有串流區塊
+2. 組裝完整回應
+3. 對完整內容套用 moderation
+4. 若偵測到違規，封鎖整個串流
+5. 若內容安全，回傳原始串流
 
 ```yaml showLineNumbers title="Streaming Config"
 guardrails:
@@ -217,32 +217,32 @@ guardrails:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-## Content Categories
+## 內容類別 {#content-categories}
 
-The OpenAI Moderation API detects the following categories of harmful content:
+OpenAI Moderation API 會偵測以下有害內容類別：
 
-| Category | Description |
+| Category | 說明 |
 |----------|-------------|
-| `hate` | Content that expresses, incites, or promotes hate based on race, gender, ethnicity, religion, nationality, sexual orientation, disability status, or caste |
-| `harassment` | Content that harasses, bullies, or intimidates an individual |
-| `self-harm` | Content that promotes, encourages, or depicts acts of self-harm |
-| `sexual` | Content meant to arouse sexual excitement or promote sexual services |
-| `violence` | Content that depicts death, violence, or physical injury |
+| `hate` | 表達、煽動或宣揚基於種族、性別、族裔、宗教、國籍、性傾向、身心障礙狀態或種姓的仇恨內容 |
+| `harassment` | 騷擾、霸凌或恐嚇個人的內容 |
+| `self-harm` | 宣揚、鼓勵或描繪自殘行為的內容 |
+| `sexual` | 意圖引發性興奮或推廣性服務的內容 |
+| `violence` | 描繪死亡、暴力或身體傷害的內容 |
 
-Each category is evaluated with both a boolean flag and a confidence score (0.0 to 1.0).
+每個類別都會以布林旗標與信心分數（0.0 到 1.0）進行評估。
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-When content violates OpenAI's moderation policy:
+當內容違反 OpenAI 的 moderation 政策時：
 
-- **HTTP Status**: 400 Bad Request
-- **Error Type**: `HTTPException`
-- **Error Details**: Includes violated categories and confidence scores
-- **Behavior**: Request is immediately blocked
+- **HTTP 狀態**：400 Bad Request
+- **錯誤類型**：`HTTPException`
+- **錯誤詳情**：包含違規類別與信心分數
+- **行為**：請求會立即被封鎖
 
-## Best Practices
+## 最佳實務 {#best-practices}
 
-### 1. Use Pre-call for User Input
+### 1. 對使用者輸入使用前置呼叫 {#1-use-pre-call-for-user-input}
 
 ```yaml
 guardrails:
@@ -252,7 +252,7 @@ guardrails:
       mode: "pre_call"  # Block harmful user inputs early
 ```
 
-### 2. Use Post-call for LLM Responses
+### 2. 對 LLM 回應使用後置呼叫 {#2-use-post-call-for-llm-responses}
 
 ```yaml
 guardrails:
@@ -262,7 +262,7 @@ guardrails:
       mode: "post_call"  # Ensure LLM responses are safe
 ```
 
-### 3. Combine with Other Guardrails
+### 3. 與其他防護欄結合 {#3-combine-with-other-guardrails}
 
 ```yaml
 guardrails:
@@ -277,36 +277,36 @@ guardrails:
       mode: "pre_call"
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-### Common Issues
+### 常見問題 {#common-issues}
 
-1. **Invalid API Key**: Ensure your OpenAI API key is correctly set
+1. **無效的 API 金鑰**：請確認您的 OpenAI API 金鑰已正確設定
    ```bash
    export OPENAI_API_KEY="sk-your-actual-key"
    ```
 
-2. **Rate Limiting**: OpenAI Moderation API has rate limits. Monitor usage in high-volume scenarios.
+2. **速率限制**：OpenAI Moderation API 有速率限制。在高流量情境下請監控用量。
 
-3. **Network Issues**: Verify connectivity to OpenAI's API endpoints.
+3. **網路問題**：請驗證與 OpenAI API 端點的連線。
 
-### Debug Mode
+### 除錯模式 {#debug-mode}
 
-Enable detailed logging to troubleshoot issues:
+啟用詳細記錄以疑難排解問題：
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-Look for logs starting with `OpenAI Moderation:` to trace guardrail execution.
+請尋找以 `OpenAI Moderation:` 開頭的記錄，以追蹤防護欄執行流程。
 
-## API Costs
+## API 成本 {#api-costs}
 
-The OpenAI Moderation API is **free to use** for content policy compliance. This makes it a cost-effective guardrail option compared to other commercial moderation services.
+OpenAI Moderation API 對於內容政策合規而言是**免費使用**。與其他商業 moderation 服務相比，這使它成為具成本效益的防護欄選項。
 
-## Need Help?
+## 需要協助嗎？ {#need-help}
 
-For additional support:
-- Check the [OpenAI Moderation API documentation](https://platform.openai.com/docs/guides/moderation)
-- Review [LiteLLM Guardrails documentation](./quick_start)
-- Join our [Discord community](https://discord.gg/wuPM9dRgDw) 
+如需額外支援：
+- 查看 [OpenAI Moderation API 文件](https://platform.openai.com/docs/guides/moderation)
+- 閱讀 [LiteLLM 防護欄文件](./quick_start)
+- 加入我們的 [Discord 社群](https://discord.gg/wuPM9dRgDw)

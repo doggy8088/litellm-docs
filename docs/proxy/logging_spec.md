@@ -1,63 +1,62 @@
+# StandardLoggingPayload 規格 {#standardloggingpayload-specification}
 
-# StandardLoggingPayload Specification
+位於 `kwargs["standard_logging_object"]` 下方。這是一個標準 payload，會記錄每個成功與失敗的回應。
 
-Found under `kwargs["standard_logging_object"]`. This is a standard payload, logged for every successful and failed response.
+## 標準記錄負載 {#standardloggingpayload}
 
-## StandardLoggingPayload
-
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `id` | `str` | Unique identifier |
-| `trace_id` | `str` | Trace multiple LLM calls belonging to same overall request |
-| `call_type` | `str` | Type of call |
-| `response_cost` | `float` | Cost of the response in USD ($) |
-| `cost_breakdown` | `Optional[CostBreakdown]` | Detailed cost breakdown object |
-| `response_cost_failure_debug_info` | `StandardLoggingModelCostFailureDebugInformation` | Debug information if cost tracking fails |
-| `status` | `StandardLoggingPayloadStatus` | Status of the payload |
-| `status_fields` | `StandardLoggingPayloadStatusFields` | Typed status fields for easy filtering and analytics |
-| `total_tokens` | `int` | Total number of tokens |
-| `prompt_tokens` | `int` | Number of prompt tokens |
-| `completion_tokens` | `int` | Number of completion tokens |
-| `startTime` | `float` | Start time of the call |
-| `endTime` | `float` | End time of the call |
-| `completionStartTime` | `float` | Time to first token for streaming requests |
-| `response_time` | `float` | Total response time. If streaming, this is the time to first token |
-| `model_map_information` | `StandardLoggingModelInformation` | Model mapping information |
-| `model` | `str` | Model name sent in request |
-| `model_id` | `Optional[str]` | Model ID of the deployment used |
-| `model_group` | `Optional[str]` | `model_group` used for the request |
+| `id` | `str` | 唯一識別碼 |
+| `trace_id` | `str` | 追蹤屬於同一整體請求的多次 LLM 呼叫 |
+| `call_type` | `str` | 呼叫類型 |
+| `response_cost` | `float` | 回應的成本（USD，$） |
+| `cost_breakdown` | `Optional[CostBreakdown]` | 詳細成本分解物件 |
+| `response_cost_failure_debug_info` | `StandardLoggingModelCostFailureDebugInformation` | 若成本追蹤失敗時的除錯資訊 |
+| `status` | `StandardLoggingPayloadStatus` | payload 狀態 |
+| `status_fields` | `StandardLoggingPayloadStatusFields` | 用於便於篩選與分析的型別化狀態欄位 |
+| `total_tokens` | `int` | token 總數 |
+| `prompt_tokens` | `int` | prompt token 數量 |
+| `completion_tokens` | `int` | completion token 數量 |
+| `startTime` | `float` | 呼叫開始時間 |
+| `endTime` | `float` | 呼叫結束時間 |
+| `completionStartTime` | `float` | 串流請求的首個 token 時間 |
+| `response_time` | `float` | 總回應時間。若為串流，則為首個 token 時間 |
+| `model_map_information` | `StandardLoggingModelInformation` | 模型對應資訊 |
+| `model` | `str` | 在請求中送出的模型名稱 |
+| `model_id` | `Optional[str]` | 所使用部署的模型 ID |
+| `model_group` | `Optional[str]` | 用於該請求的 `model_group` |
 | `api_base` | `str` | LLM API base URL |
-| `metadata` | `StandardLoggingMetadata` | Metadata information |
-| `cache_hit` | `Optional[bool]` | Whether cache was hit |
-| `cache_key` | `Optional[str]` | Optional cache key |
-| `saved_cache_cost` | `float` | Cost saved by cache |
-| `request_tags` | `list` | List of request tags |
-| `end_user` | `Optional[str]` | Optional end user identifier |
-| `requester_ip_address` | `Optional[str]` | Optional requester IP address |
-| `messages` | `Optional[Union[str, list, dict]]` | Messages sent in the request |
-| `response` | `Optional[Union[str, list, dict]]` | LLM response |
-| `error_str` | `Optional[str]` | Optional error string |
-| `error_information` | `Optional[StandardLoggingPayloadErrorInformation]` | Optional error information |
-| `model_parameters` | `dict` | Model parameters |
-| `hidden_params` | `StandardLoggingHiddenParams` | Hidden parameters |
+| `metadata` | `StandardLoggingMetadata` | 中繼資料資訊 |
+| `cache_hit` | `Optional[bool]` | 是否命中快取 |
+| `cache_key` | `Optional[str]` | 可選的快取金鑰 |
+| `saved_cache_cost` | `float` | 快取節省的成本 |
+| `request_tags` | `list` | 請求標籤清單 |
+| `end_user` | `Optional[str]` | 可選的終端使用者識別碼 |
+| `requester_ip_address` | `Optional[str]` | 可選的請求者 IP 位址 |
+| `messages` | `Optional[Union[str, list, dict]]` | 在請求中送出的訊息 |
+| `response` | `Optional[Union[str, list, dict]]` | LLM 回應 |
+| `error_str` | `Optional[str]` | 可選的錯誤字串 |
+| `error_information` | `Optional[StandardLoggingPayloadErrorInformation]` | 可選的錯誤資訊 |
+| `model_parameters` | `dict` | 模型參數 |
+| `hidden_params` | `StandardLoggingHiddenParams` | 隱藏參數 |
 
-## Cost Breakdown
+## 成本分解 {#cost-breakdown}
 
-The `cost_breakdown` field provides detailed cost breakdown for completion requests as a `CostBreakdown` object containing:
+`cost_breakdown` 欄位會提供 completion 請求的詳細成本分解，作為一個 `CostBreakdown` 物件，包含：
 
-- **`input_cost`**: Cost of input/prompt tokens including cache creation tokens
-- **`output_cost`**: Cost of output/completion tokens (including reasoning tokens if applicable)
-- **`tool_usage_cost`**: Cost of built-in tools usage (e.g., web search, code interpreter)
-- **`total_cost`**: Total cost of input + output + tool usage
-- **`reasoning_cost`**: Cost of reasoning tokens, reported as a subset of `output_cost` (populated when the model returns reasoning tokens, e.g. `gemini-2.5-flash`, `o3`)
-- **`cache_read_cost`**: Cost of cache-read tokens, reported as a subset of `input_cost` (populated when cached tokens are present in the response)
-- **`cache_creation_cost`**: Cost of cache-creation tokens, reported as a subset of `input_cost` (populated when prompt caching is used, e.g. Anthropic models)
+- **`input_cost`**：輸入/prompt token 的成本，包含快取建立 token
+- **`output_cost`**：輸出/completion token 的成本（如適用，包含 reasoning token）
+- **`tool_usage_cost`**：內建工具使用的成本（例如：web search、code interpreter）
+- **`total_cost`**：輸入 + 輸出 + 工具使用的總成本
+- **`reasoning_cost`**：reasoning token 的成本，回報為 `output_cost` 的子集（當模型回傳 reasoning token 時填入，例如 `gemini-2.5-flash`、`o3`）
+- **`cache_read_cost`**：cache-read token 的成本，回報為 `input_cost` 的子集（當回應中存在已快取 token 時填入）
+- **`cache_creation_cost`**：cache-creation token 的成本，回報為 `input_cost` 的子集（當使用 prompt caching 時填入，例如 Anthropic models）
 
-**Note**: This field is populated for all call types. For non-completion calls, `input_cost` and `output_cost` may be 0.
+**注意**：此欄位會為所有呼叫類型填入。對於非 completion 呼叫，`input_cost` 與 `output_cost` 可能為 0。
 
-The total cost relationship is: `response_cost = cost_breakdown.total_cost`
+總成本關係為：`response_cost = cost_breakdown.total_cost`
 
-### CostBreakdown Type
+### CostBreakdown 型別 {#costbreakdown-type}
 
 ```python
 class CostBreakdown(TypedDict, total=False):
@@ -70,144 +69,142 @@ class CostBreakdown(TypedDict, total=False):
     cache_creation_cost: float  # Cost of cache-creation tokens in USD; subset of input_cost
 ```
 
-## StandardLoggingUserAPIKeyMetadata
+## 標準記錄使用者 API 金鑰中繼資料 {#standardlogginguserapikeymetadata}
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `user_api_key_hash` | `Optional[str]` | Hash of the litellm virtual key |
-| `user_api_key_alias` | `Optional[str]` | Alias of the API key |
-| `user_api_key_org_id` | `Optional[str]` | Organization ID associated with the key |
-| `user_api_key_team_id` | `Optional[str]` | Team ID associated with the key |
-| `user_api_key_user_id` | `Optional[str]` | User ID associated with the key |
-| `user_api_key_team_alias` | `Optional[str]` | Team alias associated with the key |
+| `user_api_key_hash` | `Optional[str]` | litellm 虛擬金鑰的雜湊值 |
+| `user_api_key_alias` | `Optional[str]` | API 金鑰別名 |
+| `user_api_key_org_id` | `Optional[str]` | 與金鑰相關聯的組織 ID |
+| `user_api_key_team_id` | `Optional[str]` | 與金鑰相關聯的團隊 ID |
+| `user_api_key_user_id` | `Optional[str]` | 與金鑰相關聯的使用者 ID |
+| `user_api_key_team_alias` | `Optional[str]` | 與金鑰相關聯的團隊別名 |
 
-## StandardLoggingMetadata
+## 標準記錄中繼資料 {#standardloggingmetadata}
 
-Inherits from `StandardLoggingUserAPIKeyMetadata` and adds:
+繼承自 `StandardLoggingUserAPIKeyMetadata` 並新增：
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `spend_logs_metadata` | `Optional[dict]` | Key-value pairs for spend logging |
-| `requester_ip_address` | `Optional[str]` | Requester's IP address |
-| `requester_metadata` | `Optional[dict]` | Additional requester metadata |
-| `vector_store_request_metadata` | `Optional[List[StandardLoggingVectorStoreRequest]]` | Vector store request metadata |
-| `requester_custom_headers` | Dict[str, str] | Any custom (`x-`) headers sent by the client to the proxy. |
-| `prompt_management_metadata` | `Optional[StandardLoggingPromptManagementMetadata]` | Prompt management and versioning metadata |
-| `mcp_tool_call_metadata` | `Optional[StandardLoggingMCPToolCall]` | MCP (Model Context Protocol) tool call information and cost tracking |
-| `applied_guardrails` | `Optional[List[str]]` | List of applied guardrail names |
-| `usage_object` | `Optional[dict]` | Raw usage object from the LLM provider |
-| `cold_storage_object_key` | `Optional[str]` | S3/GCS object key for cold storage retrieval |
-| `guardrail_information` | `Optional[list[StandardLoggingGuardrailInformation]]` | Guardrail information |
+| `spend_logs_metadata` | `Optional[dict]` | 用於花費記錄的鍵值對 |
+| `requester_ip_address` | `Optional[str]` | 請求者的 IP 位址 |
+| `requester_metadata` | `Optional[dict]` | 額外的請求者中繼資料 |
+| `vector_store_request_metadata` | `Optional[List[StandardLoggingVectorStoreRequest]]` | 向量儲存請求中繼資料 |
+| `requester_custom_headers` | Dict[str, str] | 用戶端傳送給 proxy 的任何自訂（`x-`）標頭。 |
+| `prompt_management_metadata` | `Optional[StandardLoggingPromptManagementMetadata]` | prompt 管理與版本控制中繼資料 |
+| `mcp_tool_call_metadata` | `Optional[StandardLoggingMCPToolCall]` | MCP（Model Context Protocol）工具呼叫資訊與成本追蹤 |
+| `applied_guardrails` | `Optional[List[str]]` | 已套用防護欄名稱清單 |
+| `usage_object` | `Optional[dict]` | 來自 LLM 提供者的原始 usage 物件 |
+| `cold_storage_object_key` | `Optional[str]` | 冷儲存擷取用的 S3/GCS 物件鍵值 |
+| `guardrail_information` | `Optional[list[StandardLoggingGuardrailInformation]]` | 防護欄資訊 |
 
+## 標準記錄向量儲存請求 {#standardloggingvectorstorerequest}
 
-## StandardLoggingVectorStoreRequest
-
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| vector_store_id | Optional[str] | ID of the vector store |
-| custom_llm_provider | Optional[str] | Custom LLM provider the vector store is associated with (e.g., bedrock, openai, anthropic) |
-| query | Optional[str] | Query to the vector store |
-| vector_store_search_response | Optional[VectorStoreSearchResponse] | OpenAI format vector store search response |
-| start_time | Optional[float] | Start time of the vector store request |
-| end_time | Optional[float] | End time of the vector store request |
+| vector_store_id | Optional[str] | 向量儲存的 ID |
+| custom_llm_provider | Optional[str] | 與向量儲存相關聯的自訂 LLM 提供者（例如：bedrock、openai、anthropic） |
+| query | Optional[str] | 對向量儲存的查詢 |
+| vector_store_search_response | Optional[VectorStoreSearchResponse] | OpenAI 格式的向量儲存搜尋回應 |
+| start_time | Optional[float] | 向量儲存請求的開始時間 |
+| end_time | Optional[float] | 向量儲存請求的結束時間 |
 
+## 標準記錄額外標頭 {#standardloggingadditionalheaders}
 
-## StandardLoggingAdditionalHeaders
-
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `x_ratelimit_limit_requests` | `int` | Rate limit for requests |
-| `x_ratelimit_limit_tokens` | `int` | Rate limit for tokens |
-| `x_ratelimit_remaining_requests` | `int` | Remaining requests in rate limit |
-| `x_ratelimit_remaining_tokens` | `int` | Remaining tokens in rate limit |
+| `x_ratelimit_limit_requests` | `int` | 請求的速率限制 |
+| `x_ratelimit_limit_tokens` | `int` | token 的速率限制 |
+| `x_ratelimit_remaining_requests` | `int` | 速率限制中剩餘的請求數 |
+| `x_ratelimit_remaining_tokens` | `int` | 速率限制中剩餘的 token 數 |
 
-## StandardLoggingHiddenParams
+## 標準記錄隱藏參數 {#standardlogginghiddenparams}
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `model_id` | `Optional[str]` | Optional model ID |
-| `cache_key` | `Optional[str]` | Optional cache key |
-| `api_base` | `Optional[str]` | Optional API base URL |
-| `response_cost` | `Optional[str]` | Optional response cost |
-| `additional_headers` | `Optional[StandardLoggingAdditionalHeaders]` | Additional headers |
-| `batch_models` | `Optional[List[str]]` | Only set for Batches API. Lists the models used for cost calculation |
-| `litellm_model_name` | `Optional[str]` | Model name sent in request |
+| `model_id` | `Optional[str]` | 可選的模型 ID |
+| `cache_key` | `Optional[str]` | 可選的快取金鑰 |
+| `api_base` | `Optional[str]` | 可選的 API base URL |
+| `response_cost` | `Optional[str]` | 可選的回應成本 |
+| `additional_headers` | `Optional[StandardLoggingAdditionalHeaders]` | 額外標頭 |
+| `batch_models` | `Optional[List[str]]` | 僅供 Batches API 設定。列出用於成本計算的模型 |
+| `litellm_model_name` | `Optional[str]` | 在請求中送出的模型名稱 |
 
-## StandardLoggingModelInformation
+## 標準記錄模型資訊 {#standardloggingmodelinformation}
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `model_map_key` | `str` | Model map key |
-| `model_map_value` | `Optional[ModelInfo]` | Optional model information |
+| `model_map_key` | `str` | 模型對應鍵 |
+| `model_map_value` | `Optional[ModelInfo]` | 可選的模型資訊 |
 
-## StandardLoggingModelCostFailureDebugInformation
+## 標準記錄模型成本失敗除錯資訊 {#standardloggingmodelcostfailuredebuginformation}
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `error_str` | `str` | Error string |
-| `traceback_str` | `str` | Traceback string |
-| `model` | `str` | Model name |
-| `cache_hit` | `Optional[bool]` | Whether cache was hit |
-| `custom_llm_provider` | `Optional[str]` | Optional custom LLM provider |
-| `base_model` | `Optional[str]` | Optional base model |
-| `call_type` | `str` | Call type |
-| `custom_pricing` | `Optional[bool]` | Whether custom pricing was used |
+| `error_str` | `str` | 錯誤字串 |
+| `traceback_str` | `str` | 回溯字串 |
+| `model` | `str` | 模型名稱 |
+| `cache_hit` | `Optional[bool]` | 是否命中快取 |
+| `custom_llm_provider` | `Optional[str]` | 可選的自訂 LLM 提供者 |
+| `base_model` | `Optional[str]` | 可選的基礎模型 |
+| `call_type` | `str` | 呼叫類型 |
+| `custom_pricing` | `Optional[bool]` | 是否使用自訂定價 |
 
-## StandardLoggingPayloadErrorInformation
+## 標準記錄負載錯誤資訊 {#standardloggingpayloaderrorinformation}
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `error_code` | `Optional[str]` | Optional error code (eg. "429") |
-| `error_class` | `Optional[str]` | Optional error class (eg. "RateLimitError") |
-| `llm_provider` | `Optional[str]` | LLM provider that returned the error (eg. "openai")` |
+| `error_code` | `Optional[str]` | 可選的錯誤代碼（例如 "429"） |
+| `error_class` | `Optional[str]` | 可選的錯誤類別（例如 "RateLimitError"） |
+| `llm_provider` | `Optional[str]` | 傳回錯誤的 LLM 提供者（例如 "openai"）` |
 
-## StandardLoggingPayloadStatus
+## 標準記錄負載狀態 {#standardloggingpayloadstatus}
 
-A literal type with two possible values:
+具有兩個可能值的文字型別：
 - `"success"`
 - `"failure"`
 
-## StandardLoggingGuardrailInformation
+## 標準記錄防護欄資訊 {#standardloggingguardrailinformation}
 
-| Field                 | Type | Description                                                                                                                                                               |
+| 欄位                 | 型別 | 說明                                                                                                                                                               |
 |-----------------------|------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `guardrail_name`      | `Optional[str]` | Guardrail name                                                                                                                                                            |
-| `guardrail_provider`  | `Optional[str]` | Guardrail provider                                                                                                                                                        |
-| `guardrail_mode`      | `Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks]]]` | Guardrail mode                                                                                                                                                            |
-| `guardrail_request`   | `Optional[dict]` | Guardrail request                                                                                                                                                         |
-| `guardrail_response`  | `Optional[Union[dict, str, List[dict]]]` | Guardrail response                                                                                                                                                        |
-| `guardrail_status`    | `Literal["success", "guardrail_intervened", "guardrail_failed_to_respond"]` | Guardrail execution status: `success` = no violations detected, `blocked` = content blocked/modified due to policy violations, `failure` = technical error or API failure |
-| `start_time`          | `Optional[float]` | Start time of the guardrail                                                                                                                                               |
-| `end_time`            | `Optional[float]` | End time of the guardrail                                                                                                                                                 |
-| `duration`            | `Optional[float]` | Duration of the guardrail in seconds                                                                                                                                      |
-| `masked_entity_count` | `Optional[Dict[str, int]]` | Count of masked entities                                                                                                                                                  |
+| `guardrail_name`      | `Optional[str]` | 防護欄名稱                                                                                                                                                            |
+| `guardrail_provider`  | `Optional[str]` | 防護欄提供者                                                                                                                                                        |
+| `guardrail_mode`      | `Optional[Union[GuardrailEventHooks, List[GuardrailEventHooks]]]` | 防護欄模式                                                                                                                                                            |
+| `guardrail_request`   | `Optional[dict]` | 防護欄請求                                                                                                                                                         |
+| `guardrail_response`  | `Optional[Union[dict, str, List[dict]]]` | 防護欄回應                                                                                                                                                        |
+| `guardrail_status`    | `Literal["success", "guardrail_intervened", "guardrail_failed_to_respond"]` | 防護欄執行狀態：`success` = 未偵測到違規，`blocked` = 因政策違規而封鎖/修改內容，`failure` = 技術錯誤或 API 失敗 |
+| `start_time`          | `Optional[float]` | 防護欄的開始時間                                                                                                                                               |
+| `end_time`            | `Optional[float]` | 防護欄的結束時間                                                                                                                                                 |
+| `duration`            | `Optional[float]` | 防護欄持續時間（秒）                                                                                                                                      |
+| `masked_entity_count` | `Optional[Dict[str, int]]` | 遮罩實體數量                                                                                                                                                  |
 
-## StandardLoggingPayloadStatusFields
+## 標準記錄負載狀態欄位 {#standardloggingpayloadstatusfields}
 
-Typed status fields for easy filtering and analytics.
+用於輕鬆篩選與分析的型別化狀態欄位。
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `llm_api_status` | `StandardLoggingPayloadStatus` | Status of the LLM API call: `"success"` if completed successfully, `"failure"` if errored |
-| `guardrail_status` | `GuardrailStatus` | Status of guardrail execution (see below) |
+| `llm_api_status` | `StandardLoggingPayloadStatus` | LLM API 呼叫的狀態：成功完成時為 `"success"`，發生錯誤時為 `"failure"` |
+| `guardrail_status` | `GuardrailStatus` | 防護欄執行狀態（見下方） |
 
-### StandardLoggingPayloadStatus
+### 標準記錄負載狀態 {#standardloggingpayloadstatus-1}
 
-A literal type with two possible values:
-- `"success"` - The LLM API request completed successfully
-- `"failure"` - The LLM API request failed
+具有兩個可能值的文字型別：
+- `"success"` - LLM API 請求成功完成
+- `"failure"` - LLM API 請求失敗
 
-### GuardrailStatus
+### 防護欄狀態 {#guardrailstatus}
 
-A literal type with four possible values:
-- `"success"` - Guardrail ran and allowed content through (no violations detected)
-- `"guardrail_intervened"` - Guardrail blocked or modified content due to policy violations
-- `"guardrail_failed_to_respond"` - Guardrail had a technical failure or API error
-- `"not_run"` - No guardrail was executed for this request
+具有四個可能值的文字型別：
+- `"success"` - 防護欄執行並放行內容（未偵測到違規）
+- `"guardrail_intervened"` - 防護欄因政策違規而封鎖或修改內容
+- `"guardrail_failed_to_respond"` - 防護欄發生技術性失敗或 API 錯誤
+- `"not_run"` - 此請求未執行任何防護欄
 
-### Usage Examples
+### 使用範例 {#usage-examples}
 
-Filter logs for requests where guardrails intervened:
+篩選防護欄介入的請求記錄：
 ```json
 {
   "status_fields": {
@@ -216,7 +213,7 @@ Filter logs for requests where guardrails intervened:
 }
 ```
 
-Find guardrail technical failures:
+尋找防護欄技術性失敗：
 ```json
 {
   "status_fields": {
@@ -225,7 +222,7 @@ Find guardrail technical failures:
 }
 ```
 
-Get successful LLM requests:
+取得成功的 LLM 請求：
 ```json
 {
   "status_fields": {
@@ -234,7 +231,7 @@ Get successful LLM requests:
 }
 ```
 
-Find requests where guardrails ran successfully without intervention:
+尋找防護欄成功執行且未介入的請求：
 ```json
 {
   "status_fields": {
@@ -244,7 +241,7 @@ Find requests where guardrails ran successfully without intervention:
 }
 ```
 
-Find requests where no guardrail was run:
+尋找未執行任何防護欄的請求：
 ```json
 {
   "status_fields": {
@@ -253,40 +250,40 @@ Find requests where no guardrail was run:
 }
 ```
 
-## StandardLoggingPromptManagementMetadata
+## 標準記錄提示管理中繼資料 {#standardloggingpromptmanagementmetadata}
 
-Used for tracking prompt versioning and management information.
+用於追蹤 prompt 版本資訊與管理資訊。
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `prompt_id` | `str` | **Required**. Unique identifier for the prompt template or version |
-| `prompt_variables` | `Optional[dict]` | Variables/parameters used in the prompt template (e.g., `{"user_name": "John", "context": "support"}`) |
-| `prompt_integration` | `str` | **Required**. Integration or system managing the prompt (e.g., `"langfuse"`, `"promptlayer"`, `"custom"`) |
+| `prompt_id` | `str` | **必要**。prompt 範本或版本的唯一識別碼 |
+| `prompt_variables` | `Optional[dict]` | prompt 範本中使用的變數/參數（例如 `{"user_name": "John", "context": "support"}`） |
+| `prompt_integration` | `str` | **必要**。管理 prompt 的整合或系統（例如 `"langfuse"`、`"promptlayer"`、`"custom"`） |
 
-## StandardLoggingMCPToolCall
+## 標準記錄 MCP 工具呼叫 {#standardloggingmcptoolcall}
 
-Used to track Model Context Protocol (MCP) tool calls within LiteLLM requests. This provides detailed logging for external tool integrations.
+用於追蹤 LiteLLM 請求中的 Model Context Protocol (MCP) 工具呼叫。這可為外部工具整合提供詳細記錄。
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `name` | `str` | **Required**. The name of the tool being called (e.g., `"get_weather"`, `"search_database"`) |
-| `arguments` | `dict` | **Required**. Arguments passed to the tool as key-value pairs |
-| `result` | `Optional[dict]` | The response/result returned by the tool execution (populated by custom logging hooks) |
-| `mcp_server_name` | `Optional[str]` | Name of the MCP server that handled the tool call (e.g., `"weather-service"`, `"database-connector"`) |
-| `mcp_server_logo_url` | `Optional[str]` | URL for the MCP server's logo (used for UI display in LiteLLM dashboard) |
-| `namespaced_tool_name` | `Optional[str]` | Fully qualified tool name including server prefix (e.g., `"deepwiki-mcp/get_page_content"`, `"github-mcp/create_issue"`) |
-| `mcp_server_cost_info` | `Optional[MCPServerCostInfo]` | Cost tracking information for the tool call |
+| `name` | `str` | **必要**。被呼叫的工具名稱（例如 `"get_weather"`、`"search_database"`） |
+| `arguments` | `dict` | 傳遞給工具的參數，以鍵值對形式表示 |
+| `result` | `Optional[dict]` | 工具執行傳回的回應/結果（由自訂記錄回呼填入） |
+| `mcp_server_name` | `Optional[str]` | 處理該工具呼叫的 MCP 伺服器名稱（例如 `"weather-service"`、`"database-connector"`） |
+| `mcp_server_logo_url` | `Optional[str]` | MCP 伺服器標誌的 URL（用於 LiteLLM 儀表板中的 UI 顯示） |
+| `namespaced_tool_name` | `Optional[str]` | 包含伺服器前綴的完整工具名稱（例如 `"deepwiki-mcp/get_page_content"`、`"github-mcp/create_issue"`） |
+| `mcp_server_cost_info` | `Optional[MCPServerCostInfo]` | 該工具呼叫的成本追蹤資訊 |
 
-### MCPServerCostInfo
+### MCPServer 成本資訊 {#mcpservercostinfo}
 
-Cost tracking structure for MCP server tool calls:
+MCP 伺服器工具呼叫的成本追蹤結構：
 
-| Field | Type | Description |
+| 欄位 | 型別 | 說明 |
 |-------|------|-------------|
-| `default_cost_per_query` | `Optional[float]` | Default cost in USD for any tool call to this MCP server |
-| `tool_name_to_cost_per_query` | `Optional[Dict[str, float]]` | Per-tool cost mapping for granular pricing (e.g., `{"search": 0.01, "create": 0.05}`) |
+| `default_cost_per_query` | `Optional[float]` | 此 MCP 伺服器任何工具呼叫的預設 USD 成本 |
+| `tool_name_to_cost_per_query` | `Optional[Dict[str, float]]` | 用於細緻定價的每個工具成本對應（例如 `{"search": 0.01, "create": 0.05}`） |
 
-### Usage
+### 用法 {#usage}
 
 ```python
 # Basic MCP tool call metadata

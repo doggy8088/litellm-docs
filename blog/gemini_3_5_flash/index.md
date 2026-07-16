@@ -1,31 +1,30 @@
 ---
 slug: gemini_3_5_flash
-title: "DAY 0 Support: Gemini 3.5 Flash on LiteLLM"
+title: "DAY 0 支援：LiteLLM 上的 Gemini 3.5 Flash"
 date: 2026-05-19T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "Guide to using Gemini 3.5 Flash on LiteLLM Proxy and SDK with day 0 support."
+description: "在 LiteLLM Proxy 和 SDK 中使用 Gemini 3.5 Flash 的指南，提供 day 0 支援。"
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
 
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Gemini 3.5 Flash Day 0 Support 
+# Gemini 3.5 Flash Day 0 支援  {#gemini-35-flash-day-0-support}
 
-LiteLLM now supports `gemini-3.5-flash` with full day 0 support!
+LiteLLM 現在完整支援 `gemini-3.5-flash`，並提供 day 0 支援！
 
 :::note
-If you only want cost tracking, you need no change in your current LiteLLM version. But if you want support for new features introduced with this release — thinking levels, strict function-call IDs, and thought signatures — use `v1.87.0-dev.1` or above.
+如果您只需要成本追蹤，您目前的 LiteLLM 版本無需變更。但如果您想支援此版本新增的功能——thinking levels、strict function-call IDs 和 thought signatures——請使用 `v1.87.0-dev.1` 或以上版本。
 :::
 
 {/* truncate */}
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -48,11 +47,11 @@ pip install litellm==1.87.0.dev1
 </TabItem>
 </Tabs>
 
-## What's New
+## 新功能 {#whats-new}
 
-### 1. Minimal thinking level
+### 1. 最小 thinking level {#1-minimal-thinking-level}
 
-Gemini 3.5 Flash supports the new "Minimal" level. LiteLLM maps OpenAI `reasoning_effort` to Gemini's `thinkingLevel` — use `reasoning_effort="minimal"`.
+Gemini 3.5 Flash 支援新的「Minimal」層級。LiteLLM 會將 OpenAI `reasoning_effort` 對應到 Gemini 的 `thinkingLevel`——請使用 `reasoning_effort="minimal"`。
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -90,15 +89,15 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 |--------------------|-----------------|
 | `minimal` | `minimal` |
 
-### 2. Strict function calling
+### 2. 嚴格函式呼叫 {#2-strict-function-calling}
 
-Gemini 3.5+ requires every `functionResponse` to include the same `id` as the originating `functionCall`, plus the matching function name. LiteLLM round-trips this through standard OpenAI fields: `tool_calls[].id` on the assistant message, and the same value as `tool_call_id` on the tool result.
+Gemini 3.5+ 要求每個 `functionResponse` 都必須包含與來源 `id` 相同的 `functionCall`，以及相符的函式名稱。LiteLLM 會透過標準 OpenAI 欄位進行往返轉換：assistant 訊息上的 `tool_calls[].id`，以及 tool 結果上的相同值 `tool_call_id`。
 
-**How the tool-call loop works**
+**工具呼叫迴圈如何運作**
 
-**Step 1 : User submits a query that would trigger a tool call**
+**步驟 1：使用者提交會觸發工具呼叫的查詢**
 
-Send the user message and your tool definitions. The model responds with `tool_calls` — save the **`id`** from the first tool call (it may look like `5x450f94__thought__<signature>`; pass it back unchanged on the next request).
+傳送使用者訊息與您的工具定義。模型會回應 `tool_calls`——請儲存第一個工具呼叫中的 **`id`**（它可能看起來像 `5x450f94__thought__<signature>`；請在下一個請求中原封不動地傳回）。
 
 ```bash
 curl -sS http://localhost:4000/v1/chat/completions \
@@ -131,7 +130,7 @@ curl -sS http://localhost:4000/v1/chat/completions \
   }' | tee /tmp/gemini_tool_step1.json | jq .
 ```
 
-Copy the tool call id from the response:
+從回應中複製工具呼叫 ID：
 
 ```bash
 TOOL_CALL_ID=$(jq -r '.choices[0].message.tool_calls[0].id' /tmp/gemini_tool_step1.json)
@@ -139,9 +138,9 @@ echo "$TOOL_CALL_ID"
 # e.g. 5x450f94__thought__EvACCu0CAQw51sdR...
 ```
 
-**Step 2 : Run your tool, then send the result with the same `tool_call_id`**
+**步驟 2：執行您的工具，然後使用相同的 `tool_call_id` 傳送結果**
 
-Run `get_weather` locally, then call the proxy again with the full message history. Set **`tool_call_id`** to the exact **`id`** from Step 1 — LiteLLM uses it as the Gemini `functionResponse.id`.
+在本地執行 `get_weather`，然後以完整訊息歷史再次呼叫 proxy。將 **`tool_call_id`** 設為步驟 1 中精確的 **`id`**——LiteLLM 會將其用作 Gemini `functionResponse.id`。
 
 ```bash
 # Result from your local get_weather("Tokyo") call
@@ -183,19 +182,19 @@ curl -sS http://localhost:4000/v1/chat/completions \
     }')" | jq .
 ```
 
-The **`id`** on the assistant `tool_calls` entry and the **`tool_call_id`** on the `role: tool` message must match. The function **name** must match the tool definition (`get_weather`).
+assistant `tool_calls` 項目上的 **`id`** 與 `role: tool` 訊息上的 **`tool_call_id`** 必須一致。函式 **名稱** 必須與工具定義（`get_weather`）相符。
 
-**Step 3 : Model produces the final answer**
+**步驟 3：模型產生最終答案**
 
-LiteLLM sends the matching `id` and `name` on the Gemini `functionResponse` part. The model then returns a normal assistant message with the weather summary.
+LiteLLM 會將相符的 `id` 和 `name` 傳送到 Gemini `functionResponse` 部分。接著模型會回傳一則包含天氣摘要的正常 assistant 訊息。
 
-### 3. Sampling parameters (`temperature`, `top_p`, `top_k`)
+### 3. 採樣參數（`temperature`、`top_p`、`top_k`） {#3-sampling-parameters-temperature-top_p-top_k}
 
-Google has advised moving away from `temperature`, `top_p`, and `top_k` for Gemini 3.5+ and steering sampling behavior through **system instructions** instead. These parameters still work today, but may be removed in a future API release.
+Google 已建議在 Gemini 3.5+ 中逐步停用 `temperature`、`top_p` 與 `top_k`，並改以 **system instructions** 來控制採樣行為。這些參數目前仍可使用，但未來可能會在 API 版本中移除。
 
-LiteLLM follows the same guidance: when you pass `temperature`, `top_p`, or `top_k` on Gemini 3+ models, you will see a deprecation warning in the logs recommending system-instruction-based sampling instead.
+LiteLLM 採用相同的指引：當您在 Gemini 3+ 模型上傳遞 `temperature`、`top_p` 或 `top_k` 時，您會在記錄中看到一則淘汰警告，建議改用基於 system instruction 的採樣方式。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -215,7 +214,7 @@ print(response.choices[0].message.content)
 
 <TabItem value="proxy" label="PROXY">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -232,13 +231,13 @@ model_list:
       vertex_location: us-central1
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Make requests**
+**3. 發送請求**
 
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -253,18 +252,18 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Supported Endpoints
+## 支援的端點 {#supported-endpoints}
 
-LiteLLM provides **full end-to-end support** for Gemini 3.5 Flash on:
+LiteLLM 為 Gemini 3.5 Flash 提供 **完整端到端支援**，適用於：
 
-- ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
-- ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) compatible endpoint 
+- ✅ `/v1/chat/completions` - OpenAI 相容的 chat completions 端點
+- ✅ `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic 相容的 messages 端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容端點 
 
-All endpoints support:
-- Streaming and non-streaming responses
-- Function calling with thought signatures
-- Multi-turn conversations
-- All Gemini 3-specific features (thinking levels, thought signatures)
-- Full multimodal support (text, image, audio, video)
+所有端點都支援：
+- 串流與非串流回應
+- 具備 thought signatures 的函式呼叫
+- 多輪對話
+- 所有 Gemini 3 特定功能（thinking levels、thought signatures）
+- 完整的多模態支援（文字、圖片、音訊、影片）

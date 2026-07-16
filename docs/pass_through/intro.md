@@ -1,53 +1,51 @@
-# Why Pass-Through Endpoints?
+# 為什麼要使用轉接端點？ {#why-pass-through-endpoints}
 
-These endpoints are useful for 2 scenarios:
+這些端點適用於 2 種情境：
 
-1. **Migrate existing projects** to litellm proxy. E.g: If you have users already in production with Anthropic's SDK, you just need to change the base url to get cost tracking/logging/budgets/etc. 
+1. **將既有專案遷移** 到 litellm proxy。例如：如果您已經有使用 Anthropic SDK 並在正式環境中的用戶，您只需要變更 base url，就能取得成本追蹤/記錄/預算等功能。 
 
+2. **使用特定提供者的端點**。例如：如果您想使用 [Vertex AI 的 token 計數端點](https://docs.litellm.ai/docs/pass_through/vertex_ai#count-tokens-api)
 
-2. **Use provider-specific endpoints** E.g: If you want to use [Vertex AI's token counting endpoint](https://docs.litellm.ai/docs/pass_through/vertex_ai#count-tokens-api)
+## 您的請求如何被處理？ {#how-is-your-request-handled}
 
+請求會被轉送到提供者的端點。接著回應會傳回給用戶端。**不會進行任何轉換。**
 
-## How is your request handled? 
+### 請求轉送流程 {#request-forwarding-process}
 
-The request is passed through to the provider's endpoint. The response is then passed back to the client. **No translation is done.**
+1. **接收請求**：LiteLLM 會在 `/provider/endpoint` 接收您的請求
+2. **驗證**：您的 LiteLLM API 金鑰會被驗證，並對應到提供者的 API 金鑰
+3. **請求轉換**：請求會重新格式化以符合目標提供者的 API
+4. **轉送**：請求會傳送到實際的提供者端點
+5. **回應處理**：提供者回應會直接傳回給您
 
-### Request Forwarding Process
-
-1. **Request Reception**: LiteLLM receives your request at `/provider/endpoint`
-2. **Authentication**: Your LiteLLM API key is validated and mapped to the provider's API key
-3. **Request Transformation**: Request is reformatted for the target provider's API
-4. **Forwarding**: Request is sent to the actual provider endpoint
-5. **Response Handling**: Provider response is returned directly to you
-
-### Authentication Flow
+### 驗證流程 {#authentication-flow}
 
 ```mermaid
 graph LR
-    A[Client Request] --> B[LiteLLM Proxy]
-    B --> C[Validate LiteLLM API Key]
-    C --> D[Map to Provider API Key]
-    D --> E[Forward to Provider]
-    E --> F[Return Response]
+    A[用戶端請求] --> B[LiteLLM 代理伺服器]
+    B --> C[驗證 LiteLLM API 金鑰]
+    C --> D[對應到提供者 API 金鑰]
+    D --> E[轉送至提供者]
+    E --> F[傳回回應]
 ```
 
-**Key Points:**
-- Use your **LiteLLM API key** in requests, not the provider's key
-- LiteLLM handles the provider authentication internally
-- Same authentication works across all passthrough endpoints
+**重點：**
+- 請在請求中使用您的 **LiteLLM API 金鑰**，而不是提供者的金鑰
+- LiteLLM 會在內部處理提供者驗證
+- 相同的驗證可用於所有轉接端點
 
-### Error Handling
+### 錯誤處理 {#error-handling}
 
-**Provider Errors**: Forwarded directly to you with original error codes and messages
+**提供者錯誤**：會連同原始錯誤代碼與訊息直接轉送給您
 
-**LiteLLM Errors**: 
-- `401`: Invalid LiteLLM API key
-- `404`: Provider or endpoint not supported
-- `500`: Internal routing/forwarding errors
+**LiteLLM 錯誤**： 
+- `401`：無效的 LiteLLM API 金鑰
+- `404`：不支援的提供者或端點
+- `500`：內部路由/轉送錯誤
 
-### Benefits
+### 好處 {#benefits}
 
-- **Unified Authentication**: One API key for all providers
-- **Centralized Logging**: All requests logged through LiteLLM
-- **Cost Tracking**: Usage tracked across all endpoints
-- **Access Control**: Same permissions apply to passthrough endpoints
+- **統一驗證**：一組 API 金鑰適用於所有提供者
+- **集中式記錄**：所有請求都會透過 LiteLLM 記錄
+- **成本追蹤**：跨所有端點追蹤用量
+- **存取控制**：相同權限適用於轉接端點

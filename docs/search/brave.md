@@ -1,10 +1,10 @@
-# Brave Search
+# Brave 搜尋 {#brave-search}
 
-Get started by creating a free API key via https://brave.com/search/api/.
+先透過 https://brave.com/search/api/. 建立免費 API 金鑰開始使用
 
-For documentation on other parameters supported by the Brave Search API, visit https://api-dashboard.search.brave.com/api-reference/web/search/post.
+如需 Brave Search API 支援的其他參數文件，請造訪 https://api-dashboard.search.brave.com/api-reference/web/search/post.
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Brave Search"
 import os
@@ -19,9 +19,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -37,7 +37,7 @@ search_tools:
       api_key: os.environ/BRAVE_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -45,7 +45,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/brave-search \

@@ -1,16 +1,16 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Together AI 
-LiteLLM supports all models on Together AI. 
+# Together AI {#together-ai}
+LiteLLM 支援 Together AI 上的所有模型。 
 
-## API Keys
+## API 金鑰 {#api-keys}
 
 ```python 
 import os 
 os.environ["TOGETHERAI_API_KEY"] = "your-api-key"
 ```
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 ```python
 from litellm import completion 
@@ -22,43 +22,42 @@ messages = [{"role": "user", "content": "Write me a poem about the blue sky"}]
 completion(model="together_ai/togethercomputer/Llama-2-7B-32K-Instruct", messages=messages)
 ```
 
-## Together AI Models
-liteLLM supports `non-streaming` and `streaming` requests to all models on https://api.together.xyz/
+## Together AI 模型 {#together-ai-models}
+liteLLM 支援對 https://api.together.xyz/ 上所有模型的 `non-streaming` 與 `streaming` 請求
 
-Example TogetherAI Usage - Note: liteLLM supports all models deployed on TogetherAI
+TogetherAI 用法範例 - 注意：liteLLM 支援在 TogetherAI 上部署的所有模型
 
-
-### Llama LLMs - Chat
-| Model Name                        | Function Call                                                           | Required OS Variables              |
+### Llama LLMs - 聊天 {#llama-llms---chat}
+| 模型名稱                        | 函式呼叫                                                           | 必要的作業系統環境變數              |
 |-----------------------------------|-------------------------------------------------------------------------|------------------------------------|
 | togethercomputer/llama-2-70b-chat | `completion('together_ai/togethercomputer/llama-2-70b-chat', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
 
-### Llama LLMs - Language / Instruct
-| Model Name                               | Function Call                                                                  | Required OS Variables              |
+### Llama LLMs - 語言 / Instruct {#llama-llms---language--instruct}
+| 模型名稱                               | 函式呼叫                                                                  | 必要的作業系統環境變數              |
 |------------------------------------------|--------------------------------------------------------------------------------|------------------------------------|
 | togethercomputer/llama-2-70b             | `completion('together_ai/togethercomputer/llama-2-70b', messages)`             | `os.environ['TOGETHERAI_API_KEY']` |
 | togethercomputer/LLaMA-2-7B-32K          | `completion('together_ai/togethercomputer/LLaMA-2-7B-32K', messages)`          | `os.environ['TOGETHERAI_API_KEY']` |
 | togethercomputer/Llama-2-7B-32K-Instruct | `completion('together_ai/togethercomputer/Llama-2-7B-32K-Instruct', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
 | togethercomputer/llama-2-7b              | `completion('together_ai/togethercomputer/llama-2-7b', messages)`              | `os.environ['TOGETHERAI_API_KEY']` |
 
-### Falcon LLMs
-| Model Name                           | Function Call                                                              | Required OS Variables              |
+### Falcon LLMs {#falcon-llms}
+| 模型名稱                           | 函式呼叫                                                              | 必要的作業系統環境變數              |
 |--------------------------------------|----------------------------------------------------------------------------|------------------------------------|
 | togethercomputer/falcon-40b-instruct | `completion('together_ai/togethercomputer/falcon-40b-instruct', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
 | togethercomputer/falcon-7b-instruct  | `completion('together_ai/togethercomputer/falcon-7b-instruct', messages)`  | `os.environ['TOGETHERAI_API_KEY']` |
 
-### Alpaca LLMs
-| Model Name                 | Function Call                                                    | Required OS Variables              |
+### Alpaca LLMs {#alpaca-llms}
+| 模型名稱                 | 函式呼叫                                                    | 必要的作業系統環境變數              |
 |----------------------------|------------------------------------------------------------------|------------------------------------|
 | togethercomputer/alpaca-7b | `completion('together_ai/togethercomputer/alpaca-7b', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
 
-### Other Chat LLMs
-| Model Name                   | Function Call                                                      | Required OS Variables              |
+### 其他聊天 LLMs {#other-chat-llms}
+| 模型名稱                   | 函式呼叫                                                      | 必要的作業系統環境變數              |
 |------------------------------|--------------------------------------------------------------------|------------------------------------|
 | HuggingFaceH4/starchat-alpha | `completion('together_ai/HuggingFaceH4/starchat-alpha', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
 
-### Code LLMs
-| Model Name                              | Function Call                                                                 | Required OS Variables              |
+### 程式碼 LLMs {#code-llms}
+| 模型名稱                              | 函式呼叫                                                                 | 必要的作業系統環境變數              |
 |-----------------------------------------|-------------------------------------------------------------------------------|------------------------------------|
 | togethercomputer/CodeLlama-34b          | `completion('together_ai/togethercomputer/CodeLlama-34b', messages)`          | `os.environ['TOGETHERAI_API_KEY']` |
 | togethercomputer/CodeLlama-34b-Instruct | `completion('together_ai/togethercomputer/CodeLlama-34b-Instruct', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
@@ -68,21 +67,20 @@ Example TogetherAI Usage - Note: liteLLM supports all models deployed on Togethe
 | WizardLM/WizardCoder-15B-V1.0           | `completion('together_ai/WizardLM/WizardCoder-15B-V1.0', messages)`           | `os.environ['TOGETHERAI_API_KEY']` |
 | WizardLM/WizardCoder-Python-34B-V1.0    | `completion('together_ai/WizardLM/WizardCoder-Python-34B-V1.0', messages)`    | `os.environ['TOGETHERAI_API_KEY']` |
 
-### Language LLMs
-| Model Name                          | Function Call                                                             | Required OS Variables              |
+### 語言 LLMs {#language-llms}
+| 模型名稱                          | 函式呼叫                                                             | 必要的作業系統環境變數              |
 |-------------------------------------|---------------------------------------------------------------------------|------------------------------------|
 | NousResearch/Nous-Hermes-Llama2-13b | `completion('together_ai/NousResearch/Nous-Hermes-Llama2-13b', messages)` | `os.environ['TOGETHERAI_API_KEY']` |
 | Austism/chronos-hermes-13b          | `completion('together_ai/Austism/chronos-hermes-13b', messages)`          | `os.environ['TOGETHERAI_API_KEY']` |
 | upstage/SOLAR-0-70b-16bit           | `completion('together_ai/upstage/SOLAR-0-70b-16bit', messages)`           | `os.environ['TOGETHERAI_API_KEY']` |
 | WizardLM/WizardLM-70B-V1.0          | `completion('together_ai/WizardLM/WizardLM-70B-V1.0', messages)`          | `os.environ['TOGETHERAI_API_KEY']` |
 
+## Prompt 範本 {#prompt-templates}
 
-## Prompt Templates
+使用 Together AI 上具有自身提示格式的聊天模型？
 
-Using a chat model on Together AI with it's own prompt format?
-
-### Using Llama2 Instruct models
-If you're using Together AI's Llama2 variants( `model=togethercomputer/llama-2..-instruct`), LiteLLM can automatically translate between the OpenAI prompt format and the TogetherAI Llama2 one (`[INST]..[/INST]`). 
+### 使用 Llama2 Instruct 模型 {#using-llama2-instruct-models}
+如果您正在使用 Together AI 的 Llama2 變體（`model=togethercomputer/llama-2..-instruct`），LiteLLM 可以自動在 OpenAI 提示格式與 TogetherAI 的 Llama2 格式（`[INST]..[/INST]`）之間進行轉換。 
 
 ```python
 from litellm import completion 
@@ -95,13 +93,13 @@ messages = [{"role": "user", "content": "Write me a poem about the blue sky"}]
 completion(model="together_ai/togethercomputer/Llama-2-7B-32K-Instruct", messages=messages)
 ```
 
-### Using another model
+### 使用另一個模型 {#using-another-model}
 
-You can create a custom prompt template on LiteLLM (and we [welcome PRs](https://github.com/BerriAI/litellm) to add them to the main repo 🤗)
+您可以在 LiteLLM 上建立自訂提示範本（我們也 [歡迎 PR](https://github.com/BerriAI/litellm) 將它們加入主要 repo 🤗）
 
-Let's make one for `OpenAssistant/llama2-70b-oasst-sft-v10`!
+讓我們為 `OpenAssistant/llama2-70b-oasst-sft-v10` 建立一個！
 
-The accepted template format is: [Reference](https://huggingface.co/OpenAssistant/llama2-70b-oasst-sft-v10-)
+可接受的範本格式是：[參考](https://huggingface.co/OpenAssistant/llama2-70b-oasst-sft-v10-)
 ```
 """
 <|im_start|>system
@@ -112,7 +110,7 @@ The accepted template format is: [Reference](https://huggingface.co/OpenAssistan
 """
 ```
 
-Let's register our custom prompt template: [Implementation Code](https://github.com/BerriAI/litellm/blob/64f3d3c56ef02ac5544983efc78293de31c1c201/litellm/llms/prompt_templates/factory.py#L77)
+讓我們註冊我們的自訂提示範本：[實作程式碼](https://github.com/BerriAI/litellm/blob/64f3d3c56ef02ac5544983efc78293de31c1c201/litellm/llms/prompt_templates/factory.py#L77)
 ```python
 import litellm 
 
@@ -135,7 +133,7 @@ litellm.register_prompt_template(
     )
 ```
 
-Let's use it! 
+讓我們使用它！ 
 
 ```python
 from litellm import completion 
@@ -148,7 +146,7 @@ messages=[{"role":"user", "content": "Write me a poem about the blue sky"}]
 completion(model="together_ai/OpenAssistant/llama2-70b-oasst-sft-v10", messages=messages)
 ```
 
-**Complete Code**
+**完整程式碼**
 
 ```python
 import litellm 
@@ -182,7 +180,7 @@ response = completion(model="together_ai/OpenAssistant/llama2-70b-oasst-sft-v10"
 print(response)
 ```
 
-**Output**
+**輸出**
 ```json
 {
   "choices": [
@@ -208,14 +206,12 @@ print(response)
 ```
 
 
-## Rerank 
+## Rerank {#rerank}
 
-### Usage
-
-
+### 用法 {#usage}
 
 <Tabs>
-<TabItem value="sdk" label="LiteLLM SDK Usage">
+<TabItem value="sdk" label="LiteLLM SDK 用法">
 
 ```python
 from litellm import rerank
@@ -241,13 +237,13 @@ print(response)
 ```
 </TabItem>
 
-<TabItem value="proxy" label="LiteLLM Proxy Usage">
+<TabItem value="proxy" label="LiteLLM Proxy 用法">
 
-LiteLLM provides an cohere api compatible `/rerank` endpoint for Rerank calls.
+LiteLLM 提供一個與 cohere api 相容的 `/rerank` 端點，用於 Rerank 請求。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將這個加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -257,7 +253,7 @@ model_list:
       api_key: os.environ/TOGETHERAI_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -265,7 +261,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test request
+測試請求
 
 ```bash
 curl http://0.0.0.0:4000/rerank \

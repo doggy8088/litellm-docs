@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiveKit xAI Realtime Voice Agent
+# LiveKit xAI 即時 Voice Agent {#livekit-xai-realtime-voice-agent}
 
-Use LiveKit's xAI Grok Voice Agent plugin with LiteLLM Proxy to build low-latency voice AI agents.
+使用 LiveKit 的 xAI Grok Voice Agent 外掛程式搭配 LiteLLM Proxy，建立低延遲的語音 AI 代理程式。
 
-The LiveKit Agents framework provides tools for building real-time voice and video AI applications. By routing through LiteLLM Proxy, you get unified access to multiple realtime voice providers, cost tracking, rate limiting, and more.
+LiveKit Agents framework 提供用於建構即時語音與視訊 AI 應用程式的工具。透過路由經由 LiteLLM Proxy，您可以統一存取多個即時語音提供者、成本追蹤、速率限制等功能。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Install Dependencies
+### 1. 安裝相依套件 {#1-install-dependencies}
 
 ```bash
 uv add livekit-agents[xai]
 ```
 
-### 2. Start LiteLLM Proxy
+### 2. 啟動 LiteLLM Proxy {#2-start-litellm-proxy}
 
-Create a config file with your xAI realtime model:
+建立一個包含您的 xAI 即時模型的設定檔：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -35,15 +35,15 @@ general_settings:
   master_key: sk-1234  # Change this to a secure key
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-### 3. Configure LiveKit xAI Plugin
+### 3. 設定 LiveKit xAI 外掛程式 {#3-configure-livekit-xai-plugin}
 
-Point LiveKit's xAI plugin to your LiteLLM proxy:
+將 LiveKit 的 xAI 外掛程式指向您的 LiteLLM proxy：
 
 ```python
 from livekit.plugins import xai
@@ -56,12 +56,12 @@ model = xai.realtime.RealtimeModel(
 )
 ```
 
-## Complete Example
+## 完整範例 {#complete-example}
 
-Here's a complete working example:
+以下是一個完整可運作的範例：
 
 <Tabs>
-<TabItem value="python" label="Python Client">
+<TabItem value="python" label="Python 用戶端">
 
 ```python
 #!/usr/bin/env python3
@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 </TabItem>
 
-<TabItem value="livekit" label="LiveKit Agent">
+<TabItem value="livekit" label="LiveKit 代理程式">
 
 ```python
 from livekit.agents import Agent, AgentSession, WorkerOptions, cli
@@ -155,19 +155,19 @@ if __name__ == "__main__":
 </TabItem>
 </Tabs>
 
-## Running the Example
+## 執行範例 {#running-the-example}
 
-1. **Start LiteLLM Proxy** (if not already running):
+1. **啟動 LiteLLM Proxy**（如果尚未執行）：
    ```bash
    litellm --config config.yaml --port 4000
    ```
 
-2. **Run the example**:
+2. **執行範例**：
    ```bash
    python your_script.py
    ```
 
-## Expected Output
+## 預期輸出 {#expected-output}
 
 ```
 ✅ Connected: session.created
@@ -178,13 +178,12 @@ Because they make up everything!
 ```
 
 
-## Complete Working Example
+## 完整可運作範例 {#complete-working-example}
 
-**[LiveKit Agent SDK Cookbook](https://github.com/BerriAI/litellm/tree/main/cookbook/livekit_agent_sdk)**
+**[LiveKit Agent SDK 食譜](https://github.com/BerriAI/litellm/tree/main/cookbook/livekit_agent_sdk)**
 
+## 深入了解 {#learn-more}
 
-## Learn More
-
-- [xAI Realtime API](/docs/providers/xai_realtime)
-- [LiveKit xAI Plugin](https://docs.livekit.io/agents/models/realtime/plugins/xai/)
-- [LiteLLM Realtime API](/docs/realtime)
+- [xAI 即時 API](/docs/providers/xai_realtime)
+- [LiveKit xAI 外掛程式](https://docs.livekit.io/agents/models/realtime/plugins/xai/)
+- [LiteLLM 即時 API](/docs/realtime)

@@ -1,12 +1,12 @@
 ---
 slug: gpt_5_4
-title: "Day 0 Support: GPT-5.4"
+title: "第 0 天支援：GPT-5.4"
 date: 2026-03-05T10:00:00
 authors:
   - sameer
   - krrish
   - ishaan-alt
-description: "GPT-5.4 model support in LiteLLM"
+description: "LiteLLM 中對 GPT-5.4 模型的支援"
 tags: [openai, gpt-5.4, completion]
 hide_table_of_contents: false
 ---
@@ -14,22 +14,22 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM now supports fully GPT-5.4!
+LiteLLM 現在完整支援 GPT-5.4！
 
 {/* truncate */}
 
-## Docker Image
+## Docker 映像 {#docker-image}
 
 ```bash
 docker pull ghcr.io/berriai/litellm:v1.81.14-stable.gpt-5.4_patch
 ```
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -39,7 +39,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -50,7 +50,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it**
+**3. 測試它**
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/chat/completions" \
@@ -83,8 +83,8 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Notes
+## 注意事項 {#notes}
 
-- Restart your container to get the cost tracking for this model.
-- Use `/responses` for better model performance.
-- GPT-5.4 supports reasoning, function calling, vision, and tool-use — see the [OpenAI provider docs](../../docs/providers/openai) for advanced usage.
+- 重新啟動您的容器，以取得此模型的成本追蹤。
+- 使用 `/responses` 以獲得更好的模型效能。
+- GPT-5.4 支援 reasoning、function calling、vision 和 tool-use — 請參閱 [OpenAI provider 文件](../../docs/providers/openai) 以了解進階用法。

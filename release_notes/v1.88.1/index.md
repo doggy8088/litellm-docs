@@ -1,5 +1,5 @@
 ---
-title: "v1.88.1 - Dependency Bumps"
+title: "v1.88.1 - 相依性升級"
 slug: "v1-88-1"
 date: 2026-06-08T17:23:56
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,12 +43,12 @@ pip install litellm==1.88.1
 </TabItem>
 </Tabs>
 
-`v1.88.1` is a patch release on top of [`v1.88.0`](/release_notes/v1.88.0/v1-88-0). It bumps PyJWT and the `ws` override to clear dependency advisories on the 1.88 line.
+`v1.88.1` 是建立在 [`v1.88.0`](/release_notes/v1.88.0/v1-88-0) 之上的修補版發行。它升級了 PyJWT 與 `ws` 覆寫，以清除 1.88 系列上的相依性安全公告。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- build(deps): bump PyJWT to 2.13.0 and the `ws` override to 8.20.1 - [PR #29987](https://github.com/BerriAI/litellm/pull/29987)
+- build(deps): 將 PyJWT 升級至 2.13.0，並將 `ws` 覆寫升級至 8.20.1 - [PR #29987](https://github.com/BerriAI/litellm/pull/29987)
 
-## Full Changelog
+## 完整更新記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.88.0...v1.88.1

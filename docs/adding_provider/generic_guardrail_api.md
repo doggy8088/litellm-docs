@@ -1,29 +1,29 @@
-# [BETA] Generic Guardrail API - Integrate Without a PR
+# [BETA] Generic Guardrail API - 無需 PR 即可整合 {#beta-generic-guardrail-api---integrate-without-a-pr}
 
-## The Problem
+## 問題 {#the-problem}
 
-As a guardrail provider, integrating with LiteLLM traditionally requires:
-- Making a PR to the LiteLLM repository
-- Waiting for review and merge
-- Maintaining provider-specific code in LiteLLM's codebase
-- Updating the integration for changes to your API
+身為防護欄提供者，傳統上與 LiteLLM 整合需要：
+- 向 LiteLLM 儲存庫提交 PR
+- 等待審查與合併
+- 在 LiteLLM 的程式碼庫中維護特定提供者的程式碼
+- 針對您的 API 變更更新整合
 
-## The Solution
+## 解決方案 {#the-solution}
 
-The **Generic Guardrail API** lets you integrate with LiteLLM **instantly** by implementing a simple API endpoint. No PR required.
+**Generic Guardrail API** 讓您只要實作一個簡單的 API 端點，就能**立即**與 LiteLLM 整合。不需要 PR。
 
-### Key Benefits
+### 主要優點 {#key-benefits}
 
-1. **No PR Needed** - Deploy and integrate immediately
-2. **Universal Support** - Works across ALL LiteLLM endpoints (chat, embeddings, image generation, etc.)
-3. **Simple Contract** - One endpoint, three response types
-4. **Multi-Modal Support** - Handle both text and images in requests/responses
-5. **Custom Parameters** - Pass provider-specific params via config
-6. **Full Control** - You own and maintain your guardrail API
+1. **不需要 PR** - 立即部署並整合
+2. **通用支援** - 可跨越所有 LiteLLM 端點運作（chat、embeddings、image generation 等）
+3. **簡單合約** - 一個端點，三種回應類型
+4. **多模態支援** - 在請求/回應中同時處理文字與圖片
+5. **自訂參數** - 透過 config 傳遞特定提供者的參數
+6. **完全控制** - 您自行擁有並維護您的防護欄 API
 
-## Supported Endpoints
+## 支援的端點 {#supported-endpoints}
 
-The Generic Guardrail API works with the following LiteLLM endpoints:
+Generic Guardrail API 可與下列 LiteLLM 端點搭配使用：
 
 - `/v1/chat/completions` - OpenAI Chat Completions
 - `/v1/completions` - OpenAI Text Completions
@@ -33,22 +33,22 @@ The Generic Guardrail API works with the following LiteLLM endpoints:
 - `/v1/audio/speech` - OpenAI Text-to-Speech
 - `/v1/messages` - Anthropic Messages
 - `/v1/rerank` - Cohere Rerank
-- Pass-through endpoints
+- 轉發端點
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-1. LiteLLM extracts text and images from any request (chat messages, embeddings, image prompts, etc.)
-2. Sends extracted content + metadata to your API endpoint
-3. Your API responds with: `BLOCKED`, `NONE`, or `GUARDRAIL_INTERVENED`
-4. LiteLLM enforces the decision and applies any modifications
+1. LiteLLM 從任何請求中擷取文字與圖片（chat messages、embeddings、image prompts 等）
+2. 將擷取的內容 + 中繼資料傳送到您的 API 端點
+3. 您的 API 回應：`BLOCKED`、`NONE`，或 `GUARDRAIL_INTERVENED`
+4. LiteLLM 執行該決策並套用任何修改
 
-## API Contract
+## API 合約 {#api-contract}
 
-### Endpoint
+### 端點 {#endpoint}
 
-Implement `POST /beta/litellm_basic_guardrail_api`
+實作 `POST /beta/litellm_basic_guardrail_api`
 
-### Request Format
+### 請求格式 {#request-format}
 
 ```json
 {
@@ -108,7 +108,7 @@ Implement `POST /beta/litellm_basic_guardrail_api`
 }
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
 ```json
 {
@@ -119,22 +119,22 @@ Implement `POST /beta/litellm_basic_guardrail_api`
 }
 ```
 
-**Actions:**
-- `BLOCKED` - LiteLLM raises error and blocks request
-- `NONE` - Request proceeds unchanged  
-- `GUARDRAIL_INTERVENED` - Request proceeds with modified texts/images (provide `texts` and/or `images` fields)
+**動作：**
+- `BLOCKED` - LiteLLM 拋出錯誤並封鎖請求
+- `NONE` - 請求照原樣繼續  
+- `GUARDRAIL_INTERVENED` - 請求以修改後的文字/圖片繼續（提供 `texts` 和/或 `images` 欄位）
 
-## Parameters
+## 參數 {#parameters}
 
-### `tools` Parameter
+### `tools` 參數 {#tools-parameter}
 
-The `tools` parameter provides information about available function/tool definitions in the request.
+`tools` 參數提供請求中可用函式/工具定義的資訊。
 
-**Format:** OpenAI `ChatCompletionToolParam` format (see [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools))
+**格式：** OpenAI `ChatCompletionToolParam` 格式（請參閱 [OpenAI API 參考](https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools)）
 
-Built-in tools that carry only a `type` and no `function` block, such as `{"type": "code_interpreter"}` or `{"type": "file_search", "vector_store_ids": [...]}`, are also accepted and forwarded to your endpoint intact (including their tool-specific config). Your endpoint should treat `function` as optional and branch on `type`.
+僅包含 `type` 且沒有 `function` 區塊的內建工具，例如 `{"type": "code_interpreter"}` 或 `{"type": "file_search", "vector_store_ids": [...]}`，也會被接受並原樣轉送到您的端點（包括其工具特定設定）。您的端點應將 `function` 視為選用，並根據 `type` 分支處理。
 
-**Example:**
+**範例：**
 ```json
 {
   "type": "function",
@@ -159,23 +159,23 @@ Built-in tools that carry only a `type` and no `function` block, such as `{"type
 }
 ```
 
-**Availability:**
-- **Input only:** Tools are only passed for `input_type="request"` (pre-call guardrails). Output/response guardrails do not currently receive tool definitions.
-- **Supported endpoints:** The `tools` parameter is supported on: `/v1/chat/completions`, `/v1/responses`, and `/v1/messages`. Other endpoints do not have tool support.
+**可用性：**
+- **僅輸入：** 工具只會在 `input_type="request"`（呼叫前防護欄）時傳入。輸出/回應防護欄目前不會接收工具定義。
+- **支援的端點：** `tools` 參數支援於：`/v1/chat/completions`、`/v1/responses` 和 `/v1/messages`。其他端點不支援工具。
 
-**Use cases:**
-- Enforce tool permission policies (e.g., only allow certain users/teams to access specific tools)
-- Validate tool schemas before sending to LLM
-- Log tool usage for audit purposes
-- Block sensitive tools based on user context
+**使用情境：**
+- 強制執行工具權限政策（例如，只允許特定使用者/團隊存取特定工具）
+- 在傳送至 LLM 前驗證工具 schema
+- 記錄工具使用情況以供稽核
+- 根據使用者情境封鎖敏感工具
 
-### `tool_calls` Parameter
+### `tool_calls` 參數 {#tool_calls-parameter}
 
-The `tool_calls` parameter contains actual function/tool invocations being made in the request or response.
+`tool_calls` 參數包含在請求或回應中實際進行的函式/工具呼叫。
 
-**Format:** OpenAI `ChatCompletionMessageToolCall` format (see [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat/object#chat/object-tool_calls))
+**格式：** OpenAI `ChatCompletionMessageToolCall` 格式（請參閱 [OpenAI API 參考](https://platform.openai.com/docs/api-reference/chat/object#chat/object-tool_calls)）
 
-**Example:**
+**範例：**
 ```json
 {
   "id": "call_abc123",
@@ -187,29 +187,29 @@ The `tool_calls` parameter contains actual function/tool invocations being made 
 }
 ```
 
-**Key Difference from `tools`:**
-- **`tools`** = Tool definitions/schemas (what tools are *available*)
-- **`tool_calls`** = Tool invocations/executions (what tools are *being called* with what arguments)
+**與 `tools` 的主要差異：**
+- **`tools`** = 工具定義/schema（有哪些工具*可用*）
+- **`tool_calls`** = 工具呼叫/執行（*正在*呼叫哪些工具，以及使用哪些參數）
 
-**Availability:**
-- **Both input and output:** Tool calls can be present in both `input_type="request"` (assistant messages requesting tool calls) and `input_type="response"` (LLM responses with tool calls).
-- **Supported endpoints:** The `tool_calls` parameter is supported on: `/v1/chat/completions`, `/v1/responses`, and `/v1/messages`.
+**可用性：**
+- **輸入與輸出皆可：** 工具呼叫可出現在 `input_type="request"`（要求工具呼叫的 assistant 訊息）與 `input_type="response"`（帶有工具呼叫的 LLM 回應）中。
+- **支援的端點：** `tool_calls` 參數支援於：`/v1/chat/completions`、`/v1/responses` 和 `/v1/messages`。
 
-**Use cases:**
-- Validate tool call arguments before execution
-- Redact sensitive data from tool call arguments (e.g., PII)
-- Log tool invocations for audit/debugging
-- Block tool calls with dangerous parameters
-- Modify tool call arguments (e.g., enforce constraints, sanitize inputs)
-- Monitor tool usage patterns across users/teams
+**使用情境：**
+- 在執行前驗證工具呼叫參數
+- 從工具呼叫參數中移除敏感資料（例如 PII）
+- 記錄工具呼叫以供稽核/除錯
+- 封鎖帶有危險參數的工具呼叫
+- 修改工具呼叫參數（例如，強制限制、清理輸入）
+- 監控跨使用者/團隊的工具使用模式
 
-### `structured_messages` Parameter
+### `structured_messages` 參數 {#structured_messages-parameter}
 
-The `structured_messages` parameter provides the full input in OpenAI chat completion spec format, useful for distinguishing between system and user messages.
+`structured_messages` 參數以 OpenAI chat completion 規格格式提供完整輸入，適合用來區分系統訊息與使用者訊息。
 
-**Format:** Array of OpenAI chat completion messages (see [OpenAI API reference](https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages))
+**格式：** OpenAI chat completion 訊息陣列（請參閱 [OpenAI API 參考](https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages)）
 
-**Example:**
+**範例：**
 ```json
 [
   {"role": "system", "content": "You are a helpful assistant"},
@@ -217,18 +217,18 @@ The `structured_messages` parameter provides the full input in OpenAI chat compl
 ]
 ```
 
-**Availability:**
-- **Supported endpoints:** `/v1/chat/completions`, `/v1/messages`, `/v1/responses`
-- **Input only:** Only passed for `input_type="request"` (pre-call guardrails)
+**可用性：**
+- **支援的端點：** `/v1/chat/completions`、`/v1/messages`、`/v1/responses`
+- **僅輸入：** 僅在 `input_type="request"`（呼叫前防護欄）時傳入
 
-**Use cases:**
-- Apply different policies for system vs user messages
-- Enforce role-based content restrictions
-- Log structured conversation context
+**使用情境：**
+- 對系統訊息與使用者訊息套用不同政策
+- 強制執行基於角色的內容限制
+- 記錄結構化對話脈絡
 
-## LiteLLM Configuration
+## LiteLLM 設定 {#litellm-configuration}
 
-Add to `config.yaml`:
+新增至 `config.yaml`：
 
 ```yaml
 litellm_settings:
@@ -247,33 +247,33 @@ litellm_settings:
           language: "en"
 ```
 
-### Error handling: `unreachable_fallback` and `fail_on_error`
+### 錯誤處理：`unreachable_fallback` 與 `fail_on_error` {#error-handling-unreachable_fallback-and-fail_on_error}
 
-Two settings control what LiteLLM does when the guardrail itself fails, rather than returning a verdict. They sit on a spectrum from strict to permissive, and they compose:
+有兩個設定控制當防護欄本身失敗時 LiteLLM 的行為，而不是回傳判定結果。它們位於從嚴格到寬鬆的光譜上，且可相互組合：
 
-- `unreachable_fallback` (default `fail_closed`) only reacts to the guardrail endpoint being **unreachable**: network errors, timeouts, or an HTTP 502/503/504 from an upstream proxy/load balancer. Set it to `fail_open` to let requests proceed in just those cases.
-- `fail_on_error` (default `true`) is the broader control. It governs **any** guardrail error, not only unreachability.
+- `unreachable_fallback`（預設 `fail_closed`）只處理防護欄端點**無法連線**的情況：網路錯誤、逾時，或上游 proxy/load balancer 傳回 HTTP 502/503/504。將其設為 `fail_open`，即可在這些情況下讓請求繼續。
+- `fail_on_error`（預設 `true`）則是更廣泛的控制項。它管理**任何**防護欄錯誤，而不僅限於無法連線。
 
-| `fail_on_error` | Behavior on a guardrail error |
+| `fail_on_error` | 發生防護欄錯誤時的行為 |
 | --- | --- |
-| `true` (default) | **Fail closed.** Any error blocks the request: a non-2xx response, a malformed or unparseable body, a network failure, or an internal serialization/validation error. This preserves LiteLLM's existing behavior |
-| `false` | **Fail open (complete).** Any guardrail error is downgraded to a critical-level log line and the request proceeds as if the guardrail were not configured |
+| `true`（預設） | **失敗封閉。** 任何錯誤都會封鎖請求：非 2xx 回應、格式錯誤或無法解析的主體、網路失敗，或內部序列化/驗證錯誤。這可保留 LiteLLM 現有行為 |
+| `false` | **失敗開放（complete）。** 任何防護欄錯誤都會降級為 critical 等級的記錄行，並且請求照彷彿未設定防護欄一樣繼續執行 |
 
-Only a valid guardrail response can act. With `fail_on_error: false`, a parsed `BLOCKED` decision still blocks; everything that is not a valid response (errors, malformed bodies, unreachable endpoints) is bypassed. This applies to both the request hook (`pre_call`) and the response hook (`post_call`); on the response path, a fail-open returns the already-generated model output, while fail-closed turns a successful generation into an error.
+只有有效的防護欄回應才能生效。使用 `fail_on_error: false` 時，已解析的 `BLOCKED` 判定仍會封鎖；所有非有效回應的情況（錯誤、格式錯誤的主體、無法連線的端點）都會被略過。這同時適用於請求 hook（`pre_call`）與回應 hook（`post_call`）；在回應路徑上，fail-open 會回傳已產生的模型輸出，而 fail-closed 則會把成功生成轉成錯誤。
 
 :::danger
 
-`fail_on_error: false` is a complete bypass on failure. It means that **any** failure in the guardrail or its endpoint, for any reason, will cause the guardrail to be skipped for that request rather than block it. Enable it only if you have understood and accepted that tradeoff: choose it when your availability and operational constraints are stronger than your security constraints. If the guardrail is a hard security boundary, leave it at the default `true` (fail closed).
+`fail_on_error: false` 是在失敗時的完整繞過。這表示防護欄或其端點發生**任何**失敗、任何原因，都會讓該次請求略過防護欄而不是被封鎖。只有在您已理解並接受此取捨時才啟用：當可用性與營運限制比安全限制更重要時才選擇它。如果防護欄是硬性安全邊界，請維持預設 `true`（失敗封閉）。
 
 :::
 
-The default is fail closed precisely because a guardrail is usually a security control. Every fail-open bypass is logged at critical level (`Generic Guardrail API error (fail-open) ...`) with the call id and trace id, so you can alert on it and audit how often it happens.
+預設之所以是失敗封閉，正是因為防護欄通常是一種安全控制。每一次 fail-open 繞過都會以 critical 等級（`Generic Guardrail API error (fail-open) ...`）記錄，並附上 call id 與 trace id，因此您可以對其發出警示並稽核其發生頻率。
 
-### Static and dynamic headers
+### 靜態與動態標頭 {#static-and-dynamic-headers}
 
-You can send two kinds of headers to your guardrail endpoint:
+您可以將兩種類型的標頭傳送至您的防護欄端點：
 
-- **Static headers** (`headers`): A key/value map sent with **every** request to your guardrail. Use this for fixed values (e.g. API keys, `X-Service-Name`). Configure in `litellm_params`:
+- **靜態標頭** (`headers`)：隨 **每個** 請求一併送至您的 guardrail 的鍵/值對應。請用於固定值（例如 API 金鑰、`X-Service-Name`）。在 `litellm_params` 中設定：
 
   ```yaml
   litellm_params:
@@ -284,7 +284,7 @@ You can send two kinds of headers to your guardrail endpoint:
       X-API-Key: "secret"
   ```
 
-- **Dynamic headers** (`extra_headers`): A list of **header names** that are forwarded from the **client request** to your guardrail. Only headers in this list (plus a small default allowlist such as `x-litellm-*`) have their values sent; others are sent as `[present]`. Use this to pass through client-provided headers (e.g. `x-request-id`, `x-correlation-id`). Configure in `litellm_params`:
+- **動態標頭** (`extra_headers`)：一份從 **用戶端請求** 轉送至您的 guardrail 的 **標頭名稱** 清單。只有這份清單中的標頭（外加少量預設允許清單，例如 `x-litellm-*`）會傳送其值；其他標頭會以 `[present]` 形式傳送。請用來傳遞用戶端提供的標頭（例如 `x-request-id`、`x-correlation-id`）。在 `litellm_params` 中設定：
 
   ```yaml
   litellm_params:
@@ -296,11 +296,11 @@ You can send two kinds of headers to your guardrail endpoint:
       - x-custom-auth
   ```
 
-This mirrors the [MCP static and extra headers](/docs/mcp#forwarding-custom-headers-to-mcp-servers) behavior.
+這與 [MCP static and extra headers](/docs/mcp#forwarding-custom-headers-to-mcp-servers) 的行為相同。
 
-### Example: Pillar Security
+### 範例：Pillar Security {#example-pillar-security}
 
-[Pillar Security](https://pillar.security) uses the Generic Guardrail API to provide comprehensive AI security scanning including prompt injection protection, PII/PCI detection, secret detection, and content moderation.
+[Pillar Security](https://pillar.security) 使用 Generic Guardrail API 提供完整的 AI 安全性掃描，包括 prompt injection 防護、PII/PCI 偵測、秘密資訊偵測，以及內容審核。
 
 ```yaml
 guardrails:
@@ -317,11 +317,11 @@ guardrails:
         plr_scanners: true  # Include scanner details in response
 ```
 
-See the [Pillar Security documentation](../proxy/guardrails/pillar_security.md) for full configuration options.
+請參閱 [Pillar Security 文件](../proxy/guardrails/pillar_security.md) 以取得完整設定選項。
 
-## Usage
+## 使用方式 {#usage}
 
-Users apply your guardrail by name:
+使用者可依名稱套用您的 guardrail：
 
 ```python
 response = client.chat.completions.create(
@@ -331,7 +331,7 @@ response = client.chat.completions.create(
 )
 ```
 
-Or with dynamic parameters:
+或使用動態參數：
 
 ```python
 response = client.chat.completions.create(
@@ -347,11 +347,11 @@ response = client.chat.completions.create(
 )
 ```
 
-## Implementation Example
+## 實作範例 {#implementation-example}
 
-See [mock_bedrock_guardrail_server.py](https://github.com/BerriAI/litellm/blob/main/cookbook/mock_guardrail_server/mock_bedrock_guardrail_server.py) for a complete reference implementation.
+請參閱 [mock_bedrock_guardrail_server.py](https://github.com/BerriAI/litellm/blob/main/cookbook/mock_guardrail_server/mock_bedrock_guardrail_server.py) 取得完整的參考實作。
 
-**Minimal FastAPI example:**
+**最小化 FastAPI 範例：**
 
 ```python
 from fastapi import FastAPI
@@ -436,20 +436,19 @@ async def apply_guardrail(request: GuardrailRequest):
     return GuardrailResponse(action="NONE")
 ```
 
-## When to Use This
+## 何時使用此功能 {#when-to-use-this}
 
-✅ **Use Generic Guardrail API when:**
-- You want instant integration without waiting for PRs
-- You maintain your own guardrail service
-- You need full control over updates and features
-- You want to support all LiteLLM endpoints automatically
+✅ **在以下情況使用 Generic Guardrail API：**
+- 您想要立即整合，不必等待 PR
+- 您維護自己的 guardrail 服務
+- 您需要對更新與功能擁有完整控制權
+- 您希望自動支援所有 LiteLLM 端點
 
-❌ **Make a PR when:**
-- You want deeper integration with LiteLLM internals
-- Your guardrail requires complex LiteLLM-specific logic
-- You want to be featured as a built-in provider
+❌ **在以下情況提出 PR：**
+- 您想要與 LiteLLM 內部實作有更深入的整合
+- 您的 guardrail 需要複雜的 LiteLLM 專屬邏輯
+- 您希望被列為內建提供者
 
-## Questions?
+## 有問題嗎？ {#questions}
 
-This is a **beta API**. We're actively improving it based on feedback. Open an issue or PR if you need additional capabilities.
-
+這是一個 **beta API**。我們正根據回饋積極改進中。如需其他功能，請開啟 issue 或 PR。

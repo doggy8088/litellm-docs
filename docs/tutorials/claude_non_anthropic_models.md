@@ -2,34 +2,34 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Use Claude Code with Non-Anthropic Models
+# 搭配非 Anthropic 模型使用 Claude Code {#use-claude-code-with-non-anthropic-models}
 
-This tutorial shows how to use Claude Code with non-Anthropic models like OpenAI, Gemini, and other LLM providers through LiteLLM proxy.
+本教學說明如何透過 LiteLLM proxy，將 Claude Code 搭配 OpenAI、Gemini 及其他 LLM 提供者等非 Anthropic 模型使用。
 
 :::info 
 
-LiteLLM automatically translates between different provider formats, allowing you to use any supported LLM provider with Claude Code while maintaining the Anthropic Messages API format.
+LiteLLM 會自動在不同提供者格式之間進行轉換，讓您在維持 Anthropic Messages API 格式的同時，使用 Claude Code 搭配任何受支援的 LLM 提供者。
 
 :::
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) installed
-- API keys for your chosen providers (OpenAI, Vertex AI, etc.)
+- 已安裝 [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
+- 您所選提供者（OpenAI、Vertex AI 等）的 API 金鑰
 
-## Installation
+## 安裝 {#installation}
 
-First, install LiteLLM with proxy support:
+首先，安裝具備 proxy 支援的 LiteLLM：
 
 ```bash
 uv tool install 'litellm[proxy]'
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
-Create a configuration file with your preferred non-Anthropic models:
+建立一個設定檔，內容為您偏好的非 Anthropic 模型：
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -49,7 +49,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-Set your environment variables:
+設定您的環境變數：
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
@@ -68,7 +68,7 @@ model_list:
       api_key: os.environ/GEMINI_API_KEY
 ```
 
-Set your environment variables:
+設定您的環境變數：
 
 ```bash
 export GEMINI_API_KEY="your-gemini-api-key"
@@ -97,7 +97,7 @@ model_list:
       vertex_credentials: os.environ/VERTEX_FILE_PATH_ENV_VAR # os.environ["VERTEX_FILE_PATH_ENV_VAR"] = "/path/to/service_account.json" 
 ```
 
-Set your environment variables:
+設定您的環境變數：
 
 ```bash
 export VERTEX_FILE_PATH_ENV_VAR="/path/to/service_account.json"
@@ -118,7 +118,7 @@ model_list:
       api_version: "2024-02-01"
 ```
 
-Set your environment variables:
+設定您的環境變數：
 
 ```bash
 export AZURE_API_KEY="your-azure-api-key"
@@ -129,7 +129,7 @@ export LITELLM_MASTER_KEY="sk-1234567890"
 </TabItem>
 </Tabs>
 
-### 2. Start LiteLLM Proxy
+### 2. 啟動 LiteLLM Proxy {#2-start-litellm-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -137,9 +137,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Verify Setup
+### 3. 驗證設定 {#3-verify-setup}
 
-Test that your proxy is working correctly:
+測試您的 proxy 是否正常運作：
 
 <Tabs>
 <TabItem value="openai-test" label="OpenAI">
@@ -200,9 +200,9 @@ curl -X POST http://0.0.0.0:4000/v1/messages \
 </TabItem>
 </Tabs>
 
-### 4. Configure Claude Code
+### 4. 設定 Claude Code {#4-configure-claude-code}
 
-Configure Claude Code to use your LiteLLM proxy:
+設定 Claude Code 使用您的 LiteLLM proxy：
 
 ```bash
 export ANTHROPIC_BASE_URL="http://0.0.0.0:4000"
@@ -210,12 +210,12 @@ export ANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"
 ```
 
 :::tip
-The `LITELLM_MASTER_KEY` gives Claude Code access to all proxy models. You can also create virtual keys in the LiteLLM UI to limit access to specific models.
+`LITELLM_MASTER_KEY` 讓 Claude Code 可存取所有 proxy 模型。您也可以在 LiteLLM UI 中建立虛擬金鑰，以限制對特定模型的存取。
 :::
 
-### 5. Use Claude Code with Non-Anthropic Models
+### 5. 搭配非 Anthropic 模型使用 Claude Code {#5-use-claude-code-with-non-anthropic-models}
 
-Start Claude Code and specify which model to use:
+啟動 Claude Code 並指定要使用的模型：
 
 ```bash
 # Use OpenAI GPT-4o
@@ -237,57 +237,57 @@ claude --model anthropic-vertex
 claude --model azure-gpt-4
 ```
 
-### 6. Switch Models at Runtime with `/model`
+### 6. 透過 `/model` 在執行時切換模型 {#6-switch-models-at-runtime-with-model}
 
-Once Claude Code is running, you can switch between any of the models exposed by your LiteLLM proxy using the built-in `/model` command. By default the picker only shows Anthropic's hardcoded models, so to populate it with the models from your LiteLLM proxy you must opt in to **gateway model discovery**.
+當 Claude Code 執行中時，您可以使用內建的 `/model` 指令，在 LiteLLM proxy 透過公開的任何模型之間切換。預設情況下，選擇器只會顯示 Anthropic 的硬編碼模型，因此若要用 LiteLLM proxy 的模型填入，您必須選擇加入 **gateway model discovery**。
 
-Set the following environment variable before launching Claude Code:
+在啟動 Claude Code 前，設定以下環境變數：
 
 ```bash
 export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1
 ```
 
-On startup, Claude Code will call `GET /v1/models` against your `ANTHROPIC_BASE_URL` (your LiteLLM proxy) and add each returned model to the `/model` picker, labeled **From gateway**. Inside Claude Code, run:
+啟動時，Claude Code 會對您的 `ANTHROPIC_BASE_URL`（您的 LiteLLM proxy）呼叫 `GET /v1/models`，並將每個回傳的模型加入 `/model` 選擇器，標示為 **From gateway**。在 Claude Code 內執行：
 
 ```
 /model
 ```
 
-and select any LiteLLM-managed model (`gpt-4o`, `gemini-3.0-flash-exp`, `anthropic-vertex`, etc.) to switch without restarting the session.
+然後選取任何由 LiteLLM 管理的模型（`gpt-4o`、`gemini-3.0-flash-exp`、`anthropic-vertex` 等），即可在不重新啟動工作階段的情況下切換。
 
 :::info Requirements
 
-- Claude Code **v2.1.129** or later.
-- `ANTHROPIC_BASE_URL` must point at a gateway that serves the Anthropic Messages API format — LiteLLM does this on `/v1/messages`.
-- Discovery is opt-in. Without `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`, Claude Code will not query your proxy's `/v1/models`.
+- Claude Code **v2.1.129** 或更新版本。
+- `ANTHROPIC_BASE_URL` 必須指向一個提供 Anthropic Messages API 格式的 gateway——LiteLLM 會在 `/v1/messages` 上完成此事。
+- 探索功能採選擇加入。若沒有 `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`，Claude Code 將不會查詢您 proxy 的 `/v1/models`。
 
 :::
 
-:::tip Surface only specific models
+:::tip 僅顯示特定模型
 
-If you only want a subset of your LiteLLM models to show up in the `/model` picker, issue a [virtual key](../proxy/virtual_keys) scoped to those models and use that key as `ANTHROPIC_AUTH_TOKEN`. `/v1/models` will only return models the key can access.
+如果您只希望部分 LiteLLM 模型顯示在 `/model` 選擇器中，請發出一個範圍限定於這些模型的 [虛擬金鑰](../proxy/virtual_keys)，並將該金鑰作為 `ANTHROPIC_AUTH_TOKEN` 使用。`/v1/models` 只會回傳該金鑰可存取的模型。
 
-You can also add individual model entries manually via `ANTHROPIC_CUSTOM_MODEL_OPTION` instead of (or in addition to) enabling discovery.
+您也可以透過 `ANTHROPIC_CUSTOM_MODEL_OPTION` 手動新增個別模型項目，而不啟用探索，或同時這麼做。
 
 :::
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-LiteLLM acts as a unified interface that:
+LiteLLM 作為統一介面，其功能如下：
 
-1. **Receives requests** from Claude Code in Anthropic Messages API format
-2. **Translates** the request to the target provider's format (OpenAI, Gemini, etc.)
-3. **Forwards** the request to the actual provider
-4. **Translates** the response back to Anthropic Messages API format
-5. **Returns** the response to Claude Code
+1. **接收請求**：來自 Claude Code，格式為 Anthropic Messages API
+2. **轉換**：將請求轉為目標提供者的格式（OpenAI、Gemini 等）
+3. **轉送**：將請求傳送給實際的提供者
+4. **轉換**：將回應轉回 Anthropic Messages API 格式
+5. **回傳**：將回應傳回 Claude Code
 
-This allows you to use Claude Code's interface with any LLM provider supported by LiteLLM.
+如此一來，您就能以 Claude Code 的介面搭配 LiteLLM 支援的任何 LLM 提供者。
 
-## Advanced Features
+## 進階功能 {#advanced-features}
 
-### Load Balancing and Fallbacks
+### 負載平衡與備援 {#load-balancing-and-fallbacks}
 
-Configure multiple deployments with automatic fallback:
+設定多個部署並自動備援：
 
 ```yaml
 model_list:
@@ -308,9 +308,9 @@ router_settings:
   timeout: 30
 ```
 
-### Usage Tracking and Budgets
+### 使用量追蹤與預算 {#usage-tracking-and-budgets}
 
-Track usage and set budgets through the LiteLLM UI:
+透過 LiteLLM UI 追蹤使用量並設定預算：
 
 ```yaml
 litellm_settings:
@@ -321,30 +321,29 @@ general_settings:
   store_model_in_db: true
 ```
 
-Start the proxy with the UI:
+使用以下方式啟動 proxy 與 UI：
 
 ```bash
 litellm --config /path/to/config.yaml --detailed_debug
 ```
 
-Access the UI at `http://0.0.0.0:4000/ui` to:
-- View usage analytics
-- Set budget limits per user/key
-- Monitor costs across different providers
-- Create virtual keys with specific permissions
+前往 `http://0.0.0.0:4000/ui` 的 UI 以：
+- 檢視使用量分析
+- 設定每位使用者／金鑰的預算上限
+- 監控跨不同提供者的成本
+- 建立具有特定權限的虛擬金鑰
 
+## 支援的提供者 {#supported-providers}
 
-## Supported Providers
+LiteLLM 支援 100+ 個提供者。以下列出幾個適合搭配 Claude Code 使用的熱門選項：
 
-LiteLLM supports 100+ providers. Here are some popular ones for use with Claude Code:
+- **OpenAI**：GPT-4o、GPT-4o-mini、o1、o3-mini
+- **Google**：Gemini 2.0 Flash、Gemini 1.5 Pro/Flash
+- **Azure OpenAI**：透過 Azure 使用所有 OpenAI 模型
+- **AWS Bedrock**：Llama、Mistral 及其他模型
+- **Vertex AI**：Google Cloud 上的 Gemini、Claude 及其他模型
+- **Groq**：Llama 與 Mixtral 的快速推論
+- **Together AI**：Llama、Mixtral 及其他開源模型
+- **Deepseek**：Deepseek-chat、Deepseek-coder
 
-- **OpenAI**: GPT-4o, GPT-4o-mini, o1, o3-mini
-- **Google**: Gemini 2.0 Flash, Gemini 1.5 Pro/Flash
-- **Azure OpenAI**: All OpenAI models via Azure
-- **AWS Bedrock**: Llama, Mistral, and other models
-- **Vertex AI**: Gemini, Claude, and other models on Google Cloud
-- **Groq**: Fast inference for Llama and Mixtral
-- **Together AI**: Llama, Mixtral, and other open source models
-- **Deepseek**: Deepseek-chat, Deepseek-coder
-
-[View full list of supported providers →](https://docs.litellm.ai/docs/providers)
+[檢視完整支援提供者清單 →](https://docs.litellm.ai/docs/providers)

@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Google AI Studio Image Generation
+# Google AI Studio 圖像生成 {#google-ai-studio-image-generation}
 
-Google AI Studio provides powerful image generation capabilities using Google's Imagen models to create high-quality images from text descriptions.
+Google AI Studio 提供強大的圖像生成功能，使用 Google 的 Imagen 模型，根據文字描述建立高品質圖像。
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Google AI Studio Image Generation uses Google's Imagen models to generate high-quality images from text descriptions. |
-| Provider Route on LiteLLM | `gemini/` |
-| Provider Doc | [Google AI Studio Image Generation ↗](https://ai.google.dev/gemini-api/docs/imagen) |
-| Supported Operations | [`/images/generations`](#image-generation) |
+| 說明 | Google AI Studio 圖像生成使用 Google 的 Imagen 模型，根據文字描述生成高品質圖像。 |
+| LiteLLM 上的提供者路由 | `gemini/` |
+| 提供者文件 | [Google AI Studio 圖像生成 ↗](https://ai.google.dev/gemini-api/docs/imagen) |
+| 支援的操作 | [`/images/generations`](#image-generation) |
 
-## Setup
+## 設定 {#setup}
 
-### API Key
+### API 金鑰 {#api-key}
 
 ```python showLineNumbers
 # Set your Google AI Studio API key
@@ -24,14 +24,14 @@ import os
 os.environ["GEMINI_API_KEY"] = "your-api-key-here"
 ```
 
-Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+請從 [Google AI Studio](https://aistudio.google.com/app/apikey) 取得您的 API 金鑰。
 
-## Image Generation
+## 圖像生成 {#image-generation}
 
-### Usage - LiteLLM Python SDK
+### 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
 <Tabs>
-<TabItem value="basic" label="Basic Usage">
+<TabItem value="basic" label="基本用法">
 
 ```python showLineNumbers title="Basic Image Generation"
 import litellm
@@ -51,7 +51,7 @@ print(response.data[0].url)
 
 </TabItem>
 
-<TabItem value="async" label="Async Usage">
+<TabItem value="async" label="非同步用法">
 
 ```python showLineNumbers title="Async Image Generation"
 import litellm
@@ -78,7 +78,7 @@ asyncio.run(generate_image())
 
 </TabItem>
 
-<TabItem value="advanced" label="Advanced Parameters">
+<TabItem value="advanced" label="進階參數">
 
 ```python showLineNumbers title="Advanced Image Generation with Parameters"
 import litellm
@@ -104,9 +104,9 @@ for image in response.data:
 </TabItem>
 </Tabs>
 
-### Usage - LiteLLM Proxy Server
+### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-#### 1. Configure your config.yaml
+#### 1. 設定您的 config.yaml {#1-configure-your-configyaml}
 
 ```yaml showLineNumbers title="Google AI Studio Image Generation Configuration"
 model_list:
@@ -121,7 +121,7 @@ general_settings:
   master_key: sk-1234
 ```
 
-#### 2. Start LiteLLM Proxy Server
+#### 2. 啟動 LiteLLM Proxy Server {#2-start-litellm-proxy-server}
 
 ```bash showLineNumbers title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -129,7 +129,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-#### 3. Make requests with OpenAI Python SDK
+#### 3. 使用 OpenAI Python SDK 發出請求 {#3-make-requests-with-openai-python-sdk}
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -191,9 +191,9 @@ curl --location 'http://localhost:4000/v1/images/generations' \
 </TabItem>
 </Tabs>
 
-## Gemini Image Models
+## Gemini 圖像模型 {#gemini-image-models}
 
-Gemini image models (e.g. `gemini-3.1-flash-image-preview`, `gemini-3-pro-image-preview`) use the `generateContent` API and return base64 images. They also support **Google Search grounding** on `/v1/images/generations`.
+Gemini 圖像模型（例如 `gemini-3.1-flash-image-preview`、`gemini-3-pro-image-preview`）使用 `generateContent` API，並回傳 base64 圖像。它們也支援 `/v1/images/generations` 上的**Google Search grounding**。
 
 ```python showLineNumbers title="Gemini image generation with Google Search"
 import litellm
@@ -221,11 +221,11 @@ curl --location 'http://localhost:4000/v1/images/generations' \
 }'
 ```
 
-You can also pass `tools=[{"type": "web_search"}]` or native `tools=[{"googleSearch": {}}]`.
+您也可以傳遞 `tools=[{"type": "web_search"}]` 或原生 `tools=[{"googleSearch": {}}]`。
 
-### Passing imageConfig
+### 傳遞 imageConfig {#passing-imageconfig}
 
-Gemini image models accept a full `imageConfig` object. All fields map directly to `generationConfig.imageConfig` on the underlying `generateContent` request.
+Gemini 圖像模型接受完整的 `imageConfig` 物件。所有欄位都會直接對應到基礎 `generateContent` 請求中的 `generationConfig.imageConfig`。
 
 ```python showLineNumbers title="imageConfig with all fields"
 import litellm
@@ -269,27 +269,27 @@ curl --location 'http://localhost:4000/v1/images/generations' \
 }'
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-Google AI Studio Image Generation supports the following OpenAI-compatible parameters:
+Google AI Studio 圖像生成支援以下與 OpenAI 相容的參數：
 
-| Parameter | Type | Description | Default | Example |
+| 參數 | 類型 | 說明 | 預設值 | 範例 |
 |-----------|------|-------------|---------|---------|
-| `prompt` | string | Text description of the image to generate | Required | `"A sunset over the ocean"` |
-| `model` | string | The model to use for generation | Required | `"gemini/imagen-4.0-generate-001"` |
-| `n` | integer | Number of images to generate (1-4) | `1` | `2` |
-| `size` | string | Image dimensions | `"1024x1024"` | `"512x512"`, `"1024x1024"` |
-| `web_search_options` | object | Enable Google Search grounding (Gemini image models only) | - | `{}` |
-| `tools` | array | Pass `{"type": "web_search"}` or `{"googleSearch": {}}` (Gemini image models only) | - | `[{"type": "web_search"}]` |
-| `imageConfig` | object | Full [ImageConfig](https://cloud.google.com/vertex-ai/docs/reference/rpc/google.cloud.aiplatform.v1#imageconfig) object (Gemini image models only). Fields: `aspectRatio`, `imageSize`, `personGeneration`, `imageOutputOptions` | - | `{"aspectRatio": "16:9", "imageSize": "2K"}` |
+| `prompt` | string | 要生成之圖像的文字描述 | 必填 | `"A sunset over the ocean"` |
+| `model` | string | 用於生成的模型 | 必填 | `"gemini/imagen-4.0-generate-001"` |
+| `n` | integer | 要生成的圖像數量（1-4） | `1` | `2` |
+| `size` | string | 圖像尺寸 | `"1024x1024"` | `"512x512"`、`"1024x1024"` |
+| `web_search_options` | object | 啟用 Google Search grounding（僅限 Gemini 圖像模型） | - | `{}` |
+| `tools` | array | 傳遞 `{"type": "web_search"}` 或 `{"googleSearch": {}}`（僅限 Gemini 圖像模型） | - | `[{"type": "web_search"}]` |
+| `imageConfig` | object | 完整的 [ImageConfig](https://cloud.google.com/vertex-ai/docs/reference/rpc/google.cloud.aiplatform.v1#imageconfig) 物件（僅限 Gemini 圖像模型）。欄位：`aspectRatio`、`imageSize`、`personGeneration`、`imageOutputOptions` | - | `{"aspectRatio": "16:9", "imageSize": "2K"}` |
 
-1. Create an account at [Google AI Studio](https://aistudio.google.com/)
-2. Generate an API key from [API Keys section](https://aistudio.google.com/app/apikey)
-3. Set your `GEMINI_API_KEY` environment variable
-4. Start generating images using LiteLLM
+1. 在 [Google AI Studio](https://aistudio.google.com/) 建立帳戶
+2. 從 [API Keys 區段](https://aistudio.google.com/app/apikey) 產生 API 金鑰
+3. 設定您的 `GEMINI_API_KEY` 環境變數
+4. 開始使用 LiteLLM 生成圖像
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Google AI Studio Documentation](https://ai.google.dev/gemini-api/docs)
-- [Imagen Model Overview](https://ai.google.dev/gemini-api/docs/imagen)
-- [LiteLLM Image Generation Guide](../../completion/image_generation)
+- [Google AI Studio 文件](https://ai.google.dev/gemini-api/docs)
+- [Imagen 模型概覽](https://ai.google.dev/gemini-api/docs/imagen)
+- [LiteLLM 圖像生成指南](../../completion/image_generation)

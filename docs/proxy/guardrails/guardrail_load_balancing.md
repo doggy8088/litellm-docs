@@ -1,47 +1,47 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Guardrail Load Balancing
+# 防護欄負載平衡 {#guardrail-load-balancing}
 
-Load balance guardrail requests across multiple guardrail deployments. This is useful when you have rate limits on guardrail providers (e.g., AWS Bedrock Guardrails) and want to distribute requests across multiple accounts or regions.
+將防護欄請求分散到多個防護欄部署之間進行負載平衡。當防護欄提供者有速率限制（例如 AWS Bedrock Guardrails）且您想在多個帳戶或區域之間分配請求時，這很有用。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
 ```mermaid
 flowchart LR
     subgraph LiteLLM Gateway
-        Router[Router]
-        G1[Guardrail Instance A]
-        G2[Guardrail Instance B]
-        G3[Guardrail Instance N]
+        Router[路由器]
+        G1[防護欄實例 A]
+        G2[防護欄實例 B]
+        G3[防護欄實例 N]
     end
     
-    Client[Client Request] --> Router
-    Router -->|Round Robin / Weighted| G1
-    Router -->|Round Robin / Weighted| G2
-    Router -->|Round Robin / Weighted| G3
+    Client[用戶端請求] --> Router
+    Router -->|輪詢 / 加權| G1
+    Router -->|輪詢 / 加權| G2
+    Router -->|輪詢 / 加權| G3
     
-    G1 --> AWS1[AWS Account 1]
-    G2 --> AWS2[AWS Account 2]
-    G3 --> AWSN[AWS Account N]
+    G1 --> AWS1[AWS 帳戶 1]
+    G2 --> AWS2[AWS 帳戶 2]
+    G3 --> AWSN[AWS 帳戶 N]
 ```
 
-When you define multiple guardrails with the **same `guardrail_name`**, LiteLLM automatically load balances requests across them using the router's load balancing strategy.
+當您定義多個具有**相同 `guardrail_name`** 的防護欄時，LiteLLM 會使用路由器的負載平衡策略自動在它們之間對請求進行負載平衡。
 
-## Why Use Guardrail Load Balancing?
+## 為什麼要使用防護欄負載平衡？ {#why-use-guardrail-load-balancing}
 
-| Use Case | Benefit |
+| 使用情境 | 好處 |
 |----------|---------|
-| **AWS Bedrock Rate Limits** | Bedrock Guardrails have per-account rate limits. Distribute across multiple AWS accounts to increase throughput |
-| **Multi-Region Redundancy** | Deploy guardrails across regions for failover and lower latency |
-| **Cost Optimization** | Spread usage across accounts with different pricing tiers or credits |
-| **A/B Testing** | Test different guardrail configurations with weighted distribution |
+| **AWS Bedrock 速率限制** | Bedrock Guardrails 具有每個帳戶的速率限制。跨多個 AWS 帳戶分散以提高吞吐量 |
+| **多區域備援** | 在不同區域部署防護欄以進行故障轉移並降低延遲 |
+| **成本最佳化** | 將用量分散到具有不同定價層級或額度的帳戶 |
+| **A/B 測試** | 以加權分配測試不同的防護欄設定 |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Multiple Guardrails with Same Name
+### 1. 定義多個同名防護欄 {#1-define-multiple-guardrails-with-same-name}
 
-Define multiple guardrail entries with the **same `guardrail_name`** but different configurations:
+定義多個具有**相同 `guardrail_name`** 但不同設定的防護欄項目：
 
 <Tabs>
 <TabItem value="bedrock" label="Bedrock Guardrails">
@@ -79,7 +79,7 @@ guardrails:
 
 </TabItem>
 
-<TabItem value="custom" label="Custom Guardrails">
+<TabItem value="custom" label="自訂防護欄">
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -134,15 +134,15 @@ guardrails:
 </TabItem>
 </Tabs>
 
-### 2. Start LiteLLM Gateway
+### 2. 啟動 LiteLLM Gateway {#2-start-litellm-gateway}
 
 ```bash showLineNumbers title="Start proxy"
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Make Requests
+### 3. 發送請求 {#3-make-requests}
 
-Requests using the guardrail will be automatically load balanced:
+使用防護欄的請求將自動進行負載平衡：
 
 ```bash showLineNumbers title="Test request"
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -155,9 +155,9 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## Weighted Load Balancing
+## 加權負載平衡 {#weighted-load-balancing}
 
-Assign weights to distribute traffic unevenly across guardrail instances:
+指派權重以在防護欄實例之間不均勻地分配流量：
 
 ```yaml showLineNumbers title="config.yaml - Weighted distribution"
 guardrails:
@@ -180,37 +180,37 @@ guardrails:
       weight: 2  # Lower weight = less traffic
 ```
 
-## Bedrock Guardrails - Multi-Account Setup
+## Bedrock Guardrails - 多帳戶設定 {#bedrock-guardrails---multi-account-setup}
 
-AWS Bedrock Guardrails have rate limits per account. Here's how to set up load balancing across multiple AWS accounts:
+AWS Bedrock Guardrails 具有每個帳戶的速率限制。以下說明如何在多個 AWS 帳戶之間設定負載平衡：
 
-### Architecture
+### 架構 {#architecture}
 
 ```mermaid
 flowchart TB
     subgraph LiteLLM["LiteLLM Gateway"]
-        LB[Load Balancer]
+        LB[負載平衡器]
     end
     
-    subgraph AWS1["AWS Account 1 (us-east-1)"]
+    subgraph AWS1["AWS 帳戶 1 (us-east-1)"]
         BG1[Bedrock Guardrail]
     end
     
-    subgraph AWS2["AWS Account 2 (us-west-2)"]
+    subgraph AWS2["AWS 帳戶 2 (us-west-2)"]
         BG2[Bedrock Guardrail]
     end
     
-    subgraph AWS3["AWS Account 3 (eu-west-1)"]
+    subgraph AWS3["AWS 帳戶 3 (eu-west-1)"]
         BG3[Bedrock Guardrail]
     end
     
-    Client[Client] --> LiteLLM
+    Client[用戶端] --> LiteLLM
     LB --> BG1
     LB --> BG2
     LB --> BG3
 ```
 
-### Configuration
+### 設定 {#configuration}
 
 ```yaml showLineNumbers title="config.yaml - Multi-account Bedrock"
 model_list:
@@ -253,7 +253,7 @@ guardrails:
       aws_region_name: "eu-west-1"
 ```
 
-### Test Multi-Account Setup
+### 測試多帳戶設定 {#test-multi-account-setup}
 
 ```bash showLineNumbers title="Run multiple requests to verify load balancing"
 # Run 10 requests - they will be distributed across accounts
@@ -270,11 +270,11 @@ done
 wait
 ```
 
-Check proxy logs to verify requests are distributed across different AWS accounts.
+請檢查 proxy 記錄，以驗證請求是否分散到不同的 AWS 帳戶。
 
-## Custom Guardrails Example
+## 自訂防護欄範例 {#custom-guardrails-example}
 
-Create two custom guardrail classes for load balancing:
+建立兩個用於負載平衡的自訂防護欄類別：
 
 ```python showLineNumbers title="custom_guardrail.py"
 from litellm.integrations.custom_guardrail import CustomGuardrail
@@ -325,15 +325,15 @@ guardrails:
       mode: "pre_call"
 ```
 
-## Verifying Load Balancing
+## 驗證負載平衡 {#verifying-load-balancing}
 
-Enable detailed debug logging to verify load balancing is working:
+啟用詳細的除錯記錄，以驗證負載平衡是否正常運作：
 
 ```bash showLineNumbers title="Start with debug logging"
 litellm --config config.yaml --detailed_debug
 ```
 
-You should see logs indicating which guardrail instance is selected:
+您應該會看到指出已選取哪個防護欄實例的記錄：
 
 ```
 Selected guardrail deployment: bedrock/guardrail (guard-us-east)
@@ -342,10 +342,9 @@ Selected guardrail deployment: bedrock/guardrail (guard-eu-west)
 ...
 ```
 
-## Related
+## 相關 {#related}
 
-- [Guardrails Quick Start](./quick_start.md)
+- [防護欄快速開始](./quick_start.md)
 - [Bedrock Guardrails](./bedrock.md)
-- [Custom Guardrails](./custom_guardrail.md)
-- [Load Balancing for LLM Calls](../load_balancing.md)
-
+- [自訂防護欄](./custom_guardrail.md)
+- [LLM 請求的負載平衡](../load_balancing.md)

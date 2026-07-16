@@ -1,52 +1,52 @@
-# Passthrough Managed IDs
+# 直通受控 ID {#passthrough-managed-ids}
 
-When you use LiteLLM's passthrough endpoints (e.g. `/openai/v1/files`, `/azure/openai/batches`) the upstream provider returns its own raw IDs such as `file-abc123` or `batch_xyz`. By default those IDs are returned directly to your client, which means:
+當您使用 LiteLLM 的 passthrough endpoints（例如 `/openai/v1/files`、`/azure/openai/batches`）時，上游提供者會回傳它自己的原始 ID，例如 `file-abc123` 或 `batch_xyz`。預設情況下，這些 ID 會直接回傳給您的 client，這表示：
 
-- Any user who guesses or intercepts another user's `file-abc123` can use it.
-- You have no proxy-level record of who owns what.
-- Multi-tenant isolation has to be done entirely in your application code.
+- 任何猜到或攔截到其他使用者 `file-abc123` 的人都可以使用它。
+- 您沒有 proxy 層級的紀錄可追蹤誰擁有什麼。
+- 多租戶隔離必須完全在您的應用程式程式碼中完成。
 
-**Passthrough Managed IDs** solves this. When the feature is enabled the proxy:
+**Passthrough Managed IDs** 解決了這個問題。啟用此功能後，proxy 會：
 
-1. **Mints** a stable, opaque managed ID for every raw provider ID it sees in a response.
-2. **Stores** the `managed_id → raw_id` mapping in the proxy database, tagged with the creating user/team.
-3. **Resolves** a managed ID back to the raw provider ID just before forwarding any request upstream, after running an ownership/permission check.
+1. **建立** 它在回應中看到的每個原始提供者 ID 對應的穩定、不可讀的 managed ID。
+2. **儲存** `managed_id → raw_id` 對應關係到 proxy 資料庫，並標註建立該項目的使用者/團隊。
+3. 在將任何請求轉送到上游之前，先執行擁有權/權限檢查，然後再將 managed ID **解析** 回原始提供者 ID。
 
-Your clients never see raw provider IDs and can never access resources they do not own — even if they guess or forge a managed ID string.
+您的 client 永遠看不到原始提供者 ID，也永遠無法存取不屬於自己的資源——即使他們猜測或偽造 managed ID 字串也一樣。
 
-## How to enable
+## 如何啟用 {#how-to-enable}
 
-Add one line to `general_settings` in your proxy config:
+在您的 proxy 設定中，新增一行到 `general_settings`：
 
 ```yaml
 general_settings:
   passthrough_managed_object_ids: true
 ```
 
-The feature requires:
-- A database configured for the proxy (Prisma / PostgreSQL).
-- The `managed_files` enterprise hook to be available.
+此功能需要：
+- 為 proxy 設定的資料庫（Prisma / PostgreSQL）。
+- 可用的 `managed_files` enterprise hook。
 
-The feature is active only for **OpenAI** and **Azure OpenAI** passthrough routes.
+此功能僅適用於 **OpenAI** 與 **Azure OpenAI** 的 passthrough 路由。
 
-## Native managed endpoints vs passthrough
+## 原生受控端點 vs 直通 {#native-managed-endpoints-vs-passthrough}
 
-| | Native managed endpoints | Passthrough with managed IDs |
+| | 原生 managed endpoints | 具有 managed IDs 的 passthrough |
 |---|---|---|
-| **URL prefix** | `/v1/files`, `/v1/batches` | `/openai/v1/files`, `/azure/openai/batches` |
-| **Routing** | LiteLLM internal logic; model-based routing | Direct forward to upstream provider |
-| **Credential resolution** | Via `model_list` router | Via `PassthroughEndpointRouter` / env vars |
-| **Use when** | You want LiteLLM to pick the right deployment automatically, or you need cross-provider batching | You want to call a provider API directly (e.g. fine-tuning, responses, custom endpoints) but still need proxy-level access control |
-| **ID management** | Always managed by LiteLLM | Managed IDs only when `passthrough_managed_object_ids: true` |
-| **Streaming ID minting** | Supported | **Not yet supported** (output IDs in streaming responses are not rewritten) |
+| **URL prefix** | `/v1/files`、`/v1/batches` | `/openai/v1/files`、`/azure/openai/batches` |
+| **Routing** | LiteLLM 內部邏輯；以模型為基礎的路由 | 直接轉送到上游提供者 |
+| **Credential resolution** | 透過 `model_list` router | 透過 `PassthroughEndpointRouter` / 環境變數 |
+| **Use when** | 您希望 LiteLLM 自動選擇正確的 deployment，或您需要跨提供者批次處理 | 您希望直接呼叫提供者 API（例如 fine-tuning、responses、自訂端點），但仍需要 proxy 層級的存取控制 |
+| **ID management** | 一律由 LiteLLM 管理 | 只有在 `passthrough_managed_object_ids: true` 時才使用 managed IDs |
+| **Streaming ID minting** | 支援 | **尚未支援**（streaming 回應中的輸出 IDs 不會被重寫） |
 
-## Supported endpoints
+## 支援的端點 {#supported-endpoints}
 
-### Response ID minting (OUTPUT)
+### 回應 ID 鑄造（輸出） {#response-id-minting-output}
 
-These are the specific routes where LiteLLM will mint a managed ID for raw provider IDs it sees in the **response body** and swap them before returning to the client.
+這些是 LiteLLM 會在 **回應本文** 中看到原始提供者 ID 時，建立 managed ID 並在回傳給 client 之前替換的特定路由。
 
-| Provider | Method | Path | Fields rewritten |
+| 提供者 | 方法 | 路徑 | 已重寫欄位 |
 |----------|--------|------|-----------------|
 | OpenAI | `POST` | `/v1/files` | `id` (`file-`) |
 | OpenAI | `GET` | `/v1/files/{file_id}` | `id` (`file-`) |
@@ -65,21 +65,22 @@ These are the specific routes where LiteLLM will mint a managed ID for raw provi
 | Azure | `POST` | `/v1/batches/{batch_id}/cancel` | `id` (`batch_`), `input_file_id`, `output_file_id`, `error_file_id` |
 | Azure | `POST` | `/v1/responses` | `id` (`resp_`) |
 | Azure | `GET` | `/v1/responses/{response_id}` | `id` (`resp_`) |
+
 | Azure | `DELETE` | `/v1/responses/{response_id}` | `id` (`resp_`) |
 
-### Managed ID resolution (INPUT)
+### 受控 ID 解析（輸入） {#managed-id-resolution-input}
 
-This is **not route-specific**. For every OpenAI or Azure passthrough request, LiteLLM scans the entire request before forwarding it upstream:
+這**不是路由專屬**的。對於每一個 OpenAI 或 Azure 的 passthrough 請求，LiteLLM 會在轉送到上游之前掃描整個請求：
 
-| Location | What is scanned |
-|----------|-----------------|
-| **URL path** | Each path segment |
-| **Query params** | Every string-valued parameter |
-| **Request body** | All string values, recursively (works in nested objects and arrays) |
+| 位置 | 掃描內容 |
+|----------|----------|
+| **URL path** | 每個路徑片段 |
+| **Query params** | 每個字串型別參數 |
+| **Request body** | 所有字串值，遞迴掃描（可作用於巢狀物件與陣列） |
 
-This means any endpoint that accepts a file ID, batch ID, or response ID in path, query, or body will automatically resolve managed IDs — including endpoints not listed in the output table above, such as fine-tuning jobs (`/v1/fine_tuning/jobs`), assistants, or any custom endpoint.
+這表示任何在 path、query 或 body 中接受 file ID、batch ID 或 response ID 的 endpoint，都會自動解析 managed IDs——包括上方輸出表中未列出的 endpoint，例如 fine-tuning jobs（`/v1/fine_tuning/jobs`）、assistants，或任何自訂 endpoint。
 
-**Example — fine-tuning job:**
+**範例 — fine-tuning job：**
 
 ```python
 # Client sends managed IDs for training_file and validation_file
@@ -94,9 +95,9 @@ response = client.post("/azure/openai/v1/fine_tuning/jobs", json={
 # { "model": "gpt-4o-mini", "training_file": "file-2dbc75...", "validation_file": "file-2dbc75..." }
 ```
 
-## Request flow - any endpoint
+## 請求流程 - 任一端點 {#request-flow---any-endpoint}
 
-This applies to **any** OpenAI or Azure passthrough endpoint — not just fine-tuning. The same path/query/body scan runs on every request; the example below uses a fine-tuning job with a managed file ID in the body.
+這適用於**任何** OpenAI 或 Azure passthrough endpoint——不只是 fine-tuning。每個請求都會執行相同的 path/query/body 掃描；下方範例使用的是 body 中帶有 managed file ID 的 fine-tuning job。
 
 ```mermaid
 sequenceDiagram
@@ -119,47 +120,47 @@ sequenceDiagram
     Passthrough->>Azure: POST { training_file: file-2dbc7561... }
 ```
 
-On the **response** path, `rewrite_response_ids()` mints managed IDs for raw provider IDs — but only on routes listed in the output map (files, batches, responses). Other endpoints (e.g. fine-tuning) return upstream IDs as-is unless they appear in that map.
+在**回應**路徑上，`rewrite_response_ids()` 會為原始提供者 ID 鑄造 managed IDs——但只會針對輸出對應表中列出的路由（files、batches、responses）執行。其他 endpoint（例如 fine-tuning）會原樣回傳上游 ID，除非它們出現在該對應表中。
 
-## Permission checks
+## 權限檢查 {#permission-checks}
 
-Every managed ID resolution runs four checks in order. **All must pass** or the request is rejected.
+每次 managed ID 解析都會依序執行四項檢查。**全部都必須通過**，否則請求會被拒絕。
 
-### 1. Provider match
+### 1. 提供者比對 {#1-provider-match}
 
-The managed ID encodes the provider it was minted for (e.g. `azure`). If you send an Azure-minted ID on an OpenAI passthrough route (or vice versa), the proxy returns **404** and never forwards the ID upstream.
+managed ID 內含其鑄造時所對應的提供者（例如 `azure`）。如果您在 OpenAI passthrough 路由上送出 Azure 鑄造的 ID（反之亦然），代理會回傳**404**，且絕不會將該 ID 轉送到上游。
 
-### 2. DB existence
+### 2. 資料庫存在性 {#2-db-existence}
 
-The managed ID must map to a real row in the proxy database. A guessed, forged, or base64-crafted string that does not correspond to a real row returns **404**. The raw provider ID is **never** forwarded to the upstream when the DB check fails.
+managed ID 必須對應到代理資料庫中的真實資料列。猜測、偽造或以 base64 構造、但無法對應到真實資料列的字串，會回傳**404**。當資料庫檢查失敗時，原始提供者 ID **絕不會**被轉送到上游。
 
-### 3. Access check - per-request
+### 3. 存取檢查 - 每次請求 {#3-access-check---per-request}
 
-`can_access_resource()` decides whether the caller may use a specific resource:
+`can_access_resource()` 會決定呼叫端是否可使用特定資源：
 
-| Caller identity | Access granted when |
+| 呼叫端身分 | 授予存取權時 |
 |-----------------|---------------------|
-| Proxy admin / master key | Always |
-| Has `user_id` | `created_by == user_id` |
-| Has `team_id` (service account) | `team_id == resource.team_id` |
-| Has both `user_id` and `team_id` | Either condition above |
-| Neither | Never (**403**) |
+| Proxy 管理員 / master key | 一律 |
+| 具有 `user_id` | `created_by == user_id` |
+| 具有 `team_id`（service account） | `team_id == resource.team_id` |
+| 同時具有 `user_id` 和 `team_id` | 以上任一條件 |
+| 兩者皆無 | 永不（**403**） |
 
-### 4. Access check - list endpoints
+### 4. 存取檢查 - 清單端點 {#4-access-check---list-endpoints}
 
-`build_owner_filter()` scopes the database query for list operations (see below). Same rules, expressed as a Prisma `WHERE` clause:
+`build_owner_filter()` 會為列表操作界定資料庫查詢的範圍（見下文）。同樣的規則，以 Prisma `WHERE` 子句表示如下：
 
-| Caller | WHERE clause |
+| 呼叫端 | WHERE 子句 |
 |--------|-------------|
-| Proxy admin / master key | `{}` (no filter — sees all rows) |
-| `user_id` only | `created_by = user_id` |
-| `team_id` only | `team_id = team_id` |
-| Both `user_id` and `team_id` | `created_by = user_id OR team_id = team_id` |
-| Neither | Empty list returned immediately — no DB query |
+| Proxy 管理員 / master key | `{}`（無篩選條件——可看見所有資料列） |
+| 僅 `user_id` | `created_by = user_id` |
+| 僅 `team_id` | `team_id = team_id` |
+| 同時具有 `user_id` 和 `team_id` | `created_by = user_id OR team_id = team_id` |
+| 兩者皆無 | 立即回傳空清單——不進行 DB 查詢 |
 
-## How list endpoints work
+## 清單端點運作方式 {#how-list-endpoints-work}
 
-`GET /openai/v1/files` and `GET /openai/v1/batches` (and their Azure equivalents) are **fully intercepted**. The request is never forwarded to the upstream provider. Instead, the proxy queries its own database and returns only the rows the caller owns:
+`GET /openai/v1/files` 和 `GET /openai/v1/batches`（以及其 Azure 對應項）會被**完全攔截**。請求不會轉送至上游提供者。相反地，proxy 會查詢自己的資料庫，並只回傳呼叫端擁有的資料列：
 
 ```
 GET /openai/v1/files
@@ -178,20 +179,20 @@ GET /openai/v1/files
                               All IDs in data[] are managed IDs
 ```
 
-Pagination parameters `limit`, `after`, and `before` are supported and map directly to a cursor on `created_at`.
+支援分頁參數 `limit`、`after` 和 `before`，並直接對應到 `created_at` 上的游標。
 
-A caller with no `user_id` and no `team_id` always receives an empty list — the proxy never falls back to an unscoped query.
+沒有 `user_id` 且沒有 `team_id` 的呼叫端一律會收到空清單——proxy 絕不會退回到未受範圍限制的查詢。
 
-## Limitations
+## 限制 {#limitations}
 
-### Streaming responses - output ID minting not supported
+### 串流回應 - 不支援輸出 ID 鑄造 {#streaming-responses---output-id-minting-not-supported}
 
-When the upstream returns a **streaming** (SSE) response, managed IDs are **not minted** for raw provider IDs in the stream chunks. The client receives the raw upstream IDs.
+當上游回傳**串流**（SSE）回應時，串流區塊中的原始提供者 ID 不會被鑄造為 managed IDs。用戶端會收到原始的上游 ID。
 
-### Raw IDs are passed through unchanged
+### 原始 ID 會原樣直通 {#raw-ids-are-passed-through-unchanged}
 
-If you send a raw provider ID (e.g. `file-abc123`) instead of a managed ID, the proxy passes it through without any ownership check. The permission system only applies to strings that decode as passthrough managed IDs.
+如果您傳送的是原始提供者 ID（例如 `file-abc123`）而不是 managed ID，proxy 會直接傳遞，不會進行任何擁有權檢查。權限系統只會套用於可解碼為 passthrough managed IDs 的字串。
 
-### IDs are provider-scoped
+### ID 以提供者為範圍 {#ids-are-provider-scoped}
 
-A managed ID minted for `azure` cannot be used on `openai` passthrough routes and vice versa. Attempting to do so returns **404**.
+為 `azure` 鑄造的 managed ID 不能用於 `openai` passthrough 路由，反之亦然。嘗試這麼做會回傳 **404**。

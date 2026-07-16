@@ -1,30 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Baseten
+# Baseten {#baseten}
 
-LiteLLM supports both Baseten Model APIs and dedicated deployments with automatic routing.
+LiteLLM 同時支援 Baseten Model API 與具備自動路由的專屬部署。
 
-## API Types
+## API 類型 {#api-types}
 
-### Model API (Default)
+### Model API（預設） {#model-api-default}
 - **URL**: `https://inference.baseten.co/v1`
-- **Format**: `baseten/<model-name>` (e.g., `baseten/openai/gpt-oss-120b`)
-- **Best for**: Quick access to popular models
+- **格式**: `baseten/<model-name>`（例如，`baseten/openai/gpt-oss-120b`）
+- **最適合**: 快速存取熱門模型
 
-### Dedicated Deployments
+### 專屬部署 {#dedicated-deployments}
 - **URL**: `https://model-{id}.api.baseten.co/environments/production/sync/v1`
-- **Format**: `baseten/{8-digit-alphanumeric-code}` (e.g., `baseten/abcd1234`)
-- **Best for**: Custom models, latency SLAs
+- **格式**: `baseten/{8-digit-alphanumeric-code}`（例如，`baseten/abcd1234`）
+- **最適合**: 自訂模型、延遲 SLA
 
 :::tip
-**Automatic Routing**: LiteLLM detects the type based on model format:
-- 8-digit alphanumeric codes → Dedicated deployment
-- All other formats → Model API
+**自動路由**：LiteLLM 會根據模型格式偵測類型：
+- 8 位英數代碼 → 專屬部署
+- 其他所有格式 → Model API
 :::
 
-
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python
 import os
@@ -45,9 +44,9 @@ response = completion(
 )
 ```
 
-## Examples
+## 範例 {#examples}
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 ```python
 # Model API
 response = completion(
@@ -66,7 +65,7 @@ response = completion(
 )
 ```
 
-### Streaming (Model API only)
+### 串流（僅限 Model API） {#streaming-model-api-only}
 ```python
 response = completion(
     model="baseten/openai/gpt-oss-120b",
@@ -80,9 +79,9 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-## Usage with LiteLLM Proxy
+## 與 LiteLLM Proxy 一起使用 {#usage-with-litellm-proxy}
 
-1. **Config**:
+1. **設定**：
 ```yaml
 model_list:
   - model_name: baseten-model
@@ -91,7 +90,7 @@ model_list:
       api_key: your-baseten-api-key
 ```
 
-2. **Request**:
+2. **請求**：
 ```python
 import openai
 client = openai.OpenAI(

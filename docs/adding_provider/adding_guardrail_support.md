@@ -1,17 +1,17 @@
-# Adding Guardrail Support to Endpoints
+# 將 Guardrail 支援新增至端點 {#adding-guardrail-support-to-endpoints}
 
-This guide explains how to add guardrail translation support to new LiteLLM endpoints (e.g., Chat Completions, Responses API, etc.).
+本指南說明如何為新的 LiteLLM 端點（例如 Chat Completions、Responses API 等）新增 guardrail 翻譯支援。
 
-## When to Add Guardrail Support
+## 何時要新增 Guardrail 支援 {#when-to-add-guardrail-support}
 
-Add guardrail support when:
-- You're creating a new LiteLLM endpoint (e.g., a new API format)
-- You want to enable guardrails for an existing endpoint that doesn't support them
-- You need custom text extraction logic for a specific message format
+在以下情況下新增 guardrail 支援：
+- 您正在建立新的 LiteLLM 端點（例如新的 API 格式）
+- 您想為不支援 guardrails 的既有端點啟用 guardrails
+- 您需要針對特定訊息格式的自訂文字擷取邏輯
 
-## Directory Structure
+## 目錄結構 {#directory-structure}
 
-Guardrail handlers follow this structure:
+Guardrail 處理器遵循以下結構：
 
 ```
 litellm/llms/{provider}/{endpoint}/guardrail_translation/
@@ -20,9 +20,9 @@ litellm/llms/{provider}/{endpoint}/guardrail_translation/
 └── README.md            # Documentation (optional but recommended)
 ```
 
-### Example Structures
+### 範例結構 {#example-structures}
 
-**OpenAI Chat Completions:**
+**OpenAI Chat Completions：**
 ```
 litellm/llms/openai/chat/guardrail_translation/
 ├── __init__.py
@@ -30,7 +30,7 @@ litellm/llms/openai/chat/guardrail_translation/
 └── README.md
 ```
 
-**OpenAI Responses API:**
+**OpenAI Responses API：**
 ```
 litellm/llms/openai/responses/guardrail_translation/
 ├── __init__.py
@@ -38,18 +38,18 @@ litellm/llms/openai/responses/guardrail_translation/
 └── README.md
 ```
 
-**Anthropic Messages:**
+**Anthropic Messages：**
 ```
 litellm/llms/anthropic/chat/guardrail_translation/
 ├── __init__.py
 └── handler.py
 ```
 
-## Step-by-Step Implementation
+## 逐步實作 {#step-by-step-implementation}
 
-### Step 1: Create the Handler Class
+### 步驟 1：建立處理器類別 {#step-1-create-the-handler-class}
 
-Create `handler.py` that inherits from `BaseTranslation`:
+建立 `handler.py`，其繼承自 `BaseTranslation`：
 
 ```python
 """
@@ -115,11 +115,11 @@ class MyEndpointHandler(BaseTranslation):
         pass
 ```
 
-### Step 2: Implement Core Methods
+### 步驟 2：實作核心方法 {#step-2-implement-core-methods}
 
-#### A. Process Input Messages
+#### A. 處理輸入訊息 {#a-process-input-messages}
 
-Extract text from input, apply guardrails, and map back:
+從輸入中擷取文字、套用 guardrails，並映射回去：
 
 ```python
 async def process_input_messages(
@@ -160,9 +160,9 @@ async def process_input_messages(
     return data
 ```
 
-#### B. Process Output Response
+#### B. 處理輸出回應 {#b-process-output-response}
 
-Extract text from response, apply guardrails, and update:
+從回應中擷取文字、套用 guardrails，並更新：
 
 ```python
 async def process_output_response(
@@ -202,9 +202,9 @@ async def process_output_response(
     return response
 ```
 
-### Step 3: Create Helper Methods
+### 步驟 3：建立輔助方法 {#step-3-create-helper-methods}
 
-Implement helper methods for text extraction and mapping:
+實作用於文字擷取與映射的輔助方法：
 
 ```python
 async def _extract_input_text_and_create_tasks(
@@ -256,9 +256,9 @@ def _has_text_content(self, response: Any) -> bool:
     return True  # or appropriate logic
 ```
 
-### Step 4: Register the Handler
+### 步驟 4：註冊處理器 {#step-4-register-the-handler}
 
-Create `__init__.py` to register the handler with call types:
+建立 `__init__.py` 以使用呼叫類型註冊處理器：
 
 ```python
 """My Endpoint handler for Unified Guardrails."""
@@ -276,11 +276,11 @@ guardrail_translation_mappings = {
 __all__ = ["guardrail_translation_mappings"]
 ```
 
-**Important:** Make sure your `CallTypes` are defined in `litellm/types/utils.py`.
+**重要：** 請確保您的 `CallTypes` 已在 `litellm/types/utils.py` 中定義。
 
-### Step 5: Add Documentation
+### 步驟 5：新增文件 {#step-5-add-documentation}
 
-Create `README.md` with usage examples and format details:
+建立 `README.md`，包含使用範例與格式詳細資訊：
 
 ```markdown
 # {Provider} {Endpoint} Guardrail Translation Handler
@@ -304,7 +304,7 @@ This handler processes {Endpoint} input/output by:
 }
 ```
 
-### Output Format
+### 輸出格式 {#output-format}
 ```json
 {
   "field": "value",
@@ -312,9 +312,9 @@ This handler processes {Endpoint} input/output by:
 }
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-The handler is automatically discovered and applied when guardrails are used with this endpoint.
+當將 guardrails 與此端點搭配使用時，系統會自動發現並套用該處理器。
 
 ```bash
 curl -X POST 'http://localhost:4000/{my_endpoint}' \
@@ -327,12 +327,12 @@ curl -X POST 'http://localhost:4000/{my_endpoint}' \
 }'
 
 ```
-## Extension
+## 擴充 {#extension}
 
-Override these methods to customize behavior:
-- `_extract_input_text_and_create_tasks()`: Custom text extraction
-- `_apply_guardrail_responses_to_input()`: Custom response mapping
-- `_has_text_content()`: Custom content detection
+覆寫以下方法以自訂行為：
+- `_extract_input_text_and_create_tasks()`：自訂文字擷取
+- `_apply_guardrail_responses_to_input()`：自訂回應映射
+- `_has_text_content()`：自訂內容偵測
 ```
 
 ### Step 6: Add Unit Tests
@@ -403,10 +403,9 @@ class TestOutputProcessing:
         assert "GUARDRAILED" in get_response_text(result)
 ```
 
-## Support
+## 支援 {#support}
 
-For questions or issues:
-- Check existing handler implementations for examples
-- Review the base translation class documentation
-- Create an issue on GitHub with the `guardrails` label
-
+如有問題或發生問題：
+- 檢查既有的處理器實作以取得範例
+- 檢閱基礎翻譯類別文件
+- 在 GitHub 上建立 issue，並加上 `guardrails` 標籤

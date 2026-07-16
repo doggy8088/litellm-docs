@@ -1,33 +1,31 @@
 import Image from '@theme/IdealImage';
 
-# Weights & Biases
-
+# Weights & Biases {#weights--biases}
 
 :::tip
 
-This is community maintained, Please make an issue if you run into a bug
+這是由社群維護的文件，如果您遇到 bug，請提出 issue
 https://github.com/BerriAI/litellm
 
 :::
 
-
-Weights & Biases helps AI developers build better models faster https://wandb.ai
+Weights & Biases 協助 AI 開發者更快打造更好的模型 https://wandb.ai
 
 <Image img={require('../../img/wandb.png')} />
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們想了解如何讓 callbacks 變得更好！歡迎認識 LiteLLM 的 [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 ::: 
 
-## Pre-Requisites
-Ensure you have run `uv add wandb` for this integration
+## 先決條件 {#pre-requisites}
+請確認您已為此整合執行 `uv add wandb`
 ```shell
 uv add wandb litellm
 ```
 
-## Quick Start
-Use just 2 lines of code, to instantly log your responses **across all providers** with Weights & Biases
+## 快速開始 {#quick-start}
+只需 2 行程式碼，即可使用 Weights & Biases 立即記錄您 **跨所有提供者** 的回應
 
 ```python
 litellm.success_callback = ["wandb"]
@@ -53,8 +51,8 @@ response = litellm.completion(
 )
 ```
 
-## Support & Talk to Founders
+## 支援與聯絡 founders {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

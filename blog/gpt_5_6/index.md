@@ -1,12 +1,12 @@
 ---
 slug: gpt_5_6
-title: "Day 0 Support: GPT-5.6 (Sol, Terra, Luna)"
+title: "第 0 天支援：GPT-5.6（Sol、Terra、Luna）"
 date: 2026-07-09T10:00:00
 authors:
   - mateo
   - krrish
   - ishaan-alt
-description: "Day 0 support for the GPT-5.6 family (Sol, Terra, and Luna) on LiteLLM."
+description: "LiteLLM 對 GPT-5.6 系列（Sol、Terra、Luna）的第 0 天支援。"
 image: ./hero.png
 tags: [openai, gpt-5.6, gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna, completion, day 0 support]
 hide_table_of_contents: false
@@ -17,28 +17,28 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x GPT-5.6](./hero.png)
 
-LiteLLM now supports the [GPT-5.6 family](https://openai.com/index/previewing-gpt-5-6-sol/). Route traffic to OpenAI's newest frontier models through the LiteLLM AI Gateway with no code changes.
+LiteLLM 現在支援 [GPT-5.6 系列](https://openai.com/index/previewing-gpt-5-6-sol/)。透過 LiteLLM AI Gateway 將流量路由至 OpenAI 最新的前沿模型，無需變更程式碼。
 
 {/* truncate */}
 
-GPT-5.6 introduces a new naming system where the number identifies the generation and the tier name identifies a durable capability level. `gpt-5.6-sol` is the flagship for complex reasoning and agentic workloads, `gpt-5.6-terra` is a balanced model for everyday work with performance competitive with GPT-5.5 at roughly half the cost, and `gpt-5.6-luna` is the fastest and most affordable tier. Per OpenAI, the family sets a new state of the art on agentic coding (Terminal-Bench 2.1) with broad gains in long-horizon biology and cybersecurity workflows. GPT-5.6 also adds a new `max` reasoning effort for the deepest single-agent thinking and an `ultra` mode that coordinates subagents on the most complex tasks.
+GPT-5.6 引入了一套新的命名系統，其中數字代表世代，等級名稱則代表持久的能力層級。`gpt-5.6-sol` 是用於複雜推理與 agentic 工作負載的旗艦模型，`gpt-5.6-terra` 是兼顧效能與日常工作的平衡模型，效能可與 GPT-5.5 相抗衡，成本約為一半，而 `gpt-5.6-luna` 則是最快且最經濟實惠的等級。根據 OpenAI，這個系列在 agentic coding（Terminal-Bench 2.1）上樹立了新的最佳水準，並在長期規劃的生物學與資安工作流程中帶來廣泛提升。GPT-5.6 也新增了供最深度單一代理程式思考使用的 `max` reasoning effort，以及可在最複雜任務上協調子代理程式的 `ultra` 模式。
 
-:::info Living post
-**This post is updated as GPT-5.6 support expands.** GPT-5.6 is now available on Azure OpenAI in addition to OpenAI direct. Global Azure deployments match OpenAI list pricing, and regional deployments (`azure/us/*` and `azure/eu/*`) are tracked with the standard 10% regional uplift.
+:::info 持續更新的文章
+**隨著 GPT-5.6 支援擴充，本篇文章會持續更新。** 除了 OpenAI 直接服務外，GPT-5.6 現在也可在 Azure OpenAI 上使用。全域 Azure 部署與 OpenAI 列表價格一致，而區域部署（`azure/us/*` 和 `azure/eu/*`）則依標準 10% 區域加成計價。
 :::
 
 :::note
-**No Docker image upgrade needed.** GPT-5.6 routes through the existing `OpenAIGPT5Config` in LiteLLM (the version classifier already matches `gpt-5.4` and newer), so any recent version works out of the box. The GPT-5.6 pricing and metadata are also bundled starting in `v1.93.0-dev.2` for anyone running with `LITELLM_LOCAL_MODEL_COST_MAP=true`.
+**不需要升級 Docker 映像檔。** GPT-5.6 會透過 LiteLLM 中既有的 `OpenAIGPT5Config` 路由（版本分類器已可匹配 `gpt-5.4` 及更新版本），因此任何近期版本都能直接使用。從 `v1.93.0-dev.2` 起，GPT-5.6 的定價與中繼資料也會隨附提供給使用 `LITELLM_LOCAL_MODEL_COST_MAP=true` 的任何人。
 
-For cost tracking, hit the **Reload Model Cost Map** button in the Admin UI (or `POST /reload/model_cost_map`) to pull the latest pricing from GitHub. This feature is available on `v1.76.0` and above.
+若要進行成本追蹤，請在 Admin UI 中點選 **Reload Model Cost Map** 按鈕（或 `POST /reload/model_cost_map`），以從 GitHub 取得最新定價。此功能適用於 `v1.76.0` 及以上版本。
 :::
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -56,7 +56,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -67,7 +67,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it**
+**3. 測試它**
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/chat/completions" \
@@ -124,7 +124,7 @@ print(response.choices[0].message.content)
 </TabItem>
 <TabItem value="azure" label="Azure OpenAI">
 
-Point `model` at the Azure deployment name. Global deployments use the `azure/gpt-5.6-*` names; regional deployments use `azure/us/gpt-5.6-*` or `azure/eu/gpt-5.6-*` so cost tracking picks up the regional uplift automatically.
+將 `model` 指向 Azure 部署名稱。全域部署使用 `azure/gpt-5.6-*` 名稱；區域部署則使用 `azure/us/gpt-5.6-*` 或 `azure/eu/gpt-5.6-*`，讓成本追蹤自動套用區域加成。
 
 ```yaml
 model_list:
@@ -158,9 +158,9 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Responses API
+## 回應 API {#responses-api}
 
-For agentic and multi-turn workflows, use `/v1/responses` to preserve reasoning state and output item metadata across turns.
+對於 agentic 與多輪工作流程，請使用 `/v1/responses`，以在各輪之間保留 reasoning 狀態與輸出項目中繼資料。
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/v1/responses" \
@@ -172,20 +172,20 @@ curl -X POST "http://0.0.0.0:4000/v1/responses" \
   }'
 ```
 
-## Pricing
+## 定價 {#pricing}
 
-Prices are per 1M tokens (USD), shown as short context (≤272K tokens) / long context (>272K tokens).
+價格以每 100 萬 token（USD）計算，並以短上下文（≤272K tokens）/長上下文（>272K tokens）顯示。
 
-| Model | Input | Cached input | Cache write | Output |
+| 模型 | 輸入 | 快取輸入 | 快取寫入 | 輸出 |
 |-------|-------|--------------|-------------|--------|
 | `gpt-5.6-sol` | $5.00 / $10.00 | $0.50 / $1.00 | $6.25 / $12.50 | $30.00 / $45.00 |
 | `gpt-5.6-terra` | $2.50 / $5.00 | $0.25 / $0.50 | $3.125 / $6.25 | $15.00 / $22.50 |
 | `gpt-5.6-luna` | $1.00 / $2.00 | $0.10 / $0.20 | $1.25 / $2.50 | $6.00 / $9.00 |
 
-Global Azure OpenAI deployments (`azure/gpt-5.6-*`) match these OpenAI list prices. Regional deployments (`azure/us/gpt-5.6-*` and `azure/eu/gpt-5.6-*`) carry the standard 10% uplift on the base rate; LiteLLM tracks the difference automatically once you route through the regional model name.
+全域 Azure OpenAI 部署（`azure/gpt-5.6-*`）符合這些 OpenAI 列表價格。區域部署（`azure/us/gpt-5.6-*` 和 `azure/eu/gpt-5.6-*`）會在基礎費率上加上標準 10% 溢價；一旦您透過區域模型名稱進行路由，LiteLLM 便會自動追蹤差額。
 
-## Notes
+## 附註 {#notes}
 
-- For cost tracking on the GPT-5.6 models, hit the **Reload Model Cost Map** button in the Admin UI (or `POST /reload/model_cost_map`). Works on any LiteLLM version `v1.76.0` or newer, with no container restart or image upgrade required.
-- GPT-5.6 supports reasoning, function calling, parallel tool calls, vision (image input), prompt caching, web search, and structured output; see the [OpenAI provider docs](../../docs/providers/openai) for advanced usage.
-- The GPT-5.6 family launched in limited preview and OpenAI is expanding availability through the API and Codex; check your OpenAI account for model access.
+- 若要對 GPT-5.6 模型進行成本追蹤，請在 Admin UI 中點選 **Reload Model Cost Map** 按鈕（或 `POST /reload/model_cost_map`）。適用於任何 `v1.76.0` 或更新版本的 LiteLLM，無需重新啟動容器或升級映像檔。
+- GPT-5.6 支援 reasoning、function calling、parallel tool calls、vision（image input）、prompt caching、web search 與 structured output；進階用法請參閱 [OpenAI provider docs](../../docs/providers/openai)。
+- GPT-5.6 系列已在 limited preview 中推出，而 OpenAI 正透過 API 與 Codex 擴大可用性；請在您的 OpenAI 帳戶中查看模型存取權限。

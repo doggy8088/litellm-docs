@@ -1,8 +1,8 @@
-# 🔑 LiteLLM Keys (Access Claude-2, Llama2-70b, etc.)
+# 🔑 LiteLLM 金鑰（存取 Claude-2、Llama2-70b 等） {#-litellm-keys-access-claude-2-llama2-70b-etc}
 
-Use this if you're trying to add support for new LLMs and need access for testing. We provide a free $10 community-key for testing all providers on LiteLLM: 
+如果您想新增對新 LLM 的支援並需要用於測試的存取權，請使用這個。LiteLLM 提供免費的 10 美元社群金鑰，可用於測試所有提供者： 
 
-## usage (community-key)
+## 使用方式（社群金鑰） {#usage-community-key}
 
 ```python
 import os
@@ -21,19 +21,19 @@ response = completion(model="gpt-3.5-turbo", messages=messages)
 response = completion("command-nightly", messages)
 ```
 
-**Need a dedicated key?**
-Email us @ krrish@berri.ai 
+**需要專用金鑰嗎？**
+請寄信給我們 @ krrish@berri.ai 
 
-## Supported Models for LiteLLM Key
-These are the models that currently work with the "sk-litellm-.." keys.
+## LiteLLM 金鑰支援的模型 {#supported-models-for-litellm-key}
+這些是目前可與 "sk-litellm-.." 金鑰搭配使用的模型。
 
-For a complete list of models/providers that you can call with LiteLLM, [check out our provider list](./providers/) or check out [models.litellm.ai](https://models.litellm.ai/)
+如需可透過 LiteLLM 呼叫的模型／提供者完整清單，[請查看我們的提供者清單](./providers/) 或前往 [models.litellm.ai](https://models.litellm.ai/)
 
-* OpenAI models - [OpenAI docs](./providers/openai.md)
+* OpenAI 模型 - [OpenAI 文件](./providers/openai.md)
     * gpt-4
     * gpt-3.5-turbo
     * gpt-3.5-turbo-16k
-* Llama2 models - [TogetherAI docs](./providers/togetherai.md)
+* Llama2 模型 - [TogetherAI 文件](./providers/togetherai.md)
     * togethercomputer/llama-2-70b-chat
     * togethercomputer/llama-2-70b
     * togethercomputer/LLaMA-2-7B-32K
@@ -42,29 +42,28 @@ For a complete list of models/providers that you can call with LiteLLM, [check o
     * togethercomputer/CodeLlama-34b
     * WizardLM/WizardCoder-Python-34B-V1.0
     * NousResearch/Nous-Hermes-Llama2-13b
-* Falcon models - [TogetherAI docs](./providers/togetherai.md)
+* Falcon 模型 - [TogetherAI 文件](./providers/togetherai.md)
     * togethercomputer/falcon-40b-instruct
     * togethercomputer/falcon-7b-instruct
-* Jurassic/AI21 models - [AI21 docs](./providers/ai21.md)
+* Jurassic/AI21 模型 - [AI21 文件](./providers/ai21.md)
     * j2-ultra
     * j2-mid
     * j2-light
-* NLP Cloud models - [NLPCloud docs](./providers/nlp_cloud.md)
+* NLP Cloud 模型 - [NLPCloud 文件](./providers/nlp_cloud.md)
     * dolpin
     * chatdolphin 
-* Anthropic models - [Anthropic docs](./providers/anthropic.md)
+* Anthropic 模型 - [Anthropic 文件](./providers/anthropic.md)
     * claude-2
     * claude-instant-v1
 
-
-## For OpenInterpreter
-This was initially built for the Open Interpreter community. If you're trying to use this feature in there, here's how you can do it:  
-**Note**: You will need to clone and modify the Github repo, until [this PR is merged.](https://github.com/KillianLucas/open-interpreter/pull/288)
+## 供 OpenInterpreter 使用 {#for-openinterpreter}
+這最初是為 Open Interpreter 社群所建立的。如果您想在那裡使用這個功能，方法如下：  
+**注意**：您需要複製並修改 Github repo，直到 [這個 PR 被合併。](https://github.com/KillianLucas/open-interpreter/pull/288)
 
 ```
 git clone https://github.com/krrishdholakia/open-interpreter-litellm-fork
 ```
-To run it do: 
+執行方式： 
 ```
 uv build 
 
@@ -78,9 +77,8 @@ uv run interpreter --model litellm_proxy/togethercomputer/llama-2-70b-chat
 uv run interpreter --model litellm_proxy/claude-2
 ```
 
-And that's it! 
+就這樣！ 
 
-Now you can call any model you like!
+現在您可以呼叫任何您想要的模型！
 
-
-Want us to add more models? [Let us know!](https://github.com/BerriAI/litellm/issues/new/choose)
+想要我們新增更多模型嗎？[請告訴我們！](https://github.com/BerriAI/litellm/issues/new/choose)

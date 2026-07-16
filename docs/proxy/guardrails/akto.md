@@ -1,35 +1,35 @@
-# Akto
+# Akto {#akto}
 
-Use [Akto](https://www.akto.io/) as a guardrail provider, enabling runtime security for all LLM traffic routed through the proxy. Akto is purpose-built to secure autonomous and agentic AI systems that inspects every request and response inline, risk-scores interactions, and enforces policy decisions to block harmful actions, data exposure, and unsafe behavior before they can occur.
+將 [Akto](https://www.akto.io/) 用作防護欄提供者，為透過 proxy 路由的所有 LLM 流量啟用執行階段安全性。Akto 專為保護自主式與 agentic AI 系統而設計，可就地檢查每個請求與回應、為互動評分風險，並在有害動作、資料外洩與不安全行為發生前強制執行政策決策以加以阻擋。
 
-Akto's key capabilities include:
+Akto 的主要功能包括：
 
-- **Agentic AI Discovery** - automatically discover AI agents, MCP servers, and GenAI applications across your cloud environments
-- **Continuous AI Red Teaming** - run 4,000+ AI-specific probes to identify risks such as prompt injection, tool misuse, policy bypass, and emerging attack patterns in CI/CD
-- **Runtime Guardrails** - enforce configurable policies covering prompt injection, jailbreaks, sensitive data leakage, unauthorized tool use, schema violations, and more
-- **AI Security Posture Management** - unified visibility into risk scores, compliance gaps, and security metrics, with support for 10+ standards including OWASP GenAI, NIST AI RMF, and MITRE ATLAS
+- **Agentic AI Discovery** - 自動探索您雲端環境中的 AI 代理程式、MCP 伺服器與 GenAI 應用程式
+- **Continuous AI Red Teaming** - 執行 4,000+ 個 AI 專用探測，以在 CI/CD 中找出如提示注入、工具誤用、政策繞過與新興攻擊模式等風險
+- **Runtime Guardrails** - 強制執行可設定的政策，涵蓋提示注入、越獄、敏感資料外洩、未授權工具使用、結構描述違規等更多項目
+- **AI Security Posture Management** - 將風險分數、合規缺口與安全指標整合在單一檢視中，並支援 10+ 種標準，包括 OWASP GenAI、NIST AI RMF 與 MITRE ATLAS
 
-The integration with akto uses a **two-entry guardrail pattern**:
-- `akto-validate` (`pre_call`) — validates requests against your security policies before they reach the LLM
-- `akto-ingest` (`post_call`) — ingests requests and responses into Akto for monitoring and analysis
+與 akto 的整合使用**雙入口防護欄模式**：
+- `akto-validate` (`pre_call`) — 在請求到達 LLM 之前，根據您的安全政策驗證請求
+- `akto-ingest` (`post_call`) — 將請求與回應擷取到 Akto 以供監控與分析
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Get Your Akto Credentials
+### 1. 取得您的 Akto 憑證 {#1-get-your-akto-credentials}
 
-Set up the Akto Guardrail API Service and grab:
-- `AKTO_GUARDRAIL_API_BASE` — your Guardrail API Base URL
-- `AKTO_API_KEY` — your API key
+設定 Akto Guardrail API Service 並取得：
+- `AKTO_GUARDRAIL_API_BASE` — 您的 Guardrail API Base URL
+- `AKTO_API_KEY` — 您的 API 金鑰
 
-### 2. Configure in `config.yaml`
+### 2. 在 `config.yaml` 中設定 {#2-configure-in-configyaml}
 
-#### Block + Ingest (recommended)
+#### 阻擋 + 擷取（建議） {#block--ingest-recommended}
 
-Use both entries below. This gives you:
-- pre-call block decision
-- post-call ingestion for allowed traffic
+同時使用下列兩個入口。這可讓您獲得：
+- 請求前阻擋決策
+- 對允許流量進行請求後擷取
 
-Keep these as two separate entries (`akto-validate` and `akto-ingest`).
+請將這兩者維持為兩個獨立入口（`akto-validate` 與 `akto-ingest`）。
 
 ```yaml
 guardrails:
@@ -54,9 +54,9 @@ guardrails:
       default_on: true
 ```
 
-#### Monitor-only mode
+#### 僅監控模式 {#monitor-only-mode}
 
-If you only want logging/ingestion and no blocking, keep only `akto-ingest`.
+如果您只想要記錄／擷取而不要阻擋，請只保留 `akto-ingest`。
 
 ```yaml
 guardrails:
@@ -69,7 +69,7 @@ guardrails:
       default_on: true
 ```
 
-### 3. Test request
+### 3. 測試請求 {#3-test-request}
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -83,7 +83,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-If a request gets blocked:
+如果請求被阻擋：
 
 ```json
 {
@@ -96,50 +96,50 @@ If a request gets blocked:
 }
 ```
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-When an LLM request arrives, the Akto connector hands the payload to the Akto Guardrail Engine, which evaluates it against your input policies and returns the verdict. Approved requests are forwarded to the LLM provider. Responses are sent back through the engine for output guardrail checks before being delivered to the caller. Every decision flows into the Akto dashboard for monitoring, threat analysis, and remediation.
+當 LLM 請求到達時，Akto connector 會將負載交給 Akto Guardrail Engine，後者會根據您的輸入政策進行評估並回傳裁決。核准的請求會轉送至 LLM 提供者。回應會在送達呼叫端之前，經由 engine 傳回以進行輸出防護欄檢查。每一項決策都會流入 Akto 儀表板，以供監控、威脅分析與補救。
 
-**Block + Ingest mode:**
+**阻擋 + 擷取模式：**
 ```
 Request → LiteLLM → Akto guardrail check
   → Allowed  → forward to LLM → ingest response
   → Blocked  → ingest blocked marker → 403 error
 ```
 
-**Monitor-only mode:**
+**僅監控模式：**
 ```
 Request → LiteLLM → forward to LLM → get response
   → Send to Akto (guardrails + ingest) → log only
 ```
 
-## Event Behavior
+## 事件行為 {#event-behavior}
 
-| Entry | LiteLLM hook | Akto call behavior |
+| 入口 | LiteLLM hook | Akto 呼叫行為 |
 |------|---|---|
-| `akto-validate` | `pre_call` | Awaited call with `guardrails=true`, `ingest_data=false` |
-| `akto-ingest` | `post_call` | Fire-and-forget call with `guardrails=true`, `ingest_data=true` |
+| `akto-validate` | `pre_call` | 帶有 `guardrails=true`、`ingest_data=false` 的等待呼叫 |
+| `akto-ingest` | `post_call` | 帶有 `guardrails=true`、`ingest_data=true` 的 fire-and-forget 呼叫 |
 
-When blocked in `pre_call`, LiteLLM sends one fire-and-forget ingest payload with blocked metadata and returns `403`.
+當在 `pre_call` 中被阻擋時，LiteLLM 會傳送一個帶有被阻擋中繼資料的 fire-and-forget 擷取負載，並回傳 `403`。
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-| Parameter | Env Variable | Default | Description |
+| 參數 | 環境變數 | 預設值 | 說明 |
 |-----------|-------------|---------|-------------|
-| `akto_base_url` | `AKTO_GUARDRAIL_API_BASE` | *required* | Akto Guardrail API Base URL |
-| `akto_api_key` | `AKTO_API_KEY` | *required* | API key (sent as `Authorization` header) |
-| `akto_account_id` | `AKTO_ACCOUNT_ID` | `1000000` | Akto account id included in payload |
-| `akto_vxlan_id` | `AKTO_VXLAN_ID` | `0` | Akto vxlan id included in payload |
-| `unreachable_fallback` | — | `fail_closed` | `fail_open` or `fail_closed` |
-| `guardrail_timeout` | — | `5` | Timeout in seconds |
-| `default_on` | — | `true` (recommended) | Enables the guardrail entry by default |
+| `akto_base_url` | `AKTO_GUARDRAIL_API_BASE` | *必填* | Akto Guardrail API Base URL |
+| `akto_api_key` | `AKTO_API_KEY` | *必填* | API 金鑰（以 `Authorization` 標頭傳送） |
+| `akto_account_id` | `AKTO_ACCOUNT_ID` | `1000000` | 負載中包含的 Akto account id |
+| `akto_vxlan_id` | `AKTO_VXLAN_ID` | `0` | 負載中包含的 Akto vxlan id |
+| `unreachable_fallback` | — | `fail_closed` | `fail_open` 或 `fail_closed` |
+| `guardrail_timeout` | — | `5` | 以秒為單位的逾時時間 |
+| `default_on` | — | `true`（建議） | 預設啟用防護欄入口 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-| Scenario | `fail_closed` (default) | `fail_open` |
+| 情境 | `fail_closed`（預設） | `fail_open` |
 |----------|------------------------|-------------|
-| Akto unreachable | ❌ Blocked (503) | ✅ Passes through |
-| Akto returns error | ❌ Blocked (503) | ✅ Passes through |
-| Guardrail says no | ❌ Blocked (403) | ❌ Blocked (403) |
+| Akto 無法連線 | ❌ 已阻擋（503） | ✅ 通過 |
+| Akto 回傳錯誤 | ❌ 已阻擋（503） | ✅ 通過 |
+| 防護欄判定否決 | ❌ 已阻擋（403） | ❌ 已阻擋（403） |
 
-In case you want to reach out to the Akto team, contact them at [support@akto.io](mailto:support@akto.io).
+如果您想聯絡 Akto 團隊，請透過 [support@akto.io](mailto:support@akto.io) 與他們聯繫。
