@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - agent/zh-tw-localization
 
 permissions:
   contents: read
@@ -39,7 +40,9 @@ jobs:
       - name: Deploy to Firebase Hosting
         if: >-
           github.event_name == 'workflow_dispatch' ||
-          (github.event_name == 'push' && github.ref == 'refs/heads/main')
+          (github.event_name == 'push' &&
+            (github.ref == 'refs/heads/main' ||
+             github.ref == 'refs/heads/agent/zh-tw-localization'))
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
