@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "vertex-ai-sprint": {
+      "hosting": {
+        "litellm-docs-zh-tw": [
+          "litellm-docs-zh-tw-8088"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

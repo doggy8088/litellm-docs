@@ -6,6 +6,7 @@
 
 # Generated files
 .docusaurus
+.firebase
 .cache-loader
 
 # Misc
