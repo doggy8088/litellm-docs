@@ -2,20 +2,20 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Quick Start
+# 快速入門 {#quick-start}
 
-Create keys, track spend, add models without worrying about the config / CRUD endpoints.
+建立金鑰、追蹤花費、新增模型，而無需擔心 config / CRUD 端點。
 
 <Image img={require('../../img/litellm_ui_create_key.png')} dark={require('../../img/litellm_ui_create_key_dark.png')} alt="The Virtual Keys page with the Create New Key button" />
 
-## Quick Start
+## 快速入門 {#quick-start-1}
 
-- Requires proxy master key to be set
-- Requires db connected
+- 需要先設定 proxy master key
+- 需要已連接 db
 
-Follow [setup](./virtual_keys.md#setup)
+請依照 [設定](./virtual_keys.md#setup)
 
-### 1. Start the proxy
+### 1. 啟動 proxy {#1-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -23,21 +23,21 @@ litellm --config /path/to/config.yaml
 #INFO: Proxy running on http://0.0.0.0:4000
 ```
 
-### 2. Go to UI
+### 2. 前往 UI {#2-go-to-ui}
 
 ```bash
 http://0.0.0.0:4000/ui # <proxy_base_url>/ui
 ```
 
-### 3. Get Admin UI Link on Swagger
+### 3. 在 Swagger 取得 Admin UI 連結 {#3-get-admin-ui-link-on-swagger}
 
-Your Proxy Swagger is available on the root of the Proxy: e.g.: `http://localhost:4000/`
+您的 Proxy Swagger 可在 Proxy 的根目錄找到：例如：`http://localhost:4000/`
 
 <Image img={require('../../img/ui_link.png')} alt="Swagger page with the Admin UI link" />
 
-### 4. Sign in for the first time
+### 4. 首次登入 {#4-sign-in-for-the-first-time}
 
-Out of the box, the UI accepts a login built from environment variables: the username is `UI_USERNAME` (default `admin`) and the password is `UI_PASSWORD`. If `UI_PASSWORD` is unset, the master key itself is accepted as the password. Anyone who signs in this way is a proxy admin.
+開箱即用時，UI 接受由環境變數組成的登入資訊：使用者名稱是 `UI_USERNAME`（預設為 `admin`），密碼是 `UI_PASSWORD`。如果 `UI_PASSWORD` 未設定，則會直接接受 master key 本身作為密碼。以這種方式登入的任何人都會是 proxy 管理員。
 
 ```shell
 LITELLM_MASTER_KEY="sk-$(openssl rand -hex 32)" # master key for the proxy; must start with sk-
@@ -45,17 +45,17 @@ UI_USERNAME=ishaan-litellm   # username to sign in on UI
 UI_PASSWORD=langchain        # password to sign in on UI
 ```
 
-On accessing the LiteLLM UI, you will be prompted to enter your username, password
+存取 LiteLLM UI 時，系統會提示您輸入使用者名稱與密碼
 
-:::warning[Environment credentials are for bootstrapping only]
-This login path stores a permanent, shared, cleartext admin credential in your environment, cannot be rotated per person, and leaves no way to tell which admin did what. Once you are signed in, follow the steps below to move to per-user accounts and disable it. Until you do, the dashboard shows a warning banner to every admin.
+:::warning[環境憑證僅供啟動使用]
+這條登入路徑會在您的環境中儲存一組永久、共用、明文的管理員憑證，無法針對個別人員輪替，而且無法得知是哪位管理員執行了哪些操作。登入後，請依照下列步驟改用每位使用者各自的帳號並將其停用。在您完成之前，儀表板會對每位管理員顯示警告橫幅。
 :::
 
-### 5. Create your own admin account and disable environment credential login
+### 5. 建立您自己的管理員帳號並停用環境憑證登入 {#5-create-your-own-admin-account-and-disable-environment-credential-login}
 
-First, while signed in with the environment credentials, create a `proxy_admin` user for yourself: go to `Internal Users` -> `+ Invite User`, set the role to `proxy_admin`, and open the invitation link it generates to set your password. You can also create the user over the API with `POST /user/new` and a `user_role` of `proxy_admin`; see [invite users](./self_serve.md). Sign out and confirm you can sign in with your email and new password before continuing.
+首先，使用環境憑證登入後，為自己建立一個 `proxy_admin` 使用者：前往 `Internal Users` -> `+ Invite User`，將角色設為 `proxy_admin`，然後開啟系統產生的邀請連結以設定您的密碼。您也可以透過 API 使用 `POST /user/new` 和 `user_role` 的 `proxy_admin` 來建立該使用者；請參閱 [邀請使用者](./self_serve.md)。請登出並確認您可以使用您的電子郵件與新密碼登入後，再繼續下一步。
 
-Then turn off the environment credential login path in your `config.yaml` and restart the proxy:
+接著，在您的 `config.yaml` 中關閉環境憑證登入路徑，並重新啟動 proxy：
 
 ```yaml
 general_settings:
@@ -63,34 +63,34 @@ general_settings:
   disable_env_credential_login: true
 ```
 
-After the restart, `UI_USERNAME`/`UI_PASSWORD` and the master key are rejected on the login page with `401 Invalid credentials used to access UI`, the warning banner disappears, and only database users (and [SSO](./admin_ui_sso.md), if configured) can sign in. You can now remove `UI_USERNAME` and `UI_PASSWORD` from your environment.
+重新啟動後，`UI_USERNAME`/`UI_PASSWORD` 和 master key 會在登入頁面被拒絕並顯示 `401 Invalid credentials used to access UI`，警告橫幅會消失，而且只有資料庫中的使用者（以及已設定時的 [SSO](./admin_ui_sso.md)）可以登入。現在您可以從環境中移除 `UI_USERNAME` 和 `UI_PASSWORD`。
 
 :::note
-Enabling `disable_env_credential_login` before creating a `proxy_admin` user with a password will make you unable to log in. If you find yourself in this situation, use the master key to disable `disable_env_credential_login` and restart the proxy to restore access.
+在建立帶有密碼的 `proxy_admin` 使用者之前啟用 `disable_env_credential_login`，會使您無法登入。如果您遇到這種情況，請使用 master key 停用 `disable_env_credential_login`，然後重新啟動 proxy 以恢復存取。
 :::
 
-If you use SSO, `disable_password_login_when_sso_enabled` also blocks this login path, since it rejects every username/password login once the SSO provider is fully configured. See [SSO for the Admin UI](./admin_ui_sso.md).
+如果您使用 SSO，`disable_password_login_when_sso_enabled` 也會封鎖這條登入路徑，因為在 SSO 提供者完全設定完成後，它會拒絕所有使用者名稱/密碼登入。請參閱 [Admin UI 的 SSO](./admin_ui_sso.md)。
 
-### 6. Configure Root Redirect URL
+### 6. 設定 Root Redirect URL {#6-configure-root-redirect-url}
 
-When `DOCS_URL` is set to something other than `"/"`, you can configure where the root path (`/`) redirects to using `ROOT_REDIRECT_URL`:
+當 `DOCS_URL` 設定為非 `"/"` 以外的值時，您可以使用 `/` 設定根路徑（`ROOT_REDIRECT_URL`）重新導向到哪裡：
 
 ```shell
 DOCS_URL="/docs"              # Set docs to a different path
 ROOT_REDIRECT_URL="/ui"       # Redirect root path (/) to /ui
 ```
 
-By default, `DOCS_URL` is `"/"`, so this setting is only needed when you've changed `DOCS_URL` to a different path.
+預設情況下，`DOCS_URL` 是 `"/"`，因此只有在您已將 `DOCS_URL` 變更為不同路徑時才需要此設定。
 
-## Limit failed sign-in attempts
+## 限制登入失敗嘗試次數 {#limit-failed-sign-in-attempts}
 
-Failed username and password sign-ins to the Admin UI are counted per source address. More than 10 wrong passwords from one address within 60 seconds, across all usernames, blocks that address for 5 minutes. Accounts are never locked: the same username can still sign in from any other address. Half the address limit (5 by default) is the allowance for a single username from that address. Going over it blocks only that address and username pair, and its further failures no longer count toward the address, so one script stuck on one account does not lock out everyone else behind a shared office address.
+Admin UI 中使用者名稱與密碼登入失敗的次數會依來源位址計算。任何位址在 60 秒內對所有使用者名稱累計超過 10 次錯誤密碼，會使該位址被封鎖 5 分鐘。帳號永遠不會被鎖定：相同的使用者名稱仍可從任何其他位址登入。位址限制的一半（預設為 5）是該位址對單一使用者名稱的可用次數。超過後只會封鎖該位址與使用者名稱組合，而其後續失敗將不再計入該位址，因此卡在單一帳號上的腳本不會讓共享辦公室位址後方的所有人都無法登入。
 
-While a block is active, every sign-in attempt for that address or pair is refused with `429 Too many failed sign-in attempts` and a `Retry-After` header, before the password is checked. That includes the correct password, `UI_USERNAME`/`UI_PASSWORD`, and the master key typed into the form. Refused attempts do not extend the block. If you are blocked and cannot wait, the master key still works as a bearer token on the API, which the sign-in limit does not cover.
+封鎖生效期間，該位址或組合的每次登入嘗試都會在驗證密碼前被拒絕，並回傳 `429 Too many failed sign-in attempts` 與 `Retry-After` 標頭。這也包括正確密碼、`UI_USERNAME`/`UI_PASSWORD`，以及在表單中輸入的 master key。被拒絕的嘗試不會延長封鎖時間。如果您被封鎖且無法等待，master key 仍可作為 API 的 bearer token 使用，而登入限制不會涵蓋這一點。
 
-Counters live in Redis when the proxy has one, so a block applies across all workers and pods. Without Redis each worker counts on its own, so the effective limit is the configured number times the worker count; the proxy warns about this at startup. If Redis becomes unreachable, the proxy falls back to per-worker counters and keeps accepting sign-ins.
+當 proxy 有 Redis 時，計數器會儲存在 Redis 中，因此封鎖會套用到所有 worker 和 pod。沒有 Redis 時，每個 worker 都會自行計數，因此有效上限是設定值乘以 worker 數量；proxy 會在啟動時警告這一點。若 Redis 無法連線，proxy 會退回到每個 worker 各自的計數器，並繼續接受登入。
 
-To count per address, the proxy has to know which address is the client. Set `general_settings.trusted_proxy_ranges` to the CIDR ranges of the load balancer or ingress in front of LiteLLM; the client is then the first `X-Forwarded-For` hop outside those ranges. If clients connect to LiteLLM directly, set it to `[]` so the peer address is used and `X-Forwarded-For` is ignored. If it is unset, the proxy cannot tell a client from a shared ingress, so it warns at startup and enforces only the per-username limit. IPv6 addresses are grouped by /64.
+若要依位址計數，proxy 必須知道哪個位址是 client。將 `general_settings.trusted_proxy_ranges` 設為 LiteLLM 前方的 load balancer 或 ingress 之 CIDR 範圍；此時 client 會是落在這些範圍之外的第一個 `X-Forwarded-For` 跳點。如果 client 直接連到 LiteLLM，請將其設為 `[]`，如此就會使用對等端位址，並忽略 `X-Forwarded-For`。如果未設定，proxy 無法區分 client 與共用 ingress，因此會在啟動時警告，且只強制套用每個使用者名稱的限制。IPv6 位址會依 /64 分組。
 
 ```yaml
 general_settings:
@@ -104,36 +104,36 @@ general_settings:
     "198.51.100.4": 0                         # 0 exempts this address from both limits
 ```
 
-An override raises both limits for that address, since the per-username allowance follows the address limit, and `0` exempts the address entirely. `LITELLM_DISABLE_LOGIN_RATE_LIMIT=true` turns the limit off everywhere; it is read once at startup. See [Security best practices](./security_best_practices#limit-failed-admin-ui-sign-in-attempts) for the reasoning behind the defaults.
+覆寫會提高該位址的兩個限制，因為每個使用者名稱的可用次數會跟隨位址限制，而 `0` 會完全豁免該位址。`LITELLM_DISABLE_LOGIN_RATE_LIMIT=true` 會在所有地方關閉此限制；它只會在啟動時讀取一次。請參閱 [安全最佳實務](./security_best_practices#limit-failed-admin-ui-sign-in-attempts) 以了解這些預設值背後的理由。
 
-## Invite-other users
+## 邀請其他使用者 {#invite-other-users}
 
-Allow others to create/delete their own keys.
+允許其他人建立/刪除自己的金鑰。
 
-[**Go Here**](./self_serve.md)
+[**前往這裡**](./self_serve.md)
 
-## Model Management
+## 模型管理 {#model-management}
 
-The Admin UI provides the following model management capabilities:
+Admin UI 提供以下模型管理功能：
 
-- **Add Models**: Add new models through the UI without restarting the proxy
-- **AI Hub**: Make models and agents public for developers to discover what's available
-- **Price Data Sync**: Keep model pricing data up to date by syncing from GitHub
+- **新增模型**：無需重新啟動 proxy，即可透過 UI 新增模型
+- **AI Hub**：將模型和代理程式公開，讓開發者探索可用項目
+- **價格資料同步**：透過從 GitHub 同步，讓模型定價資料保持最新
 
-For detailed information on model management, see [Model Management](./model_management.md).
+如需模型管理的詳細資訊，請參閱 [模型管理](./model_management.md)。
 
-For information on sharing models and agents, see [AI Hub](./ai_hub.md).
+如需關於共享模型和代理程式的資訊，請參閱 [AI Hub](./ai_hub.md)。
 
-:::tip[Sync Model Pricing Data]
-[Sync model pricing data from GitHub](./sync_models_github.md) to keep your model cost information current.
+:::tip[同步模型定價資料]
+[從 GitHub 同步模型定價資料](./sync_models_github.md)，讓您的模型成本資訊保持最新。
 :::
 
-## Disable Admin UI
+## 停用 Admin UI {#disable-admin-ui}
 
-Set `DISABLE_ADMIN_UI="True"` in your environment to disable the Admin UI.
+在您的環境中設定 `DISABLE_ADMIN_UI="True"` 以停用 Admin UI。
 
-Useful, if your security team has additional restrictions on UI usage.
+如果您的資安團隊對 UI 使用有額外限制，這會很有用。
 
-**Expected Response**
+**預期回應**
 
 <Image img={require('../../img/admin_ui_disabled.png')} dark={require('../../img/admin_ui_disabled_dark.png')} alt="Admin UI Disabled message" />

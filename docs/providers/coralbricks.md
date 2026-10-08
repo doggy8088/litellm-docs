@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CoralBricks
+# CoralBricks {#coralbricks}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | CoralBricks serves open-weight GLM and DeepSeek models in FP4 over an OpenAI-compatible API |
-| Provider Route on LiteLLM | `coralbricks/` |
-| Link to Provider Doc | [CoralBricks](https://www.coralbricks.ai) |
-| Default Base URL | `https://inference.coralbricks.ai/v1` |
-| Supported Operations | `/chat/completions`, `/responses`, `/messages` |
+| 說明 | CoralBricks 透過相容於 OpenAI 的 API 提供開源權重的 GLM 與 DeepSeek 模型，並以 FP4 服務 |
+| LiteLLM 上的提供者路由 | `coralbricks/` |
+| 提供者文件連結 | [CoralBricks](https://www.coralbricks.ai) |
+| 預設 Base URL | `https://inference.coralbricks.ai/v1` |
+| 支援的操作 | `/chat/completions`, `/responses`, `/messages` |
 
-CoralBricks is its own provider on LiteLLM rather than a generic OpenAI-compatible route, so its spend is priced from the CoralBricks cost map entries and reported under `coralbricks` instead of being pooled with OpenAI traffic. `/responses` and `/messages` requests are forwarded to the matching CoralBricks endpoints as they arrive, with no translation through chat completions
+CoralBricks 在 LiteLLM 中是獨立的提供者，而不是一般的 OpenAI 相容路由，因此其支出會依據 CoralBricks 成本對應表項目計價，並回報於 `coralbricks`，而不是與 OpenAI 流量合併。`/responses` 與 `/messages` 請求會在到達時直接轉送至對應的 CoralBricks 端點，不經由 chat completions 轉換
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python showLineNumbers title="Environment Variables"
 import os
@@ -24,19 +24,19 @@ os.environ["CORALBRICKS_API_KEY"] = "your-api-key"
 os.environ["CORALBRICKS_API_BASE"] = "https://inference.coralbricks.ai/v1"  # optional override
 ```
 
-## Models
+## 模型 {#models}
 
-| Model | Input / 1M tokens | Output / 1M tokens | Cache write / 1M tokens | Cache read / 1M tokens |
+| 模型 | 輸入 / 每 1M tokens | 輸出 / 每 1M tokens | 快取寫入 / 每 1M tokens | 快取讀取 / 每 1M tokens |
 |-------|-------------------|--------------------|-------------------------|------------------------|
 | `coralbricks/glm-5.3-fp4` | $1.12 | $4.40 | $1.68 | $0 |
 | `coralbricks/glm-5.3-flash-fp4` | $0.15 | $0.50 | $0.23 | $0 |
 | `coralbricks/deepseek-v4.1-flash-fast-fp4` | $0.30 | $1.20 | $0.09 | $0 |
 
-Every model takes up to 1,048,576 input tokens and supports tool calling, reasoning, and prompt caching. Pricing follows the [CoralBricks pricing page](https://www.coralbricks.ai/pricing): cache writes are billed at the cache write rate and cached reads are free. If your contract prices differ, set `input_cost_per_token` / `output_cost_per_token` on the deployment and those override the cost map
+每個模型最多可處理 1,048,576 個輸入 tokens，並支援工具呼叫、推理與提示快取。定價依照 [CoralBricks 定價頁面](https://www.coralbricks.ai/pricing)：快取寫入依快取寫入費率計費，而快取讀取免費。如果您的合約價格不同，請在部署上設定 `input_cost_per_token` / `output_cost_per_token`，這些設定會覆寫成本對應表
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Chat Completions
+### 聊天完成 {#chat-completions}
 
 ```python showLineNumbers title="CoralBricks Chat Completion"
 import os
@@ -52,7 +52,7 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="CoralBricks Streaming Chat Completion"
 import os
@@ -70,7 +70,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Responses API
+### 回應 API {#responses-api}
 
 ```python showLineNumbers title="CoralBricks Responses API"
 import os
@@ -87,9 +87,9 @@ response = litellm.responses(
 print(response.output_text)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add CoralBricks to your LiteLLM Proxy configuration:
+將 CoralBricks 新增到您的 LiteLLM Proxy 設定中：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -102,7 +102,7 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 export CORALBRICKS_API_KEY="your-api-key"
@@ -146,13 +146,14 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 
 </TabItem>
+
 </Tabs>
 
-You can also add CoralBricks from the Admin UI. Go to Models, then Add Model, pick CoralBricks as the provider, choose one of the `coralbricks/` models, and paste your key
+您也可以從管理介面新增 CoralBricks。前往 Models，然後選擇 Add Model，將 CoralBricks 作為提供者，選取其中一個 `coralbricks/` 模型，並貼上您的金鑰
 
-## Responses API
+## 回應 API {#responses-api-1}
 
-The proxy forwards `/v1/responses` requests to the CoralBricks Responses endpoint:
+proxy 會將 `/v1/responses` 請求轉送至 CoralBricks Responses 端點：
 
 ```bash showLineNumbers title="Responses API through LiteLLM Proxy"
 curl http://localhost:4000/v1/responses \
@@ -165,9 +166,9 @@ curl http://localhost:4000/v1/responses \
   }'
 ```
 
-## Anthropic Messages Compatibility
+## Anthropic Messages 相容性 {#anthropic-messages-compatibility}
 
-The proxy forwards `/v1/messages` requests to the CoralBricks Messages endpoint, so Anthropic SDK clients work unchanged:
+proxy 會將 `/v1/messages` 請求轉送至 CoralBricks Messages 端點，因此 Anthropic SDK 用戶端可不需修改即可運作：
 
 ```bash showLineNumbers title="Anthropic Messages through LiteLLM Proxy"
 curl http://localhost:4000/v1/messages \
@@ -181,13 +182,13 @@ curl http://localhost:4000/v1/messages \
   }'
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-The `coralbricks/` models are registered in LiteLLM's model cost map, so per-request spend is computed automatically on all three endpoints, returned in the `x-litellm-response-cost` response header, and recorded in spend logs under provider `coralbricks`. Cache writes and cached reads are tracked from the usage CoralBricks returns, so a repeated prompt is billed at the free cached read rate for its cached prefix
+`coralbricks/` 模型已註冊於 LiteLLM 的模型成本對應表，因此所有三個端點的每次請求支出都會自動計算，並在 `x-litellm-response-cost` 回應標頭中傳回，且會以提供者 `coralbricks` 記錄於支出記錄中。快取寫入與快取讀取會根據 CoralBricks 回傳的使用量進行追蹤，因此重複的提示會以其快取前綴適用免費的快取讀取費率計費
 
-## Custom Endpoints
+## 自訂端點 {#custom-endpoints}
 
-Set `CORALBRICKS_API_BASE` or pass `api_base` explicitly to route through a different CoralBricks endpoint. The `coralbricks/` route keeps the provider identity and pricing either way
+設定 `CORALBRICKS_API_BASE` 或明確傳入 `api_base`，即可改由不同的 CoralBricks 端點路由。`coralbricks/` 路由無論如何都會保留提供者身分與定價
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:

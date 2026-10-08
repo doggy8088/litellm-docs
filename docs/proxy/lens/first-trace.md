@@ -1,27 +1,27 @@
 ---
-title: "Send your first trace"
-description: "Connect agent instrumentation to the Lens trace endpoint and inspect a run."
+title: "傳送您的第一個 trace"
+description: "將代理程式的 instrumentation 連接到 Lens trace 端點，並檢視一次執行。"
 slug: "/proxy/lens/first-trace"
 ---
 
-# Send your first trace
+# 傳送您的第一個 trace {#send-your-first-trace}
 
-## Connect your agent
+## 連接您的代理程式 {#connect-your-agent}
 
-Point your agent's OpenTelemetry OTLP/HTTP exporter to LiteLLM:
+將您的代理程式 OpenTelemetry OTLP/HTTP exporter 指向 LiteLLM：
 
-| Setting | Value |
+| 設定 | 值 |
 | --- | --- |
-| Trace endpoint | `https://<your-litellm-proxy>/v1/traces` |
-| HTTP header | `Authorization: Bearer <your-litellm-key>` |
+| Trace 端點 | `https://<your-litellm-proxy>/v1/traces` |
+| HTTP 標頭 | `Authorization: Bearer <your-litellm-key>` |
 
-Use a LiteLLM key to authenticate. Record the agent's task, steps, tool calls, inputs, and final answer. Lens uses this content to check what happened.
+使用 LiteLLM 金鑰進行驗證。記錄代理程式的任務、步驟、工具呼叫、輸入，以及最終答案。Lens 會使用這些內容來檢查發生了什麼事。
 
-For a working example, use [DeepLite](https://github.com/BerriAI/deeplite). Set `LITELLM_DEV_BASE=https://<your-litellm-proxy>/v1/traces` and `LITELLM_DEV_KEY=<your-litellm-key>` in its `.env` file, then run the agent.
+如需可運作的範例，請使用 [DeepLite](https://github.com/BerriAI/deeplite)。在其 `.env` 檔案中設定 `LITELLM_DEV_BASE=https://<your-litellm-proxy>/v1/traces` 和 `LITELLM_DEV_KEY=<your-litellm-key>`，然後執行該代理程式。
 
-## Configure the exporter {#send-your-first-trace}
+## 設定 exporter {#send-your-first-trace}
 
-Use your existing model configuration. Set the trace destination once, then choose an integration from the sidebar. Replace `research_agent` with your agent's name.
+使用您既有的模型設定。先設定一次 trace 目的地，然後從側邊欄選擇一個整合。將 `research_agent` 替換為您代理程式的名稱。
 
 ```bash
 export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://<your-litellm-proxy>/v1/traces"
@@ -31,14 +31,14 @@ export OTEL_METRICS_EXPORTER="none"
 export OTEL_LOGS_EXPORTER="none"
 ```
 
-Open an integration guide from the sidebar for dependencies, configuration, and runnable simple-agent and swarm examples. The examples send model calls and traces to your gateway. If your app already configures a tracer provider, keep it and point its exporter at the destination above.
+從側邊欄開啟整合指南，以取得相依性、設定，以及可執行的 simple-agent 和 swarm 範例。這些範例會將模型請求與 traces 傳送到您的閘道。如果您的應用程式已經設定了 tracer provider，請保留它，並將其 exporter 指向上述目的地。
 
-To record personal coding sessions, follow the [Claude Code and Codex setup](./coding-agents.md).
+若要記錄個人編碼工作階段，請依照 [Claude Code 和 Codex 設定](./coding-agents.md)。
 
-## View your first trace
+## 檢視您的第一個 trace {#view-your-first-trace}
 
-Open **Lens > Traces**. Select a time range that includes your run, then open it. For the examples above, look for **research_agent**. The same name is available under **Agent** when creating an investigation. Select a step to read its input, output, and attributes.
+開啟 **Lens > Traces**。選取包含您執行內容的時間範圍，然後開啟它。對於上述範例，請尋找 **research_agent**。在建立調查時，**Agent** 下也可使用相同名稱。選取某個步驟以讀取其輸入、輸出與屬性。
 
-![A research_agent trace with its question, model call, and final answer.](/img/lens/first-agent-trace.png)
+![research_agent trace，包含其問題、模型呼叫與最終答案。](/img/lens/first-agent-trace.png)
 
-Check that you can see the task, tool results, and final answer. If these are missing, update your agent's instrumentation before running an investigation.
+確認您可以看到任務、工具結果與最終答案。若這些內容缺失，請在執行調查之前更新您代理程式的 instrumentation。

@@ -1,34 +1,34 @@
-# Nadir
+# Nadir {#nadir}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Nadir is an intelligent LLM router. A single virtual model, `auto`, is classified by complexity server-side and routed to the cheapest model that clears the quality bar. |
-| Provider Route on LiteLLM | `nadir/` |
-| Link to Provider Doc | [Nadir Documentation ↗](https://getnadir.com/docs) |
-| Base URL | `https://api.getnadir.com/v1` |
-| Supported Operations | `/chat/completions` |
+| 說明 | Nadir 是一個智慧型 LLM 路由器。單一虛擬模型 `auto` 會在伺服器端依複雜度分類，並路由到能通過品質門檻的最便宜模型。 |
+| LiteLLM 上的提供者路由 | `nadir/` |
+| 提供者文件連結 | [Nadir 文件 ↗](https://getnadir.com/docs) |
+| 基礎 URL | `https://api.getnadir.com/v1` |
+| 支援的操作 | `/chat/completions` |
 
 <br />
 
-Nadir speaks the OpenAI `/v1/chat/completions` dialect, so no request translation is required.
+Nadir 使用 OpenAI `/v1/chat/completions` 方言，因此不需要請求轉換。
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["NADIR_API_KEY"] = ""  # your Nadir API key
 ```
 
-## Optional Variables
+## 選用變數 {#optional-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["NADIR_API_BASE"] = ""  # defaults to https://api.getnadir.com/v1
 ```
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Nadir Non-streaming Completion"
 import os
@@ -44,7 +44,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Nadir Streaming Completion"
 import os
@@ -62,9 +62,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+將以下內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -74,7 +74,7 @@ model_list:
       api_key: os.environ/NADIR_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -90,46 +90,46 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## Model
+## 模型 {#model}
 
-Nadir exposes one virtual model. Send `nadir/auto` and the router picks the
-underlying model per request.
+Nadir 提供一個虛擬模型。傳送 `nadir/auto`，路由器就會為每個請求挑選
+底層模型。
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | auto | `completion(model="nadir/auto", messages=messages)` |
 
-## Cost tracking
+## 成本追蹤 {#cost-tracking}
 
-The `model` field on the response reports the model Nadir actually routed to.
-Nadir returns the cost it computed for a non-streaming call, and LiteLLM records
-that as the response cost, so the SDK's `response_cost`, the proxy's
-`x-litellm-response-cost` header, and the spend logs all carry Nadir's number:
+回應上的 `model` 欄位會回報 Nadir 實際路由到的模型。
+Nadir 會回傳其為非串流呼叫計算出的成本，而 LiteLLM 會將其記錄
+為回應成本，因此 SDK 的 `response_cost`、proxy 的
+`x-litellm-response-cost` 標頭，以及花費記錄都會帶有 Nadir 的數值：
 
 ```python
 print(f"Request cost: ${response._hidden_params['response_cost']}")
 ```
 
-Streaming responses carry no cost from Nadir. LiteLLM prices them from the
-routed model's own entry in the LiteLLM model cost map, for example
-`openrouter/anthropic/claude-haiku-4.5`, so a routed model with no cost map
-entry logs a streamed call at $0.
+串流回應不會從 Nadir 帶回成本。LiteLLM 會根據
+路由後模型在 LiteLLM 模型成本對照表中的自己的項目進行計價，例如
+`openrouter/anthropic/claude-haiku-4.5`，因此沒有成本對照表
+項目的路由模型會將串流呼叫記錄為 $0。
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
-Nadir validates requests against its own schema and drops anything outside it,
-so LiteLLM advertises only the parameters the endpoint honors:
+Nadir 會根據自己的結構定義驗證請求，並丟棄超出範圍的任何內容，
+因此 LiteLLM 只宣告端點接受的參數：
 
 `frequency_penalty`, `max_tokens`, `presence_penalty`, `response_format`,
 `stream`, `temperature`, `top_p`
 
-`extra_headers` and `max_retries` are handled by the LiteLLM transport rather
-than sent in the request body. Passing any other parameter raises
-`litellm.UnsupportedParamsError` unless `drop_params=True` is set.
+`extra_headers` 和 `max_retries` 由 LiteLLM 傳輸層處理，而不是
+隨請求主體傳送。傳遞任何其他參數都會引發
+`litellm.UnsupportedParamsError`，除非已設定 `drop_params=True`。
 
 :::info
 
-`tools`, `tool_choice`, and `functions` are **not** supported. Function calling
-is not part of Nadir's request schema today.
+`tools`、`tool_choice` 和 `functions` **不**支援。函式呼叫
+目前並非 Nadir 請求結構的一部分。
 
 :::

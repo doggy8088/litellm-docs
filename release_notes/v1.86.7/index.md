@@ -1,5 +1,5 @@
 ---
-title: "v1.86.7 - Stream Cost Recovery & MCP Key Scoping"
+title: "v1.86.7 - 串流成本回收與 MCP 金鑰範圍設定"
 slug: "v1-86-7"
 date: 2026-06-24T18:28:34
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,17 +43,17 @@ pip install litellm==1.86.7
 </TabItem>
 </Tabs>
 
-`v1.86.7` is a patch release on top of [`v1.86.6`](/release_notes/v1.86.6/v1-86-6). It backports cost-tracking recovery for interrupted Anthropic streams, adds a `no-mcp-servers` sentinel that scopes a key to zero MCP servers, caps Anthropic `cache_control` injection at the 4-block API limit, and bumps OpenSSL plus `cryptography`, `python-multipart`, `pydantic-settings`, and `pypdf` for CVE coverage.
+`v1.86.7` 是建置於 [`v1.86.6`](/release_notes/v1.86.6/v1-86-6) 之上的修補版本。它回補了中斷的 Anthropic 串流之成本追蹤回收功能，新增一個 `no-mcp-servers` sentinel，用來將金鑰範圍限定為零個 MCP 伺服器，將 Anthropic `cache_control` 注入上限限制為 4 個區塊的 API 限額，並升級 OpenSSL 以及 `cryptography`、`python-multipart`、`pydantic-settings` 和 `pypdf` 以涵蓋 CVE。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(integrations): cap Anthropic cache_control injection at 4 blocks - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
-- fix(passthrough): recover output tokens for interrupted anthropic streams - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
-- fix(proxy): record partial spend on the failure row for interrupted streams - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
-- feat(mcp): scope a key to zero MCP servers with no-mcp-servers sentinel - [PR #31029](https://github.com/BerriAI/litellm/pull/31029)
-- fix(passthrough,streaming): recover cost on interrupted and agentic Anthropic streams - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
-- fix(docker): bump wolfi-base digest to patch openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
+- fix(integrations): 將 Anthropic cache_control 注入上限限制為 4 個區塊 - [PR #30480](https://github.com/BerriAI/litellm/pull/30480)
+- fix(passthrough): 回收中斷的 anthropic 串流之輸出 token - [PR #30787](https://github.com/BerriAI/litellm/pull/30787)
+- fix(proxy): 在失敗列為中斷的串流記錄部分支出 - [PR #30788](https://github.com/BerriAI/litellm/pull/30788)
+- feat(mcp): 使用 no-mcp-servers sentinel 將金鑰範圍限定為零個 MCP 伺服器 - [PR #31029](https://github.com/BerriAI/litellm/pull/31029)
+- fix(passthrough,streaming): 回收中斷與 agentic Anthropic 串流的成本 - [PR #31035](https://github.com/BerriAI/litellm/pull/31035)
+- fix(docker): 更新 wolfi-base digest 以修補 openssl CVE-2026-34182 - [PR #31133](https://github.com/BerriAI/litellm/pull/31133)
 
-## Full Changelog
+## 完整更新記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.86.6...v1.86.7

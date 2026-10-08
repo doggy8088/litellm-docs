@@ -1,40 +1,40 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock AgentCore
+# Bedrock AgentCore {#bedrock-agentcore}
 
-Call Bedrock AgentCore in the OpenAI Request/Response format.
+以 OpenAI 的請求/回應格式呼叫 Bedrock AgentCore。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Amazon Bedrock AgentCore provides direct access to hosted agent runtimes for executing agentic workflows with foundation models. |
-| Provider Route on LiteLLM | `bedrock/agentcore/{AGENT_RUNTIME_ARN}` |
-| Provider Doc | [AWS Bedrock AgentCore ↗](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agentcore_InvokeAgentRuntime.html) |
+| 描述 | Amazon Bedrock AgentCore 提供對受託管 agent runtime 的直接存取，可使用 foundation models 執行 agentic workflows。 |
+| LiteLLM 上的提供者路由 | `bedrock/agentcore/{AGENT_RUNTIME_ARN}` |
+| 提供者文件 | [AWS Bedrock AgentCore ↗](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agentcore_InvokeAgentRuntime.html) |
 
 :::info
 
-This documentation is for **AgentCore Agents** (agent runtimes). If you want to use AgentCore MCP servers with LiteLLM, see the [MCP AWS SigV4 Auth](https://docs.litellm.ai/docs/mcp_aws_sigv4) guide for setup instructions.
+此文件適用於 **AgentCore Agents**（agent runtimes）。如果您想將 AgentCore MCP servers 與 LiteLLM 一起使用，請參閱 [MCP AWS SigV4 Auth](https://docs.litellm.ai/docs/mcp_aws_sigv4) 指南以取得設定說明。
 
 :::
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Model Format to LiteLLM
+### 模型格式到 LiteLLM {#model-format-to-litellm}
 
-To call a bedrock agent runtime through LiteLLM, use the following model format.
+若要透過 LiteLLM 呼叫 bedrock agent runtime，請使用以下模型格式。
 
-Here the `model=bedrock/agentcore/` tells LiteLLM to call the bedrock `InvokeAgentRuntime` API.
+此處的 `model=bedrock/agentcore/` 會告訴 LiteLLM 呼叫 bedrock `InvokeAgentRuntime` API。
 
 ```shell showLineNumbers title="Model Format to LiteLLM"
 bedrock/agentcore/{AGENT_RUNTIME_ARN}
 ```
 
-**Example:**
+**範例：**
 - `bedrock/agentcore/arn:aws:bedrock-agentcore:us-west-2:123456789012:runtime/my-agent-runtime`
 
-You can find the Agent Runtime ARN in your AWS Bedrock console under AgentCore.
+您可以在 AWS Bedrock 主控台的 AgentCore 下找到 Agent Runtime ARN。
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Basic AgentCore Completion"
 import litellm
@@ -74,9 +74,9 @@ for chunk in response:
         print(chunk.choices[0].delta.content, end="")
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
-#### 1. Configure your model in config.yaml
+#### 1. 在 config.yaml 中設定您的模型 {#1-configure-your-model-in-configyaml}
 
 <Tabs>
 <TabItem value="config-yaml" label="config.yaml">
@@ -101,13 +101,13 @@ model_list:
 </TabItem>
 </Tabs>
 
-#### 2. Start the LiteLLM Proxy
+#### 2. 啟動 LiteLLM Proxy {#2-start-the-litellm-proxy}
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
 ```
 
-#### 3. Make requests to your AgentCore runtimes
+#### 3. 向您的 AgentCore runtimes 發出請求 {#3-make-requests-to-your-agentcore-runtimes}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -198,9 +198,9 @@ for chunk in stream:
 </TabItem>
 </Tabs>
 
-## Provider-specific Parameters
+## 提供者專屬參數 {#provider-specific-parameters}
 
-AgentCore supports additional parameters that can be passed to customize the runtime invocation.
+AgentCore 支援可傳入的額外參數，用於自訂 runtime 呼叫。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -238,33 +238,33 @@ model_list:
 </TabItem>
 </Tabs>
 
-### Available Parameters
+### 可用參數 {#available-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 型別 | 說明 |
 |-----------|------|-------------|
-| `qualifier` | string | Optional runtime qualifier/version to invoke a specific version of the agent runtime |
-| `runtimeSessionId` | string | Optional custom session ID (must be 33+ characters). If not provided, LiteLLM generates one automatically |
+| `qualifier` | string | 選用的 runtime qualifier/version，用於呼叫 agent runtime 的特定版本 |
+| `runtimeSessionId` | string | 選用的自訂 session ID（必須為 33 個字元以上）。如果未提供，LiteLLM 會自動產生一個 |
 
 ## LiteLLM A2A Gateway {#litellm-a2a-gateway}
 
-Register a Bedrock AgentCore runtime as a first-class A2A agent on the LiteLLM [Agent Gateway](../a2a). This gives you per-agent RBAC, access groups, trace-ID enforcement, and the `x-a2a-{agent_name_or_id}-{header}` per-user passthrough convention, the same surface as any other A2A provider.
+將 Bedrock AgentCore runtime 註冊為 LiteLLM [Agent Gateway](../a2a) 上的一級 A2A 代理程式。這可讓您享有每個代理程式的 RBAC、存取群組、trace-ID 強制，以及 `x-a2a-{agent_name_or_id}-{header}` 每位使用者轉傳慣例，與任何其他 A2A 提供者相同的介面。
 
-This path is distinct from the chat-completions invocation above. Pick one based on your client:
+此路徑與上方的 chat-completions 呼叫不同。請依據您的用戶端選擇其一：
 
-| You want to call AgentCore via... | Use this path |
+| 您要透過... 呼叫 AgentCore | 使用此路徑 |
 |---|---|
-| `/v1/chat/completions` with `model: bedrock/agentcore/<ARN>` | Chat completions (covered above) |
-| `POST /a2a/{agent_id}` with A2A JSON-RPC 2.0 (`message/send` or `message/stream`) | A2A Gateway (this section) |
+| `/v1/chat/completions` 搭配 `model: bedrock/agentcore/<ARN>` | Chat completions（上方已涵蓋） |
+| `POST /a2a/{agent_id}` 搭配 A2A JSON-RPC 2.0（`message/send` 或 `message/stream`） | A2A Gateway（本節） |
 
-### 1. Register the agent
+### 1. 註冊 agent {#1-register-the-agent}
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-1. Go to **Agents** → **Add Agent**.
-2. Select **Bedrock AgentCore** as the provider.
-3. Paste the AgentCore Runtime ARN as the agent URL.
-4. Configure AWS credentials (or leave blank to use the proxy's ambient credential chain; see [Authentication](#a2a-gateway-authentication) below).
+1. 前往 **Agents** → **Add Agent**。
+2. 將 **Bedrock AgentCore** 選為提供者。
+3. 將 AgentCore Runtime ARN 貼為代理程式 URL。
+4. 設定 AWS 憑證（或留白以使用 proxy 的環境憑證鏈；請參閱下方的 [Authentication](#a2a-gateway-authentication)）。
 
 </TabItem>
 <TabItem value="api" label="REST API">
@@ -291,15 +291,15 @@ curl -X POST http://localhost:4000/v1/agents \
 </TabItem>
 </Tabs>
 
-### Updating or rotating credentials
+### 更新或輪替憑證 {#updating-or-rotating-credentials}
 
-Any credential-bearing field in `litellm_params` (`aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `api_key`, and similar) is write-only. `GET`/`POST`/`PUT`/`PATCH /v1/agents` responses, and the Admin UI's agent edit form, always show these fields as a redacted placeholder rather than the stored value.
+`litellm_params` 中任何含有憑證的欄位（`aws_access_key_id`、`aws_secret_access_key`、`aws_session_token`、`api_key` 等）皆為唯寫。`GET`/`POST`/`PUT`/`PATCH /v1/agents` 回應，以及 Admin UI 的代理程式編輯表單，永遠會將這些欄位顯示為已遮蔽的預留位置，而非已儲存的值。
 
-- Editing an unrelated field (name, description, rate limits) and saving leaves the stored credential unchanged, even though the form round-trips the placeholder for every credential field it didn't touch.
-- To rotate a credential, submit the new value for that field; the update is applied immediately and, again, never echoed back.
-- Submitting a field as an empty string clears the stored credential (for example, to fall back to the proxy's ambient AWS credential chain).
+- 編輯無關欄位（名稱、描述、速率限制）並儲存時，已儲存的憑證不會變更，即使表單對每個未觸及的憑證欄位都會來回傳遞該預留位置。
+- 若要輪替憑證，請提交該欄位的新值；更新會立即套用，且同樣不會回傳回來。
+- 將欄位提交為空字串會清除已儲存的憑證（例如，改回使用 proxy 的環境 AWS 憑證鏈）。
 
-### 2. Invoke via A2A
+### 2. 透過 A2A 呼叫 {#2-invoke-via-a2a}
 
 ```bash showLineNumbers
 curl -X POST http://localhost:4000/a2a/my-agentcore-runtime/message/send \
@@ -319,15 +319,15 @@ curl -X POST http://localhost:4000/a2a/my-agentcore-runtime/message/send \
   }'
 ```
 
-### Session isolation
+### 工作階段隔離 {#session-isolation}
 
-Each AgentCore runtime session is its own microVM: reusing the same `X-Amzn-Bedrock-AgentCore-Runtime-Session-Id` keeps conversation context, and mixing two callers into one session leaks context between them. LiteLLM picks that session id in this order:
+每個 AgentCore runtime 工作階段都是自己的 microVM：重複使用相同的 `X-Amzn-Bedrock-AgentCore-Runtime-Session-Id` 會保留對話內容，而將兩個呼叫者混入同一個工作階段會導致彼此之間的內容外洩。LiteLLM 依下列順序選取該工作階段 id：
 
-1. **`params.message.contextId`** in the A2A request, scoped to the calling API key so two keys can never collide on the same `contextId`. This is the recommended way to isolate sessions per conversation.
-2. **`runtimeSessionId`** in the agent's `litellm_params` (see [Available Parameters](#available-parameters)), used only when the request carries no `contextId`. Every caller that omits `contextId` shares this one session.
-3. A freshly generated id, when neither of the above is set. Every request gets its own session, so multi-turn context is not preserved.
+1. **`params.message.contextId`**，位於 A2A 請求中，並以呼叫的 API 金鑰為範圍，因此兩個金鑰永遠不會在同一個 `contextId` 上衝突。這是每個對話隔離工作階段的建議方式。
+2. 代理程式的 `litellm_params` 中的 **`runtimeSessionId`**（請參閱 [Available Parameters](#available-parameters)），僅在請求未帶有 `contextId` 時使用。省略 `contextId` 的每個呼叫者都會共用這一個工作階段。
+3. 當以上皆未設定時，會產生一個新的 id。每個請求都會取得自己的工作階段，因此不會保留多輪對話內容。
 
-To keep a conversation going across turns, send the same `contextId` on every `message/send` or `message/stream` call for that conversation, and a different `contextId` for each new conversation or end user:
+若要在多輪之間維持對話，請在該對話的每次 `message/send` 或 `message/stream` 呼叫中傳送相同的 `contextId`，並為每個新對話或最終使用者使用不同的 `contextId`：
 
 ```bash showLineNumbers
 curl -X POST http://localhost:4000/a2a/my-agentcore-runtime/message/send \
@@ -348,46 +348,46 @@ curl -X POST http://localhost:4000/a2a/my-agentcore-runtime/message/send \
   }'
 ```
 
-AWS requires the runtime session id to be 33-256 characters. LiteLLM prefixes `contextId` with a 16-character hash of the calling key before checking this, so `contextId` itself needs to be at least 16 characters; a UUID (36 characters) comfortably clears it. A `contextId` (or a configured `runtimeSessionId`) outside that range is rejected with HTTP 400 and a JSON-RPC `-32602` error before any request reaches AWS, rather than silently falling back to a shared session.
+AWS 要求 runtime 工作階段 id 為 33-256 個字元。LiteLLM 會在檢查前，先在 `contextId` 前加上呼叫金鑰的 16 字元雜湊，因此 `contextId` 本身至少需要 16 個字元；UUID（36 個字元）則很充裕。超出該範圍的 `contextId`（或已設定的 `runtimeSessionId`）會在任何請求送達 AWS 之前，以 HTTP 400 和 JSON-RPC `-32602` 錯誤遭到拒絕，而不是無聲地退回共用工作階段。
 
-### Authentication {#a2a-gateway-authentication}
+### 驗證 {#a2a-gateway-authentication}
 
-The AgentCore A2A path supports **two distinct outbound auth modes**, picked automatically based on what's in `litellm_params`:
+AgentCore A2A 路徑支援**兩種不同的對外驗證模式**，會根據 `litellm_params` 中的內容自動選擇：
 
-| Mode | When it fires | What's sent to AgentCore |
+| 模式 | 觸發時機 | 傳送給 AgentCore 的內容 |
 |---|---|---|
-| **Bearer / JWT** | `litellm_params.api_key` is set (any value) | `Authorization: Bearer <api_key>` — SigV4 is bypassed entirely |
-| **SigV4** | `litellm_params.api_key` is **not** set | Per-request SigV4 signature using the full AWS credential chain (below) |
+| **Bearer / JWT** | 已設定 `litellm_params.api_key`（任何值） | `Authorization: Bearer <api_key>`——完全略過 SigV4 |
+| **SigV4** | 未設定 `litellm_params.api_key` | 使用完整 AWS credential chain（如下）進行每次請求的 SigV4 簽章 |
 
-#### SigV4 credential resolution
+#### SigV4 憑證解析 {#sigv4-credential-resolution}
 
-When SigV4 mode is active, credentials are resolved in this priority order:
+當 SigV4 模式啟用時，憑證會依下列優先順序解析：
 
-1. **`aws_web_identity_token` + `aws_role_name` + `aws_session_name`** → `sts:AssumeRoleWithWebIdentity`. Cross-account IRSA path.
-2. **`aws_role_name` alone** → `sts:AssumeRole`. The proxy's ambient credentials (instance profile, IRSA, env vars) are the source identity. Session name auto-generated if omitted.
-3. **`aws_profile_name`** → resolved via the boto3 profile loader (`~/.aws/credentials`).
-4. **`aws_access_key_id` + `aws_secret_access_key` + `aws_session_token`** → explicit temporary credentials.
-5. **`aws_access_key_id` + `aws_secret_access_key` + `aws_region_name`** → explicit long-lived credentials. All three must be set; without `aws_region_name` this branch is skipped.
-6. **No credentials configured** → boto3 default chain (env vars, IRSA via `AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN`, instance metadata).
+1. **`aws_web_identity_token` + `aws_role_name` + `aws_session_name`** → `sts:AssumeRoleWithWebIdentity`。跨帳戶 IRSA 路徑。
+2. **僅 `aws_role_name`** → `sts:AssumeRole`。proxy 的 ambient credentials（instance profile、IRSA、環境變數）為來源身分。若省略，session name 會自動產生。
+3. **`aws_profile_name`** → 透過 boto3 profile loader（`~/.aws/credentials`）解析。
+4. **`aws_access_key_id` + `aws_secret_access_key` + `aws_session_token`** → 明確的暫時性憑證。
+5. **`aws_access_key_id` + `aws_secret_access_key` + `aws_region_name`** → 明確的長期憑證。三者都必須設定；若沒有 `aws_region_name`，此分支會被略過。
+6. **未設定任何憑證** → boto3 預設鏈（環境變數、透過 `AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN` 的 IRSA、instance metadata）。
 
-Recognized fields on `litellm_params` for SigV4:
+`litellm_params` 上可辨識的 SigV4 欄位：
 
-| Field | Description |
+| 欄位 | 說明 |
 |---|---|
-| `aws_role_name` | IAM role ARN to assume via STS |
-| `aws_session_name` | Session name for the AssumeRole call (auto-generated if omitted) |
-| `aws_external_id` | ExternalId passed to `sts:AssumeRole` for cross-account trust policies |
-| `aws_web_identity_token` | OIDC token for `AssumeRoleWithWebIdentity` (set explicitly or via `AWS_WEB_IDENTITY_TOKEN_FILE` env) |
+| `aws_role_name` | 要透過 STS assume 的 IAM role ARN |
+| `aws_session_name` | AssumeRole 呼叫的 session name（若省略則自動產生） |
+| `aws_external_id` | 傳遞給 `sts:AssumeRole` 的 ExternalId，用於跨帳戶信任政策 |
+| `aws_web_identity_token` | 供 `AssumeRoleWithWebIdentity` 使用的 OIDC token（可明確設定或透過 `AWS_WEB_IDENTITY_TOKEN_FILE` env 設定） |
 | `aws_profile_name` | AWS CLI profile name |
-| `aws_sts_endpoint` | Custom STS endpoint (VPC endpoints, FIPS endpoints) |
-| `aws_access_key_id` / `aws_secret_access_key` / `aws_session_token` | Explicit credentials |
-| `aws_region_name` | AWS region. If omitted, detected from the runtime ARN in `agent_card_params.url`. |
+| `aws_sts_endpoint` | 自訂 STS endpoint（VPC endpoints、FIPS endpoints） |
+| `aws_access_key_id` / `aws_secret_access_key` / `aws_session_token` | 明確的憑證 |
+| `aws_region_name` | AWS region。若省略，會從 `agent_card_params.url` 中的 runtime ARN 偵測。 |
 
-#### IRSA on EKS
+#### EKS 上的 IRSA {#irsa-on-eks}
 
-For Kubernetes deployments using [IAM Roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html), no explicit credential configuration is needed. boto3's default chain picks up `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_ARN` from the pod environment automatically.
+對於使用 [IAM Roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) 的 Kubernetes 部署，不需要明確設定憑證。boto3 的預設鏈會自動從 pod 環境中取得 `AWS_WEB_IDENTITY_TOKEN_FILE` 和 `AWS_ROLE_ARN`。
 
-If you want the invocation to assume a **second** role (e.g. separate the pod's identity from the agent-invocation identity for CloudTrail attribution), combine IRSA with `aws_role_name`:
+如果您希望呼叫時再 assume **第二個** role（例如：將 pod 的身分與 agent 呼叫身分分開，以利 CloudTrail 歸因），請將 IRSA 與 `aws_role_name` 結合使用：
 
 ```bash showLineNumbers
 curl -X POST http://localhost:4000/v1/agents \
@@ -407,31 +407,30 @@ curl -X POST http://localhost:4000/v1/agents \
   }'
 ```
 
-The proxy pod's IRSA role serves as the source identity for the AssumeRole call; the assumed role's CloudTrail entries reflect the agent invocation.
+proxy pod 的 IRSA role 會作為 AssumeRole 呼叫的來源身分；assumed role 的 CloudTrail 項目會反映 agent 呼叫。
 
-### Per-user header passthrough
+### 每位使用者的標頭透傳 {#per-user-header-passthrough}
 
-The standard A2A header forwarding mechanisms apply; see [A2A Agent Authentication Headers](../a2a_agent_headers) for the full reference. All three methods work with AgentCore:
+適用標準 A2A 標頭轉送機制；完整參考請參閱 [A2A Agent Authentication Headers](../a2a_agent_headers)。這三種方法都可與 AgentCore 搭配使用：
 
-- **`static_headers`** — always sent to AgentCore (e.g. a custom `X-Tenant-Id`)
-- **`extra_headers`** — admin-configured allowlist of client headers to forward
-- **`x-a2a-{agent_name_or_id}-{header}` convention** — caller-driven forwarding without admin config
+- **`static_headers`** — 一律傳送至 AgentCore（例如自訂 `X-Tenant-Id`）
+- **`extra_headers`** — 由管理員設定的允許轉送 client headers 清單
+- **`x-a2a-{agent_name_or_id}-{header}` 慣例** — 不需管理設定、由呼叫端驅動的轉送
 
-Note that the SigV4 / Bearer auth handled by `litellm_params` is **separate** from the agent-level header forwarding above. Auth headers are computed per-request by the AWS signer; user passthrough headers are merged into the request after signing.
+請注意，`litellm_params` 所處理的 SigV4 / Bearer auth 與上方的 agent-level 標頭轉送是**分開**的。auth headers 會由 AWS signer 逐次請求計算；使用者透傳標頭則會在簽章後併入請求。
 
-### RBAC and trace IDs
+### RBAC 與 trace IDs {#rbac-and-trace-ids}
 
-All standard A2A controls apply:
-- **Per-agent RBAC** — [Agent Permission Management](../a2a_agent_permissions). Returns HTTP 403 when the calling key/team isn't authorized for the AgentCore agent.
-- **Access groups** — tag the agent with one or more access groups in the LiteLLM dashboard, then grant the group to a team or key via `object_permission.agent_access_groups`. See [Agent Access Groups](../a2a_agent_permissions#agent-access-groups).
-- **Trace ID enforcement.** Set `require_trace_id_on_calls_to_agent: true` on `litellm_params` to require `x-litellm-trace-id` on every inbound call. See [A2A Overview: Trace ID enforcement](../a2a#trace-id-enforcement-optional-per-agent).
+適用所有標準 A2A 控制：
+- **每個代理程式的 RBAC** — [Agent Permission Management](../a2a_agent_permissions)。當呼叫的金鑰/團隊未獲授權使用 AgentCore 代理程式時，會回傳 HTTP 403。
+- **存取群組** — 在 LiteLLM 儀表板中為代理程式加上一或多個存取群組標籤，然後透過 `object_permission.agent_access_groups` 將該群組授予團隊或金鑰。請參閱 [Agent Access Groups](../a2a_agent_permissions#agent-access-groups)。
+- **Trace ID 強制。** 在 `litellm_params` 上設定 `require_trace_id_on_calls_to_agent: true`，以要求每次傳入呼叫都必須有 `x-litellm-trace-id`。請參閱 [A2A Overview: Trace ID enforcement](../a2a#trace-id-enforcement-optional-per-agent)。
 
-## Further Reading
+## 延伸閱讀 {#further-reading}
 
-- [AWS Bedrock AgentCore Documentation](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agentcore_InvokeAgentRuntime.html)
-- [LiteLLM Authentication to Bedrock](https://docs.litellm.ai/docs/providers/bedrock#boto3---authentication)
-- [LiteLLM A2A Gateway Overview](../a2a)
-- [A2A Agent Authentication Headers](../a2a_agent_headers)
-- [A2A Agent Permission Management](../a2a_agent_permissions)
-- [MCP AWS SigV4](../mcp_aws_sigv4) — for the AgentCore-hosted MCP servers path (separate from the agent runtimes path)
-
+- [AWS Bedrock AgentCore 文件](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agentcore_InvokeAgentRuntime.html)
+- [LiteLLM 驗證至 Bedrock](https://docs.litellm.ai/docs/providers/bedrock#boto3---authentication)
+- [LiteLLM A2A 閘道總覽](../a2a)
+- [A2A 代理程式驗證標頭](../a2a_agent_headers)
+- [A2A 代理程式權限管理](../a2a_agent_permissions)
+- [MCP AWS SigV4](../mcp_aws_sigv4) — 用於 AgentCore 主機代管的 MCP 伺服器路徑（與代理程式執行階段路徑分開）

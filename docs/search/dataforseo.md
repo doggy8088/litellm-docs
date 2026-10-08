@@ -1,19 +1,19 @@
-# DataForSEO Search
+# DataForSEO 搜尋 {#dataforseo-search}
 
-**Get API Access:** [DataForSEO](https://dataforseo.com/)
+**取得 API 存取權：** [DataForSEO](https://dataforseo.com/)
 
-## Setup
+## 設定 {#setup}
 
-1. Go to [DataForSEO](https://dataforseo.com/) and create an account
-2. Navigate to your account dashboard
-3. Generate API credentials:
-   - You'll receive a **login** (username)
-   - You'll receive a **password**
-4. Set up your environment variables:
-   - `DATAFORSEO_LOGIN` - Your DataForSEO login/username
-   - `DATAFORSEO_PASSWORD` - Your DataForSEO password
+1. 前往 [DataForSEO](https://dataforseo.com/) 並建立帳號
+2. 前往您的帳戶儀表板
+3. 產生 API 憑證：
+   - 您將收到 **登入名稱**（使用者名稱）
+   - 您將收到 **密碼**
+4. 設定您的環境變數：
+   - `DATAFORSEO_LOGIN` - 您的 DataForSEO 登入名稱/使用者名稱
+   - `DATAFORSEO_PASSWORD` - 您的 DataForSEO 密碼
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="DataForSEO Search"
 import os
@@ -29,9 +29,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -46,9 +46,9 @@ search_tools:
       search_provider: dataforseo
 ```
 
-The proxy reads `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD` from its environment, so no `api_key` is needed. To pass credentials explicitly, set `api_key` to a single `login:password` string, either literally or from one env var such as `api_key: os.environ/DATAFORSEO_API_KEY` where `DATAFORSEO_API_KEY=your-login:your-password`. Two `os.environ/` references joined by `:` are not resolved
+Proxy 會從其環境中讀取 `DATAFORSEO_LOGIN` 和 `DATAFORSEO_PASSWORD`，因此不需要 `api_key`。若要明確傳遞認證，請將 `api_key` 設為單一 `login:password` 字串，可以是字面值，或來自單一環境變數，例如 `api_key: os.environ/DATAFORSEO_API_KEY`，其中 `DATAFORSEO_API_KEY=your-login:your-password`。以 `:` 串接的兩個 `os.environ/` 參照不會被解析
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -56,7 +56,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/dataforseo-search \
@@ -68,7 +68,7 @@ curl http://0.0.0.0:4000/v1/search/dataforseo-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 供應者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="DataForSEO Search with Provider-specific Parameters"
 import os
@@ -89,4 +89,3 @@ response = search(
     os="windows"                   # Operating system
 )
 ```
-

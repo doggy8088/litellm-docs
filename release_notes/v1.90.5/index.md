@@ -1,5 +1,5 @@
 ---
-title: "v1.90.5 - Docker Migration Assets Restored"
+title: "v1.90.5 - Docker Migration Assets 已恢復"
 slug: "v1-90-5"
 date: 2026-07-16T15:38:03
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,12 +43,12 @@ pip install litellm==1.90.5
 </TabItem>
 </Tabs>
 
-`v1.90.5` is a patch release on top of [`v1.90.4`](/release_notes/v1.90.4/v1-90-4). It restores the `litellm-proxy-extras` source folder (the Prisma schema and its migrations catalog) in the runtime stage of all three published Docker images. Images from `v1.90.0` through `v1.90.4` dropped `/app/litellm-proxy-extras`, which broke deployments that run their own pre-deploy migration job against the schema and migrations shipped at that path; the breakage could be silent, because `prisma migrate deploy` pointed at a schema with no adjacent migrations directory exits 0 without applying anything. Images now match what `v1.89.x` and earlier contained.
+`v1.90.5` 是建立在 [`v1.90.4`](/release_notes/v1.90.4/v1-90-4) 之上的修補版本。它會將所有三個已發佈 Docker 映像在執行階段中的 `litellm-proxy-extras` 來源資料夾（Prisma schema 及其 migrations 目錄）還原。從 `v1.90.0` 到 `v1.90.4` 的映像移除了 `/app/litellm-proxy-extras`，這導致那些在部署前自行對該路徑下提供的 schema 與 migrations 執行 migration job 的部署失效；而且這個問題可能是無聲的，因為 `prisma migrate deploy` 指向一個沒有相鄰 migrations 目錄的 schema 時，會直接以 0 結束而不會套用任何內容。現在這些映像已與 `v1.89.x` 及更早版本所包含的內容一致。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(docker): restore litellm-proxy-extras source dir in runtime images - [PR #33592](https://github.com/BerriAI/litellm/pull/33592)
+- fix(docker): 在執行階段映像中還原 litellm-proxy-extras 原始目錄 - [PR #33592](https://github.com/BerriAI/litellm/pull/33592)
 
-## Full Changelog
+## 完整變更紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.90.4...v1.90.5

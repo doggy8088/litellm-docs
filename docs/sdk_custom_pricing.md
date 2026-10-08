@@ -1,16 +1,16 @@
-# Custom Pricing - SageMaker, Azure, etc
+# 自訂定價 - SageMaker、Azure 等 {#custom-pricing---sagemaker-azure-etc}
 
-Register custom pricing for sagemaker completion model
+為 sagemaker completion model 註冊自訂定價
 
-For chat, completion, embedding and responses models, set `cost_per_second`. LiteLLM multiplies it by the full request
-duration, including streaming until the last chunk, and ignores it when per-token pricing is configured
+對於 chat、completion、embedding 和 responses 模型，請設定 `cost_per_second`。LiteLLM 會將其乘以整個請求
+持續時間，包括串流直到最後一個 chunk，且當已設定每個 token 定價時會忽略它
 
-For chat, completion, embedding and responses, `input_cost_per_second` and `output_cost_per_second` remain accepted as
-legacy aliases. `cost_per_second` takes precedence, followed by `input_cost_per_second` and then
-`output_cost_per_second`; the resolved rate is charged once, not added. Transcription, speech and video continue to use
-`input_cost_per_second` and `output_cost_per_second`
+對於 chat、completion、embedding 和 responses，`input_cost_per_second` 與 `output_cost_per_second` 仍可作為
+舊版別名使用。`cost_per_second` 優先，其次是 `input_cost_per_second`，再來是
+`output_cost_per_second`；解析後的費率只會收費一次，不會累加。轉錄、語音和影片仍繼續使用
+`input_cost_per_second` 和 `output_cost_per_second`
 
-`cost_per_second` needs v1.105.0 or later. On earlier versions, use `input_cost_per_second`
+`cost_per_second` 需要 v1.105.0 或更新版本。在較早版本中，請使用 `input_cost_per_second`
 
 ```python
 # !uv add boto3 
@@ -38,9 +38,7 @@ def test_completion_sagemaker():
 
 ```
 
-
-## Cost Per Token (e.g. Azure)
-
+## 每個 Token 成本（例如 Azure） {#cost-per-token-eg-azure}
 
 ```python
 # !uv add boto3 

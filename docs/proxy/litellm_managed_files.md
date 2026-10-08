@@ -2,23 +2,23 @@ import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
 import Image from '@theme/IdealImage';
 
-# [BETA] LiteLLM Managed Files
+# [BETA] LiteLLM 受管理檔案 {#beta-litellm-managed-files}
 
-- Reuse the same file across different providers.
-- Prevent users from seeing files they don't have access to on `list` and `retrieve` calls. 
+- 在不同提供者之間重用同一個檔案。
+- 防止使用者在 `list` 和 `retrieve` 請求中看到自己沒有存取權限的檔案。
 
 <EnterpriseFeature free />
 
-| Property | Value | Comments |
+| 屬性 | 值 | 備註 |
 | --- | --- | --- |
 | Proxy | ✅ |  |
-| SDK | ❌ | Requires postgres DB for storing file ids. |
-| Available across all providers | ✅ |  |
-| Supported endpoints | `/chat/completions`, `/batch`, `/fine_tuning`, `/responses` |  |
+| SDK | ❌ | 需要 postgres DB 來儲存檔案 id。 |
+| 適用於所有提供者 | ✅ |  |
+| 支援的端點 | `/chat/completions`, `/batch`, `/fine_tuning`, `/responses` |  |
 
-## Usage
+## 使用方式 {#usage}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -40,16 +40,16 @@ litellm_settings:
   require_managed_files: true # optional - reject POST /v1/files without target_model_names
 ```
 
-#### (Optional) Enforce managed files on upload
+#### （選用）在上傳時強制使用受管理檔案 {#optional-enforce-managed-files-on-upload}
 
-By default, `POST /v1/files` falls back to the classic provider file path when `target_model_names` is omitted. Set `require_managed_files: true` under `litellm_settings` to require managed files on every upload.
+預設情況下，當未指定 `POST /v1/files` 時，`target_model_names` 會回退到傳統的提供者檔案路徑。請在 `require_managed_files: true` 下設定 `litellm_settings`，以要求每次上傳都使用受管理檔案。
 
 ```yaml
 litellm_settings:
   require_managed_files: true
 ```
 
-When enabled, uploads without `target_model_names` return `400`. Existing managed-file behavior is unchanged when `target_model_names` is provided.
+啟用後，未提供 `target_model_names` 的上傳會回傳 `400`。當提供 `target_model_names` 時，既有的受管理檔案行為不會改變。
 
 ```python
 # String (comma-separated for multiple models)
@@ -59,23 +59,23 @@ extra_body={"target_model_names": "gpt-4o-mini-openai, {{gemini_flash}}"}
 extra_body={"target_model_names": ["gpt-4o-mini-openai"]}
 ```
 
-### 2. Start proxy
+### 2. 啟動 proxy {#2-start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Test it!
+### 3. 測試看看！ {#3-test-it}
 
-Specify `target_model_names` to use the same file id across different providers. This is the list of model_names set via config.yaml (or 'public_model_names' on UI). 
+指定 `target_model_names` 以在不同提供者之間使用相同的 file id。這是透過 config.yaml 設定的 model_names 清單（或 UI 上的 'public_model_names'）。 
 
 ```python
 target_model_names="gpt-4o-mini-openai, {{gemini_flash}}" # 👈 Specify model_names
 ```
 
-Check `/v1/models` to see the list of available model names for a key.
+請查看 `/v1/models`，以查看某個 key 可用的模型名稱清單。
 
-#### **Store a PDF file**
+#### **儲存 PDF 檔案** {#store-a-pdf-file}
 
 ```python
 from openai import OpenAI
@@ -103,7 +103,7 @@ file = client.files.create(
 print(f"file id={file.id}")
 ```
 
-#### **Use the same file id across different providers**
+#### **在不同提供者之間使用相同的 file id** {#use-the-same-file-id-across-different-providers}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -160,7 +160,7 @@ print(completion.choices[0].message)
 </TabItem>
 </Tabs>
 
-### Complete Example
+### 完整範例 {#complete-example}
 
 ```python   
 import base64
@@ -235,11 +235,11 @@ print(completion.choices[0].message)
 
 ```
 
-## File Permissions
+## 檔案權限 {#file-permissions}
 
-Prevent users from seeing files they don't have access to on `list` and `retrieve` calls. 
+防止使用者在 `list` 和 `retrieve` 請求中看到自己沒有存取權限的檔案。
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml-1}
 
 ```yaml
 model_list:
@@ -253,15 +253,15 @@ general_settings:
   database_url: "postgresql://<user>:<password>@<host>:<port>/<dbname>" # alternatively use the env var - DATABASE_URL
 ```
 
-### 2. Start proxy
+### 2. 啟動 proxy {#2-start-proxy-1}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Issue a key to the user
+### 3. 將 key 發給使用者 {#3-issue-a-key-to-the-user}
 
-Let's create a user with the id `user_123`.
+讓我們建立一個 id 為 `user_123` 的使用者。
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/user/new' \
@@ -270,7 +270,7 @@ curl -L -X POST 'http://0.0.0.0:4000/user/new' \
 -d '{"models": ["gpt-4o-mini-openai"], "user_id": "user_123"}'
 ```
 
-Get the key from the response.
+從回應中取得 key。
 
 ```json
 {
@@ -278,16 +278,16 @@ Get the key from the response.
 }
 ```
 
-### 4. User creates a file
+### 4. 使用者建立檔案 {#4-user-creates-a-file}
 
-#### 4a. Create a file
+#### 4a. 建立檔案 {#4a-create-a-file}
 
 ```jsonl
 {"messages": [{"role": "system", "content": "Clippy is a factual chatbot that is also sarcastic."}, {"role": "user", "content": "What's the capital of France?"}, {"role": "assistant", "content": "Paris, as if everyone doesn't know that already."}]}
 {"messages": [{"role": "system", "content": "Clippy is a factual chatbot that is also sarcastic."}, {"role": "user", "content": "Who wrote 'Romeo and Juliet'?"}, {"role": "assistant", "content": "Oh, just some guy named William Shakespeare. Ever heard of him?"}]}
 ```
 
-#### 4b. Upload the file
+#### 4b. 上傳檔案 {#4b-upload-the-file}
 
 ```python
 from openai import OpenAI
@@ -307,7 +307,7 @@ finetuning_input_file = client.files.create(
 print(finetuning_input_file) # file.id = "litellm_proxy/..." = {"model_name": {"deployment_id": "deployment_file_id"}}
 ```
 
-### 5. User retrieves a file 
+### 5. 使用者擷取檔案 {#5-user-retrieves-a-file}
 
 <Tabs>
 <TabItem value="has_access" label="User created file">
@@ -344,12 +344,9 @@ except Exception as e:
 </TabItem>
 </Tabs>
 
+## 支援的端點 {#supported-endpoints}
 
-
-
-## Supported Endpoints
-
-#### Create a file - `/files`
+#### 建立檔案 - `/files` {#create-a-file---files}
 
 ```python
 from openai import OpenAI
@@ -375,7 +372,7 @@ file = client.files.create(
 )
 ```
 
-#### Retrieve a file - `/files/{file_id}`
+#### 擷取檔案 - `/files/{file_id}` {#retrieve-a-file---filesfile_id}
 
 ```python
 client = OpenAI(base_url="http://0.0.0.0:4000", api_key="sk-<your-litellm-api-key>", max_retries=0)
@@ -383,7 +380,7 @@ client = OpenAI(base_url="http://0.0.0.0:4000", api_key="sk-<your-litellm-api-ke
 file = client.files.retrieve(file_id=file.id)
 ```
 
-#### Delete a file - `/files/{file_id}/delete`
+#### 刪除檔案 - `/files/{file_id}/delete` {#delete-a-file---filesfile_iddelete}
 
 ```python
 client = OpenAI(base_url="http://0.0.0.0:4000", api_key="sk-<your-litellm-api-key>", max_retries=0)
@@ -391,7 +388,7 @@ client = OpenAI(base_url="http://0.0.0.0:4000", api_key="sk-<your-litellm-api-ke
 file = client.files.delete(file_id=file.id)
 ```
 
-#### List files - `/files`
+#### 列出檔案 - `/files` {#list-files---files}
 
 ```python
 client = OpenAI(base_url="http://0.0.0.0:4000", api_key="sk-<your-litellm-api-key>", max_retries=0)
@@ -401,41 +398,35 @@ files = client.files.list(extra_body={"target_model_names": "gpt-4o-mini-openai"
 print(files) # All files user has created
 ```
 
-Pre-GA Limitations on List Files:
- - No multi-model support: Just 1 model name is supported for now. 
- - No multi-deployment support: Just 1 deployment of the model is supported for now (e.g. if you have 2 deployments with the `gpt-4o-mini-openai` public model name, it will pick one and return all files on that deployment).
+GA 前列出檔案的限制：
+ - 不支援多模型：目前只支援 1 個模型名稱。
+ - 不支援多部署：目前只支援該模型的 1 個部署（例如，如果您有 2 個具有 `gpt-4o-mini-openai` 公開模型名稱的部署，它會挑選其中一個，並回傳該部署上的所有檔案）。
 
-Pre-GA Limitations will be fixed before GA of the Managed Files feature.
+GA 前的限制會在 Managed Files 功能正式發布前修正。
 
-## FAQ
+## 常見問題 {#faq}
 
-**1. Does LiteLLM store the file?**
+**1. LiteLLM 會儲存檔案嗎？**
 
-No, LiteLLM does not store the file. It only stores the file id's in the postgres DB.
+不會，LiteLLM 不會儲存檔案。它只會在 postgres DB 中儲存檔案 ID。
 
-**2. How does LiteLLM know which file to use for a given file id?**
+**2. LiteLLM 如何知道要為特定檔案 ID 使用哪個檔案？**
 
-LiteLLM stores a mapping of the litellm file id to the model-specific file id in the postgres DB. When a request comes in, LiteLLM looks up the model-specific file id and uses it in the request to the provider.
+LiteLLM 會在 postgres DB 中儲存 litellm 檔案 ID 與特定於模型的檔案 ID 之間的對應。當請求進來時，LiteLLM 會查詢特定於模型的檔案 ID，並在請求中將其用於提供者。
 
-**3. How do file deletions work?**
+**3. 檔案刪除如何運作？**
 
-When a file is deleted, LiteLLM deletes the mapping from the postgres DB, and the files on each provider.
+當檔案被刪除時，LiteLLM 會從 postgres DB 和每個提供者上的檔案中刪除對應關係。
 
-**4. Can a user call a file id that was created by another user?**
+**4. 使用者可以呼叫由其他使用者建立的檔案 ID 嗎？**
 
-No, as of `v1.71.2` users can only view/edit/delete files they have created.
+不行，截至 `v1.71.2`，使用者只能檢視/編輯/刪除自己建立的檔案。
 
-
-
-## Architecture
-
-
-
-
+## 架構 {#architecture}
 
 <Image img={require('../../img/managed_files_arch.png')}  style={{ width: '800px', height: 'auto' }} />
 
-## See Also
+## 另請參閱 {#see-also}
 
-- [Managed Files w/ Finetuning APIs](../../docs/proxy/managed_finetuning)
-- [Managed Files w/ Batch APIs](../../docs/proxy/managed_batches)
+- [搭配微調 API 的受管理檔案](../../docs/proxy/managed_finetuning)
+- [搭配批次 API 的受管理檔案](../../docs/proxy/managed_batches)

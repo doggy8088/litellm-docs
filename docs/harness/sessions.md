@@ -2,11 +2,11 @@
 title: Sessions
 ---
 
-# Sessions
+# 工作階段 {#sessions}
 
-A session keeps its working directory and conversation history alive between turns. `litellm.agent()` creates a session for one turn and closes it afterwards. Use `litellm.agent_session()` when you need more than one turn
+工作階段會在各回合之間保留其工作目錄與對話歷史。`litellm.agent()` 會為單一回合建立工作階段，並在之後關閉它。當您需要超過一個回合時，請使用 `litellm.agent_session()`
 
-## Multi-turn
+## 多回合 {#multi-turn}
 
 ```python
 with litellm.agent_session(Harness.CODEX, sandbox=box, model="litellm_proxy/coder") as s:
@@ -16,21 +16,21 @@ with litellm.agent_session(Harness.CODEX, sandbox=box, model="litellm_proxy/code
     print(s.cost)  # running total across all turns
 ```
 
-Options you pass to `agent_session()` apply to every turn.
+您傳遞給 `agent_session()` 的選項會套用到每個回合。
 
-## Ending a session
+## 結束工作階段 {#ending-a-session}
 
-| Method | Runtime | Sandbox | Resumable |
+| 方法 | 執行階段 | 沙箱 | 可續接 |
 |---|---|---|---|
-| `s.close()` | stopped | closed if the session created it | no |
-| `s.detach()` returns `State` | parked | left running | yes |
-| `s.stop()` returns `State` | stopped | closed if the session created it | yes |
+| `s.close()` | 已停止 | 若工作階段建立了它，則關閉 | 否 |
+| `s.detach()` 回傳 `State` | 已停放 | 保持執行中 | 是 |
+| `s.stop()` 回傳 `State` | 已停止 | 若工作階段建立了它，則關閉 | 是 |
 
-Leaving a `with` block calls `close()` unless you already called `detach()` or `stop()`. If you passed in the sandbox, it belongs to you.
+離開 `with` 區塊時，會呼叫 `close()`，除非您已經呼叫過 `detach()` 或 `stop()`。如果您傳入沙箱，則它屬於您。
 
-## Across processes
+## 跨程序 {#across-processes}
 
-For harnesses that support resume, `State` holds the harness, its native session id, the working directory and the model. It never holds credentials. `state.dumps()` gives you bytes to store anywhere
+對於支援續接的 harness，`State` 會保存 harness、其原生工作階段 ID、工作目錄和模型。它絕不保存憑證。`state.dumps()` 會提供給您位元組，以便儲存在任何地方
 
 ```python title="app.py"
 from litellm import Harness
@@ -52,12 +52,12 @@ async def chat(chat_id: str, msg: str):
     return {"text": r.text, "cost": r.cost}
 ```
 
-`agent_resume()` raises `StateIncompatible` when the state came from a different harness or can't be read. Tool Loop does not support resume
+當狀態來自不同的 harness 或無法讀取時，`agent_resume()` 會引發 `StateIncompatible`。Tool Loop 不支援續接
 
-## History
+## 歷史 {#history}
 
 ```python
 messages = s.history()  # OpenAI-format messages
 ```
 
-Deep Agents and Tool Loop support history in this release. On the other harnesses `history()` raises `CapabilityUnsupported`. Tool Loop keeps its OpenAI-format messages through a stop/start in the same session, but it does not support detaching and resuming
+Deep Agents 和 Tool Loop 在此版本中支援歷史記錄。在其他 harness 上，`history()` 會引發 `CapabilityUnsupported`。Tool Loop 會在同一工作階段中的停止/啟動之間保留其 OpenAI 格式訊息，但不支援分離與續接

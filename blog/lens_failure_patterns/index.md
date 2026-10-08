@@ -1,10 +1,10 @@
 ---
 slug: lens-failure-patterns
-title: "How LiteLLM Lens finds repeated failures across 1,000s of agent traces"
+title: "LiteLLM Lens 如何在 1,000 多個代理程式追蹤中找出重複失敗"
 date: 2026-10-05
 authors:
   - moe
-description: "Inside Lens: parallel trace review, Python tools for large traces, and investigations that connect repeated failures to source evidence."
+description: "Lens 內部：平行追蹤審查、處理大型追蹤的 Python 工具，以及將重複失敗連結到來源證據的調查。"
 image: ./assets/lens-failure-patterns.gif
 tags: [lens, agent-tracing, engineering]
 hide_table_of_contents: true
@@ -14,76 +14,76 @@ import LensHero from './LensHero';
 
 export const Hero = LensHero;
 
-A research agent can finish a report after reading the first 8,000 characters of each page. If its web tool cuts off a source and the agent fills in the gaps, you get a completed run with unsupported claims.
+研究代理程式在讀完每個頁面的前 8,000 個字元後，就能完成一份報告。如果其網頁工具在來源中途截斷，而代理程式自行補齊空缺，您就會得到一個完成的執行，卻帶有未經證實的主張。
 
-Across thousands of runs, you need to find the affected sessions and what they have in common. [LiteLLM Lens](/blog/litellm-lens-launch) uses agents to do that work.
+在成千上萬次執行中，您需要找出受影響的工作階段，以及它們的共同點。[LiteLLM Lens](/blog/litellm-lens-launch) 使用代理程式來完成這項工作。
 
-Here's how it works behind the scenes: reviewers inspect executions in parallel, grouping agents connect related observations, and investigators check each candidate pattern against the original traces.
+以下說明其幕後運作方式：審查者會平行檢視執行結果，分組代理程式會連結相關觀察，而調查員會將每個候選模式與原始追蹤結果比對。
 
 {/* truncate */}
 
-![Lens reviews executions in parallel, groups observations, investigates candidate patterns, and returns findings with source evidence.](./assets/01-pipeline.svg)
+![Lens 會平行審查執行結果、分組觀察、調查候選模式，並回傳帶有來源證據的發現。](./assets/01-pipeline.svg)
 
-## Phase 1: Review each execution
+## 第 1 階段：審查每次執行 {#phase-1-review-each-execution}
 
-We give each execution its own reviewer and run the reviewers in parallel. Each has a complete run to investigate, because a tool response near the start may explain an incorrect answer hundreds of steps later.
+我們為每次執行配置各自的審查者，並平行執行這些審查者。每個審查者都能完整檢視一個執行，因為在一開始附近的工具回應，可能解釋了數百步之後的錯誤答案。
 
-![Each execution has a reviewer that can read, search, and use Python before returning observations with source quotes.](./assets/02-parallel-review.svg)
+![每次執行都有一位審查者，可以閱讀、搜尋並使用 Python，然後回傳附有來源引文的觀察。](./assets/02-parallel-review.svg)
 
-The reviewer decides what to read and follows leads through tool results and subagent handoffs. It keeps going until it has observations to return, and can open other selected executions if it needs a comparison.
+審查者會決定要讀什麼，並沿著工具結果與子代理程式交接追蹤線索。它會持續進行，直到有觀察結果可回傳；如果需要比對，也可以開啟其他選定的執行。
 
-In the research example, a reviewer might notice that a page ends mid-sentence and the final answer contains claims the returned text doesn't support. It records what it found with citations and leaves the cause open for investigation.
+在研究範例中，審查者可能注意到某個頁面在句子中途結尾，而最終答案包含了返回文字無法支持的主張。它會用引文記錄所發現的內容，並保留原因以待調查。
 
-We ask reviewers to examine the process as well as the outcome. An agent might try an incompatible `grep` tool five times before succeeding through a terminal. We want to keep those failed attempts in view, even though the agent completed the task.
+我們要求審查者同時檢視過程與結果。某個代理程式可能先嘗試一個不相容的 `grep` 工具五次，之後才透過終端成功。我們希望即使代理程式完成了任務，這些失敗嘗試也能保持在視野中。
 
-## Reviewers can use Python
+## 審查者可以使用 Python {#reviewers-can-use-python}
 
-We give reviewers a workspace containing the traces and tools to inspect them, much like a coding agent working in a repository. They can read and search the evidence, or write Python to answer questions that need computation.
+我們為審查者提供一個工作區，其中包含追蹤結果與檢視它們的工具，就像一個在儲存庫中工作的程式碼代理程式。他們可以閱讀並搜尋證據，或撰寫 Python 來回答需要計算的問題。
 
-![Reviewers use catalog, read, search, and confined Python to inspect the trace workspace. Selected text or computed output returns to the model.](./assets/05-evidence-workspace.svg)
+![審查者使用目錄、讀取、搜尋以及受限的 Python 來檢視追蹤工作區。選取的文字或計算結果會回傳給模型。](./assets/05-evidence-workspace.svg)
 
-For the research example, a reviewer could write a short script to compare response lengths and find pages that stop at the same point. It uses those measurements to decide which responses to open and which claims to check. It can use the same approach to count repeated failures or reconstruct a sequence of subagent calls.
+在研究範例中，審查者可以撰寫一個簡短腳本來比較回應長度，並找出在相同位置停止的頁面。它會利用這些測量結果決定要開啟哪些回應，以及要檢查哪些主張。它也可以用同樣的方法來計算重複失敗次數，或重建一連串子代理程式呼叫。
 
-The traces stay in the workspace, and the reviewer brings the passages or computed results it needs into the model's context. A trace can be larger than the context window because the agent can search and analyze it in pieces.
+追蹤結果保留在工作區中，而審查者會將所需段落或計算結果帶入模型的上下文。追蹤可以大於上下文視窗，因為代理程式可以分段搜尋並分析。
 
-Python runs in a confined environment without network access. As an investigation grows, the agents can compact their conversations into working notes and return to earlier evidence when they need it.
+Python 會在沒有網路存取的受限環境中執行。隨著調查擴大，代理程式可以將對話濃縮為工作筆記，並在需要時回到較早的證據。
 
-## Phase 2: Group related observations
+## 第 2 階段：分組相關觀察 {#phase-2-group-related-observations}
 
-Several reviewers may flag the same underlying problem. We group their observations in parallel batches, then merge matches across batches so an investigator can examine the examples together.
+多位審查者可能會標示出同一個潛在問題。我們以平行批次分組其觀察結果，然後跨批次合併匹配項目，讓調查員可以一起檢視這些範例。
 
-![Lens groups observation batches in parallel and merges matching candidates across batches.](./assets/03-group-patterns.svg)
+![Lens 會平行分組觀察批次，並跨批次合併相符的候選項目。](./assets/03-group-patterns.svg)
 
-We group by the check and suspected cause. A missing PDF tool needs a different fix from a failing PDF renderer, so those should remain separate candidates.
+我們依據檢查項目與疑似原因來分組。缺少 PDF 工具需要的修正，和 PDF 轉譯器故障需要的修正不同，因此它們應保持為不同的候選項目。
 
-For the page-cutoff example, we collect observations about abrupt endings and unsupported claims into a candidate about missing source content. The investigator gets examples from different runs, with links to their evidence, and can test whether one explanation accounts for them.
+對於頁面截斷的範例，我們會把關於突然結尾與未經支持主張的觀察，收集成一個關於來源內容缺失的候選項目。調查員會取得來自不同執行的範例，並附上其證據連結，然後判斷是否有單一解釋能同時說明它們。
 
-## Phase 3: Investigate the candidate
+## 第 3 階段：調查候選項目 {#phase-3-investigate-the-candidate}
 
-We start an investigator for each candidate and run these agents in parallel. They get the reviewers' observations and access to the original traces, with the same read, search, and Python tools.
+我們會為每個候選項目啟動一位調查員，並平行執行這些代理程式。他們會取得審查者的觀察結果，以及原始追蹤的存取權，並具備相同的讀取、搜尋與 Python 工具。
 
-![An investigator checks original traces and review records, then submits a finding whose citations Lens validates.](./assets/04-investigate.svg)
+![調查員會檢查原始追蹤與審查紀錄，然後提交一項 Lens 驗證其引文的發現。](./assets/04-investigate.svg)
 
-We send investigators back to the original traces because a reviewer may have left out context that changes the explanation. In the research case, the investigator compares page responses with final claims. It also looks for counterexamples, such as runs where the agent acknowledged missing information or fetched the rest of the source.
+我們把調查員帶回原始追蹤，因為審查者可能略去了會改變解釋的上下文。在研究案例中，調查員會比較頁面回應與最終主張。他也會尋找反例，例如代理程式承認資訊不足，或擷取了來源其餘部分的執行。
 
-When different pages repeatedly return exactly 8,000 characters, that suggests the tool is cutting them off at a fixed limit. The investigator still needs to check whether the missing content explains a false claim, and distinguish that evidence from a plausible guess.
+當不同頁面反覆精確回傳 8,000 個字元時，這表示工具可能在固定限制處將其截斷。調查員仍需要確認缺失內容是否能解釋錯誤主張，並將該證據與合理推測區分開來。
 
-The investigator can drop a candidate that doesn't hold up. Before saving a finding, the worker checks its citations against the source and sends invalid quotes back for repair. An exact quote can still support a bad interpretation, so we check that distinction in our evaluations too.
+調查員可以捨棄站不住腳的候選項目。在儲存發現之前，工作者會根據來源檢查其引文，並將無效引文送回修正。精確引文仍可能支持錯誤解讀，因此我們也在評估中檢查這項區別。
 
-## Checking the design on a real trace
+## 在真實追蹤上檢查設計 {#checking-the-design-on-a-real-trace}
 
-On a real coding-agent session with 350 spans, reviewers and investigators used Python to inspect validation commands. They found checks piped through `tail` that reported success even when the underlying check failed. Lens identified the problem and the later passing checks, without claiming those failures remained in the delivered code. We checked the findings' citations against the source.
+在一個包含 350 個跨度的真實程式碼代理程式工作階段中，審查者與調查員使用 Python 檢查驗證命令。他們發現某些檢查經由 `tail` 傳送，即使底層檢查失敗，也仍回報成功。Lens 辨識出這個問題，以及後來通過的檢查，但沒有聲稱這些失敗仍存在於交付的程式碼中。我們已將發現的引文與來源比對。
 
-A search in that session returned more than 544,000 characters. Tool access gives agents control over what they read, but they can still request too much. We inspect their tool use alongside the quality of their findings.
+在該工作階段中的搜尋回傳了超過 544,000 個字元。工具存取讓代理程式能掌控其閱讀內容，但他們仍可能要求過多。我們會將其工具使用情況與發現品質一併檢視。
 
-## How results reach Lens
+## 結果如何送達 Lens {#how-results-reach-lens}
 
-The worker sends progress and findings to the LiteLLM gateway, so you can watch completed reviews appear while other agents are still working. The findings link back to the original steps for inspection.
+工作者會將進度與發現傳送到 LiteLLM gateway，因此您可以在其他代理程式仍在工作時，觀察已完成的審查逐一出現。這些發現會連回原始步驟以供檢視。
 
-![The Lens worker polls LiteLLM for investigations, reads evidence and calls models through the gateway, then reports progress and findings.](./assets/06-deployment.svg)
+![Lens 工作者會輪詢 LiteLLM 以取得調查，讀取證據並透過 gateway 呼叫模型，然後回報進度與發現。](./assets/06-deployment.svg)
 
-The worker runs on your infrastructure and polls LiteLLM for jobs. It uses the gateway for evidence and calls to your chosen analysis model. ClickHouse stores traces, and Postgres stores investigation state. The [pipeline and tools](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/lens/context_pipeline.py) are open source.
+工作者會在您的基礎架構上執行，並向 LiteLLM 輪詢工作。它使用 gateway 來取得證據，並呼叫您選擇的分析模型。ClickHouse 儲存追蹤結果，而 Postgres 儲存調查狀態。[管線與工具](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/lens/context_pipeline.py) 是開源的。
 
-For our architecture experiments, we built a golden dataset with 25 investigations, 3,752 sessions, and 99,797 spans. The controlled cases include nested agents, long tool results, healthy runs, and failures followed by recovery. Our architecture found all 11 expected failure patterns: **100% recall**.
+在我們的架構實驗中，我們建立了一個黃金資料集，包含 25 項調查、3,752 個工作階段與 99,797 個跨度。這些受控案例包含巢狀代理程式、長工具結果、健康執行，以及失敗後恢復。我們的架構找出了全部 11 種預期的失敗模式：**100% 的召回率**。
 
-To try it on your agent, [connect a worker and create an investigation](/docs/proxy/lens/investigations).
+要在您的代理程式上試用，請[連接工作者並建立調查](/docs/proxy/lens/investigations)。

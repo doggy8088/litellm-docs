@@ -1,18 +1,18 @@
 ---
-title: Redis and Valkey Cache
-description: Credentials, namespaces, ACL users, cluster and sentinel topologies, and TLS for the LiteLLM proxy's Redis cache.
+title: Redis 與 Valkey 快取
+description: LiteLLM proxy 的 Redis 快取之憑證、命名空間、ACL 使用者、叢集與 sentinel 拓撲，以及 TLS。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Redis and Valkey Cache
+# Redis 與 Valkey 快取 {#redis-and-valkey-cache}
 
-Redis is LiteLLM's default cache and the only one shared across workers and replicas. Valkey, AWS
-ElastiCache and GCP Memorystore all speak the Redis protocol, so everything on this page applies to
-them too.
+Redis 是 LiteLLM 的預設快取，也是唯一可在 workers 與 replicas 之間共享的快取。Valkey、AWS
+ElastiCache 與 GCP Memorystore 都使用 Redis 協定，因此本頁內容也都適用於
+它們。
 
-## Connect the proxy to Redis
+## 將 proxy 連線至 Redis {#connect-the-proxy-to-redis}
 
 ```yaml
 model_list:
@@ -28,7 +28,7 @@ litellm_settings:
   cache: True # set cache responses to True, litellm defaults to using a redis cache
 ```
 
-Set either `REDIS_URL` or the `REDIS_HOST` in your os environment, to enable caching.
+請在您的作業系統環境中設定 `REDIS_URL` 或 `REDIS_HOST`，即可啟用快取。
 
   ```shell
   REDIS_URL = ""        # REDIS_URL='redis://username:password@hostname:port/database'
@@ -40,43 +40,42 @@ Set either `REDIS_URL` or the `REDIS_HOST` in your os environment, to enable cac
   REDIS_SSL = "True"    # REDIS_SSL='True' to enable SSL by default is False
   ```
 
-### Additional Redis kwargs
+### 額外的 Redis kwargs {#additional-redis-kwargs}
 
 :::info
-Use `REDIS_*` environment variables to configure all Redis client library parameters. This is the suggested mechanism for toggling Redis settings as it automatically maps environment variables to Redis client kwargs.
+使用 `REDIS_*` 環境變數來設定所有 Redis 用戶端程式庫參數。這是切換 Redis 設定的建議機制，因為它會自動將環境變數對應到 Redis client kwargs。
 :::
 
-You can pass in any additional redis.Redis arg, by storing the variable + value in your os
-environment, like this:
+您可以透過在作業系統環境中儲存變數加值，來傳入任何額外的 redis.Redis 參數，如下所示：
 
 ```shell
 REDIS_<redis-kwarg-name> = ""
 ```
 
-For example:
+例如：
 ```shell
 REDIS_SSL = "True"
 REDIS_SSL_CERT_REQS = "None" 
 REDIS_MAX_CONNECTIONS = "20"
 ```
 
-The variable name is `REDIS_` plus the upper-cased kwarg name, so the pool size is `REDIS_MAX_CONNECTIONS`. There is no `REDIS_CONNECTION_POOL_KWARGS` variable; setting it does nothing
+變數名稱是 `REDIS_` 加上大寫的 kwarg 名稱，因此池大小是 `REDIS_MAX_CONNECTIONS`。沒有 `REDIS_CONNECTION_POOL_KWARGS` 這個變數；設定它不會有任何作用
 
 :::warning
-**Note**: For non-string Redis parameters (like integers, booleans, or complex objects), avoid using `REDIS_*` environment variables as they may fail during Redis client initialization. Instead, use `cache_kwargs` in your router configuration for such parameters.
+**注意**：對於非字串型別的 Redis 參數（例如整數、布林值或複雜物件），請避免使用 `REDIS_*` 環境變數，因為它們可能會在 Redis 用戶端初始化期間失敗。請改為在您的 router 設定中使用 `cache_kwargs` 來設定這類參數。
 :::
 
-[**See how it's read from the environment**](https://github.com/BerriAI/litellm/blob/4d7ff1b33b9991dcf38d821266290631d9bcd2dd/litellm/_redis.py#L40)
+[**查看它如何從環境中讀取**](https://github.com/BerriAI/litellm/blob/4d7ff1b33b9991dcf38d821266290631d9bcd2dd/litellm/_redis.py#L40)
 
-Then run the proxy:
+接著執行 proxy：
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-## Namespace
+## 命名空間 {#namespace}
 
-If you want to create some folder for your keys, you can set a namespace, like this:
+如果您想為金鑰建立某個資料夾，可以設定 namespace，如下所示：
 
 ```yaml
 litellm_settings:
@@ -86,38 +85,38 @@ litellm_settings:
     namespace: "litellm.caching.caching"
 ```
 
-and keys will be stored like:
+而金鑰會像這樣儲存：
 
 ```
 litellm.caching.caching:<hash>
 ```
 
-## Restricted ACL users (Redis 7+ / Valkey)
+## 受限制的 ACL 使用者（Redis 7+ / Valkey） {#restricted-acl-users-redis-7--valkey}
 
-If your security policy requires the proxy to connect as a least-privilege user instead of `default`, set a namespace (as above) and grant that user the namespace's key pattern and channel pattern plus the commands it needs:
+如果您的安全政策要求 proxy 以最小權限使用者而非 `default` 連線，請設定 namespace（如上），並授予該使用者該 namespace 的 key pattern 與 channel pattern，以及它所需的命令：
 
 ```bash
 ACL SETUSER litellm-proxy on '>your-password' '~litellm:*' '&litellm:*' +@all
 ```
 
-replacing `litellm` with your namespace. With a namespace set, every key the proxy writes lives under `<namespace>:`, so `~<namespace>:*` covers all of them. Without a namespace the proxy's keys have assorted names, so there is no practical key pattern to scope an ACL to
+將 `litellm` 替換為您的 namespace。設定 namespace 後，proxy 寫入的每個 key 都會位於 `<namespace>:` 底下，因此 `~<namespace>:*` 便可涵蓋全部。若未設定 namespace，proxy 的 keys 會有各式各樣的名稱，因此沒有實際可行的 key pattern 可供 ACL 限定範圍
 
-The channel grant matters too: Redis 7+ and Valkey create ACL users with `resetchannels`, which denies all pub/sub channels. The proxy subscribes to channels for config sync and auth cache invalidation, and without `&<namespace>:*` (or `&litellm_proxy.*` when no namespace is set) your logs will repeat `No permissions to access a channel; reconnecting in 5s` every few seconds and config changes will only propagate on the periodic reload
+channel 授權也很重要：Redis 7+ 與 Valkey 會以 `resetchannels` 建立 ACL 使用者，這會拒絕所有 pub/sub channels。proxy 會訂閱 channels 以進行 config 同步與 auth 快取失效處理，若沒有 `&<namespace>:*`（或未設定 namespace 時的 `&litellm_proxy.*`），您的 logs 會每隔幾秒重複顯示 `No permissions to access a channel; reconnecting in 5s`，而 config 變更只會在定期重新載入時傳播
 
-Two more things to know when scoping ACLs:
+在 ACL 範圍設定上，還有另外兩件事需要知道：
 
-- The `general_settings.coordination_redis` block (for pointing coordination at a different Redis than your response cache) also accepts `namespace`, so its user can be scoped the same way
-- When coordination Redis is configured through `REDIS_HOST` / `REDIS_PORT` environment variables alone (no `cache_params` redis block), it cannot carry a namespace, so its keys are unprefixed and the connecting user needs an unscoped key grant
+- `general_settings.coordination_redis` 區塊（用來將 coordination 指向與您的 response cache 不同的 Redis）也接受 `namespace`，因此其使用者也可以用同樣方式限制範圍
+- 當 coordination Redis 僅透過 `REDIS_HOST` / `REDIS_PORT` 環境變數設定（沒有 `cache_params` redis 區塊）時，它無法帶有 namespace，因此其 keys 不會加上前綴，而連線使用者需要未限定範圍的 key 授權
 
-If you see `No permissions to access a key` in the proxy logs and spend tracking repeatedly logs `Restoring N transaction sets to in-memory queues`, the connecting user's ACL is missing one of the grants above. On proxy versions without [the namespace delimiter fix](https://github.com/BerriAI/litellm/pull/38403), internal keys whose literal names begin with the namespace string (for example `litellm_spend_update_buffer` under namespace `litellm`) were written outside the namespace and denied even with the grants in place; upgrade if the denied keys in your Redis `ACL LOG` show up unprefixed
+如果您在 proxy logs 中看到 `No permissions to access a key`，而 spend tracking 反覆記錄 `Restoring N transaction sets to in-memory queues`，表示連線使用者的 ACL 少了上述其中一項授權。在沒有 [namespace 分隔符修正](https://github.com/BerriAI/litellm/pull/38403) 的 proxy 版本上，內部 keys 若其字面名稱以 namespace 字串開頭（例如 namespace `litellm` 下的 `litellm_spend_update_buffer`）會寫到 namespace 之外，因此即使權限已設定仍會被拒絕；如果您在 Redis `ACL LOG` 中看到被拒絕的 keys 沒有前綴，請升級
 
-## Redis Cluster
+## Redis 叢集 {#redis-cluster}
 
-Point the proxy at a Redis Cluster either with `redis_startup_nodes` under `cache_params` in `config.yaml`, or with the `REDIS_CLUSTER_NODES` environment variable, a JSON list of `{"host": ..., "port": ...}` objects. Only one of the two is needed.
+可透過在 `cache_params` 下於 `config.yaml` 的 `redis_startup_nodes` 中設定，或使用 `REDIS_CLUSTER_NODES` 環境變數（一個 `{"host": ..., "port": ...}` 物件的 JSON 清單），將 proxy 指向 Redis Cluster。兩者擇一即可。
 
 <Tabs>
 
-<TabItem value="redis-cluster-config" label="Set on config.yaml">
+<TabItem value="redis-cluster-config" label="在 config.yaml 中設定">
 
 ```yaml
 model_list:
@@ -134,11 +133,11 @@ litellm_settings:
 
 </TabItem>
 
-<TabItem value="redis-env" label="Set on .env">
+<TabItem value="redis-env" label="在 .env 中設定">
 
-You can configure redis cluster in your .env by setting `REDIS_CLUSTER_NODES` in your .env
+您可以在 .env 中設定 `REDIS_CLUSTER_NODES`，以在 .env 中設定 redis cluster
 
-**Example `REDIS_CLUSTER_NODES`** value
+**範例 `REDIS_CLUSTER_NODES`** 值
 
 ```
 REDIS_CLUSTER_NODES = "[{"host": "127.0.0.1", "port": "7001"}, {"host": "127.0.0.1", "port": "7003"}, {"host": "127.0.0.1", "port": "7004"}, {"host": "127.0.0.1", "port": "7005"}, {"host": "127.0.0.1", "port": "7006"}, {"host": "127.0.0.1", "port": "7007"}]"
@@ -146,7 +145,7 @@ REDIS_CLUSTER_NODES = "[{"host": "127.0.0.1", "port": "7001"}, {"host": "127.0.0
 
 :::note
 
-Example python script for setting redis cluster nodes in .env:
+用於在 .env 中設定 redis cluster nodes 的 python 示範腳本：
 
 ```python
 # List of startup nodes
@@ -170,13 +169,13 @@ print("REDIS_CLUSTER_NODES", os.environ["REDIS_CLUSTER_NODES"])
 
 </Tabs>
 
-## Redis Sentinel
+## Redis Sentinel {#redis-sentinel}
 
-Point the proxy at a Redis Sentinel deployment either with `service_name` and `sentinel_nodes` under `cache_params` in `config.yaml`, or with the `REDIS_SENTINEL_NODES`, `REDIS_SERVICE_NAME` and `REDIS_SENTINEL_PASSWORD` environment variables.
+可透過在 `cache_params` 的 `config.yaml` 中設定 `service_name` 與 `sentinel_nodes`，或使用 `REDIS_SENTINEL_NODES`、`REDIS_SERVICE_NAME` 與 `REDIS_SENTINEL_PASSWORD` 環境變數，將 proxy 指向 Redis Sentinel deployment。
 
 <Tabs>
 
-<TabItem value="redis-sentinel-config" label="Set on config.yaml">
+<TabItem value="redis-sentinel-config" label="在 config.yaml 中設定">
 
 ```yaml
 model_list:
@@ -195,11 +194,11 @@ litellm_settings:
 
 </TabItem>
 
-<TabItem value="redis-env" label="Set on .env">
+<TabItem value="redis-env" label="在 .env 中設定">
 
-You can configure redis sentinel in your .env by setting `REDIS_SENTINEL_NODES` in your .env
+您可以在 .env 中設定 `REDIS_SENTINEL_NODES`，以在 .env 中設定 redis sentinel
 
-**Example `REDIS_SENTINEL_NODES`** value
+**範例 `REDIS_SENTINEL_NODES`** 值
 
 ```env
 REDIS_SENTINEL_NODES='[["localhost", 26379]]'
@@ -209,7 +208,7 @@ REDIS_SENTINEL_PASSWORD = "password"
 
 :::note
 
-Example python script for setting redis cluster nodes in .env:
+用於在 .env 中設定 redis cluster nodes 的 python 示範腳本：
 
 ```python
 # List of startup nodes
@@ -226,7 +225,7 @@ print("REDIS_SENTINEL_NODES", os.environ["REDIS_SENTINEL_NODES"])
 
 </Tabs>
 
-## TTL
+## TTL {#ttl}
 
 ```yaml
 litellm_settings:
@@ -238,33 +237,33 @@ litellm_settings:
     # default_in_redis_ttl: Optional[float], default is None. time in seconds.
 ```
 
-## SSL
+## SSL {#ssl}
 
-just set `REDIS_SSL="True"` in your .env, and LiteLLM will pick this up.
+只要在您的 .env 中設定 `REDIS_SSL="True"`，LiteLLM 就會讀取它。
 
 ```env
 REDIS_SSL="True"
 ```
 
-For quick testing, you can also use REDIS_URL, eg.:
+若要快速測試，您也可以使用 REDIS_URL，例如：
 
 ```
 REDIS_URL="rediss://.."
 ```
 
-but we **don't** recommend using REDIS_URL in prod. We've noticed a performance difference between
-using it vs. redis_host, port, etc.
+但我們**不**建議在正式環境中使用 REDIS_URL。我們注意到
+相較於使用 redis_host、port 等設定，前者與後者之間有效能差異。
 
-## IAM authentication
+## IAM 驗證 {#iam-authentication}
 
-Both major managed Redis offerings can authenticate the proxy with a short-lived signed token
-instead of a password, so no Redis password ever exists in your config or secret store. See
-[AWS ElastiCache IAM Authentication](./elasticache_iam.md) for ElastiCache and Valkey, and
-[GCP Memorystore IAM Authentication](./gcp_memorystore_iam.md) for Memorystore.
+兩大主要受管 Redis 產品都能以短效期的簽署 token 來驗證 proxy，
+而不是使用密碼，因此在您的設定或 secrets 儲存庫中不會存在任何 Redis 密碼。請參閱
+[AW S ElastiCache IAM Authentication](./elasticache_iam.md) 了解 ElastiCache 與 Valkey，並參閱
+[GCP Memorystore IAM Authentication](./gcp_memorystore_iam.md) 了解 Memorystore。
 
-## Redis max_connections
+## Redis max_connections {#redis-max_connections}
 
-You can set the `max_connections` parameter in your `cache_params` for Redis. This is passed directly to the Redis client and controls the maximum number of simultaneous connections in the pool. If you see errors like `No connection available`, try increasing this value:
+您可以在 Redis 的 `cache_params` 中設定 `max_connections` 參數。這會直接傳遞給 Redis client，並控制池中同時連線數的上限。如果您看到像 `No connection available` 這樣的錯誤，請嘗試提高此值：
 
 ```yaml
 litellm_settings:
@@ -274,7 +273,7 @@ litellm_settings:
     max_connections: 100
 ```
 
-`cache_params` only sizes the response cache client. The proxy can hold two more Redis clients, each with its own pool: the coordination Redis from `general_settings.coordination_redis` (spend tracking, cross-pod rate limits, pod locks) and the router Redis from `router_settings.redis_host` / `redis_port` / `redis_password`. Set `max_connections` inside those blocks to size them; `coordination_redis` forwards any extra key to the Redis client, and `router_settings.cache_kwargs` does the same for the router client:
+`cache_params` 只會調整 response cache client 的大小。proxy 還可以持有另外兩個 Redis client，每個都有自己的 pool：來自 `general_settings.coordination_redis` 的 coordination Redis（spend tracking、跨 pod rate limits、pod locks）以及來自 `router_settings.redis_host` / `redis_port` / `redis_password` 的 router Redis。請在那些區塊內設定 `max_connections` 來調整它們的大小；`coordination_redis` 會將任何額外 key 傳遞給 Redis client，而 `router_settings.cache_kwargs` 也會對 router client 做同樣的事：
 
 ```yaml
 general_settings:
@@ -290,11 +289,11 @@ router_settings:
     max_connections: 100
 ```
 
-With response caching disabled and no `coordination_redis` block, the coordination client is built from the `REDIS_*` environment variables alone, so `REDIS_MAX_CONNECTIONS` is the way to size its pool
+若關閉 response caching 且沒有 `coordination_redis` 區塊，coordination client 會僅根據 `REDIS_*` 環境變數建立，因此 `REDIS_MAX_CONNECTIONS` 是調整其 pool 的方式
 
-## Redis socket_timeout
+## Redis socket_timeout {#redis-socket_timeout}
 
-The proxy cache client waits at most `socket_timeout` seconds for each Redis command before it raises a timeout. The default is **5.0 s**, set by `RedisCache.__init__` in `litellm/caching/redis_cache.py`. Set it with `cache_params.socket_timeout`; the value is passed to the Redis client as is and applies to every topology (standalone, `REDIS_URL`, cluster and Sentinel):
+proxy cache client 在每個 Redis 命令上最多等待 `socket_timeout` 秒，超過後就會引發逾時。預設為 **5.0 s**，由 `RedisCache.__init__` 在 `litellm/caching/redis_cache.py` 中設定。請用 `cache_params.socket_timeout` 設定；其值會原樣傳遞給 Redis client，並適用於所有拓撲（單機、`REDIS_URL`、叢集與 Sentinel）：
 
 ```yaml
 litellm_settings:
@@ -304,7 +303,7 @@ litellm_settings:
     socket_timeout: 1.0 # seconds per Redis command, default 5.0
 ```
 
-The coordination and router clients have their own 5.0 s default and read the same key from their own blocks. A `Timeout reading from <host>:6379` logged by spend tracking or rate limiting under load comes from the coordination client, so raise `socket_timeout` there rather than in `cache_params`:
+coordination 與 router clients 各自有自己的 5.0 s 預設值，並從各自的區塊讀取相同的 key。spend tracking 或 rate limiting 在負載下記錄到的 `Timeout reading from <host>:6379` 來自 coordination client，因此應在那裡提高 `socket_timeout`，而不是在 `cache_params` 中：
 
 ```yaml
 general_settings:
@@ -320,21 +319,21 @@ router_settings:
     socket_timeout: 10.0
 ```
 
-The `REDIS_SOCKET_TIMEOUT` environment variable (default `0.1`) does not change the cache client's timeout. LiteLLM only applies it to Redis clients built without an explicit `socket_timeout`, which today is the Sentinel connection path in `litellm/_redis.py`. The proxy cache client always passes its own `socket_timeout` (the 5.0 s default or your `cache_params` value), and a caller kwarg outranks the `REDIS_*` environment mapping, so with `REDIS_SOCKET_TIMEOUT` set the cache client still runs at 5.0 s. The same applies to the coordination and router clients, which are built the same way. That holds when the cache client connects through Sentinel too, since its kwarg is already present when the Sentinel default would apply. The one exception is `socket_timeout: null` in `cache_params`, which drops the kwarg and lets `REDIS_SOCKET_TIMEOUT` through
+`REDIS_SOCKET_TIMEOUT` 環境變數（預設 `0.1`）不會變更快取用戶端的逾時設定。LiteLLM 只會將它套用到未明確設定 `socket_timeout` 的 Redis 用戶端，而目前這只會出現在 `litellm/_redis.py` 的 Sentinel 連線路徑中。proxy 的快取用戶端一律會傳入自己的 `socket_timeout`（5.0 秒預設值或您的 `cache_params` 值），而呼叫端的 kwarg 會優先於 `REDIS_*` 環境對應，因此在設定 `REDIS_SOCKET_TIMEOUT` 時，快取用戶端仍會以 5.0 秒執行。協調與路由用戶端也是以相同方式建立，因此也適用相同情況。當快取用戶端也透過 Sentinel 連線時，情況亦然，因為在 Sentinel 預設值原本會套用之前，它的 kwarg 就已經存在。唯一的例外是 `socket_timeout: null` 中的 `cache_params`，它會移除該 kwarg，並讓 `REDIS_SOCKET_TIMEOUT` 通過
 
-## Virtual Key Authentication Cache (Redis)
+## 虛擬金鑰驗證快取（Redis） {#virtual-key-authentication-cache-redis}
 
-When the proxy verifies a **virtual key** (customer API key), results are cached so the database is not queried on every request. By default that cache lives **only in each worker process**, so after a deploy, new pods or extra Uvicorn workers each warm their own cache and can trigger more DB reads until warmed.
+當 proxy 驗證 **virtual key**（客戶 API 金鑰）時，結果會被快取，因此不會在每次請求時都查詢資料庫。預設情況下，該快取**只存在於每個 worker process** 中，因此在部署後，新 pod 或額外的 Uvicorn worker 會各自暖機自己的快取，在快取暖機前可能觸發更多 DB 讀取。
 
-Set `litellm_settings.enable_redis_auth_cache: true` to mirror virtual-key auth data into **the same Redis instance** configured under `litellm_settings.cache` / `cache_params`. Workers and replicas then share cached auth entries across the cluster.
+設定 `litellm_settings.enable_redis_auth_cache: true`，即可將 virtual key 驗證資料鏡像到與 `litellm_settings.cache` / `cache_params` 下所設定的**相同 Redis 實例**。如此一來，workers 與 replicas 就能在整個叢集中共用已快取的驗證項目。
 
-**Requirements**
+**需求**
 
-- `litellm_settings.cache` must be **`true`** (Redis for the proxy is initialized during cache setup). See [All settings](./config_settings).
-- `cache_params.type` must be **`redis`** (or Redis Cluster, per your cache config); the auth cache attaches to that Redis client. See [supported `cache_params`](./caching_settings.md#supported-cache_params-on-proxy-configyaml).
-- Optionally set **`general_settings.user_api_key_cache_ttl`** (seconds): TTL applies to both the in-memory and Redis tiers when Redis auth caching is enabled, so stale keys expire consistently.
+- `litellm_settings.cache` 必須是 **`true`**（proxy 的 Redis 會在快取設定期間初始化）。請參閱 [所有設定](./config_settings)。
+- `cache_params.type` 必須是 **`redis`**（或依您的快取設定使用 Redis Cluster）；驗證快取會附加到該 Redis 用戶端。請參閱 [支援的 `cache_params`](./caching_settings.md#supported-cache_params-on-proxy-configyaml)。
+- 可選擇設定 **`general_settings.user_api_key_cache_ttl`**（秒）：啟用 Redis 驗證快取時，TTL 會同時套用到記憶體層與 Redis 層，因此過期的金鑰會一致地逾時。
 
-Example:
+範例：
 
 ```yaml
 litellm_settings:
@@ -351,28 +350,28 @@ general_settings:
 
 :::tip
 
-Startup logs distinguish the two modes: with `enable_redis_auth_cache: true`, you should see a message that virtual-key lookups are shared across workers.
+啟動記錄會區分這兩種模式：在設定 `enable_redis_auth_cache: true` 時，您應該會看到一則訊息，指出 virtual key 查詢會在 workers 之間共用。
 
 :::
 
-### Cache TTL for the key object
+### 金鑰物件的快取 TTL {#cache-ttl-for-the-key-object}
 
-Configure how long the in-memory cache stores the key object (prevents db requests)
+設定記憶體快取儲存金鑰物件的時間長度（可避免 DB 請求）
 
 ```yaml
 general_settings:
   user_api_key_cache_ttl: <your-number> #time in seconds
 ```
 
-By default this value is set to 60s.
+預設此值設為 60 秒。
 
-### Cache capacity for the key object
+### 金鑰物件的快取容量 {#cache-capacity-for-the-key-object}
 
-The in-memory tier holds 200 entries per worker by default, shared by virtual keys, teams, users, end users and memberships. With more active keys than that, entries get evicted between requests and every auth lookup falls through to the DB. Raise the cap to fit your key count:
+記憶體層預設每個 worker 可保留 200 個項目，由 virtual keys、teams、users、end users 和 memberships 共用。當活躍金鑰數量超過此數時，項目會在請求之間被逐出，而每次驗證查詢都會落回 DB。請提高上限以符合您的金鑰數量：
 
 ```yaml
 general_settings:
   user_api_key_cache_max_size: 5000 # entries per worker, must be a positive integer
 ```
 
-The same knob is editable at runtime from the Admin UI under Settings > Router Settings > General, or via `POST /config/field/update`; the running cache is resized on the next config reload without a restart. A value set in `config.yaml` takes precedence over the DB value
+同一個設定旋鈕也可在執行時透過 Admin UI 的 Settings > Router Settings > General 編輯，或透過 `POST /config/field/update`；執行中的快取會在下一次設定重新載入時重新調整大小，無需重新啟動。於 `config.yaml` 中設定的值會優先於 DB 值

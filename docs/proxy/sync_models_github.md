@@ -1,19 +1,19 @@
-# Auto Sync New Models (Day-0 Launches)
+# 新模型自動同步（Day-0 上線） {#auto-sync-new-models-day-0-launches}
 
-Automatically keep your model pricing and context window data up to date without restarting your service. **This allows you to add day-0 support for new models without restarting your service.**
+在不重新啟動您的服務的情況下，自動讓您的模型價格與 context window 資料保持最新。**這可讓您在不重新啟動您的服務的情況下，為新模型加入 day-0 支援。**
 
-## Overview
+## 總覽 {#overview}
 
-When providers like OpenAI or Anthropic release new models (e.g., GPT-5, Claude 4), you typically need to restart your LiteLLM service to get the latest pricing and context window data. 
+當 OpenAI 或 Anthropic 等提供者釋出新模型（例如 GPT-5、Claude 4）時，您通常需要重新啟動 LiteLLM 服務，才能取得最新的價格與 context window 資料。
 
-With auto-sync, LiteLLM automatically pulls the latest model data from GitHub's [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) without requiring a restart. This means:
+透過自動同步，LiteLLM 會自動從 GitHub 的 [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 取得最新模型資料，而不需要重新啟動。這表示：
 
-- **Zero downtime** when new models are released
-- **Always accurate pricing** for cost tracking and budgets
-- **Automatic updates** - set it once and forget it
+- **零停機時間**：當新模型釋出時
+- **始終準確的價格**：用於成本追蹤與預算
+- **自動更新** - 設定一次即可
 
-:::info[Startup behavior (no configuration needed)]
-The endpoints on this page only control **re-syncing while the proxy is running**. Independently of them, every LiteLLM process already fetches the remote `model_prices_and_context_window.json` from GitHub `main` (or `LITELLM_MODEL_COST_MAP_URL` if set) **once at startup**, and falls back to the copy bundled with the package (`litellm/model_prices_and_context_window_backup.json`) only if that fetch fails or fails validation. If you ship your own copy of the pricing file in your image and want the proxy to use it instead of the remote file, you must set `LITELLM_LOCAL_MODEL_COST_MAP=True`. See [Custom model cost map](./custom_model_cost_map) for details and `GET /model/cost_map/source` to check which copy is loaded.
+:::info[啟動行為（無需設定）]
+本頁上的端點只控制代理程式執行時的**重新同步**。與這些端點無關，每個 LiteLLM 程序在啟動時都已經會從 GitHub `main`（或若已設定則為 `LITELLM_MODEL_COST_MAP_URL`）**抓取一次**遠端 `model_prices_and_context_window.json`，只有在該抓取失敗或驗證失敗時，才會回退到隨套件附帶的副本（`litellm/model_prices_and_context_window_backup.json`）。如果您在映像檔中放入自己的價格檔副本，並希望代理程式使用它而不是遠端檔案，則必須設定 `LITELLM_LOCAL_MODEL_COST_MAP=True`。請參閱[自訂模型成本對映](./custom_model_cost_map)了解詳細資訊，並使用 `GET /model/cost_map/source` 檢查載入的是哪個副本。
 :::
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/ba41acc1882d41b284bbddbb0e9c27ce?sid=bdae351e-2026-4e39-932b-fcb185ff612c" frameBorder="0" allowFullScreen></iframe>
@@ -21,39 +21,39 @@ The endpoints on this page only control **re-syncing while the proxy is running*
 <br/>
 <br/>
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-**Manual sync:**
+**手動同步：**
 ```bash
 curl -X POST "https://your-proxy-url/reload/model_cost_map" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
-**Automatic sync every 6 hours:**
+**每 6 小時自動同步：**
 ```bash
 curl -X POST "https://your-proxy-url/schedule/model_cost_map_reload?hours=6" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
-## API Endpoints
+## API 端點 {#api-endpoints}
 
-| Endpoint | Method | Description |
+| Endpoint | 方法 | 說明 |
 |----------|--------|-------------|
-| `/reload/model_cost_map` | POST | Manual sync |
-| `/schedule/model_cost_map_reload?hours={hours}` | POST | Schedule periodic sync |
-| `/schedule/model_cost_map_reload` | DELETE | Cancel scheduled sync |
-| `/schedule/model_cost_map_reload/status` | GET | Check sync status |
-| `/model/cost_map/source` | GET | Where the loaded map came from and which revision it is |
+| `/reload/model_cost_map` | POST | 手動同步 |
+| `/schedule/model_cost_map_reload?hours={hours}` | POST | 排程定期同步 |
+| `/schedule/model_cost_map_reload` | DELETE | 取消已排程的同步 |
+| `/schedule/model_cost_map_reload/status` | GET | 檢查同步狀態 |
+| `/model/cost_map/source` | GET | 已載入的對映來自何處，以及它是哪個修訂版本 |
 
-**Authentication:** Requires admin role or master key
+**驗證：** 需要管理員角色或 master key
 
-If a reload succeeds but a newly added model still does not show up, work through [Model missing after Reload Price Data](../troubleshoot/missing_model) before changing anything on the deployment.
+如果重新載入成功，但新加入的模型仍然沒有顯示出來，請先依照[重新載入價格資料後模型遺失](../troubleshoot/missing_model)處理，再對部署做任何變更。
 
-## Checking which revision is loaded
+## 檢查目前載入的是哪個修訂版本 {#checking-which-revision-is-loaded}
 
-Every time the proxy loads the pricing map it records the git blob id of the bytes it parsed, the same id `git rev-parse <commit>:model_prices_and_context_window.json` prints for that file in a litellm checkout. It reports that id as `source_revision`, together with the `etag` GitHub served for the fetch and `loaded_at`, on `GET /model/cost_map/source`, `POST /reload/model_cost_map`, and `GET /schedule/model_cost_map_reload/status`. The Admin UI shows the same three values on the Price Data Reload card under Models and Endpoints
+每次代理程式載入價格對映時，都會記錄其解析的位元組之 git blob id，也就是在 litellm checkout 中對該檔案執行 `git rev-parse <commit>:model_prices_and_context_window.json` 時印出的相同 id。它會將該 id 回報為 `source_revision`，以及 GitHub 在抓取時提供的 `etag` 和 `loaded_at`，顯示在 `GET /model/cost_map/source`、`POST /reload/model_cost_map` 和 `GET /schedule/model_cost_map_reload/status` 上。儀表板會在 Models and Endpoints 下的 Price Data Reload 卡片中顯示相同的三個值
 
 ```bash
 curl -s "https://your-proxy-url/model/cost_map/source" \
@@ -73,9 +73,9 @@ curl -s "https://your-proxy-url/model/cost_map/source" \
 }
 ```
 
-`source_revision` is the one-line answer to "which pricing map is my proxy on". To check it against `main`, run `git rev-parse origin/main:model_prices_and_context_window.json` in a litellm checkout: a match means the proxy is on the current file. To see when `main` shipped that exact file, run `git log --first-parent --find-object=<source_revision> --format='%h %cs %s' origin/main -- model_prices_and_context_window.json`: the older line is the merge that shipped it and the newer line, when there is one, the merge that replaced it. `--first-parent` matters because most revisions reach `main` through merges from `litellm_internal_staging`, and plain `git log` leaves those merges out. Without a checkout, `gh api 'repos/BerriAI/litellm/contents/model_prices_and_context_window.json?ref=main' --jq .sha` prints the id `main` serves right now. Two proxies reporting the same `source_revision` are serving byte-identical maps, whatever URL each fetched from. `etag` is `null` when the map came from the bundled copy (`LITELLM_LOCAL_MODEL_COST_MAP=True` or a failed fetch), and `source_revision` is then the bundled file's id. Nothing is stamped into the JSON itself, so the file has no `_metadata` entry and no `generated_at`
+`source_revision` 是對「我的代理程式目前使用哪個價格對映」這個問題的一行答案。若要將它與 `main` 比對，請在 litellm checkout 中執行 `git rev-parse origin/main:model_prices_and_context_window.json`：若相符，表示代理程式正在使用目前的檔案。若要查看 `main` 何時釋出該確切檔案，請執行 `git log --first-parent --find-object=<source_revision> --format='%h %cs %s' origin/main -- model_prices_and_context_window.json`：較舊的一行是釋出它的合併，較新的一行（如果有的話）則是取代它的合併。`--first-parent` 很重要，因為大多數修訂版本是透過從 `litellm_internal_staging` 合併而來的方式進入 `main`，而單純的 `git log` 不會保留那些合併。若沒有 checkout，`gh api 'repos/BerriAI/litellm/contents/model_prices_and_context_window.json?ref=main' --jq .sha` 會印出它目前提供的 id `main`。兩個代理程式若回報相同的 `source_revision`，就表示它們提供的是位元組完全相同的對映，不論各自是從哪個 URL 抓取的。當對映來自隨附副本（`LITELLM_LOCAL_MODEL_COST_MAP=True` 或抓取失敗）時，`etag` 會是 `null`，而 `source_revision` 則是該隨附檔案的 id。JSON 本身不會被寫入任何標記，因此該檔案沒有 `_metadata` 項目，也沒有 `generated_at`
 
-## Python Example
+## Python 範例 {#python-example}
 
 ```python
 import requests
@@ -92,16 +92,16 @@ result = sync_models("https://your-proxy-url", "your-admin-token")
 print(result['message'])
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-Both variables apply to the startup fetch and to every reload triggered by the endpoints above.
+這兩個變數同時適用於啟動時的抓取，以及上述端點所觸發的每次重新載入。
 
-**Custom model cost map URL** (default shown; the remote fetch happens even when this is unset):
+**自訂模型成本對映 URL**（下方顯示預設值；即使未設定，遠端抓取仍會發生）：
 ```bash
 export LITELLM_MODEL_COST_MAP_URL="https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json"
 ```
 
-**Use local model cost map only** (disables the remote fetch at startup and on reload; the bundled backup file is used):
+**僅使用本機模型成本對映**（停用啟動時與重新載入時的遠端抓取；會使用隨附的備份檔案）：
 ```bash
 export LITELLM_LOCAL_MODEL_COST_MAP=True
 ```

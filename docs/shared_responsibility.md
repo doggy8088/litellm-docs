@@ -1,58 +1,58 @@
 ---
 title: Shared Responsibility Model
-description: What LiteLLM is responsible for and what you are responsible for when you self-host the gateway, and how to tell which side an issue falls on.
+description: 當您自行代管閘道時，LiteLLM 負責什麼、您負責什麼，以及如何判斷問題屬於哪一方。
 ---
 
-# Shared Responsibility Model
+# Shared Responsibility Model {#shared-responsibility-model}
 
-When you self-host LiteLLM, you run the software and we build it. That split decides who debugs what. Here, we describe which problems are our responsibility and which ones are yours, so that a report reaches the right team.
+當您自行代管 LiteLLM 時，您負責執行軟體，而我們負責建置軟體。這個分工決定由誰來除錯什麼。在此，我們說明哪些問題是我們的責任、哪些是您的責任，好讓報告能送到正確的團隊。
 
-In a nutshell, we own the behavior of the product as documented on this site, and you own the environment it runs in + any code you add to it.
+簡單來說，我們負責本網站文件中所描述的產品行為，而您負責其執行所在的環境，以及您新增到其中的任何程式碼。
 
-| Area                                                                                                                      | Owner   |
+| 領域                                                                                                                      | 負責方  |
 | ------------------------------------------------------------------------------------------------------------------------- | ------- |
-| Correctness of documented features and endpoints                                                                          | LiteLLM |
-| Memory leaks, hangs, and stability problems in the documented feature set                                                 | LiteLLM |
-| Provider translation, cost tracking, and routing behavior as documented                                                   | LiteLLM |
-| Security patches and the official Docker image and Helm chart                                                             | LiteLLM |
-| Uptime of your instance and the infrastructure under it                                                                   | You     |
-| Custom callbacks, custom guardrails, custom auth, and other code you inject                                               | You     |
-| Infra issues due to deploying in a way that differs from our recommended path (your own Dockerfile, chart, or base image) | You     |
-| Bugs introduced by your own patches on a fork not present in upstream                                                     | You     |
-| Your provider accounts, quotas, and provider-side outages                                                                 | You     |
+| 文件化功能與端點的正確性                                                                                                  | LiteLLM |
+| 文件化功能集中的記憶體洩漏、卡住與穩定性問題                                                                              | LiteLLM |
+| 文件化的提供者轉譯、成本追蹤與路由行為                                                                                    | LiteLLM |
+| 安全修補程式，以及官方 Docker 映像與 Helm chart                                                                            | LiteLLM |
+| 您的執行個體可用性與其底層基礎架構                                                                                        | 您      |
+| 自訂回呼、自訂防護欄、自訂驗證，以及您注入的其他程式碼                                                                    | 您      |
+| 因以不同於我們建議路徑的方式部署所造成的基礎架構問題（您自己的 Dockerfile、chart 或 base image）                        | 您      |
+| 在 fork 上由您自己的修補所引入、且上游不存在的錯誤                                                                          | 您      |
+| 您的提供者帳戶、配額，以及提供者端中斷                                                                                     | 您      |
 
-## What we are responsible for
+## 我們負責什麼 {#what-we-are-responsible-for}
 
-We are responsible for the product working. Every feature documented on this site should behave as documented. If it does not, that is a bug for us and you should [open an issue](https://github.com/BerriAI/litellm/issues) or raise it in your enterprise support channel.
+我們負責產品能正常運作。本站文件中所記載的每個功能都應如文件所述般運作。若不是如此，那就是我們的錯誤，您應該 [提出 issue](https://github.com/BerriAI/litellm/issues) 或在您的企業支援管道中回報。
 
-That responsibility covers stability, not only correctness. Memory growth, file descriptor or connection leaks, deadlocks, hangs, and throughput regressions within the documented feature set are our responsibility to diagnose and fix. This covers the interfaces you interact with: the public HTTP surface is governed by the [API Stability Policy](./api_stability_policy.md), version numbering and what a patch or minor bump means is documented in [Release Cycle](./proxy/release_cycle.md), and beta features moving behind Enterprise by the [Migration Policy](./migration_policy.md). We maintain the official Docker image, Helm chart, and Terraform modules described in [Production Deployment](./proxy/deploy.md), and we ship security patches for the [supported version window](./enterprise.md#version-support).
+這項責任涵蓋的是穩定性，不只是正確性。文件化功能集中的記憶體成長、檔案描述元或連線洩漏、死結、卡住，以及吞吐量退化，都屬於我們負責診斷與修正的範圍。這也涵蓋您所互動的介面：公開 HTTP 表面受 [API 穩定性政策](./api_stability_policy.md) 規範，版本編號以及 patch 或 minor 版本升級代表什麼，已記載於 [發布週期](./proxy/release_cycle.md)，而依 [遷移政策](./migration_policy.md) 移至 Enterprise 之後的 beta 功能。我們維護 [正式版部署](./proxy/deploy.md) 中所描述的官方 Docker 映像、Helm chart 與 Terraform 模組，並為 [支援版本範圍](./enterprise.md#version-support) 提供安全修補程式。
 
-If you are on an end-of-life line, we recommend upgrading as a first step to ensure you have the latest bug fixes and security patches applied.
+如果您使用的是已終止支援的版本線，我們建議先升級，確保已套用最新的錯誤修正與安全修補程式。
 
-## What you are responsible for
+## 您負責什麼 {#what-you-are-responsible-for}
 
-You are responsible for keeping your instance up, apart from stability defects in the application itself. That means capacity and sizing, restarts and rollouts, health checking and autoscaling, and the health of Postgres, Redis, your network, and your orchestrator. [Production Best Practices](./proxy/prod.md), [Database Sizing](./proxy/db_sizing.md), and [Redis Sizing](./proxy/redis_sizing.md) cover the settings and sizing we recommend. The [health endpoints](./proxy/health.md) are there for your probes.
+除應用程式本身的穩定性缺陷外，您負責維持您的執行個體正常運作。這表示容量與規模調整、重新啟動與部署、健康檢查與自動擴縮，以及 Postgres、Redis、您的網路與您的調度器的健康狀態。[正式版部署最佳實務](./proxy/prod.md)、[資料庫規模調整](./proxy/db_sizing.md) 與 [Redis 規模調整](./proxy/redis_sizing.md) 說明了我們建議的設定與規模。[健康狀態端點](./proxy/health.md) 則是供您的探測使用。
 
-You are also responsible for any custom code you introduce to the gateway. [Custom callbacks](./observability/custom_callback.md), [custom guardrails](./proxy/guardrails/custom_guardrail.md), [custom auth](./proxy/custom_auth.md), [custom SSO](./proxy/custom_sso.md), [hooks](./proxy/call_hooks.md), and [plugins](./proxy/plugins.md) execute in the proxy process, so a blocking call, an unbounded cache, or a leaked client in that code can show up as proxy latency, memory growth, or a hang even when the proxy is behaving correctly. The logic of your handler, and its performance and memory behavior, is under your ownership. The same applies to anything you wrap around the gateway, including sidecars, proxies in front of it, and added middleware that mutates requests.
+您也要負責您引入閘道的任何自訂程式碼。[自訂回呼](./observability/custom_callback.md)、[自訂防護欄](./proxy/guardrails/custom_guardrail.md)、[自訂驗證](./proxy/custom_auth.md)、[自訂 SSO](./proxy/custom_sso.md)、[hooks](./proxy/call_hooks.md) 與 [plugins](./proxy/plugins.md) 都是在 proxy 程序中執行，因此該程式碼中的阻塞呼叫、無上限快取或洩漏的 client，即使 proxy 本身行為正確，也可能表現為 proxy 延遲、記憶體成長或卡住。您的 handler 邏輯，以及其效能與記憶體行為，皆由您負責。同樣地，任何包在閘道外層的東西也適用，包括 sidecar、位於前方的 proxy，以及會修改請求的新增 middleware。
 
-Running a fork is the same way. A bug that also reproduces on unmodified upstream at the same version is firmly within our responsibility to debug and fix. A bug your patches introduced is under your ownership, and so is keeping those patches working as you rebase onto newer releases. If you have patched around something because upstream lacked it, create an issue or send the patch as a pull request, and if it is a general improvement, we are happy to add it upstream.
+使用 fork 也是同樣道理。若某個錯誤在未修改的上游相同版本中也可重現，那就明確屬於我們的除錯與修正責任。若是您的修補所引入的錯誤，則由您負責；當您 rebase 到新版時，維持那些修補可正常運作也同樣由您負責。如果您因為上游缺少某功能而先行自行修補，請建立 issue 或將修補以 pull request 送出；若那是通用的改進，我們很樂意將其加入上游。
 
-Also, if your deployment strategy is not following our recommended path, that path is yours to maintain. Plenty of teams build their own image, write their own chart, change the base image or Python version, pin their own dependency set, or run their own process manager and worker counts. That is supported use of the software. It also means a broken build, a missing system library, a mismatched dependency, an OOMKill from a container memory limit, a misconfigured worker count, etc. is something you own. See:
+另外，如果您的部署策略不是依照我們建議的路徑，那條路徑也由您自行維護。許多團隊會自行建置映像、撰寫自己的 chart、變更 base image 或 Python 版本、鎖定自己的相依套件集合，或自行執行 process manager 與 worker 數量。這屬於對軟體的支援性使用。但這也表示，建置失敗、缺少系統函式庫、相依套件版本不匹配、因容器記憶體限制而被 OOMKill、worker 數量設定錯誤等，都是您要負責的。請參閱：
 
-- [Production Deployment](./proxy/deploy.md)
-- [Docker Quick Start](./proxy/docker_quick_start.md)
-- [Server Tuning](./proxy/server_tuning.md)
+- [正式版部署](./proxy/deploy.md)
+- [Docker 快速開始](./proxy/docker_quick_start.md)
+- [伺服器調校](./proxy/server_tuning.md)
 
-## Filing an issue with us
+## 向我們提交 issue {#filing-an-issue-with-us}
 
-Please include:
+請包含：
 
-1. The LiteLLM version
-2. How you deployed it
-3. A redacted config
-4. The exact request
-5. The full error or traceback with [detailed debug logging](./proxy/debugging.md) enabled
-6. For stability reports, we recommend including the memory or latency curve over time, the request rate, and the worker and container limits
-7. For memory and latency issues, we recommend including [Pyroscope profiling](./proxy/pyroscope_profiling.md) results
+1. LiteLLM 版本
+2. 您的部署方式
+3. 已遮蔽的設定
+4. 精確的請求
+5. 啟用 [詳細除錯記錄](./proxy/debugging.md) 後的完整錯誤或 traceback
+6. 對於穩定性報告，我們建議一併提供隨時間變化的記憶體或延遲曲線、請求速率，以及 worker 與容器限制
+7. 對於記憶體與延遲問題，我們建議一併提供 [Pyroscope profiling](./proxy/pyroscope_profiling.md) 結果
 
-Open bugs and feature requests as [GitHub issues](https://github.com/BerriAI/litellm/issues). Enterprise customers can also use their dedicated support channel. See [Professional Support](./enterprise.md#professional-support) for hours and SLA options.
+請將錯誤與功能請求以 [GitHub issues](https://github.com/BerriAI/litellm/issues) 提出。企業客戶也可以使用其專屬支援管道。關於服務時段與 SLA 選項，請參閱 [專業支援](./enterprise.md#professional-support)。

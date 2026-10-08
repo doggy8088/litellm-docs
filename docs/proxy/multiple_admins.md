@@ -2,43 +2,41 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-
-# ✨ Audit Logs
+# ✨ 稽核記錄 {#-audit-logs}
 
 <Image 
   img={require('../../img/release_notes/ui_audit_log.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
+身為 Proxy 管理員，您可以檢查某個實體（金鑰、團隊、使用者、模型）是否以及何時被建立、更新、刪除或重新產生，以及是誰執行了該動作。這對於稽核與法規遵循很有用。
 
-As a Proxy Admin, you can check if and when a entity (key, team, user, model) was created, updated, deleted, or regenerated, along with who performed the action. This is useful for auditing and compliance.
+LiteLLM 會追蹤以下實體與動作的變更：
 
-LiteLLM tracks changes to the following entities and actions:
-
-- **Entities:** Keys, Teams, Users, Models
-- **Actions:** Create, Update, Delete, Regenerate
+- **實體：** 金鑰、團隊、使用者、模型
+- **動作：** 建立、更新、刪除、重新產生
 
 <EnterpriseFeature />
 
-## Usage
+## 用法 {#usage}
 
-### 1. Switch on audit Logs 
-With an enterprise license, audit logs are on by default, so there is nothing to configure. On other plans, or if you want to be explicit, add `store_audit_logs` to your litellm config.yaml and then start the proxy
+### 1. 開啟稽核記錄 {#1-switch-on-audit-logs}
+使用企業授權時，稽核記錄預設為開啟，因此無須設定。其他方案，或如果您想明確指定，請將 `store_audit_logs` 加入您的 litellm config.yaml，然後啟動 proxy
 ```shell
 litellm_settings:
   store_audit_logs: true
 ```
 
-To turn audit logs off on an enterprise license, set it explicitly to `false`, which takes precedence over the default. `LITELLM_STORE_AUDIT_LOGS` works the same way as the config setting and is read when the config leaves `store_audit_logs` unset
+若要在企業授權上關閉稽核記錄，請將其明確設定為 `false`，這會優先於預設值。`LITELLM_STORE_AUDIT_LOGS` 的作用方式與設定值相同，且會在 config 保持 `store_audit_logs` 未設定時讀取
 
 ```shell
 litellm_settings:
   store_audit_logs: false
 ```
 
-### 2. Make a change to an entity
+### 2. 對某個實體進行變更 {#2-make-a-change-to-an-entity}
 
-In this example, we will delete a key.
+在此範例中，我們將刪除一個金鑰。
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/delete' \
@@ -49,23 +47,22 @@ curl -X POST 'http://0.0.0.0:4000/key/delete' \
     }'
 ```
 
-### 3. View the audit log on LiteLLM UI
+### 3. 在 LiteLLM UI 上檢視稽核記錄 {#3-view-the-audit-log-on-litellm-ui}
 
-On the LiteLLM UI, navigate to Logs -> Audit Logs. You should see the audit log for the key deletion.
+在 LiteLLM UI 中，前往 Logs -> Audit Logs。您應該會看到該金鑰刪除的稽核記錄。
 
 <Image 
   img={require('../../img/key_delete.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
+## 將稽核記錄匯出到外部儲存體 {#export-audit-logs-to-external-storage}
 
-## Export Audit Logs to External Storage
+除了將稽核記錄儲存在資料庫中之外，您也可以將其匯出到外部儲存後端（例如 S3）。記錄會批次處理並非同步上傳，因此不會阻塞您的 proxy 請求。
 
-You can export audit logs to an external storage backend (e.g. S3) in addition to storing them in the database. Logs are batched and uploaded asynchronously, so they do not block your proxy requests.
+### S3 範例 {#s3-example}
 
-### S3 Example
-
-Add `audit_log_callbacks` and `s3_callback_params` to your `litellm_settings`:
+將 `audit_log_callbacks` 和 `s3_callback_params` 加到您的 `litellm_settings`：
 
 ```yaml
 litellm_settings:
@@ -79,7 +76,7 @@ litellm_settings:
     s3_path: litellm-audit                   # [OPTIONAL] prefix path in the bucket
 ```
 
-Audit logs are written as JSON files to:
+稽核記錄會以 JSON 檔案寫入至：
 
 ```
 s3://<bucket>/audit_logs/<YYYY-MM-DD>/<HH-MM-SS>_<audit-log-id>.json
@@ -89,13 +86,13 @@ s3://<bucket>/<s3_path>/audit_logs/<YYYY-MM-DD>/<HH-MM-SS>_<audit-log-id>.json
 
 :::info
 
-`audit_log_callbacks` only fires while audit logging is enabled, which is the default on an enterprise license and otherwise needs `store_audit_logs: true`.
+`audit_log_callbacks` 只有在啟用稽核記錄時才會觸發，而這在企業授權下是預設值，否則需要 `store_audit_logs: true`。
 
 :::
 
-### Send Audit Logs to a Separate S3 Bucket
+### 將稽核記錄傳送到不同的 S3 儲存桶 {#send-audit-logs-to-a-separate-s3-bucket}
 
-If you also send normal request/response logs to S3 via `callbacks: ["s3_v2"]`, by default both streams share `s3_callback_params` and land in the same bucket. To send audit logs to a different bucket (e.g. a compliance-only bucket with stricter access controls or longer retention), add an `s3_audit_callback_params` block. It accepts the same fields as `s3_callback_params` and only applies to audit logs.
+如果您也透過 `callbacks: ["s3_v2"]` 將一般請求/回應記錄傳送到 S3，預設情況下兩個串流會共用 `s3_callback_params` 並落在同一個儲存桶中。若要將稽核記錄傳送到不同的儲存桶（例如僅供法遵使用、具有更嚴格存取控制或更長保留期限的儲存桶），請新增一個 `s3_audit_callback_params` 區塊。它接受與 `s3_callback_params` 相同的欄位，且只適用於稽核記錄。
 
 ```yaml
 litellm_settings:
@@ -118,21 +115,21 @@ litellm_settings:
     s3_path: litellm-audit
 ```
 
-## Advanced
+## 進階 {#advanced}
 
-### Attribute Management changes to Users
+### 對使用者的屬性管理變更 {#attribute-management-changes-to-users}
 
-Call management endpoints on behalf of a user, and have the audit log attribute the change to them instead of to the calling key's `user_id`. (Useful when connecting proxy to your development platform).
+代表某位使用者呼叫管理端點，並讓稽核記錄將變更歸屬於該使用者，而不是呼叫 key 的 `user_id`。（在將 proxy 連接到您的開發平台時很有用）。
 
-:::warning[Opt in required since v1.84.0]
+:::warning[自 v1.84.0 起需選擇加入]
 
-Before v1.84.0 the `LiteLLM-Changed-By` header was honored unconditionally, which let any caller rewrite audit attribution. Since v1.84.0 the proxy ignores the header unless the calling key, or its team, has `allow_litellm_changed_by_header: true` in its metadata; without the opt in, `changed_by` falls back to the calling key's `user_id`. The master key cannot opt in because it has no stored metadata, so send the header with an admin virtual key
+在 v1.84.0 之前，`LiteLLM-Changed-By` 標頭會無條件生效，任何呼叫者都能重寫稽核歸屬。自 v1.84.0 起，除非呼叫 key，或其 team，的 metadata 中有 `allow_litellm_changed_by_header: true`，否則 proxy 會忽略該標頭；若未選擇加入，`changed_by` 會回退到呼叫 key 的 `user_id`。master key 無法選擇加入，因為它沒有儲存的 metadata，因此請搭配 admin virtual key 傳送該標頭
 
 :::
 
-#### 1. Allow your admin key to set the header
+#### 1. 允許您的 admin key 設定標頭 {#1-allow-your-admin-key-to-set-the-header}
 
-Set `allow_litellm_changed_by_header: true` in the metadata of the admin virtual key that will send the header. Setting it on the key's team metadata instead opts in every key on that team
+在將傳送該標頭之 admin virtual key 的 metadata 中設定 `allow_litellm_changed_by_header: true`。改為在該 key 的 team metadata 上設定，則會讓該 team 上的每個 key 都選擇加入
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/update' \
@@ -144,14 +141,14 @@ curl -X POST 'http://0.0.0.0:4000/key/update' \
     }'
 ```
 
-#### 2. Set `LiteLLM-Changed-By` in request headers
+#### 2. 在請求標頭中設定 `LiteLLM-Changed-By` {#2-set-litellm-changed-by-in-request-headers}
 
-Set the 'user_id' in request headers, when calling a management endpoint. [View Full List](https://docs.litellm.ai/api-reference/#/team%20management).
+在呼叫管理端點時，請在請求標頭中設定 'user_id'。[檢視完整清單](https://docs.litellm.ai/api-reference/#/team%20management)。
 
-- Update Team budget with the opted-in admin key. 
-- Attribute change to 'krrish@berri.ai'. 
+- 使用已選擇加入的 admin key 更新 Team 預算。 
+- 將變更歸屬於 'krrish@berri.ai'。 
 
-**Key change:** Passing `-H 'LiteLLM-Changed-By: krrish@berri.ai'`
+**Key 變更：** 傳遞 `-H 'LiteLLM-Changed-By: krrish@berri.ai'`
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/update' \
@@ -164,7 +161,7 @@ curl -X POST 'http://0.0.0.0:4000/team/update' \
     }'
 ```
 
-#### 3. Emitted Audit Log 
+#### 3. 產生的稽核記錄 {#3-emitted-audit-log}
 
 ```bash
 {
@@ -186,42 +183,40 @@ curl -X POST 'http://0.0.0.0:4000/team/update' \
  }
 ```
 
-## API SPEC of Audit Log 
+## 稽核記錄的 API 規格 {#api-spec-of-audit-log}
 
+### `id` {#id}
+- **型別：** `String`
+- **說明：** 這是每個稽核記錄項目的唯一識別碼。預設會自動產生為 UUID（Universally Unique Identifier）。
 
-### `id`
+### `updated_at` {#updated_at}
+- **型別：** `DateTime`
+- **說明：** 此欄位儲存稽核記錄項目建立或更新時的時間戳記。預設會自動設為目前的日期與時間。
+
+### `changed_by` {#changed_by}
 - **Type:** `String`
-- **Description:** This is the unique identifier for each audit log entry. It is automatically generated as a UUID (Universally Unique Identifier) by default.
+- **Description:** 執行受稽核動作的 `user_id`。如果傳入 `LiteLLM-Changed-By` 標頭，且呼叫 key 或其 team 的 metadata 中有 `allow_litellm_changed_by_header: true`，則 `changed_by=<value passed for LiteLLM-Changed-By header>`
 
-### `updated_at`
-- **Type:** `DateTime`
-- **Description:** This field stores the timestamp of when the audit log entry was created or updated. It is automatically set to the current date and time by default.
+### `changed_by_api_key` {#changed_by_api_key}
+- **型別：** `String`
+- **說明：** 此欄位儲存用來執行被稽核動作的雜湊 API 金鑰。若留白，預設為空字串。
 
-### `changed_by`
-- **Type:** `String`
-- **Description:** The `user_id` that performed the audited action. If the `LiteLLM-Changed-By` header is passed and the calling key or its team has `allow_litellm_changed_by_header: true` in its metadata, then `changed_by=<value passed for LiteLLM-Changed-By header>`
+### `action` {#action}
+- **型別：** `String`
+- **說明：** 執行的動作類型。為 "create"、"update" 或 "delete" 其中之一。
 
-### `changed_by_api_key`
-- **Type:** `String`
-- **Description:** This field stores the hashed API key that was used to perform the audited action. If left blank, it defaults to an empty string.
+### `table_name` {#table_name}
+- **型別：** `String`
+- **說明：** 此欄位儲存受被稽核動作影響的資料表名稱。可為下列值之一：`LiteLLM_TeamTable`、`LiteLLM_UserTable`、`LiteLLM_VerificationToken`
 
-### `action`
-- **Type:** `String`
-- **Description:** The type of action that was performed. One of "create", "update", or "delete".
+### `object_id` {#object_id}
+- **型別：** `String`
+- **說明：** 此欄位儲存受被稽核動作影響的物件 ID。可以是 key ID、team ID、user ID
 
-### `table_name`
-- **Type:** `String`
-- **Description:** This field stores the name of the table that was affected by the audited action. It can be one of the following values: `LiteLLM_TeamTable`, `LiteLLM_UserTable`, `LiteLLM_VerificationToken`
+### `before_value` {#before_value}
+- **型別：** `Json?`
+- **說明：** 此欄位儲存執行被稽核動作前該資料列的值。此欄位為選用，可為 null。
 
-
-### `object_id`
-- **Type:** `String`
-- **Description:** This field stores the ID of the object that was affected by the audited action. It can be the key ID, team ID, user ID
-
-### `before_value`
-- **Type:** `Json?`
-- **Description:** This field stores the value of the row before the audited action was performed. It is optional and can be null.
-
-### `updated_values`
-- **Type:** `Json?`
-- **Description:** This field stores the values of the row that were updated after the audited action was performed
+### `updated_values` {#updated_values}
+- **型別：** `Json?`
+- **說明：** 此欄位儲存執行被稽核動作後已更新的資料列值

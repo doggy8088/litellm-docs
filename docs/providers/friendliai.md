@@ -1,24 +1,24 @@
-# FriendliAI
+# FriendliAI {#friendliai}
 
 :::info
-**We support ALL FriendliAI models, just set `friendliai/` as a prefix when sending completion requests**
+**我們支援所有 FriendliAI 模型，送出 completion 請求時只要將 `friendliai/` 作為前綴即可**
 :::
 
-| Property                   | Details                                                                                         |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| Description                | The fastest and most efficient inference engine to build production-ready, compound AI systems. |
-| Provider Route on LiteLLM  | `friendliai/`                                                                                   |
-| Provider Doc               | [FriendliAI ↗](https://friendli.ai/docs/sdk/integrations/litellm)                               |
-| Supported OpenAI Endpoints | `/chat/completions`, `/completions`                                                             |
+| 屬性                     | 詳細資訊                                                                                        |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| 說明                     | 用於建置可供正式環境使用的複合式 AI 系統，速度最快且最有效率的推論引擎。 |
+| LiteLLM 上的提供者路由  | `friendliai/`                                                                                   |
+| 提供者文件               | [FriendliAI ↗](https://friendli.ai/docs/sdk/integrations/litellm)                               |
+| 支援的 OpenAI 端點       | `/chat/completions`, `/completions`                                                             |
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python
 # env variable
 os.environ['FRIENDLI_TOKEN']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 ```python
 from litellm import completion
@@ -34,7 +34,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 
 ```python
 from litellm import completion
@@ -53,11 +53,11 @@ for chunk in response:
     print(chunk)
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-We support ALL FriendliAI AI models, just set `friendliai/` as a prefix when sending completion requests
+我們支援所有 FriendliAI AI 模型，送出 completion 請求時只要將 `friendliai/` 作為前綴即可
 
-| Model Name                  | Function Call                                                          |
-| --------------------------- | ---------------------------------------------------------------------- |
+| 模型名稱                  | 函式呼叫                                                          |
+| ------------------------- | ---------------------------------------------------------------------- |
 | meta-llama-3.1-8b-instruct  | `completion(model="friendliai/meta-llama-3.1-8b-instruct", messages)`  |
 | meta-llama-3.1-70b-instruct | `completion(model="friendliai/meta-llama-3.1-70b-instruct", messages)` |

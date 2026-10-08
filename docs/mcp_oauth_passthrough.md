@@ -1,39 +1,39 @@
-# MCP OAuth Passthrough
+# MCP OAuth Passthrough {#mcp-oauth-passthrough}
 
-Some MCP servers run their own OAuth issuer and expect the client (Claude Code, Cursor, ChatGPT, etc.) to authenticate directly against it. For those servers LiteLLM can let the client's own upstream token flow through instead of minting, storing, or refreshing anything itself.
+有些 MCP 伺服器會執行自己的 OAuth 發行者，並期望用戶端（Claude Code、Cursor、ChatGPT 等）直接對其進行驗證。對於這些伺服器，LiteLLM 可以讓用戶端自己的上游 token 直接透傳，而不是由 LiteLLM 自行鑄造、儲存或重新整理任何內容。
 
-Two `auth_type` values cover this. They differ in one thing: whether LiteLLM still authenticates the caller at its own edge.
+這兩個 `auth_type` 值涵蓋了這點。它們只差一件事：LiteLLM 是否仍在自己的邊緣對呼叫者進行驗證。
 
-| Mode | LiteLLM admission | Credential forwarded upstream | Spend / rate limits / audit | Use when |
+| 模式 | LiteLLM 接入 | 向上游轉送的憑證 | 花費 / 速率限制 / 稽核 | 適用時機 |
 |------|-------------------|-------------------------------|-----------------------------|----------|
-| `true_passthrough` | None; anonymous at the LiteLLM layer | The client's `Authorization`, verbatim | Not recorded | LiteLLM should add zero auth and the upstream is the sole gate |
-| `oauth_delegate` | Required (LiteLLM key / SSO / JWT) | A distinct upstream bearer the caller sends alongside admission | Recorded, keyed on the admission identity | You want LiteLLM to keep gating and observing the route while the upstream owns tool authorization |
+| `true_passthrough` | 無；在 LiteLLM 層是匿名的 | 用戶端的 `Authorization`，原樣不變 | 不會記錄 | LiteLLM 應完全不加任何驗證，且上游是唯一的閘口 |
+| `oauth_delegate` | 需要（LiteLLM 金鑰 / SSO / JWT） | 呼叫者隨接入一起提供的獨立上游 bearer | 會記錄，並以接入身分為索引 | 您希望 LiteLLM 繼續對路由進行閘控與觀測，而上游負責工具授權 |
 
-Both modes return the upstream's protected-resource metadata verbatim during discovery, so the client always authorizes against the real upstream issuer.
+這兩種模式在探索時都會原樣回傳上游的受保護資源中繼資料，因此用戶端一律會對真正的上游發行者進行授權。
 
-Both forward the token exactly as the caller sent it. LiteLLM does not decode it, does not check its audience or scopes, and does not exchange it; the upstream MCP server is the only party that validates it. If the caller's token was minted for a different resource, neither mode can make it work, and you want [`oauth2_token_exchange`](#audience-locked-tokens-passthrough-or-token-exchange) instead.
+兩者也都會完全按呼叫者送出的內容轉送 token。LiteLLM 不會解碼、不會檢查其 audience 或 scope，也不會交換它；驗證它的唯一一方是上游 MCP 伺服器。如果呼叫者的 token 是為了其他資源所鑄造，這兩種模式都無法讓它可用，此時您應改用 [`oauth2_token_exchange`](#audience-locked-tokens-passthrough-or-token-exchange)。
 
-Both also take an orthogonal `dcr_bridge` flag that changes where an OAuth-only client discovers its authorization server. Turn it on for clients that cannot register with the upstream IdP themselves or cannot send two separate credentials, such as OpenCode, Claude Code, Cursor, and Claude Desktop. See [Gateway-hosted sign-in (DCR bridge)](#gateway-hosted-sign-in-dcr-bridge).
+兩者還會另外採用一個互不相干的 `dcr_bridge` 旗標，來變更僅支援 OAuth 的用戶端發現其授權伺服器的位置。對於無法自行向上游 IdP 註冊或無法送出兩組獨立憑證的用戶端，請將其開啟，例如 OpenCode、Claude Code、Cursor 和 Claude Desktop。請參閱 [閘道代管登入（DCR 橋接）](#gateway-hosted-sign-in-dcr-bridge)。
 
-## Audience-locked tokens: passthrough or token exchange {#audience-locked-tokens-passthrough-or-token-exchange}
+## 受眾鎖定的 token：透傳或 token 交換 {#audience-locked-tokens-passthrough-or-token-exchange}
 
-An OAuth access token carries an audience (`aud`, or the resource it was requested for). A well-behaved upstream MCP server rejects any token whose audience names something else, for example a token an agent obtained for a SaaS API and then presented to the MCP server. Because `true_passthrough` and `oauth_delegate` forward the token verbatim, that rejection shows up as the upstream's own `401` relayed back to the client. This is the correct confused-deputy-safe outcome: the gateway did not launder a token minted for one resource into access to another, and it is not a LiteLLM bug to file.
+OAuth access token 會帶有一個 audience（`aud`，或其所請求的資源）。行為良好的上游 MCP 伺服器會拒絕任何 audience 指向其他內容的 token，例如代理程式為 SaaS API 取得、之後又提交給 MCP 伺服器的 token。由於 `true_passthrough` 和 `oauth_delegate` 會原樣轉送 token，這種拒絕會以回傳給用戶端的上游 `401` 形式呈現。這是正確且可避免 confused-deputy 的結果：閘道沒有把原本為某一資源鑄造的 token 洗成另一資源的存取權，這也不是 LiteLLM 的 bug 可回報。
 
-Pick the mode from the token you actually hold:
+請根據您實際持有的 token 選擇模式：
 
-| The caller's token was minted for | Use | What LiteLLM does with it |
+| 呼叫者的 token 是為了下列對象所鑄造 | 使用 | LiteLLM 如何處理 |
 |-----------------------------------|-----|---------------------------|
-| The upstream MCP server itself (the client ran OAuth against that server's issuer) | `true_passthrough` or `oauth_delegate` | Forwards it verbatim; the upstream validates audience and scopes |
-| A different resource (your IdP, an internal API, a SaaS API), and your IdP supports RFC 8693 or Entra On-Behalf-Of | `oauth2_token_exchange` | Sends it to the IdP as the `subject_token`, receives a token whose audience is the MCP server (`audience: ...` in the server config), caches it, and forwards only the exchanged token. See [MCP OBO Auth](./mcp_obo_auth.md) |
-| A LiteLLM virtual key, SSO session, or IdP JWT that only proves identity to the gateway | Neither passthrough mode | Admission credentials are never forwarded upstream. Configure a server-side credential (`oauth2` client credentials, a static `authentication_token`, or token exchange) instead |
+| 上游 MCP 伺服器本身（用戶端對該伺服器的發行者執行 OAuth） | `true_passthrough` 或 `oauth_delegate` | 原樣轉送；由上游驗證 audience 與 scope |
+| 其他資源（您的 IdP、內部 API、SaaS API），且您的 IdP 支援 RFC 8693 或 Entra On-Behalf-Of | `oauth2_token_exchange` | 將其作為 `subject_token` 傳送給 IdP，接收一個 audience 為 MCP 伺服器的 token（伺服器設定中的 `audience: ...`），快取後只轉送交換後的 token。請參閱 [MCP OBO Auth](./mcp_obo_auth.md) |
+| LiteLLM 虛擬金鑰、SSO 工作階段，或僅向閘道證明身分的 IdP JWT | 兩種透傳模式都不是 | 接入憑證絕不會向上游轉送。請改為設定伺服器端憑證（`oauth2` client credentials、靜態 `authentication_token`，或 token 交換） |
 
-The practical test: if you would have to ask your IdP to widen a token's audience so the upstream accepts it, stop and use token exchange. Widening audiences turns one bearer into a key for several resources, and the passthrough modes exist precisely so that the gateway never does that on the caller's behalf.
+實務上的測試方式：如果您必須要求 IdP 擴大 token 的 audience 才能讓上游接受，請停下來並改用 token 交換。擴大 audience 會把單一 bearer 變成多個資源的金鑰，而這些透傳模式存在的目的，正是為了讓閘道絕不代表呼叫者做這件事。
 
-## true_passthrough
+## true_passthrough {#true_passthrough}
 
-LiteLLM acts as a transparent proxy: no admission check, nothing minted or stored, and the client's `Authorization` forwarded unchanged. Reach for it when the upstream is the source of truth for access and you do not want LiteLLM gating the route twice.
+LiteLLM 會扮演透明代理：不做接入檢查、不鑄造也不儲存任何內容，並將用戶端的 `Authorization` 原封不動地轉送。當上游才是存取的事實來源，而您不希望 LiteLLM 以雙重方式對路由進行閘控時，就適合使用它。
 
-### Setup
+### 設定 {#setup}
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -42,14 +42,14 @@ mcp_servers:
     auth_type: true_passthrough
 ```
 
-That is the entire configuration. No client credentials or token endpoints, because LiteLLM never participates in the token exchange.
+這就是全部設定。不需要用戶端憑證或 token endpoint，因為 LiteLLM 從不參與 token 交換。
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-- The client sends its MCP request with no LiteLLM API key.
-- With no upstream token yet, LiteLLM relays the upstream's own `401` and `WWW-Authenticate`.
-- The client runs OAuth directly against the upstream issuer.
-- The client retries with `Authorization: Bearer <upstream-token>`, and LiteLLM forwards it untouched.
+- 用戶端送出 MCP 請求，且不帶 LiteLLM API 金鑰。
+- 在尚未有上游 token 時，LiteLLM 會轉送上游自己的 `401` 與 `WWW-Authenticate`。
+- 用戶端直接對上游發行者執行 OAuth。
+- 用戶端以 `Authorization: Bearer <upstream-token>` 重試，LiteLLM 會不加改動地轉送它。
 
 ```mermaid
 sequenceDiagram
@@ -58,42 +58,42 @@ sequenceDiagram
     participant MCP as Upstream MCP Server
     participant Auth as Upstream OAuth Server
 
-    Client->>LiteLLM: MCP request (no LiteLLM key)
-    LiteLLM-->>Client: 401 + WWW-Authenticate (upstream challenge, relayed)
+    Client->>LiteLLM: MCP 請求（無 LiteLLM 金鑰）
+    LiteLLM-->>Client: 401 + WWW-Authenticate（轉送的上游挑戰）
 
-    Note over Client,Auth: Client runs OAuth directly with upstream
-    Client->>Auth: Authorize + token exchange
+    Note over Client,Auth: 用戶端直接與上游執行 OAuth
+    Client->>Auth: 授權 + token 交換
     Auth-->>Client: access_token
 
-    Client->>LiteLLM: MCP request + Bearer access_token
-    LiteLLM->>MCP: Forward request + Bearer access_token (verbatim)
-    MCP-->>LiteLLM: MCP response
-    LiteLLM-->>Client: MCP response
+    Client->>LiteLLM: MCP 請求 + Bearer access_token
+    LiteLLM->>MCP: 轉送請求 + Bearer access_token（原樣）
+    MCP-->>LiteLLM: MCP 回應
+    LiteLLM-->>Client: MCP 回應
 ```
 
-### Fail-Closed Behavior
+### 失敗封閉行為 {#fail-closed-behavior}
 
-The transparent path fires only when every target resolves to `true_passthrough`. It falls back to normal LiteLLM admission when:
+只有在每個目標都解析為 `true_passthrough` 時，透明路徑才會生效。以下情況會回退到一般 LiteLLM 接入：
 
-- The server's `auth_type` is anything else.
-- The request targets multiple servers (`x-mcp-servers: a,b`) and any one is not `true_passthrough`.
-- The target server cannot be resolved from the URL path or the `x-mcp-servers` header.
+- 伺服器的 `auth_type` 不是其他任何值。
+- 請求同時指向多個伺服器（`x-mcp-servers: a,b`），且其中任何一個不是 `true_passthrough`。
+- 無法從 URL 路徑或 `x-mcp-servers` 標頭解析出目標伺服器。
 
-### Security Trade-offs
+### 安全權衡 {#security-trade-offs}
 
-- The MCP route becomes an unauthenticated ingress at the LiteLLM layer.
-- Spend tracking, per-key rate limits, and any guardrail depending on `user_api_key_auth.user_id` do not run.
-- LiteLLM cannot tell who the caller is, so per-user auditing must come from the upstream server's logs.
-- `available_on_public_internet: false` adds no authentication here; it mainly controls IP-based discovery ([see guide](./mcp_public_internet.md)).
-- Only enable it on servers whose upstream OAuth issuer you trust to enforce access control.
+- MCP 路由在 LiteLLM 層會變成未驗證的進入點。
+- 花費追蹤、每金鑰速率限制，以及任何依賴 `user_api_key_auth.user_id` 的防護欄都不會執行。
+- LiteLLM 無法辨識呼叫者身分，因此每位使用者的稽核必須來自上游伺服器的記錄。
+- `available_on_public_internet: false` 在此不會新增任何驗證；它主要控制基於 IP 的探索（[請參閱指南](./mcp_public_internet.md)）。
+- 只有在您信任其上游 OAuth 發行者會強制執行存取控制的伺服器上才啟用它。
 
-### Config Reference
+### 設定參考 {#config-reference}
 
-| Field | Required | Description |
+| 欄位 | 必要 | 說明 |
 |-------|----------|-------------|
-| `auth_type` | Yes | Must be `true_passthrough`. |
-| `url` | Yes | The upstream MCP server URL. |
-| `allowed_tools` | No | Server-level tool allowlist. With no caller identity there are no per-key or per-team tool permissions, so this list is the only tool restriction and it applies to every caller identically. |
+| `auth_type` | 是 | 必須為 `true_passthrough`。 |
+| `url` | 是 | 上游 MCP 伺服器 URL。 |
+| `allowed_tools` | 否 | 伺服器層級的工具允許清單。由於沒有呼叫者身分，就沒有每金鑰或每團隊的工具權限，因此此清單是唯一的工具限制，且對所有呼叫者一律適用。 |
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -105,11 +105,11 @@ mcp_servers:
       - fetch
 ```
 
-## oauth_delegate
+## oauth_delegate {#oauth_delegate}
 
-LiteLLM still admits the caller (LiteLLM API key, SSO, or JWT), then forwards a separate upstream bearer the caller supplies. LiteLLM mints nothing and never forwards the admission credential upstream. Use it when the upstream owns tool-level authorization but you still want LiteLLM gating the route and keeping spend, rate-limit, and audit attribution.
+LiteLLM 仍會接納呼叫者（LiteLLM API 金鑰、SSO 或 JWT），然後轉送呼叫者提供的獨立上游 bearer。LiteLLM 不會鑄造任何內容，也絕不會把接入憑證向上游轉送。當上游負責工具層級授權，但您仍希望 LiteLLM 對路由進行閘控並保留花費、速率限制與稽核歸因時，請使用它。
 
-### Setup
+### 設定 {#setup-1}
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -118,14 +118,14 @@ mcp_servers:
     auth_type: oauth_delegate
 ```
 
-No client credentials, for the same reason as `true_passthrough`. What changes is the request: the caller sends two credentials.
+與 `true_passthrough` 的原因相同，不需要用戶端憑證。不同之處在於請求：呼叫者會送出兩組憑證。
 
-### How It Works
+### 運作方式 {#how-it-works-1}
 
-- The caller admits with a LiteLLM credential in `x-litellm-api-key`.
-- The upstream token rides in `Authorization` (or `x-mcp-<alias>-authorization` for aggregate requests).
-- LiteLLM validates admission, then forwards only the upstream bearer, never the admission credential.
-- With no upstream token yet, LiteLLM returns a `401` pointing at the gateway's `oauth-protected-resource` well-known, which proxies the upstream metadata verbatim.
+- 呼叫者以 `x-litellm-api-key` 中的 LiteLLM 憑證進行接入。
+- 上游 token 放在 `Authorization` 中（若為彙總請求，則放在 `x-mcp-<alias>-authorization` 中）。
+- LiteLLM 驗證接入後，只轉送上游 bearer，絕不轉送接入憑證。
+- 在尚未有上游 token 時，LiteLLM 會回傳一個指向閘道 `oauth-protected-resource` well-known 的 `401`，而該 well-known 會原樣代理上游中繼資料。
 
 ```mermaid
 sequenceDiagram
@@ -134,53 +134,53 @@ sequenceDiagram
     participant MCP as Upstream MCP Server
     participant Auth as Upstream OAuth Server
 
-    Client->>LiteLLM: MCP request + x-litellm-api-key (no upstream token)
-    Note over LiteLLM: Admit caller (key / SSO / JWT)
-    LiteLLM-->>Client: 401 + WWW-Authenticate (gateway, proxies upstream metadata)
+Client->>LiteLLM: MCP 請求 + x-litellm-api-key（無上游 token）
+    Note over LiteLLM: 接受呼叫者（key / SSO / JWT）
+    LiteLLM-->>Client: 401 + WWW-Authenticate（閘道，代理上游中繼資料）
 
-    Note over Client,Auth: Client runs OAuth directly with upstream
-    Client->>Auth: Authorize + token exchange
+    Note over Client,Auth: Client 直接與上游執行 OAuth
+    Client->>Auth: 授權 + token 交換
     Auth-->>Client: access_token
 
-    Client->>LiteLLM: MCP request + x-litellm-api-key + Authorization: Bearer access_token
-    Note over LiteLLM: Admit caller, strip admission credential, record spend / rate limit / audit
-    LiteLLM->>MCP: Forward request + Bearer access_token (upstream token only)
-    MCP-->>LiteLLM: MCP response
-    LiteLLM-->>Client: MCP response
+    Client->>LiteLLM: MCP 請求 + x-litellm-api-key + Authorization: Bearer access_token
+    Note over LiteLLM: 接受呼叫者，移除接受憑證，記錄花費 / rate limit / 稽核
+    LiteLLM->>MCP: 轉送請求 + Bearer access_token（僅上游 token）
+    MCP-->>LiteLLM: MCP 回應
+    LiteLLM-->>Client: MCP 回應
 ```
 
-:::warning[Keep the two credentials in separate headers]
+:::warning[請將兩個憑證分開放在不同標頭中]
 
-If a caller sends a single credential in `Authorization` with no `x-litellm-api-key`, LiteLLM treats it as the admission credential (virtual key, IdP JWT, or SSO session token) and never forwards it upstream. That is the leak defense keeping a LiteLLM or IdP token from reaching a third-party MCP server.
+如果呼叫者在 `Authorization` 中送出單一憑證，且沒有 `x-litellm-api-key`，LiteLLM 會將其視為接受憑證（虛擬 key、IdP JWT，或 SSO 工作階段 token），且絕不會將其轉送到上游。這是避免 LiteLLM 或 IdP token 遭洩漏到第三方 MCP 伺服器的防護。
 
 :::
 
-### Security Trade-offs
+### 安全性權衡 {#security-trade-offs-1}
 
-- Admission always runs, so there is no anonymous ingress.
-- Spend, rate limits, and audit resolve against the admission identity.
-- LiteLLM forwards the upstream token without inspecting it, so the upstream still owns tool-level authorization and token validation.
+- 接受流程一律會執行，因此沒有匿名入口。
+- 花費、rate limit 與稽核會根據接受身分解析。
+- LiteLLM 會原封不動轉送上游 token 而不檢查，因此上游仍然負責工具層級的授權與 token 驗證。
 
-### Config Reference
+### 設定參考 {#config-reference-1}
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `auth_type` | Yes | Must be `oauth_delegate`. |
-| `url` | Yes | The upstream MCP server URL. |
+| 欄位 | 必填 | 說明 |
+|-------|------|------|
+| `auth_type` | 是 | 必須為 `oauth_delegate`。 |
+| `url` | 是 | 上游 MCP 伺服器 URL。 |
 
-At request time: admission in `x-litellm-api-key`, upstream token in `Authorization: Bearer <upstream-token>` (or `x-mcp-<alias>-authorization` for a specific server in an aggregate request).
+在請求時：接受在 `x-litellm-api-key` 中，上游 token 在 `Authorization: Bearer <upstream-token>` 中（或在聚合請求中，特定伺服器的 `x-mcp-<alias>-authorization` 中）。
 
-Because admission runs, the full LiteLLM permission model applies on top of whatever the upstream enforces: [per-key and per-team tool permissions](./mcp_control.md#per-entity-tool-level-permissions), the server-level `allowed_tools` list, per-key rate limits, and spend logging of every tool call under the admitted identity.
+因為接受流程會執行，所以完整的 LiteLLM 權限模型會套用在上游所強制執行的任何規則之上：[每個 key 與每個團隊的工具權限](./mcp_control.md#per-entity-tool-level-permissions)、伺服器層級的 `allowed_tools` 清單、每個 key 的 rate limit，以及在被接受的身分下對每次工具呼叫進行花費記錄。
 
-## Multi-server aggregate requests {#multi-server-aggregate-requests}
+## 多伺服器聚合請求 {#multi-server-aggregate-requests}
 
-A request to the aggregate `/mcp` endpoint (or one carrying `x-mcp-servers: a,b`) fans out to several upstreams, but the request can only carry one `Authorization` header. If two of those upstreams both forward the caller's token, sending that one header to both would replay a single bearer across unrelated resources (the cross-resource replay RFC 9700 warns about). LiteLLM therefore applies two rules to `true_passthrough` and `oauth_delegate` servers inside an aggregate scope.
+對聚合 `/mcp` 端點的請求（或帶有 `x-mcp-servers: a,b` 的請求）會分流到多個上游，但該請求只能攜帶一個 `Authorization` 標頭。如果其中兩個上游都會轉送呼叫者的 token，將這一個標頭同時送給兩者，就會把單一 bearer 在不相關的資源之間重放（這正是 cross-resource replay RFC 9700 所警告的）。因此，LiteLLM 對聚合範圍內的 `true_passthrough` 與 `oauth_delegate` 伺服器套用兩項規則。
 
-Bind one upstream token to one server with `x-mcp-{alias}-authorization`. The alias is lowercased and any character outside `a-z0-9_` becomes `_`, so a server aliased `Jira Cloud` is addressed as `x-mcp-jira_cloud-authorization`. The value is forwarded verbatim, so include the scheme (`Bearer <token>`). Per-server headers are never withheld, on any operation, because each one names exactly one recipient.
+使用 `x-mcp-{alias}-authorization` 將一個上游 token 綁定到一個伺服器。別名會轉為小寫，且 `a-z0-9_` 之外的任何字元都會變成 `_`，因此別名為 `Jira Cloud` 的伺服器會以 `x-mcp-jira_cloud-authorization` 來指定。值會原封不動轉送，因此請包含 scheme（`Bearer <token>`）。每個伺服器的標頭絕不會被保留，無論任何操作皆然，因為每個標頭都明確指定了唯一的接收者。
 
-The request-wide `Authorization` is withheld from a client-forwarded server during a listing fan-out (`tools/list`, and the prompt and resource listings) whenever another server in the same scope would also consume it. That server is then listed with no upstream credential, so a server that requires one returns its `401` and the aggregate absorbs it (see below). Explicitly addressed operations such as `tools/call` on a named tool, a single-server route like `/{server_name}/mcp`, or an aggregate scope where only one server forwards the caller's token are unaffected: the client named the one recipient, so the request-wide header is forwarded to it.
+請求範圍內的 `Authorization` 會在清單分流（`tools/list`，以及 prompt 與資源清單）時，若同一範圍內的另一個伺服器也會消耗它，則不會轉送給由用戶端轉送的伺服器。那台伺服器此時會以沒有上游憑證的狀態列出，因此需要憑證的伺服器會回傳其 `401`，而聚合會吸收該回應（見下文）。明確指定的操作，例如在命名工具上的 `tools/call`、像 `/{server_name}/mcp` 這類單一伺服器路由，或只有一個伺服器會轉送呼叫者 token 的聚合範圍，則不受影響：用戶端已指定唯一接收者，因此請求範圍內的標頭會轉送給它。
 
-In practice this is why a single bearer that is valid for several upstreams can execute tools through the aggregate endpoint yet not appear in the aggregate `tools/list`: the tool call names one server, the listing does not. The fix is to send the token per server rather than request-wide.
+實務上，這就是為什麼一個對多個上游都有效的單一 bearer，可以透過聚合端點執行工具，卻不會出現在聚合 `tools/list` 中：工具呼叫會指定一個伺服器，清單則不會。解法是改為針對每個伺服器分別送出 token，而不是以請求範圍送出。
 
 ```bash title="Aggregate tools/list with per-server tokens" showLineNumbers
 curl -X POST "https://litellm.example.com/mcp" \
@@ -192,45 +192,45 @@ curl -X POST "https://litellm.example.com/mcp" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
-Sending the same token value on two per-server headers is your decision, made explicitly per server, and LiteLLM honors it. What it refuses to do is make that decision for you by fanning out an unaddressed `Authorization`.
+在兩個每伺服器標頭上送出相同的 token 值，是您按伺服器明確做出的決定，而 LiteLLM 會遵循。它拒絕做的是，代替您決定，將一個未指定對象的 `Authorization` 分流出去。
 
-For `true_passthrough` there is an additional constraint: the transparent admission path fires only when every server in the scope is `true_passthrough`. Mixing a `true_passthrough` server into an aggregate with any other mode falls back to normal LiteLLM admission, so the caller needs a LiteLLM credential for that request.
+對於 `true_passthrough` 還有另一項限制：只有當範圍內每個伺服器都是 `true_passthrough` 時，透明接受路徑才會啟用。若在聚合中混入一個 `true_passthrough` 伺服器與任何其他模式，則會退回一般 LiteLLM 接受流程，因此呼叫者需要為該請求提供 LiteLLM 憑證。
 
-## Previewing tools in the Admin UI {#previewing-tools-in-the-admin-ui}
+## 在 Admin UI 中預覽工具 {#previewing-tools-in-the-admin-ui}
 
-LiteLLM holds no upstream token for these servers, so the create and edit forms cannot list tools on their own. Both forms show an "Authorize & Fetch Tools (browser-only)" button for `true_passthrough` and `oauth_delegate`. It runs the upstream OAuth flow in the admin's browser and keeps the resulting token in that browser session only, forwarding it per server for the tool preview and for configuring `allowed_tools`. The token is not written to the server row, to the per-user credential store, or to any cache; closing the tab discards it.
+LiteLLM 對這些伺服器不持有上游 token，因此建立與編輯表單無法自行列出工具。這兩個表單都會為 `true_passthrough` 與 `oauth_delegate` 顯示「Authorize & Fetch Tools（僅瀏覽器）」按鈕。它會在管理員的瀏覽器中執行上游 OAuth 流程，並只將產生的 token 保留在該瀏覽器工作階段中，將其按伺服器轉送給工具預覽以及設定 `allowed_tools`。該 token 不會寫入伺服器列、不會寫入每個使用者的憑證儲存區，也不會寫入任何快取；關閉分頁後便會丟棄。
 
-The optional OAuth Client ID and Client Secret next to that button are different: they are saved with the server as declared configuration. Set them when the upstream issuer does not support dynamic client registration and every admin should authorize through one pre-registered app.
+按鈕旁邊可選的 OAuth Client ID 與 Client Secret 則不同：它們會隨伺服器一起作為宣告式設定儲存。當上游 issuer 不支援動態用戶端註冊，且每位管理員都應透過一個預先註冊的應用程式授權時，請設定它們。
 
-## Intentional limits {#intentional-limits}
+## 刻意的限制 {#intentional-limits}
 
-The following are consequences of forwarding a token verbatim without inspecting it, and they are by design rather than defects.
+以下這些是原封不動轉送 token 而不檢查所造成的結果，屬於設計如此，而非缺陷。
 
-On the multi-server aggregate there is no per-server "needs re-authentication" signal. A single-server route relays the upstream's `401` and `WWW-Authenticate` truthfully, but the aggregate absorbs one server's auth failure into an empty listing for that server so the remaining servers still list. Use the single-server route, or the per-server header, when you need to see which upstream rejected the token.
+在多伺服器聚合中，沒有每個伺服器「需要重新驗證」的訊號。單一伺服器路由會如實轉送上游的 `401` 與 `WWW-Authenticate`，但聚合會將某個伺服器的驗證失敗吸收為該伺服器的空白清單，因此其餘伺服器仍可列出。當您需要查看是哪個上游拒絕了 token 時，請使用單一伺服器路由，或每伺服器標頭。
 
-Sender-constrained tokens (DPoP, RFC 9449, or mTLS-bound tokens, RFC 8705) cannot be relayed. The binding proves the request came from the TLS client or the key holder that obtained the token, and a layer-7 proxy is neither. The upstream will reject them; obtain a plain bearer for the MCP server or use token exchange.
+受 sender 約束的 tokens（DPoP，RFC 9449，或 mTLS-bound tokens，RFC 8705）無法轉送。該綁定證明請求來自取得該 token 的 TLS 用戶端或金鑰持有人，而第 7 層 proxy 兩者皆非。上游會拒絕它們；請為 MCP 伺服器取得一般 bearer，或使用 token 交換。
 
-Revoked tokens are not detected at connect time. LiteLLM keeps no state about a forwarded token and does not introspect it, so a token revoked at the issuer is forwarded and rejected by the upstream on the request that uses it. The client sees the upstream's `401` at that point, exactly as it would talking to the upstream directly.
+已撤銷的 tokens 不會在連線時被偵測到。LiteLLM 不會保留任何關於已轉送 token 的狀態，也不會 introspect 它，因此在發行端已撤銷的 token，仍會被轉送，並在使用它的請求上被上游拒絕。屆時用戶端會看到上游的 `401`，就如同直接與上游通訊一樣。
 
-## Gateway-hosted sign-in (DCR bridge) {#gateway-hosted-sign-in-dcr-bridge}
+## Gateway 托管登入（DCR 橋接） {#gateway-hosted-sign-in-dcr-bridge}
 
-OAuth-only MCP clients (OpenCode, Claude Code, Cursor, Claude Desktop) connect by running a single Dynamic Client Registration (RFC 7591) plus PKCE flow against whatever authorization server the discovery metadata advertises. They:
+僅支援 OAuth 的 MCP 用戶端（OpenCode、Claude Code、Cursor、Claude Desktop）會透過對 discovery 中繼資料所宣告的任一授權伺服器執行單一 Dynamic Client Registration（RFC 7591）加上 PKCE 流程來連線。它們：
 
-- Hold no client credential pre-provisioned with the upstream IdP.
-- Cannot send a separate LiteLLM credential alongside an upstream token.
+- 沒有預先由上游 IdP 提供的用戶端憑證。
+- 無法在上游 token 旁再送出獨立的 LiteLLM 憑證。
 
-So neither the plain `true_passthrough` request nor the two-header `oauth_delegate` request fits them. The `dcr_bridge` flag closes that gap:
+因此，純粹的 `true_passthrough` 請求與雙標頭 `oauth_delegate` 請求都不適用於它們。`dcr_bridge` 標誌解決了這個落差：
 
-- **On:** LiteLLM advertises itself as the authorization server during discovery and hosts `/{server_name}/register`, `/{server_name}/authorize`, and `/{server_name}/token`. The client registers and signs in through the gateway while LiteLLM runs the upstream OAuth behind those endpoints.
-- **Off:** LiteLLM relays the upstream server's own OAuth metadata verbatim. Suits clients already registered with the upstream IdP, or able to run DCR directly against it.
+- **On:** LiteLLM 在 discovery 期間宣告自己為授權伺服器，並代管 `/{server_name}/register`、`/{server_name}/authorize` 與 `/{server_name}/token`。用戶端會透過 gateway 註冊並登入，而 LiteLLM 會在這些端點背後執行上游 OAuth。
+- **Off:** LiteLLM 原封不動轉送上游伺服器自己的 OAuth 中繼資料。適用於已在上游 IdP 註冊，或可直接對其執行 DCR 的用戶端。
 
-Where to set it:
+設定位置：
 
-- Valid only on `true_passthrough` and `oauth_delegate`; rejected on any other `auth_type` at create, update, and config load.
-- In the Admin UI it is the "Gateway-hosted sign-in (DCR bridge)" switch on the MCP server form, defaulted on for those two modes.
-- In config it is a boolean field.
+- 僅對 `true_passthrough` 與 `oauth_delegate` 有效；在建立、更新與設定載入時，其他任何 `auth_type` 都會被拒絕。
+- 在 Admin UI 中，它是 MCP 伺服器表單上的「Gateway 托管登入（DCR 橋接）」切換，對這兩種模式預設為開啟。
+- 在設定中，它是一個布林欄位。
 
-### true_passthrough with the bridge
+### 含橋接的 true_passthrough {#true_passthrough-with-the-bridge}
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -241,15 +241,15 @@ mcp_servers:
     dcr_bridge: true
 ```
 
-The transparent option for OAuth-only clients:
+供僅支援 OAuth 的用戶端使用的透明選項：
 
-- The client discovers the gateway as its authorization server and registers through `POST /{server_name}/register`.
-- It runs PKCE against `GET /{server_name}/authorize` and `POST /{server_name}/token`.
-- Where the upstream supports DCR, LiteLLM relays the client's registration to it.
-- Where the server has no stored `client_id`, LiteLLM mints an ephemeral client for the flow and persists nothing.
-- No LiteLLM sign-in is involved, and no caller identity or spend is recorded.
+- 用戶端將閘道視為其授權伺服器來發現，並透過 `POST /{server_name}/register` 註冊。
+- 它針對 `GET /{server_name}/authorize` 和 `POST /{server_name}/token` 執行 PKCE。
+- 若上游支援 DCR，LiteLLM 會將用戶端的註冊轉送給上游。
+- 若伺服器未儲存 `client_id`，LiteLLM 會為此流程鑄造一個暫時性用戶端，且不保留任何內容。
+- 不涉及 LiteLLM 登入，也不會記錄呼叫者身分或支出。
 
-### oauth_delegate with the bridge
+### oauth_delegate 與橋接 {#oauth_delegate-with-the-bridge}
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -260,79 +260,79 @@ mcp_servers:
     dcr_bridge: true
 ```
 
-This combination keeps LiteLLM in the observability path for OAuth-only clients, so spend, rate limits, audit, and per-tool-call attribution all resolve. Reach for it when you want to see in LiteLLM which server a caller used and which tools it invoked.
+此組合會讓 LiteLLM 保持在僅 OAuth 用戶端的可觀測性路徑中，因此支出、速率限制、稽核，以及每次工具呼叫的歸屬都能正常解析。當您想在 LiteLLM 中查看呼叫者使用了哪個伺服器以及呼叫了哪些工具時，就選用它。
 
-An OAuth-only client cannot present a LiteLLM key inline, so identity comes from a LiteLLM browser session instead:
+僅 OAuth 用戶端無法在內嵌時提供 LiteLLM 金鑰，因此身分改由 LiteLLM 瀏覽器工作階段提供：
 
-- At the authorize step LiteLLM looks for a LiteLLM UI session cookie.
-- With no cookie, it redirects to LiteLLM login (`/sso/key/generate`) first.
-- After sign-in the user re-initiates the connection.
-- LiteLLM seals that identity plus the upstream token into a gateway-bound credential.
-- The client stores that credential and replays it on every later request; admission, spend, and audit resolve against it.
+- 在授權步驟中，LiteLLM 會尋找 LiteLLM UI 工作階段 cookie。
+- 若沒有 cookie，會先重新導向至 LiteLLM 登入（`/sso/key/generate`）。
+- 登入後，使用者會重新啟動連線。
+- LiteLLM 會將該身分與上游權杖封裝為一個繫結於閘道的憑證。
+- 用戶端會儲存該憑證，並在之後每次請求時重放；存取、支出與稽核都會以此為依據。
 
-:::warning[Two prerequisites]
+:::warning[兩個必要條件]
 
-- **The gateway needs a working browser sign-in** (SSO or username/password). Without one there is no identity to bind and the authorize step cannot proceed. A missing gateway sign-in is the usual reason an `oauth_delegate` bridge connection stalls at the login page.
-- **The client's OAuth flow must run in an interactive browser session.** OpenCode, Claude Code, Cursor, and Claude Desktop all do.
+- **閘道需要可正常運作的瀏覽器登入**（SSO 或使用者名稱／密碼）。若沒有，便沒有可繫結的身分，且授權步驟無法進行。缺少閘道登入通常是 `oauth_delegate` 橋接連線卡在登入頁面的原因。
+- **用戶端的 OAuth 流程必須在互動式瀏覽器工作階段中執行。** OpenCode、Claude Code、Cursor，以及 Claude Desktop 都是如此。
 
-For fully scripted, non-interactive delegation, leave `dcr_bridge` off and use the two-header `oauth_delegate` request instead.
+若要完全以腳本化、非互動方式委派，請關閉 `dcr_bridge`，並改用雙標頭 `oauth_delegate` 請求。
 
 :::
 
 ```mermaid
 sequenceDiagram
-    participant Client as OAuth-only client
+    participant Client as 僅 OAuth 用戶端
     participant Browser
     participant LiteLLM as LiteLLM Proxy
-    participant MCP as Upstream MCP Server
-    participant Auth as Upstream OAuth Server
+    participant MCP as 上游 MCP 伺服器
+    participant Auth as 上游 OAuth 伺服器
 
-    Client->>LiteLLM: MCP request (no credential)
-    LiteLLM-->>Client: 401 + WWW-Authenticate (gateway is the authorization server)
-    Client->>LiteLLM: POST /{server}/register (DCR)
-    Client->>Browser: open /{server}/authorize
+    Client->>LiteLLM: MCP 請求（無憑證）
+    LiteLLM-->>Client: 401 + WWW-Authenticate（閘道是授權伺服器）
+    Client->>LiteLLM: POST /{server}/register（DCR）
+    Client->>Browser: 開啟 /{server}/authorize
     Browser->>LiteLLM: GET /{server}/authorize
-    Note over LiteLLM: no LiteLLM session cookie
-    LiteLLM-->>Browser: redirect to LiteLLM login
-    Browser->>LiteLLM: sign in (SSO / username-password)
-    Browser->>LiteLLM: GET /{server}/authorize (with session)
-    LiteLLM->>Auth: authorize upstream, capture code at /callback
-    Auth-->>LiteLLM: upstream authorization code
-    LiteLLM-->>Browser: gateway code, redirect back to client
+    Note over LiteLLM: 無 LiteLLM 工作階段 cookie
+    LiteLLM-->>Browser: 重新導向至 LiteLLM 登入
+    Browser->>LiteLLM: 登入（SSO / 使用者名稱-密碼）
+    Browser->>LiteLLM: GET /{server}/authorize（含工作階段）
+    LiteLLM->>Auth: 授權上游，在 /callback 擷取 code
+    Auth-->>LiteLLM: 上游授權 code
+    LiteLLM-->>Browser: 閘道 code，重新導回用戶端
     Client->>LiteLLM: POST /{server}/token
-    Note over LiteLLM: seal LiteLLM identity + upstream token into one gateway-bound credential
-    LiteLLM-->>Client: gateway-bound credential
-    Client->>LiteLLM: MCP request + gateway-bound credential
-    Note over LiteLLM: admit, record spend / rate limit / audit / tool calls
-    LiteLLM->>MCP: forward request + upstream token (identity credential stripped)
-    MCP-->>LiteLLM: MCP response
-    LiteLLM-->>Client: MCP response
+    Note over LiteLLM: 將 LiteLLM 身分 + 上游權杖封裝成單一繫結於閘道的憑證
+    LiteLLM-->>Client: 繫結於閘道的憑證
+    Client->>LiteLLM: MCP 請求 + 繫結於閘道的憑證
+    Note over LiteLLM: 核准、記錄支出 / 速率限制 / 稽核 / 工具呼叫
+    LiteLLM->>MCP: 轉送請求 + 上游權杖（已移除身分憑證）
+    MCP-->>LiteLLM: MCP 回應
+    LiteLLM-->>Client: MCP 回應
 ```
 
-### Choosing the flag
+### 選擇旗標 {#choosing-the-flag}
 
-| Situation | `dcr_bridge` |
+| 情境 | `dcr_bridge` |
 |-----------|--------------|
-| An OAuth-only client (OpenCode, Claude Code, Cursor, Claude Desktop, ChatGPT) that holds no upstream `client_id` and cannot send two credentials | `true` |
-| A client already registered with the upstream IdP, or one that runs DCR directly against the upstream | `false` |
-| A scripted, non-interactive caller that can send `x-litellm-api-key` plus an upstream `Authorization` bearer | `false`, with `auth_type: oauth_delegate` (two-header form) |
+| 一個僅 OAuth 的用戶端（OpenCode、Claude Code、Cursor、Claude Desktop、ChatGPT），其沒有任何上游 `client_id`，且無法傳送兩個憑證 | `true` |
+| 已向上游 IdP 註冊的用戶端，或直接對上游執行 DCR 的用戶端 | `false` |
+| 可傳送 `x-litellm-api-key` 加上上游 `Authorization` bearer 的腳本化、非互動式呼叫者 | `false`，並搭配 `auth_type: oauth_delegate`（雙標頭形式） |
 
-### Connecting a client
+### 連接用戶端 {#connecting-a-client}
 
-- Point the client at `https://<gateway-host>/<server_name>/mcp` and let it discover OAuth from there.
-- Do not configure a `client_id` or secret on the client; the gateway handles registration and the token exchange.
-- On a `true_passthrough` bridge server the browser flow authorizes only with the upstream.
-- On an `oauth_delegate` bridge server it signs in to LiteLLM first, then authorizes with the upstream.
+- 將用戶端指向 `https://<gateway-host>/<server_name>/mcp`，並讓其從該處發現 OAuth。
+- 請勿在用戶端上設定 `client_id` 或密鑰；由閘道負責註冊與權杖交換。
+- 在 `true_passthrough` 橋接伺服器上，瀏覽器流程只會向上游進行授權。
+- 在 `oauth_delegate` 橋接伺服器上，會先登入 LiteLLM，然後再向上游授權。
 
-Follow each client's own MCP documentation for exact field names, which change over time.
+請遵循各用戶端自己的 MCP 文件以取得確切欄位名稱，這些名稱會隨時間變動。
 
-Claude Code registers and runs the browser flow on first use:
+Claude Code 會在首次使用時註冊並執行瀏覽器流程：
 
 ```bash
 claude mcp add --transport http miro https://<gateway-host>/miro/mcp
 ```
 
-Cursor reads remote MCP servers from `~/.cursor/mcp.json`:
+Cursor 會從 `~/.cursor/mcp.json` 讀取遠端 MCP 伺服器：
 
 ```json
 {
@@ -344,7 +344,7 @@ Cursor reads remote MCP servers from `~/.cursor/mcp.json`:
 }
 ```
 
-OpenCode reads them from `opencode.json`:
+OpenCode 會從 `opencode.json` 讀取它們：
 
 ```json
 {
@@ -358,25 +358,25 @@ OpenCode reads them from `opencode.json`:
 }
 ```
 
-### Config Reference
+### 設定參考 {#config-reference-2}
 
-| Field | Required | Description |
+| 欄位 | 必填 | 說明 |
 |-------|----------|-------------|
-| `auth_type` | Yes | Must be `true_passthrough` or `oauth_delegate`; `dcr_bridge` is rejected on any other value. |
-| `url` | Yes | The upstream MCP server URL. |
-| `dcr_bridge` | Yes | `true` so the gateway hosts sign-in for OAuth-only clients. Off relays the upstream's own OAuth metadata instead. |
+| `auth_type` | 是 | 必須是 `true_passthrough` 或 `oauth_delegate`；`dcr_bridge` 會拒絕任何其他值。 |
+| `url` | 是 | 上游 MCP 伺服器 URL。 |
+| `dcr_bridge` | 是 | `true`，因此閘道會為僅 OAuth 用戶端代管登入。關閉則改為轉送上游自己的 OAuth 中繼資料。 |
 
-## Delegate Auth to Upstream (PKCE Passthrough) {#delegate-auth-to-upstream-pkce-passthrough}
+## 將授權委派給上游（PKCE 透傳） {#delegate-auth-to-upstream-pkce-passthrough}
 
-:::warning[Deprecated]
+:::warning[已棄用]
 
-`delegate_auth_to_upstream` is the original flag-based form of client-forwarded OAuth and is deprecated. It no longer bypasses LiteLLM admission: on current versions LiteLLM still requires its own API key, SSO, or JWT on every request that carries a bearer, and the proxy logs a deprecation warning when a server is loaded with `auth_type: oauth2` and `delegate_auth_to_upstream: true`. New servers should use `auth_type: oauth_delegate` (admission required, upstream token forwarded) or `auth_type: true_passthrough` (no admission). Existing configs should migrate to one of those two. The section below describes what the legacy flag still does.
+`delegate_auth_to_upstream` 是 client-forwarded OAuth 的原始旗標式形式，現已棄用。它不再能繞過 LiteLLM 存取控制：在目前版本中，LiteLLM 對任何攜帶 bearer 的請求仍然要求其自身的 API 金鑰、SSO 或 JWT，且當伺服器載入 `auth_type: oauth2` 與 `delegate_auth_to_upstream: true` 時，proxy 會記錄棄用警告。新伺服器應使用 `auth_type: oauth_delegate`（需要存取控制，上游權杖會被轉送）或 `auth_type: true_passthrough`（不需存取控制）。既有設定應遷移至這兩者之一。下方章節說明這個舊旗標仍會做什麼。
 
 :::
 
-For OAuth2 MCP servers where the client authenticates directly against the upstream server's own OAuth issuer, the legacy flag lets a credential-free client reach the upstream's OAuth challenge through LiteLLM so it can start PKCE. Once the client holds an upstream token it must also present a LiteLLM credential, exactly as with `oauth_delegate`.
+對於 OAuth2 MCP 伺服器，若用戶端直接對上游伺服器自己的 OAuth issuer 進行驗證，這個舊旗標可讓無憑證用戶端透過 LiteLLM 抵達上游的 OAuth challenge，以便開始 PKCE。一旦用戶端持有上游權杖，就必須同時提供 LiteLLM 憑證，與 `oauth_delegate` 完全相同。
 
-### Setup
+### 設定 {#setup-2}
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -387,69 +387,69 @@ mcp_servers:
     delegate_auth_to_upstream: true
 ```
 
-Delegated servers are interactive, so they take `oauth2_flow: authorization_code`. The flag is honored **only** when `auth_type: oauth2`; setting it on any other auth type is silently ignored.
+委派伺服器是互動式的，因此會採用 `oauth2_flow: authorization_code`。此旗標**僅**在 `auth_type: oauth2` 時才會生效；將其設定於任何其他驗證類型時會被靜默忽略。
 
-:::warning[Internal-only (`available_on_public_internet: false`) and the anonymous discovery step]
+:::warning[僅限內部（`available_on_public_internet: false`）與匿名發現步驟]
 
-`available_on_public_internet: false` does not make the credential-free cold start authenticated. An anonymous caller with no `Authorization` header can still reach the upstream OAuth2 `/authorize` challenge for a matching `auth_type: oauth2` server with `delegate_auth_to_upstream: true` (not `oauth2_flow: client_credentials`). The internal-only flag mainly controls IP-based discovery and related behavior ([see guide](./mcp_public_internet.md)). Tool calls are not affected: any request carrying a bearer goes through LiteLLM admission.
+`available_on_public_internet: false` 不會讓無憑證的冷啟動變成已驗證。沒有 `Authorization` 標頭的匿名呼叫者，仍可到達相符的 `auth_type: oauth2` 伺服器之上游 OAuth2 `/authorize` challenge，前提是該伺服器為 `delegate_auth_to_upstream: true`（而非 `oauth2_flow: client_credentials`）。內部限用旗標主要控制基於 IP 的發現與相關行為（[請參閱指南](./mcp_public_internet.md)）。工具呼叫不受影響：任何攜帶 bearer 的請求都會經過 LiteLLM 存取控制。
 
 :::
 
-### How It Works
+### 運作方式 {#how-it-works-2}
 
-1. The client sends an MCP request to LiteLLM with no `Authorization` header and no `x-litellm-api-key`.
-2. Because every target server is `auth_type: oauth2` with `delegate_auth_to_upstream: true`, LiteLLM admits this credential-free request anonymously so the upstream's own `401` + `WWW-Authenticate` flows back to the client.
-3. The client completes PKCE directly with the upstream OAuth issuer.
-4. The client retries with `Authorization: Bearer <upstream-token>`. LiteLLM runs its own admission on this request. With no LiteLLM credential the request fails with `401`; the client has to send a LiteLLM key in `x-litellm-api-key` alongside the upstream bearer, which is the `oauth_delegate` request shape.
-5. Once admitted, LiteLLM forwards the upstream bearer untouched and never forwards the LiteLLM credential.
+1. 用戶端向 LiteLLM 傳送 MCP 請求，且沒有 `Authorization` 標頭和 `x-litellm-api-key`。
+2. 因為每個目標伺服器都以 `delegate_auth_to_upstream: true` 設為 `auth_type: oauth2`，LiteLLM 會匿名核准這個無憑證請求，讓上游自己的 `401` + `WWW-Authenticate` 流程回到用戶端。
+3. 用戶端直接與上游 OAuth issuer 完成 PKCE。
+4. 用戶端以 `Authorization: Bearer <upstream-token>` 重試。LiteLLM 會對此請求執行自己的存取控制。由於沒有 LiteLLM 憑證，請求會以 `401` 失敗；用戶端必須在 `x-litellm-api-key` 中連同上游 bearer 一起傳送 LiteLLM 金鑰，這就是 `oauth_delegate` 請求形狀。
+5. 一旦核准，LiteLLM 會不變地轉送上游 bearer，且絕不轉送 LiteLLM 憑證。
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant LiteLLM as LiteLLM Proxy
-    participant MCP as Upstream MCP Server
-    participant Auth as Upstream OAuth Server
+    participant MCP as 上游 MCP 伺服器
+    participant Auth as 上游 OAuth 伺服器
 
-    Client->>LiteLLM: MCP request (no credentials at all)
-    LiteLLM->>MCP: Forward request (no Authorization)
+    Client->>LiteLLM: MCP 請求（完全沒有憑證）
+    LiteLLM->>MCP: 轉送請求（無 Authorization）
     MCP-->>LiteLLM: 401 + WWW-Authenticate
-    LiteLLM-->>Client: 401 + WWW-Authenticate (passthrough)
+    LiteLLM-->>Client: 401 + WWW-Authenticate（透傳）
 
-    Note over Client,Auth: Client runs PKCE directly with upstream
-    Client->>Auth: Authorize + token exchange (PKCE)
+注意，Client 與 Auth：Client 直接與上游執行 PKCE
+    Client->>Auth: 授權 + token 交換（PKCE）
     Auth-->>Client: access_token
 
-    Client->>LiteLLM: MCP request + Bearer access_token (no LiteLLM key)
-    LiteLLM-->>Client: 401 (LiteLLM admission required)
+    Client->>LiteLLM: MCP 請求 + Bearer access_token（無 LiteLLM key）
+    LiteLLM-->>Client: 401（需要 LiteLLM admission）
 
-    Client->>LiteLLM: MCP request + x-litellm-api-key + Bearer access_token
-    Note over LiteLLM: Admit caller, strip admission credential
-    LiteLLM->>MCP: Forward request + Bearer access_token
-    MCP-->>LiteLLM: MCP response
-    LiteLLM-->>Client: MCP response
+    Client->>LiteLLM: MCP 請求 + x-litellm-api-key + Bearer access_token
+    注意，LiteLLM：允許呼叫端，移除 admission 憑證
+    LiteLLM->>MCP: 轉送請求 + Bearer access_token
+    MCP-->>LiteLLM: MCP 回應
+    LiteLLM-->>Client: MCP 回應
 ```
 
-### Fail-Closed Behavior
+### Fail-Closed 行為 {#fail-closed-behavior-1}
 
-The anonymous cold start fires only when the request carries no bearer and **every** target opts in. It runs normal LiteLLM auth when:
+匿名冷啟動只會在請求不帶 bearer 且**所有**目標都選擇加入時觸發。以下情況會執行正常的 LiteLLM 驗證：
 
-- The request carries an `Authorization` header (any bearer, including an upstream token).
-- The server's `auth_type` is anything other than `oauth2`.
-- `delegate_auth_to_upstream` is not explicitly `true`.
-- The server's effective `oauth2_flow` is `client_credentials`.
-- The request targets multiple servers (`x-mcp-servers: a,b`) and any one is not delegated.
-- The target server cannot be resolved from the URL path or `x-mcp-servers` header.
+- 請求帶有 `Authorization` 標頭（任何 bearer，包括上游 token）。
+- 伺服器的 `auth_type` 不是 `oauth2` 以外的任何值。
+- `delegate_auth_to_upstream` 沒有明確設為 `true`。
+- 伺服器的有效 `oauth2_flow` 是 `client_credentials`。
+- 請求目標為多個伺服器（`x-mcp-servers: a,b`），且其中任何一個未委派。
+- 無法從 URL 路徑或 `x-mcp-servers` 標頭解析出目標伺服器。
 
-### Security Trade-offs
+### 安全性取捨 {#security-trade-offs-2}
 
-- Only the credential-free discovery step is anonymous. Tool calls run under a LiteLLM identity, so spend tracking, per-key rate limits, and guardrails apply as they do for `oauth_delegate`.
-- LiteLLM forwards the upstream token without inspecting it, so the upstream still owns tool-level authorization and token validation.
-- Because the flag is deprecated and behaves like `oauth_delegate` once a bearer is present, migrate to `auth_type: oauth_delegate` rather than relying on it.
+- 只有免憑證探索步驟是匿名的。工具呼叫會在 LiteLLM 身分下執行，因此花費追蹤、每個 key 的速率限制，以及防護欄都會如同 `oauth_delegate` 一樣套用。
+- LiteLLM 會轉送上游 token 而不檢查它，因此上游仍負責工具層級的授權與 token 驗證。
+- 由於此旗標已棄用，且在存在 bearer 時行為如同 `oauth_delegate`，請改用 `auth_type: oauth_delegate`，不要依賴它。
 
-### Config Reference
+### 設定參考 {#config-reference-3}
 
-| Field | Required | Description |
+| 欄位 | 必填 | 說明 |
 |-------|----------|-------------|
-| `auth_type` | Yes | Must be `oauth2`. The flag is ignored otherwise. |
-| `oauth2_flow` | Yes | Set to `authorization_code`; delegation lets the client's interactive PKCE flow start against the upstream server. |
-| `delegate_auth_to_upstream` | Yes | Set to `true` to opt this server into the legacy delegate behavior. Deprecated in favor of `auth_type: oauth_delegate`. |
+| `auth_type` | 是 | 必須為 `oauth2`。否則此旗標會被忽略。 |
+| `oauth2_flow` | 是 | 設為 `authorization_code`；委派可讓用戶端的互動式 PKCE 流程在上游伺服器上啟動。 |
+| `delegate_auth_to_upstream` | 是 | 設為 `true`，以將此伺服器納入傳統委派行為。已棄用，改用 `auth_type: oauth_delegate`。 |

@@ -1,19 +1,19 @@
-# Azure AI OCR (Mistral, Cohere Parse)
+# Azure AI OCR (Mistral, Cohere Parse) {#azure-ai-ocr-mistral-cohere-parse}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure AI OCR provides document intelligence capabilities powered by Mistral and Cohere Parse, enabling text extraction from PDFs and images |
-| Provider Route on LiteLLM | `azure_ai/` |
-| Supported Operations | `/ocr` |
-| Link to Provider Doc | [Azure AI ↗](https://ai.azure.com/)
+| 說明 | Azure AI OCR 透過 Mistral 和 Cohere Parse 提供文件智慧功能，可從 PDF 和影像中擷取文字 |
+| LiteLLM 上的提供者路由 | `azure_ai/` |
+| 支援的操作 | `/ocr` |
+| 提供者文件連結 | [Azure AI ↗](https://ai.azure.com/)
 
-Extract text from documents and images using Azure AI's OCR models, powered by Mistral. Cohere Parse deployments are covered [below](#cohere-parse).
+使用 Azure AI 的 OCR 模型從文件和影像擷取文字，由 Mistral 提供支援。Cohere Parse 部署已在[下方](#cohere-parse)說明。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -37,7 +37,7 @@ for page in response.pages:
     print(page.markdown)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM PROXY** {#litellm-proxy}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -50,11 +50,11 @@ model_list:
       mode: ocr
 ```
 
-## Document Types
+## 文件類型 {#document-types}
 
-Azure AI OCR supports both PDFs and images.
+Azure AI OCR 支援 PDF 和圖片。
 
-### PDF Documents
+### PDF 文件 {#pdf-documents}
 
 ```python showLineNumbers title="PDF OCR"
 response = litellm.ocr(
@@ -66,7 +66,7 @@ response = litellm.ocr(
 )
 ```
 
-### Image Documents
+### 圖片文件 {#image-documents}
 
 ```python showLineNumbers title="Image OCR"
 response = litellm.ocr(
@@ -78,7 +78,7 @@ response = litellm.ocr(
 )
 ```
 
-### Base64 Encoded Documents
+### Base64 編碼文件 {#base64-encoded-documents}
 
 ```python showLineNumbers title="Base64 PDF"
 import base64
@@ -96,7 +96,7 @@ response = litellm.ocr(
 )
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Parameters"
 response = litellm.ocr(
@@ -111,7 +111,7 @@ response = litellm.ocr(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
 ```python showLineNumbers title="Response Structure"
 # Response has the following structure
@@ -126,7 +126,7 @@ for page in response.pages:
     print(page.markdown)
 ```
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async Usage"
 import litellm
@@ -140,19 +140,19 @@ response = await litellm.aocr(
 )
 ```
 
-## Important Notes
+## 重要注意事項 {#important-notes}
 
-:::info[URL Conversion]
-Azure AI OCR endpoints don't have internet access. LiteLLM automatically converts public URLs to base64 data URIs before sending requests to Azure AI.
+:::info[URL 轉換]
+Azure AI OCR 端點沒有網際網路存取權限。LiteLLM 會在將請求傳送至 Azure AI 之前，自動將公開 URL 轉換為 base64 data URI。
 :::
 
-## Cohere Parse
+## Cohere Parse {#cohere-parse}
 
-Azure AI Foundry also serves [Cohere Parse](https://ai.azure.com/catalog/models/Cohere-parse-v5) through the same `/ocr` endpoint. Use `azure_ai/<deployment name>`: a deployment whose name contains both `cohere` and `parse` (the catalog's default name `Cohere-parse-v5` does) is sent to the Cohere Parse API on your Foundry resource, at `{api_base}/providers/cohere/v2/parse`. Other names keep routing to Mistral OCR, so keep `cohere` and `parse` in the deployment name if you rename it.
+Azure AI Foundry 也透過相同的 `/ocr` 端點提供 [Cohere Parse](https://ai.azure.com/catalog/models/Cohere-parse-v5)。請使用 `azure_ai/<deployment name>`：名稱同時包含 `cohere` 和 `parse` 的部署（目錄的預設名稱 `Cohere-parse-v5` 就符合）會被送往您 Foundry 資源上的 Cohere Parse API，位於 `{api_base}/providers/cohere/v2/parse`。其他名稱仍會路由至 Mistral OCR，因此如果您重新命名，請將 `cohere` 和 `parse` 保留在部署名稱中。
 
-Parse accepts `image_url` documents only, an image URL or a base64 `data:image/...` URI. PDFs and `document_url` inputs are rejected with a 400 before anything is sent to Azure. Foundry cannot fetch external URLs, so LiteLLM downloads a remote image and sends it inline as a data URI, the same conversion it applies for the Mistral models above.
+Parse 只接受 `image_url` 文件、影像 URL 或 base64 `data:image/...` URI。PDF 和 `document_url` 輸入會在任何內容送到 Azure 之前以 400 拒絕。Foundry 無法擷取外部 URL，因此 LiteLLM 會下載遠端影像並將其以 data URI 內嵌送出，這與它對上述 Mistral 模型套用的轉換相同。
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-1}
 
 ```python showLineNumbers title="Cohere Parse on Azure AI"
 import litellm
@@ -175,7 +175,7 @@ for page in response.pages:
 print(response.usage_info.pages_processed)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM PROXY** {#litellm-proxy-1}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -199,15 +199,15 @@ curl http://0.0.0.0:4000/v1/ocr \
   }'
 ```
 
-`output_format` accepts `markdown` (default) or `blocks`, and `req_format: native` returns Cohere's own response body instead of the LiteLLM OCR shape. Cost tracking bills `usage_info.pages_processed` at the per-page price in the model cost map.
+`output_format` 接受 `markdown`（預設）或 `blocks`，而 `req_format: native` 會回傳 Cohere 自己的回應主體，而不是 LiteLLM OCR 的格式。成本追蹤會依模型成本對照表中的每頁價格向 `usage_info.pages_processed` 計費。
 
-The model cost map prices `azure_ai/Cohere-parse-v5` at Cohere's published rate of $1.50 per 1,000 pages, the price the Foundry catalog links to for this model.
+模型成本對照表將 `azure_ai/Cohere-parse-v5` 定價為 Cohere 公布的每 1,000 頁 1.50 美元，這也是 Foundry 目錄為此模型連結的價格。
 
-Health checks (`/health` and the Admin UI's Test Connection button) send Parse a small PNG instead of the PDF used for Mistral OCR. Each probe is a real one-page Parse call, so it bills one page per deployment per check. The `ocr` probe mode and the per-page price are both looked up in the model cost map under `Cohere-parse-v5`; a deployment under any other name needs `model_info: {mode: ocr, base_model: azure_ai/Cohere-parse-v5}` in its `model_list` entry, the same `mode` and `base_model` convention every other Azure model uses, so health checks probe it as OCR and spend tracking finds the Parse price instead of recording $0.
+健康檢查（`/health` 和 Admin UI 的 Test Connection 按鈕）會向 Parse 傳送一個小型 PNG，而不是 Mistral OCR 使用的 PDF。每次探測都是一次實際的單頁 Parse 請求，因此每次檢查會針對每個部署計費一頁。`ocr` 探測模式與每頁價格都會在模型成本對照表中以 `Cohere-parse-v5` 查找；任何其他名稱下的部署，其 `model_list` 項目都需要 `model_info: {mode: ocr, base_model: azure_ai/Cohere-parse-v5}`，這與每個其他 Azure 模型使用的 `mode` 和 `base_model` 慣例相同，因此健康檢查會將其視為 OCR 進行探測，而費用追蹤則會找到 Parse 價格，而不是記錄 $0。
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-- `mistral-document-ai-2505` - Latest Mistral OCR model on Azure AI
-- `Cohere-parse-v5` - Cohere Parse, image documents only
+- `mistral-document-ai-2505` - Azure AI 上最新的 Mistral OCR 模型
+- `Cohere-parse-v5` - Cohere Parse，僅限影像文件
 
-Use the Azure AI provider prefix: `azure_ai/<model-name>`
+使用 Azure AI 提供者前綴：`azure_ai/<model-name>`

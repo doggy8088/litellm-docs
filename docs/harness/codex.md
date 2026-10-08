@@ -3,20 +3,20 @@ title: Codex
 sidebar_label: Codex
 ---
 
-# Codex
+# Codex {#codex}
 
-`Harness.CODEX` runs OpenAI's Codex CLI with `codex exec --json` inside your sandbox and turns its JSONL events into events.
+`Harness.CODEX` 會在您的 sandbox 內執行 OpenAI 的 Codex CLI 並使用 `codex exec --json`，再將其 JSONL events 轉換為 events。
 
-## Install
+## 安裝 {#install}
 
 ```bash
 pip install litellm starlette uvicorn
 npm install -g @openai/codex   # inside the sandbox
 ```
 
-The `codex` binary must already be on the sandbox's `PATH`. If it isn't, the call raises `HarnessInstallFailed`.
+`codex` binary 必須已存在於 sandbox 的 `PATH` 上。如果沒有，該呼叫會引發 `HarnessInstallFailed`。
 
-## Usage
+## 使用 {#usage}
 
 ```python
 import litellm
@@ -31,9 +31,9 @@ result = litellm.agent(
 )
 ```
 
-## Use with LiteLLM AI Gateway
+## 與 LiteLLM AI Gateway 一起使用 {#use-with-litellm-ai-gateway}
 
-Codex speaks the OpenAI Responses API, so it fits best on an OpenAI reasoning model, which the gateway serves on `/v1/responses` natively. You can also give it a Claude or Gemini group; the gateway translates Responses requests into that provider's format, though Codex-specific features like reasoning summaries may not come through.
+Codex 使用 OpenAI Responses API，因此最適合搭配 OpenAI reasoning model，而閘道會在 `/v1/responses` 原生提供該模型。您也可以提供 Claude 或 Gemini group；閘道會將 Responses 請求轉換為該提供者的格式，不過像 reasoning summaries 這類 Codex 專屬功能可能不會傳遞過去。
 
 ```yaml title="config.yaml"
 model_list:
@@ -53,7 +53,7 @@ general_settings:
   database_url: os.environ/DATABASE_URL
 ```
 
-Create a virtual key scoped to that group.
+建立一個範圍限定於該 group 的 virtual key。
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
@@ -62,7 +62,7 @@ curl -X POST http://localhost:4000/key/generate \
   -d '{"models": ["gpt"], "key_alias": "codex"}'
 ```
 
-Then run with the `litellm_proxy/` prefix. Set the gateway in the environment, or pass it on the call.
+接著使用 `litellm_proxy/` prefix 執行。將閘道設定在環境中，或在呼叫時傳入。
 
 ```python
 import litellm
@@ -80,11 +80,11 @@ result = litellm.agent(
 )
 ```
 
-Codex calls `/v1/responses`. The gateway sees each request with `model` set to `gpt`, the header `x-litellm-tags: harness,codex`, and your `metadata` as `x-litellm-spend-logs-metadata`, so the spend log row carries both.
+Codex 會呼叫 `/v1/responses`。閘道會看到每個請求都設定了 `model` 為 `gpt`、header `x-litellm-tags: harness,codex`，以及您的 `metadata` 為 `x-litellm-spend-logs-metadata`，因此花費記錄列同時帶有兩者。
 
-`reasoning_effort` is sent to the model on every call and has the biggest effect on both quality and cost. `"high"` suits migrations and hard bugs; leave it unset for routine edits. It only does something on a group whose model supports reasoning effort, and a group behind translation may ignore it.
+`reasoning_effort` 會在每次呼叫時傳送給模型，且對品質與成本都有最大的影響。`"high"` 適合移轉與棘手的錯誤；例行編輯時請保持未設定。它只會在其模型支援 reasoning effort 的 group 上生效，而位於 translation 之後的 group 可能會忽略它。
 
-## Options
+## 選項 {#options}
 
 ```python
 @dataclass(frozen=True)
@@ -95,31 +95,31 @@ class CodexOptions:
     env: Mapping[str, str] = field(default_factory=dict)
 ```
 
-`config` passes native keys through untyped, because Codex's config changes often. Keys LiteLLM manages itself, such as `model_provider`, `model_providers` and `approval_policy`, raise `OptionsMismatch`.
+`config` 會將原生 key 不加型別地直接傳遞，因為 Codex 的設定經常變動。LiteLLM 自行管理的 key，例如 `model_provider`、`model_providers` 和 `approval_policy`，會引發 `OptionsMismatch`。
 
-## Models
+## 模型 {#models}
 
-Codex speaks the OpenAI Responses API. The adapter registers a `litellm` model provider with `wire_api="responses"` pointing at the session's local endpoint, and sets `CODEX_HOME` to a temporary directory so your own Codex config and login are never used. With a `litellm_proxy/` model the endpoint forwards `/v1/responses` to the gateway with the `harness,codex` tags, and the gateway translates for non-OpenAI model groups. Without a gateway it calls `litellm.aresponses`.
+Codex 使用 OpenAI Responses API。此 adapter 會註冊一個 `litellm` model provider，並將 `wire_api="responses"` 指向該 session 的本機 endpoint，同時將 `CODEX_HOME` 設為暫存目錄，如此便永遠不會使用您自己的 Codex 設定與登入資訊。使用 `litellm_proxy/` model 時，endpoint 會將 `/v1/responses` 與 `harness,codex` tags 一起轉送到閘道，而閘道會為非 OpenAI model groups 進行轉換。若沒有閘道，則會呼叫 `litellm.aresponses`。
 
-`OPENAI_API_KEY` and `CODEX_API_KEY` are never forwarded into the sandbox.
+`OPENAI_API_KEY` 與 `CODEX_API_KEY` 絕不會轉送到 sandbox 內。
 
-## Built-in tools
+## 內建工具 {#built-in-tools}
 
-Shell commands appear as `bash` and web searches as `web_search`. File edits show up as `FileChange` events from the sandbox snapshot, whether or not Codex reported them as a tool call.
+Shell commands 會顯示為 `bash`，web searches 則顯示為 `web_search`。檔案編輯會以來自 sandbox snapshot 的 `FileChange` events 顯示，不論 Codex 是否將其回報為 tool call。
 
-## Permissions
+## 權限 {#permissions}
 
 | Mode | Codex |
 |---|---|
 | `"read-only"` | `--sandbox read-only` |
-| `"full"` (default) | `--dangerously-bypass-approvals-and-sandbox` in `sandbox.docker`; `--sandbox workspace-write` with `approval_policy=never` in `sandbox.local` |
+| `"full"`（預設） | 在 `sandbox.docker` 中的 `--dangerously-bypass-approvals-and-sandbox`；在 `sandbox.local` 中使用 `approval_policy=never` 的 `--sandbox workspace-write` |
 
-Codex keeps its own OS-level sandbox on in `sandbox.local`, which protects your machine. It's turned off in Docker, where the container is already the boundary and nested sandboxing often fails. `"edit"` and `"ask"` raise `CapabilityUnsupported`.
+Codex 會在 `sandbox.local` 中維持其自己的 OS-level sandbox 開啟，以保護您的電腦。在 Docker 中則會關閉，因為容器本身已是邊界，而巢狀 sandboxing 常常會失敗。`"edit"` 與 `"ask"` 會引發 `CapabilityUnsupported`。
 
-## Skills, output and sessions
+## Skills、輸出與工作階段 {#skills-output-and-sessions}
 
-Skills are copied into `$CODEX_HOME/skills/<name>/`. Structured output uses Codex's native `--output-schema`. Later turns in a session use `codex exec resume` with the thread id from the first turn.
+Skills 會被複製到 `$CODEX_HOME/skills/<name>/`。結構化輸出使用 Codex 的原生 `--output-schema`。工作階段後續輪次會使用 `codex exec resume`，並帶入第一輪的 thread id。
 
-## Limits
+## 限制 {#limits}
 
-Codex can't filter its built-in tools, so `disable_tools=` raises `CapabilityUnsupported`. Custom Python `tools=` and `history()` aren't available.
+Codex 無法過濾其內建工具，因此 `disable_tools=` 會引發 `CapabilityUnsupported`。自訂 Python `tools=` 與 `history()` 無法使用。

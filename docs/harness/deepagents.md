@@ -3,19 +3,19 @@ title: Deep Agents
 sidebar_label: Deep Agents
 ---
 
-# Deep Agents
+# Deep Agents {#deep-agents}
 
-`Harness.DEEPAGENTS` runs LangChain's [Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview) in your Python process. There's no process to launch and nothing to install in the sandbox
+`Harness.DEEPAGENTS` 會在您的 Python 程序中執行 LangChain 的 [Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview)。不需要啟動任何程序，沙箱中也不需要安裝任何東西
 
-## Install
+## 安裝 {#install}
 
 ```bash
 pip install litellm deepagents langchain-litellm
 ```
 
-Deep Agents needs Python 3.11 or newer and doesn't need `starlette` or `uvicorn`. If `deepagents` or `langchain-litellm` is missing, the call raises `HarnessInstallFailed` with the install command. {/* keep-python-version */}
+Deep Agents 需要 Python 3.11 或更新版本，且不需要 `starlette` 或 `uvicorn`。如果缺少 `deepagents` 或 `langchain-litellm`，呼叫會以安裝指令引發 `HarnessInstallFailed`。{/* keep-python-version */}
 
-## Usage
+## 使用方式 {#usage}
 
 ```python
 import litellm
@@ -36,9 +36,9 @@ result = litellm.agent(
 )
 ```
 
-## Use with LiteLLM AI Gateway
+## 與 LiteLLM AI Gateway 搭配使用 {#use-with-litellm-ai-gateway}
 
-Deep Agents works with any model group that supports tool calling. A strong model pays off for the planning step, so a Claude or GPT group is a good default, with a cheaper group for subagents.
+Deep Agents 可與任何支援工具呼叫的模型群組搭配使用。強大的模型對規劃步驟很有幫助，因此 Claude 或 GPT 群組是良好的預設，而較便宜的群組則可用於子代理程式。
 
 ```yaml title="config.yaml"
 model_list:
@@ -56,7 +56,7 @@ general_settings:
   database_url: os.environ/DATABASE_URL
 ```
 
-Create a virtual key scoped to those groups.
+建立一個限定於這些群組的虛擬金鑰。
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
@@ -65,7 +65,7 @@ curl -X POST http://localhost:4000/key/generate \
   -d '{"models": ["claude", "gpt-mini"], "key_alias": "deepagents"}'
 ```
 
-Then run with the `litellm_proxy/` prefix. Set the gateway in the environment, or pass it on the call.
+接著使用 `litellm_proxy/` 前綴執行。將 gateway 設定在環境中，或在呼叫時傳入。
 
 ```python
 import litellm
@@ -83,11 +83,11 @@ result = litellm.agent(
 )
 ```
 
-Deep Agents calls `/v1/chat/completions` through a `ChatLiteLLM` model with `model="litellm_proxy/claude"`. The gateway sees each request with `model` set to `claude`, the header `x-litellm-tags: harness,deepagents`, and your `metadata` as `x-litellm-spend-logs-metadata`, the same attribution the CLI harnesses get.
+Deep Agents 會透過帶有 `ChatLiteLLM` 模型與 `model="litellm_proxy/claude"` 的 `/v1/chat/completions` 進行呼叫。gateway 會看到每個請求，且 `model` 設為 `claude`、標頭 `x-litellm-tags: harness,deepagents`，以及您的 `metadata` 作為 `x-litellm-spend-logs-metadata`，這與 CLI harness 所取得的歸因相同。
 
-Unlike the other harnesses, Deep Agents runs in your Python process and calls the gateway itself. There is no local endpoint and no session token, so the virtual key lives in your process, and your process needs network access to the gateway. Its packages, `pip install deepagents langchain-litellm`, go on the machine running your code rather than in the sandbox.
+不同於其他 harness，Deep Agents 會在您的 Python 程序中執行並自行呼叫 gateway。沒有本機端點，也沒有 session token，因此虛擬金鑰會存在於您的程序中，而您的程序需要能連線到 gateway。其套件 `pip install deepagents langchain-litellm` 會安裝在執行您程式碼的機器上，而不是沙箱中。
 
-## Options
+## 選項 {#options}
 
 ```python
 @dataclass(frozen=True)
@@ -96,9 +96,9 @@ class DeepAgentsOptions:
     recursion_limit: int | None = None   # LangGraph recursion limit per turn
 ```
 
-## How it maps
+## 對應方式 {#how-it-maps}
 
-The adapter calls `create_deep_agent()` once per session.
+此 adapter 每個工作階段呼叫一次 `create_deep_agent()`。
 
 | `litellm.agent()` | `create_deep_agent` |
 |---|---|
@@ -107,28 +107,28 @@ The adapter calls `create_deep_agent()` once per session.
 | `instructions=` | `system_prompt=` |
 | `tools=` | `tools=` |
 | `output=` | `response_format=` |
-| `sandbox=` | `backend=`, which runs file and shell tools through the sandbox |
-| sessions | `checkpointer=InMemorySaver()` with one thread per session |
+| `sandbox=` | `backend=`，其會透過沙箱執行檔案與 shell 工具 |
+| sessions | 每個工作階段一個執行緒的 `checkpointer=InMemorySaver()` |
 
-## Models
+## 模型 {#models}
 
-The model is a `ChatLiteLLM` chat model. With a `litellm_proxy/` model, calls go straight to the gateway with your virtual key and don't need the local endpoint. Cost and tokens come from LangChain's `usage_metadata`.
+此模型是 `ChatLiteLLM` 聊天模型。使用 `litellm_proxy/` 模型時，請求會直接帶著您的虛擬金鑰送到 gateway，且不需要本機端點。成本與 token 數量來自 LangChain 的 `usage_metadata`。
 
-## Sandbox
+## 沙箱 {#sandbox}
 
-The agent loop runs in your process, but its file tools and its `execute` shell tool run against your sandbox. With `sandbox.local(path)`, file access is limited to `path`.
+代理程式迴圈在您的程序中執行，但其檔案工具與 `execute` shell 工具會在您的沙箱上執行。使用 `sandbox.local(path)` 時，檔案存取僅限於 `path`。
 
-## Built-in tools
+## 內建工具 {#built-in-tools}
 
-`read_file`, `write_file`, `edit_file`, `ls`, `glob`, `grep` and `execute` appear as `read`, `write`, `edit`, `ls`, `glob`, `grep` and `bash`. `write_todos` and `task` keep their native names. `disable_tools=` removes tools by their normalized name.
+`read_file`、`write_file`、`edit_file`、`ls`、`glob`、`grep` 和 `execute` 會顯示為 `read`、`write`、`edit`、`ls`、`glob`、`grep` 和 `bash`。`write_todos` 和 `task` 保留其原生名稱。`disable_tools=` 會依據工具的標準化名稱移除工具。
 
-## Permissions
+## 權限 {#permissions}
 
-`"read-only"`, `"edit"` and `"full"` (the default) are supported. `"read-only"` removes the write, edit and execute tools, and `"edit"` removes `execute`.
+支援 `"read-only"`、`"edit"` 和 `"full"`（預設）。`"read-only"` 會移除 write、edit 和 execute 工具，而 `"edit"` 會移除 `execute`。
 
-## Sessions and history
+## 工作階段與歷史記錄 {#sessions-and-history}
 
-Deep Agents and Tool Loop support custom Python tools and history in this release. A Deep Agents session keeps a LangGraph checkpointer and a thread id, and `s.history()` returns the thread's messages in OpenAI format
+此版本中的 Deep Agents 與 Tool Loop 支援自訂 Python 工具和歷史記錄。Deep Agents 工作階段會保留 LangGraph checkpointer 與 thread id，而 `s.history()` 會以 OpenAI 格式回傳該執行緒的訊息
 
 ```python
 with litellm.agent_session(Harness.DEEPAGENTS, sandbox=box, model="litellm_proxy/claude") as s:

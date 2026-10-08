@@ -1,12 +1,12 @@
 ---
 slug: gemini_3_7_flash
-title: "Day 0 support: Gemini 3.7 Flash"
+title: "第 0 天支援：Gemini 3.7 Flash"
 date: 2026-08-13T10:00:00
 authors:
   - mateo
   - krrish
   - ishaan-alt
-description: "day 0 support for Gemini 3.7 Flash on LiteLLM, with launch pricing tracked across Google AI Studio and Vertex AI."
+description: "LiteLLM 對 Gemini 3.7 Flash 的第 0 天支援，並追蹤 Google AI Studio 與 Vertex AI 的上市定價。"
 image: ./hero.png
 tags: [gemini, gemini-3.7-flash, day 0 support, llms]
 hide_table_of_contents: false
@@ -17,28 +17,28 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x Gemini 3.7 Flash](./hero.png)
 
-# Gemini 3.7 Flash day 0 support
+# Gemini 3.7 Flash 第 0 天支援 {#gemini-37-flash-day-0-support}
 
-LiteLLM now supports `gemini-3.7-flash` on day 0, on both Google AI Studio (`gemini/`) and Vertex AI (`vertex_ai/`). Google's newest Flash model delivers faster responses with meaningfully better quality than 3.6 Flash and scores higher on complex multi-step agentic, coding, and reasoning benchmarks.
+LiteLLM 現在在第 0 天就支援 `gemini-3.7-flash`，可在 Google AI Studio（`gemini/`）與 Vertex AI（`vertex_ai/`）上使用。Google 最新的 Flash 模型可提供更快的回應，品質比 3.6 Flash 明顯更好，且在複雜的多步驟代理式、程式碼與推理基準測試中得分更高。
 
 {/* truncate */}
 
 :::note
-**No Docker image upgrade needed.** Gemini 3.7 Flash routes through the existing Gemini configs, so any recent LiteLLM version works out of the box for inference. For cost tracking, hit the **Reload Model Cost Map** button in the Admin UI (or `POST /reload/model_cost_map`) to pull the latest pricing from GitHub. This is available on `v1.76.0` and above. The `gemini-3.7-flash` pricing and metadata are also bundled starting in `v1.98.0-dev.2` for anyone running with `LITELLM_LOCAL_MODEL_COST_MAP=true`.
+**不需要升級 Docker 映像。** Gemini 3.7 Flash 會透過現有的 Gemini 設定進行路由，因此任何近期版本的 LiteLLM 都可直接用於推論。若要追蹤成本，請在管理介面中點擊 **Reload Model Cost Map** 按鈕（或 `POST /reload/model_cost_map`）以從 GitHub 取得最新定價。這項功能在 `v1.76.0` 及以上版本可用。從 `v1.98.0-dev.2` 開始，`gemini-3.7-flash` 的定價與中繼資料也會隨附提供，適用於任何使用 `LITELLM_LOCAL_MODEL_COST_MAP=true` 執行的人。
 :::
 
-## Launch pricing
+## 上市定價 {#launch-pricing}
 
-Gemini 3.7 Flash launches at a 50% discount that runs through December 31, 2026. LiteLLM tracks cost at the promotional rate.
+Gemini 3.7 Flash 上市期間提供 50% 折扣，至 2026 年 12 月 31 日止。LiteLLM 以促銷費率計算成本。
 
-| | Promotional | Standard |
+| | 促銷價 | 標準價 |
 |---|---|---|
-| Input | $0.75 / 1M tokens | $1.50 / 1M tokens |
-| Output | $3.75 / 1M tokens | $7.50 / 1M tokens |
+| 輸入 | $0.75 / 1M tokens | $1.50 / 1M tokens |
+| 輸出 | $3.75 / 1M tokens | $7.50 / 1M tokens |
 
-Cache reads, batch, flex, and priority tiers are discounted proportionally.
+快取讀取、批次、彈性與優先層級皆按比例折扣。
 
-## Quick Start
+## 快速入門 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -58,7 +58,7 @@ print(response.choices[0].message.content)
 
 <TabItem value="proxy" label="PROXY">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -75,13 +75,13 @@ model_list:
       vertex_location: us-central1
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Make requests**
+**3. 發送請求**
 
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -96,9 +96,9 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Thinking levels
+## 思考層級 {#thinking-levels}
 
-Gemini 3.7 Flash is a reasoning model. LiteLLM maps OpenAI `reasoning_effort` to Gemini's `thinkingLevel`, so the same request shape you use for other reasoning models works here.
+Gemini 3.7 Flash 是一個推理模型。LiteLLM 會將 OpenAI `reasoning_effort` 對應到 Gemini 的 `thinkingLevel`，因此您在其他推理模型上使用的相同請求格式也可在這裡使用。
 
 ```python
 from litellm import completion
@@ -112,21 +112,21 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-:::warning[Known limitation at launch]
-The `minimal` thinking level is not yet supported on `gemini-3.7-flash`. The Gemini API returns a 400 (`Thinking level MINIMAL is not supported for this model`). Google plans minimal thinking support as a fast follow. All other thinking levels work as expected.
+:::warning[已知的上市限制]
+尚未支援 `minimal` 思考層級於 `gemini-3.7-flash` 上使用。Gemini API 會回傳 400（`Thinking level MINIMAL is not supported for this model`）。Google 計畫以快速後續更新方式提供最小思考支援。其他所有思考層級都可如預期運作。
 :::
 
-## Supported Endpoints
+## 支援的端點 {#supported-endpoints}
 
-LiteLLM provides full end-to-end support for Gemini 3.7 Flash on:
+LiteLLM 為 Gemini 3.7 Flash 提供完整的端到端支援，適用於：
 
-- `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
-- `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- `/v1/generateContent` - [Google Gemini API](../../docs/generateContent) compatible endpoint
+- `/v1/chat/completions` - 相容於 OpenAI 的 chat completions 端點
+- `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
+- [`/v1/messages`](/docs/anthropic_unified) - 相容於 Anthropic 的 messages 端點
+- `/v1/generateContent` - 相容於 [Google Gemini API](/docs/generateContent) 的端點
 
-All endpoints support streaming and non-streaming responses, function calling with thought signatures, multi-turn conversations, and full multimodal input (text, image, audio, video).
+所有端點都支援串流與非串流回應、帶有 thought signatures 的 function calling、多輪對話，以及完整的多模態輸入（文字、圖片、音訊、影片）。
 
-## Feedback
+## 回饋 {#feedback}
 
-Running Gemini 3.7 Flash through LiteLLM and hitting something unexpected? Share it on [GitHub discussion #36799](https://github.com/BerriAI/litellm/discussions/36799).
+透過 LiteLLM 執行 Gemini 3.7 Flash 時遇到意外情況嗎？請在 [GitHub discussion #36799](https://github.com/BerriAI/litellm/discussions/36799) 分享。

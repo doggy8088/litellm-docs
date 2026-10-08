@@ -1,5 +1,5 @@
 ---
-title: "v1.84.3 - Dockerfile Re-cut for Non-Root Image"
+title: "v1.84.3 - 供非 root 映像重新裁切 Dockerfile"
 slug: "v1-84-3"
 date: 2026-05-27T00:00:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,10 +43,10 @@ pip install litellm==1.84.3
 </TabItem>
 </Tabs>
 
-`v1.84.3` is a Dockerfile-only re-cut of [`v1.84.2`](/release_notes/v1.84.2/v1-84-2); the application code is identical. It restores `npm` to the `Dockerfile.non_root` builder stage so the `litellm-non_root:1.84.3` image builds, which the `1.84.2` image did not.
+`v1.84.3` 是 [`v1.84.2`](/release_notes/v1.84.2/v1-84-2) 的僅 Dockerfile 重新裁切版本；應用程式程式碼完全相同。它將 `npm` 還原到 `Dockerfile.non_root` builder 階段，因此 `litellm-non_root:1.84.3` 映像可以建置，而 `1.84.2` 映像則無法。
 
-If you are upgrading from [`v1.84.1`](/release_notes/v1.84.1/v1-84-1), see the [`v1.84.2`](/release_notes/v1.84.2/v1-84-2) notes for the underlying code changes; in particular the path-handling hardening covered in the [host-header authentication bypass advisory](/blog/host-header-auth-bypass).
+如果您是從 [`v1.84.1`](/release_notes/v1.84.1/v1-84-1) 升級，請參閱 [`v1.84.2`](/release_notes/v1.84.2/v1-84-2) 附註以了解底層程式碼變更；特別是 [host-header authentication bypass advisory](/blog/host-header-auth-bypass) 所涵蓋的路徑處理強化。
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/5560f35279...v1.84.3

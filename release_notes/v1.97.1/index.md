@@ -1,5 +1,5 @@
 ---
-title: "v1.97.1 - Docker-Only Maintenance Release"
+title: "v1.97.1 - 僅限 Docker 的維護版釋出"
 slug: "v1-97-1"
 date: 2026-09-02T00:10:30
 authors:
@@ -18,15 +18,15 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info[This is a Docker-only release]
+:::info[這是僅限 Docker 的版本]
 
-`v1.97.1` is distributed as container images. There is no PyPI package for this version, so `pip install litellm==1.97.1` will not resolve. If you install LiteLLM from PyPI, stay on `1.97.0`; everything in this release is either a container-image build fix or a dependency refresh that only reaches you through the image.
+`v1.97.1` 以容器映像分發。此版本沒有 PyPI 套件，因此 `pip install litellm==1.97.1` 將無法解析。如果您是從 PyPI 安裝 LiteLLM，請維持在 `1.97.0`；此版本中的所有內容，要不是容器映像建置修正，就是只會透過映像送達您的相依套件更新。
 
-This release also does not move the `latest` tag. The current stable line is [`v1.99.0`](/release_notes/v1.99.0/v1-99-0).
+此版本也不會推進 `latest` 標記。當前穩定版本線是 [`v1.99.0`](/release_notes/v1.99.0/v1-99-0)。
 
 :::
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 ```bash
 docker run \
@@ -35,33 +35,33 @@ docker run \
 docker.litellm.ai/berriai/litellm:1.97.1
 ```
 
-The `litellm`, `litellm-database` and `litellm-non_root` variants are all published at this tag on both GHCR and Docker Hub, each cosign-signed as usual.
+`litellm`、`litellm-database` 和 `litellm-non_root` 這些變體都已在 GHCR 與 Docker Hub 的此標記下發佈，且一如往常皆經過 cosign 簽署。
 
-## What's in it
+## 其中內容 {#whats-in-it}
 
-`v1.97.1` is a maintenance patch on top of [`v1.97.0`](/release_notes/v1.97.0/v1-97-0). It carries no product changes: one fix that makes the images build again, and a refresh of five third-party dependencies.
+`v1.97.1` 是建立在 [`v1.97.0`](/release_notes/v1.97.0/v1-97-0) 之上的維護性修補程式。不包含產品變更：一個讓映像重新可建置的修正，以及五個第三方相依套件的更新。
 
-### Image builds
+### 映像建置 {#image-builds}
 
-Every image built from `stable/1.97.x` had started failing. The Dockerfiles pin their base image by digest, but `apk add python3` resolves against Wolfi's live package repository at build time, so the digest pin never held the Python version, and Wolfi had moved `python3` on to 3.14. `uvloop` 0.21.0 has no 3.14 wheel, so `uv sync` fell back to building it from source and the build died there. The `migrations` image failed one step earlier and for a different reason: its pinned base ships glibc 2.43, while Wolfi's current `python-3.13` needs 2.44.
+所有從 `stable/1.97.x` 建置的映像都開始失敗。Dockerfile 以 digest 鎖定其基底映像，但 `apk add python3` 在建置時是針對 Wolfi 的即時套件儲存庫解析，因此 digest 鎖定從未限制住 Python 版本，而 Wolfi 已經將 `python3` 推進到 3.14。`uvloop` 0.21.0 沒有 3.14 wheel，因此 `uv sync` 退回改從原始碼建置，並在那裡失敗。`migrations` 映像則早一步失敗，且原因不同：其鎖定的基底隨附 glibc 2.43，而 Wolfi 目前的 `python-3.13` 需要 2.44。
 
-All six Dockerfiles now pin `python-3.13` explicitly, pass `--python python3.13` to each `uv sync`, and set `UV_PYTHON_DOWNLOADS=0` so a missing interpreter fails loudly rather than silently pulling one down. The `migrations` image moves to the glibc 2.44 base. This is the same pair of failures that took down the 1.99.0 pipeline, fixed there first and cherry-picked back here.
+現在，所有六個 Dockerfile 都明確鎖定 `python-3.13`、將 `--python python3.13` 傳給每個 `uv sync`，並設定 `UV_PYTHON_DOWNLOADS=0`，因此缺少直譯器時會明確失敗，而不是悄悄下載一個。`migrations` 映像則改用 glibc 2.44 基底。這與導致 1.99.0 pipeline 當機的是同一組失敗，先在那裡修好，然後再挑選回補到這裡。
 
-### Dependency refresh
+### 相依套件更新 {#dependency-refresh}
 
-On the Python side, `RestrictedPython` moves to 8.5, `sqlparse` to 0.6.0 and `pypdf` to 6.15.0, each the smallest step that keeps the release current. The `RestrictedPython` update also raises the `proxy` extra's floor to `>=8.5,<9.0`, matching the range used on the development branch. That floor only matters if you build your own package from this branch, since there is no PyPI artifact for 1.97.1.
+在 Python 這一側，`RestrictedPython` 升至 8.5，`sqlparse` 升至 0.6.0，而 `pypdf` 升至 6.15.0，都是維持版本最新所需的最小幅度更新。`RestrictedPython` 更新也將 `proxy` 額外套件的下限提高到 `>=8.5,<9.0`，與開發分支上使用的範圍一致。只有在您從此分支自行建置套件時，該下限才有影響，因為 1.97.1 沒有 PyPI 成品。
 
-In the Admin UI's lockfile, `nanoid` moves to 3.3.18 and `browserslist` to 4.28.8. Neither is a direct dependency, so nothing in the dashboard's declared dependencies changes; `browserslist` brings its own build-data packages along with it. The dashboard bundle in this image was rebuilt against the new lockfile.
+在 Admin UI 的 lockfile 中，`nanoid` 升至 3.3.18，而 `browserslist` 升至 4.28.8。兩者都不是直接相依套件，因此儀表板的宣告相依套件沒有任何變更；`browserslist` 會連同它自己的建置資料套件一起帶上。此映像中的儀表板套件已根據新的 lockfile 重新建置。
 
-The `build_from_pip` Docker image pins `pypdf` outside the main lock and had been left behind at 6.7.5. It now installs 6.15.0, the same release the lock resolves. That image is a build variant and is not the published proxy image.
+`build_from_pip` Docker 映像在主 lockfile 之外鎖定 `pypdf`，且一直停留在 6.7.5。現在它安裝 6.15.0，也就是 lockfile 解析出的同一版。該映像是建置變體，不是已發佈的 proxy 映像。
 
-Two `pypdf` entries in `osv-scanner.toml` carry an `ignoreUntil` date that has already passed, so they no longer suppress anything. They are removed.
+`pypdf` 在 `osv-scanner.toml` 中有兩個項目帶有已經過期的 `ignoreUntil` 日期，因此它們已不再抑制任何內容。這些項目已移除。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- chore(deps): refresh stale dependency pins and cut 1.97.1 - [PR #39200](https://github.com/BerriAI/litellm/pull/39200)
-- fix(docker): pin apk python to 3.13 and bump wolfi-base on stable/1.97.x - [PR #39212](https://github.com/BerriAI/litellm/pull/39212)
+- chore(deps): 重新整理過期的相依性固定版本並發佈 1.97.1 - [PR #39200](https://github.com/BerriAI/litellm/pull/39200)
+- fix(docker): 將 apk python 固定到 3.13，並在 stable/1.97.x 上升級 wolfi-base - [PR #39212](https://github.com/BerriAI/litellm/pull/39212)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.97.0...474d7e50f09de2cbfe1c141ac29aca5246e0c0d7

@@ -1,12 +1,12 @@
-# ✨ Budget / Rate Limit Tiers
+# ✨ 預算 / 限流層級 {#-budget--rate-limit-tiers}
 
-Define tiers with rate limits. Assign them to keys. 
+定義具有速率限制的層級。將它們指派給金鑰。
 
-Use this to control access and budgets across a lot of keys.
+使用這個來控管大量金鑰的存取與預算。
 
 <EnterpriseFeature />
 
-## 1. Create a budget 
+## 1. 建立預算 {#1-create-a-budget}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/budget/new' \
@@ -18,7 +18,7 @@ curl -L -X POST 'http://0.0.0.0:4000/budget/new' \
 }'
 ```
 
-## 2. Assign budget to a key 
+## 2. 將預算指派給金鑰 {#2-assign-budget-to-a-key}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -29,7 +29,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-Expected Response:
+預期回應：
 
 ```json
 {
@@ -42,7 +42,7 @@ Expected Response:
 }
 ```
 
-## 3. Check if budget is enforced on key 
+## 3. 檢查金鑰上是否已強制執行預算 {#3-check-if-budget-is-enforced-on-key}
 
 ```bash
 # Authorization: 👈 KEY from step 2.
@@ -57,6 +57,4 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-
-## [API Reference](https://docs.litellm.ai/api-reference/#/budget%20management)
-
+## [API 參考](https://docs.litellm.ai/api-reference/#/budget%20management) {#api-reference}

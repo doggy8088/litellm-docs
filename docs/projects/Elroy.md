@@ -1,9 +1,8 @@
-# 🐕 Elroy
+# 🐕 Elroy {#-elroy}
 
-Elroy is a scriptable AI assistant that remembers and sets goals.
+Elroy 是一個可透過腳本操作的 AI 助理，能夠記住並設定目標。
 
-Interact through the command line, share memories via MCP, or build your own tools using Python.
-
+可透過命令列互動、經由 MCP 分享記憶，或使用 Python 建立您自己的工具。
 
 [![Static Badge][github-shield]][github-url]
 [![Discord][discord-shield]][discord-url]

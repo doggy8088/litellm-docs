@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteLLM Prompt Management (GitOps)
+# LiteLLM 提示詞管理（GitOps） {#litellm-prompt-management-gitops}
 
-Store prompts as `.prompt` files in your repository and use them directly with LiteLLM. No external services required.
+將提示詞儲存為儲存在您儲存庫中的 `.prompt` 檔案，並直接與 LiteLLM 搭配使用。無需外部服務。
 
-## Supported Integrations
+## 支援的整合 {#supported-integrations}
 
-- **File System**: Store `.prompt` files locally
-- **BitBucket**: Store `.prompt` files in BitBucket repositories with team-based access control
-- **Gitlab**: Store `.prompt` files in Gitlab repositories with team-based access control
-## Quick Start
+- **檔案系統**：在本機儲存 `.prompt` 檔案
+- **BitBucket**：在具備團隊型存取控制的 BitBucket 儲存庫中儲存 `.prompt` 檔案
+- **Gitlab**：在具備團隊型存取控制的 Gitlab 儲存庫中儲存 `.prompt` 檔案
+## 快速開始 {#quick-start}
 
 <Tabs>
 
 <TabItem value="sdk" label="SDK">
 
-**1. Create a .prompt file**
+**1. 建立 .prompt 檔案**
 
-Create `prompts/hello.prompt`:
+建立 `prompts/hello.prompt`：
 
 ```yaml nolint
 ---
@@ -30,7 +30,7 @@ System: You are a helpful assistant.
 User: {{user_message}}
 ```
 
-**2. Use with LiteLLM**
+**2. 與 LiteLLM 一起使用**
 
 ```python
 import litellm
@@ -48,9 +48,9 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="bitbucket" label="BITBUCKET">
 
-**1. Create a .prompt file in BitBucket**
+**1. 在 BitBucket 中建立 .prompt 檔案**
 
-Create `prompts/hello.prompt` in your BitBucket repository:
+在您的 BitBucket 儲存庫中建立 `prompts/hello.prompt`：
 
 ```yaml nolint
 ---
@@ -62,7 +62,7 @@ System: You are a helpful assistant.
 User: {{user_message}}
 ```
 
-**2. Configure BitBucket access**
+**2. 設定 BitBucket 存取權限**
 
 ```python
 import litellm
@@ -79,7 +79,7 @@ bitbucket_config = {
 litellm.set_global_bitbucket_config(bitbucket_config)
 ```
 
-**3. Use with LiteLLM**
+**3. 與 LiteLLM 一起使用**
 
 ```python
 response = litellm.completion(
@@ -92,9 +92,9 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="gitlab" label="GITLAB">
 
-**1. Create a .prompt file in a gitlab repo**
+**1. 在 gitlab 儲存庫中建立 .prompt 檔案**
 
-Create `prompts/hello.prompt` in your gitlab repository:
+在您的 gitlab 儲存庫中建立 `prompts/hello.prompt`：
 
 ```yaml nolint
 ---
@@ -106,7 +106,7 @@ System: You are a helpful assistant.
 User: {{user_message}}
 ```
 
-**2. Configure Gitlab access**
+**2. 設定 Gitlab 存取權限**
 
 ```python
 import litellm
@@ -122,7 +122,7 @@ gitlab_config = {
 litellm.set_global_gitlab_config(gitlab_config)
 ```
 
-**3. Use with LiteLLM**
+**3. 與 LiteLLM 一起使用**
 
 ```python
 response = litellm.completion(
@@ -136,9 +136,9 @@ response = litellm.completion(
 
 <TabItem value="proxy" label="PROXY">
 
-**1. Create a .prompt file**
+**1. 建立 .prompt 檔案**
 
-Create `prompts/hello.prompt`:
+建立 `prompts/hello.prompt`：
 
 ```yaml nolint
 ---
@@ -150,7 +150,7 @@ System: You are a helpful assistant.
 User: {{user_message}}
 ```
 
-**2. Setup config.yaml**
+**2. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -175,13 +175,13 @@ litellm_settings:
     branch: "main"
 ```
 
-**3. Start the proxy**
+**3. 啟動 proxy**
 
 ```bash
 litellm --config config.yaml --detailed_debug
 ```
 
-**4. Test it!**
+**4. 測試它！**
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -199,9 +199,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-### .prompt File Format
+### .prompt 檔案格式 {#prompt-file-format}
 
-`.prompt` files use YAML frontmatter for metadata and support Jinja2 templating:
+`.prompt` 檔案使用 YAML frontmatter 作為中繼資料，並支援 Jinja2 樣板化：
 
 ```yaml nolint
 ---
@@ -217,9 +217,9 @@ System: You are a helpful {{role}} assistant.
 User: {{user_message}}
 ```
 
-### Advanced Features
+### 進階功能 {#advanced-features}
 
-**Multi-role conversations:**
+**多角色對話：**
 
 ```yaml nolint
 ---
@@ -231,7 +231,7 @@ System: You are a helpful coding assistant.
 User: {{user_question}}
 ```
 
-**Dynamic model selection:**
+**動態模型選擇：**
 
 ```yaml nolint
 ---
@@ -243,18 +243,18 @@ System: You are a helpful assistant specialized in {{domain}}.
 User: {{user_message}}
 ```
 
-### API Reference
+### API 參考 {#api-reference}
 
-For prompt integrations, use these parameters:
+對於提示詞整合，請使用這些參數：
 
-**File System (dotprompt):**
+**檔案系統（dotprompt）：**
 ```
 model: dotprompt/<base_model>     # required (e.g., dotprompt/{{openai_large}})
 prompt_id: str                    # required - the .prompt filename without extension
 prompt_variables: Optional[dict]  # optional - variables for template rendering
 ```
 
-**BitBucket:**
+**BitBucket：**
 ```
 model: bitbucket/<base_model>     # required (e.g., bitbucket/{{openai_large}})
 prompt_id: str                    # required - the .prompt filename without extension
@@ -262,7 +262,7 @@ prompt_variables: Optional[dict]  # optional - variables for template rendering
 bitbucket_config: Optional[dict]  # optional - BitBucket configuration (if not set globally)
 ```
 
-**Gitlab:**
+**Gitlab：**
 ```
 model: gitlab/<base_model>        # required (e.g., gitlab/{{openai_large}})
 prompt_id: str                    # required - the .prompt filename without extension
@@ -270,7 +270,7 @@ prompt_variables: Optional[dict]  # optional - variables for template rendering
 gitlab_config: Optional[dict]     # optional - Gitlab configuration (if not set globally)
 ```
 
-**Example API calls:**
+**API 呼叫範例：**
 
 ```python
 # File system integration

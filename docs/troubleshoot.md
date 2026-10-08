@@ -1,69 +1,69 @@
-# Outage Troubleshooting
+# 停機故障排除 {#outage-troubleshooting}
 
-Use this page when LiteLLM nodes go down: pods restart or get OOMKilled, the load balancer marks targets unhealthy, or requests time out across the deployment. Most outages we investigate come down to sizing (CPU or memory per worker), workers recycling at the same time, or a dependency (database, Redis, an upstream provider) stalling the event loop. All of those are only visible from the deployment side, so support needs the information below to give you a root cause rather than a list of follow-up questions.
+當 LiteLLM 節點當機時，請使用此頁面：pod 重新啟動或出現 OOMKilled、負載平衡器將目標標記為不健康，或整個部署中的請求逾時。我們調查的大多數停機事件，最後都歸因於容量設定（每個 worker 的 CPU 或記憶體）、workers 同時重啟，或某個依賴項（資料庫、Redis、上游提供者）阻塞了 event loop。這些狀況只有從部署端才能看見，因此支援需要以下資訊，才能提供根本原因，而不是一連串後續問題。
 
-Gather everything in this list before opening a ticket. Redact API keys, database passwords, and other secrets from every file you share.
+在提交工單前，請先蒐集此清單中的所有項目。請從您分享的每個檔案中刪除 API 金鑰、資料庫密碼與其他機密。
 
-## What to send
+## 要提供的內容 {#what-to-send}
 
-| Information | Why we need it | How to collect it |
+| 資訊 | 我們需要它的原因 | 如何蒐集 |
 |-------------|----------------|-------------------|
-| Kubernetes events | Show restarts, `OOMKilled`, failed liveness or readiness probes, evictions, and scheduling failures, with timestamps | `kubectl get events` and `kubectl describe pod`, see [Kubernetes events](#kubernetes-events) |
-| `values.yaml` | Replica count, resource requests and limits, probe settings, autoscaling, worker count, and environment variables the pods actually run with | `helm get values <release>`, see [values.yaml](#valuesyaml) |
-| `config.yaml` | Model list, router settings, cache and database settings, callbacks, and general settings the proxy loaded | Read it from inside a running pod, see [config.yaml](#configyaml) |
-| Node type | The machine class the pods run on, so we can compare it against what the pods request | `kubectl describe node`, see [Node type](#node-type) |
-| CPU | CPU requests and limits per pod and CPU usage over the incident window, compared with the [sizing recommendation](./proxy/prod.md#machine-specifications) | `kubectl top pod` and your metrics dashboard, see [CPU and memory](#cpu-and-memory) |
-| Memory | Memory requests and limits per pod and memory usage over the incident window; an `OOMKilled` pod is a memory problem regardless of what the logs say | `kubectl top pod` and your metrics dashboard, see [CPU and memory](#cpu-and-memory) |
-| RPS | Requests per second the deployment was serving when it went down, and the normal baseline, so we can check the CPU and memory numbers against the load | Prometheus or load balancer metrics, see [RPS](#rps) |
+| Kubernetes 事件 | 顯示重新啟動、`OOMKilled`、失敗的 liveness 或 readiness probe、驅逐與排程失敗，並附時間戳記 | `kubectl get events` 與 `kubectl describe pod`，請參閱[Kubernetes 事件](#kubernetes-events) |
+| `values.yaml` | 副本數量、資源請求與限制、probe 設定、自動調整、worker 數量，以及 pod 實際執行時使用的環境變數 | `helm get values <release>`，請參閱[values.yaml](#valuesyaml) |
+| `config.yaml` | 代理程式載入的模型清單、路由設定、快取與資料庫設定、回呼，以及一般設定 | 從執行中的 pod 內讀取，請參閱[config.yaml](#configyaml) |
+| 節點類型 | pod 所執行的機器類別，以便與 pod 的請求內容進行比對 | `kubectl describe node`，請參閱[節點類型](#node-type) |
+| CPU | 每個 pod 的 CPU 請求與限制，以及事故期間的 CPU 使用量，並與[sizing recommendation](./proxy/prod.md#machine-specifications)比較 | `kubectl top pod`與您的 metrics 儀表板，請參閱[CPU 與記憶體](#cpu-and-memory) |
+| 記憶體 | 每個 pod 的記憶體請求與限制，以及事故期間的記憶體使用量；一個`OOMKilled` pod 就是記憶體問題，無論日誌說了什麼 | `kubectl top pod`與您的 metrics 儀表板，請參閱[CPU 與記憶體](#cpu-and-memory) |
+| RPS | 部署當機時的每秒請求數與正常基準，讓我們能將 CPU 與記憶體數字對照負載 | Prometheus 或負載平衡器 metrics，請參閱[RPS](#rps) |
 
-Along with those, include the LiteLLM version (the image tag, or `litellm_version` from `GET /health/readiness/details`), the timeline of the incident in UTC, what "down" looked like from your side (5xx from the load balancer, probe failures, restarts, timeouts), whether every replica failed at once or one at a time, whether the database and Redis were healthy at the same time, and anything that changed in the days before (a version upgrade, new models, a traffic increase, a change to `values.yaml` or `config.yaml`).
+除了上述內容之外，還請提供 LiteLLM 版本（映像標籤，或來自 `GET /health/readiness/details` 的 `litellm_version`）、事故的 UTC 時間線、您那邊看到的「當機」樣貌（負載平衡器回傳 5xx、probe 失敗、重新啟動、逾時）、是否所有副本同時失敗或依序失敗、資料庫與 Redis 是否同時健康，以及前幾天內的任何變更（版本升級、新模型、流量增加、`values.yaml` 或 `config.yaml` 的變更）。
 
-## Kubernetes events
+## Kubernetes 事件 {#kubernetes-events}
 
-Events record what Kubernetes did to the pods and why, and they expire after about an hour, so collect them as soon as possible after the incident.
+事件會記錄 Kubernetes 對 pod 做了什麼以及原因，而且大約一小時後就會過期，因此請在事故發生後盡快蒐集。
 
 ```shell
 kubectl get events -n <namespace> --sort-by=.lastTimestamp
 kubectl describe pod -n <namespace> <pod-name>
 ```
 
-Send the full output of both commands. In the `describe` output the `Last State`, `Reason`, `Exit Code`, and `Restart Count` fields tell us whether the container was `OOMKilled` (exit code 137), exited on its own (`Error`), or was killed because a probe failed. The `Events` section at the bottom shows probe failures and image, scheduling, or volume problems. If the pod was replaced, run the same commands against the new pod and include the previous container's logs:
+請提供這兩個指令的完整輸出。在 `describe` 輸出中，`Last State`、`Reason`、`Exit Code` 與 `Restart Count` 欄位會告訴我們容器是否為`OOMKilled`（exit code 137）、是否自行結束（`Error`），或是因為 probe 失敗而被終止。底部的 `Events` 區段會顯示 probe 失敗以及映像、排程或磁碟區問題。如果 pod 已被替換，請針對新 pod 執行相同指令，並附上前一個容器的日誌：
 
 ```shell
 kubectl logs -n <namespace> <pod-name> --previous
 ```
 
-If events have already expired, or the container runtime no longer has the previous container's logs, send the pod restart and termination history and the pod logs from your cluster's logging or monitoring system instead.
+如果事件已經過期，或容器執行環境不再保留前一個容器的日誌，請改提供 pod 重新啟動與終止歷史，以及來自您叢集的記錄或監控系統的 pod 日誌。
 
-## values.yaml
+## values.yaml {#valuesyaml}
 
-Send the values the release is actually running with, not the file in your repository, since the two drift.
+請提供發行版實際執行時使用的 values，而不是您儲存庫中的檔案，因為兩者可能會不同步。
 
 ```shell
 helm get values <release-name> -n <namespace>
 ```
 
-Add `--all` to include the chart defaults if you have not overridden `resources`, `replicaCount`, or the probe settings; we need to know what those resolve to. If you deploy with plain manifests or Kustomize instead of Helm, send the rendered `Deployment` (`kubectl get deployment -n <namespace> <name> -o yaml`) and the `HorizontalPodAutoscaler` if you have one.
+如果您尚未覆寫 `resources`、`replicaCount` 或 probe 設定，請加入 `--all` 以包含 chart 預設值；我們需要知道這些值最終會解析成什麼。如果您使用的是原始 manifest 或 Kustomize，而不是 Helm，請提供渲染後的 `Deployment`（`kubectl get deployment -n <namespace> <name> -o yaml`）以及 `HorizontalPodAutoscaler`（如果有的話）。
 
-## config.yaml
+## config.yaml {#configyaml}
 
-The Helm chart renders `proxy_config` from `values.yaml` into a ConfigMap and mounts it at `/etc/litellm/config.yaml`. Read it from a running pod so we see the configuration the proxy loaded, including any environment variable substitutions:
+Helm chart 會將來自 `values.yaml` 的 `proxy_config` 渲染成 ConfigMap，並掛載到 `/etc/litellm/config.yaml`。請從執行中的 pod 讀取，以便我們看到代理程式載入的設定，包括任何環境變數替換：
 
 ```shell
 kubectl exec -n <namespace> <pod-name> -- cat /etc/litellm/config.yaml
 ```
 
-If the pods are crash looping and `exec` fails with `container not found`, read the ConfigMap instead:
+如果 pod 正在反覆當機，而 `exec` 因 `container not found` 而失敗，請改讀取 ConfigMap：
 
 ```shell
 kubectl get configmap -n <namespace> <release-name>-config -o yaml
 ```
 
-Redact `api_key`, `database_url`, `master_key`, and any other secret before sending. Also include the environment variables the container runs with that affect capacity: `NUM_WORKERS`, `MAX_REQUESTS_BEFORE_RESTART`, `MAX_REQUESTS_BEFORE_RESTART_JITTER`, `DATABASE_CONNECTION_POOL_LIMIT`, `DATABASE_CONNECTION_TIMEOUT`, `REDIS_HOST`, and `LITELLM_MODE`.
+送出前請將 `api_key`、`database_url`、`master_key` 以及任何其他機密遮蔽。另外也請提供容器執行時會影響容量的環境變數：`NUM_WORKERS`、`MAX_REQUESTS_BEFORE_RESTART`、`MAX_REQUESTS_BEFORE_RESTART_JITTER`、`DATABASE_CONNECTION_POOL_LIMIT`、`DATABASE_CONNECTION_TIMEOUT`、`REDIS_HOST`，以及 `LITELLM_MODE`。
 
-## Node type
+## 節點類型 {#node-type}
 
-The node type is the instance class or machine spec of the Kubernetes nodes the LiteLLM pods are scheduled on. Cloud providers label each node with it, and `describe node` also shows how much of the node is already committed to other pods:
+節點類型是 LiteLLM pod 所排程到的 Kubernetes 節點之 instance 類別或機器規格。雲端提供者會為每個節點加上標籤，而 `describe node` 也會顯示該節點已有多少資源分配給其他 pod：
 
 ```shell
 kubectl get pod -n <namespace> <pod-name> -o wide
@@ -71,33 +71,33 @@ kubectl get node <node-name> -o jsonpath='{.metadata.labels.node\.kubernetes\.io
 kubectl describe node <node-name>
 ```
 
-Send the instance type (for example `m6i.2xlarge` or `n2-standard-8`) and the `Capacity`, `Allocatable`, and `Allocated resources` sections from `describe node`. If you run on bare metal or a VM, send the vCPU count and memory of the machine instead. A node that is oversubscribed will throttle LiteLLM even when the pod's own limits look correct.
+請提供 instance type（例如 `m6i.2xlarge` 或 `n2-standard-8`）以及 `describe node` 中的 `Capacity`、`Allocatable` 與 `Allocated resources` 區段。如果您是在裸機或 VM 上執行，請改提供該機器的 vCPU 數量與記憶體。若節點過度超額配置，即使 pod 自己的限制看起來正確，也會讓 LiteLLM 降速。
 
-## CPU and memory
+## CPU 與記憶體 {#cpu-and-memory}
 
-We need two things for each: what the pod is allowed (requests and limits), and what it used through the incident.
+每一項我們都需要兩件事：pod 被允許使用的內容（requests 與 limits），以及它在事故期間實際使用了多少。
 
 ```shell
 kubectl get pod -n <namespace> <pod-name> -o jsonpath='{range .spec.containers[*]}{.name}{"\t"}{.resources}{"\n"}{end}'
 kubectl top pod -n <namespace>
 ```
 
-`kubectl top` needs metrics-server installed in the cluster and shows current usage only, so also export a graph or table of CPU and memory per pod from Prometheus, CloudWatch, Datadog, or whatever you use, covering from an hour before the incident until after recovery. In Prometheus, `container_cpu_usage_seconds_total` and `container_memory_working_set_bytes` filtered by pod are the right series. Note the worker count per pod alongside the numbers: the [production guide](./proxy/prod.md#machine-specifications) recommends 1 vCPU and 4Gi of memory per worker, and a pod running four workers on 1 vCPU and 4Gi is undersized even though each worker looks configured correctly.
+`kubectl top` 需要在叢集中安裝 metrics-server，且只會顯示目前使用量，因此也請從 Prometheus、CloudWatch、Datadog，或您使用的其他工具，匯出事故前一小時到恢復後的每個 pod CPU 與記憶體圖表或表格。在 Prometheus 中，依 pod 篩選的 `container_cpu_usage_seconds_total` 與 `container_memory_working_set_bytes` 是正確的序列。請將每個 pod 的 worker 數量與數字一併註明：[production guide](./proxy/prod.md#machine-specifications) 建議每個 worker 使用 1 vCPU 與 4Gi 記憶體，而在 1 vCPU 與 4Gi 上執行四個 workers 的 pod 即使每個 worker 看起來都已正確設定，仍然屬於容量不足。
 
-## RPS
+## RPS {#rps}
 
-Requests per second tells us whether the deployment fell over under normal load or under a spike. If you have [Prometheus metrics](./proxy/prometheus.md) enabled, query the proxy request counter over the incident window:
+每秒請求數可告訴我們部署是因為正常負載還是突發尖峰而崩潰。如果您已啟用[Prometheus metrics](./proxy/prometheus.md)，請查詢事故期間的 proxy request counter：
 
 ```promql
 sum(rate(litellm_proxy_total_requests_metric_total[1m]))
 sum by (pod) (rate(litellm_proxy_total_requests_metric_total[1m]))
 ```
 
-If you do not scrape LiteLLM metrics, use the request count from the load balancer or ingress in front of it (for example the ALB `RequestCount` metric in CloudWatch). Send the peak RPS during the incident, the RPS in the hour before it, and the typical baseline, along with the number of replicas serving that traffic, so we can work out RPS per pod and per worker.
+如果您沒有抓取 LiteLLM metrics，請使用其前方負載平衡器或 ingress 的請求計數（例如 CloudWatch 中的 ALB `RequestCount` metric）。請提供事故期間的峰值 RPS、事故前一小時的 RPS 與典型基準，以及處理該流量的副本數量，以便我們算出每個 pod 與每個 worker 的 RPS。
 
-## Deployments without Kubernetes
+## 不使用 Kubernetes 的部署 {#deployments-without-kubernetes}
 
-For Docker Compose or a single container on a VM, the same information comes from Docker and the host:
+對於 Docker Compose 或 VM 上的單一容器，這些資訊都來自 Docker 與主機：
 
 ```shell
 docker inspect <container-name> --format '{{.State.Status}} {{.State.OOMKilled}} {{.State.ExitCode}} {{.RestartCount}} {{.HostConfig.NanoCpus}} {{.HostConfig.Memory}}'
@@ -106,12 +106,12 @@ docker stats --no-stream <container-name>
 nproc && free -h
 ```
 
-Send your `docker-compose.yaml` (or the `docker run` command) in place of `values.yaml`, the `config.yaml` you mount into the container, the VM's instance type or vCPU and memory, and the RPS from whatever load balancer sits in front of the container.
+請以您的 `docker-compose.yaml`（或 `docker run` 指令）取代 `values.yaml`，以及您掛載到容器中的 `config.yaml`，另外提供 VM 的 instance type 或 vCPU 與記憶體，以及位於容器前方的任何負載平衡器所提供的 RPS。
 
-## What we look at first
+## 我們首先查看的內容 {#what-we-look-at-first}
 
-Knowing what support checks first helps you check it yourself while you wait. Undersized pods are the most common cause: compare the CPU and memory limits and the worker count against the [machine specifications](./proxy/prod.md#machine-specifications). If several pods restarted at about the same time with no OOMKill, check whether `MAX_REQUESTS_BEFORE_RESTART` is set without [jitter](./proxy/server_tuning.md#recycle-workers), which makes workers that booted together recycle together. If readiness probes failed while the process stayed up, check the database: `GET /health/readiness` returns 503 when the configured database is unreachable, see [health endpoints](./proxy/health.md#probe-endpoints). If requests timed out while CPU stayed low, look for Redis or database timeouts in the logs and check the [production settings](./proxy/prod.md) for connection limits and request timeouts.
+了解哪些支援會先檢查，能讓您在等待時先自行檢查。尺寸過小的 pod 是最常見的原因：請將 CPU 和記憶體限制，以及 worker 數量，與 [機器規格](./proxy/prod.md#machine-specifications) 進行比較。若有多個 pod 大約在同一時間重新啟動，且沒有 OOMKill，請檢查 `MAX_REQUESTS_BEFORE_RESTART` 是否在未加上 [jitter](./proxy/server_tuning.md#recycle-workers) 的情況下設定，這會使同時啟動的 workers 也同時回收。若在程序仍持續執行時 readiness probe 失敗，請檢查資料庫：當設定的資料庫無法連線時，`GET /health/readiness` 會回傳 503，請參閱 [健康狀態端點](./proxy/health.md#probe-endpoints)。若請求逾時但 CPU 仍偏低，請在記錄中尋找 Redis 或資料庫逾時，並檢查 [正式環境設定](./proxy/prod.md) 中的連線限制與請求逾時。
 
-## Support
+## 支援 {#support}
 
-Share the collected information with the LiteLLM team on [Slack](https://www.litellm.ai/support), on [Discord](https://discord.gg/wuPM9dRgDw), or by email at [ishaan@berri.ai](mailto:ishaan@berri.ai) and [krrish@berri.ai](mailto:krrish@berri.ai). If you already have a support channel with us, post there.
+請將蒐集到的資訊透過 [Slack](https://www.litellm.ai/support)、[Discord](https://discord.gg/wuPM9dRgDw)，或寄送電子郵件至 [ishaan@berri.ai](mailto:ishaan@berri.ai) 和 [krrish@berri.ai](mailto:krrish@berri.ai) 與 LiteLLM 團隊分享。如果您已經有我們的支援頻道，請直接貼在那裡。

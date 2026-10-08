@@ -1,16 +1,15 @@
-
-# ✨ IP Address Filtering
+# ✨ IP 位址篩選 {#-ip-address-filtering}
 
 <EnterpriseFeature />
 
-Restrict which IP's can call the proxy endpoints.
+限制哪些 IP 可以呼叫 proxy 端點。
 
 ```yaml
 general_settings:
   allowed_ips: ["192.168.1.1"]
 ```
 
-**Expected Response** (if IP not listed)
+**預期回應**（如果 IP 未列出）
 
 ```bash
 {

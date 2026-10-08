@@ -1,5 +1,5 @@
 ---
-title: "v1.100.4 - UI and CLI Session Token Format"
+title: "v1.100.4 - UI 與 CLI 工作階段權杖格式"
 slug: "v1-100-4"
 date: 2026-09-30T00:56:00
 authors:
@@ -21,7 +21,7 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -45,33 +45,33 @@ pip install litellm==1.100.4
 </TabItem>
 </Tabs>
 
-This release is published as [`ghcr.io/berriai/litellm:v1.100.4`](https://github.com/BerriAI/litellm/pkgs/container/litellm). See the [GitHub release](https://github.com/BerriAI/litellm/releases/tag/v1.100.4) and the full [releases page](https://github.com/BerriAI/litellm/releases)
+此版本以 [`ghcr.io/berriai/litellm:v1.100.4`](https://github.com/BerriAI/litellm/pkgs/container/litellm) 形式發布。請參閱 [GitHub 發行版](https://github.com/BerriAI/litellm/releases/tag/v1.100.4) 以及完整的 [發行版頁面](https://github.com/BerriAI/litellm/releases)
 
 :::danger Breaking Changes
 
-**Session tokens issued before the upgrade stop working.** Admin UI and `lite` CLI users sign in once more after upgrading. During a rolling upgrade, pods on the old and new versions reject each other's session tokens, so finish the rollout before asking users to sign in again. Virtual keys, the master key and stored credentials are unaffected. See [`f7cd90f`](https://github.com/BerriAI/litellm/commit/f7cd90f09e9716652b38daec9f0640cdf49d582b)
+**升級前簽發的工作階段權杖將停止運作。** Admin UI 與 `lite` CLI 使用者在升級後需要再次登入一次。在滾動升級期間，舊版與新版上的 pod 會拒絕彼此的工作階段權杖，因此請先完成部署再要求使用者重新登入。虛擬金鑰、主金鑰與已儲存的憑證不受影響。請參閱 [`f7cd90f`](https://github.com/BerriAI/litellm/commit/f7cd90f09e9716652b38daec9f0640cdf49d582b)
 
 :::
 
-:::warning `lite` CLI users must log in again
+:::warning `lite` CLI 使用者必須重新登入
 
-After upgrading the proxy, every `lite` CLI user has to run `lite login` once more. Until they do, the CLI keeps sending its old session token and its requests to the proxy fail
+升級 proxy 之後，每位 `lite` CLI 使用者都必須再次執行 `lite login`。在此之前，CLI 會持續傳送舊的工作階段權杖，而對 proxy 的請求將失敗
 
 :::
 
-`v1.100.4` is a patch release on top of [`v1.100.3`](https://github.com/BerriAI/litellm/releases/tag/v1.100.3). It carries one change: the session tokens the Admin UI and the `lite` CLI receive after sign-in now use their own encryption context and a header-safe format. Both the Docker image and the PyPI package were built from [`883282f`](https://github.com/BerriAI/litellm/commit/883282fb72f31ab90a0ba828a10bbfe7d2680805)
+`v1.100.4` 是建立在 [`v1.100.3`](https://github.com/BerriAI/litellm/releases/tag/v1.100.3) 之上的修補版。它帶來一項變更：Admin UI 與 `lite` CLI 在登入後接收的工作階段權杖，現在使用它們自己的加密內容與標頭安全格式。Docker 映像與 PyPI 套件皆是從 [`883282f`](https://github.com/BerriAI/litellm/commit/883282fb72f31ab90a0ba828a10bbfe7d2680805) 建置而成
 
-## UI and CLI session tokens get their own format
+## UI 和 CLI 工作階段權杖有了自己的格式 {#ui-and-cli-session-tokens-get-their-own-format}
 
-Session tokens were encrypted with the same routine the proxy uses for stored credentials, so they carried a `v2:gcm:` prefix and base64 padding. Basic auth parsers split on the first `:` and browsers reject `:` and `=` in WebSocket subprotocols, so Langfuse pass-through and the realtime playground could not use them. About one login in 262,144 also produced a token starting with `sk-`, which the proxy then treated as a virtual key and rejected with a 401
+工作階段權杖先前是用 proxy 為已儲存憑證使用的相同程序加密，因此帶有 `v2:gcm:` 前綴與 base64 填充。基本驗證剖析器會在第一個 `:` 處分割，而瀏覽器會在 WebSocket 子協定中拒絕 `:` 與 `=`，因此 Langfuse pass-through 與即時 playground 無法使用它們。大約每 262,144 次登入也會產生一個以 `sk-` 開頭的權杖，而 proxy 隨即將其視為虛擬金鑰並以 401 拒絕
 
-Session tokens are now AES-256-GCM encrypted under a context of their own and returned as `litellm_login_` followed by unpadded base64url. They pass through any header, are easy to spot in logs, and are checked only as session tokens. Stored credentials keep their current encryption, so there is nothing to migrate
+工作階段權杖現在以它們自己的內容下的 AES-256-GCM 加密，並以 `litellm_login_` 加上未填充的 base64url 形式回傳。它們可通過任何標頭、在記錄中容易辨識，且只會作為工作階段權杖進行檢查。已儲存的憑證維持目前的加密方式，因此不需要遷移
 
-### What's Changed
+### 有什麼變更 {#whats-changed}
 
-- refactor(auth): bind UI/CLI session tokens to their own AES-GCM context - [`f7cd90f`](https://github.com/BerriAI/litellm/commit/f7cd90f09e9716652b38daec9f0640cdf49d582b)
-- chore(lint): scope a TRY004 suppression to the bearer-token salt key check - [`241abae`](https://github.com/BerriAI/litellm/commit/241abaec794d19b74ab6b490056be62d22836867)
+- refactor(auth): 將 UI/CLI 工作階段權杖繫結到它們自己的 AES-GCM 內容 - [`f7cd90f`](https://github.com/BerriAI/litellm/commit/f7cd90f09e9716652b38daec9f0640cdf49d582b)
+- chore(lint): 將 TRY004 抑制範圍限定於 bearer-token salt key 檢查 - [`241abae`](https://github.com/BerriAI/litellm/commit/241abaec794d19b74ab6b490056be62d22836867)
 
-## Full Changelog
+## 完整變更紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.100.3...v1.100.4

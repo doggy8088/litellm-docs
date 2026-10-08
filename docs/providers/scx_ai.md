@@ -1,41 +1,41 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# SCX.ai
+# SCX.ai {#scxai}
 
-## Overview
+## 總覽 {#overview}
 
 | Property | Details |
 |-------|-------|
-| Description | SCX.ai is an Australian sovereign AI platform serving open models over an OpenAI-compatible API, hosted on renewable-powered infrastructure. |
+| Description | SCX.ai 是一個澳洲主權 AI 平台，透過 OpenAI 相容的 API 提供開放模型，並部署於使用再生能源供電的基礎架構上。 |
 | Provider Route on LiteLLM | `scx-ai/` |
-| Link to Provider Doc | [SCX.ai Documentation ↗](https://scx.ai) |
+| Link to Provider Doc | [SCX.ai 文件 ↗](https://scx.ai) |
 | Base URL | `https://api.scx.ai/v1` |
 | Supported Operations | [`/chat/completions`](#usage---litellm-python-sdk) |
 
 <br />
 <br />
 
-**We support ALL SCX.ai chat models, just set `scx-ai/` as a prefix when sending completion requests**
+**我們支援所有 SCX.ai 聊天模型；在傳送 completion 請求時，只要將 `scx-ai/` 設為前綴即可**
 
-## Available Models
+## 可用模型 {#available-models}
 
 | Model | Description | Context Window | Max Output |
 |-------|-------------|----------------|------------|
-| `scx-ai/GLM-5.2` | Z.ai GLM-5.2, a 753B sparse MoE for long-horizon agentic coding | 1,048,576 tokens | 131,072 tokens |
-| `scx-ai/Qwen3.8-Max` | Alibaba Qwen3.8 Max, a 2.4T sparse MoE taking text and image input | 1,000,000 tokens | 131,072 tokens |
+| `scx-ai/GLM-5.2` | Z.ai GLM-5.2，適用於長期代理程式編碼的 753B 稀疏 MoE | 1,048,576 tokens | 131,072 tokens |
+| `scx-ai/Qwen3.8-Max` | Alibaba Qwen3.8 Max，支援文字與圖片輸入的 2.4T 稀疏 MoE | 1,000,000 tokens | 131,072 tokens |
 
-Both models support reasoning, function calling, JSON mode and JSON schema output. `scx-ai/Qwen3.8-Max` additionally accepts image input. Prompt caching is applied automatically on both, and cache hits are reported in `usage.prompt_tokens_details.cached_tokens` and billed at the cached input rate.
+兩個模型都支援推理、函式呼叫、JSON 模式與 JSON schema 輸出。`scx-ai/Qwen3.8-Max` 另外也接受圖片輸入。Prompt 快取會自動套用於兩者，且快取命中會回報於 `usage.prompt_tokens_details.cached_tokens`，並以快取輸入費率計費。
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["SCX_API_KEY"] = ""  # your SCX.ai API key
 ```
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="SCX.ai Non-streaming Completion"
 import os
@@ -55,7 +55,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="SCX.ai Streaming Completion"
 import os
@@ -77,7 +77,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="SCX.ai Function Calling"
 import os
@@ -116,7 +116,7 @@ response = completion(
 print(response)
 ```
 
-### Structured Output
+### 結構化輸出 {#structured-output}
 
 ```python showLineNumbers title="SCX.ai JSON Schema Output"
 import os
@@ -144,9 +144,9 @@ response = completion(
 print(response)
 ```
 
-### Vision
+### 視覺 {#vision}
 
-Image input is supported on `scx-ai/Qwen3.8-Max`. Images must be at least 10 pixels on each side.
+`scx-ai/Qwen3.8-Max` 支援圖片輸入。圖片每一邊至少必須為 10 像素。
 
 ```python showLineNumbers title="SCX.ai Image Input"
 import os
@@ -168,7 +168,7 @@ response = completion(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy Server
+## 使用方式 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -182,9 +182,9 @@ model_list:
       api_key: os.environ/SCX_API_KEY
 ```
 
-## Custom API Base
+## 自訂 API Base {#custom-api-base}
 
-**Option 1: Environment variable**
+**選項 1：環境變數**
 
 ```python showLineNumbers title="Custom API Base via env var"
 import os
@@ -199,7 +199,7 @@ response = completion(
 )
 ```
 
-**Option 2: Pass directly**
+**選項 2：直接傳入**
 
 ```python showLineNumbers title="Custom API Base via parameter"
 from litellm import completion
@@ -212,7 +212,7 @@ response = completion(
 )
 ```
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
 - `temperature`
 - `max_tokens`
@@ -232,4 +232,4 @@ response = completion(
 - `logprobs`
 - `top_logprobs`
 
-`max_completion_tokens` is sent upstream as `max_tokens`. SCX.ai accepts `temperature` in the range `[0.0, 2.0)` and rejects `2.0` itself, so LiteLLM clamps anything higher to `1.99`.
+`max_completion_tokens` 會以上游形式傳送為 `max_tokens`。SCX.ai 接受介於 `[0.0, 2.0)` 範圍內的 `temperature`，並拒絕 `2.0` 本身，因此 LiteLLM 會將任何更高的值限制為 `1.99`。

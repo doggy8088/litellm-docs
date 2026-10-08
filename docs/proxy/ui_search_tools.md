@@ -1,31 +1,30 @@
-# Search tools (Admin UI)
+# 搜尋工具（Admin UI） {#search-tools-admin-ui}
 
-Control which teams and virtual keys may call each configured web search integration (`/v1/search`) and see team/key level usage visibility within LiteLLM's spend dashboard.
-
+控制哪些團隊與虛擬金鑰可呼叫每個已設定的網路搜尋整合（`/v1/search`），並在 LiteLLM 的支出儀表板中查看團隊／金鑰層級的使用可見性。
 
 ![](/img/ui-search-tools/step-01-go-to-search-tools-tab.png)
 
-## Step 1: Register tools
+## 步驟 1：註冊工具 {#step-1-register-tools}
 
-**Search tools** page → create tool (name + provider + credentials).
+**搜尋工具** 頁面 → 建立工具（名稱 + 提供者 + 認證資訊）。
 
 ![](/img/ui-search-tools/step-02-add-new-search-tool.png)
 
-## Step 2: Team allowlist
+## 步驟 2：團隊允許清單 {#step-2-team-allowlist}
 
-**Teams** → create/edit team → open **Search Tool Settings** → add tool(s) to the team.
+**團隊** → 建立／編輯團隊 → 開啟 **搜尋工具設定** → 將工具加入該團隊。
 
 ![](/img/ui-search-tools/step-03-create-or-edit-team.png)
 ![](/img/ui-search-tools/step-04-open-search-tool-settings.png)
 ![](/img/ui-search-tools/step-05-add-search-tool-to-team.png)
 
-## Step 3: Key (optional stricter list)
+## 步驟 3：金鑰（可選的更嚴格清單） {#step-3-key-optional-stricter-list}
 
-**Virtual keys** → generate/update for that team → **Search Tool Settings** must stay inside the team list (if team list is non-empty).
+**虛擬金鑰** → 為該團隊產生／更新 → **搜尋工具設定** 必須維持在團隊清單內（如果團隊清單非空）。
 
 ![](/img/ui-search-tools/step-06-create-team-key.png)
 
-## Step 4: Call search
+## 步驟 4：呼叫搜尋 {#step-4-call-search}
 
 ```bash
 curl -sS -X POST "http://localhost:4000/v1/search/YOUR_SEARCH_TOOL_NAME" \
@@ -36,14 +35,14 @@ curl -sS -X POST "http://localhost:4000/v1/search/YOUR_SEARCH_TOOL_NAME" \
 
 ![](/img/ui-search-tools/step-07-open-usage-team-usage.png)
 
-## Step 5: See spend
+## 步驟 5：查看支出 {#step-5-see-spend}
 
-**Logs** → filter **Team ID** + **Public model / search tool** = `search_tool_name` → **Cost** column.
+**記錄** → 篩選 **團隊 ID** + **Public model / search tool** = `search_tool_name` → **Cost** 欄位。
 
 ![](/img/ui-search-tools/step-08-select-team.png)
 ![](/img/ui-search-tools/step-09-see-search-tool-usage.png)
 
-## Related
+## 相關 {#related}
 
-- [Search providers & YAML](../search/index.md)
-- [Proxy config (`search_tools` row)](./config_settings.md)
+- [搜尋提供者與 YAML](../search/index.md)
+- [Proxy 設定（`search_tools` 列）](./config_settings.md)

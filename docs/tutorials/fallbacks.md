@@ -1,32 +1,32 @@
 ---
-description: "Use completion() with model fallbacks (failover) so a failing provider automatically fails over to a backup model for reliable responses."
+description: "使用 completion() 搭配模型備援（failover），讓失敗的提供者自動切換到備用模型，以取得可靠的回應。"
 keywords: [fallbacks, failover, provider failover, model failover, reliability, backup model, completion]
 ---
 
-# Using completion() with Fallbacks (Failover) for Reliability
+# 使用 completion() 搭配備援（Failover）以提升可靠性 {#using-completion-with-fallbacks-failover-for-reliability}
 
-This tutorial demonstrates how to employ the `completion()` function with model fallbacks (also called failover) to improve reliability. LLM APIs can be unstable; `completion()` with fallbacks tries backup models in order when the primary model fails, and only raises once every model has been tried
+本教學示範如何將 `completion()` 函式與模型備援（也稱為 failover）搭配使用，以提升可靠性。LLM API 可能不穩定；搭配備援的 `completion()` 會在主要模型失敗時依序嘗試備用模型，並且只會在所有模型都嘗試過後才拋出例外
 
-## Set Up Fallbacks for a Virtual Key
+## 為虛擬金鑰設定備援 {#set-up-fallbacks-for-a-virtual-key}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/35539129dd104313aff40eb1cd255778" frameBorder="0" allowFullScreen></iframe>
 
-## Usage 
-To use fallback models with `completion()`, specify a list of models in the `fallbacks` parameter. 
+## 使用方式  {#usage}
+若要在 `completion()` 中使用備援模型，請在 `fallbacks` 參數中指定模型清單。
 
-The `fallbacks` list holds the backup models to try, in order, if the primary model passed as `model` fails to provide a response. The primary model is tried first automatically, so it does not need to be repeated in the list.
+`fallbacks` 清單會依順序保存要嘗試的備用模型，前提是作為 `model` 傳入的主要模型無法提供回應。主要模型會自動先嘗試，因此不需要在清單中重複列出。
 
 ```python
 response = completion(model="bad-model", fallbacks=["{{openai_small}}", "command-nightly"], messages=messages)
 ```
 
-An entry in `fallbacks` can also be a dict that overrides litellm params for that attempt, for example `{"model": "{{openai_small}}", "api_key": "sk-..."}`.
+`fallbacks` 中的項目也可以是會覆寫此次嘗試之 litellm 參數的字典，例如 `{"model": "{{openai_small}}", "api_key": "sk-..."}`。
 
-## How does `completion_with_fallbacks()` work
+## `completion_with_fallbacks()` 的運作方式 {#how-does-completion_with_fallbacks-work}
 
-When `fallbacks` is set (or `litellm.model_fallbacks` is configured), `completion()` hands the call to `completion_with_fallbacks()`, which runs `async_completion_with_fallbacks()`. It makes a single ordered pass over `[model] + fallbacks`, calling each model once. The first non-`None` response is returned, with an `x-litellm-attempted-fallbacks` header set to the number of fallbacks tried before the successful model (0 when the primary model succeeded). If every attempt fails, an exception is raised containing the most recent error and the message `All fallback attempts failed`. There is no time window, no retry loop and no per-model cooldown; each model is attempted exactly once.
+當設定 `fallbacks`（或已設定 `litellm.model_fallbacks`）時，`completion()` 會將呼叫交給 `completion_with_fallbacks()`，由其執行 `async_completion_with_fallbacks()`。它會對 `[model] + fallbacks` 進行一次依序的單次掃描，每個模型只呼叫一次。會回傳第一個非 `None` 的回應，並設定 `x-litellm-attempted-fallbacks` 標頭為在成功模型之前嘗試過的備援數量（若主要模型成功則為 0）。如果每次嘗試都失敗，則會拋出包含最新錯誤以及訊息 `All fallback attempts failed` 的例外。此機制沒有時間視窗、沒有重試迴圈，也沒有每個模型的冷卻時間；每個模型都只會嘗試一次。
 
-### Output from calls
+### 請求的輸出 {#output-from-calls}
 ```
 Completion with 'bad-model': got exception Unable to map your input to a model. Check your input - {'model': 'bad-model'
 
@@ -57,7 +57,7 @@ completion call {{openai_small}}
 
 ```
 
-### Core of the implementation
+### 實作核心 {#core-of-the-implementation}
 ```python
 fallbacks = [original_model] + nested_kwargs.pop("fallbacks", [])
 
@@ -83,4 +83,4 @@ for attempted_fallbacks, fallback in enumerate(fallbacks):
 raise Exception(f"{most_recent_exception_str}. All fallback attempts failed. ...")
 ```
 
-See `litellm/litellm_core_utils/fallback_utils.py` for the full implementation.
+完整實作請參見 `litellm/litellm_core_utils/fallback_utils.py`。

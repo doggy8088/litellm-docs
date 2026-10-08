@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cerebras
+# Cerebras {#cerebras}
 https://inference-docs.cerebras.ai/api-reference/chat-completions
 
 :::tip
 
-**We support ALL Cerebras models, just set `model=cerebras/<any-model-on-cerebras>` as a prefix when sending litellm requests**
+**我們支援所有 Cerebras 模型，只要在傳送 litellm 請求時將 `model=cerebras/<any-model-on-cerebras>` 設為前綴即可**
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['CEREBRAS_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -45,7 +45,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -78,11 +78,11 @@ for chunk in response:
 ```
 
 
-## Usage with LiteLLM Proxy Server
+## 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server}
 
-Here's how to call a Cerebras model with the LiteLLM Proxy Server
+以下是如何透過 LiteLLM Proxy Server 呼叫 Cerebras 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -93,13 +93,13 @@ Here's how to call a Cerebras model with the LiteLLM Proxy Server
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 傳送請求
 
   <Tabs>
 
@@ -145,5 +145,3 @@ Here's how to call a Cerebras model with the LiteLLM Proxy Server
   </TabItem>
 
   </Tabs>
-
-

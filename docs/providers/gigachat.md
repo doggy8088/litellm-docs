@@ -1,38 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# GigaChat
+# GigaChat {#gigachat}
 https://developers.sber.ru/docs/ru/gigachat/api/overview
 
-GigaChat is Sber AI's large language model, Russia's leading LLM provider.
+GigaChat 是 Sber AI 的大型語言模型，也是俄羅斯領先的 LLM 提供者。
 
 :::tip
 
-**We support ALL GigaChat models, just set `model=gigachat/<any-model-on-gigachat>` as a prefix when sending litellm requests**
+**我們支援所有 GigaChat 模型，只要在傳送 litellm 請求時將 `model=gigachat/<any-model-on-gigachat>` 作為前綴即可**
 
 :::
 
 :::warning
 
-GigaChat API uses self-signed SSL certificates. You must pass `ssl_verify=False` in your requests.
+GigaChat API 使用自簽署 SSL 憑證。您必須在請求中傳遞 `ssl_verify=False`。
 
 :::
 
-## Supported Features
+## 支援的功能 {#supported-features}
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Chat Completion | Yes |
-| Streaming | Yes |
-| Async | Yes |
-| Function Calling / Tools | Yes |
-| Structured Output (JSON Schema) | Yes (via function call emulation) |
-| Image Input | Yes (base64 and URL) - GigaChat-2-Max, GigaChat-2-Pro only |
-| Embeddings | Yes |
+| 聊天完成 | 是 |
+| 串流 | 是 |
+| 非同步 | 是 |
+| 函式呼叫 / 工具 | 是 |
+| 結構化輸出（JSON Schema） | 是（透過函式呼叫模擬） |
+| 圖片輸入 | 是（base64 和 URL）- 僅限 GigaChat-2-Max、GigaChat-2-Pro |
+| 嵌入 | 是 |
 
-## API Key
+## API 金鑰 {#api-key}
 
-GigaChat uses OAuth authentication. Set your credentials as environment variables:
+GigaChat 使用 OAuth 驗證。請將您的憑證設定為環境變數：
 
 ```python
 import os
@@ -44,9 +44,9 @@ os.environ['GIGACHAT_CREDENTIALS'] = "your-credentials-here"
 os.environ['GIGACHAT_SCOPE'] = "GIGACHAT_API_PERS"  # or GIGACHAT_API_B2B for business
 ```
 
-Get your credentials at: https://developers.sber.ru/studio/
+您的憑證可在此取得：https://developers.sber.ru/studio/
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 ```python
 from litellm import completion
@@ -64,7 +64,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 
 ```python
 from litellm import completion
@@ -85,7 +85,7 @@ for chunk in response:
     print(chunk)
 ```
 
-## Sample Usage - Function Calling
+## 範例用法 - 函式呼叫 {#sample-usage---function-calling}
 
 ```python
 from litellm import completion
@@ -117,9 +117,9 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Structured Output
+## 範例用法 - 結構化輸出 {#sample-usage---structured-output}
 
-GigaChat supports structured output via JSON schema (emulated through function calling):
+GigaChat 支援透過 JSON schema 的結構化輸出（透過函式呼叫模擬）：
 
 ```python
 from litellm import completion
@@ -148,9 +148,9 @@ response = completion(
 print(response)  # Returns JSON: {"name": "John", "age": 30}
 ```
 
-## Sample Usage - Image Input
+## 範例用法 - 圖片輸入 {#sample-usage---image-input}
 
-GigaChat supports image input via base64 or URL (GigaChat-2-Max and GigaChat-2-Pro only):
+GigaChat 支援透過 base64 或 URL 的圖片輸入（僅限 GigaChat-2-Max 和 GigaChat-2-Pro）：
 
 ```python
 from litellm import completion
@@ -172,7 +172,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Embeddings
+## 範例用法 - Embeddings {#sample-usage---embeddings}
 
 ```python
 from litellm import embedding
@@ -188,9 +188,9 @@ response = embedding(
 print(response)
 ```
 
-## Usage with LiteLLM Proxy
+## 與 LiteLLM Proxy 搭配使用 {#usage-with-litellm-proxy}
 
-### 1. Set GigaChat Models on config.yaml
+### 1. 在 config.yaml 上設定 GigaChat 模型 {#1-set-gigachat-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -211,16 +211,16 @@ model_list:
       ssl_verify: false
 ```
 
-### 2. Start Proxy
+### 2. 啟動 Proxy {#2-start-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -254,30 +254,30 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-### Chat Models
+### 聊天模型 {#chat-models}
 
-| Model Name | Context Window | Vision | Description |
+| 模型名稱 | Context 視窗 | 視覺 | 說明 |
 |------------|----------------|--------|-------------|
-| gigachat/GigaChat-2-Lite | 128K | No | Fast, lightweight model |
-| gigachat/GigaChat-2-Pro | 128K | Yes | Professional model with vision |
-| gigachat/GigaChat-2-Max | 128K | Yes | Maximum capability model |
+| gigachat/GigaChat-2-Lite | 128K | 否 | 快速、輕量級模型 |
+| gigachat/GigaChat-2-Pro | 128K | 是 | 具備視覺能力的專業模型 |
+| gigachat/GigaChat-2-Max | 128K | 是 | 最高能力模型 |
 
-### Embedding Models
+### Embedding 模型 {#embedding-models}
 
-| Model Name | Max Input | Dimensions | Description |
+| 模型名稱 | 最大輸入 | 維度 | 說明 |
 |------------|-----------|------------|-------------|
-| gigachat/Embeddings | 512 | 1024 | Standard embeddings |
-| gigachat/Embeddings-2 | 512 | 1024 | Updated embeddings |
-| gigachat/EmbeddingsGigaR | 4096 | 2560 | High-dimensional embeddings |
+| gigachat/Embeddings | 512 | 1024 | 標準 embeddings |
+| gigachat/Embeddings-2 | 512 | 1024 | 更新的 embeddings |
+| gigachat/EmbeddingsGigaR | 4096 | 2560 | 高維度 embeddings |
 
 :::note
-Available models may vary depending on your API access level (personal or business).
+可用模型可能會因您的 API 存取層級（個人或企業）而有所不同。
 :::
 
-## Limitations
+## 限制 {#limitations}
 
-- Only one function call per request (GigaChat API limitation)
-- Maximum 1 image per message, 10 images total per conversation
-- GigaChat API uses self-signed SSL certificates - `ssl_verify=False` is required
+- 每個請求僅限一個函式呼叫（GigaChat API 限制）
+- 每則訊息最多 1 張圖片，每次對話總共最多 10 張圖片
+- GigaChat API 使用自簽署 SSL 憑證 - 需要 `ssl_verify=False`

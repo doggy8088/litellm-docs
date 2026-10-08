@@ -1,14 +1,14 @@
-# Cloudflare Workers AI
+# Cloudflare Workers AI {#cloudflare-workers-ai}
 https://developers.cloudflare.com/workers-ai/models/text-generation/
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['CLOUDFLARE_API_KEY'] = "3dnSGlxxxx"
 os.environ['CLOUDFLARE_ACCOUNT_ID'] = "03xxxxx"
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -25,7 +25,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -45,14 +45,12 @@ for chunk in response:
     print(chunk)
 ```
 
-## Supported Models
-All models listed here https://developers.cloudflare.com/workers-ai/models/text-generation/ are supported
+## 支援的模型 {#supported-models}
+此處列出的所有模型 https://developers.cloudflare.com/workers-ai/models/text-generation/ 都支援
 
-| Model Name                        | Function Call                                            |
+| 模型名稱                        | 函式呼叫                                            |
 |-----------------------------------|----------------------------------------------------------|
 | @cf/meta/llama-2-7b-chat-fp16     | `completion(model="mistral/mistral-tiny", messages)`    |
 | @cf/meta/llama-2-7b-chat-int8     | `completion(model="mistral/mistral-small", messages)`   |
 | @cf/mistral/mistral-7b-instruct-v0.1 | `completion(model="mistral/mistral-medium", messages)` |
 | @hf/thebloke/codellama-7b-instruct-awq | `completion(model="codellama/codellama-medium", messages)` |
-
-

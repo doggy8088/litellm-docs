@@ -1,0 +1,258 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# /realtime
+
+Use this to loadbalance across Azure + OpenAI + xAI and more. 
+
+Supported Providers:
+- OpenAI
+- Azure
+- xAI ([see full docs](/docs/providers/xai_realtime))
+- Google AI Studio (Gemini)
+- Vertex AI
+- Vertex AI Chirp, transcription only ([see full docs](/docs/providers/vertex_transcription#chirp-realtime-transcription))
+- Bedrock
+- Meta Muse Voice, transcription only ([see full docs](/docs/providers/meta#muse-voice-realtime-transcription))
+
+## Proxy Usage
+
+### Add model to config 
+
+
+<Tabs>
+<TabItem value="openai" label="OpenAI">
+
+```yaml
+model_list:
+  - model_name: openai-gpt-4o-realtime-audio
+    litellm_params:
+      model: openai/gpt-4o-realtime-preview-2024-10-01
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      mode: realtime
+```
+</TabItem>
+<TabItem value="openai+azure" label="OpenAI + Azure">
+
+```yaml
+model_list:
+  - model_name: azure-gpt-4o-realtime-audio
+    litellm_params:
+      model: azure/gpt-4o-realtime-preview
+      api_key: os.environ/AZURE_SWEDEN_API_KEY
+      api_base: os.environ/AZURE_SWEDEN_API_BASE
+
+  - model_name: azure-gpt-realtime
+    litellm_params:
+      model: azure/gpt-realtime
+      api_key: os.environ/AZURE_API_KEY
+      api_base: os.environ/AZURE_API_BASE
+    model_info:
+      mode: realtime
+
+  - model_name: openai-gpt-4o-realtime-audio
+    litellm_params:
+      model: openai/gpt-4o-realtime-preview-2024-10-01
+      api_key: os.environ/OPENAI_API_KEY
+```
+
+</TabItem>
+<TabItem value="xai" label="xAI Grok Voice Agent">
+
+```yaml
+model_list:
+  - model_name: grok-voice-agent
+    litellm_params:
+      model: xai/grok-voice-latest
+      api_key: os.environ/XAI_API_KEY
+    model_info:
+      mode: realtime
+```
+
+**[See full xAI Realtime documentation →](/docs/providers/xai_realtime)**
+
+</TabItem>
+</Tabs>
+
+### Start proxy 
+
+```bash
+litellm --config /path/to/config.yaml 
+
+# RUNNING on http://0.0.0.0:4000
+```
+
+### Test 
+
+Run this script using node - `node test.js`
+
+```js
+// test.js
+const WebSocket = require("ws");
+
+const url = "ws://0.0.0.0:4000/v1/realtime?model=openai-gpt-4o-realtime-audio";
+// const url = "wss://my-azure-endpoint.openai.azure.com/openai/realtime?api-version=2024-10-01-preview&deployment=gpt-4o-realtime-preview";
+const ws = new WebSocket(url, {
+    headers: {
+        "api-key": `sk-<your-litellm-api-key>`,
+        "OpenAI-Beta": "realtime=v1",
+    },
+});
+
+ws.on("open", function open() {
+    console.log("Connected to server.");
+    ws.send(JSON.stringify({
+        type: "response.create",
+        response: {
+            modalities: ["text"],
+            instructions: "Please assist the user.",
+        }
+    }));
+});
+
+ws.on("message", function incoming(message) {
+    console.log(JSON.parse(message.toString()));
+});
+
+ws.on("error", function handleError(error) {
+    console.error("Error: ", error);
+});
+```
+
+## Azure: GA vs beta realtime protocol
+
+Azure exposes two realtime upstreams. The GA endpoint (`/openai/v1/realtime?model=<deployment>`) speaks the GA event schema (`session.type`, `output_modalities`, nested `audio`), and the older beta endpoint (`/openai/realtime?api-version=2024-10-01-preview&deployment=<deployment>`) speaks the beta schema (`modalities`, `voice`, flat audio formats). Sending a GA-shaped `session.update` to the beta endpoint fails with `Unknown parameter: 'session.type'`
+
+LiteLLM picks the upstream from the client connection. A client that sends the `OpenAI-Beta: realtime=v1` header (the openai SDK's `client.beta.realtime.connect`) is bridged to the beta endpoint. A client without that header (the openai SDK's `client.realtime.connect`, and most voice agent frameworks) is bridged to the GA endpoint. Transcription sessions (`intent=transcription`) always use GA
+
+```python
+import os
+
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI(base_url="http://0.0.0.0:4000", api_key=os.environ["LITELLM_API_KEY"])
+
+async with client.realtime.connect(model="azure-gpt-realtime") as connection:
+    await connection.session.update(
+        session={"type": "realtime", "output_modalities": ["audio"], "instructions": "Please assist the user."}
+    )
+    async for event in connection:
+        print(event.type)
+        if event.type == "session.updated":
+            break
+```
+
+To pin one protocol regardless of what the client sends, set `realtime_protocol` on the deployment or `LITELLM_AZURE_REALTIME_PROTOCOL` in the proxy's environment. The deployment setting wins over the environment variable, and both win over the client header. The realtime health check (`/health` on a `mode: realtime` deployment, and the Admin UI's Test Connect) has no client header to read, so it probes the GA endpoint unless one of those pins the protocol
+
+```yaml
+model_list:
+  - model_name: azure-gpt-realtime
+    litellm_params:
+      model: azure/gpt-realtime
+      api_key: os.environ/AZURE_API_KEY
+      api_base: os.environ/AZURE_API_BASE
+      realtime_protocol: beta # or GA
+```
+
+```bash
+export LITELLM_AZURE_REALTIME_PROTOCOL=beta # or GA
+```
+
+## Guardrails
+
+You can apply [LiteLLM guardrails](https://docs.litellm.ai/docs/proxy/guardrails/quick_start) to realtime sessions.
+
+### Set guardrails on a key or team
+
+The easiest production setup: attach guardrails to a virtual key or team so they always apply automatically, without any client-side changes.
+
+See [Virtual Keys → Guardrails](https://docs.litellm.ai/docs/proxy/virtual_keys#guardrails) and [Teams → Guardrails](https://docs.litellm.ai/docs/proxy/team_budgets).
+
+### Pass guardrails dynamically (easy testing)
+
+Pass `guardrails` as a query param when opening the WebSocket.
+Useful for testing guardrails without modifying key/team config.
+
+```js
+// node test.js
+const WebSocket = require("ws");
+
+const guardrails = ["your-guardrail-name"]; // comma-separated list
+const url = `ws://0.0.0.0:4000/v1/realtime?model=openai-gpt-4o-realtime-audio&guardrails=${guardrails.join(",")}`;
+
+const ws = new WebSocket(url, {
+    headers: {
+        "Authorization": "Bearer sk-<your-litellm-api-key>",
+    },
+});
+
+ws.on("open", function open() {
+    console.log("Connected — guardrails active:", guardrails);
+});
+
+ws.on("message", function incoming(message) {
+    const data = JSON.parse(message);
+    if (data.type === "error") {
+        // Guardrail block is sent as an error event before the connection closes
+        console.error("Guardrail error:", data.error.message);
+    }
+});
+
+ws.on("close", function close(code, reason) {
+    console.log("Closed:", code, reason.toString());
+    // code 1011 = blocked by guardrail at pre_call
+});
+```
+
+Or with Python:
+
+```python
+import asyncio
+import websockets
+
+async def main():
+    url = "ws://0.0.0.0:4000/v1/realtime?model=openai-gpt-4o-realtime-audio&guardrails=your-guardrail-name"
+    async with websockets.connect(
+        url,
+        additional_headers={"Authorization": "Bearer sk-<your-litellm-api-key>"},
+    ) as ws:
+        print("Connected — guardrail active")
+        async for msg in ws:
+            import json
+            data = json.loads(msg)
+            if data["type"] == "error":
+                print("Guardrail blocked:", data["error"]["message"])
+                break
+
+asyncio.run(main())
+```
+
+When a guardrail blocks the request, the proxy sends an `error` event over the WebSocket and then closes the connection:
+
+```json
+{
+    "type": "error",
+    "error": {
+        "type": "guardrail_error",
+        "message": "Guardrail blocked this request: <reason>"
+    }
+}
+```
+
+## Logging
+
+To prevent requests from being dropped, by default LiteLLM just logs these event types:
+
+- `session.created`
+- `response.create`
+- `response.done`
+
+You can override this by setting the `logged_real_time_event_types` parameter in the config. For example:
+
+```yaml
+litellm_settings:
+  logged_real_time_event_types: "*" # Log all events
+  ## OR ## 
+  logged_real_time_event_types: ["session.created", "response.create", "response.done"] # Log only these event types
+```

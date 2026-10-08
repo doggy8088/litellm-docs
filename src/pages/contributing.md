@@ -1,41 +1,41 @@
-# Contributing to Documentation
+# 貢獻文件 {#contributing-to-documentation}
 
-This website is built using [Docusaurus 3](https://docusaurus.io/), a modern static website generator.
+本網站使用 [Docusaurus 3](https://docusaurus.io/) 建置，這是一個現代化的靜態網站產生器。
 
-Clone the docs repo:
+複製文件倉庫：
 
 ```bash
 git clone https://github.com/BerriAI/litellm-docs.git
 cd litellm-docs
 ```
 
-### Local setup for locally running docs
+### 在本機執行文件的本機設定 {#local-setup-for-locally-running-docs}
 
-Install dependencies:
+安裝相依性：
 
 ```bash
 npm install
 ```
 
-Run the docs site locally:
+在本機執行文件網站：
 
 ```bash
 npm start
 ```
 
-Open docs here: [http://localhost:3000/](http://localhost:3000/).
+在此開啟文件：[http://localhost:3000/](http://localhost:3000/)。
 
-### Making changes to Docs
-- All the docs are placed under the `docs` directory
-- Blog posts are placed under the `blog` directory
-- If you are adding a new `.md` file or editing the hierarchy, check whether `sidebars.js` needs to be updated
+### 進行文件變更 {#making-changes-to-docs}
+- 所有文件都放在 `docs` 目錄下
+- 部落格貼文都放在 `blog` 目錄下
+- 如果您正在新增一個 `.md` 檔案，或編輯階層，請檢查是否需要更新 `sidebars.js`
 
-### Verify your changes
+### 驗證您的變更 {#verify-your-changes}
 
-Before opening a PR, run:
+在開啟 PR 之前，請執行：
 
 ```bash
 npm run build
 ```
 
-After testing your changes, open a pull request against [github.com/BerriAI/litellm-docs](https://github.com/BerriAI/litellm-docs).
+在測試完您的變更後，請對 [github.com/BerriAI/litellm-docs](https://github.com/BerriAI/litellm-docs) 開啟 pull request。

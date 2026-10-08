@@ -1,15 +1,14 @@
-# Topaz
+# Topaz {#topaz}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Professional-grade photo and video editing powered by AI. |
-| Provider Route on LiteLLM | `topaz/` |
-| Provider Doc | [Topaz ↗](https://www.topazlabs.com/enhance-api) |
-| API Endpoint for Provider | https://api.topazlabs.com |
-| Supported OpenAI Endpoints | `/image/variations` |
+| 說明 | 由 AI 驅動的專業級相片與影片編輯。 |
+| LiteLLM 提供者路由 | `topaz/` |
+| 提供者文件 | [Topaz ↗](https://www.topazlabs.com/enhance-api) |
+| 提供者 API 端點 | https://api.topazlabs.com |
+| 支援的 OpenAI 端點 | `/image/variations` |
 
-
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python
 from litellm import image_variation
@@ -21,7 +20,7 @@ response = image_variation(
 )
 ```
 
-## Supported OpenAI Params
+## 支援的 OpenAI 參數 {#supported-openai-params}
 
 - `response_format`
-- `size` (widthxheight)
+- `size` (寬x高)

@@ -1,6 +1,6 @@
 ---
-title: Production Deployment
-description: Production deployment guide for LiteLLM on AWS, GCP, Azure, or any Kubernetes cluster, with Helm charts and official Terraform modules.
+title: 生產部署
+description: LiteLLM 在 AWS、GCP、Azure 或任何 Kubernetes 叢集上的生產部署指南，包含 Helm chart 與官方 Terraform 模組。
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,31 +8,31 @@ import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 import { CloudArchitectureSelector } from '@site/src/components/CloudArchitecture';
 
-# Production Deployment
+# 生產部署 {#production-deployment}
 
-Production deployment guide for AWS, Google Cloud, Azure, or any Kubernetes cluster. For a first deployment on a single machine, start with the [Quickstart](./docker_quick_start.md); this page picks up where it ends.
+適用於 AWS、Google Cloud、Azure 或任何 Kubernetes 叢集的生產部署指南。若要在單一機器上進行首次部署，請從 [快速入門](./docker_quick_start.md) 開始；本頁接續其後。
 
-There are two supported paths. If you run Kubernetes, [deploy with Helm](#deploy-with-helm) on EKS, GKE, or AKS; the install is the same on every cloud, only the data stores and ingress differ. If you do not run Kubernetes, AWS and GCP have [official Terraform modules](#deploy-with-terraform-aws-and-gcp) that stand up the entire stack; Azure has no Terraform module, so AKS with Helm is the supported path there.
+有兩條支援的路徑。如果您使用 Kubernetes，請在 EKS、GKE 或 AKS 上 [使用 Helm 部署](#deploy-with-helm)；各雲端上的安裝方式相同，只有資料儲存與 ingress 不同。如果您未使用 Kubernetes，AWS 與 GCP 有可建置整個堆疊的 [官方 Terraform 模組](#deploy-with-terraform-aws-and-gcp)；Azure 沒有 Terraform 模組，因此在那裡支援的路徑是使用 Helm 的 AKS。
 
-## Architecture
+## 架構 {#architecture}
 
 <CloudArchitectureSelector />
 
-LiteLLM provides two deployment modes:
+LiteLLM 提供兩種部署模式：
 
-- **Monolithic**: one `litellm` image serves LLM traffic, management APIs, and the UI. This is what the `litellm-helm` chart runs, and the simplest to operate.
-- **Microservices**: a `gateway` (LLM traffic, port 4000), `backend` (management APIs and UI backend, port 4001), and `ui` (port 3000), each deployed and scaled independently. This is what the componentized `litellm` chart and both Terraform modules run; see the [chart values](https://github.com/BerriAI/litellm/blob/main/helm/litellm/values.yaml) for the full reference.
+- **單體式**：一個 `litellm` 映像檔同時提供 LLM 流量、管理 API 與 UI。這是 `litellm-helm` chart 的執行方式，也是最容易操作的方式。
+- **微服務**：一個 `gateway`（LLM 流量，port 4000）、`backend`（管理 API 與 UI 後端，port 4001）以及 `ui`（port 3000），各自獨立部署與擴展。這是元件化 `litellm` chart 與兩個 Terraform 模組的執行方式；完整參考請見 [chart 值](https://github.com/BerriAI/litellm/blob/main/helm/litellm/values.yaml)。
 
-The supporting infrastructure is identical in either mode:
+支援基礎架構在任一模式下都相同：
 
-| Component | Purpose | Notes |
+| 元件 | 用途 | 備註 |
 |---|---|---|
-| LiteLLM services | One proxy deployment (monolithic) or gateway + backend + ui (microservices) | Stateless; run 2+ replicas behind a load balancer |
-| PostgreSQL | Keys, teams, users, spend logs, config | Required for the proxy's auth and tracking features |
-| Redis | Rate limiting, router state, caching across instances | Required once you run more than one instance |
-| Migrations job | Applies schema migrations against Postgres | Runs once per upgrade; proxy instances set `DISABLE_SCHEMA_UPDATE=true` |
+| LiteLLM 服務 | 一個 proxy 部署（單體式）或 gateway + backend + ui（微服務） | 無狀態；在負載平衡器後方執行 2 個以上副本 |
+| PostgreSQL | 金鑰、團隊、使用者、花費記錄、設定 | proxy 的驗證與追蹤功能所必需 |
+| Redis | 速率限制、路由器狀態、跨執行個體快取 | 當您執行超過一個執行個體時就需要 |
+| migrations 工作 | 對 Postgres 套用結構描述遷移 | 每次升級執行一次；proxy 執行個體設定 `DISABLE_SCHEMA_UPDATE=true` |
 
-## Core configuration
+## 核心設定 {#core-configuration}
 
 ```bash
 DATABASE_URL="postgresql://user:password@host:5432/litellm"
@@ -42,23 +42,23 @@ DISABLE_SCHEMA_UPDATE="true"  # proxy instances never run migrations; the migrat
 STORE_MODEL_IN_DB="True"      # manage models from the Admin UI instead of config files
 ```
 
-`LITELLM_SALT_KEY` cannot be rotated after you add models: it encrypts the provider credentials stored in your database, and changing it makes them unreadable. Generate a strong random value and store both keys in your cloud's secret manager.
+`LITELLM_SALT_KEY` 在您新增模型之後無法輪替：它會加密儲存在資料庫中的提供者憑證，而變更它會使這些憑證無法讀取。請產生強度高的隨機值，並將兩個金鑰都存放在雲端的密鑰管理服務中。
 
-Official images are published to `ghcr.io/berriai` and mirrored at `docker.litellm.ai/berriai`. Use `ghcr.io/berriai/litellm` for monolithic deployments, including those with Postgres, since it bundles the Prisma toolchain, and pin a version tag rather than `latest` or a moving tag, so rollbacks are deterministic. All images are signed; see the [Docker Image Security Guide](./docker_image_security.md) for verification and the non-root variant.
+官方映像檔發佈於 `ghcr.io/berriai`，並鏡像至 `docker.litellm.ai/berriai`。單體式部署（包括使用 Postgres 的部署）請使用 `ghcr.io/berriai/litellm`，因為它封裝了 Prisma 工具鏈，並請固定版本標籤，而不要使用 `latest` 或可移動的標籤，這樣回復才具可預測性。所有映像檔都經過簽署；驗證方式與非 root 版本請參閱 [Docker Image Security Guide](./docker_image_security.md)。
 
-## Provision the data stores
+## 佈建資料儲存 {#provision-the-data-stores}
 
-The Helm path needs a PostgreSQL database and a Redis reachable from your cluster. Use the managed services:
+Helm 路徑需要一個 PostgreSQL 資料庫，以及一個可從您的叢集連線的 Redis。請使用受管服務：
 
 <Tabs>
 <TabItem value="aws" label="AWS">
 
-Provision [RDS PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) and [ElastiCache Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html) in the same VPC as your EKS cluster, with security groups permitting the cluster's nodes on ports 5432 and 6379.
+在與您的 EKS 叢集相同的 VPC 中佈建 [RDS PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html) 與 [ElastiCache Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html)，並設定安全性群組允許叢集節點透過 5432 與 6379 埠連線。
 
 </TabItem>
 <TabItem value="gcp" label="Google Cloud">
 
-Provision [Cloud SQL PostgreSQL](https://cloud.google.com/sql/docs/postgres) and [Memorystore Redis](https://cloud.google.com/memorystore/docs/redis) with private IPs on the VPC your GKE cluster uses (Cloud SQL needs [Private Services Access](https://cloud.google.com/vpc/docs/private-services-access)). Use the instances' private IPs as the endpoints below.
+在您的 GKE 叢集所使用的 VPC 上，使用私有 IP 佈建 [Cloud SQL PostgreSQL](https://cloud.google.com/sql/docs/postgres) 與 [Memorystore Redis](https://cloud.google.com/memorystore/docs/redis)（Cloud SQL 需要 [Private Services Access](https://cloud.google.com/vpc/docs/private-services-access)）。以下方的端點請使用這些執行個體的私有 IP。
 
 </TabItem>
 <TabItem value="azure" label="Azure">
@@ -77,14 +77,14 @@ az redis create --resource-group litellm-prod --name litellm-redis \
   --location eastus --sku Standard --vm-size c1
 ```
 
-Docs: [AKS](https://learn.microsoft.com/en-us/azure/aks/what-is-aks), [Azure Database for PostgreSQL Flexible Server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/overview), [Azure Cache for Redis](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview). Azure Cache for Redis serves TLS on port 6380, and TLS is enabled through the URL scheme: instead of `redis_host` and `redis_port`, set `redis_url: "rediss://:<access-key>@litellm-redis.redis.cache.windows.net:6380"` under `router_settings` (the `rediss://` scheme turns TLS on).
+文件：[AKS](https://learn.microsoft.com/en-us/azure/aks/what-is-aks)、[Azure Database for PostgreSQL Flexible Server](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/overview)、[Azure Cache for Redis](https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-overview)。Azure Cache for Redis 透過 6380 埠提供 TLS，且 TLS 透過 URL scheme 啟用：請將 `redis_host` 與 `redis_port` 改為在 `router_settings` 下設定 `redis_url: "rediss://:<access-key>@litellm-redis.redis.cache.windows.net:6380"`（`rediss://` scheme 會開啟 TLS）。
 
 </TabItem>
 </Tabs>
 
-## Deploy with Helm
+## 使用 Helm 部署 {#deploy-with-helm}
 
-First create the secrets both charts consume:
+首先建立兩個 chart 都會使用的 secrets：
 
 ```bash
 kubectl create secret generic litellm-masterkey \
@@ -100,7 +100,7 @@ kubectl create secret generic litellm-env \
   --from-literal=OPENAI_API_KEY="<provider-key>"
 ```
 
-Then pick a deployment mode:
+接著選擇一種部署模式：
 
 <Tabs>
 <TabItem value="monolith" label="Monolithic (litellm-helm)">
@@ -144,7 +144,7 @@ proxy_config:
 helm install litellm oci://ghcr.io/berriai/litellm-helm -f values.yaml
 ```
 
-The chart lives at [`helm/litellm-helm`](https://github.com/BerriAI/litellm/tree/main/helm/litellm-helm); the published chart versions carry LiteLLM release numbers (for example `1.90.2`), and `helm show values oci://ghcr.io/berriai/litellm-helm` lists every knob. Beyond the values above it supports [autoscaling](#autoscaling) (`autoscaling.*` or `keda.*`), PodDisruptionBudgets (`pdb.*`), a Prometheus ServiceMonitor (`serviceMonitor.*`), read replica routing (`db.readReplicaUrl`, see [Database Read Replica](./db_read_replica.md)), graceful drain on shutdown (`lifecycle`), ArgoCD or Helm hooks for the migrations job (`migrationJob.hooks.*`, see [Helm PreSync hooks](./prod.md#run-migrations-from-the-helm-presync-hook)), and an optional [dedicated Prometheus metrics listener](./prometheus.md#isolate-prometheus-scraping-from-inference-traffic) configured through `metricsServer.*`.
+該 chart 位於 [`helm/litellm-helm`](https://github.com/BerriAI/litellm/tree/main/helm/litellm-helm)；已發佈的 chart 版本採用 LiteLLM 發行版號（例如 `1.90.2`），而 `helm show values oci://ghcr.io/berriai/litellm-helm` 列出所有調整選項。除了上述值之外，它還支援 [自動擴展](#autoscaling)（`autoscaling.*` 或 `keda.*`）、PodDisruptionBudgets（`pdb.*`）、Prometheus ServiceMonitor（`serviceMonitor.*`）、讀取副本路由（`db.readReplicaUrl`，請參閱 [Database Read Replica](./db_read_replica.md)）、關機時優雅排空（`lifecycle`）、供 migrations 工作使用的 ArgoCD 或 Helm hooks（`migrationJob.hooks.*`，請參閱 [Helm PreSync hooks](./prod.md#run-migrations-from-the-helm-presync-hook)），以及透過 `metricsServer.*` 設定的可選 [專用 Prometheus metrics 監聽器](./prometheus.md#isolate-prometheus-scraping-from-inference-traffic)。
 
 </TabItem>
 <TabItem value="micro" label="Microservices (litellm)">
@@ -197,22 +197,22 @@ helm upgrade --install litellm \
   -f values.yaml
 ```
 
-This deploys `gateway`, `backend`, and `ui` as separate services. You can scale the gateway for inference traffic without scaling the management API or Admin UI. The chart requires external Postgres and Redis and supports database read replicas, IAM database authentication, Redis Cluster, per-component probes, and per-component autoscaling.
+這會將 `gateway`、`backend` 與 `ui` 以獨立服務部署。您可以在不擴充管理 API 或 Admin UI 的情況下，獨立擴展 gateway 以處理推理流量。該 chart 需要外部 Postgres 與 Redis，並支援資料庫讀取副本、IAM 資料庫驗證、Redis Cluster、每個元件的探針，以及每個元件的自動擴展。
 
-Pin the chart to `1.89.0` or newer. Each component image tag defaults to the chart version. See the [chart values](https://github.com/BerriAI/litellm/blob/main/helm/litellm/values.yaml) for every option, [Autoscaling](#autoscaling) for scaling configuration, and [Prometheus metrics isolation](./prometheus.md#isolate-prometheus-scraping-from-inference-traffic) for the gateway metrics sidecar.
+請將 chart 鎖定至 `1.89.0` 或更新版本。每個元件的映像檔標籤預設為 chart 版本。每個選項請參閱 [chart 值](https://github.com/BerriAI/litellm/blob/main/helm/litellm/values.yaml)，擴展設定請參閱 [自動擴展](#autoscaling)，gateway metrics sidecar 請參閱 [Prometheus metrics 隔離](./prometheus.md#isolate-prometheus-scraping-from-inference-traffic)。
 
-The [high-throughput deployment profile](./high_throughput.md) adds shared database connections, isolated spend processing, and RPS/TPS autoscaling. This profile is currently available in nightly builds.
+[高吞吐量部署設定檔](./high_throughput.md) 會加入共用資料庫連線、隔離的花費處理，以及 RPS/TPS 自動擴展。此設定檔目前可在 nightly builds 中使用。
 
 </TabItem>
 </Tabs>
 
-Both charts run the migrations job automatically and keep `DISABLE_SCHEMA_UPDATE=true` on the proxy pods. Expose the service through your cloud's ingress: the [AWS Load Balancer Controller](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html) on EKS, [GKE Ingress](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress) on GKE, or [Application Gateway Ingress (AGIC)](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview) on AKS, with health checks on `/health/readiness`, then point your DNS record at the resulting load balancer. For secrets, prefer your cloud's secret manager over plain Kubernetes secrets ([Key Vault CSI driver](https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver) on AKS, for example); the charts consume whatever secret you mount.
+兩個 chart 都會自動執行 migrations 工作，並讓 proxy pod 保持 `DISABLE_SCHEMA_UPDATE=true`。透過您雲端的 ingress 來公開服務：EKS 使用 [AWS Load Balancer Controller](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html)，GKE 使用 [GKE Ingress](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)，AKS 使用 [Application Gateway Ingress (AGIC)](https://learn.microsoft.com/en-us/azure/application-gateway/ingress-controller-overview)，並在 `/health/readiness` 上進行健康檢查，接著將 DNS 記錄指向產生的負載平衡器。就機密資料而言，請優先使用您雲端的密鑰管理服務，而非一般 Kubernetes secrets（例如 AKS 上的 [Key Vault CSI driver](https://learn.microsoft.com/en-us/azure/aks/csi-secrets-store-driver)）；chart 會使用您掛載的任何 secret。
 
-### Autoscaling
+### 自動擴展 {#autoscaling}
 
-Both charts can scale themselves, and both ship autoscaling off or conservative by default. For the thresholds to aim at, and why memory is not one of them, see [autoscaling in the production checklist](./prod.md#autoscaling).
+兩個 chart 都可自行擴展，而且兩者預設都將 autoscaling 設為關閉或保守。關於應設定的門檻，以及為何不以記憶體作為其中之一，請參閱 [生產檢查清單中的自動擴展](./prod.md#autoscaling)。
 
-`litellm-helm` offers two mutually exclusive mechanisms. `autoscaling.*` renders a standard HorizontalPodAutoscaler, and `keda.*` renders a KEDA `ScaledObject` for scaling on queue depth, Prometheus queries, or anything else KEDA can read. Enabling both renders only the HPA, so pick one.
+`litellm-helm` 提供兩種互斥機制。`autoscaling.*` 會產生標準的 HorizontalPodAutoscaler，而 `keda.*` 則會產生一個 KEDA `ScaledObject`，用於依佇列深度、Prometheus 查詢或 KEDA 可讀取的其他任何來源進行擴展。兩者都啟用時只會產生 HPA，因此請擇一。
 
 ```yaml
 autoscaling:
@@ -231,15 +231,15 @@ keda:
   triggers: []          # required; a ScaledObject with no triggers will not scale
 ```
 
-`keda.triggers` is empty by default and has no useful default, so supply the trigger yourself; the chart's `values.yaml` carries a commented Prometheus example. `keda.fallback`, `keda.behavior`, and `keda.restoreToOriginalReplicaCount` are passed through for controlling what happens when the metric source is unavailable and how replicas settle after a scale event.
+`keda.triggers` 預設為空白，且沒有可用的預設值，因此請自行提供 trigger；chart 的 `values.yaml` 內含一個已註解的 Prometheus 範例。`keda.fallback`、`keda.behavior` 與 `keda.restoreToOriginalReplicaCount` 會原樣傳遞，用於控制 metric 來源無法使用時會發生什麼事，以及在一次擴展事件後副本如何穩定。
 
-The componentized chart scales each component on its own, under `gateway.hpa`, `backend.hpa`, and `ui.hpa`. The gateway and backend autoscale out of the box and the UI does not, with maximums sized to the shape of each component's traffic: the gateway defaults to `maxReplicas: 10` at 70 percent CPU and 80 percent memory, the backend to `maxReplicas: 4` at 70 percent CPU, and the UI to `maxReplicas: 3` at 80 percent CPU with `enabled: false`. Raising the gateway's ceiling is usually all you need, since it is the only component that sees LLM traffic.
+元件化圖表會在 `gateway.hpa`、`backend.hpa` 和 `ui.hpa` 下，分別獨立擴展每個元件。閘道與後端會自動擴縮，但 UI 不會；其上限會依各元件流量型態設定：閘道預設為 `maxReplicas: 10`，在 CPU 70% 與記憶體 80% 時觸發，後端預設為 `maxReplicas: 4`，在 CPU 70% 時觸發，而 UI 預設為 `maxReplicas: 3`，在 CPU 80% 與 `enabled: false` 時觸發。通常只要提高閘道的上限就夠了，因為它是唯一會看到 LLM 流量的元件。
 
-Whichever mechanism you use, set the maximum against what your database can serve. The connection pool is per worker, so the ceiling on replicas is also a ceiling on Postgres connections; `litellm-helm` defaults `maxReplicas` to 100, which at the default pool limit of 10 asks for roughly 1000 connections at full scale-out. See [bounding database connections](./prod.md#bound-database-connections).
+無論您使用哪種機制，請將最大值設定在資料庫能夠提供的範圍內。連線池是每個 worker 各自獨立，因此副本上限也等同於 Postgres 連線上限；`litellm-helm` 預設 `maxReplicas` 為 100，在預設 10 的池上限下，滿載擴展時大約需要 1000 條連線。請參閱[界定資料庫連線上限](./prod.md#bound-database-connections)。
 
-#### Scale on requests and tokens per pod
+#### 依每個 Pod 的請求與 token 數量擴展 {#scale-on-requests-and-tokens-per-pod}
 
-CPU lags LLM traffic: a pod streaming forty responses is mostly waiting on providers, so its CPU stays low while its capacity is gone. Both charts can scale on the two counters the proxy already exports, `litellm_proxy_total_requests_metric_total` and `litellm_total_tokens_metric_total`, expressed as requests per second (RPS) and tokens per second (TPS) per pod, the way load is usually quoted (1k rps, 75M tok/s). The targets are opt-in and empty by default, so nothing changes until you set one, and they sit next to the CPU and memory targets: an HPA follows whichever metric asks for the most replicas. `averageValue` is a Kubernetes quantity, so `"6M"` and `"6000000"` are the same tokens per second.
+CPU 會落後於 LLM 流量：一個正在串流四十個回應的 Pod，大多時間都在等待提供者，因此 CPU 仍然很低，但容量已經耗盡。這兩個圖表都可以依代理程式已匯出的兩個計數器進行擴展，`litellm_proxy_total_requests_metric_total` 與 `litellm_total_tokens_metric_total`，其表示方式為每個 Pod 的每秒請求數（RPS）與每秒 token 數（TPS），也就是常見的負載表示方式（1k rps、75M tok/s）。這些目標是可選用的，預設為空，因此在您設定其中一個之前不會有任何變化，而且它們與 CPU 和記憶體目標並列：HPA 會採用要求副本數最多的那個指標。`averageValue` 是 Kubernetes 數值，因此 `"6M"` 與 `"6000000"` 代表相同的每秒 token 數。
 
 ```yaml
 # litellm-helm
@@ -263,7 +263,7 @@ gateway:
     targetTokensPerSecond: "6M"
 ```
 
-Each target renders an `autoscaling/v2` `Pods` metric, `litellm_requests_per_second` or `litellm_tokens_per_second`, with an `AverageValue` target. Kubernetes cannot read Prometheus by itself, so two things have to be in place. The chart's ServiceMonitor (Prometheus Operator) scrapes every pod on its own so each sample carries the `pod` label. Turn on the dedicated metrics listener with it (`gateway.metricsServer.enabled` on the componentized chart, `metricsServer.enabled` on `litellm-helm`): the main port serves `/metrics/` behind virtual-key auth and answers an unauthenticated scrape with 401, so the componentized chart refuses to render a ServiceMonitor without it. Then a [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter) has to serve those two names on `custom.metrics.k8s.io`, grouped by pod. `rate()` already returns a per-second value, so there is no `* 60`:
+每個目標都會產生一個 `autoscaling/v2` `Pods` 指標，`litellm_requests_per_second` 或 `litellm_tokens_per_second`，並設定 `AverageValue` 目標。Kubernetes 無法自行讀取 Prometheus，因此必須先具備兩件事。圖表的 ServiceMonitor（Prometheus Operator）會各自抓取每個 Pod，讓每個樣本都帶有 `pod` 標籤。啟用專用 metrics listener 與其搭配使用（元件化圖表上為 `gateway.metricsServer.enabled`，`metricsServer.enabled` 上為 `litellm-helm`）：主要連接埠會在虛擬金鑰驗證之後提供 `/metrics/`，並對未驗證的 scrape 回應 401，因此元件化圖表若沒有它就會拒絕產生 ServiceMonitor。接著 [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter) 必須在 `custom.metrics.k8s.io` 上，以 Pod 分組提供這兩個名稱。`rate()` 已經會回傳每秒值，因此不需要 `* 60`：
 
 ```yaml
 rules:
@@ -277,13 +277,13 @@ rules:
     metricsQuery: sum(rate(<<.Series>>{<<.LabelMatchers>>}[1m])) by (<<.GroupBy>>)
 ```
 
-The unit is a constant factor and does not make the HPA react any faster. What sets the lag is the `rate()` window in the adapter rule, the scrape interval, and the HPA sync period (15s by default). Keep the window at `[1m]` and the ServiceMonitor interval at the chart default of 15s or faster so the window always holds at least four samples: after a traffic step the signal moves on the next scrape and reaches its full value 60s later, where a `[2m]` window is still at half.
+單位只是固定倍率，並不會讓 HPA 反應得更快。真正造成延遲的是 adapter 規則中的 `rate()` 視窗、scrape 間隔，以及 HPA 同步週期（預設為 15 秒）。請將視窗維持在 `[1m]`，並將 ServiceMonitor 間隔維持在圖表預設的 15 秒或更快，讓視窗中始終至少有四個樣本：在流量階躍之後，訊號會在下一次 scrape 時移動，並在 60 秒後達到完整值，而 `[2m]` 視窗此時仍只到一半。
 
-Both counters are split by model, key, and team labels, so the `sum by (pod)` folds a pod's series into one number. `kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/<ns>/pods/*/litellm_tokens_per_second` shows what the HPA sees. Worked example: 1,000 rps across 10 gateway pods is 100 rps per pod against a target of 90, so the HPA asks for `ceil(10 * 100 / 90) = 12` replicas. The token metric does the same arithmetic: ten pods serving 70,000,000 tokens per second between them average 7,000,000 TPS against a target of 6,000,000, so `ceil(10 * 7000000 / 6000000) = 12`.
+這兩個計數器都會依模型、金鑰與團隊標籤拆分，因此 `sum by (pod)` 會把一個 Pod 的序列收斂成單一數值。`kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/<ns>/pods/*/litellm_tokens_per_second` 顯示 HPA 看到的內容。範例：10 個閘道 Pod 共承載 1,000 rps，平均每個 Pod 為 100 rps，目標為 90，因此 HPA 會要求 `ceil(10 * 100 / 90) = 12` 個副本。token 指標則做同樣的運算：10 個 Pod 共同處理每秒 70,000,000 個 token，平均每個 Pod 為 7,000,000 TPS，目標為 6,000,000，因此 `ceil(10 * 7000000 / 6000000) = 12`。
 
-Tokens are counted when a response finishes, so a long stream shows up in TPS only once it completes. RPS reacts first and TPS catches up, which is fine for scale-out but means a burst of long streams is under-counted for as long as they run. Do not set a TPS target alone if your traffic is dominated by multi-minute streams.
+token 是在回應完成時才計數，因此長時間串流只會在完成後才以 TPS 顯示。RPS 會先反應，TPS 會隨後跟上，這對擴展是沒問題的，但也表示長時間串流的突發流量在執行期間會被低估。若您的流量主要是數分鐘的串流，請勿只設定 TPS 目標。
 
-On `litellm-helm` the same signals are available through KEDA without an adapter. `keda.prometheus.requestsPerSecond` and `keda.prometheus.tokensPerSecond` are the load one replica should carry, and each adds a Prometheus trigger on `sum(rate(<counter>{namespace="<release namespace>",job="<release>-metrics"}[1m]))`, selected by release namespace and the `job` label the chart's ServiceMonitor produces. KEDA divides the release-wide rate by the per-replica threshold to pick the replica count, so the result matches the HPA path for the same traffic. Keep `keda.pollingInterval` at 15s or lower for the same reason as the scrape interval above.
+在 `litellm-helm` 上，這些相同的訊號可透過 KEDA 使用，且不需要 adapter。`keda.prometheus.requestsPerSecond` 與 `keda.prometheus.tokensPerSecond` 是單一副本應承載的負載，而每個都會在 `sum(rate(<counter>{namespace="<release namespace>",job="<release>-metrics"}[1m]))` 上新增 Prometheus trigger，並由發佈命名空間與圖表 ServiceMonitor 產生的 `job` 標籤進行選取。KEDA 會將整個發佈範圍的速率除以每副本門檻來決定副本數，因此在相同流量下結果會與 HPA 路徑一致。請將 `keda.pollingInterval` 維持在 15 秒或更低，原因與上方的 scrape 間隔相同。
 
 ```yaml
 keda:
@@ -298,14 +298,14 @@ serviceMonitor:
   enabled: true
 ```
 
-On AWS ECS the Terraform module takes the same per-second inputs, `gateway_target_requests_per_second` on `ALBRequestCountPerTarget` and `gateway_target_tokens_per_second` once you publish the token counter to CloudWatch, and converts them itself because the ALB publishes a per-minute count. CloudWatch target tracking aggregates every metric over 60-second periods with no period setting, so ECS reacts on a roughly one-minute cadence whatever the unit; the [module README](https://github.com/BerriAI/litellm/blob/main/terraform/litellm/aws/README.md#scaling-the-gateway-on-requests-and-tokens) covers both policies. Cloud Run scales on request concurrency and has no custom-metric input, so there is no TPS path on GCP outside GKE.
+在 AWS ECS 上，Terraform 模組會接受相同的每秒輸入值，`gateway_target_requests_per_second` 在 `ALBRequestCountPerTarget` 上，以及在您將 token 計數器發布到 CloudWatch 之後的 `gateway_target_tokens_per_second`，並自行進行轉換，因為 ALB 會發布每分鐘計數。CloudWatch target tracking 會以 60 秒週期彙總每個指標，且沒有週期設定，因此 ECS 無論單位為何都會以約一分鐘的節奏反應；[module README](https://github.com/BerriAI/litellm/blob/main/terraform/litellm/aws/README.md#scaling-the-gateway-on-requests-and-tokens) 說明了這兩種政策。Cloud Run 依請求並行數進行擴展，且沒有自訂指標輸入，因此在 GKE 之外沒有 TPS 路徑。
 
-### Kubernetes without Helm
+### 不使用 Helm 的 Kubernetes {#kubernetes-without-helm}
 
-If you manage raw manifests, the equivalent deployment is a ConfigMap for `config.yaml`, a Secret for keys, a Deployment with health probes, and a Service.
+如果您管理原始 manifest，等效的部署是：用於 `config.yaml` 的 ConfigMap、用於金鑰的 Secret、帶有健康檢查探針的 Deployment，以及 Service。
 
 <details>
-<summary>Full manifest (ConfigMap, Secret, Deployment, Service)</summary>
+<summary>完整 manifest（ConfigMap、Secret、Deployment、Service）</summary>
 
 ```yaml
 apiVersion: v1
@@ -392,11 +392,11 @@ spec:
 
 </details>
 
-To connect the database, add `DATABASE_URL` and `LITELLM_MASTER_KEY` to the Secret; nothing else in the manifest changes, because the image already carries the Prisma toolchain.
+要連接資料庫，請將 `DATABASE_URL` 與 `LITELLM_MASTER_KEY` 加入 Secret；manifest 中其他內容都不需要變更，因為映像檔已經內建 Prisma 工具鏈。
 
-## Deploy with Terraform (AWS and GCP)
+## 使用 Terraform（AWS 與 GCP）部署 {#deploy-with-terraform-aws-and-gcp}
 
-The official modules deploy the full microservices stack (network, database, Redis, object storage, secrets, compute, load balancer, and a migrations job that runs before the services start) and are published to the Terraform Registry:
+官方模組會部署完整的微服務堆疊（網路、資料庫、Redis、物件儲存、秘密、運算、負載平衡器，以及在服務啟動前執行的 migration job），並已發佈到 Terraform Registry：
 
 - [`BerriAI/litellm/aws`](https://registry.terraform.io/modules/BerriAI/litellm/aws/latest)
 - [`BerriAI/litellm/google`](https://registry.terraform.io/modules/BerriAI/litellm/google/latest)
@@ -404,7 +404,7 @@ The official modules deploy the full microservices stack (network, database, Red
 <Tabs>
 <TabItem value="aws" label="AWS (ECS Fargate)">
 
-By default, provisions a VPC with public and private subnets, an Aurora PostgreSQL cluster (writer plus reader, IAM database auth), ElastiCache Redis (multi-AZ, encrypted), an S3 bucket, Secrets Manager entries, an Application Load Balancer, and ECS Fargate services. The networking and both data stores are optional, so you can reuse what your account already runs; see below.
+預設會佈建一個包含公有與私有子網路的 VPC、一個 Aurora PostgreSQL 叢集（writer 加 reader、IAM 資料庫驗證）、ElastiCache Redis（Multi-AZ、加密）、一個 S3 bucket、Secrets Manager 項目、一個 Application Load Balancer，以及 ECS Fargate 服務。網路以及兩個資料儲存系統都可以選擇不使用，因此您可以重用帳戶中既有的資源；請見下方。
 
 ```hcl title="main.tf"
 module "litellm" {
@@ -435,11 +435,11 @@ module "litellm" {
 }
 ```
 
-Before you apply: provision the TLS certificate in [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) (the module refuses a plaintext ALB unless you explicitly set `allow_plaintext_alb = true`), and create any provider-key secrets in [Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) first, since `gateway_extra_secrets` takes their ARNs. After apply, point your DNS record at the ALB hostname.
+在您套用之前：請先在 [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) 中佈建 TLS 憑證（除非您明確設定 `allow_plaintext_alb = true`，否則模組會拒絕明文 ALB），並先在 [Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) 中建立任何提供者金鑰秘密，因為 `gateway_extra_secrets` 會使用它們的 ARN。套用之後，請將 DNS 記錄指向 ALB hostname。
 
-The module auto-generates the master key into Secrets Manager if you do not supply one. The application connects to Aurora with short-lived IAM tokens, so its `DATABASE_URL` carries no password (the database master password itself is generated into Secrets Manager and never touches the application). Every resource is named `<tenant>-litellm-<env>`, and the module declares no provider, so you can `for_each` it to run one stack per tenant.
+如果您沒有提供 master key，模組會自動將其產生到 Secrets Manager。應用程式會使用短效 IAM token 連線到 Aurora，因此其 `DATABASE_URL` 不包含密碼（資料庫 master password 本身會產生到 Secrets Manager，且永遠不會接觸到應用程式）。每個資源都會以 `<tenant>-litellm-<env>` 命名，而模組沒有宣告任何 provider，因此您可以將其 `for_each`，讓每個租戶執行一個堆疊。
 
-**Bringing your own VPC, database, or Redis.** The networking and both data stores are each optional, so you can deploy into infrastructure your account already has. This is the path to take when your guardrails only allow workloads inside a pre-approved VPC, or when a separate team owns the Postgres and Redis you are expected to use. Set only the pieces you want to reuse; anything you leave at its default is still created for you.
+**自備 VPC、資料庫或 Redis。** 網路與兩個資料儲存系統都各自可選，因此您可以部署到帳戶中既有的基礎架構。當您的防護欄只允許工作負載位於預先核准的 VPC 內，或是由另一個團隊負責您預期要使用的 Postgres 與 Redis 時，就應採用這條路徑。只設定您想要重用的部分；任何維持預設值的項目仍會為您建立。
 
 ```hcl title="main.tf"
 module "litellm" {
@@ -468,18 +468,18 @@ module "litellm" {
 }
 ```
 
-Your existing stores have to accept traffic from the tasks. The module always creates its own tasks security group and reports it as the `task_security_group_id` output, so either allow that group inbound on the database and Redis, or pass a group they already allow through `additional_task_security_group_ids`. Private subnets you supply also need their own egress, through a NAT gateway or VPC endpoints, since the module creates no routing of its own in this mode. It reaches Secrets Manager, pulls container images, and calls LLM providers from those subnets.
+您既有的儲存系統必須接受來自 task 的流量。模組一律會建立自己的 task security group，並將其回報為 `task_security_group_id` 輸出，因此請允許該群組對資料庫與 Redis 的入站存取，或者傳入他們已經允許通過 `additional_task_security_group_ids` 的群組。您提供的私有子網路也需要自己的出站路由，透過 NAT gateway 或 VPC endpoints，因為在此模式下模組不會自行建立任何 routing。它會從那些子網路存取 Secrets Manager、提取容器映像檔，並呼叫 LLM 提供者。
 
-Supply private subnets in at least two availability zones whenever the module still creates Aurora or ElastiCache, since both of their subnet groups require it. One private subnet is accepted only when you have turned both stores off.
+當此模組仍會建立 Aurora 或 ElastiCache 時，請至少提供位於兩個可用區域的私有子網，因為這兩者的子網群組都需要如此。只有在您已將兩者都關閉時，單一私有子網才會被接受。
 
-Leaving a `create_*` at `false` with an empty URL runs the stack without that component entirely. With no database there is no key management, spend tracking, or UI persistence, so authentication falls back to the master key alone. Without Redis, rate limits, budgets, and router cooldowns are counted per gateway process rather than across the cluster, and the module runs two gateway tasks by default and autoscales to ten, so a caller spread across them receives each process's full allowance. The plan warns when you configure that combination. Hold the gateway to a single process with `gateway_autoscaling_enabled = false`, `gateway_desired_count = 1`, and `gateway_num_workers = 1` if you need per-key limits to mean anything without Redis.
+在 `false` 留下一個空白 URL 的 `create_*`，會讓叢集在完全不包含該元件的情況下執行。沒有資料庫，就沒有金鑰管理、支出追蹤或 UI 持久化，因此驗證會退回只使用 master key。沒有 Redis 時，速率限制、預算和路由冷卻時間會以每個閘道程序為單位計算，而不是跨叢集計算，而且此模組預設會執行兩個閘道任務並自動擴展至十個，因此分散在這些程序上的呼叫者會各自收到每個程序的完整額度。當您設定這種組合時，規劃會發出警告。若您需要在沒有 Redis 的情況下讓每個金鑰限制仍有意義，請透過 `gateway_autoscaling_enabled = false`、`gateway_desired_count = 1` 和 `gateway_num_workers = 1` 將閘道限制為單一程序。
 
-Missing or inconsistent inputs fail during `terraform plan` rather than halfway through an apply, so setting `vpc_id` without the subnet ids, or dropping `azs` without setting `vpc_id`, tells you so before anything is created.
+遺失或不一致的輸入會在 `terraform plan` 期間失敗，而不是在 apply 到一半時才失敗，因此若在未提供子網 ID 的情況下設定 `vpc_id`，或在未設定 `vpc_id` 的情況下移除 `azs`，系統會在任何資源建立之前先告知您。
 
 </TabItem>
 <TabItem value="gcp" label="Google Cloud (Cloud Run)">
 
-Provisions a VPC with Private Services Access, Cloud SQL PostgreSQL (primary plus read replica), Memorystore Redis with TLS, a GCS bucket, Secret Manager entries, Cloud Run services, and a global HTTPS load balancer with serverless NEGs.
+部署 VPC，包含 Private Services Access、Cloud SQL PostgreSQL（主資料庫加上讀取複本）、具有 TLS 的 Memorystore Redis、GCS bucket、Secret Manager 項目、Cloud Run 服務，以及搭配無伺服器 NEG 的全域 HTTPS load balancer。
 
 ```hcl title="main.tf"
 module "litellm" {
@@ -509,44 +509,44 @@ module "litellm" {
 }
 ```
 
-Three GCP-specific caveats. First, always override `image_registry`: it defaults to `ghcr.io/berriai`, which Cloud Run cannot pull from, so the apply succeeds but the services fail at image pull. Point it at an [Artifact Registry remote repository](https://cloud.google.com/artifact-registry/docs/repositories/remote-overview) that proxies `ghcr.io`. Second, the database uses password authentication through Secret Manager rather than IAM auth; LiteLLM's IAM token support is AWS RDS specific. Third, create the DNS record for `lb_domains` pointing at the load balancer IP after apply; the [Google-managed certificate](https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs) will not finish provisioning until the domain resolves to it.
+三個 GCP 特有的注意事項。第一，務必覆寫 `image_registry`：其預設值是 `ghcr.io/berriai`，而 Cloud Run 無法從該處提取，因此 apply 會成功，但服務會在映像檔提取時失敗。請將其指向可代理 `ghcr.io` 的 [Artifact Registry 遠端儲存庫](https://cloud.google.com/artifact-registry/docs/repositories/remote-overview)。第二，資料庫使用透過 Secret Manager 的密碼驗證，而非 IAM 驗證；LiteLLM 的 IAM token 支援是 AWS RDS 專用。第三，請在 apply 之後建立指向 load balancer IP 的 `lb_domains` DNS 記錄；在網域解析到該 IP 之前，[Google 管理的憑證](https://cloud.google.com/load-balancing/docs/ssl-certificates/google-managed-certs) 不會完成佈建。
 
 </TabItem>
 </Tabs>
 
-The AWS module can run Prometheus collection in a dedicated ECS sidecar using `gateway_metrics_port` and restrict access with `gateway_metrics_scrape_cidrs`; see [Isolate Prometheus scraping from inference traffic](./prometheus.md#isolate-prometheus-scraping-from-inference-traffic).
+AWS 模組可以使用 `gateway_metrics_port` 在專用的 ECS sidecar 中執行 Prometheus 收集，並以 `gateway_metrics_scrape_cidrs` 限制存取；請參閱[將 Prometheus scraping 與推論流量隔離](./prometheus.md#isolate-prometheus-scraping-from-inference-traffic)。
 
-To manage LiteLLM resources (keys, teams, models) as code once the stack is up, use [terraform-provider-litellm](https://github.com/BerriAI/terraform-provider-litellm).
+若要在叢集啟動後，將 LiteLLM 資源（金鑰、團隊、模型）以程式碼方式管理，請使用 [terraform-provider-litellm](https://github.com/BerriAI/terraform-provider-litellm)。
 
-## Other platforms
+## 其他平台 {#other-platforms}
 
 <Tabs>
 <TabItem value="render" label="Render">
 
-Deploy on [Render](https://render.com/):
+部署到 [Render](https://render.com/)：
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/805964b3c8384b41be180a61442389a3" frameBorder="0" allowFullScreen></iframe>
 
 </TabItem>
 <TabItem value="railway" label="Railway">
 
-Deploy on [Railway](https://railway.app): click the button, then set `PORT=4000` in the Railway environment variables.
+部署到 [Railway](https://railway.app)：按一下按鈕，然後在 Railway 環境變數中設定 `PORT=4000`。
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/S7P9sn?referralCode=t3ukrU)
+[![在 Railway 上部署](https://railway.app/button.svg)](https://railway.app/template/S7P9sn?referralCode=t3ukrU)
 
 </TabItem>
 </Tabs>
 
-## Verify the deployment
+## 驗證部署 {#verify-the-deployment}
 
-Confirm the proxy is up and can reach its database:
+確認 proxy 已啟動且可連線到其資料庫：
 
 ```bash
 curl -s https://llm.example.com/health/readiness
 ```
 
-Then open the Admin UI at `https://llm.example.com/ui`, log in with your master key, add a model, create a virtual key, and send a Playground message; a response proves the full path through the load balancer, proxy, database, and provider credentials. The [Quickstart](./docker_quick_start.md#2-log-in-to-the-admin-ui) walks through each of those clicks with screenshots; the flow is identical on a production deployment.
+接著在 `https://llm.example.com/ui` 開啟 Admin UI，使用您的 master key 登入，新增模型、建立虛擬金鑰，並傳送 Playground 訊息；回應證明請求已完整經過 load balancer、proxy、資料庫與提供者憑證。 [Quickstart](./docker_quick_start.md#2-log-in-to-the-admin-ui) 會以截圖逐步說明上述每個點選步驟；在正式部署上的流程完全相同。
 
-## Next steps
+## 後續步驟 {#next-steps}
 
-Use the [production checklist](./prod.md) to configure workers, resources, Redis, graceful degradation, and server tuning. Verify images with the [Docker Image Security Guide](./docker_image_security.md). Add regions with [Multi-Region Deployment](./multi_region.md). For workloads above 1,000 RPS, enable the [Redis transaction buffer](./prod.md#redis-transaction-buffer) and evaluate the [high-throughput deployment profile](./high_throughput.md).
+請使用 [production checklist](./prod.md) 設定 worker、資源、Redis、優雅降級與伺服器調校。請使用 [Docker Image Security Guide](./docker_image_security.md) 驗證映像檔。使用 [Multi-Region Deployment](./multi_region.md) 新增區域。對於高於 1,000 RPS 的工作負載，請啟用 [Redis transaction buffer](./prod.md#redis-transaction-buffer) 並評估 [high-throughput deployment profile](./high_throughput.md)。

@@ -1,17 +1,17 @@
-# Supabase Tutorial 
-[Supabase](https://supabase.com/) is an open source Firebase alternative.
-Start your project with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime subscriptions, Storage, and Vector embeddings.
+# Supabase 教學  {#supabase-tutorial}
+[Supabase](https://supabase.com/) 是一個開源的 Firebase 替代方案。
+以 Postgres 資料庫、驗證、即時 API、Edge Functions、即時訂閱、儲存與向量嵌入來啟動您的專案。
 
-## Use Supabase to log requests and see total spend across all LLM Providers (OpenAI, Azure, Anthropic, Cohere, Replicate, PaLM)
-liteLLM provides `success_callbacks` and `failure_callbacks`, making it easy for you to send data to a particular provider depending on the status of your responses. 
+## 使用 Supabase 記錄請求，並查看所有 LLM 提供者（OpenAI、Azure、Anthropic、Cohere、Replicate、PaLM）的總支出 {#use-supabase-to-log-requests-and-see-total-spend-across-all-llm-providers-openai-azure-anthropic-cohere-replicate-palm}
+liteLLM 提供 `success_callbacks` 和 `failure_callbacks`，讓您能夠依據回應的狀態，輕鬆將資料傳送到特定提供者。 
 
-In this case, we want to log requests to Supabase in both scenarios - when it succeeds and fails. 
+在這個案例中，我們希望在兩種情況下都將請求記錄到 Supabase——成功時與失敗時。 
 
-### Create a supabase table 
+### 建立 supabase 資料表  {#create-a-supabase-table}
 
-Go to your Supabase project > go to the [Supabase SQL Editor](https://supabase.com/dashboard/projects) and create a new table with this configuration.
+前往您的 Supabase 專案 > 開啟 [Supabase SQL 編輯器](https://supabase.com/dashboard/projects)，並依照此設定建立一個新資料表。
 
-Note: You can change the table name. Just don't change the column names. 
+注意：您可以變更資料表名稱。只要不要變更欄位名稱即可。 
 
 ```sql
 create table
@@ -30,15 +30,15 @@ create table
   ) tablespace pg_default;
 ```
 
-### Use Callbacks 
-Use just 2 lines of code, to instantly see costs and log your responses **across all providers** with Supabase: 
+### 使用回呼  {#use-callbacks}
+只要使用 2 行程式碼，就能立即透過 Supabase 查看成本並記錄您跨所有提供者的回應： 
 
 ```
 litellm.success_callback=["supabase"]
 litellm.failure_callback=["supabase"]
 ```
 
-Complete code
+完整程式碼
 ```python
 from litellm import completion
 
@@ -61,19 +61,19 @@ response = completion(model="gpt-3.5-turbo", messages=[{"role": "user", "content
 response = completion(model="chatgpt-test", messages=[{"role": "user", "content": "Hi 👋 - i'm a bad call to test error logging"}]) 
 ```
 
-### Additional Controls 
+### 其他控制項  {#additional-controls}
 
-**Different Table name**
+**不同的資料表名稱**
 
-If you modified your table name, here's how to pass the new name.
+如果您修改了資料表名稱，以下說明如何傳入新的名稱。
 
 ```python 
 litellm.modify_integration("supabase",{"table_name": "litellm_logs"})
 ```
 
-**Identify end-user**
+**識別終端使用者**
 
-Here's how to map your llm call to an end-user 
+以下說明如何將您的 llm 請求對應到終端使用者 
 
 ```python
 litellm.identify({"end_user": "krrish@berri.ai"})

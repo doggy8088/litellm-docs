@@ -1,9 +1,9 @@
 ---
 slug: litellm-gateway-course
-title: "Learn the LiteLLM gateway with a guided course"
+title: "以引導式課程學習 LiteLLM 閘道"
 date: 2026-09-28T10:00:00-07:00
 authors: [moe]
-description: "Follow a request through the LiteLLM gateway, Router, and SDK. A guided course for teams deploying the gateway and contributors making code changes."
+description: "跟著一則請求走過 LiteLLM 閘道、Router 和 SDK。這是一門為部署閘道的團隊與進行程式碼變更的貢獻者設計的引導式課程。"
 tags: [proxy, product]
 hide_table_of_contents: true
 image: ./hero.png
@@ -14,7 +14,7 @@ import HeroLight from './hero.png';
 import HeroDark from './hero-dark.png';
 
 <ThemedImage
-  alt="Learn the LiteLLM gateway at litellm.ai/course. Follow a request through gateway access checks, Router deployment selection, and SDK provider translation."
+  alt="在 litellm.ai/course 學習 LiteLLM 閘道。跟著一則請求走過閘道存取檢查、Router 部署選擇，以及 SDK 提供者轉譯。"
   sources={{
     light: typeof HeroLight === 'string' ? HeroLight : HeroLight.src.images.at(-1).path,
     dark: typeof HeroDark === 'string' ? HeroDark : HeroDark.src.images.at(-1).path,
@@ -22,38 +22,38 @@ import HeroDark from './hero-dark.png';
   style={{width: '100%'}}
 />
 
-The [LiteLLM gateway course](https://litellm.ai/course) walks you through how the gateway, Router, and SDK work together. We built it for developers and platform teams deploying LiteLLM, and contributors who want to understand the code before opening a pull request.
+[LiteLLM 閘道課程](https://litellm.ai/course)會帶您了解閘道、Router 和 SDK 如何協同運作。我們為部署 LiteLLM 的開發者與平台團隊，以及想在開啟 pull request 前先了解程式碼的貢獻者所設計。
 
 {/* truncate */}
 
-## Start with one request
+## 從一則請求開始 {#start-with-one-request}
 
-The first lessons follow a support app that sends a question to a model called `support-chat`. The gateway checks the caller's access. The Router chooses a deployment. The SDK translates the call into the provider's format.
+前幾個課程單元會跟著一個支援應用程式，該應用程式會向名為 `support-chat` 的模型送出問題。閘道會檢查呼叫者的存取權限。Router 會選擇一個部署。SDK 會將該呼叫轉換為提供者的格式。
 
-Later lessons build on that same app. You add access rules, compare routing choices, follow retries and fallbacks, and see how costs and logs are recorded.
+後續課程單元會以同一個應用程式為基礎。您將新增存取規則、比較路由選擇、跟著重試與備援，並了解成本與記錄如何被記錄。
 
-In [Follow one request](https://litellm.ai/course#/lesson/request-lifetime), you can switch between an allowed request, a denied model, and a blocked answer. Select a scenario to see which steps run and where the request stops.
+在[跟著一則請求](https://litellm.ai/course#/lesson/request-lifetime)中，您可以在允許的請求、遭拒絕的模型，以及被封鎖的回應之間切換。選取一種情境，查看哪些步驟會執行，以及請求在哪裡停止。
 
-![Request flow with Answer blocked selected. The provider generates an answer before a response check blocks delivery.](./request-stops.png)
+![已選取「回應被封鎖」的請求流程。提供者先產生回應，接著回應檢查會阻止傳遞。](./request-stops.png)
 
-## Understand the deployment you run
+## 了解您執行的部署 {#understand-the-deployment-you-run}
 
-For platform teams, the lessons cover everyday decisions: how to give a team access to models, set a budget, choose fallbacks, and investigate a failed request.
+對平台團隊而言，這些課程涵蓋日常決策：如何讓團隊存取模型、設定預算、選擇備援，以及調查失敗的請求。
 
-The operations chapters explain how gateway workers, Redis, and PostgreSQL fit together. Other chapters cover streaming, caching, tools, and agents.
+作業章節會說明 gateway worker、Redis 與 PostgreSQL 如何協同運作。其他章節則涵蓋串流、快取、工具與代理程式。
 
-Use the [production guide](https://docs.litellm.ai/docs/proxy/prod) alongside the course when you configure your deployment.
+在設定您的部署時，請搭配課程一起使用[正式文件指南](https://docs.litellm.ai/docs/proxy/prod)。
 
-## Find where a code change belongs
+## 找出程式碼變更應該放在哪裡 {#find-where-a-code-change-belongs}
 
-For contributors, the course helps you find where a change belongs. A provider request in the wrong format points toward an SDK adapter. An unexpected deployment choice points toward the Router. A permission error starts with the gateway's access checks.
+對貢獻者而言，這門課程能幫助您找出變更應該放在哪裡。格式錯誤的提供者請求指向 SDK adapter。非預期的部署選擇指向 Router。權限錯誤則從閘道的存取檢查開始。
 
-The lessons include **Why this exists** and **Where the code lives** sections. Open them to read the reason for a behavior and follow links to the relevant implementation, documentation, or tests.
+課程單元包含 **Why this exists** 與 **Where the code lives** 區段。打開它們可閱讀某個行為存在的原因，並依照連結找到相關實作、文件或測試。
 
-The final chapter follows a change across the system, from a dashboard field to permissions, stored data, and the settings loaded by gateway workers. It shows you how to trace the behavior and choose what to test. The [contribution guide](https://docs.litellm.ai/docs/extras/contributing_code) covers repository setup and the pull request process.
+最後一章會追蹤一項變更如何在整個系統中流動，從儀表板欄位一路到權限、儲存的資料，以及 gateway worker 載入的設定。它會示範如何追蹤該行為並選擇要測試的內容。[貢獻指南](https://docs.litellm.ai/docs/extras/contributing_code)涵蓋儲存庫設定與 pull request 流程。
 
-## Take the course
+## 開始課程 {#take-the-course}
 
-The course has 83 lessons in 15 chapters. Follow the lessons in order, or use the sidebar to return to a topic. Your progress is saved in your browser. No login is required.
+這門課程共有 15 章、83 個課程單元。請依序學習各單元，或使用側邊欄返回某個主題。您的進度會儲存在瀏覽器中。不需要登入。
 
-**[Start the LiteLLM gateway course →](https://litellm.ai/course)**
+**[開始 LiteLLM 閘道課程 →](https://litellm.ai/course)**

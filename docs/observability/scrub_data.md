@@ -1,10 +1,10 @@
-# Scrub Logged Data
+# 清理已記錄資料 {#scrub-logged-data}
 
-Redact messages / mask PII before sending data to logging integrations (langfuse/etc.).
+在將資料傳送至記錄整合（langfuse/etc.）之前，先將訊息去識別化／遮罩 PII。
 
-See our [**Presidio PII Masking**](https://github.com/BerriAI/litellm/blob/a176feeacc5fdf504747978d82056eb84679c4be/litellm/proxy/hooks/presidio_pii_masking.py#L286) for reference.
+請參考我們的 [**Presidio PII 遮罩**](https://github.com/BerriAI/litellm/blob/a176feeacc5fdf504747978d82056eb84679c4be/litellm/proxy/hooks/presidio_pii_masking.py#L286)。
 
-1. Setup a custom callback 
+1. 設定自訂回呼 
 
 ```python
 from litellm.integrations.custom_logger import CustomLogger
@@ -49,7 +49,7 @@ customHandler = MyCustomHandler()
 ```
 
 
-2. Connect custom handler to LiteLLM
+2. 將自訂處理器連接到 LiteLLM
 
 ```python
 import litellm
@@ -57,7 +57,7 @@ import litellm
 litellm.callbacks = [customHandler]
 ```
 
-3. Test it!
+3. 測試它！
 
 ```python
 # uv add langfuse 

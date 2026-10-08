@@ -1,24 +1,24 @@
-# Custom HTTP Handler
+# 自訂 HTTP 處理器 {#custom-http-handler}
 
-Configure custom aiohttp sessions for better performance and control in LiteLLM completions.
+為 LiteLLM completions 設定自訂 aiohttp sessions，以提升效能與控制能力。
 
-## Overview
+## 總覽 {#overview}
 
-You can inject custom `aiohttp.ClientSession` instances into LiteLLM for:
-- Custom connection pooling and timeouts
-- Corporate proxy and SSL configurations  
-- Performance optimization
-- Request monitoring
+您可以將自訂的 `aiohttp.ClientSession` 實例注入 LiteLLM，用於：
+- 自訂連線池與逾時
+- 企業代理伺服器與 SSL 設定  
+- 效能最佳化
+- 請求監控
 
-:::info Scope
-`BaseLLMAIOHTTPHandler` is only used by the `aiohttp_openai/` provider (chat completions) and by Topaz image variations. Requests to other providers, including plain `openai/`, go through the httpx based clients and are not affected by this handler.
+:::info 範圍
+`BaseLLMAIOHTTPHandler` 僅由 `aiohttp_openai/` 提供者（chat completions）以及 Topaz 圖片變體使用。對其他提供者的請求，包括純 `openai/`，會透過基於 httpx 的用戶端處理，且不受此處理器影響。
 
-The instance that `litellm.completion` calls lives in the `litellm.main` module, so the replacement must be assigned to `litellm.main.base_llm_aiohttp_handler`. Setting `litellm.base_llm_aiohttp_handler` creates a new attribute on the `litellm` package that nothing reads, and the custom session is silently ignored. `litellm.images.main` binds its own reference to the handler at import time, so the Topaz image variation path is not changed by this assignment.
+`litellm.completion` 呼叫的實例位於 `litellm.main` 模組中，因此替換內容必須指定給 `litellm.main.base_llm_aiohttp_handler`。設定 `litellm.base_llm_aiohttp_handler` 會在 `litellm` 套件上建立一個沒有人會讀取的新屬性，而自訂 session 會被靜默忽略。`litellm.images.main` 在匯入時會將自己對處理器的參考綁定，因此此指定不會改變 Topaz 圖片變體路徑。
 :::
 
-## Basic Usage
+## 基本用法 {#basic-usage}
 
-### Default (No Changes Required)
+### 預設（無需變更） {#default-no-changes-required}
 ```python
 import litellm
 
@@ -29,7 +29,7 @@ response = await litellm.acompletion(
 )
 ```
 
-### Custom Session
+### 自訂 Session {#custom-session}
 ```python
 import aiohttp
 import litellm
@@ -49,9 +49,9 @@ litellm.main.base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler(client_session=ses
 response = await litellm.acompletion(model="aiohttp_openai/{{openai_small}}", messages=[...])
 ```
 
-## Common Patterns
+## 常見模式 {#common-patterns}
 
-### FastAPI Integration
+### FastAPI 整合 {#fastapi-integration}
 ```python
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -81,7 +81,7 @@ async def chat(messages: list[dict]):
     return await litellm.acompletion(model="aiohttp_openai/{{openai_small}}", messages=messages)
 ```
 
-### Corporate Proxy
+### 企業代理 {#corporate-proxy}
 ```python
 import ssl
 
@@ -98,7 +98,7 @@ session = aiohttp.ClientSession(
 litellm.main.base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler(client_session=session)
 ```
 
-### High Performance
+### 高效能 {#high-performance}
 ```python
 # Optimized for high throughput
 session = aiohttp.ClientSession(
@@ -115,7 +115,7 @@ session = aiohttp.ClientSession(
 litellm.main.base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler(client_session=session)
 ```
 
-## Constructor Options
+## 建構式選項 {#constructor-options}
 
 ```python
 BaseLLMAIOHTTPHandler(
@@ -125,15 +125,15 @@ BaseLLMAIOHTTPHandler(
 )
 ```
 
-## Resource Management
+## 資源管理 {#resource-management}
 
-- **User sessions**: You manage the lifecycle (call `await session.close()`)
-- **Auto-created sessions**: Automatically cleaned up by the handler
-- **100% backward compatible**: Existing code works unchanged
+- **使用者 sessions**：由您管理生命週期（呼叫 `await session.close()`）
+- **自動建立的 sessions**：由處理器自動清理
+- **100% 向後相容**：既有程式碼可原樣運作
 
-## Configuration Tips
+## 設定提示 {#configuration-tips}
 
-### Development
+### 開發 {#development}
 ```python
 session = aiohttp.ClientSession(
     timeout=aiohttp.ClientTimeout(total=60),
@@ -141,7 +141,7 @@ session = aiohttp.ClientSession(
 )
 ```
 
-### Production
+### 生產環境 {#production}
 ```python
 session = aiohttp.ClientSession(
     timeout=aiohttp.ClientTimeout(total=300),

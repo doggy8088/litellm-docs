@@ -1,99 +1,99 @@
 ---
 slug: auto-router-prompt-caching-benchmark
-title: "Prompt Caching Works with Auto Router"
+title: "Prompt 快取可與 Auto Router 搭配使用"
 date: 2026-07-31T10:00:00
 authors:
   - tin
 image: ./hero.png
-description: "The most common objection to auto-routing is that switching models throws away your prompt cache. We measured it across five datasets, including real gateway traffic with the provider's own cache accounting, and the answer is no."
+description: "對 auto-routing 最常見的疑慮是，切換模型會丟失您的 prompt 快取。我們在五個資料集上進行了測量，其中包括使用提供者自身快取計費的真實閘道流量，而答案是否定的。"
 keywords: [prompt caching, auto router, llm cost savings, model routing, cache warming, anthropic prompt cache, litellm auto routing, prefix cache]
 tags: [routing, complexity-router, caching, cost, benchmarks, engineering]
 hide_table_of_contents: false
 ---
 
-![Auto-Router x Prompt Caching: measured across five datasets](./hero.png)
+![Auto-Router 與 Prompt 快取：跨五個資料集測量](./hero.png)
 
-**Yes, you can use prompt caching with Auto-Routing.** The two compound rather than cancel out. We measured it across five datasets, two of which report what the provider's cache actually did.
+**是的，您可以在 Auto-Routing 中使用 prompt 快取。** 兩者是相輔相成，而非彼此抵消。我們在五個資料集上進行了測量，其中兩個會回報提供者的快取實際做了什麼。
 
 {/* truncate */}
 
-:::info[🚀 Help shape the Auto-Router]
+:::info[🚀 協助塑造 Auto-Router]
 
-Get early access, work directly with the LiteLLM team, and influence the roadmap with your production traffic.
+搶先取得使用權，直接與 LiteLLM 團隊合作，並以您的正式環境流量影響產品藍圖。
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計夥伴</a>
 
 <br /><br />
 
-Already testing it? Share your results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+已經在測試了嗎？請在 [討論串 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
 
 :::
 
-## The results
+## 結果 {#the-results}
 
-- **Auto-routing does not break prompt caching.** The two compound on every dataset we measured
-- **37% to 69% cheaper** than caching alone on a single model
-- **The real failure mode is the opposite one.** Running a router with caching switched off is about **4x more expensive** than caching one fixed model
+- **Auto-routing 不會破壞 prompt 快取。** 在我們測量的每個資料集上，兩者都是相輔相成
+- **比僅在單一模型上快取便宜 37% 到 69%**
+- **真正的失敗模式正好相反。** 在關閉快取的情況下執行 router，成本大約會比對單一固定模型做快取 **高 4 倍**
 
-| Evaluation | Sample | Router + caching, vs caching alone |
+| 評估 | 樣本 | Router + 快取，相較於僅快取 |
 | --- | --- | --- |
-| Simulation, general chat ([WildChat-1M](https://huggingface.co/datasets/allenai/WildChat-1M)) | 30,769 multi-turn conversations | **68.7% cheaper** |
-| Simulation, developer chat ([DevGPT](https://github.com/NAIST-SE/DevGPT)) | 1,011 conversations | **46% cheaper** |
-| Real agent traces, provider cache accounting | 95 sessions, 8,174 API calls | **37.4% cheaper** |
-| [TwinRouterBench](https://github.com/CommonstackAI/TwinRouterBench) static track | 81 multi-step instances | **44 to 50% cheaper** |
+| 模擬，一般聊天 ([WildChat-1M](https://huggingface.co/datasets/allenai/WildChat-1M)) | 30,769 個多輪對話 | **便宜 68.7%** |
+| 模擬，開發者聊天 ([DevGPT](https://github.com/NAIST-SE/DevGPT)) | 1,011 個對話 | **便宜 46%** |
+| 真實代理程式軌跡，提供者快取計費 | 95 個工作階段，8,174 次 API 呼叫 | **便宜 37.4%** |
+| [TwinRouterBench](https://github.com/CommonstackAI/TwinRouterBench) 靜態軌道 | 81 個多步驟實例 | **便宜 44% 到 50%** |
 
-## How it was measured
+## 測量方式 {#how-it-was-measured}
 
-- **Router arm:** one model group, four tiers. SIMPLE to `claude-haiku-4-5`, MEDIUM to `claude-sonnet-5`, COMPLEX and REASONING to `claude-opus-5`
-- **Baseline arm:** every request to one frontier model with prompt caching on, the strongest realistic baseline rather than a cold-priced strawman
-- **Cache behaviour:** read from `usage.cache_read_input_tokens` and `cache_creation_input_tokens` on the gateway spend logs and agent traces; modelled on the other three legs
-- **Turn classification:** one window function partitioned by session and model, labelling each turn as staying on a model, first visiting a tier, or returning to one already used
+- **Router 分支：** 一個模型群組，四個層級。SIMPLE 到 `claude-haiku-4-5`，MEDIUM 到 `claude-sonnet-5`，COMPLEX 和 REASONING 到 `claude-opus-5`
+- **基準分支：** 每個請求都送往單一前沿模型，並啟用 prompt 快取；這是最強、最貼近實務的基準，而不是冷啟動價格的稻草人
+- **快取行為：** 從閘道支出記錄與代理程式軌跡上的 `usage.cache_read_input_tokens` 和 `cache_creation_input_tokens` 讀取；其餘三個分支則以模型化方式處理
+- **輪次分類：** 一個 window function 依工作階段與模型分區，將每一輪標記為停留在某模型、首次造訪某層級，或回到先前已使用過的模型
 
-## Why auto-routing doesn't break prompt caching
+## 為什麼 auto-routing 不會破壞 prompt 快取 {#why-auto-routing-doesnt-break-prompt-caching}
 
-**99.3% of the time a session switches back to a model it used earlier, that model's cache is still warm.** The router comes back long before the cache expires, so a switch is not an eviction.
+**當工作階段切回先前使用過的模型時，有 99.3% 的時間該模型的快取仍是熱的。** router 會在快取過期前很久就回來，因此切換並不等於逐出。
 
-We measured this on **4,684 real switch-backs** from live LiteLLM gateway traffic.
+我們在來自實際 LiteLLM 閘道流量的 **4,684 次真實切回** 上測量了這點。
 
-| Provider cache state | % of Model Returns with Warm Cache |
+| 提供者快取狀態 | 熱快取的模型回切比例 |
 | --- | --- |
-| Still warm at 5m TTL | **97.4%** |
-| Still warm at 1h TTL | **99.3%** |
-| Past TTL, the only ones a switch could have hurt | **2.6% / 0.7%** |
+| 5 分鐘 TTL 時仍為熱的 | **97.4%** |
+| 1 小時 TTL 時仍為熱的 | **99.3%** |
+| 已超過 TTL、也就是切換可能造成影響的那些 | **2.6% / 0.7%** |
 
-## We tried a background cache warmer. It wasn't worth it
+## 我們嘗試了背景快取暖機器。但不值得 {#we-tried-a-background-cache-warmer-it-wasnt-worth-it}
 
-If switching really did strand the cache, a background refresher that replays a session's prefix would be the fix. We built the measurement for it first.
+如果切換真的會讓快取閒置，一個重新播放工作階段前綴的背景更新器會是解法。我們先為它建立了測量方式。
 
-**Only 4% of cache misses are preventable by a background cache warmer.** The rest either happened while the cache was still alive, or after the model had been idle so long that keeping it warm costs more than the write it avoids.
+**只有 4% 的快取失敗可由背景快取暖機器避免。** 其餘不是發生在快取仍有效時，就是發生在模型閒置太久、維持熱快取的成本高於它所避免的寫入成本之後。
 
-| Traffic | Typical prefix | What warming does to total cost |
+| 流量 | 典型前綴 | 暖機對總成本的影響 |
 | --- | --- | --- |
-| General chat | ~1,700 tokens | **0.10% more expensive** |
-| Agent traces, multi-hour gaps | large | **0.63% more expensive** |
-| Our gateway, agentic | ~190,000 tokens | **0.9% cheaper** |
+| 一般聊天 | ~1,700 tokens | **貴 0.10%** |
+| 代理程式軌跡，間隔數小時 | 大型 | **貴 0.63%** |
+| 我們的閘道，agentic | ~190,000 tokens | **便宜 0.9%** |
 
-Warming is worth roughly plus or minus two percent: a narrow optimization for long sessions with large stable prefixes, not the thing standing between a deployment and its savings.
+暖機的效益大約只有正負兩個百分點：對於具有大型穩定前綴的長工作階段而言是一項窄幅優化，而不是攸關部署是否能節省成本的關鍵。
 
-## See it on your own traffic
+## 在您自己的流量上查看 {#see-it-on-your-own-traffic}
 
-The Auto-Router Benchmarks tab now reports prompt cache behaviour per router, from the provider's own usage payload:
+Auto-Router Benchmarks 分頁現在會根據提供者自身的使用量 payload，逐個 router 報告 prompt 快取行為：
 
-- **Hit rate**, split by whether the turn stayed on a model, first visited a tier, or returned to one
-- **Expired-miss share**, narrowing return misses to those whose tier went idle past the TTL
-- **Savable by warming**, the share of all misses a refresher could prevent
-- **Warming cost and net estimate**, in dollars
-- **Coverage**, so a low hit rate caused by response logging being off does not read as a cold cache
+- **命中率**，依輪次是停留在某模型、首次造訪某層級，或回到先前使用過的模型來拆分
+- **過期未命中占比**，將回切未命中縮小到那些其層級已超過 TTL 而閒置的情況
+- **可由暖機挽回的比例**，所有未命中中可由更新器避免的部分
+- **暖機成本與淨估計**，以美元計算
+- **涵蓋率**，因此若因關閉 response logging 而導致命中率偏低，也不會被解讀為冷快取
 
 ```
 GET /auto_router/benchmarks?start_date=2026-07-01&end_date=2026-07-31
 ```
 
-## Try it
+## 試試看 {#try-it}
 
 :::info
 
-Point a client at an auto-router with prompt caching on, then check the Auto-Router Benchmarks tab against your own traffic. Share numbers or questions on [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168). To work on this with us directly, [apply to be a design partner](https://calendly.com/tin-berri/litellm-auto-router-design-partner).
+將用戶端指向啟用 prompt 快取的 auto-router，然後將 Auto-Router Benchmarks 分頁與您自己的流量進行比對。請在 [討論串 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享數字或問題。若要直接與我們一起進行這項工作，請 [申請成為設計夥伴](https://calendly.com/tin-berri/litellm-auto-router-design-partner)。
 
 :::
 
@@ -125,4 +125,4 @@ model_list:
       complexity_router_default_model: claude-sonnet-5
 ```
 
-Every response carries `x-litellm-model-name` and `x-litellm-response-cost`, and the provider's cache token counts land in the spend logs. Full reference on the [Auto Routing docs page](/docs/proxy/auto_routing).
+每個回應都會帶有 `x-litellm-model-name` 與 `x-litellm-response-cost`，而提供者的快取 token 計數則會出現在支出記錄中。完整參考資訊請見 [Auto Routing 文件頁面](/docs/proxy/auto_routing)。

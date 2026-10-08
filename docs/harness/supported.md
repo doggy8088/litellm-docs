@@ -1,11 +1,11 @@
 ---
-title: Supported harnesses
-sidebar_label: Supported harnesses
+title: 支援的 harness
+sidebar_label: 支援的 harness
 ---
 
-# Supported harnesses
+# 支援的 harness {#supported-harnesses}
 
-This release supports five harnesses. Each one is driven through its own programmatic interface, never by scraping a terminal
+此版本支援五種 harness。每一種都透過各自的程式化介面驅動，從不透過擷取終端機
 
 ```python
 from enum import Enum
@@ -18,23 +18,23 @@ class Harness(Enum):
     TOOL_LOOP = "tool_loop"
 ```
 
-`Harness` is a plain `Enum`. A `StrEnum` member would compare equal to its string and let `"codex"` through, so `litellm.agent()` and the other entry points check `isinstance(harness, Harness)` and raise `TypeError` otherwise.
+`Harness` 是一個純粹的 `Enum`。`StrEnum` 成員會與其字串相等，並允許 `"codex"` 通過，因此 `litellm.agent()` 和其他進入點會檢查 `isinstance(harness, Harness)`，否則便會引發 `TypeError`。
 
-## Capabilities
+## 能力 {#capabilities}
 
-| Capability | Claude Code | Codex | OpenCode | Deep Agents | Tool Loop |
+| 能力 | Claude Code | Codex | OpenCode | Deep Agents | Tool Loop |
 |---|:-:|:-:|:-:|:-:|:-:|
-| Any gateway model group | yes | yes | yes | yes | yes |
-| Cost tracking | yes | yes | yes | yes | yes |
-| Skills | yes | yes | yes | yes | no |
-| Structured output | yes | yes | yes | yes | yes |
-| Detach and resume | yes | yes | yes | yes | no |
-| Built-in tool filtering (`disable_tools=`) | yes | no | yes | yes | no |
-| Custom Python tools (`tools=`) | no | no | no | yes | yes |
-| History (`s.history()`) | no | no | no | yes | yes |
-| Permission modes | `read-only`, `edit`, `full` | `read-only`, `full` | `read-only`, `edit`, `full` | `read-only`, `edit`, `full` | `ask`, `full` |
+| 任何 gateway 模型群組 | 是 | 是 | 是 | 是 | 是 |
+| 成本追蹤 | 是 | 是 | 是 | 是 | 是 |
+| Skills | 是 | 是 | 是 | 是 | 否 |
+| 結構化輸出 | 是 | 是 | 是 | 是 | 是 |
+| 分離並恢復 | 是 | 是 | 是 | 是 | 否 |
+| 內建工具篩選（`disable_tools=`） | 是 | 否 | 是 | 是 | 否 |
+| 自訂 Python 工具（`tools=`） | 否 | 否 | 否 | 是 | 是 |
+| 歷史紀錄（`s.history()`） | 否 | 否 | 否 | 是 | 是 |
+| 權限模式 | `read-only`, `edit`, `full` | `read-only`, `full` | `read-only`, `edit`, `full` | `read-only`, `edit`, `full` | `ask`, `full` |
 
-`permissions="ask"` with interactive approval isn't available on the CLI harnesses in this release. Asking a harness for something it doesn't support raises `CapabilityUnsupported` before the runtime starts, and it never falls back to a looser mode. You can read the same table in code.
+`permissions="ask"` 搭配互動式核准在此版本的 CLI harness 上不可用。向 harness 要求它不支援的功能時，會在執行階段開始前引發 `CapabilityUnsupported`，而且絕不會退回到較寬鬆的模式。您可以在程式碼中讀到相同的表格。
 
 ```python
 caps = litellm.agent_capabilities(Harness.CODEX)
@@ -42,19 +42,19 @@ caps.tool_filtering     # False
 caps.permission_modes   # frozenset({'read-only', 'full'})
 ```
 
-## How each one is driven
+## 每一種的驅動方式 {#how-each-one-is-driven}
 
-| Harness | Driven through | Speaks to its model | Runs in | Needs in sandbox |
+| Harness | 透過以下方式驅動 | 與其模型通訊 | 執行於 | 沙箱中需要 |
 |---|---|---|---|---|
 | `CLAUDE_CODE` | `claude -p --output-format stream-json` | Anthropic Messages | sandbox | `claude` |
 | `CODEX` | `codex exec --json` | OpenAI Responses | sandbox | `codex` |
 | `OPENCODE` | `opencode run --format json` | OpenAI Chat Completions | sandbox | `opencode` |
-| `DEEPAGENTS` | `deepagents` Python API | LangChain chat model | your process | nothing |
-| `TOOL_LOOP` | LiteLLM tool loop | OpenAI Chat Completions | your process | nothing |
+| `DEEPAGENTS` | `deepagents` Python API | LangChain chat model | 您的程序 | 無需任何 |
+| `TOOL_LOOP` | LiteLLM tool loop | OpenAI Chat Completions | 您的程序 | 無需任何 |
 
-The runtime binaries aren't installed for you in this release. Put them in your sandbox image, or on your `PATH` for `sandbox.local`. If the binary is missing, the call raises `HarnessInstallFailed` naming it.
+此版本不會為您安裝執行階段二進位檔。請將它們放入您的 sandbox 映像中，或放在您的 `PATH` 上以供 `sandbox.local` 使用。若二進位檔遺失，該呼叫會引發 `HarnessInstallFailed`，並指出其名稱。
 
-Every harness takes a typed options class for settings that only make sense for that runtime. Passing another harness's options raises `OptionsMismatch`.
+每個 harness 都會接受一個型別化的 options 類別，用於僅對該執行階段有意義的設定。傳入其他 harness 的 options 會引發 `OptionsMismatch`。
 
 ```python
 from litellm import Harness, CodexOptions

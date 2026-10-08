@@ -1,12 +1,12 @@
 ---
 slug: qwen3_8_omni_flash
-title: "Day 0 Support: Qwen3.8-Omni-Flash"
+title: "支援首日：Qwen3.8-Omni-Flash"
 date: 2026-09-18T10:00:00
 image: ./hero.png
 authors:
   - misbah
   - mateo
-description: "Day 0 support for Qwen3.8-Omni-Flash on LiteLLM, with text, image, audio and video input."
+description: "LiteLLM 對 Qwen3.8-Omni-Flash 的支援首日，支援文字、圖片、音訊和影片輸入。"
 tags: [qwen, dashscope, qwen3.8-omni-flash, day 0 support]
 hide_table_of_contents: false
 ---
@@ -16,19 +16,19 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x Qwen3.8-Omni-Flash](./hero.png)
 
-LiteLLM supports `qwen3.8-omni-flash` on day 0 through the DashScope provider, with text, image, audio and video input and text output. Audio and video content parts pass straight through, so an OpenAI-shaped request works as it is.
+LiteLLM 透過 DashScope 提供者於支援首日支援 `qwen3.8-omni-flash`，支援文字、圖片、音訊和影片輸入，以及文字輸出。音訊和影片內容部分會直接通過，因此 OpenAI 形式的請求可直接使用。
 
 {/* truncate */}
 
-Qwen calls it its first omni model built around agentic work. It reasons over audio and video together and calls tools across long jobs, such as editing a vlog or recapping a film. It has a 1M-token context window and 131K max output, and Qwen puts video input at about 89% cheaper than Qwen3.5-Omni-Plus.
+Qwen 稱其為首個以代理式工作為核心打造的 omni model。它會同時對音訊和影片進行推理，並在長時間作業中呼叫工具，例如編輯 vlog 或為影片做摘要。它具有 1M-token 的 context window 和 131K 的最大輸出，而 Qwen 將影片輸入的價格訂為比 Qwen3.5-Omni-Plus 便宜約 89%。
 
-## Pricing
+## 定價 {#pricing}
 
-Per 1M tokens, International: $0.15 input, $0.016 cached input, $0.47 output. Pricing lands in [PR #41754](https://github.com/BerriAI/litellm/pull/41754); without it requests route fine but log $0 spend. Hit **Reload Model Cost Map** in the Admin UI, or `POST /reload/model_cost_map`, to pick it up without a redeploy on `v1.76.0` and above.
+每 1M token，International：輸入 $0.15、快取輸入 $0.016、輸出 $0.47。定價已納入 [PR #41754](https://github.com/BerriAI/litellm/pull/41754)；未納入前，請求路由可正常運作，但會記錄 $0 的支出。請在 Admin UI 中按 **Reload Model Cost Map**，或執行 `POST /reload/model_cost_map`，即可在 `v1.76.0` 及以上版本不需重新部署就取得更新。
 
-## Usage
+## 使用方式 {#usage}
 
-LiteLLM's DashScope provider defaults to the mainland China endpoint. On an International account, set `api_base` to `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`, as below. Audio goes in as a `data:;base64,` URL rather than the bare base64 OpenAI accepts.
+LiteLLM 的 DashScope 提供者預設使用中國大陸端點。若為 International 帳號，請將 `api_base` 設為 `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`，如下所示。音訊需以 `data:;base64,` URL 傳入，而不是 OpenAI 可接受的原始 base64。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -76,6 +76,6 @@ curl -X POST "http://0.0.0.0:4000/chat/completions" \
 </TabItem>
 </Tabs>
 
-## Feedback
+## 回饋 {#feedback}
 
-Running Qwen3.8-Omni-Flash through LiteLLM and hitting something unexpected? Share it on [GitHub discussion #41845](https://github.com/BerriAI/litellm/discussions/41845).
+透過 LiteLLM 執行 Qwen3.8-Omni-Flash 時遇到意料之外的情況嗎？請在 [GitHub discussion #41845](https://github.com/BerriAI/litellm/discussions/41845) 分享。

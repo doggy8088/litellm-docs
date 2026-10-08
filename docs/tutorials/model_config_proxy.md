@@ -1,13 +1,13 @@
-# Customize Prompt Templates on OpenAI-Compatible server 
+# 在 OpenAI 相容伺服器上自訂 Prompt 範本  {#customize-prompt-templates-on-openai-compatible-server}
 
-**You will learn:** How to set a custom prompt template on our OpenAI compatible server. 
-**How?** We will modify the prompt template for a Mistral 7B Instruct model on Bedrock
+**您將學到：** 如何在我們與 OpenAI 相容的伺服器上設定自訂提示模板。 
+**如何做？** 我們將修改 Bedrock 上 Mistral 7B Instruct 模型的提示模板
 
-Custom prompt templates only apply to providers where LiteLLM builds the raw text prompt itself (for example Bedrock Mistral and Llama text models). Providers that receive chat `messages`, such as `huggingface/` models (including TGI endpoints set with `api_base`), apply the chat template on the server side and ignore `roles`
+自訂提示模板只適用於 LiteLLM 會自行建立原始文字提示的提供者（例如 Bedrock Mistral 和 Llama 文字模型）。接收聊天 `messages` 的提供者，例如 `huggingface/` 模型（包括透過 `api_base` 設定的 TGI 端點），會在伺服器端套用聊天模板，並忽略 `roles`
 
-## Step 1: Start OpenAI Compatible server
+## 步驟 1：啟動 OpenAI 相容伺服器 {#step-1-start-openai-compatible-server}
 
-Create a `config.yaml` with the model:
+建立一個 `config.yaml`，使用以下模型：
 
 ```yaml
 model_list:
@@ -17,7 +17,7 @@ model_list:
       aws_region_name: us-east-1
 ```
 
-Set a master key (the proxy refuses to start without one), then start the proxy with `--detailed_debug` so it logs the raw request it sends to the provider:
+設定 master key（否則 proxy 無法啟動），然後使用 `--detailed_debug` 啟動 proxy，如此它會記錄傳送給提供者的原始請求：
 
 ```shell
 $ export LITELLM_MASTER_KEY="sk-$(openssl rand -hex 32)"
@@ -26,7 +26,7 @@ $ litellm --config config.yaml --detailed_debug
 # OpenAI compatible server running on http://0.0.0.0:4000
 ```
 
-In a new shell with the same `LITELLM_MASTER_KEY` exported, send a test request: 
+在新的 shell 中，匯出相同的 `LITELLM_MASTER_KEY` 後，送出測試請求： 
 ```shell
 curl http://0.0.0.0:4000/v1/chat/completions \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
@@ -41,7 +41,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ``` 
 
-The proxy logs show the prompt LiteLLM built with its default Mistral formatting:
+proxy 記錄會顯示 LiteLLM 以其預設 Mistral 格式建立的提示：
 
 ```shell
 POST Request Sent from LiteLLM:
@@ -50,16 +50,16 @@ https://bedrock-runtime.us-east-1.amazonaws.com/model/mistral.mistral-7b-instruc
 -d '{'prompt': '<s>[INST] \nYou are terse. [/INST]\n[INST] Say hi [/INST]\n', 'max_tokens': 30}'
 ```
 
-Let's say we want our own template instead:
-* BOS (`<s>`) tokens at the start of every System and Human message
-* A `<<SYS>>` block around the system message
-* EOS (`</s>`) tokens at the end of every assistant message
+假設我們想要改成自己的模板：
+* 每個 System 和 Human 訊息開頭都加上 BOS（`<s>`）權杖
+* 在 system 訊息外包一個 `<<SYS>>` 區塊
+* 每個 assistant 訊息結尾都加上 EOS（`</s>`）權杖
 
-## Step 2: Create Custom Prompt Template
+## 步驟 2：建立自訂 Prompt 範本 {#step-2-create-custom-prompt-template}
 
-Our litellm server accepts prompt templates as part of the model's `litellm_params` in `config.yaml`. You can save api keys, fallback models, prompt templates etc. in this config. [See a complete config file](../proxy/configs.md#set-custom-prompt-templates)
+我們的 litellm 伺服器會在 `config.yaml` 中，將提示模板作為模型的 `litellm_params` 一部分來接受。您可以在此設定中儲存 API 金鑰、備援模型、提示模板等。[查看完整設定檔](../proxy/configs.md#set-custom-prompt-templates)
 
-Update `config.yaml`:
+更新 `config.yaml`：
 
 ```yaml
 model_list:
@@ -79,14 +79,14 @@ model_list:
           post_message: "</s>"
 ```
 
-## Step 3: Run new template
+## 步驟 3：執行新範本 {#step-3-run-new-template}
 
-Restart the proxy with the updated config:
+使用更新後的設定重新啟動 proxy：
 ```shell
 $ litellm --config config.yaml --detailed_debug
 ```
 
-Send the same curl request as in Step 1. The proxy logs now show our custom prompt sent to Bedrock:
+送出與步驟 1 相同的 curl 請求。proxy 記錄現在會顯示我們送往 Bedrock 的自訂提示：
 
 ```shell
 -d '{'prompt': '<s>[INST] <<SYS>>\nYou are terse.\n<</SYS>>\n [/INST]\n<s>[INST] Say hi [/INST]\n', 'max_tokens': 30}'

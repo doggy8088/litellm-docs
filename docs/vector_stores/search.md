@@ -1,29 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /vector_stores/search - Search Vector Store
+# /vector_stores/search - 搜尋向量儲存 {#vector_storessearch---search-vector-store}
 
-Search a vector store for relevant chunks based on a query and file attributes filter. This is useful for retrieval-augmented generation (RAG) use cases.
+依據查詢與檔案屬性篩選條件搜尋向量儲存中相關的區塊。這對檢索增強生成（RAG）使用案例很有幫助。
 
-## Overview
+## 概覽 {#overview}
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | Tracked per search operation |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Support LLM Providers | **OpenAI, Azure OpenAI, Bedrock, Vertex RAG Engine, Azure AI, Milvus, Valkey, Gemini** | Full vector stores API support across providers |
+| 成本追蹤 | ✅ | 依每次搜尋作業追蹤 |
+| 記錄 | ✅ | 可跨所有整合使用 |
+| 終端使用者追蹤 | ✅ | |
+| 支援 LLM 提供者 | **OpenAI, Azure OpenAI, Bedrock, Vertex RAG Engine, Azure AI, Milvus, Valkey, Gemini** | 跨提供者完整支援 vector stores API |
 
-For **retrieve, list, update, and delete** over HTTP (including `custom_llm_provider` / `model` routing), see [Create vector store](./create.md#vector-store-management-and-routing-on-the-proxy).
+如需透過 HTTP 進行 **retrieve、list、update 與 delete**（包含 `custom_llm_provider` / `model` 路由），請參閱[建立向量儲存](./create.md#vector-store-management-and-routing-on-the-proxy)。
 
-## Usage
+## 用法 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 <Tabs>
-<TabItem value="basic" label="Basic Usage">
+<TabItem value="basic" label="基本用法">
 
-#### Non-streaming example
+#### 非串流範例 {#non-streaming-example}
 ```python showLineNumbers title="Search Vector Store - Basic"
 import litellm
 
@@ -34,7 +34,7 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-#### Synchronous example
+#### 同步範例 {#synchronous-example}
 ```python showLineNumbers title="Search Vector Store - Sync"
 import litellm
 
@@ -47,9 +47,9 @@ print(response)
 
 </TabItem>
 
-<TabItem value="advanced" label="Advanced Configuration">
+<TabItem value="advanced" label="進階設定">
 
-#### With filters and ranking options
+#### 使用篩選與排序選項 {#with-filters-and-ranking-options}
 ```python showLineNumbers title="Search Vector Store - Advanced"
 import litellm
 
@@ -70,9 +70,9 @@ print(response)
 
 </TabItem>
 
-<TabItem value="multiple-queries" label="Multiple Queries">
+<TabItem value="multiple-queries" label="多重查詢">
 
-#### Searching with multiple queries
+#### 使用多個查詢進行搜尋 {#searching-with-multiple-queries}
 ```python showLineNumbers title="Search Vector Store - Multiple Queries"
 import litellm
 
@@ -89,9 +89,9 @@ print(response)
 
 </TabItem>
 
-<TabItem value="openai-provider" label="OpenAI Provider">
+<TabItem value="openai-provider" label="OpenAI 提供者">
 
-#### Using OpenAI provider explicitly
+#### 明確使用 OpenAI 提供者 {#using-openai-provider-explicitly}
 ```python showLineNumbers title="Search Vector Store - OpenAI Provider"
 import litellm
 import os
@@ -109,9 +109,9 @@ print(response)
 
 </TabItem>
 
-<TabItem value="azure-ai-provider" label="Azure AI Provider">
+<TabItem value="azure-ai-provider" label="Azure AI 提供者">
 
-#### Using Azure AI Search
+#### 使用 Azure AI Search {#using-azure-ai-search}
 ```python showLineNumbers title="Search Vector Store - Azure AI Provider"
 import litellm
 import os
@@ -134,13 +134,13 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-[See full Azure AI vector store documentation](../providers/azure_ai_vector_stores.md)
+[請參閱完整的 Azure AI 向量儲存文件](../providers/azure_ai_vector_stores.md)
 
 </TabItem>
 
-<TabItem value="milvus-provider" label="Milvus Provider">
+<TabItem value="milvus-provider" label="Milvus 提供者">
 
-#### Using Milvus
+#### 使用 Milvus {#using-milvus}
 ```python showLineNumbers title="Search Vector Store - Milvus Provider"
 import litellm
 import os
@@ -164,15 +164,15 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-[See full Milvus vector store documentation](../providers/milvus_vector_stores.md)
+[請參閱完整的 Milvus 向量儲存文件](../providers/milvus_vector_stores.md)
 
 </TabItem>
 
 <TabItem value="mongodb-provider" label="MongoDB Provider (BETA)">
 
-#### Using MongoDB (BETA)
+#### 使用 MongoDB（BETA） {#using-mongodb-beta}
 
-Search an existing MongoDB Vector Search index on Atlas or a self-managed deployment. Install `litellm[mongodb]`, then set `MONGODB_CONNECTION_STRING` and your embedding provider's credentials. Replace the placeholders with your index, collection fields, and the model used to embed your documents.
+搜尋 Atlas 上既有的 MongoDB Vector Search 索引，或自我管理的部署。安裝 `litellm[mongodb]`，接著設定 `MONGODB_CONNECTION_STRING` 以及您的 embedding 提供者憑證。請以您的索引、集合欄位，以及用來為文件建立 embedding 的模型取代預留位置。
 
 ```python showLineNumbers title="Search Vector Store - MongoDB Provider (BETA)"
 import os
@@ -194,15 +194,15 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-The embedding model must match the one used for the stored vectors. This BETA integration supports search only; index creation, ingestion, filters, ranking options, and query rewriting are not supported.
+embedding 模型必須與儲存向量所使用的模型相符。此 BETA 整合僅支援搜尋；不支援索引建立、資料擷取、篩選條件、排序選項與查詢改寫。
 
-[MongoDB setup and reference](../providers/mongodb_vector_stores.md) · [Sample-document example](../tutorials/mongodb_vector_search.md)
+[MongoDB 設定與參考](../providers/mongodb_vector_stores.md) · [範例文件範例](../tutorials/mongodb_vector_search.md)
 
 </TabItem>
 
 <TabItem value="valkey-provider" label="Valkey Provider">
 
-#### Using Valkey
+#### 使用 Valkey {#using-valkey}
 ```python showLineNumbers title="Search Vector Store - Valkey Provider"
 import litellm
 
@@ -218,13 +218,13 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-[See full Valkey vector store documentation](../providers/valkey_vector_stores.md)
+[查看完整的 Valkey vector store 文件](../providers/valkey_vector_stores.md)
 
 </TabItem>
 
-<TabItem value="gemini-provider" label="Gemini Provider">
+<TabItem value="gemini-provider" label="Gemini 提供者">
 
-#### Using Gemini File Search
+#### 使用 Gemini File Search {#using-gemini-file-search}
 ```python showLineNumbers title="Search Vector Store - Gemini Provider"
 import litellm
 import os
@@ -241,7 +241,7 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-**With Metadata Filter:**
+**搭配中繼資料篩選：**
 ```python showLineNumbers title="Search with Metadata Filter"
 response = await litellm.vector_stores.asearch(
     vector_store_id="fileSearchStores/your-store-id",
@@ -253,17 +253,17 @@ response = await litellm.vector_stores.asearch(
 print(response)
 ```
 
-[See full Gemini File Search documentation](../providers/gemini_file_search.md)
+[請參閱完整的 Gemini File Search 文件](../providers/gemini_file_search.md)
 
 </TabItem>
 </Tabs>
 
-### LiteLLM Proxy Server
+### LiteLLM Proxy Server {#litellm-proxy-server}
 
 <Tabs>
-<TabItem value="proxy-setup" label="Setup & Usage">
+<TabItem value="proxy-setup" label="設定與用法">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -276,13 +276,13 @@ general_settings:
   # Vector store settings can be added here if needed
 ```
 
-2. Start proxy 
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it with OpenAI SDK!
+3. 使用 OpenAI SDK 測試它！
 
 ```python showLineNumbers title="OpenAI SDK via LiteLLM Proxy"
 from openai import OpenAI
@@ -326,9 +326,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123/search' \
 
 <TabItem value="vertex-search-proxy" label="Vertex AI Search">
 
-Register the data store or search app as a [managed vector store](./managed_vector_stores.md) with provider `vertex_ai/search_api`. Native Discovery Engine search fields go in `extra_body`.
+使用提供者 `vertex_ai/search_api` 將資料儲存或搜尋應用程式註冊為 [受管理的 vector store](./managed_vector_stores.md)。原生 Discovery Engine 搜尋欄位放在 `extra_body` 中。
 
-A data store that uses layout-based chunking returns whole-document snippets by default. Ask for chunk results so each hit carries the matching passage:
+使用基於版面配置分塊的資料儲存預設會回傳整份文件的片段。請要求回傳 chunk 結果，讓每個命中都帶有對應段落：
 
 ```bash showLineNumbers title="Search a chunked data store"
 curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-datastore_1234567890/search' \
@@ -343,9 +343,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-datastore_1234567890/se
 }'
 ```
 
-Each result's `content[0].text` is the chunk text, `file_id` and `filename` are the source document's URI and title, and `attributes` carry `document_id`, `chunk_id`, `pageSpan`, and the document's `structData` when the store provides them.
+每個結果的 `content[0].text` 是 chunk 文字，`file_id` 和 `filename` 是來源文件的 URI 與標題，而當儲存區提供時，`attributes` 會帶有 `document_id`、`chunk_id`、`pageSpan`，以及該文件的 `structData`。
 
-An Enterprise-tier search app can return extractive segments or answers instead. They take precedence over snippets in `content[0].text` (segments first, then answers):
+Enterprise 等級的搜尋應用程式也可以回傳擷取式片段或答案。它們在 `content[0].text` 中優先於片段（先片段，後答案）：
 
 ```bash showLineNumbers title="Search with extractive content"
 curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-search-app/search' \
@@ -361,19 +361,19 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-search-app/search' \
 }'
 ```
 
-A structured data store returns each record under `attributes.structData`.
+結構化資料儲存會將每筆記錄回傳於 `attributes.structData` 之下。
 
 </TabItem>
 </Tabs>
 
-## Setting Up Vector Stores
+## 設定向量儲存 {#setting-up-vector-stores}
 
-To search a store that already exists on a provider, register it with LiteLLM first via `config.yaml`, `POST /vector_store/new`, or the Admin UI; see [Managed Vector Stores](./managed_vector_stores.md). For provider-specific configuration, see the [Vector Store Configuration Guide](../completion/knowledgebase.md):
+若要搜尋已存在於某個提供者上的儲存區，請先透過 `config.yaml`、`POST /vector_store/new`，或 Admin UI 將其註冊至 LiteLLM；請參閱 [受管理的 Vector Stores](./managed_vector_stores.md)。關於提供者特定的設定，請參閱 [Vector Store 設定指南](../completion/knowledgebase.md)：
 
-- Provider-specific configuration (Bedrock, OpenAI, Azure, Vertex AI, PG Vector)
-- Python SDK and Proxy setup examples  
-- Authentication and credential management
+- 提供者特定設定（Bedrock、OpenAI、Azure、Vertex AI、PG Vector）
+- Python SDK 與 Proxy 設定範例  
+- 驗證與憑證管理
 
-## Using Vector Stores with Chat Completions
+## 在 Chat Completions 中使用向量儲存 {#using-vector-stores-with-chat-completions}
 
-Pass `vector_store_ids` in chat completion requests to automatically retrieve relevant context. See [Using Vector Stores with Chat Completions](../completion/knowledgebase.md#2-make-a-request-with-vector_store_ids-parameter) for implementation details.
+在 chat completion 請求中傳入 `vector_store_ids`，即可自動擷取相關脈絡。請參閱[在 Chat Completions 中使用向量儲存](../completion/knowledgebase.md#2-make-a-request-with-vector_store_ids-parameter)以了解實作細節。

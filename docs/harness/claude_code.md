@@ -3,20 +3,20 @@ title: Claude Code
 sidebar_label: Claude Code
 ---
 
-# Claude Code
+# Claude Code {#claude-code}
 
-`Harness.CLAUDE_CODE` runs Anthropic's Claude Code CLI with `claude -p --output-format stream-json` inside your sandbox and turns its stream-json output into events.
+`Harness.CLAUDE_CODE` 會在您的沙箱內執行 Anthropic 的 Claude Code CLI 與 `claude -p --output-format stream-json`，並將其 stream-json 輸出轉換為事件。
 
-## Install
+## 安裝 {#install}
 
 ```bash
 pip install litellm starlette uvicorn
 npm install -g @anthropic-ai/claude-code   # inside the sandbox
 ```
 
-The `claude` binary must already be on the sandbox's `PATH`. If it isn't, the call raises `HarnessInstallFailed`.
+`claude` 二進位檔必須已存在於沙箱的 `PATH` 上。若不存在，該呼叫會引發 `HarnessInstallFailed`。
 
-## Usage
+## 使用 {#usage}
 
 ```python
 import litellm
@@ -31,9 +31,9 @@ result = litellm.agent(
 )
 ```
 
-## Use with LiteLLM AI Gateway
+## 與 LiteLLM AI Gateway 搭配使用 {#use-with-litellm-ai-gateway}
 
-Claude Code speaks the Anthropic Messages API, so it fits best on a Claude model group, which the gateway serves on `/v1/messages` natively. Bedrock and Vertex Claude deployments behave the same as Anthropic direct, so you can load-balance across them in one group.
+Claude Code 使用 Anthropic Messages API，因此最適合搭配 Claude 模型群組，而該閘道可在 `/v1/messages` 上原生提供。Bedrock 與 Vertex Claude 部署的行為與 Anthropic 直接使用相同，因此您可以在同一個群組中對它們進行負載平衡。
 
 ```yaml title="config.yaml"
 model_list:
@@ -51,7 +51,7 @@ general_settings:
   database_url: os.environ/DATABASE_URL
 ```
 
-Create a virtual key scoped to that group.
+建立一個範圍限定於該群組的虛擬金鑰。
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
@@ -60,7 +60,7 @@ curl -X POST http://localhost:4000/key/generate \
   -d '{"models": ["claude"], "key_alias": "claude-code"}'
 ```
 
-Then run with the `litellm_proxy/` prefix. Set the gateway in the environment, or pass it on the call.
+接著以 `litellm_proxy/` 前綴執行。可在環境中設定閘道，或在呼叫時傳入。
 
 ```python
 import litellm
@@ -78,11 +78,11 @@ result = litellm.agent(
 )
 ```
 
-Claude Code calls `/v1/messages`. The gateway sees each request with `model` set to `claude`, the header `x-litellm-tags: harness,claude_code`, and your `metadata` as `x-litellm-spend-logs-metadata`, so the spend log row carries both.
+Claude Code 會呼叫 `/v1/messages`。閘道會看到每個請求，其 `model` 設為 `claude`、標頭 `x-litellm-tags: harness,claude_code`，以及您的 `metadata` 作為 `x-litellm-spend-logs-metadata`，因此費用記錄列會同時帶有兩者。
 
-Claude Code also makes small background calls, such as titles and summaries. They go to the same group as `model`, like OpenCode's, so they are billed and tagged the same way.
+Claude Code 也會進行一些小型背景呼叫，例如標題與摘要。它們會前往與 `model` 相同的群組，就像 OpenCode 一樣，因此其計費與標記方式相同。
 
-## Options
+## 選項 {#options}
 
 ```python
 @dataclass(frozen=True)
@@ -91,32 +91,32 @@ class ClaudeCodeOptions:
     env: Mapping[str, str] = field(default_factory=dict)
 ```
 
-`config` passes native Claude Code settings through untyped, because those settings change often. Keys LiteLLM manages itself, such as `env`, `apiKeyHelper`, `model` and `permissions`, raise `OptionsMismatch`. Use `max_turns=` on the call to cap the tool loop, the same as every other harness.
+`config` 會將原生 Claude Code 設定以未型別方式傳遞，因為這些設定經常變動。LiteLLM 自行管理的鍵，例如 `env`、`apiKeyHelper`、`model` 和 `permissions`，會引發 `OptionsMismatch`。在呼叫時使用 `max_turns=` 來限制工具迴圈，與其他每個 harness 相同。
 
-## Models
+## 模型 {#models}
 
-Claude Code speaks Anthropic Messages. It gets `ANTHROPIC_BASE_URL` pointing at the session's local endpoint and `ANTHROPIC_AUTH_TOKEN` set to the session token, and `CLAUDE_CONFIG_DIR` points at a temporary directory with `--setting-sources user`, so your own Claude Code login, settings and a repo's `.claude/settings.json` are never used. With a `litellm_proxy/` model the endpoint forwards `/v1/messages` to the gateway with the `harness,claude_code` tags. Without a gateway it calls `litellm.anthropic.messages.acreate`.
+Claude Code 支援 Anthropic Messages。它會取得 `ANTHROPIC_BASE_URL`，指向工作階段的本機端點，且 `ANTHROPIC_AUTH_TOKEN` 設為工作階段權杖，而 `CLAUDE_CONFIG_DIR` 則指向一個包含 `--setting-sources user` 的暫存目錄，因此您自己的 Claude Code 登入、設定與儲存庫的 `.claude/settings.json` 絕不會被使用。使用 `litellm_proxy/` 模型時，端點會將 `/v1/messages` 以及 `harness,claude_code` 標籤轉送到閘道。沒有閘道時，則會呼叫 `litellm.anthropic.messages.acreate`。
 
-`ANTHROPIC_API_KEY` is set to an empty string in the runtime, and telemetry and nonessential traffic are turned off.
+`ANTHROPIC_API_KEY` 在執行階段會設為空字串，而遙測與非必要流量會關閉。
 
-## Built-in tools
+## 內建工具 {#built-in-tools}
 
-Tools appear as `read`, `write`, `edit`, `bash`, `glob`, `grep` and `web_search`. Tools outside that set, such as `Task` and `TodoWrite`, keep their native names. `disable_tools=` maps to `--disallowedTools`.
+工具會顯示為 `read`、`write`、`edit`、`bash`、`glob`、`grep` 和 `web_search`。該集合以外的工具，例如 `Task` 和 `TodoWrite`，會保留其原生名稱。`disable_tools=` 會對應至 `--disallowedTools`。
 
-## Permissions
+## 權限 {#permissions}
 
-| Mode | Claude Code |
+| 模式 | Claude Code |
 |---|---|
 | `"read-only"` | `--permission-mode plan` |
 | `"edit"` | `--permission-mode acceptEdits` |
-| `"full"` (default) | `--permission-mode bypassPermissions` |
+| `"full"`（預設） | `--permission-mode bypassPermissions` |
 
-`"ask"` raises `CapabilityUnsupported`.
+`"ask"` 會引發 `CapabilityUnsupported`。
 
-## Skills, output and sessions
+## 技能、輸出與工作階段 {#skills-output-and-sessions}
 
-Skills are copied into `$CLAUDE_CONFIG_DIR/skills/<name>/`. Structured output works by instructing the model to answer with one JSON object matching your schema, which is then validated. Later turns in a session use `--resume` with the session id from the first turn.
+技能會複製到 `$CLAUDE_CONFIG_DIR/skills/<name>/`。結構化輸出是透過指示模型以符合您 schema 的單一 JSON 物件作答，之後再進行驗證。工作階段中的後續回合會使用 `--resume`，並帶入第一回合中的工作階段 id。
 
-## Limits
+## 限制 {#limits}
 
-Custom Python `tools=` and `history()` raise `CapabilityUnsupported`. Subscription login (Claude Max) isn't used, because every model call goes through LiteLLM.
+自訂 Python `tools=` 和 `history()` 會引發 `CapabilityUnsupported`。不會使用訂閱登入（Claude Max），因為每次模型呼叫都會經過 LiteLLM。

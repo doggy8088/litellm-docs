@@ -1,25 +1,26 @@
-# Overview
+# 總覽 {#overview}
 
-| Feature | Supported | 
+| 功能 | 支援 | 
 |---------|-----------|
-| Supported Providers | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent`, `agentcore`, `nimble`, `bing_grounding` |
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Load Balancing | ❌ |
+| 支援的提供者 | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent`, `agentcore`, `nimble`, `bing_grounding` |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 負載平衡 | ❌ |
 
 :::tip
 
-LiteLLM follows the [Perplexity API request/response for the Search API](https://docs.perplexity.ai/api-reference/search-post)
+LiteLLM 遵循 [Search API 的 Perplexity API 請求/回應](https://docs.perplexity.ai/api-reference/search-post)
 
 :::
 
 :::info
 
-Supported from LiteLLM v1.78.7+
+自 LiteLLM v1.78.7+ 起支援
 :::
 
-## **LiteLLM Python SDK Usage**
-### Quick Start 
+## **LiteLLM Python SDK 用法** {#litellm-python-sdk-usage}
+
+### 快速開始  {#quick-start}
 
 ```python showLineNumbers title="Basic Search"
 from litellm import search
@@ -39,9 +40,9 @@ for result in response.results:
     print(f"Snippet: {result.snippet}\n")
 ```
 
-To use [Parallel AI Search](./parallel_ai.md), set `PARALLEL_API_KEY` and pass `search_provider="parallel_ai"`.
+若要使用 [Parallel AI Search](./parallel_ai.md)，請設定 `PARALLEL_API_KEY` 並傳入 `search_provider="parallel_ai"`。
 
-### Async Usage 
+### 非同步用法  {#async-usage}
 
 ```python showLineNumbers title="Async Search"
 from litellm import asearch
@@ -65,7 +66,7 @@ async def search_async():
 asyncio.run(search_async())
 ```
 
-### Optional Parameters
+### 選用參數 {#optional-parameters}
 
 ```python showLineNumbers title="Search with Options"
 response = search(
@@ -79,13 +80,13 @@ response = search(
 )
 ```
 
-## **LiteLLM AI Gateway Usage**
+## **LiteLLM AI Gateway 用法** {#litellm-ai-gateway-usage}
 
-LiteLLM provides a Perplexity API compatible `/search` endpoint for search calls.
+LiteLLM 提供與 Perplexity API 相容的 `/search` 端點供搜尋請求使用。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -111,7 +112,7 @@ search_tools:
       api_key: os.environ/PARALLEL_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -119,9 +120,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test Request
+### 測試請求 {#test-request}
 
-**Option 1: Search tool name in URL (Recommended - keeps body Perplexity-compatible)**
+**選項 1：URL 中的搜尋工具名稱（建議 - 保持 body 與 Perplexity 相容）**
 
 ```bash showLineNumbers title="cURL Request"
 curl http://0.0.0.0:4000/v1/search/perplexity-search \
@@ -135,7 +136,7 @@ curl http://0.0.0.0:4000/v1/search/perplexity-search \
   }'
 ```
 
-**Option 2: Search tool name in body**
+**選項 2：body 中的搜尋工具名稱**
 
 ```bash showLineNumbers title="cURL Request with search_tool_name in body"
 curl http://0.0.0.0:4000/v1/search \
@@ -148,9 +149,9 @@ curl http://0.0.0.0:4000/v1/search \
   }'
 ```
 
-### Load Balancing
+### 負載平衡 {#load-balancing}
 
-Give multiple search tools the same `search_tool_name` to load balance across them. Each request picks one of the matching tools at random. `router_settings.routing_strategy` does not apply to search tools, so strategies like `least-busy` or `latency-based-routing` have no effect on which provider serves a search request
+讓多個搜尋工具使用相同的 `search_tool_name` 以在它們之間進行負載平衡。每個請求會隨機選取一個符合條件的工具。`router_settings.routing_strategy` 不適用於搜尋工具，因此像 `least-busy` 或 `latency-based-routing` 這類策略，對哪個提供者提供搜尋請求沒有影響
 
 ```yaml showLineNumbers title="config.yaml with load balancing"
 search_tools:
@@ -175,7 +176,7 @@ search_tools:
       api_key: os.environ/BRAVE_API_KEY
 ```
 
-Test with load balancing:
+使用負載平衡進行測試：
 
 ```bash
 curl http://0.0.0.0:4000/v1/search/my-search \
@@ -187,9 +188,9 @@ curl http://0.0.0.0:4000/v1/search/my-search \
   }'
 ```
 
-### Restrict Search Tool Access
+### 限制搜尋工具存取 {#restrict-search-tool-access}
 
-Set `search_tools` under `object_permission` on a key or team to limit which search tools it can call. The allowlist applies to `/search`, `/v1/search`, `/search/{search_tool_name}`, web search interception, router fallbacks between search tools, and `/search_tools/list`
+在 key 或 team 的 `object_permission` 底下設定 `search_tools`，以限制其可呼叫的搜尋工具。允許清單適用於 `/search`、`/v1/search`、`/search/{search_tool_name}`、網頁搜尋攔截、搜尋工具之間的路由備援，以及 `/search_tools/list`
 
 ```bash showLineNumbers title="Grant a team one search tool"
 curl http://0.0.0.0:4000/team/new \
@@ -201,25 +202,25 @@ curl http://0.0.0.0:4000/team/new \
   }'
 ```
 
-By default an empty or missing `search_tools` list allows every search tool. To make every search tool opt-in, turn on `search_tool_deny_by_default`:
+預設情況下，空白或缺少的 `search_tools` 清單會允許所有搜尋工具。若要讓所有搜尋工具都採取 opt-in，請開啟 `search_tool_deny_by_default`：
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
   search_tool_deny_by_default: true
 ```
 
-The setting defaults to `false`. With it on, the requested search tool must be listed in `object_permission.search_tools` of each identity the request resolves to
+此設定預設為 `false`。啟用後，請求的搜尋工具必須列在請求所解析到之每個身分的 `object_permission.search_tools` 中
 
-| Caller | Grants required |
+| 呼叫端 | 需要的授權 |
 |---|---|
-| Virtual key without a team | The key |
-| Virtual key with a team | The key and its team |
-| Team member without a virtual key (JWT or `lite login` session) | The team the request resolved to |
-| User without a virtual key or team | The user |
+| 沒有 team 的虛擬 key | 該 key |
+| 有 team 的虛擬 key | 該 key 及其 team |
+| 沒有虛擬 key 的 team 成員（JWT 或 `lite login` session） | 請求所解析到的 team |
+| 沒有虛擬 key 或 team 的使用者 | 該使用者 |
 
-A missing permission record, a `null` list, and an empty list all grant nothing. A user's personal grants only count when the request has no virtual key and no team, so they never widen or narrow a key or team request. If a key names a team that cannot be loaded, the request is denied rather than treated as a key without a team. Denied requests return `403` before any search provider is called, with `key_search_tool_access_denied`, `team_search_tool_access_denied`, or `user_search_tool_access_denied`, and `/search_tools/list` only returns the tools the caller may call
+缺少權限記錄、`null` 清單，以及空白清單都不會授予任何權限。只有當請求沒有虛擬 key 也沒有 team 時，使用者的個人授權才會生效，因此它們永遠不會擴大或縮小 key 或 team 的請求。如果某個 key 指定了無法載入的 team，請求會遭拒絕，而不是被視為沒有 team 的 key。被拒絕的請求會在呼叫任何搜尋提供者之前回傳 `403`，並附帶 `key_search_tool_access_denied`、`team_search_tool_access_denied` 或 `user_search_tool_access_denied`，而 `/search_tools/list` 只會回傳呼叫端可呼叫的工具
 
-For a team key, grant the tool on both objects:
+對於 team key，請在兩個物件上都授予該工具：
 
 ```bash showLineNumbers title="Team and key both grant the search tool"
 curl -X POST 'http://localhost:4000/team/new' \
@@ -233,21 +234,21 @@ curl -X POST 'http://localhost:4000/key/generate' \
   -d '{"team_id": "<team_id from above>", "object_permission": {"search_tools": ["tavily-search"]}}'
 ```
 
-The master key and dashboard login sessions are not restricted. A proxy admin calling with its own virtual key is restricted like any other key. Web search interception with no registered search tool stops falling back to the default provider for every restricted caller, since there is no tool name a grant could list. Existing keys and teams with empty lists lose search access as soon as the setting is on
+master key 和 dashboard 登入 session 不受限制。使用自己的虛擬 key 呼叫的 proxy 管理員會像其他任何 key 一樣受到限制。若沒有註冊的搜尋工具，對網頁搜尋攔截的處理會停止為每個受限呼叫端回退到預設提供者，因為沒有可供授權清單列出的工具名稱。現有的空白清單 key 和 team 只要此設定一開啟就會失去搜尋存取權
 
-Setting the flag back to `false` restores the earlier behavior, where an empty or unset list means unrestricted. A nonempty `search_tools` list that leaves out the requested tool is still rejected
+將旗標改回 `false` 會恢復先前的行為，也就是空白或未設定的清單表示不受限制。若非空白的 `search_tools` 清單沒有包含所要求的工具，仍會遭到拒絕
 
-## **Request/Response Format**
+## **請求/回應格式** {#requestresponse-format}
 
 :::info
 
-LiteLLM follows the **Perplexity Search API specification**. 
+LiteLLM 遵循 **Perplexity Search API 規格**。 
 
-See the [official Perplexity Search documentation](https://docs.perplexity.ai/api-reference/search-post) for complete details.
+請參閱 [Perplexity Search 官方文件](https://docs.perplexity.ai/api-reference/search-post) 以取得完整詳細資訊。
 
 :::
 
-### Example Request
+### 請求範例 {#example-request}
 
 ```json showLineNumbers title="Search Request"
 {
@@ -259,19 +260,19 @@ See the [official Perplexity Search documentation](https://docs.perplexity.ai/ap
 }
 ```
 
-### Request Parameters
+### 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `query` | string or array | Yes | Search query. Can be a single string or array of strings |
-| `search_provider` | string | Yes (SDK) | The search provider to use: `"perplexity"`, `"tavily"`, `"parallel_ai"`, `"exa_ai"`, `"brave"`, `"google_pse"`, `"dataforseo"`, `"firecrawl"`, `"searxng"`, `"linkup"`, `"duckduckgo"`, `"searchapi"`, `"serper"`, or `"you_com"` or `"apiserpent"` or `"agentcore"` or `"bing_grounding"` |
-| `search_tool_name` | string | Yes (Proxy) | Name of the search tool configured in `config.yaml` |
-| `max_results` | integer | No | Maximum number of results to return (1-20). Default: 10 |
-| `search_domain_filter` | array | No | List of domains to filter results (max 20 domains) |
-| `max_tokens_per_page` | integer | No | Maximum tokens per page to process. Default: 1024 |
-| `country` | string | No | Country code filter (e.g., `"US"`, `"GB"`, `"DE"`) |
+| `query` | string 或 array | 是 | 搜尋查詢。可以是單一字串或字串陣列 |
+| `search_provider` | string | 是（SDK） | 要使用的搜尋提供者：`"perplexity"`、`"tavily"`、`"parallel_ai"`、`"exa_ai"`、`"brave"`、`"google_pse"`、`"dataforseo"`、`"firecrawl"`、`"searxng"`、`"linkup"`、`"duckduckgo"`、`"searchapi"`、`"serper"`，或 `"you_com"` 或 `"apiserpent"` 或 `"agentcore"` 或 `"bing_grounding"` |
+| `search_tool_name` | string | 是（Proxy） | 在 `config.yaml` 中設定的搜尋工具名稱 |
+| `max_results` | integer | 否 | 要回傳的最大結果數量（1-20）。預設值：10 |
+| `search_domain_filter` | array | 否 | 用於篩選結果的網域清單（最多 20 個網域） |
+| `max_tokens_per_page` | integer | 否 | 每頁要處理的最大 token 數。預設值：1024 |
+| `country` | string | 否 | 國家代碼篩選器（例如 `"US"`、`"GB"`、`"DE"`） |
 
-**Query Format Examples:**
+**查詢格式範例：**
 
 ```python
 # Single query
@@ -281,9 +282,9 @@ query = "AI developments"
 query = ["AI developments", "machine learning trends"]
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-The response follows Perplexity's search format with the following structure:
+回應遵循 Perplexity 的搜尋格式，結構如下：
 
 ```json showLineNumbers title="Search Response"
 {
@@ -305,20 +306,20 @@ The response follows Perplexity's search format with the following structure:
 }
 ```
 
-#### Response Fields
+#### 回應欄位 {#response-fields}
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `object` | string | Always `"search"` for search responses |
-| `results` | array | List of search results |
-| `results[].title` | string | Title of the search result |
-| `results[].url` | string | URL of the search result |
-| `results[].snippet` | string | Text snippet from the result |
-| `results[].date` | string | Optional publication or last updated date |
+| `object` | string | 搜尋回應一律為 `"search"` |
+| `results` | array | 搜尋結果清單 |
+| `results[].title` | string | 搜尋結果標題 |
+| `results[].url` | string | 搜尋結果 URL |
+| `results[].snippet` | string | 結果中的文字片段 |
+| `results[].date` | string | 選用的發佈或最後更新日期 |
 
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-| Provider | Environment Variable | `search_provider` Value |
+| 提供者 | 環境變數 | `search_provider` 值 |
 |----------|---------------------|------------------------|
 | Perplexity AI | `PERPLEXITYAI_API_KEY` | `perplexity` |
 | Tavily | `TAVILY_API_KEY` | `tavily` |
@@ -328,15 +329,15 @@ The response follows Perplexity's search format with the following structure:
 | Google PSE | `GOOGLE_PSE_API_KEY`, `GOOGLE_PSE_ENGINE_ID` | `google_pse` |
 | DataForSEO | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | `dataforseo` |
 | Firecrawl | `FIRECRAWL_API_KEY` | `firecrawl` |
-| SearXNG | `SEARXNG_API_BASE` (required) | `searxng` |
+| SearXNG | `SEARXNG_API_BASE`（必填） | `searxng` |
 | Linkup | `LINKUP_API_KEY` | `linkup` |
 | Serper | `SERPER_API_KEY` | `serper` |
 | DuckDuckGo | `DUCKDUCKGO_API_BASE` | `duckduckgo` |
 | SearchAPI.io | `SEARCHAPI_API_KEY` | `searchapi` |
-| You.com | `YOUCOM_API_KEY` *(optional — omit for keyless free tier)* | `you_com` |
+| You.com | `YOUCOM_API_KEY` *（選用 — 無金鑰免費方案可省略）* | `you_com` |
 | APISerpent | `APISERPENT_API_KEY` | `apiserpent` |
-| Bedrock AgentCore | `AGENTCORE_GATEWAY_URL` (required), AWS credentials or `AGENTCORE_GATEWAY_TOKEN` | `agentcore` |
+| Bedrock AgentCore | `AGENTCORE_GATEWAY_URL`（必填）、AWS 憑證或 `AGENTCORE_GATEWAY_TOKEN` | `agentcore` |
 | Nimble | `NIMBLE_API_KEY` | `nimble` |
-| Grounding with Bing (Microsoft Foundry) | `BING_GROUNDING_PROJECT_ENDPOINT`, `BING_GROUNDING_MODEL` (required), `api_key` or `BING_GROUNDING_TOKEN` or azure-identity | `bing_grounding` |
+| Grounding with Bing (Microsoft Foundry) | `BING_GROUNDING_PROJECT_ENDPOINT`、`BING_GROUNDING_MODEL`（必填）、`api_key` 或 `BING_GROUNDING_TOKEN` 或 azure-identity | `bing_grounding` |
 
-See the individual provider documentation for detailed setup instructions and provider-specific parameters.
+請參閱各個提供者的文件，以取得詳細的設定說明與提供者專屬參數。

@@ -1,12 +1,12 @@
 ---
 slug: mimo_v2_6
-title: "Day 0 Support: Xiaomi MiMo V2.6"
+title: "Day 0 支援：Xiaomi MiMo V2.6"
 date: 2026-09-22T10:00:00
 image: ./hero.png
 authors:
   - misbah
   - mateo
-description: "Day 0 support for Xiaomi MiMo V2.6 Pro and Flash on LiteLLM, priced on the native route for the first time."
+description: "LiteLLM 對 Xiaomi MiMo V2.6 Pro 和 Flash 的 Day 0 支援，首次以原生路由計價。"
 tags: [xiaomi, mimo, mimo-v2.6, day 0 support]
 hide_table_of_contents: false
 ---
@@ -16,23 +16,23 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x Xiaomi MiMo V2.6](./hero.png)
 
-LiteLLM supports `mimo-v2.6-pro` and `mimo-v2.6-flash` on day 0, and prices both on Xiaomi's own endpoint for the first time.
+LiteLLM 在 Day 0 支援 `mimo-v2.6-pro` 和 `mimo-v2.6-flash`，並首次在 Xiaomi 的自家端點上為兩者計價。
 
 {/* truncate */}
 
-## Pricing
+## 定價 {#pricing}
 
-Per 1M tokens, Pro is $0.435 input and $0.87 output, Flash is $0.14 and $0.28. V2.6 costs what V2.5 cost; Xiaomi kept the rates and raised the model.
+每 100 萬 token，Pro 的輸入為 $0.435、輸出為 $0.87；Flash 則為 $0.14 和 $0.28。V2.6 的價格與 V2.5 相同；Xiaomi 維持費率不變並提升了模型。
 
-Pro reads cached input at $0.0036, about a 121st of its input rate, where most providers in the same cost map charge a tenth. Cache writes are free for now.
+Pro 的快取輸入讀取費用為 $0.0036，約為其輸入費率的 121 分之 1，而同一成本圖中的多數提供者會收取十分之一。快取寫入目前免費。
 
-## Thinking is on by default
+## 思考預設為開啟 {#thinking-is-on-by-default}
 
-Every V2.6 model reasons unless told otherwise, and Xiaomi controls that with `thinking.type` rather than `reasoning_effort`. LiteLLM treats `xiaomi_mimo` as an OpenAI-compatible provider and does not map `thinking` for it yet, so pass it through explicitly with `allowed_openai_params=["thinking"]`.
+除非另行告知，所有 V2.6 模型都會推理，而 Xiaomi 透過 `thinking.type` 而非 `reasoning_effort` 來控制這點。LiteLLM 將 `xiaomi_mimo` 視為 OpenAI 相容的提供者，目前尚未為它對應 `thinking`，因此請使用 `allowed_openai_params=["thinking"]` 明確傳遞。
 
-In multi-turn tool calling, the `reasoning_content` from a prior assistant turn has to go back in the next request or the API returns a 400.
+在多輪工具呼叫中，前一次 assistant 回合的 `reasoning_content` 必須在下一個請求中一併送回，否則 API 會回傳 400。
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -70,12 +70,12 @@ model_list:
 </TabItem>
 </Tabs>
 
-Hit **Reload Model Cost Map** in the Admin UI, or `POST /reload/model_cost_map`, to pick the rows up without a redeploy on `v1.76.0` and above.
+請在 Admin UI 中點選 **重新載入模型成本映射**，或 `POST /reload/model_cost_map`，即可在不重新部署 `v1.76.0` 及以上版本的情況下套用這些列。
 
-## If you are on V2.5
+## 如果您使用的是 V2.5 {#if-you-are-on-v25}
 
-Xiaomi deprecates `mimo-v2.5-pro` and `mimo-v2.5` at 10:00 Beijing time on October 21, 2026.
+Xiaomi 將於 2026 年 10 月 21 日北京時間 10:00 淘汰 `mimo-v2.5-pro` 和 `mimo-v2.5`。
 
-## Feedback
+## 回饋 {#feedback}
 
-Running MiMo V2.6 through LiteLLM and hitting something unexpected? Share it on {/* TODO: link the discussion once posted */} [GitHub discussions](https://github.com/BerriAI/litellm/discussions).
+透過 LiteLLM 執行 MiMo V2.6 時遇到意料之外的情況嗎？請在 {/* TODO: link the discussion once posted */} [GitHub 討論區](https://github.com/BerriAI/litellm/discussions) 分享。

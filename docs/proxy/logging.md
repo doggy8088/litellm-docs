@@ -2,32 +2,29 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Logging
+# 記錄 {#logging}
 
-Log Proxy input, output, and exceptions using:
+使用以下方式記錄 Proxy 的輸入、輸出與例外：
 
 - Langfuse
 - OpenTelemetry
-- GCS, s3, Azure (Blob) Buckets
+- GCS、s3、Azure（Blob）Buckets
 - AWS SQS
 - Lunary
 - MLflow
 - Deepeval
-- Custom Callbacks - Custom code and API endpoints
+- 自訂回呼 - 自訂程式碼與 API 端點
 - Langsmith
 - DataDog
 - Azure Sentinel
 - DynamoDB
-- etc.
+- 等等
 
+## 取得 LiteLLM Call ID {#getting-the-litellm-call-id}
 
-
-## Getting the LiteLLM Call ID
-
-LiteLLM generates a unique `call_id` for each request. This `call_id` can be
-used to track the request across the system. This can be very useful for finding
-the info for a particular request in a logging system like one of the systems
-mentioned in this page.
+LiteLLM 會為每個請求產生一個唯一的 `call_id`。此 `call_id` 可用於
+追蹤系統中的請求。這對於在記錄系統中尋找
+特定請求的資訊非常有用，例如本頁所提及的系統之一。
 
 ```shell
 curl -i -sSL --location 'http://0.0.0.0:4000/chat/completions' \
@@ -39,7 +36,7 @@ curl -i -sSL --location 'http://0.0.0.0:4000/chat/completions' \
     }' | grep 'x-litellm'
 ```
 
-The output of this is:
+其輸出如下：
 
 ```output
 x-litellm-call-id: b980db26-9512-45cc-b1da-c511a363b83f
@@ -51,23 +48,21 @@ x-litellm-key-tpm-limit: None
 x-litellm-key-rpm-limit: None
 ```
 
-A number of these headers could be useful for troubleshooting, but the
-`x-litellm-call-id` is the one that is most useful for tracking a request across
-components in your system, including in logging tools.
+其中一些標頭對疑難排解可能有幫助，但
+`x-litellm-call-id` 是最適合用來追蹤系統中各元件間請求的標頭，
+包括記錄工具。
 
+## 記錄功能 {#logging-features}
 
-## Logging Features
+### 遮罩訊息、回應內容 {#redact-messages-response-content}
 
-
-### Redact Messages, Response Content
-
-Set `litellm.turn_off_message_logging=True` This will prevent the messages and responses from being logged to your logging provider, but request metadata - e.g. spend, will still be tracked. Useful for privacy/compliance when handling sensitive data.
+設定 `litellm.turn_off_message_logging=True` 這將防止訊息與回應被記錄到您的記錄提供者，但請求中繼資料（例如支出）仍會被追蹤。當處理敏感資料時，這對隱私／法規遵循很有用。
 
 <Tabs>
 
-<TabItem value="global" label="Global">
+<TabItem value="global" label="全域">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 ```yaml
 model_list:
   - model_name: {{openai_small}}
@@ -78,7 +73,7 @@ litellm_settings:
   turn_off_message_logging: True # 👈 Key Change
 ```
 
-**2. Send request**
+**2. 傳送請求**
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
     --header 'Content-Type: application/json' \
@@ -94,25 +89,24 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
-
 </TabItem>
-<TabItem value="dynamic" label="Per Request">
+<TabItem value="dynamic" label="每個請求">
 
 :::info
 
-Dynamic request message redaction is in BETA. 
+動態請求訊息遮罩目前為 BETA。 
 
 :::
 
-Pass in a request header to enable message redaction for a request.
+傳入請求標頭以啟用該請求的訊息遮罩。
 
 ```
 x-litellm-enable-message-redaction: true
 ```
 
-Example config.yaml
+範例 config.yaml
 
-**1. Setup config.yaml **
+**1. 設定 config.yaml **
 
 ```yaml
 model_list:
@@ -121,7 +115,7 @@ model_list:
       model: {{openai_small}}
 ```
 
-**2. Setup per request header**
+**2. 設定每個請求的標頭**
 
 ```shell
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -142,22 +136,21 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-**3. Check Logging Tool + Spend Logs**
+**3. 檢查記錄工具 + 支出記錄**
 
-**Logging Tool**
+**記錄工具**
 
 <Image img={require('../../img/message_redaction_logging.png')}/>
 
-**Spend Logs**
+**支出記錄**
 
 <Image img={require('../../img/message_redaction_spend_logs.png')} />
 
+### 遮罩 UserAPIKeyInfo {#redacting-userapikeyinfo}
 
-### Redacting UserAPIKeyInfo 
+從記錄中遮罩使用者 api key 的資訊（hashed token、user_id、team id 等）。 
 
-Redact information about the user api key (hashed token, user_id, team id, etc.), from logs. 
-
-Currently supported for Langfuse, OpenTelemetry, Logfire, ArizeAI logging.
+目前支援 Langfuse、OpenTelemetry、Logfire、ArizeAI 記錄。
 
 ```yaml
 litellm_settings: 
@@ -165,12 +158,12 @@ litellm_settings:
   redact_user_api_key_info: true
 ```
 
-### Disable Message Redaction
+### 停用訊息遮罩 {#disable-message-redaction}
 
-If you have `litellm.turn_off_message_logging` turned on, you can override it for specific requests by
-setting a request header `LiteLLM-Disable-Message-Redaction: true`.
+如果您已啟用 `litellm.turn_off_message_logging`，可透過
+設定請求標頭 `LiteLLM-Disable-Message-Redaction: true` 來針對特定請求覆寫它。
 
-The proxy only honors this header on keys or teams whose metadata has `allow_client_message_redaction_opt_out: true`. On any other key the header is dropped and messages stay redacted
+Proxy 只會對其 metadata 含有 `allow_client_message_redaction_opt_out: true` 的金鑰或團隊接受這個標頭。對其他任何金鑰，該標頭都會被捨棄，而訊息仍會維持遮罩
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -179,7 +172,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
     --data '{"metadata": {"allow_client_message_redaction_opt_out": true}}'
 ```
 
-Then send the header with that key
+然後將該標頭與該金鑰一起傳送
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -197,14 +190,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
+### 關閉所有追蹤/記錄 {#turn-off-all-trackinglogging}
 
-### Turn off all tracking/logging
-
-For some use cases, you may want to turn off all tracking/logging. You can do this by passing `no-log=True` in the request body.
+對於某些用途，您可能會想關閉所有追蹤／記錄。您可以在請求本文中傳入 `no-log=True` 來做到這點。
 
 :::info
 
-Disable this by setting `global_disable_no_log_param:true` in your config.yaml file.
+可在您的 config.yaml 檔案中設定 `global_disable_no_log_param:true` 來停用此功能。
 
 ```yaml
 litellm_settings:
@@ -213,7 +205,7 @@ litellm_settings:
 :::
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -267,22 +259,22 @@ print(response)
 </TabItem>
 </Tabs>
 
-**Expected Console Log**  
+**預期的主控台記錄**
 
 ```
 LiteLLM.Info: "no-log request, skipping logging"
 ```
 
-### ✨ Dynamically Disable specific callbacks
+### ✨ 動態停用特定 callback {#-dynamically-disable-specific-callbacks}
 
 <EnterpriseFeature />
 
-For some use cases, you may want to disable specific callbacks for a request. You can do this by passing `x-litellm-disable-callbacks: <callback_name>` in the request headers.
+在某些使用情境中，您可能會希望為某個請求停用特定回呼。您可以在請求標頭中傳入 `x-litellm-disable-callbacks: <callback_name>` 來達成。
 
-Send the list of callbacks to disable in the request header `x-litellm-disable-callbacks`.
+在請求標頭 `x-litellm-disable-callbacks` 中傳送要停用的回呼清單。
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -330,36 +322,31 @@ print(response)
 </TabItem>
 </Tabs>
 
+### ✨ 依虛擬金鑰、團隊進行條件式記錄 {#-conditional-logging-by-virtual-keys-teams}
 
-### ✨ Conditional Logging by Virtual Keys, Teams
+可用於：
+1. 依條件為某些虛擬金鑰／團隊啟用記錄
+2. 為不同的虛擬金鑰／團隊設定不同的記錄提供者
 
-Use this to:
-1. Conditionally enable logging for some virtual keys/teams
-2. Set different logging providers for different virtual keys/teams
+[👉 **開始使用** - 依團隊／金鑰的記錄](team_logging)
 
-[👉 **Get Started** - Team/Key Based Logging](team_logging)
+## 會記錄哪些內容？ {#what-gets-logged}
 
+終端成功與失敗回呼事件會包含 `kwargs["standard_logging_object"]`，當 LiteLLM 完成建構標準 payload 時。中間的串流事件，以及在 payload 建構失敗時的回呼，可以省略它。
 
+[👉 **標準記錄負載規格**](./logging_spec)
 
+## Langfuse {#langfuse}
 
+我們將使用 `--config` 來設定 `litellm.success_callback = ["langfuse"]`，這會將所有成功的 LLM 呼叫記錄到 langfuse。請務必在您的環境中設定 `LANGFUSE_PUBLIC_KEY` 和 `LANGFUSE_SECRET_KEY`
 
-## What gets logged?
-
-Terminal success and failure callback events include `kwargs["standard_logging_object"]` when LiteLLM finishes building the standard payload. Intermediate streaming events and callbacks where payload construction fails can omit it.
-
-[👉 **Standard Logging Payload Specification**](./logging_spec)
-
-## Langfuse
-
-We will use the `--config` to set `litellm.success_callback = ["langfuse"]` this will log all successful LLM calls to langfuse. Make sure to set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in your environment
-
-**Step 1** Install langfuse
+**步驟 1** 安裝 langfuse
 
 ```shell
 uv add "langfuse>=4.7,<5"
 ```
 
-**Step 2**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 2**：建立 `config.yaml` 檔案並設定 `litellm_settings`：`success_callback`
 
 ```yaml
 model_list:
@@ -370,7 +357,7 @@ litellm_settings:
   success_callback: ["langfuse"]
 ```
 
-**Step 3**: Set required env variables for logging to langfuse
+**步驟 3**：設定記錄到 langfuse 所需的環境變數
 
 ```shell
 export LANGFUSE_PUBLIC_KEY="pk_kk"
@@ -379,31 +366,31 @@ export LANGFUSE_SECRET_KEY="sk_ss"
 export LANGFUSE_HOST="https://xxx.langfuse.com"
 ```
 
-**Step 4**: Start the proxy, make a test request
+**步驟 4**：啟動 proxy，送出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```
 litellm --test
 ```
 
-Expected output on Langfuse
+Langfuse 上的預期輸出
 
 <Image img={require('../../img/langfuse_small.png')} />
 
-### Logging Metadata to Langfuse
+### 將記錄中繼資料寫入 Langfuse {#logging-metadata-to-langfuse}
 
 <Tabs>
 
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
-Pass `metadata` as part of the request body
+將 `metadata` 作為請求本文的一部分傳入
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -428,7 +415,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 <TabItem value="openai" label="OpenAI v1.0.0+">
 
-Set `extra_body={"metadata": { }}` to `metadata` you want to pass
+將您要傳入的 `extra_body={"metadata": { }}` 設為 `metadata`
 
 ```python
 import openai
@@ -502,16 +489,14 @@ print(response)
 </Tabs>
 
 :::info
-Langfuse v4 requires W3C trace IDs (32 lowercase hex chars). LiteLLM first lowercases a custom `trace_id` and strips hyphens, so a UUID is used as is once normalized. Anything that still isn't 32 hex chars (like `trace-id22` above) is deterministically hashed to one; the same `trace_id` always maps to the same Langfuse trace, but the ID visible in Langfuse is the normalized or hashed form, not the original string.
+Langfuse v4 需要 W3C trace ID（32 個小寫十六進位字元）。LiteLLM 會先將自訂 `trace_id` 轉成小寫並移除連字號，因此 UUID 在正規化後會原樣使用。任何仍然不是 32 個十六進位字元的值（例如上方的 `trace-id22`）都會以確定性雜湊轉成一個；相同的 `trace_id` 永遠會對應到相同的 Langfuse trace，但在 Langfuse 中可見的 ID 會是正規化或雜湊後的形式，而不是原始字串。
 :::
 
-### Custom Tags
+### 自訂標籤 {#custom-tags}
 
-Set `tags` as part of your request body
-
+將 `tags` 作為請求本文的一部分傳入
 
 <Tabs>
-
 
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
@@ -542,9 +527,9 @@ print(response)
 ```
 </TabItem>
 
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
-Pass `metadata` as part of the request body
+將 `metadata` 作為請求本文的一部分傳入
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -606,28 +591,25 @@ print(response)
 </TabItem>
 </Tabs>
 
+### LiteLLM 標籤 - `cache_hit`, `cache_key` {#litellm-tags---cache_hit-cache_key}
 
+如果您想控制由 LiteLLM proxy 將哪些 LiteLLM 特定欄位以標籤形式記錄，請使用此功能。預設情況下，LiteLLM Proxy 不會記錄任何 LiteLLM 特定欄位
 
-### LiteLLM Tags - `cache_hit`, `cache_key`
-
-Use this if you want to control which LiteLLM-specific fields are logged as tags by the LiteLLM proxy. By default LiteLLM Proxy logs no LiteLLM-specific fields
-
-| LiteLLM specific field    | Description                                                                             | Example Value                           |
+| LiteLLM 特定欄位    | 說明                                                                             | 範例值                           |
 | ------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------- |
-| `cache_hit`               | Indicates whether a cache hit occurred (True) or not (False)                            | `true`, `false`                         |
-| `cache_key`               | The Cache key used for this request                                                     | `d2b758c****`                           |
-| `proxy_base_url`          | The base URL for the proxy server, the value of env var `PROXY_BASE_URL` on your server | `https://proxy.example.com`             |
-| `user_api_key_alias`      | An alias for the LiteLLM Virtual Key.                                                   | `prod-app1`                             |
-| `user_api_key_user_id`    | The unique ID associated with a user's API key.                                         | `user_123`, `user_456`                  |
-| `user_api_key_user_email` | The email associated with a user's API key.                                             | `user@example.com`, `admin@example.com` |
-| `user_api_key_team_alias` | An alias for a team associated with an API key.                                         | `team_alpha`, `dev_team`                |
+| `cache_hit`               | 表示是否發生快取命中（True）或未發生（False）                            | `true`, `false`                         |
+| `cache_key`               | 此請求使用的快取金鑰                                                     | `d2b758c****`                           |
+| `proxy_base_url`          | 代理伺服器的基礎 URL，其值為您伺服器上的環境變數 `PROXY_BASE_URL` | `https://proxy.example.com`             |
+| `user_api_key_alias`      | LiteLLM Virtual Key 的別名。                                                   | `prod-app1`                             |
+| `user_api_key_user_id`    | 與使用者 API 金鑰相關聯的唯一 ID。                                         | `user_123`, `user_456`                  |
+| `user_api_key_user_email` | 與使用者 API 金鑰相關聯的電子郵件。                                             | `user@example.com`, `admin@example.com` |
+| `user_api_key_team_alias` | 與 API 金鑰相關聯之團隊的別名。                                         | `team_alpha`, `dev_team`                |
 
+**使用方式**
 
-**Usage**
+指定 `langfuse_default_tags` 以控制會記錄到 Langfuse 的 litellm 欄位
 
-Specify `langfuse_default_tags` to control what litellm fields get logged on Langfuse
-
-Example config.yaml 
+範例 config.yaml 
 ```yaml
 model_list:
   - model_name: {{openai_large}}
@@ -643,11 +625,11 @@ litellm_settings:
   langfuse_default_tags: ["cache_hit", "cache_key", "proxy_base_url", "user_api_key_alias", "user_api_key_user_id", "user_api_key_user_email", "user_api_key_team_alias", "semantic-similarity", "proxy_base_url"]
 ```
 
-### View POST sent from LiteLLM to provider
+### 檢視 LiteLLM 傳送給提供者的 POST {#view-post-sent-from-litellm-to-provider}
 
-Use this when you want to view the RAW curl request sent from LiteLLM to the LLM API 
+當您想查看從 LiteLLM 傳送到 LLM API 的原始 curl 請求時，請使用這個設定
 
-Set `log_raw_request_response: true` in `litellm_settings`. LiteLLM then attaches the curl command it sent to the provider as `raw_request` in the Langfuse metadata of every request. This is a global setting with no per-request toggle
+請在 `litellm_settings` 中設定 `log_raw_request_response: true`。LiteLLM 接著會將其傳送給提供者的 curl 指令作為 `raw_request` 附加到每個請求的 Langfuse metadata 中。這是全域設定，沒有每個請求的切換
 
 ```yaml
 litellm_settings:
@@ -655,23 +637,23 @@ litellm_settings:
   log_raw_request_response: true
 ```
 
-**Expected Output on Langfuse**
+**Langfuse 上的預期輸出**
 
-You will see `raw_request` in your Langfuse Metadata. This is the RAW CURL command sent from LiteLLM to your LLM API provider
+您會在 Langfuse 的 Metadata 中看到 `raw_request`。這是從 LiteLLM 傳送到您的 LLM API 提供者的原始 CURL 命令
 
 <Image img={require('../../img/debug_langfuse.png')} />
 
-## OpenTelemetry
+## OpenTelemetry {#opentelemetry}
 
 :::tip
 
-The full OpenTelemetry reference (span hierarchy, every emitted span and attribute, metrics, semconv mode, and troubleshooting) lives at [Observability → OpenTelemetry Integration](/docs/observability/opentelemetry_integration). The section below is a proxy-focused quickstart.
+完整的 OpenTelemetry 參考文件（span 階層、所有發出的 span 與屬性、metrics、semconv 模式，以及疑難排解）位於 [可觀測性 → OpenTelemetry 整合](/docs/observability/opentelemetry_integration)。下方章節是以 proxy 為重點的快速入門。
 
 :::
 
-:::info 
+:::info
 
-[Optional] Customize OTEL Service Name and OTEL TRACER NAME by setting the following variables in your environment
+[選用] 透過在您的環境中設定下列變數，自訂 OTEL Service Name 與 OTEL TRACER NAME
 
 ```shell
 OTEL_TRACER_NAME=<your-trace-name>     # default="litellm"
@@ -682,32 +664,32 @@ OTEL_SERVICE_NAME=<your-service-name>` # default="litellm"
 
 <Tabs>
 
-<TabItem value="Console Exporter" label="Log to console">
+<TabItem value="Console Exporter" label="記錄到主控台">
 
-**Step 1:** Set callbacks and env vars
+**步驟 1：** 設定 callbacks 與環境變數
 
-Add the following to your env
+將下列內容加入您的環境中
 
 ```shell
 OTEL_EXPORTER="console"
 ```
 
-Add `otel` as a callback on your `litellm_config.yaml`
+將 `otel` 加為您的 `litellm_config.yaml` 的 callback
 
 ```shell
 litellm_settings:
   callbacks: ["otel"]
 ```
 
-**Step 2**: Start the proxy, make a test request
+**步驟 2**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -723,9 +705,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }'
 ```
 
-**Step 3**: **Expect to see the following logged on your server logs / console**
+**步驟 3**：**預期會在您的伺服器記錄 / 主控台中看到下列內容**
 
-This is the Span from OTEL Logging
+這是來自 OTEL Logging 的 Span
 
 ```json
 {
@@ -758,13 +740,13 @@ This is the Span from OTEL Logging
 
 </TabItem>
 
-<TabItem value="Honeycomb" label="Log to Honeycomb">
+<TabItem value="Honeycomb" label="記錄到 Honeycomb">
 
-#### Quick Start - Log to Honeycomb
+#### 快速入門 - 記錄到 Honeycomb {#quick-start---log-to-honeycomb}
 
-**Step 1:** Set callbacks and env vars
+**步驟 1：** 設定 callbacks 與環境變數
 
-Add the following to your env
+將下列內容加入您的環境中
 
 ```shell
 OTEL_EXPORTER="otlp_http"
@@ -772,22 +754,22 @@ OTEL_ENDPOINT="https://api.honeycomb.io/v1/traces"
 OTEL_HEADERS="x-honeycomb-team=<your-api-key>"
 ```
 
-Add `otel` as a callback on your `litellm_config.yaml`
+將 `otel` 加為您的 `litellm_config.yaml` 的 callback
 
 ```shell
 litellm_settings:
   callbacks: ["otel"]
 ```
 
-**Step 2**: Start the proxy, make a test request
+**步驟 2**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -805,12 +787,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 
-<TabItem value="traceloop" label="Log to Traceloop Cloud">
+<TabItem value="traceloop" label="記錄到 Traceloop Cloud">
 
-#### Quick Start - Log to Traceloop
+#### 快速入門 - 記錄到 Traceloop {#quick-start---log-to-traceloop}
 
-**Step 1:**
-Add the following to your env
+**步驟 1：**
+將下列內容加入您的環境中
 
 ```shell
 OTEL_EXPORTER="otlp_http"
@@ -818,22 +800,22 @@ OTEL_ENDPOINT="https://api.traceloop.com"
 OTEL_HEADERS="Authorization=Bearer%20<your-api-key>"
 ```
 
-**Step 2:** Add `otel` as a callbacks
+**步驟 2：** 將 `otel` 加為 callbacks
 
 ```shell
 litellm_settings:
   callbacks: ["otel"]
 ```
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -851,13 +833,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 
-<TabItem value="otel-col" label="Log to OTEL HTTP Collector">
+<TabItem value="otel-col" label="記錄到 OTEL HTTP Collector">
 
-#### Quick Start - Log to OTEL Collector
+#### 快速入門 - 記錄到 OTEL Collector {#quick-start---log-to-otel-collector}
 
-**Step 1:** Set callbacks and env vars
+**步驟 1：** 設定 callbacks 與環境變數
 
-Add the following to your env
+將下列內容加入您的環境中
 
 ```shell
 OTEL_EXPORTER="otlp_http"
@@ -865,22 +847,22 @@ OTEL_ENDPOINT="http://0.0.0.0:4317"
 OTEL_HEADERS="x-honeycomb-team=<your-api-key>" # Optional
 ```
 
-Add `otel` as a callback on your `litellm_config.yaml`
+將 `otel` 加為您的 `litellm_config.yaml` 的 callback
 
 ```shell
 litellm_settings:
   callbacks: ["otel"]
 ```
 
-**Step 2**: Start the proxy, make a test request
+**步驟 2**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -898,13 +880,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 
-<TabItem value="otel-col-grpc" label="Log to OTEL GRPC Collector">
+<TabItem value="otel-col-grpc" label="記錄到 OTEL GRPC Collector">
 
-#### Quick Start - Log to OTEL GRPC Collector
+#### 快速入門 - 記錄到 OTEL GRPC Collector {#quick-start---log-to-otel-grpc-collector}
 
-**Step 1:** Set callbacks and env vars
+**步驟 1：** 設定 callbacks 與環境變數
 
-Add the following to your env
+將下列內容加入您的環境中
 
 ```shell
 OTEL_EXPORTER="otlp_grpc"
@@ -912,24 +894,24 @@ OTEL_ENDPOINT="http:/0.0.0.0:4317"
 OTEL_HEADERS="x-honeycomb-team=<your-api-key>" # Optional
 ```
 
-> Note: OTLP gRPC requires `grpcio`. Install via `uv add "litellm[grpc]"` (or `grpcio`).
+> 注意：OTLP gRPC 需要 `grpcio`。可透過 `uv add "litellm[grpc]"`（或 `grpcio`）安裝。
 
-Add `otel` as a callback on your `litellm_config.yaml`
+將 `otel` 加為您的 `litellm_config.yaml` 的 callback
 
 ```shell
 litellm_settings:
   callbacks: ["otel"]
 ```
 
-**Step 2**: Start the proxy, make a test request
+**步驟 2**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -949,11 +931,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </Tabs>
 
-** 🎉 Expect to see this trace logged in your OTEL collector**
+** 🎉 預期會在您的 OTEL collector 中看到這個 trace 被記錄**
 
-### Redacting Messages, Response Content
+### 遮罩訊息、回應內容 {#redacting-messages-response-content}
 
-Set `message_logging=False` for `otel`, no messages / response will be logged
+將 `message_logging=False` 設為 `otel`，將不會記錄任何訊息 / 回應
 
 ```yaml
 litellm_settings:
@@ -965,20 +947,21 @@ callback_settings:
     message_logging: False
 ```
 
-### Traceparent Header
-##### Context propagation across Services `Traceparent HTTP Header`
+### Traceparent 標頭 {#traceparent-header}
 
-❓ Use this when you want to **pass information about the incoming request in a distributed tracing system**
+##### 跨服務的內容傳遞 `Traceparent HTTP Header` {#context-propagation-across-services-traceparent-http-header}
 
-✅ Key change: Pass the **`traceparent` header** in your requests. [Read more about traceparent headers here](https://uptrace.dev/opentelemetry/opentelemetry-traceparent.html#what-is-traceparent-header)
+❓ 當您想要在分散式追蹤系統中 **傳遞關於傳入請求的資訊** 時，請使用這個
+
+✅ 主要變更：在您的請求中傳遞 **`traceparent` 標頭**。[在此閱讀更多關於 traceparent 標頭的資訊](https://uptrace.dev/opentelemetry/opentelemetry-traceparent.html#what-is-traceparent-header)
 
 ```curl
 traceparent: 00-80e1afed08e019fc1110464cfa66635c-7a085853722dc6d2-01
 ```
 
-Example Usage
+使用範例
 
-1. Make Request to LiteLLM Proxy with `traceparent` header
+1. 向 LiteLLM Proxy 發出帶有 `traceparent` 標頭的請求
 
 ```python
 import openai
@@ -1010,21 +993,21 @@ print(response)
 # Trace ID:  80e1afed08e019fc1110464cfa66635c
 ```
 
-2. Lookup Trace ID on OTEL Logger
+2. 在 OTEL Logger 上查詢 Trace ID
 
-Search for Trace=`80e1afed08e019fc1110464cfa66635c` on your OTEL Collector
+在您的 OTEL Collector 上搜尋 Trace=`80e1afed08e019fc1110464cfa66635c`
 
 <Image img={require('../../img/otel_parent.png')} />
 
-##### Forwarding `Traceparent HTTP Header` to LLM APIs
+##### 轉送 `Traceparent HTTP Header` 至 LLM API {#forwarding-traceparent-http-header-to-llm-apis}
 
-Use this if you want to forward the traceparent headers to your self hosted LLMs like vLLM
+如果您想將 traceparent 標頭轉送到您自架的 LLM，例如 vLLM，請使用這個
 
-Set `forward_traceparent_to_llm_provider: True` in your `config.yaml`. This will forward the `traceparent` header to your LLM API
+在您的 `forward_traceparent_to_llm_provider: True` 中設定 `config.yaml`。這會將 `traceparent` 標頭轉送到您的 LLM API
 
 :::warning
 
-Only use this for self hosted LLMs, this can cause Bedrock, VertexAI calls to fail
+僅可用於自架 LLM，這可能會導致 Bedrock、VertexAI 呼叫失敗
 
 :::
 
@@ -1033,23 +1016,21 @@ litellm_settings:
   forward_traceparent_to_llm_provider: True
 ```
 
-## Google Cloud Storage Buckets
+## Google Cloud Storage Bucket {#google-cloud-storage-buckets}
 
-Log LLM Logs to [Google Cloud Storage Buckets](https://cloud.google.com/storage?hl=en)
+將 LLM 記錄寫入 [Google Cloud Storage Buckets](https://cloud.google.com/storage?hl=en)
 
 <EnterpriseFeature />
 
-| Property                     | Details                                                        |
-| ---------------------------- | -------------------------------------------------------------- |
-| Description                  | Log LLM Input/Output to cloud storage buckets                  |
-| Load Test Benchmarks         | [Benchmarks](https://docs.litellm.ai/docs/benchmarks)          |
-| Google Docs on Cloud Storage | [Google Cloud Storage](https://cloud.google.com/storage?hl=en) |
+| 屬性                     | 詳細資訊                                                     |
+| ------------------------ | ------------------------------------------------------------ |
+| 說明                     | 將 LLM 輸入/輸出記錄到雲端儲存 bucket                  |
+| 壓力測試基準             | [基準](https://docs.litellm.ai/docs/benchmarks)          |
+| Google Cloud Storage 文件 | [Google Cloud Storage](https://cloud.google.com/storage?hl=en) |
 
+#### 使用方式 {#usage}
 
-
-#### Usage
-
-1. Add `gcs_bucket` to LiteLLM Config.yaml
+1. 將 `gcs_bucket` 加到 LiteLLM Config.yaml
 ```yaml
 model_list:
 - litellm_params:
@@ -1062,20 +1043,20 @@ litellm_settings:
   callbacks: ["gcs_bucket"] # 👈 KEY CHANGE # 👈 KEY CHANGE
 ```
 
-2. Set required env variables
+2. 設定必要的環境變數
 
 ```shell
 GCS_BUCKET_NAME="<your-gcs-bucket-name>"
 GCS_PATH_SERVICE_ACCOUNT="/Users/ishaanjaffer/Downloads/adroit-crow-413218-a956eef1a2a8.json" # Add path to service account.json
 ```
 
-3. Start Proxy
+3. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-4. Test it! 
+4. 測試一下！ 
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1092,45 +1073,40 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-
-#### Expected Logs on GCS Buckets
+#### GCS Bucket 上預期的記錄 {#expected-logs-on-gcs-buckets}
 
 <Image img={require('../../img/gcs_bucket.png')} />
 
-#### Fields Logged on GCS Buckets
+#### GCS Bucket 上記錄的欄位 {#fields-logged-on-gcs-buckets}
 
-[**The standard logging object is logged on GCS Bucket**](../proxy/logging_spec)
+[**標準 logging 物件會記錄到 GCS Bucket**](../proxy/logging_spec)
 
+#### 從 Google Cloud Console 取得 `service_account.json` {#getting-service_accountjson-from-google-cloud-console}
 
-#### Getting `service_account.json` from Google Cloud Console
+1. 前往 [Google Cloud Console](https://console.cloud.google.com/)
+2. 搜尋 IAM & Admin
+3. 點選 Service Accounts
+4. 選取一個 Service Account
+5. 點選 'Keys' -> Add Key -> Create New Key -> JSON
+6. 儲存 JSON 檔案並將路徑加入 `GCS_PATH_SERVICE_ACCOUNT`
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Search for IAM & Admin
-3. Click on Service Accounts
-4. Select a Service Account
-5. Click on 'Keys' -> Add Key -> Create New Key -> JSON
-6. Save the JSON file and add the path to `GCS_PATH_SERVICE_ACCOUNT`
+## Google Cloud Storage - PubSub 主題 {#google-cloud-storage---pubsub-topic}
 
-
-
-## Google Cloud Storage - PubSub Topic
-
-Log LLM Logs/SpendLogs to [Google Cloud Storage PubSub Topic](https://cloud.google.com/pubsub/docs/reference/rest)
+將 LLM 記錄/SpendLogs 寫入 [Google Cloud Storage PubSub Topic](https://cloud.google.com/pubsub/docs/reference/rest)
 
 <EnterpriseFeature />
 
-| Property    | Details                                                            |
+| 屬性        | 詳細資訊                                                            |
 | ----------- | ------------------------------------------------------------------ |
-| Description | Log LiteLLM `SpendLogs Table` to Google Cloud Storage PubSub Topic |
+| 說明        | 將 LiteLLM `SpendLogs Table` 記錄到 Google Cloud Storage PubSub Topic |
 
-When to use `gcs_pubsub`?
+何時使用 `gcs_pubsub`？
 
-- If your LiteLLM Database has crossed 1M+ spend logs and you want to send `SpendLogs` to a PubSub Topic that can be consumed by GCS BigQuery
+- 如果您的 LiteLLM 資料庫中已超過 1M+ 筆支出記錄，且您想將 `SpendLogs` 傳送到可由 GCS BigQuery 消費的 PubSub Topic
 
+#### 使用方式 {#usage-1}
 
-#### Usage
-
-1. Add `gcs_pubsub` to LiteLLM Config.yaml
+1. 將 `gcs_pubsub` 新增到 LiteLLM Config.yaml
 ```yaml
 model_list:
 - litellm_params:
@@ -1143,20 +1119,20 @@ litellm_settings:
   callbacks: ["gcs_pubsub"] # 👈 KEY CHANGE # 👈 KEY CHANGE
 ```
 
-2. Set required env variables
+2. 設定必要的環境變數
 
 ```shell
 GCS_PUBSUB_TOPIC_ID="litellmDB"
 GCS_PUBSUB_PROJECT_ID="reliableKeys"
 ```
 
-3. Start Proxy
+3. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-4. Test it! 
+4. 測試它！ 
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1173,11 +1149,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-## Deepeval
-LiteLLM supports logging on [Confidential AI](https://documentation.confident-ai.com/) (The Deepeval Platform):
+## Deepeval {#deepeval}
+LiteLLM 支援在 [Confidential AI](https://documentation.confident-ai.com/)（Deepeval 平台）上記錄：
 
-### Usage:
-1. Add `deepeval` in the LiteLLM `config.yaml`
+### 使用方式： {#usage-2}
+1. 在 LiteLLM `deepeval` 中新增 `config.yaml`
 
 ```yaml
 model_list:
@@ -1189,20 +1165,20 @@ litellm_settings:
   failure_callback: ["deepeval"]
 ```
 
-2. Set your environment variables in `.env` file. 
+2. 在 `.env` 檔案中設定您的環境變數。 
 ```shell
 CONFIDENT_API_KEY=<your-api-key>
 ```
 :::info
-You can obtain your `CONFIDENT_API_KEY` by logging into [Confident AI](https://app.confident-ai.com/project) platform. 
+您可以透過登入 [Confident AI](https://app.confident-ai.com/project) 平台來取得您的 `CONFIDENT_API_KEY`。 
 :::
 
-3. Start your proxy server:
+3. 啟動您的 proxy server：
 ```shell
 litellm --config config.yaml --debug
 ```
 
-4. Make a request:
+4. 發送請求：
 ```shell
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
@@ -1222,19 +1198,19 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-5. Check trace on platform: 
+5. 在平台上檢查 trace： 
 
 <Image img={require('../../img/deepeval_visible_trace.png')} />
 
-## s3 Buckets
+## s3 儲存貯體 {#s3-buckets}
 
-We will use the `--config` to set 
+我們將使用 `--config` 來設定
 
-- `litellm.success_callback = ["s3"]` 
+- `litellm.success_callback = ["s3"]`
 
-This will log all successful LLM calls to s3 Bucket
+這會將所有成功的 LLM 呼叫記錄到 s3 Bucket
 
-**Step 1** Set AWS Credentials in .env
+**步驟 1** 在 .env 中設定 AWS 憑證
 
 ```shell
 AWS_ACCESS_KEY_ID = ""
@@ -1242,7 +1218,7 @@ AWS_SECRET_ACCESS_KEY = ""
 AWS_REGION_NAME = ""
 ```
 
-**Step 2**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 2**：建立 `config.yaml` 檔案並設定 `litellm_settings`：`success_callback`
 
 ```yaml
 model_list:
@@ -1272,25 +1248,25 @@ litellm_settings:
     s3_partition_granularity: day # [OPTIONAL] date folder layout for log objects: day (default) or hour, see Hourly Folders below
 ```
 
-The default of 16 for `s3_max_concurrent_uploads` comes from the flush budget rather than from an S3 limit: a full queue of `DEFAULT_S3_BATCH_SIZE` (512) entries has to drain inside `DEFAULT_S3_FLUSH_INTERVAL_SECONDS` (10s), and at a pessimistic 300ms per PUT that needs `512 * 0.3 / 10 = 15.4` uploads in flight, so 16 is the smallest round number that fits. It is also an order of magnitude under the [3,500 PUT/s per prefix](https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html) S3 supports, and in the same range as boto3's `max_concurrency` of 10 or Fluentd's suggested 8 flush threads. The limit is per uvicorn worker, so process wide concurrency is `workers * 16`
+`s3_max_concurrent_uploads` 的預設值 16 來自 flush 預算，而不是來自 S3 限制：滿載 `DEFAULT_S3_BATCH_SIZE`（512）筆的 queue 必須在 `DEFAULT_S3_FLUSH_INTERVAL_SECONDS`（10 秒）內排空，而以每次 PUT 最悲觀 300ms 計算，這需要 `512 * 0.3 / 10 = 15.4` 個同時進行中的 uploads，因此 16 是符合條件的最小整數。這也比 [每個 prefix 每秒 3,500 次 PUT](https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html) 的 S3 支援量級低一個數量級，且與 boto3 建議的 `max_concurrency` 10 或 Fluentd 建議的 8 個 flush threads 處於相近範圍。此限制是每個 uvicorn worker 各自套用，因此整個程序的並發數為 `workers * 16`
 
-The bound is a sliding window, not a batch size: the 17th upload starts as soon as one of the first 16 finishes, so a worker ships about `s3_max_concurrent_uploads / PUT latency` objects per second. Measured against a us-east-1 bucket, one small PUT took about 100ms round trip, so 16 sustains roughly 160 logs per second per worker, 32 about 320, and 64 about 610. Cross region or under `503 SlowDown` the latency is closer to 300ms and those numbers drop to a third. Size it with `s3_max_concurrent_uploads >= peak requests per second per worker * PUT latency in seconds`, rounded up to the next power of two. A worker doing 250 requests per second at 100ms needs 25, so set 32
+這個上限是滑動視窗，不是批次大小：第 17 個 upload 會在前 16 個其中之一完成後立即開始，因此一個 worker 每秒大約送出 `s3_max_concurrent_uploads / PUT latency` 個物件。以 us-east-1 bucket 實測，一次小型 PUT 的往返時間約 100ms，因此 16 大約可每個 worker 每秒維持 160 筆 logs、32 約 320、64 約 610。跨區域或在 `503 SlowDown` 下，延遲會接近 300ms，這些數字會降為三分之一。請用 `s3_max_concurrent_uploads >= peak requests per second per worker * PUT latency in seconds` 進行調整，並向上取整到下一個 2 的冪次方。每秒處理 250 次請求、延遲 100ms 的 worker 需要 25，因此設定為 32
 
-When the bound is too low for the traffic nothing is lost, but delivery lags: a flush takes longer than `DEFAULT_S3_FLUSH_INTERVAL_SECONDS`, objects show up in the bucket later than the flush interval, and `log_queue` grows in memory until traffic drops. If you see objects arriving minutes late while the proxy log shows no `Error uploading to s3` lines, that is the signal to raise the bound. If the number you compute is above 64, turn on `s3_batch_file_upload` instead: each flush then becomes one object per key prefix, so the bound stops mattering and the bucket sees a handful of PUTs per tick. Raising the bound far above what the formula gives moves you back toward the burst shape that makes S3 throttle: eight workers at a few hundred in flight each measured about 4,500 PUTs per second into one fresh daily prefix and got `503 SlowDown` on 11 to 18 percent of them, while the same eight workers at 16 saw 0.08 percent, all recovered on the first retry
+當上限對流量來說太低時，不會遺失任何資料，但傳送會延遲：一次 flush 會花比 `DEFAULT_S3_FLUSH_INTERVAL_SECONDS` 更久，物件出現在 bucket 的時間會晚於 flush 間隔，而且 `log_queue` 會在記憶體中增加，直到流量下降。如果您看到物件延遲數分鐘才到達，而 proxy log 沒有任何 `Error uploading to s3` 行，這就是要提高上限的訊號。如果您計算出的數字高於 64，請改為啟用 `s3_batch_file_upload`：此時每次 flush 都會變成每個 key prefix 一個物件，因此上限不再重要，而 bucket 每個 tick 只會看到少量 PUT。把上限提高到遠高於公式所得，會讓行為回到 S3 容易節流的突發形狀：8 個 workers、每個 worker 同時處理數百個請求，實測在一個新的每日 prefix 中達到每秒約 4,500 次 PUT，其中 11% 到 18% 遭到 `503 SlowDown`，而同樣 8 個 workers 但上限為 16 時只有 0.08%，且全部都在第一次重試時恢復
 
-With `s3_batch_file_upload` enabled, each flush produces one `batch_<HH-MM-SS>_<uuid>.jsonl` object per object key prefix, so batch files sit next to the per request objects they replace and team or API key prefixes are preserved. Uploads that fail stay in the queue and are retried on the next flush. The flag is ignored with a warning when `cold_storage_custom_logger: s3_v2` is set, because spend log lookups require per request objects
+啟用 `s3_batch_file_upload` 後，每次 flush 都會為每個物件 key prefix 產生一個 `batch_<HH-MM-SS>_<uuid>.jsonl` 物件，因此批次檔會放在它們所取代的每請求物件旁邊，而團隊或 API key 的 prefix 也會保留。失敗的上傳會留在 queue 中，並在下一次 flush 時重試。當 `cold_storage_custom_logger: s3_v2` 已設定時，該旗標會被忽略並記錄警告，因為 spend log 查詢需要每請求物件
 
-Failed uploads are retried, but not forever. Each flush uploads new events before the ones it is retrying, and 403, 500 and 503 are retried up to three times inside the same flush with a 1s then 2s backoff; any other failure waits for the next flush. An object S3 rejects for a reason specific to that object (400 or 403 with a code such as `EntityTooLarge`, `InvalidArgument`, `MalformedXML`, `InvalidDigest` or `KeyTooLongError`) is dropped at the end of that flush once another object in it delivered, since retrying it can never succeed; `AccessDenied`, credential and KMS errors, 404, 429 and 5xx are treated as recoverable and keep retrying. An object that keeps failing while its siblings deliver is dropped after `s3_max_retry_age_seconds` (1 hour by default); the clock only starts once a sibling has delivered, so a whole bucket outage where nothing delivers does not start it, but an object already on the clock keeps aging through a later outage. These are two independent drop rules: `s3_drop_on_terminal_error: false` turns off only the terminal drop and `s3_max_retry_age_seconds: 0` turns off only the age limit, so set both to keep every failed object retrying. Independently of either, after a failed flush the queue is trimmed to `s3_max_queue_size` by dropping its oldest events, so raise that cap if the queue must outlive a long outage; every drop is logged as `s3 logging: N uploads dropped`
+失敗的上傳會重試，但不會無限重試。每次 flush 會先上傳新的事件，再處理正在重試的那些；403、500 與 503 會在同一次 flush 內重試最多三次，backoff 先 1 秒再 2 秒；任何其他失敗則等到下一次 flush。S3 因該物件本身的特定原因而拒絕的物件（400 或 403，且代碼如 `EntityTooLarge`、`InvalidArgument`、`MalformedXML`、`InvalidDigest` 或 `KeyTooLongError`）會在該次 flush 結束時於其中另一個物件已送達後被捨棄，因為重試它永遠不可能成功；`AccessDenied`、憑證與 KMS 錯誤、404、429 與 5xx 則視為可恢復，會持續重試。當某個物件在其同伴已送達時仍持續失敗，會在 `s3_max_retry_age_seconds`（預設 1 小時）後被捨棄；計時器只會在有同伴送達後才開始，因此整個 bucket 停擺、沒有任何物件送達的情況不會啟動它，但已在計時中的物件會在之後的停擺期間持續累積時間。這是兩個彼此獨立的捨棄規則：`s3_drop_on_terminal_error: false` 只會關閉終端捨棄，而 `s3_max_retry_age_seconds: 0` 只會關閉年齡上限，因此請同時設定兩者以讓每個失敗的物件持續重試。無論上述哪一個，失敗的 flush 之後 queue 都會透過捨棄最舊的事件而被裁切到 `s3_max_queue_size`，因此如果 queue 必須撐過長時間停擺，請提高該上限；每次捨棄都會記錄為 `s3 logging: N uploads dropped`
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發送測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1306,11 +1282,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }'
 ```
 
-Your logs should be available on the specified s3 Bucket
+您的記錄應該會出現在指定的 s3 Bucket 中
 
-### Hourly Folders
+### 每小時資料夾 {#hourly-folders}
 
-By default `s3_v2` writes every log for a day into one date folder, `my-test-path/2026-10-01/time-14-05-09-123456_chatcmpl-abc.json`. Set `s3_partition_granularity: hour` to add an hour folder under the date, so the same object lands at `my-test-path/2026-10-01/14/time-14-05-09-123456_chatcmpl-abc.json` and a query over a time range only has to list the hours it needs
+預設情況下，`s3_v2` 會把某一天的每一筆 log 寫入同一個日期資料夾 `my-test-path/2026-10-01/time-14-05-09-123456_chatcmpl-abc.json`。請設定 `s3_partition_granularity: hour` 以在日期底下加上一個小時資料夾，如此同一個物件就會落在 `my-test-path/2026-10-01/14/time-14-05-09-123456_chatcmpl-abc.json`，而時間範圍查詢只需要列出它需要的小時
 
 ```yaml
 litellm_settings:
@@ -1322,14 +1298,14 @@ litellm_settings:
     s3_partition_granularity: hour
 ```
 
-You can also set it with the `S3_PARTITION_GRANULARITY` environment variable, and a value in `s3_callback_params` wins over it. The date and hour both come from the request start time, the same clock the daily layout already uses, and team or key alias prefixes stay in front of the date folder. Leaving the setting out, or setting it to `day` or an empty value, keeps the daily layout unchanged, and any other value logs a warning and falls back to `day`
+您也可以透過 `S3_PARTITION_GRANULARITY` 環境變數設定，而 `s3_callback_params` 中的值會優先於它。日期與小時都來自請求開始時間，也就是每日版面配置已經使用的同一個時鐘，而團隊或金鑰別名的 prefix 會保留在日期資料夾前方。若不設定此項，或將其設為 `day` 或空值，則會維持每日版面配置不變；任何其他值都會記錄警告並回退到 `day`
 
-The same setting applies to audit log objects, `s3_batch_file_upload` files and the cold storage object key, so `cold_storage_custom_logger: s3_v2` keeps finding the objects it wrote. When audit logs go to a separate bucket through `s3_audit_callback_params`, their layout comes from `s3_partition_granularity` in that block instead, falling back to the environment variable, so request logs and audit logs can use different layouts. With batch uploads on, a flush that spans an hour boundary writes one `.jsonl` file per hour folder. In the Admin UI the option shows up as Folder Partitioning on the `s3_v2` callback form. Only `s3_v2` supports it. The legacy `s3` callback and the `gcs_bucket` logger always write daily folders
+相同的設定也會套用於 audit log 物件、`s3_batch_file_upload` 檔案以及 cold storage 物件 key，因此 `cold_storage_custom_logger: s3_v2` 仍可找到其寫入的物件。當 audit logs 透過 `s3_audit_callback_params` 進入不同的 bucket 時，其版面配置會改由該區塊中的 `s3_partition_granularity` 取得，否則回退到環境變數，因此 request logs 與 audit logs 可以使用不同的版面配置。開啟 batch uploads 後，跨越小時邊界的 flush 會為每個小時資料夾寫入一個 `.jsonl` 檔案。在 Admin UI 中，這個選項會以 Folder Partitioning 的名稱出現在 `s3_v2` callback 表單上。只有 `s3_v2` 支援它。舊版的 `s3` callback 與 `gcs_bucket` logger 一律寫入每日資料夾
 
-### Team Alias Prefix in Object Key
+### 團隊別名在物件鍵中的前綴 {#team-alias-prefix-in-object-key}
 
-You can add the team alias to the object key by setting the `team_alias` in the `config.yaml` file. 
-This will prefix the object key with the team alias.
+您可以在 `team_alias` 檔案中設定 `config.yaml`，將團隊別名加入物件鍵。 
+這會在物件鍵前加上團隊別名作為前綴。
 
 ```yaml
 litellm_settings:
@@ -1344,11 +1320,11 @@ litellm_settings:
     s3_use_team_prefix: true
 ```
 
-On s3 bucket, you will see the object key as `my-test-path/my-team-alias/...`
+在 s3 bucket 中，您會看到物件鍵為 `my-test-path/my-team-alias/...`
 
-### Key Alias Prefix in Object Key
+### 鍵別名在物件鍵中的前綴 {#key-alias-prefix-in-object-key}
 
-You can add the user api key alias to the s3 object key by enabling s3_use_key_prefix.
+您可以透過啟用 s3_use_key_prefix，將使用者 API 金鑰別名加入 s3 物件鍵。
 
 ```yaml
 litellm_settings:
@@ -1363,30 +1339,28 @@ litellm_settings:
     s3_use_key_prefix: true
 ```
 
-On s3 bucket, you will see the object key as `my-test-path/my-key-alias/...`
+在 s3 bucket 中，您會看到物件鍵為 `my-test-path/my-key-alias/...`
 
-if both team alias and key alias are enabled then the path becomes
+如果團隊別名和金鑰別名都已啟用，則路徑會變成
 `my-test-path/my-team-alias/my-key-alias/...`
 
-## AWS SQS
+## AWS SQS {#aws-sqs}
 
-
-| Property             | Details                                                                               |
+| 屬性             | 詳細資料                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------- |
-| Description          | Log LLM Input/Output to AWS SQS Queue                                                 |
-| AWS Docs on SQS      | [AWS SQS](https://aws.amazon.com/sqs/)                                                |
-| Fields Logged to SQS | LiteLLM [Standard Logging Payload is logged for each LLM call](../proxy/logging_spec) |
+| 說明          | 將 LLM 輸入/輸出記錄到 AWS SQS Queue                                                 |
+| SQS 的 AWS 文件      | [AWS SQS](https://aws.amazon.com/sqs/)                                                |
+| 記錄到 SQS 的欄位 | LiteLLM [每次 LLM 呼叫都會記錄標準記錄負載](../proxy/logging_spec) |
 
+將 LLM 記錄寫入 [AWS Simple Queue Service (SQS)](https://aws.amazon.com/sqs/)
 
-Log LLM Logs to [AWS Simple Queue Service (SQS)](https://aws.amazon.com/sqs/)
+我們將使用 litellm `--config` 來設定
 
-We will use the litellm `--config` to set 
+- `litellm.callbacks = ["aws_sqs"]`
 
-- `litellm.callbacks = ["aws_sqs"]` 
+這會將所有成功的 LLM 請求記錄到 AWS SQS Queue
 
-This will log all successful LLM calls to AWS SQS Queue
-
-**Step 1** Set AWS Credentials in .env
+**步驟 1** 在 .env 中設定 AWS 憑證
 
 ```shell
 AWS_ACCESS_KEY_ID = ""
@@ -1394,7 +1368,7 @@ AWS_SECRET_ACCESS_KEY = ""
 AWS_REGION_NAME = ""
 ```
 
-**Step 2**: Create a `config.yaml` file and set `litellm_settings`: `callbacks`
+**步驟 2**：建立一個 `config.yaml` 檔案，並設定 `litellm_settings`：`callbacks`
 
 ```yaml
 model_list:
@@ -1420,15 +1394,15 @@ litellm_settings:
 
 ```
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1444,23 +1418,20 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }'
 ```
 
+## Azure Blob 儲存體 {#azure-blob-storage}
 
-## Azure Blob Storage
-
-Log LLM Logs to [Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction)
+將 LLM 記錄寫入 [Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction)
 
 <EnterpriseFeature />
 
-| Property                        | Details                                                                                                         |
+| 屬性                        | 詳細資訊                                                                                                         |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Description                     | Log LLM Input/Output to Azure Blob Storage (Bucket)                                                             |
-| Azure Docs on Data Lake Storage | [Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction) |
+| 說明                     | 將 LLM 輸入/輸出記錄到 Azure Blob Storage（Bucket）                                                             |
+| Azure Data Lake Storage 文件 | [Azure Data Lake Storage](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction) |
 
+#### 使用方式 {#usage-3}
 
-
-#### Usage
-
-1. Add `azure_storage` to LiteLLM Config.yaml
+1. 將 `azure_storage` 加入 LiteLLM Config.yaml
 ```yaml
 model_list:
   - model_name: fake-openai-endpoint
@@ -1473,7 +1444,7 @@ litellm_settings:
   callbacks: ["azure_storage"] # 👈 KEY CHANGE # 👈 KEY CHANGE
 ```
 
-2. Set required env variables
+2. 設定必要的環境變數
 
 ```shell
 # Required Environment Variables for Azure Storage
@@ -1507,13 +1478,13 @@ AZURE_STORAGE_ENDPOINT_SUFFIX="core.usgovcloudapi.net" # The storage endpoint su
 AZURE_AUTHORITY_HOST="https://login.microsoftonline.us" # The Entra ID login authority to use. Needed with Option 2 and Option 3
 ```
 
-3. Start Proxy
+3. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-4. Test it! 
+4. 試試看！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1530,38 +1501,36 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-
-#### Expected Logs on Azure Data Lake Storage
+#### Azure Data Lake Storage 上預期的記錄 {#expected-logs-on-azure-data-lake-storage}
 
 <Image img={require('../../img/azure_blob.png')} />
 
-#### Fields Logged on Azure Data Lake Storage
+#### Azure Data Lake Storage 上記錄的欄位 {#fields-logged-on-azure-data-lake-storage}
 
-[**The standard logging object is logged on Azure Data Lake Storage**](../proxy/logging_spec)
+[**標準 logging 物件會記錄到 Azure Data Lake Storage**](../proxy/logging_spec)
 
+## [Datadog](../observability/datadog) {#datadog}
 
-## [Datadog](../observability/datadog)
+👉 請到這裡使用 [Datadog LLM 可觀測性](../observability/datadog) 搭配 LiteLLM Proxy
 
-👉 Go here for using [Datadog LLM Observability](../observability/datadog) with LiteLLM Proxy
+## [Azure Sentinel](../observability/azure_sentinel) {#azure-sentinel}
 
-## [Azure Sentinel](../observability/azure_sentinel)
+👉 請到這裡使用 [Azure Sentinel](../observability/azure_sentinel) 搭配 LiteLLM Proxy
 
-👉 Go here for using [Azure Sentinel](../observability/azure_sentinel) with LiteLLM Proxy
+## Lunary {#lunary}
 
-
-## Lunary
-#### Step1: Install dependencies and set your environment variables 
-Install the dependencies
+#### 步驟 1：安裝相依套件並設定環境變數 {#step1-install-dependencies-and-set-your-environment-variables}
+安裝依賴項
 ```shell
 uv add litellm lunary
 ```
 
-Get you Lunary public key from from https://app.lunary.ai/settings 
+從 https://app.lunary.ai/settings 取得您的 Lunary 公開金鑰
 ```shell
 export LUNARY_PUBLIC_KEY="<your-public-key>"
 ```
 
-#### Step 2: Create a `config.yaml` and set `lunary` callbacks
+#### 步驟 2：建立 `config.yaml` 並設定 `lunary` callback {#step-2-create-a-configyaml-and-set-lunary-callbacks}
 
 ```yaml
 model_list:
@@ -1573,12 +1542,12 @@ litellm_settings:
   failure_callback: ["lunary"]
 ```
 
-#### Step 3: Start the LiteLLM proxy
+#### 步驟 3：啟動 LiteLLM proxy {#step-3-start-the-litellm-proxy}
 ```shell
 litellm --config config.yaml
 ```
 
-#### Step 4: Make a request
+#### 步驟 4：發出請求 {#step-4-make-a-request}
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -1598,23 +1567,21 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## MLflow
+## MLflow {#mlflow}
 
-👉 Follow the tutorial [here](../observability/mlflow) to get started with mlflow on LiteLLM Proxy Server
+👉 請依照這裡的教學 [here](../observability/mlflow) 開始在 LiteLLM Proxy Server 上使用 mlflow
 
+## 自訂 Callback 類別 [Async] {#custom-callback-class-async}
 
+當您想在 `python` 中執行自訂回呼時，請使用這個
 
-## Custom Callback Class [Async]
+#### 步驟 1 - 建立您的自訂 `litellm` callback 類別 {#step-1---create-your-custom-litellm-callback-class}
 
-Use this when you want to run custom callbacks in `python`
+我們為此使用 `litellm.integrations.custom_logger`，**關於 litellm 自訂回呼的更多詳細資訊 [請見這裡](https://docs.litellm.ai/docs/observability/custom_callback)**
 
-#### Step 1 - Create your custom `litellm` callback class
+在 python 檔案中定義您的自訂回呼類別。
 
-We use `litellm.integrations.custom_logger` for this, **more details about litellm custom callbacks [here](https://docs.litellm.ai/docs/observability/custom_callback)**
-
-Define your custom callback class in a python file.
-
-Here's an example custom logger for tracking `key, user, model, prompt, response, tokens, cost`. We create a file called `custom_callbacks.py` and initialize `proxy_handler_instance` 
+這裡有一個用於追蹤 `key, user, model, prompt, response, tokens, cost` 的自訂記錄器範例。我們建立一個名為 `custom_callbacks.py` 的檔案並初始化 `proxy_handler_instance` 
 
 ```python
 from litellm.integrations.custom_logger import CustomLogger
@@ -1707,15 +1674,15 @@ proxy_handler_instance = MyCustomHandler()
 # Set litellm.callbacks = [proxy_handler_instance] on the proxy
 ```
 
-#### Step 2 - Pass your custom callback class in `config.yaml`
+#### 步驟 2 - 在 `config.yaml` 中傳入您的自訂 callback 類別 {#step-2---pass-your-custom-callback-class-in-configyaml}
 
-We pass the custom callback class defined in **Step1** to the config.yaml. 
-Set `callbacks` to `python_filename.logger_instance_name`
+我們將 **Step1** 中定義的自訂回呼類別傳遞給 config.yaml。  
+將 `callbacks` 設為 `python_filename.logger_instance_name`
 
-In the config below, we pass
+在下面的設定中，我們傳遞：
 
 - python_filename: `custom_callbacks.py`
-- logger_instance_name: `proxy_handler_instance`. This is defined in Step 1
+- logger_instance_name: `proxy_handler_instance`。這是在 Step 1 中定義的
 
 `callbacks: custom_callbacks.proxy_handler_instance`
 
@@ -1731,20 +1698,20 @@ litellm_settings:
 ```
 
 :::warning
-The dotted path has to name the instance created in Step 1 (`proxy_handler_instance = MyCustomHandler()`), not the class. Name the class and the proxy fails config load with an error naming the entry and what it resolved to, since only `CustomLogger` instances are dispatched. On versions before that check, a class-valued entry started clean and never ran, with no error and no log line
+點狀路徑必須指向步驟 1 中建立的 instance（`proxy_handler_instance = MyCustomHandler()`），而不是 class。若命名為 class，proxy 會在載入設定時失敗，並以錯誤指出該項目及其解析結果，因為只有 `CustomLogger` instances 會被 dispatch。在此檢查之前的版本中，指向 class 的項目會正常啟動但永遠不會執行，且沒有任何錯誤或 log 行
 :::
 
-#### Step 2b - Loading Custom Callbacks from S3/GCS (Alternative)
+#### 步驟 2b - 從 S3/GCS 載入自訂 Callback（替代方式） {#step-2b---loading-custom-callbacks-from-s3gcs-alternative}
 
-Instead of using local Python files, you can load custom callbacks directly from S3 or GCS buckets. This is useful for centralized callback management or when deploying in containerized environments.
+您也可以不使用本機 Python 檔案，而是直接從 S3 或 GCS bucket 載入自訂回呼。這對於集中管理回呼，或在容器化環境中部署時很有用。
 
-**URL Format:**
+**URL 格式：**
 - **S3**: `s3://bucket-name/module_name.instance_name`
 - **GCS**: `gcs://bucket-name/module_name.instance_name`
 
-**Example - Loading from S3:**
+**範例 - 從 S3 載入：**
 
-Let's say you have a file `custom_callbacks.py` stored in your S3 bucket `litellm-proxy` with the following content:
+假設您有一個檔案 `custom_callbacks.py`，儲存在您的 S3 bucket `litellm-proxy` 中，內容如下：
 
 ```python
 # custom_callbacks.py (stored in S3)
@@ -1764,7 +1731,7 @@ class MyCustomHandler(CustomLogger):
 custom_handler = MyCustomHandler()
 ```
 
-**Configuration:**
+**設定：**
 
 ```yaml
 model_list:
@@ -1776,7 +1743,7 @@ litellm_settings:
   callbacks: ["s3://litellm-proxy/custom_callbacks.custom_handler"]
 ```
 
-**Example - Loading from GCS:**
+**範例 - 從 GCS 載入：**
 
 ```yaml
 model_list:
@@ -1788,29 +1755,29 @@ litellm_settings:
   callbacks: ["gcs://my-gcs-bucket/custom_callbacks.custom_handler"]
 ```
 
-**How it works:**
-1. LiteLLM detects the S3/GCS URL prefix
-2. Downloads the Python file to a temporary location
-3. Loads the module and extracts the specified instance
-4. Cleans up the temporary file
-5. Uses the callback instance for logging
+**運作方式：**
+1. LiteLLM 偵測 S3/GCS URL 前綴
+2. 將 Python 檔下載到暫存位置
+3. 載入模組並擷取指定的實例
+4. 清理暫存檔案
+5. 使用該回呼實例進行記錄
 
-This approach allows you to:
-- Centrally manage callback files across multiple proxy instances
-- Share callbacks across different environments
-- Version control callback files in cloud storage
+這種做法可讓您：
+- 在多個 proxy 實例之間集中管理回呼檔案
+- 在不同環境之間共用回呼
+- 在雲端儲存空間中為回呼檔案進行版本控制
 
-#### Step 2c - Mounting Custom Callbacks in Helm/Kubernetes (Alternative)
+#### 步驟 2c - 在 Helm/Kubernetes 中掛載自訂 Callback（替代方式） {#step-2c---mounting-custom-callbacks-in-helmkubernetes-alternative}
 
-When deploying with Helm or Kubernetes, you can mount custom callback Python files alongside your `config.yaml` using `subPath` to avoid overwriting the config directory.
+在使用 Helm 或 Kubernetes 部署時，您可以使用 `config.yaml`，將自訂回呼 Python 檔與您的 `subPath` 一起掛載，以避免覆蓋 config 目錄。
 
-**The Problem:**
-Mounting a volume to a directory (e.g., `/app/`) would normally hide all existing files in that directory, including your `config.yaml`.
+**問題：**
+將 volume 掛載到某個目錄（例如 `/app/`）通常會隱藏該目錄中所有既有檔案，包括您的 `config.yaml`。
 
-**The Solution:**
-Use `subPath` in your `volumeMounts` to mount individual files without overwriting the entire directory.
+**解決方案：**
+在您的 `subPath` 中使用 `volumeMounts`，即可掛載個別檔案，而不會覆蓋整個目錄。
 
-**Example - Helm values.yaml:**
+**範例 - Helm values.yaml：**
 
 ```yaml
 # values.yaml
@@ -1825,7 +1792,7 @@ volumeMounts:
     subPath: custom_callbacks.py         # Required to avoid overwriting directory
 ```
 
-**Create the ConfigMap with your callback file:**
+**使用您的回呼檔建立 ConfigMap：**
 
 ```yaml
 apiVersion: v1
@@ -1843,22 +1810,22 @@ data:
     proxy_handler_instance = MyCustomHandler()
 ```
 
-**Reference in your config.yaml:**
+**在您的 config.yaml 中參照：**
 
 ```yaml
 litellm_settings:
   callbacks: custom_callbacks.proxy_handler_instance
 ```
 
-**How it works:**
-1. The `subPath` parameter tells Kubernetes to mount only the specific file
-2. This places `custom_callbacks.py` in `/app/` alongside your existing `config.yaml`
-3. LiteLLM automatically finds the callback file in the same directory as the config
-4. No files are overwritten or hidden
+**運作方式：**
+1. `subPath` 參數會告訴 Kubernetes 只掛載特定檔案
+2. 這會將 `custom_callbacks.py` 放到 `/app/`，並與您既有的 `config.yaml` 一起存放
+3. LiteLLM 會自動在與 config 相同的目錄中尋找回呼檔案
+4. 不會覆蓋或隱藏任何檔案
 
-**Note:** You can mount multiple callback files by adding more `volumeMounts` entries, each with its own `subPath`.
+**注意：** 您可以透過新增更多 `volumeMounts` 項目來掛載多個回呼檔案，每個項目都各自帶有自己的 `subPath`。
 
-#### Step 3 - Start proxy + test request
+#### 步驟 3 - 啟動 proxy + 測試請求 {#step-3---start-proxy--test-request}
 
 ```shell
 litellm --config proxy_config.yaml
@@ -1880,7 +1847,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }'
 ```
 
-#### Resulting Log on Proxy
+#### proxy 上產生的記錄 {#resulting-log-on-proxy}
 
 ```shell
 On Success
@@ -1893,9 +1860,9 @@ On Success
     Proxy Metadata: {'user_api_key': None, 'headers': Headers({'host': '0.0.0.0:4000', 'user-agent': 'curl/7.88.1', 'accept': '*/*', 'authorization': "Bearer $LITELLM_API_KEY", 'content-length': '199', 'content-type': 'application/x-www-form-urlencoded'}), 'model_group': '{{openai_small}}', 'deployment': 'gpt-5.6-luna-ModelID-gpt-5.6-luna'}
 ```
 
-#### Logging Proxy Request Object, Header, Url
+#### 記錄 Proxy 請求物件、標頭、URL {#logging-proxy-request-object-header-url}
 
-Here's how you can access the `url`, `headers`, `request body` sent to the proxy for each request
+以下說明如何存取每個請求送往 proxy 的 `url`、`headers`、`request body`
 
 ```python
 class MyCustomHandler(CustomLogger):
@@ -1907,7 +1874,7 @@ class MyCustomHandler(CustomLogger):
         print(proxy_server_request)
 ```
 
-**Expected Output**
+**預期輸出**
 
 ```shell
 {
@@ -1936,9 +1903,9 @@ class MyCustomHandler(CustomLogger):
 }
 ```
 
-#### Logging `model_info` set in config.yaml 
+#### 記錄在 config.yaml 中設定的 `model_info` {#logging-model_info-set-in-configyaml}
 
-Here is how to log the `model_info` set in your proxy `config.yaml`. Information on setting `model_info` on [config.yaml](https://docs.litellm.ai/docs/proxy/configs)
+以下說明如何記錄設定在您的 proxy `model_info` 中的 `config.yaml`。關於在 [config.yaml](https://docs.litellm.ai/docs/proxy/configs) 上設定 `model_info` 的資訊
 
 ```python
 class MyCustomHandler(CustomLogger):
@@ -1950,17 +1917,17 @@ class MyCustomHandler(CustomLogger):
         print(model_info)
 ```
 
-**Expected Output**
+**預期輸出**
 
 ```python
 {'mode': 'embedding', 'input_cost_per_token': 0.002}
 ```
 
-##### Logging responses from proxy
+##### 記錄來自 proxy 的回應 {#logging-responses-from-proxy}
 
-Both `/chat/completions` and `/embeddings` responses are available as `response_obj`
+`/chat/completions` 與 `/embeddings` 回應皆可作為 `response_obj` 取得
 
-**Note: for `/chat/completions`, both `stream=True` and `non stream` responses are available as `response_obj`**
+**注意：對於 `/chat/completions`，`stream=True` 與 `non stream` 回應皆可作為 `response_obj` 取得**
 
 ```python
 class MyCustomHandler(CustomLogger):
@@ -1970,7 +1937,7 @@ class MyCustomHandler(CustomLogger):
 
 ```
 
-**Expected Output /chat/completion [for both `stream` and `non-stream` responses]**
+**預期輸出 /chat/completion [適用於 `stream` 與 `non-stream` 回應]**
 
 ```python
 ModelResponse(
@@ -1997,7 +1964,7 @@ ModelResponse(
 )
 ```
 
-**Expected Output /embeddings**
+**預期輸出 /embeddings**
 
 ```python
 {
@@ -2018,31 +1985,29 @@ ModelResponse(
 }
 ```
 
-## Custom Callback APIs [Async]
+## 自訂 Callback API [Async] {#custom-callback-apis-async}
 
 <Image 
   img={require('../../img/callback_api.png')}
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
-<p style={{textAlign: 'left', color: '#666'}}>Send LiteLLM logs to a custom API endpoint</p>
+<p style={{textAlign: 'left', color: '#666'}}>將 LiteLLM logs 傳送至自訂 API 端點</p>
 
 <EnterpriseFeature />
 
-| Property       | Details                                                                                                                                                    |
+| 屬性       | 詳細資訊                                                                                                                                                    |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Description    | Log LLM Input/Output to a custom API endpoint                                                                                                              |
-| Logged Payload | `List[StandardLoggingPayload]` LiteLLM logs a list of [`StandardLoggingPayload` objects](https://docs.litellm.ai/docs/proxy/logging_spec) to your endpoint |
+| 說明    | 將 LLM 輸入/輸出記錄到自訂 API 端點                                                                                                              |
+| Logged Payload | `List[StandardLoggingPayload]` LiteLLM 會將一份 [`StandardLoggingPayload` 物件](https://docs.litellm.ai/docs/proxy/logging_spec) 清單記錄到您的端點 |
 
+如果您有以下需求，請使用此功能：
 
+- 想使用以非 Python 程式語言撰寫的自訂回呼
+- 希望回呼在不同的微服務上執行
 
-Use this if you:
+#### 使用方式 {#usage-4}
 
-- Want to use custom callbacks written in a non Python programming language
-- Want your callbacks to run on a different microservice
-
-#### Usage
-
-1. Set `success_callback: ["generic_api"]` on litellm config.yaml
+1. 在 litellm config.yaml 上設定 `success_callback: ["generic_api"]`
 
 ```yaml showLineNumbers title="litellm config.yaml"
 model_list:
@@ -2055,12 +2020,12 @@ litellm_settings:
   success_callback: ["generic_api"]
 ```
 
-2. Set Environment Variables for the custom API endpoint
+2. 為自訂 API 端點設定環境變數
 
-| Environment Variable      | Details                                                     | Required             |
+| 環境變數      | 詳細說明                                                     | 必填             |
 | ------------------------- | ----------------------------------------------------------- | -------------------- |
-| `GENERIC_LOGGER_ENDPOINT` | The endpoint + route we should send callback logs to        | Yes                  |
-| `GENERIC_LOGGER_HEADERS`  | Optional: Set headers to be sent to the custom API endpoint | No, this is optional |
+| `GENERIC_LOGGER_ENDPOINT` | 我們應將 callback 記錄傳送到的端點 + 路由        | 是                  |
+| `GENERIC_LOGGER_HEADERS`  | 選填：設定要傳送至自訂 API 端點的標頭 | 否，這是選填 |
 
 ```shell showLineNumbers title=".env"
 GENERIC_LOGGER_ENDPOINT="https://webhook-test.com/30343bc33591bc5e6dc44217ceae3e0a"
@@ -2072,13 +2037,13 @@ GENERIC_LOGGER_HEADERS="Authorization=Bearer <your-api-key>"
 GENERIC_LOGGER_HEADERS="Authorization=Bearer <your-api-key>,X-Custom-Header=custom-header-value"
 ```
 
-3. Start the proxy
+3. 啟動 proxy
 
 ```shell
 litellm --config /path/to/config.yaml
 ```
 
-4. Make a test request
+4. 發送測試請求
 
 ```shell
 curl -i --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2095,14 +2060,12 @@ curl -i --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
+## Langsmith {#langsmith}
 
+1. 在 litellm config.yaml 上設定 `success_callback: ["langsmith"]`
 
-## Langsmith
-
-1. Set `success_callback: ["langsmith"]` on litellm config.yaml
-
-If you're using a custom LangSmith instance, you can set the
-`LANGSMITH_BASE_URL` environment variable to point to your instance.
+如果您使用自訂的 LangSmith 執行個體，可以設定
+`LANGSMITH_BASE_URL` 環境變數以指向您的執行個體。
 
 ```yaml
 litellm_settings:
@@ -2116,13 +2079,13 @@ environment_variables:
 ```
 
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！ 
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2138,13 +2101,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }
 '
 ```
-Expect to see your log on Langfuse
+預期會在 Langfuse 上看到您的記錄
 <Image img={require('../../img/langsmith_new.png')} />
 
+## Arize AI {#arize-ai}
 
-## Arize AI
-
-1. Set `success_callback: ["arize"]` on litellm config.yaml
+1. 在 litellm config.yaml 上設定 `success_callback: ["arize"]`
 
 ```yaml
 model_list:
@@ -2164,13 +2126,13 @@ environment_variables:
     ARIZE_HTTP_ENDPOINT: "https://otlp.arize.com/v1" # OPTIONAL - your custom arize HTTP api endpoint. Set either this or ARIZE_ENDPOINT
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2186,14 +2148,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }
 '
 ```
-Expect to see your logs in Arize.
+預期會在 Arize 中看到您的 logs。
 
+## Langtrace {#langtrace}
 
-## Langtrace
+`langtrace` 回呼會直接將 span 發送至 `https://app.langtrace.ai/api/trace`，並在 `x-api-key` 標頭中帶上 `LANGTRACE_API_KEY`。對於自架的 Langtrace，請將 `LANGTRACE_API_HOST` 設為其基礎 URL（例如 `https://langtrace.example.com`），回呼就會發送至 `<host>/api/trace`。[Langtrace 頁面](../observability/langtrace_integration) 說明了 OpenTelemetry v2 exporter，其改為透過 collector 路由
 
-The `langtrace` callback posts spans straight to `https://app.langtrace.ai/api/trace` with `LANGTRACE_API_KEY` in the `x-api-key` header. For a self-hosted Langtrace, set `LANGTRACE_API_HOST` to its base URL (for example `https://langtrace.example.com`) and the callback posts to `<host>/api/trace`. The [Langtrace page](../observability/langtrace_integration) covers the OpenTelemetry v2 exporter, which routes through a collector instead
-
-1. Set `callbacks: ["langtrace"]` on litellm config.yaml
+1. 在 litellm config.yaml 上設定 `callbacks: ["langtrace"]`
 
 ```yaml
 model_list:
@@ -2210,13 +2171,13 @@ environment_variables:
     LANGTRACE_API_KEY: "141a****"
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2233,19 +2194,19 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-## Galileo
+## Galileo {#galileo}
 
 [BETA]
 
-Log LLM I/O on [www.rungalileo.io](https://www.rungalileo.io/)
+使用 [www.rungalileo.io](https://www.rungalileo.io/) 記錄 LLM I/O
 
 :::info
 
-Beta Integration
+Beta 整合
 
 :::
 
-**Required Env Variables**
+**必要環境變數**
 
 Galileo Cloud (app.galileo.ai):
 
@@ -2265,9 +2226,9 @@ export GALILEO_USERNAME=""
 export GALILEO_PASSWORD=""
 ```
 
-#### Quick Start 
+#### 快速入門 {#quick-start}
 
-1. Add to Config.yaml
+1. 新增至 Config.yaml
 
 ```yaml
 model_list:
@@ -2286,13 +2247,13 @@ litellm_settings:
   success_callback: ["galileo"] # 👈 KEY CHANGE
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！ 
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2309,13 +2270,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-🎉 That's it - Expect to see your Logs on your Galileo Dashboard
+🎉 就這樣 - 預期會在您的 Galileo 儀表板上看到您的記錄
 
-## OpenMeter
+## OpenMeter {#openmeter}
 
-Bill customers according to their LLM API usage with [OpenMeter](../observability/openmeter.md)
+使用 [OpenMeter](../observability/openmeter.md) 根據客戶的 LLM API 用量向其計費
 
-**Required Env Variables**
+**必要環境變數**
 
 ```bash
 # from https://openmeter.cloud
@@ -2323,9 +2284,9 @@ export OPENMETER_API_ENDPOINT="" # defaults to https://openmeter.cloud
 export OPENMETER_API_KEY=""
 ```
 
-##### Quick Start 
+##### 快速入門 {#quick-start-1}
 
-1. Add to Config.yaml
+1. 新增至 Config.yaml
 
 ```yaml
 model_list:
@@ -2339,13 +2300,13 @@ litellm_settings:
   success_callback: ["openmeter"] # 👈 KEY CHANGE
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試！ 
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2364,16 +2325,16 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 <Image img={require('../../img/openmeter_img_2.png')} />
 
-## DynamoDB
+## DynamoDB {#dynamodb}
 
-We will use the `--config` to set 
+我們將使用 `--config` 來設定 
 
 - `litellm.success_callback = ["dynamodb"]` 
 - `litellm.dynamodb_table_name = "your-table-name"`
 
-This will log all successful LLM calls to DynamoDB
+這會將所有成功的 LLM 呼叫記錄到 DynamoDB
 
-**Step 1** Set AWS Credentials in .env
+**步驟 1** 在 .env 中設定 AWS 憑證
 
 ```shell
 AWS_ACCESS_KEY_ID = ""
@@ -2381,7 +2342,7 @@ AWS_SECRET_ACCESS_KEY = ""
 AWS_REGION_NAME = ""
 ```
 
-**Step 2**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 2**：建立 `config.yaml` 檔案並設定 `litellm_settings`：`success_callback`
 
 ```yaml
 model_list:
@@ -2393,15 +2354,15 @@ litellm_settings:
   dynamodb_table_name: your-table-name
 ```
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發送測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2417,9 +2378,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     }'
 ```
 
-Your logs should be available on DynamoDB
+您的記錄應可在 DynamoDB 上取得
 
-#### Data Logged to DynamoDB /chat/completions
+#### 記錄到 DynamoDB 的 /chat/completions 資料 {#data-logged-to-dynamodb-chatcompletions}
 
 ```json
 {
@@ -2459,7 +2420,7 @@ Your logs should be available on DynamoDB
 }
 ```
 
-#### Data logged to DynamoDB /embeddings
+#### 記錄到 DynamoDB 的 /embeddings 資料 {#data-logged-to-dynamodb-embeddings}
 
 ```json
 {
@@ -2490,17 +2451,17 @@ Your logs should be available on DynamoDB
 }
 ```
 
-## Sentry
+## Sentry {#sentry}
 
-If api calls fail (llm/database) you can log those to Sentry: 
+如果 API 請求失敗（llm/database），您可以將它們記錄到 Sentry：
 
-**Step 1** Install Sentry
+**步驟 1** 安裝 Sentry
 
 ```shell
 uv add --upgrade sentry-sdk
 ```
 
-**Step 2**: Save your Sentry_DSN and add `litellm_settings`: `failure_callback`
+**步驟 2**：儲存您的 Sentry_DSN，並新增 `litellm_settings`：`failure_callback`
 
 ```shell
 export SENTRY_DSN="your-sentry-dsn"
@@ -2523,33 +2484,33 @@ general_settings:
   database_url: "my-bad-url" # set a fake url to trigger a sentry exception
 ```
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```
 litellm --test
 ```
 
-## Athina
+## Athina {#athina}
 
-[Athina](https://athina.ai/) allows you to log LLM Input/Output for monitoring, analytics, and observability.
+[Athina](https://athina.ai/) 可讓您記錄 LLM 輸入/輸出，以進行監控、分析與可觀測性。
 
-We will use the `--config` to set `litellm.success_callback = ["athina"]` this will log all successful LLM calls to athina
+我們將使用 `--config` 來設定 `litellm.success_callback = ["athina"]`；這會將所有成功的 LLM 請求記錄到 athina
 
-**Step 1** Set Athina API key
+**步驟 1** 設定 Athina API 金鑰
 
 ```shell
 ATHINA_API_KEY = "your-athina-api-key"
 ```
 
-**Step 2**: Create a `config.yaml` file and set `litellm_settings`: `success_callback`
+**步驟 2**：建立 `config.yaml` 檔案，並設定 `litellm_settings`：`success_callback`
 
 ```yaml
 model_list:
@@ -2560,15 +2521,15 @@ litellm_settings:
   success_callback: ["athina"]
 ```
 
-**Step 3**: Start the proxy, make a test request
+**步驟 3**：啟動 proxy，發出測試請求
 
-Start proxy
+啟動 proxy
 
 ```shell
 litellm --config config.yaml --debug
 ```
 
-Test Request
+測試請求
 
 ```
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -2583,7 +2544,6 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     ]
     }'
 ```
-
 
 {/* ## (BETA) Moderation with Azure Content Safety
 

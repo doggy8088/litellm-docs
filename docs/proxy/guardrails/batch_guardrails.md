@@ -1,12 +1,12 @@
-# Batch API Guardrails
+# 批次 API 防護欄 {#batch-api-guardrails}
 
-Guard the records inside a batch input file, so a batch job cannot move content past a guardrail that would have blocked the same content on `/chat/completions`
+保護批次輸入檔中的記錄，這樣批次作業就不會把內容送過原本會在 `/chat/completions` 阻擋相同內容的防護欄。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-A batch job is submitted in two steps. You upload a `.jsonl` file to `/v1/files` with `purpose=batch`, then create the job against the file id. The records only ever execute at the provider, so the upload is the one moment LiteLLM holds their content.
+批次作業分兩步提交。您先使用 `purpose=batch` 將 `.jsonl` 檔案上傳到 `/v1/files`，然後再根據檔案 id 建立作業。記錄只會在提供者端執行，因此上傳就是 LiteLLM 持有其內容的唯一時刻。
 
-That is where guardrails run. Each record is scanned on its own, under the call type its `url` names, so a record targeting `/v1/chat/completions` is checked exactly as the equivalent chat request would be:
+防護欄就在這裡執行。每筆記錄都會依其 `url` 所命名的呼叫類型單獨掃描，因此針對 `/v1/chat/completions` 的記錄會以與對應 chat 請求完全相同的方式進行檢查：
 
 ```
 POST /v1/files  (purpose=batch)
@@ -24,11 +24,11 @@ POST /v1/files  (purpose=batch)
       Provider receives the remaining records
 ```
 
-One offending record does not reject the file. A batch job routinely holds thousands of rows, so rejecting all of them because of one is rarely what you want.
+單一有問題的記錄不會使整個檔案失敗。批次作業通常包含成千上萬列，因此因為其中一列就讓全部失敗，通常不是您想要的結果。
 
-## Setup
+## 設定 {#setup}
 
-Nothing to turn on. Any guardrail that runs on `pre_call` is applied to batch uploads:
+不需要開啟任何功能。任何在 `pre_call` 上執行的防護欄都會套用到批次上傳：
 
 ```yaml
 model_list:
@@ -49,15 +49,15 @@ files_settings:
     api_key: os.environ/OPENAI_API_KEY
 ```
 
-## What happens to each record
+## 每筆記錄會發生什麼事 {#what-happens-to-each-record}
 
-A guardrail that rewrites content, such as PII masking, has its rewrite applied and the record is submitted in that form. A guardrail that blocks means the record is left out of the file that reaches the provider, and the rest of the job continues.
+會改寫內容的防護欄，例如 PII 遮罩，會套用其改寫結果，並以該形式提交記錄。會封鎖的防護欄則表示該記錄不會納入送往提供者的檔案中，而其餘作業會繼續。
 
-Records the guardrails did not object to are passed through as written, byte for byte, so enabling a guardrail does not reformat the rest of your file.
+防護欄未反對的記錄會原樣傳遞，逐位元組不變，因此啟用防護欄不會重新格式化檔案中的其他內容。
 
-## The upload response
+## 上傳回應 {#the-upload-response}
 
-The response is the usual file object with one extra field, `litellm_batch_guardrail`, present only when a guardrail changed something:
+回應是一般的檔案物件，外加一個額外欄位 `litellm_batch_guardrail`，僅在防護欄變更了某些內容時才會出現：
 
 ```bash
 curl -sS http://localhost:4000/v1/files \
@@ -83,32 +83,32 @@ curl -sS http://localhost:4000/v1/files \
 }
 ```
 
-`submitted_records` is how many reached the provider. Each entry in `modified_records` identifies the record by both its `custom_id` and its 1-based `line` in the file you uploaded, so you can reconcile against your source either way.
+`submitted_records` 是實際送達提供者的數量。`modified_records` 中的每個項目都會以 `custom_id` 及其在您上傳的檔案中以 1 為起始的 `line` 來識別該記錄，因此無論哪一種方式，您都可以與原始來源對照。
 
-`action` is `redacted` when the record was submitted with a guardrail's rewrite applied, and `dropped` when it was left out.
+`action` 在記錄套用防護欄的改寫後提交時為 `redacted`，而在該記錄被排除時為 `dropped`。
 
-`guardrail` names which guardrail dropped a record, when it identified itself. It deliberately reports the guardrail rather than a reason: a guardrail refusing content and a guardrail that could not be reached under its fail-closed default raise the same way, so the two cannot be told apart at this point. The name tells you what to go and check.
+`guardrail` 會說明是哪個防護欄刪除了記錄，前提是它有自行標識名稱。它刻意回報的是防護欄，而不是原因：防護欄拒絕內容，以及在其 fail-closed 預設下無法連線的防護欄，會以相同方式拋出，因此此時無法分辨兩者。名稱會告訴您接下來該檢查什麼。
 
-The same outcome is written to the proxy logs and to the request metadata that logging callbacks read, so a dropped record is visible server side and not only to the caller.
+相同結果也會寫入代理伺服器記錄以及記錄回呼所讀取的請求中繼資料，因此被刪除的記錄在伺服器端可見，而不僅僅是對呼叫端可見。
 
-## When the upload is refused
+## 當上傳被拒絕時 {#when-the-upload-is-refused}
 
-Four cases still fail the whole upload rather than dropping a record.
+仍有四種情況會讓整個上傳失敗，而不是只刪除單筆記錄。
 
-If every record is blocked there is nothing left to submit, so the upload returns 400 rather than creating an empty job.
+如果每筆記錄都被阻擋，就沒有任何內容可提交，因此上傳會回傳 400，而不是建立空白作業。
 
-If a guardrail cannot be reached, or fails in a way that is not a decision about the content, the upload returns 400 carrying that guardrail's own status. Dropping a record that was never actually inspected would silently cost you data, so the file is refused instead. This covers a guardrail configured to fail closed whose backend is down, which is otherwise easy to mistake for a policy block, since many integrations report both the same way.
+如果防護欄無法連線，或以非內容判定的方式失敗，上傳會回傳 400，並帶有該防護欄自己的狀態。若刪除一筆其實從未被檢查的記錄，會讓您在不知情下遺失資料，因此系統會改為拒絕該檔案。這包含配置為 fail closed、且其後端已離線的防護欄；這很容易被誤認為是政策封鎖，因為許多整合都會以相同方式回報兩者。
 
-If a guardrail is configured to route sensitive content to a different model, a record that trips it returns 400 naming the line. Every record of a batch file is submitted to one provider, so there is no way to send that one record elsewhere. Send it outside the batch.
+如果防護欄設定為將敏感內容路由到不同模型，觸發它的記錄會回傳 400，並標示該列。批次檔案中的每筆記錄都會提交給同一個提供者，因此沒有辦法把那一筆記錄送到別處。請在批次之外送出。
 
-If a record's `body` is not an object, or carries no `messages`, `prompt` or `input`, there is nothing for a guardrail to read and the upload returns 400 naming the line. Records are also checked before this for the usual batch file requirements, so a line that does not parse or is missing `custom_id`, `method`, `url` or `body` is rejected earlier with its own message.
+如果記錄的 `body` 不是物件，或沒有 `messages`、`prompt` 或 `input`，就沒有任何內容可供防護欄讀取，上傳會回傳 400，並標示該列。記錄在此之前也會先依一般批次檔案需求進行檢查，因此無法解析或缺少 `custom_id`、`method`、`url` 或 `body` 的列，會更早以其自身訊息被拒絕。
 
-## Limits
+## 限制 {#limits}
 
-Only guardrails that run on `pre_call` see batch records. A guardrail configured for `post_call` alone does not participate, since there is no response to inspect at upload time.
+只有在 `pre_call` 上執行的防護欄才會看到批次記錄。僅配置給 `post_call` 的防護欄不會參與，因為在上傳時沒有可檢查的回應。
 
-A `guardrails` key inside a record's own body is ignored when choosing what to run, so a record cannot opt out of what your key or team selected. It is preserved in the record that reaches the provider.
+記錄自身內容中的 `guardrails` 金鑰在決定要執行什麼時會被忽略，因此記錄不能規避您或團隊所選擇的內容。它會保留在送往提供者的記錄中。
 
-Guardrails attached to a specific deployment through `litellm_params` are applied after routing, which batch uploads do not go through, so those are not applied to batch records.
+透過 `litellm_params` 附加到特定部署的防護欄，會在路由之後才套用，而批次上傳不會經過路由，因此那些防護欄不會套用到批次記錄。
 
-Records are scanned in bounded batches rather than all at once, and a very large file with a network-backed guardrail will take correspondingly longer to upload. There is no cap on how many records will be scanned.
+記錄會分批、以有限範圍進行掃描，而不是一次全部掃描；若檔案很大且防護欄依賴網路，對應的上傳時間也會更長。掃描記錄數量沒有上限。

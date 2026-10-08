@@ -1,25 +1,25 @@
-# TypeSafe AI (Jev)
+# TypeSafe AI (Jev) {#typesafe-ai-jev}
 
-Pass-through endpoint for the [TypeSafe AI](https://docs.typesafe.ai/api) System One API. Jev returns typed decisions (a choice, a score, or a yes/no probability) instead of text, so it is called through its own evaluate endpoint rather than `/chat/completions`.
+[TypeSafe AI](https://docs.typesafe.ai/api) System One API 的轉送端點。Jev 回傳的是有型別的決策（選項、分數，或是是否的機率），而不是文字，因此它會透過自己的 evaluate 端點呼叫，而不是 `/chat/completions`。
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |-------|-------|-------|
-| Cost Tracking | ✅ | Priced from the response `usage` and the model registry |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ❌ | Not offered by the TypeSafe API |
+| 成本追蹤 | ✅ | 根據回應 `usage` 和模型註冊表計費 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 終端使用者追蹤 | ❌ | [如果您需要這個功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ❌ | TypeSafe API 不提供 |
 
-Just replace `https://api.typesafe.ai` with `LITELLM_PROXY_BASE_URL/typesafe` 🚀
+只要將 `https://api.typesafe.ai` 替換為 `LITELLM_PROXY_BASE_URL/typesafe` 🚀
 
-LiteLLM adds the TypeSafe API key from the proxy environment, so clients only need a LiteLLM virtual key.
+LiteLLM 會從代理環境中加入 TypeSafe API 金鑰，因此用戶端只需要一個 LiteLLM 虛擬金鑰。
 
-To let JEV pick the model for a completion, configure the [JEV Auto Router](/docs/auto_router/setup#jev-classifier-typesafe-ai) with `classifier_type: jev` and `jev_classifier_config`. It uses one System One Choice question for the configured tiers, then dispatches to the selected completion model. See [routing context, fallback and accounting](/docs/proxy/auto_routing#jev-classifier) and the [measured classifier comparison](/blog/jev-auto-router-benchmark)
+若要讓 JEV 為 completion 選擇模型，請使用 `classifier_type: jev` 和 `jev_classifier_config` 設定 [JEV Auto Router](/docs/auto_router/setup#jev-classifier-typesafe-ai)。它會針對已設定的層級使用一個 System One Choice 問題，然後將請求分派到所選的 completion 模型。請參閱 [路由脈絡、備援與計費](/docs/proxy/auto_routing#jev-classifier) 以及 [已量測的分類器比較](/blog/jev-auto-router-benchmark)
 
-The [OSS classifier guide](/docs/auto_router/decision_classifiers) documents the canonical `classifier_type: oss_classifier` and `opensource_classifier_config.provider: jev` names, which require a gateway build containing [backend #43626](https://github.com/BerriAI/litellm/pull/43626). Both configurations use the TypeSafe transport; the new backend continues to accept the existing Jev names.
+[OSS 分類器指南](/docs/auto_router/decision_classifiers) 文件說明了標準的 `classifier_type: oss_classifier` 和 `opensource_classifier_config.provider: jev` 名稱，這需要包含 [backend #43626](https://github.com/BerriAI/litellm/pull/43626) 的 gateway build。兩種設定都使用 TypeSafe 傳輸；新 backend 會繼續接受既有的 Jev 名稱。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-1. Set the TypeSafe API key in the proxy environment
+1. 在 proxy 環境中設定 TypeSafe API 金鑰
 
 ```bash showLineNumbers
 export TYPESAFE_API_KEY=""
@@ -27,7 +27,7 @@ export TYPESAFE_API_KEY=""
 export TYPESAFE_API_BASE="https://api.typesafe.ai"
 ```
 
-2. Start the proxy
+2. 啟動 proxy
 
 ```bash showLineNumbers
 litellm
@@ -35,7 +35,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Ask Jev a question through the proxy
+3. 透過 proxy 向 Jev 提出問題
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/typesafe/v1/systemone' \
@@ -58,7 +58,7 @@ curl -X POST 'http://0.0.0.0:4000/typesafe/v1/systemone' \
 }'
 ```
 
-The response is TypeSafe's own, unchanged:
+回應是 TypeSafe 原生、未經變更的內容：
 
 ```json
 {
@@ -75,20 +75,20 @@ The response is TypeSafe's own, unchanged:
 }
 ```
 
-Any path under `/typesafe/` is forwarded, so `GET /typesafe/v1/models` lists the available models. [See the TypeSafe API reference](https://docs.typesafe.ai/api)
+`/typesafe/` 底下的任何路徑都會被轉送，因此 `GET /typesafe/v1/models` 會列出可用模型。[請參閱 TypeSafe API 參考文件](https://docs.typesafe.ai/api)
 
-## Try it in the Admin UI
+## 在管理介面中試試看 {#try-it-in-the-admin-ui}
 
-The Playground has a **System One** tab (Beta) for sending Jev requests without curl. Open `LITELLM_PROXY_BASE_URL/ui/?page=llm-playground&tab=system-one`, or go to **Playground** and pick **System One**. The proxy still needs `TYPESAFE_API_KEY`; without it the upstream error shows inline
+Playground 有一個 **System One** 分頁（Beta），可用來不透過 curl 傳送 Jev 請求。開啟 `LITELLM_PROXY_BASE_URL/ui/?page=llm-playground&tab=system-one`，或前往 **Playground** 並選擇 **System One**。proxy 仍需要 `TYPESAFE_API_KEY`；若沒有它，上游錯誤會直接顯示在內嵌位置
 
-The left side is a JSON editor preloaded with an issue triage example that asks one question of each type: `area` (choice), `has_repro_steps` (noul) and `severity` (score). Edit it or paste your own request; **Reset example** restores it and **Format JSON** reindents it. The `model` is set in the JSON (for example `jev-latest`) rather than picked from the model list
+左側是 JSON 編輯器，預先載入一個事件分流範例，會針對每種類型各問一個問題：`area`（選項）、`has_repro_steps`（noul）以及 `severity`（分數）。您可以編輯它或貼上自己的請求；**重設範例** 會還原內容，而 **Format JSON** 會重新縮排。`model` 是在 JSON 中設定的（例如 `jev-latest`），而不是從模型清單中挑選
 
-The request is checked as you type. `state` and a non-empty `questions` object are required, every question needs `instructions`, choice `criteria` must map 1 to 255 labels to descriptions, noul `criteria` is optional with `true` and `false` descriptions, and score `criteria` is a list of at least 2 levels. Errors are listed by JSON path and disable **Send**; more than 10 score levels only shows a warning. Fields outside these are forwarded to TypeSafe unchanged
+請求會在您輸入時進行檢查。需要 `state` 與非空的 `questions` 物件，每個問題都需要 `instructions`，選項 `criteria` 必須對應 1 到 255 個標籤與說明，noul `criteria` 為選用，且需有 `true` 與 `false` 說明，而分數 `criteria` 則必須是至少 2 個層級的清單。錯誤會依 JSON 路徑列出，並停用 **送出**；超過 10 個分數層級只會顯示警告。這些之外的欄位都會原樣轉送至 TypeSafe
 
-**Virtual Key Source** picks the key: **Current UI Session** uses your dashboard login, and **Virtual Key** lets you paste one so the call is attributed and budgeted against that key. **Send** posts to `/typesafe/v1/systemone`, the same endpoint as the curl above, so spend and logs land the same way
+**虛擬金鑰來源** 會決定使用哪個金鑰：**目前 UI 工作階段** 會使用您的儀表板登入，而 **虛擬金鑰** 讓您貼上一個金鑰，使這次呼叫可歸屬並依該金鑰計入預算。**送出** 會將請求 POST 到 `/typesafe/v1/systemone`，也就是與上方 curl 相同的端點，因此支出與記錄也會以相同方式落地
 
-The right side shows a **Question breakdown** of the state and each question's criteria, and once the call returns, the answers above it: the picked choice with confidence and a probability bar per option, the noul probability, and the score with its legend and per-level probabilities. The model TypeSafe reports, input and output tokens, latency and the raw JSON response are shown under the answers. Auth and upstream errors, such as a 401 for an unknown key, show inline
+右側會顯示狀態與每個問題準則的 **問題拆解**，而在呼叫返回後，則會顯示上方答案：選定的選項與信心值及每個選項的機率條，noul 機率，以及帶圖例與每層機率的分數。TypeSafe 回報的模型、輸入與輸出 token、延遲時間，以及原始 JSON 回應都會顯示在答案下方。驗證與上游錯誤，例如未知金鑰導致的 401，會直接顯示
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-Spend uses `usage.input_tokens` and `usage.output_tokens` from the response and the `typesafe/<model>` entry in LiteLLM's model registry (`jev-1.13.0`, `jev-latest`, `jev-preview`). The request is logged under the versioned model TypeSafe reports, for example `typesafe/jev-1.13.0`, even when the request used an alias.
+支出會使用回應中的 `usage.input_tokens` 與 `usage.output_tokens`，以及 LiteLLM 模型註冊表中的 `typesafe/<model>` 項目（`jev-1.13.0`、`jev-latest`、`jev-preview`）。請求會以 TypeSafe 回報的版本化模型記錄，例如 `typesafe/jev-1.13.0`，即使該請求使用的是別名。

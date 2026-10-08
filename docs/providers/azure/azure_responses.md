@@ -2,25 +2,25 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure Responses API
+# Azure Responses API {#azure-responses-api}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure OpenAI Responses API |
-| `custom_llm_provider` on LiteLLM | `azure/` |
-| Supported Operations | `/v1/responses`|
+| 說明 | Azure OpenAI Responses API |
+| `custom_llm_provider` 在 LiteLLM 上 | `azure/` |
+| 支援的操作 | `/v1/responses`|
 | Azure OpenAI Responses API | [Azure OpenAI Responses API ↗](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/responses?tabs=python-secure) |
-| Cost Tracking, Logging Support | ✅ LiteLLM will log, track cost for Responses API Requests |
-| Supported OpenAI Params | ✅ All OpenAI params are supported, [See here](https://github.com/BerriAI/litellm/blob/0717369ae6969882d149933da48eeb8ab0e691bd/litellm/llms/openai/responses/transformation.py#L23) |
+| 成本追蹤、記錄支援 | ✅ LiteLLM 會記錄、追蹤 Responses API 請求的成本 |
+| 支援的 OpenAI 參數 | ✅ 支援所有 OpenAI 參數，[請見此處](https://github.com/BerriAI/litellm/blob/0717369ae6969882d149933da48eeb8ab0e691bd/litellm/llms/openai/responses/transformation.py#L23) |
 
-## Usage
+## 用法 {#usage}
 
-## Create a model response
+## 建立模型回應 {#create-a-model-response}
 
 <Tabs>
 <TabItem value="litellm-sdk" label="LiteLLM SDK">
 
-#### Non-streaming
+#### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Azure Responses API"
 import litellm
@@ -38,7 +38,7 @@ response = litellm.responses(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming}
 ```python showLineNumbers title="Azure Responses API"
 import litellm
 
@@ -57,9 +57,9 @@ for event in response:
 ```
 
 </TabItem>
-<TabItem value="proxy" label="OpenAI SDK with LiteLLM Proxy">
+<TabItem value="proxy" label="使用 LiteLLM Proxy 的 OpenAI SDK">
 
-First, add this to your litellm proxy config.yaml:
+首先，將以下內容加入您的 litellm proxy config.yaml：
 ```yaml showLineNumbers title="Azure Responses API"
 model_list:
   - model_name: o1-pro
@@ -70,16 +70,16 @@ model_list:
       api_version: 2023-03-15-preview
 ```
 
-Start your LiteLLM proxy:
+啟動您的 LiteLLM proxy：
 ```bash
 litellm --config /path/to/config.yaml
 
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Then use the OpenAI SDK pointed to your proxy:
+接著使用指向您 proxy 的 OpenAI SDK：
 
-#### Non-streaming
+#### 非串流 {#non-streaming-1}
 ```python showLineNumbers
 from openai import OpenAI
 
@@ -98,7 +98,7 @@ response = client.responses.create(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming-1}
 ```python showLineNumbers
 from openai import OpenAI
 
@@ -122,16 +122,16 @@ for event in response:
 </TabItem>
 </Tabs>
 
-## Azure Codex Models
+## Azure Codex 模型 {#azure-codex-models}
 
-Codex models use Azure's new [/v1/preview API](https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle?tabs=key#next-generation-api) which provides ongoing access to the latest features with no need to update `api-version` each month. 
+Codex 模型使用 Azure 的新 [/v1/preview API](https://learn.microsoft.com/en-us/azure/ai-services/openai/api-version-lifecycle?tabs=key#next-generation-api)，可持續存取最新功能，且無需每月更新 `api-version`。 
 
-**LiteLLM will send your requests to the `/v1/preview` endpoint when you set `api_version="preview"`.**
+**當您設定 `api_version="preview"` 時，LiteLLM 會將您的請求傳送到 `/v1/preview` 端點。**
 
 <Tabs>
 <TabItem value="litellm-sdk" label="LiteLLM SDK">
 
-#### Non-streaming
+#### 非串流 {#non-streaming-2}
 
 ```python showLineNumbers title="Azure Codex Models"
 import litellm
@@ -149,7 +149,7 @@ response = litellm.responses(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming-2}
 ```python showLineNumbers title="Azure Codex Models"
 import litellm
 
@@ -168,9 +168,9 @@ for event in response:
 ```
 
 </TabItem>
-<TabItem value="proxy" label="OpenAI SDK with LiteLLM Proxy">
+<TabItem value="proxy" label="使用 LiteLLM Proxy 的 OpenAI SDK">
 
-First, add this to your litellm proxy config.yaml:
+首先，將以下內容加入您的 litellm proxy config.yaml：
 ```yaml showLineNumbers title="Azure Codex Models"
 model_list:
   - model_name: codex-mini
@@ -181,16 +181,16 @@ model_list:
       api_version: preview # 👈 key difference
 ```
 
-Start your LiteLLM proxy:
+啟動您的 LiteLLM proxy：
 ```bash
 litellm --config /path/to/config.yaml
 
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Then use the OpenAI SDK pointed to your proxy:
+接著使用指向您 proxy 的 OpenAI SDK：
 
-#### Non-streaming
+#### 非串流 {#non-streaming-3}
 ```python showLineNumbers
 from openai import OpenAI
 
@@ -209,7 +209,7 @@ response = client.responses.create(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming-3}
 ```python showLineNumbers
 from openai import OpenAI
 
@@ -233,11 +233,9 @@ for event in response:
 </TabItem>
 </Tabs>
 
+## 透過 `/chat/completions` 呼叫 {#calling-via-chatcompletions}
 
-## Calling via `/chat/completions`
-
-You can also call the Azure Responses API via the `/chat/completions` endpoint.
-
+您也可以透過 `/chat/completions` 端點呼叫 Azure Responses API。
 
 <Tabs>
 <TabItem value="litellm-sdk" label="LiteLLM SDK">
@@ -258,9 +256,9 @@ response = completion(
 print(response)
 ```
 </TabItem>
-<TabItem value="proxy" label="OpenAI SDK with LiteLLM Proxy">
+<TabItem value="proxy" label="使用 LiteLLM Proxy 的 OpenAI SDK">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml showLineNumbers
 model_list:
@@ -272,14 +270,14 @@ model_list:
       api_version: 2023-03-15-preview
 ```
 
-2. Start LiteLLM proxy
+2. 啟動 LiteLLM proxy
 ```bash
 litellm --config /path/to/config.yaml
 
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試看看！
 
 ```bash
 curl http://localhost:4000/v1/chat/completions \

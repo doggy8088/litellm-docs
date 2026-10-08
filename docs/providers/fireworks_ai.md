@@ -1,41 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Fireworks AI
-
+# Fireworks AI {#fireworks-ai}
 
 :::info
-**We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when sending completion requests**
+**我們支援所有 Fireworks AI 模型，只要在傳送 completion 請求時將 `fireworks_ai/` 設為前綴即可**
 :::
 
 :::tip
-New to running Fireworks AI behind LiteLLM? [Getting Started with Fireworks AI on LiteLLM](/blog/fireworks-getting-started) goes from an empty directory to a working request, then adds a second model and a fallback.
+剛開始使用 LiteLLM 在 Fireworks AI 背後執行？[在 LiteLLM 上開始使用 Fireworks AI](/blog/fireworks-getting-started) 會從空目錄開始，到可運作的請求，然後再新增第二個模型與一個備援。
 :::
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | The fastest and most efficient inference engine to build production-ready, compound AI systems. |
-| Provider Route on LiteLLM | `fireworks_ai/` |
-| Provider Doc | [Fireworks AI ↗](https://docs.fireworks.ai/getting-started/introduction) |
-| Supported OpenAI Endpoints | `/chat/completions`, `/responses`, `/embeddings`, `/completions`, `/audio/transcriptions`, `/rerank` |
+| 說明 | 用於建置可直接投入正式環境的複合式 AI 系統的最快且最有效率的推論引擎。 |
+| LiteLLM 上的提供者路由 | `fireworks_ai/` |
+| 提供者文件 | [Fireworks AI ↗](https://docs.fireworks.ai/getting-started/introduction) |
+| 支援的 OpenAI 端點 | `/chat/completions`, `/responses`, `/embeddings`, `/completions`, `/audio/transcriptions`, `/rerank` |
 
+## 概覽 {#overview}
 
-## Overview
+本指南說明如何將 LiteLLM 與 Fireworks AI 整合。您可以透過三種主要方式連接到 Fireworks AI：
 
-This guide explains how to integrate LiteLLM with Fireworks AI. You can connect to Fireworks AI in three main ways:
+1. <b> 使用 Fireworks AI 無伺服器模型 </b> – 可輕鬆連接到由 Fireworks 管理的模型。
+2. <b> 連接到您自己的 Fireworks 帳戶中的模型 </b> – 存取託管於您 Fireworks 帳戶內的模型。
+3. <b> 透過直接路由部署連接 </b> – 以更彈性、可自訂的方式連接到特定 Fireworks 執行個體。
 
-1. <b> Using Fireworks AI serverless models </b> – Easy connection to Fireworks-managed models.
-2. <b> Connecting to a model in your own Fireworks account </b> – Access models that are hosted within your Fireworks account.
-3. <b> Connecting via a direct-route deployment </b> – A more flexible, customizable connection to a specific Fireworks instance.
-
-
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['FIREWORKS_AI_API_KEY']
 ```
 
-## Sample Usage - Serverless Models
+## 範例用法 - 無伺服器模型 {#sample-usage---serverless-models}
 ```python
 from litellm import completion
 import os
@@ -50,9 +47,9 @@ response = completion(
 print(response)
 ```
 
-A bare serverless slug like `glm-5p3-flash` is expanded to `accounts/fireworks/models/glm-5p3-flash` for you, so you can pass either the short slug or the full resource id.
+像 `glm-5p3-flash` 這樣的原始無伺服器 slug，會自動為您展開為 `accounts/fireworks/models/glm-5p3-flash`，因此您可以傳入短 slug 或完整資源 ID。
 
-## Sample Usage - Serverless Models - Streaming
+## 範例用法 - 無伺服器模型 - 串流 {#sample-usage---serverless-models---streaming}
 ```python
 from litellm import completion
 import os
@@ -70,7 +67,7 @@ for chunk in response:
     print(chunk)
 ```
 
-## Sample Usage -  Models in Your Own Fireworks Account 
+## 範例用法 - 您自己的 Fireworks 帳戶中的模型  {#sample-usage----models-in-your-own-fireworks-account}
 ```python
 from litellm import completion
 import os
@@ -85,7 +82,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Direct-Route Deployment
+## 範例用法 - 直接路由部署 {#sample-usage---direct-route-deployment}
 ```python
 from litellm import completion
 import os
@@ -101,12 +98,11 @@ response = completion(
 print(response)
 ```
 
-> **Note:** The above is for the chat interface, if you want to use the text completion interface it's model="text-completion-openai/accounts/fireworks/models/deepseek-v4p1-flash#accounts/gitlab/deployments/2fb7764c"
+> **注意：** 上述內容是針對聊天介面；如果您想使用文字完成介面，則是 model="text-completion-openai/accounts/fireworks/models/deepseek-v4p1-flash#accounts/gitlab/deployments/2fb7764c"
 
+## 範例用法 - 路由器 {#sample-usage---routers}
 
-## Sample Usage - Routers
-
-Fireworks routers are served at `accounts/fireworks/routers/<router-id>` rather than `accounts/fireworks/models/<model-id>`, so a bare slug alone cannot tell LiteLLM which one you mean. Prefix the slug with `routers/` to target a router; LiteLLM expands `routers/<id>` to `accounts/fireworks/routers/<id>`. See the [Fireworks routers docs](https://docs.fireworks.ai/deployments/routers) for the routers available on your account.
+Fireworks 路由器的提供位置是 `accounts/fireworks/routers/<router-id>`，而不是 `accounts/fireworks/models/<model-id>`，因此單靠原始 slug 無法讓 LiteLLM 知道您的意思。請在 slug 前加上 `routers/` 以前往路由器；LiteLLM 會將 `routers/<id>` 展開為 `accounts/fireworks/routers/<id>`。請參閱 [Fireworks 路由器文件](https://docs.fireworks.ai/deployments/routers)，以查看您帳戶可用的路由器。
 
 ```python
 from litellm import completion
@@ -122,23 +118,23 @@ response = completion(
 print(response)
 ```
 
-The full resource id (`fireworks_ai/accounts/fireworks/routers/glm-latest`) is still accepted if you prefer to be explicit. Slugs ending in `-fast` (for example `fireworks_ai/glm-5p3-fast`) are treated as routers even without the `routers/` prefix.
+如果您偏好明確指定，也仍可接受完整資源路徑（`fireworks_ai/accounts/fireworks/routers/glm-latest`）。結尾為 `-fast` 的 slug（例如 `fireworks_ai/glm-5p3-fast`）會被視為路由器，即使沒有 `routers/` 前綴也是如此。
 
-## FireRouter and open-model routers
+## FireRouter 與 open-model 路由器 {#firerouter-and-open-model-routers}
 
-[FireRouter](https://docs.fireworks.ai/nexus/firerouter) is Fireworks' managed router. Instead of pointing at one model, a router ID picks a model for each user turn. Fireworks serves routers under `accounts/fireworks/routers/<id>`, and LiteLLM accepts the short ID or the full resource path:
+[FireRouter](https://docs.fireworks.ai/nexus/firerouter) 是 Fireworks 的代管路由器。路由器 ID 不會指向單一模型，而是會為每次使用者回合挑選一個模型。Fireworks 會在 `accounts/fireworks/routers/<id>` 下提供路由器，而 LiteLLM 接受短 ID 或完整資源路徑：
 
-| Router ID | What it routes across | LiteLLM model |
+| 路由器 ID | 路由範圍 | LiteLLM 模型 |
 | - | - | - |
-| `auto` | Fireworks open models, chosen by Fireworks | `fireworks_ai/auto` |
-| `auto-instant` | Fireworks open models, tuned for the lowest latency | `fireworks_ai/auto-instant` |
-| `firerouter` | Claude Opus or GPT, plus the Fireworks open-model mix | `fireworks_ai/firerouter` |
-| `firerouter/<models>` | Only the models you list, such as `firerouter/opus` or `firerouter/kimi-k3/glm-5p3` | `fireworks_ai/firerouter/kimi-k3/glm-5p3` |
-| any of the above | Same router, spelled out | `fireworks_ai/accounts/fireworks/routers/<id>` |
+| `auto` | 由 Fireworks 挑選的 Fireworks open models | `fireworks_ai/auto` |
+| `auto-instant` | 為最低延遲而調校的 Fireworks open models | `fireworks_ai/auto-instant` |
+| `firerouter` | Claude Opus 或 GPT，加上 Fireworks open-model 混合 | `fireworks_ai/firerouter` |
+| `firerouter/<models>` | 僅限您列出的模型，例如 `firerouter/opus` 或 `firerouter/kimi-k3/glm-5p3` | `fireworks_ai/firerouter/kimi-k3/glm-5p3` |
+| 上述任一項 | 相同路由器，完整寫出 | `fireworks_ai/accounts/fireworks/routers/<id>` |
 
-`auto` and `auto-instant` only use Fireworks open models, so your Fireworks API key is the only credential they need. `firerouter/auto` and `firerouter/auto-instant` behave the same way. See [Example router IDs](https://docs.fireworks.ai/nexus/firerouter#example-router-ids) for more routes
+`auto` 和 `auto-instant` 只使用 Fireworks open models，因此您的 Fireworks API 金鑰是它們唯一需要的憑證。`firerouter/auto` 和 `firerouter/auto-instant` 的運作方式也相同。請參閱 [範例路由器 ID](https://docs.fireworks.ai/nexus/firerouter#example-router-ids) 以取得更多路由
 
-The full resource path works on every LiteLLM version. The short `firerouter` IDs need v1.104.0-rc.1 or later, and the short `auto` and `auto-instant` IDs need v1.105.0 or later. On older versions a short ID is sent as a model path and Fireworks returns a 404, so use the full path there
+完整資源路徑可在每個 LiteLLM 版本上使用。短版 `firerouter` ID 需要 v1.104.0-rc.1 或更新版本，而短版 `auto` 和 `auto-instant` ID 需要 v1.105.0 或更新版本。在較舊版本中，短 ID 會以模型路徑傳送，而 Fireworks 會回傳 404，因此請在那裡使用完整路徑
 
 ```yaml
 model_list:
@@ -159,17 +155,17 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -d '{"model": "auto", "messages": [{"role": "user", "content": "hello"}]}'
 ```
 
-### Which model served the request
+### 哪個模型處理了這個請求 {#which-model-served-the-request}
 
-The proxy returns the `model_name` you configured, such as `auto`, in the response `model` field. On the SDK, a non-streaming `completion()` reports the served model in `response.model`, for example `fireworks_ai/glm-5p3-flash`. A streamed response keeps the requested router ID in `model` and puts the served model in `response._hidden_params["provider_response_model"]`
+proxy 會在回應 `model` 欄位中回傳您設定的 `model_name`，例如 `auto`。在 SDK 上，非串流的 `completion()` 會在 `response.model` 中回報已提供服務的模型，例如 `fireworks_ai/glm-5p3-flash`。串流回應會在 `model` 中保留請求的路由器 ID，並將已提供服務的模型放在 `response._hidden_params["provider_response_model"]` 中
 
-### Closed-model credentials
+### 關閉模型憑證 {#closed-model-credentials}
 
-Fireworks does not resell closed models. When a `firerouter` route includes Claude or GPT, Fireworks calls that provider under your own account, using either [Provider Keys](https://docs.fireworks.ai/nexus/provider-keys) stored on your Fireworks account or an `x-anthropic-api-key` or `x-openai-api-key` header on the request. A header takes precedence over a stored Provider Key
+Fireworks 不會轉售關閉模型。當 `firerouter` 路由包含 Claude 或 GPT 時，Fireworks 會使用您自己的帳戶代表您呼叫該提供者，並使用儲存在您 Fireworks 帳戶上的 [Provider Keys](https://docs.fireworks.ai/nexus/provider-keys) 或請求上的 `x-anthropic-api-key` 或 `x-openai-api-key` 標頭。標頭的優先順序高於已儲存的 Provider Key
 
-If no credential is available for a closed model, FireRouter leaves it out and serves the turn with the other models in the route. For example, `firerouter/opus` without an Anthropic credential is served by Fireworks open models. You get `400 no_credential` instead when you send `x-routing-preference: 1`, which forces the route's closed primary, or when you call a closed model ID directly
+如果沒有可用於關閉模型的憑證，FireRouter 會將它排除，並以路由中的其他模型提供該回合服務。舉例來說，沒有 Anthropic 憑證的 `firerouter/opus` 會由 Fireworks open models 提供服務。當您傳送 `x-routing-preference: 1` 時，您會改收到 `400 no_credential`，這會強制使用該路由的關閉主模型；或者當您直接呼叫關閉模型 ID 時，也會是如此
 
-To send the header from LiteLLM, set it on the deployment with `litellm_params.extra_headers`, or let each client send its own by enabling `forward_client_headers_to_llm_api` globally or per model group
+若要從 LiteLLM 傳送標頭，請使用 `litellm_params.extra_headers` 將其設定在部署上，或透過全域啟用 `forward_client_headers_to_llm_api`，或在每個模型群組上啟用，讓每個用戶端自行傳送
 
 ```yaml
 model_list:
@@ -189,7 +185,7 @@ general_settings:
 #   forward_client_headers_to_llm_api: [firerouter]
 ```
 
-The same headers go through the SDK on `completion()`:
+相同的標頭會透過 `completion()` 上的 SDK 傳遞：
 
 ```python
 from litellm import completion
@@ -201,17 +197,17 @@ response = completion(
 )
 ```
 
-### Routing preference
+### 路由偏好設定 {#routing-preference}
 
-`x-routing-preference` sets how strongly a `firerouter` request favors its primary model or cheaper models, from `1` (max intelligence) to `5` (max savings). The default is `3`. See [Routing Preferences](https://docs.fireworks.ai/nexus/routing-preferences). It travels the same way as the credential headers: `litellm_params.extra_headers` on the deployment, client-supplied when `forward_client_headers_to_llm_api` is on, or `extra_headers` on `completion()`
+`x-routing-preference` 設定 `firerouter` 請求有多強烈地偏好其主模型或較便宜的模型，從 `1`（最高智能）到 `5`（最高節省）。預設值是 `3`。請參閱 [Routing Preferences](https://docs.fireworks.ai/nexus/routing-preferences)。其傳遞方式與憑證標頭相同：在部署上使用 `litellm_params.extra_headers`、在 `forward_client_headers_to_llm_api` 開啟時由用戶端提供，或在 `completion()` 上使用 `extra_headers`
 
-### Cost tracking
+### 成本追蹤 {#cost-tracking}
 
-LiteLLM prices each request off the model Fireworks reports it routed to, so a router has no price of its own. Fireworks-hosted models are billed at Fireworks rates, and closed models (for example a Claude turn) are billed at that provider's own list price. The charges land on two vendor bills, Fireworks for open models and Anthropic or OpenAI for closed ones, but LiteLLM spend logs and budgets add both up under the one model group
+LiteLLM 會根據 Fireworks 回報其路由到的模型來為每個請求定價，因此路由器本身沒有自己的價格。Fireworks 代管的模型會以 Fireworks 的費率計費，而關閉模型（例如 Claude 回合）則會以該提供者自己的標價計費。費用會分別列在兩份供應商帳單上，open models 計入 Fireworks，關閉模型則計入 Anthropic 或 OpenAI，但 LiteLLM 的支出記錄與預算會將它們全部加總到同一個模型群組下
 
-## Usage with LiteLLM Proxy 
+## 搭配 LiteLLM Proxy 使用  {#usage-with-litellm-proxy}
 
-### 1. Set Fireworks AI Models on config.yaml
+### 1. 在 config.yaml 中設定 Fireworks AI 模型 {#1-set-fireworks-ai-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -221,17 +217,16 @@ model_list:
       api_key: "os.environ/FIREWORKS_AI_API_KEY"
 ```
 
-### 2. Start Proxy 
+### 2. 啟動 Proxy  {#2-start-proxy}
 
 ```
 litellm --config config.yaml
 ```
 
-### 3. Test it
-
+### 3. 測試 {#3-test-it}
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -301,9 +296,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Responses API
+## Responses API {#responses-api}
 
-`fireworks_ai/` models on `/v1/responses` go straight to Fireworks' native `https://api.fireworks.ai/inference/v1/responses` endpoint, so server-side features such as MCP tools (`"type": "mcp"`), `previous_response_id`, and reasoning output items work the same as they do against Fireworks directly
+`fireworks_ai/` 在 `/v1/responses` 上的模型會直接送往 Fireworks 的原生 `https://api.fireworks.ai/inference/v1/responses` 端點，因此 MCP 工具（`"type": "mcp"`）、`previous_response_id`，以及 reasoning output items 等伺服器端功能，運作方式都與直接對 Fireworks 使用時相同
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -332,7 +327,7 @@ print(response.output)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -342,13 +337,13 @@ model_list:
       api_key: "os.environ/FIREWORKS_AI_API_KEY"
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl http://0.0.0.0:4000/v1/responses \
@@ -371,15 +366,15 @@ curl http://0.0.0.0:4000/v1/responses \
 </TabItem>
 </Tabs>
 
-Multi-turn tool calling works the same way it does against Fireworks directly: send back the `function_call_output` items together with the `previous_response_id` Fireworks returned, and Fireworks continues the conversation server-side
+多回合工具呼叫的運作方式與直接對 Fireworks 使用時相同：將 `function_call_output` items 與 Fireworks 回傳的 `previous_response_id` 一併送回，Fireworks 就會在伺服器端繼續對話
 
-`developer` input items are sent to Fireworks as `system` messages, since Fireworks' Responses API has no developer role on models such as kimi-k3 and qwen3.8. A model whose chat template needs the system message first (qwen3.8) still rejects a developer item placed after the first input item, the same way it does when called directly
+`developer` input items 會以 `system` messages 的形式送往 Fireworks，因為 Fireworks 的 Responses API 在 kimi-k3 和 qwen3.8 等模型上沒有 developer role。其 chat template 需要 system message 先出現的模型（qwen3.8）仍會拒絕放在第一個 input item 之後的 developer item，和直接呼叫時的行為相同
 
-## Document Inlining 
+## 文件內嵌  {#document-inlining}
 
-LiteLLM supports document inlining for Fireworks AI models. This is useful for models that are not vision models, but still need to parse documents/images/etc.
+LiteLLM 支援 Fireworks AI 模型的文件內嵌。這對於不是視覺模型、但仍需要解析文件/圖片等內容的模型很有用。
 
-LiteLLM will add `#transform=inline` to the url of the image_url, if the model is not a vision model.[**See Code**](https://github.com/BerriAI/litellm/blob/1ae9d45798bdaf8450f2dfdec703369f3d2212b7/litellm/llms/fireworks_ai/chat/transformation.py#L114)
+如果模型不是視覺模型，LiteLLM 會將 `#transform=inline` 加到 image_url 的網址中。[**查看程式碼**](https://github.com/BerriAI/litellm/blob/1ae9d45798bdaf8450f2dfdec703369f3d2212b7/litellm/llms/fireworks_ai/chat/transformation.py#L114)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -417,7 +412,7 @@ print(completion)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -428,13 +423,13 @@ model_list:
     #   api_base: os.environ/FIREWORKS_AI_API_BASE [OPTIONAL], defaults to "https://api.fireworks.ai/inference/v1"
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -463,9 +458,9 @@ curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Disable Auto-add
+### 停用自動新增 {#disable-auto-add}
 
-If you want to disable the auto-add of `#transform=inline` to the url of the image_url, set `disable_add_transform_inline_image_block` to `True`
+如果您想停用將 `#transform=inline` 自動新增到 image_url 的網址，請將 `disable_add_transform_inline_image_block` 設為 `True`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -485,9 +480,9 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-## Reasoning Effort
+## 推理努力 {#reasoning-effort}
 
-The `reasoning_effort` parameter is supported on select Fireworks AI models. Supported models include:
+`reasoning_effort` 參數支援於部分 Fireworks AI 模型。支援的模型包括：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -530,13 +525,13 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Supported Models - ALL Fireworks AI Models Supported!
+## 支援的模型 - 支援所有 Fireworks AI 模型！ {#supported-models---all-fireworks-ai-models-supported}
 
 :::info
-We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when sending completion requests
+我們支援所有 Fireworks AI 模型，只要在傳送 completion 請求時將 `fireworks_ai/` 設為前綴即可
 :::
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | glm-5p3-flash | `completion(model="fireworks_ai/glm-5p3-flash", messages)` |
 | deepseek-v4-pro | `completion(model="fireworks_ai/deepseek-v4-pro", messages)` |
@@ -545,15 +540,15 @@ We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when se
 | minimax-m3 | `completion(model="fireworks_ai/minimax-m3", messages)` |
 | gpt-oss-120b | `completion(model="fireworks_ai/gpt-oss-120b", messages)` |
 
-The table above is a small selection of popular models. For the full, current list of models and routers, see the [Fireworks model library](https://fireworks.ai/models).
+上表僅列出少數常見模型。完整且最新的模型與路由器清單，請參閱 [Fireworks 模型程式庫](https://fireworks.ai/models)。
 
-## Supported Embedding Models
+## 支援的嵌入模型 {#supported-embedding-models}
 
 :::info
-We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when sending embedding requests
+我們支援所有 Fireworks AI 模型，只要在傳送 embedding 請求時將 `fireworks_ai/` 設為前綴即可
 :::
 
-| Model Name            | Function Call                                                   |
+| 模型名稱            | 函式呼叫                                                   |
 |-----------------------|-----------------------------------------------------------------|
 | fireworks_ai/nomic-ai/nomic-embed-text-v1.5 | `response = litellm.embedding(model="fireworks_ai/nomic-ai/nomic-embed-text-v1.5", input=input_text)` |
 | fireworks_ai/nomic-ai/nomic-embed-text-v1 | `response = litellm.embedding(model="fireworks_ai/nomic-ai/nomic-embed-text-v1", input=input_text)` |
@@ -561,10 +556,9 @@ We support ALL Fireworks AI models, just set `fireworks_ai/` as a prefix when se
 | fireworks_ai/thenlper/gte-large | `response = litellm.embedding(model="fireworks_ai/thenlper/gte-large", input=input_text)` |
 | fireworks_ai/thenlper/gte-base | `response = litellm.embedding(model="fireworks_ai/thenlper/gte-base", input=input_text)` |
 
+## 音訊轉錄 {#audio-transcription}
 
-## Audio Transcription
-
-### Quick Start
+### 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -584,12 +578,12 @@ response = transcription(
 )
 ```
 
-[Pass API Key/API Base in `.transcription`](../set_keys.md#passing-args-to-completion-or-any-litellm-endpoint---transcription-embedding-text_completion-etc)
+[在 `.transcription` 中傳入 API 金鑰/API Base](../set_keys.md#passing-args-to-completion-or-any-litellm-endpoint---transcription-embedding-text_completion-etc)
 
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -602,13 +596,13 @@ model_list:
       mode: audio_transcription
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/audio/transcriptions' \
@@ -621,9 +615,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/audio/transcriptions' \
 </TabItem>
 </Tabs>
 
-## Rerank
+## 重新排序 {#rerank}
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -652,12 +646,12 @@ response = rerank(
 print(response)
 ```
 
-[Pass API Key/API Base in `.rerank`](../set_keys.md#passing-args-to-completion-or-any-litellm-endpoint---transcription-embedding-text_completion-etc)
+[在 `.rerank` 中傳入 API 金鑰/API Base](../set_keys.md#passing-args-to-completion-or-any-litellm-endpoint---transcription-embedding-text_completion-etc)
 
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -669,13 +663,13 @@ model_list:
       mode: rerank
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config config.yaml
 ```
 
-3. Test it
+3. 測試
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -698,8 +692,8 @@ curl http://0.0.0.0:4000/rerank \
 </TabItem>
 </Tabs>
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | fireworks/qwen3-reranker-8b | `rerank(model="fireworks_ai/fireworks/qwen3-reranker-8b", query=query, documents=documents)` |

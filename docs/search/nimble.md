@@ -1,13 +1,13 @@
-# Nimble Search
+# Nimble 搜尋 {#nimble-search}
 
-**Get API Key:** [https://online.nimbleway.com/settings/api-keys](https://online.nimbleway.com/settings/api-keys)
+**取得 API 金鑰：** [https://online.nimbleway.com/settings/api-keys](https://online.nimbleway.com/settings/api-keys)
 
 :::info
 
-Supported from LiteLLM v1.98.0+
+支援自 LiteLLM v1.98.0+ 起
 :::
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Nimble Search"
 import os
@@ -22,9 +22,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -40,7 +40,7 @@ search_tools:
       api_key: os.environ/NIMBLE_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -48,7 +48,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/nimble-search \
@@ -60,7 +60,7 @@ curl http://0.0.0.0:4000/v1/search/nimble-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 供應商特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Nimble Search with Provider-specific Parameters"
 import os
@@ -81,6 +81,6 @@ response = search(
 )
 ```
 
-Domains can be restricted either through the unified `search_domain_filter`, where a `-` prefix excludes a host, or through Nimble's own `include_domains` and `exclude_domains`, which win when both are given. See the [Nimble Search API reference](https://docs.nimbleway.com/api-reference/search/search) for the full parameter set, including `content_type`, `start_date` and `end_date`.
+可透過統一的 `search_domain_filter` 來限制網域，其中 `-` 前綴會排除主機，或使用 Nimble 自身的 `include_domains` 和 `exclude_domains`；當兩者都提供時，後者會優先生效。請參閱 [Nimble Search API 參考文件](https://docs.nimbleway.com/api-reference/search/search)，以取得完整參數集合，包括 `content_type`、`start_date` 和 `end_date`。
 
-Set `NIMBLE_API_BASE` to override the default `https://sdk.nimbleway.com/v2` endpoint.
+將 `NIMBLE_API_BASE` 設為覆寫預設的 `https://sdk.nimbleway.com/v2` 端點。

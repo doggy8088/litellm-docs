@@ -1,10 +1,10 @@
-# Arize Phoenix Prompt Management
+# Arize Phoenix 提示管理 {#arize-phoenix-prompt-management}
 
-Use prompt versions from [Arize Phoenix](https://phoenix.arize.com/) with LiteLLM SDK and Proxy.
+使用來自 [Arize Phoenix](https://phoenix.arize.com/) 的提示版本搭配 LiteLLM SDK 和 Proxy。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### SDK
+### SDK {#sdk}
 
 ```python
 import litellm
@@ -19,9 +19,9 @@ response = litellm.completion(
 )
 ```
 
-### Proxy
+### Proxy {#proxy}
 
-**1. Add prompt to config**
+**1. 將提示新增至設定**
 
 ```yaml
 prompts:
@@ -35,7 +35,7 @@ prompts:
       ignore_prompt_manager_optional_params: true # optional: ignore temp, max_tokens from prompt
 ```
 
-**2. Make request**
+**2. 發出請求**
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -50,39 +50,39 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-### Get Arize Phoenix Credentials
+### 取得 Arize Phoenix 憑證 {#get-arize-phoenix-credentials}
 
-1. **API Token**: Get from [Arize Phoenix Settings](https://app.phoenix.arize.com/)
-2. **Workspace URL**: `https://app.phoenix.arize.com/s/{your-workspace}`
-3. **Prompt ID**: Found in prompt version URL
+1. **API Token**：從 [Arize Phoenix 設定](https://app.phoenix.arize.com/) 取得
+2. **Workspace URL**：`https://app.phoenix.arize.com/s/{your-workspace}`
+3. **Prompt ID**：可在提示版本 URL 中找到
 
-**Set environment variable**:
+**設定環境變數**：
 ```bash
 export PHOENIX_API_KEY="your-token"
 ```
 
-### SDK + PROXY Options
+### SDK + PROXY 選項 {#sdk--proxy-options}
 
-| Parameter | Required | Description |
+| 參數 | 必要 | 說明 |
 |-----------|----------|-------------|
-| `prompt_id` | Yes | Arize Phoenix prompt version ID |
-| `prompt_integration` | Yes | Set to `"arize_phoenix"` |
-| `api_base` | Yes | Workspace URL |
-| `api_key` | Yes | Access token |
-| `prompt_variables` | No | Variables for template |
+| `prompt_id` | 是 | Arize Phoenix 提示版本 ID |
+| `prompt_integration` | 是 | 設為 `"arize_phoenix"` |
+| `api_base` | 是 | Workspace URL |
+| `api_key` | 是 | 存取權杖 |
+| `prompt_variables` | 否 | 範本的變數 |
 
-### Proxy-only Options
+### 僅限 Proxy 的選項 {#proxy-only-options}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `ignore_prompt_manager_model` | Use config model instead of prompt's model |
-| `ignore_prompt_manager_optional_params` | Ignore temperature, max_tokens from prompt |
+| `ignore_prompt_manager_model` | 使用設定中的 model，而非提示的 model |
+| `ignore_prompt_manager_optional_params` | 忽略提示中的 temperature、max_tokens |
 
-## Variable Templates
+## 變數範本 {#variable-templates}
 
-Arize Phoenix uses Mustache/Handlebars syntax:
+Arize Phoenix 使用 Mustache/Handlebars 語法：
 
 ```python
 # Template: "Hello {{name}}, question: {{question}}"
@@ -94,7 +94,7 @@ prompt_variables = {
 ```
 
 
-## Combine with Additional Messages
+## 與其他訊息合併 {#combine-with-additional-messages}
 
 ```python
 response = litellm.completion(
@@ -110,7 +110,7 @@ response = litellm.completion(
 ```
 
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python
 try:
@@ -127,8 +127,7 @@ except Exception as e:
     # 403: Access denied
 ```
 
-## Support
+## 支援 {#support}
 
-- [LiteLLM GitHub Issues](https://github.com/BerriAI/litellm/issues)
-- [Arize Phoenix Docs](https://docs.arize.com/phoenix)
-
+- [LiteLLM GitHub 問題](https://github.com/BerriAI/litellm/issues)
+- [Arize Phoenix 文件](https://docs.arize.com/phoenix)

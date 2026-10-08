@@ -1,22 +1,22 @@
-# Budget Reset Times and Timezones
+# 預算重設時間與時區 {#budget-reset-times-and-timezones}
 
-LiteLLM supports predictable budget reset times that align with natural calendar boundaries.
+LiteLLM 支援可預測的預算重設時間，可與自然的日曆邊界對齊。
 
-## How Budget Resets Work
+## 預算重設運作方式 {#how-budget-resets-work}
 
-By default all budgets reset at midnight (00:00:00) in the configured timezone, with special handling for common durations. The time of day resets land on is configurable via `budget_reset_time` (see [Configuring the Reset Time of Day](#configuring-the-reset-time-of-day) below); the table shows the default midnight behavior.
+預設情況下，所有預算都會在已設定時區的午夜（00:00:00）重設，並針對常見期間進行特殊處理。重設發生的時刻可透過 `budget_reset_time` 設定（請參閱下方的[設定重設時刻](#configuring-the-reset-time-of-day)）；表格顯示預設的午夜行為。
 
-| Duration | Reset Behavior |
+| 期間 | 重設行為 |
 | --- | --- |
-| Daily (24h/1d) | Resets at midnight every day |
-| Weekly (7d) | Resets on Monday at midnight |
-| Monthly (30d) | Resets on the 1st of each month at midnight |
+| 每日（24h/1d） | 每天午夜重設 |
+| 每週（7d） | 每週一午夜重設 |
+| 每月（30d） | 每月 1 日午夜重設 |
 
-Sub-day durations (for example `1h`, `30m`, `10s`) roll forward by their interval from the current time, so a time of day does not apply to them.
+日以下期間（例如 `1h`、`30m`、`10s`）會依目前時間向前順延其間隔，因此不適用一天中的特定時刻。
 
-## Configuring the Timezone
+## 設定時區 {#configuring-the-timezone}
 
-Specify the timezone for all budget resets in your configuration file:
+請在設定檔中指定所有預算重設所使用的時區：
 
 ```yaml
 litellm_settings:
@@ -25,17 +25,17 @@ litellm_settings:
   timezone: "US/Eastern" # Any valid timezone string
 ```
 
-This ensures that all budget resets happen at midnight in your specified timezone rather than in UTC. If no timezone is specified, UTC will be used by default.
+這可確保所有預算重設都會在您指定的時區午夜發生，而不是在 UTC。若未指定時區，預設會使用 UTC。
 
-## Configuring the Reset Time of Day
+## 設定重設時刻 {#configuring-the-reset-time-of-day}
 
 :::info
 
-`budget_reset_time` is available starting in the next release (after `v1.94.0`).
+`budget_reset_time` 自下一個版本起可用（在 `v1.94.0` 之後）。
 
 :::
 
-By default day, week, and month budgets reset at midnight. Set `budget_reset_time` to pick the wall-clock time (in the configured `timezone`) that resets should land on instead, for example to align budget rollover with the start of your business day or an upstream provider's billing boundary:
+預設情況下，日、週與月預算都會在午夜重設。請將 `budget_reset_time` 設定為選擇實際時鐘時間（在已設定的 `timezone` 中），使重設改為落在該時間，例如讓預算重新計算與您的營業日開始時間或上游提供者的計費邊界一致：
 
 ```yaml
 litellm_settings:
@@ -45,21 +45,21 @@ litellm_settings:
   budget_reset_time: "09:00" # (string) "HH:MM" or "HH:MM:SS", 24-hour clock
 ```
 
-With the config above, daily budgets reset at 09:00 US/Eastern each day, weekly budgets reset on Monday at 09:00, and monthly budgets reset on the 1st at 09:00. The value accepts a 24-hour `"HH:MM"` or `"HH:MM:SS"` string and must be quoted. If it is omitted, resets stay at midnight. A malformed value fails config load at startup rather than silently falling back to midnight, so a typo surfaces immediately instead of quietly changing when budgets reset. Sub-day durations ignore `budget_reset_time` since a time of day is meaningless for them.
+使用上方設定時，日預算會在每天 US/Eastern 的 09:00 重設，週預算會在星期一 09:00 重設，而月預算會在每月 1 日 09:00 重設。此值接受 24 小時制的 `"HH:MM"` 或 `"HH:MM:SS"` 字串，且必須加上引號。若省略，重設會維持在午夜。格式錯誤的值會在啟動時使設定載入失敗，而不是悄悄回退到午夜，因此拼字錯誤會立即顯示，而不會靜默地改變預算重設時間。日以下期間會忽略 `budget_reset_time`，因為對它們而言一天中的特定時刻沒有意義。
 
-## Supported Timezones
+## 支援的時區 {#supported-timezones}
 
-Any valid [IANA timezone string](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) is supported (powered by Python's `zoneinfo` module). DST transitions are handled automatically.
+支援任何有效的 [IANA 時區字串](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)（由 Python 的 `zoneinfo` 模組提供支援）。DST 轉換會自動處理。
 
-**Common timezone values:**
+**常見的時區值：**
 
-| Timezone | Description |
+| 時區 | 說明 |
 | --- | --- |
-| `UTC` | Coordinated Universal Time |
-| `US/Eastern` | Eastern Time |
-| `US/Pacific` | Pacific Time |
-| `Europe/London` | UK Time |
-| `Asia/Kolkata` | Indian Standard Time (IST) |
-| `Asia/Bangkok` | Indochina Time (ICT) |
-| `Asia/Tokyo` | Japan Standard Time |
-| `Australia/Sydney` | Australian Eastern Time |
+| `UTC` | 世界協調時間 |
+| `US/Eastern` | 東部時間 |
+| `US/Pacific` | 太平洋時間 |
+| `Europe/London` | 英國時間 |
+| `Asia/Kolkata` | 印度標準時間（IST） |
+| `Asia/Bangkok` | 中南半島時間（ICT） |
+| `Asia/Tokyo` | 日本標準時間 |
+| `Australia/Sydney` | 澳洲東部時間 |

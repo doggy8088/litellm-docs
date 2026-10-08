@@ -1,20 +1,19 @@
-# Azure AI Speech (Cognitive Services)
+# Azure AI Speech（Cognitive Services） {#azure-ai-speech-cognitive-services}
 
-Azure AI Speech is Azure's Cognitive Services text-to-speech API, separate from Azure OpenAI. It provides high-quality neural voices with broader language support and advanced speech customization.
+Azure AI Speech 是 Azure 的 Cognitive Services 文字轉語音 API，獨立於 Azure OpenAI。它提供高品質神經語音，支援更多語言，並具備進階語音自訂功能。
 
-**When to use this vs Azure OpenAI TTS:**
-- **Azure AI Speech** - More languages, neural voices, SSML support, speech customization
-- **Azure OpenAI TTS** - OpenAI models, integrated with Azure OpenAI services
+**何時使用此服務而非 Azure OpenAI TTS：**
+- **Azure AI Speech** - 更多語言、神經語音、SSML 支援、語音自訂
+- **Azure OpenAI TTS** - OpenAI 模型，與 Azure OpenAI 服務整合
 
+## 概觀 {#overview}
 
-## Overview
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Azure AI Speech is Azure's Cognitive Services text-to-speech API, separate from Azure OpenAI. It provides high-quality neural voices with broader language support and advanced speech customization. |
-| Provider Route on LiteLLM | `azure/speech/` |
+| 說明 | Azure AI Speech 是 Azure 的 Cognitive Services 文字轉語音 API，獨立於 Azure OpenAI。它提供高品質神經語音，支援更多語言，並具備進階語音自訂功能。 |
+| LiteLLM 上的提供者路由 | `azure/speech/` |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 **LiteLLM SDK**
 
@@ -47,30 +46,30 @@ model_list:
       api_key: os.environ/AZURE_TTS_API_KEY
 ```
 
-## Setup
+## 設定 {#setup}
 
-1. Create an Azure Cognitive Services resource in the [Azure Portal](https://portal.azure.com)
-2. Get your API key from the resource
-3. Note your region (e.g., `eastus`, `westus`, `westeurope`)
-4. Use the regional endpoint: `https://{region}.tts.speech.microsoft.com`
+1. 在 [Azure Portal](https://portal.azure.com) 中建立 Azure Cognitive Services 資源
+2. 從該資源取得您的 API 金鑰
+3. 記下您的區域（例如，`eastus`、`westus`、`westeurope`）
+4. 使用區域端點：`https://{region}.tts.speech.microsoft.com`
 
-## Cost Tracking (Pricing)
+## 成本追蹤（定價） {#cost-tracking-pricing}
 
-LiteLLM automatically tracks costs for Azure AI Speech based on the number of characters processed.
+LiteLLM 會根據處理的字元數，自動追蹤 Azure AI Speech 的成本。
 
-### Available Models
+### 可用模型 {#available-models}
 
-| Model | Voice Type | Cost per 1M Characters |
+| 模型 | 語音類型 | 每 1M 字元成本 |
 |-------|-----------|----------------------|
 | `azure/speech/azure-tts` | Neural | $15 |
 | `azure/speech/azure-tts-hd` | Neural HD | $30 |
 
-### How Costs are Calculated
+### 成本如何計算 {#how-costs-are-calculated}
 
-Azure AI Speech charges based on the number of characters in your input text. LiteLLM automatically:
-- Counts the number of characters in your `input` parameter
-- Calculates the cost based on the model pricing
-- Returns the cost in the response object
+Azure AI Speech 會根據您輸入文字中的字元數計費。LiteLLM 會自動：
+- 計算您 `input` 參數中的字元數
+- 根據模型定價計算成本
+- 在回應物件中傳回成本
 
 ```python showLineNumbers title="View Request Cost"
 from litellm import speech
@@ -88,32 +87,32 @@ cost = response._hidden_params.get("response_cost")
 print(f"Request cost: ${cost}")
 ```
 
-### Verify Azure Pricing
+### 驗證 Azure 定價 {#verify-azure-pricing}
 
-To check the latest Azure AI Speech pricing:
+若要查看最新的 Azure AI Speech 定價：
 
-1. Visit the [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
-2. Set **Service** to "AI Services"
-3. Set **API** to "Azure AI Speech"
-4. Select **Text to Speech** and your region
-5. View the current pricing per million characters
+1. 造訪 [Azure 定價計算機](https://azure.microsoft.com/en-us/pricing/calculator/)
+2. 將 **Service** 設為 "AI Services"
+3. 將 **API** 設為 "Azure AI Speech"
+4. 選擇 **Text to Speech** 與您的區域
+5. 查看每百萬字元的目前定價
 
-**Note:** Pricing may vary by region and Azure subscription type.
+**注意：** 定價可能因區域與 Azure 訂用帳戶類型而異。
 
-## Voice Mapping
+## 語音對應 {#voice-mapping}
 
-LiteLLM automatically maps OpenAI voice names to Azure Neural voices:
+LiteLLM 會自動將 OpenAI 語音名稱對應至 Azure Neural 語音：
 
-| OpenAI Voice | Azure Neural Voice | Description |
+| OpenAI 語音 | Azure Neural 語音 | 說明 |
 |-------------|-------------------|-------------|
-| `alloy` | en-US-JennyNeural | Neutral and balanced |
-| `echo` | en-US-GuyNeural | Warm and upbeat |
-| `fable` | en-GB-RyanNeural | Expressive and dramatic |
-| `onyx` | en-US-DavisNeural | Deep and authoritative |
-| `nova` | en-US-AmberNeural | Friendly and conversational |
-| `shimmer` | en-US-AriaNeural | Bright and cheerful |
+| `alloy` | en-US-JennyNeural | 中性且平衡 |
+| `echo` | en-US-GuyNeural | 溫暖且活潑 |
+| `fable` | en-GB-RyanNeural | 富表現力且戲劇化 |
+| `onyx` | en-US-DavisNeural | 聲音低沉且具權威感 |
+| `nova` | en-US-AmberNeural | 親切且具對話感 |
+| `shimmer` | en-US-AriaNeural | 明亮且愉快 |
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Parameters"
 response = speech(
@@ -127,25 +126,25 @@ response = speech(
 )
 ```
 
-### Response Formats
+### 回應格式 {#response-formats}
 
-| Format | Azure Output Format | Sample Rate |
+| 格式 | Azure 輸出格式 | 取樣率 |
 |--------|-------------------|-------------|
 | `mp3` | audio-24khz-48kbitrate-mono-mp3 | 24kHz |
 | `opus` | ogg-48khz-16bit-mono-opus | 48kHz |
 | `wav` | riff-24khz-16bit-mono-pcm | 24kHz |
 | `pcm` | raw-24khz-16bit-mono-pcm | 24kHz |
 
-## Passing Raw SSML
+## 傳遞原始 SSML {#passing-raw-ssml}
 
-LiteLLM automatically detects when your `input` contains SSML (by checking for `<speak>` tags) and passes it through to Azure without any transformation. This gives you complete control over speech synthesis.
+LiteLLM 會自動偵測您的 `input` 是否包含 SSML（透過檢查 `<speak>` 標籤），並在不做任何轉換的情況下將其傳遞給 Azure。這讓您能完整控制語音合成。
 
-**When to use raw SSML:**
-- Using the `<lang>` element with multilingual voices to translate text (e.g., English text → Spanish speech)
-- Complex SSML structures with multiple voices or prosody changes
-- Fine-grained control over pronunciation, breaks, emphasis, and other speech features
+**何時使用原始 SSML：**
+- 搭配多語言語音使用 `<lang>` 元素來翻譯文字（例如，英文文字 → 西班牙語語音）
+- 具有多個語音或韻律變化的複雜 SSML 結構
+- 對發音、停頓、強調及其他語音特徵進行精細控制
 
-### LiteLLM SDK
+### LiteLLM SDK {#litellm-sdk}
 
 ```python showLineNumbers title="Raw SSML for Multilingual Translation"
 from litellm import speech
@@ -204,7 +203,7 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -219,18 +218,18 @@ curl http://0.0.0.0:4000/v1/audio/speech \
 ```
 
 
-## Sending Azure-Specific Params
+## 傳送 Azure 特定參數 {#sending-azure-specific-params}
 
-Azure AI Speech supports advanced SSML features through optional parameters:
+Azure AI Speech 透過可選參數支援進階 SSML 功能：
 
-- `style`: Speaking style (e.g., "cheerful", "sad", "angry", "whispering")
-- `styledegree`: Style intensity (0.01 to 2)
-- `role`: Voice role (e.g., "Girl", "Boy", "SeniorFemale", "SeniorMale")
-- `lang`: Language code for multilingual voices (e.g., "es-ES", "fr-FR", "hi-IN")
+- `style`：說話風格（例如，「cheerful」、「sad」、「angry」、「whispering」）
+- `styledegree`：風格強度（0.01 到 2）
+- `role`：語音角色（例如，「Girl」、「Boy」、「SeniorFemale」、「SeniorMale」）
+- `lang`：多語言語音的語言代碼（例如，「es-ES」、「fr-FR」、「hi-IN」）
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-1}
 
-#### Custom Azure Voice
+#### 自訂 Azure 語音 {#custom-azure-voice}
 
 ```python showLineNumbers title="Custom Azure Voice"
 from litellm import speech
@@ -246,7 +245,7 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-#### Speaking Style
+#### 說話風格 {#speaking-style}
 
 ```python showLineNumbers title="Speaking Style"
 from litellm import speech
@@ -262,7 +261,7 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-#### Style with Degree and Role
+#### 風格、程度與角色 {#style-with-degree-and-role}
 
 ```python showLineNumbers title="Style with Degree and Role"
 from litellm import speech
@@ -280,7 +279,7 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-#### Language Override for Multilingual Voices
+#### 多語言語音的語言覆寫 {#language-override-for-multilingual-voices}
 
 ```python showLineNumbers title="Language Override"
 from litellm import speech
@@ -296,11 +295,11 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-### **LiteLLM AI Gateway (CURL)**
+### **LiteLLM AI Gateway (CURL)** {#litellm-ai-gateway-curl}
 
-First, ensure you have set up your proxy config as shown in the [LiteLLM Proxy setup](#quick-start) above.
+首先，請確保您已依照上方的 [LiteLLM Proxy 設定](#quick-start) 完成 proxy 設定。
 
-**Using the model name from your config:**
+**使用您設定檔中的模型名稱：**
 
 ```yaml
 model_list:
@@ -311,7 +310,7 @@ model_list:
       api_key: os.environ/AZURE_TTS_API_KEY
 ```
 
-#### Custom Azure Voice
+#### 自訂 Azure 語音 {#custom-azure-voice-1}
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -325,7 +324,7 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-#### Speaking Style
+#### 說話風格 {#speaking-style-1}
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -340,7 +339,7 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-#### Style with Degree and Role
+#### 風格、程度與角色 {#style-with-degree-and-role-1}
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -357,7 +356,7 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-#### Language Override
+#### 語言覆寫 {#language-override}
 
 ```bash
 curl http://0.0.0.0:4000/v1/audio/speech \
@@ -372,16 +371,16 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-### Azure-Specific Parameters Reference
+### Azure 特定參數參考 {#azure-specific-parameters-reference}
 
-| Parameter | Description | Example Values | Notes |
+| 參數 | 說明 | 範例值 | 備註 |
 |-----------|-------------|----------------|-------|
-| `style` | Speaking style | `cheerful`, `sad`, `angry`, `excited`, `friendly`, `hopeful`, `shouting`, `terrified`, `unfriendly`, `whispering` | Only supported by certain voices. See [Azure voice styles documentation](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-synthesis-markup-voice#use-speaking-styles-and-roles) |
-| `styledegree` | Style intensity | `0.01` to `2` | Higher values = more intense. Default is `1` |
-| `role` | Voice role | `Girl`, `Boy`, `YoungAdultFemale`, `YoungAdultMale`, `OlderAdultFemale`, `OlderAdultMale`, `SeniorFemale`, `SeniorMale` | Only supported by certain voices |
-| `lang` | Language code | `es-ES`, `fr-FR`, `de-DE`, `hi-IN`, etc. | For multilingual voices. Overrides the default language |
+| `style` | 說話風格 | `cheerful`、`sad`、`angry`、`excited`、`friendly`、`hopeful`、`shouting`、`terrified`、`unfriendly`、`whispering` | 僅部分語音支援。請參閱 [Azure 語音風格文件](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-synthesis-markup-voice#use-speaking-styles-and-roles) |
+| `styledegree` | 風格強度 | `0.01` 到 `2` | 數值越高 = 越強烈。預設為 `1` |
+| `role` | 語音角色 | `Girl`、`Boy`、`YoungAdultFemale`、`YoungAdultMale`、`OlderAdultFemale`、`OlderAdultMale`、`SeniorFemale`、`SeniorMale` | 僅部分語音支援 |
+| `lang` | 語言代碼 | `es-ES`、`fr-FR`、`de-DE`、`hi-IN` 等 | 適用於多語言語音。覆寫預設語言 |
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async Usage"
 import asyncio
@@ -403,22 +402,22 @@ async def generate_speech():
 asyncio.run(generate_speech())
 ```
 
-## Regional Endpoints
+## 區域端點 {#regional-endpoints}
 
-Replace `{region}` with your Azure resource region:
+請將 `{region}` 替換為您的 Azure 資源區域：
 
 - US East: `https://eastus.tts.speech.microsoft.com`
 - US West: `https://westus.tts.speech.microsoft.com`
 - Europe West: `https://westeurope.tts.speech.microsoft.com`
 - Asia Southeast: `https://southeastasia.tts.speech.microsoft.com`
 
-[Full list of regions](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/regions)
+[完整區域清單](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/regions)
 
-## Advanced Features
+## 進階功能 {#advanced-features}
 
-### Custom Neural Voices
+### 自訂 Neural 語音 {#custom-neural-voices}
 
-You can use any Azure Neural voice by passing the full voice name:
+您可以透過傳入完整語音名稱來使用任何 Azure Neural 語音：
 
 ```python showLineNumbers title="Custom Voice"
 response = speech(
@@ -430,9 +429,9 @@ response = speech(
 )
 ```
 
-Browse available voices in the [Azure Speech Gallery](https://speech.microsoft.com/portal/voicegallery).
+在 [Azure Speech Gallery](https://speech.microsoft.com/portal/voicegallery) 瀏覽可用語音。
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python showLineNumbers title="Error Handling"
 from litellm import speech
@@ -450,8 +449,7 @@ except APIError as e:
     print(f"Azure Speech error: {e}")
 ```
 
-## Reference
+## 參考資料 {#reference}
 
-- [Azure Speech Service Documentation](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/)
+- [Azure Speech Service 文件](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/)
 - [Text-to-Speech REST API](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/rest-text-to-speech)
-

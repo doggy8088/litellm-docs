@@ -1,13 +1,13 @@
 ---
 slug: gpt_6_sol_luna
-title: "Day 0 Support: GPT-6 Sol and GPT-6 Luna"
+title: "Day 0 支援：GPT-6 Sol 與 GPT-6 Luna"
 date: 2026-09-22T12:00:00
 image: /img/litellm_gpt_6_sol_luna_announcement.png
 authors:
   - misbah
   - mateo
   - kerry
-description: "Day 0 support for GPT-6 Sol and GPT-6 Luna on LiteLLM, at half the price of their GPT-5.6 counterparts."
+description: "LiteLLM 對 GPT-6 Sol 與 GPT-6 Luna 的 Day 0 支援，價格僅為其 GPT-5.6 對應模型的一半。"
 tags: [openai, gpt-6, gpt-6-sol, gpt-6-luna, completion, day 0 support]
 hide_table_of_contents: false
 ---
@@ -15,24 +15,24 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-![LiteLLM x GPT-6 Sol and Luna](/img/litellm_gpt_6_sol_luna_announcement.png)
+![LiteLLM x GPT-6 Sol 和 Luna](/img/litellm_gpt_6_sol_luna_announcement.png)
 
-LiteLLM now supports [GPT-6 Sol and GPT-6 Luna](https://openai.com/index/introducing-gpt-6-sol-and-luna/). Route traffic to them through the LiteLLM AI Gateway with the same config you use for every other OpenAI model.
+LiteLLM 現在支援 [GPT-6 Sol 與 GPT-6 Luna](https://openai.com/index/introducing-gpt-6-sol-and-luna/)。您可以透過 LiteLLM AI Gateway，使用與其他所有 OpenAI 模型相同的設定，將流量路由到它們。
 
 {/* truncate */}
 
-Sol and Luna join GPT-6 Astra, trained with the same methods and priced for work at scale. `gpt-6-sol` is built for complex coding and agentic workflows at $2 input and $10 output per 1M tokens, and `gpt-6-luna` is the high-volume tier at $0.10 and $0.50. OpenAI prices both at half their GPT-5.6 counterparts' current rates. Per OpenAI, Sol at `xhigh` scores 33.2% on AutomationBench at $0.27 a task and 68.8% on DeepSWE v1.1 at `max`, while Luna reaches 66.6% on DeepSWE. Both keep a 1,050,000-token context window with 922K input and 128K output, take text and image input, and run reasoning effort from `none` to `max`, defaulting to `medium`. There is no GPT-6 Terra; Astra stays the top of the range.
+Sol 和 Luna 加入了 GPT-6 Astra，採用相同方法訓練，並以適合大規模工作負載的價格提供。`gpt-6-sol` 適合複雜的程式碼撰寫與 agentic 工作流程，價格為每 1M tokens 輸入 $2、輸出 $10，`gpt-6-luna` 則是高流量級距，價格為 $0.10 和 $0.50。OpenAI 將兩者定價為其 GPT-5.6 對應模型目前費率的一半。依 OpenAI 所述，`xhigh` 的 Sol 在 AutomationBench 上以每個任務 $0.27 的成本取得 33.2%，在 DeepSWE v1.1 上以 `max` 取得 68.8%；而 Luna 在 DeepSWE 上可達 66.6%。兩者皆保有 1,050,000 個 token 的上下文視窗，其中 922K 為輸入、128K 為輸出，支援文字與圖片輸入，並可將 reasoning effort 從 `none` 執行至 `max`，預設為 `medium`。沒有 GPT-6 Terra；Astra 仍是最高階型號。
 
 :::note
-**No image upgrade needed.** LiteLLM already treats GPT-6 names as the GPT-5 request family, so `max_completion_tokens` and the reasoning params are handled on any version from `v1.101.0`. Pricing landed in [PR #42515](https://github.com/BerriAI/litellm/pull/42515); hit **Reload Model Cost Map** in the Admin UI (or `POST /reload/model_cost_map`) to pull it, on `v1.76.0` and above.
+**無須升級圖片。** LiteLLM 已將 GPT-6 名稱視為 GPT-5 請求家族，因此 `max_completion_tokens` 與 reasoning 參數可在從 `v1.101.0` 起的任何版本上處理。定價已登錄於 [PR #42515](https://github.com/BerriAI/litellm/pull/42515)；請在管理介面中按下 **重新載入模型成本對照表**（或 `POST /reload/model_cost_map`）以取得它，適用於 `v1.76.0` 及以上版本。
 :::
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -46,7 +46,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -57,7 +57,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it**
+**3. 測試**
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/chat/completions" \
@@ -106,9 +106,9 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Responses API
+## Responses API {#responses-api}
 
-For agentic and multi-turn workflows, use `/v1/responses` to preserve reasoning state across turns.
+對於 agentic 與多輪工作流程，請使用 `/v1/responses` 以在各輪之間保留 reasoning 狀態。
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/v1/responses" \
@@ -120,23 +120,23 @@ curl -X POST "http://0.0.0.0:4000/v1/responses" \
   }'
 ```
 
-## Pricing
+## 定價 {#pricing}
 
-Prices are per 1M tokens (USD), shown as short context (≤272K tokens) / long context (>272K tokens).
+價格以每 1M tokens（USD）計算，並以短上下文（≤272K tokens）/ 長上下文（>272K tokens）顯示。
 
 | Model | Input | Cached input | Cache write | Output |
 |-------|-------|--------------|-------------|--------|
 | `gpt-6-sol` | $2.00 / $4.00 | $0.20 / $0.40 | $2.50 / $5.00 | $10.00 / $15.00 |
 | `gpt-6-luna` | $0.10 / $0.20 | $0.01 / $0.02 | $0.125 / $0.25 | $0.50 / $0.75 |
 
-Flex and Batch run at half these rates and Priority at double; LiteLLM tracks all of them from the same cost map row.
+Flex 與 Batch 的費率為上述一半，Priority 則為兩倍；LiteLLM 會從同一個成本對照表列追蹤所有費率。
 
-## Notes
+## 備註 {#notes}
 
-`temperature` only applies when reasoning is off, so send `reasoning_effort="none"` alongside it, as in the Luna example above. Without it LiteLLM drops or refuses the parameter, since the default effort is `medium`.
+`temperature` 僅在 reasoning 關閉時適用，因此請連同 `reasoning_effort="none"` 一併送出，如上方 Luna 範例所示。若未提供，LiteLLM 會丟棄或拒絕該參數，因為預設 effort 為 `medium`。
 
-Both models accept OpenAI's explicit prompt cache breakpoints, and LiteLLM passes them through on `/chat/completions`, `/responses` and `/v1/messages`; see [prompt caching](../../docs/completion/prompt_caching). OpenAI also says changing reasoning effort or tools mid-conversation no longer breaks the cache, which matters if you route different effort levels to the same deployment.
+這兩個模型都支援 OpenAI 明確的 prompt cache breakpoint，LiteLLM 會在 `/chat/completions`、`/responses` 與 `/v1/messages` 上直接轉送；請參閱 [prompt caching](/docs/completion/prompt_caching)。OpenAI 也表示，在對話中途變更 reasoning effort 或 tools 不再會破壞 cache，若您將不同 effort 等級路由到同一個 deployment，這點就很重要。
 
-## Feedback
+## 回饋 {#feedback}
 
-Running GPT-6 Sol or Luna through LiteLLM and hitting something unexpected? Share it on [GitHub discussion #42523](https://github.com/BerriAI/litellm/discussions/42523).
+透過 LiteLLM 執行 GPT-6 Sol 或 Luna 時遇到意料之外的問題？請在 [GitHub discussion #42523](https://github.com/BerriAI/litellm/discussions/42523) 分享。

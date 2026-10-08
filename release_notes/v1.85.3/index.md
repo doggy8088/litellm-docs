@@ -1,5 +1,5 @@
 ---
-title: "v1.85.3 - Observability, Budget & Rate-Limit Fixes"
+title: "v1.85.3 - 可觀測性、預算與速率限制修正"
 slug: "v1-85-3"
 date: 2026-06-01T19:02:53
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,16 +43,16 @@ pip install litellm==1.85.3
 </TabItem>
 </Tabs>
 
-`v1.85.3` is a patch release on top of [`v1.85.2`](/release_notes/v1.85.2/v1-85-2). It cherry-picks fixes for duplicate Claude Code traces, Bearer-prefix hashing, budget-reset writes, and two flag-leak corrections in the rate limiter and the provider request body.
+`v1.85.3` 是建立在 [`v1.85.2`](/release_notes/v1.85.2/v1-85-2) 之上的修補版發行。它挑選性納入了重複 Claude Code 追蹤、Bearer 前綴雜湊、預算重設寫入，以及速率限制器和提供者請求內文中兩項旗標洩漏修正。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(logging): stop duplicate Claude Code traces (internal copy of #29089) - [PR #29311](https://github.com/BerriAI/litellm/pull/29311)
-- fix(proxy): normalize the Bearer prefix in the safe-hash helper - [PR #29343](https://github.com/BerriAI/litellm/pull/29343)
-- fix(budget): reset_budget writes only `{spend, budget_reset_at}` and no longer pre-zeroes the counter - [PR #29358](https://github.com/BerriAI/litellm/pull/29358)
-- fix(rate-limit): stop the v3 limiter from leaking internal stash to the provider body - [PR #27913](https://github.com/BerriAI/litellm/pull/27913)
-- fix(proxy): stop the `use_chat_completions_api` flag from leaking into the provider request body - [PR #29447](https://github.com/BerriAI/litellm/pull/29447)
+- fix(logging): 停止重複的 Claude Code traces（#29089 的內部複本） - [PR #29311](https://github.com/BerriAI/litellm/pull/29311)
+- fix(proxy): 在 safe-hash helper 中將 Bearer 前綴標準化 - [PR #29343](https://github.com/BerriAI/litellm/pull/29343)
+- fix(budget): reset_budget 只會寫入 `{spend, budget_reset_at}`，且不再預先將計數器歸零 - [PR #29358](https://github.com/BerriAI/litellm/pull/29358)
+- fix(rate-limit): 阻止 v3 limiter 將內部 stash 洩漏到提供者的本文 - [PR #27913](https://github.com/BerriAI/litellm/pull/27913)
+- fix(proxy): 阻止 `use_chat_completions_api` 標記洩漏到提供者請求本文 - [PR #29447](https://github.com/BerriAI/litellm/pull/29447)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.85.2...v1.85.3

@@ -2,29 +2,29 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Spend Tracking
+# 支出追蹤 {#spend-tracking}
 
-Track spend for keys, users, and teams across 100+ LLMs.
+追蹤跨越 100+ LLM 的金鑰、使用者與團隊支出。
 
-LiteLLM automatically tracks spend for all known models. See our [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
+LiteLLM 會自動追蹤所有已知模型的支出。請參閱我們的 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
 
-Provider-specific cost tracking (e.g., [Vertex AI PayGo / priority pricing](../providers/vertex.md#paygo--priority-cost-tracking), [Bedrock service tiers](../providers/bedrock.md#usage---service-tier), [Azure base model mapping](./custom_pricing.md#set-base_model-for-cost-tracking-eg-azure-deployments)) is applied automatically when the response includes tier metadata.
+當回應包含分級中繼資料時，會自動套用特定提供者的成本追蹤（例如 [Vertex AI PayGo / priority pricing](../providers/vertex.md#paygo--priority-cost-tracking)、[Bedrock service tiers](../providers/bedrock.md#usage---service-tier)、[Azure base model mapping](./custom_pricing.md#set-base_model-for-cost-tracking-eg-azure-deployments)）。
 
-:::tip[Keep Pricing Data Updated]
-[Sync model pricing data from GitHub](./sync_models_github.md) to ensure accurate cost tracking.
+:::tip[保持定價資料為最新]
+[從 GitHub 同步模型定價資料](./sync_models_github.md)，以確保成本追蹤準確。
 :::
 
-:::info[Cost does not match your provider bill?]
-Use the step-by-step workflow in [Debugging a cost discrepancy](../troubleshoot/cost_discrepancy): align time ranges, compare token categories (including cache), then decide whether the gap is ingestion, formula, or model-map pricing.
+:::info[成本與您的提供者帳單不符？]
+請使用 [Debugging a cost discrepancy](../troubleshoot/cost_discrepancy) 中的逐步流程：對齊時間範圍、比較 token 類別（包含快取），然後判定差異是來自 ingestion、公式，還是 model-map 定價。
 :::
 
-### How to Track Spend with LiteLLM
+### 如何使用 LiteLLM 追蹤支出 {#how-to-track-spend-with-litellm}
 
-**Step 1**
+**步驟 1**
 
-👉 [Setup LiteLLM with a Database](https://docs.litellm.ai/docs/proxy/virtual_keys#setup)
+👉 [使用資料庫設定 LiteLLM](https://docs.litellm.ai/docs/proxy/virtual_keys#setup)
 
-**Step2** Send `/chat/completions` request
+**步驟2** 傳送 `/chat/completions` 請求
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
@@ -59,7 +59,7 @@ print(response)
 
 <TabItem value="Curl" label="Curl Request">
 
-Pass `metadata` as part of the request body
+將 `metadata` 作為請求本文的一部分傳入
 
 ```shell title="Curl Request with Spend Tracking" showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -122,20 +122,20 @@ print(response)
 </TabItem>
 </Tabs>
 
-**Step3 - Verify Spend Tracked**
-That's IT. Now Verify your spend was tracked
+**步驟3 - 驗證支出已被追蹤**
+就是這樣。現在請驗證您的支出是否已被追蹤
 
 <Tabs>
 <TabItem value="curl" label="Response Headers">
 
-Expect to see `x-litellm-response-cost` in the response headers with calculated cost
+預期會在回應標頭中看到 `x-litellm-response-cost`，以及計算出的成本
 
 <Image img={require('../../img/response_cost_img.png')} />
 
 </TabItem>
 <TabItem value="db" label="DB + UI">
 
-The following spend gets tracked in Table `LiteLLM_SpendLogs`
+以下支出會被追蹤到表 `LiteLLM_SpendLogs` 中
 
 ```json title="Spend Log Entry Format" showLineNumbers
 {
@@ -158,35 +158,35 @@ The following spend gets tracked in Table `LiteLLM_SpendLogs`
 }
 ```
 
-Navigate to the Usage Tab on the LiteLLM UI (found on https://your-proxy-endpoint/ui) and verify you see spend tracked under `Usage`
+前往 LiteLLM UI 上的 Usage 分頁（位於 https://your-proxy-endpoint/ui `Usage`
 
 <Image img={require('../../img/admin_ui_spend.png')} />
 
 </TabItem>
 </Tabs>
 
-### Requests that price to $0
+### 請求費用為 $0 的請求 {#requests-that-price-to-0}
 
-A request that carries usage but prices to `$0` on a model whose pricing entry has a non-zero rate is still written to `LiteLLM_SpendLogs` with `spend = 0`, and LiteLLM flags it in two places so the gap is visible instead of silently under-billed
+帶有用量但在定價項目有非零費率的模型上定價為 `$0` 的請求，仍會以 `LiteLLM_SpendLogs` 和 `spend = 0` 寫入，LiteLLM 會在兩個位置標記它，因此差異是可見的，而不是默默地少計費
 
-- one `WARNING` line in the proxy log naming the model group, the deployment's pricing entry and the pricing key it is missing, for example `pricing entry '<model_id>' has no input_cost_per_token, output_cost_per_token`
-- the Prometheus counter `litellm_zero_cost_requests_total`, labelled by `requested_model`, `model`, `model_id`, `api_provider` and `reason` (`missing_pricing_key`, `pricing_not_applied` or `cost_calculation_error`), so you can alert on it (see [Prometheus metrics](prometheus#request-counting-metrics))
+- 一則 `WARNING` 記錄，在 proxy log 中列出 model group、該 deployment 的定價項目，以及它缺少的定價鍵，例如 `pricing entry '<model_id>' has no input_cost_per_token, output_cost_per_token`
+- Prometheus 計數器 `litellm_zero_cost_requests_total`，以 `requested_model`、`model`、`model_id`、`api_provider` 和 `reason`（`missing_pricing_key`、`pricing_not_applied` 或 `cost_calculation_error`）標註，因此您可以對其設警報（請參閱 [Prometheus 指標](prometheus#request-counting-metrics)）
 
-Free models (every rate the request used is set to `0`) and requests that carry no usage are not flagged. To fix a `missing_pricing_key`, set the missing rate in the deployment's `model_info` or in the model cost map, or set every rate to `0` to mark the model free
+免費模型（請求使用的每個費率都設為 `0`）以及沒有帶有用量的請求不會被標記。若要修正 `missing_pricing_key`，請在 deployment 的 `model_info` 或 model cost map 中設定缺少的費率，或將每個費率都設為 `0` 以將模型標記為免費
 
-### Allowing Non-Proxy Admins to access `/spend` endpoints
+### 允許非 Proxy 管理員存取 `/spend` 端點 {#allowing-non-proxy-admins-to-access-spend-endpoints}
 
-Use this when you want non-proxy admins to access `/spend` endpoints
+當您希望非 proxy 管理員可存取 `/spend` 端點時使用此功能
 
 :::info
 
-Schedule a [meeting with us to get your Enterprise License](https://enterprise.litellm.ai/demo)
+安排與我們會議以取得您的 Enterprise License [與我們安排會議以取得您的 Enterprise License](https://enterprise.litellm.ai/demo)
 
 :::
 
-##### Create Key
+##### 建立金鑰 {#create-key}
 
-Create Key with with `permissions={"get_spend_routes": true}`
+使用 `permissions={"get_spend_routes": true}` 建立金鑰
 
 ```shell title="Generate Key with Spend Route Permissions" showLineNumbers
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -197,26 +197,26 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
     }'
 ```
 
-##### Use generated key on `/spend` endpoints
+##### 在 `/spend` 端點使用產生的金鑰 {#use-generated-key-on-spend-endpoints}
 
-Access spend Routes with newly generate keys
+使用新產生的金鑰存取支出路由
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30' \
   -H 'Authorization: Bearer sk-H16BKvrSNConSsBYLGc_7A'
 ```
 
-#### Reset Team, API Key Spend - MASTER KEY ONLY
+#### 重設團隊、API 金鑰支出 - 僅限 MASTER KEY {#reset-team-api-key-spend---master-key-only}
 
-Use `/global/spend/reset` if you want to:
+若您想要，請使用 `/global/spend/reset`：
 
-- Reset the Spend for all API Keys, Teams. The `spend` for ALL Teams and Keys in `LiteLLM_TeamTable` and `LiteLLM_VerificationToken` will be set to `spend=0`
+- 重設所有 API 金鑰、團隊的支出。所有團隊與金鑰在 `spend` 與 `LiteLLM_TeamTable` 中的 `LiteLLM_VerificationToken` 將被設為 `spend=0`
 
-- LiteLLM will maintain all the logs in `LiteLLMSpendLogs` for Auditing Purposes
+- LiteLLM 會保留 `LiteLLMSpendLogs` 中的所有記錄以供稽核
 
-##### Request
+##### 請求 {#request}
 
-Only the `LITELLM_MASTER_KEY` you set can access this route
+只有您設定的 `LITELLM_MASTER_KEY` 可以存取此路由
 
 ```shell
 curl -X POST \
@@ -225,15 +225,15 @@ curl -X POST \
   -H 'Content-Type: application/json'
 ```
 
-##### Expected Responses
+##### 預期回應 {#expected-responses}
 
 ```shell
 {"message":"Spend for all API Keys and Teams reset successfully","status":"success"}
 ```
 
-## Total spend per user
+## 每位使用者的總支出 {#total-spend-per-user}
 
-Assuming you have been issuing keys for end users, and setting their `user_id` on the key, you can check their usage.
+假設您已為終端使用者發放金鑰，並在金鑰上設定其 `user_id`，您可以查看他們的用量。
 
 ```shell title="Get User Spend - API Request" showLineNumbers
 curl -L -X GET 'http://localhost:4000/user/info?user_id=jane_smith' \
@@ -289,25 +289,25 @@ curl -L -X GET 'http://localhost:4000/user/info?user_id=jane_smith' \
 }
 ```
 
-**Warning**
-End users can provide the `user` parameter in their request bodies, doing this will increment the cost reported via `/customer/info?end_user_id=self-declared-user`, and not for the user that owns the key as reported by that API. This means users could "avoid" having their spend tracked, through their method.
-This means if you need to track user spend, and are giving end users API keys, you must always set user_id when creating their api keys, and use keys issued for that user every time you're making LLM calls on their behalf in backend services. This will track their spend.
+**警告**
+終端使用者可以在其請求本文中提供 `user` 參數；如此一來，透過 `/customer/info?end_user_id=self-declared-user` 報告的成本會增加到該參數所指定的使用者，而不是該 API 所回報的金鑰擁有者。這表示使用者可能會透過他們的方法「避免」其支出被追蹤。
+這表示如果您需要追蹤使用者支出，且有發放 API 金鑰給終端使用者，您必須在建立其 API 金鑰時一律設定 user_id，並且每次代表他們在後端服務中進行 LLM 呼叫時，都使用為該使用者發放的金鑰。這樣才能追蹤他們的支出。
 
-## Spend list endpoints (`/spend/keys` and `/spend/users`)
+## 支出清單端點（`/spend/keys` 與 `/spend/users`） {#spend-list-endpoints-spendkeys-and-spendusers}
 
-These endpoints list rows from the verification-token and user tables (ordered by spend). They are included in `spend_tracking_routes` for internal users.
+這些端點會列出 verification-token 與 user 表中的資料列（依支出排序）。它們包含在 `spend_tracking_routes` 中，供內部使用者使用。
 
-### Access control (default)
+### 存取控制（預設） {#access-control-default}
 
-By default, non-admin callers are **scoped to their own data**:
+預設情況下，非管理員呼叫者會**限定在自己的資料範圍內**：
 
-| Caller role | `/spend/keys` | `/spend/users` |
+| 呼叫者角色 | `/spend/keys` | `/spend/users` |
 |-------------|---------------|----------------|
-| `proxy_admin` / `proxy_admin_viewer` | All keys | All users (or `?user_id=` for one row) |
-| `internal_user` / `internal_user_view_only` | Keys where `user_id` matches the caller | Only the caller's row |
-| Non-admin with no `user_id` on the key | Empty list `[]` | Empty list `[]` |
+| `proxy_admin` / `proxy_admin_viewer` | 所有金鑰 | 所有使用者（或單一資料列的 `?user_id=`） |
+| `internal_user` / `internal_user_view_only` | `user_id` 與呼叫者相符的金鑰 | 只有呼叫者自己的資料列 |
+| 未在金鑰上設定 `user_id` 的非管理員 | 空清單 `[]` | 空清單 `[]` |
 
-An internal user who passes `?user_id=` for **another** user receives **HTTP 403** (not a silently filtered list).
+內部使用者若為**另一位**使用者傳遞 `?user_id=`，會收到 **HTTP 403**（而不是被靜默過濾的清單）。
 
 ```shell title="Admin — all keys" showLineNumbers
 curl -X GET 'http://localhost:4000/spend/keys' \
@@ -319,19 +319,19 @@ curl -X GET 'http://localhost:4000/spend/keys' \
   -H 'Authorization: Bearer <internal-user-key>'
 ```
 
-### Scoping cannot be disabled
+### 無法停用範圍限制 {#scoping-cannot-be-disabled}
 
-Caller scoping on `/spend/keys` and `/spend/users` is unconditional. There is no `general_settings` key or environment variable that restores the pre-scoping behavior where any authenticated key could list the full key and user tables. Automation that needs the full tables must use a `proxy_admin` or `proxy_admin_viewer` key.
+`/spend/keys` 和 `/spend/users` 上的呼叫者範圍限制是無條件啟用的。沒有任何 `general_settings` 金鑰或環境變數可以還原到範圍限制前的行為，也就是任何已驗證金鑰都能列出完整的 key 和 user 表。需要完整表格的自動化必須使用 `proxy_admin` 或 `proxy_admin_viewer` 金鑰。
 
 :::info
-Prefer `/user/info?user_id=...` or `/global/spend/report` for per-user spend analytics. The list endpoints are intended for admin dashboards and scoped self-service views.
+針對每位使用者的支出分析，請優先使用 `/user/info?user_id=...` 或 `/global/spend/report`。這些清單端點是為管理員儀表板與已限定範圍的自助式檢視而設計。
 :::
 
-## Daily Spend Breakdown API
+## 每日支出明細 API {#daily-spend-breakdown-api}
 
-Retrieve granular daily usage data for a user (by model, provider, and API key) with a single endpoint.
+透過單一端點擷取使用者的細粒度每日用量資料（按模型、提供者與 API 金鑰）。
 
-Example Request:
+範例請求：
 
 ```shell title="Daily Spend Breakdown API" showLineNumbers
 curl -L -X GET 'http://localhost:4000/user/daily/activity?start_date=2025-03-20&end_date=2025-03-27' \
@@ -374,32 +374,32 @@ curl -L -X GET 'http://localhost:4000/user/daily/activity?start_date=2025-03-20&
 }
 ```
 
-### API Reference
+### API 參考 {#api-reference}
 
-See our [Swagger API](https://docs.litellm.ai/api-reference/#/Budget%20%26%20Spend%20Tracking/get_user_daily_activity_user_daily_activity_get) for more details on the `/user/daily/activity` endpoint
+請參閱我們的 [Swagger API](https://docs.litellm.ai/api-reference/#/Budget%20%26%20Spend%20Tracking/get_user_daily_activity_user_daily_activity_get) 以取得關於 `/user/daily/activity` 端點的更多詳細資訊
 
 :::info
-Request counts on this endpoint are derived from spend logs, so they only cover requests that were logged and they record each upstream attempt separately. For counts of what the gateway actually answered, including requests rejected before a key or model was resolved, use [`/gateway/daily/activity`](./endpoint_activity.md#gateway-daily-activity). The two are not expected to match
+此端點上的請求計數是從 spend logs 推導而來，因此只涵蓋已記錄的請求，且會分別記錄每次上游嘗試。若要取得閘道實際回應的計數，包括在 key 或 model 尚未解析前就被拒絕的請求，請使用 [`/gateway/daily/activity`](./endpoint_activity.md#gateway-daily-activity)。這兩者預期不會相符
 :::
 
-## Custom Tags
+## 自訂標籤 {#custom-tags}
 
-:::tip[See Full Request Tags Documentation]
-For full documentation on all tag options including `x-litellm-tags` header, request body `tags`, and config-based tags, see the dedicated [Request Tags](./request_tags.md) page.
+:::tip[請參閱完整請求標籤文件]
+如需包含 `x-litellm-tags` header、request body `tags` 以及基於設定的標籤在內的所有標籤選項完整文件，請參閱專用的 [Request Tags](./request_tags.md) 頁面。
 :::
 
-Requirements:
+需求：
 
-- Virtual Keys & a database should be set up, see [virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
+- Virtual Keys 與資料庫應已設定，請參閱 [virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
 
-**Note:** By default, LiteLLM will track `User-Agent` as a custom tag for cost tracking. This enables viewing usage for tools like Claude Code, Gemini CLI, etc.
+**注意：** 預設情況下，LiteLLM 會將 `User-Agent` 作為支出追蹤的自訂標籤進行追蹤。這可讓您檢視 Claude Code、Gemini CLI 等工具的用量。
 
 <Image img={require('../../img/claude_cli_tag_usage.png')} />
 
-### Client-side spend tag
+### 用戶端支出標籤 {#client-side-spend-tag}
 
 <Tabs>
-<TabItem value="key" label="Set on Key">
+<TabItem value="key" label="設定於金鑰">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -415,7 +415,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 ```
 
 </TabItem>
-<TabItem value="team" label="Set on Team">
+<TabItem value="team" label="設定於團隊">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/team/new' \
@@ -433,7 +433,7 @@ curl -L -X POST 'http://0.0.0.0:4000/team/new' \
 </TabItem>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-Set `extra_body={"metadata": { }}` to `metadata` you want to pass
+將您想要傳遞的 `extra_body={"metadata": { }}` 設為 `metadata`
 
 ```python
 import openai
@@ -502,7 +502,7 @@ runOpenAI();
 
 <TabItem value="Curl" label="Curl Request">
 
-Pass `metadata` as part of the request body
+將 `metadata` 作為請求本文的一部分傳入
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -558,9 +558,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-### Add custom headers to spend tracking
+### 新增自訂標頭以進行支出追蹤 {#add-custom-headers-to-spend-tracking}
 
-You can add custom headers to the request to track spend and usage.
+您可以在請求中新增自訂標頭，以追蹤支出與用量。
 
 ```yaml
 litellm_settings:
@@ -568,39 +568,39 @@ litellm_settings:
     - "x-custom-header"
 ```
 
-### Disable user-agent tracking
+### 停用 user-agent 追蹤 {#disable-user-agent-tracking}
 
-You can disable user-agent tracking by setting `litellm_settings.disable_add_user_agent_to_request_tags` to `true`.
+您可以將 `litellm_settings.disable_add_user_agent_to_request_tags` 設為 `true` 來停用 user-agent 追蹤。
 
 ```yaml
 litellm_settings:
   disable_add_user_agent_to_request_tags: true
 ```
 
-## ✨ (Enterprise) Generate Spend Reports
+## ✨（Enterprise）產生支出報告 {#-enterprise-generate-spend-reports}
 
-Use this to charge other teams, customers, users
+用於向其他團隊、客戶、使用者收費
 
-Use the `/global/spend/report` endpoint to get spend reports
+使用 `/global/spend/report` 端點取得支出報告
 
 <Tabs>
 
-<TabItem value="per team" label="Spend Per Team">
+<TabItem value="per team" label="每個團隊的支出">
 
-#### Example Request
+#### 範例請求 {#example-request}
 
-👉 Key Change: Specify `group_by=team`
+👉 金鑰變更：指定 `group_by=team`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30&group_by=team' \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-#### Example Response
+#### 範例回應 {#example-response}
 
 <Tabs>
 
-<TabItem value="response" label="Expected Response">
+<TabItem value="response" label="預期回應">
 
 ```shell
 [
@@ -644,7 +644,7 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 </TabItem>
 
-<TabItem value="py-script" label="Script to Parse Response (Python)">
+<TabItem value="py-script" label="剖析回應的腳本（Python）">
 
 ```python
 import requests
@@ -677,7 +677,7 @@ for row in spend_report:
       print()
 ```
 
-Output from script
+腳本輸出
 
 ```shell
 # Date: 2024-05-11T00:00:00+00:00
@@ -707,26 +707,26 @@ Output from script
 
 </TabItem>
 
-<TabItem value="per customer" label="Spend Per Customer">
+<TabItem value="per customer" label="每位客戶的支出">
 
 :::info
 
-Customer [this is `user` passed to `/chat/completions` request](#how-to-track-spend-with-litellm)
+客戶 [這是 `user` 傳入 `/chat/completions` 請求時的值](#how-to-track-spend-with-litellm)
 
-- [LiteLLM API key](virtual_keys.md)
+- [LiteLLM API 金鑰](virtual_keys.md)
 
 :::
 
-#### Example Request
+#### 範例請求 {#example-request-1}
 
-👉 Key Change: Specify `group_by=customer`
+👉 主要變更：指定 `group_by=customer`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30&group_by=customer' \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-#### Example Response
+#### 範例回應 {#example-response-1}
 
 ```shell
 [
@@ -770,16 +770,16 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 </TabItem>
 
-<TabItem value="per key" label="Spend for Specific API Key">
+<TabItem value="per key" label="特定 API 金鑰的支出">
 
-👉 Key Change: Specify `api_key=sk-<your-litellm-api-key>`
+👉 主要變更：指定 `api_key=sk-<your-litellm-api-key>`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30&api_key=sk-<your-litellm-api-key>' \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-#### Example Response
+#### 範例回應 {#example-response-2}
 
 ```shell
 [
@@ -808,22 +808,22 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 </TabItem>
 
-<TabItem value="per user" label="Spend for Internal User (Key Owner)">
+<TabItem value="per user" label="內部使用者（金鑰擁有者）的支出">
 
 :::info
 
-Internal User (Key Owner): This is the value of `user_id` passed when calling [`/key/generate`](https://docs.litellm.ai/api-reference/#/key%20management/generate_key_fn_key_generate_post)
+內部使用者（金鑰擁有者）：這是呼叫 [`user_id`](https://docs.litellm.ai/api-reference/#/key%20management/generate_key_fn_key_generate_post) 時傳入的 `/key/generate` 值
 
 :::
 
-👉 Key Change: Specify `internal_user_id=ishaan`
+👉 主要變更：指定 `internal_user_id=ishaan`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-12-30&internal_user_id=ishaan' \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-#### Example Response
+#### 範例回應 {#example-response-3}
 
 ```shell
 [
@@ -888,47 +888,47 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 </Tabs>
 
-## 📊 Spend Logs API - Individual Transaction Logs
+## 📊 支出記錄 API - 個別交易記錄 {#-spend-logs-api---individual-transaction-logs}
 
-The `/spend/logs` endpoint now supports a `summarize` parameter to control data format when using date filters.
+`/spend/logs` 端點現在支援 `summarize` 參數，以在使用日期篩選器時控制資料格式。
 
-### Key Parameters
+### 主要參數 {#key-parameters}
 
-| Parameter   | Description                                                                                  |
+| 參數   | 說明                                                                                  |
 | ----------- | -------------------------------------------------------------------------------------------- |
-| `summarize` | **New parameter**: `true` (default) = aggregated data, `false` = individual transaction logs |
+| `summarize` | **新參數**：`true`（預設）= 彙總資料，`false` = 個別交易記錄 |
 
-### Examples
+### 範例 {#examples}
 
-**Get individual transaction logs:**
+**取得個別交易記錄：**
 
 ```bash title="Get Individual Transaction Logs" showLineNumbers
 curl -X GET "http://localhost:4000/spend/logs?start_date=2024-01-01&end_date=2024-01-02&summarize=false" \
 -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Get summarized data (default):**
+**取得彙總資料（預設）：**
 
 ```bash title="Get Summarized Spend Data" showLineNumbers
 curl -X GET "http://localhost:4000/spend/logs?start_date=2024-01-01&end_date=2024-01-02" \
 -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Use Cases:**
+**使用情境：**
 
-- `summarize=false`: Analytics dashboards, ETL processes, detailed audit trails
-- `summarize=true`: Daily spending reports, high-level cost tracking (legacy behavior)
+- `summarize=false`：分析儀表板、ETL 處理流程、詳細稽核軌跡
+- `summarize=true`：每日支出報告、高層級成本追蹤（舊行為）
 
-## Paginated Spend Logs - `/spend/logs/v2`
+## 分頁式 Spend Logs - `/spend/logs/v2` {#paginated-spend-logs---spendlogsv2}
 
-Use `/spend/logs/v2` for programmatic access to individual spend logs with page-based pagination. The legacy `/spend/logs` endpoint above truncates results to the 10,000 most recent matching rows (the response then carries an `x-litellm-spend-logs-truncated: true` header), so `/spend/logs/v2` is the recommended endpoint for exports and integrations.
+請使用 `/spend/logs/v2` 以程式化方式存取具有以頁面為基礎分頁的個別 spend logs。上方的舊版 `/spend/logs` 端點會將結果截斷為最近 10,000 筆符合條件的列（回應接著會帶有 `x-litellm-spend-logs-truncated: true` 標頭），因此 `/spend/logs/v2` 是匯出與整合的建議端點。
 
 ```bash title="Get a page of spend logs" showLineNumbers
 curl -X GET "http://localhost:4000/spend/logs/v2?start_date=2024-01-01%2000:00:00&end_date=2024-01-02%2023:59:59&page=1&page_size=100" \
 -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-`start_date` and `end_date` take `YYYY-MM-DD HH:MM:SS` timestamps. `page` starts at 1 and `page_size` accepts up to 1000 rows per page. The endpoint also accepts filters such as `api_key`, `user_id`, `team_id`, `model`, `status_filter`, `min_spend` and `max_spend`; the full list is on your proxy's Swagger page (`/docs`) under `/spend/logs/v2`.
+`start_date` 和 `end_date` 採用 `YYYY-MM-DD HH:MM:SS` 時間戳記。`page` 從 1 開始，而 `page_size` 每頁最多接受 1000 筆資料。此端點也接受 `api_key`、`user_id`、`team_id`、`model`、`status_filter`、`min_spend` 和 `max_spend` 等篩選條件；完整清單位於您的 proxy Swagger 頁面（`/docs`）中的 `/spend/logs/v2`。
 
 ```json title="Response format"
 {
@@ -941,29 +941,28 @@ curl -X GET "http://localhost:4000/spend/logs/v2?start_date=2024-01-01%2000:00:0
 }
 ```
 
-### The `total` count is capped at 10,000
+### `total` 計數上限為 10,000 {#the-total-count-is-capped-at-10000}
 
-Counting every matching row in a large time window caused expensive full scans on the spend logs table, so since v1.93.0 the count query behind this endpoint is bounded at 10,000 rows. When more rows match, `total` reports exactly `10000`, `total_pages` is derived from that capped value, and `total_is_capped` is `true`. Only the advertised count is capped. The data itself is never truncated, so pages past the advertised `total_pages` keep returning rows until the results are exhausted.
+在大型時間範圍內計算每一筆符合條件的列，會讓 spend logs 資料表產生昂貴的全表掃描，因此自 v1.93.0 起，此端點背後的 count 查詢上限為 10,000 列。當符合的列更多時，`total` 會準確回報 `10000`，`total_pages` 會根據這個上限值推導，而 `total_is_capped` 則是 `true`。只有公告的計數會受上限限制。資料本身絕不會被截斷，因此超過公告 `total_pages` 的頁面會持續回傳資料列，直到結果取完為止。
 
-There are two ways to read every matching row. When `total_is_capped` is `true`, ignore `total_pages` and keep requesting pages until you receive an empty `data` array. Alternatively, chunk your query into smaller time windows so each window matches fewer than 10,000 rows; every window then reports an exact `total`. Prefer the windowing approach for large exports, since it also avoids deep offset pagination, which gets slower the further in you page.
+有兩種方式可讀取每一筆符合條件的列。當 `total_is_capped` 為 `true` 時，請忽略 `total_pages`，並持續請求頁面，直到收到空的 `data` 陣列。或者，將查詢切分為較小的時間範圍，使每個時間範圍符合少於 10,000 筆資料列；此時每個時間範圍都會回報精確的 `total`。對於大型匯出，請優先使用時間範圍切分方式，因為這也可避免深層 offset 分頁，而 offset 越往後效能越慢。
 
-With `group_by_session=true`, pagination is bounded to the same 10,000-row window and a page starting past it returns no rows, so chunk the time window instead of paging past the cap.
+使用 `group_by_session=true` 時，分頁同樣受限於相同的 10,000 列視窗，而從超出該視窗的位置開始的頁面不會回傳任何資料列，因此請切分時間範圍，而不要在超過上限後繼續翻頁。
 
-## ✨ Custom Spend Log metadata
+## ✨ 自訂支出記錄中繼資料 {#-custom-spend-log-metadata}
 
-Log specific key,value pairs as part of the metadata for a spend log
+將特定 key,value 配對作為支出記錄中繼資料的一部分進行記錄
 
 <EnterpriseFeature feature="Logging specific key,value pairs in spend logs metadata" />
 
-Requirements: 
+需求：
 
-- Virtual Keys & a database should be set up, see [virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
+- 需要先設定 Virtual Keys 與資料庫，請參閱 [virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
 
-#### Usage - /chat/completions requests with special spend logs metadata 
-
+#### 用法 - 具有特殊支出記錄中繼資料的 /chat/completions 請求 {#usage---chatcompletions-requests-with-special-spend-logs-metadata}
 
 <Tabs>
-<TabItem value="key" label="Set on Key">
+<TabItem value="key" label="設定於金鑰">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -981,7 +980,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 ```
 
 </TabItem>
-<TabItem value="team" label="Set on Team">
+<TabItem value="team" label="設定於團隊">
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/team/new' \
@@ -1002,7 +1001,7 @@ curl -L -X POST 'http://0.0.0.0:4000/team/new' \
 
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-Set `extra_body={"metadata": { }}` to `metadata` you want to pass
+將 `extra_body={"metadata": { }}` 設為您要傳入的 `metadata`
 
 ```python
 import openai
@@ -1032,7 +1031,7 @@ response = client.chat.completions.create(
 print(response)
 ```
 
-**Using Headers:**
+**使用標頭：**
 
 ```python
 import openai
@@ -1059,7 +1058,6 @@ print(response)
 ```
 
 </TabItem>
-
 
 <TabItem value="openai js" label="OpenAI JS">
 
@@ -1098,7 +1096,7 @@ async function runOpenAI() {
 runOpenAI();
 ```
 
-**Using Headers:**
+**使用標頭：**
 
 ```js
 const openai = require('openai');
@@ -1136,9 +1134,9 @@ runOpenAI();
 
 </TabItem>
 
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
-Pass `metadata` as part of the request body
+將 `metadata` 作為請求主體的一部分傳入
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1161,9 +1159,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 
-<TabItem value="headers" label="Using Headers">
+<TabItem value="headers" label="使用標頭">
 
-Pass `x-litellm-spend-logs-metadata` as a request header with JSON string
+將 `x-litellm-spend-logs-metadata` 以 JSON 字串作為請求標頭傳入
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -1222,10 +1220,9 @@ print(response)
 </TabItem>
 </Tabs>
 
+#### 檢視含自訂中繼資料的支出 {#viewing-spend-w-custom-metadata}
 
-#### Viewing Spend w/ custom metadata
-
-#### `/spend/logs` Request Format 
+#### `/spend/logs` 請求格式  {#spendlogs-request-format}
 
 ```bash
 # request_id: e.g.: chatcmpl-9ZKMURhVYSi9D6r6PJ9vLcayIK0Vm
@@ -1233,7 +1230,7 @@ curl -X GET "http://0.0.0.0:4000/spend/logs?request_id=<your-call-id" \
 -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-#### `/spend/logs` Response Format
+#### `/spend/logs` 回應格式 {#spendlogs-response-format}
 ```bash
 [
     {

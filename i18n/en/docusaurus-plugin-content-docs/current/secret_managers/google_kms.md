@@ -1,0 +1,35 @@
+# Google Key Management Service
+
+<EnterpriseFeature />
+
+Use encrypted keys from Google KMS on the proxy
+
+Step 1. Add keys to env 
+```
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/credentials.json"
+export GOOGLE_KMS_RESOURCE_NAME="projects/*/locations/*/keyRings/*/cryptoKeys/*"
+export PROXY_DATABASE_URL_ENCRYPTED=b'\n$\x00D\xac\xb4/\x8e\xc...'
+```
+
+Step 2: Update Config
+
+```yaml
+general_settings:
+  key_management_system: "google_kms"
+  database_url: "os.environ/PROXY_DATABASE_URL_ENCRYPTED"
+  master_key: os.environ/LITELLM_MASTER_KEY
+```
+
+Step 3: Start + test proxy
+
+```
+$ litellm --config /path/to/config.yaml
+```
+
+And in another terminal
+```
+$ litellm --test 
+```
+
+[Quick Test Proxy](../proxy/user_keys)
+

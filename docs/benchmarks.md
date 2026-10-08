@@ -1,118 +1,115 @@
-
 import Image from '@theme/IdealImage';
 
-# Benchmarks
+# 基準測試 {#benchmarks}
 
-Benchmarks for LiteLLM Gateway (Proxy Server) tested against a fake OpenAI endpoint.
+LiteLLM Gateway（Proxy Server）針對假的 OpenAI endpoint 進行的基準測試。
 
+LiteLLM Gateway 在 1k RPS 下具有 **8ms P95 延遲**（請參閱 [此處](#4-instances) 的基準測試）
 
-LiteLLM Gateway has **8ms P95 latency** at 1k RPS (See benchmarks [here](#4-instances))
+## 高吞吐量設定檔：50K 到 100K token 提示詞下達到 3,000 RPS {#high-throughput-profile-3000-rps-with-50k-to-100k-token-prompts}
 
-## High-throughput profile: 3,000 RPS with 50K to 100K-token prompts
+大型提示詞會帶來與短篇聊天請求不同的閘道工作負載。Token 計數、預算檢查、支出追蹤與指標收集，都會在模型提供者呼叫之前或之後發生，並且在高請求量下可能成為瓶頸。
 
-Large prompts create a different gateway workload than short chat requests. Token counting, budget checks, spend tracking, and metrics collection all happen before or after the model-provider call and can become bottlenecks at high request volume.
+此基準測試比較了[高吞吐量部署設定檔](./proxy/high_throughput.md)與 `v1.101.0`。此設定檔結合了 Rust token 計數、共用資料庫連線、隔離的指標與支出處理，以及依流量自動擴縮。
 
-This benchmark compares the [high-throughput deployment profile](./proxy/high_throughput.md) with `v1.101.0`. The profile combines Rust token counting, shared database connections, isolated metrics and spend processing, and traffic-based autoscaling.
-
-:::info[Nightly benchmark]
-The high-throughput profile is still in development and is available in nightly builds. These results used the earliest available version of the complete profile.
+:::info[夜間基準測試]
+高吞吐量設定檔仍在開發中，並可於 nightly builds 中使用。這些結果使用的是完整設定檔可取得的最早版本。
 :::
 
-### Results
+### 結果 {#results}
 
-| Category | Metric | High-throughput profile | `v1.101.0` | Change |
+| 類別 | 指標 | 高吞吐量設定檔 | `v1.101.0` | 變化 |
 |---|---|---:|---:|---:|
-| Deployment | Gateway pods | 33 | 132 | 4x fewer |
-|  | Workers per pod | 4 | 1 | |
-|  | Total workers | 132 | 132 | same |
-| Throughput | Requests/sec | 3.00K | 0.19K | 16x |
+| 部署 | Gateway pods | 33 | 132 | 少 4 倍 |
+|  | 每個 pod 的 worker 數 | 4 | 1 | |
+|  | 總 worker 數 | 132 | 132 | 相同 |
+| 吞吐量 | Requests/sec | 3.00K | 0.19K | 16x |
 |  | Tokens/sec | 224.61M | 6.92M | 32x |
-|  | Projected tokens/30 days | 582.20T | 17.94T | 32x |
-| Reliability | HTTP 200 rate (Locust) | 100.00% | 92.07% | |
-| Request latency | p50 | 30.581 ms | 6.950 s | 227x |
+|  | 預估 tokens/30 天 | 582.20T | 17.94T | 32x |
+| 可靠性 | HTTP 200 rate (Locust) | 100.00% | 92.07% | |
+| 請求延遲 | p50 | 30.581 ms | 6.950 s | 227x |
 |  | p95 | 54.029 ms | 27.451 s | 508x |
 |  | p99 | 91.645 ms | 29.826 s | 325x |
-| Time to first token | p50 | 31.667 ms | 9.400 s | 297x |
+| 首個 token 的時間 | p50 | 31.667 ms | 9.400 s | 297x |
 
-The profile reached the full 3,000 RPS target with 100 percent client-visible success. The baseline settled near 190 RPS and returned a successful response for 92.07 percent of requests.
+此設定檔以 100% 的客戶可見成功率達到完整 3,000 RPS 目標。基準組穩定在接近 190 RPS，且 92.07% 的請求回傳成功回應。
 
-### Test setup
+### 測試設定 {#test-setup}
 
-| Test dimension | Configuration |
+| 測試面向 | 設定 |
 |---|---|
-| Load generator | Distributed Locust with one master and 30 workers |
-| Traffic | 3,000 simulated users at one request per second each |
-| Request mix | 50K, 75K, and 100K-token prompts in equal shares |
-| Streaming | 50 percent of requests |
-| Endpoint | `/v1/chat/completions` with `max_tokens: 16` |
-| Authentication | Virtual key with a budget, so admission token counting and budget reservation ran |
-| Model | In-process mock model with response caching disabled |
-| Network path | Public AWS Application Load Balancer |
-| Client timeout | 60 seconds |
-| Run duration | High-throughput profile: 24m 22s. Baseline: 5m 7s. |
+| 負載產生器 | 分散式 Locust，1 個 master 與 30 個 workers |
+| 流量 | 3,000 名模擬使用者，每人每秒 1 個請求 |
+| 請求混合 | 50K、75K 與 100K-token 提示詞，各佔相同比例 |
+| 串流 | 50% 的請求 |
+| 端點 | `/v1/chat/completions` 搭配 `max_tokens: 16` |
+| 驗證 | 帶有預算的虛擬金鑰，因此會執行 admission token 計數與預算保留 |
+| 模型 | 內建 mock model，且停用回應快取 |
+| 網路路徑 | 公開 AWS Application Load Balancer |
+| 用戶端逾時 | 60 秒 |
+| 執行時間 | 高吞吐量設定檔：24m 22s。基準組：5m 7s。 |
 
-The mock model removes provider cost and provider latency while keeping the gateway request path active. The test still includes authentication, budgets, token counting, spend tracking, and metrics.
+此 mock model 移除了提供者成本與提供者延遲，同時保留閘道請求路徑的運作。測試仍包含驗證、預算、token 計數、支出追蹤與指標。
 
-Both deployments ran 132 total gateway workers and requested 528 GiB of memory. The high-throughput profile used 33 pods with four workers per pod and requested 132 vCPU. The baseline used 132 pods with one worker per pod and requested 264 vCPU.
+兩個部署都執行了 132 個閘道 worker，並請求了 528 GiB 記憶體。高吞吐量設定檔使用 33 個 pod、每個 pod 4 個 worker，並請求 132 vCPU。基準組使用 132 個 pod、每個 pod 1 個 worker，並請求 264 vCPU。
 
-### What made the difference
+### 造成差異的因素 {#what-made-the-difference}
 
-Each change below was measured separately before the complete profile was tested.
+以下每項變更都先單獨量測，之後才測試完整設定檔。
 
-| Change | Customer impact | Measured effect |
+| 變更 | 客戶影響 | 量測結果 |
 |---|---|---|
-| Rust admission token counting | Reduces CPU spent counting large prompts before dispatch. | 50K / 75K / 100K counts fell from 46 / 53 / 100 ms to 4.9 / 6.8 / 10.2 ms. |
-| PgBouncer per pod | Prevents database connections from multiplying with every worker. | Postgres held 86 to 175 connections across 11 to 29 pods, with no waiting PgBouncer clients. |
-| Spend collector sidecar | Keeps spend processing away from inference workers. | At 700 RPS, p99 fell from 1.8 s to 830 ms. Total compute stayed roughly the same. |
-| Metrics sidecar | Keeps Prometheus scrapes away from inference workers. | The sidecar used about 2 millicores per pod at 700 RPS. |
-| Higher CPU burst limit | Prevents all workers in a pod from being throttled together. | At 700 RPS, p99 fell from 830 ms to 670 ms. |
-| Gateway keep-alive | Keeps load-balancer connections valid during scaling. | ALB-generated 502 responses fell from 15 to zero in the 200 RPS test. |
-| RPS and TPS autoscaling | Reacts to traffic before CPU becomes saturated. | A new replica was added about 48 seconds after a 200-user load step. |
-| Admission token-count reuse | Avoids counting the same large streaming prompt twice in mock tests. | Streaming mock requests finished within about 30 ms of non-streaming requests. |
+| Rust admission token 計數 | 減少在分派前計算大型提示詞所耗費的 CPU。 | 50K / 75K / 100K 計數從 46 / 53 / 100 ms 降至 4.9 / 6.8 / 10.2 ms。 |
+| 每個 pod 一個 PgBouncer | 避免資料庫連線隨著每個 worker 成倍增加。 | Postgres 在 11 到 29 個 pod 間維持 86 到 175 個連線，且沒有等待中的 PgBouncer client。 |
+| 支出收集 sidecar | 將支出處理與推論 worker 分離。 | 在 700 RPS 時，p99 從 1.8 s 降至 830 ms。總計算量大致相同。 |
+| 指標 sidecar | 將 Prometheus scrape 與推論 worker 分離。 | 在 700 RPS 時，sidecar 每個 pod 約使用 2 millicores。 |
+| 更高的 CPU burst limit | 避免同一個 pod 中所有 worker 一起被 throttling。 | 在 700 RPS 時，p99 從 830 ms 降至 670 ms。 |
+| Gateway keep-alive | 在擴縮期間維持 load balancer 連線有效。 | 在 200 RPS 測試中，ALB 產生的 502 回應從 15 個降至 0。 |
+| RPS 與 TPS 自動擴縮 | 在 CPU 飽和前對流量做出反應。 | 在 200 使用者負載階梯後約 48 秒新增了一個副本。 |
+| Admission token-count 重用 | 避免在 mock 測試中對相同的大型串流提示詞重複計數。 | 串流 mock 請求在約 30 ms 內完成，與非串流請求相當。 |
 
-### How to read the metrics
+### 如何解讀指標 {#how-to-read-the-metrics}
 
-- Requests per second, tokens per second, projected tokens, and request latency come from the gateway's Prometheus metrics.
-- Time to first token comes from Locust and measures the time from sending the request to receiving the first streaming event. It includes request upload, the load balancer, and gateway admission work.
-- The HTTP 200 rate comes from Locust because it includes failures that never reached the gateway.
+- 每秒請求數、每秒 token 數、預估 token 數與請求延遲來自閘道的 Prometheus 指標。
+- 首個 token 的時間來自 Locust，衡量從送出請求到收到第一個串流事件的時間。它包含請求上傳、load balancer 與閘道 admission 工作。
+- HTTP 200 rate 來自 Locust，因為它包含從未到達閘道的失敗。
 
-The `v1.101.0` run had 5,118 client-visible failures: 4,546 client timeouts or dropped connections, 457 HTTP 504 responses, and 115 HTTP 502 responses. The gateway did not receive these requests, so its own success metric showed 100 percent while Locust showed 92.07 percent.
+`v1.101.0` 執行有 5,118 個客戶可見失敗：4,546 個客戶逾時或連線中斷、457 個 HTTP 504 回應，以及 115 個 HTTP 502 回應。閘道沒有收到這些請求，因此其自身的成功指標顯示 100%，而 Locust 顯示 92.07%。
 
-Use the `POST` rows when reading Locust throughput. Each streaming request also creates a `TTFT` row, so the Locust `Aggregated` row counts more entries than real requests when streaming is enabled.
+閱讀 Locust 吞吐量時請使用 `POST` 列。每個串流請求也會建立一列 `TTFT`，因此在啟用串流時，Locust 的 `Aggregated` 列所計數的項目會比真實請求更多。
 
-### Benchmark scope
+### 基準範圍 {#benchmark-scope}
 
-This is a before-and-after comparison of the complete profile, not a single-variable test. The deployments used different pod shapes and ran for different lengths of time. The individual effects in the table above come from separate A/B tests at 200 to 1,000 RPS.
+這是完整設定檔的前後比較，而不是單一變數測試。這些部署使用了不同的 pod 形狀，且執行時間也不同。上表中的個別效果來自 200 到 1,000 RPS 的獨立 A/B 測試。
 
-The in-process mock model excludes provider latency. These results measure gateway capacity for this specific traffic shape and should not be treated as universal production sizing guidance. Measure a representative workload before choosing worker counts, pod resources, and HPA targets.
+內建 mock model 排除了提供者延遲。這些結果衡量的是此特定流量形狀下的閘道容量，不應被視為通用的生產規模配置指南。在選擇 worker 數、pod 資源與 HPA 目標之前，請先量測具代表性的工作負載。
 
-The sections below use short request bodies against a fake OpenAI endpoint on 4 CPU / 8 GB machines. They are not directly comparable with this large-prompt benchmark.
+以下各節使用在 4 CPU / 8 GB 機器上，對假 OpenAI 端點發出的短請求本文。它們無法直接與此大型提示詞基準測試相比。
 
-## Machine Spec used for testing
+## 用於測試的機器規格 {#machine-spec-used-for-testing}
 
-Each machine deploying LiteLLM had the following specs:
+每台部署 LiteLLM 的機器具有以下規格：
 
 - 4 CPU
 - 8GB RAM
 
-## Configuration
+## 設定 {#configuration}
 
-- Database: PostgreSQL. See [Database Sizing](./proxy/db_sizing.md) for how to size yours
-- Redis: Not used. Recommended in production; see [Redis Sizing](./proxy/redis_sizing.md)
-- Load generator: Locust, 1000 users, each with 0.5s to 1s of think time between requests. See [Locust Settings](#locust-settings) before comparing these numbers against your own run.
+- 資料庫：PostgreSQL。請參閱[資料庫容量規劃](./proxy/db_sizing.md)了解如何規劃您的配置
+- Redis：未使用。建議在 production 中使用；請參閱[Redis 容量規劃](./proxy/redis_sizing.md)
+- 負載產生器：Locust，1,000 名使用者，每次請求間有 0.5s 到 1s 的思考時間。在將這些數字與您自己的執行結果比較前，請參閱[Locust 設定](#locust-settings)。
 
+### 2 個 LiteLLM Proxy 執行個體 {#2-instance-litellm-proxy}
 
-### 2 Instance LiteLLM Proxy
+在這些測試中，基準延遲特性是針對 fake-openai-endpoint 量測。
 
-In these tests the baseline latency characteristics are measured against a fake-openai-endpoint.
+#### 效能指標 {#performance-metrics}
 
-#### Performance Metrics
-
-| **Type** | **Name** | **Median (ms)** | **95%ile (ms)** | **99%ile (ms)** | **Average (ms)** | **Current RPS** |
+| **類型** | **名稱** | **中位數 (ms)** | **95%ile (ms)** | **99%ile (ms)** | **平均值 (ms)** | **目前 RPS** |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | /chat/completions | 200 | 630 | 1200 | 262.46 | 1035.7 |
 | Custom | LiteLLM Overhead Duration (ms) | 12 | 29 | 43 | 14.74 | 1035.7 |
-|  | Aggregated | 100 | 430 | 930 | 138.6 | 2071.4 |
+|  | 彙總 | 100 | 430 | 930 | 138.6 | 2071.4 |
 
 {/* <Image img={require('../img/1_instance_proxy.png')} /> */}
 
@@ -120,26 +117,24 @@ In these tests the baseline latency characteristics are measured against a fake-
 
 <Image img={require('../img/instances_vs_rps.png')} /> */}
 
+### 4 個執行個體 {#4-instances}
 
-### 4 Instances
-
-| **Type** | **Name** | **Median (ms)** | **95%ile (ms)** | **99%ile (ms)** | **Average (ms)** | **Current RPS** |
+| **類型** | **名稱** | **中位數 (ms)** | **95%ile (ms)** | **99%ile (ms)** | **平均值 (ms)** | **目前 RPS** |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | /chat/completions | 100 | 150 | 240 | 111.73 | 1170 |
 | Custom | LiteLLM Overhead Duration (ms) | 2 | 8 | 13 | 3.32 | 1170 |
-|  | Aggregated | 77 | 130 | 180 | 57.53 | 2340 |
+|  | 彙總 | 77 | 130 | 180 | 57.53 | 2340 |
 
-#### Key Findings
-- Doubling from 2 to 4 LiteLLM instances halves median latency: 200 ms → 100 ms.
-- High-percentile latencies drop significantly: P95 630 ms → 150 ms, P99 1,200 ms → 240 ms.
-- Setting workers equal to CPU count gives optimal performance.
+#### 主要發現 {#key-findings}
+- 從 2 個 LiteLLM 執行個體加倍到 4 個時，中位延遲減半：200 ms → 100 ms。
+- 高百分位延遲顯著下降：P95 630 ms → 150 ms，P99 1,200 ms → 240 ms。
+- 將 workers 設為與 CPU 數量相同可獲得最佳效能。
 
+## 使用網路模擬設定基準測試 {#setting-up-benchmarking-with-network-mock}
 
-## Setting Up Benchmarking with Network Mock
+測量 proxy 開銷最快的方法是使用 `network_mock` 模式。這會在 httpx transport 層攔截對外請求並回傳預先準備好的回應，不需要設定模擬提供者。 
 
-The fastest way to benchmark proxy overhead is using `network_mock` mode. This intercepts outbound requests at the httpx transport layer and returns canned responses, no need for setting up a mock provider. 
-
-**1. Create a proxy config:**
+**1. 建立 proxy 設定：**
 
 ```yaml
 model_list:
@@ -159,30 +154,30 @@ general_settings:
   master_key: "sk-<your-litellm-master-key>"
 ```
 
-**2. Start the proxy:**
+**2. 啟動 proxy：**
 
 ```bash
 litellm --config benchmark_config.yaml --port 4000 --num_workers 8
 ```
 
-**3. Run the benchmark script:**
+**3. 執行基準測試腳本：**
 
 ```bash
 python scripts/benchmark_mock.py --requests 2000 --max-concurrent 200 --runs 3
 ```
 
-Get the benchmarking script [here](https://github.com/BerriAI/litellm/blob/main/scripts/benchmark_mock.py)
+在 [此處](https://github.com/BerriAI/litellm/blob/main/scripts/benchmark_mock.py) 取得基準測試腳本
 
-This measures pure proxy overhead on the hot path without any network latency to a real or fake provider.
+這可量測熱路徑上的純 proxy 開銷，不含任何到真實或假的提供者之網路延遲。
 
-## Setting Up a Fake OpenAI Endpoint
+## 設定假的 OpenAI Endpoint {#setting-up-a-fake-openai-endpoint}
 
-For load testing and benchmarking, you can use a fake OpenAI proxy server. LiteLLM provides:
+若要進行負載測試與基準測試，您可以使用假的 OpenAI proxy server。LiteLLM 提供：
 
-1. **Hosted endpoint**: Use our free hosted fake endpoint at `https://exampleopenaiendpoint-production.up.railway.app/`
-2. **Self-hosted**: Set up your own fake OpenAI proxy server using [github.com/BerriAI/example_openai_endpoint](https://github.com/BerriAI/example_openai_endpoint)
+1. **代管 endpoint**：使用我們免費代管的假 endpoint：`https://exampleopenaiendpoint-production.up.railway.app/`
+2. **自架**：使用 [github.com/BerriAI/example_openai_endpoint](https://github.com/BerriAI/example_openai_endpoint) 設定您自己的假 OpenAI proxy server
 
-Use this config for testing:
+使用此設定進行測試：
 
 ```yaml
 model_list:
@@ -193,53 +188,51 @@ model_list:
       api_key: "test"
 ```
 
-## `/realtime` API Benchmarks
+## `/realtime` API 基準測試 {#realtime-api-benchmarks}
 
-End-to-end latency benchmarks for the `/realtime` endpoint tested against a fake realtime endpoint.
+針對 `/realtime` endpoint 的端到端延遲基準測試，測試對象為假的即時 endpoint。
 
-### Performance Metrics
+### 效能指標 {#performance-metrics-1}
 
-| Metric          | Value      |
+| 指標          | 數值      |
 | --------------- | ---------- |
-| Median latency  | 59 ms      |
-| p95 latency     | 67 ms      |
-| p99 latency     | 99 ms      |
-| Average latency | 63 ms      |
+| 中位延遲  | 59 ms      |
+| p95 延遲     | 67 ms      |
+| p99 延遲     | 99 ms      |
+| 平均延遲 | 63 ms      |
 | RPS             | 1,207      |
 
-### Test Setup
+### 測試設定 {#test-setup-1}
 
-| Category | Specification |
+| 類別 | 規格 |
 |----------|---------------|
-| **Load Testing** | Locust: 1,000 users with 0.5s to 1s think time, 500 ramp-up |
-| **System** | 4 vCPUs, 8 GB RAM, 4 workers, 4 instances |
-| **Database** | PostgreSQL (Redis unused) |
+| **負載測試** | Locust：1,000 名使用者，思考時間 0.5s 到 1s，500 個 ramp-up |
+| **系統** | 4 vCPU、8 GB RAM、4 個 worker、4 個 instance |
+| **資料庫** | PostgreSQL（未使用 Redis） |
 
+## 基礎架構建議 {#infrastructure-recommendations}
 
-## Infrastructure Recommendations
+以上執行使用單一 PostgreSQL instance 且未使用 Redis，這是基準設定而非 production 設定。關於各請求率下的 instance 大小、決定部署是否能在擴增後存活的連線計算方式，以及在 AWS、Azure 和 GCP 上可直接使用的受管服務選擇，請參閱[資料庫容量規劃](./proxy/db_sizing.md)與[Redis 容量規劃](./proxy/redis_sizing.md)。若要了解配套的閘道端設定，請參閱[生產環境最佳實務](./proxy/prod.md)。
 
-The runs above used a single PostgreSQL instance and no Redis, which is a benchmark configuration rather than a production one. For instance sizes at each request rate, the connection math that decides whether a deployment survives a scale-out, and concrete managed-service picks on AWS, Azure, and GCP, see [Database Sizing](./proxy/db_sizing.md) and [Redis Sizing](./proxy/redis_sizing.md). For the gateway-side configuration that goes with it, see [Production Best Practices](./proxy/prod.md).
+## Locust 設定 {#locust-settings}
 
-## Locust Settings
+- 1000 名使用者
+- 500 名使用者 Ramp Up
+- `wait_time = between(0.5, 1)`，因此每位使用者會在每次請求之間休息 0.5s 到 1s
 
-- 1000 Users
-- 500 user Ramp Up
-- `wait_time = between(0.5, 1)`, so every user sleeps 0.5s to 1s between requests
+### 為何在重現這些數字時，思考時間很重要 {#why-the-think-time-matters-when-you-reproduce-these-numbers}
 
-### Why the think time matters when you reproduce these numbers
+Locust 使用者的時間不是在等待回應，就是在休息。若思考時間平均為 0.75s，且回應約為 110ms，則 1000 位使用者中的每一位大約每 0.86s 完成一個請求，因此此執行提供約 1160 RPS，並在任何瞬間維持大約 **130 個 in-flight 請求**。上面延遲欄位所描述的是這個 in-flight 深度，而不是使用者數。
 
-A Locust user spends its time either waiting on a response or sleeping. With a 0.75s mean think time and ~110ms responses, each of the 1000 users completes a request about every 0.86s, so the run offers ~1160 RPS and holds roughly **130 requests in flight** at any instant. That in-flight depth, not the user count, is what the latency columns above describe.
+沒有思考時間的 closed-loop client 測量的是不同的東西。1000 個並行 worker 在前一個請求一返回就送出下一個請求，會維持 **1000 個 in-flight 請求**，大約是這些執行 queue 深度的 8 倍。一旦閘道飽和，其吞吐量就會固定，而依 Little's Law，任何 client 觀察到的延遲就只是 `requests in flight / throughput`。因此，同一個部署、在相同 RPS 下，純粹因為 client 將 8 倍多的工作排入其中，所回報的延遲大約就是 8 倍。延遲與並行度並非獨立，缺少其中任一項，另一個數字都沒有意義。
 
-A closed-loop client with no think time is measuring something else. 1000 concurrent workers that send the next request the moment the previous one returns hold **1000 requests in flight**, about 8x the queue depth of these runs. Once a gateway is saturated its throughput is fixed, and by Little's Law the latency each client observes is just `requests in flight / throughput`. So the same deployment, at the same RPS, reports roughly 8x the latency purely because the client queued 8x as much work into it. Latency and concurrency are not independent, and neither number means anything without the other.
+若要與上方的表格比較，請保留 0.5 秒到 1 秒的思考時間，或將您用戶端的 in-flight 請求數維持在接近 130，並將其與延遲一併回報。也值得先回報 RPS：如果您的執行結果顯示比這些表格更高的 RPS 和更高的延遲，表示您的閘道比此基準測試更快，而您的用戶端只是排入更深的佇列。
 
-To compare against the tables above, either keep the 0.5s to 1s think time, or hold your client's in-flight request count near 130 and report it alongside the latency. It is also worth reporting RPS first: if your run shows higher RPS and higher latency than these tables, your gateway is faster than this benchmark and your client is simply queueing deeper.
+## 如何測量 LiteLLM Overhead {#how-to-measure-litellm-overhead}
 
-## How to measure LiteLLM Overhead
+來自 litellm 的所有回應都會包含 `x-litellm-overhead-duration-ms` 標頭，這是 LiteLLM Proxy 額外加入的延遲開銷，單位為毫秒。
 
-All responses from litellm will include the `x-litellm-overhead-duration-ms` header, this is the latency overhead in milliseconds added by LiteLLM Proxy.
-
-
-If you want to measure this on locust you can use the following code:
+如果您想在 locust 上測量這項數值，可以使用以下程式碼：
 
 ```python showLineNumbers title="Locust Code for measuring LiteLLM Overhead"
 import os
@@ -290,72 +283,67 @@ class MyUser(HttpUser):
                 error_log.write(response.text + "\n")
 ```
 
+## LiteLLM 與 Portkey 效能比較 {#litellm-vs-portkey-performance-comparison}
 
-## LiteLLM vs Portkey Performance Comparison
+**測試設定**：每個執行個體 4 CPU、8 GB RAM｜負載：1k 同時使用者、500 個漸增
+**版本：** Portkey **v1.14.0**｜LiteLLM **v1.79.1-stable**  
+**測試時間：** 5 分鐘
 
-**Test Configuration**: 4 CPUs, 8 GB RAM per instance | Load: 1k concurrent users, 500 ramp-up
-**Versions:** Portkey **v1.14.0** | LiteLLM **v1.79.1-stable**  
-**Test Duration:** 5 minutes  
+### 多執行個體（4×）效能 {#multi-instance-4-performance}
 
-### Multi-Instance (4×) Performance
-
-| Metric              | Portkey (no DB) | LiteLLM (with DB) | Comment        |
+| 指標              | Portkey（無 DB） | LiteLLM（有 DB） | 備註        |
 | ------------------- | --------------- | ----------------- | -------------- |
-| **Total Requests**  | 293,796         | 312,405           | LiteLLM higher |
-| **Failed Requests** | 0               | 0                 | Same           |
-| **Median Latency**  | 100 ms          | 100 ms            | Same           |
-| **p95 Latency**     | 230 ms          | 150 ms            | LiteLLM lower  |
-| **p99 Latency**     | 500 ms          | 240 ms            | LiteLLM lower  |
-| **Average Latency** | 123 ms          | 111 ms            | LiteLLM lower  |
-| **Current RPS**     | 1,170.9         | 1,170             | Same           |
+| **總請求數**  | 293,796         | 312,405           | LiteLLM 較高 |
+| **失敗請求數** | 0               | 0                 | 相同           |
+| **中位延遲**  | 100 ms          | 100 ms            | 相同           |
+| **p95 延遲**     | 230 ms          | 150 ms            | LiteLLM 較低  |
+| **p99 延遲**     | 500 ms          | 240 ms            | LiteLLM 較低  |
+| **平均延遲** | 123 ms          | 111 ms            | LiteLLM 較低  |
+| **目前 RPS**     | 1,170.9         | 1,170             | 相同           |
 
+*延遲指標越低越好；請求數與 RPS 越高越好。*
 
-*Lower is better for latency metrics; higher is better for requests and RPS.*
-
-### Technical Insights
+### 技術洞見 {#technical-insights}
 
 **Portkey**
 
-**Pros**
+**優點**
 
-* Low memory footprint
-* Stable latency with minimal spikes
+* 記憶體占用低
+* 延遲穩定，尖峰最小
 
-**Cons**
+**缺點**
 
-* CPU utilization capped around ~40%, indicating underutilization of available compute resources
-* Experienced three I/O timeout outages
+* CPU 使用率約封頂在 ~40%，顯示未充分利用可用運算資源
+* 曾發生三次 I/O timeout 當機
 
 **LiteLLM**
 
-**Pros**
+**優點**
 
-* Fully uses available CPU capacity
-* Strong connection handling and low latency after initial warm-up spikes
+* 完全使用可用的 CPU 容量
+* 強健的連線處理，以及初始暖機尖峰之後的低延遲
 
-**Cons**
+**缺點**
 
-* High memory usage during initialization and per request
+* 初始化期間與每次請求的記憶體使用量高
 
+## 記錄回呼 {#logging-callbacks}
 
+### [GCS Bucket 記錄](https://docs.litellm.ai/docs/observability/gcs_bucket_integration) {#gcs-bucket-logging}
 
-## Logging Callbacks
+使用 GCS Bucket 對延遲、RPS 相較於基本 Litellm Proxy **沒有影響**
 
-### [GCS Bucket Logging](https://docs.litellm.ai/docs/observability/gcs_bucket_integration)
-
-Using GCS Bucket has **no impact on latency, RPS compared to Basic Litellm Proxy**
-
-| Metric | Basic Litellm Proxy | LiteLLM Proxy with GCS Bucket Logging |
+| 指標 | 基本 Litellm Proxy | 啟用 GCS Bucket 記錄的 LiteLLM Proxy |
 |--------|------------------------|---------------------|
 | RPS | 1133.2 | 1137.3 |
-| Median Latency (ms) | 140 | 138 |
+| 中位延遲 (ms) | 140 | 138 |
 
+### [LangSmith 記錄](https://docs.litellm.ai/docs/proxy/logging) {#langsmith-logging}
 
-### [LangSmith logging](https://docs.litellm.ai/docs/proxy/logging)
+使用 LangSmith 對延遲、RPS 相較於基本 Litellm Proxy **沒有影響**
 
-Using LangSmith has **no impact on latency, RPS compared to Basic Litellm Proxy**
-
-| Metric | Basic Litellm Proxy | LiteLLM Proxy with LangSmith |
+| 指標 | 基本 Litellm Proxy | 啟用 LangSmith 的 LiteLLM Proxy |
 |--------|------------------------|---------------------|
 | RPS | 1133.2 | 1135 |
-| Median Latency (ms) | 140 | 132 |
+| 中位延遲 (ms) | 140 | 132 |

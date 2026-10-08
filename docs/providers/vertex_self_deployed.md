@@ -1,31 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI - Self Deployed Models
+# Vertex AI - 自行部署模型 {#vertex-ai---self-deployed-models}
 
-Deploy and use your own models on Vertex AI through Model Garden or custom endpoints.
+透過 Model Garden 或自訂端點，在 Vertex AI 上部署並使用您自己的模型。
 
-## Model Garden
+## Model Garden {#model-garden}
 
 :::tip
 
-All OpenAI compatible models from Vertex Model Garden are supported. 
+Vertex Model Garden 中所有與 OpenAI 相容的模型皆受支援。 
 
 :::
 
-### Using Model Garden
+### 使用 Model Garden {#using-model-garden}
 
-**Almost all Vertex Model Garden models are OpenAI compatible.**
+**幾乎所有 Vertex Model Garden 模型都與 OpenAI 相容。**
 
 <Tabs>
 
-<TabItem value="openai" label="OpenAI Compatible Models">
+<TabItem value="openai" label="OpenAI 相容模型">
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/openai/{MODEL_ID}` |
-| Vertex Documentation | [Model Garden LiteLLM Inference](https://github.com/GoogleCloudPlatform/generative-ai/blob/main/open-models/use-cases/model_garden_litellm_inference.ipynb), [Vertex Model Garden](https://cloud.google.com/model-garden?hl=en) |
-| Supported Operations | `/chat/completions`, `/embeddings` |
+| 提供者路由 | `vertex_ai/openai/{MODEL_ID}` |
+| Vertex 文件 | [Model Garden LiteLLM 推論](https://github.com/GoogleCloudPlatform/generative-ai/blob/main/open-models/use-cases/model_garden_litellm_inference.ipynb), [Vertex Model Garden](https://cloud.google.com/model-garden?hl=en) |
+| 支援的操作 | `/chat/completions`, `/embeddings` |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -48,8 +48,7 @@ response = completion(
 
 <TabItem value="proxy" label="Proxy">
 
-
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -60,7 +59,7 @@ model_list:
         vertex_ai_location: "us-east-1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -68,7 +67,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -86,15 +85,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
-
-
 </TabItem>
 
 </Tabs>
 
 </TabItem>
 
-<TabItem value="non-openai" label="Non-OpenAI Compatible Models">
+<TabItem value="non-openai" label="非 OpenAI 相容模型">
 
 ```python
 from litellm import completion
@@ -114,19 +111,19 @@ response = completion(
 
 </Tabs>
 
-## Gemma Models (Custom Endpoints)
+## Gemma 模型（自訂端點） {#gemma-models-custom-endpoints}
 
-Deploy Gemma models on custom Vertex AI prediction endpoints with OpenAI-compatible format.
+在具備 OpenAI 相容格式的自訂 Vertex AI 預測端點上部署 Gemma 模型。
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/gemma/{MODEL_NAME}` |
-| Vertex Documentation | [Vertex AI Prediction](https://cloud.google.com/vertex-ai/docs/predictions/get-predictions) |
-| Required Parameter | `api_base` - Full prediction endpoint URL |
+| 提供者路由 | `vertex_ai/gemma/{MODEL_NAME}` |
+| Vertex 文件 | [Vertex AI Prediction](https://cloud.google.com/vertex-ai/docs/predictions/get-predictions) |
+| 必要參數 | `api_base` - 完整的預測端點 URL |
 
-**Proxy Usage:**
+**Proxy 使用方式：**
 
-**1. Add to config.yaml**
+**1. 新增至 config.yaml**
 
 ```yaml
 model_list:
@@ -138,13 +135,13 @@ model_list:
       vertex_location: "us-central1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it**
+**3. 測試它**
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -157,7 +154,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-**SDK Usage:**
+**SDK 使用方式：**
 
 ```python
 from litellm import completion
@@ -171,19 +168,19 @@ response = completion(
 )
 ```
 
-## MedGemma Models (Custom Endpoints)
+## MedGemma 模型（自訂端點） {#medgemma-models-custom-endpoints}
 
-Deploy MedGemma models on custom Vertex AI prediction endpoints with OpenAI-compatible format. MedGemma models use the same `vertex_ai/gemma/` route.
+在具備 OpenAI 相容格式的自訂 Vertex AI 預測端點上部署 MedGemma 模型。MedGemma 模型使用相同的 `vertex_ai/gemma/` 路由。
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |----------|---------|
-| Provider Route | `vertex_ai/gemma/{MODEL_NAME}` |
-| Vertex Documentation | [Vertex AI Prediction](https://cloud.google.com/vertex-ai/docs/predictions/get-predictions) |
-| Required Parameter | `api_base` - Full prediction endpoint URL |
+| 提供者路由 | `vertex_ai/gemma/{MODEL_NAME}` |
+| Vertex 文件 | [Vertex AI Prediction](https://cloud.google.com/vertex-ai/docs/predictions/get-predictions) |
+| 必要參數 | `api_base` - 完整的預測端點 URL |
 
-**Proxy Usage:**
+**Proxy 使用方式：**
 
-**1. Add to config.yaml**
+**1. 新增至 config.yaml**
 
 ```yaml
 model_list:
@@ -195,13 +192,13 @@ model_list:
       vertex_location: "us-central1"
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it**
+**3. 測試它**
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -214,7 +211,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-**SDK Usage:**
+**SDK 使用方式：**
 
 ```python
 from litellm import completion

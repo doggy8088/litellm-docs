@@ -1,16 +1,16 @@
-# Mistral AI Batch API
+# Mistral AI 批次 API {#mistral-ai-batch-api}
 
-LiteLLM routes the OpenAI-compatible `/v1/files` and `/v1/batches` endpoints to Mistral's [Files](https://docs.mistral.ai/api/#tag/files) and [Batch](https://docs.mistral.ai/api/#tag/batch) APIs. A Mistral batch job runs one model for every line of the input file, so the model is picked once, on the file upload or the batch request, instead of per line. The job can target `/v1/chat/completions` or `/v1/ocr`, and OCR pages inside a batch are billed at Mistral's batch rate.
+LiteLLM 會將與 OpenAI 相容的 `/v1/files` 和 `/v1/batches` 端點路由至 Mistral 的 [Files](https://docs.mistral.ai/api/#tag/files) 與 [Batch](https://docs.mistral.ai/api/#tag/batch) API。Mistral 批次工作會針對輸入檔案的每一行執行一次模型，因此模型只會在檔案上傳或批次請求時選取一次，而不是逐行選取。此工作可目標指向 `/v1/chat/completions` 或 `/v1/ocr`，而批次中的 OCR 頁面則依 Mistral 的批次費率計費。
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Upload, retrieve, list, delete files | ✅ |
-| Download file content | ✅ |
-| Create and retrieve batches | ✅ |
-| List and cancel batches | Not yet |
-| Cost tracking for batch OCR | ✅ per page, see [Batch OCR cost tracking](#batch-ocr-cost-tracking) |
+| 上傳、擷取、列出、刪除檔案 | ✅ |
+| 下載檔案內容 | ✅ |
+| 建立與擷取批次 | ✅ |
+| 列出與取消批次 | 尚未支援 |
+| 批次 OCR 成本追蹤 | ✅ 每頁，請參閱 [批次 OCR 成本追蹤](#batch-ocr-cost-tracking) |
 
-## 1. Add a Mistral model to config.yaml
+## 1. 將 Mistral 模型新增至 config.yaml {#1-add-a-mistral-model-to-configyaml}
 
 ```yaml
 model_list:
@@ -20,16 +20,16 @@ model_list:
       api_key: os.environ/MISTRAL_API_KEY
 ```
 
-## 2. Upload the batch input file
+## 2. 上傳批次輸入檔案 {#2-upload-the-batch-input-file}
 
-Each line is an OpenAI batch request. For OCR the `url` is `/v1/ocr` and the `body` is a Mistral OCR request:
+每一行都是一個 OpenAI 批次請求。對於 OCR，`url` 是 `/v1/ocr`，而 `body` 是一個 Mistral OCR 請求：
 
 ```json
 {"custom_id": "doc-0", "method": "POST", "url": "/v1/ocr", "body": {"document": {"type": "document_url", "document_url": "https://arxiv.org/pdf/2201.04234"}}}
 {"custom_id": "doc-1", "method": "POST", "url": "/v1/ocr", "body": {"document": {"type": "document_url", "document_url": "https://arxiv.org/pdf/2201.04234"}}}
 ```
 
-Pass `model` with the upload so LiteLLM sends the file with that deployment's credentials and encodes the model into the returned file id. Every later call that carries the id reuses it.
+上傳時傳入 `model`，如此 LiteLLM 便會使用該部署的憑證傳送檔案，並將模型編碼進回傳的檔案 ID。之後任何帶有此 ID 的呼叫都會重用它。
 
 ```bash
 curl http://0.0.0.0:4000/v1/files \
@@ -39,11 +39,11 @@ curl http://0.0.0.0:4000/v1/files \
   -F file="@ocr_batch_input.jsonl"
 ```
 
-Mistral accepts the `batch`, `fine-tune`, and `ocr` purposes. LiteLLM maps `user_data` onto `ocr`, and any other purpose (`assistants`, `vision`, `evals`) is rejected with a 400 because Mistral has no equivalent.
+Mistral 接受 `batch`、`fine-tune` 和 `ocr` 用途。LiteLLM 會將 `user_data` 對應到 `ocr`，而任何其他用途（`assistants`、`vision`、`evals`）都會因為 Mistral 沒有對應項目而以 400 拒絕。
 
-## 3. Create the batch
+## 3. 建立批次 {#3-create-the-batch}
 
-`endpoint` is `/v1/ocr` for OCR jobs or `/v1/chat/completions` for chat jobs. The `model` is read from the encoded file id, so sending it again is optional.
+`endpoint` 對 OCR 工作是 `/v1/ocr`，對聊天工作則是 `/v1/chat/completions`。`model` 會從已編碼的檔案 ID 讀取，因此再次傳送是可選的。
 
 ```bash
 curl http://0.0.0.0:4000/v1/batches \
@@ -57,47 +57,47 @@ curl http://0.0.0.0:4000/v1/batches \
   }'
 ```
 
-Mistral has no `completion_window`; the value is accepted and echoed back as `24h`.
+Mistral 沒有 `completion_window`；此值會被接受並回傳為 `24h`。
 
-## 4. Poll the batch and download the output
+## 4. 查詢批次狀態並下載輸出 {#4-poll-the-batch-and-download-the-output}
 
 ```bash
 curl http://0.0.0.0:4000/v1/batches/batch_bGl0ZWxsbTo1YzU4... \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-Mistral's job statuses map onto the OpenAI ones: `QUEUED` -> `validating`, `RUNNING` -> `in_progress`, `SUCCESS` -> `completed`, `FAILED` -> `failed`, `TIMEOUT_EXCEEDED` -> `expired`, `CANCELLATION_REQUESTED` -> `cancelling`, `CANCELLED` -> `cancelled`. Once the status is `completed`, download `output_file_id`:
+Mistral 的工作狀態對應到 OpenAI 的狀態：`QUEUED` -> `validating`、`RUNNING` -> `in_progress`、`SUCCESS` -> `completed`、`FAILED` -> `failed`、`TIMEOUT_EXCEEDED` -> `expired`、`CANCELLATION_REQUESTED` -> `cancelling`、`CANCELLED` -> `cancelled`。狀態變為 `completed` 後，下載 `output_file_id`：
 
 ```bash
 curl http://0.0.0.0:4000/v1/files/file-bGl0ZWxsbToyNjE0.../content \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-Each output line carries the OCR response under `response.body`, including `usage_info.pages_processed`.
+每一個輸出行都會在 `response.body` 下攜帶 OCR 回應，包括 `usage_info.pages_processed`。
 
-## Listing files
+## 列出檔案 {#listing-files}
 
-A file id that LiteLLM encoded carries its own routing, but a plain list has no id to route on, so name the provider on the request:
+LiteLLM 已編碼的檔案 ID 會攜帶其自身的路由資訊，但單純的列表沒有可供路由的 ID，因此請在請求中指定提供者名稱：
 
 ```bash
 curl "http://0.0.0.0:4000/v1/files?provider=mistral&purpose=batch" \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-OCR files read back with `purpose=user_data`, and files created by other Mistral products with a purpose the upload endpoint does not accept (`playground`, `audio`, and similar) also read back as `user_data`, so an unfiltered list never fails on them.
+OCR 檔案會以 `purpose=user_data` 讀回，而由其他 Mistral 產品建立、其用途不被上傳端點接受的檔案（`playground`、`audio` 及其他類似項目）也會以 `user_data` 讀回，因此未過濾的列表不會因此失敗。
 
-## Batch OCR cost tracking
+## 批次 OCR 成本追蹤 {#batch-ocr-cost-tracking}
 
-When a batch that targets `/v1/ocr` completes, LiteLLM reads `usage_info.pages_processed` and `usage_info.pages_processed_annotation` from every line of the output file and bills each page at the model's batch rate. The rates come from the [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json):
+當目標指向 `/v1/ocr` 的批次完成時，LiteLLM 會從輸出檔案的每一行讀取 `usage_info.pages_processed` 和 `usage_info.pages_processed_annotation`，並以模型的批次費率對每一頁計費。費率來自 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)：
 
-| Key | Used for |
+| 鍵 | 用途 |
 |-----|----------|
-| `ocr_cost_per_page_batches` | OCR pages inside a batch |
-| `annotation_cost_per_page_batches` | Annotation pages inside a batch |
-| `ocr_cost_per_page` | Synchronous `/v1/ocr` calls, and the fallback when no batch rate is set |
-| `annotation_cost_per_page` | Synchronous annotation pages, and the fallback when no batch rate is set |
+| `ocr_cost_per_page_batches` | 批次中的 OCR 頁面 |
+| `annotation_cost_per_page_batches` | 批次中的註解頁面 |
+| `ocr_cost_per_page` | 同步 `/v1/ocr` 呼叫，以及未設定批次費率時的備援 |
+| `annotation_cost_per_page` | 同步註解頁面，以及未設定批次費率時的備援 |
 
-The batch rates for `mistral/mistral-ocr-latest` are half the synchronous per-page rates, matching Mistral's 50% batch discount. To bill at a different rate, set the keys on the deployment's `model_info`, which wins over the cost map for that deployment:
+`mistral/mistral-ocr-latest` 的批次費率是同步每頁費率的一半，與 Mistral 50% 的批次折扣相符。若要以不同費率計費，請在部署的 `model_info` 上設定這些鍵，這會覆蓋該部署的成本對照表：
 
 ```yaml
 model_list:
@@ -110,4 +110,4 @@ model_list:
       annotation_cost_per_page_batches: 0.0025
 ```
 
-The spend is recorded the first time a completed batch is retrieved, on the key that created it, under the batch id with a `_batch_cost` suffix, and shows up on the `/spend/logs` routes and the Admin UI Logs page.
+支出會在第一次擷取完成的批次時記錄在建立它的金鑰上，位於帶有 `_batch_cost` 後綴的批次 ID 底下，並會顯示在 `/spend/logs` 路由與 Admin UI Logs 頁面上。

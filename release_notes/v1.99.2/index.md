@@ -1,5 +1,5 @@
 ---
-title: "v1.99.2 - Caller Timeout Cooldowns"
+title: "v1.99.2 - 呼叫端逾時冷卻"
 slug: "v1-99-2"
 date: 2026-09-15T10:00:00
 authors:
@@ -18,15 +18,15 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info[This is a Docker-only release]
+:::info[這是僅適用於 Docker 的版本]
 
-`v1.99.2` is distributed as container images. There is no PyPI package for this version, so `pip install litellm==1.99.2` will not resolve, and `1.99.0` is the newest version this line ever published to PyPI. If you install LiteLLM from PyPI, this fix does not reach you yet: it is on the development line but is not in `1.101.0`, the current PyPI release, so it arrives in a later one.
+`v1.99.2` 以容器映像檔形式發布。此版本沒有 PyPI 套件，因此 `pip install litellm==1.99.2` 無法解析，而 `1.99.0` 是這條線路曾發布到 PyPI 的最新版本。如果您從 PyPI 安裝 LiteLLM，這個修正目前還不會到達您這裡：它位於開發線上，但不在目前的 PyPI 發行版 `1.101.0` 中，所以會在之後的版本才會提供。
 
-The `latest` tag does NOT point at this release. LiteLLM has moved well past the 1.99 line, so `latest` stays where it is and you have to ask for `1.99.2` by name.
+`latest` 標籤並不指向此版本。LiteLLM 已經遠遠超過 1.99 線路，因此 `latest` 會維持原樣，您需要以名稱要求 `1.99.2`。
 
 :::
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 ```bash
 docker run \
@@ -35,18 +35,18 @@ docker run \
 docker.litellm.ai/berriai/litellm:1.99.2
 ```
 
-`v1.99.2` is a patch release on top of [`v1.99.1`](/release_notes/v1.99.1/v1-99-1). It stops a caller's own request timeout from taking a deployment out of rotation for everyone else.
+`v1.99.2` 是建立在 [`v1.99.1`](/release_notes/v1.99.1/v1-99-1) 之上的修補版。它會阻止呼叫端自身的請求逾時，將部署從其他人可用的輪替中移除。
 
-If your proxy runs a model group with a low `allowed_fails` and callers that set their own per-request `timeout`, this release is worth picking up. Before it, a request that sent `"timeout": 0.001` and got the resulting 408 counted as a deployment failure, so one impatient caller could put a healthy deployment into cooldown and every other caller on that model group saw "No deployments available" until the cooldown expired. A 408 now counts against the deployment only when it arrives after the caller's own timeout could have fired, which is the point past which the provider, not the caller, is the one that ran long.
+如果您的 proxy 執行具有較低 `allowed_fails` 的模型群組，而且呼叫端會設定各自每次請求的 `timeout`，這個版本值得採用。在此之前，送出 `"timeout": 0.001` 並收到對應 408 的請求會被算作部署失敗，因此一個沒耐心的呼叫端就可能讓健康的部署進入冷卻，且該模型群組上的其他所有呼叫端都會看到「沒有可用的部署」，直到冷卻期結束為止。現在，只有在 408 抵達時已經晚於呼叫端自身逾時可能觸發的時間點，才會將其計入部署；也就是說，超過那個時間點後，已經不是呼叫端，而是提供者本身跑得太久。
 
-The guard is narrow on purpose. A deployment configured with its own small `timeout` still gets cooled down on a 408, so a genuinely slow or unhealthy deployment is still pulled out of rotation the way it always was. The marker that makes a timeout caller-set is written by the proxy, so callers driving the Router directly through the SDK are unaffected either way.
+這個防護刻意設得很狹窄。若部署本身配置了較小的 `timeout`，在收到 408 時仍會進入冷卻，因此真正緩慢或不健康的部署仍會照常被移出輪替。將逾時標記為由呼叫端設定的是 proxy，因此透過 SDK 直接驅動 Router 的呼叫端，不論哪種情況都不受影響。
 
-This release also refreshes tornado to 6.5.8, GitPython to 3.1.59, and pypdf to 6.16.1 in the lockfile, all versions the development line already resolves at or above. Those are lockfile changes, so they reach you through the image and through the locked development environment, and no declared dependency range moved. No configuration changes.
+此版本也在鎖定檔中將 tornado 更新至 6.5.8、GitPython 更新至 3.1.59，以及 pypdf 更新至 6.16.1，這些版本在開發線上都已解析為相同或更高版本。這些都是鎖定檔變更，因此會透過映像檔和鎖定的開發環境提供給您，而且沒有任何已宣告的相依版本範圍變動。沒有設定變更。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(router): stop counting caller-set timeout 408s toward deployment cooldown - [PR #41230](https://github.com/BerriAI/litellm/pull/41230)
+- fix(router): 停止將呼叫者設定的 timeout 408s 納入 deployment 冷卻時間 - [PR #41230](https://github.com/BerriAI/litellm/pull/41230)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.99.1...v1.99.2

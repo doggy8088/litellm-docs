@@ -1,55 +1,55 @@
-# MCP ID-JAG Auth (Okta)
+# MCP ID-JAG Auth (Okta) {#mcp-id-jag-auth-okta}
 
-ID-JAG (Identity Assertion Authorization Grant, [draft-ietf-oauth-identity-assertion-authz-grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/)) lets LiteLLM obtain an access token for an MCP server whose authorization server is different from the user's identity provider. Okta ships this as [AI agent token exchange](https://developer.okta.com/docs/guides/ai-agent-token-exchange/-/main/).
+ID-JAG（Identity Assertion Authorization Grant，[draft-ietf-oauth-identity-assertion-authz-grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/)）可讓 LiteLLM 取得一個 MCP 伺服器的 access token，而該伺服器的授權伺服器與使用者的 identity provider 不同。Okta 將此功能作為 [AI agent token exchange](https://developer.okta.com/docs/guides/ai-agent-token-exchange/-/main/) 提供。
 
-Use ID-JAG when:
+在以下情況使用 ID-JAG：
 
-- The MCP server trusts a resource authorization server (for example an Okta custom authorization server) that is separate from the org authorization server that authenticates your users.
-- You want an admin policy at the identity provider, rather than an interactive consent screen, to decide whether the gateway may call the MCP on a user's behalf. This is what makes it work for headless agents.
-- You want the access the gateway receives to be user scoped, auditable, and revocable from the identity provider.
+- MCP 伺服器信任一個 resource authorization server（例如 Okta custom authorization server），而它與驗證您使用者身分的 org authorization server 是分開的。
+- 您希望由 identity provider 的管理員政策，而不是互動式同意畫面，來決定 gateway 是否可代表使用者呼叫 MCP。這就是它能用於 headless agents 的原因。
+- 您希望 gateway 取得的存取權限以使用者為範圍、可稽核，並且可由 identity provider 撤銷。
 
-ID-JAG differs from [OBO token exchange](./mcp_obo_auth): OBO is a single RFC 8693 exchange against one authorization server, while ID-JAG is two legs across two authorization servers.
+ID-JAG 與 [OBO token exchange](./mcp_obo_auth) 不同：OBO 是在單一 authorization server 上進行一次 RFC 8693 交換，而 ID-JAG 則是跨兩個 authorization servers 的兩段流程。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
 ```mermaid
 flowchart TD
-    A[User signs in and the client gets an Okta id_token] --> B[Client calls LiteLLM with the id_token]
-    B --> C{MCP server auth_type is oauth2_id_jag?}
-    C -- No --> D[Use the server's configured auth flow]
-    C -- Yes --> E[Leg 1: LiteLLM POSTs an RFC 8693 token exchange to the org authorization server, requested_token_type=id-jag]
-    E --> F[Org authorization server applies admin policy and returns a signed ID-JAG assertion]
-    F --> G[Leg 2: LiteLLM POSTs an RFC 7523 jwt-bearer grant with the ID-JAG to the resource authorization server]
-    G --> H[Resource authorization server validates the ID-JAG and returns an access token]
-    H --> I[LiteLLM caches the access token per subject token and MCP server]
-    I --> J[LiteLLM calls the MCP server with the access token]
-    J --> K[MCP server executes the tool and returns the result]
+    A[使用者登入，client 取得 Okta id_token] --> B[Client 使用 id_token 呼叫 LiteLLM]
+    B --> C{MCP server auth_type 是否為 oauth2_id_jag?}
+    C -- 否 --> D[使用伺服器已設定的 auth flow]
+    C -- 是 --> E[第 1 段：LiteLLM 向 org authorization server POST RFC 8693 token exchange，requested_token_type=id-jag]
+    E --> F[Org authorization server 套用管理員政策並回傳已簽署的 ID-JAG assertion]
+    F --> G[第 2 段：LiteLLM 以 ID-JAG 向 resource authorization server POST RFC 7523 jwt-bearer grant]
+    G --> H[Resource authorization server 驗證 ID-JAG 並回傳 access token]
+    H --> I[LiteLLM 依 subject token 與 MCP server 快取 access token]
+    I --> J[LiteLLM 使用 access token 呼叫 MCP server]
+    J --> K[MCP server 執行工具並回傳結果]
 ```
 
-In short:
+簡而言之：
 
-1. The client sends a request to LiteLLM with the user's `id_token`.
-2. LiteLLM uses that `id_token` as the RFC 8693 `subject_token` and exchanges it for an ID-JAG assertion at the org authorization server (`token_exchange_endpoint`).
-3. LiteLLM presents the ID-JAG to the resource authorization server (`id_jag_resource_token_endpoint`) via the RFC 7523 `jwt-bearer` grant and receives the MCP access token.
-4. LiteLLM forwards only the access token to the MCP server.
-5. LiteLLM caches the access token until it expires, so repeated calls from the same user avoid both authorization-server round trips.
+1. client 使用使用者的 `id_token` 向 LiteLLM 發送請求。
+2. LiteLLM 會將該 `id_token` 作為 RFC 8693 `subject_token`，並在 org authorization server（`token_exchange_endpoint`）將其交換為 ID-JAG assertion。
+3. LiteLLM 透過 RFC 7523 `jwt-bearer` grant，將 ID-JAG 提交給 resource authorization server（`id_jag_resource_token_endpoint`），並取得 MCP access token。
+4. LiteLLM 只將 access token 傳給 MCP server。
+5. LiteLLM 會快取 access token，直到其過期，因此同一使用者的重複呼叫可避免兩次 authorization-server 往返。
 
-LiteLLM authenticates to both authorization servers with a private-key-JWT `client_assertion` (RFC 7523), which is what Okta requires. It falls back to `client_secret` when no private key is configured.
+LiteLLM 使用 private-key-JWT `client_assertion`（RFC 7523）向兩個 authorization servers 驗證身分，這也是 Okta 的要求。當未設定 private key 時，它會退回使用 `client_secret`。
 
-## Set Up Okta
+## 設定 Okta {#set-up-okta}
 
-ID-JAG requires the **Okta for AI Agents** subscription. At a high level:
+ID-JAG 需要 **Okta for AI Agents** 訂閱。高階步驟如下：
 
-1. Register the LiteLLM gateway as an OAuth app (the agent). Configure it for `private_key_jwt` client authentication and upload the public key as a JWKS, keeping the matching private key for LiteLLM. Note the `kid`.
-2. Confirm the org authorization server token endpoint, `https://<your-org>.okta.com/oauth2/v1/token`. This is leg 1's `token_exchange_endpoint`.
-3. Set up the resource (custom) authorization server that the MCP trusts, with its token endpoint `https://<your-org>.okta.com/oauth2/<custom-as-id>/v1/token`. This is leg 2's `id_jag_resource_token_endpoint`. Its issuer identifier is the `audience` for leg 1.
-4. Configure the cross-app access policy that authorizes the gateway app to obtain an ID-JAG for the resource, including the scopes it may request.
+1. 將 LiteLLM gateway 註冊為 OAuth app（agent）。將其設定為 `private_key_jwt` client authentication，並以上傳 public key 作為 JWKS，同時將相對應的 private key 保留給 LiteLLM。請記下 `kid`。
+2. 確認 org authorization server token endpoint，也就是 `https://<your-org>.okta.com/oauth2/v1/token`。這是第 1 段的 `token_exchange_endpoint`。
+3. 設定 MCP 所信任的 resource（custom）authorization server，其 token endpoint 為 `https://<your-org>.okta.com/oauth2/<custom-as-id>/v1/token`。這是第 2 段的 `id_jag_resource_token_endpoint`。其 issuer identifier 是第 1 段的 `audience`。
+4. 設定跨應用程式 access policy，授權 gateway app 為該 resource 取得 ID-JAG，包括它可請求的 scopes。
 
-See Okta's [AI agent token exchange guide](https://developer.okta.com/docs/guides/ai-agent-token-exchange/-/main/) for the click-by-click setup.
+請參閱 Okta 的 [AI agent token exchange guide](https://developer.okta.com/docs/guides/ai-agent-token-exchange/-/main/) 以取得逐步點選式設定。
 
-## Configure an MCP Server for ID-JAG
+## 為 ID-JAG 設定 MCP Server {#configure-an-mcp-server-for-id-jag}
 
-Set `auth_type: oauth2_id_jag` on the MCP server.
+在 MCP server 上設定 `auth_type: oauth2_id_jag`。
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -87,28 +87,28 @@ mcp_servers:
       - "mcp.tools.execute"
 ```
 
-### Config Fields
+### 設定欄位 {#config-fields}
 
-| Field | Required | Description |
+| 欄位 | 必填 | 說明 |
 |-------|----------|-------------|
-| `auth_type` | Yes | Must be `oauth2_id_jag`. |
-| `token_exchange_endpoint` | Yes | Org authorization server token endpoint for leg 1 (RFC 8693 token exchange). |
-| `id_jag_resource_token_endpoint` | Yes | Resource authorization server token endpoint for leg 2 (RFC 7523 jwt-bearer grant). |
-| `client_id` | Yes | OAuth client identifier for the gateway app at the authorization servers. |
-| `client_private_key` | Recommended | PEM private key LiteLLM uses to sign the `client_assertion`. Required for Okta. |
-| `client_private_key_id` | Optional | Key id advertised as `kid` in the `client_assertion` JWT header. |
-| `client_assertion_signing_alg` | Optional | Signing algorithm for the `client_assertion`. Defaults to `RS256`. |
-| `client_secret` | Optional | Used as a fallback only when `client_private_key` is not set. |
-| `audience` | Recommended | Resource authorization server identifier. LiteLLM sends this as the leg-1 `audience`. |
-| `id_jag_resource` | Optional | RFC 8707 resource indicator sent on leg 1. |
-| `scopes` | Optional | Scopes LiteLLM requests. Joined into the OAuth `scope` parameter. |
-| `subject_token_type` | Optional | Subject token type for leg 1. Defaults to `urn:ietf:params:oauth:token-type:id_token` for ID-JAG. |
+| `auth_type` | 是 | 必須為 `oauth2_id_jag`。 |
+| `token_exchange_endpoint` | 是 | 第 1 段的 org authorization server token endpoint（RFC 8693 token exchange）。 |
+| `id_jag_resource_token_endpoint` | 是 | 第 2 段的 resource authorization server token endpoint（RFC 7523 jwt-bearer grant）。 |
+| `client_id` | 是 | authorization servers 上 gateway app 的 OAuth client identifier。 |
+| `client_private_key` | 建議 | LiteLLM 用來簽署 `client_assertion` 的 PEM private key。Okta 必填。 |
+| `client_private_key_id` | 選用 | 在 `client_assertion` JWT header 中以 `kid` 顯示的 key id。 |
+| `client_assertion_signing_alg` | 選用 | `client_assertion` 的 signing algorithm。預設為 `RS256`。 |
+| `client_secret` | 選用 | 僅在未設定 `client_private_key` 時作為備援。 |
+| `audience` | 建議 | Resource authorization server identifier。LiteLLM 會將此作為第 1 段的 `audience` 傳送。 |
+| `id_jag_resource` | 選用 | 第 1 段傳送的 RFC 8707 resource indicator。 |
+| `scopes` | 選用 | LiteLLM 請求的 scopes。會合併成 OAuth `scope` 參數。 |
+| `subject_token_type` | 選用 | 第 1 段的 subject token type。ID-JAG 預設為 `urn:ietf:params:oauth:token-type:id_token`。 |
 
-## The Two Legs
+## 兩段流程 {#the-two-legs}
 
-### Leg 1: token exchange for an ID-JAG
+### 第 1 段：交換 ID-JAG {#leg-1-token-exchange-for-an-id-jag}
 
-For each uncached subject token and MCP server pair, LiteLLM POSTs an RFC 8693 token exchange to `token_exchange_endpoint`:
+對於每一組未快取的 subject token 與 MCP server 配對，LiteLLM 會向 `token_exchange_endpoint` POST RFC 8693 token exchange：
 
 ```http
 POST /oauth2/v1/token
@@ -125,7 +125,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &client_assertion=<signed-jwt>
 ```
 
-The org authorization server applies its admin policy and returns the ID-JAG assertion:
+org authorization server 會套用其管理員政策並回傳 ID-JAG assertion：
 
 ```json
 {
@@ -136,11 +136,11 @@ The org authorization server applies its admin policy and returns the ID-JAG ass
 }
 ```
 
-The ID-JAG is a signed JWT with `typ: oauth-id-jag+jwt` whose `aud` is the resource authorization server.
+ID-JAG 是一個帶有 `typ: oauth-id-jag+jwt` 的簽署 JWT，其 `aud` 為 resource authorization server。
 
-### Leg 2: jwt-bearer for the access token
+### 第 2 段：用 jwt-bearer 取得 access token {#leg-2-jwt-bearer-for-the-access-token}
 
-LiteLLM presents the ID-JAG to `id_jag_resource_token_endpoint` with the RFC 7523 grant:
+LiteLLM 透過 RFC 7523 grant 將 ID-JAG 提交給 `id_jag_resource_token_endpoint`：
 
 ```http
 POST /oauth2/<custom-as-id>/v1/token
@@ -152,7 +152,7 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
 &client_assertion=<signed-jwt>
 ```
 
-The resource authorization server validates the ID-JAG and returns the access token:
+resource authorization server 會驗證 ID-JAG 並回傳 access token：
 
 ```json
 {
@@ -162,17 +162,17 @@ The resource authorization server validates the ID-JAG and returns the access to
 }
 ```
 
-LiteLLM then calls the MCP server with:
+接著 LiteLLM 會使用以下內容呼叫 MCP server：
 
 ```http
 Authorization: Bearer access-token-for-mcp-server
 ```
 
-## Calling an ID-JAG MCP Server
+## 呼叫 ID-JAG MCP Server {#calling-an-id-jag-mcp-server}
 
-Leg 1 needs an identity token to assert. LiteLLM takes it from one of two places. If the request carries the user's `id_token` in `Authorization`, that token is the subject. Otherwise LiteLLM uses the identity assertion it captured for the authenticated user when they signed in through LiteLLM SSO, which is what lets an agent holding only a LiteLLM virtual key reach the MCP server as the user that key belongs to. The user is always the one the virtual key resolves to; no request field can select whose identity is asserted upstream.
+第 1 段需要一個身分 token 來做 assertion。LiteLLM 會從兩個位置擇一取得。若請求在 `Authorization` 中攜帶使用者的 `id_token`，該 token 就是 subject。否則，LiteLLM 會使用其在使用者透過 LiteLLM SSO 登入時為已驗證使用者擷取的 identity assertion，這也是為何僅持有 LiteLLM virtual key 的 agent 能夠以該 key 所屬的使用者身分存取 MCP server。使用者永遠是 virtual key 所對應的那位；沒有任何請求欄位可以選擇要在上游 assert 哪個身分。
 
-When sending the `id_token` yourself, keep the LiteLLM key in `x-litellm-api-key` and reserve `Authorization` for the user token:
+當您自行傳送 `id_token` 時，請將 LiteLLM key 放在 `x-litellm-api-key`，並將 `Authorization` 保留給使用者 token：
 
 ```bash title="Direct MCP call" showLineNumbers
 curl -X POST "https://litellm.example.com/internal_tools/mcp" \
@@ -183,12 +183,12 @@ curl -X POST "https://litellm.example.com/internal_tools/mcp" \
 ```
 
 :::tip
-If the MCP client can only send one `Authorization` header, use `x-litellm-api-key` for the LiteLLM key and reserve `Authorization` for the user's `id_token`. LiteLLM needs the `id_token` as the leg-1 `subject_token`.
+如果 MCP client 只能送出一個 `Authorization` header，請將 `x-litellm-api-key` 用於 LiteLLM key，並將 `Authorization` 保留給使用者的 `id_token`。LiteLLM 需要 `id_token` 作為第 1 段的 `subject_token`。
 :::
 
-### Store-sourced subject with a virtual key only
+### 只使用 virtual key 的儲存來源 subject {#store-sourced-subject-with-a-virtual-key-only}
 
-With no `Authorization` header, the same call works for any user who has signed in through LiteLLM SSO at least once and whose assertion has not expired:
+若沒有 `Authorization` header，只要任何已透過 LiteLLM SSO 登入至少一次且其 assertion 尚未過期的使用者，皆可使用相同呼叫：
 
 ```bash title="Virtual key only" showLineNumbers
 curl -X POST "https://litellm.example.com/internal_tools/mcp" \
@@ -197,18 +197,18 @@ curl -X POST "https://litellm.example.com/internal_tools/mcp" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
-Assertion reads are cached per process for `MCP_SSO_ASSERTION_CACHE_TTL_SECONDS` (default 60), so a fresh SSO login on one pod becomes visible to the others within one TTL.
+Assertion 讀取會依程序快取 `MCP_SSO_ASSERTION_CACHE_TTL_SECONDS`（預設 60），因此某個 pod 上新的 SSO 登入會在一個 TTL 內對其他 pod 可見。
 
-## Credential Errors at Connect Time
+## 連線時的憑證錯誤 {#credential-errors-at-connect-time}
 
-On a single-server route such as `/internal_tools/mcp` or `/mcp/internal_tools`, LiteLLM resolves the ID-JAG credential before it opens the MCP session, so a failure comes back as an HTTP status the client can act on rather than as a session that appears to have no tools. This runs for the store-sourced flow (no `Authorization` header), which is exactly where the failures below are decided before any authorization server is called.
+在像 `/internal_tools/mcp` 或 `/mcp/internal_tools` 這類單一伺服器路由上，LiteLLM 會在開啟 MCP session 之前先解析 ID-JAG 憑證，因此失敗會以 client 可處理的 HTTP 狀態回傳，而不是以看似沒有 tools 的 session 呈現。這適用於儲存來源流程（沒有 `Authorization` header），也正是在這裡，以下失敗會在呼叫任何 authorization server 之前被判定。
 
-| Status | Meaning | What fixes it |
+| 狀態 | 含義 | 修正方式 |
 |--------|---------|---------------|
-| `412 Precondition Failed` | No identity assertion is stored for this user, or the stored one has expired. The body names which. | The user signs in through LiteLLM SSO so the gateway captures a current assertion. |
-| `503 Service Unavailable` | The assertion store (the LiteLLM database) is unreachable. | Nothing on the user's side; check database connectivity. |
+| `412 Precondition Failed` | 此使用者沒有儲存身分斷言，或已儲存的斷言已過期。回應主體會說明是哪一種。 | 使用者透過 LiteLLM SSO 登入，讓閘道擷取最新的斷言。 |
+| `503 Service Unavailable` | 斷言儲存區（LiteLLM 資料庫）無法連線。 | 使用者端無需處理；請檢查資料庫連線。 |
 
-The 412 is a plain status with a JSON body, not an OAuth challenge. There is no `WWW-Authenticate` header, because the client cannot resolve it by fetching authorization server metadata and retrying; only a LiteLLM SSO login fixes it.
+412 是帶有 JSON 主體的純狀態碼，不是 OAuth 挑戰。沒有 `WWW-Authenticate` 標頭，因為用戶端無法透過擷取授權伺服器中繼資料並重試來解析它；只有 LiteLLM SSO 登入才能修正。
 
 ```bash
 $ curl -s -i -X POST https://litellm.example.com/mcp/internal_tools \
@@ -222,31 +222,31 @@ content-type: application/json
 {"detail":"precondition required: ID-JAG requires an IdP identity assertion for this user and none is stored. Sign in through LiteLLM SSO so the gateway captures one."}
 ```
 
-A `tools/call` on the same route returns the same 412 rather than reporting that the tool does not exist.
+同一路由上的 `tools/call` 會回傳相同的 412，而不是回報工具不存在。
 
-On the aggregate `/mcp` route that serves several servers at once, one server's credential failure must not fail the whole connection, so it is reported per server instead. `tools/list` succeeds, the failing server contributes no tools, and the reason lands in the response's `_meta`:
+在同時服務多個伺服器的彙總 `/mcp` 路由上，某一個伺服器的憑證失敗不得導致整個連線失敗，因此會改為逐一伺服器回報。`tools/list` 成功時，失敗的伺服器不會提供任何工具，而原因會出現在回應的 `_meta` 中：
 
 ```json
 {"_meta":{"litellm.ai/server_outcomes":{"internal_tools":{"status":"internal","http_status":412}}},"tools":[]}
 ```
 
-If you see that shape and want the status and message directly, call the server on its single-server route.
+如果您看到這種形式，並且想直接取得狀態與訊息，請呼叫單一伺服器路由上的伺服器。
 
-Known limitation: when the request carries an `Authorization` bearer, `tools/list` currently still resolves the subject from the stored assertion while `tools/call` uses the bearer. A caller with a valid `id_token` but no stored assertion therefore gets the empty list with the `_meta` 412 above rather than a connect-time status, and the pre-flight does not run for that request so it cannot reject a credential the tool call would accept. Signing in through LiteLLM SSO once removes the mismatch.
+已知限制：當請求帶有 `Authorization` bearer 時，`tools/list` 目前仍會從已儲存的斷言解析主體，而 `tools/call` 則使用 bearer。因此，若呼叫端具有有效的 `id_token` 但沒有已儲存的斷言，便會取得上方那個帶有 `_meta` 的空清單 412，而不是連線時狀態；而且該請求不會執行 pre-flight，因此無法拒絕工具呼叫本來會接受的憑證。透過 LiteLLM SSO 登入一次即可移除這種不一致。
 
-## Caching Behavior
+## 快取行為 {#caching-behavior}
 
-LiteLLM caches the leg-2 access token by subject token and MCP server ID, so two different users get separate tokens while repeated calls from the same user to the same MCP server reuse the cached token until it expires. The cache TTL is based on the leg-2 `expires_in` minus LiteLLM's OAuth expiry buffer. If `expires_in` is missing or invalid, LiteLLM uses the default OAuth token cache TTL.
+LiteLLM 會依主體 token 與 MCP 伺服器 ID 快取第二階段存取 token，因此兩位不同使用者會取得各自獨立的 token，而同一位使用者對同一個 MCP 伺服器的重複呼叫，則會重用快取的 token，直到其到期為止。快取 TTL 以第二階段 `expires_in` 減去 LiteLLM 的 OAuth 到期緩衝時間為基礎。若 `expires_in` 缺失或無效，LiteLLM 會使用預設的 OAuth token 快取 TTL。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-| Symptom | Check |
+| 症狀 | 檢查項目 |
 |---------|-------|
-| MCP server receives the LiteLLM key | Move the LiteLLM key to `x-litellm-api-key` and use `Authorization` for the user `id_token`. |
-| `412 Precondition Failed` on connect | No stored SSO assertion for this user, or it has expired. Have the user sign in through LiteLLM SSO, then retry. See [Credential Errors at Connect Time](#credential-errors-at-connect-time). |
-| `503 Service Unavailable` on connect | The assertion store is unreachable. Check the LiteLLM database connection. |
-| `tools/list` returns no tools and `_meta` shows `http_status: 412` | You are on the aggregate `/mcp` route. Call the single-server route to get the status and message directly. |
-| Leg 1 returns 400 or 403 | Confirm the cross-app access policy authorizes the gateway app for the resource and scopes, and that `audience` matches the resource authorization server identifier. |
-| Leg 1 returns 401 | Confirm `client_id`, `client_private_key`, and `client_private_key_id` match the gateway app's registered JWKS. |
-| Leg 2 rejects the assertion | Confirm `id_jag_resource_token_endpoint` points at the resource authorization server that trusts the org authorization server, and that its clock and the ID-JAG `exp` agree. |
-| Authorization servers are called on every request | Confirm leg 2 returns `expires_in`, and that the same user `id_token` and MCP server are being reused. |
+| MCP 伺服器收到 LiteLLM 金鑰 | 將 LiteLLM 金鑰移到 `x-litellm-api-key`，並使用 `Authorization` 作為使用者 `id_token`。 |
+| 連線時出現 `412 Precondition Failed` | 此使用者沒有已儲存的 SSO 斷言，或已過期。請使用者透過 LiteLLM SSO 登入，然後重試。請參閱[連線時的憑證錯誤](#credential-errors-at-connect-time)。 |
+| 連線時出現 `503 Service Unavailable` | 斷言儲存區無法連線。請檢查 LiteLLM 資料庫連線。 |
+| `tools/list` 不會回傳任何工具，且 `_meta` 顯示 `http_status: 412` | 您使用的是彙總 `/mcp` 路由。請呼叫單一伺服器路由以直接取得狀態與訊息。 |
+| 第 1 階段回傳 400 或 403 | 確認跨應用程式存取政策已授權閘道應用程式對應資源與 scope，且 `audience` 與資源授權伺服器識別碼相符。 |
+| 第 1 階段回傳 401 | 確認 `client_id`、`client_private_key` 與 `client_private_key_id` 符合閘道應用程式已註冊的 JWKS。 |
+| 第 2 階段拒絕斷言 | 確認 `id_jag_resource_token_endpoint` 指向信任組織授權伺服器的資源授權伺服器，且其時鐘與 ID-JAG `exp` 一致。 |
+| 授權伺服器在每次請求時都會被呼叫 | 確認第 2 階段回傳 `expires_in`，且使用的是相同的使用者 `id_token` 與 MCP 伺服器。 |

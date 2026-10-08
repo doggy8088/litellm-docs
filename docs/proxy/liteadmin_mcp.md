@@ -1,50 +1,50 @@
 ---
 title: LiteAdmin MCP
-sidebar_label: Connect Claude or Codex
-description: Connect Claude Desktop, Claude Code, or Codex to your LiteLLM gateway with LiteAdmin MCP.
+sidebar_label: 連接 Claude 或 Codex
+description: 將 Claude Desktop、Claude Code 或 Codex 連接到您的 LiteLLM 閘道，使用 LiteAdmin MCP。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteAdmin MCP
+# LiteAdmin MCP {#liteadmin-mcp}
 
-Use **LiteAdmin MCP** ([LiteLLM Admin MCP](https://github.com/BerriAI/litellm-admin-mcp)) to manage your gateway from Claude, Codex, or another MCP client. You can ask your agent to:
+使用 **LiteAdmin MCP**（[https://github.com/BerriAI/litellm-admin-mcp]）從 Claude、Codex 或其他 MCP 用戶端管理您的閘道。您可以請求代理程式執行：
 
-- Create and manage virtual keys.
-- Add model deployments.
-- Manage teams, members, and budgets.
-- Check spending, activity, and request logs.
+- 建立與管理虛擬金鑰。
+- 新增模型部署。
+- 管理團隊、成員與預算。
+- 檢查支出、活動與請求記錄。
 
-Your client runs the agent and model. The MCP server calls your gateway's management API with your personal admin credential. Connecting it leaves your client's model-provider settings unchanged.
+您的用戶端會執行代理程式與模型。MCP 伺服器會使用您的個人管理憑證呼叫閘道的管理 API。連接後不會變更您用戶端的模型提供者設定。
 
-To host MCP inside your Enterprise deployment, follow [Deploy LiteAdmin MCP on Enterprise](./liteadmin_mcp_enterprise.md) for unified and componentized Docker images.
+若要在您的 Enterprise 部署中託管 MCP，請依照 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md)，以使用統一與元件化的 Docker 映像檔。
 
-For gateway management in Slack, follow the [LiteAdmin Slack app setup](./liteadmin_slack.md) and choose the Enterprise or standalone deployment. To route third-party MCP tools through LiteLLM, see the separate [MCP Gateway](../mcp.md) guide.
+若要在 Slack 中管理閘道，請依照 [LiteAdmin Slack 應用程式設定](./liteadmin_slack.md)，並選擇 Enterprise 或獨立部署。若要透過 LiteLLM 路由第三方 MCP 工具，請參閱獨立的 [MCP Gateway](../mcp.md) 指南。
 
-## Before you start
+## 開始之前 {#before-you-start}
 
-You need a running LiteLLM gateway and a personal [virtual key](./virtual_keys.md) belonging to a user with the [`proxy_admin` role](./access_control.md#global-proxy-roles). The connector requires this role for **all tools, including reads**; `proxy_admin_viewer` and team-admin accounts cannot use it.
+您需要一個正在執行的 LiteLLM 閘道，以及屬於具有 [`proxy_admin` 角色](./access_control.md#global-proxy-roles) 使用者的個人 [虛擬金鑰](./virtual_keys.md)。連接器要求此角色適用於**所有工具，包括讀取**；`proxy_admin_viewer` 和團隊管理員帳戶無法使用它。
 
-For the local client setup below, install [uv](https://docs.astral.sh/uv/getting-started/installation/) on the computer that runs your MCP client. The connector requires Python 3.12 or later; uv can download a compatible interpreter. {/* keep-python-version */}
+對於下方的本機用戶端設定，請在執行 MCP 用戶端的電腦上安裝 [uv](https://docs.astral.sh/uv/getting-started/installation/)。連接器需要 Python 3.12 或更新版本；uv 可以下載相容的直譯器。{/* keep-python-version */}
 
-Have these values ready:
+請先準備好以下值：
 
-| Setting | Value |
+| 設定 | 值 |
 | --- | --- |
-| `LITELLM_BASE_URL` | Your gateway's HTTPS origin, such as `https://gateway.example.com`. An optional `/v1` suffix is accepted. |
-| `LITELLM_API_KEY` | Your personal proxy-admin key. |
+| `LITELLM_BASE_URL` | 您的閘道 HTTPS origin，例如 `https://gateway.example.com`。可接受可選的 `/v1` 後綴。 |
+| `LITELLM_API_KEY` | 您的個人 proxy-admin 金鑰。 |
 
-The computer running the connector must reach your gateway's `/openapi.json` and management APIs. Use HTTPS except for local loopback development.
+執行連接器的電腦必須能存取您的閘道 `/openapi.json` 與管理 API。除本機迴環開發外，請使用 HTTPS。
 
-## Connect your client
+## 連接您的用戶端 {#connect-your-client}
 
-Choose your client below and replace the gateway URL and key placeholders. Keep configurations containing keys private and out of version control. Use your client's secret storage when available.
+請在下方選擇您的用戶端，並將閘道 URL 與金鑰預留位置替換掉。包含金鑰的設定請保持私密，並避免納入版本控制。可用時請使用您用戶端的機密儲存。
 
 <Tabs groupId="liteadmin-client">
 <TabItem value="claude-desktop" label="Claude Desktop" default>
 
-Open **Settings → Developer → Edit Config** in Claude Desktop. Add the `litellm-admin` entry under `mcpServers`, preserving any existing servers:
+在 Claude Desktop 中開啟 **Settings → Developer → Edit Config**。將 `litellm-admin` 項目新增到 `mcpServers` 下方，並保留任何既有伺服器：
 
 ```json title="claude_desktop_config.json"
 {
@@ -68,16 +68,16 @@ Open **Settings → Developer → Edit Config** in Claude Desktop. Add the `lite
 }
 ```
 
-Quit and reopen Claude Desktop. Open **+ → Connectors** in a new chat to check for `litellm-admin` and its tools. Developer settings also show connection status and logs.
+關閉並重新開啟 Claude Desktop。在新的聊天中開啟 **+ → Connectors**，檢查 `litellm-admin` 及其工具。Developer 設定也會顯示連線狀態與記錄。
 
-If Claude cannot find `uvx`, replace `"command": "uvx"` with its absolute path. Run `which uvx` on macOS or `where uvx` on Windows to find it. In JSON, escape Windows backslashes as `\\`.
+如果 Claude 找不到 `uvx`，請將 `"command": "uvx"` 替換為其絕對路徑。在 macOS 上執行 `which uvx`，或在 Windows 上執行 `where uvx` 以找出它。在 JSON 中，將 Windows 反斜線跳脫為 `\\`。
 
-See the [manual Claude Desktop configuration guide](https://modelcontextprotocol.io/docs/develop/connect-local-servers) for config-file locations.
+請參閱 [手動 Claude Desktop 設定指南](https://modelcontextprotocol.io/docs/develop/connect-local-servers) 以了解設定檔位置。
 
 </TabItem>
 <TabItem value="claude-code" label="Claude Code">
 
-Run this in your terminal:
+在您的終端機中執行：
 
 ```bash
 claude mcp add --scope user --transport stdio litellm-admin \
@@ -88,20 +88,20 @@ claude mcp add --scope user --transport stdio litellm-admin \
   litellm-admin-mcp
 ```
 
-The `--scope user` option makes the connection available across your projects and stores it in your private Claude configuration. Your shell may also retain the command in its history.
+`--scope user` 選項可讓連線在您的專案之間可用，並將其儲存在您的私人 Claude 設定中。您的 shell 也可能會將此命令保留在歷史記錄中。
 
-Restart Claude Code and run `/mcp` to check the connection. You can also inspect it from the terminal:
+重新啟動 Claude Code，並執行 `/mcp` 來檢查連線。您也可以從終端機檢查：
 
 ```bash
 claude mcp get litellm-admin
 ```
 
-See [Claude Code's MCP documentation](https://code.claude.com/docs/en/mcp) for configuration scopes and client troubleshooting.
+請參閱 [Claude Code 的 MCP 文件](https://code.claude.com/docs/en/mcp) 以了解設定範圍與用戶端疑難排解。
 
 </TabItem>
 <TabItem value="codex" label="Codex">
 
-Add this server to your existing `~/.codex/config.toml`:
+將此伺服器新增到您現有的 `~/.codex/config.toml`：
 
 ```toml title="~/.codex/config.toml"
 [mcp_servers.litellm-admin]
@@ -119,62 +119,62 @@ LITELLM_BASE_URL = "https://gateway.example.com"
 LITELLM_API_KEY = "<your-personal-proxy-admin-key>"
 ```
 
-Local Codex clients share this configuration on the same host. Restart your client to load the server. In Codex CLI, run `/mcp` to inspect the active connection and tools; `codex mcp list` lists configured servers.
+本機 Codex 用戶端會在同一主機上共用此設定。重新啟動您的用戶端以載入伺服器。在 Codex CLI 中，執行 `/mcp` 以檢查作用中的連線與工具；`codex mcp list` 會列出已設定的伺服器。
 
-For terminal use, you can keep the key out of this file: remove the `LITELLM_API_KEY` assignment, add `env_vars = ["LITELLM_API_KEY"]` to the server table above the `.env` table, and export the variable before launching `codex`. A desktop app must also have access to that environment variable to use this option.
+若要在終端機使用，您可以將金鑰保留在此檔案之外：移除 `LITELLM_API_KEY` 指派，在上方伺服器表格中的 `.env` 表格之前新增 `env_vars = ["LITELLM_API_KEY"]`，並在啟動 `codex` 之前匯出該變數。桌面應用程式若要使用此選項，也必須能存取該環境變數。
 
-See the [official Codex MCP documentation](https://developers.openai.com/codex/mcp) for supported configuration fields.
+請參閱 [官方 Codex MCP 文件](https://developers.openai.com/codex/mcp) 以了解支援的設定欄位。
 
 </TabItem>
 </Tabs>
 
-These examples check the connector's GitHub `main` branch each time the client starts the server. Restart the connection after an update. For a fixed version, replace `@main` with a release tag or full commit SHA and remove `--refresh-package` and the `litellm-admin-mcp` argument immediately after it.
+這些範例會在用戶端每次啟動伺服器時檢查連接器的 GitHub `main` 分支。更新後請重新啟動連線。若要使用固定版本，請將 `@main` 替換為發行標籤或完整 commit SHA，並移除 `--refresh-package` 以及其後緊接的 `litellm-admin-mcp` 引數。
 
-## Verify the connection
+## 驗證連線 {#verify-the-connection}
 
-Start with a read request:
+先從讀取請求開始：
 
-> Use LiteAdmin to list my teams and their current budgets.
+> 使用 LiteAdmin 列出我的團隊及其目前預算。
 
-Check that the client calls an admin tool and returns data from your gateway. An empty team list is a valid result if you have no teams. Connecting to the MCP server alone does not verify gateway access.
+檢查用戶端是否呼叫了管理工具並從您的閘道回傳資料。如果您沒有任何團隊，空白的團隊清單也是有效結果。僅連接到 MCP 伺服器並不足以驗證閘道存取。
 
-Once the read succeeds, you can request changes such as:
+讀取成功後，您可以請求變更，例如：
 
-- “Create a key for Engineering with a $100 monthly budget.”
-- “Update the Engineering team's monthly budget to $500.”
+- “為 Engineering 建立一個每月預算 $100 的金鑰。”
+- “將 Engineering 團隊的每月預算更新為 $500。”
 
-Use names and limits that match your intended change. The gateway enforces the caller's permissions and feature entitlements. After a write times out, inspect the affected key, team, or model before retrying.
+請使用符合您預期變更的名稱與限制。閘道會強制執行呼叫者的權限與功能授權。寫入逾時後，請在重試前檢查受影響的金鑰、團隊或模型。
 
-### Add a model deployment
+### 新增模型部署 {#add-a-model-deployment}
 
-Your gateway needs a database, `STORE_MODEL_IN_DB=True`, and provider authentication for [model management](./model_management.md). Include the public model name, exact provider/model ID, and a stored credential name or gateway environment-variable reference in your request. For example:
+您的閘道需要資料庫、`STORE_MODEL_IN_DB=True`，以及供 [模型管理](./model_management.md) 使用的提供者驗證。請在請求中包含公開模型名稱、精確的提供者/模型 ID，以及已儲存的憑證名稱或閘道環境變數參照。例如：
 
-> Add a model named support-chat using openai/gpt-4.1 and the existing gateway credential openai-production.
+> 使用 openai/gpt-4.1 與現有的閘道憑證 openai-production 新增名為 support-chat 的模型。
 
-Use a provider/model ID and credential that exist in your deployment. Keep provider API keys out of chat. Adding a gateway deployment does not provision provider access or test inference.
+請使用在您的部署中存在的提供者/模型 ID 與憑證。請將提供者 API 金鑰保留在聊天內容之外。新增閘道部署不會佈建提供者存取權，也不會測試推論。
 
-## Restrict the available tools
+## 限制可用工具 {#restrict-the-available-tools}
 
-Set these variables in the MCP server's environment, then restart the connection:
+請在 MCP 伺服器的環境中設定這些變數，然後重新啟動連線：
 
-| Variable | Effect |
+| 變數 | 影響 |
 | --- | --- |
-| `LITELLM_ADMIN_READ_ONLY=true` | Expose only reviewed read operations. A `proxy_admin` identity is still required. |
-| `LITELLM_ADMIN_TOOLS=list_keys,list_teams` | Limit the server to these canonical tool names. |
+| `LITELLM_ADMIN_READ_ONLY=true` | 只公開經過審核的讀取操作。仍需要 `proxy_admin` 身分。 |
+| `LITELLM_ADMIN_TOOLS=list_keys,list_teams` | 將伺服器限制為這些標準工具名稱。 |
 
-The connector discovers schemas from your gateway and exposes the reviewed operations available there. Use the [operation catalog](https://github.com/BerriAI/litellm-admin-mcp/blob/main/src/litellm_admin_mcp/operations.json) to find tool names. If you set both restrictions, only tools allowed by both remain available.
+連接器會從您的閘道探索 schema，並公開其中可用的經審核操作。請使用 [操作目錄](https://github.com/BerriAI/litellm-admin-mcp/blob/main/src/litellm_admin_mcp/operations.json) 來尋找工具名稱。如果您同時設定兩種限制，只有兩者都允許的工具才會保留可用。
 
-## Run LiteAdmin MCP inside LiteLLM
+## 在 LiteLLM 內執行 LiteAdmin MCP {#run-liteadmin-mcp-inside-litellm}
 
-Follow [Deploy LiteAdmin MCP on Enterprise](./liteadmin_mcp_enterprise.md) to serve `/admin/mcp` from a unified LiteLLM image or the management backend in a componentized deployment. The guide covers the opt-in flag, Enterprise license, ingress routing, authentication, client configuration, and verification
+請依照 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md) 的說明，從統一的 LiteLLM 映像檔或元件化部署中的管理後端提供 `/admin/mcp`。該指南涵蓋啟用旗標、Enterprise 授權、入口路由、驗證、用戶端設定與驗證
 
-### Embedded tool and response settings
+### 內嵌工具與回應設定 {#embedded-tool-and-response-settings}
 
-See [Tool and response settings](./liteadmin_mcp_enterprise.md#tool-and-response-settings) for embedded defaults, read-only restrictions, and worker requirements for compact results
+請參閱 [工具與回應設定](./liteadmin_mcp_enterprise.md#tool-and-response-settings) 以了解內嵌預設值、唯讀限制，以及回傳精簡結果所需的 worker
 
-## Host a shared MCP endpoint
+## 託管共享 MCP 端點 {#host-a-shared-mcp-endpoint}
 
-Use Streamable HTTP when you want to run the connector on a server instead of each user's computer. Install uv on that host, then run:
+當您想在伺服器上而不是每位使用者的電腦上執行連接器時，請使用 Streamable HTTP。先在該主機上安裝 uv，然後執行：
 
 ```bash
 export LITELLM_BASE_URL=https://gateway.example.com
@@ -184,11 +184,11 @@ uvx --isolated --refresh-package litellm-admin-mcp \
   litellm-admin-mcp --transport streamable-http --port 8080
 ```
 
-Put an HTTPS reverse proxy in front of `127.0.0.1:8080` and forward to it from `admin-mcp.example.com`. The client endpoint is `https://admin-mcp.example.com/mcp`. Set `LITELLM_MCP_PUBLIC_URL` to that public origin without the `/mcp` path so the connector accepts its Host and Origin headers.
+在 `127.0.0.1:8080` 前面放置 HTTPS 反向代理，並從 `admin-mcp.example.com` 轉送到它。用戶端端點是 `https://admin-mcp.example.com/mcp`。將 `LITELLM_MCP_PUBLIC_URL` 設為該公開 origin，但不要包含 `/mcp` 路徑，以便連接器接受其 Host 與 Origin 標頭。
 
-**Leave `LITELLM_API_KEY` unset on the hosted service.** Each client sends its own personal proxy-admin key. Run one installation per trusted gateway and connect only to a connector you operate and trust.
+**請讓託管服務上的 `LITELLM_API_KEY` 保持未設定。** 每個用戶端都會傳送自己的個人 proxy-admin 金鑰。每個受信任的閘道請只執行一份安裝，並只連接到您營運且信任的連接器。
 
-Configure your client with one of these alternatives to the local setup:
+請使用以下任一替代方案設定您的用戶端，以取代本機設定：
 
 <Tabs groupId="liteadmin-http-client">
 <TabItem value="claude-code" label="Claude Code" default>
@@ -199,7 +199,7 @@ claude mcp add --scope user --transport http litellm-admin-remote \
   --header 'Authorization: Bearer <your-personal-proxy-admin-key>'
 ```
 
-Restart Claude Code and run `/mcp` to check the connection. This command saves the header in your private client configuration; your shell may retain it in history.
+重新啟動 Claude Code，然後執行 `/mcp` 以檢查連線。此命令會將標頭儲存在您的私人用戶端設定中；您的 shell 可能會將其保留在歷史紀錄裡。
 
 </TabItem>
 <TabItem value="codex" label="Codex">
@@ -210,32 +210,32 @@ url = "https://admin-mcp.example.com/mcp"
 bearer_token_env_var = "LITELLM_API_KEY"
 ```
 
-Set `LITELLM_API_KEY` in the environment of the Codex process. For Codex CLI:
+在 Codex 程序的環境中設定 `LITELLM_API_KEY`。對於 Codex CLI：
 
 ```bash
 export LITELLM_API_KEY='<your-personal-proxy-admin-key>'
 codex
 ```
 
-Run `/mcp` to check the connection.
+執行 `/mcp` 以檢查連線。
 
 </TabItem>
 </Tabs>
 
-This endpoint uses bearer API-key authentication. It does not provide browser OAuth login, so `codex mcp login` and OAuth-only connector forms do not apply. Use the local configuration above for Claude Desktop.
+此端點使用 bearer API-key 驗證。它不提供瀏覽器 OAuth 登入，因此 `codex mcp login` 和僅限 OAuth 的連接器表單不適用。請使用上方的本機設定給 Claude Desktop。
 
-Check `/healthz` for process health, then repeat the read request to verify gateway access. A healthy process does not prove that its gateway URL, credential, or management APIs work.
+檢查 `/healthz` 以確認程序健康狀態，然後重複讀取請求以驗證閘道存取。程序健康狀態良好不代表其閘道 URL、憑證或管理 API 可正常運作。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-| Symptom | Check |
+| 現象 | 檢查項目 |
 | --- | --- |
-| `uvx` not found | Install uv and use the executable's absolute path in desktop clients. |
-| Startup timeout | Allow the first package/Python download to finish; check access to GitHub and package downloads. Increase the client's startup timeout if needed. |
-| Unauthorized or forbidden | Use an active personal key owned by a `proxy_admin`. Read-only mode does not grant access to other roles. |
-| Missing tools or schema discovery failure | Check access to `/openapi.json` and the gateway's management routes. Update the connector if an operation ID changed. |
-| Model creation fails | Check the database, `STORE_MODEL_IN_DB`, exact provider/model ID, and gateway credentials. |
-| Hosted connection rejected | Check the `/mcp` URL, bearer header, HTTPS proxy, and `LITELLM_MCP_PUBLIC_URL`. |
-| Write times out | Inspect gateway state before retrying; the connector does not retry tool calls. |
+| 找不到 `uvx` | 安裝 uv，並在桌面用戶端中使用可執行檔的絕對路徑。 |
+| 啟動逾時 | 讓第一個套件/Python 下載完成；檢查是否可存取 GitHub 與套件下載。必要時提高用戶端的啟動逾時。 |
+| 未經授權或遭禁止 | 使用由 `proxy_admin` 擁有的有效個人金鑰。唯讀模式不會授予其他角色的存取權。 |
+| 遺失工具或架構探索失敗 | 檢查對 `/openapi.json` 與閘道管理路由的存取。若作業 ID 已變更，請更新連接器。 |
+| 模型建立失敗 | 檢查資料庫、`STORE_MODEL_IN_DB`、精確的提供者/模型 ID，以及閘道憑證。 |
+| 托管連線遭拒 | 檢查 `/mcp` URL、bearer 標頭、HTTPS proxy，以及 `LITELLM_MCP_PUBLIC_URL`。 |
+| 寫入逾時 | 在重試前檢查閘道狀態；連接器不會重試工具呼叫。 |
 
-See the [connector repository](https://github.com/BerriAI/litellm-admin-mcp) for result paging, schema-discovery options, and Docker hosting.
+請參閱 [連接器儲存庫](https://github.com/BerriAI/litellm-admin-mcp) 以取得結果分頁、架構探索選項，以及 Docker 托管。

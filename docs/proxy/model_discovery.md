@@ -1,8 +1,8 @@
-# Model Discovery
+# 模型探索 {#model-discovery}
 
-Use this to give users an accurate list of models available behind provider endpoint, when calling `/v1/models` for wildcard models.
+在針對 wildcard 模型呼叫 `/v1/models` 時，使用此功能可提供使用者一份在提供者端點後方可用的模型準確清單。
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
 - Fireworks AI
 - OpenAI
@@ -15,9 +15,9 @@ Use this to give users an accurate list of models available behind provider endp
 - Vertex AI
 - Eden AI
 
-### Usage
+### 使用方式 {#usage}
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -30,7 +30,7 @@ litellm_settings:
     check_provider_endpoint: true # 👈 Enable checking provider endpoint for wildcard models
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -38,13 +38,13 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**3. Call `/v1/models`**
+**3. 呼叫 `/v1/models`**
 
 ```bash
 curl -X GET "http://localhost:4000/v1/models" -H "Authorization: Bearer $LITELLM_KEY"
 ```
 
-Expected response
+預期的回應
 
 ```json
 {
@@ -108,9 +108,9 @@ Expected response
 }
 ```
 
-## Which key discovery uses
+## 哪些金鑰探索會使用 {#which-key-discovery-uses}
 
-Discovery calls the provider with the wildcard deployment's own credentials: its `api_base`, and its `api_key` or, when that is unset, the provider's environment variable on the proxy host. For a deployment pointed at a custom Anthropic-compatible gateway, LiteLLM requests `<api_base>/v1/models` with `x-api-key` set to that key and lists each returned id under the wildcard prefix, for example `my-gateway/claude-sonnet-4-5`
+探索會使用 wildcard deployment 自身的憑證呼叫提供者：其 `api_base`，以及其 `api_key`；若未設定，則使用 proxy 主機上的提供者環境變數。對於指向自訂 Anthropic 相容閘道的 deployment，LiteLLM 會以 `x-api-key` 設定為該金鑰的 `<api_base>/v1/models`，並在 wildcard 前綴下列出每個回傳的 id，例如 `my-gateway/claude-sonnet-4-5`
 
 ```yaml
 model_list:
@@ -127,11 +127,11 @@ litellm_settings:
   check_provider_endpoint: true
 ```
 
-The listing reflects that one key's access. A provider key that a caller forwards on the `/v1/models` request (see [Forward LLM Provider Authentication Headers](./forward_client_headers.md#forward-llm-provider-authentication-headers)) is not used for discovery, so users whose own keys can see different models all get the same list, and a listed model can still fail with a given user's key. When neither the deployment key nor the environment variable is set, the wildcard route adds nothing to `/v1/models`
+該清單反映的是那一把金鑰的存取權限。請求者在 `/v1/models` 請求上轉送的提供者金鑰（請參閱 [轉送 LLM 提供者驗證標頭](./forward_client_headers.md#forward-llm-provider-authentication-headers)）不會用於探索，因此自己的金鑰可看到不同模型的使用者，全都會得到相同的清單，而且清單中的模型仍可能會因特定使用者的金鑰而失敗。當 deployment 金鑰與環境變數都未設定時，wildcard 路由不會新增任何內容到 `/v1/models`
 
-## Hide a model from `/v1/models`
+## 將模型從 `/v1/models` 隱藏 {#hide-a-model-from-v1models}
 
-Set `model_info.discoverable: false` on a `model_list` entry to leave it out of the listing endpoints while keeping it callable by anyone whose key allows it. This is for models a chat client's model picker should not offer, such as embedding, classifier, or evaluator models that only your own services call. Clients like Claude Code (`CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`) and Open WebUI fill their pickers from `GET /v1/models`, and most do not filter by capability
+在 `model_list` 項目上設定 `model_info.discoverable: false`，即可將其排除於清單端點之外，同時仍可由任何其金鑰允許的對象呼叫。這適用於聊天用戶端的模型選擇器不應提供的模型，例如僅由您自己的服務呼叫的 embedding、classifier 或 evaluator 模型。像 Claude Code（`CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`）與 Open WebUI 這類用戶端會從 `GET /v1/models` 填入其選擇器，而且多數不會依 capability 篩選
 
 ```yaml
 model_list:
@@ -148,7 +148,7 @@ model_list:
       discoverable: false   # callable by name, absent from /v1/models
 ```
 
-With that config a regular virtual key gets only `{{anthropic}}` back from `GET /v1/models` (and `/models`, in both the OpenAI and the Anthropic response shape), from `GET /v1/model/info` (and `/model/info`), and from `GET /model_group/info`, while `POST /v1/embeddings` with `"model": "text-embedding-3-small"` works exactly as before
+使用該設定時，一般 virtual key 從 `GET /v1/models`（以及 `/models`，在 OpenAI 與 Anthropic 兩種回應格式中皆然）只會收到 `{{anthropic}}`，從 `GET /v1/model/info`（以及 `/model/info`）也是如此，從 `GET /model_group/info` 亦同，而 `POST /v1/embeddings` 搭配 `"model": "text-embedding-3-small"` 仍會完全照舊運作
 
 ```bash
 curl -s http://localhost:4000/v1/models -H "Authorization: Bearer $LITELLM_KEY" | jq '.data[].id'
@@ -160,8 +160,8 @@ curl -s http://localhost:4000/v1/embeddings -H "Authorization: Bearer $LITELLM_K
 # 1536
 ```
 
-The flag only changes what the listing endpoints advertise. Every request that names the model, on any endpoint, is still subject to the same key and team `models` allowlists as today, and `GET /v1/models/{model}` still returns the model so a client that validates a model it was given by name keeps working. Proxy admins (`proxy_admin` and `proxy_admin_viewer` roles, including the master key) still see the model on every listing endpoint, so the Admin UI and `GET /v1/models?scope=expand` keep showing the full inventory
+此旗標只會變更清單端點所宣告的內容。任何在任何端點上指定該模型的請求，仍一律受相同的金鑰與團隊 `models` allowlists 約束，而 `GET /v1/models/{model}` 仍會回傳該模型，因此依名稱驗證所給模型的用戶端仍可正常運作。Proxy 管理員（`proxy_admin` 與 `proxy_admin_viewer` 角色，包括 master key）仍會在每個清單端點看到該模型，因此 Admin UI 與 `GET /v1/models?scope=expand` 會持續顯示完整清單
 
-A model group stays listed while at least one of its deployments is discoverable. Setting the flag on a wildcard entry such as `claude-*` hides every model that entry expands to. Leaving the field out means discoverable, so existing configs are unchanged
+只要某個模型群組的至少一個 deployment 仍可被探索，該群組就會保持列出。將旗標設定在 wildcard 項目上，例如 `claude-*`，會隱藏該項目展開出的所有模型。保留該欄位不填則表示可被探索，因此既有設定不會改變
 
-To stop a key from calling a model instead of just hiding it, use the key's or team's `models` list ([Restrict Model Access](./model_access)). To hide a `model_group_alias` rather than a `model_list` entry, use the alias's `hidden` flag ([Hide Alias Models](./load_balancing#hide-alias-models))
+若要阻止金鑰呼叫某個模型，而不只是將其隱藏，請使用該金鑰或團隊的 `models` 清單（[限制模型存取](./model_access)）。若要隱藏 `model_group_alias` 而不是 `model_list` 項目，請使用 alias 的 `hidden` 旗標（[隱藏 Alias 模型](./load_balancing#hide-alias-models)）

@@ -1,26 +1,25 @@
-# CLI Authentication
+# CLI 驗證 {#cli-authentication}
 
-Use the litellm cli to authenticate to the LiteLLM Gateway. This is great if you're trying to give a large number of developers self-serve access to the LiteLLM Gateway.
+使用 litellm cli 驗證至 LiteLLM Gateway。如果您想讓大量開發者可自行存取 LiteLLM Gateway，這非常適合。
 
-
-## Demo
+## 示範 {#demo}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/87c5d243cde642ff942783024ff037e3" frameBorder="0" allowFullScreen></iframe>
 
-## Usage 
+## 使用方式  {#usage}
 
-### Prerequisites - Start LiteLLM Proxy with Beta Flag
+### 必要條件 - 以 Beta 標記啟動 LiteLLM Proxy {#prerequisites---start-litellm-proxy-with-beta-flag}
 
-:::warning[Beta Feature - Required]
+:::warning[Beta 功能 - 必要]
 
-CLI SSO Authentication is currently in beta. You must set this environment variable **when starting up your LiteLLM Proxy**:
+CLI SSO 驗證目前處於 beta 階段。啟動您的 LiteLLM Proxy 時，您必須設定這個環境變數：
 
 ```bash
 export EXPERIMENTAL_UI_LOGIN="True"
 litellm --config config.yaml
 ```
 
-Or add it to your proxy startup command:
+或者將其加入您的 proxy 啟動命令：
 
 ```bash
 EXPERIMENTAL_UI_LOGIN="True" litellm --config config.yaml
@@ -28,11 +27,11 @@ EXPERIMENTAL_UI_LOGIN="True" litellm --config config.yaml
 
 :::
 
-### Configuration
+### 設定 {#configuration}
 
-#### JWT Token Expiration
+#### JWT 權杖到期時間 {#jwt-token-expiration}
 
-By default, CLI authentication tokens expire after **24 hours**. You can customize this expiration time by setting the `LITELLM_CLI_JWT_EXPIRATION_HOURS` environment variable when starting your LiteLLM Proxy:
+預設情況下，CLI 驗證權杖會在 **24 小時**後過期。您可以在啟動 LiteLLM Proxy 時，透過設定 `LITELLM_CLI_JWT_EXPIRATION_HOURS` 環境變數來自訂這個到期時間：
 
 ```bash
 # Set CLI JWT tokens to expire after 48 hours
@@ -41,62 +40,62 @@ export EXPERIMENTAL_UI_LOGIN="True"
 litellm --config config.yaml
 ```
 
-Or in a single command:
+或者使用單一命令：
 
 ```bash
 LITELLM_CLI_JWT_EXPIRATION_HOURS=48 EXPERIMENTAL_UI_LOGIN="True" litellm --config config.yaml
 ```
 
-**Examples:**
-- `LITELLM_CLI_JWT_EXPIRATION_HOURS=12` - Tokens expire after 12 hours
-- `LITELLM_CLI_JWT_EXPIRATION_HOURS=168` - Tokens expire after 7 days (168 hours)
-- `LITELLM_CLI_JWT_EXPIRATION_HOURS=720` - Tokens expire after 30 days (720 hours)
+**範例：**
+- `LITELLM_CLI_JWT_EXPIRATION_HOURS=12` - 權杖在 12 小時後過期
+- `LITELLM_CLI_JWT_EXPIRATION_HOURS=168` - 權杖在 7 天（168 小時）後過期
+- `LITELLM_CLI_JWT_EXPIRATION_HOURS=720` - 權杖在 30 天（720 小時）後過期
 
-:::note[Experimental UI Session]
-When `EXPERIMENTAL_UI_LOGIN` is enabled, the **browser UI login** session uses a fixed 10-minute expiry (not configurable). `LITELLM_UI_SESSION_DURATION` applies only to non-experimental flows.
+:::note[實驗性 UI 工作階段]
+當啟用 `EXPERIMENTAL_UI_LOGIN` 時，**瀏覽器 UI 登入**工作階段會使用固定的 10 分鐘到期時間（不可設定）。`LITELLM_UI_SESSION_DURATION` 僅適用於非實驗性流程。
 :::
 
 :::tip
-You can check your current token's age and expiration status using:
+您可以使用以下方式檢查目前權杖的年齡與到期狀態：
 ```bash
 lite whoami
 ```
 :::
 
-#### Pre-fill the verification code
+#### 預先填入驗證碼 {#pre-fill-the-verification-code}
 
-By default the browser page that finishes `lite login` asks you to type the verification code the terminal printed. To have `lite login` open that page with the code already filled in, so you only confirm it and click Continue, set on the proxy:
+預設情況下，完成 `lite login` 的瀏覽器頁面會要求您輸入終端機列印出的驗證碼。若要讓 `lite login` 開啟該頁面時已經填入驗證碼，讓您只需確認後按一下 Continue，請在 proxy 上設定：
 
 ```yaml
 general_settings:
   allow_cli_sso_verification_uri_complete: true
 ```
 
-The flag is off by default because typing the code by hand is what ties the browser page to the terminal that started the login. With the flag on, still check that the pre-filled code matches the one the terminal printed before you confirm it. Older `lite` versions open the page without the code either way, so upgrade the CLI as well
+此旗標預設為關閉，因為手動輸入驗證碼正是將瀏覽器頁面與啟動登入的終端機連結起來的方式。啟用此旗標後，請在確認前仍檢查預先填入的驗證碼是否與終端機列印出的相符。較舊的 `lite` 版本無論如何都會在未填入驗證碼的情況下開啟頁面，因此也請一併升級 CLI
 
-If that browser is already signed in to your SSO provider and you would rather skip the code entirely, run `lite login --pkce` instead: one Approve click and the terminal prints `Login successful!`. See [Browser sign-in with PKCE](#browser-sign-in-with-pkce)
+如果該瀏覽器已登入您的 SSO 提供者，而且您想完全跳過驗證碼，請改執行 `lite login --pkce`：按一下 Approve 即可，終端機會列印 `Login successful!`。請參閱 [使用 PKCE 的瀏覽器登入](#browser-sign-in-with-pkce)
 
-#### Attribution metadata (OIDC claims)
+#### 歸因中繼資料（OIDC claim） {#attribution-metadata-oidc-claims}
 
-Map allowlisted OIDC claims into the LiteLLM user's `metadata` and return them to the CLI in `/sso/cli/poll` as `attribution_metadata`. Use this for stable attribution fields (for example employment type or cost center) without parsing large group lists in the client.
+將允許清單中的 OIDC claim 對應到 LiteLLM 使用者的 `metadata`，並在 `/sso/cli/poll` 中以 `attribution_metadata` 傳回給 CLI。這適用於穩定的歸因欄位（例如僱用類型或成本中心），而無需在用戶端解析大型群組清單。
 
-Set on the **proxy** before startup:
+在啟動前於 **proxy** 上設定：
 
 ```bash
 export CLI_SSO_CLAIM_MAP="employment_type->acme_employment_type,org_info.department->department"
 export GENERIC_USER_EXTRA_ATTRIBUTES="employment_type,org_info.department"
 ```
 
-`CLI_SSO_CLAIM_MAP` and `LITELLM_CLI_SSO_CLAIM_MAP` are equivalent. Format: comma-separated `source_claim->metadata_key` pairs. The optional `metadata.` prefix on the destination is stripped; values are stored on the user's `metadata` JSON column.
+`CLI_SSO_CLAIM_MAP` 與 `LITELLM_CLI_SSO_CLAIM_MAP` 等效。格式：以逗號分隔的 `source_claim->metadata_key` 鍵值對。目的地上的可選 `metadata.` 前綴會被移除；值會儲存在使用者的 `metadata` JSON 欄位中。
 
-| Part | Meaning |
+| 部分 | 意義 |
 |------|---------|
-| `source_claim` | OIDC claim path (dot notation), including fields from `GENERIC_USER_EXTRA_ATTRIBUTES` |
-| `metadata_key` | Key under LiteLLM user `metadata` (supports nested keys via dots) |
+| `source_claim` | OIDC claim 路徑（點號表示法），包含來自 `GENERIC_USER_EXTRA_ATTRIBUTES` 的欄位 |
+| `metadata_key` | LiteLLM 使用者 `metadata` 下的鍵（支援透過點號的巢狀鍵） |
 
-Only non-secret scalar values (`string`, `int`, `float`, `bool`) are persisted and returned. Lists, objects, and destination keys containing fragments like `token` or `secret` are dropped.
+僅會保留並傳回非機密純量值（`string`、`int`、`float`、`bool`）。清單、物件，以及包含如 `token` 或 `secret` 之類片段的目的地鍵會被丟棄。
 
-Example poll response (after SSO completes):
+範例輪詢回應（SSO 完成後）：
 
 ```json
 {
@@ -110,63 +109,63 @@ Example poll response (after SSO completes):
 }
 ```
 
-**Local testing without a real IdP:** run `python scripts/mock_oidc_server_for_cli_sso.py` from the LiteLLM repo, point Generic SSO env vars at `http://127.0.0.1:8765`, then run `python scripts/test_cli_sso_claims_e2e.py`.
+**沒有真實 IdP 的本機測試：** 從 LiteLLM repo 執行 `python scripts/mock_oidc_server_for_cli_sso.py`，將 Generic SSO 環境變數指向 `http://127.0.0.1:8765`，然後執行 `python scripts/test_cli_sso_claims_e2e.py`。
 
-### Steps
+### 步驟 {#steps}
 
-1. **Install the CLI**
+1. **安裝 CLI**
 
-   The `lite` client is a thin laptop install: it points at a LiteLLM proxy and runs your coding agents through it, with none of the proxy server runtime pulled in. The one-line installer needs only `curl`; it bootstraps [uv](https://github.com/astral-sh/uv) when it's missing and lets uv provision a compatible Python for you:
+`lite` 用戶端是一個輕量的筆電安裝：它會連到 LiteLLM proxy，並透過它執行您的 coding agents，且不會載入 proxy server runtime。這個單行安裝程式只需要 `curl`；當 [uv](https://github.com/astral-sh/uv) 不存在時，它會引導安裝，並讓 uv 為您佈建相容的 Python：
 
-   ```shell
+```shell
    curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install-cli.sh | sh
    ```
 
-   Already have uv and prefer to drive it yourself? Install the package directly:
+   已經有 uv，並且想自行操作嗎？直接安裝套件：
 
    ```shell
    uv tool install 'litellm[cli]'
    ```
 
-   Any of these gives you the `lite` command. A proxy server installed from `litellm[proxy]` ships it too, but that extra leaves out `keyring`, so its credential stays in a file instead of your OS keychain. Start by typing it in your terminal:
+   以上任一方式都會提供您 `lite` 指令。從 `litellm[proxy]` 安裝的 proxy 伺服器也會隨附它，但那個額外版本缺少 `keyring`，因此其憑證會儲存在檔案中，而不是您的作業系統 keychain。請先在終端機輸入它：
 
-   ```shell
+```shell
    lite
    ```
 
-2. **Set up environment variables**
+2. **設定環境變數**
 
-   On your local machine, set the proxy URL:
+在您的本機上，設定 proxy URL：
 
-   ```bash
+```bash
    export LITELLM_PROXY_URL=http://localhost:4000
    ```
 
-   *(Replace with your actual proxy URL)*
+   （請替換為您的實際 proxy URL）
 
-3. **Login**
+3. **登入**
 
-   ```shell
+```shell
    lite login
    ```
 
-   This will open a browser window to authenticate. If you have connected LiteLLM Proxy to your SSO provider, you should be able to login with your SSO credentials. Once logged in, you can use the CLI to make requests to the LiteLLM Gateway.
+   這會開啟瀏覽器視窗進行驗證。如果您已將 LiteLLM Proxy 連接到您的 SSO 提供者，您應該可以使用您的 SSO 憑證登入。登入後，您可以使用 CLI 向 LiteLLM Gateway 發出請求。
 
-   The browser page asks for the verification code the terminal printed. To skip typing it, either have the proxy [pre-fill the verification code](#pre-fill-the-verification-code) or, when the browser already holds your SSO session, use [`lite login --pkce`](#browser-sign-in-with-pkce), which needs no code at all
+   瀏覽器頁面會要求輸入終端機列印出的驗證碼。若要略過輸入，可讓 proxy [預先填入驗證碼](#pre-fill-the-verification-code)，或在瀏覽器已持有您的 SSO 工作階段時，改用 [`lite login --pkce`](#browser-sign-in-with-pkce)，這完全不需要驗證碼
 
-   The credential goes into your OS keychain, and `lite login` prints where it landed. On a machine with no keychain it falls back to `~/.litellm/token.json` with owner-only permissions. See [the `lite login` credential](./management_cli.md#the-lite-login-credential) for the details and for how to turn keychain storage off
+   憑證會進入您的作業系統 keychain，而 `lite login` 會列印其存放位置。在沒有 keychain 的機器上，則會退回到具有僅擁有者權限的 `~/.litellm/token.json`。如需詳細資訊，以及如何關閉 keychain 儲存，請參閱 [`lite login` 憑證](./management_cli.md#the-lite-login-credential)
 
-4. **Make a test request to view models**
+4. **發出測試請求以檢視模型**
 
-   ```shell
+```shell
    lite models list
    ```
 
-   This will list all the models available to you.
+   這會列出所有可供您使用的模型。
 
-## Browser sign-in with PKCE
+## 使用 PKCE 的瀏覽器登入 {#browser-sign-in-with-pkce}
 
-`lite login --pkce` signs you in through your system browser with OAuth 2.0 authorization code and PKCE (S256). The CLI acts as a public client: it registers itself with the proxy, listens on a loopback port that the OS assigns, and never holds a client secret. The proxy sign-in page and your SSO provider do the authentication, and the CLI only ever sees the resulting credential
+`lite login --pkce` 會透過您的系統瀏覽器，使用 OAuth 2.0 authorization code 與 PKCE（S256）讓您登入。CLI 充當 public client：它會向 proxy 註冊自己，監聽作業系統指派的 loopback 埠，且從不持有 client secret。proxy 登入頁面與您的 SSO 提供者負責驗證，而 CLI 只會看到最終產生的憑證
 
 ```shell
 export LITELLM_PROXY_URL=https://litellm.example.com
@@ -183,21 +182,21 @@ Credential stored in your OS keychain.
 You can now use the CLI without specifying --api-key
 ```
 
-In the browser, the proxy sign-in page opens first if you have no session (SSO if the proxy is connected to your identity provider, otherwise username and password). After sign-in, the browser comes back to a consent page. The page names the CLI's loopback address, for example `http://127.0.0.1:57485`, shows the user you are signed in as, and lets you pick the team that requests are attributed to. Users who belong to teams must pick one, the same rule as `lite login`. Click Approve. The browser shows "Signed in to LiteLLM. You can close this window and return to the terminal." and the terminal prints `Login successful!`
+在瀏覽器中，如果您沒有工作階段，會先開啟 proxy 登入頁面（若 proxy 已連線到您的身分提供者則顯示 SSO，否則顯示使用者名稱與密碼）。登入後，瀏覽器會回到同意頁面。該頁面會列出 CLI 的 loopback 位址，例如 `http://127.0.0.1:57485`，顯示您目前登入的使用者，並讓您選擇要將請求歸屬到的團隊。屬於團隊的使用者必須選擇一個，規則與 `lite login` 相同。按一下 Approve。瀏覽器會顯示「已登入 LiteLLM。您可以關閉此視窗並返回終端機。」而終端機會列印 `Login successful!`
 
-The classic `lite login` flow and virtual API keys keep working unchanged. `--pkce` needs a proxy that serves `/.well-known/litellm-cli-auth`; on an older proxy the command stops with a message that says so
+傳統的 `lite login` 流程與虛擬 API 金鑰仍可正常使用，且不會改變。`--pkce` 需要一個提供 `/.well-known/litellm-cli-auth` 的 proxy；在較舊的 proxy 上，指令會以一則說明訊息停止執行
 
-### The stored credential
+### 已儲存的憑證 {#the-stored-credential}
 
-The key and the refresh token both go to your OS keychain, the same place `lite login` puts the key, and the rest of the record goes to `~/.litellm/token.json` (mode `0600`). Next to the `base_url`, `user_id`, and `user_role` fields that `lite login` writes, a `--pkce` record also holds `expires_at`, `client_id`, `token_endpoint`, `revocation_endpoint`, `resource`, and `team_id`, none of which gets anyone a key on its own. On a machine with no usable keychain the key and the refresh token fall back into that same file and `lite login` says so; treat `~/.litellm/token.json` as sensitive whenever it does, because anyone who can read it can exchange the refresh token for a working key. A `--pkce` login made with an earlier `lite` leaves its refresh token in the file until the next `lite` command reads it and moves it into the keychain
+key 與 refresh token 都會存入您的作業系統 keychain，也就是 `lite login` 存放 key 的地方，而記錄的其餘部分會存入 `~/.litellm/token.json`（模式 `0600`）。除了 `base_url`、`user_id` 與 `user_role` 欄位以外，`lite login` 寫入的 `--pkce` 記錄也包含 `expires_at`、`client_id`、`token_endpoint`、`revocation_endpoint`、`resource` 與 `team_id`，這些都無法單獨讓任何人取得 key。在沒有可用 keychain 的機器上，key 與 refresh token 會退回到同一個檔案，而 `lite login` 也會說明這一點；只要是這種情況，請將 `~/.litellm/token.json` 視為敏感資訊，因為任何能讀取它的人都可以用 refresh token 交換出可用的 key。使用較早 `lite` 進行的 `--pkce` 登入，會讓其 refresh token 留在檔案中，直到下一次 `lite` 指令讀取它並將其移入 keychain 為止
 
-The key expires after `LITELLM_CLI_JWT_EXPIRATION_HOURS` (24 hours by default, see [JWT Token Expiration](#jwt-token-expiration)). You do not need to log in again when it does: the next `lite` command that needs the key renews it with the refresh token and saves the new pair. Each renewal rotates the refresh token, and a refresh token that was already used is refused
+key 會在 `LITELLM_CLI_JWT_EXPIRATION_HOURS` 後到期（預設為 24 小時，請參閱 [JWT Token Expiration](#jwt-token-expiration)）。到期時您不需要再次登入：下一個需要該 key 的 `lite` 指令會使用 refresh token 進行更新並儲存新的配對。每次更新都會輪替 refresh token，而已使用過的 refresh token 會被拒絕
 
-### Use the credential from other tools
+### 從其他工具使用該憑證 {#use-the-credential-from-other-tools}
 
-`lite auth print-token` prints the current key to stdout and nothing else (diagnostics go to stderr). It renews the key first when it is about to expire, so a tool that calls it always gets a key that works
+`lite auth print-token` 只會將目前的 key 輸出到 stdout，除此之外沒有其他輸出（診斷訊息會送到 stderr）。當 key 即將到期時，它會先更新 key，因此呼叫它的工具永遠能取得可用的 key
 
-Claude Code can run it as its [`apiKeyHelper`](https://code.claude.com/docs/en/settings). `lite login --pkce --config-claude` sets `env.ANTHROPIC_BASE_URL` to the proxy and `env.ANTHROPIC_AUTH_TOKEN` to this login's key in `~/.claude/settings.json`, leaving your other settings alone. Rerun the command after the key expires. To have Claude Code call `lite auth print-token` on every refresh, set `apiKeyHelper` by hand as shown:
+Claude Code 可以將它作為 [`apiKeyHelper`](https://code.claude.com/docs/en/settings) 執行。`lite login --pkce --config-claude` 會在 `~/.claude/settings.json` 中將 `env.ANTHROPIC_BASE_URL` 設為 proxy，並將 `env.ANTHROPIC_AUTH_TOKEN` 設為此登入的 key，同時保留您的其他設定不變。key 到期後請重新執行此指令。若要讓 Claude Code 在每次更新時呼叫 `lite auth print-token`，請依下列方式手動設定 `apiKeyHelper`：
 
 ```json title="~/.claude/settings.json"
 {
@@ -208,7 +207,7 @@ Claude Code can run it as its [`apiKeyHelper`](https://code.claude.com/docs/en/s
 }
 ```
 
-For OpenCode, or any other OpenAI-compatible client, point the client at `<proxy>/v1` and pass the key through an environment variable:
+對於 OpenCode，或任何其他相容 OpenAI 的 client，請將 client 指向 `<proxy>/v1`，並透過環境變數傳遞 key：
 
 ```shell
 LITELLM_PROXY_KEY=$(lite auth print-token) opencode
@@ -234,29 +233,29 @@ LITELLM_PROXY_KEY=$(lite auth print-token) opencode
 }
 ```
 
-Requests made with the key are attributed to your user and the team you picked, so they show up under your name on the logs page and draw down your user and team budgets
+使用此 key 發出的請求會歸屬於您的使用者與您選擇的團隊，因此它們會在記錄頁面上以您的名稱顯示，並會計入您的使用者與團隊預算
 
-### Log out
+### 登出 {#log-out}
 
 ```shell
 lite logout
 ```
 
-`lite logout` sends the refresh token to the proxy's `POST /revoke` endpoint and then clears both stores, the keychain entry and `~/.litellm/token.json`. The refresh token is dead from that point on. The key itself is not revocable; it expires on its own within `LITELLM_CLI_JWT_EXPIRATION_HOURS`
+`lite logout` 會將 refresh token 傳送到 proxy 的 `POST /revoke` 端點，然後清除兩個儲存位置，也就是 keychain 項目與 `~/.litellm/token.json`。從那一刻起，refresh token 就失效了。key 本身無法撤銷；它會在 `LITELLM_CLI_JWT_EXPIRATION_HOURS` 內自行到期
 
-Signing in again, with `lite login --pkce` or the classic `lite login`, does the same to the record it replaces: the new credential is saved first, then the previous login's refresh token is revoked, so an older copy of `token.json` cannot be renewed once you have signed in again. If the proxy cannot be reached for that revocation, the login still succeeds and says so
+再次登入，無論是使用 `lite login --pkce` 或傳統的 `lite login`，都會對其取代的記錄做同樣的處理：先儲存新的憑證，然後撤銷先前登入的 refresh token，因此一旦您再次登入，較舊的 `token.json` 副本就無法再更新。如果因為無法連線到 proxy 而無法完成該撤銷，登入仍會成功並明確告知
 
-An admin cannot revoke a `--pkce` login from the dashboard; only the holder's `lite logout` cuts the refresh token short. Every renewal re-reads the user on the proxy, so deactivating the user or removing them from the team makes the next renewal fail, and the key runs out within `LITELLM_CLI_JWT_EXPIRATION_HOURS`. When a renewal is refused, `lite auth print-token` and every other `lite` command print the reason the proxy gave on stderr, and once the key has run out they tell you to run `lite login --pkce` again
+管理員無法從儀表板撤銷 `--pkce` 登入；只有持有人自己的 `lite logout` 會縮短 refresh token 的有效期。每次更新都會重新從 proxy 讀取使用者，因此停用該使用者或將其從團隊移除，會使下一次更新失敗，而 key 會在 `LITELLM_CLI_JWT_EXPIRATION_HOURS` 內用盡。當更新遭拒時，`lite auth print-token` 與其他所有 `lite` 指令都會在 stderr 列印 proxy 提供的原因，而且一旦 key 已經用盡，它們會提示您再次執行 `lite login --pkce`
 
-### Several workers or replicas
+### 多個 worker 或複本 {#several-workers-or-replicas}
 
-Refresh-token single use, replay detection, and `POST /revoke` are enforced through the proxy's Redis cache when one is configured, either `litellm_settings.cache` with Redis `cache_params` or `general_settings.coordination_redis`, and they fail closed while Redis is unreachable: a refresh or a `POST /revoke` that arrives then answers `503 temporarily_unavailable`, the CLI keeps the key it already has and tries again on its next command, and `lite logout` keeps your login record, exits 1, and asks you to run it again shortly, so the refresh token still gets revoked. Without Redis each worker keeps its own record, so on a proxy with more than one worker or replica a revoked or already-used refresh token can still be accepted by a worker that never saw it. Run a single worker or configure Redis
+refresh token 的單次使用、防重放偵測，以及 `POST /revoke` 都會在 proxy 已設定 Redis 快取時，透過該快取強制執行；無論是使用 Redis `cache_params` 或 `general_settings.coordination_redis` 的 `litellm_settings.cache`，當 Redis 無法連線時都會採取封閉失敗：此時到達的 refresh 或 `POST /revoke` 會回應 `503 temporarily_unavailable`，CLI 會保留現有的 key 並在下次指令時再試一次，而 `lite logout` 會保留您的登入記錄、以 1 結束，並要求您稍後再執行一次，因此 refresh token 仍會被撤銷。若沒有 Redis，每個 worker 都會保留自己的記錄，因此在具有多個 worker 或複本的 proxy 上，已撤銷或已使用過的 refresh token 仍可能被未曾看過它的 worker 接受。請執行單一 worker 或設定 Redis
 
-## Native client contract
+## 原生 client 合約 {#native-client-contract}
 
-A CLI written in any language can run the same sign-in from one discovery document, without reading LiteLLM source. A typical case is a Go launcher that signs the user in and then starts OpenCode with the key. The contract is versioned: check `contract_version` before you trust the rest of the document. Adding fields never bumps the version; only a field that changes meaning or goes away does
+任何語言撰寫的 CLI 都可以從同一份 discovery 文件執行相同的登入流程，而無需讀取 LiteLLM 原始碼。典型情況是以 Go 撰寫的啟動器先讓使用者登入，然後使用該金鑰啟動 OpenCode。此合約有版本：在信任文件其餘部分之前，請先檢查 `contract_version`。新增欄位不會提升版本；只有會改變意義或消失的欄位才會
 
-### Discovery document
+### Discovery 文件 {#discovery-document}
 
 ```shell
 curl https://litellm.example.com/.well-known/litellm-cli-auth
@@ -279,15 +278,15 @@ curl https://litellm.example.com/.well-known/litellm-cli-auth
 }
 ```
 
-`resource` is the proxy origin. Send it as the RFC 8707 `resource` parameter on the authorize and token requests. That parameter is what asks for a proxy API credential instead of an MCP session; without it the same authorize request takes the MCP connect path, and the token it mints is rejected on `/v1/*`
+`resource` 是 proxy origin。請在 authorize 與 token 請求中，將它作為 RFC 8707 `resource` 參數傳送。該參數用於要求 proxy API 憑證，而不是 MCP session；若沒有它，相同的 authorize 請求會走 MCP connect 路徑，而其鑄造的 token 會在 `/v1/*` 被拒絕
 
-The URLs are built from the request's base URL. Behind a load balancer or reverse proxy, set `PROXY_BASE_URL` on the proxy to its public origin so `issuer`, the endpoints, and `resource` name the address your users reach. `lite login --pkce` checks this the way [RFC 8414 section 3.3](https://www.rfc-editor.org/rfc/rfc8414#section-3.3) asks: it stops with a message that names the issuer to pass as `--base-url` when `issuer` differs from the `--base-url` the user typed, so the two must agree
+這些 URL 會根據請求的 base URL 建立。在 load balancer 或 reverse proxy 後方，請在 proxy 上將 `PROXY_BASE_URL` 設為其公開 origin，讓 `issuer`、各端點以及 `resource` 都指向使用者實際到達的位址。`lite login --pkce` 會依照 [RFC 8414 section 3.3](https://www.rfc-editor.org/rfc/rfc8414#section-3.3) 的要求檢查這一點：當 `issuer` 與使用者輸入的 `--base-url` 不同時，它會停止並顯示一則訊息，指出要傳入作為 `--base-url` 的 issuer，因此兩者必須一致
 
-### Steps
+### 步驟 {#steps-1}
 
-1. Fetch the discovery document above and check that `contract_version` is `1` and that `code_challenge_methods_supported` includes `S256`. Before you post anything to the endpoints, also check that `issuer` matches the address you fetched the document from (same scheme, host, port, and path, ignoring case and a trailing slash) and that every endpoint and `resource` sit on that same origin. Post to the registration, token, and revocation endpoints without following redirects: a `307` or `308` would otherwise replay the code and verifier, or the refresh token, wherever `Location` points
+1. 取得上述 discovery 文件，並確認 `contract_version` 為 `1`，且 `code_challenge_methods_supported` 包含 `S256`。在向任何端點送出內容之前，也請確認 `issuer` 與您取得文件的位址相符（相同的 scheme、host、port 與 path，不分大小寫且忽略尾端斜線），並確認每個端點與 `resource` 都位於相同的 origin。請在不跟隨 redirects 的情況下，向註冊、token 與撤銷端點送出請求：否則 `307` 或 `308` 會把 code 與 verifier，或 refresh token，重送到 `Location` 指向的任何位置
 
-2. Register a public client. Start a listener on `127.0.0.1` on a port the OS assigns and register that address as the redirect URI. Keep the returned `client_id`; there is no secret
+2. 註冊公開用戶端。於 `127.0.0.1` 上啟動監聽器，使用由作業系統指派的連接埠，並將該位址註冊為 redirect URI。保留回傳的 `client_id`；這裡沒有 secret
 
    ```shell
    curl -X POST https://litellm.example.com/register \
@@ -309,7 +308,7 @@ The URLs are built from the request's base URL. Behind a load balancer or revers
    }
    ```
 
-3. Generate a PKCE code verifier (43 to 128 characters) and its S256 code challenge, plus a random `state`, and open the system browser on the authorization endpoint
+3. 產生 PKCE code verifier（43 到 128 個字元）及其 S256 code challenge，外加一個隨機 `state`，並在 authorization 端點開啟系統瀏覽器
 
    ```text
    https://litellm.example.com/authorize
@@ -322,11 +321,11 @@ The URLs are built from the request's base URL. Behind a load balancer or revers
      &resource=https://litellm.example.com
    ```
 
-   With no proxy session, the browser is sent to the sign-in page and returns to this URL afterwards. With a session, the consent page renders right away. The user picks a team and clicks Approve
+   若沒有 proxy session，瀏覽器會被導向登入頁面，之後再返回此 URL。若有 session，consent 頁面會立即顯示。使用者選取 team 並按一下 Approve
 
-4. Receive the code on the loopback listener. The browser lands on `http://127.0.0.1:53187/callback?code=<code>&state=<state>`. Check that `state` matches the one you sent before you use the code. If the user clicked Deny, the callback carries `error` and `error_description` instead of `code`
+4. 在 loopback 監聽器上接收 code。瀏覽器會抵達 `http://127.0.0.1:53187/callback?code=<code>&state=<state>`。在使用 code 之前，請確認 `state` 與先前傳送的相同。若使用者按了 Deny，回呼中會帶有 `error` 與 `error_description`，而不是 `code`
 
-5. Exchange the code for the credential. The request is form-encoded and there is no client secret; `code_verifier` proves the client is the one that started the flow
+5. 以 code 交換憑證。請求使用 form-encoded，且沒有 client secret；`code_verifier` 可證明該 client 就是啟動此流程的那個
 
    ```shell
    curl -X POST https://litellm.example.com/token \
@@ -349,9 +348,9 @@ The URLs are built from the request's base URL. Behind a load balancer or revers
    }
    ```
 
-   The authorization code is single-use. Sending it again returns `400` with `{"error": "invalid_grant", "error_description": "the authorization code was already used"}`
+   authorization code 只能使用一次。再次傳送會回傳帶有 `{"error": "invalid_grant", "error_description": "the authorization code was already used"}` 的 `400`
 
-6. Use `access_token` as the Bearer token on the proxy's LLM routes: `/v1/chat/completions`, `/v1/responses`, `/v1/messages`, `/v1/models`, and the rest. Spend is attributed to the user and the team from the token response
+6. 在 proxy 的 LLM 路由上將 `access_token` 作為 Bearer token 使用：`/v1/chat/completions`、`/v1/responses`、`/v1/messages`、`/v1/models`，以及其餘路由。費用會歸屬於 token 回應中的使用者與 team
 
    ```shell
    curl https://litellm.example.com/v1/chat/completions \
@@ -360,7 +359,7 @@ The URLs are built from the request's base URL. Behind a load balancer or revers
      -d '{"model": "gpt-5.4-mini", "messages": [{"role": "user", "content": "Say hi in three words."}]}'
    ```
 
-7. Renew the credential before `expires_in` runs out. The response has the same shape as in step 5 and carries a new refresh token. The old refresh token is refused with `400 invalid_grant` if it is used again, so store the new pair before you use the new access token
+7. 在 `expires_in` 用完之前更新憑證。回應的格式與步驟 5 相同，並會帶回新的 refresh token。舊的 refresh token 若再次使用，將以 `400 invalid_grant` 被拒絕，因此在使用新的 access token 之前，請先儲存新的配對
 
    ```shell
    curl -X POST https://litellm.example.com/token \
@@ -370,44 +369,43 @@ The URLs are built from the request's base URL. Behind a load balancer or revers
      -d resource=https://litellm.example.com
    ```
 
-8. Revoke the refresh token on logout ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)), and revoke the refresh token of any credential you replace when the user signs in again. Only refresh tokens are revocable; access tokens expire on their own. The endpoint answers `200` with `{}` even for a token it no longer recognizes, so it is safe to call more than once
+8. 在登出時撤銷 refresh token（[RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)），且當使用者再次登入、您替換任何憑證時，也要撤銷該憑證的 refresh token。只有 refresh token 可被撤銷；access token 會自行到期。即使是伺服器已不再識別的 token，端點也會以 `200` 搭配 `{}` 回應，因此可安全重複呼叫多次
 
-   ```shell
+```shell
    curl -X POST https://litellm.example.com/revoke \
      -d token=llm_srefresh_eyJhbGciOiJ... \
      -d client_id=llm_dcrc_lq411b6QkPmfxjW...
    ```
 
-### Security rules
+### 安全規則 {#security-rules}
 
-Native proxy API grants redirect to a loopback address (`127.0.0.1`, `::1`, or `localhost`). Hosted HTTPS callbacks require a separate [hosted app grant](#hosted-app-sign-in) and exact operator allowlisting; client registration alone does not authorize one. The authorization code is single-use and bound to the client and the PKCE verifier. `lite` never follows a redirect from the registration, token, or revocation endpoint; a `3xx` answer stops the command with a message naming where it pointed, so the code and verifier or the refresh token only ever reach the origin the discovery document was checked against. The consent page is served with `Cache-Control: no-store` and `Content-Security-Policy: frame-ancestors 'none'`, so it cannot be embedded in another page. The server never picks a team on the user's behalf: the team comes from the consent page, membership is checked again at every token exchange and refresh, and a grant posted without a team while the user still has a live team to pick from is refused with `400 invalid_grant` and the description `this user belongs to a team; sign in again and pick the team for this credential`
+原生 proxy API 授權會重新導向至 loopback 位址（`127.0.0.1`、`::1` 或 `localhost`）。託管的 HTTPS 回呼需要獨立的 [hosted app grant](#hosted-app-sign-in) 以及精確的 operator allowlisting；僅有 client registration 並不足以授權。authorization code 只能使用一次，且會綁定 client 與 PKCE verifier。`lite` 絕不會跟隨來自註冊、token 或撤銷端點的 redirect；若收到 `3xx` 回應，命令會停止並顯示指出其所指向位置的訊息，因此 code 與 verifier 或 refresh token 只會抵達其 discovery 文件所檢查之 origin。consent 頁面以 `Cache-Control: no-store` 與 `Content-Security-Policy: frame-ancestors 'none'` 提供，因此無法嵌入另一個頁面。伺服器絕不會代替使用者選擇 team：team 來自 consent 頁面，在每次 token exchange 與 refresh 時都會再次檢查 membership，而若在使用者仍有可選擇的有效 team 時，提交未指定 team 的 grant 會以 `400 invalid_grant` 與描述 `this user belongs to a team; sign in again and pick the team for this credential` 被拒絕
 
-The device authorization grant, embedded browsers, and the resource owner password credentials grant are not supported
+device authorization grant、embedded browsers，以及 resource owner password credentials grant 都不支援
 
+## Hosted app 登入 {#hosted-app-sign-in}
 
-## Hosted app sign-in
+Hosted application 可透過相同的 authorization-code 與 S256 PKCE 流程重用閘道已設定的 Google、Okta 或其他 SSO 提供者。請以 gateway URL 設定應用程式，並在閘道上註冊其精確的 HTTPS callback。請使用其 `/.well-known/litellm-cli-auth` discovery 文件宣告所需 hosted scope 的 gateway release
 
-A hosted application can reuse the gateway's configured Google, Okta or other SSO provider through the same authorization-code and S256 PKCE flow. Configure the application with the gateway URL and register its exact HTTPS callback on the gateway. Use a gateway release whose `/.well-known/litellm-cli-auth` discovery document advertises the required hosted scope
-
-| Requested scope | Gateway callback setting | Access |
+| 要求的 scope | Gateway callback 設定 | 存取權 |
 | --- | --- | --- |
-| `proxy:read` | `LITELLM_PROXY_API_OAUTH_REDIRECT_URIS` | Model listings and aggregate usage reports within the user's current permissions |
-| `proxy:admin` | `LITELLM_PROXY_API_OAUTH_ADMIN_REDIRECT_URIS` | Existing administrator operations and model calls, subject to current `proxy_admin` authority and gateway limits |
+| `proxy:read` | `LITELLM_PROXY_API_OAUTH_REDIRECT_URIS` | 使用者目前權限範圍內的模型清單與彙總使用量報告 |
+| `proxy:admin` | `LITELLM_PROXY_API_OAUTH_ADMIN_REDIRECT_URIS` | 現有的管理員操作與模型呼叫，受目前 `proxy_admin` 權限與 gateway 限制約束 |
 
-For an administrator app, set on the gateway:
+對於管理員應用程式，請在閘道上設定：
 
 ```shell
 export LITELLM_PROXY_API_OAUTH_ADMIN_REDIRECT_URIS=https://admin.example.com/oauth/callback
 ```
 
-Both settings accept comma-separated exact HTTPS URIs. Wildcards, query strings and fragments are rejected. An admin callback may request either scope; a reporting callback cannot request admin access. Omitting `scope` requests `proxy:read`. Registering a callback never promotes the user or skips their consent
+這兩個設定都接受以逗號分隔的精確 HTTPS URI。萬用字元、查詢字串與 fragment 會被拒絕。admin callback 可要求任一 scope；reporting callback 不能要求 admin 存取權。省略 `scope` 會請求 `proxy:read`。註冊 callback 絕不會提升使用者權限或略過其同意
 
-The discovery document retains `contract_version: 1` and adds `hosted_app`. Its `scopes_supported` lists currently enabled hosted scopes, `access_token_ttl` is 300 seconds, and `refresh_token_ttl` is 86400 seconds. Clients check those capabilities, validate `issuer` and `resource` against their configured gateway, and use the discovered registration, authorization, token and revocation endpoints. Send `resource=<gateway origin>` and the chosen `scope` when authorizing. Hosted tokens include `scope`, `user_id`, `access_token`, `refresh_token`, `expires_in` and `refresh_expires_in`
+discovery 文件保留 `contract_version: 1` 並新增 `hosted_app`。其 `scopes_supported` 列出目前啟用的 hosted scopes，`access_token_ttl` 為 300 秒，而 `refresh_token_ttl` 為 86400 秒。用戶端會檢查這些功能，驗證 `issuer` 與 `resource` 是否符合其設定的 gateway，並使用已探索到的 registration、authorization、token 與 revocation 端點。進行授權時請送出 `resource=<gateway origin>` 與所選的 `scope`。Hosted token 會包含 `scope`、`user_id`、`access_token`、`refresh_token`、`expires_in` 與 `refresh_expires_in`
 
-Hosted grants require a database and shared Redis. The gateway checks the current user, selected team, callback trust and applicable model, budget and rate limits on use. Custom authentication and exclusive external-auth modes do not issue hosted grants. An admin who loses the `proxy_admin` role loses hosted admin access
+Hosted grant 需要資料庫與共享 Redis。gateway 會在使用時檢查目前使用者、所選 team、callback 信任以及適用的模型、預算與速率限制。自訂驗證與 exclusive external-auth 模式不會簽發 hosted grant。失去 `proxy_admin` 角色的管理員也會失去 hosted admin 存取權
 
-Access tokens expire within five minutes. Refresh tokens rotate and cannot extend consent beyond 24 hours; reusing a spent refresh token revokes the grant. A successful refresh preserves still-unexpired access tokens for work already in progress. Revoking an access or refresh token at the discovered revocation endpoint invalidates the entire grant across gateway workers
+Access token 會在五分鐘內過期。Refresh token 會輪替，且無法將同意延長超過 24 小時；重複使用已用完的 refresh token 會撤銷該 grant。成功的 refresh 會保留仍未過期、且已在進行中的工作所使用的 access token。在已探索到的 revocation 端點撤銷 access 或 refresh token，會使整個 grant 在所有 gateway worker 間失效
 
-Clients encrypt refresh tokens at rest, bind them to the gateway and user, serialize renewal, and persist renewal attempts before sending them. An uncertain renewal requires signing in again rather than replaying the refresh or an administrator operation. Disconnect removes local access immediately and retries gateway revocation if the gateway is temporarily unavailable
+用戶端會在靜態儲存時加密 refresh token，將其綁定至閘道與使用者，序列化更新，並在送出前保留更新嘗試記錄。不確定的更新需要重新登入，而不是重播 refresh 或執行管理員操作。中斷連線會立即移除本機存取權，並在閘道暫時無法使用時重試閘道撤銷。
 
-Keep the gateway URL, callback configuration, signing configuration and shared Redis state when upgrading the standard gateway deployment. The application discovers protocol capabilities from that URL; it does not depend on a separate backend image pin
+在升級標準閘道部署時，請保留閘道 URL、回呼設定、簽署設定以及共用的 Redis 狀態。應用程式會從該 URL 探索通訊協定能力；它不依賴於獨立的後端映像版本固定。

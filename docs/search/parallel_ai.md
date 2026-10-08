@@ -1,8 +1,8 @@
-# Parallel AI Search
+# 平行 AI 搜尋 {#parallel-ai-search}
 
-**Get API Key:** [https://www.parallel.ai](https://www.parallel.ai)
+**取得 API 金鑰：** [https://www.parallel.ai](https://www.parallel.ai)
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Parallel AI Search"
 import os
@@ -17,9 +17,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -35,7 +35,7 @@ search_tools:
       api_key: os.environ/PARALLEL_AI_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -43,7 +43,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/parallel-search \
@@ -55,7 +55,7 @@ curl http://0.0.0.0:4000/v1/search/parallel-search \
   }'
 ```
 
-## Provider-specific Parameters
+## 提供者特定參數 {#provider-specific-parameters}
 
 ```python showLineNumbers title="Parallel AI Search with Provider-specific Parameters"
 import os
@@ -73,9 +73,9 @@ response = search(
 )
 ```
 
-## Web Search Interception
+## Web Search Interception {#web-search-interception}
 
-When a Parallel AI search tool backs [web search interception](../integrations/websearch_interception.md), the intercepted `litellm_web_search` tool's optional `objective` and `search_queries` fields are forwarded to Parallel's v1 Search API as `objective` and `search_queries`, so one tool call from the model searches several keyword angles at once. Parallel AI is the only search provider that receives this richer shape today; every other provider gets the tool call's single `query`.
+當 Parallel AI 搜尋工具支援 [web search interception](../integrations/websearch_interception.md) 時，被攔截的 `litellm_web_search` 工具可選的 `objective` 與 `search_queries` 欄位會以 `objective` 和 `search_queries` 的形式轉送至 Parallel 的 v1 Search API，因此模型的一次工具呼叫會同時以多個關鍵字角度進行搜尋。Parallel AI 是目前唯一會接收這種更豐富結構的搜尋提供者；其他所有提供者都只會收到工具呼叫的單一 `query`。
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -110,7 +110,7 @@ curl http://0.0.0.0:4000/v1/messages \
   }'
 ```
 
-The model sees the [three-field schema](../integrations/websearch_interception.md#the-search-tool-the-model-sees) and typically fills all of them. LiteLLM then sends Parallel the model's `objective` and up to five of its `search_queries`; queries past the fifth are dropped before the request goes out, matching Parallel's cap.
+模型會看到 [三欄位 schema](../integrations/websearch_interception.md#the-search-tool-the-model-sees)，通常會將三者都填入。LiteLLM 接著會將模型的 `objective` 以及最多五個 `search_queries` 傳送給 Parallel；超過第五個的查詢會在請求送出前被捨棄，符合 Parallel 的上限。
 
 ```json title="Outbound Parallel AI request"
 {
@@ -121,5 +121,4 @@ The model sees the [three-field schema](../integrations/websearch_interception.m
 }
 ```
 
-When the model fills only `query`, or you call `/v1/search/parallel-search` with a single `query` string, that string is sent as both a one-item `search_queries` list and the `objective`. A list of `query` strings on a direct search call maps to `search_queries` the same way, with `objective` passed through only when you supply it. An `objective` set in the search tool's `litellm_params` is kept on every request and the model's is dropped.
-
+當模型只填入 `query`，或您以單一 `query` 字串呼叫 `/v1/search/parallel-search` 時，該字串會同時以一個元素的 `search_queries` 清單和 `objective` 送出。直接搜尋呼叫中的 `query` 字串清單也會以相同方式對應到 `search_queries`，並且只有在您提供 `objective` 時才會一併傳入。搜尋工具的 `litellm_params` 中設定的 `objective` 會保留在每次請求中，而模型的會被捨棄。

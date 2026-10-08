@@ -1,20 +1,20 @@
 import Image from '@theme/IdealImage';
 
-# Claude Code Gateway (SSO sign-in)
+# Claude Code 閘道（SSO 登入） {#claude-code-gateway-sso-sign-in}
 
-Let developers sign in to Claude Code with your SSO provider instead of an API key. LiteLLM serves the same gateway protocol Anthropic's self-hosted [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) speaks: Claude Code's `/login` opens on a **Cloud gateway** screen, the developer signs in through your identity provider in the browser, and every request after that carries a LiteLLM token tied to that developer's user and team, so spend, budgets, and logs are attributed per person with nothing to issue or rotate
+讓開發者使用您的 SSO 提供者登入 Claude Code，而不是使用 API 金鑰。LiteLLM 提供與 Anthropic 自架 [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) 相同的閘道協定：Claude Code 的 `/login` 會開啟 **Cloud gateway** 畫面，開發者在瀏覽器中透過您的身分提供者登入，而之後的每個請求都會攜帶與該開發者的使用者與團隊綁定的 LiteLLM 權杖，因此支出、預算與記錄都會依個人歸屬，無需發放或輪替任何憑證
 
-<EnterpriseFeature feature="SSO">From v1.76.0, SSO is free for up to 5 users. Beyond that, an enterprise license is required.</EnterpriseFeature>
+<EnterpriseFeature feature="SSO">自 v1.76.0 起，SSO 對最多 5 位使用者免費。超過後則需要企業授權。</EnterpriseFeature>
 
-The flow works with any SSO provider LiteLLM supports (Google, Microsoft Entra ID, Okta, or any OIDC provider through the generic client). It differs from [Claude Code with Okta SSO (JWT Auth)](./claude_code_okta_sso), where a helper script fetches an IdP token and Claude Code sends that token as its API key: here there is no script to distribute, the sign-in is Claude Code's own, and the proxy can push [managed settings](#4-push-managed-settings-from-the-proxy) to every signed-in client. Claude Code v2.1.195 or later is required on developer machines
+此流程適用於 LiteLLM 支援的任何 SSO 提供者（Google、Microsoft Entra ID、Okta，或透過通用用戶端的任何 OIDC 提供者）。它與 [Claude Code with Okta SSO (JWT Auth)](./claude_code_okta_sso) 不同，後者是由輔助腳本擷取 IdP 權杖，並由 Claude Code 將該權杖作為其 API 金鑰傳送：在這裡沒有需要散發的腳本，登入是 Claude Code 自身的流程，而且 proxy 可以將 [受管理設定](#4-push-managed-settings-from-the-proxy) 推送到每個已登入的用戶端。開發者機器上需要 Claude Code v2.1.195 或更新版本
 
-## How it works
+## 運作方式 {#how-it-works}
 
-Claude Code reads the gateway URL from a managed settings file, fetches the gateway's OAuth discovery document, and asks the developer once to trust the gateway. It then starts an [OAuth device authorization](https://www.rfc-editor.org/rfc/rfc8628) flow: the terminal shows a short code and opens the browser on LiteLLM's SSO login, the developer signs in with your identity provider and confirms the code, and Claude Code, which has been polling the token endpoint, receives a LiteLLM CLI token and a refresh token. The CLI token is a JWT scoped to the developer's user and team, valid for 24 hours by default, and Claude Code renews it with the refresh token before it expires, so a developer who keeps using Claude Code is not sent back to the browser (see [Session lifetime and sign-out](#session-lifetime-and-sign-out)). Claude Code stores both, fetches managed settings with the CLI token, and sends every inference request to `/claude_code_gateway/v1/messages` with it as the bearer token. Under the hood the gateway reuses the proxy's existing [CLI SSO device flow](../proxy/cli_sso), so anything that works for `lite login` (SSO providers, team membership, model access, budgets) works here
+Claude Code 會從受管理設定檔讀取閘道 URL，擷取閘道的 OAuth 探索文件，並只要求開發者一次信任該閘道。接著它會啟動 [OAuth 裝置授權](https://www.rfc-editor.org/rfc/rfc8628) 流程：終端機會顯示一組短代碼並在瀏覽器中開啟 LiteLLM 的 SSO 登入，開發者使用您的身分提供者登入並確認代碼，而持續輪詢權杖端點的 Claude Code 會接收 LiteLLM CLI 權杖與重新整理權杖。CLI 權杖是受限於開發者的使用者與團隊的 JWT，預設有效期為 24 小時，而 Claude Code 會在到期前使用重新整理權杖更新它，因此持續使用 Claude Code 的開發者不會被重新導向回瀏覽器（請參閱 [Session lifetime and sign-out](#session-lifetime-and-sign-out)）。Claude Code 會同時儲存兩者、使用 CLI 權杖擷取受管理設定，並以其作為 bearer token 將每個推論請求傳送至 `/claude_code_gateway/v1/messages`。在底層，該閘道重用了 proxy 現有的 [CLI SSO device flow](../proxy/cli_sso)，因此任何適用於 `lite login` 的功能（SSO 提供者、團隊成員資格、模型存取、預算）都適用於此處
 
-## 1. Turn the gateway on
+## 1. 開啟閘道 {#1-turn-the-gateway-on}
 
-Enable the gateway in `general_settings`. The `anthropic/*` wildcard matters: Claude Code asks for model names by itself (`claude-opus-4-7` for the current release), so the proxy needs to resolve whatever it sends, and a named alias next to it gives you a stable name to grant on teams
+在 `general_settings` 中啟用閘道。`anthropic/*` 萬用字元很重要：Claude Code 會自行要求模型名稱（目前版本為 `claude-opus-4-7`），因此 proxy 需要解析其送出的任何名稱，而其旁邊的命名別名則可讓您在團隊上授權時使用穩定名稱
 
 ```yaml
 model_list:
@@ -33,7 +33,7 @@ general_settings:
   enable_claude_code_gateway: true
 ```
 
-The browser leg is the proxy's SSO login, so configure your SSO provider the way [SSO for Admin UI](../proxy/admin_ui_sso) describes and register `<proxy base url>/sso/callback` as the redirect URI. For Google that is two variables; Microsoft, Okta, and generic OIDC have their own set on that page
+瀏覽器端是 proxy 的 SSO 登入，因此請依照 [SSO for Admin UI](../proxy/admin_ui_sso) 的說明設定您的 SSO 提供者，並將 `<proxy base url>/sso/callback` 註冊為重新導向 URI。對 Google 而言這是兩個變數；Microsoft、Okta 與通用 OIDC 在該頁面上有各自的一組設定
 
 ```bash
 export GOOGLE_CLIENT_ID="<client id>"
@@ -42,15 +42,15 @@ export PROXY_BASE_URL="https://litellm.internal.example.com"
 litellm --config config.yaml
 ```
 
-`PROXY_BASE_URL` is the origin developers reach. The gateway builds the discovery document, the token endpoint, and the browser verification URL from it, so behind a load balancer or TLS terminator it must name the public-facing origin, not the pod. Claude Code only signs in to a gateway whose hostname resolves to private addresses (RFC 1918, link-local, CGNAT `100.64.0.0/10`, IPv6 ULA `fc00::/7`, or loopback), because a trusted gateway can push settings that run commands on developer machines. Put the proxy on an internal hostname behind TLS; the CLI pins the TLS certificate per hostname on first connect. Plain `http://` on loopback, as in the screenshots below, is accepted for local testing
+`PROXY_BASE_URL` 是開發者存取的 origin。閘道會根據它建立探索文件、權杖端點與瀏覽器驗證 URL，因此在負載平衡器或 TLS 終止器後方，它必須指向對外公開的 origin，而不是 pod。Claude Code 只會向主機名稱解析為私有位址（RFC 1918、link-local、CGNAT `100.64.0.0/10`、IPv6 ULA `fc00::/7`，或 loopback）的閘道登入，因為受信任的閘道可以推送會在開發者機器上執行命令的設定。請將 proxy 放在 TLS 之後的內部主機名稱上；CLI 會在第一次連線時依主機名稱固定 TLS 憑證。如下方截圖所示，loopback 上的純 `http://` 可用於本機測試
 
-Two optional settings tune the flow. `LITELLM_CLI_JWT_EXPIRATION_HOURS` sets the session token's lifetime between renewals (default `24`). Claude Code renews the session token with the refresh token before it expires, so a developer stays signed in past that lifetime. A session ends when 14 days pass without a renewal, when a renewal is refused, or when the developer runs `/logout` (see [Session lifetime and sign-out](#session-lifetime-and-sign-out)). Keep it at or below `336`, since a session token that lives longer than the 14-day refresh token outlives the token that would renew it, and the developer is back to `/login` when it expires. `allow_cli_sso_verification_uri_complete: true` under `general_settings` adds `verification_uri_complete` to the device authorization response, which carries the code in the URL so a client that honors it opens the browser page with the code already filled in. It is off by default because typing the code is what ties the browser page to the terminal that started the login; see [Pre-fill the verification code](../proxy/cli_sso#pre-fill-the-verification-code)
+有兩個可選設定可調整此流程。`LITELLM_CLI_JWT_EXPIRATION_HOURS` 可設定工作階段權杖在重新整理之間的存活時間（預設為 `24`）。Claude Code 會在到期前使用重新整理權杖更新工作階段權杖，因此開發者在該期限之後仍會維持登入狀態。當 14 天內沒有重新整理、重新整理遭拒，或開發者執行 `/logout` 時，工作階段便會結束（請參閱 [Session lifetime and sign-out](#session-lifetime-and-sign-out)）。請將其設為 `336` 或以下，因為存活時間長於 14 天重新整理權杖的工作階段權杖，其壽命會超過可用來更新它的權杖，而在其到期時開發者又會回到 `/login`。`allow_cli_sso_verification_uri_complete: true` 在 `general_settings` 下方可加入 `verification_uri_complete` 至裝置授權回應，這會將代碼放在 URL 中，因此支援它的用戶端會在已填入代碼的情況下開啟瀏覽器頁面。預設為關閉，因為輸入代碼正是把瀏覽器頁面與啟動登入的終端機連結起來的方式；請參閱 [Pre-fill the verification code](../proxy/cli_sso#pre-fill-the-verification-code)
 
-With more than one worker or replica, the browser leg and the terminal's polling can land on different processes, and the sign-in state lives in the proxy's CLI SSO cache. The record of which refresh tokens were already used or revoked lives in the proxy's cache too, and a process that never saw that record accepts a refresh token another process already rotated or revoked. Configure Redis (`REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD` in the environment, or `general_settings.coordination_redis`) so that cache is shared, or run a single worker. While Redis is unreachable a renewal or a sign-out answers `503 temporarily_unavailable` rather than guessing, and Claude Code keeps using the session token it has and renews again later
+當有超過一個 worker 或副本時，瀏覽器端與終端機的輪詢可能落在不同的程序上，而登入狀態則存在於 proxy 的 CLI SSO 快取中。哪些重新整理權杖已被使用或撤銷的記錄也存在於 proxy 的快取中，而從未看過該記錄的程序會接受另一個程序已經輪替或撤銷的重新整理權杖。請設定 Redis（環境中的 `REDIS_HOST`、`REDIS_PORT` 與 `REDIS_PASSWORD`，或 `general_settings.coordination_redis`），以便共用該快取，或只執行單一 worker。當 Redis 無法連線時，重新整理或登出會回應 `503 temporarily_unavailable`，而不是自行猜測，Claude Code 會繼續使用它現有的工作階段權杖，稍後再嘗試重新整理
 
-## 2. Verify from the command line
+## 2. 從命令列驗證 {#2-verify-from-the-command-line}
 
-The discovery document is served without authentication. The `issuer` is the URL to put in every developer's managed settings file in the next step
+探索文件在未經驗證的情況下提供。`issuer` 是下一步要放入每位開發者受管理設定檔中的 URL
 
 ```bash
 curl http://localhost:4000/claude_code_gateway/.well-known/oauth-authorization-server
@@ -66,7 +66,7 @@ curl http://localhost:4000/claude_code_gateway/.well-known/oauth-authorization-s
 }
 ```
 
-Starting a device authorization by hand shows what Claude Code sees at `/login`: a code for the developer, the browser URL, a ten-minute window, and a five-second polling interval
+手動啟動裝置授權會顯示 Claude Code 在 `/login` 看到的內容：給開發者的代碼、瀏覽器 URL、十分鐘的時間窗，以及五秒的輪詢間隔
 
 ```bash
 curl -X POST http://localhost:4000/claude_code_gateway/oauth/device_authorization
@@ -82,7 +82,7 @@ curl -X POST http://localhost:4000/claude_code_gateway/oauth/device_authorizatio
 }
 ```
 
-Polling the token endpoint before the browser sign-in has finished answers `authorization_pending`, which is what Claude Code waits on
+在瀏覽器登入尚未完成前輪詢權杖端點會回應 `authorization_pending`，這正是 Claude Code 等待的結果
 
 ```bash
 curl -X POST http://localhost:4000/claude_code_gateway/oauth/token \
@@ -94,7 +94,7 @@ curl -X POST http://localhost:4000/claude_code_gateway/oauth/token \
 {"error": "authorization_pending"}
 ```
 
-Once the developer has approved the code in the browser (the next section shows that leg), the same poll answers the session token with a refresh token next to it, served with `cache-control: no-store`. `expires_in` is `LITELLM_CLI_JWT_EXPIRATION_HOURS` in seconds, and `user_id` and `team_id` name the user and team the session is scoped to
+當開發者已在瀏覽器中核准代碼之後（下一節會示範該流程），同一次輪詢會回應工作階段權杖，旁邊還會帶有重新整理權杖，並以 `cache-control: no-store` 提供。`expires_in` 是 `LITELLM_CLI_JWT_EXPIRATION_HOURS`，單位為秒，而 `user_id` 與 `team_id` 則指定此工作階段所屬的使用者與團隊
 
 ```json
 {
@@ -107,7 +107,7 @@ Once the developer has approved the code in the browser (the next section shows 
 }
 ```
 
-Renewal is the `refresh_token` grant on the same endpoint, with no `client_id`, which is exactly what Claude Code sends. The response has the same shape with a new session token and a new refresh token, and the refresh token just presented is spent
+重新整理是對同一端點的 `refresh_token` 授權，且沒有 `client_id`，這正是 Claude Code 所送出的內容。回應具有相同的結構，包含新的工作階段權杖與新的重新整理權杖，而剛剛提供的重新整理權杖則已被使用完畢
 
 ```bash
 curl -X POST http://localhost:4000/claude_code_gateway/oauth/token \
@@ -115,7 +115,7 @@ curl -X POST http://localhost:4000/claude_code_gateway/oauth/token \
   -d refresh_token="$REFRESH_TOKEN"
 ```
 
-A refresh token presented a second time, one that was revoked, or a value that was never a refresh token answers `400 invalid_grant`
+第二次提供、已被撤銷，或從未是重新整理權杖的值會回應 `400 invalid_grant`
 
 ```json
 {
@@ -124,7 +124,7 @@ A refresh token presented a second time, one that was revoked, or a value that w
 }
 ```
 
-Sign-out is [RFC 7009](https://www.rfc-editor.org/rfc/rfc7009) revocation on the `revocation_endpoint`. `/logout` posts the session token and the refresh token there, one request each. Revoking the refresh token is what ends the sign-in; the session token is stateless and expires on its own, so its request changes nothing. The endpoint answers `200` with `{}` whether or not it recognizes the token, so calling it twice is safe
+登出是在 `revocation_endpoint` 上進行的 [RFC 7009](https://www.rfc-editor.org/rfc/rfc7009) 撤銷。`/logout` 會將工作階段權杖與重新整理權杖分別各送出一個請求到該處。撤銷重新整理權杖才是結束登入的動作；工作階段權杖是無狀態的，並會自行到期，因此對它的請求不會改變任何事情。無論端點是否辨識該權杖，回應都會是 `200` 並附帶 `{}`，所以呼叫兩次是安全的
 
 ```bash
 curl -X POST http://localhost:4000/claude_code_gateway/oauth/revoke \
@@ -132,9 +132,9 @@ curl -X POST http://localhost:4000/claude_code_gateway/oauth/revoke \
   -d token_type_hint=refresh_token
 ```
 
-## 3. Point Claude Code at the proxy
+## 3. 將 Claude Code 指向 proxy {#3-point-claude-code-at-the-proxy}
 
-Claude Code opens `/login` on the gateway screen only when the gateway URL comes from a managed settings file. Those keys are ignored in a developer's own `~/.claude/settings.json`, so deploy this file through your device management tooling or write it directly: `/Library/Application Support/ClaudeCode/managed-settings.json` on macOS, `/etc/claude-code/managed-settings.json` on Linux and WSL, `C:\Program Files\ClaudeCode\managed-settings.json` on Windows
+只有當閘道 URL 來自受管理設定檔時，Claude Code 才會在閘道畫面上開啟 `/login`。這些金鑰在開發者自己的 `~/.claude/settings.json` 中會被忽略，因此請透過您的裝置管理工具部署此檔案，或直接寫入：macOS 上的 `/Library/Application Support/ClaudeCode/managed-settings.json`、Linux 與 WSL 上的 `/etc/claude-code/managed-settings.json`、Windows 上的 `C:\Program Files\ClaudeCode\managed-settings.json`
 
 ```json
 {
@@ -143,47 +143,47 @@ Claude Code opens `/login` on the gateway screen only when the gateway URL comes
 }
 ```
 
-The URL is the `issuer` from the discovery document, with the `/claude_code_gateway` path. If developer machines route HTTPS through a corporate proxy, add the LiteLLM host to `NO_PROXY` so the CLI connects to it directly, and if your internal network is numbered from public IPv4 space you own, list those blocks in the `gatewayInternalNetworks` managed setting (Claude Code v2.1.268 or later); both are covered in Anthropic's [gateway prerequisites](https://code.claude.com/docs/en/claude-apps-gateway#prerequisites)
+網址是來自探索文件的 `issuer`，並帶有 `/claude_code_gateway` 路徑。如果開發人員的電腦將 HTTPS 經由公司代理伺服器轉送，請將 LiteLLM 主機加入 `NO_PROXY`，讓 CLI 直接連線到它；如果您的內部網路是由您擁有的公用 IPv4 位址空間編號，請將那些區段列入 `gatewayInternalNetworks` 管理設定（Claude Code v2.1.268 或更新版本）；這兩者都在 Anthropic 的 [gateway prerequisites](https://code.claude.com/docs/en/claude-apps-gateway#prerequisites) 中有說明
 
-With the file in place, run `claude` (or `/login` in a running session). The gateway screen shows the URL from managed settings
+檔案就緒後，執行 `claude`（或在執行中的工作階段中執行 `/login`）。閘道畫面會顯示來自管理設定的網址
 
 <Image img={require('../../img/claude_code_gateway/gateway_detected.png')} style={{ width: '800px', height: 'auto' }} />
 
-On the first connection Claude Code asks the developer to trust the gateway, since a trusted gateway can push settings to the machine. This is asked once per gateway host
+首次連線時，Claude Code 會要求開發人員信任該閘道，因為受信任的閘道可以將設定推送到機器上。每個閘道主機只會詢問一次
 
 <Image img={require('../../img/claude_code_gateway/trust_gateway.png')} style={{ width: '800px', height: 'auto' }} />
 
-Claude Code then shows the verification code and opens the browser on the proxy's SSO login. If the browser does not open, the developer visits the URL shown
+接著 Claude Code 會顯示驗證碼，並在代理伺服器的 SSO 登入頁面開啟瀏覽器。如果瀏覽器沒有開啟，開發人員請前往畫面上顯示的網址
 
 <Image img={require('../../img/claude_code_gateway/device_code.png')} style={{ width: '800px', height: 'auto' }} />
 
-The browser goes through your identity provider (a browser already signed in to the provider lands on the next page without a prompt) and then asks for the code from the terminal
+瀏覽器會經過您的身分提供者（已登入該提供者的瀏覽器會直接進到下一頁而不會出現提示），然後要求輸入來自終端機的代碼
 
 <Image img={require('../../img/claude_code_gateway/browser_verification_code.png')} style={{ width: '800px', height: 'auto' }} />
 
-After Continue, the browser confirms the login and the terminal picks it up on its next poll
+按下 Continue 後，瀏覽器會確認登入，終端機則會在下一次輪詢時接收
 
 <Image img={require('../../img/claude_code_gateway/browser_login_complete.png')} style={{ width: '800px', height: 'auto' }} />
 
 <Image img={require('../../img/claude_code_gateway/connected.png')} style={{ width: '800px', height: 'auto' }} />
 
-From here Claude Code continues with its usual first-run prompts (security notes and workspace trust) and lands on the prompt, showing **Cloud gateway** next to the model. Requests hit `POST /claude_code_gateway/v1/messages` on the proxy with the developer's token, and each one shows up in the proxy's logs and spend under that developer's user and team
+之後 Claude Code 會繼續進行一般的首次執行提示（安全性說明與工作區信任），並進入提示畫面，在模型旁顯示 **Cloud gateway**。請求會使用開發人員的權杖送到代理伺服器上的 `POST /claude_code_gateway/v1/messages`，每一筆都會以該開發人員的使用者與團隊身分顯示在代理伺服器的記錄與支出中
 
 <Image img={require('../../img/claude_code_gateway/signed_in_session.png')} style={{ width: '800px', height: 'auto' }} />
 
-### Session lifetime and sign-out
+### 工作階段存續時間與登出 {#session-lifetime-and-sign-out}
 
-Claude Code stores the session token together with the refresh token. Five minutes before the session token expires (24 hours by default), it posts the refresh token to the token endpoint and stores the new session token and refresh token it gets back, so a developer who keeps using Claude Code is not sent back to the browser. Each refresh token is single-use and lives 14 days, and every renewal issues a new one, so a session ends after 14 days without a renewal, and Claude Code asks for `/login` once the session token it holds expires. Two Claude Code terminals on one machine share the stored credential but renew on their own, so the second one to renew presents the refresh token the first already rotated, is refused (one or more `400`s on `/claude_code_gateway/oauth/token` in the proxy's access log) and carries on with the credential the first terminal saved
+Claude Code 會將工作階段權杖與更新權杖一併儲存。在工作階段權杖到期前五分鐘（預設為 24 小時），它會將更新權杖送到權杖端點，並儲存收到的新工作階段權杖與更新權杖，因此持續使用 Claude Code 的開發人員不會被帶回瀏覽器。每個更新權杖都是一次性使用，存續 14 天，而每次更新都會發出新的更新權杖，因此若 14 天內未更新，工作階段就會結束；當它持有的工作階段權杖到期後，Claude Code 會要求 `/login`。同一台機器上的兩個 Claude Code 終端機會共用儲存的憑證，但會各自更新，因此第二個嘗試更新者會帶出第一個已輪替過的更新權杖，因而遭到拒絕（代理伺服器存取記錄中的 `400`s on `/claude_code_gateway/oauth/token`）並改用第一個終端機儲存的憑證繼續執行
 
-Every renewal re-reads the developer's user record and team membership in LiteLLM. Deactivating or deleting the user in LiteLLM, or removing them from the team the session was issued for, refuses the next renewal with `400 invalid_grant`, and Claude Code asks for `/login` once the current session token expires, within `LITELLM_CLI_JWT_EXPIRATION_HOURS`. A deleted user's requests to `/claude_code_gateway/v1/messages` answer `401` right away, before that session token expires. Deprovisioning a developer at the identity provider alone does not end a session in progress, because renewal checks LiteLLM's own user and team state and not the identity provider, so that session keeps renewing until 14 days pass without a renewal. Deactivate the user in LiteLLM as well to end it sooner
+每次更新都會重新讀取 LiteLLM 中該開發人員的使用者記錄與團隊成員資格。若在 LiteLLM 中停用或刪除該使用者，或將其從發出該工作階段的團隊中移除，下一次更新將以 `400 invalid_grant` 拒絕，而 Claude Code 會在目前工作階段權杖到期後、於 `LITELLM_CLI_JWT_EXPIRATION_HOURS` 內要求 `/login`。已刪除使用者對 `/claude_code_gateway/v1/messages` 的請求會在該工作階段權杖到期前立即回應 `401`。僅在身分提供者處撤銷開發人員的佈建，並不會結束進行中的工作階段，因為更新會檢查的是 LiteLLM 自身的使用者與團隊狀態，而不是身分提供者，因此該工作階段會持續更新，直到 14 天內未再更新。也請在 LiteLLM 中停用該使用者，才能更早結束
 
-`/logout` posts the session token and the refresh token to `POST /claude_code_gateway/oauth/revoke`, the `revocation_endpoint` from the discovery document, then removes the stored credential. Revoking the refresh token ends that sign-in, since every refresh token rotated from it, whoever holds one, is refused from then on. The session token itself is self-contained and is not revoked; it stays valid until it expires
+`/logout` 會將工作階段權杖與更新權杖送到 `POST /claude_code_gateway/oauth/revoke`，也就是探索文件中的 `revocation_endpoint`，然後移除已儲存的憑證。撤銷更新權杖會結束該登入，因為由它輪替出的每個更新權杖、無論持有者是誰，此後都會被拒絕。工作階段權杖本身是自包含的，不會被撤銷；它會保持有效直到過期為止
 
-Renewal and revocation need LiteLLM v1.106.0 or later (first in `v1.106.0-rc.1`). Earlier releases issue no refresh token and answer every refresh with `401`, so Claude Code asks for `/login` again at every expiry, and during a rolling upgrade a renewal served by a replica still on the previous release does the same for that developer once
+更新與撤銷需要 LiteLLM v1.106.0 或更新版本（最早在 `v1.106.0-rc.1` 中）。較早版本不會發出更新權杖，而且每次更新都會回應 `401`，因此 Claude Code 會在每次到期時再次要求 `/login`；在滾動升級期間，若由仍停留在前一版的複本提供更新，對該開發人員而言也會同樣如此一次
 
-## 4. Push managed settings from the proxy
+## 4. 從代理伺服器推送管理設定 {#4-push-managed-settings-from-the-proxy}
 
-Anything you put under `claude_code_gateway_managed_settings` is served verbatim as the organization's managed settings to every client signed in through the gateway. The value is a Claude Code [managed settings](https://code.claude.com/docs/en/managed-settings) document, so the same keys work: `permissions`, `env`, hooks, allowed tools, and so on. Claude Code fetches it at startup and again every hour, and locked keys cannot be overridden locally
+您放在 `claude_code_gateway_managed_settings` 底下的任何內容，都會原樣作為組織的管理設定提供給每一個透過閘道登入的用戶端。其值是 Claude Code 的 [managed settings](https://code.claude.com/docs/en/managed-settings) 文件，因此相同的鍵都可使用：`permissions`、`env`、hooks、allowed tools 等。Claude Code 會在啟動時擷取一次，之後每小時再擷取一次，而鎖定的鍵無法在本機覆寫
 
 ```yaml
 general_settings:
@@ -199,7 +199,7 @@ general_settings:
       OTEL_EXPORTER_OTLP_ENDPOINT: https://litellm.internal.example.com/claude_code_gateway
 ```
 
-The endpoint is `GET /claude_code_gateway/managed/settings`, authenticated with the CLI token (any LiteLLM key works for checking it). The response wraps your block in the `{uuid, checksum, settings}` envelope Claude Code expects, where both ids are the SHA-256 of the canonical JSON, and the same value is returned as an `ETag`. Claude Code sends it back as `If-None-Match` on the hourly refresh and gets `304 Not Modified` until the block changes. When `claude_code_gateway_managed_settings` is unset, the endpoint answers `404`, which the CLI reads as "no managed policy"
+端點是 `GET /claude_code_gateway/managed/settings`，以 CLI 權杖進行驗證（任何 LiteLLM 金鑰都可用於檢查它）。回應會將您的區塊包裝在 Claude Code 預期的 `{uuid, checksum, settings}` 封套中，其中兩個 id 都是 canonical JSON 的 SHA-256，而相同的值會以 `ETag` 的形式回傳。Claude Code 在每小時重新整理時會將它以 `If-None-Match` 送回，並持續收到 `304 Not Modified`，直到該區塊變更為止。當 `claude_code_gateway_managed_settings` 未設定時，端點會回應 `404`，CLI 會將其讀作「沒有管理原則」
 
 ```bash
 curl -s http://localhost:4000/claude_code_gateway/managed/settings \
@@ -223,21 +223,21 @@ curl -s http://localhost:4000/claude_code_gateway/managed/settings \
 }
 ```
 
-Some settings need the developer's approval the first time they apply. A telemetry destination is one of them: Claude Code shows where telemetry will go and applies the block only once the developer accepts, so tell your developers to expect this screen
+有些設定在首次套用時需要開發人員同意。遙測目的地就是其中之一：Claude Code 會顯示遙測將送往何處，並且只有在開發人員接受後才套用該區塊，因此請告知您的開發人員預期會看到此畫面
 
 <Image img={require('../../img/claude_code_gateway/managed_settings_approval.png')} style={{ width: '800px', height: 'auto' }} />
 
-## 5. Telemetry
+## 5. 遙測 {#5-telemetry}
 
-In sessions signed in through `/login`, Claude Code sends its OpenTelemetry exports (OTLP over HTTP; gRPC is not supported on gateway sessions) to the gateway rather than to a locally set `OTEL_EXPORTER_OTLP_ENDPOINT`, unless a managed setting names another collector. The `env` block above turns the exporters on and points them at the proxy, which serves `POST /claude_code_gateway/v1/metrics`, `/v1/logs`, and `/v1/traces`, authenticated with the same token, and answers `200`. Today the proxy accepts these exports and discards them; per-request usage, spend, and logs come from the proxy's own logging on `/claude_code_gateway/v1/messages`, not from the OTLP stream. If you already collect Claude Code telemetry, set `OTEL_EXPORTER_OTLP_ENDPOINT` in the managed settings to your collector instead
+在透過 `/login` 登入的工作階段中，Claude Code 會將其 OpenTelemetry 匯出（OTLP over HTTP；gateway 工作階段不支援 gRPC）送往閘道，而不是送往本機設定的 `OTEL_EXPORTER_OTLP_ENDPOINT`，除非管理設定指定了另一個收集器。上方的 `env` 區塊會啟用匯出器並將其指向代理伺服器，而代理伺服器提供 `POST /claude_code_gateway/v1/metrics`、`/v1/logs` 與 `/v1/traces`，使用相同的權杖進行驗證，並回應 `200`。目前代理伺服器會接受這些匯出並將其捨棄；每筆請求的使用量、支出與記錄來自代理伺服器在 `/claude_code_gateway/v1/messages` 上的自身記錄，而不是來自 OTLP 串流。如果您已經收集 Claude Code 遙測，請在管理設定中將 `OTEL_EXPORTER_OTLP_ENDPOINT` 設為您的收集器
 
-## Deployment topologies
+## 部署拓撲 {#deployment-topologies}
 
-**Claude Code to LiteLLM.** The setup on this page: developers sign in through LiteLLM, LiteLLM holds the provider credentials, and the proxy's [model access](../proxy/virtual_keys), [budgets](../proxy/users), [rate limits](../proxy/users), and [logging](../proxy/logging) apply per user and team. This is the topology to pick when LiteLLM is already your gateway for other clients
+**Claude Code 到 LiteLLM。** 本頁的設定：開發人員透過 LiteLLM 登入，LiteLLM 持有提供者憑證，而代理伺服器的 [model access](../proxy/virtual_keys)、[budgets](../proxy/users)、[rate limits](../proxy/users) 與 [logging](../proxy/logging) 會依使用者與團隊套用。當 LiteLLM 已經是其他用戶端的閘道時，應選擇這個拓撲
 
-**Claude Code to LiteLLM behind a load balancer.** The same thing with several replicas: `PROXY_BASE_URL` names the balancer's origin so the discovery document and the browser URL point developers at an address they reach, TLS terminates at the balancer on a private hostname, and Redis is configured so the device flow completes on any replica. Sticky sessions are not needed
+**在負載平衡器後方的 Claude Code 到 LiteLLM。** 相同的設定搭配多個複本：`PROXY_BASE_URL` 會將負載平衡器的來源命名，使探索文件與瀏覽器網址將開發人員導向他們可存取的位址，TLS 在私有主機名稱上的負載平衡器終止，並且已設定 Redis，使裝置流程可在任何複本上完成。不需要黏著式工作階段
 
-**Claude Code to the Claude apps gateway to LiteLLM.** Anthropic offers no hosted gateway; the [Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) is software you run yourself. If you already run it (for its IdP-group policies, or because Claude Desktop connects through it), it can front LiteLLM as an `anthropic` upstream whose `base_url` is the proxy and whose `api_key` is a LiteLLM virtual key. Set `forward_user_identity: true` on that upstream and the Claude apps gateway adds `x-litellm-end-user-id` (the developer's email) to every request it forwards; LiteLLM reads that header as the [customer id](../proxy/customers) without any extra configuration, so spend is tracked per developer even though the proxy sees one key. A `429` from LiteLLM on such a request is returned to the developer as-is instead of failing over to another upstream (Claude apps gateway v2.1.267 or later), so per-customer budgets and rate limits hold. In this topology the sign-in and managed settings are the Claude apps gateway's, and `enable_claude_code_gateway` stays off on LiteLLM
+**Claude Code 到 Claude apps gateway 到 LiteLLM。** Anthropic 不提供代管的 gateway；[Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) 是您自行執行的軟體。如果您已經在執行它（因為它有 IdP 群組政策，或因為 Claude Desktop 透過它連線），它可以作為 LiteLLM 的 `anthropic` upstream，其 `base_url` 是 proxy，而其 `api_key` 是 LiteLLM 虛擬金鑰。將 `forward_user_identity: true` 設定在該 upstream 上，Claude apps gateway 會在轉送的每個請求中加入 `x-litellm-end-user-id`（開發者的電子郵件）；LiteLLM 會將該標頭視為 [customer id](../proxy/customers)，無需任何額外設定，因此即使 proxy 只看見一把金鑰，支出仍會依開發者個別追蹤。對此類請求，LiteLLM 回傳的 `429` 會原樣交還給開發者，而不是故障轉移到另一個 upstream（Claude apps gateway v2.1.267 或更新版本），因此每位客戶的預算與速率限制都能維持。在這種拓撲中，登入與受管理設定屬於 Claude apps gateway，而 LiteLLM 上的 `enable_claude_code_gateway` 會保持關閉
 
 ```yaml
 upstreams:
@@ -248,25 +248,25 @@ upstreams:
     forward_user_identity: true
 ```
 
-## Known limits
+## 已知限制 {#known-limits}
 
-Revocation covers the refresh token only. The session token is self-contained, so after `/logout` the session token a developer held keeps working until it expires, within `LITELLM_CLI_JWT_EXPIRATION_HOURS`
+撤銷只涵蓋 refresh token。session token 是自包含的，因此在 `/logout` 之後，開發者持有的 session token 仍會持續運作，直到 `LITELLM_CLI_JWT_EXPIRATION_HOURS`
 
-A replayed refresh token is refused on its own and ends nothing else, so a copy of a refresh token that renews before the real one keeps its chain alive. The real Claude Code drops its refresh token on that refusal, which leaves `/logout` nothing to revoke, so deactivating or deleting the user in LiteLLM, or removing them from the team, is what ends that chain
+被重放的 refresh token 只會被拒絕，且不會終止其他任何內容，因此在真正的 refresh token 之前先完成更新的副本，會讓它的鏈保持存活。真正的 Claude Code 在遭到該拒絕時會丟棄其 refresh token，這使得 `/logout` 沒有任何東西可撤銷，因此在 LiteLLM 中停用或刪除該使用者，或將其從團隊中移除，才會終止那條鏈
 
-The refresh token is signed with the MCP gateway's session signing keys, derived from `master_key` unless `general_settings.mcp_session_token_signing` is set. On a proxy where that block cannot be loaded, sign-in still succeeds but returns no refresh token and the proxy logs the fault, so the developer is back to signing in at every expiry until it is fixed
+refresh token 由 MCP gateway 的 session 簽署金鑰簽署，這些金鑰會從 `master_key` 衍生，除非已設定 `general_settings.mcp_session_token_signing`。在無法載入該區塊的 proxy 上，登入仍會成功，但不會回傳 refresh token，且 proxy 會記錄該錯誤，因此開發者會回到每次到期都必須重新登入，直到問題修復為止
 
-The token is scoped to the first team on the developer's user record. A developer who belongs to several teams has no team picker in this flow and gets the first team's models and budget; `lite login` offers the picker if a developer needs a token for another team
+該 token 的範圍限定於開發者使用者記錄中的第一個團隊。屬於多個團隊的開發者在此流程中沒有團隊選擇器，會取得第一個團隊的模型與預算；`lite login` 提供該選擇器，以便開發者需要其他團隊的 token 時使用
 
-Two endpoints of the protocol are not served: `GET /claude_code_gateway/v1/models` and `HEAD /claude_code_gateway/api/hello` answer `404`. Sign-in, managed settings, and inference do not depend on them. Model discovery through `/v1/models` is off in Claude Code unless `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` is set, and with the endpoint unserved the `/model` picker shows Claude Code's built-in list, which is why the proxy config keeps the `anthropic/*` wildcard. The team's model list still decides which of those models a developer may use
+此協定有兩個端點不提供服務：`GET /claude_code_gateway/v1/models` 與 `HEAD /claude_code_gateway/api/hello` 回應 `404`。登入、受管理設定與推論都不依賴它們。透過 `/v1/models` 的模型探索在 Claude Code 中是關閉的，除非已設定 `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`；而在該端點未提供服務時，`/model` 選擇器會顯示 Claude Code 內建的清單，這就是為什麼 proxy 設定會保留 `anthropic/*` 萬用字元。團隊的模型清單仍然決定開發者可使用哪些模型
 
-`enable_claude_code_gateway`, `claude_code_gateway_managed_settings`, and `allow_cli_sso_verification_uri_complete` are read from `general_settings` in `config.yaml` only; they cannot be set from the Admin UI or the database
+`enable_claude_code_gateway`、`claude_code_gateway_managed_settings` 與 `allow_cli_sso_verification_uri_complete` 只會從 `general_settings` 中的 `config.yaml` 讀取；它們不能從 Admin UI 或資料庫設定
 
-Claude Code disables server-side WebSearch on gateway sessions and uses the 5-minute prompt cache TTL rather than the 1-hour one, because it cannot see which upstream a gateway routes to. Both are Claude Code behaviors for any gateway, LiteLLM included
+Claude Code 會在 gateway 工作階段停用伺服器端 WebSearch，並使用 5 分鐘的 prompt cache TTL，而不是 1 小時的 TTL，因為它無法看見 gateway 路由到哪個 upstream。這兩者都是任何 gateway 的 Claude Code 行為，LiteLLM 也包含在內
 
-## Related docs
+## 相關文件 {#related-docs}
 
-- [CLI SSO Authentication](../proxy/cli_sso): the device flow the gateway reuses, token lifetime, the PKCE sign-in whose refresh token family and revocation this gateway reuses, and the native client contract
-- [SSO for Admin UI](../proxy/admin_ui_sso): configuring Google, Microsoft, Okta, or generic OIDC on the proxy
-- [Claude Code with Okta SSO (JWT Auth)](./claude_code_okta_sso): the `apiKeyHelper` alternative, where Claude Code sends the IdP token itself
-- [Claude Code Quickstart](./claude_responses_api): basic Claude Code with LiteLLM setup using an API key
+- [CLI SSO 驗證](../proxy/cli_sso)：gateway 重用的 device flow、token 存活時間，以及此 gateway 重用其 refresh token family 與撤銷機制的 PKCE 登入，還有原生用戶端合約
+- [Admin UI 的 SSO](../proxy/admin_ui_sso)：在 proxy 上設定 Google、Microsoft、Okta 或通用 OIDC
+- [使用 Okta SSO（JWT Auth）的 Claude Code](./claude_code_okta_sso)：`apiKeyHelper` 替代方案，其中 Claude Code 會直接傳送 IdP token
+- [Claude Code 快速入門](./claude_responses_api)：使用 API 金鑰設定 Claude Code 與 LiteLLM 的基本範例

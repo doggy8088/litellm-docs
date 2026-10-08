@@ -1,50 +1,50 @@
 ---
-title: Chat UI
-description: Chat with the models on your LiteLLM gateway, use MCP tools, and see your own keys, logs, and usage on one page in the Admin UI.
+title: 聊天介面
+description: 在您的 LiteLLM 閘道上與模型聊天、使用 MCP 工具，並在管理員介面中的單一頁面查看您自己的金鑰、記錄與用量。
 ---
 
 import Image from '@theme/IdealImage';
 
-# Chat UI
+# 聊天介面 {#chat-ui}
 
-The Chat UI is a chat page in the LiteLLM Admin UI, at `/ui/chat`. A proxy admin enables it for the gateway. Then each user who can log in to the Admin UI can use it. Users can send messages to the models that they have access to and use the tools of MCP servers.
+聊天介面是 LiteLLM 管理員介面中的聊天頁面，位於 `/ui/chat`。代理程式管理員會為閘道啟用它。之後，任何可以登入管理員介面的使用者都可以使用它。使用者可以向其有存取權的模型傳送訊息，並使用 MCP 伺服器的工具。
 
-Each request from the Chat UI goes through the gateway. LiteLLM applies the same model access, budgets, and logs to these requests as to API requests.
+來自聊天介面的每個請求都會經過閘道。LiteLLM 會將相同的模型存取、預算與記錄套用到這些請求，與 API 請求相同。
 
 :::info Beta
 
-The Chat UI is a beta feature. Its pages and controls can change in new releases. The Chat UI is available in v1.92.0 and newer versions.
+聊天介面是一項 beta 功能。其頁面與控制項可能會在新版本中變更。聊天介面可用於 v1.92.0 及更新版本。
 
 :::
 
-## Enable the Chat UI
+## 啟用聊天介面 {#enable-the-chat-ui}
 
-The Chat UI is off by default. A proxy admin must enable it.
+聊天介面預設為關閉。代理程式管理員必須將其啟用。
 
-1. Log in to the Admin UI as a proxy admin.
-2. Go to **Settings** > **Admin Settings**.
-3. Click the **UI Settings** tab.
-4. Set **[BETA] Enable Chat page** to on. The page refreshes.
+1. 以代理程式管理員身分登入管理員介面。
+2. 前往 **Settings** > **Admin Settings**。
+3. 點擊 **UI Settings** 分頁。
+4. 將 **[BETA] Enable Chat page** 設為開啟。頁面會重新整理。
 
 <Image
   img={require('../../../img/chat_ui_enable.png')}
   dark={require('../../../img/chat_ui_enable_dark.png')}
-  alt="The Admin Settings page with the [BETA] Enable Chat page switch on and highlighted"
+  alt="管理員設定頁面，已將 [BETA] Enable Chat page 開關開啟並標示"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-When the Chat UI is on, the view switcher at the top of the Admin UI shows **Chat**. Select **Chat** to open the Chat UI. You can also go to `PROXY_BASE_URL/ui/chat`.
+當聊天介面開啟時，管理員介面頂端的檢視切換器會顯示 **Chat**。選取 **Chat** 以開啟聊天介面。您也可以前往 `PROXY_BASE_URL/ui/chat`。
 
 <Image
   img={require('../../../img/chat_ui_switcher.png')}
   dark={require('../../../img/chat_ui_switcher_dark.png')}
-  alt="The view switcher with the AI Gateway and Chat options"
+  alt="具有 AI Gateway 與 Chat 選項的檢視切換器"
   style={{width: '100%', maxWidth: '640px', display: 'block', margin: '1.5rem 0'}}
 />
 
-When the Chat UI is off, the view switcher shows **Chat** as not available. If a user goes to `/ui/chat`, the Admin UI opens the dashboard.
+當聊天介面關閉時，檢視切換器會將 **Chat** 顯示為不可用。若使用者前往 `/ui/chat`，管理員介面會開啟儀表板。
 
-To change this value without the Admin UI, send this request with a proxy admin key:
+若要在不使用管理員介面的情況下變更此值，請使用代理程式管理員金鑰傳送此請求：
 
 ```bash
 curl -X PATCH "$PROXY_BASE_URL/update/ui_settings" \
@@ -53,91 +53,91 @@ curl -X PATCH "$PROXY_BASE_URL/update/ui_settings" \
   -d '{"enable_chat_ui": true}'
 ```
 
-LiteLLM keeps this value in the database. The gateway must have a `DATABASE_URL`.
+LiteLLM 會將此值保存在資料庫中。閘道必須有 `DATABASE_URL`。
 
-## Send a message
+## 傳送訊息 {#send-a-message}
 
-1. Click **New Chat**.
-2. Select a model in the model list below the message box.
-3. Type your message.
-4. Click **Send**, or push Enter.
+1. 點擊 **New Chat**。
+2. 在訊息方塊下方的模型清單中選取一個模型。
+3. 輸入您的訊息。
+4. 點擊 **Send**，或按 Enter。
 
 <Image
   img={require('../../../img/chat_ui_new_chat.png')}
   dark={require('../../../img/chat_ui_new_chat_dark.png')}
-  alt="A new chat in the Chat UI with the message box and the model list"
+  alt="聊天介面中的新聊天，包含訊息方塊與模型清單"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-The model list shows only the models that your user can use. Type in the search box to find a model.
+模型清單只會顯示您的使用者可以使用的模型。在搜尋方塊中輸入以尋找模型。
 
 <Image
   img={require('../../../img/chat_ui_model_picker.png')}
   dark={require('../../../img/chat_ui_model_picker_dark.png')}
-  alt="The open model list with a search box"
+  alt="已展開的模型清單與搜尋方塊"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-The Chat UI shows the response as the model sends it. Below each response, the Chat UI shows these metrics for the request:
+聊天介面會在模型傳送回應時顯示該回應。每則回應下方，聊天介面會顯示此請求的下列指標：
 
-- **TTFT**: the time to the first token
-- **Total Latency**: the time for the full response
-- **In**, **Out**, and **Total**: the input tokens, the output tokens, and the sum of these tokens
-- **Cost**: the cost of the request
+- **TTFT**：第一個 token 的時間
+- **Total Latency**：完整回應所需時間
+- **In**、**Out** 與 **Total**：輸入 token、輸出 token，以及這些 token 的總和
+- **Cost**：請求成本
 
 <Image
   img={require('../../../img/chat_ui_conversation.png')}
   dark={require('../../../img/chat_ui_conversation_dark.png')}
-  alt="A chat with a response and the request metrics below the response"
+  alt="一個聊天回應以及回應下方的請求指標"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-### Chat history
+### 聊天記錄 {#chat-history}
 
-The Chat UI keeps your chats in the local storage of your browser. The gateway does not keep the chats. The **Recents** list shows your chats. The title of each chat is the start of its first message.
+聊天介面會將您的聊天儲存在瀏覽器的本機儲存空間中。閘道不會保留這些聊天。**Recents** 清單會顯示您的聊天。每個聊天的標題是其第一則訊息的開頭。
 
-Your browser keeps a maximum of 100 chats. When you start one more chat, the Chat UI deletes the chat with the oldest change. Chats from one browser do not show in a different browser or on a different computer. If you clear the data of your browser, the browser deletes your chats.
+您的瀏覽器最多會保留 100 則聊天。當您再開始一則聊天時，聊天介面會刪除變更最舊的聊天。來自一個瀏覽器的聊天不會顯示在不同的瀏覽器或不同的電腦上。如果您清除瀏覽器資料，瀏覽器就會刪除您的聊天。
 
-The gateway records each request in the logs. Refer to [See your logs](#see-your-logs).
+閘道會在記錄中記錄每個請求。請參閱 [查看您的記錄](#see-your-logs)。
 
-## Use MCP tools in a chat
+## 在聊天中使用 MCP 工具 {#use-mcp-tools-in-a-chat}
 
-The Chat UI can give the tools of an MCP server to the model.
+聊天介面可以將 MCP 伺服器的工具提供給模型。
 
-1. Click **+** next to the model list.
-2. For each MCP server that you will use, set the switch to on.
-3. Send your message.
+1. 點擊模型清單旁的 **+**。
+2. 對於您將使用的每個 MCP 伺服器，將開關設為開啟。
+3. 傳送您的訊息。
 
 <Image
   img={require('../../../img/chat_ui_mcp_picker.png')}
   dark={require('../../../img/chat_ui_mcp_picker_dark.png')}
-  alt="The MCP server list with one switch for each server"
+  alt="MCP 伺服器清單，每個伺服器各有一個開關"
   style={{width: '100%', maxWidth: '720px', display: 'block', margin: '1.5rem 0'}}
 />
 
-The model can then call the tools of the servers that you selected. The list shows only the MCP servers that your login can access. To give users access to an MCP server, refer to [Grant access to MCP servers](../../mcp_grant_access.md).
+之後模型就可以呼叫您所選擇之伺服器的工具。清單只會顯示您的登入可存取的 MCP 伺服器。若要讓使用者可存取 MCP 伺服器，請參閱 [授予 MCP 伺服器存取權](../../mcp_grant_access.md)。
 
-## Connect to an MCP server with OAuth
+## 使用 OAuth 連線至 MCP 伺服器 {#connect-to-an-mcp-server-with-oauth}
 
-Some MCP servers must have a sign-in for each user. For these servers, LiteLLM keeps one OAuth token for each user.
+某些 MCP 伺服器必須為每位使用者登入一次。對於這些伺服器，LiteLLM 會為每位使用者保留一個 OAuth 權杖。
 
-1. Click **Integrations**.
-2. Find the MCP server. A server that must have a sign-in shows a **Connect** button.
-3. Click **Connect**.
-4. Sign in on the page of the provider.
+1. 點擊 **Integrations**。
+2. 找到 MCP 伺服器。必須登入的伺服器會顯示 **Connect** 按鈕。
+3. 點擊 **Connect**。
+4. 在提供者的頁面上登入。
 
 <Image
   img={require('../../../img/chat_ui_integrations.png')}
   dark={require('../../../img/chat_ui_integrations_dark.png')}
-  alt="The Integrations page with one MCP server and one OAuth server with a Connect button"
+  alt="Integrations 頁面，顯示一個 MCP 伺服器與一個具有 Connect 按鈕的 OAuth 伺服器"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-The **All** tab shows all the MCP servers that your login can access. Each server shows its number of tools. The **Connected** tab shows the servers that are on for your chats.
+**All** 分頁會顯示您的登入可存取的所有 MCP 伺服器。每個伺服器都會顯示其工具數量。**Connected** 分頁會顯示已啟用供您聊天使用的伺服器。
 
-The **Credentials** page shows your OAuth connections. To remove a connection, click the delete icon (**Revoke connection**) on its row.
+**Credentials** 頁面會顯示您的 OAuth 連線。若要移除連線，請點擊其所在列上的刪除圖示（**Revoke connection**）。
 
-To show the **Connect** button for an MCP server, a proxy admin sets `auth_type: oauth2` and `oauth2_flow: authorization_code` on the server:
+若要為 MCP 伺服器顯示 **Connect** 按鈕，代理程式管理員會在伺服器上設定 `auth_type: oauth2` 與 `oauth2_flow: authorization_code`：
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -151,55 +151,55 @@ mcp_servers:
 
 :::warning
 
-Set `oauth2_flow` on each MCP server that has `auth_type: oauth2`. If `oauth2_flow` is missing, the gateway does not start.
+在每個具有 `auth_type: oauth2` 的 MCP 伺服器上設定 `oauth2_flow`。如果缺少 `oauth2_flow`，閘道就不會啟動。
 
 :::
 
-For the full OAuth settings, refer to [MCP OAuth](../../mcp_oauth.md).
+如需完整的 OAuth 設定，請參閱 [MCP OAuth](../../mcp_oauth.md)。
 
-## See your API keys
+## 查看您的 API 金鑰 {#see-your-api-keys}
 
-The **API Keys** page shows the virtual keys of your user. For each key, the page shows the spend, the budget, the expiry date, and the creation date.
+**API Keys** 頁面會顯示您使用者的虛擬金鑰。對於每個金鑰，頁面會顯示花費、預算、到期日與建立日期。
 
-On LiteLLM Enterprise, each key also has a **Rotate** button. **Rotate** makes a new secret value for the key.
+在 LiteLLM Enterprise 中，每個金鑰也有一個 **Rotate** 按鈕。**Rotate** 會為該金鑰產生新的密鑰值。
 
 <Image
   img={require('../../../img/chat_ui_api_keys.png')}
   dark={require('../../../img/chat_ui_api_keys_dark.png')}
-  alt="The API Keys page with two virtual keys"
+  alt="API Keys 頁面，包含兩個虛擬金鑰"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-## See your logs
+## 查看您的記錄 {#see-your-logs}
 
-The **Logs** page shows only the requests of your user. Each row shows the time, the model, the status, the tokens, the duration, and the cost. Click **24h**, **7d**, or **30d** to change the time range.
+**Logs** 頁面只會顯示您使用者的請求。每列會顯示時間、模型、狀態、token、持續時間與成本。點擊 **24h**、**7d** 或 **30d** 以變更時間範圍。
 
-Click a row to see the details of the request. The details show the request body and the response body. To keep these bodies, set `store_prompts_in_spend_logs: true` in `general_settings`.
+點擊一列可查看請求詳細資訊。詳細資訊會顯示請求主體與回應主體。若要保留這些主體，請在 `general_settings` 中設定 `store_prompts_in_spend_logs: true`。
 
 <Image
   img={require('../../../img/chat_ui_logs.png')}
   dark={require('../../../img/chat_ui_logs_dark.png')}
-  alt="The Logs page with three successful requests"
+  alt="Logs 頁面，顯示三個成功的請求"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-## See your usage
+## 查看您的用量 {#see-your-usage}
 
-The **Usage** page shows your total spend, the number of API requests, the tokens, and the success rate. Click **7d**, **30d**, or **90d** to change the time range.
+**Usage** 頁面會顯示您的總花費、API 請求數、token 數量與成功率。點擊 **7d**、**30d** 或 **90d** 以變更時間範圍。
 
 <Image
   img={require('../../../img/chat_ui_usage.png')}
   dark={require('../../../img/chat_ui_usage_dark.png')}
-  alt="The Usage page with spend, requests, tokens, and success rate"
+  alt="Usage 頁面，顯示花費、請求、token 與成功率"
   style={{width: '100%', display: 'block', margin: '1.5rem 0'}}
 />
 
-## Spend for Chat UI requests
+## Chat UI 請求的花費 {#spend-for-chat-ui-requests}
 
-The Chat UI sends each request with the login session of the user. LiteLLM records the spend of the request for that user. The spend does not go to the virtual keys of the user.
+聊天介面會使用使用者的登入工作階段傳送每個請求。LiteLLM 會將該請求的花費記錄在該使用者名下。這些花費不會計入使用者的虛擬金鑰。
 
-## Chat UI and Playground
+## Chat UI 與 Playground {#chat-ui-and-playground}
 
-The Admin UI also has a **Playground** page. Use the Playground to do tests on models and to compare a maximum of 3 models side by side. The Chat UI keeps a chat history, connects to MCP servers, and shows your keys, logs, and usage.
+管理員介面也有一個 **Playground** 頁面。使用 Playground 來對模型進行測試，並並排比較最多 3 個模型。聊天介面可保留聊天記錄、連線至 MCP 伺服器，並顯示您的金鑰、記錄與用量。
 
-For more information, refer to [Model Compare Playground UI](../model_compare_ui.md), [MCP Overview](../../mcp.md), and [Admin UI](../ui.md).
+如需更多資訊，請參閱 [Model Compare Playground UI](../model_compare_ui.md)、[MCP Overview](../../mcp.md) 與 [Admin UI](../ui.md)。

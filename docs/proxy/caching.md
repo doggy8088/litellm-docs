@@ -1,51 +1,43 @@
 ---
-title: Caching
-description: Cache LLM responses on the LiteLLM proxy to cut spend and latency.
+title: 快取
+description: 在 LiteLLM proxy 上快取 LLM 回應，以降低支出與延遲。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Caching
+# 快取 {#caching}
 
 :::note
 
-For OpenAI/Anthropic Prompt Caching, go [here](../completion/prompt_caching.md)
+關於 OpenAI/Anthropic Prompt Caching，請前往 [這裡](../completion/prompt_caching.md)
 
 :::
 
-Cache LLM Responses. LiteLLM's caching system stores and reuses LLM responses to save costs and
-reduce latency. When you make the same request twice, the cached response is returned instead of
-calling the LLM API again.
+快取 LLM 回應。LiteLLM 的快取系統會儲存並重用 LLM 回應，以節省成本並降低延遲。當您兩次送出相同的請求時，系統會回傳快取的回應，而不是再次呼叫 LLM API。
 
-## Supported caches
+## 支援的快取 {#supported-caches}
 
-| Cache | `cache_params.type` | Setup |
+| 快取 | `cache_params.type` | 設定 |
 | --- | --- | --- |
-| Redis, Valkey, ElastiCache, Memorystore | `redis` | [Redis and Valkey](./caching_redis.md) |
-| Redis semantic | `redis-semantic` | [Semantic caching](./caching_semantic.md) |
-| Valkey semantic | `valkey-semantic` | [Semantic caching](./caching_semantic.md) |
-| Qdrant semantic | `qdrant-semantic` | [Semantic caching](./caching_semantic.md) |
-| S3 bucket | `s3` | [S3 and GCS](./caching_object_storage.md) |
-| GCS bucket | `gcs` | [S3 and GCS](./caching_object_storage.md) |
-| In memory | `local` | [below](#in-memory-and-disk-caches) |
-| Disk | `disk` | [below](#in-memory-and-disk-caches) |
+| Redis、Valkey、ElastiCache、Memorystore | `redis` | [Redis 與 Valkey](./caching_redis.md) |
+| Redis 語意快取 | `redis-semantic` | [語意快取](./caching_semantic.md) |
+| Valkey 語意快取 | `valkey-semantic` | [語意快取](./caching_semantic.md) |
+| Qdrant 語意快取 | `qdrant-semantic` | [語意快取](./caching_semantic.md) |
+| S3 儲存貯體 | `s3` | [S3 與 GCS](./caching_object_storage.md) |
+| GCS 儲存貯體 | `gcs` | [S3 與 GCS](./caching_object_storage.md) |
+| 記憶體中 | `local` | [下方](#in-memory-and-disk-caches) |
+| 磁碟 | `disk` | [下方](#in-memory-and-disk-caches) |
 
-Redis is the right default for anything past a single worker. An in-memory cache lives inside one
-worker process, so a proxy running four workers keeps four separate caches and the hit rate drops
-roughly by the worker count. See [What Needs Redis](./redis_requirements.md) for the rest of what
-Redis buys you.
+Redis 是超過單一 worker 時的正確預設選擇。記憶體中快取存在於單一 worker 程序內，因此執行四個 workers 的 proxy 會保有四個彼此獨立的快取，命中率大約會隨 worker 數量而下降。其餘 Redis 帶來的好處，請參閱 [需要 Redis 的項目](./redis_requirements.md)。
 
-Exact-match caches (`redis`, `s3`, `gcs`, `local`, `disk`) key on a hash of the whole request, so
-any change to the conversation is a miss. Semantic caches embed the prompt and serve the closest
-match above a similarity threshold, which suits single-shot prompts and goes badly wrong on agentic
-traffic; read [Semantic caching](./caching_semantic.md) before turning one on.
+完全匹配快取（`redis`、`s3`、`gcs`、`local`、`disk`）會以整個請求的雜湊作為鍵，因此對對話的任何變更都會造成未命中。語意快取會為提示詞建立嵌入，並提供相似度門檻以上最接近的匹配結果，這適合單輪提示詞，但在 agent 流量上很容易出問題；在啟用之前，請先閱讀 [語意快取](./caching_semantic.md)。
 
-## Quick start
+## 快速開始 {#quick-start}
 
-### Step 1: Add `cache` to the config.yaml
+### 步驟 1：將 `cache` 加入 config.yaml {#step-1-add-cache-to-the-configyaml}
 
-Caching is enabled by adding the `cache` key to the `config.yaml`
+只要將 `cache` key 加到 `config.yaml` 即可啟用快取
 
 ```yaml
 model_list:
@@ -61,7 +53,7 @@ litellm_settings:
   cache: True # set cache responses to True, litellm defaults to using a redis cache
 ```
 
-### Step 2: Add Redis credentials to .env
+### 步驟 2：將 Redis 憑證加入 .env {#step-2-add-redis-credentials-to-env}
 
 ```shell
 REDIS_URL = ""        # REDIS_URL='redis://username:password@hostname:port/database'
@@ -71,23 +63,23 @@ REDIS_PORT = ""       # REDIS_PORT='18841'
 REDIS_PASSWORD = ""   # REDIS_PASSWORD='liteLlmIsAmazing'
 ```
 
-For namespaces, ACL users, cluster and sentinel topologies, TLS, IAM authentication and the full
-list of `REDIS_*` variables, see [Redis and Valkey](./caching_redis.md). The per-command timeout
-of the cache client is `cache_params.socket_timeout` (default 5 s), not `REDIS_SOCKET_TIMEOUT`;
-see [Redis socket_timeout](./caching_redis.md#redis-socket_timeout).
+關於命名空間、ACL 使用者、叢集與 Sentinel 拓撲、TLS、IAM 驗證，以及完整的
+`REDIS_*` 環境變數清單，請參閱 [Redis 與 Valkey](./caching_redis.md)。快取用戶端的每個命令逾時為
+`cache_params.socket_timeout`（預設 5 秒），不是 `REDIS_SOCKET_TIMEOUT`；
+請參閱 [Redis socket_timeout](./caching_redis.md#redis-socket_timeout)。
 
-### Step 3: Run proxy with config
+### 步驟 3：使用設定啟動 proxy {#step-3-run-proxy-with-config}
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-### Step 4: Test it
+### 步驟 4：測試它 {#step-4-test-it}
 
 <Tabs>
 <TabItem value="chat_completions" label="/chat/completions">
 
-Send the same request twice:
+兩次送出相同的請求：
 
 ```shell
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -110,7 +102,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 <TabItem value="responses" label="/v1/responses">
 
-Send the same request twice:
+兩次送出相同的請求：
 
 ```shell
 curl http://0.0.0.0:4000/v1/responses \
@@ -131,7 +123,7 @@ curl http://0.0.0.0:4000/v1/responses \
 </TabItem>
 <TabItem value="embeddings" label="/embeddings">
 
-Send the same request twice:
+兩次送出相同的請求：
 
 ```shell
 curl --location 'http://0.0.0.0:4000/embeddings' \
@@ -152,22 +144,20 @@ curl --location 'http://0.0.0.0:4000/embeddings' \
 </TabItem>
 </Tabs>
 
-The second response is served from the cache. It carries an `x-litellm-cache-key` response header,
-which you can feed to [`/cache/delete`](./caching_controls.md#deleting-cache-keys---cachedelete).
+第二個回應會從快取提供。它會帶有 `x-litellm-cache-key` 回應標頭，
+您可以將其提供給 [`/cache/delete`](./caching_controls.md#deleting-cache-keys---cachedelete)。
 
-With `cache: True` and no `supported_call_types`, caching is on for `/chat/completions`,
-`/completions`, `/embeddings`, `/audio/transcriptions`, `/rerank`, `/v1/responses` and
-`/v1/messages`. To restrict it to some of them, see
-[supported call types](./caching_controls.md#control-call-types-caching-is-on-for---chatcompletion-embeddings-etc).
+在 `cache: True` 且沒有 `supported_call_types` 的情況下，快取會對 `/chat/completions`、
+`/completions`、`/embeddings`、`/audio/transcriptions`、`/rerank`、`/v1/responses` 和
+`/v1/messages` 啟用。若要將其限制於其中部分，請參閱
+[支援的呼叫類型](./caching_controls.md#control-call-types-caching-is-on-for---chatcompletion-embeddings-etc)。
 
-On `/v1/responses`, exact-match caches key on the request body, so a request that carries
-`previous_response_id` is a different key from the one that inlines the conversation, and each
-turn of a multi-turn conversation is its own entry.
+在 `/v1/responses` 上，完全匹配快取會以請求本文作為鍵，因此帶有
+`previous_response_id` 的請求會與將對話內嵌的請求使用不同的鍵，而多輪對話的每一輪都會是自己的項目。
 
-## In memory and disk caches
+## 記憶體中與磁碟快取 {#in-memory-and-disk-caches}
 
-Neither needs external infrastructure, and neither is shared between workers or replicas, so use
-them for local development rather than production.
+兩者都不需要外部基礎架構，而且兩者都不會在 workers 或 replicas 之間共享，因此請將它們用於本機開發，而非正式環境。
 
 <Tabs>
 <TabItem value="local" label="In Memory Cache">
@@ -193,17 +183,17 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-## Debugging Caching - `/cache/ping`
+## 快取除錯 - `/cache/ping` {#debugging-caching---cacheping}
 
-LiteLLM Proxy exposes a `/cache/ping` endpoint to test if the cache is working as expected
+LiteLLM Proxy 提供一個 `/cache/ping` 端點，用來測試快取是否如預期運作
 
-**Usage**
+**使用方式**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/cache/ping'  -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Expected Response - when cache healthy**
+**預期回應 - 當快取正常時**
 
 ```shell
 {
@@ -225,8 +215,6 @@ curl --location 'http://0.0.0.0:4000/cache/ping'  -H "Authorization: Bearer $LIT
 }
 ```
 
-## Next steps
+## 下一步 {#next-steps}
 
-Tune what gets cached and for how long with [cache controls](./caching_controls.md), look up any
-setting in the [`cache_params` reference](./caching_settings.md), or set up a specific backend from
-the table above.
+您可以透過 [快取控制](./caching_controls.md) 調整哪些內容會被快取以及快取多久，透過 [`cache_params` 參考資料](./caching_settings.md) 查詢任何設定，或從上方表格設定特定後端。

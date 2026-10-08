@@ -1,5 +1,5 @@
 ---
-title: "v1.86.2 - Path-Handling Hardening Backport"
+title: "v1.86.2 - 路徑處理強化回補"
 slug: "v1-86-2"
 date: 2026-05-27T00:00:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.86.2
 </TabItem>
 </Tabs>
 
-`v1.86.2` is a patch release on top of [`v1.86.1`](/release_notes/v1.86.1/v1-86-1). It backports the path-handling hardening covered in the [host-header authentication bypass advisory](/blog/host-header-auth-bypass).
+`v1.86.2` 是建構在 [`v1.86.1`](/release_notes/v1.86.1/v1-86-1) 之上的修補版發行。它回補了 [host-header authentication bypass advisory](/blog/host-header-auth-bypass) 中涵蓋的路徑處理強化。
 
-### Bug Fixes
+### 錯誤修正 {#bug-fixes}
 
-- **Proxy auth / routing**
-    - Route the proxy's path-dependent call sites through `get_request_route()` so they all derive the request route from the ASGI scope rather than the `Host`-reconstructed URL - [PR #28547](https://github.com/BerriAI/litellm/pull/28547)
+- **Proxy 驗證 / 路由**
+    - 將 proxy 依賴路徑的呼叫點透過 `get_request_route()` 路由，讓它們全部從 ASGI scope 而不是 `Host` 重建的 URL 衍生 request route - [PR #28547](https://github.com/BerriAI/litellm/pull/28547)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.86.1...v1.86.2

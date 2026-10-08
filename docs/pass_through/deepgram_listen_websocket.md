@@ -1,27 +1,27 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Deepgram Realtime (`/listen`) WebSocket Passthrough
+# Deepgram 即時（`/listen`）WebSocket 透傳 {#deepgram-realtime-listen-websocket-passthrough}
 
-Stream live audio to Deepgram's realtime speech-to-text API (`wss://api.deepgram.com/v1/listen`) through the LiteLLM proxy. The proxy authenticates the caller with a LiteLLM virtual key, injects the Deepgram credential server-side, relays audio and transcript frames unchanged in both directions, and logs the session's audio duration as spend when the socket closes
+透過 LiteLLM proxy 串流即時音訊到 Deepgram 的即時語音轉文字 API（`wss://api.deepgram.com/v1/listen`）。proxy 會用 LiteLLM 虛擬金鑰驗證呼叫端，在伺服器端注入 Deepgram 憑證，雙向原樣轉送音訊與轉錄框架，並在 socket 關閉時將該工作階段的音訊時長記錄為支出
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |-------|-------|-------|
-| Cost Tracking | ✅ | Billed at socket close from the `Metadata.duration` frame, times the channel count, using the `deepgram/streaming/<model>` per-second price |
-| Logging | ✅ | Works across all integrations, one SpendLogs row per WebSocket session |
-| Streaming | ✅ | Interim and final `Results` frames are relayed as Deepgram sends them |
-| Guardrails | ❌ | Audio frames are opaque bytes; no request or response guardrails run on them |
+| 成本追蹤 | ✅ | 在 socket 關閉時依據 `Metadata.duration` 框架計費，乘以通道數，使用 `deepgram/streaming/<model>` 每秒價格 |
+| 記錄 | ✅ | 可跨所有整合運作，每個 WebSocket 工作階段一筆 SpendLogs 資料列 |
+| 串流 | ✅ | Deepgram 傳送的中繼與最終 `Results` 框架都會被轉送 |
+| 防護欄 | ❌ | 音訊框架是透明位元組；不會對其執行請求或回應防護欄 |
 
-## Endpoints
+## 端點 {#endpoints}
 
-`ws://<proxy>/deepgram/v1/listen` and its alias `ws://<proxy>/deepgram/listen`. Both relay to `<DEEPGRAM_API_BASE>/listen` (default `wss://api.deepgram.com/v1/listen`)
+`ws://<proxy>/deepgram/v1/listen` 及其別名 `ws://<proxy>/deepgram/listen`。兩者都會轉送至 `<DEEPGRAM_API_BASE>/listen`（預設 `wss://api.deepgram.com/v1/listen`）
 
-## Configuration
+## 設定 {#configuration}
 
-Set the Deepgram credential in one of two places. The proxy checks the configured pass-through deployments first and falls back to the `DEEPGRAM_API_KEY` environment variable
+請將 Deepgram 憑證設定在兩個位置之一。proxy 會先檢查已設定的透傳部署，然後再回退到 `DEEPGRAM_API_KEY` 環境變數
 
 <Tabs>
-<TabItem value="env" label="Environment variable">
+<TabItem value="env" label="環境變數">
 
 ```bash
 export DEEPGRAM_API_KEY="your-deepgram-key"
@@ -32,7 +32,7 @@ litellm --config config.yaml --port 4000
 </TabItem>
 <TabItem value="config" label="config.yaml / Admin UI">
 
-Add a Deepgram deployment with `use_in_pass_through: true`. The same flag is the "Use in pass through routes" toggle under Advanced Settings when you add a Deepgram model from the Admin UI, so the credential can be managed from the dashboard without any extra setup
+新增一個帶有 `use_in_pass_through: true` 的 Deepgram 部署。當您從 Admin UI 新增 Deepgram 模型時，在 Advanced Settings 下的「Use in pass through routes」切換選項也是同一個旗標，因此可以在 dashboard 中管理憑證，無需額外設定
 
 ```yaml
 model_list:
@@ -49,20 +49,20 @@ general_settings:
 </TabItem>
 </Tabs>
 
-`DEEPGRAM_API_BASE` (optional) overrides the upstream base URL, for example a self-hosted or regional Deepgram deployment. `https://` and `http://` bases are converted to `wss://` and `ws://`. The base URL is read only from the server; a client cannot pick the destination the proxy's Deepgram key is sent to
+`DEEPGRAM_API_BASE`（選用）會覆寫上游 base URL，例如自架或區域性的 Deepgram 部署。`https://` 與 `http://` 的 base 會轉換為 `wss://` 和 `ws://`。base URL 只會從伺服器端讀取；客戶端無法選擇 proxy 的 Deepgram 金鑰要送往的目的地
 
-## Authentication
+## 驗證 {#authentication}
 
-The WebSocket handshake accepts the same LiteLLM key mechanisms as the other WebSocket routes: an `Authorization: Bearer <litellm-key>` header, an `api-key: <litellm-key>` header, or the `Sec-WebSocket-Protocol: openai-insecure-api-key.<litellm-key>` subprotocol for browsers that cannot set headers. The handshake is rejected when the key is invalid, and the socket is closed with code `1011` when no Deepgram credential is configured on the proxy
+WebSocket 握手接受與其他 WebSocket 路由相同的 LiteLLM 金鑰機制：`Authorization: Bearer <litellm-key>` 標頭、`api-key: <litellm-key>` 標頭，或供無法設定標頭的瀏覽器使用的 `Sec-WebSocket-Protocol: openai-insecure-api-key.<litellm-key>` 子協定。當金鑰無效時，握手會被拒絕；若 proxy 上未設定 Deepgram 憑證，socket 會以代碼 `1011` 關閉
 
-## Query parameters
+## 查詢參數 {#query-parameters}
 
-Everything after `?` is forwarded to Deepgram verbatim (`encoding`, `sample_rate`, `channels`, `language`, `interim_results`, `smart_format`, `punctuate`, and so on, per the [Deepgram listen reference](https://developers.deepgram.com/reference/speech-to-text-api/listen-streaming)). If `model` is missing or empty the proxy appends `model=nova-3`
+`?` 之後的所有內容都會原樣轉送給 Deepgram（`encoding`、`sample_rate`、`channels`、`language`、`interim_results`、`smart_format`、`punctuate` 等，詳見 [Deepgram listen 參考文件](https://developers.deepgram.com/reference/speech-to-text-api/listen-streaming)）。如果 `model` 缺少或為空，proxy 會附加 `model=nova-3`
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
-<TabItem value="python" label="Python (websockets)">
+<TabItem value="python" label="Python（websockets）">
 
 ```python
 import asyncio
@@ -115,7 +115,7 @@ websocat -b \
 ```
 
 </TabItem>
-<TabItem value="browser" label="Browser">
+<TabItem value="browser" label="瀏覽器">
 
 ```javascript
 const ws = new WebSocket(
@@ -129,20 +129,20 @@ ws.onmessage = (event) => console.log(JSON.parse(event.data));
 </TabItem>
 </Tabs>
 
-## What is and is not forwarded
+## 會與不會轉送的內容 {#what-is-and-is-not-forwarded}
 
-Client to Deepgram: binary frames (audio) are sent as binary, text frames (`KeepAlive`, `Finalize`, `CloseStream` control messages) as text, and the query string as-is. The caller's `Authorization`, `api-key`, and other request headers are not forwarded; the proxy sends only `Authorization: Token <DEEPGRAM_API_KEY>` upstream
+從客戶端到 Deepgram：二進位框架（音訊）會以二進位形式送出，文字框架（`KeepAlive`、`Finalize`、`CloseStream` 控制訊息）會以文字形式送出，查詢字串則維持原樣。呼叫端的 `Authorization`、`api-key` 與其他請求標頭不會被轉送；proxy 只會將 `Authorization: Token <DEEPGRAM_API_KEY>` 傳送至上游
 
-Deepgram to client: every frame is relayed byte for byte in the order received, including interim `Results`, final `Results`, `UtteranceEnd`, `SpeechStarted`, and the closing `Metadata` frame. The proxy does not reshape, merge, or filter transcripts. When Deepgram closes the connection with a non-normal code (for example `1008` for an invalid request), that code and reason are propagated to the client
+從 Deepgram 到客戶端：每個框架都會依接收順序逐位元組原樣轉送，包括中繼 `Results`、最終 `Results`、`UtteranceEnd`、`SpeechStarted`，以及關閉的 `Metadata` 框架。proxy 不會重塑、合併或過濾轉錄。當 Deepgram 以非正常代碼關閉連線時（例如 `1008`，表示請求無效），該代碼與原因都會傳遞給客戶端
 
-## Cost tracking
+## 成本追蹤 {#cost-tracking}
 
-When the socket closes, the proxy reads the last `Metadata` frame's `duration` (seconds of audio Deepgram processed) and multiplies it by the `input_cost_per_second` of the `deepgram/streaming/<model>` entry (`deepgram/streaming/<model>-multilingual` when `language=multi`) in [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json). The pre-recorded `deepgram/<model>` entry is never used as a substitute. If Deepgram never sends `Metadata` (for example the client dropped the connection), the proxy falls back to the furthest `start + duration` seen across `Results` frames. Deepgram bills every channel it processes, so a stereo session with `multichannel=true&channels=2` costs twice its wall-clock duration. The proxy multiplies the duration by the channel count from `Metadata.channels`, falling back to the widest `channel_index` seen in `Results` frames and then to the `channels` query parameter, and defaulting to one. The spend is written to SpendLogs with `call_type: pass_through_endpoint`, attributed to the calling key, team, and user like any other route
+當 socket 關閉時，proxy 會讀取最後一個 `Metadata` 框架的 `duration`（Deepgram 已處理的音訊秒數），並將其乘以 [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中 `deepgram/streaming/<model>` 項目的 `input_cost_per_second`（`language=multi` 時為 `deepgram/streaming/<model>-multilingual`）。預錄的 `deepgram/<model>` 項目絕不會被用作替代。如果 Deepgram 從未傳送 `Metadata`（例如客戶端中斷連線），proxy 會回退到在 `Results` 框架中看到的最遠 `start + duration`。Deepgram 會按其處理的每個通道計費，因此一個 `multichannel=true&channels=2` 的立體聲工作階段，費用是其實際時長的兩倍。proxy 會以 `Metadata.channels` 中的通道數乘上時長，若無則回退到在 `Results` 框架中看到的最寬 `channel_index`，再無則回退到 `channels` 查詢參數，最後預設為一。支出會以 `call_type: pass_through_endpoint` 寫入 SpendLogs，並像任何其他路由一樣歸屬於呼叫端金鑰、團隊與使用者
 
 ```bash
 curl -s "http://localhost:4000/spend/logs?api_key=$LITELLM_API_KEY" -H "Authorization: Bearer $LITELLM_MASTER_KEY"
 ```
 
-## Known limitations
+## 已知限制 {#known-limitations}
 
-Cost is billed once at socket close, so a session that is still open has no spend row yet and budgets are checked at connect time only. Audio frames are not inspected, so request and response guardrails do not apply to this route. Interim results are relayed verbatim; there is no server-side deduplication of interim versus final transcripts. Deepgram's `/listen` does not report token counts, so SpendLogs shows the audio duration as the usage measure and `prompt_tokens`/`completion_tokens` stay at zero. A model without an exact `deepgram/streaming/<model>` entry in the cost map is refused before anything is relayed: the socket is closed with code 1008 and reason `No streaming price for 'deepgram/streaming/<model>': add it to the model cost map to enable it`, so add that entry before using the model. Deepgram's `callback` and `callback_method` query parameters are refused with close code 1008 because callback delivery sends the transcript frames to your URL instead of down this socket, which would leave the session unmetered
+費用會在 socket 關閉時一次性計費，因此仍開啟中的工作階段尚未有支出資料列，且配額僅在連線時檢查一次。音訊框架不會被檢查，因此請求與回應防護欄不適用於此路由。中繼結果會原樣轉送；伺服器端不會對中繼與最終轉錄做去重。Deepgram 的 `/listen` 不會回報 token 數，因此 SpendLogs 會將音訊時長顯示為使用量指標，而 `prompt_tokens`/`completion_tokens` 會維持為零。若成本對應表中沒有某個模型的精確 `deepgram/streaming/<model>` 項目，該模型會在任何內容轉送之前被拒絕：socket 會以代碼 1008 關閉，原因為 `No streaming price for 'deepgram/streaming/<model>': add it to the model cost map to enable it`，因此請先新增該項目再使用該模型。Deepgram 的 `callback` 與 `callback_method` 查詢參數會以關閉代碼 1008 拒絕，因為 callback 傳送會將轉錄框架送往您的 URL，而不是透過此 socket 下行，這會讓該工作階段無法計量

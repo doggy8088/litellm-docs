@@ -1,25 +1,25 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Amazon Nova
+# Amazon Nova {#amazon-nova}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Amazon Nova is a family of foundation models built by Amazon that deliver frontier intelligence and industry-leading price performance. |
-| Provider Route on LiteLLM | `amazon_nova/` |
-| Provider Doc | [Amazon Nova ↗](https://docs.aws.amazon.com/nova/latest/userguide/what-is-nova.html) |
-| Supported OpenAI Endpoints | `/chat/completions`, `v1/responses` |
-| Other Supported Endpoints | `v1/messages`, `/generateContent` | 
+| 說明 | Amazon Nova 是一系列由 Amazon 建立的基礎模型，提供前沿智慧與業界領先的價格效能。 |
+| LiteLLM 提供者路由 | `amazon_nova/` |
+| 提供者文件 | [Amazon Nova ↗](https://docs.aws.amazon.com/nova/latest/userguide/what-is-nova.html) |
+| 支援的 OpenAI 端點 | `/chat/completions`, `v1/responses` |
+| 其他支援的端點 | `v1/messages`, `/generateContent` | 
 
-## Authentication
+## 驗證 {#authentication}
 
-Amazon Nova uses API key authentication. You can obtain your API key from the [Amazon Nova developer console ↗](https://nova.amazon.com/dev/documentation).
+Amazon Nova 使用 API 金鑰驗證。您可以從 [Amazon Nova developer console ↗](https://nova.amazon.com/dev/documentation) 取得您的 API 金鑰。
 
 ```bash
 export AMAZON_NOVA_API_KEY="your-api-key"
 ```
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -45,7 +45,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -54,12 +54,12 @@ model_list:
       model: amazon_nova/nova-micro-v1
       api_key: os.environ/AMAZON_NOVA_API_KEY
 ```
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Test it
+### 3. 測試它 {#3-test-it}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -78,16 +78,16 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Usage | Context Window |
+| 模型名稱 | 用法 | 上下文視窗 |
 |------------|-------|----------------|
 | Nova Micro | `completion(model="amazon_nova/nova-micro-v1", messages=messages)` | 128K tokens |
 | Nova Lite | `completion(model="amazon_nova/nova-lite-v1", messages=messages)` | 300K tokens |
 | Nova Pro | `completion(model="amazon_nova/nova-pro-v1", messages=messages)` | 300K tokens |
 | Nova Premier | `completion(model="amazon_nova/nova-premier-v1", messages=messages)` | 1M tokens |
 
-## Usage - Streaming
+## 用法 - 串流 {#usage---streaming}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -132,7 +132,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Usage - Function Calling / Tool Usage
+## 用法 - 函式呼叫 / 工具使用 {#usage---function-calling--tool-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -213,7 +213,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Set temperature, top_p, etc.
+## 設定 temperature、top_p 等 {#set-temperature-top_p-etc}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -240,7 +240,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**Set on yaml**
+**在 yaml 中設定**
 
 ```yaml
 model_list:
@@ -251,7 +251,7 @@ model_list:
       max_tokens: 500
       top_p: 0.9
 ```
-**Set on request**
+**在請求中設定**
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
 --header 'Content-Type: application/json' \
@@ -272,20 +272,20 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Model Comparison
+## 模型比較 {#model-comparison}
 
-| Model | Best For | Speed | Cost | Context |
+| 模型 | 適用情境 | 速度 | 成本 | 上下文 |
 |-------|----------|-------|------|---------|
-| **Nova Micro** | Simple tasks, high throughput | Fastest | Lowest | 128K |
-| **Nova Lite** | Balanced performance | Fast | Low | 300K |
-| **Nova Pro** | Complex reasoning | Medium | Medium | 300K |
-| **Nova Premier** | Most advanced tasks | Slower | Higher | 1M |
+| **Nova Micro** | 簡單任務、高吞吐量 | 最快 | 最低 | 128K |
+| **Nova Lite** | 平衡效能 | 快 | 低 | 300K |
+| **Nova Pro** | 複雜推理 | 中等 | 中等 | 300K |
+| **Nova Premier** | 最先進的任務 | 較慢 | 較高 | 1M |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-Common error codes and their meanings:
+常見錯誤代碼及其意義：
 
-- `401 Unauthorized`: Invalid API key
-- `429 Too Many Requests`: Rate limit exceeded
-- `400 Bad Request`: Invalid request format
-- `500 Internal Server Error`: Service temporarily unavailable
+- `401 Unauthorized`: 無效的 API 金鑰
+- `429 Too Many Requests`: 已超過速率限制
+- `400 Bad Request`: 無效的請求格式
+- `500 Internal Server Error`: 服務暫時無法使用

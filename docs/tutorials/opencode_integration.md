@@ -2,35 +2,35 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenCode Quickstart
+# OpenCode 快速入門 {#opencode-quickstart}
 
-This tutorial shows how to connect OpenCode to your existing LiteLLM instance and switch between models.
+本教學示範如何將 OpenCode 連接到您現有的 LiteLLM 實例，並在模型之間切換。
 
 :::info 
 
-This integration allows you to use any LiteLLM supported model through OpenCode with centralized authentication, usage tracking, and cost controls.
+此整合可讓您透過 OpenCode 使用任何 LiteLLM 支援的模型，並具備集中式驗證、用量追蹤與成本控管。
 
 :::
 
 <br />
 
-### Video Walkthrough
+### 影片導覽 {#video-walkthrough}
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/00791498f1d84e4ba6d7476bd2e1442f" frameBorder="0" allowFullScreen></iframe>
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-- LiteLLM already configured and running (e.g., http://localhost:4000)
-- LiteLLM API key
+- 已設定並執行中的 LiteLLM（例如：`http://localhost:4000`）
+- LiteLLM API 金鑰
 
-## Installation
+## 安裝 {#installation}
 
-### Step 1: Install OpenCode
+### 步驟 1：安裝 OpenCode {#step-1-install-opencode}
 
-Choose your preferred installation method:
+請選擇您偏好的安裝方式：
 
 <Tabs>
-<TabItem value="curl" label="One-line install (recommended)">
+<TabItem value="curl" label="單行安裝（建議）">
 
 ```bash
 curl -fsSL https://opencode.ai/install | bash
@@ -53,22 +53,22 @@ brew install sst/tap/opencode
 </TabItem>
 </Tabs>
 
-Verify installation:
+驗證安裝：
 
 ```bash
 opencode --version
 ```
 
-### Step 2: Configure LiteLLM Provider
+### 步驟 2：設定 LiteLLM 提供者 {#step-2-configure-litellm-provider}
 
-Create your OpenCode configuration file. You can place this in different locations depending on your needs:
+建立您的 OpenCode 設定檔。您可以根據需求將其放在不同位置：
 
-**Configuration locations:**
-- **Global**: `~/.config/opencode/opencode.json` (applies to all projects)
-- **Project**: `opencode.json` in your project root (project-specific settings)
-- **Custom**: Set `OPENCODE_CONFIG` environment variable
+**設定位置：**
+- **全域**：`~/.config/opencode/opencode.json`（適用於所有專案）
+- **專案**：位於您專案根目錄中的 `opencode.json`（專案專屬設定）
+- **自訂**：設定 `OPENCODE_CONFIG` 環境變數
 
-Create `~/.config/opencode/opencode.json` (global config):
+建立 `~/.config/opencode/opencode.json`（全域設定）：
 
 ```json
 {
@@ -97,44 +97,44 @@ Create `~/.config/opencode/opencode.json` (global config):
 ```
 
 :::tip
-The keys in the "models" object (e.g., "gpt-5.6-terra", "claude-sonnet-5") should match the `model_name` values from your LiteLLM configuration. The "name" field provides a friendly display name that will appear as an alias in OpenCode.
+「models」物件中的鍵（例如「gpt-5.6-terra」、「claude-sonnet-5」）應與您 LiteLLM 設定中的 `model_name` 值相符。「name」欄位會提供一個友善的顯示名稱，並在 OpenCode 中顯示為別名。
 
-If a model accepts images, it also needs a `modalities` entry; see [Enabling image and vision input](#enabling-image-and-vision-input).
+如果模型接受圖片，還需要一個 `modalities` 項目；請參閱[啟用圖片與視覺輸入](#enabling-image-and-vision-input)。
 :::
 
-### Step 3: Connect to LiteLLM Provider
+### 步驟 3：連接到 LiteLLM 提供者 {#step-3-connect-to-litellm-provider}
 
-Launch OpenCode:
+啟動 OpenCode：
 
 ```bash
 opencode
 ```
 
-Add your API key:
+新增您的 API 金鑰：
 
 ```bash
 /connect
 ```
 
-Then:
-- **Enter provider name**: `LiteLLM` (must match the "name" field in your config)
-- **Enter your LiteLLM API key**: Your LiteLLM master key or virtual key
+接著：
+- **輸入提供者名稱**：`LiteLLM`（必須與您設定中的 "name" 欄位相符）
+- **輸入您的 LiteLLM API 金鑰**：您的 LiteLLM 主金鑰或虛擬金鑰
 
-### Step 4: Switch Between Models
+### 步驟 4：在模型之間切換 {#step-4-switch-between-models}
 
-In OpenCode, run:
+在 OpenCode 中執行：
 
 ```bash
 /models
 ```
 
-Select any model from your LiteLLM configuration. OpenCode will route all requests through your LiteLLM instance.
+從您的 LiteLLM 設定中選擇任一模型。OpenCode 會將所有請求透過您的 LiteLLM 實例進行路由。
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### Model Parameters
+### 模型參數 {#model-parameters}
 
-You can customize model parameters like context limits:
+您可以自訂模型參數，例如上下文限制：
 
 ```json
 {
@@ -167,17 +167,16 @@ You can customize model parameters like context limits:
 }
 ```
 
-### Enabling image and vision input
+### 啟用圖片與視覺輸入 {#enabling-image-and-vision-input}
 
-OpenCode does **not** discover model capabilities from the `/v1/models` endpoint. The OpenAI
-model-listing schema has no field for modalities, so there is nothing for it to read. Models under a
-custom `@ai-sdk/openai-compatible` provider therefore fall back to text-only input.
+OpenCode 不會從 `/v1/models` 端點探索模型能力。OpenAI 的
+模型清單 schema 沒有模態的欄位，因此沒有任何內容可供其讀取。因此，位於自訂 `@ai-sdk/openai-compatible` 提供者底下的模型會退回為僅文字輸入。
 
-The effect is client-side and silent: OpenCode checks the model's declared input modalities, sees no
-`image`, and **strips image attachments out of the request before it is sent**. LiteLLM never
-receives the image, and the model replies as though you had pasted nothing.
+其影響發生在用戶端，而且是靜默的：OpenCode 會檢查模型宣告的輸入模態，看到沒有
+`image`，並在請求送出前**將圖片附件從請求中移除**。LiteLLM 永遠不會
+收到該圖片，而模型的回應就像您什麼都沒貼上一樣。
 
-Declare `modalities` on every vision-capable model in your OpenCode config:
+請在 OpenCode 設定中的每個可進行視覺處理的模型上宣告 `modalities`：
 
 ```json
 {
@@ -207,20 +206,17 @@ Declare `modalities` on every vision-capable model in your OpenCode config:
 }
 ```
 
-Leave `modalities` off text-only models such as `deepseek-chat`; declaring `image` input for a model
-that cannot accept it moves the failure from the client to the provider.
+對於像 `deepseek-chat` 這類僅文字模型，請不要啟用 `modalities`；對無法接受圖片的模型宣告 `image` 輸入，會把失敗從用戶端移到提供者端。
 
 :::warning
-Setting `supports_vision: true` under `model_info` in your LiteLLM `config.yaml` does **not** fix
-this. That flag drives LiteLLM's own routing and cost logic and is not exposed on `/v1/models`, and
-OpenCode would not read it if it were. `modalities` in the OpenCode config is the only place this
-can be declared.
+在您的 LiteLLM `config.yaml` 中，於 `model_info` 下設定 `supports_vision: true` 並**不會**修正此問題。
+該旗標驅動的是 LiteLLM 自身的路由與成本邏輯，而且不會在 `/v1/models` 上公開，即使公開了，OpenCode 也不會讀取它。`modalities` 在 OpenCode 設定中是唯一可以宣告此項目的地方。
 :::
 
-#### Auto Router and other model groups
+#### 自動路由器與其他模型群組 {#auto-router-and-other-model-groups}
 
-A model group is just another model name to OpenCode, so an [Auto Router](../proxy/auto_routing)
-entry needs the same declaration even though the models behind it are vision-capable:
+對 OpenCode 來說，模型群組只是另一個模型名稱，因此即使其背後的模型具備視覺處理能力，[自動路由器](../proxy/auto_routing)
+項目也需要相同的宣告：
 
 ```json
 {
@@ -233,15 +229,15 @@ entry needs the same declaration even though the models behind it are vision-cap
 }
 ```
 
-Declare `image` input only when every tier the router can select accepts images. If one tier is
-text-only, an image-bearing request will fail once the router lands on that tier.
+只有當路由器可選擇的每個層級都接受圖片時，才宣告 `image` 輸入。若其中一個層級
+僅支援文字，當路由器落到該層級時，帶有圖片的請求就會失敗。
 
-### Multi-Provider Setup
+### 多提供者設定 {#multi-provider-setup}
 
-You can configure multiple LiteLLM instances or mix with other providers:
+您可以設定多個 LiteLLM 實例，或與其他提供者混合使用：
 
 <Tabs>
-<TabItem value="multi-litellm" label="Multiple LiteLLM Instances">
+<TabItem value="multi-litellm" label="多個 LiteLLM 實例">
 
 ```json
 {
@@ -276,7 +272,7 @@ You can configure multiple LiteLLM instances or mix with other providers:
 ```
 
 </TabItem>
-<TabItem value="mixed-providers" label="Mixed Providers">
+<TabItem value="mixed-providers" label="混合提供者">
 
 ```json
 {
@@ -313,9 +309,9 @@ You can configure multiple LiteLLM instances or mix with other providers:
 </TabItem>
 </Tabs>
 
-## Example LiteLLM Configuration
+## LiteLLM 設定範例 {#example-litellm-configuration}
 
-Here's an example LiteLLM `config.yaml` that works well with OpenCode:
+以下是一個與 OpenCode 搭配效果良好的 LiteLLM `config.yaml` 範例：
 
 ```yaml
 model_list:
@@ -343,9 +339,9 @@ model_list:
       api_key: os.environ/DEEPSEEK_API_KEY
 ```
 
-### Dropping OpenCode-specific parameters
+### 捨棄 OpenCode 專用參數 {#dropping-opencode-specific-parameters}
 
-OpenCode sends a `reasoningSummary` parameter with reasoning-capable models such as `{{openai_large}}`. This parameter is not supported by the Chat Completions API and will cause errors. Add `additional_drop_params` to every model entry in your `model_list` that will receive requests from OpenCode with reasoning enabled:
+OpenCode 會對具備推理能力的模型（例如 `reasoningSummary`）傳送 `{{openai_large}}` 參數。此參數不受 Chat Completions API 支援，並會導致錯誤。請將 `additional_drop_params` 加到您所有會接收來自 OpenCode、且已啟用推理請求的模型項目中，於您的 `model_list`：
 
 ```yaml
 model_list:
@@ -356,43 +352,43 @@ model_list:
       additional_drop_params: ["reasoningSummary"]
 ```
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**OpenCode not connecting:**
-- Verify your LiteLLM proxy is running: `curl http://localhost:4000/health`
-- Check that the `baseURL` in your OpenCode config matches your LiteLLM instance
-- Ensure the provider name in `/connect` matches exactly with your config
+**OpenCode 無法連線：**
+- 驗證您的 LiteLLM proxy 是否正在執行：`curl http://localhost:4000/health`
+- 檢查您 OpenCode 設定中的 `baseURL` 是否與您的 LiteLLM 實例相符
+- 確保 `/connect` 中的提供者名稱與您的設定完全一致
 
-**Authentication errors:**
-- Verify your LiteLLM API key is correct
-- Check that your LiteLLM instance has authentication properly configured
-- Ensure your API key has access to the models you're trying to use
+**驗證錯誤：**
+- 驗證您的 LiteLLM API 金鑰是否正確
+- 檢查您的 LiteLLM 實例是否已正確設定驗證
+- 確保您的 API 金鑰可存取您嘗試使用的模型
 
-**Model not found:**
-- Ensure the model names in OpenCode config match your LiteLLM `model_name` values
-- Check LiteLLM logs for detailed error messages
-- Verify the models are properly configured in your LiteLLM instance
+**找不到模型：**
+- 確保 OpenCode 設定中的模型名稱與您的 LiteLLM `model_name` 值相符
+- 檢查 LiteLLM 記錄以取得詳細錯誤訊息
+- 驗證模型是否已在您的 LiteLLM 實例中正確設定
 
-**Configuration not loading:**
-- Check the config file path and permissions
-- Validate JSON syntax using a JSON validator
-- Ensure the `$schema` URL is accessible
+**設定未載入：**
+- 檢查設定檔路徑與權限
+- 使用 JSON 驗證器驗證 JSON 語法
+- 確保 `$schema` URL 可存取
 
-**Images and screenshots are ignored:**
-- OpenCode defaults custom OpenAI-compatible provider models to text-only input and strips image
-  attachments before sending, so the request reaching LiteLLM contains no image. Declare
-  `modalities` on the model in your OpenCode config:
+**圖片與截圖會被忽略：**
+- OpenCode 預設會將自訂 OpenAI 相容提供者模型視為僅文字輸入，並在傳送前移除圖片
+  附件，因此送到 LiteLLM 的請求不會包含圖片。請在 OpenCode 設定中的模型上宣告
+  `modalities`：
   ```json
   "{{anthropic}}": {
     "name": "Claude Sonnet 5",
     "modalities": { "input": ["text", "image"], "output": ["text"] }
   }
   ```
-- `model_info: supports_vision: true` in your LiteLLM `config.yaml` has no effect here. See
-  [Enabling image and vision input](#enabling-image-and-vision-input).
+- 您在 LiteLLM `config.yaml` 中的 `model_info: supports_vision: true` 在此無效。請參閱
+  [啟用圖片與視覺輸入](#enabling-image-and-vision-input)。
 
-**`Unknown parameter: 'reasoningSummary'` error:**
-- OpenCode sends a `reasoningSummary` parameter that is not supported by the Chat Completions API. Add `additional_drop_params: ["reasoningSummary"]` to each affected model entry in your `litellm_params`:
+**`Unknown parameter: 'reasoningSummary'` 錯誤：**
+- OpenCode 會傳送一個 Chat Completions API 不支援的 `reasoningSummary` 參數。請將 `additional_drop_params: ["reasoningSummary"]` 加到您 `litellm_params` 中每個受影響的模型項目：
   ```yaml
   - model_name: {{openai_large}}
     litellm_params:
@@ -401,8 +397,8 @@ model_list:
       additional_drop_params: ["reasoningSummary"]
   ```
 
-## Tips
+## 提示 {#tips}
 
-- Add more models to the config as needed - they'll appear in `/models`
-- Use project-specific configs for different codebases with different model requirements
-- Monitor your LiteLLM proxy logs to see OpenCode requests in real-time
+- 視需要在設定中新增更多模型——它們會顯示在 `/models` 中
+- 對於不同且有不同模型需求的程式碼基底，使用專案專屬設定
+- 監控您的 LiteLLM proxy 記錄，以即時查看 OpenCode 請求

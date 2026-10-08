@@ -1,44 +1,41 @@
 ---
 title: Azure Redis Entra ID Authentication
-description: Authenticate the LiteLLM proxy to Azure Cache for Redis or Azure Managed Redis with Microsoft Entra ID instead of an access key.
+description: 透過 Microsoft Entra ID，而非存取金鑰，將 LiteLLM proxy 驗證至 Azure Cache for Redis 或 Azure Managed Redis。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure Redis Entra ID Authentication
+# Azure Redis Entra ID Authentication {#azure-redis-entra-id-authentication}
 
-Connect LiteLLM's Redis cache to Azure Cache for Redis or Azure Managed Redis using Microsoft
-Entra ID (formerly Azure AD), so the proxy authenticates as a managed identity or service principal
-and no access key exists in your config
+將 LiteLLM 的 Redis 快取連接到 Azure Cache for Redis 或 Azure Managed Redis，使用 Microsoft
+Entra ID（前稱 Azure AD），讓 proxy 以受管理識別身分或服務主體進行驗證，
+且設定中不包含存取金鑰
 
-## Why use it
+## 為什麼要使用它 {#why-use-it}
 
-With Entra ID authentication the client presents a short-lived Entra access token in place of a
-password, and Azure validates it against the cache's access policy assignments on every connection.
-Access is revoked by removing a policy assignment instead of rotating a key and redeploying every
-replica, and every connection is attributable to an identity in your tenant
+使用 Entra ID 驗證時，用戶端會以短效的 Entra 存取權杖取代密碼，Azure 會在每次連線時依據快取的存取原則指派來驗證它。
+透過移除原則指派即可撤銷存取，而不必輪替金鑰並重新部署每個
+複本；且每次連線都能對應到您租戶中的某個身分
 
-LiteLLM builds the Entra credential once and keeps it alive for the life of the proxy, so the Azure
-SDK's internal token cache and silent refresh apply. Each new Redis connection authenticates with a
-fresh token, which avoids the failure mode where pooled connections start failing once the initial
-token expires after about an hour
+LiteLLM 會建立一次 Entra 憑證，並在 proxy 的生命週期內保持其存活，因此會套用 Azure
+SDK 的內部權杖快取與靜默重新整理。每個新的 Redis 連線都會使用
+新的權杖進行驗證，避免共用連線在初始權杖於約一小時後過期時開始失敗的情況
 
-## Requirements
+## 需求 {#requirements}
 
-You need `azure-identity` installed, which ships with `litellm[proxy]` and the Docker image. Entra
-ID authentication must be enabled on the cache, and the identity the proxy runs as needs a data
-access policy on it; Data Contributor is enough for the response cache. Azure serves these caches
-over TLS only, so set `ssl: true` and use port 6380 for Azure Cache for Redis or port 10000 for
-Azure Managed Redis
+您需要已安裝 `azure-identity`，其隨附於 `litellm[proxy]` 和 Docker 映像。必須在快取上啟用 Entra
+ID 驗證，而 proxy 執行所使用的身分需要具備資料
+存取原則；對於回應快取，Data Contributor 已足夠。Azure 僅透過 TLS 提供這些快取，因此請設定 `ssl: true` 並對 Azure Cache for Redis 使用 6380 埠，或對
+Azure Managed Redis 使用 10000 埠
 
-## Configuration
+## 設定 {#configuration}
 
-Set `azure_redis_ad_token: "true"` and drop the password
+設定 `azure_redis_ad_token: "true"` 並移除密碼
 
 <Tabs>
 
-<TabItem value="config" label="Set on config.yaml">
+<TabItem value="config" label="在 config.yaml 中設定">
 
 ```yaml
 litellm_settings:
@@ -53,7 +50,7 @@ litellm_settings:
 
 </TabItem>
 
-<TabItem value="env" label="Set on .env">
+<TabItem value="env" label="在 .env 中設定">
 
 ```env
 REDIS_HOST="my-cache.redis.cache.windows.net"
@@ -67,35 +64,35 @@ REDIS_USERNAME="<object id of the proxy's identity>"
 
 </Tabs>
 
-Azure Redis instances usually expect the identity's object (principal) ID as the Redis username
-during `AUTH`. Set the `REDIS_USERNAME` environment variable to that object ID; when it is unset
-LiteLLM sends the token alone, which ACL-configured instances may reject
+Azure Redis 執行個體通常會在 `AUTH` 期間，預期使用身分的物件（主體）ID 作為 Redis 使用者名稱。
+將 `REDIS_USERNAME` 環境變數設定為該物件 ID；當其未設定時，
+LiteLLM 只會送出權杖，而這可能會被已設定 ACL 的執行個體拒絕
 
-## How credentials resolve
+## 憑證如何解析 {#how-credentials-resolve}
 
-If `azure_client_id`, `azure_tenant_id`, and `azure_client_secret` are all set, in `cache_params`
-or through the standard `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_CLIENT_SECRET` environment
-variables, LiteLLM authenticates as that service principal. If only `azure_client_id` is set, it
-authenticates as that user-assigned managed identity. Otherwise it falls back to
-`DefaultAzureCredential`, which covers a system-assigned managed identity, the Azure CLI, and the
-other standard azure-identity mechanisms
+如果 `azure_client_id`、`azure_tenant_id` 和 `azure_client_secret` 都已設定，且在 `cache_params`
+中或透過標準的 `AZURE_CLIENT_ID`、`AZURE_TENANT_ID` 和 `AZURE_CLIENT_SECRET` 環境
+變數，LiteLLM 會以該服務主體進行驗證。如果只設定了 `azure_client_id`，則會
+以該使用者指派的受管理識別進行驗證。否則會退回到
+`DefaultAzureCredential`，這涵蓋系統指派的受管理識別、Azure CLI，以及
+其他標準的 azure-identity 機制
 
-## Settings
+## 設定 {#settings}
 
-| Setting | Required | Description |
+| 設定 | 必要 | 說明 |
 | --- | --- | --- |
-| `azure_redis_ad_token` | yes | The string `"true"` turns on Entra ID authentication. Env equivalent: `REDIS_AZURE_AD_TOKEN` |
-| `azure_client_id` | no | Client ID of a user-assigned managed identity or service principal. Falls back to `AZURE_CLIENT_ID` |
-| `azure_tenant_id` | no | Tenant ID, needed together with a client secret. Falls back to `AZURE_TENANT_ID` |
-| `azure_client_secret` | no | Service principal secret. Falls back to `AZURE_CLIENT_SECRET` |
+| `azure_redis_ad_token` | 是 | 字串 `"true"` 會開啟 Entra ID 驗證。環境變數對應值：`REDIS_AZURE_AD_TOKEN` |
+| `azure_client_id` | 否 | 使用者指派的受管理識別或服務主體的用戶端 ID。會退回到 `AZURE_CLIENT_ID` |
+| `azure_tenant_id` | 否 | 租戶 ID，需與用戶端密碼一起使用。會退回到 `AZURE_TENANT_ID` |
+| `azure_client_secret` | 否 | 服務主體密碼。會退回到 `AZURE_CLIENT_SECRET` |
 
-`REDIS_USERNAME` is environment-only and should hold the object ID of the identity when your cache
-requires a username on `AUTH`
+`REDIS_USERNAME` 僅限環境變數，當您的快取
+在 `AUTH` 上需要使用者名稱時，應填入該身分的物件 ID
 
-## Verify
+## 驗證 {#verify}
 
-Ping the cache through the proxy. A healthy response means a token was issued, Azure accepted it,
-and a write round-tripped
+透過 proxy 對快取進行 ping。健康的回應表示已發出權杖、Azure 已接受它，
+而且寫入已完成往返
 
 ```shell
 curl -s -X GET 'http://localhost:4000/cache/ping' \
@@ -111,34 +108,34 @@ curl -s -X GET 'http://localhost:4000/cache/ping' \
 }
 ```
 
-## Notes
+## 注意事項 {#notes}
 
-Sync Redis clients authenticate inside a custom connect function; async clients wrap the same live
-credential in a redis-py credential provider that is consulted on every new connection. Both paths
-share one credential object, so token renewal happens inside the Azure SDK with no restart
+同步 Redis 用戶端會在自訂連線函式中進行驗證；非同步用戶端則會將同一個即時
+憑證包裝成 redis-py 憑證提供者，並在每次新連線時查詢。兩條路徑
+共用同一個憑證物件，因此權杖更新會在 Azure SDK 內部完成，無需重新啟動
 
-If you configure GCP IAM (`gcp_service_account`) alongside Entra ID, the GCP path wins and LiteLLM
-logs a warning. If you configure AWS ElastiCache IAM (`aws_iam_auth`) alongside Entra ID, the Entra
-path wins, also with a warning. Configure exactly one. Supplying your own `credential_provider`
-overrides all of this
+如果您在 Entra ID 旁邊也設定了 GCP IAM（`gcp_service_account`），GCP 路徑會勝出，而 LiteLLM
+會記錄警告。如果您在 Entra ID 旁邊也設定了 AWS ElastiCache IAM（`aws_iam_auth`），Entra
+路徑會勝出，同樣會有警告。請只設定其中一個。提供您自己的 `credential_provider`
+會覆寫以上所有設定
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-`azure-identity is required for Azure AD Redis authentication` means the package is missing from a
-custom install; it is already part of `litellm[proxy]`
+`azure-identity is required for Azure AD Redis authentication` 表示該套件在
+自訂安裝中遺失；它已是 `litellm[proxy]` 的一部分
 
-`Azure AD authentication failed for Redis` or `WRONGPASS invalid username-password pair` means the
-token was issued but the cache rejected it. The usual causes are Entra ID authentication not being
-enabled on the cache, the identity missing a data access policy assignment, or `REDIS_USERNAME` not
-matching the identity's object ID
+`Azure AD authentication failed for Redis` 或 `WRONGPASS invalid username-password pair` 表示
+權杖已發出，但快取拒絕了它。常見原因是快取上未啟用 Entra ID 驗證、
+身分缺少資料存取原則指派，或 `REDIS_USERNAME` 未
+與該身分的物件 ID 相符
 
-An error from azure-identity itself, such as `DefaultAzureCredential failed to retrieve a token`,
-means no credential source was found. Check that the proxy actually runs with the managed identity
-you assigned, or that the `AZURE_*` variables are set
+來自 azure-identity 本身的錯誤，例如 `DefaultAzureCredential failed to retrieve a token`，
+表示找不到任何憑證來源。請檢查 proxy 是否 वास्तव際以您指派的受管理識別執行，
+或是否已設定 `AZURE_*` 變數
 
-## See also
+## 另請參閱 {#see-also}
 
-Everything else about the Redis cache, including cluster topology, namespaces and TLS, lives on
-[Redis and Valkey](./caching_redis.md). For AWS, see
-[AWS ElastiCache IAM Authentication](./elasticache_iam.md); for GCP, see
+關於 Redis 快取的其他所有內容，包括叢集拓樸、命名空間和 TLS，都在
+[Redis 和 Valkey](./caching_redis.md) 中。關於 AWS，請參閱
+[AWS ElastiCache IAM Authentication](./elasticache_iam.md)；關於 GCP，請參閱
 [GCP Memorystore IAM Authentication](./gcp_memorystore_iam.md)

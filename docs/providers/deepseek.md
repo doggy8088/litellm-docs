@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Deepseek
+# Deepseek {#deepseek}
 https://deepseek.com/
 
-**We support ALL Deepseek models, just set `deepseek/` as a prefix when sending completion requests**
+**我們支援所有 Deepseek 模型，送出 completion 請求時只要將 `deepseek/` 作為前綴即可**
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['DEEPSEEK_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -27,7 +27,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -45,29 +45,27 @@ for chunk in response:
     print(chunk)
 ```
 
+## 支援的模型 - 支援所有 Deepseek 模型！ {#supported-models---all-deepseek-models-supported}
+我們支援所有 Deepseek 模型，送出 completion 請求時只要將 `deepseek/` 作為前綴即可
 
-## Supported Models - ALL Deepseek Models Supported!
-We support ALL Deepseek models, just set `deepseek/` as a prefix when sending completion requests
-
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | deepseek-chat | `completion(model="deepseek/deepseek-chat", messages)` | 
 | deepseek-coder | `completion(model="deepseek/deepseek-coder", messages)` | 
 | deepseek-flash | `completion(model="deepseek/deepseek-flash", messages)` | 
-| deepseek-v4-pro | `completion(model="deepseek/deepseek-v4-pro", messages)` | 
+| deepseek-v4-pro | `completion(model="deepseek/deepseek-v4-pro", messages)` |
 
-
-## Reasoning Models
-| Model Name               | Function Call                                                                                                                                                      |
+## 推理模型 {#reasoning-models}
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | deepseek-reasoner | `completion(model="deepseek/deepseek-reasoner", messages)` |
 
-### Thinking / Reasoning Mode
+### 思考 / 推理模式 {#thinking--reasoning-mode}
 
-Enable thinking mode for DeepSeek reasoner models using `thinking` or `reasoning_effort` parameters:
+使用 `thinking` 或 `reasoning_effort` 參數，為 DeepSeek reasoner 模型啟用思考模式：
 
 <Tabs>
-<TabItem value="thinking" label="thinking param">
+<TabItem value="thinking" label="thinking 參數">
 
 ```python
 from litellm import completion
@@ -85,7 +83,7 @@ print(resp.choices[0].message.content)  # Final answer
 ```
 
 </TabItem>
-<TabItem value="reasoning_effort" label="reasoning_effort param">
+<TabItem value="reasoning_effort" label="reasoning_effort 參數">
 
 ```python
 from litellm import completion
@@ -106,10 +104,10 @@ print(resp.choices[0].message.content)  # Final answer
 </Tabs>
 
 :::note
-DeepSeek only supports `{"type": "enabled"}` - unlike Anthropic, it doesn't support `budget_tokens`. Any `reasoning_effort` value other than `"none"` enables thinking mode.
+DeepSeek 只支援 `{"type": "enabled"}` - 不像 Anthropic，它不支援 `budget_tokens`。任何不是 `reasoning_effort` 的 `"none"` 值都會啟用思考模式。
 :::
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -132,7 +130,7 @@ print(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -142,13 +140,13 @@ model_list:
         api_key: os.environ/DEEPSEEK_API_KEY
 ```
 
-2. Run proxy
+2. 執行 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -174,15 +172,15 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 </Tabs>
 
-## Off-Peak Pricing
+## 離峰定價 {#off-peak-pricing}
 
-DeepSeek bills half its listed rate outside its peak hours. Peak hours are 01:00-04:00 and 06:00-10:00 UTC, Monday through Friday, excluding Chinese public holidays. Every other hour is off-peak, including weekends and Chinese public holidays in full. The rates below are USD per 1M tokens, from the [DeepSeek pricing page](https://api-docs.deepseek.com/quick_start/pricing), for `deepseek-flash` (DeepSeek-V4.1-Flash) and `deepseek-v4-pro` (DeepSeek-V4-Pro-0813)
+DeepSeek 在其尖峰時段以標示費率的一半計費。尖峰時段為 UTC 週一至週五 01:00-04:00 和 06:00-10:00，排除中國國定假日。其他所有時段皆為離峰，包括週末與所有中國國定假日。以下費率為每 100 萬 tokens 的 USD，來自 [DeepSeek 定價頁面](https://api-docs.deepseek.com/quick_start/pricing)，適用於 `deepseek-flash`（DeepSeek-V4.1-Flash）與 `deepseek-v4-pro`（DeepSeek-V4-Pro-0813）
 
-| Model | Rate | Input | Output | Cache hit |
+| 模型 | 費率 | 輸入 | 輸出 | 快取命中 |
 |-------|------|-------|--------|-----------|
-| deepseek-flash | Peak | $0.30 | $1.20 | $0.006 |
-| deepseek-flash | Off-peak | $0.15 | $0.60 | $0.003 |
-| deepseek-v4-pro | Peak | $1.32 | $3.96 | $0.044 |
-| deepseek-v4-pro | Off-peak | $0.66 | $1.98 | $0.022 |
+| deepseek-flash | 尖峰 | $0.30 | $1.20 | $0.006 |
+| deepseek-flash | 離峰 | $0.15 | $0.60 | $0.003 |
+| deepseek-v4-pro | 尖峰 | $1.32 | $3.96 | $0.044 |
+| deepseek-v4-pro | 離峰 | $0.66 | $1.98 | $0.022 |
 
-LiteLLM's cost tracking applies the off-peak rate automatically. The built-in cost map entries for these models carry the schedule above, and each request is priced from the UTC time and weekday it completes at, so tracked spend matches the DeepSeek invoice with no extra configuration. Chinese public holidays are not modeled, so on those days peak hours bill at the peak rate, a small overestimate. The legacy `deepseek-v4-flash` and `deepseek-v4-flash-vision-exp` names are served by DeepSeek-V4.1-Flash and billed at the Flash rate, off-peak included. To change the schedule or rates, or to set one on another deployment, see [Off-Peak Pricing](../proxy/off_peak_pricing)
+LiteLLM 的成本追蹤會自動套用離峰費率。這些模型的內建成本對照表項目已包含上述時程，且每個請求都會依其完成時的 UTC 時間與星期幾計價，因此追蹤的支出會與 DeepSeek 發票一致，無需額外設定。中國國定假日未納入模型，因此在那些日子尖峰時段仍會以尖峰費率計費，會稍微高估。舊版的 `deepseek-v4-flash` 與 `deepseek-v4-flash-vision-exp` 名稱由 DeepSeek-V4.1-Flash 提供，並以 Flash 費率計費，包含離峰時段。若要變更時程或費率，或在其他部署上設定，請參閱 [離峰定價](../proxy/off_peak_pricing)

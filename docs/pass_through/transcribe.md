@@ -1,21 +1,21 @@
-# Amazon Transcribe
+# Amazon Transcribe {#amazon-transcribe}
 
-Pass-through endpoints for the [Amazon Transcribe](https://docs.aws.amazon.com/transcribe/latest/dg/what-is.html) batch and management API (start, poll and delete transcription jobs, manage custom vocabularies, vocabulary filters, language models and Call Analytics categories), in native AWS format (no translation).
+[Amazon Transcribe](https://docs.aws.amazon.com/transcribe/latest/dg/what-is.html) 批次與管理 API 的轉送端點（開始、輪詢與刪除轉錄工作、管理自訂詞彙、詞彙篩選器、語言模型和 Call Analytics 類別），採用原生 AWS 格式（不轉換）。
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |-------|-------|-------|
-| Cost Tracking | ✅ | `StartTranscriptionJob` is priced when the job completes, from the length of the media file it transcribed, at the `transcribe/StartTranscriptionJob` rate in the LiteLLM model cost map, so key, team and user budgets apply. Management calls are logged as `transcribe/{Operation}` with spend `0`. Job types and media LiteLLM cannot price yet are rejected, see Cost tracking and budgets |
-| Logging | ✅ | works across all integrations |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ❌ | Streaming transcription (`StartStreamTranscription`, the `transcribestreaming` HTTP/2 and WebSocket endpoint) is a separate protocol and is not covered by this pass-through |
+| 成本追蹤 | ✅ | `StartTranscriptionJob` 會在工作完成時計費，依據其轉錄的媒體檔案長度，按 LiteLLM 模型成本對應表中的 `transcribe/StartTranscriptionJob` 費率計算，因此適用金鑰、團隊與使用者預算。管理呼叫會記錄為 `transcribe/{Operation}`，支出為 `0`。LiteLLM 尚無法計價的工作類型與媒體會被拒絕，請參閱成本追蹤與預算 |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 終端使用者追蹤 | ❌ | [如果您需要此功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ❌ | 串流轉錄（`StartStreamTranscription`，`transcribestreaming` HTTP/2 與 WebSocket 端點）是獨立協定，不在此轉送範圍內 |
 
-Just replace `https://transcribe.{aws_region_name}.amazonaws.com` with `LITELLM_PROXY_BASE_URL/transcribe` 🚀
+只要將 `https://transcribe.{aws_region_name}.amazonaws.com` 替換為 `LITELLM_PROXY_BASE_URL/transcribe` 即可 🚀
 
-LiteLLM signs the forwarded request with SigV4 using the proxy's AWS credentials, so clients only need a LiteLLM virtual key.
+LiteLLM 會使用代理伺服器的 AWS 憑證透過 SigV4 簽署轉送的請求，因此用戶端只需要 LiteLLM 虛擬金鑰。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-1. Set AWS credentials and region in the proxy environment. The credentials need `transcribe:*` permissions for the operations you call, plus read access to the S3 bucket holding the audio
+1. 在代理伺服器環境中設定 AWS 憑證與區域。這些憑證需要具備 `transcribe:*` 權限，以執行您呼叫的操作，並且需要對存放音訊的 S3 儲存貯體有讀取存取權
 
 ```bash showLineNumbers
 export AWS_ACCESS_KEY_ID=""
@@ -23,7 +23,7 @@ export AWS_SECRET_ACCESS_KEY=""
 export AWS_REGION_NAME="us-west-2"
 ```
 
-2. List the S3 buckets that virtual keys may transcribe from and write transcripts to, then start the proxy. Without this list only proxy admin keys can start jobs, see Access control
+2. 列出虛擬金鑰可從哪些 S3 儲存貯體進行轉錄，以及可將轉錄稿寫入哪些儲存貯體，然後啟動代理伺服器。若沒有這份清單，只有代理伺服器管理員金鑰可以啟動工作，請參閱存取控制
 
 ```yaml showLineNumbers
 general_settings:
@@ -37,7 +37,7 @@ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Start a transcription job through the proxy
+3. 透過代理伺服器啟動轉錄工作
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/transcribe/StartTranscriptionJob' \
@@ -51,7 +51,7 @@ curl -X POST 'http://0.0.0.0:4000/transcribe/StartTranscriptionJob' \
 }'
 ```
 
-4. Poll the job until it completes, then download the transcript from `TranscriptFileUri`
+4. 輪詢工作直到完成，然後從 `TranscriptFileUri` 下載轉錄稿
 
 ```bash showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/transcribe/GetTranscriptionJob' \
@@ -60,11 +60,11 @@ curl -X POST 'http://0.0.0.0:4000/transcribe/GetTranscriptionJob' \
 -d '{"TranscriptionJobName": "my-job"}'
 ```
 
-The operation name in the URL is any operation of the Amazon Transcribe JSON API, e.g. `StartTranscriptionJob`, `GetTranscriptionJob`, `ListTranscriptionJobs`, `DeleteTranscriptionJob`, `CreateVocabulary`. The allowlist is read from the AWS service model shipped with botocore, so it tracks the installed SDK version. Anything else returns a 400 listing the supported set. [See all Amazon Transcribe operations](https://docs.aws.amazon.com/transcribe/latest/APIReference/API_Operations_Amazon_Transcribe_Service.html). The billable job types LiteLLM does not price yet (`StartMedicalTranscriptionJob`, `StartMedicalScribeJob`, `StartCallAnalyticsJob`) are rejected with a 400 before anything is sent to AWS, see Cost tracking and budgets
+URL 中的操作名稱可以是 Amazon Transcribe JSON API 的任何操作，例如 `StartTranscriptionJob`、`GetTranscriptionJob`、`ListTranscriptionJobs`、`DeleteTranscriptionJob`、`CreateVocabulary`。允許清單是從隨 botocore 提供的 AWS 服務模型讀取，因此會隨已安裝的 SDK 版本而變動。其他任何內容都會回傳 400，列出支援的集合。[查看所有 Amazon Transcribe 操作](https://docs.aws.amazon.com/transcribe/latest/APIReference/API_Operations_Amazon_Transcribe_Service.html)。LiteLLM 尚未計價的可計費工作類型（`StartMedicalTranscriptionJob`、`StartMedicalScribeJob`、`StartCallAnalyticsJob`）會在任何內容送到 AWS 之前以 400 拒絕，請參閱成本追蹤與預算
 
-## Usage with the AWS SDK (boto3)
+## 與 AWS SDK（boto3）搭配使用 {#usage-with-the-aws-sdk-boto3}
 
-Point the SDK's `endpoint_url` at `LITELLM_PROXY_BASE_URL/transcribe` and pass your LiteLLM virtual key as the AWS access key id. The proxy reads the operation from the SDK's `X-Amz-Target` header, per the AWS JSON 1.1 protocol.
+將 SDK 的 `endpoint_url` 指向 `LITELLM_PROXY_BASE_URL/transcribe`，並將您的 LiteLLM 虛擬金鑰作為 AWS access key id 傳入。代理伺服器會依照 AWS JSON 1.1 協定，從 SDK 的 `X-Amz-Target` 標頭讀取操作。
 
 ```python showLineNumbers
 import boto3
@@ -87,28 +87,28 @@ job = client.get_transcription_job(TranscriptionJobName="my-job")["Transcription
 print(job["TranscriptionJobStatus"])
 ```
 
-The SDK signs the request locally with the placeholder credentials. LiteLLM reads the virtual key from the `Credential=` field of that signature, authenticates the call with it, discards the SDK signature, and re-signs the request with the proxy's AWS credentials.
+SDK 會使用替代憑證在本機簽署請求。LiteLLM 會從該簽章的 `Credential=` 欄位讀取虛擬金鑰，據此驗證呼叫、丟棄 SDK 簽章，並以代理伺服器的 AWS 憑證重新簽署請求。
 
-## Cost tracking and budgets
+## 成本追蹤與預算 {#cost-tracking-and-budgets}
 
-Amazon Transcribe bills every second of the media file, silence included, and does not report that duration. After a successful `StartTranscriptionJob`, LiteLLM polls `GetTranscriptionJob` in the background until the job reaches `COMPLETED` or `FAILED`, downloads the media file the job transcribed from S3 with the proxy's AWS credentials, reads its length, rounds it up to whole seconds and multiplies by `input_cost_per_second` of the `transcribe/StartTranscriptionJob` entry in the model cost map. That spend is written to SpendLogs and to the key, team and user, so `max_budget` blocks further requests once it is exceeded. A `FAILED` job is charged `0`. If the job cannot be polled, or the media cannot be fetched or read, LiteLLM charges the longest media Transcribe accepts for a standard batch job (8 hours, 28800 seconds) so an unreadable job can never be free. Every other operation (`GetTranscriptionJob`, `ListTranscriptionJobs`, vocabulary management, and so on) is logged as `transcribe/{Operation}` with spend `0`.
+Amazon Transcribe 會對媒體檔案的每一秒計費，包括靜音，且不會回報該持續時間。在成功 `StartTranscriptionJob` 後，LiteLLM 會在背景輪詢 `GetTranscriptionJob`，直到工作達到 `COMPLETED` 或 `FAILED`，接著使用代理伺服器的 AWS 憑證從 S3 下載該工作所轉錄的媒體檔案，讀取其長度，將其無條件進位到整秒，並乘上模型成本對應表中 `transcribe/StartTranscriptionJob` 項目的 `input_cost_per_second`。該支出會寫入 SpendLogs 以及金鑰、團隊與使用者，因此一旦超出 `max_budget`，就會阻擋後續請求。`FAILED` 工作會收取 `0`。如果無法輪詢該工作，或無法擷取或讀取媒體，LiteLLM 會以 Transcribe 接受的最長標準批次工作媒體長度（8 小時，28800 秒）計費，因此不可讀取的工作絕不會是免費的。其他所有操作（`GetTranscriptionJob`、`ListTranscriptionJobs`、詞彙管理等）都會記錄為 `transcribe/{Operation}`，支出為 `0`。
 
-Because spend lands when the job completes, jobs submitted before the first charge is written are not stopped by the budget, and a job whose polling is interrupted by a proxy restart is not charged. Use key or team `rpm_limit` to bound how many jobs a key can start in that window, and use `allowed_routes` to restrict which keys may reach `/transcribe` at all.
+由於支出會在工作完成時才入帳，在首次寫入費用之前提交的工作不會被預算停止，而輪詢因代理伺服器重新啟動而中斷的工作也不會被計費。請使用金鑰或團隊 `rpm_limit` 來限制金鑰在該時間窗內可啟動的工作數量，並使用 `allowed_routes` 來限制哪些金鑰可以存取 `/transcribe`。
 
-Only the standard batch rate is priced. `StartTranscriptionJob` requests that add a per-second surcharge (`ContentRedaction`, `ToxicityDetection`, or a custom language model through `ModelSettings.LanguageModelName` or `LanguageIdSettings.<language>.LanguageModelName`) and the separately priced job types `StartMedicalTranscriptionJob`, `StartMedicalScribeJob` and `StartCallAnalyticsJob` are rejected with a 400 explaining why, before anything is sent to AWS. If `transcribe/StartTranscriptionJob` is missing from the model cost map, `StartTranscriptionJob` is rejected the same way rather than being forwarded unpriced.
+只有標準批次費率會被計價。會加上每秒附加費的 `StartTranscriptionJob` 請求（`ContentRedaction`、`ToxicityDetection`，或透過 `ModelSettings.LanguageModelName` 或 `LanguageIdSettings.<language>.LanguageModelName` 使用自訂語言模型）以及另外計價的工作類型 `StartMedicalTranscriptionJob`、`StartMedicalScribeJob` 和 `StartCallAnalyticsJob`，都會在任何內容送到 AWS 之前以 400 拒絕，並說明原因。如果模型成本對應表中缺少 `transcribe/StartTranscriptionJob`，`StartTranscriptionJob` 也會以相同方式遭拒絕，而不會在未計價的情況下轉送。
 
-LiteLLM reads the media length with libsndfile, so the media must be `flac`, `mp3`, `ogg` or `wav`. The format is taken from `MediaFormat` when set, otherwise from the file extension of `Media.MediaFileUri`. A request whose media is in another format (`mp4`, `m4a`, `webm`, `amr`) or whose format cannot be determined is rejected with a 400 before anything is sent to AWS; convert the file or set `MediaFormat` to submit it.
+LiteLLM 使用 libsndfile 讀取媒體長度，因此媒體必須是 `flac`、`mp3`、`ogg` 或 `wav`。格式會在設定 `MediaFormat` 時以其為準，否則依據 `Media.MediaFileUri` 的副檔名判定。媒體屬於其他格式（`mp4`、`m4a`、`webm`、`amr`）或格式無法判定的請求，會在任何內容送到 AWS 之前以 400 拒絕；請轉換檔案或設定 `MediaFormat` 後再提交。
 
-## Access control
+## 存取控制 {#access-control}
 
-Every request through `/transcribe` runs under the proxy's AWS credentials, so LiteLLM limits what a virtual key can reach with them.
+透過 `/transcribe` 的每個請求都在代理伺服器的 AWS 憑證下執行，因此 LiteLLM 會限制虛擬金鑰可透過這些憑證存取的內容。
 
-A key that is not a proxy admin may only start jobs whose `Media.MediaFileUri` and `OutputBucketName` name a bucket listed in `general_settings.transcribe_media_buckets`, and may not set `DataAccessRoleArn` or `JobExecutionSettings`; anything else is rejected with a 403 before the request is signed. When the list is unset, empty or malformed, only proxy admin keys can start jobs. The list can be set in `config.yaml` as above, or from the Admin UI under Settings, Router Settings, General Settings (`transcribe_media_buckets`, comma-separated bucket names); a value saved there is picked up by the running proxy on its next config reload, and a value in `config.yaml` takes precedence over it.
+非代理伺服器管理員的金鑰只能啟動其 `Media.MediaFileUri` 與 `OutputBucketName` 指定的是 `general_settings.transcribe_media_buckets` 中列出的儲存貯體的工作，且不得設定 `DataAccessRoleArn` 或 `JobExecutionSettings`；其他任何內容都會在請求簽署前以 403 拒絕。當清單未設定、為空或格式錯誤時，只有代理伺服器管理員金鑰可以啟動工作。該清單可如上所述在 `config.yaml` 中設定，或在儀表板的 Settings、Router Settings、General Settings（`transcribe_media_buckets`，以逗號分隔的儲存貯體名稱）中設定；儲存在那裡的值會在執行中的代理伺服器下一次重新載入設定時生效，而 `config.yaml` 中的值則優先於它。
 
-Each `StartTranscriptionJob` is tagged with the calling key's owner (its team when it has one, otherwise its user, otherwise the key itself). `GetTranscriptionJob` and `DeleteTranscriptionJob` answer only for jobs carrying the caller's owner tag and return a 404 for any other job name, and a caller-supplied `litellm-owner` tag is rejected. Account-wide operations such as `ListTranscriptionJobs` and vocabulary management are limited to proxy admin keys. Proxy admins bypass both checks and see every job in the AWS account.
+每個 `StartTranscriptionJob` 都會加上呼叫金鑰的擁有者標記（若有團隊則為其團隊，否則為其使用者，再否則為該金鑰本身）。`GetTranscriptionJob` 與 `DeleteTranscriptionJob` 只會回應帶有呼叫者擁有者標記的工作，對任何其他工作名稱都回傳 404，而呼叫者提供的 `litellm-owner` 標記會被拒絕。諸如 `ListTranscriptionJobs` 與詞彙管理等帳戶層級操作僅限代理伺服器管理員金鑰使用。代理伺服器管理員同時繞過這兩項檢查，並可看到 AWS 帳戶中的每個工作。
 
-## Limitations
+## 限制 {#limitations}
 
-Only the `transcribe.{region}.amazonaws.com` JSON API is proxied. Streaming transcription uses the separate `transcribestreaming.{region}.amazonaws.com` endpoint over HTTP/2 event streams or WebSockets and cannot be routed through these endpoints; clients that stream should continue to call AWS directly for now.
+只有 `transcribe.{region}.amazonaws.com` JSON API 會被轉送。串流轉錄使用透過 HTTP/2 事件串流或 WebSockets 的獨立 `transcribestreaming.{region}.amazonaws.com` 端點，且無法透過這些端點進行路由；目前需要串流的用戶端應繼續直接呼叫 AWS。
 
-Transcripts are written by AWS to S3 and returned as a presigned `TranscriptFileUri`; the transcript body is never returned through LiteLLM. To price the job, the proxy downloads the media file once with its own AWS credentials, so they need `s3:GetObject` on the bucket named in `Media.MediaFileUri`, and the proxy needs enough temporary disk for one media file at a time.
+AWS 會將轉錄稿寫入 S3，並以預先簽署的 `TranscriptFileUri` 回傳；轉錄稿本文絕不會透過 LiteLLM 回傳。為了替工作計價，代理伺服器會使用自身的 AWS 憑證從 S3 下載一次媒體檔案，因此它們需要對 `Media.MediaFileUri` 中指定的儲存貯體具有 `s3:GetObject`，而代理伺服器需要足夠的暫存磁碟空間，一次容納一個媒體檔案。

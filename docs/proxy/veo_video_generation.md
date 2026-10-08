@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Veo Video Generation with Google AI Studio
+# 使用 Google AI Studio 的 Veo 影片生成 {#veo-video-generation-with-google-ai-studio}
 
-Generate videos using Google's Veo model through LiteLLM's pass-through endpoints.
+透過 LiteLLM 的轉送端點，使用 Google 的 Veo 模型生成影片。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-LiteLLM allows you to use Google AI Studio's Veo video generation API through pass-through routes with zero configuration.
+LiteLLM 讓您能透過轉送路由使用 Google AI Studio 的 Veo 影片生成 API，且無需任何設定。
 
-### 1. Add Google AI Studio API Key to your environment 
+### 1. 將 Google AI Studio API 金鑰加入您的環境  {#1-add-google-ai-studio-api-key-to-your-environment}
 
 ```bash
 export GEMINI_API_KEY="your_google_ai_studio_api_key"
 ```
 
-### 2. Start LiteLLM Proxy 
+### 2. 啟動 LiteLLM Proxy  {#2-start-litellm-proxy}
 
 ```bash
 litellm
@@ -23,7 +23,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Generate Video
+### 3. 生成影片 {#3-generate-video}
 
 <Tabs>
 <TabItem value="python" label="Python">
@@ -138,26 +138,25 @@ curl -X GET "http://localhost:4000/gemini/v1beta/files/VIDEO_ID:download?alt=med
 </TabItem>
 </Tabs>
 
-## Complete Example
+## 完整範例 {#complete-example}
 
-For a full working example with error handling and logging, see our [Veo Video Generation Cookbook](https://github.com/BerriAI/litellm/blob/main/cookbook/veo_video_generation.py).
+如需含錯誤處理與記錄的完整可運作範例，請參閱我們的 [Veo Video Generation Cookbook](https://github.com/BerriAI/litellm/blob/main/cookbook/veo_video_generation.py)。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-1. **Video Generation Request**: Send a prompt to Veo's `predictLongRunning` endpoint
-2. **Operation Polling**: Monitor the long-running operation until completion
-3. **File Download**: Download the generated video through LiteLLM's pass-through with automatic redirect handling
+1. **影片生成請求**：將提示傳送至 Veo 的 `predictLongRunning` 端點
+2. **作業輪詢**：監控長時間執行的作業直到完成
+3. **檔案下載**：透過 LiteLLM 的轉送下載生成的影片，並自動處理重新導向
 
-LiteLLM handles:
-- ✅ Authentication with Google AI Studio
-- ✅ Request routing and proxying
-- ✅ Automatic redirect handling for file downloads
+LiteLLM 會處理：
+- ✅ 與 Google AI Studio 的驗證
+- ✅ 請求路由與代理
+- ✅ 檔案下載的自動重新導向處理
 
-## Configuration Options
+## 設定選項 {#configuration-options}
 
-### Environment Variables
+### 環境變數 {#environment-variables}
 
 ```bash
 export GEMINI_API_KEY="your_google_ai_studio_api_key"
 ```
-

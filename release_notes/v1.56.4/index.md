@@ -20,11 +20,11 @@ import Image from '@theme/IdealImage';
 
 `deepgram`, `fireworks ai`, `vision`, `admin ui`, `dependency upgrades`
 
-## New Models
+## 新模型 {#new-models}
 
-### **Deepgram Speech to Text**
+### **Deepgram 語音轉文字** {#deepgram-speech-to-text}
 
-New Speech to Text support for Deepgram models. [**Start Here**](https://docs.litellm.ai/docs/providers/deepgram)
+新增對 Deepgram 模型的 Speech to Text 支援。[**從這裡開始**](https://docs.litellm.ai/docs/providers/deepgram)
 
 ```python
 from litellm import transcription
@@ -39,34 +39,25 @@ response = transcription(model="deepgram/nova-2", file=audio_file)
 print(f"response: {response}")
 ```
 
-### **Fireworks AI - Vision** support for all models
-LiteLLM supports document inlining for Fireworks AI models. This is useful for models that are not vision models, but still need to parse documents/images/etc.
-LiteLLM will add `#transform=inline` to the url of the image_url, if the model is not a vision model [See Code](https://github.com/BerriAI/litellm/blob/1ae9d45798bdaf8450f2dfdec703369f3d2212b7/litellm/llms/fireworks_ai/chat/transformation.py#L114)
+### **Fireworks AI - Vision** 支援所有模型 {#fireworks-ai---vision-support-for-all-models}
+LiteLLM 支援 Fireworks AI 模型的文件內嵌。這對於不是 vision 模型、但仍需要解析文件/圖片/等內容的模型很有用。
+如果模型不是 vision 模型，LiteLLM 會在 image_url 的網址後面加上 `#transform=inline` [查看程式碼](https://github.com/BerriAI/litellm/blob/1ae9d45798bdaf8450f2dfdec703369f3d2212b7/litellm/llms/fireworks_ai/chat/transformation.py#L114)
 
+## Proxy 管理 UI {#proxy-admin-ui}
 
-## Proxy Admin UI
-
-- `Test Key` Tab displays `model` used in response
+- `Test Key` 分頁會顯示回應中使用的 `model`
 
 <Image img={require('../../img/release_notes/ui_model.png')} />
 
-- `Test Key` Tab renders content in `.md`, `.py` (any code/markdown format)
+- `Test Key` 分頁會以 `.md`、`.py`（任何程式碼／markdown 格式）呈現內容
 
 <Image img={require('../../img/release_notes/ui_format.png')} />
 
+## 相依性升級 {#dependency-upgrades}
 
-## Dependency Upgrades
+- （安全性修正）升級至 `fastapi==0.115.5` https://github.com/BerriAI/litellm/pull/7447
 
-- (Security fix) Upgrade to `fastapi==0.115.5` https://github.com/BerriAI/litellm/pull/7447
+## 錯誤修正 {#bug-fixes}
 
-## Bug Fixes
-
-- Add health check support for realtime models [Here](https://docs.litellm.ai/docs/proxy/health#realtime-models)
-- Health check error with audio_transcription model https://github.com/BerriAI/litellm/issues/5999
-
-
-
-
-
-
-
+- 新增對即時模型的健康檢查支援 [這裡](https://docs.litellm.ai/docs/proxy/health#realtime-models)
+- audio_transcription 模型的健康檢查錯誤 https://github.com/BerriAI/litellm/issues/5999

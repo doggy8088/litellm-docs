@@ -1,31 +1,31 @@
 ---
 slug: router-plugins-on-the-proxy
-title: "Announcing Router Plugins: Customize Routing Signals"
+title: "宣布 Router Plugins：自訂路由訊號"
 date: 2026-07-17T12:00:00
 authors:
   - krrish
-description: "Router plugins are now live on LiteLLM. Configure a plugin pipeline to determine which models to pick for a given input. Plugins can be chained as well"
+description: "Router plugins 現已在 LiteLLM 上線。設定一個插件管線，以決定針對給定輸入要選擇哪些模型。插件也可以串接"
 tags: [routing, complexity-router, plugins, proxy, product]
 hide_table_of_contents: false
 ---
 
-:::info[Availability]
+:::info[可用性]
 
-Router plugins run on the proxy from **v1.94.x**. The design is still evolving; tell us how you'd use it and what you'd want next in the [autorouter discussion on GitHub (#32168)](https://github.com/BerriAI/litellm/discussions/32168).
+Router plugins 自 **v1.94.x** 起可在 proxy 上運作。此設計仍在演進中；歡迎告訴我們您會如何使用它，以及您接下來希望看到什麼，請參閱 GitHub 上的 [autorouter 討論（#32168）](https://github.com/BerriAI/litellm/discussions/32168)。
 
 :::
 
-Router plugins are now available on LiteLLM. Each plugin receives the routing context, enriches it, and hands it to the next before the router makes the final decision.
+Router plugins 現已可在 LiteLLM 上使用。每個插件都會接收路由內容、加以擴充，然後在 router 做出最終決策之前將其傳給下一個插件。
 
-The push came from the [autorouter discussion (#32168)](https://github.com/BerriAI/litellm/discussions/32168): teams wanted to layer their own signals (language detection, domain classification, tenant policy, budget caps) onto routing without waiting for each one to land in core. This plugin extension lets teams make these changes while keeping LiteLLM's routing core stable.
+這股推動力來自 [autorouter 討論（#32168）](https://github.com/BerriAI/litellm/discussions/32168)：團隊希望將自己的訊號（語言偵測、網域分類、租戶政策、預算上限）層疊到路由之上，而不必等待每一項都進入核心。這個插件擴充功能讓團隊能在維持 LiteLLM 路由核心穩定的同時完成這些變更。
 
 {/* truncate */}
 
-## Get Started
+## 開始使用 {#get-started}
 
-A plugin is any object with an `async run` method that takes the routing context and returns it. Narrow `candidate_models` to restrict what the router can pick, and write to `signals` to pass information downstream.
+插件可以是任何具有 `async run` 方法的物件，該方法會接收路由內容並將其回傳。收窄 `candidate_models` 可限制 router 能選擇的內容，並寫入 `signals` 以將資訊往下游傳遞。
 
-Write one next to your `config.yaml` in `plugins/cheap_first.py`:
+在 `plugins/cheap_first.py` 的 `config.yaml` 旁建立一個插件：
 
 ```python
 from litellm.types.router import RoutingContext
@@ -42,7 +42,7 @@ class CheapFirst:
 cheap_first_plugin = CheapFirst()
 ```
 
-Reference it from `router_settings.plugins` by its dotted path. The proxy loads it from the local file next to `config.yaml`, or from an installed pip package using the same syntax:
+透過其 dotted path 從 `router_settings.plugins` 參照它。proxy 會從與 `config.yaml` 相鄰的本機檔案載入它，或使用相同語法從已安裝的 pip 套件載入：
 
 ```yaml
 model_list:
@@ -60,15 +60,15 @@ router_settings:
     - plugins.cheap_first.cheap_first_plugin
 ```
 
-Start the proxy, and every routing decision now runs through your plugin:
+啟動 proxy 後，每一次路由決策都會經過您的插件：
 
 ```bash
 litellm --config config.yaml
 ```
 
-## Chaining plugins
+## 串接插件 {#chaining-plugins}
 
-Plugins run as a pipeline in list order, and each one sees the mutations and signals the previous plugin left behind. Add a second plugin in `plugins/enterprise_only.py` that reads the tenant off `context.metadata` and, for enterprise callers, restricts the pool to the models it left; it can also read the `cheap-first` signal published upstream:
+插件會依清單順序作為管線執行，而每一個插件都會看到前一個插件留下的修改與訊號。在 `plugins/enterprise_only.py` 中新增第二個插件，讀取 `context.metadata` 所標示的租戶，並針對企業呼叫者將候選池限制為它保留的模型；它也可以讀取上游發佈的 `cheap-first` 訊號：
 
 ```python
 from litellm.types.router import RoutingContext
@@ -92,7 +92,7 @@ class EnterpriseOnly:
 enterprise_only_plugin = EnterpriseOnly()
 ```
 
-List both under `router_settings.plugins`. `cheap_first` runs first and narrows the pool, then `enterprise_only` receives that narrowed pool and applies its own policy on top:
+將兩者都列在 `router_settings.plugins` 下。`cheap_first` 會先執行並縮小候選池，接著 `enterprise_only` 會接收該縮小後的候選池，並在其上套用自己的政策：
 
 ```yaml
 router_settings:
@@ -101,11 +101,11 @@ router_settings:
     - plugins.enterprise_only.enterprise_only_plugin
 ```
 
-Each plugin only narrows; if any plugin removes every remaining candidate, the request raises rather than silently falling back to the full pool, so a policy in the chain can't be bypassed by an earlier one.
+每個插件都只會縮小範圍；如果任何插件移除了所有剩餘候選項，請求就會直接失敗，而不是悄悄回退到完整候選池，因此管線中的某項政策不會被前面的政策繞過。
 
-## Plugins inside the autorouter
+## 插件在 autorouter 內部 {#plugins-inside-the-autorouter}
 
-`router_settings.plugins` runs the pipeline globally, on every routing decision. You can also scope plugins to the [complexity autorouter](/docs/proxy/auto_routing), where they run inside the tier pick against that tier's actual candidate pool. Put them under `complexity_router_config.plugins` on the auto-router model:
+`router_settings.plugins` 會在全域範圍內對每一次路由決策執行該管線。您也可以將插件限定於 [complexity autorouter](/docs/proxy/auto_routing)，讓它們在 tier 選擇流程中、以該 tier 的實際候選池執行。將它們放在自動路由器模型的 `complexity_router_config.plugins` 下：
 
 ```yaml
 model_list:
@@ -130,17 +130,17 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-Here the autorouter first classifies the request into a tier, then the plugin filters that tier's pool before a deployment is picked. So a `COMPLEX` request that classifies into `["gpt-4o", "gpt-4o-mini"]` still passes through `cheap_first`, which keeps only `gpt-4o-mini`. As with the global pipeline, `default_model` is not an escape hatch: if a plugin drops every candidate in the tier, the request raises rather than falling back to it.
+這裡 autorouter 會先將請求分類到某個 tier，接著插件會在選定部署之前先過濾該 tier 的候選池。因此，一個分類到 `["gpt-4o", "gpt-4o-mini"]` 的 `COMPLEX` 請求，仍然會經過 `cheap_first`，而後者只會保留 `gpt-4o-mini`。與全域管線相同，`default_model` 不是逃生出口：如果插件刪除了該 tier 中所有候選項，請求就會直接失敗，而不是回退到它。
 
-Two things to know when combining plugins with the complexity router: `session_affinity` is disabled when plugins are configured, so a mid-session policy change still applies on later turns instead of being skipped by a cached model pin, and `adaptive: true` alongside `plugins` raises at config validation, since the bandit selector doesn't consume plugin-narrowed pools yet.
+當將插件與 complexity router 結合時，有兩件事要注意：啟用插件時 `session_affinity` 會停用，因此中途的政策變更仍會套用到後續回合，而不會因快取的模型固定而被略過；此外，`adaptive: true` 與 `plugins` 一起使用時會在設定驗證階段拋出錯誤，因為 bandit 選擇器目前尚未消耗經插件縮小的候選池。
 
-For the full contract, the request lifecycle, and more on scoping plugins to the autorouter's tiers, see the [routing plugins docs](/docs/routing_plugins).
+若要了解完整合約、請求生命週期，以及更多關於將插件限定到 autorouter 各 tier 的內容，請參閱 [routing plugins 文件](/docs/routing_plugins)。
 
-## Register your plugin
+## 註冊您的插件 {#register-your-plugin}
 
-We are also making plugins discoverable with a `router_plugins.json` at the root of the LiteLLM repo.
+我們也正透過 LiteLLM repo 根目錄的一個 `router_plugins.json`，讓插件可被探索。
 
-Here's a sample entry:
+以下是一個範例項目：
 
 ```json
   {
@@ -158,10 +158,10 @@ Here's a sample entry:
   }
 ```
 
-The first community entry is language-detector by [Jean Nuñez](https://github.com/jeann2013), which detects the user's language and publishes a routing signal. It pins to a reviewed commit, targets litellm>=1.94.0, and its entrypoint is litellm_plugin_language_detector.plugin.language_detector_plugin; drop that string under router_settings.plugins and it runs. If you've written a plugin, add it to the catalog so others can find it.
+第一個社群項目是由 [Jean Nuñez](https://github.com/jeann2013) 提供的 language-detector，它會偵測使用者的語言並發佈一個路由訊號。它固定到一個經審核的 commit，目標為 litellm>=1.94.0，而其 entrypoint 為 litellm_plugin_language_detector.plugin.language_detector_plugin；只要將該字串放到 router_settings.plugins 下即可執行。若您寫了插件，請將它加入目錄，讓其他人能找到。
 
-## Feedback
+## 回饋 {#feedback}
 
-If you have any feedback, we'd love to hear it!
+如果您有任何回饋，我們很想聽聽！
 
-Please share your thoughts on the [autorouter discussion on GitHub (#32168)](https://github.com/BerriAI/litellm/discussions/32168) or just reach out to me (krrish@berri.ai) with your thoughts on how this can be improved!
+請在 GitHub 上的 [autorouter 討論（#32168）](https://github.com/BerriAI/litellm/discussions/32168) 分享您的想法，或直接聯絡我（krrish@berri.ai），告訴我您認為可以如何改進！

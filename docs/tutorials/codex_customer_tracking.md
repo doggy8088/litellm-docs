@@ -1,20 +1,20 @@
 import Image from '@theme/IdealImage';
 
-# Codex CLI - Granular Cost Tracking
+# Codex CLI - 細緻成本追蹤 {#codex-cli---granular-cost-tracking}
 
-Track Codex CLI usage by customer or tags using LiteLLM proxy. This enables granular cost attribution for billing, budgeting, and analytics.
+使用 LiteLLM proxy 依客戶或標籤追蹤 Codex CLI 使用情況。這可讓您為計費、預算與分析進行細緻的成本歸因。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-Codex reads its configuration from `~/.codex/config.toml`. The `[model_providers.<id>]` block accepts `http_headers` (static values) and `env_http_headers` (values read from environment variables when Codex starts), and Codex attaches both to every request it sends to `base_url`. This is the Codex equivalent of Claude Code's `ANTHROPIC_CUSTOM_HEADERS`: put a LiteLLM tracking header there and every `/v1/responses` call lands in the spend logs with that customer or those tags.
+Codex 會從 `~/.codex/config.toml` 讀取其組態。`[model_providers.<id>]` 區塊接受 `http_headers`（靜態值）與 `env_http_headers`（Codex 啟動時從環境變數讀取的值），而 Codex 會將這兩者附加到它送往 `base_url` 的每一個請求。這是 Claude Code 的 `ANTHROPIC_CUSTOM_HEADERS` 在 Codex 中的對應：把 LiteLLM 追蹤標頭放在那裡，每一次 `/v1/responses` 呼叫就會連同該客戶或那些標籤一起記錄到支出記錄中。
 
-## Why Set a Customer Header
+## 為何要設定客戶標頭 {#why-set-a-customer-header}
 
-Codex has no setting that puts an end user in the request body, so without a header its spend is attributed to the virtual key and nothing else. One header in `config.toml` gives every request an end user, and with it per-customer budgets, the End User filter on the Logs page, and `/customer/info` all work. Headers are checked before any request body field, so the value you set here always wins.
+Codex 沒有可將最終使用者放進請求本文中的設定，因此若沒有標頭，其支出只會歸因於虛擬金鑰，而不會有其他資訊。在 `config.toml` 中放入一個標頭，就能讓每個請求都有一個最終使用者，並且讓每位客戶的預算、Logs 頁面的 End User 篩選器，以及 `/customer/info` 都能正常運作。標頭會先於任何請求本文欄位被檢查，因此您在此設定的值永遠優先。
 
-## Option 1: Track by Customer
+## 選項 1：依客戶追蹤 {#option-1-track-by-customer}
 
-Use this to attribute costs to specific customers or end-users. `x-litellm-customer-id` and `x-litellm-end-user-id` both land as the end user of the spend row.
+用這個方式將成本歸因到特定客戶或最終使用者。`x-litellm-customer-id` 與 `x-litellm-end-user-id` 都會成為支出列的最終使用者。
 
 ```toml
 model = "gpt-5.3-codex"
@@ -28,27 +28,27 @@ wire_api = "responses"
 http_headers = { "x-litellm-end-user-id" = "alice" }
 ```
 
-## Option 2: Track by Tags
+## 選項 2：依標籤追蹤 {#option-2-track-by-tags}
 
-Use this to attribute costs to projects, cost centers, or environments. Pass comma-separated tags, on their own or next to a customer header in the same provider block.
+用這個方式將成本歸因到專案、成本中心或環境。傳入以逗號分隔的標籤，可單獨使用，或與同一提供者區塊中的客戶標頭一起使用。
 
 ```toml
 [model_providers.litellm]
 http_headers = { "x-litellm-customer-id" = "carol", "x-litellm-tags" = "project:onboarding,team:platform" }
 ```
 
-## Option 3: Per-Developer Value from an Environment Variable
+## 選項 3：來自環境變數的每位開發者值 {#option-3-per-developer-value-from-an-environment-variable}
 
-A shared `config.toml` cannot hard-code each developer's id. `env_http_headers` names an environment variable instead, so the file stays identical across machines and each developer runs `export LITELLM_END_USER_ID=alice` before launching Codex. When the variable is unset or empty, Codex omits the header.
+共用的 `config.toml` 無法硬編碼每位開發者的 id。`env_http_headers` 改為指定一個環境變數，因此檔案在各台機器上保持一致，而每位開發者在啟動 Codex 前都會執行 `export LITELLM_END_USER_ID=alice`。當該變數未設定或為空時，Codex 會省略該標頭。
 
 ```toml
 [model_providers.litellm]
 env_http_headers = { "x-litellm-end-user-id" = "LITELLM_END_USER_ID" }
 ```
 
-## Option 4: Custom Header Name
+## 選項 4：自訂標頭名稱 {#option-4-custom-header-name}
 
-If your developers already carry an identity header, name it under `general_settings` in the proxy `config.yaml` with `user_header_name` and LiteLLM reads that header as the customer id too. The [customer id precedence table](../proxy/customers.md#1-make-llm-api-call-w-customer-id) lists `user_header_mappings` as the newer way to declare such a header.
+如果您的開發者已經帶有身分標頭，請在 proxy `config.yaml` 中的 `general_settings` 下為其命名，並使用 `user_header_name`，LiteLLM 也會將該標頭視為客戶 id。[客戶 id 優先順序表](../proxy/customers.md#1-make-llm-api-call-w-customer-id) 將 `user_header_mappings` 列為定義此類標頭的較新方式。
 
 ```yaml
 general_settings:
@@ -60,44 +60,44 @@ general_settings:
 env_http_headers = { "x-okta-user" = "CODEX_OKTA_USER" }
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Configure and Run Codex
+### 1. 設定並執行 Codex {#1-configure-and-run-codex}
 
-Add the provider block from Option 1 to `~/.codex/config.toml`, then export your LiteLLM key and start Codex.
+將選項 1 的提供者區塊加入 `~/.codex/config.toml`，接著匯出您的 LiteLLM 金鑰並啟動 Codex。
 
 ```bash
 export LITELLM_API_KEY=sk-<your-api-key>
 codex
 ```
 
-All requests will now be tracked under the end user `alice`. Each Codex turn makes two `/v1/responses` calls and both are attributed, so one turn shows up as two spend rows.
+現在所有請求都會依該最終使用者 `alice` 進行追蹤。每一次 Codex 回合會發出兩個 `/v1/responses` 呼叫，而兩者都會被歸因，因此一個回合會顯示為兩筆支出列。
 
-### 2. View Usage in LiteLLM UI
+### 2. 在 LiteLLM UI 中檢視使用情況 {#2-view-usage-in-litellm-ui}
 
-Navigate to the **Logs** tab in the LiteLLM UI (`http://localhost:4000/ui/?page=logs`). The End User column shows the header value on every Codex row, and the Tags column carries your `x-litellm-tags` entries next to the `User-Agent: codex-tui` tag LiteLLM adds on its own.
+前往 LiteLLM UI 中的 **Logs** 分頁（`http://localhost:4000/ui/?page=logs`）。End User 欄會顯示每一筆 Codex 列上的標頭值，而 Tags 欄則會連同 LiteLLM 自行新增的 `User-Agent: codex-tui` 標籤一起顯示您的 `x-litellm-tags` 條目。
 
 <Image img={require('../../img/codex_customer_tracking_logs.png')} />
 
-Open **Filters** and pick an end user to see only that developer's requests. Click on a request to see details, including the model, the `aresponses` call type, and the cost.
+開啟 **Filters** 並選取一個最終使用者，即可只查看該開發者的請求。點選某個請求可查看詳細資訊，包括模型、`aresponses` 呼叫類型與成本。
 
-### 3. Query Spend per Customer
+### 3. 查詢每位客戶的支出 {#3-query-spend-per-customer}
 
-The same rows are available over the API. [`/customer/info?end_user_id=alice`](../proxy/customers.md#2-get-customer-spend) returns that customer's all-up spend, and the Enterprise [`/global/spend/report`](../proxy/cost_tracking.md#-enterprise-generate-spend-reports) endpoint with `group_by=customer` breaks spend down per customer and day.
+相同的列也可透過 API 取得。[`/customer/info?end_user_id=alice`](../proxy/customers.md#2-get-customer-spend) 會回傳該客戶的總支出，而 Enterprise [`/global/spend/report`](../proxy/cost_tracking.md#-enterprise-generate-spend-reports) 端點搭配 `group_by=customer` 可將支出依客戶與日期細分。
 
-## Supported Headers
+## 支援的標頭 {#supported-headers}
 
-| Header | Description |
+| 標頭 | 說明 |
 |--------|-------------|
-| `x-litellm-customer-id` | Track by customer/end-user ID |
-| `x-litellm-end-user-id` | Alternative customer ID header |
-| `x-litellm-tags` | Comma-separated tags for cost attribution |
-| Header named by `user_header_name` | Custom customer ID header configured on the proxy |
+| `x-litellm-customer-id` | 依客戶/最終使用者 ID 追蹤 |
+| `x-litellm-end-user-id` | 替代的客戶 ID 標頭 |
+| `x-litellm-tags` | 用於成本歸因的逗號分隔標籤 |
+| 由 `user_header_name` 命名的標頭 | 在 proxy 上設定的自訂客戶 ID 標頭 |
 
-## Related
+## 相關內容 {#related}
 
-- [Claude Code - Granular Cost Tracking](./claude_code_customer_tracking.md)
-- [Connect Codex CLI to LiteLLM](../proxy/client_setup/codex_cli.md)
-- [Customer Budgets](../proxy/customers.md)
-- [Tag Budgets](../proxy/tag_budgets.md)
-- [Track Usage for Coding Tools](./cost_tracking_coding.md)
+- [Claude Code - 細緻成本追蹤](./claude_code_customer_tracking.md)
+- [將 Codex CLI 連接到 LiteLLM](../proxy/client_setup/codex_cli.md)
+- [客戶預算](../proxy/customers.md)
+- [標籤預算](../proxy/tag_budgets.md)
+- [為程式設計工具追蹤使用量](./cost_tracking_coding.md)

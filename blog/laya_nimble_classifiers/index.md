@@ -1,10 +1,10 @@
 ---
 slug: laya-nimble-classifiers
-title: "Adding Self-hosted Auto Router Classifiers: Laya & Nimble"
+title: "新增自架 Auto Router 分類器：Laya 與 Nimble"
 date: 2026-10-02T12:00:00
 authors:
   - tin
-description: "Use Laya or Bespoke Nimble to classify Auto Router requests on your own infrastructure. Control where classification runs, which model you serve, and how you provision it."
+description: "使用 Laya 或 Bespoke Nimble 在您自己的基礎架構上對 Auto Router 請求進行分類。控制分類執行的位置、您提供哪個模型，以及如何佈建它。"
 image: ./cover.png
 tags: [auto-router, product, ai-gateway]
 hide_table_of_contents: false
@@ -21,38 +21,38 @@ export function Hero() {
   );
 }
 
-LiteLLM Auto Router now supports **Laya** and **Bespoke Nimble** as self-hosted classifiers. Run either model on your infrastructure to choose which completion model handles each request. Your application keeps calling the same router endpoint.
+LiteLLM Auto Router 現在支援 **Laya** 和 **Bespoke Nimble** 作為自架分類器。在您的基礎架構上執行任一模型，以選擇由哪個 completion model 處理每個請求。您的應用程式仍會呼叫相同的 router endpoint。
 
 {/* truncate */}
 
-## Why self-host a classifier?
+## 為什麼要自架分類器？ {#why-self-host-a-classifier}
 
-Customers have asked to keep classification local, avoid another hosted classifier vendor, and use clusters they already operate. Self-hosting gives you control over:
+客戶希望將分類維持在本地、避免再依賴另一個 hosted classifier vendor，並使用他們已在運作的 cluster。自架可讓您控制：
 
-- **Prompt data.** Process classification context on servers you control, with your own access and logging policies.
-- **Vendor dependencies.** Run the classifier without opening an account with a separate hosted classifier service.
-- **Deployment location.** Choose the network and region where classification runs, including your existing private cluster.
-- **Capacity and latency tuning.** Allocate compute for your traffic, keep the model warm, and place it near the gateway.
-- **Model versions.** Choose the supported checkpoint you serve and decide when to roll out upgrades.
-- **Compute costs.** Use your infrastructure budget and compare its cost against hosted inference on your workload.
+- **Prompt 資料。** 在您控制的伺服器上處理分類 context，並使用您自己的存取與 logging policy。
+- **供應商依賴。** 不必註冊另一個 hosted classifier service 的帳戶，即可執行分類器。
+- **部署位置。** 選擇分類執行的 network 與 region，包括您現有的 private cluster。
+- **容量與延遲調校。** 為您的流量配置 compute，讓 model 保持 warm，並將其放在靠近 gateway 的位置。
+- **模型版本。** 選擇您提供的受支援 checkpoint，並決定何時推出升級。
+- **運算成本。** 使用您的基礎架構預算，並針對您的 workload 將其成本與 hosted inference 進行比較。
 
-You operate and pay for the classifier service. Measure latency, routing quality, and total cost on your own traffic with the [evaluation guide](/docs/auto_router/evaluate).
+您負責營運並支付分類器服務費用。使用 [evaluation guide](/docs/auto_router/evaluate) 在您自己的流量上衡量延遲、routing 品質與總成本。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-1. Your application sends a request to the LiteLLM Auto Router.
-2. Your self-hosted classifier chooses a complexity tier, such as `SIMPLE` or `COMPLEX`.
-3. LiteLLM calls a completion model assigned to that tier to generate the answer.
+1. 您的應用程式將請求送至 LiteLLM Auto Router。
+2. 您的自架分類器會選擇一個 complexity tier，例如 `SIMPLE` 或 `COMPLEX`。
+3. LiteLLM 會呼叫指派給該 tier 的 completion model 來產生答案。
 
-The completion model still receives the request. You choose separately whether that model runs locally or through a hosted provider.
+completion model 仍會收到該請求。您可另行選擇該模型是本地執行，還是透過 hosted provider 執行。
 
-## Get started
+## 開始使用 {#get-started}
 
-Connect your classifier endpoint to LiteLLM:
+將您的分類器 endpoint 連接到 LiteLLM：
 
-- **[Connect Laya](/docs/auto_router/decision_classifiers#laya-self-hosted-http-server):** set your server's base URL, credentials, and classifier model.
-- **[Connect Nimble](/docs/auto_router/decision_classifiers#nimble-self-hosted-system-one-server):** connect your System One endpoint and select the model it serves.
+- **[Connect Laya](/docs/auto_router/decision_classifiers#laya-self-hosted-http-server)：** 設定伺服器的 base URL、憑證與分類器模型。
+- **[Connect Nimble](/docs/auto_router/decision_classifiers#nimble-self-hosted-system-one-server)：** 連接您的 System One endpoint，並選取其提供的模型。
 
-In **Models + Endpoints → Auto Router**, select **OSS Classifier**, choose your provider, and assign completion models to tiers. Use **[Test Routing](/docs/auto_router/decision_classifiers#test-routing-and-send-a-request)** to inspect the choice before sending completions.
+在 **Models + Endpoints → Auto Router** 中，選取 **OSS Classifier**，選擇您的提供者，並將 completion models 指派給各 tier。使用 **[Test Routing](/docs/auto_router/decision_classifiers#test-routing-and-send-a-request)** 在送出 completions 之前檢查選擇結果。
 
-The **[connection guide](/docs/auto_router/decision_classifiers)** covers endpoint settings and credentials, with a **[complete YAML example](/docs/auto_router/decision_classifiers#configure-the-router)** for configuring tiers and fallback behavior. Jev remains available as the hosted classifier option.
+**[connection guide](/docs/auto_router/decision_classifiers)** 說明了 endpoint 設定與憑證，並提供一個 **[complete YAML example](/docs/auto_router/decision_classifiers#configure-the-router)** 以設定 tiers 與 fallback 行為。Jev 仍可作為 hosted classifier 選項。

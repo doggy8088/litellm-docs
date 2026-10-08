@@ -2,25 +2,25 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Lasso Security
+# Lasso Security {#lasso-security}
 
-Use [Lasso Security](https://www.lasso.security/) to protect your LLM applications from prompt injection attacks, harmful content generation, and other security threats through input and output validation.
+使用 [Lasso Security](https://www.lasso.security/) 透過輸入與輸出驗證，保護您的 LLM 應用程式免於提示注入攻擊、有害內容生成及其他安全威脅。
 
-## Prerequisites
+## 必要條件 {#prerequisites}
 
-The Lasso guardrail requires the `ulid-py` package (version 1.1.0 or higher) for generating unique conversation identifiers:
+Lasso guardrail 需要 `ulid-py` 套件（版本 1.1.0 或以上）來產生唯一的對話識別碼：
 
 ```shell
 uv add ulid-py>=1.1.0
 ```
 
-This package is used to create lexicographically sortable identifiers for tracking conversations and sessions in the Lasso Security platform.
+此套件用於建立可依字典順序排序的識別碼，以追蹤 Lasso Security 平台中的對話與工作階段。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml 
+### 1. 在您的 LiteLLM config.yaml 中定義 Guardrails  {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section:
+在 `guardrails` 區段下定義您的 guardrails：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -43,24 +43,23 @@ guardrails:
       api_key: os.environ/LASSO_API_KEY
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` - Run **before** LLM call to validate **user input**. Blocks requests with detected policy violations (jailbreaks, harmful prompts, PII, etc.)
-- `post_call` - Run **after** LLM call to validate **model output**. Blocks responses containing harmful content, policy violations, or sensitive information
+- `pre_call` - 在 LLM 呼叫**之前**執行，以驗證**使用者輸入**。會阻擋偵測到政策違規的請求（越獄、有害提示、PII 等）
+- `post_call` - 在 LLM 呼叫**之後**執行，以驗證**模型輸出**。會阻擋包含有害內容、政策違規或敏感資訊的回應
 
-
-### 2. Start LiteLLM Gateway 
+### 2. 啟動 LiteLLM Gateway  {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求  {#3-test-request}
 
 <Tabs>
-<TabItem label="Pre-call Guardrail Test" value = "pre-call-test">
+<TabItem label="呼叫前 Guardrail 測試" value = "pre-call-test">
 
-Test input validation with a prompt injection attempt:
+使用提示注入嘗試來測試輸入驗證：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -74,7 +73,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on policy violation:
+政策違規時的預期回應：
 
 ```shell
 {
@@ -115,9 +114,9 @@ Expected response on policy violation:
 
 </TabItem>
 
-<TabItem label="Post-call Guardrail Test" value = "post-call-test">
+<TabItem label="呼叫後 Guardrail 測試" value = "post-call-test">
 
-Test output validation by requesting harmful content generation:
+透過請求生成有害內容來測試輸出驗證：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -131,7 +130,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response when model output violates policies:
+模型輸出違反政策時的預期回應：
 
 ```shell
 {
@@ -180,9 +179,9 @@ Expected response when model output violates policies:
 
 </TabItem>
 
-<TabItem label="Successful Call" value = "allowed">
+<TabItem label="成功的呼叫" value = "allowed">
 
-Test with safe content that passes all guardrails:
+使用可通過所有 guardrails 的安全內容進行測試：
 
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
@@ -196,7 +195,7 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-Expected response:
+預期回應：
 
 ```shell
 {
@@ -226,25 +225,25 @@ Expected response:
 </TabItem>
 </Tabs>
 
-## What Gets Scanned
+## 掃描內容 {#what-gets-scanned}
 
-The Lasso guardrail scans the whole agentic turn, not the prompt text alone. Agent tool use is a common path for both exfiltration and injection, such as a poisoned tool result carrying instructions or a tool call carrying sensitive arguments, so tool traffic is classified in both directions.
+Lasso 防護欄會掃描整個代理程式回合，而不只是提示文字。代理程式的工具使用同時也是資料外洩與注入的常見途徑，例如遭污染的工具回應攜帶指令，或工具請求攜帶敏感引數，因此工具流量會在雙向中分類。
 
-On `pre_call` the guardrail sends every message in the request. That covers `system`, `user` and `assistant` text; each entry of an assistant message's `tool_calls` as a `tool_use` block holding the tool name and its arguments; each `role: "tool"` message as a `tool_result` block holding the tool's output; and the request's `tools` array, so Lasso also sees tool names, descriptions and JSON schema parameters.
+在 `pre_call` 上，防護欄會傳送請求中的每則訊息。這包含 `system`、`user` 與 `assistant` 文字；assistant 訊息的每個 `tool_calls` 項目會作為一個 `tool_use` 區塊，內含工具名稱及其引數；每個 `role: "tool"` 訊息會作為一個 `tool_result` 區塊，內含工具的輸出；以及請求的 `tools` 陣列，因此 Lasso 也能看到工具名稱、描述與 JSON schema 參數。
 
-On `post_call` the guardrail sends the model's reply for each choice, which is the assistant text plus any `tool_calls` the model generated on that turn, again as `tool_use` blocks. Tool results appear only on `pre_call`, because a tool's output reaches the proxy on the next request rather than in the model's reply.
+在 `post_call` 上，防護欄會傳送模型對每個 choice 的回覆，也就是 assistant 文字以及模型在該回合生成的任何 `tool_calls`，同樣以 `tool_use` 區塊呈現。工具結果只會出現在 `pre_call` 上，因為工具的輸出是在下一個請求時才會抵達 proxy，而不是在模型的回覆中。
 
-Tool payloads are masked as well as classified. With `mask: true`, masked tool call arguments are written back into `tool_calls` before the request continues to the LLM, and masked tool output is written back into the `tool` message, so the model never sees the raw values.
+工具負載會同時被遮罩與分類。使用 `mask: true` 時，已遮罩的工具請求引數會寫回 `tool_calls`，之後請求才會繼續傳送至 LLM，而已遮罩的工具輸出則會寫回 `tool` 訊息，因此模型永遠看不到原始值。
 
-The [Generic Guardrail API](#alternative-configuration-generic-guardrail-api) configuration has the same coverage; it delivers the turn to Lasso as `structured_messages`, `tool_calls` and `tools`.
+[Generic Guardrail API](#alternative-configuration-generic-guardrail-api) 設定具有相同涵蓋範圍；它會將回合以 `structured_messages`、`tool_calls` 與 `tools` 的形式傳送給 Lasso。
 
-## PII Masking with Lasso
+## 使用 Lasso 進行 PII 遮罩 {#pii-masking-with-lasso}
 
-Lasso supports automatic PII detection and masking using the `/classifix` endpoint. When enabled, sensitive information like emails, phone numbers, and other PII will be automatically masked with appropriate placeholders.
+Lasso 支援使用 `/classifix` 端點自動偵測與遮罩 PII。啟用後，電子郵件、電話號碼及其他 PII 等敏感資訊將自動以適當的預留位置字串遮罩。
 
-### Enabling PII Masking
+### 啟用 PII 遮罩 {#enabling-pii-masking}
 
-To enable PII masking, add the `mask: true` parameter to your guardrail configuration:
+若要啟用 PII 遮罩，請將 `mask: true` 參數加入您的 guardrail 設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -268,20 +267,20 @@ guardrails:
       mask: true  # Enable PII masking
 ```
 
-### Masking Behavior
+### 遮罩行為 {#masking-behavior}
 
-When masking is enabled:
+啟用遮罩時：
 
-- **Pre-call masking**: PII in user input is masked before being sent to the LLM
-- **Post-call masking**: PII in LLM responses is masked before being returned to the user
-- **Selective blocking**: Only harmful content (jailbreaks, hate speech, etc.) is blocked; PII violations are masked and allowed to continue
+- **呼叫前遮罩**：在傳送至 LLM 之前，先遮罩使用者輸入中的 PII
+- **呼叫後遮罩**：在回傳給使用者之前，先遮罩 LLM 回應中的 PII
+- **選擇性阻擋**：只會阻擋有害內容（越獄、仇恨言論等）；PII 違規會被遮罩並允許繼續
 
-### Masking Example
+### 遮罩範例 {#masking-example}
 
 <Tabs>
-<TabItem label="Pre-call Masking" value="pre-call-masking">
+<TabItem label="呼叫前遮罩" value="pre-call-masking">
 
-**Input with PII:**
+**含 PII 的輸入：**
 ```shell
 curl -i http://0.0.0.0:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -294,17 +293,17 @@ curl -i http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-The message sent to the LLM will be automatically masked:
+傳送給 LLM 的訊息將會自動被遮罩：
 `"My email is <EMAIL_ADDRESS> and phone is <PHONE_NUMBER>"`
 
 </TabItem>
 
-<TabItem label="Post-call Masking" value="post-call-masking">
+<TabItem label="呼叫後遮罩" value="post-call-masking">
 
-**LLM Response with PII:**
-If the LLM responds with: `"You can contact us at support@company.com or call 555-0123"`
+**含 PII 的 LLM 回應：**
+如果 LLM 回應為： `"You can contact us at support@company.com or call 555-0123"`
 
-**Masked Response to User:**
+**傳給使用者的遮罩後回應：**
 ```json
 {
   "choices": [
@@ -321,22 +320,22 @@ If the LLM responds with: `"You can contact us at support@company.com or call 55
 </TabItem>
 </Tabs>
 
-### Supported PII Types
+### 支援的 PII 類型 {#supported-pii-types}
 
-Lasso can detect and mask various types of PII:
+Lasso 可以偵測並遮罩各種類型的 PII：
 
-- Email addresses → `<EMAIL_ADDRESS>`
-- Phone numbers → `<PHONE_NUMBER>`
-- Credit card numbers → `<CREDIT_CARD>`
-- Social security numbers → `<SSN>`
-- IP addresses → `<IP_ADDRESS>`
-- And many more based on your Lasso configuration
+- 電子郵件地址 → `<EMAIL_ADDRESS>`
+- 電話號碼 → `<PHONE_NUMBER>`
+- 信用卡號碼 → `<CREDIT_CARD>`
+- 社會安全號碼 → `<SSN>`
+- IP 位址 → `<IP_ADDRESS>`
+- 以及更多類型，視您的 Lasso 設定而定
 
-## Advanced Configuration
+## 進階設定 {#advanced-configuration}
 
-### User and Conversation Tracking
+### 使用者與對話追蹤 {#user-and-conversation-tracking}
 
-Lasso allows you to track users and conversations for better security monitoring and contextual analysis:
+Lasso 讓您能夠追蹤使用者與對話，以進行更好的安全監控與情境分析：
 
 ```yaml
 guardrails:
@@ -349,9 +348,9 @@ guardrails:
       lasso_conversation_id: os.environ/LASSO_CONVERSATION_ID  # Optional: Track conversation sessions
 ```
 
-### Multiple Guardrail Configuration
+### 多重 Guardrail 設定 {#multiple-guardrail-configuration}
 
-You can configure both pre-call and post-call guardrails to cover both directions:
+您可以設定請求前與請求後兩種防護欄，以涵蓋雙向流量：
 
 ```yaml
 guardrails:
@@ -370,9 +369,9 @@ guardrails:
       lasso_user_id: os.environ/LASSO_USER_ID
 ```
 
-### Alternative Configuration: Generic Guardrail API
+### 替代設定：Generic Guardrail API {#alternative-configuration-generic-guardrail-api}
 
-Lasso can also be configured using the [Generic Guardrail API](/docs/adding_provider/generic_guardrail_api) format:
+Lasso 也可以使用 [Generic Guardrail API](/docs/adding_provider/generic_guardrail_api) 格式進行設定：
 
 ```yaml
 guardrails:
@@ -386,35 +385,35 @@ guardrails:
         mask: false  # Set to true to enable PII masking
 ```
 
-**Parameters:**
-- **`mask`**: Boolean flag to enable/disable PII masking (default: `false`)
+**參數：**
+- **`mask`**：用於啟用/停用 PII 遮罩的布林旗標（預設：`false`）
 
-## Security Features
+## 安全功能 {#security-features}
 
-Lasso Security provides protection against:
+Lasso Security 提供以下防護：
 
-- **Jailbreak Attempts**: Detects prompt injection and instruction bypass attempts
-- **Harmful Content**: Identifies sexual, violent, hateful, or illegal content requests/responses
-- **PII Detection**: Finds and can mask personally identifiable information
-- **Custom Policies**: Enforces your organization-specific content policies
-- **Code Security**: Analyzes code snippets for potential security vulnerabilities
+- **越獄嘗試**：偵測提示注入與指令繞過嘗試
+- **有害內容**：識別性內容、暴力內容、仇恨內容或違法內容的請求/回應
+- **PII 偵測**：找出並可遮罩個人可識別資訊
+- **自訂政策**：強制執行您組織特定的內容政策
+- **程式碼安全**：分析程式碼片段中的潛在安全漏洞
 
-### Action-Based Response Control
+### 基於動作的回應控制 {#action-based-response-control}
 
-The Lasso guardrail uses an intelligent action-based system to determine how to handle violations:
+Lasso guardrail 使用智慧型的基於動作系統來決定如何處理違規：
 
-- **`BLOCK`**: Violations with this action will block the request/response completely
-- **`AUTO_MASKING`**: Violations will be masked (if masking is enabled) and the request continues
-- **`WARN`**: Violations will be logged as warnings and the request continues
-- **Mixed Actions**: If ANY finding has a `BLOCK` action, the entire request is blocked
+- **`BLOCK`**：具有此動作的違規將完全阻擋請求/回應
+- **`AUTO_MASKING`**：違規將被遮罩（若已啟用遮罩），且請求會繼續
+- **`WARN`**：違規將以警告記錄，且請求會繼續
+- **混合動作**：若任何發現項目具有 `BLOCK` 動作，整個請求都會被阻擋
 
-This provides granular control based on Lasso's risk assessment, allowing safe content to proceed while blocking dangerous requests.
+這可根據 Lasso 的風險評估提供精細控制，讓安全內容繼續通過，同時封鎖危險請求。
 
-**Example behavior:**
-- Jailbreak attempt → `"action": "BLOCK"` → Request blocked
-- PII detected → `"action": "AUTO_MASKING"` → Request continues with masking (if enabled)
-- Minor policy violation → `"action": "WARN"` → Request continues with warning log
+**範例行為：**
+- 越獄嘗試 → `"action": "BLOCK"` → 請求被阻擋
+- 偵測到 PII → `"action": "AUTO_MASKING"` → 請求在遮罩後繼續（若已啟用）
+- 輕微政策違規 → `"action": "WARN"` → 請求在警告記錄後繼續
 
-## Need Help?
+## 需要協助嗎？ {#need-help}
 
-For any questions or support, please contact us at [support@lasso.security](mailto:support@lasso.security) 
+如有任何問題或需要支援，請透過 [support@lasso.security](mailto:support@lasso.security) 與我們聯絡

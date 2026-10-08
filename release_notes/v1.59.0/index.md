@@ -17,44 +17,40 @@ hide_table_of_contents: false
 
 import Image from '@theme/IdealImage';
 
-# v1.59.0
-
-
+# v1.59.0 {#v1590}
 
 :::info
 
-Get a 7 day free trial for LiteLLM Enterprise [here](https://litellm.ai/#trial).
+在此取得 LiteLLM Enterprise 7 天免費試用 [here](https://litellm.ai/#trial)。
 
-**no call needed**
+**無需通話**
 
 :::
 
-## UI Improvements
+## UI 改進 {#ui-improvements}
 
-### [Opt In] Admin UI - view messages / responses 
+### [Opt In] Admin UI - 檢視訊息 / 回應  {#opt-in-admin-ui---view-messages--responses}
 
-You can now view messages and response logs on Admin UI.
+您現在可以在 Admin UI 上檢視訊息和回應記錄。
 
 <Image img={require('../../img/release_notes/ui_logs.png')} />
 
-How to enable it - add `store_prompts_in_spend_logs: true` to your `proxy_config.yaml`
+如何啟用 - 將 `store_prompts_in_spend_logs: true` 加到您的 `proxy_config.yaml`
 
-Once this flag is enabled, your `messages` and `responses` will be stored in the `LiteLLM_Spend_Logs` table.
-
-```yaml
-general_settings:
-  store_prompts_in_spend_logs: true
-```
-
-## DB Schema Change
-
-Added `messages` and `responses` to the `LiteLLM_Spend_Logs` table.
-
-**By default this is not logged.** If you want `messages` and `responses` to be logged, you need to opt in with this setting 
+啟用此旗標後，您的 `messages` 和 `responses` 將會儲存在 `LiteLLM_Spend_Logs` 資料表中。
 
 ```yaml
 general_settings:
   store_prompts_in_spend_logs: true
 ```
 
+## DB 結構變更 {#db-schema-change}
 
+已將 `messages` 和 `responses` 新增至 `LiteLLM_Spend_Logs` 資料表。
+
+**預設情況下不會記錄。** 如果您希望記錄 `messages` 和 `responses`，您需要透過此設定選擇加入
+
+```yaml
+general_settings:
+  store_prompts_in_spend_logs: true
+```

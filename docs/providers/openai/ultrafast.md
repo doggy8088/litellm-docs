@@ -1,27 +1,27 @@
 ---
-title: OpenAI Fast & Ultrafast mode
-sidebar_label: Fast & Ultrafast mode
-description: Set up OpenAI Fast and Ultrafast modes through the LiteLLM Admin UI or config.yaml, call them through the Responses API, and expose them in Codex.
+title: OpenAI Fast 與 Ultrafast 模式
+sidebar_label: Fast 與 Ultrafast 模式
+description: 透過 LiteLLM Admin UI 或 config.yaml 設定 OpenAI Fast 和 Ultrafast 模式，透過 Responses API 呼叫它們，並在 Codex 中公開它們。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI Fast & Ultrafast mode
+# OpenAI Fast 與 Ultrafast 模式 {#openai-fast--ultrafast-mode}
 
-Use `service_tier: "priority"` for Fast mode or `service_tier: "ultrafast"` for Ultrafast on GPT-6 Astra. You can set the tier as a deployment default in the Admin UI or `config.yaml`, or choose it per request. The examples below use the [Responses API](./responses_api.md).
+對 GPT-6 Astra 的 Fast 模式使用 `service_tier: "priority"`，或對 Ultrafast 使用 `service_tier: "ultrafast"`。您可以在 Admin UI 或 `config.yaml` 中將該層級設為部署預設值，或針對每個請求個別選擇。以下範例使用 [Responses API](./responses_api.md)。
 
-The walkthrough creates `gpt-6-astra-ultrafast` for Astra Ultrafast, with a Fast alternative named `gpt-6.1-sol-fast`. These gateway aliases are names you choose; the `service_tier` parameter selects the processing mode.
+本導覽會為 Astra Ultrafast 建立 `gpt-6-astra-ultrafast`，並以名為 `gpt-6.1-sol-fast` 的 Fast 替代項目。這些 gateway 別名是您自行選擇的名稱；`service_tier` 參數會選取處理模式。
 
-## Supported models and availability
+## 支援的模型與可用性 {#supported-models-and-availability}
 
-### Fast mode
+### Fast 模式 {#fast-mode}
 
-OpenAI renamed Priority processing to [Fast mode](https://developers.openai.com/api/docs/guides/fast-mode). Both `service_tier: "priority"` and `service_tier: "fast"` select it. This guide uses `priority`, which also keeps Codex's `/fast` command.
+OpenAI 已將 Priority 處理重新命名為 [Fast 模式](https://developers.openai.com/api/docs/guides/fast-mode)。`service_tier: "priority"` 和 `service_tier: "fast"` 都會選取它。本指南使用 `priority`，這也保留了 Codex 的 `/fast` 指令。
 
-The following models were verified with completed Responses API calls through LiteLLM on October 6, 2026. Each returned a Fast processing tier:
+下列模型已透過 LiteLLM 的完整 Responses API 請求在 2026 年 10 月 6 日驗證。每個模型都回傳了 Fast 處理層級：
 
-| OpenAI model ID | LiteLLM upstream model | Returned `service_tier` |
+| OpenAI 模型 ID | LiteLLM 上游模型 | 回傳的 `service_tier` |
 | --- | --- | --- |
 | `gpt-6-astra` | `openai/gpt-6-astra` | `fast` |
 | `gpt-6.1-sol` | `openai/gpt-6.1-sol` | `fast` |
@@ -31,46 +31,46 @@ The following models were verified with completed Responses API calls through Li
 | `gpt-5.6-terra` | `openai/gpt-5.6-terra` | `priority` |
 | `gpt-5.6-luna` | `openai/gpt-5.6-luna` | `priority` |
 
-These are the current models tested for this guide, not an exhaustive list. See OpenAI's [Fast pricing table](https://developers.openai.com/api/docs/pricing?latest-pricing=fast) for additional supported models. Fast mode also supports Chat Completions. It is unavailable with EU data residency for the GPT-6 models above; check OpenAI's [regional requirements](https://developers.openai.com/api/docs/guides/fast-mode#is-fast-mode-compatible-with-data-residency-zero-data-retention-and-a-baa).
+這些是本指南目前測試過的模型，不是完整清單。請參閱 OpenAI 的 [Fast 定價表](https://developers.openai.com/api/docs/pricing?latest-pricing=fast) 以取得其他受支援模型。Fast 模式也支援 Chat Completions。對於上述 GPT-6 模型，它無法搭配 EU 資料駐留使用；請查看 OpenAI 的 [區域需求](https://developers.openai.com/api/docs/guides/fast-mode#is-fast-mode-compatible-with-data-residency-zero-data-retention-and-a-baa)。
 
-### Ultrafast mode
+### Ultrafast 模式 {#ultrafast-mode}
 
-Use **GPT-6 Astra** (`openai/gpt-6-astra`) with `service_tier: "ultrafast"`. A completed Responses API call through LiteLLM returned `service_tier: "ultrafast"` in testing. The Ultrafast setup in this guide uses Astra only.
+搭配 `service_tier: "ultrafast"` 使用 **GPT-6 Astra**（`openai/gpt-6-astra`）。透過 LiteLLM 的完整 Responses API 請求在測試中回傳了 `service_tier: "ultrafast"`。本指南中的 Ultrafast 設定只使用 Astra。
 
-OpenAI makes Astra Ultrafast available to all API users with low initial rate limits. Use the Responses API over HTTP or WebSocket. Ultrafast supports US data residency and global processing only; EU and other non-US regional processing endpoints are not supported. See OpenAI's [Ultrafast guide](https://developers.openai.com/api/docs/guides/ultrafast-mode) for current availability and limits.
+OpenAI 讓所有 API 使用者都能使用 Astra Ultrafast，且初始速率限制較低。請透過 HTTP 或 WebSocket 使用 Responses API。Ultrafast 僅支援美國資料駐留與全球處理；不支援 EU 與其他非美國區域處理端點。請參閱 OpenAI 的 [Ultrafast 指南](https://developers.openai.com/api/docs/guides/ultrafast-mode) 以取得目前的可用性與限制。
 
-Your OpenAI account must support the selected tier for the model. Adding a tier to LiteLLM's catalog does not enable it at OpenAI, and Fast mode support does not imply Ultrafast support.
+您的 OpenAI 帳戶必須支援該模型所選的層級。將層級加入 LiteLLM 的目錄不會在 OpenAI 啟用它，而且支援 Fast 模式不代表支援 Ultrafast。
 
-## Before you start
+## 開始之前 {#before-you-start}
 
-Use a recent LiteLLM release with Responses API support, an OpenAI API credential with access to the selected model and available credits, and permission to add models to your gateway. The UI walkthrough below was captured on LiteLLM v1.105.0. For a new gateway, follow the [Admin UI quickstart](../../proxy/docker_quick_start.md) first.
+請使用支援 Responses API 的最新 LiteLLM 版本、可存取所選模型且有可用額度的 OpenAI API 憑證，以及可將模型新增至您的 gateway 的權限。以下 UI 導覽是在 LiteLLM v1.105.0 上擷取的。若是新的 gateway，請先完成 [Admin UI 快速入門](../../proxy/docker_quick_start.md)。
 
-Both modes cost more than Standard. Check OpenAI's [Fast pricing](https://developers.openai.com/api/docs/pricing?latest-pricing=fast) and [Ultrafast pricing](https://developers.openai.com/api/docs/pricing?latest-pricing=ultrafast). For LiteLLM spend tracking, confirm that your model's cost-map entry has the applicable `*_priority` rates for Fast or `*_ultrafast` rates for Ultrafast, including input, output, caching, and long-context rates. If pricing is missing or differs from your agreement, configure [custom pricing](../../proxy/custom_pricing.md) before relying on spend totals or budgets.
+這兩種模式的費用都比 Standard 高。請查看 OpenAI 的 [Fast 定價](https://developers.openai.com/api/docs/pricing?latest-pricing=fast) 與 [Ultrafast 定價](https://developers.openai.com/api/docs/pricing?latest-pricing=ultrafast)。若要使用 LiteLLM 進行支出追蹤，請確認您的模型 cost-map 項目具有適用於 Fast 的 `*_priority` 費率或適用於 Ultrafast 的 `*_ultrafast` 費率，包括輸入、輸出、快取與長上下文費率。若定價缺失或與您的協議不同，請先設定 [自訂定價](../../proxy/custom_pricing.md)，再依賴支出總計或預算。
 
-## Set up in the Admin UI
+## 在 Admin UI 中設定 {#set-up-in-the-admin-ui}
 
-### 1. Select the model and credentials
+### 1. 選取模型與憑證 {#1-select-the-model-and-credentials}
 
-Open **Models + Endpoints**, then **Add Model**. Choose **OpenAI** as the provider and `gpt-6-astra` under **LiteLLM Model Name(s)**. In **Model Mappings**, set **Public Model Name** to `gpt-6-astra-ultrafast`.
+開啟 **Models + Endpoints**，然後按 **Add Model**。選擇 **OpenAI** 作為提供者，並在 **LiteLLM Model Name(s)** 下方選擇 `gpt-6-astra`。在 **Model Mappings** 中，將 **Public Model Name** 設為 `gpt-6-astra-ultrafast`。
 
-For Fast mode, select a model from the Fast table above, such as `gpt-6.1-sol`, and use a public name such as `gpt-6.1-sol-fast`. The model-selection screenshot shows Astra; the Fast settings are shown separately below.
+對於 Fast 模式，請從上方的 Fast 表格中選取一個模型，例如 `gpt-6.1-sol`，並使用例如 `gpt-6.1-sol-fast` 的公開名稱。模型選擇的截圖顯示的是 Astra；Fast 設定則另外顯示在下方。
 
-Select your OpenAI credential under **Existing Credentials**, or enter your OpenAI API key in the provider credential fields. The screenshot uses an existing credential named `openai`; use your own credential's name.
+在 **Existing Credentials** 下方選取您的 OpenAI 憑證，或在提供者憑證欄位中輸入您的 OpenAI API 金鑰。截圖使用的是名為 `openai` 的現有憑證；請使用您自己的憑證名稱。
 
-Leave **Mode** blank for now. In v1.105.0, that dropdown does not include Responses; set it through **Model Info** in the next step.
+先將 **Mode** 保持空白。在 v1.105.0 中，該下拉選單不包含 Responses；請在下一步透過 **Model Info** 設定它。
 
-![Add Model with OpenAI, gpt-6-astra, the gpt-6-astra-ultrafast public name, and an existing credential](../../../img/openai_ultrafast/add-model.jpg)
+![新增模型，包含 OpenAI、gpt-6-astra、gpt-6-astra-ultrafast 公開名稱，以及現有憑證](../../../img/openai_ultrafast/add-model.jpg)
 
-### 2. Set the service tier
+### 2. 設定服務層級 {#2-set-the-service-tier}
 
-Expand **Advanced Settings** and choose the settings for your mode:
+展開 **Advanced Settings**，並為您的模式選擇設定：
 
-`service_tier` (singular) in **LiteLLM Params** selects the processing mode. `service_tiers` (plural) in **Model Info** is an optional list of modes advertised to clients such as Codex.
+**LiteLLM Params** 中的 `service_tier`（單數）會選取處理模式。**Model Info** 中的 `service_tiers`（複數）則是可選的模式清單，會向 Codex 等用戶端宣告。
 
 <Tabs groupId="openai-service-tier">
-<TabItem value="ultrafast" label="Ultrafast (Astra)">
+<TabItem value="ultrafast" label="Ultrafast（Astra）">
 
-Enter this JSON in **LiteLLM Params**:
+在 **LiteLLM Params** 中輸入此 JSON：
 
 ```json
 {
@@ -78,7 +78,7 @@ Enter this JSON in **LiteLLM Params**:
 }
 ```
 
-Enter this JSON in **Model Info**:
+在 **Model Info** 中輸入此 JSON：
 
 ```json
 {
@@ -87,12 +87,12 @@ Enter this JSON in **Model Info**:
 }
 ```
 
-![Advanced Settings showing service_tier set to ultrafast and Model Info with responses mode and the advertised service tiers](../../../img/openai_ultrafast/advanced-settings.jpg)
+![Advanced Settings 顯示 service_tier 設為 ultrafast，且 Model Info 具有 responses 模式與已公開的服務層級](../../../img/openai_ultrafast/advanced-settings.jpg)
 
 </TabItem>
 <TabItem value="fast" label="Fast">
 
-Enter this JSON in **LiteLLM Params**:
+在 **LiteLLM Params** 中輸入此 JSON：
 
 ```json
 {
@@ -100,7 +100,7 @@ Enter this JSON in **LiteLLM Params**:
 }
 ```
 
-Enter this JSON in **Model Info**:
+在 **Model Info** 中輸入此 JSON：
 
 ```json
 {
@@ -109,25 +109,25 @@ Enter this JSON in **Model Info**:
 }
 ```
 
-![Fast mode in Advanced Settings with service_tier set to priority and Model Info set to responses with only the priority tier](../../../img/openai_ultrafast/fast-settings.jpg)
+![Advanced Settings 中的 Fast 模式，service_tier 設為 priority，且 Model Info 設為 responses 只包含 priority 層級](../../../img/openai_ultrafast/fast-settings.jpg)
 
 </TabItem>
 </Tabs>
 
-`mode: "responses"` makes the connection test use the Responses endpoint.
+`mode: "responses"` 會讓連線測試使用 Responses 端點。
 
-### 3. Test and save
+### 3. 測試並儲存 {#3-test-and-save}
 
-Click **Test Connect**. The test should send the selected upstream model and `service_tier` (`priority` for Fast, `ultrafast` for Astra Ultrafast) to OpenAI's `/v1/responses` endpoint. Resolve any credential, quota, or access errors shown by the test, then click **Add Model** to save.
+按一下 **Test Connect**。測試應會將所選的上游模型與 `service_tier`（Fast 為 `priority`，Astra Ultrafast 為 `ultrafast`）傳送到 OpenAI 的 `/v1/responses` 端點。請先解決測試中顯示的任何憑證、配額或存取錯誤，然後按 **Add Model** 儲存。
 
-Under **Deployed Models**, search for the public name you configured, open its model ID, and select **Raw JSON**. Confirm that `litellm_params.service_tier` matches your chosen tier and `model_info.mode` is `"responses"`. Use a [virtual key](../../proxy/virtual_keys.md) with access to this public model name for the requests below.
+在 **Deployed Models** 下方，搜尋您設定的公開名稱，開啟其模型 ID，並選取 **Raw JSON**。確認 `litellm_params.service_tier` 與您選擇的層級相符，且 `model_info.mode` 為 `"responses"`。下方請使用可存取此公開模型名稱的 [虛擬金鑰](../../proxy/virtual_keys.md) 來發出請求。
 
-## Set up with config.yaml
+## 使用 config.yaml 設定 {#set-up-with-configyaml}
 
-Add the following deployment to your gateway configuration as an alternative to adding it in the UI:
+將下列部署新增至您的 gateway 設定，作為在 UI 中新增的替代方式：
 
 <Tabs groupId="openai-service-tier">
-<TabItem value="ultrafast" label="Ultrafast (GPT-6 Astra)">
+<TabItem value="ultrafast" label="Ultrafast（GPT-6 Astra）">
 
 ```yaml title="config.yaml"
 model_list:
@@ -142,7 +142,7 @@ model_list:
 ```
 
 </TabItem>
-<TabItem value="fast" label="Fast (GPT-6.1 Sol)">
+<TabItem value="fast" label="Fast（GPT-6.1 Sol）">
 
 ```yaml title="config.yaml"
 model_list:
@@ -159,15 +159,15 @@ model_list:
 </TabItem>
 </Tabs>
 
-Set `OPENAI_API_KEY` in the gateway's environment and restart with the updated configuration. For a local proxy installation, start it with `litellm --config config.yaml`; see [proxy configuration](../../proxy/configs.md) for deployment options.
+在 gateway 的環境中設定 `OPENAI_API_KEY`，並以更新後的設定重新啟動。若為本機 proxy 安裝，請使用 `litellm --config config.yaml` 啟動；請參閱 [proxy 設定](../../proxy/configs.md) 以了解部署選項。
 
-The `openai/` prefix selects the upstream provider. Clients call the selected deployment's public `model_name`, such as `gpt-6-astra-ultrafast`. Keep the provider key on the gateway; clients authenticate with their LiteLLM virtual keys.
+`openai/` 前綴會選取上游提供者。用戶端會呼叫所選部署的公開 `model_name`，例如 `gpt-6-astra-ultrafast`。請將提供者金鑰保留在 gateway 上；用戶端使用其 LiteLLM 虛擬金鑰進行驗證。
 
-## Send a request through the gateway
+## 透過 gateway 傳送請求 {#send-a-request-through-the-gateway}
 
-The requests below use the Astra Ultrafast alias. For the Fast deployment, use `model: "gpt-6.1-sol-fast"` and `service_tier: "priority"` instead.
+下方請求使用 Astra Ultrafast 別名。對於 Fast 部署，請改用 `model: "gpt-6.1-sol-fast"` 和 `service_tier: "priority"`。
 
-Set `LITELLM_BASE_URL` to your gateway URL without a trailing `/v1`, and `LITELLM_API_KEY` to a virtual key that can access the model:
+將 `LITELLM_BASE_URL` 設為不含尾端 `/v1` 的 gateway URL，並將 `LITELLM_API_KEY` 設為可存取該模型的虛擬金鑰：
 
 ```bash
 export LITELLM_BASE_URL="http://localhost:4000"
@@ -191,7 +191,7 @@ curl "${LITELLM_BASE_URL}/v1/responses" \
 </TabItem>
 <TabItem value="openai-sdk" label="OpenAI Python SDK">
 
-Install or upgrade `openai`, then run:
+安裝或升級 `openai`，然後執行：
 
 ```python
 import os
@@ -215,11 +215,11 @@ print(response.service_tier)
 </TabItem>
 </Tabs>
 
-Both examples explicitly request a tier. If the client omits `service_tier`, the deployment default above supplies it. An explicit tier in the request overrides that default. To choose Fast or Ultrafast only for selected calls, leave `service_tier` out of the deployment and send it on those calls.
+上述兩個範例都明確請求了一個 tier。若用戶端省略 `service_tier`，上方的部署預設值會提供它。請求中明確指定的 tier 會覆寫該預設值。若只想對特定請求使用 Fast 或 Ultrafast，請將 `service_tier` 從部署中移除，並在那些請求中送出它。
 
-## Use the LiteLLM Python SDK directly
+## 直接使用 LiteLLM Python SDK {#use-the-litellm-python-sdk-directly}
 
-Without a gateway, set `OPENAI_API_KEY` in your application's environment and call the upstream model with `litellm.responses()`:
+在沒有閘道的情況下，請在應用程式的環境中設定 `OPENAI_API_KEY`，並使用 `litellm.responses()` 呼叫上游模型：
 
 ```python
 import litellm
@@ -233,25 +233,25 @@ response = litellm.responses(
 print(response)
 ```
 
-For Fast mode, use `model="openai/gpt-6.1-sol"` and `service_tier="priority"`, or another model from the Fast table above.
+對於 Fast 模式，請使用 `model="openai/gpt-6.1-sol"` 和 `service_tier="priority"`，或使用上方 Fast 表格中的其他模型。
 
-## Offer /fast and /ultrafast in Codex
+## 在 Codex 中提供 /fast 和 /ultrafast {#offer-fast-and-ultrafast-in-codex}
 
-Use `model_info.service_tiers: ["priority"]` to offer `/fast`. For Astra, use `["priority", "ultrafast"]` to offer both `/fast` and `/ultrafast`. Codex CLI 0.159 or newer also needs `model_catalog_url` pointed at your gateway's `/v1/models` endpoint and `[features] api_key_model_discovery = true`. Follow the [Codex model catalog setup](../../proxy/client_setup/codex_cli.md#model-catalog-and-service-tiers), select your gateway model, then choose a mode.
+使用 `model_info.service_tiers: ["priority"]` 來提供 `/fast`。對於 Astra，使用 `["priority", "ultrafast"]` 來同時提供 `/fast` 和 `/ultrafast`。Codex CLI 0.159 或更新版本也需要將 `model_catalog_url` 指向您閘道的 `/v1/models` 端點，並且 `[features] api_key_model_discovery = true`。請遵循 [Codex 模型目錄設定](../../proxy/client_setup/codex_cli.md#model-catalog-and-service-tiers)，選取您的閘道模型，然後選擇一個模式。
 
-For a model where users toggle modes on and off, omit the deployment's `litellm_params.service_tier` and keep `model_info.service_tiers`. Otherwise, a client that stops sending a tier still inherits the deployment's default. Advertising a tier does not grant OpenAI access to it.
+對於使用者切換模式開關的模型，請省略部署的 `litellm_params.service_tier`，並保留 `model_info.service_tiers`。否則，停止送出 tier 的用戶端仍會繼承部署的預設值。宣告一個 tier 並不會授予 OpenAI 存取該 tier 的權限。
 
-## Verify and troubleshoot
+## 驗證與疑難排解 {#verify-and-troubleshoot}
 
-Check the completed response's `service_tier` field to confirm the tier that served the request: `fast` or `priority` for Fast mode, and `ultrafast` for Ultrafast. OpenAI's [Fast guide](https://developers.openai.com/api/docs/guides/fast-mode) explains the returned tier names and when traffic ramp limits can downgrade a Fast request to `default`. For streaming, inspect the response on the `response.completed` event. A saved model name, a catalog entry, or an outgoing request alone does not confirm the served tier.
+檢查完成回應的 `service_tier` 欄位，以確認提供該請求服務的 tier：Fast 模式為 `fast` 或 `priority`，Ultrafast 則為 `ultrafast`。OpenAI 的 [Fast 指南](https://developers.openai.com/api/docs/guides/fast-mode) 說明了傳回的 tier 名稱，以及流量上升限制何時可能會將 Fast 請求降級為 `default`。若為串流，請在 `response.completed` 事件上檢查回應。僅有已儲存的模型名稱、目錄項目，或送出的請求本身，都無法確認實際提供服務的 tier。
 
-| Symptom | What to check |
+| 症狀 | 要檢查的項目 |
 | --- | --- |
-| `insufficient_quota` or `credit_balance_exhausted` | Check the OpenAI account's credits and billing. A LiteLLM virtual-key budget does not fund the upstream account. |
-| `Invalid service_tier argument`, or the provider rejects the model or tier | Check the [supported models](#supported-models-and-availability), account access, regional endpoint, and requested tier. Use Astra for the Ultrafast setup above. Model access alone does not guarantee access to every tier. |
-| Fast or Ultrafast requests appear to cost the same as Standard | Confirm the model's `*_priority` or `*_ultrafast` pricing fields, or configure custom pricing. Provider access and LiteLLM cost tracking are separate. |
-| The request uses a different tier | Inspect the client's `service_tier`; it overrides the deployment default. Confirm the selected alias routes to the intended deployment. |
-| A Fast request returns `service_tier: "default"` | OpenAI can downgrade requests when traffic ramps too quickly. Check the provider's ramp limits; HTTP 200 alone does not prove Fast processing. |
-| Codex does not show `/fast` or `/ultrafast` | Check both catalog settings and the model's `service_tiers`. If several deployments share an alias, configure the list on each. See the Codex guide for catalog caching and version requirements. |
+| `insufficient_quota` 或 `credit_balance_exhausted` | 檢查 OpenAI 帳戶的點數與帳單。LiteLLM 虛擬金鑰的預算不會為上游帳戶提供資金。 |
+| `Invalid service_tier argument`，或提供者拒絕該模型或 tier | 檢查 [支援的模型](#supported-models-and-availability)、帳戶存取權限、區域端點，以及請求的 tier。對於上述 Ultrafast 設定，請使用 Astra。僅有模型存取權並不保證能存取每個 tier。 |
+| Fast 或 Ultrafast 請求看起來與 Standard 成本相同 | 確認模型的 `*_priority` 或 `*_ultrafast` 定價欄位，或設定自訂定價。提供者存取權與 LiteLLM 成本追蹤是分開的。 |
+| 請求使用了不同的 tier | 檢查用戶端的 `service_tier`；它會覆寫部署預設值。確認所選別名路由到預期的部署。 |
+| Fast 請求回傳 `service_tier: "default"` | 當流量上升過快時，OpenAI 可能會降級請求。請檢查提供者的上升限制；僅有 HTTP 200 並不能證明是 Fast 處理。 |
+| Codex 沒有顯示 `/fast` 或 `/ultrafast` | 檢查目錄設定與模型的 `service_tiers`。如果多個部署共用同一個別名，請在每個部署上設定清單。請參閱 Codex 指南以了解目錄快取與版本需求。 |
 
-The examples use HTTP Responses requests. For repeated agent tool calls, OpenAI recommends a persistent WebSocket connection to reduce connection overhead; see [LiteLLM's Responses WebSocket guide](../../response_api.md#websocket-mode).
+這些範例使用 HTTP Responses 請求。對於重複的代理程式工具呼叫，OpenAI 建議使用持久的 WebSocket 連線以降低連線額外負擔；請參閱 [LiteLLM 的 Responses WebSocket 指南](../../response_api.md#websocket-mode)。

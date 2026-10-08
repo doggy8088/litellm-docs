@@ -2,38 +2,37 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Budgets, Rate Limits
+# 預算、速率限制 {#budgets-rate-limits}
 
-:::info[**Budget Setup Options**]
-**Personal budgets**: Create virtual keys without team_id for individual spending limits
+:::info[**預算設定選項**]
+**個人預算**：建立不含 team_id 的虛擬金鑰，以設定個人支出上限
 
-**Team budgets**: Add team_id to virtual keys to draw on a team's shared budget
+**團隊預算**：將 team_id 加到虛擬金鑰上，以使用團隊共享的預算
 
-**Team member budgets**: Set individual spending limits within the team's shared budget
+**團隊成員預算**：在團隊共享預算內，為個別成員設定支出上限
 
-**Agent budgets**: Set rate limits (tpm/rpm) and session-level caps (iterations, dollar budget) on agents [**Jump**](#agents)
+**代理程式預算**：為代理程式設定速率限制（tpm/rpm）與工作階段層級上限（迭代次數、美元預算） [**跳轉**](#agents)
 
-***If a key belongs to a team, only the team (and team-member) budgets are enforced; the key owner's personal budget does not apply. `v1.94.0` briefly enforced the personal budget as well, behind a `skip_user_budget_on_team_key` opt-out; both the enforcement and the flag were removed in `v1.95.0`.***
+***如果金鑰屬於某個團隊，則只會強制執行團隊（以及 team-member）預算；金鑰擁有者的個人預算不適用。`v1.94.0` 曾短暫地也在 `skip_user_budget_on_team_key` opt-out 之下強制執行個人預算；在 `v1.95.0` 中，強制執行與該旗標都已移除。***
 :::
 
-Requirements: 
+需求：
 
-- Need to a postgres database (e.g. [Supabase](https://supabase.com/), [Neon](https://neon.tech/), etc) [**See Setup**](./virtual_keys.md#setup)
+- 需要一個 postgres 資料庫（例如 [Supabase](https://supabase.com/)、[Neon](https://neon.tech/) 等）[**查看設定**](./virtual_keys.md#setup)
 
-:::warning[Budgets require a database]
+:::warning[預算需要資料庫]
 
-Every budget on this page is enforced against spend read from the database, so none of them cap anything on a [DB-less deployment](./docker_quick_start.md#running-without-a-database). `litellm_settings.max_budget` fails open there rather than erroring: the proxy's global spend is only loaded when a database client exists, and with no total to compare against, the global budget check is skipped and requests keep being served past the limit. A warning is logged once at startup when a budget is set with no database connected, but nothing blocks at request time. Key, team, and user budgets are unavailable for the same reason, since virtual keys cannot be resolved without a database (`No connected db.`). Run with a database if a budget is part of how you bound spend
+本頁上的每一項預算都是根據從資料庫讀取的支出來強制執行，因此它們都無法在 [DB-less deployment](./docker_quick_start.md#running-without-a-database) 上限制任何內容。`litellm_settings.max_budget` 在此情況下會 fail open，而不是報錯：只有在存在資料庫用戶端時，proxy 的全域支出才會載入；若沒有可比較的總額，就會略過全域預算檢查，請求仍會在超過限制後繼續提供服務。當設定了預算但未連接資料庫時，啟動時會記錄一次警告，但在請求時不會有任何阻擋。由於沒有資料庫就無法解析虛擬金鑰（`No connected db.`），金鑰、團隊與使用者預算也同樣無法使用。如果預算是您限制支出的方式之一，請搭配資料庫執行
 
 :::
 
+## 設定預算 {#set-budgets}
 
-## Set Budgets
+### 全域 Proxy {#global-proxy}
 
-### Global Proxy
+在 proxy 上對所有請求套用預算
 
-Apply a budget across all calls on the proxy
-
-**Step 1. Modify config.yaml**
+**步驟 1. 修改 config.yaml**
 
 ```yaml
 general_settings:
@@ -45,13 +44,13 @@ litellm_settings:
   budget_duration: 30d # (str) frequency of reset - You can set duration as seconds ("30s"), minutes ("30m"), hours ("30h"), days ("30d").
 ```
 
-**Step 2. Start proxy**
+**步驟 2. 啟動 proxy**
 
 ```bash
 litellm /path/to/config.yaml
 ```
 
-**Step 3. Send test call**
+**步驟 3. 傳送測試請求**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -68,17 +67,16 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-### Team
+### 團隊 {#team}
 
-You can:
-- Add budgets to Teams
+您可以：
+- 為 Teams 加入預算
 
 :::info
 
-**Step-by step tutorial on setting, resetting budgets on Teams here (API or using Admin UI)**
+**逐步教學：在 Teams 上設定、重設預算（透過 API 或使用 Admin UI）**
 
-
-#### **Add budgets to teams**
+#### **為團隊新增預算** {#add-budgets-to-teams}
 ```shell 
 curl --location 'http://localhost:4000/team/new' \
 --header 'Authorization: Bearer <your-master-key>' \
@@ -90,9 +88,9 @@ curl --location 'http://localhost:4000/team/new' \
 }' 
 ```
 
-[**See Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
+[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
 
-**Sample Response**
+**範例回應**
 
 ```shell
 {
@@ -118,9 +116,9 @@ curl --location 'http://localhost:4000/team/new' \
 }
 ```
 
-#### **Add budget duration to teams**
+#### **為團隊新增預算期間** {#add-budget-duration-to-teams}
 
-`budget_duration`: Budget is reset at the end of specified duration. If not set, budget is never reset. You can set duration as seconds ("30s"), minutes ("30m"), hours ("30h"), days ("30d").
+`budget_duration`：預算會在指定持續時間結束時重設。如果未設定，預算將永不重設。您可以將持續時間設定為秒（"30s"）、分鐘（"30m"）、小時（"30h"）、天（"30d"）。
 
 ```
 curl 'http://0.0.0.0:4000/team/new' \
@@ -133,14 +131,13 @@ curl 'http://0.0.0.0:4000/team/new' \
 }'
 ```
 
-### Team Members
+### 團隊成員 {#team-members}
 
-Use this when you want to budget a users spend within a Team 
+當您想要限制 Team 內使用者的支出預算時，請使用此功能
 
+#### 步驟 1. 建立使用者 {#step-1-create-user}
 
-#### Step 1. Create User
-
-Create a user with `user_id=ishaan`
+使用 `user_id=ishaan` 建立使用者
 
 ```shell
 curl --location 'http://0.0.0.0:4000/user/new' \
@@ -151,9 +148,9 @@ curl --location 'http://0.0.0.0:4000/user/new' \
 }'
 ```
 
-#### Step 2. Add User to an existing Team - set `max_budget_in_team`
+#### 步驟 2. 將使用者加入既有團隊 - 設定 `max_budget_in_team` {#step-2-add-user-to-an-existing-team---set-max_budget_in_team}
 
-Set `max_budget_in_team` when adding a User to a team. We use the same `user_id` we set in Step 1
+在將使用者加入團隊時，設定 `max_budget_in_team`。我們會使用在步驟 1 中設定的相同 `user_id`
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/member_add' \
@@ -162,9 +159,9 @@ curl -X POST 'http://0.0.0.0:4000/team/member_add' \
 -d '{"team_id": "e8d1460f-846c-45d7-9b43-55f3cc52ac32", "max_budget_in_team": 0.000000000001, "member": {"role": "user", "user_id": "ishaan"}}'
 ```
 
-#### Step 3. Create a Key for Team member from Step 1
+#### 步驟 3. 為步驟 1 的團隊成員建立金鑰 {#step-3-create-a-key-for-team-member-from-step-1}
 
-Set `user_id=ishaan` from step 1
+設定步驟 1 中的 `user_id=ishaan`
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -175,17 +172,16 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
         "team_id": "e8d1460f-846c-45d7-9b43-55f3cc52ac32"
 }'
 ```
-Response from `/key/generate`
+來自 `/key/generate` 的回應
 
-We use the `key` from this response in Step 4
+我們會在步驟 4 中使用此回應中的 `key`
 ```shell
 {"key":"sk-RV-l2BJEZ_LYNChSx2EueQ", "models":[],"spend":0.0,"max_budget":null,"user_id":"ishaan","team_id":"e8d1460f-846c-45d7-9b43-55f3cc52ac32","max_parallel_requests":null,"metadata":{},"tpm_limit":null,"rpm_limit":null,"budget_duration":null,"allowed_cache_controls":[],"soft_budget":null,"key_alias":null,"duration":null,"aliases":{},"config":{},"permissions":{},"model_max_budget":{},"key_name":null,"expires":null,"token_id":null}% 
 ```
 
-#### Step 4. Make /chat/completions requests for Team member
+#### 步驟 4. 對團隊成員發出 /chat/completions 請求 {#step-4-make-chatcompletions-requests-for-team-member}
 
-Use the key from step 3 for this request. After 2-3 requests expect to see The following error `ExceededBudget: Crossed spend within team` 
-
+此請求請使用步驟 3 中的金鑰。執行 2-3 次請求後，預期會看到以下錯誤 `ExceededBudget: Crossed spend within team` 
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -202,11 +198,11 @@ curl --location 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-#### Update a team member's budget
+#### 更新團隊成員的預算 {#update-a-team-members-budget}
 
-Update `max_budget_in_team` for an existing team member with `/team/member_update`. The new budget takes effect on the member's next request
+使用 `/team/member_update` 更新現有團隊成員的 `max_budget_in_team`。新的預算會在該成員的下一個請求時生效
 
-This gives the member their own budget. It no longer follows the team's `team_member_budget` default, and later `/team/update` changes to that default leave this member untouched. To change the budget for every member still on the default, update `team_member_budget` on `/team/update` instead
+這會讓該成員擁有自己的預算。它不再跟隨團隊的 `team_member_budget` 預設值，而之後對該預設值的 `/team/update` 變更也不會影響這位成員。若要變更所有仍使用預設值的成員，請改為更新 `team_member_budget` 上的 `/team/update`
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/member_update' \
@@ -215,13 +211,13 @@ curl -X POST 'http://0.0.0.0:4000/team/member_update' \
 -d '{"team_id": "e8d1460f-846c-45d7-9b43-55f3cc52ac32", "user_id": "ishaan", "max_budget_in_team": 10}'
 ```
 
-Spend the member already accrued in this team counts against the new budget. See [Existing spend counts against a budget added later](#existing-spend-counts-against-a-budget-added-later)
+該成員已在此團隊累積的支出會計入新的預算。請參閱 [先前的支出會計入後來新增的預算](#existing-spend-counts-against-a-budget-added-later)
 
-A budget change is permanent. When the member's `budget_duration` window rolls over, the reset only sets their current cycle spend back to $0 and moves the next reset date forward, so a raised `max_budget_in_team` stays at the new value in every later cycle and does not revert to the earlier amount or to the team default. Raising `team_member_budget` with `/team/update` behaves the same way for every member still on the team default
+預算變更是永久性的。當成員的 `budget_duration` 週期重設時，只會將其目前週期支出重設回 $0，並將下一次重設日期往後移，因此提高後的 `max_budget_in_team` 會在之後每個週期都維持新值，不會回復到較早的金額或團隊預設值。使用 `/team/update` 提高 `team_member_budget` 時，對所有仍使用團隊預設值的成員來說行為相同
 
-When a member on the team default gets their own budget this way, their current reset window carries over and the next reset lands on the same date as before. Sending `budget_duration` in the same `/team/member_update` call starts a new window from that point instead
+當一位使用團隊預設值的成員以這種方式取得自己的預算時，其目前的重設視窗會沿用，且下一次重設仍會落在相同日期。若在同一次 `/team/member_update` 呼叫中送出 `budget_duration`，則會從該時間點開始一個新的視窗
 
-To raise a member's budget for a limited time, send `temp_budget_increase` together with `temp_budget_expiry` (a UTC datetime) on `/team/member_update`, or fill in **Temporary Budget Increase (USD)** and **Temporary Budget Expiry (UTC)** when editing the member in the UI. The increase is added on top of the member's budget, or the team default if they are on it, until `temp_budget_expiry` and stops applying after that without any action. It expires at that time rather than at the next budget reset, so set the expiry to the member's next reset if you want it to last only for the current cycle. A member on the team default who only gets a temporary increase stays on the team default, and the increase has no effect on a member with no budget at all
+若要在有限時間內提高成員的預算，請在 `/team/member_update` 上將 `temp_budget_increase` 與 `temp_budget_expiry`（UTC datetime）一併送出，或在 UI 中編輯該成員時填入 **Temporary Budget Increase (USD)** 與 **Temporary Budget Expiry (UTC)**。在 `temp_budget_expiry` 之前，這項增加會疊加在成員的預算之上；如果該成員使用團隊預設值，則會疊加在團隊預設值之上，並在之後自動停止生效，無需任何操作。它會在該時間到期，而不是在下一次預算重設時到期，因此如果您只希望它持續到目前週期結束，請將到期時間設為成員的下一次重設時間。使用團隊預設值且只獲得臨時增加的成員仍會維持團隊預設值，而對沒有任何預算的成員來說，這項增加不會產生任何效果
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/team/member_update' \
@@ -230,21 +226,21 @@ curl -X POST 'http://0.0.0.0:4000/team/member_update' \
 -d '{"team_id": "e8d1460f-846c-45d7-9b43-55f3cc52ac32", "user_id": "ishaan", "temp_budget_increase": 25, "temp_budget_expiry": "2026-11-01T00:00:00Z"}'
 ```
 
-To put a customized member back on the team default, click **Use team default** next to their budget on the team's **Members** tab, or call `POST /team/{team_id}/member/{user_id}/reset_budget`. Their spend is kept and later `/team/update` changes to `team_member_budget` reach them again. This is available starting in `v1.104.0`
+若要將已自訂的成員恢復為團隊預設值，請在團隊的 **Members** 分頁中，按一下其預算旁邊的 **Use team default**，或呼叫 `POST /team/{team_id}/member/{user_id}/reset_budget`。其支出會被保留，且之後對 `team_member_budget` 的 `/team/update` 變更會再次套用到他們。此功能自 `v1.104.0` 起提供
 
-#### Reset a team member's spend
+#### 重設團隊成員的支出 {#reset-a-team-members-spend}
 
-Reset the spend tracked against a member's in-team budget without changing the budget itself. This sets the member's current cycle spend, which is the value checked against their budget, and leaves their total spend and logs untouched. Callable by a proxy admin, or by an admin of the team or its organization. A team admin cannot reset their own spend, only a proxy admin can do that
+在不變更預算本身的情況下，重設針對成員在團隊內預算所追蹤的支出。這會將成員目前週期支出設為用來與其預算比對的值，並保留其總支出與記錄不變。可由 proxy 管理員，或該團隊或其組織的管理員呼叫。團隊管理員無法重設自己的支出，只有 proxy 管理員可以
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-1. Go to **Teams** and open the team
-2. Open the **Members** tab
-3. In the **Actions** column of the member's row, click the **Reset spend** icon (the refresh icon between the edit and delete icons)
-4. The **Reset Team Member Spend** dialog shows the member and their current cycle spend. Click **Reset** to set it to $0
+1. 前往 **Teams** 並開啟該團隊
+2. 開啟 **Members** 分頁
+3. 在該成員那一列的 **Actions** 欄中，按一下 **Reset spend** 圖示（位於編輯與刪除圖示之間的重新整理圖示）
+4. **Reset Team Member Spend** 對話框會顯示該成員及其目前週期支出。按一下 **Reset** 將其設為 $0
 
-The icon is shown only to users who can edit the team, and only on rows where **Current Cycle Spend (USD)** is above $0. A team admin does not see it on their own row, but a proxy admin does
+只有可編輯該團隊的使用者才會看到此圖示，而且只會顯示在 **Current Cycle Spend (USD)** 高於 $0 的列上。團隊管理員不會在自己的列上看到它，但 proxy 管理員會
 
 </TabItem>
 <TabItem value="api" label="API">
@@ -256,51 +252,50 @@ curl -X POST 'http://0.0.0.0:4000/team/e8d1460f-846c-45d7-9b43-55f3cc52ac32/memb
 -d '{"reset_to": 0}'
 ```
 
-`reset_to` must be a number of at least 0 that is no greater than the member's current spend or their budget
+`reset_to` 必須是大於或等於 0 的數字，且不得大於該成員目前的支出或其預算
 
-Response:
+回應：
 
 ```shell
 {"team_id":"e8d1460f-846c-45d7-9b43-55f3cc52ac32","user_id":"ishaan","spend":0.0,"previous_spend":3.495e-05,"max_budget":10.0}
 ```
 
-The endpoint returns a 403 (`Cannot reset your own spend. Ask a proxy admin.`) when a team admin targets their own user, and a 404 when the user has no membership row in that team
+當團隊管理員指定自己為目標使用者時，端點會回傳 403（`Cannot reset your own spend. Ask a proxy admin.`）；當該使用者在該團隊中沒有成員資料列時，則回傳 404
 
 </TabItem>
 </Tabs>
 
-The reset takes effect on the member's next request, on every proxy instance. It applies to one member at a time and there is no bulk version, so repeat it for each member you want to reset
+重設會在該成員的下一個請求時於每個 proxy instance 上生效。它一次只適用於一位成員，且沒有批次版本，因此請針對您要重設的每位成員重複執行
 
-#### Existing spend counts against a budget added later
+#### 先前的支出會計入後來新增的預算 {#existing-spend-counts-against-a-budget-added-later}
 
-Spend is tracked for every team member, including members with no budget. On the team's **Members** tab, **Current Cycle Spend (USD)** is the value checked against the member's budget and it goes back to $0 when the member's `budget_duration` window rolls over, while **Total Spend (USD)** is cumulative and never resets. A member with no budget has no budget window, so their current cycle spend is never reset automatically and keeps growing. Older versions only tracked spend for members that had a budget, and a member added on one of those versions starts being tracked on their next request after the upgrade
+系統會追蹤每位團隊成員的支出，包括沒有預算的成員。在團隊的 **Members** 分頁中，**Current Cycle Spend (USD)** 是用來與成員預算比對的值，並會在成員的 `budget_duration` 視窗重設時回到 $0；而 **Total Spend (USD)** 則是累計值，永不重設。沒有預算的成員沒有預算視窗，因此其目前週期支出不會自動重設，並會持續增加。舊版本只會追蹤有預算的成員，而在那些版本中新增的成員會在升級後的下一個請求才開始被追蹤
 
-If you give that member a budget later, the spend they already accrued counts against it right away. This applies both to setting `team_member_budget` on the team with `/team/update`, which links the team's member budget to every member that has no budget yet, and to setting `max_budget_in_team` for one member with `/team/member_update`. For example, a member spends $500 with no budget, an admin then sets a $100 member budget, and the member's next request is rejected with a budget exceeded error
+如果之後您為該成員新增預算，先前已累積的支出會立刻計入。這同時適用於在團隊上使用 `/team/update` 設定 `team_member_budget`，這會將團隊的成員預算連結到每一位尚未有預算的成員，以及使用 `/team/member_update` 為單一成員設定 `max_budget_in_team`。例如，某成員在沒有預算的情況下花費了 $500，之後管理員設定了 $100 的成員預算，而該成員的下一個請求就會因超過預算而被拒絕
 
-There are two ways out. If the new budget has a `budget_duration`, the member's current cycle spend goes back to $0 at the next reset and they are unblocked without any action. If it has no `budget_duration`, the member stays blocked until someone [resets their spend](#reset-a-team-members-spend) in the UI or through the API
+有兩種脫困方式。如果新預算有 `budget_duration`，成員的目前週期支出會在下一次重設時回到 $0，且不需任何操作即可解除阻擋。如果沒有 `budget_duration`，成員會持續被阻擋，直到有人在 UI 中或透過 API [重設其支出](#reset-a-team-members-spend)
 
+### 內部使用者 {#internal-user}
 
-### Internal User
-
-Apply a budget across all calls an internal user (key owner) can make on the proxy. 
+在 proxy 上，對內部使用者（金鑰擁有者）可發出的所有請求套用預算。
 
 :::info
 
-For keys with a `team_id` set, this personal budget is not enforced; the team (and team-member) budgets apply instead. `v1.94.0` enforced it alongside the team budget behind a `skip_user_budget_on_team_key` opt-out, and `v1.95.0` removed both.
+對於已設定 `team_id` 的金鑰，這項個人預算不會被強制執行；會改為套用團隊（以及 team-member）預算。`v1.94.0` 曾在團隊預算之外、透過 `skip_user_budget_on_team_key` opt-out 一併強制執行，而 `v1.95.0` 已將兩者都移除。
 
-To apply a budget to a user within a team, use team member budgets.
+若要對團隊內的使用者套用預算，請使用團隊成員預算。
 
 :::
 
-LiteLLM exposes a `/user/new` endpoint to create budgets for this.
+LiteLLM 提供一個 `/user/new` 端點來建立這些預算。
 
-You can:
-- Add budgets to users [**Jump**](#add-budgets-to-users)
-- Add budget durations, to reset spend [**Jump**](#add-budget-duration-to-users)
+您可以：
+- 將預算新增到使用者 [**跳轉**](#add-budgets-to-users)
+- 新增預算持續時間，以重設支出 [**跳轉**](#add-budget-duration-to-users)
 
-By default the `max_budget` is set to `null` and is not checked for keys
+預設情況下，`max_budget` 設為 `null`，且不會針對金鑰進行檢查
 
-#### **Add budgets to users**
+#### **為使用者新增預算** {#add-budgets-to-users}
 ```shell 
 curl --location 'http://localhost:4000/user/new' \
 --header 'Authorization: Bearer <your-master-key>' \
@@ -308,9 +303,9 @@ curl --location 'http://localhost:4000/user/new' \
 --data-raw '{"models": ["azure-models"], "max_budget": 0, "user_id": "krrish3@berri.ai"}' 
 ```
 
-[**See Swagger**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/new_user_user_new_post)
+[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/new_user_user_new_post)
 
-**Sample Response**
+**範例回應**
 
 ```shell
 {
@@ -321,9 +316,9 @@ curl --location 'http://localhost:4000/user/new' \
 }
 ```
 
-#### **Add budget duration to users**
+#### **為使用者新增預算期間** {#add-budget-duration-to-users}
 
-`budget_duration`: Budget is reset at the end of specified duration. If not set, budget is never reset. You can set duration as seconds ("30s"), minutes ("30m"), hours ("30h"), days ("30d").
+`budget_duration`：預算會在指定持續時間結束時重設。若未設定，預算永不重設。您可以將持續時間設定為秒（"30s"）、分鐘（"30m"）、小時（"30h"）、天（"30d"）。
 
 ```
 curl 'http://0.0.0.0:4000/user/new' \
@@ -336,11 +331,11 @@ curl 'http://0.0.0.0:4000/user/new' \
 }'
 ```
 
-#### Create new keys for existing user
+#### 為既有使用者建立新金鑰 {#create-new-keys-for-existing-user}
 
-Now you can just call `/key/generate` with that user_id (i.e. krrish3@berri.ai) and:
-- **Budget Check**: krrish3@berri.ai's budget (i.e. $10) will be checked for this key
-- **Spend Tracking**: spend for this key will update krrish3@berri.ai's spend as well
+現在您只需使用該 user_id（例如 krrish3@berri.ai）呼叫 `/key/generate`，並且：
+- **預算檢查**：會檢查此金鑰的 krrish3@berri.ai 預算（例如 $10）
+- **支出追蹤**：此金鑰的支出也會更新 krrish3@berri.ai 的支出
 
 ```bash
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -349,22 +344,22 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{"models": ["azure-models"], "user_id": "krrish3@berri.ai"}'
 ```
 
-### Virtual Key
+### 虛擬金鑰 {#virtual-key}
 
-Apply a budget on a key.
+對金鑰套用預算。
 
-You can:
-- Add budgets to keys [**Jump**](#add-budgets-to-keys)
-- Add budget durations, to reset spend [**Jump**](#add-budget-duration-to-keys)
+您可以：
+- 將預算新增到金鑰 [**跳轉**](#add-budgets-to-keys)
+- 新增預算持續時間，以重設支出 [**跳轉**](#add-budget-duration-to-keys)
 
-**Expected Behaviour**
-- Costs Per key get auto-populated in `LiteLLM_VerificationToken` Table
-- After the key crosses it's `max_budget`, requests fail
-- If duration set, spend is reset at the end of the duration
+**預期行為**
+- 每個金鑰的成本會自動填入 `LiteLLM_VerificationToken` 表格
+- 金鑰超過其 `max_budget` 後，請求會失敗
+- 若設定了持續時間，支出會在持續時間結束時重設
 
-By default the `max_budget` is set to `null` and is not checked for keys
+預設情況下，`max_budget` 設為 `null`，且不會針對金鑰進行檢查
 
-#### **Add budgets to keys**
+#### **為金鑰新增預算** {#add-budgets-to-keys}
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -376,7 +371,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-Example Request to `/chat/completions` when key has crossed budget
+金鑰超過預算時對 `/chat/completions` 的範例請求
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -395,16 +390,16 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 ```
 
 
-Expected Response from `/chat/completions` when key has crossed budget
+金鑰超過預算時來自 `/chat/completions` 的預期回應
 ```shell
 {
   "detail":"Authentication Error, ExceededTokenBudget: Current spend for token: 7.2e-05; Max Budget for Token: 2e-07"
 }   
 ```
 
-#### **Add budget duration to keys**
+#### **為金鑰新增預算期間** {#add-budget-duration-to-keys}
 
-`budget_duration`: Budget is reset at the end of specified duration. If not set, budget is never reset. You can set duration as seconds ("30s"), minutes ("30m"), hours ("30h"), days ("30d").
+`budget_duration`：預算會在指定持續時間結束時重設。若未設定，預算永不重設。您可以將持續時間設定為秒（"30s"）、分鐘（"30m"）、小時（"30h"）、天（"30d"）。
 
 ```
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -417,27 +412,27 @@ curl 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-#### **Set multiple budget windows on a key**
+#### **在金鑰上設定多個預算視窗** {#set-multiple-budget-windows-on-a-key}
 
-Apply multiple concurrent budget limits at different time scales on the same key, for example capping a key at **$10/day** AND **$100/month**.
+在同一把金鑰上於不同時間尺度套用多個同時生效的預算限制，例如將金鑰上限設為 **$10/day** 並且 **$100/month**。
 
-**When is this useful?**
+**這在什麼情況下有用？**
 
-A single `budget_duration` window can't prevent a bad day from burning your entire month. Multiple budget windows let you:
+單一 `budget_duration` 視窗無法防止糟糕的一天燒掉您整個月份的額度。多個預算視窗可讓您：
 
-- Block a runaway usage spike within the day while still allowing normal monthly spend.
-- Give Claude Code rollouts a daily guardrail (`24h`) and a monthly ceiling (`30d`) so a single heavy session doesn't exhaust the whole month.
-- Layer fine-grained hourly limits for bursty workloads on top of a weekly cap.
+- 在一天內封鎖失控的用量暴增，同時仍允許正常的每月支出。
+- 為 Claude Code rollout 提供每日防護欄（`24h`）與每月上限（`30d`），避免單次大量使用的工作階段耗盡整個月份。
+- 在週上限之上，為突發型工作負載分層加入更細的每小時限制。
 
 :::info
 
-See [User Budget docs](https://docs.litellm.ai/docs/proxy/users) for more on how budgets work across keys, teams, and users.
+請參閱 [使用者預算文件](https://docs.litellm.ai/docs/proxy/users)，以了解預算如何跨金鑰、團隊與使用者運作。
 
 :::
 
-**Via API**
+**透過 API**
 
-Pass `budget_limits` as a list of `{budget_duration, max_budget}` objects:
+將 `budget_limits` 作為 `{budget_duration, max_budget}` 物件的清單傳入：
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -451,44 +446,43 @@ curl 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-Each window is tracked independently and resets on its own schedule:
+每個時間窗口都會獨立追蹤，並依各自的排程重設：
 
-| `budget_duration` | Resets |
+| `budget_duration` | 重設 |
 |---|---|
-| `1h`  | Every hour |
-| `24h` | Daily at midnight UTC |
-| `7d`  | Every Monday at midnight UTC (or the configured reset time) |
-| `30d` | 1st of every month at midnight UTC |
+| `1h`  | 每小時 |
+| `24h` | 每日 UTC 午夜 |
+| `7d`  | 每週一 UTC 午夜（或已設定的重設時間） |
+| `30d` | 每月 1 日 UTC 午夜 |
 
-**Via Dashboard**
+**透過儀表板**
 
-Open **Virtual Keys → Create Key → Optional Settings → Budget Windows**.
+開啟 **Virtual Keys → Create Key → Optional Settings → Budget Windows**。
 
 <Image img={require('../../img/key_budget_window_1.png')} dark={require('../../img/key_budget_window_1_dark.png')} alt="Budget Windows section in the key form" />
 
-Click **+ Add Budget Window** to add a row, choose the period from the dropdown, and enter the spend cap.
+點擊 **+ Add Budget Window** 新增一列，從下拉選單選擇期間，並輸入支出上限。
 
 <Image img={require('../../img/key_budget_window_2.png')} dark={require('../../img/key_budget_window_2_dark.png')} alt="A budget window row with a period and spend cap" />
 
-Add a second row for a different time period (e.g. monthly $100 on top of a daily $10).
+再新增第二列以設定不同時間區間（例如：在每日 10 美元之外，再加上每月 100 美元）。
 
 <Image img={require('../../img/key_budget_window_3.png')} dark={require('../../img/key_budget_window_3_dark.png')} alt="Two budget windows with different periods" />
 
-Each window shows the reset schedule below the input so it's always clear when spend resets.
+每個窗口都會在輸入欄位下方顯示重設排程，因此您可以清楚知道支出何時重設。
 
 <Image img={require('../../img/key_budget_window_4.png')} dark={require('../../img/key_budget_window_4_dark.png')} alt="Reset schedule shown below each budget window" />
 
+### ✨ 虛擬金鑰（模型特定） {#-virtual-key-model-specific}
 
-### ✨ Virtual Key (Model Specific)
+為每個可供虛擬金鑰使用的模型設定獨立預算。例如，一把金鑰可以有：
 
-Set a separate budget for each model available to a virtual key. For example, one key can have:
-
-- A $0.0000001 daily budget for `{{openai_large}}`
-- A $10 budget every 30 days for `{{openai_small}}`
+- `{{openai_large}}` 的每日 $0.0000001 預算
+- `{{openai_small}}` 的每 30 天 $10 預算
 
 <EnterpriseFeature />
 
-`model_max_budget` uses the **[`Dict[str, GenericBudgetInfo]`](#genericbudgetinfo)** schema.
+`model_max_budget` 使用 **[`Dict[str, GenericBudgetInfo]`](#genericbudgetinfo)** 結構描述。
 
 ```bash
 curl 'http://0.0.0.0:4000/key/generate' \
@@ -499,30 +493,30 @@ curl 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-**Via Dashboard**
+**透過 Dashboard**
 
-To add a per-model budget to a new key, go to **Virtual Keys → Create Key → Optional Settings → Per-Model Budgets**. To update an existing key, open the key's edit page and use the same section.
+若要為新金鑰新增按模型預算，請前往 **Virtual Keys → Create Key → Optional Settings → Per-Model Budgets**。若要更新現有金鑰，請開啟該金鑰的編輯頁面並使用相同區段。
 
-![Per-Model Budgets on the key form](https://raw.githubusercontent.com/yassin-berriai/litellm-pr-media/main/lit-5894/key-per-model-budget-empty.png)
+![金鑰表單上的按模型預算](https://raw.githubusercontent.com/yassin-berriai/litellm-pr-media/main/lit-5894/key-per-model-budget-empty.png)
 
-Select **+ Add Model Budget**, choose a model, set the spending limit, and select the budget period. Each model has its own tracking and reset schedule. For example, a daily limit on one model does not affect a monthly limit on another. Limits can be less than $0.01.
+選取 **+ Add Model Budget**，選擇一個模型，設定支出上限，然後選取預算期間。每個模型都有各自的追蹤與重設排程。範例來說，某個模型的每日上限不會影響另一個模型的每月上限。上限可低於 $0.01。
 
-![A per-model budget filled in](https://raw.githubusercontent.com/yassin-berriai/litellm-pr-media/main/lit-5894/key-per-model-budget-filled.png)
+![已填入的每模型預算](https://raw.githubusercontent.com/yassin-berriai/litellm-pr-media/main/lit-5894/key-per-model-budget-filled.png)
 
-#### How LiteLLM matches model names
+#### LiteLLM 如何比對模型名稱 {#how-litellm-matches-model-names}
 
-LiteLLM matches a budget against the model name in the request and its provider-prefixed form. For example, a budget for `claude-opus-4-8` applies to requests that use any of these names:
+LiteLLM 會將預算與請求中的模型名稱及其帶有提供者前綴的形式進行比對。範例來說，`claude-opus-4-8` 的預算會套用到使用下列任一名稱的請求：
 
 - `claude-opus-4-8`
 - `anthropic/claude-opus-4-8`
 - `bedrock/anthropic.claude-opus-4-8`
 - `us.anthropic.claude-opus-4-8`
 
-Set the budget using the name configured in `model_list`. If you route the same model under multiple names, use the unprefixed model family name so that one budget applies to all supported variants.
+請使用在 `model_list` 中設定的名稱來設定預算。如果您將相同模型以多個名稱進行路由，請使用不帶前綴的模型家族名稱，讓一個預算套用到所有支援的變體。
 
-#### View current usage
+#### 檢視目前用量 {#view-current-usage}
 
-`/key/info` returns `model_max_budget_usage` together with `model_max_budget`. For each budgeted model, it reports the amount spent during the current budget period. LiteLLM uses the same usage value to enforce the budget, so the reported usage is consistent with enforcement.
+`/key/info` 會連同 `model_max_budget_usage` 與 `model_max_budget` 一併回傳。對於每個有預算的模型，它會回報目前預算期間內的支出金額。LiteLLM 使用相同的用量值來執行預算限制，因此回報的用量會與限制執行一致。
 
 ```bash
 curl -X GET 'http://0.0.0.0:4000/key/info?key=sk-...' \
@@ -540,13 +534,13 @@ curl -X GET 'http://0.0.0.0:4000/key/info?key=sk-...' \
 }
 ```
 
-If a model's `time_period` is missing or invalid, the model is omitted from `model_max_budget_usage` instead of being reported with zero usage.
+如果模型的 `time_period` 遺失或無效，該模型會被省略於 `model_max_budget_usage`，而不是以零用量回報。
 
-#### Test the budget
+#### 測試預算 {#test-the-budget}
 
-With the small `{{openai_large}}` budget shown above, the first request should succeed. The second request should be rejected after the key exceeds the limit.
+使用上方顯示的較小 `{{openai_large}}` 預算時，第一個請求應會成功。第二個請求在金鑰超過上限後應會被拒絕。
 
-**[LangChain and OpenAI SDK usage examples](../proxy/user_keys#request-format)**
+**[LangChain 和 OpenAI SDK 使用範例](../proxy/user_keys#request-format)**
 
 <Tabs>
 <TabItem label="Successful call" value="allowed">
@@ -570,7 +564,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 <TabItem label="Rejected call" value="not-allowed">
 
-Send the same request again. LiteLLM rejects it after the key exceeds its `{{openai_large}}` budget.
+再次送出相同的請求。LiteLLM 會在金鑰超過其 `{{openai_large}}` 預算後拒絕該請求。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -588,7 +582,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -604,15 +598,15 @@ Expected response:
 </TabItem>
 </Tabs>
 
-By default, LiteLLM returns a `budget_exceeded` error when a per-model budget is exceeded. To route the request to another model instead, see [Budget Fallbacks](./budget_fallbacks).
+預設情況下，當每模型預算超過時，LiteLLM 會回傳 `budget_exceeded` 錯誤。如要改為將請求路由到另一個模型，請參閱 [預算備援](./budget_fallbacks)。
 
-### ✨ Internal User (Model Specific)
+### ✨ 內部使用者（特定模型） {#-internal-user-model-specific}
 
-Use an internal-user per-model budget to apply one limit across all keys owned by that user. This prevents a user from bypassing the limit by creating another key. For example, use this scope to give each engineer a $200 monthly Opus budget when engineers have multiple keys.
+使用內部使用者的每模型預算，將單一上限套用到該使用者擁有的所有金鑰。這可防止使用者透過建立另一把金鑰來繞過限制。範例來說，當工程師有多把金鑰時，可使用此範圍為每位工程師設定每月 $200 的 Opus 預算。
 
 <EnterpriseFeature />
 
-`model_max_budget` uses the same **[`Dict[str, GenericBudgetInfo]`](#genericbudgetinfo)** schema as the key-level setting. You can configure it with either `/user/new` or `/user/update`.
+`model_max_budget` 使用與金鑰層級設定相同的 **[`Dict[str, GenericBudgetInfo]`](#genericbudgetinfo)** 結構。您可以使用 `/user/new` 或 `/user/update` 進行設定。
 
 ```bash
 curl 'http://0.0.0.0:4000/user/new' \
@@ -624,7 +618,7 @@ curl 'http://0.0.0.0:4000/user/new' \
 }'
 ```
 
-Use `1mo` for a calendar-month budget that resets on the first day of each month. After the user exceeds the limit, LiteLLM rejects requests made with any of the user's keys:
+使用 `1mo` 來設定每個月第一天重設的日曆月預算。當使用者超過上限後，LiteLLM 會拒絕使用該使用者任何金鑰所發出的請求：
 
 ```json
 {
@@ -637,29 +631,28 @@ Use `1mo` for a calendar-month budget that resets on the first day of each month
 }
 ```
 
-`/user/info` returns each model's spend for the current budget period in `model_max_budget_usage`, using the same format as `/key/info`.
+`/user/info` 會以與 `/key/info` 相同的格式，回傳每個模型在目前預算期間內於 `model_max_budget_usage` 的支出。
 
-**Via Dashboard**
+**透過儀表板**
 
-Go to **Internal Users**, select the user, and then open **Details → Edit → Per-Model Budgets**. For each existing budget, the dashboard shows the amount spent during the current period.
+前往 **Internal Users**，選取該使用者，然後開啟 **Details → Edit → Per-Model Budgets**。對於每個現有預算，儀表板會顯示目前期間內的支出金額。
 
-![Per-Model Budgets on an internal user](https://raw.githubusercontent.com/yassin-berriai/litellm-pr-media/main/lit-5894/user-per-model-budget.png)
+![內部使用者的 Per-Model Budgets](https://raw.githubusercontent.com/yassin-berriai/litellm-pr-media/main/lit-5894/user-per-model-budget.png)
 
-User-level and key-level budgets are tracked independently. If a key has its own per-model budget, each request counts toward both the key budget and the owner's user budget. LiteLLM rejects the request when either limit is exceeded.
+使用者層級與金鑰層級的預算是分開追蹤的。如果某把金鑰有自己的每模型預算，每個請求都會同時計入金鑰預算與擁有者的使用者預算。當任一上限超過時，LiteLLM 會拒絕該請求。
 
+### 代理程式 {#agents}
 
-### Agents
-
-Set budgets and rate limits on agents registered with LiteLLM's [Agent Gateway](../a2a.md). You can control:
-- **Per-agent rate limits**: `tpm_limit` and `rpm_limit` on the agent itself
-- **Per-session rate limits**: `session_tpm_limit` and `session_rpm_limit` applied per session
-- **Per-session iteration cap**: `max_iterations` in agent `litellm_params`
-- **Per-session budget cap**: `max_budget_per_session` in agent `litellm_params`
+在 LiteLLM 註冊的代理程式上設定預算與速率限制，[Agent Gateway](../a2a.md)。您可以控制：
+- **每個代理程式的速率限制**：套用在代理程式本身的 `tpm_limit` 和 `rpm_limit`
+- **每個工作階段的速率限制**：每個工作階段套用的 `session_tpm_limit` 和 `session_rpm_limit`
+- **每個工作階段的迭代上限**：代理程式 `max_iterations` 中的 `litellm_params`
+- **每個工作階段的預算上限**：代理程式 `max_budget_per_session` 中的 `litellm_params`
 
 <Tabs>
 <TabItem value="agent-rate-limits" label="Agent Rate Limits">
 
-Set `tpm_limit` and `rpm_limit` on the agent to cap total throughput across all sessions.
+在代理程式上設定 `tpm_limit` 和 `rpm_limit`，以限制所有工作階段的總吞吐量。
 
 ```bash
 curl -X POST 'http://localhost:4000/v1/agents' \
@@ -681,7 +674,7 @@ curl -X POST 'http://localhost:4000/v1/agents' \
 </TabItem>
 <TabItem value="session-rate-limits" label="Session Rate Limits">
 
-Set `session_tpm_limit` and `session_rpm_limit` to cap throughput per individual session.
+設定 `session_tpm_limit` 和 `session_rpm_limit`，以限制單一工作階段的吞吐量。
 
 ```bash
 curl -X POST 'http://localhost:4000/v1/agents' \
@@ -703,7 +696,7 @@ curl -X POST 'http://localhost:4000/v1/agents' \
 </TabItem>
 <TabItem value="session-budgets" label="Session Budgets">
 
-Set `max_iterations` and `max_budget_per_session` in agent `litellm_params` to cap individual sessions. Requires `require_trace_id_on_calls_by_agent` so LiteLLM can track calls per session.
+在代理程式 `max_iterations` 中設定 `max_budget_per_session` 和 `litellm_params`，以限制個別工作階段。需要 `require_trace_id_on_calls_by_agent`，因此 LiteLLM 可以追蹤每個工作階段的呼叫。
 
 ```bash
 curl -X POST 'http://localhost:4000/v1/agents' \
@@ -725,16 +718,16 @@ curl -X POST 'http://localhost:4000/v1/agents' \
   }'
 ```
 
-When a session exceeds the limit, requests receive a **429 Too Many Requests** response.
+當工作階段超過限制時，請求會收到 **429 Too Many Requests** 回應。
 
-See the [Agent Iteration Budgets](../a2a_iteration_budgets) guide for full details.
+請參閱 [Agent Iteration Budgets](../a2a_iteration_budgets) 指南以了解完整細節。
 
 </TabItem>
 </Tabs>
 
 :::info
 
-You can also update rate limits on existing agents using `PATCH /v1/agents/{agent_id}`:
+您也可以使用 `PATCH /v1/agents/{agent_id}` 更新既有代理程式的速率限制：
 
 ```bash
 curl -X PATCH 'http://localhost:4000/v1/agents/<agent_id>' \
@@ -750,12 +743,11 @@ curl -X PATCH 'http://localhost:4000/v1/agents/<agent_id>' \
 
 :::
 
+### 客戶 {#customers}
 
-### Customers
+這可用來為傳遞給 `user` 的 `/chat/completions` 編列預算，**而不需要為每位使用者建立一把金鑰**
 
-Use this to budget `user` passed to `/chat/completions`, **without needing to create a key for every user**
-
-**Step 1. Create the budget**
+**步驟 1. 建立預算**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/budget/new' \
@@ -767,7 +759,7 @@ curl --location 'http://0.0.0.0:4000/budget/new' \
         }'
 ```
 
-**Step 2. Point `max_end_user_budget_id` at that budget in config.yaml**
+**步驟 2. 在 config.yaml 中將 `max_end_user_budget_id` 指向該預算**
 
 ```yaml
 general_settings:
@@ -777,9 +769,9 @@ litellm_settings:
   max_end_user_budget_id: "default-customer-budget" # applied to any 'user' without their own budget
 ```
 
-This budget applies to every customer that has no budget of their own, including customers that don't exist in the database yet. LiteLLM caches the budget object for 60 seconds, so edits to it take up to a minute to apply. The float setting `max_end_user_budget` is no longer enforced; if you have it in your config, replace it with `max_end_user_budget_id` as shown above.
+此預算會套用到所有沒有自己的預算的客戶，包括資料庫中尚不存在的客戶。LiteLLM 會快取該預算物件 60 秒，因此對其所做的編輯最多需要一分鐘才會生效。float 設定 `max_end_user_budget` 已不再強制執行；如果您的設定中有它，請將其替換為 `max_end_user_budget_id`，如上所示。
 
-3. Make a /chat/completions call, pass 'user' - First call Works 
+3. 發出 /chat/completions 呼叫，傳入 'user' - 第一次呼叫成功 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
         --header 'Content-Type: application/json' \
@@ -796,7 +788,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-4. Make a /chat/completions call, pass 'user' - Call Fails, since 'ishaan3' over budget
+4. 發出 /chat/completions 呼叫，傳入 'user' - 呼叫失敗，因為 'ishaan3' 已超過預算
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
         --header 'Content-Type: application/json' \
@@ -813,18 +805,18 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-Error
+錯誤
 ```shell
 {"error":{"message":"ExceededBudget: End User=ishaan3 over budget. Spend=0.0008869999999999999, Budget=0.0001","type":"auth_error","param":"None","code":401}}%
 ```
 
-Customer budgets are global per deployment. Spend is tracked against the customer id alone, so the same customer shares one budget across every virtual key and team, and a customer budget can't be scoped to a single key or team.
+客戶預算是每個部署的全域設定。支出僅根據客戶 id 進行追蹤，因此同一客戶會在每個虛擬金鑰與團隊之間共用一份預算，而且客戶預算無法限定為單一金鑰或團隊。
 
-## Reset Budgets 
+## 重設預算 {#reset-budgets}
 
-Reset budgets across keys/internal users/teams/customers
+重設跨金鑰／內部使用者／團隊／客戶的預算
 
-`budget_duration`: Budget is reset at the end of specified duration. If not set, budget is never reset. You can set duration as seconds ("30s"), minutes ("30m"), hours ("30h"), days ("30d").
+`budget_duration`：預算會在指定期間結束時重設。如果未設定，預算永遠不會重設。您可以將期間設定為秒（"30s"）、分鐘（"30m"）、小時（"30h"）、天（"30d"）。
 
 <Tabs>
 <TabItem value="users" label="Internal Users">
@@ -866,24 +858,24 @@ curl 'http://0.0.0.0:4000/team/new' \
 </TabItem>
 </Tabs>
 
-**Note:** By default, the server checks for resets every 10 minutes, to minimize DB calls.
+**注意：** 預設情況下，伺服器每 10 分鐘檢查一次是否需要重設，以減少資料庫呼叫。
 
-To change this, set `proxy_budget_rescheduler_min_time` and `proxy_budget_rescheduler_max_time`
+若要變更此設定，請設定 `proxy_budget_rescheduler_min_time` 和 `proxy_budget_rescheduler_max_time`
 
-E.g.: Check every 1 seconds
+例如：每 1 秒檢查一次
 ```yaml
 general_settings: 
   proxy_budget_rescheduler_min_time: 1
   proxy_budget_rescheduler_max_time: 1
 ```
 
-## Fallback to 'free' models
+## 備援到「free」模型 {#fallback-to-free-models}
 
-If a key/user/team is at its budget limit, requests to models configured with `input_cost_per_token: 0` and `output_cost_per_token: 0` are still allowed. Budget checks are skipped entirely for zero-cost models.
+如果金鑰／使用者／團隊已達到其預算上限，對設定了 `input_cost_per_token: 0` 和 `output_cost_per_token: 0` 的模型之請求仍會被允許。對零成本模型則會完全略過預算檢查。
 
-This lets you configure free or self-hosted models as a fallback that budget-exhausted keys can still access.
+這讓您可以將免費或自架模型設定為備援，即使預算已用盡的金鑰仍可存取。
 
-To mark a model as free, set both cost fields explicitly to `0` in your `config.yaml`:
+若要將模型標記為免費，請在您的 `0` 中將這兩個成本欄位都明確設為 `config.yaml`：
 
 ```yaml
 model_list:
@@ -894,24 +886,24 @@ model_list:
       output_cost_per_token: 0
 ```
 
-**Note:** The cost fields must be explicitly set to `0`. If they are unset (`null`/missing), the model is not treated as free and budget checks still apply.
+**注意：** 成本欄位必須明確設為 `0`。如果未設定（`null`／缺失），模型不會被視為免費，預算檢查仍會套用。
 
-## Budget reservation
+## 預算保留 {#budget-reservation}
 
-Budget reservation is enabled by default. It helps enforce budgets during concurrent traffic by accounting for a request before the provider processes it.
+預算保留預設為啟用。它會在提供者處理請求之前先將該請求計入，藉此協助在並行流量下執行預算限制。
 
-### How it works
+### 運作方式 {#how-it-works}
 
-1. LiteLLM estimates the request's maximum cost from the request body and the model's pricing.
-2. It temporarily reserves that amount against the applicable budget.
-3. If the reservation would exceed the budget, LiteLLM rejects the request before sending it to the provider.
-4. After the response is priced, LiteLLM replaces the reservation with the actual cost.
+1. LiteLLM 會根據請求本文與模型定價估算該請求的最高成本。
+2. 它會暫時為適用的預算保留該金額。
+3. 如果保留金額會超過預算，LiteLLM 會在將請求送出至提供者之前先拒絕該請求。
+4. 在回應完成定價後，LiteLLM 會以實際成本取代該保留金額。
 
-When `max_tokens` or `max_completion_tokens` is present, LiteLLM uses that value in the estimate. Otherwise, it uses the model's configured limits. For routes without token pricing, such as some image and audio routes, LiteLLM cannot reserve a cost and instead enforces the budget using recorded spend.
+當存在 `max_tokens` 或 `max_completion_tokens` 時，LiteLLM 會在估算中使用該值。否則，它會使用模型已設定的限制。對於沒有 token 定價的路由，例如某些圖片與音訊路由，LiteLLM 無法保留成本，改以已記錄的支出來執行預算限制。
 
-### Disable budget reservation
+### 停用預算保留 {#disable-budget-reservation}
 
-Disable reservation only as a temporary mitigation if unreconciled reservations cause unexpected `BudgetExceededError` responses after the affected requests have completed:
+只有在未對帳的保留在受影響請求完成後導致非預期的 `BudgetExceededError` 回應時，才應將保留停用作為暫時性的緩解措施：
 
 ```yaml
 general_settings:
@@ -920,48 +912,48 @@ general_settings:
 
 :::warning
 
-Disabling reservation can allow concurrent requests to exceed a configured budget because each request is evaluated only against spend already recorded.
+停用保留可能會讓並行請求超出已設定的預算，因為每個請求只會根據已記錄的支出進行評估。
 
 :::
 
-Requests are still rejected when the budget is already exhausted. LiteLLM also logs a warning for each request while reservation is disabled.
+當預算已經耗盡時，請求仍會被拒絕。LiteLLM 在停用保留期間也會為每個請求記錄警告。
 
-If a budget must remain a hard ceiling when Redis is unavailable or contains stale data, keep reservation enabled and also configure [`fail_closed_budget_enforcement`](#hard-budget-enforcement-fail-closed).
+如果預算在 Redis 無法使用或包含過期資料時仍必須維持為硬性上限，請保持保留啟用，並同時設定 [`fail_closed_budget_enforcement`](#hard-budget-enforcement-fail-closed)。
 
-### Batch requests
+### 批次請求 {#batch-requests}
 
-Budget reservation cannot estimate the full cost of a batch job. A `POST /batches` request contains an `input_file_id` rather than the prompts in the file, so LiteLLM cannot price the complete workload at submission. The submission reservation is released after the submission response, and LiteLLM records the final cost when the batch completes.
+預算保留無法估算批次工作的完整成本。`POST /batches` 請求包含的是 `input_file_id`，而不是檔案中的提示，因此 LiteLLM 無法在提交時為完整工作負載定價。提交時的保留會在提交回應後釋放，而 LiteLLM 會在批次完成時記錄最終成本。
 
-Use [batch rate limiting](../batches#how-rate-limiting-for-batches-api-works) to control batch throughput, and monitor completed batch costs for budget reporting.
+請使用 [批次速率限制](../batches#how-rate-limiting-for-batches-api-works) 來控制批次吞吐量，並監控已完成批次的成本以供預算報表使用。
 
-## Hard budget enforcement (fail closed)
+## 硬性預算強制執行（失敗即封閉） {#hard-budget-enforcement-fail-closed}
 
-Budget checks read current spend from a cross-pod counter in Redis, which keeps enforcement fast and consistent across workers and replicas. The counter is the source of truth on the hot path, and the database is reconciled in the background. If Redis restarts and reloads an older snapshot, the counter can come back lower than the spend already recorded in the database; on the hot path that stale value is trusted, which can let a key keep spending past its `max_budget` until the counter is corrected.
+預算檢查會從 Redis 中的跨 pod 計數器讀取目前支出，這可讓強制執行在 workers 與 replicas 之間保持快速且一致。該計數器是熱路徑上的事實來源，而資料庫會在背景中進行協調。若 Redis 重新啟動並載入較舊的快照，計數器可能會回到低於資料庫中已記錄支出的值；在熱路徑上，系統會信任這個過時值，這可能讓金鑰持續花費超過其 `max_budget`，直到計數器被修正為止。
 
-For deployments where a configured budget must be a hard ceiling even while Redis is degraded, set `fail_closed_budget_enforcement`:
+對於已設定的預算即使在 Redis 降級時也必須是硬上限的部署，請設定 `fail_closed_budget_enforcement`：
 
 ```yaml
 general_settings:
   fail_closed_budget_enforcement: true
 ```
 
-With it enabled, every budgeted request validates spend against the authoritative database before being admitted (covering key, team, user, organization, end-user, tag, and per-window budgets), so a stale or missing Redis counter cannot under-report spend. The database read is coalesced and cached in-process for a few seconds, so the extra load is bounded to roughly one read per budgeted entity per cache window per worker rather than one read per request. If current spend can be verified against neither Redis nor the database, the request is rejected with a `503` instead of being admitted on an unverifiable budget.
+啟用後，每個有預算的請求在被接受前都會先以權威資料庫驗證支出（涵蓋 key、team、user、organization、end-user、tag，以及 per-window 預算），因此過時或缺失的 Redis 計數器無法低估支出。資料庫讀取會在程序內合併並快取數秒，因此額外負載會被限制在每個 worker、每個快取視窗、每個有預算實體約一筆讀取，而不是每個請求一筆讀取。若目前支出無法同時由 Redis 與資料庫驗證，請求會以 `503` 被拒絕，而不是在無法驗證的預算上被接受。
 
-Leave the setting off (the default) to keep healthy under-budget traffic entirely off the database; in the default mode the counter is still cross-checked against the database whenever it reads below the caller's last-known recorded spend, which catches the common stale-counter case without a per-request database read.
+保持此設定關閉（預設值）可讓健康且未超預算的流量完全不碰資料庫；在預設模式下，當計數器讀到低於呼叫者最後已知記錄支出時，仍會與資料庫交叉檢查，這能在不需要每個請求都讀取資料庫的情況下，攔截常見的過時計數器情境。
 
-## Set Rate Limits 
+## 設定速率限制 {#set-rate-limits}
 
-You can set: 
-- tpm limits (tokens per minute)
-- rpm limits (requests per minute)
-- max parallel requests
-- rpm / tpm limits per model for a given key or team
+您可以設定：
+- tpm 限制（每分鐘 tokens）
+- rpm 限制（每分鐘請求數）
+- 最大平行請求數
+- 針對特定 key 或 team、依模型設定的 rpm / tpm 限制
 
-### TPM Rate Limit Type (Input/Output/Total)
+### TPM 速率限制類型（輸入／輸出／總計） {#tpm-rate-limit-type-inputoutputtotal}
 
-By default, TPM (tokens per minute) rate limits count **total tokens** (input + output). You can configure this to count only input tokens or only output tokens instead.
+預設情況下，TPM（每分鐘 tokens）速率限制會計算**總 tokens**（輸入 + 輸出）。您也可以將其設定為只計算輸入 tokens，或改為只計算輸出 tokens。
 
-Set `token_rate_limit_type` in your `config.yaml`:
+請在您的 `token_rate_limit_type` 中設定 `config.yaml`：
 
 ```yaml
 general_settings:
@@ -969,21 +961,21 @@ general_settings:
   token_rate_limit_type: "output"  # Options: "input", "output", "total" (default)
 ```
 
-| Value | Description |
+| 值 | 說明 |
 |-------|-------------|
-| `total` | Count total tokens (prompt + completion). **Default behavior.** |
-| `input` | Count only prompt/input tokens |
-| `output` | Count only completion/output tokens |
+| `total` | 計算總 tokens（prompt + completion）。**預設行為。** |
+| `input` | 僅計算 prompt／input tokens |
+| `output` | 僅計算 completion／output tokens |
 
-This setting applies globally to all TPM rate limit checks (keys, users, teams, etc.).
+此設定會全域套用至所有 TPM 速率限制檢查（keys、users、teams 等）。
 
-### Estimated Output Tokens (requests without `max_tokens`)
+### 預估輸出 token（不含 `max_tokens` 的請求） {#estimated-output-tokens-requests-without-max_tokens}
 
-TPM limits are enforced by reserving tokens before the call and reconciling against real usage after it. When a request omits `max_tokens` / `max_completion_tokens`, LiteLLM has to guess how many output tokens to reserve, and the built-in guess is a single static estimate shared by every key, team and model.
+TPM 限制是透過在呼叫前保留 token，並在之後與實際用量對帳來執行的。當請求省略 `max_tokens` / `max_completion_tokens` 時，LiteLLM 必須猜測需要保留多少輸出 token，而內建的猜測是所有金鑰、團隊與模型共用的單一靜態估算值。
 
-That guess is wrong in both directions. If your model really emits more than the estimate, concurrent requests are all admitted against an under-reservation and the window overruns the limit once they finish. If it emits far less, the over-reservation blocks requests the budget could have served.
+那個估算值在兩個方向都可能錯誤。如果您的模型實際輸出的 token 多於估算值，所有並行請求都會在保留不足的情況下被放行，等它們完成後，該時間窗口就會超出上限。如果模型輸出的 token 遠少於估算值，過度保留會阻擋本可被預算服務的請求。
 
-Declare what your models actually emit with `default_estimated_output_tokens` (one value) and `default_estimated_output_tokens_per_model` (a map of model name to value). Both are settable on a key and on a team.
+請使用 `default_estimated_output_tokens`（單一值）與 `default_estimated_output_tokens_per_model`（模型名稱到值的對應表）來宣告您的模型實際輸出量。這兩者都可在金鑰與團隊層級設定。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -1000,7 +992,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-The same two fields work on `/team/new` and `/team/update`, and both are editable from the Admin UI on the key and team settings pages.
+這兩個欄位也適用於 `/team/new` 與 `/team/update`，而且都可在管理介面的金鑰與團隊設定頁面中編輯。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/update' \
@@ -1013,36 +1005,34 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-**Resolution order** for the reserved output budget, first match wins:
+**保留輸出預算的解析順序**，以第一個符合者為準：
 
-| Priority | Source |
+| 優先順序 | 來源 |
 | --- | --- |
-| 1 | Request `max_tokens` or `max_completion_tokens` |
-| 2 | Key `default_estimated_output_tokens_per_model[model]` |
-| 3 | Key `default_estimated_output_tokens` |
-| 4 | Team `default_estimated_output_tokens_per_model[model]` |
-| 5 | Team `default_estimated_output_tokens` |
-| 6 | Built-in static estimate |
+| 1 | 請求 `max_tokens` 或 `max_completion_tokens` |
+| 2 | 金鑰 `default_estimated_output_tokens_per_model[model]` |
+| 3 | 金鑰 `default_estimated_output_tokens` |
+| 4 | 團隊 `default_estimated_output_tokens_per_model[model]` |
+| 5 | 團隊 `default_estimated_output_tokens` |
+| 6 | 內建靜態估算 |
 
-Values must be positive integers, and the management endpoints reject anything else with a `422` naming the offending field. A value that is missing, or malformed because it was written straight into `metadata` rather than through these fields, falls through to the next tier, so a key that declares nothing behaves exactly as it does today. Embedding requests are unaffected since they produce no output tokens.
+值必須為正整數，管理端點會以一則帶有 `422` 的錯誤拒絕其他任何值，並指出出錯的欄位。缺少的值，或是因為直接寫入 `metadata` 而非透過這些欄位寫入所造成的格式錯誤值，會往下落到下一層，因此沒有宣告任何值的金鑰，其行為會完全如同目前一樣。Embedding 請求不受影響，因為它們不會產生任何輸出 token。
 
 :::tip
-Size the estimate from your observed output distribution for that model, around the p95, not from its maximum context. Both directions cost you something:
+請根據您觀察到的該模型輸出分佈來設定估算值，約取 p95，而不是依其最大 context。兩個方向都會有代價：
 
-- Declaring **more** than the model emits throttles traffic the budget could have served. If the declared value plus the input estimate exceeds the limit the request is charged against, every such request is refused, and the proxy logs the reservation and the limit at debug level so you can see why.
-- Declaring **less** than the model emits is worse than declaring nothing, because the reservation is then smaller than the built-in estimate and more concurrent requests are admitted before the real usage lands.
+- 宣告**多於**模型實際輸出的值，會使本可由該預算承接的流量受到節流。若宣告值加上輸入估算超過請求所計費的限制，所有這類請求都會被拒絕，而且 proxy 會以 debug 等級記錄保留量與限制，讓您看見原因。
+- 宣告**少於**模型實際輸出的值，比宣告什麼都不填更糟，因為此時保留量會小於內建估算，在真正用量到達前會允許更多並行請求。
 :::
 
 :::note
-The proxy already hard-caps generation for tenants whose smallest applicable TPM limit is under 4096, by injecting a `max_tokens` of a quarter of that limit. A declaration larger than that cap raises it, so you are never truncated below what you said your model emits. A declaration smaller than it is ignored, because an estimate describes the typical response and must not silently truncate the long tail.
+對於最小適用 TPM 限制低於 4096 的租戶，proxy 已經會透過注入一個為該限制四分之一的 `max_tokens` 來硬性上限生成。宣告大於該上限的值會提高此上限，因此永遠不會被截斷到低於您所宣告的模型輸出量。比該上限更小的宣告會被忽略，因為估算描述的是典型回應，不應在不告知的情況下截斷長尾。
 :::
-
 
 <Tabs>
 <TabItem value="per-team" label="Per Team">
 
-Use `/team/new` or `/team/update`, to persist rate limits across multiple keys for a team.
-
+使用 `/team/new` 或 `/team/update`，即可在 team 的多個 key 之間保留 rate limits。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/new' \
@@ -1051,9 +1041,9 @@ curl --location 'http://0.0.0.0:4000/team/new' \
 --data '{"team_id": "my-prod-team", "max_parallel_requests": 10, "tpm_limit": 20, "rpm_limit": 4}' 
 ```
 
-[**See Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
+[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
 
-**Expected Response**
+**預期回應**
 
 ```json
 {
@@ -1066,11 +1056,11 @@ curl --location 'http://0.0.0.0:4000/team/new' \
 </TabItem>
 <TabItem value="per-team-model" label="Per Team Per Model">
 
-**Set rate limits per model for a team**
+**為 team 設定每個 model 的 rate limits**
 
-Use `model_rpm_limit` and `model_tpm_limit` to set rate limits per model for all keys belonging to a team. These limits apply across all keys in the team and are inherited by keys unless overridden at the key level.
+使用 `model_rpm_limit` 和 `model_tpm_limit`，可為屬於某個 team 的所有 keys 設定每個 model 的 rate limits。這些限制會套用到 team 中的所有 keys，且除非在 key 層級覆寫，否則會由 keys 繼承。
 
-Use `/team/new` or `/team/update` with `model_rpm_limit` and `model_tpm_limit` as dictionaries mapping model names to their limits:
+使用 `/team/new` 或 `/team/update` 搭配 `model_rpm_limit` 和 `model_tpm_limit`，以 model 名稱對應其限制的字典：
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/new' \
@@ -1083,7 +1073,7 @@ curl --location 'http://0.0.0.0:4000/team/new' \
 }'
 ```
 
-**Update existing team with per-model limits:**
+**更新既有 team 的 per-model 限制：**
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/update' \
@@ -1096,9 +1086,9 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-**Alternative: Use metadata**
+**替代方式：使用 metadata**
 
-You can also pass per-model limits via the `metadata` field:
+您也可以透過 `metadata` 欄位傳入 per-model 限制：
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/update' \
@@ -1113,17 +1103,16 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-**Resolution order:** When a key belongs to a team, rate limits are resolved as: **Key metadata > Key model_max_budget > Team metadata**. Keys can override team-level per-model limits with their own `model_rpm_limit` or `model_tpm_limit`.
+**解析順序：** 當 key 屬於某個 team 時，rate limits 的解析順序為：**Key metadata > Key model_max_budget > Team metadata**。Keys 可以使用自己的 `model_rpm_limit` 或 `model_tpm_limit` 覆寫 team 層級的 per-model 限制。
 
-**Verify:** Make a `/chat/completions` request and check response headers `x-litellm-key-remaining-requests-{model}` and `x-litellm-key-remaining-tokens-{model}` for the model-specific limits.
+**驗證：** 發出一個 `/chat/completions` 請求，並檢查回應標頭 `x-litellm-key-remaining-requests-{model}` 和 `x-litellm-key-remaining-tokens-{model}`，以確認 model-specific 限制。
 
-[**See Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
+[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
 
 </TabItem>
 <TabItem value="per-user" label="Per Internal User">
 
-Use `/user/new` or `/user/update`, to persist rate limits across multiple keys for internal users.
-
+使用 `/user/new` 或 `/user/update`，即可在 internal users 的多個 key 之間保留 rate limits。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/user/new' \
@@ -1132,9 +1121,9 @@ curl --location 'http://0.0.0.0:4000/user/new' \
 --data '{"user_id": "krrish@berri.ai", "max_parallel_requests": 10, "tpm_limit": 20, "rpm_limit": 4}' 
 ```
 
-[**See Swagger**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/new_user_user_new_post)
+[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/new_user_user_new_post)
 
-**Expected Response**
+**預期回應**
 
 ```json
 {
@@ -1147,7 +1136,7 @@ curl --location 'http://0.0.0.0:4000/user/new' \
 </TabItem>
 <TabItem value="per-key" label="Per Key">
 
-Use `/key/generate`, if you want them for just that key.
+如果您只想針對那個 key 使用，請使用 `/key/generate`。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -1156,7 +1145,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{"max_parallel_requests": 10, "tpm_limit": 20, "rpm_limit": 4}' 
 ```
 
-**Expected Response**
+**預期回應**
 
 ```json
 {
@@ -1169,11 +1158,11 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 </TabItem>
 <TabItem value="per-key-model" label="Per API Key Per model">
 
-**Set rate limits per model per api key**
+**為每個 api key 設定每個 model 的 rate limits**
 
-Set `model_rpm_limit` and `model_tpm_limit` to set rate limits per model per api key
+設定 `model_rpm_limit` 和 `model_tpm_limit`，即可為每個 api key 設定每個 model 的 rate limits
 
-Here `{{openai_large}}` is the `model_name` set on the [litellm config.yaml](configs.md)
+這裡的 `{{openai_large}}` 是在 [litellm config.yaml](configs.md) 中設定的 `model_name`
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -1182,7 +1171,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{"model_rpm_limit": {"{{openai_large}}": 2}, "model_tpm_limit": {"{{openai_large}}": 1000}}' 
 ```
 
-**Expected Response**
+**預期回應**
 
 ```json
 {
@@ -1191,9 +1180,9 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 }
 ```
 
-**Verify Model Rate Limits set correctly for this key**
+**確認此金鑰的 Model Rate Limits 已正確設定**
 
-**Make /chat/completions request check if `x-litellm-key-remaining-requests-gpt-5.6-terra` returned**
+**發出 /chat/completions 請求，檢查是否回傳 `x-litellm-key-remaining-requests-gpt-5.6-terra`**
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -1207,25 +1196,24 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-
-**Expected headers**
+**預期標頭**
 
 ```shell
 x-litellm-key-remaining-requests-gpt-5.6-terra: 1
 x-litellm-key-remaining-tokens-gpt-5.6-terra: 179
 ```
 
-These headers indicate:
+這些標頭表示：
 
-- 1 request remaining for the gpt-5.6-terra model for key=`sk-ulGNRXWtv7M0lFnnsQk0wQ`
-- 179 tokens remaining for the gpt-5.6-terra model for key=`sk-ulGNRXWtv7M0lFnnsQk0wQ`
+- gpt-5.6-terra 模型對於 key=`sk-ulGNRXWtv7M0lFnnsQk0wQ` 還剩 1 個請求
+- gpt-5.6-terra 模型對於 key=`sk-ulGNRXWtv7M0lFnnsQk0wQ` 還剩 179 個 token
 
 </TabItem>
 <TabItem value="per-agent" label="Per Agent">
 
-Set rate limits on agents registered with the [Agent Gateway](../a2a.md).
+在透過 [Agent Gateway](../a2a.md) 註冊的 agent 上設定 rate limits。
 
-**Agent-level limits** cap total throughput across all sessions:
+**Agent-level limits** 會限制所有 sessions 的總吞吐量：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/v1/agents' \
@@ -1234,7 +1222,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/agents' \
 --data '{"agent_name": "my-agent", "agent_card_params": {"name": "my-agent", "description": "My agent", "url": "http://my-agent:8080", "version": "1.0.0"}, "tpm_limit": 100000, "rpm_limit": 100}'
 ```
 
-**Session-level limits** cap throughput per individual session:
+**Session-level limits** 會限制單一 session 的吞吐量：
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/v1/agents' \
@@ -1243,24 +1231,24 @@ curl -X POST 'http://0.0.0.0:4000/v1/agents' \
 --data '{"agent_name": "my-agent", "agent_card_params": {"name": "my-agent", "description": "My agent", "url": "http://my-agent:8080", "version": "1.0.0"}, "session_tpm_limit": 50000, "session_rpm_limit": 50}'
 ```
 
-You can also set **max_iterations** (call count cap) and **max_budget_per_session** (dollar cap) per session via `litellm_params`. See [Agent Iteration Budgets](../a2a_iteration_budgets) for details.
+您也可以透過 `litellm_params`，為每個 session 設定 **max_iterations**（呼叫次數上限）與 **max_budget_per_session**（金額上限）。詳情請參閱 [Agent Iteration Budgets](../a2a_iteration_budgets)。
 
 </TabItem>
 <TabItem value="per-end-user" label="For customers">
 
-:::info 
+:::info
 
-You can also create a budget id for a customer on the UI, under the 'Rate Limits' tab.
+您也可以在 UI 的「Rate Limits」分頁下，為客戶建立 budget id。
 
 :::
 
-Use this to set rate limits for `user` passed to `/chat/completions`, without needing to create a key for every user
+可用來為傳遞給 `user` 的 `/chat/completions` 設定 rate limits，而無需為每位使用者建立一個 key
 
-#### Step 1. Create Budget
+#### 步驟 1. 建立預算 {#step-1-create-budget}
 
-Set a `tpm_limit` on the budget (You can also pass `rpm_limit` if needed)
+在 budget 上設定 `tpm_limit`（如有需要，您也可以傳入 `rpm_limit`）
 
-Both are optional; a budget with neither set applies no LiteLLM TPM or RPM limit to its customers, and only provider rate limits apply
+兩者皆為選用；若預算未設定這兩者，則不會對其客戶套用任何 LiteLLM TPM 或 RPM 限制，僅適用提供者的速率限制
 
 ```shell
 curl --location 'http://0.0.0.0:4000/budget/new' \
@@ -1272,10 +1260,9 @@ curl --location 'http://0.0.0.0:4000/budget/new' \
 }'
 ```
 
+#### 步驟 2. 建立具有預算的 `Customer` {#step-2-create-customer-with-budget}
 
-#### Step 2. Create `Customer` with Budget
-
-We use `budget_id="free-tier"` from Step 1 when creating this new customers
+建立這位新客戶時，我們會使用步驟 1 中的 `budget_id="free-tier"`
 
 ```shell
 curl --location 'http://0.0.0.0:4000/customer/new' \
@@ -1287,10 +1274,9 @@ curl --location 'http://0.0.0.0:4000/customer/new' \
 }'
 ```
 
+#### 步驟 3. 在 `user_id` 請求中傳入 `/chat/completions` id {#step-3-pass-user_id-id-in-chatcompletions-requests}
 
-#### Step 3. Pass `user_id` id in `/chat/completions` requests
-
-Pass the `user_id` from Step 2 as `user="palantir"` 
+將步驟 2 中的 `user_id` 作為 `user="palantir"` 傳入
 
 ```shell
 curl --location 'http://localhost:4000/chat/completions' \
@@ -1312,15 +1298,15 @@ curl --location 'http://localhost:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Set default budget for ALL internal users 
+## 為所有內部使用者設定預設預算 {#set-default-budget-for-all-internal-users}
 
-Use this to set a default budget for users who you give keys to.
+可用來為您提供 key 的使用者設定預設 budget。
 
-This will apply when a user has [`user_role="internal_user"`](./self_serve.md#available-roles) (set this via `/user/new` or `/user/update`). 
+當使用者有 [`user_role="internal_user"`](./self_serve.md#available-roles) 時，這會生效（可透過 `/user/new` 或 `/user/update` 設定）。 
 
-This will NOT apply if a key has a team_id (team budgets will apply then). [Tell us how we can improve this!](https://github.com/BerriAI/litellm/issues)
+如果 key 有 team_id，這將不會生效（屆時會套用 team budgets）。[告訴我們如何改進！](https://github.com/BerriAI/litellm/issues)
 
-1. Define max budget in your config.yaml
+1. 在您的 config.yaml 中定義 max budget
 
 ```yaml
 model_list: 
@@ -1334,7 +1320,7 @@ litellm_settings:
   internal_user_budget_duration: "1mo" # reset every month
 ```
 
-2. Create key for user 
+2. 為使用者建立 key 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -1343,7 +1329,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response: 
+預期回應： 
 
 ```bash
 {
@@ -1352,7 +1338,7 @@ Expected Response:
 }
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -1364,7 +1350,7 @@ curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-Expected Response: 
+預期回應： 
 
 ```bash
 {
@@ -1377,41 +1363,39 @@ Expected Response:
 }
 ```
 
-### Multi-instance rate limiting
+### 多實例速率限制 {#multi-instance-rate-limiting}
 
+**重要注意事項：**
+- 速率限制適用於任何設定了 `tpm_limit`、`rpm_limit` 或 `max_parallel_requests` 的金鑰、使用者或團隊，無論其角色為何。除非您自行設定，主金鑰沒有任何限制。
+- 測試速率限制時，請使用具有明確限制的虛擬金鑰，讓 limiter 有可執行的限制。
 
-**Important Notes:**
-- Rate limits apply to any key, user or team that has `tpm_limit`, `rpm_limit` or `max_parallel_requests` set, regardless of role. The master key has no limits unless you configure them.
-- When testing rate limits, use a virtual key with explicit limits so the limiter has something to enforce.
+變更：
+- 這會在更新目前請求／權杖時改用 async_increment，而不是 async_set_cache。
+- 內存快取會每 0.01 秒與 redis 同步一次，以避免每個請求都呼叫 redis。
+- 在測試中，這被發現比先前的實作快 2 倍，並將預期與實際失敗之間的偏差在高流量（3 個執行個體上每秒 100 RPS）下減少到最多 10 個請求。
 
-Changes: 
-- This moves to using async_increment instead of async_set_cache when updating current requests/tokens. 
-- The in-memory cache is synced with redis every 0.01s, to avoid calling redis for every request. 
-- In testing, this was found to be 2x faster than the previous implementation, and reduced drift between expected and actual fails to at most 10 requests at high-traffic (100 RPS across 3 instances). 
+### 嚴格速率限制強制執行（失敗即關閉） {#hard-rate-limit-enforcement-fail-closed}
 
-### Hard rate limit enforcement (fail closed)
+在多個 instance 之間，tpm、rpm 與 max_parallel_requests 計數器會存放在 Redis（`general_settings.coordination_redis` 或 `REDIS_*` 環境變數）中，因此每個 instance 會強制執行相同的限制。當 Redis 無法連線時，每個 instance 會退回使用自身記憶體中的計數器並持續提供服務，因此具有 `rpm_limit: 2` 的金鑰在每個 instance 上最多會被允許 2 個請求，在 Redis 恢復之前，N 個 instance 會承接 N 倍的限制
 
-Across several instances, the tpm, rpm, and max_parallel_requests counters live in Redis (`general_settings.coordination_redis` or the `REDIS_*` environment variables) so every instance enforces the same limit. While Redis is unreachable, each instance falls back to counters in its own memory and keeps serving, so a key with `rpm_limit: 2` is admitted up to 2 requests per instance, N times the limit across N instances, until Redis is back
-
-For deployments where a configured rate limit must be a hard ceiling even while Redis is down, set `fail_closed_rate_limit_enforcement`:
+對於即使 Redis 當機時，已設定的速率限制也必須是硬性上限的部署，請設定 `fail_closed_rate_limit_enforcement`：
 
 ```yaml
 general_settings:
   fail_closed_rate_limit_enforcement: true
 ```
 
-With it enabled, a request whose counters cannot be verified against Redis is rejected with a `503` instead of being admitted against a per-instance counter. It is a `503` rather than a `429` so clients and load balancers can tell a Redis outage from a rate limit. The setting changes nothing while Redis answers, requests that carry no rate limit are unaffected, and post-request accounting stays best effort, so a request that was already admitted is never failed after the fact
+啟用後，無法對照 Redis 驗證其計數器的請求，會以 `503` 被拒絕，而不是依據每個 instance 的計數器予以放行。這是 `503` 而非 `429`，因此用戶端與負載平衡器可以分辨 Redis 當機與速率限制之間的差異。只要 Redis 有回應，這個設定就不會改變任何事情；未攜帶速率限制的請求不受影響，而且請求後的計帳仍屬 best effort，因此已經放行的請求不會在事後失敗
 
-Leave the setting off (the default) to keep serving through a Redis outage on per-instance limits. Without Redis the setting has no effect: a proxy that starts with it on and no Redis configured logs a warning and keeps enforcing limits per instance. The legacy limiter selected by `LEGACY_MULTI_INSTANCE_RATE_LIMITING=true` ignores the setting as well
+請保持此設定為關閉（預設值），以便在 Redis 當機時仍可透過每個 instance 的限制繼續提供服務。沒有 Redis 時，這個設定不會產生任何作用：若 proxy 在啟用此設定且未設定 Redis 的情況下啟動，會記錄警告並繼續以每個 instance 強制執行限制。由 `LEGACY_MULTI_INSTANCE_RATE_LIMITING=true` 所選擇的舊版 limiter 也會忽略此設定
 
+## 授予新模型存取權限 {#grant-access-to-new-model}
 
-## Grant Access to new model 
+使用模型存取群組來讓使用者可存取特定模型，並隨時間加入新的模型（例如 mistral、llama-2 等）。
 
-Use model access groups to give users access to select models, and add new ones to it over time (e.g. mistral, llama-2, etc.). 
+使用 `/key/generate` 與 `/user/new` 之間有什麼差異？如果您在 `/user/new` 上這麼做，它會在為該使用者產生的多個金鑰之間持續保留。
 
-Difference between doing this with `/key/generate` vs. `/user/new`? If you do it on `/user/new` it'll persist across multiple keys generated for that user.
-
-**Step 1. Assign model, access group in config.yaml**
+**步驟 1. 在 config.yaml 中指定模型、存取群組**
 
 ```yaml
 model_list:
@@ -1425,7 +1409,7 @@ model_list:
       access_groups: ["beta-models"] # 👈 Model Access Group
 ```
 
-**Step 2. Create key with access group**
+**步驟 2. 建立具有存取群組的金鑰**
 
 ```bash
 curl --location 'http://localhost:4000/user/new' \
@@ -1435,10 +1419,9 @@ curl --location 'http://localhost:4000/user/new' \
 			"max_budget": 0}'
 ```
 
+## 為既有內部使用者建立新金鑰 {#create-new-keys-for-existing-internal-user}
 
-## Create new keys for existing internal user
-
-Just include user_id in the `/key/generate` request.
+只要在 `/key/generate` 請求中加入 user_id 即可。
 
 ```bash
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -1447,12 +1430,11 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{"models": ["azure-models"], "user_id": "krrish@berri.ai"}'
 ```
 
+## API 規格 {#api-specification}
 
-## API Specification 
+### `GenericBudgetInfo` {#genericbudgetinfo}
 
-### `GenericBudgetInfo`
-
-A Pydantic model that defines budget information with a time period and limit.
+一個定義預算資訊、包含時間期間與上限的 Pydantic 模型。
 
 ```python
 class GenericBudgetInfo(BaseModel):
@@ -1460,15 +1442,15 @@ class GenericBudgetInfo(BaseModel):
     time_period: str    # Duration string like "1d", "30d", etc.
 ```
 
-#### Fields:
-- `budget_limit` (float): The maximum budget amount in USD
-- `time_period` (str): Duration string specifying the time period for the budget. Supported formats:
-  - Seconds: "30s"
-  - Minutes: "30m" 
-  - Hours: "30h"
-  - Days: "30d"
+#### 欄位： {#fields}
+- `budget_limit`（float）：以 USD 表示的最大預算金額
+- `time_period`（str）：指定預算時間期間的持續時間字串。支援的格式：
+  - 秒："30s"
+  - 分鐘："30m"
+  - 小時："30h"
+  - 天："30d"
 
-#### Example:
+#### 範例： {#example}
 ```json
 {
   "budget_limit": "0.0001",

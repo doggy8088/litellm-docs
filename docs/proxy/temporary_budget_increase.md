@@ -1,18 +1,17 @@
-# ✨ Temporary Budget Increase
+# ✨ 暫時增加預算 {#-temporary-budget-increase}
 
-Set temporary budget increase for a LiteLLM Virtual Key. Use this if you get asked to increase the budget for a key temporarily.
+為 LiteLLM Virtual Key 設定暫時增加的預算。如果您被要求暫時提高某個 key 的預算，請使用此功能。
 
-
-| Hierarchy | Supported | 
+| 階層 | 支援 | 
 |-----------|-----------|
 | LiteLLM Virtual Key | ✅ |
-| User | ❌ |
-| Team | ❌ |
-| Organization | ❌ |
+| 使用者 | ❌ |
+| 團隊 | ❌ |
+| 組織 | ❌ |
 
 <EnterpriseFeature feature="Temporary Budget Increase" />
 
-1. Create a LiteLLM Virtual Key with budget
+1. 使用預算建立 LiteLLM Virtual Key
 
 ```bash
 curl -L -X POST 'http://localhost:4000/key/generate' \
@@ -23,7 +22,7 @@ curl -L -X POST 'http://localhost:4000/key/generate' \
 }'
 ```
 
-Expected response:
+預期回應：
 
 ```json
 {
@@ -31,7 +30,7 @@ Expected response:
 }
 ```
 
-2. Update key with temporary budget increase
+2. 以暫時增加的預算更新 key
 
 ```bash
 curl -L -X POST 'http://localhost:4000/key/update' \
@@ -44,7 +43,7 @@ curl -L -X POST 'http://localhost:4000/key/update' \
 }'
 ```
 
-3. Test it! 
+3. 測試它！
 
 ```bash
 curl -L -X POST 'http://localhost:4000/chat/completions' \
@@ -56,10 +55,8 @@ curl -L -X POST 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-Expected Response Header:
+預期回應標頭：
 
 ```
 x-litellm-key-max-budget: 100.0000001
 ```
-
-

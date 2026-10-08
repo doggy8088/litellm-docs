@@ -1,5 +1,5 @@
 ---
-title: "v1.90.6 - Prisma Bake for Non-Root Migrations"
+title: "v1.90.6 - Prisma 為非 root migrations 烘焙"
 slug: "v1-90-6"
 date: 2026-07-19T02:09:06
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,12 +43,12 @@ pip install litellm==1.90.6
 </TabItem>
 </Tabs>
 
-`v1.90.6` is a patch release on top of [`v1.90.5`](/release_notes/v1.90.5/v1-90-5). Where `v1.90.5` restored the `litellm-proxy-extras` source folder to the runtime images, this release makes those migration assets usable from any account: the prisma CLI and its engines are now baked at `/opt/prisma`, a fixed path every runtime uid can read. Deployments that run as a non-root user, such as kubernetes `runAsUser` and `docker --user`, previously had prisma fall back to downloading its engines into a home directory it could not write, so a fresh-database migration failed on hosts with no outbound network access. Migrations now run offline under any uid. The release also carries routine dependency maintenance updates to mcp, pypdf, pydantic-settings, python-multipart, and starlette in the image lockfile.
+`v1.90.6` 是建立在 [`v1.90.5`](/release_notes/v1.90.5/v1-90-5) 之上的修補程式發行版本。`v1.90.5` 將 `litellm-proxy-extras` source folder 還原到 runtime images，這個版本則讓那些 migration 資產可由任何帳號使用：prisma CLI 及其 engines 現在已烘焙在 `/opt/prisma`，這是一個每個 runtime uid 都能讀取的固定路徑。以非 root 使用者執行的部署，例如 kubernetes `runAsUser` 和 `docker --user`，先前會讓 prisma 退回為將其 engines 下載到一個無法寫入的 home directory，因此在沒有對外網路存取的主機上，新的資料庫 migration 會失敗。現在 migrations 可在任何 uid 下離線執行。此版本也在 image lockfile 中帶來對 mcp、pypdf、pydantic-settings、python-multipart 與 starlette 的例行相依性維護更新。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(docker): bake prisma CLI and engines at a fixed path so fresh-DB migrations work for any uid offline - [PR #33853](https://github.com/BerriAI/litellm/pull/33853)
+- fix(docker): 將 prisma CLI 和 engines 烘焙到固定路徑，以便 fresh-DB migrations 可在離線狀態下由任何 uid 運作 - [PR #33853](https://github.com/BerriAI/litellm/pull/33853)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.90.5...v1.90.6

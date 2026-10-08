@@ -1,5 +1,5 @@
 ---
-title: "v1.86.4 - Azure AD, Batch Auth & Passthrough Backports"
+title: "v1.86.4 - Azure AD、Batch Auth 與 Passthrough 回補"
 slug: "v1-86-4"
 date: 2026-06-03T20:10:47
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,17 +43,17 @@ pip install litellm==1.86.4
 </TabItem>
 </Tabs>
 
-`v1.86.4` is a patch release on top of [`v1.86.3`](/release_notes/v1.86.3/v1-86-3). It backports the same six staged fixes shipped on the 1.84 and 1.85 lines: Azure AD token refresh, batch and video model routing, org-scoped team key creation, Vertex Claude effort handling, and duplicate passthrough cost callbacks.
+`v1.86.4` 是建立在 [`v1.86.3`](/release_notes/v1.86.3/v1-86-3) 之上的修補版。它回補了 1.84 和 1.85 系列中發佈的同樣六項已排程修正：Azure AD token refresh、batch 與 video model routing、org-scoped team key 建立、Vertex Claude effort 處理，以及重複的 passthrough cost callbacks。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(azure): preserve AD token refresh in the v1 OpenAI client path - [PR #28627](https://github.com/BerriAI/litellm/pull/28627)
-- fix(proxy): map a stripped batch `body.model` back to the proxy alias so key access checks pass - [PR #29264](https://github.com/BerriAI/litellm/pull/29264)
-- fix(proxy): resolve managed video model ids through the router before auth, budget, and key checks - [PR #29545](https://github.com/BerriAI/litellm/pull/29545)
-- fix(key_generate): let team members create keys on org-scoped teams (regression since v1.84.0-rc.1) - [PR #29310](https://github.com/BerriAI/litellm/pull/29310)
-- fix(vertex): strip `output_config.effort` for Vertex Claude models that reject it, such as Haiku 4.5 - [PR #29585](https://github.com/BerriAI/litellm/pull/29585)
-- fix(passthrough): stop duplicate cost callbacks for Anthropic streaming pass-through - [PR #29598](https://github.com/BerriAI/litellm/pull/29598)
+- fix(azure): 在 v1 OpenAI client 路徑中保留 AD token refresh - [PR #28627](https://github.com/BerriAI/litellm/pull/28627)
+- fix(proxy): 將去除 batch `body.model` 的內容對回 proxy alias，讓 key 存取檢查可以通過 - [PR #29264](https://github.com/BerriAI/litellm/pull/29264)
+- fix(proxy): 在 auth、budget 與 key 檢查之前，先透過 router 解析受管理的 video model ids - [PR #29545](https://github.com/BerriAI/litellm/pull/29545)
+- fix(key_generate): 允許 team members 在 org-scoped teams 上建立 keys（自 v1.84.0-rc.1 起的迴歸）- [PR #29310](https://github.com/BerriAI/litellm/pull/29310)
+- fix(vertex): 移除 Vertex Claude models 所拒絕的 `output_config.effort`，例如 Haiku 4.5 - [PR #29585](https://github.com/BerriAI/litellm/pull/29585)
+- fix(passthrough): 停止 Anthropic streaming pass-through 的重複 cost callbacks - [PR #29598](https://github.com/BerriAI/litellm/pull/29598)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.86.3...v1.86.4

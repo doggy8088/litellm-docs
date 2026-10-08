@@ -1,5 +1,5 @@
 ---
-title: v1.63.0 - Anthropic 'thinking' response update
+title: v1.63.0 - Anthropic 'thinking' 回應更新
 slug: v1.63.0
 date: 2025-03-05T10:00:00
 authors:
@@ -15,14 +15,11 @@ tags: [llm translation, thinking, reasoning_content, claude-3-7-sonnet]
 hide_table_of_contents: false
 ---
 
-v1.63.0 fixes Anthropic 'thinking' response on streaming to return the `signature` block. [Github Issue](https://github.com/BerriAI/litellm/issues/8964)
+v1.63.0 修正了 Anthropic 'thinking' 回應在串流時傳回 `signature` 區塊。[Github Issue](https://github.com/BerriAI/litellm/issues/8964)
 
+同時也將回應結構從 `signature_delta` 移至 `signature`，使其與 Anthropic 保持一致。[Anthropic Docs](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#implementing-extended-thinking)
 
-
-It also moves the response structure from `signature_delta` to `signature` to be the same as Anthropic. [Anthropic Docs](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking#implementing-extended-thinking)
-
-
-## Diff 
+## 差異 {#diff}
 
 ```bash
 "message": {

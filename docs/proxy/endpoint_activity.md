@@ -2,30 +2,30 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Endpoint Activity
+# 端點活動 {#endpoint-activity}
 
-Track and visualize API endpoint usage directly in the dashboard. Monitor endpoint-level activity analytics, spend breakdowns, and performance metrics to understand which endpoints are receiving the most traffic and how they're performing.
+直接在儀表板中追蹤並視覺化 API 端點使用情況。監控端點層級的活動分析、支出拆分與效能指標，以了解哪些端點接收最多流量，以及它們的表現如何。
 
-## Overview
+## 總覽 {#overview}
 
-Endpoint Activity enables you to track spend and usage for individual API endpoints automatically. Every time you call an endpoint through the LiteLLM proxy, activity is automatically tracked and aggregated. This allows you to:
+端點活動可讓您自動追蹤個別 API 端點的支出與使用情況。每次透過 LiteLLM proxy 呼叫端點時，系統都會自動追蹤並彙總活動。這可讓您：
 
-- Track spend per endpoint automatically
-- View endpoint-level usage analytics in the Admin UI
-- Monitor token consumption by endpoint
-- Analyze success and failure rates per endpoint
-- Identify which endpoints are getting the most activity
-- View trend data showing endpoint usage over time
+- 自動追蹤每個端點的支出
+- 在 Admin UI 中查看端點層級的使用分析
+- 依端點監控 token 消耗
+- 分析每個端點的成功與失敗率
+- 找出哪些端點的活動最多
+- 查看顯示端點使用隨時間變化的趨勢資料
 
 <Image img={require('../../img/ui_endpoint_activity.png')} />
 
-## How Endpoint Activity Works
+## 端點活動的運作方式 {#how-endpoint-activity-works}
 
-Endpoint activity is **automatically tracked** whenever you make API calls through the LiteLLM proxy. No additional configuration is required - simply call your endpoints as usual and activity will be tracked.
+每當您透過 LiteLLM proxy 發出 API 請求時，端點活動都會**自動追蹤**。不需要額外設定，只要照常呼叫您的端點即可，系統就會追蹤活動。
 
-### Example API Call
+### API 呼叫範例 {#example-api-call}
 
-When you make a request to any endpoint, activity is automatically recorded:
+當您對任何端點發出請求時，系統會自動記錄活動：
 
 ```bash showLineNumbers title="Endpoint activity is automatically tracked"
 # /chat/completions: 👈 ENDPOINT AUTOMATICALLY TRACKED
@@ -44,71 +44,71 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   }'
 ```
 
-The endpoint (`/chat/completions`) will be automatically tracked with:
+該端點（`/chat/completions`）將會自動追蹤以下資訊：
 
-- Token counts (prompt tokens, completion tokens, total tokens)
-- Spend for the request
-- Request status (success or failure)
-- Timestamp and other metadata
+- token 數量（提示 token、完成 token、總 token）
+- 該請求的支出
+- 請求狀態（成功或失敗）
+- 時間戳記與其他中繼資料
 
-## How to View Endpoint Activity
+## 如何查看端點活動 {#how-to-view-endpoint-activity}
 
-### View Activity in Admin UI
+### 在 Admin UI 中查看活動 {#view-activity-in-admin-ui}
 
-Navigate to the Endpoint Activity tab in the Admin UI to view endpoint-level analytics:
+前往 Admin UI 中的端點活動分頁，查看端點層級分析：
 
-#### 1. Access Endpoint Activity
+#### 1. 存取端點活動 {#1-access-endpoint-activity}
 
-Go to the Usage page in the Admin UI (`PROXY_BASE_URL/ui/?login=success&page=new_usage`) and click on the **Endpoint Activity** tab.
+前往 Admin UI（`PROXY_BASE_URL/ui/?login=success&page=new_usage`）中的 Usage 頁面，然後點選 **Endpoint Activity** 分頁。
 
 ![](https://colony-recorder.s3.amazonaws.com/files/2026-01-10/67601fc0-8415-49b4-8e55-0673d37540c2/ascreenshot_f609a506dfe745c5aadccd332681c32d_text_export.jpeg)
 
-#### 2. View Endpoint Analytics
+#### 2. 查看端點分析 {#2-view-endpoint-analytics}
 
-The Endpoint Activity dashboard provides:
+Endpoint Activity 儀表板提供：
 
-- **Endpoint usage table**: View all endpoints with aggregated metrics including:
-  - Total requests (successful and failed)
-  - Success rate percentage
-  - Total tokens consumed
-  - Total spend per endpoint
-- **Success vs Failed requests chart**: Visualize request success and failure rates by endpoint
-- **Usage trends**: See how endpoint activity changes over time with daily trend data
+- **端點使用表格**：查看所有端點及其彙總指標，包括：
+  - 總請求數（成功與失敗）
+  - 成功率百分比
+  - 已消耗總 token 數
+  - 每個端點的總支出
+- **成功與失敗請求圖表**：依端點視覺化請求成功與失敗率
+- **使用趨勢**：透過每日趨勢資料查看端點活動如何隨時間變化
 
 ![](https://colony-recorder.s3.amazonaws.com/files/2026-01-10/41b2b158-3ab3-4154-a0d0-7233451d3f2b/ascreenshot_ff46db6e09b54ea9bf34ae9028aff58a_text_export.jpeg)
 
 ![](https://colony-recorder.s3.amazonaws.com/files/2026-01-10/bce32f99-f0ba-4502-8a3a-76257ff5e47a/ascreenshot_2273d3a94acd42e983ad7d6436722c2a_text_export.jpeg)
 
-#### 3. Understand Endpoint Metrics
+#### 3. 了解端點指標 {#3-understand-endpoint-metrics}
 
-Each endpoint displays the following metrics:
+每個端點會顯示以下指標：
 
-- **Successful Requests**: Number of requests that completed successfully
-- **Failed Requests**: Number of requests that encountered errors
-- **Total Requests**: Sum of successful and failed requests
-- **Success Rate**: Percentage of successful requests
-- **Total Tokens**: Sum of prompt and completion tokens
-- **Spend**: Total cost for all requests to that endpoint
+- **成功請求數**：成功完成的請求數量
+- **失敗請求數**：發生錯誤的請求數量
+- **總請求數**：成功與失敗請求的總和
+- **成功率**：成功請求所占百分比
+- **總 token 數**：提示與完成 token 的總和
+- **支出**：該端點所有請求的總成本
 
-## Gateway Request Counts
+## 閘道請求計數 {#gateway-request-counts}
 
-The **Successful Requests** and **Failed Requests** tiles on the Usage page, along with the **Gateway Requests by Endpoint** chart below them, are counted by the proxy itself rather than derived from spend logs. LiteLLM's request-metrics middleware sits at the ASGI edge, classifies each inbound LLM, MCP and A2A call, and records the status the gateway returned. Those counts are folded into the `LiteLLM_DailyGatewayRequests` table, keyed by date, category and route. The key holds nothing a caller supplies and no per-key, per-user or per-deployment dimension, so the table grows with how many route classes your deployment serves and how long it has been running, never with traffic
+「**成功請求**」與「**失敗請求**」磁磚，以及其下方的「**依端點分類的閘道請求**」圖表，都是由 proxy 本身計算，而不是從 spend logs 推導而來。LiteLLM 的 request-metrics middleware 位於 ASGI 邊緣，會分類每個傳入的 LLM、MCP 與 A2A 請求，並記錄閘道回傳的狀態。這些計數會彙整到 `LiteLLM_DailyGatewayRequests` 表中，並以日期、類別與路由作為索引。此鍵值不包含呼叫端提供的任何內容，也沒有任何 per-key、per-user 或 per-deployment 維度，因此此表的成長只取決於您的部署服務了多少種路由類別以及已執行多久，絕不會隨流量成長
 
-Counting at the edge changes what the number means. A request is recorded whether or not it ever reached LiteLLM's logging callbacks, so authentication rejections, rate limit responses and provider errors land in the failed column instead of going missing; every status is counted, not just 2xx. One inbound request also counts exactly once however many upstream calls LiteLLM made to serve it, so router retries, fallbacks and internal fan-out do not inflate the total
+在邊緣進行計數會改變數字的意義。無論請求最終是否到達 LiteLLM 的 logging callbacks，系統都會記錄它，因此驗證遭拒、速率限制回應與提供者錯誤都會落在失敗欄位，而不會消失不見；每一種狀態都會被計數，而不只是 2xx。單一傳入請求也只會計數一次，不論 LiteLLM 為了服務它而向上游發出多少次呼叫，因此路由重試、備援與內部 fan-out 不會膨脹總數
 
-Counts accumulate in memory and are committed on the same interval as the spend batch writer, `proxy_batch_write_at`, which defaults to 10 seconds, so a request can take a few seconds to appear. A commit that fails is merged back and retried on the next flush rather than dropped, and the accumulator is drained once more during shutdown. None of this is gated behind an enterprise license; any deployment with a database configured records these counts
+計數會先累積在記憶體中，並以與 spend batch writer 相同的間隔提交，`proxy_batch_write_at` 預設為 10 秒，因此請求可能要幾秒後才會顯示。提交失敗時會併回並在下一次 flush 時重試，而不是被捨棄，且 accumulator 也會在關閉期間再排空一次。這一切都不受企業授權限制；任何已設定資料庫的部署都會記錄這些計數
 
-### Why gateway counts do not match the per-key and per-model breakdowns
+### 為什麼閘道計數與依 key 與依模型的細分不同 {#why-gateway-counts-do-not-match-the-per-key-and-per-model-breakdowns}
 
-The per-key, per-model, per-provider and per-tag panels on the Usage page still read the daily spend rollups, which are written from spend logs after a request completes. The two sources answer different questions and are not expected to tie out
+Usage 頁面上的 per-key、per-model、per-provider 與 per-tag 面板，仍然讀取每日 spend 匯總，而這些匯總是在請求完成後由 spend logs 寫入。這兩種來源回答的是不同問題，因此不預期彼此完全一致
 
-A spend log row exists only for a request that got far enough to be logged, and it carries the key, team and model that served it. A gateway count exists for anything the proxy answered, including requests rejected before a key was resolved or a model was chosen, which is why the gateway table carries no key or user dimension at all. Drift runs in both directions: the gateway counts only classified inference, MCP and A2A traffic and collapses internal fan-out into one row, while the spend rollups also cover logged management and passthrough calls and record each upstream attempt separately. Use the tile for traffic volume and the breakdowns for attributing spend
+只有當請求進入足夠深、能夠被記錄時，才會存在一筆 spend log 資料列，且它會帶有服務該請求的 key、team 與 model。只要 proxy 有回應，就會產生一筆閘道計數，包括在 key 尚未解析或 model 尚未選定前就被拒絕的請求，這也是閘道表完全不包含 key 或 user 維度的原因。差異會朝兩個方向發生：閘道只計數已分類的 inference、MCP 與 A2A 流量，並將內部 fan-out 壓成一列；而 spend 匯總也涵蓋已記錄的管理與 passthrough 請求，並分別記錄每一次上游嘗試。請將磁磚用於流量量體，將細分用於歸屬 spend
 
 ### `/gateway/daily/activity` {#gateway-daily-activity}
 
-Gateway counts are served by their own endpoint. Because the underlying table is deployment-wide with no per-key or per-user dimension, it is restricted to the `proxy_admin` and `proxy_admin_viewer` roles; any other caller gets a 403. In the Admin UI a non-admin simply sees the spend-derived counts in the tiles and no gateway chart. The same fallback applies to an admin whose deployment has not recorded any gateway counts yet
+閘道計數由其專屬 endpoint 提供。由於底層表是整個部署共用，且沒有 per-key 或 per-user 維度，因此僅限於 `proxy_admin` 與 `proxy_admin_viewer` 角色；任何其他呼叫端都會得到 403。在 Admin UI 中，非管理員只會看到磁磚中的 spend 衍生計數，而不會看到閘道圖表。若管理員的部署尚未記錄任何閘道計數，也會採用同樣的回退行為
 
-`start_date` and `end_date` are both optional and take `YYYY-MM-DD`; omitting them returns the last 30 days
+`start_date` 與 `end_date` 皆為選填，並接受 `YYYY-MM-DD`；若省略則回傳最近 30 天
 
 ```shell title="Gateway request counts" showLineNumbers
 curl -L -X GET 'http://localhost:4000/gateway/daily/activity?start_date=2026-07-28&end_date=2026-08-04' \
@@ -131,32 +131,32 @@ curl -L -X GET 'http://localhost:4000/gateway/daily/activity?start_date=2026-07-
 }
 ```
 
-`by_date` is ordered oldest first and `by_route` is ordered by successful requests, highest first. `category` is one of `llm`, `mcp` or `a2a`, and `route` is the normalized route the classifier assigned rather than the raw request path, so `/v1/chat/completions` and `/chat/completions` fold into the same row. The chart in the Admin UI renders the top 15 routes
+`by_date` 由舊到新排序，而 `by_route` 則依成功請求數由高到低排序。`category` 其值為 `llm`、`mcp` 或 `a2a` 之一，而 `route` 是分類器指派的標準化路由，而不是原始請求路徑，因此 `/v1/chat/completions` 與 `/chat/completions` 會合併到同一列。Admin UI 中的圖表會顯示前 15 條路由
 
-## Use Cases
+## 使用案例 {#use-cases}
 
-### Performance Monitoring
+### 效能監控 {#performance-monitoring}
 
-Monitor endpoint health and performance:
+監控端點健康狀態與效能：
 
-- Identify endpoints with high failure rates
-- Track which endpoints are receiving the most traffic
-- Monitor token consumption patterns by endpoint
-- Detect anomalies in endpoint usage
+- 找出失敗率高的端點
+- 追蹤哪些端點接收最多流量
+- 依端點監控 token 消耗模式
+- 偵測端點使用異常
 
-### Cost Optimization
+### 成本最佳化 {#cost-optimization}
 
-Understand spend distribution across endpoints:
+了解各端點之間的支出分布：
 
-- Identify high-cost endpoints
-- Optimize expensive endpoints
-- Allocate budget based on endpoint usage
-- Track cost trends over time
+- 找出高成本端點
+- 最佳化昂貴的端點
+- 依端點使用情況分配預算
+- 追蹤隨時間變化的成本趨勢
 
 ---
 
-## Related Features
+## 相關功能 {#related-features}
 
-- [Customer Usage](./customer_usage.md) - Track spend and usage for individual customers
-- [Cost Tracking](./cost_tracking.md) - Cost tracking and analytics
-- [Spend Logs](./cost_tracking.md#-spend-logs-api---individual-transaction-logs) - Detailed request-level spend logs
+- [客戶使用量](./customer_usage.md) - 追蹤個別客戶的 spend 與使用量
+- [成本追蹤](./cost_tracking.md) - 成本追蹤與分析
+- [Spend Logs](./cost_tracking.md#-spend-logs-api---individual-transaction-logs) - 詳細的請求層級 spend logs

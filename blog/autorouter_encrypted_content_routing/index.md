@@ -1,34 +1,34 @@
 ---
 slug: auto-router-encrypted-content-routing
-title: "Auto-Router: Switching Tiers Without Encrypted Content Failures"
+title: "Auto-Router：在不發生加密內容失敗的情況下切換層級"
 date: 2026-09-18T10:00:00
 authors:
   - tin
-description: "How LiteLLM safely removes undecryptable encrypted reasoning from cross-tier follow-ups so Auto-Router can keep routing requests"
-keywords: [auto router, encrypted content, Responses API, reasoning, routing, LiteLLM]
+description: "LiteLLM 如何安全地從跨層後續請求中移除無法解密的加密推理，讓 Auto-Router 能持續路由請求"
+keywords: [auto router, 加密內容, Responses API, 推理, 路由, LiteLLM]
 tags: [routing, complexity-router, responses-api, engineering]
 hide_table_of_contents: false
 ---
 
-Auto-Router can move a conversation between tiers as the request changes from simple work to a harder task. Responses API clients can make that switch difficult because a previous response may include encrypted reasoning content that only the deployment that created it can decrypt
+Auto-Router 可以在請求從簡單工作變成較困難的任務時，在不同層級之間移動對話。Responses API 用戶端可能會讓這種切換變得困難，因為先前的回應可能包含只有建立它的部署才能解密的加密推理內容
 
-LiteLLM now keeps the readable history and removes encrypted reasoning that the newly selected tier cannot verify. The request can continue to the selected model instead of failing with `invalid_encrypted_content`
+LiteLLM 現在會保留可讀的歷史記錄，並移除新選定層級無法驗證的加密推理。請求可以繼續送往所選模型，而不是因為 `invalid_encrypted_content` 而失敗
 
-This fix is included in the LiteLLM `v1.102.x` release line and landed in [PR #40280](https://github.com/BerriAI/litellm/pull/40280)
+這項修正已包含在 LiteLLM `v1.102.x` 發行線，並已合併於 [PR #40280](https://github.com/BerriAI/litellm/pull/40280)
 
 {/* truncate */}
 
-## Why encrypted reasoning blocks fail after a tier change
+## 為什麼在切換層級後加密推理區塊會失敗 {#why-encrypted-reasoning-blocks-fail-after-a-tier-change}
 
-A Responses API reasoning item can contain an `encrypted_content` field and an item ID such as `rs_...`. The provider binds that payload to the organization, API key, or encryption boundary that created it. A later request that carries the item to a different boundary can reach the provider, but the provider cannot verify it
+Responses API 的推理項目可能包含 `encrypted_content` 欄位，以及像 `rs_...` 這樣的項目 ID。提供者會將該負載綁定到建立它的組織、API 金鑰或加密邊界。後續請求若將該項目帶到不同的邊界，雖然可以送達提供者，但提供者無法驗證它
 
-Auto-Router makes this situation more common than a fixed model route. One turn may go to a fast model in the SIMPLE tier. The next turn may classify as COMPLEX and select a different model group. If the follow-up includes reasoning from the first turn, forwarding the encrypted payload to the second group produces the upstream error
+Auto-Router 讓這種情況比固定的模型路由更常見。某一回合可能會走向 SIMPLE 層級中的快速模型。下一回合可能會被分類為 COMPLEX，並選擇不同的模型群組。如果後續請求包含第一回合的推理內容，將加密負載轉送到第二個群組就會產生上游錯誤
 
-Broad session or deployment affinity avoids the error by pinning more traffic than the conversation requires. It also prevents Auto-Router from switching tiers when the request needs a different model
+廣泛的工作階段或部署親和性會透過固定比對話所需更多的流量來避免此錯誤。它也會阻止 Auto-Router 在請求需要不同模型時切換層級
 
-## The routing decision
+## 路由決策 {#the-routing-decision}
 
-Enable the `encrypted_content_affinity` pre-call check alongside your Auto-Router configuration
+啟用 `encrypted_content_affinity` 的前置呼叫檢查，並搭配您的 Auto-Router 設定
 
 ```yaml
 router_settings:
@@ -58,19 +58,19 @@ model_list:
             - model_name: opus
 ```
 
-When LiteLLM sees a tracked encrypted item, it first looks for the deployment that created it. If that deployment is available, LiteLLM pins this request to it. If another healthy deployment shares the same encryption boundary, LiteLLM can use that peer
+當 LiteLLM 看到已追蹤的加密項目時，會先尋找建立它的部署。如果該部署可用，LiteLLM 會將此請求固定到該部署。如果另一個健康的部署共用相同的加密邊界，LiteLLM 可以使用該對等部署
 
-If the originating deployment belongs to a different routed group, LiteLLM removes the undecryptable encrypted reasoning and returns the healthy deployments for the selected group. Auto-Router keeps its tier decision
+如果來源部署屬於不同的路由群組，LiteLLM 會移除無法解密的加密推理，並回傳所選群組的健康部署。Auto-Router 會維持其層級決策
 
-A same-group deployment that is temporarily unavailable follows the existing fail-fast behavior. LiteLLM does not send the encrypted item to a same-group deployment that cannot serve it and does not hide a cooldown behind a cross-tier rewrite
+同一群組內暫時不可用的部署會沿用既有的快速失敗行為。LiteLLM 不會將加密項目送往無法提供服務的同群組部署，也不會透過跨層重寫來隱藏冷卻期間
 
-## What LiteLLM removes
+## LiteLLM 會移除什麼 {#what-litellm-removes}
 
-LiteLLM mutates the request before dispatch and removes `encrypted_content` and `id` from a reasoning item when the selected deployment cannot decrypt them. It keeps a readable `summary` or `content` field so the selected model still sees the response history
+LiteLLM 會在派送前修改請求，並在所選部署無法解密時，從推理項目中移除 `encrypted_content` 與 `id`。它會保留可讀的 `summary` 或 `content` 欄位，讓所選模型仍能看到回應歷史
 
-If a reasoning item has no readable summary or content, LiteLLM removes that item. Other input items, including user messages and ordinary assistant messages, remain in the request
+如果推理項目沒有可讀的摘要或內容，LiteLLM 會移除該項目。其他輸入項目，包括使用者訊息與一般 assistant 訊息，仍會保留在請求中
 
-For example, a cross-tier follow-up changes from this:
+範例而言，跨層後續請求會從這樣：
 
 ```json
 {
@@ -83,7 +83,7 @@ For example, a cross-tier follow-up changes from this:
 }
 ```
 
-to this before dispatch:
+在派送前變成這樣：
 
 ```json
 {
@@ -94,14 +94,14 @@ to this before dispatch:
 }
 ```
 
-LiteLLM applies the same boundary check to bridged Anthropic thinking blocks. When the bridge identifies encrypted reasoning from another route, it drops that thinking block instead of forwarding a foreign or unsigned signature that the provider would reject
+LiteLLM 會將相同的邊界檢查套用到已橋接的 Anthropic thinking 區塊。當橋接偵測到來自其他路由的加密推理時，它會丟棄該 thinking 區塊，而不是轉送提供者會拒絕的外部或未簽署簽章
 
-## Why this keeps Auto-Router useful
+## 為什麼這能讓 Auto-Router 保持可用 {#why-this-keeps-auto-router-useful}
 
-The check pins only requests that need the original encryption boundary. Ordinary requests continue through the configured routing strategy, and a cross-tier follow-up can reach the tier selected for the current request
+此檢查只會固定需要原始加密邊界的請求。一般請求會繼續透過已設定的路由策略，而跨層後續請求可以到達針對目前請求所選定的層級
 
-This gives Auto-Router two safe paths. It preserves encrypted reasoning when the selected deployment can verify it. For cross-tier Responses requests, it preserves the readable summary and removes the provider-bound payload. For bridged Anthropic thinking, it drops the foreign encrypted block before dispatch
+這讓 Auto-Router 有兩條安全路徑。當所選部署可以驗證加密推理時，它會保留加密推理。對於跨層 Responses 請求，它會保留可讀摘要並移除由提供者綁定的負載。對於已橋接的 Anthropic thinking，它會在派送前丟棄外來的加密區塊
 
-The behavior lives in the encrypted-content pre-call check and the Responses request utilities. The relevant implementation and regression coverage are available in [the affinity check](https://github.com/BerriAI/litellm/blob/main/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py), [the Responses request utility](https://github.com/BerriAI/litellm/blob/main/litellm/responses/utils.py), and [the routing tests](https://github.com/BerriAI/litellm/blob/main/tests/test_litellm/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py)
+此行為位於加密內容的前置呼叫檢查與 Responses 請求工具中。相關實作與回歸涵蓋可見於 [親和性檢查](https://github.com/BerriAI/litellm/blob/main/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py)、[Responses 請求工具](https://github.com/BerriAI/litellm/blob/main/litellm/responses/utils.py) 與 [路由測試](https://github.com/BerriAI/litellm/blob/main/tests/test_litellm/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py)
 
-For the complete setup and deployment-affinity behavior, see the [Responses API encrypted content affinity guide](https://docs.litellm.ai/docs/response_api#encrypted-content-affinity-multi-region-load-balancing)
+如需完整設定與部署親和性行為，請參閱 [Responses API 加密內容親和性指南](https://docs.litellm.ai/docs/response_api#encrypted-content-affinity-multi-region-load-balancing)

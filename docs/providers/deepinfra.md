@@ -1,28 +1,28 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# DeepInfra
+# DeepInfra {#deepinfra}
 https://deepinfra.com/
 
 :::tip
 
-**We support ALL DeepInfra models, just set `model=deepinfra/<any-model-on-deepinfra>` as a prefix when sending litellm requests**
+**我們支援所有 DeepInfra 模型，只要在傳送 litellm 請求時將 `model=deepinfra/<any-model-on-deepinfra>` 設為前綴即可**
 
 :::
 
-## Table of Contents
+## 目錄 {#table-of-contents}
 
-- [API Key](#api-key)
-- [Chat Models](#chat-models)
-- [Rerank Endpoint](#rerank-endpoint)
+- [API 金鑰](#api-key)
+- [聊天模型](#chat-models)
+- [重新排序端點](#rerank-endpoint)
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['DEEPINFRA_API_KEY']
 ```
 
-## Sample Usage
+## 使用範例 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -34,7 +34,7 @@ response = completion(
 )
 ```
 
-## Sample Usage - Streaming
+## 使用範例 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -50,8 +50,8 @@ for chunk in response:
     print(chunk)
 ```
 
-## Chat Models
-| Model Name       | Function Call                        |
+## 聊天模型 {#chat-models}
+| 模型名稱       | 函式呼叫                        |
 |------------------|--------------------------------------|
 | meta-llama/Meta-Llama-3-8B-Instruct  | `completion(model="deepinfra/meta-llama/Meta-Llama-3-8B-Instruct", messages)` | 
 | meta-llama/Meta-Llama-3-70B-Instruct  | `completion(model="deepinfra/meta-llama/Meta-Llama-3-70B-Instruct", messages)` | 
@@ -62,19 +62,19 @@ for chunk in response:
 | mistralai/Mistral-7B-Instruct-v0.1 | `completion(model="deepinfra/mistralai/Mistral-7B-Instruct-v0.1", messages)` | 
 | jondurbin/airoboros-l2-70b-gpt4-1.4.1 | `completion(model="deepinfra/jondurbin/airoboros-l2-70b-gpt4-1.4.1", messages)` |
 
-## Rerank Endpoint
+## 重新排序端點 {#rerank-endpoint}
 
-LiteLLM provides a Cohere API compatible `/rerank` endpoint for DeepInfra rerank models.
+LiteLLM 提供與 Cohere API 相容的 `/rerank` 端點，供 DeepInfra 重新排序模型使用。
 
-### Supported Rerank Models
+### 支援的重新排序模型 {#supported-rerank-models}
 
-| Model Name | Description |
+| 模型名稱 | 說明 |
 |------------|-------------|
-| `deepinfra/Qwen/Qwen3-Reranker-0.6B` | Lightweight rerank model (0.6B parameters) |
-| `deepinfra/Qwen/Qwen3-Reranker-4B` | Medium rerank model (4B parameters) |
-| `deepinfra/Qwen/Qwen3-Reranker-8B` | Large rerank model (8B parameters) |
+| `deepinfra/Qwen/Qwen3-Reranker-0.6B` | 輕量級重新排序模型（0.6B 參數） |
+| `deepinfra/Qwen/Qwen3-Reranker-4B` | 中型重新排序模型（4B 參數） |
+| `deepinfra/Qwen/Qwen3-Reranker-8B` | 大型重新排序模型（8B 參數） |
 
-### Usage - LiteLLM Python SDK
+### 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -102,7 +102,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add to config.yaml
+1. 新增至 config.yaml
 ```yaml
 model_list:
   - model_name: Qwen/Qwen3-Reranker-0.6B
@@ -111,7 +111,7 @@ model_list:
       api_key: os.environ/DEEPINFRA_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -119,7 +119,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000/
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash 
 curl -L -X POST 'http://0.0.0.0:4000/rerank' \
@@ -141,16 +141,15 @@ curl -L -X POST 'http://0.0.0.0:4000/rerank' \
 </TabItem>
 </Tabs>
 
-### Supported Cohere Rerank API Params
+### 支援的 Cohere 重新排序 API 參數 {#supported-cohere-rerank-api-params}
 
-| Param              | Type        | Description                                     |
+| 參數              | 類型        | 說明                                     |
 | ------------------ | ----------- | ----------------------------------------------- |
-| `query`            | `str`       | The query to rerank the documents against       |
-| `documents`        | `list[str]` | The documents to rerank                         |
+| `query`            | `str`       | 用於對文件進行重新排序的查詢       |
+| `documents`        | `list[str]` | 要重新排序的文件                         |
 
-
-### Provider-specific parameters
-Pass any deepinfra specific parameters as a keyword argument to the rerank function, e.g.
+### 提供者特定參數 {#provider-specific-parameters}
+請將任何 deepinfra 特定參數作為關鍵字引數傳遞給 rerank 函式，例如：
 
 ```
 response = rerank(
@@ -167,7 +166,7 @@ response = rerank(
 )
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
 ```json
 {

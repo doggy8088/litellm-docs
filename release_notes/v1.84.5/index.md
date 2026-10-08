@@ -1,5 +1,5 @@
 ---
-title: "v1.84.5 - Azure AD, Batch Auth & Passthrough Backports"
+title: "v1.84.5 - Azure AD、Batch Auth 與 Passthrough 回補"
 slug: "v1-84-5"
 date: 2026-06-03T20:44:41
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,17 +43,17 @@ pip install litellm==1.84.5
 </TabItem>
 </Tabs>
 
-`v1.84.5` is a patch release on top of [`v1.84.4`](/release_notes/v1.84.4/v1-84-4). It backports six staged fixes covering Azure AD token refresh, batch and video model routing, org-scoped team key creation, Vertex Claude effort handling, and duplicate passthrough cost callbacks.
+`v1.84.5` 是建立在 [`v1.84.4`](/release_notes/v1.84.4/v1-84-4) 之上的修補版本。它回補了六項已排程修正，涵蓋 Azure AD 權杖重新整理、批次與影片模型路由、組織範圍團隊金鑰建立、Vertex Claude effort 處理，以及重複的 passthrough 成本回呼。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(azure): preserve AD token refresh in the v1 OpenAI client path - [PR #28627](https://github.com/BerriAI/litellm/pull/28627)
-- fix(proxy): map a stripped batch `body.model` back to the proxy alias so key access checks pass - [PR #29264](https://github.com/BerriAI/litellm/pull/29264)
-- fix(proxy): resolve managed video model ids through the router before auth, budget, and key checks - [PR #29545](https://github.com/BerriAI/litellm/pull/29545)
-- fix(key_generate): let team members create keys on org-scoped teams (regression since v1.84.0-rc.1) - [PR #29310](https://github.com/BerriAI/litellm/pull/29310)
-- fix(vertex): strip `output_config.effort` for Vertex Claude models that reject it, such as Haiku 4.5 - [PR #29585](https://github.com/BerriAI/litellm/pull/29585)
-- fix(passthrough): stop duplicate cost callbacks for Anthropic streaming pass-through - [PR #29598](https://github.com/BerriAI/litellm/pull/29598)
+- fix(azure): 在 v1 OpenAI 用戶端路徑中保留 AD 權杖重新整理 - [PR #28627](https://github.com/BerriAI/litellm/pull/28627)
+- fix(proxy): 將移除的 batch `body.model` 對應回 proxy 別名，讓金鑰存取檢查能通過 - [PR #29264](https://github.com/BerriAI/litellm/pull/29264)
+- fix(proxy): 在 auth、budget 與 key 檢查之前，先透過 router 解析受管理的影片模型 id - [PR #29545](https://github.com/BerriAI/litellm/pull/29545)
+- fix(key_generate): 讓團隊成員能在 org-scoped 團隊上建立金鑰（自 v1.84.0-rc.1 起的回歸） - [PR #29310](https://github.com/BerriAI/litellm/pull/29310)
+- fix(vertex): 對於會拒絕它的 Vertex Claude 模型（例如 Haiku 4.5），移除 `output_config.effort` - [PR #29585](https://github.com/BerriAI/litellm/pull/29585)
+- fix(passthrough): 停止 Anthropic 串流 passthrough 的重複成本回呼 - [PR #29598](https://github.com/BerriAI/litellm/pull/29598)
 
-## Full Changelog
+## 完整更新記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.4...v1.84.5

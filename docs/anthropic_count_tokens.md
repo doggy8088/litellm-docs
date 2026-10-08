@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /v1/messages/count_tokens
+# /v1/messages/count_tokens {#v1messagescount_tokens}
 
-## Overview
+## 概覽 {#overview}
 
-Anthropic-compatible token counting endpoint. Count tokens for messages before sending them to the model.
+Anthropic 相容的 token 計數端點。在將訊息送入模型之前先計算其 token 數。
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ❌ | Token counting only, no cost incurred |
-| Logging | ✅ | Works across all integrations |
-| End-user Tracking | ✅ | |
-| Supported Providers | Anthropic, Vertex AI (Claude), Bedrock (Claude), Gemini, Vertex AI | Auto-routes to provider-specific token counting APIs |
+| 成本追蹤 | ❌ | 僅進行 token 計數，不產生成本 |
+| 記錄 | ✅ | 可跨所有整合使用 |
+| 終端使用者追蹤 | ✅ | |
+| 支援的提供者 | Anthropic、Vertex AI（Claude）、Bedrock（Claude）、Gemini、Vertex AI | 會自動路由至提供者專屬的 token 計數 API |
 
-## Quick Start
+## 快速入門 {#quick-start}
 
-### 1. Start LiteLLM Proxy
+### 1. 啟動 LiteLLM Proxy {#1-start-litellm-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -24,7 +24,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 2. Count Tokens
+### 2. 計算 Token {#2-count-tokens}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -68,7 +68,7 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-**Expected Response:**
+**預期回應：**
 
 ```json
 {
@@ -76,9 +76,9 @@ print(response.json())
 }
 ```
 
-## LiteLLM Proxy Configuration
+## LiteLLM Proxy 設定 {#litellm-proxy-configuration}
 
-Add models to your `config.yaml`:
+將模型新增至您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -100,14 +100,14 @@ model_list:
       aws_region_name: us-west-2
 ```
 
-## Request Parameters
+## 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
-| `model` | string | ✅ | The model to use for token counting |
-| `messages` | array | ✅ | Array of messages in Anthropic format |
+| `model` | string | ✅ | 用於 token 計數的模型 |
+| `messages` | array | ✅ | Anthropic 格式的訊息陣列 |
 
-### Messages Format
+### 訊息格式 {#messages-format}
 
 ```json
 {
@@ -119,7 +119,7 @@ model_list:
 }
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
 ```json
 {
@@ -127,26 +127,26 @@ model_list:
 }
 ```
 
-| Field | Type | Description |
+| 欄位 | 類型 | 說明 |
 |-------|------|-------------|
-| `input_tokens` | integer | Number of tokens in the input messages |
+| `input_tokens` | integer | 輸入訊息中的 token 數量 |
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-The `/v1/messages/count_tokens` endpoint automatically routes to the appropriate provider-specific token counting API:
+`/v1/messages/count_tokens` 端點會自動路由至適當的提供者專屬 token 計數 API：
 
-| Provider | Token Counting Method |
+| 提供者 | Token 計數方法 |
 |----------|----------------------|
 | Anthropic | [Anthropic Token Counting API](https://docs.anthropic.com/en/docs/build-with-claude/token-counting) |
-| OpenAI | [OpenAI Responses API `/input_tokens`](https://platform.openai.com/docs/api-reference/responses/input-tokens) — see [Token Counting](./count_tokens.md) |
-| Vertex AI (Claude) | Vertex AI Partner Models Token Counter |
-| Bedrock (Claude) | AWS Bedrock CountTokens API |
+| OpenAI | [OpenAI Responses API `/input_tokens`](https://platform.openai.com/docs/api-reference/responses/input-tokens) — 參閱 [Token Counting](./count_tokens.md) |
+| Vertex AI（Claude） | Vertex AI Partner Models Token Counter |
+| Bedrock（Claude） | AWS Bedrock CountTokens API |
 | Gemini | Google AI Studio countTokens API |
-| Vertex AI (Gemini) | Vertex AI countTokens API |
+| Vertex AI（Gemini） | Vertex AI countTokens API |
 
-## Examples
+## 範例 {#examples}
 
-### Count Tokens with System Message
+### 透過系統訊息計算 Token {#count-tokens-with-system-message}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
@@ -160,7 +160,7 @@ curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
   }'
 ```
 
-### Count Tokens for Multi-turn Conversation
+### 計算多輪對話的 Token {#count-tokens-for-multi-turn-conversation}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
@@ -176,7 +176,7 @@ curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
   }'
 ```
 
-### Using with Vertex AI Claude
+### 搭配 Vertex AI Claude 使用 {#using-with-vertex-ai-claude}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
@@ -190,7 +190,7 @@ curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
   }'
 ```
 
-### Using with Bedrock Claude
+### 搭配 Bedrock Claude 使用 {#using-with-bedrock-claude}
 
 ```bash
 curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
@@ -204,18 +204,18 @@ curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
   }'
 ```
 
-## Comparison with Anthropic Passthrough
+## 與 Anthropic 轉送相比 {#comparison-with-anthropic-passthrough}
 
-LiteLLM provides two ways to count tokens:
+LiteLLM 提供兩種計算 token 的方式：
 
-| Endpoint | Description | Use Case |
+| 端點 | 說明 | 使用情境 |
 |----------|-------------|----------|
-| `/v1/messages/count_tokens` | LiteLLM's Anthropic-compatible endpoint | Works with all supported providers (Anthropic, Vertex AI, Bedrock, etc.) |
-| `/anthropic/v1/messages/count_tokens` | [Pass-through to Anthropic API](./pass_through/anthropic_completion.md#example-2-token-counting-api) | Direct Anthropic API access with native headers |
+| `/v1/messages/count_tokens` | LiteLLM 的 Anthropic 相容端點 | 可與所有支援的提供者（Anthropic、Vertex AI、Bedrock 等）搭配使用 |
+| `/anthropic/v1/messages/count_tokens` | [轉送至 Anthropic API](./pass_through/anthropic_completion.md#example-2-token-counting-api) | 直接存取 Anthropic API，使用原生標頭 |
 
-### Pass-through Example
+### 轉送範例 {#pass-through-example}
 
-For direct Anthropic API access with full native headers:
+若要直接存取 Anthropic API 並保留完整原生標頭：
 
 ```bash
 curl --request POST \

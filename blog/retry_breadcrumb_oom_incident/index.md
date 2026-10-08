@@ -1,6 +1,6 @@
 ---
 slug: retry-breadcrumb-oom-incident
-title: "Incident Report: Retry Breadcrumb Memory Growth Causing OOM on v1.100.0"
+title: "事件報告：重試麵包屑記憶體成長導致 v1.100.0 發生 OOM"
 date: 2026-09-12T10:00:00
 authors:
   - kerry
@@ -8,93 +8,93 @@ tags: [incident-report, router, redis, memory]
 hide_table_of_contents: false
 ---
 
-**Date:** September 7 to September 9, 2026  
-**Affected versions:** `v1.100.0`  
-**Severity:** Medium (production outage for one customer; low blast radius, required an unreachable Redis)  
-**Status:** Resolved in `v1.100.1`
+**日期：** 2026 年 9 月 7 日至 2026 年 9 月 9 日  
+**受影響版本：** `v1.100.0`  
+**嚴重性：** 中等（單一客戶的生產環境中斷；影響範圍小，且需要無法連線的 Redis）  
+**狀態：** 已在 `v1.100.1` 中修正
 
-> **Note:** If you are running `v1.100.0`, upgrade to `v1.100.1` or later. [`v1.99.1`](https://github.com/BerriAI/litellm/releases/tag/v1.99.1) and earlier are not affected. The `v1.100.0` dev and rc pre-releases, `v1.101.0-dev.1`, and `v1.101.0-dev.2` carry the same defect; `v1.101.0-rc.1` and later are not affected.
+> **注意：** 如果您正在執行 `v1.100.0`，請升級至 `v1.100.1` 或更新版本。[`v1.99.1`](https://github.com/BerriAI/litellm/releases/tag/v1.99.1) 及更早版本不受影響。`v1.100.0` dev 與 rc 預發行版本、`v1.101.0-dev.1`，以及 `v1.101.0-dev.2` 都存在相同缺陷；`v1.101.0-rc.1` 及更新版本不受影響。
 
-## Summary
+## 摘要 {#summary}
 
-Between September 7 and September 9, 2026, an enterprise customer running `litellm-database:v1.100.0` behind nginx experienced two waves of kernel OOM kills across their proxy fleet: dozens of kills by the customer's count, one worker process reaching 61 GB RSS, and thousands of HTTP 502s and tens of thousands of HTTP 499s while the platform was down.
+在 2026 年 9 月 7 日至 2026 年 9 月 9 日期間，一位在 nginx 後方執行 `litellm-database:v1.100.0` 的企業客戶，經歷了其 proxy 叢集中兩波核心 OOM kill：依客戶統計有數十次 kill，某個 worker process 的 RSS 達到 61 GB，而平台停機期間則出現數千次 HTTP 502 與數萬次 HTTP 499。
 
-This needed two things to be true at once: the provider on the customer's traffic kept failing, so the router kept retrying, and Redis was unreachable at the same time, so every completing request logged the growing result of those retries in full. The retries grew unbounded because of a one-line change in [PR #38133](https://github.com/BerriAI/litellm/pull/38133) (August 24), which ran retry breadcrumbs, the record the router keeps of each failed LLM attempt, through an existing credential-masking helper before storing them. The helper was correct for its original inputs but assumed it was copying a plain tree; the breadcrumb was not a tree, it contained a pointer back to the same list it was about to be appended to. Copying it without preserving that shared reference turned a structure that had cost nothing in memory since December 2023 into one that roughly doubled in size with every retry, until a cost-tracking error handler turned it into a log string on every request for as long as the Redis outage lasted, and a single allocation reached 27 GB.
+這必須同時滿足兩個條件：客戶流量所使用的提供者持續失敗，因此 router 不斷重試；同時 Redis 無法連線，因此每個完成的請求都會將那些重試的累積結果完整記錄下來。重試之所以無界增長，是因為 [PR #38133](https://github.com/BerriAI/litellm/pull/38133)（8 月 24 日）的一行變更，將重試麵包屑——router 為每次失敗的 LLM 嘗試保留的紀錄——在儲存前先經過一個既有的憑證遮罩 helper。這個 helper 對其原始輸入是正確的，但它假設自己是在複製一棵普通樹；麵包屑不是樹，它包含一個指回即將被追加到其中的同一個 list 的指標。若在不保留該共享參照的情況下複製它，就會把自 2023 年 12 月以來在記憶體中成本為零的結構，變成每次重試都大約加倍的結構；直到一個成本追蹤錯誤處理器在 Redis 中斷期間，於每個請求上都把它轉成 log 字串，而單次配置最終達到 27 GB。
 
-We fixed the underlying growth in [PR #39491](https://github.com/BerriAI/litellm/pull/39491), merged September 3 and included in `v1.101.0-rc.1`. It was not backported to `v1.100.0` before that version was tagged stable two days later. We backported it to `stable/1.100.x` on September 9 ([PR #40455](https://github.com/BerriAI/litellm/pull/40455)) and published `v1.100.1`.
+我們在 [PR #39491](https://github.com/BerriAI/litellm/pull/39491) 中修正了底層成長問題，該 PR 於 9 月 3 日合併，並納入 `v1.101.0-rc.1`。該修正未在兩天後該版本被標記為 stable 之前回補到 `v1.100.0`。我們於 9 月 9 日將其回補到 `stable/1.100.x`（[PR #40455](https://github.com/BerriAI/litellm/pull/40455)），並發布 `v1.100.1`。
 
-We own this outcome entirely. The defect existed in a form we could have caught, a ticket filed three days before the stable release correctly identified a growth problem in the same code path, and our own fix PR turned an untested hedge in that ticket into a stated fact. The rest of this post explains how each of those things happened and what we're changing so that a defect like this can't reach a stable release the same way again.
+我們完全承擔這個結果。這個缺陷以我們本可發現的形式存在；在 stable release 前三天提交的一張 ticket 正確指出同一段程式碼路徑中的成長問題，而我們自己的修正 PR 又把那張 ticket 中一個未經測試的推測，變成了明確陳述的事實。本文其餘部分會說明這些事情是如何發生的，以及我們正在做哪些改變，確保這類缺陷不會再以同樣方式進入 stable release。
 
 {/* truncate */}
 
 ---
 
-## Background
+## 背景 {#background}
 
-1. **What a retry breadcrumb is.** When an LLM call fails and the router retries or falls back, it writes a note about the failed attempt into the request's metadata under `previous_models`, so logs can show what was tried and what succeeded. One breadcrumb is roughly 10 KB.
-2. **Why the breadcrumb needed masking.** Because it copies request settings wholesale, a breadcrumb can carry a forwarded `Authorization` header or a provider key, and it flows into spend logs and logging callbacks. `mask_credentials_in_payload` is an existing helper that replaces values under credential-looking keys with asterisks; it was already used elsewhere for guardrail responses. Running new breadcrumbs through it was reviewed and merged as a one-line security fix.
-3. **A pointer loop that was already there, and had always been free.** For every incoming request, the proxy builds one metadata dict and a request snapshot whose body is a shallow copy of that same dict. When a call fails, the router's breadcrumb stores the snapshot by reference, appends itself to a list shared across the process, and the metadata's `previous_models` field points at that same list. The breadcrumb, the snapshot, the metadata, and the list form a loop. This had existed since December 2023 and cost nothing: a pointer is 8 bytes, so the process held four breadcrumbs' worth of memory, forever, regardless of how many failures occurred.
+1. **什麼是重試麵包屑。** 當 LLM 呼叫失敗且 router 重試或備援時，它會在請求的 metadata 下以 `previous_models` 儲存一則關於該次失敗嘗試的註記，因此 log 可以顯示嘗試了什麼、成功了什麼。一則麵包屑大約是 10 KB。
+2. **為什麼麵包屑需要遮罩。** 因為它會完整複製請求設定，麵包屑可能攜帶轉送的 `Authorization` header 或提供者金鑰，且它會流入支出 log 與記錄回呼。`mask_credentials_in_payload` 是一個既有 helper，會將看起來像憑證的 key 底下的值以星號取代；它先前已在其他防護欄回應中使用。將新的麵包屑送入它處理，已被審查並以一行安全修正合併。
+3. **一個已存在且一直是免費的指標迴圈。** 對於每個進入的請求，proxy 會建立一個 metadata dict 與一個 request snapshot，而其 body 只是同一個 dict 的淺拷貝。當呼叫失敗時，router 的麵包屑會以參照方式儲存該 snapshot，將自己附加到一個在整個 process 中共享的 list，且 metadata 的 `previous_models` 欄位會指向同一個 list。麵包屑、snapshot、metadata 與該 list 形成一個迴圈。這個結構自 2023 年 12 月以來就已存在，而且成本為零：一個指標是 8 bytes，因此 process 永遠只持有相當於四個麵包屑的記憶體，不論發生多少次失敗都一樣。
 
-|                     | v1.98.0 (before)                                                                                                                                    | v1.100.0 (regression)                                                       | v1.101.0-rc.1 (fix)                                                             |
+|                     | v1.98.0（修正前）                                                                                                                                    | v1.100.0（回歸）                                                       | v1.101.0-rc.1（修正）                                                             |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Breadcrumb contents | Exception info, request kwargs, metadata, and a shallow copy of the request snapshot, all shared references, so the loop costs nothing              | Same fields, now passed through `mask_credentials_in_payload` before storage | Same as v1.100.0, minus the request snapshot, which is what closed the loop     |
-| Stored on           | The router, one list shared by every request in the process, last four kept                                                                        | Same                                                                        | The request's own metadata, last four per request                               |
+| 麵包屑內容          | Exception 資訊、request kwargs、metadata，以及 request snapshot 的淺拷貝，全都是共享參照，因此該迴圈不耗費成本              | 相同欄位，但在儲存前先經過 `mask_credentials_in_payload`                     | 與 v1.100.0 相同，但移除了 request snapshot，也就是閉合該迴圈的部分     |
+| 儲存位置            | router，由 process 中每個請求共享的一個 list，保留最後四筆                                                                        | 相同                                                                        | 該請求自身的 metadata，每個請求保留最後四筆                               |
 
 ---
 
-## What went wrong
+## 哪裡出了問題 {#what-went-wrong}
 
-1. **The masking helper assumed a tree, and the breadcrumb wasn't one.** To star out a secret without mutating the original (which the router still needs for the retry), `mask_credentials_in_payload` rebuilds the structure it's given as a new copy. That's correct for guardrail responses and provider params, which are plain trees. It has no memo of objects it has already visited, which is how Python's own `copy.deepcopy` keeps shared references shared and loops as loops. Handed the breadcrumb's pointer back to the shared list, it didn't keep the pointer. It built a new list containing copies of every earlier breadcrumb, each of which already held copies of its own predecessors.
-2. **Each retry's breadcrumb became roughly the sum of the last four.** With nothing shared anymore, breadcrumb size compounds: measured at close to 1.85x per failed retry in our reproduction of the incident, which put one request's metadata past a million characters by the twelfth failure. The fix PR's own measurement shows the same curve on a chat completions path under `--detailed_debug`: a single debug log line grew from roughly 10 KB to 1.24 MB within nine failing requests ([PR #39491](https://github.com/BerriAI/litellm/pull/39491)).
-3. **Two failures at once is what made this an outage.** Either one alone was survivable. The provider on the customer's high-volume embeddings path kept failing, so the router kept retrying, and every retry made the breadcrumb structure bigger: a request that failed a dozen times carried a structure over a million characters wide by the end. At the same time Redis was genuinely unreachable, so the spend-tracking call on every completing request failed with the same exception for as long as the outage lasted. The provider failures decided how large the structure got, and the Redis outage decided how often something read the whole thing back. On their own, the provider failures would have grown a structure nothing expensive touched, and the Redis outage would have raised an exception over a structure that was still 10 KB. Together, on that traffic, every completing request paid the full cost of every retry that preceded it.
-4. **The growing structure was turned into a log string on every request, with no level gate.** Each time the spend-counter increment failed, that exception landed in the cost-tracking callback's error handler, which builds a Slack alert by pasting the request's full metadata into an f-string, evaluated immediately, at every log level, not only under `--detailed_debug`. For a full minute at a time, every completing request turned an already-doubling structure into text, on the event loop. The customer's `py-spy` trace showed the worker pinned at 100% inside that single line; their memory map showed one 27 GB allocation.
+1. **遮罩 helper 假設的是一棵樹，而麵包屑不是。** 為了在不修改原始資料的情況下把 secret 變成星號（而 router 在重試時仍需要原始資料），`mask_credentials_in_payload` 會把收到的結構重建成一份新拷貝。這對 guardrail 回應與提供者參數是正確的，因為它們是普通樹狀結構。它沒有記錄自己已經訪問過哪些物件，而這正是 Python 自己的 `copy.deepcopy` 維持共享參照仍為共享、迴圈仍為迴圈的方法。當它拿到麵包屑中指回共享 list 的指標時，它沒有保留那個指標。它建立了一個新 list，裡面包含每一個較早麵包屑的拷貝，而那些拷貝本身又已經各自持有其前驅的拷貝。
+2. **每次重試的麵包屑大約變成前四筆總和。** 一旦不再共享，麵包屑大小就會複合成長：我們在此次事件的重現中量測到，每次失敗重試約增長 1.85 倍，這使得一個請求的 metadata 在第 12 次失敗時就超過了一百萬個字元。修正 PR 自己的量測也顯示，在 `--detailed_debug` 下的 chat completions 路徑上存在相同曲線：一條 debug log 從大約 10 KB 在九次失敗請求內成長到 1.24 MB（[PR #39491](https://github.com/BerriAI/litellm/pull/39491)）。
+3. **同時發生兩種失敗，才造成這次中斷。** 單獨任何一個都還能承受。客戶高流量 embeddings 路徑上的提供者持續失敗，因此 router 不斷重試，而每次重試都讓麵包屑結構變大：到最後，一個失敗了十幾次的請求，其結構寬度超過一百萬個字元。與此同時，Redis 確實無法連線，因此每個完成請求上的支出追蹤呼叫在整個中斷期間都以相同例外失敗。提供者失敗決定了結構變得多大，而 Redis 中斷決定了有多頻繁地把整個結構讀回來。單獨來看，提供者失敗只會讓一個沒什麼昂貴操作碰觸的結構成長，而 Redis 中斷則只會在仍只有 10 KB 的結構上拋出例外。兩者一起發生在那段流量上時，每個完成的請求都得為其前面所有重試付出完整成本。
+4. **成長中的結構在每個請求上都被轉成 log 字串，且沒有 level 門檻。** 每次 spend-counter increment 失敗時，那個例外都會進入 cost-tracking callback 的 error handler，而該 handler 會透過 f-string 組出 Slack alert，立即在每個 log level 都被求值，而不只是 `--detailed_debug` 之下。每次長達一分鐘的時間裡，每個完成請求都會把一個本來就已經加倍成長的結構轉成文字，而且是在 event loop 上完成。客戶的 `py-spy` trace 顯示 worker 卡在該單一行內 100%；其記憶體映射顯示出一筆 27 GB 的配置。
 
 ---
 
-## Detection and response
+## 偵測與回應 {#detection-and-response}
 
-The customer opened a Sev 0 ticket on September 9 reporting two waves of kernel OOM kills (September 7 and 9), 502s and 499s across their fleet, and one process at 61 GB RSS. A `py-spy` flamegraph they captured pinpointed the stall inside the cost-tracking callback's error handler, and they traced the regression to commit `721227e9ee` before we did.
+客戶在 9 月 9 日提交了一張 Sev 0 工單，回報兩波 kernel OOM kill（9 月 7 日與 9 日）、整個叢集上的 502 與 499，以及一個進程的 RSS 達 61 GB。他們擷取的 `py-spy` flamegraph 精確指出停滯發生在成本追蹤 callback 的錯誤處理器內，而他們比我們更早將回歸問題追溯到 commit `721227e9ee`。
 
-| Date (2026)     | Event                                                                                                                                                                                                    |
+| 日期（2026）     | 事件                                                                                                                                                                                                    |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Aug 24          | [PR #38133](https://github.com/BerriAI/litellm/pull/38133) merges: retry breadcrumbs are masked before storage. Regression introduced.                                                                  |
-| Sep 2, 17:47 PT | LIT-6780 filed at Medium priority after an engineer QA'ing an unrelated PR notices the proxy slowing down under repeated failing requests. The ticket's own text flags "running without --detailed_debug was not tried." |
-| Sep 3           | [PR #39491](https://github.com/BerriAI/litellm/pull/39491) merges, fixing the growth, but states "Only happens with --detailed_debug on", dropping the ticket's hedge rather than testing it. It is not nominated for a stable backport. |
-| Sep 5, 18:12 PT | `v1.101.0-rc.1` is tagged from staging, including both fixes.                                                                                                                                            |
-| Sep 5, 18:45 PT | `v1.100.0` is tagged stable from the earlier rc line; neither fix is present.                                                                                                                            |
-| Sep 6           | Customer deploys `v1.100.0`.                                                                                                                                                                             |
-| Sep 7, 08:40 PT | First OOM wave.                                                                                                                                                                                          |
-| Sep 9, 04:29 PT | Second OOM wave. The customer opens a Sev 0 ticket at 05:04 PT.                                                                                                                                          |
-| Sep 9, 06:21 PT | Customer traces the regression to commit `721227e9ee`, moves to `v1.102.0-dev.1`, which already carries the fix, and reports no further OOM kills.                                                       |
-| Sep 9, 14:27 PT | [PR #40455](https://github.com/BerriAI/litellm/pull/40455) backports the PR #39491 fix to `stable/1.100.x`.                                                                                              |
-| Sep 9, 18:42 PT | `v1.100.1` is published with the backport.                                                                                                                                                               |
+| 8 月 24 日          | [PR #38133](https://github.com/BerriAI/litellm/pull/38133) 合併：重試 breadcrumbs 在儲存前已被遮罩。引入回歸問題。                                                                  |
+| 9 月 2 日，17:47 PT | 由於一位在 QA 一個無關 PR 的工程師注意到 proxy 在反覆失敗的請求下逐漸變慢，LIT-6780 以 Medium 優先級提單。工單本身的文字註明「未嘗試在不使用 --detailed_debug 的情況下執行」。 |
+| 9 月 3 日           | [PR #39491](https://github.com/BerriAI/litellm/pull/39491) 合併，修正了成長問題，但表示「Only happens with --detailed_debug on」，將工單中的保留說法直接當成事實，而未加以測試。它沒有被提名回補到穩定版。 |
+| 9 月 5 日，18:12 PT | `v1.101.0-rc.1` 自 staging 標記而出，包含兩項修正。                                                                                                                                            |
+| 9 月 5 日，18:45 PT | `v1.100.0` 自較早的 rc 線路標記為 stable；兩項修正皆未包含。                                                                                                                            |
+| 9 月 6 日           | 客戶部署 `v1.100.0`。                                                                                                                                                                             |
+| 9 月 7 日，08:40 PT | 第一波 OOM。                                                                                                                                                                                          |
+| 9 月 9 日，04:29 PT | 第二波 OOM。客戶在 05:04 PT 開啟 Sev 0 工單。                                                                                                                                          |
+| 9 月 9 日，06:21 PT | 客戶將回歸問題追溯到 commit `721227e9ee`，切換到已包含修正的 `v1.102.0-dev.1`，並回報不再有 OOM kill。                                                       |
+| 9 月 9 日，14:27 PT | [PR #40455](https://github.com/BerriAI/litellm/pull/40455) 將 PR #39491 的修正回補到 `stable/1.100.x`。                                                                                              |
+| 9 月 9 日，18:42 PT | `v1.100.1` 隨著回補版本發布。                                                                                                                                                               |
 
 ---
 
-## Why our process did not catch this
+## 為什麼我們的流程沒有發現這個 {#why-our-process-did-not-catch-this}
 
-1. **Nothing tested two dependency failures at once.** This incident needed upstream retries and a sustained Redis outage together. The twelve days between the regression merging and the stable tag, seven of them with [`v1.100.0-rc.1`](https://github.com/BerriAI/litellm/releases/tag/v1.100.0-rc.1) out as the release candidate, never combined them, so nothing exercised the path that broke.
-2. **A hedge in a ticket did not survive into the fix that closed it.** LIT-6780's repro was a credential failure that never reached the cost-tracking callback, so every test in it looked debug-only by construction, and the ticket said so directly. The fix PR dropped that hedge and stated the opposite as fact, without running the one test that would have checked it.
-3. **The alert line that actually broke had no log-level gate, and nobody had reason to look at it.** The line the fix PR measured and fixed was a genuinely debug-only line. A second consumer of the same structure, the cost-tracking alert, ran at every log level and was untouched by that PR, because nothing connected the two.
-4. **Cost and memory regressions are silent in review.** A one-line change to run an existing, well-tested helper on a new input looked like a self-evidently safe security fix. Nothing in code review or CI surfaces that an input violates an unstated assumption the helper depends on.
+1. **從未同時測試兩個相依性失敗。** 這次事故同時需要上游重試與持續性的 Redis 中斷。回歸問題合併到 stable 標籤之間的十二天中，有七天 [`v1.100.0-rc.1`](https://github.com/BerriAI/litellm/releases/tag/v1.100.0-rc.1) 作為 release candidate 發布在外，從未把兩者結合起來，因此沒有任何測試覆蓋到出問題的路徑。
+2. **工單中的保留說法沒有延續到關閉它的修正中。** LIT-6780 的重現案例是憑證失敗，從未到達成本追蹤 callback，因此其中每一項測試本質上都只會是 debug-only，工單也直接這麼寫了。修正 PR 卻把這個保留說法拿掉，改成直接把相反內容當事實，卻沒有執行那個本該驗證的唯一測試。
+3. **真正出問題的警示行沒有 log-level 閘道，且沒有人有理由去看它。** 修正 PR 測量並修正的那一行，確實只會在 debug 模式下出現。相同結構的第二個消費者，也就是成本追蹤警示，則會在每個 log level 下執行，且未受該 PR 影響，因為兩者之間沒有任何關聯。
+4. **成本與記憶體回歸在審查中是靜默的。** 將既有且經充分測試的 helper 套用到新輸入的一行變更，看起來像是顯而易見安全的安全修正。無論在 code review 或 CI 中，都無法顯示某個輸入違反了 helper 所依賴的未明示假設。
 
 ---
 
-## What we're changing
+## 我們正在改變的內容 {#what-were-changing}
 
-- **Verified assumptions, not inferred ones.** A claim that narrows a bug's blast radius (such as "only under `--detailed_debug`") now has to be written down and either tested or explicitly carried forward, not silently dropped when the fix ships. Rather than a new section, we added this to the existing Caveats instructions in our PR template, alongside the severity-tiered caveats authors already list there.
-- **Chaos testing on every release candidate.** Every release candidate of the proxy now has to pass a load test under an injected fault before it ships. Stable releases are cut from a release candidate that passed it; a patch cut straight from a stable branch, the way `v1.100.1` was, is not gated yet. The first case is this incident's exact trigger: [`tests/e2e/load/test_redis_chaos_e2e.py`](https://github.com/BerriAI/litellm/blob/main/tests/e2e/load/test_redis_chaos_e2e.py) (added in [PR #40482](https://github.com/BerriAI/litellm/pull/40482)) drives sustained chat completions and Anthropic messages traffic through a live multi-worker proxy against deployments that fail and fall back, then holds the proxy's Redis unresponsive for 90 seconds mid-run. It asserts zero failed requests on both endpoints, budgets the proxy's RSS at p50, p90, and p99 and its CPU per request as multiples of the healthy baseline from the same run, and puts flat ceilings on p50/p90/p99 latency and log bytes per request. This is the class of test that would have caught this defect regardless of how the originating ticket was classified, because it doesn't depend on anyone correctly predicting the trigger. From here it expands to other dependencies: slow database writes and provider errors that trigger retries and fallbacks.
+- **驗證假設，而非推測假設。** 將 bug 影響範圍縮小的主張（例如「only under `--detailed_debug`」）現在必須明確寫下，並且要嘛經過測試，要嘛在後續中明確保留，不能在修正發布時悄悄移除。我們不是新增一個新段落，而是把這項內容加入 PR 範本中既有的 Caveats 指示，與作者已經會列出的嚴重程度分級 caveats 並列。
+- **每個 release candidate 都要進行 chaos testing。** proxy 的每個 release candidate 在發布前都必須先通過一次注入故障的 load test。stable release 只能從通過該測試的 release candidate 產生；像 `v1.100.1` 那樣直接從 stable branch 切出的 patch，現在還沒有被門檻限制。第一個案例就是本次事故的精確觸發條件：[`tests/e2e/load/test_redis_chaos_e2e.py`](https://github.com/BerriAI/litellm/blob/main/tests/e2e/load/test_redis_chaos_e2e.py)（於 [PR #40482](https://github.com/BerriAI/litellm/pull/40482) 中新增）會透過一個運作中的 multi-worker proxy，將持續性的 chat completions 與 Anthropic messages 流量導向會失敗並進入備援的部署，接著在執行中段讓 proxy 的 Redis 失去回應 90 秒。它會對兩個端點都斷言零失敗請求，將 proxy 的 RSS 以 p50、p90、p99 以及其每個請求的 CPU 設為同一輪健康基準的倍數預算，並對 p50/p90/p99 latency 與每個請求的 log bytes 設下固定上限。這類測試不論原始工單被歸類成什麼，都能抓到這個缺陷，因為它不依賴任何人正確預測觸發條件。接下來它會擴展到其他相依項目：緩慢的資料庫寫入，以及會觸發重試與備援的提供者錯誤。
 
-| Action item                                                                                                                                                                                                       | Status  | Date               |
+| 行動項目                                                                                                                                                                                                       | 狀態  | 日期               |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------ |
-| Untested-assumptions guidance added to PR template ([litellm#40811](https://github.com/BerriAI/litellm/pull/40811))                                                                                               | Shipped | September 11, 2026 |
-| Redis chaos load test gating every release candidate ([litellm#40482](https://github.com/BerriAI/litellm/pull/40482), [project-releaser#238](https://github.com/BerriAI/project-releaser/pull/238))               | Shipped | September 12, 2026 |
+| 將未測試假設的指引加入 PR 範本（[litellm#40811](https://github.com/BerriAI/litellm/pull/40811))                                                                                               | 已發布 | 2026 年 9 月 11 日 |
+| 每個 release candidate 都要通過 Redis chaos load test 的門檻（[litellm#40482](https://github.com/BerriAI/litellm/pull/40482), [project-releaser#238](https://github.com/BerriAI/project-releaser/pull/238))               | 已發布 | 2026 年 9 月 12 日 |
 
 ---
 
-## Known limitations
+## 已知限制 {#known-limitations}
 
-1. The cost-tracking callback's error handler still turns the full request metadata into a log string at every log level, bounded now only by the per-request cap of four breadcrumbs. This is a smaller version of the same class of defect and is tracked for a follow-up fix.
-2. `mask_credentials_in_payload` still copies without a memo of visited objects, and any value nested past a depth of 10 is returned unmasked. It is safe today because nothing currently hands it a structure with a shared reference or a loop, but that safety is an invariant of its callers, not a guarantee the helper itself enforces.
+1. 成本追蹤 callback 的錯誤處理器仍會在每個 log level 下把完整的請求中繼資料轉成 log 字串，現在只受每個請求最多四個 breadcrumbs 的限制。這是同一類缺陷的較小版本，目前已列入後續修正追蹤。
+2. `mask_credentials_in_payload` 仍然會在沒有已拜訪物件紀錄的情況下複製，而深度超過 10 的任何值都會以未遮罩狀態返回。今天之所以安全，是因為目前沒有任何人會把具有共享參照或迴圈的結構交給它，但這種安全性是其呼叫端的不變條件，而不是該 helper 自身所強制保證的事項。
 
-We're sorry for the outage this caused. A defect in a one-line security fix should not have been able to take down a production proxy for hours, and the gap between "we have a ticket that describes this" and "we shipped a release that has it" is exactly the gap we're closing with the changes above.
+對於這次造成的中斷，我們深感抱歉。單行安全修正中的缺陷不應該有能力讓 production proxy 停擺數小時，而「我們有一張描述這件事的工單」與「我們發布了一個真的帶有這個問題的版本」之間的落差，正是我們要透過上述變更補上的落差。

@@ -1,18 +1,18 @@
 ---
-title: "Fallbacks (Provider Failover)"
-description: "Set up automatic provider failover in LiteLLM. If a model or provider fails after num_retries, fallback to another model group for high availability and reliability."
+title: "備援（提供者故障轉移）"
+description: "在 LiteLLM 中設定自動提供者故障轉移。若模型或提供者在 num_retries 後失敗，則備援到另一個模型群組，以達到高可用性與可靠性。"
 keywords:
   [
-    fallbacks,
-    failover,
-    provider failover,
-    model failover,
-    automatic failover,
-    high availability,
-    reliability,
-    retries,
-    backup model,
-    cross-provider failover,
+    備援,
+    故障轉移,
+    提供者故障轉移,
+    模型故障轉移,
+    自動故障轉移,
+    高可用性,
+    可靠性,
+    重試,
+    備用模型,
+    跨提供者故障轉移,
   ]
 ---
 
@@ -20,21 +20,20 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Fallbacks (Provider Failover)
+# 備援（提供者故障轉移） {#fallbacks-provider-failover}
 
-Fallbacks are how LiteLLM does automatic **failover**. If a call fails after num_retries, LiteLLM falls back to another model group, so a failing model or provider automatically fails over to a healthy backup. If you are looking for "provider failover" or "model failover", this is the page. 
+備援是 LiteLLM 執行自動 **故障轉移** 的方式。若請求在 num_retries 之後失敗，LiteLLM 會備援到另一個模型群組，讓失敗的模型或提供者自動故障轉移到健康的備用項目。如果您正在尋找「provider failover」或「model failover」，就是這一頁。 
 
-- Quick Start [load balancing](./load_balancing.md)
-- Quick Start [client side fallbacks](#client-side-fallbacks)
+- 快速開始 [load balancing](./load_balancing.md)
+- 快速開始 [用戶端端備援](#client-side-fallbacks)
 
+備援通常是從一個 `model_name` 到另一個 `model_name`。
 
-Fallbacks are typically done from one `model_name` to another `model_name`. 
+## 快速開始  {#quick-start}
 
-## Quick Start 
+### 1. 設定備援 {#1-setup-fallbacks}
 
-### 1. Setup fallbacks
-
-Key change: 
+關鍵變更： 
 
 ```python
 fallbacks=[{"{{openai_small}}": ["{{openai_large}}"]}]
@@ -74,7 +73,6 @@ router = Router(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-
 ```yaml keep-model-ids
 model_list:
   - model_name: {{openai_small}}
@@ -98,24 +96,22 @@ router_settings:
 </TabItem>
 </Tabs>
 
-
-### 2. Start Proxy
+### 2. 啟動 Proxy {#2-start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Test Fallbacks
+### 3. 測試備援 {#3-test-fallbacks}
 
-:::warning[Deprecated for Proxy requests]
-Starting in LiteLLM Proxy v1.85.0, `mock_testing_fallbacks`, `mock_testing_context_fallbacks`, and `mock_testing_content_policy_fallbacks` are stripped from incoming Proxy requests and have no effect. These flags remain supported only for direct `litellm.Router` calls in tests.
+:::warning[已棄用於 Proxy 請求]
+從 LiteLLM Proxy v1.85.0 起，`mock_testing_fallbacks`、`mock_testing_context_fallbacks` 和 `mock_testing_content_policy_fallbacks` 會從進入的 Proxy 請求中剝除，且不會產生任何效果。這些旗標僅在測試中針對直接的 `litellm.Router` 呼叫仍受支援。
 :::
 
-For direct `Router` tests, pass `mock_testing_fallbacks=True` to trigger fallbacks.
+對於直接的 `Router` 測試，請傳入 `mock_testing_fallbacks=True` 以觸發備援。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
-
 
 ```python
 
@@ -135,36 +131,32 @@ response = router.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-The mock-testing flags are deprecated for Proxy requests. To validate Proxy fallbacks, trigger an actual provider error in a non-production environment and send a normal request without a `mock_testing_*` flag.
+模擬測試旗標已針對 Proxy 請求棄用。若要驗證 Proxy 備援，請在非正式環境中觸發實際的提供者錯誤，並在不帶 `mock_testing_*` 旗標的情況下送出一般請求。
 
 </TabItem>
 </Tabs>
 
+### 說明 {#explanation}
 
+備援會依順序執行 - ["gpt-4o-mini", "gpt-4o", "gpt-4.1"]，會先使用 'gpt-4o-mini'，接著是 'gpt-4o'，依此類推。
 
+您也可以設定 [`default_fallbacks`](#default-fallbacks)，以防某個特定模型群組設定錯誤／有問題。
 
-### Explanation
+備援有 3 種類型： 
+- `content_policy_fallbacks`：適用於 litellm.ContentPolicyViolationError - LiteLLM 會跨提供者對應內容政策違規錯誤 [**查看程式碼**](https://github.com/BerriAI/litellm/blob/89a43c872a1e3084519fb9de159bf52f5447c6c4/litellm/utils.py#L8495C27-L8495C54)
+- `context_window_fallbacks`：適用於 litellm.ContextWindowExceededErrors - LiteLLM 會跨提供者對應上下文視窗錯誤訊息 [**查看程式碼**](https://github.com/BerriAI/litellm/blob/89a43c872a1e3084519fb9de159bf52f5447c6c4/litellm/utils.py#L8469)
+- `fallbacks`：適用於其餘所有錯誤 - 例如 litellm.RateLimitError
 
-Fallbacks are done in-order - ["gpt-4o-mini", "gpt-4o", "gpt-4.1"], will do 'gpt-4o-mini' first, then 'gpt-4o', etc.
+## 用戶端端備援 {#client-side-fallbacks}
 
-You can also set [`default_fallbacks`](#default-fallbacks), in case a specific model group is misconfigured / bad.
+在 SDK 與 proxy 的用戶端端，於 `.completion()` 呼叫中設定備援。
 
-There are 3 types of fallbacks: 
-- `content_policy_fallbacks`: For litellm.ContentPolicyViolationError - LiteLLM maps content policy violation errors across providers [**See Code**](https://github.com/BerriAI/litellm/blob/89a43c872a1e3084519fb9de159bf52f5447c6c4/litellm/utils.py#L8495C27-L8495C54)
-- `context_window_fallbacks`: For litellm.ContextWindowExceededErrors - LiteLLM maps context window error messages across providers [**See Code**](https://github.com/BerriAI/litellm/blob/89a43c872a1e3084519fb9de159bf52f5447c6c4/litellm/utils.py#L8469)
-- `fallbacks`: For all remaining errors - e.g. litellm.RateLimitError
+在此請求中會發生以下情況：
+1. 對 `model="zephyr-beta"` 的請求會失敗
+2. litellm proxy 會迴圈處理 `fallbacks=["{{openai_small}}"]` 中指定的所有 model_groups
+3. 對 `model="{{openai_small}}"` 的請求會成功，而發出請求的用戶端將會收到來自 gpt-5.6-luna 的回應 
 
-
-## Client Side Fallbacks
-
-Set fallbacks in the `.completion()` call for SDK and client-side for proxy. 
-
-In this request the following will occur:
-1. The request to `model="zephyr-beta"` will fail
-2. litellm proxy will loop through all the model_groups specified in `fallbacks=["{{openai_small}}"]`
-3. The request to `model="{{openai_small}}"` will succeed and the client making the request will get a response from gpt-5.6-luna 
-
-👉 Key Change: `"fallbacks": ["{{openai_small}}"]`
+👉 關鍵變更： `"fallbacks": ["{{openai_small}}"]`
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -278,11 +270,11 @@ print(response)
 
 </Tabs>
 
-### Control Fallback Prompts  
+### 控制備援提示詞   {#control-fallback-prompts}
 
-Pass in messages/temperature/etc. per model in fallback (works for embedding/image generation/etc. as well).
+在備援中，針對每個模型傳入 messages/temperature/etc.（也適用於 embedding/image generation/etc.）。
 
-Key Change:
+關鍵變更：
 
 ```
 fallbacks = [
@@ -422,9 +414,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Content Policy Violation Fallback
+## 內容政策違規備援 {#content-policy-violation-fallback}
 
-Key change: 
+關鍵變更： 
 
 ```python
 content_policy_fallbacks=[{"{{anthropic}}": ["my-fallback-model"]}]
@@ -468,14 +460,14 @@ response = router.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-In your proxy config.yaml just add this line 👇
+在您的 proxy config.yaml 中只要新增這一行 👇
 
 ```yaml
 router_settings:
   content_policy_fallbacks: [{"{{anthropic}}": ["my-fallback-model"]}]
 ```
 
-Start proxy 
+啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -486,9 +478,9 @@ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-## Context Window Exceeded Fallback
+## 上下文視窗超出備援 {#context-window-exceeded-fallback}
 
-Key change: 
+關鍵變更： 
 
 ```python
 context_window_fallbacks=[{"{{anthropic}}": ["my-fallback-model"]}]
@@ -532,14 +524,14 @@ response = router.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-In your proxy config.yaml just add this line 👇
+在您的 proxy config.yaml 中只要新增這一行 👇
 
 ```yaml
 router_settings:
   context_window_fallbacks: [{"{{anthropic}}": ["my-fallback-model"]}]
 ```
 
-Start proxy 
+啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -550,19 +542,20 @@ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-## Advanced
-### Fallbacks + Retries + Timeouts + Cooldowns
+## 進階 {#advanced}
 
-To set fallbacks, just do: 
+### 備援 + 重試 + 逾時 + 冷卻期 {#fallbacks--retries--timeouts--cooldowns}
+
+設定備援，只要這樣做： 
 
 ```
 litellm_settings:
   fallbacks: [{"zephyr-beta": ["{{openai_small}}"]}] 
 ```
 
-**Covers all errors (429, 500, etc.)**
+**涵蓋所有錯誤（429、500 等）**
 
-**Set via config**
+**透過 config 設定**
 ```yaml
 model_list:
   - model_name: zephyr-beta
@@ -594,13 +587,13 @@ litellm_settings:
   cooldown_time: 30 # how long to cooldown model if fails/min > allowed_fails
 ```
 
-### Fallback to Specific Model ID
+### 備援到特定模型 ID {#fallback-to-specific-model-id}
 
-If all models in a group are in cooldown (e.g. rate limited), LiteLLM will fallback to the model with the specific model ID.
+如果某個群組中的所有模型都在冷卻期（例如受速率限制），LiteLLM 會備援到具有特定模型 ID 的模型。
 
-This skips any cooldown check for the fallback model.
+這會略過該備援模型的任何冷卻期檢查。
 
-1. Specify the model ID in `model_info`
+1. 在 `model_info` 中指定模型 ID
 ```yaml keep-model-ids
 model_list:
   - model_name: {{openai_large}}
@@ -619,16 +612,16 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-**Note:** This will only fallback to the model with the specific model ID. If you want to fallback to another model group, you can set `fallbacks=[{"{{openai_large}}": ["anthropic-claude"]}]`
+**注意：** 這只會備援到具有特定模型 ID 的模型。如果您想備援到另一個模型群組，可以設定 `fallbacks=[{"{{openai_large}}": ["anthropic-claude"]}]`
 
-2. Set fallbacks in config
+2. 在 config 中設定備援
 
 ```yaml
 litellm_settings:
   fallbacks: [{"{{openai_large}}": ["my-specific-model-id"]}]
 ```
 
-3. Test it while the primary deployment is unavailable.
+3. 在主要部署不可用時進行測試。
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -645,40 +638,38 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-Validate it works, by checking the response header `x-litellm-model-id`
+透過檢查回應標頭 `x-litellm-model-id` 來驗證是否可正常運作
 
 ```bash
 x-litellm-model-id: my-specific-model-id
 ```
 
-### Test Fallbacks! 
+### 測試備援！  {#test-fallbacks}
 
-Check if your fallbacks are working as expected by triggering the relevant provider error in a non-production environment.
+透過在非正式環境中觸發相關的提供者錯誤，確認您的備援是否如預期運作。
 
-#### **Regular Fallbacks**
+#### **一般備援** {#regular-fallbacks}
 
-Make the primary test deployment return a retryable provider error, such as a rate-limit or server error, then send a normal request.
+讓主要測試部署回傳可重試的提供者錯誤，例如速率限制或伺服器錯誤，然後送出一般請求。
 
+#### **內容政策備援** {#content-policy-fallbacks}
 
-#### **Content Policy Fallbacks**
+使用一個會被主要提供者以內容政策錯誤拒絕的測試請求。
 
-Use a test request that the primary provider rejects with a content-policy error.
+#### **上下文視窗備援** {#context-window-fallbacks}
 
-#### **Context Window Fallbacks**
+啟用前置呼叫檢查，並送出一個超過主要模型已設定內容視窗的測試請求。
 
-Enable pre-call checks and send a test request that exceeds the primary model's configured context window.
+### 在支出記錄中追蹤備援 {#track-fallbacks-in-spend-logs}
 
-
-### Track Fallbacks in Spend Logs
-
-Every spend log row records whether the request was served by the model group the client asked for, or by a fallback. The proxy writes two keys into the `metadata` column of `LiteLLM_SpendLogs`:
+每一筆支出記錄列都會記錄該請求是由用戶端要求的 model group 提供，還是由備援提供。Proxy 會寫入 `metadata` 欄位中的兩個鍵，位於 `LiteLLM_SpendLogs`：
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `attempted_fallbacks` | int | Number of fallback attempts made. `0` means the requested model group served the request |
-| `original_model_group` | str | The model group the client originally requested |
+| `attempted_fallbacks` | int | 進行的備援嘗試次數。`0` 表示所請求的 model group 提供了此請求 |
+| `original_model_group` | str | 用戶端最初請求的 model group |
 
-For example, a request to `{{openai_small}}` that fails over to `claude-fable-5` produces a row with `model_group=claude-fable-5`, `attempted_fallbacks=1`, and `original_model_group={{openai_small}}`, so fallback-served and directly-served requests stay distinguishable after the fact:
+範例來說，對 `{{openai_small}}` 的請求若失敗並切換到 `claude-fable-5`，會產生一筆包含 `model_group=claude-fable-5`、`attempted_fallbacks=1` 和 `original_model_group={{openai_small}}` 的列，因此事後仍能區分由備援提供與直接提供的請求：
 
 ```sql
 SELECT model_group,
@@ -687,26 +678,26 @@ SELECT model_group,
 FROM "LiteLLM_SpendLogs";
 ```
 
-Both keys are set by the proxy and overwrite any client-supplied values of the same name. Rows written before this feature read `null` for both keys.
+這兩個鍵都由 Proxy 設定，並會覆寫任何用戶端提供的同名值。此功能推出前寫入的列，這兩個鍵都會顯示 `null`。
 
-### Context Window Fallbacks (Pre-Call Checks + Fallbacks)
+### 上下文視窗備援（呼叫前檢查 + 備援） {#context-window-fallbacks-pre-call-checks--fallbacks}
 
-**Before call is made** check if a call is within model context window with  **`enable_pre_call_checks: true`**.
+**在發出呼叫之前**，使用 **`enable_pre_call_checks: true`** 檢查請求是否在模型上下文視窗內。
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/c9e6b05cfb20dfb17272218e2555d6b496c47f6f/litellm/router.py#L2163)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/c9e6b05cfb20dfb17272218e2555d6b496c47f6f/litellm/router.py#L2163)
 
 :::important
-**`enable_pre_call_checks` is required** for context-window enforcement. Without it, requests are sent to the provider regardless of input token count. Set `enable_pre_call_checks: true` in `router_settings` in your config.
+**`enable_pre_call_checks` 是必要的**，才能強制執行上下文視窗。若沒有它，不論輸入 token 數量多少，請求都會送到提供者。請在您的設定中的 `enable_pre_call_checks: true` 設定 `router_settings`。
 :::
 
-#### Custom max_input_tokens per deployment
+#### 每個 deployment 自訂 max_input_tokens {#custom-max_input_tokens-per-deployment}
 
-You can override the default context limit for a deployment by setting `max_input_tokens` in `model_info`. This is useful for testing, rate-limiting long prompts, or enforcing stricter limits than the provider's default.
+您可以在 `max_input_tokens` 中設定 `model_info`，以覆寫某個 deployment 的預設上下文限制。這對測試、對長提示詞做速率限制，或強制比提供者預設值更嚴格的限制都很有用。
 
-**Both** of the following are required:
+以下 **兩者都** 必須具備：
 
-1. **`router_settings.enable_pre_call_checks: true`** — enables pre-call checks
-2. **`model_info.max_input_tokens`** on the deployment, which overrides the limit for that model
+1. **`router_settings.enable_pre_call_checks: true`** — 啟用前置呼叫檢查
+2. **`model_info.max_input_tokens`** 在部署上，這會覆寫該模型的限制
 
 ```yaml
 router_settings:
@@ -721,19 +712,18 @@ model_list:
       max_input_tokens: 10  # Override: reject prompts > 10 tokens
 ```
 
-If a request exceeds the limit, LiteLLM raises `ContextWindowExceededError` with details like `Model={{openai_large}}, Max Input Tokens=10, Got=306`.
+如果請求超過限制，LiteLLM 會拋出 `ContextWindowExceededError`，並帶有如 `Model={{openai_large}}, Max Input Tokens=10, Got=306` 之類的詳細資訊。
 
-**1. Setup config**
+**1. 設定 config**
 
-For azure deployments, set the base model. Pick the base model from [this list](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json), all the azure models start with azure/.
-
+針對 azure deployments，請設定 base model。請從 [這份清單](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中選擇 base model，所有 azure models 都以 azure/ 開頭。
 
 <Tabs>
 <TabItem value="same-group" label="Same Group">
 
-Filter instances of a model (e.g. gpt-4o-mini) with smaller context windows
+以較小內容視窗篩選模型的實例（例如 gpt-4o-mini）
 
-The model ids in this example are illustrative and kept for their context window sizes.
+此範例中的 model ids 僅供說明，並保留其內容視窗大小。
 
 ```yaml keep-model-ids
 router_settings:
@@ -755,7 +745,7 @@ model_list:
     api_key: os.environ/OPENAI_API_KEY
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -763,7 +753,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試看看！**
 
 ```python keep-model-ids
 import openai
@@ -790,9 +780,9 @@ print(response)
 
 <TabItem value="different-group" label="Context Window Fallbacks (Different Groups)">
 
-Fallback to larger models if current model is too small.
+如果目前模型太小，則備援到更大的模型。
 
-The model ids in this example are illustrative and kept for their context window sizes.
+此範例中的 model ids 僅供說明，並保留其內容視窗大小。
 
 ```yaml keep-model-ids
 router_settings:
@@ -822,7 +812,7 @@ litellm_settings:
   context_window_fallbacks: [{"gpt-3.5-turbo-small": ["gpt-3.5-turbo-large", "claude-opus"]}]
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -830,7 +820,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試看看！**
 
 ```python keep-model-ids
 import openai
@@ -856,10 +846,9 @@ print(response)
 </TabItem>
 </Tabs>
 
+### 內容政策備援 {#content-policy-fallbacks-1}
 
-### Content Policy Fallbacks
-
-Fallback across providers (e.g. from Azure OpenAI to Anthropic) if you hit content policy violation errors. 
+如果遇到內容政策違規錯誤，則跨提供者備援（例如從 Azure OpenAI 備援到 Anthropic）。 
 
 ```yaml keep-model-ids
 model_list:
@@ -879,12 +868,9 @@ litellm_settings:
   content_policy_fallbacks: [{"gpt-3.5-turbo-small": ["claude-opus"]}]
 ```
 
+### 預設備援  {#default-fallbacks}
 
-
-### Default Fallbacks 
-
-You can also set default_fallbacks, in case a specific model group is misconfigured / bad.
-
+您也可以設定 default_fallbacks，以防某個特定模型群組設定錯誤／有問題。
 
 ```yaml keep-model-ids
 model_list:
@@ -904,19 +890,19 @@ litellm_settings:
   default_fallbacks: ["claude-opus"]
 ```
 
-This will default to claude-opus in case any model fails.
+這會在任何模型失敗時預設使用 claude-opus。
 
-A model-specific fallbacks (e.g. `{"gpt-3.5-turbo-small": ["claude-opus"]}`) overrides default fallback.
+特定模型的備援（例如 `{"gpt-3.5-turbo-small": ["claude-opus"]}`）會覆寫預設備援。
 
-### EU-Region Filtering (Pre-Call Checks)
+### EU 區域篩選（呼叫前檢查） {#eu-region-filtering-pre-call-checks}
 
-**Before call is made** check if a call is within model context window with  **`enable_pre_call_checks: true`**.
+**在發出呼叫之前**，使用 **`enable_pre_call_checks: true`** 檢查請求是否在模型上下文視窗內。
 
-Set 'region_name' of deployment. 
+設定 deployment 的 'region_name'。
 
-**Note:** LiteLLM can automatically infer region_name for Vertex AI, Bedrock, and IBM WatsonxAI based on your litellm params. For Azure, set `litellm.enable_preview = True`.
+**注意：** LiteLLM 可根據您的 litellm 參數，自動推斷 Vertex AI、Bedrock 和 IBM WatsonxAI 的 region_name。對於 Azure，請設定 `litellm.enable_preview = True`。
 
-**1. Set Config**
+**1. 設定設定**
 
 ```yaml keep-model-ids
 router_settings:
@@ -943,7 +929,7 @@ model_list:
     vertex_location: us-east1 # 👈 AUTOMATICALLY INFERS 'region_name'
 ```
 
-**2. Start proxy**
+**2. 啟動代理伺服器**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -951,7 +937,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```python
 import openai
@@ -971,11 +957,11 @@ print(response)
 print(response.headers.get('x-litellm-model-api-base'))
 ```
 
-### Setting Fallbacks for Wildcard Models
+### 為萬用字元模型設定備援 {#setting-fallbacks-for-wildcard-models}
 
-You can set fallbacks for wildcard models (e.g. `azure/*`) in your config file.
+您可以在設定檔中為萬用字元模型（例如 `azure/*`）設定備援。
 
-1. Setup config
+1. 設定設定檔
 ```yaml
 model_list:
   - model_name: "{{openai_large}}"
@@ -992,12 +978,12 @@ litellm_settings:
   fallbacks: [{"{{openai_large}}": ["azure/{{openai_large}}"]}]
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it while the primary deployment is unavailable.
+3. 在主要部署不可用時進行測試。
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -1020,9 +1006,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-#### Provider-prefixed fallback keys for bare model names
+#### 針對裸模型名稱的提供者前綴備援鍵 {#provider-prefixed-fallback-keys-for-bare-model-names}
 
-A request for a bare model name such as `{{anthropic}}`, the form Claude Code sends, is served by the `anthropic/*` deployment, and the fallback lookup matches it against a key written the way that wildcard is, `anthropic/{{anthropic}}`. LiteLLM infers the provider the same way routing does and only tries this when some fallback key ends in `/<model name>`, so an alias that resolves to no provider still falls through to `*`. Precedence is the exact key first, then the sibling key (the `<provider>/<model>` spelling of a bare name, or the bare spelling of a prefixed name), then `*`, and the same lookup serves `fallbacks`, `context_window_fallbacks`, and `content_policy_fallbacks`. A matched chain is terminal: once the `anthropic/{{anthropic}}` chain is chosen, `*` is not tried after its targets fail, so list the `*` targets at the end of that chain when they should run too. Added in [PR #43062](https://github.com/BerriAI/litellm/pull/43062), coming to the next release candidate
+對於像 `{{anthropic}}` 這類裸模型名稱的請求，也就是 Claude Code 傳送的格式，會由 `anthropic/*` 部署提供，而備援查找會將其與以該萬用字元寫法記錄的鍵比對，也就是 `anthropic/{{anthropic}}`。LiteLLM 會以與路由相同的方式推斷提供者，並且只有在某個備援鍵以 `/<model name>` 結尾時才會嘗試這種方式，因此解析為沒有提供者的別名仍會落到 `*`。優先順序是先比對完全相同的鍵，接著是同層級的鍵（裸名稱的 `<provider>/<model>` 拼法，或帶前綴名稱的裸拼法），最後是 `*`，而相同的查找也適用於 `fallbacks`、`context_window_fallbacks` 和 `content_policy_fallbacks`。匹配到的鏈是終點：一旦選定 `anthropic/{{anthropic}}` 鏈，`*` 就不會在其目標失敗後再嘗試，因此當 `*` 目標也應該執行時，請將它們列在該鏈的末端。新增於 [PR #43062](https://github.com/BerriAI/litellm/pull/43062)，將在下一個 release candidate 提供
 
 ```yaml
 model_list:
@@ -1045,13 +1031,13 @@ litellm_settings:
     - {"*": ["{{openai_small}}"]}
 ```
 
-A request for `{{anthropic}}` that fails on `anthropic/*` is retried on `openai/{{openai_large}}` and then on `{{openai_small}}`, while a request for any other bare name without a key of its own goes straight to `*`
+對於 `{{anthropic}}` 的請求若在 `anthropic/*` 上失敗，會先重試 `openai/{{openai_large}}`，接著再重試 `{{openai_small}}`；而對於任何其他沒有自己鍵值的裸名稱請求，則會直接送往 `*`
 
-### Enforce Key Model Access on Fallbacks
+### 在備援上強制執行 Key 模型存取權限 {#enforce-key-model-access-on-fallbacks}
 
-By default a fallback configured in `router_settings` runs for every request, even when the calling key is not allowed to call the fallback model directly. A key limited to the access group of `gpt-5.6` still gets a response from `{{anthropic}}` whenever `gpt-5.6` fails and `{{anthropic}}` is its fallback.
+預設情況下，在 `router_settings` 中設定的備援，會套用於每一個請求，即使呼叫用的 key 不允許直接呼叫備援模型也是如此。僅限於 `gpt-5.6` 存取群組的 key，在 `gpt-5.6` 失敗且 `{{anthropic}}` 是其備援時，仍會收到來自 `{{anthropic}}` 的回應。
 
-Set `general_settings.enforce_fallback_model_access: true` to apply the same key, team and project model access checks to every fallback target before it is tried. Targets the caller may not use are skipped. When no authorized target remains, the caller gets the primary model's own error. Keys that are allowed to call the fallback model keep falling back as before, and the check covers `fallbacks`, `context_window_fallbacks`, `content_policy_fallbacks` and `default_fallbacks`.
+設定 `general_settings.enforce_fallback_model_access: true`，可在嘗試每個備援目標之前，將相同的 key、team 與 project 模型存取檢查套用到所有備援目標。呼叫者不能使用的目標會被略過。當沒有授權的目標可用時，呼叫者會收到主要模型本身的錯誤。允許呼叫備援模型的 key 仍會如以往一樣進行備援，而此檢查涵蓋 `fallbacks`、`context_window_fallbacks`、`content_policy_fallbacks` 和 `default_fallbacks`。
 
 ```yaml keep-model-ids
 model_list:
@@ -1075,15 +1061,15 @@ general_settings:
   enforce_fallback_model_access: true
 ```
 
-A key created with `"models": ["openai-only"]` can call `gpt-5.6` but not `{{anthropic}}`. With the flag on, a failing `gpt-5.6` request from that key returns the OpenAI error instead of a `{{anthropic}}` completion, and the response carries no `x-litellm-attempted-fallbacks` header. A key created with `"models": ["openai-only", "{{anthropic}}"]` still falls back.
+以 `"models": ["openai-only"]` 建立的 key 可以呼叫 `gpt-5.6`，但不能呼叫 `{{anthropic}}`。在開啟此旗標後，來自該 key 的失敗 `gpt-5.6` 請求會回傳 OpenAI 錯誤，而不是 `{{anthropic}}` completion，且回應不會帶有 `x-litellm-attempted-fallbacks` header。以 `"models": ["openai-only", "{{anthropic}}"]` 建立的 key 仍然會進行備援。
 
-Requests that carry no virtual key, such as the proxy's own health checks, are never restricted. If the access lookup itself fails, the fallback is skipped rather than allowed.
+未攜帶虛擬 key 的請求，例如 Proxy 自身的健康檢查，永遠不會受到限制。如果存取查找本身失敗，則會略過備援，而不是允許。
 
-### Enforce Budget on Fallbacks
+### 在備援上強制執行預算 {#enforce-budget-on-fallbacks}
 
-Budget is checked once, when the request is authenticated, against the model the caller asked for. The fallback target is picked afterwards, so on its own that check cannot see the model that actually bills. This matters most when the primary model is priced at zero: a zero-cost model is exempt from budget checks entirely, so without a second check a request for it is admitted, falls back to the paid model, and bills in full with no cap applied.
+預算只會在請求通過驗證時檢查一次，檢查對象是呼叫者所要求的模型。之後才會選定備援目標，因此單靠這次檢查無法看見實際計費的模型。這在主要模型的定價為零時最重要：零成本模型完全免於預算檢查，因此若沒有第二次檢查，該模型的請求會被允許通過、再備援到付費模型，並且會在沒有套用上限的情況下完整計費。
 
-The proxy re-checks the calling key's and user's budget against every fallback target before it is tried, so this needs no configuration. Over-budget targets are skipped. When no affordable target remains, the caller gets the primary model's own error. The primary attempt itself is never blocked, so a zero-cost model keeps working at the cap, and a zero-cost fallback target is always allowed. The check covers `fallbacks`, `context_window_fallbacks`, `content_policy_fallbacks` and `default_fallbacks`.
+Proxy 會在嘗試每個備援目標之前，重新檢查呼叫用 key 與使用者的預算，因此這不需要任何設定。超出預算的目標會被略過。當沒有可負擔的目標可用時，呼叫者會收到主要模型本身的錯誤。主要嘗試本身永遠不會被阻擋，因此零成本模型在上限下仍可運作，而零成本的備援目標則一律允許。此檢查涵蓋 `fallbacks`、`context_window_fallbacks`、`content_policy_fallbacks` 和 `default_fallbacks`。
 
 ```yaml keep-model-ids
 model_list:
@@ -1109,25 +1095,24 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-A user whose spend has passed their `max_budget` can still call `free-model` and pay nothing. Once `free-model` fails, that user gets the `free-model` error instead of a billed `{{anthropic}}` completion, and the response carries no `x-litellm-attempted-fallbacks` header. A user still under budget keeps falling back to `{{anthropic}}` as before.
+支出已超過其 `max_budget` 的使用者，仍可呼叫 `free-model` 並且不需支付任何費用。當 `free-model` 失敗時，該使用者會收到 `free-model` 錯誤，而不是一個會計費的 `{{anthropic}}` completion，且回應不會帶有 `x-litellm-attempted-fallbacks` header。仍在預算內的使用者則會照以往一樣繼續備援到 `{{anthropic}}`。
 
-To turn this off and let fallbacks run whatever the caller's budget, set `enforce_fallback_budget: false`:
+若要關閉此功能，讓備援不受呼叫者預算限制，請設定 `enforce_fallback_budget: false`：
 
 ```yaml
 general_settings:
   enforce_fallback_budget: false
 ```
 
-A team key does not inherit the key owner's personal `max_budget` unless `general_settings.apply_user_budget_to_team_keys` is set, matching how personal budgets are enforced elsewhere. Requests that carry no virtual key, such as the proxy's own health checks, are never restricted. If the spend lookup itself fails, the fallback is skipped rather than allowed.
+team key 不會繼承 key 擁有者個人的 `max_budget`，除非設定了 `general_settings.apply_user_budget_to_team_keys`，這與其他地方套用個人預算的方式一致。未攜帶虛擬 key 的請求，例如 Proxy 自身的健康檢查，永遠不會受到限制。如果支出查找本身失敗，則會略過備援，而不是允許。
 
-### Disable Fallbacks (Per Request/Key)
-
+### 停用備援（每次請求/金鑰） {#disable-fallbacks-per-requestkey}
 
 <Tabs>
 
-<TabItem value="request" label="Per Request">
+<TabItem value="request" label="每次請求">
 
-You can disable fallbacks per request by setting `disable_fallbacks: true` in your request body.
+您可以在請求本文中設定 `disable_fallbacks: true`，以停用每個請求的備援。
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -1147,9 +1132,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 </TabItem>
 
-<TabItem value="key" label="Per Key">
+<TabItem value="key" label="每個金鑰">
 
-You can disable fallbacks per key by setting `disable_fallbacks: true` in your key metadata.
+您可以在金鑰中繼資料中設定 `disable_fallbacks: true`，以按金鑰停用備援。
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -1165,4 +1150,4 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 </TabItem>
 </Tabs>
 
-Both forms cover every fallback the proxy would otherwise make for that request, the mid-stream one included: when the chosen deployment's stream fails before its first chunk on `/chat/completions`, `/v1/messages`, or `/v1/responses`, the request returns that deployment's own error instead of a fallback deployment's response
+這兩種形式都涵蓋了代理程式原本會為該請求進行的所有備援，包括串流中途的那一種：當所選部署的串流在其第一個 chunk 之前於 `/chat/completions`、`/v1/messages` 或 `/v1/responses` 失敗時，該請求會回傳該部署自身的錯誤，而不是備援部署的回應

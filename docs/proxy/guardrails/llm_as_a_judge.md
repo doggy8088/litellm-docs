@@ -2,30 +2,30 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LLM-as-a-Judge
+# LLM 作為裁判 {#llm-as-a-judge}
 
-## Overview
+## 概觀 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資料 |
 |-------|-------|
-| Description | Score every incoming request or LLM response 0-100 against weighted criteria using a judge model, and block or log the ones that fall below a threshold. |
-| Provider | LiteLLM native (any chat model on your proxy or any provider model can act as the judge) |
-| Supported Actions | `block` (raises HTTP 422 when the score is below the threshold), `log` (records the verdict, lets the request or response through) |
-| Supported Modes | `pre_call` (the judge evaluates the request messages before they reach the LLM), `during_call` (same as `pre_call`, but the judge runs in parallel with the LLM call), `post_call` (the judge evaluates the LLM response) |
-| Streaming Support | Yes. A failing verdict terminates the stream. |
-| API Requirements | Credentials for the judge model, either a proxy deployment or provider environment variables |
+| 說明 | 針對每個傳入請求或 LLM 回應，依加權條件以 0-100 進行評分，並封鎖或記錄低於門檻者。 |
+| 提供者 | LiteLLM 原生（您代理程式上的任何 chat model，或任何提供者 model 都可作為裁判） |
+| 支援的動作 | `block`（當分數低於門檻時回傳 HTTP 422），`log`（記錄判定，讓請求或回應通過） |
+| 支援的模式 | `pre_call`（裁判在 LLM 接收請求訊息之前先評估它們），`during_call`（與 `pre_call` 相同，但裁判與 LLM 呼叫並行執行），`post_call`（裁判評估 LLM 回應） |
+| 串流支援 | 是。失敗的判定會終止串流。 |
+| API 要求 | 裁判 model 的認證資料，使用代理程式部署或提供者環境變數皆可 |
 
-## How it works
+## 運作方式 {#how-it-works}
 
-In `post_call` mode the guardrail sends the conversation and the LLM response to the judge model with your criteria. In `pre_call` and `during_call` mode it judges the latest request turn instead, with the earlier role-labelled messages passed along only as context, so an on-topic history does not hide an off-topic new turn and an earlier rejected turn does not sink later valid ones. The judged turn is the trailing run of `user` messages in the request, all of their text parts joined, taken from the messages the guardrail scope keeps (`skip_system_message_in_guardrail`, `skip_tool_message_in_guardrail` and `scan_only_tool_results` apply as usual); when the request does not end with a user turn (for example a tool-result round trip), or the endpoint hands the guardrail no per-message structure, the judge evaluates all of the kept request text. This runs before any response exists, so the judge can reject an off-topic or disallowed request without spending tokens on the main model (`during_call` still runs the main call in parallel and discards its result when the judge rejects). The judge returns a verdict per criterion (score 0-100, reasoning, pass/fail) plus a weighted overall score. If the overall score is below `overall_threshold` and `on_failure` is `block`, the request fails with HTTP 422 carrying the full verdicts; with `on_failure: log` the call proceeds and the verdict is recorded in the request's logging metadata (`eval_information`), visible in spend logs and logging integrations.
+在 `post_call` 模式下，防護欄會將對話與 LLM 回應連同您的條件送至裁判 model。在 `pre_call` 與 `during_call` 模式下，它改為判定最新的請求回合，而較早的帶角色標註訊息只會作為上下文傳入，因此貼題的歷史不會掩蓋離題的新回合，而較早被拒絕的回合也不會拖垮之後有效的回合。被判定的回合是請求中連續的 `user` 訊息，其所有文字部分會合併，並取自防護欄範圍保留的訊息（`skip_system_message_in_guardrail`、`skip_tool_message_in_guardrail` 和 `scan_only_tool_results` 照常適用）；當請求不是以使用者回合結尾時（例如工具結果往返），或端點未提供防護欄任何逐訊息結構時，裁判會評估所有保留的請求文字。這會在任何回應存在之前執行，因此裁判可在不耗費主 model 代幣的情況下拒絕離題或不允許的請求（當裁判拒絕時，`during_call` 仍會並行執行主呼叫並捨棄其結果）。裁判會針對每個條件回傳判定（分數 0-100、理由、通過/失敗）以及加權總分。如果總分低於 `overall_threshold` 且 `on_failure` 為 `block`，請求會以 HTTP 422 失敗，並帶有完整判定；若為 `on_failure: log`，呼叫會繼續進行，且判定會記錄在請求的記錄中繼資料（`eval_information`）中，可在費用記錄與記錄整合中看到。
 
-Every judged request or response costs one extra LLM call to the judge model.
+每個被判定的請求或回應都會額外產生一次對裁判 model 的 LLM 呼叫成本。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Define Guardrails on your LiteLLM config.yaml
+### 1. 在您的 LiteLLM config.yaml 中定義 Guardrails {#1-define-guardrails-on-your-litellm-configyaml}
 
-Define your guardrails under the `guardrails` section:
+在 `guardrails` 區段下定義您的 guardrails：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -56,22 +56,22 @@ guardrails:
           description: Is the response professional and polite?
 ```
 
-Criterion weights must sum to 100. `overall_threshold` defaults to 80 and `on_failure` defaults to `block`.
+條件權重總和必須為 100。`overall_threshold` 預設為 80，`on_failure` 預設為 `block`。
 
-To judge the request instead of the response, set `mode: pre_call` (or `mode: [pre_call, post_call]` to judge both sides) and write the criteria about the request, for example `description: Is the request about cooking or recipes?`. A rejected request returns HTTP 422 with `"message": "LLM judge rejected request: score below threshold"` and the same `verdicts` payload as below, and the main model is never called.
+若要判定請求而非回應，請設定 `mode: pre_call`（或設定 `mode: [pre_call, post_call]` 以同時判定雙方），並撰寫關於請求的條件，例如 `description: Is the request about cooking or recipes?`。被拒絕的請求會回傳 HTTP 422，並附上 `"message": "LLM judge rejected request: score below threshold"` 及如下相同的 `verdicts` 負載，而主 model 絕不會被呼叫。
 
-### 2. Start LiteLLM Gateway
+### 2. 啟動 LiteLLM Gateway {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request
+### 3. 測試請求 {#3-test-request}
 
 <Tabs>
 <TabItem label="Blocked Request" value="blocked">
 
-A response that fails the criteria is rejected with HTTP 422 and the verdicts attached:
+未通過條件的回應會以 HTTP 422 拒絕，並附上判定：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -103,32 +103,32 @@ curl -i http://localhost:4000/v1/chat/completions \
 </TabItem>
 <TabItem label="Passing Request" value="passing">
 
-A response that meets the threshold is returned unchanged. With `on_failure: log`, even failing responses are returned; the verdict is recorded in `eval_information` in the request metadata so it reaches spend logs and logging callbacks.
+符合門檻的回應會原樣回傳。搭配 `on_failure: log` 時，即使失敗的回應也會回傳；判定會記錄在請求中繼資料的 `eval_information` 中，因此會送達費用記錄與記錄回呼。
 
 </TabItem>
 </Tabs>
 
-## Creating the guardrail from the Admin UI
+## 從 Admin UI 建立 guardrail {#creating-the-guardrail-from-the-admin-ui}
 
-The guardrail can be created entirely from the dashboard: Guardrails, Add New Guardrail, provider "LiteLLM LLM as a Judge". The judge model dropdown is populated from your proxy's model list, and the criteria, threshold, and failure action map to the config fields above. Guardrails created this way are stored in the database and load on startup with no config file entry.
+可完全從儀表板建立 guardrail：Guardrails、Add New Guardrail、提供者 "LiteLLM LLM as a Judge"。裁判 model 下拉選單會從您的代理程式 model 清單填入，而條件、門檻與失敗動作會對應到上述設定欄位。以這種方式建立的 guardrail 會儲存在資料庫中，並在啟動時載入，無須在設定檔中加入項目。
 
 <Image img={require('../../../img/llm_judge_ui_dropdown.png')} />
 
-A blocked response as seen from the Playground; the judge's rejection terminates the stream:
+從 Playground 看到的被封鎖回應；裁判的拒絕會終止串流：
 
 <Image img={require('../../../img/llm_judge_playground_blocked.png')} />
 
-## How the judge model's credentials resolve
+## 裁判 model 的認證資料如何解析 {#how-the-judge-models-credentials-resolve}
 
-`judge_model` is resolved against the proxy's Router first. If the name matches a configured deployment (exact public name, a wildcard route such as `anthropic/*`, or a `model_group_alias` entry), the judge call goes through that deployment and uses its credentials; this is what makes judge models selected in the Admin UI dropdown work, since their keys live in the deployment rather than the environment. A name the Router cannot serve falls back to the SDK, resolving credentials from environment variables like any direct `litellm.completion` call.
+`judge_model` 會先根據代理程式的 Router 解析。如果名稱符合已設定的部署（精確公開名稱、例如 `anthropic/*` 的萬用字元路由，或 `model_group_alias` 項目），裁判呼叫就會透過該部署並使用其認證資料；這就是為什麼在 Admin UI 下拉選單中選取的裁判 model 可以運作，因為它們的金鑰位於部署中而非環境變數中。Router 無法提供的名稱會回退到 SDK，像任何直接的 `litellm.completion` 呼叫一樣，從環境變數解析認證資料。
 
-Two consequences of the Router path are worth knowing. If a judge model name matches both a deployment and a valid provider model id, the deployment wins, so the deployment's key is used rather than the environment key. And judge calls through a deployment participate in that deployment's rate and cooldown accounting like any other call, so a persistently failing judge can cool down a deployment it shares with user traffic. The judge call itself is made with retries and standard fallbacks disabled so the configured `judge_model` stays authoritative.
+Router 路徑有兩個值得注意的後果。如果裁判 model 名稱同時符合某個部署與有效的提供者 model id，會以部署為準，因此使用的是該部署的金鑰，而不是環境金鑰。透過部署的裁判呼叫也會像其他呼叫一樣，納入該部署的速率與冷卻計算，因此持續失敗的裁判可能會讓與使用者流量共用的部署進入冷卻。裁判呼叫本身會關閉重試與標準備援，因此設定的 `judge_model` 仍具權威性。
 
-## Failure behavior
+## 失敗行為 {#failure-behavior}
 
-The guardrail fails open on judge errors: if the judge call fails or returns an unparsable verdict, a warning is logged, the guardrail status is recorded as `guardrail_failed_to_respond`, and the response is returned to the caller. Markdown-fenced JSON verdicts (which some judge models produce) are parsed normally and do not count as failures. Only a successfully parsed verdict below the threshold triggers a block.
+當裁判發生錯誤時，guardrail 採失敗開放：如果裁判呼叫失敗或回傳無法解析的判定，會記錄警告、將 guardrail 狀態記錄為 `guardrail_failed_to_respond`，並將回應傳回呼叫端。Markdown 圍欄的 JSON 判定（某些裁判 model 會產生）會正常解析，不會被視為失敗。只有成功解析且低於門檻的判定才會觸發封鎖。
 
-## Supported params
+## 支援的參數 {#supported-params}
 
 ```yaml
 guardrails:

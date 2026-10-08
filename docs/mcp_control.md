@@ -2,56 +2,56 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# MCP Permission Management
+# MCP 權限管理 {#mcp-permission-management}
 
-Control which MCP servers and tools can be accessed by specific keys, teams, or organizations in LiteLLM. When a client attempts to list or call tools, LiteLLM enforces access controls based on configured permissions.
+在 LiteLLM 中控制哪些 MCP 伺服器和工具可供特定金鑰、團隊或組織存取。當用戶端嘗試列出或呼叫工具時，LiteLLM 會根據已設定的權限強制執行存取控制。
 
-## Overview
+## 概覽 {#overview}
 
-LiteLLM provides fine-grained permission management for MCP servers, allowing you to:
+LiteLLM 為 MCP 伺服器提供細緻的權限管理，讓您可以：
 
-- **Restrict MCP access by entity**: Control which keys, teams, or organizations can access specific MCP servers
-- **Tool-level filtering**: Automatically filter available tools based on entity permissions
-- **Centralized control**: Manage all MCP permissions from the LiteLLM Admin UI or API
-- **One-click public MCPs**: Mark specific servers as available to every LiteLLM API key when you don't need per-key restrictions
+- **依實體限制 MCP 存取**：控制哪些金鑰、團隊或組織可以存取特定的 MCP 伺服器
+- **工具層級篩選**：根據實體權限自動篩選可用工具
+- **集中式控制**：從 LiteLLM 管理員介面或 API 管理所有 MCP 權限
+- **一鍵公開 MCP**：在不需要逐金鑰限制時，將特定伺服器標記為所有 LiteLLM API 金鑰皆可使用
 
-This ensures that only authorized entities can discover and use MCP tools, providing an additional security layer for your MCP infrastructure.
+這可確保只有獲授權的實體才能探索並使用 MCP 工具，為您的 MCP 基礎架構提供額外的安全層。
 
-:::info[Related Documentation]
-- [MCP Overview](./mcp.md) - Learn about MCP in LiteLLM
-- [Grant MCP Server Access to Keys and Teams](./mcp_grant_access.md) - Step-by-step Admin UI and API procedure for key and team grants
-- [MCP Cost Tracking](./mcp_cost.md) - Track costs for MCP tool calls
-- [MCP Guardrails](./mcp_guardrail.md) - Apply security guardrails to MCP calls
-- [Using MCP](./mcp_usage.md) - How to use MCP with LiteLLM
+:::info[相關文件]
+- [MCP 總覽](./mcp.md) - 了解 LiteLLM 中的 MCP
+- [將 MCP Server 存取權授予 Keys 和 Teams](./mcp_grant_access.md) - 逐步說明的 Admin UI 與 API 授權 key 和 team 的流程
+- [MCP 成本追蹤](./mcp_cost.md) - 追蹤 MCP 工具呼叫的成本
+- [MCP 防護欄](./mcp_guardrail.md) - 對 MCP 呼叫套用安全防護欄
+- [使用 MCP](./mcp_usage.md) - 如何在 LiteLLM 中使用 MCP
 :::
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-LiteLLM supports managing permissions for MCP Servers by Keys, Teams, Organizations (entities) on LiteLLM. When a MCP client attempts to list tools, LiteLLM will only return the tools the entity has permissions to access.
+LiteLLM 支援在 LiteLLM 上以金鑰、團隊、組織（實體）來管理 MCP 伺服器的權限。當 MCP 用戶端嘗試列出工具時，LiteLLM 只會回傳該實體有權存取的工具。
 
-When Creating a Key, Team, or Organization, you can select the allowed MCP Servers that the entity has access to.
+建立金鑰、團隊或組織時，您可以選擇該實體可存取的允許 MCP 伺服器。
 
 <Image 
   img={require('../img/mcp_key.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-## Permission Hierarchy
+## 權限階層 {#permission-hierarchy}
 
-Permissions can be set at six distinct levels. When more than one level applies to a request, LiteLLM **intersects** the lists (most-restrictive wins), except for the organization level, which acts as a **ceiling**.
+權限可設定於六個不同層級。當多個層級同時適用於某個請求時，LiteLLM 會**取交集**（最嚴格者勝出），組織層級除外，其作用為**上限**。
 
-| Level | Source | How it composes |
+| 層級 | 來源 | 組合方式 |
 |---|---|---|
-| **Key** | `object_permission.mcp_servers` / `object_permission.mcp_access_groups` on the virtual key | If the key has an explicit list, it's used. |
-| **Team** | Same fields on the team | If both key and team have lists, the result is the **intersection** (only servers in both). If only the team has a list, the key inherits it. |
-| **End user** | Same fields on the `LiteLLM_EndUserTable` row matching `x-litellm-end-user-id` | Intersected with the running result. Skipped if no end-user-id is present on the request. |
-| **Agent** | Same fields on the agent identified by `x-litellm-agent-id`, or the agent the key is bound to (`agent_id` set at key generation) | Intersected with the running result. Skipped if no agent applies. |
-| **Internal user** | Same fields on the internal user (the human) the request authenticated as | Intersected with the running result, so it can only narrow. Skipped if that user carries no entitlement. |
-| **Organization** | Same fields on the org owning the key/team | Acts as a **ceiling**; the final allowed-server set is intersected with the org's list. If the org has no list, no additional restriction. |
+| **Key** | 虛擬 key 上的 `object_permission.mcp_servers` / `object_permission.mcp_access_groups` | 如果 key 有明確清單，就使用該清單。 |
+| **Team** | team 上相同的欄位 | 如果 key 和 team 都有清單，結果為**交集**（只保留同時屬於兩者的 servers）。如果只有 team 有清單，key 會繼承該清單。 |
+| **End user** | 與 `x-litellm-end-user-id` 相符的 `LiteLLM_EndUserTable` 資料列上的相同欄位 | 與目前結果取交集。若請求中沒有 end-user-id，則略過。 |
+| **Agent** | 由 `x-litellm-agent-id` 所識別的 agent 上的相同欄位，或 key 綁定的 agent（在 key 生成時設定 `agent_id`） | 與目前結果取交集。若不適用任何 agent，則略過。 |
+| **Internal user** | 請求驗證為其身分的 internal user（真人）上的相同欄位 | 與目前結果取交集，因此只能縮小範圍。若該使用者沒有任何權益，則略過。 |
+| **Organization** | 擁有該 key/team 的 org 上相同的欄位 | 充當**上限**；最終允許的 servers 集合會與 org 的清單取交集。若 org 沒有清單，則不會增加額外限制。 |
 
-If no level has a list, the request can access **every** MCP server (open by default).
+如果沒有任何層級有清單，請求可以存取**所有** MCP 伺服器（預設為開放）。
 
-A key bound to an agent (`agent_id` passed to `/key/generate`) gets the same treatment as a request carrying `x-litellm-agent-id`: the agent's list is intersected with the key's on every request the key makes. Granting a server to the key alone is not enough; the agent must also hold the grant (via the Admin UI agent edit form or `PATCH /v1/agents/{agent_id}`), otherwise requests scoped to that server are denied with an error naming the agent.
+綁定到 agent 的 key（將 `agent_id` 傳給 `/key/generate`）會獲得與帶有 `x-litellm-agent-id` 的請求相同的處理方式：該 agent 的清單會在 key 發出的每個請求上與 key 的清單取交集。只授予 key 本身某個 server 並不足夠；agent 也必須持有該授權（透過 Admin UI 的 agent 編輯表單或 `PATCH /v1/agents/{agent_id}`），否則針對該 server 的請求會被拒絕，並顯示包含 agent 名稱的錯誤。
 
 ```mermaid
 flowchart TD
@@ -87,26 +87,26 @@ flowchart TD
     Q --> R
 ```
 
-The same intersection model applies to the per-server tool-level dict `mcp_tool_permissions` (see [Per-entity Tool-Level Permissions](#per-entity-tool-level-permissions) below).
+相同的交集模型也適用於每個伺服器的工具層級字典 `mcp_tool_permissions`（請參閱下方的 [每個實體的工具層級權限](#per-entity-tool-level-permissions)）。
 
-### Require keys to define their own MCP access
+### 要求 key 定義其自己的 MCP 存取 {#require-keys-to-define-their-own-mcp-access}
 
-By default a key with an empty or absent `mcp_servers` list inherits its team's list, so the team is effectively a default that every key falls back to. Set `require_key_mcp_access_defined: true` under `general_settings` to flip that relationship: the team becomes a ceiling rather than a default, and a key with an empty list is granted no MCP servers unless it grants some explicitly (either directly in `object_permission.mcp_servers` or via an [access group](#grouping-mcps-access-groups)).
+預設情況下，具有空白或不存在的 `mcp_servers` 清單的 key 會繼承其 team 的清單，因此 team 實際上是每個 key 預設退回的對象。將 `require_key_mcp_access_defined: true` 設在 `general_settings` 下方，可翻轉這種關係：team 變成上限而不是預設值，而空清單的 key 若未明確授予任何 MCP servers（無論是直接在 `object_permission.mcp_servers` 中，或透過 [access group](#grouping-mcps-access-groups)），就不會獲得任何 MCP servers。
 
 ```yaml title="config.yaml" showLineNumbers
 general_settings:
   require_key_mcp_access_defined: true
 ```
 
-Turning this on is the recommended posture. With inheritance, every key issued under a team silently reaches every MCP server that team can reach, so access is granted implicitly and widens whenever the team's list grows; with the flag on, a key reaches only what it was explicitly granted, and the team's list caps rather than defines that grant. We're looking to make this the default behavior in a future release; follow along and weigh in on the [deprecation discussion](https://github.com/BerriAI/litellm/discussions/32090). Enable it once your keys carry their own `object_permission.mcp_servers` (or an access group), since flipping it on before that will drop MCP access for keys that were relying on inheritance.
+建議採用此設定。使用繼承時，在某個 team 底下發出的每個 key 都會無聲地連到該 team 能連到的每個 MCP server，因此存取會以隱含方式授予，且會隨著 team 清單擴大而擴大；啟用此旗標後，key 只會連到明確授予的內容，而 team 清單只會作為上限而非定義該授權。我們正考慮在未來版本將此設為預設行為；請持續關注並參與 [deprecation discussion](https://github.com/BerriAI/litellm/discussions/32090)。當您的 keys 已具備自己的 `object_permission.mcp_servers`（或 access group）時再啟用此設定，因為在此之前切換會讓依賴繼承的 keys 失去 MCP 存取權。
 
-A team with an empty `mcp_servers` list still means "no restriction" regardless of this flag, since an empty team list never restricts. The flag only changes what an empty *key* list means when the team does have a list: inherit it (default) versus grant nothing (flag on). Access-group grants on the key remain additive, so attaching a group still reaches its servers even when the flag is enabled.
+若 team 的 `mcp_servers` 清單為空，即使有此旗標，也仍表示「不受限制」，因為空的 team 清單永遠不會限制。此旗標只會改變當 team 確實有清單時，空白 *key* 清單的含義：繼承它（預設）或不授予任何內容（旗標開啟）。key 上的 access-group 授權仍會累加，因此即使啟用旗標，附加群組仍可到達其 servers。
 
-For the equivalent control at the end-user level, see [`require_end_user_mcp_access_defined`](./proxy/config_settings#general_settings---reference).
+關於 end-user 層級的等效控制，請參閱 [`require_end_user_mcp_access_defined`](./proxy/config_settings#general_settings---reference)。
 
-### Opting a key out of all MCP servers (`no-mcp-servers`)
+### 將 key 排除於所有 MCP servers 之外（`no-mcp-servers`） {#opting-a-key-out-of-all-mcp-servers-no-mcp-servers}
 
-To explicitly deny a key every MCP server, put the sentinel `no-mcp-servers` in its `mcp_servers` list. This mirrors the `no-default-models` sentinel used for model access. Unlike an empty list, which inherits the team's servers, `no-mcp-servers` overrides team inheritance and any additive access-group grants, so the key resolves to zero MCP servers no matter what its team allows.
+若要明確拒絕某個 key 的所有 MCP servers，請在其 `mcp_servers` 清單中放入 sentinel `no-mcp-servers`。這與用於模型存取的 `no-default-models` sentinel 相同。不同於空清單會繼承 team 的 servers，`no-mcp-servers` 會覆寫 team 繼承以及任何累加式 access-group 授權，因此無論 team 允許什麼，該 key 解析後都會是零個 MCP servers。
 
 ```bash title="Key with no MCP access" showLineNumbers
 curl -X POST "http://localhost:4000/key/generate" \
@@ -119,14 +119,14 @@ curl -X POST "http://localhost:4000/key/generate" \
   }'
 ```
 
-## Allow/Disallow MCP Tools
+## 允許/禁止 MCP 工具 {#allowdisallow-mcp-tools}
   
-Control which tools are available from your MCP servers. You can either allow only specific tools or block dangerous ones.
+控制哪些工具可從您的 MCP 伺服器使用。您可以只允許特定工具，或封鎖危險工具。
 
 <Tabs>
-<TabItem value="allowed" label="Only Allow Specific Tools">
+<TabItem value="allowed" label="只允許特定工具">
 
-Use `allowed_tools` to specify exactly which tools users can access. All other tools will be blocked.
+使用 `allowed_tools` 精確指定使用者可存取哪些工具。其他所有工具都會被封鎖。
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -143,15 +143,15 @@ mcp_servers:
     # only list_tools will be available
 ```
 
-**Use this when:**
-- You want strict control over which tools are available
-- You're in a high-security environment
-- You're testing a new MCP server with limited tools
+**適用於：**
+- 您想嚴格控制哪些工具可用
+- 您處於高安全性環境
+- 您正在以有限工具測試新的 MCP 伺服器
 
 </TabItem>
-<TabItem value="blocked" label="Block Specific Tools">
+<TabItem value="blocked" label="封鎖特定工具">
 
-Use `disallowed_tools` to block specific tools. All other tools will be available.
+使用 `disallowed_tools` 來封鎖特定工具。其他所有工具都會可用。
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -168,27 +168,27 @@ mcp_servers:
     # only repo_delete will be blocked
 ```
 
-**Use this when:**
-- Most tools are safe, but you want to block a few dangerous ones
-- You want to prevent expensive API calls
-- You're gradually adding restrictions to an existing server
+**適用於：**
+- 大多數工具都安全，但您想封鎖少數危險工具
+- 您想避免昂貴的 API 呼叫
+- 您正逐步為現有伺服器新增限制
 
 </TabItem>
 </Tabs>
 
-### Important Notes
+### 重要注意事項 {#important-notes}
 
-- If you specify both `allowed_tools` and `disallowed_tools`, the allowed list takes priority
-- Tool names are case-sensitive
+- 如果您同時指定 `allowed_tools` 和 `disallowed_tools`，允許清單會優先
+- 工具名稱區分大小寫
 
-## Pin a Server's Tool List
+## 鎖定 Server 的工具清單 {#pin-a-servers-tool-list}
 
-`allowed_tools` trusts whatever the upstream says each tool does. Pinning freezes the tool list, the descriptions, and the input schemas too: the gateway serves only the pinned tools with their pinned descriptions and schemas, refuses calls to any other name, and alerts when the upstream drifts from the pin. That closes tool poisoning (OWASP LLM01): a server that quietly rewrites a description to carry instructions for the model, or adds a tool your clients never approved, changes nothing your clients see
+`allowed_tools` 相信上游對每個工具功能的描述。鎖定也會凍結工具清單、描述和輸入 schema：gateway 只提供已鎖定的工具及其已鎖定的描述與 schema，拒絕對任何其他名稱的呼叫，並在上游與鎖定內容不一致時發出警示。這可阻止工具投毒（OWASP LLM01）：某個 server 悄悄重寫描述以向模型傳遞指令，或新增您的 clients 從未核准的工具，都不會改變 clients 看到的任何內容
 
 <Tabs>
 <TabItem value="api" label="Pin from the API">
 
-Pin the catalog the gateway sees right now (admin only, needs a database). Find `server_id` with `GET /v1/mcp/server`. The response is the stored snapshot: each tool's name, description, and input schema:
+將 gateway 目前看到的目錄鎖定（僅限 admin，且需要 database）。使用 `GET /v1/mcp/server` 找到 `server_id`。回應會是儲存的快照：每個工具的名稱、描述與輸入 schema：
 
 ```bash title="Pin" showLineNumbers
 curl -s -X POST http://localhost:4000/v1/mcp/server/$SERVER_ID/pin \
@@ -204,9 +204,9 @@ curl -s -X POST http://localhost:4000/v1/mcp/server/$SERVER_ID/pin \
 }
 ```
 
-The snapshot is taken after the [discovery guardrail scan](./mcp_guardrail#scanning-tool-descriptions-on-discovery), so a description a guardrail blocks never gets pinned and a description it masks is pinned in its masked form; a server with no tool left to pin returns `400`. A `tool_name_to_description` override in effect at pin time is what gets pinned
+快照會在 [discovery guardrail scan](./mcp_guardrail#scanning-tool-descriptions-on-discovery) 之後擷取，因此被 guardrail 阻擋的描述不會被鎖定，而被遮罩的描述會以其遮罩後的形式被鎖定；若某個 server 最後沒有任何工具可鎖定，則會回傳 `400`。在鎖定當下生效的 `tool_name_to_description` 覆寫會被一併鎖定
 
-Unpin to serve the live upstream catalog again:
+解除鎖定即可再次提供即時的上游目錄：
 
 ```bash title="Unpin" showLineNumbers
 curl -s -X DELETE http://localhost:4000/v1/mcp/server/$SERVER_ID/pin \
@@ -220,7 +220,7 @@ curl -s -X DELETE http://localhost:4000/v1/mcp/server/$SERVER_ID/pin \
 </TabItem>
 <TabItem value="config" label="Pin in config.yaml">
 
-`pinned_tools` maps each tool name to the description and input schema your clients should see. The pin response above is the same shape, so pin once on a deployment with a database and paste the response here:
+`pinned_tools` 會將每個工具名稱對應到您的 clients 應該看到的描述與輸入 schema。上方的鎖定回應具有相同的結構，因此請先在有 database 的 deployment 上鎖定一次，然後將回應貼到這裡：
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -240,14 +240,14 @@ mcp_servers:
 </TabItem>
 </Tabs>
 
-What clients see once a server is pinned:
+server 被鎖定後，clients 會看到：
 
-- `tools/list` (over `/mcp`, `/mcp-rest/tools/list`, and LLM-driven discovery) returns the pinned tools only, each with its pinned description and input schema
-- A tool the upstream added after the pin is not listed, and a call to it returns `403`
-- A tool the upstream removed after the pin is not listed either, since the gateway has nothing to call
-- A description or input schema the upstream changed after the pin is served as pinned
+- `tools/list`（優先於 `/mcp`、`/mcp-rest/tools/list`，以及 LLM 驅動的 discovery）只會回傳已鎖定的工具，每個工具都帶有其已鎖定的描述與輸入 schema
+- 上游在鎖定後新增的工具不會列出，而且對它的呼叫會回傳 `403`
+- 上游在鎖定後移除的工具也不會列出，因為 gateway 沒有可呼叫的對象
+- 上游在鎖定後變更的描述或輸入 schema 會以鎖定內容提供
 
-Whenever a listing finds the upstream differs from the pin, the gateway logs a warning and sends an `mcp_pinned_tools_changed` [alert](./proxy/alerting#all-possible-alert-types) naming the added, removed, and changed tools, once per distinct diff per server; the same diff on the next listing stays quiet, a different one alerts again, and the alert clears on its own once the upstream matches the pin. Re-pin to accept a change you reviewed
+只要某次清單比對發現上游與鎖定內容不同，gateway 就會記錄警告並發送一則 `mcp_pinned_tools_changed` [alert](./proxy/alerting#all-possible-alert-types)，指出新增、移除與變更的工具；每個 server 的每種不同 diff 只會發送一次。下一次相同 diff 的清單會保持靜默，不同 diff 會再次發出 alert，而當上游重新與鎖定內容一致時，alert 會自行清除。若您審查後接受某項變更，請重新鎖定
 
 ```text
 MCP server `notes`: upstream tool list drifted from the pinned catalog; serving the pinned tools and descriptions until an admin re-pins the server
@@ -255,36 +255,36 @@ added: `delete_all_notes`
 changed: `get_note`
 ```
 
-### Important Notes
+### 重要注意事項 {#important-notes-1}
 
-- A pin covers tool names, descriptions, and input schemas; anything else the upstream reports about a tool (annotations, output schema) is served live
-- `allowed_tools`, `disallowed_tools`, and per-key tool permissions still apply on top of the pin
-- The [discovery guardrail scan](./mcp_guardrail#scanning-tool-descriptions-on-discovery) still runs on a pinned server, on the pinned text the proxy is about to serve: a pinned tool keeps serving its pinned description while the upstream's text is poisoned (reported as changed), and a pinned description the guardrails themselves block is hidden and reported as blocked until the admin re-pins the server
-- A `tool_name_to_description` override edited after the pin reads as a changed tool: the pinned text is served until the server is re-pinned
+- 鎖定涵蓋工具名稱、描述與輸入 schema；上游回報的任何其他工具資訊（annotations、output schema）都會即時提供
+- `allowed_tools`、`disallowed_tools`，以及每個 key 的工具權限仍會疊加在鎖定之上
+- [discovery guardrail scan](./mcp_guardrail#scanning-tool-descriptions-on-discovery) 仍會在已鎖定的 server 上執行，針對 proxy 即將提供的已鎖定文字執行：當上游文字遭到污染時，已鎖定的工具仍會提供其已鎖定的描述（並回報為已變更）；而當已鎖定的描述本身被 guardrails 阻擋時，會隱藏並回報為已阻擋，直到 admin 重新鎖定 server
+- 在鎖定後編輯的 `tool_name_to_description` 覆寫會被視為已變更的工具：已鎖定文字會持續提供，直到 server 重新鎖定
 
-## Public MCP Servers (allow_all_keys)
+## 公開 MCP 伺服器（allow_all_keys） {#public-mcp-servers-allow_all_keys}
 
-Some MCP servers are meant to be shared broadly: internal knowledge bases, calendar integrations, or other low-risk utilities where every team should be able to connect without requesting access. Instead of adding those servers to every key, team, or organization, enable the new `allow_all_keys` toggle.
+有些 MCP servers 是為了廣泛共享而設計的：內部知識庫、日曆整合，或其他低風險工具，讓每個 team 都能在不需申請存取權的情況下連線。與其將這些 servers 加入每個 key、team 或 organization，不如啟用新的 `allow_all_keys` 切換開關。
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-1. Open **MCP Servers → Add / Edit** in the Admin UI.
-2. Expand **Permission Management / Access Control**.
-3. Toggle **Allow All LiteLLM Keys** on.
+1. 在管理員 UI 中開啟 **MCP Servers → Add / Edit**。
+2. 展開 **Permission Management / Access Control**。
+3. 將 **Allow All LiteLLM Keys** 切換為開啟。
 
 <Image 
   img={require('../img/mcp_allow_all_ui.png')}
   style={{width: '80%', display: 'block', margin: '1rem auto'}}
-  alt="MCP server configuration in Admin UI"
-/> 
+  alt="管理員 UI 中的 MCP 伺服器組態"
+/>
 
-The toggle makes the server “public” without touching existing access groups.
+這個切換開關會讓伺服器變成「公開」，而不會影響既有的存取群組。
 
 </TabItem>
 <TabItem value="config" label="config.yaml">
 
-Set `allow_all_keys: true` to mark the server as public:
+設定 `allow_all_keys: true`，將伺服器標記為公開：
 
 ```yaml title="Make an MCP server public" showLineNumbers
 mcp_servers:
@@ -296,23 +296,23 @@ mcp_servers:
 </TabItem>
 </Tabs>
 
-### When to use it
+### 何時使用 {#when-to-use-it}
 
-- You have shared MCP utilities where fine-grained ACLs would only add busywork.
-- You want a “default enabled” experience for internal users, while still being able to layer tool-level restrictions.
-- You’re onboarding new teams and want the safest MCPs available out of the box.
+- 您有共享的 MCP 工具，而細緻的 ACL 只會增加瑣碎工作。
+- 您希望內部使用者有「預設啟用」的體驗，同時仍能疊加工具層級的限制。
+- 您正在讓新團隊上線，希望開箱即用就能使用最安全的 MCP。
 
-Once enabled, LiteLLM automatically includes the server for every key during tool discovery/calls, with no extra virtual-key or team configuration required.
+啟用後，LiteLLM 會在工具 discovery/calls 期間自動為每個 key 納入該 server，無需額外的 virtual-key 或 team 設定。
 
 ---
 
-## Allow/Disallow MCP Tool Parameters
+## 允許/禁止 MCP 工具參數 {#allowdisallow-mcp-tool-parameters}
 
-Control which parameters are allowed for specific MCP tools using the `allowed_params` configuration. This provides fine-grained control over tool usage by restricting the parameters that can be passed to each tool.
+使用 `allowed_params` 組態控制特定 MCP 工具允許使用哪些參數。這可透過限制可傳遞給每個工具的參數，對工具使用提供細緻控制。
 
-### Configuration
+### 組態 {#configuration}
 
-`allowed_params` is a dictionary that maps tool names to lists of allowed parameter names. When configured, only the specified parameters will be accepted for that tool - any other parameters will be rejected with a 403 error.
+`allowed_params` 是一個將工具名稱對應到允許參數名稱清單的字典。設定後，只有指定的參數會被該工具接受——任何其他參數都會被拒絕並回傳 403 錯誤。
 
 ```yaml title="config.yaml with allowed_params" showLineNumbers
 mcp_servers:
@@ -337,19 +337,19 @@ mcp_servers:
       create_issue: ["title", "body", "labels"]
 ```
 
-### How It Works
+### 運作方式 {#how-it-works-1}
 
-1. **Tool-specific filtering**: Each tool can have its own list of allowed parameters
-2. **Flexible naming**: Tool names can be specified with or without the server prefix (e.g., both `"getpetbyid"` and `"my_api_mcp-getpetbyid"` work)
-3. **Whitelist approach**: Only parameters in the allowed list are permitted
-4. **Unlisted tools**: If `allowed_params` is not set, all parameters are allowed
-5. **Error handling**: Requests with disallowed parameters receive a 403 error with details about which parameters are allowed
+1. **工具專屬篩選**：每個工具都可以有自己的允許參數清單
+2. **命名彈性**：工具名稱可在有或沒有伺服器前綴的情況下指定（例如，`"getpetbyid"` 和 `"my_api_mcp-getpetbyid"` 都可用）
+3. **白名單方式**：只允許允許清單中的參數
+4. **未列出工具**：如果未設定 `allowed_params`，則允許所有參數
+5. **錯誤處理**：帶有不允許參數的請求會收到 403 錯誤，並附上哪些參數允許的詳細資訊
 
-### Example Request Behavior
+### 範例請求行為 {#example-request-behavior}
 
-With the configuration above, here's how requests would be handled:
+使用上方組態時，請求會如何處理如下：
 
-**✅ Allowed Request:**
+**✅ 允許的請求：**
 ```json
 {
   "tool": "read_wiki_contents",
@@ -359,7 +359,7 @@ With the configuration above, here's how requests would be handled:
 }
 ```
 
-**❌ Rejected Request:**
+**❌ 拒絕的請求：**
 ```json
 {
   "tool": "read_wiki_contents",
@@ -370,24 +370,24 @@ With the configuration above, here's how requests would be handled:
 }
 ```
 
-**Error Response:**
+**錯誤回應：**
 ```json
 {
   "error": "Parameters ['limit'] are not allowed for tool read_wiki_contents. Allowed parameters: ['status']. Contact proxy admin to allow these parameters."
 }
 ```
 
-### Use Cases
+### 使用案例 {#use-cases}
 
-- **Security**: Prevent users from accessing sensitive parameters or dangerous operations
-- **Cost control**: Restrict expensive parameters (e.g., limiting result counts)
-- **Compliance**: Enforce parameter usage policies for regulatory requirements
-- **Staged rollouts**: Gradually enable parameters as tools are tested
-- **Multi-tenant isolation**: Different parameter access for different user groups
+- **安全性**：防止使用者存取敏感參數或危險操作
+- **成本控管**：限制昂貴參數（例如，限制結果數量）
+- **合規性**：為法規需求強制執行參數使用政策
+- **階段性推出**：在工具經測試後逐步啟用參數
+- **多租戶隔離**：不同使用者群組有不同的參數存取權限
 
-### Combining with Tool Filtering
+### 與工具過濾結合 {#combining-with-tool-filtering}
 
-`allowed_params` works alongside `allowed_tools` and `disallowed_tools` for complete control:
+`allowed_params` 可與 `allowed_tools` 和 `disallowed_tools` 搭配使用，以達到完整控制：
 
 ```yaml title="Combined filtering example" showLineNumbers
 mcp_servers:
@@ -411,43 +411,43 @@ mcp_servers:
       search_issues: ["query", "sort", "order", "perPage"]
 ```
 
-This configuration ensures that:
-1. Only the three listed tools are available
-2. The `delete_repo` tool is explicitly blocked
-3. Each tool can only use its specified parameters
+此設定可確保：
+1. 僅有列出的三個工具可用
+2. `delete_repo` 工具被明確封鎖
+3. 每個工具只能使用其指定的參數
 
 ---
 
-## MCP Server Access Control
+## MCP 伺服器存取控制 {#mcp-server-access-control}
 
-LiteLLM Proxy provides two methods for controlling access to specific MCP servers:
+LiteLLM Proxy 提供兩種存取特定 MCP 伺服器的控制方式：
 
-1. **URL-based Namespacing** - Use URL paths to directly access specific servers or access groups
-2. **Header-based Namespacing** - Use the `x-mcp-servers` header to specify which servers to access
+1. **以 URL 為基礎的命名空間** - 使用 URL 路徑直接存取特定伺服器或存取群組
+2. **以標頭為基礎的命名空間** - 使用 `x-mcp-servers` 標頭指定要存取哪些伺服器
 
 ---
 
-### Method 1: URL-based Namespacing
+### 方法 1：基於 URL 的命名空間 {#method-1-url-based-namespacing}
 
-LiteLLM Proxy supports URL-based namespacing for MCP servers using the format `/<servers or access groups>/mcp`. This allows you to:
+LiteLLM Proxy 支援對 MCP 伺服器使用以 URL 為基礎的命名空間，格式為 `/<servers or access groups>/mcp`。這可讓您：
 
-- **Direct URL Access**: Point MCP clients directly to specific servers or access groups via URL
-- **Simplified Configuration**: Use URLs instead of headers for server selection
-- **Access Group Support**: Use access group names in URLs for grouped server access
+- **直接透過 URL 存取**：透過 URL 將 MCP 用戶端直接指向特定伺服器或存取群組
+- **簡化設定**：使用 URL 而非標頭來選擇伺服器
+- **支援存取群組**：在 URL 中使用存取群組名稱，以便群組化存取伺服器
 
-#### URL Format
+#### URL 格式 {#url-format}
 
 ```
 <your-litellm-proxy-base-url>/<server_alias_or_access_group>/mcp
 ```
 
-**Examples:**
-- `/github_mcp/mcp` - Access tools from the "github_mcp" MCP server
-- `/zapier/mcp` - Access tools from the "zapier" MCP server  
-- `/dev_group/mcp` - Access tools from all servers in the "dev_group" access group
-- `/github_mcp,zapier/mcp` - Access tools from multiple specific servers
+**範例：**
+- `/github_mcp/mcp` - 從「github_mcp」MCP 伺服器存取工具
+- `/zapier/mcp` - 從「zapier」MCP 伺服器存取工具  
+- `/dev_group/mcp` - 存取「dev_group」存取群組中所有伺服器的工具
+- `/github_mcp,zapier/mcp` - 存取多個特定伺服器中的工具
 
-#### Usage Examples
+#### 使用範例 {#usage-examples}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI API">
@@ -474,7 +474,7 @@ curl --location 'https://api.openai.com/v1/responses' \
 }'
 ```
 
-This example uses URL namespacing to access only the "github" MCP server.
+此範例使用 URL 命名空間，僅存取「github」MCP 伺服器。
 
 </TabItem>
 
@@ -502,7 +502,7 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 }'
 ```
 
-This example uses the `x-mcp-servers` header to access all servers in the "dev_group" access group. Use `server_url: "litellm_proxy"` when calling the proxy's `/v1/responses` endpoint; do not use the full proxy URL.
+這個範例使用 `x-mcp-servers` 標頭來存取「dev_group」存取群組中的所有伺服器。呼叫代理伺服器的 `/v1/responses` 端點時，請使用 `server_url: "litellm_proxy"`；不要使用完整的代理伺服器 URL。
 
 </TabItem>
 
@@ -521,32 +521,32 @@ This example uses the `x-mcp-servers` header to access all servers in the "dev_g
 }
 ```
 
-This configuration uses URL namespacing to access tools from both "github" and "zapier" MCP servers.
+此設定使用 URL 命名空間，存取來自「github」與「zapier」MCP 伺服器的工具。
 
 </TabItem>
 </Tabs>
 
-#### Benefits of URL Namespacing
+#### URL 命名空間的優點 {#benefits-of-url-namespacing}
 
-- **Direct Access**: No need for additional headers to specify servers
-- **Clean URLs**: Self-documenting URLs that clearly indicate which servers are accessible
-- **Access Group Support**: Use access group names for grouped server access
-- **Multiple Servers**: Specify multiple servers in a single URL with comma separation
-- **Simplified Configuration**: Easier setup for MCP clients that prefer URL-based configuration
+- **直接存取**：無需額外標頭來指定伺服器
+- **簡潔 URL**：具備自我說明性的 URL，可清楚指出哪些伺服器可供存取
+- **存取群組支援**：使用存取群組名稱來進行分組伺服器存取
+- **多個伺服器**：在單一 URL 中以逗號分隔指定多個伺服器
+- **簡化設定**：對偏好以 URL 為基礎設定的 MCP 用戶端而言，更容易完成設定
 
 ---
 
-### Method 2: Header-based Namespacing
+### 方法 2：基於標頭的命名空間 {#method-2-header-based-namespacing}
 
-You can choose to access specific MCP servers and only list their tools using the `x-mcp-servers` header. This header allows you to:
-- Limit tool access to one or more specific MCP servers
-- Control which tools are available in different environments or use cases
+您可以使用 `x-mcp-servers` 標頭來存取特定 MCP 伺服器，並且只列出它們的工具。此標頭可讓您：
+- 將工具存取限制為一個或多個特定的 MCP 伺服器
+- 控制在不同環境或使用情境中可用的工具
 
-The header accepts a comma-separated list of server aliases: `"alias_1,Server2,Server3"`
+此標頭接受以逗號分隔的伺服器別名清單：`"alias_1,Server2,Server3"`
 
-**Notes:**
-- If the header is not provided, tools from all available MCP servers will be accessible
-- This method works with the standard LiteLLM MCP endpoint
+**注意：**
+- 如果未提供此標頭，所有可用 MCP 伺服器的工具都將可存取
+- 此方法可搭配標準 LiteLLM MCP 端點運作
 
 <Tabs>
 <TabItem value="openai" label="OpenAI API">
@@ -574,7 +574,7 @@ curl --location 'https://api.openai.com/v1/responses' \
 }'
 ```
 
-In this example, the request will only have access to tools from the "alias_1" MCP server.
+在此範例中，請求只會存取來自「alias_1」MCP 伺服器的工具。
 
 </TabItem>
 
@@ -603,7 +603,7 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 }'
 ```
 
-This configuration restricts the request to only use tools from the specified MCP servers. Use `server_url: "litellm_proxy"` when calling the proxy's `/v1/responses` endpoint.
+此設定會將請求限制為僅使用來自指定 MCP 伺服器的工具。呼叫 Proxy 的 `server_url: "litellm_proxy"` 端點時，請使用 `/v1/responses`。
 
 </TabItem>
 
@@ -623,24 +623,24 @@ This configuration restricts the request to only use tools from the specified MC
 }
 ```
 
-This configuration in Cursor IDE settings will limit tool access to only the specified MCP servers.
+Cursor IDE 設定中的此設定會將工具存取限制為僅指定的 MCP 伺服器。
 
 </TabItem>
 </Tabs>
 
 ---
 
-### Comparison: Header vs URL Namespacing
+### 比較：標頭與 URL 命名空間 {#comparison-header-vs-url-namespacing}
 
-| Feature | Header Namespacing | URL Namespacing |
+| 功能 | 標頭命名空間 | URL 命名空間 |
 |---------|-------------------|-----------------|
-| **Method** | Uses `x-mcp-servers` header | Uses URL path `/<servers>/mcp` |
-| **Endpoint** | Standard `litellm_proxy` endpoint | Custom `/<servers>/mcp` endpoint |
-| **Configuration** | Requires additional header | Self-contained in URL |
-| **Multiple Servers** | Comma-separated in header | Comma-separated in URL path |
-| **Access Groups** | Supported via header | Supported via URL path |
-| **Client Support** | Works with all MCP clients | Works with URL-aware MCP clients |
-| **Use Case** | Dynamic server selection | Fixed server configuration |
+| **方法** | 使用 `x-mcp-servers` 標頭 | 使用 URL 路徑 `/<servers>/mcp` |
+| **端點** | 標準 `litellm_proxy` 端點 | 自訂 `/<servers>/mcp` 端點 |
+| **設定** | 需要額外標頭 | URL 內建自包含 |
+| **多個伺服器** | 在標頭中以逗號分隔 | 在 URL 路徑中以逗號分隔 |
+| **存取群組** | 透過標頭支援 | 透過 URL 路徑支援 |
+| **用戶端支援** | 適用於所有 MCP 用戶端 | 適用於可識別 URL 的 MCP 用戶端 |
+| **使用情境** | 動態伺服器選擇 | 固定伺服器設定 |
 
 <Tabs>
 <TabItem value="openai" label="OpenAI API">
@@ -668,7 +668,7 @@ curl --location 'https://api.openai.com/v1/responses' \
 }'
 ```
 
-In this example, the request will only have access to tools from the "alias_1" MCP server.
+在此範例中，請求只會存取來自「alias_1」MCP 伺服器的工具。
 
 </TabItem>
 
@@ -697,7 +697,7 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 }'
 ```
 
-This configuration restricts the request to only use tools from the specified MCP servers.
+此設定會將請求限制為僅使用來自指定 MCP 伺服器的工具。
 
 </TabItem>
 
@@ -717,18 +717,18 @@ This configuration restricts the request to only use tools from the specified MC
 }
 ```
 
-This configuration in Cursor IDE settings will limit tool access to only the specified MCP server.
+Cursor IDE 設定中的此設定會將工具存取限制為僅指定的 MCP 伺服器。
 
 </TabItem>
 </Tabs>
 
-### Grouping MCPs (Access Groups)
+### 分組 MCP（存取群組） {#grouping-mcps-access-groups}
 
-MCP Access Groups allow you to group multiple MCP servers together for easier management.
+MCP 存取群組可讓您將多個 MCP 伺服器分組，以便更容易管理。
 
-#### 1. Create an Access Group
+#### 1. 建立存取群組 {#1-create-an-access-group}
 
-##### A. Creating Access Groups using Config:
+##### A. 使用設定建立存取群組： {#a-creating-access-groups-using-config}
 
 ```yaml title="Creating access groups for MCP using the config" showLineNumbers
 mcp_servers:
@@ -739,26 +739,26 @@ mcp_servers:
     access_groups: ["dev_group"]
 ```
 
-While adding `mcp_servers` using the config:
-- Pass in a list of strings inside `access_groups`
-- These groups can then be used for segregating access using keys, teams and MCP clients using headers
+在使用設定加入 `mcp_servers` 時：
+- 在 `access_groups` 中傳入字串清單
+- 接著可使用這些群組，透過金鑰、團隊與使用標頭的 MCP 用戶端來分隔存取權限
 
-##### B. Creating Access Groups using UI
+##### B. 使用 UI 建立存取群組 {#b-creating-access-groups-using-ui}
 
-To create an access group:
-- Go to MCP Servers in the LiteLLM UI
-- Click "Add a New MCP Server" 
-- Under "MCP Access Groups", create a new group (e.g., "dev_group") by typing it
-- Add the same group name to other servers to group them together
+若要建立存取群組：
+- 前往 LiteLLM UI 中的 MCP Servers
+- 點選 "Add a New MCP Server" 
+- 在 "MCP Access Groups" 下，透過輸入建立新群組（例如 "dev_group"）
+- 將相同的群組名稱加入其他伺服器，將它們分組在一起
 
 <Image 
   img={require('../img/mcp_create_access_group.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-#### 2. Use Access Group in Cursor
+#### 2. 在 Cursor 中使用存取群組 {#2-use-access-group-in-cursor}
 
-Include the access group name in the `x-mcp-servers` header:
+在 `x-mcp-servers` 標頭中包含存取群組名稱：
 
 ```json title="Cursor Configuration with Access Groups" showLineNumbers
 {
@@ -774,40 +774,39 @@ Include the access group name in the `x-mcp-servers` header:
 }
 ```
 
-This gives you access to all servers in the "dev_group" access group.
-- Which means that if deepwiki server (and any other servers) which have the access group `dev_group` assigned to them will be available for tool calling
+這樣您就能存取 "dev_group" 存取群組中的所有伺服器。
+- 這表示 deepwiki 伺服器（以及任何其他已指派存取群組 `dev_group` 的伺服器）都可用於工具呼叫
 
-#### Advanced: Connecting Access Groups to API Keys
+#### 進階：將存取群組連接到 API 金鑰 {#advanced-connecting-access-groups-to-api-keys}
 
-When creating API keys, you can assign them to specific access groups for permission management:
+建立 API 金鑰時，您可以將它們指派給特定的存取群組以進行權限管理：
 
-- Go to "Keys" in the LiteLLM UI and click "Create Key"
-- Select the desired MCP access groups from the dropdown
-- The key will have access to all MCP servers in those groups
-- This is reflected in the Test Key page
+- 前往 LiteLLM UI 中的 "Keys" 並點選 "Create Key"
+- 從下拉選單選取所需的 MCP 存取群組
+- 這個金鑰將可存取這些群組中的所有 MCP 伺服器
+- 這會反映在 Test Key 頁面中
 
 <Image 
   img={require('../img/mcp_key_access_group.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
+## 每個實體的工具層級權限 {#per-entity-tool-level-permissions}
 
-## Per-entity Tool-Level Permissions {#per-entity-tool-level-permissions}
+控制不同團隊可從同一個 MCP 伺服器存取哪些工具。例如，讓您的工程團隊可存取 `list_repositories`、`create_issue` 與 `search_code`，而銷售團隊則只可存取 `search_code` 與 `close_issue`。
 
-Control which tools different teams can access from the same MCP server. For example, give your Engineering team access to `list_repositories`, `create_issue`, and `search_code`, while Sales only gets `search_code` and `close_issue`.
-
-This video shows how to set allowed tools for a Key, Team, or Organization.
+這段影片示範如何為 Key、Team 或 Organization 設定允許的工具。
 
 <iframe width="840" height="500" src="https://www.loom.com/embed/7464d444c3324078892367272fe50745" frameBorder="0" allowFullScreen></iframe>
 
-### `mcp_tool_permissions` API
+### `mcp_tool_permissions` API {#mcp_tool_permissions-api}
 
-`object_permission.mcp_tool_permissions` is a `Dict[server_id, List[tool_name]]` on the key, team, end-user, agent, internal user, or organization. It's evaluated **after** server-level access has been resolved (see [Permission Hierarchy](#permission-hierarchy) above) and applies the same six-level intersection: most-restrictive wins, organization acts as a ceiling.
+`object_permission.mcp_tool_permissions` 是設定在金鑰、團隊、終端使用者、代理程式、內部使用者或組織上的 `Dict[server_id, List[tool_name]]`。它會在**伺服器層級存取**已解析之後才評估（請參閱上方的 [權限階層](#permission-hierarchy)），並套用相同的六層交集：最嚴格者勝出，組織作為上限。
 
-This is distinct from the server-registration-level `allowed_tools` / `disallowed_tools` (which apply to **every** caller of the server). `mcp_tool_permissions` lets you carve out per-team subsets without changing the server config.
+這與伺服器註冊層級的 `allowed_tools` / `disallowed_tools` 不同（後者適用於伺服器的**每一位**呼叫者）。`mcp_tool_permissions` 可讓您在不變更伺服器設定的情況下，切出每個團隊的子集合。
 
 <Tabs>
-<TabItem value="key" label="On a Key">
+<TabItem value="key" label="在 Key 上">
 
 ```bash title="Engineering key — full GitHub access" showLineNumbers
 curl -X POST "http://localhost:4000/key/generate" \
@@ -838,7 +837,7 @@ curl -X POST "http://localhost:4000/key/generate" \
 ```
 
 </TabItem>
-<TabItem value="team" label="On a Team">
+<TabItem value="team" label="在 Team 上">
 
 ```bash title="Team-wide tool subset (all keys inherit)" showLineNumbers
 curl -X POST "http://localhost:4000/team/new" \
@@ -855,12 +854,12 @@ curl -X POST "http://localhost:4000/team/new" \
   }'
 ```
 
-When the key also sets `mcp_tool_permissions` for `github_mcp`, the resulting tool list is the **intersection** of the two.
+當該金鑰也為 `mcp_tool_permissions` 設定 `github_mcp` 時，產生的工具清單是兩者的**交集**。
 
 </TabItem>
-<TabItem value="agent" label="On an Agent">
+<TabItem value="agent" label="在代理程式上">
 
-When an agent (identified by `x-litellm-agent-id`) calls MCP tools, the agent's own `mcp_tool_permissions` participate in the intersection. Useful for capping what an autonomous agent can do regardless of which key originally invoked it.
+當代理程式（由 `x-litellm-agent-id` 識別）呼叫 MCP 工具時，代理程式本身的 `mcp_tool_permissions` 會參與交集計算。這對於限制自主代理程式可執行的操作很有用，不論其最初是由哪個金鑰呼叫。
 
 ```bash showLineNumbers
 curl -X PATCH "http://localhost:4000/v1/agents/{agent_id}" \
@@ -879,7 +878,7 @@ curl -X PATCH "http://localhost:4000/v1/agents/{agent_id}" \
 </TabItem>
 <TabItem value="user" label="On an Internal User">
 
-An entitlement on the internal user says which tools that *person* may run, whatever key they happen to be holding. It only ever narrows: the tools they get on a server are the intersection of their entitlement with what the key, team, agent and organization already allow.
+內部使用者上的權限會說明該*人*可執行哪些工具，不論其持有的是哪一把金鑰。這只會縮小範圍：他們在伺服器上取得的工具，是其權限與金鑰、團隊、代理程式及組織已允許內容的交集。
 
 ```bash title="Grant one person a single tool on one server" showLineNumbers
 curl -X POST "http://localhost:4000/user/update" \
@@ -894,20 +893,20 @@ curl -X POST "http://localhost:4000/user/update" \
   }'
 ```
 
-`/user/new` takes the same `object_permission` block at creation time. See [Entitling a person rather than a credential](#per-user-tool-permissions) below for the read-back and the resolution details.
+`/user/new` 在建立時會採用相同的 `object_permission` 區塊。請參閱下方的 [授權某個人而非憑證](#per-user-tool-permissions)，以了解讀回與解析細節。
 
 </TabItem>
 </Tabs>
 
-### Entitling a person rather than a credential {#per-user-tool-permissions}
+### 授權某個人而非憑證 {#per-user-tool-permissions}
 
-Every other level describes a credential or a group: the key's scope, the team's scope, the organization's ceiling. The internal user level describes the human, so an admin can say which people may perform which MCP tool calls without chasing down every key those people hold
+其他每個層級都在描述憑證或群組：金鑰的範圍、團隊的範圍、組織的上限。內部使用者層級描述的是人，因此管理員可以說明哪些人可執行哪些 MCP 工具呼叫，而不必追查這些人持有的每一把金鑰。
 
-The grant lives on the internal user's `object_permission` and uses the same fields as everywhere else, `mcp_servers`, `mcp_access_groups` and `mcp_tool_permissions`. It resolves as a ceiling on both axes: the servers the person reaches are intersected with what their key, team, agent and organization allow, and so are the tools they may run on each of those servers. Someone entitled to a server their key does not grant still cannot reach it. In resolution order the key and team come first, then the end user, then the agent, then the internal user, then the organization ceiling
+此授與內容位於內部使用者的 `object_permission` 上，並使用與其他地方相同的欄位：`mcp_servers`、`mcp_access_groups` 和 `mcp_tool_permissions`。它會在兩個軸向上作為上限套用：此人可存取的伺服器會與其金鑰、團隊、代理程式及組織允許的內容取交集，而他們可在每個伺服器上執行的工具也同樣如此。即使某人已被授權到其金鑰未授予的伺服器，仍然無法存取。解析順序中，先是金鑰與團隊，再來是終端使用者，接著是代理程式，再來是內部使用者，最後是組織上限。
 
-A user carrying no entitlement places no ceiling, so nothing changes for an existing deployment until an admin grants someone one. Servers named only as keys of `mcp_tool_permissions` count as entitled, so granting one tool never means naming its server twice
+未攜帶任何權限的使用者不會設定上限，因此在管理員授予某人權限之前，既有部署不會有任何變更。僅作為 `mcp_tool_permissions` 金鑰而命名的伺服器也算已授權，因此授與單一工具並不代表必須把其伺服器名稱重複寫兩次。
 
-Read the grant back with `GET /v2/user/info`, which now returns the linked `object_permission`:
+使用 `GET /v2/user/info` 讀回該授與內容，現在會回傳連結的 `object_permission`：
 
 ```bash showLineNumbers
 curl -X GET "http://localhost:4000/v2/user/info?user_id=alice" \
@@ -922,15 +921,15 @@ curl -X GET "http://localhost:4000/v2/user/info?user_id=alice" \
 }
 ```
 
-The full block also carries `object_permission_id`, `mcp_access_groups` and the remaining object-permission fields
+完整區塊也包含 `object_permission_id`、`mcp_access_groups` 以及其餘的物件權限欄位。
 
-The entitlement is applied at `tools/list` time and again at `tools/call` time, so a tool outside it is never advertised and a client that hardcodes the name is still refused. The refusal arrives inside the MCP result with `isError: true`:
+此權限會在 `tools/list` 時套用，並再次於 `tools/call` 時套用，因此範圍外的工具永遠不會被公告，而硬編碼該名稱的用戶端仍會遭到拒絕。拒絕結果會在 MCP 回應中，並帶有 `isError: true`：
 
 ```text
 Tool 'delete_repo' is not allowed for your key/team on server 'issue_tracker'. Contact proxy admin for access.
 ```
 
-The same grant is editable from the Admin UI on the internal user's detail page under **Internal Users**.
+同一個授與內容也可在管理員介面中的內部使用者詳細資料頁面，透過 **Internal Users** 編輯。
 
 <Image 
   img={require('../img/mcp_user_entitlements.png')}
@@ -938,23 +937,22 @@ The same grant is editable from the Admin UI on the internal user's detail page 
   alt="MCP entitlements section on the internal user detail page"
 />
 
-:::info[Only a proxy admin can set this]
-`/user/new` and `/user/update` accept `object_permission` from a proxy admin only. A non-admin editing their own record is rejected, since an empty grant list means "no restriction" and a self-write would otherwise lift a ceiling an admin placed on them.
+:::info[只有代理伺服器管理員才能設定此項]
+`/user/new` 和 `/user/update` 只接受來自代理伺服器管理員的 `object_permission`。非管理員編輯自己的記錄會被拒絕，因為空白的授與清單代表「不受限制」，而如果允許自我寫入，原本由管理員設定給他的上限就會被解除。
 :::
 
-:::note[An admin role is not a waiver]
-A caller with an admin role and no explicit key-level `mcp_servers` list normally sees the whole MCP server registry. Once that human carries an entitlement of their own, that shortcut no longer applies and the entitlement binds them; the admin role widens what the credential reaches, and leaves the scope attached to the person in place.
+:::note[管理員角色不是豁免]
+具有管理員角色但沒有明確金鑰層級 `mcp_servers` 清單的呼叫者，通常會看到完整的 MCP 伺服器登錄。當該人本身帶有自己的權限時，這個捷徑就不再適用，而該權限會約束他們；管理員角色會擴大憑證可存取的範圍，並維持附加在個人身上的範圍不變。
 :::
 
+## 每個 MCP 伺服器的速率限制 {#rate-limiting-per-mcp-server}
 
-## Rate Limiting per MCP Server
+使用 `mcp_rpm_limit` 將金鑰或團隊每分鐘可對特定 MCP 伺服器發出的工具呼叫數量設上限。這是一個以 MCP 伺服器名稱為鍵的 `Dict[str, int]`；名稱若有設定別名，則使用伺服器別名，否則使用設定的伺服器名稱。每個項目都為該伺服器設定每分鐘請求數上限，因此對 `github` 的限制不會影響對 `slack` 的呼叫。未設定項目的伺服器不受上限限制。
 
-Cap how many tool calls a key or team can make to a specific MCP server per minute with `mcp_rpm_limit`. This is a `Dict[str, int]` keyed by MCP server name, where the name is the server's alias if one is set, otherwise the configured server name. Each entry sets the requests-per-minute limit for that one server, so a limit on `github` does not affect calls to `slack`. Servers without an entry are uncapped.
-
-Once the limit is exceeded within the window, further tool calls to that server return `429 Too Many Requests` until the window rolls over. The cap only applies to actual MCP tool calls; it has no effect on regular LLM requests.
+一旦在該時間窗內超過上限，之後對該伺服器的工具呼叫會回傳 `429 Too Many Requests`，直到時間窗重新開始。此上限僅套用於實際的 MCP 工具呼叫；對一般 LLM 請求沒有影響。
 
 <Tabs>
-<TabItem value="key" label="On a Key">
+<TabItem value="key" label="在金鑰上">
 
 ```bash title="Cap a key at 100 github + 200 slack calls per minute" showLineNumbers
 curl -X POST "http://localhost:4000/key/generate" \
@@ -967,7 +965,7 @@ curl -X POST "http://localhost:4000/key/generate" \
 ```
 
 </TabItem>
-<TabItem value="team" label="On a Team">
+<TabItem value="team" label="在團隊上">
 
 ```bash title="Cap a team at 500 github calls per minute (all keys share the counter)" showLineNumbers
 curl -X POST "http://localhost:4000/team/new" \
@@ -983,32 +981,30 @@ curl -X POST "http://localhost:4000/team/new" \
 </TabItem>
 </Tabs>
 
-`mcp_rpm_limit` is also accepted on `/key/update`, `/team/update`, `/user/new`, and `/user/update`. A key-level limit takes precedence over a team-level limit for the same server; the team limit otherwise applies to every key on the team as a shared counter.
+`mcp_rpm_limit` 也可用於 `/key/update`、`/team/update`、`/user/new` 與 `/user/update`。對同一伺服器而言，金鑰層級的限制優先於團隊層級的限制；否則團隊限制會作為共享計數器套用到該團隊中的每個金鑰。
 
+## 儀表板檢視模式 {#dashboard-view-modes}
 
-## Dashboard View Modes
+代理閘道管理員也可以透過 `general_settings.user_mcp_management_mode` 控制非管理員在 MCP 儀表板中看到的內容：
 
-Proxy admins can also control what non-admins see inside the MCP dashboard via `general_settings.user_mcp_management_mode`:
-
-- `restricted` *(default)* – users only see servers that their team explicitly has access to.
-- `view_all` – every dashboard user can see the full MCP server list. 
+- `restricted` *(預設)* – 使用者只會看到其團隊明確擁有存取權的伺服器。
+- `view_all` – 每位儀表板使用者都能看到完整的 MCP 伺服器清單。 
 
 ```yaml title="Config example"
 general_settings:
   user_mcp_management_mode: view_all
 ```
 
-This is useful when you want discoverability for MCP offerings without granting additional execution privileges.
+當您希望 MCP 供應項目具備可發現性，但又不授予額外的執行權限時，這很有用。
 
+## 發布 MCP 登錄檔 {#publish-mcp-registry}
 
-## Publish MCP Registry
+如果您希望其他系統（例如在您網路外執行、具備 MCP 功能的 IDE 等外部代理程式框架）能自動探索 LiteLLM 上託管的 MCP 伺服器，您可以公開一個 Model Context Protocol Registry 端點。此登錄會列出內建的 LiteLLM MCP 伺服器以及您已設定的每一台伺服器，並使用 [官方 MCP Registry 規格](https://github.com/modelcontextprotocol/registry)。
 
-If you want other systems (for example external agent frameworks such as MCP-capable IDEs running outside your network) to automatically discover the MCP servers hosted on LiteLLM, you can expose a Model Context Protocol Registry endpoint. This registry lists the built-in LiteLLM MCP server and every server you have configured, using the [official MCP Registry spec](https://github.com/modelcontextprotocol/registry).
+1. 在您的 proxy 設定（或 DB 設定）中的 `enable_mcp_registry: true` 下設定 `general_settings`，然後重新啟動 proxy。
+2. LiteLLM 會在 `GET /v1/mcp/registry.json` 提供 registry。
+3. 每個項目都會指向 `/mcp`（內建伺服器）或您的自訂伺服器的 `/{mcp_server_name}/mcp`，因此用戶端可以使用公布的 Streamable HTTP URL 直接連線。
 
-1. Set `enable_mcp_registry: true` under `general_settings` in your proxy config (or DB settings) and restart the proxy.
-2. LiteLLM will serve the registry at `GET /v1/mcp/registry.json`.
-3. Each entry points to either `/mcp` (built-in server) or `/{mcp_server_name}/mcp` for your custom servers, so clients can connect directly using the advertised Streamable HTTP URL.
-
-:::note[Permissions still apply]
-The registry only advertises server URLs. Actual access control is still enforced by LiteLLM when the client connects to `/mcp` or `/{server}/mcp`, so publishing the registry does not bypass per-key permissions.
+:::note[權限仍然適用]
+registry 只會公布伺服器 URL。實際的存取控制仍會在用戶端連線到 `/mcp` 或 `/{server}/mcp` 時由 LiteLLM 強制執行，因此發布 registry 不會繞過每個金鑰的權限。
 :::

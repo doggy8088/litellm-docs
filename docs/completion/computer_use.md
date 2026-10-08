@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Computer Use
+# 電腦使用 {#computer-use}
 
-Computer use allows models to interact with computer interfaces by taking screenshots and performing actions like clicking, typing, and scrolling. This enables AI models to autonomously operate desktop environments.
+電腦使用可讓模型透過擷取螢幕截圖並執行點擊、輸入與捲動等動作，與電腦介面互動。這使 AI 模型能夠自主操作桌面環境。
 
-**Supported Providers:**
+**支援的提供者：**
 - Anthropic API (`anthropic/`)
 - Bedrock (Anthropic) (`bedrock/`)
 - Vertex AI (Anthropic) (`vertex_ai/`)
 
-**Supported Tool Types:**
-- `computer` - Computer interaction tool with display parameters
-- `bash` - Bash shell tool  
-- `text_editor` - Text editor tool
-- `web_search` - Web search tool
+**支援的工具類型：**
+- `computer` - 具顯示參數的電腦互動工具
+- `bash` - Bash shell 工具  
+- `text_editor` - 文字編輯器工具
+- `web_search` - 網頁搜尋工具
 
-LiteLLM will standardize the computer use tools across all supported providers.
+LiteLLM 會將所有支援提供者的電腦使用工具標準化。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -70,7 +70,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy Server">
 
-1. Define computer use models on config.yaml
+1. 在 config.yaml 定義電腦使用模型
 
 ```yaml keep-model-ids
 model_list:
@@ -88,13 +88,13 @@ model_list:
       supports_computer_use: True        # set supports_computer_use to True so /model/info returns this attribute as True
 ```
 
-2. Run proxy server
+2. 執行 proxy server
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it using the OpenAI Python SDK
+3. 使用 OpenAI Python SDK 進行測試
 
 ```python keep-model-ids
 import os 
@@ -141,12 +141,12 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Checking if a model supports `computer use`
+## 檢查模型是否支援 `computer use` {#checking-if-a-model-supports-computer-use}
 
 <Tabs>
 <TabItem label="LiteLLM Python SDK" value="Python">
 
-Use `supports_computer_use(model="")` from `litellm.utils` -> returns `True` if model supports computer use and `False` if not. It is not exported on the top-level `litellm` package, so `litellm.supports_computer_use` raises `AttributeError`
+使用來自 `litellm.utils` 的 `supports_computer_use(model="")` -> 若模型支援 computer use 則回傳 `True`，若不支援則回傳 `False`。它未在最上層的 `litellm` 套件中匯出，因此 `litellm.supports_computer_use` 會引發 `AttributeError`
 
 ```python
 from litellm.utils import supports_computer_use
@@ -161,7 +161,7 @@ assert supports_computer_use(model="openai/{{openai_large}}") == False
 
 <TabItem label="LiteLLM Proxy Server" value="proxy">
 
-1. Define computer use models on config.yaml
+1. 在 config.yaml 定義電腦使用模型
 
 ```yaml
 model_list:
@@ -179,13 +179,13 @@ model_list:
       supports_computer_use: True        # set supports_computer_use to True so /model/info returns this attribute as True
 ```
 
-2. Run proxy server
+2. 執行 proxy server
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Call `/model/info` to check if your model supports `computer use`. The flag is on each deployment's `model_info`. `/model_group/info` does not return `supports_computer_use`
+3. 呼叫 `/model/info` 以檢查您的模型是否支援 `computer use`。此旗標位於每個部署的 `model_info` 上。`/model_group/info` 不會回傳 `supports_computer_use`
 
 ```shell
 curl -X 'GET' \
@@ -194,7 +194,7 @@ curl -X 'GET' \
   -H "x-api-key: $LITELLM_API_KEY"
 ```
 
-Expected Response (trimmed)
+預期回應（截短）
 
 ```json
 {
@@ -228,14 +228,14 @@ Expected Response (trimmed)
 </TabItem>
 </Tabs>
 
-## Different Tool Types
+## 不同的工具類型 {#different-tool-types}
 
-Computer use supports several different tool types for various interaction modes:
+電腦使用支援數種不同的工具類型，以滿足各種互動模式：
 
 <Tabs>
 <TabItem value="computer" label="Computer Tool">
 
-The `computer_20241022` tool provides direct screen interaction capabilities.
+`computer_20241022` 工具提供直接的螢幕互動能力。
 
 ```python keep-model-ids
 import os 
@@ -283,7 +283,7 @@ print(response)
 </TabItem>
 <TabItem value="bash" label="Bash Tool">
 
-The `bash_20241022` tool provides command line interface access.
+`bash_20241022` 工具提供命令列介面存取。
 
 ```python keep-model-ids
 import os 
@@ -317,7 +317,7 @@ print(response)
 </TabItem>
 <TabItem value="text_editor" label="Text Editor Tool">
 
-The `text_editor_20250124` tool provides text file editing capabilities.
+`text_editor_20250124` 工具提供文字檔案編輯能力。
 
 ```python keep-model-ids
 import os 
@@ -351,9 +351,9 @@ print(response)
 </TabItem>
 </Tabs>
 
-## Advanced Usage with Multiple Tools
+## 具備多種工具的進階用法 {#advanced-usage-with-multiple-tools}
 
-You can combine different computer use tools in a single request:
+您可以在單一請求中結合不同的電腦使用工具：
 
 ```python keep-model-ids
 import os 
@@ -406,9 +406,9 @@ response = completion(
 print(response)
 ```
 
-## Spec
+## 規格 {#spec}
 
-### Computer Tool (`computer_20241022`)
+### 電腦工具 (`computer_20241022`) {#computer-tool-computer_20241022}
 
 ```json
 {
@@ -420,7 +420,7 @@ print(response)
 }
 ```
 
-### Bash Tool (`bash_20241022`)
+### Bash 工具 (`bash_20241022`) {#bash-tool-bash_20241022}
 
 ```json
 {
@@ -429,7 +429,7 @@ print(response)
 }
 ```
 
-### Text Editor Tool (`text_editor_20250124`)
+### 文字編輯器工具 (`text_editor_20250124`) {#text-editor-tool-text_editor_20250124}
 
 ```json
 {
@@ -438,7 +438,7 @@ print(response)
 }
 ```
 
-### Web Search Tool (`web_search_20250305`)
+### 網頁搜尋工具 (`web_search_20250305`) {#web-search-tool-web_search_20250305}
 
 ```json
 {

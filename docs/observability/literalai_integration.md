@@ -1,20 +1,20 @@
 import Image from '@theme/IdealImage';
 
-# Literal AI
+# Literal AI {#literal-ai}
 
-[Literal AI](https://literalai.com) is a collaborative observability, evaluation and analytics platform for building production-grade LLM apps.
+[Literal AI](https://literalai.com) 是一個協作式可觀測性、評估與分析平台，用於建構可供正式環境使用的 LLM 應用程式。
 
 <Image img={require('../../img/literalai.png')} />
 
-## Pre-Requisites
+## 先決條件 {#pre-requisites}
 
-Ensure you have the `literalai` package installed:
+請確認您已安裝 `literalai` 套件：
 
 ```shell
 uv add literalai litellm
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python
 import litellm
@@ -36,9 +36,9 @@ response = litellm.completion(
 )
 ```
 
-## Multi Step Traces
+## 多步驟追蹤 {#multi-step-traces}
 
-This integration is compatible with the Literal AI SDK decorators, enabling conversation and agent tracing
+此整合與 Literal AI SDK 裝飾器相容，可啟用對話與代理程式追蹤
 
 ```py
 import litellm
@@ -73,17 +73,17 @@ my_agent("Hello world")
 literalai_client.flush()
 ```
 
-Learn more about [Literal AI logging capabilities](https://docs.literalai.com/guides/logs).
+深入了解 [Literal AI 記錄功能](https://docs.literalai.com/guides/logs)。
 
-## Bind a Generation to its Prompt Template
+## 將生成內容綁定至其提示範本 {#bind-a-generation-to-its-prompt-template}
 
-This integration works out of the box with prompts managed on Literal AI. This means that a specific LLM generation will be bound to its template.
+此整合可直接與在 Literal AI 上管理的提示搭配使用。這表示特定的 LLM 生成內容會綁定到其範本。
 
-Learn more about [Prompt Management](https://docs.literalai.com/guides/prompt-management#pull-a-prompt-template-from-literal-ai) on Literal AI.
+深入了解 Literal AI 上的 [提示管理](https://docs.literalai.com/guides/prompt-management#pull-a-prompt-template-from-literal-ai)。
 
-## OpenAI Proxy Usage
+## OpenAI Proxy 使用方式 {#openai-proxy-usage}
 
-If you are using the Lite LLM proxy, you can use the Literal AI OpenAI instrumentation to log your calls.
+如果您使用的是 Lite LLM proxy，您可以使用 Literal AI OpenAI instrumentation 來記錄您的請求。
 
 ```py
 from literalai import LiteralClient

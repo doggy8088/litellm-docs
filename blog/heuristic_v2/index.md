@@ -1,46 +1,46 @@
 ---
 slug: heuristic-v2
-title: "Introducing AutoRouter Heuristic v2: 27% More Tasks Solved at 45% Lower Cost"
+title: "介紹 AutoRouter Heuristic v2：以 45% 更低成本解決多 27% 的任務"
 date: 2026-09-02T10:00:00
 authors:
   - tin
 image: ./hero.png
-description: "Heuristic v2 is a new classifier for LiteLLM's AutoRouter, pretrained across multiple rounds of graded response data so it ships with zero cold start. On a 21-task Terminal-Bench 2.0 subset it solved 3 more tasks than Heuristic v1, at 45% lower cost per solved task and lower latency."
+description: "Heuristic v2 是 LiteLLM 的 AutoRouter 新分類器，先以多輪分級回應資料預訓練，因此出貨時就沒有冷啟動問題。在 Terminal-Bench 2.0 的 21 任務子集中，它比 Heuristic v1 多解決 3 個任務，而且每個已解決任務的成本低 45%，延遲也更低。"
 keywords: [heuristic router, complexity router, auto router, model routing, llm cost savings, terminal bench, litellm auto routing, probability routing]
 tags: [routing, complexity-router, cost, benchmarks, engineering, product]
 hide_table_of_contents: false
 ---
 
-![Heuristic v2 is cheaper, faster, and better: -45% cost per solved task, -20% median task time, +27% more quality than Heuristic v1, on a 21-task Terminal-Bench 2.0 subset](./hero.png)
+![Heuristic v2 更便宜、更快、更好：每個已解決任務成本 -45%、任務中位時間 -20%、品質比 Heuristic v1 高 +27%，基於 Terminal-Bench 2.0 的 21 任務子集](./hero.png)
 
-**Heuristic v2, LiteLLM's new AutoRouter classifier, is up to 45% more efficient than Heuristic v1: more tasks solved, at lower cost, in less time.** Only the classifier changed.
+**Heuristic v2，LiteLLM 的新 AutoRouter 分類器，效率最高可比 Heuristic v1 高 45%：以更低成本，在更短時間內解決更多任務。** 只有分類器改變了。
 
 {/* truncate */}
 
-:::info[🚀 Help shape the Auto-Router]
+:::info[🚀 協助塑造 Auto-Router]
 
-Get early access, work directly with the LiteLLM team, and influence the roadmap with your production traffic.
+搶先取得使用權，直接與 LiteLLM 團隊合作，並以您的正式流量影響產品路線圖。
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計夥伴</a>
 
 <br /><br />
 
-Already testing it? Share your results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+已經在測試了嗎？請在 [討論 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
 
 :::
 
-## Key findings
+## 主要發現 {#key-findings}
 
-- **No cold start.** Heuristic v2 ships pretrained across multiple rounds of graded response data, so it already knows which tier to trust before it sees your first prompt
-- **3 more tasks solved.** 14/21 against 11/21, a 27% jump in solve rate on this subset
-- **45% lower cost per solved task.** $0.70 against $1.28, and 30% lower total spend across the run ($9.78 against $14.06)
-- **Faster, too.** Mean LLM call latency fell 10% (13.1s against 14.5s), p90 fell 10% (30.7s against 34.1s), and median task completion time fell from 8m53s to 7m08s
-- **Steadier tier choices mean fewer cache misses.** 87% of input tokens were cache reads, against 82% for Heuristic v1
-- **Just as reliable.** Zero failed requests in either arm, across 933 combined LLM calls
+- **沒有冷啟動。** Heuristic v2 以多輪分級回應資料預先訓練，因此在看到您的第一個提示之前，就已經知道應該信任哪個層級
+- **多解決 3 個任務。** 14/21 對 11/21，在這個子集上的解決率提升 27%
+- **每個已解決任務成本低 45%。** $0.70 對 $1.28，整個執行過程的總支出也低 30%（$9.78 對 $14.06）
+- **速度也更快。** 平均 LLM 呼叫延遲下降 10%（13.1s 對 14.5s）、p90 下降 10%（30.7s 對 34.1s），任務完成中位時間也從 8m53s 降到 7m08s
+- **更穩定的層級選擇代表更少的快取未命中。** 87% 的輸入 token 是快取讀取，而 Heuristic v1 為 82%
+- **同樣可靠。** 兩個組別在 933 次合計 LLM 呼叫中皆無請求失敗
 
-## What changed
+## 有哪些變更 {#what-changed}
 
-Heuristic v1 scores a prompt's complexity and maps the score to a tier. Heuristic v2 estimates each tier's odds of success on the request and routes to the cheapest tier that clears a probability bar, not the tier that matches a difficulty score.
+Heuristic v1 會為提示詞的複雜度評分，並將分數對應到某個層級。Heuristic v2 則估計每個層級在該請求上成功的機率，並路由到能通過機率門檻的最便宜層級，而不是匹配難度分數的層級。
 
 ```text
 Prompt
@@ -51,13 +51,13 @@ Prompt
   -> Route to a model configured in that tier
 ```
 
-The probability estimate blends three levels of evidence:
+機率估計結合了三個層次的證據：
 
-- **Tier-wide performance:** how the tier does across all requests
-- **Request-type performance:** how it does on this kind of request (code, technical design, analytical reasoning, writing, factual lookup, or general)
-- **Similar-request performance:** how it does on requests that look most like this one
+- **整體層級表現：** 該層級在所有請求上的表現
+- **請求類型表現：** 它在這類請求上的表現（程式碼、技術設計、分析推理、寫作、事實查詢或一般類型）
+- **相似請求表現：** 它在與這個請求最相似的請求上的表現
 
-Thin evidence defers to the broader estimate; a large sample overrides it. A stronger tier should never look less capable than a weaker one, so the router corrects the four probabilities to be monotonic, then picks the first one that clears the bar:
+證據不足時，會回退到較廣泛的估計；樣本量足夠大時，則以其為準。較強的層級不應看起來比較弱的層級還沒能力，因此路由器會先把四個機率校正為單調遞增，然後選擇第一個通過門檻的層級：
 
 ```text
 raw:       [0.60, 0.72, 0.69, 0.91]
@@ -65,31 +65,31 @@ corrected: [0.60, 0.72, 0.72, 0.91]
            SIMPLE MEDIUM COMPLEX REASONING
 ```
 
-Same four abstract tiers as before, `SIMPLE`, `MEDIUM`, `COMPLEX`, `REASONING`. You still decide which models live in each one.
+與先前相同的四個抽象層級，`SIMPLE`、`MEDIUM`、`COMPLEX`、`REASONING`。您仍可決定每一層要放哪些模型。
 
-## Pretrained, zero cold start
+## 預先訓練，零冷啟動 {#pretrained-zero-cold-start}
 
-Adaptive routing earns its edge by watching your traffic: a Thompson-sampled tier pool loses a few rounds on the wrong model before it learns which one wins. Heuristic v2 skips that step. Its success-probability tables are calibrated across multiple rounds of graded response data before the classifier ever ships, so it already knows which tier to trust before it sees your first prompt, no ramp-up period on your traffic required.
+自適應路由之所以能取得優勢，是因為它會觀察您的流量：採樣自 Thompson 的層級池在學會哪個模型會贏之前，會先在錯誤的模型上輸掉幾輪。Heuristic v2 省略了這一步。它的成功機率表是在分類器正式發佈前，先以多輪分級回應資料校準完成，因此在看到您的第一個提示之前，就已經知道應該信任哪個層級，不需要在您的流量上進行暖機期。
 
-## Results
+## 結果 {#results}
 
-| Classifier | Solve rate | Solved/21 | Total cost | $/solved | Mean call latency | p90 call latency | Median task time |
+| 分類器 | 解決率 | 已解決/21 | 總成本 | $/已解決 | 平均呼叫延遲 | p90 呼叫延遲 | 任務中位時間 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | **Heuristic v2** | **66.7%** | **14/21** | **$9.78** | **$0.70** | **13.1s** | **30.7s** | **7m08s** |
 | Heuristic v1 | 52.4% | 11/21 | $14.06 | $1.28 | 14.5s | 34.1s | 8m53s |
 
-## Where the savings come from
+## 節省來自哪裡 {#where-the-savings-come-from}
 
-| Classifier | SIMPLE (Haiku) | MEDIUM (Sonnet) | COMPLEX (Opus) | REASONING (Opus, high effort) |
+| 分類器 | SIMPLE (Haiku) | MEDIUM (Sonnet) | COMPLEX (Opus) | REASONING (Opus, high effort) |
 |---|---:|---:|---:|---:|
 | Heuristic v2 | 45% ($1.61) | 55% ($8.17) | 0% | 0% |
 | Heuristic v1 | 39% ($1.15) | 45% ($5.18) | 15% ($7.43) | 1% ($0.29) |
 
-Heuristic v2 never escalated to Opus on this benchmark. Heuristic v1 sent 16% of turns to Opus, and those turns made up 55% of its total spend. That escalation didn't buy extra solves this run: the four tasks Heuristic v2 solved that v1 missed (`adaptive-rejection-sampler`, `crack-7z-hash`, `install-windows-3.11`, `password-recovery`) were all solved on Haiku and Sonnet alone. v1 opened one of those four on Opus and still failed it.
+Heuristic v2 在這個基準上從未升級到 Opus。Heuristic v1 則將 16% 的輪次送往 Opus，而這些輪次佔了其總支出的 55%。這次執行中，這種升級沒有換來額外的解答：Heuristic v2 解決而 v1 漏掉的四個任務（`adaptive-rejection-sampler`、`crack-7z-hash`、`install-windows-3.11`、`password-recovery`）全都只靠 Haiku 和 Sonnet 就解決了。v1 其中一個任務還先送到 Opus，最後仍然失敗。
 
-Heuristic v1 also switches tiers more often turn to turn, which costs it some prompt-cache hits: 82% of its input tokens were cache reads, against 87% for Heuristic v2.
+Heuristic v1 也更常在輪次之間切換層級，這使它損失了一些提示快取命中：其輸入 token 的 82% 是快取讀取，而 Heuristic v2 為 87%。
 
-## Try it
+## 試用 {#try-it}
 
 ```yaml title="config.yaml"
 model_list:
@@ -119,28 +119,28 @@ model_list:
       complexity_router_default_model: claude-sonnet-5
 ```
 
-:::note[Free trial scope]
+:::note[免費試用範圍]
 
-The free trial covers Heuristic v2 on one auto router. If you want it on more than one, [apply to be a design partner](https://calendly.com/tin-berri/litellm-auto-router-design-partner) and we'll sort it out with you directly.
+免費試用涵蓋一個 auto router 上的 Heuristic v2。如果您想在多於一個 auto router 上使用，請 [申請成為設計夥伴](https://calendly.com/tin-berri/litellm-auto-router-design-partner)，我們會直接與您處理。
 
 :::
 
-Heuristic v2 makes no LLM classifier call on the request path, and reuses the same tier config as Heuristic v1 or the LLM classifier. Swap `classifier_type` and compare against your current setup. Full reference on the [Auto Routing docs page](/docs/proxy/auto_routing).
+Heuristic v2 在請求路徑上不會呼叫 LLM 分類器，並且重用與 Heuristic v1 或 LLM 分類器相同的層級設定。將 `classifier_type` 替換後，與您目前的設定比較。完整參考請見 [Auto Routing 文件頁面](/docs/proxy/auto_routing)。
 
-## How it was measured
+## 量測方式 {#how-it-was-measured}
 
-- **Benchmark:** a 21-task subset of Terminal-Bench 2.0, both classifiers run concurrently through one LiteLLM proxy, harbor 0.20.0 + terminus-2, `max_turns=50`, `-n 6` per arm, 1 trial per task
-- **Tiers:** identical for both arms, SIMPLE to `claude-haiku-4-5`, MEDIUM to `claude-sonnet-5`, COMPLEX and REASONING to `claude-opus-5` at high effort. Only `classifier_type` differs
-- **Cost:** total USD across all 21 tasks from gateway spend logs
-- **Latency:** per-LLM-call latency measured at the proxy, 437 calls for Heuristic v1 against 496 for Heuristic v2
-- **Caveat:** one run per arm on 21 tasks. Heuristic v1 scored 12-13/21 in two earlier runs against 11/21 here, so a few tasks of run-to-run noise is expected and a 3-task gap is suggestive, not conclusive. Total run wall clock ran longer for Heuristic v2 (46m30s against 37m55s, with 6 tasks per arm running concurrently) because of long-running tasks in the tail and one timeout on `chess-best-move`; that's a property of this run's slowest tasks, not a per-request latency regression, which is why the headline numbers above are per-call latency and median task time instead
+- **基準測試：** Terminal-Bench 2.0 的 21 任務子集，兩個分類器透過同一個 LiteLLM proxy 並行執行，harbor 0.20.0 + terminus-2，`max_turns=50`、`-n 6` 每個組別各 1 次試驗，每個任務 1 次 trial
+- **層級：** 兩個組別完全相同，SIMPLE 到 `claude-haiku-4-5`、MEDIUM 到 `claude-sonnet-5`、COMPLEX 和 REASONING 到高 effort 的 `claude-opus-5`。只有 `classifier_type` 不同
+- **成本：** 來自 gateway 支出記錄的 21 個任務總美元支出
+- **延遲：** 在 proxy 端量測每次 LLM 呼叫的延遲，Heuristic v1 為 437 次呼叫，Heuristic v2 為 496 次呼叫
+- **注意事項：** 每個組別在 21 個任務上各跑一次。Heuristic v1 在前兩次較早的執行中曾得到 12-13/21，而此處為 11/21，因此預期會有少數任務的執行間雜訊，3 個任務的差距屬於提示性而非定論性。整體執行的實際牆鐘時間中，Heuristic v2 較長（46m30s 對 37m55s，兩個組別各有 6 個任務並行執行），原因是尾端有長時間執行的任務以及 `chess-best-move` 發生一次逾時；這是本次執行中最慢任務的特性，不是每次請求延遲回退，因此上方標題數字採用的是每次呼叫延遲與任務中位時間
 
-## Related reading
+## 相關閱讀 {#related-reading}
 
-[Opus-level quality at 27% lower cost](/blog/auto-router-terminal-bench-benchmark), [LiteLLM Fusion: 56% more tasks solved than Fable 5](/blog/fusion-terminal-bench-benchmark), and [what auto-routing saved in production](/blog/auto-router-production-savings).
+[27% 更低成本達到 Opus 等級品質](/blog/auto-router-terminal-bench-benchmark)、[LiteLLM Fusion：比 Fable 5 多解決 56% 的任務](/blog/fusion-terminal-bench-benchmark)，以及[在正式環境中自動路由節省了什麼](/blog/auto-router-production-savings)。
 
 :::info
 
-Point Heuristic v2 at your own workload and compare it against your current classifier. Share numbers or questions in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168). To work on this with us directly, [apply to be a design partner](https://calendly.com/tin-berri/litellm-auto-router-design-partner).
+將 Heuristic v2 指向您自己的工作負載，並與您目前的分類器比較。在 [討論 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享數據或問題。如要與我們直接合作這項工作，請 [申請成為設計夥伴](https://calendly.com/tin-berri/litellm-auto-router-design-partner)。
 
 :::

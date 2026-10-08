@@ -1,23 +1,23 @@
 import Image from '@theme/IdealImage';
 
-# DeepEval
+# DeepEval {#deepeval}
 
-### What is DeepEval?
-[DeepEval](https://deepeval.com) is an open-source evaluation framework for LLMs ([Github](https://github.com/confident-ai/deepeval)). 
+### 什麼是 DeepEval？ {#what-is-deepeval}
+[DeepEval](https://deepeval.com) 是一個針對 LLM 的開源評估框架（[Github](https://github.com/confident-ai/deepeval)）。
 
-### What is Confident AI?
+### 什麼是 Confident AI？ {#what-is-confident-ai}
 
-[Confident AI](https://documentation.confident-ai.com) (the ***deepeval*** platfrom) offers an Observatory for teams to trace and monitor LLM applications. Think Datadog for LLM apps. The observatory allows you to:
+[Confident AI](https://documentation.confident-ai.com)（***deepeval*** 平台）為團隊提供一個可觀測性平台，用於追蹤與監控 LLM 應用程式。可將其視為 LLM 應用程式的 Datadog。該平台可讓您：
 
-- Detect and debug issues in your LLM applications in real-time
-- Search and analyze historical generation data with powerful filters
-- Collect human feedback on model responses
-- Run evaluations to measure and improve performance
-- Track costs and latency to optimize resource usage
+- 即時偵測並除錯 LLM 應用程式中的問題
+- 使用強大的篩選條件搜尋並分析歷史生成資料
+- 蒐集人類對模型回應的意見回饋
+- 執行評估以衡量並改善效能
+- 追蹤成本與延遲以最佳化資源使用
 
 <Image img={require('../../img/deepeval_dashboard.png')} />
 
-### Quickstart
+### 快速開始 {#quickstart}
 
 ```python
 import os
@@ -45,11 +45,11 @@ print(response)
 ```
 
 :::info
-You can obtain your `CONFIDENT_API_KEY` by logging into [Confident AI](https://app.confident-ai.com/project) platform. 
+您可以透過登入 [Confident AI](https://app.confident-ai.com/project) 平台來取得您的 `CONFIDENT_API_KEY`。
 :::
 
-## Support & Talk with Deepeval team
-- [Confident AI Docs 📝](https://documentation.confident-ai.com)
-- [Platform 🚀](https://confident-ai.com)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Support ✉️ support@confident-ai.com
+## 支援與 Deepeval 團隊聯絡 {#support--talk-with-deepeval-team}
+- [Confident AI 文件 📝](https://documentation.confident-ai.com)
+- [平台 🚀](https://confident-ai.com)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 支援 ✉️ support@confident-ai.com

@@ -1,63 +1,63 @@
 ---
-title: Customize your classifier
-sidebar_label: Customize your classifier
-description: Tune Auto Router classification with heuristic v1 and v2, heuristic-first and hybrid LLM chains, self-hosted classifiers, custom prompts, context, and calibrated forecasts. UI screenshots and matching YAML examples.
+title: 自訂您的分類器
+sidebar_label: 自訂您的分類器
+description: 使用 heuristic v1 與 v2、heuristic-first 與 hybrid LLM 鏈、自架分類器、自訂提示、context，以及校準後的預測來調校 Auto Router 分類。UI 截圖與對應的 YAML 範例。
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 import { SlidersHorizontal, Gauge, BrainCircuit, GitBranch, Split, Target, Combine, Server, Braces } from 'lucide-react';
 
-An Auto Router's classifier decides which tier should handle a request.
+Auto Router 的分類器會決定哪個 tier 應處理一則請求。
 
-## Choose a classifier
+## 選擇分類器 {#choose-a-classifier}
 
 <NavigationCards
 columns={3}
 variant="cards"
 items={[
-  { title: "Heuristic v1", icon: <SlidersHorizontal size={18} />, tone: "local", description: "Local keyword and pattern scoring with tunable weights. No classifier API call.", to: "#tune-heuristic-v1" },
-  { title: "Heuristic v2", icon: <Gauge size={18} />, tone: "local", description: "Local success estimates for four tiers. Tune the minimum success threshold.", to: "#tune-heuristic-v2" },
-  { title: "Always use the judge", icon: <BrainCircuit size={18} />, tone: "judge", description: "An LLM selects the tier whenever classification runs.", to: "#tune-the-llm-judge" },
-  { title: "Heuristic first", icon: <GitBranch size={18} />, tone: "chain", description: "Run v1 or v2 up to a tier ceiling, then ask the LLM for remaining requests.", to: "#heuristic-first" },
-  { title: "Hybrid", icon: <Split size={18} />, tone: "chain", description: "Run v1 or v2 locally; ask the LLM near decision boundaries.", to: "#hybrid" },
-  { title: "Capability", icon: <Target size={18} />, tone: "forecast", description: "Forecast whether an efficient solver can finish the task; otherwise use a capable solver.", to: "#capability" },
-  { title: "Fuse v2", icon: <Combine size={18} />, tone: "forecast", description: "Compare two solver forecasts and choose within an acceptable quality gap.", to: "#fuse-v2" },
-  { title: "OSS classifier", icon: <Server size={18} />, description: "Connect to self-hosted Laya or Bespoke Nimble, or the hosted Jev classifier.", to: "#connect-a-self-hosted-classifier" },
-  { title: "Custom classifier", icon: <Braces size={18} />, description: "Route with your own Python plugin, configured at gateway startup.", to: "#custom-classifier-startup-configuration-only" },
+  { title: "Heuristic v1", icon: <SlidersHorizontal size={18} />, tone: "local", description: "以可調整權重進行本機關鍵字與模式評分。不會呼叫分類器 API。", to: "#tune-heuristic-v1" },
+  { title: "Heuristic v2", icon: <Gauge size={18} />, tone: "local", description: "四個 tier 的本機成功率估計。調整最低成功率門檻。", to: "#tune-heuristic-v2" },
+  { title: "永遠使用 judge", icon: <BrainCircuit size={18} />, tone: "judge", description: "當分類執行時，由 LLM 選擇 tier。", to: "#tune-the-llm-judge" },
+  { title: "Heuristic first", icon: <GitBranch size={18} />, tone: "chain", description: "先執行 v1 或 v2，直到 tier 上限，然後對其餘請求詢問 LLM。", to: "#heuristic-first" },
+  { title: "Hybrid", icon: <Split size={18} />, tone: "chain", description: "本機執行 v1 或 v2；在決策邊界附近詢問 LLM。", to: "#hybrid" },
+  { title: "Capability", icon: <Target size={18} />, tone: "forecast", description: "預測高效率求解器是否能完成任務；否則使用高能力求解器。", to: "#capability" },
+  { title: "Fuse v2", icon: <Combine size={18} />, tone: "forecast", description: "比較兩個求解器預測，並在可接受的品質差距內選擇。", to: "#fuse-v2" },
+  { title: "OSS classifier", icon: <Server size={18} />, description: "連接到自架的 Laya 或 Bespoke Nimble，或代管的 Jev 分類器。", to: "#connect-a-self-hosted-classifier" },
+  { title: "Custom classifier", icon: <Braces size={18} />, description: "使用您自己的 Python 外掛進行路由，並在閘道啟動時設定。", to: "#custom-classifier-startup-configuration-only" },
 ]}
 />
 
-Heuristic v2, custom scoring, custom tiers/instructions, and forecast modes follow the gateway's displayed allowances. Check **View limits** rather than assuming a disabled option is a missing feature. Built-in v1 and built-in OSS classification do not require a license. A v2 chain consumes the same v2 allowance as a standalone v2 router.
+Heuristic v2、自訂評分、自訂 tiers/指示，以及預測模式皆遵循閘道顯示的授權額度。請查看 **View limits**，而非假設停用的選項代表缺少功能。內建 v1 與內建 OSS 分類不需要授權。v2 鏈會消耗與獨立 v2 路由器相同的 v2 授權額度。
 
-## Find the controls
+## 找到控制項 {#find-the-controls}
 
-Start with the classifier that fits your traffic, measure its decisions, then tune its thresholds, context, or instructions. The model assigned to the selected tier generates the answer; the judge model only makes the routing decision.
+從最符合您流量的分類器開始，測量其決策，然後調整其門檻、context 或指示。指派給所選 tier 的模型會生成答案；judge 模型只負責做出路由決策。
 
-This guide pairs the dashboard controls with their `config.yaml` equivalents. It covers classification first, then the routing rules that can override or reuse a decision. For initial deployment, see [Admin Setup](./setup.md); for measuring quality and savings, see [Evaluate](./evaluate.md).
+本指南將儀表板控制項與其 `config.yaml` 對應項配對說明。內容先涵蓋分類，接著是可覆寫或重用決策的路由規則。初始部署請參閱 [Admin Setup](./setup.md)；衡量品質與節省請參閱 [Evaluate](./evaluate.md)。
 
-:::info UI and version availability
+:::info UI 與版本可用性
 
-The screenshots show the updated editor in [LiteLLM #44928](https://github.com/BerriAI/litellm/pull/44928), using a local demonstration router. The separate tuning sections and selectable v1/v2 local heuristic require a gateway and dashboard build containing that change. Do not assume an older release exposes these controls or accepts `local_heuristic`.
+截圖顯示的是 [LiteLLM #44928](https://github.com/BerriAI/litellm/pull/44928) 中更新後的編輯器，使用的是本機示範路由器。獨立的調校區段與可選擇的 v1/v2 本機 heuristic 需要包含該變更的閘道與儀表板版本。請勿假設較舊版本會提供這些控制項或接受 `local_heuristic`。
 
-The examples describe that implementation. Defaults can change between releases; leaving an optional setting unset follows the defaults in your installed build. Screenshot model names are demonstration deployment aliases, not provider model IDs.
+範例描述的是該實作。預設值可能會在不同版本之間變更；保留未設定的可選項目會沿用您已安裝版本中的預設值。截圖中的模型名稱是示範部署別名，不是提供者模型 ID。
 
 :::
 
-Open **Models + Endpoints > Auto-Routers > Add Auto Router**. For a saved router, open its row and select **Edit Auto Router**. Choose **What classifies your requests?**, assign the tier models, then expand **Advanced settings**.
+開啟 **Models + Endpoints > Auto-Routers > Add Auto Router**。若是已儲存的 router，請開啟其列並選取 **Edit Auto Router**。選擇 **What classifies your requests?**，指派 tier 模型，然後展開 **Advanced settings**。
 
-![Top-level classifier family, routing approach, classification frequency, and judge model controls](../../img/auto_router/classifier/classifier-selection.jpg)
+![頂層分類器家族、路由方式、分類頻率，以及 judge 模型控制項](../../img/auto_router/classifier/classifier-selection.jpg)
 
-For an LLM complexity router, **Local checks before the judge** selects the chain. **Heuristic tuning** contains the selected local scorer's settings, and **LLM tuning** contains the judge settings. **Always use the judge** hides heuristic tuning. OSS providers use a separate **Classifier tuning** section.
+對於 LLM 複雜度 router，**Local checks before the judge** 會選擇鏈。**Heuristic tuning** 包含所選本機評分器的設定，而 **LLM tuning** 包含 judge 設定。**Always use the judge** 會隱藏 heuristic tuning。OSS 提供者使用獨立的 **Classifier tuning** 區段。
 
-![Always use the judge selected, with LLM tuning and no heuristic tuning section](../../img/auto_router/classifier/always-judge.jpg)
+![已選取 Always use the judge，顯示 LLM tuning，且沒有 heuristic tuning 區段](../../img/auto_router/classifier/always-judge.jpg)
 
-**Always use the judge** disables the local-first stage. It does not disable keyword overrides, session reuse, or heuristic recovery after a judge failure. Switching modes can preserve inactive tuning values; it does not reset every setting.
+**Always use the judge** 會停用 local-first 階段。它不會停用關鍵字覆寫、session 重用，或在 judge 失敗後的 heuristic 恢復。切換模式可能會保留未啟用的調校值；它不會重設所有設定。
 
-## Start with a complete configuration
+## 從完整設定開始 {#start-with-a-complete-configuration}
 
-All settings below belong inside `model_list[].litellm_params.complexity_router_config`, unless explicitly labeled otherwise. `complexity_router_default_model` is a sibling under `litellm_params`.
+以下所有設定都應放在 `model_list[].litellm_params.complexity_router_config` 內，除非明確標示為其他位置。`complexity_router_default_model` 是 `litellm_params` 下的同層項目。
 
-This example mirrors the heuristic-first v2 screenshot: a `0.6` success threshold and a `MEDIUM` local ceiling. Those values illustrate the controls; evaluate them on your own traffic before adopting them.
+此範例對應 heuristic-first v2 截圖：`0.6` 成功率門檻與 `MEDIUM` 本機上限。這些數值用於說明控制項；在採用之前，請先以您自己的流量進行評估。
 
 ```yaml title="config.yaml"
 model_list:
@@ -92,19 +92,19 @@ model_list:
         classifier_context_budget_chars: 8000
 ```
 
-Set `OPENAI_API_KEY` on the gateway, start `litellm --config config.yaml`, and send client requests to `model: classifier-chain-demo`. Tier values and the judge's `model` must name deployed model groups. The judge may share a deployment with a solver, as above, or use a separate alias.
+在閘道上設定 `OPENAI_API_KEY`，啟動 `litellm --config config.yaml`，並將用戶端請求送至 `model: classifier-chain-demo`。tier 值與 judge 的 `model` 必須命名已部署的模型群組。judge 可以與求解器共用一個 deployment，如上所示，或使用獨立別名。
 
-The following examples are configuration fragments: replace the corresponding fields inside `complexity_router_config`, keeping your deployed tier models. Remove mode-specific fields when changing modes instead of accumulating settings from every example.
+以下範例是設定片段：請將相應欄位替換到 `complexity_router_config` 之中，同時保留您已部署的 tier 模型。切換模式時，請移除該模式專屬欄位，不要把每個範例的設定全部累加。
 
-## Chain a heuristic with an LLM
+## 將 heuristic 與 LLM 串接 {#chain-a-heuristic-with-an-llm}
 
-Select **LLM > Routing approach > Complexity**. Expand **Advanced settings**, choose **Heuristic first** or **Hybrid**, then choose **Heuristic before the judge**. Both modes support **Heuristic v1 (rule-based)** and **Heuristic v2**.
+選取 **LLM > Routing approach > Complexity**。展開 **Advanced settings**，選擇 **Heuristic first** 或 **Hybrid**，然後選擇 **Heuristic before the judge**。兩種模式都支援 **Heuristic v1 (rule-based)** 與 **Heuristic v2**。
 
-### Heuristic first
+### Heuristic first {#heuristic-first}
 
-**Decide locally up to** sets the most expensive tier the heuristic can choose without a judge call. V1 also needs at least one scoring signal. V2 needs a tier that meets its success threshold. Higher-tier results, absent v1 signals, or a v2 prediction where no tier qualifies go to the judge.
+**Decide locally up to** 會設定 heuristic 在不呼叫 judge 的情況下可選擇的最高成本 tier。V1 也需要至少一個評分訊號。V2 需要一個符合其成功率門檻的 tier。若 v1 沒有訊號，或 v2 預測中沒有任何 tier 符合條件，較高 tier 的結果會交由 judge。
 
-![Heuristic first using v2, a MEDIUM local ceiling, and a 0.6 success threshold](../../img/auto_router/classifier/heuristic-first-v2.jpg)
+![使用 v2、MEDIUM 本機上限，以及 0.6 成功率門檻的 Heuristic first](../../img/auto_router/classifier/heuristic-first-v2.jpg)
 
 ```yaml title="Heuristic first with v2"
 classifier_type: heuristic_first
@@ -116,13 +116,13 @@ classifier_llm_config:
   classification_rubric: agentic
 ```
 
-Set `local_heuristic: heuristic` to use v1 and tune its weights below. Omitted or `null` `local_heuristic` preserves v1 behavior. `heuristic_first_max_tier` is required in YAML and must be a configured built-in tier below the highest tier; the UI initially selects `SIMPLE`.
+將 `local_heuristic: heuristic` 設為使用 v1，並在下方調整其權重。省略或 `null` `local_heuristic` 會保留 v1 行為。`heuristic_first_max_tier` 在 YAML 中為必填，且必須是已設定、位於最高 tier 之下的內建 tier；UI 初始會選取 `SIMPLE`。
 
-### Hybrid
+### Hybrid {#hybrid}
 
-Hybrid can accept any local tier. With v1, **Boundary margin** measures distance from the weighted-score tier boundaries. A score within the margin of any active boundary, including equality, goes to the judge. A request with no scoring signal also goes to the judge.
+Hybrid 可接受任何本機 tier。使用 v1 時，**Boundary margin** 會量測加權分數 tier 邊界的距離。位於任何作用中邊界 margin 內的分數，包括相等，都會交由 judge。沒有任何評分訊號的請求也會交由 judge。
 
-![Hybrid using rule-based v1 with a 0.03 boundary margin and separate heuristic tuning](../../img/auto_router/classifier/hybrid-v1.jpg)
+![使用規則式 v1、0.03 邊界 margin 與獨立 heuristic tuning 的 Hybrid](../../img/auto_router/classifier/hybrid-v1.jpg)
 
 ```yaml title="Hybrid with v1"
 classifier_type: hybrid
@@ -133,7 +133,7 @@ classifier_llm_config:
   classification_rubric: agentic
 ```
 
-With v2, the label becomes **Success threshold margin**. The lowest qualifying tier is accepted only when its probability and every lower tier's probability are farther than the margin from the success threshold. If no tier qualifies, ask the judge. Higher-tier probabilities do not affect this boundary check.
+使用 v2 時，標籤會變成 **Success threshold margin**。只有當最低符合條件的 tier 之機率，以及所有較低 tier 的機率，都與成功率門檻相距超過該 margin 時，才會接受該 tier。若沒有任何 tier 符合條件，則交由 judge。較高 tier 的機率不會影響此邊界檢查。
 
 ```yaml title="Hybrid with v2"
 classifier_type: hybrid
@@ -145,44 +145,44 @@ classifier_llm_config:
   classification_rubric: agentic
 ```
 
-`hybrid_boundary_margin` is required in YAML, accepts `0` through `1`, and starts at `0.03` in the UI. A larger margin delegates more boundary cases; `0` still delegates exact-boundary results. Do not set both the hybrid margin and the heuristic-first ceiling. `local_heuristic` is accepted only for these two chain types.
+`hybrid_boundary_margin` 在 YAML 中為必填，可接受 `0` 到 `1`，且在 UI 中起始為 `0.03`。較大的 margin 會將更多邊界案例交由下游；`0` 仍會將精確邊界結果交由下游。不要同時設定 hybrid margin 與 heuristic-first 上限。只有這兩種 chain 類型接受 `local_heuristic`。
 
-Judge-visible images and encrypted tasks bypass the local shortcut. On a judge error, `classifier_fallback: heuristic` uses the selected local version. A v2 chain recovers with v2, not v1.
+judge 可見的圖片與加密任務會略過本機捷徑。當 judge 發生錯誤時，`classifier_fallback: heuristic` 會使用所選的本機版本。v2 鏈會以 v2 復原，而不是 v1。
 
-## Tune heuristic v1
+## 調校 heuristic v1 {#tune-heuristic-v1}
 
-Select **Heuristics > Rule-based** (`classifier_type: heuristic`), the default when YAML omits the type. Open **Advanced settings > Heuristic tuning > Advanced scoring**. V1 scores the current ask using seven built-in dimensions, plus optional custom dimensions. It estimates tokens as text length divided by four; it does not call a tokenizer or LLM for classification.
+選取 **Heuristics > Rule-based**（`classifier_type: heuristic`），這是 YAML 省略 type 時的預設值。開啟 **Advanced settings > Heuristic tuning > Advanced scoring**。V1 會使用七個內建維度加上可選的自訂維度，對目前的請求進行評分。它會以文字長度除以四來估算 token；它不會在分類時呼叫 tokenizer 或 LLM。
 
-![Rule-based token thresholds and dimension weights in Advanced scoring](../../img/auto_router/classifier/v1-weights.jpg)
+![Advanced scoring 中的規則式 token 閾值與維度權重](../../img/auto_router/classifier/v1-weights.jpg)
 
-### Weights, thresholds, and boundaries
+### 權重、閾值與邊界 {#weights-thresholds-and-boundaries}
 
-| UI label / key | Shipped default | What changing it does |
+| UI 標籤 / 鍵 | 預設出貨值 | 變更後的效果 |
 | --- | --- | --- |
-| Token count / `dimension_weights.tokenCount` | `0.10` | Changes the contribution from short or long requests. |
-| Code presence / `dimension_weights.codePresence` | `0.30` | Changes the contribution from code-related terms. |
-| Reasoning markers / `dimension_weights.reasoningMarkers` | `0.25` | Changes the contribution from reasoning phrases. |
-| Technical terms / `dimension_weights.technicalTerms` | `0.25` | Changes the contribution from technical vocabulary. |
-| Simple indicators / `dimension_weights.simpleIndicators` | `0.05` | Changes the contribution from greetings, definitions, and other simple-request indicators. |
-| Multi-step patterns / `dimension_weights.multiStepPatterns` | `0.03` | Changes the contribution from step sequences and numbered tasks. |
-| Question complexity / `dimension_weights.questionComplexity` | `0.02` | Changes the contribution from multiple questions. |
-| Simple to Medium / `tier_boundaries.simple_medium` | `0.15` | Scores below this remain `SIMPLE`. Lowering it promotes more requests. |
-| Medium to Complex / `tier_boundaries.medium_complex` | `0.35` | Scores at or above this reach at least `COMPLEX`. |
-| Complex to Reasoning / `tier_boundaries.complex_reasoning` | `0.60` | Scores at or above this reach `REASONING`. |
-| Short below / `token_thresholds.simple` | `15` | Below this estimated token count, the token dimension scores `-1`. |
-| Long above / `token_thresholds.complex` | `400` | Above this estimated token count, the token dimension scores `1`; between thresholds it scores `0`. |
-| Minimum score / `reasoning_override_min_score` | Follows `simple_medium` | Two or more reasoning markers can promote to `REASONING` once this floor is reached. `0` restores marker-only promotion. |
+| Token 數量 / `dimension_weights.tokenCount` | `0.10` | 變更來自短請求或長請求的貢獻。 |
+| 程式碼存在 / `dimension_weights.codePresence` | `0.30` | 變更來自程式碼相關詞彙的貢獻。 |
+| 推理標記 / `dimension_weights.reasoningMarkers` | `0.25` | 變更來自推理片語的貢獻。 |
+| 技術術語 / `dimension_weights.technicalTerms` | `0.25` | 變更來自技術詞彙的貢獻。 |
+| 簡單指標 / `dimension_weights.simpleIndicators` | `0.05` | 變更來自問候、定義與其他簡單請求指標的貢獻。 |
+| 多步驟模式 / `dimension_weights.multiStepPatterns` | `0.03` | 變更來自步驟序列與編號任務的貢獻。 |
+| 問題複雜度 / `dimension_weights.questionComplexity` | `0.02` | 變更來自多個問題的貢獻。 |
+| 簡單到中等 / `tier_boundaries.simple_medium` | `0.15` | 低於此值的分數維持為 `SIMPLE`。降低此值會促進更多請求。 |
+| 中等到複雜 / `tier_boundaries.medium_complex` | `0.35` | 大於或等於此值的分數至少達到 `COMPLEX`。 |
+| 複雜到推理 / `tier_boundaries.complex_reasoning` | `0.60` | 大於或等於此值的分數會達到 `REASONING`。 |
+| 短於 / `token_thresholds.simple` | `15` | 低於此估算 token 數量時，token 維度的分數為 `-1`。 |
+| 長於 / `token_thresholds.complex` | `400` | 高於此估算 token 數量時，token 維度的分數為 `1`；介於閾值之間時，分數為 `0`。 |
+| 最低分數 / `reasoning_override_min_score` | 依照 `simple_medium` | 一旦達到此下限，兩個或以上的推理標記即可提升為 `REASONING`。`0` 會恢復僅依標記的提升。 |
 
-The UI accepts boundaries and the reasoning floor from `-1` to `1`, and nonnegative whole-number token thresholds. Keep boundaries increasing and the short threshold below the long threshold. Equality with a tier boundary selects the higher tier.
+UI 接受來自 `-1` 到 `1` 的邊界與推理下限，以及非負整數的 token 閾值。請保持邊界遞增，且短閾值低於長閾值。與層級邊界相等時，會選擇較高層級。
 
-Changing a weight in the UI rebalances the other built-in and custom weights to total `1.00`. **Restore default weights** removes the override and custom dimensions. Untouched controls follow shipped defaults.
+在 UI 中變更權重時，會重新平衡其他內建與自訂權重，使總和為 `1.00`。**還原預設權重** 會移除覆寫與自訂維度。未調整的控制項會沿用出貨預設值。
 
-In YAML, a supplied `dimension_weights` map **replaces** the map: omitted dimensions get weight zero. Supply all seven keys when retaining them. Partial boundary and token-threshold maps, in contrast, merge with their defaults. The backend does not automatically normalize a YAML weight map.
+在 YAML 中，提供的 `dimension_weights` map **會取代** 該 map：未列出的維度權重為零。若要保留所有維度，請提供全部七個鍵。相較之下，部分邊界與 token 閾值 map 會與其預設值合併。後端不會自動正規化 YAML 權重 map。
 
 <details>
-<summary>Tier-boundary and token-threshold controls</summary>
+<summary>層級邊界與 token 閾值控制項</summary>
 
-![Simple-to-Medium, Medium-to-Complex, Complex-to-Reasoning boundaries and token thresholds](../../img/auto_router/classifier/v1-boundaries.jpg)
+![簡單到中等、中等到複雜、複雜到推理的邊界與 token 閾值](../../img/auto_router/classifier/v1-boundaries.jpg)
 
 </details>
 
@@ -204,36 +204,36 @@ dimension_weights:
   questionComplexity: 0.02
 ```
 
-### Keyword lists
+### 關鍵字清單 {#keyword-lists}
 
-**Custom Technical Keywords** appends to the effective technical list. **Heuristic Keyword Overrides** replaces the corresponding built-in list. Matching is case-insensitive; individual words normally use word boundaries, while phrases and CJK terms use substring matching. Empty override lists keep the built-ins rather than disabling a dimension.
+**自訂技術關鍵字** 會附加到實際使用的技術清單。**啟發式關鍵字覆寫** 會取代對應的內建清單。比對不區分大小寫；單字通常使用字邊界，而片語與 CJK 詞彙則使用子字串比對。空白的覆寫清單會保留內建值，而不是停用某個維度。
 
-| UI label | Key | Default / effect |
+| UI 標籤 | 鍵 | 預設 / 效果 |
 | --- | --- | --- |
-| Custom Technical Keywords | `custom_technical_keywords` | None. Append terms, deduplicated case-insensitively. |
-| Code keywords | `code_keywords` | Shipped code-related list; replace it with your list. |
-| Reasoning keywords | `reasoning_keywords` | Shipped reasoning list; also supplies the reasoning-override markers. |
-| Technical keywords | `technical_keywords` | Shipped technical list; custom technical keywords append to this replacement. |
-| Simple keywords | `simple_keywords` | Shipped simple-request list; replace it with your list. |
+| 自訂技術關鍵字 | `custom_technical_keywords` | 無。附加詞彙，並以不區分大小寫方式去重。 |
+| 程式碼關鍵字 | `code_keywords` | 出貨時的程式碼相關清單；可用您的清單取代。 |
+| 推理關鍵字 | `reasoning_keywords` | 出貨時的推理清單；也提供推理覆寫標記。 |
+| 技術關鍵字 | `technical_keywords` | 出貨時的技術清單；自訂技術關鍵字會附加到此取代內容。 |
+| 簡單關鍵字 | `simple_keywords` | 出貨時的簡單請求清單；可用您的清單取代。 |
 
 ```yaml title="Append domain vocabulary without replacing built-ins"
 custom_technical_keywords: [kafka, terraform, postgresql]
 ```
 
 <details>
-<summary>Keyword override controls</summary>
+<summary>關鍵字覆寫控制項</summary>
 
-![Reasoning floor and the four heuristic keyword override lists](../../img/auto_router/classifier/keyword-overrides.jpg)
+![推理下限與四個啟發式關鍵字覆寫清單](../../img/auto_router/classifier/keyword-overrides.jpg)
 
 </details>
 
-### Custom dimensions
+### 自訂維度 {#custom-dimensions}
 
-Under **Advanced scoring > Dimension weights**, select **Add custom dimension**. Each row has its own inline weight and keyword or restricted-regex matchers.
+在 **Advanced scoring > Dimension weights** 下，選取 **Add custom dimension**。每一列都有自己的內嵌權重，以及關鍵字或受限 regex 比對器。
 
-![Custom incident dimension with a 0.1 weight, outage and incident keywords, and match-count scoring](../../img/auto_router/classifier/custom-dimension.jpg)
+![具有 0.1 權重、outage 與 incident 關鍵字，以及 match-count 計分的自訂 incident 維度](../../img/auto_router/classifier/custom-dimension.jpg)
 
-This is the configuration shown above, including the UI's rebalanced built-in weights:
+以下是上方所示的設定，包括 UI 重新平衡後的內建權重：
 
 ```yaml title="A v1 custom dimension"
 dimension_weights:
@@ -251,61 +251,61 @@ custom_dimensions:
     scoring_mode: match_count
 ```
 
-| Row field | Key under `custom_dimensions[]` | Constraints and behavior |
+| 列欄位 | `custom_dimensions[]` 下的鍵 | 限制與行為 |
 | --- | --- | --- |
-| Name | `name` | Unique case-insensitive ASCII identifier, starting with a letter, then letters, digits, or underscores; at most 64 characters. Cannot reuse a built-in dimension name. |
-| Weight | `weight` | Finite number greater than `0`, at most `1`. Do not also put this dimension in `dimension_weights`. |
-| Keywords | `keywords` | Nonblank keyword strings. At least one keyword or pattern is required. |
-| Regex patterns | `patterns` | Case-insensitive patterns over the first 2,048 characters of the ask. |
-| Scoring | `scoring_mode` | `binary`: any match contributes full weight. `match_count`: one distinct matching matcher contributes half, two or more contribute full weight. Repeated occurrences of one matcher do not increase the count. |
+| 名稱 | `name` | 唯一、不區分大小寫的 ASCII 識別碼，以字母開頭，後接字母、數字或底線；最多 64 個字元。不能重複使用內建維度名稱。 |
+| 權重 | `weight` | 大於 `0` 的有限數字，且至多為 `1`。也不要將此維度放入 `dimension_weights`。 |
+| 關鍵字 | `keywords` | 非空白的關鍵字字串。至少需要一個關鍵字或模式。 |
+| Regex 模式 | `patterns` | 針對 ask 前 2,048 個字元的不區分大小寫模式。 |
+| 計分 | `scoring_mode` | `binary`：任何比對都會貢獻完整權重。`match_count`：一個不同的匹配比對器會貢獻一半，兩個或以上則貢獻完整權重。單一比對器的重複出現不會增加計數。 |
 
-YAML defaults to `binary`; a newly added UI row starts with `match_count`. There can be at most 16 dimensions, 32 combined matchers per dimension, 256 characters per matcher, and 4,096 matcher characters per dimension. Regex permits bounded single-character or character-class repeats up to 64; unbounded quantifiers, repeated groups, backreferences, and lookarounds are rejected. Additional pattern-work limits protect the routing path.
+YAML 預設為 `binary`；新新增的 UI 列會以 `match_count` 開始。最多可有 16 個維度、每個維度 32 個合併比對器、每個比對器 256 個字元，以及每個維度 4,096 個比對器字元。Regex 允許上限為 64 的受限單字元或字元類別重複；不允許無界量詞、重複群組、反向參照與前瞻/後顧斷言。額外的模式工作量限制可保護路由路徑。
 
-Custom dimensions require standalone or chained v1. They are not accepted for v2, or just to tune an LLM/OSS/custom classifier's failure fallback.
+自訂維度需要獨立或串接的 v1。v2 不接受這些設定，也不能只是用來調整 LLM/OSS/自訂分類器的失敗備援。
 
-## Tune heuristic v2
+## 調整 heuristic v2 {#tune-heuristic-v2}
 
-Select **Heuristics > Heuristic v2**. **Heuristic tuning > Success threshold** maps to `heuristic_v2_success_threshold`, a number from `0` through `1`. Blank uses the selected artifact's `routing_threshold`, currently `0.75` for the bundled `ultrafeedback` artifact.
+選取 **Heuristics > Heuristic v2**。**Heuristic tuning > Success threshold** 對應到 `heuristic_v2_success_threshold`，其數值範圍為 `0` 到 `1`。留白時會使用所選 artifact 的 `routing_threshold`，目前 bundled `ultrafeedback` artifact 的值為 `0.75`。
 
-V2 predicts success for each built-in tier and chooses the first that reaches the threshold. Raising it generally favors stronger tiers, or more judge calls in a chain. These are task-success estimates, not v1 scores or confidence in a class label. V1 weights, keywords, token thresholds, and custom dimensions do not tune v2.
+V2 會預測每個內建層級的成功機率，並選擇第一個達到門檻的層級。提高此值通常會偏向更強的層級，或在串接中增加更多 judge 呼叫。這些是任務成功的估計，不是 v1 分數，也不是對類別標籤的信心。V1 的權重、關鍵字、token 閾值與自訂維度不會調整 v2。
 
 ```yaml title="Standalone v2"
 classifier_type: heuristic_v2
 heuristic_v2_success_threshold: 0.75
 ```
 
-If no tier qualifies, standalone v2 chooses `REASONING`; a v2 chain asks the judge. The [v2 chain screenshot](#heuristic-first) shows the threshold control alongside its local ceiling.
+如果沒有任何層級符合，獨立 v2 會選擇 `REASONING`；v2 串接會詢問 judge。[v2 串接截圖](#heuristic-first) 顯示了門檻控制項與其本地上限。
 
-### Custom trained artifact (YAML only)
+### 自訂訓練的 artifact（僅限 YAML） {#custom-trained-artifact-yaml-only}
 
-`heuristic_v2_artifact` defaults to `ultrafeedback`. It also accepts an inline trained artifact object, not a filename or URL. Use measured task outcomes to construct one; editing its statistics is not equivalent to adjusting a UI weight.
+`heuristic_v2_artifact` 預設為 `ultrafeedback`。它也接受內嵌的 trained artifact 物件，而不是檔名或 URL。請使用量測過的任務結果來建構；編輯其統計資料不等同於調整 UI 權重。
 
-| Artifact field | Default / contract |
+| 資產欄位 | 預設 / 合約 |
 | --- | --- |
 | `schema_version` | `1` |
-| `global_statistics` | Exactly one entry for each tier `1` through `4`, with positive `observations` and `successes` between zero and observations. |
-| `domain_statistics`, `cohort_statistics` | Optional domain and similarity-cohort statistics with unique keys. |
-| `domain_prior_mass`, `cohort_prior_mass` | `200`, `20`; strictly positive smoothing strengths. Higher values favor broader prior statistics over sparse observations. |
-| `routing_threshold` | `0.75`; overridden by `heuristic_v2_success_threshold` when set. |
-| `datasets`, `success_definition`, `split_method` | Training provenance describing the evidence and evaluation split. |
+| `global_statistics` | 每個層級 `1` 到 `4` 各有一筆條目，且 `observations` 與 `successes` 必須為正，並介於零與觀測值之間。 |
+| `domain_statistics`, `cohort_statistics` | 可選的網域與相似性群組統計資料，且鍵值必須唯一。 |
+| `domain_prior_mass`, `cohort_prior_mass` | `200`、`20`；必須為嚴格正值的平滑強度。較高的值會偏好較廣泛的先驗統計資料，而非稀疏觀測值。 |
+| `routing_threshold` | `0.75`；若設定 `heuristic_v2_success_threshold`，則由其覆蓋。 |
+| `datasets`, `success_definition`, `split_method` | 描述證據與評估切分的訓練來源資訊。 |
 
-Global entries contain `tier`, `successes`, and `observations`. Domain entries add a `request_type`; cohort entries add a nonempty `cohort` identifier generated by the predictor's feature grouping. Each domain/tier or cohort/tier pair must be unique. Dataset entries contain nonempty `name`, `url`, `license`, optional `success_definition`, and a positive `rows` count. These fields record evidence; they do not download or train on a dataset. The default split description is `sha256(prompt): 70% train, 15% validation, 15% test`.
+全域條目包含 `tier`、`successes` 與 `observations`。網域條目會新增一個 `request_type`；群組條目會新增一個非空的 `cohort` 識別碼，由 predictor 的特徵分組產生。每個網域/層級或群組/層級配對都必須唯一。資料集條目包含非空的 `name`、`url`、`license`、可選的 `success_definition`，以及正值的 `rows` 計數。這些欄位用來記錄證據；它們不會下載或對資料集進行訓練。預設的切分說明是 `sha256(prompt): 70% train, 15% validation, 15% test`。
 
-See the [artifact schema](https://github.com/BerriAI/litellm/blob/2b634df9d1f7005963faa2a983430f2bbe09cebc/litellm/router_strategy/complexity_router/tier_predictor.py) for the nested statistics contract. Feature extraction is built in, and the predictor makes per-tier success probabilities monotonic.
+請參閱 [資產結構](https://github.com/BerriAI/litellm/blob/2b634df9d1f7005963faa2a983430f2bbe09cebc/litellm/router_strategy/complexity_router/tier_predictor.py) 以了解巢狀統計資料合約。特徵擷取已內建，且 predictor 會讓各層級的成功機率保持單調。
 
-## Tune the LLM judge
+## 調整 LLM judge {#tune-the-llm-judge}
 
-For judge-only routing, select **LLM > Routing approach > Complexity**, then **Advanced settings > Local checks before the judge > Always use the judge**. Choose the **Judge model** in the main form, then open **LLM tuning**. These settings also apply to heuristic-first and hybrid chains; they are separate from each tier model's reasoning effort and generation settings.
+若要進行僅 judge 路由，請選擇 **LLM > Routing approach > Complexity**，然後選擇 **Advanced settings > Local checks before the judge > Always use the judge**。在主要表單中選擇 **Judge model**，再開啟 **LLM tuning**。這些設定也適用於 heuristic-first 與 hybrid 鏈；它們與各層級模型的推理努力與生成設定是分開的。
 
-| UI label | Key under `classifier_llm_config` | Default / effect |
+| UI 標籤 | `classifier_llm_config` 下的鍵值 | 預設 / 效果 |
 | --- | --- | --- |
-| Judge model | `model` | Required deployed model-group alias. Choose a model that supports the classifier's structured response. |
-| Reasoning Effort | `reasoning_effort` | Unset uses the deployment/provider default. Available choices depend on the selected model. More reasoning can increase judge latency and cost. |
-| Timeout (ms) | `timeout_ms` | `3000`; use a positive integer. Too short increases fallback frequency; too long delays requests on a slow judge. |
-| Classifier circuit breaker | `circuit_breaker_enabled` | `true`. A timeout opens this router instance's classifier circuit and immediately uses fallback on later requests. |
-| Circuit breaker cooldown (seconds) | `circuit_breaker_cooldown_seconds` | `30`, strictly positive. After cooldown, one request probes while concurrent requests keep using fallback. Success closes the circuit; a failed probe restarts cooldown. |
-| Use images for classification | `vision.enabled` | `false`. Forward inline image data from the newest user turn when the judge declares vision support. |
-| Maximum images per request | `vision.max_images` | `1`, positive integer; shown when image classification is enabled. Limits added judge cost. |
+| Judge model | `model` | 必填的已部署 model-group 別名。請選擇支援分類器結構化回應的模型。 |
+| Reasoning Effort | `reasoning_effort` | 未設定時使用部署/提供者預設值。可用選項取決於所選模型。更多推理可能會增加 judge 延遲與成本。 |
+| Timeout (ms) | `timeout_ms` | `3000`；請使用正整數。過短會增加備援頻率；過長則會在 judge 緩慢時延遲請求。 |
+| Classifier circuit breaker | `circuit_breaker_enabled` | `true`。逾時會打開此路由執行個體的分類器斷路器，並在後續請求中立即使用備援。 |
+| Circuit breaker cooldown (seconds) | `circuit_breaker_cooldown_seconds` | `30`，且必須為嚴格正值。冷卻時間結束後，一個請求會進行探測，而並行請求會繼續使用備援。成功會關閉斷路器；探測失敗則會重新開始冷卻時間。 |
+| Use images for classification | `vision.enabled` | `false`。當 judge 宣告支援 vision 時，會轉送最新使用者輪次中的內嵌影像資料。 |
+| Maximum images per request | `vision.max_images` | `1`，正整數；在啟用影像分類時顯示。限制新增的 judge 成本。 |
 
 ```yaml title="Always judge, with explicit execution defaults"
 classifier_type: llm
@@ -320,21 +320,21 @@ classifier_llm_config:
     max_images: 1
 ```
 
-Image classification forwards only inline `data:` URIs, not remote HTTP(S) image URLs or images from prior turns. Unsupported judges still receive text only. **Use images for classification** changes what the judge sees; **Modality Routing** separately ensures the answering model can accept images.
+影像分類只會轉送內嵌的 `data:` URI，而不會轉送遠端 HTTP(S) 影像網址或先前輪次的影像。不支援的 judge 仍只會收到文字。**Use images for classification** 會改變 judge 看到的內容；**Modality Routing** 則另外確保回答模型可以接受影像。
 
-### Prompt and rubric
+### 提示詞與規則 {#prompt-and-rubric}
 
-Open **Classifier Prompt > Customize prompt**. Choose a **Base rubric**, optionally replace **Classification instructions** or **Calibration examples**, and inspect **What this router sends** before saving.
+開啟 **Classifier Prompt > Customize prompt**。選擇 **Base rubric**，可選擇性地替換 **Classification instructions** 或 **Calibration examples**，並在儲存前檢視 **What this router sends**。
 
-![Classifier prompt editor with the Agentic rubric, separate instructions and examples, and the assembled-prompt preview heading](../../img/auto_router/classifier/llm-prompt.jpg)
+![Classifier 提示詞編輯器，顯示 Agentic 規則、分開的指示與範例，以及組裝後提示詞預覽標題](../../img/auto_router/classifier/llm-prompt.jpg)
 
-| Control / key | Options or limit | Use |
+| 控制項 / 鍵值 | 選項或限制 | 用途 |
 | --- | --- | --- |
-| Base rubric / `classifier_llm_config.classification_rubric` | `legacy`, `agentic`, `chat`, `business` | `agentic` anchors routine engineering at Medium; `chat` omits engineering anchors; `business` uses business criteria and examples; `legacy` preserves the original uncalibrated rubric. |
-| Classification instructions / `classification_prompt` | Optional nonblank text, at most 2,000 characters | Replace the opening instructions, retaining tier criteria and the appended prompt-injection defense. |
-| Calibration examples / `classification_examples` | Optional nonblank text, at most 4,000 characters | Replace only the example lines. The router supplies the section heading. |
+| Base rubric / `classifier_llm_config.classification_rubric` | `legacy`、`agentic`、`chat`、`business` | `agentic` 將例行工程錨定於 Medium；`chat` 省略工程錨點；`business` 使用商業準則與範例；`legacy` 保留原始、未校準的規則。 |
+| Classification instructions / `classification_prompt` | 可選的非空文字，最多 2,000 個字元 | 取代開頭指示，同時保留層級準則與附加的提示注入防護。 |
+| Calibration examples / `classification_examples` | 可選的非空文字，最多 4,000 個字元 | 只取代範例行。路由會提供此區段標題。 |
 
-New LLM configurations in the UI start with `agentic`. **Omitted YAML uses `legacy`**, so explicitly set a rubric when you want UI-equivalent behavior. Rubrics and these section overrides also apply to complexity chains. Capability and Fuse v2 use their own packaged prompts instead.
+UI 中新的 LLM 設定會以 `agentic` 開始。**省略的 YAML 會使用 `legacy`**，因此當您希望與 UI 等效時，請明確設定規則。規則與這些區段覆寫也適用於複雜度鏈。Capability 與 Fuse v2 則改用其各自封裝的提示詞。
 
 ```yaml title="Customize the opening and examples without replacing tier criteria"
 classifier_llm_config:
@@ -348,30 +348,30 @@ classification_examples: |-
   "Diagnose why retries caused duplicate charges across services" -> COMPLEX
 ```
 
-**Reset to default** removes custom opening/examples while retaining the selected rubric. Custom tier criteria are edited through **Edit tiers**, not by rewriting them in the opening prompt.
+**重設為預設值** 會移除自訂的開頭/範例，同時保留所選規則。自訂層級準則是透過 **Edit tiers** 編輯，而不是在開頭提示詞中重寫。
 
 <details>
-<summary>Legacy full system-prompt replacement</summary>
+<summary>傳統完整 system-prompt 取代</summary>
 
-`classifier_llm_config.system_prompt` replaces the entire system role, including tier criteria and the built-in injection defense. It is mutually exclusive with `classification_rubric`, `classification_prompt`, and `classification_examples`. An existing full-prompt configuration uses the legacy UI editor; new configurations should normally use the section editor above.
+`classifier_llm_config.system_prompt` 會取代整個 system 角色，包括層級準則與內建的注入防護。它與 `classification_rubric`、`classification_prompt`、以及 `classification_examples` 互斥。既有的完整提示詞設定會使用傳統 UI 編輯器；新的設定通常應使用上方的區段編輯器。
 
-If you use full replacement, supply your own instruction to treat quoted caller text as data, never routing instructions. Use `classifier_fallback: default_model` when your taxonomy is no longer complexity. Tier renames do not rewrite text frozen into a full system-prompt string.
+如果您使用完整取代，請自行提供指示，將引號中的呼叫端文字視為資料，而不是路由指示。當您的分類已不再是 complexity 時，請使用 `classifier_fallback: default_model`。層級重新命名不會改寫已凍結在完整 system-prompt 字串中的文字。
 
 </details>
 
-### Failure policy and conversation context
+### 失敗政策與對話上下文 {#failure-policy-and-conversation-context}
 
-These controls are in **LLM tuning** for complexity LLM/chains and **Classifier tuning** for OSS. They are not the forecast modes' fallback-policy editors.
+這些控制項位於 complexity 的 LLM/鏈用 **LLM tuning** 與 OSS 的 **Classifier tuning** 中。它們不是 forecast modes 的備援政策編輯器。
 
-![Classifier failure policy, history window, character budget, and assistant-turn controls](../../img/auto_router/classifier/context-and-fallback.jpg)
+![Classifier 失敗政策、歷史視窗、字元預算與 assistant 回合控制項](../../img/auto_router/classifier/context-and-fallback.jpg)
 
-| UI label | Key | Default / behavior |
+| UI 標籤 | 鍵值 | 預設 / 行為 |
 | --- | --- | --- |
-| If the classifier fails | `classifier_fallback` | `heuristic` scores locally after an error, timeout, invalid response, or plugin decline. `default_model` routes directly to the configured default model. |
-| Context Window Size | `classifier_context_window_size` | `3`; nonnegative count of prior user turns. `0` omits history and its depth summary, not the current ask or selected system text. |
-| Context Character Budget | `classifier_context_budget_chars` | `8000`; nonnegative budget for prior-turn text. Whole fitting turns can survive a small budget; an oversized boundary turn is omitted when too little room remains for truncation. |
-| Include Assistant Turns | `classifier_context_include_assistant_turns` | `false`. When enabled, the window counts prior turns across both roles. Useful when a user's "yes" approves work described by the assistant. |
-| Per-turn cap (YAML only) | `classifier_context_per_turn_chars` | Unset; optional positive cap on each prior turn, applied before the total budget. Keeps the opening and ending of a capped turn. |
+| If the classifier fails | `classifier_fallback` | 在錯誤、逾時、無效回應或外掛拒絕後，`heuristic` 會在本地重新評分。`default_model` 會直接路由到已設定的預設模型。 |
+| Context Window Size | `classifier_context_window_size` | `3`；先前使用者輪次的非負計數。`0` 會省略歷史與其深度摘要，但不會省略目前的請求或所選的 system 文字。 |
+| Context Character Budget | `classifier_context_budget_chars` | `8000`；先前輪次文字的非負預算。完整且符合條件的輪次即使在小預算下也能保留；當可用空間不足以進行截斷時，超出邊界的輪次會被省略。 |
+| Include Assistant Turns | `classifier_context_include_assistant_turns` | `false`。啟用後，視窗會計入兩種角色的先前輪次。當使用者的「yes」是在核准 assistant 所描述的工作時特別有用。 |
+| Per-turn cap (YAML only) | `classifier_context_per_turn_chars` | 未設定；每個先前輪次的可選正值上限，會在總預算之前套用。保留受限輪次的開頭與結尾。 |
 
 ```yaml title="Context and failure policy, under complexity_router_config"
 classifier_fallback: heuristic
@@ -380,25 +380,25 @@ classifier_context_budget_chars: 8000
 classifier_context_include_assistant_turns: false
 ```
 
-History excludes tool output and harness reminders. The router takes recent turns first, retains whole turns where possible, and truncates the oldest retained turn if necessary. The current ask and selected system text sit outside the prior-turn budget. Claude Code system text is excluded from classification; the answering model still receives it.
+歷史不包含工具輸出與測試框架提醒。路由會優先採用較近期的輪次，盡可能保留完整輪次，並在必要時截斷最舊的已保留輪次。目前的請求與所選 system 文字位於先前輪次預算之外。Claude Code system 文字不會被納入分類；回答模型仍會接收它。
 
-Increasing history sends more data to the judge's provider, which may differ from the answering provider. Use window size `0` when you do not want prior turns sent. It does not make classification data-free.
+增加歷史會將更多資料送至 judge 的提供者，這可能與回答提供者不同。當您不希望送出先前輪次時，請使用視窗大小 `0`。這不會讓分類變成零資料成本。
 
-For `classifier_fallback: default_model`, configure **Default Model**, preferably through the sibling `litellm_params.complexity_router_default_model` shown in the complete example. In the normalized router configuration, this is `default_model`. A plain LLM/OSS/custom heuristic fallback uses v1; a chain uses its selected local version. Custom taxonomies use `fallback_tier`. Capability and Fuse v2 always recover to their capable solver.
+對於 `classifier_fallback: default_model`，請設定 **預設模型**，最好透過完整範例中顯示的同層級 `litellm_params.complexity_router_default_model`。在正規化後的路由設定中，這是 `default_model`。純粹的 LLM/OSS/自訂啟發式備援使用 v1；鏈則使用其所選的本機版本。自訂分類體系使用 `fallback_tier`。Capability 和 Fuse v2 一律回復到其可處理的求解器。
 
-## Connect a self-hosted classifier
+## 連接自行代管的分類器 {#connect-a-self-hosted-classifier}
 
-Select **OSS Classifier**, choose **OSS provider**, then expand **Advanced settings > Classifier tuning**. This connects to an existing server; it does not deploy or start one. See [Self-hosted classifiers](./decision_classifiers.md) for installation and connectivity details.
+選取 **OSS 分類器**，選擇 **OSS 提供者**，然後展開 **進階設定 > 分類器調校**。這會連線到既有伺服器；不會部署或啟動新的伺服器。請參閱 [自行代管的分類器](./decision_classifiers.md) 以取得安裝與連線詳細資料。
 
-![Laya classifier tuning with english model, a 15000 ms timeout, and circuit breaker settings](../../img/auto_router/classifier/laya-tuning.jpg)
+![Laya 分類器調校，包含英文模型、15000 ms 逾時，以及斷路器設定](../../img/auto_router/classifier/laya-tuning.jpg)
 
-| Provider | `provider` | Classifier model | Gateway environment |
+| 提供者 | `provider` | 分類器模型 | 閘道環境 |
 | --- | --- | --- | --- |
-| Laya, self-hosted | `laya` | `english`, `multilingual`, `typed-decisions` | `LAYA_API_BASE`, optional `LAYA_API_KEY` |
-| Bespoke Nimble, self-hosted | `bespoke` | `nimble-latest`, `nimble`, `bespokelabs/Bespoke-Nimble-9B` | `BESPOKE_API_BASE`, optional `BESPOKE_API_KEY` |
-| Jev, hosted TypeSafe API | `jev` | `jev-latest` by default | `TYPESAFE_API_KEY`; optional `TYPESAFE_API_BASE`, default `https://api.typesafe.ai` |
+| Laya，自行代管 | `laya` | `english`、`multilingual`、`typed-decisions` | `LAYA_API_BASE`，可選 `LAYA_API_KEY` |
+| Bespoke Nimble，自行代管 | `bespoke` | `nimble-latest`、`nimble`、`bespokelabs/Bespoke-Nimble-9B` | `BESPOKE_API_BASE`，可選 `BESPOKE_API_KEY` |
+| Jev，代管式 TypeSafe API | `jev` | 預設為 `jev-latest` | `TYPESAFE_API_KEY`；可選 `TYPESAFE_API_BASE`，預設 `https://api.typesafe.ai` |
 
-Set the environment on the gateway. An internal hostname is resolved from the gateway's host/container, not your browser. All three use `POST /v1/systemone`; set the base URL without that suffix.
+在閘道上設定環境。內部主機名稱是從閘道的主機／容器解析，而不是從您的瀏覽器解析。三者皆使用 `POST /v1/systemone`；請設定不含該尾碼的 base URL。
 
 ```bash title="Laya connection on the gateway"
 export LAYA_API_BASE="http://laya-server:8000"
@@ -417,26 +417,26 @@ classifier_context_window_size: 3
 classifier_context_budget_chars: 8000
 ```
 
-For Nimble, change the provider to `bespoke` and model to a supported name your server serves. A `30000` ms timeout is a reasonable initial test value for that server, not the backend default. For Jev, select `jev` with `jev-latest` and configure the TypeSafe key.
+對於 Nimble，將提供者變更為 `bespoke`，並將模型改為您的伺服器所提供的受支援名稱。對該伺服器而言，`30000` ms 逾時是合理的初始測試值，而不是後端預設值。對於 Jev，請選取 `jev` 搭配 `jev-latest`，並設定 TypeSafe 金鑰。
 
-| UI label | Key under `opensource_classifier_config` | Default / behavior |
+| UI 標籤 | `opensource_classifier_config` 下的鍵 | 預設 / 行為 |
 | --- | --- | --- |
-| OSS provider | `provider` | `jev`; accepted values are `jev`, `laya`, `bespoke`. |
-| Classifier Model | `model` | Backend default `jev-latest`; explicitly select the appropriate model for Laya/Nimble. UI provider changes choose that provider's preset default. |
-| Classifier Timeout (ms) | `timeout_ms` | `3000`, positive integer. Raise it for cold or slower self-hosted inference, then measure. |
-| Classifier Instructions | `instructions` | Omit for built-ins; nonblank text replaces the opening instructions. Custom instructions follow the custom-tier allowance. |
-| Classifier circuit breaker | `circuit_breaker_enabled` | `true`; timeout protection as described for the LLM judge. |
-| Circuit breaker cooldown (seconds) | `circuit_breaker_cooldown_seconds` | `30`, strictly positive. |
-| Endpoint (YAML/admin API only) | `api_base` | Provider environment/default. Laya/Nimble require a reachable HTTP(S) base with no embedded credentials, query, or fragment. |
-| Credential (YAML/admin API only) | `api_key` | Provider environment when using its environment base. Optional for unauthenticated self-hosted servers; required for Jev. |
+| OSS 提供者 | `provider` | `jev`；接受的值為 `jev`、`laya`、`bespoke`。 |
+| 分類器模型 | `model` | 後端預設 `jev-latest`；請明確選取適用於 Laya/Nimble 的模型。UI 更換提供者時會選擇該提供者的預設值。 |
+| 分類器逾時 (ms) | `timeout_ms` | `3000`，正整數。若冷啟動或自行代管推論較慢，請提高此值，然後進行測量。 |
+| 分類器指令 | `instructions` | 內建項目請省略；非空白文字會取代開頭指令。自訂指令遵循自訂層級允許範圍。 |
+| 分類器斷路器 | `circuit_breaker_enabled` | `true`；如同 LLM judge 所述的逾時保護。 |
+| 斷路器冷卻時間 (秒) | `circuit_breaker_cooldown_seconds` | `30`，嚴格為正值。 |
+| 端點 (僅 YAML／管理 API) | `api_base` | 提供者環境／預設值。Laya/Nimble 需要可連線的 HTTP(S) base，且不得內嵌憑證、查詢字串或片段。 |
+| 憑證 (僅 YAML／管理 API) | `api_key` | 使用其環境 base 時，採用提供者環境設定。對於未驗證的自行代管伺服器為選用；對 Jev 則為必填。 |
 
-An explicit `api_base` does **not** inherit the environment API key. Supply a matching explicit key when that endpoint requires authentication; Jev rejects an explicit base without an explicit key. The dashboard intentionally has no endpoint/key fields. Team members cannot set these overrides through management APIs.
+明確指定的 `api_base` **不會**繼承環境 API 金鑰。當該端點需要驗證時，請提供相符的明確金鑰；Jev 會拒絕未明確提供金鑰的明確 base。儀表板刻意不提供端點／金鑰欄位。團隊成員無法透過管理 API 設定這些覆寫。
 
-The canonical keys are `oss_classifier` and `opensource_classifier_config`. Existing `jev`, `jev_classifier_config`, and provider `typesafe` aliases remain accepted; do not supply both classifier blocks.
+標準鍵為 `oss_classifier` 和 `opensource_classifier_config`。既有的 `jev`、`jev_classifier_config`，以及提供者 `typesafe` 別名仍可接受；請勿同時提供兩個分類器區塊。
 
-### A self-hosted OpenAI-compatible judge
+### 自行代管的 OpenAI 相容 judge {#a-self-hosted-openai-compatible-judge}
 
-A generic vLLM or other OpenAI-compatible chat endpoint is a different integration: register it as a regular model and select **LLM**, not an OSS System One provider. Add this deployment alongside your existing solvers, then use its alias in `classifier_llm_config.model`:
+通用的 vLLM 或其他 OpenAI 相容聊天端點是不同的整合：將其註冊為一般模型，並選取 **LLM**，而不是 OSS System One 提供者。將此部署與您現有的求解器並列新增，然後在 `classifier_llm_config.model` 中使用其別名：
 
 ```yaml title="Additional model_list entry"
 - model_name: local-routing-judge
@@ -454,17 +454,17 @@ classifier_llm_config:
   classification_rubric: agentic
 ```
 
-Use an authentication value your server accepts, and verify its structured-output support. The same alias can be used in a heuristic-first/hybrid chain. Self-hosting the judge does not change where the selected completion models run.
+使用您的伺服器接受的驗證值，並確認其結構化輸出支援。相同的別名可用於先啟發式／混合鏈。自行代管 judge 不會改變所選 completion 模型的執行位置。
 
-## Forecast solver success
+## 預測求解器成功 {#forecast-solver-success}
 
-Under **LLM > Routing approach**, **Capability** and **Fuse v2** forecast task success instead of selecting a complexity label directly. Both have **Efficient solver**, **Capable solver**, and **Judge model** controls. Both use packaged prompts and choose the capable solver on an invalid forecast or classifier failure. Do not add generic prompt/rubric overrides, a local heuristic chain, or `classifier_fallback: default_model` to these modes.
+在 **LLM > 路由方式** 下，**Capability** 和 **Fuse v2** 會預測任務成功，而不是直接選擇複雜度標籤。兩者都提供 **Efficient solver**、**Capable solver** 與 **Judge model** 控制項。兩者都使用封裝的提示，並在無效的預測或分類器失敗時選擇可處理的求解器。請勿向這些模式新增一般性的提示／評分規則覆寫、本機啟發式鏈，或 `classifier_fallback: default_model`。
 
-### Capability
+### Capability {#capability}
 
-Set **Solve probability threshold** in the main form. In **LLM tuning**, **Capability boundary step** raises the required probability once for uncertain/unmatched tasks and twice for unsupported tasks.
+在主表單中設定 **Solve probability threshold**。在 **LLM tuning** 中，**Capability boundary step** 會在不確定／不匹配的任務時將所需機率提高一次，並在不受支援的任務時提高兩次。
 
-![Capability LLM tuning, including the boundary step, output token limit, response format, and calibration](../../img/auto_router/classifier/capability-tuning.jpg)
+![Capability LLM 調校，包括邊界步進、輸出 token 上限、回應格式與校準](../../img/auto_router/classifier/capability-tuning.jpg)
 
 ```yaml title="Capability example, replacing complexity_router_config"
 tiers:
@@ -483,22 +483,22 @@ capability_classifier_config:
   response_format: json_schema
 ```
 
-| Key under `capability_classifier_config` | Default / limits | Effect |
+| `capability_classifier_config` 下的鍵 | 預設 / 限制 | 影響 |
 | --- | --- | --- |
-| `efficient_tier`, `capable_tier` | Required configured built-in tiers; capable must be higher | Choose solver pools and the failure destination. The UI chooses models while preserving these names. |
-| `base_threshold` | Required number in `[0, 1]` | Efficient is selected when its predicted success meets the adjusted threshold. |
-| `threshold_step` | `0.0`, nonnegative | Supported: base. Uncertain/unmatched: base + step. Unsupported: base + 2 x step. **Base + 2 x step must be at most 1.** |
-| `max_output_tokens` | `4096`, positive integer | Limits the judge's forecast response, not the solver's answer. |
-| `response_format` | `json_schema`; or `json_object` | JSON-object mode accommodates judges without strict schema support; returned forecasts are still validated. |
-| `calibration` | Unset | Optional fitted probability transformation before threshold comparison. |
+| `efficient_tier`、`capable_tier` | 需要已設定的內建層級；capable 必須更高 | 選擇求解器池與失敗目的地。UI 會選擇模型，同時保留這些名稱。 |
+| `base_threshold` | `[0, 1]` 中的必要數值 | 當 Efficient 的預測成功率達到調整後門檻時，就會選取它。 |
+| `threshold_step` | `0.0`，非負 | 支援：base。不確定／不匹配：base + step。不受支援：base + 2 x step。**Base + 2 x step 必須至多為 1。** |
+| `max_output_tokens` | `4096`，正整數 | 限制 judge 的預測回應，而非求解器的答案。 |
+| `response_format` | `json_schema`；或 `json_object` | JSON 物件模式可讓沒有嚴格結構描述支援的 judge 也能使用；傳回的預測仍會經過驗證。 |
+| `calibration` | 未設定 | 在門檻比較前的可選擬合機率轉換。 |
 
-Capability uses a bundled capability card, not a dashboard-editable solver profile. Tune the probability threshold against observed whole-task success rather than interpreting it as classification confidence.
+Capability 使用內建的 capability 卡片，而不是可在儀表板編輯的求解器設定檔。請根據觀察到的整體任務成功率來調整機率門檻，而不是將其解讀為分類信心。
 
-### Fuse v2
+### Fuse v2 {#fuse-v2}
 
-Supply **Efficient solver profile**, **Capable solver profile**, and **Harness and budget**, either using the preset selectors or custom text. Set **Maximum quality gap** to the allowed difference between predicted capable and efficient success probabilities.
+請提供 **Efficient solver profile**、**Capable solver profile** 與 **Harness and budget**，可使用預設選擇器或自訂文字。將 **Maximum quality gap** 設定為預測的 capable 與 efficient 成功機率之間允許的差異。
 
-![Fuse v2 custom profiles, harness description, and a 0.1 maximum quality gap](../../img/auto_router/classifier/fuse-v2-profiles.jpg)
+![Fuse v2 自訂設定檔、harness 說明，以及 0.1 的最大品質落差](../../img/auto_router/classifier/fuse-v2-profiles.jpg)
 
 ```yaml title="Fuse v2 example, replacing complexity_router_config"
 tiers:
@@ -519,45 +519,45 @@ llm_v2_config:
   response_format: json_schema
 ```
 
-The profile text above demonstrates the fields. Replace it with evidence about your actual models, reasoning settings, tools, verification, and budget. Profile descriptions do not configure solver parameters; separately set those parameters on the solver deployments or tier model entries.
+上方的設定檔文字展示了這些欄位。請以您實際模型、推理設定、工具、驗證與預算的證據取代它。設定檔說明不會設定求解器參數；請另外在求解器部署或層級模型項目上設定那些參數。
 
-| Key under `llm_v2_config` | Default / limits | Effect |
+| `llm_v2_config` 下的鍵 | 預設 / 限制 | 影響 |
 | --- | --- | --- |
-| `efficient_tier`, `capable_tier` | `SIMPLE`, `REASONING` | Exactly two populated built-in tiers, capable above efficient, with one distinct model-group alias in each. |
-| `efficient_profile`, `capable_profile`, `harness` | Nonblank text, at most 4,000 characters each, or a corresponding preset | Describe what is being forecast. |
-| `efficient_profile_preset`, `capable_profile_preset`, `harness_preset` | Unset; known IDs from the gateway's preset catalog | Supply versioned descriptions. Explicit text overrides preset text; an unknown preset is still invalid. |
-| `max_quality_gap` | Required number in `[0, 1]` | Efficient wins when capable probability minus efficient probability is at most this gap. A larger gap tolerates more estimated quality loss. Zero still permits tied or higher efficient forecasts. |
-| `max_output_tokens` | `1024`, positive integer | Judge response budget. |
-| `response_format` | `json_schema`; or `json_object` | Structured response mode; both validate the verdict. |
-| `calibration` | Unset | Optional separate fitted transformations for efficient and capable probabilities. |
+| `efficient_tier`、`capable_tier` | `SIMPLE`、`REASONING` | 恰好兩個已填入的內建層級，分別為 capable 與 efficient，且每個層級各有一個不同的 model-group 別名。 |
+| `efficient_profile`、`capable_profile`、`harness` | 非空文字，每個最多 4,000 個字元，或對應的預設集 | 描述正在預測的內容。 |
+| `efficient_profile_preset`、`capable_profile_preset`、`harness_preset` | 未設定；來自 gateway 預設集目錄中的已知 ID | 提供版本化描述。明確文字會覆寫預設文字；未知的預設集仍然無效。 |
+| `max_quality_gap` | 以 `[0, 1]` 表示的必要數值 | 當 capable 機率減去 efficient 機率小於或等於這個差距時，efficient 會勝出。較大的差距可容忍較多估計品質損失。零仍允許平手或較高的 efficient 預測。 |
+| `max_output_tokens` | `1024`、正整數 | 判斷回應預算。 |
+| `response_format` | `json_schema`；或 `json_object` | 結構化回應模式；兩者都會驗證判決。 |
+| `calibration` | 未設定 | 可選的、分別適用於 efficient 與 capable 機率的擬合轉換。 |
 
-The UI loads presets from `/public/complexity_router/fuse_presets` and displays their model, version, and sources. Presets do not supply a measured quality guarantee, quality-gap setting, or fitted calibration. Fuse requires `adaptive: false` and does not support custom or Non-Reasoning tiers.
+UI 會從 `/public/complexity_router/fuse_presets` 載入預設集，並顯示其模型、版本與來源。預設集不會提供量測到的品質保證、品質差距設定或擬合校準。Fuse 需要 `adaptive: false`，且不支援自訂或 Non-Reasoning 層級。
 
-### Fitted forecast calibration
+### 擬合後的預測校準 {#fitted-forecast-calibration}
 
-**Use fitted calibration** enables already-fitted coefficients; it does not run a training job. Both modes apply `sigmoid(slope * logit(clipped_probability) + intercept)` before choosing a solver. Fit and validate coefficients for your judge, solvers, prompt version, and execution setup.
+**使用擬合校準** 會啟用已擬合的係數；它不會執行訓練工作。兩種模式都會在選擇 solver 之前套用 `sigmoid(slope * logit(clipped_probability) + intercept)`。請為您的 judge、solver、prompt 版本與執行設定擬合並驗證係數。
 
-| Mode | Calibration fields | Constraints |
+| 模式 | 校準欄位 | 限制 |
 | --- | --- | --- |
-| Capability | `calibration.version`, `.slope`, `.intercept` | Version 1-128 characters without surrounding whitespace; finite slope `0` through `20`; finite intercept `-20` through `20`. |
-| Fuse v2 | `calibration.version`, `.prompt_version`, `.efficient.slope`, `.efficient.intercept`, `.capable.slope`, `.capable.intercept` | Nonblank version up to 512 characters; prompt version `llm-v2-1`; finite slopes strictly greater than zero; finite intercepts. The UI supplies the prompt version. |
+| Capability | `calibration.version`、`.slope`、`.intercept` | 版本為 1-128 個字元，且前後無空白；有限斜率 `0` 到 `20`；有限截距 `-20` 到 `20`。 |
+| Fuse v2 | `calibration.version`、`.prompt_version`、`.efficient.slope`、`.efficient.intercept`、`.capable.slope`、`.capable.intercept` | 非空版本最多 512 個字元；prompt 版本 `llm-v2-1`；有限斜率必須嚴格大於零；有限截距。UI 會提供 prompt 版本。 |
 
-Without this block, routing uses raw forecasts. Calibration examples in the complexity prompt are unrelated to these numerical coefficients.
+若沒有這個區塊，路由會使用原始預測。複雜度 prompt 中的校準範例與這些數值係數無關。
 
-## Customize tiers or use a plugin
+## 自訂層級或使用外掛 {#customize-tiers-or-use-a-plugin}
 
-**Models by tier** maps `tiers` to deployed model aliases or pools. **Display name** writes `tier_labels`; configuration keys remain canonical, while the LLM rubric also sees your labels. Per-model reasoning effort and fast mode configure the answering models, not the classifier.
+**依層級的模型** 會將 `tiers` 對應到已部署的模型別名或池。**顯示名稱** 會寫入 `tier_labels`；設定鍵仍保持 canonical，而 LLM 評分準則也會看到您的標籤。每個模型的 reasoning effort 與 fast mode 會設定應答模型，而不是 classifier。
 
-| Control / key | Default / applicability |
+| 控制項 / 鍵 | 預設 / 適用範圍 |
 | --- | --- |
-| `tiers` | Set explicitly to your deployed aliases. A single alias pins a model group; a list provides a pool. |
-| `tier_model_configs` | Empty; stores per-tier, per-model `litellm_params`. YAML can also use structured model entries in `tiers`. |
-| `tier_labels` | Empty partial map. Renames built-in tiers in UI/logs and the LLM rubric, without renaming YAML keys. |
-| Add a non-reasoning tier / `enable_non_reasoning_tier` | `false`. Adds `NON_REASONING` below `SIMPLE`; requires a mapped model and plain LLM, OSS, or custom classifier. Heuristics/chains/forecasts cannot produce it. |
-| Edit tiers / `tier_definitions` | Unset. Ordered custom taxonomy of 2-8 tiers; custom names need descriptions and must exactly match `tiers`. Requires LLM, OSS, or a custom classifier. |
-| Fallback Tier / `fallback_tier` | Required with a custom taxonomy; must name one of its tiers. Replaces heuristic/default-model classifier recovery. |
+| `tiers` | 明確設定為您已部署的別名。單一別名會固定一個模型群組；清單則提供一個池。 |
+| `tier_model_configs` | 空白；儲存每個層級、每個模型的 `litellm_params`。YAML 也可以在 `tiers` 中使用結構化模型項目。 |
+| `tier_labels` | 空的部分對應表。會在 UI/記錄與 LLM 評分準則中重新命名內建層級，但不會重新命名 YAML 鍵。 |
+| 新增 non-reasoning 層級 / `enable_non_reasoning_tier` | `false`。在 `SIMPLE` 之下新增 `NON_REASONING`；需要一個已對應的模型，以及 plain LLM、OSS 或自訂 classifier。heuristics/chains/forecasts 無法產生它。 |
+| 編輯層級 / `tier_definitions` | 未設定。2-8 個層級的有序自訂分類法；自訂名稱需要描述，且必須與 `tiers` 完全相符。需要 LLM、OSS 或自訂 classifier。 |
+| 備援層級 / `fallback_tier` | 自訂分類法時必填；必須指定其層級之一。取代 heuristic/default-model classifier 的復原。 |
 
-A custom taxonomy cannot combine with rubric presets, full system-prompt replacement, tier labels, adaptive routing, session affinity, nonempty escalation keywords, stalled-task escalation, or routing plugins. Use section-level instructions/examples and a fallback tier.
+自訂分類法不能與評分準則預設集、完整系統提示取代、層級標籤、自適應路由、session affinity、非空的升級關鍵字、停滯任務升級或路由外掛組合使用。請使用層級層級的指示/範例與備援層級。
 
 ```yaml title="Custom support taxonomy, replacing complexity_router_config"
 classifier_type: llm
@@ -576,9 +576,9 @@ classification_prompt: Choose the support category needed to answer the request 
 escalation_keywords: []
 ```
 
-### Custom classifier (startup configuration only)
+### 自訂 classifier（僅限啟動設定） {#custom-classifier-startup-configuration-only}
 
-`classifier_type: custom` requires `classifier_plugin`, a dotted path to an installed Python instance in proxy YAML. It implements `async classify(context)`, returning a tier name or `None` to use the fallback policy. Its `RoutingContext` contains raw and structured messages, metadata, and informational candidate models.
+`classifier_type: custom` 需要 `classifier_plugin`，也就是 proxy YAML 中已安裝 Python 實例的點分路徑。它實作 `async classify(context)`，回傳一個層級名稱，或回傳 `None` 以使用備援政策。其 `RoutingContext` 包含原始與結構化訊息、metadata，以及資訊性候選模型。
 
 ```yaml title="Custom plugin, under complexity_router_config"
 classifier_type: custom
@@ -587,23 +587,23 @@ classifier_plugin_timeout_ms: 3000
 classifier_fallback: heuristic
 ```
 
-`classifier_plugin_timeout_ms` is a positive integer, default `3000`, shown as **Classifier plugin timeout (ms)** for an existing custom router. Install and configure the plugin at proxy startup; the HTTP model-management and routing-test APIs do not import arbitrary plugin paths. The UI does not offer a plugin failure-policy picker; configure that in YAML.
+`classifier_plugin_timeout_ms` 是正整數，預設為 `3000`，在既有自訂 router 中顯示為 **Classifier plugin timeout (ms)**。請在 proxy 啟動時安裝並設定外掛；HTTP model-management 與 routing-test API 不會匯入任意外掛路徑。UI 不提供外掛失敗政策選擇器；請在 YAML 中設定。
 
-`classifier_plugin` chooses the tier. The separate `plugins` list contains routing plugins whose `run(context)` narrows candidate models after classification. See the [classification reference](/docs/proxy/auto_routing#classification) and [routing plugin guide](/docs/routing_plugins) for the implementation contracts.
+`classifier_plugin` 會選擇層級。獨立的 `plugins` 清單包含路由外掛，其 `run(context)` 會在分類後縮小候選模型範圍。請參閱 [分類參考](/docs/proxy/auto_routing#classification) 與 [路由外掛指南](/docs/routing_plugins) 以了解實作合約。
 
-## Control when classification runs
+## 控制分類執行時機 {#control-when-classification-runs}
 
-**How often to classify** is in the main form, above the model tiers.
+**分類頻率** 位於主表單中、模型層級上方。
 
-| UI choice | Configuration | Behavior |
+| UI 選項 | 設定 | 行為 |
 | --- | --- | --- |
-| Every request | `classification_mode: every_request`, `session_affinity: false` | Default. Includes tool-result continuation requests. |
-| Every new user message | `classification_mode: user_turn`, `session_affinity: false` | Reclassifies new human asks; reuses the held decision on continuations. |
-| Once per session | `classification_mode: every_request`, `session_affinity: true` | Pins the first model and skips later classification while the pin is valid. |
+| 每個請求 | `classification_mode: every_request`、`session_affinity: false` | 預設。包含工具結果續接請求。 |
+| 每個新的使用者訊息 | `classification_mode: user_turn`、`session_affinity: false` | 重新分類新的人工提問；續接時重用保留的決定。 |
+| 每個 session 一次 | `classification_mode: every_request`、`session_affinity: true` | 固定第一個模型，並在固定有效時略過後續分類。 |
 
-Reuse requires a resolvable client session ID and a valid held decision. Missing/expired state still classifies. Routing plugins suppress the ordinary replay paths, and custom taxonomies do not support once-per-session mode.
+重用需要可解析的用戶端 session ID 與有效的保留決定。缺少/過期的狀態仍會進行分類。路由外掛會抑制一般的重播路徑，而自訂分類法不支援每個 session 一次模式。
 
-In **Sessions and efficiency > Affinity**, **Pin one model deployment per tier** maps to `deployment_affinity` (default `true`). It reuses a model/deployment within each classified tier while still permitting reclassification and tier changes. **How long a pin survives idle** maps to `session_affinity_ttl_seconds` (default `3600`, positive integer), refreshed on reuse. Session affinity implies a deployment pin even when `deployment_affinity` is false.
+在 **Sessions and efficiency > Affinity** 中，**Pin one model deployment per tier** 對應到 `deployment_affinity`（預設 `true`）。它會在每個已分類層級內重用模型/deployment，同時仍允許重新分類與層級變更。**How long a pin survives idle** 對應到 `session_affinity_ttl_seconds`（預設 `3600`，正整數），在重用時會重新整理。即使 `deployment_affinity` 為 false，session affinity 仍表示 deployment 固定。
 
 ```yaml title="Reclassify each human ask while reusing continuation decisions"
 classification_mode: user_turn
@@ -613,19 +613,19 @@ session_affinity_ttl_seconds: 3600
 ```
 
 <details>
-<summary>Session and efficiency controls</summary>
+<summary>Session 與效率控制</summary>
 
-![Session efficiency settings including per-tier deployment affinity](../../img/auto_router/classifier/sessions-and-efficiency.jpg)
+![包含每個層級 deployment affinity 的 session 效率設定](../../img/auto_router/classifier/sessions-and-efficiency.jpg)
 
 </details>
 
-## Preprocessing and routing overrides
+## 前處理與路由覆寫 {#preprocessing-and-routing-overrides}
 
-These settings affect the input being classified or the final route. They are separate from the classifier's weights and prompt. An **Always use the judge** router can still skip a judge call because a keyword rule, housekeeping rule, or session decision already supplies the route.
+這些設定會影響被分類的輸入或最終路由。它們與 classifier 的權重和提示彼此獨立。即使是 **Always use the judge** router，也可能略過 judge 呼叫，因為關鍵字規則、維護規則或 session 決定已經提供了路由。
 
-### Request preprocessing
+### 請求前處理 {#request-preprocessing}
 
-**Request preprocessing > Ignore Custom Tags** writes `reminder_markers`, a nonempty list of `{open, close}` pairs. Matching is case-insensitive. Custom pairs replace built-in pairs, including the Codex envelope pairs enabled for Codex user agents; include every built-in pair your harness still needs. Omit the setting to keep all applicable defaults.
+**Request preprocessing > Ignore Custom Tags** 會寫入 `reminder_markers`，也就是一個非空的 `{open, close}` 配對清單。比對不區分大小寫。自訂配對會取代內建配對，包括為 Codex user agents 啟用的 Codex envelope 配對；請包含您的測試工具仍需要的每個內建配對。若省略此設定，則保留所有適用的預設值。
 
 ```yaml title="An explicit reminder-marker pair"
 reminder_markers:
@@ -633,29 +633,29 @@ reminder_markers:
     close: </system-reminder>
 ```
 
-The selected answering model still receives the full message. This is classification cleanup, not redaction or an access-control boundary.
+選定的應答模型仍會接收完整訊息。這是分類清理，不是去識別化或存取控制邊界。
 
 <details>
-<summary>Tag-exclusion controls</summary>
+<summary>標籤排除控制</summary>
 
-![Opening and closing tag fields under Request preprocessing](../../img/auto_router/classifier/preprocessing.jpg)
+![Request preprocessing 下方的開頭與結尾標籤欄位](../../img/auto_router/classifier/preprocessing.jpg)
 
 </details>
 
-### Rules and recovery
+### 規則與復原 {#rules-and-recovery}
 
-Open **Routing rules and recovery**. Defaults and keys below apply to ordinary complexity routing; forecast/custom-tier modes hide or reject incompatible controls.
+開啟 **Routing rules and recovery**。以下預設值與鍵適用於一般複雜度路由；預測/自訂層級模式會隱藏或拒絕不相容的控制項。
 
-| UI section | Keys and defaults | Effect |
+| UI 區段 | 鍵值與預設值 | 效果 |
 | --- | --- | --- |
-| Keyword Tier Overrides | `keyword_tier_rules: null`; rows contain `keywords` and `tier` | Match before classification. If several rules match, the highest matching tier wins. |
-| Semantic keyword matching | `semantic_keyword_matching: false`, `embedding_model: null`, `match_threshold: 0.5` | Uses embedding similarity instead of literal matching for the same rules. Requires an embedding model; threshold is `0` through `1`. Adds an embedding call. |
-| Escalation Keywords | `escalation_keywords` defaults to `["LITELLM ESCALATE"]` | Exact case-sensitive phrase bumps one tier. `[]` disables it. |
-| Plan-Mode Override | `plan_mode_min_tier: null`, `plan_mode_patterns: null` | Optional minimum tier while agent plan-mode markers are present. Additional patterns are case-sensitive literal sentinels. Does not rewrite the session pin. |
-| Housekeeping Routing | `route_housekeeping_to_cheapest_tier: true`, `housekeeping_patterns: null` | Recognized conversation-title calls skip classification and use the cheapest tier; keyword rules/pins still take precedence, and escalation can raise the result. Extra sentinels are case-sensitive. |
-| Modality Routing | `modality_routing: false`, `modality_pin_override: false` | Replaces an explicitly non-vision model on image turns with a capable higher-tier/default model. The override allows this on a pinned session for that turn only. Unknown vision support is not treated as explicitly unsupported. |
-| Context Window Escalation | `enable_context_window_escalation: false`, `context_window_escalation_buffer: 0.95` | Restricts selection to models that fit, or moves to the nearest higher tier proven to fit. Buffer is greater than `0`, at most `1`. Models with unknown windows are not proof of a fit or overflow. |
-| Stalled Task Escalation | `stall_escalation_enabled: false`, `stall_escalation_window: 6`, `stall_escalation_repeat_threshold: 3` | Escalates repeated/failing recent tool calls one tier. Repeat count must be at least `2` and no greater than the positive window. Incompatible with session affinity or `classification_mode: user_turn`. |
+| 關鍵字分級覆寫 | `keyword_tier_rules: null`；列包含 `keywords` 和 `tier` | 在分類前比對。如果多個規則符合，則以符合程度最高的分級為準。 |
+| 語意關鍵字比對 | `semantic_keyword_matching: false`、`embedding_model: null`、`match_threshold: 0.5` | 對相同規則改用嵌入相似度，而非字面比對。需要嵌入模型；閾值為 `0` 到 `1`。會增加一次嵌入呼叫。 |
+| 升級關鍵字 | `escalation_keywords` 預設為 `["LITELLM ESCALATE"]` | 精確且區分大小寫的片語會上升一個分級。`[]` 會停用此功能。 |
+| 計畫模式覆寫 | `plan_mode_min_tier: null`、`plan_mode_patterns: null` | 當代理程式計畫模式標記存在時，選用的最低分級。額外模式為區分大小寫的字面哨兵。不會重寫工作階段釘選。 |
+| 維運路由 | `route_housekeeping_to_cheapest_tier: true`、`housekeeping_patterns: null` | 可辨識的對話標題呼叫會略過分類並使用最便宜的分級；關鍵字規則/釘選仍優先，且升級可提高結果。額外哨兵為區分大小寫。 |
+| 多模態路由 | `modality_routing: false`、`modality_pin_override: false` | 在圖片輪次中，以具備能力的更高分級/預設模型取代明確非 vision 的模型。此覆寫允許在釘選工作階段中僅對該輪次生效。不會將未知的 vision 支援視為明確不支援。 |
+| 上下文視窗升級 | `enable_context_window_escalation: false`、`context_window_escalation_buffer: 0.95` | 將選擇限制在能容納的模型，或移至已證明可容納的最近較高分級。緩衝區大於 `0`，至多為 `1`。上下文視窗未知的模型，不能作為可容納或溢出的證明。 |
+| 卡住的任務升級 | `stall_escalation_enabled: false`、`stall_escalation_window: 6`、`stall_escalation_repeat_threshold: 3` | 將重複/失敗的近期工具呼叫升級一個分級。重複次數必須至少為 `2`，且不得大於正值視窗。不相容於工作階段親和性或 `classification_mode: user_turn`。 |
 
 ```yaml title="Keyword routing and optional stalled-task recovery"
 keyword_tier_rules:
@@ -670,38 +670,38 @@ stall_escalation_window: 6
 stall_escalation_repeat_threshold: 3
 ```
 
-If semantic matching fails, the router continues normal classification without retrying literal matching. Custom classifier plugins do not use the housekeeping shortcut. An explicit escalation keyword and stalled-task detection can each raise the result one rung in the same request. Plan-mode sentinels are caller-visible strings, not authorization controls.
+如果語意比對失敗，路由器會繼續正常分類，不會重試字面比對。自訂分類器外掛程式不使用維運捷徑。明確的升級關鍵字與卡住的任務偵測都可以在同一請求中將結果各自提高一級。計畫模式哨兵是呼叫端可見字串，不是授權控制。
 
 <details>
-<summary>Recovery controls</summary>
+<summary>復原控制</summary>
 
-![Stalled task escalation with repeat and recent-call settings](../../img/auto_router/classifier/recovery.jpg)
+![具有重複與近期呼叫設定的卡住任務升級](../../img/auto_router/classifier/recovery.jpg)
 
 </details>
 
-### Model selection, compression, and compatibility
+### 模型選擇、壓縮與相容性 {#model-selection-compression-and-compatibility}
 
-These do not change the meaning of a v1 score, v2 threshold, or judge prompt. See the [routing reference](/docs/proxy/auto_routing) and [prompt-caching guide](./prompt_caching.md) for full workflows.
+這些不會改變 v1 分數、v2 閾值或 judge 提示詞的含義。請參閱 [路由參考](/docs/proxy/auto_routing) 與 [提示詞快取指南](./prompt_caching.md) 以了解完整流程。
 
-| Setting group | Keys and defaults | Purpose |
+| 設定群組 | 鍵值與預設值 | 目的 |
 | --- | --- | --- |
-| Adaptive Routing | `adaptive: false`; `adaptive_weights: {quality: 0.3, cost: 0.7}`; `tier_distance_penalty: 0.5`; `adaptive_eligible: all` | Learn model selection from feedback. Weights are `0` through `1` and sum to `1`; penalty is nonnegative. `classified_tier` restricts sampling to the selected pool; `all` uses a soft tier-distance penalty. |
-| Cache-aware routing | `cache_aware_routing: false`; `cache_aware_routing_output_tokens: 1024`; `cache_aware_routing_timeout_ms: 2000` | Compare warm-cache cost on supported native Anthropic requests. Output estimate is nonnegative; timeout is positive. Unsupported requests retain their normal route. |
-| Compression | Sibling `litellm_params.auto_router_routing_compression` and `auto_router_model_compression`, both unset | Choose a configured guardrail per hop. Both unset preserve inherited behavior. Once either is set, an omitted hop means no compression; `none` explicitly disables a hop. |
-| Context compaction (YAML only) | `context_compaction`, enabled by default | Compacts full conversation history near the selected deployment's input limit. Distinct from the classifier's prior-turn window and compression guardrails. `false` or `null` disables it. |
-| Compatibility | `return_raw_model_name: false`; `max_tokens_from_tier_model: true` | Return the resolved model name instead of the router alias; or control whether the selected model's output ceiling replaces the caller's token limit. Tier-level token overrides still win. |
-| Routing plugins (startup configuration) | `plugins: null` | Narrow candidate models after classification; distinct from a tier-selecting `classifier_plugin`. |
+| 自適應路由 | `adaptive: false`；`adaptive_weights: {quality: 0.3, cost: 0.7}`；`tier_distance_penalty: 0.5`；`adaptive_eligible: all` | 從回饋中學習模型選擇。權重為 `0` 到 `1`，總和為 `1`；懲罰值為非負。`classified_tier` 將取樣限制在所選集合中；`all` 使用柔性的分級距離懲罰。 |
+| 快取感知路由 | `cache_aware_routing: false`；`cache_aware_routing_output_tokens: 1024`；`cache_aware_routing_timeout_ms: 2000` | 在受支援的原生 Anthropic 請求上，比較暖快取成本。輸出估計為非負；逾時為正值。不支援的請求會保留其正常路由。 |
+| 壓縮 | 同層級的 `litellm_params.auto_router_routing_compression` 與 `auto_router_model_compression`，兩者皆未設定 | 每一跳選擇已設定的 guardrail。兩者皆未設定時會保留繼承行為。一旦任一項設定，省略某一跳即表示不進行壓縮；`none` 會明確停用某一跳。 |
+| 上下文壓縮（僅 YAML） | `context_compaction`，預設啟用 | 在所選部署的輸入限制附近壓縮完整對話歷史。與分類器的前一輪視窗及壓縮 guardrail 不同。`false` 或 `null` 會停用它。 |
+| 相容性 | `return_raw_model_name: false`；`max_tokens_from_tier_model: true` | 回傳解析後的模型名稱，而不是路由器別名；或控制所選模型的輸出上限是否取代呼叫端的 token 限制。分級層級的 token 覆寫仍然優先。 |
+| 路由外掛程式（啟動設定） | `plugins: null` | 在分類後縮小候選模型；與選擇分級的 `classifier_plugin` 不同。 |
 
-Cache-aware routing has additional eligibility requirements: built-in tiers, supported native Anthropic requests and classified causes, no routing plugins/adaptive/session affinity, `classification_mode: every_request`, one string model alias per tier, no per-tier parameter overrides, and one eligible supported deployment per candidate. An enabled switch alone does not make every request eligible. Adaptive `all` is a soft tier preference, not a hard minimum-tier guarantee.
+快取感知路由還有其他符合資格條件：內建分級、受支援的原生 Anthropic 請求與已分類原因、沒有路由外掛程式/自適應/工作階段親和性、`classification_mode: every_request`、每個分級一個字串模型別名、沒有每分級參數覆寫，以及每個候選項一個符合資格且受支援的部署。僅啟用開關並不代表每個請求都符合資格。自適應 `all` 是柔性的分級偏好，而不是硬性的最低分級保證。
 
-For full-history compaction, `context_compaction.model` optionally chooses a compatible native-compaction model; unset lets the router select a capable configured model. `trigger_ratio` defaults to `0.9` and must be strictly between `0` and `1`; `max_tokens` defaults to `4096` and must be at least `512`; `timeout_seconds` defaults to `120` and must be positive. Provider/client-managed native histories retain their existing behavior. Context-window escalation is suppressed while compaction is pending.
+對於完整歷史壓縮，`context_compaction.model` 可選擇一個相容的原生壓縮模型；未設定則讓路由器選擇一個可行且已設定的模型。`trigger_ratio` 預設為 `0.9`，且必須嚴格介於 `0` 與 `1` 之間；`max_tokens` 預設為 `4096`，且必須至少為 `512`；`timeout_seconds` 預設為 `120`，且必須為正值。由提供者/用戶端管理的原生歷史會保留其既有行為。當壓縮待處理時，會抑制上下文視窗升級。
 
-## Verify a change
+## 驗證變更 {#verify-a-change}
 
-Keep a held-out set of real request shapes: simple lookups, difficult short questions, long context with a simple ask, follow-ups such as "yes", image tasks, tool continuations, and domain-specific terms. Change one policy or group of related settings, then compare against the previous configuration.
+保留一組隔離的真實請求形狀：簡單查詢、困難的短問題、帶有簡單提問的長上下文、像「yes」這類追問、圖片任務、工具續作，以及領域特定術語。一次只變更一項政策或一組相關設定，然後與先前設定比較。
 
-Use **Test Routing** to inspect the chosen tier/model without generating the final answer. A judge, OSS classifier, or semantic embedding call can still incur cost. **Test Connection** can also call completion models. A successful fallback does not prove the intended classifier answered.
+使用 **Test Routing** 來檢查所選的分級/模型，而不產生最終答案。judge、OSS 分類器或語意嵌入呼叫仍可能產生成本。**Test Connection** 也可能呼叫 completion 模型。成功的備援不代表原本預期的分類器有回應。
 
-Inspect the decision cause, classifier model, fallback/error information, and probabilities where available. OSS decisions retain `cause: jev_classifier` even for Laya and Nimble. Measure downstream task quality, judge-call rate, fallback rate, classification latency, and total cost including classifier calls. Self-hosted classifiers still incur infrastructure cost.
+檢查決策原因、分類器模型、備援/錯誤資訊，以及可取得時的機率。即使對 Laya 和 Nimble，OSS 決策仍會保留 `cause: jev_classifier`。衡量下游任務品質、judge 呼叫率、備援率、分類延遲，以及包含分類器呼叫在內的總成本。自架分類器仍會產生基礎設施成本。
 
-Save, reopen the router, and confirm the chosen mode, heuristic version, thresholds, and prompt. Use [Evaluate](./evaluate.md) to assess production quality and savings rather than treating a lower judge-call count or a higher forecast as a quality result.
+儲存、重新開啟路由器，並確認所選模式、heuristic 版本、閾值與提示詞。使用 [Evaluate](./evaluate.md) 來評估正式環境品質與節省，而不是把較低的 judge 呼叫數或較高的預測視為品質結果。

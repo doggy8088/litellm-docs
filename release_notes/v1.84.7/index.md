@@ -1,5 +1,5 @@
 ---
-title: "v1.84.7 - Claude Fable 5 & Batch File Authorization"
+title: "v1.84.7 - Claude Fable 5 與批次檔案授權"
 slug: "v1-84-7"
 date: 2026-06-10T18:11:13
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.84.7
 </TabItem>
 </Tabs>
 
-`v1.84.7` is a patch release on top of [`v1.84.6`](/release_notes/v1.84.6/v1-84-6). It adds Claude Fable 5 across Anthropic, Bedrock, Vertex AI, and Azure AI, and authorizes batch files using the upload `target_model_names`.
+`v1.84.7` 是建立在 [`v1.84.6`](/release_notes/v1.84.6/v1-84-6) 之上的修補版發行。它在 Anthropic、Bedrock、Vertex AI 和 Azure AI 上新增 Claude Fable 5，並使用上傳 `target_model_names` 授權批次檔案。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- feat: add Claude Fable 5 across Anthropic, Bedrock, Vertex AI, and Azure AI - [PR #30064](https://github.com/BerriAI/litellm/pull/30064)
-- fix(proxy): authorize batch files using upload `target_model_names` (LIT-3593) - [PR #30009](https://github.com/BerriAI/litellm/pull/30009)
+- feat: 在 Anthropic、Bedrock、Vertex AI 和 Azure AI 上新增 Claude Fable 5 - [PR #30064](https://github.com/BerriAI/litellm/pull/30064)
+- fix(proxy): 使用上傳 `target_model_names` 授權批次檔案 (LIT-3593) - [PR #30009](https://github.com/BerriAI/litellm/pull/30009)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.6...v1.84.7

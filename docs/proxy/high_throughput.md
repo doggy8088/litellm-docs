@@ -1,45 +1,45 @@
-# Scale for high-throughput workloads
+# 為高吞吐量工作負載進行擴展 {#scale-for-high-throughput-workloads}
 
-Large prompts put meaningful work on the gateway before a request reaches the model provider. Authentication, budget checks, token counting, spend tracking, metrics collection, and database connections can all compete with request processing.
+大型提示會在請求到達模型提供者之前，讓閘道承擔相當多的工作。驗證、預算檢查、token 計數、支出追蹤、指標收集，以及資料庫連線都可能與請求處理相互競爭。
 
-This deployment profile separates that work and scales the gateway using request volume and token volume. In our large-prompt benchmark, it sustained 3,000 requests per second with 50K to 100K-token prompts while using 33 gateway pods. See the [full benchmark](../benchmarks.md#high-throughput-profile-3000-rps-with-50k-to-100k-token-prompts) for the test setup and results.
+此部署設定檔會將這些工作分離，並依請求量與 token 量來擴展閘道。在我們的大型提示基準測試中，使用 33 個閘道 Pod，仍可在 50K 到 100K token 的提示下維持每秒 3,000 個請求。測試設定與結果請參閱[完整基準測試](../benchmarks.md#high-throughput-profile-3000-rps-with-50k-to-100k-token-prompts)。
 
-:::warning[Development preview]
-The high-throughput deployment profile is still in development and is available in nightly builds. The install example below pins the earliest available version. Use the latest nightly for evaluation, and validate it in a non-production environment before rollout.
+:::warning[開發預覽版]
+高吞吐量部署設定檔仍在開發中，僅可在 nightly builds 中使用。以下安裝範例會固定到最早可用的版本。請使用最新 nightly 進行評估，並在正式上線前於非生產環境中驗證。
 :::
 
-## When to use this profile
+## 何時使用此設定檔 {#when-to-use-this-profile}
 
-Use this profile when your deployment has one or more of these characteristics:
+當您的部署具有下列一項或多項特性時，請使用此設定檔：
 
-- Thousands of requests per second
-- Prompts with tens of thousands of tokens
-- Multiple gateway workers per pod
-- Strict database connection limits
-- Long-running streaming requests
+- 每秒數千個請求
+- 含有數萬個 token 的提示
+- 每個 Pod 有多個閘道 worker
+- 嚴格的資料庫連線限制
+- 長時間執行的串流請求
 
-For a new deployment, start with [Deploy with Helm](./deploy.md) and the [production checklist](./prod.md). Apply this profile after you have a working componentized deployment with external Postgres and Redis.
+若是新的部署，請先從[使用 Helm 部署](./deploy.md)與[生產環境檢查清單](./prod.md)開始。待您完成具備外部 Postgres 與 Redis 的元件化部署後，再套用此設定檔。
 
-## How the deployment works
+## 部署的運作方式 {#how-the-deployment-works}
 
-The componentized chart runs the gateway, management backend, Admin UI, and database migrations independently. Only the gateway handles inference traffic, so each part can scale without increasing every other component.
+元件化 chart 會獨立執行閘道、管理後端、Admin UI 與資料庫遷移。只有閘道會處理推論流量，因此各部分都能擴展，而不會連帶增加其他元件的負載。
 
-This profile changes the gateway in six ways:
+此設定檔會從六個面向調整閘道：
 
-| Setting | What it does |
+| 設定 | 功能 |
 |---|---|
-| `gateway.numWorkers` | Runs four request workers in each gateway pod. |
-| `database.connectionPool` | Shares a small PgBouncer pool across all workers in a pod. |
-| `LITELLM_RUST=1` | Moves large-prompt token counting to the Rust fast path. |
-| `gateway.metricsServer` and `gateway.collector` | Moves metrics scraping and spend processing out of the request workers. |
-| `gateway.hpa` | Scales on requests per second, tokens per second, CPU, and memory. |
-| Keep-alive and rollout settings | Protects long-running requests during idle periods, scaling, and upgrades. |
+| `gateway.numWorkers` | 在每個閘道 Pod 中執行四個請求 worker。 |
+| `database.connectionPool` | 在同一個 Pod 的所有 worker 之間共用一個小型 PgBouncer pool。 |
+| `LITELLM_RUST=1` | 將大型提示的 token 計數移到 Rust 快速路徑。 |
+| `gateway.metricsServer` and `gateway.collector` | 將指標抓取與支出處理移出請求 worker。 |
+| `gateway.hpa` | 依每秒請求數、每秒 token 數、CPU 與記憶體進行擴展。 |
+| Keep-alive 與 rollout 設定 | 在閒置期間、擴展與升級時保護長時間執行的請求。 |
 
-All of these settings are opt-in. Upgrading the chart does not enable the profile automatically.
+上述所有設定皆為選用。升級 chart 不會自動啟用此設定檔。
 
-## Deploy the profile
+## 部署此設定檔 {#deploy-the-profile}
 
-Create the database and master-key Secrets first. Then add the following values to your existing componentized deployment.
+請先建立資料庫與 master-key Secrets。接著將下列 values 加入您現有的元件化部署中。
 
 ```yaml title="values.yaml"
 fullnameOverride: litellm
@@ -148,7 +148,7 @@ gateway:
       json_logs: true
 ```
 
-Install the earliest nightly that contains the complete profile:
+安裝包含完整設定檔的最早 nightly：
 
 ```bash
 helm upgrade --install litellm \
@@ -157,85 +157,85 @@ helm upgrade --install litellm \
   -f values.yaml
 ```
 
-Add your `model_list`, ingress, database read replica, and other environment-specific values as described in [Deploy with Helm](./deploy.md#deploy-with-helm). `fullnameOverride: litellm` gives the resources the short names used in the verification commands below.
+依照[使用 Helm 部署](./deploy.md#deploy-with-helm)中的說明，加入您的 `model_list`、ingress、資料庫唯讀複本，以及其他環境專屬 values。`fullnameOverride: litellm` 會為下方驗證命令使用的資源提供簡短名稱。
 
-## Count large prompts without blocking requests
+## 在不阻塞請求的情況下計算大型提示 {#count-large-prompts-without-blocking-requests}
 
-Budget enforcement counts prompt tokens before a request is sent to the model provider. For 50K to 100K-token prompts, this can become the largest CPU cost in the gateway request path.
+在請求送往模型提供者之前，預算強制會先計算提示 token。對於 50K 到 100K token 的提示，這可能成為閘道請求路徑中最大的 CPU 成本。
 
-Set `LITELLM_RUST=1` to use the Rust token-counting fast path. In testing, token counting for 50K, 75K, and 100K-token bodies fell from 46, 53, and 100 ms to 4.9, 6.8, and 10.2 ms. This was the largest single improvement in the profile.
+將 `LITELLM_RUST=1` 設為使用 Rust token 計數快速路徑。在測試中，50K、75K 與 100K token 請求主體的 token 計數，從 46、53 與 100 ms 降至 4.9、6.8 與 10.2 ms。這是此設定檔中單一幅度最大的改善。
 
-The Rust path is off by default. Enable it only after confirming that the Rust extension loads in your gateway image.
+Rust 路徑預設為關閉。請只在確認 Rust 擴充功能已載入您的閘道映像之後再啟用。
 
-## Run four workers with CPU headroom
+## 以足夠的 CPU 頭room 執行四個 worker {#run-four-workers-with-cpu-headroom}
 
-The benchmark used four gateway workers in each pod, with a 4 vCPU request and a 16 vCPU limit. This keeps scheduling predictable while allowing the workers and Rust tokenizer threads to use short CPU bursts without throttling the entire pod.
+該基準測試在每個 Pod 中使用四個閘道 worker，搭配 4 vCPU 請求與 16 vCPU 上限。這可讓排程保持可預測，同時讓 worker 與 Rust tokenizer 執行緒利用短暫的 CPU 突發而不會使整個 Pod 降速。
 
-At 700 RPS, a 4 vCPU limit caused throttling even though average CPU stayed below that limit. Raising the limit to 16 removed the throttling and reduced p99 latency from 830 ms to 670 ms. Eight workers per pod did not improve latency and used 50 percent more memory, so four workers is the tested starting point for this traffic shape.
+在 700 RPS 時，即使平均 CPU 低於上限，4 vCPU 上限仍會造成 throttling。將上限提高到 16 後，throttling 消失，且 p99 延遲從 830 ms 降至 670 ms。每個 Pod 使用八個 worker 並未改善延遲，卻多用了 50% 的記憶體，因此四個 worker 是此流量型態經測試後的起始值。
 
-Measure your own workload before changing the worker count. Provider latency, prompt size, streaming duration, and enabled callbacks all affect the right value.
+在變更 worker 數量之前，請先衡量您自己的工作負載。提供者延遲、提示大小、串流持續時間，以及已啟用的 callback 都會影響最合適的值。
 
-## Share database connections across workers
+## 在 worker 之間共用資料庫連線 {#share-database-connections-across-workers}
 
-Without PgBouncer, every gateway worker opens its own Prisma connection pool. Adding workers or pods can therefore multiply database connections quickly.
+若沒有 PgBouncer，每個閘道 worker 都會開啟自己的 Prisma 連線池。因此，增加 worker 或 Pod 可能會迅速倍增資料庫連線數。
 
-`database.connectionPool.enabled` starts one PgBouncer pool in each gateway pod. All workers in that pod share the same upstream connection budget. In the 1,000 RPS test, Postgres held 86 to 175 connections across 11 to 29 pods, with no waiting clients in PgBouncer.
+`database.connectionPool.enabled` 會在每個閘道 Pod 中啟動一個 PgBouncer pool。該 Pod 中所有 worker 都共用同一個上游連線配額。在 1,000 RPS 測試中，Postgres 在 11 到 29 個 Pod 之間維持 86 到 175 個連線，而 PgBouncer 中沒有等待中的 client。
 
-Start with the chart default of 20 upstream connections per pod. The benchmark used 8 because that workload did not queue. Choose a value based on your database limit, gateway replica count, and observed PgBouncer wait time.
+請先使用 chart 預設值：每個 Pod 20 個上游連線。該基準測試使用 8，因為該工作負載沒有佇列。請根據您的資料庫限制、閘道 replica 數量，以及觀察到的 PgBouncer 等待時間來選擇數值。
 
-## Move background work out of request workers
+## 將背景工作移出請求 worker {#move-background-work-out-of-request-workers}
 
-Two sidecars keep operational work away from inference traffic:
+兩個 sidecar 可將作業工作與推論流量分離：
 
-- `gateway.metricsServer` serves Prometheus metrics on port 4001, so scrapes do not reach the request workers.
-- `gateway.collector` handles spend calculation, spend logs, counters, and budget reconciliation after the response.
+- `gateway.metricsServer` 在 port 4001 提供 Prometheus 指標，因此抓取不會進入請求 worker。
+- `gateway.collector` 在回應之後處理支出計算、支出記錄、計數器與預算對帳。
 
-The collector improved tail latency in testing. At 700 RPS, p99 fell from 1.8 seconds to 830 ms. Total compute stayed roughly the same because the work moved to the sidecar. Treat this as request isolation, not a compute reduction.
+此 collector 在測試中改善了尾端延遲。在 700 RPS 時，p99 從 1.8 秒降至 830 ms。總計算量大致相同，因為工作被移至 sidecar。請將此視為請求隔離，而非計算量減少。
 
-The metrics port does not use virtual-key authentication. Keep it off public ingress. Enable `gateway.serviceMonitor` when you use the Prometheus Operator.
+指標 port 不使用 virtual-key 驗證。請勿將其暴露於公開 ingress。使用 Prometheus Operator 時，請啟用 `gateway.serviceMonitor`。
 
-## Scale on requests and tokens
+## 依請求與 token 進行擴展 {#scale-on-requests-and-tokens}
 
-CPU alone can react too slowly to a sudden increase in large requests. The high-throughput profile lets the HorizontalPodAutoscaler use four signals at once:
+單靠 CPU 對大量請求的突增反應可能過慢。高吞吐量設定檔可讓 HorizontalPodAutoscaler 同時使用四個訊號：
 
-- Requests per second per pod
-- Tokens per second per pod
-- Gateway CPU
-- Gateway memory
+- 每個 Pod 的每秒請求數
+- 每個 Pod 的每秒 token 數
+- 閘道 CPU
+- 閘道記憶體
 
-The HPA follows whichever signal requires the most replicas. In testing, the request-rate metric triggered scale-out about 48 seconds after load began.
+HPA 會跟隨需要最多 replica 的那個訊號。在測試中，請求速率指標在負載開始後約 48 秒觸發擴展。
 
-The RPS and TPS targets require a Prometheus Adapter that exposes `litellm_requests_per_second` and `litellm_tokens_per_second` through the Kubernetes custom metrics API. The exact adapter rules are documented in [Scale on requests and tokens per pod](./deploy.md#scale-on-requests-and-tokens-per-pod).
+RPS 與 TPS 目標需要一個 Prometheus Adapter，透過 Kubernetes custom metrics API 提供 `litellm_requests_per_second` 與 `litellm_tokens_per_second`。精確的 adapter 規則記載於[依每個 Pod 的請求與 token 進行擴展](./deploy.md#scale-on-requests-and-tokens-per-pod)。
 
-If you do not run a Prometheus Adapter, remove `targetRequestsPerSecond` and `targetTokensPerSecond`. The HPA will continue to scale on CPU and memory.
+如果您沒有執行 Prometheus Adapter，請移除 `targetRequestsPerSecond` 與 `targetTokensPerSecond`。HPA 仍會依 CPU 與記憶體進行擴展。
 
-Choose RPS and TPS targets from a measured pod. The example values include headroom for the benchmark workload, but they are not universal limits.
+請從已量測的 Pod 中選擇 RPS 與 TPS 目標。範例值已為基準測試工作負載預留餘裕，但它們不是通用上限。
 
-## Keep long requests alive during scaling
+## 在擴展期間讓長請求持續存活 {#keep-long-requests-alive-during-scaling}
 
-Set `KEEPALIVE_TIMEOUT` above your load balancer's idle timeout. The example uses 75 seconds for an AWS Application Load Balancer with a 60-second idle timeout. This prevents the gateway from closing a connection before the load balancer expects it to close.
+將 `KEEPALIVE_TIMEOUT` 設為高於負載平衡器的閒置逾時。範例使用 75 秒，適用於閒置逾時為 60 秒的 AWS Application Load Balancer。這可防止閘道在負載平衡器預期關閉之前先行關閉連線。
 
-The rollout settings give long requests time to finish:
+rollout 設定可讓長請求有時間完成：
 
-- `maxUnavailable: 0` keeps existing capacity during an upgrade.
-- The `preStop` delay gives the load balancer time to stop sending new requests.
-- `terminationGracePeriodSeconds` is longer than the configured request timeout.
-- The PodDisruptionBudget limits simultaneous pod disruption.
+- `maxUnavailable: 0` 在升級期間維持既有容量。
+- `preStop` 的延遲可讓負載平衡器有時間停止送出新請求。
+- `terminationGracePeriodSeconds` 長於已設定的請求逾時。
+- PodDisruptionBudget 會限制同時發生的 Pod 中斷。
 
-Match these values to your longest allowed request and your load balancer's deregistration behavior.
+請將這些值與您允許的最長請求，以及負載平衡器的取消註冊行為相互對應。
 
-The startup probe gives a new four-worker pod time to load before Kubernetes applies liveness checks. `allow_requests_on_db_unavailable: true` keeps a temporary slow database health check from removing an otherwise usable pod during scale-out. Decide whether this availability tradeoff matches your database failure policy.
+startup probe 會讓新的四 worker Pod 有時間在 Kubernetes 套用 liveness 檢查之前先完成載入。`allow_requests_on_db_unavailable: true` 可避免暫時性較慢的資料庫健康檢查，在擴展過程中將原本可正常使用的 Pod 移除。請判斷此可用性取捨是否符合您的資料庫故障政策。
 
-## Verify the deployment
+## 驗證部署 {#verify-the-deployment}
 
-Each gateway pod should have the gateway, metrics, and collector containers:
+每個閘道 Pod 應包含閘道、指標與 collector 容器：
 
 ```bash
 kubectl -n <namespace> get pods -l app.kubernetes.io/component=gateway \
   -o custom-columns=POD:.metadata.name,CONTAINERS:.spec.containers[*].name
 ```
 
-Confirm the worker, connection-pool, Rust, and keep-alive settings:
+確認 worker、連線池、Rust 與 keep-alive 設定：
 
 ```bash
 kubectl -n <namespace> exec deploy/litellm-gateway -c gateway -- \
@@ -245,7 +245,7 @@ kubectl -n <namespace> exec deploy/litellm-gateway -c gateway -- \
   python -c "import litellm.rust_bridge._native; print('rust ok')"
 ```
 
-Confirm that Prometheus metrics and the Kubernetes custom metrics API are available:
+確認 Prometheus 指標與 Kubernetes custom metrics API 可用：
 
 ```bash
 kubectl -n <namespace> port-forward svc/litellm-gateway-metrics 4001:4001 &
@@ -260,8 +260,8 @@ kubectl get --raw \
 kubectl -n <namespace> describe hpa litellm-gateway
 ```
 
-The HPA output should list RPS, TPS, CPU, and memory. Immediately after a rollout, new pods may briefly report `FailedGetPodsMetric` until their first request creates a metrics series.
+HPA 輸出應列出 RPS、TPS、CPU 與記憶體。rollout 剛完成後，新 Pod 可能會暫時回報 `FailedGetPodsMetric`，直到其第一個請求建立指標序列為止。
 
-## Benchmark results
+## 基準測試結果 {#benchmark-results}
 
-The [benchmark report](../benchmarks.md#high-throughput-profile-3000-rps-with-50k-to-100k-token-prompts) documents the test conditions, before-and-after results, client-visible failures, and one-variable-at-a-time measurements behind this profile.
+[基準測試報告](../benchmarks.md#high-throughput-profile-3000-rps-with-50k-to-100k-token-prompts) 記錄了此設定檔背後的測試條件、前後結果、用戶端可見的失敗，以及一次只變更一個變數的測量。

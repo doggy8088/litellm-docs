@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Levo
+# Levo {#levo}
 
-API and LLM security testing and observability, at [levo.ai](https://levo.ai/).
+API 與 LLM 安全性測試和可觀測性，位於 [levo.ai](https://levo.ai/)。
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們希望了解如何讓回呼更好！歡迎認識 LiteLLM 的 [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 :::
 
-## Pre-Requisites
+## 前置需求 {#pre-requisites}
 
 ```shell
 uv add litellm
 ```
 
-You need a Levo collector URL in addition to your API key. Contact Levo support if you do not have one.
+除了您的 API 金鑰之外，您還需要一個 Levo collector URL。若您沒有，請聯絡 Levo 支援。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="python" label="SDK">
@@ -50,7 +50,7 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -63,7 +63,7 @@ litellm_settings:
   callbacks: ["levo"]
 ```
 
-2. Set your credentials
+2. 設定您的憑證
 
 ```shell
 LITELLM_OTEL_V2=true
@@ -73,13 +73,13 @@ LEVOAI_WORKSPACE_ID="your-workspace-id"
 LEVOAI_COLLECTOR_URL="your-levo-collector-url"   # contact Levo support for this
 ```
 
-3. Start LiteLLM Proxy
+3. 啟動 LiteLLM Proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-4. Test it!
+4. 測試它！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -99,29 +99,29 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## What Levo renders
+## Levo 會呈現什麼 {#what-levo-renders}
 
-Open the Levo dashboard. Levo does not add a vendor mapper, so spans arrive in the canonical `gen_ai.*` schema; see [Span attributes](./opentelemetry_v2#span-attributes) for the full list of keys.
+打開 Levo 儀表板。Levo 不會新增供應商對應器，因此 span 會以 canonical `gen_ai.*` schema 抵達；完整鍵值清單請參閱 [Span attributes](./opentelemetry_v2#span-attributes)。
 
-The preset routes spans to `LEVOAI_COLLECTOR_URL` with `Authorization: Bearer $LEVOAI_API_KEY`, plus `x-levo-organization-id` and `x-levo-workspace-id` headers built from `LEVOAI_ORG_ID` and `LEVOAI_WORKSPACE_ID`.
+預設會將 span 路由到 `LEVOAI_COLLECTOR_URL`，並使用 `Authorization: Bearer $LEVOAI_API_KEY`，以及從 `LEVOAI_ORG_ID` 和 `LEVOAI_WORKSPACE_ID` 建立的 `x-levo-organization-id` 和 `x-levo-workspace-id` 標頭。
 
-## Configuration
+## 組態 {#configuration}
 
-| Variable | Required | Notes |
+| 變數 | 必填 | 備註 |
 |---|---|---|
-| `LEVOAI_API_KEY` | Yes | |
-| `LEVOAI_ORG_ID` | Yes | |
-| `LEVOAI_WORKSPACE_ID` | Yes | |
-| `LEVOAI_COLLECTOR_URL` | Yes | Used as-is with no path manipulation, so provide the exact URL Levo gave you |
+| `LEVOAI_API_KEY` | 是 | |
+| `LEVOAI_ORG_ID` | 是 | |
+| `LEVOAI_WORKSPACE_ID` | 是 | |
+| `LEVOAI_COLLECTOR_URL` | 是 | 原樣使用，不做路徑處理，因此請提供 Levo 給您的 دقیق確 URL |
 
-All four are validated at startup; the integration raises if any is missing. To label spans with an environment, set `OTEL_ENVIRONMENT_NAME`, which stamps `deployment.environment` on every span.
+這四項都會在啟動時驗證；若有任何一項缺少，整合會擲出例外。若要用環境標記 span，請設定 `OTEL_ENVIRONMENT_NAME`，這會在每個 span 上標記 `deployment.environment`。
 
-## Full OpenTelemetry reference
+## OpenTelemetry 完整參考 {#full-opentelemetry-reference}
 
-This page covers the Levo-specific setup. For span attributes, prompt and response capture, metrics, distributed tracing, and which routes are traced, see the [OpenTelemetry v2 guide](./opentelemetry_v2).
+此頁涵蓋 Levo 專屬設定。關於 span attributes、prompt 與 response 擷取、metrics、distributed tracing，以及哪些 routes 會被追蹤，請參閱 [OpenTelemetry v2 guide](./opentelemetry_v2)。
 
-## Support & Talk to Founders
+## 支援與聯絡創辦人 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

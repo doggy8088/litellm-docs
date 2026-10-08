@@ -1,28 +1,28 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# In-memory Prompt Injection Detection
+# 記憶體內提示注入偵測 {#in-memory-prompt-injection-detection}
 
-LiteLLM Supports the following methods for detecting prompt injection attacks
+LiteLLM 支援以下方法來偵測提示注入攻擊
 
-- [Similarity Checks](#similarity-checking)
-- [LLM API Call to check](#llm-api-checks)
+- [相似度檢查](#similarity-checking)
+- [透過 LLM API 呼叫檢查](#llm-api-checks)
 
-Both checks run on every unified endpoint: `/v1/chat/completions`, `/v1/messages`, `/v1/responses`, `/v1/completions`, `/v1/embeddings` and `/v1/moderations`. They scan the request text, tool outputs included (a `tool` message, a `tool_result` block or a `function_call_output` item), together with any text attachment it carries (a `text/*` data URL in a `file` or `input_file` part, or a text `document` block on `/v1/messages`). Audio, video and non-text files such as a PDF or a `file_id` reference cannot be scanned, so a request carrying one is rejected with a 400 unless you set `skip_unscannable_attachments` (see [Settings](#settings))
+這兩項檢查會在每個統一端點上執行：`/v1/chat/completions`、`/v1/messages`、`/v1/responses`、`/v1/completions`、`/v1/embeddings` 和 `/v1/moderations`。它們會掃描請求文字，包括工具輸出（`tool` 訊息、`tool_result` 區塊或 `function_call_output` 項目），以及其所攜帶的任何文字附件（`text/*` 資料 URL，位於 `file` 或 `input_file` 部分中，或位於 `/v1/messages` 上的文字 `document` 區塊）。音訊、影片以及非文字檔案（例如 PDF 或 `file_id` 參照）無法掃描，因此攜帶這類內容的請求會被拒絕並回傳 400，除非您設定 `skip_unscannable_attachments`（請參閱 [設定](#settings)）
 
-## Similarity Checking
+## 相似度檢查 {#similarity-checking}
 
-LiteLLM supports similarity checking against a pre-generated list of prompt injection attacks, to identify if a request contains an attack. 
+LiteLLM 支援對預先產生的提示注入攻擊清單進行相似度檢查，以識別請求是否包含攻擊。
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/93a1a865f0012eb22067f16427a7c0e584e2ac62/litellm/proxy/hooks/prompt_injection_detection.py#L4)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/93a1a865f0012eb22067f16427a7c0e584e2ac62/litellm/proxy/hooks/prompt_injection_detection.py#L4)
 
-1. Enable `detect_prompt_injection` in your config.yaml
+1. 在您的 config.yaml 中啟用 `detect_prompt_injection`
 ```yaml
 litellm_settings:
     callbacks: ["detect_prompt_injection"]
 ```
 
-2. Make a request 
+2. 發出請求
 
 ```
 curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -36,7 +36,7 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-3. Expected response
+3. 預期回應
 
 ```json
 {
@@ -49,9 +49,9 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 }
 ```
 
-The same request is rejected on `/v1/messages`, `/v1/responses`, `/v1/completions`, `/v1/embeddings` and `/v1/moderations`, and so is a request whose injection sits inside a tool output or a text attachment rather than the message text
+相同的請求也會在 `/v1/messages`、`/v1/responses`、`/v1/completions`、`/v1/embeddings` 和 `/v1/moderations` 上被拒絕；其注入內容位於工具輸出或文字附件中，而非訊息文字內的請求也同樣如此
 
-## Settings
+## 設定 {#settings}
 
 ```yaml
 litellm_settings:
@@ -62,24 +62,24 @@ litellm_settings:
     skip_unscannable_attachments: false
 ```
 
-| Setting | Default | Effect |
+| 設定 | 預設值 | 作用 |
 |---|---|---|
-| `heuristics_check` | `false` (`true` when `prompt_injection_params` is omitted) | Run the similarity check |
-| `llm_api_check` | `false` | Ask a model in `model_list` for a verdict |
-| `fail_on_error` | `true` | Reject the request when the check itself errors |
-| `skip_unscannable_attachments` | `false` | Let audio, video and non-text files through unscanned |
+| `heuristics_check` | `false`（當省略 `true` 時為 `prompt_injection_params`） | 執行相似度檢查 |
+| `llm_api_check` | `false` | 要求 `model_list` 中的模型給出判定 |
+| `fail_on_error` | `true` | 當檢查本身發生錯誤時拒絕請求 |
+| `skip_unscannable_attachments` | `false` | 允許音訊、影片與非文字檔案在未掃描的情況下通過 |
 
-With `fail_on_error: true` a check that errors (the LLM judge is unreachable, say) fails the request with a 500 instead of letting it through. Set it to `false` to let such requests through; the error is still logged
+使用 `fail_on_error: true` 時，發生錯誤的檢查（例如 LLM judge 無法連線）會使請求以 500 失敗，而不是直接放行。將其設為 `false` 可放行這類請求；錯誤仍會被記錄
 
-The rejected prompt itself only reaches the proxy log at `DEBUG` level, so run the proxy with `--detailed_debug` when you need to see what was blocked
+被拒絕的 prompt 本身只會以 `DEBUG` 層級出現在 proxy 記錄中，因此當您需要查看哪些內容被封鎖時，請以 `--detailed_debug` 啟動 proxy
 
-## Advanced Usage 
+## 進階用法  {#advanced-usage}
 
-### LLM API Checks 
+### LLM API 檢查  {#llm-api-checks}
 
-Check if user input contains a prompt injection attack, by running it against an LLM API.
+透過將使用者輸入送往 LLM API，檢查其中是否包含提示注入攻擊。
 
-**Step 1. Setup config**
+**步驟 1. 設定 config**
 ```yaml
 litellm_settings:
   callbacks: ["detect_prompt_injection"]
@@ -99,7 +99,7 @@ model_list:
       api_version: "2023-07-01-preview"
 ```
 
-**Step 2. Start proxy**
+**步驟 2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -107,7 +107,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Step 3. Test it**
+**步驟 3. 測試**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/chat/completions' \

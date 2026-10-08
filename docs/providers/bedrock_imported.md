@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock Imported Models
+# Bedrock 匯入模型 {#bedrock-imported-models}
 
-Bedrock Imported Models (Deepseek, Deepseek R1, Qwen, OpenAI-compatible models)
+Bedrock 匯入模型（Deepseek、Deepseek R1、Qwen、OpenAI 相容模型）
 
-### Deepseek R1
+### Deepseek R1 {#deepseek-r1}
 
-This is a separate route, as the chat template is different.
+這是一條獨立路由，因為聊天範本不同。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `bedrock/deepseek_r1/{model_arn}` |
-| Provider Documentation | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html), [Deepseek Bedrock Imported Model](https://aws.amazon.com/blogs/machine-learning/deploy-deepseek-r1-distilled-llama-models-with-amazon-bedrock-custom-model-import/) |
+| 提供者路由 | `bedrock/deepseek_r1/{model_arn}` |
+| 提供者文件 | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html), [Deepseek Bedrock Imported Model](https://aws.amazon.com/blogs/machine-learning/deploy-deepseek-r1-distilled-llama-models-with-amazon-bedrock-custom-model-import/) |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -31,8 +31,7 @@ response = completion(
 
 <TabItem value="proxy" label="Proxy">
 
-
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -42,7 +41,7 @@ model_list:
 
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -50,7 +49,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -70,18 +69,14 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+### Deepseek（非 R1） {#deepseek-not-r1}
 
-### Deepseek (not R1)
-
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `bedrock/llama/{model_arn}` |
-| Provider Documentation | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html), [Deepseek Bedrock Imported Model](https://aws.amazon.com/blogs/machine-learning/deploy-deepseek-r1-distilled-llama-models-with-amazon-bedrock-custom-model-import/) |
+| 提供者路由 | `bedrock/llama/{model_arn}` |
+| 提供者文件 | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html), [Deepseek Bedrock Imported Model](https://aws.amazon.com/blogs/machine-learning/deploy-deepseek-r1-distilled-llama-models-with-amazon-bedrock-custom-model-import/) |
 
-
-
-Use this route to call Bedrock Imported Models that follow the `llama` Invoke Request / Response spec
-
+使用此路由可呼叫遵循 `llama` Invoke Request / Response 規格的 Bedrock 匯入模型
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -100,8 +95,7 @@ response = completion(
 
 <TabItem value="proxy" label="Proxy">
 
-
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -111,7 +105,7 @@ model_list:
 
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -119,7 +113,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -139,12 +133,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Qwen3 Imported Models
+### Qwen3 匯入模型 {#qwen3-imported-models}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `bedrock/qwen3/{model_arn}` |
-| Provider Documentation | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html), [Qwen3 Models](https://aws.amazon.com/about-aws/whats-new/2025/09/qwen3-models-fully-managed-amazon-bedrock/) |
+| 提供者路由 | `bedrock/qwen3/{model_arn}` |
+| 提供者文件 | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html), [Qwen3 Models](https://aws.amazon.com/about-aws/whats-new/2025/09/qwen3-models-fully-managed-amazon-bedrock/) |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -165,7 +159,7 @@ response = completion(
 
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -175,7 +169,7 @@ model_list:
 
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -183,7 +177,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -203,13 +197,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### Qwen2 Imported Models
+### Qwen2 匯入模型 {#qwen2-imported-models}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `bedrock/qwen2/{model_arn}` |
-| Provider Documentation | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html) |
-| Note | Qwen2 and Qwen3 architectures are mostly similar. The main difference is in the response format: Qwen2 uses "text" field while Qwen3 uses "generation" field. |
+| 提供者路由 | `bedrock/qwen2/{model_arn}` |
+| 提供者文件 | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html) |
+| Note | Qwen2 與 Qwen3 架構大致相似。主要差異在回應格式：Qwen2 使用「text」欄位，而 Qwen3 使用「generation」欄位。 |
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -230,7 +224,7 @@ response = completion(
 
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -240,7 +234,7 @@ model_list:
 
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -248,7 +242,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -268,19 +262,19 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-### OpenAI-Compatible Imported Models (Qwen 2.5 VL, etc.)
+### OpenAI 相容匯入模型（Qwen 2.5 VL 等） {#openai-compatible-imported-models-qwen-25-vl-etc}
 
-Use this route for Bedrock imported models that follow the **OpenAI Chat Completions API spec**. This includes models like Qwen 2.5 VL that accept OpenAI-formatted messages with support for vision (images), tool calling, and other OpenAI features.
+使用此路由可處理遵循 **OpenAI Chat Completions API 規格** 的 Bedrock 匯入模型。這包括像 Qwen 2.5 VL 這類接受 OpenAI 格式訊息的模型，並支援 vision（圖片）、tool calling 及其他 OpenAI 功能。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `bedrock/openai/{model_arn}` |
-| Provider Documentation | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html) |
-| Supported Features | Vision (images), tool calling, streaming, system messages |
+| 提供者路由 | `bedrock/openai/{model_arn}` |
+| 提供者文件 | [Bedrock Imported Models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-customization-import-model.html) |
+| Supported Features | Vision（圖片）、tool calling、串流、system 訊息 |
 
-#### LiteLLMSDK Usage
+#### LiteLLMSDK 使用方式 {#litellmsdk-usage}
 
-**Basic Usage**
+**基本使用**
 
 ```python
 from litellm import completion
@@ -293,7 +287,7 @@ response = completion(
 )
 ```
 
-**With Vision (Images)**
+**搭配 Vision（圖片）**
 
 ```python
 import base64
@@ -326,7 +320,7 @@ response = completion(
 )
 ```
 
-**Comparing Multiple Images**
+**比較多張圖片**
 
 ```python
 import base64
@@ -365,9 +359,9 @@ response = completion(
 )
 ```
 
-#### LiteLLM Proxy Usage (AI Gateway)
+#### LiteLLM Proxy 使用方式（AI Gateway） {#litellm-proxy-usage-ai-gateway}
 
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml
 model_list:
@@ -376,7 +370,7 @@ model_list:
         model: bedrock/openai/arn:aws:bedrock:us-east-1:046319184608:imported-model/0m2lasirsp6z
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -384,9 +378,9 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
-Basic text request:
+基本文字請求：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -404,7 +398,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-With vision (image):
+搭配 vision（圖片）：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -433,25 +427,25 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-### Moonshot Kimi K2 Thinking
+### Moonshot Kimi K2 Thinking {#moonshot-kimi-k2-thinking}
 
-Moonshot AI's Kimi K2 Thinking model is now available on Amazon Bedrock. This model features advanced reasoning capabilities with automatic reasoning content extraction.
+Moonshot AI 的 Kimi K2 Thinking 模型現已於 Amazon Bedrock 上提供。此模型具備進階推理能力，並可自動擷取推理內容。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Provider Route | `bedrock/moonshot.kimi-k2-thinking`, `bedrock/invoke/moonshot.kimi-k2-thinking` |
-| Provider Documentation | [AWS Bedrock Moonshot Announcement ↗](https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-bedrock-fully-managed-open-weight-models/) |
-| Supported Parameters | `temperature`, `max_tokens`, `top_p`, `stream`, `tools`, `tool_choice` |
-| Special Features | Reasoning content extraction, Tool calling |
+| 提供者路由 | `bedrock/moonshot.kimi-k2-thinking`, `bedrock/invoke/moonshot.kimi-k2-thinking` |
+| 提供者文件 | [AWS Bedrock Moonshot Announcement ↗](https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-bedrock-fully-managed-open-weight-models/) |
+| 支援的參數 | `temperature`, `max_tokens`, `top_p`, `stream`, `tools`, `tool_choice` |
+| Special Features | 推理內容擷取、tool calling |
 
-#### Supported Features
+#### 支援功能 {#supported-features}
 
-- **Reasoning Content Extraction**: Automatically extracts `<reasoning>` tags and returns them as `reasoning_content` (similar to OpenAI's o1 models)
-- **Tool Calling**: Full support for function/tool calling with tool responses
-- **Streaming**: Both streaming and non-streaming responses
-- **System Messages**: System message support
+- **推理內容擷取**：自動擷取 `<reasoning>` 標籤，並將其以 `reasoning_content` 回傳（類似 OpenAI 的 o1 模型）
+- **Tool Calling**：完整支援 function/tool calling 與 tool 回應
+- **Streaming**：支援串流與非串流回應
+- **System Messages**：支援 system 訊息
 
-#### Basic Usage
+#### 基本使用 {#basic-usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -484,7 +478,7 @@ if response.choices[0].message.reasoning_content:
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-**1. Add to config**
+**1. 新增至設定**
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -496,7 +490,7 @@ model_list:
       aws_region_name: us-west-2
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash title="Start LiteLLM Proxy" showLineNumbers
 litellm --config /path/to/config.yaml
@@ -504,7 +498,7 @@ litellm --config /path/to/config.yaml
 # RUNNING at http://0.0.0.0:4000
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash title="Test Kimi K2 via Proxy" showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -526,7 +520,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-#### Tool Calling Example
+#### Tool Calling 範例 {#tool-calling-example}
 
 ```python title="Kimi K2 with Tool Calling" showLineNumbers
 from litellm import completion
@@ -569,7 +563,7 @@ if response.choices[0].message.tool_calls:
     print(f"Arguments: {tool_call.function.arguments}")
 ```
 
-#### Streaming Example
+#### 串流範例 {#streaming-example}
 
 ```python title="Kimi K2 Streaming" showLineNumbers
 from litellm import completion
@@ -597,14 +591,14 @@ for chunk in response:
         print(f"\n[Reasoning: {chunk.choices[0].delta.reasoning_content}]")
 ```
 
-#### Supported Parameters
+#### 支援參數 {#supported-parameters}
 
-| Parameter | Type | Description | Supported |
+| 參數 | 類型 | 說明 | Supported |
 |-----------|------|-------------|-----------|
-| `temperature` | float (0-1) | Controls randomness in output | ✅ |
-| `max_tokens` | integer | Maximum tokens to generate | ✅ |
-| `top_p` | float | Nucleus sampling parameter | ✅ |
-| `stream` | boolean | Enable streaming responses | ✅ |
-| `tools` | array | Tool/function definitions | ✅ |
-| `tool_choice` | string/object | Tool choice specification | ✅ |
-| `stop` | array | Stop sequences | ❌ (Not supported on Bedrock) |
+| `temperature` | float (0-1) | 控制輸出的隨機性 | ✅ |
+| `max_tokens` | integer | 可生成的最大 token 數 | ✅ |
+| `top_p` | float | 核心採樣參數 | ✅ |
+| `stream` | boolean | 啟用串流回應 | ✅ |
+| `tools` | array | tool/function 定義 | ✅ |
+| `tool_choice` | string/object | tool 選擇規格 | ✅ |
+| `stop` | array | 停止序列 | ❌（Bedrock 不支援） |

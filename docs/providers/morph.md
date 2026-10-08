@@ -1,18 +1,18 @@
-# Morph
+# Morph {#morph}
 
-LiteLLM supports all models on [Morph](https://morphllm.com)
+LiteLLM 支援 [Morph](https://morphllm.com) 上的所有模型
 
-## Overview
+## 概觀 {#overview}
 
-Morph provides specialized AI models designed for agentic workflows, particularly excelling at precise code editing and manipulation. Their "Apply" models enable targeted code changes without full file rewrites, making them ideal for AI agents that need to make intelligent, context-aware code modifications.
+Morph 提供專為代理式工作流程設計的專用 AI 模型，特別擅長精確的程式碼編輯與操作。其「Apply」模型可在不完整重寫檔案的情況下，進行有針對性的程式碼變更，非常適合需要進行智慧、具情境感知程式碼修改的 AI 代理程式。
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 import os 
 os.environ["MORPH_API_KEY"] = "your-api-key"
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 
 ```python
 from litellm import completion
@@ -39,7 +39,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 
@@ -61,23 +61,23 @@ for chunk in response:
     print(chunk)
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name               | Function Call                              | Description | Context Window |
+| 模型名稱               | 函式呼叫                              | 說明 | 上下文視窗 |
 |--------------------------|--------------------------------------------|-----------------------|----------------|
-| morph-v3-fast            | `completion('morph/morph-v3-fast', messages)` | Fastest model, optimized for quick responses | 16k tokens |
-| morph-v3-large           | `completion('morph/morph-v3-large', messages)` | Most capable model for complex tasks | 16k tokens |
+| morph-v3-fast            | `completion('morph/morph-v3-fast', messages)` | 速度最快的模型，針對快速回應進行最佳化 | 16k tokens |
+| morph-v3-large           | `completion('morph/morph-v3-large', messages)` | 最適合複雜任務的高能力模型 | 16k tokens |
 
-## Usage - LiteLLM Proxy Server
+## 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
-Here's how to use Morph with the LiteLLM Proxy Server:
+以下是如何在 LiteLLM Proxy Server 中使用 Morph：
 
-1. Save API key in your environment
+1. 將 API 金鑰儲存在您的環境中
 ```bash
 export MORPH_API_KEY="your-api-key"
 ```
 
-2. Add model to config.yaml
+2. 將模型加入 config.yaml
 ```yaml
 model_list:
   - model_name: morph-v3-fast
@@ -89,14 +89,14 @@ model_list:
       model: morph/morph-v3-large
 ```
 
-3. Start the proxy server
+3. 啟動 proxy server
 ```bash
 litellm --config config.yaml
 ```
 
-## Advanced Usage
+## 進階用法 {#advanced-usage}
 
-### Setting API Base
+### 設定 API Base {#setting-api-base}
 ```python
 import litellm 
 
@@ -109,7 +109,7 @@ response = completion(
 print(response)
 ```
 
-### Setting API Key
+### 設定 API 金鑰 {#setting-api-key}
 ```python 
 import litellm 
 

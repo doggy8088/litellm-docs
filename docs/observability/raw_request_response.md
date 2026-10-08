@@ -2,11 +2,10 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Raw Request/Response Logging
+# 原始請求/回應記錄 {#raw-requestresponse-logging}
 
-
-## Logging
-See the raw request/response sent by LiteLLM in your logging provider (OTEL/Langfuse/etc.).
+## 記錄 {#logging}
+請在您的記錄提供者（OTEL/Langfuse/etc.）中查看 LiteLLM 傳送的原始請求/回應。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -44,7 +43,6 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-
 ```yaml
 litellm_settings:
   log_raw_request_response: True
@@ -54,16 +52,15 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-**Expected Log**
+**預期記錄**
 
 <Image img={require('../../img/raw_request_log.png')}/>
 
+## 回傳原始回應標頭  {#return-raw-response-headers}
 
-## Return Raw Response Headers 
+回傳來自 llm provider 的原始回應標頭。 
 
-Return raw response headers from llm provider. 
-
-Currently only supported for openai. 
+目前僅支援 openai。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -88,7 +85,7 @@ print(response._hidden_params)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -101,7 +98,7 @@ litellm_settings:
   return_response_headers: true
 ```
 
-2. Test it!
+2. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -118,7 +115,6 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-
-**Expected Response**
+**預期回應**
 
 <Image img={require('../../img/raw_response_headers.png')}/>

@@ -1,12 +1,12 @@
-# Multiple Deployments
+# 多個部署 {#multiple-deployments}
 
-If you have multiple deployments of the same model, you can pass the list of deployments, and LiteLLM will return the first result. 
+如果您有同一模型的多個部署，您可以傳入部署清單，而 LiteLLM 會回傳第一個結果。 
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Multiple providers offer Mistral-7B-Instruct. 
+多個提供者提供 Mistral-7B-Instruct。 
 
-Here's how you can use litellm to return the first result: 
+以下是您可以使用 litellm 回傳第一個結果的方式： 
 
 ```python
 from litellm import completion

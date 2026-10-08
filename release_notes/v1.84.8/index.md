@@ -1,5 +1,5 @@
 ---
-title: "v1.84.8 - Database Resilience & Grace-Period Key Rotation"
+title: "v1.84.8 - 資料庫韌性與寬限期金鑰輪替"
 slug: "v1-84-8"
 date: 2026-06-12T18:20:57
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,20 +43,20 @@ pip install litellm==1.84.8
 </TabItem>
 </Tabs>
 
-`v1.84.8` is a patch release on top of [`v1.84.7`](/release_notes/v1.84.7/v1-84-7). It backports a database-resilience set (Prisma reconnection, prepared-statement and timeout controls, 5xx on DB infra errors during auth) together with the complete grace-period key rotation fix, plus routing and streaming corrections.
+`v1.84.8` 是基於 [`v1.84.7`](/release_notes/v1.84.7/v1-84-7) 的修補版本。它回溯移植了資料庫韌性相關的一組修正（Prisma 重新連線、prepared statement 與 timeout 控制、認證期間資料庫基礎架構錯誤回傳 5xx），以及完整的寬限期金鑰輪替修正，外加路由與串流修正。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(anthropic): correct streaming reasoning token usage - [PR #27319](https://github.com/BerriAI/litellm/pull/27319)
-- fix(proxy): grace-period key rotation deprecated-key lookup - [PR #27756](https://github.com/BerriAI/litellm/pull/27756)
-- fix(router): use forwarded model_id for native Azure container IDs - [PR #27921](https://github.com/BerriAI/litellm/pull/27921)
-- fix(proxy): recover from cached-plan errors by reconnecting the Prisma client - [PR #29983](https://github.com/BerriAI/litellm/pull/29983)
-- fix(proxy): expose Prisma idle/connect timeout and extra DB URL params - [PR #28395](https://github.com/BerriAI/litellm/pull/28395)
-- feat(proxy): add option to disable server-side prepared statements for DB lookups - [PR #29984](https://github.com/BerriAI/litellm/pull/29984)
-- fix(proxy): return 5xx on DB infra errors during auth - [PR #29986](https://github.com/BerriAI/litellm/pull/29986)
-- fix(passthrough): resolve costing model when body model is unknown - [PR #30160](https://github.com/BerriAI/litellm/pull/30160)
-- fix(proxy): return deprecated-key lookup result directly in get_data combined view - [PR #30327](https://github.com/BerriAI/litellm/pull/30327)
+- fix(anthropic): 修正串流 reasoning token 用量 - [PR #27319](https://github.com/BerriAI/litellm/pull/27319)
+- fix(proxy): 寬限期金鑰輪替已棄用金鑰查找 - [PR #27756](https://github.com/BerriAI/litellm/pull/27756)
+- fix(router): native Azure container IDs 使用轉送的 model_id - [PR #27921](https://github.com/BerriAI/litellm/pull/27921)
+- fix(proxy): 透過重新連線 Prisma client 從快取方案錯誤中復原 - [PR #29983](https://github.com/BerriAI/litellm/pull/29983)
+- fix(proxy): 公開 Prisma 閒置/連線 timeout 與額外 DB URL 參數 - [PR #28395](https://github.com/BerriAI/litellm/pull/28395)
+- feat(proxy): 新增停用資料庫查詢伺服器端 prepared statements 的選項 - [PR #29984](https://github.com/BerriAI/litellm/pull/29984)
+- fix(proxy): 認證期間資料庫基礎架構錯誤回傳 5xx - [PR #29986](https://github.com/BerriAI/litellm/pull/29986)
+- fix(passthrough): 當 body model 未知時解析 costing model - [PR #30160](https://github.com/BerriAI/litellm/pull/30160)
+- fix(proxy): 在 get_data combined view 中直接回傳已棄用金鑰查找結果 - [PR #30327](https://github.com/BerriAI/litellm/pull/30327)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.84.7...v1.84.8

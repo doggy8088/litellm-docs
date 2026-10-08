@@ -1,66 +1,66 @@
 ---
 slug: typesafe-jev-compaction
-title: "Reduce agent context with TypeSafe Jev and LiteLLM"
+title: "使用 TypeSafe Jev 與 LiteLLM 降低代理程式內容脈絡"
 date: 2026-09-18T10:00:00
 authors:
   - yassin
-description: "Use TypeSafe Jev to remove old tool results from bot conversations and enable compaction for a team in LiteLLM."
+description: "使用 TypeSafe Jev 移除機器人對話中的舊工具結果，並為 LiteLLM 中的團隊啟用壓縮。"
 tags: [product, agents, guardrails]
 hide_table_of_contents: false
 ---
 
-A bot looks up the weather, then checks a shop's opening hours. The user asks, "What time does the shop close?" The bot still sends the old weather report to the model, even though it no longer helps answer the question.
+機器人先查詢天氣，接著查看商店的營業時間。使用者問：「商店幾點關門？」機器人仍然把先前的天氣報告送給模型，儘管它已經無助於回答這個問題。
 
-TypeSafe Jev helps LiteLLM spot tool results that are no longer needed. LiteLLM replaces those results with a short notice before calling the model. This is called compaction, and it can reduce the input tokens used by long conversations.
+TypeSafe Jev 可協助 LiteLLM 找出不再需要的工具結果。LiteLLM 會在呼叫模型之前，以簡短提示取代這些結果。這稱為壓縮，可減少長對話所使用的輸入 token。
 
 {/* truncate */}
 
-## What Jev does
+## Jev 的功能 {#what-jev-does}
 
-[TypeSafe's Jev](https://docs.typesafe.ai/api) answers questions with a choice, a score, or a yes/no probability. For example, it can choose whether a customer question belongs with billing or support.
+[TypeSafe 的 Jev](https://docs.typesafe.ai/api) 會以選項、分數或是/否機率來回答問題。範例來說，它可以判斷某個客戶問題是屬於帳務還是支援。
 
-You can call Jev directly through LiteLLM's `/typesafe/v1/systemone` endpoint. The [TypeSafe pass-through guide](/docs/pass_through/typesafe) shows the request format, logging, and cost tracking.
+您可以透過 LiteLLM 的 `/typesafe/v1/systemone` endpoint 直接呼叫 Jev。[TypeSafe pass-through 指南](/docs/pass_through/typesafe) 說明了請求格式、記錄與成本追蹤。
 
-For compaction, LiteLLM asks Jev a simple question about each older tool result: **does the bot still need this to answer the user's latest question?**
+在壓縮時，LiteLLM 會向 Jev 針對每個較舊的工具結果提出一個簡單問題：**機器人回答使用者最新問題時，仍然需要這個結果嗎？**
 
-## How compaction works
+## 壓縮的運作方式 {#how-compaction-works}
 
 ```mermaid
 sequenceDiagram
-    participant A as Bot
+    participant A as 機器人
     participant G as LiteLLM
     participant J as TypeSafe Jev
-    participant M as Model
-    A->>G: Chat history, including tool results
-    G->>J: Which old tool results are still needed?
-    J-->>G: Scores for those results
-    G->>G: Replace results with low scores
-    G->>M: Chat history with less old tool output
-    M-->>G: Answer
-    G-->>A: Answer
+    participant M as 模型
+    A->>G: 對話歷史，包含工具結果
+    G->>J: 這些較舊的工具結果哪些仍然需要？
+    J-->>G: 這些結果的分數
+    G->>G: 以低分結果取代
+    G->>M: 較少舊工具輸出的對話歷史
+    M-->>G: 回應
+    G-->>A: 回應
 ```
 
-LiteLLM checks each completed tool exchange: a tool call and its results. By default, results with a Jev score below `0.2` are replaced with:
+LiteLLM 會檢查每個已完成的工具交換：一次工具呼叫及其結果。預設情況下，Jev 分數低於 `0.2` 的結果會被取代為：
 
 ```text
 [Tool result removed by TypeSafe compaction: judged no longer relevant to the current task]
 ```
 
-Results that are kept stay unchanged. LiteLLM also keeps the tool calls and their IDs, so the conversation still has the structure the model expects. System and user messages are unchanged. The last assistant message and any tool exchange it belongs to are protected.
+保留下來的結果維持不變。LiteLLM 也會保留工具呼叫及其 ID，因此對話仍具有模型預期的結構。系統訊息與使用者訊息不會改變。最後一則助手訊息，以及其所屬的任何工具交換，都會受到保護。
 
-The guardrail works with Chat Completions, Anthropic Messages, and the Responses API. Jev checks the old tool results; your chosen model writes the answer.
+此防護欄可搭配 Chat Completions、Anthropic Messages 與 Responses API 使用。Jev 會檢查較舊的工具結果；您選擇的模型則負責撰寫回應。
 
-## Enable compaction in LiteLLM
+## 在 LiteLLM 中啟用壓縮 {#enable-compaction-in-litellm}
 
-Use a LiteLLM proxy with a model already configured and a build that includes the `typesafe` guardrail. Keep your existing authentication setup, including OIDC if you use it.
+使用已設定模型且包含 `typesafe` 防護欄的建置版本之 LiteLLM proxy。請保留現有的驗證設定，包括您使用 OIDC 時的設定。
 
-Set your TypeSafe API key on the proxy:
+在 proxy 上設定您的 TypeSafe API 金鑰：
 
 ```bash
 export TYPESAFE_API_KEY="your-typesafe-api-key"
 ```
 
-Add this guardrail to your existing `config.yaml`, then restart the proxy:
+將此防護欄加入您現有的 `config.yaml`，然後重新啟動 proxy：
 
 ```yaml title="config.yaml"
 guardrails:
@@ -73,16 +73,16 @@ guardrails:
         relevance_threshold: 0.2
 ```
 
-`pre_call` means compaction runs before LiteLLM calls your model. The proxy sends TypeSafe the system text, latest user question, and older tool exchanges selected for evaluation. This setup leaves compaction off until you enable it for a request or team.
+`pre_call` 表示壓縮會在 LiteLLM 呼叫您的模型之前執行。proxy 會將系統文字、最新的使用者問題，以及選取供評估的較舊工具交換傳送給 TypeSafe。這樣的設定會讓壓縮保持關閉，直到您為某個請求或團隊啟用它。
 
-## Try it: weather, then shop hours
+## 示範：先天氣，再商店營業時間 {#try-it-weather-then-shop-hours}
 
-This example has two tool results: a weather report and the shop's opening hours. The user only wants to know when the shop closes. Jev can mark the weather report for removal. The shop hours belong to the last assistant exchange, so LiteLLM keeps them.
+此範例包含兩個工具結果：天氣報告與商店的營業時間。使用者只想知道商店何時關門。Jev 可以將天氣報告標記為移除。商店營業時間屬於最後一則助手交換，因此 LiteLLM 會保留它們。
 
-Set `LITELLM_PROXY_URL` to your gateway URL and `ACCESS_TOKEN` to a bearer token accepted by your proxy. For OIDC, use your valid OIDC access token. Replace `my-model` below with a model available to your team.
+將 `LITELLM_PROXY_URL` 設為您的閘道 URL，並將 `ACCESS_TOKEN` 設為 proxy 接受的 bearer token。若使用 OIDC，請使用有效的 OIDC access token。請將下方的 `my-model` 替換為您團隊可用的模型。
 
 <details>
-<summary>Complete example request</summary>
+<summary>完整範例請求</summary>
 
 ```bash
 curl -i "$LITELLM_PROXY_URL/v1/chat/completions" \
@@ -118,26 +118,26 @@ curl -i "$LITELLM_PROXY_URL/v1/chat/completions" \
 
 </details>
 
-Both tool results are longer than the default 200-character minimum. If Jev scores the weather result below `0.2`, LiteLLM replaces it with the removal notice. The shop hours stay in the request, and the model should answer **6 PM**.
+兩個工具結果都長於預設的 200 字元最低值。若 Jev 將天氣結果的分數評為低於 `0.2`，LiteLLM 會以移除通知取代它。商店營業時間會保留在請求中，而模型應該會回答 **6 PM**。
 
-Jev may decide a result is still useful and keep it. Turning on compaction does not guarantee that every request gets smaller.
+Jev 也可能判定某個結果仍有用而將其保留。啟用壓縮不代表每個請求都會變得更小。
 
-## Check the result
+## 檢查結果 {#check-the-result}
 
-Look for `jev-compaction` in the `x-litellm-applied-guardrails` response header. On a proxy with database logging, open the request in **Logs → Guardrails & Policy Compliance**. When results are removed, the guardrail records:
+請在 `x-litellm-applied-guardrails` 回應標頭中尋找 `jev-compaction`。若 proxy 啟用了資料庫記錄，請在 **Logs → Guardrails & Policy Compliance** 中開啟該請求。當結果被移除時，此防護欄會記錄：
 
-| Field | What it shows |
+| 欄位 | 內容 |
 | --- | --- |
-| `exchanges_evaluated` | How many tool exchanges Jev checked. |
-| `exchanges_dropped` | How many had their results replaced. |
-| `chars_removed` | About how many characters were removed. |
-| `model` | The configured Jev model. |
+| `exchanges_evaluated` | Jev 檢查了多少個工具交換。 |
+| `exchanges_dropped` | 有多少個工具交換的結果被取代。 |
+| `chars_removed` | 大約移除了多少個字元。 |
+| `model` | 已設定的 Jev 模型。 |
 
-Compare the same request with compaction on and off. For the off version, remove `guardrails` from the request and use a team without compaction enabled. Also leave `default_on` disabled. Compare input tokens, response time, and whether the answer is still correct. Include Jev's own cost when checking total savings.
+比較啟用與停用壓縮的同一請求。對於停用版本，請從請求中移除 `guardrails`，並使用未啟用壓縮的團隊。也請保持 `default_on` 停用。比較輸入 token、回應時間，以及答案是否仍然正確。計算總節省時，請將 Jev 本身的成本也納入。
 
-## Turn it on for a team
+## 為團隊啟用 {#turn-it-on-for-a-team}
 
-On LiteLLM Enterprise, attach `jev-compaction` to a team. If your users authenticate with OIDC, use the LiteLLM team that their tokens map to. See the [OIDC setup guide](/docs/proxy/token_auth#tracking-end-users--internal-users--team--org) for that mapping.
+在 LiteLLM Enterprise 中，將 `jev-compaction` 附加到某個團隊。如果您的使用者透過 OIDC 驗證，請使用其 token 對應的 LiteLLM 團隊。請參閱 [OIDC 設定指南](/docs/proxy/token_auth#tracking-end-users--internal-users--team--org) 了解該對應。
 
 ```bash
 curl "$LITELLM_PROXY_URL/team/update" \
@@ -149,6 +149,6 @@ curl "$LITELLM_PROXY_URL/team/update" \
   }'
 ```
 
-Start with the default score threshold of `0.2`. A higher threshold can remove more results, so check that answers stay correct before raising it. If Jev is unavailable, LiteLLM's default `fail_open` setting sends the original request to the model without compaction.
+請先從預設的分數門檻 `0.2` 開始。較高的門檻可以移除更多結果，因此在提高門檻前，請確認答案仍然正確。若 Jev 無法使用，LiteLLM 的預設 `fail_open` 設定會將原始請求送到模型，而不進行壓縮。
 
-See the [TypeSafe compaction guide](/docs/proxy/guardrails/typesafe) for more settings, or the [pass-through guide](/docs/pass_through/typesafe) to call Jev directly.
+如需更多設定，請參閱 [TypeSafe 壓縮指南](/docs/proxy/guardrails/typesafe)；若要直接呼叫 Jev，請參閱 [pass-through 指南](/docs/pass_through/typesafe)。

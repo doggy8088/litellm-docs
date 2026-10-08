@@ -1,54 +1,54 @@
 ---
 title: Admin Setup
 sidebar_label: Admin Setup
-description: Create and configure an Auto Router through the dashboard, an agent skill, config.yaml, the model-management API, or lite autoroute.
+description: 透過儀表板、代理程式技能、config.yaml、模型管理 API 或 lite autoroute 建立並設定 Auto Router。
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
-Create an Auto Router for your team using one of the methods below. To connect your coding agent to an existing router, follow [User Setup](/docs/auto_router/user_setup).
+使用以下方法之一為您的團隊建立 Auto Router。若要將您的程式碼代理程式連接到既有的 router，請依照 [使用者設定](/docs/auto_router/user_setup) 操作。
 
-After setup, [Customize your classifier](./optimize_classifier.md) explains every classification setting, with dashboard screenshots and matching YAML for heuristic/LLM chains, prompts, context, and self-hosted classifiers.
+設定完成後，[自訂您的分類器](./optimize_classifier.md) 會說明每個分類設定，並提供儀表板截圖，以及 heuristic/LLM 鏈、提示、上下文與自架分類器的對應 YAML。
 
-Five ways in. All of them create the same `auto_router/complexity_router` deployment.
+共有五種方式。全部都會建立相同的 `auto_router/complexity_router` 部署。
 
 <NavigationCards
 columns={5}
 items={[
-  { title: "Add an Auto Router", description: "Models + Endpoints → Auto Router, then test and save.", to: "#add-an-auto-router-models--endpoints--auto-router" },
-  { title: "Agent skill", description: "One line to your coding agent.", to: "#agent-skill" },
-  { title: "config.yaml", description: "One router entry in model_list.", to: "#configyaml" },
-  { title: "Model-management API", description: "POST /model/new, for CI/CD.", to: "#model-management-api" },
-  { title: "lite autoroute", description: "Try it locally without touching the proxy.", to: "#lite-autoroute" },
+  { title: "新增 Auto Router", description: "Models + Endpoints → Auto Router，接著測試並儲存。", to: "#add-an-auto-router-models--endpoints--auto-router" },
+  { title: "代理程式技能", description: "只要在您的程式碼代理程式加一行。", to: "#agent-skill" },
+  { title: "config.yaml", description: "在 model_list 中加入一筆 router 項目。", to: "#configyaml" },
+  { title: "模型管理 API", description: "POST /model/new，供 CI/CD 使用。", to: "#model-management-api" },
+  { title: "lite autoroute", description: "在本機試用，不必碰觸 proxy。", to: "#lite-autoroute" },
 ]}
 />
 
-## Add an Auto Router (Models + Endpoints → Auto Router)
+## 新增 Auto Router (Models + Endpoints → Auto Router) {#add-an-auto-router-models--endpoints--auto-router}
 
-![The Add Auto Router dialog in Models + Endpoints, with Configure automatically and template options](../../blog/autorouter_setup_and_testing/auto-setup.png)
+![Models + Endpoints 中的新增 Auto Router 對話框，含自動設定與範本選項](../../blog/autorouter_setup_and_testing/auto-setup.png)
 
-- In the LiteLLM Dashboard, go to **Models + Endpoints** and open the **Auto Router** tab. Add a new Auto Router model, or enable and configure an existing one.
-- Enter an Auto Router name, then select **Configure automatically** or choose a template. Review the generated tiers, test routing, and save.
-- **Configure automatically** checks the models your proxy already serves, selects the best available models for all four complexity tiers, and fills in the form for you.
-- Templates: 1M Context, Anthropic Family, OpenAI Family, Gemini Family, Lite. Each fills all four tiers from models your proxy already serves.
-- A template whose models are not deployed is greyed out with the missing names listed.
-- **Test Routing** sends one prompt through the classifier and shows the model it would pick. Nothing is created and the picked model is not called.
-- **Test Connection** runs a minimal request per tier model group. Green means reachable with your credentials.
-- Detailed Configuration holds the rest: keyword rules, LLM classifier and prompt, escalation keywords, adaptive pools.
+- 在 LiteLLM Dashboard 中，前往 **Models + Endpoints** 並開啟 **Auto Router** 分頁。新增一個 Auto Router 模型，或啟用並設定既有模型。
+- 輸入 Auto Router 名稱，然後選擇 **Configure automatically** 或選取一個範本。檢視產生的 tiers、測試路由，然後儲存。
+- **Configure automatically** 會檢查您的 proxy 已提供哪些模型，為全部四個複雜度 tier 選出最佳可用模型，並自動為您填入表單。
+- 範本：1M Context、Anthropic Family、OpenAI Family、Gemini Family、Lite。每個範本都會從您的 proxy 已提供的模型填入全部四個 tier。
+- 若某個範本的模型尚未部署，該範本會呈現灰色，並列出缺少的名稱。
+- **Test Routing** 會透過分類器送出一則提示，並顯示它會選擇的模型。此操作不會建立任何內容，也不會呼叫所選模型。
+- **Test Connection** 會針對每個 tier 模型群組執行最小請求。綠色代表使用您的憑證可連線。
+- **Detailed Configuration** 包含其餘設定：關鍵字規則、LLM 分類器與提示、升級關鍵字、自適應池。
 
-The templates as config.yaml: [Recommended Configurations](/docs/auto_router/recommended_configurations). Release post: [AutoRouter: 1 Click Deploy](/blog/auto-router-setup-and-testing).
+範本對應的 config.yaml： [建議設定](/docs/auto_router/recommended_configurations)。發布文章：[AutoRouter: 1 Click Deploy](/blog/auto-router-setup-and-testing)。
 
-## Agent skill
+## 代理程式技能 {#agent-skill}
 
 ```
 run curl -fsSL https://docs.litellm.ai/skills/auto-router and follow the instructions
 ```
 
-- Reads the models your proxy already serves.
-- Asks for the router name and a model per tier.
-- States the defaults it is assuming before it writes anything.
+- 讀取您的 proxy 已提供的模型。
+- 會詢問 router 名稱以及每個 tier 的模型。
+- 在寫入任何內容之前，會先說明它假設的預設值。
 
-## config.yaml
+## config.yaml {#configyaml}
 
 ```yaml title="config.yaml"
 model_list:
@@ -73,46 +73,46 @@ model_list:
       complexity_router_default_model: {{openai_large}}
 ```
 
-- Tiers name other `model_name` entries in the same file, so every tier is a deployment the proxy already knows.
-- `complexity_router_default_model` serves whenever the router cannot decide.
-- No `classifier_type` means the heuristic scorer: free, no added latency.
-- `classifier_type: llm` with a small model raises accuracy on agent traffic for a fraction of a cent per request. See [benchmarks](/docs/auto_router/benchmarks).
-- Everything else (keyword rules, tier pools, session affinity, scorer tuning): [configuration reference](/docs/proxy/auto_routing).
+- tiers 會在同一個檔案中為其他 `model_name` 項目命名，因此每個 tier 都是 proxy 已知的部署。
+- `complexity_router_default_model` 會在 router 無法決定時提供服務。
+- 沒有 `classifier_type` 代表 heuristic scorer：免費，且不會增加延遲。
+- 使用小型模型的 `classifier_type: llm` 能以每次請求幾分之一美分的成本提升 agent 流量的準確度。請參閱 [基準測試](/docs/auto_router/benchmarks)。
+- 其餘所有內容（關鍵字規則、tier pools、session affinity、scorer 調校）：[設定參考](/docs/proxy/auto_routing)。
 
-## JEV classifier (TypeSafe AI)
+## JEV 分類器 (TypeSafe AI) {#jev-classifier-typesafe-ai}
 
-This section uses the Jev configuration and dashboard labels supported by released builds. The new **OSS Classifier** configuration requires [backend #43626](https://github.com/BerriAI/litellm/pull/43626), and its dashboard requires [UI #43768](https://github.com/BerriAI/litellm/pull/43768). See [OSS classifiers](/docs/auto_router/decision_classifiers) for hosted Jev, self-hosted Nimble and Laya, and the [migration from the existing names](/docs/auto_router/decision_classifiers#migrate-an-existing-jev-or-nimble-router). The new backend continues to accept the configuration below.
+本節使用已發布建置版本支援的 Jev 設定與儀表板標籤。新的 **OSS Classifier** 設定需要 [backend #43626](https://github.com/BerriAI/litellm/pull/43626)，而其儀表板需要 [UI #43768](https://github.com/BerriAI/litellm/pull/43768)。請參閱 [OSS classifiers](/docs/auto_router/decision_classifiers) 了解託管 Jev、自架 Nimble 和 Laya，以及 [從現有名稱遷移](/docs/auto_router/decision_classifiers#migrate-an-existing-jev-or-nimble-router)。新的 backend 仍可接受以下設定。
 
-`classifier_type: jev` uses TypeSafe System One Choice evaluation to select a tier inside the existing Auto Router. LiteLLM sends the classifier input to `POST /v1/systemone` as `state`, with one `questions.tier` question whose criteria describe the configured tiers. The chosen tier's model serves the completion
+`classifier_type: jev` 使用 TypeSafe System One Choice evaluation，在現有的 Auto Router 中選出某個 tier。LiteLLM 會將分類器輸入傳送到 `POST /v1/systemone` 作為 `state`，並附上一個 `questions.tier` 問題，其準則描述已設定的 tiers。所選 tier 的模型會提供 completion
 
-### Set the server key
+### 設定伺服器金鑰 {#set-the-server-key}
 
-Provision `TYPESAFE_API_KEY` in the proxy process through your deployment's secret manager. The dashboard does not need the provider key. Clients keep using a LiteLLM virtual key
+透過您的部署密鑰管理系統，在 proxy 程序中佈建 `TYPESAFE_API_KEY`。儀表板不需要提供者金鑰。用戶端會繼續使用 LiteLLM 虛擬金鑰
 
 ```bash
 export TYPESAFE_API_BASE="https://api.typesafe.ai"
 litellm --config config.yaml
 ```
 
-`TYPESAFE_API_BASE` is optional and defaults to `https://api.typesafe.ai`. Omitting `jev_classifier_config.api_key` and `api_base` uses these server settings. A missing TypeSafe key prevents JEV initialization. An explicit `api_base` requires an explicit `api_key`, so a configuration override cannot redirect the server's environment key to a different host. Team members using the management API cannot set either field
+`TYPESAFE_API_BASE` 為選用，預設為 `https://api.typesafe.ai`。若省略 `jev_classifier_config.api_key` 和 `api_base`，則會使用這些伺服器設定。缺少 TypeSafe 金鑰會阻止 JEV 初始化。明確的 `api_base` 需要明確的 `api_key`，因此設定覆寫不能將伺服器的環境金鑰重新導向到其他主機。使用管理 API 的團隊成員無法設定這兩個欄位
 
-### Create or edit in the dashboard
+### 在儀表板中建立或編輯 {#create-or-edit-in-the-dashboard}
 
-In **Models + Endpoints**, open **Auto Router** and add a router, or edit an existing router. Configure its tier models, then choose **JEV Classifier** under **Classification Method** in Detailed Configuration
+在 **Models + Endpoints** 中，開啟 **Auto Router** 並新增一個 router，或編輯既有 router。設定其 tier 模型，然後在 Detailed Configuration 的 **Classification Method** 下選擇 **JEV Classifier**
 
-Set **JEV Model** (`jev-latest` by default) and **JEV Timeout (ms)** (`3000` by default). Review the circuit breaker, classifier fallback, **Context Window Size**, **Context Character Budget**, and assistant-turn setting. Enterprise users can replace the built-in rubric with **JEV Instructions**, or restore the built-in instructions
+設定 **JEV Model**（預設為 `jev-latest`）與 **JEV Timeout (ms)**（預設為 `3000`）。檢視 circuit breaker、classifier fallback、**Context Window Size**、**Context Character Budget**，以及 assistant-turn 設定。企業版使用者可以用 **JEV Instructions** 取代內建 rubic，或還原內建指示
 
-JEV uses the same history defaults as the LLM classifier: up to three prior user turns within an 8,000-character prior-turn budget, with assistant turns excluded. This history is sent to the configured TypeSafe endpoint, which can differ from your completion provider. Set **Context Window Size** to `0` to omit history; the current ask and selected system text are still sent
+JEV 使用與 LLM classifier 相同的歷史預設值：在 8,000 字元的前次對話預算內，最多三個先前的使用者回合，不包含 assistant 回合。這段歷史會傳送到已設定的 TypeSafe endpoint，其可與您的 completion provider 不同。將 **Context Window Size** 設為 `0` 可省略歷史；目前的 ask 和所選系統文字仍會傳送
 
-When upgrading an existing JEV router to the [dashboard and context integration](https://github.com/BerriAI/litellm/pull/41886), omitting these settings enables those defaults. Set `classifier_context_window_size: 0` before upgrading if the router should continue sending no prior conversation
+將既有的 JEV router 升級到 [儀表板與上下文整合](https://github.com/BerriAI/litellm/pull/41886) 時，省略這些設定會啟用那些預設值。若 router 應繼續不傳送前一段對話，請在升級前設定 `classifier_context_window_size: 0`
 
-**Test Routing** classifies your input without creating a router or calling the selected completion model. It can make a paid JEV request, and semantic keyword matching can also make a paid embedding request. **Test Connection** checks the configured model dependencies and makes a separate JEV classification probe. Its JEV result reports an error when routing used a fallback, even if the selected completion model is reachable. These probes can incur provider charges
+**Test Routing** 會對您的輸入進行分類，而不建立 router 或呼叫所選 completion 模型。它可能會產生一次付費的 JEV 請求，而語意關鍵字比對也可能會產生一次付費的 embedding 請求。**Test Connection** 會檢查已設定的模型相依性，並進行單獨的 JEV 分類探測。若路由使用了備援，即使所選 completion 模型可連線，其 JEV 結果也會回報錯誤。這些探測可能會產生提供者費用
 
-Save the router and call its model name through the normal completion API. Reopen the edit form to change the classifier settings. To investigate a decision, inspect its cause and classifier metadata in the routing-decision card rather than assuming that a successful completion proves JEV answered
+儲存 router，並透過一般 completion API 呼叫其模型名稱。重新開啟編輯表單以變更分類器設定。若要調查某次決策，請在 routing-decision 卡片中檢視其原因與分類器中繼資料，而不是假設完成成功就代表 JEV 已回應
 
-### Configure in YAML
+### 在 YAML 中設定 {#configure-in-yaml}
 
-Add this router entry alongside the tier deployments in your `model_list`. The tier values and default model must name deployments already configured on the proxy
+將此 router 項目與 tier deployments 一同新增到您的 `model_list` 中。tier 值與預設模型必須命名為 proxy 上已設定的部署
 
 ```yaml title="config.yaml"
 - model_name: jev-router
@@ -137,15 +137,15 @@ Add this router entry alongside the tier deployments in your `model_list`. The t
       classifier_context_include_assistant_turns: false
 ```
 
-This example explicitly chooses `default_model` fallback. The shipped `classifier_fallback` default is `heuristic`. The prior-turn character budget does not bound the current ask or system text, so review classifier input separately from the completion model's context window
+此範例明確選擇 `default_model` 備援。隨附的 `classifier_fallback` 預設值是 `heuristic`。前次對話字元預算不會限制目前的 ask 或 system 文字，因此請將分類器輸入與 completion 模型的 context window 分開檢視
 
-Built-in JEV classification uses the same licensing policy as the built-in LLM classifier. Custom `instructions` and `tier_definitions` use the existing Enterprise custom-classifier capability. JEV also supports `enable_non_reasoning_tier`
+內建 JEV 分類使用與內建 LLM classifier 相同的授權政策。自訂 `instructions` 和 `tier_definitions` 使用既有的 Enterprise 自訂分類器能力。JEV 也支援 `enable_non_reasoning_tier`
 
-See the [JEV reference](/docs/proxy/auto_routing#jev-classifier) for defaults, context, recovery, authorization and accounting, the [measured comparison](/blog/jev-auto-router-benchmark) for quality and cost scope, and [TypeSafe pass-through](/docs/pass_through/typesafe) for calling System One directly
+請參閱 [JEV 參考](/docs/proxy/auto_routing#jev-classifier) 了解預設值、上下文、復原、授權與帳務，[量測比較](/blog/jev-auto-router-benchmark) 了解品質與成本範圍，以及 [TypeSafe pass-through](/docs/pass_through/typesafe) 以直接呼叫 System One
 
-## Model-management API
+## 模型管理 API {#model-management-api}
 
-For CI/CD or scripts, create the same deployment with `POST /model/new`. Enable `store_model_in_db` first; Auto Routers are model deployments, so there is no separate `/auto_router/new` endpoint. This example uses the [Anthropic Family preset](/docs/auto_router/recommended_configurations#anthropic-family); create the referenced model deployments first.
+適用於 CI/CD 或指令碼時，請使用 `POST /model/new` 建立相同的部署。請先啟用 `store_model_in_db`；Auto Routers 是模型部署，因此沒有單獨的 `/auto_router/new` 端點。此範例使用 [Anthropic Family 預設](/docs/auto_router/recommended_configurations#anthropic-family)；請先建立所引用的模型部署。
 
 ```bash
 curl -X POST "http://localhost:4000/model/new" \
@@ -171,17 +171,17 @@ curl -X POST "http://localhost:4000/model/new" \
   }'
 ```
 
-The response includes `model_id`. Use it with `PATCH /model/{model_id}/update` for partial changes, and call the router by its `model_name`. Validate a complexity configuration before saving with `POST /auto_router/validate_complexity_router_config`. See [Model Management](/docs/proxy/model_management) for deployment CRUD and [Configuration Reference](/docs/proxy/auto_routing) for the full router payload.
+回應包含 `model_id`。將其與 `PATCH /model/{model_id}/update` 搭配使用以進行部分變更，並透過其 `model_name` 呼叫路由器。使用 `POST /auto_router/validate_complexity_router_config` 儲存前驗證複雜度組態。請參閱 [模型管理](/docs/proxy/model_management) 以了解部署 CRUD，並參閱 [組態參考](/docs/proxy/auto_routing) 以查看完整的路由器負載。
 
-## lite autoroute
+## lite autoroute {#lite-autoroute}
 
-- Stands up a throwaway local proxy that forwards every request to your real proxy.
-- Routes Claude Code traffic through it for the session. Nothing bypasses the real proxy and its config is untouched.
-- Guide: [lite autoroute](/docs/learn/autorouter_cli).
+- 建立一個臨時的本機代理，將每個請求轉送到您的實際代理。
+- 在該工作階段中，透過它路由 Claude Code 流量。沒有任何流量會繞過實際代理，而且其組態不會受到影響。
+- 指南：[lite autoroute](/docs/learn/autorouter_cli)。
 
-## Claude Code and Claude Desktop
+## Claude Code 和 Claude Desktop {#claude-code-and-claude-desktop}
 
-- Claude Code populates its model picker from `/v1/models` and keeps only names containing `claude` or `anthropic`. Name the router accordingly, or set `ANTHROPIC_MODEL` directly.
-- On Claude for Teams or Enterprise, the exact router name must be on the organization allowlist. The check runs client-side, so a rejected router leaves nothing in gateway logs.
-- A router advertises no context window until you declare one in `model_info`, and Claude Code applies its own default regardless. Both sides: [context window](/docs/proxy/auto_routing#context-window).
-- Tutorial: [Auto Router with Claude Code and Claude Desktop](/docs/tutorials/claude_code_autorouter).
+- Claude Code 會從 `/v1/models` 填入其模型選擇器，並僅保留名稱包含 `claude` 或 `anthropic` 的項目。請相應地命名路由器，或直接設定 `ANTHROPIC_MODEL`。
+- 在 Claude for Teams 或 Enterprise 上，確切的路由器名稱必須位於組織允許清單中。此檢查在用戶端執行，因此遭拒的路由器不會在閘道記錄中留下任何內容。
+- 在您於 `model_info` 中宣告之前，路由器不會顯示任何 context window，而 Claude Code 會套用其自己的預設值，無論如何皆然。雙方皆可參閱：[context window](/docs/proxy/auto_routing#context-window)。
+- 教學：[使用 Claude Code 和 Claude Desktop 的 Auto Router](/docs/tutorials/claude_code_autorouter)。

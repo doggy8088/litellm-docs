@@ -1,37 +1,35 @@
 import Image from '@theme/IdealImage';
 
-# Athina
-
+# Athina {#athina}
 
 :::tip
 
-This is community maintained, Please make an issue if you run into a bug
+這是由社群維護的文件；如果您遇到錯誤，請建立 issue
 https://github.com/BerriAI/litellm
 
 :::
 
-
-[Athina](https://athina.ai/) is an evaluation framework and production monitoring platform for your LLM-powered app. Athina is designed to enhance the performance and reliability of AI applications through real-time monitoring, granular analytics, and plug-and-play evaluations.
+[Athina](https://athina.ai/) 是一個適用於您的 LLM 驅動應用程式的評估框架與正式環境監控平台。Athina 旨在透過即時監控、細緻分析，以及即插即用的評估，提升 AI 應用程式的效能與可靠性。
 
 <Image img={require('../../img/athina_dashboard.png')} />
 
-## Getting Started
+## 開始使用 {#getting-started}
 
-Use Athina to log requests across all LLM Providers (OpenAI, Azure, Anthropic, Cohere, Replicate, PaLM)
+使用 Athina 來記錄跨所有 LLM 提供者（OpenAI、Azure、Anthropic、Cohere、Replicate、PaLM）的請求
 
-liteLLM provides `callbacks`, making it easy for you to log data depending on the status of your responses.
+liteLLM 提供 `callbacks`，讓您能夠依據回應狀態輕鬆記錄資料。
 
-## Using Callbacks
+## 使用回呼 {#using-callbacks}
 
-First, sign up to get an API_KEY on the [Athina dashboard](https://app.athina.ai).
+首先，請在 [Athina 儀表板](https://app.athina.ai) 註冊以取得 API_KEY。
 
-Use just 1 line of code, to instantly log your responses **across all providers** with Athina:
+只需 1 行程式碼，即可使用 Athina 立即記錄您**跨所有提供者**的回應：
 
 ```python
 litellm.success_callback = ["athina"]
 ```
 
-### Complete code
+### 完整程式碼 {#complete-code}
 
 ```python
 from litellm import completion
@@ -50,8 +48,8 @@ response = completion(
 ) 
 ```
 
-## Additional information in metadata
-You can send some additional information to Athina by using the `metadata` field in completion. This can be useful for sending metadata about the request, such as the customer_id, prompt_slug, or any other information you want to track.
+## 中繼資料中的額外資訊 {#additional-information-in-metadata}
+您可以透過 completion 中的 `metadata` 欄位，傳送一些額外資訊給 Athina。這對於傳送請求的中繼資料很有用，例如 customer_id、prompt_slug，或任何您想追蹤的其他資訊。
 
 ```python
 #openai call with additional metadata
@@ -67,25 +65,25 @@ response = completion(
 )
 ```
 
-Following are the allowed fields in metadata, their types, and their descriptions:
+以下是 metadata 中允許的欄位、其型別與說明：
 
-* `environment: Optional[str]` - Environment your app is running in (ex: production, staging, etc). This is useful for segmenting inference calls by environment.
-* `prompt_slug: Optional[str]` - Identifier for the prompt used for inference. This is useful for segmenting inference calls by prompt.
-* `customer_id: Optional[str]` - This is your customer ID. This is useful for segmenting inference calls by customer.
-* `customer_user_id: Optional[str]` - This is the end user ID. This is useful for segmenting inference calls by the end user.
-* `session_id: Optional[str]` - is the session or conversation ID. This is used for grouping different inferences into a conversation or chain. [Read more].(https://docs.athina.ai/logging/grouping_inferences)
-* `external_reference_id: Optional[str]` - This is useful if you want to associate your own internal identifier with the inference logged to Athina.
-* `context: Optional[Union[dict, str]]` - This is the context used as information for the prompt. For RAG applications, this is the "retrieved" data. You may log context as a string or as an object (dictionary).
-* `expected_response: Optional[str]` - This is the reference response to compare against for evaluation purposes. This is useful for segmenting inference calls by expected response.
-* `user_query: Optional[str]` - This is the user's query. For conversational applications, this is the user's last message.
-* `tags: Optional[list]` - This is a list of tags. This is useful for segmenting inference calls by tags.
-* `user_feedback: Optional[str]` - The end user’s feedback.
-* `model_options: Optional[dict]` - This is a dictionary of model options. This is useful for getting insights into how model behavior affects your end users.
-* `custom_attributes: Optional[dict]` - This is a dictionary of custom attributes. This is useful for additional information about the inference.
+* `environment: Optional[str]` - 您的應用程式執行所在的環境（例如：production、staging 等）。這對於依環境區分推論請求很有用。
+* `prompt_slug: Optional[str]` - 用於推論的 prompt 識別碼。這對於依 prompt 區分推論請求很有用。
+* `customer_id: Optional[str]` - 這是您的 customer ID。這對於依客戶區分推論請求很有用。
+* `customer_user_id: Optional[str]` - 這是 end user ID。這對於依最終使用者區分推論請求很有用。
+* `session_id: Optional[str]` - 這是 session 或 conversation ID。這用於將不同的推論分組成一段對話或鏈。［閱讀更多］(https://docs.athina.ai/logging/grouping_inferences)
+* `external_reference_id: Optional[str]` - 如果您想將自己的內部識別碼與記錄到 Athina 的推論關聯起來，這會很有用。
+* `context: Optional[Union[dict, str]]` - 這是作為 prompt 資訊使用的 context。對於 RAG 應用程式，這是「檢索到的」資料。您可以將 context 記錄為字串或物件（dictionary）。
+* `expected_response: Optional[str]` - 這是供評估用途比較的參考回應。這對於依預期回應區分推論請求很有用。
+* `user_query: Optional[str]` - 這是使用者的查詢。對於對話式應用程式，這是使用者的最後一則訊息。
+* `tags: Optional[list]` - 這是一個標籤清單。這對於依標籤區分推論請求很有用。
+* `user_feedback: Optional[str]` - 最終使用者的回饋。
+* `model_options: Optional[dict]` - 這是一個 model 選項的 dictionary。這對於取得模型行為如何影響您的最終使用者的洞察很有用。
+* `custom_attributes: Optional[dict]` - 這是一個自訂屬性的 dictionary。這對於推論的額外資訊很有用。
 
-## Using a self hosted deployment of Athina
+## 使用自架部署的 Athina {#using-a-self-hosted-deployment-of-athina}
 
-If you are using a self hosted deployment of Athina, you will need to set the `ATHINA_BASE_URL` environment variable to point to your self hosted deployment.
+如果您使用的是自架部署的 Athina，您需要將 `ATHINA_BASE_URL` 環境變數設定為指向您的自架部署。
 
 ```python
 ...
@@ -93,10 +91,10 @@ os.environ["ATHINA_BASE_URL"]= "http://localhost:9000"
 ...
 ```
 
-## Support & Talk with Athina Team
+## 支援與 Athina 團隊交流 {#support--talk-with-athina-team}
 
-- [Schedule Demo 👋](https://cal.com/shiv-athina/30min)
-- [Website 💻](https://athina.ai/?utm_source=litellm&utm_medium=website)
-- [Docs 📖](https://docs.athina.ai/?utm_source=litellm&utm_medium=website)
-- [Demo Video 📺](https://www.loom.com/share/d9ef2c62e91b46769a39c42bb6669834?sid=711df413-0adb-4267-9708-5f29cef929e3)
-- Our emails ✉️ shiv@athina.ai, akshat@athina.ai, vivek@athina.ai
+- [預約示範 👋](https://cal.com/shiv-athina/30min)
+- [網站 💻](https://athina.ai/?utm_source=litellm&utm_medium=website)
+- [文件 📖](https://docs.athina.ai/?utm_source=litellm&utm_medium=website)
+- [示範影片 📺](https://www.loom.com/share/d9ef2c62e91b46769a39c42bb6669834?sid=711df413-0adb-4267-9708-5f29cef929e3)
+- 我們的電子郵件 ✉️ shiv@athina.ai, akshat@athina.ai, vivek@athina.ai

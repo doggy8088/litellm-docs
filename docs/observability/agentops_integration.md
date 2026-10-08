@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AgentOps
+# AgentOps {#agentops}
 
-Observability and DevTool platform for AI agents, at [agentops.ai](https://www.agentops.ai/).
+適用於 AI 代理程式的可觀測性與 DevTool 平台，請見 [agentops.ai](https://www.agentops.ai/)。
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們想了解如何讓回呼變得更好！與 LiteLLM 的 [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 見面，或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 :::
 
-## Pre-Requisites
+## 前置需求 {#pre-requisites}
 
 ```shell
 uv add litellm
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="python" label="SDK">
@@ -45,7 +45,7 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -58,20 +58,20 @@ litellm_settings:
   callbacks: ["agentops"]
 ```
 
-2. Set your credentials
+2. 設定您的認證資訊
 
 ```shell
 LITELLM_OTEL_V2=true
 AGENTOPS_API_KEY="your-api-key"
 ```
 
-3. Start LiteLLM Proxy
+3. 啟動 LiteLLM Proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-4. Test it!
+4. 測試它！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -91,36 +91,36 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## What AgentOps renders
+## AgentOps 會呈現什麼 {#what-agentops-renders}
 
-Open the AgentOps dashboard. AgentOps does not add a vendor mapper, so spans arrive in the canonical `gen_ai.*` schema; see [Span attributes](./opentelemetry_v2#span-attributes) for the full list of keys.
+開啟 AgentOps 儀表板。AgentOps 不會加入供應商對應器，因此 spans 會以標準的 `gen_ai.*` schema 抵達；請參閱 [Span attributes](./opentelemetry_v2#span-attributes) 以取得完整鍵值清單。
 
-The preset sets three resource-level labels on the traces: `service.name` from `AGENTOPS_SERVICE_NAME`, a fixed `telemetry.sdk.name` of `agentops`, and `deployment.environment` from `AGENTOPS_ENVIRONMENT` when you set it. AgentOps routes the trace by the project encoded in the auth token, so the project never appears as a resource attribute.
+此預設會在 traces 上設定三個資源層級標籤：來自 `AGENTOPS_SERVICE_NAME` 的 `service.name`、固定為 `agentops` 的 `telemetry.sdk.name`，以及當您設定時來自 `AGENTOPS_ENVIRONMENT` 的 `deployment.environment`。AgentOps 會依據認證 token 中編碼的專案來路由 trace，因此專案永遠不會以資源屬性的形式出現。
 
-![LiteLLM trace in AgentOps](/img/observability/otel_v2_agentops.png)
+![LiteLLM 在 AgentOps 中的 trace](/img/observability/otel_v2_agentops.png)
 
-## Configuration
+## 設定 {#configuration}
 
-| Variable | Required | Notes |
+| 變數 | 必要 | 備註 |
 |---|---|---|
-| `AGENTOPS_API_KEY` | Yes | Exchanged for a short-lived JWT |
-| `AGENTOPS_SERVICE_NAME` | No | Defaults to `agentops` |
-| `AGENTOPS_ENVIRONMENT` | No | No default; `deployment.environment` is only stamped when you set it |
+| `AGENTOPS_API_KEY` | 是 | 會交換成短效 JWT |
+| `AGENTOPS_SERVICE_NAME` | 否 | 預設為 `agentops` |
+| `AGENTOPS_ENVIRONMENT` | 否 | 無預設值；只有在您設定時才會標記 `deployment.environment` |
 
-Traces are sent to `https://otlp.agentops.ai/v1/traces`.
+traces 會傳送至 `https://otlp.agentops.ai/v1/traces`。
 
-## Good to know
+## 了解事項 {#good-to-know}
 
-AgentOps mints its auth token on the first span export rather than at startup, so the very first export can look briefly delayed. This happens once per process and is expected; the token is then cached for the process lifetime.
+AgentOps 會在第一次 span 匯出時才鑄造其認證 token，而不是在啟動時，因此第一次匯出看起來可能會短暫延遲。這種情況每個 process 只會發生一次，屬於預期行為；之後 token 會在該 process 的生命週期內被快取。
 
-Set `AGENTOPS_SERVICE_NAME` and `AGENTOPS_ENVIRONMENT` if you want to separate environments in the AgentOps UI.
+如果您想在 AgentOps UI 中區分不同環境，請設定 `AGENTOPS_SERVICE_NAME` 和 `AGENTOPS_ENVIRONMENT`。
 
-## Full OpenTelemetry reference
+## 完整 OpenTelemetry 參考 {#full-opentelemetry-reference}
 
-This page covers the AgentOps-specific setup. For span attributes, prompt and response capture, metrics, distributed tracing, and which routes are traced, see the [OpenTelemetry v2 guide](./opentelemetry_v2).
+此頁面涵蓋 AgentOps 專屬設定。關於 span 屬性、prompt 與回應擷取、指標、分散式 tracing，以及哪些路由會被追蹤，請參閱 [OpenTelemetry v2 指南](./opentelemetry_v2)。
 
-## Support & Talk to Founders
+## 支援與與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

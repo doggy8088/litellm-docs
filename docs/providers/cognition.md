@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cognition
+# Cognition {#cognition}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Cognition serves its SWE coding models over an OpenAI-compatible API |
-| Provider Route on LiteLLM | `cognition/` |
-| Link to Provider Doc | [Cognition Documentation](https://docs.devin.ai) |
-| Default Base URL | `https://api.cognition.ai/v1` |
-| Supported Operations | `/chat/completions`, `/messages` through LiteLLM's Anthropic Messages adapter |
+| 說明 | Cognition 透過與 OpenAI 相容的 API 提供其 SWE 程式碼模型 |
+| LiteLLM 上的提供者路由 | `cognition/` |
+| 提供者文件連結 | [Cognition 文件](https://docs.devin.ai) |
+| 預設 Base URL | `https://api.cognition.ai/v1` |
+| 支援的操作 | `/chat/completions`、透過 LiteLLM 的 Anthropic Messages adapter 的 `/messages` |
 
-Cognition is its own provider on LiteLLM rather than a generic OpenAI-compatible route, so its spend is priced from the Cognition cost map entries and reported under `cognition` instead of being pooled with OpenAI traffic
+Cognition 在 LiteLLM 上是獨立的提供者，而不是一般的 OpenAI 相容路由，因此其支出依據 Cognition cost map 項目計價，並回報在 `cognition`，而不是與 OpenAI 流量合併
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python showLineNumbers title="Environment Variables"
 import os
@@ -24,19 +24,19 @@ os.environ["COGNITION_API_KEY"] = "your-api-key"
 os.environ["COGNITION_API_BASE"] = "https://api.cognition.ai/v1"  # optional override
 ```
 
-## Models
+## 模型 {#models}
 
-| Model | Input / 1M tokens | Output / 1M tokens | Cache read / 1M tokens |
+| 模型 | 輸入 / 100 萬 tokens | 輸出 / 100 萬 tokens | 快取讀取 / 100 萬 tokens |
 |-------|-------------------|--------------------|------------------------|
 | `cognition/swe-1.7` | $0.50 | $2.50 | $0.20 |
 | `cognition/swe-1.7-lightning` | $2.50 | $12.50 | $1.00 |
 | `cognition/swe-1.6` | $0.50 | $2.50 | $0.20 |
 
-Pricing follows the [Cognition model list](https://docs.devin.ai/desktop/models). `swe-1.7` is the standard tier; `swe-1.7-lightning` is the Cerebras-served tier that answers at about 1000 tokens a second and costs 5x. If your contract prices differ, set `input_cost_per_token` / `output_cost_per_token` on the deployment and those override the cost map
+定價遵循 [Cognition 模型清單](https://docs.devin.ai/desktop/models)。`swe-1.7` 是標準層級；`swe-1.7-lightning` 是由 Cerebras 提供服務的層級，回應速度約為每秒 1000 個 tokens，成本為 5 倍。如果您的合約定價不同，請在部署上設定 `input_cost_per_token` / `output_cost_per_token`，它們會覆寫 cost map
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Chat Completions
+### 聊天完成 {#chat-completions}
 
 ```python showLineNumbers title="Cognition Chat Completion"
 import os
@@ -52,7 +52,7 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Cognition Streaming Chat Completion"
 import os
@@ -70,7 +70,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Tool Calling
+### 工具呼叫 {#tool-calling}
 
 ```python showLineNumbers title="Cognition Tool Calling"
 import os
@@ -103,9 +103,9 @@ response = completion(
 print(response.choices[0].message.tool_calls)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add Cognition to your LiteLLM Proxy configuration:
+將 Cognition 加入您的 LiteLLM Proxy 設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -118,7 +118,7 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 export COGNITION_API_KEY="your-api-key"
@@ -164,11 +164,11 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-You can also add Cognition from the Admin UI. Go to Models, then Add Model, pick Cognition as the provider, choose one of the `cognition/` models, and paste your key
+您也可以從 Admin UI 新增 Cognition。前往 Models，然後選擇 Add Model，將 Cognition 作為提供者，選擇其中一個 `cognition/` 模型，並貼上您的金鑰
 
-## Anthropic Messages Compatibility
+## Anthropic Messages 相容性 {#anthropic-messages-compatibility}
 
-LiteLLM translates Anthropic Messages-shaped requests into Cognition chat completions, both through the SDK facade and the proxy's `/v1/messages` endpoint:
+LiteLLM 會將 Anthropic Messages 形式的請求轉換為 Cognition chat completions，無論是透過 SDK facade 還是 proxy 的 `/v1/messages` endpoint 都一樣：
 
 ```bash showLineNumbers title="Anthropic Messages through LiteLLM Proxy"
 curl http://localhost:4000/v1/messages \
@@ -182,13 +182,13 @@ curl http://localhost:4000/v1/messages \
   }'
 ```
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-The `cognition/` models are registered in LiteLLM's model cost map, so per-request spend is computed automatically, returned in the `x-litellm-response-cost` response header, and recorded in spend logs under provider `cognition`. Discounts and reports configured for OpenAI do not apply to this traffic
+`cognition/` 模型已註冊在 LiteLLM 的 model cost map 中，因此每次請求的支出會自動計算、回傳於 `x-litellm-response-cost` 回應標頭中，並以提供者 `cognition` 記錄在支出日誌中。為 OpenAI 設定的折扣與報表不適用於此流量
 
-## Custom Endpoints
+## 自訂端點 {#custom-endpoints}
 
-Cognition provisions API endpoints per customer today, so most deployments should set `COGNITION_API_BASE` or pass `api_base` explicitly with the base URL from your Cognition onboarding. `https://api.cognition.ai/v1` is the conventional default used when neither is set. The `cognition/` route keeps the provider identity and pricing either way
+Cognition 目前會為每位客戶配置 API 端點，因此大多數部署應設定 `COGNITION_API_BASE`，或使用來自 Cognition onboarding 的 base URL 明確傳入 `api_base`。`https://api.cognition.ai/v1` 是在未設定前兩者時使用的慣用預設值。無論哪種方式，`cognition/` 路由都會保留提供者身分與定價
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:

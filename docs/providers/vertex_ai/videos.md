@@ -1,24 +1,24 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI Video Generation (Veo)
+# Vertex AI 影片生成（Veo） {#vertex-ai-video-generation-veo}
 
-LiteLLM supports Vertex AI's Veo video generation models using the unified OpenAI video API surface.
+LiteLLM 支援 Vertex AI 的 Veo 影片生成模型，使用統一的 OpenAI 影片 API 介面。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Google Cloud Vertex AI Veo video generation models |
-| Provider Route on LiteLLM | `vertex_ai/` |
-| Supported Models | `veo-2.0-generate-001`, `veo-3.0-generate-001`, `veo-3.0-fast-generate-001`, `veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview`, `veo-3.1-lite-generate-001` |
-| Cost Tracking | ✅ Duration-based pricing, with 720p and 1080p tiers where Google prices them (Veo 3.1 Lite) |
-| Logging Support | ✅ Full request/response logging |
-| Proxy Server Support | ✅ Full proxy integration with virtual keys |
-| Spend Management | ✅ Budget tracking and rate limiting |
-| Link to Provider Doc | [Vertex AI Veo Documentation ↗](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation) |
+| 說明 | Google Cloud Vertex AI Veo 影片生成模型 |
+| LiteLLM 上的提供者路由 | `vertex_ai/` |
+| 支援的模型 | `veo-2.0-generate-001`, `veo-3.0-generate-001`, `veo-3.0-fast-generate-001`, `veo-3.1-generate-preview`, `veo-3.1-fast-generate-preview`, `veo-3.1-lite-generate-001` |
+| 成本追蹤 | ✅ 依持續時間計價，並在 Google 定價的 720p 與 1080p 等級採用對應費率（Veo 3.1 Lite） |
+| 記錄支援 | ✅ 完整的請求／回應記錄 |
+| 代理伺服器支援 | ✅ 與虛擬金鑰完整整合 |
+| 支出管理 | ✅ 預算追蹤與速率限制 |
+| 提供者文件連結 | [Vertex AI Veo 文件 ↗](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/veo-video-generation) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### Required Environment Setup
+### 必要的環境設定 {#required-environment-setup}
 
 ```python
 import json
@@ -35,7 +35,7 @@ with open("/path/to/service_account.json", "r", encoding="utf-8") as f:
     os.environ["VERTEXAI_CREDENTIALS"] = f.read()
 ```
 
-### Basic Usage
+### 基本使用方式 {#basic-usage}
 
 ```python
 from litellm import video_generation, video_status, video_content
@@ -89,49 +89,49 @@ with open("generated_video.mp4", "wb") as f:
     f.write(video_bytes)
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Description | Max Duration | Status |
+| 模型名稱 | 說明 | 最長持續時間 | 狀態 |
 |------------|-------------|--------------|--------|
-| veo-2.0-generate-001 | Veo 2.0 video generation | 5 seconds | GA |
-| veo-3.0-generate-001 | Veo 3.0 high quality | 8 seconds | GA |
-| veo-3.0-fast-generate-001 | Veo 3.0 fast generation | 8 seconds | GA |
-| veo-3.1-generate-preview | Veo 3.1 high quality | 10 seconds | Preview |
-| veo-3.1-fast-generate-preview | Veo 3.1 fast | 10 seconds | Preview |
-| veo-3.1-lite-generate-001 | Veo 3.1 Lite, the lowest-cost tier, 720p or 1080p output | 8 seconds | Preview |
+| veo-2.0-generate-001 | Veo 2.0 影片生成 | 5 秒 | GA |
+| veo-3.0-generate-001 | Veo 3.0 高品質 | 8 秒 | GA |
+| veo-3.0-fast-generate-001 | Veo 3.0 快速生成 | 8 秒 | GA |
+| veo-3.1-generate-preview | Veo 3.1 高品質 | 10 秒 | Preview |
+| veo-3.1-fast-generate-preview | Veo 3.1 快速 | 10 秒 | Preview |
+| veo-3.1-lite-generate-001 | Veo 3.1 Lite，最低成本等級，720p 或 1080p 輸出 | 8 秒 | Preview |
 
-Veo 3.1 Lite is priced per second of output at $0.05 for 720p and $0.08 for 1080p, and Veo renders 720p unless a request asks for 1080p. See [Size to Resolution Mapping](#size-to-resolution-mapping) for how to request 1080p through the OpenAI `size` parameter.
+Veo 3.1 Lite 依輸出秒數計價，720p 每秒 $0.05、1080p 每秒 $0.08；除非請求指定 1080p，否則 Veo 會輸出 720p。請參閱 [Size to Resolution Mapping](#size-to-resolution-mapping)，了解如何透過 OpenAI `size` 參數請求 1080p。
 
-## Video Generation Parameters
+## 影片生成參數 {#video-generation-parameters}
 
-LiteLLM converts OpenAI-style parameters to Veo's API shape automatically:
+LiteLLM 會自動將 OpenAI 風格的參數轉換為 Veo 的 API 格式：
 
-| OpenAI Parameter | Vertex AI Parameter | Description | Example |
+| OpenAI 參數 | Vertex AI 參數 | 說明 | 範例 |
 |------------------|---------------------|-------------|---------|
-| `prompt` | `instances[].prompt` | Text description of the video | "A cat playing" |
-| `size` | `parameters.aspectRatio`, plus `parameters.resolution` on models with a 1080p price tier | Converted to `16:9` or `9:16`, and to `720p` or `1080p` where the model is priced per resolution | "1920x1080" → `16:9` and `1080p` |
-| `seconds` | `parameters.durationSeconds` | Clip length in seconds | "8" → `8` |
-| `input_reference` | `instances[].image` | Reference image for animation | `open("image.jpg", "rb")` |
-| Provider-specific params | `extra_body` | Forwarded to Vertex API | `{"negativePrompt": "blurry"}` |
+| `prompt` | `instances[].prompt` | 影片的文字描述 | "A cat playing" |
+| `size` | `parameters.aspectRatio`, plus `parameters.resolution` on models with a 1080p price tier | 轉換為 `16:9` 或 `9:16`，且在依解析度計價的模型上轉換為 `720p` 或 `1080p` | "1920x1080" → `16:9` and `1080p` |
+| `seconds` | `parameters.durationSeconds` | 秒數長度 | "8" → `8` |
+| `input_reference` | `instances[].image` | 用於動畫的參考圖片 | `open("image.jpg", "rb")` |
+| 提供者專屬參數 | `extra_body` | 轉送至 Vertex API | `{"negativePrompt": "blurry"}` |
 
-### Size to Aspect Ratio Mapping
+### 尺寸到長寬比對應 {#size-to-aspect-ratio-mapping}
 
 - `1280x720`, `1920x1080` → `16:9`
 - `720x1280`, `1080x1920` → `9:16`
-- Unknown sizes default to `16:9`
+- 未知尺寸預設為 `16:9`
 
-### Size to Resolution Mapping
+### 大小到解析度對應 {#size-to-resolution-mapping}
 
-Veo picks the output resolution from its own `resolution` parameter, not from the aspect ratio, so a `1920x1080` request that only sets `aspectRatio` still comes back as 720p. For models whose LiteLLM pricing carries a separate 1080p rate (today `veo-3.1-lite-generate-001`), LiteLLM also infers `resolution` from `size`:
+Veo 會從自己的 `resolution` 參數決定輸出解析度，而不是從長寬比決定，因此只設定 `1920x1080` 的 `aspectRatio` 請求，仍會以 720p 回傳。對於 LiteLLM 定價中包含獨立 1080p 費率的模型（目前 `veo-3.1-lite-generate-001`），LiteLLM 也會根據 `size` 推斷 `resolution`：
 
-| `size` | `aspectRatio` sent | `resolution` sent |
+| `size` | 傳送的 `aspectRatio` | 傳送的 `resolution` |
 |--------|--------------------|-------------------|
 | `1280x720` | `16:9` | `720p` |
 | `720x1280` | `9:16` | `720p` |
 | `1920x1080` | `16:9` | `1080p` |
 | `1080x1920` | `9:16` | `1080p` |
 
-Any other `size` value maps to an aspect ratio only and leaves the resolution to Veo's default. Models without a 1080p price tier (Veo 2.0, Veo 3.0, and the other Veo 3.1 variants) never get an inferred `resolution`, so their requests are unchanged. Passing `resolution` yourself, either as a top-level parameter or inside `extra_body`, always wins over the value inferred from `size`.
+任何其他 `size` 值都只會對應到長寬比，並讓解析度維持 Veo 的預設值。不含 1080p 費率的模型（Veo 2.0、Veo 3.0，以及其他 Veo 3.1 變體）永遠不會推斷出 `resolution`，因此其請求不會變更。若您自行傳入 `resolution`，不論是作為頂層參數或放在 `extra_body` 中，都會優先於從 `size` 推斷出的值。
 
 ```bash
 curl --location 'http://0.0.0.0:4000/v1/videos' \
@@ -145,15 +145,15 @@ curl --location 'http://0.0.0.0:4000/v1/videos' \
 }'
 ```
 
-The response `usage` reports the resolution that was requested, and the spend log prices the clip at that tier:
+回應 `usage` 會回報所請求的解析度，而支出記錄會以該等級為該剪輯定價：
 
 ```json
 {"duration_seconds": 8.0, "video_resolution": "1080p"}
 ```
 
-An 8 second Veo 3.1 Lite clip therefore costs $0.40 at `1280x720` and $0.64 at `1920x1080`.
+因此，一段 8 秒的 Veo 3.1 Lite 影片在 `1280x720` 下費用為 $0.40，在 `1920x1080` 下費用為 $0.64。
 
-## Async Usage
+## 非同步使用方式 {#async-usage}
 
 ```python
 from litellm import avideo_generation, avideo_status, avideo_content
@@ -202,9 +202,9 @@ async def workflow():
 asyncio.run(workflow())
 ```
 
-## LiteLLM Proxy Usage
+## LiteLLM 代理使用方式 {#litellm-proxy-usage}
 
-Add Veo models to your `config.yaml`:
+將 Veo 模型加入您的 `config.yaml`：
 
 ```yaml
 model_list:
@@ -216,7 +216,7 @@ model_list:
       vertex_credentials: os.environ/VERTEXAI_CREDENTIALS
 ```
 
-Start the proxy and make requests:
+啟動代理並發出請求：
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -269,9 +269,9 @@ if status.status == "completed":
 </TabItem>
 </Tabs>
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-LiteLLM records the duration returned by Veo so you can apply duration-based pricing.
+LiteLLM 會記錄 Veo 回傳的期間，讓您可以套用依期間計費。
 
 ```python
 with open("/path/to/service_account.json", "r", encoding="utf-8") as f:
@@ -289,18 +289,17 @@ response = video_generation(
 print(response.usage)  # {"duration_seconds": 5.0}
 ```
 
-For models priced per resolution, `usage` also carries `video_resolution` (`720p` or `1080p`) and the cost uses that tier's per-second rate, as shown in [Size to Resolution Mapping](#size-to-resolution-mapping).
+對於依解析度計價的模型，`usage` 也會帶有 `video_resolution`（`720p` 或 `1080p`），且成本會使用該等級的每秒費率，如 [Size to Resolution Mapping](#size-to-resolution-mapping) 所示。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-- **`vertex_project is required`**: set `VERTEXAI_PROJECT` env var or pass `vertex_project` in the request.
-- **`Permission denied`**: ensure the service account has the `Vertex AI User` role and the correct region enabled.
-- **Video stuck in `processing`**: Veo operations are long-running. Continue polling every 10–15 seconds up to ~10 minutes.
+- **`vertex_project is required`**：設定 `VERTEXAI_PROJECT` 環境變數，或在請求中傳入 `vertex_project`。
+- **`Permission denied`**：請確認服務帳戶具有 `Vertex AI User` 角色，且已啟用正確的區域。
+- **影片卡在 `processing`**：Veo 作業屬於長時間執行。請持續每 10–15 秒輪詢一次，最長約 10 分鐘。
 
-## See Also
+## 另請參見 {#see-also}
 
-- [OpenAI Video Generation](../openai/videos.md)
-- [Azure Video Generation](../azure/videos.md)
-- [Gemini Video Generation](../gemini/videos.md)
-- [Video Generation API Reference](/docs/videos)
-
+- [OpenAI 影片生成](../openai/videos.md)
+- [Azure 影片生成](../azure/videos.md)
+- [Gemini 影片生成](../gemini/videos.md)
+- [影片生成 API 參考](/docs/videos)

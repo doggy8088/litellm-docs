@@ -1,10 +1,10 @@
-# Callbacks
+# 回呼 {#callbacks}
 
-## Use Callbacks to send Output Data to Posthog, Sentry etc
+## 使用回呼將輸出資料傳送至 Posthog、Sentry 等 {#use-callbacks-to-send-output-data-to-posthog-sentry-etc}
 
-liteLLM provides `success_callbacks` and `failure_callbacks`, making it easy for you to send data to a particular provider depending on the status of your responses.
+liteLLM 提供 `success_callbacks` 和 `failure_callbacks`，讓您可以根據回應的狀態，輕鬆將資料傳送到特定的提供者。
 
-liteLLM supports:
+liteLLM 支援：
 
 - [Lunary](https://lunary.ai/docs)
 - [Helicone](https://docs.helicone.ai/introduction)
@@ -12,7 +12,7 @@ liteLLM supports:
 - [PostHog](https://posthog.com/docs/libraries/python)
 - [Slack](https://slack.dev/bolt-python/concepts)
 
-### Quick Start
+### 快速開始 {#quick-start}
 
 ```python
 from litellm import completion

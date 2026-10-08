@@ -1,9 +1,9 @@
 ---
 slug: gpt_5_4_mini_nano
-title: "Day 0 Support: GPT-5.4-mini and GPT-5.4-nano"
+title: "首日支援：GPT-5.4-mini 與 GPT-5.4-nano"
 date: 2026-03-17T10:00:00
 authors: [sameer, krrish, ishaan]
-description: "GPT-5.4-mini and GPT-5.4-nano model support in LiteLLM"
+description: "LiteLLM 中對 GPT-5.4-mini 與 GPT-5.4-nano 模型的支援"
 tags: [openai, gpt-5.4-mini, gpt-5.4-nano, completion]
 hide_table_of_contents: false
 ---
@@ -11,20 +11,20 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM now supports GPT-5.4-mini and GPT-5.4-nano, cost-effective models for simple completions and high-throughput workloads.
+LiteLLM 現已支援 GPT-5.4-mini 與 GPT-5.4-nano，這兩款模型適合簡單的 completions 與高吞吐量工作負載，且具成本效益。
 
 {/* truncate */}
 
 :::note
-If you're on **v1.82.3-stable** or above, you don't need any update to use these models.
+如果您使用的是 **v1.82.3-stable** 或以上版本，則不需要任何更新即可使用這些模型。
 :::
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -38,13 +38,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it**
+**3. 測試**
 
 ```bash
 # GPT-5.4-mini
@@ -90,7 +90,7 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Notes
+## 注意事項 {#notes}
 
-- Both models support function calling, vision, and tool-use; see the [OpenAI provider docs](../../docs/providers/openai) for advanced usage.
-- GPT-5.4-nano is the most cost-effective option for simple tasks; GPT-5.4-mini offers a balance of speed and capability.
+- 這兩款模型都支援 function calling、vision 與 tool-use；進階用法請參閱 [OpenAI 提供者文件](/docs/providers/openai)。
+- GPT-5.4-nano 是簡單任務最具成本效益的選項；GPT-5.4-mini 則在速度與能力之間取得平衡。

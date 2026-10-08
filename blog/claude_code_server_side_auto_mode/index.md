@@ -1,59 +1,59 @@
 ---
 slug: claude-code-server-side-auto-mode
-title: "Claude Code server-side auto mode through LiteLLM"
+title: "透過 LiteLLM 使用 Claude Code 伺服器端自動模式"
 date: 2026-09-21T12:00:00
 authors:
   - litellm
-description: "Anthropic is moving Claude Code auto mode's safety classifier server-side. LiteLLM's native /v1/messages route now forwards the safeguards contract to the Anthropic API, Bedrock InvokeModel, Bedrock Mantle and Vertex AI. Here is the contract, what changed, which releases carry it, and how to verify it."
+description: "Anthropic 正將 Claude Code 自動模式的安全分類器移至伺服器端。LiteLLM 的原生 /v1/messages 路由現在會將防護契約轉送至 Anthropic API、Bedrock InvokeModel、Bedrock Mantle 與 Vertex AI。以下說明該契約、變更內容、涵蓋哪些版本，以及如何驗證。"
 tags: [announcement, claude-code, anthropic, ai-gateway]
 hide_table_of_contents: true
 ---
 
-*Last Updated: October 6, 2026*
+*最後更新：2026 年 10 月 6 日*
 
-Anthropic is moving Claude Code auto mode's safety classifier from the client to the Claude API. Starting with Claude Code v2.1.278, released September 19, sessions on Enterprise plans and Claude API accounts ask the server to run those checks as part of their own model requests, and Anthropic does not charge for the checks when the server performs them. Anthropic told us the rollout started on September 18 and is gradual, beginning with the Claude Code CLI and VS Code extension and followed by the desktop app and Claude Code on the web over the following week, and that on September 25 auto mode becomes the default permission mode in Claude Code. Today the built-in default is auto on Pro, Max and Team plans and Manual on Enterprise plans and Claude API keys, the accounts that typically sit behind a gateway, per Anthropic's [permission modes reference](https://code.claude.com/docs/en/permission-modes).
+Anthropic 正將 Claude Code 自動模式的安全分類器從用戶端移至 Claude API。自 2026 年 9 月 19 日發布的 Claude Code v2.1.278 起，Enterprise 方案與 Claude API 帳戶中的工作階段會要求伺服器在各自的模型請求中執行這些檢查，而 Anthropic 不會對伺服器執行的檢查收費。Anthropic 告訴我們，這項推行自 9 月 18 日開始且採漸進式推出，先從 Claude Code CLI 與 VS Code 擴充功能開始，接著在隔週於桌面應用程式與網頁版 Claude Code 推出，並且在 9 月 25 日時，自動模式會成為 Claude Code 的預設權限模式。如今，內建預設值在 Pro、Max 與 Team 方案上為 auto，在 Enterprise 方案與 Claude API 金鑰上為 Manual；依 Anthropic 的 [權限模式參考](https://code.claude.com/docs/en/permission-modes)，這些帳戶通常位於閘道之後。
 
-Server-side auto mode depends on a contract between Claude Code and the API that some gateways did not preserve, LiteLLM included. The fix first shipped in the dev release cut on Tuesday, September 22, and is now in the v1.104.0 stable release and in patch releases of earlier lines. This post explains what Claude Code needs from an AI Gateway, what LiteLLM was doing wrong, what changed, which release carries it, and how to confirm your deployment is ready.
+伺服器端自動模式依賴 Claude Code 與 API 之間的一項契約，而有些閘道並未保留這項契約，LiteLLM 也包含在內。此修正最早於 9 月 22 日星期二的開發版釋出中推出，現在已包含在 v1.104.0 穩定版以及較早版本線的修補版中。這篇文章說明 Claude Code 對 AI 閘道的需求、LiteLLM 原本做錯了什麼、有哪些變更、哪些版本包含這項修正，以及如何確認您的部署已就緒。
 
 {/* truncate */}
 
-## What server-side auto mode needs from an AI Gateway
+## 伺服器端自動模式需要 AI 閘道提供什麼 {#what-server-side-auto-mode-needs-from-an-ai-gateway}
 
-Claude Code sends a `safeguards` field in the `/v1/messages` request body, an array with one `dangerous_tool_use` entry that carries the session's permission mode, and it sets `dangerous-tool-use-2026-09-03` in the `anthropic-beta` header. The API answers with a `safeguard_results` field: one `dangerous_tool_use` entry whose `status.type` is `available` and whose `status.tool_uses` is keyed by tool use ID, each marked `evaluated` with an outcome such as `not_flagged`. When the response is streamed, `safeguard_results` arrives inside the `delta` of the final `message_delta` event.
+Claude Code 會在 `/v1/messages` 請求本文中送出一個 `safeguards` 欄位，這是一個只包含一個 `dangerous_tool_use` 項目的陣列，承載該工作階段的權限模式，並在 `anthropic-beta` 標頭中設定 `dangerous-tool-use-2026-09-03`。API 會以一個 `safeguard_results` 欄位作回應：其中一個 `dangerous_tool_use` 項目，其 `status.type` 為 `available`，且其 `status.tool_uses` 以工具使用 ID 為鍵，每個都標記為 `evaluated`，並帶有例如 `not_flagged` 的結果。當回應以串流方式傳送時，`safeguard_results` 會出現在最後一個 `message_delta` 事件的 `delta` 中。
 
-For server-side auto mode to run, a gateway has to forward request headers and body fields as they are, including ones it does not recognize such as `safeguards`, and return responses and streaming events without dropping keys such as `safeguard_results` or rewriting tool use IDs. Anthropic's [gateway compatibility guide](https://code.claude.com/docs/en/llm-gateway-protocol#feature-pass-through) spells this out.
+要讓伺服器端自動模式運作，閘道必須按原樣轉送請求標頭與本文欄位，即使是它不認識的欄位，例如 `safeguards`，並且在回傳回應與串流事件時不得遺漏 `safeguard_results` 之類的鍵，或重寫工具使用 ID。Anthropic 的 [閘道相容性指南](https://code.claude.com/docs/en/llm-gateway-protocol#feature-pass-through) 已清楚說明這點。
 
-If any of that is dropped or rewritten, the server's checks never reach the session, and Claude Code keeps using its own classifier requests, billed as before. Before the first action it would check that way, Claude Code holds the action and shows this notice, naming the gateway:
+如果其中任何一項被遺漏或重寫，伺服器端的檢查就永遠不會送達該工作階段，而 Claude Code 會繼續使用自己的分類器請求，費用與以前相同。在第一次會採用那種方式執行動作之前，Claude Code 會暫停該動作並顯示以下通知，並標示出閘道名稱：
 
 ```text
 We're changing auto mode to no longer charge for classifier requests in Claude Code. However, this session isn't eligible because your requests go through <your gateway>, which isn't compatible with this update. Nothing breaks: auto mode keeps working, and its classifier requests are billed as before. To fix it and access the new version of auto mode, ask your gateway to implement: https://code.claude.com/docs/en/auto-mode-classifier-billing
 ```
 
-Nothing breaks when this happens. Users keep the auto mode they have today and keep paying for the classifier calls. Anthropic has told us that new Claude Code releases keep the client-side classifier until at least October 23, 2026, that releases after that date only support server-side auto mode, and that from then on auto mode is not available behind a gateway that does not support the server-side classifier, so gateways have a window to catch up. Anthropic's [notice reference](https://code.claude.com/docs/en/auto-mode-classifier-billing) covers who sees the notice and what it means.
+發生這種情況時不會有任何損壞。使用者仍會維持目前的自動模式，並持續為分類器呼叫付費。Anthropic 已告訴我們，新的 Claude Code 版本至少會保留用戶端分類器到 2026 年 10 月 23 日為止，該日期之後的版本只支援伺服器端自動模式，而且自那之後，若閘道不支援伺服器端分類器，自動模式將無法在該閘道後方使用，因此閘道有一段時間可以補上。Anthropic 的 [通知參考](https://code.claude.com/docs/en/auto-mode-classifier-billing) 說明了哪些人會看到這則通知，以及其意義。
 
-## What LiteLLM was doing wrong
+## LiteLLM 原本做錯了什麼 {#what-litellm-was-doing-wrong}
 
-LiteLLM's native `/v1/messages` endpoint builds the outbound request from an allowlist of known Anthropic Messages parameters so that the same endpoint can front Claude on Bedrock, Vertex AI, Azure AI and non-Anthropic models. `safeguards` was not on that list, so it was silently dropped before the request left the proxy.
+LiteLLM 的原生 `/v1/messages` 端點會從已知 Anthropic Messages 參數的允許清單建立外送請求，因此同一個端點可作為 Claude on Bedrock、Vertex AI、Azure AI 以及非 Anthropic 模型的前端。`safeguards` 不在該清單中，因此它在請求離開代理程式之前就被悄悄丟棄了。
 
-Anthropic therefore received a request with no `safeguards`, returned no evaluated `safeguard_results`, and Claude Code fell back to the paid client-side classifier. Running Claude Code v2.1.278 in auto mode against a LiteLLM release without the fix shows the notice above with your proxy's address in it, and `/status` reports the Auto mode server row as `Disabled`.
+因此 Anthropic 收到的請求沒有 `safeguards`，也就沒有回傳任何已評估的 `safeguard_results`，而 Claude Code 便退回到付費的用戶端分類器。以 auto 模式在未套用修正的 LiteLLM 版本上執行 Claude Code v2.1.278 時，會顯示上方那則通知，裡面會包含您的代理程式位址，而且 `/status` 會將 Auto mode server 列顯示為 `Disabled`。
 
-The raw pass-through route, `POST /anthropic/v1/messages`, was never affected. It forwards the body and headers verbatim, and it already carried `safeguards` and the full beta header before the fix. We confirmed this by running Anthropic's gateway check against a build from before the fix: the pass-through route passes and the native route fails.
+原始直通路由 `POST /anthropic/v1/messages` 從未受影響。它會逐字轉送本文與標頭，而在修正之前，它已經包含 `safeguards` 與完整的 beta 標頭。我們透過對修正前的建置執行 Anthropic 的閘道檢查來確認這點：直通路由通過，而原生路由失敗。
 
-## What changed
+## 有哪些變更 {#what-changed}
 
-[PR #42152](https://github.com/BerriAI/litellm/pull/42152), merged into `main` on September 21, 2026, makes the native `/v1/messages` route preserve the contract. `safeguards` is now a recognized request parameter and is forwarded as sent. When the resolved provider is first-party `anthropic`, the `anthropic-beta` header is forwarded unchanged instead of being filtered against the known-betas list; requests to Claude on Bedrock, Vertex AI and Azure AI keep the existing filtering because those providers still reject unknown flags. `safeguard_results` is declared on the response and streaming chunk types, and it is returned unchanged in both the JSON response and the final `message_delta` event when streaming. LiteLLM does not rewrite tool use IDs on this route, so `safeguard_results` entries still match the tool uses they refer to.
+[PR #42152](https://github.com/BerriAI/litellm/pull/42152) 於 2026 年 9 月 21 日合併到 `main`，使原生 `/v1/messages` 路由得以保留這項契約。`safeguards` 現在是可辨識的請求參數，並會照送出內容轉送。當解析出的提供者是第一方 `anthropic` 時，`anthropic-beta` 標頭會原樣轉送，而不是依 known-betas 清單進行篩選；對 Claude on Bedrock、Vertex AI 與 Azure AI 的請求仍會保留現有篩選，因為那些提供者仍會拒絕未知旗標。`safeguard_results` 已在回應與串流區塊型別中宣告，且在 JSON 回應與串流時的最後一個 `message_delta` 事件中都會原樣返回。LiteLLM 不會在這條路由上重寫工具使用 ID，因此 `safeguard_results` 項目仍會與它們所對應的工具使用相符。
 
-When `/v1/messages` is used to reach a non-Anthropic model through the adapter path, `safeguards` is stripped before the request is translated so those backends do not return a 400.
+當使用 `/v1/messages` 透過轉接器路徑連到非 Anthropic 模型時，`safeguards` 會在請求被轉換前移除，因此那些後端不會回傳 400。
 
-This fix covers LiteLLM's route to the Anthropic API. Claude Code also asks for server-side checks on Amazon Bedrock and Google Cloud's Vertex AI, and [PR #42288](https://github.com/BerriAI/litellm/pull/42288), merged on September 21, 2026, covers those too. On `/v1/messages`, Claude on Bedrock InvokeModel (for example `bedrock/us.anthropic.claude-sonnet-5`) and Claude on Vertex AI now get `safeguards` and the `dangerous-tool-use-2026-09-03` beta forwarded, and `safeguard_results` comes back unchanged. That change is in v1.99.3, v1.100.2, v1.101.1, v1.102.1, v1.103.2 and v1.104.0; v1.101.0 and v1.103.0 do not have it. Claude on Bedrock Mantle (`bedrock_mantle/anthropic.claude-sonnet-5`) is served through Mantle's native Anthropic Messages API from v1.104.0 and preserves the contract there too.
+這項修正涵蓋 LiteLLM 通往 Anthropic API 的路由。Claude Code 也會在 Amazon Bedrock 與 Google Cloud 的 Vertex AI 上要求伺服器端檢查，而 [PR #42288](https://github.com/BerriAI/litellm/pull/42288) 於 2026 年 9 月 21 日合併，也涵蓋了這些情況。在 `/v1/messages` 上，Claude on Bedrock InvokeModel（例如 `bedrock/us.anthropic.claude-sonnet-5`）與 Claude on Vertex AI 現在都會轉送 `safeguards` 與 `dangerous-tool-use-2026-09-03` beta，而 `safeguard_results` 會原樣傳回。這項變更包含於 v1.99.3、v1.100.2、v1.101.1、v1.102.1、v1.103.2 與 v1.104.0；v1.101.0 與 v1.103.0 不包含它。Claude on Bedrock Mantle（`bedrock_mantle/anthropic.claude-sonnet-5`）自 v1.104.0 起透過 Mantle 原生的 Anthropic Messages API 提供服務，且同樣會保留該契約。
 
-The Bedrock Converse route, `bedrock/converse/<model>`, is not covered on any release. LiteLLM translates it through the chat completions adapter, which drops `safeguards`, and Bedrock's ConverseStream API does not return `safeguard_results` even when they are sent, so Claude Code keeps its paid classifier there. On releases without the fix the verification request below fails on this route with a 400, `safeguards: Extra inputs are not permitted`. Point Claude Code at a `bedrock/<inference profile>` deployment, or a `bedrock_mantle/` deployment on v1.104.0 or later, instead. Microsoft Foundry is tracked separately and not covered by this post.
+Bedrock Converse 路由 `bedrock/converse/<model>` 在任何版本中都未涵蓋。LiteLLM 會透過 chat completions 轉接器翻譯它，而該轉接器會捨棄 `safeguards`，且 Bedrock 的 ConverseStream API 即使收到也不會回傳 `safeguard_results`，因此 Claude Code 在那裡仍會使用其付費分類器。在未套用修正的版本上，下面的驗證請求會在此路由上以 400 失敗，`safeguards: Extra inputs are not permitted`。請改將 Claude Code 指向 `bedrock/<inference profile>` 部署，或 v1.104.0 以上的 `bedrock_mantle/` 部署。Microsoft Foundry 另行追蹤，且不在本文涵蓋範圍內。
 
-It first shipped in the dev release cut from `main` on Tuesday, September 22, ahead of Anthropic's September 25 default change. Dev releases are pre-release builds published to PyPI, Docker Hub and GitHub releases as `-dev.N` tags, so this one is `v1.104.0-dev.1` by the current numbering (`litellm==1.104.0.dev1` on PyPI). The fix for the Anthropic API route is now in the v1.104.0 stable release and was backported to v1.99.3, v1.100.2, v1.101.1, v1.102.1 and v1.103.2. Claude Code sessions routed through the native `/v1/messages` endpoint on any earlier LiteLLM release see the notice and keep using the client-side classifier until you upgrade. If you would rather your users not see the notice in the meantime, Anthropic documents setting `CLAUDE_CODE_AUTO_MODE_SERVER=0` in the environment Claude Code starts from, which tells it not to ask the gateway for server-side checks. That only hides the notice: Claude Code keeps making the same paid classifier requests until you upgrade.
+它最初是在 9 月 22 日星期二從 `main` 切出的 dev release 中發布，早於 Anthropic 9 月 25 日的預設變更。Dev release 是預先發布版本，會以 `-dev.N` 標籤發布到 PyPI、Docker Hub 和 GitHub releases，因此依照目前的編號，這個版本是 `v1.104.0-dev.1`（在 PyPI 上為 `litellm==1.104.0.dev1`）。Anthropic API 路由的修正現在已在 v1.104.0 穩定版中，並已回補到 v1.99.3、v1.100.2、v1.101.1、v1.102.1 和 v1.103.2。任何較早的 LiteLLM 版本上，經由原生 `/v1/messages` 端點路由的 Claude Code 會看到通知，並繼續使用用戶端分類器，直到您升級為止。若您希望在此期間使用者不要看到通知，Anthropic 說明可在 Claude Code 啟動所用的環境中設定 `CLAUDE_CODE_AUTO_MODE_SERVER=0`，這會告訴它不要向閘道要求伺服器端檢查。這只會隱藏通知：在您升級之前，Claude Code 仍會持續送出相同的付費分類器請求。
 
-## How to verify your deployment
+## 如何驗證您的部署 {#how-to-verify-your-deployment}
 
-Send a request that mirrors what Claude Code sends, with a forced tool call so the server has something to evaluate, and check the response for `safeguard_results`. The model has to be a deployment that LiteLLM routes to the Anthropic API, Bedrock InvokeModel, Bedrock Mantle or Vertex AI; replace `claude-sonnet-5` with that deployment's model name on your proxy.
+送出一個模擬 Claude Code 所送出的請求，並強制呼叫工具，讓伺服器有可供評估的內容，然後檢查回應中是否有 `safeguard_results`。模型必須是 LiteLLM 會路由到 Anthropic API、Bedrock InvokeModel、Bedrock Mantle 或 Vertex AI 的部署；請以您 proxy 上該部署的模型名稱取代 `claude-sonnet-5`。
 
 ```bash
 curl -s "$LITELLM_PROXY_URL/v1/messages" \
@@ -71,7 +71,7 @@ curl -s "$LITELLM_PROXY_URL/v1/messages" \
   }' | jq '{safeguard_results, tool_use_ids: [.content[] | select(.type == "tool_use") | .id]}'
 ```
 
-On a release with the fix, the tool use ID in `safeguard_results` matches the one in the response content:
+在已修正的版本上，`safeguard_results` 中的工具使用 ID 會與回應內容中的 ID 相符：
 
 ```json
 {
@@ -95,38 +95,38 @@ On a release with the fix, the tool use ID in `safeguard_results` matches the on
 }
 ```
 
-On a proxy without the fix, `safeguard_results` comes back empty (`[]`) or missing, because `safeguards` never reached the provider.
+在未修正的 proxy 上，`safeguard_results` 會回傳空白（`[]`）或缺失，因為 `safeguards` 從未送達提供者。
 
-Anthropic shared a gateway check script with us that sends the same request non-streaming and streaming and checks that every tool use ID comes back evaluated. Both legs pass against a release with the fix. You can also check from Claude Code itself: start a session through your proxy in auto mode, send a prompt and wait for the reply, then run `/status` and look for the Auto mode server row reading `Enabled`. Before the first model response the row reads `Enabled` on any proxy, so check it after a reply. In non-interactive mode with `-p --output-format stream-json`, the notice above arrives as a `system` message at `warning` level, so a scripted check can grep for it.
+Anthropic 與我們分享了一個閘道檢查腳本，會以非串流與串流方式送出相同請求，並檢查每個工具使用 ID 是否都已完成評估。兩種情況在已修正的版本上都會通過。您也可以直接從 Claude Code 本身進行檢查：透過您的 proxy 以 auto mode 啟動工作階段，送出提示並等待回覆，接著執行 `/status`，並查看 Auto mode server 那一列是否顯示 `Enabled`。在第一個模型回應之前，任何 proxy 上該列都會顯示 `Enabled`，因此請在收到回覆後再檢查。若在非互動模式下搭配 `-p --output-format stream-json`，上方通知會以 `system` 訊息的形式出現在 `warning` 層級，因此可用腳本化檢查去搜尋它。
 
-If you use the `/anthropic/v1/messages` pass-through route today, no action is needed.
-
----
-
-### Frequently Asked Questions
-
-### Does this change how LiteLLM handles beta headers for Bedrock, Vertex AI or Azure AI?
-
-Beta header filtering still applies when the resolved provider is anything other than first-party `anthropic`, because those providers reject unknown beta flags, so the allowlist in `anthropic_beta_headers_config.json` remains the source of truth for them. `dangerous-tool-use-2026-09-03` is on that allowlist for Bedrock InvokeModel and Vertex AI in the releases listed above, and for Bedrock Mantle from v1.104.0, which is how server-side auto mode runs on those routes. Bedrock Converse maps it to nothing, so it is not forwarded there. Only requests bound for the Anthropic API forward the whole header unchanged.
-
-### Will my Claude Code users be broken before I upgrade?
-
-No. Claude Code detects that the server's checks are not reaching the session and keeps using its own classifier. Users see the notice, keep the current experience, and keep being billed for classifier calls until you upgrade. Anthropic has told us new Claude Code releases keep the client-side classifier until at least October 23, 2026, and that releases after that date need the server-side classifier for auto mode, so upgrade before then.
-
-### Is this available in LiteLLM OSS?
-
-Yes. The fix is in LiteLLM OSS (Apache 2.0) and requires no configuration. [LiteLLM Enterprise](https://litellm.ai/enterprise) adds SSO/SCIM, air-gapped deployment, 24/7 SLA support and advanced guardrails on top.
+如果您目前使用 `/anthropic/v1/messages` pass-through 路由，則無需採取任何動作。
 
 ---
 
-## Conclusion
+### 常見問題 {#frequently-asked-questions}
 
-An AI Gateway in front of Claude Code has to forward provider contracts it did not exist for when they were designed. The `safeguards` field is one of those, and LiteLLM's native `/v1/messages` route now passes it through unchanged on the way to the Anthropic API, Bedrock InvokeModel, Bedrock Mantle and Vertex AI. Upgrade to a release with the fix, keep Claude Code off `bedrock/converse/` deployments, run the check above, and your users get server-side auto mode at no cost.
+### 這會改變 LiteLLM 處理 Bedrock、Vertex AI 或 Azure AI 的 beta headers 方式嗎？ {#does-this-change-how-litellm-handles-beta-headers-for-bedrock-vertex-ai-or-azure-ai}
 
-## Recommended Reading
+當解析後的提供者不是第一方 `anthropic` 時，beta header 的過濾仍會套用，因為這些提供者會拒絕未知的 beta 標記，所以 `anthropic_beta_headers_config.json` 中的 allowlist 仍是它們的事實來源。`dangerous-tool-use-2026-09-03` 已列入上述版本中 Bedrock InvokeModel 與 Vertex AI 的 allowlist，且自 v1.104.0 起也適用於 Bedrock Mantle，這就是這些路由上伺服器端 auto mode 的運作方式。Bedrock Converse 會將其對應為無，因此不會轉送到那裡。只有發往 Anthropic API 的請求才會原封不動轉送整個 header。
 
-- [Claude Code with LiteLLM AI Gateway](https://docs.litellm.ai/docs/tutorials/claude_code_gateway)
-- [Claude Code: managing Anthropic beta headers](https://docs.litellm.ai/docs/tutorials/claude_code_beta_headers)
-- [Anthropic pass-through endpoints](https://docs.litellm.ai/docs/pass_through/anthropic_completion)
-- [Anthropic: auto mode classifier request charges](https://code.claude.com/docs/en/auto-mode-classifier-billing)
-- [Anthropic: LLM gateway compatibility guide](https://code.claude.com/docs/en/llm-gateway-protocol#feature-pass-through)
+### 在我升級之前，我的 Claude Code 使用者會壞掉嗎？ {#will-my-claude-code-users-be-broken-before-i-upgrade}
+
+不會。Claude Code 會偵測伺服器的檢查未到達該工作階段，並繼續使用自己的分類器。使用者會看到通知，維持目前的體驗，並且在您升級之前，classifier 呼叫仍會持續計費。Anthropic 已告知我們，新的 Claude Code 版本會持續使用用戶端分類器直到至少 2026 年 10 月 23 日，而該日期之後的版本在 auto mode 中需要伺服器端分類器，因此請在那之前升級。
+
+### 這在 LiteLLM OSS 中可用嗎？ {#is-this-available-in-litellm-oss}
+
+可以。修正已包含在 LiteLLM OSS（Apache 2.0）中，且不需要任何設定。[LiteLLM Enterprise](https://litellm.ai/enterprise) 則在此基礎上增加 SSO/SCIM、air-gapped 部署、24/7 SLA 支援與進階 guardrails。
+
+---
+
+## 結論 {#conclusion}
+
+置於 Claude Code 前方的 AI Gateway 必須轉送那些在設計時尚未存在的提供者合約。`safeguards` 欄位就是其中之一，而 LiteLLM 的原生 `/v1/messages` 路由現在會在送往 Anthropic API、Bedrock InvokeModel、Bedrock Mantle 和 Vertex AI 的途中原封不動地傳遞它。請升級到含有修正的版本、讓 Claude Code 不要使用 `bedrock/converse/` 部署、執行上方檢查，您的使用者就能以零成本取得伺服器端 auto mode。
+
+## 推薦閱讀 {#recommended-reading}
+
+- [Claude Code 與 LiteLLM AI Gateway](https://docs.litellm.ai/docs/tutorials/claude_code_gateway)
+- [Claude Code：管理 Anthropic beta headers](https://docs.litellm.ai/docs/tutorials/claude_code_beta_headers)
+- [Anthropic pass-through 端點](https://docs.litellm.ai/docs/pass_through/anthropic_completion)
+- [Anthropic：auto mode classifier 請求費用](https://code.claude.com/docs/en/auto-mode-classifier-billing)
+- [Anthropic：LLM gateway 相容性指南](https://code.claude.com/docs/en/llm-gateway-protocol#feature-pass-through)

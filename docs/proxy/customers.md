@@ -2,34 +2,34 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Customers / End-Users
+# 客戶／終端使用者 {#customers--end-users}
 
-Track spend, set budgets and permissions for your customers.
+追蹤花費、為您的客戶設定預算與權限。
 
-## Tracking Customer Spend + Permissions
+## 追蹤客戶花費 + 權限 {#tracking-customer-spend--permissions}
 
-### 1. Make LLM API call w/ Customer ID
+### 1. 使用客戶 ID 發出 LLM API 請求 {#1-make-llm-api-call-w-customer-id}
 
-LiteLLM checks for a customer/end-user ID in the following order (first match wins):
+LiteLLM 依照以下順序檢查客戶／終端使用者 ID（以第一個符合者為準）：
 
-| Priority | Method | Where | Notes |
+| 優先順序 | 方法 | 位置 | 備註 |
 |----------|--------|-------|-------|
-| 1 | `x-litellm-customer-id` header | Request headers | Standard header, always checked |
-| 2 | `x-litellm-end-user-id` header | Request headers | Standard header, always checked |
-| 3 | Custom header via `user_header_mappings` | Request headers | Configured in `general_settings` |
-| 4 | Custom header via `user_header_name` | Request headers | Deprecated — use `user_header_mappings` |
-| 5 | `user` field | Request body | Standard OpenAI field |
-| 6 | `litellm_metadata.user` field | Request body | Anthropic-style metadata |
-| 7 | `metadata.user_id` field | Request body | Generic metadata pattern |
-| 8 | `safety_identifier` field | Request body | Responses API |
+| 1 | `x-litellm-customer-id` 標頭 | 請求標頭 | 標準標頭，一律檢查 |
+| 2 | `x-litellm-end-user-id` 標頭 | 請求標頭 | 標準標頭，一律檢查 |
+| 3 | 透過 `user_header_mappings` 的自訂標頭 | 請求標頭 | 在 `general_settings` 中設定 |
+| 4 | 透過 `user_header_name` 的自訂標頭 | 請求標頭 | 已棄用 — 請改用 `user_header_mappings` |
+| 5 | `user` 欄位 | 請求主體 | 標準 OpenAI 欄位 |
+| 6 | `litellm_metadata.user` 欄位 | 請求主體 | Anthropic 風格的中繼資料 |
+| 7 | `metadata.user_id` 欄位 | 請求主體 | 通用中繼資料模式 |
+| 8 | `safety_identifier` 欄位 | 請求主體 | Responses API |
 
-:::info[JWT auth takes precedence]
+:::info[JWT 驗證優先]
 
-If [JWT auth](token_auth) is enabled with `end_user_id_jwt_field`, the customer ID from the verified JWT claim takes precedence over all headers and body fields listed above. The request-supplied fields are only used when the JWT does not yield an end-user ID. Since the claim comes from a token LiteLLM has already validated, callers cannot override it with `x-litellm-end-user-id`, `metadata.user_id`, etc.
+如果在 `end_user_id_jwt_field` 啟用 [JWT auth](token_auth)，則已驗證 JWT 聲明中的 customer ID 會優先於上方列出的所有標頭與主體欄位。只有在 JWT 無法產生 end-user ID 時，才會使用請求提供的欄位。由於該聲明來自 LiteLLM 已經驗證過的 token，呼叫端無法使用 `x-litellm-end-user-id`、`metadata.user_id` 等覆寫它。
 
 :::
 
-**Option 1: Standard headers** (recommended, no request body modification needed)
+**選項 1：標準標頭**（建議，無需修改 request body）
 
 ```bash showLineNumbers title="Make request with customer ID in header"
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -42,9 +42,9 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-Both `x-litellm-customer-id` and `x-litellm-end-user-id` are supported and always checked without any configuration.
+`x-litellm-customer-id` 和 `x-litellm-end-user-id` 都受支援，且一律會在不需任何設定的情況下檢查。
 
-**Option 2: `user` field in request body** (OpenAI-compatible)
+**選項 2：請求主體中的 `user` 欄位**（相容 OpenAI）
 
 ```bash showLineNumbers title="Make request with customer ID in body"
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -57,7 +57,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-**Option 3: Custom header via `user_header_mappings`** (configurable)
+**選項 3：透過 `user_header_mappings` 的自訂標頭**（可設定）
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
@@ -77,7 +77,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-**Option 4: `litellm_metadata.user`** (Anthropic-style)
+**選項 4：`litellm_metadata.user`**（Anthropic 風格）
 
 ```bash showLineNumbers title="Make request with litellm_metadata.user"
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -90,7 +90,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-**Option 5: `metadata.user_id`**
+**選項 5：`metadata.user_id`**
 
 ```bash showLineNumbers title="Make request with metadata.user_id"
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -103,16 +103,16 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
         }'
 ```
 
-The customer_id will be upserted into the DB with the new spend.
+customer_id 會隨著新的花費 upsert 到資料庫中。
 
-If the customer_id already exists, spend will be incremented.
+如果 customer_id 已存在，花費將會累加。
 
-### 2. Get Customer Spend 
+### 2. 取得客戶花費  {#2-get-customer-spend}
 
 <Tabs>
-<TabItem value="all-up" label="All-up spend">
+<TabItem value="all-up" label="總花費">
 
-Call `/customer/info` to get a customer's all up spend
+呼叫 `/customer/info` 以取得客戶的總花費
 
 ```bash showLineNumbers title="Get customer spend"
 # end_user_id: 👈 CUSTOMER ID
@@ -121,7 +121,7 @@ curl -X GET 'http://0.0.0.0:4000/customer/info?end_user_id=ishaan3' \
         -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-Expected Response:
+預期回應：
 
 ```json showLineNumbers title="Response"
 {
@@ -136,26 +136,26 @@ Expected Response:
 ```
 
 </TabItem>
-<TabItem value="event-webhook" label="Event Webhook">
+<TabItem value="event-webhook" label="事件 Webhook">
 
-To update spend in your client-side DB, point the proxy to your webhook. 
+若要在用戶端資料庫中更新花費，請將 proxy 指向您的 webhook。 
 
-E.g. if your server is `https://webhook.site` and your listening on `6ab090e8-c55f-4a23-b075-3209f5c57906`
+例如，如果您的伺服器是 `https://webhook.site`，且您正在 `6ab090e8-c55f-4a23-b075-3209f5c57906` 監聽
 
-1. Add webhook url to your proxy environment: 
+1. 將 webhook URL 新增至您的 proxy 環境： 
 
 ```bash showLineNumbers title="Set webhook URL"
 export WEBHOOK_URL="https://webhook.site/6ab090e8-c55f-4a23-b075-3209f5c57906"
 ```
 
-2. Add 'webhook' to config.yaml
+2. 在 config.yaml 中加入 'webhook'
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings: 
   alerting: ["webhook"] # 👈 KEY CHANGE
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash showLineNumbers title="Test webhook"
 curl -X POST 'http://localhost:4000/chat/completions' \
@@ -174,7 +174,7 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 '
 ```
 
-Expected Response 
+預期回應 
 
 ```json showLineNumbers title="Webhook event payload"
 {
@@ -194,34 +194,33 @@ Expected Response
 }
 ```
 
-[See Webhook Spec](./alerting.md#api-spec-for-webhook-event)
+[查看 Webhook 規格](./alerting.md#api-spec-for-webhook-event)
 
 </TabItem>
 </Tabs>
 
+## 限制哪些 ID 會成為客戶 {#restricting-which-ids-become-customers}
 
-## Restricting Which IDs Become Customers
-
-Every distinct customer ID LiteLLM sees is upserted into the customer table, which becomes a problem when a client sends a per-session identifier. Claude Code, for example, puts a JSON blob in `metadata.user_id`:
+LiteLLM 看到的每個不同 customer ID 都會 upsert 到 customer table；當 client 傳送每次 session 一個識別碼時，這會成為問題。例如，Claude Code 會在 `metadata.user_id` 放入一個 JSON blob：
 
 ```json title="What Claude Code sends"
 {"device_id": "4ec41ed1...", "account_uuid": "...", "session_id": "..."}
 ```
 
-Each session then lands in Usage -> Customer Usage as its own customer, and if you have a [default customer budget](#default-budget-for-all-customers) configured, each session gets its own copy of that budget, so a monthly cap meant for real customers turns into a per-session cap on that traffic.
+接著每個 session 都會在 Usage -> Customer Usage 中以自己的 customer 顯示；如果您已設定 [default customer budget](#default-budget-for-all-customers)，每個 session 都會擁有該 budget 的自己的副本，因此原本要給真實客戶的每月上限，會變成該流量的每 session 上限。
 
-Set `validate_end_user_id_in_db` to keep those IDs out. Available in v1.87.0 and above.
+設定 `validate_end_user_id_in_db` 即可將這些 ID 排除在外。適用於 v1.87.0 及以上版本。
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
   validate_end_user_id_in_db: true
 ```
 
-An ID is then accepted only when it matches an existing customer's `user_id`, an internal user's `user_id`, or an internal user's email. IDs shaped like a JSON object or array are dropped before any database lookup, since those are never real customer identifiers. Dropping is not an error: the request still succeeds, it just carries no customer, and its spend is attributed to the virtual key, team and internal user as usual. Lookups are cached for 5 minutes when the ID resolved and 1 minute when it did not, so a newly created customer can take up to a minute to be recognized.
+之後只有在 ID 符合現有 customer 的 `user_id`、internal user 的 `user_id`，或 internal user 的 email 時才會被接受。外型像 JSON object 或 array 的 ID 會在任何資料庫查詢前被捨棄，因為那些從來都不是真正的 customer 識別碼。捨棄不是錯誤：請求仍會成功，只是不會帶有 customer，而其花費會照常歸屬到 virtual key、team 和 internal user。查詢結果會快取 5 分鐘（ID 有對應時）以及 1 分鐘（ID 無對應時），因此新建立的 customer 最多可能需要一分鐘才會被辨識。
 
-### Keeping a default budget for unregistered customers
+### 保留未註冊客戶的預設 budget {#keeping-a-default-budget-for-unregistered-customers}
 
-On its own, `validate_end_user_id_in_db` drops every ID with no matching row, which works against `max_end_user_budget_id` if you rely on that to cap customers you never explicitly created. Set both and the two cooperate: JSON-shaped IDs are still dropped, while a plain-string ID with no row is preserved so the default budget still applies to it.
+單獨使用時，`validate_end_user_id_in_db` 會捨棄所有沒有對應資料列的 ID；如果您依賴這點來限制從未明確建立過的客戶，這會與 `max_end_user_budget_id` 相衝突。兩者同時設定時會互相配合：JSON 形狀的 ID 仍會被捨棄，而沒有資料列的純字串 ID 會被保留，因此 default budget 仍會套用到它。
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
@@ -229,19 +228,19 @@ litellm_settings:
   max_end_user_budget_id: "your_default_budget_id"
 ```
 
-### Bucketing internal traffic under one customer
+### 將內部流量分桶到單一客戶 {#bucketing-internal-traffic-under-one-customer}
 
-If you would rather label that traffic than drop it, have the client send `x-litellm-customer-id`. Headers are checked before any request body field, so the header wins over whatever the client puts in `metadata.user_id`, and Claude Code can set it through `ANTHROPIC_CUSTOM_HEADERS` with no other change, while Codex CLI does the same through `http_headers` in its `config.toml`. See [Claude Code granular cost tracking](../tutorials/claude_code_customer_tracking.md) and [Codex CLI granular cost tracking](../tutorials/codex_customer_tracking.md).
+如果您希望替該流量標記，而不是捨棄它，請讓 client 傳送 `x-litellm-customer-id`。標頭會在任何 request body 欄位之前檢查，因此標頭會勝過 client 放在 `metadata.user_id` 中的內容，而 Claude Code 可透過 `ANTHROPIC_CUSTOM_HEADERS` 設定它而無需其他變更，Codex CLI 則可透過其 `config.toml` 中的 `http_headers` 完成相同設定。請參閱 [Claude Code granular cost tracking](../tutorials/claude_code_customer_tracking.md) 與 [Codex CLI granular cost tracking](../tutorials/codex_customer_tracking.md)。
 
-Create that customer through `/customer/new` with its own budget. That satisfies `validate_end_user_id_in_db`, and an explicit customer budget takes precedence over the default one, so internal traffic can carry a different limit than your real customers.
+請透過 `/customer/new` 建立該客戶並設定其自己的 budget。這樣即可滿足 `validate_end_user_id_in_db`，而明確的 customer budget 會優先於預設 budget，因此內部流量可以擁有與真實客戶不同的限制。
 
-## Restricting Which Models a Customer Can Use
+## 限制客戶可使用的模型 {#restricting-which-models-a-customer-can-use}
 
-Set `models` on a customer to limit which models requests made on its behalf can call. A request that carries this customer's ID, through the `user` field or the `x-litellm-customer-id` header, is rejected with a 403 when the requested model is not in the list, even if the virtual key and team allow it. An empty or missing list means the customer adds no model restriction. The customer list only narrows access: the key's and team's own model restrictions still apply on top, so listing a model on the customer never grants a key access to it
+在 customer 上設定 `models`，以限制以其名義送出的請求可呼叫哪些模型。攜帶此 customer ID 的請求，無論是透過 `user` 欄位或 `x-litellm-customer-id` 標頭，只要請求的模型不在清單中，就會回傳 403 拒絕，即使 virtual key 與 team 允許也一樣。空白或缺少的清單表示該 customer 不加任何模型限制。customer 清單只會縮小存取範圍：key 與 team 本身的模型限制仍會疊加生效，因此在 customer 上列出某個模型，絕不會賦予 key 對它的存取權。
 
-Entries follow the same rules as key and team `models`, so a wildcard such as `anthropic/*` or a model access group name works here too
+項目遵循與 key 和 team `models` 相同的規則，因此像 `anthropic/*` 這類萬用字元或 model access group 名稱在此也同樣有效。
 
-Client-supplied `fallbacks` are checked against the customer's list too, as are router fallbacks when `enforce_fallback_model_access` is enabled
+client 提供的 `fallbacks` 也會對照 customer 的清單檢查，在啟用 `enforce_fallback_model_access` 時，router fallback 亦同。
 
 ```bash showLineNumbers title="Create a customer limited to one model"
 curl -L -X POST 'http://localhost:4000/customer/new' \
@@ -253,7 +252,7 @@ curl -L -X POST 'http://localhost:4000/customer/new' \
   }'
 ```
 
-A request for any other model on behalf of `user_1` then fails with the same error shape as key and team model checks, with `type` set to `customer_model_access_denied`
+代表 `user_1` 的任何其他模型請求，之後都會以與 key 和 team 模型檢查相同的錯誤格式失敗，且 `type` 會設為 `customer_model_access_denied`。
 
 ```bash showLineNumbers title="Request a model outside the customer's list"
 curl -L -X POST 'http://localhost:4000/v1/chat/completions' \
@@ -277,7 +276,7 @@ curl -L -X POST 'http://localhost:4000/v1/chat/completions' \
 }
 ```
 
-Change the list with `/customer/update`. Omitting `models` leaves the current list untouched, and sending `"models": []` removes the restriction. `/customer/info` returns the current list in its `models` field
+使用 `/customer/update` 變更清單。省略 `models` 會保留目前清單不變，而傳送 `"models": []` 會移除限制。`/customer/info` 會在其 `models` 欄位回傳目前清單。
 
 ```bash showLineNumbers title="Remove the customer's model restriction"
 curl -L -X POST 'http://localhost:4000/customer/update' \
@@ -289,21 +288,21 @@ curl -L -X POST 'http://localhost:4000/customer/update' \
   }'
 ```
 
-## Setting Customer Object Permissions
+## 設定客戶物件權限 {#setting-customer-object-permissions}
 
-Control which resources (MCP servers, vector stores, agents) a customer can access.
+控制客戶可存取哪些資源（MCP 伺服器、向量儲存、代理程式）。
 
-### What are Object Permissions?
+### 什麼是物件權限？ {#what-are-object-permissions}
 
-Object permissions allow you to restrict customer access to specific:
-- **MCP Servers**: Limit which MCP servers the customer can call
-- **MCP Access Groups**: Assign customers to predefined groups of MCP servers
-- **MCP Tool Permissions**: Granular control over which tools within an MCP server the customer can use
-- **Vector Stores**: Control which vector stores the customer can query
-- **Agents**: Restrict which agents the customer can interact with
-- **Agent Access Groups**: Assign customers to predefined groups of agents
+物件權限可讓您限制客戶對特定項目的存取：
+- **MCP 伺服器**：限制客戶可呼叫哪些 MCP 伺服器
+- **MCP 存取群組**：將客戶指派至預先定義的 MCP 伺服器群組
+- **MCP 工具權限**：細緻控制客戶可在 MCP 伺服器中使用哪些工具
+- **向量儲存**：控制客戶可查詢哪些向量儲存
+- **代理程式**：限制客戶可互動的代理程式
+- **代理程式存取群組**：將客戶指派至預先定義的代理程式群組
 
-### Creating a Customer with Object Permissions
+### 建立具有物件權限的客戶 {#creating-a-customer-with-object-permissions}
 
 ```bash showLineNumbers title="Create customer with object permissions"
 curl -L -X POST 'http://localhost:4000/customer/new' \
@@ -324,19 +323,19 @@ curl -L -X POST 'http://localhost:4000/customer/new' \
   }'
 ```
 
-**Parameters:**
-- `mcp_servers` (Optional[List[str]]): List of allowed MCP server IDs
-- `mcp_access_groups` (Optional[List[str]]): List of MCP access group names
-- `mcp_tool_permissions` (Optional[Dict[str, List[str]]]): Map of server ID to allowed tool names
-- `vector_stores` (Optional[List[str]]): List of allowed vector store IDs
-- `agents` (Optional[List[str]]): List of allowed agent IDs
-- `agent_access_groups` (Optional[List[str]]): List of agent access group names
+**參數：**
+- `mcp_servers` (Optional[List[str]]): 允許的 MCP 伺服器 ID 清單
+- `mcp_access_groups` (Optional[List[str]]): MCP 存取群組名稱清單
+- `mcp_tool_permissions` (Optional[Dict[str, List[str]]]): 伺服器 ID 對允許工具名稱的對應
+- `vector_stores` (Optional[List[str]]): 允許的向量儲存 ID 清單
+- `agents` (Optional[List[str]]): 允許的代理程式 ID 清單
+- `agent_access_groups` (Optional[List[str]]): 代理程式存取群組名稱清單
 
-**Note:** If `object_permission` is `null` or `{}`, the customer has no object-level restrictions.
+**注意：**如果 `object_permission` 是 `null` 或 `{}`，則該客戶沒有物件層級限制。
 
-### Updating Customer Object Permissions
+### 更新客戶物件權限 {#updating-customer-object-permissions}
 
-You can update object permissions for existing customers:
+您可以更新既有客戶的物件權限：
 
 ```bash showLineNumbers title="Update customer object permissions"
 curl -L -X POST 'http://localhost:4000/customer/update' \
@@ -351,16 +350,16 @@ curl -L -X POST 'http://localhost:4000/customer/update' \
   }'
 ```
 
-### Viewing Customer Object Permissions
+### 檢視客戶物件權限 {#viewing-customer-object-permissions}
 
-When you query customer info, object permissions are included in the response:
+當您查詢客戶資訊時，回應中會包含物件權限：
 
 ```bash showLineNumbers title="Get customer info with object permissions"
 curl -X GET 'http://0.0.0.0:4000/customer/info?end_user_id=user_1' \
     -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Response with object permissions"
 {
   "user_id": "user_1",
@@ -382,10 +381,10 @@ curl -X GET 'http://0.0.0.0:4000/customer/info?end_user_id=user_1' \
 }
 ```
 
-### Use Cases
+### 使用案例 {#use-cases}
 
-**1. Tiered Access Control**
-Create different permission tiers for your customers:
+**1. 分級存取控制**
+為您的客戶建立不同的權限等級：
 
 ```bash showLineNumbers title="Free tier customer"
 # Free tier - limited access
@@ -418,8 +417,8 @@ curl -L -X POST 'http://localhost:4000/customer/new' \
   }'
 ```
 
-**2. Department-Specific Access**
-Restrict customers to resources relevant to their department:
+**2. 部門專屬存取**
+將客戶限制在與其部門相關的資源：
 
 ```bash showLineNumbers title="Sales team customer"
 curl -L -X POST 'http://localhost:4000/customer/new' \
@@ -435,8 +434,8 @@ curl -L -X POST 'http://localhost:4000/customer/new' \
   }'
 ```
 
-**3. Tool-Level Restrictions**
-Grant access to specific tools within an MCP server:
+**3. 工具層級限制**
+授予對 MCP 伺服器內特定工具的存取：
 
 ```bash showLineNumbers title="Limited tool access"
 curl -L -X POST 'http://localhost:4000/customer/new' \
@@ -453,15 +452,15 @@ curl -L -X POST 'http://localhost:4000/customer/new' \
   }'
 ```
 
-## Setting Customer Budgets
+## 設定客戶預算 {#setting-customer-budgets}
 
-Set customer budgets (e.g. monthly budgets, tpm/rpm limits) on LiteLLM Proxy 
+在 LiteLLM Proxy 上設定客戶預算（例如每月預算、tpm/rpm 限制）
 
-### Default Budget for All Customers
+### 所有客戶的預設預算 {#default-budget-for-all-customers}
 
-Apply budget limits to all customers without explicit budgets. This is useful for rate limiting and spending controls across all end users.
+將預算限制套用至所有沒有明確預算的客戶。這對於在所有終端使用者之間進行速率限制與花費控制很有用。
 
-**Step 1: Create a default budget**
+**步驟 1：建立預設預算**
 
 ```bash showLineNumbers title="Create default budget"
 curl -X POST 'http://localhost:4000/budget/new' \
@@ -474,14 +473,14 @@ curl -X POST 'http://localhost:4000/budget/new' \
 }'
 ```
 
-**Step 2: Configure the default budget ID**
+**步驟 2：設定預設預算 ID**
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
   max_end_user_budget_id: "budget_id_from_step_1"
 ```
 
-**Step 3: Test it**
+**步驟 3：測試它**
 
 ```bash showLineNumbers title="Make request with customer ID"
 curl -X POST 'http://localhost:4000/chat/completions' \
@@ -494,17 +493,17 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 }'
 ```
 
-The customer will be subject to the default budget limits (RPM, TPM, and $ budget). Customers with explicit budgets are unaffected, and the default also applies to customers that don't exist in the database yet. LiteLLM caches the budget object for 60 seconds, so edits to it take up to a minute to apply.
+該 customer 會受預設 budget 限制（RPM、TPM 與 $ budget）約束。具有明確 budget 的 customer 不受影響，而預設值也適用於資料庫中尚不存在的 customer。LiteLLM 會快取 budget 物件 60 秒，因此對其所做的編輯最多需要一分鐘才會生效。
 
-The float setting `max_end_user_budget` is no longer enforced; if you have it in your config, replace it with `max_end_user_budget_id` as shown above.
+浮點設定 `max_end_user_budget` 不再強制；如果您的設定中有它，請依上方所示將其改為 `max_end_user_budget_id`。
 
-The default applies to every ID that reaches customer tracking, including per-session IDs sent by agent clients. See [Restricting Which IDs Become Customers](#restricting-which-ids-become-customers) if you want those kept out of the customer table while real customers keep the default budget.
+此預設會套用到所有進入 customer tracking 的 ID，包括 agent client 傳送的每次 session ID。若您想讓這些 ID 不進入 customer table，同時讓真實客戶保留預設 budget，請參閱 [限制哪些 ID 會成為客戶](#restricting-which-ids-become-customers)。
 
-### Quick Start 
+### 快速入門  {#quick-start}
 
-Create / Update a customer with budget
+建立／更新具有預算的客戶
 
-**Create New Customer w/ budget**
+**建立新客戶並附帶 budget**
 ```bash showLineNumbers title="Create customer with budget"
 curl -X POST 'http://0.0.0.0:4000/customer/new'         
     -H "Authorization: Bearer $LITELLM_API_KEY"         
@@ -515,13 +514,13 @@ curl -X POST 'http://0.0.0.0:4000/customer/new'
     }'
 ```
 
-`/customer/new` accepts budget fields inline: `max_budget`, `soft_budget`, `budget_duration`, `tpm_limit`, `rpm_limit`, `max_parallel_requests` and `model_max_budget`. Set either `max_budget` or `budget_id`, not both; passing both is rejected. Customer `tpm_limit` and `rpm_limit` are stored on a budget object, so they only apply when the customer is linked to one, either inline as above or through `budget_id`.
+`/customer/new` 可內嵌接受 budget 欄位：`max_budget`、`soft_budget`、`budget_duration`、`tpm_limit`、`rpm_limit`、`max_parallel_requests` 以及 `model_max_budget`。請設定 `max_budget` 或 `budget_id` 其一，不可同時設定兩者；同時傳入會被拒絕。Customer `tpm_limit` 與 `rpm_limit` 會儲存在 budget 物件上，因此只有在 customer 連結到該物件時才會套用，無論是如上內嵌設定，或透過 `budget_id`。
 
-`/customer/update` accepts a narrower set of fields: `user_id`, `alias`, `blocked`, `max_budget`, `budget_id`, `allowed_model_region`, `default_model` and `object_permission`. Anything else, including `tpm_limit`, `rpm_limit` and `budget_duration`, is silently dropped; to change those, update the budget object with `/budget/update` instead.
+`/customer/update` 可接受較少的一組欄位：`user_id`、`alias`、`blocked`、`max_budget`、`budget_id`、`allowed_model_region`、`default_model` 以及 `object_permission`。其他任何欄位，包括 `tpm_limit`、`rpm_limit` 和 `budget_duration`，都會被靜默捨棄；若要變更那些設定，請改用 `/budget/update` 更新 budget 物件。
 
-Customer budgets are global per deployment. Spend is tracked against the customer id alone, so the same customer shares one budget across every virtual key and team, and a customer budget can't be scoped to a single key or team.
+Customer budgets 是每個 deployment 全域共用的。花費只會依 customer id 追蹤，因此同一個 customer 會在每個 virtual key 與 team 之間共用一個 budget，而且 customer budget 無法限定於單一 key 或 team。
 
-**Test it!**
+**試試看！**
 
 ```bash showLineNumbers title="Test customer budget"
 curl -X POST 'http://localhost:4000/chat/completions' \
@@ -539,25 +538,25 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 }
 ```
 
-### Assign Pricing Tiers
+### 指派定價層級 {#assign-pricing-tiers}
 
-Create and assign customers to pricing tiers.
+建立並將客戶指派至定價層級。
 
-#### 1. Create a budget
+#### 1. 建立預算 {#1-create-a-budget}
 
 <Tabs>
 <TabItem value="ui" label="UI">
 
-- Go to the 'Budgets' tab on the UI. 
-- Click on '+ Create Budget'.
-- Create your pricing tier (e.g. 'my-free-tier' with budget $4). This means each user on this pricing tier will have a max budget of $4. 
+- 前往 UI 上的 'Budgets' 分頁。 
+- 點選 '+ Create Budget'。
+- 建立您的定價層級（例如，'my-free-tier'，預算為 $4）。這表示此定價層級上的每位使用者最高預算為 $4。
 
 <Image img={require('../../img/create_budget_modal.png')} />
 
 </TabItem>
 <TabItem value="api" label="API">
 
-Use the `/budget/new` endpoint for creating a new budget. [API Reference](https://docs.litellm.ai/api-reference/#/budget%20management/new_budget_budget_new_post)
+使用 `/budget/new` 端點來建立新的預算。[API 參考](https://docs.litellm.ai/api-reference/#/budget%20management/new_budget_budget_new_post)
 
 ```bash showLineNumbers title="Create budget via API"
 curl -X POST 'http://localhost:4000/budget/new' \
@@ -574,7 +573,7 @@ curl -X POST 'http://localhost:4000/budget/new' \
 
 :::info
 
-`tpm_limit` and `rpm_limit` are optional on a budget. Leaving them unset stores `null` and LiteLLM enforces no per-customer TPM or RPM limit for customers on that budget; only your provider's own rate limits apply. Set them only when you want LiteLLM to cap the customer
+`tpm_limit` 與 `rpm_limit` 在 budget 上是選用的。若保留未設定，會儲存 `null`，且 LiteLLM 不會對該 budget 上的 customer 強制執行每個 customer 的 TPM 或 RPM 限制；只會套用您的 provider 本身的 rate limits。僅在您要讓 LiteLLM 對該 customer 設上限時才設定它們。
 
 ```bash
 curl -X POST 'http://localhost:4000/budget/info' \
@@ -583,15 +582,15 @@ curl -X POST 'http://localhost:4000/budget/info' \
   -d '{"budgets": ["my-free-tier"]}'
 ```
 
-`tpm_limit` and `rpm_limit` come back as `null` when no LiteLLM limit is set
+當未設定 LiteLLM 限制時，`tpm_limit` 與 `rpm_limit` 會回傳為 `null`。
 
 :::
 
-#### 2. Assign Budget to Customer 
+#### 2. 將預算指派給客戶  {#2-assign-budget-to-customer}
 
-In your application code, assign budget when creating a new customer. 
+在您的應用程式程式碼中，於建立新客戶時指派預算。 
 
-Just use the `budget_id` used when creating the budget. In our example, this is `my-free-tier`.
+只要使用建立預算時所用的 `budget_id`。在我們的範例中，這是 `my-free-tier`。
 
 ```bash showLineNumbers title="Assign budget to customer"
 curl -X POST 'http://localhost:4000/customer/new' \
@@ -603,7 +602,7 @@ curl -X POST 'http://localhost:4000/customer/new' \
 }
 ```
 
-#### 3. Test it! 
+#### 3. 測試它！  {#3-test-it}
 
 <Tabs>
 <TabItem value="curl" label="curl">

@@ -5,31 +5,29 @@ sidebar_label: Snowflake Cortex
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Snowflake Cortex
+# Snowflake Cortex {#snowflake-cortex}
 
-LiteLLM supports all models on the Snowflake Cortex REST API, including models from Anthropic (Claude), OpenAI (GPT), Meta (Llama), Mistral, DeepSeek, and Snowflake.
+LiteLLM 支援 Snowflake Cortex REST API 上的所有模型，包括 Anthropic（Claude）、OpenAI（GPT）、Meta（Llama）、Mistral、DeepSeek，以及 Snowflake 的模型。
 
 | | |
 |---|---|
-| Description | Snowflake Cortex REST API provides access to leading frontier LLMs through OpenAI-compatible and Anthropic-compatible endpoints. All inference runs within Snowflake's security perimeter. |
-| Provider Route on LiteLLM | `snowflake/` |
+| 說明 | Snowflake Cortex REST API 透過相容 OpenAI 與相容 Anthropic 的端點，提供對領先前沿 LLM 的存取。所有推論都在 Snowflake 的安全邊界內執行。 |
+| LiteLLM 提供者路由 | `snowflake/` |
 | Provider Docs | [Cortex REST API ↗](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-rest-api) |
 | API Endpoints | Chat Completions: `https://{account}.snowflakecomputing.com/api/v2/cortex/v1/chat/completions` <br/> Messages: `https://{account}.snowflakecomputing.com/api/v2/cortex/v1/messages` <br/> Legacy: `https://{account}.snowflakecomputing.com/api/v2/cortex/inference:complete` |
-| Supported OpenAI Endpoints | `/chat/completions`, `/completions`, `/embeddings` |
+| 支援的 OpenAI 端點 | `/chat/completions`, `/completions`, `/embeddings` |
 
+提示：我們支援所有 Snowflake Cortex 模型。傳送 LiteLLM 請求時，請使用 `model=snowflake/<model-name>` 作為前綴。
 
-Tip : We support ALL Snowflake Cortex models. Use `model=snowflake/<model-name>` as a prefix when sending LiteLLM requests.
+## 驗證 {#authentication}
 
+Snowflake Cortex REST API 支援三種驗證方法。
 
-## Authentication
+### 程式化存取權杖（PAT），建議 {#programmatic-access-token-pat-recommended}
 
-Snowflake Cortex REST API supports three authentication methods.
+最簡單的方法。在 Snowsight 的 **User Menu → My Profile → Programmatic Access Tokens** 中產生 PAT。
 
-### Programmatic Access Token (PAT), recommended
-
-The simplest approach. Generate a PAT in Snowsight under **User Menu → My Profile → Programmatic Access Tokens**.
-
-LiteLLM reads the token from `SNOWFLAKE_JWT` (the same env var used for JWT auth) and the account from `SNOWFLAKE_ACCOUNT_ID`. Prefix the PAT with `pat/` so LiteLLM sends it as a `PROGRAMMATIC_ACCESS_TOKEN` instead of a `KEYPAIR_JWT`.
+LiteLLM 會從 `SNOWFLAKE_JWT`（JWT 驗證所使用的相同環境變數）讀取權杖，並從 `SNOWFLAKE_ACCOUNT_ID` 讀取帳戶。請在 PAT 前加上 `pat/`，讓 LiteLLM 將其作為 `PROGRAMMATIC_ACCESS_TOKEN` 傳送，而不是 `KEYPAIR_JWT`。
 
 ```python
 import os
@@ -44,9 +42,9 @@ response = completion(
 )
 ```
 
-### JWT (Key-Pair Authentication)
+### JWT（金鑰配對驗證） {#jwt-key-pair-authentication}
 
-Generate a JWT from a Snowflake key pair. See [Key-pair authentication](https://docs.snowflake.com/en/user-guide/key-pair-auth).
+從 Snowflake 金鑰組產生 JWT。請參閱 [Key-pair authentication](https://docs.snowflake.com/en/user-guide/key-pair-auth)。
 
 ```python
 import os
@@ -61,7 +59,7 @@ response = completion(
 )
 ```
 
-### Pass credentials as parameters
+### 將憑證作為參數傳遞 {#pass-credentials-as-parameters}
 
 ```python
 from litellm import completion
@@ -83,11 +81,11 @@ response = completion(
 )
 ```
 
-When you pass `api_base`, use the account host (`https://<account>.snowflakecomputing.com`, optionally with `/api/v2`). LiteLLM appends `/api/v2` if it is missing and then the `/cortex/v1/messages`, `/cortex/v1/chat/completions` or `/cortex/inference:embed` path; an `api_base` that already contains `/cortex/v1` produces a duplicated, invalid URL.
+當您傳入 `api_base` 時，請使用帳戶主機（`https://<account>.snowflakecomputing.com`，可選擇加上 `/api/v2`）。若缺少，LiteLLM 會附加 `/api/v2`，然後是 `/cortex/v1/messages`、`/cortex/v1/chat/completions` 或 `/cortex/inference:embed` 路徑；若 `api_base` 已經包含 `/cortex/v1`，就會產生重複且無效的 URL。
 
-For all authentication options, see [Authenticating to Cortex REST API](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-rest-api#authenticating-cortex-rest-api-requests).
+所有驗證選項請參閱 [對 Cortex REST API 進行驗證](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-rest-api#authenticating-cortex-rest-api-requests)。
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -109,7 +107,7 @@ print(response.choices[0].message.content)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-**1. Config**
+**1. 設定**
 
 ```yaml
 model_list:
@@ -125,13 +123,13 @@ model_list:
       api_base: https://<account>.snowflakecomputing.com
 ```
 
-**2. Start proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test**
+**3. 測試**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -147,16 +145,16 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
 ```
 temperature, max_tokens, max_completion_tokens, top_p, stream,
 tools, tool_choice
 ```
 
-Claude models also accept `thinking` (see below). `response_format` is not supported and raises an `UnsupportedParamsError` unless `drop_params` is set.
+Claude 模型也接受 `thinking`（見下文）。`response_format` 不受支援，且會引發 `UnsupportedParamsError`，除非已設定 `drop_params`。
 
-## Streaming
+## 串流 {#streaming}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -195,9 +193,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Tool / Function Calling
+## 工具 / Function Calling {#tool--function-calling}
 
-Supported on Claude and select models. LiteLLM automatically transforms OpenAI tool format to Snowflake's `tool_spec` format.
+支援 Claude 和部分模型。LiteLLM 會自動將 OpenAI 工具格式轉換為 Snowflake 的 `tool_spec` 格式。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -273,9 +271,9 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Thinking / Reasoning
+## 思考 / 推理 {#thinking--reasoning}
 
-Claude models on Cortex support extended thinking. Pass the provider's `thinking` parameter directly; `reasoning_effort` is not a supported param for Snowflake and raises an `UnsupportedParamsError` unless `drop_params` is set.
+Cortex 上的 Claude 模型支援 extended thinking。直接傳入提供者的 `thinking` 參數；`reasoning_effort` 不是 Snowflake 支援的參數，且會引發 `UnsupportedParamsError`，除非已設定 `drop_params`。
 
 ```python
 from litellm import completion
@@ -288,18 +286,18 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-## Prompt Caching
+## 提示快取 {#prompt-caching}
 
-Snowflake Cortex supports prompt caching to reduce costs:
+Snowflake Cortex 支援提示快取以降低成本：
 
-- **OpenAI models**: Implicit caching for prompts ≥ 1,024 tokens (no code changes needed)
-- **Claude models**: Explicit caching via `cache_control` breakpoints
+- **OpenAI models**：對於 ≥ 1,024 個 token 的提示進行隱式快取（不需要變更程式碼）
+- **Claude models**：透過 `cache_control` breakpoint 進行顯式快取
 
-Cached input tokens are billed at **10% of the regular input rate** (90% discount) when ≥ 1,024 tokens are cached.
+當快取的輸入 token ≥ 1,024 時，快取的輸入 token 會以**一般輸入費率的 10%** 計費（折扣 90%）。
 
-See [Cortex REST API Billing & Cost Analysis](https://www.snowflake.com/en/developers/guides/cortex-rest-api-billing-cost/) for details.
+詳情請參閱 [Cortex REST API Billing & Cost Analysis](https://www.snowflake.com/en/developers/guides/cortex-rest-api-billing-cost/)。
 
-## Embeddings
+## 嵌入 {#embeddings}
 
 ```python
 from litellm import embedding
@@ -315,17 +313,17 @@ response = embedding(
 print(response.data[0]["embedding"][:5])
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-All models are available through the `snowflake/` prefix.
+所有模型都可透過 `snowflake/` 前綴使用。
 
 :::tip
-For current model availability, rate limits, and pricing, see the official [Cortex REST API docs](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-rest-api) and [Service Consumption Table](https://www.snowflake.com/legal-files/CreditConsumptionTable.pdf).
+如需目前的模型可用性、速率限制與價格，請參閱官方 [Cortex REST API docs](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-rest-api) 與 [Service Consumption Table](https://www.snowflake.com/legal-files/CreditConsumptionTable.pdf)。
 :::
 
-### Chat Completion Models
+### 聊天完成模型 {#chat-completion-models}
 
-| Model | `litellm` model name | Function Calling | Vision | Prompt Caching |
+| 模型 | `litellm` model name | Function Calling | Vision | Prompt Caching |
 |---|---|---|---|---|
 | Claude Sonnet 4.5 | `snowflake/claude-sonnet-4-5` | ✅ | ✅ | ✅ |
 | Claude Sonnet 4.6 | `snowflake/claude-sonnet-4-6` | ✅ | ✅ | ✅ |
@@ -347,10 +345,9 @@ For current model availability, rate limits, and pricing, see the official [Cort
 | Llama 4 Maverick | `snowflake/llama4-maverick` | ✅ | | |
 | Snowflake Llama 3.3 70B | `snowflake/snowflake-llama-3.3-70b` | ✅ | | |
 
-### Embedding Models
+### 嵌入模型 {#embedding-models}
 
-| Model | `litellm` model name |
+| 模型 | `litellm` model name |
 |---|---|
 | Snowflake Arctic Embed L v2.0 | `snowflake/snowflake-arctic-embed-l-v2.0` |
 | Snowflake Arctic Embed M v2.0 | `snowflake/snowflake-arctic-embed-m-v2.0` |
-

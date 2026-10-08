@@ -1,23 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Predibase
+# Predibase {#predibase}
 
-LiteLLM supports all models on Predibase
+LiteLLM 支援 Predibase 上的所有模型
 
-
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
-### API KEYS
+### API 金鑰 {#api-keys}
 ```python
 import os 
 os.environ["PREDIBASE_API_KEY"] = ""
 ```
 
-### Example Call
+### 範例呼叫 {#example-call}
 
 ```python
 from litellm import completion
@@ -36,7 +35,7 @@ response = completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add models to your config.yaml
+1. 將模型加入您的 config.yaml
 
   ```yaml
   model_list:
@@ -48,14 +47,13 @@ response = completion(
   ```
 
 
-
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml --debug
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求傳送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -111,16 +109,15 @@ response = completion(
 
   </Tabs>
 
-
 </TabItem>
 
 </Tabs>
 
-## Advanced Usage - Prompt Formatting 
+## 進階使用方式 - 提示詞格式化  {#advanced-usage---prompt-formatting}
 
-LiteLLM has prompt template mappings for all `meta-llama` llama3 instruct models. [**See Code**](https://github.com/BerriAI/litellm/blob/4f46b4c3975cd0f72b8c5acb2cb429d23580c18a/litellm/llms/prompt_templates/factory.py#L1360)
+LiteLLM 為所有 `meta-llama` llama3 instruct 模型提供提示詞範本對應。[**查看程式碼**](https://github.com/BerriAI/litellm/blob/4f46b4c3975cd0f72b8c5acb2cb429d23580c18a/litellm/llms/prompt_templates/factory.py#L1360)
 
-To apply a custom prompt template: 
+若要套用自訂提示詞範本： 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -182,8 +179,8 @@ model_list:
 
 </Tabs>
 
-## Passing additional params - max_tokens, temperature 
-See all litellm.completion supported params [here](https://docs.litellm.ai/docs/completion/input)
+## 傳遞額外參數 - max_tokens, temperature  {#passing-additional-params---max_tokens-temperature}
+查看所有 litellm.completion 支援的參數 [這裡](https://docs.litellm.ai/docs/completion/input)
 
 ```python
 # !uv add litellm
@@ -201,7 +198,7 @@ response = completion(
 )
 ```
 
-**proxy**
+**代理**
 
 ```yaml
   model_list:
@@ -213,10 +210,10 @@ response = completion(
         temperature: 0.5
 ```
 
-## Passings Predibase specific params - adapter_id, adapter_source, 
-Send params [not supported by `litellm.completion()`](https://docs.litellm.ai/docs/completion/input) but supported by Predibase by passing them to `litellm.completion`
+## 傳遞 Predibase 特定參數 - adapter_id, adapter_source,  {#passings-predibase-specific-params---adapter_id-adapter_source}
+傳送 [不受 `litellm.completion()` 支援](https://docs.litellm.ai/docs/completion/input) 但可透過將其傳遞給 `litellm.completion` 來由 Predibase 支援的參數
 
-Example `adapter_id`, `adapter_source` are Predibase specific param - [See List](https://github.com/BerriAI/litellm/blob/8a35354dd6dbf4c2fcefcd6e877b980fcbd68c58/litellm/llms/predibase.py#L54)
+範例 `adapter_id`, `adapter_source` 是 Predibase 特定參數 - [查看清單](https://github.com/BerriAI/litellm/blob/8a35354dd6dbf4c2fcefcd6e877b980fcbd68c58/litellm/llms/predibase.py#L54)
 
 ```python
 # !uv add litellm
@@ -234,7 +231,7 @@ response = completion(
 )
 ```
 
-**proxy**
+**代理**
 
 ```yaml
   model_list:

@@ -1,5 +1,5 @@
 ---
-title: "v1.90.4 - Responses API Guardrail Coverage"
+title: "v1.90.4 - Responses API 防護欄涵蓋範圍"
 slug: "v1-90-4"
 date: 2026-07-11T13:00:41
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,12 +43,12 @@ pip install litellm==1.90.4
 </TabItem>
 </Tabs>
 
-`v1.90.4` is a patch release on top of [`v1.90.3`](/release_notes/v1.90.3/v1-90-3). It restores text guardrail coverage on the Responses API (`/v1/responses`). The shared guardrail content helpers now walk the Responses `input` taxonomy (the `text`, `input_text`, and `output_text` part types, and `message`, `function_call`, and `function_call_output` items), so guardrails that build on those helpers (AIM, Lakera v2, Cato, Lasso, Repello, IBM, Azure Content Safety, and enterprise secret detection) inspect and redact request text on `/v1/responses` the same way they already do for chat completions.
+`v1.90.4` 是在 [`v1.90.3`](/release_notes/v1.90.3/v1-90-3) 之上的修補版發行。它恢復了 Responses API（`/v1/responses`）上的文字防護欄涵蓋範圍。共用的防護欄內容輔助工具現在會遍歷 Responses `input` 分類法（`text`、`input_text` 與 `output_text` 部分類型，以及 `message`、`function_call` 與 `function_call_output` 項目），因此建立在這些輔助工具之上的防護欄（AIM、Lakera v2、Cato、Lasso、Repello、IBM、Azure Content Safety，以及企業祕密偵測）會以與處理聊天完成相同的方式，在 `/v1/responses` 上檢查並遮罩請求文字。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(guardrails): walk Responses-API text taxonomy in shared content helpers - [PR #32542](https://github.com/BerriAI/litellm/pull/32542)
+- fix(guardrails): 在共用內容輔助工具中遍歷 Responses-API 文字分類法 - [PR #32542](https://github.com/BerriAI/litellm/pull/32542)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.90.3...v1.90.4

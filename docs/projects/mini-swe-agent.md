@@ -1,17 +1,17 @@
-# mini-swe-agent
+# mini-swe-agent {#mini-swe-agent}
 
-**mini-swe-agent** The 100 line AI agent that solves GitHub issues & more.
+**mini-swe-agent** 這個 100 行的 AI 代理程式，可解決 GitHub issues 及更多問題。
 
-Key features:
-- Just 100 lines of Python - radically simple and hackable
-- Uses bash only (no custom tools) for maximum flexibility
-- Built on LiteLLM for model flexibility
-- Comes with CLI and Python bindings
-- Deployable anywhere: local, docker, podman, apptainer
+主要特色：
+- 只有 100 行 Python - 結構極度簡單且可輕鬆改造
+- 僅使用 bash（沒有自訂工具），提供最大彈性
+- 建構於 LiteLLM 之上，具備模型彈性
+- 附帶 CLI 與 Python bindings
+- 可部署於任何地方：local、docker、podman、apptainer
 
-Perfect for researchers, developers who want readable tools, and engineers who need easy deployment.
+非常適合研究人員、想要可讀性高工具的開發者，以及需要 آسان部署的工程師。
 
-- [Website](https://mini-swe-agent.com/latest/)
+- [網站](https://mini-swe-agent.com/latest/)
 - [GitHub](https://github.com/SWE-agent/mini-swe-agent)
-- [Quick Start](https://mini-swe-agent.com/latest/quickstart/)
-- [Documentation](https://mini-swe-agent.com/latest/)
+- [快速入門](https://mini-swe-agent.com/latest/quickstart/)
+- [文件](https://mini-swe-agent.com/latest/)

@@ -1,10 +1,10 @@
-# Mock Completion() Responses - Save Testing Costs 💰
+# Mock Completion() 回應 - 節省測試成本 💰 {#mock-completion-responses---save-testing-costs-}
 
-For testing purposes, you can use `completion()` with `mock_response` to mock calling the completion endpoint. 
+為了測試用途，您可以搭配 `completion()` 與 `mock_response` 來模擬呼叫 completion 端點。 
 
-This will return a response object with a default response (works for streaming as well), without calling the LLM APIs. 
+這會回傳一個具有預設回應的回應物件（串流情境也適用），而不會呼叫 LLM API。 
 
-## quick start
+## 快速開始 {#quick-start}
 ```python
 from litellm import completion 
 
@@ -14,7 +14,7 @@ messages = [{"role":"user", "content":"This is a test request"}]
 completion(model=model, messages=messages, mock_response="It's simple to use and easy to get started")
 ```
 
-## streaming
+## 串流 {#streaming}
 
 ```python
 from litellm import completion 
@@ -26,7 +26,7 @@ for chunk in response:
     complete_response += chunk["choices"][0]["delta"]["content"]
 ```
 
-## (Non-streaming) Mock Response Object 
+## （非串流）模擬回應物件  {#non-streaming-mock-response-object}
 
 ```json
 {
@@ -51,7 +51,7 @@ for chunk in response:
 }
 ```
 
-## Building a pytest function using `completion` with `mock_response`
+## 使用 `completion` 與 `mock_response` 建立 pytest 函式 {#building-a-pytest-function-using-completion-with-mock_response}
 
 ```python
 from litellm import completion

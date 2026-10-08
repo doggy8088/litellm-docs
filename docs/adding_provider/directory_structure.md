@@ -1,6 +1,6 @@
-# Directory Structure
+# 目錄結構 {#directory-structure}
 
-When adding a new provider, you need to create a directory for the provider that follows the following structure:
+當新增一個新的提供者時，您需要為該提供者建立一個目錄，並遵循以下結構：
 
 ```
 litellm/llms/
@@ -21,4 +21,3 @@ litellm/llms/
         ├── handler.py
         └── transformation.py
 ```
-

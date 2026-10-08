@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Jina AI
+# Jina AI {#jina-ai}
 https://jina.ai/embeddings/
 
-Supported endpoints: 
+支援的端點：
 - /embeddings
 - /rerank
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['JINA_AI_API_KEY']
 ```
 
-## Sample Usage - Embedding
+## 範例用法 - Embedding {#sample-usage---embedding}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -33,7 +33,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add to config.yaml
+1. 新增至 config.yaml
 ```yaml
 model_list:
   - model_name: embedding-model
@@ -42,7 +42,7 @@ model_list:
       api_key: os.environ/JINA_AI_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -50,7 +50,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000/
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash 
 curl -L -X POST 'http://0.0.0.0:4000/embeddings' \
@@ -62,7 +62,7 @@ curl -L -X POST 'http://0.0.0.0:4000/embeddings' \
 </TabItem>
 </Tabs>
 
-## Sample Usage - Rerank
+## 範例用法 - Rerank {#sample-usage---rerank}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -92,7 +92,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add to config.yaml
+1. 新增至 config.yaml
 ```yaml
 model_list:
   - model_name: rerank-model
@@ -101,13 +101,13 @@ model_list:
       api_key: os.environ/JINA_AI_API_KEY
 ```
 
-2. Start proxy 
+2. 啟動 proxy 
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash 
 curl -L -X POST 'http://0.0.0.0:4000/rerank' \
@@ -129,22 +129,22 @@ curl -L -X POST 'http://0.0.0.0:4000/rerank' \
 </TabItem>
 </Tabs>
 
-## Supported Models
-All models listed here https://jina.ai/embeddings/ are supported
+## 支援的模型 {#supported-models}
+此處列出的所有模型 https://jina.ai/embeddings/ 均受支援
 
-## Supported Optional Rerank Parameters
+## 支援的可選 rerank 參數 {#supported-optional-rerank-parameters}
 
-All cohere rerank parameters are supported. 
+支援所有 cohere rerank 參數。 
 
-## Supported Optional Embeddings Parameters
+## 支援的可選 embeddings 參數 {#supported-optional-embeddings-parameters}
 
 ```
 dimensions
 ```
 
-## Provider-specific parameters
+## 提供者專屬參數 {#provider-specific-parameters}
 
-Pass any jina ai specific parameters as a keyword argument to the `embedding` or `rerank` function, e.g. 
+將任何 jina ai 專屬參數作為關鍵字引數傳遞給 `embedding` 或 `rerank` 函式，例如
 
 <Tabs>
 <TabItem value="sdk" label="SDK">

@@ -1,137 +1,137 @@
-# Auto Routing Benchmark: Cost Ladders
+# 自動路由基準測試：成本階梯 {#auto-routing-benchmark-cost-ladders}
 
-This benchmark evaluates how well LiteLLM routing strategies reduce cost while preserving response quality. It compares the semantic [Auto Router](./auto_routing_semantic.md), the rule-based `complexity_router`, fixed-model baselines, and a cost-matched shuffled control on a three-model Gemini 3.x cost ladder.
+此基準測試評估 LiteLLM 路由策略在維持回應品質的同時降低成本的效果。它比較了語意 [自動路由器](./auto_routing_semantic.md)、規則式 `complexity_router`、固定模型基準，以及在三模型 Gemini 3.x 成本階梯上的成本匹配洗牌對照組。
 
-## Key findings
+## 重點發現 {#key-findings}
 
-- The semantic Auto Router preserved more quality than the `complexity_router` at the same cost. At approximately 58% savings, the semantic router achieved a 46.8% win rate against the flagship and 82/90 exact-match answers. The fitted `complexity_router` achieved 41.5% and 71/90.
-- The semantic router performed significantly better than the shuffled control. The `complexity_router` did not.
-- The rule-based complexity score was not predictive of when the cheap model would produce an acceptable answer.
-- The middle model in this ladder cost 14.1 times more than the cheap model while producing worse results. Model-tier selection was therefore as important as router selection.
+- 語意自動路由器在相同成本下，比 `complexity_router` 保留了更多品質。在約 58% 的節省下，語意路由器相較於旗艦模型達到 46.8% 的勝率，以及 82/90 的完全匹配答案。擬合的 `complexity_router` 達到 41.5% 和 71/90。
+- 語意路由器的表現明顯優於洗牌對照組。`complexity_router` 則沒有。
+- 規則式複雜度分數無法預測便宜模型何時會產生可接受的答案。
+- 此階梯中的中階模型成本是便宜模型的 14.1 倍，卻產生較差的結果。因此，模型層級選擇與路由器選擇同等重要。
 
-## Benchmark design
+## 基準測試設計 {#benchmark-design}
 
-### Evaluation dataset
+### 評估資料集 {#evaluation-dataset}
 
-The evaluation used 300 prompts across three categories:
+評估使用了三個類別共 300 個提示詞：
 
-| Category | Prompts | Source |
+| 類別 | 提示詞 | 來源 |
 |---|---:|---|
-| Chat | 120 | WildChat-1M |
-| Verifiable reasoning | 90 | MATH-500 levels 4 and 5, plus MMLU-Pro |
-| Code | 90 | BigCodeBench |
+| 聊天 | 120 | WildChat-1M |
+| 可驗證推理 | 90 | MATH-500 第 4 和第 5 級，以及 MMLU-Pro |
+| 程式碼 | 90 | BigCodeBench |
 
-A separate 100-prompt training set was used for all configuration and threshold-fitting decisions. The training and evaluation prompts came from disjoint index ranges.
+另有一組獨立的 100 個提示詞訓練集，用於所有設定與閾值擬合決策。訓練與評估提示詞來自互不重疊的索引範圍。
 
-### Response generation and scoring
+### 回應生成與評分 {#response-generation-and-scoring}
 
-Each of the three models generated one response per evaluation prompt at temperature 0, producing a fixed 3 x 300 response matrix. Every routing strategy selected from this same matrix. This design pairs the strategies exactly and prevents generation sampling from affecting comparisons.
+三個模型各自以溫度 0 為每個評估提示詞生成一個回應，形成固定的 3 x 300 回應矩陣。每種路由策略都從同一個矩陣中選取。此設計將各策略完全配對，並防止生成抽樣影響比較。
 
-Quality was measured in two ways:
+品質以兩種方式衡量：
 
-1. A model from a different provider family performed blinded, pairwise comparisons against the all-flagship baseline. Each pair was judged in both response orders, and conflicting judgments were recorded as ties.
-2. The 90 verifiable reasoning prompts were scored with mechanical exact match, without an LLM judge.
+1. 來自不同提供者家族的模型會針對全旗艦基準進行盲測、成對比較。每一對都會以兩種回應順序判定，而衝突判定則記錄為平手。
+2. 90 個可驗證推理提示詞使用機械式完全匹配評分，未使用 LLM 評審。
 
-The reported cost includes the selected model's input, output, and thinking tokens.
+報告的成本包含所選模型的輸入、輸出與思考 token。
 
-## Results
+## 結果 {#results}
 
-| Strategy | Win rate vs. flagship | 95% CI | Cost | Savings vs. flagship | Exact match |
+| 策略 | 相較於旗艦的勝率 | 95% CI | 成本 | 相較於旗艦的節省 | 完全匹配 |
 |---|---:|---:|---:|---:|---:|
-| All flagship (baseline) | 50.0% | | $9.320 | | 82/90 |
-| Semantic Auto Router, threshold 0.3 | 48.2% | [45.8%, 50.5%] | $4.893 | 47.5% | 82/90 |
-| Semantic Auto Router, threshold 0.2 | 46.8% | [44.0%, 49.5%] | $3.894 | 58.2% | 82/90 |
-| All cheap | 43.7% | [40.0%, 47.5%] | $0.247 | 97.4% | 81/90 |
-| `complexity_router`, fitted | 41.5% | [38.0%, 45.0%] | $3.889 | 58.3% | 71/90 |
-| `complexity_router`, default | 39.8% | [36.0%, 43.7%] | $2.053 | 78.0% | 76/90 |
-| Shuffled control | 39.2% | [35.7%, 42.7%] | $3.784 | 59.4% | 68/90 |
+| 全旗艦（基準） | 50.0% | | $9.320 | | 82/90 |
+| 語意自動路由器，閾值 0.3 | 48.2% | [45.8%, 50.5%] | $4.893 | 47.5% | 82/90 |
+| 語意自動路由器，閾值 0.2 | 46.8% | [44.0%, 49.5%] | $3.894 | 58.2% | 82/90 |
+| 全便宜 | 43.7% | [40.0%, 47.5%] | $0.247 | 97.4% | 81/90 |
+| `complexity_router`，擬合 | 41.5% | [38.0%, 45.0%] | $3.889 | 58.3% | 71/90 |
+| `complexity_router`，預設 | 39.8% | [36.0%, 43.7%] | $2.053 | 78.0% | 76/90 |
+| 洗牌對照組 | 39.2% | [35.7%, 42.7%] | $3.784 | 59.4% | 68/90 |
 
-A 50% win rate means that a strategy was indistinguishable from the all-flagship baseline. Ties count as half a win.
+50% 的勝率表示該策略與全旗艦基準無法區分。平手算作半勝。
 
-### Comparison at matched cost
+### 相同成本下的比較 {#comparison-at-matched-cost}
 
-The clearest comparison is between the two strategies with approximately 58% savings:
+最清楚的比較是兩種約有 58% 節省的策略：
 
-| Strategy | Savings | Win rate vs. flagship | Exact match |
+| 策略 | 節省 | 相較於旗艦的勝率 | 完全匹配 |
 |---|---:|---:|---:|
-| Semantic Auto Router, threshold 0.2 | 58.2% | 46.8% | 82/90 |
-| `complexity_router`, fitted | 58.3% | 41.5% | 71/90 |
+| 語意自動路由器，閾值 0.2 | 58.2% | 46.8% | 82/90 |
+| `complexity_router`，擬合 | 58.3% | 41.5% | 71/90 |
 
-At effectively the same cost, the semantic router achieved a 5.3 percentage-point higher win rate and answered 11 more verifiable prompts correctly.
+在實際相同的成本下，語意路由器達到高 5.3 個百分點的勝率，並多正確回答 11 個可驗證提示詞。
 
-## Does the routing decision add value?
+## 路由決策是否增加價值？ {#does-the-routing-decision-add-value}
 
-The shuffled control uses the fitted `complexity_router`'s exact tier counts but randomly assigns those tiers to prompts using a fixed seed. Its cost is therefore similar by construction. Comparing a router with this control tests whether the routing decisions add value beyond the overall mix of cheap and expensive models.
+洗牌對照組使用擬合的 `complexity_router` 的精確層級數量，但以固定種子隨機將這些層級指派給提示詞。因此，其成本在設計上相近。將路由器與此對照組比較，可測試路由決策是否在整體便宜與昂貴模型組合之外帶來價值。
 
-Compared with the shuffled control:
+與洗牌對照組相比：
 
-- The semantic router improved win rate by 9.0 points at threshold 0.3, with a 95% confidence interval of [+5.3, +12.7].
-- The semantic router improved win rate by 7.7 points at threshold 0.2, with a 95% confidence interval of [+3.8, +11.5].
-- The fitted `complexity_router` improved win rate by 2.3 points, with a 95% confidence interval of [-0.2, +4.8].
-- The default `complexity_router` improved win rate by 0.7 points, with a 95% confidence interval of [-2.5, +3.8].
+- 語意路由器在閾值 0.3 時，勝率提升 9.0 個百分點，95% 信賴區間為 [+5.3, +12.7]。
+- 語意路由器在閾值 0.2 時，勝率提升 7.7 個百分點，95% 信賴區間為 [+3.8, +11.5]。
+- 擬合的 `complexity_router` 提升 2.3 個百分點，95% 信賴區間為 [-0.2, +4.8]。
+- 預設的 `complexity_router` 提升 0.7 個百分點，95% 信賴區間為 [-2.5, +3.8]。
 
-Both semantic-router confidence intervals exclude zero. Both `complexity_router` intervals include zero. On this evaluation, semantic routing added measurable value; rule-based complexity routing did not.
+兩個語意路由器的信賴區間都不包含 0。兩個 `complexity_router` 的區間都包含 0。在此評估中，語意路由帶來了可衡量的價值；規則式複雜度路由則沒有。
 
-## Why the complexity score underperformed
+## 為何複雜度分數表現不佳 {#why-the-complexity-score-underperformed}
 
-The training prompts were labeled by comparing the flagship and cheap responses and identifying cases where the cheap response was worse. The complexity score was then evaluated as a predictor of those labels.
+訓練提示詞是透過比較旗艦與便宜回應，並找出便宜回應較差的案例來標註。接著，將複雜度分數評估為這些標籤的預測因子。
 
-Its area under the ROC curve (AUC) was:
+其 ROC 曲線下面積（AUC）為：
 
-- 0.524 across the full training set, which is close to random.
-- 0.420 on chat prompts, which indicates mildly inverted predictions.
+- 0.524，涵蓋完整訓練集，接近隨機。
+- 0.420，針對聊天提示詞，表示略為反向的預測。
 
-Mean complexity scores were identical to three decimal places for prompts where the cheap model was sufficient and prompts where it was not. No tested threshold outperformed always predicting that the cheap model would be sufficient.
+對於便宜模型足夠，以及便宜模型不足的提示詞，其平均複雜度分數相同到小數點後三位。沒有任何測試閾值優於一律預測便宜模型足夠。
 
-The default scoring weights emphasize features such as code and explicit reasoning markers. These features describe the type of prompt, but they did not predict whether the cheap model could answer it successfully. In this evaluation:
+預設評分權重著重於程式碼與明確推理標記等特徵。這些特徵描述的是提示詞類型，但它們無法預測便宜模型是否能成功回答。在此評估中：
 
-- 97% of chat prompts were assigned to the cheapest tier.
-- 97% of code prompts were assigned to the middle tier.
-- The cheap model was sufficient for 90% of verifiable reasoning prompts but only 50% of chat prompts.
+- 97% 的聊天提示詞被分派到最便宜的層級。
+- 97% 的程式碼提示詞被分派到中階層級。
+- 90% 的可驗證推理提示詞由便宜模型足夠應付，但聊天提示詞僅有 50%。
 
-These results apply to a same-family cost ladder, where every model can attempt every request and the routing decision is primarily whether the cheap model is sufficient. Routing across models with different capabilities is a separate use case.
+這些結果適用於同家族成本階梯，在其中每個模型都可以嘗試每個請求，而路由決策主要在於便宜模型是否足夠。跨不同能力模型的路由是另一個使用案例。
 
-## Validate the model tiers before tuning the router
+## 在調整路由器之前先驗證模型層級 {#validate-the-model-tiers-before-tuning-the-router}
 
-The middle tier, `gemini-3-flash-preview`, appeared to offer a useful price and quality trade-off based on list prices. Its measured performance did not support that assumption:
+中階層級 `gemini-3-flash-preview`，根據標價看來似乎提供了有用的價格與品質權衡。但其實測表現並不支持這個假設：
 
-| Metric | `gemini-3-flash-preview` | `gemini-3.1-flash-lite` |
+| 指標 | `gemini-3-flash-preview` | `gemini-3.1-flash-lite` |
 |---|---:|---:|
-| Relative cost | 14.1x the Flash-Lite cost | Baseline |
-| Win rate vs. flagship | 37.5% | 43.7% |
-| Exact match | 63/90 | 81/90 |
+| 相對成本 | Flash-Lite 成本的 14.1 倍 | 基準 |
+| 相較於旗艦的勝率 | 37.5% | 43.7% |
+| 完全匹配 | 63/90 | 81/90 |
 
-Among prompts where exactly one of these models answered correctly, Flash-Lite won 20 to 2. The middle tier did not provide a useful cost-quality trade-off on this dataset.
+在這兩個模型中，僅有一個答對的提示詞裡，Flash-Lite 以 20 比 2 勝出。中階層級在此資料集上未提供有用的成本-品質權衡。
 
-Thinking tokens explain much of the unexpected cost. `gemini-3-flash-preview` generated 981,308 thinking tokens, compared with 581,883 from the flagship. As a result, its 4x list-price output advantage produced only a 2.7x measured cost advantage. Flash-Lite generated no thinking tokens and cost 37 times less than the flagship, compared with the 8x difference suggested by list prices.
+思考 token 解釋了大部分意料之外的成本。`gemini-3-flash-preview` 產生了 981,308 個思考 token，而旗艦模型為 581,883 個。因此，其 4 倍標價輸出優勢只帶來 2.7 倍的實測成本優勢。Flash-Lite 未產生思考 token，且成本比旗艦低 37 倍；相較之下，標價所暗示的差異只有 8 倍。
 
-Both `complexity_router` configurations sent most prompts to the underperforming middle tier. Before tuning a router, measure each candidate model on representative traffic and include thinking-token charges in the cost calculation.
+兩種 `complexity_router` 設定都將大多數提示詞送往表現不佳的中階層級。在調整路由器之前，請在具代表性的流量上測量每個候選模型，並將思考 token 費用納入成本計算。
 
-## Choosing a routing strategy
+## 選擇路由策略 {#choosing-a-routing-strategy}
 
-For a cost ladder within one model family:
+對於單一模型家族內的成本階梯：
 
-1. Start with the semantic [Auto Router](./auto_routing_semantic.md).
-2. Build routes from labeled examples that show when the cheap model is sufficient.
-3. Fit `score_threshold` on a held-out training set that represents production traffic.
-4. Select a threshold based on an explicit quality and savings target.
+1. 從語意 [自動路由器](./auto_routing_semantic.md) 開始。
+2. 根據標註範例建立路由，這些範例顯示何時便宜模型足夠。
+3. 在代表生產流量的保留訓練集上擬合 `score_threshold`。
+4. 根據明確的品質與節省目標選擇閾值。
 
-`score_threshold` controls when the router falls back to `auto_router_default_model`:
+`score_threshold` 控制路由器何時回退到 `auto_router_default_model`：
 
-- At 0.3, the router sent 52% of prompts to the flagship, saved 47.5%, and achieved a 48.2% win rate.
-- At 0.2, it sent 38% of prompts to the flagship, saved 58.2%, and achieved a 46.8% win rate.
+- 在 0.3 時，路由器將 52% 的提示詞送往旗艦模型，節省 47.5%，並達到 48.2% 的勝率。
+- 在 0.2 時，它將 38% 的提示詞送往旗艦模型，節省 58.2%，並達到 46.8% 的勝率。
 
-The lower threshold increased savings by 10.7 percentage points and reduced win rate by 1.4 points. Neither setting met both a 45% win-rate floor and 50% savings target with 95% confidence: threshold 0.3 missed the savings target, while the lower bound for threshold 0.2's win rate was 44.0%.
+較低的閾值使節省增加 10.7 個百分點，並使勝率下降 1.4 個百分點。兩種設定都未能在 95% 信賴下同時達到 45% 的勝率下限與 50% 的節省目標：閾值 0.3 未達節省目標，而閾值 0.2 的勝率下限為 44.0%。
 
-Do not tune a threshold on the evaluation set. Doing so would overfit the reported result and would not provide a valid estimate of production performance.
+不要在評估集上調整閾值。這樣做會使報告結果過度擬合，且無法提供生產效能的有效估計。
 
-## Limitations
+## 限制 {#limitations}
 
-This benchmark covers one provider family, one three-model ladder, one 300-prompt evaluation set, and one judge model. Additional limitations include:
+此基準測試涵蓋一個提供者家族、一個三模型梯度、一個 300 個提示的評估集，以及一個裁判模型。其他限制包括：
 
-- The judge disagreed with itself on 32% of pairs when response order was reversed. These disagreements were recorded as ties, which moves results toward 50%.
-- Judge decisions agreed with mechanical ground truth 90% of the time on the verifiable subset.
-- Code responses were judged but not executed.
-- The results measure this specific model ladder and dataset. Other models and production workloads may produce different cost-quality trade-offs.
+- 當回應順序反轉時，裁判在 32% 的配對上與自身判定不一致。這些不一致被記錄為平手，這會使結果朝 50% 靠攏。
+- 在可驗證子集上，裁判決定與機械真實標準有 90% 的時間一致。
+- 程式碼回應有被判定，但未執行。
+- 這些結果衡量的是這個特定模型梯度與資料集。其他模型與正式工作負載可能會產生不同的成本-品質取捨。
 
-Use the methodology, rather than the exact percentages, when evaluating another deployment: generate one paired response matrix, reserve a separate training set, include a cost-matched shuffled control, count thinking tokens, and define quality and savings requirements before evaluating the routers.
+在評估其他部署時，請使用該方法論，而不是精確百分比：產生一個配對回應矩陣、保留獨立的訓練集、納入一個成本匹配的隨機打亂對照、計算思考 token，並在評估路由器之前先定義品質與節省需求。

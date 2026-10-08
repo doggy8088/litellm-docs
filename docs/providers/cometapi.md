@@ -1,17 +1,17 @@
-# CometAPI
-LiteLLM supports all AI models from [CometAPI](https://www.cometapi.com/). CometAPI provides access to 500+ AI models through a unified API interface, including cutting-edge models like GPT-5, Claude Opus 4.1, and various other state-of-the-art language models.
+# CometAPI {#cometapi}
+LiteLLM 支援來自 [CometAPI](https://www.cometapi.com/) 的所有 AI 模型。CometAPI 透過統一的 API 介面提供超過 500 種 AI 模型的存取，包括 GPT-5、Claude Opus 4.1 等尖端模型，以及其他各種最先進的語言模型。
 
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_CometAPI.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
-## Authentication
+## 驗證 {#authentication}
 
-To use CometAPI models, you need to obtain an API key from [CometAPI Token Console](https://api.cometapi.com/console/token). CometAPI offers free tokens for new users - you can get your free API key instantly by registering.
+若要使用 CometAPI 模型，您需要從 [CometAPI Token Console](https://api.cometapi.com/console/token) 取得 API 金鑰。CometAPI 為新使用者提供免費 token－您只要註冊就能立即取得免費 API 金鑰。
 
-## Usage
+## 使用方式 {#usage}
 
-Set your CometAPI key as an environment variable and use the completion function:
+將您的 CometAPI 金鑰設為環境變數，並使用 completion 函式：
 
 ```python
 import os
@@ -32,9 +32,9 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-### Alternative Usage - Explicit API Key
+### 替代用法 - 明確指定 API 金鑰 {#alternative-usage---explicit-api-key}
 
-You can also pass the API key explicitly:
+您也可以明確傳入 API 金鑰：
 
 ```python
 import os
@@ -53,9 +53,9 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-## Usage - Streaming
+## 使用方式 - 串流 {#usage---streaming}
 
-Just set `stream=True` when calling completion:
+在呼叫 completion 時，只要設定 `stream=True`：
 
 ```python
 import os
@@ -75,9 +75,9 @@ for chunk in response:
     print(chunk.choices[0].delta.content or "", end="")
 ```
 
-## Usage - Async Streaming
+## 使用方式 - 非同步串流 {#usage---async-streaming}
 
-For async streaming, use `acompletion`:
+對於非同步串流，請使用 `acompletion`：
 
 ```python
 from litellm import acompletion
@@ -104,11 +104,11 @@ async def completion_call():
 await completion_call()
 ```
 
-## CometAPI Models
+## CometAPI 模型 {#cometapi-models}
 
-CometAPI offers access to 500+ AI models through a unified API. Some popular models include:
+CometAPI 透過統一的 API 提供超過 500 種 AI 模型的存取。部分熱門模型包括：
 
-| Model Name | Function Call |
+| 模型名稱 | 函式呼叫 |
 |------------|---------------|
 | cometapi/gpt-5 | `completion('cometapi/gpt-5', messages)` |
 | cometapi/gpt-5-mini | `completion('cometapi/gpt-5-mini', messages)` |
@@ -117,15 +117,15 @@ CometAPI offers access to 500+ AI models through a unified API. Some popular mod
 | cometapi/gpt-oss-120b | `completion('cometapi/gpt-oss-120b', messages)` |
 | cometapi/chatgpt-4o-latest | `completion('cometapi/chatgpt-4o-latest', messages)` |
 
-For a complete list of available models, visit the [CometAPI Models page](https://www.cometapi.com/model/).
+如需可用模型的完整清單，請造訪 [CometAPI 模型頁面](https://www.cometapi.com/model/)。
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Description | Required |
+| 變數 | 說明 | 必要 |
 |----------|-------------|----------|
-| `COMETAPI_KEY` | Your CometAPI API key | Yes |
+| `COMETAPI_KEY` | 您的 CometAPI API 金鑰 | 是 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python
 import os

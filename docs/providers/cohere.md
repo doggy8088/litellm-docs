@@ -1,21 +1,20 @@
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cohere
+# Cohere {#cohere}
 
-## API KEYS
+## API 金鑰 {#api-keys}
 
 ```python
 import os 
 os.environ["COHERE_API_KEY"] = ""
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
-#### Cohere v2 API (Default)
+#### Cohere v2 API（預設） {#cohere-v2-api-default}
 
 ```python showLineNumbers
 from litellm import completion
@@ -30,9 +29,9 @@ response = completion(
 )
 ```
 
-#### Cohere v1 API
+#### Cohere v1 API {#cohere-v1-api}
 
-To use the Cohere v1/chat API, prefix your model name with `cohere_chat/v1/`:
+若要使用 Cohere v1/chat API，請在模型名稱前加上 `cohere_chat/v1/`：
 
 ```python showLineNumbers
 from litellm import completion
@@ -47,9 +46,9 @@ response = completion(
 )
 ```
 
-#### Streaming
+#### 串流 {#streaming}
 
-**Cohere v2 Streaming:**
+**Cohere v2 串流：**
 
 ```python showLineNumbers
 from litellm import completion
@@ -69,7 +68,7 @@ for chunk in response:
 ```
 
 
-**Cohere v1 Streaming:**
+**Cohere v1 串流：**
 
 ```python showLineNumbers
 from litellm import completion
@@ -89,21 +88,21 @@ for chunk in response:
 ```
 
 
-## Usage with LiteLLM Proxy 
+## 與 LiteLLM Proxy 搭配使用 {#usage-with-litellm-proxy}
 
-Here's how to call Cohere with the LiteLLM Proxy Server
+以下是如何透過 LiteLLM Proxy Server 呼叫 Cohere
 
-### 1. Save key in your environment
+### 1. 將金鑰儲存在您的環境中 {#1-save-key-in-your-environment}
 
 ```bash
 export COHERE_API_KEY="your-api-key"
 ```
 
-### 2. Start the proxy 
+### 2. 啟動 proxy {#2-start-the-proxy}
 
-Define the cohere models you want to use in the config.yaml
+在 config.yaml 中定義您要使用的 cohere 模型
 
-**For Cohere v1 models:**
+**適用於 Cohere v1 模型：**
 ```yaml showLineNumbers
 model_list:
   - model_name: command-a-03-2025 
@@ -112,7 +111,7 @@ model_list:
       api_key: "os.environ/COHERE_API_KEY"
 ```
 
-**For Cohere v2 models:**
+**適用於 Cohere v2 模型：**
 ```yaml showLineNumbers
 model_list:
   - model_name: command-a-03-2025-v2
@@ -126,10 +125,10 @@ litellm --config /path/to/config.yaml
 ```
 
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
 <Tabs>
-<TabItem value="v1-curl" label="Cohere v1 - Curl Request">
+<TabItem value="v1-curl" label="Cohere v1 - Curl 請求">
 
 ```shell showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -147,7 +146,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 </TabItem>
-<TabItem value="v2-curl" label="Cohere v2 - Curl Request">
+<TabItem value="v2-curl" label="Cohere v2 - Curl 請求">
 
 ```shell showLineNumbers
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -207,9 +206,8 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-## Supported Models
-| Model Name | Function Call |
+## 支援的模型 {#supported-models}
+| 模型名稱 | 函式呼叫 |
 |------------|----------------|
 | command-a-03-2025 | `litellm.completion('command-a-03-2025', messages)` |
 | command-r-plus-08-2024 | `litellm.completion('command-r-plus-08-2024', messages)` |  
@@ -219,8 +217,7 @@ print(response)
 | command-light | `litellm.completion('command-light', messages)` |  
 | command-nightly | `litellm.completion('command-nightly', messages)` |
 
-
-## Embedding
+## 嵌入 {#embedding}
 
 ```python
 from litellm import embedding
@@ -233,16 +230,15 @@ response = embedding(
 )
 ```
 
-### Setting - Input Type for v3 models
-v3 Models have a required parameter: `input_type`. LiteLLM defaults to `search_document`. It can be one of the following four values:
+### 設定 - v3 模型的輸入類型 {#setting---input-type-for-v3-models}
+v3 模型有一個必填參數：`input_type`。LiteLLM 預設為 `search_document`。它可以是以下四個值之一：
 
-- `input_type="search_document"`: (default) Use this for texts (documents) you want to store in your vector database
-- `input_type="search_query"`: Use this for search queries to find the most relevant documents in your vector database
-- `input_type="classification"`: Use this if you use the embeddings as an input for a classification system
-- `input_type="clustering"`: Use this if you use the embeddings for text clustering
+- `input_type="search_document"`： （預設）當您要將文字（文件）儲存在向量資料庫中時使用
+- `input_type="search_query"`：當您要用搜尋查詢在向量資料庫中尋找最相關的文件時使用
+- `input_type="classification"`：當您將 embeddings 作為分類系統的輸入時使用
+- `input_type="clustering"`：當您將 embeddings 用於文字叢集時使用
 
 https://txt.cohere.com/introducing-embed-v3/
-
 
 ```python
 from litellm import embedding
@@ -256,8 +252,8 @@ response = embedding(
 )
 ```
 
-### Supported Embedding Models
-| Model Name               | Function Call                                                |
+### 支援的嵌入模型 {#supported-embedding-models}
+| 模型名稱               | 函式呼叫                                                |
 |--------------------------|--------------------------------------------------------------|
 | embed-english-v3.0       | `embedding(model="embed-english-v3.0", input=["good morning from litellm", "this is another item"])` |
 | embed-english-light-v3.0 | `embedding(model="embed-english-light-v3.0", input=["good morning from litellm", "this is another item"])` |
@@ -267,14 +263,14 @@ response = embedding(
 | embed-english-light-v2.0 | `embedding(model="embed-english-light-v2.0", input=["good morning from litellm", "this is another item"])` |
 | embed-multilingual-v2.0  | `embedding(model="embed-multilingual-v2.0", input=["good morning from litellm", "this is another item"])` |
 
-## Rerank 
+## 重新排序 {#rerank}
 
-### Usage
+### 使用方式 {#usage-1}
 
-LiteLLM supports the v1 and v2 clients for Cohere rerank. By default, the `rerank` endpoint uses the v2 client, but you can specify the v1 client by explicitly calling `v1/rerank`
+LiteLLM 支援 Cohere rerank 的 v1 和 v2 用戶端。預設情況下，`rerank` 端點會使用 v2 用戶端，但您可以透過明確呼叫 `v1/rerank` 來指定 v1 用戶端
 
 <Tabs>
-<TabItem value="sdk" label="LiteLLM SDK Usage">
+<TabItem value="sdk" label="LiteLLM SDK 使用方式">
 
 ```python
 from litellm import rerank
@@ -300,13 +296,13 @@ print(response)
 ```
 </TabItem>
 
-<TabItem value="proxy" label="LiteLLM Proxy Usage">
+<TabItem value="proxy" label="LiteLLM Proxy 使用方式">
 
-LiteLLM provides an cohere api compatible `/rerank` endpoint for Rerank calls.
+LiteLLM 提供一個相容 cohere api 的 `/rerank` 端點供 Rerank 請求使用。
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -320,7 +316,7 @@ model_list:
       api_key: os.environ/COHERE_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -328,7 +324,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test request
+測試請求
 
 ```bash
 curl http://0.0.0.0:4000/rerank \
@@ -350,14 +346,14 @@ curl http://0.0.0.0:4000/rerank \
 </TabItem>
 </Tabs>
 
-## Parse (OCR)
+## 解析（OCR） {#parse-ocr}
 
-[Cohere Parse](https://docs.cohere.com/reference/parse) turns a document image into markdown. LiteLLM serves it through the [`/ocr` endpoint](../ocr), so requests and responses use the same shape as every other OCR provider and each call is cost tracked per billed page.
+[Cohere Parse](https://docs.cohere.com/reference/parse) 會將文件影像轉換為 markdown。LiteLLM 透過 [`/ocr` 端點](../ocr) 提供此功能，因此請求與回應會使用與其他 OCR 提供者相同的格式，而且每次呼叫都會依據計費頁面進行成本追蹤。
 
-Parse accepts `image_url` documents only: an image URL or a base64 `data:image/...` URI. PDFs and `document_url` inputs are rejected with a 400 before anything is sent to Cohere.
+Parse 僅接受 `image_url` 文件：影像 URL 或 base64 `data:image/...` URI。PDF 與 `document_url` 輸入會在送往 Cohere 之前先以 400 拒絕。
 
 <Tabs>
-<TabItem value="sdk" label="LiteLLM SDK Usage">
+<TabItem value="sdk" label="LiteLLM SDK 使用方式">
 
 ```python showLineNumbers
 import os
@@ -379,11 +375,11 @@ print(response.usage_info.pages_processed)
 ```
 </TabItem>
 
-<TabItem value="proxy" label="LiteLLM Proxy Usage">
+<TabItem value="proxy" label="LiteLLM Proxy 使用方式">
 
-**Setup**
+**設定**
 
-Add this to your litellm proxy config.yaml
+將以下內容加入您的 litellm proxy config.yaml
 
 ```yaml
 model_list:
@@ -393,7 +389,7 @@ model_list:
       api_key: os.environ/COHERE_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -401,7 +397,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Test request
+測試請求
 
 ```bash
 curl http://0.0.0.0:4000/v1/ocr \
@@ -418,11 +414,11 @@ curl http://0.0.0.0:4000/v1/ocr \
 </TabItem>
 </Tabs>
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
-| Parameter | Values | Description |
+| 參數 | 值 | 說明 |
 |-----------|--------|-------------|
-| `output_format` | `markdown` (default), `blocks` | Cohere's output layout. With `blocks`, each page carries Cohere's `blocks` array and `markdown` is empty |
-| `req_format` | `litellm` (default), `native` | `native` returns Cohere's own response body instead of the LiteLLM OCR shape |
+| `output_format` | `markdown`（預設）、`blocks` | Cohere 的輸出版面配置。使用 `blocks` 時，每一頁都會包含 Cohere 的 `blocks` 陣列，且 `markdown` 會是空的 |
+| `req_format` | `litellm`（預設）、`native` | `native` 會回傳 Cohere 自己的回應主體，而不是 LiteLLM OCR 格式 |
 
-Cohere Parse deployed on Azure AI Foundry is covered in [Azure AI OCR](./azure_ocr#cohere-parse).
+部署於 Azure AI Foundry 的 Cohere Parse 已涵蓋於 [Azure AI OCR](./azure_ocr#cohere-parse)。

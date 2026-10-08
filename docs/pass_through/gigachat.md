@@ -1,18 +1,18 @@
-# GigaChat
+# GigaChat {#gigachat}
 
-Pass-through endpoints for GigaChat - call the provider-specific endpoint in native format (no translation).
+GigaChat 的通透傳遞端點 - 以原生格式呼叫提供者特定端點（不進行翻譯）。
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |-------|-------|-------|
-| Cost Tracking | ✅ | supported for `/chat/completions` and `/embeddings` |
-| Logging | ✅ | works across all integrations |
-| Streaming | ✅ | |
+| 成本追蹤 | ✅ | 支援 `/chat/completions` 和 `/embeddings` |
+| 記錄 | ✅ | 可跨所有整合運作 |
+| 串流 | ✅ | |
 
-Just replace `https://gigachat.devices.sberbank.ru/api/v1` with `LITELLM_PROXY_BASE_URL/gigachat`
+只要將 `https://gigachat.devices.sberbank.ru/api/v1` 替換為 `LITELLM_PROXY_BASE_URL/gigachat`
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-1. Add your GigaChat credentials to your environment
+1. 將您的 GigaChat 憑證加入環境變數
 
 ```bash
 export GIGACHAT_CREDENTIALS="your-authorization-key"
@@ -21,15 +21,15 @@ export GIGACHAT_CREDENTIALS="your-authorization-key"
 export GIGACHAT_SCOPE="GIGACHAT_API_PERS"
 ```
 
-Instead of credentials, you can supply a pre-issued token directly with `GIGACHAT_ACCESS_TOKEN`.
+除了憑證之外，您也可以直接使用 `GIGACHAT_ACCESS_TOKEN` 提供預先核發的權杖。
 
 :::info
 
-The GigaChat API is served with certificates from the Russian Trusted Root CA, which most systems do not trust by default. Either [install the certificate chain](https://developers.sber.ru/docs/ru/gigachat/certificates) or run the proxy with `ssl_verify: false`.
+GigaChat API 使用來自 Russian Trusted Root CA 的憑證提供服務，而多數系統預設不信任該憑證鏈。您可以選擇 [安裝憑證鏈](https://developers.sber.ru/docs/ru/gigachat/certificates) 或在啟動 proxy 時加上 `ssl_verify: false`。
 
 :::
 
-2. Start LiteLLM Proxy
+2. 啟動 LiteLLM Proxy
 
 ```bash
 litellm
@@ -37,7 +37,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/gigachat/chat/completions' \
@@ -49,18 +49,18 @@ curl -L -X POST 'http://0.0.0.0:4000/gigachat/chat/completions' \
 }'
 ```
 
-## Examples
+## 範例 {#examples}
 
-Anything after `http://0.0.0.0:4000/gigachat` is treated as a provider-specific route, and handled accordingly.
+`http://0.0.0.0:4000/gigachat` 之後的任何內容都會被視為提供者特定路由，並依此處理。
 
-Key Changes:
+主要變更：
 
-| **Original Endpoint**                                | **Replace With**                  |
+| **原始端點**                                | **替換為**                  |
 |------------------------------------------------------|-----------------------------------|
 | `https://gigachat.devices.sberbank.ru/api/v1`          | `http://0.0.0.0:4000/gigachat` (LITELLM_PROXY_BASE_URL="http://0.0.0.0:4000")      |
-| `bearer $GIGACHAT_ACCESS_TOKEN`                                 | `bearer anything` (use `bearer LITELLM_VIRTUAL_KEY` if Virtual Keys are setup on proxy)                    |
+| `bearer $GIGACHAT_ACCESS_TOKEN`                                 | `bearer anything`（如果 proxy 上已設定 Virtual Keys，請使用 `bearer LITELLM_VIRTUAL_KEY`）                    |
 
-### **Example 1: Chat completions (streaming)**
+### **範例 1：聊天完成（串流）** {#example-1-chat-completions-streaming}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/gigachat/chat/completions' \
@@ -73,7 +73,7 @@ curl -L -X POST 'http://0.0.0.0:4000/gigachat/chat/completions' \
 }'
 ```
 
-### **Example 2: Embeddings**
+### **範例 2：嵌入** {#example-2-embeddings}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/gigachat/embeddings' \
@@ -85,7 +85,7 @@ curl -L -X POST 'http://0.0.0.0:4000/gigachat/embeddings' \
 }'
 ```
 
-### **Example 3: List models**
+### **範例 3：列出模型** {#example-3-list-models}
 
 ```bash
 curl -L -X GET 'http://0.0.0.0:4000/gigachat/models' \

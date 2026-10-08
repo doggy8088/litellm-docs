@@ -1,23 +1,22 @@
-# Be an Integration Partner
+# 成為整合合作夥伴 {#be-an-integration-partner}
 
-Welcome, integration partners! 👋
+歡迎，整合合作夥伴們！👋
 
-We're excited to have you contribute to LiteLLM. To get started and connect with the LiteLLM community:
+我們很高興您能為 LiteLLM 做出貢獻。若要開始並與 LiteLLM 社群連結：
 
-## Get Support & Connect {#get-support--connect}
+## 取得支援與連結 {#get-support--connect}
 
+加入 [Slack](https://litellmossslack.slack.com/) 或 [Discord](https://discord.com/invite/wuPM9dRgDw) 與社群連結，您可以與其他開發人員交流、獲得您整合的協助與回饋，並隨時掌握 LiteLLM 的最新進展。
 
-Join [Slack](https://litellmossslack.slack.com/) or [Discord](https://discord.com/invite/wuPM9dRgDw) to connect with the community, you can talk with other developers, get help and feedback on your integration, and stay updated on LiteLLM developments.
+## 我們為整合合作夥伴提供什麼 {#what-we-offer-integration-partners}
 
-## What We Offer Integration Partners
+- 來自 LiteLLM 團隊的**直接支援**
+- 對您整合實作的**回饋**
+- 與持續成長的 LLM 開發者社群**協作**
+- 您的整合在我們文件中的**曝光**
 
-- **Direct support** from the LiteLLM team
-- **Feedback** on your integration implementation
-- **Collaboration** with a growing community of LLM developers
-- **Visibility** for your integration in our documentation
+## 有問題嗎？ {#questions}
 
-## Questions?
+加入我們的 Slack 社群後，請前往 **`#integration-partners`** 頻道自我介紹並提出問題。我們的團隊與社群成員很樂意協助您使用 LiteLLM 打造出色的整合。
 
-Once you've joined our Slack community, head over to the **`#integration-partners`** channel to introduce yourself and ask questions. Our team and community members are happy to help you build great integrations with LiteLLM.
-
-We look forward to working with you.
+我們期待與您合作。

@@ -1,5 +1,5 @@
 ---
-title: "v1.94.1 - Team Key Budget Enforcement Reverted"
+title: "v1.94.1 - 已還原團隊金鑰預算強制執行"
 slug: "v1-94-1"
 date: 2026-07-30T21:45:00
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,18 +43,18 @@ pip install litellm==1.94.1
 </TabItem>
 </Tabs>
 
-`v1.94.1` is a patch release on top of [`v1.94.0`](/release_notes/v1.94.0/v1-94-0). It reverts the change that made a user's personal `max_budget` apply to their team keys.
+`v1.94.1` 是建構在 [`v1.94.0`](/release_notes/v1.94.0/v1-94-0) 之上的修補版發行。它還原了將使用者的個人 `max_budget` 套用到其團隊金鑰的變更。
 
-If you are on `v1.94.0`, upgrading to `v1.94.1` is recommended. Under `v1.94.0`, once a user's personal spend crossed their own `max_budget`, every request made with a team-scoped key belonging to that user was refused with `429 ExceededBudget`, even when the team had budget left. That check runs on management routes as well as LLM routes, and the Admin UI session token is itself team-scoped, so an affected user was also locked out of the dashboard: key lists, team lists, and most other panels returned `429` and the page rendered empty.
+如果您正在使用 `v1.94.0`，建議升級至 `v1.94.1`。在 `v1.94.0` 下，一旦使用者的個人支出超過其自己的 `max_budget`，即使團隊仍有預算，使用該使用者所屬團隊範圍金鑰發出的每個請求都會被拒絕並回傳 `429 ExceededBudget`。這項檢查同時會在管理路由與 LLM 路由上執行，而 Admin UI 工作階段權杖本身就是團隊範圍，因此受影響的使用者也會被鎖定在儀表板之外：金鑰清單、團隊清單與大多數其他面板都會回傳 `429`，且頁面會顯示為空白。
 
-A team-scoped key is once again governed by the team and team-member budgets alone. A user's personal `max_budget` continues to apply to their personal keys, unchanged.
+團隊範圍金鑰現在再次只受團隊與團隊成員預算管理。使用者的個人 `max_budget` 仍然適用於其個人金鑰，且維持不變。
 
-The `general_settings.skip_user_budget_on_team_key` flag that `v1.94.0` introduced as an opt-out is removed in this release. It existed only to switch the reverted behavior off, so it goes away with the behavior rather than remaining as a setting that does nothing. If you set it, remove it from your config; the hierarchy it restored is now the default.
+`general_settings.skip_user_budget_on_team_key` 標記是在 `v1.94.0` 中作為可選關閉項而新增的，本版已將其移除。它存在的目的只是關閉已還原的行為，因此隨著該行為一起移除，而不是保留成一個毫無作用的設定。如果您有設定它，請將其從設定中移除；它所恢復的階層現在已是預設值。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- revert(proxy): stop enforcing user budget on team keys - [PR #35271](https://github.com/BerriAI/litellm/pull/35271)
+- revert(proxy): 停止對團隊金鑰強制執行使用者預算 - [PR #35271](https://github.com/BerriAI/litellm/pull/35271)
 
-## Full Changelog
+## 完整更新紀錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.94.0...v1.94.1

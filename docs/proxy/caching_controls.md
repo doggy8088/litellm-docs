@@ -1,32 +1,32 @@
 ---
 title: Cache Controls
-description: Control what the LiteLLM proxy caches and for how long, per request, per virtual key, and proxy-wide.
+description: 控制 LiteLLM proxy 快取哪些內容以及快取多久，可依請求、依虛擬金鑰，或由 proxy 全域控制。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cache Controls
+# 快取控制 {#cache-controls}
 
-Once caching is on it applies to every supported call type. This page covers narrowing that: per
-request with a `cache` object in the body, per virtual key with key metadata, and proxy-wide with
-`cache_params`.
+一旦啟用快取，就會套用到每一種支援的呼叫類型。本頁說明如何縮小範圍：可在每個
+請求中使用 body 內的 `cache` 物件、透過金鑰中繼資料依虛擬金鑰設定，或透過
+`cache_params` 進行 proxy 全域設定。
 
-## Dynamic Cache Controls
+## 動態快取控制 {#dynamic-cache-controls}
 
-| Parameter   | Type             | Description                                                                       |
+| 參數   | 類型             | 說明                                                                       |
 | ----------- | ---------------- | --------------------------------------------------------------------------------- |
-| `ttl`       | _Optional(int)_  | Will cache the response for the user-defined amount of time (in seconds)          |
-| `s-maxage`  | _Optional(int)_  | Will only accept cached responses that are within user-defined range (in seconds) |
-| `no-cache`  | _Optional(bool)_ | Will not store the response in cache.                                             |
-| `no-store`  | _Optional(bool)_ | Will not cache the response                                                       |
-| `namespace` | _Optional(str)_  | Will cache the response under a user-defined namespace                            |
+| `ttl`       | _Optional(int)_  | 會將回應快取使用者定義的時間長度（以秒為單位）          |
+| `s-maxage`  | _Optional(int)_  | 只會接受在使用者定義範圍內（以秒為單位）的快取回應 |
+| `no-cache`  | _Optional(bool)_ | 不會將回應儲存在快取中。                                             |
+| `no-store`  | _Optional(bool)_ | 不會快取回應                                                       |
+| `namespace` | _Optional(str)_  | 會將回應快取在使用者定義的命名空間下                            |
 
-Each cache parameter can be controlled on a per-request basis. Here are examples for each parameter:
+每個快取參數都可以依請求層級控制。以下是每個參數的範例：
 
-### `ttl`
+### `ttl` {#ttl}
 
-Set how long (in seconds) to cache a response.
+設定回應快取的時間長度（以秒為單位）。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -70,9 +70,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### `s-maxage`
+### `s-maxage` {#s-maxage}
 
-Only accept cached responses that are within the specified age (in seconds).
+只接受在指定年齡內（以秒為單位）的快取回應。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -116,9 +116,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### `no-cache`
+### `no-cache` {#no-cache}
 
-Force a fresh response, bypassing the cache.
+強制取得新的回應，略過快取。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -162,9 +162,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### `no-store`
+### `no-store` {#no-store}
 
-Will not store the response in cache.
+不會將回應儲存在快取中。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -208,9 +208,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-### `namespace`
+### `namespace` {#namespace}
 
-Store the response under a specific cache namespace.
+將回應儲存在特定快取命名空間下。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -254,11 +254,11 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Per-key cache controls
+## 依金鑰的快取控制 {#per-key-cache-controls}
 
-Set the `cache` field in a virtual key's metadata and the proxy applies it to every request made
-with that key, so clients need no changes. This is the usual way to keep one class of traffic out of
-the cache while leaving it on everywhere else.
+在虛擬金鑰的中繼資料中設定 `cache` 欄位，proxy 就會將其套用到使用該金鑰發出的每個請求，
+因此用戶端無需變更。這通常是讓某一類流量排除於
+快取之外，同時讓其他所有地方維持啟用的做法。
 
 ```shell
 curl http://localhost:4000/key/generate \
@@ -269,11 +269,11 @@ curl http://localhost:4000/key/generate \
   }'
 ```
 
-Supported key-level cache controls: `ttl`, `s-maxage`, `no-cache`, `no-store`.
+支援的金鑰層級快取控制：`ttl`、`s-maxage`、`no-cache`、`no-store`。
 
-## Set caching default off (opt in only)
+## 將快取預設關閉（僅 opt in） {#set-caching-default-off-opt-in-only}
 
-1. **Set `mode: default_off` for caching**
+1. **將 `mode: default_off` 設為快取**
 
 ```yaml
 model_list:
@@ -291,7 +291,7 @@ litellm_settings:
     mode: default_off # 👈 Key change cache is default_off
 ```
 
-2. **Opting in to cache when cache is default off**
+2. **在快取預設關閉時 opt in 使用快取**
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python SDK">
@@ -337,12 +337,12 @@ curl http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
-## Control Call Types Caching is on for - (`/chat/completion`, `/embeddings`, etc.)
+## 控制啟用快取的呼叫類型 -（`/chat/completion`、`/embeddings` 等） {#control-call-types-caching-is-on-for---chatcompletion-embeddings-etc}
 
-By default, caching is on for all call types. You can control which call types caching is on for by
-setting `supported_call_types` in `cache_params`
+預設情況下，所有呼叫類型都會啟用快取。您可以透過
+在 `cache_params` 中設定 `supported_call_types`，來控制哪些呼叫類型啟用快取。
 
-**Cache will only be on for the call types specified in `supported_call_types`**
+**快取只會對 `supported_call_types` 中指定的呼叫類型啟用**
 
 ```yaml
 litellm_settings:
@@ -354,12 +354,12 @@ litellm_settings:
       # /chat/completions, /completions, /embeddings, /audio/transcriptions, /v1/responses
 ```
 
-## Set cache for proxy, but not on the actual llm api call
+## 為 proxy 設定快取，但不套用於實際的 llm api 呼叫 {#set-cache-for-proxy-but-not-on-the-actual-llm-api-call}
 
-Use this if you just want to enable features like rate limiting, and loadbalancing across multiple
-instances.
+如果您只想啟用像是速率限制與跨多個
+執行個體的負載平衡等功能，請使用此項。
 
-Set `supported_call_types: []` to disable caching on the actual api call.
+將 `supported_call_types: []` 設為停用實際 api 呼叫上的快取。
 
 ```yaml
 litellm_settings:
@@ -369,11 +369,11 @@ litellm_settings:
     supported_call_types: []
 ```
 
-## Deleting Cache Keys - `/cache/delete`
+## 刪除快取鍵 - `/cache/delete` {#deleting-cache-keys---cachedelete}
 
-To delete a cache key, send a request to `/cache/delete` with the `keys` you want to delete
+若要刪除快取鍵，請將請求送到 `/cache/delete`，並帶上您要刪除的 `keys`
 
-Example
+範例
 
 ```shell
 curl -X POST "http://0.0.0.0:4000/cache/delete" \
@@ -385,10 +385,10 @@ curl -X POST "http://0.0.0.0:4000/cache/delete" \
 # {"status":"success"}
 ```
 
-### Viewing Cache Keys from responses
+### 檢視回應中的快取鍵 {#viewing-cache-keys-from-responses}
 
-You can view the cache_key in the response headers, on cache hits the cache key is sent as the
-`x-litellm-cache-key` response headers
+您可以在回應標頭中查看 cache_key；在快取命中時，快取鍵會以
+`x-litellm-cache-key` 回應標頭送出
 
 ```shell
 curl -i --location 'http://0.0.0.0:4000/chat/completions' \
@@ -406,7 +406,7 @@ curl -i --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-Response from litellm proxy
+來自 litellm proxy 的回應
 
 ```text
 date: Thu, 04 Apr 2024 17:37:21 GMT
@@ -430,13 +430,13 @@ x-litellm-cache-key: 586bf3f3c1bf5aecb55bd9996494d3bbc69eb58397163add6d49537762a
 
 ```
 
-## Provider-Specific Optional Parameters Caching
+## 提供者特定的選用參數快取 {#provider-specific-optional-parameters-caching}
 
-By default, LiteLLM only includes standard OpenAI parameters in cache keys. However, some providers (like Vertex AI) use additional parameters that affect the output but aren't included in the standard cache key generation.
+預設情況下，LiteLLM 只會將標準 OpenAI 參數納入快取鍵。不過，有些提供者（例如 Vertex AI）會使用會影響輸出的額外參數，但這些參數不包含在標準快取鍵產生中。
 
-### Enable Provider-Specific Parameter Caching
+### 啟用提供者特定參數快取 {#enable-provider-specific-parameter-caching}
 
-Add this setting to your `config.yaml` to include provider-specific optional parameters in cache keys:
+將此設定加入您的 `config.yaml`，以便將提供者特定的選用參數納入快取鍵：
 
 ```yaml
 litellm_settings:

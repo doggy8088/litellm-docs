@@ -1,78 +1,78 @@
 import Image from '@theme/IdealImage';
 
-# Customize UI Logo
+# 自訂 UI 標誌 {#customize-ui-logo}
 
-Personalize your LiteLLM dashboard by replacing the default logo with your own company branding. You can set a custom logo via the UI or the API.
+透過以您自己的公司品牌識別取代預設標誌，為您的 LiteLLM 儀表板增添個人化設定。您可以透過 UI 或 API 設定自訂標誌。
 
-## Via the UI
+## 透過 UI {#via-the-ui}
 
-### 1. Navigate to Settings
+### 1. 前往設定 {#1-navigate-to-settings}
 
-Click the **Settings** icon in the sidebar.
+點擊側邊欄中的 **Settings** 圖示。
 
-![Navigate to Settings](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/57a15404-51f7-481e-9db2-cea94566d3ce/ascreenshot_7a348567c839448bb806fd71cf4abca0_text_export.jpeg)
+![前往設定](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/57a15404-51f7-481e-9db2-cea94566d3ce/ascreenshot_7a348567c839448bb806fd71cf4abca0_text_export.jpeg)
 
-### 2. Open UI Theme Settings
+### 2. 開啟 UI 主題設定 {#2-open-ui-theme-settings}
 
-Click **UI Theme** from the settings menu.
+在設定選單中點擊 **UI Theme**。
 
-![Open UI Theme](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/30663fe1-9f78-4496-96d4-c53513cbaf82/ascreenshot_ac1eb59eda0e423fbd0e7d3a6cabd4c7_text_export.jpeg)
+![開啟 UI 主題](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/30663fe1-9f78-4496-96d4-c53513cbaf82/ascreenshot_ac1eb59eda0e423fbd0e7d3a6cabd4c7_text_export.jpeg)
 
-### 3. Click the Logo URL Field
+### 3. 點擊 Logo URL 欄位 {#3-click-the-logo-url-field}
 
-Click the **Logo URL** text field to start editing.
+點擊 **Logo URL** 文字欄位開始編輯。
 
-![Click Logo URL Field](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/069e8412-8ec1-4d36-ba38-6b2e2858a45a/ascreenshot_8fc7fb4a3af74815bc1b69a8554bc110_text_export.jpeg)
+![點擊 Logo URL 欄位](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/069e8412-8ec1-4d36-ba38-6b2e2858a45a/ascreenshot_8fc7fb4a3af74815bc1b69a8554bc110_text_export.jpeg)
 
-### 4. Find Your Logo Image
+### 4. 找到您的標誌圖片 {#4-find-your-logo-image}
 
-Open a new browser tab and find the logo image you want to use (e.g., search Google Images for your company logo).
+開啟新的瀏覽器分頁，找到您想使用的標誌圖片（例如，搜尋 Google Images 找到您的公司標誌）。
 
-![Find Logo Image](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/d9b55dac-bc4e-4728-b422-4afbc21f9034/ascreenshot_2a805f39c83d4b5e95f43495a6ea4e79_text_export.jpeg)
+![找到標誌圖片](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/d9b55dac-bc4e-4728-b422-4afbc21f9034/ascreenshot_2a805f39c83d4b5e95f43495a6ea4e79_text_export.jpeg)
 
-### 5. Right-Click on the Logo Image
+### 5. 在標誌圖片上按右鍵 {#5-right-click-on-the-logo-image}
 
-Right-click the image you want to use as your logo.
+在您想用作標誌的圖片上按右鍵。
 
-![Right-Click Image](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/9d42d13e-6028-4710-acb2-c6af04a855c7/ascreenshot_0f21f29ba0e44132afe483a4b88e8b70_text_export.jpeg)
+![在圖片上按右鍵](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/9d42d13e-6028-4710-acb2-c6af04a855c7/ascreenshot_0f21f29ba0e44132afe483a4b88e8b70_text_export.jpeg)
 
-### 6. Copy the Image Address
+### 6. 複製圖片位址 {#6-copy-the-image-address}
 
-Select **Copy Image Address** from the context menu to copy the URL.
+從快顯選單中選取 **Copy Image Address** 以複製 URL。
 
-![Copy Image Address](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/c25637be-383a-498b-ad11-eb1761d52757/ascreenshot_b237ee800979462189a02c1e1942ebf1_text_export.jpeg)
+![複製圖片位址](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/c25637be-383a-498b-ad11-eb1761d52757/ascreenshot_b237ee800979462189a02c1e1942ebf1_text_export.jpeg)
 
-### 7. Switch Back to LiteLLM
+### 7. 切回 LiteLLM {#7-switch-back-to-litellm}
 
-Navigate back to the LiteLLM UI tab (e.g., press **Cmd + Left** or click the tab).
+切回 LiteLLM UI 分頁（例如，按 **Cmd + Left** 或點擊該分頁）。
 
-![Switch Back](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/f0647856-679c-4591-9ff7-7fd3cfbc70b4/ascreenshot_3ce46dae64c94891ac0983f5ed8f085a_text_export.jpeg)
+![切回](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/f0647856-679c-4591-9ff7-7fd3cfbc70b4/ascreenshot_3ce46dae64c94891ac0983f5ed8f085a_text_export.jpeg)
 
-### 8. Paste the Logo URL
+### 8. 貼上 Logo URL {#8-paste-the-logo-url}
 
-Paste the copied image URL into the **Logo URL** field with **Cmd + V**.
+使用 **Cmd + V** 將複製的圖片 URL 貼到 **Logo URL** 欄位中。
 
-![Paste URL](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/54dd30d9-7a88-41e8-a580-a6acf707c7fa/ascreenshot_8a772218ac0743d9ae8ffd3311eccd5a_text_export.jpeg)
+![貼上 URL](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/54dd30d9-7a88-41e8-a580-a6acf707c7fa/ascreenshot_8a772218ac0743d9ae8ffd3311eccd5a_text_export.jpeg)
 
-### 9. Save Changes
+### 9. 儲存變更 {#9-save-changes}
 
-Click **Save Changes** to apply your new logo.
+點擊 **Save Changes** 以套用您的新標誌。
 
-![Save Changes](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/4baf6494-d146-4600-b6f2-ef667338d580/ascreenshot_722cbcd568ec4267af5122b3958bb248_text_export.jpeg)
+![儲存變更](https://colony-recorder.s3.amazonaws.com/files/2026-03-13/4baf6494-d146-4600-b6f2-ef667338d580/ascreenshot_722cbcd568ec4267af5122b3958bb248_text_export.jpeg)
 
-Your custom logo will now appear in the LiteLLM dashboard sidebar and login page.
+您的自訂標誌現在會顯示在 LiteLLM 儀表板側邊欄與登入頁面。
 
-## Dark Mode Logo
+## 深色模式標誌 {#dark-mode-logo}
 
-A logo drawn for a light background rarely reads well on a dark one, so you can set a second logo that LiteLLM uses whenever the dashboard is in dark mode. Fill in **Custom Logo URL (dark mode)** on the same UI Theme page, or set `UI_LOGO_PATH_DARK`
+為淺色背景繪製的標誌，在深色背景上通常不易辨識，因此您可以設定第二個標誌，讓 LiteLLM 在儀表板處於深色模式時使用。請在相同的 UI Theme 頁面中填入 **Custom Logo URL (dark mode)**，或設定 `UI_LOGO_PATH_DARK`
 
-Leaving it empty is a valid choice. Dark mode then reuses whatever you set for the light logo, so your branding still shows rather than reverting to LiteLLM's. The same thing happens if the dark logo is set but cannot be loaded, which means a broken or deleted image never costs you your branding
+留空是一個有效的選擇。此時深色模式會重用您為淺色標誌設定的內容，因此仍會顯示您的品牌，而不會改回 LiteLLM 的品牌。如果已設定深色標誌但無法載入，也會發生同樣情況，這表示損壞或已刪除的圖片不會讓您的品牌受損
 
-Setting only the dark logo leaves light mode on the default LiteLLM logo, so set both if you want your own artwork in each theme
+只設定深色標誌會讓淺色模式維持預設的 LiteLLM 標誌，因此若您希望每個主題都顯示自己的圖樣，請兩者都設定
 
-## Via the API
+## 透過 API {#via-the-api}
 
-### Set a Custom Logo
+### 設定自訂標誌 {#set-a-custom-logo}
 
 ```bash
 curl -X PATCH 'http://localhost:4000/update/ui_theme_settings' \
@@ -84,11 +84,11 @@ curl -X PATCH 'http://localhost:4000/update/ui_theme_settings' \
   }'
 ```
 
-`logo_url_dark` is optional. Omit it and dark mode reuses `logo_url`
+`logo_url_dark` 為選用。若省略它，深色模式會重用 `logo_url`
 
-### Set a Custom Favicon
+### 設定自訂 favicon {#set-a-custom-favicon}
 
-You can also customize the browser tab favicon:
+您也可以自訂瀏覽器分頁的 favicon：
 
 ```bash
 curl -X PATCH 'http://localhost:4000/update/ui_theme_settings' \
@@ -100,15 +100,15 @@ curl -X PATCH 'http://localhost:4000/update/ui_theme_settings' \
   }'
 ```
 
-### Get Current Theme Settings
+### 取得目前主題設定 {#get-current-theme-settings}
 
 ```bash
 curl -X GET 'http://localhost:4000/get/ui_theme_settings'
 ```
 
-### Reset to Default Logo
+### 重設為預設標誌 {#reset-to-default-logo}
 
-Send an empty `logo_url` to restore the default LiteLLM logo:
+傳送空的 `logo_url` 以還原預設的 LiteLLM 標誌：
 
 ```bash
 curl -X PATCH 'http://localhost:4000/update/ui_theme_settings' \
@@ -119,9 +119,9 @@ curl -X PATCH 'http://localhost:4000/update/ui_theme_settings' \
   }'
 ```
 
-## Via `proxy_config.yaml`
+## 透過 `proxy_config.yaml` {#via-proxy_configyaml}
 
-You can also set the logo URL in your proxy configuration file:
+您也可以在 proxy 設定檔中設定 logo URL：
 
 ```yaml
 litellm_settings:
@@ -131,7 +131,7 @@ litellm_settings:
     favicon_url: "https://example.com/your-favicon.ico"  # optional
 ```
 
-Or set them as environment variables:
+或者將它們設為環境變數：
 
 ```yaml
 environment_variables:
@@ -139,13 +139,13 @@ environment_variables:
   UI_LOGO_PATH_DARK: "https://example.com/your-company-logo-dark.png"
 ```
 
-## Supported Logo Formats
+## 支援的標誌格式 {#supported-logo-formats}
 
-| Format | Supported |
+| 格式 | 支援 |
 |--------|-----------|
-| JPEG / JPG | Yes |
-| PNG | Yes |
-| SVG | Yes |
-| ICO (favicon only) | Yes |
-| HTTP/HTTPS URL | Yes |
-| Local file path | Yes |
+| JPEG / JPG | 是 |
+| PNG | 是 |
+| SVG | 是 |
+| ICO（僅限 favicon） | 是 |
+| HTTP/HTTPS URL | 是 |
+| 本機檔案路徑 | 是 |

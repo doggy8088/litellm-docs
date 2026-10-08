@@ -2,24 +2,23 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Session Logs
+# 會話記錄 {#session-logs}
 
-Group requests into sessions. This allows you to group related requests together.
-
+將請求分組為會話。這可讓您將相關請求分組在一起。
 
 <Image img={require('../../img/ui_session_logs.png')}/>
 
-## Usage 
+## 用法  {#usage}
 
-### `/chat/completions`
+### `/chat/completions` {#chatcompletions}
 
-To group multiple requests into a single session, pass the same `litellm_session_id` in the metadata for each request. Here's how to do it:
+若要將多個請求分組成單一會話，請在每個請求的中繼資料中傳入相同的 `litellm_session_id`。做法如下：
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-**Request 1**
-Create a new session with a unique ID and make the first request. The session ID will be used to track all related requests.
+**請求 1**
+使用唯一的 ID 建立新會話，並發出第一個請求。會話 ID 將用於追蹤所有相關請求。
 
 ```python showLineNumbers
 import openai
@@ -48,8 +47,8 @@ response1 = client.chat.completions.create(
 )
 ```
 
-**Request 2**
-Make another request using the same session ID to link it with the previous request. This allows tracking related requests together.
+**請求 2**
+使用相同的會話 ID 發出另一個請求，將其與先前的請求連結。這可讓您將相關請求一起追蹤。
 
 ```python showLineNumbers
 # Second request using same session ID
@@ -70,8 +69,8 @@ response2 = client.chat.completions.create(
 </TabItem>
 <TabItem value="langchain" label="Langchain">
 
-**Request 1**
-Initialize a new session with a unique ID and create a chat model instance for making requests. The session ID is embedded in the model's configuration.
+**請求 1**
+以唯一的 ID 初始化新會話，並建立一個 chat model 實例以發出請求。會話 ID 會嵌入模型的設定中。
 
 ```python showLineNumbers
 from langchain.chat_models import ChatOpenAI
@@ -93,8 +92,8 @@ chat = ChatOpenAI(
 response1 = chat.invoke("Write a short story about a robot")
 ```
 
-**Request 2**
-Use the same chat model instance to make another request, automatically maintaining the session context through the previously configured session ID.
+**請求 2**
+使用相同的 chat model 實例發出另一個請求，透過先前設定的會話 ID 自動維持會話內容。
 
 ```python showLineNumbers
 # Second request using same chat object and session ID
@@ -104,8 +103,8 @@ response2 = chat.invoke("Now write a poem about that robot")
 </TabItem>
 <TabItem value="curl" label="Curl">
 
-**Request 1**
-Generate a new session ID and make the initial API call. The session ID in the metadata will be used to track this conversation.
+**請求 1**
+產生新的會話 ID 並發出初始 API 呼叫。中繼資料中的會話 ID 將用於追蹤這段對話。
 
 ```bash showLineNumbers
 # Create a session ID
@@ -130,8 +129,8 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-**Request 2**
-Make a follow-up request using the same session ID to maintain conversation context and tracking.
+**請求 2**
+使用相同的會話 ID 發出後續請求，以維持對話內容與追蹤。
 
 ```bash showLineNumbers
 # Second request using same session ID
@@ -153,8 +152,8 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 <TabItem value="litellm" label="LiteLLM Python SDK">
 
-**Request 1**
-Start a new session by creating a unique ID and making the initial request. This session ID will be used to group related requests together.
+**請求 1**
+透過建立唯一的 ID 並發出初始請求來開始新會話。此會話 ID 將用於將相關請求分組在一起。
 
 ```python showLineNumbers
 import litellm
@@ -175,8 +174,8 @@ response1 = litellm.completion(
 )
 ```
 
-**Request 2**
-Continue the conversation by making another request with the same session ID, linking it to the previous interaction.
+**請求 2**
+使用相同的會話 ID 發出另一個請求，將其連結到先前的互動，以延續對話。
 
 ```python showLineNumbers
 # Second request using same session ID
@@ -194,15 +193,15 @@ response2 = litellm.completion(
 </TabItem>
 </Tabs>
 
-### `/responses`
+### `/responses` {#responses}
 
-For the `/responses` endpoint, use `previous_response_id` to group requests into a session. The `previous_response_id` is returned in the response of each request.
+對於 `/responses` 端點，請使用 `previous_response_id` 將請求分組成會話。每個請求回應都會回傳 `previous_response_id`。
 
 <Tabs>
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-**Request 1**
-Make the initial request and store the response ID for linking follow-up requests.
+**請求 1**
+發出初始請求並儲存回應 ID，以便連結後續請求。
 
 ```python showLineNumbers
 from openai import OpenAI
@@ -222,8 +221,8 @@ response1 = client.responses.create(
 response_id = response1.id
 ```
 
-**Request 2**
-Make a follow-up request using the previous response ID to maintain the conversation context.
+**請求 2**
+使用先前的回應 ID 發出後續請求，以維持對話內容。
 
 ```python showLineNumbers
 # Second request using previous response ID
@@ -237,8 +236,8 @@ response2 = client.responses.create(
 </TabItem>
 <TabItem value="curl" label="Curl">
 
-**Request 1**
-Make the initial request. The response will include an ID that can be used to link follow-up requests.
+**請求 1**
+發出初始請求。回應將包含可用於連結後續請求的 ID。
 
 ```bash showLineNumbers
 # Store your API key
@@ -256,8 +255,8 @@ curl http://localhost:4000/v1/responses \
 # Response will include an 'id' field that you'll use in the next request
 ```
 
-**Request 2**
-Make a follow-up request using the previous response ID to maintain the conversation context.
+**請求 2**
+使用先前的回應 ID 發出後續請求，以維持對話內容。
 
 ```bash showLineNumbers
 # Second request using previous response ID
@@ -274,8 +273,8 @@ curl http://localhost:4000/v1/responses \
 </TabItem>
 <TabItem value="litellm" label="LiteLLM Python SDK">
 
-**Request 1**
-Make the initial request and store the response ID for linking follow-up requests.
+**請求 1**
+發出初始請求並儲存回應 ID，以便連結後續請求。
 
 ```python showLineNumbers
 import litellm
@@ -292,8 +291,8 @@ response1 = litellm.responses(
 response_id = response1.id
 ```
 
-**Request 2**
-Make a follow-up request using the previous response ID to maintain the conversation context.
+**請求 2**
+使用先前的回應 ID 發出後續請求，以維持對話內容。
 
 ```python showLineNumbers
 # Second request using previous response ID

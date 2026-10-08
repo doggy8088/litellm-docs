@@ -1,10 +1,10 @@
 ---
-title: Events
+title: 事件
 ---
 
-# Events
+# 事件 {#events}
 
-`litellm.agent(..., stream=True)` yields eight kinds of event. Each adapter translates its runtime's native events into these.
+`litellm.agent(..., stream=True)` 會產生八種事件。每個 adapter 都會將其執行階段的原生事件轉換為這些事件。
 
 ```python
 from litellm.harness import (
@@ -33,24 +33,24 @@ for event in litellm.agent(Harness.CLAUDE_CODE, "Add type hints to utils.py", sa
             print(f"\n${cost:.4f}")
 ```
 
-That `match` has no `case _`. `Event` is a closed union, so mypy and pyright both treat it as exhaustive.
+該 `match` 沒有 `case _`。`Event` 是一個封閉聯集，因此 mypy 和 pyright 都將其視為窮盡。
 
-| Event | Fields | Notes |
+| 事件 | 欄位 | 備註 |
 |---|---|---|
-| `Text` | `delta` | Assistant text, streamed. |
-| `Reasoning` | `delta` | Only when the model and the harness emit it. |
-| `ToolCall` | `id`, `name`, `native_name`, `input`, `builtin` | `builtin` is `False` for your own `tools=`. |
-| `ToolResult` | `id`, `output`, `is_error` | Paired with `ToolCall.id`. |
-| `FileChange` | `path`, `kind`, `diff` | `kind` is `"created"`, `"modified"` or `"deleted"`. `diff` is a unified diff for text files up to 256 KB, else `None`. |
-| `Compaction` | `tokens_before`, `tokens_after` | The runtime summarized its own history. |
-| `Approval` | `tool`, `input`, `allow()`, `deny(reason)` | Only from harnesses with tool approval. |
-| `Done` | `result`, `usage`, `cost`, `stop_reason` | Always the last event, exactly once. |
+| `Text` | `delta` | 助理文字，串流傳輸。 |
+| `Reasoning` | `delta` | 只有在模型與 harness 皆產生時才會出現。 |
+| `ToolCall` | `id`, `name`, `native_name`, `input`, `builtin` | `builtin` 是供您自己的 `tools=` 使用的 `False`。 |
+| `ToolResult` | `id`, `output`, `is_error` | 與 `ToolCall.id` 配對。 |
+| `FileChange` | `path`, `kind`, `diff` | `kind` 是 `"created"`、`"modified"` 或 `"deleted"`。`diff` 是適用於最多 256 KB 文字檔案的統一 diff，否則為 `None`。 |
+| `Compaction` | `tokens_before`, `tokens_after` | 執行階段已摘要其自身歷史。 |
+| `Approval` | `tool`, `input`, `allow()`, `deny(reason)` | 僅限具有工具核准的 harness。 |
+| `Done` | `result`, `usage`, `cost`, `stop_reason` | 永遠是最後一個事件，且只會出現一次。 |
 
-`FileChange` events come from diffing a sandbox snapshot taken before and after each turn, so edits appear even when the runtime doesn't report them as a tool call.
+`FileChange` 事件來自於在每個回合前後擷取的沙箱快照進行 diff，因此即使執行階段未將其回報為工具呼叫，編輯仍會顯示出來。
 
-## Tool names
+## 工具名稱 {#tool-names}
 
-Built-in tools that do the same thing get the same `name` on every harness, so UI code doesn't need a branch per runtime. `native_name` always has the runtime's original name.
+在每個 harness 中，做相同事情的內建工具都會具有相同的 `name`，因此 UI 程式碼不需要針對每個執行階段分支處理。`native_name` 一律保留執行階段的原始名稱。
 
 | `name` | Claude Code | Codex | OpenCode | Deep Agents | Tool Loop |
 |---|---|---|---|---|---|
@@ -63,9 +63,9 @@ Built-in tools that do the same thing get the same `name` on every harness, so U
 | `ls` | `LS` | | `list` | `ls` | |
 | `web_search` | `WebSearch` | web search | `webfetch` | | |
 
-Tools that aren't in this table keep their native name in `name`.
+不在此表中的工具會在 `name` 中保留其原生名稱。
 
-## Stream result
+## 串流結果 {#stream-result}
 
 ```python
 stream = litellm.agent(Harness.OPENCODE, prompt, sandbox=box, model="litellm_proxy/coder", stream=True)

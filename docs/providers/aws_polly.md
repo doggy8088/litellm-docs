@@ -1,17 +1,17 @@
-# AWS Polly Text to Speech (tts)
+# AWS Polly 文字轉語音 (tts) {#aws-polly-text-to-speech-tts}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Convert text to natural-sounding speech using AWS Polly's neural and standard TTS engines |
-| Provider Route on LiteLLM | `aws_polly/` |
-| Supported Operations | `/audio/speech` |
-| Link to Provider Doc | [AWS Polly SynthesizeSpeech ↗](https://docs.aws.amazon.com/polly/latest/dg/API_SynthesizeSpeech.html) |
+| 說明 | 使用 AWS Polly 的 neural 和 standard TTS 引擎將文字轉換為自然發聲的語音 |
+| LiteLLM 上的提供者路由 | `aws_polly/` |
+| 支援的操作 | `/audio/speech` |
+| 提供者文件連結 | [AWS Polly SynthesizeSpeech ↗](https://docs.aws.amazon.com/polly/latest/dg/API_SynthesizeSpeech.html) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python showLineNumbers title="SDK Usage"
 import litellm
@@ -33,7 +33,7 @@ response = litellm.speech(
 response.stream_to_file(speech_file_path)
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM 代理伺服器** {#litellm-proxy}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -45,18 +45,18 @@ model_list:
       aws_region_name: "us-east-1"
 ```
 
-## Polly Engines
+## Polly 引擎 {#polly-engines}
 
-AWS Polly supports different speech synthesis engines. Specify the engine in the model name:
+AWS Polly 支援不同的語音合成引擎。請在模型名稱中指定引擎：
 
-| Model | Engine | Cost (per 1M chars) | Description |
+| 模型 | 引擎 | 成本（每 100 萬字元） | 說明 |
 |-------|--------|---------------------|-------------|
-| `aws_polly/standard` | Standard | $4.00 | Original Polly voices, faster and lowest cost |
-| `aws_polly/neural` | Neural | $16.00 | More natural, human-like speech (recommended) |
-| `aws_polly/generative` | Generative | $30.00 | Most expressive, highest quality (limited voices) |
-| `aws_polly/long-form` | Long-form | $100.00 | Optimized for long content like articles |
+| `aws_polly/standard` | Standard | $4.00 | 原始 Polly 聲音，更快且成本最低 |
+| `aws_polly/neural` | Neural | $16.00 | 更自然、更像人聲的語音（推薦） |
+| `aws_polly/generative` | Generative | $30.00 | 表現力最強、品質最高（可用聲音有限） |
+| `aws_polly/long-form` | Long-form | $100.00 | 針對文章等長篇內容最佳化 |
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-1}
 
 ```python showLineNumbers title="Using Different Engines"
 import litellm
@@ -83,7 +83,7 @@ response = litellm.speech(
 )
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM 代理伺服器** {#litellm-proxy-1}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -101,22 +101,22 @@ model_list:
       aws_region_name: "us-east-1"
 ```
 
-## Available Voices
+## 可用語音 {#available-voices}
 
-### Native Polly Voices
+### 原生 Polly 語音 {#native-polly-voices}
 
-AWS Polly has many voices across different languages. Here are popular US English voices:
+AWS Polly 在不同語言中提供許多語音。以下是常見的美式英語語音：
 
-| Voice | Gender | Engine Support |
+| 語音 | 性別 | 引擎支援 |
 |-------|--------|----------------|
-| `Joanna` | Female | Neural, Standard |
-| `Matthew` | Male | Neural, Standard, Generative |
-| `Ivy` | Female (child) | Neural, Standard |
-| `Kendra` | Female | Neural, Standard |
-| `Amy` | Female (British) | Neural, Standard |
-| `Brian` | Male (British) | Neural, Standard |
+| `Joanna` | 女性 | Neural, Standard |
+| `Matthew` | 男性 | Neural, Standard, Generative |
+| `Ivy` | 女性（兒童） | Neural, Standard |
+| `Kendra` | 女性 | Neural, Standard |
+| `Amy` | 女性（英國） | Neural, Standard |
+| `Brian` | 男性（英國） | Neural, Standard |
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-2}
 
 ```python showLineNumbers title="Using Native Polly Voices"
 import litellm
@@ -143,7 +143,7 @@ response = litellm.speech(
 )
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM 代理伺服器** {#litellm-proxy-2}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -159,11 +159,11 @@ model_list:
       aws_region_name: "us-east-1"
 ```
 
-### OpenAI Voice Mappings
+### OpenAI 語音對應 {#openai-voice-mappings}
 
-LiteLLM also supports OpenAI voice names, which are automatically mapped to Polly voices:
+LiteLLM 也支援 OpenAI 語音名稱，這些名稱會自動對應到 Polly 語音：
 
-| OpenAI Voice | Maps to Polly Voice |
+| OpenAI 語音 | 對應的 Polly 語音 |
 |--------------|---------------------|
 | `alloy` | Joanna |
 | `echo` | Matthew |
@@ -172,7 +172,7 @@ LiteLLM also supports OpenAI voice names, which are automatically mapped to Poll
 | `nova` | Ivy |
 | `shimmer` | Kendra |
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-3}
 
 ```python showLineNumbers title="Using OpenAI Voice Names"
 import litellm
@@ -191,11 +191,11 @@ response = litellm.speech(
 )
 ```
 
-## SSML Support
+## SSML 支援 {#ssml-support}
 
-AWS Polly supports SSML (Speech Synthesis Markup Language) for advanced control over speech output. LiteLLM automatically detects SSML input.
+AWS Polly 支援 SSML（Speech Synthesis Markup Language），可進一步控制語音輸出。LiteLLM 會自動偵測 SSML 輸入。
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-4}
 
 ```python showLineNumbers title="SSML Example"
 import litellm
@@ -215,7 +215,7 @@ response = litellm.speech(
 )
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM 代理伺服器** {#litellm-proxy-3}
 
 ```bash showLineNumbers title="cURL Request with SSML"
 curl -X POST http://localhost:4000/v1/audio/speech \
@@ -229,7 +229,7 @@ curl -X POST http://localhost:4000/v1/audio/speech \
   --output speech.mp3
 ```
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
 ```python showLineNumbers title="All Parameters"
 response = litellm.speech(
@@ -244,15 +244,15 @@ response = litellm.speech(
 )
 ```
 
-## Response Formats
+## 回應格式 {#response-formats}
 
-| Format | Description |
+| 格式 | 說明 |
 |--------|-------------|
-| `mp3` | MP3 audio (default) |
-| `ogg_vorbis` | Ogg Vorbis audio |
-| `pcm` | Raw PCM audio |
+| `mp3` | MP3 音訊（預設） |
+| `ogg_vorbis` | Ogg Vorbis 音訊 |
+| `pcm` | 原始 PCM 音訊 |
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-5}
 
 ```python showLineNumbers title="Different Response Formats"
 import litellm
@@ -274,11 +274,11 @@ response = litellm.speech(
 )
 ```
 
-## AWS Authentication
+## AWS 驗證 {#aws-authentication}
 
-LiteLLM supports multiple AWS authentication methods.
+LiteLLM 支援多種 AWS 驗證方法。
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk-6}
 
 ```python showLineNumbers title="Authentication Options"
 import litellm
@@ -318,7 +318,7 @@ response = litellm.speech(
 )
 ```
 
-### **LiteLLM PROXY**
+### **LiteLLM 代理伺服器** {#litellm-proxy-4}
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
@@ -343,7 +343,7 @@ model_list:
       aws_profile_name: "my-profile"
 ```
 
-## Async Support
+## 非同步支援 {#async-support}
 
 ```python showLineNumbers title="Async Usage"
 import litellm

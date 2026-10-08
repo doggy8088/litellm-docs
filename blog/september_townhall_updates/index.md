@@ -1,118 +1,118 @@
 ---
 slug: september-townhall-updates
-title: "September Townhall Updates: 583 Bug Fixes, OCR on Rust, and 83.5% Coverage"
+title: "9 月 Townhall 更新：583 個錯誤修復、Rust 上的 OCR，以及 83.5% 覆蓋率"
 date: 2026-09-24T12:00:00
 authors:
   - ishaan
   - yujonglee
   - oliver
   - mateo
-description: "A recap of the September LiteLLM town hall: security and stability updates, OCR running on Rust by default, test coverage past the 80% target, and new Fusion and liteagents launches."
+description: "9 月 LiteLLM town hall 回顧：安全性與穩定性更新、預設在 Rust 上執行的 OCR、測試覆蓋率超過 80% 目標，以及 Fusion 和 liteagents 的新發布。"
 tags: [townhall, security, reliability, product]
 hide_table_of_contents: false
 ---
 
-Thank you to everyone who joined our September town hall. We covered security updates, stability updates, and new features in the product, including OCR running on Rust by default and test coverage past the 80% target we set in August.
+感謝所有參加我們 9 月 town hall 的朋友。我們介紹了產品中的安全性更新、穩定性更新與新功能，包括預設在 Rust 上執行的 OCR，以及超過我們 8 月設定的 80% 目標的測試覆蓋率。
 
 {/* truncate */}
 
-## Security
+## 安全性 {#security}
 
-We shipped 52 security fixes this month, broken down by category:
+本月我們推出了 52 項安全性修復，按類別如下：
 
-| Category                                    | Fixes |
+| 類別                                         | 修復數 |
 | -------------------------------------------- | ----- |
-| Credential / secret / PII hardening          | 27    |
-| General hardening (validation, fail-closed)  | 12    |
-| Quota / budget / rate-limit hardening        | 10    |
-| Access control / authz hardening             | 3     |
+| 認證 / 秘密 / PII 強化                        | 27    |
+| 一般強化（驗證、失敗即關閉）                  | 12    |
+| 額度 / 預算 / 速率限制強化                    | 10    |
+| 存取控制 / authz 強化                         | 3     |
 
-Major work in security went into authentication:
+安全性方面的主要工作集中在驗證：
 
-- Configurable password policies
-- Blocking passwords found in known breaches
-- Enforced SSO login
-- The option to disable logins that use credentials held in environment variables
+- 可設定的密碼政策
+- 封鎖在已知外洩事件中出現的密碼
+- 強制 SSO 登入
+- 可選擇停用使用環境變數中保存的憑證進行的登入
 
-**Master keys.** Wiz found 1 in 10 of the LiteLLM instances they scanned running with a blank or default master key. LiteLLM now refuses to start when the master key is unset or still at the default, so a deployment leaning on it will fail to boot on upgrade.
+**主金鑰。** Wiz 發現他們掃描的 LiteLLM 實例中，有 10 分之 1 是以空白或預設的主金鑰執行。LiteLLM 現在在主金鑰未設定或仍為預設值時會拒絕啟動，因此依賴它的部署在升級時將無法開機。
 
-**A new disclosure practice, and more CVEs.**
+**新的揭露做法，以及更多 CVE。**
 
-- For anything an unauthenticated attacker can reach, we build the fix in a private fork and publish it at the same moment as the release, the backports, and the disclosure.
-- We're minting more CVEs than before, mostly low and medium severity.
-- The increase comes from a change in publishing policy. Our security posture hasn't changed.
-- Subscribe to our [GitHub security advisories](https://github.com/BerriAI/litellm/security/advisories) to get them as they land.
+- 對於任何未經驗證的攻擊者可到達的內容，我們會在私有分支中建立修補，並在發佈、回溯修補與揭露的同一時間公開。
+- 我們產生的 CVE 比以前更多了，大多數屬於低風險與中風險。
+- 這項增加來自發佈政策的變更。我們的安全態勢並未改變。
+- 訂閱我們的 [GitHub security advisories](https://github.com/BerriAI/litellm/security/advisories)，以便在它們發布時收到通知。
 
-Next month we're at Patch the Planet, an OpenAI and Trail of Bits initiative where security engineers spend a focused week on one project.
+下個月我們會參加 Patch the Planet，這是 OpenAI 與 Trail of Bits 的一項倡議，安全工程師會專注於一個專案工作一週。
 
-## Stability
+## 穩定性 {#stability}
 
-In September we shipped **583 bug fixes**.
+9 月我們推出了 **583 個錯誤修復**。
 
-| Area                          | Fixes |
+| 領域                          | 修復數 |
 | ----------------------------- | ----- |
-| Proxy Core & Resilience       | 228   |
-| Providers & Model Transforms  | 94    |
-| Other / SDK                   | 88    |
+| Proxy Core 與穩定性          | 228   |
+| 提供者與模型轉換              | 94    |
+| 其他 / SDK                    | 88    |
 | UI + Auth / SSO               | 57    |
-| Cost, Budgets & Observability | 43    |
+| 成本、預算與可觀測性          | 43    |
 | MCP Gateway                   | 39    |
-| Streaming / Realtime APIs     | 34    |
+| 串流 / 即時 API               | 34    |
 
-The largest share went to the proxy core: scaling, resilience, and the circuit breakers that decide what happens when a dependency fails. If Redis goes down, the gateway should not.
+最大宗的工作集中在 proxy core：擴充能力、穩定性，以及在相依元件失敗時決定會發生什麼事的 circuit breaker。如果 Redis 掛掉，閘道不應該一起掛掉。
 
-- **Coverage.** We committed to 80% by the end of September and finished at **83.5%**, measured as the share of endpoints and user flows the suite exercises, not lines of code.
-- **User flows.** Up from 402 to 521 covered, with 600 the October target.
-- **Staffing.** One engineer now works only on cost and budget discrepancies, so report them as you hit them. Two more are on open source full time, aiming for fewer than 100 open issues by year end.
+- **覆蓋率。** 我們承諾在 9 月底前達到 80%，最後完成 **83.5%**；這是以測試套件涵蓋的端點與使用者流程所占比例來衡量，而不是以程式碼行數。
+- **使用者流程。** 從 402 提升到 521 個已涵蓋，10 月目標是 600 個。
+- **人力配置。** 現在有一位工程師專門處理成本與預算差異，因此您一旦發現就請回報。另有兩位工程師全職投入開源，目標是在年底前把 open issues 降到 100 個以下。
 
-## Product
+## 產品 {#product}
 
-**221 feature commits** this month.
+本月共有 **221 個功能性提交**。
 
-### OCR runs on Rust by default
+### OCR 預設在 Rust 上執行 {#ocr-runs-on-rust-by-default}
 
-Starting with `v1.102.0`, OCR runs on Rust by default. `LITELLM_RUST=0` still falls back to Python. SDK and gateway users don't need to change anything for this migration.
+從 `v1.102.0` 開始，OCR 預設在 Rust 上執行。`LITELLM_RUST=0` 仍然會回退到 Python。SDK 與 gateway 使用者在這次遷移中不需要做任何變更。
 
-![OCR benchmark at 30 offered requests per second with an 8 MiB upload, showing Rust completing every arrival while Python falls well short, and Rust p95 latency in the tens of milliseconds against several seconds for Python](./rust-ocr-benchmark.png)
+![OCR 基準測試：在每秒 30 個提供請求、8 MiB 上傳的情況下，顯示 Rust 能完成每一次到達，而 Python 遠遠落後，且 Rust 的 p95 延遲僅為數十毫秒，相比之下 Python 則是數秒](./rust-ocr-benchmark.png)
 
-- On a single CPU, median throughput went from 143.6 to 211.7 RPS at 1 MiB, and from 21.6 to 36.2 RPS at 8 MiB.
-- These are proxy overhead numbers, measured against a local mock provider with proxy CPU as the bottleneck. [Full methodology](https://docs.litellm.ai/blog/litellm-rust-ocr).
-- `/messages` is next, shipping as opt-in.
-- By December 1, we want chat completions, messages, and responses migrated and deployable as a pure Rust Axum server.
-- Progress is public at [docs.litellm.ai/rust-migration](https://docs.litellm.ai/rust-migration), currently at 5%.
+- 在單顆 CPU 上，中位吞吐量在 1 MiB 時從 143.6 提升到 211.7 RPS，在 8 MiB 時從 21.6 提升到 36.2 RPS。
+- 這些是 proxy 開銷數據，以本機 mock provider 為基準進行測量，瓶頸在 proxy CPU。[完整方法](https://docs.litellm.ai/blog/litellm-rust-ocr)。
+- `/messages` 是下一個，將以 opt-in 方式發布。
+- 到 12 月 1 日前，我們希望 chat completions、messages 和 responses 都完成遷移，並可作為純 Rust 的 Axum server 部署。
+- 進度公開於 [docs.litellm.ai/rust-migration](https://docs.litellm.ai/rust-migration)，目前為 5%。
 
-### New models
+### 新模型 {#new-models}
 
-We added a lot of new models over the past month, across nearly every major provider.
+過去一個月，我們在幾乎每一家主要提供者都新增了許多新模型。
 
-![Thirty days of new AI integrations from August 25 to September 24, 2026, listing selected merged model additions across OpenAI, Anthropic, Google Gemini, xAI, Meta, Alibaba Qwen, Z.ai, Moonshot AI, Fireworks AI, Together AI, Eden AI and AIHubMix](./new-models.png)
+![自 2026 年 8 月 25 日至 9 月 24 日的 30 天新 AI 整合，列出 OpenAI、Anthropic、Google Gemini、xAI、Meta、Alibaba Qwen、Z.ai、Moonshot AI、Fireworks AI、Together AI、Eden AI 和 AIHubMix 之間部分已合併的模型新增項目](./new-models.png)
 
-Highlights include OpenAI's GPT-6 family, Claude Opus 5.5 and Claude Fable 5.1, Gemini 3.8 Flash and Grok 4.7, plus Eden AI as a new provider.
+亮點包括 OpenAI 的 GPT-6 系列、Claude Opus 5.5 與 Claude Fable 5.1、Gemini 3.8 Flash 和 Grok 4.7，以及作為新提供者的 Eden AI。
 
-### Fusion
+### Fusion {#fusion}
 
-`litellm/fusion-1` sends your request to a configurable panel of models in parallel, has a judge compare the successful responses, then has that judge synthesize one answer. It works with Chat Completions, Anthropic Messages, and Responses.
+`litellm/fusion-1` 會將您的請求平行送往一組可設定的模型，讓 judge 比較成功的回應，然後由該 judge 綜合成一個答案。它可與 Chat Completions、Anthropic Messages 和 Responses 搭配使用。
 
-![LiteLLM fusion model card: one request fans out to a panel of models in parallel, to openai/gpt-6-astra, anthropic/claude-opus-5 and gemini/gemini-3.8-flash, and a judge returns a single response](./fusion-1.png)
+![LiteLLM fusion 模型卡：一個請求平行展開到一組模型，包括 openai/gpt-6-astra、anthropic/claude-opus-5 和 gemini/gemini-3.8-flash，最後由 judge 回傳單一回應](./fusion-1.png)
 
-It's expensive, and cost and latency both scale with panel size and the models you pick. Keep it for hard problems where quality matters more than cost. See the [fusion docs](https://docs.litellm.ai/docs/fusion) for setup.
+這很昂貴，而且成本與延遲都會隨著組內模型數量與您選擇的模型而增加。請將它保留給品質比成本更重要的困難問題。設定方式請參見 [fusion 文件](https://docs.litellm.ai/docs/fusion)。
 
-### liteagents SDK
+### liteagents SDK {#liteagents-sdk}
 
-liteagents is a beta SDK that lets you swap between agent harnesses without rewriting your agent. Pick the harness in a `ProfileOptions` block, whether that's the Claude Agent SDK, Deep Agents or Pydantic AI, and query it through one client.
+liteagents 是一個 beta SDK，讓您可以在不同 agent harness 之間切換，而不必重寫您的 agent。您可以在 `ProfileOptions` 區塊中選擇 harness，不論是 Claude Agent SDK、Deep Agents 或 Pydantic AI，然後透過單一用戶端對其進行查詢。
 
-![liteagents SDK code sample: a LiteAgentClient is configured with a ProfileOptions block selecting the deepagents harness and a model, then queried for a response](./liteagents-sdk.png)
+![liteagents SDK 程式碼範例：以 ProfileOptions 區塊設定 LiteAgentClient，選擇 deepagents harness 和一個模型，然後查詢回應](./liteagents-sdk.png)
 
-Read more about the [liteagents SDK](https://www.litellm.ai/liteagents).
+閱讀更多關於 [liteagents SDK](https://www.litellm.ai/liteagents) 的內容。
 
-### Also shipped
+### 其他已發布功能 {#also-shipped}
 
-- **Self-hosting.** A PgBouncer inside the container shares database connections across workers, spend writes can move to a sidecar off the request path, and Helm and Terraform can [autoscale on requests and tokens per second](https://docs.litellm.ai/docs/proxy/deploy#scale-on-requests-and-tokens-per-pod) per pod rather than only CPU.
-- **MCP Gateway.** The `/mcp` route now runs [semantic search across tools](https://docs.litellm.ai/docs/mcp_tool_search) and returns only those matching the query, so we no longer trim long upstream catalogs to fit. [Tool permissions](https://docs.litellm.ai/docs/mcp_control) are enforced on listing and calling, and session tokens are RS256-signed so an external gateway can verify a token came from LiteLLM.
-- **Team admin permissions.** Budget, TPM, RPM and the approved model list stay with the proxy admin while team admins self-serve keys and models. Rolling out shortly.
+- **自架。** 容器內的 PgBouncer 會在各個 worker 之間共享資料庫連線，spend writes 可移到請求路徑外的 sidecar，且 Helm 與 Terraform 現在可依每個 pod 的請求數與每秒 token 數進行 [自動擴縮](https://docs.litellm.ai/docs/proxy/deploy#scale-on-requests-and-tokens-per-pod)，而不只限於 CPU。
+- **MCP Gateway。** `/mcp` 路由現在會對工具執行 [語意搜尋](https://docs.litellm.ai/docs/mcp_tool_search) 並只回傳與查詢相符的項目，因此我們不再需要為了容納內容而裁剪過長的上游目錄。[工具權限](https://docs.litellm.ai/docs/mcp_control) 會在列出與呼叫時強制執行，且 session token 使用 RS256 簽章，因此外部 gateway 可以驗證 token 來自 LiteLLM。
+- **團隊管理員權限。** 預算、TPM、RPM 與核准的模型清單仍由 proxy 管理員保管，而團隊管理員則可自助管理金鑰與模型。即將推出。
 
-## We're hiring
+## 我們正在招募 {#were-hiring}
 
-We're hiring across the core gateway; reach us at [recruiting@berri.ai](mailto:recruiting@berri.ai), or [product@berri.ai](mailto:product@berri.ai) for product feedback.
+我們正在核心閘道各處招募人才；產品回饋請聯絡 [product@berri.ai](mailto:product@berri.ai)，或透過 [recruiting@berri.ai](mailto:recruiting@berri.ai) 與我們聯繫。
 
-Thank you for using LiteLLM. **The LiteLLM Team**
+感謝您使用 LiteLLM。**LiteLLM 團隊**

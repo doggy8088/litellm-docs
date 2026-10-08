@@ -1,12 +1,9 @@
-# Llama Together AI Tutorial
+# Llama Together AI 教學 {#llama-together-ai-tutorial}
 https://together.ai/
-
-
 
 ```bash
 uv add litellm
 ```
-
 
 ```python
 import os
@@ -16,7 +13,7 @@ user_message = "Hello, whats the weather in San Francisco??"
 messages = [{ "content": user_message,"role": "user"}]
 ```
 
-## Calling Llama on TogetherAI
+## 在 TogetherAI 上呼叫 Llama {#calling-llama-on-togetherai}
 https://api.together.xyz/playground/chat?model=meta-llama%2FLlama-3.3-70B-Instruct-Turbo
 
 ```python
@@ -25,18 +22,15 @@ response = completion(model=model_name, messages=messages)
 print(response)
 ```
 
-
 ```
 ModelResponse(id='p37X6YS-4YNCb4-a42452fa9a16e22a', created=1790615034, model='meta-llama/Llama-3.3-70B-Instruct-Turbo', object='chat.completion', choices=[Choices(finish_reason='stop', index=0, message=Message(content="San Francisco! The weather in San Francisco is known for being quite unique and unpredictable...", role='assistant'))], usage=Usage(completion_tokens=20, prompt_tokens=44, total_tokens=64))
 ```
 
+LiteLLM 會將您的 OpenAI 格式 `messages` 陣列原封不動地傳送到 Together AI 的 `/v1/chat/completions` 端點，並由 Together AI 在伺服器端套用該模型的聊天範本。LiteLLM 不會將訊息重寫為 `[INST] ... [/INST]` 提示，且以 `litellm.register_prompt_template` 註冊的範本不會套用到 `together_ai/` 聊天模型
 
-LiteLLM sends your OpenAI-format `messages` array unchanged to Together AI's `/v1/chat/completions` endpoint, and Together AI applies the model's chat template server-side. LiteLLM does not rewrite the messages into a `[INST] ... [/INST]` prompt, and templates registered with `litellm.register_prompt_template` are not applied to `together_ai/` chat models
+[實作程式碼](https://github.com/BerriAI/litellm/blob/main/litellm/llms/together_ai/chat/transformation.py)
 
-[Implementation Code](https://github.com/BerriAI/litellm/blob/main/litellm/llms/together_ai/chat/transformation.py)
-
-## With Streaming
-
+## 使用串流 {#with-streaming}
 
 ```python
 response = completion(model=model_name, messages=messages, stream=True)

@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Token Counting
+# Token 計數 {#token-counting}
 
-## Overview
+## 概覽 {#overview}
 
-LiteLLM provides exact token counting by calling provider-specific token counting APIs. This gives you accurate token counts before sending requests, helping with cost estimation and context window management.
+LiteLLM 透過呼叫各提供者特定的 token 計數 API 提供精確的 token 計數。這可讓您在傳送請求前取得準確的 token 數量，協助進行成本估算與上下文視窗管理。
 
-| Feature | Details |
+| 功能 | 詳細資訊 |
 |---------|---------|
-| SDK Method | `litellm.acount_tokens()` |
-| Proxy Endpoints | `/v1/messages/count_tokens` (Anthropic format), `/v1/responses/input_tokens` (OpenAI format) |
-| Fallback | Local tiktoken-based counting for unsupported providers |
+| SDK 方法 | `litellm.acount_tokens()` |
+| Proxy 端點 | `/v1/messages/count_tokens`（Anthropic 格式）、`/v1/responses/input_tokens`（OpenAI 格式） |
+| 備援 | 對不支援的提供者採用本地 tiktoken 基礎計數 |
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
-| Provider | Token Counting API | Format |
+| 提供者 | Token 計數 API | 格式 |
 |----------|-------------------|--------|
 | OpenAI | [Responses API `/input_tokens`](https://platform.openai.com/docs/api-reference/responses/input-tokens) | OpenAI Responses |
 | Anthropic | [Messages `/count_tokens`](https://docs.anthropic.com/en/docs/build-with-claude/token-counting) | Anthropic Messages |
@@ -23,11 +23,11 @@ LiteLLM provides exact token counting by calling provider-specific token countin
 | Bedrock (Claude) | AWS Bedrock CountTokens API | Anthropic Messages |
 | Gemini | Google AI Studio countTokens API | Anthropic Messages |
 | Vertex AI (Gemini) | Vertex AI countTokens API | Anthropic Messages |
-| Other providers | Local tiktoken fallback | N/A |
+| 其他提供者 | 本地 tiktoken 備援 | N/A |
 
-## SDK Usage
+## SDK 使用方式 {#sdk-usage}
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
 ```python
 import asyncio
@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-### With Tools and System Message
+### 搭配工具與系統訊息 {#with-tools-and-system-message}
 
 ```python
 import asyncio
@@ -81,9 +81,9 @@ async def main():
 asyncio.run(main())
 ```
 
-### Response Format
+### 回應格式 {#response-format}
 
-`litellm.acount_tokens()` returns a `TokenCountResponse`:
+`litellm.acount_tokens()` 會回傳一個 `TokenCountResponse`：
 
 ```python
 TokenCountResponse(
@@ -97,9 +97,9 @@ TokenCountResponse(
 )
 ```
 
-### Fallback Behavior
+### 備援行為 {#fallback-behavior}
 
-If a provider doesn't support a token counting API, or if the API key is missing, `acount_tokens()` automatically falls back to local tiktoken-based counting:
+如果提供者不支援 token 計數 API，或 API 金鑰遺失，`acount_tokens()` 會自動退回到本地 tiktoken 基礎計數：
 
 ```python
 # Unsupported provider → automatic fallback
@@ -110,11 +110,11 @@ result = await litellm.acount_tokens(
 print(result.tokenizer_type)  # "local_tokenizer"
 ```
 
-On the proxy, local counting runs in a worker thread, so a large payload does not hold up other requests. Each worker process counts at most `TOKEN_COUNTER_MAX_CONCURRENT_COUNTS` payloads at a time (default 4) and queues the rest, which bounds the memory a burst of large counts can take. Strings longer than `TOKEN_COUNTER_MAX_EXACT_CHARS` characters (default 4,000,000, roughly a million tokens) are estimated by tokenizing 16 evenly spaced samples that together total that many characters and scaling the result by the string's length, which keeps the cost of the largest payloads bounded.
+在 proxy 上，本地計數會在工作執行緒中執行，因此大型負載不會阻塞其他請求。每個 worker process 同時最多會計算 `TOKEN_COUNTER_MAX_CONCURRENT_COUNTS` 個負載（預設 4），其餘會排隊，這可限制大量大型計數突發時所需的記憶體。長度超過 `TOKEN_COUNTER_MAX_EXACT_CHARS` 個字元的字串（預設 4,000,000，約 100 萬個 token）會透過對 16 個平均分布的樣本進行 tokenization 來估算，這些樣本合計達到該字元數，再依字串長度縮放結果，如此可將最大負載的成本限制在可控範圍內。
 
-## Proxy Usage
+## Proxy 使用方式 {#proxy-usage}
 
-### OpenAI Format: `/v1/responses/input_tokens`
+### OpenAI 格式：`/v1/responses/input_tokens` {#openai-format-v1responsesinput_tokens}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -154,14 +154,14 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-**Response:**
+**回應：**
 ```json
 {"object": "response.input_tokens", "input_tokens": 13}
 ```
 
-### Anthropic Format: `/v1/messages/count_tokens`
+### Anthropic 格式：`/v1/messages/count_tokens` {#anthropic-format-v1messagescount_tokens}
 
-See [Anthropic Token Counting](./anthropic_count_tokens.md) for full documentation.
+請參閱 [Anthropic Token Counting](./anthropic_count_tokens.md) 取得完整文件。
 
 ```bash
 curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
@@ -175,7 +175,7 @@ curl -X POST "http://localhost:4000/v1/messages/count_tokens" \
   }'
 ```
 
-## Proxy Configuration
+## Proxy 設定 {#proxy-configuration}
 
 ```yaml
 model_list:

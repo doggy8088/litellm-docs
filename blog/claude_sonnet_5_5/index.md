@@ -1,12 +1,12 @@
 ---
 slug: claude_sonnet_5_5
-title: "Day 0 Support: Claude Sonnet 5.5"
+title: "Day 0 支援：Claude Sonnet 5.5"
 date: 2026-09-28T10:00:00
 authors:
   - misbah
   - mateo
   - kerry
-description: "Day 0 support for Claude Sonnet 5.5 on the LiteLLM AI Gateway. Use it across Anthropic, Bedrock, Gemini Enterprise Agent Platform, and Azure."
+description: "LiteLLM AI Gateway 對 Claude Sonnet 5.5 的 Day 0 支援。可透過 Anthropic、Bedrock、Gemini Enterprise Agent Platform 和 Azure 使用。"
 image: /img/litellm_claude_sonnet_5_5_announcement.png
 tags: [anthropic, claude, sonnet 5.5, day 0 support]
 hide_table_of_contents: false
@@ -17,27 +17,27 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x Claude Sonnet 5.5](/img/litellm_claude_sonnet_5_5_announcement.png)
 
-LiteLLM now supports [Claude Sonnet 5.5](https://www.anthropic.com/claude-sonnet-5-5) on Day 0. Use it across Anthropic, Bedrock, Gemini Enterprise Agent Platform, and Azure through the LiteLLM AI Gateway, with spend, rate limits, and logging in one place.
+LiteLLM 現在在 Day 0 支援 [Claude Sonnet 5.5](https://www.anthropic.com/claude-sonnet-5-5)。可透過 LiteLLM AI Gateway，在 Anthropic、Bedrock、Gemini Enterprise Agent Platform 和 Azure 上使用，並將支出、速率限制與記錄集中管理。
 
 {/* truncate */}
 
-## What's new in Sonnet 5.5
+## Sonnet 5.5 有哪些新內容 {#whats-new-in-sonnet-55}
 
-- **Same price as Sonnet 5:** $2 / MTok input, $10 / MTok output, $0.20 / MTok cache reads
-- **30%+ faster**, and up to 30% less per task, per Anthropic
-- **70.6% on Terminal-Bench 4.0**, up from Sonnet 5's 10.3%
-- **1M-token context**, up to 128K output tokens
+- **與 Sonnet 5 同價：** 輸入 $2 / MTok、輸出 $10 / MTok、快取讀取 $0.20 / MTok
+- **速度快 30% 以上**，且每個工作最多可節省 30%，依 Anthropic 所述
+- **Terminal-Bench 4.0 達 70.6%**，高於 Sonnet 5 的 10.3%
+- **100 萬 token 上下文**，輸出最多可達 128K tokens
 
-## Enabling Sonnet 5.5
+## 啟用 Sonnet 5.5 {#enabling-sonnet-55}
 
-Pricing landed in [PR #43586](https://github.com/BerriAI/litellm/pull/43586). No upgrade needed: open **Price Data** under **Models + Endpoints** in the UI and click **Reload Price Data** (or `POST /reload/model_cost_map`), on `v1.76.0` and above.
+定價已登錄於 [PR #43586](https://github.com/BerriAI/litellm/pull/43586)。無須升級：在 UI 中打開 **Models + Endpoints** 下的 **Price Data**，然後按一下 **Reload Price Data**（或 `POST /reload/model_cost_map`），適用於 `v1.76.0` 及以上版本。
 
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -47,7 +47,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -61,7 +61,7 @@ docker run -d \
 </TabItem>
 <TabItem value="bedrock" label="Bedrock">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -74,10 +74,10 @@ model_list:
 ```
 
 :::note
-For cross-region routing, use a regional inference profile such as `bedrock/converse/us.anthropic.claude-sonnet-5-5`. Regional profiles carry a 10% premium and `global.` stays at base price; LiteLLM tracks each variant.
+若要進行跨區域路由，請使用像 `bedrock/converse/us.anthropic.claude-sonnet-5-5` 這類區域性推論設定檔。區域性設定檔會加收 10% 的溢價，而 `global.` 仍維持基本價格；LiteLLM 會追蹤各個變體。
 :::
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -92,7 +92,7 @@ docker run -d \
 </TabItem>
 <TabItem value="gemini-enterprise" label="Gemini Enterprise Agent Platform">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -103,7 +103,7 @@ model_list:
       vertex_location: global
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -119,7 +119,7 @@ docker run -d \
 </TabItem>
 <TabItem value="azure" label="Azure">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -130,7 +130,7 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE  # https://<resource>.services.ai.azure.com
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -145,7 +145,7 @@ docker run -d \
 </TabItem>
 </Tabs>
 
-**3. Test it!**
+**3. 進行測試！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -162,12 +162,12 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Worth knowing
+## 需要知道的事 {#worth-knowing}
 
-**Forced tool use returns a 400.** Use `tool_choice: "auto"` and say in the prompt when the tool applies.
+**強制工具使用會回傳 400。** 請使用 `tool_choice: "auto"`，並在提示詞中說明該工具何時適用。
 
-**`thinking: {"type": "disabled"}` returns a 400.** Anthropic's replacement is `between_tools`; see their [migration guide](https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide).
+**`thinking: {"type": "disabled"}` 會回傳 400。** Anthropic 的替代方案是 `between_tools`；請參閱他們的 [遷移指南](https://platform.claude.com/docs/en/models/sonnet-5-5/migration-guide)。
 
-## Feedback
+## 回饋 {#feedback}
 
-Running Claude Sonnet 5.5 through LiteLLM and hitting something unexpected? Share it on [GitHub discussion #43590](https://github.com/BerriAI/litellm/discussions/43590).
+透過 LiteLLM 執行 Claude Sonnet 5.5 時遇到非預期情況嗎？請在 [GitHub 討論 #43590](https://github.com/BerriAI/litellm/discussions/43590) 分享。

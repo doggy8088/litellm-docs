@@ -1,22 +1,22 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Xiaomi MiMo
+# Xiaomi MiMo {#xiaomi-mimo}
 https://platform.xiaomimimo.com/#/docs
 
 :::tip
 
-**We support ALL Xiaomi MiMo models, just set `model=xiaomi_mimo/<any-model-on-xiaomi-mimo>` as a prefix when sending litellm requests**
+**我們支援所有 Xiaomi MiMo 模型，只要在傳送 litellm 請求時將 `model=xiaomi_mimo/<any-model-on-xiaomi-mimo>` 設為前綴即可**
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['XIAOMI_MIMO_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -37,7 +37,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -62,11 +62,11 @@ for chunk in response:
 ```
 
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 一起使用 {#usage-with-litellm-proxy-server}
 
-Here's how to call a Xiaomi MiMo model with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 Xiaomi MiMo 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -77,13 +77,13 @@ Here's how to call a Xiaomi MiMo model with the LiteLLM Proxy Server
   ```
 
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 向 LiteLLM Proxy Server 發送請求
 
   <Tabs>
 
@@ -130,8 +130,8 @@ Here's how to call a Xiaomi MiMo model with the LiteLLM Proxy Server
 
   </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-| Model Name | Usage |
+| 模型名稱 | 用法 |
 |------------|-------|
 | mimo-v2-flash | `completion(model="xiaomi_mimo/mimo-v2-flash", messages)` |

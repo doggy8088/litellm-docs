@@ -1,24 +1,24 @@
 import Image from '@theme/IdealImage';
 
-# Hashicorp Vault
+# Hashicorp Vault {#hashicorp-vault}
 
 <EnterpriseFeature />
 
-| Feature | Support | Description |
+| 功能 | 支援 | 說明 |
 |---------|----------|-------------|
-| Reading Secrets | ✅ | Read secrets e.g `OPENAI_API_KEY` |
-| Writing Secrets | ✅ | Store secrets e.g `Virtual Keys` |
-| Authentication Methods to Hashicorp Vault | ✅ | AppRole, TLS Certificate, Token |
+| 讀取密鑰 | ✅ | 讀取密鑰，例如 `OPENAI_API_KEY` |
+| 寫入密鑰 | ✅ | 儲存密鑰，例如 `Virtual Keys` |
+| Hashicorp Vault 的驗證方法 | ✅ | AppRole、TLS Certificate、Token |
 
-Read secrets from [Hashicorp Vault](https://developer.hashicorp.com/vault/docs/secrets/kv/kv-v2)
+從 [Hashicorp Vault](https://developer.hashicorp.com/vault/docs/secrets/kv/kv-v2) 讀取密鑰
 
-**Step 1.** Add Hashicorp Vault details in your environment
+**步驟 1.** 在您的環境中新增 Hashicorp Vault 詳細資訊
 
-LiteLLM supports three methods of authentication:
+LiteLLM 支援三種驗證方法：
 
-1. AppRole authentication (recommended) - `HCP_VAULT_APPROLE_ROLE_ID` and `HCP_VAULT_APPROLE_SECRET_ID`
-2. TLS cert authentication - `HCP_VAULT_CLIENT_CERT` and `HCP_VAULT_CLIENT_KEY`
-3. Token authentication - `HCP_VAULT_TOKEN`
+1. AppRole 驗證（建議）- `HCP_VAULT_APPROLE_ROLE_ID` 和 `HCP_VAULT_APPROLE_SECRET_ID`
+2. TLS 憑證驗證 - `HCP_VAULT_CLIENT_CERT` 和 `HCP_VAULT_CLIENT_KEY`
+3. Token 驗證 - `HCP_VAULT_TOKEN`
 
 ```bash
 HCP_VAULT_ADDR="https://test-cluster-public-vault-0f98180c.e98296b2.z1.hashicorp.cloud:8200"
@@ -45,7 +45,7 @@ HCP_VAULT_MOUNT_NAME="secret" # OPTIONAL. defaults to "secret", set this if your
 HCP_VAULT_PATH_PREFIX="litellm" # OPTIONAL. defaults to None, set this if your secrets live under a custom prefix like secret/data/litellm/OPENAI_API_KEY
 ```
 
-**Step 2.** Add to proxy config.yaml
+**步驟 2.** 新增到 proxy config.yaml
 
 ```yaml
 general_settings:
@@ -58,33 +58,32 @@ general_settings:
     access_mode: "read_and_write" # Literal["read_only", "write_only", "read_and_write"]
 ```
 
-**Step 3.** Start + test proxy
+**步驟 3.** 啟動 + 測試 proxy
 
 ```
 $ litellm --config /path/to/config.yaml
 ```
 
-[Quick Test Proxy](../proxy/user_keys)
+[快速測試 Proxy](../proxy/user_keys)
 
+## 驗證方法 {#authentication-methods}
 
-## Authentication Methods
+LiteLLM 支援 Hashicorp Vault 的三種驗證方法，優先順序如下：
 
-LiteLLM supports three authentication methods for Hashicorp Vault, with the following priority:
+1. **AppRole** - 適用於正式環境應用程式的建議選項
+2. **TLS Certificate** - 用於基於憑證的驗證
+3. **Token** - 直接 token 驗證
 
-1. **AppRole** - Recommended for production applications
-2. **TLS Certificate** - For certificate-based authentication
-3. **Token** - Direct token authentication
+### 1. AppRole 驗證 {#1-approle-authentication}
 
-### 1. AppRole Authentication
+設定 AppRole 驗證：
 
-To set up AppRole authentication:
-
-1. Enable AppRole auth in Vault:
+1. 在 Vault 中啟用 AppRole auth：
 ```bash
 vault auth enable approle
 ```
 
-2. Create a policy and role for LiteLLM:
+2. 為 LiteLLM 建立 policy 與 role：
 ```bash
 # Create a policy file (litellm-policy.hcl)
 path "secret/data/*" {
@@ -101,7 +100,7 @@ vault write auth/approle/role/litellm \
     token_max_ttl=32d
 ```
 
-3. Get your Role ID and Secret ID:
+3. 取得您的 Role ID 和 Secret ID：
 ```bash
 # Get Role ID
 vault read auth/approle/role/litellm/role-id
@@ -110,42 +109,42 @@ vault read auth/approle/role/litellm/role-id
 vault write -f auth/approle/role/litellm/secret-id
 ```
 
-4. Set the environment variables:
+4. 設定環境變數：
 ```bash
 export HCP_VAULT_APPROLE_ROLE_ID="your-role-id"
 export HCP_VAULT_APPROLE_SECRET_ID="your-secret-id"
 ```
 
-### 2. TLS Certificate Authentication
+### 2. TLS 憑證驗證 {#2-tls-certificate-authentication}
 
-TLS Certificate authentication uses client certificates for mutual TLS authentication with Vault.
+TLS Certificate 驗證使用用戶端憑證與 Vault 進行 mutual TLS 驗證。
 
-**Environment Variables:**
+**環境變數：**
 ```bash
 export HCP_VAULT_CLIENT_CERT="path/to/client.pem"
 export HCP_VAULT_CLIENT_KEY="path/to/client.key"
 export HCP_VAULT_CERT_ROLE="your-cert-role"  # Optional
 ```
 
-**How it works:**
-- LiteLLM uses the client certificate and key for mutual TLS authentication
-- Vault validates the certificate and issues a temporary token
-- The token is cached for the duration of its lease
+**運作方式：**
+- LiteLLM 使用用戶端憑證和金鑰進行 mutual TLS 驗證
+- Vault 驗證憑證並簽發暫時 token
+- token 會在租期期間快取
 
-### 3. Token Authentication
+### 3. Token 驗證 {#3-token-authentication}
 
-Direct token authentication uses a static Vault token.
+直接 token 驗證使用靜態 Vault token。
 
-**Environment Variables:**
+**環境變數：**
 ```bash
 export HCP_VAULT_TOKEN="hvs.CAESIG52gL6ljBSdmq*****"
 ```
 
-## Namespaces
+## 命名空間 {#namespaces}
 
-On Vault Enterprise, LiteLLM sends the namespace in two places: as the `X-Vault-Namespace` header on the AppRole or TLS cert login request, and as a path segment in the URL of every secret read, write, rotate and delete. `HCP_VAULT_NAMESPACE` sets both. When the role that LiteLLM logs in with lives in a different namespace than the secrets it manages, set the two independently with `HCP_VAULT_LOGIN_NAMESPACE` and `HCP_VAULT_SECRET_NAMESPACE`. Each one falls back to `HCP_VAULT_NAMESPACE` when unset, so existing deployments keep working unchanged. The same three settings are available in the Admin UI under Settings > Admin Settings > Hashicorp Vault as Namespace, Login Namespace and Secret Namespace
+在 Vault Enterprise 中，LiteLLM 會將命名空間送到兩個位置：作為 AppRole 或 TLS 憑證登入請求上的 `X-Vault-Namespace` 標頭，以及作為每個 secret 讀取、寫入、輪換與刪除之 URL 中的一個路徑區段。`HCP_VAULT_NAMESPACE` 會同時設定這兩者。當 LiteLLM 登入時使用的 role 所在命名空間與其管理的 secrets 不同時，可分別使用 `HCP_VAULT_LOGIN_NAMESPACE` 和 `HCP_VAULT_SECRET_NAMESPACE` 來單獨設定。未設定時，兩者都會回退到 `HCP_VAULT_NAMESPACE`，因此既有部署可維持不變。相同的三個設定也可在 Admin UI 的 Settings > Admin Settings > Hashicorp Vault 下找到，名稱分別是 Namespace、Login Namespace 與 Secret Namespace
 
-For example, an AppRole that is defined in the top-level `admin` namespace and has access to every team namespace below it, with team virtual keys and provider secrets stored under `admin/teams/team-a`:
+例如，一個定義在最上層 `admin` 命名空間中、並可存取其下每個團隊命名空間的 AppRole，而團隊 virtual keys 與提供者 secrets 儲存在 `admin/teams/team-a` 下：
 
 ```bash
 HCP_VAULT_ADDR="https://vault.example.com:8200"
@@ -155,35 +154,34 @@ HCP_VAULT_APPROLE_ROLE_ID="your-role-id"
 HCP_VAULT_APPROLE_SECRET_ID="your-secret-id"
 ```
 
-With this configuration the login request is `POST https://vault.example.com:8200/v1/auth/approle/login` with the header `X-Vault-Namespace: admin`, and a read of `OPENAI_API_KEY` goes to `GET https://vault.example.com:8200/v1/admin/teams/team-a/secret/data/OPENAI_API_KEY` with only the `X-Vault-Token` header. Vault addresses the root namespace by omitting the header, so to log in at root while reading team secrets, leave `HCP_VAULT_LOGIN_NAMESPACE` and `HCP_VAULT_NAMESPACE` unset and set only `HCP_VAULT_SECRET_NAMESPACE`. Secret requests never carry a namespace header, so the URL is the single source of truth for which namespace a secret lives in. A per-team `namespace` override (see [Team-specific overrides](#team-specific-overrides)) replaces `HCP_VAULT_SECRET_NAMESPACE` for that team's keys and never affects login
+使用此設定時，登入請求會以 `POST https://vault.example.com:8200/v1/auth/approle/login` 搭配標頭 `X-Vault-Namespace: admin` 送出，而對 `OPENAI_API_KEY` 的讀取會以只有 `X-Vault-Token` 標頭的方式送往 `GET https://vault.example.com:8200/v1/admin/teams/team-a/secret/data/OPENAI_API_KEY`。Vault 會透過省略標頭來處理 root 命名空間，因此若要在 root 登入同時讀取團隊 secrets，請將 `HCP_VAULT_LOGIN_NAMESPACE` 和 `HCP_VAULT_NAMESPACE` 保持未設定，並只設定 `HCP_VAULT_SECRET_NAMESPACE`。secret 請求永遠不會攜帶命名空間標頭，因此 URL 是判定 secret 所屬命名空間的唯一依據。每個團隊的 `namespace` 覆寫（請參閱 [團隊專屬覆寫](#team-specific-overrides)）會替換該團隊金鑰的 `HCP_VAULT_SECRET_NAMESPACE`，且永遠不會影響登入
 
-## How it works
+## 運作方式 {#how-it-works}
 
-**Reading Secrets**
+**讀取密鑰**
 
-LiteLLM reads secrets from Hashicorp Vault's KV v2 engine using the following URL format:
+LiteLLM 使用以下 URL 格式，從 Hashicorp Vault 的 KV v2 引擎讀取密鑰：
 ```
 {VAULT_ADDR}/v1/{NAMESPACE}/{MOUNT_NAME}/data/{PATH_PREFIX}/{SECRET_NAME}
 ```
 
-For example, if you have:
+範例，若您有：
 - `HCP_VAULT_ADDR="https://vault.example.com:8200"`
 - `HCP_VAULT_NAMESPACE="admin"`
 - `HCP_VAULT_MOUNT_NAME="secret"`
 - `HCP_VAULT_PATH_PREFIX="litellm"`
-- Secret name: `AZURE_API_KEY`
+- 密鑰名稱：`AZURE_API_KEY`
 
-
-LiteLLM will look up:
+LiteLLM 會查找：
 ```
 https://vault.example.com:8200/v1/admin/secret/data/litellm/AZURE_API_KEY
 ```
 
-### Expected Secret Format
+### 預期的密鑰格式 {#expected-secret-format}
 
-LiteLLM expects all secrets to be stored as a JSON object with a `key` field containing the secret value.
+LiteLLM 預期所有密鑰都儲存為 JSON 物件，並包含一個 `key` 欄位來存放密鑰值。
 
-For example, for `AZURE_API_KEY`, the secret should be stored as:
+範例，對於 `AZURE_API_KEY`，密鑰應儲存為：
 
 ```json
 {
@@ -193,28 +191,27 @@ For example, for `AZURE_API_KEY`, the secret should be stored as:
 
 <Image img={require('../../img/hcorp.png')} />
 
-**Writing Secrets**
+**寫入密鑰**
 
-When a Virtual Key is Created / Deleted on LiteLLM, LiteLLM will automatically create / delete the secret in Hashicorp Vault.
+當在 LiteLLM 上建立 / 刪除 Virtual Key 時，LiteLLM 會自動在 Hashicorp Vault 中建立 / 刪除對應的密鑰。
 
-- Create Virtual Key on LiteLLM either through the LiteLLM Admin UI or API
+- 可透過 LiteLLM Admin UI 或 API 在 LiteLLM 上建立 Virtual Key
 
 <Image img={require('../../img/hcorp_create_virtual_key.png')} />
 
+- 在 Hashicorp Vault 中檢查密鑰
 
-- Check Hashicorp Vault for secret
-
-LiteLLM stores secret under the `prefix_for_stored_virtual_keys` path (default: `litellm/`)
+LiteLLM 會將密鑰儲存在 `prefix_for_stored_virtual_keys` 路徑下（預設：`litellm/`）
 
 <Image img={require('../../img/hcorp_virtual_key.png')} />
 
-### Team-specific overrides
+### 團隊專屬覆寫 {#team-specific-overrides}
 
-When running the LiteLLM proxy you can override the Vault location per team. Use the [Team-Level Secret Manager Settings](./overview.md#team-level-secret-manager-settings) flow in the dashboard and configure the panel shown below:
+執行 LiteLLM proxy 時，您可以依團隊覆寫 Vault 位置。在儀表板中使用 [團隊層級密鑰管理器設定](./overview.md#team-level-secret-manager-settings) 流程，並設定如下所示的面板：
 
 <Image img={require('../../img/secret_manager_hashicorp_vault_settings.png')} />
 
-Use the following structure for the JSON payload:
+JSON payload 請使用以下結構：
 
 ```json
 {
@@ -225,9 +222,9 @@ Use the following structure for the JSON payload:
 }
 ```
 
-- `namespace` – overrides the secret namespace (`HCP_VAULT_SECRET_NAMESPACE`, or `HCP_VAULT_NAMESPACE` when that is unset) in the secret URL. Login always uses the login namespace.
-- `mount` – which KV engine mount to use (defaults to `secret`).
-- `path_prefix` – additional path segments between the mount and the secret name.
-- `data` – the field name inside the KV payload (defaults to `key`).
+- `namespace` – 在 secret URL 中覆寫 secret 命名空間（`HCP_VAULT_SECRET_NAMESPACE`，若未設定則為 `HCP_VAULT_NAMESPACE`）。登入一律使用登入命名空間。
+- `mount` – 要使用的 KV 引擎掛載點（預設為 `secret`）。
+- `path_prefix` – 掛載點與 secret 名稱之間的額外路徑區段。
+- `data` – KV 負載中的欄位名稱（預設為 `key`）。
 
-Whenever LiteLLM stores or deletes virtual keys for that team, these overrides are applied so you can keep each team’s credentials in its own namespace, mount, or field layout without changing the global Vault configuration.
+每當 LiteLLM 為該團隊儲存或刪除 virtual key 時，這些覆寫都會套用，因此您可以將每個團隊的憑證保留在各自的命名空間、mount 或欄位配置中，而無需變更全域 Vault 設定。

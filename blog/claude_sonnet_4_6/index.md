@@ -1,11 +1,11 @@
 ---
 slug: claude_sonnet_4_6
-title: "Day 0 Support: Claude Sonnet 4.6"
+title: "第 0 天支援：Claude Sonnet 4.6"
 date: 2026-02-17T10:00:00
 authors:
   - ishaan-alt
   - krrish
-description: "Day 0 support for Claude Sonnet 4.6 on LiteLLM AI Gateway - use across Anthropic, Azure, Vertex AI, and Bedrock."
+description: "LiteLLM AI Gateway 對 Claude Sonnet 4.6 的第 0 天支援 - 可跨 Anthropic、Azure、Vertex AI 和 Bedrock 使用。"
 tags: [anthropic, claude, sonnet 4.6]
 hide_table_of_contents: false
 ---
@@ -13,22 +13,22 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM now supports Claude Sonnet 4.6 on Day 0. Use it across Anthropic, Azure, Vertex AI, and Bedrock through the LiteLLM AI Gateway.
+LiteLLM 現已在第 0 天支援 Claude Sonnet 4.6。可透過 LiteLLM AI Gateway 在 Anthropic、Azure、Vertex AI 和 Bedrock 上使用。
 
 {/* truncate */}
 
-## Docker Image
+## Docker 映像檔 {#docker-image}
 
 ```bash
 docker pull ghcr.io/berriai/litellm:v1.81.3-stable.sonnet-4-6
 ```
 
-## Usage - Anthropic
+## 使用方式 - Anthropic {#usage---anthropic}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -38,7 +38,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -49,7 +49,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -83,12 +83,12 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Usage - Azure
+## 使用方式 - Azure {#usage---azure}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -99,7 +99,7 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE  # https://<resource>.services.ai.azure.com
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -111,7 +111,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -147,12 +147,12 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Usage - Vertex AI
+## 使用方式 - Vertex AI {#usage---vertex-ai}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -163,7 +163,7 @@ model_list:
       vertex_location: us-east5
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -176,7 +176,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -212,12 +212,12 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Usage - Bedrock
+## 使用方式 - Bedrock {#usage---bedrock}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -229,7 +229,7 @@ model_list:
       aws_region_name: us-east-1
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -241,7 +241,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it!**
+**3. 測試它！**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \

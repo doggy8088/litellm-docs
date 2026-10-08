@@ -1,34 +1,34 @@
-# Claude Code with Okta SSO (JWT Auth)
+# Claude Code 與 Okta SSO（JWT 驗證） {#claude-code-with-okta-sso-jwt-auth}
 
-Route Claude Code through LiteLLM using each developer's Okta identity. Claude Code sends the developer's own Okta access token with every request, LiteLLM validates it against your Okta authorization server and creates the user automatically on first request, and usage, spend, and logs are attributed to that user. There are no per-user API keys to issue and no manual provisioning, so the setup works the same for 10 developers or 10,000.
+透過 LiteLLM，使用每位開發者的 Okta 身分來路由 Claude Code。Claude Code 會在每個請求中傳送開發者自己的 Okta access token，LiteLLM 會針對您的 Okta 授權伺服器驗證它，並在首次請求時自動建立使用者，而使用量、支出與記錄都會歸屬於該使用者。無需發放每位使用者的 API 金鑰，也不需要手動佈建，因此此設定對 10 位開發者或 10,000 位開發者都同樣適用。
 
 <EnterpriseFeature feature="JWT authentication" />
 
-This guide uses Okta, but any OIDC provider that issues JWT access tokens (Azure AD, Keycloak, Auth0, etc.) works the same way; only the issuer URLs and app setup differ.
+本指南使用 Okta，但任何發出 JWT access token 的 OIDC 提供者（例如 Azure AD、Keycloak、Auth0 等）都可用相同方式運作；只有 issuer URLs 與應用程式設定不同。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-The first time a developer uses Claude Code, a small `apiKeyHelper` script opens an Okta sign-in page. After that, everything is silent: the script serves cached tokens and refreshes them in the background, Claude Code sends the token as its API key, and LiteLLM verifies the token signature against Okta's published JWKS keys. Because `user_id_upsert` is enabled, LiteLLM creates an internal user record from the token's `sub` and `email` claims on first request, so per-user spend tracking starts immediately without an admin issuing anything.
+開發者第一次使用 Claude Code 時，一個小型 `apiKeyHelper` 腳本會開啟 Okta 登入頁面。之後一切都會靜默進行：該腳本會提供快取的 token，並在背景重新整理，Claude Code 會將該 token 作為其 API 金鑰傳送，而 LiteLLM 會針對 Okta 公開的 JWKS 金鑰驗證 token 簽章。因為已啟用 `user_id_upsert`，LiteLLM 會在首次請求時根據 token 的 `sub` 與 `email` claim 建立內部使用者記錄，因此無需管理員發放任何內容即可立即開始進行每位使用者的支出追蹤。
 
-## 1. Create an Okta app
+## 1. 建立 Okta 應用程式 {#1-create-an-okta-app}
 
-In the Okta Admin Console, create an **OIDC Native Application** for Claude Code:
+在 Okta Admin Console 中，為 Claude Code 建立一個 **OIDC Native Application**：
 
-1. **Applications > Create App Integration**, choose **OIDC** and **Native Application**.
-2. Under **Grant type**, enable **Device Authorization** (best for CLI tools; no client secret and no localhost redirect needed) and **Refresh Token**.
-3. Assign the app to the Okta groups that should have access.
-4. Note the **Client ID**.
+1. **Applications > Create App Integration**，選擇 **OIDC** 與 **Native Application**。
+2. 在 **Grant type** 下，啟用 **Device Authorization**（最適合 CLI 工具；不需要 client secret，也不需要 localhost redirect）以及 **Refresh Token**。
+3. 將此應用程式指派給應該具有存取權的 Okta 群組。
+4. 記下 **Client ID**。
 
-Tokens must come from a **custom authorization server** (for example the built-in one named `default`), not the org authorization server, because only custom authorization server access tokens are JWTs you can verify against a JWKS endpoint. Under **Security > API > Authorization Servers**, confirm the `default` server exists and note two values:
+Token 必須來自 **custom authorization server**（例如內建的、名為 `default` 的伺服器），而不是 org authorization server，因為只有 custom authorization server 的 access token 才是您可以透過 JWKS endpoint 驗證的 JWT。於 **Security > API > Authorization Servers** 下，確認 `default` 伺服器存在，並記下兩個值：
 
-- JWKS URL: `https://<your-okta-domain>/oauth2/default/v1/keys`
-- Audience: `api://default` (or whatever your server's audience is set to)
+- JWKS URL：`https://<your-okta-domain>/oauth2/default/v1/keys`
+- Audience：`api://default`（或您的伺服器設定的 audience 值）
 
-Access tokens from custom authorization servers include `sub` by default. To also get the user's email in the access token, add a claim under **Security > API > Authorization Servers > default > Claims**: name `email`, include in **Access Token**, value `user.email`.
+來自 custom authorization server 的 access token 預設包含 `sub`。若也要在 access token 中取得使用者的 email，請在 **Security > API > Authorization Servers > default > Claims** 下新增一個 claim：名稱 `email`、包含於 **Access Token**、值 `user.email`。
 
-## 2. Configure LiteLLM
+## 2. 設定 LiteLLM {#2-configure-litellm}
 
-Enable JWT auth in your proxy config:
+在您的 proxy 設定中啟用 JWT 驗證：
 
 ```yaml
 model_list:
@@ -51,7 +51,7 @@ general_settings:
     user_id_upsert: true
 ```
 
-Set the environment variables. User upsert writes to the database, so `DATABASE_URL` is required:
+設定環境變數。使用者 upsert 會寫入資料庫，因此需要 `DATABASE_URL`：
 
 ```bash
 export JWT_PUBLIC_KEY_URL="https://<your-okta-domain>/oauth2/default/v1/keys"
@@ -62,7 +62,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 export LITELLM_MASTER_KEY="sk-<paste-a-long-random-key>"
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -70,13 +70,13 @@ litellm --config /path/to/config.yaml
 
 :::tip
 
-To restrict access to your corporate domain, add `user_allowed_email_domain: "yourcompany.com"` under `litellm_jwtauth`. See [JWT-based Auth](../proxy/token_auth) for all available claim mappings and access controls.
+若要限制僅能存取您的公司網域，請在 `litellm_jwtauth` 下加入 `user_allowed_email_domain: "yourcompany.com"`。所有可用的 claim 對應與存取控制，請參閱 [JWT-based Auth](../proxy/token_auth)。
 
 :::
 
-## 3. Verify with a token
+## 3. 使用 token 驗證 {#3-verify-with-a-token}
 
-Get an access token for your own Okta user, for example by running the helper script from step 4 once, then call the proxy with it:
+取得您自己的 Okta 使用者的 access token，例如先執行第 4 步的輔助腳本一次，然後用它呼叫 proxy：
 
 ```bash
 export OKTA_TOKEN="<your-okta-access-token>"
@@ -91,11 +91,11 @@ curl -X POST http://0.0.0.0:4000/v1/messages \
   }'
 ```
 
-A successful response means the token validated against Okta's JWKS. Open the Admin UI under **Internal Users** and you will see a user created from your token's `sub` claim, with this request's spend already attributed to it.
+若回應成功，表示該 token 已通過 Okta 的 JWKS 驗證。開啟 **Internal Users** 下的 Admin UI，您會看到一個由 token 的 `sub` claim 建立的使用者，而這次請求的支出已經歸屬於該使用者。
 
-## 4. Configure Claude Code
+## 4. 設定 Claude Code {#4-configure-claude-code}
 
-Claude Code supports a dynamic credential via [`apiKeyHelper`](https://code.claude.com/docs/en/settings): a script it runs to get a fresh API key instead of using a static one. Save this as `~/.claude/okta-token.sh` (fill in your Okta domain and the Client ID from step 1):
+Claude Code 透過 [`apiKeyHelper`](https://code.claude.com/docs/en/settings) 支援動態憑證：它會執行一個腳本來取得新的 API 金鑰，而不是使用靜態金鑰。將以下內容儲存為 `~/.claude/okta-token.sh`（請填入您的 Okta 網域與第 1 步的 Client ID）：
 
 ```bash
 #!/usr/bin/env bash
@@ -157,9 +157,9 @@ while true; do
 done
 ```
 
-The script prints only the access token to stdout, which is what `apiKeyHelper` requires; sign-in prompts go to stderr. Make it executable with `chmod +x ~/.claude/okta-token.sh`.
+此腳本只會將 access token 輸出到 stdout，而這正是 `apiKeyHelper` 所要求的；登入提示會輸出到 stderr。使用 `chmod +x ~/.claude/okta-token.sh` 使其可執行。
 
-Then point Claude Code at LiteLLM in `~/.claude/settings.json`:
+接著在 `~/.claude/settings.json` 中，將 Claude Code 指向 LiteLLM：
 
 ```json
 {
@@ -171,20 +171,20 @@ Then point Claude Code at LiteLLM in `~/.claude/settings.json`:
 }
 ```
 
-`CLAUDE_CODE_API_KEY_HELPER_TTL_MS` controls how long Claude Code caches the helper's output; set it just under your Okta access token lifetime (Okta's default is 1 hour, so 55 minutes here). On first launch the developer completes one Okta sign-in in the browser, and every request after that carries their identity automatically.
+`CLAUDE_CODE_API_KEY_HELPER_TTL_MS` 會控制 Claude Code 快取輔助程式輸出的時間長度；請將其設為略低於您的 Okta access token 存活時間（Okta 預設為 1 小時，因此此處為 55 分鐘）。首次啟動時，開發者會在瀏覽器中完成一次 Okta 登入，而之後每個請求都會自動帶上其身分。
 
-## 5. Roll out to your org
+## 5. 在您的組織中展開 {#5-roll-out-to-your-org}
 
-Nothing above requires per-user admin work, so rollout is just distributing two files through your device management tooling: the helper script and the Claude Code settings. To enforce the settings centrally instead of relying on each developer's `~/.claude/settings.json`, deploy them as [managed settings](https://code.claude.com/docs/en/settings) (`/Library/Application Support/ClaudeCode/managed-settings.json` on macOS, `/etc/claude-code/managed-settings.json` on Linux), which take precedence and cannot be overridden locally.
+上述內容都不需要逐一為使用者進行管理作業，因此展開只需要透過您的裝置管理工具分發兩個檔案：輔助腳本與 Claude Code 設定。若要集中強制套用這些設定，而不是依賴每位開發者的 `~/.claude/settings.json`，請將它們部署為 [managed settings](https://code.claude.com/docs/en/settings)（macOS 上為 `/Library/Application Support/ClaudeCode/managed-settings.json`，Linux 上為 `/etc/claude-code/managed-settings.json`），其優先順序較高且無法在本機覆寫。
 
-## Optional: teams, budgets, and per-user keys
+## 選用：團隊、預算與每位使用者的金鑰 {#optional-teams-budgets-and-per-user-keys}
 
-Two extensions are common once the basic flow works. To attribute spend to teams, add a `groups` claim to your Okta access tokens and map it with `team_ids_jwt_field: "groups"`; the group values must match LiteLLM team IDs, which you can sync from Okta via [SCIM](../tutorials/scim_litellm) or create manually. To give each developer their own budget, rate limits, and model access instead of shared team settings, use [JWT to Virtual Key Mapping](../proxy/jwt_key_mapping) with `unregistered_jwt_client_behavior: "auto_register"`, which provisions a virtual key per user on their first request.
+基本流程運作後，通常會有兩項延伸需求。若要將支出歸屬到團隊，請在您的 Okta access token 中加入 `groups` claim，並使用 `team_ids_jwt_field: "groups"` 將其對應；群組值必須與 LiteLLM 團隊 ID 相符，您可以透過 [SCIM](../tutorials/scim_litellm) 從 Okta 同步，或手動建立。若要讓每位開發者擁有自己的預算、速率限制與模型存取權，而非共用團隊設定，請搭配 `unregistered_jwt_client_behavior: "auto_register"` 使用 [JWT to Virtual Key Mapping](../proxy/jwt_key_mapping)，它會在使用者首次請求時為其佈建一把虛擬金鑰。
 
-## Related docs
+## 相關文件 {#related-docs}
 
-- [JWT-based Auth](../proxy/token_auth): all `litellm_jwtauth` options
-- [JWT to Virtual Key Mapping](../proxy/jwt_key_mapping): per-user keys, budgets, and model access
-- [Provisioning identities and issuing keys](../proxy/identity_provisioning): how JWT auth, SCIM, and key auto-registration fit together
-- [Claude Code Gateway (SSO sign-in)](./claude_code_gateway): developers sign in with `/login` through the proxy's SSO, with no helper script
-- [Claude Code Quickstart](./claude_responses_api): basic Claude Code with LiteLLM setup
+- [JWT-based Auth](../proxy/token_auth)：所有 `litellm_jwtauth` 選項
+- [JWT to Virtual Key Mapping](../proxy/jwt_key_mapping)：每位使用者的金鑰、預算與模型存取權
+- [Provisioning identities and issuing keys](../proxy/identity_provisioning)：JWT 驗證、SCIM 與金鑰自動註冊如何整合
+- [Claude Code Gateway (SSO sign-in)](./claude_code_gateway)：開發者透過 proxy 的 SSO 使用 `/login` 登入，無需輔助腳本
+- [Claude Code Quickstart](./claude_responses_api)：Claude Code 與 LiteLLM 的基本設定

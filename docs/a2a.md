@@ -3,51 +3,50 @@ import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 import LiteLLMFlow from '@site/src/components/LiteLLMFlow';
 
-# Agent Gateway (A2A Protocol) - Overview
+# Agent Gateway (A2A Protocol) - 概覽 {#agent-gateway-a2a-protocol---overview}
 
-Add A2A Agents on LiteLLM AI Gateway, Invoke agents in A2A Protocol, track request/response logs in LiteLLM Logs. Manage which Teams, Keys can access which Agents onboarded.
+在 LiteLLM AI Gateway 新增 A2A Agents、透過 A2A Protocol 呼叫 agents，並在 LiteLLM Logs 追蹤 request/response logs。管理哪些 Teams、Keys 可以存取哪些已上線的 Agents。
 
 <LiteLLMFlow copyCommand={false} agentPrompt={false} highlight="A2A agents" />
 
-| Feature | Supported | 
+| 功能 | 支援 | 
 |---------|-----------|
-| Supported Agent Providers | A2A, Vertex AI Agent Engine, LangGraph, Azure AI Foundry, Bedrock AgentCore, Pydantic AI |
-| Logging | ✅ |
-| Load Balancing | ✅ |
-| Streaming | ✅ |
+| 支援的 Agent 提供者 | A2A, Vertex AI Agent Engine, LangGraph, Azure AI Foundry, Bedrock AgentCore, Pydantic AI |
+| 記錄 | ✅ |
+| 負載平衡 | ✅ |
+| 串流 | ✅ |
 | [Iteration Budgets](a2a_iteration_budgets) | ✅ |
-
 
 :::tip
 
-LiteLLM follows the [A2A (Agent-to-Agent) Protocol](https://github.com/google/A2A) for invoking agents.
+LiteLLM 依照 [A2A (Agent-to-Agent) Protocol](https://github.com/google/A2A) 呼叫 agents。
 
 :::
 
-## Adding your Agent
+## 新增您的代理程式 {#adding-your-agent}
 
-### Add A2A Agents
+### 新增 A2A 代理程式 {#add-a2a-agents}
 
-You can add A2A-compatible agents through the LiteLLM Admin UI.
+您可以透過 LiteLLM Admin UI 新增相容於 A2A 的 agents。
 
-1. Navigate to **Agentic** > **Agents**
-2. Click **Add New Agent**
-3. In the **Configure** step, enter the agent name (e.g., `ij-local`) and the URL of your A2A agent
-4. Choose a **Protocol Version** (`1.0` or `0.3`) - the wire format LiteLLM serves to clients for this agent
-5. Continue through the remaining steps and save the agent
+1. 前往 **Agentic** > **Agents**
+2. 點擊 **Add New Agent**
+3. 在 **Configure** 步驟中，輸入 agent 名稱（例如 `ij-local`）以及您的 A2A agent URL
+4. 選擇 **Protocol Version**（`1.0` 或 `0.3`）－LiteLLM 提供給用戶端的此 agent wire format
+5. 完成其餘步驟並儲存 agent
 
 <Image 
   img={require('../img/add_agent_1.png')}
   dark={require('../img/add_agent_1_dark.png')}
-  alt="Add New Agent dialog showing the agent name, URL and protocol version"
+  alt="新增 Agent 對話框，顯示 agent 名稱、URL 與通訊協定版本"
   style={{width: '80%', display: 'block', margin: '0'}}
 />
 
-The URL should be the invocation URL for your A2A agent (e.g., `http://localhost:10001`).
+URL 應該是您的 A2A agent 的呼叫 URL（例如 `http://localhost:10001`）。
 
-#### Define agents in config.yaml
+#### 在 config.yaml 中定義代理程式 {#define-agents-in-configyaml}
 
-Agents can also be declared in `config.yaml` under the top-level `agents` key, which is useful when the gateway is deployed from a ConfigMap or another read-only source. `agent_name` and `agent_card_params` are both required; entries missing either one are skipped at startup.
+也可以在 `config.yaml` 中，於頂層 `agents` 鍵下宣告 agents，當閘道部署自 ConfigMap 或其他唯讀來源時特別有用。`agent_name` 與 `agent_card_params` 皆為必要；缺少任一項的項目會在啟動時略過。
 
 ```yaml title="config.yaml"
 agents:
@@ -58,131 +57,128 @@ agents:
       protocolVersion: "1.0"  # or "0.3"
 ```
 
-`protocolVersion` can be set the same way when registering through the API.
+`protocolVersion` 在透過 API 註冊時也可用相同方式設定。
 
-An optional `litellm_params` block carries per-agent settings such as `api_key`, `headers`, `agent_card_path`, and Microsoft Entra credentials; [Foundry agents over A2A](./providers/azure_ai_agents#foundry-agents-over-a2a) shows a full entry
+可選的 `litellm_params` 區塊會帶入每個 agent 的設定，例如 `api_key`、`headers`、`agent_card_path` 與 Microsoft Entra 憑證；[透過 A2A 的 Foundry agents](./providers/azure_ai_agents#foundry-agents-over-a2a) 顯示了一個完整項目
 
-Config-defined agents show up in the Agents tab and in `GET /v1/agents` alongside agents created in the UI, and they survive the periodic reload from the database. Verify them with:
+以設定檔定義的 agents 會與 UI 中建立的 agents 一起顯示在 Agents 分頁與 `GET /v1/agents` 中，並且會保留在定期從資料庫重新載入後的狀態。使用以下方式驗證：
 
 ```shell
 curl -s http://localhost:4000/v1/agents \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY"
 ```
 
-If an agent created in the UI already uses a name you then declare in `config.yaml`, the database record wins and the config entry with that name is skipped, so the name always resolves to the record you can edit. Delete the database agent and the config entry takes the name back on the next reload.
+如果在 UI 中建立的 agent 已經使用了您之後在 `config.yaml` 中宣告的名稱，則以資料庫記錄為準，而該名稱的設定檔項目會被略過，因此該名稱永遠會解析為您可以編輯的記錄。刪除資料庫中的 agent 後，該設定檔項目會在下一次重新載入時重新取回該名稱。
 
 :::info
 
-Agents declared in `config.yaml` are not stored in the database, so they cannot be edited or deleted from the Admin UI. Change the config file and restart the gateway instead.
+在 `config.yaml` 中宣告的 agents 不會儲存在資料庫中，因此無法從 Admin UI 編輯或刪除。請改為變更設定檔並重新啟動閘道。
 
-The `agents` key is read correctly starting in the next release (after `v1.95.0`). On earlier versions, use `agent_list`, and note that config-defined agents are dropped on gateways that have a database attached.
+`agents` 鍵會從下一個版本開始正確讀取（在 `v1.95.0` 之後）。在較舊版本中，請使用 `agent_list`，並請注意，已連接資料庫的 gateways 會丟棄設定檔定義的 agents。
 
 :::
 
-### Add Azure AI Foundry Agents
+### 新增 Azure AI Foundry 代理程式 {#add-azure-ai-foundry-agents}
 
-Follow [this guide, to add your azure ai foundry agent to LiteLLM Agent Gateway](./providers/azure_ai_agents#litellm-a2a-gateway)
+請依照[這份指南，將您的 azure ai foundry agent 加入 LiteLLM Agent Gateway](./providers/azure_ai_agents#litellm-a2a-gateway)
 
-Agents created in the current Foundry portal expose an A2A endpoint instead of the Assistants API; register those under `agents:` with Entra credentials as shown in [Foundry agents over A2A](./providers/azure_ai_agents#foundry-agents-over-a2a)
+目前 Foundry 入口網站中建立的 agents 會公開 A2A endpoint，而不是 Assistants API；請如[透過 A2A 的 Foundry agents](./providers/azure_ai_agents#foundry-agents-over-a2a) 所示，使用 Entra 憑證將這些 agents 註冊在 `agents:` 下
 
-### Add Vertex AI Agent Engine
+### 新增 Vertex AI Agent Engine {#add-vertex-ai-agent-engine}
 
-Follow [this guide, to add your Vertex AI Agent Engine to LiteLLM Agent Gateway](./providers/vertex_ai_agent_engine)
+請依照[這份指南，將您的 Vertex AI Agent Engine 加入 LiteLLM Agent Gateway](./providers/vertex_ai_agent_engine)
 
-### Add Bedrock AgentCore Agents
+### 新增 Bedrock AgentCore 代理程式 {#add-bedrock-agentcore-agents}
 
-Follow [this guide, to add your bedrock agentcore agent to LiteLLM Agent Gateway](./providers/bedrock_agentcore#litellm-a2a-gateway)
+請依照[這份指南，將您的 bedrock agentcore agent 加入 LiteLLM Agent Gateway](./providers/bedrock_agentcore#litellm-a2a-gateway)
 
-### Add LangGraph Agents
+### 新增 LangGraph 代理程式 {#add-langgraph-agents}
 
-Follow [this guide to register a LangGraph agent and configure its agent card](/docs/providers/langgraph)
+請依照[這份指南註冊 LangGraph agent 並設定其 agent card](/docs/providers/langgraph)
 
-### Add Pydantic AI Agents
+### 新增 Pydantic AI 代理程式 {#add-pydantic-ai-agents}
 
-Follow [this guide, to add your pydantic ai agent to LiteLLM Agent Gateway](./providers/pydantic_ai_agent#litellm-a2a-gateway)
+請依照[這份指南，將您的 pydantic ai agent 加入 LiteLLM Agent Gateway](./providers/pydantic_ai_agent#litellm-a2a-gateway)
 
+## 協定版本控管 {#protocol-versioning}
 
-## Protocol versioning
+LiteLLM proxy 會使用 **a2a-sdk 1.x** 來路由 A2A agents，並可依每個 agent 向用戶端提供 **A2A 0.3** 或 **1.0** wire format。上游 agents 可使用任一版本；LiteLLM 會將 `message/send`、`message/stream` 與延伸卡片回應正規化為您所固定的版本。
 
-LiteLLM proxy routes A2A agents using **a2a-sdk 1.x** and can serve either **A2A 0.3** or **1.0** wire format to clients per agent. Upstream agents may speak either version; LiteLLM normalizes `message/send`, `message/stream`, and extended-card responses to the version you pin.
-
-| Version | Wire shape | Example send result |
+| 版本 | Wire shape | 範例送出結果 |
 |---------|------------|---------------------|
-| **0.3** | Objects discriminated by `kind` (`message`, `task`, `status-update`, …) | `{"kind": "message", "role": "user", "parts": [{"kind": "text", "text": "..."}]}` |
-| **1.0** | Protobuf JSON envelopes (`message`, `task`, `statusUpdate`, `artifactUpdate`) | `{"message": {"role": "ROLE_USER", "parts": [{"text": "..."}]}}` |
+| **0.3** | 由 `kind` 區分的物件（`message`、`task`、`status-update`、…） | `{"kind": "message", "role": "user", "parts": [{"kind": "text", "text": "..."}]}` |
+| **1.0** | Protobuf JSON envelopes（`message`、`task`、`statusUpdate`、`artifactUpdate`） | `{"message": {"role": "ROLE_USER", "parts": [{"text": "..."}]}}` |
 
-### Pinning a version
+### 鎖定版本 {#pinning-a-version}
 
-Set `agent_card_params.protocolVersion` to `"0.3"` or `"1.0"` when registering an agent (UI dropdown or API). LiteLLM serves that version on the proxied agent card and converts upstream responses to match.
+在註冊 agent（UI 下拉選單或 API）時，將 `agent_card_params.protocolVersion` 設為 `"0.3"` 或 `"1.0"`。LiteLLM 會在代理的 agent card 上提供該版本，並將上游回應轉換為相符格式。
 
-Only `"0.3"` and `"1.0"` are accepted; other values return HTTP 400 at registration.
+僅接受 `"0.3"` 與 `"1.0"`；其他值會在註冊時回傳 HTTP 400。
 
-### When `protocolVersion` is not pinned
+### 當 `protocolVersion` 未鎖定時 {#when-protocolversion-is-not-pinned}
 
-If an agent has no pinned version, LiteLLM infers the served version from the client request:
+如果 agent 沒有固定版本，LiteLLM 會根據用戶端請求推斷提供的版本：
 
-| Client signal | Served version |
+| 用戶端信號 | 提供的版本 |
 |---------------|----------------|
-| JSON-RPC method `SendMessage` or `SendStreamingMessage` | `1.0` |
+| JSON-RPC 方法 `SendMessage` 或 `SendStreamingMessage` | `1.0` |
 | Request header `a2a-version: 1.x` | `1.0` |
-| Otherwise (e.g. `message/send` with no header) | `0.3` |
+| 否則（例如沒有 header 的 `message/send`） | `0.3` |
 
-:::tip[Always pin `protocolVersion`]
+:::tip[一律固定 `protocolVersion`]
 
-The proxied agent card defaults to `1.0` when unset, but legacy `message/send` callers without an `a2a-version` header receive **0.3**-shaped responses. Pin `protocolVersion` explicitly so your card and responses always match.
+當未設定時，代理的 agent card 預設為 `1.0`，但沒有 `a2a-version` header 的舊版 `message/send` 呼叫者會收到 **0.3** 形狀的回應。請明確固定 `protocolVersion`，以確保您的 card 與回應始終一致。
 
 :::
 
-Task methods (`tasks/get`, `tasks/list`, …) are forwarded to the upstream agent unchanged. Version conversion applies to LiteLLM-integrated messaging paths only.
+Task methods（`tasks/get`、`tasks/list`、…）會原封不動轉送到上游 agent。版本轉換僅適用於 LiteLLM 整合的訊息傳遞路徑。
 
-### Dependency
+### 相依性 {#dependency}
 
-LiteLLM proxy A2A routes require **a2a-sdk >= 1.1.0** (included in the `proxy` / `proxy-dev` dependency groups). If you call agents from your own code, install the matching SDK version:
+LiteLLM proxy A2A routes 需要 **a2a-sdk >= 1.1.0**（已包含在 `proxy` / `proxy-dev` dependency groups 中）。如果您從自己的程式碼呼叫 agents，請安裝相對應的 SDK 版本：
 
 ```bash
 pip install "a2a-sdk>=1.1.0,<2.0"
 ```
 
-## Invoking your Agents
+## 呼叫您的代理程式 {#invoking-your-agents}
 
-See the [Invoking A2A Agents](./a2a_invoking_agents) guide to learn how to call your agents using:
-- **A2A SDK** - Native A2A protocol with full support for tasks and artifacts
-- **OpenAI SDK** - Familiar `/chat/completions` interface with `a2a/` model prefix
+請參閱 [Invoking A2A Agents](./a2a_invoking_agents) 指南，了解如何使用以下方式呼叫您的 agents：
+- **A2A SDK** - 原生 A2A protocol，完整支援 tasks 與 artifacts
+- **OpenAI SDK** - 熟悉的 `/chat/completions` 介面，搭配 `a2a/` 模型前綴
 
-## Tracking Agent Logs
+## 追蹤代理程式記錄 {#tracking-agent-logs}
 
-After invoking an agent, you can view the request logs in the LiteLLM **Logs** tab.
+在呼叫 agent 之後，您可以在 LiteLLM 的 **Logs** 分頁查看 request logs。
 
-The logs show:
-- **Request/Response content** sent to and received from the agent (open a row, then switch the **Request & Response** section to **JSON**; requires `store_prompts_in_spend_logs: true`)
-- **User, Key, Team** information for tracking who made the request
-- **Latency and cost** metrics
+logs 會顯示：
+- **Request/Response 內容**，送出至 agent 與自 agent 收到的內容（開啟某一列，然後將 **Request & Response** 區段切換為 **JSON**；需要 `store_prompts_in_spend_logs: true`）
+- **User、Key、Team** 資訊，用於追蹤誰發出該 request
+- **Latency 與 cost** 指標
 
 <Image 
   img={require('../img/agent2.png')}
   dark={require('../img/agent2_dark.png')}
-  alt="Request log details for an A2A agent call showing the request JSON"
+  alt="A2A agent 呼叫的 request log 詳細資訊，顯示 request JSON"
   style={{width: '100%', display: 'block', margin: '2rem auto'}}
 />
 
+## 轉送 LiteLLM Context 標頭 {#forwarding-litellm-context-headers}
 
-## Forwarding LiteLLM Context Headers
+當 LiteLLM 呼叫您的 A2A agent 時，會傳送特殊 header，以啟用：
+- **Trace Grouping**：來自同一次 agent 執行的所有 LLM calls 會顯示在同一個 trace 下
+- **Agent Spend Tracking**：成本會歸屬到特定 agent
 
-When LiteLLM invokes your A2A agent, it sends special headers that enable:
-- **Trace Grouping**: All LLM calls from the same agent execution appear under one trace
-- **Agent Spend Tracking**: Costs are attributed to the specific agent
-
-| Header | Purpose |
+| Header | 用途 |
 |--------|---------|
-| `X-LiteLLM-Trace-Id` | Links all LLM calls to the same execution flow |
-| `X-LiteLLM-Agent-Id` | Attributes spend to the correct agent |
+| `X-LiteLLM-Trace-Id` | 將所有 LLM calls 連結到同一個執行流程 |
+| `X-LiteLLM-Agent-Id` | 將支出歸屬到正確的 agent |
 
+若要啟用這些功能，您的 A2A server 必須將這些 header **轉送** 給它回呼 LiteLLM 時所發出的任何 LLM calls。
 
-To enable these features, your A2A server must **forward these headers** to any LLM calls it makes back to LiteLLM.
+### 實作步驟 {#implementation-steps}
 
-### Implementation Steps
-
-**Step 1: Extract headers from incoming A2A request**
+**步驟 1：從傳入的 A2A request 擷取 header**
 ```python
 def get_litellm_headers(request) -> dict:
     """Extract X-LiteLLM-* headers from incoming A2A request."""
@@ -193,8 +189,8 @@ def get_litellm_headers(request) -> dict:
     }
 ```
 
-**Step 2: Forward headers to your LLM calls**
-Pass the extracted headers when making calls back to LiteLLM:
+**步驟 2：將 header 轉送到您的 LLM calls**
+進行回呼 LiteLLM 的 calls 時，傳入擷取到的 header：
 <Tabs>
 <TabItem value="openai" label="OpenAI SDK" default>
 
@@ -263,68 +259,67 @@ response = httpx.post(
 </TabItem>
 </Tabs>
 
-### Result
+### 結果 {#result}
 
-With header forwarding enabled, you'll see:
+啟用標頭轉送後，您會看到：
 
-**Trace Grouping in Langfuse:**
+**Langfuse 中的追蹤分組：**
 
 <Image
   img={require('../img/a2a_trace_grouping.png')}
   style={{width: '80%', display: 'block', margin: '0', borderRadius: '8px'}}
 />
 
-**Agent Spend Attribution:**
+**代理程式支出歸因：**
 
-Open **Usage**, choose **Agent Usage (A2A)** and stay on the **Cost** tab to see spend per agent.
+開啟 **使用情況**，選擇 **Agent Usage (A2A)**，並停留在 **Cost** 分頁以查看每個代理程式的支出。
 
 <Image
   img={require('../img/a2a_agent_spend.png')}
   dark={require('../img/a2a_agent_spend_dark.png')}
-  alt="Agent Usage (A2A) page showing daily spend and spend by agent"
+  alt="Agent Usage (A2A) 頁面顯示每日支出與按代理程式劃分的支出"
   style={{width: '80%', display: 'block', margin: '0', borderRadius: '8px'}}
 />
 
-## API Reference
+## API 參考 {#api-reference}
 
-### Endpoints
+### 端點 {#endpoints}
 
-| Endpoint | Method | Purpose |
+| 端點 | 方法 | 用途 |
 |----------|--------|---------|
-| `POST /a2a/{agent_id}` | JSON-RPC 2.0 | **Primary** — all A2A methods (see table below) |
-| `POST /a2a/{agent_id}/message/send` | JSON-RPC | Alias for `message/send` only |
-| `POST /v1/a2a/{agent_id}/message/send` | JSON-RPC | Alias for `message/send` only |
-| `GET /a2a/{agent_id}/.well-known/agent.json` | Agent card | Discovery (proxy URL in `url` field) |
-| `GET /a2a/{agent_id}/.well-known/agent-card.json` | Agent card | Discovery (standard path) |
+| `POST /a2a/{agent_id}` | JSON-RPC 2.0 | **主要** — 所有 A2A 方法（請見下表） |
+| `POST /a2a/{agent_id}/message/send` | JSON-RPC | 只有 `message/send` 的別名 |
+| `POST /v1/a2a/{agent_id}/message/send` | JSON-RPC | 只有 `message/send` 的別名 |
+| `GET /a2a/{agent_id}/.well-known/agent.json` | Agent card | 探索（`url` 欄位中的代理 URL） |
+| `GET /a2a/{agent_id}/.well-known/agent-card.json` | Agent card | 探索（標準路徑） |
 
-`{agent_id}` may be the agent UUID or the registered agent name.
+`{agent_id}` 可以是代理 UUID 或已註冊的代理名稱。
 
-### Supported JSON-RPC methods
+### 支援的 JSON-RPC 方法 {#supported-json-rpc-methods}
 
-Send any of these in the `method` field of `POST /a2a/{agent_id}`:
+在 `method` 欄位中的 `POST /a2a/{agent_id}` 送出以下任一項：
 
-| Method | Description |
+| 方法 | 說明 |
 |--------|-------------|
-| `message/send` | Send a message; returns a `task` or `message` (LiteLLM-integrated path) |
-| `message/stream` | Streaming variant (NDJSON/SSE) |
-| `tasks/get` | Get task status by `params.id` |
-| `tasks/list` | List tasks (optional `params.contextId`) |
-| `tasks/cancel` | Cancel task by `params.id` |
-| `tasks/resubscribe` | Subscribe to task updates (streaming) |
-| `tasks/pushNotificationConfig/set` | Register push notification config |
-| `tasks/pushNotificationConfig/get` | Get push config |
-| `tasks/pushNotificationConfig/list` | List push configs for a task |
-| `tasks/pushNotificationConfig/delete` | Delete push config |
-| `agent/getAuthenticatedExtendedCard` | Extended agent card |
+| `message/send` | 傳送訊息；回傳 `task` 或 `message`（LiteLLM 整合路徑） |
+| `message/stream` | 串流變體（NDJSON/SSE） |
+| `tasks/get` | 依 `params.id` 取得任務狀態 |
+| `tasks/list` | 列出任務（可選 `params.contextId`） |
+| `tasks/cancel` | 依 `params.id` 取消任務 |
+| `tasks/resubscribe` | 訂閱任務更新（串流） |
+| `tasks/pushNotificationConfig/set` | 註冊推播通知組態 |
+| `tasks/pushNotificationConfig/get` | 取得推播組態 |
+| `tasks/pushNotificationConfig/list` | 列出任務的推播組態 |
+| `tasks/pushNotificationConfig/delete` | 刪除推播組態 |
+| `agent/getAuthenticatedExtendedCard` | 擴充代理卡片 |
 
+**路由：** `message/send` 和 `message/stream` 會透過 LiteLLM 的 A2A 用戶端（記錄、防護欄、支出）。所有其他方法都會轉送到 `agent_card_params.url` 中的上游 URL。任務 API 需要該 URL；僅完成橋接的代理只支援訊息方法。
 
-**Routing:** `message/send` and `message/stream` go through LiteLLM's A2A client (logging, guardrails, spend). All other methods are forwarded to the upstream URL in `agent_card_params.url`. Task APIs require that URL; completion-bridge-only agents support messaging methods only.
+請參閱 [支援的 A2A 方法](./a2a_agent_card#supported-a2a-methods) 以取得範例、別名與限制。
 
-See [Supported A2A methods](./a2a_agent_card#supported-a2a-methods) for examples, aliases, and limitations.
+### 驗證 {#authentication}
 
-### Authentication
-
-Include your LiteLLM Virtual Key in either of two headers. `x-litellm-api-key` is preferred when the inbound `Authorization` header may carry a token destined for the backend agent (e.g. when using the [convention-based passthrough](./a2a_agent_headers#method-3-convention-based-forwarding) to forward the caller's identity).
+請在兩個標頭中的任一個包含您的 LiteLLM Virtual Key。當傳入的 `Authorization` 標頭可能帶有要傳送給後端代理的權杖時，建議使用 `x-litellm-api-key`（例如，使用 [基於慣例的直通](./a2a_agent_headers#method-3-convention-based-forwarding) 來轉送呼叫者的身分時）。
 
 ```
 Authorization: Bearer sk-your-litellm-key
@@ -332,13 +327,13 @@ Authorization: Bearer sk-your-litellm-key
 x-litellm-api-key: Bearer sk-your-litellm-key
 ```
 
-#### Per-agent permission check
+#### 每個代理程式的權限檢查 {#per-agent-permission-check}
 
-After the virtual key is authenticated, LiteLLM checks whether the calling key (and its team) is allowed to invoke the requested agent. If not, the response is HTTP 403. See [Agent Permission Management](./a2a_agent_permissions) for the full intersection model and access groups.
+在 Virtual Key 通過驗證後，LiteLLM 會檢查呼叫端的金鑰（及其團隊）是否允許呼叫所請求的代理。如果不允許，回應為 HTTP 403。完整的交集模型與存取群組請參閱 [代理權限管理](./a2a_agent_permissions)。
 
-#### Trace ID enforcement (optional, per-agent)
+#### Trace ID 強制執行（選用，每個代理程式） {#trace-id-enforcement-optional-per-agent}
 
-An agent can require every inbound request to carry a trace ID for cross-system audit threading. Set `require_trace_id_on_calls_to_agent: true` in the agent's `litellm_params`. When set, requests missing `x-litellm-trace-id` (or `x-litellm-session-id`) are rejected with HTTP 400.
+代理可以要求每個傳入請求都攜帶 trace ID，以便進行跨系統稽核串接。請在代理的 `litellm_params` 中設定 `require_trace_id_on_calls_to_agent: true`。設定後，缺少 `x-litellm-trace-id`（或 `x-litellm-session-id`）的請求會以 HTTP 400 拒絕。
 
 ```bash title="Register an agent that requires inbound trace IDs" showLineNumbers
 curl -X POST http://localhost:4000/v1/agents \
@@ -353,20 +348,20 @@ curl -X POST http://localhost:4000/v1/agents \
   }'
 ```
 
-Enforcing a trace ID on **outbound** calls made by a key owned by an agent is controlled by `require_trace_id_on_calls_by_agent` on the same `litellm_params` block.
+對由代理擁有的金鑰所發出的**傳出**呼叫強制要求 trace ID，則由同一個 `litellm_params` 區塊上的 `require_trace_id_on_calls_by_agent` 控制。
 
-#### Sub-agent identity propagation
+#### 子代理程式身分傳遞 {#sub-agent-identity-propagation}
 
-When the backend agent itself calls LiteLLM (for chat completions or to invoke a sub-agent), LiteLLM forwards two headers to maintain trace continuity:
+當後端代理本身呼叫 LiteLLM（用於 chat completions 或呼叫子代理）時，LiteLLM 會轉送兩個標頭以維持追蹤連續性：
 
-- `X-LiteLLM-Trace-Id` — links all calls in the chain to a single trace
-- `X-LiteLLM-Agent-Id` — attributes spend to the originating agent
+- `X-LiteLLM-Trace-Id` — 將鏈中的所有呼叫連結到單一追蹤
+- `X-LiteLLM-Agent-Id` — 將支出歸屬於來源代理
 
-The caller's **virtual key** and **end-user ID** are not automatically forwarded. If the downstream agent needs the user's identity, propagate it explicitly via [`extra_headers` or the `x-a2a-{agent_name_or_id}-{header}` convention](./a2a_agent_headers).
+呼叫端的 **virtual key** 和 **end-user ID** 不會自動轉送。如果下游代理需要使用者身分，請透過 [`extra_headers` 或 `x-a2a-{agent_name_or_id}-{header}` 慣例](./a2a_agent_headers) 明確傳遞。
 
-### Request Format
+### 請求格式 {#request-format}
 
-LiteLLM follows the [A2A JSON-RPC 2.0 specification](https://github.com/google/A2A). The message body shape depends on the agent's pinned `protocolVersion` (or the client signals above when unpinned).
+LiteLLM 遵循 [A2A JSON-RPC 2.0 規格](https://github.com/google/A2A)。訊息本文格式取決於代理固定的 `protocolVersion`（若未固定，則取決於上方的用戶端信號）。
 
 <Tabs>
 <TabItem value="v03" label="0.3 wire format" default>
@@ -389,7 +384,7 @@ LiteLLM follows the [A2A JSON-RPC 2.0 specification](https://github.com/google/A
 </TabItem>
 <TabItem value="v10" label="1.0 wire format">
 
-Use the [a2a-sdk 1.x client](./a2a_invoking_agents#a2a-sdk) (recommended) or send JSON-RPC with PascalCase methods / an `a2a-version: 1.0` header when the agent is pinned to `1.0`.
+在代理固定為 `1.0` 時，請使用 [a2a-sdk 1.x 用戶端](./a2a_invoking_agents#a2a-sdk)（建議）或送出帶有 PascalCase 方法 / `a2a-version: 1.0` 標頭的 JSON-RPC。
 
 ```json title="Request Body (1.0 SDK — protobuf types)"
 // Build with a2a.types.Message, Part, Role, then wrap in SendMessageRequest
@@ -398,7 +393,7 @@ Use the [a2a-sdk 1.x client](./a2a_invoking_agents#a2a-sdk) (recommended) or sen
 </TabItem>
 </Tabs>
 
-### Response Format
+### 回應格式 {#response-format}
 
 <Tabs>
 <TabItem value="resp03" label="0.3 response" default>
@@ -440,14 +435,14 @@ Use the [a2a-sdk 1.x client](./a2a_invoking_agents#a2a-sdk) (recommended) or sen
 }
 ```
 
-Streaming events use `statusUpdate` / `artifactUpdate` keys instead of `kind: "status-update"`.
+串流事件使用 `statusUpdate` / `artifactUpdate` 鍵，而不是 `kind: "status-update"`。
 
 </TabItem>
 </Tabs>
 
-Agent JSON-RPC errors are returned in the `error` field with the same `id` as the request when possible. Poll long-running work with `tasks/get` after `message/send` returns a `submitted` task.
+代理 JSON-RPC 錯誤會在 `error` 欄位中回傳，並在可行時使用與請求相同的 `id`。對於長時間執行的工作，請在 `message/send` 回傳 `submitted` 任務後，使用 `tasks/get` 輪詢。
 
-### Example: `tasks/get`
+### 範例：`tasks/get` {#example-tasksget}
 
 ```bash title="Poll task after message/send"
 curl -X POST "http://localhost:4000/a2a/my-agent" \
@@ -461,15 +456,15 @@ curl -X POST "http://localhost:4000/a2a/my-agent" \
   }'
 ```
 
-## Agent Registry
+## 代理程式登錄 {#agent-registry}
 
-Want to create a central registry so your team can discover what agents are available within your company?
+想建立一個中央登錄，讓您的團隊能夠探索公司內可用的代理嗎？
 
-Use the [AI Hub](./proxy/ai_hub) to make agents public and discoverable across your organization. This allows developers to browse available agents without needing to rebuild them.
+使用 [AI Hub](./proxy/ai_hub) 將代理公開，並在整個組織中可供探索。這讓開發者能夠瀏覽可用的代理，而不必重新建置它們。
 
-### Search the registry
+### 搜尋登錄 {#search-the-registry}
 
-`GET /v1/agents` lists every agent the key can reach. Add `query=<task>` to rank those same agents by semantic similarity between the task and each agent's name, description, and skills. Pick the embedding model first:
+`GET /v1/agents` 會列出金鑰可存取的每個代理。加入 `query=<task>`，依任務與每個代理名稱、描述及技能之間的語意相似度來排序這些相同的代理。請先選擇嵌入模型：
 
 ```yaml title="config.yaml" showLineNumbers
 model_list:
@@ -490,9 +485,9 @@ $ curl -s "http://localhost:4000/v1/agents?query=translate+a+pdf+document&top_k=
 {"agent_name":"warehouse-sql-analyst","search_score":0.0946962275274791}
 ```
 
-`top_k` defaults to 5 and caps at 100. Each result is the normal agent object plus a `search_score` (cosine similarity, higher is better). Ranking only ever covers agents the key is allowed to see, so a key restricted to two agents gets those two back whatever the query. Without `agent_search_embedding_model` a `query` returns `400 agent_search_not_configured`; if the embedding call fails, the request returns `503 agent_search_unavailable`. Agent embeddings are computed once per process and reused until the agent card changes.
+`top_k` 預設為 5，且上限為 100。每個結果都是一般的代理物件加上一個 `search_score`（餘弦相似度，越高越好）。排序只會涵蓋金鑰允許查看的代理，因此被限制只能看到兩個代理的金鑰，不論查詢內容為何，都只會回傳那兩個。若沒有 `agent_search_embedding_model`，`query` 會回傳 `400 agent_search_not_configured`；如果嵌入呼叫失敗，請求會回傳 `503 agent_search_unavailable`。代理嵌入會在每個程序中計算一次，並在代理卡片變更前重複使用。
 
-MCP clients get the same search as a virtual tool. A key with `mcp_tool_search_enabled: true` on its `object_permission` sees `agent_search(query, top_k)` next to `mcp_tool_search` and `mcp_tool_call` on `tools/list`, over both `/mcp/` and `/mcp-rest`:
+MCP 用戶端會將相同的搜尋作為虛擬工具取得。其 `object_permission` 上具有 `mcp_tool_search_enabled: true` 的金鑰，會在 `tools/list` 上、同時跨越 `/mcp/` 與 `/mcp-rest`，於 `mcp_tool_search` 和 `mcp_tool_call` 旁看到 `agent_search(query, top_k)`：
 
 ```console title="agent_search over /mcp-rest" showLineNumbers
 $ curl -s -X POST http://localhost:4000/mcp-rest/tools/call \
@@ -510,4 +505,4 @@ $ curl -s -X POST http://localhost:4000/mcp-rest/tools/call \
 ]
 ```
 
-See [MCP Tool Search](./mcp_tool_search.md) for how to enable the virtual tools on a key.
+請參閱 [MCP 工具搜尋](./mcp_tool_search.md) 了解如何在金鑰上啟用虛擬工具。

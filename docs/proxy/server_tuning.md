@@ -1,34 +1,34 @@
 ---
 title: Server Tuning
-description: Optional deep tuning for the LiteLLM Proxy container; alternative ASGI servers, worker recycling, hitless restarts, TLS, keepalive, and loading config from object storage.
+description: LiteLLM Proxy 容器的選用深度調校；替代 ASGI 伺服器、worker 迴圈回收、無中斷重啟、TLS、keepalive，以及從物件儲存載入設定。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Server Tuning
+# 伺服器調校 {#server-tuning}
 
-Reach for this page only when the defaults are not enough. Most deployments should run one Uvicorn worker per pod and scale horizontally, as described in the [production checklist](./prod.md#sizing-and-workers). The options below matter when you pack multiple workers into one container, terminate TLS at the proxy, serve HTTP/2, or cannot mount a config file on your host. See the [CLI reference](./cli.md) for every flag.
+只有在預設值不夠用時才來看這一頁。大多數部署都應該每個 pod 執行一個 Uvicorn worker 並水平擴展，如 [production checklist](./prod.md#sizing-and-workers) 所述。以下選項適用於您將多個 worker 打包進同一個容器、在 proxy 端終止 TLS、提供 HTTP/2，或無法在主機上掛載設定檔時。每個旗標請參閱 [CLI reference](./cli.md)。
 
-## Uvicorn vs. Gunicorn
+## Uvicorn 與 Gunicorn {#uvicorn-vs-gunicorn}
 
-LiteLLM Proxy runs on [Uvicorn](https://uvicorn.dev/) by default. Passing `--run_gunicorn` instead starts [Gunicorn](https://gunicorn.org/) as a process manager that supervises [Uvicorn worker processes](https://uvicorn.dev/deployment/#gunicorn) (`uvicorn.workers.UvicornWorker`). In both cases your application code still runs on Uvicorn; the difference is which process manages and recycles the workers.
+LiteLLM Proxy 預設執行於 [Uvicorn](https://uvicorn.dev/)。改用 `--run_gunicorn` 則會啟動 [Gunicorn](https://gunicorn.org/) 作為程序管理器，監督 [Uvicorn worker processes](https://uvicorn.dev/deployment/#gunicorn)（`uvicorn.workers.UvicornWorker`）。在這兩種情況下，應用程式程式碼仍然執行在 Uvicorn 上；差別在於由哪個程序管理並回收 worker。
 
-| | Uvicorn (default) | Gunicorn (`--run_gunicorn`) |
+| | Uvicorn（預設） | Gunicorn（`--run_gunicorn`） |
 |---|---|---|
-| **When to use** | Recommended for almost all deployments, especially Kubernetes with one worker per pod. | Choose when you run **multiple workers in a single container** and want a mature process manager to supervise and recycle them. |
-| **Worker recycling** | Uvicorn's [`limit_max_requests`](https://uvicorn.dev/settings/#resource-limits). | Gunicorn's [`max_requests`](https://gunicorn.org/reference/settings/#max_requests), the battle-tested mechanism Gunicorn has shipped for years. |
-| **Process supervision** | Uvicorn's built-in multiprocess manager. | Gunicorn's [arbiter](https://gunicorn.org/design/#arbiter), which restarts workers one at a time as they exit. |
+| **何時使用** | 幾乎所有部署都建議使用，特別是 Kubernetes 中每個 pod 一個 worker 的情境。 | 當您在**單一容器中執行多個 worker**，並希望有成熟的程序管理器來監督與回收它們時選擇。 |
+| **worker 回收** | Uvicorn 的 [`limit_max_requests`](https://uvicorn.dev/settings/#resource-limits)。 | Gunicorn 的 [`max_requests`](https://gunicorn.org/reference/settings/#max_requests)，這是 Gunicorn 多年來提供、經實戰驗證的機制。 |
+| **程序監督** | Uvicorn 內建的多程序管理器。 | Gunicorn 的 [arbiter](https://gunicorn.org/design/#arbiter)，會在 worker 結束時一次重啟一個。 |
 
-:::tip[Recommendation]
+:::tip[建議]
 
-On Kubernetes, run **one Uvicorn worker per pod** and scale **horizontally** (more pods) rather than vertically (more workers per pod). One process per pod keeps latency predictable under load, lets the Horizontal Pod Autoscaler use the [thresholds in the production checklist](./prod.md#autoscaling) accurately, and makes rolling restarts hitless because Kubernetes drains one pod at a time. Reach for Gunicorn only when you must pack multiple workers into one container.
+在 Kubernetes 上，請**每個 pod 執行一個 Uvicorn worker**，並**水平**（更多 pod）而非垂直（每個 pod 更多 worker）擴展。每個 pod 一個程序可讓負載下的延遲更可預測、讓 Horizontal Pod Autoscaler 能準確使用 [production checklist 中的門檻](./prod.md#autoscaling)，並使滾動重啟成為無中斷，因為 Kubernetes 一次只會排空一個 pod。只有在您必須將多個 worker 打包進單一容器時，才改用 Gunicorn。
 
 :::
 
-### Recycle workers
+### 回收 worker {#recycle-workers}
 
-If you observe gradual memory growth under sustained load, recycle each worker after a fixed number of requests to bound memory usage. `--max_requests_before_restart` maps to Uvicorn's [`limit_max_requests`](https://uvicorn.dev/settings/#resource-limits) (default server) and to Gunicorn's [`max_requests`](https://gunicorn.org/reference/settings/#max_requests) under `--run_gunicorn`. Configure it via CLI flag or environment variable:
+如果您在持續負載下觀察到記憶體逐漸增加，可在固定請求數之後回收每個 worker，以限制記憶體使用量。`--max_requests_before_restart` 對應到 Uvicorn 的 [`limit_max_requests`](https://uvicorn.dev/settings/#resource-limits)（預設伺服器）以及 Gunicorn 在 `--run_gunicorn` 下的 [`max_requests`](https://gunicorn.org/reference/settings/#max_requests)。可透過 CLI 旗標或環境變數設定：
 
 ```shell
 # CLI
@@ -40,7 +40,7 @@ export MAX_REQUESTS_BEFORE_RESTART=10000
 
 :::tip
 
-When you run **multiple workers in one container** and rely on `--max_requests_before_restart`, prefer `--run_gunicorn`. Gunicorn's [`max_requests`](https://gunicorn.org/reference/settings/#max_requests) recycling is more mature than Uvicorn's, and its [arbiter](https://gunicorn.org/design/#arbiter) restarts workers one at a time so the pod keeps serving traffic while a worker is replaced.
+當您在**單一容器中執行多個 worker**且依賴 `--max_requests_before_restart` 時，請優先選用 `--run_gunicorn`。Gunicorn 的 [`max_requests`](https://gunicorn.org/reference/settings/#max_requests) 回收比 Uvicorn 的更成熟，而且其 [arbiter](https://gunicorn.org/design/#arbiter) 會一次重啟一個 worker，因此當某個 worker 被替換時，pod 仍可持續提供流量。
 
 :::
 
@@ -49,25 +49,25 @@ When you run **multiple workers in one container** and rely on `--max_requests_b
 CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "4", "--run_gunicorn", "--max_requests_before_restart", "10000"]
 ```
 
-When several workers boot together and serve a similar amount of traffic, they reach the request threshold at almost the same time and recycle in lockstep, dropping a chunk of capacity at once. Add `--max_requests_before_restart_jitter` to offset each worker's threshold by a random amount in `[0, jitter]` so restarts stagger instead of synchronizing. It maps to Uvicorn's [`limit_max_requests_jitter`](https://uvicorn.dev/settings/#resource-limits) (requires `uvicorn>=0.41.0`) and Gunicorn's [`max_requests_jitter`](https://gunicorn.org/reference/settings/#max_requests_jitter), and has no effect without `--max_requests_before_restart`.
+當多個 worker 同時啟動並承載相似的流量時，它們幾乎會在同一時間達到請求門檻並同步回收，一次降掉一大塊容量。加入 `--max_requests_before_restart_jitter`，即可將每個 worker 的門檻按 `[0, jitter]` 內的隨機量偏移，讓重啟錯開而非同步。它對應到 Uvicorn 的 [`limit_max_requests_jitter`](https://uvicorn.dev/settings/#resource-limits)（需要 `uvicorn>=0.41.0`）以及 Gunicorn 的 [`max_requests_jitter`](https://gunicorn.org/reference/settings/#max_requests_jitter)，且在沒有 `--max_requests_before_restart` 時不會產生任何效果。
 
 ```shell
 # Stagger recycling so workers don't all restart at once
 CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "4", "--run_gunicorn", "--max_requests_before_restart", "10000", "--max_requests_before_restart_jitter", "1000"]
 ```
 
-### Keep restarts hitless
+### 讓重啟保持無中斷 {#keep-restarts-hitless}
 
-A restart is "hitless" when in-flight requests finish before the process exits, so no client sees a dropped connection. Two cases matter in production:
+當進行中的請求在程序結束前完成時，重啟就是「無中斷」的，因此不會有任何用戶端看到連線中斷。生產環境中有兩種情況很重要：
 
-**Worker recycling (from `--max_requests_before_restart`).** Both servers stop accepting new connections on the recycled worker and let outstanding requests drain before it exits, then a replacement worker starts. Gunicorn additionally guarantees in-flight requests up to its [`graceful_timeout`](https://gunicorn.org/reference/settings/#graceful_timeout) (30s by default) on [`SIGTERM`](https://gunicorn.org/signals/). With one worker per pod, recycling briefly reduces that pod's capacity, which is why we recommend scaling horizontally so the load balancer can route around it.
+**worker 回收（來自 `--max_requests_before_restart`）。** 兩種伺服器都會停止在被回收的 worker 上接受新連線，讓未完成的請求在它退出前排空，接著啟動替代 worker。Gunicorn 另外還保證在其 [`graceful_timeout`](https://gunicorn.org/reference/settings/#graceful_timeout)（預設 30s）內，進行中的請求都可完成，適用於 [`SIGTERM`](https://gunicorn.org/signals/)。在每個 pod 一個 worker 的情況下，回收會短暫降低該 pod 的容量，這就是為什麼我們建議水平擴展，讓負載平衡器可以繞過它。
 
-**Rolling deploys and pod restarts (Kubernetes).** Make restarts hitless at the orchestration layer rather than relying on the server alone:
+**滾動部署與 pod 重啟（Kubernetes）。** 請在編排層讓重啟保持無中斷，而不是只依賴伺服器本身：
 
-- Use a [`RollingUpdate`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment) strategy (the Deployment default) so new pods become Ready before old pods are terminated.
-- Keep a [readiness probe](https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/) on `/health/readiness` so Kubernetes only sends traffic to pods that can serve it, and stops routing to a pod as soon as termination begins.
-- Set [`terminationGracePeriodSeconds`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination) to comfortably exceed your longest expected request (LiteLLM's request timeout defaults to 600s; see the [recommended config](./prod.md#set-a-request-timeout)). On termination Kubernetes sends `SIGTERM`, and both Uvicorn and Gunicorn shut down [gracefully](https://uvicorn.dev/deployment/) by draining in-flight requests before exiting.
-- Optionally add a small [`preStop` hook](https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks) (for example `sleep 5`) to give the load balancer time to deregister the pod before the server begins shutting down, eliminating the brief window where traffic can still arrive at a terminating pod.
+- 使用 [`RollingUpdate`](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment) 策略（Deployment 預設值），讓新 pod 在舊 pod 終止前先變成 Ready。
+- 在 `/health/readiness` 上保留 [readiness probe](https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/)，使 Kubernetes 只將流量送往可提供服務的 pod，並在終止開始時立刻停止路由到該 pod。
+- 將 [`terminationGracePeriodSeconds`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination) 設為明顯高於您預期最長請求時間（LiteLLM 的 request timeout 預設為 600s；請參閱 [recommended config](./prod.md#set-a-request-timeout)）。在終止時，Kubernetes 會送出 `SIGTERM`，而 Uvicorn 與 Gunicorn 都會在結束前透過排空進行中的請求來[優雅地](https://uvicorn.dev/deployment/)關閉。
+- 視需要加入一個小型的 [`preStop` hook](https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks)（例如 `sleep 5`），給負載平衡器時間在伺服器開始關閉前將該 pod 取消註冊，消除流量仍可能到達正在終止的 pod 的短暫窗口。
 
 ```yaml title="Kubernetes Deployment snippet for hitless rolling restarts"
 spec:
@@ -91,9 +91,9 @@ spec:
                 command: ["sh", "-c", "sleep 5"]
 ```
 
-## TLS at the proxy
+## 在 proxy 端的 TLS {#tls-at-the-proxy}
 
-For TLS terminated by the proxy itself (rather than your load balancer), pass the key and cert paths:
+若要由 proxy 本身終止 TLS（而非您的負載平衡器），請傳入金鑰與憑證路徑：
 
 ```shell
 docker run docker.litellm.ai/berriai/litellm:latest \
@@ -101,9 +101,9 @@ docker run docker.litellm.ai/berriai/litellm:latest \
     --ssl_certfile_path ssl_test/certfile.crt
 ```
 
-## HTTP/2 with Hypercorn
+## 使用 Hypercorn 的 HTTP/2 {#http2-with-hypercorn}
 
-To serve HTTP/2, build an image with hypercorn installed and pass `--run_hypercorn`:
+若要提供 HTTP/2，請建立安裝了 hypercorn 的映像檔，並傳入 `--run_hypercorn`：
 
 ```shell
 FROM docker.litellm.ai/berriai/litellm:latest
@@ -126,26 +126,26 @@ docker run \
     --run_hypercorn
 ```
 
-## Outbound HTTP/2 to providers
+## 對提供者的外送 HTTP/2 {#outbound-http2-to-providers}
 
-Available from v1.103.0.
+自 v1.103.0 起可用。
 
-The server flags above only affect the hop from your clients to LiteLLM. Calls from LiteLLM to LLM providers use HTTP/1.1 by default because the default aiohttp transport has no HTTP/2 client. Set `http2: true` under `litellm_settings` (or the `LITELLM_HTTP2` environment variable) to have LiteLLM negotiate HTTP/2 with providers over TLS; upstreams that do not offer `h2` via ALPN fall back to HTTP/1.1 automatically, and plain `http://` upstreams stay on HTTP/1.1.
+上述伺服器旗標只影響從您的用戶端到 LiteLLM 的這一跳。LiteLLM 到 LLM 提供者的呼叫預設使用 HTTP/1.1，因為預設的 aiohttp transport 沒有 HTTP/2 client。請在 `litellm_settings` 下設定 `http2: true`（或 `LITELLM_HTTP2` 環境變數），讓 LiteLLM 透過 TLS 與提供者協商 HTTP/2；不透過 ALPN 提供 `h2` 的上游會自動回退到 HTTP/1.1，而純 `http://` 的上游則會維持在 HTTP/1.1。
 
 ```yaml
 litellm_settings:
   http2: true
 ```
 
-Enabling this routes provider traffic through httpx instead of aiohttp, which was chosen as the default for its higher HTTP/1.1 throughput. Load test with the flag on before enabling it fleet-wide. Clients you pass in yourself through `litellm.client_session` or `litellm.aclient_session` are used as is and are not switched to HTTP/2. Deployments on the `aiohttp_openai/` provider always use aiohttp and stay on HTTP/1.1; LiteLLM logs a warning if the flag is on for such a request.
+啟用此功能會讓提供者流量改走 httpx，而不是 aiohttp；aiohttp 是因為其較高的 HTTP/1.1 吞吐量才被選為預設。請先在開啟旗標的情況下進行負載測試，再全面啟用。若您透過 `litellm.client_session` 或 `litellm.aclient_session` 自行傳入用戶端，則會原樣使用，不會切換為 HTTP/2。`aiohttp_openai/` 提供者上的部署一律使用 aiohttp 並維持在 HTTP/1.1；若對此類請求開啟該旗標，LiteLLM 會記錄警告。
 
-## Granian ASGI server [Beta]
+## Granian ASGI 伺服器 [Beta] {#granian-asgi-server-beta}
 
-:::info[Beta feature]
-`--run_granian` is in **beta**. Uvicorn is still the default server. Try Granian when you need more gateway throughput or see instability under load with uvicorn; report issues on [GitHub](https://github.com/BerriAI/litellm/issues).
+:::info[Beta 功能]
+`--run_granian` 屬於**beta**。Uvicorn 仍是預設伺服器。當您需要更高的 gateway 吞吐量，或在使用 uvicorn 時於負載下看到不穩定現象，請嘗試 Granian；問題請回報到 [GitHub](https://github.com/BerriAI/litellm/issues)。
 :::
 
-[Granian](https://github.com/emmett-framework/granian) is a Rust-backed ASGI server. In LiteLLM benchmarks it showed a 10 to 20 RPS improvement over uvicorn with the same worker count, steadier latency under sustained load, and lower error rates (see [PR #26027](https://github.com/BerriAI/litellm/pull/26027)). Scale throughput with `--num_workers`.
+[Granian](https://github.com/emmett-framework/granian) 是一個以 Rust 為後端的 ASGI 伺服器。在 LiteLLM 基準測試中，與相同 worker 數量的 uvicorn 相比，它提升了 10 到 20 RPS，在持續負載下延遲更穩定，且錯誤率更低（請參閱 [PR #26027](https://github.com/BerriAI/litellm/pull/26027)）。請使用 `--num_workers` 來擴展吞吐量。
 
 ```shell
 docker run docker.litellm.ai/berriai/litellm:latest \
@@ -155,11 +155,11 @@ docker run docker.litellm.ai/berriai/litellm:latest \
     --num_workers 4
 ```
 
-Both `--ssl_certfile_path` and `--ssl_keyfile_path` are required when enabling TLS with Granian. Not supported with Granian: `--max_requests_before_restart` (use Gunicorn for per-request worker recycling) and `--ciphers` (Hypercorn only). See [CLI server backend options](/docs/proxy/cli#server-backend-options).
+使用 Granian 啟用 TLS 時，需要同時設定 `--ssl_certfile_path` 與 `--ssl_keyfile_path`。Granian 不支援：`--max_requests_before_restart`（請改用 Gunicorn 進行每請求 worker 回收）以及 `--ciphers`（僅限 Hypercorn）。請參閱 [CLI server backend options](/docs/proxy/cli#server-backend-options)。
 
-## Per-worker admission control
+## 每個 worker 的接納控制 {#per-worker-admission-control}
 
-A worker whose event loop is saturated keeps accepting connections, so during a load spike callers wait for seconds with no overload signal, and the liveness probe (which runs on the same loop) slows down enough that Kubernetes restarts the pod and pushes the load onto the remaining replicas. Admission control puts a hard cap on how much work each worker process takes on and turns the excess into an explicit, fast `503` that clients can retry against.
+處於飽和狀態的工作程序仍會持續接受連線，因此在負載尖峰期間，呼叫端會在沒有超載訊號的情況下等待數秒，而 liveness probe（也在同一個迴圈上執行）會變慢到足以讓 Kubernetes 重新啟動 pod，並將負載推到剩餘的複本上。Admission control 會對每個工作程序處理的工作量設下硬性上限，並把超出的部分轉成明確、快速的 `503`，讓用戶端可以重試。
 
 ```yaml
 general_settings:
@@ -168,7 +168,7 @@ general_settings:
   admission_queue_timeout_seconds: 1.0    # a queued request is rejected after waiting this long
 ```
 
-The feature is off until `max_in_flight_requests_per_worker` is set. When a request arrives and the worker has a free slot it runs immediately. Otherwise it waits in the queue until a slot frees or the timeout elapses. If the queue is already full, or the wait times out, the client gets:
+此功能會保持關閉，直到設定 `max_in_flight_requests_per_worker`。當請求到達且工作程序有可用插槽時，就會立即執行。否則它會在佇列中等待，直到有插槽釋放或逾時到期。如果佇列已滿，或等待逾時，用戶端會收到：
 
 ```
 HTTP/1.1 503 Service Unavailable
@@ -177,26 +177,26 @@ retry-after: 1
 {"error":{"message":"Worker at capacity: 64 in-flight, 64 queued requests. Retry later.","type":"overloaded_error","code":"503"}}
 ```
 
-A slot is held for the whole response, so a streaming completion counts as one in-flight request until its last chunk is sent, and a client disconnect (queued or in flight) releases the slot immediately. The probe and metrics paths (`/health/liveliness`, `/health/liveness`, `/health/readiness`, `/health/readiness/details`, `/health/backlog`, `/health/drain`, `/metrics`) bypass the gate, so an overloaded worker still answers its liveness probe quickly while a wedged process does not. Rejections happen before authentication, so they are not attributed to a key in spend logs. The limits are read on the first request and need a restart to change.
+插槽會在整個回應期間被保留，因此串流 completion 會被視為一個 in-flight request，直到最後一個區塊送出為止，而用戶端中斷連線（排隊中或 in flight）會立即釋放插槽。探針與指標路徑（`/health/liveliness`、`/health/liveness`、`/health/readiness`、`/health/readiness/details`、`/health/backlog`、`/health/drain`、`/metrics`）會繞過此閘門，因此過載的工作程序仍會快速回應其 liveness probe，而卡住的程序則不會。拒絕會在驗證之前發生，因此在 spend logs 中不會歸屬到某個金鑰。這些限制會在第一個請求時讀取，且需要重新啟動才能變更。
 
-The cap is per worker process and works the same on uvicorn and Granian. A pod started with `--num_workers 4` and `max_in_flight_requests_per_worker: 64` admits up to 256 concurrent requests, and a deployment of N replicas admits N times that, so size it from the per-worker throughput you measured rather than the deployment total. It is a good fit with an HPA: replicas that are already saturated shed load with `503`s instead of accumulating latency while new replicas come up. It complements `global_max_parallel_requests`, which is a deployment-wide limit coordinated through Redis: use the global limit to bound total load on your providers and the per-worker limit to keep any single event loop from drowning without depending on Redis.
+此上限是每個工作程序程序各自適用，且在 uvicorn 和 Granian 上的運作方式相同。以 `--num_workers 4` 和 `max_in_flight_requests_per_worker: 64` 啟動的 pod 最多可接受 256 個並行請求，而 N 個複本的部署可接受其 N 倍，因此應根據您量測到的每個工作程序吞吐量來設定，而不是依據部署總量。這非常適合搭配 HPA：已經飽和的複本會以 `503` 拒絕負載，而不是在新複本啟動期間累積延遲。它與 `global_max_parallel_requests` 相輔相成，後者是透過 Redis 協調的整體部署層級限制：使用全域限制來界定對您的提供者的總負載，並使用每工作程序限制來確保任何單一事件迴圈不會在不依賴 Redis 的情況下被淹沒。
 
-Monitor it with `/health/backlog` (fields `in_flight_requests`, `admitted_requests`, `queued_requests`, `rejected_requests`) or the Prometheus metrics `litellm_admission_admitted_requests`, `litellm_admission_queued_requests`, and `litellm_admission_rejected_requests_total{reason="queue_full"|"queue_timeout"}`; see [Pod health metrics](/docs/proxy/prometheus#pod-health-metrics). A steady stream of `queue_timeout` rejections means the worker is at capacity and needs more replicas; `queue_full` rejections mean spikes are arriving faster than the queue can absorb, so raise the queue size or add capacity.
+可使用 `/health/backlog`（欄位 `in_flight_requests`、`admitted_requests`、`queued_requests`、`rejected_requests`）或 Prometheus 指標 `litellm_admission_admitted_requests`、`litellm_admission_queued_requests` 和 `litellm_admission_rejected_requests_total{reason="queue_full"|"queue_timeout"}` 進行監控；請參閱 [Pod 健康指標](/docs/proxy/prometheus#pod-health-metrics)。持續出現 `queue_timeout` 拒絕表示工作程序已達容量上限，需要更多複本；`queue_full` 拒絕表示尖峰到達的速度快於佇列可吸收的速度，因此請增加佇列大小或新增容量。
 
-## Keepalive timeout
+## Keepalive timeout {#keepalive-timeout}
 
-Defaults to 5 seconds; between requests, connections must receive new data within this period or be disconnected.
+預設為 5 秒；在請求之間，連線必須在此期間內收到新資料，否則將會中斷連線。
 
 ```shell
 docker run docker.litellm.ai/berriai/litellm:latest \
     --keepalive_timeout 75
 ```
 
-Or set `KEEPALIVE_TIMEOUT=75` as an env var.
+或將 `KEEPALIVE_TIMEOUT=75` 設為環境變數。
 
-## Load config.yaml from S3 or GCS
+## 從 S3 或 GCS 載入 config.yaml {#load-configyaml-from-s3-or-gcs}
 
-Use this if you cannot mount a config file on your deployment service (AWS Fargate, Railway, etc.). LiteLLM reads `config.yaml` from the bucket at startup.
+如果無法在部署服務（AWS Fargate、Railway 等）上掛載設定檔，請使用此方式。LiteLLM 會在啟動時從儲存貯體讀取 `config.yaml`。
 
 <Tabs>
 <TabItem value="gcs" label="GCS Bucket">
@@ -226,6 +226,6 @@ docker run --name litellm-proxy \
 </TabItem>
 </Tabs>
 
-## Disable pulling live model prices
+## 停用載入即時模型價格 {#disable-pulling-live-model-prices}
 
-Set `LITELLM_LOCAL_MODEL_COST_MAP="True"` to use the bundled [model prices file](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) instead of fetching it at startup, if you see long cold starts or have network egress restrictions.
+若您看到較長的冷啟動，或有網路輸出限制，請將 `LITELLM_LOCAL_MODEL_COST_MAP="True"` 設為使用內建的 [模型價格檔案](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)，而不是在啟動時擷取。

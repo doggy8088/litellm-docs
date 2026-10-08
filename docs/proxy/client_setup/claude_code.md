@@ -5,25 +5,25 @@ sidebar_label: Claude Code (CLI)
 
 import Image from '@theme/IdealImage';
 
-# Connect Claude Code to LiteLLM
+# 將 Claude Code 連接到 LiteLLM {#connect-claude-code-to-litellm}
 
-[Claude Code](https://docs.anthropic.com/en/docs/claude-code) talks to the Anthropic Messages API. LiteLLM serves that format at `/v1/messages`, so two environment variables point Claude Code at the gateway and it works against any model in your config, not just Anthropic's.
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code) 會與 Anthropic Messages API 通訊。LiteLLM 在 `/v1/messages` 提供該格式，因此兩個環境變數可將 Claude Code 指向閘道，讓它能使用您設定中的任何模型，而不只限於 Anthropic 的模型。
 
-## Quick reference
+## 快速參考 {#quick-reference}
 
-| Setting | Value |
+| 設定 | 值 |
 |---|---|
-| `ANTHROPIC_BASE_URL` | `<LITELLM_PROXY_BASE_URL>` (e.g. `http://localhost:4000`) |
-| `ANTHROPIC_AUTH_TOKEN` | Your LiteLLM [virtual key](../virtual_keys.md) |
-| `ANTHROPIC_MODEL` | A `model_name` from your config |
-| MCP endpoint | `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp` |
-| MCP auth header | `x-litellm-api-key: Bearer <virtual key>` |
+| `ANTHROPIC_BASE_URL` | `<LITELLM_PROXY_BASE_URL>`（例如 `http://localhost:4000`） |
+| `ANTHROPIC_AUTH_TOKEN` | 您的 LiteLLM [虛擬金鑰](../virtual_keys.md) |
+| `ANTHROPIC_MODEL` | 來自您設定的一個 `model_name` |
+| MCP 端點 | `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp` |
+| MCP 驗證標頭 | `x-litellm-api-key: Bearer <virtual key>` |
 
-## LLM setup
+## LLM 設定 {#llm-setup}
 
-### 1. Point Claude Code at the gateway
+### 1. 將 Claude Code 指向閘道 {#1-point-claude-code-at-the-gateway}
 
-Export the base URL, your virtual key, and the model, then launch Claude Code:
+匯出 base URL、您的虛擬金鑰和模型，然後啟動 Claude Code：
 
 ```bash
 export LITELLM_API_KEY="sk-<your-virtual-key>"
@@ -34,31 +34,31 @@ export ANTHROPIC_MODEL="{{anthropic}}"
 claude
 ```
 
-Claude Code sends every request to LiteLLM's `/v1/messages` endpoint with your virtual key as the bearer token. To make this permanent, add the exports to your shell profile (`~/.zshrc`, `~/.bashrc`) or to the `env` block of Claude Code's `settings.json`. If `ANTHROPIC_API_KEY` is also set in your shell, unset it for this session so Claude Code does not send it instead of the virtual key.
+Claude Code 會將每個請求送到 LiteLLM 的 `/v1/messages` 端點，並使用您的虛擬金鑰作為 bearer token。若要永久生效，請將這些 export 加入您的 shell 設定檔（`~/.zshrc`、`~/.bashrc`）或 Claude Code 的 `settings.json` 的 `env` 區塊中。如果您的 shell 也設定了 `ANTHROPIC_API_KEY`，請在此工作階段中將其取消設定，以免 Claude Code 傳送它而不是虛擬金鑰。
 
-### 2. Pick a model
+### 2. 選擇模型 {#2-pick-a-model}
 
-Claude Code sends whatever model id is selected, so that id has to exist as a `model_name` on your gateway. `ANTHROPIC_MODEL` pins the default to one of your names. The `/model` picker inside a session still lists Anthropic's own ids (for example `claude-haiku-4-5-20251001`), so choosing one there fails with `Invalid model name passed in` unless your config also defines that exact name; either add those names to `model_list` or keep switching models through `ANTHROPIC_MODEL`. [Route Claude Code to non-Anthropic models](../../tutorials/claude_non_anthropic_models.md) covers mapping the Sonnet, Opus, and Haiku tiers to any provider.
+Claude Code 會送出所選取的任何模型 ID，因此該 ID 必須存在於您閘道上的一個 `model_name`。`ANTHROPIC_MODEL` 會將預設值固定為您的其中一個名稱。工作階段內的 `/model` 選擇器仍會列出 Anthropic 自己的 ID（例如 `claude-haiku-4-5-20251001`），因此選擇那些項目會導致 `Invalid model name passed in`，除非您的設定也定義了完全相同的名稱；您可以將那些名稱加入 `model_list`，或是持續透過 `ANTHROPIC_MODEL` 切換模型。[將 Claude Code 路由到非 Anthropic 模型](../../tutorials/claude_non_anthropic_models.md) 說明如何將 Sonnet、Opus 和 Haiku 層級對應到任何提供者。
 
-### 3. Verify
+### 3. 驗證 {#3-verify}
 
-Send a prompt. Here Claude Code 2.1 is answering through a local gateway with `ANTHROPIC_MODEL` set to a model from `model_list`:
+傳送一個提示。在此，Claude Code 2.1 正透過本機閘道回應，並將 `ANTHROPIC_MODEL` 設為來自 `model_list` 的模型：
 
 <Image img={require('../../../img/client_setup/claude_code_llm.png')} />
 
-Then confirm the traffic in the Admin UI under **Logs** or **Usage**, attributed to your virtual key and the model you chose.
+接著在 Admin UI 的 **Logs** 或 **Usage** 中確認流量，且其歸屬為您的虛擬金鑰與您選擇的模型。
 
-## Sign in without a static key
+## 不使用靜態金鑰登入 {#sign-in-without-a-static-key}
 
-[Claude Code Gateway SSO](../../tutorials/claude_code_gateway.md) is the native device sign-in option recommended for fleet rollout, with no per-user keys. You can also use [`lite auth print-token`](../cli_sso.md#use-the-credential-from-other-tools) as `apiKeyHelper` after [`lite login --pkce`](../cli_sso.md#browser-sign-in-with-pkce), or use an [IdP JWT helper](../../tutorials/claude_code_okta_sso.md)
+[Claude Code Gateway SSO](../../tutorials/claude_code_gateway.md) 是原生裝置登入選項，建議用於大規模部署，且不需要每位使用者各自的金鑰。您也可以在 [`lite auth print-token`](../cli_sso.md#use-the-credential-from-other-tools) 之後將其作為 [`lite login --pkce`](../cli_sso.md#browser-sign-in-with-pkce) 的 `apiKeyHelper` 使用，或使用 [IdP JWT helper](../../tutorials/claude_code_okta_sso.md)
 
-`lite login --pkce --config-claude` writes this login's key to `~/.claude/settings.json` as `env.ANTHROPIC_AUTH_TOKEN`; rerun it after the key expires, or set `apiKeyHelper` so Claude Code fetches a fresh token itself
+`lite login --pkce --config-claude` 會將此登入的金鑰寫入 `~/.claude/settings.json`，並設為 `env.ANTHROPIC_AUTH_TOKEN`；請在金鑰過期後重新執行，或設定 `apiKeyHelper`，讓 Claude Code 自行取得新的 token
 
-If a user's team or key restricts models, Claude Code's default model name must be on that list, or set `ANTHROPIC_MODEL` to an allowed alias. Otherwise requests fail with `403 The requested model '...' is not available for this API key`
+如果使用者的 team 或 key 限制了模型，Claude Code 的預設模型名稱必須在該清單中，或將 `ANTHROPIC_MODEL` 設為允許的別名。否則請求會以 `403 The requested model '...' is not available for this API key` 失敗
 
-## MCP setup
+## MCP 設定 {#mcp-setup}
 
-Expose your LiteLLM [MCP gateway](../../mcp.md) tools inside Claude Code with `claude mcp add`. The URL is `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp`, where `<server_name>` matches a key under `mcp_servers:` in your gateway config, and the virtual key goes in the `x-litellm-api-key` header:
+使用 `claude mcp add` 在 Claude Code 中公開您的 LiteLLM [MCP 閘道](../../mcp.md) 工具。URL 為 `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp`，其中 `<server_name>` 對應您閘道設定中 `mcp_servers:` 底下的一個金鑰，而虛擬金鑰則放在 `x-litellm-api-key` 標頭中：
 
 ```bash
 claude mcp add --transport http litellm-tools \
@@ -66,18 +66,18 @@ claude mcp add --transport http litellm-tools \
   --header "x-litellm-api-key: Bearer $LITELLM_API_KEY"
 ```
 
-| Part | Meaning |
+| 部分 | 含義 |
 |---|---|
-| `litellm-tools` | The name for this server inside Claude Code; choose anything |
-| `http://localhost:4000/my_mcp_server/mcp` | `<PROXY_URL>/<server_name>/mcp`; `my_mcp_server` must match the key under `mcp_servers:` on the gateway |
-| `--header "x-litellm-api-key: Bearer $LITELLM_API_KEY"` | Your virtual key, authenticating you to the gateway |
+| `litellm-tools` | Claude Code 內此伺服器的名稱；可任意選擇 |
+| `http://localhost:4000/my_mcp_server/mcp` | `<PROXY_URL>/<server_name>/mcp`；`my_mcp_server` 必須與閘道上 `mcp_servers:` 底下的金鑰相符 |
+| `--header "x-litellm-api-key: Bearer $LITELLM_API_KEY"` | 您的虛擬金鑰，用於向閘道驗證您的身分 |
 
-The key needs access to `my_mcp_server` (see [the overview](./overview.md#the-values-you-will-reuse-everywhere)); otherwise the gateway rejects the connection with `The key is not allowed to access the requested MCP servers`. Start Claude Code and run `/mcp`: the server shows as connected with its tools listed, prefixed with the server name (`my_mcp_server-read_wiki_structure`).
+該金鑰需要可存取 `my_mcp_server`（請參閱[概覽](./overview.md#the-values-you-will-reuse-everywhere)）；否則閘道會以 `The key is not allowed to access the requested MCP servers` 拒絕連線。啟動 Claude Code 並執行 `/mcp`：伺服器會顯示為已連線，並列出其工具，且工具名稱以前綴伺服器名稱（`my_mcp_server-read_wiki_structure`）顯示。
 
 <Image img={require('../../../img/client_setup/claude_code_mcp.png')} />
 
-For servers behind upstream OAuth (for example a hosted GitHub or Atlassian MCP), keep the LiteLLM key in `x-litellm-api-key` and let LiteLLM run the OAuth flow; see [MCP OAuth](../../mcp_oauth.md).
+對於位於上游 OAuth 後方的伺服器（例如代管的 GitHub 或 Atlassian MCP），請將 LiteLLM 金鑰保留在 `x-litellm-api-key`，並讓 LiteLLM 執行 OAuth 流程；請參閱[MCP OAuth](../../mcp_oauth.md)。
 
-## Next steps
+## 下一步 {#next-steps}
 
-[Cut Claude Code costs](../../tutorials/claude_code_cut_costs.md) with budgets, prompt caching, and fallbacks, [bring your own Anthropic key](../../tutorials/claude_code_byok.md), [route Claude Code to non-Anthropic models](../../tutorials/claude_non_anthropic_models.md), or check the [Claude Code compatibility matrix](../../claude_code_compatibility.md).
+透過預算、提示快取和備援來[降低 Claude Code 成本](../../tutorials/claude_code_cut_costs.md)，[使用您自己的 Anthropic 金鑰](../../tutorials/claude_code_byok.md)，[將 Claude Code 路由到非 Anthropic 模型](../../tutorials/claude_non_anthropic_models.md)，或查看[Claude Code 相容性矩陣](../../claude_code_compatibility.md)。

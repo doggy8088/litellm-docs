@@ -1,18 +1,18 @@
 ---
 slug: august-townhall-announcement
-title: "August Townhall: Product + Roadmap Updates"
+title: "8 月全體員工大會：產品 + 路線圖更新"
 date: 2026-08-10T12:00:00
 authors:
   - krrish
   - ishaan-alt
-description: "Join the LiteLLM August townhall on Thursday, 27 August at 7:30 AM PT to learn about LiteLLM's product updates and roadmap."
+description: "加入 LiteLLM 於 8 月 27 日星期四上午 7:30（PT）舉辦的全體員工大會，了解 LiteLLM 的產品更新與路線圖。"
 tags: [announcement, townhall]
 hide_table_of_contents: true
 ---
 
 import Image from '@theme/IdealImage';
 
-We are hosting our August townhall on **Thursday, 27 August at 7:30 AM PT**.
+我們將在**8 月 27 日星期四上午 7:30（PT）**舉辦 8 月全體員工大會。
 
 <Image
   img={require('../../img/august_townhall_banner.png')}
@@ -21,24 +21,24 @@ We are hosting our August townhall on **Thursday, 27 August at 7:30 AM PT**.
 
 {/* truncate */}
 
-## Agenda
+## 議程 {#agenda}
 
-- Product updates and roadmap progress
-- Reliability and security updates
-- Open Q&A with the team
+- 產品更新與路線圖進度
+- 可靠性與安全性更新
+- 與團隊的公開問答
 
-## Stability
+## 穩定性 {#stability}
 
-Our team is focused on stability: improving reliability and reducing regressions across releases. Follow the roadmap here: [Stability roadmap](https://github.com/BerriAI/litellm/issues/30484).
+我們的團隊正專注於穩定性：提升可靠性並減少各版本之間的迴歸問題。請在此查看路線圖：[穩定性路線圖](https://github.com/BerriAI/litellm/issues/30484)。
 
-## How to contribute
+## 如何貢獻 {#how-to-contribute}
 
-Add the topics and questions you'd like us to cover when you register below. We use your responses to set the agenda.
+請在下方註冊時新增您希望我們涵蓋的主題與問題。我們會使用您的回覆來設定議程。
 
-## Register
+## 註冊 {#register}
 
-Register here: [LiteLLM August Townhall Form](https://forms.gle/ti1BATLWmYQNb7bcA)
+在此註冊：[LiteLLM 8 月全體員工大會表單](https://forms.gle/ti1BATLWmYQNb7bcA)
 
-We will hold the townhall from **7:30 AM to 8:30 AM PT on Zoom**.
+我們將於**上午 7:30 至 8:30（PT）在 Zoom**舉行全體員工大會。
 
-For security, attendance is restricted to corporate emails. If you register with a non-corporate email, we will share the townhall slides and accompanying blog post after the event.
+為了安全起見，參加資格僅限公司電子郵件。如果您使用非公司電子郵件註冊，我們會在活動結束後分享全體員工大會投影片與對應的部落格文章。

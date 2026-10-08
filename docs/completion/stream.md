@@ -1,17 +1,17 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Streaming + Async
+# 串流 + 非同步 {#streaming--async}
 
-| Feature | LiteLLM SDK | LiteLLM Proxy |
+| 功能 | LiteLLM SDK | LiteLLM Proxy |
 |---------|-------------|---------------|
-| Streaming | ✅ [start here](#streaming-responses) | ✅ [start here](../proxy/user_keys#streaming) |
-| Async | ✅ [start here](#async-completion) | ✅ [start here](../proxy/user_keys#streaming) |
-| Async Streaming | ✅ [start here](#async-streaming) | ✅ [start here](../proxy/user_keys#streaming) |
+| 串流 | ✅ [從這裡開始](#streaming-responses) | ✅ [從這裡開始](../proxy/user_keys#streaming) |
+| 非同步 | ✅ [從這裡開始](#async-completion) | ✅ [從這裡開始](../proxy/user_keys#streaming) |
+| 非同步串流 | ✅ [從這裡開始](#async-streaming) | ✅ [從這裡開始](../proxy/user_keys#streaming) |
 
-## Streaming Responses
-LiteLLM supports streaming the model response back by passing `stream=True` as an argument to the completion function
-### Usage
+## 串流回應 {#streaming-responses}
+LiteLLM 支援透過將 `stream=True` 作為 completion 函式的引數來串流傳回模型回應
+### 用法 {#usage}
 ```python
 from litellm import completion
 messages = [{"role": "user", "content": "Hey, how's it going?"}]
@@ -20,9 +20,9 @@ for part in response:
     print(part.choices[0].delta.content or "")
 ```
 
-### Helper function
+### 輔助函式 {#helper-function}
 
-LiteLLM also exposes a helper function to rebuild the complete streaming response from the list of chunks. 
+LiteLLM 也提供一個輔助函式，可從 chunks 清單重建完整的串流回應。 
 
 ```python
 from litellm import completion
@@ -35,9 +35,9 @@ for chunk in response:
 print(litellm.stream_chunk_builder(chunks, messages=messages))
 ```
 
-## Async Completion
-Asynchronous Completion with LiteLLM. LiteLLM provides an asynchronous version of the completion function called `acompletion`
-### Usage
+## 非同步 Completion {#async-completion}
+使用 LiteLLM 的非同步 Completion。LiteLLM 提供一個稱為 `acompletion` 的 completion 函式非同步版本
+### 用法 {#usage-1}
 ```python
 from litellm import acompletion
 import asyncio
@@ -53,11 +53,11 @@ print(response)
 
 ```
 
-## Async Streaming
-We've implemented an `__anext__()` function in the streaming object returned. This enables async iteration over the streaming object. 
+## 非同步串流 {#async-streaming}
+我們已在傳回的串流物件中實作 `__anext__()` 函式。這使得可以對串流物件進行非同步迭代。 
 
-### Usage
-Here's an example of using it with openai.
+### 用法 {#usage-2}
+以下是將它與 openai 搭配使用的範例。
 ```python
 from litellm import acompletion
 import asyncio, os, traceback
@@ -80,17 +80,17 @@ async def completion_call():
 asyncio.run(completion_call())
 ```
 
-## Error Handling - Infinite Loops
+## 錯誤處理 - 無限迴圈 {#error-handling---infinite-loops}
 
-Sometimes a model might enter an infinite loop, and keep repeating the same chunks - [e.g. issue](https://github.com/BerriAI/litellm/issues/5158)
+有時模型可能會進入無限迴圈，並持續重複相同的 chunks - [例如 issue](https://github.com/BerriAI/litellm/issues/5158)
 
-Break out of it with: 
+可用以下方式中斷： 
 
 ```python
 litellm.REPEATED_STREAMING_CHUNK_LIMIT = 100 # # catch if model starts looping the same chunk while streaming. Uses high default to prevent false positives.
 ```
 
-LiteLLM provides error handling for this, by checking if a chunk is repeated 'n' times (Default is 100). If it exceeds that limit, it will raise a `litellm.InternalServerError`, to allow retry logic to happen. 
+LiteLLM 透過檢查某個 chunk 是否重複了 'n' 次（預設為 100）來處理這種錯誤。如果超過該限制，將會拋出 `litellm.InternalServerError`，以便觸發重試邏輯。 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -137,14 +137,14 @@ for chunk in response:
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-Define this on your config.yaml on the proxy. 
+請在 Proxy 的 config.yaml 中定義這項設定。 
 
 ```yaml
 litellm_settings:
     REPEATED_STREAMING_CHUNK_LIMIT: 100 # this overrides the litellm default
 ```
 
-The proxy uses the litellm SDK. To validate this works, try the 'SDK' code snippet. 
+Proxy 使用 litellm SDK。若要驗證這是否可運作，請試試看 'SDK' 程式碼片段。 
 
 </TabItem>
 </Tabs>

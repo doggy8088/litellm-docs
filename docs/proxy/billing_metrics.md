@@ -1,29 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Billable Request Metering
+# 可計費請求計量 {#billable-request-metering}
 
-LiteLLM Enterprise [pricing is usage-based](../enterprise#how-is-pricing-structured). Billable request metering reports that usage. The proxy counts successful requests to LLM, MCP, and A2A endpoints and pushes one OpenTelemetry counter to LiteLLM's collector, authenticated with the mTLS client certificate issued for your deployment.
+LiteLLM Enterprise [定價採用按使用量計費](../enterprise#how-is-pricing-structured)。可計費請求計量會回報該使用量。proxy 會計算對 LLM、MCP 和 A2A 端點的成功請求，並將一個 OpenTelemetry 計數器推送到 LiteLLM 的收集器，該收集器使用為您的部署核發的 mTLS 用戶端憑證進行驗證。
 
-Only the request count is sent. Prompts, responses, virtual keys, and your license key never leave the deployment. Metering runs separately from any [OTEL logging](../observability/opentelemetry_integration) you configure and never touches your own metrics pipeline.
+只會傳送請求數量。提示詞、回應、虛擬金鑰與您的授權金鑰都不會離開部署。計量會與您設定的任何 [OTEL 記錄](../observability/opentelemetry_integration) 分開執行，且絕不會接觸您的自有指標管線。
 
 :::info
 
-You need a `LITELLM_LICENSE` and metering credentials (`client.crt` and `client.key`) from your LiteLLM onboarding. Missing either? [Contact us](https://enterprise.litellm.ai/demo).
+您需要 `LITELLM_LICENSE` 以及來自 LiteLLM onboarding 的計量憑證（`client.crt` 和 `client.key`）。少了其中一項？[聯絡我們](https://enterprise.litellm.ai/demo)。
 
 :::
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Set environment variables
+### 1. 設定環境變數 {#1-set-environment-variables}
 
-| Variable | Required | Description |
+| 變數 | 必填 | 說明 |
 |----------|----------|-------------|
-| `LITELLM_BILLING_METRICS_ENDPOINT` | Yes | Collector URL. Use `https://telemetry.litellm.ai` |
-| `LITELLM_BILLING_METRICS_CLIENT_CERT` | Yes | mTLS client certificate. File path or inline PEM |
-| `LITELLM_BILLING_METRICS_CLIENT_KEY` | Yes | Private key for the certificate. File path or inline PEM |
-| `LITELLM_BILLING_METRICS_CA_CERT` | No | CA bundle for the collector. Leave unset for `telemetry.litellm.ai` |
-| `LITELLM_BILLING_METRICS_EXPORT_INTERVAL_MS` | No | Push interval in milliseconds. Default `60000` |
+| `LITELLM_BILLING_METRICS_ENDPOINT` | 是 | 收集器 URL。請使用 `https://telemetry.litellm.ai` |
+| `LITELLM_BILLING_METRICS_CLIENT_CERT` | 是 | mTLS 用戶端憑證。檔案路徑或內嵌 PEM |
+| `LITELLM_BILLING_METRICS_CLIENT_KEY` | 是 | 憑證的私密金鑰。檔案路徑或內嵌 PEM |
+| `LITELLM_BILLING_METRICS_CA_CERT` | 否 | 收集器的 CA 套件。若使用 `telemetry.litellm.ai`，請留空 |
+| `LITELLM_BILLING_METRICS_EXPORT_INTERVAL_MS` | 否 | 推送間隔（毫秒）。預設 `60000` |
 
 ```bash
 export LITELLM_LICENSE="eyJ..."
@@ -32,9 +32,9 @@ export LITELLM_BILLING_METRICS_CLIENT_CERT="/etc/litellm/billing-mtls/client.crt
 export LITELLM_BILLING_METRICS_CLIENT_KEY="/etc/litellm/billing-mtls/client.key"
 ```
 
-The certificate variables accept a file path or the PEM content itself. Use inline PEM when your secret store injects values as environment variables and cannot mount files, for example ECS with AWS Secrets Manager or Cloud Run with Secret Manager.
+憑證變數可接受檔案路徑或 PEM 內容本身。當您的密鑰存放區將值以環境變數注入且無法掛載檔案時，請使用內嵌 PEM，例如 ECS 搭配 AWS Secrets Manager 或 Cloud Run 搭配 Secret Manager。
 
-You can also set these in the config file:
+您也可以在設定檔中設定這些項目：
 
 ```yaml
 environment_variables:
@@ -43,56 +43,56 @@ environment_variables:
   LITELLM_BILLING_METRICS_CLIENT_KEY: "-----BEGIN PRIVATE KEY-----\n..."
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 3. Verify
+### 3. 驗證 {#3-verify}
 
-Send a request through the proxy, then check the logs for:
+透過 proxy 傳送請求，然後檢查記錄是否有：
 
 ```
 Enterprise billing metrics enabled: exporting to https://telemetry.litellm.ai every 60000 ms
 ```
 
-If this line is missing, look for a warning naming the misconfigured variable. Metering problems never affect request serving. On any error the exporter is disabled and the proxy runs normally.
+如果缺少這一行，請尋找指出設定錯誤變數名稱的警告。計量問題絕不會影響請求服務。發生任何錯誤時，匯出器都會停用，而 proxy 會正常執行。
 
-## Deploy
+## 部署 {#deploy}
 
 <Tabs>
 <TabItem value="helm" label="Helm">
 
-Both the [standard chart](https://github.com/BerriAI/litellm/tree/main/helm/litellm-helm) and the [microservices chart](./deploy#deploy-with-helm) have a `billingMetrics` block, off by default.
+[標準 chart](https://github.com/BerriAI/litellm/tree/main/helm/litellm-helm) 與 [微服務 chart](./deploy#deploy-with-helm) 都有 `billingMetrics` 區塊，且預設為停用。
 
-1. Create a TLS Secret from your issued certificate:
+1. 從您核發的憑證建立 TLS Secret：
 
 ```bash
 kubectl create secret tls litellm-billing-metrics-mtls --cert=client.crt --key=client.key
 ```
 
-2. Enable metering in your values:
+2. 在您的 values 中啟用計量：
 
 ```yaml
 billingMetrics:
   enabled: true
 ```
 
-The chart looks for the Secret name `litellm-billing-metrics-mtls` by default.
+此 chart 預設會尋找名為 `litellm-billing-metrics-mtls` 的 Secret。
 
-| Value | Default | Description |
+| 值 | 預設值 | 說明 |
 |-------|---------|-------------|
-| `billingMetrics.enabled` | `false` | Enable metering |
-| `billingMetrics.endpoint` | `https://telemetry.litellm.ai` | Collector URL |
-| `billingMetrics.secretName` | `litellm-billing-metrics-mtls` | Existing TLS Secret with `tls.crt` and `tls.key` |
-| `billingMetrics.caSecretName` | `""` | Existing Secret with `ca.crt`. Leave empty for the default collector |
-| `billingMetrics.exportIntervalMs` | `""` | Push interval. The proxy defaults to `60000` |
+| `billingMetrics.enabled` | `false` | 啟用計量 |
+| `billingMetrics.endpoint` | `https://telemetry.litellm.ai` | 收集器 URL |
+| `billingMetrics.secretName` | `litellm-billing-metrics-mtls` | 現有的 TLS Secret，包含 `tls.crt` 和 `tls.key` |
+| `billingMetrics.caSecretName` | `""` | 現有的 Secret，包含 `ca.crt`。若要使用預設收集器，請留空 |
+| `billingMetrics.exportIntervalMs` | `""` | 推送間隔。proxy 預設為 `60000` |
 
 </TabItem>
 <TabItem value="terraform" label="Terraform (AWS / GCP)">
 
-The reference stacks at [`terraform/litellm/aws`](https://github.com/BerriAI/litellm/tree/main/terraform/litellm/aws) (ECS Fargate) and [`terraform/litellm/gcp`](https://github.com/BerriAI/litellm/tree/main/terraform/litellm/gcp) (Cloud Run) enable metering when `billing_metrics_endpoint` is set:
+[`terraform/litellm/aws`](https://github.com/BerriAI/litellm/tree/main/terraform/litellm/aws)（ECS Fargate）與 [`terraform/litellm/gcp`](https://github.com/BerriAI/litellm/tree/main/terraform/litellm/gcp)（Cloud Run）中的參考堆疊在設定 `billing_metrics_endpoint` 時會啟用計量：
 
 ```hcl
 billing_metrics_endpoint = "https://telemetry.litellm.ai"
@@ -103,7 +103,7 @@ export TF_VAR_billing_metrics_client_cert_pem="$(cat client.crt)"
 export TF_VAR_billing_metrics_client_key_pem="$(cat client.key)"
 ```
 
-The stack stores the certificate and key in Secrets Manager (AWS) or Secret Manager (GCP) and injects them as environment variables. No volume is needed.
+此堆疊會將憑證和金鑰儲存在 Secrets Manager（AWS）或 Secret Manager（GCP）中，並將它們作為環境變數注入。不需要磁碟區。
 
 </TabItem>
 <TabItem value="docker" label="Docker">
@@ -123,18 +123,18 @@ docker run \
 </TabItem>
 </Tabs>
 
-## What counts as billable
+## 什麼算作可計費 {#what-counts-as-billable}
 
-A request counts when it returns a 2xx status on an LLM inference endpoint (chat completions, embeddings, responses, images, audio, and the other inference routes), the MCP transport, or the A2A `message/send` route. GET reads, management endpoints, health probes, and failed requests do not count.
+當一個請求在 LLM 推論端點（chat completions、embeddings、responses、images、audio 以及其他推論路由）、MCP 傳輸，或 A2A `message/send` 路由上回傳 2xx 狀態時，就會計入。GET 讀取、管理端點、健康檢查探針，以及失敗的請求都不會計入。
 
-The count lines up with the **successful requests** number on the Admin UI usage page.
+計數會與 Admin UI 使用量頁面上的 **successful requests** 數字一致。
 
-## FAQ
+## 常見問題 {#faq}
 
-**Does this affect proxy performance?** No meaningful impact at the default settings. The per-request cost is about 1.6 microseconds.
+**這會影響 proxy 效能嗎？** 在預設設定下幾乎沒有可感知的影響。每個請求的成本約為 1.6 微秒。
 
-**What if the collector is unreachable?** Requests are unaffected. The counter is cumulative, so counts recorded during an outage are included in the next successful export.
+**如果收集器無法連線怎麼辦？** 請求不受影響。計數器是累計式的，因此在中斷期間記錄的計數會包含在下一次成功匯出中。
 
-**What happens on restart?** The proxy flushes the counter on shutdown, so no counts are lost.
+**重新啟動時會怎樣？** proxy 在關機時會刷新計數器，因此不會遺失任何計數。
 
-**Air-gapped deployments?** Metering needs outbound HTTPS to the collector. If your deployment cannot reach it, talk to us during onboarding.
+**離線隔離部署呢？** 計量需要對收集器進行 HTTPS 對外連線。如果您的部署無法連線，請在 onboarding 期間與我們討論。

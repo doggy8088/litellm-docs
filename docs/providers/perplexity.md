@@ -1,16 +1,16 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Perplexity AI (pplx-api)
+# Perplexity AI（pplx-api） {#perplexity-ai-pplx-api}
 https://www.perplexity.ai
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['PERPLEXITYAI_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -23,7 +23,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -39,17 +39,17 @@ for chunk in response:
     print(chunk)
 ```
 
-## Reasoning Effort
+## 推理努力 {#reasoning-effort}
 
-Requires v1.72.6+
+需要 v1.72.6+
 
 :::info
 
-See full guide on Reasoning with LiteLLM [here](../reasoning_content)
+請參閱 LiteLLM 推理完整指南 [這裡](../reasoning_content)
 
 :::
 
-You can set the reasoning effort by setting the `reasoning_effort` parameter.
+您可以透過設定 `reasoning_effort` 參數來設定推理努力。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -69,7 +69,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -79,15 +79,15 @@ model_list:
         api_key: os.environ/PERPLEXITYAI_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
-Replace `anything` with your LiteLLM Proxy Virtual Key, if [setup](../proxy/virtual_keys).
+如果已[設定](../proxy/virtual_keys)，請將 `anything` 替換為您的 LiteLLM Proxy 虛擬金鑰。
 
 ```bash
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -103,10 +103,10 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Supported Models
-All models listed here https://docs.perplexity.ai/docs/model-cards are supported.  Just do `model=perplexity/<model-name>`.
+## 支援的模型 {#supported-models}
+此處列出的所有 https://docs.perplexity.ai/docs/model-cards 模型都受支援。 只要執行 `model=perplexity/<model-name>` 即可。
 
-| Model Name               | Function Call                                                                                                                                                      |
+| 模型名稱               | 函式呼叫                                                                                                                                                      |
 |--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | sonar-deep-research | `completion(model="perplexity/sonar-deep-research", messages)` | 
 | sonar-reasoning-pro | `completion(model="perplexity/sonar-reasoning-pro", messages)` | 
@@ -115,19 +115,13 @@ All models listed here https://docs.perplexity.ai/docs/model-cards are supported
 | sonar | `completion(model="perplexity/sonar", messages)` | 
 | r1-1776 | `completion(model="perplexity/r1-1776", messages)` | 
 
+## 代理程式 API（Responses API） {#agent-api-responses-api}
 
+需要 v1.72.6+
 
+### 使用預設值 {#using-presets}
 
-
-
-## Agent API (Responses API)
-
-Requires v1.72.6+
-
-
-### Using Presets
-
-Presets provide optimized defaults for specific use cases. Start with a preset for quick setup:
+預設值為特定使用案例提供最佳化的預設設定。從預設值開始可快速完成設定：
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -151,7 +145,7 @@ print(response.output)
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -161,13 +155,13 @@ model_list:
         api_key: os.environ/PERPLEXITY_API_KEY
 ```
 
-2. Start proxy
+2. 啟動 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試看看！
 
 ```bash
 curl http://0.0.0.0:4000/v1/responses \
@@ -182,9 +176,9 @@ curl http://0.0.0.0:4000/v1/responses \
 </TabItem>
 </Tabs>
 
-### Using Third-Party Models
+### 使用第三方模型 {#using-third-party-models}
 
-Access models from OpenAI, Anthropic, Google, xAI, and other providers through Perplexity's unified API:
+透過 Perplexity 的統一 API 存取來自 OpenAI、Anthropic、Google、xAI 及其他提供者的模型：
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -265,9 +259,9 @@ print(response.output)
 </TabItem>
 </Tabs>
 
-### Web Search Tool
+### 網頁搜尋工具 {#web-search-tool}
 
-Enable web search capabilities to access real-time information:
+啟用網頁搜尋功能以存取即時資訊：
 
 ```python
 from litellm import responses
@@ -286,9 +280,9 @@ response = responses(
 print(response.output)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
-The Agent API supports custom function tools. Pass function tools through unchanged:
+Agent API 支援自訂函式工具。請原封不動地傳遞函式工具：
 
 ```python
 from litellm import responses
@@ -323,9 +317,9 @@ response = responses(
 print(response.output)
 ```
 
-### Structured Outputs
+### 結構化輸出 {#structured-outputs}
 
-Request JSON schema structured outputs via the `text` parameter:
+透過 `text` 參數請求 JSON schema 結構化輸出：
 
 ```python
 from litellm import responses
@@ -359,9 +353,9 @@ print(response.output)
 ```
 
 
-### Reasoning Effort (Responses API)
+### 推理努力（Responses API） {#reasoning-effort-responses-api}
 
-Control the reasoning effort level for reasoning-capable models:
+控制具備推理能力模型的推理努力等級：
 
 ```python
 from litellm import responses
@@ -380,9 +374,9 @@ response = responses(
 print(response.output)
 ```
 
-### Multi-Turn Conversations
+### 多輪對話 {#multi-turn-conversations}
 
-Use message arrays for multi-turn conversations with context:
+使用訊息陣列進行具備上下文的多輪對話：
 
 ```python
 from litellm import responses
@@ -404,9 +398,9 @@ response = responses(
 print(response.output)
 ```
 
-### Streaming Responses
+### 串流回應 {#streaming-responses}
 
-Stream responses for real-time output:
+串流回應以即時輸出：
 
 ```python
 from litellm import responses
@@ -428,9 +422,9 @@ for chunk in response:
             print(chunk.delta, end="", flush=True)
 ```
 
-### Supported Third-Party Models
+### 支援的第三方模型 {#supported-third-party-models}
 
-| Provider | Model Name | Function Call |
+| 提供者 | 模型名稱 | 函式呼叫 |
 |----------|------------|---------------|
 | OpenAI | gpt-5.2 | `responses(model="perplexity/openai/gpt-5.2", ...)` |
 | OpenAI | gpt-5.1 | `responses(model="perplexity/openai/gpt-5.1", ...)` |
@@ -446,16 +440,16 @@ for chunk in response:
 | xAI | grok-4-1-fast-non-reasoning | `responses(model="perplexity/xai/grok-4-1-fast-non-reasoning", ...)` |
 | Perplexity | sonar | `responses(model="perplexity/perplexity/sonar", ...)` |
 
-### Available Presets
+### 可用預設值 {#available-presets}
 
-| Preset Name | Function Call |
+| 預設名稱 | 函式呼叫 |
 |-------------|---------------|
 | fast-search | `responses(model="perplexity/preset/fast-search", ...)` |
 | pro-search | `responses(model="perplexity/preset/pro-search", ...)` |
 | deep-research | `responses(model="perplexity/preset/deep-research", ...)` |
 | advanced-deep-research | `responses(model="perplexity/preset/advanced-deep-research", ...)` |
 
-### Complete Example
+### 完整範例 {#complete-example}
 
 ```python
 from litellm import responses
@@ -486,5 +480,5 @@ print(f"Usage: {response.usage}")
 
 :::info
 
-For more information about passing provider-specific parameters, [go here](../completion/provider_specific_params.md)
+如需更多關於傳遞特定提供者參數的資訊，請[前往這裡](../completion/provider_specific_params.md)
 :::

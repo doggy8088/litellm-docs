@@ -1,20 +1,19 @@
-# Migration Policy
+# 遷移政策 {#migration-policy}
 
-## New Beta Feature Introduction
+## 新 Beta 功能介紹 {#new-beta-feature-introduction}
 
-- If we introduce a new feature that may move to the Enterprise Tier it will be clearly labeled as **Beta**. With the following example disclaimer
-**Example Disclaimer**
+- 如果我們推出一項可能會移至 Enterprise 等級的新功能，將會明確標示為 **Beta**。以下為範例免責聲明
+**範例免責聲明**
 
 :::info
 
-Beta Feature -  This feature might move to LiteLLM Enterprise
+Beta 功能 -  這項功能可能會移至 LiteLLM Enterprise
 
 :::
 
+## 當 Beta 功能移至 Enterprise 時的政策 {#policy-if-a-beta-feature-moves-to-enterprise}
 
-## Policy if a Beta Feature moves to Enterprise
-
-If we decide to move a beta feature to the paid Enterprise version we will:
-- Provide **at least 30 days** notice to all users of the beta feature
-- Provide **a free 3 month License to prevent any disruptions to production**
-- Provide a **dedicated slack, discord, microsoft teams support channel** to help your team during this transition
+如果我們決定將 beta 功能移至付費的 Enterprise 版本，我們會：
+- 至少提前 **30 天** 通知所有 beta 功能使用者
+- 提供 **免費 3 個月授權，以避免對正式環境造成任何中斷**
+- 提供 **專屬的 slack、discord、microsoft teams 支援頻道**，協助您的團隊度過這個轉換期間

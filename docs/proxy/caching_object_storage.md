@@ -1,17 +1,17 @@
 ---
 title: S3 and GCS Cache
-description: Back the LiteLLM proxy's response cache with an S3 or GCS bucket.
+description: 以 S3 或 GCS 儲存貯體支援 LiteLLM proxy 的回應快取。
 ---
 
-# S3 and GCS Cache
+# S3 和 GCS 快取 {#s3-and-gcs-cache}
 
-Object storage trades latency for durability and cost. A bucket is far slower than Redis on every
-lookup, but it is cheap, shared across every replica, and survives a restart. Use it when the cache
-hits are worth saving and a few hundred milliseconds of lookup is not a problem.
+物件儲存以延遲換取耐久性與成本。儲存貯體在每一次
+查詢上都比 Redis 慢得多，但它很便宜、可在每個複本間共享，而且在重新啟動後仍可運作。當快取
+命中值得保存，而且幾百毫秒的查詢時間不是問題時，請使用它。
 
-## S3
+## S3 {#s3}
 
-### Step 1: Add `cache` to the config.yaml
+### 步驟 1：將 `cache` 新增到 config.yaml {#step-1-add-cache-to-the-configyaml}
 
 ```yaml
 model_list:
@@ -34,15 +34,15 @@ litellm_settings:
     s3_endpoint_url: https://s3.amazonaws.com # [OPTIONAL] S3 endpoint URL, if you want to use Backblaze/cloudflare s3 buckets
 ```
 
-### Step 2: Run proxy with config
+### 步驟 2：使用 config 執行 proxy {#step-2-run-proxy-with-config}
 
 ```shell
 $ litellm --config /path/to/config.yaml
 ```
 
-## GCS
+## GCS {#gcs}
 
-### Step 1: Add `cache` to the config.yaml
+### 步驟 1：將 `cache` 新增到 config.yaml {#step-1-add-cache-to-the-configyaml-1}
 
 ```yaml
 model_list:
@@ -63,16 +63,16 @@ litellm_settings:
     gcs_path: cache/ # [OPTIONAL] GCS path prefix for cache objects
 ```
 
-### Step 2: Add GCS Credentials to .env
+### 步驟 2：將 GCS 憑證新增到 .env {#step-2-add-gcs-credentials-to-env}
 
-Set the GCS environment variables in your .env file:
+在您的 .env 檔案中設定 GCS 環境變數：
 
 ```shell
 GCS_BUCKET_NAME="your-gcs-bucket-name"
 GCS_PATH_SERVICE_ACCOUNT="/path/to/service-account.json"
 ```
 
-### Step 3: Run proxy with config
+### 步驟 3：使用 config 執行 proxy {#step-3-run-proxy-with-config}
 
 ```shell
 $ litellm --config /path/to/config.yaml

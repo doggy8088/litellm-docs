@@ -1,27 +1,27 @@
-# Grounding with Bing Search (Microsoft Foundry)
+# 使用 Bing 搜尋進行 grounding（Microsoft Foundry） {#grounding-with-bing-search-microsoft-foundry}
 
-[Grounding with Bing Search](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/tools/bing-grounding) runs a web search through a model deployment in a [Microsoft Foundry](https://learn.microsoft.com/en-us/azure/ai-foundry/) project, using the project's Responses API. The model performs the search and returns cited results, so search traffic stays inside your Foundry project and is billed by Azure
+[使用 Bing 搜尋進行 grounding](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/tools/bing-grounding) 會透過 [Microsoft Foundry](https://learn.microsoft.com/en-us/azure/ai-foundry/) 專案中的模型部署執行網頁搜尋，並使用該專案的 Responses API。模型會執行搜尋並回傳附引用的結果，因此搜尋流量會停留在您的 Foundry 專案內，並由 Azure 計費
 
-There are two modes, chosen by whether you set a Grounding with Bing connection:
+有兩種模式，取決於您是否設定 Grounding with Bing 連線：
 
-- **Web search mode** (default): the model's built-in `web_search` tool. It needs no Bing resource and pays no per-search Bing fee, so LiteLLM tracks it at zero cost
-- **Connection mode**: the paid Grounding with Bing (G1) connection, selected with `BING_GROUNDING_CONNECTION_ID`. LiteLLM tracks it at the `bing_grounding/search` map price
+- **網頁搜尋模式**（預設）：模型內建的 `web_search` 工具。它不需要 Bing 資源，也不會支付任何每次搜尋的 Bing 費用，因此 LiteLLM 將其追蹤為零成本
+- **連線模式**：付費的 Grounding with Bing（G1）連線，使用 `BING_GROUNDING_CONNECTION_ID` 選取。LiteLLM 會以 `bing_grounding/search` 地圖價格追蹤
 
-Both modes call the same model deployment, whose token usage is billed by Azure on your Foundry account
+兩種模式都會呼叫相同的模型部署，其 token 使用量會由 Azure 依您的 Foundry 帳戶計費
 
 | | |
 |---|---|
-| Provider ID | `bing_grounding` |
-| Project endpoint | `BING_GROUNDING_PROJECT_ENDPOINT`, or `api_base` |
-| Model deployment | `BING_GROUNDING_MODEL` (required) |
-| Auth (Azure API key) | `api_key`, sent as the `api-key` header |
-| Auth (Entra token) | `BING_GROUNDING_TOKEN`, sent as `Authorization: Bearer` |
-| Auth (azure-identity) | any `DefaultAzureCredential` source, for scope `https://ai.azure.com/.default` |
-| Grounding with Bing connection | `BING_GROUNDING_CONNECTION_ID` (optional, switches to connection mode) |
+| 提供者 ID | `bing_grounding` |
+| 專案端點 | `BING_GROUNDING_PROJECT_ENDPOINT`，或 `api_base` |
+| 模型部署 | `BING_GROUNDING_MODEL`（必填） |
+| 驗證（Azure API 金鑰） | `api_key`，以 `api-key` 標頭傳送 |
+| 驗證（Entra 權杖） | `BING_GROUNDING_TOKEN`，以 `Authorization: Bearer` 傳送 |
+| 驗證（azure-identity） | 任何 `DefaultAzureCredential` 來源，適用於範圍 `https://ai.azure.com/.default` |
+| Grounding with Bing 連線 | `BING_GROUNDING_CONNECTION_ID`（選用，切換至連線模式） |
 
-The project endpoint looks like `https://<account>.services.ai.azure.com/api/projects/<project>`
+專案端點看起來像 `https://<account>.services.ai.azure.com/api/projects/<project>`
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Grounding with Bing Search"
 import os
@@ -42,9 +42,9 @@ for result in response.results:
     print(f"Snippet: {result.snippet}\n")
 ```
 
-### Authentication
+### 驗證 {#authentication}
 
-Pass an Azure API key per call, and it rides the `api-key` header:
+每次請求傳入 Azure API 金鑰，並透過 `api-key` 標頭送出：
 
 ```python showLineNumbers title="Grounding with Bing Search with an Azure API key"
 response = search(
@@ -54,11 +54,11 @@ response = search(
 )
 ```
 
-Or omit `BING_GROUNDING_TOKEN` and `api_key` to mint an Entra token from the standard [azure-identity](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme) chain (`AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID`, a shared profile, managed identity, or any other `DefaultAzureCredential` source) for scope `https://ai.azure.com/.default`
+或者省略 `BING_GROUNDING_TOKEN` 和 `api_key`，即可從標準 [azure-identity](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme) 連結鏈（`AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID`、共用設定檔、受控識別，或任何其他 `DefaultAzureCredential` 來源）產生 Entra 權杖，適用於範圍 `https://ai.azure.com/.default`
 
-### Connection mode (paid Grounding with Bing)
+### 連線模式（付費 Grounding with Bing） {#connection-mode-paid-grounding-with-bing}
 
-Set `BING_GROUNDING_CONNECTION_ID` to the project connection for a Grounding with Bing (G1) resource. The model then searches through that paid connection instead of the built-in tool, and LiteLLM tracks the `bing_grounding/search` cost:
+將 `BING_GROUNDING_CONNECTION_ID` 設為 Grounding with Bing（G1）資源的專案連線。模型接著會透過該付費連線而非內建工具進行搜尋，而 LiteLLM 會追蹤 `bing_grounding/search` 成本：
 
 ```python showLineNumbers title="Grounding with Bing Search in connection mode"
 os.environ["BING_GROUNDING_CONNECTION_ID"] = (
@@ -73,9 +73,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI Gateway {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 search_tools:
@@ -84,9 +84,9 @@ search_tools:
       search_provider: bing_grounding
 ```
 
-Set `BING_GROUNDING_PROJECT_ENDPOINT`, `BING_GROUNDING_MODEL`, and one of the auth options in the proxy's environment. `BING_GROUNDING_CONNECTION_ID` is optional and switches to connection mode
+在閘道的環境中設定 `BING_GROUNDING_PROJECT_ENDPOINT`、`BING_GROUNDING_MODEL`，以及其中一種驗證選項。`BING_GROUNDING_CONNECTION_ID` 為選用，並會切換至連線模式
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -94,7 +94,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/bing-grounding-search \
@@ -106,9 +106,9 @@ curl http://0.0.0.0:4000/v1/search/bing-grounding-search \
   }'
 ```
 
-## Web search interception
+## 網頁搜尋攔截 {#web-search-interception}
 
-Grounding with Bing Search is a natural backend for [web search interception](../completion/web_search), which serves a model's native `web_search` tool from a search provider. Point the interception at the configured tool:
+使用 Bing 搜尋進行 grounding 是 [網頁搜尋攔截](../completion/web_search) 的自然後端，可從搜尋提供者提供模型原生的 `web_search` 工具。將攔截指向已設定的工具：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -129,21 +129,21 @@ litellm_settings:
     search_tool_name: bing-grounding-search
 ```
 
-## Unified Parameters
+## 統一參數 {#unified-parameters}
 
-| Unified spec parameter | Web search mode | Connection mode |
+| 統一規格參數 | 網頁搜尋模式 | 連線模式 |
 |---|---|---|
-| `max_results` | caps the returned results after the fact (the built-in tool has no count knob) | maps to the search configuration's `count` |
-| `country` | maps to the approximate `user_location` | _ignored (the connection's `market` wants a full locale, which a bare country code cannot fill)_ |
-| `search_domain_filter` | _ignored (no equivalent)_ | _ignored (no equivalent)_ |
-| `max_tokens_per_page` | _ignored (no equivalent)_ | _ignored (no equivalent)_ |
+| `max_results` | 事後限制回傳結果數量（內建工具沒有數量旋鈕） | 對應到搜尋設定中的 `count` |
+| `country` | 對應到近似的 `user_location` | _忽略（此連線的 `market` 需要完整地區設定，而單獨的國家代碼無法滿足）_ |
+| `search_domain_filter` | _忽略（無對應項）_ | _忽略（無對應項）_ |
+| `max_tokens_per_page` | _忽略（無對應項）_ | _忽略（無對應項）_ |
 
-## Notes
+## 附註 {#notes}
 
-Web search mode is tracked at zero cost because the built-in `web_search` tool pays no per-search Bing fee. Connection mode is tracked at the `bing_grounding/search` map price, the Grounding with Bing (G1) per-search fee. The model deployment's token usage is billed separately by Azure on your Foundry account
+網頁搜尋模式因內建 `web_search` 工具不收取每次搜尋的 Bing 費用而被追蹤為零成本。連線模式則以 `bing_grounding/search` 地圖價格、也就是 Grounding with Bing（G1）的每次搜尋費用進行追蹤。模型部署的 token 使用量會由 Azure 另行在您的 Foundry 帳戶上計費
 
-The Entra token (`BING_GROUNDING_TOKEN` or one minted via azure-identity) is only sent to the endpoint configured in `BING_GROUNDING_PROJECT_ENDPOINT`, so a caller-supplied `api_base` cannot exfiltrate it. A caller-supplied `api_key` is treated as an Azure API key and sent in the `api-key` header instead
+Entra 權杖（`BING_GROUNDING_TOKEN`，或透過 azure-identity 產生的權杖）只會傳送到在 `BING_GROUNDING_PROJECT_ENDPOINT` 中設定的端點，因此呼叫端提供的 `api_base` 無法將其外洩。呼叫端提供的 `api_key` 會被視為 Azure API 金鑰，並改以 `api-key` 標頭傳送
 
-LiteLLM posts to `<project-endpoint>/openai/v1/responses`, appending the path automatically if the endpoint does not already end in it
+LiteLLM 會將請求送至 `<project-endpoint>/openai/v1/responses`，如果端點尚未以該字串結尾，則會自動附加此路徑
 
-If the grounded search comes back `failed` or `incomplete` with no results, LiteLLM raises an error rather than returning an empty success, so a failed search is not logged as a normal zero-result hit
+如果 grounding 搜尋回傳 `failed` 或 `incomplete` 且沒有結果，LiteLLM 會回傳錯誤，而不是回傳空的成功結果，因此失敗的搜尋不會被記錄為正常的零結果命中

@@ -1,10 +1,10 @@
 ---
-title: Structured output
+title: 結構化輸出
 ---
 
-# Structured output
+# 結構化輸出 {#structured-output}
 
-Pass a Pydantic model as `output=`. The runtime does its normal work, and its final answer is validated into `result.output`.
+將 Pydantic model 作為 `output=` 傳入。執行階段會照常運作，並將其最終答案驗證為 `result.output`。
 
 ```python
 from typing import Literal
@@ -25,12 +25,12 @@ r = litellm.agent(
 r.output.verdict  # "request_changes"
 ```
 
-| Harness | How the schema is enforced |
+| Harness | 結構描述如何被強制執行 |
 |---|---|
-| `CLAUDE_CODE` | instruction to answer with one JSON object matching the schema, then validated |
-| `CODEX` | Codex's native `--output-schema` |
-| `OPENCODE` | instruction to answer with one JSON object matching the schema, then validated |
+| `CLAUDE_CODE` | 要求回答一個符合結構描述的 JSON 物件，然後進行驗證 |
+| `CODEX` | Codex 的原生 `--output-schema` |
+| `OPENCODE` | 要求回答一個符合結構描述的 JSON 物件，然後進行驗證 |
 | `DEEPAGENTS` | `create_deep_agent(response_format=Review)` |
 | `TOOL_LOOP` | `litellm.acompletion(response_format=Review)` |
 
-If validation fails, the call raises `OutputInvalid`. The exception carries `.raw` with the model's text and `.result` with the rest of the turn, so the work isn't lost.
+如果驗證失敗，呼叫會引發 `OutputInvalid`。該例外會攜帶 `.raw`，其中包含模型的文字，以及 `.result`，其中包含該輪其餘內容，因此工作不會遺失。

@@ -1,8 +1,8 @@
-# [BETA] Image Variations
+# [BETA] 圖片變體 {#beta-image-variations}
 
-OpenAI's `/image/variations` endpoint is now supported.
+現在已支援 OpenAI 的 `/image/variations` 端點。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 ```python
 from litellm import image_variation
@@ -25,7 +25,7 @@ response = image_variation(
 print(response)
 ```
 
-## Supported Providers
+## 支援的提供者 {#supported-providers}
 
 - OpenAI
 - Topaz

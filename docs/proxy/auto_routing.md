@@ -7,30 +7,30 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# [Beta] Auto Routing
+# 【Beta】自動路由 {#beta-auto-routing}
 
-One router for complexity, semantic, and adaptive routing. Classify each request with heuristics, an LLM classifier, JEV through TypeSafe System One Choice, lexical/semantic keyword rules, or your own classifier plugin, then route to a pinned model, a random pool, or a Thompson-sampled pool per tier
+一個用於複雜度、語意與自適應路由的路由器。可使用 heuristics、LLM 分類器、透過 TypeSafe System One Choice 的 JEV、詞彙／語意關鍵字規則，或您自己的分類器外掛來分類每個請求，然後依各層級路由到釘選模型、隨機池，或 Thompson 抽樣池
 
-:::info[Availability]
+:::info[可用性]
 
-Auto routing is in **beta**, so config keys and defaults can still change between releases. Ships in **v1.94.x**. The earliest dev release cuts **Tuesday, 2026-07-14**. Suggestions and feedback: [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+Auto routing 目前為 **beta**，因此設定鍵與預設值在版本之間仍可能變更。將於 **v1.94.x** 推出。最早的開發版本預計於 **2026-07-14 星期二** 發佈。建議與回饋：[@discussion #32168](https://github.com/BerriAI/litellm/discussions/32168)。
 
 :::
 
-## When to use
+## 何時使用 {#when-to-use}
 
-| Feature      | Semantic Auto Router (deprecated) | Auto Routing (this page)                                                   |
+| 功能 | Semantic Auto Router（已棄用） | Auto Routing（本頁） |
 | ------------ | --------------------------------- | -------------------------------------------------------------------------- |
-| Classifier   | Embedding match on utterances     | Heuristics, LLM classifier, JEV, lexical/semantic keyword rules, or your own plugin |
-| Tier value   | One model                         | One model, random pool, or adaptive (Thompson-sampled) pool                |
-| Latency      | ~100-500ms (embedding call)       | Sub-millisecond (heuristic/keyword) or one small classifier call (LLM)     |
-| Session pin  | No                                | Opt-in `session_affinity` (off by default), keyed by `session_id` metadata |
-| Log          | No routing-cause signal           | `cause=` marker per decision (scorer, literal, semantic, session_pin, LLM, plugin) |
-| Best for     | Intent-based routing              | Cost/quality tiering, hybrid rule + classifier setups, prompt-cache pinning |
+| 分類器 | 對語句進行 embedding 比對 | heuristics、LLM 分類器、JEV、詞彙／語意關鍵字規則，或您自己的外掛 |
+| 層級值 | 一個模型 | 一個模型、隨機池，或自適應（Thompson 抽樣）池 |
+| 延遲 | 約 100-500ms（embedding 呼叫） | 次毫秒（heuristic／關鍵字）或一次小型分類器呼叫（LLM） |
+| 工作階段釘選 | 否 | 可選 `session_affinity`（預設關閉），以 `session_id` 中繼資料為鍵 |
+| 記錄 | 無路由原因訊號 | 每個決策都有 `cause=` 標記（scorer、literal、semantic、session_pin、LLM、plugin） |
+| 最適合 | 以意圖為基礎的路由 | 成本／品質分層、混合規則 + 分類器設定、prompt-cache 釘選 |
 
-The [semantic auto router](./auto_routing_semantic.md) is deprecated but still works for existing configs.
+[語意自動路由器](./auto_routing_semantic.md) 已棄用，但仍可用於既有設定。
 
-## Quick start (Proxy)
+## 快速上手（Proxy） {#quick-start-proxy}
 
 ```yaml
 model_list:
@@ -55,7 +55,7 @@ model_list:
       complexity_router_default_model: {{openai_large}}
 ```
 
-Call it like any other model:
+像任何其他模型一樣呼叫它：
 
 ```shell
 curl -X POST http://localhost:4000/v1/chat/completions \
@@ -63,19 +63,19 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -d '{"model": "smart-router", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
 ```
 
-## Set it up with your agent
+## 與您的代理程式一同設定 {#set-it-up-with-your-agent}
 
-To get started, tell your agent:
+若要開始，請告訴您的代理程式：
 
 ```
 run curl -fsSL https://docs.litellm.ai/skills/auto-router and follow the instructions
 ```
 
-It reads the models your proxy already serves, asks how you want the router named and which model should serve each tier, and calls out the defaults it is assuming before it writes anything.
+它會讀取您的 proxy 已提供的模型，詢問您希望路由器如何命名，以及每個層級應由哪個模型提供服務，並在寫入任何內容之前先指出它所假設的預設值。
 
-## Full config
+## 完整設定 {#full-config}
 
-Every knob v2 exposes. All fields on `complexity_router_config` are optional except `tiers`.
+v2 暴露的每個旋鈕。除了 `tiers` 之外，`complexity_router_config` 上的所有欄位都是選用的。
 
 ```yaml
 - model_name: smart-router
@@ -174,25 +174,25 @@ Every knob v2 exposes. All fields on `complexity_router_config` are optional exc
     # auto_router_model_compression: none
 ```
 
-## Classification
+## 分類 {#classification}
 
-Choose a classifier, with optional keyword rules before classification. Unless configured otherwise, an LLM, JEV or custom classifier failure falls back to the heuristic scorer
+選擇一個分類器，並可在分類前套用選用的關鍵字規則。除非另有設定，LLM、JEV 或自訂分類器失敗時會回退到 heuristic scorer
 
-**Heuristic scorer (default).** Zero API calls, sub-millisecond. Scores each request across seven dimensions and maps the score to a tier.
+**Heuristic scorer（預設）。** 零 API 呼叫，次毫秒。針對七個維度為每個請求評分，並將分數對應到某個層級。
 
-| Dimension          | What it detects                                 |
+| 維度 | 偵測內容 |
 | ------------------ | ----------------------------------------------- |
-| tokenCount         | Short (&lt;15) or long (&gt;400) prompts        |
-| codePresence       | "function", "class", "api", "database", etc.    |
-| reasoningMarkers   | "step by step", "think through", "analyze"      |
-| technicalTerms     | "architecture", "distributed", "encryption"     |
-| simpleIndicators   | "what is", "define", greetings                  |
-| multiStepPatterns  | "first...then", numbered steps                  |
-| questionComplexity | Multiple question marks                         |
+| tokenCount | 短（&lt;15）或長（&gt;400）提示 |
+| codePresence | "function"、"class"、"api"、"database" 等 |
+| reasoningMarkers | "step by step"、"think through"、"analyze" |
+| technicalTerms | "architecture"、"distributed"、"encryption" |
+| simpleIndicators | "what is"、"define"、問候語 |
+| multiStepPatterns | "first...then"、編號步驟 |
+| questionComplexity | 多個問號 |
 
-Two or more reasoning markers auto-routes to `REASONING` regardless of the weighted score.
+兩個或以上的 reasoning markers 會自動路由到 `REASONING`，不受加權分數影響。
 
-**LLM classifier.** Uses a small fast model (gpt-5.6-luna, Claude Sonnet 5, whatever you point it at) with structured output. Goes through the same `Router` instance, so credentials, budgets, and fallbacks apply. Timeout, empty content, or schema mismatch falls back to the heuristic scorer, or to `complexity_router_default_model` with `classifier_fallback: default_model`, which is what a classifier grading something other than complexity wants since a complexity score would produce a tier unrelated to its taxonomy.
+**LLM 分類器。** 使用小型快速模型（gpt-5.6-luna、Claude Sonnet 5，或您指定的任何模型）並搭配結構化輸出。會經由相同的 `Router` 實例，因此認證、預算與備援都會套用。逾時、內容為空，或 schema 不符時會回退到 heuristic scorer，或回退到帶有 `classifier_fallback: default_model` 的 `complexity_router_default_model`，這正是分類器在評分非複雜度內容時所需要的，因為複雜度分數會產生與其分類法無關的層級。
 
 ```yaml
 classifier_type: llm
@@ -201,11 +201,11 @@ classifier_llm_config:
   timeout_ms: 2000
 ```
 
-### JEV classifier
+### JEV 分類器 {#jev-classifier}
 
-This reference retains the field names supported by released builds. A build containing [backend #43626](https://github.com/BerriAI/litellm/pull/43626) also accepts `classifier_type: oss_classifier` with `opensource_classifier_config.provider: jev`; the settings below apply inside `opensource_classifier_config`. The existing names remain accepted. See the [OSS classifier guide](/docs/auto_router/decision_classifiers) for migration and the Jev, Nimble and Laya provider configurations.
+這份參考文件保留了發行版建置所支援的欄位名稱。包含 [backend #43626](https://github.com/BerriAI/litellm/pull/43626) 的建置也接受帶有 `opensource_classifier_config.provider: jev` 的 `classifier_type: oss_classifier`；以下設定會套用於 `opensource_classifier_config` 內。既有名稱仍然可接受。請參閱 [OSS 分類器指南](/docs/auto_router/decision_classifiers) 以了解遷移方式，以及 Jev、Nimble 與 Laya 提供者設定。
 
-Set `classifier_type: jev` with `jev_classifier_config` to use [TypeSafe System One](/docs/pass_through/typesafe). It sends one `questions.tier` Choice question to `POST /v1/systemone`, with the classification input in `state` and tier descriptions in `criteria`. The returned choice selects the existing tier pool. See [setup and dashboard instructions](/docs/auto_router/setup#jev-classifier-typesafe-ai)
+以 `jev_classifier_config` 設定 `classifier_type: jev`，即可使用 [TypeSafe System One](/docs/pass_through/typesafe)。它會向 `POST /v1/systemone` 傳送一個 `questions.tier` Choice 問題，並將分類輸入放在 `state`、層級說明放在 `criteria`。回傳的 choice 會選取既有的層級池。請參閱 [設定與儀表板說明](/docs/auto_router/setup#jev-classifier-typesafe-ai)
 
 ```yaml
 classifier_type: jev
@@ -220,55 +220,55 @@ classifier_context_budget_chars: 8000
 classifier_context_include_assistant_turns: false
 ```
 
-| `jev_classifier_config` field | Default | Behavior |
+| `jev_classifier_config` 欄位 | 預設值 | 行為 |
 | --- | --- | --- |
-| `model` | `jev-latest` | TypeSafe model identifier, without a `typesafe/` prefix. Pin a version for a repeatable evaluation |
-| `api_key` | `null` | Reads `TYPESAFE_API_KEY` from the server when omitted |
-| `api_base` | `null` | Reads `TYPESAFE_API_BASE`, then falls back to `https://api.typesafe.ai`. An explicit value requires an explicit `api_key` |
-| `timeout_ms` | `3000` | Deadline for a classification, at least 1 ms |
-| `instructions` | `null` | Replaces the built-in question instructions. Omit to keep the default. Blank strings are rejected |
-| `circuit_breaker_enabled` | `true` | Enables the process-local timeout breaker for this router instance |
-| `circuit_breaker_cooldown_seconds` | `30` | Positive cooldown before one recovery probe is admitted |
+| `model` | `jev-latest` | TypeSafe 模型識別碼，不含 `typesafe/` 前綴。固定版本以進行可重現的評估 |
+| `api_key` | `null` | 若未提供，則從伺服器讀取 `TYPESAFE_API_KEY` |
+| `api_base` | `null` | 先讀取 `TYPESAFE_API_BASE`，再回退到 `https://api.typesafe.ai`。明確值需要明確的 `api_key` |
+| `timeout_ms` | `3000` | 分類的截止時間，至少 1 ms |
+| `instructions` | `null` | 取代內建的問題指示。略過即可保留預設值。空字串會被拒絕 |
+| `circuit_breaker_enabled` | `true` | 為此路由器實例啟用程序本地的 timeout breaker |
+| `circuit_breaker_cooldown_seconds` | `30` | 進入一次復原探測前所需的正向冷卻時間 |
 
-#### Context sent to JEV
+#### 傳送至 JEV 的上下文 {#context-sent-to-jev}
 
-JEV shares the classifier context builder with the LLM classifier. `classifier_context_window_size` defaults to three prior user turns. `classifier_context_budget_chars` defaults to 8,000 characters of prior-turn text, taking the newest turns first. `classifier_context_per_turn_chars` is an optional positive cap with no default cap. `classifier_context_include_assistant_turns: true` includes assistant text and makes the window count both roles
+JEV 與 LLM 分類器共用分類器上下文建構器。`classifier_context_window_size` 預設為前三個使用者回合。`classifier_context_budget_chars` 預設為 8,000 個字元的前回合文字，且會先取最新的回合。`classifier_context_per_turn_chars` 是可選的正向上限，沒有預設上限。`classifier_context_include_assistant_turns: true` 會包含 assistant 文字，並讓視窗計算兩個角色
 
-Prior turns are sent to the configured TypeSafe endpoint by default, even if another provider serves the completion. Assistant turns are excluded unless enabled. Existing JEV routers gain this history behavior when upgrading to the [context integration](https://github.com/BerriAI/litellm/pull/41886). Set `classifier_context_window_size: 0` before upgrading to keep prior conversation out of JEV requests
+預設情況下，前回合會傳送到已設定的 TypeSafe 端點，即使完成回應是由其他提供者提供。除非啟用，否則會排除 assistant 回合。升級到 [context integration](https://github.com/BerriAI/litellm/pull/41886) 時，既有的 JEV 路由器會取得這項歷史記錄行為。請在升級前設定 `classifier_context_window_size: 0`，以避免先前對話進入 JEV 請求
 
-These bounds cover prior-turn text. The current ask and extracted system text are outside that budget, as is the numbering around quoted turns. Recognized Claude Code requests omit their harness system text. A window size of `0` disables prior-turn context, and a character budget below `120` suppresses that block. Increasing context changes what is sent to TypeSafe and can change classification cost and tier choices
+這些界限涵蓋前回合文字。當前請求與擷取出的 system 文字不在此預算內，引用回合周圍的編號也不在內。已識別的 Claude Code 請求會省略其 harness system 文字。視窗大小為 `0` 會停用前回合上下文，而低於 `120` 的字元預算會抑制該區塊。增加上下文會改變傳送給 TypeSafe 的內容，並可能改變分類成本與層級選擇
 
-#### Fallback and recovery
+#### 備援與復原 {#fallback-and-recovery}
 
-Timeouts, HTTP failures, malformed responses, missing or unknown choices, and an open circuit use the existing classifier fallback. For built-in tiers, `classifier_fallback: heuristic` is the default. `classifier_fallback: default_model` sends the request to `litellm_params.complexity_router_default_model`. A configured `fallback_tier` takes precedence for custom tiers
+逾時、HTTP 失敗、格式不正確的回應、缺少或未知的 choice，以及開啟中的 circuit 會使用既有的分類器備援。對於內建層級，`classifier_fallback: heuristic` 是預設值。`classifier_fallback: default_model` 會將請求送往 `litellm_params.complexity_router_default_model`。針對自訂層級，已設定的 `fallback_tier` 具有優先權
 
-The breaker opens on a recognized classification timeout. During its cooldown, requests use fallback without making another JEV call. After cooldown, one request probes recovery while others continue to fall back. A successful probe closes the breaker, and a failed probe reopens it. Ordinary non-timeout failures while closed use fallback without opening the breaker. This state belongs to one router instance in one process and is not shared across workers
+breaker 會在辨識到的分類逾時時開啟。在其冷卻期間，請求會使用備援，而不會再進行另一個 JEV 呼叫。冷卻結束後，會由一個請求測試復原，而其他請求則繼續使用備援。成功的探測會關閉 breaker，而失敗的探測會重新開啟它。已關閉時的一般非逾時失敗會直接使用備援，不會開啟 breaker。此狀態屬於單一程序中的單一路由器實例，且不會在 workers 之間共享
 
-The classifier deadline bounds waiting for classification. It does not guarantee that a canceled provider request was never received or billed, and a fallback completion can still fail at its own provider
+分類器截止時間會限制等待分類的時間。它不保證已取消的提供者請求從未被接收或計費，而備援完成仍可能在其自己的提供者端失敗
 
-#### Customization, licensing and authorization
+#### 自訂、授權與認證 {#customization-licensing-and-authorization}
 
-Built-in JEV classification is available without an Enterprise license under the same policy as the built-in LLM classifier. Replacing `instructions` or defining `tier_definitions` uses the existing Enterprise custom-classifier capability. With `tier_definitions`, each description becomes the corresponding Choice criterion. JEV also supports the normal `enable_non_reasoning_tier` configuration
+內建 JEV 分類可在沒有 Enterprise 授權的情況下使用，且與內建 LLM 分類器適用相同政策。替換 `instructions` 或定義 `tier_definitions` 會使用現有的 Enterprise 自訂分類器能力。使用 `tier_definitions` 時，每個描述都會成為對應的 Choice 準則。JEV 也支援一般的 `enable_non_reasoning_tier` 設定
 
-Dependency authorization identifies JEV as `typesafe/<configured model>` with role `evaluation`, alongside the router's tier, default and embedding dependencies. Restricted keys and team members need access to the dependencies they can invoke. Team-member management writes cannot supply `api_key` or `api_base`, even when the user can edit a router. Choosing JEV does not grant additional model or management permissions
+依賴授權會將 JEV 識別為 `typesafe/<configured model>`，角色為 `evaluation`，以及路由器的 tier、預設和 embedding 依賴。受限金鑰與團隊成員需要能存取其可呼叫的依賴。團隊成員管理寫入無法提供 `api_key` 或 `api_base`，即使使用者可以編輯路由器也一樣。選擇 JEV 不會授予額外的模型或管理權限
 
-#### Test Routing and accounting
+#### 測試路由與計費 {#test-routing-and-accounting}
 
-`POST /auto_router/test_routing` classifies without sending a completion to the selected tier. A JEV call can still incur provider spend, as can a semantic embedding call. The request's `default_model` field selects the default for this preview. **Test Connection** also probes JEV and the configured model dependencies, so it can incur both classifier and completion charges
+`POST /auto_router/test_routing` 會在不向所選 tier 傳送 completion 的情況下進行分類。JEV 呼叫仍可能產生提供者支出，語意 embedding 呼叫也是如此。請求的 `default_model` 欄位會為此預覽選擇預設值。**Test Connection** 也會探測 JEV 與已設定的模型依賴，因此可能同時產生分類器與 completion 費用
 
-Test Routing checks access to the models it can call and enforces virtual-key budget limits before classification. Team and member policy also applies through management-route authorization. The preview does not bypass these checks because it skips the downstream completion
+Test Routing 會在分類前檢查其可呼叫模型的存取權，並強制執行虛擬金鑰預算上限。團隊與成員政策也會透過管理路由授權套用。預覽不會繞過這些檢查，因為它會略過下游 completion
 
-Successful JEV decisions record `cause: jev_classifier`, `classifier_model: typesafe/<model>`, `classifier_probabilities`, `classifier_confidence`, and `classifier_cost` when priceable. The model is the version returned by TypeSafe, or the configured model when the response omits it. Probabilities describe TypeSafe's choice, not independently measured correctness
+成功的 JEV 決策在可計價時會記錄 `cause: jev_classifier`、`classifier_model: typesafe/<model>`、`classifier_probabilities`、`classifier_confidence` 與 `classifier_cost`。模型是 TypeSafe 回傳的版本；如果回應省略了它，則使用已設定的模型。機率描述的是 TypeSafe 的選擇，而不是獨立量測的正確性
 
-JEV usage is logged as a separate classifier call with the originating request's identity metadata. Returned input/output tokens are priced using the model registry. Missing usage or pricing makes cost unknown. An HTTP response with usable usage can be logged even if its choice later fails validation, but a fallback decision does not guarantee a `classifier_cost` value. When reconciling spend, inspect the separate classifier row as well as the parent completion
+JEV 使用情況會以一筆獨立的分類器呼叫記錄，並帶有來源請求的身分中繼資料。傳回的輸入/輸出 token 會依模型登錄表定價。缺少用量或定價會使成本無法得知。即使其選擇稍後驗證失敗，只要 HTTP 回應具有可用用量，仍可被記錄；但備援決策不保證有 `classifier_cost` 值。在對帳支出時，請同時檢查獨立的分類器列以及父 completion
 
-For successful classifications, reported Auto Router savings deduct `classifier_cost`. Do not add that metadata again when summing spend rows that already include the classifier call. See [evaluation and savings accounting](/docs/auto_router/evaluate#evaluate-jev-on-your-own-prompts) and the [benchmark's cost scope](/blog/jev-auto-router-benchmark)
+對於成功的分類，回報的 Auto Router 節省會扣除 `classifier_cost`。在加總已包含分類器呼叫的支出列時，不要再次加入該中繼資料。請參閱 [評估與節省對帳](/docs/auto_router/evaluate#evaluate-jev-on-your-own-prompts) 與 [benchmark 的成本範圍](/blog/jev-auto-router-benchmark)
 
-### Keyword rules
+### 關鍵字規則 {#keyword-rules}
 
-Deterministic short-circuit. Match a keyword, land in that tier. When multiple rules match, routing escalates to the highest tier (`SIMPLE < MEDIUM < COMPLEX < REASONING`) so rule order does not silently change behavior
+確定性的短路。匹配關鍵字，就進入該 tier。當多個規則都匹配時，路由會升級到最高 tier（`SIMPLE < MEDIUM < COMPLEX < REASONING`），因此規則順序不會在不知不覺間改變行為
 
-Enable `semantic_keyword_matching` to match paraphrases via embeddings. Semantic scoring uses MAX aggregation so a strong match on one keyword in a tier is not diluted by that tier's other utterances. Query embeddings carry the caller's request metadata, so their spend attributes to the originating key. On embedding failure the router falls back to the scorer.
+啟用 `semantic_keyword_matching` 可透過 embeddings 匹配意義相近的改寫。語意評分使用 MAX 彙總，因此某個 tier 中一個關鍵字的強匹配不會被該 tier 的其他語句稀釋。查詢 embedding 會攜帶呼叫者的請求中繼資料，因此其支出會歸屬於來源金鑰。若 embedding 失敗，路由器會回退至評分器。
 
 ```yaml
 keyword_tier_rules:
@@ -281,11 +281,11 @@ embedding_model: voyage-3-5
 match_threshold: 0.5
 ```
 
-**Custom classifier plugin.** Your own code picks the tier. Set `classifier_type: custom` and point `classifier_plugin` at a dotted path to an object with an async `classify(context)`, resolved the same way routing [`plugins`](../routing_plugins.md) are. Reach for it when the tier is not a judgment about the prompt at all: route by team or tenant plan, by a flag in a service you own, by any rule you can express in Python.
+**自訂分類器外掛程式。** 您自己的程式碼決定 tier。請設定 `classifier_type: custom`，並將 `classifier_plugin` 指向一個具有非同步 `classify(context)` 的物件之點記法路徑，其解析方式與路由 [`plugins`](../routing_plugins.md) 相同。當 tier 根本不是對提示詞的判斷時，就適合使用它：依團隊或租戶方案路由、依您所擁有服務中的旗標路由，或依任何您能以 Python 表達的規則路由。
 
 :::info
 
-Custom classifier plugins ship in **v1.99.x** ([PR #37249](https://github.com/BerriAI/litellm/pull/37249)). Config file only: like `plugins`, `classifier_plugin` cannot be set through the model-management API or the UI, because a live object does not travel over HTTP.
+自訂分類器外掛程式隨 **v1.99.x** 一併推出（[PR #37249](https://github.com/BerriAI/litellm/pull/37249)）。僅限設定檔：如同 `plugins`，`classifier_plugin` 無法透過模型管理 API 或 UI 設定，因為活的物件不會透過 HTTP 傳輸。
 
 :::
 
@@ -320,43 +320,43 @@ class TierByTeam:
 tier_by_team = TierByTeam()
 ```
 
-`context` is the same `RoutingContext` a routing plugin receives: `raw_messages`, `structured_messages` (normalized to OpenAI chat format), `metadata`, and `candidate_models`. Caller identity rides along on `metadata`, so `user_api_key_team_id`, `user_api_key_team_alias`, and `user_api_key_user_id` are readable with no plumbing of your own. `candidate_models` here is an informational snapshot of every tier's models rather than the narrowing surface a routing plugin filters: the tier you return picks the pool, so mutating the list is a no-op.
+`context` 與路由外掛程式接收的是相同的 `RoutingContext`：`raw_messages`、`structured_messages`（已正規化為 OpenAI chat 格式）、`metadata` 與 `candidate_models`。呼叫者身分會隨著 `metadata` 一起傳遞，因此 `user_api_key_team_id`、`user_api_key_team_alias` 與 `user_api_key_user_id` 無需您自己做任何接線即可讀取。這裡的 `candidate_models` 是每個 tier 模型的資訊快照，而不是路由外掛程式所過濾的縮小表面：您回傳的 tier 會選取模型池，因此修改清單不會有作用。
 
-Return the name of a tier: a built-in tier (`SIMPLE`, `MEDIUM`, `COMPLEX`, `REASONING`), or its `tier_labels` display name. Return `None` to decline.
+回傳一個 tier 的名稱：內建 tier（`SIMPLE`、`MEDIUM`、`COMPLEX`、`REASONING`），或其 `tier_labels` 顯示名稱。回傳 `None` 表示拒絕。
 
-Anything else is treated as availability rather than policy and falls back exactly the way the LLM classifier does. `None`, a raised exception, a call slower than `classifier_plugin_timeout_ms`, a tier name the router does not recognize, and a tier with no models configured all hand the request to `classifier_fallback`: the heuristic scorer by default, or `default_model`. A plugin that is down degrades routing; it never fails the request.
+其他任何情況都會被視為可用性而非政策，並且會完全以 LLM 分類器相同的方式回退。`None`、擲出例外、呼叫耗時超過 `classifier_plugin_timeout_ms`、路由器無法辨識的 tier 名稱，以及未設定模型的 tier，都會將請求交給 `classifier_fallback`：預設為啟發式評分器，或 `default_model`。當外掛程式當機時，路由會降級；它永遠不會使請求失敗。
 
-Config mistakes surface at startup instead of on the first classified request. A `classifier_plugin` whose `classify` is missing or not `async` is rejected with the config key named, `classifier_type: custom` without a plugin raises, and a plugin set under any other `classifier_type` raises too, since it would never run.
+設定錯誤會在啟動時顯示，而不是在第一次被分類的請求上才出現。`classifier_plugin` 若其 `classify` 缺失或不是 `async`，會連同設定鍵名稱一併被拒絕；`classifier_type: custom` 若沒有外掛程式會擲出例外，而設定在任何其他 `classifier_type` 下的外掛程式也會擲出例外，因為它永遠不會執行。
 
-Everything else on the router still applies. `keyword_tier_rules` short-circuit ahead of the plugin, escalation keywords still escalate the tier it returns, `adaptive: true` still Thompson-samples inside that tier's pool, and `session_affinity: true` still pins a session to its first-turn model. The `classifier_context_*` settings are LLM-classifier only; a plugin gets the messages directly and decides for itself how much of them to read.
+路由器上的其他一切仍然適用。`keyword_tier_rules` 會在外掛程式之前短路，升級關鍵字仍會將它回傳的 tier 升級，`adaptive: true` 仍會在該 tier 的模型池內進行 Thompson 抽樣，而 `session_affinity: true` 仍會將工作階段固定到其首輪模型。`classifier_context_*` 設定僅適用於 LLM 分類器；外掛程式會直接取得訊息，並自行決定要讀取多少內容。
 
-### What gets classified
+### 會被分類的內容 {#what-gets-classified}
 
-A request is not classified as a blob. The router extracts the **last real human ask** and the **latest system prompt** from the message list, and the current-request scoring paths read those strings rather than the raw payload. The classifier context window can also add prior turns and a trajectory estimate, described below. This matters most under an agent harness, where a single turn arrives as a huge shared system prefix, a pile of tool results, and a one-line ask
+請求不會被當作一個 blob 來分類。路由器會從訊息列表中擷取**最後一個真正的人類請求**與**最新的系統提示詞**，而目前請求的評分路徑會讀取這些字串，而非原始 payload。分類器的 context window 也可以加入先前回合與軌跡估計，如下所述。這在 agent harness 下最重要，因為單一回合會以龐大的共用 system 前綴、大量工具結果，以及一行請求進來
 
-Extraction walks the message list newest-first and returns the first user turn that still carries human text. Content is flattened by keeping `type == "text"` blocks only, so a turn whose content is entirely tool output flattens to the empty string and is skipped rather than accepted as the ask; on the Messages surface tool results ride non-text `tool_result` blocks on a user turn, and on chat completions they sit on the `tool` role, which is never read. Complete `<system-reminder>` ... `</system-reminder>` blocks are removed before the text is used, and the ask written around them survives. Marker matching is literal and case-insensitive, an unclosed opening tag is not a block and is left alone, and `reminder_markers` swaps in a different pair for a harness that brands its reminders differently. When every user turn holds nothing but plumbing there is no ask at all, and the request goes to `complexity_router_default_model` rather than letting harness-injected text pick the tier. On a router with `plugins` configured it goes through the `MEDIUM` pool instead, so a default model can never bypass the plugin pipeline
+擷取會從最新的訊息開始向前走，並回傳仍含有人類文字的第一個 user 回合。內容會只保留 `type == "text"` 區塊，因此其內容完全是工具輸出的回合會被壓平成空字串並略過，而不是被接受為請求；在 Messages 表面上，工具結果會以非文字 `tool_result` 區塊附著在 user 回合上，而在 chat completions 中，它們位於 `tool` role 上，該 role 從不會被讀取。完整的 `<system-reminder>` ... `</system-reminder>` 區塊會在文字使用前被移除，而圍繞它們撰寫的請求仍會保留。標記比對是字面且不分大小寫，未關閉的開頭標籤不算區塊且會維持原樣，而 `reminder_markers` 會為以不同方式標示提醒的 harness 代入另一組標記。當所有 user 回合都只有接線內容時，就根本沒有請求，請求會被送往 `complexity_router_default_model`，而不是讓 harness 注入的文字決定 tier。在設定了 `plugins` 的路由器上，它會改走 `MEDIUM` 模型池，因此預設模型永遠無法繞過外掛程式管線
 
-The consequence is the one an expert reader usually assumes is missing: "fix this typo" and "refactor the auth subsystem" are each scored on their own ask rather than being forced onto the same tier by the 40k-token system prefix and reminder blocks they share
+其結果正是資深讀者通常會認為缺少的那一點：「修正這個 typo」與「重構 auth 子系統」各自會根據自己的請求進行評分，而不是因為它們共用 40k token 的 system 前綴與提醒區塊而被迫進入同一個 tier
 
-The stripped human ask is the only text that reaches `keyword_tier_rules`, semantic keyword matching, escalation keywords, and the heuristic scorer's reasoning-marker dimension. The system prompt is extracted separately and is **not** reminder-stripped; it feeds the heuristic scorer's code, technical, and simple dimensions, and it is quoted into the LLM classifier payload. Reasoning markers deliberately read the human ask alone, which is what stops a `You are an expert engineer. Always think step by step.` system prompt from pinning every request in the session to `REASONING`. Escalation keywords are narrower still: they read only the newest user turn's stripped text, so one escalate request does not re-fire on each of the tool turns that follow it
+被剝離過的 human ask 是唯一會傳到 `keyword_tier_rules`、語義關鍵字比對、升級關鍵字，以及 heuristic scorer 的 reasoning-marker 維度的文字。system prompt 會另外擷取，且**不會**移除 reminder；它會餵給 heuristic scorer 的 code、technical 與 simple 維度，並會被引用到 LLM classifier payload 中。reasoning markers 刻意只讀 human ask，也正是這點阻止了一個 `You are an expert engineer. Always think step by step.` system prompt 把 session 中的每個請求都固定到 `REASONING`。升級關鍵字的範圍更窄：它們只讀最新 user turn 的剝離後文字，所以一次 escalate 請求不會在後續每個 tool turn 上再次觸發
 
-The heuristic override that forces `REASONING` on two or more reasoning markers is part of the scorer, so it applies when `classifier_type` is `heuristic` and on the scorer fallback after a failed classifier call. On the LLM classifier path the tier the classifier returns is used as-is
+強制 `REASONING` 的 heuristic override 在兩個或以上 reasoning markers 時是 scorer 的一部分，所以當 `classifier_type` 是 `heuristic`，以及在 classifier 呼叫失敗後的 scorer fallback 中都會套用。在 LLM classifier 路徑上，classifier 回傳的 tier 會原樣使用
 
-The deprecated [semantic auto router](./auto_routing_semantic.md) has a much thinner contract. It takes the newest user message alone and returns whatever that message flattens to, with no reminder stripping, no system prompt, and no skipping, so a newest turn holding only tool-result blocks yields the empty string and gets embedded as such. What it does embed is cut to the first `auto_router_max_input_chars` characters (default 2000, head kept) before the call to `auto_router_embedding_model`, since a truncated prompt still routes where an over-long one errors out. Under an agent harness that reads as routing on the opening of one turn, which is the design an expert reader tends to assume the complexity router also has
+已棄用的 [semantic auto router](./auto_routing_semantic.md) 合約要薄得多。它只取最新的 user message，並回傳該訊息平坦化後的內容，沒有 reminder stripping、沒有 system prompt、也沒有 skipping，所以最新一輪如果只含 tool-result 區塊，會產生空字串並以此嵌入。它實際嵌入的內容會在呼叫 `auto_router_embedding_model` 之前截斷為前 `auto_router_max_input_chars` 個字元（預設 2000，保留開頭），因為被截斷的 prompt 仍然能路由，而過長的則會出錯。在 agent harness 下，這看起來就像是在一輪的開頭進行路由，這也是資深讀者通常會以為 complexity router 也具備的設計
 
-### Classifier context window
+### 分類器上下文視窗 {#classifier-context-window}
 
 :::info
 
-Context-window support ships in **v1.96.x** ([PR #35185](https://github.com/BerriAI/litellm/pull/35185)); assistant turns in the window arrived in the same release ([PR #35471](https://github.com/BerriAI/litellm/pull/35471)). On earlier versions the classifier saw only the current message, and these keys are silently ignored.
+context-window 支援隨 **v1.96.x** 一起推出（[PR #35185](https://github.com/BerriAI/litellm/pull/35185)）；同版也加入了視窗中的 assistant turns（[PR #35471](https://github.com/BerriAI/litellm/pull/35471)）。在較早版本中，classifier 只會看到目前訊息，而這些 key 會被靜默忽略。
 
 :::
 
-The LLM and JEV classifiers receive up to three prior user turns by default, within an 8,000-character prior-turn budget. A follow-up like "now do the same for the streaming path" can then be rated against what it refers to. `classifier_context_per_turn_chars` optionally caps each turn before the total budget applies, and is unset by default
+預設情況下，LLM 與 JEV classifier 最多會收到前 3 個 user turn，且受限於 8,000 字元的前序 turn 預算。像「now do the same for the streaming path」這樣的後續內容，就能針對其所指涉的內容來評分。`classifier_context_per_turn_chars` 可選擇在總預算套用前先限制每個 turn 的長度，且預設未設定
 
-By default, only turns carrying text a human wrote count toward the window. Tool output never qualifies (`tool_result` blocks on the Messages surface, the `tool` role on chat completions), complete reminder blocks are stripped before a turn is considered (`<system-reminder>` ... `</system-reminder>` by default, another pair with `reminder_markers`), and a turn left empty after stripping is skipped rather than spending a slot. Set `classifier_context_include_assistant_turns` to include assistant turns too; see [Assistant turns in the context window](#assistant-turns-in-the-context-window) below. A turn whose text equals the ask being classified is excluded so the ask is never quoted twice. Prior turns are sent oldest first and numbered `[1]`, `[2]`, `[3]`, and a turn cut at the character limit gets a trailing `...` so the classifier can tell it was clipped. When prior conversation exists, a single depth line (`Conversation so far: ~N tokens across the request`) is included as well. That trajectory count is a rough four-characters-per-token estimate over the text of every message on the request, not a tokenizer count and not limited to the turns in the window, so it reads as a depth signal rather than as a billable number
+預設只有包含人類撰寫文字的 turn 會算進視窗。tool 輸出永遠不符合資格（Messages surface 上的 `tool_result` blocks、chat completions 上的 `tool` role），完整的 reminder 區塊會在該 turn 被考慮前先被剝離（預設為 `<system-reminder>` ... `</system-reminder>`，另一組帶有 `reminder_markers`），而剝離後若 turn 變成空白，會被跳過而不是佔用一個名額。設定 `classifier_context_include_assistant_turns` 以同時包含 assistant turns；請參見下方的 [context window 中的 assistant turns](#assistant-turns-in-the-context-window)。其文字等於正在分類的 ask 的 turn 會被排除，因此該 ask 絕不會被引用兩次。前序 turns 會依最舊到最新送出並標記為 `[1]`、`[2]`、`[3]`，而在字元限制處被截斷的 turn 會在尾端加上 `...`，讓 classifier 能辨識它已被裁切。只要存在前序對話，也會一併包含單一深度行（`Conversation so far: ~N tokens across the request`）。那個 trajectory 計數是對請求上每則訊息文字內容所做的每個 token 約 4 個字元的粗略估算，不是 tokenizer 計數，也不限於視窗內的 turns，因此它較像是深度訊號，而不是可計費數字
 
-On the LLM path, the system role carries the operator's rubric, while caller-supplied context is quoted in the user turn. JEV sends this classification context as `state` with the instructions on the Choice question. A three-turn conversation on the LLM path produces:
+在 LLM 路徑上，system role 會承載操作者的評分準則，而呼叫端提供的 context 則會引用在 user turn 中。JEV 會將此分類 context 作為 `state`，並把指示放在 Choice question 上。LLM 路徑上的三輪對話會產生：
 
 ```
 system: <rubric, operator-authored, identical on every request>
@@ -374,13 +374,13 @@ user:   Caller system prompt, quoted as task context:
         now do the same for the streaming path
 ```
 
-Set `classifier_context_window_size: 0` to disable prior-turn context and the depth line. The current ask and extracted system text remain outside the prior-turn budget, except that recognized Claude Code harness system text is omitted. Raise `classifier_context_budget_chars` or an explicit per-turn cap if relevant context is clipped. These context controls also apply to JEV. Keyword matching still reads the human ask, and the heuristic scorer does not use this prior-turn window
+設定 `classifier_context_window_size: 0` 可停用前序 turn context 與深度行。目前的 ask 與擷取出的 system 文字仍然不計入前序 turn 預算，唯獨辨識出的 Claude Code harness system 文字會被省略。若相關 context 被截斷，請提高 `classifier_context_budget_chars` 或明確的每 turn 上限。這些 context 控制也適用於 JEV。keyword 比對仍然會讀 human ask，而 heuristic scorer 不使用這個前序 turn 視窗
 
-Note that `session_affinity` skips reclassification after a session's first turn, so on a router that turns it on the context window only comes into play on turn one, or on requests where no `session_id` is resolvable from metadata. It is off by default, so by default every turn is classified and the window applies throughout.
+請注意，`session_affinity` 會在 session 的第一個 turn 之後跳過重新分類，因此在啟用它的 router 上，context window 只會在第一輪發揮作用，或是在沒有可由 metadata 解析出 `session_id` 的請求上發揮作用。它預設為關閉，因此預設每個 turn 都會被分類，而視窗會貫穿整個過程。
 
-### Assistant turns in the context window
+### 上下文視窗中的助理回合 {#assistant-turns-in-the-context-window}
 
-`classifier_context_include_assistant_turns` is off by default and puts the model's own replies in the window. It exists for the conversation where difficulty is stated by the assistant rather than by the user: the assistant answers "here is the plan, it is complex, should I execute?", the user answers "yes", and with user turns alone the router rates the word "yes" and picks the cheapest tier. With it on, the classifier rates the work the current message approves, judged in the conversation it continues.
+`classifier_context_include_assistant_turns` 預設為關閉，並會把模型自身的回覆納入視窗。它是為了這種對話而存在：難度是由 assistant 而不是 user 說明的情況。assistant 回答「here is the plan, it is complex, should I execute?」，user 回答「yes」，而只看 user turns 時，router 會評分「yes」這個字並選擇最便宜的 tier。啟用後，classifier 會評分目前訊息所核准的工作，並以其延續的對話脈絡來判定。
 
 ```yaml
 classifier_type: llm
@@ -391,54 +391,54 @@ classifier_context_window_size: 3
 classifier_context_per_turn_chars: 200
 ```
 
-Enabling it changes what `classifier_context_window_size` counts: the last N turns of the conversation across both roles rather than the last N user turns, so budget accordingly if a chatty exchange should still carry several user asks. Turns are labeled by role in the payload only when this is on, which keeps the prompt of every existing deployment unchanged. Assistant replies share `classifier_context_per_turn_chars` with user turns, so raise it if replies truncate before the part that states the difficulty.
+啟用它會改變 `classifier_context_window_size` 的計算方式：計算的是對話中兩種角色合計的最後 N 個 turns，而不是最後 N 個 user turns，因此如果一段很多話的互動仍應包含數個 user ask，請相應調整預算。只有在啟用此功能時，turn 才會在 payload 中以角色標示，這可保持每個既有 deployment 的 prompt 不變。assistant 回覆與 user turns 共用 `classifier_context_per_turn_chars`，因此若回覆在說明難度的那一段之前就被截斷，請提高此值。
 
-It ships off by default for two reasons: turning it on shifts tier decisions, and therefore spend, on an already-deployed router, and assistant text becomes net-new egress to the classifier deployment, which may be a different provider than the routed model. Assistant text reaches the classifier payload and nothing else; `keyword_tier_rules`, escalation keywords, the heuristic scorer, and semantic matching still read only the human ask, so an assistant echoing an escalation keyword back cannot pick the tier.
+它預設關閉有兩個原因：啟用後會在已部署的 router 上改變 tier 決策，進而影響支出；而且 assistant 文字會成為傳送到 classifier deployment 的全新 egress，該 deployment 可能與被路由的模型屬於不同提供者。assistant 文字只會進入 classifier payload，其他內容不會；`keyword_tier_rules`、升級關鍵字、heuristic scorer 與語義比對仍然只讀 human ask，因此 assistant 就算把升級關鍵字回音回來，也無法決定 tier。
 
-## Tier pools
+## 層級集區 {#tier-pools}
 
-A tier value can be a single model name or a list.
+tier 值可以是單一 model 名稱或清單。
 
-- **Single string:** pins the tier to one model.
-- **List:** router random-picks per request (uniform), same idea as simple-shuffle. Empty pools raise at config load rather than falling through to `default_model`.
-- **List + `adaptive: true`:** Thompson-sample across the pool. Cold requests sample only inside the classified tier so cost weights do not collapse initial traffic on the cheapest model. Models configured in multiple tiers use their minimum distance from the classified tier. Feedback from a later turn attributes back to the model that actually served the previous response.
+- **單一字串：** 將 tier 固定到某一個 model。
+- **清單：** router 會對每個請求隨機選取（均勻），概念與 simple-shuffle 相同。空的 pool 會在設定載入時直接報錯，而不是落到 `default_model`。
+- **清單 + `adaptive: true`：** 在整個 pool 中使用 Thompson sampling。冷啟動請求只會在被分類的 tier 內取樣，因此成本權重不會把初始流量完全壓到最便宜的 model 上。跨多個 tier 設定的 models，會使用它們相對於被分類 tier 的最小距離。後續 turn 的回饋會歸因回實際提供前一個回應的 model。
 
-## Session affinity
+## 工作階段黏著性 {#session-affinity}
 
-Off by default: every turn is classified on its own merits, so each one lands on the cheapest tier adequate for it.
+預設關閉：每個 turn 都會依自身條件獨立分類，因此每個 turn 都會落到對它而言足夠且最便宜的 tier。
 
-Set `session_affinity: true` to pin the first-turn model for a session and skip reclassification on later turns. Turning it on buys two things. Provider-side prompt caches keyed to that model stop getting invalidated when a follow-up ("thanks!") would otherwise classify into a different tier. And a multi-turn session stays on a single model, which avoids provider errors when conversation history produced by one model (for example an Anthropic `thinking` block) is replayed to a different model on a later turn.
+設定 `session_affinity: true` 可將 session 的第一個 turn model 鎖定，並在後續 turns 跳過重新分類。啟用它有兩個好處。以該 model 為鍵的提供者端 prompt cache，當原本會在 follow-up（「thanks!」）時分類到不同 tier 時，就不會再被失效。另一方面，多輪 session 會維持在單一 model 上，避免當某個 model 產生的對話歷史（例如 Anthropic 的 `thinking` block）在之後的 turn 被重播到另一個 model 時發生提供者錯誤。
 
-The trade is that the whole session inherits the first turn's tier. A conversation that opens with one hard question then continues with simple follow-ups keeps paying the expensive tier for all of them.
+代價是整個 session 都會繼承第一輪的 tier。若一段對話一開始是高難度問題，之後接著簡單 follow-up，這些 follow-up 仍會持續按昂貴 tier 計費。
 
 ```yaml
 session_affinity: true          # default false; set true to pin a session to its first-turn model
 session_affinity_ttl_seconds: 3600
 ```
 
-`session_id` is read from request metadata; when no `session_id` is resolvable the router classifies every turn as usual, whatever this is set to. When `adaptive: true` is also set, a pinned turn still stamps the adaptive bandit's chosen-model metadata key so reward feedback keeps working. `session_affinity` is ignored when routing `plugins` are configured, so a mid-session policy change still applies on later turns rather than being skipped by a cached pin. That is routing `plugins` specifically; a `classifier_plugin` picks the tier on the turns that are classified and leaves the pin in place.
+`session_id` 會從 request metadata 讀取；當沒有可解析出的 `session_id` 時，無論此項設定為何，router 都會照常將每個 turn 分類。當 `adaptive: true` 也有設定時，被鎖定的 turn 仍會寫入 adaptive bandit 所選模型的 metadata key，讓獎勵回饋持續運作。當路由 `plugins` 已設定時，`session_affinity` 會被忽略，因此 session 中途的政策變更仍會套用到後續 turns，而不會因為快取的鎖定而被跳過。那是專指路由 `plugins`；一個 `classifier_plugin` 會在被分類的那些 turns 上選擇 tier，並保留鎖定不變。
 
-:::info[Changed default]
+:::info[預設值已變更]
 
-`session_affinity` used to default to `true`. Routers created before that changed have no `session_affinity` key stored, so they pick up the new `false` default and start reclassifying every turn. Add `session_affinity: true` to any router that should keep pinning.
+`session_affinity` 原本預設為 `true`。在該變更之前建立的路由器沒有儲存 `session_affinity` 金鑰，因此它們會沿用新的 `false` 預設值，並開始重新分類每一回合。將 `session_affinity: true` 加到任何應該維持固定指派的路由器上。
 
 :::
 
-### Session affinity pins the model name
+### 工作階段黏著性固定模型名稱 {#session-affinity-pins-the-model-name}
 
-The pin the complexity router stores is the **model name** it routed to, cached under `complexity_router_session_affinity:v1:<router name>:<key hash>:<session_id>` for `session_affinity_ttl_seconds`. The TTL is refreshed on cache hits, and an escalation request can move the pin up a tier. Deployment selection then runs as usual underneath that name. If the tier entry names a model group fanned across several deployments (two Bedrock regions, Vertex plus the first-party Anthropic API, a pair of Azure resources), the session stays on one model and still spreads across those deployments, and each provider-side prefix cache sees a fraction of the session's turns. On a coding-agent workload, where the cache prefix is most of the request, that is the difference between reading a warm prefix and writing it again
+複雜度路由器儲存的固定值是它路由到的**模型名稱**，會依 `complexity_router_session_affinity:v1:<router name>:<key hash>:<session_id>` 快取，用於 `session_affinity_ttl_seconds`。TTL 會在快取命中時重新整理，而升級請求可以將固定值升上一個層級。之後，部署選擇會像往常一樣在該名稱底下執行。如果該層級條目命名的是一個跨多個部署分發的模型群組（兩個 Bedrock 區域、Vertex 加上第一方 Anthropic API、兩個 Azure 資源），該會話仍會停留在同一個模型上，並且仍會分散到那些部署上，而每個提供者端前綴快取只會看到該會話一部分的回合。在編碼代理程式工作負載上，由於快取前綴佔請求的大部分，這就是讀取一個熱前綴與再次寫入它之間的差異
 
-`DeploymentAffinityCheck` is the piece that closes it. It pins a concrete deployment id (`model_info.id`) rather than a model name, and it exists for exactly this implicit prompt-caching case. It is a separate Router pre-call check, enabled independently of anything on the router alias, and it takes two flags worth knowing apart:
+`DeploymentAffinityCheck` 是完成這件事的部分。它固定的是一個具體的部署 id（`model_info.id`），而不是模型名稱，且它正是為這種隱式提示詞快取情境而存在。它是 Router 的一個前置請求檢查，獨立於路由器別名上的任何設定啟用，並且有兩個值得分開理解的旗標：
 
-| `optional_pre_call_checks` entry | Pins the deployment by |
+| `optional_pre_call_checks` 條目 | 依據以下項目固定部署 |
 | ------------------------------- | ---------------------- |
-| `deployment_affinity`           | the caller's key hash (`metadata.user_api_key_hash`) |
-| `session_affinity`              | `session_id` from request metadata |
-| `responses_api_deployment_check` | `previous_response_id`, which wins over both above |
+| `deployment_affinity`           | 呼叫者的金鑰雜湊（`metadata.user_api_key_hash`） |
+| `session_affinity`              | 來自請求中繼資料的 `session_id` |
+| `responses_api_deployment_check` | `previous_response_id`，其優先於上述兩者 |
 
-The `session_affinity` string in `optional_pre_call_checks` is a different setting from `session_affinity` inside `complexity_router_config`, despite the shared name. The first pins a deployment id under a Router pre-call check; the second pins a model name and skips reclassification. Both are worth having on an agent workload. `deployment_affinity_ttl_seconds` (default `3600`) is the TTL for the deployment pin, and it lives in `router_settings`, not on the router alias
+`session_affinity` 字串在 `optional_pre_call_checks` 中，與 `session_affinity` 內的 `complexity_router_config` 是不同的設定，儘管名稱相同。前者在 Router 前置請求檢查下固定一個部署 id；後者固定一個模型名稱並略過重新分類。兩者對代理程式工作負載都很值得設定。`deployment_affinity_ttl_seconds`（預設為 `3600`）是部署固定值的 TTL，且它位於 `router_settings` 中，而不是路由器別名上
 
-Recommended shape for a coding-agent workload, pinning the tier for the session and the deployment behind it:
+建議的編碼代理程式工作負載形態：固定會話的層級及其背後的部署：
 
 ```yaml
 model_list:
@@ -481,19 +481,19 @@ router_settings:
   deployment_affinity_ttl_seconds: 3600
 ```
 
-The third entry, `prompt_caching`, enables `PromptCachingDeploymentCheck`, which is prefix-driven rather than session-driven: after a successful completion it records the deployment that served the prompt keyed on the cacheable prefix (everything up to and including the last `cache_control` checkpoint), and sends the next request carrying that same prefix back to the same deployment. It only looks when the prompt clears the model's minimum cacheable token count, and it helps callers that send no `session_id` and no stable key, so it complements the two affinity pins rather than replacing either
+第三個條目，`prompt_caching`，會啟用 `PromptCachingDeploymentCheck`，其依據的是前綴而非會話：在一次成功的 completion 之後，它會記錄服務該提示詞的部署，並以可快取前綴（直到並包含最後一個 `cache_control` 檢查點為止的所有內容）作為索引，然後將下一個帶有相同前綴的請求送回同一個部署。它只會在提示詞通過模型的最小可快取 token 數時才會查看，並且有助於那些不送出 `session_id` 且沒有穩定金鑰的呼叫者，因此它是補充這兩個親和性固定值，而不是取代其中任何一個
 
-## Custom technical keywords
+## 自訂技術關鍵字 {#custom-technical-keywords}
 
-The built-in technical keyword list is generic; it contains "tcp" but not "udp", "api" but not "kafka" or "postgresql". `custom_technical_keywords` appends to the built-in list instead of replacing it.
+內建的技術關鍵字清單是通用的；它包含「tcp」，但不包含「udp」、「api」但不包含「kafka」或「postgresql」。`custom_technical_keywords` 會附加到內建清單，而不是取代它。
 
 ```yaml
 custom_technical_keywords: [kafka, redis, postgresql, mongodb, udp, dns, ssl, ssh]
 ```
 
-## Decision log
+## 決策記錄 {#decision-log}
 
-Every routing decision emits one greppable line naming its cause. `cause=` is greppable by decision type in your log pipeline.
+每個路由決策都會輸出一行可 grep 的記錄，說明其原因。`cause=` 可以依決策類型在您的記錄管線中以 grep 搜尋。
 
 ```
 ComplexityRouter: routing decision cause=complexity_scorer,      tier=SIMPLE,     score=-0.150, signals=['short (7 tokens)', 'simple (what is)'], routed_model={{openai_small}}
@@ -504,11 +504,11 @@ ComplexityRouter: routing decision cause=classifier_plugin,      tier=REASONING,
 ComplexityRouter: routing decision cause=session_affinity_pin,                                                                                      routed_model={{openai_large}}
 ```
 
-## Reading the picked model from the response
+## 從回應讀取所選模型 {#reading-the-picked-model-from-the-response}
 
-By default the response body `model` field stays the alias you called (`smart-router`), matching the OpenAI convention that a client gets back the model name it asked for, and the tier that actually answered is reachable only through the [`x-litellm-model-id` response header](./response_headers.md#litellm-specific-headers). Clients that cannot read response headers, including framework wrappers and streaming consumers that only see body chunks, need the value in the body.
+預設情況下，回應本文的 `model` 欄位會維持您呼叫時使用的別名（`smart-router`），符合 OpenAI 慣例：用戶端會收到它所要求的模型名稱，而實際回應的層級只能透過 [`x-litellm-model-id` 回應標頭](./response_headers.md#litellm-specific-headers) 取得。無法讀取回應標頭的用戶端，包括框架包裝器以及只能看到串流區塊的串流消費者，都需要本文中的值。
 
-Set `return_raw_model_name` on the router to put it there. The proxy then skips the restamp and leaves the resolved model in `model`, on the non-streaming response and on every streaming chunk:
+在路由器上設定 `return_raw_model_name` 即可把它放到那裡。之後，proxy 會跳過重新覆寫，並將已解析的模型保留在 `model` 中，無論是非串流回應還是每個串流區塊：
 
 ```yaml
 - model_name: smart-router
@@ -521,9 +521,9 @@ Set `return_raw_model_name` on the router to put it there. The proxy then skips 
       return_raw_model_name: true   # default false
 ```
 
-The same switch is on the auto router tab in the UI, as "Return raw model name".
+UI 中 auto router 分頁上的同一個切換項目，名稱是「Return raw model name」。
 
-Non-streaming:
+非串流：
 
 ```json
 {
@@ -533,7 +533,7 @@ Non-streaming:
 }
 ```
 
-Streaming, on every SSE chunk rather than only the first or the last:
+串流時，會套用到每個 SSE 區塊，而不只是第一個或最後一個：
 
 ```
 data: {"id":"chatcmpl-abc123","model":"{{openai_large}}","choices":[{"delta":{"content":"The"},"...":"..."}]}
@@ -541,19 +541,19 @@ data: {"id":"chatcmpl-abc123","model":"{{openai_large}}","choices":[{"delta":{"c
 data: {"id":"chatcmpl-abc123","model":"{{openai_large}}","choices":[{"delta":{"content":" sum"},"...":"..."}]}
 ```
 
-Because `model` is a standard OpenAI response field, every SDK and framework already carries it through to application code; nothing needs to read raw chunks. In LangChain it arrives as `response_metadata.model_name`, on the final chunk when streaming.
+由於 `model` 是標準的 OpenAI 回應欄位，因此每個 SDK 和框架都已經會將它傳遞到應用程式程式碼；不需要讀取原始區塊。在 LangChain 中，串流時它會以 `response_metadata.model_name` 的形式出現在最後一個區塊上。
 
-Two things change once the flag is on. Callers stop getting back the alias they sent, which some clients assert on. And the value is the resolved model as the deployment reports it, so a provider-prefixed identifier such as `hosted_vllm/my-model` reaches the client verbatim rather than the `model_list` `model_name` that the [decision log](#decision-log) prints as `routed_model=`.
+一旦啟用這個旗標，就會有兩件事改變。呼叫者不再拿回自己送出的別名，而有些用戶端會對此做斷言。而且該值會是部署回報的已解析模型，因此像 `hosted_vllm/my-model` 這樣的提供者前綴識別碼，會原封不動送到用戶端，而不是 [決策記錄](#decision-log) 列印為 `routed_model=` 的 `model_list` `model_name`。
 
-:::info[No dedicated body field]
+:::info[沒有專用的本文欄位]
 
-The v1.99 release candidates briefly carried a separate `router_model_name` body field for this ([PR #37725](https://github.com/BerriAI/litellm/pull/37725)), added with LangChain callers in mind. It never reached them: `@langchain/openai` builds `additional_kwargs` and `response_metadata` from fixed key allowlists and drops unknown fields at both the top level of a chunk and inside `delta`, so no proxy-side placement of a namespaced key could work. The field was removed before the stable release in favor of `return_raw_model_name`, which lands in the `model` field that LangChain does propagate.
+v1.99 發行候選版曾短暫包含一個獨立的 `router_model_name` 本文欄位，用於此用途（[PR #37725](https://github.com/BerriAI/litellm/pull/37725)），並以 LangChain 呼叫者為設計考量。但它從未真正傳遞到他們那裡：`@langchain/openai` 建構會根據固定的金鑰允許清單建立 `additional_kwargs` 和 `response_metadata`，並在區塊頂層與 `delta` 內部都捨棄未知欄位，因此在 proxy 端放置命名空間金鑰都不可能奏效。該欄位在穩定版發行前已移除，改為使用 `return_raw_model_name`，其會落在 LangChain 會轉傳的 `model` 欄位中。
 
 :::
 
-## Reported savings
+## 回報的節省 {#reported-savings}
 
-Every auto-routed request records what routing saved against a counterfactual: the one model the traffic would have run on without a router, net of what the routing decision itself cost
+每個自動路由的請求都會記錄一項與反事實比較的節省量：若沒有路由器，流量原本會在哪一個模型上執行，扣除路由決策本身的成本後
 
 ```text
 savings = cost(baseline model, this request)
@@ -561,47 +561,47 @@ savings = cost(baseline model, this request)
         - cost(the classifier call that routed it)
 ```
 
-- **The baseline is derived, not configured.** Without a router a deployment has to pick one model able to carry the hardest request it will see, so the baseline is the most expensive model in the hardest tier the router configures. Hardest *configured*, so a router defining only `SIMPLE` and `MEDIUM` is measured against the best it could actually have picked. A tier naming a pool contributes every model in it, and self-defined tier labels carry no severity order, so there every model across every tier competes
-- **"Most expensive" is settled by cost, not by rate**, since a model dearer per output token can be cheaper per cached token. Candidates are priced once against a fixed reference request (20k prompt tokens: 19k cache reads and a 1k cache write, plus 1k completion) through the same engine the savings use. Unpriceable candidates drop out, and if none price the driver reports zero. The ranking is pinned per router instance, so it stays off the per-request path
-- **Only one side is hypothetical.** What the request actually cost is read back from what the cost calculator recorded, on the service tier and data residency it was billed on, rather than re-derived; the baseline never ran, so it is priced through the same engine on that same basis. That figure is input plus output cost, leaving built-in tool cost, discounts and margins outside the comparison
-- **The result is signed.** Switching models leaves the new one cold, and when the resulting cache-creation charge outweighs the cheaper rates the number goes negative and the dashboard says so
-- **The classifier's own charge counts against the saving** (v1.100 and later). An LLM classifier records what its call cost on the routing decision as `classifier_cost`, and the reported figure is net of it, so the number is what routing earned after paying for the decision. A decision the heuristic made on its own records no charge, and nothing is deducted there
-- **Zero savings retains both costs.** For supported native Anthropic requests, complete observed usage establishes equal model costs while the recorded session has used the exact baseline deployment at the same prices, including overlapping requests. Both costs remain nonzero when the request was billable. A recorded classifier charge still counts against savings. After routing diverges, returning to the same model requires cache-history evidence; model identity alone does not establish zero savings. Missing pricing or evidence produces an unavailable estimate
+- **基準值是推導出來的，不是設定的。** 沒有路由器時，一個部署必須選擇一個能處理它將看到的最困難請求的模型，因此基準值就是路由器設定的最困難層級中最昂貴的模型。最困難是指 *已設定*，因此只定義 `SIMPLE` 和 `MEDIUM` 的路由器，會以其實際能選到的最佳項目作為衡量基準。命名為模型池的層級會貢獻其中每一個模型，而自定義層級標籤不帶嚴重程度順序，因此在那裡每個層級中的每個模型都會競爭
+- **「最昂貴」由成本決定，而不是由費率決定**，因為每輸出 token 更貴的模型，可能每個快取 token 反而更便宜。候選項會透過相同的引擎，以固定參考請求（20k 提示詞 tokens：19k 快取讀取與 1k 快取寫入，加上 1k completion）計價一次，該引擎也用於節省量。無法計價的候選項會被排除，若沒有任何項目可計價，驅動程式會回報零。排序會釘選在每個路由器執行個體上，因此它不會走在每請求路徑上
+- **只有一側是反事實。** 該請求實際花費多少，是從成本計算器記錄回來的結果讀取，而不是重新推導；基準值從未執行過，因此它會以相同基礎透過同一個引擎計價。該數字是輸入加上輸出成本，因此把內建工具成本、折扣與利潤排除在比較之外
+- **結果可為負。** 切換模型會讓新模型維持冷態，而當因此產生的快取建立費用大於較便宜的費率時，數字就會變成負值，儀表板也會顯示如此
+- **分類器本身的費用會計入節省量**（v1.100 及之後）。LLM 分類器會將其在路由決策上的呼叫成本記錄為 `classifier_cost`，而回報的數值會扣除它，因此該數字是路由在支付決策成本之後所賺到的量。由啟發式自行做出的決策不會記錄任何費用，且那裡不會扣除任何東西
+- **零節省會保留兩項成本。** 對於支援的原生 Anthropic 請求，完整觀察到的使用情況會建立相等的模型成本，而已記錄的會話則已使用完全相同、以相同價格計算的基準部署，包括重疊請求。當請求可計費時，兩項成本都維持非零。已記錄的分類器費用仍會計入節省量。在路由分歧之後，要回到相同模型需要快取歷史證據；僅靠模型身份無法建立零節省。缺少定價或證據會產生不可用的估算
 
-### Cache-prefix history and expiry {#the-baseline-is-priced-with-a-warm-cache}
+### 快取前綴歷史與到期 {#the-baseline-is-priced-with-a-warm-cache}
 
-For supported native Anthropic `/v1/messages` requests, a baseline cache read requires a matching prefix that was available when the request started and remained within its five-minute or one-hour TTL. A prefix known to have expired is charged as a write. Requests served by cheaper models advance the hypothetical baseline history too. An assistant message alone does not establish a cache hit
+對於受支援的原生 Anthropic `/v1/messages` 請求，基準快取讀取需要在請求開始時可用、且在五分鐘或一小時 TTL 內仍然存在的相符前綴。已知已過期的前綴會以寫入計費。由較便宜模型處理的請求也會推進假設性的基準歷史。單獨的 assistant 訊息本身不會建立快取命中
 
-Use a stable session ID, a configured proxy database and enabled spend logging. Accounting runs after inference and replays recorded observations in request-start order. Late observations can temporarily withdraw affected estimates while request, session and daily totals are corrected. Actual billed spend remains recorded throughout
+請使用穩定的 session ID、已設定的 proxy 資料庫，以及已啟用的支出記錄。帳務會在推論之後執行，並依請求開始順序重放已記錄的觀測值。較晚的觀測值可能會暫時撤回受影響的估算，直到請求、session 與每日總計完成修正。實際的已計費支出會在整個過程中持續記錄
 
-Baseline token counting requires the same endpoint and API key as the served request. An Anthropic-compatible gateway must support native counting for every required prefix, including system or tools without messages. Missing or timed-out counts produce unknown estimates; a local tokenizer or invented message cannot establish a cache hit
+基準 token 計數需要與已提供服務的請求相同的 endpoint 和 API key。相容 Anthropic 的閘道必須為每個必要的前綴支援原生計數，包括沒有訊息的 system 或 tools。缺少或逾時的計數會產生未知估算；本機 tokenizer 或虛構訊息無法建立快取命中
 
-The comparison holds recorded prompts, output usage and request timing fixed. It does not predict alternate model responses, provider evictions or unrecorded traffic. Legacy sessions do not become new baseline-identical sessions merely because their recorded history is unavailable. Inactive session history is pruned according to session retention, and reusing a retired session ID does not establish another initial estimate
+此比較會將已記錄的 prompts、輸出用量與請求時間固定不變。它不會預測其他模型回應、提供者淘汰或未記錄的流量。舊版 session 不會僅因其已記錄歷史不可用，就變成新的、與基準完全相同的 session。非作用中的 session 歷史會依據 session 保留政策被清除，而重用已退役的 session ID 不會建立另一個初始估算
 
-Some Claude Code beta headers and `context_management` shapes remain unsupported for modeled cache accounting. Initial baseline-identical requests can still use complete observed usage. Support after switching models depends on the actual request shape and available prefix counts
+某些 Claude Code beta 標頭與 `context_management` 形狀在模型化的快取帳務中仍不受支援。初始的基準完全相同請求仍可使用完整的已觀測用量。切換模型後的支援情況取決於實際的請求形狀與可用的前綴計數
 
-### Estimate coverage
+### 估算涵蓋範圍 {#estimate-coverage}
 
-The dashboard compares baseline and routed costs over the same estimated turns, including turns with numeric zero savings. It shows how many turns have estimates alongside total actual spend. Unknown and pending turns contribute to neither comparison cost, while their actual spend remains in the total. Existing session-status clients receive no baseline total when coverage is partial
+儀表板會比較相同估算 turns 上的基準與路由成本，包括節省為數字零的 turns。它會顯示有多少 turns 具有估算，以及總實際支出。未知與待處理的 turns 不會計入任何一側的比較成本，而其實際支出仍會保留在總計中。當涵蓋範圍部分不足時，既有的 session-status 用戶端不會收到基準總計
 
-For example, a baseline-identical request costing $0.10 has $0.10 baseline cost, $0.10 routed model cost and $0 model savings. If the next turn has unavailable cache history, its billed spend is still recorded but it is excluded from both sides of the savings comparison
+例如，一個花費 $0.10 的基準完全相同請求，其基準成本為 $0.10、路由模型成本為 $0.10，而模型節省為 $0。如果下一個 turn 的快取歷史不可用，則其已計費支出仍會被記錄，但會從節省比較的兩側排除
 
-### Where it shows up
+### 顯示位置 {#where-it-shows-up}
 
-- **Usage**, normalized from each provider's own shape: `cache_read_input_tokens` and `cache_creation_input_tokens` on the Anthropic surface, `prompt_tokens_details.cached_tokens` on the OpenAI-compatible surface, plus DeepSeek's `prompt_cache_hit_tokens`
-- **Daily rollups**: `cache_read_input_tokens` and `cache_creation_input_tokens` columns alongside `autorouter_savings_spend`, on `LiteLLM_DailyUserSpend`, `LiteLLM_DailyTeamSpend`, `LiteLLM_DailyTagSpend`, `LiteLLM_DailyOrganizationSpend`, `LiteLLM_DailyEndUserSpend` and `LiteLLM_DailyAgentSpend`
-- **API**: `GET /user/daily/activity` returns them under `metrics`, with a `total_autorouter_savings_spend` in the response metadata
-- **UI**: the **Cost Optimization** page reads that endpoint, where the number is labeled "Auto-router savings". Its Auto-Router Benchmarks tab folds each turn's `classifier_cost` into that turn's spend, so the savings percentage there is net savings measured against the full baseline cost
+- **用量**，依各提供者自身的形狀標準化：Anthropic 表面上的 `cache_read_input_tokens` 與 `cache_creation_input_tokens`、OpenAI 相容表面上的 `prompt_tokens_details.cached_tokens`，以及 DeepSeek 的 `prompt_cache_hit_tokens`
+- **每日彙總**：`cache_read_input_tokens` 與 `cache_creation_input_tokens` 欄位，以及 `autorouter_savings_spend`，位於 `LiteLLM_DailyUserSpend`、`LiteLLM_DailyTeamSpend`、`LiteLLM_DailyTagSpend`、`LiteLLM_DailyOrganizationSpend`、`LiteLLM_DailyEndUserSpend` 和 `LiteLLM_DailyAgentSpend` 上
+- **API**：`GET /user/daily/activity` 會在 `metrics` 下回傳它們，並在回應中繼資料中提供 `total_autorouter_savings_spend`
+- **UI**：**Cost Optimization** 頁面會讀取該 endpoint，其中該數值標示為「Auto-router savings」。其 Auto-Router Benchmarks 分頁會將每個 turn 的 `classifier_cost` 納入該 turn 的支出，因此那裡的節省百分比是相對於完整基準成本量測的淨節省
 
 :::note
 
-`LiteLLM_SpendLogs` has no cache-token or savings columns, so the split is not queryable there; the daily rollup above is. The usage carrying that split does ride in the row's `metadata` under `usage_object`, which is what the daily savings writer reads back to rebuild `Usage`. Its `cache_hit` and `cache_key` columns are unrelated, describing LiteLLM's own response cache rather than provider-side prompt caching. Routing itself persists as `routing_decision` in metadata: `routed_model`, `cause` and `conversation_continuing` always, `tier` when a tier was determined, `classifier_cost` when the LLM classifier ran, and the derived baseline alongside the deployment it resolved to. The net figure is stamped on that metadata as `autorouter_savings`. The versioned `autorouter_savings_estimate` records comparison identity, provenance, status, reason and both comparison costs. Readers use the recorded estimate and its coverage
+`LiteLLM_SpendLogs` 沒有 cache-token 或 savings 欄位，因此無法在那裡查詢拆分；上方的每日彙總可以。承載該拆分的用量確實會隨列中的 `metadata` 一起位於 `usage_object` 之下，而每日節省寫入器正是讀回這些資料以重建 `Usage`。其 `cache_hit` 與 `cache_key` 欄位無關，它們描述的是 LiteLLM 自己的回應快取，而不是提供者端的提示快取。路由本身會以中繼資料中的 `routing_decision` 持久保存：`routed_model`、`cause` 與 `conversation_continuing` 一律如此，當已決定 tier 時則為 `tier`，當 LLM 分類器執行時則為 `classifier_cost`，以及其所解析到的部署旁的衍生基準。淨值會以 `autorouter_savings` 的形式標記在該中繼資料上。版本化的 `autorouter_savings_estimate` 會記錄比較身分、來源、狀態、原因以及兩個比較成本。讀者會使用已記錄的估算及其涵蓋範圍
 
 :::
 
-## Alias `litellm_params` on the router
+## 閘道路由器上的別名 `litellm_params` {#alias-litellm_params-on-the-router}
 
-`drop_params`, `cache_control_injection_points`, and any other `litellm_params` set on the auto router deployment itself are merged into the outbound request when the router picks a tier. Values the caller passes explicitly on a request win over the alias defaults.
+`drop_params`、`cache_control_injection_points`，以及設定在 auto router 部署本身上的任何其他 `litellm_params`，在 router 選取 tier 時都會合併到對外請求中。呼叫端在請求上明確傳入的值會優先於別名預設值。
 
 ```yaml
 - model_name: smart-router
@@ -614,9 +614,9 @@ For example, a baseline-identical request costing $0.10 has $0.10 baseline cost,
     complexity_router_config: {...}
 ```
 
-## Compression
+## 壓縮 {#compression}
 
-From v1.101.0 an auto router can name a compression guardrail for each of the two hops a routed request makes: the classifier call that decides the tier, and the call to the model it routes to. Both fields sit on the marker's `litellm_params` next to `complexity_router_default_model`, take the name of a [Headroom](./headroom.md) or [Compresr](./guardrails/compresr.md) guardrail, and accept `none`, case-insensitive, for a hop that should not be compressed at all.
+從 v1.101.0 起，auto router 可為路由請求所經過的兩個 hop 各自指定一個壓縮防護欄：決定 tier 的 classifier 呼叫，以及路由到的模型呼叫。這兩個欄位都位於 marker 的 `litellm_params`，旁邊是 `complexity_router_default_model`，可接受 [Headroom](./headroom.md) 或 [Compresr](./guardrails/compresr.md) 防護欄的名稱，並接受不區分大小寫的 `none`，表示該 hop 完全不應壓縮。
 
 ```yaml title="config.yaml"
 - model_name: smart-router
@@ -627,17 +627,17 @@ From v1.101.0 an auto router can name a compression guardrail for each of the tw
     auto_router_model_compression: none
 ```
 
-Leaving both unset preserves what every existing router does today: a single compression pass, whichever one the key, team, or request already selected, feeding both hops. Setting either field makes the router authoritative for the requests it serves instead, and every other compression guardrail is suppressed for them, including one marked `default_on` and one the caller named in the request body. Ordinary deployments on the same proxy are untouched. Naming the same guardrail on both hops runs it once and reuses the result rather than compressing the same text twice.
+兩者都不設定時，會保留目前每個既有 router 的行為：單一壓縮流程，不論是 key、team 或請求先前選定的哪一個，都會同時餵給兩個 hop。設定任一欄位則會使 router 對其所服務的請求擁有主導權，其他所有壓縮防護欄都會被抑制，包括標記為 `default_on` 的，以及呼叫端在請求本文中指定的防護欄。同一個 proxy 上的其他一般部署不受影響。若兩個 hop 指定相同的防護欄，則只會執行一次並重用結果，而不是將同一段文字壓縮兩次。
 
-A name that does not resolve to an active compression guardrail costs a warning in the proxy logs and an uncompressed hop rather than a failed request. Errors from a guardrail that does resolve still behave as that guardrail is configured to behave, so a compression service that is unreachable and set to fail closed still fails the request before any provider call.
+若名稱無法解析為作用中的壓縮防護欄，會在 proxy 記錄中產生警告，並使該 hop 不經壓縮，而非導致請求失敗。來自可解析防護欄的錯誤仍會依該防護欄的設定方式運作，因此若壓縮服務無法連線且設定為 fail closed，則仍會在任何提供者呼叫之前使請求失敗。
 
-Two things are worth knowing before rolling this out. Compressing the routing hop only saves tokens when the LLM classifier is what runs, since that is the only classifier that sends the text to a model; the heuristic scorers read it locally for free, and the deprecated semantic router embeds only the last user message, which compression leaves alone. And when the two hops name different guardrails, the model hop compresses first, so the classifier reads the model-compressed text rather than the original. Routing deliberately reads the live messages: the only uncompressed copy available is the one taken before the pre-call guardrails run, and handing that to a compression service would ship a masking guardrail's own input to a third party.
+在推出此功能前，有兩件事值得注意。只有在執行 LLM 分類器時，壓縮 routing hop 才能節省 token，因為只有該分類器會將文字送到模型；heuristic scorer 會在本機讀取文字，因此不會產生成本，而已棄用的 semantic router 只會嵌入最後一則 user 訊息，壓縮不會影響它。當兩個 hop 指定不同的防護欄時，會先壓縮 model hop，因此 classifier 讀到的是 model 壓縮後的文字，而不是原始文字。Routing 會刻意讀取即時訊息：唯一可用的未壓縮副本是 pre-call 防護欄執行前取出的那一份，而將其交給壓縮服務會把 masking 防護欄自身的輸入送到第三方。
 
-## Context window
+## 上下文視窗 {#context-window}
 
-An auto router entry is a marker rather than a callable model, so it carries no provider metadata of its own and advertises no context window until you declare one. The number is not derived from the tier models: not the minimum across them, not the maximum, and not the window of `complexity_router_default_model`. Tiers hold model names the proxy resolves at request time, and nothing in the model-info path walks that list. Until you declare a window, `GET /v1/models` omits `max_input_tokens` and `max_output_tokens` for the router entirely, and `/model_group/info` reports `null` for both.
+auto router 項目是 marker，而不是可呼叫的模型，因此本身不帶有 provider 中繼資料，也不會宣告 context window，直到您明確指定為止。此數值不是由 tier 模型推導而來：不是它們之間的最小值，不是最大值，也不是 `complexity_router_default_model` 的 window。tiers 保留的是 proxy 會在請求時解析的模型名稱，而 model-info 流程中的任何東西都不會走訪該清單。在您指定 window 之前，`GET /v1/models` 會完全省略 router 的 `max_input_tokens` 與 `max_output_tokens`，而 `/model_group/info` 會對兩者都回報 `null`。
 
-Declare it in `model_info` on the router entry:
+請在 router 項目的 `model_info` 中宣告它：
 
 ```yaml title="config.yaml"
 - model_name: smart-router
@@ -653,27 +653,27 @@ Declare it in `model_info` on the router entry:
     max_output_tokens: 64000
 ```
 
-Both values then appear on `/v1/models`, `/model/info`, and `/model_group/info`, which is what clients and the LiteLLM UI read. They are advisory. Nothing gates, escalates, or rejects a request against the window declared on the router entry, so pick a number that describes the router honestly to callers; the smallest window a request might land on is the conservative choice, and the largest is the optimistic one.
+之後這兩個值會出現在 `/v1/models`、`/model/info` 與 `/model_group/info` 上，這正是用戶端與 LiteLLM UI 會讀取的內容。它們僅供參考。沒有任何機制會依據 router 項目上宣告的 window 對請求進行門檻控制、升級或拒絕，因此請選擇一個能如實向呼叫端描述 router 的數字；請求可能落到的最小 window 是保守選擇，而最大值則是樂觀選擇。
 
-Where a `model_name` fronts both a router marker and ordinary deployments, `/model_group/info` reports the largest `max_input_tokens` in that group rather than the smallest, since model-group metadata aggregates by maximum across deployments.
+在一個 `model_name` 同時前置 router marker 與一般部署的情況下，`/model_group/info` 會回報該群組中最大的 `max_input_tokens`，而不是最小值，因為 model-group 中繼資料是依各 deployment 的最大值彙總。
 
-:::info[Cost fields read zero on a router entry]
+:::info[Router 項目的成本欄位讀取為零]
 
-`/model_group/info` reports `input_cost_per_token` and `output_cost_per_token` as `0.0` for an auto router, and its `providers` as an empty string, because custom pricing on a strategy alias is deliberately excluded from the cost map. Spend is still tracked against the tier model that served the request, so those zeros are a gap in this metadata view rather than untracked usage.
+`/model_group/info` 會將 `input_cost_per_token` 和 `output_cost_per_token` 報告為 `0.0`，作為自動路由器，且其 `providers` 會作為空字串，因為策略別名上的自訂定價會刻意排除在成本對應表之外。支出仍會根據提供請求的階層模型進行追蹤，因此這些零值只是此中繼資料檢視中的落差，而不是未追蹤的用量。
 
 :::
 
-### What enforces the window
+### 什麼會強制套用此視窗 {#what-enforces-the-window}
 
-Routing resolves first. The router picks a tier, the marker drops out of the candidate pool, and everything after that is ordinary model-group behavior applied to the selected model: deployment selection, cooldowns, tag routing, and context-window pre-call checks against that deployment's own `max_input_tokens`. Enforcement therefore depends on `router_settings.enable_pre_call_checks: true` and on a window being declared or resolvable for the tier deployments, never on the router entry. See [Context Window Fallbacks](./reliability.md#context-window-fallbacks-pre-call-checks--fallbacks).
+路由會先解析。路由器先選出一個階層，標記會從候選池中移除，而之後的一切都會成為套用到所選模型的標準模型群組行為：部署選擇、冷卻時間、標籤路由，以及針對該部署自身 `max_input_tokens` 的上下文視窗請求前檢查。因此，強制執行取決於 `router_settings.enable_pre_call_checks: true`，以及是否已為階層部署宣告或可解析出一個視窗，從不取決於路由器項目。請參閱 [上下文視窗備援](./reliability.md#context-window-fallbacks-pre-call-checks--fallbacks)。
 
-`context_window_fallbacks` are resolved against the tier the router selected first and the name the client called second, so a chain keyed on either `smart-router` or the tier's own model group is honored.
+`context_window_fallbacks` 會先依路由器選定的階層、再依用戶端第二個呼叫的名稱來解析，因此以 `smart-router` 或該階層自身的模型群組為鍵的鏈都會被遵循。
 
-`auto_router_max_input_chars` is unrelated to any of this. It truncates the text handed to the embedding model that matches routes on a semantic router, and defaults to 2000 characters.
+`auto_router_max_input_chars` 與這些都無關。它會截斷傳給與語意路由器上路由相符的嵌入模型的文字，預設為 2000 個字元。
 
-### Context-window escalation
+### 上下文視窗升級 {#context-window-escalation}
 
-From v1.101.0 the complexity router can check whether the decided tier can hold the prompt before dispatch and move the request when it provably cannot. This is off by default, so a router that omits the key dispatches on complexity alone; set `enable_context_window_escalation: true` to turn it on.
+從 v1.101.0 開始，複雜度路由器可在派發前檢查所決定的階層是否能容納提示，若明確無法容納，便將請求移走。此功能預設為關閉，因此省略該鍵的路由器會僅依複雜度派發；設定 `enable_context_window_escalation: true` 即可將其開啟。
 
 ```yaml title="config.yaml"
 complexity_router_config:
@@ -681,19 +681,19 @@ complexity_router_config:
   context_window_escalation_buffer: 0.95   # default
 ```
 
-The estimate covers the whole prompt footprint, including the top-level `system` block, Responses API `instructions`, and serialized tool definitions, which carry most of the payload on coding-agent traffic. A tier model qualifies when the count fits within `context_window_escalation_buffer` of its declared window, so the default keeps 5% of headroom instead of gambling on prompts that land near the limit. Where only some of the tier's models fit, the tier keeps the request and the pick narrows to those; where none fit, the request moves to the lowest higher tier holding a model that provably fits.
+此估算涵蓋整個提示足跡，包括最上層的 `system` 區塊、Responses API `instructions`，以及序列化的工具定義，這些在 coding-agent 流量中承載了大部分負載。當數量落在其宣告視窗的 `context_window_escalation_buffer` 之內時，某個階層模型即符合條件，因此預設會保留 5% 的餘裕，而不是拿接近上限的提示去賭。若只有部分階層模型符合，該階層會保留請求，而選擇會縮小到那些模型；若沒有任何模型符合，請求會移到持有明確可容納模型的下一個較高階層。
 
-Unknown windows are left alone in both directions. A model group with no resolvable window is never escalated away from, because its misfit cannot be proven, and never escalated onto, because its fit cannot be proven either. A group counts as unproven if even one of its deployments lacks a window, since the group is only as safe as its smallest member. When nothing anywhere provably fits, the classified tier stands and the request dispatches, so escalation never raises on its own and never diverts to `complexity_router_default_model`.
+未知視窗在兩個方向都會被忽略。沒有可解析視窗的模型群組永遠不會被升離，因為無法證明它不符合，也永遠不會被升到，因為同樣無法證明它符合。只要某個群組的任一部署缺少視窗，該群組就會被視為未證明，因為群組的安全性只和其中最小的成員一樣高。當任何地方都無法明確符合時，已分類的階層維持不變且請求照常派發，因此升階絕不會自行觸發，也絕不會改派到 `complexity_router_default_model`。
 
-The window escalation reads is `model_info.max_input_tokens` on each tier deployment, falling back to the model cost map. Declaring a window on the router entry has no effect here. Escalated decisions log `context_escalated` alongside the tier the classifier originally picked, and they are never session-pinned, so routing comes back down when the session does.
+視窗升階會在每個階層部署上讀取 `model_info.max_input_tokens`，並回退到模型成本對應表。在路由器項目上宣告視窗在此無效。升階後的決策會將 `context_escalated` 與分類器最初選取的階層一起記錄，而且它們絕不會被工作階段固定，因此當工作階段如此運作時，路由也會隨之回落。
 
-Both keys belong inside `complexity_router_config`. Setting either one level up, directly under `litellm_params`, is rejected at load and on management-endpoint writes rather than silently ignored.
+這兩個鍵都必須放在 `complexity_router_config` 之內。直接在 `litellm_params` 下方更上層設定任一鍵，會在載入時以及管理端點寫入時遭到拒絕，而不是被悄悄忽略。
 
-## Effort ladders
+## 努力階梯 {#effort-ladders}
 
-Switching models is not the only axis a router can climb. Reasoning effort changes how many output tokens a request spends at the same per-token rate, while switching models changes the rate on every token in the request, so climbing effort on a cheap model is often the cheaper next step and worth exhausting before the tier ladder reaches for a frontier model
+切換模型並不是路由器唯一能往上爬升的軸。推理努力度會以相同的每個權杠成本改變請求所花費的輸出 token 數，而切換模型則會改變請求中每個 token 的費率，因此在便宜模型上提升努力度，往往是更便宜的下一步，而且值得在階層梯子伸手去拿前沿模型之前先耗盡。
 
-Nothing new is needed to express that. Declare one `model_list` entry per rung, identical except for the reasoning parameter in its `litellm_params`, and point tiers at those names. When the router returns a tier's model name, that name resolves to its deployment and the deployment's own `litellm_params` are merged into the outbound request, with anything the caller sent explicitly winning over them. A client that sets `reasoning_effort` itself therefore keeps its value, and everyone else gets the rung
+表達這件事不需要任何新內容。為每一級宣告一個 `model_list` 項目，除了其 `litellm_params` 中的推理參數外，其餘皆相同，並將各階層指向那些名稱。當路由器回傳某個階層的模型名稱時，該名稱會解析為其部署，而該部署自身的 `litellm_params` 會合併到外送請求中，且呼叫端明確送出的任何內容都會勝出。因此，設定了 `reasoning_effort` 的用戶端會保留其值，而其他所有人都會取得該級別。
 
 ```yaml
 model_list:
@@ -734,7 +734,7 @@ model_list:
       complexity_router_default_model: {{openai_small}}-high
 ```
 
-Anthropic-family rungs use `thinking` the same way, since it is an ordinary `litellm_params` key:
+Anthropic 系列的級別會以相同方式使用 `thinking`，因為它是一般的 `litellm_params` 鍵：
 
 ```yaml
   - model_name: claude-sonnet-5-thinking
@@ -744,9 +744,9 @@ Anthropic-family rungs use `thinking` the same way, since it is an ordinary `lit
       thinking: {type: enabled, budget_tokens: 8192}
 ```
 
-Effort levels are per-model capabilities, so check the model supports the rung you are asking for: `gpt-5-mini` rejects `xhigh` while `gpt-5.4-mini` accepts it, and `drop_params: true` on the router alias turns that rejection into a silently dropped parameter, which reads as a ladder that changed nothing. Two more things to keep in mind. Cost tracking prices each rung under its underlying model, so a ladder built this way shows up in spend as one model at several effort levels rather than as separate models. And `session_affinity` pins the rung's `model_name`; the TTL is refreshed on cache hits, and an escalation request can move the pin up a tier rather than leaving it on a hard fixed-duration lock
+努力等級是每個模型的能力，因此請確認模型支援您要求的級別：`gpt-5-mini` 會拒絕 `xhigh`，而 `gpt-5.4-mini` 則接受它，若在路由器別名上設定 `drop_params: true`，會把該拒絕變成一個悄然被丟棄的參數，讀起來就像一個什麼都沒改變的階梯。還有兩件事要記住。成本追蹤會依其底層模型為每個級別定價，因此這種方式建構的階梯在支出上會顯示為同一個模型有多個努力等級，而不是多個獨立模型。而 `session_affinity` 會固定該級別的 `model_name`；快取命中時 TTL 會重新整理，而升階請求可能把固定點往上移一個階層，而不是讓它維持在硬性固定期間鎖定
 
-## Python SDK
+## Python SDK {#python-sdk}
 
 ```python
 from litellm import Router
@@ -782,31 +782,31 @@ response = await router.acompletion(
 )
 ```
 
-## UI
+## UI {#ui}
 
-Models + Endpoints > Add Model > Auto Router tab. Enter a router name, then click **Configure automatically** to have LiteLLM check the models your proxy already serves, select the best available models for all four complexity tiers, and fill in the form for you. Review the generated tiers before saving. You can also use the **Template** dropdown to pick one of the bundled templates to prefill all four tiers, or **Custom Configuration** to fill them in yourself. A template whose models this proxy does not serve is greyed out with the missing names, so anything selectable is applicable. Everything else lives under **Detailed Configuration**, collapsed by default with a one-line summary of the tiers it currently holds; expand it to set the tier model groups, tier display names, Semantic Keyword Matching, LLM Classifier, escalation keywords, or Adaptive.
+Models + Endpoints > Add Model > Auto Router 分頁。輸入路由器名稱，然後按一下 **自動設定**，讓 LiteLLM 檢查您的 proxy 已提供的模型，為所有四個複雜度階層選出最佳可用模型，並為您填入表單。儲存之前請先檢視產生的階層。您也可以使用 **Template** 下拉式選單，選取其中一個內建範本來預填四個階層，或使用 **Custom Configuration** 自行填入。此 proxy 未提供其模型的範本會以灰色顯示，並標示缺少的名稱，因此任何可選項目都適用。其他所有設定都位於 **Detailed Configuration** 下方，預設為收合狀態，並以一行摘要說明目前包含的階層；展開後即可設定階層模型群組、階層顯示名稱、Semantic Keyword Matching、LLM Classifier、升階關鍵字，或 Adaptive。
 
-**Test Routing** sends the input through the form's classifier without creating a router or calling the selected completion model. LLM and JEV classifier calls and semantic embedding calls can incur spend. **Test Connection** probes the configured model dependencies and, for JEV, separately checks that classification succeeded. See [JEV Test Routing and accounting](#test-routing-and-accounting)
+**Test Routing** 會在不建立路由器或呼叫所選 completion 模型的情況下，將輸入通過表單的分類器。LLM 與 JEV 分類器呼叫，以及語意嵌入呼叫，都可能產生支出。**Test Connection** 會探測已設定的模型相依性，對於 JEV，則另外檢查分類是否成功。請參閱 [JEV Test Routing 與計費](#test-routing-and-accounting)
 
-Tier and classifier dropdowns exclude embedding-mode models; the semantic embedding dropdown lists only embedding-mode models. All four tiers are required on submit; missing tiers are flagged inline.
+階層與分類器下拉式選單會排除嵌入模式模型；語意嵌入下拉式選單只列出嵌入模式模型。提交時四個階層都為必填；缺少的階層會在欄位內標示。
 
-Selecting **LLM Classifier** exposes its model, timeout and prompt editor. **JEV Classifier** exposes JEV model, timeout, circuit breaker and instructions. Both expose classifier fallback, **Context Window Size**, **Context Character Budget**, and **Include Assistant Turns**. See [JEV dashboard setup](/docs/auto_router/setup#create-or-edit-in-the-dashboard) for the create and edit flow
+選擇 **LLM Classifier** 會顯示其模型、逾時與提示編輯器。**JEV Classifier** 會顯示 JEV 模型、逾時、斷路器與指示。兩者都會顯示分類器備援、**Context Window Size**、**Context Character Budget** 與 **Include Assistant Turns**。請參閱 [JEV 儀表板設定](/docs/auto_router/setup#create-or-edit-in-the-dashboard) 以了解建立與編輯流程
 
-**Advanced > Session Affinity** holds the session pin, off to match the config default. Both the create tab and the edit modal write the value explicitly, so a router built in the UI records what it does rather than inheriting whatever the default happens to be.
+**Advanced > Session Affinity** 會保留工作階段固定，關閉以符合設定預設值。建立分頁與編輯對話框都會明確寫入該值，因此在 UI 中建立的路由器會記錄自身實際行為，而不是繼承預設值碰巧是什麼。
 
-**Advanced > Compression** picks the compression guardrail for the routing decision, then either reuses it for the model call or takes a different one, `None` included. Editing a router back to *not configured* does not clear a policy that was already saved, because a model update merges the fields it is given and never deletes a key, so picking **None** for both hops is how you turn compression off from the modal. Legacy semantic auto routers (`auto_router/<name>`) accept both fields through `config.yaml` and the model-management API but have no control for them in the UI yet.
+**Advanced > Compression** 會為路由決策選取壓縮防護欄，接著要嘛在模型呼叫中重用它，要嘛採用不同的防護欄，`None` 也包括在內。將路由器編輯回 *not configured* 不會清除已儲存的政策，因為模型更新會合併其收到的欄位，且永遠不會刪除鍵，因此在對話框中將這兩個步驟都選為 **None**，才是關閉壓縮的方式。舊版語意自動路由器（`auto_router/<name>`）可透過 `config.yaml` 與模型管理 API 接受這兩個欄位，但目前尚未在 UI 中提供控制項。
 
-## Claude Code and Claude Desktop
+## Claude Code 與 Claude Desktop {#claude-code-and-claude-desktop}
 
-Two things decide whether a router shows up in a Claude client, and only one of them is about the name:
+有兩件事決定一個路由器是否會出現在 Claude 用戶端中，而其中只有一件與名稱有關：
 
-1. **Gateway model discovery only picks up a `model_name` containing `claude` or `anthropic`.** That's the whole filter Claude Code applies when it populates the `/model` picker from `/v1/models`; a name like `smart-router` just doesn't get auto-discovered. It still works fine if you point `ANTHROPIC_MODEL` or `ANTHROPIC_CUSTOM_MODEL_OPTION` at it directly, which skips discovery and its filter entirely.
-2. **On Claude for Teams or Enterprise, the name has to be on the organization's `availableModels` allowlist.** Anything missing from the allowlist is greyed out in the Claude Desktop picker and replaced at CLI startup with `restricted by your organization's settings`, regardless of whether the name looks Anthropic.
+1. **閘道模型探索只會挑出包含 `claude` 或 `anthropic` 的 `model_name`。** 這就是 Claude Code 在從 `/v1/models` 填入 `/model` 選擇器時套用的整個篩選條件；像 `smart-router` 這樣的名稱根本不會被自動探索。如果您直接將 `ANTHROPIC_MODEL` 或 `ANTHROPIC_CUSTOM_MODEL_OPTION` 指向它，它仍然可以正常運作，因為這樣會完全略過探索及其篩選條件。
+2. **在 Claude for Teams 或 Enterprise 上，名稱必須位於組織的 `availableModels` 白名單中。** 任何不在白名單中的項目都會在 Claude Desktop 選擇器中顯示為灰色，並且在 CLI 啟動時被替換為 `restricted by your organization's settings`，不論該名稱看起來是否像 Anthropic。
 
-The allowlist check runs client-side, so a router excluded by it leaves nothing in the LiteLLM logs to explain itself. See [Auto Router with Claude Code and Claude Desktop](../tutorials/claude_code_autorouter.md).
+白名單檢查是在用戶端執行，因此被排除的路由器不會在 LiteLLM 記錄中留下任何可供說明的資訊。請參閱 [Claude Code 與 Claude Desktop 的自動路由器](../tutorials/claude_code_autorouter.md)。
 
-## See also
+## 另請參閱 {#see-also}
 
-- Announcement post: [Auto Router v2: one router for complexity, semantic, and adaptive routing](/blog/autorouter-v2)
-- Local Claude Code preview: [lite autoroute](../learn/autorouter_cli.md)
-- Legacy semantic router: [Semantic Auto Router (deprecated)](./auto_routing_semantic.md)
+- 公告文章：[Auto Router v2: one router for complexity, semantic, and adaptive routing](/blog/autorouter-v2)
+- 本機 Claude Code 預覽：[lite autoroute](../learn/autorouter_cli.md)
+- 舊版語意路由器：[Semantic Auto Router（已棄用）](./auto_routing_semantic.md)

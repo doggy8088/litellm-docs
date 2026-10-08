@@ -1,10 +1,10 @@
-# Hosted Cache - api.litellm.ai (removed)
+# 托管快取 - api.litellm.ai（已移除） {#hosted-cache---apilitellmai-removed}
 
-The hosted cache backed by api.litellm.ai has been removed from LiteLLM. `"hosted"` is not a valid `Cache(type=...)` value, and passing it leaves the cache without a backend, so the next `completion()` call raises `AttributeError: 'Cache' object has no attribute 'cache'`
+由 api.litellm.ai 支援的托管快取已從 LiteLLM 中移除。`"hosted"` 不是有效的 `Cache(type=...)` 值，傳入它會使快取失去後端，因此下一個 `completion()` 請求會引發 `AttributeError: 'Cache' object has no attribute 'cache'`
 
-Use one of the supported backends instead: `local` (the default, in memory), `redis`, `redis-semantic`, `valkey-semantic`, `qdrant-semantic`, `s3`, `gcs`, `azure-blob` or `disk`. See [Caching - In-Memory, Redis, s3, gcs, Redis Semantic Cache, Disk](./all_caches.md) for setup of each one. The examples below use the default in-memory cache
+請改用下列支援的後端之一：`local`（預設，記憶體中）、`redis`、`redis-semantic`、`valkey-semantic`、`qdrant-semantic`、`s3`、`gcs`、`azure-blob` 或 `disk`。請參閱 [快取 - 記憶體中、Redis、s3、gcs、Redis 語意快取、磁碟](./all_caches.md) 以了解各自的設定方式。以下範例使用預設的記憶體中快取
 
-## Quick Start Usage - Completion
+## 快速開始使用 - Completion {#quick-start-usage---completion}
 ```python
 import litellm
 from litellm import completion
@@ -26,8 +26,7 @@ response2 = completion(
 # response1 == response2, response 1 is cached
 ```
 
-
-## Usage - Embedding()
+## 使用方式 - Embedding() {#usage---embedding}
 
 ```python
 import time
@@ -47,10 +46,10 @@ end_time = time.time()
 print(f"Embedding 2 response time: {end_time - start_time} seconds")
 ```
 
-## Caching with Streaming 
-LiteLLM can cache your streamed responses for you
+## 串流快取  {#caching-with-streaming}
+LiteLLM 可以為您快取串流回應
 
-### Usage
+### 使用方式 {#usage}
 ```python
 import litellm
 import time

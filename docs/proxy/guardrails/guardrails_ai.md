@@ -2,17 +2,17 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Guardrails AI
+# Guardrails AI {#guardrails-ai}
 
-Use Guardrails AI ([guardrailsai.com](https://www.guardrailsai.com/)) to add checks to LLM output.
+使用 Guardrails AI ([guardrailsai.com](https://www.guardrailsai.com/)) 為 LLM 輸出新增檢查。
 
-## Pre-requisites
+## 前置需求 {#pre-requisites}
 
-- Setup Guardrails AI Server. [quick start](https://www.guardrailsai.com/docs/getting_started/guardrails_server)
+- 設定 Guardrails AI 伺服器。[快速開始](https://www.guardrailsai.com/docs/getting_started/guardrails_server)
 
-## Usage
+## 用法 {#usage}
 
-1. Setup config.yaml 
+1. 設定 config.yaml 
 
 ```yaml
 model_list:
@@ -31,15 +31,15 @@ guardrails:
       api_base: os.environ/GUARDRAILS_AI_API_BASE   # 👈 Guardrails AI API Base. Defaults to "http://0.0.0.0:8000"
 ```
 
-2. Start LiteLLM Gateway 
+2. 啟動 LiteLLM 閘道 
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-3. Test request 
+3. 測試請求 
 
-**[Langchain, OpenAI SDK Usage Examples](/docs/proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](/docs/proxy/user_keys#request-format)**
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -54,15 +54,14 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-
-## ✨ Control Guardrails per Project (API Key)
+## ✨ 依專案（API 金鑰）控制 Guardrails {#-control-guardrails-per-project-api-key}
 
 <EnterpriseFeature />
 
-Use this to control what guardrails run per project. In this tutorial we only want the following guardrails to run for 1 project (API Key)
+使用此功能可控制每個專案執行哪些 guardrails。在本教學中，我們只希望以下 guardrails 對 1 個專案（API 金鑰）執行
 - `guardrails`: ["aporia-pre-guard", "aporia-post-guard"]
 
-**Step 1** Create Key with guardrail settings
+**步驟 1** 使用 guardrail 設定建立金鑰
 
 <Tabs>
 <TabItem value="/key/generate" label="/key/generate">
@@ -94,7 +93,7 @@ curl --location 'http://0.0.0.0:4000/key/update' \
 </TabItem>
 </Tabs>
 
-**Step 2** Test it with new key
+**步驟 2** 使用新金鑰測試
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -110,6 +109,3 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
     ]
 }'
 ```
-
-
-

@@ -1,86 +1,86 @@
 ---
 slug: auto-router-context-and-benchmarks
-title: "Auto Router v1.97: usage benchmarks and better quality for lower cost"
+title: "Auto Router v1.97：使用量基準測試與更低成本下的更佳品質"
 date: 2026-08-04T10:00:00
 authors:
   - tin
-description: "v1.97 adds cost and usage benchmarks for the auto router, gives the LLM classifier a window of prior turns, and turns session affinity off by default. Across 5,600 live classifier calls, prior turns raised tier agreement on referential follow-ups from 14% to 78% at under a tenth of a cent per request, with no measurable latency change."
+description: "v1.97 為 auto router 新增成本與使用量基準測試，讓 LLM 分類器可看到先前幾輪對話，並預設關閉 session affinity。根據 5,600 次實際 classifier 請求，加入先前幾輪後，對指涉性追問的 tier 一致率從 14% 提升到 78%，每次請求成本不到十分之一美分，且沒有可測得的延遲變化。"
 image: ./autorouter-v2-hero.png
 keywords: [auto router, complexity router, llm classifier, conversation context, session affinity, llm cost savings, model routing, litellm auto routing, router benchmarks]
 tags: [routing, complexity-router, cost, benchmarks, observability, product]
 hide_table_of_contents: false
 ---
 
-![LiteLLM Autorouter V2: routing accuracy on complex scenarios, 5.6x more accurate by reading the last N turns of the conversation before picking a model](./autorouter-v2-hero.png)
+![LiteLLM Autorouter V2：在選擇模型前先讀取對話的最後 N 輪，以提升複雜情境下的路由準確度，準確率高出 5.6 倍](./autorouter-v2-hero.png)
 
 <br /><br />
 
-:::info[🚀 Help shape the Auto-Router]
+:::info[🚀 協助塑造 Auto-Router]
 
-Get early access, work directly with the LiteLLM team, and influence the roadmap with your production traffic.
+搶先體驗、直接與 LiteLLM 團隊合作，並用您的生產流量影響產品藍圖。
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計夥伴</a>
 
 <br /><br />
 
-Already testing it? Share your results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+已經在測試了嗎？請在 [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
 
 :::
 
-v1.97 makes three changes to the auto router.
+v1.97 對 auto router 做了三項變更。
 
-* The LLM classifier now receives a window of prior conversation turns, defaulting to three. This improves accuracy of follow-up classifications from 14% to 78%, costs at most $0.61 per 1,000 requests, and no additional latency.
-* A new Benchmarks view prices routed traffic against an all-frontier baseline and reports the difference, and those savings now also appear in the Cost Optimization totals.
-* Session affinity is now off by default, following our [previous post](/blog/auto-router-prompt-caching-benchmark) showing this was leading to worse quality without cost improvements.
+* LLM 分類器現在會接收一段先前對話輪次，預設為三輪。這將追問分類的準確率從 14% 提升到 78%，成本最高為每 1,000 次請求 $0.61，且不增加額外延遲。
+* 新的 Benchmarks 檢視會以 all-frontier 基準為您的路由流量定價並回報差異，這些節省現在也會出現在 Cost Optimization 總計中。
+* session affinity 現在預設為關閉，這符合我們[先前的文章](/blog/auto-router-prompt-caching-benchmark)所示：這會導致品質變差，且沒有成本改善。
 
-:::warning[Two defaults changed]
+:::warning[兩個預設值已變更]
 
-`classifier_context_window_size` now defaults to `3` (LLM classifier only), and `session_affinity` now defaults to `false` (all routers). Config files are not modified, but the new defaults apply to any key left unset, so a config that never mentioned `session_affinity` will reclassify every turn after upgrading. Configs that set either key explicitly are unaffected.
+`classifier_context_window_size` 現在預設為 `3`（僅 LLM 分類器），而 `session_affinity` 現在預設為 `false`（所有 routers）。設定檔不會被修改，但新預設值會套用到任何尚未設定的鍵，因此從未提及 `session_affinity` 的設定，在升級後會重新分類每一輪。明確設定任一鍵值的設定不受影響。
 
 :::
 
 {/* truncate */}
 
-## Cost and usage benchmarks
+## 成本與使用量基準測試 {#cost-and-usage-benchmarks}
 
-The Benchmarks view shows your savings using your router against a fixed model (Opus, for example) on your actual usage.
+Benchmarks 檢視會顯示您使用 router 相較於固定模型（例如 Opus）的實際用量所節省的成本。
 
-![Auto-Router Benchmarks tab showing total estimated savings against an all-frontier baseline, session counts, and prompt cache behaviour by bucket](./benchmarks-overview.png)
+![Auto-Router Benchmarks 分頁顯示相對於 all-frontier 基準的總預估節省、session 數，以及依 bucket 分組的 prompt cache 行為](./benchmarks-overview.png)
 
-Per router and per time range, it prices routed traffic against the same traffic sent to one frontier model at list prices and reports the difference in dollars and percent, alongside: sessions on the router, turns per session, tokens per session, and savings per session. The baseline is priced with a warm single-model cache rather than a cold one.
+針對每個 router 與每個時間範圍，它會以清單價格將路由流量與送往單一 frontier 模型的相同流量進行定價，並回報美元與百分比差異，同時列出：router 上的 sessions、每個 session 的 turns、每個 session 的 tokens，以及每個 session 的節省。基準值是以已預熱的單一模型 cache 而非冷 cache 來定價。
 
-The view also estimates the value of a background cache warmer on your traffic, netting rescued cache writes against the cost of the replays. The Benchmarks numbers are queryable directly:
+此檢視也會估算背景 cache 保溫器對您流量的價值，將挽救的 cache 寫入與重播成本相抵後得出淨值。Benchmarks 數值可直接查詢：
 
 ```bash
 GET /auto_router/benchmarks?start_date=2026-07-01&end_date=2026-07-31
 ```
 
-### Savings roll up into Cost Optimization
+### 節省會匯總到 Cost Optimization {#savings-roll-up-into-cost-optimization}
 
-Router savings now feed into the Cost Optimization section alongside prompt compression and prompt caching, with their own card, savings line, and slice of the by-driver breakdown.
+Router 節省現在會與 prompt 壓縮和 prompt caching 一起匯入 Cost Optimization 區段，並擁有自己的卡片、節省行，以及 by-driver 明細中的一個切片。
 
-![Cost Optimization usage tab showing total saved split across compression, prompt caching, and auto-router savings](./cost-optimization.png)
+![Cost Optimization 使用量分頁顯示總節省，分別拆分為壓縮、prompt caching 與 auto-router 節省](./cost-optimization.png)
 
-The two views answer different questions and their savings figures will not match. Benchmarks prices traffic against one frontier model end to end; the Cost Optimization card counts the difference between the tier the router picked and the priciest tier it could have picked.
+這兩個檢視回答的是不同問題，因此其節省數字不會相同。Benchmarks 會以一個 frontier 模型端到端為流量定價；Cost Optimization 卡片則計算 router 所選 tier 與它本可選擇的最昂貴 tier 之間的差額。
 
-## The LLM classifier can see prior turns
+## LLM 分類器可以看到先前幾輪 {#the-llm-classifier-can-see-prior-turns}
 
 :::note
 
-Everything in this section requires `classifier_type: llm`. The heuristic scorer does not call a model and has nowhere to put the context, so it is unchanged; the three fields below are read only on the LLM path.
+本節中的所有內容都需要 `classifier_type: llm`。heuristic scorer 不會呼叫模型，也沒有可放置 context 的位置，因此維持不變；下方三個欄位只會在 LLM 路徑上讀取。
 
 :::
 
-### The problem
+### 問題 {#the-problem}
 
-The LLM classifier previously only saw the current turn, which does not work well for multi-turn queries:
+先前 LLM 分類器只會看到目前這一輪，對多輪查詢的效果不佳：
 
-* Turn 1: "Make a plan to redesign this component"
-* Turn 2: "Yes, go ahead"
+* 第 1 輪：「請為重新設計這個元件擬定一個計畫」
+* 第 2 輪：「好，開始吧」
 
-Turn 2 may be classified as simple while the work it authorises is substantial.
+第 2 輪可能會被分類為簡單，但它所授權的工作其實相當龐大。
 
-Three new fields on `complexity_router_config` address this:
+`complexity_router_config` 上的三個新欄位可解決這個問題：
 
 ```yaml
     litellm_params:
@@ -94,39 +94,39 @@ Three new fields on `complexity_router_config` address this:
         classifier_context_include_assistant_turns: false  # default false
 ```
 
-Prior turns are inserted oldest-first, numbered `[1]`, `[2]`, `[3]`, each clipped to `classifier_context_per_turn_chars` with a trailing ellipsis marking the cut.
+先前輪次會依最早到最晚的順序插入，編號為 `[1]`、`[2]`、`[3]`，每一輪都會裁切到 `classifier_context_per_turn_chars`，並以尾端省略號標示截斷處。
 
-Turns without human-written text do not consume a slot. Tool output is excluded, `<system-reminder>` blocks are stripped, turns left empty after stripping are skipped, and a turn identical to the ask being classified is dropped.
+沒有人工撰寫文字的輪次不會佔用名額。工具輸出會被排除，`<system-reminder>` 區塊會被移除，移除後變成空白的輪次會被略過，而與正在分類的詢問完全相同的輪次會被丟棄。
 
-With `classifier_context_include_assistant_turns` enabled, assistant messages join the window with role labels, and that text reaches the classifier payload only; keyword rules, escalation, the heuristic scorer, and semantic matching continue to read the human message alone.
+啟用 `classifier_context_include_assistant_turns` 時，assistant 訊息會連同角色標籤一起加入這段 window，而該文字只會送到 classifier payload；關鍵字規則、升級處理、heuristic scorer 與語意比對仍只會讀取人類訊息。
 
-### What we measured
+### 我們測量了什麼 {#what-we-measured}
 
-5,600 live classifier calls against real providers: two sweeps of seven configurations each (`classifier_context_window_size` of 0, 1, 2, 3, 5, 8, 10), one with assistant turns in the window and one without, across three multi-turn datasets, with two repeats per conversation. Everything else was identical between configurations, including the conversations, the rubric, the classifier model (`gpt-5.4-mini`), and the per-turn cap.
+對真實提供者進行 5,600 次 live classifier 呼叫：兩輪掃描、每輪七種設定（`classifier_context_window_size` 為 0、1、2、3、5、8、10），一組在 window 中包含 assistant 輪次，另一組不包含，涵蓋三個多輪資料集，每段對話重複兩次。除設定外，其餘全部相同，包括對話內容、rubric、classifier 模型（`gpt-5.4-mini`）與每輪上限。
 
-**Quality.** Agreement between the tier the router picked and the reference tier:
+**品質。** router 所選 tier 與參考 tier 之間的一致率：
 
-| Window | Short-reply follow-ups | MT-Bench 2nd turns | ShareGPT multi-turn |
+| Window | 短回覆追問 | MT-Bench 第 2 輪 | ShareGPT 多輪 |
 |---|---|---|---|
 | 0 | 50.0% | 49.4% | 83.8% |
 | 1 | 71.2% | 53.1% | 84.4% |
 | 2 | 87.5% | 53.1% | 90.6% |
-| **3** *(default)* | **85.0%** | **55.0%** | **91.9%** |
+| **3** *(預設)* | **85.0%** | **55.0%** | **91.9%** |
 | 5 | 86.2% | 53.8% | 91.9% |
 | 8 | 87.5% | 55.6% | 91.2% |
 | 10 | 90.0% | 55.6% | 88.8% |
 
-The largest effect is on the 36 follow-ups whose final turn only resolves against the history. Agreement there is **14% at N=0, 47% at N=1, and 78% at N=2**, and flat from there out to N=10. Self-describing controls in the same set sit at 80% with no window and 91 to 95% with one, so the window is not raising every number uniformly.
+最大的影響出現在 36 個追問上，它們最後一輪只在歷史脈絡下才說得通。那部分的一致率在 **N=0 時為 14%，N=1 時為 47%，N=2 時為 78%**，之後一路到 N=10 都維持持平。同一組中的自我描述控制項在沒有 window 時為 80%，有一輪時為 91% 到 95%，因此這個 window 並不是讓所有數字都等比例上升。
 
-N=1 recovers less than half the gap. One prior turn tells the classifier that a conversation exists without establishing its subject, and roughly a third of referential cases remain misrouted at that setting.
+N=1 只能恢復不到一半的落差。單一先前輪次只會讓分類器知道對話存在，卻無法建立其主題，因此在該設定下，大約三分之一的指涉性案例仍會被路由錯誤。
 
-MT-Bench's ceiling reflects its reference labels rather than router behaviour. Its category-to-tier mapping assigns MEDIUM to every "writing" second turn, so that column is usable as a trend and not as an accuracy score.
+MT-Bench 的上限反映的是其參考標籤，而非 router 行為。其類別到 tier 的對應會把每個「寫作」的第二輪都指定為 MEDIUM，因此該欄位適合用來看趨勢，而不適合當作準確率分數。
 
-![Agreement against window size across three datasets](./agreement-vs-window.png)
+![跨三個資料集比較不同 window 大小的一致率](./agreement-vs-window.png)
 
-**Latency.** Paired per conversation against N=0, every 95% bootstrap CI contains **zero** in both sweeps:
+**延遲。** 以每段對話相較於 N=0 配對比較，兩輪掃描中的每個 95% bootstrap CI 都包含 **零**：
 
-| Window | Assistant turns on | Assistant turns off |
+| Window | 啟用 assistant 輪次 | 停用 assistant 輪次 |
 |---|---|---|
 | 1 | +21.5 ms [-19.6, +63.9] | -17.8 ms [-68.9, +29.6] |
 | 2 | +10.5 ms [-31.2, +55.2] | -14.3 ms [-67.2, +34.4] |
@@ -135,53 +135,53 @@ MT-Bench's ceiling reflects its reference labels rather than router behaviour. I
 | 8 | -10.5 ms [-45.0, +23.9] | +10.2 ms [-43.6, +63.9] |
 | 10 | +9.0 ms [-25.9, +43.1] | -15.3 ms [-65.6, +30.0] |
 
-Prompt tokens and latency correlate at r = 0.007 with assistant turns on and r = 0.018 with them off, across a 318 to 1,043 token range. The window adds prefill only; output remains a small fixed structured tier. p50 sits near 600 ms in every configuration.
+在 318 到 1,043 個 token 的範圍內，prompt tokens 與延遲的相關係數為 r = 0.007（啟用 assistant 輪次）與 r = 0.018（停用 assistant 輪次）。這個 window 只增加 prefill；輸出仍然是固定且小型的結構化 tier。所有設定的 p50 都接近 600 ms。
 
-**Cost.** The classifier costs at most $0.61 per 1,000 requests:
+**成本。** 這個 classifier 的成本最高為每 1,000 次請求 $0.61：
 
-| Window | Classifier $/1k req (follow-ups / MT-Bench / ShareGPT) | Modelled routed $/1k req |
+| Window | Classifier $/1k req（追問 / MT-Bench / ShareGPT） | 模型化路由 $/1k req |
 |---|---|---|
 | 0 | $0.31 / $0.32 / $0.34 | $2.87 / $5.41 / $5.48 |
 | 2 | $0.38 / $0.42 / $0.44 | $6.79 / $4.65 / $5.31 |
 | 3 | $0.38 / $0.42 / $0.47 | $6.49 / $5.13 / $5.14 |
 | 10 | $0.38 / $0.42 / $0.61 | $6.42 / $4.87 / $5.22 |
 
-Tier selection dominates the cost effect, and it moves in both directions depending on the traffic.
+tier 選擇主導了成本影響，而且會依流量不同而往兩個方向變動。
 
-On the short-reply set, routed cost rises from $2.87 to about $6.50 per 1k. At N=0 those requests went to the cheap tier while authorising substantial work, with a tier mix of 66% SIMPLE at N=0 against 30% at N=2, so the increase reflects requests being priced at the tier they required. On MT-Bench and ShareGPT routed cost drifts down instead, as context resolves ambiguous follow-ups to MEDIUM rather than REASONING.
+在短回覆集上，路由後成本從每 1k 的 $2.87 上升到約 $6.50。當 N=0 時，這些請求會送往便宜層級，同時授權大量工作；在 N=0 時，層級組合有 66% 為 SIMPLE，而 N=2 時為 30%，因此這個增加反映的是請求按其所需層級定價。相較之下，在 MT-Bench 和 ShareGPT 上，路由後成本反而略為下降，因為上下文將含糊的後續回覆解析為 MEDIUM，而不是 REASONING。
 
-Which direction applies to a given deployment depends on its traffic, which is what the Benchmarks view is for: compare routed spend against the baseline after a day of traffic.
+對特定部署適用哪個方向，取決於其流量，這也正是 Benchmarks 檢視頁的用途：在一天的流量之後，比較路由後支出與基準值。
 
-### What to run
+### 要執行什麼 {#what-to-run}
 
-The default of 3 sits past the point where every curve flattens, and additional classifier tokens beyond it produce no measurable gain. The tables above come from the assistant-turns-on sweep; the user-only sweep, which is the default, plateaus one slot earlier because an assistant turn otherwise consumes a slot, so 3 is sufficient in both modes.
+預設值 3 已經超過所有曲線趨於平坦的點，而超過這個值再增加分類器 token 也不會帶來可測得的增益。上表來自 assistant-turns-on 掃描；user-only 掃描則是預設值，會早一個槽位趨於平坦，因為否則一個 assistant turn 會消耗一個槽位，所以在兩種模式下 3 都已足夠。
 
-`classifier_context_include_assistant_turns` ships off because enabling it shifts tier decisions, and therefore spend, on routers already in production.
+`classifier_context_include_assistant_turns` 預設關閉，因為啟用它會改變層級判定，進而改變已在生產環境中的路由器支出。
 
-`classifier_context_per_turn_chars` is best left at 200. The plateau arrives well before the cap takes effect, and the truncation marker is sufficient signal that a turn was cut.
+`classifier_context_per_turn_chars` 最好維持在 200。趨於平坦的點會在上限生效前很久就到達，而截斷標記已足以表示某個 turn 被截斷。
 
 <details>
-<summary>Caveats</summary>
+<summary>注意事項</summary>
 
-Reference tiers are judgement calls. The hand labels and the ShareGPT judge pass both encode the rule that a short reply inherits the difficulty of the work it approves, which is the behaviour the window produces, making the follow-up set both the sharpest instrument here and the most favourable one.
+參考層級是判斷性的決定。人工標記與 ShareGPT 評審通過都編碼了這條規則：短回覆會繼承其所核准工作的難度，而這正是視窗產生的行為，使得後續集合既是這裡最銳利的工具，也是最有利的工具。
 
-Routed completion cost is modelled rather than billed: the chosen tier's price applied to the conversation's prompt tokens plus 600 output tokens. No tier model was called, which isolates the effect of the tier choice from the effect of any particular answer.
+路由後的 completion 成本是模型化而非實際計費：將所選層級的價格套用到對話的 prompt tokens 加上 600 個輸出 tokens。沒有呼叫任何層級模型，這樣就能把層級選擇的影響與任何特定回覆的影響分離開來。
 
-One classifier model was swept. A reasoning-heavier model carries more absolute latency, though the marginal cost of roughly 200 extra prefill tokens should remain negligible.
+只對一個分類器模型做了掃描。較偏重推理的模型具有更高的絕對延遲，不過約 200 個額外 prefill tokens 的邊際成本應仍可忽略不計。
 
-Latency was measured on a single VM at concurrency 10. The paired differences carry the finding; the absolute numbers reflect that setup.
+延遲是在單一 VM 上、並發 10 下測得。成對差異承載了這個發現；絕對數值則反映了該設定。
 
 </details>
 
-## Session affinity now off by default
+## Session affinity 現在預設關閉 {#session-affinity-now-off-by-default}
 
-Session affinity pins a session to the model that handled its first turn and skips reclassification thereafter, with the goal of keeping provider prompt caches warm. Two things motivated the change of default.
+Session affinity 會將某個 session 綁定到處理其第一個 turn 的模型，之後跳過重新分類，目的是維持提供者 prompt cache 的熱度。這個預設值的變更有兩個原因。
 
-Our [prompt caching benchmark](/blog/auto-router-prompt-caching-benchmark) examined 4,684 switch-backs and found 97.4% still warm at the 5-minute TTL and 99.3% at an hour. Provider caches survive routing changes well enough that pinning was trading routing quality for cache hits that would have occurred anyway.
+我們的 [prompt caching benchmark](/blog/auto-router-prompt-caching-benchmark) 檢視了 4,684 次切換，發現 97.4% 在 5 分鐘 TTL 下仍然是熱的，而在一小時時則有 99.3%。提供者快取在路由變更下仍可良好存活，因此綁定是在犧牲路由品質，去換取本來就會發生的快取命中。
 
-Additionally, pinning served in part as a substitute for a classifier without access to conversation history, which is no longer needed.
+此外，綁定部分上也是用來替代無法存取對話歷史的分類器，而這已不再需要。
 
-Configs that do not mention `session_affinity` will classify every turn after upgrading. To retain the previous behaviour, for strict per-session model consistency or for prefixes long enough that a miss is expensive, set it explicitly:
+未提到 `session_affinity` 的設定，在升級後會對每個 turn 進行分類。若要保留先前的行為，無論是為了嚴格的每個 session 模型一致性，或是為了足夠長、使未命中代價高昂的前綴，請明確設定：
 
 ```yaml
       complexity_router_config:
@@ -189,9 +189,9 @@ Configs that do not mention `session_affinity` will classify every turn after up
         session_affinity_ttl_seconds: 3600
 ```
 
-Affinity requires a resolvable `session_id` in metadata and is ignored when `plugins` are set.
+Affinity 需要在 metadata 中有可解析的 `session_id`，且在設定了 `plugins` 時會被忽略。
 
-## Try it
+## 試試看 {#try-it}
 
 ```yaml
 model_list:
@@ -222,6 +222,6 @@ model_list:
           REASONING: gpt-5.5
 ```
 
-Every response carries `x-litellm-model-name` and `x-litellm-response-cost`, so the tier for a given request can be checked before relying on any aggregate. After a day of production traffic, the routed-versus-baseline figure in Benchmarks describes a specific workload more accurately than any of the datasets used here.
+每個回應都帶有 `x-litellm-model-name` 和 `x-litellm-response-cost`，因此可在依賴任何彙總之前先檢查某個請求所屬的層級。在生產流量運行一天後，Benchmarks 中的路由後對基準值指標，比此處使用的任何資料集都更能精確描述特定工作負載。
 
-Full docs: [Auto Routing](https://docs.litellm.ai/docs/proxy/auto_routing).
+完整文件：[Auto Routing](https://docs.litellm.ai/docs/proxy/auto_routing)。

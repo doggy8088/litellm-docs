@@ -1,17 +1,15 @@
 import Image from '@theme/IdealImage';
 
-# Comparing LLMs on a Test Set using LiteLLM
-
+# 使用 LiteLLM 在測試集上比較 LLM {#comparing-llms-on-a-test-set-using-litellm}
 
 <div class="cell markdown" id="L-W4C3SgClxl">
 
-LiteLLM allows you to use any LLM as a drop in replacement for
+LiteLLM 讓您可以使用任何 LLM，作為即插即用的替代方案，適用於
 `gpt-3.5-turbo`
 
-This notebook walks through how you can compare GPT-4 vs Claude-2 on a
-given test set using litellm
+本筆記本將示範如何使用 litellm 在給定的測試集上比較 GPT-4 與 Claude-2
 
-## Output at the end of this tutorial:
+## 本教學結束時的輸出： {#output-at-the-end-of-this-tutorial}
 <Image img={require('../../img/compare_llms.png')} />
 <br></br>
 
@@ -65,9 +63,9 @@ os.environ['ANTHROPIC_API_KEY'] = ""
 
 <div class="cell markdown" id="Ktn25dfKEJF1">
 
-## Calling gpt-3.5-turbo and claude-2 on the same questions
+## 在相同問題上呼叫 gpt-3.5-turbo 與 claude-2 {#calling-gpt-35-turbo-and-claude-2-on-the-same-questions}
 
-## LiteLLM `completion()` allows you to call all LLMs in the same format
+## LiteLLM `completion()` 讓您可以用相同格式呼叫所有 LLM {#litellm-completion-allows-you-to-call-all-llms-in-the-same-format}
 
 </div>
 
@@ -100,7 +98,7 @@ for question in questions:
 
 <div class="cell markdown" id="RkEXhXxCDN77">
 
-## Visualizing Results
+## 視覺化結果 {#visualizing-results}
 
 </div>
 
@@ -117,7 +115,7 @@ df = pd.DataFrame(results, columns=columns)
 
 df
 ```
-## Output Table
+## 輸出表格 {#output-table}
 <Image img={require('../../img/compare_llms.png')} />
 
 </div>

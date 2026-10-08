@@ -1,5 +1,5 @@
 ---
-title: "v1.99.1 - OTel Cache Token Counts"
+title: "v1.99.1 - OTel 快取 Token 計數"
 slug: "v1-99-1"
 date: 2026-09-02T14:01:25
 authors:
@@ -18,15 +18,15 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info[This is a Docker-only release]
+:::info[這是僅限 Docker 的版本]
 
-`v1.99.1` is distributed as container images. There is no PyPI package for this version, so `pip install litellm==1.99.1` will not resolve. If you install LiteLLM from PyPI, stay on `1.99.0`; the change in this release reaches you through the image.
+`v1.99.1` 以容器映像檔形式發佈。此版本沒有 PyPI 套件，因此 `pip install litellm==1.99.1` 將無法解析。如果您從 PyPI 安裝 LiteLLM，請維持在 `1.99.0`；此版本中的變更會透過映像檔帶給您。
 
-The `latest` tag does point at this release.
+`latest` 標籤確實指向這個版本。
 
 :::
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 ```bash
 docker run \
@@ -35,18 +35,18 @@ docker run \
 docker.litellm.ai/berriai/litellm:1.99.1
 ```
 
-`v1.99.1` is a patch release on top of [`v1.99.0`](/release_notes/v1.99.0/v1-99-0). It adds cache token counts to OpenTelemetry v2 LLM spans.
+`v1.99.1` 是建立在 [`v1.99.0`](/release_notes/v1.99.0/v1-99-0) 之上的修補版本。它為 OpenTelemetry v2 的 LLM span 新增了快取 token 計數。
 
-If you export OTel v2 traces to a tool that prices requests from token counts, this release is worth picking up. Under `v1.99.0` an LLM span carried the cache cost attributes but no cache token counts, so anything computing cache spend from tokens recorded zero even when the provider had billed for a cache write or a cache read. The span now carries `gen_ai.usage.cache_creation.input_tokens` and `gen_ai.usage.cache_read.input_tokens` alongside the existing input and output token counts, matching what the API response reports in `usage`.
+如果您將 OTel v2 trace 匯出到會根據 token 計數為請求定價的工具，這個版本值得採用。在 `v1.99.0` 下，LLM span 會帶有快取成本屬性，但沒有快取 token 計數，因此任何根據 token 計算快取支出的系統，即使提供者已對快取寫入或快取讀取收費，也會記錄為 0。現在 span 會在既有的輸入與輸出 token 計數之外，同時帶有 `gen_ai.usage.cache_creation.input_tokens` 和 `gen_ai.usage.cache_read.input_tokens`，與 API 回應在 `usage` 中回報的內容一致。
 
-The counts are read from the provider's own usage object, so they are populated today for Anthropic-shaped usage, which is where prompt caching reports a separate creation and read count. Providers that report a cached-token count in a different shape are not yet covered, and generalizing that is follow-up work.
+這些計數是從提供者自己的 usage 物件讀取，因此目前已針對 Anthropic 形式的 usage 填入，這也是提示快取會分開回報建立與讀取計數的地方。以不同形式回報快取 token 計數的提供者尚未涵蓋，將其通用化是後續工作。
 
-This release also refreshes RestrictedPython to 8.5 in the lockfile, matching the version the development line already resolves. That only affects the image, since there is no PyPI artifact for this version. No configuration changes.
+此版本也將鎖定檔中的 RestrictedPython 更新到 8.5，與開發分支已解析的版本一致。這只會影響映像檔，因為此版本沒有 PyPI 成品。沒有組態變更。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(otel): emit cache token counts on OTel v2 LLM spans - [PR #38716](https://github.com/BerriAI/litellm/pull/38716)
+- fix(otel): 在 OTel v2 LLM span 上回傳快取 token 計數 - [PR #38716](https://github.com/BerriAI/litellm/pull/38716)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.99.0...v1.99.1

@@ -1,80 +1,80 @@
 ---
 slug: ai-gateway-identity-and-finops
-title: "Secure shared AI agents with identity-aware access and spend controls"
+title: "以具備身分意識的存取與支出控制安全保護共享 AI 代理程式"
 date: 2026-09-08T10:00:00
 authors:
   - yassin
-description: "How LiteLLM preserves caller identity across shared agents, governs model and MCP access, and enforces independent budgets for each business unit."
+description: "LiteLLM 如何在共享代理程式之間保留呼叫者身分、管理模型與 MCP 存取，並為每個業務單位強制執行獨立預算。"
 tags: [product, agents, mcp, security, finops]
 hide_table_of_contents: false
 ---
 
-Shared agents can preserve individual identity, access, and spend controls.
+共享代理程式可以保留個別身分、存取與支出控制。
 
-When a finance agent serves multiple business units, platform teams need a consistent way to identify who initiated each request, apply the right model and tool permissions, and attribute spend. LiteLLM keeps this context available across shared-agent workflows so each business unit can operate under its own access and budget policies.
+當財務代理程式服務多個業務單位時，平台團隊需要一致的方法來識別每個請求的發起者、套用正確的模型與工具權限，並歸屬支出。LiteLLM 讓這些脈絡在共享代理程式工作流程中保持可用，因此每個業務單位都能在各自的存取與預算政策下運作。
 
-LiteLLM provides one control plane for this workflow across the Agent Gateway, Model Gateway, and MCP Gateway. Teams can share the same agent infrastructure while keeping access, credentials, spend, and audit data tied to the right caller.
+LiteLLM 為此工作流程提供一個統一的控制平面，涵蓋 Agent Gateway、Model Gateway 與 MCP Gateway。團隊可以共享相同的代理程式基礎架構，同時讓存取權、憑證、支出與稽核資料都繫結到正確的呼叫者。
 
 {/* truncate */}
 
-## One gateway for the complete agent workflow
+## 一個閘道，涵蓋完整的代理程式工作流程 {#one-gateway-for-the-complete-agent-workflow}
 
-A typical agent request crosses four boundaries:
+典型的代理程式請求會跨越四個邊界：
 
-1. A user calls an agent.
-2. The agent calls a model.
-3. The agent calls an MCP tool.
-4. The agent calls another agent.
+1. 使用者呼叫代理程式。
+2. 代理程式呼叫模型。
+3. 代理程式呼叫 MCP 工具。
+4. 代理程式呼叫另一個代理程式。
 
-LiteLLM governs each boundary through a single proxy:
+LiteLLM 透過單一 proxy 管理每個邊界：
 
 ```mermaid
 flowchart LR
-    User(["User"]) -- "1: message/send" --> AG["Agent Gateway"]
-    AG --> Agent["Finance Agent"]
+    User(["使用者"]) -- "1: message/send" --> AG["Agent Gateway"]
+    AG --> Agent["財務代理程式"]
     Agent -- "2: /v1/chat/completions" --> MG["Model Gateway"]
     Agent -- "3: tool calls" --> MCG["MCP Gateway"]
-    MCG --> MCP["Finance MCP Server"]
+    MCG --> MCP["財務 MCP 伺服器"]
     Agent -- "4: message/send" --> AG2["Agent Gateway"]
-    AG2 --> Agent2["Summarizer Agent"]
+    AG2 --> Agent2["摘要代理程式"]
 ```
 
-The [Agent Gateway](../../docs/a2a) authenticates callers, controls which users and teams can invoke each agent, and records request, response, latency, and cost data. The Model Gateway routes LLM traffic and applies budgets and rate limits. The MCP Gateway centralizes tool access and upstream authentication.
+[Agent Gateway](/docs/a2a) 會驗證呼叫者身分、控管哪些使用者與團隊可以呼叫每個代理程式，並記錄請求、回應、延遲與成本資料。Model Gateway 會對 LLM 流量進行路由，並套用預算與速率限制。MCP Gateway 會集中管理工具存取與上游驗證。
 
-Together, they let platform teams operate agents as shared services with per-user governance across every request.
+合在一起，它們讓平台團隊能將代理程式作為共享服務來營運，並在每次請求中對每位使用者施行治理。
 
-## Authenticate every call to a shared agent
+## 驗證對共享代理程式的每次呼叫 {#authenticate-every-call-to-a-shared-agent}
 
-Start by registering each agent in the Agent Gateway. Agents appear in the Admin UI with their status and spend data:
+先在 Agent Gateway 中註冊每個代理程式。代理程式會以其狀態與支出資料顯示在管理 UI 中：
 
-![Agents tab showing the finance-agent and summarizer-agent registered on the Agent Gateway](/img/a2a_gateway_poc_agents_tab.png)
+![Agents 分頁顯示已在 Agent Gateway 註冊的 finance-agent 與 summarizer-agent](/img/a2a_gateway_poc_agents_tab.png)
 
-Users can authenticate through OIDC or another supported LiteLLM credential while sharing the same team policy. In this example, two business units belong to `shared-agents-team`:
+使用者可以透過 OIDC 或其他受支援的 LiteLLM 憑證進行驗證，同時共享相同的團隊政策。在此範例中，兩個業務單位屬於 `shared-agents-team`：
 
-![LiteLLM Admin UI showing op-unit-a and op-unit-b under the shared-agents-team policy](/img/a2a_gateway_poc_virtual_keys_tab.png)
+![LiteLLM 管理 UI 顯示 shared-agents-team 政策下的 op-unit-a 與 op-unit-b](/img/a2a_gateway_poc_virtual_keys_tab.png)
 
-The team's object permissions define which agents and MCP servers its members can access. Both business units use a single finance agent registration with centrally managed upstream credentials.
+團隊的物件權限定義其成員可以存取哪些代理程式與 MCP 伺服器。兩個業務單位都使用單一的財務代理程式註冊，並由中央管理的上游憑證提供支援。
 
-![Teams tab showing shared-agents-team with its resources and combined spend against a $5 budget](/img/a2a_gateway_poc_teams_tab.png)
+![Teams 分頁顯示 shared-agents-team 及其資源，並對照 $5 預算的合併支出](/img/a2a_gateway_poc_teams_tab.png)
 
-When a request reaches the Agent Gateway, LiteLLM validates the caller's authentication and resolves the associated user and team. The gateway forwards that verified context to the agent as `X-LiteLLM-User-Id` and `X-LiteLLM-Team-Id`.
+當請求抵達 Agent Gateway 時，LiteLLM 會驗證呼叫者的身分驗證，並解析關聯的使用者與團隊。閘道會將該已驗證脈絡以 `X-LiteLLM-User-Id` 與 `X-LiteLLM-Team-Id` 的形式轉發給代理程式。
 
 ```mermaid
 sequenceDiagram
-    participant U as Business Unit User
+    participant U as 業務單位使用者
     participant AG as LiteLLM Agent Gateway
-    participant FA as Finance Agent
+    participant FA as 財務代理程式
 
     U->>AG: message/send with OIDC or API credential
-    AG->>AG: Authenticate caller and resolve user + team
-    AG->>FA: Forward request with verified identity
-    FA-->>AG: Agent response
-    AG-->>U: Agent response
+    AG->>AG: 驗證呼叫者並解析使用者 + 團隊
+    AG->>FA: 轉發帶有已驗證身分的請求
+    FA-->>AG: 代理程式回應
+    AG-->>U: 代理程式回應
 ```
 
-The agent can use this authenticated context for downstream authorization, attribution, and budget enforcement.
+代理程式可以使用這個已驗證的脈絡來進行下游授權、歸屬與預算強制執行。
 
-Clients invoke the shared agent through the standard A2A JSON-RPC interface:
+用戶端透過標準 A2A JSON-RPC 介面呼叫共享代理程式：
 
 ```bash
 curl -X POST "$LITELLM_BASE_URL/a2a/$AGENT_ID" \
@@ -97,110 +97,110 @@ curl -X POST "$LITELLM_BASE_URL/a2a/$AGENT_ID" \
   }'
 ```
 
-## Keep user attribution on model calls
+## 在模型呼叫中保留使用者歸屬 {#keep-user-attribution-on-model-calls}
 
-The finance agent calls the Model Gateway with its own workload identity. This keeps service authentication separate from the end user's authentication.
+財務代理程式以自身的工作負載身分呼叫 Model Gateway。這使得服務驗證與終端使用者的驗證彼此分離。
 
-For per-user attribution, the agent reads the verified `X-LiteLLM-User-Id` value from the inbound request and supplies it as the `user` field on its outbound model request. It also forwards LiteLLM trace and agent context headers so calls remain grouped under the same execution and spend is attributed to the correct agent.
+為了進行每位使用者的歸屬，代理程式會從傳入請求中讀取已驗證的 `X-LiteLLM-User-Id` 值，並將其作為其外送模型請求中的 `user` 欄位。它也會轉發 LiteLLM trace 與代理程式脈絡標頭，讓請求維持在同一個執行流程之下，並將支出歸屬給正確的代理程式。
 
-This gives LiteLLM two useful dimensions at the same time:
+這讓 LiteLLM 同時具備兩個有用的維度：
 
-- The workload identity identifies the agent making the model call.
-- The `user` field identifies the customer or business unit whose budget applies.
+- 工作負載身分可識別發起模型呼叫的代理程式。
+- `user` 欄位可識別適用其預算的客戶或業務單位。
 
-Multiple teams can therefore share one agent and one model route while LiteLLM maintains separate usage and budget records for each caller.
+因此，多個團隊可以共享一個代理程式與一條模型路由，同時 LiteLLM 仍能為每個呼叫者維持獨立的使用量與預算記錄。
 
-## Apply each user's permissions to MCP tools
+## 將每位使用者的權限套用至 MCP 工具 {#apply-each-users-permissions-to-mcp-tools}
 
-The same finance agent accesses tools through the MCP Gateway with centrally managed credentials for upstream systems.
+同一個財務代理程式會透過 MCP Gateway 存取工具，並為上游系統使用中央管理的憑證。
 
-In this example, the finance MCP server exposes two tools:
+在此範例中，財務 MCP 伺服器公開兩個工具：
 
-- `get_revenue_summary`, available to any authorized caller
-- `get_payroll_details`, restricted to users with the `finance-payroll-access` group
+- `get_revenue_summary`，任何獲授權的呼叫者皆可使用
+- `get_payroll_details`，限制為具有 `finance-payroll-access` 群組的使用者
 
-![MCP Servers tab showing the finance_mcp server registered on the MCP Gateway](/img/a2a_gateway_poc_mcp_servers_tab.png)
+![MCP Servers 分頁顯示已在 MCP Gateway 註冊的 finance_mcp 伺服器](/img/a2a_gateway_poc_mcp_servers_tab.png)
 
-For interactive per-user OAuth, configure the MCP server with `auth_type: oauth2` and `oauth2_flow: authorization_code`. The user completes a PKCE sign-in with the organization's identity provider. LiteLLM stores the resulting credential for that user and MCP server, then attaches it to later tool calls for the same user.
+若要針對每位使用者進行互動式 OAuth，請將 MCP 伺服器設定為 `auth_type: oauth2` 與 `oauth2_flow: authorization_code`。使用者會透過組織的身分提供者完成 PKCE 登入。LiteLLM 會為該使用者與 MCP 伺服器儲存產生的憑證，然後在同一位使用者後續的工具呼叫中附加該憑證。
 
-The upstream MCP server remains the authorization authority. It evaluates the token's claims and decides whether the user can access payroll details or only the broader revenue summary. LiteLLM centralizes the OAuth flow and credential handling while preserving each user's upstream identity.
+上游 MCP 伺服器仍是授權權威。它會評估權杖的聲明，並決定使用者可否存取薪資明細，或僅能存取更廣泛的營收摘要。LiteLLM 集中管理 OAuth 流程與憑證處理，同時保留每位使用者的上游身分。
 
-See [MCP OAuth](../../docs/mcp_oauth) for configuration options, including machine-to-machine and on-behalf-of flows.
+請參閱 [MCP OAuth](/docs/mcp_oauth) 以了解設定選項，包括 machine-to-machine 與 on-behalf-of 流程。
 
-## Keep user and agent attribution across multi-agent calls
+## 在多代理程式呼叫中保留使用者與代理程式歸屬 {#keep-user-and-agent-attribution-across-multi-agent-calls}
 
-An agent-to-agent workflow includes two useful attribution dimensions:
+代理程式對代理程式的工作流程包含兩個有用的歸屬維度：
 
-- The immediate workload identity, such as the finance agent
-- The originating user who started the workflow
+- 直接的工作負載身分，例如財務代理程式
+- 啟動工作流程的原始使用者
 
-LiteLLM records the immediate workload identity at every gateway hop. When a downstream agent also needs the originating user, the calling agent passes that authenticated user context as application metadata or a supported forwarded header.
+LiteLLM 會在每一個閘道路徑記錄直接的工作負載身分。當下游代理程式也需要原始使用者時，呼叫端代理程式會將該已驗證的使用者脈絡作為應用程式中繼資料或受支援的轉送標頭傳遞。
 
-Together, these dimensions give platform teams a complete view of the workflow: gateway logs show which agent made each call, while the propagated user context connects the workflow to the business unit that initiated it.
+結合這兩個維度，平台團隊就能完整檢視工作流程：閘道記錄會顯示哪個代理程式發出了每個請求，而傳遞下去的使用者脈絡則會將工作流程連結到發起它的業務單位。
 
-## Enforce independent budgets below the shared team
+## 在共享團隊之下強制執行獨立預算 {#enforce-independent-budgets-below-the-shared-team}
 
-Shared infrastructure can support an independent spend limit for every business unit.
+共享基礎架構可以支援每個業務單位各自獨立的支出上限。
 
-LiteLLM supports budgets at multiple levels, including keys, teams, agents, and customers. For a shared-agent deployment, create a customer record for each business unit and pass that customer ID in the model request's `user` field.
+LiteLLM 支援多層級預算，包括金鑰、團隊、代理程式與客戶。對於共享代理程式部署，請為每個業務單位建立一筆客戶記錄，並在模型請求的 `user` 欄位中傳入該客戶 ID。
 
-For example:
+例如：
 
-- `op-unit-a`: $0.01 budget
-- `op-unit-b`: $5.00 budget
-- Both units: the same finance agent and `shared-agents-team`
+- `op-unit-a`：$0.01 預算
+- `op-unit-b`：$5.00 預算
+- 兩個單位：相同的財務代理程式與 `shared-agents-team`
 
 ```mermaid
 sequenceDiagram
-    participant A as Op Unit A ($0.01 budget)
-    participant B as Op Unit B ($5.00 budget)
+    participant A as Op Unit A ($0.01 預算)
+    participant B as Op Unit B ($5.00 預算)
     participant Agent as Shared Finance Agent
     participant MG as LiteLLM Model Gateway
 
     A->>Agent: message/send
     Agent->>MG: chat completion with user=op-unit-a
-    MG-->>Agent: 429 after Op Unit A reaches its limit
+    MG-->>Agent: 在 Op Unit A 達到其上限後回傳 429
     B->>Agent: message/send
     Agent->>MG: chat completion with user=op-unit-b
-    MG-->>Agent: 200 while Op Unit B has budget
+    MG-->>Agent: 在 Op Unit B 仍有預算時回傳 200
 ```
 
-When one unit reaches its limit, LiteLLM applies that unit's budget policy independently. Other units continue using their own budgets, and the shared team budget provides an aggregate ceiling across them.
+當某個單位達到其上限時，LiteLLM 會獨立套用該單位的預算政策。其他單位會繼續使用自己的預算，而共享團隊預算則為它們提供總體上限。
 
-This gives FinOps teams both views they need: consolidated spend for the shared service and independent controls for each business unit using it.
+這讓 FinOps 團隊同時擁有所需的兩種視圖：共享服務的整體支出，以及使用它的每個業務單位的獨立控制。
 
-## Monitor identity and budgets in LiteLLM Logs
+## 在 LiteLLM Logs 中監控身分與預算 {#monitor-identity-and-budgets-in-litellm-logs}
 
-LiteLLM Logs gives platform, security, and FinOps teams a single operational view of shared-agent activity. When an agent carries the authenticated end-user context into its downstream calls, operators can filter by **End User** to follow one business unit across A2A agent invocations, model requests, and MCP tool operations.
+LiteLLM Logs 為平台、安全與 FinOps 團隊提供共享代理程式活動的單一操作檢視。當代理程式將已驗證的終端使用者脈絡帶入其下游請求時，操作人員可以依 **End User** 進行篩選，以追蹤某個業務單位在 A2A 代理程式呼叫、模型請求與 MCP 工具操作中的活動。
 
-Each log row includes the team, model or tool, token usage, cost, duration, and end-user ID. This makes it easy to start with a customer or business unit and trace the resources used throughout its workflow.
+每一筆記錄列都包含團隊、模型或工具、token 使用量、成本、持續時間，以及終端使用者 ID。這使得從客戶或業務單位開始，並追蹤其工作流程中所使用的資源變得容易。
 
-![LiteLLM Request Logs filtered by end user, showing A2A, model, and MCP activity for one business unit](/img/a2a_gateway_poc_logs_end_user_attribution.png)
+![依終端使用者篩選的 LiteLLM 請求記錄，顯示某一業務單位的 A2A、模型與 MCP 活動](/img/a2a_gateway_poc_logs_end_user_attribution.png)
 
-Request details make customer budget enforcement visible. The entry records the `429` status, the end-user ID, current spend, and configured budget limit. Budget evaluation occurs before model-provider invocation, so the entry shows zero model tokens and cost.
+請求詳細資訊可讓客戶預算執行情況一目了然。該項目會記錄 `429` 狀態、終端使用者 ID、目前支出，以及設定的預算上限。預算評估會在模型提供者呼叫之前進行，因此該項目顯示的模型 token 與成本皆為零。
 
-![LiteLLM request details for a budget enforcement event, including status 429, end-user ID, current spend, and budget limit](/img/a2a_gateway_poc_logs_budget_exceeded.png)
+![LiteLLM 的請求詳細資訊，顯示預算執行事件，包括狀態 429、終端使用者 ID、目前支出與預算上限](/img/a2a_gateway_poc_logs_budget_exceeded.png)
 
-For shared-agent environments, these views answer three common operational questions:
+對於共用代理程式環境，這些檢視可回答三個常見的營運問題：
 
-- Which business unit initiated the workflow?
-- Which agents, models, and tools handled its requests?
-- How did the applicable customer budget govern the request?
+- 是哪個業務單位啟動了此工作流程？
+- 哪些代理程式、模型與工具處理了其請求？
+- 適用的客戶預算如何約束該請求？
 
-Team and workload attribution support infrastructure-level reporting, while the end-user field provides the business-unit-level detail needed for access reviews, incident investigation, and spend management.
+團隊與工作負載歸屬支援基礎架構層級的報表，而終端使用者欄位則提供業務單位層級所需的詳細資訊，可用於存取審查、事件調查與支出管理。
 
-## A practical deployment pattern
+## 實用的部署模式 {#a-practical-deployment-pattern}
 
-To apply this architecture:
+若要套用此架構：
 
-1. Register shared agents in the Agent Gateway.
-2. Grant teams access to the required agents and MCP servers through object permissions.
-3. Configure OIDC or another supported authentication method that resolves end-user identity and team membership.
-4. Read the authenticated inbound user context and pass it as `user` on model calls.
-5. Configure per-user OAuth for MCP servers that enforce user-specific permissions.
-6. Create customer budgets for each business unit, with an optional aggregate team budget.
-7. Use LiteLLM Logs to audit the user, key, team, agent, latency, and cost for each request.
+1. 在 Agent Gateway 中註冊共用代理程式。
+2. 透過物件權限授予團隊存取所需代理程式與 MCP 伺服器的權限。
+3. 設定 OIDC 或其他受支援的驗證方法，以解析終端使用者身分與團隊成員資格。
+4. 讀取已驗證的傳入使用者情境，並在模型呼叫時將其作為 `user` 傳遞。
+5. 設定針對使用者的 MCP 伺服器 OAuth，以強制執行使用者特定權限。
+6. 為每個業務單位建立客戶預算，並可選擇加上一個彙總的團隊預算。
+7. 使用 LiteLLM Logs 稽核每一個請求的使用者、金鑰、團隊、代理程式、延遲與成本。
 
-The result is a shared agent platform with clear security and financial boundaries: users access their approved tools and data, spend is attributed to the correct business unit, and each unit is governed independently through one shared agent deployment.
+其結果是一個具有清楚安全與財務邊界的共用代理程式平台：使用者可存取其已核准的工具與資料，支出會歸屬至正確的業務單位，而每個單位則透過單一共用代理程式部署獨立治理。
 
-Explore the [Agent Gateway](../../docs/a2a), [MCP Gateway](../../docs/mcp), and [budget and rate-limit controls](../../docs/proxy/users) to build this pattern in your LiteLLM deployment.
+請探索 [Agent Gateway](/docs/a2a)、[MCP Gateway](/docs/mcp) 與 [預算及速率限制控制](/docs/proxy/users)，以在您的 LiteLLM 部署中建構此模式。

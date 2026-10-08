@@ -1,12 +1,12 @@
 ---
-title: Recommended Configurations
-sidebar_label: Recommended Configurations
-description: The bundled 1M Context, Anthropic, OpenAI, Gemini, and Lite presets as config.yaml, the configs the public benchmarks were run on, and how to choose between them.
+title: 推薦設定
+sidebar_label: 推薦設定
+description: 將內建的 1M Context、Anthropic、OpenAI、Gemini 與 Lite 預設值整理為 config.yaml、這些設定所對應的公開基準測試配置，以及如何在它們之間選擇。
 ---
 
-Recommended ladders, matching the dashboard's Auto Router templates. Every tier must exist as a `model_name` in the same file; swap the provider prefix or credentials for your own deployments and the router entry stays the same.
+建議的梯級，與儀表板的 Auto Router 範本相符。每個層級都必須在同一個檔案中存在為 `model_name`；將提供者前綴或憑證替換為您自己的部署，router 項目就會保持不變。
 
-| Ladder | SIMPLE | MEDIUM | COMPLEX | REASONING | Classifier |
+| 梯級 | SIMPLE | MEDIUM | COMPLEX | REASONING | 分類器 |
 | --- | --- | --- | --- | --- | --- |
 | [1M Context](#1m-context) | gpt-5.6-luna | gpt-5.6-terra | gpt-5.6-sol | claude-opus-5, high effort | heuristic v2 |
 | [Anthropic Family](#anthropic-family) | claude-haiku-4-5 | claude-sonnet-5 | claude-opus-5 | claude-opus-5, high effort | heuristic |
@@ -16,17 +16,17 @@ Recommended ladders, matching the dashboard's Auto Router templates. Every tier 
 | [Benchmark config](#the-benchmark-configuration) | claude-haiku-4-5 | claude-sonnet-5 | claude-opus-5 | claude-opus-5 | LLM, gpt-5.4-mini |
 | [Production config](#the-production-configuration) | claude-haiku-4-5 | claude-haiku-4-5 | claude-sonnet-5 | claude-opus-5 | heuristic |
 
-## Choosing a ladder
+## 選擇梯級 {#choosing-a-ladder}
 
-- **One family** when clients depend on provider-specific behavior (Anthropic cache control, OpenAI reasoning params). Every tier stays on one API surface.
-- **Lite** when cost beats provider consistency and traffic is agentic. Mixed providers, LLM classifier with the `agentic` rubric.
-- **1M Context** for long prompts. Luna, Terra, Sol, then Opus 5 at high effort, with the heuristic v2 classifier.
-- **Same model, more effort** for the top rung. Costs more output tokens, not a higher per-token rate. Pattern: [effort ladders](/docs/proxy/auto_routing#effort-ladders).
-- All ladders leave `session_affinity` off (the default; see [prompt caching](/docs/auto_router/prompt_caching)) and set `escalation_keywords: ["LITELLM ESCALATE"]`, which bumps a request one tier when the exact phrase appears. Matching is case-sensitive.
+- **單一家族**：當用戶端依賴提供者特定行為（Anthropic 快取控制、OpenAI reasoning 參數）時。每個層級都維持在同一個 API 表面。
+- **Lite**：當成本比提供者一致性更重要且流量是 agentic 時。混合提供者，使用帶有 `agentic` rubric 的 LLM 分類器。
+- **1M Context**：適用於長提示。Luna、Terra、Sol，然後在高 effort 時用 Opus 5，搭配 heuristic v2 分類器。
+- **相同模型，更多 effort**：適用於最上層。增加的是輸出 token 成本，而不是更高的每 token 費率。模式：[effort 梯級](/docs/proxy/auto_routing#effort-ladders)。
+- 所有梯級都會關閉 `session_affinity`（預設；請參閱 [prompt caching](/docs/auto_router/prompt_caching)），並設定 `escalation_keywords: ["LITELLM ESCALATE"]`；當完全相同的片語出現時，會將請求提升一個層級。比對區分大小寫。
 
-## Anthropic Family
+## Anthropic Family {#anthropic-family}
 
-Haiku, Sonnet, Opus, then Opus at high reasoning effort.
+Haiku、Sonnet、Opus，然後在高 reasoning effort 時使用 Opus。
 
 ```yaml title="config.yaml" keep-model-ids
 model_list:
@@ -63,11 +63,11 @@ model_list:
       complexity_router_default_model: claude-sonnet-5
 ```
 
-Keep `claude` in the router name if Claude Code or Claude Desktop needs to discover it. See [Admin Setup](/docs/auto_router/setup#claude-code-and-claude-desktop).
+如果 Claude Code 或 Claude Desktop 需要發現它，請在 router 名稱中保留 `claude`。請參閱 [管理員設定](/docs/auto_router/setup#claude-code-and-claude-desktop)。
 
-## OpenAI Family
+## OpenAI Family {#openai-family}
 
-Luna, Terra, Sol, then Sol at xhigh reasoning effort.
+Luna、Terra、Sol，然後在 xhigh reasoning effort 時使用 Sol。
 
 ```yaml title="config.yaml"
 model_list:
@@ -104,9 +104,9 @@ model_list:
       complexity_router_default_model: {{openai_large}}
 ```
 
-## Gemini Family
+## Gemini Family {#gemini-family}
 
-Flash Lite 2.5, Flash Lite 3.1, Flash 3.7, then Pro 3.1.
+Flash Lite 2.5、Flash Lite 3.1、Flash 3.7，然後是 Pro 3.1。
 
 ```yaml title="config.yaml" keep-model-ids
 model_list:
@@ -142,9 +142,9 @@ model_list:
       complexity_router_default_model: gemini-3.1-flash-lite
 ```
 
-## Lite
+## Lite {#lite}
 
-Cross-provider, built for cost. DeepSeek V4 Flash also serves as the LLM classifier, with the `agentic` rubric and a zero-turn context window.
+跨提供者，以成本為導向。DeepSeek V4 Flash 也可作為 LLM 分類器，採用 `agentic` rubric，並使用零輪次上下文視窗。
 
 ```yaml title="config.yaml"
 model_list:
@@ -187,11 +187,11 @@ model_list:
       complexity_router_default_model: muse-spark-1.2-xhigh
 ```
 
-## 1M Context
+## 1M Context {#1m-context}
 
-Luna, Terra, Sol, then Opus 5 at high reasoning effort. Uses the heuristic v2 classifier, so classification adds no LLM call.
+Luna、Terra、Sol，然後在高 reasoning effort 時使用 Opus 5。使用 heuristic v2 分類器，因此分類不會增加任何 LLM 請求。
 
-The GPT tiers accept up to 922K input tokens and Opus 5 accepts 1M. The router moves oversized prompts to the lowest higher tier with capacity. See [context-window escalation](/docs/proxy/auto_routing#context-window).
+GPT 層級最多可接受 922K 輸入 token，而 Opus 5 可接受 1M。router 會將超出大小的提示移到具備容量的下一個最低較高層級。請參閱 [context-window escalation](/docs/proxy/auto_routing#context-window)。
 
 ```yaml title="config.yaml"
 model_list:
@@ -228,10 +228,10 @@ model_list:
       complexity_router_default_model: {{openai_large}}
 ```
 
-## The benchmark configuration
+## 基準測試設定 {#the-benchmark-configuration}
 
-- [Terminal-Bench](/blog/auto-router-terminal-bench-benchmark): Opus-5 solve rate at 27% lower cost, this config, gpt-5.4-mini classifier reading only the current message.
-- [Cost and quality](/blog/auto-router-cost-quality-benchmark) and [prompt caching](/blog/auto-router-prompt-caching-benchmark): same tiers, heuristic classifier.
+- [Terminal-Bench](/blog/auto-router-terminal-bench-benchmark)：Opus-5 solve rate 低 27% 成本，這個設定，gpt-5.4-mini 分類器只讀取目前訊息。
+- [Cost and quality](/blog/auto-router-cost-quality-benchmark) 與 [prompt caching](/blog/auto-router-prompt-caching-benchmark)：相同層級，heuristic 分類器。
 
 ```yaml title="config.yaml" keep-model-ids
 model_list:
@@ -268,17 +268,17 @@ model_list:
       complexity_router_default_model: claude-sonnet-5
 ```
 
-The classifier context window is the knob to revisit for your own traffic:
+分類器上下文視窗是您自己流量最值得重新檢視的調整旋鈕：
 
-- Terminal-Bench: last 3 user messages raised solve rate 66.7% to 76.2% and cost 44%. Assistant replies made both worse.
-- Chat traffic ([v1.97 measurements](/blog/auto-router-context-and-benchmarks)): prior turns raised follow-up agreement 14% to 78%.
-- Shipped default: 3 user turns, no assistant turns.
+- Terminal-Bench：最近 3 則使用者訊息讓 solve rate 從 66.7% 提升到 76.2%，成本增加 44%。assistant 回覆會讓兩者都更差。
+- 聊天流量（[v1.97 measurements](/blog/auto-router-context-and-benchmarks)）：先前輪次讓後續回應一致率從 14% 提升到 78%。
+- 已發布的預設值：3 則使用者輪次，不含 assistant 輪次。
 
-## The production configuration
+## Production config {#the-production-configuration}
 
-- The [production case study](/blog/auto-router-production-savings) that reported 51.1% savings.
-- Haiku serves both SIMPLE and MEDIUM; Opus is reserved for REASONING.
-- 95% of requests never reached the flagship tier.
+- 報告 51.1% 節省的 [production case study](/blog/auto-router-production-savings)。
+- Haiku 同時處理 SIMPLE 與 MEDIUM；Opus 保留給 REASONING。
+- 95% 的請求從未到達旗艦層級。
 
 ```yaml title="config.yaml" keep-model-ids
 model_list:
@@ -307,11 +307,11 @@ model_list:
       complexity_router_default_model: claude-haiku-4-5
 ```
 
-## Coding agents with load balancing
+## 具備負載平衡的 coding agents {#coding-agents-with-load-balancing}
 
-- For a tier with more than one deployment behind it, for example the same Claude model on Anthropic and on Bedrock.
-- `session_affinity` pins the tier for the session; `deployment_affinity` plus the `prompt_caching` pre-call check pins the deployment holding the cache.
-- Both matter on agent traffic. Details: [Session affinity](/docs/proxy/auto_routing#session-affinity).
+- 適用於其後方有多個部署的層級，例如 Anthropic 與 Bedrock 上的相同 Claude model。
+- `session_affinity` 會將該層級鎖定於該 session；`deployment_affinity` 加上 `prompt_caching` 的 pre-call 檢查會將具備快取的部署鎖定。
+- 這兩者對 agent 流量都很重要。細節：[Session affinity](/docs/proxy/auto_routing#session-affinity)。
 
 ```yaml title="config.yaml" keep-model-ids
 model_list:

@@ -1,26 +1,26 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vercel AI Gateway
+# Vercel AI Gateway {#vercel-ai-gateway}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Vercel AI Gateway provides a unified interface to access multiple AI providers through a single endpoint, with built-in caching, rate limiting, and analytics. |
-| Provider Route on LiteLLM | `vercel_ai_gateway/` |
-| Link to Provider Doc | [Vercel AI Gateway Documentation ↗](https://vercel.com/docs/ai-gateway) |
-| Base URL | `https://ai-gateway.vercel.sh/v1` |
-| Supported Operations | `/chat/completions`, `/embeddings`, `/models` |
+| 說明 | Vercel AI Gateway 提供透過單一端點存取多個 AI 提供者的統一介面，內建快取、速率限制與分析。 |
+| LiteLLM 上的提供者路由 | `vercel_ai_gateway/` |
+| 提供者文件連結 | [Vercel AI Gateway 文件 ↗](https://vercel.com/docs/ai-gateway) |
+| 基礎 URL | `https://ai-gateway.vercel.sh/v1` |
+| 支援的操作 | `/chat/completions`, `/embeddings`, `/models` |
 
 <br />
 <br />
 
 https://vercel.com/docs/ai-gateway
 
-**We support ALL models available through Vercel AI Gateway, just set `vercel_ai_gateway/` as a prefix when sending completion requests**
+**我們支援透過 Vercel AI Gateway 可用的所有模型，只要在送出 completion 請求時將 `vercel_ai_gateway/` 設為前綴即可**
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["VERCEL_AI_GATEWAY_API_KEY"] = ""  # your Vercel AI Gateway API key
@@ -28,7 +28,7 @@ os.environ["VERCEL_AI_GATEWAY_API_KEY"] = ""  # your Vercel AI Gateway API key
 os.environ["VERCEL_OIDC_TOKEN"] = ""  # your Vercel OIDC token for authentication
 ```
 
-## Optional Variables
+## 選用變數 {#optional-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["VERCEL_SITE_URL"] = ""  # your site url
@@ -36,11 +36,11 @@ os.environ["VERCEL_SITE_URL"] = ""  # your site url
 os.environ["VERCEL_APP_NAME"] = ""  # your app name
 ```
 
-Note: see the [Vercel AI Gateway docs](https://vercel.com/docs/ai-gateway#using-the-ai-gateway-with-an-api-key) for instructions on obtaining a key.
+註：請參閱 [Vercel AI Gateway 文件](https://vercel.com/docs/ai-gateway#using-the-ai-gateway-with-an-api-key) 以取得金鑰的操作說明。
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Vercel AI Gateway Non-streaming Completion"
 import os
@@ -60,7 +60,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Vercel AI Gateway Streaming Completion"
 import os
@@ -82,7 +82,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Embeddings
+### 嵌入向量 {#embeddings}
 
 ```python showLineNumbers title="Vercel AI Gateway Embeddings"
 import os
@@ -99,7 +99,7 @@ response = embedding(
 print(response.data[0]["embedding"][:5])  # Print first 5 dimensions
 ```
 
-You can also specify the `dimensions` parameter:
+您也可以指定 `dimensions` 參數：
 
 ```python showLineNumbers title="Vercel AI Gateway Embeddings with Dimensions"
 response = embedding(
@@ -109,9 +109,9 @@ response = embedding(
 )
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add the following to your LiteLLM Proxy configuration file:
+請將下列內容加入您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -131,7 +131,7 @@ model_list:
       api_key: os.environ/VERCEL_AI_GATEWAY_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -244,8 +244,8 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For more detailed information on using the LiteLLM Proxy, see the [LiteLLM Proxy documentation](../providers/litellm_proxy).
+如需關於使用 LiteLLM Proxy 的更詳細資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- [Vercel AI Gateway Documentation](https://vercel.com/docs/ai-gateway)
+- [Vercel AI Gateway 文件](https://vercel.com/docs/ai-gateway)

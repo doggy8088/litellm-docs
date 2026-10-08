@@ -1,5 +1,5 @@
 ---
-title: "v1.90.3 - Bedrock Tool Config & MCP Log Redaction"
+title: "v1.90.3 - Bedrock 工具設定與 MCP 記錄去識別化"
 slug: "v1-90-3"
 date: 2026-07-03T19:17:20
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,14 +43,14 @@ pip install litellm==1.90.3
 </TabItem>
 </Tabs>
 
-`v1.90.3` is a patch release on top of [`v1.90.2`](/release_notes/v1.90.2/v1-90-2). It drops the unsupported `toolSpec.strict` field for Bedrock Converse on Claude Opus 4.7/4.8, honors the cache TTL for Bedrock `tool_config` cache injection points, and stops the MCP client from logging tool-call input.
+`v1.90.3` 是建構於 [`v1.90.2`](/release_notes/v1.90.2/v1-90-2) 之上的修補版。它移除了 Claude Opus 4.7/4.8 的 Bedrock Converse 不支援的 `toolSpec.strict` 欄位，會遵守 Bedrock `tool_config` 快取注入點的快取 TTL，並停止 MCP client 記錄 tool-call input。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(bedrock/converse): drop toolSpec.strict for Opus 4.7/4.8 - [PR #31582](https://github.com/BerriAI/litellm/pull/31582)
-- fix(bedrock): honor ttl for tool_config cache injection points - [PR #31929](https://github.com/BerriAI/litellm/pull/31929)
-- fix(mcp): stop logging tool-call input in the MCP client - [PR #31393](https://github.com/BerriAI/litellm/pull/31393)
+- fix(bedrock/converse): 為 Opus 4.7/4.8 移除 toolSpec.strict - [PR #31582](https://github.com/BerriAI/litellm/pull/31582)
+- fix(bedrock): 在 tool_config 快取注入點遵循 ttl - [PR #31929](https://github.com/BerriAI/litellm/pull/31929)
+- fix(mcp): 停止在 MCP 用戶端記錄 tool-call 輸入 - [PR #31393](https://github.com/BerriAI/litellm/pull/31393)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.90.2...v1.90.3

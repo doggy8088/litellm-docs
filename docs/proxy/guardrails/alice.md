@@ -1,21 +1,21 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Alice
+# Alice {#alice}
 
-The Alice guardrail screens prompts and model responses against policies you configure in Alice. On every call it forwards the request to Alice, which decides what in the payload is worth evaluating and answers with a verdict the guardrail enforces: allow the call, block it, replace flagged text, or record a detection and let the call through.
+Alice 防護欄會根據您在 Alice 中設定的政策，檢查提示與模型回應。每次呼叫時，它都會將請求轉送給 Alice，由 Alice 判定酬載中哪些內容值得評估，並回傳防護欄所執行的判定：允許呼叫、封鎖、替換標記文字，或記錄偵測並讓呼叫通過。
 
-Policies are configured per application rather than globally, so one proxy can enforce a different policy set per team or product while sharing a single project credential. Which application a call belongs to is named on the LiteLLM virtual key, described under [Naming the application](#naming-the-application).
+政策是依應用程式而非全域進行設定，因此單一 proxy 可以在共用同一組專案憑證的同時，為不同團隊或產品強制執行不同的政策集合。呼叫屬於哪個應用程式，會在 LiteLLM 虛擬金鑰中命名，請參閱［命名應用程式］(#naming-the-application)。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Get your Alice API key
+### 1. 取得您的 Alice API 金鑰 {#1-get-your-alice-api-key}
 
-In the Alice platform, open **Account Settings**, then **API Keys**, and create a key for the project whose policies you want enforced.
+在 Alice 平台中，開啟 **Account Settings**，然後開啟 **API Keys**，並為您要強制執行其政策的專案建立金鑰。
 
-### 2. Add Alice to your LiteLLM config.yaml
+### 2. 將 Alice 新增至您的 LiteLLM config.yaml {#2-add-alice-to-your-litellm-configyaml}
 
-Define the guardrail under the `guardrails` section. One entry covers both directions; list both hook points in `mode` so prompts and responses are screened.
+在 `guardrails` 區段下定義防護欄。單一項目同時涵蓋雙向；請在 `mode` 中列出兩個回呼點，以便同時檢查提示與回應。
 
 ```yaml title="config.yaml"
 model_list:
@@ -33,7 +33,7 @@ guardrails:
       api_key: os.environ/ALICE_API_KEY
 ```
 
-### 3. Start LiteLLM Proxy
+### 3. 啟動 LiteLLM Proxy {#3-start-litellm-proxy}
 
 ```shell
 export OPENAI_API_KEY=sk-...
@@ -41,9 +41,9 @@ export ALICE_API_KEY=...
 litellm --config config.yaml
 ```
 
-### 4. Create a virtual key naming the application
+### 4. 建立命名該應用程式的虛擬金鑰 {#4-create-a-virtual-key-naming-the-application}
 
-Alice resolves the application from the authenticated virtual key, so a request made with the master key is refused. Create a key that names one:
+Alice 會從已驗證的虛擬金鑰解析應用程式，因此使用主金鑰發出的請求會被拒絕。建立一個命名該應用程式的金鑰：
 
 ```shell
 curl -sSLX POST 'http://0.0.0.0:4000/key/generate' \
@@ -55,9 +55,9 @@ curl -sSLX POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ```
 
-### 5. Make your first request
+### 5. 發出您的第一個請求 {#5-make-your-first-request}
 
-The blocked example assumes a policy set to block for the application this key maps to.
+被封鎖的範例假設此金鑰對應的應用程式，其政策集合設定為封鎖。
 
 <Tabs>
 <TabItem label="Blocked request" value="blocked">
@@ -85,7 +85,7 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }
 ```
 
-The message is the block text configured on the matching policy in Alice, falling back to a generic sentence when the policy names none.
+此訊息是 Alice 中對應政策所設定的封鎖文字；如果該政策未命名文字，則會回退為通用句子。
 
 </TabItem>
 <TabItem label="Permitted request" value="allowed">
@@ -102,50 +102,50 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-The request reaches the model and the response is returned unchanged.
+請求會送達模型，且回應會在未變更的情況下返回。
 
 </TabItem>
 </Tabs>
 
-## Naming the application
+## 命名應用程式 {#naming-the-application}
 
-One Alice credential covers a whole project, and a project usually holds several applications, so something on each request has to say which application's policies apply. That is the virtual key, and nothing else, because a virtual key is the only thing on the request that the proxy itself authenticated.
+一組 Alice 憑證涵蓋整個專案，而專案通常包含多個應用程式，因此每個請求中都必須有某些內容指出適用哪個應用程式的政策。這就是虛擬金鑰，而且只能是它，因為虛擬金鑰是 proxy 本身已驗證的請求中唯一的內容。
 
-Issue one key per application and name the application on it, as in step 4 above. `alice_app_id` in the key's metadata is read first; the key's `key_alias` is the fallback, so naming the key after the application and setting no metadata also works. Either value must match the Application ID on that application in Alice, which is the free-form identifier shown on the add-application form.
+每個應用程式發行一個金鑰，並在其上命名該應用程式，如上方步驟 4 所示。金鑰中 `alice_app_id` 的中繼資料會先讀取；金鑰的 `key_alias` 是回退值，因此也可以將金鑰命名為應用程式名稱，且不設定中繼資料。任一值都必須與 Alice 中該應用程式的 Application ID 相符，這是新增應用程式表單上顯示的自由格式識別碼。
 
-A caller cannot override this. The proxy strips caller-supplied `user_api_key_*` fields from the request before any guardrail sees it, so a developer cannot point their own traffic at an application with more permissive policies than the one their key was issued for. A request whose key names no application is refused rather than evaluated against a guess.
+呼叫者無法覆寫這一點。proxy 會在任何防護欄看到請求之前，從請求中移除呼叫者提供的 `user_api_key_*` 欄位，因此開發者無法把自己的流量指向比其金鑰原本發行對象更寬鬆的政策所屬應用程式。如果某個請求的金鑰未命名任何應用程式，則會被拒絕，而不是以猜測結果進行評估。
 
-## What is sent to Alice
+## 傳送給 Alice 的內容 {#what-is-sent-to-alice}
 
-The guardrail forwards the hook's own arguments, renaming and selecting nothing, so that what is worth evaluating stays a decision Alice makes rather than one baked into the gateway.
+防護欄會轉送該回呼點本身的引數，不進行重新命名也不挑選，讓值得評估的內容保持為 Alice 所做的決定，而不是內建於閘道中的決定。
 
-Credentials are the single exception. `secret_fields`, `api_key`, `raw_headers`, `headers`, and `provider_specific_header` are dropped wherever they appear in the payload, at any nesting depth, because the caller's `Authorization` token lives in several of them and a guardrail endpoint is not a place to send it. LiteLLM already excludes these from its own spend logs. The removal happens on a copy; the rest of the pipeline still sees the original.
+憑證是唯一例外。`secret_fields`、`api_key`、`raw_headers`、`headers` 與 `provider_specific_header` 會在酬載中出現的任何位置被移除，不論巢狀深度為何，因為呼叫者的 `Authorization` token 會出現在其中幾個欄位，而防護欄端點不應傳送它。LiteLLM 已將這些內容自其自身的支出記錄中排除。移除作業會發生在副本上；其餘管線仍會看到原始內容。
 
-## Verdicts
+## 判定 {#verdicts}
 
-Alice answers with one of four verdicts. `ALLOW` proceeds. `BLOCK` raises a 400 carrying the policy's own message. `MASK` substitutes redacted text positionally over the texts that were submitted; if any replacement cannot be applied the call is blocked instead, so partially masked content never reaches the model. `DETECT` proceeds and logs a warning carrying the correlation id, which is how a detection recorded on the Alice side ties back to a specific request.
+Alice 會回應四種判定之一。`ALLOW` 繼續執行。`BLOCK` 會擲回一個 400，並帶有該政策自己的訊息。`MASK` 會依位置以已移除文字取代提交的文字；如果任何取代無法套用，則改為封鎖該呼叫，因此部分遮罩的內容永遠不會送達模型。`DETECT` 會繼續執行，並記錄一則包含關聯 ID 的警告，這是 Alice 端記錄的偵測如何回溯到特定請求的方式。
 
-Anything else, including a response that cannot be read, is treated as an outage rather than as permission.
+任何其他情況，包括無法讀取的回應，都會被視為服務中斷，而非授權。
 
-## Supported parameters
+## 支援的參數 {#supported-parameters}
 
-`api_key` is required, either in the config or through the `ALICE_API_KEY` environment variable.
+`api_key` 為必要項目，可在設定檔中或透過 `ALICE_API_KEY` 環境變數提供。
 
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |---|---|---|
-| `api_key` | `ALICE_API_KEY` | Alice project API key |
-| `api_base` | `https://api.alice.io` | Host only; falls back to `ALICE_API_BASE`. The evaluate path is appended automatically |
-| `unreachable_fallback` | `fail_closed` | Behavior when Alice cannot be reached, returns a 5xx, or answers something unreadable. `fail_open` allows the call and logs a critical line instead |
+| `api_key` | `ALICE_API_KEY` | Alice 專案 API 金鑰 |
+| `api_base` | `https://api.alice.io` | 僅主機；回退至 `ALICE_API_BASE`。evaluate 路徑會自動附加 |
+| `unreachable_fallback` | `fail_closed` | 當 Alice 無法連線、回傳 5xx，或回應無法讀取時的行為。`fail_open` 會允許呼叫並記錄一行 critical |
 
-A 4xx from Alice, such as a rejected credential, is not treated as unreachable. That is a configuration error rather than an outage, so it propagates rather than silently failing open.
+來自 Alice 的 4xx，例如遭拒絕的憑證，不會被視為無法連線。那是設定錯誤，而不是服務中斷，因此會向上傳遞，而不是靜默失敗並開放通過。
 
-## Supported modes
+## 支援的模式 {#supported-modes}
 
-Alice supports `pre_call`, `during_call`, and `post_call`. Use `pre_call` to screen prompts before the model is reached and `post_call` to screen completions.
+Alice 支援 `pre_call`、`during_call` 與 `post_call`。使用 `pre_call` 可在模型收到請求前檢查提示，並使用 `post_call` 檢查 completions。
 
-Streaming responses are screened on `post_call`, where blocking works but masking does not: LiteLLM's default streaming transform discards returned text rewrites, so a `MASK` verdict on a streamed response has no effect while a `BLOCK` still stops the stream. Screen prompts on `pre_call` if you need masking to apply reliably.
+串流回應會在 `post_call` 上檢查，其中封鎖可運作但遮罩不行：LiteLLM 的預設串流轉換會捨棄回傳的文字重寫，因此在串流回應上，`MASK` 判定不會產生效果，而 `BLOCK` 仍會停止串流。如果您需要可靠套用遮罩，請在 `pre_call` 上檢查提示。
 
-## Further reading
+## 延伸閱讀 {#further-reading}
 
-- [Alice documentation](https://docs.alice.io)
+- [Alice 文件](https://docs.alice.io)
 - [Alice](https://alice.io)

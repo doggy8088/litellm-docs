@@ -1,13 +1,13 @@
 import Image from '@theme/IdealImage';
 
-# LiteLLM Proxy Performance
+# LiteLLM 代理效能 {#litellm-proxy-performance}
 
-The numbers on this page compare the proxy against calling a provider directly. For gateway capacity numbers (requests, tokens, and latency per pod at scale) see [Benchmarks](../benchmarks.md).
+本頁上的數字比較了 proxy 與直接呼叫提供者的差異。若要查看閘道容量數字（規模化下每個 pod 的請求、token 與延遲），請參閱 [基準測試](../benchmarks.md)。
 
-### Throughput - 30% Increase
-LiteLLM proxy + Load Balancer gives **30% increase** in throughput compared to Raw OpenAI API
+### 吞吐量 - 提升 30% {#throughput---30-increase}
+LiteLLM 代理程式 + 負載平衡器與原始 OpenAI API 相比，可使吞吐量**提升 30%**
 <Image img={require('../../img/throughput.png')} />
 
-### Latency Added - 0.00325 seconds
-LiteLLM proxy adds **0.00325 seconds** latency as compared to using the Raw OpenAI API
+### 額外延遲 - 0.00325 秒 {#latency-added---000325-seconds}
+與使用原始 OpenAI API 相比，LiteLLM 代理程式會增加**0.00325 秒**延遲
 <Image img={require('../../img/latency.png')} />

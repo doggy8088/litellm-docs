@@ -2,56 +2,56 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Grant MCP Server Access to Keys and Teams
+# 將 MCP 伺服器存取授予金鑰與團隊 {#grant-mcp-server-access-to-keys-and-teams}
 
-This guide walks through granting an MCP server to a virtual key and to a team, first in the Admin UI and then through the management API, and shows how the resulting access resolves when the key and the team both carry a grant. The rules themselves (six-level intersection, `no-mcp-servers`, `require_key_mcp_access_defined`, access groups, per-entity tool permissions) live in [MCP Permission Management](./mcp_control); this page is the procedure that applies them.
+本指南說明如何將 MCP 伺服器授予虛擬金鑰與團隊，先在 Admin UI 中操作，再透過管理 API 操作，並展示當金鑰與團隊都具有授權時，最終存取如何解析。規則本身（六層交集、`no-mcp-servers`、`require_key_mcp_access_defined`、存取群組、每個實體的工具權限）載於 [MCP 權限管理](./mcp_control)；本頁則是套用這些規則的操作流程。
 
-## Before you start
+## 開始前 {#before-you-start}
 
-Register the MCP server first, either in `config.yaml` under `mcp_servers` or from **MCP Servers** in the Admin UI (see [MCP Gateway](./mcp#adding-your-mcp)). Every grant below refers to the server by its `server_id` (a UUID for servers added in the UI) or by its `server_name` alias (the config key, for example `deepwiki`). Both forms are accepted by the API and resolve to the same server.
+請先註冊 MCP 伺服器，可在 `config.yaml` 下的 `mcp_servers` 中進行，或從 Admin UI 的 **MCP Servers** 進行（請參見 [MCP Gateway](./mcp#adding-your-mcp)）。以下每個授權都會依其 `server_id`（對於在 UI 中新增的伺服器，這是一個 UUID）或其 `server_name` 別名（設定鍵，例如 `deepwiki`）來指向該伺服器。API 可接受這兩種形式，並會解析為同一個伺服器。
 
-If several servers should always be granted together, put them in an [access group](./mcp_control#grouping-mcps-access-groups) and grant the group instead. If a key or team should see a hand-picked subset of tools across servers, create a [toolset](./mcp_toolsets) and grant that.
+如果有多個伺服器應該總是一起授權，請將它們放入一個 [存取群組](./mcp_control#grouping-mcps-access-groups) 並改為授權該群組。如果金鑰或團隊應只看見跨伺服器手動挑選的一部分工具，請建立一個 [工具集](./mcp_toolsets) 並授權它。
 
-## The grant fields
+## 授權欄位 {#the-grant-fields}
 
-MCP access is stored in the `object_permission` block of the key or team. The same four fields work on both, and they map one to one onto the controls in the Admin UI **MCP Settings** section.
+MCP 存取會儲存在金鑰或團隊的 `object_permission` 區塊中。這四個欄位可同時用於兩者，且它們與 Admin UI **MCP Settings** 區段中的控制項一一對應。
 
-| Field | Type | What it grants |
+| 欄位 | 類型 | 授予的內容 |
 |-------|------|----------------|
-| `mcp_servers` | `list[str]` | Server IDs or aliases the entity may reach. The sentinel `no-mcp-servers` blocks all MCP access, see [Opting a key out](./mcp_control#opting-a-key-out-of-all-mcp-servers-no-mcp-servers) |
-| `mcp_access_groups` | `list[str]` | Access group names. Every server in the group is granted |
-| `mcp_toolsets` | `list[str]` | Toolset IDs. Grants the servers the toolset draws from, limited to the tools it names |
-| `mcp_tool_permissions` | `dict[str, list[str]]` | Per-server tool allowlist, keyed by server ID or alias. Omit a server to allow all of its tools. A server named here counts as granted even if it is missing from `mcp_servers` |
+| `mcp_servers` | `list[str]` | 實體可存取的伺服器 ID 或別名。哨兵值 `no-mcp-servers` 會封鎖所有 MCP 存取，請參見 [讓金鑰退出](./mcp_control#opting-a-key-out-of-all-mcp-servers-no-mcp-servers) |
+| `mcp_access_groups` | `list[str]` | 存取群組名稱。群組中的每個伺服器都會被授予 |
+| `mcp_toolsets` | `list[str]` | 工具集 ID。授予工具集所來源的伺服器，但僅限於其所列出的工具 |
+| `mcp_tool_permissions` | `dict[str, list[str]]` | 以伺服器 ID 或別名為鍵的逐伺服器工具允許清單。省略某個伺服器即可允許其所有工具。此處列出的伺服器即使未包含於 `mcp_servers` 中，仍視為已授權 |
 
-A key or team with none of these fields set has no MCP restriction of its own; what that means at runtime depends on the other levels, see [How key and team grants resolve](#how-key-and-team-grants-resolve).
+若金鑰或團隊未設定這些欄位，則其本身沒有 MCP 限制；執行時的意義取決於其他層級，請參見 [金鑰與團隊授權如何解析](#how-key-and-team-grants-resolve)。
 
-## Grant an MCP server to a virtual key
+## 將 MCP 伺服器授予虛擬金鑰 {#grant-an-mcp-server-to-a-virtual-key}
 
-### Admin UI
+### Admin UI {#admin-ui}
 
-Open **Virtual Keys** in the left sidebar (`http://localhost:4000/ui/api-keys`) and click **+ Create New Key**. Fill in the owner, key name and models as usual, then scroll down and expand the **MCP Settings** accordion. The **Allowed MCP Servers** selector lists every registered server, access group and toolset, plus a **No MCP Servers** entry that blocks all MCP access for the key.
+在左側側邊欄開啟 **Virtual Keys**（`http://localhost:4000/ui/api-keys`），然後按一下 **+ Create New Key**。照常填入擁有者、金鑰名稱與模型，接著向下捲動並展開 **MCP Settings** 手風琴區塊。**Allowed MCP Servers** 選擇器會列出所有已註冊的伺服器、存取群組與工具集，另外還有一個 **No MCP Servers** 項目，可為該金鑰封鎖所有 MCP 存取。
 
 <Image
   img={require('../img/mcp_grant_key_selector.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
-  alt="Allowed MCP Servers selector on the Create New Key form listing No MCP Servers, an access group, an MCP server and a toolset"
+  alt="Create New Key 表單上的 Allowed MCP Servers 選擇器，列出 No MCP Servers、一個存取群組、一個 MCP 伺服器與一個工具集"
 />
 
-Pick one or more entries. Each selected server (including servers resolved from an access group) expands into its tool list underneath, with every tool on by default. Untick a tool to remove it from the key; the header shows how many tools remain allowed. Click **Create Key** and copy the key from the confirmation dialog.
+選取一個或多個項目。每個已選取的伺服器（包含從存取群組解析出的伺服器）都會在下方展開其工具清單，並預設勾選所有工具。取消勾選某個工具即可將其從金鑰中移除；標題會顯示仍允許的工具數量。按一下 **Create Key**，並從確認對話框中複製金鑰。
 
 <Image
   img={require('../img/mcp_grant_key_tools.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
-  alt="MCP Settings on the Create New Key form with the deepwiki server selected and two of three tools allowed"
-/>
+  alt="Create New Key 表單中的 MCP Settings，已選取 deepwiki 伺服器，且三個工具中有兩個被允許"
+ />
 
-The selection is saved as `object_permission.mcp_servers` (or `mcp_access_groups` / `mcp_toolsets`, depending on what you picked) and the tool toggles as `object_permission.mcp_tool_permissions`. Read it back with `GET /key/info?key=<key>`.
+選擇內容會儲存為 `object_permission.mcp_servers`（或 `mcp_access_groups` / `mcp_toolsets`，視您所選內容而定），工具切換狀態則儲存為 `object_permission.mcp_tool_permissions`。可使用 `GET /key/info?key=<key>` 讀回。
 
-To change an existing key, click the key in the **Virtual Keys** table, open its **Settings** tab, click **Edit Settings**, change **MCP Servers / Access Groups** and the tool toggles, then click **Save Changes**.
+若要變更現有金鑰，請在 **Virtual Keys** 表格中按一下該金鑰，開啟其 **Settings** 分頁，按一下 **Edit Settings**，變更 **MCP Servers / Access Groups** 與工具切換，然後按一下 **Save Changes**。
 
-### API
+### API {#api}
 
-`POST /key/generate` takes the grant inline. The example below grants one server and restricts the key to two of its tools:
+`POST /key/generate` 會直接內嵌授權。以下範例授予一個伺服器，並將金鑰限制為其中兩個工具：
 
 ```bash title="Create a key with an MCP grant" showLineNumbers
 curl -X POST "http://localhost:4000/key/generate" \
@@ -69,7 +69,7 @@ curl -X POST "http://localhost:4000/key/generate" \
   }'
 ```
 
-`POST /key/update` takes the same block plus the `key` to change. Fields you send replace the stored value for that field and fields you omit are kept, so adding a toolset to the key above leaves `mcp_servers` and `mcp_tool_permissions` in place:
+`POST /key/update` 會採用相同的區塊，外加要變更的 `key`。您送出的欄位會取代該欄位已儲存的值，而您省略的欄位則會保留，因此在上述金鑰中加入工具集後，`mcp_servers` 與 `mcp_tool_permissions` 會維持原狀：
 
 ```bash title="Add a toolset to an existing key" showLineNumbers
 curl -X POST "http://localhost:4000/key/update" \
@@ -83,9 +83,9 @@ curl -X POST "http://localhost:4000/key/update" \
   }'
 ```
 
-To grant every server in an access group, send `"mcp_access_groups": ["research"]` instead of `mcp_servers`. To block all MCP access, send `"mcp_servers": ["no-mcp-servers"]`.
+若要授予存取群組中的每個伺服器，請送出 `"mcp_access_groups": ["research"]` 而非 `mcp_servers`。若要封鎖所有 MCP 存取，請送出 `"mcp_servers": ["no-mcp-servers"]`。
 
-Confirm what the key sees by listing tools with the key itself:
+可透過用金鑰本身列出工具來確認金鑰可見的內容：
 
 ```bash showLineNumbers
 curl -s "http://localhost:4000/mcp-rest/tools/list" \
@@ -96,23 +96,23 @@ curl -s "http://localhost:4000/mcp-rest/tools/list" \
 ["read_wiki_contents", "read_wiki_structure"]
 ```
 
-## Grant an MCP server to a team
+## 將 MCP 伺服器授予團隊 {#grant-an-mcp-server-to-a-team}
 
-### Admin UI
+### Admin UI {#admin-ui-1}
 
-Open **Teams** in the left sidebar (`http://localhost:4000/ui/teams`) and click **Create Team**. Fill in the team name and models, then expand the **MCP Settings** accordion. The **Allowed MCP Servers** selector offers the same servers, access groups and toolsets as the key form. Selecting an access group shows each server it resolves to, tagged with the group name, so you can still toggle tools per server. Click **Create Team**.
+在左側側邊欄開啟 **Teams**（`http://localhost:4000/ui/teams`），然後按一下 **Create Team**。填入團隊名稱與模型後，展開 **MCP Settings** 手風琴區塊。**Allowed MCP Servers** 選擇器提供與金鑰表單相同的伺服器、存取群組與工具集。選取存取群組時，會顯示其所解析出的每個伺服器，並標示群組名稱，因此您仍可針對每個伺服器切換工具。按一下 **Create Team**。
 
 <Image
   img={require('../img/mcp_grant_team_access_group.png')}
   style={{width: '80%', display: 'block', margin: '0'}}
-  alt="MCP Settings on the Create Team form with the research access group selected and the deepwiki server resolved through it"
-/>
+  alt="Create Team 表單中的 MCP Settings，已選取 research 存取群組，並透過它解析出 deepwiki 伺服器"
+ />
 
-To change an existing team, click the team in the **Teams** table, open its **Settings** tab, click **Edit Settings**, change **MCP Servers / Access Groups** and the tool toggles, then click **Save Changes**. Keys that belong to the team inherit the new grant; nothing on the keys needs to be edited.
+若要變更現有團隊，請在 **Teams** 表格中按一下該團隊，開啟其 **Settings** 分頁，按一下 **Edit Settings**，變更 **MCP Servers / Access Groups** 與工具切換，然後按一下 **Save Changes**。屬於該團隊的金鑰會繼承新的授權；金鑰本身無需進行任何編輯。
 
-### API
+### API {#api-1}
 
-`POST /team/new` and `POST /team/update` take the same `object_permission` block as the key endpoints, with `team_id` identifying the team on update:
+`POST /team/new` 與 `POST /team/update` 使用與金鑰端點相同的 `object_permission` 區塊，而 `team_id` 則用來在更新時識別團隊：
 
 <Tabs>
 <TabItem value="new" label="/team/new">
@@ -152,42 +152,42 @@ curl -X POST "http://localhost:4000/team/update" \
 </TabItem>
 </Tabs>
 
-`/team/update` merges the same way `/key/update` does: only the fields you send are replaced. Read the stored grant back with `GET /team/info?team_id=<team-id>`; it is returned under `team_info.object_permission`.
+`/team/update` 的合併方式與 `/key/update` 相同：只有您送出的欄位會被取代。可透過 `GET /team/info?team_id=<team-id>` 讀回已儲存的授權；它會以 `team_info.object_permission` 返回。
 
-## How key and team grants resolve
+## 金鑰與團隊授權如何解析 {#how-key-and-team-grants-resolve}
 
-The full rule set is in [Permission Hierarchy](./mcp_control#permission-hierarchy) and [Per-entity Tool-Level Permissions](./mcp_control#per-entity-tool-level-permissions). The cases below are the ones you hit when only a key and its team carry grants, in the order LiteLLM applies them.
+完整規則集載於 [權限階層](./mcp_control#permission-hierarchy) 與 [每個實體的工具層級權限](./mcp_control#per-entity-tool-level-permissions)。以下案例是在只有金鑰與其團隊具有授權時會遇到的情況，順序依 LiteLLM 套用規則的先後而定。
 
-A key with no MCP grant of its own inherits the team's grant. Every server and every tool the team allows is available to the key, and nothing else. With `require_key_mcp_access_defined: true` in `general_settings` the same key gets no MCP servers at all until it is granted some explicitly, see [Require keys to define their own MCP access](./mcp_control#require-keys-to-define-their-own-mcp-access).
+沒有自己的 MCP 授權的金鑰會繼承團隊的授權。團隊允許的每個伺服器與每個工具都可供該金鑰使用，除此之外沒有其他內容。若在 `general_settings` 中使用 `require_key_mcp_access_defined: true`，相同的金鑰在明確被授予某些 MCP 之前，將完全沒有任何 MCP 伺服器；請參見 [要求金鑰自行定義 MCP 存取](./mcp_control#require-keys-to-define-their-own-mcp-access)。
 
-When both the key and the team list servers, the key reaches the intersection. Tool permissions intersect too, per server: a team that allows two tools on `deepwiki` and a key that allows one of them yields that one tool. If only one side sets `mcp_tool_permissions` for a server, that side's list applies unchanged.
+當金鑰與團隊都列出伺服器時，金鑰可存取其交集。工具權限也會依伺服器進行交集：團隊在 `deepwiki` 上允許兩個工具，而金鑰允許其中一個時，結果只會剩下那一個工具。若只有一方為某伺服器設定 `mcp_tool_permissions`，則該方的清單會原樣套用。
 
-Within a single level, a toolset and a direct `mcp_tool_permissions` entry are unioned before the levels are intersected. A key granted the toolset `wiki_readonly` (two read tools) plus `mcp_tool_permissions: {"deepwiki": ["read_wiki_structure"]}` sees both read tools, not just the one named directly.
+在單一層級內，工具集與直接的 `mcp_tool_permissions` 項目會先聯集，再與其他層級取交集。若某金鑰被授予工具集 `wiki_readonly`（兩個讀取工具）以及 `mcp_tool_permissions: {"deepwiki": ["read_wiki_structure"]}`，它會同時看到兩個讀取工具，而不只是直接命名的那一個。
 
-`no-mcp-servers` on the key wins over any team grant. `tools/list` returns an empty list and `tools/call` is refused, even though the team allows the server.
+金鑰上的 `no-mcp-servers` 會覆蓋任何團隊授權。`tools/list` 會回傳空清單，而 `tools/call` 也會遭拒絕，即使團隊允許該伺服器亦然。
 
-A key inside a team can only be granted servers the team already allows (or servers marked `allow_all_keys`). `/key/generate` and `/key/update` enforce this at write time (the Admin UI saves through the same endpoints) and answer `403`:
+團隊中的金鑰只能被授予團隊已允許的伺服器（或標記為 `allow_all_keys` 的伺服器）。`/key/generate` 與 `/key/update` 會在寫入時強制執行此規則（Admin UI 也是透過相同的端點儲存），並回應 `403`：
 
 ```text
 Key requests MCP servers not allowed by team '<team-id>': ['<server-id>']. Team allows: ['<server-id>']. Global (allow_all_keys) servers: [].
 ```
 
-A key that is not in a team can be granted any server by a proxy admin; a non-admin caller can only grant `allow_all_keys` servers to such a key. Servers the key already holds are grandfathered on `/key/update`, so shrinking the team's list does not break existing keys until you try to add a new server.
+不屬於任何團隊的金鑰可由 proxy 管理員授予任何 server；非管理員呼叫者只能將 `allow_all_keys` servers 授予這類金鑰。金鑰已持有的 servers 會在 `/key/update` 中被視為既有權限，因此縮減團隊清單不會破壞既有金鑰，直到您嘗試新增新的 server 為止。
 
-Organization, internal user, end user and agent grants sit above the key and team and only ever narrow the result further. Narrowing happens at `tools/list` time and again at `tools/call` time, so a tool outside the effective set is neither advertised nor callable.
+組織、內部使用者、終端使用者與 agent 的授權位於 key 與 team 之上，且只會進一步縮小結果。縮小會在 `tools/list` 時發生一次，並在 `tools/call` 時再次發生，因此超出有效集合的工具既不會被公布，也無法被呼叫。
 
-### Worked example
+### 範例演練 {#worked-example}
 
-Team `research-team` allows `deepwiki` with `mcp_tool_permissions: {"deepwiki": ["read_wiki_structure", "read_wiki_contents"]}` and the toolset `wiki_readonly` (the same two tools).
+Team `research-team` 允許 `deepwiki` 搭配 `mcp_tool_permissions: {"deepwiki": ["read_wiki_structure", "read_wiki_contents"]}`，以及 toolset `wiki_readonly`（同樣的兩個工具）。
 
-| Key grant | Effective tools on `deepwiki` |
+| Key 授權 | `deepwiki` 上的有效工具 |
 |-----------|-------------------------------|
-| none | `read_wiki_structure`, `read_wiki_contents` (inherited from the team) |
-| `mcp_servers: ["deepwiki"]`, `mcp_tool_permissions: {"deepwiki": ["read_wiki_structure"]}` | `read_wiki_structure` (intersection) |
-| the row above plus `mcp_toolsets: ["wiki_readonly"]` | `read_wiki_structure`, `read_wiki_contents` (key-level union, then intersected with the team) |
-| `mcp_servers: ["no-mcp-servers"]` | none, `tools/list` is empty |
-| `mcp_servers: ["deepwiki_backup"]` (not allowed by the team) | write rejected with `403` |
+| 無 | `read_wiki_structure`、`read_wiki_contents`（從 team 繼承） |
+| `mcp_servers: ["deepwiki"]`、`mcp_tool_permissions: {"deepwiki": ["read_wiki_structure"]}` | `read_wiki_structure`（交集） |
+| 上一列再加上 `mcp_toolsets: ["wiki_readonly"]` | `read_wiki_structure`、`read_wiki_contents`（key 層級聯集，然後與 team 取交集） |
+| `mcp_servers: ["no-mcp-servers"]` | 無，`tools/list` 為空 |
+| `mcp_servers: ["deepwiki_backup"]`（team 不允許） | 寫入被拒絕，錯誤為 `403` |
 
-## Related
+## 相關 {#related}
 
-[MCP Permission Management](./mcp_control) for the rules and the remaining levels (organization, internal user, end user, agent), [MCP Toolsets](./mcp_toolsets) for creating toolsets, [Agent Permission Management](./a2a_agent_permissions) for agent grants, and [MCP Gateway](./mcp) for registering servers.
+[MCP 權限管理](./mcp_control) 可查看規則與其餘層級（組織、內部使用者、終端使用者、agent），[MCP Toolsets](./mcp_toolsets) 可建立 toolsets，[Agent 權限管理](./a2a_agent_permissions) 可查看 agent 授權，以及 [MCP Gateway](./mcp) 可查看註冊 servers。

@@ -1,7 +1,7 @@
 ---
 id: index
-title: Getting Started
-sidebar_label: Quickstart
+title: 開始使用
+sidebar_label: 快速入門
 ---
 
 import Tabs from '@theme/Tabs';
@@ -14,31 +14,31 @@ import QuickStartBox from '@site/src/components/QuickStartBox';
 
 <QuickStartBox source="docs-index" />
 
-**LiteLLM** is an open-source library that gives you a single, unified interface to call 100+ LLMs (OpenAI, Anthropic, Vertex AI, Bedrock, and more) using the OpenAI format.
+**LiteLLM** 是一個開源函式庫，可讓您使用 OpenAI 格式，透過單一、統一的介面呼叫 100+ 個 LLM（OpenAI、Anthropic、Vertex AI、Bedrock 等）。
 
-- Call any provider using the same `completion()` interface, with no API to re-learn for each one
-- Consistent output format regardless of which provider or model you use
-- Built-in retry / fallback logic across multiple deployments via the [Router](./routing.md)
-- Self-hosted [LLM Gateway (Proxy)](/docs/simple_proxy) with virtual keys, cost tracking, and an admin UI
+- 使用相同的 `completion()` 介面呼叫任何提供者，無需為每個提供者重新學習 API
+- 無論使用哪個提供者或模型，都能取得一致的輸出格式
+- 透過 [Router](./routing.md) 在多個部署之間內建重試 / 備援邏輯
+- 自我託管的 [LLM Gateway (Proxy)](/docs/simple_proxy)，具備虛擬金鑰、成本追蹤與管理介面
 
 [![PyPI](https://img.shields.io/pypi/v/litellm.svg)](https://pypi.org/project/litellm/)
-[![GitHub Stars](https://img.shields.io/github/stars/BerriAI/litellm?style=social)](https://github.com/BerriAI/litellm)
+[![GitHub 星星](https://img.shields.io/github/stars/BerriAI/litellm?style=social)](https://github.com/BerriAI/litellm)
 
 ---
 
-## Installation
+## 安裝 {#installation}
 
 ```shell
 uv add litellm
 ```
 
-To deploy the full AI Gateway (Proxy) with the Admin UI, follow the [Quickstart](./proxy/docker_quick_start.md); it runs as a container and needs no Python setup. To run it from the CLI instead, see the [Gateway Quickstart](./learn/gateway_quickstart.md).
+若要部署完整的 AI Gateway (Proxy) 與管理介面，請依照 [快速開始](./proxy/docker_quick_start.md)；其以容器執行，無需 Python 設定。若要改為從 CLI 執行，請參閱 [Gateway 快速開始](./learn/gateway_quickstart.md)。
 
 ---
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Make your first LLM call using the provider of your choice:
+使用您選擇的提供者進行第一次 LLM 請求：
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -143,11 +143,11 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-Every response follows the OpenAI Chat Completions format, regardless of provider. ✅
+無論使用哪個提供者，每個回應都遵循 OpenAI Chat Completions 格式。✅
 
-### Response Format
+### 回應格式 {#response-format}
 
-Non-streaming responses return a `ModelResponse` object:
+非串流回應會回傳一個 `ModelResponse` 物件：
 
 ```json
 {
@@ -173,7 +173,7 @@ Non-streaming responses return a `ModelResponse` object:
 }
 ```
 
-Streaming responses (`stream=True`) yield `ModelResponseStream` chunks:
+串流回應（`stream=True`）會產生 `ModelResponseStream` 區塊：
 
 ```json
 {
@@ -194,25 +194,25 @@ Streaming responses (`stream=True`) yield `ModelResponseStream` chunks:
 }
 ```
 
-📖 [Full output format reference →](/docs/completion/output)
+📖 [完整輸出格式參考 →](/docs/completion/output)
 
-:::tip[Open in Colab]
+:::tip[在 Colab 中開啟]
 <a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_Getting_Started.ipynb">
-<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 :::
 
 ---
 
-## New to LiteLLM?
+## LiteLLM 新手？ {#new-to-litellm}
 
-**Want to get started fast?** Head to [Tutorials](/docs/tutorials) for step-by-step walkthroughs of AI coding tools, agent SDKs, proxy setup, and more.
+**想要快速開始嗎？** 請前往 [教學](/docs/tutorials)，查看 AI 程式撰寫工具、代理程式 SDK、Proxy 設定等逐步導覽。
 
-**Need to understand a specific feature?** Check [Guides](/docs/guides) for streaming, function calling, prompt caching, and other how-tos.
+**需要了解特定功能嗎？** 查看 [指南](/docs/guides)，了解串流、函式呼叫、提示快取及其他操作說明。
 
 ---
 
-## Choose Your Path
+## 選擇您的路徑 {#choose-your-path}
 
 <NavigationCards
 columns={2}
@@ -220,24 +220,24 @@ items={[
 {
 icon: "🐍",
 title: "Python SDK",
-description: "Integrate LiteLLM directly into your Python application. Drop-in replacement for the OpenAI client.",
+description: "將 LiteLLM 直接整合到您的 Python 應用程式中。可直接替代 OpenAI client。",
 listDescription: [
-"completion(), embedding(), image_generation() and more",
-"Router with retry, fallback, and load balancing",
-"OpenAI-compatible exceptions across all providers",
-"Observability callbacks (Langfuse, MLflow, Helicone…)",
+"completion()、embedding()、image_generation() 等更多功能",
+"具備重試、備援與負載平衡的 Router",
+"跨所有提供者相容於 OpenAI 的例外狀況",
+"可觀測性回呼（Langfuse、MLflow、Helicone…）",
 ],
 to: "#litellm-python-sdk",
 },
 {
 icon: "🖥️",
-title: "Proxy Server (LLM Gateway)",
-description: "Self-hosted gateway for platform teams managing LLM access across an organization.",
+title: "Proxy 伺服器（LLM 閘道）",
+description: "供平台團隊自行代管的閘道，用於管理整個組織的 LLM 存取。",
 listDescription: [
-"Virtual keys with per-key/team/user budgets",
-"Centralized logging, guardrails, and caching",
-"Admin UI for monitoring and management",
-"Drop-in replacement for any OpenAI-compatible client",
+"具備每個金鑰／團隊／使用者預算的虛擬金鑰",
+"集中式記錄、防護欄與快取",
+"用於監控與管理的管理介面",
+"可直接替代任何相容 OpenAI 的 client",
 ],
 to: "#litellm-proxy-server-llm-gateway",
 },
@@ -246,11 +246,11 @@ to: "#litellm-proxy-server-llm-gateway",
 
 ---
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
-### Streaming
+### 串流 {#streaming}
 
-Add `stream=True` to receive chunks as they are generated:
+加入 `stream=True` 以在區塊產生時接收它們：
 
 ```python
 from litellm import completion
@@ -266,9 +266,9 @@ for chunk in completion(
     print(chunk.choices[0].delta.content or "", end="")
 ```
 
-### Exception Handling
+### 例外狀況處理 {#exception-handling}
 
-LiteLLM maps every provider's errors to the OpenAI exception types, so your existing error handling keeps working:
+LiteLLM 會將每個提供者的錯誤對應到 OpenAI 例外類型，因此您既有的錯誤處理仍可正常運作：
 
 ```python
 import litellm
@@ -286,9 +286,9 @@ except litellm.APIError as e:
     print(f"API error: {e}")
 ```
 
-### Logging & Observability
+### 記錄與可觀測性 {#logging--observability}
 
-Send input/output to Langfuse, MLflow, Helicone, Lunary, and more with a single line:
+只需一行即可將輸入／輸出傳送到 Langfuse、MLflow、Helicone、Lunary 等更多工具：
 
 ```python
 import litellm
@@ -301,11 +301,11 @@ response = litellm.completion(
 )
 ```
 
-📖 [See all observability integrations →](/docs/observability/opentelemetry_v2)
+📖 [查看所有可觀測性整合 →](/docs/observability/opentelemetry_v2)
 
-### Track Costs & Usage
+### 追蹤成本與用量 {#track-costs--usage}
 
-Use a callback to capture cost per response:
+使用回呼來擷取每個回應的成本：
 
 ```python
 import litellm
@@ -322,17 +322,17 @@ litellm.completion(
 )
 ```
 
-📖 [Custom callback docs →](/docs/observability/custom_callback)
+📖 [自訂回呼文件 →](/docs/observability/custom_callback)
 
 ---
 
-## LiteLLM Proxy Server (LLM Gateway)
+## LiteLLM Proxy Server (LLM 閘道) {#litellm-proxy-server-llm-gateway}
 
-The proxy is a self-hosted OpenAI-compatible gateway. Any client that works with OpenAI works with the proxy, with no code changes.
+該 proxy 是一個自我託管、相容 OpenAI 的 gateway。任何可搭配 OpenAI 使用的用戶端，都可直接與該 proxy 搭配使用，無需變更程式碼。
 
-![LiteLLM Proxy Dashboard](https://github.com/BerriAI/litellm/assets/29436595/47c97d5e-b9be-4839-b28c-43d7f4f10033)
+![LiteLLM Proxy 儀表板](https://github.com/BerriAI/litellm/assets/29436595/47c97d5e-b9be-4839-b28c-43d7f4f10033)
 
-#### Step 1: Start the proxy
+#### 步驟 1：啟動 proxy {#step-1-start-the-proxy}
 
 <Tabs>
 <TabItem value="cli" label="LiteLLM CLI">
@@ -368,7 +368,7 @@ docker run \
 </TabItem>
 </Tabs>
 
-#### Step 2: Call it with the OpenAI client
+#### 步驟 2：使用 OpenAI client 呼叫它 {#step-2-call-it-with-the-openai-client}
 
 ```python
 import openai
@@ -382,39 +382,39 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-👉 [Full proxy quickstart →](/docs/proxy/docker_quick_start)
+👉 [完整 proxy 快速開始 →](/docs/proxy/docker_quick_start)
 
-:::tip[Debugging tool]
-Use **`/utils/transform_request`** to inspect exactly what LiteLLM sends to any provider. It helps when debugging prompt formatting, header issues, and provider-specific parameters.
+:::tip[除錯工具]
+使用 **`/utils/transform_request`** 來精確檢查 LiteLLM 傳送給任何提供者的內容。這在除錯提示格式、標頭問題，以及提供者特定參數時很有幫助。
 :::
 
-🔗 [Interactive API explorer (Swagger) →](https://docs.litellm.ai/api-reference/)
+🔗 [互動式 API 探索工具（Swagger） →](https://docs.litellm.ai/api-reference/)
 
 ---
 
-## Agent & MCP Gateway
+## Agent 與 MCP Gateway {#agent--mcp-gateway}
 
-LiteLLM is a unified gateway for **LLMs, agents, and MCP**, so you don't need a separate agent or MCP gateway. One endpoint for 100+ models, A2A agents, and MCP tools.
+LiteLLM 是一個整合的 **LLMs、agents 與 MCP** 閘道，因此您不需要另外的 agent 或 MCP gateway。單一端點即可支援 100+ 個模型、A2A agents 與 MCP tools。
 
 <NavigationCards
 columns={3}
 items={[
 {
 icon: "🔗",
-title: "A2A Agents",
-description: "Add and invoke A2A agents via the LiteLLM gateway.",
+title: "A2A 代理程式",
+description: "透過 LiteLLM 閘道新增並調用 A2A 代理程式。",
 to: "/docs/a2a",
 },
 {
 icon: "🛠️",
-title: "MCP Gateway",
-description: "Central MCP endpoint with per-key access control.",
+title: "MCP 閘道",
+description: "具備金鑰層級存取控制的集中式 MCP 端點。",
 to: "/docs/mcp",
 },
 {
 icon: "✨",
-title: "✨ Enterprise Quickstart",
-      description: "Quickstart guide for trial customers: LLM, MCP, and Agent gateway.",
+title: "✨ 企業版快速入門",
+description: "試用客戶快速入門指南：LLM、MCP 與 Agent 閘道。",
 to: "/docs/learn/enterprise_quickstart",
 },
 ]}
@@ -422,45 +422,45 @@ to: "/docs/learn/enterprise_quickstart",
 
 ---
 
-## What to Explore Next
+## 接下來可以探索什麼 {#what-to-explore-next}
 
 <NavigationCards
 columns={3}
 items={[
 {
 icon: "🔀",
-title: "Routing & Load Balancing",
-description: "Load balance across deployments and set automatic fallbacks.",
+title: "路由與負載平衡",
+description: "在多個部署之間進行負載平衡並設定自動備援。",
 to: "/docs/routing-load-balancing",
 },
 {
 icon: "🔑",
-title: "Virtual Keys",
-description: "Manage access, budgets, and rate limits per team or user.",
+title: "虛擬金鑰",
+description: "依團隊或使用者管理存取、預算與速率限制。",
 to: "/docs/proxy/virtual_keys",
 },
 {
 icon: "📊",
-title: "Spend Tracking",
-description: "Track costs per key, team, and user across all providers.",
+title: "支出追蹤",
+description: "追蹤所有提供者中每個金鑰、團隊與使用者的成本。",
 to: "/docs/proxy/cost_tracking",
 },
 {
 icon: "🛡️",
-title: "Guardrails",
-description: "Add content filtering, PII masking, and safety checks.",
+title: "防護欄（Guardrails）",
+description: "加入內容過濾、PII 遮罩與安全檢查。",
 to: "/docs/proxy/guardrails/quick_start",
 },
 {
 icon: "📡",
-title: "Observability",
-description: "Integrate with Langfuse, MLflow, Helicone, and more.",
+title: "可觀測性",
+description: "與 Langfuse、MLflow、Helicone 等更多工具整合。",
 to: "/docs/observability/opentelemetry_v2",
 },
 {
 icon: "🏭",
-title: "Enterprise",
-description: "SSO/SAML, audit logs, and advanced security for production.",
+title: "企業版（Enterprise）",
+description: "供正式環境使用的 SSO/SAML、稽核記錄與進階安全性。",
 to: "/docs/enterprise",
 },
 ]}

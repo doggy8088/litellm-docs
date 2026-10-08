@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CLF AI Gateway
+# CLF AI Gateway {#clf-ai-gateway}
 https://clfaigateway.dev/docs
 
-CLF AI Gateway is an OpenAI-compatible gateway that serves open-weight models. It is an independent service and is not affiliated with Cloudflare; for Cloudflare's own inference product see [Cloudflare Workers AI](./cloudflare_workers)
+CLF AI Gateway 是一個相容於 OpenAI 的閘道，可提供開放權重模型。它是獨立服務，且不隸屬於 Cloudflare；若要查看 Cloudflare 自家的推論產品，請參閱 [Cloudflare Workers AI](./cloudflare_workers)
 
 :::tip
 
-Set `model=clf_ai_gateway/<model>` to route a request through CLF AI Gateway. The current model list is at https://clfaigateway.dev/models and from `GET /v1/models`
+設定 `model=clf_ai_gateway/<model>` 以透過 CLF AI Gateway 路由請求。最新的模型清單位於 [https://clfaigateway.dev/models](https://clfaigateway.dev/models)，以及來自 `GET /v1/models`
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python
 import os
@@ -21,9 +21,9 @@ os.environ["CLF_AI_GATEWAY_API_KEY"] = "sk-gw-..."
 os.environ["CLF_AI_GATEWAY_API_BASE"] = "https://api.clfaigateway.dev/v1"  # optional, this is the default
 ```
 
-`CLF_AI_GATEWAY_API_BASE` only needs to be set when you are pointing LiteLLM at a different endpoint. Leaving it unset uses `https://api.clfaigateway.dev/v1`
+`CLF_AI_GATEWAY_API_BASE` 只需要在您將 LiteLLM 指向不同端點時設定。若不設定，則會使用 `https://api.clfaigateway.dev/v1`
 
-## Sample Usage
+## 使用範例 {#sample-usage}
 
 ```python
 from litellm import completion
@@ -38,7 +38,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 使用範例 - 串流 {#sample-usage---streaming}
 
 ```python
 from litellm import completion
@@ -56,9 +56,9 @@ for chunk in response:
     print(chunk)
 ```
 
-## Reasoning
+## 推理 {#reasoning}
 
-Every model on the gateway is a reasoning model, so `reasoning_effort` is accepted on all of them. The levels each model takes differ, and LiteLLM reads them from the model map rather than assuming a single set
+閘道上的每個模型都是推理模型，因此所有模型都接受 `reasoning_effort`。各模型採用的等級不同，而 LiteLLM 會從模型對應表讀取，而不是假設只有一組固定值
 
 ```python
 from litellm import completion
@@ -74,11 +74,11 @@ response = completion(
 print(response)
 ```
 
-Reasoning tokens are counted inside `completion_tokens`, so they are billed at the output price rather than separately
+推理 token 會計入 `completion_tokens`，因此它們會以輸出價格計費，而不是另外計費
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 一起使用 {#usage-with-litellm-proxy-server}
 
-1. Add the model to your config.yaml
+1. 將模型加入您的 config.yaml
 
   ```yaml
   model_list:
@@ -88,13 +88,13 @@ Reasoning tokens are counted inside `completion_tokens`, so they are billed at t
         api_key: os.environ/CLF_AI_GATEWAY_API_KEY
   ```
 
-2. Start the proxy
+2. 啟動 proxy
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send a request
+3. 傳送請求
 
   <Tabs>
 
@@ -137,44 +137,44 @@ Reasoning tokens are counted inside `completion_tokens`, so they are billed at t
 
   </Tabs>
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-All of these support tool calling, JSON mode, and reasoning
+以下所有模型都支援工具呼叫、JSON 模式與推理
 
-| Model | Context window | Vision |
+| 模型 | 上下文視窗 | 影像 |
 | ----- | -------------- | ------ |
-| clf_ai_gateway/glm-5.3 | 1,048,576 | no |
-| clf_ai_gateway/glm-5.3-flash | 1,048,576 | yes |
-| clf_ai_gateway/glm-5.2 | 262,144 | no |
-| clf_ai_gateway/glm-4.7-flash | 131,072 | no |
-| clf_ai_gateway/kimi-k2.7-code | 262,144 | yes |
-| clf_ai_gateway/kimi-k2.6 | 262,144 | yes |
-| clf_ai_gateway/deepseek-v4-pro | 1,048,576 | no |
-| clf_ai_gateway/deepseek-v4-flash | 1,048,576 | no |
-| clf_ai_gateway/qwen3.8-27b | 262,144 | yes |
+| clf_ai_gateway/glm-5.3 | 1,048,576 | 否 |
+| clf_ai_gateway/glm-5.3-flash | 1,048,576 | 是 |
+| clf_ai_gateway/glm-5.2 | 262,144 | 否 |
+| clf_ai_gateway/glm-4.7-flash | 131,072 | 否 |
+| clf_ai_gateway/kimi-k2.7-code | 262,144 | 是 |
+| clf_ai_gateway/kimi-k2.6 | 262,144 | 是 |
+| clf_ai_gateway/deepseek-v4-pro | 1,048,576 | 否 |
+| clf_ai_gateway/deepseek-v4-flash | 1,048,576 | 否 |
+| clf_ai_gateway/qwen3.8-27b | 262,144 | 是 |
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 | --------- | ---- | ----------- |
-| frequency_penalty | number | Penalizes new tokens based on their frequency in the text |
-| max_completion_tokens | integer | Maximum number of tokens to generate |
-| max_tokens | integer | Maximum number of tokens to generate |
-| n | integer | Number of completions to generate |
-| parallel_tool_calls | boolean | Whether the model may call several tools at once |
-| presence_penalty | number | Penalizes tokens based on whether they appear in the text so far |
-| reasoning_effort | string | How much the model reasons before answering |
-| response_format | object | Format of the response, e.g. `{"type": "json_object"}` |
-| seed | integer | Sampling seed for deterministic results |
-| stop | string/array | Sequences where the API stops generating tokens |
-| stream | boolean | Whether to stream the response |
-| stream_options | object | Options for streaming, e.g. `{"include_usage": true}` |
-| temperature | number | Controls randomness |
-| tool_choice | string/object | Controls which tool, if any, the model calls |
-| tools | array | List of tools the model can use |
-| top_p | number | Controls nucleus sampling |
-| user | string | User identifier |
+| frequency_penalty | number | 根據新 token 在文字中的出現頻率來懲罰它們 |
+| max_completion_tokens | integer | 要產生的 token 最大數量 |
+| max_tokens | integer | 要產生的 token 最大數量 |
+| n | integer | 要產生的完成數量 |
+| parallel_tool_calls | boolean | 模型是否可以同時呼叫多個工具 |
+| presence_penalty | number | 根據 token 是否已出現在目前為止的文字中來懲罰它們 |
+| reasoning_effort | string | 模型在回答前進行多少推理 |
+| response_format | object | 回應格式，例如 `{"type": "json_object"}` |
+| seed | integer | 用於決定性結果的取樣種子 |
+| stop | string/array | API 停止產生 token 的序列 |
+| stream | boolean | 是否串流回應 |
+| stream_options | object | 串流選項，例如 `{"include_usage": true}` |
+| temperature | number | 控制隨機性 |
+| tool_choice | string/object | 控制模型呼叫哪個工具（如果有） |
+| tools | array | 模型可使用的工具清單 |
+| top_p | number | 控制 nucleus sampling |
+| user | string | 使用者識別碼 |
 
-## Prompt Caching
+## 提示詞快取 {#prompt-caching}
 
-The gateway caches recognized prompt prefixes automatically. Cached input tokens come back in `prompt_tokens_details.cached_tokens` and are billed at the model's cached input price, which LiteLLM reads from the model map for cost tracking
+閘道會自動快取可辨識的提示詞前綴。快取的輸入 token 會以 `prompt_tokens_details.cached_tokens` 回來，並依模型的快取輸入價格計費，而 LiteLLM 會從模型對應表讀取該價格以進行成本追蹤

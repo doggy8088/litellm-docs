@@ -2,16 +2,15 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Argilla
+# Argilla {#argilla}
 
-Argilla is a collaborative annotation tool for AI engineers and domain experts who need to build high-quality datasets for their projects.
+Argilla 是一個供 AI 工程師與領域專家協作的標註工具，可用來為他們的專案建立高品質資料集。
 
+## 開始使用 {#getting-started}
 
-## Getting Started
+若要將資料記錄到 Argilla，首先需要部署 Argilla 伺服器。如果您尚未部署 Argilla 伺服器，請依照 [這裡](https://docs.argilla.io/latest/getting_started/quickstart/) 的指示進行。
 
-To log the data to Argilla, first you need to deploy the Argilla server. If you have not deployed the Argilla server, please follow the instructions [here](https://docs.argilla.io/latest/getting_started/quickstart/).
-
-Next, you will need to configure and create the Argilla dataset.
+接著，您需要設定並建立 Argilla 資料集。
 
 ```python
 import argilla as rg
@@ -44,10 +43,9 @@ dataset = rg.Dataset(
 dataset.create()
 ```
 
-For further configuration, please refer to the [Argilla documentation](https://docs.argilla.io/latest/how_to_guides/dataset/).
+如需進一步設定，請參閱 [Argilla 文件](https://docs.argilla.io/latest/how_to_guides/dataset/)。
 
-
-## Usage
+## 使用方式 {#usage}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -93,13 +91,13 @@ litellm_settings:
 </TabItem>
 </Tabs>
 
-## Example Output
+## 範例輸出 {#example-output}
 
 <Image img={require('../../img/argilla.png')} />
 
-## Add sampling rate to Argilla calls
+## 將取樣率加入 Argilla 請求 {#add-sampling-rate-to-argilla-calls}
 
-To just log a sample of calls to argilla, add `ARGILLA_SAMPLING_RATE` to your env vars.
+若只想記錄一部分送往 Argilla 的請求，請將 `ARGILLA_SAMPLING_RATE` 加入您的環境變數。
 
 ```bash
 ARGILLA_SAMPLING_RATE=0.1 # log 10% of calls to argilla

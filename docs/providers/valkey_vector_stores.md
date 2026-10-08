@@ -1,48 +1,48 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Valkey - Vector Store
+# Valkey - 向量儲存 {#valkey---vector-store}
 
-Search documents you have already indexed in [Valkey](https://valkey.io/) through LiteLLM's unified vector store API, so that any virtual key can run retrieval against your datastore without ever holding your Valkey credentials.
+透過 LiteLLM 的統一向量儲存 API 搜尋您已在 [Valkey](https://valkey.io/) 中建立索引的文件，如此任何虛擬金鑰都能對您的資料儲存進行檢索，而無須持有您的 Valkey 憑證。
 
-LiteLLM only reads from Valkey; building and loading the index stays yours. Each search embeds the query with the model you registered, runs a KNN [`FT.SEARCH`](https://valkey.io/commands/ft.search/) against your index, and returns the same OpenAI-shaped results every other provider returns, scored `1 - cosine distance` so higher is closer.
+LiteLLM 只會從 Valkey 讀取；建立與載入索引仍由您負責。每次搜尋都會使用您註冊的模型將查詢轉為嵌入，對您的索引執行 KNN [`FT.SEARCH`](https://valkey.io/commands/ft.search/)，並回傳與其他每個提供者相同的 OpenAI 形狀結果，分數為 `1 - cosine distance`，因此數值越高代表越接近。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-You need three things:
-1. A Valkey server with the [valkey-search](https://valkey.io/topics/search/) module loaded
-2. An embedding model (the one that embedded your documents)
-3. An [`FT` index](https://valkey.io/commands/ft.create/) over your documents
+您需要三樣東西：
+1. 已載入 [valkey-search](https://valkey.io/topics/search/) 模組的 Valkey 伺服器
+2. 一個嵌入模型（用來將您的文件轉為嵌入的那個）
+3. 一個針對您文件的 [`FT` 索引](https://valkey.io/commands/ft.create/)
 
-## 1. Turn on vector search in Valkey
+## 1. 在 Valkey 中開啟向量搜尋 {#1-turn-on-vector-search-in-valkey}
 
-Valkey by itself is a key-value store and knows nothing about vectors. Vector search comes from [valkey-search](https://github.com/valkey-io/valkey-search), a module that adds the `FT.*` command family ([Valkey docs](https://valkey.io/topics/search/)), and it has to be loaded on your server. LiteLLM adds no Python dependency for this: it talks to the module with the Redis client the gateway already ships.
+Valkey 本身只是鍵值儲存，對向量一無所知。向量搜尋來自 [valkey-search](https://github.com/valkey-io/valkey-search)，這是一個新增 `FT.*` 命令家族（[Valkey 文件](https://valkey.io/topics/search/)）的模組，而且必須載入到您的伺服器上。LiteLLM 不會為此新增任何 Python 相依套件：它使用閘道已隨附的 Redis 用戶端與該模組通訊。
 
-The quickest way to get a server locally is the [valkey-bundle](https://hub.docker.com/r/valkey/valkey-bundle) image, which has the module preloaded:
+在本機快速取得伺服器的方法是使用 [valkey-bundle](https://hub.docker.com/r/valkey/valkey-bundle) 映像，該映像已預先載入模組：
 
 ```bash showLineNumbers title="Local Valkey with vector search"
 docker run -d -p 6379:6379 valkey/valkey-bundle:latest
 ```
 
-Managed [ElastiCache for Valkey](https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-elasticache-vector-search/) (Valkey 8.2 on node-based clusters) and [MemoryDB](https://docs.aws.amazon.com/memorydb/latest/devguide/vector-search.html) already ship the module. Cluster mode is fine: LiteLLM sends `FT.SEARCH` to whichever node the endpoint resolves to, and valkey-search itself [fans the query out across shards and merges the results](https://valkey.io/topics/search/). On a server you run yourself, start it with [`valkey-server --loadmodule /path/to/libsearch.so`](https://github.com/valkey-io/valkey-search#load-the-module).
+託管的 [ElastiCache for Valkey](https://aws.amazon.com/about-aws/whats-new/2025/10/amazon-elasticache-vector-search/)（節點式叢集上的 Valkey 8.2）與 [MemoryDB](https://docs.aws.amazon.com/memorydb/latest/devguide/vector-search.html) 已經隨附該模組。叢集模式沒問題：LiteLLM 會將 `FT.SEARCH` 傳送到端點解析出的任一節點，而 valkey-search 本身會 [將查詢分散到各個分片並合併結果](https://valkey.io/topics/search/)。若是您自行架設的伺服器，請使用 [`valkey-server --loadmodule /path/to/libsearch.so`](https://github.com/valkey-io/valkey-search#load-the-module) 啟動。
 
-If the module is missing, LiteLLM connects fine and then every search fails, because the server rejects the command it has never heard of:
+如果缺少該模組，LiteLLM 仍可正常連線，但接下來每次搜尋都會失敗，因為伺服器會拒絕它從未聽過的命令：
 
 ```
 litellm.APIConnectionError: unknown command 'FT.SEARCH', with args beginning with:
 'my-search-index' '*=>[KNN 3 @embedding $vec AS vector_distance]' ...
 ```
 
-## 2. Store your documents the way LiteLLM reads them
+## 2. 以 LiteLLM 讀取的方式儲存您的文件 {#2-store-your-documents-the-way-litellm-reads-them}
 
-Each document is a Valkey [HASH](https://valkey.io/topics/hashes/) with a text field (`text` by default) and a FLOAT32 vector field (`embedding` by default), and an [`FT.CREATE`](https://valkey.io/commands/ft.create/) index over those keys is what `FT.SEARCH` queries. Valkey hashes have no schema, so LiteLLM cannot guess which field is which; the names you register must match your data.
+每份文件都是一個 Valkey [HASH](https://valkey.io/topics/hashes/)，包含一個文字欄位（預設為 `text`）與一個 FLOAT32 向量欄位（預設為 `embedding`），而針對這些鍵的 [`FT.CREATE`](https://valkey.io/commands/ft.create/) 索引就是 `FT.SEARCH` 查詢的依據。Valkey 雜湊沒有 schema，因此 LiteLLM 無法猜測哪個欄位是哪個；您註冊的名稱必須與資料一致。
 
 ```bash showLineNumbers title="Create the index"
 FT.CREATE my-search-index ON HASH PREFIX 1 kb: \
   SCHEMA embedding VECTOR HNSW 6 TYPE FLOAT32 DIM 1536 DISTANCE_METRIC COSINE
 ```
 
-`DIM` must equal your embedding model's dimensions (1536 for `text-embedding-3-small`). Embed and write the documents with the same model you will register in LiteLLM:
+`DIM` 必須等於您的嵌入模型維度（`text-embedding-3-small` 為 1536）。請使用您稍後會在 LiteLLM 中註冊的相同模型，對文件進行嵌入並寫入：
 
 ```python showLineNumbers title="Load documents into the index"
 import struct
@@ -64,28 +64,28 @@ for (key, text), item in zip(docs.items(), response.data):
     client.hset(key, mapping={"text": text, "embedding": struct.pack(f"<{len(embedding)}f", *embedding)})
 ```
 
-A different model returns wrong results silently; a different dimension fails with `query vector blob size (N) does not match index's expected size (M)`.
+不同的模型會悄悄回傳錯誤結果；不同的維度則會出現 `query vector blob size (N) does not match index's expected size (M)`。
 
-## 3. Register the index with LiteLLM
+## 3. 在 LiteLLM 中註冊索引 {#3-register-the-index-with-litellm}
 
-Registering tells LiteLLM where the index is and which model embeds queries; it creates nothing in Valkey. Add the embedding model under **Models** first, named after the provider's model (`text-embedding-3-small`), since LiteLLM reuses that model's credentials but sends its name to the provider.
+註冊會告訴 LiteLLM 索引的位置以及哪個模型用來嵌入查詢；它不會在 Valkey 中建立任何東西。請先在 **Models** 底下新增嵌入模型，名稱使用提供者的模型（`text-embedding-3-small`），因為 LiteLLM 會重用該模型的憑證，但把它的名稱傳給提供者。
 
 <Tabs>
-<TabItem value="ui" label="Admin UI">
+<TabItem value="ui" label="管理 UI">
 
-Open **Tools > Vector Stores**, go to the **Manage Vector Stores** tab, and click **+ Add Vector Store**.
+開啟 **Tools > Vector Stores**，前往 **Manage Vector Stores** 分頁，然後點擊 **+ Add Vector Store**。
 
-<img src="/img/valkey_vs_manage_tab.png" alt="Manage Vector Stores tab with the Add Vector Store button" />
+<img src="/img/valkey_vs_manage_tab.png" alt="含有 Add Vector Store 按鈕的 Manage Vector Stores 分頁" />
 
-Pick **Valkey** as the provider. The form then explains what it expects and shows the connection fields. Enter the name of your `FT` index as the Vector Store ID, fill in the host and port, and choose the embedding model that produced the vectors already sitting in the index. Leave Text Field and Vector Field Name alone unless your hashes use different names.
+選擇 **Valkey** 作為提供者。接著表單會說明其預期內容並顯示連線欄位。將您的 `FT` 索引名稱填入 Vector Store ID，輸入主機與連接埠，並選擇已產生索引中向量的嵌入模型。除非您的雜湊使用不同名稱，否則請維持 Text Field 與 Vector Field Name 不變。
 
-<img src="/img/valkey_vs_add_modal.png" alt="Add New Vector Store modal with the Valkey provider selected and every field filled in" />
+<img src="/img/valkey_vs_add_modal.png" alt="已選取 Valkey 提供者且每個欄位都已填妥的 Add New Vector Store 視窗" />
 
-Click **Create** and the store appears in the table, ready to search:
+點擊 **Create** 後，該儲存會出現在表格中，準備搜尋：
 
-<img src="/img/valkey_vs_created_row.png" alt="Manage Vector Stores table listing the new Valkey store" />
+<img src="/img/valkey_vs_created_row.png" alt="列出新 Valkey 儲存的 Manage Vector Stores 表格" />
 
-Creating a store does not test the connection. A wrong host, port, or index name is only reported on the first search, so run one from the [Test Vector Store tab](#4-test-the-store) straight away.
+建立儲存不會測試連線。錯誤的主機、連接埠或索引名稱只會在第一次搜尋時回報，因此請立即從 [Test Vector Store 分頁](#4-test-the-store) 執行一次測試。
 
 </TabItem>
 <TabItem value="config" label="config.yaml">
@@ -114,7 +114,7 @@ litellm --config /path/to/config.yaml
 ```
 
 </TabItem>
-<TabItem value="api" label="Management API">
+<TabItem value="api" label="管理 API">
 
 ```bash showLineNumbers title="Register the index"
 curl -X POST 'http://localhost:4000/vector_store/new' \
@@ -132,18 +132,18 @@ curl -X POST 'http://localhost:4000/vector_store/new' \
   }'
 ```
 
-The store is written to the LiteLLM database and is searchable immediately, with no restart. See [Managed Vector Stores](../vector_stores/managed_vector_stores.md) for the rest of the management API.
+該儲存會寫入 LiteLLM 資料庫並立即可供搜尋，無須重新啟動。其餘管理 API 請參閱 [Managed Vector Stores](../vector_stores/managed_vector_stores.md)。
 
 </TabItem>
 </Tabs>
 
-## 4. Test the store
+## 4. 測試儲存 {#4-test-the-store}
 
-In the Admin UI, the **Test Vector Store** tab runs a real search against the registered store and shows each hit with its score, which is the fastest way to confirm the connection, the index name, and the embedding model all line up:
+在 Admin UI 中，**Test Vector Store** 分頁會針對已註冊的儲存執行實際搜尋，並顯示每個命中的分數；這是確認連線、索引名稱與嵌入模型是否一致的最快方式：
 
-<img src="/img/valkey_vs_test_results.png" alt="Test Vector Store tab showing six ranked results for a support question" />
+<img src="/img/valkey_vs_test_results.png" alt="Test Vector Store 分頁顯示支援問題的六個排名結果" />
 
-The same search over HTTP:
+透過 HTTP 的相同搜尋：
 
 ```bash showLineNumbers title="Search the index"
 curl -X POST 'http://localhost:4000/v1/vector_stores/my-search-index/search' \
@@ -183,9 +183,9 @@ curl -X POST 'http://localhost:4000/v1/vector_stores/my-search-index/search' \
 }
 ```
 
-`file_id` and `filename` are the Valkey keys the hits came from. `max_num_results` defaults to 10 and has to be between 1 and 50.
+`file_id` 與 `filename` 是命中結果來自的 Valkey 鍵。`max_num_results` 預設為 10，且必須介於 1 到 50 之間。
 
-From the SDK, pass the connection settings inline instead of registering the store:
+從 SDK 使用時，請改為內嵌傳入連線設定，而不是註冊儲存：
 
 ```python showLineNumbers title="Search from the Python SDK"
 import litellm
@@ -200,40 +200,40 @@ response = litellm.vector_stores.search(
 )
 ```
 
-`litellm.vector_stores.asearch` is the async equivalent. Both need the `redis` package, which the proxy already installs; in a bare SDK environment run `pip install redis`.
+`litellm.vector_stores.asearch` 是非同步對應版本。兩者都需要 `redis` 套件，而閘道已經安裝該套件；在純 SDK 環境中請執行 `pip install redis`。
 
-Once a store is registered, any LiteLLM feature that takes a vector store id can use it, including [RAG in `/chat/completions`](../completion/knowledgebase.md) through `tools: [{"type": "file_search", "vector_store_ids": ["my-search-index"]}]`.
+一旦儲存已註冊，任何接受 vector store id 的 LiteLLM 功能都可使用它，包括透過 `tools: [{"type": "file_search", "vector_store_ids": ["my-search-index"]}]` 進行的 [`/chat/completions` 中的 RAG](../completion/knowledgebase.md)。
 
-## Settings reference
+## 設定參考 {#settings-reference}
 
-Defaults cover most of this table. What decides whether a search finds anything is the index name, the host, the embedding model, and the two field names.
+大多數此表格都可使用預設值。決定搜尋能否找到任何結果的是索引名稱、主機、嵌入模型，以及兩個欄位名稱。
 
-| Setting | UI label | Required | What to put in it |
+| 設定 | UI 標籤 | 必填 | 要填入的內容 |
 |---|---|---|---|
-| `vector_store_id` | Vector Store ID | Yes | The name of the `FT` index, exactly as you passed it to `FT.CREATE`. This is not a free-form label; an unknown name fails with `Index with name '...' not found in database 0` |
-| `valkey_host` | Valkey Host | Yes | The bare hostname or IP, with no scheme and no port, so `my-valkey.example.com` rather than `redis://my-valkey.example.com:6379` |
-| `valkey_port` | Valkey Port | No | Defaults to `6379`. Change it only if your server listens somewhere else |
-| `valkey_password` | Valkey Password | No | Only if the server requires AUTH. Leave empty otherwise |
-| `valkey_ssl` | Use TLS | No | Defaults to `false`. Set it to `true` for ElastiCache or MemoryDB clusters with in-transit encryption, which is what makes LiteLLM connect with `rediss://` |
-| `litellm_embedding_model` | Embedding Model | Yes | The exact model that produced the vectors in the index. A different model returns plausible but wrong results, and a different dimension errors |
-| `valkey_text_field` | Text Field | No | Defaults to `text`. Must match the hash field holding the readable text, or every result comes back with empty content |
-| `valkey_embedding_field` | Vector Field Name | No | Defaults to `embedding`. Must match the field your index was created on |
-| `litellm_embedding_config` | n/a | No | Extra arguments for the embedding call such as `api_key` or `api_base`. On the proxy you can normally omit it, because LiteLLM resolves those from the registered model |
+| `vector_store_id` | Vector Store ID | 是 | `FT` 索引的名稱，必須與您傳給 `FT.CREATE` 的內容完全一致。這不是自由格式標籤；未知名稱會以 `Index with name '...' not found in database 0` 失敗 |
+| `valkey_host` | Valkey Host | 是 | 純主機名稱或 IP，不含 scheme 與連接埠，因此是 `my-valkey.example.com` 而不是 `redis://my-valkey.example.com:6379` |
+| `valkey_port` | Valkey Port | 否 | 預設為 `6379`。只有當您的伺服器監聽其他位置時才變更 |
+| `valkey_password` | Valkey Password | 否 | 僅在伺服器要求 AUTH 時需要。否則請留空 |
+| `valkey_ssl` | Use TLS | 否 | 預設為 `false`。若是啟用傳輸中加密的 ElastiCache 或 MemoryDB 叢集，請設為 `true`，這會讓 LiteLLM 以 `rediss://` 連線 |
+| `litellm_embedding_model` | Embedding Model | 是 | 與索引中向量相同的確切模型。不同模型會回傳看似合理但錯誤的結果，而不同維度則會報錯 |
+| `valkey_text_field` | Text Field | 否 | 預設為 `text`。必須與存放可讀文字的雜湊欄位一致，否則每個結果都會回傳空內容 |
+| `valkey_embedding_field` | Vector Field Name | 否 | 預設為 `embedding`。必須與您的索引建立在其上的欄位一致 |
+| `litellm_embedding_config` | n/a | 否 | 嵌入請求的額外引數，例如 `api_key` 或 `api_base`。在閘道上通常可以省略，因為 LiteLLM 會從已註冊的模型解析這些設定 |
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**`unknown command 'FT.SEARCH'`** means the server has no vector search. Run `valkey-cli FT._LIST`: a server with the module answers with its indexes, and one without it repeats the same unknown command error. A plain `valkey/valkey` image is the usual culprit.
+**`unknown command 'FT.SEARCH'`** 表示伺服器沒有向量搜尋。請執行 `valkey-cli FT._LIST`：有載入模組的伺服器會回應其索引，沒有載入的則會重複相同的未知命令錯誤。一般的 `valkey/valkey` 映像通常就是罪魁禍首。
 
-**`query vector blob size (N) does not match index's expected size (M)`** means the embedding model registered on the store returns a different number of dimensions than the index was created with. Both numbers are byte counts, so divide by 4 to see the dimensions being compared, then either register the model that built the index or rebuild the index at the new dimension.
+**`query vector blob size (N) does not match index's expected size (M)`** 表示儲存上的嵌入模型回傳的維度數與建立索引時的維度數不同。這兩個數字都是位元組數，因此除以 4 即可看出正在比較的維度，接著不是註冊建立該索引的模型，就是以新的維度重建索引。
 
-**Results arrive with empty text** means the hits are real but `valkey_text_field` names a field your hashes do not have. Run `HGETALL` on one of the returned keys and set the field to whatever holds the prose.
+**結果回傳時文字為空白** 表示命中結果是真實的，但 `valkey_text_field` 指向的是您的雜湊沒有的欄位。請對其中一個回傳的鍵執行 `HGETALL`，並將欄位設定為承載正文的內容。
 
-**`Connection refused`, or a search that hangs and then fails**, usually means the wrong port or a security group that does not allow the gateway through. LiteLLM waits 5 seconds to connect and 30 seconds for the command, so an unreachable host fails quickly rather than pinning a worker.
+**`Connection refused`，或是搜尋卡住後失敗**，通常表示連接埠錯誤，或是安全性群組不允許閘道通過。LiteLLM 連線等待 5 秒、指令等待 30 秒，因此無法連上的主機會快速失敗，而不會卡住某個工作者。
 
-**Ranking that looks random** points at the embedding model. Nothing errors when the query is embedded by a different model than the documents were, so compare what the store is registered with against what your ingestion job actually used.
+**看起來隨機的排名** 指向嵌入模型。當查詢是由不同於文件所用的模型進行嵌入時，不會出現錯誤，因此請比較儲存所註冊的模型與您的資料擷取工作實際使用的模型。
 
-## Not supported
+## 不支援的 {#not-supported}
 
-Valkey vector stores are search-only. LiteLLM cannot create an index (`POST /v1/vector_stores`), upload files, or run `/rag/ingest` against Valkey, which is why Valkey is absent from the Create Vector Store tab in the Admin UI; build and populate the index with `FT.CREATE` and `HSET` yourself. The `filters` parameter on search is not implemented either, and passing it raises an error rather than being silently ignored.
+Valkey 向量儲存僅供搜尋。LiteLLM 無法建立索引（`POST /v1/vector_stores`）、上傳檔案，或對 Valkey 執行 `/rag/ingest`，這也是 Valkey 不會出現在 Admin UI 的 Create Vector Store 分頁中的原因；請自行使用 `FT.CREATE` 和 `HSET` 建立並填入索引。搜尋上的 `filters` 參數也尚未實作，傳入時會拋出錯誤，而不是被靜默忽略。
 
-A Valkey server with the same module can also back LiteLLM's [semantic cache](../proxy/caching_semantic.md), which is a separate feature with its own index that LiteLLM does create and write to.
+具有相同模組的 Valkey 伺服器也可以支援 LiteLLM 的 [語意快取](../proxy/caching_semantic.md)，這是一項具有自己索引的獨立功能，而 LiteLLM 會建立並寫入該索引。

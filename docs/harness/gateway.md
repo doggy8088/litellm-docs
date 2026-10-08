@@ -1,33 +1,33 @@
 ---
-title: Using with LiteLLM AI Gateway
-sidebar_label: Using with AI Gateway
-description: Run agents with litellm.agent() against one LiteLLM AI Gateway virtual key, pick the right harness for each job, and track spend per harness.
+title: 使用 LiteLLM AI Gateway
+sidebar_label: 使用 AI Gateway
+description: 針對一個 LiteLLM AI Gateway 虛擬金鑰執行 litellm.agent() 的代理程式，為每個工作挑選合適的 harness，並追蹤各 harness 的支出。
 ---
 
-# Using with LiteLLM AI Gateway
+# 使用 LiteLLM AI Gateway {#using-with-litellm-ai-gateway}
 
-The recommended way to run an agent with `litellm.agent()` is against a [LiteLLM AI Gateway](/docs/proxy/docker_quick_start). Claude Code, Codex, OpenCode, Deep Agents and Tool Loop use different model APIs and ways to pass credentials. With the gateway they share one virtual key, the same model groups and fallbacks, and every call lands in the gateway's spend logs tagged with the harness that made it
+建議以 `litellm.agent()` 搭配 [LiteLLM AI Gateway](/docs/proxy/docker_quick_start) 來執行代理程式。Claude Code、Codex、OpenCode、Deep Agents 與 Tool Loop 使用不同的模型 API 以及傳遞憑證的方式。透過 gateway，它們共用一把虛擬金鑰、相同的模型群組與備援，而且每次請求都會進入 gateway 的支出記錄，並標記發出請求的 harness
 
-The CLI runtimes only see a per-session token for a local endpoint on your host, and that endpoint adds your virtual key when it forwards to the gateway. Deep Agents and Tool Loop call the gateway from your Python process with the virtual key. Provider keys live on the gateway and never reach your machine
+CLI 執行環境只會看到主機上本機端點的每個工作階段權杖，而該端點在轉送至 gateway 時會加入您的虛擬金鑰。Deep Agents 與 Tool Loop 會在您的 Python 程式中，使用虛擬金鑰呼叫 gateway。提供者金鑰保留在 gateway 上，絕不會到達您的機器
 
-## How requests flow
+## 請求如何流動 {#how-requests-flow}
 
 ```mermaid
 flowchart LR
-    R[Claude Code / Codex / OpenCode<br/>in sandbox] -->|session token| E[local endpoint<br/>on host]
-    E -->|virtual key<br/>x-litellm-tags: harness,codex| G[LiteLLM AI Gateway]
-    D[Deep Agents<br/>in your process] -->|virtual key| G
-    T[Tool Loop<br/>in your process] -->|virtual key| G
+    R[Claude Code / Codex / OpenCode<br/>在沙箱中] -->|工作階段權杖| E[主機上的本機端點]
+    E -->|虛擬金鑰<br/>x-litellm-tags: harness,codex| G[LiteLLM AI Gateway]
+    D[Deep Agents<br/>在您的程式中] -->|虛擬金鑰| G
+    T[Tool Loop<br/>在您的程式中] -->|虛擬金鑰| G
     G --> P1[Anthropic]
     G --> P2[Bedrock]
     G --> P3[OpenAI]
 ```
 
-Every forwarded request carries `x-litellm-tags: harness,<name>` (see [request tags](/docs/proxy/request_tags)), where `<name>` is `claude_code`, `codex`, `opencode`, `deepagents` or `tool_loop`, and your `metadata=` is sent as `x-litellm-spend-logs-metadata`. The `model` in each request is rewritten to the model group you passed, so a runtime's own default model name never reaches the gateway
+每個轉送的請求都會帶有 `x-litellm-tags: harness,<name>`（請參閱 [request tags](/docs/proxy/request_tags)），其中 `<name>` 是 `claude_code`、`codex`、`opencode`、`deepagents` 或 `tool_loop`，而您的 `metadata=` 會以 `x-litellm-spend-logs-metadata` 傳送。每個請求中的 `model` 會被重寫為您傳入的模型群組，因此執行環境自己的預設模型名稱永遠不會送到 gateway
 
-## 1. Configure the gateway
+## 1. 設定 gateway {#1-configure-the-gateway}
 
-Give each kind of harness a model group that suits it. Claude Code is tuned for Claude, Codex for OpenAI reasoning models, and OpenCode, Deep Agents and Tool Loop work with any group that supports their API
+為每一種 harness 指派適合的模型群組。Claude Code 最適合 Claude，Codex 最適合 OpenAI 推理模型，而 OpenCode、Deep Agents 與 Tool Loop 可搭配任何支援其 API 的群組
 
 ```yaml title="config.yaml"
 model_list:
@@ -67,9 +67,9 @@ general_settings:
 litellm --config config.yaml --port 4000
 ```
 
-The gateway exposes every group on `/v1/messages`, `/v1/responses` and `/v1/chat/completions`, and translates between formats when a harness calls a group from another provider. A database is needed for virtual keys and spend logs.
+gateway 會在 `/v1/messages`、`/v1/responses` 和 `/v1/chat/completions` 上公開每個群組，且當某個 harness 呼叫來自其他提供者的群組時，會在格式之間進行轉換。虛擬金鑰與支出記錄需要資料庫。
 
-## 2. Create a virtual key
+## 2. 建立虛擬金鑰 {#2-create-a-virtual-key}
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
@@ -78,11 +78,11 @@ curl -X POST http://localhost:4000/key/generate \
   -d '{"models": ["claude", "claude-haiku", "gpt", "gemini"], "key_alias": "agents", "max_budget": 50}'
 ```
 
-The response contains a `key` starting with `sk-`. The key can only call the groups in `models`, and stops working once it has spent `max_budget` dollars. See [Virtual keys](/docs/proxy/virtual_keys) for rate limits and team keys.
+回應中會包含一個以 `sk-` 開頭的 `key`。該金鑰只能呼叫 `models` 中的群組，並且在花費達到 `max_budget` 美元後就會停止運作。請參閱 [虛擬金鑰](/docs/proxy/virtual_keys) 以了解速率限制與團隊金鑰。
 
-## 3. Point litellm.agent() at it
+## 3. 將 litellm.agent() 指向它 {#3-point-litellmagent-at-it}
 
-Gateway calls follow the same convention as `litellm.completion`: prefix the model group with `litellm_proxy/` and set the gateway's address and key.
+gateway 呼叫遵循與 `litellm.completion` 相同的慣例：在模型群組前加上 `litellm_proxy/`，並設定 gateway 的位址與金鑰。
 
 ```bash
 export LITELLM_PROXY_API_BASE=http://localhost:4000
@@ -101,25 +101,25 @@ result = litellm.agent(
 )
 ```
 
-You can pass `api_base=` and `api_key=` on the call instead of using the environment. `api_base` is the gateway root, without `/v1`. Setting `litellm.use_litellm_proxy = True` sends every call through the gateway, even without the prefix. A model without the prefix is otherwise called directly through the LiteLLM SDK (see [Without a gateway](#without-a-gateway)).
+您可以在呼叫時傳入 `api_base=` 與 `api_key=`，而不必使用環境變數。`api_base` 是 gateway 根位址，不含 `/v1`。設定 `litellm.use_litellm_proxy = True` 會讓每次呼叫都經由 gateway，即使沒有前綴也一樣。沒有前綴的模型否則會直接透過 LiteLLM SDK 呼叫（請參閱 [Without a gateway](#without-a-gateway)）。
 
-## 4. Choosing a harness
+## 4. 選擇一個 harness {#4-choosing-a-harness}
 
-All five harnesses take the same call, but they are good at different jobs and use the gateway route that fits each runtime
+五種 harness 都使用相同的呼叫，但它們擅長不同工作，並使用適合各自執行環境的 gateway 路由
 
-| Harness | Gateway route | Best model group | Pick it for |
+| Harness | Gateway 路由 | 最適合的模型群組 | 適用情境 |
 |---|---|---|---|
-| Claude Code | `/v1/messages` | Claude (Anthropic, Bedrock or Vertex) | long, multi-file changes in a real repo |
-| Codex | `/v1/responses` | OpenAI reasoning model | hard, well-specified tasks where reasoning depth pays off |
-| OpenCode | `/v1/chat/completions` | any | running a coding agent on non-Claude or self-hosted models |
-| Deep Agents | `/v1/chat/completions` via `litellm_proxy/` | any | agents that call your own Python functions |
-| Tool Loop | `/v1/chat/completions` via `litellm_proxy/` | any tool-calling model | a minimal loop around your own Python functions |
+| Claude Code | `/v1/messages` | Claude（Anthropic、Bedrock 或 Vertex） | 真實儲存庫中長篇、多檔案變更 |
+| Codex | `/v1/responses` | OpenAI 推理模型 | 困難、規格明確且值得投入推理深度的任務 |
+| OpenCode | `/v1/chat/completions` | 任何 | 在非 Claude 或自架模型上執行 coding agent |
+| Deep Agents | 透過 `litellm_proxy/` 的 `/v1/chat/completions` | 任何 | 會呼叫您自己的 Python 函式的代理程式 |
+| Tool Loop | 透過 `litellm_proxy/` 的 `/v1/chat/completions` | 任何支援工具呼叫的模型 | 圍繞您自己的 Python 函式的極簡迴圈 |
 
-### Claude Code
+### Claude Code {#claude-code}
 
-Claude Code is the most capable general coding agent of the CLI harnesses. It plans, reads widely before editing, runs tests and recovers from its own mistakes, which makes it the default for refactors, bug hunts and changes that span many files. It is also the most expensive per task
+Claude Code 是 CLI harness 中最強大的通用 coding agent。它會先規劃、廣泛閱讀再編輯、執行測試，並從自己的錯誤中恢復，因此成為重構、除錯與跨多個檔案變更的預設選擇。它也是每個任務成本最高的
 
-Its prompts are written for Claude, so point it at a Claude group. Bedrock and Vertex Claude behave the same as Anthropic direct; other models work through gateway translation but lose quality. Use `permissions="edit"` on your laptop, or `"full"` inside `sandbox.docker` when it needs to install packages and run the suite.
+其提示詞是為 Claude 撰寫的，因此請將它指向 Claude 群組。Bedrock 與 Vertex Claude 的行為與 Anthropic 直接呼叫相同；其他模型則透過 gateway 轉換運作，但會降低品質。請在您的筆電上使用 `permissions="edit"`，或在 `sandbox.docker` 中使用 `"full"`，當它需要安裝套件並執行測試套件時。
 
 ```python
 litellm.agent(
@@ -131,11 +131,11 @@ litellm.agent(
 )
 ```
 
-### Codex
+### Codex {#codex}
 
-Codex is strongest on self-contained, well-specified problems where a reasoning model can think hard before acting: migrations, tricky algorithms, making a failing suite pass. It is weaker at open-ended exploration, and it can't turn off individual built-in tools.
+Codex 在自成一體、規格明確的問題上最強：推理模型可以先深思再行動，例如遷移、棘手的演算法、讓失敗的測試套件通過。它在開放式探索上較弱，而且無法關閉個別內建工具。
 
-It speaks the Responses API, so the best fit is an OpenAI group like `gpt`. Other providers work because the gateway translates Responses into their native format, though Codex-specific features such as reasoning summaries may not survive. Codex supports only `"read-only"` and `"full"`, so run changes inside `sandbox.docker`.
+它使用 Responses API，因此最合適的是像 `gpt` 這樣的 OpenAI 群組。其他提供者也可以運作，因為 gateway 會將 Responses 轉換為其原生格式，雖然 Codex 專屬功能（例如推理摘要）可能無法保留。Codex 只支援 `"read-only"` 與 `"full"`，因此請在 `sandbox.docker` 中執行變更。
 
 ```python
 litellm.agent(
@@ -147,11 +147,11 @@ litellm.agent(
 )
 ```
 
-### OpenCode
+### OpenCode {#opencode}
 
-OpenCode is a capable coding agent that works with any model. It is the right pick when you want an agent loop on Gemini, Qwen, DeepSeek, a fine-tune or a self-hosted vLLM group. Its tool use is less polished than Claude Code's on long tasks.
+OpenCode 是一個強大的 coding agent，可與任何模型搭配。當您想在 Gemini、Qwen、DeepSeek、fine-tune 或自架 vLLM 群組上使用代理程式迴圈時，它是正確的選擇。它在長時間任務上的工具使用不如 Claude Code 精緻。
 
-It speaks plain Chat Completions, so any group works without translation. `"edit"` is a good default, and OpenCode enforces it through its own permission config.
+它使用純粹的 Chat Completions，因此任何群組都能在不轉換的情況下運作。`"edit"` 是不錯的預設值，而 OpenCode 透過自己的權限設定強制執行它。
 
 ```python
 litellm.agent(
@@ -163,11 +163,11 @@ litellm.agent(
 )
 ```
 
-### Deep Agents
+### Deep Agents {#deep-agents}
 
-Deep Agents and Tool Loop both run in your process, call your Python functions and support `s.history()`. Deep Agents also has built-in file and shell tools, which makes it useful when a task combines your internal APIs with sandbox access. It is less polished at pure coding than the CLI agents
+Deep Agents 與 Tool Loop 都在您的程式中執行、呼叫您的 Python 函式，並支援 `s.history()`。Deep Agents 也內建檔案與 shell 工具，當任務結合您的內部 API 與沙箱存取時很有用。它在純 coding 上不如 CLI 代理程式精緻
 
-It calls the gateway directly with `litellm_proxy/<group>` and never uses the local endpoint, and it works with any group that supports tool calling. Its file and shell tools act on the sandbox; use `"edit"` unless it needs a shell.
+它會以 `litellm_proxy/<group>` 直接呼叫 gateway，且永遠不使用本機端點，並可與任何支援工具呼叫的群組搭配。其檔案與 shell 工具作用於沙箱；除非它需要 shell，否則請使用 `"edit"`。
 
 ```python
 litellm.agent(
@@ -180,9 +180,9 @@ litellm.agent(
 )
 ```
 
-### Tool Loop
+### Tool Loop {#tool-loop}
 
-Tool Loop is a minimal in-process loop around `litellm.acompletion()`. Use it when your task can be handled by your own Python functions and you don't need built-in file or shell tools
+Tool Loop 是圍繞 `litellm.acompletion()` 的極簡進程內迴圈。當您的任務可以由您自己的 Python 函式處理，且不需要內建檔案或 shell 工具時，請使用它
 
 ```python
 litellm.agent(
@@ -194,15 +194,15 @@ litellm.agent(
 )
 ```
 
-The gateway sees Chat Completions requests tagged `harness,tool_loop`. See [Tool Loop](./tool_loop.md) for its SDK, options and permission behavior
+gateway 會看到標記為 `harness,tool_loop` 的 Chat Completions 請求。請參閱 [Tool Loop](./tool_loop.md) 以了解其 SDK、選項與權限行為
 
-## 5. Comparing harnesses
+## 5. 比較 harness {#5-comparing-harnesses}
 
-Each harness's requests carry its own tag, so if you try more than one on the same kind of task, the gateway already has the numbers to compare spend, request count and failure rate per harness. Pass a shared `metadata={"experiment": "..."}` to group the runs.
+每個 harness 的請求都帶有自己的標記，因此如果您在同一類任務上嘗試多於一個，gateway 已經擁有可比較各 harness 支出、請求數量與失敗率的數據。請傳入共用的 `metadata={"experiment": "..."}` 以將這些執行分組。
 
-## 6. See spend by harness
+## 6. 依 harness 查看支出 {#6-see-spend-by-harness}
 
-In the gateway UI, open **Usage** and switch to the tag view. Each harness shows up as its own tag (`claude_code`, `codex`, `opencode`, `deepagents`, `tool_loop`) next to the shared `harness` tag. The same data is available from the API
+在 gateway 儀表板中，開啟 **Usage** 並切換到標籤檢視。每個 harness 都會以自己的標籤顯示（`claude_code`、`codex`、`opencode`、`deepagents`、`tool_loop`），旁邊則是共用的 `harness` 標籤。相同的資料也可透過 API 取得
 
 ```bash
 # daily spend and tokens for each harness tag
@@ -214,11 +214,11 @@ curl "http://localhost:4000/spend/logs?api_key=sk-...&start_date=2026-09-30&end_
   -H "Authorization: Bearer $LITELLM_MASTER_KEY"
 ```
 
-Each spend log row has `request_tags` set to `["harness", "codex"]` (or the matching harness) and your `metadata=` under `metadata.spend_logs_metadata`, so you can filter by a run id or a user id you passed in. `result.cost` comes from the gateway's `x-litellm-response-cost` header, so it matches what the gateway records.
+每一列支出記錄都將 `request_tags` 設為 `["harness", "codex"]`（或相對應的 harness），並在 `metadata.spend_logs_metadata` 下方記錄您的 `metadata=`，因此您可以依您傳入的執行 ID 或使用者 ID 進行篩選。`result.cost` 來自 gateway 的 `x-litellm-response-cost` 標頭，因此它會與 gateway 記錄的內容一致。
 
-## Without a gateway
+## 沒有 gateway 的情況 {#without-a-gateway}
 
-Without the `litellm_proxy/` prefix, the model is called directly through the LiteLLM SDK. Set the usual provider variable on your host and pass a full LiteLLM model string.
+沒有 `litellm_proxy/` 前綴時，模型會直接透過 LiteLLM SDK 呼叫。請在主機上設定一般的提供者變數，並傳入完整的 LiteLLM 模型字串。
 
 ```python
 result = litellm.agent(
@@ -229,4 +229,4 @@ result = litellm.agent(
 )
 ```
 
-CLI harnesses still use the per-session endpoint to keep provider keys on the host. In-process harnesses call the LiteLLM SDK from your Python process. Cost is computed locally from LiteLLM's model cost map. You lose central spend logs, shared keys and gateway-side fallbacks. See [Models and routing](./models.md#sdk-mode) for details
+CLI harness 仍會使用每個工作階段的端點，以將提供者金鑰保留在主機上。in-process harness 會從您的 Python 程式呼叫 LiteLLM SDK。成本會根據 LiteLLM 的模型成本對照表在本機計算。您將失去集中式支出記錄、共享金鑰，以及閘道端的備援。詳情請參閱 [模型與路由](./models.md#sdk-mode)

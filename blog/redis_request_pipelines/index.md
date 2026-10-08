@@ -1,59 +1,59 @@
 ---
 slug: redis-request-pipelines
-title: "How we cut LiteLLM's Redis round trips per request by 64%"
+title: "我們如何將 LiteLLM 每次請求的 Redis 往返次數降低 64%"
 date: 2026-10-01T09:00:00
 authors:
   - yassin
 image: ./cover.gif
-description: "A governed request to the LiteLLM AI Gateway waited on Redis 22 times. It now waits 8 times: one pipeline per Redis backend before the model call, one after."
+description: "一個送往 LiteLLM AI Gateway 的受管請求曾在 Redis 上等待 22 次。現在只等待 8 次：在模型呼叫前，每個 Redis 後端各一個 pipeline；在模型呼叫後，再一個。"
 tags: [performance, redis, proxy, engineering, ai-gateway]
 hide_table_of_contents: true
 ---
 
 import { PerformanceResults, RoundTripTimeline, BatchLifecycle, EndpointResults } from './diagrams';
 
-![LiteLLM's 22 Redis round trips merge into 8, a 64% reduction per request](./cover.gif)
+![LiteLLM 的 22 次 Redis 往返合併為 8 次，每次請求減少 64%](./cover.gif)
 
-This week, we cut the number of times a request to the LiteLLM proxy waits on Redis from **22 to 8**.
+本週，我們將 LiteLLM proxy 上一個請求等待 Redis 的次數從 **22 次降到 8 次**。
 
-A request from a key with a budget, in a team with a budget and TPM/RPM limits, against a model group with usage-based routing and a Redis response cache, made 22 Redis round trips: 12 before the model was called and 10 after. The same request, with the same checks and the same writes, now makes **5 before and 3 after**.
+一個來自具有預算之金鑰、位於具有預算與 TPM/RPM 限制之團隊、針對採用依使用量路由與 Redis 回應快取之模型群組的請求，原本會造成 22 次 Redis 往返：模型呼叫前 12 次、之後 10 次。相同的請求、相同的檢查與相同的寫入，現在只需 **前 5 次、後 3 次**。
 
 {/* truncate */}
 
 <PerformanceResults />
 
-## Why it was slow
+## 為什麼會慢 {#why-it-was-slow}
 
-Seven parts of the proxy talk to Redis on a request: auth, spend counters, budget reservation, the rate limiter, the router, the response cache, and the post-call accounting. Each one read what it needed, decided, wrote, and returned before the next one started. The rate limiter alone ran three Lua scripts one after another. Budget reservation re-read the spend counters auth had just read, then sent one increment per entity.
+proxy 在一次請求中與 Redis 溝通的部分有七個：auth、支出計數器、預算保留、速率限制器、router、回應快取，以及呼叫後的計帳。每一個都先讀取自己需要的資料、做出判斷、寫入，然後在下一個開始之前返回。光是速率限制器就連續執行了三個 Lua scripts。預算保留會重新讀取 auth 剛剛讀過的支出計數器，然後對每個實體各送出一次遞增。
 
-Of the 22 round trips, **5 carried information a decision depended on**: the identity rows, the spend counters, the rate-limit scripts, the routing state and the response-cache lookup. The other 17 were re-reads of values already in hand, write-backs, and counter updates nothing waited for. Redis was never the bottleneck. The cost was waiting for the answer, 22 times in a row, on every request.
+在 22 次往返中，**有 5 次承載了決策所依賴的資訊**：身分資料列、支出計數器、速率限制 script、路由狀態，以及回應快取查詢。其餘 17 次是重複讀取已掌握的值、回寫，以及沒有人等待的計數器更新。Redis 從來不是瓶頸。成本在於等待答案，連續等 22 次，發生在每一次請求上。
 
 <RoundTripTimeline />
 
-## What we changed
+## 我們做了什麼 {#what-we-changed}
 
-**Every request now owns one Redis batch per backend.** Auth, the spend check, the rate limiter and the router declare their reads and scripts on it and get a handle back. The first time anyone awaits a handle, everything declared so far leaves as one pipeline, and every caller reads its own reply. The checks themselves did not move: budget rejects still happen in the budget code, rate-limit rejects in the rate limiter, in the same order as before.
+**現在每個請求都會擁有每個後端各一個 Redis 批次。** auth、支出檢查、速率限制器和 router 會在其中宣告它們要讀取的內容與 scripts，並取得一個 handle 回傳。任何人第一次 await 這個 handle 時，到目前為止已宣告的一切會一次以一個 pipeline 送出，而每個呼叫端都會讀取自己的回應。檢查本身沒有移動：預算拒絕仍然發生在預算程式碼中，速率限制拒絕仍然發生在速率限制器中，順序與之前相同。
 
 <BatchLifecycle />
 
-After the model responds, nothing waits on the writes, so they collect in a post-call batch: the response-cache write, the spend increments, the deployment usage counter and the rate limiter's token script. They leave in one pipeline when the success or failure callbacks finish. A one-second deadline flushes the batch if no callback closes it, and shutdown drains whatever is still pending, so a pod restart does not lose accounting.
+在模型回應後，沒有任何東西會等待那些寫入，因此它們會收集到一個呼叫後批次中：回應快取寫入、支出增量、部署使用量計數器，以及速率限制器的 token script。當成功或失敗回呼完成時，它們會一次以一個 pipeline 送出。如果沒有任何回呼關閉它，則一個一秒的期限會強制 flush 該批次，而 shutdown 會排空所有仍在等待的內容，因此 pod 重新啟動不會遺失計帳。
 
-Each command in a pipeline gets its own reply. A Lua script that is not loaded fails only its owner, which falls back to a direct call exactly as it did before. A pipeline that fails as a whole looks to every owner like Redis being unreachable, which they already handle. Redis Cluster clients keep making direct calls, since a cluster pipeline fans out per node. Requests that touch two Redis backends get one pipeline per backend, and the proxy and router caches share a pipeline when they point at the same server.
+pipeline 中的每個命令都會取得自己的回應。尚未載入的 Lua script 只會讓其擁有者失敗，並像之前一樣退回到直接呼叫。整個 pipeline 失敗時，對每個擁有者來說都像是 Redis 無法連線，這正是他們已經在處理的情況。Redis Cluster client 仍會進行直接呼叫，因為 cluster pipeline 會依節點分散。觸及兩個 Redis 後端的請求，會對每個後端各使用一個 pipeline；而 proxy 與 router 的快取若指向同一台伺服器，就會共用一個 pipeline。
 
-## Redis round trips per request: 22 → 8
+## 每次請求的 Redis 往返次數：22 → 8 {#redis-round-trips-per-request-22--8}
 
-The same harness ran every endpoint shape the proxy governs the same way, with and without streaming, with usage-based and simple-shuffle routing, and with a response-cache hit. `/v1/responses` keeps one extra round trip on each side because its native handler still makes two synchronous cache calls from a worker thread.
+相同的測試框架以相同方式執行 proxy 管理的每一種 endpoint 形狀，包含與不包含 streaming、包含依使用量與簡單隨機洗牌路由，以及有回應快取命中的情況。`/v1/responses` 每一側都多保留一次往返，因為其原生 handler 仍從 worker thread 進行兩次同步快取呼叫。
 
 <EndpointResults />
 
-## Auth refresh requests: 46 → 16 Redis round trips
+## auth 重新整理請求：46 → 16 次 Redis 往返 {#auth-refresh-requests-46--16-redis-round-trips}
 
-Auth keeps its management objects, the key, the end user, the team and the model-access registry, in memory for 60 seconds. On the first request after they expire, the proxy refreshed each one from Redis and then Postgres one call at a time: 16 serial Redis trips before routing started, the end user, the key and the registry each read twice, and the team alias deleted with a synchronous call on the event loop. That request cost 46 round trips instead of 22, once a minute for every active key.
+auth 會將其管理物件、key、end user、team 與 model-access registry 保留在記憶體中 60 秒。在它們過期後的第一個請求中，proxy 會逐一從 Redis，然後從 Postgres 重新整理每一個物件：在路由開始前有 16 次連續的 Redis 往返，end user、key 與 registry 各讀取兩次，而 team alias 則在 event loop 上以同步呼叫刪除。對於每個活躍 key，每分鐘一次，這個請求的成本從 22 次往返變成 46 次。
 
-The same request now reads whatever memory is missing with one MGET on the request pipeline, reads the team, and sends the write-backs and the alias delete as one pipeline behind it. The refresh is 3 trips, and the request as a whole went from **46 to 16 round trips** for chat and from 40 to 14 for `/v1/messages`.
+現在，相同的請求會在 request pipeline 上透過一次 MGET 讀取記憶體中缺少的內容、讀取 team，並將回寫與 alias 刪除作為其後的一個 pipeline 送出。重新整理現在是 3 次往返，而整體請求則從 **46 次降到 16 次往返**（chat），以及從 40 次降到 14 次（`/v1/messages`）。
 
-## How we measured
+## 我們如何測量 {#how-we-measured}
 
-We measured both versions on the same local proxy, from the commit before this work (`27c110cb`) to main with all five changes in it (`13d004fc`): Redis 6.0 and Postgres 14, mock deployments so the count does not depend on a provider, and a tracer that logs every Redis call and every pipeline flush with its caller. A pipeline or a Lua script counts as one round trip. Every sample was preceded by a warm-up request 12 seconds earlier, and the harness idles for 65 seconds every three samples so the 60-second cache expiry never lands inside a sample. For the refresh case, the harness sent a warm-up request, waited 65 seconds and traced the next one. All requests returned HTTP 200 in both arms.
+我們在同一個本機 proxy 上測量了兩個版本，從這項工作之前的 commit（`27c110cb`）到包含全部五項變更的 main（`13d004fc`）：Redis 6.0 與 Postgres 14、mock deployments（因此計數不依賴任何提供者），以及一個會記錄每次 Redis 呼叫與每次 pipeline flush 及其呼叫者的 tracer。一次 pipeline 或一次 Lua script 算作一次往返。每個樣本前 12 秒都會先送出一個 warm-up 請求，且測試框架每三個樣本就會閒置 65 秒，因此 60 秒的快取到期永遠不會落在樣本內。對於重新整理案例，測試框架先送出一個 warm-up 請求，等待 65 秒，然後追蹤下一個請求。兩邊的所有請求都回傳 HTTP 200。
 
-See the changes: [routing reads](https://github.com/BerriAI/litellm/pull/43320), [spend counters](https://github.com/BerriAI/litellm/pull/43369), [the pre-call pipeline](https://github.com/BerriAI/litellm/pull/43407), [the post-call pipeline](https://github.com/BerriAI/litellm/pull/43779) and [the auth refresh](https://github.com/BerriAI/litellm/pull/43776).
+請參閱變更：[路由讀取](https://github.com/BerriAI/litellm/pull/43320)、[支出計數器](https://github.com/BerriAI/litellm/pull/43369)、[呼叫前 pipeline](https://github.com/BerriAI/litellm/pull/43407)、[呼叫後 pipeline](https://github.com/BerriAI/litellm/pull/43779) 以及 [auth 重新整理](https://github.com/BerriAI/litellm/pull/43776)。

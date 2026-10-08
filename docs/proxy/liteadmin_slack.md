@@ -1,39 +1,39 @@
 ---
 title: Set up the LiteAdmin Slack app
-sidebar_label: Set up the Slack app
-description: Install LiteAdmin in Slack, deploy the Enterprise worker or a standalone agent, and connect your own LiteLLM admin account.
+sidebar_label: 設定 Slack app
+description: 在 Slack 中安裝 LiteAdmin，部署 Enterprise worker 或獨立 agent，並連接您自己的 LiteLLM 管理員帳戶。
 toc_max_heading_level: 2
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Set up the LiteAdmin Slack app
+# 設定 LiteAdmin Slack app {#set-up-the-liteadmin-slack-app}
 
-Use **LiteAdmin** to ask about teams, budgets, models, and spend from a Slack DM. Each admin connects their own LiteLLM account
+使用 **LiteAdmin**，可透過 Slack DM 詢問團隊、預算、模型與支出。每位管理員都會連接自己的 LiteLLM 帳戶
 
-Install the Slack app once, then choose one deployment below. **Enterprise** uses the worker bundled with your gateway and its existing SSO. **Standalone** runs a separate agent service with its own HTTPS address and login configuration
+先安裝 Slack app，然後從下方選擇一種部署方式。**Enterprise** 使用隨您的 gateway 一起封裝的 worker 及其既有的 SSO。**Standalone** 會執行一個獨立的 agent 服務，並使用自己的 HTTPS 位址與登入設定
 
-To connect Claude Code or Codex to an MCP endpoint on your Enterprise deployment, see [Deploy LiteAdmin MCP on Enterprise](./liteadmin_mcp_enterprise.md). That guide covers `/admin/mcp` in unified and componentized images; this page configures the Slack agent worker
+若要將 Claude Code 或 Codex 連接到 Enterprise 部署上的 MCP endpoint，請參閱 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md)。該指南涵蓋 `/admin/mcp` 在整合式與組件化映像中的設定；本頁面則設定 Slack agent worker
 
-## Before you start
+## 開始之前 {#before-you-start}
 
-You need a working LiteLLM gateway with HTTPS, a database, and a tool-calling model each connecting admin can use. Each user needs an active [`proxy_admin` account](./access_control.md#global-proxy-roles) whose email matches their Slack profile. You also need permission to create and install a Slack app in your workspace
+您需要一個可正常運作的 LiteLLM gateway，具備 HTTPS、資料庫，以及每位可連接的管理員都能使用的工具呼叫模型。每位使用者都需要一個啟用中的 [`proxy_admin` 帳戶](./access_control.md#global-proxy-roles)，其電子郵件需與 Slack 個人資料相符。您也需要有權限在您的工作區中建立並安裝 Slack app
 
-Run one worker for each Slack app, workspace, and gateway, with persistent storage and outbound Slack WebSocket access. Use HTTPS origins without URL subpaths. The Enterprise deployment additionally requires a valid license and [SSO configured on the gateway](./admin_ui_sso.md)
+請為每個 Slack app、工作區與 gateway 執行一個 worker，並具備持久儲存與對外 Slack WebSocket 存取。請使用不含 URL 子路徑的 HTTPS origin。Enterprise 部署另外需要有效授權，以及 [在 gateway 上已設定 SSO](./admin_ui_sso.md)
 
-## 1. Create and install the Slack app {#2-create-and-install-the-slack-app}
+## 1. 建立並安裝 Slack app {#2-create-and-install-the-slack-app}
 
-Use a separate Slack app for each environment, for example **LiteAdmin Dev** for testing
+每個環境請使用獨立的 Slack app，例如用於測試的 **LiteAdmin Dev**
 
-1. Open [Slack's app dashboard](https://api.slack.com/apps), select **Create New App**, then **From a manifest**, and choose your workspace
-2. Paste the JSON manifest below. Change the app name if needed, review the permissions, and create the app
-3. Under **Basic Information**, open **App-Level Tokens**. Generate a token named `liteadmin-socket` with the `connections:write` scope. Save the `xapp-…` value as `SLACK_APP_TOKEN`
-4. Under **OAuth & Permissions**, select **Install to Workspace** and approve the installation. Save the **Bot User OAuth Token**, beginning with `xoxb-`, as `SLACK_BOT_TOKEN`
-5. Open your workspace in Slack's web app. Copy the workspace ID beginning with `T` from `https://app.slack.com/client/T…/…` and save it as `SLACK_WORKSPACE_ID`
+1. 開啟 [Slack 的 app dashboard](https://api.slack.com/apps)，選擇 **Create New App**，接著選擇 **From a manifest**，然後選取您的工作區
+2. 貼上以下 JSON manifest。視需要變更 app 名稱，檢閱權限，然後建立 app
+3. 在 **Basic Information** 下方，開啟 **App-Level Tokens**。產生名為 `liteadmin-socket`、具備 `connections:write` scope 的 token。將 `xapp-…` 值儲存為 `SLACK_APP_TOKEN`
+4. 在 **OAuth & Permissions** 下方，選擇 **Install to Workspace** 並核准安裝。將以 `xoxb-` 開頭的 **Bot User OAuth Token** 儲存為 `SLACK_BOT_TOKEN`
+5. 在 Slack 的網頁應用程式中開啟您的工作區。從 `https://app.slack.com/client/T…/…` 複製以 `T` 開頭的工作區 ID，並將其儲存為 `SLACK_WORKSPACE_ID`
 
 <details>
-<summary>Slack app manifest for direct messages</summary>
+<summary>用於直接訊息的 Slack app manifest</summary>
 
 ```json
 {
@@ -77,65 +77,65 @@ Use a separate Slack app for each environment, for example **LiteAdmin Dev** for
 
 </details>
 
-This manifest enables Socket Mode, direct-message events, and a writable **Messages** tab. The app can read messages sent to it and look up the Slack profile email needed to match a gateway account. Slack does not need an inbound event webhook; it delivers messages through the worker's outbound connection
+此 manifest 啟用 Socket Mode、直接訊息事件，以及可寫入的 **Messages** 分頁。此 app 可讀取傳送給它的訊息，並查找與 gateway 帳戶配對所需的 Slack 個人資料電子郵件。Slack 不需要內送事件 webhook；它會透過 worker 的對外連線傳遞訊息
 
-## 2. Deploy and connect
+## 2. 部署並連接 {#2-deploy-and-connect}
 
-Choose one setup path. Enterprise starts in read-only mode so you can test lookups before allowing changes
+請選擇一條設定路徑。Enterprise 會以唯讀模式啟動，方便您在允許變更之前先測試查詢
 
 <Tabs groupId="liteadmin-setup" queryString="deployment">
-<TabItem value="enterprise" label="Enterprise (recommended)" default>
+<TabItem value="enterprise" label="Enterprise（建議）" default>
 
-The Docker image includes the agent code and its dependencies. You must enable the worker and install a Slack app before anyone can use it. The Helm setting `liteadmin.enabled` defaults to `false`; a normal gateway container does not start the worker. Enable it through your deployment configuration, with a valid Enterprise license. There is no dashboard toggle
+Docker 映像包含 agent 程式碼及其相依項目。您必須先啟用 worker 並安裝 Slack app，任何人才能使用它。Helm 設定 `liteadmin.enabled` 預設為 `false`；一般 gateway 容器不會啟動 worker。請透過您的部署設定啟用它，並具備有效的 Enterprise 授權。儀表板沒有切換開關
 
-The gateway and worker run as separate containers from the same image. Slack delivers messages over the worker's outbound Socket Mode connection. The worker calls your gateway with the requesting admin's personal session. You keep the worker private and use the gateway's HTTPS address for sign-in
+gateway 與 worker 會以相同映像中的不同容器執行。Slack 會透過 worker 的對外 Socket Mode 連線傳遞訊息。worker 會使用請求管理員的個人 session 呼叫您的 gateway。您應將 worker 保持私有，並使用 gateway 的 HTTPS 位址進行登入
 
-:::note Availability
+:::note 可用性
 
-Use an image and chart containing [LiteLLM PR #44444](https://github.com/BerriAI/litellm/pull/44444) and the pinned worker from [Admin Agent PR #18](https://github.com/BerriAI/litellm-admin-agent/pull/18). Older images and charts do not contain this integration. The image names below are examples, not published release tags
+請使用包含 [LiteLLM PR #44444](https://github.com/BerriAI/litellm/pull/44444) 的映像與 chart，以及來自 [Admin Agent PR #18](https://github.com/BerriAI/litellm-admin-agent/pull/18) 的固定版本 worker。較舊的映像與 chart 不包含此整合。下方映像名稱僅為範例，並非已發布的 release tag
 
 :::
 
-### Prepare your gateway {#1-prepare-your-gateway}
+### 準備您的 gateway {#1-prepare-your-gateway}
 
-Start with a working Enterprise gateway that has a database, an HTTPS address, and [SSO configured](./admin_ui_sso.md). Verify that you can sign in to its Admin UI. Use an origin such as `https://gateway.example.com`, without a URL subpath
+請先準備一個可正常運作的 Enterprise gateway，具備資料庫、HTTPS 位址，以及 [已設定的 SSO](./admin_ui_sso.md)。確認您可以登入其 Admin UI。請使用例如 `https://gateway.example.com` 這類不含 URL 子路徑的 origin
 
-Choose a tool-calling model that the gateway exposes and that each connecting admin can access. Use its gateway model name in the configuration below
+請選擇 gateway 有提供且每位連接的管理員都能存取的工具呼叫模型。請在下方設定中使用其 gateway 模型名稱
 
-Each user needs an active [`proxy_admin` account](./access_control.md#global-proxy-roles) whose email matches their Slack profile. The gateway checks Enterprise entitlement and current admin permissions before connecting an account; the worker also checks entitlement and identity before allowing agent use
+每位使用者都需要一個啟用中的 [`proxy_admin` 帳戶](./access_control.md#global-proxy-roles)，其電子郵件需與 Slack 個人資料相符。gateway 會在連接帳戶前檢查 Enterprise 資格與目前管理員權限；worker 也會在允許使用 agent 前檢查資格與身分
 
-Run one worker for each Slack app, workspace, and gateway. Allow outbound Slack WebSocket connections and HTTPS requests from the worker to the gateway. Allow the gateway to reach the worker on its private port `10000`
+請為每個 Slack app、工作區與 gateway 執行一個 worker。允許 worker 對 Slack 的 WebSocket 對外連線，以及從 worker 到 gateway 的 HTTPS 請求。允許 gateway 透過其私有埠 `10000` 存取 worker
 
-### Store the worker's credentials {#3-store-the-workers-credentials}
+### 儲存 worker 的憑證 {#3-store-the-workers-credentials}
 
-Store these five values in your secret manager. Keep them separate from the gateway's master key and database credentials
+請將以下五個值儲存在您的 secret manager 中。請將它們與 gateway 的 master key 與資料庫憑證分開保存
 
-| Setting | Value |
+| 設定 | 值 |
 | --- | --- |
-| `SLACK_BOT_TOKEN` | The installed app's `xoxb-…` token |
-| `SLACK_APP_TOKEN` | The `xapp-…` token with `connections:write` |
-| `SLACK_WORKSPACE_ID` | The workspace ID beginning with `T` |
-| `ADMIN_AGENT_SERVICE_TOKEN` | A random shared secret of at least 32 characters, used by the gateway and worker |
-| `CREDENTIAL_ENCRYPTION_KEY` | A persistent Fernet key used to encrypt saved personal sessions |
+| `SLACK_BOT_TOKEN` | 已安裝 app 的 `xoxb-…` token |
+| `SLACK_APP_TOKEN` | 具備 `connections:write` 的 `xapp-…` token |
+| `SLACK_WORKSPACE_ID` | 以 `T` 開頭的工作區 ID |
+| `ADMIN_AGENT_SERVICE_TOKEN` | 至少 32 個字元的隨機共享 secret，供 gateway 與 worker 使用 |
+| `CREDENTIAL_ENCRYPTION_KEY` | 用於加密已儲存個人 session 的持久 Fernet key |
 
-Generate the service token with `openssl rand -hex 32`. To generate the encryption key on a machine with the Python `cryptography` package installed, run:
+使用 `openssl rand -hex 32` 產生服務 token。若要在已安裝 Python `cryptography` 套件的機器上產生加密金鑰，請執行：
 
 ```bash
 python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'
 ```
 
-Save generated values in your secret manager. Preserve the encryption key and worker state volume across upgrades so the worker can read saved connections. Keep credentials out of source control and Slack messages
+請將產生的值儲存在您的 secret manager 中。升級時請保留加密金鑰與 worker state volume，以便 worker 讀取已儲存的連線。請勿將憑證放在原始碼管理系統或 Slack 訊息中
 
-### Enable the worker {#4-enable-the-worker}
+### 啟用 worker {#4-enable-the-worker}
 
-Choose the deployment method you already use for the gateway. Both examples start in **read-only mode**, so the agent can answer lookups without changing gateway resources
+請選擇您已用於 gateway 的部署方式。兩個範例都會以 **唯讀模式** 啟動，因此 agent 可以在不變更 gateway 資源的情況下回答查詢
 
 <Tabs groupId="liteadmin-native-deployment">
 <TabItem value="helm" label="Kubernetes / Helm" default>
 
-Use the `helm/litellm-helm` chart from a LiteLLM checkout containing this integration. Keep your existing gateway values, including the Enterprise license, database, and SSO settings
+請使用包含此整合的 LiteLLM checkout 中的 `helm/litellm-helm` chart。請保留您現有的 gateway values，包括 Enterprise 授權、資料庫與 SSO 設定
 
-Create a Secret named `liteadmin-slack` in the gateway's namespace through your usual secret-management workflow. It must contain the five settings from **Store the worker's credentials** above. For a manual installation, save only those settings in a private `liteadmin-secrets.env` file, then run:
+透過您平常的 secret 管理流程，在 gateway 的 namespace 中建立名為 `liteadmin-slack` 的 Secret。它必須包含上方 **儲存 worker 的憑證** 中的五個設定。若為手動安裝，請只將這些設定儲存在私有的 `liteadmin-secrets.env` 檔案中，然後執行：
 
 ```bash
 chmod 600 liteadmin-secrets.env
@@ -144,9 +144,9 @@ kubectl --namespace "$LITELLM_NAMESPACE" create secret generic liteadmin-slack \
   --from-env-file=liteadmin-secrets.env
 ```
 
-Use your actual namespace. If the Secret already exists, update it through the system that manages it and preserve its encryption key
+請使用您實際的 namespace。若 Secret 已存在，請透過管理它的系統更新，並保留其加密金鑰
 
-Add a `liteadmin-values.yaml` file:
+新增一個 `liteadmin-values.yaml` 檔案：
 
 ```yaml title="liteadmin-values.yaml"
 image:
@@ -162,9 +162,9 @@ liteadmin:
   readOnly: true
 ```
 
-Replace the image with a build containing this integration. Set `gatewayUrl` and `model` to your gateway URL and model name. Use `storageClassName` under `liteadmin` if your cluster requires a particular storage class
+請將映像替換為包含此整合的 build。將 `gatewayUrl` 與 `model` 設為您的 gateway URL 與模型名稱。若您的叢集需要特定的儲存類別，請在 `liteadmin` 下使用 `storageClassName`
 
-Apply the configuration to your existing release. Replace `litellm` with your release name and `gateway-values.yaml` with the values file you already use:
+將設定套用到您現有的 release。請將 `litellm` 替換為您的 release 名稱，並將 `gateway-values.yaml` 替換為您已使用的 values 檔案：
 
 ```bash
 export LITELLM_RELEASE=litellm
@@ -175,20 +175,20 @@ helm upgrade "$LITELLM_RELEASE" ./helm/litellm-helm \
   -f liteadmin-values.yaml
 ```
 
-The chart starts one worker with a private ClusterIP Service and a persistent volume claim. It configures the gateway's worker address and shares only `ADMIN_AGENT_SERVICE_TOKEN` with gateway replicas. The worker receives its own Secret, without gateway master-key or database credentials
+此 chart 會啟動一個 worker，搭配私有的 ClusterIP Service 與 persistent volume claim。它會設定 gateway 的 worker 位址，並只與 gateway replicas 共用 `ADMIN_AGENT_SERVICE_TOKEN`。worker 會接收自己的 Secret，不含 gateway master key 或資料庫憑證
 
-Gateway autoscaling does not scale the worker. Keep the worker at one replica and keep its Service private. After changing worker Secret values, restart the worker to load them; changing the shared service token also requires restarting the gateway
+Gateway autoscaling 不會擴縮 worker。請將 worker 維持為 1 個副本，並讓其 Service 保持私有。變更 worker Secret 值後，請重新啟動 worker 以載入設定；變更共享服務 token 也需要重新啟動 gateway
 
 </TabItem>
 <TabItem value="compose" label="Docker Compose">
 
-From a LiteLLM checkout containing this integration, build the image or use a published build that contains it:
+從包含此整合的 LiteLLM checkout 中，建置映像或使用包含它的已發布 build：
 
 ```bash
 docker build -t litellm-native-admin:local .
 ```
 
-Keep your existing gateway `.env` and Compose configuration, including its license, database, model, and SSO settings. Save the worker settings in a separate private file:
+保留您現有的閘道 `.env` 和 Compose 設定，包括其授權、資料庫、模型與 SSO 設定。將 worker 設定儲存在另一個私密檔案中：
 
 ```dotenv title="liteadmin.env"
 LITELLM_IMAGE=litellm-native-admin:local
@@ -202,9 +202,9 @@ CREDENTIAL_ENCRYPTION_KEY=your-generated-fernet-key
 ADMIN_READ_ONLY=true
 ```
 
-Replace the placeholders with your gateway settings and the secrets you saved above. Use the same service token for the gateway and worker; the overlay reads it from this file for both
+將預留位置替換為您的閘道設定以及您先前儲存的密鑰。閘道與 worker 使用相同的服務權杖；overlay 會從此檔案讀取兩者
 
-Start the gateway and worker with the additional Compose file:
+使用額外的 Compose 檔案啟動閘道與 worker：
 
 ```bash
 chmod 600 liteadmin.env
@@ -212,16 +212,16 @@ docker compose --env-file .env --env-file liteadmin.env \
   -f docker-compose.yml -f docker-compose.liteadmin.yml up -d
 ```
 
-Use Docker Compose v2. Keep worker credentials in `liteadmin.env`; the base gateway configuration loads its own `.env`. The overlay starts the same image with `--admin-agent`, sets the private worker address on the gateway, and creates the `liteadmin_state` volume. It publishes no worker port
+使用 Docker Compose v2。將 worker 憑證保留在 `liteadmin.env`；基礎閘道設定會載入其自己的 `.env`。overlay 會以 `--admin-agent` 啟動相同映像、在閘道上設定私有 worker 位址，並建立 `liteadmin_state` 磁碟區。它不會公開任何 worker 連接埠
 
-Keep your existing HTTPS reverse proxy in front of the gateway. After changing worker settings, rerun the Compose command so the container receives the new values
+在閘道前方保留您現有的 HTTPS 反向代理。變更 worker 設定後，請重新執行 Compose 指令，讓容器接收新值
 
 </TabItem>
 </Tabs>
 
-### Verify the worker {#5-verify-the-worker}
+### 驗證 worker {#5-verify-the-worker}
 
-For **Helm**, find the worker Deployment in your namespace. Its name ends in `-liteadmin`:
+對於 **Helm**，請在您的命名空間中找到 worker Deployment。其名稱以 `-liteadmin` 結尾：
 
 ```bash
 kubectl --namespace "$LITELLM_NAMESPACE" get deployments
@@ -234,9 +234,9 @@ kubectl --namespace "$LITELLM_NAMESPACE" exec \
   "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:10000/readyz').read().decode())"
 ```
 
-Replace `LITEADMIN_DEPLOYMENT` with the name shown by `get deployments`; chart name overrides can change it. Expect one ready worker and `{"status": "ready"}`
+將 `LITEADMIN_DEPLOYMENT` 替換為 `get deployments` 顯示的名稱；chart 名稱覆寫可能會變更它。預期會有一個就緒的 worker 和 `{"status": "ready"}`
 
-For **Docker Compose**, run the same readiness check inside the worker:
+對於 **Docker Compose**，在 worker 內執行相同的就緒檢查：
 
 ```bash
 docker compose --env-file .env --env-file liteadmin.env \
@@ -245,42 +245,42 @@ docker compose --env-file .env --env-file liteadmin.env \
   "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:10000/readyz').read().decode())"
 ```
 
-Expect `{"status": "ready"}`. With Slack enabled, readiness checks the state database and the Slack socket. Complete the next step to verify sign-in, model access, and an admin-tool request
+預期為 `{"status": "ready"}`。啟用 Slack 後，就緒檢查會檢查狀態資料庫與 Slack socket。請完成下一步以驗證登入、模型存取以及管理工具請求
 
-### Connect your account and test a request {#6-connect-your-account-and-test-a-request}
+### 連結您的帳戶並測試請求 {#6-connect-your-account-and-test-a-request}
 
-1. Open **LiteAdmin** in Slack **Apps**, or the name you chose in the manifest, and send `connect` in a DM
-2. Open the private connection link within ten minutes. It should use your gateway's HTTPS address
-3. Sign in through your normal LiteLLM login. If you already have a valid browser session, proceed to the connection page
-4. Check the email on the page and select **Connect account**. Expect **Account connected**
-5. Return to Slack and ask: **What is my current LiteLLM role? Use the gateway to verify it**
+1. 在 Slack 的 **Apps** 中開啟 **LiteAdmin**，或開啟您在 manifest 中選擇的名稱，並在 DM 中傳送 `connect`
+2. 在十分鐘內開啟私人連結。它應使用您閘道的 HTTPS 位址
+3. 透過您平常的 LiteLLM 登入方式登入。如果您已經有有效的瀏覽器工作階段，請前往連結頁面
+4. 檢查頁面上的電子郵件，並選取 **Connect account**。預期會顯示 **Account connected**
+5. 返回 Slack 並詢問：**What is my current LiteLLM role? Use the gateway to verify it**
 
-Expect a reply confirming `proxy_admin`. You can then ask **List my teams and their current budgets**. The worker uses your personal session for model requests and admin operations, and verifies your Slack identity and current gateway permissions
+預期會收到回覆，確認 `proxy_admin`。接著您可以詢問 **List my teams and their current budgets**。worker 會使用您的個人工作階段進行模型請求與管理操作，並驗證您的 Slack 身分與目前的閘道權限
 
-Connection links expire after ten minutes and can be used once. Personal sessions last up to 24 hours. Send `connect` again when your session expires, or `disconnect` to delete the worker's saved connection and invalidate pending links. Disconnect does not revoke an exported credential at the gateway; that credential keeps its own expiration
+連結會在十分鐘後過期，且只能使用一次。個人工作階段最長可維持 24 小時。當您的工作階段到期時，請再次傳送 `connect`，或傳送 `disconnect` 以刪除 worker 已儲存的連結並使待處理連結失效。斷開連結不會撤銷閘道上的已匯出憑證；該憑證會維持其自身的到期時間
 
-### Allow changes after testing
+### 在測試後允許變更 {#allow-changes-after-testing}
 
-The examples above set read-only mode. To permit connected admins to change keys, teams, models, or budgets, set `liteadmin.readOnly: false` in Helm, or `ADMIN_READ_ONLY=false` in Compose, then apply the deployment again
+上述範例設定為唯讀模式。若要允許已連結的管理員變更金鑰、團隊、模型或預算，請在 Helm 中設定 `liteadmin.readOnly: false`，或在 Compose 中設定 `ADMIN_READ_ONLY=false`，然後再次套用部署
 
-Choose a change you intend to make and verify the result in the gateway. The configuration defaults permit writes when you omit the read-only setting; keep the explicit `true` value if this deployment should only answer lookups
+選擇您打算進行的一項變更，並在閘道中驗證結果。若省略唯讀設定，組態預設會允許寫入；如果此部署只應回應查詢，請保留明確的 `true` 值
 
-### Move an existing app to the Enterprise worker {#existing-liteadmin-installations}
+### 將現有應用程式移轉到 Enterprise worker {#existing-liteadmin-installations}
 
-This deployment uses the [LiteLLM Admin Agent](https://github.com/BerriAI/litellm-admin-agent) code in `native` authentication mode. A separate Slack app has its own worker and saved connections. Your existing standalone app continues to use its configured backend
+此部署使用 [LiteLLM Admin Agent](https://github.com/BerriAI/litellm-admin-agent) 程式碼，並採用 `native` 驗證模式。獨立的 Slack 應用程式有自己的 worker 與已儲存連結。您現有的獨立應用程式會繼續使用其設定的後端
 
-To reuse an existing Slack app, stop its old worker before starting the bundled worker with that app's credentials. Run one worker for those credentials. Have users send `connect` again to establish native gateway sessions. Keep the old deployment's state and encryption key until you finish the migration
+若要重用現有的 Slack 應用程式，請先停止其舊 worker，再使用該應用程式的憑證啟動捆綁的 worker。針對那些憑證只執行一個 worker。請使用者再次傳送 `connect` 以建立原生閘道工作階段。在完成移轉前，請保留舊部署的狀態與加密金鑰
 
-Native mode uses the gateway's connection page and existing SSO configuration. You do not configure hosted `/register`, `/authorize`, or `/token` callbacks, or add a second identity-provider client
+原生模式使用閘道的連結頁面與既有的 SSO 組態。您不需要設定代管的 `/register`、`/authorize` 或 `/token` 回呼，也不需要新增第二個身分提供者用戶端
 
 </TabItem>
-<TabItem value="standalone" label="Standalone">
+<TabItem value="standalone" label="獨立">
 
-Deploy the [LiteLLM Admin Agent](https://github.com/BerriAI/litellm-admin-agent) as a separate service with its own HTTPS address and login configuration. Use Python 3.12 for the local setup commands, plus Docker Compose or a paid Render service with persistent storage. {/* keep-python-version */}
+將 [LiteLLM Admin Agent](https://github.com/BerriAI/litellm-admin-agent) 部署為具有自己 HTTPS 位址與登入設定的獨立服務。於本機設定指令使用 Python 3.12，並搭配 Docker Compose 或具有持久化儲存空間的付費 Render 服務。{/* keep-python-version */}
 
-The app bundles a pinned [Admin MCP connector](./liteadmin_mcp.md) and launches it with the requesting user's credential. You do not need to register an MCP server in the gateway or deploy another connector
+此應用程式會捆綁固定版本的 [Admin MCP connector](./liteadmin_mcp.md)，並以請求使用者的憑證啟動它。您不需要在閘道中註冊 MCP 伺服器或部署另一個 connector
 
-### Create your configuration {#1-create-your-configuration}
+### 建立您的設定 {#1-create-your-configuration}
 
 ```bash keep-python-version
 git clone https://github.com/BerriAI/litellm-admin-agent.git
@@ -291,15 +291,15 @@ pip install --require-hashes -r requirements.txt
 python setup_env.py
 ```
 
-These commands use a macOS/Linux shell. Open the generated `.env` file to enter your settings. If you already have one, edit it instead of rerunning the setup script.
+這些指令使用 macOS/Linux shell。開啟產生的 `.env` 檔案以輸入您的設定。如果您已經有一個，請編輯它，不要重新執行設定腳本。
 
-Save the generated `CREDENTIAL_ENCRYPTION_KEY` in your secret manager and preserve it across upgrades. The app needs the same key to read saved connections. Keep `.env` private and retain the generated `ADMIN_AGENT_SERVICE_TOKEN` too.
+將產生的 `CREDENTIAL_ENCRYPTION_KEY` 儲存在您的密鑰管理器中，並在升級期間保留它。應用程式需要相同的金鑰來讀取已儲存的連結。請讓 `.env` 保持私密，並同時保留產生的 `ADMIN_AGENT_SERVICE_TOKEN`。
 
-Add the three Slack values from the installation above to `.env`: `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN`, and `SLACK_WORKSPACE_ID`
+將上方安裝中的三個 Slack 值加入 `.env`：`SLACK_APP_TOKEN`、`SLACK_BOT_TOKEN` 和 `SLACK_WORKSPACE_ID`
 
-### Choose your gateway and login method {#3-choose-your-gateway-and-login-method}
+### 選擇您的閘道與登入方式 {#3-choose-your-gateway-and-login-method}
 
-Edit these entries in `.env`, leaving the generated secrets in place:
+在 `.env` 中編輯這些項目，並保留產生的密鑰不變：
 
 ```dotenv title=".env"
 LITELLM_BASE_URL=https://gateway.example.com/v1
@@ -308,27 +308,27 @@ CONNECTION_AUTH_MODE=api_key
 AGENT_PUBLIC_URL=https://admin.example.com
 ```
 
-Set `LITELLM_MODEL` to a model name exposed by your gateway that each connected admin can use. Set `AGENT_PUBLIC_URL` to the app's HTTPS origin without a path. For Render, fill in your local copy after you receive the deployment URL.
+將 `LITELLM_MODEL` 設為您的閘道公開的模型名稱，且每位已連結的管理員都可使用。將 `AGENT_PUBLIC_URL` 設為應用程式的 HTTPS 來源，不含路徑。若使用 Render，請在收到部署 URL 後將其填入您的本機副本。
 
-Use `api_key` for personal-key login. Users enter their key on a private browser page after sending `connect` in Slack. **Keep gateway keys out of Slack messages.** For browser SSO, see [Optional: SSO login](#optional-sso-login) before changing `CONNECTION_AUTH_MODE` to `sso`.
+將 `api_key` 用於個人金鑰登入。使用者在 Slack 中傳送 `connect` 後，會在私密瀏覽器頁面輸入其金鑰。**請勿將閘道金鑰留在 Slack 訊息中。** 若使用瀏覽器 SSO，請在將 `CONNECTION_AUTH_MODE` 變更為 `sso` 之前，先參閱 [選用：SSO 登入](#optional-sso-login)。
 
-You choose one login method for the deployment. Each Slack user signs in with their own account; the agent uses that user's credential for model requests and admin operations.
+您可為此部署選擇一種登入方式。每位 Slack 使用者都使用自己的帳戶登入；agent 會使用該使用者的憑證進行模型請求與管理操作。
 
-### Deploy the app {#4-deploy-the-app}
+### 部署應用程式 {#4-deploy-the-app}
 
 <Tabs groupId="liteadmin-hosting">
 <TabItem value="docker" label="Docker Compose" default>
 
-Set `AGENT_PUBLIC_URL` to the HTTPS address you plan to use, then run:
+將 `AGENT_PUBLIC_URL` 設為您計畫使用的 HTTPS 位址，然後執行：
 
 ```bash
 python doctor.py --offline
 docker compose up -d --build
 ```
 
-The offline check validates configuration before deployment. Compose binds the app to `127.0.0.1:10000` and stores state in the `admin-state` volume.
+離線檢查會在部署前驗證組態。Compose 會將應用程式繫結到 `127.0.0.1:10000`，並將狀態儲存在 `admin-state` 磁碟區中。
 
-Point your domain at the host and configure an HTTPS reverse proxy. For Caddy on the same host:
+將您的網域指向該主機並設定 HTTPS 反向代理。若在同一主機上使用 Caddy：
 
 ```caddyfile
 admin.example.com {
@@ -336,36 +336,36 @@ admin.example.com {
 }
 ```
 
-If the reverse proxy runs in another container or on another host, configure a shared private network and forward to the app's reachable private address.
+如果反向代理執行於另一個容器或另一台主機上，請設定共用的私人網路，並轉送到應用程式可達的私人位址。
 
-Keep the `admin-state` volume and encryption key across restarts and upgrades. Run one container for this Slack app.
+在重新啟動與升級期間，請保留 `admin-state` 磁碟區與加密金鑰。針對此 Slack 應用程式只執行一個容器。
 
 </TabItem>
 <TabItem value="render" label="Render">
 
-Create a Render **Blueprint** from the [agent repository](https://github.com/BerriAI/litellm-admin-agent) or your fork. Use its [`render.yaml`](https://github.com/BerriAI/litellm-admin-agent/blob/main/render.yaml), a paid plan with a persistent disk, and one instance.
+從 [agent repository](https://github.com/BerriAI/litellm-admin-agent) 或您的 fork 建立 Render **Blueprint**。使用其 [`render.yaml`](https://github.com/BerriAI/litellm-admin-agent/blob/main/render.yaml)、具有持久化磁碟的付費方案，以及一個執行個體。
 
-Enter these settings when Render prompts you:
+當 Render 提示時，請輸入以下設定：
 
-| Setting | Value |
+| 設定 | 值 |
 | --- | --- |
-| `LITELLM_BASE_URL` | Your gateway URL, such as `https://gateway.example.com/v1`. |
-| `LITELLM_MODEL` | Your gateway's tool-calling model name. |
-| `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN`, `SLACK_WORKSPACE_ID` | The values from your Slack installation. |
-| `CONNECTION_AUTH_MODE` | `api_key`, or `sso` after completing the SSO requirements below. |
-| `CREDENTIAL_ENCRYPTION_KEY` | The key generated by `setup_env.py`. Preserve it on later deploys. |
-| `ADMIN_TOOL_NAMES` | Leave empty for all available reviewed tools, or set an allowlist. |
+| `LITELLM_BASE_URL` | 您的閘道 URL，例如 `https://gateway.example.com/v1`。 |
+| `LITELLM_MODEL` | 您閘道的工具呼叫模型名稱。 |
+| `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN`, `SLACK_WORKSPACE_ID` | 來自您 Slack 安裝的值。 |
+| `CONNECTION_AUTH_MODE` | `api_key`，或在完成下方 SSO 要求後設定為 `sso`。 |
+| `CREDENTIAL_ENCRYPTION_KEY` | 由 `setup_env.py` 產生的金鑰。請在後續部署中保留它。 |
+| `ADMIN_TOOL_NAMES` | 對所有可用且已審核的工具保持空白，或設定允許清單。 |
 
-The Blueprint creates the state disk and a service token. It uses Render's external URL as the app origin. After deployment, copy that HTTPS URL into your local `.env` as `AGENT_PUBLIC_URL` so the preflight checks the same address. If you use a custom domain, set `AGENT_PUBLIC_URL` in Render's environment too.
+Blueprint 會建立狀態磁碟與服務權杖。它會使用 Render 的外部 URL 作為應用程式來源。部署後，請將該 HTTPS URL 複製到您的本機 `.env` 中，並設為 `AGENT_PUBLIC_URL`，讓預檢檢查相同位址。若您使用自訂網域，也請在 Render 的環境中設定 `AGENT_PUBLIC_URL`。
 
-Keep the generated service token for optional gateway Agents registration. Slack use does not require that registration. To change the login method later, update `CONNECTION_AUTH_MODE` under **Environment** and redeploy.
+保留產生的服務權杖以供選用的閘道代理程式註冊。Slack 使用不需要該註冊。若要稍後變更登入方式，請更新 **Environment** 下的 `CONNECTION_AUTH_MODE` 並重新部署。
 
 </TabItem>
 </Tabs>
 
-### Check the deployment {#5-check-the-deployment}
+### 檢查部署 {#5-check-the-deployment}
 
-In your local setup environment, set `LITELLM_SETUP_KEY` to your personal proxy-admin key and run:
+在您的本機設定環境中，將 `LITELLM_SETUP_KEY` 設為您的個人 proxy-admin 金鑰，然後執行：
 
 ```bash
 export LITELLM_SETUP_KEY='<your-personal-proxy-admin-key>'
@@ -373,75 +373,75 @@ python doctor.py
 unset LITELLM_SETUP_KEY
 ```
 
-The preflight checks your gateway identity, model visibility, MCP tool discovery, and Slack configuration. It does not call the model, change gateway state, or send Slack messages. Keep the setup credential off the deployed service and remove any saved copy after the check.
+preflight 會檢查您的閘道身分、模型可見性、MCP 工具探索，以及 Slack 設定。它不會呼叫模型、變更閘道狀態，或傳送 Slack 訊息。請將設定憑證保留在已部署的服務之外，並在檢查後移除任何已儲存的副本。
 
-You can also check readiness at your deployed URL:
+您也可以在已部署的 URL 上檢查 readiness：
 
 ```bash
 curl --fail https://admin.example.com/readyz
 ```
 
-Use your own app URL. A successful readiness check confirms the database and Slack socket are ready; the Slack read request below verifies the agent conversation.
+請使用您自己的應用程式 URL。成功的 readiness 檢查會確認資料庫與 Slack socket 已就緒；下方的 Slack read 請求會驗證代理程式對話。
 
-### Connect your account in Slack {#6-connect-your-account-in-slack}
+### 在 Slack 中連接您的帳戶 {#6-connect-your-account-in-slack}
 
-1. Open **LiteAdmin**, or the name you chose, under Slack **Apps** and send `connect` in a DM.
-2. Open the private connection link within ten minutes.
-3. Enter your personal proxy-admin key on the browser page, or complete SSO if your deployment uses it.
-4. Return to Slack and ask: **“List my teams and their current budgets.”**
+1. 在 Slack 的 **Apps** 下開啟 **LiteAdmin**，或您選擇的名稱，並在 DM 中傳送 `connect`。
+2. 在十分鐘內開啟私人連線連結。
+3. 在瀏覽器頁面上輸入您的個人 proxy-admin 金鑰，或在您的部署使用 SSO 時完成 SSO。
+4. 返回 Slack 並詢問：**「列出我的團隊及其目前預算。」**
 
-After the read succeeds, try a change you intend to make, such as “Create a key for Engineering with a $100 monthly budget.” The default configuration permits writes for connected admins. Use [read-only mode](#optional-restrict-tools) to limit the app to lookups.
+在讀取成功後，請嘗試您打算進行的變更，例如「為 Engineering 建立一個金鑰，月預算為 100 美元。」預設設定允許已連接的管理員進行寫入。使用 [唯讀模式](#optional-restrict-tools) 可將應用程式限制為查詢。
 
-Personal-key connections expire after 24 hours; SSO connections follow the gateway token's expiry. Gateway expiry or revocation can end access sooner. Send `connect` again to sign in. Send `disconnect` to remove your saved connection; revoke the credential in LiteLLM if you also want to invalidate it.
+個人金鑰連線會在 24 小時後過期；SSO 連線則遵循閘道權杖的到期時間。閘道到期或撤銷可能會更早終止存取。再次傳送 `connect` 以登入。傳送 `disconnect` 可移除您已儲存的連線；若您也想使其失效，請在 LiteLLM 中撤銷該憑證。
 
-### Optional: restrict tools
+### 選用：限制工具 {#optional-restrict-tools}
 
-Set these variables in `.env` or Render's environment and redeploy:
+在 `.env` 或 Render 的環境中設定這些變數，然後重新部署：
 
-| Variable | Effect |
+| 變數 | 效果 |
 | --- | --- |
-| `ADMIN_READ_ONLY=true` | Limit the agent to lookups. Users still need `proxy_admin`. |
-| `ADMIN_TOOL_NAMES=list_keys,list_teams` | Expose only these canonical connector tools. |
+| `ADMIN_READ_ONLY=true` | 將代理程式限制為查詢。使用者仍需要 `proxy_admin`。 |
+| `ADMIN_TOOL_NAMES=list_keys,list_teams` | 僅公開這些標準連接器工具。 |
 
-An empty `ADMIN_TOOL_NAMES` allows all reviewed tools available on your gateway, subject to read-only mode. If an explicit tool is unavailable, the app stops the request. For model creation, also follow the [gateway prerequisites](./liteadmin_mcp.md#add-a-model-deployment).
+空白的 `ADMIN_TOOL_NAMES` 允許閘道上所有已審核且可用的工具，但仍受唯讀模式限制。若明確指定的工具不可用，應用程式會停止該請求。若要建立模型，也請遵循 [閘道先決條件](./liteadmin_mcp.md#add-a-model-deployment)。
 
-### Optional: SSO login
+### 選用：SSO 登入 {#optional-sso-login}
 
-Your gateway must have an SSO provider configured and support the hosted **proxy API** authorization-code flow: `/register`, `/authorize` with S256 PKCE, and `/token`. Support depends on the installed gateway release. Check the [agent's compatibility requirements](https://github.com/BerriAI/litellm-admin-agent/blob/main/docs/compatibility.md#optional-browser-sso) before enabling this mode.
+您的閘道必須已設定 SSO 提供者，並支援託管的 **proxy API** 授權碼流程：`/register`、採用 S256 PKCE 的 `/authorize`，以及 `/token`。支援情況取決於已安裝的閘道版本。啟用此模式前，請先檢查 [代理程式的相容性需求](https://github.com/BerriAI/litellm-admin-agent/blob/main/docs/compatibility.md#optional-browser-sso)。
 
-On the **gateway**, no setting currently allows the app's hosted callback. LiteLLM currently accepts only loopback `redirect_uri` values for proxy API grants, so `/authorize` rejects `https://admin.example.com/oauth/callback` with `400 invalid_request` and `a proxy-API grant may only redirect to a loopback address`. `MCP_TRUSTED_REDIRECT_ORIGINS` covers MCP OAuth only and does not change this. Until your gateway release accepts hosted proxy API callbacks, use `api_key` mode. The app uses your gateway's SSO provider and does not need a separate Google or Okta client secret.
+在 **gateway** 上，目前沒有任何設定可讓應用程式的託管回呼通過。LiteLLM 目前僅接受 proxy API 授權的迴圈回送 `redirect_uri` 值，因此 `/authorize` 會以 `400 invalid_request` 與 `a proxy-API grant may only redirect to a loopback address` 拒絕 `https://admin.example.com/oauth/callback`。`MCP_TRUSTED_REDIRECT_ORIGINS` 僅涵蓋 MCP OAuth，且不會改變這點。在您的閘道版本接受託管的 proxy API 回呼之前，請使用 `api_key` 模式。應用程式會使用您的閘道 SSO 提供者，不需要額外的 Google 或 Okta client secret。
 
-On the **agent**, set `CONNECTION_AUTH_MODE=sso` and redeploy. Verify the full flow: send `connect`, sign in, return to the browser page, then make a read request in Slack. If your gateway lacks this flow, configure `api_key` mode instead; the app does not switch modes on its own.
+在 **agent** 上，設定 `CONNECTION_AUTH_MODE=sso` 並重新部署。驗證完整流程：傳送 `connect`、登入、返回瀏覽器頁面，然後在 Slack 中發出讀取請求。如果您的閘道不具備此流程，請改為設定 `api_key` 模式；應用程式不會自行切換模式。
 
-### Optional: use a hosted Admin MCP
+### 選用：使用託管 Admin MCP {#optional-use-a-hosted-admin-mcp}
 
-Leave `ADMIN_MCP_URL` empty to use the bundled connector. To use a [hosted connector](./liteadmin_mcp.md#host-a-shared-mcp-endpoint), set:
+將 `ADMIN_MCP_URL` 保持空白即可使用內建連接器。若要使用 [託管連接器](./liteadmin_mcp.md#host-a-shared-mcp-endpoint)，請設定：
 
 ```dotenv
 ADMIN_MCP_URL=https://admin-mcp.example.com/mcp
 ```
 
-Use a connector you operate and trust, configured for the same gateway. The agent sends each requesting user's gateway bearer credential to it. The hosted connector's own tool restrictions also apply.
+請使用您操作且信任的連接器，並將其配置為相同的閘道。代理程式會將每位請求使用者的閘道 bearer 憑證傳送給它。託管連接器本身的工具限制也同樣適用。
 
 </TabItem>
 </Tabs>
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-| Symptom | What to check |
+| 症狀 | 要檢查的內容 |
 | --- | --- |
-| No response in Slack | Confirm installation in the intended workspace, Socket Mode, the writable Messages tab, and `message.im` events. Check worker readiness and outbound Slack connectivity |
-| Worker fails at startup | Check the Slack credentials, service token, encryption key, model, gateway URL, and writable persistent storage |
-| Readiness returns 503 | Check the app token's `connections:write` scope, outbound WebSocket access, and the state database |
-| Enterprise connection page returns 404 | Verify the gateway image contains this integration and has `LITELLM_ADMIN_AGENT_URL` configured |
-| Enterprise connection page returns 403 | Check Enterprise entitlement, the current `proxy_admin` role, matching gateway and Slack emails, and the HTTPS origin |
-| Enterprise connection page returns 410 | The link expired, was consumed, or was invalidated. Send `connect` for a new link |
-| Enterprise connection page returns 503 | Check the private worker address, gateway-to-worker access, matching service tokens, and the gateway database |
-| Standalone connection is denied | Check the current `proxy_admin` role, personal key ownership, model access, and the email match with Slack |
-| Standalone connection page rejects the session | Use a fresh link in one browser. Check HTTPS and `AGENT_PUBLIC_URL`, which must have no subpath |
-| Standalone SSO callback fails | A `400` saying a proxy-API grant may only redirect to a loopback address means the gateway release does not accept hosted callbacks; use `api_key` mode |
-| Connection succeeds but a request fails | Confirm the admin can use the configured model and the worker can reach the gateway over HTTPS. For standalone deployments, run `doctor.py` and check `ADMIN_TOOL_NAMES` |
-| Changes are refused | Check `liteadmin.readOnly` or `ADMIN_READ_ONLY` and any hosted connector restrictions. The Enterprise examples start in read-only mode |
-| A change times out | Inspect the gateway resource before retrying. A timeout does not undo a completed operation |
+| Slack 中沒有回應 | 確認已安裝到預期的工作區、Socket Mode、可寫入的 Messages 分頁，以及 `message.im` 事件。檢查 worker 就緒狀態與對外 Slack 連線 |
+| worker 在啟動時失敗 | 檢查 Slack 憑證、服務權杖、加密金鑰、模型、閘道 URL，以及可寫入的持久性儲存體 |
+| readiness 回傳 503 | 檢查應用程式權杖的 `connections:write` 範圍、對外 WebSocket 存取，以及狀態資料庫 |
+| Enterprise 連線頁面回傳 404 | 確認閘道映像檔包含此整合，且已設定 `LITELLM_ADMIN_AGENT_URL` |
+| Enterprise 連線頁面回傳 403 | 檢查 Enterprise 權益、目前的 `proxy_admin` 角色、閘道與 Slack 電子郵件是否一致，以及 HTTPS origin |
+| Enterprise 連線頁面回傳 410 | 連結已過期、已被使用，或已失效。傳送 `connect` 以取得新連結 |
+| Enterprise 連線頁面回傳 503 | 檢查私人 worker 位址、閘道到 worker 的存取、相符的服務權杖，以及閘道資料庫 |
+| 獨立連線遭拒 | 檢查目前的 `proxy_admin` 角色、個人金鑰所有權、模型存取權，以及與 Slack 的電子郵件是否匹配 |
+| 獨立連線頁面拒絕該 session | 在單一瀏覽器中使用新的連結。檢查 HTTPS 與 `AGENT_PUBLIC_URL`，其不得有子路徑 |
+| 獨立 SSO 回呼失敗 | 顯示代理 API 授權只能重新導向到迴圈回送位址的 `400`，表示閘道版本不接受託管回呼；請使用 `api_key` 模式 |
+| 連線成功但請求失敗 | 確認管理員可使用已設定的模型，且 worker 可透過 HTTPS 連到閘道。對於獨立部署，執行 `doctor.py` 並檢查 `ADMIN_TOOL_NAMES` |
+| 變更被拒絕 | 檢查 `liteadmin.readOnly` 或 `ADMIN_READ_ONLY` 以及任何託管連接器限制。Enterprise 範例以唯讀模式開始 |
+| 變更逾時 | 在重試前檢查閘道資源。逾時不會撤銷已完成的操作 |
 
-See the [agent operations guide](https://github.com/BerriAI/litellm-admin-agent/blob/main/docs/operations.md) for backups and upgrades. [Gateway Agents / A2A registration](https://github.com/BerriAI/litellm-admin-agent/blob/main/docs/compatibility.md#optional-gateway-agents--a2a) is optional for standalone Slack use
+請參閱 [代理程式作業指南](https://github.com/BerriAI/litellm-admin-agent/blob/main/docs/operations.md) 以了解備份與升級。[Gateway Agents / A2A 註冊](https://github.com/BerriAI/litellm-admin-agent/blob/main/docs/compatibility.md#optional-gateway-agents--a2a) 對於獨立 Slack 使用是選用的

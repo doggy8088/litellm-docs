@@ -1,14 +1,14 @@
 ---
-title: "Add Model Pricing & Context Window"
+title: "新增模型定價與上下文視窗"
 ---
 
-To add pricing or context window information for a model, simply make a PR to this file:
+若要為模型新增定價或上下文視窗資訊，只需對此檔案提出 PR：
 
-**[model_prices_and_context_window.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)**
+**[模型價格與上下文視窗.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)**
 
-### Sample Spec
+### 範例規格 {#sample-spec}
 
-Here's the full specification with all available fields:
+以下是包含所有可用欄位的完整規格：
 
 ```json
 {
@@ -56,26 +56,26 @@ Here's the full specification with all available fields:
 }
 ```
 
-### Batch pricing keys
+### 批次計價鍵 {#batch-pricing-keys}
 
-Batch API lines bill from the `*_batches` keys when the entry carries them. An entry without them bills half its standard rate
+當批次 API 項目帶有 `*_batches` 鍵時，就依這些鍵計費。未帶有這些鍵的項目則以其標準費率的一半計費
 
-| Key | Bills |
+| Key | 計費內容 |
 | --- | --- |
-| `input_cost_per_token_batches` | prompt tokens |
-| `output_cost_per_token_batches` | completion tokens |
-| `cache_read_input_token_cost_batches` | cached prompt tokens |
-| `cache_creation_input_token_cost_batches` | cache write tokens |
-| `input_cost_per_token_above_272k_tokens_batches` | prompt tokens, prompt over 272K |
-| `output_cost_per_token_above_272k_tokens_batches` | completion tokens, prompt over 272K |
-| `cache_read_input_token_cost_above_272k_tokens_batches` | cached prompt tokens, prompt over 272K |
-| `cache_creation_input_token_cost_above_272k_tokens_batches` | cache write tokens, prompt over 272K |
+| `input_cost_per_token_batches` | prompt token |
+| `output_cost_per_token_batches` | completion token |
+| `cache_read_input_token_cost_batches` | 已快取的 prompt token |
+| `cache_creation_input_token_cost_batches` | 快取寫入 token |
+| `input_cost_per_token_above_272k_tokens_batches` | prompt token，prompt 超過 272K |
+| `output_cost_per_token_above_272k_tokens_batches` | completion token，prompt 超過 272K |
+| `cache_read_input_token_cost_above_272k_tokens_batches` | 已快取的 prompt token，prompt 超過 272K |
+| `cache_creation_input_token_cost_above_272k_tokens_batches` | 快取寫入 token，prompt 超過 272K |
 
-The `above_272k` keys apply to a batch line whose prompt exceeds 272K tokens, the long-context threshold OpenAI prices from. Any tier key the entry leaves out falls back to that entry's flat `*_batches` rate for the same tokens
+`above_272k` 鍵適用於 prompt 超過 272K token 的批次列，也就是 OpenAI 計價所採用的長上下文閾值。項目未填寫的任何層級鍵，皆回退為該項目對相同 token 的固定 `*_batches` 費率
 
-### Examples
+### 範例 {#examples}
 
-#### Anthropic Claude
+#### Anthropic Claude {#anthropic-claude}
 
 ```json
 {
@@ -105,7 +105,7 @@ The `above_272k` keys apply to a batch line whose prompt exceeds 272K tokens, th
 }
 ```
 
-#### Vertex AI Gemini
+#### Vertex AI Gemini {#vertex-ai-gemini}
 
 ```json
 {
@@ -139,9 +139,9 @@ The `above_272k` keys apply to a batch line whose prompt exceeds 272K tokens, th
 }
 ```
 
-### Using Aliases
+### 使用別名 {#using-aliases}
 
-Many providers release the same model under multiple names, for example a `latest` tag and a dated version like `claude-sonnet-4-5-20250929`. Instead of duplicating the entire entry, you can use the `aliases` field:
+許多提供者會以多個名稱釋出同一個模型，例如 `latest` 標籤和像 `claude-sonnet-4-5-20250929` 這樣的日期版本。與其複製整個項目，不如使用 `aliases` 欄位：
 
 ```json
 {
@@ -159,8 +159,8 @@ Many providers release the same model under multiple names, for example a `lates
 }
 ```
 
-At load time, each alias is expanded into a top-level entry sharing the same data as the canonical entry. The example above makes both `claude-sonnet-4-5` and `claude-sonnet-4-5-20250929` resolve with the same pricing and capabilities.
+在載入時，每個別名都會展開為頂層項目，並與標準項目共享相同的資料。上方範例會讓 `claude-sonnet-4-5` 和 `claude-sonnet-4-5-20250929` 都以相同的定價與功能解析。
 
 :::info
-This is different from [`model_alias_map`](../completion/model_alias.md), which is a runtime SDK/proxy feature for mapping user-facing model names to LiteLLM model identifiers. The `aliases` field here is for the model cost JSON only, and it avoids duplicate entries for models that share identical pricing and capabilities.
+這與 [`model_alias_map`](../completion/model_alias.md) 不同；後者是執行階段 SDK/代理程式功能，用來將使用者可見的模型名稱對應到 LiteLLM 模型識別碼。此處的 `aliases` 欄位僅用於 model cost JSON，並可避免對於具有相同計價與能力的模型建立重複項目。
 :::

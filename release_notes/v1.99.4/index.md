@@ -1,5 +1,5 @@
 ---
-title: "v1.99.4 - End-User Budget Resets and GPT-6 Request Mapping"
+title: "v1.99.4 - 最終使用者預算重設與 GPT-6 請求對應"
 slug: "v1-99-4"
 date: 2026-09-25T06:20:00
 authors:
@@ -21,7 +21,7 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -45,24 +45,24 @@ pip install litellm==1.99.4
 </TabItem>
 </Tabs>
 
-This release is published as [`ghcr.io/berriai/litellm:v1.99.4`](https://github.com/BerriAI/litellm/pkgs/container/litellm). See the [GitHub release](https://github.com/BerriAI/litellm/releases/tag/v1.99.4) and the full [releases page](https://github.com/BerriAI/litellm/releases)
+此版本已發布為 [`ghcr.io/berriai/litellm:v1.99.4`](https://github.com/BerriAI/litellm/pkgs/container/litellm)。請參閱 [GitHub 發行版](https://github.com/BerriAI/litellm/releases/tag/v1.99.4) 與完整的 [發行版頁面](https://github.com/BerriAI/litellm/releases)
 
-`v1.99.4` is a patch release on top of [`v1.99.3`](/release_notes/v1.99.3/v1-99-3). It fixes end-user budget resets and maps GPT-6 model names to the GPT-5 request family. There are no new database migrations or breaking changes. The `v1.99.4` tag points at [`b6f084f`](https://github.com/BerriAI/litellm/commit/b6f084fc486707527d86458ec4ba07ced7942953)
+`v1.99.4` 是在 [`v1.99.3`](/release_notes/v1.99.3/v1-99-3) 之上的修補版。它修正了最終使用者預算重設，並將 GPT-6 模型名稱對應到 GPT-5 請求系列。沒有新的資料庫遷移或破壞性變更。`v1.99.4` 標籤指向 [`b6f084f`](https://github.com/BerriAI/litellm/commit/b6f084fc486707527d86458ec4ba07ced7942953)
 
-## End-user budget resets
+## 最終使用者預算重設 {#end-user-budget-resets}
 
-A shared budget with more than about 32,700 end users never reset, because the reset job listed every end user by id in one statement and Postgres rejected it, so those end users stayed blocked. The job now resets end users by their budget link. A reset also zeroes the cached end-user spend counter in memory and Redis, so requests on every replica stop getting a 429 once the window rolls over instead of after the cache expires
+一個共享預算若有超過約 32,700 名最終使用者，重設就永遠不會執行，因為重設工作在單一語句中列出每位最終使用者的 id，而 Postgres 拒絕了它，所以那些最終使用者一直被封鎖。現在，該工作會依據最終使用者與其預算的連結來重設。重設也會將記憶體與 Redis 中快取的最終使用者支出計數器歸零，因此每個複本上的請求會在視窗一過期就開始收到 429，而不是等到快取過期後才會
 
-## GPT-6 model names use the GPT-5 request family
+## GPT-6 模型名稱使用 GPT-5 請求系列 {#gpt-6-model-names-use-the-gpt-5-request-family}
 
-OpenAI and Azure configs now treat `gpt-6` model names like `gpt-5`, so they get the same request parameter handling. The lockfile also refreshes anyio, gitpython and soupsieve
+OpenAI 與 Azure 設定現在會將 `gpt-6` 模型名稱視為 `gpt-5`，因此它們會使用相同的請求參數處理方式。lockfile 也更新了 anyio、gitpython 和 soupsieve
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix: treat gpt-6 names as the gpt-5 request family in OpenAI and Azure configs - [PR #39631](https://github.com/BerriAI/litellm/pull/39631)
-- fix(proxy): invalidate end-user spend counter and cache on budget reset - [PR #39729](https://github.com/BerriAI/litellm/pull/39729)
-- fix(reset_budget_job): reset end users by budget link, not by user id - [PR #40639](https://github.com/BerriAI/litellm/pull/40639)
+- fix: 在 OpenAI 與 Azure 設定中將 gpt-6 名稱視為 gpt-5 請求系列 - [PR #39631](https://github.com/BerriAI/litellm/pull/39631)
+- fix(proxy): 在預算重設時使最終使用者支出計數器與快取失效 - [PR #39729](https://github.com/BerriAI/litellm/pull/39729)
+- fix(reset_budget_job): 依據預算連結而非使用者 id 重設最終使用者 - [PR #40639](https://github.com/BerriAI/litellm/pull/40639)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.99.3...v1.99.4

@@ -1,45 +1,45 @@
-# Auto Sync Anthropic Beta Headers
+# 自動同步 Anthropic Beta 標頭 {#auto-sync-anthropic-beta-headers}
 
-Automatically keep your Anthropic beta headers configuration up to date without restarting your service. **This allows you to support new Anthropic beta features across all providers without restarting your service.**
+自動讓您的 Anthropic beta 標頭設定保持最新，無需重新啟動服務。**這可讓您在所有提供者上支援新的 Anthropic beta 功能，而無需重新啟動服務。**
 
-## Overview
+## 總覽 {#overview}
 
-When Anthropic releases new beta features (e.g., new tool capabilities, extended context windows), you typically need to restart your LiteLLM service to get the latest beta header mappings for different providers (Anthropic, Bedrock, Vertex AI, Azure AI).
+當 Anthropic 發布新的 beta 功能（例如新的工具能力、延伸的上下文視窗）時，通常需要重新啟動您的 LiteLLM 服務，才能取得不同提供者（Anthropic、Bedrock、Vertex AI、Azure AI）最新的 beta 標頭對應。
 
-With auto-sync, LiteLLM automatically pulls the latest configuration from GitHub's [`anthropic_beta_headers_config.json`](https://github.com/BerriAI/litellm/blob/main/litellm/anthropic_beta_headers_config.json) without requiring a restart. This means:
+使用自動同步後，LiteLLM 會自動從 GitHub 的 [`anthropic_beta_headers_config.json`](https://github.com/BerriAI/litellm/blob/main/litellm/anthropic_beta_headers_config.json) 提取最新設定，無需重新啟動。這表示：
 
-- **Zero downtime** when new beta features are released
-- **Always up-to-date** provider support mappings
-- **Automatic updates** - set it once and forget it
+- **零停機時間**：當新的 beta 功能發布時
+- **始終保持最新** 的提供者支援對應
+- **自動更新** - 設定一次即可
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-**Manual sync:**
+**手動同步：**
 ```bash
 curl -X POST "https://your-proxy-url/reload/anthropic_beta_headers" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
-**Automatic sync every 24 hours:**
+**每 24 小時自動同步：**
 ```bash
 curl -X POST "https://your-proxy-url/schedule/anthropic_beta_headers_reload?hours=24" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   -H "Content-Type: application/json"
 ```
 
-## API Endpoints
+## API 端點 {#api-endpoints}
 
-| Endpoint | Method | Description |
+| 端點 | 方法 | 說明 |
 |----------|--------|-------------|
-| `/reload/anthropic_beta_headers` | POST | Manual sync |
-| `/schedule/anthropic_beta_headers_reload?hours={hours}` | POST | Schedule periodic sync |
-| `/schedule/anthropic_beta_headers_reload` | DELETE | Cancel scheduled sync |
-| `/schedule/anthropic_beta_headers_reload/status` | GET | Check sync status |
+| `/reload/anthropic_beta_headers` | POST | 手動同步 |
+| `/schedule/anthropic_beta_headers_reload?hours={hours}` | POST | 排程週期性同步 |
+| `/schedule/anthropic_beta_headers_reload` | DELETE | 取消排程的同步 |
+| `/schedule/anthropic_beta_headers_reload/status` | GET | 檢查同步狀態 |
 
-**Authentication:** Requires admin role or master key
+**驗證：** 需要 admin 角色或 master key
 
-## Python Example
+## Python 範例 {#python-example}
 
 ```python
 import requests
@@ -56,21 +56,21 @@ result = sync_anthropic_beta_headers("https://your-proxy-url", "your-admin-token
 print(result['message'])
 ```
 
-## Configuration
+## 設定 {#configuration}
 
-**Custom beta headers config URL:**
+**自訂 beta 標頭設定 URL：**
 ```bash
 export LITELLM_ANTHROPIC_BETA_HEADERS_URL="https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/anthropic_beta_headers_config.json"
 ```
 
-**Use local beta headers config:**
+**使用本機 beta 標頭設定：**
 ```bash
 export LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS=True
 ```
 
-## Scheduling Automatic Reloads
+## 排程自動重新載入 {#scheduling-automatic-reloads}
 
-Schedule automatic reloads to ensure your proxy always has the latest beta header mappings:
+排程自動重新載入，確保您的 proxy 永遠擁有最新的 beta 標頭對應：
 
 ```bash
 # Reload every 24 hours
@@ -78,13 +78,13 @@ curl -X POST "https://your-proxy-url/schedule/anthropic_beta_headers_reload?hour
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
-**Check reload status:**
+**檢查重新載入狀態：**
 ```bash
 curl -X GET "https://your-proxy-url/schedule/anthropic_beta_headers_reload/status" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
-**Response:**
+**回應：**
 ```json
 {
   "scheduled": true,
@@ -94,35 +94,35 @@ curl -X GET "https://your-proxy-url/schedule/anthropic_beta_headers_reload/statu
 }
 ```
 
-**Cancel scheduled reload:**
+**取消排程的重新載入：**
 ```bash
 curl -X DELETE "https://your-proxy-url/schedule/anthropic_beta_headers_reload" \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
 ```
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-| Variable | Description | Default |
+| 變數 | 說明 | 預設值 |
 |----------|-------------|---------|
-| `LITELLM_ANTHROPIC_BETA_HEADERS_URL` | URL to fetch beta headers config from | GitHub main branch |
-| `LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS` | Set to `True` to use local config only | `False` |
+| `LITELLM_ANTHROPIC_BETA_HEADERS_URL` | 從哪個 URL 取得 beta 標頭設定 | GitHub main branch |
+| `LITELLM_LOCAL_ANTHROPIC_BETA_HEADERS` | 設定為 `True` 以僅使用本機設定 | `False` |
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-1. **Initial Load:** On startup, LiteLLM loads the beta headers configuration from the remote URL (or local file if configured)
-2. **Caching:** The configuration is cached in memory to avoid repeated fetches on every request
-3. **Scheduled Reload:** If configured, the proxy checks every 10 seconds whether it's time to reload based on your schedule
-4. **Manual Reload:** You can trigger an immediate reload via the API endpoint
-5. **Multi-Pod Support:** In multi-pod deployments, the reload configuration is stored in the database so all pods stay in sync
+1. **初始載入：** 啟動時，LiteLLM 會從遠端 URL 載入 beta 標頭設定（若已設定，則使用本機檔案）
+2. **快取：** 設定會快取於記憶體中，以避免每次請求都重複擷取
+3. **排程重新載入：** 若已設定，proxy 會每 10 秒檢查一次，是否已到依照您的排程重新載入的時間
+4. **手動重新載入：** 您可透過 API 端點觸發立即重新載入
+5. **多 Pod 支援：** 在多 Pod 部署中，重新載入設定會儲存在資料庫中，讓所有 Pod 保持同步
 
-## Benefits
+## 優點 {#benefits}
 
-- **No Restarts Required:** Add support for new Anthropic beta features without downtime
-- **Provider Compatibility:** Automatically get updated mappings for Bedrock, Vertex AI, Azure AI, etc.
-- **Performance:** Configuration is cached and only reloaded when needed
-- **Reliability:** Falls back to local configuration if remote fetch fails
+- **無需重新啟動：** 無停機地新增對 Anthropic beta 功能的支援
+- **提供者相容性：** 自動取得 Bedrock、Vertex AI、Azure AI 等的更新對應
+- **效能：** 設定會被快取，僅在需要時重新載入
+- **可靠性：** 若遠端擷取失敗，會退回本機設定
 
-## Related
+## 相關內容 {#related}
 
-- [Model Cost Map Sync](./sync_models_github.md) - Auto-sync model pricing data
-- [Anthropic Beta Headers](../providers/anthropic.md) - Using Anthropic beta features
+- [模型成本對應同步](./sync_models_github.md) - 自動同步模型定價資料
+- [Anthropic Beta 標頭](../providers/anthropic.md) - 使用 Anthropic beta 功能

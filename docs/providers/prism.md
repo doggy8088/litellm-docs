@@ -1,41 +1,41 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Prism
+# Prism {#prism}
 
-## Overview
+## 概覽 {#overview}
 
 | Property | Details |
 |-------|-------|
-| Description | Prism Inference serves open-weight models for coding agents over OpenAI Chat Completions, OpenAI Responses, and Anthropic Messages APIs, with zero data retention on inputs and outputs. |
+| Description | Prism Inference 透過 OpenAI Chat Completions、OpenAI Responses 與 Anthropic Messages APIs 提供開放權重模型，輸入與輸出皆零資料保留。 |
 | Provider Route on LiteLLM | `prism/` |
-| Link to Provider Doc | [Prism Documentation ↗](https://docs.prisminference.com) |
+| Link to Provider Doc | [Prism 文件 ↗](https://docs.prisminference.com) |
 | Base URL | `https://api.prisminference.com/v1` |
 | Supported Operations | [`/chat/completions`](#usage---litellm-python-sdk), [`/responses`](#responses-api), [`/messages`](#anthropic-messages-api) |
 
 <br />
 <br />
 
-**We support ALL Prism models, just set `prism/` as a prefix when sending requests**
+**我們支援所有 Prism 模型，傳送請求時只要將 `prism/` 設為前綴即可**
 
-## Available Models
+## 可用模型 {#available-models}
 
 | Model | Description | Context Window | Max Output |
 |-------|-------------|----------------|------------|
-| `prism/deepseek-v4.1-flash` | DeepSeek-V4.1-Flash, the current generation for coding, vision, reasoning, and tool-use loops; takes text and image input | 1,000,000 tokens | 384,000 tokens |
-| `prism/deepseek-v4-flash` | DeepSeek-V4-Flash, a text-only model for fast coding and tool loops | 1,000,000 tokens | 384,000 tokens |
+| `prism/deepseek-v4.1-flash` | DeepSeek-V4.1-Flash，現行一代，適用於程式設計、視覺、推理與工具使用迴圈；可接受文字與圖片輸入 | 1,000,000 tokens | 384,000 tokens |
+| `prism/deepseek-v4-flash` | DeepSeek-V4-Flash，純文字模型，適合快速程式設計與工具迴圈 | 1,000,000 tokens | 384,000 tokens |
 
-Both models support reasoning, function calling, JSON mode, and JSON schema output, and LiteLLM ships their pricing (input, output, and cached input) so spend is tracked out of the box. Prism's catalog at `GET https://api.prisminference.com/v1/models` lists more models (for example `glm-5.3` and `kimi-k3`); any of them works with the `prism/` prefix, but for spend tracking on those you need to pass `input_cost_per_token` and `output_cost_per_token` in `litellm_params` until they are added to LiteLLM's model cost map.
+這兩個模型都支援推理、函式呼叫、JSON 模式與 JSON schema 輸出，LiteLLM 也會隨附其定價（輸入、輸出與快取輸入），因此開箱即可追蹤支出。Prism 在 `GET https://api.prisminference.com/v1/models` 的型錄列出更多模型（例如 `glm-5.3` 與 `kimi-k3`）；任何一個都可搭配 `prism/` 前綴使用，但若要追蹤那些模型的支出，您需要傳入 `input_cost_per_token` 與 `output_cost_per_token` 到 `litellm_params`，直到它們被加入 LiteLLM 的模型成本對照表。
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["PRISM_API_KEY"] = ""  # your Prism API key
 ```
 
-## Usage - LiteLLM Python SDK
+## 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Prism Non-streaming Completion"
 import os
@@ -55,7 +55,7 @@ response = completion(
 print(response)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Prism Streaming Completion"
 import os
@@ -77,7 +77,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="Prism Function Calling"
 import os
@@ -116,7 +116,7 @@ response = completion(
 print(response)
 ```
 
-### Structured Output
+### 結構化輸出 {#structured-output}
 
 ```python showLineNumbers title="Prism JSON Schema Output"
 import os
@@ -145,9 +145,9 @@ response = completion(
 print(response)
 ```
 
-### Vision
+### 視覺 {#vision}
 
-Image input is supported on `prism/deepseek-v4.1-flash`.
+圖片輸入支援於 `prism/deepseek-v4.1-flash`。
 
 ```python showLineNumbers title="Prism Image Input"
 import os
@@ -169,9 +169,9 @@ response = completion(
 print(response)
 ```
 
-### Responses API
+### Responses API {#responses-api}
 
-Prism serves the OpenAI Responses API natively, so `litellm.responses` sends the request straight to `https://api.prisminference.com/v1/responses`.
+Prism 原生提供 OpenAI Responses API，因此 `litellm.responses` 會將請求直接送至 `https://api.prisminference.com/v1/responses`。
 
 ```python showLineNumbers title="Prism Responses API"
 import os
@@ -187,9 +187,9 @@ response = litellm.responses(
 print(response.output_text)
 ```
 
-### Anthropic Messages API
+### Anthropic Messages API {#anthropic-messages-api}
 
-Prism also serves the Anthropic Messages API natively, so `litellm.anthropic.messages.acreate` sends the request straight to `https://api.prisminference.com/v1/messages`.
+Prism 也原生提供 Anthropic Messages API，因此 `litellm.anthropic.messages.acreate` 會將請求直接送至 `https://api.prisminference.com/v1/messages`。
 
 ```python showLineNumbers title="Prism Anthropic Messages API"
 import asyncio
@@ -209,7 +209,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## Usage - LiteLLM Proxy Server
+## 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -223,7 +223,7 @@ model_list:
       api_key: os.environ/PRISM_API_KEY
 ```
 
-A deployment configured this way serves all three endpoints on the proxy: `/v1/chat/completions`, `/v1/responses`, and `/v1/messages`.
+以這種方式設定的部署會在 proxy 上提供全部三個端點：`/v1/chat/completions`、`/v1/responses` 與 `/v1/messages`。
 
 <Tabs>
 <TabItem value="chat" label="Chat Completions">
@@ -269,9 +269,9 @@ curl http://0.0.0.0:4000/v1/messages \
 </TabItem>
 </Tabs>
 
-## Custom API Base
+## 自訂 API Base {#custom-api-base}
 
-**Option 1: Environment variable**
+**選項 1：環境變數**
 
 ```python showLineNumbers title="Custom API Base via env var"
 import os
@@ -286,7 +286,7 @@ response = completion(
 )
 ```
 
-**Option 2: Pass directly**
+**選項 2：直接傳入**
 
 ```python showLineNumbers title="Custom API Base via parameter"
 from litellm import completion
@@ -299,7 +299,7 @@ response = completion(
 )
 ```
 
-## Supported OpenAI Parameters
+## 支援的 OpenAI 參數 {#supported-openai-parameters}
 
 - `temperature`
 - `max_tokens`

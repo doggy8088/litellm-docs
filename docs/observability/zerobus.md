@@ -2,57 +2,57 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import ZerobusArchitecture from '@site/src/components/ZerobusArchitecture';
 
-# Databricks Zerobus
+# Databricks Zerobus {#databricks-zerobus}
 
-Send LiteLLM Gateway request logs to a Unity Catalog Delta table with Databricks Zerobus Ingest. Query model usage, latency, cost, and request metadata in Databricks, alongside your existing enterprise data.
+將 LiteLLM Gateway 的請求記錄傳送至使用 Databricks Zerobus Ingest 的 Unity Catalog Delta 表。可在 Databricks 中與您現有的企業資料一起查詢模型使用量、延遲、成本與請求中繼資料。
 
-This quickstart connects an existing LiteLLM Gateway deployment to Databricks. Create a destination table, configure service principal authentication, enable the integration, and verify a request made with a LiteLLM virtual key. You can configure the integration through your deployment's YAML configuration or the LiteLLM Admin UI.
+這份快速入門會將既有的 LiteLLM Gateway 部署連接到 Databricks。建立目的地資料表、設定服務主體驗證、啟用整合，並驗證使用 LiteLLM 虛擬金鑰發出的請求。您可以透過部署的 YAML 組態或 LiteLLM 管理 UI 來設定此整合。
 
 <ZerobusArchitecture />
 
-LiteLLM buffers logs and sends JSON batches to the Zerobus REST API using OAuth client credentials. The default flush interval is 10 seconds, with an earlier flush when the queue reaches 100 rows.
+LiteLLM 會緩衝記錄，並使用 OAuth 用戶端憑證將 JSON 批次傳送至 Zerobus REST API。預設的清空間隔為 10 秒；當佇列達到 100 列時會提早清空。
 
-## Before you begin
+## 開始之前 {#before-you-begin}
 
-You need an existing LiteLLM Gateway deployment, its HTTPS URL, and administrator access to configure logging. The gateway must already have a working model, and you need a LiteLLM virtual key authorized to call that model. Your gateway's cloud environment must allow outbound HTTPS connections to the Databricks workspace and Zerobus endpoints.
+您需要一個既有的 LiteLLM Gateway 部署、其 HTTPS URL，以及用於設定記錄的管理員存取權。閘道必須已經有可正常運作的模型，且您需要一把獲授權呼叫該模型的 LiteLLM 虛擬金鑰。閘道的雲端環境必須允許對 Databricks 工作區與 Zerobus 端點進行對外 HTTPS 連線。
 
-You also need a Databricks workspace with Unity Catalog in a [supported Zerobus region](https://docs.databricks.com/aws/en/resources/feature-region-support#ingestion-availability), a catalog and schema for a managed Delta table, and access to a SQL warehouse or notebook compute. A Databricks administrator must be able to create a service principal and grant access to the destination.
+您也需要一個已啟用 Unity Catalog 的 Databricks 工作區，且位於 [支援的 Zerobus 區域](https://docs.databricks.com/aws/en/resources/feature-region-support#ingestion-availability)，以及供受管理 Delta 表使用的 catalog 和 schema，並可存取 SQL warehouse 或 notebook 運算資源。Databricks 管理員必須能夠建立服務主體並授予目的地的存取權。
 
-Your Databricks user also needs `USE CATALOG`, `USE SCHEMA`, and `SELECT` to run the verification query. These reader privileges are separate from the ingestion principal's grants.
+您的 Databricks 使用者也需要 `USE CATALOG`、`USE SCHEMA` 和 `SELECT` 才能執行驗證查詢。這些讀取者權限與擷取主體的授權是分開的。
 
-To configure the integration through the Admin UI, your deployment must have PostgreSQL connected and `general_settings.store_model_in_db: true` enabled. Sign in using your organization's configured authentication method with proxy administrator access.
+若要透過管理 UI 設定整合，您的部署必須已連接 PostgreSQL 且已啟用 `general_settings.store_model_in_db: true`。請使用組織已設定的驗證方式登入，並具備 proxy 管理員存取權。
 
-The examples use `my_catalog.my_schema.litellm_traces`. Replace `my_catalog` and `my_schema` with your existing catalog and schema everywhere they appear. Screenshots show an example workspace using a Databricks-hosted model. Zerobus logging works with other supported model providers as well. Use your own workspace URL, ID, region, and service principal credentials.
+範例使用 `my_catalog.my_schema.litellm_traces`。請在所有出現處將 `my_catalog` 和 `my_schema` 替換為您現有的 catalog 與 schema。螢幕截圖顯示的是一個使用 Databricks 託管模型的範例工作區。Zerobus 記錄同樣適用於其他受支援的模型提供者。請使用您自己的工作區 URL、ID、區域與服務主體憑證。
 
-## 1. Prepare gateway access
+## 1. 準備閘道存取權 {#1-prepare-gateway-access}
 
-Get your gateway's HTTPS base URL and a [virtual key](https://docs.litellm.ai/docs/proxy/virtual_keys) from your platform administrator. If you manage keys, open **Virtual Keys → + Create New Key** in your deployed Admin UI, select the appropriate team and allowed model, and create a key with the budget and expiration required by your organization.
+向您的平台管理員取得閘道的 HTTPS 基礎 URL 與 [虛擬金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys)。如果您負責管理金鑰，請在已部署的管理 UI 中開啟 **Virtual Keys → + Create New Key**，選取適當的團隊與允許的模型，並依組織需求建立具備預算與到期時間的金鑰。
 
-In the environment where you will send the verification request, set your deployment URL and virtual key:
+在您要送出驗證請求的環境中，設定部署 URL 與虛擬金鑰：
 
 ```bash
 export LITELLM_BASE_URL="https://litellm.example.com"
 export LITELLM_API_KEY="<your-litellm-virtual-key>"
 ```
 
-Replace the example domain with your deployed gateway URL, without a trailing slash or `/v1` suffix. Note an existing model alias that this key can access; you will use it in step 6. The virtual key authenticates requests to LiteLLM. The Databricks service principal created below authenticates log delivery from the gateway to Databricks.
+請將範例網域替換為您已部署的閘道 URL，且不要加上結尾斜線或 `/v1` 尾碼。請記下此金鑰可存取的既有模型別名；您會在步驟 6 使用它。虛擬金鑰用於向 LiteLLM 驗證請求。下方建立的 Databricks 服務主體則用於驗證從閘道傳送到 Databricks 的記錄。
 
-## 2. Identify your Databricks endpoints
+## 2. 識別您的 Databricks 端點 {#2-identify-your-databricks-endpoints}
 
-Open the destination Databricks workspace. Copy the base URL from the address bar, excluding paths, query parameters, and fragments. The numeric `o=` parameter identifies the workspace. Find its region in the workspace switcher or the Databricks account console. See [Databricks endpoint discovery](https://docs.databricks.com/aws/en/ingestion/zerobus-ingest#get-your-workspace-url-and-zerobus-ingest-endpoint).
+開啟目的地 Databricks 工作區。從位址列複製基礎 URL，排除路徑、查詢參數與片段。數值型 `o=` 參數會識別工作區。請在工作區切換器或 Databricks 帳戶主控台中找到其區域。請參閱 [Databricks 端點探索](https://docs.databricks.com/aws/en/ingestion/zerobus-ingest#get-your-workspace-url-and-zerobus-ingest-endpoint)。
 
-| Value | Example format |
+| 值 | 範例格式 |
 | --- | --- |
-| Workspace URL | `https://dbc-xxxxxxxx-xxxx.cloud.databricks.com` |
-| Workspace ID | The numeric value in `?o=<workspace-id>` |
-| Workspace region | For example, `us-east-2` |
-| Zerobus server endpoint on AWS | `https://<workspace-id>.zerobus.<region>.cloud.databricks.com` |
+| 工作區 URL | `https://dbc-xxxxxxxx-xxxx.cloud.databricks.com` |
+| 工作區 ID | `?o=<workspace-id>` 中的數值 |
+| 工作區區域 | 例如 `us-east-2` |
+| AWS 上的 Zerobus 伺服器端點 | `https://<workspace-id>.zerobus.<region>.cloud.databricks.com` |
 
-**Include `https://` in both URLs.** The workspace URL authenticates the service principal; the Zerobus endpoint receives the logs. They must refer to the same workspace and region. Do not copy another workspace's ID or use the account ID. For Azure, use the endpoint ending in `.azuredatabricks.net` for your workspace.
+**請在兩個 URL 中都包含 `https://`。** 工作區 URL 用於驗證服務主體；Zerobus 端點會接收記錄。兩者必須指向相同的工作區與區域。請勿複製其他工作區的 ID，也不要使用帳戶 ID。若為 Azure，請使用結尾為 `.azuredatabricks.net` 的端點。
 
-## 3. Create the destination table
+## 3. 建立目的地資料表 {#3-create-the-destination-table}
 
-Generate the table definition using the same LiteLLM version as your deployed gateway. Run this command in the gateway's container or in an administration environment with the matching package version. Alternatively, use the full table definition below:
+使用與已部署閘道相同的 LiteLLM 版本產生資料表定義。請在閘道的容器中，或在具有相符套件版本的管理環境中執行此命令。或者，也可以使用下方完整資料表定義：
 
 ```bash
 python - <<'PY'
@@ -62,14 +62,14 @@ print(create_table_sql("my_catalog.my_schema.litellm_traces"))
 PY
 ```
 
-In Databricks, open **SQL Editor**, select a SQL warehouse, paste the generated statement, and run it to create a managed Delta table. You can also run it in a SQL notebook cell. Open **Catalog**, navigate to your table, and confirm that its columns match the generated definition.
+在 Databricks 中，開啟 **SQL Editor**，選取 SQL warehouse，貼上產生的陳述式，然後執行以建立受管理的 Delta 表。您也可以在 SQL notebook 儲存格中執行。開啟 **Catalog**，前往您的資料表，並確認其欄位與產生的定義相符。
 
-![The LiteLLM traces table and column definitions in Databricks Catalog Explorer](/img/zerobus/databricks-table.png)
+![LiteLLM traces 資料表與欄位定義在 Databricks Catalog Explorer 中的畫面](/img/zerobus/databricks-table.png)
 
-*Create a dedicated Delta table with the schema generated by LiteLLM.*
+*使用 LiteLLM 產生的 schema 建立專用的 Delta 資料表。*
 
 <details>
-<summary>Full table definition</summary>
+<summary>完整資料表定義</summary>
 
 ```sql
 CREATE TABLE my_catalog.my_schema.litellm_traces (
@@ -119,15 +119,15 @@ CREATE TABLE my_catalog.my_schema.litellm_traces (
 
 </details>
 
-If the table already exists, compare its schema with the generated DDL before continuing. Nested fields use `VARIANT`; a table created with these columns as `STRING` does not match this schema. `LONG` and `BIGINT` are equivalent Databricks SQL types.
+如果資料表已存在，請在繼續之前將其 schema 與產生的 DDL 進行比較。巢狀欄位使用 `VARIANT`；使用這些欄位作為 `STRING` 建立的資料表不符合此 schema。`LONG` 和 `BIGINT` 是等價的 Databricks SQL 類型。
 
-## 4. Create the service principal and grant access
+## 4. 建立服務主體並授予存取權 {#4-create-the-service-principal-and-grant-access}
 
-In the Databricks workspace, open **Settings → Identity and access**. Next to **Service principals**, select **Manage**, then **Add service principal → Add new**. Give it a descriptive name, such as `litellm-zerobus`. See [Databricks service principal setup](https://docs.databricks.com/aws/en/ingestion/zerobus-ingest#create-a-service-principal-and-grant-permissions).
+在 Databricks 工作區中，開啟 **Settings → Identity and access**。在 **Service principals** 旁選取 **Manage**，然後選取 **Add service principal → Add new**。請為其命名一個具描述性的名稱，例如 `litellm-zerobus`。請參閱 [Databricks 服務主體設定](https://docs.databricks.com/aws/en/ingestion/zerobus-ingest#create-a-service-principal-and-grant-permissions)。
 
-Open the service principal's **Secrets** tab and select **Generate secret**. Choose a lifetime and copy the client ID and secret to your secret store. The client ID is the principal's application ID; the secret is displayed only once. This integration requests the `all-apis` OAuth scope and restricts its ingestion token to the catalog, schema, and table below. See [Databricks OAuth secrets](https://docs.databricks.com/aws/en/dev-tools/auth/oauth-m2m#step-1-create-an-oauth-secret).
+開啟服務主體的 **Secrets** 分頁並選取 **Generate secret**。選擇有效期間，並將 client ID 和 secret 複製到您的密鑰儲存區。client ID 是主體的 application ID；secret 只會顯示一次。此整合會請求 `all-apis` OAuth 範圍，並將其擷取權杖限制於下方的 catalog、schema 與資料表。請參閱 [Databricks OAuth secrets](https://docs.databricks.com/aws/en/dev-tools/auth/oauth-m2m#step-1-create-an-oauth-secret)。
 
-Run the following SQL as a principal authorized to grant these privileges. Replace the application ID placeholder with the client ID you copied:
+以有權授予這些權限的主體執行下列 SQL。請以您複製的 client ID 取代 application ID 佔位符：
 
 ```sql
 GRANT USE CATALOG ON CATALOG my_catalog
@@ -140,77 +140,77 @@ GRANT SELECT, MODIFY ON TABLE my_catalog.my_schema.litellm_traces
 TO `<service-principal-application-id>`;
 ```
 
-Grant these privileges directly to the service principal. Group membership and a broad `ALL PRIVILEGES` grant do not replace the explicit grants used when LiteLLM requests the Zerobus token.
+請直接將這些權限授予服務主體。群組成員資格與廣泛的 `ALL PRIVILEGES` 授權，無法取代 LiteLLM 要求 Zerobus 權杖時所使用的明確授權。
 
-In **Catalog**, open the destination table's **Permissions** tab and confirm the principal has `SELECT` and `MODIFY`. Also verify `USE CATALOG` on the catalog and `USE SCHEMA` on the schema.
+在 **Catalog** 中，開啟目的地資料表的 **Permissions** 分頁，並確認該主體具有 `SELECT` 和 `MODIFY`。同時也請驗證 catalog 上的 `USE CATALOG` 以及 schema 上的 `USE SCHEMA`。
 
-![The service principal's permissions on the destination table in Databricks](/img/zerobus/databricks-permissions.png)
+![Databricks 中目的地資料表上的服務主體權限](/img/zerobus/databricks-permissions.png)
 
-*The ingestion principal needs explicit access to the catalog, schema, and table.*
+*擷取主體需要對 catalog、schema 與資料表的明確存取權。*
 
-## 5. Connect the LiteLLM Gateway
+## 5. 連接 LiteLLM Gateway {#5-connect-the-litellm-gateway}
 
-Choose one configuration method. YAML enables logging for both successful and failed model calls. The Admin UI adds a success callback and logs successful calls; use YAML if you also need failed-call records.
+選擇一種設定方式。YAML 會為成功與失敗的模型呼叫都啟用記錄。管理 UI 會新增成功回呼並記錄成功的呼叫；如果您也需要失敗呼叫的記錄，請使用 YAML。
 
-### Option A: Configure with YAML
+### 選項 A：使用 YAML 設定 {#option-a-configure-with-yaml}
 
-Add the following environment variables to your gateway deployment through your platform's configuration and secret management system. Make them available to every gateway replica. Store the client secret as a secret and inject it at runtime.
+透過您平台的組態與密鑰管理系統，將下列環境變數加入您的閘道部署。請使所有閘道副本都能存取這些變數。請將 client secret 儲存為密鑰，並於執行階段注入。
 
-| Gateway environment variable | Value |
+| 閘道環境變數 | 值 |
 | --- | --- |
 | `ZEROBUS_WORKSPACE_URL` | `https://<your-workspace-host>` |
 | `ZEROBUS_SERVER_ENDPOINT` | `https://<workspace-id>.zerobus.<region>.cloud.databricks.com` |
-| `ZEROBUS_CLIENT_ID` | The service principal's application ID |
-| `ZEROBUS_CLIENT_SECRET` | The service principal's OAuth secret, injected from your secret manager |
+| `ZEROBUS_CLIENT_ID` | 服務主體的 application ID |
+| `ZEROBUS_CLIENT_SECRET` | 服務主體的 OAuth secret，從您的密鑰管理工具注入 |
 | `ZEROBUS_TABLE_NAME` | `my_catalog.my_schema.litellm_traces` |
 
-Merge the following into the configuration used by your deployment. If `litellm_settings.callbacks` already contains entries, append `zerobus` to that list and preserve your existing callbacks and other configuration:
+將下列內容合併到您部署所使用的組態中。如果 `litellm_settings.callbacks` 已經包含項目，請將 `zerobus` 附加到該清單，並保留您既有的回呼與其他組態：
 
 ```yaml
 litellm_settings:
   callbacks: ["zerobus"]
 ```
 
-Apply the configuration and secret changes using your deployment's normal rollout process, and confirm that the gateway replicas become healthy.
+請使用部署的正常推出流程套用組態與密鑰變更，並確認閘道副本已恢復為健康狀態。
 
-LiteLLM reads the connection values from each gateway process's environment. Setting these variables only in the terminal used to send requests does not configure the deployed gateway. Missing required values fail callback initialization. Authentication and table access are checked when the first batch is sent, so continue through the verification steps after the rollout succeeds.
+LiteLLM 會從每個 gateway 程序的環境中讀取連線值。只在用於送出請求的終端機中設定這些變數，並不會設定已部署的 gateway。缺少必要值會使回呼初始化失敗。驗證與資料表存取會在送出第一批資料時檢查，因此即使 rollout 成功，也請繼續完成驗證步驟。
 
-### Option B: Configure in the Admin UI
+### 選項 B：在 Admin UI 中設定 {#option-b-configure-in-the-admin-ui}
 
-Open your deployed Admin UI, for example `https://litellm.example.com/ui`, and sign in through your organization's configured authentication method. Your deployment must have PostgreSQL connected and `general_settings.store_model_in_db: true` enabled so that it can load the configuration saved through the UI. See the [Admin UI guide](https://docs.litellm.ai/docs/proxy/ui) for administrator access and SSO setup.
+開啟您已部署的 Admin UI，例如 `https://litellm.example.com/ui`，並透過您組織已設定的驗證方法登入。您的部署必須已連接 PostgreSQL，且啟用 `general_settings.store_model_in_db: true`，才能載入透過 UI 儲存的設定。請參閱 [Admin UI 指南](https://docs.litellm.ai/docs/proxy/ui) 以取得管理員存取權與 SSO 設定。
 
-Open **Settings → Logging & Alerts**, select **Add Callback**, and choose **Databricks Zerobus**. Fill in the following fields:
+開啟 **Settings → Logging & Alerts**，選取 **Add Callback**，然後選擇 **Databricks Zerobus**。填入以下欄位：
 
-| Field | Value |
+| 欄位 | 值 |
 | --- | --- |
-| **Workspace URL** | The workspace base URL from step 2, including `https://` |
-| **Zerobus Endpoint** | The Zerobus URL for the same workspace, including `https://` |
-| **Service Principal Client ID** | The service principal's application ID |
-| **Service Principal Client Secret** | The OAuth secret generated in step 4 |
+| **Workspace URL** | 第 2 步中的工作區基底 URL，包含 `https://` |
+| **Zerobus Endpoint** | 同一工作區的 Zerobus URL，包含 `https://` |
+| **Service Principal Client ID** | service principal 的應用程式 ID |
+| **Service Principal Client Secret** | 第 4 步產生的 OAuth secret |
 | **Table** | `my_catalog.my_schema.litellm_traces` |
 
-![The Databricks Zerobus configuration form in the LiteLLM Admin UI](/img/zerobus/litellm-configure.png)
+![LiteLLM Admin UI 中的 Databricks Zerobus 設定表單](/img/zerobus/litellm-configure.png)
 
-*Enter all five connection values. The OAuth secret is masked in the form.*
+*輸入全部五個連線值。OAuth secret 會在表單中以遮蔽方式顯示。*
 
-Select **Add Callback**. Confirm that **Databricks Zerobus** appears in the logging callbacks list. Saving the callback configures the integration; the request and SQL query below verify delivery.
+選取 **Add Callback**。確認 **Databricks Zerobus** 出現在 logging callbacks 清單中。儲存回呼即可完成整合設定；以下的請求與 SQL 查詢會驗證傳遞。
 
-![Databricks Zerobus listed as a configured logging callback in LiteLLM](/img/zerobus/litellm-active.png)
+![LiteLLM 中已列出為已設定 logging callback 的 Databricks Zerobus](/img/zerobus/litellm-active.png)
 
-## 6. Send a request through LiteLLM
+## 6. 透過 LiteLLM 送出請求 {#6-send-a-request-through-litellm}
 
-From a client that can reach your deployed gateway, send a chat completion using the base URL and virtual key from step 1. Choose Python, JavaScript, or cURL below, and replace `your-model-alias` with an existing model alias authorized for that key. Each example sends the same request and prints its response ID.
+從可連線到您已部署 gateway 的用戶端，使用第 1 步的 base URL 與 virtual key 送出 chat completion。請在下方選擇 Python、JavaScript 或 cURL，並將 `your-model-alias` 替換為該金鑰已授權的既有 model alias。每個範例都會送出相同的請求並列印其回應 ID。
 
 <Tabs>
 <TabItem value="python" label="Python" default>
 
-Install the [OpenAI Python SDK](https://github.com/openai/openai-python) in your client environment:
+在您的用戶端環境中安裝 [OpenAI Python SDK](https://github.com/openai/openai-python)：
 
 ```bash
 python3 -m pip install openai
 ```
 
-Save the following as `zerobus_request.py`:
+將下列內容儲存為 `zerobus_request.py`：
 
 ```python title="zerobus_request.py"
 import os
@@ -234,7 +234,7 @@ print("Response ID:", response.id)
 print("Assistant:", response.choices[0].message.content)
 ```
 
-Run it from the environment where you set `LITELLM_BASE_URL` and `LITELLM_API_KEY`:
+從您設定 `LITELLM_BASE_URL` 和 `LITELLM_API_KEY` 的環境中執行它：
 
 ```bash
 python3 zerobus_request.py
@@ -243,13 +243,13 @@ python3 zerobus_request.py
 </TabItem>
 <TabItem value="javascript" label="JavaScript">
 
-Install the [OpenAI JavaScript SDK](https://github.com/openai/openai-node) in your Node.js project:
+在您的 Node.js 專案中安裝 [OpenAI JavaScript SDK](https://github.com/openai/openai-node)：
 
 ```bash
 npm install openai
 ```
 
-Save the following as `zerobus-request.mjs`:
+將下列內容儲存為 `zerobus-request.mjs`：
 
 ```javascript title="zerobus-request.mjs"
 import OpenAI from "openai";
@@ -272,7 +272,7 @@ console.log("Response ID:", response.id);
 console.log("Assistant:", response.choices[0].message.content);
 ```
 
-Run it from the environment where you set `LITELLM_BASE_URL` and `LITELLM_API_KEY`:
+從您設定 `LITELLM_BASE_URL` 和 `LITELLM_API_KEY` 的環境中執行它：
 
 ```bash
 node zerobus-request.mjs
@@ -281,7 +281,7 @@ node zerobus-request.mjs
 </TabItem>
 <TabItem value="curl" label="cURL">
 
-This example uses cURL to send the request and `jq` to print the response ID and assistant message. Run it from the environment where you set `LITELLM_BASE_URL` and `LITELLM_API_KEY`:
+此範例使用 cURL 送出請求，並使用 `jq` 列印回應 ID 與 assistant 訊息。請從您設定 `LITELLM_BASE_URL` 和 `LITELLM_API_KEY` 的環境中執行它：
 
 ```bash
 curl --fail-with-body --silent --show-error \
@@ -304,19 +304,19 @@ jq -r '"Response ID: \(.id)", "Assistant: \(.choices[0].message.content)"' \
 </TabItem>
 </Tabs>
 
-Save the printed response ID. The `user` value makes this request easy to find in the table's `end_user` column; `metadata.tags` labels the request for later analysis.
+儲存列印出的回應 ID。`user` 值可讓您在資料表的 `end_user` 欄中輕鬆找到這個請求；`metadata.tags` 會為之後的分析標記這個請求。
 
-If your gateway has a database, open **Logs** in the Admin UI and select the request to inspect its status, token counts, and cost. Database request logs and Zerobus delivery are separate; verify the destination table in the next step.
+如果您的 gateway 有資料庫，請在 Admin UI 中開啟 **Logs** 並選取該請求以檢查其狀態、token 數量與成本。資料庫請求記錄與 Zerobus 傳遞是分開的；請在下一步驗證目的地資料表。
 
-![The successful completion in LiteLLM, showing request identity, token usage, and cost](/img/zerobus/litellm-request.png)
+![LiteLLM 中的成功完成畫面，顯示請求識別、token 使用量與成本](/img/zerobus/litellm-request.png)
 
-*The example request used 22 prompt tokens and 10 completion tokens. Your model and usage can differ.*
+*此範例請求使用了 22 個 prompt tokens 與 10 個 completion tokens。您的模型與使用量可能不同。*
 
-## 7. Verify the request in Databricks
+## 7. 在 Databricks 中驗證請求 {#7-verify-the-request-in-databricks}
 
-With the defaults, allow at least 10 seconds for the next gateway flush, then allow for Databricks ingestion and query visibility. A successful model response by itself does not confirm delivery to the table.
+在預設設定下，請至少等待 10 秒讓下一次 gateway flush 完成，接著再等待 Databricks 擷取與查詢可見性。僅有成功的模型回應並不能確認已傳遞到資料表。
 
-In Databricks SQL Editor or a SQL notebook cell, run this query, replacing the response ID placeholder with the exact value returned in step 6:
+在 Databricks SQL Editor 或 SQL notebook cell 中執行此查詢，並將回應 ID 佔位符替換為第 6 步傳回的精確值：
 
 ```sql
 SELECT
@@ -334,13 +334,13 @@ WHERE id = '<response-id-from-step-6>'
 ORDER BY start_time DESC;
 ```
 
-The result should include your response ID, `status = 'success'`, `end_user = 'zerobus-quickstart'`, and usage for the model call. Cost depends on the model's configured pricing. If no row appears, rerun the query after another flush interval and check the gateway logs using the troubleshooting table below.
+結果應包含您的回應 ID、`status = 'success'`、`end_user = 'zerobus-quickstart'`，以及該模型呼叫的使用量。成本取決於模型設定的定價。如果沒有出現任何資料列，請在另一個 flush 間隔後重新執行查詢，並使用下方的疑難排解表檢查 gateway 記錄。
 
-![Databricks SQL Editor returning the verified LiteLLM response ID with success status, token counts, and cost.](/img/zerobus/databricks-verification.png)
+![Databricks SQL Editor 傳回已驗證的 LiteLLM 回應 ID，並顯示成功狀態、token 數量與成本。](/img/zerobus/databricks-verification.png)
 
-*The query returns one successful row with the same token counts shown in LiteLLM.*
+*該查詢會傳回一筆成功的資料列，且 token 數量與 LiteLLM 中顯示的相同。*
 
-To locate all quickstart requests:
+若要找出所有 quickstart 請求：
 
 ```sql
 SELECT id, status, model, end_user, total_tokens, response_cost, start_time
@@ -350,9 +350,9 @@ ORDER BY start_time DESC
 LIMIT 20;
 ```
 
-## Configuration reference
+## 設定參考 {#configuration-reference}
 
-The `zerobus` callback accepts optional settings under `litellm_settings.zerobus_params`. Connection parameters take precedence over their corresponding environment variables and support `os.environ/VARIABLE_NAME` references.
+`zerobus` 回呼在 `litellm_settings.zerobus_params` 下接受可選設定。連線參數會優先於對應的環境變數，並支援 `os.environ/VARIABLE_NAME` 參照。
 
 ```yaml
 litellm_settings:
@@ -368,26 +368,26 @@ litellm_settings:
     turn_off_message_logging: true
 ```
 
-| Parameter | Environment fallback / default | Description |
+| 參數 | 環境備援 / 預設值 | 說明 |
 | --- | --- | --- |
-| `workspace_url` | `ZEROBUS_WORKSPACE_URL` | Required. Workspace base URL used for OAuth. |
-| `server_endpoint` | `ZEROBUS_SERVER_ENDPOINT` | Required. Full Zerobus URL, including `https://`. |
-| `client_id` | `ZEROBUS_CLIENT_ID` | Required. Service principal application ID. |
-| `client_secret` | `ZEROBUS_CLIENT_SECRET` | Required. Service principal OAuth secret. |
-| `table_name` | `ZEROBUS_TABLE_NAME` | Required. Fully qualified `catalog.schema.table`. |
-| `batch_size` | `100` | Positive integer. Queue size that triggers an early flush. |
-| `flush_interval` | `10` | Positive integer. Seconds between periodic flushes. |
-| `turn_off_message_logging` | `false` | Redacts prompt and response content before enqueueing. |
+| `workspace_url` | `ZEROBUS_WORKSPACE_URL` | 必填。用於 OAuth 的工作區基底 URL。 |
+| `server_endpoint` | `ZEROBUS_SERVER_ENDPOINT` | 必填。完整的 Zerobus URL，包含 `https://`。 |
+| `client_id` | `ZEROBUS_CLIENT_ID` | 必填。service principal 應用程式 ID。 |
+| `client_secret` | `ZEROBUS_CLIENT_SECRET` | 必填。service principal OAuth secret。 |
+| `table_name` | `ZEROBUS_TABLE_NAME` | 必填。完整限定的 `catalog.schema.table`。 |
+| `batch_size` | `100` | 正整數。觸發提早 flush 的佇列大小。 |
+| `flush_interval` | `10` | 正整數。定期 flush 之間的秒數。 |
+| `turn_off_message_logging` | `false` | 將 prompt 與回應內容在佇列前進行遮罩。 |
 
-`batch_size` is a flush trigger, not a maximum request size. A flush sends the queued rows, so a backlog can produce a larger batch.
+`batch_size` 是 flush 觸發條件，不是請求大小上限。flush 會送出已排入佇列的列，因此積壓可能產生較大的批次。
 
-## Data and privacy
+## 資料與隱私 {#data-and-privacy}
 
-Each logged event contains scalar fields for request identity, status, model, timing, tokens, cost, and caller attribution. Nested values use `VARIANT` columns. Team, key, and organization fields depend on the virtual key and request context; they can be null when that context is absent. The API key column contains a hash, not the original key.
+每個已記錄事件都包含請求識別、狀態、模型、時間、token、成本與呼叫者歸因的純量欄位。巢狀值會使用 `VARIANT` 欄。團隊、金鑰與組織欄位取決於 virtual key 與請求內容；當缺少該內容時，這些欄位可能為 null。API key 欄位包含的是雜湊值，而不是原始金鑰。
 
-By default, logs include prompt and response content. Set `zerobus_params.turn_off_message_logging: true` to redact that content for both success and failure events while retaining operational fields. This setting does not remove every potentially sensitive field: review metadata, error text, user identifiers, and client information against your organization's logging policy. Store the OAuth secret in your deployment's secret manager and control access to the destination through Unity Catalog.
+預設情況下，記錄會包含 prompt 與回應內容。將 `zerobus_params.turn_off_message_logging: true` 設為遮罩這些內容，可同時處理成功與失敗事件，但仍保留營運欄位。此設定不會移除所有可能敏感的欄位：請依照您組織的記錄政策檢視 metadata、錯誤文字、使用者識別碼與用戶端資訊。將 OAuth secret 儲存在您部署的秘密管理系統中，並透過 Unity Catalog 控制對目的地的存取。
 
-For example, aggregate spend and usage by team and model:
+例如，依團隊與 model 匯總支出與使用量：
 
 ```sql
 SELECT
@@ -403,29 +403,29 @@ GROUP BY team_alias, model
 ORDER BY spend_usd DESC;
 ```
 
-## Delivery behavior
+## 傳遞行為 {#delivery-behavior}
 
-The integration sends logs asynchronously and keeps its queue in process memory. Network errors and HTTP `408`, `429`, `500`, `502`, `503`, and `504` retain the batch for a later flush. An insert `401` discards the cached token and retries the batch with a fresh token. Other non-retryable responses drop the rejected batch and log the reason.
+此整合會非同步送出記錄，並將其佇列保留在程序記憶體中。網路錯誤與 HTTP `408`、`429`、`500`、`502`、`503` 及 `504` 會保留該批次，供之後的 flush 使用。insert `401` 會捨棄快取的 token，並使用新的 token 重試該批次。其他不可重試的回應會丟棄被拒絕的批次並記錄原因。
 
-Retries can produce duplicate rows when a request was accepted but its response was lost. Process termination, permanent rejection, or queue overflow can lose logs. The queue is capped at 50,000 rows per logger, so this callback does not provide a durable delivery guarantee. Zerobus logging errors are handled separately from the model response. Monitor gateway logging failures and deduplicate by your request identifiers when building reports that require unique events.
+若請求已被接受但其回應遺失，重試可能造成重複資料列。程序終止、永久拒絕或佇列溢位都可能導致記錄遺失。每個 logger 的佇列上限為 50,000 列，因此此回呼不提供持久傳遞保證。Zerobus 記錄錯誤會與模型回應分開處理。建置需要唯一事件的報表時，請監控 gateway 記錄失敗，並依您的請求識別碼去重。
 
-LiteLLM acquires OAuth tokens automatically and refreshes them before expiry. When rotating a credential stored in the gateway process environment, update the deployed secret and restart the affected processes. When using the Admin UI, update the callback's connection settings.
+LiteLLM 會自動取得 OAuth token，並在到期前更新。當輪替儲存在 gateway 程序環境中的憑證時，請更新已部署的 secret 並重新啟動受影響的程序。使用 Admin UI 時，請更新回呼的連線設定。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-Inspect your deployed gateway's container or service logs for `zerobus:` messages and `CustomLogger` batch flush messages. If more detail is needed, temporarily set `LITELLM_LOG=DEBUG` in the gateway deployment and apply the change through your normal rollout process. Restore the previous log level after diagnosing the integration because debug logs can contain request details.
+檢查您已部署的閘道容器或服務記錄中是否有 `zerobus:` 訊息以及 `CustomLogger` 批次 flush 訊息。如果需要更多詳細資訊，請暫時在閘道部署中將 `LITELLM_LOG=DEBUG` 設為 debug，並透過您的正常發布流程套用變更。完成整合診斷後，請還原先前的記錄等級，因為 debug 記錄可能包含請求詳細資訊。
 
-| Symptom | What to check |
+| 症狀 | 應檢查項目 |
 | --- | --- |
-| Gateway fails to initialize the callback | Set all five required connection values. Include `https://` in the endpoint and use a three-part table name. |
-| `token request returned 401: invalid_authorization_details` | Reapply the explicit grants from step 4 directly to the application ID. Confirm the table is in the workspace used to mint the token. |
-| OAuth authentication fails | Check the client ID, secret value and expiry, workspace access, and the secret's ability to request the `all-apis` scope. |
-| `insert returned 400` with an empty body | Check that the endpoint's numeric workspace ID and region belong to `ZEROBUS_WORKSPACE_URL`. An incorrect endpoint can cause this response. |
-| `Record decoder/encoder error` | Compare the destination columns and types with `create_table_sql(...)` from the running LiteLLM version, including the nested `VARIANT` fields. |
-| SQL Editor reports `INSUFFICIENT_PERMISSIONS` | The signed-in reader needs `USE CATALOG`, `USE SCHEMA`, and `SELECT`. Ingestion can succeed even when a different browser user cannot query the table. |
-| Request succeeds but no row appears | Allow a flush interval plus ingestion time, rerun the query, and inspect the deployed gateway's token and insert errors. Confirm every replica has the integration configuration and the queried table matches `ZEROBUS_TABLE_NAME`. |
-| Test request returns `401` or `403` | Check that the virtual key belongs to this LiteLLM deployment, is valid, and is authorized for the requested model alias. |
-| Successes appear but failures do not | The Admin UI registers a success callback. Use `litellm_settings.callbacks: ["zerobus"]` for success and failure events. Failures rejected before model-call logging may not produce a row. |
-| Repeated retries or queue overflow | Check network reachability and Databricks responses. Resolve the destination error before the in-memory queue reaches its limit. |
+| 閘道無法初始化回呼 | 設定全部五個必要的連線值。請在端點中包含 `https://`，並使用三段式資料表名稱。 |
+| `token request returned 401: invalid_authorization_details` | 直接將步驟 4 中的明確授權重新套用到應用程式 ID。確認資料表位於用來鑄造 token 的工作區中。 |
+| OAuth 驗證失敗 | 檢查 client ID、密鑰值與到期時間、工作區存取權，以及該密鑰是否能請求 `all-apis` scope。 |
+| `insert returned 400`，且本文為空 | 檢查端點的數字工作區 ID 與區域是否屬於 `ZEROBUS_WORKSPACE_URL`。錯誤的端點可能導致此回應。 |
+| `Record decoder/encoder error` | 將目的地欄位與型別和正在執行的 LiteLLM 版本中的 `create_table_sql(...)` 進行比較，包括巢狀的 `VARIANT` 欄位。 |
+| SQL Editor 回報 `INSUFFICIENT_PERMISSIONS` | 已登入的讀者需要 `USE CATALOG`、`USE SCHEMA` 和 `SELECT`。即使不同的瀏覽器使用者無法查詢資料表，擷取仍可能成功。 |
+| 請求成功但沒有出現任何列 | 先允許一個 flush 間隔加上擷取時間，重新執行查詢，並檢查已部署閘道的 token 與插入錯誤。確認每個複本都具有整合設定，且查詢的資料表符合 `ZEROBUS_TABLE_NAME`。 |
+| 測試請求回傳 `401` 或 `403` | 檢查虛擬金鑰是否屬於此 LiteLLM 部署、是否有效，以及是否已獲授權使用所請求的模型別名。 |
+| 有成功結果但沒有失敗結果 | Admin UI 會註冊成功回呼。對於成功與失敗事件，請使用 `litellm_settings.callbacks: ["zerobus"]`。在 model-call 記錄前遭拒絕的失敗可能不會產生任何資料列。 |
+| 重複重試或佇列溢位 | 檢查網路可達性與 Databricks 回應。先解決目的地錯誤，再讓記憶體內佇列達到其限制。 |
 
-See the [LiteLLM logging guide](https://docs.litellm.ai/docs/proxy/logging) for other callbacks and [Databricks Zerobus Ingest](https://docs.databricks.com/aws/en/ingestion/zerobus-ingest) for service configuration.
+如需其他回呼，請參閱 [LiteLLM 記錄指南](https://docs.litellm.ai/docs/proxy/logging)；如需服務設定，請參閱 [Databricks Zerobus Ingest](https://docs.databricks.com/aws/en/ingestion/zerobus-ingest)。

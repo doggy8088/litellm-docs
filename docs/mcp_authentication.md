@@ -1,39 +1,39 @@
-# MCP Non-OAuth Authentication
+# MCP 非 OAuth 驗證 {#mcp-non-oauth-authentication}
 
-This page covers upstream MCP authentication that does not use an OAuth flow, including no authentication, fixed credentials, and AWS SigV4. For OAuth setup, see [MCP OAuth](./mcp_oauth.md), [MCP OAuth Passthrough](./mcp_oauth_passthrough.md), or [MCP On-Behalf-Of Auth](./mcp_obo_auth.md).
+本頁涵蓋不使用 OAuth 流程的上游 MCP 驗證，包括無驗證、固定憑證與 AWS SigV4。關於 OAuth 設定，請參閱 [MCP OAuth](./mcp_oauth.md)、[MCP OAuth Passthrough](./mcp_oauth_passthrough.md)，或 [MCP On-Behalf-Of Auth](./mcp_obo_auth.md)。
 
-LiteLLM handles two separate authentication hops for an MCP request:
+LiteLLM 會為 MCP 請求處理兩個獨立的驗證跳轉：
 
-- **Client to LiteLLM:** the MCP client proves that it can use the LiteLLM gateway, usually with a LiteLLM API key.
-- **LiteLLM to the upstream MCP server:** LiteLLM authenticates to the selected upstream according to that server's `auth_type`.
+- **Client to LiteLLM：** MCP 用戶端證明其可以使用 LiteLLM 閘道，通常會使用 LiteLLM API 金鑰。
+- **LiteLLM to the upstream MCP server：** LiteLLM 依據該伺服器的 `auth_type` 對所選上游進行驗證。
 
-The `auth_type` on an MCP server controls the second hop. A LiteLLM API key used for gateway admission is not copied to the upstream server. To let individual users or service-account keys use their own upstream credential for a shared server instead of the one stored on it, see [Per-User and Per-Key Upstream Credentials](./mcp_per_user_auth.md).
+MCP server 上的 `auth_type` 控制第二個跳轉。用於閘道准入的 LiteLLM API 金鑰不會複製到上游 server。若要讓個別使用者或 service-account 金鑰在共用 server 上使用其自己的上游憑證，而不是使用儲存在該 server 上的憑證，請參閱 [Per-User and Per-Key Upstream Credentials](./mcp_per_user_auth.md)。
 
-:::note[Transport scope]
+:::note[傳輸範圍]
 
-The wire examples on this page cover remote MCP servers using SSE or Streamable HTTP. [OpenAPI-generated MCP tools](./mcp_openapi.md) have separate auth-header handling.
+本頁的 wire 範例涵蓋使用 SSE 或 Streamable HTTP 的遠端 MCP server。[OpenAPI-generated MCP tools](./mcp_openapi.md) 具有獨立的 auth-header 處理。
 
 :::
 
-## Choose a non-OAuth auth type
+## 選擇非 OAuth 驗證類型 {#choose-a-non-oauth-auth-type}
 
-For a fixed, non-OAuth credential, choose the type that matches the header required by the upstream server:
+對於固定的非 OAuth 憑證，請選擇與上游 server 所需標頭相符的類型：
 
-| `auth_type` | What you provide | Default credential sent upstream | Use case |
+| `auth_type` | 您提供的內容 | 預設傳送到上游的憑證 | 使用情境 |
 |---|---|---|---|
-| `none` | Nothing | No credential | The upstream allows anonymous requests or relies on network-level access control |
-| `api_key` | API key value | `X-API-Key: <auth_value>` | The upstream expects an `X-API-Key` header |
-| `bearer_token` | Token only | `Authorization: Bearer <auth_value>` | A fixed bearer token, personal access token, or service token |
-| `basic` | Raw `username:password` | `Authorization: Basic <base64(username:password)>` | HTTP Basic authentication |
-| `token` | Token only | `Authorization: token <auth_value>` | An upstream that explicitly uses the GitHub-style `token` scheme |
-| `authorization` | Complete header value, including its scheme | `Authorization: <auth_value>` | A custom authorization scheme; available in config and API |
-| `aws_sigv4` | AWS credentials or an IAM role | A new AWS SigV4 signature for each request | AWS Bedrock AgentCore MCP servers |
+| `none` | 無 | 無憑證 | 上游允許匿名請求，或依賴網路層級的存取控制 |
+| `api_key` | API key 值 | `X-API-Key: <auth_value>` | 上游預期有 `X-API-Key` 標頭 |
+| `bearer_token` | 只有 Token | `Authorization: Bearer <auth_value>` | 固定的 bearer token、personal access token 或 service token |
+| `basic` | 原始 `username:password` | `Authorization: Basic <base64(username:password)>` | HTTP Basic 驗證 |
+| `token` | 只有 Token | `Authorization: token <auth_value>` | 明確使用 GitHub 風格 `token` 機制的上游 |
+| `authorization` | 完整標頭值，包括其機制 | `Authorization: <auth_value>` | 自訂授權機制；可在設定與 API 中使用 |
+| `aws_sigv4` | AWS 憑證或 IAM role | 每個請求都產生新的 AWS SigV4 簽章 | AWS Bedrock AgentCore MCP server |
 
-## What the client sends
+## 用戶端傳送的內容 {#what-the-client-sends}
 
-Static upstream credentials are stored on the MCP server configuration. The client does not send the upstream username, password, or API key on each tool request.
+靜態上游憑證會儲存在 MCP server 設定中。用戶端不會在每次工具請求時傳送上游使用者名稱、密碼或 API key。
 
-For example, the client can make the same request whether the upstream server uses `none`, `basic`, or `api_key`:
+例如，無論上游 server 使用 `none`、`basic` 或 `api_key`，用戶端都可以送出相同的請求：
 
 ```http title="Client to LiteLLM"
 POST /inventory/mcp HTTP/1.1
@@ -44,19 +44,19 @@ Content-Type: application/json
 {"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}
 ```
 
-LiteLLM authenticates the client, selects the `inventory` MCP server, and builds the upstream request from that server's `auth_type`. The following sections show the resulting upstream credential.
+LiteLLM 會驗證用戶端、選取 `inventory` MCP server，並根據該 server 的 `auth_type` 建構上游請求。以下各節會顯示產生的上游憑證。
 
-The client does supply the upstream token for `true_passthrough` and `oauth_delegate`. See [MCP OAuth Passthrough](./mcp_oauth_passthrough.md).
+用戶端確實會為 `true_passthrough` 與 `oauth_delegate` 提供上游 token。請參閱 [MCP OAuth Passthrough](./mcp_oauth_passthrough.md)。
 
-## Non-OAuth auth types
+## 非 OAuth 驗證類型 {#non-oauth-auth-types}
 
-### None
+### None {#none}
 
-`auth_type: none` means the auth resolver contributes no upstream credential.
+`auth_type: none` 表示驗證解析器不會提供任何上游憑證。
 
-- **Behavior:** LiteLLM adds no `Authorization`, `X-API-Key`, or other credential header for this auth type.
-- **Use when:** the upstream MCP endpoint requires no application credential. Common examples are a public MCP server or a private endpoint protected by network policy.
-- **Do not use when:** the upstream requires Basic Auth, an API key, a bearer token, or a caller-owned token.
+- **行為：** LiteLLM 不會為此驗證類型新增 `Authorization`、`X-API-Key` 或其他憑證標頭。
+- **適用情境：** 上游 MCP 端點不需要應用程式憑證。常見範例是公開的 MCP server 或受網路原則保護的私有端點。
+- **不適用情境：** 上游需要 Basic Auth、API key、bearer token，或呼叫端擁有的 token。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -66,7 +66,7 @@ mcp_servers:
     auth_type: "none"
 ```
 
-The upstream request has no auth credential added by LiteLLM:
+上游請求不會由 LiteLLM 加入任何驗證憑證：
 
 ```http title="LiteLLM to upstream"
 POST /mcp HTTP/1.1
@@ -74,19 +74,19 @@ Host: mcp.example.com
 Content-Type: application/json
 ```
 
-:::warning[Do not put credentials in the URL]
+:::warning[請勿將憑證放在 URL 中]
 
-A URL such as `https://username:password@mcp.example.com/mcp` is rejected when `auth_type` is `none`. LiteLLM does not infer Basic Auth from URL userinfo. Remove the credentials from the URL and configure [`auth_type: basic`](#basic-auth) instead.
+當 `auth_type` 為 `none` 時，像 `https://username:password@mcp.example.com/mcp` 這樣的 URL 會被拒絕。LiteLLM 不會從 URL userinfo 推斷 Basic Auth。請從 URL 中移除憑證，改為設定 [`auth_type: basic`](#basic-auth)。
 
 :::
 
-### Basic Auth
+### Basic Auth {#basic-auth}
 
-`auth_type: basic` turns a raw username and password into a standard HTTP Basic header.
+`auth_type: basic` 會將原始使用者名稱與密碼轉換為標準的 HTTP Basic 標頭。
 
-- **Authentication value:** enter `username:password`. Do not base64-encode it and do not add the `Basic` prefix.
-- **Behavior:** LiteLLM base64-encodes the full value, adds the `Basic` scheme, and sends the same service credential on every upstream request.
-- **Use when:** the upstream documentation asks for HTTP Basic authentication.
+- **驗證值：** 請輸入 `username:password`。不要進行 base64 編碼，也不要加上 `Basic` 前綴。
+- **行為：** LiteLLM 會將完整值進行 base64 編碼，加入 `Basic` 機制，並在每次上游請求中傳送相同的服務憑證。
+- **適用情境：** 上游文件要求 HTTP Basic 驗證。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -97,21 +97,21 @@ mcp_servers:
     auth_value: os.environ/MCP_BASIC_AUTH # value: username:password
 ```
 
-For `MCP_BASIC_AUTH=username:password`, LiteLLM sends:
+對於 `MCP_BASIC_AUTH=username:password`，LiteLLM 會傳送：
 
 ```http title="LiteLLM to upstream"
 Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=
 ```
 
-The username and password belong in `auth_value`, not in the server URL.
+使用者名稱與密碼應放在 `auth_value` 中，而不是放在 server URL 中。
 
-### API key
+### API key {#api-key}
 
-`auth_type: api_key` sends one fixed key in `X-API-Key`.
+`auth_type: api_key` 會在 `X-API-Key` 中傳送單一固定金鑰。
 
-- **Authentication value:** enter only the key value.
-- **Behavior:** LiteLLM sends the same key on each upstream request.
-- **Use when:** the upstream documentation requires `X-API-Key`.
+- **驗證值：** 請只輸入金鑰值。
+- **行為：** LiteLLM 會在每次上游請求中傳送相同的金鑰。
+- **適用情境：** 上游文件要求 `X-API-Key`。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -126,15 +126,15 @@ mcp_servers:
 X-API-Key: <INVENTORY_API_KEY>
 ```
 
-If the upstream expects a different header name, use [`static_headers`](#custom-and-forwarded-headers) or set `upstream_token_header`.
+如果上游預期不同的標頭名稱，請使用 [`static_headers`](#custom-and-forwarded-headers) 或設定 `upstream_token_header`。
 
-### Bearer token
+### Bearer token {#bearer-token}
 
-`auth_type: bearer_token` adds the `Bearer` scheme to a fixed token.
+`auth_type: bearer_token` 會將 `Bearer` 機制加到固定 token 上。
 
-- **Authentication value:** enter only the token. Do not add the `Bearer` prefix.
-- **Behavior:** LiteLLM sends `Authorization: Bearer <token>` on each upstream request.
-- **Use when:** the upstream accepts a fixed bearer token, such as a service token or personal access token. For tokens that must be minted, refreshed, exchanged, or supplied by the caller, see [MCP OAuth](./mcp_oauth.md).
+- **驗證值：** 請只輸入 token。不要加上 `Bearer` 前綴。
+- **行為：** LiteLLM 會在每次上游請求中傳送 `Authorization: Bearer <token>`。
+- **適用情境：** 上游接受固定的 bearer token，例如 service token 或 personal access token。若 token 必須由呼叫端簽發、重新整理、交換或提供，請參閱 [MCP OAuth](./mcp_oauth.md)。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -149,13 +149,13 @@ mcp_servers:
 Authorization: Bearer <INVENTORY_TOKEN>
 ```
 
-### Token
+### Token {#token}
 
-`auth_type: token` uses the lowercase `token` authorization scheme.
+`auth_type: token` 使用小寫的 `token` 授權機制。
 
-- **Authentication value:** enter only the token. Do not add the `token` prefix.
-- **Behavior:** LiteLLM sends `Authorization: token <token>`.
-- **Use when:** the upstream explicitly documents this scheme. Use `bearer_token` for standard bearer authentication.
+- **驗證值：** 請只輸入 token。不要加上 `token` 前綴。
+- **行為：** LiteLLM 會傳送 `Authorization: token <token>`。
+- **適用情境：** 上游明確記載使用此機制。標準 bearer 驗證請使用 `bearer_token`。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -170,13 +170,13 @@ mcp_servers:
 Authorization: token <LEGACY_SERVICE_TOKEN>
 ```
 
-### Authorization
+### Authorization {#authorization}
 
-`auth_type: authorization` sends the authentication value verbatim in the `Authorization` header.
+`auth_type: authorization` 會將驗證值原樣傳送到 `Authorization` 標頭中。
 
-- **Authentication value:** enter the complete value, including the scheme or prefix.
-- **Behavior:** LiteLLM does not add, remove, or change the scheme.
-- **Use when:** the upstream uses an authorization scheme that the other static types do not cover. This value is supported in `config.yaml` and the server API, but is not currently listed in the Admin UI selector.
+- **驗證值：** 請輸入完整值，包括機制或前綴。
+- **行為：** LiteLLM 不會新增、移除或變更該機制。
+- **適用情境：** 上游使用其他靜態類型未涵蓋的授權機制。此值可在 `config.yaml` 與 server API 中使用，但目前未列於 Admin UI 下拉選單中。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -191,13 +191,13 @@ mcp_servers:
 Authorization: Custom <CUSTOM_AUTH_TOKEN>
 ```
 
-### AWS SigV4
+### AWS SigV4 {#aws-sigv4}
 
-`auth_type: aws_sigv4` signs every request with AWS Signature Version 4 instead of attaching one fixed token.
+`auth_type: aws_sigv4` 會使用 AWS Signature Version 4 為每個請求簽章，而不是附加單一固定 token。
 
-- **Behavior:** LiteLLM hashes and signs each request, then adds the generated `Authorization`, `x-amz-date`, and temporary-credential headers required by AWS.
-- **Use when:** the upstream is an AWS Bedrock AgentCore MCP server.
-- **Credential source:** use explicit AWS credentials, the boto3 credential chain, or an IAM role that LiteLLM can assume.
+- **行為：** LiteLLM 會對每個請求進行雜湊與簽章，然後加入 AWS 所需產生的 `Authorization`、`x-amz-date` 以及暫時性憑證標頭。
+- **適用情境：** 上游是 AWS Bedrock AgentCore MCP server。
+- **憑證來源：** 使用明確的 AWS 憑證、boto3 憑證鏈，或 LiteLLM 可以 assume 的 IAM role。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -210,14 +210,14 @@ mcp_servers:
     aws_service_name: "bedrock-agentcore"
 ```
 
-See [MCP AWS SigV4 Auth](./mcp_aws_sigv4.md) for setup and troubleshooting.
+設定與疑難排解請參閱 [MCP AWS SigV4 Auth](./mcp_aws_sigv4.md)。
 
-## Custom and forwarded headers
+## 自訂與轉發標頭 {#custom-and-forwarded-headers}
 
-Some upstreams require a custom header name or more than one fixed header. These settings are separate from `auth_type`:
+有些上游需要自訂標頭名稱或多個固定標頭。這些設定與 `auth_type` 分開：
 
-- **`static_headers`:** LiteLLM adds the configured values to every upstream request. Use this for a custom static credential, tenant identifier, or secondary gateway credential.
-- **`extra_headers`:** LiteLLM copies only the named headers from the current client request to the upstream. Use this for request-specific context that the client owns.
+- **`static_headers`：** LiteLLM 會將設定的值加入每次上游請求中。可用於自訂靜態憑證、租戶識別碼或次要閘道憑證。
+- **`extra_headers`：** LiteLLM 只會將目前用戶端請求中指定的標頭複製到上游。可用於由用戶端擁有的、與請求相關的內容。
 
 ```yaml title="config.yaml"
 mcp_servers:
@@ -231,6 +231,6 @@ mcp_servers:
       - X-Tenant-ID
 ```
 
-The `none` resolver still contributes no credential in this example. `X-Custom-Auth` is present because it was declared separately in `static_headers`.
+在此範例中，`none` 解析器仍然不會提供任何憑證。因為 `X-Custom-Auth` 是在 `static_headers` 中另外宣告的，所以它會存在。
 
-For a caller-owned OAuth bearer in `Authorization`, use `true_passthrough` or `oauth_delegate` instead of treating it as a generic extra header.
+對於 `Authorization` 中由呼叫端持有的 OAuth bearer，請改用 `true_passthrough` 或 `oauth_delegate`，不要將其視為一般的額外標頭。

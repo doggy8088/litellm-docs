@@ -1,30 +1,30 @@
 import { ControlPlaneArchitecture } from '@site/src/components/ControlPlaneArchitecture';
 
-# Global Control Plane
+# 全域控制平面 {#global-control-plane}
 
-Deploy a single LiteLLM UI that manages multiple independent LiteLLM proxy instances, each with its own database, Redis, and master key.
+部署單一 LiteLLM UI，以管理多個彼此獨立的 LiteLLM proxy 執行個體，每個執行個體都有自己的資料庫、Redis 與主金鑰。
 
 <EnterpriseFeature />
 
-## When to use this
+## 何時使用此功能 {#when-to-use-this}
 
-Pick this over the shared-database [Multi-Region Deployment](./multi_region.md) topology when blast-radius isolation matters more than global consistency. A database outage on one worker cannot affect another, but a key created on one worker will not authenticate on another, because keys, teams, and budgets are local to the worker that owns them. Multi-Region covers the full tradeoff and the licensing table, where this page appears as a row
+當爆炸半徑隔離比全域一致性更重要時，請選擇此方案，而非共用資料庫的 [多區域部署](./multi_region.md) 拓撲。某個 worker 上的資料庫中斷不會影響另一個 worker，但在某個 worker 上建立的金鑰無法在另一個 worker 上驗證，因為金鑰、團隊與預算都隸屬於其擁有它們的 worker。Multi-Region 涵蓋完整的取捨與授權表，本頁即列於其中
 
-Do not confuse this with the dedicated admin instance described on that page. That instance is also admin-only and serves no LLM traffic, but it shares one database with the regional proxies it manages, so it administers a single deployment. A global control plane shares nothing with its workers and administers many separate deployments
+不要將此與該頁面所描述的專用管理執行個體混淆。該執行個體同樣僅供管理使用且不提供任何 LLM 流量，但它與所管理的區域 proxy 共用一個資料庫，因此它管理的是單一部署。全域控制平面不與其 worker 共用任何資源，並管理多個獨立部署
 
-## Architecture
+## 架構 {#architecture}
 
 <ControlPlaneArchitecture />
 
-The **control plane** is a LiteLLM instance that serves the admin UI and knows about all the workers. It exists purely so admins can switch between workers and manage them from a single UI
+**控制平面** 是一個 LiteLLM 執行個體，提供管理 UI 並了解所有 worker。它的存在純粹是為了讓管理員能在單一 UI 中切換 worker 並進行管理
 
-Each **worker** is a fully independent LiteLLM proxy that handles LLM requests for its region or team. Workers have their own database, Redis, users, keys, teams, and budgets
+每個 **worker** 都是完全獨立的 LiteLLM proxy，負責處理其區域或團隊的 LLM 請求。Worker 擁有自己的資料庫、Redis、使用者、金鑰、團隊與預算
 
-## Setup
+## 設定 {#setup}
 
-### 1. Control Plane Configuration
+### 1. 控制平面設定 {#1-control-plane-configuration}
 
-The control plane needs a `worker_registry` that lists all worker instances. Each entry requires `worker_id`, `name`, and `url`
+控制平面需要一個 `worker_registry`，列出所有 worker 執行個體。每個項目都需要 `worker_id`、`name` 和 `url`
 
 ```yaml title="cp_config.yaml"
 model_list: []
@@ -42,15 +42,15 @@ worker_registry:
     url: "http://localhost:4002"
 ```
 
-Start the control plane:
+啟動控制平面：
 
 ```bash
 litellm --config cp_config.yaml --port 4000
 ```
 
-### 2. Worker Configuration
+### 2. Worker 設定 {#2-worker-configuration}
 
-Each worker needs `control_plane_url` in its `general_settings`. This enables the `/v3/login` and `/v3/login/exchange` endpoints on the worker so the control plane UI can authenticate against it cross-origin. `PROXY_BASE_URL` must also be set for each worker so that SSO callback redirects resolve correctly
+每個 worker 都需要在其 `general_settings` 中設定 `control_plane_url`。這會在 worker 上啟用 `/v3/login` 和 `/v3/login/exchange` 端點，讓控制平面 UI 能以跨來源方式對其進行驗證。每個 worker 也必須設定 `PROXY_BASE_URL`，以便 SSO 回呼重新導向能正確解析
 
 ```yaml title="worker_a_config.yaml"
 model_list: []
@@ -65,28 +65,28 @@ general_settings:
 PROXY_BASE_URL=http://localhost:4001 litellm --config worker_a_config.yaml --port 4001
 ```
 
-Repeat this for every worker in the registry, changing the master key, the database URL, and the port each time. A worker is an ordinary LiteLLM proxy in every other respect, so the [production deployment guide](./prod.md) applies to it unchanged
+對登錄中的每個 worker 重複此操作，每次都變更主金鑰、資料庫 URL 與埠號。worker 在其他所有方面都是一般的 LiteLLM proxy，因此 [正式環境部署指南](./prod.md) 可原封不動套用
 
 :::important
-Each worker must have its own `master_key` and `database_url`. The whole point of this architecture is that workers are independent
+每個 worker 都必須有自己的 `master_key` 與 `database_url`。這個架構的核心目的就是讓 worker 彼此獨立
 :::
 
 :::info
-If a worker runs more than one instance behind a load balancer, configure Redis on that worker (the `cache` section of its config). The login code issued by `/v3/login` is stored server-side, so without shared Redis the exchange can land on a different instance and fail with a 401
+如果某個 worker 在負載平衡器後方執行多個執行個體，請在該 worker 上設定 Redis（其組態中的 `cache` 區段）。`/v3/login` 發出的登入代碼會儲存在伺服器端，因此若沒有共用 Redis，交換可能會落到不同的執行個體並以 401 失敗
 :::
 
-### 3. SSO Configuration (Optional)
+### 3. SSO 設定（選用） {#3-sso-configuration-optional}
 
-SSO is configured on the control plane instance the same way as a standard LiteLLM proxy. See the [SSO setup guide](./admin_ui_sso.md) for full instructions. If you use SSO, register each worker URL and the control plane URL as allowed callback URLs in your SSO provider's dashboard
+SSO 在控制平面執行個體上的設定方式與標準 LiteLLM proxy 相同。完整操作請參閱 [SSO 設定指南](./admin_ui_sso.md)。如果您使用 SSO，請在 SSO 提供者的儀表板中將每個 worker URL 與控制平面 URL 註冊為允許的回呼 URL
 
-With the control plane and at least one worker running, open `http://localhost:4000/ui`. You should see the worker selector on the login page
+當控制平面與至少一個 worker 都在執行時，請開啟 `http://localhost:4000/ui`。您應該會在登入頁面上看到 worker 選擇器
 
-## How It Works
+## 運作方式 {#how-it-works}
 
-### Login Flow
+### 登入流程 {#login-flow}
 
-On load, the UI reads the control plane's `/.well-known/litellm-ui-config` endpoint, which reports `is_control_plane: true` whenever `worker_registry` is set, along with the registered workers (their IDs, names, and URLs). Because it is a control plane, the login page shows a worker selector dropdown
+載入時，UI 會讀取控制平面的 `/.well-known/litellm-ui-config` 端點；當 `worker_registry` 已設定時，該端點會回報 `is_control_plane: true`，以及已註冊的 worker（其 ID、名稱與 URL）。由於它是控制平面，登入頁面會顯示 worker 選擇下拉選單
 
-The user picks a worker and logs in with username/password or SSO. The UI authenticates against the selected worker by calling its `/v3/login` endpoint, which returns a single-use code, then redeems that code at the worker's `/v3/login/exchange` for a JWT. From then on it points all subsequent API calls at that worker, so keys, teams, models, and budgets are managed on the selected worker from the control plane UI
+使用者選擇一個 worker，然後以使用者名稱/密碼或 SSO 登入。UI 會透過呼叫所選 worker 的 `/v3/login` 端點來對其進行驗證，該端點會回傳一次性代碼，接著在該 worker 的 `/v3/login/exchange` 兌換此代碼以取得 JWT。從那時起，後續所有 API 呼叫都會指向該 worker，因此金鑰、團隊、模型與預算都會透過控制平面 UI 在所選 worker 上進行管理
 
-Once logged in, users can switch workers from the navbar dropdown without leaving the UI. Switching redirects back to the login page to authenticate against the new worker
+登入後，使用者可從導覽列下拉選單切換 worker，而不必離開 UI。切換時會重新導向回登入頁面，以便對新的 worker 進行驗證

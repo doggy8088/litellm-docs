@@ -1,0 +1,203 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# EnkryptAI Guardrails
+
+LiteLLM supports EnkryptAI guardrails for content moderation and safety checks on LLM inputs and outputs.
+
+## Quick Start
+
+### 1. Define Guardrails on your LiteLLM config.yaml
+
+Define your guardrails under the `guardrails` section:
+
+```yaml
+model_list:
+  - model_name: {{openai_small}}
+    litellm_params:
+      model: openai/{{openai_small}}
+      api_key: os.environ/OPENAI_API_KEY
+
+guardrails:
+  - guardrail_name: "enkryptai-guard"
+    litellm_params:
+      guardrail: enkryptai
+      mode: "pre_call"
+      api_key: os.environ/ENKRYPTAI_API_KEY
+      policy_name: "my-policy"  # EnkryptAI policy that defines which detectors run
+```
+
+#### Supported values for `mode`
+
+- `pre_call` - Run **before** LLM call, on **input**
+- `post_call` - Run **after** LLM call, on **output**
+- `during_call` - Run **during** LLM call, on **input**. Same as `pre_call` but runs in parallel as LLM call
+
+#### Available Detectors
+
+Detectors are configured in the EnkryptAI policy referenced by `policy_name`, not in the LiteLLM config. LiteLLM sends only the text and the `x-enkrypt-policy` header, so a `detectors:` block under `litellm_params` has no effect. EnkryptAI policies support these detection types:
+
+- **toxicity** - Detect toxic language
+- **nsfw** - Detect NSFW (Not Safe For Work) content
+- **pii** - Detect personally identifiable information
+  - Entities configurable in the policy: `["pii", "email", "phone", "secrets", "ip_address", "url"]`
+- **injection_attack** - Detect prompt injection attempts
+- **keyword_detector** - Detect custom keywords/phrases
+- **policy_violation** - Detect policy violations
+- **bias** - Detect biased content
+- **sponge_attack** - Detect sponge attacks
+
+### 2. Set Environment Variables
+
+```bash
+export ENKRYPTAI_API_KEY="your-api-key"
+```
+
+### 3. Start LiteLLM Gateway
+
+```shell
+litellm --config config.yaml --detailed_debug
+```
+
+### 4. Test Request
+
+**[Langchain, OpenAI SDK Usage Examples](/docs/proxy/user_keys#request-format)**
+
+<Tabs>
+<TabItem label="Successful Call" value="allowed">
+
+```shell
+curl -i http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -d '{
+    "model": "{{openai_small}}",
+    "messages": [
+      {"role": "user", "content": "Hello, how can you help me today?"}
+    ],
+    "guardrails": ["enkryptai-guard"]
+  }'
+```
+
+**Response: HTTP 200 Success**
+
+Content passes all detector checks and is allowed through.
+
+</TabItem>
+
+<TabItem label="Unsuccessful Call" value="not-allowed">
+
+Expect this to fail if content violates detector policies:
+
+```shell
+curl -i http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -d '{
+    "model": "{{openai_small}}",
+    "messages": [
+      {"role": "user", "content": "My email is test@example.com and my SSN is 123-45-6789"}
+    ],
+    "guardrails": ["enkryptai-guard"]
+  }'
+```
+
+**Expected Response on Failure: HTTP 500 Error**
+
+The `message` is a plain string listing each violation, and its details come from the EnkryptAI response.
+
+```json
+{
+  "error": {
+    "message": "Guardrail failed: 1 violation(s) detected\n\n- PII:\n  PII Detected: {'email': ['test@example.com']}",
+    "type": "internal_server_error",
+    "param": null,
+    "code": "500"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Video Walkthrough
+
+<iframe width="840" height="500" src="https://www.loom.com/embed/ff222211e0864937aee4aeef0f28c3b7" frameBorder="0" allowFullScreen></iframe>
+
+## Advanced Configuration
+
+### Using Custom Policies
+
+You can specify a custom EnkryptAI policy:
+
+```yaml
+guardrails:
+  - guardrail_name: "enkryptai-custom"
+    litellm_params:
+      guardrail: enkryptai
+      mode: "pre_call"
+      api_key: os.environ/ENKRYPTAI_API_KEY
+      policy_name: "my-custom-policy"  # Sent via x-enkrypt-policy header
+```
+
+Detection is controlled entirely by the policy referenced in `policy_name`; LiteLLM sends only the text and this header to EnkryptAI, so per-detector settings must be configured in the EnkryptAI policy itself. Any detected violation blocks the request.
+
+### Input and Output Guardrails
+
+Configure separate guardrails for input and output:
+
+```yaml
+guardrails:
+  # Input guardrail
+  - guardrail_name: "enkryptai-input"
+    litellm_params:
+      guardrail: enkryptai
+      mode: "pre_call"
+      api_key: os.environ/ENKRYPTAI_API_KEY
+      policy_name: "my-input-policy"
+
+  # Output guardrail
+  - guardrail_name: "enkryptai-output"
+    litellm_params:
+      guardrail: enkryptai
+      mode: "post_call"
+      api_key: os.environ/ENKRYPTAI_API_KEY
+      policy_name: "my-output-policy"
+```
+
+## Configuration Options
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `api_key` | string | EnkryptAI API key | `ENKRYPTAI_API_KEY` env var |
+| `api_base` | string | EnkryptAI API base URL | `https://api.enkryptai.com` |
+| `policy_name` | string | Custom policy name (sent via `x-enkrypt-policy` header) | None |
+| `mode` | string | When to run: `pre_call`, `post_call`, or `during_call` | Required |
+
+## Observability
+
+EnkryptAI guardrail logs include:
+
+- **guardrail_status**: `success`, `guardrail_intervened`, or `guardrail_failed_to_respond`
+- **guardrail_provider**: `enkryptai`
+- **guardrail_json_response**: Full API response with detection details
+- **duration**: Time taken for guardrail check
+- **start_time** and **end_time**: Timestamps
+
+These logs are available through your configured LiteLLM logging callbacks.
+
+## Error Handling
+
+The guardrail handles errors gracefully:
+
+- **API Failures**: Logs error and raises exception
+- **Rate Limits (429)**: Logs error and raises exception
+- **Invalid Configuration**: Raises `ValueError` on initialization
+- **Violations Detected**: Raises an exception and blocks the request
+
+## Support
+
+For more information about EnkryptAI:
+- Documentation: [https://docs.enkryptai.com](https://docs.enkryptai.com)
+- Website: [https://enkryptai.com](https://enkryptai.com)
+

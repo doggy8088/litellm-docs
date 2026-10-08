@@ -1,20 +1,20 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Vertex AI Text to Speech
+# Vertex AI 文字轉語音 {#vertex-ai-text-to-speech}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Google Cloud Text-to-Speech with Chirp3 HD voices and Gemini TTS |
-| Provider Route on LiteLLM | `vertex_ai/chirp` (Chirp), `vertex_ai/gemini-*-tts` (Gemini) |
+| 說明 | 具備 Chirp3 HD 聲音與 Gemini TTS 的 Google Cloud 文字轉語音 |
+| LiteLLM 上的提供者路由 | `vertex_ai/chirp`（Chirp）、`vertex_ai/gemini-*-tts`（Gemini） |
 
-## Chirp3 HD Voices
+## Chirp3 HD 聲音 {#chirp3-hd-voices}
 
-Google Cloud Text-to-Speech API with high-quality Chirp3 HD voices.
+具備高品質 Chirp3 HD 聲音的 Google Cloud Text-to-Speech API。
 
-### Quick Start
+### 快速開始 {#quick-start}
 
-#### LiteLLM Python SDK
+#### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Chirp3 Quick Start"
 from litellm import speech
@@ -31,9 +31,9 @@ response = speech(
 response.stream_to_file(speech_file_path)
 ```
 
-#### LiteLLM AI Gateway
+#### LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -45,13 +45,13 @@ model_list:
       vertex_credentials: "/path/to/service_account.json"
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash title="Start LiteLLM Proxy"
 litellm --config /path/to/config.yaml
 ```
 
-**3. Make requests**
+**3. 發出請求**
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -87,9 +87,9 @@ response.stream_to_file("speech.mp3")
 </TabItem>
 </Tabs>
 
-### Voice Mapping
+### 聲音對應 {#voice-mapping}
 
-LiteLLM maps OpenAI voice names to Google Cloud voices. You can use either OpenAI voices or Google Cloud voices directly.
+LiteLLM 會將 OpenAI 聲音名稱對應到 Google Cloud 聲音。您可以直接使用 OpenAI 聲音或 Google Cloud 聲音。
 
 | OpenAI Voice | Google Cloud Voice |
 |-------------|-------------------|
@@ -100,9 +100,9 @@ LiteLLM maps OpenAI voice names to Google Cloud voices. You can use either OpenA
 | `nova` | en-US-Studio-O |
 | `shimmer` | en-US-Wavenet-F |
 
-### Using Google Cloud Voices Directly
+### 直接使用 Google Cloud 聲音 {#using-google-cloud-voices-directly}
 
-#### LiteLLM Python SDK
+#### LiteLLM Python SDK {#litellm-python-sdk-1}
 
 ```python showLineNumbers title="Chirp3 HD Voice"
 from litellm import speech
@@ -133,7 +133,7 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-#### LiteLLM AI Gateway
+#### LiteLLM AI 閘道 {#litellm-ai-gateway-1}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -194,13 +194,13 @@ response.stream_to_file("speech.mp3")
 </TabItem>
 </Tabs>
 
-Browse available voices: [Google Cloud Text-to-Speech Console](https://console.cloud.google.com/vertex-ai/generative/speech/text-to-speech)
+瀏覽可用聲音：[Google Cloud Text-to-Speech Console](https://console.cloud.google.com/vertex-ai/generative/speech/text-to-speech)
 
-### Passing Raw SSML
+### 傳遞原始 SSML {#passing-raw-ssml}
 
-LiteLLM auto-detects SSML when your input contains `<speak>` tags and passes it through unchanged.
+當您的輸入包含 `<speak>` 標籤時，LiteLLM 會自動偵測 SSML，並原樣傳遞。
 
-#### LiteLLM Python SDK
+#### LiteLLM Python SDK {#litellm-python-sdk-2}
 
 ```python showLineNumbers title="SSML Input"
 from litellm import speech
@@ -235,7 +235,7 @@ response = speech(
 response.stream_to_file("speech.mp3")
 ```
 
-#### LiteLLM AI Gateway
+#### LiteLLM AI 閘道 {#litellm-ai-gateway-2}
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -273,17 +273,17 @@ response.stream_to_file("speech.mp3")
 </TabItem>
 </Tabs>
 
-### Supported Parameters
+### 支援的參數 {#supported-parameters}
 
-| Parameter | Description | Values |
+| 參數 | 說明 | Values |
 |-----------|-------------|--------|
-| `voice` | Voice selection | OpenAI voice, Google Cloud voice name, or dict |
-| `input` | Text to convert | Plain text or SSML |
-| `speed` | Speaking rate | 0.25 to 4.0 (default: 1.0) |
-| `response_format` | Audio format | `mp3`, `opus`, `wav`, `pcm`, `flac` |
-| `use_ssml` | Force SSML mode | `True` / `False` |
+| `voice` | 聲音選擇 | OpenAI voice、Google Cloud voice 名稱，或 dict |
+| `input` | 要轉換的文字 | 純文字或 SSML |
+| `speed` | 說話速度 | 0.25 到 4.0（預設：1.0） |
+| `response_format` | 音訊格式 | `mp3`、`opus`、`wav`、`pcm`、`flac` |
+| `use_ssml` | 強制 SSML 模式 | `True` / `False` |
 
-### Async Usage
+### 非同步用法 {#async-usage}
 
 ```python showLineNumbers title="Async Speech Generation"
 import asyncio
@@ -303,21 +303,21 @@ asyncio.run(main())
 
 ---
 
-## Gemini TTS
+## Gemini TTS {#gemini-tts}
 
-Gemini models with audio output capabilities using the chat completions API.
+具備音訊輸出能力的 Gemini 模型，使用 chat completions API。
 
 :::warning
-**Limitations:**
-- Only supports `pcm16` audio format
-- Streaming not yet supported
-- Must set `modalities: ["audio"]`
-- When using via LiteLLM Proxy, must include `"allowed_openai_params": ["audio", "modalities"]` in the request body to enable audio parameters
+**限制：**
+- 僅支援 `pcm16` 音訊格式
+- 尚不支援串流
+- 必須設定 `modalities: ["audio"]`
+- 透過 LiteLLM Proxy 使用時，必須在請求主體中包含 `"allowed_openai_params": ["audio", "modalities"]`，以啟用音訊參數
 :::
 
-### Quick Start
+### 快速開始 {#quick-start-1}
 
-#### LiteLLM Python SDK
+#### LiteLLM Python SDK {#litellm-python-sdk-3}
 
 ```python showLineNumbers title="Gemini TTS Quick Start"
 from litellm import completion
@@ -340,9 +340,9 @@ response = completion(
 print(response)
 ```
 
-#### LiteLLM AI Gateway
+#### LiteLLM AI 閘道 {#litellm-ai-gateway-3}
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -354,13 +354,13 @@ model_list:
       vertex_credentials: "/path/to/service_account.json"
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash title="Start LiteLLM Proxy"
 litellm --config /path/to/config.yaml
 ```
 
-**3. Make requests**
+**3. 發出請求**
 
 <Tabs>
 <TabItem value="curl" label="curl">
@@ -399,14 +399,14 @@ print(response)
 </TabItem>
 </Tabs>
 
-### Supported Models
+### 支援的模型 {#supported-models}
 
 - `vertex_ai/gemini-2.5-flash-preview-tts`
 - `vertex_ai/gemini-2.5-pro-preview-tts`
 
-See [Gemini TTS documentation](https://ai.google.dev/gemini-api/docs/speech-generation) for available voices.
+可用聲音請參見 [Gemini TTS 文件](https://ai.google.dev/gemini-api/docs/speech-generation)。
 
-### Advanced Usage
+### 進階用法 {#advanced-usage}
 
 ```python showLineNumbers title="Gemini TTS with System Prompt"
 from litellm import completion

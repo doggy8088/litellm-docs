@@ -1,82 +1,82 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Microsoft 365 MCP server
+# Microsoft 365 MCP server {#microsoft-365-mcp-server}
 
-> Reach Outlook mail and calendar, OneDrive and SharePoint files, and Teams through Microsoft Graph, with every tool call running under the signed-in user's own Entra ID account.
+> 透過 Microsoft Graph 存取 Outlook 郵件與行事曆、OneDrive 與 SharePoint 檔案，以及 Teams，且每次工具呼叫都會在已登入使用者自己的 Entra ID 帳戶下執行。
 
-Microsoft Graph is the API behind Microsoft 365, and the open source [ms-365-mcp-server](https://github.com/Softeria/ms-365-mcp-server) exposes it over MCP. You run that server next to the proxy over Streamable HTTP, where it signs nobody in and calls Graph with whatever bearer token arrives on the request, and LiteLLM supplies that token: it runs the Entra ID sign-in for each user, stores the resulting Graph token against that LiteLLM user, and attaches it to every tool call. No shared mailbox credential or tenant-wide application secret is involved. LiteLLM adds centralized auth, access control by key and team, cost tracking per tool call, and one audit trail across every MCP server you expose.
+Microsoft Graph 是 Microsoft 365 背後的 API，而開放原始碼 [ms-365-mcp-server](https://github.com/Softeria/ms-365-mcp-server) 透過 MCP 將其公開。您將該伺服器與 proxy 並排，透過 Streamable HTTP 執行；它不會登入任何人，而是使用請求上帶來的任何 bearer token 呼叫 Graph，LiteLLM 則提供該 token：它會為每位使用者執行 Entra ID 登入，將產生的 Graph token 儲存在對應的 LiteLLM 使用者下，並將其附加到每次工具呼叫。此過程不涉及共享信箱憑證或租用戶範圍的應用程式密鑰。LiteLLM 增加了集中式驗證、依金鑰與團隊進行的存取控制、每次工具呼叫的成本追蹤，以及涵蓋您公開的每個 MCP 伺服器的單一稽核軌跡。
 
-The server only translates MCP calls into Graph calls. Sign-in, consent, token storage, and refresh happen between LiteLLM and Entra ID, so swapping the server changes nothing about how users authenticate: any MCP server that calls Graph with the `Authorization: Bearer` token it receives works with the same LiteLLM configuration and a different `url`.
+該伺服器僅將 MCP 請求轉換為 Graph 請求。登入、同意、token 儲存與重新整理都發生在 LiteLLM 與 Entra ID 之間，因此更換伺服器不會改變使用者的驗證方式：任何以其收到的 `Authorization: Bearer` token 呼叫 Graph 的 MCP 伺服器，都能搭配相同的 LiteLLM 組態與不同的 `url` 運作。
 
-## When should you use this server
+## 您何時應該使用此伺服器 {#when-should-you-use-this-server}
 
-- Give an agent the user's own inbox and calendar: what came in, what is booked, and who is free, without a shared service mailbox
-- Pull SharePoint and OneDrive documents as a retrieval step before answering, limited to what that person can already open
-- Read and post in Teams chats and channels, manage Planner and To Do tasks, and query Excel tables and OneNote pages from the same server
+- 讓代理程式取得使用者自己的收件匣與行事曆：收到什麼、已排定什麼、以及誰有空，而不需共享服務信箱
+- 在回答前先擷取 SharePoint 與 OneDrive 文件作為檢索步驟，且僅限於該人已可開啟的內容
+- 在同一個伺服器上讀取與發佈 Teams 聊天與頻道、管理 Planner 與 To Do 工作，並查詢 Excel 表格與 OneNote 頁面
 
-## Key features
+## 主要功能 {#key-features}
 
-- Per-user auth through Entra ID: each caller consents once in their browser, and every tool call carries their delegated Graph permissions, so the agent sees exactly what the user sees
-- Tool surface follows the delegated permissions on the app registration, so a read-only rollout and a full read/write rollout use the same server with different scopes
-- 300+ tools across mail, calendar, contacts, OneDrive, SharePoint, Teams, Planner, To Do, OneNote, Excel, users, and groups, plus `search-query` and `graph-batch` for anything else Graph exposes
-- Self-hosted over Streamable HTTP, so Graph traffic stays inside your network
+- 透過 Entra ID 的每位使用者驗證：每位呼叫者都會在瀏覽器中同意一次，且每次工具呼叫都會攜帶其委派的 Graph 權限，因此代理程式看到的內容與使用者完全一致
+- 工具範圍遵循應用程式註冊上的委派權限，因此唯讀部署與完整讀寫部署可使用相同伺服器，但範圍不同
+- 涵蓋郵件、行事曆、聯絡人、OneDrive、SharePoint、Teams、Planner、To Do、OneNote、Excel、使用者與群組的 300+ 個工具，外加 `search-query` 與 `graph-batch`，以處理 Graph 公開的任何其他內容
+- 以 Streamable HTTP 自我代管，因此 Graph 流量會保留在您的網路內
 
-## Authentication
+## 驗證 {#authentication}
 
-- **Method:** OAuth 2.0 authorization code with PKCE against Microsoft Entra ID. Entra does not support dynamic client registration, so you register an app and give LiteLLM its client ID and secret. LiteLLM then publishes OAuth discovery documents for the server that point MCP clients at its own sign-in endpoints in front of Entra (`per_server_oauth_discovery: true` below).
-- **App registration:** Create one in the [Microsoft Entra admin center](https://entra.microsoft.com) under **App registrations**. You will add a Web redirect URI, a client secret, and delegated Microsoft Graph permissions.
-- **Consent:** Each user approves the delegated permissions on first sign-in. A tenant that restricts user consent needs an admin to grant consent once on the app registration's **API permissions** page.
+- **方法：** 透過 Microsoft Entra ID 進行具 PKCE 的 OAuth 2.0 授權碼流程。Entra 不支援動態用戶端註冊，因此您需要註冊一個應用程式，並提供 LiteLLM 其 client ID 與 secret。接著 LiteLLM 會為該伺服器發布 OAuth 探索文件，將 MCP 用戶端指向位於 Entra 前方、LiteLLM 自己的登入端點（如下方 `per_server_oauth_discovery: true`）。
+- **應用程式註冊：** 請在 [Microsoft Entra admin center](https://entra.microsoft.com) 的 **App registrations** 下建立一個。您將新增 Web redirect URI、client secret，以及委派的 Microsoft Graph 權限。
+- **同意：** 每位使用者在首次登入時核准委派權限。若租用戶限制使用者自行同意，則需要管理員在應用程式註冊的 **API permissions** 頁面上一次性授予同意。
 
-### Single sign-on through Okta or another identity provider
+### 透過 Okta 或其他識別提供者進行單一登入 {#single-sign-on-through-okta-or-another-identity-provider}
 
-Microsoft Graph accepts only access tokens that Entra ID issues, so neither an Okta token nor the credential from your LiteLLM single sign-on can stand in for the Graph token, and LiteLLM does not convert one into the other. What carries over is the sign-in itself. When your Microsoft 365 tenant federates authentication to Okta or another identity provider, the Entra sign-in LiteLLM starts redirects there like any other Microsoft 365 sign-in, so users see their usual SSO page, and Entra issues the Graph token once they return. Each user does this once; LiteLLM refreshes the token afterwards.
+Microsoft Graph 只接受 Entra ID 核發的 access token，因此無論是 Okta token，或是您 LiteLLM 單一登入取得的憑證，都不能取代 Graph token，LiteLLM 也不會將其中一個轉換成另一個。可沿用的是登入本身。當您的 Microsoft 365 租用戶將驗證聯邦到 Okta 或其他識別提供者時，LiteLLM 啟動的 Entra 登入會像任何其他 Microsoft 365 登入一樣重新導向到那裡，因此使用者會看到慣用的 SSO 頁面，而 Entra 會在他們返回後核發 Graph token。每位使用者只需執行一次；之後 LiteLLM 會重新整理該 token。
 
-Three other LiteLLM auth modes come up in this setup and none of them replaces the flow above. [On-behalf-of token exchange](../mcp_obo_auth.md) trades an Entra ID token the client already presents to LiteLLM, so it applies only when users authenticate to LiteLLM with Entra ID tokens rather than through Okta. [ID-JAG](../mcp_id_jag.md) gets tokens from an Okta authorization server, which Graph does not trust. [OAuth passthrough](../mcp_oauth_passthrough.md) forwards the client's bearer token unchanged and exchanges nothing, so the client would still have to obtain a Graph token on its own.
+此設定中還會出現另外三種 LiteLLM 驗證模式，但都無法取代上述流程。[代表方 token 交換](../mcp_obo_auth.md) 會交換用戶端已提供給 LiteLLM 的 Entra ID token，因此只適用於使用者以 Entra ID token 驗證到 LiteLLM，而不是透過 Okta 的情況。[ID-JAG](../mcp_id_jag.md) 會從 Okta 授權伺服器取得 token，但 Graph 不信任該伺服器。[OAuth passthrough](../mcp_oauth_passthrough.md) 會原封不動地轉送用戶端的 bearer token 並不做交換，因此用戶端仍必須自行取得 Graph token。
 
-## Endpoint
+## 端點 {#endpoint}
 
-**Self-hosted MCP server** (organization mode, Streamable HTTP on port 3000):
+**自我代管 MCP 伺服器**（organization mode，埠 3000 上的 Streamable HTTP）：
 
 ```bash
 npx -y @softeria/ms-365-mcp-server --http 3000 --org-mode
 ```
 
-The server then listens at `http://localhost:3000/mcp`. `--http` is what makes it take the bearer token on each request, which is the one LiteLLM forwards, instead of signing in on its own; it checks only that the token is present and unexpired and leaves the rest to Graph. `--org-mode` adds the work and school tools (Teams, SharePoint, shared mailboxes) and their permissions. Add `--read-only` to drop every write tool, or `--enabled-tools <regex>` to expose a subset, and pin a version (`@softeria/ms-365-mcp-server@<version>`) in production, since the tool list changes between releases. Keep the port reachable from the proxy only.
+接著伺服器會監聽於 `http://localhost:3000/mcp`。`--http` 讓它在每次請求時接收 bearer token，也就是 LiteLLM 轉送的那個，而不是自行登入；它只會檢查 token 是否存在且尚未過期，其餘部分則交給 Graph。`--org-mode` 會加入工作與學校工具（Teams、SharePoint、共享信箱）及其權限。新增 `--read-only` 可移除所有寫入工具，或新增 `--enabled-tools <regex>` 以公開子集合，並在生產環境中鎖定版本（`@softeria/ms-365-mcp-server@<version>`），因為工具清單會在各版本之間變動。請僅讓 proxy 可連線至該埠。
 
 ***
 
-## Connect via LiteLLM MCP Gateway
+## 透過 LiteLLM MCP Gateway 連線 {#connect-via-litellm-mcp-gateway}
 
 :::info
-Microsoft 365 is one of the servers that needs explicit client credentials. LiteLLM normally handles OAuth client setup through dynamic registration, as on the [Atlassian](./atlassian.md) and [Linear](./linear.md) servers, but Entra ID requires your own app registration, the same way [Slack](./slack.md) does.
+Microsoft 365 是需要明確用戶端憑證的伺服器之一。LiteLLM 通常會透過動態註冊處理 OAuth client 設定，如 [Atlassian](./atlassian.md) 與 [Linear](./linear.md) 伺服器所示，但 Entra ID 需要您自己的應用程式註冊，這點與 [Slack](./slack.md) 相同。
 :::
 
-### Step 1: Register an Entra ID app
+### 步驟 1：註冊 Entra ID 應用程式 {#step-1-register-an-entra-id-app}
 
-1. In the [Microsoft Entra admin center](https://entra.microsoft.com), open **App registrations** and click **New registration**.
-2. Name it (for example `LiteLLM MCP gateway - Microsoft 365`) and keep **Accounts in this organizational directory only** unless users from other tenants should sign in.
-3. Under **Redirect URI**, pick the **Web** platform and enter `{PROXY_BASE_URL}/callback`:
+1. 在 [Microsoft Entra admin center](https://entra.microsoft.com) 中，開啟 **App registrations** 並按一下 **New registration**。
+2. 命名它（例如 `LiteLLM MCP gateway - Microsoft 365`），並維持 **Accounts in this organizational directory only**，除非其他租用戶的使用者也應可登入。
+3. 在 **Redirect URI** 下，選擇 **Web** 平台並輸入 `{PROXY_BASE_URL}/callback`：
 
    ```
    https://llm.example.com/callback
    ```
 
-4. Replace `https://llm.example.com` with the origin users see in their address bar. This is the value LiteLLM sends to Entra as the `redirect_uri`, so a mismatch fails the flow at the Microsoft sign-in page with `AADSTS50011`. See [Reverse proxy and ingress configuration](../mcp_oauth.md#reverse-proxy-and-ingress-configuration) if LiteLLM sits behind an ingress.
-5. Under **Certificates & secrets**, create a client secret and copy its **Value** right away; it is shown once.
-6. Under **API permissions**, click **Add a permission**, pick **Microsoft Graph**, then **Delegated permissions**, and add the scopes for the capabilities you want, matching the table in [Tools provided](#tools-provided). A read-only rollout is `openid`, `offline_access`, `User.Read`, `Mail.Read`, `Calendars.Read`, `Files.Read.All`, and `Sites.Read.All`. `offline_access` is what lets LiteLLM refresh the token, so keep it.
-7. Click **Grant admin consent** if your tenant blocks users from consenting themselves.
-8. From **Overview**, copy the **Application (client) ID** and **Directory (tenant) ID**.
+4. 將 `https://llm.example.com` 替換為使用者在網址列中看到的來源。這是 LiteLLM 傳送給 Entra 的 `redirect_uri` 值，因此若不一致，流程會在 Microsoft 登入頁面以 `AADSTS50011` 失敗。若 LiteLLM 位於 ingress 之後，請參閱 [Reverse proxy and ingress configuration](../mcp_oauth.md#reverse-proxy-and-ingress-configuration)。
+5. 在 **Certificates & secrets** 下建立 client secret，並立即複製其 **Value**；該值只會顯示一次。
+6. 在 **API permissions** 下，按一下 **Add a permission**，選取 **Microsoft Graph**，接著選取 **Delegated permissions**，然後新增您想要的功能所需 scopes，並與 [Tools provided](#tools-provided) 中的表格對應。唯讀部署是 `openid`、`offline_access`、`User.Read`、`Mail.Read`、`Calendars.Read`、`Files.Read.All` 與 `Sites.Read.All`。`offline_access` 可讓 LiteLLM 重新整理 token，因此請保留它。
+7. 若您的租用戶封鎖使用者自行同意，請按一下 **Grant admin consent**。
+8. 從 **Overview** 複製 **Application (client) ID** 與 **Directory (tenant) ID**。
 
-### Step 2: Run the Graph MCP server
+### 步驟 2：執行 Graph MCP 伺服器 {#step-2-run-the-graph-mcp-server}
 
-Start the server on the proxy host or on a machine only the proxy can reach. `--http` makes it use the token LiteLLM forwards instead of prompting for its own sign-in, and `--org-mode` turns on the work and school tools:
+將伺服器啟動在 proxy 主機上，或啟動在只有 proxy 可連線的機器上。`--http` 會讓它使用 LiteLLM 轉送的 token，而不是提示其自己的登入；`--org-mode` 則會開啟工作與學校工具：
 
 ```bash
 npx -y @softeria/ms-365-mcp-server --http 3000 --org-mode
 ```
 
-### Step 3: Register the server in LiteLLM
+### 步驟 3：在 LiteLLM 中註冊伺服器 {#step-3-register-the-server-in-litellm}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -104,14 +104,14 @@ mcp_servers:
       - Sites.Read.All
 ```
 
-`oauth2_flow: authorization_code` selects the interactive per-user flow and is required; the proxy refuses to start on an `auth_type: oauth2` server that omits it. `per_server_oauth_discovery: true` makes LiteLLM publish the OAuth discovery documents for `/microsoft_365/mcp` itself, with its own `/microsoft_365/authorize` and `/microsoft_365/token` endpoints fronting the Entra URLs above. Without it, the server's protected-resource metadata sends MCP clients to the gateway's shared `/mcp` authorization server, which signs users in to LiteLLM rather than to Entra, so the browser ends on a "The connection cannot continue" page and no Graph token is ever stored. Storing MCP servers also needs `store_model_in_db: true`, covered in [Prerequisites](../mcp.md#prerequisites).
+`oauth2_flow: authorization_code` 會選擇每位使用者的互動式流程，且為必要；若 `auth_type: oauth2` 伺服器省略它，代理程式將拒絕啟動。`per_server_oauth_discovery: true` 讓 LiteLLM 為 `/microsoft_365/mcp` 本身發佈 OAuth 探索文件，並以其自己的 `/microsoft_365/authorize` 與 `/microsoft_365/token` 端點作為上述 Entra URL 的前置。若沒有它，伺服器的受保護資源中繼資料會將 MCP 用戶端導向閘道共用的 `/mcp` 授權伺服器，該伺服器會將使用者登入 LiteLLM 而不是 Entra，因此瀏覽器最後會停在「連線無法繼續」頁面，且永遠不會儲存任何 Graph token。儲存 MCP 伺服器也需要 `store_model_in_db: true`，詳見 [Prerequisites](../mcp.md#prerequisites)。
 
 </TabItem>
 <TabItem value="ui" label="LiteLLM UI">
 
-Navigate to **MCP Servers**, click **+ Add New MCP Server**, and set:
+請前往 **MCP Servers**，點選 **+ Add New MCP Server**，並設定：
 
-| Field | Value |
+| 欄位 | 值 |
 |---|---|
 | **Server Name** | `microsoft_365` |
 | **Transport** | HTTP |
@@ -121,9 +121,9 @@ Navigate to **MCP Servers**, click **+ Add New MCP Server**, and set:
 | **Client ID / Client Secret** | From Step 1 |
 | **Authorization URL** | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize` |
 | **Token URL** | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token` |
-| **Scopes** | The delegated permissions from Step 1 |
+| **Scopes** | 第 1 步中的委派權限 |
 
-Click **Create MCP Server**. The form has no field for `per_server_oauth_discovery` yet, so turn it on through the management API with the `server_id` shown on the server's page:
+點選 **Create MCP Server**。此表單尚未提供 `per_server_oauth_discovery` 欄位，因此請透過管理 API，使用伺服器頁面上顯示的 `server_id` 將其開啟：
 
 ```bash showLineNumbers
 curl -X PUT http://localhost:4000/v1/mcp/server \
@@ -132,26 +132,26 @@ curl -X PUT http://localhost:4000/v1/mcp/server \
   -d '{"server_id": "<server_id>", "per_server_oauth_discovery": true}'
 ```
 
-Then open the server's **MCP Tools** tab to confirm LiteLLM can list the Graph tools. The first listing triggers the browser sign-in.
+接著開啟伺服器的 **MCP Tools** 分頁，確認 LiteLLM 可以列出 Graph 工具。首次列出時會觸發瀏覽器登入。
 
 </TabItem>
 </Tabs>
 
-### Step 4: Set the proxy's public origin
+### 第 4 步：設定代理程式的公開 origin {#step-4-set-the-proxys-public-origin}
 
-LiteLLM builds the `redirect_uri` it sends to Entra from its public origin. Set `PROXY_BASE_URL` to the origin you registered in Step 1 so the two match:
+LiteLLM 會根據其公開 origin 建立送往 Entra 的 `redirect_uri`。請將 `PROXY_BASE_URL` 設定為您在第 1 步註冊的 origin，使兩者一致：
 
 ```bash
 export PROXY_BASE_URL=https://llm.example.com
 ```
 
-### Step 5: Give users access to the server
+### 第 5 步：授與使用者伺服器存取權限 {#step-5-give-users-access-to-the-server}
 
-LiteLLM stores each Entra token against the LiteLLM user behind the key, so the key or its team needs the server in `object_permission.mcp_servers`, and the key needs a user behind it. A key without that completes the sign-in but has nowhere to keep the token, so the next session signs in again, and the proxy log says `OAuth credential storage not authorized`. See [MCP Permission Management](../mcp_control.md). Users who sign in to LiteLLM through SSO already have a LiteLLM user, so granting the server to the team their identity-provider group maps to is enough.
+LiteLLM 會將每個 Entra token 儲存到 key 背後的 LiteLLM 使用者帳戶，因此該 key 或其 team 需要在 `object_permission.mcp_servers` 中擁有此伺服器，且該 key 背後必須有一位使用者。沒有這些條件的 key 仍可完成登入，但沒有地方儲存 token，因此下一次工作階段會再次登入，而代理程式記錄會顯示 `OAuth credential storage not authorized`。請參閱 [MCP Permission Management](../mcp_control.md)。透過 SSO 登入 LiteLLM 的使用者已經擁有 LiteLLM 使用者帳戶，因此只要將伺服器授與其身分提供者群組對應到的 team 即可。
 
-### Step 6: Connect from an agent
+### 第 6 步：從代理程式連線 {#step-6-connect-from-an-agent}
 
-The gateway serves each server at `http://localhost:4000/{server_name}/mcp`, so `microsoft_365` is reachable at `http://localhost:4000/microsoft_365/mcp`.
+閘道會在 `http://localhost:4000/{server_name}/mcp` 提供每個伺服器，因此 `microsoft_365` 可透過 `http://localhost:4000/microsoft_365/mcp` 存取。
 
 <Tabs>
 <TabItem value="claude-code" label="Claude Code">
@@ -161,9 +161,9 @@ claude mcp add --transport http microsoft_365 http://localhost:4000/microsoft_36
   --header "x-litellm-api-key: Bearer $LITELLM_API_KEY"
 ```
 
-`/mcp` inside Claude Code shows the server and starts the Entra sign-in. Claude Code caches the OAuth client it registered with the gateway, so if you turn on `per_server_oauth_discovery` after adding the server, remove it and add it again.
+在 Claude Code 內部執行 `/mcp` 會顯示伺服器並啟動 Entra 登入。Claude Code 會快取其向閘道註冊的 OAuth 用戶端，因此如果您在新增伺服器後開啟 `per_server_oauth_discovery`，請先移除它再重新新增。
 
-Users who sign in to LiteLLM through SSO have no `sk-` key to paste. After `lite login` ([CLI authentication](../proxy/cli_sso.md)), let Claude Code fetch the header itself with `headersHelper`, a command whose output is the headers as JSON:
+透過 SSO 登入 LiteLLM 的使用者沒有可貼上的 `sk-` key。完成 `lite login`（[CLI authentication](../proxy/cli_sso.md)）之後，讓 Claude Code 使用 `headersHelper` 自行擷取該標頭，此命令的輸出會將標頭以 JSON 形式輸出：
 
 ```json title=".mcp.json" showLineNumbers
 {
@@ -177,12 +177,12 @@ Users who sign in to LiteLLM through SSO have no `sk-` key to paste. After `lite
 }
 ```
 
-The Microsoft sign-in that follows is stored against the LiteLLM user that SSO created, so the same person keeps their Graph token across keys and sessions.
+接著進行的 Microsoft 登入會儲存到 SSO 建立的 LiteLLM 使用者帳戶，因此同一位使用者可在不同 key 與不同工作階段之間保有其 Graph token。
 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
 
-Claude Desktop on third-party inference adds MCP servers under **Configure Third-Party Inference** > **Connectors**, which exports as a `managedMcpServers` entry. Point it at the per-server path and set `"oauth": true` so Claude Desktop runs the Microsoft sign-in when LiteLLM answers with a 401:
+Claude Desktop 在第三方推論上的 MCP 伺服器是透過 **Configure Third-Party Inference** > **Connectors** 新增，並會匯出為一個 `managedMcpServers` 項目。請將它指向每個伺服器的路徑，並設定 `"oauth": true`，使 Claude Desktop 在 LiteLLM 回應 401 時執行 Microsoft 登入：
 
 ```json title="managedMcpServers" showLineNumbers
 [
@@ -196,7 +196,7 @@ Claude Desktop on third-party inference adds MCP servers under **Configure Third
 ]
 ```
 
-Fleets that sign in through SSO replace `headers` with `headersHelper`, covered in [Claude Desktop (Cowork)](../tutorials/claude_desktop_cowork.md#mcp-servers-through-the-litellm-mcp-gateway). The built-in Microsoft 365 connector in Claude Desktop calls Microsoft directly and never passes through LiteLLM, so it gets none of the access control or logging above; use the `url` entry instead.
+透過 SSO 登入的部署會將 `headers` 取代為 `headersHelper`，詳見 [Claude Desktop (Cowork)](../tutorials/claude_desktop_cowork.md#mcp-servers-through-the-litellm-mcp-gateway)。Claude Desktop 內建的 Microsoft 365 連接器會直接呼叫 Microsoft，完全不經過 LiteLLM，因此不會享有上述任何存取控制或記錄；請改用 `url` 項目。
 
 </TabItem>
 <TabItem value="cursor" label="Cursor">
@@ -217,40 +217,40 @@ Fleets that sign in through SSO replace `headers` with `headersHelper`, covered 
 </TabItem>
 </Tabs>
 
-The first call opens a browser at the Microsoft sign-in, followed by the consent screen listing the delegated permissions from Step 1. LiteLLM stores that user's token and refreshes it afterwards, so later sessions connect without prompting. `GET /v1/mcp/server/{server_id}/oauth-user-credential/status` shows whether the calling user has a stored token and when it expires, and `DELETE /v1/mcp/server/{server_id}/oauth-user-credential` revokes it.
+第一次呼叫會在 Microsoft 登入頁面開啟瀏覽器，接著是列出第 1 步委派權限的同意畫面。LiteLLM 會儲存該使用者的 token，之後再行更新，因此後續工作階段可在不提示的情況下連線。`GET /v1/mcp/server/{server_id}/oauth-user-credential/status` 會顯示呼叫使用者是否有已儲存的 token 及其到期時間，而 `DELETE /v1/mcp/server/{server_id}/oauth-user-credential` 會使其失效。
 
 ***
 
-## Tools provided
+## 提供的工具 {#tools-provided}
 
 :::info
-The server publishes its tool definitions at runtime through `tools/list`, so names and fields change between releases (version 0.155.0 lists 337 tools in organization mode). The **MCP Tools** tab in the LiteLLM UI is the source of truth for what your tenant exposes; it lists the live tools and lets you call one with test arguments. `npx -y @softeria/ms-365-mcp-server --list-permissions --org-mode` prints the Graph permission set behind the full tool list, and adding `--read-only` prints the read-only set.
+此伺服器會在執行期間透過 `tools/list` 發佈其工具定義，因此名稱與欄位會在不同版本之間變動（版本 0.155.0 在 organization 模式下列出 337 個工具）。LiteLLM UI 中的 **MCP Tools** 分頁是您租戶公開內容的權威來源；它會列出即時工具並讓您用測試引數呼叫其中一個。`npx -y @softeria/ms-365-mcp-server --list-permissions --org-mode` 會列印完整工具清單背後的 Graph 權限集合，而加入 `--read-only` 會列印唯讀集合。
 :::
 
-| Area | Tools (a sample) | Delegated permissions |
+| 區域 | 工具（範例） | 委派權限 |
 |---|---|---|
-| Mail | `list-mail-messages`, `get-mail-message`, `list-mail-folders`, `list-mail-folder-messages`, `send-mail`, `forward-mail-message` | `Mail.Read` to read, `Mail.ReadWrite` and `Mail.Send` to write |
-| Calendar | `list-calendars`, `get-calendar-view`, `list-calendar-events`, `find-meeting-times`, `create-calendar-event` | `Calendars.Read` to read, `Calendars.ReadWrite` to write |
-| OneDrive | `list-drives`, `get-drive-root-item`, `list-folder-files`, `get-drive-item`, `upload-file-content`, `create-drive-item-share-link` | `Files.Read.All` to read, `Files.ReadWrite` to write |
-| SharePoint | `search-sharepoint-sites`, `get-sharepoint-site`, `list-sharepoint-site-drives`, `list-sharepoint-site-items`, `list-sharepoint-site-lists`, `get-sharepoint-site-list` | `Sites.Read.All` to read, `Sites.ReadWrite.All` to write |
-| Teams | `list-joined-teams`, `list-team-channels`, `list-channel-messages`, `list-chats`, `list-chat-messages`, `send-channel-message`, `send-chat-message` | `Team.ReadBasic.All`, `Channel.ReadBasic.All`, `ChannelMessage.Read.All`, `Chat.Read` to read; `ChannelMessage.Send`, `Chat.ReadWrite` to write |
-| Planner and To Do | `list-planner-tasks`, `list-todo-task-lists`, `list-todo-tasks`, `create-planner-task`, `create-todo-task` | `Tasks.Read` to read, `Tasks.ReadWrite` to write |
-| OneNote and Excel | `list-onenote-notebooks`, `list-onenote-pages`, `get-onenote-page-content`, `list-excel-worksheets`, `list-excel-tables`, `get-excel-range` | `Notes.Read` and `Files.Read.All` to read, `Notes.ReadWrite` and `Files.ReadWrite` to write |
-| People and directory | `get-current-user`, `list-users`, `get-user-manager`, `list-outlook-contacts`, `list-groups`, `list-group-members` | `User.Read`, `User.Read.All`, `Contacts.Read`, `Group.Read.All`, `GroupMember.Read.All` |
-| Cross-service | `search-query` (Graph search across mail, files, sites, and people), `graph-batch` (several Graph calls in one round trip) | Whatever the searched or batched resources need |
+| 郵件 | `list-mail-messages`、`get-mail-message`、`list-mail-folders`、`list-mail-folder-messages`、`send-mail`、`forward-mail-message` | `Mail.Read` 用於讀取，`Mail.ReadWrite` 與 `Mail.Send` 用於寫入 |
+| 行事曆 | `list-calendars`、`get-calendar-view`、`list-calendar-events`、`find-meeting-times`、`create-calendar-event` | `Calendars.Read` 用於讀取，`Calendars.ReadWrite` 用於寫入 |
+| OneDrive | `list-drives`、`get-drive-root-item`、`list-folder-files`、`get-drive-item`、`upload-file-content`、`create-drive-item-share-link` | `Files.Read.All` 用於讀取，`Files.ReadWrite` 用於寫入 |
+| SharePoint | `search-sharepoint-sites`、`get-sharepoint-site`、`list-sharepoint-site-drives`、`list-sharepoint-site-items`、`list-sharepoint-site-lists`、`get-sharepoint-site-list` | `Sites.Read.All` 用於讀取，`Sites.ReadWrite.All` 用於寫入 |
+| Teams | `list-joined-teams`、`list-team-channels`、`list-channel-messages`、`list-chats`、`list-chat-messages`、`send-channel-message`、`send-chat-message` | `Team.ReadBasic.All`、`Channel.ReadBasic.All`、`ChannelMessage.Read.All`、`Chat.Read` 用於讀取；`ChannelMessage.Send`、`Chat.ReadWrite` 用於寫入 |
+| Planner 和 To Do | `list-planner-tasks`、`list-todo-task-lists`、`list-todo-tasks`、`create-planner-task`、`create-todo-task` | `Tasks.Read` 用於讀取，`Tasks.ReadWrite` 用於寫入 |
+| OneNote 和 Excel | `list-onenote-notebooks`、`list-onenote-pages`、`get-onenote-page-content`、`list-excel-worksheets`、`list-excel-tables`、`get-excel-range` | `Notes.Read` 和 `Files.Read.All` 用於讀取，`Notes.ReadWrite` 和 `Files.ReadWrite` 用於寫入 |
+| 人員和目錄 | `get-current-user`、`list-users`、`get-user-manager`、`list-outlook-contacts`、`list-groups`、`list-group-members` | `User.Read`、`User.Read.All`、`Contacts.Read`、`Group.Read.All`、`GroupMember.Read.All` |
+| 跨服務 | `search-query`（跨郵件、檔案、網站與人員的 Graph 搜尋）、`graph-batch`（在一次往返中執行多個 Graph 呼叫） | 依搜尋或批次資源所需而定 |
 
-Every tool reaches an agent as `microsoft_365-<tool>` (see [Tool naming](../mcp_rest_api.md#tool-naming)). Three hundred tools is more than most agents want in one context, so pair the server with [Tool Search](../mcp_tool_search.md) or the [Semantic Filter](../mcp_semantic_filter.md), or run the server with `--enabled-tools`.
+每個工具對代理程式而言都會成為 `microsoft_365-<tool>`（請參閱 [Tool naming](../mcp_rest_api.md#tool-naming)）。三百個工具對大多數代理程式而言在單一上下文中都太多，因此請將伺服器與 [Tool Search](../mcp_tool_search.md) 或 [Semantic Filter](../mcp_semantic_filter.md) 搭配使用，或以 `--enabled-tools` 執行伺服器。
 
-### Known limitations
+### 已知限制 {#known-limitations}
 
-The server calls Graph with any unexpired bearer token it receives and serves sign-in endpoints of its own, so it must only be reachable through the proxy. OneDrive tools return `itemNotFound` for a user whose OneDrive was never provisioned (they have not opened OneDrive or Office on the web yet); SharePoint document libraries are unaffected. `search-query` and `search-sharepoint-sites` take Graph search (KQL) syntax, so a bare `*` is rejected. Adding a permission to the app registration after users consented needs a fresh consent: revoke the stored credential with `DELETE /v1/mcp/server/{server_id}/oauth-user-credential` and sign in again. Entra access tokens last about an hour; LiteLLM refreshes them with the `offline_access` refresh token, so leaving that scope out means a sign-in prompt every hour.
+伺服器會使用收到的任何未過期 bearer token 呼叫 Graph，並提供其自身的登入端點，因此只能透過 proxy 存取。當某位使用者的 OneDrive 從未被佈建時（他們尚未在網頁上開啟 OneDrive 或 Office）；OneDrive 工具會回傳 `itemNotFound`；SharePoint 文件庫不受影響。`search-query` 和 `search-sharepoint-sites` 採用 Graph 搜尋（KQL）語法，因此純粹的 `*` 會被拒絕。在使用者已同意之後，若要在 app registration 中新增權限，需要重新同意：使用 `DELETE /v1/mcp/server/{server_id}/oauth-user-credential` 撤銷已儲存的憑證，然後再次登入。Entra 存取 token 大約可維持一小時；LiteLLM 會使用 `offline_access` refresh token 來刷新它們，因此若不包含該 scope，便會每小時跳出一次登入提示。
 
 ***
 
-:::info[Restrict who can use it]
-Grant the server per key or per team with `object_permission`, and cap call volume per server with `mcp_rpm_limit`, both covered in [MCP Permission Management](../mcp_control.md). Graph applies its own per-user throttling, so a runaway agent slows that user's own Outlook and Teams clients before anyone else's.
+:::info[限制可使用者]
+透過 `object_permission` 依每個 key 或每個團隊授予伺服器存取權，並透過 `mcp_rpm_limit` 限制每台伺服器的呼叫量，這兩者都已在 [MCP 權限管理](../mcp_control.md) 中說明。Graph 會套用其自身的每位使用者節流，因此失控的代理程式會先讓該使用者自己的 Outlook 和 Teams 用戶端變慢，而不會影響其他人。
 :::
 
-:::warning[Put the LiteLLM key in `x-litellm-api-key`]
-Interactive OAuth needs the `Authorization` header free for the upstream token. If a client sends the LiteLLM API key as `Authorization: Bearer sk-...`, the OAuth flow never runs and LiteLLM forwards your LiteLLM key to the Graph server, which passes it to Microsoft, and Graph rejects it with `InvalidAuthenticationToken`. See [Debugging OAuth](../mcp_oauth.md#debugging-oauth) and the [MCP Troubleshooting Guide](../mcp_troubleshoot.md).
+:::warning[將 LiteLLM key 放在 `x-litellm-api-key` 中]
+互動式 OAuth 需要讓 `Authorization` 標頭保持空出，以便給上游 token 使用。如果用戶端將 LiteLLM API key 作為 `Authorization: Bearer sk-...` 傳送，OAuth 流程就永遠不會執行，而 LiteLLM 會將您的 LiteLLM key 轉送給 Graph 伺服器，Graph 伺服器再將其傳給 Microsoft，而 Graph 會以 `InvalidAuthenticationToken` 拒絕。請參閱 [偵錯 OAuth](../mcp_oauth.md#debugging-oauth) 以及 [MCP 疑難排解指南](../mcp_troubleshoot.md)。
 :::

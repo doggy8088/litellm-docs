@@ -1,9 +1,9 @@
 ---
 slug: litellm-admin-mcp
-title: "Introducing LiteAdmin MCP"
+title: "介紹 LiteAdmin MCP"
 date: 2026-09-23T10:00:00
 authors: [tin]
-description: "Give your agent tools to create keys, add models, and manage budgets with LiteAdmin MCP. Use the same connector through LiteAdmin, our Slack admin agent."
+description: "讓您的代理程式擁有建立金鑰、新增模型及管理預算的工具，並搭配 LiteAdmin MCP 使用。透過同一個連接器，也可使用 LiteAdmin——我們的 Slack 管理代理程式。"
 tags: [mcp, agents, ai-gateway]
 hide_table_of_contents: true
 image: ./hero.png
@@ -14,7 +14,7 @@ import HeroLight from './hero.png';
 import HeroDark from './hero-dark.png';
 
 <ThemedImage
-  alt="Introducing LiteAdmin MCP: your AI toolkit for gateway management. LiteAdmin for Slack is built on LiteAdmin MCP."
+  alt="介紹 LiteAdmin MCP：您的 AI 工具組，用於閘道管理。Slack 版 LiteAdmin 建構於 LiteAdmin MCP。"
   sources={{
     light: typeof HeroLight === 'string' ? HeroLight : HeroLight.src.images.at(-1).path,
     dark: typeof HeroDark === 'string' ? HeroDark : HeroDark.src.images.at(-1).path,
@@ -22,68 +22,68 @@ import HeroDark from './hero-dark.png';
   style={{width: '100%'}}
 />
 
-An engineer asks for an API key for a new project. You need to choose its models, set a budget, and assign it to a team. As usage grows, you need to check spending and adjust those limits.
+一位工程師為新專案索取一組 API 金鑰。您需要為它選擇模型、設定預算，並將其指派給某個團隊。隨著使用量成長，您需要檢查支出並調整那些限制。
 
-**LiteAdmin MCP** lets your agent handle these tasks through your gateway's management API. Connect it to an MCP client or a custom agent. We built **LiteAdmin**, our Slack admin agent, on the same connector.
+**LiteAdmin MCP** 讓您的代理程式透過閘道的管理 API 處理這些工作。將它連接到一個 MCP 用戶端或自訂代理程式。我們也用同一個連接器建立了 **LiteAdmin**——我們的 Slack 管理代理程式。
 
 {/* truncate */}
 
-## Connect your agent to your gateway
+## 將您的代理程式連接到您的閘道 {#connect-your-agent-to-your-gateway}
 
-Connect LiteAdmin MCP to a client such as Claude Code or Cursor, or to your own agent. Your client provides the conversation and model; the connector calls your gateway's management API with your admin credential.
+將 LiteAdmin MCP 連接到 Claude Code 或 Cursor 等用戶端，或連接到您自己的代理程式。您的用戶端提供對話與模型；連接器則使用您的管理憑證呼叫閘道的管理 API。
 
-Through that connection, you can:
+透過這項連線，您可以：
 
-- **Create and manage virtual keys:** Set model access and spending limits.
-- **Add model deployments:** Use credentials configured on your gateway.
-- **Manage teams and budgets:** Update team membership and budgets.
-- **Inspect usage:** Check spending and request logs.
+- **建立並管理虛擬金鑰：** 設定模型存取與支出上限。
+- **新增模型部署：** 使用配置在您閘道上的憑證。
+- **管理團隊與預算：** 更新團隊成員資格與預算。
+- **檢視使用量：** 檢查支出與請求記錄。
 
-The connector includes 65 reviewed admin operations and exposes the ones your gateway supports.
+此連接器包含 65 個經審核的管理操作，並會公開您閘道支援的那些操作。
 
-## Set up access for a project
+## 為專案設定存取權限 {#set-up-access-for-a-project}
 
-To set up a project for Engineering, ask:
+若要為 Engineering 設定專案，請詢問：
 
-> Create a key for Engineering with a $100 monthly budget.
+> 為 Engineering 建立一組每月預算為 100 美元的金鑰。
 
-Include the models the project needs and an alias to identify the key. The agent can look up Engineering and create the key with the limits you specify.
+請包含該專案需要的模型，以及用來識別該金鑰的別名。代理程式可以查詢 Engineering，並依照您指定的限制建立金鑰。
 
-Once the project is running, ask for its recorded spend. You can update the key's budget or the team's budget; specify which one in your request.
+專案開始運作後，請詢問其已記錄的支出。您可以更新該金鑰的預算或團隊的預算；請在您的請求中明確指定是哪一個。
 
-To add a model deployment, provide its public name, provider/model ID, and credential reference:
+若要新增模型部署，請提供其公開名稱、provider/model ID，以及憑證參照：
 
-> Add a model named support-chat using openai/gpt-4.1 and the existing gateway credential openai-production.
+> 使用 openai/gpt-4.1 與現有的閘道憑證 openai-production 新增一個名為 support-chat 的模型。
 
-Use a stored credential name and keep provider API keys out of chat. Your gateway needs provider access and a database configured to store models. Follow the [model setup requirements](/docs/proxy/liteadmin_mcp#add-a-model-deployment), then test inference after adding the deployment.
+請使用已儲存的憑證名稱，並避免在對話中暴露提供者 API 金鑰。您的閘道需要提供者存取權限，且需要設定資料庫來儲存模型。請先遵循 [模型設定需求](/docs/proxy/liteadmin_mcp#add-a-model-deployment)，然後在新增部署後測試推論。
 
-## Choose the tools your agent can use
+## 選擇您的代理程式可使用的工具 {#choose-the-tools-your-agent-can-use}
 
-Connect with your own LiteLLM proxy-admin credential. Your gateway permissions apply to management requests, and you can restrict the connector to specific tools or enable read-only mode.
+使用您自己的 LiteLLM proxy-admin 憑證連線。您的閘道權限會套用到管理請求，且您可以將連接器限制為特定工具，或啟用唯讀模式。
 
-Start with team and spend lookups, then enable key creation when you're ready to make changes.
+請先從團隊與支出查詢開始，等您準備好進行變更時，再啟用金鑰建立。
 
-## LiteAdmin: a Slack agent built on Admin MCP
+## LiteAdmin：以 Admin MCP 建立的 Slack 代理程式 {#liteadmin-a-slack-agent-built-on-admin-mcp}
 
-**LiteAdmin (the LiteLLM Admin Agent)** uses the same MCP server to manage your gateway from Slack. The app provides the conversation and sign-in; Admin MCP provides the gateway tools.
+**LiteAdmin（LiteLLM 管理代理程式）** 使用相同的 MCP 伺服器，從 Slack 管理您的閘道。這個應用程式提供對話與登入；Admin MCP 提供閘道工具。
 
-Host the agent, connect your gateway, and choose the model it uses. The app includes the MCP connector, and each installation connects one gateway to one Slack workspace.
+架設此代理程式、連接您的閘道，並選擇它使用的模型。此應用程式包含 MCP 連接器，且每次安裝都會將一個閘道連接到一個 Slack 工作區。
 
-Open **LiteLLM Admin** in Slack, send **connect**, and follow the private link to sign in with your own admin account. Your deployment can use SSO or a personal admin key entered on a browser page. Then ask:
+在 Slack 中開啟 **LiteLLM Admin**，傳送 **connect**，並依照私人連結使用您自己的管理帳號登入。您的部署可以使用 SSO，或在瀏覽器頁面中輸入個人管理金鑰。接著詢問：
 
-> Show Engineering's current spend and budget.
+> 顯示 Engineering 目前的支出與預算。
 
-After checking the spend, request a change:
+在檢查支出後，提出變更請求：
 
-> Increase Engineering's monthly budget to $500.
+> 將 Engineering 的每月預算提高到 500 美元。
 
-You can follow up about the team's keys or usage in the same DM, from your laptop or phone.
+您之後可以在同一個 DM 中，從筆記型電腦或手機追問該團隊的金鑰或使用量。
 
-## Get started
+## 開始使用 {#get-started}
 
-Both projects are open source. Choose where you want to work:
+這兩個專案都是開放原始碼。請選擇您要在哪裡工作：
 
-- **LiteAdmin MCP:** Follow the [MCP setup guide](/docs/proxy/liteadmin_mcp) to connect Claude, Codex, or another MCP client.
-- **LiteAdmin for Slack:** Follow the [Slack app setup guide](/docs/proxy/liteadmin_slack) to deploy with Docker Compose or Render.
+- **LiteAdmin MCP：** 遵循 [MCP 設定指南](/docs/proxy/liteadmin_mcp) 來連接 Claude、Codex 或其他 MCP 用戶端。
+- **LiteAdmin for Slack：** 遵循 [Slack 應用程式設定指南](/docs/proxy/liteadmin_slack) 以透過 Docker Compose 或 Render 進行部署。
 
-Once connected, try **“List my teams and their current budgets.”**
+連線完成後，試試 **「列出我的團隊及其目前預算。」**

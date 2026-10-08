@@ -1,17 +1,17 @@
-# watsonx.ai Rerank
+# watsonx.ai 重新排序 {#watsonxai-rerank}
 
-## Overview
+## 概覽 {#overview}
 
-| Property | Details                                                                  |
+| 屬性 | 詳細資訊                                                                  |
 |----------|--------------------------------------------------------------------------|
-| Description | watsonx.ai rerank integration                                            |
-| Provider Route on LiteLLM | `watsonx/`                                                               |
-| Supported Operations | `/ml/v1/text/rerank`                                                     |
-| Link to Provider Doc | [IBM WatsonX.ai ↗](https://cloud.ibm.com/apidocs/watsonx-ai#text-rerank) |
+| 說明 | watsonx.ai rerank 整合                                            |
+| LiteLLM 上的提供者路由 | `watsonx/`                                                               |
+| 支援的操作 | `/ml/v1/text/rerank`                                                     |
+| 提供者文件連結 | [IBM WatsonX.ai ↗](https://cloud.ibm.com/apidocs/watsonx-ai#text-rerank) |
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### **LiteLLM SDK**
+### **LiteLLM SDK** {#litellm-sdk}
 
 ```python
 import os
@@ -39,7 +39,7 @@ response = rerank(
 print(response)
 ```
 
-### **LiteLLM Proxy**
+### **LiteLLM Proxy** {#litellm-proxy}
 
 ```yaml
 model_list:

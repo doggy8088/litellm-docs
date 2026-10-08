@@ -1,28 +1,28 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Straiker
+# Straiker {#straiker}
 
-The Straiker guardrail applies runtime AI security to traffic routed through LiteLLM. On every call it inspects the prompt and the response, including tool definitions and tool calls, and can block or redact before content reaches the model or the client.
+Straiker 防護欄會將即時 AI 安全性套用至透過 LiteLLM 路由的流量。每次呼叫時，它都會檢查提示詞與回應，包括工具定義與工具呼叫，並且可在內容到達模型或用戶端之前加以封鎖或遮罩。
 
-Straiker detects:
+Straiker 可偵測：
 
-- Prompt injection and indirect prompt injection, including payloads hidden in tool output
-- Tool misuse, data exfiltration, and remote code execution attempts
-- PII, credentials, secrets, and other sensitive data in prompts and responses
-- Multimodal attacks in images and attachments
+- 提示詞注入與間接提示詞注入，包括隱藏在工具輸出中的酬載
+- 工具濫用、資料外洩，以及遠端程式碼執行嘗試
+- 提示詞與回應中的 PII、憑證、密鑰及其他敏感資料
+- 圖像與附件中的多模態攻擊
 
-Straiker determines whether a call is agentic from its content, so there is no agentic mode to configure. The same configuration covers single-turn chat and multi-turn tool-using agents.
+Straiker 會根據內容判定呼叫是否為 agentic，因此無需設定 agentic 模式。同一組設定可涵蓋單輪聊天與多輪使用工具的代理程式。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Get your Straiker API key
+### 1. 取得您的 Straiker API 金鑰 {#1-get-your-straiker-api-key}
 
-In the Straiker console, open **Defend**, click **Add Agent**, select the **LiteLLM Gateway** tile, and copy the key from the **Connect** step.
+在 Straiker 主控台中，開啟 **Defend**，按一下 **Add Agent**，選取 **LiteLLM Gateway** 圖塊，然後從 **Connect** 步驟複製金鑰。
 
-### 2. Add Straiker to your LiteLLM config.yaml
+### 2. 將 Straiker 新增至您的 LiteLLM config.yaml {#2-add-straiker-to-your-litellm-configyaml}
 
-Define the guardrail under the `guardrails` section. Register it once per hook point so both the prompt and the response are inspected.
+在 `guardrails` 區段下定義防護欄。每個掛鉤點註冊一次，這樣提示詞與回應都會被檢查。
 
 ```yaml title="config.yaml"
 model_list:
@@ -49,9 +49,9 @@ guardrails:
       unreachable_fallback: fail_open  # never withhold a response on an outage
 ```
 
-Use `fail_closed` on `pre_call` so an outage cannot let unscreened traffic reach the model, and `fail_open` on `post_call` so an outage does not withhold a response the model already produced.
+在 `pre_call` 上使用 `fail_closed`，以便故障不會讓未經篩選的流量到達模型，並在 `post_call` 上使用 `fail_open`，以便故障不會扣留模型已產生的回應。
 
-### 3. Start LiteLLM Proxy
+### 3. 啟動 LiteLLM Proxy {#3-start-litellm-proxy}
 
 ```shell
 export OPENAI_API_KEY=sk-...
@@ -59,12 +59,12 @@ export STRAIKER_API_KEY=...
 litellm --config config.yaml
 ```
 
-### 4. Make your first request
+### 4. 發出您的第一個請求 {#4-make-your-first-request}
 
-The blocked example assumes a control is set to block in the Straiker console for the application this key maps to.
+被封鎖的範例假設在 Straiker 主控台中，對於此金鑰對應的應用程式已設定為封鎖。
 
 <Tabs>
-<TabItem label="Blocked request" value="blocked">
+<TabItem label="封鎖的請求" value="blocked">
 
 ```shell
 curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -88,10 +88,10 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }
 ```
 
-The message is the reason returned by Straiker, falling back to `Content violates policy` when none is supplied.
+訊息是 Straiker 傳回的原因；若未提供，則回退為 `Content violates policy`。
 
 </TabItem>
-<TabItem label="Permitted request" value="allowed">
+<TabItem label="允許的請求" value="allowed">
 
 ```shell
 curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -104,14 +104,14 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-The request reaches the model and the response is returned unchanged.
+請求會到達模型，且回應會原封不動地傳回。
 
 </TabItem>
 </Tabs>
 
-## Attribute calls to individual agents
+## 將呼叫歸屬至個別代理程式 {#attribute-calls-to-individual-agents}
 
-Set `agent_id` in request metadata to attribute a call to a specific application, and `app_name` to give it a display name.
+在請求中繼資料中設定 `agent_id`，以將呼叫歸屬給特定應用程式，並設定 `app_name` 以提供顯示名稱。
 
 ```shell
 curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -127,36 +127,36 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-With a collection-scoped API key, each distinct `agent_id` is discovered as its own application in the Straiker console, so one gateway fronting many agents produces a per-agent inventory with no additional configuration. An application-scoped key pins every call to a single application regardless of `agent_id`. Calls without an `agent_id` are attributed to `default_app`.
+使用集合範圍 API 金鑰時，每個不同的 `agent_id` 都會在 Straiker 主控台中被發現為其各自的應用程式，因此一個前置許多代理程式的閘道會產生按代理程式劃分的清單，無需額外設定。應用程式範圍金鑰會將每次呼叫固定到單一應用程式，不受 `agent_id` 影響。沒有 `agent_id` 的呼叫會被歸屬為 `default_app`。
 
-Caller identity is taken from LiteLLM's own key, team, and user records, so creating virtual keys with an alias and a user attributes every call automatically. The OpenAI `user` field is carried through as the end user on whose behalf the call was made.
+呼叫者身分取自 LiteLLM 自己的金鑰、團隊與使用者記錄，因此建立帶有別名與使用者的虛擬金鑰會自動將每次呼叫歸屬。OpenAI `user` 欄位會被帶入，作為代表其進行呼叫的終端使用者。
 
-## Supported parameters
+## 支援的參數 {#supported-parameters}
 
-`api_key` is required. There is no environment variable fallback, so set it in the config.
+`api_key` 為必要。沒有環境變數回退，因此請在設定中指定。
 
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |---|---|---|
-| `api_base` | `https://api.prod.straiker.ai` | Host only. The detection path is appended automatically. Set this to your region for non-US tenants |
-| `default_app` | `LiteLLM Gateway` | Application name used when a call carries no `agent_id`. Also accepted as `source` |
-| `timeout` | `5.0` | Per-attempt HTTP timeout in seconds |
-| `max_retries` | `2` | Retries on HTTP 408, 429, 500, 502, 503, 504 and network errors |
-| `initial_backoff` | `0.1` | First retry backoff in seconds |
-| `max_backoff` | `2.0` | Backoff ceiling in seconds |
-| `unreachable_fallback` | `fail_closed` | Behavior when Straiker cannot be reached after retries |
-| `fail_on_error` | `true` | Whether a non-success response from Straiker blocks the call |
-| `max_payload_bytes` | `524288` | Maximum serialized payload size |
-| `custom_headers` | `None` | Additional headers sent to Straiker. `Authorization` cannot be overridden |
-| `metadata` | `None` | Metadata applied to every call. Config values win on a key conflict |
-| `verbose` | `false` | Include the full per-category detection envelope in block responses |
+| `api_base` | `https://api.prod.straiker.ai` | 僅主機。偵測路徑會自動附加。非美國租戶請設為您的區域 |
+| `default_app` | `LiteLLM Gateway` | 當呼叫未攜帶 `agent_id` 時使用的應用程式名稱。也可接受 `source` |
+| `timeout` | `5.0` | 每次嘗試的 HTTP 逾時（秒） |
+| `max_retries` | `2` | 針對 HTTP 408、429、500、502、503、504 以及網路錯誤進行重試 |
+| `initial_backoff` | `0.1` | 首次重試退避時間（秒） |
+| `max_backoff` | `2.0` | 退避上限（秒） |
+| `unreachable_fallback` | `fail_closed` | Straiker 在重試後仍無法連線時的行為 |
+| `fail_on_error` | `true` | Straiker 傳回非成功回應時是否封鎖呼叫 |
+| `max_payload_bytes` | `524288` | 序列化酬載的最大大小 |
+| `custom_headers` | `None` | 傳送至 Straiker 的額外標頭。`Authorization` 無法被覆寫 |
+| `metadata` | `None` | 套用至每次呼叫的中繼資料。發生金鑰衝突時，以設定值為準 |
+| `verbose` | `false` | 在封鎖回應中包含完整的按類別偵測信封 |
 
-## Supported modes
+## 支援的模式 {#supported-modes}
 
-Straiker supports `pre_call` and `post_call`, and both can block. `during_call` is rejected at initialization.
+Straiker 支援 `pre_call` 與 `post_call`，而且兩者都可以封鎖。`during_call` 會在初始化時遭拒絕。
 
-Streaming responses are handled on `post_call`. Straiker always buffers the stream and moderates the assembled response once, so no chunk reaches the client until that check passes and no flagged chunk is released before a block. This is fixed behavior, so the generic `streaming_buffer_until_moderated`, `streaming_end_of_stream_only`, and `streaming_sampling_rate` guardrail settings have no effect on Straiker
+串流回應會在 `post_call` 上處理。Straiker 一律會緩衝串流，並在組裝完成後一次進行調節，因此在該檢查通過之前，任何資料塊都不會送達用戶端，而且在封鎖之前不會釋出任何標記的資料塊。這是固定行為，因此通用的 `streaming_buffer_until_moderated`、`streaming_end_of_stream_only` 與 `streaming_sampling_rate` 防護欄設定對 Straiker 沒有效果
 
-## Further reading
+## 延伸閱讀 {#further-reading}
 
-- [Straiker documentation](https://docs.straiker.ai/defend-ai/litellm-integration)
+- [Straiker 文件](https://docs.straiker.ai/defend-ai/litellm-integration)
 - [Straiker](https://straiker.ai)

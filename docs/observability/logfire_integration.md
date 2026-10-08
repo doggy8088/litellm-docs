@@ -1,20 +1,20 @@
 import Image from '@theme/IdealImage';
 
-# Logfire
+# Logfire {#logfire}
 
-Logfire is open Source Observability & Analytics for LLM Apps
-Detailed production traces and a granular view on quality, cost and latency
+Logfire 是適用於 LLM 應用程式的開源可觀測性與分析工具
+提供詳細的正式環境追蹤與對品質、成本和延遲的細緻檢視
 
 <Image img={require('../../img/logfire.png')} />
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們希望了解如何讓回呼更好！歡迎認識 LiteLLM 的 [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 :::
 
-## Pre-Requisites
+## 前置需求 {#pre-requisites}
 
-Ensure you have installed the following packages to use this integration
+請確保您已安裝下列套件以使用此整合
 
 ```shell
 uv add litellm
@@ -24,9 +24,9 @@ uv add opentelemetry-sdk==1.25.0
 uv add opentelemetry-exporter-otlp==1.25.0
 ```
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Get your Logfire token from [Logfire](https://logfire.pydantic.dev/)
+請從 [Logfire](https://logfire.pydantic.dev/) 取得您的 Logfire token
 
 ```python
 litellm.callbacks = ["logfire"]
@@ -59,8 +59,8 @@ response = litellm.completion(
 )
 ```
 
-## Support & Talk to Founders
+## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [Schedule Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [Community Discord 💭](https://discord.gg/wuPM9dRgDw)
-- Our emails ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai

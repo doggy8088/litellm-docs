@@ -1,13 +1,13 @@
 ---
 slug: nano_banana_2_1
-title: "Day 0 Support: Nano Banana 2.1"
+title: "Day 0 支援：Nano Banana 2.1"
 date: 2026-10-06T18:00:00
 image: ./hero.png
 authors:
   - misbah
   - mateo
   - kerry
-description: "Day 0 support for Gemini Nano Banana 2.1 on LiteLLM, on Google AI Studio and Gemini Enterprise Agent Platform, with image output at half Nano Banana 2's price."
+description: "LiteLLM 上 Google AI Studio 與 Gemini Enterprise Agent Platform 的 Gemini Nano Banana 2.1 Day 0 支援，提供的影像輸出價格僅為 Nano Banana 2 的一半。"
 tags: [gemini, gemini enterprise agent platform, nano banana, image generation, day 0 support]
 hide_table_of_contents: false
 ---
@@ -15,30 +15,30 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-![LiteLLM x Nano Banana 2.1](./hero.png)
+![LiteLLM 與 Nano Banana 2.1](./hero.png)
 
-LiteLLM supports `gemini-nano-banana-2.1` on day 0 on Google AI Studio (`gemini/`) and Gemini Enterprise Agent Platform, formerly Vertex AI (`vertex_ai/`), through `/v1/images/generations`, `/v1/images/edits` and `/chat/completions`. It replaces Nano Banana 2 (`gemini-3.1-flash-image`), which the Gemini API shuts down on October 29, 2026.
+LiteLLM 支援 `gemini-nano-banana-2.1` 的 Day 0 支援，適用於 Google AI Studio（`gemini/`）與 Gemini Enterprise Agent Platform，前身為 Vertex AI（`vertex_ai/`），透過 `/v1/images/generations`、`/v1/images/edits` 和 `/chat/completions`。它取代了 Nano Banana 2（`gemini-3.1-flash-image`），Gemini API 將於 2026 年 10 月 29 日停止支援該版本。
 
 {/* truncate */}
 
-[Per Google](https://ai.google.dev/gemini-api/docs/models/gemini-nano-banana-2.1), Nano Banana 2.1 improves visual quality and text rendering at 1K, 2K and 4K, fixes tiling on wide aspect ratios, takes up to 14 reference images, and supports Search grounding and configurable thinking levels.
+[依據 Google](https://ai.google.dev/gemini-api/docs/models/gemini-nano-banana-2.1)，Nano Banana 2.1 在 1K、2K 與 4K 解析度下提升視覺品質與文字渲染，修正寬高比很寬時的平鋪問題，最多可使用 14 張參考圖片，並支援 Search grounding 與可設定的思考層級。
 
 :::note
-**No Docker image upgrade needed.** Hit **Reload Model Cost Map** in the Admin UI (or `POST /reload/model_cost_map`) to pull pricing, on `v1.76.0` and above.
+**無需升級 Docker 映像檔。** 在 Admin UI 中（或 `POST /reload/model_cost_map`）按下 **Reload Model Cost Map**，即可取得定價，適用於 `v1.76.0` 及以上版本。
 :::
 
-## Pricing
+## 定價 {#pricing}
 
-- Image output: $30 / MTok ($0.0336 per 1K image)
-- Text input: $1.50 / MTok
-- Text output: $7.50 / MTok
+- 影像輸出：$30 / MTok（每 1K 影像 $0.0336）
+- 文字輸入：$1.50 / MTok
+- 文字輸出：$7.50 / MTok
 
-## Quick Start
+## 快速開始 {#quick-start}
 
 <Tabs>
 <TabItem value="proxy" label="PROXY">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -53,13 +53,13 @@ model_list:
       vertex_location: global
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-**3. Test it**
+**3. 測試**
 
 ```bash
 curl http://0.0.0.0:4000/v1/images/generations \
@@ -89,6 +89,6 @@ print(response.data[0].b64_json[:64])
 </TabItem>
 </Tabs>
 
-## Feedback
+## 回饋 {#feedback}
 
-Questions and feedback go in [GitHub discussion #44983](https://github.com/BerriAI/litellm/discussions/44983).
+問題與回饋請至 [GitHub 討論 #44983](https://github.com/BerriAI/litellm/discussions/44983)。

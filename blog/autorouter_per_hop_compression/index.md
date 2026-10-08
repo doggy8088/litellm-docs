@@ -1,62 +1,62 @@
 ---
 slug: auto-router-per-hop-compression
-title: "AutoRouter Per-Hop Compression: Cut LLM Classifier Costs Another 32%"
+title: "AutoRouter 每一跳壓縮：再將 LLM 分類器成本降低 32%"
 date: 2026-09-05T21:00:00
 authors:
   - moe
 image: ./hero.png
-description: "The complexity router's LLM classifier can now use different compression than the model call it routes to. The classifier only needs enough context to route correctly, not to generate an answer. In internal testing, compressing it aggressively cut classification costs a further 32% beyond shared compression, with no change in routing accuracy."
+description: "complexity router 的 LLM 分類器現在可以使用與它路由到的模型呼叫不同的壓縮。分類器只需要足夠的上下文來正確路由，不需要產生回應。在內部測試中，將其積極壓縮後，分類成本在共享壓縮之外又進一步降低了 32%，且路由準確度沒有變化。"
 keywords: [auto router, compression, cost savings, routing classifier, prompt compression, llm gateway, litellm]
 tags: [routing, cost, compression, engineering]
 hide_table_of_contents: false
 ---
 
-![Per-hop compression: 32% lower classification cost without sacrificing routing quality](./hero.png)
+![每一跳壓縮：在不犧牲路由品質的情況下，分類成本降低 32%](./hero.png)
 
-**The complexity router's LLM classifier can now be compressed more aggressively than your model calls. In internal testing, that cut classification costs a further 32% beyond what shared compression was already saving, with no change in routing accuracy.**
+**complexity router 的 LLM 分類器現在可以比您的模型呼叫更積極地壓縮。在內部測試中，這讓分類成本在共享壓縮原本已節省的基礎上再降低 32%，且路由準確度沒有變化。**
 
 {/* truncate */}
 
-:::info[🚀 Help shape the Auto-Router]
+:::info[🚀 協助塑造 Auto-Router]
 
-Get early access, work directly with the LiteLLM team, and influence the roadmap with your production traffic.
+搶先取得使用權、與 LiteLLM 團隊直接合作，並以您的正式流量影響產品路線圖。
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計合作夥伴</a>
 
 <br /><br />
 
-Already testing it? Share your results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+已在測試了嗎？請在 [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
 
 :::
 
-## The problem
+## 問題 {#the-problem}
 
-The complexity router can classify requests a few ways: a free heuristic scorer, keyword rules, or, when you need judgment the heuristics can't capture, an LLM classifier. That last option pays for a second LLM call on every request: one call to decide the tier (SIMPLE to a cheap model, MEDIUM to something in the middle, COMPLEX or REASONING to a frontier model), then a second call to the model that actually answers.
+complexity router 可以用幾種方式對請求分類：免費的啟發式評分器、關鍵字規則，或者當您需要啟發式方法無法捕捉的判斷時，使用 LLM 分類器。最後這個選項會讓每個請求多付一次 LLM 呼叫費用：先呼叫一次來決定等級（SIMPLE 對應便宜的模型、MEDIUM 對應中間層級的模型、COMPLEX 或 REASONING 對應前沿模型），再呼叫第二次真正回答的模型。
 
-Until now, that classifier call shared its compression setting with the model call it routed to, which meant the classifier's compression was capped by whatever the model call could tolerate. That ceiling is the wrong one. The classifier only needs enough context to answer one question: what tier can handle this. It doesn't need the full conversation history or the detailed background the model call needs to actually produce an answer, so it can be compressed far past the point where the model call would start to suffer.
+直到現在，這個分類器呼叫都與它所路由到的模型呼叫共享壓縮設定，這表示分類器的壓縮上限受限於模型呼叫所能容忍的程度。這個上限並不正確。分類器只需要足夠的上下文來回答一個問題：這個請求由哪個等級處理。它不需要完整的對話歷史或模型呼叫為了實際產生回應所需的詳細背景，因此它可以被壓縮到遠超過模型呼叫開始受影響的程度。
 
-## The solution
+## 解決方案 {#the-solution}
 
-Two new fields decouple the LLM classifier's compression from the model call's:
+兩個新欄位將 LLM 分類器的壓縮與模型呼叫的壓縮解耦：
 
-- `auto_router_routing_compression`: the guardrail to compress the classifier's prompt
-- `auto_router_model_compression`: the guardrail to compress the model's prompt
+- `auto_router_routing_compression`：用於壓縮分類器提示詞的防護欄
+- `auto_router_model_compression`：用於壓縮模型提示詞的防護欄
 
-Set the routing compression to be aggressive while the model call compression stays moderate. The same guardrail on both hops runs compression once, never twice. Either field can be `none` to skip compression for that hop.
+將路由壓縮設為更積極，而模型呼叫壓縮維持適中。若兩個跳點都使用相同的防護欄，則只會執行一次壓縮，不會執行兩次。任何一個欄位都可以設為 `none` 以略過該跳點的壓縮。
 
-## How it works
+## 運作方式 {#how-it-works}
 
-When you send a request through a complexity router with `classifier_type: llm` and separate compression settings:
+當您透過具有 `classifier_type: llm` 和分離壓縮設定的 complexity router 傳送請求時：
 
-1. The proxy applies the routing-hop compression to a copy of your messages
-2. The classifier sees the compressed version and makes a routing decision
-3. Your original messages get the model-hop compression applied
-4. The routed model receives its own compressed copy
-5. In the logs and API response, you see which compression guardrail ran for each hop
+1. 代理伺服器會將路由跳點壓縮套用到您的訊息副本
+2. 分類器會看到壓縮後的版本並做出路由決策
+3. 您的原始訊息會套用模型跳點壓縮
+4. 被路由的模型會接收自己的壓縮副本
+5. 在記錄和 API 回應中，您會看到每個跳點執行了哪個壓縮防護欄
 
-If both hops use the same guardrail, the proxy compresses once and reuses the result. If a compression guardrail is unreachable and set to `fail_closed`, the request fails safely.
+如果兩個跳點使用相同的防護欄，代理伺服器只會壓縮一次並重用結果。如果某個壓縮防護欄無法連線且設為 `fail_closed`，請求會安全失敗。
 
-## Setting it up
+## 設定方式 {#setting-it-up}
 
 ```yaml title="config.yaml"
 model_list:
@@ -100,14 +100,14 @@ guardrails:
       tokens_to_retain: 1000
 ```
 
-In the Admin UI, open a complexity router's Detailed Configuration, then Advanced: Compression. Pick your routing guardrail, choose "Use a different compression" for the model call, and select its guardrail separately.
+在 Admin UI 中，開啟 complexity router 的 Detailed Configuration，然後進入 Advanced: Compression。選擇您的路由防護欄，替模型呼叫選擇「Use a different compression」，並分別選取其防護欄。
 
-![Advanced: Compression, with the routing decision and model call set to different guardrails](./compression-config.png)
+![Advanced: Compression，將路由決策與模型呼叫設為不同的防護欄](./compression-config.png)
 
-:::info[Try it on your traffic]
+:::info[在您的流量上試試看]
 
-Point a shadow-eval job at your busiest team, compare your current config against one with split compression, and tell us what you see in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168), or
+將 shadow-eval 工作指向您流量最大的團隊，比較您目前的設定與分離壓縮設定，並在 [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168) 告訴我們您的觀察結果，或
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計合作夥伴</a>
 
 :::

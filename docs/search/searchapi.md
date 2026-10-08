@@ -1,12 +1,12 @@
-# SearchAPI.io (Google Search)
+# SearchAPI.io（Google 搜尋） {#searchapiio-google-search}
 
-Get started by creating a free API key via https://www.searchapi.io/.
+請先透過 https://www.searchapi.io/. 建立免費 API 金鑰開始使用
 
-SearchAPI.io provides access to Google Search results with a simple API. It supports all Google Search parameters including location, language, time filters, and more.
+SearchAPI.io 提供可透過簡單 API 存取 Google 搜尋結果的功能。它支援所有 Google 搜尋參數，包括地點、語言、時間篩選等。
 
-For complete documentation on all supported parameters, visit https://www.searchapi.io/docs/google.
+如需所有支援參數的完整文件，請造訪 https://www.searchapi.io/docs/google.
 
-## LiteLLM Python SDK
+## LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="SearchAPI.io Search"
 import os
@@ -26,9 +26,9 @@ for result in response.results:
     print(f"Snippet: {result.snippet}\n")
 ```
 
-### Advanced Usage with SearchAPI.io Parameters
+### 搭配 SearchAPI.io 參數的進階用法 {#advanced-usage-with-searchapiio-parameters}
 
-SearchAPI.io supports many Google Search-specific parameters:
+SearchAPI.io 支援許多 Google 搜尋專屬參數：
 
 ```python showLineNumbers title="Advanced SearchAPI.io Parameters"
 import os
@@ -53,9 +53,9 @@ response = search(
 )
 ```
 
-## LiteLLM AI Gateway
+## LiteLLM AI 閘道 {#litellm-ai-gateway}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -71,7 +71,7 @@ search_tools:
       api_key: os.environ/SEARCHAPI_API_KEY
 ```
 
-### 2. Start the proxy
+### 2. 啟動 proxy {#2-start-the-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -79,7 +79,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### 3. Test the search endpoint
+### 3. 測試搜尋端點 {#3-test-the-search-endpoint}
 
 ```bash showLineNumbers title="Test Request"
 curl http://0.0.0.0:4000/v1/search/google-search \
@@ -92,25 +92,25 @@ curl http://0.0.0.0:4000/v1/search/google-search \
   }'
 ```
 
-## SearchAPI.io Specific Parameters
+## SearchAPI.io 專屬參數 {#searchapiio-specific-parameters}
 
-SearchAPI.io supports many Google Search parameters. Here are some commonly used ones:
+SearchAPI.io 支援許多 Google 搜尋參數。以下是一些常用項目：
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `gl` | string | Country code (e.g., 'us', 'uk', 'de') |
-| `hl` | string | Interface language (e.g., 'en', 'es', 'fr') |
-| `location` | string | Geographic location (e.g., 'New York', 'London') |
-| `device` | string | Device type: 'desktop', 'mobile', 'tablet' |
-| `time_period` | string | Time filter: 'last_hour', 'last_day', 'last_week', 'last_month', 'last_year' |
-| `time_period_min` | string | Start date (MM/DD/YYYY) |
-| `time_period_max` | string | End date (MM/DD/YYYY) |
-| `safe` | string | SafeSearch: 'active' or 'off' |
-| `lr` | string | Language restriction (e.g., 'lang_en', 'lang_es') |
-| `cr` | string | Country restriction |
-| `page` | integer | Page number for pagination |
+| `gl` | string | 國家代碼（例如 'us'、'uk'、'de'） |
+| `hl` | string | 介面語言（例如 'en'、'es'、'fr'） |
+| `location` | string | 地理位置（例如 'New York'、'London'） |
+| `device` | string | 裝置類型：'desktop'、'mobile'、'tablet' |
+| `time_period` | string | 時間篩選：'last_hour'、'last_day'、'last_week'、'last_month'、'last_year' |
+| `time_period_min` | string | 開始日期（MM/DD/YYYY） |
+| `time_period_max` | string | 結束日期（MM/DD/YYYY） |
+| `safe` | string | SafeSearch：'active' 或 'off' |
+| `lr` | string | 語言限制（例如 'lang_en'、'lang_es'） |
+| `cr` | string | 國家限制 |
+| `page` | integer | 分頁的頁碼 |
 
-### Example with Time Filters
+### 具時間篩選的範例 {#example-with-time-filters}
 
 ```python showLineNumbers title="Search with Time Filter"
 response = search(
@@ -121,7 +121,7 @@ response = search(
 )
 ```
 
-### Example with Custom Date Range
+### 具自訂日期範圍的範例 {#example-with-custom-date-range}
 
 ```python showLineNumbers title="Search with Custom Date Range"
 response = search(
@@ -133,7 +133,7 @@ response = search(
 )
 ```
 
-### Example with Location
+### 具地點的範例 {#example-with-location}
 
 ```python showLineNumbers title="Search with Location"
 response = search(
@@ -145,9 +145,9 @@ response = search(
 )
 ```
 
-## Response Format
+## 回應格式 {#response-format}
 
-SearchAPI.io returns results in the standard LiteLLM search format:
+SearchAPI.io 會以標準 LiteLLM 搜尋格式回傳結果：
 
 ```json
 {
@@ -163,15 +163,15 @@ SearchAPI.io returns results in the standard LiteLLM search format:
 }
 ```
 
-## Rate Limits
+## 速率限制 {#rate-limits}
 
-SearchAPI.io has different rate limits based on your plan:
-- Free tier: 100 requests/month
-- Paid plans: Higher limits available
+SearchAPI.io 依據您的方案提供不同的速率限制：
+- 免費方案：每月 100 次請求
+- 付費方案：提供更高限制
 
-Check your current usage at https://www.searchapi.io/dashboard.
+請至 https://www.searchapi.io/dashboard. 查看您目前的使用量
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
 ```python showLineNumbers title="Error Handling"
 from litellm import search
@@ -190,8 +190,8 @@ except Exception as e:
     print(f"Search failed: {str(e)}")
 ```
 
-## Additional Resources
+## 其他資源 {#additional-resources}
 
-- SearchAPI.io Documentation: https://www.searchapi.io/docs
-- API Dashboard: https://www.searchapi.io/dashboard
-- Pricing: https://www.searchapi.io/pricing
+- SearchAPI.io 文件：https://www.searchapi.io/docs
+- API 儀表板：https://www.searchapi.io/dashboard
+- 定價：https://www.searchapi.io/pricing

@@ -1,14 +1,14 @@
 ---
-title: Cache Settings
-description: Every cache_params setting the LiteLLM proxy accepts in config.yaml.
+title: 快取設定
+description: LiteLLM proxy 在 config.yaml 中接受的每一個 cache_params 設定。
 ---
 
-# Cache Settings
+# 快取設定 {#cache-settings}
 
-Every cache option lives under `litellm_settings.cache_params` in the proxy `config.yaml`. Which
-keys apply depends on `type`.
+每個快取選項都位於 proxy `config.yaml` 中的 `litellm_settings.cache_params` 底下。哪些
+鍵適用取決於 `type`。
 
-## Set Cache Params on config.yaml
+## 在 config.yaml 上設定快取參數 {#set-cache-params-on-configyaml}
 
 ```yaml
 model_list:
@@ -34,7 +34,7 @@ litellm_settings:
       # /chat/completions, /completions, /embeddings, /audio/transcriptions, /v1/responses
 ```
 
-## Supported `cache_params` on proxy config.yaml
+## proxy config.yaml 支援的 `cache_params` {#supported-cache_params-on-proxy-configyaml}
 
 ```yaml
 cache_params:

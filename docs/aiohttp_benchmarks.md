@@ -1,38 +1,35 @@
-# LiteLLM v1.71.1 Benchmarks
+# LiteLLM v1.71.1 基準測試 {#litellm-v1711-benchmarks}
 
-## Overview
+## 概覽 {#overview}
 
-This document presents performance benchmarks comparing LiteLLM's v1.71.1 to prior litellm versions.
+本文 प्रस्तुत了比較 LiteLLM v1.71.1 與先前 litellm 版本的效能基準測試。
 
-**Related PR:** [#11097](https://github.com/BerriAI/litellm/pull/11097)
+**相關 PR：** [#11097](https://github.com/BerriAI/litellm/pull/11097)
 
-## Testing Methodology
+## 測試方法 {#testing-methodology}
 
-The load testing was conducted using the following parameters:
-- **Request Rate:** 200 RPS (Requests Per Second)
-- **User Ramp Up:** 200 concurrent users
-- **Transport Comparison:** httpx (existing) vs aiohttp (new implementation)
-- **Number of pods/instance of litellm:** 1
-- **Machine Specs:** 2 vCPUs, 4GB RAM
-- **LiteLLM Settings:**
-    - Tested against a [fake openai endpoint](https://exampleopenaiendpoint-production.up.railway.app/)
-    - aiohttp was opt-in at v1.71.1, so the aiohttp run set `USE_AIOHTTP_TRANSPORT="True"`. That flag no longer exists and has no effect: aiohttp is now the default transport and needs no setting. To get the httpx transport instead (for example to reproduce the httpx baseline), set `DISABLE_AIOHTTP_TRANSPORT="True"` or `litellm.disable_aiohttp_transport = True`. Enabling HTTP/2 (`LITELLM_HTTP2="True"`) also forces httpx
+負載測試是使用以下參數進行的：
+- **請求速率：** 200 RPS（每秒請求數）
+- **使用者漸增：** 200 個並行使用者
+- **傳輸比較：** httpx（既有）對比 aiohttp（新實作）
+- **litellm 的 pod/執行個體數：** 1
+- **機器規格：** 2 vCPU、4GB RAM
+- **LiteLLM 設定：**
+    - 針對 [fake openai endpoint](https://exampleopenaiendpoint-production.up.railway.app/) 進行測試
+    - aiohttp 在 v1.71.1 時為選用，因此 aiohttp 執行時設定了 `USE_AIOHTTP_TRANSPORT="True"`。該旗標現已不存在且不再生效：aiohttp 現在是預設傳輸方式，無需任何設定。若要改用 httpx 傳輸（例如重現 httpx 基準），請設定 `DISABLE_AIOHTTP_TRANSPORT="True"` 或 `litellm.disable_aiohttp_transport = True`。啟用 HTTP/2（`LITELLM_HTTP2="True"`）也會強制使用 httpx
 
+## 基準測試結果 {#benchmark-results}
 
-## Benchmark Results
-
-| Metric | httpx (Existing) | aiohttp (LiteLLM v1.71.1) | Improvement | Calculation |
+| 指標 | httpx（現有） | aiohttp（LiteLLM v1.71.1） | 改善幅度 | 計算方式 |
 |--------|------------------|-------------------|-------------|-------------|
 | **RPS** | 50.2 | 224 | **+346%** ✅ | (224 - 50.2) / 50.2 × 100 = 346% |
-| **Median Latency** | 2,500ms | 74ms | **-97%** ✅ | (74 - 2500) / 2500 × 100 = -97% |
-| **95th Percentile** | 5,600ms | 250ms | **-96%** ✅ | (250 - 5600) / 5600 × 100 = -96% |
-| **99th Percentile** | 6,200ms | 330ms | **-95%** ✅ | (330 - 6200) / 6200 × 100 = -95% |
+| **中位延遲** | 2,500ms | 74ms | **-97%** ✅ | (74 - 2500) / 2500 × 100 = -97% |
+| **第 95 百分位** | 5,600ms | 250ms | **-96%** ✅ | (250 - 5600) / 5600 × 100 = -96% |
+| **第 99 百分位** | 6,200ms | 330ms | **-95%** ✅ | (330 - 6200) / 6200 × 100 = -95% |
 
-## Key Improvements
+## 主要改善 {#key-improvements}
 
-- **4.5x increase** in requests per second (from 50.2 to 224 RPS)
-- **97% reduction** in median response time (from 2.5 seconds to 74ms)
-- **96% reduction** in 95th percentile latency (from 5.6 seconds to 250ms)
-- **95% reduction** in 99th percentile latency (from 6.2 seconds to 330ms)
-
-
+- **每秒請求數提升 4.5 倍**（從 50.2 提升到 224 RPS）
+- **中位回應時間減少 97%**（從 2.5 秒降至 74ms）
+- **第 95 百分位延遲減少 96%**（從 5.6 秒降至 250ms）
+- **第 99 百分位延遲減少 95%**（從 6.2 秒降至 330ms）

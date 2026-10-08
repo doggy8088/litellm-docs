@@ -1,30 +1,30 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OIDC - JWT-based Auth 
+# 基於 JWT 的 OIDC 驗證  {#oidc---jwt-based-auth}
 
-Use JWT's to auth admins / users / projects into the proxy.
+使用 JWT 來對閘道中的管理員 / 使用者 / 專案進行驗證。
 
 <EnterpriseFeature feature="JWT-based Auth" />
 
-:::tip[JWT → Virtual Key Mapping]
+:::tip[JWT → 虛擬金鑰對應]
 
-Want per-user model restrictions, spend limits, and rate limits without distributing API keys? See **[JWT → Virtual Key Mapping](./jwt_key_mapping.md)** for granular access control for JWT-authenticated users (e.g. Claude Code + SSO).
+想要每位使用者的模型限制、花費上限與速率限制，而不必分發 API 金鑰嗎？請參閱 **[JWT → Virtual Key Mapping](./jwt_key_mapping.md)**，以了解適用於 JWT 驗證使用者的精細存取控制（例如 Claude Code + SSO）。
 
 :::
 
-## Usage
+## 使用方式 {#usage}
 
-### Step 1. Setup Proxy
+### 步驟 1. 設定閘道 {#step-1-setup-proxy}
 
-- `JWT_PUBLIC_KEY_URL`: This is the public keys endpoint of your OpenID provider. Typically it's `{openid-provider-base-url}/.well-known/openid-configuration/jwks`. For Keycloak it's `{keycloak_base_url}/realms/{your-realm}/protocol/openid-connect/certs`.
-- `JWT_AUDIENCE`: This is the audience used for decoding the JWT. If not set, the decode step will not verify the audience. 
+- `JWT_PUBLIC_KEY_URL`：這是您 OpenID 提供者的公開金鑰端點。通常是 `{openid-provider-base-url}/.well-known/openid-configuration/jwks`。對於 Keycloak，則是 `{keycloak_base_url}/realms/{your-realm}/protocol/openid-connect/certs`。
+- `JWT_AUDIENCE`：這是用於解碼 JWT 的受眾。如果未設定，解碼步驟將不會驗證受眾。 
 
 ```bash
 export JWT_PUBLIC_KEY_URL="" # "https://demo.duendesoftware.com/.well-known/openid-configuration/jwks"
 ```
 
-- `enable_jwt_auth` in your config. This will tell the proxy to check if a token is a jwt token.
+- 在您的設定中加入 `enable_jwt_auth`。這會告訴閘道檢查某個權杖是否為 JWT 權杖。
 
 ```yaml
 general_settings:
@@ -40,14 +40,14 @@ model_list:
       api_version: "2023-07-01-preview"
 ```
 
-### Step 2. Create JWT with scopes 
+### 步驟 2. 建立具 scope 的 JWT  {#step-2-create-jwt-with-scopes}
 
 <Tabs>
 <TabItem value="admin" label="admin">
 
-Create a client scope called `litellm_proxy_admin` in your OpenID provider (e.g. Keycloak).
+在您的 OpenID 提供者（例如 Keycloak）中建立名為 `litellm_proxy_admin` 的用戶端 scope。
 
-Grant your user, `litellm_proxy_admin` scope when generating a JWT. 
+在產生 JWT 時，授予您的使用者 `litellm_proxy_admin` scope。 
 
 ```bash
 curl --location ' 'https://demo.duendesoftware.com/connect/token'' \
@@ -62,7 +62,7 @@ curl --location ' 'https://demo.duendesoftware.com/connect/token'' \
 </TabItem>
 <TabItem value="project" label="project">
 
-Create a JWT for your project on your OpenID provider (e.g. Keycloak).
+在您的 OpenID 提供者（例如 Keycloak）中為您的專案建立 JWT。
 
 ```bash
 # client_id: 👈 project id
@@ -76,7 +76,7 @@ curl --location ' 'https://demo.duendesoftware.com/connect/token'' \
 </TabItem>
 </Tabs>
 
-### Step 3. Test your JWT 
+### 步驟 3. 測試您的 JWT  {#step-3-test-your-jwt}
 
 <Tabs>
 <TabItem value="key" label="/key/generate">
@@ -100,35 +100,35 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 </TabItem>
 </Tabs>
 
-## Advanced
+## 進階 {#advanced}
 
-### Multiple OIDC providers
+### 多個 OIDC 提供者 {#multiple-oidc-providers}
 
-Use this if you want LiteLLM to validate your JWT against multiple OIDC providers (e.g. Google Cloud, GitHub Auth)
+如果您希望 LiteLLM 根據多個 OIDC 提供者（例如 Google Cloud、GitHub Auth）驗證您的 JWT，請使用此功能。
 
-Set `JWT_PUBLIC_KEY_URL` in your environment to a comma-separated list of URLs for your OIDC providers. Each entry can be a JWKS URL or an OIDC discovery URL (`.../.well-known/openid-configuration`); LiteLLM fetches a discovery document and follows its `jwks_uri`
+在您的環境中設定 `JWT_PUBLIC_KEY_URL`，值為以逗號分隔的 OIDC 提供者 URL 清單。每個項目可以是 JWKS URL 或 OIDC discovery URL（`.../.well-known/openid-configuration`）；LiteLLM 會擷取 discovery 文件並追蹤其 `jwks_uri`
 
 ```bash
 export JWT_PUBLIC_KEY_URL="https://demo.duendesoftware.com/.well-known/openid-configuration,https://accounts.google.com/.well-known/openid-configuration"
 ```
 
-This validates tokens from every listed provider against one shared set of claim mappings. If your providers disagree about what a given claim contains, use per-issuer claim mapping instead
+這會以一組共用的 claim 對應，驗證來自每個列出提供者的 token。若您的提供者對某個給定 claim 的內容定義不同，請改用按 issuer 的 claim 對應
 
-#### How a token is validated
+#### Token 如何驗證 {#how-a-token-is-validated}
 
-LiteLLM reads the `kid` from the unverified JWT header and walks the `JWT_PUBLIC_KEY_URL` list in order. For each URL it loads that provider's key set and looks for a key whose `kid` equals the token's. The first match wins and the search stops there; if no listed provider publishes that `kid`, the request is rejected with a 401 (`No matching public key found`). The `iss` claim plays no part in choosing the key set on this path, so `kid` alone decides which provider's key is tried
+LiteLLM 會從未驗證的 JWT 標頭讀取 `kid`，並依序走訪 `JWT_PUBLIC_KEY_URL` 清單。對每個 URL，它會載入該提供者的金鑰集合，並尋找其 `kid` 等於 token 的金鑰。第一個符合者會勝出，搜尋便在此停止；若沒有任何列出的提供者發布該 `kid`，請求會以 401（`No matching public key found`）被拒絕。此路徑中 `iss` claim 不參與金鑰集合的選擇，因此僅由 `kid` 決定要嘗試哪個提供者的金鑰
 
-A token without a `kid` header only matches a key set that contains exactly one key. Against a JWKS with several keys it is rejected, so a provider that rotates keys must put `kid` in the header
+沒有 `kid` 標頭的 token，只有在金鑰集合恰好包含一把金鑰時才會符合。若 JWKS 中有多把金鑰，則會被拒絕，因此會輪替金鑰的提供者必須在標頭中放入 `kid`
 
-Once a key is selected the signature is verified with it and `exp` (plus `nbf` and `iat` when present) is checked. The accepted algorithms are RS256/384/512, PS256/384/512, ES256/384/512 and EdDSA; HMAC-signed tokens (`HS*`) are always rejected. Key material is read from the JWK `kty`, `n`, `e`, `x`, `y` and `crv` members, so RSA, EC and OKP keys all work and `x5c` certificate chains are ignored
+選定金鑰後，會用它驗證簽章，並檢查 `exp`（若存在，另加 `nbf` 與 `iat`）。可接受的演算法為 RS256/384/512、PS256/384/512、ES256/384/512 與 EdDSA；以 HMAC 簽署的 token（`HS*`）一律會被拒絕。金鑰材料會從 JWK 的 `kty`、`n`、`e`、`x`、`y` 和 `crv` 成員讀取，因此 RSA、EC 與 OKP 金鑰都可使用，而 `x5c` 憑證鏈會被忽略
 
-`aud` and `iss` are only verified when you ask for it. `JWT_AUDIENCE` sets the expected audience (a token whose `aud` is a list passes if it contains that value) and `JWT_ISSUER` sets the expected `iss`. Both are single values shared by every URL in the list, so with several providers `JWT_ISSUER` can only admit one of them; a setup that needs `iss` verified for more than one provider must use [per-issuer configuration](#per-issuer-claim-mapping). Leaving both unset means any token signed by any listed provider is accepted no matter which application it was minted for, and the proxy logs a warning at first use to say so
+只有在您要求時，才會驗證 `aud` 和 `iss`。`JWT_AUDIENCE` 會設定預期的 audience（其 `aud` 為清單的 token，若包含該值則通過），而 `JWT_ISSUER` 會設定預期的 `iss`。兩者都是清單中每個 URL 共用的單一值，因此在有多個提供者時，`JWT_ISSUER` 只能接受其中之一；若設定需要為多個提供者驗證 `iss`，必須使用 [per-issuer configuration](#per-issuer-claim-mapping)。兩者都不設定時，任何由清單中任一提供者簽署的 token 都會被接受，不論它是為哪個應用程式簽發，而 proxy 會在首次使用時記錄警告說明此事
 
-#### Caching and failure behavior
+#### 快取與失敗行為 {#caching-and-failure-behavior}
 
-Each key set (and each discovery document) is cached in the proxy's auth cache, Redis when configured and otherwise in-process memory, for `litellm_jwtauth.public_key_ttl` seconds (default 600). A `kid` miss does not trigger a refetch inside the TTL, so a token signed with a key the provider rotated in a moment ago is rejected until the cached copy expires
+每個金鑰集合（以及每個 discovery 文件）都會快取在 proxy 的驗證快取中；若已設定則使用 Redis，否則使用程序內記憶體，快取時間為 `litellm_jwtauth.public_key_ttl` 秒（預設 600）。`kid` miss 在 TTL 內不會觸發重新擷取，因此若 token 是由提供者剛輪替進去的金鑰簽署，會在快取副本過期前被拒絕
 
-When a fetch fails at the transport level (DNS, connect, TLS, timeout) LiteLLM tries it up to three times with a short backoff, then remembers the outage for 30 seconds so concurrent requests do not pile onto the dead endpoint. If a last-known-good copy of that key set exists and is younger than `public_key_ttl + public_key_stale_ttl` (default 600 + 3600 seconds) it is served and a warning is logged. Otherwise the request fails with a 503 (`the identity provider's JWKS endpoint is temporarily unreachable`) and the remaining URLs in the list are not tried, even if one of them holds the matching key. Set `public_key_stale_ttl: 0` to fail closed as soon as the cached copy expires. A non-200 response or an unparseable body is neither retried nor served stale; it fails the request with a 401 and also stops the walk through the list
+當擷取在傳輸層失敗（DNS、連線、TLS、逾時）時，LiteLLM 會以短暫退避最多重試三次，然後將該中斷狀態記住 30 秒，避免並發請求一窩蜂打到失效端點。若該金鑰集合存在最後一次已知正常的副本，且其時間新於 `public_key_ttl + public_key_stale_ttl`（預設 600 + 3600 秒），系統會提供該副本並記錄警告。否則請求會以 503（`the identity provider's JWKS endpoint is temporarily unreachable`）失敗，且不會嘗試清單中的其餘 URL，即使其中之一持有相符的金鑰。將 `public_key_stale_ttl: 0` 設為在快取副本過期時立即 fail closed。非 200 回應或無法解析的內容既不會重試，也不會提供過期副本；它會以 401 使請求失敗，並且停止清單遍歷
 
 ```yaml title="config.yaml"
 general_settings:
@@ -138,11 +138,11 @@ general_settings:
     public_key_stale_ttl: 3600
 ```
 
-#### Per-issuer claim mapping
+#### 按 issuer 的 claim 對應 {#per-issuer-claim-mapping}
 
-Use `litellm_jwtauth.issuers` when the same claim means different things depending on which provider minted the token. A common case: one provider puts the team ID in `sub` while another puts the user ID there, so a single global `team_id_jwt_field: "sub"` cannot serve both
+當同一個 claim 會因為是哪個提供者簽發 token 而有不同意義時，請使用 `litellm_jwtauth.issuers`。常見情況是：一個提供者把 team ID 放在 `sub`，另一個則把 user ID 放在那裡，因此單一全域 `team_id_jwt_field: "sub"` 無法同時適用兩者
 
-Each entry is matched against the token's `iss` claim and carries its own JWKS URL, audience, and claim mappings
+每個項目都會依據 token 的 `iss` claim 進行比對，並帶有各自的 JWKS URL、audience 與 claim 對應
 
 ```yaml title="config.yaml"
 general_settings:
@@ -161,38 +161,38 @@ general_settings:
         user_email_jwt_field: "email"
 ```
 
-With this config a token from `accounts.google.com` resolves `sub` to a team ID, while a token from Keycloak resolves the same `sub` to a user ID
+使用此設定時，來自 `accounts.google.com` 的 token 會將 `sub` 解析為 team ID，而來自 Keycloak 的 token 則會將相同的 `sub` 解析為 user ID
 
-##### Per-issuer fields
+##### 按 issuer 的欄位 {#per-issuer-fields}
 
-| Field | Required | Description |
+| 欄位 | 必要 | 說明 |
 | --- | --- | --- |
-| `issuer` | Yes | Exact expected `iss` claim value. Matching is an exact string comparison |
-| `audience` | Yes, unless `disable_audience_validation` is set | Expected `aud` for tokens from this issuer |
-| `disable_audience_validation` | Yes, unless `audience` is set | Skip audience validation for this issuer. Setting both this and `audience` is rejected |
-| `jwks_url` | No | This issuer's JWKS endpoint. Defaults to reading `<issuer>/.well-known/openid-configuration` and following its `jwks_uri` |
-| `team_id_jwt_field` | No | Claim path to read as the team ID |
-| `team_ids_jwt_field` | No | Claim path to read as a list of team IDs |
-| `user_id_jwt_field` | No | Claim path to read as the user ID |
-| `user_email_jwt_field` | No | Claim path to read as the user email |
-| `org_id_jwt_field` | No | Claim path to read as the organization ID |
-| `end_user_id_jwt_field` | No | Claim path to read as the end-user ID |
+| `issuer` | 是 | 預期的 `iss` claim 值。比對時採用完全相同的字串比較 |
+| `audience` | 是，除非已設定 `disable_audience_validation` | 此 issuer 的 token 預期 `aud` |
+| `disable_audience_validation` | 是，除非已設定 `audience` | 對此 issuer 略過 audience 驗證。同時設定此項與 `audience` 會被拒絕 |
+| `jwks_url` | 否 | 此 issuer 的 JWKS 端點。預設為讀取 `<issuer>/.well-known/openid-configuration` 並追蹤其 `jwks_uri` |
+| `team_id_jwt_field` | 否 | 要讀取為 team ID 的 claim 路徑 |
+| `team_ids_jwt_field` | 否 | 要讀取為 team ID 清單的 claim 路徑 |
+| `user_id_jwt_field` | 否 | 要讀取為 user ID 的 claim 路徑 |
+| `user_email_jwt_field` | 否 | 要讀取為 user email 的 claim 路徑 |
+| `org_id_jwt_field` | 否 | 要讀取為 organization ID 的 claim 路徑 |
+| `end_user_id_jwt_field` | 否 | 要讀取為 end-user ID 的 claim 路徑 |
 
-Claim paths support dot notation for nested claims, for example `resource_access.my-client.team`
+Claim 路徑支援巢狀 claim 的點記號表示法，例如 `resource_access.my-client.team`
 
-##### Things to know
+##### 需要知道的事項 {#things-to-know}
 
-Every issuer must set either `audience` or `disable_audience_validation: true`. LiteLLM rejects the config at startup otherwise, so tokens minted by another application that shares your provider's signing keys cannot authenticate against your proxy
+每個 issuer 都必須設定 `audience` 或 `disable_audience_validation: true` 其中之一。否則 LiteLLM 會在啟動時拒絕此設定，因此由另一個與您的提供者共用簽署金鑰的應用程式所簽發的 token，無法向您的 proxy 驗證
 
-Claim mappings you leave out of an issuer entry fall back to the top-level `litellm_jwtauth` setting. If you keep a global `team_id_jwt_field: "sub"` and add an issuer that only maps `user_id_jwt_field: "sub"`, that issuer's tokens still get a team ID read from `sub`. Move all of your claim mappings into `issuers` to avoid this
+您未在 issuer 項目中填寫的 claim 對應，會回退到頂層 `litellm_jwtauth` 設定。若您保留全域 `team_id_jwt_field: "sub"`，並新增一個只對 `user_id_jwt_field: "sub"` 進行對應的 issuer，該 issuer 的 token 仍會從 `sub` 讀取 team ID。請將所有 claim 對應移入 `issuers` 以避免此情況
 
-`issuers` is additive routing rather than an allow-list. A token whose `iss` matches no entry falls through to the global `JWT_PUBLIC_KEY_URL` and `JWT_AUDIENCE` path, so leave those unset if you want only your listed issuers accepted
+`issuers` 是加法式路由，而非 allow-list。其 `iss` 不符合任何項目的 token 會落回全域 `JWT_PUBLIC_KEY_URL` 與 `JWT_AUDIENCE` 路徑，因此若您只想接受列出的 issuers，請將這些設定留空
 
-Matching is on `iss` only. The `kid` header still selects the signing key within the matched issuer's JWKS
+比對只針對 `iss`。`kid` 標頭仍會在相符 issuer 的 JWKS 內選擇簽署金鑰
 
-#### Recommended multi-provider setup
+#### 建議的多提供者設定 {#recommended-multi-provider-setup}
 
-For more than one provider, prefer `litellm_jwtauth.issuers` over the shared list even when the claim mappings are the same. An `issuers` entry scopes the key lookup to that issuer's own JWKS and verifies `iss` and `aud` per provider, which the shared list cannot do. Leave `JWT_PUBLIC_KEY_URL` unset so a token whose `iss` is not listed is rejected (401, `Missing JWT Public Key URL`) instead of falling through to an unscoped path. Key caching and the stale-copy fallback described above apply to each issuer's JWKS in the same way
+若有多個提供者，即使 claim 對應相同，也建議使用 `litellm_jwtauth.issuers`，而非共用清單。`issuers` 項目會將金鑰查找範圍限定於該 issuer 自己的 JWKS，並逐一依提供者驗證 `iss` 與 `aud`，這是共用清單無法做到的。請將 `JWT_PUBLIC_KEY_URL` 保持未設定，讓其 `iss` 未列出的 token 被拒絕（401，`Missing JWT Public Key URL`），而不是落入未限定範圍的路徑。上述的金鑰快取與過期副本回退行為，會以相同方式套用到每個 issuer 的 JWKS
 
 ```yaml title="config.yaml"
 general_settings:
@@ -209,37 +209,37 @@ general_settings:
         audience: "litellm-proxy"
 ```
 
-#### Provider compatibility
+#### 提供者相容性 {#provider-compatibility}
 
-LiteLLM does not special-case any identity provider. Any issuer works if it signs tokens with one of the algorithms listed above, publishes its public keys as a JWKS (directly, or through an OIDC discovery document that carries a `jwks_uri`), sets a `kid` header that appears in that JWKS, and mints a stable `iss` value plus the audience you configure. The Keycloak and Kubernetes issuers shown on this page publish keys this way; for any other issuer, check those four points against a decoded sample token and the provider's JWKS before relying on it
+LiteLLM 不會針對任何身分提供者做特殊處理。只要某個簽發者使用上方列出的其中一種演算法簽署 token、以 JWKS 公開其公鑰（直接公開，或透過包含 `jwks_uri` 的 OIDC discovery 文件）、設定一個出現在該 JWKS 中的 `kid` 標頭，並且簽發一個穩定的 `iss` 值再加上您設定的 audience，就都可以正常運作。本頁展示的 Keycloak 與 Kubernetes 簽發者就是用這種方式公開金鑰；對於其他任何簽發者，請先用解碼後的範例 token 與該提供者的 JWKS 檢查這四點，再決定是否依賴它。
 
-#### Troubleshooting
+#### 疑難排解 {#troubleshooting}
 
-Run the proxy with `--detailed_debug` to see the `JWT Auth:` log lines that explain each rejection
+使用 `--detailed_debug` 執行 proxy，查看說明每個拒絕原因的 `JWT Auth:` 記錄行。
 
-| Symptom | Cause | Fix |
+| 症狀 | 原因 | 修正 |
 | --- | --- | --- |
-| 401 `No matching public key found. keys=[...], kid=...` | No listed JWKS contains the token's `kid`, or the token has no `kid` and the JWKS has several keys | Confirm the `kid` from the token header appears in one of the JWKS documents. If the provider just rotated keys, wait out `public_key_ttl` or restart the proxy |
-| 401 `Validation fails: Signature verification failed` with several providers in `JWT_PUBLIC_KEY_URL` | Two providers publish the same `kid`; the shared list picks the first URL that has it and verifies against the wrong key | Use `litellm_jwtauth.issuers` so the lookup is scoped to the token's issuer |
-| 401 `Validation fails: Invalid issuer` | `iss` does not equal `JWT_ISSUER` (shared path) or the matched `issuers[].issuer` | Copy `iss` verbatim from a decoded token; trailing slashes and `http` vs `https` matter |
-| 401 `Validation fails: Audience doesn't match` or `Token is missing the "aud" claim` | `aud` does not contain `JWT_AUDIENCE` / `issuers[].audience`, or the token has no `aud` | Set the audience your provider actually mints (often the client ID), or set `disable_audience_validation: true` on that issuer if it cannot mint one |
-| 401 `Validation fails: The specified alg value is not allowed` | Token is HMAC-signed or uses an algorithm outside the list above | Configure the provider to sign with RS256 or another asymmetric algorithm |
-| 401 `OIDC discovery document at ... does not contain a 'jwks_uri' field` | The URL contains `.well-known/openid-configuration`, so it was treated as a discovery document, but it returned a JWKS | Point `JWT_PUBLIC_KEY_URL` at the discovery document itself, or at a JWKS URL whose path does not contain that segment |
-| 503 `the identity provider's JWKS endpoint is temporarily unreachable` | A JWKS or discovery URL could not be reached and no stale copy was available | Check egress from the proxy to the provider. Raise `public_key_stale_ttl` to ride out longer outages |
-| 401 `Missing JWT Public Key URL from environment` | `iss` matched no `issuers` entry and `JWT_PUBLIC_KEY_URL` is unset | Add the issuer to `issuers`, or set `JWT_PUBLIC_KEY_URL` if unlisted issuers should be accepted |
+| 401 `No matching public key found. keys=[...], kid=...` | 列出的 JWKS 都不包含 token 的 `kid`，或 token 沒有 `kid` 而 JWKS 有多把金鑰 | 確認 token 標頭中的 `kid` 出現在其中一份 JWKS 文件中。如果提供者剛輪替金鑰，請等待 `public_key_ttl`，或重新啟動 proxy |
+| 在 `JWT_PUBLIC_KEY_URL` 中有多個提供者時出現 401 `Validation fails: Signature verification failed` | 兩個提供者公開了相同的 `kid`；共享清單會挑選具有它的第一個 URL，並用錯誤的金鑰進行驗證 | 請使用 `litellm_jwtauth.issuers`，讓查找範圍限定在 token 的簽發者 |
+| 401 `Validation fails: Invalid issuer` | `iss` 不等於 `JWT_ISSUER`（共享路徑），或不等於比對到的 `issuers[].issuer` | 請從解碼後的 token 原樣複製 `iss`；尾端斜線以及 `http` 與 `https` 都很重要 |
+| 401 `Validation fails: Audience doesn't match` 或 `Token is missing the "aud" claim` | `aud` 不包含 `JWT_AUDIENCE` / `issuers[].audience`，或 token 沒有 `aud` | 設定您的提供者實際簽發的 audience（通常是 client ID），或在該簽發者無法簽發時設定 `disable_audience_validation: true` |
+| 401 `Validation fails: The specified alg value is not allowed` | Token 是使用 HMAC 簽署，或使用了上方清單以外的演算法 | 將提供者設定為使用 RS256 或其他非對稱演算法簽署 |
+| 401 `OIDC discovery document at ... does not contain a 'jwks_uri' field` | 該 URL 包含 `.well-known/openid-configuration`，因此被視為 discovery 文件，但它回傳的是 JWKS | 將 `JWT_PUBLIC_KEY_URL` 指向 discovery 文件本身，或指向路徑不包含該片段的 JWKS URL |
+| 503 `the identity provider's JWKS endpoint is temporarily unreachable` | 無法連上 JWKS 或 discovery URL，且沒有可用的舊版快取 | 檢查 proxy 到提供者的對外連線。提高 `public_key_stale_ttl` 以撐過較長的中斷 |
+| 401 `Missing JWT Public Key URL from environment` | `iss` 未匹配任何 `issuers` 項目，且未設定 `JWT_PUBLIC_KEY_URL` | 將該簽發者加入 `issuers`，或在應接受未列出簽發者時設定 `JWT_PUBLIC_KEY_URL` |
 
-### Kubernetes ServiceAccount Authentication
+### Kubernetes ServiceAccount 驗證 {#kubernetes-serviceaccount-authentication}
 
-Use Kubernetes ServiceAccount tokens to authenticate workloads running in your cluster. This is useful when you want pods to authenticate to LiteLLM using their native Kubernetes identity.
+使用 Kubernetes ServiceAccount 權杖來驗證叢集中執行的工作負載。當您希望 pod 使用其原生 Kubernetes 身分向 LiteLLM 進行驗證時，這很有用。
 
-#### Prerequisites
+#### 先決條件 {#prerequisites}
 
-1. Your Kubernetes cluster must have ServiceAccount token projection enabled (default in Kubernetes 1.20+)
-2. Your cluster's OIDC issuer must be accessible (for EKS, GKE, AKS this is automatic)
+1. 您的 Kubernetes 叢集必須啟用 ServiceAccount 權杖投影（Kubernetes 1.20+ 預設啟用）
+2. 您叢集的 OIDC issuer 必須可存取（對 EKS、GKE、AKS 而言這是自動的）
 
-#### Step 1: Configure the OIDC Discovery URL
+#### 步驟 1：設定 OIDC Discovery URL {#step-1-configure-the-oidc-discovery-url}
 
-Set `JWT_PUBLIC_KEY_URL` to your cluster's OIDC discovery endpoint:
+將 `JWT_PUBLIC_KEY_URL` 設定為您叢集的 OIDC discovery 端點：
 
 <Tabs>
 <TabItem value="eks" label="Amazon EKS">
@@ -283,9 +283,9 @@ export JWT_PUBLIC_KEY_URL="https://<api-server>/openid/v1/jwks"
 </TabItem>
 </Tabs>
 
-#### Step 2: Configure LiteLLM
+#### 步驟 2：設定 LiteLLM {#step-2-configure-litellm}
 
-Configure LiteLLM to extract identity information from Kubernetes ServiceAccount tokens:
+設定 LiteLLM 以從 Kubernetes ServiceAccount 權杖中擷取身分資訊：
 
 ```yaml
 general_settings:
@@ -295,9 +295,9 @@ general_settings:
     team_alias_jwt_field: 'kubernetes\.io.namespace'
 ```
 
-#### Step 3: Create ServiceAccount and Configure Pod
+#### 步驟 3：建立 ServiceAccount 並設定 Pod {#step-3-create-serviceaccount-and-configure-pod}
 
-Create a ServiceAccount with an associated secret and configure your pod to use the token:
+建立一個關聯秘密的 ServiceAccount，並將您的 pod 設定為使用該權杖：
 
 ```yaml
 apiVersion: v1
@@ -333,15 +333,15 @@ spec:
           key: token
 ```
 
-Set the expected audience in LiteLLM:
+在 LiteLLM 中設定預期的受眾：
 
 ```bash
 export JWT_AUDIENCE="https://kubernetes.default.svc"
 ```
 
-#### Step 4: Create Team for Namespace
+#### 步驟 4：為 Namespace 建立 Team {#step-4-create-team-for-namespace}
 
-Create a team in LiteLLM that matches the namespace (using `team_alias`):
+在 LiteLLM 中建立一個與 namespace 相符的 team（使用 `team_alias`）：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/team/new' \
@@ -354,9 +354,9 @@ curl -X POST 'http://0.0.0.0:4000/team/new' \
 }'
 ```
 
-#### Step 5: Use the Token
+#### 步驟 5：使用權杖 {#step-5-use-the-token}
 
-From within the pod, the token is available in the `LITELLM_TOKEN` environment variable:
+從 pod 內部，權杖可在 `LITELLM_TOKEN` 環境變數中取得：
 
 ```bash
 # Make a request to LiteLLM using the env var
@@ -369,9 +369,9 @@ curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-#### Example: ServiceAccount Token Structure
+#### 範例：ServiceAccount 權杖結構 {#example-serviceaccount-token-structure}
 
-A Kubernetes ServiceAccount token looks like this:
+Kubernetes ServiceAccount 權杖看起來如下：
 
 ```json
 {
@@ -395,9 +395,9 @@ A Kubernetes ServiceAccount token looks like this:
 }
 ```
 
-#### Advanced: Map Namespace to Team Using Name Resolution
+#### 進階：使用名稱解析將 Namespace 對應至 Team {#advanced-map-namespace-to-team-using-name-resolution}
 
-Use the `team_alias_jwt_field` to automatically resolve namespaces to teams:
+使用 `team_alias_jwt_field` 可自動將 namespaces 解析為 teams：
 
 ```yaml
 general_settings:
@@ -409,11 +409,11 @@ general_settings:
     user_id_upsert: true
 ```
 
-This way, pods in namespace `production` automatically get associated with the team that has `team_alias: production`.
+如此一來，namespace `production` 中的 pods 會自動與具有 `team_alias: production` 的 team 建立關聯。
 
-### Set Accepted JWT Scope Names 
+### 設定可接受的 JWT scope 名稱  {#set-accepted-jwt-scope-names}
 
-Change the string in JWT 'scopes', that litellm evaluates to see if a user has admin access.
+變更 JWT 'scopes' 中的字串，讓 litellm 評估使用者是否具有管理員存取權。
 
 ```yaml
 general_settings:
@@ -423,11 +423,11 @@ general_settings:
     admin_jwt_scope: "litellm-proxy-admin"
 ```
 
-### Tracking End-Users / Internal Users / Team / Org
+### 追蹤終端使用者 / 內部使用者 / Team / Org {#tracking-end-users--internal-users--team--org}
 
-Set the field in the jwt token, which corresponds to a litellm user / team / org.
+設定 jwt 權杖中的欄位，該欄位對應到 litellm 使用者 / team / org。
 
-**Note:** All JWT fields support dot notation to access nested claims (e.g., `"user.sub"`, `"resource_access.client.roles"`).
+**注意：**所有 JWT 欄位都支援點號表示法以存取巢狀 claims（例如，`"user.sub"`、`"resource_access.client.roles"`）。
 
 ```yaml
 general_settings:
@@ -441,7 +441,7 @@ general_settings:
     end_user_id_jwt_field: "customer_id" # 👈 CAN BE ANY FIELD (supports dot notation for nested claims)
 ```
 
-Expected JWT (flat structure): 
+預期的 JWT（扁平結構）： 
 
 ```json
 {
@@ -451,7 +451,7 @@ Expected JWT (flat structure):
 }
 ```
 
-**Or with nested structure using dot notation:**
+**或使用點號表示法的巢狀結構：**
 
 ```json
 {
@@ -468,7 +468,7 @@ Expected JWT (flat structure):
 }
 ```
 
-**Configuration for nested example:**
+**巢狀範例的設定：**
 
 ```yaml
 litellm_jwtauth:
@@ -478,13 +478,13 @@ litellm_jwtauth:
   org_id_jwt_field: "organization.id"
 ```
 
-Now litellm will automatically update the spend for the user/team/org in the db for each call. 
+現在 litellm 會在每次呼叫時，自動更新資料庫中該使用者/team/org 的支出。
 
-### Resolve by Name (Alias) Instead of ID
+### 以名稱（別名）而非 ID 解析 {#resolve-by-name-alias-instead-of-id}
 
-Sometimes your JWT token contains human-readable names instead of database IDs. LiteLLM can resolve these names to IDs by looking them up in the database.
+有時您的 JWT 權杖會包含人類可讀的名稱，而不是資料庫 ID。LiteLLM 可以透過在資料庫中查找，將這些名稱解析為 ID。
 
-**Use Case:** Your IDP provides team/org names in the JWT, but LiteLLM needs the actual database IDs for spend tracking and access control.
+**使用情境：**您的 IDP 在 JWT 中提供 team/org 名稱，但 LiteLLM 進行支出追蹤與存取控制時，需要實際的資料庫 ID。
 
 ```yaml
 general_settings:
@@ -496,7 +496,7 @@ general_settings:
     org_alias_jwt_field: "org_alias"         # Resolves org by organization_alias in DB
 ```
 
-**Expected JWT:**
+**預期的 JWT：**
 
 ```json
 {
@@ -506,15 +506,15 @@ general_settings:
 }
 ```
 
-**How It Works:**
+**運作方式：**
 
-1. LiteLLM extracts the name from the configured JWT field
-2. Looks up the entity in the database by its alias field:
-   - Teams: `team_alias` column in `LiteLLM_TeamTable`
-   - Organizations: `organization_alias` column in `LiteLLM_OrganizationTable`
-3. Uses the resolved ID for spend tracking and access control
+1. LiteLLM 從已設定的 JWT 欄位擷取名稱
+2. 依據別名欄位在資料庫中查找該實體：
+   - Teams：`team_alias` 欄位於 `LiteLLM_TeamTable`
+   - Organizations：`organization_alias` 欄位於 `LiteLLM_OrganizationTable`
+3. 使用解析後的 ID 進行支出追蹤與存取控制
 
-**Precedence:** ID fields always take precedence over name fields. If both `team_id_jwt_field` and `team_alias_jwt_field` are configured and both values exist in the JWT, the ID will be used.
+**優先順序：**ID 欄位一律優先於名稱欄位。如果 `team_id_jwt_field` 與 `team_alias_jwt_field` 都已設定，且兩者的值都存在於 JWT 中，則會使用 ID。
 
 ```yaml
 # Example: ID takes precedence
@@ -523,7 +523,7 @@ litellm_jwtauth:
   team_alias_jwt_field: "team_alias"   # Fallback if team_id not present
 ```
 
-**Nested Fields:** Name fields also support dot notation for nested claims:
+**巢狀欄位：**名稱欄位也支援點號表示法以處理巢狀 claims：
 
 ```yaml
 litellm_jwtauth:
@@ -531,29 +531,28 @@ litellm_jwtauth:
   org_alias_jwt_field: "company.name"
 ```
 
-**Important Notes:**
-- The entity (team/org) must already exist in the database with the matching alias
-- Aliases should be unique - if multiple entities share the same alias, an error will be returned
-- Name resolution adds a database lookup, so using IDs directly is slightly more performant
+**重要注意事項：**
+- 該實體（team/org）必須已存在於資料庫中，且具有相符的別名
+- 別名應保持唯一 - 如果多個實體共享相同別名，將回傳錯誤
+- 名稱解析需要額外的資料庫查找，因此直接使用 ID 的效能會略佳
 
-### JWT Scopes
+### JWT 範圍 {#jwt-scopes}
 
-Here's what scopes on JWT-Auth tokens look like
+以下是 JWT 驗證權杖上的 scopes 樣式
 
-**Can be a list**
+**可以是清單**
 ```
 scope: ["litellm-proxy-admin",...]
 ```
 
-**Can be a space-separated string**
+**可以是以空白分隔的字串**
 ```
 scope: "litellm-proxy-admin ..."
 ```
 
-### Control model access with Teams
+### 使用 Teams 控制模型存取 {#control-model-access-with-teams}
 
-
-1. Specify the JWT field that contains the team ids, that the user belongs to. 
+1. 指定包含使用者所屬 team ids 的 JWT 欄位。 
 
 ```yaml
 general_settings:
@@ -565,7 +564,7 @@ general_settings:
     enforce_team_based_model_access: true # don't allow users to access models unless the team has access
 ```
 
-This is assuming your token looks like this:
+這是假設您的權杖看起來如下：
 ```
 {
   ...,
@@ -574,7 +573,7 @@ This is assuming your token looks like this:
 }
 ```
 
-2. Create the teams on LiteLLM 
+2. 在 LiteLLM 上建立 teams 
 
 ```bash
 curl -X POST '<PROXY_BASE_URL>/team/new' \
@@ -586,25 +585,24 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 }'
 ```
 
-3. Test the flow
+3. 測試流程
 
-SSO for UI: [**See Walkthrough**](https://www.loom.com/share/8959be458edf41fd85937452c29a33f3?sid=7ebd6d37-569a-4023-866e-e0cde67cb23e)
+UI 的 SSO：[**查看逐步說明**](https://www.loom.com/share/8959be458edf41fd85937452c29a33f3?sid=7ebd6d37-569a-4023-866e-e0cde67cb23e)
 
-OIDC Auth for API: [**See Walkthrough**](https://www.loom.com/share/00fe2deab59a426183a46b1e2b522200?sid=4ed6d497-ead6-47f9-80c0-ca1c4b6b4814)
+API 的 OIDC 驗證：[**查看逐步說明**](https://www.loom.com/share/00fe2deab59a426183a46b1e2b522200?sid=4ed6d497-ead6-47f9-80c0-ca1c4b6b4814)
 
+### 流程 {#flow}
 
-### Flow
+- 驗證使用者 id 是否存在於資料庫中（LiteLLM_UserTable）
+- 驗證任一 group 是否存在於資料庫中（LiteLLM_TeamTable）
+- 驗證任一 group 是否擁有模型存取權
+- 若所有檢查都通過，則允許該請求
 
-- Validate if user id is in the DB (LiteLLM_UserTable)
-- Validate if any of the groups are in the DB (LiteLLM_TeamTable)
-- Validate if any group has model access
-- If all checks pass, allow the request
+### 透過請求標頭選擇 Team {#select-team-via-request-header}
 
-### Select Team via Request Header
+當 JWT 權杖包含多個 teams（透過 `team_ids_jwt_field`）時，您可以透過傳遞 `x-litellm-team-id` 標頭，明確選擇要用於某個請求的 team。
 
-When a JWT token contains multiple teams (via `team_ids_jwt_field`), you can explicitly select which team to use for a request by passing the `x-litellm-team-id` header.
-
-The header accepts either the team's `team_id` or its `team_alias`. LiteLLM first checks the value against the team ids the JWT grants; when it is not one of them, LiteLLM looks up a team with that alias and accepts it only if that team's id is one the JWT grants. Either way the request runs as the canonical `team_id`, so budgets, model access, rate limits, spend logs and the `team_id` column in the database all show the id, never the alias. Sending the id skips the alias lookup
+此標頭可接受團隊的 `team_id` 或其 `team_alias`。LiteLLM 會先將該值與 JWT 授予的團隊 id 比對；若不屬於其中之一，LiteLLM 會以該別名查找團隊，且只有在該團隊的 id 也是 JWT 授予的其中之一時才接受。無論哪種情況，請求都會以 canonical 的 `team_id` 執行，因此預算、模型存取、速率限制、支出記錄，以及資料庫中的 `team_id` 欄位都會顯示 id，而不會顯示別名。傳送 id 可略過別名查找。
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -617,7 +615,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-The same request with the alias of `team_id_2` (the `team_alias` set on `/team/new`) resolves to the same team:
+同一個請求若改用 `team_id_2` 的別名（設定於 `/team/new` 的 `team_alias`）也會解析為同一個團隊：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -630,20 +628,19 @@ curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-**Validation:**
-- The value must be a team id in the JWT's `team_ids_jwt_field` list (or the `team_id_jwt_field` value), or the alias of one of those teams
-- A value that is neither, including the alias of a team the JWT does not grant, returns a 403 whose message says the value matched no team id or team alias and lists the team ids the JWT allows
-- An alias shared by more than one team never resolves; keep aliases unique if you want to select teams by alias
-- If no header is provided, LiteLLM auto-selects the first team with access to the requested model
+**驗證：**
+- 該值必須是 JWT 的 `team_ids_jwt_field` 清單中的團隊 id（或 `team_id_jwt_field` 值），或其中某個團隊的別名
+- 若該值既不是團隊 id 也不是別名，包括 JWT 未授予之團隊的別名，會回傳 403，訊息會說明該值未匹配任何 team id 或 team alias，並列出 JWT 允許的 team id
+- 多個團隊共用的別名永遠不會被解析；若要透過別名選擇團隊，請保持別名唯一
+- 如果未提供標頭，LiteLLM 會自動選取第一個可存取所請求模型的團隊
 
-With `fallback_to_db_teams: true` and a JWT that carries no team claim, the header is checked against the user's team memberships in the database instead of the JWT, and an alias is accepted there too: the value must be the id or the alias of a team the user belongs to, otherwise the request is denied with a 403
+使用 `fallback_to_db_teams: true` 且 JWT 不包含 team claim 時，標頭會改為依據資料庫中使用者的團隊成員資格來檢查，而不是依據 JWT，且別名同樣可接受：該值必須是使用者所屬團隊的 id 或別名，否則請求會以 403 被拒絕。
 
+### 當 JWT claims 無法解析時，回退至資料庫中的 team {#fall-back-to-db-team-when-jwt-claims-dont-resolve}
 
-### Fall back to DB team when JWT claims don't resolve
+預設情況下，當已設定 `team_id_jwt_field` 或 `team_ids_jwt_field`，且 JWT 帶有一個**不**會對應到任何 LiteLLM 團隊的 claim 值時，LiteLLM 會拋出錯誤：此 claim 會被視為具有權威性。
 
-By default, when `team_id_jwt_field` or `team_ids_jwt_field` is configured and the JWT carries a claim value that does **not** map to any LiteLLM team, LiteLLM raises an error: the claim is treated as authoritative.
-
-For deployments where the IdP team claim is **advisory** (e.g. machine tokens whose `groups` claim lives in a separate namespace from LiteLLM `team_id`s), opt in to a fallback: if the configured claim is present but unresolved, LiteLLM defers to the user's single LiteLLM team (when the user belongs to exactly one team in the DB).
+對於 IdP 團隊 claim 為**建議性**的部署（例如 `groups` claim 位於與 LiteLLM `team_id`s 不同命名空間中的機器 token），可選擇啟用備援：如果已設定的 claim 存在但無法解析，LiteLLM 會改以使用者的單一 LiteLLM 團隊為準（當使用者在資料庫中恰好屬於一個團隊時）。
 
 ```yaml
 general_settings:
@@ -654,26 +651,25 @@ general_settings:
     team_claim_fallback: true # 👈 opt in
 ```
 
-**Behavior:**
+**行為：**
 
-| Trigger | Default (`team_claim_fallback: false`) | Opt-in (`team_claim_fallback: true`) |
+| 觸發條件 | 預設（`team_claim_fallback: false`） | 可選啟用（`team_claim_fallback: true`） |
 |---|---|---|
-| `team_id` claim resolves to a real team | 200 / use team | 200 / use team |
-| `team_id` claim present, team missing in DB | raise | defer → fallback to user's single DB team |
-| `team_alias` claim resolves | 200 / use team | 200 / use team |
-| `groups` claim resolves and team grants model | 200 | 200 |
-| `groups` claim resolves but team lacks model | 403 (preserved) | 403 (preserved) |
-| `groups` claim present, none resolve to a real team | 403 | defer → fallback to user's single DB team |
-| no claim at all (single-team fallback baseline) | 200 / fallback | 200 / fallback |
+| `team_id` claim 解析為真實團隊 | 200 / 使用團隊 | 200 / 使用團隊 |
+| `team_id` claim 存在，但資料庫中找不到團隊 | raise | defer → 備援至使用者的單一資料庫團隊 |
+| `team_alias` claim 解析 | 200 / 使用團隊 | 200 / 使用團隊 |
+| `groups` claim 解析且團隊授權模型 | 200 | 200 |
+| `groups` claim 解析但團隊缺少模型 | 403（保留） | 403（保留） |
+| `groups` claim 存在，但沒有任何一個能解析為真實團隊 | 403 | defer → 備援至使用者的單一資料庫團隊 |
+| 完全沒有 claim（單一團隊備援基準） | 200 / 備援 | 200 / 備援 |
 
-**Security envelope:** the fallback only resolves when the user belongs to exactly one LiteLLM team in the DB; non-404 errors (e.g. `"No DB Connected"`) always propagate. Keep the default (`false`) if your IdP team claims are authoritative for authorization.
+**安全範圍：** 只有在使用者在資料庫中恰好屬於一個 LiteLLM 團隊時，才會觸發備援；非 404 錯誤（例如 `"No DB Connected"`）一律會向外傳遞。如果您的 IdP 團隊 claims 是授權的權威來源，請維持預設（`false`）。
 
+### 自訂 JWT 驗證 {#custom-jwt-validate}
 
-### Custom JWT Validate
+如果您需要額外方式驗證 token 是否對 LiteLLM Proxy 有效，可使用自訂邏輯驗證 JWT Token。
 
-Validate a JWT Token using custom logic, if you need an extra way to verify if tokens are valid for LiteLLM Proxy.
-
-#### 1. Setup custom validate function
+#### 1. 設定自訂驗證函式 {#1-setup-custom-validate-function}
 
 ```python
 from typing import Literal
@@ -692,7 +688,7 @@ def my_custom_validate(token: str) -> Literal[True]:
   return True
 ```
 
-#### 2. Setup config.yaml
+#### 2. 設定 config.yaml {#2-setup-configyaml}
 
 ```yaml
 general_settings:
@@ -705,9 +701,9 @@ general_settings:
     custom_validate: custom_validate.my_custom_validate # 👈 custom validate function
 ```
 
-#### 3. Test the flow
+#### 3. 測試流程 {#3-test-the-flow}
 
-**Expected JWT**
+**預期 JWT**
 
 ```
 {
@@ -717,7 +713,7 @@ general_settings:
 }
 ```
 
-**Expected Response**
+**預期回應**
 
 ```
 {
@@ -725,20 +721,18 @@ general_settings:
 }
 ```
 
+### 允許的路由  {#allowed-routes}
 
+透過設定檔設定 JWT 可存取的路由。
 
-### Allowed Routes 
+預設情況下： 
 
-Configure which routes a JWT can access via the config.
+- 管理員：只能存取管理路由（`/team/*`、`/key/*`、`/user/*`）
+- 團隊：只能存取 openai 路由（`/chat/completions` 等）+ 資訊路由（`/*/info`）
 
-By default: 
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/b204f0c01c703317d812a1553363ab0cb989d5b6/litellm/proxy/_types.py#L95)
 
-- Admins: can access only management routes (`/team/*`, `/key/*`, `/user/*`)
-- Teams: can access only openai routes (`/chat/completions`, etc.)+ info routes (`/*/info`)
-
-[**See Code**](https://github.com/BerriAI/litellm/blob/b204f0c01c703317d812a1553363ab0cb989d5b6/litellm/proxy/_types.py#L95)
-
-**Admin Routes**
+**管理員路由**
 ```yaml
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
@@ -748,7 +742,7 @@ general_settings:
     admin_allowed_routes: ["/v1/embeddings"]
 ```
 
-**Team Routes**
+**團隊路由**
 ```yaml
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
@@ -759,40 +753,39 @@ general_settings:
     team_allowed_routes: ["/v1/chat/completions"] # 👈 Set accepted routes
 ```
 
-### Allowing other provider routes for Teams
+### 讓團隊可使用其他提供者路由 {#allowing-other-provider-routes-for-teams}
 
-Team JWTs can already call `/v1/messages` and `/v1/messages/count_tokens` by default. To enable team JWT tokens to access other Anthropic-style endpoints in `anthropic_routes`, update `team_allowed_routes` in your `litellm_jwtauth` configuration. `team_allowed_routes` supports the following values:
+團隊 JWT 已可預設呼叫 `/v1/messages` 和 `/v1/messages/count_tokens`。若要讓團隊 JWT token 存取 `anthropic_routes` 中其他 Anthropic 風格的端點，請更新您 `litellm_jwtauth` 組態中的 `team_allowed_routes`。`team_allowed_routes` 支援以下值：
 
-- Named route groups from `LiteLLMRoutes` (e.g., `openai_routes`, `anthropic_routes`, `info_routes`, `mapped_pass_through_routes`).
-- Exact routes, e.g. `/v1/messages`.
-- Route prefixes ending in `*`, e.g. `/internal-models/*`, which match every route under that prefix.
+- 來自 `LiteLLMRoutes` 的具名路由群組（例如 `openai_routes`、`anthropic_routes`、`info_routes`、`mapped_pass_through_routes`）。
+- 精確路由，例如 `/v1/messages`。
+- 以 `*` 結尾的路由前綴，例如 `/internal-models/*`，可比對該前綴下的每一條路由。
 
-Below is a quick reference for the route groups you can use and example representative routes from each group. If you need the exhaustive list, see the `LiteLLMRoutes` enum in `litellm/proxy/_types.py` for the authoritative list.
+以下是您可使用的路由群組快速參考，以及各群組的代表性範例路由。如果需要完整清單，請參閱 `LiteLLMRoutes` 中的 `litellm/proxy/_types.py` enum 作為權威清單。
 
-| Route Group | What it contains | Representative routes |
+| 路由群組 | 內容 | 代表性路由 |
 |-------------|------------------|-----------------------|
-| `openai_routes` | OpenAI-compatible REST endpoints (chat, completion, embeddings, images, responses, models, etc.) | `/v1/chat/completions`, `/v1/completions`, `/v1/embeddings`, `/v1/images/generations`, `/v1/models` |
-| `anthropic_routes` | Anthropic-style endpoints (`/v1/messages` and related) | `/v1/messages`, `/v1/messages/count_tokens`, `/v1/skills` |
-| `mapped_pass_through_routes` | Provider-specific pass-through route prefixes (e.g., Anthropic when proxied via `/anthropic`). Use with `mapped_pass_through_routes` for provider wildcard mapping | `/anthropic/*`, `/vertex-ai/*`, `/bedrock/*` |
-| `passthrough_routes_wildcard` | Wildcard mapping for providers (e.g., `/anthropic/*`) - precomputed wildcard list used by the proxy | `/anthropic/*`, `/vllm/*` |
-| `google_routes` | Google-specific (e.g., Vertex / Batching endpoints) | `/v1beta/models/{model_name}:generateContent` |
-| `mcp_routes` | Internal MCP management endpoints | `/mcp/tools`, `/mcp/tools/call` |
-| `info_routes` | Read-only & info endpoints used by the UI | `/key/info`, `/team/info`, `/v1/models` |
-| `management_routes` | Admin-only management endpoints (create/update/delete user/team/model) | `/team/new`, `/key/generate`, `/model/new` |
-| `spend_tracking_routes` | Budget/spend related endpoints | `/spend/logs`, `/spend/keys`, `/spend/users` |
-| `public_routes` | Public and unauthenticated endpoints | `/`, `/routes`, `/.well-known/litellm-ui-config` |
+| `openai_routes` | OpenAI 相容的 REST 端點（chat、completion、embeddings、images、responses、models 等） | `/v1/chat/completions`、`/v1/completions`、`/v1/embeddings`、`/v1/images/generations`、`/v1/models` |
+| `anthropic_routes` | Anthropic 風格端點（`/v1/messages` 與相關端點） | `/v1/messages`、`/v1/messages/count_tokens`、`/v1/skills` |
+| `mapped_pass_through_routes` | 提供者專屬的轉發路由前綴（例如透過 `/anthropic` 轉發時的 Anthropic）。搭配 `mapped_pass_through_routes` 使用，以進行提供者萬用字元對應 | `/anthropic/*`、`/vertex-ai/*`、`/bedrock/*` |
+| `passthrough_routes_wildcard` | 提供者的萬用字元對應（例如 `/anthropic/*`）- 供 proxy 使用的預先計算萬用字元清單 | `/anthropic/*`、`/vllm/*` |
+| `google_routes` | Google 專屬（例如 Vertex / Batching 端點） | `/v1beta/models/{model_name}:generateContent` |
+| `mcp_routes` | 內部 MCP 管理端點 | `/mcp/tools`、`/mcp/tools/call` |
+| `info_routes` | UI 使用的唯讀與資訊端點 | `/key/info`、`/team/info`、`/v1/models` |
+| `management_routes` | 僅限管理員的管理端點（建立/更新/刪除 user/team/model） | `/team/new`、`/key/generate`、`/model/new` |
+| `spend_tracking_routes` | 預算/支出相關端點 | `/spend/logs`、`/spend/keys`、`/spend/users` |
+| `public_routes` | 公開與未驗證端點 | `/`、`/routes`、`/.well-known/litellm-ui-config` |
 
-Note: `llm_api_routes` is the union of OpenAI, Anthropic, Google, pass-through and other LLM routes (`openai_routes + anthropic_routes + google_routes + mapped_pass_through_routes + passthrough_routes_wildcard + apply_guardrail_routes + mcp_routes + litellm_native_routes`).
+注意：`llm_api_routes` 是 OpenAI、Anthropic、Google、轉發與其他 LLM 路由（`openai_routes + anthropic_routes + google_routes + mapped_pass_through_routes + passthrough_routes_wildcard + apply_guardrail_routes + mcp_routes + litellm_native_routes`）的聯集。
 
-Defaults (what the proxy uses if you don't override them in `litellm_jwtauth`):
+預設值（若您未在 `litellm_jwtauth` 中覆寫，proxy 會使用的值）：
 
-- `admin_jwt_scope`: `litellm_proxy_admin`
-- `admin_allowed_routes` (default): `management_routes`, `spend_tracking_routes`, `global_spend_tracking_routes`, `info_routes` 
-- `team_allowed_routes` (default): `openai_routes`, `info_routes`, `mcp_routes`, `/v1/messages`, `/v1/messages/count_tokens`. Setting `team_allowed_routes` replaces this list, so add `mcp_routes` and the `/v1/messages` routes back if teams still need them
-- `public_allowed_routes` (default): `public_routes`
+- `admin_jwt_scope`：`litellm_proxy_admin`
+- `admin_allowed_routes`（預設）：`management_routes`、`spend_tracking_routes`、`global_spend_tracking_routes`、`info_routes` 
+- `team_allowed_routes`（預設）：`openai_routes`、`info_routes`、`mcp_routes`、`/v1/messages`、`/v1/messages/count_tokens`。設定 `team_allowed_routes` 會取代此清單，因此如果團隊仍需要 `mcp_routes` 和 `/v1/messages` 路由，請將它們加回來
+- `public_allowed_routes`（預設）：`public_routes`
 
-
-Example: Allow team JWTs to call Anthropic `/v1/messages` (either by route group or by explicit route string):
+範例：允許團隊 JWT 呼叫 Anthropic `/v1/messages`（可透過路由群組或明確路由字串）：
 
 ```yaml
 general_settings:
@@ -802,7 +795,7 @@ general_settings:
     team_allowed_routes: ["openai_routes", "info_routes", "anthropic_routes"]
 ```
 
-Or selectively allow the exact Anthropic message endpoint only:
+或者只選擇性允許精確的 Anthropic message 端點：
 
 ```yaml
 general_settings:
@@ -812,7 +805,7 @@ general_settings:
     team_allowed_routes: ["/v1/messages", "info_routes"]
 ```
 
-If you register pass-through endpoints that all share a prefix, grant the prefix once with a trailing `*` so routes added later are covered without another config change. `admin_allowed_routes` accepts the same patterns.
+如果您註冊了共用同一前綴的 passthrough 端點，請一次以尾端 `*` 授權該前綴，這樣之後新增的路由就能涵蓋到，而不需要再修改設定。`admin_allowed_routes` 支援相同的模式。
 
 ```yaml
 general_settings:
@@ -822,12 +815,11 @@ general_settings:
     team_allowed_routes: ["openai_routes", "info_routes", "/internal-models/*"]
 ```
 
-Only a trailing `*` is treated as a wildcard, and it matches routes below the prefix, so `/internal-models/*` covers `/internal-models/anthropic/v1/messages` but not the bare `/internal-models` route.
+只有尾端 `*` 會被視為萬用字元，且它會比對前綴下方的路由，因此 `/internal-models/*` 會涵蓋 `/internal-models/anthropic/v1/messages`，但不包含裸的 `/internal-models` 路由。
 
+### 快取 Public Keys  {#caching-public-keys}
 
-### Caching Public Keys 
-
-Control how long public keys are cached for (in seconds).
+控制 public keys 的快取時間長度（以秒為單位）。
 
 ```yaml
 general_settings:
@@ -839,9 +831,9 @@ general_settings:
     public_key_ttl: 600 # 👈 KEY CHANGE
 ```
 
-### Custom JWT Field 
+### 自訂 JWT 欄位  {#custom-jwt-field}
 
-Set a custom field in which the team_id exists. By default, the 'client_id' field is checked. 
+設定 team_id 所在的自訂欄位。預設會檢查 'client_id' 欄位。 
 
 ```yaml
 general_settings:
@@ -851,11 +843,11 @@ general_settings:
     team_id_jwt_field: "client_id" # 👈 KEY CHANGE
 ```
 
-### Block Teams 
+### 封鎖團隊  {#block-teams}
 
-To block all requests for a certain team id, use `/team/block`
+若要封鎖某個 team id 的所有請求，請使用 `/team/block`
 
-**Block Team**
+**封鎖團隊**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/team/block' \
@@ -866,7 +858,7 @@ curl --location 'http://0.0.0.0:4000/team/block' \
 }'
 ```
 
-**Unblock Team**
+**解除封鎖團隊**
 
 ```bash
 curl --location 'http://0.0.0.0:4000/team/unblock' \
@@ -877,12 +869,11 @@ curl --location 'http://0.0.0.0:4000/team/unblock' \
 }'
 ```
 
+### Upsert 使用者 + 允許的電子郵件網域  {#upsert-users--allowed-email-domains}
 
-### Upsert Users + Allowed Email Domains 
+允許屬於特定電子郵件網域的使用者自動存取 proxy。
 
-Allow users who belong to a specific email domain, automatic access to the proxy.
-
-**Note:** `user_allowed_email_domain` is optional. If not specified, all users will be allowed regardless of their email domain.
+**注意：** `user_allowed_email_domain` 為選填。若未指定，所有使用者都將被允許，不論其電子郵件網域為何。
  
 ```yaml
 general_settings:
@@ -894,17 +885,17 @@ general_settings:
     user_id_upsert: true # 👈 upserts the user to db, if valid email but not in db
 ```
 
-## OIDC UserInfo Endpoint
+## OIDC UserInfo 端點 {#oidc-userinfo-endpoint}
 
-Use this when your JWT/access token doesn't contain user-identifying information. LiteLLM will call your identity provider's UserInfo endpoint to fetch user details.
+當您的 JWT/access token 不包含可識別使用者的資訊時，請使用此功能。LiteLLM 會呼叫您的身分提供者的 UserInfo 端點以擷取使用者詳細資料。
 
-### When to Use
+### 何時使用 {#when-to-use}
 
-- Your JWT is opaque (not self-contained) or lacks user claims
-- You need to fetch fresh user information from your identity provider
-- Your access tokens don't include email, roles, or other identifying data
+- 您的 JWT 是不透明的（非自包含）或缺少使用者 claims
+- 您需要從身分提供者取得最新的使用者資訊
+- 您的 access tokens 不包含 email、roles 或其他識別資料
 
-### Configuration
+### 設定 {#configuration}
 
 ```yaml title="config.yaml" showLineNumbers
 general_settings:
@@ -921,7 +912,7 @@ general_settings:
     user_roles_jwt_field: "roles"
 ```
 
-### Flow Diagram
+### 流程圖 {#flow-diagram}
 
 ```mermaid
 sequenceDiagram
@@ -940,7 +931,7 @@ sequenceDiagram
     LiteLLM-->>Client: Authorized/Denied
 ```
 
-### Example: Azure AD
+### 範例：Azure AD {#example-azure-ad}
 
 ```yaml title="config.yaml" showLineNumbers
 litellm_jwtauth:
@@ -950,7 +941,7 @@ litellm_jwtauth:
   user_email_jwt_field: "email"
 ```
 
-### Example: Keycloak
+### 範例：Keycloak {#example-keycloak}
 
 ```yaml title="config.yaml" showLineNumbers
 litellm_jwtauth:
@@ -960,15 +951,15 @@ litellm_jwtauth:
   user_roles_jwt_field: "resource_access.your-client.roles"
 ```
 
-## Route JWT-Shaped Machine Tokens to OAuth2
+## 將 JWT 形狀的機器 tokens 路由至 OAuth2 {#route-jwt-shaped-machine-tokens-to-oauth2}
 
-Use this when:
-- `enable_jwt_auth: true` for standard JWT validation
-- machine tokens are JWT-shaped and should be routed to OAuth2 based on claims
+在以下情況使用：
+- `enable_jwt_auth: true` 進行標準 JWT 驗證
+- 機器 tokens 為 JWT 形狀，且應根據 claims 路由至 OAuth2
 
-`routing_overrides` supports two operating modes:
-- **Selective mode**: set `enable_oauth2_auth: false` to send only matching JWTs to OAuth2 on LLM + info routes
-- **Global mode**: set `enable_oauth2_auth: true` to also enable OAuth2 on LLM + info routes
+`routing_overrides` 支援兩種運作模式：
+- **選擇性模式**：設定 `enable_oauth2_auth: false`，只將符合條件的 JWT 傳送至 LLM + 資訊路由上的 OAuth2
+- **全域模式**：設定 `enable_oauth2_auth: true`，也在 LLM + 資訊路由上啟用 OAuth2
 
 ```yaml title="config.yaml"
 general_settings:
@@ -982,16 +973,16 @@ general_settings:
         path: "oauth2"
 ```
 
-### Matching behavior
+### 比對行為 {#matching-behavior}
 
-- A rule matches when **all** configured selectors match the corresponding token claims (AND semantics).
-- Supported selectors: `iss` (required), `client_id` (optional), `scope` (optional), `aud` (optional).
-- Selector values can be a single string or a list of strings (the claim must match at least one entry, using the rules below).
-- **Wildcards:** selectors may use shell-style `*` and `?`. Matching is **case-sensitive**, so use the same casing your IdP emits in JWT claims.
-- **`scope` claim as a space-delimited string:** OAuth/OIDC often sends `scope` as one string (e.g. `openid profile App:LiteLLM`). LiteLLM splits that string **only when matching the `scope` selector**, so a configured value like `App:LiteLLM` can match. **`iss`, `aud`, and `client_id` are never split on spaces**; the full claim string is used (routing uses unverified claims only for path selection; final auth still validates the token).
-- If no rule matches, LiteLLM continues with standard JWT validation.
+- 當**所有**已設定的選擇器都與對應的 token claim 相符時，規則即成立（AND 語意）。
+- 支援的選擇器：`iss`（必填）、`client_id`（選填）、`scope`（選填）、`aud`（選填）。
+- 選擇器值可以是單一字串或字串清單（claim 至少必須符合其中一項，並依下列規則比對）。
+- **萬用字元：** 選擇器可使用 shell 風格的 `*` 與 `?`。比對是**區分大小寫**的，因此請使用與您的 IdP 在 JWT claim 中輸出的相同大小寫。
+- **`scope` claim 作為以空格分隔的字串：** OAuth/OIDC 常會將 `scope` 以單一字串傳送（例如 `openid profile App:LiteLLM`）。LiteLLM 只有在比對 `scope` 選擇器時才會將該字串拆分，因此像 `App:LiteLLM` 這樣的設定值可以比對成功。**`iss`、`aud` 和 `client_id` 絕不會以空格拆分**；會使用完整的 claim 字串（路由只使用未驗證的 claim 進行路徑選擇；最終驗證仍會驗證 token）。
+- 如果沒有任何規則匹配，LiteLLM 會繼續進行標準 JWT 驗證。
 
-### Example: `scope` and wildcard `client_id`
+### 範例：`scope` 與萬用字元 `client_id` {#example-scope-and-wildcard-client_id}
 
 ```yaml title="config.yaml"
 general_settings:
@@ -1005,7 +996,7 @@ general_settings:
         path: "oauth2"
 ```
 
-### List-based override example
+### 清單式覆寫範例 {#list-based-override-example}
 
 ```yaml title="config.yaml"
 general_settings:
@@ -1019,16 +1010,15 @@ general_settings:
         path: "oauth2"
 ```
 
-## [BETA] Control Access with OIDC Roles
+## [BETA] 使用 OIDC 角色控管存取 {#beta-control-access-with-oidc-roles}
 
-Allow JWT tokens with supported roles to access the proxy.
+允許具備支援角色的 JWT token 存取 proxy。
 
-Let users and teams access the proxy, without needing to add them to the DB.
+讓使用者與團隊可以存取 proxy，而不需要將他們加入資料庫。
 
+非常重要，請設定 `enforce_rbac: true` 以確保 RBAC 系統已啟用。
 
-Very important, set `enforce_rbac: true` to ensure that the RBAC system is enabled.
-
-**Note:** This is in beta and might change unexpectedly.
+**注意：** 這項功能目前為 beta，可能會在未經通知的情況下變更。
 
 ```yaml
 general_settings:
@@ -1050,21 +1040,21 @@ environment_variables:
   JWT_AUDIENCE: "api://LiteLLM_Proxy" # ensures audience is validated
 ```
 
-- `object_id_jwt_field`: The field in the JWT token that contains the object id. This id can be either a user id or a team id. Use this instead of `user_id_jwt_field` and `team_id_jwt_field`. If the same field could be both. **Supports dot notation** for nested claims (e.g., `"profile.object_id"`).
+- `object_id_jwt_field`：JWT token 中包含 object id 的欄位。此 id 可以是 user id 或 team id。請使用此欄位取代 `user_id_jwt_field` 和 `team_id_jwt_field`。若同一欄位可能同時是兩者。**支援點記法** 以處理巢狀聲明（例如，`"profile.object_id"`）。
 
-- `roles_jwt_field`: The field in the JWT token that contains the roles. This field is a list of roles that the user has. **Supports dot notation** for nested fields - e.g., `resource_access.litellm-test-client-id.roles`.
+- `roles_jwt_field`：JWT token 中包含 roles 的欄位。此欄位是一個使用者所擁有角色的清單。**支援點記法** 用於巢狀欄位 - 例如，`resource_access.litellm-test-client-id.roles`。
 
-**Additional JWT Field Configuration Options:**
+**其他 JWT 欄位設定選項：**
 
-- `team_ids_jwt_field`: Field containing team IDs (as a list). **Supports dot notation** (e.g., `"groups"`, `"teams.ids"`).
-- `user_email_jwt_field`: Field containing user email. **Supports dot notation** (e.g., `"email"`, `"user.email"`).
-- `end_user_id_jwt_field`: Field containing end-user ID for cost tracking. **Supports dot notation** (e.g., `"customer_id"`, `"customer.id"`). When set, the end-user ID from the verified JWT claim takes precedence over any request-supplied value (headers like `x-litellm-end-user-id` or body fields like `metadata.user_id`; see the [customer ID priority order](customers#1-make-llm-api-call-w-customer-id)).
+- `team_ids_jwt_field`：包含團隊 ID 的欄位（以清單形式）。**支援點記法**（例如 `"groups"`、`"teams.ids"`）。
+- `user_email_jwt_field`：包含使用者電子郵件的欄位。**支援點記法**（例如 `"email"`、`"user.email"`）。
+- `end_user_id_jwt_field`：包含用於成本追蹤的終端使用者 ID 的欄位。**支援點記法**（例如 `"customer_id"`、`"customer.id"`）。當設定此項時，來自已驗證 JWT claim 的終端使用者 ID 會優先於任何請求提供的值（例如標頭 `x-litellm-end-user-id` 或本文欄位 `metadata.user_id`；請參閱［customer ID 優先順序］(customers#1-make-llm-api-call-w-customer-id)）。
 
-- `role_mappings`: A list of role mappings. Map the received role in the JWT token to an internal role on LiteLLM.
+- `role_mappings`：角色對應清單。將 JWT token 中收到的角色對應到 LiteLLM 的內部角色。
 
-- `JWT_AUDIENCE`: The audience of the JWT token. This is used to validate the audience of the JWT token. Set via an environment variable.
+- `JWT_AUDIENCE`：JWT token 的 audience。這用於驗證 JWT token 的 audience。透過環境變數設定。
 
-### Example Token 
+### Token 範例  {#example-token}
 
 ```bash
 {
@@ -1074,24 +1064,23 @@ environment_variables:
 }
 ```
 
-### Role Mapping Spec 
+### 角色對應規格  {#role-mapping-spec}
 
-- `role`: The expected role in the JWT token. 
-- `internal_role`: The internal role on LiteLLM that will be used to control access. 
+- `role`：JWT token 中預期的角色。 
+- `internal_role`：LiteLLM 上將用於控制存取的內部角色。 
 
-Supported internal roles:
-- `team`: Team object will be used for RBAC spend tracking. Use this for tracking spend for a 'use case'. 
-- `internal_user`: User object will be used for RBAC spend tracking. Use this for tracking spend for an 'individual user'.
-- `proxy_admin`: Proxy admin will be used for RBAC spend tracking. Use this for granting admin access to a token.
+支援的內部角色：
+- `team`：將使用 Team 物件進行 RBAC 花費追蹤。請用於追蹤某個「使用情境」的花費。 
+- `internal_user`：將使用 User 物件進行 RBAC 花費追蹤。請用於追蹤某個「個別使用者」的花費。
+- `proxy_admin`：將使用 Proxy admin 進行 RBAC 花費追蹤。請用於授予 token 管理員存取權限。
 
-### [Architecture Diagram (Control Model Access)](./jwt_auth_arch)
+### [架構圖（控制模型存取）](./jwt_auth_arch) {#architecture-diagram-control-model-access}
 
-## [BETA] Control Model Access with Scopes
+## [BETA] 使用 Scopes 控制模型存取 {#beta-control-model-access-with-scopes}
 
-Control which models a JWT can access. Set `enforce_scope_based_access: true` to enforce scope-based access control.
+控制 JWT 可以存取哪些模型。設定 `enforce_scope_based_access: true` 以強制執行以 scope 為基礎的存取控制。
 
-### 1. Setup config.yaml with scope mappings.
-
+### 1. 使用 scope 對應設定 config.yaml。 {#1-setup-configyaml-with-scope-mappings}
 
 ```yaml
 model_list:
@@ -1118,14 +1107,14 @@ general_settings:
     enforce_rbac: true # 👈 enforces only a Team/User/ProxyAdmin can access the proxy.
 ```
 
-#### Scope Mapping Spec 
+#### Scope 對應規格  {#scope-mapping-spec}
 
-- `scope`: The scope to be used for the JWT token.
-- `models`: The models that the JWT token can access. Value is the `model_name` in `model_list`. Note: Wildcard routes are not currently supported.
+- `scope`：JWT token 要使用的 scope。
+- `models`：JWT token 可以存取的模型。值為 `model_name` 中的 `model_list`。注意：目前不支援萬用字元路由。
 
-### 2. Create a JWT with the correct scopes.
+### 2. 建立具有正確 scopes 的 JWT。 {#2-create-a-jwt-with-the-correct-scopes}
 
-Expected Token:
+預期的 Token：
 
 ```bash
 {
@@ -1133,7 +1122,7 @@ Expected Token:
 }
 ```
 
-### 3. Test the flow.
+### 3. 測試流程。 {#3-test-the-flow-1}
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -1150,23 +1139,23 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-## [BETA] Sync User Roles and Teams with IDP
+## [BETA] 與 IDP 同步使用者角色與團隊 {#beta-sync-user-roles-and-teams-with-idp}
 
-Automatically sync user roles and team memberships from your Identity Provider (IDP) to LiteLLM's database. This ensures that user permissions and team memberships in LiteLLM stay in sync with your IDP.
+將您的 Identity Provider（IDP）中的使用者角色與團隊成員資格自動同步到 LiteLLM 的資料庫。這可確保 LiteLLM 中的使用者權限與團隊成員資格與您的 IDP 保持同步。
 
-**Note:** This is in beta and might change unexpectedly.
+**注意：** 這項功能目前為 beta，可能會在未經通知的情況下變更。
 
-### Use Cases
+### 使用情境 {#use-cases}
 
-- **Role Synchronization**: Automatically update user roles in LiteLLM when they change in your IDP
-- **Team Membership Sync**: Keep team memberships in sync between your IDP and LiteLLM
-- **Centralized Access Management**: Manage all user permissions through your IDP while maintaining LiteLLM functionality
+- **角色同步**：當使用者在您的 IDP 中變更角色時，自動更新 LiteLLM 中的使用者角色
+- **團隊成員資格同步**：讓您的 IDP 與 LiteLLM 之間的團隊成員資格保持同步
+- **集中式存取管理**：透過您的 IDP 管理所有使用者權限，同時維持 LiteLLM 功能
 
-### Setup
+### 設定 {#setup}
 
-#### 1. Configure JWT Role Mapping
+#### 1. 設定 JWT 角色對應 {#1-configure-jwt-role-mapping}
 
-Map roles from your JWT token to LiteLLM user roles:
+將 JWT token 中的角色對應到 LiteLLM 使用者角色：
 
 ```yaml
 general_settings:
@@ -1186,17 +1175,17 @@ general_settings:
         litellm_role: "internal_user"
 ```
 
-#### 2. JWT Role Mapping Spec
+#### 2. JWT 角色對應規格 {#2-jwt-role-mapping-spec}
 
-- `jwt_role`: The role name as it appears in your JWT token. Supports wildcard patterns using `fnmatch` (e.g., `"ADMIN_*"` matches `"ADMIN_READ"`, `"ADMIN_WRITE"`, etc.)
-- `litellm_role`: The corresponding LiteLLM user role
+- `jwt_role`：JWT token 中顯示的角色名稱。支援使用 `fnmatch` 的萬用字元樣式（例如，`"ADMIN_*"` 可匹配 `"ADMIN_READ"`、`"ADMIN_WRITE"` 等）
+- `litellm_role`：對應的 LiteLLM 使用者角色
 
-**Supported LiteLLM Roles:**
-- `proxy_admin`: Full administrative access
-- `internal_user`: Standard user access
-- `internal_user_view_only`: Read-only access
+**支援的 LiteLLM 角色：**
+- `proxy_admin`：完整管理存取權
+- `internal_user`：標準使用者存取權
+- `internal_user_view_only`：唯讀存取權
 
-#### 3. Example JWT Token
+#### 3. JWT Token 範例 {#3-example-jwt-token}
 
 ```json
 {
@@ -1208,25 +1197,25 @@ general_settings:
 }
 ```
 
-### How It Works
+### 運作方式 {#how-it-works}
 
-When a user makes a request with a JWT token:
+當使用者帶著 JWT token 發出請求時：
 
-1. **Role Sync**: 
-   - LiteLLM checks if the user's role in the JWT matches their role in the database
-   - If different, the user's role is updated in LiteLLM's database
-   - Uses the `jwt_litellm_role_map` to convert JWT roles to LiteLLM roles
+1. **角色同步**： 
+   - LiteLLM 會檢查 JWT 中使用者的角色是否與資料庫中的角色一致
+   - 如果不同，使用者角色會在 LiteLLM 的資料庫中更新
+   - 使用 `jwt_litellm_role_map` 將 JWT 角色轉換為 LiteLLM 角色
 
-2. **Team Membership Sync**:
-   - Compares team memberships from the JWT token with the user's current teams in LiteLLM
-   - Adds the user to new teams found in the JWT
-   - Removes the user from teams not present in the JWT
+2. **團隊成員資格同步**：
+   - 比對 JWT token 中的團隊成員資格與 LiteLLM 中該使用者目前的團隊
+   - 將使用者加入 JWT 中出現的新團隊
+   - 將使用者從 JWT 中未出現的團隊移除
 
-3. **Database Updates**:
-   - Updates happen automatically during the authentication process
-   - No manual intervention required
+3. **資料庫更新**：
+   - 更新會在驗證程序期間自動進行
+   - 不需要手動介入
 
-### Configuration Options
+### 設定選項 {#configuration-options}
 
 ```yaml
 general_settings:
@@ -1249,16 +1238,16 @@ general_settings:
         litellm_role: "internal_user"
 ```
 
-### Important Notes
+### 重要注意事項 {#important-notes}
 
-- **Performance**: Sync operations happen during authentication, which may add slight latency
-- **Database Access**: Requires database access for user and team updates
-- **Team Creation**: Teams mentioned in JWT tokens must exist in LiteLLM before sync can assign users to them
-- **Wildcard Support**: JWT role patterns support wildcard matching using `fnmatch`
+- **效能**：同步操作會在驗證期間進行，可能會增加些微延遲
+- **資料庫存取**：需要資料庫存取權才能更新使用者與團隊
+- **團隊建立**：JWT token 中提到的團隊必須先存在於 LiteLLM 中，之後同步才能將使用者指派給它們
+- **萬用字元支援**：JWT 角色樣式支援使用 `fnmatch` 的萬用字元比對
 
-### Testing the Sync Feature
+### 測試同步功能 {#testing-the-sync-feature}
 
-1. **Create a test user with initial role**:
+1. **建立一個初始角色的測試使用者**：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/user/new' \
@@ -1270,7 +1259,7 @@ curl -X POST 'http://0.0.0.0:4000/user/new' \
 }'
 ```
 
-2. **Make a request with JWT containing different role**:
+2. **發出一個包含不同角色的 JWT 請求**：
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
@@ -1282,22 +1271,22 @@ curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-3. **Verify the role was updated**:
+3. **驗證角色已更新**：
 
 ```bash
 curl -X GET 'http://0.0.0.0:4000/user/info?user_id=user-123' \
 -H 'Authorization: Bearer <PROXY_MASTER_KEY>'
 ```
 
-## [BETA] JWT-to-Virtual-Key Mapping
+## [BETA] JWT 到虛擬金鑰對應 {#beta-jwt-to-virtual-key-mapping}
 
-Map JWT identities to LiteLLM virtual keys so that JWT-authenticated users get per-user budgets, rate limits, model access controls, and spend tracking.
+將 JWT 身分對應到 LiteLLM 虛擬金鑰，讓使用 JWT 驗證的使用者獲得按使用者區分的預算、速率限制、模型存取控制與花費追蹤。
 
-When a JWT comes in, LiteLLM looks up a configured claim (e.g. `email`, `sub`) in a mapping table. If a mapping exists, the request is treated as if it arrived with the corresponding virtual key, and all virtual key features apply.
+當 JWT 傳入時，LiteLLM 會在對應表中查找已設定的 claim（例如 `email`、`sub`）。如果存在對應，則該請求會被視為是透過相應的虛擬金鑰送達，且所有虛擬金鑰功能都會套用。
 
-### Setup
+### 設定 {#setup-1}
 
-Add `virtual_key_claim_field` to your JWT auth config:
+將 `virtual_key_claim_field` 加入您的 JWT 驗證設定：
 
 ```yaml
 general_settings:
@@ -1307,11 +1296,11 @@ general_settings:
     virtual_key_mapping_cache_ttl: 300       # Cache TTL in seconds (default: 300)
 ```
 
-### Managing Mappings
+### 管理對應 {#managing-mappings}
 
-All endpoints require admin auth (`Authorization: Bearer <master_key>`).
+所有端點都需要管理員驗證（`Authorization: Bearer <master_key>`）。
 
-**Create a mapping.** Link a JWT claim value to an existing virtual key:
+**建立對應。** 將 JWT claim 值連結到現有的虛擬金鑰：
 
 ```bash
 curl -X POST http://localhost:4000/jwt/key/mapping/new \
@@ -1324,21 +1313,21 @@ curl -X POST http://localhost:4000/jwt/key/mapping/new \
   }'
 ```
 
-**List mappings** (paginated):
+**列出對應**（分頁）：
 
 ```bash
 curl http://localhost:4000/jwt/key/mapping/list?page=1&size=50 \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Get a specific mapping:**
+**取得特定對應：**
 
 ```bash
 curl "http://localhost:4000/jwt/key/mapping/info?id=<mapping-id>" \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Update a mapping:**
+**更新對應：**
 
 ```bash
 curl -X POST http://localhost:4000/jwt/key/mapping/update \
@@ -1351,7 +1340,7 @@ curl -X POST http://localhost:4000/jwt/key/mapping/update \
   }'
 ```
 
-**Delete a mapping:**
+**刪除對應：**
 
 ```bash
 curl -X POST http://localhost:4000/jwt/key/mapping/delete \
@@ -1360,31 +1349,31 @@ curl -X POST http://localhost:4000/jwt/key/mapping/delete \
   -d '{"id": "<mapping-id>"}'
 ```
 
-### How It Works
+### 運作方式 {#how-it-works-1}
 
-1. A request arrives with a JWT bearer token
-2. LiteLLM validates the JWT signature
-3. Extracts the configured claim (e.g. `email` → `user@example.com`)
-4. Looks up the claim value in the `LiteLLM_JWTKeyMapping` table
-5. If a mapping exists, the request proceeds as if the mapped virtual key was used, so budgets, rate limits, model access, and spend tracking all apply
-6. If no mapping exists, falls back to standard JWT auth (team-level controls)
+1. 請求攜帶 JWT bearer token 抵達
+2. LiteLLM 驗證 JWT 簽章
+3. 擷取已設定的 claim（例如 `email` → `user@example.com`）
+4. 在 `LiteLLM_JWTKeyMapping` 表中查找 claim 值
+5. 如果存在對應，則請求會如同使用已對應的虛擬金鑰般繼續處理，因此預算、速率限制、模型存取與支出追蹤都會套用
+6. 如果沒有對應，則回退到標準 JWT 驗證（團隊層級控制）
 
-### Error Codes
+### 錯誤代碼 {#error-codes}
 
-| Code | Meaning |
+| 代碼 | 含義 |
 |------|---------|
-| 409 | Duplicate mapping — a mapping for that claim name + value already exists |
-| 400 | The provided key does not match an existing virtual key |
-| 404 | Mapping not found (for update/delete/info) |
-| 403 | Non-admin user attempted a mapping operation |
+| 409 | 重複對應 — 該 claim 名稱 + 值的對應已存在 |
+| 400 | 提供的金鑰與現有虛擬金鑰不符 |
+| 404 | 找不到對應（用於更新/刪除/資訊） |
+| 403 | 非管理員使用者嘗試執行對應操作 |
 
-## Bind JWTs to Registered Agents
+## 將 JWT 綁定到已註冊的代理程式 {#bind-jwts-to-registered-agents}
 
-Provision agent identities in your identity provider (for example, one Microsoft Entra ID app registration per agent) and let LiteLLM enforce the agent's policies on every JWT that agent presents. When `agent_id_jwt_field` is set, LiteLLM reads that claim from the verified token, matches it against a registered agent (first by `agent_id`, then by `agent_name`), and sets `agent_id` on the authenticated identity. Everything that already applies to a virtual key bound to an agent then applies to the JWT caller too: `require_trace_id_on_calls_by_agent`, per-agent MCP server and tool restrictions, and `agent_id` spend attribution.
+在您的身分識別提供者中佈建代理程式身分（例如，每個代理程式對應一個 Microsoft Entra ID app registration），並讓 LiteLLM 對該代理程式所呈現的每個 JWT 強制執行其政策。當設定 `agent_id_jwt_field` 時，LiteLLM 會從已驗證的 token 讀取該 claim，將其與已註冊的代理程式比對（先依 `agent_id`，再依 `agent_name`），並將 `agent_id` 設定在已驗證身分上。原本已適用於綁定代理程式的虛擬金鑰的一切，也會同樣適用於 JWT 呼叫端：`require_trace_id_on_calls_by_agent`、每個代理程式的 MCP server 與工具限制，以及 `agent_id` 支出歸屬。
 
-### Setup
+### 設定 {#setup-2}
 
-Register the agent under the name your identity provider will send. For an Entra app token that is the client id, which Entra puts in the `azp` claim (v2 tokens) or `appid` (v1 tokens).
+請以您的身分識別提供者會傳送的名稱註冊該代理程式。對於 Entra app token 而言，那就是 client id，Entra 會將其放在 `azp` claim（v2 tokens）或 `appid`（v1 tokens）中。
 
 ```yaml
 agents:
@@ -1404,16 +1393,14 @@ general_settings:
     user_id_jwt_field: "sub"
 ```
 
-### Behavior
+### 行為 {#behavior}
 
-A token whose claim matches a registered agent is bound to that agent and inherits its restrictions, so with the config above a call without `x-litellm-trace-id` is rejected with `400`. A token whose claim matches no registered agent is rejected with `403` rather than falling back to an unbound identity, the same way an unknown `team_id_jwt_field` value is rejected; this applies to admin-scoped tokens as well. A token that does not carry the claim at all is authenticated exactly as before. When `agent_id_jwt_field` is unset nothing changes.
+其 claim 與已註冊代理程式相符的 token，會綁定到該代理程式並繼承其限制，因此在上述設定下，沒有 `x-litellm-trace-id` 的呼叫會以 `400` 被拒絕。其 claim 與任何已註冊代理程式都不相符的 token，會以 `403` 被拒絕，而不會回退為未綁定的身分，這與未知的 `team_id_jwt_field` 值被拒絕的方式相同；這也適用於 admin 範圍的 token。完全不帶該 claim 的 token，則會如同以往一樣完成驗證。當 `agent_id_jwt_field` 未設定時，不會有任何變更。
 
-Every token that carries the configured claim is treated as an agent. Entra puts `azp` on delegated (user) tokens too, so if humans and agents obtain tokens for the same audience, `azp` will bind or reject the human callers as well. In that setup point `agent_id_jwt_field` at a claim that only agent tokens carry, such as an optional claim or a custom claim added through a claims mapping policy on the agents' app registrations, and leave `azp` for a proxy whose JWT callers are all agents.
+任何帶有已設定 claim 的 token 都會被視為代理程式。Entra 也會將 `azp` 放在 delegated（user）tokens 上，因此如果人類與代理程式為同一個 audience 取得 token，`azp` 也會綁定或拒絕人類呼叫者。在那種設定下，請將 `agent_id_jwt_field` 指向只有代理程式 token 才會帶有的 claim，例如 optional claim，或透過代理程式 app registrations 上的 claims mapping policy 新增的自訂 claim，並讓 `azp` 保留給所有 JWT 呼叫端皆為代理程式的 proxy。
 
-If the token also maps to a virtual key through [JWT-to-Virtual-Key Mapping](#beta-jwt-to-virtual-key-mapping), the mapped key's own `agent_id` is used and `agent_id_jwt_field` is not consulted for that request.
+如果該 token 也透過［JWT-to-Virtual-Key Mapping］(#beta-jwt-to-virtual-key-mapping) 對應到虛擬金鑰，則會使用對應金鑰自身的 `agent_id`，且該請求不會查詢 `agent_id_jwt_field`。
 
-## All JWT Params
+## 所有 JWT 參數 {#all-jwt-params}
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/b204f0c01c703317d812a1553363ab0cb989d5b6/litellm/proxy/_types.py#L95)
-
-
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/b204f0c01c703317d812a1553363ab0cb989d5b6/litellm/proxy/_types.py#L95)

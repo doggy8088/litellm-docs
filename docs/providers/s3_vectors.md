@@ -1,29 +1,29 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AWS S3 Vectors
+# AWS S3 Vectors {#aws-s3-vectors}
 
-Use [Amazon S3 Vectors](https://aws.amazon.com/s3/features/vectors/) as the vector store behind LiteLLM's unified vector store and RAG endpoints. LiteLLM calls the S3 Vectors REST API directly with SigV4-signed requests; no boto3 client is needed for the vector operations themselves.
+使用 [Amazon S3 Vectors](https://aws.amazon.com/s3/features/vectors/) 作為 LiteLLM 統一向量儲存與 RAG 端點背後的向量儲存。LiteLLM 直接以 SigV4 簽署的請求呼叫 S3 Vectors REST API；向量操作本身不需要 boto3 用戶端。
 
 | Property | Details |
 |----------|---------|
-| Provider Route on LiteLLM | `s3_vectors` |
-| Supported Endpoints | `POST /v1/vector_stores/{id}/search`, `POST /rag/ingest`, `POST /rag/query`, `file_search` on `/chat/completions` and `/v1/responses` |
-| Not Supported | `POST /v1/vector_stores` (OpenAI-shaped create). Use `/rag/ingest`, which auto-creates the vector bucket and index |
-| Vector store id format | `<vector_bucket_name>:<index_name>` |
-| Provider Doc | [Amazon S3 Vectors ↗](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html) |
+| LiteLLM 上的提供者路由 | `s3_vectors` |
+| 支援的端點 | `POST /v1/vector_stores/{id}/search`、`POST /rag/ingest`、`POST /rag/query`、`file_search`，適用於 `/chat/completions` 與 `/v1/responses` |
+| 不支援 | `POST /v1/vector_stores`（OpenAI 形狀的 create）。請使用 `/rag/ingest`，其會自動建立向量 bucket 與 index |
+| 向量儲存 id 格式 | `<vector_bucket_name>:<index_name>` |
+| 提供者文件 | [Amazon S3 Vectors ↗](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html) |
 
-## How it works
+## 運作方式 {#how-it-works}
 
-`/rag/ingest` takes a document, chunks it, generates embeddings with any LiteLLM embedding model, then writes the vectors into an index inside an S3 vector bucket (`PutVectors`). The bucket and index are created automatically if they do not exist. The resulting store is addressed as `bucket_name:index_name` everywhere else: `/v1/vector_stores/{id}/search` embeds your query with the configured embedding model and runs `QueryVectors` against that index, and the same id works in the `file_search` tool on `/chat/completions` and `/v1/responses`.
+`/rag/ingest` 會接收文件、切分文件片段、使用任何 LiteLLM embedding 模型產生 embeddings，然後將向量寫入 S3 向量 bucket（`PutVectors`）中的 index。若 bucket 與 index 不存在，會自動建立。其結果儲存會在其他地方以 `bucket_name:index_name` 表示：`/v1/vector_stores/{id}/search` 會使用已設定的 embedding 模型為您的查詢產生 embeddings，並針對該 index 執行 `QueryVectors`，而同一個 id 也可在 `file_search` 工具中於 `/chat/completions` 和 `/v1/responses` 使用。
 
-On the proxy, a successful ingest also registers the store in the LiteLLM database (see [tracking and access control](#how-ingested-files-are-tracked) below), so it shows up in the Admin UI and can be searched by id without any per-request AWS configuration.
+在 proxy 上，成功的 ingest 也會在 LiteLLM 資料庫中註冊該儲存（請見下方的[追蹤與存取控制](#how-ingested-files-are-tracked)），因此它會顯示在 Admin UI 中，並且可依 id 搜尋，而不需要任何逐請求的 AWS 設定。
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
-You need an embedding model for ingest and search. AWS credentials come from the environment (or any other supported method, see [Credentials](#credentials)).
+您需要一個 embedding 模型用於 ingest 與搜尋。AWS 憑證來自環境（或任何其他支援的方法，請參見[憑證](#credentials)）。
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -41,9 +41,9 @@ export AWS_REGION_NAME="us-west-2"
 litellm --config config.yaml
 ```
 
-### 2. Ingest a document
+### 2. Ingest 文件 {#2-ingest-a-document}
 
-Pass `custom_llm_provider: "s3_vectors"` in the `vector_store` block. Setting `aws_region_name` and `embedding_model` here matters: every key in the `vector_store` block is persisted onto the store's registration, so later searches against the registered store reuse them automatically.
+在 `vector_store` 區塊中傳入 `custom_llm_provider: "s3_vectors"`。此處設定 `aws_region_name` 與 `embedding_model` 很重要：`vector_store` 區塊中的每個鍵都會持久化到該儲存的註冊資訊，因此之後針對已註冊儲存的搜尋會自動重用它們。
 
 ```bash showLineNumbers title="Ingest into S3 Vectors"
 curl -X POST "http://localhost:4000/v1/rag/ingest" \
@@ -76,13 +76,13 @@ curl -X POST "http://localhost:4000/v1/rag/ingest" \
 }
 ```
 
-When `index_name` is omitted LiteLLM generates one (`litellm-index-<id>`). Pass an explicit `index_name` to keep ingesting into the same index across requests. The full list of ingest options is in the [RAG Ingest reference](../rag_ingest.md#vector_store-aws-s3-vectors).
+當未指定 `index_name` 時，LiteLLM 會產生一個（`litellm-index-<id>`）。傳入明確的 `index_name` 可讓您在多次請求間持續 ingest 到同一個 index。完整的 ingest 選項清單請見 [RAG Ingest 參考](../rag_ingest.md#vector_store-aws-s3-vectors)。
 
-:::warning[Keep the embedding model consistent]
-The index dimension is fixed at creation time from the ingest embedding model (auto-detected, e.g. 1536 for `text-embedding-3-small`). Searches must embed the query with a model of the same dimension. Set `embedding_model` inside the `vector_store` block (as above) or on the registry entry; if it is not set anywhere, search falls back to `text-embedding-3-small`.
+:::warning[保持 embedding 模型一致]
+index 維度會在建立時根據 ingest 的 embedding 模型固定（自動偵測，例如 `text-embedding-3-small` 為 1536）。搜尋時必須使用相同維度的模型為查詢產生 embeddings。請在 `vector_store` 區塊中（如上所示）或在註冊項目上設定 `embedding_model`；如果任何地方都未設定，搜尋會退回到 `text-embedding-3-small`。
 :::
 
-### 3. Search the store
+### 3. 搜尋儲存 {#3-search-the-store}
 
 ```bash showLineNumbers title="Search"
 curl -X POST "http://localhost:4000/v1/vector_stores/my-embeddings:litellm-index-a1b2c3d4/search" \
@@ -107,9 +107,9 @@ curl -X POST "http://localhost:4000/v1/vector_stores/my-embeddings:litellm-index
 }
 ```
 
-`max_num_results` maps to S3 Vectors `topK` (default 5). Results are read from the `source_text` metadata key LiteLLM writes at ingest time; vectors written to the index by other tools without that key are skipped.
+`max_num_results` 對應到 S3 Vectors `topK`（預設 5）。結果會從 LiteLLM 在 ingest 時寫入的 `source_text` 中繼資料鍵讀取；由其他工具寫入 index、但沒有該鍵的向量會被略過。
 
-### 4. Use it for RAG in chat completions
+### 4. 在 chat completions 中將其用於 RAG {#4-use-it-for-rag-in-chat-completions}
 
 ```bash showLineNumbers title="file_search tool"
 curl -X POST "http://localhost:4000/v1/chat/completions" \
@@ -122,11 +122,11 @@ curl -X POST "http://localhost:4000/v1/chat/completions" \
     }'
 ```
 
-`/rag/query` (search plus completion in one call) works with the same store id, see [RAG Query](../rag_query.md).
+`/rag/query`（一次呼叫完成搜尋加回應）可使用相同的儲存 id，請參見 [RAG Query](../rag_query.md)。
 
-## Register an existing index
+## 註冊既有 index {#register-an-existing-index}
 
-If the vector bucket and index already exist (created by an earlier ingest, another tool, or Terraform), register them in the [vector store registry](../vector_stores/managed_vector_stores.md) so every key on the proxy can search them:
+如果向量 bucket 與 index 已經存在（由先前的 ingest、其他工具或 Terraform 建立），請在 [向量儲存登錄](../vector_stores/managed_vector_stores.md) 中註冊它們，這樣 proxy 上的每個金鑰都可以搜尋它們：
 
 ```yaml showLineNumbers title="config.yaml"
 vector_store_registry:
@@ -138,61 +138,61 @@ vector_store_registry:
       embedding_model: "text-embedding-3-small"
 ```
 
-`aws_region_name` is required for search. `embedding_model` should match the model the index was built with. Instead of the `bucket:index` id you can also set `vector_bucket_name` in `litellm_params` and use the plain index name as `vector_store_id`. Once registered, a `/rag/ingest` request that names the store id lands in that index too, taking the provider, region, credentials, and embedding model from the registration instead of the request.
+`aws_region_name` 是搜尋所必需的。`embedding_model` 應與建立該 index 時使用的模型相符。除了 `bucket:index` id 之外，您也可以在 `litellm_params` 中設定 `vector_bucket_name`，並使用純 index 名稱作為 `vector_store_id`。一旦註冊，指定該儲存 id 的 `/rag/ingest` 請求也會落到該 index 中，並從註冊資訊而非請求取得提供者、區域、憑證與 embedding 模型。
 
-## Configuration reference
+## 設定參考 {#configuration-reference}
 
-Search-side `litellm_params` (registry entry, or persisted automatically from ingest):
+搜尋端 `litellm_params`（登錄項目，或從 ingest 自動持久化）：
 
-| Parameter | Required | Description |
+| 參數 | 必填 | 說明 |
 |-----------|----------|-------------|
-| `custom_llm_provider` | yes | `"s3_vectors"` |
-| `vector_store_id` | yes | `bucket:index`, or plain index name when `vector_bucket_name` is set |
-| `aws_region_name` | yes | Region of the vector bucket |
-| `embedding_model` | no | Model used to embed search queries. Default `text-embedding-3-small` |
-| `vector_bucket_name` | no | Lets `vector_store_id` be a bare index name |
-| `aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `aws_role_name`, `aws_session_name`, `aws_profile_name`, `aws_web_identity_token` | no | Explicit AWS credentials, see [Credentials](#credentials) |
-| `litellm_credential_name` | no | Reference a named credential from `credential_list` |
+| `custom_llm_provider` | 是 | `"s3_vectors"` |
+| `vector_store_id` | 是 | `bucket:index`，若設定了 `vector_bucket_name` 則可為純 index 名稱 |
+| `aws_region_name` | 是 | 向量 bucket 的區域 |
+| `embedding_model` | 否 | 用於為搜尋請求產生 embeddings 的模型。預設 `text-embedding-3-small` |
+| `vector_bucket_name` | 否 | 讓 `vector_store_id` 可為裸 index 名稱 |
+| `aws_access_key_id`、`aws_secret_access_key`、`aws_session_token`、`aws_role_name`、`aws_session_name`、`aws_profile_name`、`aws_web_identity_token` | 否 | 明確的 AWS 憑證，請參見[憑證](#credentials) |
+| `litellm_credential_name` | 否 | 從 `credential_list` 參照已命名的憑證 |
 
-Ingest-side options (the `vector_store` block of `ingest_options`) are documented in the [RAG Ingest reference](../rag_ingest.md#vector_store-aws-s3-vectors): `vector_store_id` (an existing index as `bucket:index`, or a bare index name when `vector_bucket_name` is set), `vector_bucket_name` (required unless `vector_store_id` carries the bucket), `index_name`, `dimension`, `distance_metric` (`cosine`, default, or `euclidean`), `non_filterable_metadata_keys` (default `["source_text"]`), plus the same AWS credential parameters.
+Ingest 端選項（`ingest_options` 的 `vector_store` 區塊）記載於 [RAG Ingest 參考](../rag_ingest.md#vector_store-aws-s3-vectors)：`vector_store_id`（現有 index 作為 `bucket:index`，或在設定了 `vector_bucket_name` 時使用純 index 名稱）、`vector_bucket_name`（除非 `vector_store_id` 帶有 bucket，否則必填）、`index_name`、`dimension`、`distance_metric`（`cosine`、預設值，或 `euclidean`）、`non_filterable_metadata_keys`（預設 `["source_text"]`），以及相同的 AWS 憑證參數。
 
-## Region, endpoint, and encryption
+## 區域、端點與加密 {#region-endpoint-and-encryption}
 
-LiteLLM always calls the regional S3 Vectors endpoint `https://s3vectors.<aws_region_name>.api.aws`. There is no `api_base` override for this provider. For ingest, the region resolves from `aws_region_name` in the request, then the `AWS_REGION_NAME` and `AWS_REGION` environment variables, then falls back to `us-west-2`. For search, `aws_region_name` must be present on the registry entry or persisted ingest params.
+LiteLLM 一律呼叫區域性的 S3 Vectors 端點 `https://s3vectors.<aws_region_name>.api.aws`。此提供者沒有 `api_base` 覆寫。對於 ingest，區域會先從請求中的 `aws_region_name` 解析，接著是 `AWS_REGION_NAME` 與 `AWS_REGION` 環境變數，最後退回到 `us-west-2`。對於搜尋，`aws_region_name` 必須存在於註冊項目或持久化的 ingest 參數中。
 
-Auto-created vector buckets use the S3 Vectors default server-side encryption (SSE-S3). LiteLLM does not pass an encryption configuration on `CreateVectorBucket`, so to use SSE-KMS create the vector bucket yourself with your KMS key and point LiteLLM at it; the existence check sees the bucket and skips creation. Bucket names follow S3 rules: at least 3 characters, lowercase letters, numbers, hyphens, and periods only.
+自動建立的向量 bucket 使用 S3 Vectors 預設的伺服器端加密（SSE-S3）。LiteLLM 不會在 `CreateVectorBucket` 上傳入加密設定，因此若要使用 SSE-KMS，請自行以您的 KMS key 建立向量 bucket，並讓 LiteLLM 指向它；存在性檢查會看到該 bucket 並略過建立。bucket 名稱遵循 S3 規則：至少 3 個字元，且僅可使用小寫字母、數字、連字號與句點。
 
-## Credentials
+## 憑證 {#credentials}
 
-Authentication reuses LiteLLM's standard AWS credential resolution (the same `BaseAWSLLM` chain as Bedrock). In order: explicit `aws_*` parameters on the registry entry or ingest request, a named credential via `litellm_credential_name`, environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`), `aws_profile_name`, STS role assumption via `aws_role_name` and `aws_session_name`, web identity tokens (IRSA on EKS), and finally the default boto3 chain (instance profiles, ECS task roles). See [Bedrock authentication](./bedrock.md#boto3---authentication) for details on each method.
+驗證會重用 LiteLLM 的標準 AWS 憑證解析（與 Bedrock 相同的 `BaseAWSLLM` 鏈）。順序如下：註冊項目或 ingest 請求上的明確 `aws_*` 參數、透過 `litellm_credential_name` 的已命名憑證、環境變數（`AWS_ACCESS_KEY_ID`、`AWS_SECRET_ACCESS_KEY`、`AWS_SESSION_TOKEN`）、`aws_profile_name`、透過 `aws_role_name` 與 `aws_session_name` 的 STS 角色假設、web identity token（EKS 上的 IRSA），最後是預設的 boto3 鏈（instance profile、ECS task role）。各方法的詳細資訊請參見 [Bedrock 驗證](./bedrock.md#boto3---authentication)。
 
-### IAM permissions
+### IAM 權限 {#iam-permissions}
 
-| Action | Needed for |
+| 動作 | 需要用於 |
 |--------|-----------|
-| `s3vectors:QueryVectors` | search, `/rag/query`, `file_search` |
+| `s3vectors:QueryVectors` | 搜尋、`/rag/query`、`file_search` |
 | `s3vectors:PutVectors` | `/rag/ingest` |
-| `s3vectors:GetVectorBucket` | `/rag/ingest` existence check |
-| `s3vectors:CreateVectorBucket` | `/rag/ingest` auto-create |
-| `s3vectors:GetIndex` | `/rag/ingest` existence check |
-| `s3vectors:CreateIndex` | `/rag/ingest` auto-create |
+| `s3vectors:GetVectorBucket` | `/rag/ingest` 存在性檢查 |
+| `s3vectors:CreateVectorBucket` | `/rag/ingest` 自動建立 |
+| `s3vectors:GetIndex` | `/rag/ingest` 存在性檢查 |
+| `s3vectors:CreateIndex` | `/rag/ingest` 自動建立 |
 
-With pre-created buckets and indexes, the minimal ingest policy is `GetVectorBucket`, `GetIndex`, and `PutVectors`; search-only credentials need just `QueryVectors`. The proxy also needs whatever credentials the embedding model requires (an OpenAI key in the quick start above, or `bedrock/amazon.titan-embed-text-v2:0` to stay inside AWS).
+若已預先建立 bucket 與 index，最小化 ingest 政策為 `GetVectorBucket`、`GetIndex` 和 `PutVectors`；僅限搜尋的憑證只需要 `QueryVectors`。閘道也需要嵌入模型所需的任何憑證（上方快速入門中的 OpenAI 金鑰，或 `bedrock/amazon.titan-embed-text-v2:0` 以維持在 AWS 內部）。
 
-## How ingested files are tracked
+## 匯入的檔案如何被追蹤 {#how-ingested-files-are-tracked}
 
-On a database-connected proxy, `/rag/ingest` saves the new store to the `LiteLLM_ManagedVectorStoresTable` with the `team_id` and `user_id` of the calling key, adds it to the in-memory registry, and records each ingested file (filename or URL, timestamp) in the store's `ingested_files` metadata. Ingesting again into the same bucket and index appends to that file list instead of creating a new entry. The store then appears in the Admin UI under Vector Stores, and access follows the standard [vector store permission model](../vector_stores/managed_vector_stores.md): set `object_permission.vector_stores` on a key or team to control which store ids its requests may reference.
+在連接資料庫的閘道上，`/rag/ingest` 會將新的儲存區儲存到 `LiteLLM_ManagedVectorStoresTable`，並帶有呼叫金鑰的 `team_id` 與 `user_id`，將其加入記憶體中的登錄，並在儲存區的 `ingested_files` 中繼資料中記錄每個已匯入的檔案（檔名或 URL、時間戳記）。再次匯入到相同的 bucket 與 index 時，會附加到該檔案清單，而不是建立新的項目。之後該儲存區會出現在 Admin UI 的 Vector Stores 下方，且存取遵循標準的 [vector store 權限模型](../vector_stores/managed_vector_stores.md)：在金鑰或團隊上設定 `object_permission.vector_stores`，以控制其請求可參照哪些儲存區 id。
 
-The raw file bytes are not stored in S3 or in the LiteLLM database; only chunk text (in vector metadata as `source_text`) and file metadata are kept.
+原始檔案位元組不會儲存在 S3 或 LiteLLM 資料庫中；只會保留分塊文字（在向量中繼資料中作為 `source_text`）與檔案中繼資料。
 
-## Is there a "default vector store" setting?
+## 是否有「預設 vector store」設定？ {#is-there-a-default-vector-store-setting}
 
-No. LiteLLM has no proxy-wide default vector store provider today. `/rag/ingest` defaults to `custom_llm_provider: "openai"` when the `vector_store` block omits the provider, so every ingest request that should land in S3 Vectors must pass `custom_llm_provider: "s3_vectors"` explicitly, unless its `vector_store_id` names a store in the registry or the database: then the provider, region, credentials, and embedding model come from that registration and the request needs only the id. After ingest, no provider choice is needed anywhere else: search, `/rag/query`, and `file_search` all address the store by its id, and the persisted registration carries the provider and AWS settings.
+沒有。LiteLLM 目前沒有整個代理程式共用的預設 vector store 提供者。當 `/rag/ingest` 的 `custom_llm_provider: "openai"` 區塊省略提供者時，預設會使用 `vector_store`，因此任何應該寫入 S3 Vectors 的匯入請求都必須明確傳入 `custom_llm_provider: "s3_vectors"`，除非其 `vector_store_id` 指定了登錄或資料庫中的某個儲存區：此時提供者、區域、憑證與嵌入模型都來自該註冊，請求只需要 id。匯入之後，其他任何地方都不需要再選擇提供者：搜尋、`/rag/query` 與 `file_search` 都透過 id 來存取該儲存區，而持久化的註冊則保留提供者與 AWS 設定。
 
-## Can S3 be the default storage for /v1/files?
+## S3 可以作為 /v1/files 的預設儲存嗎？ {#can-s3-be-the-default-storage-for-v1files}
 
-Not today. `/v1/files` uploads go to the target LLM provider (OpenAI, Azure, Bedrock, Vertex), and the only alternative storage backend for the `target_storage` upload parameter is `azure_storage` (Azure Blob Storage); there is no S3 storage backend. Two S3-adjacent paths do exist: files uploaded for [Bedrock batches](./bedrock_batches.md) are staged in your S3 bucket via the model's `s3_bucket_name` parameter, and for the RAG flow on this page no file storage is needed at all, since `/rag/ingest` accepts the file inline (multipart or base64), as a `file_url`, or as an existing provider `file_id`.
+目前還不行。`/v1/files` 上傳會送往目標 LLM 提供者（OpenAI、Azure、Bedrock、Vertex），而 `target_storage` 上傳參數唯一的替代儲存後端是 `azure_storage`（Azure Blob Storage）；沒有 S3 儲存後端。確實存在兩條與 S3 相鄰的路徑：為 [Bedrock batches](./bedrock_batches.md) 上傳的檔案會透過模型的 `s3_bucket_name` 參數暫存到您的 S3 bucket 中；而在本頁的 RAG 流程中，根本不需要檔案儲存，因為 `/rag/ingest` 可直接接受內嵌檔案（multipart 或 base64）、作為 `file_url`，或作為現有的提供者 `file_id`。
 
-## Validation
+## 驗證 {#validation}
 
-After an ingest, confirm the pipeline end to end: the ingest response has `"status": "completed"` and a `vector_store_id`; a search against that id returns your document text in `data[].content`; the Admin UI lists the store under Vector Stores; and in the AWS console the vector bucket and index are visible under Amazon S3, Vector buckets, in the configured region. If search returns an empty `data` array, check that the query embedding model matches the ingest model (dimension mismatch is rejected by S3 Vectors) and that the vectors carry `source_text` metadata.
+完成匯入後，請端到端確認流程：匯入回應包含 `"status": "completed"` 與 `vector_store_id`；對該 id 的搜尋會在 `data[].content` 中回傳您的文件文字；Admin UI 會在 Vector Stores 下方列出該儲存區；而在 AWS 主控台中，向量 bucket 與 index 會出現在設定區域內的 Amazon S3 > Vector buckets 下方。若搜尋回傳空的 `data` 陣列，請檢查查詢嵌入模型是否與匯入模型一致（S3 Vectors 會拒絕維度不符），以及向量是否帶有 `source_text` 中繼資料。

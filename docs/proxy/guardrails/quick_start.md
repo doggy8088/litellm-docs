@@ -2,15 +2,15 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Guardrails - Quick Start
+# 護欄 - 快速入門 {#guardrails---quick-start}
 
-Setup Prompt Injection Detection, PII Masking on LiteLLM Proxy (AI Gateway)
+在 LiteLLM Proxy（AI 閘道）上設定提示注入偵測、PII 遮罩
 
-To see where guardrails and the rest of the gateway stand against the OWASP Top 10 for LLM Applications 2026, read the [OWASP LLM Top 10 mapping](../security_owasp_llm_top10).
+若要查看 guardrails 與其餘閘道相較於 OWASP Top 10 for LLM Applications 2026 的表現，請閱讀 [OWASP LLM Top 10 對照](../security_owasp_llm_top10)。
 
-## 1. Define guardrails on your LiteLLM config.yaml
+## 1. 在您的 LiteLLM config.yaml 定義護欄 {#1-define-guardrails-on-your-litellm-configyaml}
 
-Set your guardrails under the `guardrails` section
+將您的護欄設定在 `guardrails` 區段下
 
 ```yaml
 model_list:
@@ -76,38 +76,36 @@ guardrails:
         plr_scanners: true
 ```
 
-For generic guardrail APIs you can also set **static headers** (`headers`: key/value sent on every request) and **dynamic headers** (`extra_headers`: list of client header names to forward). See [Generic Guardrail API - Static and dynamic headers](/docs/adding_provider/generic_guardrail_api#static-and-dynamic-headers).
+對於通用護欄 API，您也可以設定**靜態標頭**（`headers`：每個請求都會送出的 key/value）以及**動態標頭**（`extra_headers`：要轉送的用戶端標頭名稱清單）。請參閱[通用護欄 API - 靜態與動態標頭](/docs/adding_provider/generic_guardrail_api#static-and-dynamic-headers)。
 
-### Supported values for `mode` (Event Hooks)
+### `mode`（事件掛鉤）的支援值 {#supported-values-for-mode-event-hooks}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
-- `during_call` Run **during** LLM call, on **input** Same as `pre_call` but runs in parallel as LLM call.  Response not returned until guardrail check completes
-- `logging_only` Scan logged input and output without changing the client response. Support depends on the guardrail integration
-- A list of the supported values to run multiple modes, e.g. `mode: [pre_call, post_call]`
+- `pre_call` 在 LLM 呼叫**之前**執行，針對**輸入**
+- `post_call` 在 LLM 呼叫**之後**執行，針對**輸入與輸出**
+- `during_call` 在 LLM 呼叫**期間**執行，針對**輸入**。與 `pre_call` 相同，但會與 LLM 呼叫平行執行。回應會在 guardrail 檢查完成之前不會傳回
+- `logging_only` 掃描已記錄的輸入與輸出，不會變更用戶端回應。支援情況取決於 guardrail 整合
+- 可搭配多種模式執行的支援值清單，例如 `mode: [pre_call, post_call]`
 
-### Skip system messages in guardrail evaluation
+### 在護欄評估中略過系統訊息 {#skip-system-messages-in-guardrail-evaluation}
 
-You can stop guardrails from scanning `role: system` content while still sending the full `messages` list to the model.
+您可以阻止 guardrails 掃描 `role: system` 內容，同時仍將完整的 `messages` 清單傳送給模型。
 
-**Global**, in `litellm_settings`:
+**全域**，在 `litellm_settings` 中：
 
 ```yaml
 litellm_settings:
   skip_system_message_in_guardrail: true
 ```
 
-**Per guardrail**, under that guardrail’s `litellm_params`: set `skip_system_message_in_guardrail: true` or `false`. If omitted, the global `litellm_settings` value is used; per-guardrail `false` forces system messages to be included even when the global flag is `true`.
+**每個 guardrail**，在該 guardrail 的 `litellm_params` 下：設定 `skip_system_message_in_guardrail: true` 或 `false`。若省略，會使用全域 `litellm_settings` 值；每個 guardrail 的 `false` 會強制包含系統訊息，即使全域旗標為 `true`。
 
-**Via LiteLLM UI**, when **creating** or **editing** a guardrail in the LiteLLM Admin Dashboard, set **Skip system messages in guardrail** (under Basic Info on create, or in the edit / guardrail settings flows):
+**透過 LiteLLM UI**，在 LiteLLM Admin Dashboard 中**建立**或**編輯** guardrail 時，設定 **Skip system messages in guardrail**（在建立時的 Basic Info 下，或在編輯／guardrail 設定流程中）：
 
-
-| UI option                             | Effect                                                                                 |
+| UI 選項                             | 效果                                                                                 |
 | ------------------------------------- | -------------------------------------------------------------------------------------- |
-| **Use global default**                | Uses `litellm_settings.skip_system_message_in_guardrail` from your proxy config        |
-| **Yes — exclude from guardrail scan** | Sets per-guardrail `skip_system_message_in_guardrail: true`                            |
-| **No — always include in scan**       | Sets per-guardrail `skip_system_message_in_guardrail: false` (overrides a global skip) |
-
+| **使用全域預設值**                | 使用您的 proxy 設定中的 `litellm_settings.skip_system_message_in_guardrail`        |
+| **是 — 從護欄掃描中排除** | 設定每個護欄的 `skip_system_message_in_guardrail: true`                            |
+| **否 — 一律包含在掃描中**       | 設定每個護欄的 `skip_system_message_in_guardrail: false`（覆寫全域略過設定） |
 
 <Image
   img={require('../../../img/skip_system_message_guardrail_ui.png')}
@@ -116,48 +114,46 @@ litellm_settings:
   style={{ width: '100%', maxWidth: '900px', height: 'auto' }}
 />
 
-### Skip tool messages in guardrail evaluation
+### 在 guardrail 評估中略過 tool 訊息 {#skip-tool-messages-in-guardrail-evaluation}
 
-Same idea, for `role: tool` content: stop guardrails from scanning tool call results while still sending the full `messages` list to the model.
+同樣的概念，針對 `role: tool` 內容：阻止 guardrails 掃描 tool call 結果，同時仍將完整的 `messages` 清單傳送給模型。
 
-**Global** (in `litellm_settings`):
+**全域**（在 `litellm_settings` 中）：
 
 ```yaml
 litellm_settings:
   skip_tool_message_in_guardrail: true
 ```
 
-**Per guardrail**: under that guardrail's `litellm_params`, set `skip_tool_message_in_guardrail: true` or `false`, with the same global/per-guardrail precedence as the system-message flag above.
+**每個 guardrail**：在該 guardrail 的 `litellm_params` 下，設定 `skip_tool_message_in_guardrail: true` 或 `false`，其全域／每個 guardrail 的優先順序與上方的系統訊息旗標相同。
 
-**Via LiteLLM UI**: set **Skip tool messages in guardrail** the same way, right below the system-message dropdown described above, with the same three options (**Use global default**, **Yes, exclude from guardrail scan**, **No, always include in scan**).
+**透過 LiteLLM UI**：以相同方式設定 **Skip tool messages in guardrail**，就在上方所述的系統訊息下拉式選單正下方，並具有相同的三個選項（**Use global default**、**Yes, exclude from guardrail scan**、**No, always include in scan**）。
 
-### Where the skip flags apply
+### 略過旗標適用於何處 {#where-the-skip-flags-apply}
 
-**Where these apply:** The **unified** guardrail path (providers that implement `apply_guardrail` and run through LiteLLM’s message translation layer) on **OpenAI Chat Completions** (`/v1/chat/completions`) and **Anthropic Messages** (`/v1/messages`). Examples include Presidio, Bedrock guardrails, `litellm_content_filter`, OpenAI Moderation, Generic Guardrail API, and custom code guardrails that define `apply_guardrail`. **Lakera v2** also honors both flags, despite running via a direct hook rather than the unified path; see [Lakera AI](./lakera_ai#supported-params).
+**這些適用於哪裡：** **統一** guardrail 路徑（實作 `apply_guardrail` 並透過 LiteLLM 的訊息轉譯層執行的提供者），適用於 **OpenAI Chat Completions**（`/v1/chat/completions`）與 **Anthropic Messages**（`/v1/messages`）。範例包括 Presidio、Bedrock guardrails、`litellm_content_filter`、OpenAI Moderation、Generic Guardrail API，以及定義 `apply_guardrail` 的自訂程式碼 guardrails。**Lakera v2** 也支援這兩個旗標，儘管其是透過直接 hook 而非統一路徑執行；請參閱 [Lakera AI](./lakera_ai#supported-params)。
 
-**Where these do *not* apply:** Other guardrails that run only via direct hooks on the raw request (e.g. Aporia, DynamoAI, Javelin, Lasso, Pangea, Model Armor, Azure Content Safety hooks, Guardrails AI, AIM, Cato Networks, tool permission, MCP security). These flags also do not apply to other routes until those endpoints use the same translation layer (e.g. Responses API, embeddings, speech).
+**這些不適用於哪裡：** 其他僅透過原始請求上的直接 hook 執行的 guardrails（例如 Aporia、DynamoAI、Javelin、Lasso、Pangea、Model Armor、Azure Content Safety hooks、Guardrails AI、AIM、Cato Networks、tool permission、MCP security）。在其他路由也使用相同轉譯層之前，這些旗標也不適用於其他路由（例如 Responses API、embeddings、speech）。
 
-### Load Balancing Guardrails
+### 負載平衡護欄 {#load-balancing-guardrails}
 
-Need to distribute guardrail requests across multiple accounts or regions? See [Guardrail Load Balancing](./guardrail_load_balancing.md) for details on:
+需要在多個帳戶或區域之間分配護欄請求嗎？請參閱[護欄負載平衡](./guardrail_load_balancing.md)，了解以下內容：
 
-- Load balancing across multiple AWS Bedrock accounts (useful for rate limit management)
-- Weighted distribution across guardrail instances
-- Multi-region guardrail deployments
+- 在多個 AWS Bedrock 帳戶之間進行負載平衡（對於速率限制管理很有用）
+- 在護欄執行個體之間進行加權分配
+- 多區域護欄部署
 
-## 2. Start LiteLLM Gateway
+## 2. 啟動 LiteLLM Gateway {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-## 3. Test request
+## 3. 測試請求 {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](/docs/proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](/docs/proxy/user_keys#request-format)**
 
-
-
-Expect this to fail since since `ishaan@berri.ai` in the request is PII
+預期這會失敗，因為請求中的 `ishaan@berri.ai` 是 PII
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -172,7 +168,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```shell
 {
@@ -195,9 +191,6 @@ Expected response on failure
 ```
 
 
-
-
-
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -211,15 +204,11 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
+## **預設開啟的護欄** {#default-on-guardrails}
 
+在您的護欄設定中設定 `default_on: true`，即可在每個請求上執行護欄。如果您希望在每個請求上執行護欄，而不需要使用者指定，這會很有用。
 
-
-
-## **Default On Guardrails**
-
-Set `default_on: true` in your guardrail config to run the guardrail on every request. This is useful if you want to run a guardrail on every request without the user having to specify it.
-
-**Note:** These will run even if user specifies a different guardrail or empty guardrails array.
+**注意：** 即使使用者指定不同的護欄或空的護欄陣列，這些也會執行。
 
 ```yaml
 guardrails:
@@ -230,9 +219,9 @@ guardrails:
       default_on: true
 ```
 
-**Test Request**
+**測試請求**
 
-In this request, the guardrail `aporia-pre-guard` will run on every request because `default_on: true` is set.
+在此請求中，護欄 `aporia-pre-guard` 會在每個請求上執行，因為已設定 `default_on: true`。
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -246,27 +235,27 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Expected response**
+**預期回應**
 
-Your response headers will include `x-litellm-applied-guardrails` with the guardrail applied 
+您的回應標頭將包含套用護欄的 `x-litellm-applied-guardrails`
 
 ```
 x-litellm-applied-guardrails: aporia-pre-guard
 ```
 
-### Guardrail Policies
+### 護欄政策 {#guardrail-policies}
 
-Need more control? Use [Guardrail Policies](./guardrail_policies.md) to:
+需要更多控制嗎？使用[護欄政策](./guardrail_policies.md)來：
 
-- Group guardrails into reusable policies
-- Enable/disable guardrails for specific teams, keys, or models
-- Inherit from existing policies and override specific guardrails
+- 將護欄分組為可重複使用的政策
+- 為特定團隊、金鑰或模型啟用／停用護欄
+- 從現有政策繼承並覆寫特定護欄
 
-## **Using Guardrails Client Side**
+## **在用戶端使用護欄** {#using-guardrails-client-side}
 
-### Test yourself **(OSS)**
+### 自行測試 **（OSS）** {#test-yourself-oss}
 
-Pass `guardrails` to your request body to test it
+將 `guardrails` 傳遞到您的請求主體以進行測試
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -281,9 +270,9 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-### Inspect guardrail results in the response **(OSS)**
+### 在回應中檢查 guardrail 結果 **(OSS)** {#inspect-guardrail-results-in-the-response-oss}
 
-Set `include_guardrail_response: true` in the request body to get the guardrail execution records back on the response as a top-level `guardrail_information` list. Without it the response body is unchanged, so existing clients are unaffected. The flag is stripped before the request reaches the provider
+在請求本文中設定 `include_guardrail_response: true`，即可在回應中取得 guardrail 執行記錄，作為頂層 `guardrail_information` 清單。若不設定，回應本文將維持不變，因此既有用戶端不受影響。此旗標會在請求送達提供者之前被移除
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -297,7 +286,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response (other fields omitted)
+預期回應（省略其他欄位）
 
 ```json
 {
@@ -319,23 +308,23 @@ Expected response (other fields omitted)
 }
 ```
 
-Each entry has the same shape as `guardrail_information` in the [`StandardLoggingPayload`](../logging_spec#standardloggingguardrailinformation). `guardrail_information` is `[]` when no guardrail ran for the request. Only the exact JSON boolean `true` enables it; `"true"` or `1` are treated as off. Streaming responses do not carry the field. Any `keyword`, `snippet`, `match`, or `regex` values inside `guardrail_response` are returned as `"[REDACTED]"` so masked content is never echoed back to the caller
+每個項目的結構與 [`StandardLoggingPayload`](../logging_spec#standardloggingguardrailinformation) 中的 `guardrail_information` 相同。當此請求沒有 guardrail 執行時，`guardrail_information` 會是 `[]`。只有精確的 JSON 布林值 `true` 才會啟用它；`"true"` 或 `1` 會被視為關閉。串流回應不會帶有此欄位。`keyword`、`snippet`、`match` 或 `regex` 值中出現的任何 `guardrail_response` 都會以 `"[REDACTED]"` 傳回，因此遮罩內容絕不會回傳給呼叫端
 
-### Expose to your users **(Enterprise)**
+### 向您的使用者公開 **（Enterprise）** {#expose-to-your-users-enterprise}
 
-Follow this simple workflow to implement and tune guardrails:
+依照這個簡單流程來實作並調整護欄：
 
-### 1. View Available Guardrails
+### 1. 查看可用的護欄 {#1-view-available-guardrails}
 
-First, check what guardrails are available and their parameters:
+首先，確認有哪些護欄可用及其參數：
 
-Call `/guardrails/list` to view available guardrails and the guardrail info (supported parameters, description, etc)
+呼叫 `/guardrails/list` 以查看可用的護欄及護欄資訊（支援的參數、描述等）
 
 ```shell
 curl -X GET 'http://0.0.0.0:4000/guardrails/list'
 ```
 
-Expected response
+預期回應
 
 ```json
 {
@@ -361,10 +350,7 @@ Expected response
 ```
 
 
-
-This config will return the `/guardrails/list` response above. The `guardrail_info` field is optional and you can add any fields under info for consumers of your guardrail
-
-
+此設定將回傳上方的 `/guardrails/list` 回應。`guardrail_info` 欄位為選填，您可以在 info 下方為護欄的使用者新增任何欄位
 
 ```yaml
 - guardrail_name: "aporia-post-guard"
@@ -383,9 +369,9 @@ This config will return the `/guardrails/list` response above. The `guardrail_in
           type: "boolean"
 ```
 
-### 2. Apply Guardrails
+### 2. 套用護欄 {#2-apply-guardrails}
 
-Add selected guardrails to your chat completion request:
+將選定的護欄新增至您的聊天完成請求：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -397,9 +383,9 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-### 3. Test with Mock LLM completions
+### 3. 使用 Mock LLM completions 測試 {#3-test-with-mock-llm-completions}
 
-Send `mock_response` to test guardrails without making an LLM call. More info on `mock_response` [here](../../completion/mock_requests)
+傳送 `mock_response`，即可在不呼叫 LLM 的情況下測試護欄。更多關於 `mock_response` 的資訊請見[此處](../../completion/mock_requests)
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -415,19 +401,15 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-### 4. ✨ Pass Dynamic Parameters to Guardrail
+### 4. ✨ 將動態參數傳遞給護欄 {#4--pass-dynamic-parameters-to-guardrail}
 
 <EnterpriseFeature />
 
-Use this to pass additional parameters to the guardrail API call. e.g. things like success threshold. **[See `guardrails` spec for more details](/docs/proxy/guardrails/quick_start#guardrails-request-parameter)**
+可用來將額外參數傳遞給護欄 API 呼叫，例如成功閾值之類的項目。**[請參閱 `guardrails` 規格以了解更多細節](/docs/proxy/guardrails/quick_start#guardrails-request-parameter)**
 
+設定 `guardrails={"aporia-pre-guard": {"extra_body": {"success_threshold": 0.9}}}` 以傳遞額外參數給護欄
 
-
-
-
-Set `guardrails={"aporia-pre-guard": {"extra_body": {"success_threshold": 0.9}}}` to pass additional parameters to the guardrail
-
-In this example `success_threshold=0.9` is passed to the `aporia-pre-guard` guardrail request body
+在此範例中，`success_threshold=0.9` 會被傳遞到 `aporia-pre-guard` 護欄請求主體
 
 ```python
 import openai
@@ -459,10 +441,6 @@ response = client.chat.completions.create(
 print(response)
 ```
 
-
-
-
-
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
     --header 'Content-Type: application/json' \
@@ -484,43 +462,37 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
+## **Proxy 管理控制項** {#proxy-admin-controls}
 
+### 監控護欄 {#monitoring-guardrails}
 
-
-
-## **Proxy Admin Controls**
-
-### Monitoring Guardrails
-
-Monitor which guardrails were executed and whether they passed or failed. e.g. guardrail going rogue and failing requests we don't intend to fail
+監控哪些護欄已執行，以及它們是通過還是失敗。例如，護欄失控並使我們不打算失敗的請求失敗
 
 :::
 
-#### Setup
+#### 設定 {#setup}
 
-1. Connect LiteLLM to a [supported logging provider](../logging)
-2. Make a request with a `guardrails` parameter
-3. Check your logging provider for the guardrail trace
+1. 將 LiteLLM 連接到[支援的記錄提供者](../logging)
+2. 使用 `guardrails` 參數發出請求
+3. 在您的記錄提供者中檢查護欄追蹤
 
-#### Traced Guardrail Success
+#### 已追蹤的護欄成功 {#traced-guardrail-success}
 
 <Image img={require('../../../img/gd_success.png')} />
 
-#### Traced Guardrail Failure
+#### 已追蹤的護欄失敗 {#traced-guardrail-failure}
 
 <Image img={require('../../../img/gd_fail.png')} />
 
-### ✨ Control Guardrails per API Key
+### ✨ 依 API 金鑰控制護欄 {#-control-guardrails-per-api-key}
 
 <EnterpriseFeature />
 
-Use this to control what guardrails run per API Key. In this tutorial we only want the following guardrails to run for 1 API Key
+可用來依 API Key 控制執行哪些護欄。在本教學中，我們只希望以下護欄為 1 個 API Key 執行
 
 - `guardrails`: ["aporia-pre-guard", "aporia-post-guard"]
 
-**Step 1** Create Key with guardrail settings
-
-
+**步驟 1** 使用護欄設定建立金鑰
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -530,8 +502,6 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
             "guardrails": ["aporia-pre-guard", "aporia-post-guard"]
     }'
 ```
-
-
 
 ```shell
 curl --location 'http://0.0.0.0:4000/key/update' \
@@ -543,9 +513,7 @@ curl --location 'http://0.0.0.0:4000/key/update' \
 }'
 ```
 
-
-
-**Step 2** Test it with new key
+**步驟 2** 使用新金鑰測試
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -562,15 +530,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-### ✨ Tag-based Guardrail Modes
+### ✨ 以標籤為基礎的護欄模式 {#-tag-based-guardrail-modes}
 
 <EnterpriseFeature />
 
-Run guardrails based on the user-agent header. This is useful for running pre-call checks on OpenWebUI but only masking in logs for Claude CLI.
+根據 user-agent 標頭執行 guardrails。這對於在 OpenWebUI 上執行預先請求檢查，但在 Claude CLI 中僅在記錄中遮蔽時很有用。
 
-Both `default` and tag values can be a single mode string or a list of modes.
-
-
+`default` 和 tag 值都可以是單一 mode 字串或 mode 清單。
 
 ```yaml
 model_list:
@@ -592,8 +558,6 @@ guardrails:
       default_on: true # run on every request
 ```
 
-
-
 ```yaml
 Per guardrailmodel_list:
   - model_name: {{openai_small}}
@@ -613,8 +577,6 @@ guardrails:
       api_base: os.environ/GUARDRAILS_AI_API_BASE
       default_on: true
 ```
-
-
 
 ```yaml
 model_list:
@@ -636,13 +598,11 @@ guardrails:
       default_on: true
 ```
 
-
-
-### ✨ Model-level Guardrails
+### ✨ 模型層級 Guardrails {#-model-level-guardrails}
 
 <EnterpriseFeature />
 
-This is great for cases when you have an on-prem and hosted model, and just want to run prevent sending PII to the hosted model.
+當您同時有內部部署與託管模型，且只想防止將 PII 傳送到託管模型時，這非常適合。
 
 ```yaml
 model_list:
@@ -672,11 +632,11 @@ guardrails:
       api_base: os.environ/AZURE_GUARDRAIL_API_BASE 
 ```
 
-### ✨ Disable team from turning on/off guardrails
+### ✨ 停用團隊開啟/關閉 guardrails 的能力 {#-disable-team-from-turning-onoff-guardrails}
 
 <EnterpriseFeature />
 
-#### 1. Disable team from modifying guardrails
+#### 1. 停用團隊修改 guardrails 的能力 {#1-disable-team-from-modifying-guardrails}
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/team/update' \
@@ -688,7 +648,7 @@ curl -X POST 'http://0.0.0.0:4000/team/update' \
 }'
 ```
 
-#### 2. Try to disable guardrails for a call
+#### 2. 嘗試為請求停用 guardrails {#2-try-to-disable-guardrails-for-a-call}
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -706,7 +666,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-#### 3. Get 403 Error
+#### 3. 取得 403 錯誤 {#3-get-403-error}
 
 ```
 {
@@ -721,15 +681,15 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }
 ```
 
-Expect to NOT see `+1 412-612-9992` in your server logs on your callback. 
+預期在您的 callback 的伺服器記錄中不會看到 `+1 412-612-9992`。 
 
 :::info
-The `pii_masking` guardrail ran on this request because api key=sk-jNm1Zar7XfNdZXp49Z1kSQ has `"permissions": {"pii_masking": true}`
+由於 api key=sk-jNm1Zar7XfNdZXp49Z1kSQ 具有 `pii_masking`，因此 `"permissions": {"pii_masking": true}` guardrail 已在此請求上執行。
 :::
 
-## Specification
+## 規格 {#specification}
 
-### `guardrails` Configuration on YAML
+### `guardrails` YAML 上的設定 {#guardrails-configuration-on-yaml}
 
 ```yaml
 guardrails:
@@ -744,9 +704,9 @@ guardrails:
       
 ```
 
-Mode Specification
+Mode 規格
 
-Both `default` and tag values accept either a single string or a list of strings.
+`default` 和 tag 值都接受單一字串或字串清單。
 
 ```python
 from litellm.types.guardrails import Mode
@@ -770,13 +730,13 @@ mode = Mode(
 )
 ```
 
-### `guardrails` Request Parameter
+### `guardrails` 請求參數 {#guardrails-request-parameter}
 
-The `guardrails` parameter can be passed to any LiteLLM Proxy endpoint (`/chat/completions`, `/completions`, `/embeddings`).
+`guardrails` 參數可以傳遞給任何 LiteLLM Proxy 端點（`/chat/completions`、`/completions`、`/embeddings`）。
 
-#### Format Options
+#### 格式選項 {#format-options}
 
-1. Simple List Format:
+1. 簡單清單格式：
 
 ```python
 {"guardrails": [
@@ -785,9 +745,9 @@ The `guardrails` parameter can be passed to any LiteLLM Proxy endpoint (`/chat/c
 ]}
 ```
 
-1. Advanced Dictionary Format:
+1. 進階字典格式：
 
-In this format the dictionary key is `guardrail_name` you want to run
+在此格式中，字典鍵是您要執行的 `guardrail_name`
 
 ```python
 {"guardrails": {
@@ -800,7 +760,7 @@ In this format the dictionary key is `guardrail_name` you want to run
 }}
 ```
 
-#### Type Definition
+#### 型別定義 {#type-definition}
 
 ```python
 guardrails: Union[

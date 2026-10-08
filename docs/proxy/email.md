@@ -2,38 +2,38 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Email Notifications 
+# 電子郵件通知 {#email-notifications}
 
 <Image 
   img={require('../../img/email_2_0.png')}
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
-<p style={{textAlign: 'left', color: '#666'}}>LiteLLM Email Notifications</p>
+<p style={{textAlign: 'left', color: '#666'}}>LiteLLM 電子郵件通知</p>
 
-## Overview
+## 概覽 {#overview}
 
-Send LiteLLM Proxy users emails for specific events.
+將 LiteLLM Proxy 使用者的特定事件以電子郵件寄送給他們。
 
-| Category | Details |
+| 分類 | 詳細資訊 |
 |----------|---------|
-| Supported Events | • User added as a user on LiteLLM Proxy<br/>• Proxy API Key created for user<br/>• Proxy API Key rotated for user<br/>• Virtual key approaching or crossing its budget |
-| Supported Email Integrations | • Resend API<br/>• SendGrid API<br/>• SMTP |
+| 支援的事件 | • 使用者被新增為 LiteLLM Proxy 的使用者<br/>• 為使用者建立 Proxy API 金鑰<br/>• 為使用者輪替 Proxy API 金鑰<br/>• 虛擬金鑰接近或超過其預算 |
+| 支援的電子郵件整合 | • Resend API<br/>• SendGrid API<br/>• SMTP |
 
-## Usage
+## 用法 {#usage}
 
-### 1. Configure email integration
+### 1. 設定電子郵件整合 {#1-configure-email-integration}
 
 <Tabs>
   <TabItem value="smtp" label="SMTP">
 
-Get SMTP credentials to set this up
+取得 SMTP 憑證以進行設定
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 litellm_settings:
     callbacks: ["smtp_email"]
 ```
 
-Add the following to your proxy env
+將以下內容加入您的 proxy 環境變數
 
 ```shell showLineNumbers
 SMTP_HOST="smtp.resend.com"
@@ -47,9 +47,9 @@ SMTP_PASSWORD="xxxxx"
   </TabItem>
   <TabItem value="resend" label="Resend API">
 
-Add `resend_email` to your proxy config.yaml under `litellm_settings`
+將 `resend_email` 加入您的 proxy config.yaml 中的 `litellm_settings` 之下
 
-set the following env variables
+設定以下環境變數
 
 ```shell showLineNumbers
 RESEND_API_KEY="re_1234"
@@ -63,9 +63,9 @@ litellm_settings:
   </TabItem>
   <TabItem value="sendgrid" label="SendGrid API">
 
-Add `sendgrid_email` to your proxy config.yaml under `litellm_settings`
+將 `sendgrid_email` 加入您的 proxy config.yaml 中的 `litellm_settings` 之下
 
-set the following env variables
+設定以下環境變數
 
 ```shell showLineNumbers
 SENDGRID_API_KEY="SG.1234"
@@ -80,32 +80,32 @@ litellm_settings:
   </TabItem>
 </Tabs>
 
-### 2. Create a new user
+### 2. 建立新使用者 {#2-create-a-new-user}
 
-On the LiteLLM Proxy UI, go to users > create a new user. 
+在 LiteLLM Proxy UI 中，前往 users > 建立新使用者。 
 
-After creating a new user, they will receive an email invite a the email you specified when creating the user. 
+建立新使用者後，他們會在建立使用者時您指定的電子郵件地址收到邀請信。 
 
-### 3. Configure Budget Alerts (Optional)
+### 3. 設定預算警示（選用） {#3-configure-budget-alerts-optional}
 
-Enable budget alert emails by adding "email" to the `alerting` list in your proxy configuration:
+在 proxy 設定中，將「email」加入 `alerting` 清單，以啟用預算警示電子郵件：
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 general_settings:
   alerting: ["email"]
 ```
 
-#### Budget Alert Types
+#### 預算警示類型 {#budget-alert-types}
 
-**Soft Budget Alerts**: Automatically triggered when a key exceeds its soft budget limit. These alerts help you monitor spending before reaching critical thresholds.
+**低預算警示**：當金鑰超過其低預算上限時自動觸發。這些警示可協助您在達到關鍵門檻前監控支出。
 
-**Max Budget Alerts**: Automatically triggered when a key reaches a specified percentage of its maximum budget (default: 80%). These alerts warn you when you're approaching budget exhaustion.
+**最高預算警示**：當金鑰達到其最高預算指定百分比時自動觸發（預設：80%）。這些警示會在您接近預算耗盡時提醒您。
 
-Both alert types send a maximum of one email per 24-hour period to prevent spam.
+這兩種警示類型每 24 小時最多寄送一封電子郵件，以避免垃圾信件。
 
-#### Per-key thresholds and recipients
+#### 每個金鑰的門檻與收件者 {#per-key-thresholds-and-recipients}
 
-By default a max budget alert fires at one threshold and goes only to the email of the user who owns the key, so a key with no owner email sends nothing. To choose your own thresholds and notify additional people, set `max_budget_alert_emails` in the key's metadata. Each entry maps a percentage of that key's `max_budget` to the recipients notified once spend crosses it.
+預設情況下，最高預算警示會在單一門檻觸發，且只會寄送給擁有該金鑰的使用者電子郵件，因此沒有擁有者電子郵件的金鑰不會寄送任何通知。若要自行選擇門檻並通知其他人，請在金鑰的 metadata 中設定 `max_budget_alert_emails`。每個項目會將該金鑰的 `max_budget` 百分比對應到當支出超過該門檻時收到通知的收件者。
 
 ```shell showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -123,15 +123,15 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
   }'
 ```
 
-With the key above, spend of $50 emails the owner, $75 emails the owner and finance, and $100 emails on-call. Recipients can be a list or a comma separated string, and the key owner's email is always included alongside whoever you configure. Each threshold sends at most one email per key per `EMAIL_BUDGET_ALERT_TTL`. A 100% threshold still fires on the request that exhausts the budget, because the alert check runs before the request is rejected.
+以上述金鑰為例，支出達到 $50 時會寄給擁有者，$75 時會寄給擁有者與財務，$100 時則會寄給 on-call。收件者可以是清單或以逗號分隔的字串，而且無論您設定了誰，金鑰擁有者的電子郵件一律會一併包含。每個門檻每個金鑰在每 `EMAIL_BUDGET_ALERT_TTL` 最多只會寄送一封電子郵件。100% 門檻仍會在耗盡預算的那個請求上觸發，因為警示檢查會在請求被拒絕之前執行。
 
-Configuring `max_budget_alert_emails` on a key replaces the default 80% alert for that key. To change thresholds on an existing key, send the same `metadata` block to `/key/update`.
+在金鑰上設定 `max_budget_alert_emails` 會取代該金鑰預設的 80% 警示。若要變更既有金鑰的門檻，請將相同的 `metadata` 區塊送至 `/key/update`。
 
-There is no UI field for this yet, so set it through `/key/generate` or `/key/update`.
+目前尚未提供 UI 欄位，因此請透過 `/key/generate` 或 `/key/update` 設定。
 
-#### Team member budget thresholds and recipients
+#### 團隊成員預算門檻與收件者 {#team-member-budget-thresholds-and-recipients}
 
-Teams that set `team_member_budget` cap what each member can spend inside that team, and by default nothing is emailed before or when a member hits the cap. To alert on a member's budget, set `team_member_max_budget_alert_emails` in the team's metadata. Each entry maps a percentage of `team_member_budget` to the extra recipients notified once that member's spend in the team crosses it.
+設定 `team_member_budget` 的團隊會限制每個成員在該團隊內可花費的金額，且預設在成員達到上限之前或當下都不會寄送電子郵件。若要針對成員的預算發出警示，請在團隊的 metadata 中設定 `team_member_max_budget_alert_emails`。每個項目會將 `team_member_budget` 的百分比對應到當該成員在團隊中的支出超過該門檻時收到通知的額外收件者。
 
 ```shell showLineNumbers
 curl -X POST 'http://0.0.0.0:4000/team/update' \
@@ -149,13 +149,13 @@ curl -X POST 'http://0.0.0.0:4000/team/update' \
   }'
 ```
 
-With the team above, a member who has spent $50 of their $100 budget gets an email, and at $100 both the member and finance get one. The member's own email (from their user record) is always included, so an empty list means only the member is notified, and a member with no email on file gets nothing while the configured recipients still do. Alerts fire once per member, per team, per threshold within `EMAIL_BUDGET_ALERT_TTL`, and the 100% alert is sent on the request that exhausts the budget, before that request is rejected. Once spend reaches the lowest configured threshold, Slack and webhook destinations also get a `Team Member Budget` event for that member at the fixed points other budget types use (15% and 5% remaining, and budget crossed), with `event_group` set to `team_member`.
+以上述團隊為例，某位成員花費了其 $100 預算中的 $50 時會收到電子郵件，而達到 $100 時，該成員與財務都會收到一封。成員自己的電子郵件（來自其使用者記錄）一律會包含在內，因此空白清單表示只有該成員會收到通知，而沒有留存電子郵件的成員則不會收到任何通知，儘管已設定的收件者仍會收到。警示會在 `EMAIL_BUDGET_ALERT_TTL` 內針對每位成員、每個團隊、每個門檻觸發一次，而 100% 警示會在耗盡預算的那個請求上送出，且在該請求被拒絕之前。當支出達到最低設定門檻時，Slack 與 webhook 目的地也會針對該成員收到一則 `Team Member Budget` 事件，時間點與其他預算類型使用的固定點相同（剩餘 15% 與 5%，以及超過預算），且 `event_group` 設為 `team_member`。
 
-The same block is available in the Admin UI under the team's Team Member Settings, and `/team/new` accepts it in `metadata` as well. Invalid entries, such as a threshold that is not a whole number from 1 to 100, are ignored.
+同一區塊也可在 Admin UI 的該團隊 Team Member Settings 下使用，而 `/team/new` 也接受 `metadata`。無效項目（例如不是 1 到 100 之間整數的門檻）會被忽略。
 
-#### Default thresholds for every key
+#### 每個金鑰的預設門檻 {#default-thresholds-for-every-key}
 
-Set `default_key_max_budget_alert_emails` to apply a baseline to all keys. Per-key entries merge into the global config one threshold at a time, so a key inherits the global recipients for a threshold and adds its own on top rather than overwriting them.
+設定 `default_key_max_budget_alert_emails` 以套用到所有金鑰的基準。每個金鑰的項目會逐一與全域設定合併，因此金鑰會繼承該門檻的全域收件者，並在其上增加自己的收件者，而不是覆寫它們。
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 general_settings:
@@ -166,9 +166,9 @@ litellm_settings:
     "80": ["platform-team@your-company.com"]
 ```
 
-#### Configuration Options
+#### 設定選項 {#configuration-options}
 
-Customize budget alert behavior using these environment variables:
+使用這些環境變數自訂預算警示行為：
 
 ```bash showLineNumbers title=".env"
 # Percentage of max budget that triggers alerts (as decimal: 0.8 = 80%)
@@ -179,68 +179,67 @@ EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE=0.8
 EMAIL_BUDGET_ALERT_TTL=86400
 ```
 
-## Email Templates 
+## 電子郵件範本 {#email-templates}
 
+### 1. 使用者在 LiteLLM Proxy 中新增為使用者 {#1-user-added-as-a-user-on-litellm-proxy}
 
-### 1. User added as a user on LiteLLM Proxy
-
-This email is send when you create a new user on LiteLLM Proxy.
+當您在 LiteLLM Proxy 建立新使用者時，會寄送這封電子郵件。
 
 <Image 
   img={require('../../img/email_event_1.png')}
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-**How to trigger this event**
+**如何觸發此事件**
 
-On the LiteLLM Proxy UI, go to Users > Create User > Enter the user's email address > Create User.
+在 LiteLLM Proxy UI 中，前往 Users > Create User > 輸入使用者的電子郵件地址 > Create User。
 
 <Image 
   img={require('../../img/new_user_email.png')}
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-### 2. Proxy API Key created for user
+### 2. 為使用者建立 Proxy API 金鑰 {#2-proxy-api-key-created-for-user}
 
-This email is sent when you create a new API key for a user on LiteLLM Proxy.
+當您在 LiteLLM Proxy 為使用者建立新的 API 金鑰時，會寄送這封電子郵件。
 
 <Image 
   img={require('../../img/email_event_2.png')}
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-**How to trigger this event**
+**如何觸發此事件**
 
-On the LiteLLM Proxy UI, go to Virtual Keys > Create API Key > Select User ID
+在 LiteLLM Proxy UI 中，前往 Virtual Keys > Create API Key > 選取 User ID
 
 <Image 
   img={require('../../img/key_email.png')}
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-On the Create Key Modal, Select Advanced Settings > Set Send Email to True.
+在 Create Key Modal 中，選取 Advanced Settings > 將 Send Email 設為 True。
 
 <Image 
   img={require('../../img/key_email_2.png')}
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-### 3. Proxy API Key Rotated for User
+### 3. 為使用者輪替 Proxy API 金鑰 {#3-proxy-api-key-rotated-for-user}
 
-This email is sent when you rotate an API key for a user on LiteLLM Proxy.
+當您在 LiteLLM Proxy 為使用者輪替 API 金鑰時，會寄送這封電子郵件。
 
 <Image 
   img={require('../../img/email_regen2.png')}
   style={{maxHeight: '600px', width: 'auto', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-**How to trigger this event**
+**如何觸發此事件**
 
-On the LiteLLM Proxy UI, go to Virtual Keys > Click on a key > Click "Regenerate Key"
+在 LiteLLM Proxy UI 中，前往 Virtual Keys > 點選某個金鑰 > 點選 "Regenerate Key"
 
 :::info
 
-Ensure there is a `user_id` attached to the key. This would have been set when creating the key.
+請確認該金鑰已附加 `user_id`。這應該是在建立金鑰時設定的。
 
 :::
 
@@ -249,33 +248,32 @@ Ensure there is a `user_id` attached to the key. This would have been set when c
   style={{width: '70%', display: 'block', margin: '0 0 2rem 0'}}
 />
 
-After regenerating the key, the user will receive an email notification with:
-- Security-focused messaging about the rotation
-- The new API key (or a placeholder if `EMAIL_INCLUDE_API_KEY=false`)
-- Instructions to update their applications
-- Security best practices
+重新產生金鑰後，使用者將會收到包含以下內容的電子郵件通知：
+- 關於輪替的安全性訊息
+- 新的 API 金鑰（或在 `EMAIL_INCLUDE_API_KEY=false` 時提供的預留位置）
+- 更新其應用程式的指示
+- 安全最佳實務
 
-## Email Customization
+## 電子郵件自訂 {#email-customization}
 
-<EnterpriseFeature feature="Customizing Email Branding" />
+<EnterpriseFeature feature="自訂電子郵件品牌" />
 
-LiteLLM allows you to customize various aspects of your email notifications. Below is a complete reference of all customizable fields:
+LiteLLM 可讓您自訂電子郵件通知的各個面向。以下是所有可自訂欄位的完整參考：
 
-| Field | Environment Variable | Type | Default Value | Example | Description |
+| 欄位 | 環境變數 | 類型 | 預設值 | 範例 | 說明 |
 |-------|-------------------|------|---------------|---------|-------------|
-| Logo URL | `EMAIL_LOGO_URL` | string | LiteLLM logo | `"https://your-company.com/logo.png"` | Public URL to your company logo |
-| Support Contact | `EMAIL_SUPPORT_CONTACT` | string | support@berri.ai | `"support@your-company.com"` | Email address for user support |
-| Email Signature | `EMAIL_SIGNATURE` | string (HTML) | Standard LiteLLM footer | `"<p>Best regards,<br/>Your Team</p><p><a href='https://your-company.com'>Visit us</a></p>"` | HTML-formatted footer for all emails |
-| Invitation Subject | `EMAIL_SUBJECT_INVITATION` | string | "LiteLLM: New User Invitation" | `"Welcome to Your Company!"` | Subject line for invitation emails |
-| Key Creation Subject | `EMAIL_SUBJECT_KEY_CREATED` | string | "LiteLLM: API Key Created" | `"Your New API Key is Ready"` | Subject line for key creation emails |
-| Key Rotation Subject | `EMAIL_SUBJECT_KEY_ROTATED` | string | "LiteLLM: API Key Rotated" | `"Your API Key Has Been Rotated"` | Subject line for key rotation emails |
-| Include API Key | `EMAIL_INCLUDE_API_KEY` | boolean | true | `"false"` | Whether to include the actual API key in emails (set to false for enhanced security) |
-| Proxy Base URL | `PROXY_BASE_URL` | string | http://0.0.0.0:4000 | `"https://proxy.your-company.com"` | Base URL for the LiteLLM Proxy (used in email links) |
+| 標誌 URL | `EMAIL_LOGO_URL` | string | LiteLLM 標誌 | `"https://your-company.com/logo.png"` | 您公司標誌的公開 URL |
+| 支援聯絡方式 | `EMAIL_SUPPORT_CONTACT` | string | support@berri.ai | `"support@your-company.com"` | 使用者支援的電子郵件地址 |
+| 電子郵件簽章 | `EMAIL_SIGNATURE` | string (HTML) | 標準 LiteLLM 頁尾 | `"<p>Best regards,<br/>Your Team</p><p><a href='https://your-company.com'>Visit us</a></p>"` | 適用於所有電子郵件的 HTML 格式頁尾 |
+| 邀請主旨 | `EMAIL_SUBJECT_INVITATION` | string | "LiteLLM: 新使用者邀請" | `"Welcome to Your Company!"` | 邀請電子郵件的主旨行 |
+| 金鑰建立主旨 | `EMAIL_SUBJECT_KEY_CREATED` | string | "LiteLLM: API 金鑰已建立" | `"Your New API Key is Ready"` | 金鑰建立電子郵件的主旨行 |
+| 金鑰輪換主旨 | `EMAIL_SUBJECT_KEY_ROTATED` | string | "LiteLLM: API 金鑰已輪換" | `"Your API Key Has Been Rotated"` | 金鑰輪換電子郵件的主旨行 |
+| 包含 API 金鑰 | `EMAIL_INCLUDE_API_KEY` | boolean | true | `"false"` | 是否在電子郵件中包含實際的 API 金鑰（設為 false 可提升安全性） |
+| Proxy 基礎 URL | `PROXY_BASE_URL` | string | http://0.0.0.0:4000 | `"https://proxy.your-company.com"` | LiteLLM Proxy 的基礎 URL（用於電子郵件連結） |
 
+## 電子郵件簽名中的 HTML 支援 {#html-support-in-email-signature}
 
-## HTML Support in Email Signature
-
-The `EMAIL_SIGNATURE` field supports HTML formatting for rich, branded email footers. Here's an example of what you can include:
+`EMAIL_SIGNATURE` 欄位支援 HTML 格式，可用於建立豐富且具品牌風格的電子郵件頁尾。以下是可包含的範例：
 
 ```html
 <p>Best regards,<br/>The LiteLLM Team</p>
@@ -288,18 +286,18 @@ The `EMAIL_SIGNATURE` field supports HTML formatting for rich, branded email foo
 </p>
 ```
 
-Supported HTML features:
-- Text formatting (bold, italic, etc.)
-- Line breaks (`<br/>`)
-- Links (`<a href='...'>`)
-- Paragraphs (`<p>`)
-- Basic inline styling
-- Company information and social media links
-- Legal disclaimers or terms of service links
+支援的 HTML 功能：
+- 文字格式（粗體、斜體等）
+- 換行（`<br/>`）
+- 連結（`<a href='...'>`）
+- 段落（`<p>`）
+- 基本行內樣式
+- 公司資訊與社群媒體連結
+- 法律免責聲明或服務條款連結
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-You can customize the following aspects of emails through environment variables:
+您可以透過環境變數自訂電子郵件的以下面向：
 
 ```bash
 # Email Branding
@@ -319,17 +317,17 @@ EMAIL_INCLUDE_API_KEY="false"  # Set to false to hide API keys in emails (defaul
 PROXY_BASE_URL="https://proxy.your-company.com"      # Base URL for the LiteLLM Proxy (used in email links)
 ```
 
-## Security: Hiding API Keys in Emails
+## 安全性：在電子郵件中隱藏 API 金鑰 {#security-hiding-api-keys-in-emails}
 
-For enhanced security, you can configure LiteLLM to **not** include actual API keys in email notifications. This is useful when:
+為了提升安全性，您可以設定 LiteLLM 在電子郵件通知中**不**包含實際的 API 金鑰。這在以下情況很有用：
 
-- You want to reduce the risk of key exposure via email interception
-- Your security policy requires keys to only be retrieved from the secure dashboard
-- You're concerned about email forwarding or storage security
+- 您想降低透過電子郵件攔截而暴露金鑰的風險
+- 您的安全政策要求只能從安全儀表板擷取金鑰
+- 您擔心電子郵件轉寄或儲存的安全性
 
-When disabled, emails will show: `[Key hidden for security - retrieve from dashboard]` instead of the actual API key.
+停用時，電子郵件會顯示：`[Key hidden for security - retrieve from dashboard]`，而不是實際的 API 金鑰。
 
-**Configuration:**
+**設定：**
 
 ```bash
 # Hide API keys in emails (enhanced security)
@@ -339,27 +337,27 @@ EMAIL_INCLUDE_API_KEY="false"
 EMAIL_INCLUDE_API_KEY="true"  # or omit this variable
 ```
 
-**Behavior:**
+**行為：**
 
-| Setting | Key Created Email | Key Rotated Email |
+| 設定 | 金鑰建立電子郵件 | 金鑰輪換電子郵件 |
 |---------|------------------|-------------------|
-| `true` (default) | Shows actual `sk-xxxxx` key | Shows actual `sk-xxxxx` key |
-| `false` | Shows placeholder message | Shows placeholder message |
+| `true`（預設） | 顯示實際的 `sk-xxxxx` 金鑰 | 顯示實際的 `sk-xxxxx` 金鑰 |
+| `false` | 顯示預留位置訊息 | 顯示預留位置訊息 |
 
-Users can always retrieve their keys from the LiteLLM Proxy dashboard.
+使用者可隨時從 LiteLLM Proxy 儀表板擷取其金鑰。
 
-## HTML Support in Email Signature
+## 電子郵件簽名中的 HTML 支援 {#html-support-in-email-signature-1}
 
-The `EMAIL_SIGNATURE` environment variable supports HTML formatting, allowing you to create rich, branded email footers. You can include:
+`EMAIL_SIGNATURE` 環境變數支援 HTML 格式，讓您可以建立豐富且具品牌風格的電子郵件頁尾。您可以包含：
 
-- Text formatting (bold, italic, etc.)
-- Line breaks using `<br/>`
-- Links using `<a href='...'>`
-- Paragraphs using `<p>`
-- Company information and social media links
-- Legal disclaimers or terms of service links
+- 文字格式（粗體、斜體等）
+- 使用 `<br/>` 的換行
+- 使用 `<a href='...'>` 的連結
+- 使用 `<p>` 的段落
+- 公司資訊與社群媒體連結
+- 法律免責聲明或服務條款連結
 
-Example HTML signature:
+範例 HTML 簽章：
 ```html
 <p>Best regards,<br/>The LiteLLM Team</p>
 <p>
@@ -371,18 +369,18 @@ Example HTML signature:
 </p>
 ```
 
-## Default Templates
+## 預設範本 {#default-templates}
 
-If environment variables are not set, LiteLLM will use default templates:
+如果未設定環境變數，LiteLLM 將使用預設範本：
 
-- Default logo: LiteLLM logo
-- Default support contact: support@berri.ai
-- Default signature: Standard LiteLLM footer
-- Default subjects: "LiteLLM: \{event_message\}" (replaced with actual event message)
+- 預設標誌：LiteLLM 標誌
+- 預設支援聯絡方式：support@berri.ai
+- 預設簽章：標準 LiteLLM 頁尾
+- 預設主旨："LiteLLM: \{event_message\}"（會以實際事件訊息取代）
 
-## Template Variables
+## 範本變數 {#template-variables}
 
-When setting custom email subjects, the only supported template variable is `\{event_message\}`, which is replaced with the event message (for example "Welcome to LiteLLM Proxy" or "API Key Created"). Any other placeholder, such as `\{company_name\}`, causes a `KeyError` when the email is built and the email is not sent. Use plain text for anything else:
+設定自訂電子郵件主旨時，唯一支援的範本變數是 `\{event_message\}`，它會被事件訊息取代（例如「歡迎使用 LiteLLM Proxy」或「API 金鑰已建立」）。任何其他預留位置，例如 `\{company_name\}`，都會在建立電子郵件時導致 `KeyError`，且電子郵件不會送出。其他內容請使用純文字：
 
 ```bash
 # Examples of template variable usage
@@ -390,15 +388,15 @@ EMAIL_SUBJECT_INVITATION="Welcome to Acme! \{event_message\}"
 EMAIL_SUBJECT_KEY_CREATED="Your Acme API Key"
 ```
 
-## FAQ 
+## 常見問題 {#faq}
 
-### Why do I see "http://0.0.0.0:4000" in the email links?
+### 為什麼我在電子郵件連結中看到「`http://0.0.0.0:4000`」？ {#why-do-i-see-http00004000-in-the-email-links}
 
-The `PROXY_BASE_URL` environment variable is used to construct email links. If you are using the LiteLLM Proxy in a local environment, you will see "http://0.0.0.0:4000" in the email links.
+`PROXY_BASE_URL` 環境變數用於建構電子郵件連結。如果您在本機環境中使用 LiteLLM Proxy，您會在電子郵件連結中看到「`http://0.0.0.0:4000`」。
 
-If you are using the LiteLLM Proxy in a production environment, you will see the actual base URL of the LiteLLM Proxy.
+如果您在正式環境中使用 LiteLLM Proxy，您會看到 LiteLLM Proxy 的實際基礎 URL。
 
-You can set the `PROXY_BASE_URL` environment variable to the actual base URL of the LiteLLM Proxy.
+您可以將 `PROXY_BASE_URL` 環境變數設定為 LiteLLM Proxy 的實際基礎 URL。
 
 ```bash
 PROXY_BASE_URL="https://proxy.your-company.com"

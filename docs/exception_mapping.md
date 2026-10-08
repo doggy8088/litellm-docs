@@ -1,50 +1,48 @@
-# Exception Mapping
+# 例外對應 {#exception-mapping}
 
-LiteLLM maps exceptions across all providers to their OpenAI counterparts.
+LiteLLM 會將所有提供者的例外對應至其 OpenAI 對應項目。
 
-All exceptions can be imported from `litellm` - e.g. `from litellm import BadRequestError`
+所有例外都可以從 `litellm` 匯入 - 例如 `from litellm import BadRequestError`
 
-Calling through the AI Gateway rather than the SDK? See the [Error Reference](/docs/proxy/error_reference) for the JSON error payload, the response headers, and how to tell a gateway error from a provider error
+透過 AI 閘道而不是 SDK 呼叫嗎？請參閱 [錯誤參考](/docs/proxy/error_reference)，了解 JSON 錯誤負載、回應標頭，以及如何區分閘道錯誤與提供者錯誤
 
-## LiteLLM Exceptions
+## LiteLLM 例外 {#litellm-exceptions}
 
-| Status Code | Error Type               | Inherits from | Description |
-|-------------|--------------------------|---------------|-------------|
+| 狀態碼 | 錯誤類型 | 繼承自 | 說明 |
+|-------------|----------|---------------|-------------|
 | 400         | BadRequestError          | openai.BadRequestError |
-| 400 | UnsupportedParamsError | litellm.BadRequestError | Raised when unsupported params are passed |
-| 400         | ContextWindowExceededError| litellm.BadRequestError | Special error type for context window exceeded error messages - enables context window fallbacks |
-| 400         | ContentPolicyViolationError| litellm.BadRequestError | Special error type for content policy violation error messages - enables content policy fallbacks |
-| 400         | ImageFetchError | litellm.BadRequestError | Raised when there are errors fetching or processing images |
-| 400 | InvalidRequestError | openai.BadRequestError | Deprecated error, use BadRequestError instead |
+| 400 | UnsupportedParamsError | litellm.BadRequestError | 在傳入不支援的參數時拋出 |
+| 400         | ContextWindowExceededError| litellm.BadRequestError | 針對上下文視窗超出錯誤訊息的特殊錯誤類型 - 可啟用上下文視窗備援 |
+| 400         | ContentPolicyViolationError| litellm.BadRequestError | 針對內容政策違規錯誤訊息的特殊錯誤類型 - 可啟用內容政策備援 |
+| 400         | ImageFetchError | litellm.BadRequestError | 在擷取或處理圖片時發生錯誤時拋出 |
+| 400 | InvalidRequestError | openai.BadRequestError | 已棄用的錯誤，請改用 BadRequestError |
 | 401         | AuthenticationError      | openai.AuthenticationError |
-| 402         | PaymentRequiredError     | litellm.BadRequestError | Raised when the provider answers 402, for example an account that is out of credits. The router cools that deployment down when its model group has another deployment |
+| 402         | PaymentRequiredError     | litellm.BadRequestError | 當提供者回應 402 時拋出，例如帳戶額度已用盡。當路由器的某個模型群組還有其他部署時，會將該部署降溫 |
 | 403         | PermissionDeniedError    | openai.PermissionDeniedError |
-| 404         | NotFoundError            | openai.NotFoundError | raise when invalid models passed, example gpt-8 |
-| 408 | Timeout | openai.APITimeoutError | Raised when a timeout occurs |
+| 404         | NotFoundError            | openai.NotFoundError | 在傳入無效模型時拋出，例如 gpt-8 |
+| 408 | Timeout | openai.APITimeoutError | 發生逾時時拋出 |
 | 422         | UnprocessableEntityError | openai.UnprocessableEntityError |
 | 429         | RateLimitError           | openai.RateLimitError |
-| 500         | APIConnectionError       | openai.APIConnectionError | If any unmapped error is returned, we return this error |
-| 500         | APIError | openai.APIError | Generic 500-status code error | 
-| 503 | ServiceUnavailableError | openai.APIStatusError | If provider returns a service unavailable error, this error is raised |
-| >=500       | InternalServerError      | openai.InternalServerError | If any unmapped 500-status code error is returned, this error is raised |
-| N/A         | APIResponseValidationError | openai.APIResponseValidationError | If Rules are used, and request/response fails a rule, this error is raised |
-| N/A | BudgetExceededError | Exception | Raised for proxy, when budget is exceeded |
-| N/A | JSONSchemaValidationError | litellm.APIResponseValidationError | Raised when response does not match expected json schema - used if `response_schema` param passed in with `enforce_validation=True` |
-| N/A | MockException | Exception | Internal exception, raised by mock_completion class. Do not use directly | 
-| N/A | OpenAIError | openai.OpenAIError | Deprecated internal exception, inherits from openai.OpenAIError. |
+| 500         | APIConnectionError       | openai.APIConnectionError | 如果回傳任何未對應的錯誤，會回傳此錯誤 |
+| 500         | APIError | openai.APIError | 通用的 500 狀態碼錯誤 | 
+| 503 | ServiceUnavailableError | openai.APIStatusError | 如果提供者回傳 service unavailable 錯誤，會拋出此錯誤 |
+| >=500       | InternalServerError      | openai.InternalServerError | 如果回傳任何未對應的 500 狀態碼錯誤，會拋出此錯誤 |
+| N/A         | APIResponseValidationError | openai.APIResponseValidationError | 如果使用 Rules，且請求/回應未通過規則，會拋出此錯誤 |
+| N/A | BudgetExceededError | Exception | 用於 proxy，當超出預算時拋出 |
+| N/A | JSONSchemaValidationError | litellm.APIResponseValidationError | 當回應不符合預期的 json schema 時拋出 - 若與 `enforce_validation=True` 一起傳入 `response_schema` 參數時使用 |
+| N/A | MockException | Exception | 內部例外，由 mock_completion 類別拋出。請勿直接使用 | 
+| N/A | OpenAIError | openai.OpenAIError | 已棄用的內部例外，繼承自 openai.OpenAIError。 |
 
+基本情況下我們會回傳 APIConnectionError
 
+我們所有的例外都繼承自 OpenAI 的例外類型，因此您已經為該類型撰寫的任何錯誤處理，都能在 LiteLLM 上直接運作。
 
-Base case we return APIConnectionError
+在所有情況下，回傳的例外都繼承自原始的 OpenAI Exception，但會額外包含 3 個屬性： 
+* status_code - 例外的 http 狀態碼
+* message - 錯誤訊息
+* llm_provider - 引發例外的提供者
 
-All our exceptions inherit from OpenAI's exception types, so any error-handling you have for that, should work out of the box with LiteLLM. 
-
-For all cases, the exception returned inherits from the original OpenAI Exception but contains 3 additional attributes: 
-* status_code - the http status code of the exception
-* message - the error message
-* llm_provider - the provider raising the exception
-
-## Usage
+## 使用方式 {#usage}
 
 ```python 
 import litellm
@@ -67,7 +65,7 @@ except openai.APITimeoutError as e:
     pass
 ```
 
-## Usage - Catching Streaming Exceptions
+## 使用方式 - 擷取串流例外 {#usage---catching-streaming-exceptions}
 ```python
 import litellm
 try:
@@ -93,7 +91,7 @@ except Exception as e:
 
 ```
 
-## Usage - Should you retry exception? 
+## 使用方式 - 是否應重試例外？  {#usage---should-you-retry-exception}
 
 ```
 import litellm
@@ -115,15 +113,15 @@ except openai.APITimeoutError as e:
     print(f"should_retry: {should_retry}")
 ```
 
-## Advanced
+## 進階 {#advanced}
 
-### Accessing Provider-Specific Error Details
+### 存取提供者專屬錯誤詳細資訊 {#accessing-provider-specific-error-details}
 
-LiteLLM exceptions include a `provider_specific_fields` attribute that contains additional error information specific to each provider. This is particularly useful for Azure OpenAI, which provides detailed content filtering information.
+LiteLLM 例外包含一個 `provider_specific_fields` 屬性，其中包含各提供者專屬的額外錯誤資訊。這對 Azure OpenAI 特別有用，因為它會提供詳細的內容篩選資訊。
 
-#### Azure OpenAI - Content Policy Violation Inner Error Access
+#### Azure OpenAI - 內容政策違規內部錯誤存取 {#azure-openai---content-policy-violation-inner-error-access}
 
-When Azure OpenAI returns content policy violations, you can access the detailed content filtering results through the `innererror` field:
+當 Azure OpenAI 傳回內容政策違規時，您可以透過 `innererror` 欄位存取詳細的內容篩選結果：
 
 ```python
 import litellm
@@ -153,9 +151,9 @@ except ContentPolicyViolationError as e:
         print(f"Sexual content filtered: {content_filter_result.get('sexual', {}).get('filtered')}")
 ```
 
-**Example Response Structure:**
+**範例回應結構：**
 
-When calling the LiteLLM proxy, content policy violations will return detailed filtering information:
+當呼叫 LiteLLM 代理時，內容政策違規會傳回詳細的篩選資訊：
 
 ```json
 {
@@ -195,19 +193,19 @@ When calling the LiteLLM proxy, content policy violations will return detailed f
 }
 ```
 
-## Details 
+## 詳細資訊 {#details}
 
-To see how it's implemented - [check out the code](https://github.com/BerriAI/litellm/blob/a42c197e5a6de56ea576c73715e6c7c6b19fa249/litellm/utils.py#L1217)
+若要了解其實作方式 - [請查看程式碼](https://github.com/BerriAI/litellm/blob/a42c197e5a6de56ea576c73715e6c7c6b19fa249/litellm/utils.py#L1217)
 
-[Create an issue](https://github.com/BerriAI/litellm/issues/new) **or** [make a PR](https://github.com/BerriAI/litellm/pulls) if you want to improve the exception mapping. 
+如果您想改進例外對應，請 [建立 issue](https://github.com/BerriAI/litellm/issues/new) **或** [提出 PR](https://github.com/BerriAI/litellm/pulls)。
 
-**Note** For OpenAI and Azure we return the original exception (since they're of the OpenAI Error type). But we add the 'llm_provider' attribute to them. [See code](https://github.com/BerriAI/litellm/blob/a42c197e5a6de56ea576c73715e6c7c6b19fa249/litellm/utils.py#L1221)
+**注意** 對於 OpenAI 和 Azure，我們會回傳原始例外（因為它們屬於 OpenAI Error 類型）。但我們會為它們加上 'llm_provider' 屬性。[查看程式碼](https://github.com/BerriAI/litellm/blob/a42c197e5a6de56ea576c73715e6c7c6b19fa249/litellm/utils.py#L1221)
 
-## Custom mapping list
+## 自訂對應清單 {#custom-mapping-list}
 
-Base case - we return `litellm.APIConnectionError` exception (inherits from openai's APIConnectionError exception).
+基本情況下 - 我們會回傳 `litellm.APIConnectionError` 例外（繼承自 openai 的 APIConnectionError 例外）。
 
-| custom_llm_provider        | Timeout | ContextWindowExceededError | BadRequestError | NotFoundError | ContentPolicyViolationError | AuthenticationError | APIError | RateLimitError | ServiceUnavailableError | PermissionDeniedError | UnprocessableEntityError |
+| custom_llm_provider        | 逾時 | ContextWindowExceededError | BadRequestError | NotFoundError | ContentPolicyViolationError | AuthenticationError | APIError | RateLimitError | ServiceUnavailableError | PermissionDeniedError | UnprocessableEntityError |
 |----------------------------|---------|----------------------------|------------------|---------------|-----------------------------|---------------------|----------|----------------|-------------------------|-----------------------|-------------------------|
 | openai                     | ✓       | ✓                          | ✓                |               | ✓                           | ✓                   |          |                |                         |                       |                           |
 | watsonx                     |       | | | | | | |✓| | | |
@@ -234,12 +232,11 @@ Base case - we return `litellm.APIConnectionError` exception (inherits from open
 | vllm                       |         |                            |                  |               |                             | ✓                   | ✓        |                |                         |                       |                           |
 | azure                      | ✓       | ✓                          | ✓                | ✓             | ✓                           | ✓                   |          |                | ✓                       |                       |                           |
 
-- "✓" indicates that the specified `custom_llm_provider` can raise the corresponding exception.
-- Empty cells indicate the lack of association or that the provider does not raise that particular exception type as indicated by the function.
+- "✓" 表示指定的 `custom_llm_provider` 可以引發對應的例外。
+- 空白儲存格表示沒有關聯，或如函式所示，該提供者不會引發該特定例外類型。
 
+> 若要更深入了解這些例外，您可以查看 [此處](https://github.com/BerriAI/litellm/blob/d7e58d13bf9ba9edbab2ab2f096f3de7547f35fa/litellm/utils.py#L1544) 的實作以取得更多見解。
 
-> For a deeper understanding of these exceptions, you can check out [this](https://github.com/BerriAI/litellm/blob/d7e58d13bf9ba9edbab2ab2f096f3de7547f35fa/litellm/utils.py#L1544) implementation for additional insights.
+`ContextWindowExceededError` 是 `InvalidRequestError` 的子類別。引入它是為了讓例外處理情境有更細緻的區分。請參閱 [此 issue 以了解更多](https://github.com/BerriAI/litellm/issues/228)。
 
-The `ContextWindowExceededError` is a sub-class of `InvalidRequestError`. It was introduced to provide more granularity for exception-handling scenarios. Please refer to [this issue to learn more](https://github.com/BerriAI/litellm/issues/228).
-
-Contributions to improve exception mapping are [welcome](https://github.com/BerriAI/litellm#contributing)
+歡迎對改善例外對應提出貢獻 [歡迎](https://github.com/BerriAI/litellm#contributing)

@@ -1,12 +1,12 @@
 ---
 slug: moyai-open-source
-title: "Moyai is now open source"
+title: "Moyai 現已開源"
 date: 2026-10-07T09:00:00
 authors:
   - ishaan
   - tin
   - moe
-description: "Moyai is now open source: a self-hosted cloud agent that works with Claude Code and Codex across 100+ providers through LiteLLM."
+description: "Moyai 現已開源：一個自架的雲端代理程式，可透過 LiteLLM 跨 100+ 個提供者與 Claude Code 和 Codex 搭配運作。"
 tags: [agents, open-source, infrastructure]
 hide_table_of_contents: true
 custom_hero: true
@@ -30,57 +30,57 @@ export const sections = [
 
 <PostByline />
 
-Today we're open sourcing [Moyai](https://github.com/BerriAI/moyai), the self-hosted cloud agent our team uses every day. It works with Claude Code and Codex, runs on 100+ providers through LiteLLM, and turns a task from Slack or the browser into a pull request while your laptop is closed
+今天我們將 [Moyai](https://github.com/BerriAI/moyai) 開源，這是我們團隊每天都在使用的自架雲端代理程式。它可與 Claude Code 和 Codex 搭配運作，透過 LiteLLM 在 100+ 個提供者上執行，並能在您的筆電關機時，將來自 Slack 或瀏覽器的任務轉化為 pull request
 
 {/* truncate */}
 
-## The problem
+## 問題 {#the-problem}
 
-Our Devin bill hit $101,872 in a single month, and it was only being used internally. Most of that spend came from sessions and automations our own engineers kicked off, on models and routing we had no control over
+我們的 Devin 帳單在單一個月內就飆到 101,872 美元，而它僅供內部使用。這筆支出大多來自我們自家工程師啟動的 sessions 和自動化流程，使用的是我們無法控制的模型與路由
 
-![Devin billing dashboard showing $101,872.24 spent between Aug 30 and Sep 29, with daily spend peaking above $10,000.](/img/blog/moyai_devin_open_source/devin-bill.png)
+![Devin 帳單儀表板顯示在 8 月 30 日到 9 月 29 日之間支出 101,872.24 美元，每日支出峰值超過 10,000 美元。](/img/blog/moyai_devin_open_source/devin-bill.png)
 
-We already run a gateway that routes across 100+ providers. We wanted to point our coding agent at our own models and our own routing logic, and pay for inference instead of seats
+我們本來就有一個可跨 100+ 個提供者進行路由的 gateway。我們希望把編碼代理程式指向我們自己的模型與路由邏輯，並為推理付費，而不是為座位數付費
 
-## The results: 79% cheaper
+## 結果：便宜 79% {#the-results-79-cheaper}
 
-Moyai does the same work for about $700 a day. Over the same 31 days that's roughly $21,700 instead of $101,872, so we kept about $80,000 of a single month's bill
+Moyai 每天以約 700 美元完成同樣的工作。以相同的 31 天來看，大約是 21,700 美元，而不是 101,872 美元，因此我們省下了單月帳單中約 80,000 美元
 
 <CostChart />
 
-## Why we're open sourcing it
+## 為什麼我們要將其開源 {#why-were-open-sourcing-it}
 
-Last week we wrote about [how we built our own internal Devin in 2 days](/blog/internal-devin-two-days). The response was mostly one question: can we run it too?
+上週我們撰寫了 [如何在 2 天內打造我們自己的內部 Devin](/blog/internal-devin-two-days)。回應幾乎都指向同一個問題：我們也可以執行它嗎？
 
-Now you can. Moyai is the same code we run in production at LiteLLM. Deploy it on your own infrastructure, point it at your own LiteLLM gateway, and keep your code, credentials and spend inside your own accounts
+現在您可以了。Moyai 就是我們在 LiteLLM 生產環境中執行的相同程式碼。將它部署在您自己的基礎架構上，指向您自己的 LiteLLM gateway，並把您的程式碼、憑證與支出留在您自己的帳戶中
 
-## A cloud agent that keeps working
+## 持續運作的雲端代理程式 {#a-cloud-agent-that-keeps-working}
 
-Every session gets its own cloud workspace with a terminal, a filesystem and a browser. The agent edits code, runs your tests and prepares a pull request for review, all without touching anyone's laptop
+每個 session 都會獲得自己的雲端工作區，內含終端機、檔案系統與瀏覽器。代理程式會編輯程式碼、執行測試，並準備 pull request 供審查，整個過程都不會碰到任何人的筆電
 
-Sessions are durable. You can follow along from the web app, send a correction mid-task, or pick the thread back up in Slack the next morning. Large tasks can fan out to parallel worker agents, each on its own machine, and come back together when they finish
+Sessions 具有持久性。您可以從網頁應用程式一路跟進、在任務進行中送出修正，或隔天早上在 Slack 中接續先前的 thread。大型任務可以分派給多個平行的 worker agents，每個 agent 各自運行在自己的機器上，並在完成後再匯合
 
-<p className="moyai-big">Start a task in Slack. Come back to a PR.</p>
+<p className="moyai-big">在 Slack 中開始一項任務。回來時看到一個 PR。</p>
 
-## Any harness
+## 任何 harness {#any-harness}
 
-The agent loop is a choice, not a lock-in. Pick the harness for each session from the composer, and Moyai runs it in the same isolated workspace with the same tools, connections and permissions
+代理程式迴圈是一種選擇，而不是綁死。您可以從 composer 為每個 session 選擇 harness，Moyai 會在相同的隔離工作區中，以相同的工具、連線與權限執行它
 
 <LogoWall title="Harnesses" items={HARNESSES} />
 
-Hermes is the default. Claude Code, Codex, OpenCode and Deep Agents run through the LiteLLM agent SDK, so adding the next harness is a registry entry instead of a rewrite
+Hermes 是預設選項。Claude Code、Codex、OpenCode 和 Deep Agents 都透過 LiteLLM agent SDK 執行，因此加入下一個 harness 只需要新增一筆 registry 項目，而不是重寫
 
-## Any model, any provider
+## 任何模型、任何提供者 {#any-model-any-provider}
 
-Every model request goes through LiteLLM. Switch from GPT-6 Astra to Claude Opus 5.5 to GLM-5.3 between messages, and every request is attributed to the teammate who made it. Provider keys stay on the server; the sandbox never sees them
+每一筆模型請求都會透過 LiteLLM。您可以在訊息之間將 GPT-6 Astra 切換為 Claude Opus 5.5 再切換為 GLM-5.3，而且每一筆請求都會歸屬到發送請求的隊友。提供者金鑰會保留在伺服器上；sandbox 永遠看不到它們
 
 <LogoWall title="Providers" items={PROVIDERS} />
 
-That's 100+ providers out of the box. If LiteLLM can call it, Moyai can use it
+這代表開箱即用就支援 100+ 個提供者。如果 LiteLLM 能呼叫它，Moyai 就能使用它
 
-## Get started
+## 開始使用 {#get-started}
 
-Clone the repo and try the local demo in a couple of minutes, no API keys required
+複製 repo，並在幾分鐘內試用本地示範，不需要 API 金鑰
 
 ```sh
 git clone https://github.com/BerriAI/moyai.git
@@ -90,4 +90,4 @@ uv sync --frozen
 uv run uvicorn app.main:app --host 127.0.0.1 --port 8787 --workers 1
 ```
 
-Then [set up cloud execution](https://github.com/BerriAI/moyai/blob/main/docs/deployment.md) with Modal and your LiteLLM gateway, and [connect your apps](https://github.com/BerriAI/moyai/blob/main/docs/integrations.md). Star the [repo on GitHub](https://github.com/BerriAI/moyai), open an issue, or send us a PR. Moyai will probably review it
+接著使用 Modal 和您的 LiteLLM gateway [設定雲端執行](https://github.com/BerriAI/moyai/blob/main/docs/deployment.md)，並[連接您的應用程式](https://github.com/BerriAI/moyai/blob/main/docs/integrations.md)。到 [GitHub 上的 repo](https://github.com/BerriAI/moyai) 按下星號、開一個 issue，或寄給我們一個 PR。Moyai 很可能會審查它

@@ -1,112 +1,112 @@
 ---
 slug: fusion-terminal-bench-benchmark
-title: "Introducing LiteLLM Fusion: 56% More Tasks Solved Than Fable 5"
+title: "介紹 LiteLLM Fusion：比 Fable 5 多解決 56% 的任務"
 date: 2026-09-01T14:00:00
 authors:
   - tin
 image: ./lite-fusion-light.png
-description: "LiteLLM Auto Router Fusion ran three models on the same task and synthesized their work, solving 14 of 21 Terminal-Bench tasks against 9 for Claude Fable-5 alone. Total spend rose 36%, cost per solved task fell 12%, and turn latency went up 5x."
-keywords: [model fusion, best of n, llm ensemble, terminal bench, llm benchmarks, model routing, litellm, agent benchmarks]
+description: "LiteLLM 自動路由 Fusion 在同一任務上同時執行三個模型並綜合其成果，在 21 個 Terminal-Bench 任務中解決了 14 個，單靠 Claude Fable-5 則解決了 9 個。總支出增加 36%，每個已解決任務的成本下降 12%，而單輪延遲上升了 5 倍。"
+keywords: [模型融合, best of n, LLM 集成, terminal bench, LLM 基準, 模型路由, litellm, agent 基準]
 tags: [routing, auto-router, benchmarks, cost, engineering]
 hide_table_of_contents: false
 ---
 
-![LiteLLM Auto Router Fusion solved 14 of 21 tasks against 9 for Fable 5](./lite-fusion-light.png)
+![LiteLLM Auto Router Fusion 在 21 個任務中解決了 14 個，相較之下 Fable 5 解決了 9 個](./lite-fusion-light.png)
 
-**LiteLLM Auto Router Fusion solved 14 of 21 Terminal-Bench tasks; Claude Fable-5 on its own solved 9.** Fusion runs the task on several models in parallel and has one of them synthesize the candidate work into a single answer. Both arms ran the same 21 tasks.
+**LiteLLM Auto Router Fusion 在 21 個 Terminal-Bench 任務中解決了 14 個；Claude Fable-5 單獨則解決了 9 個。** Fusion 會在多個模型上平行執行任務，並由其中一個模型將候選成果綜合成單一答案。兩個分支都執行了相同的 21 個任務。
 
 {/* truncate */}
 
-:::info[🚀 Help shape the Auto-Router]
+:::info[🚀 協助塑造 Auto-Router]
 
-Get early access, work directly with the LiteLLM team, and influence the roadmap with your production traffic.
+搶先體驗、直接與 LiteLLM 團隊合作，並以您的正式流量影響產品藍圖。
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計夥伴</a>
 
 <br /><br />
 
-Already testing it? Share your results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+已在測試了嗎？請在 [討論串 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
 
 :::
 
-## Key findings
+## 主要發現 {#key-findings}
 
-- **Fusion solved 5 more tasks**, 14/21 against 9/21, a 24 point jump in solve rate on this subset
-- **Total spend rose 36%** ($67.13 to $91.64) while **cost per solved task fell 12%** ($7.46 to $6.55)
-- **The extra models are cheap; the synthesis is not.** Opus-5 and Kimi-K3 together account for $21.27 of the fusion bill. The Fable-5 component alone is $70.37, more than the entire single model arm
-- **Latency is the real cost.** Median turn went from 6s to 30s and p95 from 55s to 237s, with median wall clock per task moving from 5 to 8 minutes
-- **Fusion is not strictly better.** It lost one task the single model solved, and it lost it to a timeout rather than a wrong answer
+- **Fusion 多解決了 5 個任務**，14/21 對上 9/21，在這個子集上的解決率提升了 24 個百分點
+- **總支出增加 36%**（$67.13 到 $91.64），同時 **每個已解決任務的成本下降 12%**（$7.46 到 $6.55）
+- **額外的模型很便宜；綜合步驟才不便宜。** Opus-5 和 Kimi-K3 合計占 Fusion 帳單的 $21.27。Fable-5 這一項本身就要 $70.37，比整個單模型分支還高
+- **延遲才是真正的成本。** 中位單輪時間從 6s 增加到 30s，p95 從 55s 增加到 237s，而每個任務的中位整體耗時則從 5 分鐘變成 8 分鐘
+- **Fusion 並非絕對更好。** 它輸掉了一個單模型解決的任務，而且是因為逾時而非錯誤答案
 
-## Results
+## 結果 {#results}
 
-| Arm | Solve rate | Solved/n | Total cost | $/solved | Median turn | p95 turn | Median task wall clock | Agent turns |
+| 分支 | 解決率 | 已解決/n | 總成本 | $/已解決 | 中位單輪時間 | p95 單輪時間 | 任務中位整體耗時 | 代理程式輪次 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Fusion: Fable-5 + Opus-5 + Kimi-K3 | **66.7%** | **14/21** | $91.64 | **$6.55** | 30s | 237s | 8 min | 169 |
-| Fable-5 only | 42.9% | 9/21 | $67.13 | $7.46 | 6s | 55s | 5 min | 395 |
+| Fusion：Fable-5 + Opus-5 + Kimi-K3 | **66.7%** | **14/21** | $91.64 | **$6.55** | 30s | 237s | 8 分鐘 | 169 |
+| 僅 Fable-5 | 42.9% | 9/21 | $67.13 | $7.46 | 6s | 55s | 5 分鐘 | 395 |
 
-Fusion needed 57% fewer agent turns to get further, because a synthesized answer arrives closer to correct and the agent spends less time iterating. Each of those turns costs roughly 5x more wall clock, so the task still takes longer end to end.
+Fusion 需要少 57% 的代理程式輪次就能取得更多進展，因為綜合後的答案更接近正確，代理程式也花更少時間迭代。每一輪大約要多花 5 倍的整體時間，因此任務從頭到尾仍然更久。
 
-## Where the extra tasks came from
+## 額外任務從哪裡來 {#where-the-extra-tasks-came-from}
 
-Eight tasks were solved by both arms. Fusion added six that the single model missed: `chess-best-move`, `crack-7z-hash`, `largest-eigenval`, `llm-inference-batching-scheduler`, `password-recovery`, and `write-compressor`. Six were solved by neither. The one regression, `winning-avg-corewars`, timed out under fusion.
+兩個分支都解決了 8 個任務。Fusion 額外拿下了單模型漏掉的 6 個：`chess-best-move`、`crack-7z-hash`、`largest-eigenval`、`llm-inference-batching-scheduler`、`password-recovery` 和 `write-compressor`。6 個任務兩邊都沒解決。唯一的回退，`winning-avg-corewars`，在 Fusion 下逾時。
 
-| Task | Fable-5 | Fusion |
+| 任務 | Fable-5 | Fusion |
 |---|---|---|
-| adaptive-rejection-sampler | failed | failed (timeout) |
-| build-pmars | solved | solved |
-| chess-best-move | failed (timeout) | **solved** |
-| cobol-modernization | solved | solved |
-| crack-7z-hash | failed | **solved** |
-| filter-js-from-html | failed | failed |
-| gcode-to-text | failed (timeout) | failed (timeout) |
-| install-windows-3.11 | failed | failed |
-| largest-eigenval | failed | **solved** |
-| llm-inference-batching-scheduler | failed (timeout) | **solved** |
-| merge-diff-arc-agi-task | solved | solved |
-| multi-source-data-merger | solved | solved |
-| overfull-hbox | solved | solved |
-| password-recovery | failed | **solved** |
-| polyglot-c-py | failed | failed |
-| prove-plus-comm | solved | solved |
-| pypi-server | solved | solved |
-| sparql-university | solved | solved |
-| train-fasttext | failed | failed (timeout) |
-| winning-avg-corewars | **solved** | failed (timeout) |
-| write-compressor | failed | **solved** |
+| adaptive-rejection-sampler | 失敗 | 失敗（逾時） |
+| build-pmars | 已解決 | 已解決 |
+| chess-best-move | 失敗（逾時） | **已解決** |
+| cobol-modernization | 已解決 | 已解決 |
+| crack-7z-hash | 失敗 | **已解決** |
+| filter-js-from-html | 失敗 | 失敗 |
+| gcode-to-text | 失敗（逾時） | 失敗（逾時） |
+| install-windows-3.11 | 失敗 | 失敗 |
+| largest-eigenval | 失敗 | **已解決** |
+| llm-inference-batching-scheduler | 失敗（逾時） | **已解決** |
+| merge-diff-arc-agi-task | 已解決 | 已解決 |
+| multi-source-data-merger | 已解決 | 已解決 |
+| overfull-hbox | 已解決 | 已解決 |
+| password-recovery | 失敗 | **已解決** |
+| polyglot-c-py | 失敗 | 失敗 |
+| prove-plus-comm | 已解決 | 已解決 |
+| pypi-server | 已解決 | 已解決 |
+| sparql-university | 已解決 | 已解決 |
+| train-fasttext | 失敗 | 失敗（逾時） |
+| winning-avg-corewars | **已解決** | 失敗（逾時） |
+| write-compressor | 失敗 | **已解決** |
 
-The six tasks fusion picked up are the ones where a second opinion changes the answer: cracking a hash, finding an eigenvalue, writing a compressor. Different models attack these differently, and the synthesis step gets to pick the line of attack that worked instead of committing to one up front.
+Fusion 拿下的這 6 個任務，正是第二個意見會改變答案的類型：破解雜湊、找特徵值、寫壓縮器。不同模型會以不同方式處理這些問題，而綜合步驟可以選擇真正有效的攻擊路線，而不是一開始就押定單一路線。
 
-## Where the money goes
+## 錢花到哪裡去了 {#where-the-money-goes}
 
-| Model | Spend in fusion arm | Share |
+| 模型 | Fusion 分支支出 | 佔比 |
 |---|---:|---:|
 | claude-fable-5 | $70.37 | 76.8% |
 | claude-opus-5 | $17.37 | 19.0% |
 | kimi-k3 | $3.90 | 4.3% |
 
-Adding Opus-5 and Kimi-K3 as candidate generators cost $21.27 across all 21 tasks. The Fable-5 line item grew past the entire single model baseline because Fable both generates a candidate and synthesizes on 167 of 169 turns. If you want to bring the fusion bill down, the lever is the synthesizer, not the size of the candidate pool.
+將 Opus-5 和 Kimi-K3 加入作為候選生成器，在 21 個任務上共花了 $21.27。Fable-5 這一項之所以超過整個單模型基準，是因為 Fable 同時在 169 次輪次中的 167 次負責生成候選與綜合。如果您想降低 Fusion 帳單，槓桿點在綜合器，而不是候選池的大小。
 
-## How it was measured
+## 如何量測 {#how-it-was-measured}
 
-- **Benchmark:** the same 21 task subset of Terminal-Bench 2.0 used in our [earlier auto router benchmark](/blog/auto-router-terminal-bench-benchmark)
-- **Baseline arm:** every request to `claude-fable-5` at high effort
-- **Fusion arm:** `claude-fable-5`, `claude-opus-5`, and `kimi-k3` each produce candidate work at high effort; `claude-fable-5` synthesizes the final answer. Synthesis ran on 167 of 169 turns
-- **Cost:** total USD across all 21 tasks from gateway spend logs, including every candidate call and the synthesis call
-- **Failures:** agent timeouts count as failures. The fusion arm hit 5 timeout rows against 3 for the baseline, which is consistent with its higher per turn latency
-- **Provider errors:** failed rows per model group were 7 for Fable-5, 6 for Opus-5, and 4 for Kimi-K3, plus 2 arm level failures on each side. The fusion arm also logged 21 `content_filter` rows, all on candidate generations
+- **基準：** 與我們先前的 [自動路由器基準](/blog/auto-router-terminal-bench-benchmark) 相同的 Terminal-Bench 2.0 21 任務子集
+- **基準分支：** 對 `claude-fable-5` 的每個請求都使用高努力等級
+- **Fusion 分支：** `claude-fable-5`、`claude-opus-5` 和 `kimi-k3` 各自以高努力等級產生候選工作；`claude-fable-5` 綜合最終答案。綜合在 169 次輪次中的 167 次執行
+- **成本：** 來自 gateway 支出記錄、涵蓋所有候選呼叫與綜合呼叫的全部 21 個任務總美元支出
+- **失敗：** 代理程式逾時都算失敗。Fusion 分支出現 5 筆逾時紀錄，而基準分支為 3 筆，這與其較高的每輪延遲一致
+- **提供者錯誤：** 各模型群組的失敗列數分別為 Fable-5 7 筆、Opus-5 6 筆、Kimi-K3 4 筆，外加雙方各 2 筆分支層級失敗。Fusion 分支也記錄了 21 筆 `content_filter` 紀錄，全部都發生在候選生成階段
 
-One run per arm on 21 tasks is a directional result, not a confidence interval. It says fusion is worth measuring on your own workload; it does not establish a solve rate for Terminal-Bench overall, and these numbers should not be read against the arms in the earlier post, which used a different configuration.
+每個分支在 21 個任務上跑一次，只能算是方向性結果，不能當成信賴區間。這表示 Fusion 值得在您自己的工作負載上量測；但它並不能建立 Terminal-Bench 整體的解決率，而且這些數字也不應與先前文章中的分支相比，因為前者使用了不同的配置。
 
-## When to reach for it
+## 何時該使用它 {#when-to-reach-for-it}
 
-Fusion buys completed tasks with latency and total spend. That trade works when finishing the task is what you are paying for, which covers migrations, hard debugging, offline agent runs, and evaluation harnesses. It does not work behind an interactive request where a 237s p95 turn is visible to a user. If you are already running a frontier model at high effort and still watching tasks fail, the question worth asking is whether a second and third candidate would have solved them, and this subset says that about a quarter of the time it would.
+Fusion 以延遲和總支出換取完成的任務。當您付費是為了把任務完成時，這種取捨才成立；這涵蓋遷移、困難除錯、離線代理程式執行，以及評估框架。若在互動式請求後方使用，237s 的 p95 單輪時間會讓使用者直接感受到。若您已經在高努力等級下執行前沿模型，卻仍看到任務失敗，值得問的問題是：第二個與第三個候選是否能解決它們；而這個子集顯示，約四分之一的情況下答案是可以。
 
-## Try it
+## 試試看 {#try-it}
 
 :::info
 
-Point an agent at several models on the same task, synthesize the results, and compare completed tasks per dollar against your current single model. Share numbers or questions in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168). To work on this with us directly, [apply to be a design partner](https://calendly.com/tin-berri/litellm-auto-router-design-partner).
+讓代理程式在同一任務上指向多個模型、綜合結果，並比較每美元完成的任務數與您目前的單一模型。請在 [討論串 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享數字或問題。若要直接與我們一起做這件事，請 [申請成為設計夥伴](https://calendly.com/tin-berri/litellm-auto-router-design-partner)。
 
 :::
 
-Related reading: [stacking auto-routing on prompt caching](/blog/auto-router-prompt-caching-benchmark) and [what auto-routing saved in production](/blog/auto-router-production-savings).
+相關閱讀：[在提示快取之上疊加自動路由](/blog/auto-router-prompt-caching-benchmark) 與 [自動路由在生產環境中節省了什麼](/blog/auto-router-production-savings)。

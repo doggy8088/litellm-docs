@@ -1,11 +1,11 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Timeouts
+# 逾時 {#timeouts}
 
-The timeout set in router is for the entire length of the call, and is passed down to the completion() call level as well. 
+在 router 中設定的逾時是針對整個呼叫的完整長度，且也會傳遞到 completion() 呼叫層級。
 
-### Global Timeouts
+### 全域逾時 {#global-timeouts}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -29,7 +29,7 @@ router_settings:
     timeout: 30 # sets a 30s timeout for the entire call
 ```
 
-**Start Proxy** 
+**啟動 Proxy**
 
 ```shell
 $ litellm --config /path/to/config.yaml
@@ -38,17 +38,17 @@ $ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-`litellm_settings.request_timeout` (or the `REQUEST_TIMEOUT` env var) is the proxy-wide default when no router or deployment timeout is set. It applies to the native `/v1/responses` and `/v1/messages` streams as well, where it bounds each wait for the next chunk, so a stalled upstream ends the stream with an error instead of hanging. See [request timeouts on pass-through routes](./pass_through#request-timeouts) for the full precedence
+`litellm_settings.request_timeout`（或 `REQUEST_TIMEOUT` 環境變數）是在未設定路由器或部署逾時時，整個 proxy 的預設值。它也適用於原生 `/v1/responses` 和 `/v1/messages` 串流，在這些情況下，它會限制等待下一個 chunk 的每次等待時間，因此上游若停滯，串流就會以錯誤結束，而不是卡住。完整優先順序請參閱 [pass-through 路由上的請求逾時](./pass_through#request-timeouts)
 
-### Custom Timeouts & Stream Timeouts (Per Model)
+### 自訂逾時與串流逾時（每個模型） {#custom-timeouts--stream-timeouts-per-model}
 
-For each model, you can set `timeout` and `stream_timeout` under `litellm_params`:
+對於每個模型，您可以在 `timeout` 下設定 `stream_timeout` 和 `litellm_params`：
 
-- **`timeout`** → maximum time for the *complete response*.  
-  Use this to cap long-running completions.
+- **`timeout`** → 完整回應的最長時間。  
+  用於限制長時間執行的 completions。
 
-- **`stream_timeout`** → maximum time to wait for the *first chunk* (i.e., first token) in a streaming response.  
-  Use this to abort “hanging” providers (e.g., Bedrock slow start) and retry another model.
+- **`stream_timeout`** → 在串流回應中等待第一個區塊（亦即第一個 token）的最長時間。  
+  用於中止「卡住」的提供者（例如 Bedrock 啟動緩慢），並重試另一個模型。
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -106,7 +106,7 @@ model_list:
 ```
 
 
-**Start Proxy**
+**啟動 Proxy**
 
 ```shell
 $ litellm --config /path/to/config.yaml
@@ -116,11 +116,11 @@ $ litellm --config /path/to/config.yaml
 </TabItem>
 </Tabs>
 
-### Keepalive Pings for Idle Streaming Connections
+### 閒置串流連線的 keepalive ping {#keepalive-pings-for-idle-streaming-connections}
 
-`timeout` and `stream_timeout` cap how long a request is allowed to run. A separate problem is that load balancers and reverse proxies in front of the proxy often close connections that look idle, even when the client is legitimately waiting on a response. Streaming requests to models with long silent gaps before the first token, such as extended or adaptive thinking models, or otherwise slow providers, can trip these idle-connection timeouts before any content arrives.
+`timeout` 和 `stream_timeout` 會限制請求可執行的最長時間。另一個問題是，proxy 前方的負載平衡器與反向 proxy 經常會關閉看起來處於閒置狀態的連線，即使客戶端確實正在等待回應。針對在第一個 token 之前有很長靜默間隔的模型（例如延長式或自適應思考模型），或其他較慢的提供者所發出的串流請求，可能會在任何內容到達前就觸發這些閒置連線逾時。
 
-Set `keepalive_seconds` under a deployment's `litellm_params` to keep the connection alive during these gaps. Once a stream goes silent for longer than `keepalive_seconds`, the proxy sends an SSE comment frame (`: ping`) down the connection, repeating every `keepalive_seconds` until real content resumes. Comment frames are part of the SSE spec, and clients and intermediate proxies are expected to ignore them, so they don't affect the response your application sees.
+請在部署的 `litellm_params` 下設定 `keepalive_seconds`，以便在這些間隔期間維持連線存活。當串流靜默時間超過 `keepalive_seconds` 時，proxy 會沿著連線送出一個 SSE 註解框架（`: ping`），之後每隔 `keepalive_seconds` 重複一次，直到有真正的內容恢復。註解框架是 SSE 規格的一部分，且客戶端與中介 proxy 預期會忽略它們，因此不會影響您的應用程式所看到的回應。
 
 ```yaml
 model_list:
@@ -142,7 +142,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-`keepalive_seconds` is operator-only by default. A client's request-level `keepalive_seconds` has no effect unless the deployment also sets `allow_client_keepalive_override: true`, since letting any client enable heartbeats at will would let it keep an idle-looking stream alive past a load balancer's timeout indefinitely, tying up a `max_parallel_requests` slot for longer than intended.
+`keepalive_seconds` 預設僅限操作人員使用。除非部署也設定了 `allow_client_keepalive_override: true`，否則客戶端的請求層級 `keepalive_seconds` 不會產生任何作用，因為若允許任何客戶端隨意啟用 heartbeat，它就能讓看起來閒置的串流無限期地在負載平衡器逾時後仍保持存活，讓一個 `max_parallel_requests` 配額槽被占用的時間比預期更久。
 
 ```yaml
 model_list:
@@ -154,7 +154,7 @@ model_list:
       allow_client_keepalive_override: true
 ```
 
-With override allowed, a request can change the deployment's default, including disabling it with an explicit `0`:
+在允許覆寫的情況下，請求可以變更部署的預設值，包括以明確的 `0` 將其停用：
 
 ```shell
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -168,9 +168,9 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-If `allow_client_keepalive_override` isn't set, that same request body is silently ignored and the deployment's own configured value applies instead. A deployment-level `keepalive_seconds: 0` is a hard disable that takes priority over everything, including a grant of override permission: it can't be re-enabled by a request no matter what. The effective value is clamped to the range 1-300 seconds.
+如果未設定 `allow_client_keepalive_override`，則相同的請求本文會被靜默忽略，並改用部署本身設定的值。部署層級的 `keepalive_seconds: 0` 是硬性停用，且優先於一切，包括授予覆寫權限：無論如何，請求都無法將其重新啟用。有效值會被限制在 1-300 秒的範圍內。
 
-`keepalive_seconds` can also be set with an `x-litellm-keepalive-seconds` header instead of a request body field, for clients that can set custom headers more easily than extra body fields:
+`keepalive_seconds` 也可以改用 `x-litellm-keepalive-seconds` 標頭來設定，而不是請求本文欄位，適合比起額外本文欄位更容易設定自訂標頭的客戶端：
 
 ```shell
 curl http://0.0.0.0:4000/v1/chat/completions \
@@ -184,36 +184,35 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   }'
 ```
 
-The header goes through the same `allow_client_keepalive_override` gate as the body field, so it has no effect on a deployment that hasn't opted in either.
+該標頭會通過與本文欄位相同的 `allow_client_keepalive_override` 閘門，因此若部署未選擇啟用，該標頭也不會產生作用。
 
-#### A proxy-wide default
+#### 整個 proxy 的預設 {#a-proxy-wide-default}
 
-`keepalive_seconds` is per deployment. To apply one interval across every deployment, and to every pass-through route, set `sse_keepalive_ping_interval_seconds` under `litellm_settings`:
+`keepalive_seconds` 是每個部署各自設定。若要讓所有部署、以及每條 pass-through 路由都使用同一個間隔，請在 `litellm_settings` 下設定 `sse_keepalive_ping_interval_seconds`：
 
 ```yaml
 litellm_settings:
   sse_keepalive_ping_interval_seconds: 15
 ```
 
-A deployment's own `keepalive_seconds` still wins where it is set, and a deployment-level `0` still hard-disables. The global value only applies where nothing more specific does.
+部署本身的 `keepalive_seconds` 仍會在已設定的地方勝出，而部署層級的 `0` 仍會硬性停用。全域值只會在沒有更具體設定時才套用。
 
-One nuance applies before the upstream has answered, since no deployment has served the request yet: a per-deployment value is only used when every deployment behind the requested model name carries the same one. Where they disagree, the global value applies until the serving deployment is known, after which its own setting takes over for the rest of the stream.
+在上游尚未回應之前，會先適用一個細節，因為此時尚無部署已為該請求提供服務：只有當請求模型名稱背後的所有部署都具有相同值時，才會使用每個部署的值。若它們不一致，則會先套用全域值，直到知道是哪個部署在提供服務；之後，該部署本身的設定會接手並適用於串流的其餘部分。
 
-#### Silence before the upstream answers at all
+#### 在上游完全回應之前的靜默 {#silence-before-the-upstream-answers-at-all}
 
-Some providers withhold their response headers until the first token, so on those the model's whole thinking time passes before the proxy has anything to relay. `sse_keepalive_ping_interval_seconds` covers that window too: when the upstream call has not come back within one interval, the proxy opens the SSE response and starts sending `: ping` comments, then replays the real response onto the same connection once it arrives.
+有些提供者會等到第一個 token 才送出回應標頭，因此在這類情況下，模型整段思考時間都會先經過，proxy 才有任何內容可轉送。`sse_keepalive_ping_interval_seconds` 也涵蓋這段窗口：當上游請求在一個間隔內尚未返回時，proxy 會開啟 SSE 回應並開始送出 `: ping` 註解，然後在真正回應抵達後，將其重播到同一條連線上。
 
-Two things follow from opening the response that early, and both are why this stays off until you set an interval:
+提前開啟回應會帶來兩個結果，而這兩點也正是為什麼在您設定間隔之前它會保持關閉：
 
-- The status line is committed before the outcome is known, so a request that fails after the first ping arrives as an SSE error frame under a `200` rather than as an HTTP error status. Any error transformation your callbacks apply still applies to that frame
-- LiteLLM's `x-litellm-*` response headers are not known yet, so they are absent on a stream that pinged
+- 狀態列會在結果尚未明朗時就被提交，因此第一個 ping 之後才失敗的請求，會以 `200` 下的 SSE 錯誤框架返回，而不是 HTTP 錯誤狀態。任何回呼套用的錯誤轉換仍然會套用到該框架
+- LiteLLM 的 `x-litellm-*` 回應標頭此時尚未知曉，因此在有 ping 的串流上會缺少這些標頭
 
+### 設定動態逾時 - 每個請求 {#setting-dynamic-timeouts---per-request}
 
-### Setting Dynamic Timeouts - Per Request
+LiteLLM 支援針對每個請求設定 `timeout` 
 
-LiteLLM supports setting a `timeout` per request 
-
-**Example Usage**
+**使用範例**
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -234,7 +233,7 @@ response = router.completion(
 <TabItem value="proxy" label="PROXY">
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -277,12 +276,11 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 測試逾時處理  {#testing-timeout-handling}
 
-## Testing timeout handling 
+若要測試您的 retry/fallback 邏輯是否能處理逾時，您可以將 `mock_timeout=True` 設為測試用途。 
 
-To test if your retry/fallback logic can handle timeouts, you can set `mock_timeout=True` for testing. 
-
-This is currently only supported on `/chat/completions` and `/completions` endpoints. Please [let us know](https://github.com/BerriAI/litellm/issues) if you need this for other endpoints. 
+目前僅支援 `/chat/completions` 和 `/completions` 端點。若您需要其他端點支援，請[告訴我們](https://github.com/BerriAI/litellm/issues)。 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \

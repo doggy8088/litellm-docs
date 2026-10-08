@@ -2,17 +2,17 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Custom API Server (Custom Format)
+# 自訂 API Server（自訂格式） {#custom-api-server-custom-format}
 
-Call your custom torch-serve / internal LLM APIs via LiteLLM
+透過 LiteLLM 呼叫您的自訂 torch-serve / 內部 LLM API
 
 :::info
 
-- For calling an openai-compatible endpoint, [go here](./openai_compatible.md)
-- For modifying incoming/outgoing calls on proxy, [go here](../proxy/call_hooks.md)
+- 如需呼叫 openai-compatible 端點，請[前往此處](./openai_compatible.md)
+- 如需在 proxy 上修改傳入/傳出請求，請[前往此處](../proxy/call_hooks.md)
 :::
 
-Supported Routes:
+支援的路由：
 - `/v1/chat/completions` -> `litellm.acompletion`
 - `/v1/completions` -> `litellm.atext_completion`
 - `/v1/embeddings` -> `litellm.aembedding`
@@ -21,7 +21,7 @@ Supported Routes:
 
 - `/v1/messages` -> `litellm.acompletion`
 
-## Quick Start 
+## 快速開始  {#quick-start}
 
 ```python showLineNumbers
 import litellm
@@ -50,9 +50,9 @@ resp = completion(
 assert resp.choices[0].message.content == "Hi!"
 ```
 
-## OpenAI Proxy Usage
+## OpenAI Proxy 用法 {#openai-proxy-usage}
 
-1. Setup your `custom_handler.py` file 
+1. 設定您的 `custom_handler.py` 檔案 
 
 ```python
 import litellm
@@ -78,12 +78,12 @@ class MyCustomLLM(CustomLLM):
 my_custom_llm = MyCustomLLM()
 ```
 
-2. Add to `config.yaml` 
+2. 加入到 `config.yaml` 
 
-In the config below, we pass
+在下方設定中，我們傳入
 
 python_filename: `custom_handler.py`
-custom_handler_instance_name: `my_custom_llm`. This is defined in Step 1
+custom_handler_instance_name: `my_custom_llm`。這在步驟 1 中已定義
 
 custom_handler: `custom_handler.my_custom_llm`
 
@@ -105,7 +105,7 @@ litellm_settings:
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
@@ -117,7 +117,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```
 {
@@ -146,11 +146,11 @@ Expected Response
 }
 ```
 
-## Add Streaming Support 
+## 新增串流支援  {#add-streaming-support}
 
-Here's a simple example of returning unix epoch seconds for both completion + streaming use-cases. 
+這裡有一個簡單範例，示範如何在 completion + streaming 兩種情境下回傳 unix epoch 秒數。 
 
-s/o [@Eloy Lafuente](https://github.com/stronk7) for this code example.
+感謝 [@Eloy Lafuente](https://github.com/stronk7) 提供這個程式碼範例。
 
 ```python
 import time
@@ -196,9 +196,9 @@ class UnixTimeLLM(CustomLLM):
 unixtime = UnixTimeLLM()
 ```
 
-## Image Generation
+## 圖片生成 {#image-generation}
 
-1. Setup your `custom_handler.py` file 
+1. 設定您的 `custom_handler.py` 檔案 
 ```python
 import litellm
 from litellm import CustomLLM
@@ -216,12 +216,12 @@ my_custom_llm = MyCustomLLM()
 ```
 
 
-2. Add to `config.yaml` 
+2. 加入到 `config.yaml` 
 
-In the config below, we pass
+在下方設定中，我們傳入
 
 python_filename: `custom_handler.py`
-custom_handler_instance_name: `my_custom_llm`. This is defined in Step 1
+custom_handler_instance_name: `my_custom_llm`。這在步驟 1 中已定義
 
 custom_handler: `custom_handler.my_custom_llm`
 
@@ -243,7 +243,7 @@ litellm_settings:
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/images/generations' \
@@ -255,7 +255,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/images/generations' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```
 {
@@ -264,9 +264,9 @@ Expected Response
 }
 ```
 
-## Image Edit
+## 圖片編輯 {#image-edit}
 
-1. Setup your `custom_handler.py` file
+1. 設定您的 `custom_handler.py` 檔案
 ```python
 import litellm
 from litellm import CustomLLM
@@ -298,12 +298,12 @@ my_custom_llm = MyCustomLLM()
 ```
 
 
-2. Add to `config.yaml`
+2. 加入到 `config.yaml`
 
-In the config below, we pass
+在下方設定中，我們傳入
 
 python_filename: `custom_handler.py`
-custom_handler_instance_name: `my_custom_llm`. This is defined in Step 1
+custom_handler_instance_name: `my_custom_llm`。這在步驟 1 中已定義
 
 custom_handler: `custom_handler.my_custom_llm`
 
@@ -322,7 +322,7 @@ litellm_settings:
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/images/edits' \
@@ -332,7 +332,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/images/edits' \
 -F 'prompt=Make the sky blue'
 ```
 
-Expected Response
+預期回應
 
 ```
 {
@@ -341,12 +341,12 @@ Expected Response
 }
 ```
 
-## Anthropic `/v1/messages`
+## Anthropic `/v1/messages` {#anthropic-v1messages}
 
-- Write the integration for .acompletion
-- litellm will transform it to /v1/messages
+- 為 .acompletion 撰寫整合
+- litellm 會將其轉換為 /v1/messages
 
-1. Setup your `custom_handler.py` file 
+1. 設定您的 `custom_handler.py` 檔案 
 
 ```python
 import litellm
@@ -365,12 +365,12 @@ class MyCustomLLM(CustomLLM):
 my_custom_llm = MyCustomLLM()
 ```
 
-2. Add to `config.yaml` 
+2. 加入到 `config.yaml` 
 
-In the config below, we pass
+在下方設定中，我們傳入
 
 python_filename: `custom_handler.py`
-custom_handler_instance_name: `my_custom_llm`. This is defined in Step 1
+custom_handler_instance_name: `my_custom_llm`。這在步驟 1 中已定義
 
 custom_handler: `custom_handler.my_custom_llm`
 
@@ -392,7 +392,7 @@ litellm_settings:
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/messages' \
@@ -413,7 +413,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/messages' \
 }'
 ```
 
-Expected Response
+預期回應
 
 ```json
 {
@@ -437,11 +437,11 @@ Expected Response
 ```
 
 
-## Additional Parameters
+## 其他參數 {#additional-parameters}
 
-Additional parameters are passed inside `optional_params` key in the `completion` or `image_generation` function.
+其他參數會透過 `optional_params` 鍵傳入 `completion` 或 `image_generation` 函式中。
 
-Here's how to set this: 
+以下是設定方式： 
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -472,8 +472,7 @@ resp = completion(model="my-custom-llm/my-model", my_custom_param="my-custom-par
 </TabItem>
 <TabItem value="proxy" label="Proxy">
 
-
-1. Setup your `custom_handler.py` file 
+1. 設定您的 `custom_handler.py` 檔案 
 ```python
 import litellm
 from litellm import CustomLLM
@@ -492,12 +491,12 @@ my_custom_llm = MyCustomLLM()
 ```
 
 
-2. Add to `config.yaml` 
+2. 加入到 `config.yaml` 
 
-In the config below, we pass
+在下方設定中，我們傳入
 
 python_filename: `custom_handler.py`
-custom_handler_instance_name: `my_custom_llm`. This is defined in Step 1
+custom_handler_instance_name: `my_custom_llm`。這在步驟 1 中已定義
 
 custom_handler: `custom_handler.my_custom_llm`
 
@@ -520,7 +519,7 @@ litellm_settings:
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/images/generations' \
@@ -535,9 +534,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/images/generations' \
 </TabItem>
 </Tabs>
 
-
-
-## Custom Handler Spec
+## 自訂 Handler 規格 {#custom-handler-spec}
 
 ```python
 from litellm.types.utils import GenericStreamingChunk, ModelResponse, ImageResponse

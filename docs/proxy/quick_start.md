@@ -2,27 +2,27 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# CLI - Quick Start
+# CLI - 快速開始 {#cli---quick-start}
 
-Setup LiteLLM Proxy quickly via CLI. 
+透過 CLI 快速設定 LiteLLM Proxy。
 
-LiteLLM Server (LLM Gateway) manages:
+LiteLLM Server（LLM 閘道）管理：
 
-* **Unified Interface**: Calling 100+ LLMs [Huggingface/Bedrock/TogetherAI/etc.](/docs/proxy/quick_start#supported-llms) in the OpenAI `ChatCompletions` & `Completions` format
-* **Cost tracking**: Authentication, Spend Tracking & Budgets [Virtual Keys](https://docs.litellm.ai/docs/proxy/virtual_keys)
-* **Load Balancing**: between Multiple Models + Deployments of the same model - LiteLLM proxy can handle 1.5k+ requests/second during load tests.
+* **統一介面**：以 OpenAI `ChatCompletions` 與 `Completions` 格式呼叫 100+ 個 LLM [Huggingface/Bedrock/TogetherAI/etc.](/docs/proxy/quick_start#supported-llms)
+* **成本追蹤**：驗證、花費追蹤與預算 [虛擬金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys)
+* **負載平衡**：在同一模型的多個模型 + 部署之間進行 - LiteLLM proxy 在負載測試期間可處理 1.5k+ requests/second。
 
 ```shell
 $ uv tool install 'litellm[proxy]'
 ```
 
-:::warning[Minimum Python version]
-LiteLLM 1.84.0 and newer require Python {{python_min_version}} or higher (`requires-python >={{python_min_version}}`). `uv tool install` handles this for you by provisioning a compatible Python automatically. A bare `pip install 'litellm[proxy]'` does not; on an older interpreter pip silently resolves down to the last release whose `requires-python` still allowed it (1.83.9 for the previous floor), with no error. If you pinned to an old version unexpectedly, check `python --version` and upgrade to {{python_min_version}}+ (or use uv), then reinstall
+:::warning[最低 Python 版本]
+LiteLLM 1.84.0 及更新版本需要 Python {{python_min_version}} 或更高版本（`requires-python >={{python_min_version}}`）。`uv tool install` 會透過自動佈建相容的 Python 為您處理這件事。單純的 `pip install 'litellm[proxy]'` 不會；在較舊的解譯器上，pip 會默默解析到最後一個其 `requires-python` 仍允許它的版本（先前下限為 1.83.9），且不會報錯。如果您意外鎖定到舊版本，請檢查 `python --version` 並升級到 {{python_min_version}}+（或使用 uv），然後重新安裝
 :::
 
-## Quick Start - LiteLLM Proxy CLI
+## 快速入門 - LiteLLM Proxy CLI {#quick-start---litellm-proxy-cli}
 
-Run the following command to start the litellm proxy
+執行以下指令以啟動 litellm proxy
 ```shell
 $ litellm --model huggingface/bigcode/starcoder
 
@@ -32,23 +32,23 @@ $ litellm --model huggingface/bigcode/starcoder
 
 :::info
 
-Run with `--detailed_debug` if you need detailed debug logs 
+如果您需要詳細的 debug 記錄，請使用 `--detailed_debug`
 
 ```shell
 $ litellm --model huggingface/bigcode/starcoder --detailed_debug
 ```
 :::
 
-### Test
-In a new shell, run, this will make an `openai.chat.completions` request. Ensure you're using openai v1.0.0+
+### 測試 {#test}
+在新的 shell 中執行，這會發出一個 `openai.chat.completions` 請求。請確保您使用的是 openai v1.0.0+
 ```shell
 litellm --test
 ```
 
-This will now automatically route any requests for gpt-3.5-turbo to bigcode starcoder, hosted on huggingface inference endpoints. 
+這現在會自動將任何對 gpt-3.5-turbo 的請求路由到託管於 huggingface inference endpoints 的 bigcode starcoder。
 
-### Supported LLMs
-All LiteLLM supported LLMs are supported on the Proxy. Seel all [supported llms](https://docs.litellm.ai/docs/providers)
+### 支援的 LLMs {#supported-llms}
+LiteLLM 支援的所有 LLM 都支援在 Proxy 上。查看所有 [支援的 llms](https://docs.litellm.ai/docs/providers)
 <Tabs>
 <TabItem value="bedrock" label="AWS Bedrock">
 
@@ -154,7 +154,7 @@ $ litellm --model {{anthropic}}
 
 </TabItem>
 <TabItem value="vllm-local" label="VLLM">
-Assuming you're running vllm locally
+假設您是在本機執行 vllm
 
 ```shell
 $ litellm --model vllm/facebook/opt-125m
@@ -228,11 +228,11 @@ $ litellm --model command-nightly
 
 </Tabs>
 
-## Quick Start - LiteLLM Proxy + Config.yaml
-The config allows you to create a model list and set `api_base`, `max_tokens` (all litellm params). See more details about the config [here](https://docs.litellm.ai/docs/proxy/configs)
+## 快速入門 - LiteLLM Proxy + Config.yaml {#quick-start---litellm-proxy--configyaml}
+此設定可讓您建立模型清單並設定 `api_base`、`max_tokens`（所有 litellm 參數）。更多設定細節請見 [這裡](https://docs.litellm.ai/docs/proxy/configs)
 
-### Create a Config for LiteLLM Proxy
-Example config
+### 建立 LiteLLM Proxy 的設定 {#create-a-config-for-litellm-proxy}
+設定範例
 
 ```yaml
 model_list: 
@@ -253,19 +253,18 @@ model_list:
       api_key: <your-vllm-api-key|none>
 ```
 
-### Run proxy with config
+### 使用設定執行 proxy {#run-proxy-with-config}
 
 ```shell
 litellm --config your_config.yaml
 ```
 
-
-## Using LiteLLM Proxy - Curl Request, OpenAI Package, Langchain
+## 使用 LiteLLM Proxy - Curl 請求、OpenAI 套件、Langchain {#using-litellm-proxy---curl-request-openai-package-langchain}
 
 :::info
-LiteLLM is compatible with several SDKs - including OpenAI SDK, Anthropic SDK, Mistral SDK, LLamaIndex, Langchain (Js, Python)
+LiteLLM 與多個 SDK 相容 - 包括 OpenAI SDK、Anthropic SDK、Mistral SDK、LLamaIndex、Langchain（Js、Python）
 
-[More examples here](user_keys)
+[更多範例請見這裡](user_keys)
 :::
 
 <Tabs>
@@ -374,7 +373,7 @@ print(query_result[:5])
 </TabItem>
 <TabItem value="litellm" label="LiteLLM SDK">
 
-This is **not recommended**. There is duplicate logic as the proxy also uses the sdk, which might lead to unexpected errors. 
+這**不建議**。會有重複邏輯，因為 proxy 也會使用該 sdk，這可能導致未預期的錯誤。 
 
 ```python
 from litellm import completion 
@@ -425,45 +424,42 @@ print(message.content)
 
 </Tabs>
 
-[**More Info**](./configs.md)
+[**更多資訊**](./configs.md)
 
+## 📖 Proxy 端點 - [Swagger 文件](https://docs.litellm.ai/api-reference/) {#-proxy-endpoints---swagger-docs}
+- POST `/chat/completions` - 聊天完成端點，用於呼叫 100+ 個 LLM
+- POST `/completions` - 完成端點
+- POST `/embeddings` - 用於 Azure、OpenAI、Huggingface 端點的嵌入端點
+- GET `/models` - 伺服器上可用的模型
+- POST `/key/generate` - 產生可存取 proxy 的金鑰
 
+## Proxy 除錯  {#debugging-proxy}
 
-## 📖 Proxy Endpoints - [Swagger Docs](https://docs.litellm.ai/api-reference/)
-- POST `/chat/completions` - chat completions endpoint to call 100+ LLMs
-- POST `/completions` - completions endpoint
-- POST `/embeddings` - embedding endpoint for Azure, OpenAI, Huggingface endpoints
-- GET `/models` - available models on server
-- POST `/key/generate` - generate a key to access the proxy
-
-
-## Debugging Proxy 
-
-Events that occur during normal operation
+在正常運作期間發生的事件
 ```shell
 litellm --model {{openai_small}} --debug
 ```
 
-Detailed information
+詳細資訊
 ```shell
 litellm --model {{openai_small}} --detailed_debug
 ```
 
-### Set Debug Level using env variables
+### 使用環境變數設定除錯層級 {#set-debug-level-using-env-variables}
 
-Events that occur during normal operation
+在正常運作期間發生的事件
 ```shell
 export LITELLM_LOG=INFO
 ```
 
-Detailed information
+詳細資訊
 ```shell
 export LITELLM_LOG=DEBUG
 ```
 
-Errors only
+僅錯誤
 ```shell
 export LITELLM_LOG=ERROR
 ```
 
-`LITELLM_LOG` must be a valid Python logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`). Setting it to `None` makes `import litellm` fail.
+`LITELLM_LOG` 必須是有效的 Python logging level（`DEBUG`、`INFO`、`WARNING`、`ERROR`、`CRITICAL`）。將其設為 `None` 會使 `import litellm` 失敗。

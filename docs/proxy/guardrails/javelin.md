@@ -2,14 +2,15 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Javelin Guardrails
+# Javelin 防護欄 {#javelin-guardrails}
 
-Javelin provides AI safety and content moderation services with support for prompt injection detection, trust & safety violations, and language detection.
+Javelin 提供 AI 安全與內容審核服務，支援 prompt injection 偵測、信任與安全違規，以及語言偵測。
 
-## Quick Start
-### 1. Define Guardrails on your LiteLLM config.yaml 
+## 快速開始 {#quick-start}
 
-Define your guardrails under the `guardrails` section
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄  {#1-define-guardrails-on-your-litellm-configyaml}
+
+在 `guardrails` 區段下定義您的防護欄
 
 ```yaml showLineNumbers title="litellm config.yaml"
 model_list:
@@ -48,24 +49,24 @@ guardrails:
       api_version: "v1"
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-Javelin only supports `pre_call`, which runs **before** the LLM call, on **input**. `post_call` and `during_call` are not supported for this guardrail.
+Javelin 僅支援 `pre_call`，其會在 LLM 呼叫之前、於**輸入**階段執行。此防護欄不支援 `post_call` 與 `during_call`。
 
-### 2. Start LiteLLM Gateway 
+### 2. 啟動 LiteLLM Gateway  {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求  {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](/docs/proxy/user_keys#request-format)**
+**[Langchain, OpenAI SDK 使用範例](/docs/proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Prompt Injection Detection" value = "prompt-injection">
+<TabItem label="Prompt Injection 偵測" value = "prompt-injection">
 
-This will be blocked due to prompt injection attempt
+由於嘗試 prompt injection，這將被封鎖
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -80,7 +81,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure - the request is rejected with HTTP 500 and the reject prompt is returned in the error detail
+失敗時的預期回應 - 請求會被拒絕並回傳 HTTP 500，且拒絕提示會在錯誤詳細資訊中返回
 
 ```json
 {
@@ -102,9 +103,9 @@ Expected response on failure - the request is rejected with HTTP 500 and the rej
 
 </TabItem>
 
-<TabItem label="Trust & Safety Violation" value = "trust-safety">
+<TabItem label="信任與安全違規" value = "trust-safety">
 
-This will be blocked due to trust & safety violation
+由於信任與安全違規，這將被封鎖
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -119,7 +120,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```json
 {
@@ -141,9 +142,9 @@ Expected response on failure
 
 </TabItem>
 
-<TabItem label="Language Detection" value = "language-detection">
+<TabItem label="語言偵測" value = "language-detection">
 
-This will be blocked due to language policy violation
+由於語言政策違規，這將被封鎖
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -158,7 +159,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```json
 {
@@ -180,7 +181,7 @@ Expected response on failure
 
 </TabItem>
 
-<TabItem label="Successful Call" value = "allowed">
+<TabItem label="成功呼叫" value = "allowed">
 
 ```shell showLineNumbers title="Curl Request"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -199,17 +200,17 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
-## Supported Guardrail Types
+## 支援的防護欄類型 {#supported-guardrail-types}
 
-### 1. Prompt Injection Detection (`promptinjectiondetection`)
+### 1. Prompt Injection 偵測 (`promptinjectiondetection`) {#1-prompt-injection-detection-promptinjectiondetection}
 
-Detects and blocks prompt injection and jailbreak attempts.
+偵測並封鎖 prompt injection 與 jailbreak 嘗試。
 
-**Categories:**
-- `prompt_injection`: Detects attempts to manipulate the AI system
-- `jailbreak`: Detects attempts to bypass safety measures
+**類別：**
+- `prompt_injection`：偵測試圖操控 AI 系統的嘗試
+- `jailbreak`：偵測試圖繞過安全措施的嘗試
 
-**Example Response:**
+**範例回應：**
 ```json
 {
   "assessments": [
@@ -233,19 +234,19 @@ Detects and blocks prompt injection and jailbreak attempts.
 }
 ```
 
-### 2. Trust & Safety (`trustsafety`)
+### 2. 信任與安全 (`trustsafety`) {#2-trust--safety-trustsafety}
 
-Detects harmful content across multiple categories.
+偵測多個類別中的有害內容。
 
-**Categories:**
-- `violence`: Violence-related content
-- `weapons`: Weapon-related content
-- `hate_speech`: Hate speech and discriminatory content
-- `crime`: Criminal activity content
-- `sexual`: Sexual content
-- `profanity`: Profane language
+**類別：**
+- `violence`：與暴力相關的內容
+- `weapons`：與武器相關的內容
+- `hate_speech`：仇恨言論與歧視性內容
+- `crime`：犯罪活動內容
+- `sexual`：性內容
+- `profanity`：粗鄙語言
 
-**Example Response:**
+**範例回應：**
 ```json
 {
   "assessments": [
@@ -277,11 +278,11 @@ Detects harmful content across multiple categories.
 }
 ```
 
-### 3. Language Detection (`lang_detector`)
+### 3. 語言偵測 (`lang_detector`) {#3-language-detection-lang_detector}
 
-Detects the language of input text and can enforce language policies.
+偵測輸入文字的語言，並可強制執行語言政策。
 
-**Example Response:**
+**範例回應：**
 ```json
 {
   "assessments": [
@@ -299,7 +300,7 @@ Detects the language of input text and can enforce language policies.
 }
 ```
 
-## Supported Params 
+## 支援的參數  {#supported-params}
 
 ```yaml
 guardrails:
@@ -318,49 +319,49 @@ guardrails:
       # default_on: bool = False
 ```
 
-- `api_base`: (Optional[str]) The base URL of the Javelin API. Defaults to `https://api-dev.javelin.live`
-- `api_key`: (str) The API Key for the Javelin integration.
-- `guard_name`: (str) The Javelin guard to call. Required. Supported values: `promptinjectiondetection`, `trustsafety`, `lang_detector`
-- `api_version`: (Optional[str]) The API version to use. Defaults to `v1`
-- `metadata`: (Optional[Dict]) Metadata tags can be attached to screening requests as an object that can contain any arbitrary key-value pairs.
-- `config`: (Optional[Dict]) Configuration parameters for the guardrail.
-- `application`: (Optional[str]) Application name for policy-specific guardrails.
-- `default_on`: (Optional[bool]) Whether the guardrail runs on every request. Defaults to `False`; set to `true` to run it without listing it in the request `guardrails` field
+- `api_base`: (Optional[str]) Javelin API 的基礎 URL。預設為 `https://api-dev.javelin.live`
+- `api_key`: (str) Javelin 整合的 API 金鑰。
+- `guard_name`: (str) 要呼叫的 Javelin guard。必填。支援的值：`promptinjectiondetection`、`trustsafety`、`lang_detector`
+- `api_version`: (Optional[str]) 要使用的 API 版本。預設為 `v1`
+- `metadata`: (Optional[Dict]) 中繼資料標籤可以作為物件附加到篩選請求中，該物件可包含任何任意的鍵值對。
+- `config`: (Optional[Dict]) 防護欄的組態參數。
+- `application`: (Optional[str]) 政策專屬防護欄的應用程式名稱。
+- `default_on`: (Optional[bool]) 防護欄是否在每個請求上執行。預設為 `False`；設定為 `true` 可讓其在不於請求 `guardrails` 欄位中列出的情況下執行
 
-## Environment Variables
+## 環境變數 {#environment-variables}
 
-Set the following environment variables:
+設定下列環境變數：
 
 ```bash
 export JAVELIN_API_KEY="your-javelin-api-key"
 export JAVELIN_API_BASE="https://api-dev.javelin.live"  # Optional, defaults to dev environment
 ```
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-When a guardrail detects a violation:
+當防護欄偵測到違規時：
 
-1. The request is rejected with an HTTP 500 error and is **not** forwarded to the LLM
-2. `error.message` is `"Violated guardrail policy"`; `error.provider_specific_fields` carries the full `javelin_guardrail_response` and the `reject_prompt`
-3. The original violation is logged for monitoring
+1. 請求會以 HTTP 500 錯誤被拒絕，且**不會**轉送至 LLM
+2. `error.message` 為 `"Violated guardrail policy"`；`error.provider_specific_fields` 會攜帶完整的 `javelin_guardrail_response` 與 `reject_prompt`
+3. 原始違規會被記錄以供監控
 
-**How it works:**
-- Javelin guardrails check the last message for violations
-- If a violation is detected (`request_reject: true`), LiteLLM raises an `HTTPException` with status code 500 and returns the reject prompt under `error.provider_specific_fields`
-- If Javelin does not return a `reject_prompt`, LiteLLM falls back to `"Request blocked by Javelin guardrails due to <guardrail_name> violation."`, where `<guardrail_name>` is the top-level `guardrail_name` from your LiteLLM config (for example `javelin-prompt-injection`), not the Javelin guard name
+**運作方式：**
+- Javelin guardrails 會檢查最後一則訊息是否有違規
+- 若偵測到違規（`request_reject: true`），LiteLLM 會拋出一個帶有狀態碼 500 的 `HTTPException`，並在 `error.provider_specific_fields` 下回傳拒絕提示
+- 如果 Javelin 未回傳 `reject_prompt`，LiteLLM 會退回至 `"Request blocked by Javelin guardrails due to <guardrail_name> violation."`，其中 `<guardrail_name>` 是您 LiteLLM 設定中的頂層 `guardrail_name`（例如 `javelin-prompt-injection`），而不是 Javelin guard 名稱
 
-**Reject Prompts:**
-Can be configured from javelin portal.
-- Prompt Injection: `"Unable to complete request, prompt injection/jailbreak detected"`
-- Trust & Safety: `"Unable to complete request, trust & safety violation detected"`
-- Language Detection: `"Unable to complete request, language violation detected"`
+**拒絕提示：**
+可從 javelin portal 進行設定。
+- Prompt Injection：`"Unable to complete request, prompt injection/jailbreak detected"`
+- 信任與安全：`"Unable to complete request, trust & safety violation detected"`
+- 語言偵測：`"Unable to complete request, language violation detected"`
 
-## Testing
+## 測試 {#testing}
 
-You can test the Javelin guardrails using the provided test suite:
+您可以使用提供的測試套件來測試 Javelin 防護欄：
 
 ```bash
 pytest tests/guardrails_tests/test_javelin_guardrails.py -v
 ```
 
-The tests include mocked responses to avoid external API calls during testing.
+測試包含模擬回應，以避免在測試期間發出外部 API 呼叫。

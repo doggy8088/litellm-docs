@@ -1,12 +1,12 @@
-# Add Rerank Provider
+# 新增 Rerank 提供者 {#add-rerank-provider}
 
-LiteLLM **follows the Cohere Rerank API format** for all rerank providers. Here's how to add a new rerank provider:
+LiteLLM **遵循 Cohere Rerank API 格式** 適用於所有 rerank 提供者。以下是新增 rerank 提供者的方法：
 
-## 1. Create a transformation.py file
+## 1. 建立 transformation.py 檔案 {#1-create-a-transformationpy-file}
 
-Create a config class named `<Provider><Endpoint>Config` that inherits from [`BaseRerankConfig`](https://github.com/BerriAI/litellm/blob/main/litellm/llms/base_llm/rerank/transformation.py):
+建立一個名為 `<Provider><Endpoint>Config` 的設定類別，並繼承自 [`BaseRerankConfig`](https://github.com/BerriAI/litellm/blob/main/litellm/llms/base_llm/rerank/transformation.py)：
 
-Every method below is abstract on `BaseRerankConfig`, so the class cannot be instantiated until all six are implemented:
+以下每個方法在 `BaseRerankConfig` 上都是抽象方法，因此在全部六個方法都實作完成之前，無法建立此類別的執行個體：
 
 ```python
 from typing import Any
@@ -93,20 +93,17 @@ class YourProviderRerankConfig(BaseRerankConfig):
         return RerankResponse(**raw_response.json())
 ```
 
-
-## 2. Register Your Provider
-Add your provider to `ProviderConfigManager.get_provider_rerank_config()` in [`litellm/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/utils.py). Providers that are not listed there fall back to `CohereRerankConfig`, and `litellm.rerank()` then raises `Unsupported provider`:
+## 2. 註冊您的提供者 {#2-register-your-provider}
+將您的提供者新增至 [`litellm/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/utils.py) 中的 `ProviderConfigManager.get_provider_rerank_config()`。未列在其中的提供者會退回至 `CohereRerankConfig`，接著 `litellm.rerank()` 會擲出 `Unsupported provider`：
 
 ```python nolint
 elif litellm.LlmProviders.YOUR_PROVIDER == provider:
     return litellm.YourProviderRerankConfig()
 ```
 
+## 3. 將提供者加入 `rerank_api/main.py` {#3-add-provider-to-rerank_apimainpy}
 
-## 3. Add Provider to `rerank_api/main.py`
-
-Providers without a dedicated branch fall through to the generic `else` branch, which already calls `base_llm_http_handler.rerank` with the config returned in step 2. Add a dedicated branch only when your provider needs custom `api_key` or `api_base` resolution, and pass it `provider_config`
-
+沒有專屬分支的提供者會落入通用的 `else` 分支，而該分支已經會使用步驟 2 中回傳的設定呼叫 `base_llm_http_handler.rerank`。只有在您的提供者需要自訂 `api_key` 或 `api_base` 解析時，才新增專屬分支，並將其傳遞給 `provider_config`
 
 ```python nolint
 elif _custom_llm_provider == "your_provider":
@@ -129,9 +126,9 @@ elif _custom_llm_provider == "your_provider":
     ...
 ```
 
-## 4. Add Tests
+## 4. 新增測試 {#4-add-tests}
 
-Add a test file to [`tests/llm_translation`](https://github.com/BerriAI/litellm/tree/main/tests/llm_translation)
+將測試檔案加入 [`tests/llm_translation`](https://github.com/BerriAI/litellm/tree/main/tests/llm_translation)
 
 ```python
 def test_basic_rerank_cohere():
@@ -148,6 +145,5 @@ def test_basic_rerank_cohere():
     assert response.results is not None
 ```
 
-
-## Reference PRs
-- [Add Infinity Rerank](https://github.com/BerriAI/litellm/pull/7321)
+## 參考 PRs {#reference-prs}
+- [新增 Infinity Rerank](https://github.com/BerriAI/litellm/pull/7321)

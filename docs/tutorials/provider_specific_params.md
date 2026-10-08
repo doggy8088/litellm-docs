@@ -1,10 +1,10 @@
-### Setting provider-specific Params
+### 設定提供者特定參數 {#setting-provider-specific-params}
 
-Goal: Set max tokens across OpenAI + Cohere
+目標：跨 OpenAI + Cohere 設定 max tokens
 
-**1. via completion**
+**1. 透過 completion**
 
-LiteLLM will automatically translate max_tokens to the naming convention followed by that specific model provider.
+LiteLLM 會自動將 max_tokens 轉換為該特定模型提供者所遵循的命名慣例。
 
 ```python
 from litellm import completion
@@ -24,11 +24,10 @@ response = completion(model="command-nightly", messages=messages, max_tokens=100
 print(response)
 ```
 
-**2. via provider-specific config**
+**2. 透過提供者特定設定**
 
-For every provider on LiteLLM, we've gotten their specific params (following their naming conventions, etc.). You can just set it for that provider by pulling up that provider via `litellm.<provider_name>Config`. 
+對於 LiteLLM 上的每個提供者，我們都已取得其特定參數（依照其命名慣例等）。您只要透過 `litellm.<provider_name>Config` 叫出該提供者，就能為該提供者設定。 
 
-All provider configs are typed and have docstrings, so you should see them autocompleted for you in VSCode with an explanation of what it means. 
+所有提供者設定都有型別與 docstring，因此您應該會在 VSCode 中看到自動完成，並附上其意義的說明。 
 
-Here's an example of setting max tokens through provider configs. 
-
+以下是透過提供者設定來設定 max tokens 的範例。

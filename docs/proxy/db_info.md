@@ -1,98 +1,93 @@
-# What is stored in the DB
+# DB 中儲存了什麼 {#what-is-stored-in-the-db}
 
-The LiteLLM Proxy uses a PostgreSQL database to store various information. Here's are the main features the DB is used for:
-- Virtual Keys, Organizations, Teams, Users, Budgets, and more.
-- Per request Usage Tracking
+LiteLLM Proxy 使用 PostgreSQL 資料庫來儲存各種資訊。以下是此 DB 的主要用途：
+- 虛擬金鑰、組織、團隊、使用者、預算等。
+- 每次請求的使用量追蹤
 
-## Link to DB Schema
+## DB 結構的連結 {#link-to-db-schema}
 
-You can see the full DB Schema [here](https://github.com/BerriAI/litellm/blob/main/schema.prisma)
+您可以在[這裡](https://github.com/BerriAI/litellm/blob/main/schema.prisma)查看完整的 DB 結構
 
-## DB Tables
+## DB 資料表 {#db-tables}
 
-### Organizations, Teams, Users, End Users
+### 組織、團隊、使用者、終端使用者 {#organizations-teams-users-end-users}
 
-| Table Name | Description | Row Insert Frequency |
+| 資料表名稱 | 說明 | 列插入頻率 |
 |------------|-------------|---------------------|
-| LiteLLM_OrganizationTable | Manages organization-level configurations. Tracks organization spend, model access, and metadata. Links to budget configurations and teams. | Low |
-| LiteLLM_TeamTable | Handles team-level settings within organizations. Manages team members, admins, and their roles. Controls team-specific budgets, rate limits, and model access. | Low |
-| LiteLLM_UserTable | Stores user information and their settings. Tracks individual user spend, model access, and rate limits. Manages user roles and team memberships. | Low |
-| LiteLLM_EndUserTable | Manages end-user configurations. Controls model access and regional requirements. Tracks end-user spend. | Low |
-| LiteLLM_TeamMembership | Tracks user participation in teams. Manages team-specific user budgets and spend. | Low |
-| LiteLLM_OrganizationMembership | Manages user roles within organizations. Tracks organization-specific user permissions and spend. | Low |
-| LiteLLM_InvitationLink | Handles user invitations. Manages invitation status and expiration. Tracks who created and accepted invitations. | Low |
-| LiteLLM_UserNotifications | Handles model access requests. Tracks user requests for model access. Manages approval status. | Low |
+| LiteLLM_OrganizationTable | 管理組織層級設定。追蹤組織支出、模型存取與中繼資料。連結至預算設定與團隊。 | 低 |
+| LiteLLM_TeamTable | 處理組織內的團隊層級設定。管理團隊成員、管理員及其角色。控制團隊專屬預算、速率限制與模型存取。 | 低 |
+| LiteLLM_UserTable | 儲存使用者資訊及其設定。追蹤個別使用者支出、模型存取與速率限制。管理使用者角色與團隊成員資格。 | 低 |
+| LiteLLM_EndUserTable | 管理終端使用者設定。控制模型存取與區域需求。追蹤終端使用者支出。 | 低 |
+| LiteLLM_TeamMembership | 追蹤使用者在團隊中的參與。管理團隊專屬的使用者預算與支出。 | 低 |
+| LiteLLM_OrganizationMembership | 管理使用者在組織內的角色。追蹤組織專屬的使用者權限與支出。 | 低 |
+| LiteLLM_InvitationLink | 處理使用者邀請。管理邀請狀態與到期時間。追蹤誰建立並接受了邀請。 | 低 |
+| LiteLLM_UserNotifications | 處理模型存取請求。追蹤使用者對模型存取的請求。管理核准狀態。 | 低 |
 
-### Authentication
+### 驗證 {#authentication}
 
-| Table Name | Description | Row Insert Frequency |
+| 資料表名稱 | 說明 | 列插入頻率 |
 |------------|-------------|---------------------|
-| LiteLLM_VerificationToken | Manages Virtual Keys and their permissions. Controls token-specific budgets, rate limits, and model access. Tracks key-specific spend and metadata. | **Medium** - stores all Virtual Keys |
+| LiteLLM_VerificationToken | 管理虛擬金鑰及其權限。控制金鑰專屬預算、速率限制與模型存取。追蹤金鑰專屬支出與中繼資料。 | **中等** - 儲存所有虛擬金鑰 |
 
-### Model (LLM) Management
+### 模型（LLM）管理 {#model-llm-management}
 
-| Table Name | Description | Row Insert Frequency |
+| 資料表名稱 | 說明 | 列插入頻率 |
 |------------|-------------|---------------------|
-| LiteLLM_ProxyModelTable | Stores model configurations. Defines available models and their parameters. Contains model-specific information and settings. | Low - Configuration only |
+| LiteLLM_ProxyModelTable | 儲存模型設定。定義可用模型及其參數。包含模型專屬資訊與設定。 | 低 - 僅設定 |
 
-### Budget Management
+### 預算管理 {#budget-management}
 
-| Table Name | Description | Row Insert Frequency |
+| 資料表名稱 | 說明 | 列插入頻率 |
 |------------|-------------|---------------------|
-| LiteLLM_BudgetTable | Stores budget and rate limit configurations for organizations, keys, and end users. Tracks max budgets, soft budgets, TPM/RPM limits, and model-specific budgets. Handles budget duration and reset timing. | Low - Configuration only |
+| LiteLLM_BudgetTable | 儲存組織、金鑰與終端使用者的預算和速率限制設定。追蹤最高預算、軟性預算、TPM/RPM 限制及模型專屬預算。處理預算期間與重設時間。 | 低 - 僅設定 |
 
+### 追蹤與記錄 {#tracking--logging}
 
-### Tracking & Logging
-
-| Table Name | Description | Row Insert Frequency |
+| 資料表名稱 | 說明 | 列插入頻率 |
 |------------|-------------|---------------------|
-| LiteLLM_SpendLogs | Detailed logs of all API requests. Records token usage, spend, and timing information. Tracks which models and keys were used. | **Medium - this is a batch process that runs on an interval.** |
-| LiteLLM_DailyUserSpend and siblings (DailyTeamSpend, DailyOrgSpend, DailyTagSpend, DailyEndUserSpend, DailyAgentSpend) | Pre-aggregated daily spend rollups per user, team, org, tag, end user, and agent; the Admin UI Usage views read these aggregates rather than scanning SpendLogs. | Low - one row per entity per day, updated in batches |
-| LiteLLM_DailyGatewayRequests | Successful and failed request counts recorded at the ASGI edge by the request-metrics middleware, keyed by date, category and route. Backs the Successful Requests and Failed Requests tiles and the Gateway Requests by Endpoint chart on the Usage page; see [gateway request counts](./endpoint_activity.md#gateway-request-counts). | Low - one row per route per day, updated in batches |
-| LiteLLM_AuditLog | Tracks changes to system configuration. Records who made changes and what was modified. Maintains history of updates to teams, users, and models. | **Off by default**, **High - Runs on every change to an entity** |
+| LiteLLM_SpendLogs | 所有 API 請求的詳細記錄。記錄 token 使用量、花費與時間資訊。追蹤使用了哪些模型與金鑰。 | **中等 - 這是一個以固定間隔執行的批次程序。** |
+| LiteLLM_DailyUserSpend 和其同系列表（DailyTeamSpend、DailyOrgSpend、DailyTagSpend、DailyEndUserSpend、DailyAgentSpend） | 依使用者、團隊、組織、標籤、最終使用者與代理程式彙總的每日花費預先聚合資料；管理介面中的用量檢視會讀取這些彙總，而不是掃描 SpendLogs。 | 低 - 每個實體每天一列，以批次方式更新 |
+| LiteLLM_DailyGatewayRequests | 由 request-metrics middleware 在 ASGI 邊緣記錄的成功與失敗請求計數，以日期、類別與路由為鍵。支援用量頁面上的 Successful Requests 與 Failed Requests 磚塊，以及 Gateway Requests by Endpoint 圖表；請參閱 [gateway request counts](./endpoint_activity.md#gateway-request-counts)。 | 低 - 每個路由每天一列，以批次方式更新 |
+| LiteLLM_AuditLog | 追蹤系統設定的變更。記錄是誰進行了變更，以及修改了什麼。維護團隊、使用者與模型更新的歷史。 | **預設關閉**，**高 - 在每次對實體的變更時執行** |
 
-## Disable `LiteLLM_SpendLogs`
+## 停用 `LiteLLM_SpendLogs` {#disable-litellm_spendlogs}
 
-Set `disable_spend_logs: True` or `disable_error_logs: True` under `general_settings` to stop writing those tables. With spend logs disabled you lose per-request log detail in the UI but keep cost metrics in your logging integrations (s3, Prometheus, Langfuse); with error logs disabled you lose the Errors view in the UI but keep errors in application logs and other logging integrations. See [keeping error logs out of the database](./prod.md#keep-error-logs-out-of-the-database) in the production checklist.
+在 `general_settings` 下設定 `disable_spend_logs: True` 或 `disable_error_logs: True` 以停止寫入這些資料表。停用 spend logs 後，您會失去 UI 中的每請求記錄細節，但仍可在記錄整合（s3、Prometheus、Langfuse）中保留成本指標；停用 error logs 後，您會失去 UI 中的 Errors 檢視，但仍可在應用程式記錄與其他記錄整合中保留錯誤。請參閱生產檢查清單中的 [將錯誤記錄排除在資料庫之外](./prod.md#keep-error-logs-out-of-the-database)。
 
+## 資料庫遷移  {#migrating-databases}
 
-## Migrating Databases 
+如果您需要遷移資料庫，應複製下列資料表，以確保服務持續並且沒有停機時間
 
-If you need to migrate Databases the following Tables should be copied to ensure continuation of services and no downtime
-
-
-| Table Name | Description | 
+| 資料表名稱 | 說明 | 
 |------------|-------------|
-| LiteLLM_VerificationToken | **Required** to ensure existing virtual keys continue working |
-| LiteLLM_UserTable | **Required** to ensure existing virtual keys continue working |
-| LiteLLM_TeamTable | **Required** to ensure Teams are migrated |
-| LiteLLM_TeamMembership | **Required** to ensure Teams member budgets are migrated |
-| LiteLLM_BudgetTable | **Required** to migrate existing budgeting settings |
-| LiteLLM_OrganizationTable | **Optional** Only migrate if you use Organizations in DB |
-| LiteLLM_OrganizationMembership | **Optional** Only migrate if you use Organizations in DB | 
-| LiteLLM_ProxyModelTable | **Optional** Only migrate if you store your LLMs in the DB (i.e you set `STORE_MODEL_IN_DB=True`) |
-| LiteLLM_SpendLogs | **Optional** Only migrate if you want historical data on LiteLLM UI |
-| LiteLLM_ErrorLogs | **Optional** Only migrate if you want historical data on LiteLLM UI |
+| LiteLLM_VerificationToken | **必需**，以確保現有虛擬金鑰持續可用 |
+| LiteLLM_UserTable | **必需**，以確保現有虛擬金鑰持續可用 |
+| LiteLLM_TeamTable | **必需**，以確保團隊已遷移 |
+| LiteLLM_TeamMembership | **必需**，以確保團隊成員預算已遷移 |
+| LiteLLM_BudgetTable | **必需**，以遷移現有預算設定 |
+| LiteLLM_OrganizationTable | **選用** 僅在您於 DB 中使用組織時才遷移 |
+| LiteLLM_OrganizationMembership | **選用** 僅在您於 DB 中使用組織時才遷移 | 
+| LiteLLM_ProxyModelTable | **選用** 僅在您將 LLM 儲存在 DB 中時才遷移（也就是您設定了 `STORE_MODEL_IN_DB=True`） |
+| LiteLLM_SpendLogs | **選用** 僅在您想要在 LiteLLM UI 上保留歷史資料時才遷移 |
+| LiteLLM_ErrorLogs | **選用** 僅在您想要在 LiteLLM UI 上保留歷史資料時才遷移 |
 
+## 使用邏輯複寫複製資料庫 {#replicating-the-database-with-logical-replication}
 
+Postgres 邏輯複寫只會在資料列被更新或刪除時帶出 replica identity 的欄位。Prisma 會以 Postgres 預設值，也就是主鍵，建立每一個 LiteLLM 資料表，因此下游消費者會看到新資料列，但看不到先前的資料列。像 Neon 的 lakehouse sync 這類接收端需要 `REPLICA IDENTITY FULL`，並會拒絕沒有它的資料表。
 
-## Replicating the database with logical replication
-
-Postgres logical replication only carries the columns of the replica identity when a row is updated or deleted. Prisma creates every LiteLLM table at the Postgres default, which is the primary key, so a downstream consumer sees the new row but not the previous one. Sinks such as Neon's lakehouse sync require `REPLICA IDENTITY FULL` and reject tables that do not have it.
-
-Set `LITELLM_SET_REPLICA_IDENTITY_FULL=True` to have LiteLLM run
+設定 `LITELLM_SET_REPLICA_IDENTITY_FULL=True`，讓 LiteLLM 在每次 migration 執行結束時，對每一個 LiteLLM 資料表執行
 
 ```sql
 ALTER TABLE "LiteLLM_..." REPLICA IDENTITY FULL;
 ```
 
-on every LiteLLM table at the end of each migration run, including tables that a future upgrade adds, so the setting survives upgrades instead of having to be re-applied by hand. Tables that are already `FULL` are skipped, and tables in the same schema that LiteLLM does not own are left alone.
+，包括未來升級新增的資料表，這樣該設定就能在升級後持續生效，而不必手動重新套用。已經 `FULL` 的資料表會被略過，而 LiteLLM 不擁有的同一 schema 中資料表則不受影響。
 
 ```bash
 export LITELLM_SET_REPLICA_IDENTITY_FULL=True
 litellm --config /path/to/config.yaml
 ```
 
-The database user running the migrations has to own the tables. If it does not, the `ALTER` is rejected, LiteLLM logs the Postgres error and starts anyway, since replication metadata is not needed to serve requests.
+執行 migration 的資料庫使用者必須擁有這些資料表。如果沒有，`ALTER` 會被拒絕，LiteLLM 會記錄 Postgres 錯誤並繼續啟動，因為提供請求不需要複寫中繼資料。
 
-`REPLICA IDENTITY FULL` makes Postgres write the entire old row into the WAL for every `UPDATE` and `DELETE`, so leave it off unless a replication consumer needs it.
+`REPLICA IDENTITY FULL` 會讓 Postgres 在每一次 `UPDATE` 和 `DELETE` 時，將完整的舊資料列寫入 WAL，因此除非複寫消費者需要，否則請保持關閉。

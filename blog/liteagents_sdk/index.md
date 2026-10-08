@@ -1,29 +1,29 @@
 ---
 slug: liteagents-sdk
-title: "Introducing LiteAgents"
+title: "介紹 LiteAgents"
 date: 2026-09-25T10:00:00-07:00
 authors: [moe]
-description: "Switch agent harnesses without rewriting your agent. Keep your tools and model configuration, use native harness controls, and add Temporal when you need durable runs."
+description: "無需重寫您的代理程式即可切換 agent harness。保留您的工具與模型組態，使用原生 harness 控制，並在需要可持久執行時加入 Temporal。"
 tags: [agents, sdk]
 hide_table_of_contents: true
 image: ./hero.png
 ---
 
-![LiteAgents: switch harnesses, keep your agent. A ProfileOptions example changes deepagents to claude-sdk while keeping the model, tools, and MCP connections.](./hero.png)
+![LiteAgents：切換 harness，保留您的 agent。ProfileOptions 範例將 deepagents 變更為 claude-sdk，同時保留模型、工具與 MCP 連線。](./hero.png)
 
-You've built an agent with your own tools, prompts, and model configuration. Now you want to try a different harness on the same task.
+您已使用自己的工具、提示詞和模型組態建置了一個 agent。現在您想在相同任務上嘗試不同的 harness。
 
-**LiteAgents lets you switch agent harnesses without rewriting your application.** Its interface is modeled after the Claude Agent SDK, including the `query()` pattern and typed messages. Choose Deep Agents, Pydantic AI, Claude Agent SDK, Codex, or OpenCode while keeping your tools, MCP connections, model configuration, and client code. Each selected harness runs its own agent loop.
+**LiteAgents 讓您無需重寫應用程式即可切換 agent harness。** 其介面以 Claude Agent SDK 為藍本，包括 `query()` 模式與型別化訊息。您可以在保留工具、MCP 連線、模型組態與用戶端程式碼的情況下，選擇 Deep Agents、Pydantic AI、Claude Agent SDK、Codex 或 OpenCode。每個選定的 harness 都會執行自己的 agent loop。
 
-LiteLLM gives you a common interface to models. LiteAgents brings that approach to agent harnesses, with native controls and optional durability through Temporal.
+LiteLLM 為模型提供通用介面。LiteAgents 將這種做法帶到 agent harness，並透過 Temporal 提供原生控制與可選的持久性。
 
 {/* truncate */}
 
-## Change one field to try another harness
+## 只要變更一個欄位即可嘗試另一個 harness {#change-one-field-to-try-another-harness}
 
-An agent harness runs the loop around a model: supplying context, calling tools, and deciding when to continue. Different harnesses approach that work differently. You should be able to compare them on your own tasks without rebuilding the surrounding application.
+agent harness 會執行圍繞模型的迴圈：提供上下文、呼叫工具，以及決定何時繼續。不同的 harness 會以不同方式處理這項工作。您應該能夠在自己的任務上比較它們，而無需重建周邊應用程式。
 
-In LiteAgents, the harness is a field in your profile:
+在 LiteAgents 中，harness 是您個人資料中的一個欄位：
 
 ```python
 import os
@@ -44,28 +44,28 @@ async with LiteAgentClient(options=options) as agent:
         print(message)
 ```
 
-This excerpt uses your existing `lookup_order` tool and the `LITELLM_API_KEY` environment variable. Set `model` to the alias configured on your gateway and `api_base` to its endpoint. LiteAgents sends the alias unchanged; no routing prefix is needed. Once you've installed the harness you want to try, change `harness` and run the same application.
+此節錄使用您現有的 `lookup_order` 工具與 `LITELLM_API_KEY` 環境變數。將 `model` 設為您在閘道上設定的別名，並將 `api_base` 設為其端點。LiteAgents 會原樣傳送該別名；不需要路由前綴。安裝好您想嘗試的 harness 後，只要變更 `harness` 並執行相同的應用程式即可。
 
-Install only the harness integrations you plan to use. Extras such as `[deepagents]` supply that adapter's dependencies and reuse compatible packages in your Python environment. `[all]` is a convenience for trying every integration; OpenCode also needs its executable. Changing the profile selects which harness runs.
+只安裝您計畫使用的 harness 整合。像 `[deepagents]` 這類額外套件會提供該 adapter 的相依性，並重複使用您 Python 環境中相容的套件。`[all]` 是用來嘗試每個整合的便利選項；OpenCode 也需要其可執行檔。變更個人資料即可選擇由哪個 harness 執行。
 
-LiteAgents adapts your tools, MCP configuration, and events to each harness. Your application receives the same `AssistantMessage`, `UserMessage`, and optional streaming `TextDelta` types whichever harness you choose. LiteLLM handles model translation internally, so switching harnesses keeps the same model connection. With a gateway, the gateway routes your model alias to its provider. Without a gateway, use a LiteLLM `provider/model` name and provider credentials; LiteAgents calls that provider through the LiteLLM Python library. Profiles also load from JSON or YAML.
+LiteAgents 會將您的工具、MCP 組態與事件調整為各個 harness 所需格式。無論您選擇哪個 harness，應用程式都會接收相同的 `AssistantMessage`、`UserMessage`，以及可選的串流 `TextDelta` 型別。LiteLLM 會在內部處理模型轉譯，因此切換 harness 時仍維持相同的模型連線。若有閘道，閘道會將您的模型別名路由到其提供者。若沒有閘道，請使用 LiteLLM `provider/model` 名稱與提供者憑證；LiteAgents 會透過 LiteLLM Python 函式庫呼叫該提供者。個人資料也可從 JSON 或 YAML 載入。
 
-## Keep the harness's native controls
+## 保留 harness 的原生控制項 {#keep-the-harnesss-native-controls}
 
-Each harness still runs its own agent loop. Through `harness_options`, you can use supported native settings such as Deep Agents middleware and backends or Pydantic AI tool timeouts.
+每個 harness 仍會執行自己的 agent loop。透過 `harness_options`，您可以使用支援的原生設定，例如 Deep Agents 中介軟體與後端，或 Pydantic AI 工具逾時。
 
-Shared configuration makes switching straightforward; native options let you tune the harness you've chosen. Those options remain specific to that harness, and your model must support the settings you request. Switching selects a harness for new runs; it doesn't migrate an ongoing native session.
+共用組態讓切換變得簡單；原生選項則可讓您調校所選的 harness。這些選項仍然是該 harness 專屬的，而您的模型必須支援您要求的設定。切換只會為新執行選定 harness；不會移轉正在進行中的原生工作階段。
 
-## Add Temporal when you need durable runs
+## 在需要可持久執行時加入 Temporal {#add-temporal-when-you-need-durable-runs}
 
-A simple agent runs locally without Temporal or PostgreSQL. When a job needs to survive a worker restart or keep running after the client disconnects, add Temporal to the profile and run a worker. Your application keeps the same client API.
+簡單的 agent 可在本機執行，而不需要 Temporal 或 PostgreSQL。當某個工作必須在 worker 重新啟動後繼續存在，或在用戶端中斷連線後仍持續執行時，請將 Temporal 加入個人資料並啟動 worker。您的應用程式會維持相同的用戶端 API。
 
-Durable runs recover recorded operations and checkpoints after worker failure. You can start locally with SQLite, then use self-hosted Temporal or Temporal Cloud. Tools that perform external actions still need idempotency if an interrupted action may be retried.
+可持久執行可在 worker 失敗後復原已記錄的作業與 checkpoint。您可以先在本機使用 SQLite，之後再改用自架 Temporal 或 Temporal Cloud。即使動作中斷後可能會重試，執行外部動作的工具仍需要冪等性。
 
-## Try it on your agent
+## 在您的 agent 上試用 {#try-it-on-your-agent}
 
-The SDK is available as a preview. Follow the [getting-started guide](https://github.com/BerriAI/liteagents/blob/main/docs/getting-started.md), or install the package from the [latest preview release](https://github.com/BerriAI/liteagents/releases/tag/v0.3.0a2).
+此 SDK 目前以預覽版提供。請遵循 [getting-started 指南](https://github.com/BerriAI/liteagents/blob/main/docs/getting-started.md)，或從 [最新預覽版發布](https://github.com/BerriAI/liteagents/releases/tag/v0.3.0a2) 安裝套件。
 
-Start with the [harness-switching cookbook](https://github.com/BerriAI/liteagents/blob/main/cookbook/recipes/10_harness_switch.py). It runs the same model, Python tool, MCP tool, and follow-up across all six harness selectors. Add `--temporal` to try the same task with durability. The [cookbook collection](https://github.com/BerriAI/liteagents/blob/main/cookbook/recipes/README.md) also covers streaming, approvals, subagents, and worker recovery.
+從 [harness-switching 食譜](https://github.com/BerriAI/liteagents/blob/main/cookbook/recipes/10_harness_switch.py) 開始。它會在全部六個 harness 選擇器上執行相同的模型、Python 工具、MCP 工具與後續追蹤。加入 `--temporal` 以使用可持久執行來嘗試相同任務。[食譜集合](https://github.com/BerriAI/liteagents/blob/main/cookbook/recipes/README.md) 也涵蓋串流、核准、子 agent 與 worker 復原。
 
-Try your workflow on another harness and [tell us how it goes](https://github.com/BerriAI/liteagents/issues).
+在另一個 harness 上試試您的工作流程，並 [告訴我們結果如何](https://github.com/BerriAI/liteagents/issues)。

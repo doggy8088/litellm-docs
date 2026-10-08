@@ -1,5 +1,5 @@
 ---
-title: "v1.92.1 - Docker Migration Assets, Model Armor Attachments & Anthropic Passthrough"
+title: "v1.92.1 - Docker 遷移資產、Model Armor 附件與 Anthropic Passthrough"
 slug: "v1-92-1"
 date: 2026-07-19T03:07:45
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,17 +43,17 @@ pip install litellm==1.92.1
 </TabItem>
 </Tabs>
 
-`v1.92.1` is a patch release on top of [`v1.92.0`](/release_notes/v1.92.0/v1-92-0). It backports two Docker fixes onto the 1.92.x line: the runtime images regain the `/app/litellm-proxy-extras` source directory, so downstream jobs that point `prisma migrate deploy` at that path apply migrations again instead of exiting 0 with no schema applied; and the prisma CLI and engines are baked at `/opt/prisma`, a fixed path readable by any runtime uid, so fresh-database migrations work under kubernetes `runAsUser`, `docker --user`, and other non-root deployments with no outbound network access.
+`v1.92.1` 是建立在 [`v1.92.0`](/release_notes/v1.92.0/v1-92-0) 之上的修補版本。它將兩個 Docker 修正回補到 1.92.x 分支：執行階段映像重新包含 `/app/litellm-proxy-extras` 原始碼目錄，因此將 `prisma migrate deploy` 指向該路徑的下游工作會再次套用遷移，而不會在未套用 schema 的情況下以 0 結束；而且 prisma CLI 與引擎會內建於 `/opt/prisma`，這是一個任何執行階段 uid 都可讀取的固定路徑，因此全新資料庫的遷移可在 kubernetes `runAsUser`、`docker --user` 以及其他無法對外連線的非 root 部署中正常運作。
 
-Two provider fixes ride along. Model Armor no longer drops reference attachments; `skip_unscannable_attachments` restores them and the attachment count cap is removed. The Anthropic passthrough now drops an incompatible `temperature` when it downgrades adaptive thinking for pre-4.6 models, instead of forwarding a combination the upstream API rejects. The release also carries routine dependency maintenance updates to mcp and soupsieve in the image lockfile.
+另外也帶入兩個提供者修正。Model Armor 不再遺漏參考附件；`skip_unscannable_attachments` 會將其還原，且已移除附件數量上限。Anthropic passthrough 現在會在針對 4.6 之前的模型降級 adaptive thinking 時，移除不相容的 `temperature`，而不是轉送上游 API 會拒絕的組合。此版本也包含映像鎖定檔中 mcp 與 soupsieve 的例行相依性維護更新。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(docker): restore litellm-proxy-extras source dir in runtime images - [PR #33592](https://github.com/BerriAI/litellm/pull/33592)
-- fix(docker): bake prisma CLI and engines at a fixed path so fresh-DB migrations work for any uid offline - [PR #33853](https://github.com/BerriAI/litellm/pull/33853)
-- fix(model_armor): restore reference attachments via skip_unscannable_attachments and remove the attachment count cap - [PR #33554](https://github.com/BerriAI/litellm/pull/33554)
-- fix(anthropic/passthrough): drop incompatible temperature when downgrading adaptive thinking for pre-4.6 models - [PR #33244](https://github.com/BerriAI/litellm/pull/33244)
+- fix(docker): 在執行階段映像中還原 litellm-proxy-extras 原始碼目錄 - [PR #33592](https://github.com/BerriAI/litellm/pull/33592)
+- fix(docker): 將 prisma CLI 與引擎內建於固定路徑，讓任何 uid 都能離線執行 fresh-DB migrations - [PR #33853](https://github.com/BerriAI/litellm/pull/33853)
+- fix(model_armor): 透過 skip_unscannable_attachments 還原參考附件，並移除附件數量上限 - [PR #33554](https://github.com/BerriAI/litellm/pull/33554)
+- fix(anthropic/passthrough): 在針對 4.6 之前的模型降級 adaptive thinking 時移除不相容的 temperature - [PR #33244](https://github.com/BerriAI/litellm/pull/33244)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.92.0...v1.92.1

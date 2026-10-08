@@ -1,27 +1,27 @@
 ---
 slug: agent-platform-alpha
-title: "LiteLLM Managed Agents Platform — Alpha Now Open for Public Preview"
+title: "LiteLLM 受管代理程式平台 — Alpha 現已開放公開預覽"
 date: 2026-05-08T10:00:00
 authors:
   - krrish
   - ishaan-alt
-description: "Spawn sandboxed agent sessions on the LiteLLM Gateway — a control plane for managed agents, now in public preview."
+description: "在 LiteLLM Gateway 上啟動受沙箱隔離的代理程式工作階段 — 一個用於受管代理程式的控制平面，現已進入公開預覽。"
 tags: [product, agents]
 hide_table_of_contents: false
 ---
 
-We're introducing the **LiteLLM Managed Agents Platform** - a simple, self-hosted infrastructure platform for running multiple agents in production.
+我們正在推出 **LiteLLM Managed Agents Platform** —— 一個簡單、可自行架設的基礎架構平台，用於在正式環境中執行多個代理程式。
 
 {/* truncate */}
 
-![LiteLLM Managed Agents Platform Alpha](/img/litellm_agent_platform_alpha.png)
+![LiteLLM 代管代理程式平台 Alpha](/img/litellm_agent_platform_alpha.png)
 
-The main benefit of using this is that it will manage:
-- Different sandboxes for different teams/contexts
-- Session management across pod restarts/upgrades
+使用它的主要好處是它會管理：
+- 不同團隊／情境的不同沙箱
+- 在 pod 重新啟動／升級之間的工作階段管理
 
-We built this because we wanted a managed agent solution, but fully self-hosted. We are excited to have it open sourced and available for everyone to use.
+我們打造這個平台，是因為我們想要一個受管代理程式解決方案，但必須是完全自我託管。我們很高興能將它開源，並讓每個人都能使用。
 
 **Repo:** [github.com/BerriAI/litellm-agent-platform](https://github.com/BerriAI/litellm-agent-platform)
 
-Please file an issue if you have any questions or feedback.
+如果您有任何問題或回饋，請提交 issue。

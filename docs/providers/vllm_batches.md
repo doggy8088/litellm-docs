@@ -1,27 +1,27 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# vLLM - Batch + Files API
+# vLLM - 批次 + 檔案 API {#vllm---batch--files-api}
 
-vLLM's OpenAI-compatible server serves `/v1/chat/completions`, `/v1/completions`, `/v1/embeddings`, and `/v1/responses`, but it has no `/v1/files` or `/v1/batches` routes. LiteLLM fills that gap: for a `hosted_vllm` deployment whose server has no Files API, the proxy stores the batch input itself, runs every line through the deployment, and serves the batch status and the output files, so the OpenAI Batch API works against vLLM unchanged
+vLLM 的 OpenAI 相容伺服器提供 `/v1/chat/completions`、`/v1/completions`、`/v1/embeddings` 和 `/v1/responses`，但沒有 `/v1/files` 或 `/v1/batches` 路由。LiteLLM 彌補了這個缺口：對於伺服器沒有 Files API 的 `hosted_vllm` 部署，proxy 會自行儲存批次輸入，將每一行送入該部署執行，並提供批次狀態與輸出檔案，因此 OpenAI Batch API 可在 vLLM 上不變地運作
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| `/v1/files` | ✅ stored by LiteLLM |
-| `/v1/batches` | ✅ run by LiteLLM |
-| Cost Tracking | ✅ every line is billed to the key that created the batch |
+| `/v1/files` | ✅ 由 LiteLLM 儲存 |
+| `/v1/batches` | ✅ 由 LiteLLM 執行 |
+| 成本追蹤 | ✅ 每一行都會計費到建立該批次的金鑰 |
 
-This flow runs on the proxy and needs a database (`DATABASE_URL`), because the input file, the batch status, and the result files live there
+此流程在 proxy 上執行，且需要資料庫（`DATABASE_URL`），因為輸入檔案、批次狀態與結果檔案都存放在那裡
 
-## When LiteLLM runs the batch itself
+## 當 LiteLLM 自行執行批次時 {#when-litellm-runs-the-batch-itself}
 
-LiteLLM decides per request. A deployment qualifies when its `litellm_params.model` starts with `hosted_vllm/` and `GET {api_base}/files` on its server answers 404. Every other deployment, and a `hosted_vllm` deployment whose server does implement the Files API (for example the vLLM production-stack router), keeps the passthrough behavior: the upload and the batch are forwarded to the server and it runs the batch
+LiteLLM 會按請求決定。當某個部署的 `litellm_params.model` 以 `hosted_vllm/` 開頭，且其伺服器上的 `GET {api_base}/files` 回應 404 時，該部署即符合條件。其他所有部署，以及伺服器確實實作 Files API 的 `hosted_vllm` 部署（例如 vLLM production-stack router），都維持透傳行為：上傳與批次會轉送到伺服器，並由伺服器執行批次
 
-Point `api_base` at the server's `/v1` root so the probe hits the right route
+將 `api_base` 指向伺服器的 `/v1` root，讓探測命中正確路由
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Setup config.yaml
+### 1. 設定 config.yaml {#1-setup-configyaml}
 
 ```yaml
 model_list:
@@ -35,33 +35,33 @@ general_settings:
   database_url: os.environ/DATABASE_URL
 ```
 
-### 2. Start LiteLLM Proxy
+### 2. 啟動 LiteLLM Proxy {#2-start-litellm-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Create Batch File
+### 3. 建立批次檔 {#3-create-batch-file}
 
-Each line follows the OpenAI batch input shape. LiteLLM replaces `body.model` with the batch's deployment name, so what you put there does not change which server runs the line
+每一行都遵循 OpenAI batch 輸入格式。LiteLLM 會以批次的部署名稱取代 `body.model`，因此您在那裡填入的內容不會改變由哪個伺服器執行該行
 
 ```jsonl
 {"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "my-vllm-model", "messages": [{"role": "user", "content": "Hello!"}]}}
 {"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "my-vllm-model", "messages": [{"role": "user", "content": "How are you?"}]}}
 ```
 
-Every line has to name the same `url`, and it has to match the `endpoint` you give the batch. `stream: true` lines, duplicate `custom_id`s, and unknown top-level fields are rejected at upload with a 400 that names the line
+每一行都必須指定相同的 `url`，而且必須與您提供給批次的 `endpoint` 相符。`stream: true` 行、重複的 `custom_id`，以及未知的頂層欄位，會在上傳時遭到拒絕並回傳 400，且錯誤訊息會指出該行
 
-### 4. Upload File & Create Batch
+### 4. 上傳檔案並建立批次 {#4-upload-file--create-batch}
 
-:::tip[Model Routing]
-The upload has to name the deployment, either with the `x-litellm-model` header, the `?model=` query parameter, or the `target_model_names` form field. Use `purpose=batch`: an upload with another purpose to a deployment LiteLLM runs batches for answers 400, because there is no server to keep the file on. The returned file id is a long base64 id, not an OpenAI-style `file-...` id; batch operations on it route to the same deployment automatically
+:::tip[模型路由]
+上傳時必須指定部署，可透過 `x-litellm-model` 標頭、`?model=` 查詢參數，或 `target_model_names` 表單欄位。請使用 `purpose=batch`：若以其他用途上傳到 LiteLLM 會執行批次的部署，會回應 400，因為沒有伺服器可保存該檔案。回傳的檔案 id 是一個很長的 base64 id，不是 OpenAI 風格的 `file-...` id；其上的批次操作會自動路由到同一個部署
 :::
 
 <Tabs>
 <TabItem value="curl" label="cURL">
 
-**Upload File**
+**上傳檔案**
 
 ```bash
 curl http://localhost:4000/v1/files \
@@ -71,7 +71,7 @@ curl http://localhost:4000/v1/files \
   -F file="@batch_requests.jsonl"
 ```
 
-**Create Batch**
+**建立批次**
 
 ```bash
 curl http://localhost:4000/v1/batches \
@@ -84,14 +84,14 @@ curl http://localhost:4000/v1/batches \
   }'
 ```
 
-**Check Batch Status**
+**檢查批次狀態**
 
 ```bash
 curl http://localhost:4000/v1/batches/<batch id> \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Download the results**
+**下載結果**
 
 ```bash
 curl http://localhost:4000/v1/files/<output_file_id>/content \
@@ -134,42 +134,42 @@ if batch.error_file_id:
 </TabItem>
 </Tabs>
 
-## Supported Operations
+## 支援的作業 {#supported-operations}
 
-| Operation | Endpoint | Method |
+| 操作 | 端點 | 方法 |
 |-----------|----------|--------|
-| Upload file | `/v1/files` | POST |
-| Retrieve file | `/v1/files/{file_id}` | GET |
-| Delete file | `/v1/files/{file_id}` | DELETE |
-| Get file content | `/v1/files/{file_id}/content` | GET |
-| Create batch | `/v1/batches` | POST |
-| List batches | `/v1/batches` | GET |
-| Retrieve batch | `/v1/batches/{batch_id}` | GET |
-| Cancel batch | `/v1/batches/{batch_id}/cancel` | POST |
+| 上傳檔案 | `/v1/files` | POST |
+| 取回檔案 | `/v1/files/{file_id}` | GET |
+| 刪除檔案 | `/v1/files/{file_id}` | DELETE |
+| 取得檔案內容 | `/v1/files/{file_id}/content` | GET |
+| 建立批次 | `/v1/batches` | POST |
+| 列出批次 | `/v1/batches` | GET |
+| 取回批次 | `/v1/batches/{batch_id}` | GET |
+| 取消批次 | `/v1/batches/{batch_id}/cancel` | POST |
 
-Batch `endpoint` can be `/v1/chat/completions`, `/v1/completions`, `/v1/embeddings`, or `/v1/responses`
+批次 `endpoint` 可為 `/v1/chat/completions`、`/v1/completions`、`/v1/embeddings` 或 `/v1/responses`
 
-## How a batch runs
+## 批次如何執行 {#how-a-batch-runs}
 
-The batch is created as `validating`, moves to `in_progress` while the proxy replica that received the create runs the lines, then `finalizing` while the result files are written, and ends `completed`. Lines the server rejects land in the error file with the server's status code, and the batch still completes. Cancelling marks the batch `cancelling`, lets the line in flight finish, and ends it `cancelled`, keeping the output of the lines that already finished. The 24 hour `completion_window` is enforced the same way: a line still unfinished when it closes is cut off and lands in the error file as `batch_expired`, and the batch ends `expired`, keeping the output of the lines that finished in time
+批次會先建立為 `validating`，在接收建立請求的 proxy 副本執行各行時變為 `in_progress`，之後在寫入結果檔案時變為 `finalizing`，最後以 `completed` 結束。伺服器拒絕的各行會連同伺服器的狀態碼一起寫入錯誤檔案，而批次仍會完成。取消會將批次標記為 `cancelling`，讓正在處理中的那一行完成，並以 `cancelled` 結束，同時保留已完成各行的輸出。24 小時 `completion_window` 也以相同方式強制執行：在其關閉時仍未完成的一行會被截斷，並以 `batch_expired` 寫入錯誤檔案，而批次會以 `expired` 結束，並保留準時完成各行的輸出
 
-Results come back in OpenAI's batch output shape: `output_file_id` holds one line per successful request and `error_file_id` one line per failed request. Both are served only to the key that created the batch
+結果會以 OpenAI 的批次輸出格式回傳：`output_file_id` 保留每個成功請求一行，`error_file_id` 保留每個失敗請求一行。這兩者都只會提供給建立該批次的金鑰
 
-Each line is billed through the router as its own request, with the creating key, team, and tags on the spend log, at the price configured on the deployment. A deployment with no price logs its lines with spend 0
+每一行都會透過 router 以自己的請求計費，並在花費記錄上帶有建立用金鑰、團隊與標籤，價格以部署上設定的為準。沒有設定價格的部署，其各行花費會記錄為 0
 
-If the replica running a batch restarts, the batch is marked `failed` with a `runner_lost` error the next time it is retrieved more than three minutes after its last progress write. Resubmit it
+如果執行批次的副本重新啟動，則在其最後一次進度寫入後超過三分鐘的下一次擷取時，該批次會被標記為 `failed`，並帶有 `runner_lost` 錯誤。請重新提交
 
-## Settings
+## 設定 {#settings}
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `LITELLM_EXECUTED_BATCH_CONCURRENCY` | `4` | How many lines of one batch run in parallel |
-| `general_settings.allow_client_side_credentials` | `false` | Batch lines follow the same rule as live requests: a line whose body carries `api_base`, `api_key`, or another client-side credential field is rejected at upload unless this is `true` or the deployment lists the field in `configurable_clientside_auth_params` |
+| 設定 | 預設值 | 說明 |
+|---------|-----------|-------------|
+| `LITELLM_EXECUTED_BATCH_CONCURRENCY` | `4` | 一個批次中有多少行會並行執行 |
+| `general_settings.allow_client_side_credentials` | `false` | 批次各行遵循與即時請求相同的規則：若某一行的本文帶有 `api_base`、`api_key`，或其他用戶端憑證欄位，除非此項為 `true` 或該部署在 `configurable_clientside_auth_params` 中列出該欄位，否則上傳時會被拒絕 |
 
-Batch lines skip the proxy's pre-call guardrails, the same as batches a provider runs
+批次各行會略過 proxy 的請求前防護欄，與提供者執行的批次相同
 
-## Related
+## 相關內容 {#related}
 
-- [vLLM Provider Overview](./vllm)
-- [Batch API Overview](../batches)
-- [Files API](../files_endpoints)
+- [vLLM 提供者總覽](./vllm)
+- [批次 API 總覽](../batches)
+- [檔案 API](../files_endpoints)

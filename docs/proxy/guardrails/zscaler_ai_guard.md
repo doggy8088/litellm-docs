@@ -1,16 +1,16 @@
-# Zscaler AI Guard
+# Zscaler AI Guard {#zscaler-ai-guard}
 
-## Overview
-Zscaler AI Guard enforces security policies for all traffic to AI sites, models, and applications. As part of the Zero Trust Exchange, it provides a single platform for visibility, control, and deep packet inspection of AI prompts.
+## 概觀 {#overview}
+Zscaler AI Guard 會對所有前往 AI 網站、模型與應用程式的流量強制執行安全政策。作為 Zero Trust Exchange 的一部分，它提供單一平台，可對 AI 提示進行可視性、控制與深度封包檢測。
 
-## 1. Set Up Zscaler AI Guard Policy
-First, set up your guardrail policy in the Zscaler AI Guard dashboard to obtain your `ZSCALER_AI_GUARD_API_KEY` and `ZSCALER_AI_GUARD_POLICY_ID`.
+## 1. 設定 Zscaler AI Guard 原則 {#1-set-up-zscaler-ai-guard-policy}
+首先，請在 Zscaler AI Guard 儀表板中設定您的防護欄政策，以取得您的 `ZSCALER_AI_GUARD_API_KEY` 和 `ZSCALER_AI_GUARD_POLICY_ID`。
 
-## 2. Define Zscaler AI Guard in `config.yaml`
+## 2. 在 `config.yaml` 中定義 Zscaler AI Guard {#2-define-zscaler-ai-guard-in-configyaml}
 
-You can define Zscaler AI Guard settings directly in your LiteLLM `config.yaml` file.
+您可以直接在 LiteLLM `config.yaml` 檔案中定義 Zscaler AI Guard 設定。
 
-### Example Configuration
+### 範例設定 {#example-configuration}
 
 ```yaml
 guardrails:
@@ -38,9 +38,9 @@ guardrails:
       send_user_api_key_team_id: os.environ/SEND_USER_API_KEY_TEAM_ID # Optional
 ```
 
-## 3. Test request 
+## 3. 測試請求 {#3-test-request}
 
-Expect this to fail since if you enable prompt_injection as Block mode
+預期這會失敗，因為如果您將 prompt_injection 啟用為 Block 模式
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -54,10 +54,10 @@ curl -i http://localhost:4000/v1/chat/completions \
    }'
 ```
 
-## 4. Behavior on Violations
+## 4. 違規時的行為 {#4-behavior-on-violations}
 
-### Prompt is Blocked
-When input violates Zscaler AI Guard policies, return example as below:
+### 提示詞被阻擋 {#prompt-is-blocked}
+當輸入違反 Zscaler AI Guard 政策時，回傳範例如下：
 ```json
 {
    "error":{
@@ -68,12 +68,11 @@ When input violates Zscaler AI Guard policies, return example as below:
    }
 }
 ```
-- `transactionId`: Zscaler AI Guard transactionId for debugging
-- `blockingDetectors`: the list of Zscaler AI Guard detectors that block the request
+- `transactionId`：Zscaler AI Guard transactionId，用於除錯
+- `blockingDetectors`：封鎖請求的 Zscaler AI Guard 偵測器清單
 
-
-### LLM response Blocked
-When output violates Zscaler AI Guard policies, return example as below:
+### LLM 回應被阻擋 {#llm-response-blocked}
+當輸出違反 Zscaler AI Guard 政策時，回傳範例如下：
 ```json
 {
    "error":{
@@ -84,13 +83,12 @@ When output violates Zscaler AI Guard policies, return example as below:
    }
 }
 ```
-- `transactionId`: Zscaler AI Guard transactionId for debugging
-- `blockingDetectors`: the list of Zscaler AI Guard detectors that block the request
+- `transactionId`：Zscaler AI Guard transactionId，用於除錯
+- `blockingDetectors`：封鎖請求的 Zscaler AI Guard 偵測器清單
 
+## 5. 錯誤處理 {#5-error-handling}
 
-## 5. Error Handling
-
-In cases where encounter other errors when apply Zscaler AI Guard, return example as below:
+當套用 Zscaler AI Guard 時遇到其他錯誤，回傳範例如下：
 ```json
 {
    "error":{
@@ -102,27 +100,27 @@ In cases where encounter other errors when apply Zscaler AI Guard, return exampl
 }
 ```
 
-Each scan waits up to 5 seconds by default. If requests fail with `litellm.Timeout: Connection timed out. Timeout passed=5.0`, the scan is taking longer than that, which is most common under load because the limit also covers waiting for a free connection. Raise it with the `timeout` param shown above, in seconds. It applies to each individual Zscaler AI Guard API call and can differ per guardrail, so a pre-call and a post-call guardrail can carry different limits. You can also set it from the Admin UI when adding or editing the guardrail. It must be positive; a zero or negative value is ignored and the 5 second default is used instead.
+每次掃描預設最多等待 5 秒。如果請求因 `litellm.Timeout: Connection timed out. Timeout passed=5.0` 而失敗，表示掃描時間比這更長，這在負載較高時最常見，因為此限制也包含等待可用連線的時間。可使用上方顯示的 `timeout` 參數將其調高，以秒為單位。它適用於每一個獨立的 Zscaler AI Guard API 呼叫，且可因每個防護欄而異，因此前置呼叫與後置呼叫的防護欄可以有不同的限制。您也可以在新增或編輯防護欄時，於 Admin UI 中設定。此值必須為正數；零或負數會被忽略，並改用預設的 5 秒。
 
-## 6. Sending User Information to Zscaler AI Guard (Optional)
-If you need to send end-user information to Zscaler AI Guard for analysis, you can set the configuration in the environment variables to True and include the relevant information in custom_headers on Zscaler AI Guard.
+## 6. 將使用者資訊傳送至 Zscaler AI Guard（選用） {#6-sending-user-information-to-zscaler-ai-guard-optional}
+如果您需要將終端使用者資訊傳送至 Zscaler AI Guard 進行分析，您可以將環境變數中的設定設為 True，並在 Zscaler AI Guard 的 custom_headers 中包含相關資訊。
 
 - To send user_api_key_alias:
-Set SEND_USER_API_KEY_ALIAS = True in litellm (Default: False), add 'user-api-key-alias' to the custom_headers in Zscaler AI Guard
+在 litellm 中設定 SEND_USER_API_KEY_ALIAS = True（預設：False），並在 Zscaler AI Guard 的 custom_headers 中加入 'user-api-key-alias'
 
 - To send user_api_key_user_id:
-Set SEND_USER_API_KEY_USER_ID = True in litellm  (Default: False), add 'user-api-key-user-id' to the custom_headers in Zscaler AI Guard
+在 litellm 中設定 SEND_USER_API_KEY_USER_ID = True（預設：False），並在 Zscaler AI Guard 的 custom_headers 中加入 'user-api-key-user-id'
 
 - To send user_api_key_team_id:
-Set SEND_USER_API_KEY_TEAM_ID = True in litellm  (Default: False), add 'user-api-key-team-id' to the custom_headers in Zscaler AI Guard
+在 litellm 中設定 SEND_USER_API_KEY_TEAM_ID = True（預設：False），並在 Zscaler AI Guard 的 custom_headers 中加入 'user-api-key-team-id'
 
-## 7. Using a Custom Zscaler AI Guard Policy (Optional)
-If an end user wants to use their own custom Zscaler AI Guard policy instead of the default policy for LiteLLM, they can do so by providing metadata in their LiteLLM request. Follow the steps below to implement this functionality:
+## 7. 使用自訂 Zscaler AI Guard 原則（選用） {#7-using-a-custom-zscaler-ai-guard-policy-optional}
+如果終端使用者想使用自己自訂的 Zscaler AI Guard 政策，而不是 LiteLLM 的預設政策，可以透過在其 LiteLLM 請求中提供 metadata 來達成。請依照以下步驟實作此功能：
 
--  Set up the custom policy in the Zscaler AI Guard tenant designated for LiteLLM, get the custom policy id.
--  During a LiteLLM API call, include the custom policy id in the metadata section of the request payload. 
+-  在為 LiteLLM 指定的 Zscaler AI Guard tenant 中設定自訂政策，取得自訂政策 id。
+-  在 LiteLLM API 呼叫期間，於請求 payload 的 metadata 區段中包含自訂政策 id。 
 
-Example Request with Custom Policy Metadata
+含自訂政策 metadata 的範例請求
 
 ```shell
 curl -i http://localhost:8165/v1/chat/completions \
@@ -139,8 +137,8 @@ curl -i http://localhost:8165/v1/chat/completions \
   }'
 ```
 
-## 8. Set Custom Zscaler AI Guard Policy on Litellm Team OR Key Metadata (Optional)
-In addition to setting `zguard_policy_id` in a request or the configuration file, you can also set it in the metadata for LiteLLM Team or Key. The `zguard_policy_id` is determined using the following order of precedence: request, Key, Team, config file. This logic is illustrated below:
+## 8. 在 Litellm Team 或金鑰中繼資料上設定自訂 Zscaler AI Guard 原則（選用） {#8-set-custom-zscaler-ai-guard-policy-on-litellm-team-or-key-metadata-optional}
+除了在請求或設定檔中設定 `zguard_policy_id` 之外，您也可以在 LiteLLM Team 或 Key 的 metadata 中設定它。`zguard_policy_id` 會依下列優先順序決定：請求、Key、Team、設定檔。此邏輯如下所示：
 ```
 user_api_key_metadata = metadata.get("user_api_key_metadata", {}) or {}
 team_metadata = metadata.get("team_metadata", {}) or {}
@@ -158,9 +156,9 @@ policy_id = (
                 )
             )
 ```
-You can use this feature to apply multiple policies configured on the Zscaler AI Guard (ZGuard) to traffic from different applications. (Note: It is recommended to map policies using either Team or Key metadata, but not a mix of both.)
+您可以使用此功能，將在 Zscaler AI Guard（ZGuard）上設定的多個政策套用至來自不同應用程式的流量。（注意：建議使用 Team 或 Key metadata 來對應政策，但不要混用兩者。）
 
-Example set in Team/Key Metadata, you can set From UI:
+Team/Key Metadata 中的設定範例，您可以從 UI 設定：
 ```
 {"zguard_policy_id": 100}
 ```

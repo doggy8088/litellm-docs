@@ -1,12 +1,12 @@
 ---
 slug: claude_opus_5
-title: "Day 0 Support: Claude Opus 5"
+title: "Day 0 支援：Claude Opus 5"
 date: 2026-07-24T10:00:00
 authors:
   - mateo
   - krrish
   - ishaan-alt
-description: "Day 0 support for Claude Opus 5 on the LiteLLM AI Gateway. Use it across Anthropic, Azure, Vertex AI, and Bedrock."
+description: "LiteLLM AI Gateway 上對 Claude Opus 5 的 Day 0 支援。可透過 Anthropic、Azure、Vertex AI 與 Bedrock 使用。"
 image: /img/litellm_claude_opus_5_announcement.png
 tags: [anthropic, claude, opus 5, day 0 support]
 hide_table_of_contents: false
@@ -17,45 +17,45 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x Claude Opus 5](/img/litellm_claude_opus_5_announcement.png)
 
-LiteLLM now supports [Claude Opus 5](https://www.anthropic.com/news/claude-opus-5) on Day 0. Use it across Anthropic, Azure, Vertex AI, and Bedrock through the LiteLLM AI Gateway. Call it with the same OpenAI-compatible request you already use, and track spend, rate limits, and logging in one place.
+LiteLLM 現已在 Day 0 支援 [Claude Opus 5](https://www.anthropic.com/news/claude-opus-5)。可透過 LiteLLM AI Gateway，在 Anthropic、Azure、Vertex AI 與 Bedrock 上使用。使用您已在用的相同 OpenAI 相容請求來呼叫，並在同一處追蹤支出、速率限制與記錄。
 
 {/* truncate */}
 
-## What's new in Opus 5
+## Opus 5 的新功能 {#whats-new-in-opus-5}
 
-Key changes ([details from Anthropic](https://www.anthropic.com/news/claude-opus-5)):
+主要變更（[Anthropic 的詳細資訊](https://www.anthropic.com/news/claude-opus-5)）：
 
-- **Much better coding agents:** stronger at large refactors, debugging, multi-file features, and finishing end-to-end work without leaving stubs
-- **Better self-verification:** it checks and iterates on its own work more proactively
-- **Better vision and artifacts:** improved screenshots → website, charts and documents, spreadsheets, and slide decks
-- **Same base API price as Opus 4.8:** $5 / MTok input and $25 / MTok output
-- **Thinking is on by default**
-- **Fast mode:** about 2.5x faster, but costs 2x
+- **更強的程式碼代理程式：** 在大型重構、除錯、多檔案功能，以及不留占位內容地完成端到端工作方面更強
+- **更好的自我驗證：** 更主動檢查並迭代自身工作
+- **更好的視覺與產出物：** 改進的截圖 → 網站、圖表與文件、試算表，以及投影片簡報
+- **與 Opus 4.8 相同的基礎 API 價格：** 輸入 $5 / MTok、輸出 $25 / MTok
+- **預設啟用思考**
+- **快速模式：** 約快 2.5 倍，但費用為 2 倍
 
-## Before you switch from Opus 4.8
+## 在您從 Opus 4.8 切換之前 {#before-you-switch-from-opus-48}
 
-The swap is not free. Priority Tier and web fetch are both gone on Opus 5, so plan that capacity and that tooling separately. Opus 5's cybersecurity classifiers can also decline a request outright with `stop_reason: "refusal"` and a category in `stop_details`, which is worth handling explicitly or routing around with LiteLLM [fallbacks](../../docs/proxy/reliability).
+此切換並非免費。Priority Tier 和 web fetch 在 Opus 5 上都已移除，因此請分別規劃這些容量與工具。Opus 5 的資安分類器也可能直接拒絕請求，回傳 `stop_reason: "refusal"` 與 `stop_details` 中的類別；這值得明確處理，或透過 LiteLLM [備援](/docs/proxy/reliability) 繞開。
 
-Sampling parameters (`temperature`, `top_p`, `top_k`), fixed thinking budgets, and assistant message prefill remain unsupported, same as Opus 4.8. Anthropic's [Opus 5 migration guide](https://platform.claude.com/docs/en/about-claude/models/migration-guide) has the full compatibility checklist.
+取樣參數（`temperature`、`top_p`、`top_k`）、固定的思考預算，以及 assistant message prefill 仍不受支援，與 Opus 4.8 相同。Anthropic 的 [Opus 5 遷移指南](https://platform.claude.com/docs/en/about-claude/models/migration-guide) 提供完整的相容性清單。
 
-## Enabling Opus 5
+## 啟用 Opus 5 {#enabling-opus-5}
 
-Opus 5 ships in the **`v1.95.0-dev.3`** image, cutting later today, but most proxies do not need to upgrade at all. On the default remote cost map, open the **Price Data** tab under **Models + Endpoints** in the UI and click **Reload Price Data** (or `POST /reload/model_cost_map` as a proxy admin). That refetches pricing and re-registers provider routing in one step, so `claude-opus-5` becomes available across Anthropic, Azure, Vertex AI, and Bedrock even on an older version.
+Opus 5 已隨 **`v1.95.0-dev.3`** 映像檔釋出，今天稍晚會提供，但多數 proxy 根本不需要升級。在預設的遠端成本地圖上，打開 UI 中 **Models + Endpoints** 下方的 **Price Data** 分頁，然後按一下 **Reload Price Data**（或身為 proxy 管理員執行 `POST /reload/model_cost_map`）。這會一次重新抓取定價並重新註冊提供者路由，因此即使在舊版上，`claude-opus-5` 也能在 Anthropic、Azure、Vertex AI 與 Bedrock 上可用。
 
-The exception is `LITELLM_LOCAL_MODEL_COST_MAP=true`, which bakes the cost map into the image and puts it out of the Reload button's reach. Pull `v1.95.0-dev.3` or later for the bundled Opus 5 metadata:
+例外是 `LITELLM_LOCAL_MODEL_COST_MAP=true`，它會將成本地圖內建到映像檔中，讓它無法被 Reload 按鈕觸及。請升級到 `v1.95.0-dev.3` 或更新版本，以取得隨附的 Opus 5 中繼資料：
 
 ```bash
 docker pull ghcr.io/berriai/litellm:v1.95.0-dev.3
 ```
 
-## Usage
+## 使用方式 {#usage}
 
-Pick your provider below. Each tab wires up `claude-opus-5` for that provider; the request you send afterward is identical everywhere.
+請在下方選擇您的提供者。每個分頁都會為該提供者設定 `claude-opus-5`；之後您送出的請求在各處都相同。
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -65,7 +65,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -79,7 +79,7 @@ docker run -d \
 </TabItem>
 <TabItem value="azure" label="Azure">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -90,7 +90,7 @@ model_list:
       api_base: os.environ/AZURE_AI_API_BASE  # https://<resource>.services.ai.azure.com
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -105,7 +105,7 @@ docker run -d \
 </TabItem>
 <TabItem value="vertex" label="Vertex AI">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -116,7 +116,7 @@ model_list:
       vertex_location: global
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -132,7 +132,7 @@ docker run -d \
 </TabItem>
 <TabItem value="bedrock" label="Bedrock">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -145,10 +145,10 @@ model_list:
 ```
 
 :::note
-For cross-region routing, swap the model ID for a regional inference profile (`us.`, `eu.`, `au.`, or `jp.` prefix), e.g. `bedrock/converse/us.anthropic.claude-opus-5`. These carry a 10% regional premium; the `global.` profile stays at base price. LiteLLM tracks the cost of each variant automatically.
+若要進行跨區域路由，請將模型 ID 改為區域推論設定檔（`us.`、`eu.`、`au.`，或 `jp.` 前綴），例如 `bedrock/converse/us.anthropic.claude-opus-5`。這些會額外收取 10% 的區域加價；`global.` 設定檔維持基礎價格。LiteLLM 會自動追蹤每個變體的成本。
 :::
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -163,9 +163,9 @@ docker run -d \
 </TabItem>
 </Tabs>
 
-**3. Test it!**
+**3. 測試看看！**
 
-The request is the same regardless of which provider you configured above:
+無論您在上方設定的是哪個提供者，請求都相同：
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -182,13 +182,13 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-## Fast Mode
+## 快速模式 {#fast-mode}
 
 :::info
-Fast mode is **only supported on the Anthropic provider** (`anthropic/claude-opus-5`). It is not available on Azure AI, Vertex AI, or Bedrock, and it cannot be combined with the Batch API.
+快速模式**僅支援 Anthropic 提供者**（`anthropic/claude-opus-5`）。此模式不適用於 Azure AI、Vertex AI 或 Bedrock，且不能與 Batch API 搭配使用。
 :::
 
-Opus 5 runs roughly 2.5x faster with `speed: "fast"`, billed at $10 / MTok input and $50 / MTok output (2x the standard rate, down from the 6x premium on Opus 4.6). LiteLLM adds the `fast-mode-2026-02-01` beta header and tracks the premium in cost calculations automatically.
+Opus 5 在 `speed: "fast"` 下大約快 2.5 倍，計費為輸入 $10 / MTok、輸出 $50 / MTok（為標準費率的 2 倍，相較於 Opus 4.6 的 6 倍加價已降低）。LiteLLM 會加上 `fast-mode-2026-02-01` 測試版標頭，並自動在成本計算中追蹤這項加價。
 
 <Tabs>
 <TabItem value="completions" label="/v1/chat/completions">
@@ -233,11 +233,11 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 <TabItem value="responses" label="/v1/responses">
 
-Fast mode on the Responses API is coming soon. The `speed` parameter is not yet forwarded on `/v1/responses`, so requests there run at standard speed and price until support lands.
+Responses API 上的快速模式即將推出。`speed` 參數目前尚未在 `/v1/responses` 上轉發，因此在該處的請求會以標準速度與價格執行，直到支援上線。
 
 </TabItem>
 </Tabs>
 
-## Feedback
+## 回饋 {#feedback}
 
-Running Opus 5 through LiteLLM and hitting something unexpected? Share it on [GitHub discussion #34517](https://github.com/BerriAI/litellm/discussions/34517).
+透過 LiteLLM 執行 Opus 5 時遇到意料之外的情況嗎？請在 [GitHub 討論 #34517](https://github.com/BerriAI/litellm/discussions/34517) 分享。

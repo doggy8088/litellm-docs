@@ -5,33 +5,33 @@ sidebar_label: Codex (ChatGPT Desktop)
 
 import Image from '@theme/IdealImage';
 
-# Connect Codex in ChatGPT Desktop to LiteLLM
+# 將 ChatGPT Desktop 中的 Codex 連接到 LiteLLM {#connect-codex-in-chatgpt-desktop-to-litellm}
 
-Select **Codex** in the [ChatGPT desktop app](https://openai.com/chatgpt/download/). It reads the same `~/.codex/config.toml` as the [Codex CLI](./codex_cli.md), so the desktop and CLI can share a LiteLLM connection.
+在 [ChatGPT 桌面應用程式](https://openai.com/chatgpt/download/) 中選取 **Codex**。它讀取與 [Codex CLI](./codex_cli.md) 相同的 `~/.codex/config.toml`，因此桌面版與 CLI 可以共用一個 LiteLLM 連線。
 
-These settings configure the Codex side of the app, which reads `~/.codex/config.toml`. Regular ChatGPT chats in the app are not configured by that file and do not go through LiteLLM
+這些設定會設定應用程式中 Codex 的部分，該部分會讀取 `~/.codex/config.toml`。應用程式中的一般 ChatGPT 聊天不會由該檔案設定，也不會經由 LiteLLM
 
-The same `model_catalog_json` setting applies to the app; see [Model metadata for custom aliases](./codex_cli.md#model-metadata-for-custom-aliases)
+相同的 `model_catalog_json` 設定也適用於此應用程式；請參閱 [自訂別名的模型中繼資料](./codex_cli.md#model-metadata-for-custom-aliases)
 
-These instructions configure Codex's local model provider and MCP servers. Screenshots show ChatGPT Desktop 26.917.51856 on Linux; menu labels can differ by app version. Complete the app's onboarding if prompted before selecting Codex.
+這些指示會設定 Codex 的本機模型提供者與 MCP 伺服器。截圖顯示的是 Linux 上的 ChatGPT Desktop 26.917.51856；選單標籤可能因應用程式版本而異。若有提示，請先完成應用程式的導覽設定，再選取 Codex。
 
-<Image img={require('../../../img/client_setup/codex_desktop_01_mode_switcher_chatgpt_codex.png')} alt="ChatGPT Desktop mode switcher with Codex selected" />
+<Image img={require('../../../img/client_setup/codex_desktop_01_mode_switcher_chatgpt_codex.png')} alt="已選取 Codex 的 ChatGPT Desktop 模式切換器" />
 
-## Quick reference
+## 快速參考 {#quick-reference}
 
-| Setting | Value |
+| 設定 | 值 |
 |---|---|
-| Config file | `~/.codex/config.toml` (shared with the CLI) |
-| `base_url` | `<LITELLM_PROXY_BASE_URL>/v1` (e.g. `http://localhost:4000/v1`) |
-| Provider key | Your LiteLLM [virtual key](../virtual_keys.md), read from the env var named in `env_key`, or a `lite auth print-token` command (see [Codex CLI SSO](./codex_cli.md#sign-in-with-litellm-sso)) |
-| MCP endpoint | `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp` |
-| MCP auth | The same virtual key, read from the env var named in `bearer_token_env_var` |
+| 設定檔 | `~/.codex/config.toml`（與 CLI 共用） |
+| `base_url` | `<LITELLM_PROXY_BASE_URL>/v1`（例如 `http://localhost:4000/v1`） |
+| 提供者金鑰 | 您的 LiteLLM [虛擬金鑰](../virtual_keys.md)，從 `env_key` 中命名的環境變數讀取，或使用 `lite auth print-token` 命令（請參閱 [Codex CLI SSO](./codex_cli.md#sign-in-with-litellm-sso)） |
+| MCP 端點 | `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp` |
+| MCP 驗證 | 相同的虛擬金鑰，從 `bearer_token_env_var` 中命名的環境變數讀取 |
 
-## LLM setup
+## LLM 設定 {#llm-setup}
 
-### 1. Add LiteLLM as a model provider
+### 1. 將 LiteLLM 新增為模型提供者 {#1-add-litellm-as-a-model-provider}
 
-Open **Settings -> Configuration -> Open config.toml**, or edit `~/.codex/config.toml` directly, and add a provider block pointing at your gateway's Responses API endpoint. This is identical to the [CLI setup](./codex_cli.md#llm-setup):
+開啟 **Settings -> Configuration -> Open config.toml**，或直接編輯 `~/.codex/config.toml`，並新增一個指向您閘道 Responses API 端點的提供者區塊。這與 [CLI 設定](./codex_cli.md#llm-setup) 完全相同：
 
 ```toml title="~/.codex/config.toml"
 model = "{{anthropic}}"
@@ -44,35 +44,35 @@ env_key = "LITELLM_API_KEY"
 wire_api = "responses"
 ```
 
-Replace `{{anthropic}}` with a model name configured on your gateway.
+將 `{{anthropic}}` 替換為在您的閘道上設定的模型名稱。
 
-<Image img={require('../../../img/client_setup/codex_desktop_03_settings_configuration_open_config_toml.png')} alt="Codex Configuration settings with the Open config.toml link" />
+<Image img={require('../../../img/client_setup/codex_desktop_03_settings_configuration_open_config_toml.png')} alt="顯示 Open config.toml 連結的 Codex Configuration 設定" />
 
-Desktop apps may not inherit variables exported in your terminal. Add your LiteLLM virtual key to `~/.codex/.env` before launching the app:
+桌面應用程式可能不會繼承您在終端機中匯出的環境變數。請在啟動應用程式之前，將您的 LiteLLM 虛擬金鑰新增至 `~/.codex/.env`：
 
 ```dotenv title="~/.codex/.env"
 LITELLM_API_KEY=sk-<your-virtual-key>
 ```
 
-Replace the placeholder with your virtual key, keep this file private, and restart the app after changing it. An existing macOS setup using `launchctl setenv LITELLM_API_KEY <your-key>` can continue supplying the variable that way.
+將預留位置替換為您的虛擬金鑰，將此檔案保密，並在變更後重新啟動應用程式。現有使用 `launchctl setenv LITELLM_API_KEY <your-key>` 的 macOS 設定可以繼續透過該方式提供此變數。
 
-You can skip `.env` by using the [`auth` command](./codex_cli.md#sign-in-with-litellm-sso) in place of `env_key`, because the app runs the same helper
+您可以透過使用 [`auth` 命令](./codex_cli.md#sign-in-with-litellm-sso) 取代 `env_key` 來略過 `.env`，因為應用程式會執行相同的輔助程式
 
-### 2. Launch Codex in ChatGPT Desktop
+### 2. 在 ChatGPT Desktop 中啟動 Codex {#2-launch-codex-in-chatgpt-desktop}
 
-Open the ChatGPT desktop app and select **Codex** in the mode switcher. Codex reads the `litellm` provider from `config.toml` and uses `LITELLM_API_KEY` for gateway requests. Start a new task.
+開啟 ChatGPT 桌面應用程式，並在模式切換器中選取 **Codex**。Codex 會從 `config.toml` 讀取 `litellm` 提供者，並使用 `LITELLM_API_KEY` 來進行閘道請求。開始一個新任務。
 
-### 3. Verify
+### 3. 驗證 {#3-verify}
 
-Run a task, then check the Admin UI under **Logs** or **Usage**; the request should be attributed to your virtual key.
+執行一個任務，然後在 **Logs** 或 **Usage** 下方檢查 Admin UI；該請求應歸屬於您的虛擬金鑰。
 
-To use a different gateway model, update `model` in `config.toml` and start a new task.
+若要使用不同的閘道模型，請在 `config.toml` 中更新 `model`，然後開始一個新任務。
 
-## MCP setup
+## MCP 設定 {#mcp-setup}
 
-### 1. Configure the gateway server
+### 1. 設定閘道伺服器 {#1-configure-the-gateway-server}
 
-MCP is configured in the same `~/.codex/config.toml`, so the [CLI's MCP setup](./codex_cli.md#mcp-setup) applies unchanged. Add:
+MCP 是在相同的 `~/.codex/config.toml` 中設定，因此 [CLI 的 MCP 設定](./codex_cli.md#mcp-setup) 可直接套用且不需變更。新增：
 
 ```toml title="~/.codex/config.toml"
 [mcp_servers.litellm]
@@ -80,26 +80,26 @@ url = "http://localhost:4000/my_mcp_server/mcp"
 bearer_token_env_var = "LITELLM_API_KEY"
 ```
 
-where `my_mcp_server` matches a key under `mcp_servers:` in your gateway config and the key has access to that server. `LITELLM_API_KEY` must be available to the app as described above. Restart ChatGPT Desktop after changing the configuration or `.env` file.
+其中 `my_mcp_server` 符合您閘道設定中 `mcp_servers:` 底下的一個金鑰，且該金鑰可存取該伺服器。`LITELLM_API_KEY` 必須如上所述可供應用程式使用。在變更設定或 `.env` 檔案後，請重新啟動 ChatGPT Desktop。
 
-You can inspect this entry under **Settings -> Plugins -> MCPs** in the captured version. The **Add MCP server** form also accepts the URL and **Bearer token env var** shown above.
+您可以在擷取的版本中，於 **Settings -> Plugins -> MCPs** 下檢視此項目。**Add MCP server** 表單也接受上方顯示的 URL 與 **Bearer token env var**。
 
-<Image img={require('../../../img/client_setup/codex_desktop_06_mcp_server_form_url_bearer_env.png')} alt="Codex MCP server form with a LiteLLM server URL and LITELLM_API_KEY bearer token environment variable" />
+<Image img={require('../../../img/client_setup/codex_desktop_06_mcp_server_form_url_bearer_env.png')} alt="Codex MCP 伺服器表單，顯示 LiteLLM 伺服器 URL 與 LITELLM_API_KEY bearer token 環境變數" />
 
-The screenshots use a gateway server named `deepwiki`; substitute your registered server name.
+截圖使用名為 `deepwiki` 的閘道伺服器；請以您註冊的伺服器名稱替換。
 
-### 2. Verify the connection in the app
+### 2. 在應用程式中驗證連線 {#2-verify-the-connection-in-the-app}
 
-Open **Settings -> Plugins -> MCPs** and confirm that `litellm` is enabled. Some versions expose this list directly under **Settings -> MCP servers**.
+開啟 **Settings -> Plugins -> MCPs**，並確認 `litellm` 已啟用。某些版本會將此清單直接顯示在 **Settings -> MCP servers** 下方。
 
-<Image img={require('../../../img/client_setup/codex_desktop_04_settings_plugins_mcp_servers_list.png')} alt="Codex MCP settings listing the enabled LiteLLM server" />
+<Image img={require('../../../img/client_setup/codex_desktop_04_settings_plugins_mcp_servers_list.png')} alt="Codex MCP 設定列出已啟用的 LiteLLM 伺服器" />
 
-Start a task that calls a read-only tool from your server, approve it if prompted, and verify that it returns a result.
+開始一個會呼叫您伺服器上唯讀工具的任務，若有提示請核准，並確認它有回傳結果。
 
-<Image img={require('../../../img/client_setup/codex_desktop_09_mcp_tool_result.png')} alt="Codex displaying a DeepWiki tool result returned through LiteLLM" />
+<Image img={require('../../../img/client_setup/codex_desktop_09_mcp_tool_result.png')} alt="Codex 顯示透過 LiteLLM 傳回的 DeepWiki 工具結果" />
 
-See the [MCP configuration reference](../../mcp_config_reference.md) for endpoint and authentication options.
+請參閱 [MCP 設定參考](../../mcp_config_reference.md) 以了解端點與驗證選項。
 
-## Next steps
+## 下一步 {#next-steps}
 
-[Codex CLI](./codex_cli.md) shares this config file. See also [LiteLLM virtual keys](../virtual_keys.md) and the [MCP gateway reference](../../mcp.md).
+[Codex CLI](./codex_cli.md) 會共用此設定檔。另請參閱 [LiteLLM 虛擬金鑰](../virtual_keys.md) 與 [MCP 閘道參考](../../mcp.md)。

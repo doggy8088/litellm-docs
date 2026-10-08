@@ -1,8 +1,7 @@
+# Scaleway {#scaleway}
+LiteLLM 支援 Scaleway Generative APIs 上所有可用的 [模型 ↗](https://www.scaleway.com/en/docs/generative-apis/reference-content/supported-models/)。 
 
-# Scaleway 
-LiteLLM supports all [models available on Scaleway Generative APIs ↗](https://www.scaleway.com/en/docs/generative-apis/reference-content/supported-models/). 
-
-## Usage with LiteLLM Python SDK
+## 與 LiteLLM Python SDK 搭配使用 {#usage-with-litellm-python-sdk}
 
 ```python
 import os
@@ -15,9 +14,9 @@ response = completion(model="scaleway/qwen3-235b-a22b-instruct-2507", messages=m
 print(response)
 ```
 
-## Usage with LiteLLM Proxy 
+## 與 LiteLLM Proxy 搭配使用  {#usage-with-litellm-proxy}
 
-### 1. Set Scaleway models in config.yaml
+### 1. 在 config.yaml 中設定 Scaleway 模型 {#1-set-scaleway-models-in-configyaml}
 
 ```yaml
 model_list:
@@ -27,15 +26,15 @@ model_list:
       api_key: "os.environ/SCW_SECRET_KEY" # ensure you have `SCW_SECRET_KEY` in your .env
 ```
 
-### 2. Start proxy 
+### 2. 啟動 proxy  {#2-start-proxy}
 
 ```bash
 litellm --config config.yaml
 ```
 
-### 3. Query proxy 
+### 3. 查詢 proxy  {#3-query-proxy}
 
-Assuming the proxy is running on [http://localhost:4000](http://localhost:4000):
+假設 proxy 正在 [http://localhost:4000](http://localhost:4000) 上執行：
 ```bash
 curl http://localhost:4000/chat/completions \
   -H "Content-Type: application/json" \
@@ -54,18 +53,17 @@ curl http://localhost:4000/chat/completions \
     ]
   }'
 ```
-`-H "Authorization: Bearer YOUR_LITELLM_MASTER_KEY" ` is only required if you have set a LiteLLM master key
+`-H "Authorization: Bearer YOUR_LITELLM_MASTER_KEY" ` 僅在您已設定 LiteLLM master key 時才需要
 
+## 支援的功能 {#supported-features}
 
-## Supported features
+Scaleway 提供者支援 [Generative APIs 參考文件 ↗](https://www.scaleway.com/en/developers/api/generative-apis/) 中的所有功能，例如串流、結構化輸出和工具呼叫。
 
-Scaleway provider supports all features in [Generative APIs reference documentation ↗](https://www.scaleway.com/en/developers/api/generative-apis/), such as streaming, structured outputs and tool calling.
+## 音訊轉錄 {#audio-transcription}
 
-## Audio transcription
+Scaleway 的 `/audio/transcriptions` 端點與 OpenAI 相容，並可搭配 Whisper 模型使用。
 
-Scaleway's `/audio/transcriptions` endpoint is OpenAI-compatible and works with Whisper models.
-
-### Python SDK
+### Python SDK {#python-sdk}
 
 ```python
 import os
@@ -81,7 +79,7 @@ with open("speech.mp3", "rb") as audio_file:
 print(response.text)
 ```
 
-### Proxy config
+### Proxy 設定 {#proxy-config}
 
 ```yaml
 model_list:
@@ -91,7 +89,7 @@ model_list:
       api_key: "os.environ/SCW_SECRET_KEY"
 ```
 
-### Proxy request
+### Proxy 請求 {#proxy-request}
 
 ```bash
 curl http://localhost:4000/v1/audio/transcriptions \
@@ -100,4 +98,4 @@ curl http://localhost:4000/v1/audio/transcriptions \
   -F file="@speech.mp3"
 ```
 
-Supported optional params: `language`, `prompt`, `response_format`, `temperature`, `timestamp_granularities`.
+支援的選用參數：`language`、`prompt`、`response_format`、`temperature`、`timestamp_granularities`。

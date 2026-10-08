@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Z.AI (Zhipu AI)
+# Z.AI（Zhipu AI） {#zai-zhipu-ai}
 https://z.ai/
 
-**We support Z.AI GLM text/chat models, just set `zai/` as a prefix when sending completion requests**
+**我們支援 Z.AI GLM 文字／聊天模型，傳送 completion 請求時只要將 `zai/` 作為前綴即可**
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['ZAI_API_KEY']
 ```
 
-## Sample Usage
+## 使用範例 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -27,7 +27,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 使用範例 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -45,25 +45,25 @@ for chunk in response:
     print(chunk)
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
-We support ALL Z.AI GLM models, just set `zai/` as a prefix when sending completion requests.
+我們支援所有 Z.AI GLM 模型，傳送 completion 請求時只要將 `zai/` 作為前綴即可。
 
-| Model Name | Function Call | Notes |
+| 模型名稱 | 函式呼叫 | 備註 |
 |------------|---------------|-------|
-| glm-4.7 | `completion(model="zai/glm-4.7", messages)` | **Latest flagship**, 200K context, **Reasoning** |
+| glm-4.7 | `completion(model="zai/glm-4.7", messages)` | **最新旗艦**，200K context，**推理** |
 | glm-4.6 | `completion(model="zai/glm-4.6", messages)` | 200K context |
 | glm-4.5 | `completion(model="zai/glm-4.5", messages)` | 128K context |
-| glm-4.5v | `completion(model="zai/glm-4.5v", messages)` | Vision model |
-| glm-4.5-x | `completion(model="zai/glm-4.5-x", messages)` | Premium tier |
-| glm-4.5-air | `completion(model="zai/glm-4.5-air", messages)` | Lightweight |
-| glm-4.5-airx | `completion(model="zai/glm-4.5-airx", messages)` | Fast lightweight |
-| glm-4-32b-0414-128k | `completion(model="zai/glm-4-32b-0414-128k", messages)` | 32B parameter model |
-| glm-4.5-flash | `completion(model="zai/glm-4.5-flash", messages)` | **FREE tier** |
+| glm-4.5v | `completion(model="zai/glm-4.5v", messages)` | 視覺模型 |
+| glm-4.5-x | `completion(model="zai/glm-4.5-x", messages)` | 高階等級 |
+| glm-4.5-air | `completion(model="zai/glm-4.5-air", messages)` | 輕量級 |
+| glm-4.5-airx | `completion(model="zai/glm-4.5-airx", messages)` | 快速輕量級 |
+| glm-4-32b-0414-128k | `completion(model="zai/glm-4-32b-0414-128k", messages)` | 32B 參數模型 |
+| glm-4.5-flash | `completion(model="zai/glm-4.5-flash", messages)` | **免費等級** |
 
-## Model Pricing
+## 模型價格 {#model-pricing}
 
-| Model | Input ($/1M tokens) | Output ($/1M tokens) | Cached Input ($/1M tokens) | Context Window |
+| 模型 | 輸入（$/1M tokens） | 輸出（$/1M tokens） | 快取輸入（$/1M tokens） | 上下文視窗 |
 |-------|---------------------|----------------------|---------------------------|----------------|
 | glm-4.7 | $0.60 | $2.20 | $0.11 | 200K |
 | glm-4.6 | $0.60 | $2.20 | - | 200K |
@@ -73,9 +73,9 @@ We support ALL Z.AI GLM models, just set `zai/` as a prefix when sending complet
 | glm-4.5-air | $0.20 | $1.10 | - | 128K |
 | glm-4.5-airx | $1.10 | $4.50 | - | 128K |
 | glm-4-32b-0414-128k | $0.10 | $0.10 | - | 128K |
-| glm-4.5-flash | **FREE** | **FREE** | - | 128K |
+| glm-4.5-flash | **免費** | **免費** | - | 128K |
 
-## Using with LiteLLM Proxy
+## 與 LiteLLM Proxy 搭配使用 {#using-with-litellm-proxy}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -96,7 +96,7 @@ print(response.choices[0].message.content)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -110,13 +110,13 @@ model_list:
         api_key: os.environ/ZAI_API_KEY
 ```
 
-2. Run proxy
+2. 執行 proxy
 
 ```bash
 litellm --config config.yaml
 ```
 
-3. Test it!
+3. 測試它！
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \

@@ -2,20 +2,20 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Azure Content Safety Guardrail
+# Azure Content Safety 防護欄 {#azure-content-safety-guardrail}
 
-LiteLLM supports Azure Content Safety guardrails via the [Azure Content Safety API](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview). 
+LiteLLM 透過 [Azure Content Safety API](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview) 支援 Azure Content Safety 防護欄。
 
-
-## Supported Guardrails
+## 支援的防護欄 {#supported-guardrails}
 
 - [Prompt Shield](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-jailbreak?pivots=programming-language-rest)
 - [Text Moderation](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text?tabs=visual-studio%2Clinux&pivots=programming-language-rest)
 
-## Quick Start
-### 1. Define Guardrails on your LiteLLM config.yaml 
+## 快速開始 {#quick-start}
 
-Define your guardrails under the `guardrails` section
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄 {#1-define-guardrails-on-your-litellm-configyaml}
+
+在 `guardrails` 區段下定義您的防護欄
 
 ```yaml
 model_list:
@@ -40,21 +40,20 @@ guardrails:
       default_on: true
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
+- `pre_call` 在 **LLM 呼叫之前** 執行，針對 **輸入**
+- `post_call` 在 **LLM 呼叫之後** 執行，針對 **輸入與輸出**
 
-### 2. Start LiteLLM Gateway 
-
+### 2. 啟動 LiteLLM 閘道 {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求 {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](/docs/proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](/docs/proxy/user_keys#request-format)**
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -71,24 +70,23 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## Supported Params 
+## 支援的參數 {#supported-params}
 
-### Common Params
+### 通用參數 {#common-params}
 
-- `api_key` - str - Azure Content Safety API key
-- `api_base` - str - Azure Content Safety API base URL
-- `default_on` - bool - Whether to run the guardrail by default. Default is `false`.
-- `mode` - Union[str, list[str]] - Mode to run the guardrail. Either `pre_call` or `post_call`. Default is `pre_call`.
+- `api_key` - str - Azure Content Safety API 金鑰
+- `api_base` - str - Azure Content Safety API 基礎 URL
+- `default_on` - bool - 是否預設執行此防護欄。預設值為 `false`。
+- `mode` - Union[str, list[str]] - 執行防護欄的模式。可為 `pre_call` 或 `post_call`。預設值為 `pre_call`。
 
-### Azure Text Moderation
+### Azure 文字審核 {#azure-text-moderation}
 
-- `severity_threshold` - int - Severity threshold for the Azure Content Safety Text Moderation guardrail across all categories
-- `severity_threshold_by_category` - Dict[AzureHarmCategories, int] - Severity threshold by category for the Azure Content Safety Text Moderation guardrail. See list of categories - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
-- `categories` - List[AzureHarmCategories] - Categories to scan for the Azure Content Safety Text Moderation guardrail. See list of categories - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
-- `blocklistNames` - List[str] - Blocklist names to scan for the Azure Content Safety Text Moderation guardrail. Learn more - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
-- `haltOnBlocklistHit` - bool - Whether to halt the request if a blocklist hit is detected
-- `outputType` - Literal["FourSeverityLevels", "EightSeverityLevels"] - Output type for the Azure Content Safety Text Moderation guardrail. Learn more - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
-
+- `severity_threshold` - int - Azure Content Safety Text Moderation 防護欄跨所有類別的嚴重程度閾值
+- `severity_threshold_by_category` - Dict[AzureHarmCategories, int] - Azure Content Safety Text Moderation 防護欄依類別的嚴重程度閾值。請參閱類別清單 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
+- `categories` - List[AzureHarmCategories] - Azure Content Safety Text Moderation 防護欄要掃描的類別。請參閱類別清單 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/concepts/harm-categories?tabs=warning
+- `blocklistNames` - List[str] - Azure Content Safety Text Moderation 防護欄要掃描的封鎖清單名稱。深入瞭解 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
+- `haltOnBlocklistHit` - bool - 若偵測到封鎖清單命中，是否中止請求
+- `outputType` - Literal["FourSeverityLevels", "EightSeverityLevels"] - Azure Content Safety Text Moderation 防護欄的輸出類型。深入瞭解 - https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text
 
 AzureHarmCategories:
 - Hate
@@ -96,10 +94,10 @@ AzureHarmCategories:
 - Sexual
 - Violence
 
-### Azure Prompt Shield Only
+### 僅 Azure Prompt Shield {#azure-prompt-shield-only}
 
-- `cost_tier` - Optional[Literal["free", "paid"]] - Billing tier of your Azure Content Safety resource. `free` reports usage with a cost of `0`; `paid` prices usage using `price_per_1000_text_records` (required for `paid`). Omit to track usage without a cost estimate
-- `price_per_1000_text_records` - Optional[float] - USD price per 1,000 text records used to estimate Prompt Shield cost. Azure bills one text record per 1,000 characters (rounded up per request). `0` marks the free tier. Supports `os.environ/` references
+- `cost_tier` - Optional[Literal["free", "paid"]] - 您的 Azure Content Safety 資源的計費層級。`free` 會以 `0` 的成本回報使用量；`paid` 使用 `price_per_1000_text_records` 為使用量定價（`paid` 需要）。若省略，仍可追蹤使用量，但不估算成本
+- `price_per_1000_text_records` - Optional[float] - 每 1,000 筆文字記錄的 USD 價格，用於估算 Prompt Shield 成本。Azure 會以每 1,000 個字元計 1 筆文字記錄（每次請求向上取整）。`0` 表示免費層級。支援 `os.environ/` 參照
 
 ```yaml
 guardrails:
@@ -113,30 +111,29 @@ guardrails:
       price_per_1000_text_records: 0.38
 ```
 
-### Azure Prompt Shield Cost Tracking
+### Azure Prompt Shield 成本追蹤 {#azure-prompt-shield-cost-tracking}
 
-When pricing is configured, every guardrail run records its billable usage and estimated cost:
+設定價格後，每次 guardrail 執行都會記錄其可計費用量與估算成本：
 
-- **Usage counters** - `requests` (Azure API calls), `input_characters`, and `text_records` (Azure's billing unit: one per started 1,000 characters of each submitted chunk). Long prompts split across the 10,000 character limit accumulate usage per chunk. A chunk that triggers an intervention was still submitted to Azure, so it is counted; chunks after it are never sent and never counted
-- **Estimated cost** - `text_records x price_per_1000_text_records / 1000`, shown on the request's log entry in the dashboard and exported on the guardrail OTEL span as `litellm.cost.guardrail`
-- **Spend isolation** - the guardrail cost estimate is reporting-only. It is never added to the request's `response_cost`, key/team/user spend, or budget enforcement
+- **用量計數器** - `requests`（Azure API 呼叫）、`input_characters`，以及 `text_records`（Azure 的計費單位：每個提交區塊已開始的 1,000 個字元各計 1 次）。跨越 10,000 字元限制而被分割的長提示詞，會依每個區塊累計使用量。觸發介入的區塊仍已提交給 Azure，因此會被計入；其後的區塊不會再送出，也不會計入
+- **估算成本** - `text_records x price_per_1000_text_records / 1000`，會顯示在儀表板中該請求的記錄項目上，並在 guardrail OTEL span 上以 `litellm.cost.guardrail` 匯出
+- **支出隔離** - guardrail 成本估算僅供回報用途。它絕不會加到請求的 `response_cost`、金鑰/團隊/使用者支出，或預算強制執行中
 
-A `paid` tier without a positive `price_per_1000_text_records` fails at proxy startup, so a misconfigured deployment cannot silently report wrong costs. If neither `cost_tier` nor a price is set, usage counters are still recorded and no cost is invented.
+`paid` 層級若沒有正的 `price_per_1000_text_records`，在 proxy 啟動時就會失敗，因此設定錯誤的部署不會在不知不覺中回報錯誤成本。若未設定 `cost_tier` 也未設定價格，仍會記錄使用量計數器，但不會憑空產生成本。
 
-## Important Notes
+## 重要注意事項 {#important-notes}
 
-### Azure Content Safety Character Limit
+### Azure Content Safety 字元限制 {#azure-content-safety-character-limit}
 
-Both Azure Prompt Shield and Azure Text Moderation have a **10,000 character limit** per request. When text exceeds this limit:
+Azure Prompt Shield 與 Azure Text Moderation 的每個請求都有 **10,000 字元限制**。當文字超過此限制時：
 
-- LiteLLM automatically splits the text into chunks at word boundaries (no words are broken)
-- Each chunk is sent separately to the Azure Content Safety API for analysis
-- If any chunk is flagged (attack detected or severity threshold exceeded), the entire request is blocked
-- If all chunks are safe, the request is allowed to proceed
+- LiteLLM 會自動在單字邊界將文字分割成多個區塊（不會截斷任何單字）
+- 每個區塊會分別送往 Azure Content Safety API 進行分析
+- 若任何區塊被標記（偵測到攻擊或嚴重程度閾值超過），整個請求會被封鎖
+- 若所有區塊皆安全，則允許請求繼續進行
 
-This applies to both `pre_call` and `post_call` hooks and ensures that long prompts are properly analyzed without breaking words or losing context. 
+這同時適用於 `pre_call` 與 `post_call` 回呼，並確保長提示可被正確分析，而不會截斷單字或遺失上下文。
 
+## 延伸閱讀 {#further-reading}
 
-## Further Reading
-
-- [Control Guardrails per API Key](./quick_start#-control-guardrails-per-api-key)
+- [依 API 金鑰控管防護欄](./quick_start#-control-guardrails-per-api-key)

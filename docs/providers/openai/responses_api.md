@@ -1,16 +1,15 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenAI - Response API
+# OpenAI - 回應 API {#openai---response-api}
 
-To use Fast mode on supported OpenAI models or Ultrafast on GPT-6 Astra, see [Fast & Ultrafast mode](./ultrafast.md) for Admin UI setup, configuration, and request examples.
+若要在支援的 OpenAI 模型上使用 Fast mode，或在 GPT-6 Astra 上使用 Ultrafast，請參閱 [Fast & Ultrafast mode](./ultrafast.md) 以取得 Admin UI 設定、組態與請求範例。
 
-## Usage
+## 用法 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
-
-#### Non-streaming
+#### 非串流 {#non-streaming}
 ```python showLineNumbers title="OpenAI Non-streaming Response"
 import litellm
 
@@ -24,7 +23,7 @@ response = litellm.responses(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming}
 ```python showLineNumbers title="OpenAI Streaming Response"
 import litellm
 
@@ -39,7 +38,7 @@ for event in response:
     print(event)
 ```
 
-#### Web Search
+#### 網頁搜尋 {#web-search}
 ```python showLineNumbers title="OpenAI Responses with Web Search"
 import litellm
 
@@ -55,9 +54,9 @@ response = litellm.responses(
 print(response)
 ```
 
-For full details, see the [Web Search guide](../../completion/web_search.md).
+如需完整詳細資訊，請參閱 [網頁搜尋指南](../../completion/web_search.md)。
 
-#### Image Generation with Streaming
+#### 透過串流進行圖片生成 {#image-generation-with-streaming}
 ```python showLineNumbers title="OpenAI Streaming Image Generation"
 import litellm
 import base64
@@ -80,7 +79,7 @@ for event in stream:
             f.write(image_bytes)
 ```
 
-#### GET a Response
+#### 取得回應 {#get-a-response}
 ```python showLineNumbers title="Get Response by ID"
 import litellm
 
@@ -105,7 +104,7 @@ print(retrieved_response)
 # retrieved_response = await litellm.aget_responses(response_id=response_id)
 ```
 
-#### DELETE a Response
+#### 刪除回應 {#delete-a-response}
 ```python showLineNumbers title="Delete Response by ID"
 import litellm
 
@@ -130,10 +129,9 @@ print(delete_response)
 # delete_response = await litellm.adelete_responses(response_id=response_id)
 ```
 
+### 搭配 OpenAI SDK 的 LiteLLM Proxy {#litellm-proxy-with-openai-sdk}
 
-### LiteLLM Proxy with OpenAI SDK
-
-1. Set up config.yaml
+1. 設定 config.yaml
 
 ```yaml showLineNumbers title="OpenAI Proxy Configuration"
 model_list:
@@ -143,7 +141,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start LiteLLM Proxy Server
+2. 啟動 LiteLLM Proxy Server
 
 ```bash title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -151,9 +149,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Use OpenAI SDK with LiteLLM Proxy
+3. 搭配 LiteLLM Proxy 使用 OpenAI SDK
 
-#### Non-streaming
+#### 非串流 {#non-streaming-1}
 ```python showLineNumbers title="OpenAI Proxy Non-streaming Response"
 from openai import OpenAI
 
@@ -172,7 +170,7 @@ response = client.responses.create(
 print(response)
 ```
 
-#### Streaming
+#### 串流 {#streaming-1}
 ```python showLineNumbers title="OpenAI Proxy Streaming Response"
 from openai import OpenAI
 
@@ -193,7 +191,7 @@ for event in response:
     print(event)
 ```
 
-#### Image Generation with Streaming
+#### 透過串流進行圖片生成 {#image-generation-with-streaming-1}
 ```python showLineNumbers title="OpenAI Proxy Streaming Image Generation"
 from openai import OpenAI
 import base64
@@ -220,7 +218,7 @@ for event in stream:
 
 ```
 
-#### GET a Response
+#### 取得回應 {#get-a-response-1}
 ```python showLineNumbers title="Get Response by ID with OpenAI SDK"
 from openai import OpenAI
 
@@ -245,7 +243,7 @@ retrieved_response = client.responses.retrieve(response_id)
 print(retrieved_response)
 ```
 
-#### DELETE a Response
+#### 刪除回應 {#delete-a-response-1}
 ```python showLineNumbers title="Delete Response by ID with OpenAI SDK"
 from openai import OpenAI
 
@@ -270,16 +268,15 @@ delete_response = client.responses.delete(response_id)
 print(delete_response)
 ```
 
+## 支援的 Responses API 參數 {#supported-responses-api-parameters}
 
-## Supported Responses API Parameters
-
-| Provider | Supported Parameters |
+| 提供者 | 支援的參數 |
 |----------|---------------------|
-| `openai` | [All Responses API parameters are supported](https://github.com/BerriAI/litellm/blob/7c3df984da8e4dff9201e4c5353fdc7a2b441831/litellm/llms/openai/responses/transformation.py#L23) |
+| `openai` | [支援所有 Responses API 參數](https://github.com/BerriAI/litellm/blob/7c3df984da8e4dff9201e4c5353fdc7a2b441831/litellm/llms/openai/responses/transformation.py#L23) |
 
-## Reusable Prompts
+## 可重用提示詞 {#reusable-prompts}
 
-Use the `prompt` parameter to reference a stored prompt template and optionally supply variables.
+使用 `prompt` 參數來參照已儲存的提示詞範本，並視需要提供變數。
 
 ```python showLineNumbers title="Stored Prompt"
 import litellm
@@ -299,7 +296,7 @@ response = litellm.responses(
 print(response)
 ```
 
-The same parameter is supported when calling the LiteLLM proxy with the OpenAI SDK:
+透過 OpenAI SDK 呼叫 LiteLLM proxy 時也支援相同參數：
 
 ```python showLineNumbers title="Stored Prompt via Proxy"
 from openai import OpenAI
@@ -321,7 +318,7 @@ response = client.responses.create(
 print(response)
 ```
 
-## Computer Use 
+## 電腦使用  {#computer-use}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -366,7 +363,7 @@ print(response.output)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Set up config.yaml
+1. 設定 config.yaml
 
 ```yaml showLineNumbers title="OpenAI Proxy Configuration"
 model_list:
@@ -376,7 +373,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start LiteLLM Proxy Server
+2. 啟動 LiteLLM Proxy Server
 
 ```bash title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -384,7 +381,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```python showLineNumbers title="OpenAI Proxy Non-streaming Response"
 from openai import OpenAI
@@ -433,8 +430,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-
-## MCP Tools 
+## MCP 工具  {#mcp-tools}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -487,7 +483,7 @@ print(response_with_mcp_call)
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Set up config.yaml
+1. 設定 config.yaml
 
 ```yaml showLineNumbers title="OpenAI Proxy Configuration"
 model_list:
@@ -497,7 +493,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start LiteLLM Proxy Server
+2. 啟動 LiteLLM Proxy Server
 
 ```bash title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -505,7 +501,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```python showLineNumbers title="MCP Tools with OpenAI SDK via LiteLLM Proxy"
 from openai import OpenAI
@@ -561,10 +557,9 @@ print(response_with_mcp_call)
 </TabItem>
 </Tabs>
 
+## 詳述程度參數 {#verbosity-parameter}
 
-## Verbosity Parameter
-
-The `verbosity` parameter is supported for the `responses` API.
+`verbosity` 參數支援用於 `responses` API。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -643,7 +638,7 @@ display(styled_df)
 </TabItem>
 </Tabs>
 
-## Function Calling
+## 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="Function Calling with Parallel Tool Calls"
 import litellm
@@ -693,13 +688,13 @@ final_response = litellm.responses(
 print(final_response.output)
 ```
 
-Set `parallel_tool_calls=False` to ensure zero or one tool is called per turn. [More details](https://platform.openai.com/docs/guides/function-calling#parallel-function-calling).
+設定 `parallel_tool_calls=False` 以確保每一輪只會呼叫零個或一個工具。[更多詳細資訊](https://platform.openai.com/docs/guides/function-calling#parallel-function-calling)。
 
-## Tool Search & Namespaces
+## 工具搜尋與命名空間 {#tool-search--namespaces}
 
-Tool search lets models dynamically load tools at runtime instead of sending every tool definition in the prompt. Group functions into **namespaces** and mark them with `defer_loading: true`, and the model only loads the schemas it actually needs, saving tokens.
+工具搜尋可讓模型在執行階段動態載入工具，而不是在提示中傳送每個工具定義。將函式分組為 **namespaces**，並以 `defer_loading: true` 標記它們，模型就只會載入實際需要的 schema，節省 token。
 
-Requires `gpt-5.4` or later. See [OpenAI Tool Search docs](https://developers.openai.com/api/docs/guides/tools-tool-search) for full details.
+需要 `gpt-5.4` 或更新版本。請參閱 [OpenAI 工具搜尋文件](https://developers.openai.com/api/docs/guides/tools-tool-search) 取得完整詳細資訊。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -787,7 +782,7 @@ for item in response.output:
 </TabItem>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-1. Set up config.yaml
+1. 設定 config.yaml
 
 ```yaml showLineNumbers title="OpenAI Proxy Configuration"
 model_list:
@@ -797,7 +792,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-2. Start LiteLLM Proxy Server
+2. 啟動 LiteLLM Proxy Server
 
 ```bash title="Start LiteLLM Proxy Server"
 litellm --config /path/to/config.yaml
@@ -805,7 +800,7 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it!
+3. 測試它！
 
 ```python showLineNumbers title="Tool Search via OpenAI SDK with LiteLLM Proxy"
 from openai import OpenAI
@@ -847,9 +842,9 @@ print(response.output)
 </TabItem>
 </Tabs>
 
-### Tool Search via Chat Completions Bridge
+### 透過 Chat Completions Bridge 的工具搜尋 {#tool-search-via-chat-completions-bridge}
 
-You can also use tool search through the `/v1/chat/completions` endpoint by prefixing the model with `openai/responses/`. The request is routed through the Responses API but returns a standard chat completions response.
+您也可以透過 `/v1/chat/completions` 端點使用工具搜尋，只要在模型前綴加上 `openai/responses/` 即可。請求會經由 Responses API 路由，但會回傳標準的 chat completions 回應。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -925,11 +920,10 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Free-form Function Calling
+## 自由形式函式呼叫 {#free-form-function-calling}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
-
 
 ```python showLineNumbers title="Free-form Function Calling"
 import litellm
@@ -979,7 +973,7 @@ print(response.output)
 </TabItem>
 </Tabs>
 
-## Context-Free Grammar 
+## 無上下文語法  {#context-free-grammar}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
@@ -1129,11 +1123,10 @@ print(response_mssql.output[1].input)
 </TabItem>
 </Tabs>
 
-## Minimal Reasoning
+## 最小化推理 {#minimal-reasoning}
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">
-
 
 ```python showLineNumbers title="Minimal Reasoning"
 import litellm

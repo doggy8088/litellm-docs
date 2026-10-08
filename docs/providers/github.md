@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Github
+# Github {#github}
 https://github.com/marketplace/models
 
 :::tip
 
-**We support ALL Github models, just set `model=github/<any-model-on-github>` as a prefix when sending litellm requests**
-Ignore company prefix: meta/Llama-3.2-11B-Vision-Instruct becomes model=github/Llama-3.2-11B-Vision-Instruct
+**我們支援所有 Github 模型，送出 litellm 請求時只要將 `model=github/<any-model-on-github>` 設為前綴即可**
+忽略公司前綴：meta/Llama-3.2-11B-Vision-Instruct 會變成 model=github/Llama-3.2-11B-Vision-Instruct
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['GITHUB_API_KEY']
 ```
 
-## Sample Usage
+## 範例用法 {#sample-usage}
 ```python
 from litellm import completion
 import os
@@ -32,7 +32,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -51,10 +51,9 @@ for chunk in response:
 ```
 
 
+## 搭配 LiteLLM Proxy 的用法  {#usage-with-litellm-proxy}
 
-## Usage with LiteLLM Proxy 
-
-### 1. Set Github Models on config.yaml
+### 1. 在 config.yaml 設定 Github Models {#1-set-github-models-on-configyaml}
 
 ```yaml
 model_list:
@@ -64,18 +63,18 @@ model_list:
       api_key: "os.environ/GITHUB_API_KEY" # ensure you have `GITHUB_API_KEY` in your .env
 ```
 
-### 2. Start Proxy 
+### 2. 啟動 Proxy  {#2-start-proxy}
 
 ```
 litellm --config config.yaml
 ```
 
-### 3. Test it
+### 3. 測試 {#3-test-it}
 
-Make request to litellm proxy
+向 litellm proxy 發出請求
 
 <Tabs>
-<TabItem value="Curl" label="Curl Request">
+<TabItem value="Curl" label="Curl 請求">
 
 ```shell
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -144,12 +143,10 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 支援的模型 - 支援所有 Github 模型！ {#supported-models---all-github-models-supported}
+我們支援所有 Github 模型，送出 completion 請求時只要將 `github/` 設為前綴即可
 
-
-## Supported Models - ALL Github Models Supported!
-We support ALL Github models, just set `github/` as a prefix when sending completion requests
-
-| Model Name         | Usage                                           |
+| 模型名稱         | 用法                                           |
 |--------------------|---------------------------------------------------------|
 | llama-3.1-8b-Instant     | `completion(model="github/Llama-3.1-8b-Instant", messages)`     | 
 | Llama-3.1-70b-Versatile    | `completion(model="github/Llama-3.1-70b-Versatile", messages)`    | 
@@ -159,7 +156,7 @@ We support ALL Github models, just set `github/` as a prefix when sending comple
 | Mixtral-8x7b-32768 | `completion(model="github/Mixtral-8x7b-32768", messages)` |
 | Phi-4 | `completion(model="github/Phi-4", messages)` |
 
-## Github - Tool / Function Calling Example
+## Github - Tool / Function Calling 範例 {#github---tool--function-calling-example}
 
 ```python
 # Example dummy function hard coded to return the current weather

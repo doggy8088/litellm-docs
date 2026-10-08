@@ -1,32 +1,31 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /batches
+# /batches {#batches}
 
-Covers Batches, Files
+涵蓋 Batch、Files
 
-| Feature | Supported | Notes | 
+| 功能 | 支援 | 備註 | 
 |-------|-------|-------|
-| Supported Providers | OpenAI, Azure, Vertex, Bedrock, Mistral, vLLM, xAI | - |
-| ✨ Cost Tracking | ✅ | LiteLLM Enterprise only |
-| Logging | ✅ | Works across all logging integrations |
+| 支援的提供者 | OpenAI、Azure、Vertex、Bedrock、Mistral、vLLM、xAI | - |
+| ✨ 成本追蹤 | ✅ | 僅限 LiteLLM Enterprise |
+| 記錄 | ✅ | 可跨所有記錄整合運作 |
 
-Guardrails configured on your proxy are applied to the records inside a batch input file when it is
-uploaded. See [Batch API Guardrails](./proxy/guardrails/batch_guardrails)
+在您的 proxy 上設定的防護欄會在批次輸入檔上傳時套用到檔案內的記錄。請參閱 [Batch API 防護欄](./proxy/guardrails/batch_guardrails)
 
-## Quick Start 
+## 快速入門 {#quick-start}
 
-- Create File for Batch Completion
+- 為 Batch Completion 建立檔案
 
-- Create Batch Request
+- 建立 Batch 請求
 
-- List Batches
+- 列出 Batches
 
-- Retrieve the Specific Batch and File Content
+- 擷取特定的 Batch 與檔案內容
 
-**Create the batch input file**
+**建立批次輸入檔案**
 
-Each line is one request in the [OpenAI batch file format](https://platform.openai.com/docs/guides/batch). `custom_id`, `method`, `url`, and `body` are required on every line:
+每一行都是 [OpenAI 批次檔案格式](https://platform.openai.com/docs/guides/batch) 中的一個請求。每一行都需要 `custom_id`、`method`、`url`、以及 `body`：
 
 ```json showLineNumbers title="mydata.jsonl"
 {"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o", "messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_tokens": 1000}}
@@ -36,7 +35,7 @@ Each line is one request in the [OpenAI batch file format](https://platform.open
 <Tabs>
 <TabItem value="proxy" label="LiteLLM PROXY Server">
 
-**Setup config.yaml and start the proxy**
+**設定 config.yaml 並啟動 proxy**
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -54,7 +53,7 @@ $ litellm --config config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-**Create File for Batch Completion**
+**為 Batch Completion 建立檔案**
 
 ```shell
 curl http://localhost:4000/v1/files \
@@ -63,7 +62,7 @@ curl http://localhost:4000/v1/files \
     -F file="@mydata.jsonl"
 ```
 
-**Create Batch Request**
+**建立 Batch 請求**
 
 ```bash
 curl http://localhost:4000/v1/batches \
@@ -76,7 +75,7 @@ curl http://localhost:4000/v1/batches \
     }'
 ```
 
-**Retrieve the Specific Batch**
+**擷取特定的 Batch**
 
 ```bash
 curl http://localhost:4000/v1/batches/batch_abc123 \
@@ -85,7 +84,7 @@ curl http://localhost:4000/v1/batches/batch_abc123 \
 ```
 
 
-**List Batches**
+**列出 Batches**
 
 ```bash
 curl http://localhost:4000/v1/batches \
@@ -96,7 +95,7 @@ curl http://localhost:4000/v1/batches \
 </TabItem>
 <TabItem value="sdk" label="SDK">
 
-**Create File for Batch Completion**
+**為 Batch Completion 建立檔案**
 
 ```python
 import litellm
@@ -116,7 +115,7 @@ file_obj = await litellm.acreate_file(
 print("Response from creating file=", file_obj)
 ```
 
-**Create Batch Request**
+**建立 Batch 請求**
 
 ```python
 import litellm
@@ -134,7 +133,7 @@ create_batch_response = await litellm.acreate_batch(
 print("response from litellm.create_batch=", create_batch_response)
 ```
 
-**Retrieve the Specific Batch and File Content**
+**擷取特定的 Batch 與檔案內容**
 
 ```python
 # Maximum wait time before we give up
@@ -183,7 +182,7 @@ file_content = await litellm.afile_content(
 print("file content = ", file_content)
 ```
 
-**List Batches**
+**列出 Batches**
 
 ```python
 list_batches_response = litellm.list_batches(custom_llm_provider="openai", limit=2)
@@ -194,19 +193,18 @@ print("list_batches_response=", list_batches_response)
 
 </Tabs>
 
+## 多帳號 / 基於模型的路由 {#multi-account--model-based-routing}
 
-## Multi-Account / Model-Based Routing
+使用您 `config.yaml` 中模型專屬的憑證，將批次操作路由到不同的提供者帳戶。這樣可免除使用環境變數的需要，並支援多租戶批次處理。
 
-Route batch operations to different provider accounts using model-specific credentials from your `config.yaml`. This eliminates the need for environment variables and enables multi-tenant batch processing.
+### 運作方式 {#how-it-works}
 
-### How It Works
+**優先順序：**
+1. **編碼的 Batch/File ID**（最高）- 模型資訊內嵌於 ID 中
+2. **Model 參數** - 透過標頭（`x-litellm-model`）、查詢參數，或請求本文
+3. **自訂提供者**（備援）- 使用環境變數
 
-**Priority Order:**
-1. **Encoded Batch/File ID** (highest) - Model info embedded in the ID
-2. **Model Parameter** - Via header (`x-litellm-model`), query param, or request body
-3. **Custom Provider** (fallback) - Uses environment variables
-
-### Configuration
+### 組態 {#configuration}
 
 ```yaml
 model_list:
@@ -230,11 +228,11 @@ model_list:
       api_version: "2024-02-01"
 ```
 
-### Usage Examples
+### 使用範例 {#usage-examples}
 
-#### Scenario 1: Encoded File ID with Model
+#### 情境 1：含模型的編碼檔案 ID {#scenario-1-encoded-file-id-with-model}
 
-When you upload a file with a model parameter, LiteLLM encodes the model information in the file ID. All subsequent operations automatically use those credentials.
+當您上傳帶有 model 參數的檔案時，LiteLLM 會將模型資訊編碼到檔案 ID 中。之後所有操作都會自動使用那些憑證。
 
 ```bash
 # Step 1: Upload file with model
@@ -272,14 +270,14 @@ curl http://localhost:4000/v1/batches/batch_bGl0ZWxsbTpiYXRjaF82OTIwM2IzNjg0MDQ4
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**✅ Benefits:**
-- No need to specify model on every request
-- File and batch IDs "remember" which account created them
-- Automatic routing for retrieve, cancel, and file content operations
+**✅ 好處：**
+- 無需在每次請求時指定 model
+- 檔案與 batch ID 會「記住」是由哪個帳戶建立
+- 在擷取、取消，以及檔案內容操作時自動路由
 
-#### Scenario 2: Model via Header/Query Parameter
+#### 情境 2：透過標頭/查詢參數指定模型 {#scenario-2-model-via-headerquery-parameter}
 
-Specify the model for each request without encoding it in the ID.
+在 ID 中不編碼模型資訊，而是在每次請求中指定 model。
 
 ```bash
 # Create batch with model header
@@ -308,14 +306,14 @@ curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2" \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**✅ Use Case:**
-- One-off batch operations
-- Different models for different operations
-- Explicit control over routing
+**✅ 使用情境：**
+- 一次性的批次操作
+- 不同操作使用不同模型
+- 明確控制路由
 
-#### Scenario 3: Environment Variables (Fallback)
+#### 情境 3：環境變數（備援） {#scenario-3-environment-variables-fallback}
 
-Traditional approach using environment variables when no model is specified.
+在未指定 model 時，使用環境變數的傳統作法。
 
 ```bash
 export OPENAI_API_KEY="sk-env-key"
@@ -330,12 +328,12 @@ curl http://localhost:4000/v1/batches \
   }'
 ```
 
-**✅ Use Case:**
-- Backward compatibility
-- Simple single-account setups
-- Quick prototyping
+**✅ 使用情境：**
+- 向後相容
+- 簡單的單一帳戶設定
+- 快速原型開發
 
-### Complete Multi-Account Example
+### 完整的多帳號範例 {#complete-multi-account-example}
 
 ```bash
 # Upload file to Account 1
@@ -367,7 +365,7 @@ curl "http://localhost:4000/v1/batches?model=gpt-4o-account-1"
 curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2"
 ```
 
-### SDK Usage with Model Routing
+### 使用模型路由的 SDK 用法 {#sdk-usage-with-model-routing}
 
 ```python
 import litellm
@@ -409,9 +407,9 @@ batch2 = await litellm.acreate_batch(
 )
 ```
 
-### How ID Encoding Works
+### ID 編碼如何運作 {#how-id-encoding-works}
 
-LiteLLM encodes model information into file and batch IDs using base64:
+LiteLLM 使用 base64 將模型資訊編碼到檔案與 batch ID 中：
 
 ```
 Original:  file-abc123
@@ -425,52 +423,52 @@ Encoded:   batch_bGl0ZWxsbTpiYXRjaF94eXo3ODk7bW9kZWwsZ3B0LTRvLXRlc3Q
            prefix       base64(litellm:batch_xyz789;model,gpt-4o-test)
 ```
 
-The encoding:
-- ✅ Preserves OpenAI-compatible prefixes (`file-`, `batch_`)
-- ✅ Is transparent to clients
-- ✅ Enables automatic routing without additional parameters
-- ✅ Works across all batch and file endpoints
+此編碼：
+- ✅ 保留與 OpenAI 相容的前綴（`file-`、`batch_`）
+- ✅ 對用戶端而言是透明的
+- ✅ 無需額外參數即可啟用自動路由
+- ✅ 可跨所有 batch 與檔案端點運作
 
-### Supported Endpoints
+### 支援的端點 {#supported-endpoints}
 
-All batch and file endpoints support model-based routing:
+所有 batch 與檔案端點都支援以 model 為基礎的路由：
 
-| Endpoint | Method | Model Routing |
+| 端點 | 方法 | Model 路由 |
 |----------|--------|---------------|
-| `/v1/files` | POST | ✅ Via header/query/body |
-| `/v1/files/{file_id}` | GET | ✅ Auto from encoded ID + header/query |
-| `/v1/files/{file_id}/content` | GET | ✅ Auto from encoded ID + header/query |
-| `/v1/files/{file_id}` | DELETE | ✅ Auto from encoded ID |
-| `/v1/batches` | POST | ✅ Auto from file ID + header/query/body |
-| `/v1/batches` | GET | ✅ Via header/query |
-| `/v1/batches/{batch_id}` | GET | ✅ Auto from encoded ID |
-| `/v1/batches/{batch_id}/cancel` | POST | ✅ Auto from encoded ID |
+| `/v1/files` | POST | ✅ 透過標頭/查詢/本文 |
+| `/v1/files/{file_id}` | GET | ✅ 自編碼 ID + 標頭/查詢 自動取得 |
+| `/v1/files/{file_id}/content` | GET | ✅ 自編碼 ID + 標頭/查詢 自動取得 |
+| `/v1/files/{file_id}` | DELETE | ✅ 自編碼 ID 自動取得 |
+| `/v1/batches` | POST | ✅ 自檔案 ID + 標頭/查詢/本文 自動取得 |
+| `/v1/batches` | GET | ✅ 透過標頭/查詢 |
+| `/v1/batches/{batch_id}` | GET | ✅ 自編碼 ID 自動取得 |
+| `/v1/batches/{batch_id}/cancel` | POST | ✅ 自編碼 ID 自動取得 |
 
-## Supported providers
+## 支援的提供者 {#supported-providers}
 
-LiteLLM supports the following provider-native batch APIs:
+LiteLLM 支援下列提供者原生的 batch API：
 
-| Provider | Documentation |
+| 提供者 | 文件 |
 | --- | --- |
 | Azure OpenAI | [Azure OpenAI batches](./providers/azure#azure-batches-api) |
-| OpenAI | [Quick start](#quick-start) |
+| OpenAI | [快速入門](#quick-start) |
 | Google Vertex AI | [Vertex AI batch APIs](/docs/providers/vertex_batch) |
 | Amazon Bedrock | [Amazon Bedrock batch inference](./providers/bedrock_batches) |
 | Mistral AI | [Mistral AI Batch API](./providers/mistral_batches) |
-| vLLM | [vLLM batches](./providers/vllm_batches), run by LiteLLM when the server has no Files API |
+| vLLM | [vLLM batches](./providers/vllm_batches)，當伺服器沒有 Files API 時由 LiteLLM 執行 |
 | xAI | [xAI Batch API](./providers/xai_batches) |
 
-Amazon Bedrock is the supported AWS integration for batch inference.
+Amazon Bedrock 是支援的 AWS batch inference 整合。
 
-## Batch Input File Validation
+## 批次輸入檔案驗證 {#batch-input-file-validation}
 
-LiteLLM validates batch input files at upload time. When a client uploads a file to `POST /v1/files` with `purpose="batch"`, LiteLLM checks the file locally and rejects invalid files before anything is forwarded to the provider. Validation runs on every `/v1/files` routing path, including provider-routed uploads configured through `files_settings` and [LiteLLM managed files](./proxy/managed_batches) uploads that use `target_model_names`
+LiteLLM 會在上傳時驗證批次輸入檔案。當用戶端上傳檔案到 `POST /v1/files` 並使用 `purpose="batch"` 時，LiteLLM 會在本機檢查檔案，並在任何內容轉送給提供者之前拒絕無效檔案。驗證會在每個 `/v1/files` 路由路徑上執行，包括透過 `files_settings` 設定的提供者路由上傳，以及使用 `target_model_names` 的 [LiteLLM 代管檔案](./proxy/managed_batches) 上傳
 
-Rejections use the OpenAI error format, an `error` object with `message`, `type`, `param`, and `code` fields, so existing OpenAI SDK error handling works unchanged
+拒絕會使用 OpenAI 錯誤格式，也就是一個含有 `error`、`message`、`type`、以及 `param` 欄位的 `code` 物件，因此既有的 OpenAI SDK 錯誤處理可維持不變
 
-### Limit the batch input file size
+### 限制批次輸入檔案大小 {#limit-the-batch-input-file-size}
 
-Set `max_batch_file_size_mb` under `general_settings` to cap the size of batch input files. The value is an integer in MB. When it is unset, no size cap applies
+在 `general_settings` 下設定 `max_batch_file_size_mb`，可限制批次輸入檔案的大小。此值為 MB 的整數。若未設定，則不套用大小上限
 
 ```yaml
 general_settings:
@@ -478,7 +476,7 @@ general_settings:
   max_batch_file_size_mb: 10
 ```
 
-A `purpose="batch"` upload larger than the cap is rejected with HTTP `413`:
+超過上限的 `purpose="batch"` 上傳會以 HTTP `413` 拒絕：
 
 ```json
 {
@@ -491,11 +489,11 @@ A `purpose="batch"` upload larger than the cap is rejected with HTTP `413`:
 }
 ```
 
-`max_batch_file_size_mb` applies only to batch input file uploads. It is separate from `max_request_size_mb`, which applies to every proxy route
+`max_batch_file_size_mb` 僅適用於批次輸入檔案上傳。這與 `max_request_size_mb` 不同，後者適用於每一條 proxy 路由
 
-### Limit the number of records in a batch file
+### 限制批次檔案中的記錄數量 {#limit-the-number-of-records-in-a-batch-file}
 
-Set `max_batch_file_records` under `general_settings` to cap how many request lines one batch input file can hold. Blank lines are not counted. When it is unset, no record cap applies
+在 `general_settings` 下設定 `max_batch_file_records`，可限制單一批次輸入檔案可包含多少請求行。空白行不計入。若未設定，則不套用記錄上限
 
 ```yaml
 general_settings:
@@ -503,7 +501,7 @@ general_settings:
   max_batch_file_records: 1000
 ```
 
-A `purpose="batch"` upload with more records than the cap is rejected with HTTP `413`, and the file is not forwarded to the provider:
+超過上限記錄數的 `purpose="batch"` 上傳會以 HTTP `413` 拒絕，而且檔案不會轉送給提供者：
 
 ```json
 {
@@ -516,35 +514,35 @@ A `purpose="batch"` upload with more records than the cap is rejected with HTTP 
 }
 ```
 
-The `general_settings` value applies to every key. A proxy admin can give one key a different cap with `max_batch_file_records` in that key's metadata, and can add a cap for a whole team in the team's metadata. When both the key and its team have a cap, the lower one applies, and the message says where it was set
+`general_settings` 值適用於每個金鑰。proxy 管理員可以透過該金鑰中繼資料的 `max_batch_file_records` 為某個金鑰設定不同的上限，也可以在團隊的中繼資料中為整個團隊新增上限。當金鑰與其所屬團隊都設定上限時，會套用較低者，而訊息會指出設定位置
 
-### Content validation
+### 內容驗證 {#content-validation}
 
-LiteLLM always validates the content of `purpose="batch"` uploads. There is no setting to configure. The filename must end in `.jsonl`, matched case-insensitively. The file must contain at least one non-blank line. Every non-blank line must be valid JSON. Every line must be a JSON object. Every object must contain the `custom_id`, `method`, `url`, and `body` keys
+LiteLLM 一律會驗證 `purpose="batch"` 上傳內容。不需設定任何選項。檔名必須以 `.jsonl` 結尾，且比對時不分大小寫。檔案必須至少包含一行非空白行。每一行非空白行都必須是有效 JSON。每一行都必須是 JSON 物件。每個物件都必須包含 `custom_id`、`method`、`url`、以及 `body` 金鑰
 
-A file that fails any of these checks is rejected with HTTP `400` and `"type": "invalid_request_error"`. The `param` field names the offending field: `file` for a wrong extension, an empty file, a line that is not valid JSON, or a line that is not a JSON object. For a line that is missing a required key, `param` is the missing key, such as `method`. The `message` includes the 1-based line number where relevant. Line numbers count every line in the file, including blank lines
+若檔案未通過任一檢查，會以 HTTP `400` 和 `"type": "invalid_request_error"` 拒絕。`param` 欄位會指出有問題的欄位：若副檔名錯誤、檔案為空、某一行不是有效 JSON，或某一行不是 JSON 物件，則為 `file`。若某一行缺少必要金鑰，`param` 會是缺少的金鑰，例如 `method`。`message` 在相關情況下會包含以 1 為起始的行號。行號會計算檔案中的每一行，包括空白行
 
-### Provider batch limits
+### 提供者批次限制 {#provider-batch-limits}
 
-Each provider enforces its own limits on batch input files. Use them to pick a value for `max_batch_file_size_mb`
+每個提供者都會強制執行其自身對批次輸入檔案的限制。請用它們來決定 `max_batch_file_size_mb` 的值
 
-| Provider | Max input file size | Max requests |
+| 提供者 | 最大輸入檔案大小 | 最大請求數 |
 |----------|---------------------|--------------|
-| [OpenAI](https://developers.openai.com/api/docs/guides/batch) | 200 MB | 50,000 per batch |
-| [Azure OpenAI](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/batch) | 200 MB | 100,000 per file |
-| [Vertex AI](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini) | 1 GB | 200,000 per job |
-| [Amazon Bedrock](https://docs.aws.amazon.com/general/latest/gr/bedrock.html) | 1 GB per file | See AWS Service Quotas |
+| [OpenAI](https://developers.openai.com/api/docs/guides/batch) | 200 MB | 每個 batch 50,000 筆 |
+| [Azure OpenAI](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/batch) | 200 MB | 每個檔案 100,000 筆 |
+| [Vertex AI](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/batch-prediction-gemini) | 1 GB | 每個 job 200,000 筆 |
+| [Amazon Bedrock](https://docs.aws.amazon.com/general/latest/gr/bedrock.html) | 每個檔案 1 GB | 請參閱 AWS 服務配額 |
 
-Azure OpenAI raises its file cap to 1 GB with bring-your-own Blob Storage. The Vertex AI cap applies to Cloud Storage input. Amazon Bedrock also caps total job size, at 5 GB for most models. Set `max_batch_file_size_mb` at or below the smallest limit of the providers you route batch traffic to
+Azure OpenAI 在提供自有 Blob Storage 時，將其檔案上限提高到 1 GB。Vertex AI 的上限適用於 Cloud Storage 輸入。Amazon Bedrock 也會限制總工作大小，對於多數模型上限為 5 GB。請將 `max_batch_file_size_mb` 設為您路由批次流量到的提供者中最小限制值以下或等於該值
 
-## Batch Upload and Download Limits
+## 批次上傳與下載限制 {#batch-upload-and-download-limits}
 
-Two settings cap how often a caller can upload batch input files and download file content. Both are off unless set
+有兩項設定會限制呼叫者可上傳批次輸入檔案與下載檔案內容的頻率。除非設定，否則兩者都為關閉狀態
 
-| Setting | What it counts | Window |
+| 設定 | 計算項目 | 視窗 |
 | --- | --- | --- |
-| `max_batch_file_uploads_per_day` | `POST /v1/files` uploads with `purpose="batch"` | UTC day |
-| `max_file_downloads_per_minute` | `GET /v1/files/{file_id}/content` calls for one file | One minute |
+| `max_batch_file_uploads_per_day` | 具 `purpose="batch"` 的 `POST /v1/files` 上傳 | UTC 日 |
+| `max_file_downloads_per_minute` | 單一檔案的 `GET /v1/files/{file_id}/content` 呼叫 | 一分鐘 |
 
 ```yaml
 general_settings:
@@ -553,7 +551,7 @@ general_settings:
   max_file_downloads_per_minute: 10
 ```
 
-A request past either limit is rejected with HTTP `429` and a `Retry-After` header giving the seconds until the window resets. For uploads that is 00:00 UTC. The message names the limit, its value, and where it was set:
+超過任一限制的請求都會被拒絕，並回傳 HTTP `429` 與 `Retry-After` 標頭，該標頭提供距離視窗重設還剩幾秒。對於上傳而言，重設時間為 UTC 00:00。訊息會指出限制名稱、其值，以及設定位置：
 
 ```json
 {
@@ -566,11 +564,11 @@ A request past either limit is rejected with HTTP `429` and a `Retry-After` head
 }
 ```
 
-The download limit is counted per file, so a caller that hits it on one file can still download other files. It covers every file id, whether a batch input, output, or error file
+下載限制是逐檔案計算，因此在某一檔案上觸及限制的呼叫者，仍可下載其他檔案。它涵蓋每個檔案 ID，不論是批次輸入、輸出或錯誤檔案
 
-### Setting limits per key or team
+### 為每個金鑰或團隊設定限制 {#setting-limits-per-key-or-team}
 
-The `general_settings` value is a default that each key gets its own count against. A JWT caller without a virtual key is counted by its user id instead. A proxy admin can change the limit for one key by setting the same name in that key's metadata, which replaces the default for that key:
+`general_settings` 值是一個預設值，每個金鑰都會各自計入。沒有虛擬金鑰的 JWT 呼叫者則改以其使用者 ID 計算。代理程式管理員可以在某個金鑰的 metadata 中設定相同名稱，藉此變更該金鑰的限制，並以此取代該金鑰的預設值：
 
 ```bash
 curl -X POST 'http://localhost:4000/key/update' \
@@ -579,49 +577,49 @@ curl -X POST 'http://localhost:4000/key/update' \
   -d '{"key": "sk-...", "metadata": {"max_file_downloads_per_minute": 2}}'
 ```
 
-Setting the name in a team's metadata adds a second limit shared by every key in that team. When both apply, a request must fit both, and a request rejected by one does not use up a slot in the other
+在團隊的 metadata 中設定該名稱，會新增第二個限制，由該團隊中的每個金鑰共同分享。當兩者都適用時，請求必須同時符合兩者，而被其中一個拒絕的請求不會消耗另一個的配額
 
-Only a proxy admin can set, change, or clear `max_batch_file_records`, `max_batch_file_uploads_per_day`, and `max_file_downloads_per_minute` in key or team metadata, including the metadata sent to `POST /user/new`. Requests from any other role that try to change them are rejected with a `403`. `/config/update` rejects a value that is not a positive integer
+只有代理程式管理員可以在金鑰或團隊 metadata 中設定、變更或清除 `max_batch_file_records`、`max_batch_file_uploads_per_day` 與 `max_file_downloads_per_minute`，包括傳送至 `POST /user/new` 的 metadata。來自其他角色、嘗試變更這些設定的請求都會被 `403` 拒絕。`/config/update` 會拒絕非正整數的值
 
-### What counts against the limits
+### 哪些項目會計入限制 {#what-counts-against-the-limits}
 
-An upload that fails batch input file validation (a wrong format, too many records, too large) does not count. An upload that passes validation counts even when a guardrail or the provider rejects it afterwards, and a download counts even when the provider returns an error for it
+未通過批次輸入檔案驗證的上傳（格式錯誤、記錄過多、檔案過大）不會計入。通過驗證的上傳即使之後被防護欄或提供者拒絕，也仍會計入；而下載即使提供者對其返回錯誤，也仍會計入
 
-With Redis configured, the counts are shared across every proxy instance and worker. Without Redis, each worker process keeps its own count, so a caller can reach up to the limit times the number of workers, and the counts reset when the proxy restarts. Each worker keeps up to 20,000 live counters (one per caller and window, and per file id for downloads), and once more than that are live the one closest to expiry is dropped, so that caller starts a fresh window early
+在已設定 Redis 的情況下，計數會在每個 proxy 執行個體與 worker 之間共享。未設定 Redis 時，每個 worker 程序都會保有自己的計數，因此呼叫者最多可達到限額乘以 worker 數量的次數，而且在 proxy 重新啟動時計數會重設。每個 worker 最多會保留 20,000 個存活中的計數器（每個呼叫者與視窗各一個，以及下載時每個檔案 ID 各一個），而當存活數量超過此上限時，最接近到期的那一個會被捨棄，因此該呼叫者會較早開始新的視窗
 
-The limits apply to the `/v1/files` routes above, including `/files` and `/{provider}/v1/files`. Provider pass-through routes are not counted
+這些限制適用於上方的 `/v1/files` 路由，包括 `/files` 與 `/{provider}/v1/files`。提供者直通路由不會被計入
 
-## How Rate Limiting for Batches API Works
+## Batches API 的速率限制如何運作 {#how-rate-limiting-for-batches-api-works}
 
-Batch rate limits are enforced when the client calls `POST /v1/batches`, not when the input file is uploaded.
+批次速率限制會在用戶端呼叫 `POST /v1/batches` 時強制執行，而不是在輸入檔案上傳時。
 
-1. The client uploads the JSONL input file with `POST /v1/files`. This upload does not consume the batch TPM or RPM allowance.
-2. When the client creates the batch, LiteLLM downloads and evaluates the referenced input file.
-3. LiteLLM atomically checks the complete file against every applicable limit.
-4. If any limit would be exceeded, LiteLLM returns `429` and does not submit the batch to the provider. Otherwise, it records the usage and creates the provider batch.
+1. 用戶端使用 `POST /v1/files` 上傳 JSONL 輸入檔案。此上傳不會消耗批次 TPM 或 RPM 配額。
+2. 當用戶端建立批次時，LiteLLM 會下載並評估所參照的輸入檔案。
+3. LiteLLM 會以原子方式將完整檔案與每個適用限制進行檢查。
+4. 若任何限制會被超過，LiteLLM 會回傳 `429`，且不會將批次提交給提供者。否則，它會記錄用量並建立提供者批次。
 
-This allows LiteLLM to accept or reject the batch before the provider processes it.
+這使 LiteLLM 能在提供者處理之前先接受或拒絕該批次。
 
-### What LiteLLM counts
+### LiteLLM 計算哪些項目 {#what-litellm-counts}
 
-| Limit | Batch charge |
+| 限制 | 批次計費 |
 | --- | --- |
-| RPM | One request for each JSONL record. |
-| TPM | Input tokens found in each record's `body.messages`, `body.prompt`, or `body.input`. |
-| Project ITPM | The same input-token count, grouped by each record's `body.model`. |
-| Project OTPM | An output-token reservation for each record, grouped by `body.model`. LiteLLM uses `max_tokens`, `max_completion_tokens`, or `max_output_tokens` when present and accounts for `n` or `best_of`. Embedding records reserve no output tokens. If no output cap is present, LiteLLM uses the v3 limiter's built-in estimate, bounded by the smallest applicable OTPM limit. |
+| RPM | 每筆 JSONL 記錄計為一個請求。 |
+| TPM | 每筆記錄的 `body.messages`、`body.prompt` 或 `body.input` 中找到的輸入 token。 |
+| 專案 ITPM | 相同的輸入 token 數量，依每筆記錄的 `body.model` 分組。 |
+| 專案 OTPM | 每筆記錄的輸出 token 預留量，依 `body.model` 分組。LiteLLM 在存在時會使用 `max_tokens`、`max_completion_tokens` 或 `max_output_tokens`，並且會計入 `n` 或 `best_of`。embedding 記錄不會預留任何輸出 token。若未設定輸出上限，LiteLLM 會使用 v3 limiter 內建的估算值，且不會超過最小適用的 OTPM 限制。 |
 
-If LiteLLM cannot tokenize an individual record, it uses a conservative estimate based on the serialized record size. A malformed JSONL line still counts as one request.
+如果 LiteLLM 無法對單一記錄進行 tokenization，會改用基於序列化後記錄大小的保守估算。格式錯誤的 JSONL 行仍會計為一個請求。
 
 :::important
 
-`LITELLM_TPM_TOKEN_RESERVATION_ENABLED` does not control batch rate limiting. That variable controls pre-request reservation for real-time requests such as chat completions. `POST /v1/batches` always uses the batch input-file limiter described here unless one of the batch-specific skip settings below is enabled.
+`LITELLM_TPM_TOKEN_RESERVATION_ENABLED` 不會控制批次速率限制。該變數控制的是即時請求（例如 chat completions）的請求前預留。除非啟用下方其中一個批次專用的略過設定，否則 `POST /v1/batches` 一律使用此處所述的批次輸入檔案 limiter。
 
 :::
 
-### Enqueued-token limits
+### 已排入佇列的 token 限制 {#enqueued-token-limits}
 
-Per-minute windows fit batches poorly: a batch runs for hours, but its whole input file is charged to a single minute at submission. To govern batch submissions by outstanding batch work instead, set an enqueued-token allowance in the key or team metadata:
+每分鐘視窗不適合批次：批次可能執行數小時，但其整個輸入檔案會在提交時一次計入單一分鐘。若要改以未完成批次工作量來管理批次提交，請在金鑰或團隊 metadata 中設定已排隊 token 配額：
 
 ```bash
 curl -X POST 'http://localhost:4000/key/generate' \
@@ -630,36 +628,36 @@ curl -X POST 'http://localhost:4000/key/generate' \
   -d '{"metadata": {"batch_enqueued_token_limit": 100000}}'
 ```
 
-`batch_enqueued_token_limit` also works in team metadata. When both the key and its team set one, the batch must fit both allowances.
+`batch_enqueued_token_limit` 也可在團隊 metadata 中使用。當金鑰與其所屬團隊都設定了此項時，批次必須同時符合兩者的配額。
 
-Only a proxy admin can set or change `batch_enqueued_token_limit`. Key and team requests from other roles that try to write it are rejected with a `403`.
+只有代理程式管理員可以設定或變更 `batch_enqueued_token_limit`。其他角色對金鑰與團隊提出、嘗試寫入此值的請求，會被 `403` 拒絕。
 
-When a key or team has an enqueued-token limit, batch submission is governed only by that allowance:
+當金鑰或團隊具有已排隊 token 限制時，批次提交只會受該配額管理：
 
-1. When the client creates a batch, LiteLLM reserves the file's estimated tokens (the input tokens plus each record's output cap) against the allowance.
-2. If the batch does not fit, LiteLLM returns `429` naming the enqueued token limit and does not submit the batch to the provider.
-3. When LiteLLM serves a response showing the batch in a terminal state (completed, failed, expired, or cancelled), it refunds the reservation. Polling `GET /v1/batches/{batch_id}` and cancelling with `POST /v1/batches/{batch_id}/cancel` both qualify.
-4. Batch submissions are not charged to the per-minute TPM and RPM windows, so a batch whose record count exceeds the key's RPM is accepted when it fits the allowance.
+1. 當用戶端建立批次時，LiteLLM 會將檔案的估算 token（輸入 token 加上每筆記錄的輸出上限）預留於該配額中。
+2. 如果批次無法納入，LiteLLM 會回傳 `429`，指出已排隊 token 限制名稱，且不會將批次提交給提供者。
+3. 當 LiteLLM 提供的回應顯示批次處於終態（已完成、失敗、已過期或已取消）時，會退還該預留。輪詢 `GET /v1/batches/{batch_id}` 與使用 `POST /v1/batches/{batch_id}/cancel` 取消都符合條件。
+4. 批次提交不會被計入每分鐘 TPM 與 RPM 視窗，因此即使某個批次的記錄數超過金鑰的 RPM，只要符合配額仍會被接受。
 
-Real-time traffic such as chat completions is unaffected: it consumes the key's TPM and RPM limits exactly as before.
+即時流量，例如 chat completions，不受影響：它們仍然會一如既往地消耗金鑰的 TPM 與 RPM 限制。
 
-Two details to plan around:
+有兩個需要注意的細節：
 
-- `disable_batch_input_file_rate_limiting` and `skip_batch_input_file_rate_limiting_for_providers` take precedence. When they apply, LiteLLM performs no enqueued-token accounting.
-- Reservations for batches whose terminal state LiteLLM never observes (for example, a batch only ever polled directly against the provider) expire after 8 days.
+- `disable_batch_input_file_rate_limiting` 與 `skip_batch_input_file_rate_limiting_for_providers` 具有優先權。當它們適用時，LiteLLM 不會進行已排隊 token 計算。
+- 對於 LiteLLM 從未觀察到終態的批次預留（例如，只曾直接對提供者輪詢的批次），會在 8 天後過期。
 
-### Operational behavior
+### 作業行為 {#operational-behavior}
 
-| Behavior | Operational impact |
+| 行為 | 營運影響 |
 | --- | --- |
-| Accounting is based on the submitted file | Batch TPM and RPM counters are not reconciled against the provider's final usage. Final cost tracking is separate. |
-| The complete file cannot be downloaded or evaluated | LiteLLM logs the error and submits the batch without charging it to TPM or RPM. Monitor these errors if your deployment requires strict rate-limit enforcement. |
-| No applicable rate limit is configured | LiteLLM submits the batch without downloading it for rate-limit accounting. |
-| The API key has a model allowlist | LiteLLM reads the file and validates every `body.model` before submission. |
+| 計費是以提交的檔案為基礎 | 批次 TPM 與 RPM 計數器不會與提供者的最終用量進行對帳。最終成本追蹤是獨立的。 |
+| 完整檔案無法下載或評估 | LiteLLM 會記錄錯誤，並提交該批次而不將其計入 TPM 或 RPM。若您的部署需要嚴格的速率限制強制執行，請監控這些錯誤。 |
+| 未設定適用的速率限制 | LiteLLM 會提交批次，而不下載該檔案進行速率限制計費。 |
+| API 金鑰具有模型 allowlist | LiteLLM 會讀取檔案，並在提交前驗證每個 `body.model`。 |
 
-### Skipping the input-file pre-read
+### 略過輸入檔案預先讀取 {#skipping-the-input-file-pre-read}
 
-Reading a large JSONL file can add latency to batch submission. If you do not need the batch to be charged against TPM or RPM at submission, configure one of these options:
+讀取大型 JSONL 檔案可能會增加批次提交延遲。如果您不需要在提交時將批次計入 TPM 或 RPM，請設定以下其中一項：
 
 ```yaml
 general_settings:
@@ -671,33 +669,33 @@ general_settings:
     - bedrock
 ```
 
-The provider-specific option uses the provider configured on the selected route. It does not use a `custom_llm_provider` value supplied by the client.
+特定提供者的選項會使用所選路由上設定的提供者。它不會使用用戶端提供的 `custom_llm_provider` 值。
 
-For API keys with a model allowlist, LiteLLM must still read the file to validate each `body.model` value. In this case, the settings above skip the TPM and RPM counter update, but not the file download or model validation.
+對於具有模型 allowlist 的 API 金鑰，LiteLLM 仍然必須讀取檔案以驗證每個 `body.model` 值。在此情況下，上述設定會略過 TPM 與 RPM 計數器更新，但不會略過檔案下載或模型驗證。
 
-The following options are not supported:
+不支援以下選項：
 
-- `skip_batch_input_file_rate_limiting_for_models` is retained for compatibility but has no effect. LiteLLM logs a warning at startup when it is configured.
-- A `skip_batch_input_file_rate_limiting` flag in request metadata is ignored.
+- `skip_batch_input_file_rate_limiting_for_models` 會保留以供相容性使用，但沒有作用。當其被設定時，LiteLLM 會在啟動時記錄警告。
+- 請求 metadata 中的 `skip_batch_input_file_rate_limiting` 標記會被忽略。
 
-Use the global or provider-specific settings above to manage this behavior at the server level.
+請使用上述全域或特定提供者設定，在伺服器層級管理此行為。
 
-## How Cost Tracking for Batches API Works
+## Batches API 的成本追蹤如何運作 {#how-cost-tracking-for-batches-api-works}
 
-✨ **Enterprise:** Automated batch cost tracking requires a LiteLLM Enterprise license.
+✨ **Enterprise：** 自動化批次成本追蹤需要 LiteLLM Enterprise 授權。
 
-For managed batches, LiteLLM monitors the provider job in the background. When the job reaches a terminal state, LiteLLM:
+對於受管理的批次，LiteLLM 會在背景監控提供者工作。當工作到達終止狀態時，LiteLLM 會：
 
-1. Downloads the provider's output file.
-2. Reads each successful output record.
-3. Aggregates prompt, completion, and total token usage across those records.
-4. Calculates each record's cost using the deployment's configured batch pricing.
-5. Records the combined usage and cost against the user, key, team, and request tags that created the batch.
+1. 下載提供者的輸出檔案。
+2. 讀取每筆成功的輸出記錄。
+3. 彙總這些記錄中的提示、完成與總 token 用量。
+4. 使用部署所設定的批次定價計算每筆記錄的成本。
+5. 將合併後的用量與成本，記錄到建立該批次的使用者、金鑰、團隊與請求標籤。
 
-Failed output records are excluded from the aggregate. If the batch has no output file because every record failed, LiteLLM records zero usage and zero cost.
+失敗的輸出記錄會從彙總中排除。若批次因為每筆記錄都失敗而沒有輸出檔案，LiteLLM 會記錄零用量與零成本。
 
-The initial submission and the completed aggregate are recorded separately. The completed aggregate is emitted through standard spend tracking as an `aretrieve_batch` record, so it is available to the Admin UI and configured logging callbacks.
+初始提交與完成後的彙總會分開記錄。完成後的彙總會透過標準支出追蹤，以 `aretrieve_batch` 記錄發出，因此可供 Admin UI 與已設定的記錄回呼使用。
 
-Batch cost tracking does not change the TPM or RPM counters reserved at submission. Those counters remain based on the input-file calculation described above.
+批次成本追蹤不會變更在提交時保留的 TPM 或 RPM 計數器。這些計數器仍然是以上述的輸入檔案計算為基礎。
 
-## [Swagger API Reference](https://docs.litellm.ai/api-reference/#/batch)
+## [Swagger API 參考](https://docs.litellm.ai/api-reference/#/batch) {#swagger-api-reference}

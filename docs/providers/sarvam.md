@@ -1,11 +1,11 @@
-# Sarvam.ai
+# Sarvam.ai {#sarvamai}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-LiteLLM supports all the text models from [Sarvam ai](https://docs.sarvam.ai/api-reference-docs/chat/chat-completions)
+LiteLLM 支援來自 [Sarvam ai](https://docs.sarvam.ai/api-reference-docs/chat/chat-completions) 的所有文字模型
 
-## Usage
+## 用法 {#usage}
 
 ```python
 import os
@@ -23,11 +23,11 @@ response = completion(
 print(response)
 ```
 
-## Usage with LiteLLM Proxy Server
+## 搭配 LiteLLM Proxy Server 的用法 {#usage-with-litellm-proxy-server}
 
-Here's how to call a Sarvam.ai model with the LiteLLM Proxy Server
+以下說明如何使用 LiteLLM Proxy Server 呼叫 Sarvam.ai 模型
 
-1. **Modify the `config.yaml`:**
+1. **修改 `config.yaml`：**
 
     ```yaml
     model_list:
@@ -37,13 +37,13 @@ Here's how to call a Sarvam.ai model with the LiteLLM Proxy Server
           api_key: api-key                 # api key to send your model
     ```
 
-2. **Start the proxy:**
+2. **啟動 proxy：**
 
     ```bash
     $ litellm --config /path/to/config.yaml
     ```
 
-3. **Send a request to LiteLLM Proxy Server:**
+3. **向 LiteLLM Proxy Server 傳送請求：**
 
     <Tabs>
 

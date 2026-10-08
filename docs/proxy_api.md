@@ -1,8 +1,8 @@
-# LiteLLM Keys (community key, discontinued)
+# LiteLLM 金鑰（社群金鑰，已停用） {#litellm-keys-community-key-discontinued}
 
-The free community `sk-litellm-...` keys and the hosted proxy behind them are no longer available. The LiteLLM SDK has no special handling for these keys, so setting `OPENAI_API_KEY` (or any other provider key) to an `sk-litellm-...` value sends it straight to that provider, which rejects it with an authentication error
+免費的社群 `sk-litellm-...` 金鑰以及其背後的代管 proxy 已不再提供。LiteLLM SDK 對這些金鑰沒有特殊處理，因此將 `OPENAI_API_KEY`（或任何其他提供者金鑰）設定為 `sk-litellm-...` 值時，會直接傳送給該提供者，而該提供者會以驗證錯誤拒絕它
 
-To get one key for many providers, run your own [LiteLLM Proxy](./proxy/quick_start.md) with your provider credentials, then call it from the SDK through the [`litellm_proxy/` provider](./providers/litellm_proxy.md) using a key issued by your proxy
+若要為多個提供者使用一把金鑰，請使用您的提供者憑證執行自己的 [LiteLLM Proxy](./proxy/quick_start.md)，然後透過 [`litellm_proxy/` 提供者](./providers/litellm_proxy.md) 從 SDK 呼叫它，並使用由您的 proxy 核發的金鑰
 
 ```python
 import os
@@ -16,4 +16,4 @@ messages = [{"content": "Hello, how are you?", "role": "user"}]
 response = completion(model="litellm_proxy/{{openai_small}}", messages=messages)
 ```
 
-The `litellm_proxy/` prefix works the same way in tools built on the LiteLLM SDK, as long as `LITELLM_PROXY_API_BASE` points at your proxy. For every model and provider you can call, see the [provider list](./providers/) or [models.litellm.ai](https://models.litellm.ai/)
+`litellm_proxy/` 前綴在以 LiteLLM SDK 建置的工具中也以相同方式運作，只要 `LITELLM_PROXY_API_BASE` 指向您的 proxy 即可。可呼叫的每個模型與提供者，請參閱 [提供者清單](./providers/) 或 [models.litellm.ai](https://models.litellm.ai/)

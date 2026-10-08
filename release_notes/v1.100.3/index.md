@@ -1,5 +1,5 @@
 ---
-title: "v1.100.3 - GPT-6 Request Handling & End-User Budget Resets"
+title: "v1.100.3 - GPT-6 請求處理與終端使用者預算重設"
 slug: "v1-100-3"
 date: 2026-09-25T06:21:39
 authors:
@@ -21,7 +21,7 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -45,31 +45,31 @@ pip install litellm==1.100.3
 </TabItem>
 </Tabs>
 
-This release is published as [`ghcr.io/berriai/litellm:v1.100.3`](https://github.com/BerriAI/litellm/pkgs/container/litellm). See the [GitHub release](https://github.com/BerriAI/litellm/releases/tag/v1.100.3) and the full [releases page](https://github.com/BerriAI/litellm/releases)
+此版本已發布為 [`ghcr.io/berriai/litellm:v1.100.3`](https://github.com/BerriAI/litellm/pkgs/container/litellm)。請參閱 [GitHub 發行版](https://github.com/BerriAI/litellm/releases/tag/v1.100.3) 與完整的 [發行版頁面](https://github.com/BerriAI/litellm/releases)
 
-`v1.100.3` is a patch release on top of [`v1.100.2`](/release_notes/v1.100.2/v1-100-2). It makes GPT-6 models take the same request handling as GPT-5, fixes two ways an end-user budget reset could leave customers blocked, and refreshes several locked dependencies. There are no configuration changes. Both the Docker image and the PyPI package were built from [`385266c`](https://github.com/BerriAI/litellm/commit/385266c14d6a4cb069751fd3525692e0a760ec57)
+`v1.100.3` 是在 [`v1.100.2`](/release_notes/v1.100.2/v1-100-2) 之上的修補版版本。它讓 GPT-6 模型採用與 GPT-5 相同的請求處理方式，修正終端使用者預算重設可能讓客戶卡住的兩種情況，並更新數個鎖定的相依套件。沒有任何組態變更。Docker 映像與 PyPI 套件皆由 [`385266c`](https://github.com/BerriAI/litellm/commit/385266c14d6a4cb069751fd3525692e0a760ec57) 建置
 
-## GPT-6 models get GPT-5 request handling
+## GPT-6 模型採用 GPT-5 請求處理 {#gpt-6-models-get-gpt-5-request-handling}
 
-GPT-6 names such as `gpt-6-astra` failed every GPT-5 check, so they were treated as plain chat models. Chat completions returned 400 on `reasoning_effort`, `max_tokens` and function tools, and the Responses and Messages routes forwarded `temperature`, which OpenAI rejects. One helper now matches GPT-5 and GPT-6 names, still excluding `gpt-5-chat`, and the OpenAI chat, OpenAI Responses and both Azure configs use it
+像 `gpt-6-astra` 這類 GPT-6 名稱無法通過任何 GPT-5 檢查，因此被視為一般聊天模型。Chat completions 會在 `reasoning_effort`、`max_tokens` 與函式工具上回傳 400，而 Responses 與 Messages 路由則會轉送 `temperature`，這會被 OpenAI 拒絕。現在有一個 helper 同時符合 GPT-5 與 GPT-6 的名稱，仍會排除 `gpt-5-chat`，而 OpenAI chat、OpenAI Responses 以及兩種 Azure 組態都會使用它
 
-## End-user budget resets take effect everywhere
+## 終端使用者預算重設可在所有地方生效 {#end-user-budget-resets-take-effect-everywhere}
 
-An end-user budget reset zeroed the spend in the database but not the cached spend counter, and only the worker that ran the reset evicted its cached end-user object. Requests kept getting 429 after the window rolled over until every cache expired. The reset now zeroes the counter in memory and Redis and evicts the cached end user, and enforcement checks the database spend when a cached counter looks stale
+終端使用者預算重設會將資料庫中的支出歸零，但不會清除快取中的支出計數器，而且只有執行重設的 worker 會逐出其快取的終端使用者物件。請求在視窗重置後仍會持續收到 429，直到所有快取都過期為止。現在重設會將記憶體與 Redis 中的計數器歸零，並逐出快取的終端使用者，而強制執行會在快取計數器看起來過期時檢查資料庫支出
 
-A shared end-user budget with more than about 32,700 customers never reset, because the reset job listed every customer id in one statement and PostgreSQL refused it, so those customers stayed blocked. End users are now reset by their budget link, so the statement size tracks the number of budgets instead of the number of customers
+一個共享的終端使用者預算若超過約 32,700 位客戶就無法重設，因為重設工作會在單一語句中列出每個客戶 id，而 PostgreSQL 拒絕了該語句，因此那些客戶一直處於被封鎖狀態。現在終端使用者會依據其預算連結進行重設，因此語句大小會隨預算數量而非客戶數量變動
 
-## Dependencies
+## 相依套件 {#dependencies}
 
-The lockfile moves anyio to 4.14.2, gitpython to 3.1.60, pypdf to 6.16.1, soupsieve to 2.9 and tornado to 6.5.8. No declared dependency range changed
+鎖定檔將 anyio 更新為 4.14.2、gitpython 更新為 3.1.60、pypdf 更新為 6.16.1、soupsieve 更新為 2.9，並將 tornado 更新為 6.5.8。未變更任何宣告的相依套件範圍
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix: treat gpt-6 names as the gpt-5 request family in OpenAI and Azure configs - [PR #39631](https://github.com/BerriAI/litellm/pull/39631)
-- fix(proxy): invalidate end-user spend counter and cache on budget reset - [PR #39729](https://github.com/BerriAI/litellm/pull/39729)
-- fix(reset_budget_job): reset end users by budget link, not by user id - [PR #40639](https://github.com/BerriAI/litellm/pull/40639)
-- chore(deps): refresh anyio, gitpython, pypdf, soupsieve and tornado in the lockfile - [PR #43132](https://github.com/BerriAI/litellm/pull/43132)
+- fix: 將 gpt-6 名稱在 OpenAI 與 Azure 組態中視為 gpt-5 請求家族 - [PR #39631](https://github.com/BerriAI/litellm/pull/39631)
+- fix(proxy): 在預算重設時使終端使用者支出計數器與快取失效 - [PR #39729](https://github.com/BerriAI/litellm/pull/39729)
+- fix(reset_budget_job): 依據預算連結重設終端使用者，而不是依據 user id - [PR #40639](https://github.com/BerriAI/litellm/pull/40639)
+- chore(deps): 在鎖定檔中更新 anyio、gitpython、pypdf、soupsieve 與 tornado - [PR #43132](https://github.com/BerriAI/litellm/pull/43132)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.100.2...v1.100.3

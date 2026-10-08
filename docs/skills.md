@@ -1,21 +1,21 @@
-# /skills - Anthropic Skills API
+# /skills - Anthropic Skills API {#skills---anthropic-skills-api}
 
-| Feature | Supported | 
+| 功能 | 支援 | 
 |---------|-----------|
-| Cost Tracking | ✅ |
-| Logging | ✅ |
-| Load Balancing | ✅ |
-| Supported Providers | `anthropic` |
+| 成本追蹤 | ✅ |
+| 記錄 | ✅ |
+| 負載平衡 | ✅ |
+| 支援的提供者 | `anthropic` |
 
 :::tip
 
-LiteLLM follows the [Anthropic Skills API](https://docs.anthropic.com/en/docs/build-with-claude/skills) for creating, managing, and using reusable AI capabilities.
+LiteLLM 遵循 [Anthropic Skills API](https://docs.anthropic.com/en/docs/build-with-claude/skills) 來建立、管理及使用可重複使用的 AI 功能。
 
 :::
 
-## **LiteLLM Python SDK Usage**
+## **LiteLLM Python SDK 用法** {#litellm-python-sdk-usage}
 
-### Quick Start - Create a Skill
+### 快速入門 - 建立 Skill {#quick-start---create-a-skill}
 
 ```python showLineNumbers title="create_skill.py"
 from litellm import create_skill
@@ -53,7 +53,7 @@ response = create_skill(
 print(f"Skill created: {response.id}")
 ```
 
-### List Skills
+### 列出 Skills {#list-skills}
 
 ```python showLineNumbers title="list_skills.py"
 from litellm import list_skills
@@ -68,7 +68,7 @@ for skill in response.data:
     print(f"{skill.display_title}: {skill.id}")
 ```
 
-### Get Skill Details
+### 取得 Skill 詳細資料 {#get-skill-details}
 
 ```python showLineNumbers title="get_skill.py"
 from litellm import get_skill
@@ -83,7 +83,7 @@ print(f"Skill: {skill.display_title}")
 print(f"Description: {skill.description}")
 ```
 
-### Delete a Skill
+### 刪除 Skill {#delete-a-skill}
 
 ```python showLineNumbers title="delete_skill.py"
 from litellm import delete_skill
@@ -97,7 +97,7 @@ response = delete_skill(
 print(f"Deleted: {response.id}")
 ```
 
-### Async Usage
+### 非同步用法 {#async-usage}
 
 ```python showLineNumbers title="async_skills.py"
 from litellm import acreate_skill, alist_skills, aget_skill, adelete_skill
@@ -136,17 +136,17 @@ async def manage_skills():
 asyncio.run(manage_skills())
 ```
 
-## **LiteLLM Proxy Usage**
+## **LiteLLM Proxy 用法** {#litellm-proxy-usage}
 
-LiteLLM provides Anthropic-compatible `/skills` endpoints for managing skills.
+LiteLLM 提供與 Anthropic 相容的 `/skills` 端點，用於管理 skills。
 
-### Authentication
+### 驗證 {#authentication}
 
-There are two ways to authenticate Skills API requests:
+Skills API 請求有兩種驗證方式：
 
-**Option 1: Use Default ANTHROPIC_API_KEY**
+**選項 1：使用預設 ANTHROPIC_API_KEY**
 
-Set the `ANTHROPIC_API_KEY` environment variable. Requests without a `model` parameter will use this default key.
+設定 `ANTHROPIC_API_KEY` 環境變數。未提供 `model` 參數的請求將使用此預設金鑰。
 
 ```yaml showLineNumbers title="config.yaml"
 # No model_list needed - uses env var
@@ -161,9 +161,9 @@ curl "http://0.0.0.0:4000/v1/skills?beta=true" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-**Option 2: Specify Model for Credential Selection**
+**選項 2：指定模型以選擇憑證**
 
-Define multiple models in your config and use the `model` parameter to specify which credentials to use.
+在設定中定義多個模型，並使用 `model` 參數指定要使用的憑證。
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -173,7 +173,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
 ```
 
-Start litellm
+啟動 litellm
 
 ```bash
 litellm --config /path/to/config.yaml
@@ -181,15 +181,15 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Basic Usage
+### 基本用法 {#basic-usage}
 
-All examples below work with **either** authentication option (default env key or model-based routing).
+以下所有範例都可搭配**任一**驗證選項使用（預設 env 金鑰或以模型為基礎的路由）。
 
-#### Create Skill
+#### 建立 Skill {#create-skill}
 
-You can upload either a ZIP file or directly upload the SKILL.md file:
+您可以上傳 ZIP 檔，或直接上傳 SKILL.md 檔案：
 
-**Option 1: Upload ZIP file**
+**選項 1：上傳 ZIP 檔**
 
 ```bash showLineNumbers title="create_skill_zip.sh"
 curl "http://0.0.0.0:4000/v1/skills?beta=true" \
@@ -201,7 +201,7 @@ curl "http://0.0.0.0:4000/v1/skills?beta=true" \
   -F "files[]=@test-skill.zip"
 ```
 
-**Option 2: Upload SKILL.md directly**
+**選項 2：直接上傳 SKILL.md**
 
 ```bash showLineNumbers title="create_skill_md.sh"
 curl "http://0.0.0.0:4000/v1/skills?beta=true" \
@@ -213,7 +213,7 @@ curl "http://0.0.0.0:4000/v1/skills?beta=true" \
   -F "files[]=@test-skill/SKILL.md;filename=test-skill/SKILL.md"
 ```
 
-#### List Skills
+#### 列出 Skills {#list-skills-1}
 
 ```bash showLineNumbers title="list_skills.sh"
 curl "http://0.0.0.0:4000/v1/skills?beta=true" \
@@ -222,7 +222,7 @@ curl "http://0.0.0.0:4000/v1/skills?beta=true" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-#### Get Skill
+#### 取得 Skill {#get-skill}
 
 ```bash showLineNumbers title="get_skill.sh"
 curl "http://0.0.0.0:4000/v1/skills/skill_01abc?beta=true" \
@@ -231,7 +231,7 @@ curl "http://0.0.0.0:4000/v1/skills/skill_01abc?beta=true" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-#### Delete Skill
+#### 刪除 Skill {#delete-skill}
 
 ```bash showLineNumbers title="delete_skill.sh"
 curl "http://0.0.0.0:4000/v1/skills/skill_01abc?beta=true" \
@@ -241,9 +241,9 @@ curl "http://0.0.0.0:4000/v1/skills/skill_01abc?beta=true" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-### Model-Based Routing (Multi-Account)
+### 以模型為基礎的路由（多帳號） {#model-based-routing-multi-account}
 
-If you have multiple Anthropic accounts, you can use model-based routing to specify which account to use:
+如果您有多個 Anthropic 帳號，可以使用以模型為基礎的路由來指定要使用的帳號：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -258,9 +258,9 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY_TEAM_B
 ```
 
-Then route to specific accounts using the `model` parameter:
+接著使用 `model` 參數路由到特定帳號：
 
-**Create Skill with Routing**
+**建立具有路由的 Skill**
 
 ```bash showLineNumbers title="create_with_routing.sh"
 # Route to Team A - using ZIP file
@@ -284,7 +284,7 @@ curl "http://0.0.0.0:4000/v1/skills?beta=true" \
   -F "files[]=@test-skill/SKILL.md;filename=test-skill/SKILL.md"
 ```
 
-**List Skills with Routing**
+**使用路由列出 Skills**
 
 ```bash showLineNumbers title="list_with_routing.sh"
 # List Team A skills
@@ -300,7 +300,7 @@ curl "http://0.0.0.0:4000/v1/skills?beta=true&model=claude-team-b" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-**Get Skill with Routing**
+**使用路由取得 Skill**
 
 ```bash showLineNumbers title="get_with_routing.sh"
 # Get skill from Team A
@@ -316,7 +316,7 @@ curl "http://0.0.0.0:4000/v1/skills/skill_01xyz?beta=true&model=claude-team-b" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-**Delete Skill with Routing**
+**使用路由刪除 Skill**
 
 ```bash showLineNumbers title="delete_with_routing.sh"
 # Delete skill from Team A
@@ -334,9 +334,9 @@ curl "http://0.0.0.0:4000/v1/skills/skill_01xyz?beta=true&model=claude-team-b" \
   -H "anthropic-beta: skills-2025-10-02"
 ```
 
-## **SKILL.md Format**
+## **SKILL.md 格式** {#skillmd-format}
 
-Skills require a `SKILL.md` file with YAML frontmatter:
+Skills 需要一個帶有 YAML frontmatter 的 `SKILL.md` 檔案：
 
 ```markdown showLineNumbers title="SKILL.md"
 ---
@@ -357,23 +357,23 @@ Detailed instructions for Claude on how to use this skill.
 Examples and best practices...
 ```
 
-### YAML Frontmatter Requirements
+### YAML Frontmatter 要求 {#yaml-frontmatter-requirements}
 
-| Field | Required | Description |
+| 欄位 | 必填 | 說明 |
 |-------|----------|-------------|
-| `name` | Yes | Skill identifier (lowercase, numbers, hyphens only). Must match the directory name. |
-| `description` | Yes | Brief description of the skill |
-| `license` | No | License type (e.g., MIT, Apache-2.0) |
-| `allowed-tools` | No | List of Claude tools this skill can use |
-| `metadata` | No | Additional custom metadata |
+| `name` | 是 | Skill 識別碼（僅限小寫、數字、連字號）。必須與目錄名稱相符。 |
+| `description` | 是 | Skill 的簡短說明 |
+| `license` | 否 | 授權類型（例如 MIT、Apache-2.0） |
+| `allowed-tools` | 否 | 此 skill 可使用的 Claude 工具清單 |
+| `metadata` | 否 | 額外的自訂中繼資料 |
 
-**Important:** The `name` field must exactly match your skill directory name. For example, if your directory is `test-skill`, the frontmatter must have `name: test-skill`.
+**重要：** `name` 欄位必須與您的 skill 目錄名稱完全相符。範例來說，如果您的目錄是 `test-skill`，frontmatter 必須有 `name: test-skill`。
 
-### File Structure
+### 檔案結構 {#file-structure}
 
-**Option 1: ZIP file structure**
+**選項 1：ZIP 檔結構**
 
-Skills must be packaged with a top-level directory matching the skill name:
+Skills 必須封裝為與 skill 名稱相符的頂層目錄：
 
 ```
 test-skill.zip
@@ -381,27 +381,27 @@ test-skill.zip
     └── SKILL.md        # Required skill definition file
 ```
 
-All files must be in the same top-level directory, and `SKILL.md` must be at the root of that directory.
+所有檔案都必須位於同一個頂層目錄中，且 `SKILL.md` 必須位於該目錄根目錄。
 
-**Option 2: Direct SKILL.md upload**
+**選項 2：直接上傳 SKILL.md**
 
-When uploading `SKILL.md` directly (without creating a ZIP), you must include the skill directory path in the filename parameter to preserve the required structure:
+當直接上傳 `SKILL.md`（不建立 ZIP）時，您必須在 filename 參數中包含 skill 目錄路徑，以保留所需結構：
 
 ```bash
 # The filename parameter must include the skill directory path
 -F "files[]=@test-skill/SKILL.md;filename=test-skill/SKILL.md"
 ```
 
-This tells the API that `SKILL.md` belongs to the `test-skill` directory.
+這會告訴 API，`SKILL.md` 屬於 `test-skill` 目錄。
 
-**Important Requirements:**
-- The folder name (in ZIP or filename path) **must exactly match** the `name` field in SKILL.md frontmatter
-- `SKILL.md` must be in the root of the skill directory (not in a subdirectory)
-- All additional files must be in the same skill directory
+**重要要求：**
+- 資料夾名稱（在 ZIP 或 filename 路徑中）**必須與** SKILL.md frontmatter 中的 `name` 欄位完全相符
+- `SKILL.md` 必須位於 skill 目錄根目錄（不能在子目錄中）
+- 所有其他檔案都必須位於相同的 skill 目錄中
 
-## **Response Format**
+## **回應格式** {#response-format}
 
-### Skill Object
+### Skill 物件 {#skill-object}
 
 ```json showLineNumbers
 {
@@ -416,7 +416,7 @@ This tells the API that `SKILL.md` belongs to the `test-skill` directory.
 }
 ```
 
-### List Skills Response
+### 列出 Skills 回應 {#list-skills-response}
 
 ```json showLineNumbers
 {
@@ -442,18 +442,17 @@ This tells the API that `SKILL.md` belongs to the `test-skill` directory.
 }
 ```
 
+## **LiteLLM 託管技能的語意搜尋** {#semantic-search-over-litellm-hosted-skills}
 
-## **Semantic Search over LiteLLM-Hosted Skills**
+`custom_llm_provider=litellm_proxy` 技能（儲存在代理伺服器自己的資料庫中，而不是轉送給 Anthropic）支援依語意相似度排序，因此呼叫端可以描述所需內容，而不必逐頁瀏覽整個登錄項目。
 
-`custom_llm_provider=litellm_proxy` skills (stored in the proxy's own database rather than proxied to Anthropic) support ranking by semantic similarity, so a caller can describe what they need instead of paging through the whole registry.
-
-:::info[Related Documentation]
-- [MCP Tool Search](./mcp_tool_search.md#how-it-works) for the `skill_search` MCP virtual tool
+:::info[相關文件]
+- [MCP 工具搜尋](./mcp_tool_search.md#how-it-works) 針對 `skill_search` MCP 虛擬工具
 :::
 
-### Enable it
+### 啟用它 {#enable-it}
 
-Set an embedding model in `litellm_settings`:
+在 `litellm_settings` 中設定嵌入模型：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -466,16 +465,16 @@ litellm_settings:
   skill_search_embedding_model: text-embedding-3-small
 ```
 
-### Search over REST
+### 透過 REST 搜尋 {#search-over-rest}
 
-Pass `query` (and optionally `top_k`, default 5) to `GET /v1/skills`:
+將 `query`（以及可選的 `top_k`，預設為 5）傳給 `GET /v1/skills`：
 
 ```bash showLineNumbers title="search_skills.sh"
 curl "http://0.0.0.0:4000/v1/skills?custom_llm_provider=litellm_proxy&query=summarize+a+pdf&top_k=5" \
   -H "Authorization: Bearer $LITELLM_KEY"
 ```
 
-Each result carries a `search_score` (cosine similarity to the query) and, unlike a plain list, a populated `description` field:
+每個結果都會附帶一個 `search_score`（與查詢的餘弦相似度），而且不同於一般清單，還會有已填入的 `description` 欄位：
 
 ```json showLineNumbers
 {
@@ -492,16 +491,15 @@ Each result carries a `search_score` (cosine similarity to the query) and, unlik
 }
 ```
 
-`query` is only supported for `custom_llm_provider=litellm_proxy`; passing it with any other provider returns a `400 skill_search_unsupported_provider`. If `skill_search_embedding_model` isn't set, the same request returns `400 skill_search_not_configured` naming the setting to add.
+`query` 僅支援 `custom_llm_provider=litellm_proxy`；將其與任何其他提供者一起傳入會回傳 `400 skill_search_unsupported_provider`。如果未設定 `skill_search_embedding_model`，相同請求會回傳 `400 skill_search_not_configured`，指出需要新增的設定。
 
-### Authorization
+### 授權 {#authorization}
 
-Search only ranks the skills the calling key can already access: the same visibility rules `GET /v1/skills` already enforces apply before ranking runs, so search cannot be used to enumerate skills outside a key's scope.
+搜尋只會對呼叫金鑰已可存取的技能進行排序：`GET /v1/skills` 已強制執行的相同可見性規則會先套用，再進行排序，因此搜尋不能用來列舉超出金鑰範圍的技能。
 
-## **Supported Providers**
+## **支援的提供者** {#supported-providers}
 
-| Provider | Link to Usage |
+| 提供者 | 使用方式連結 |
 |----------|---------------|
-| Anthropic | [Usage](#quick-start---create-a-skill) |
-| LiteLLM (self-hosted) | [Semantic Search](#semantic-search-over-litellm-hosted-skills) |
-
+| Anthropic | [使用方式](#quick-start---create-a-skill) |
+| LiteLLM（自架） | [語意搜尋](#semantic-search-over-litellm-hosted-skills) |

@@ -2,55 +2,55 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# SAML 2.0 SSO
+# SAML 2.0 單一登入 {#saml-20-sso}
 
-<EnterpriseFeature feature="SSO">SSO is free for up to 5 users. Beyond that, an enterprise license is required.</EnterpriseFeature>
+<EnterpriseFeature feature="SSO">SSO 最多可免費供 5 位使用者使用。超過後則需要企業授權。</EnterpriseFeature>
 
-LiteLLM supports SAML 2.0 single sign-on for the admin UI alongside its existing OIDC providers (Google, Microsoft, Generic OAuth). SAML can be configured from the admin UI (**Admin Settings -> SSO Settings**) or through environment variables; no changes to `config.yaml` are needed. When SAML is configured and no OIDC provider is set, the existing **SSO** login button on the admin UI automatically redirects to the SAML Identity Provider.
+LiteLLM 支援管理介面的 SAML 2.0 單一登入，並可與現有的 OIDC 提供者（Google、Microsoft、Generic OAuth）並用。SAML 可從管理介面（**Admin Settings -> SSO Settings**）或透過環境變數進行設定；不需要對 `config.yaml` 做任何變更。當已設定 SAML 且未設定 OIDC 提供者時，管理介面上既有的 **SSO** 登入按鈕會自動重新導向至 SAML 身分提供者。
 
-## How it works
+## 運作方式 {#how-it-works}
 
 ```mermaid
 sequenceDiagram
-    participant B as User Browser
-    participant P as LiteLLM Proxy<br/>(Service Provider)
-    participant I as Identity Provider<br/>(Okta / Entra ID / etc.)
+    participant B as 使用者瀏覽器
+    participant P as LiteLLM Proxy<br/>(服務提供者)
+    participant I as 身分提供者<br/>(Okta / Entra ID / etc.)
 
     B->>P: 1. GET /sso/saml/login
-    P-->>B: 2. 303 Redirect + state cookie
+    P-->>B: 2. 303 重新導向 + 狀態 cookie
     B->>I: 3. SAMLRequest (AuthnRequest)
-    I-->>B: 4. User authenticates
+    I-->>B: 4. 使用者驗證
     B->>P: 5. POST /sso/saml/callback (SAMLResponse)
-    P-->>B: 6. Redirect to /ui/ with session JWT
+    P-->>B: 6. 重新導向至 /ui/，並附帶工作階段 JWT
 ```
 
-The proxy acts as a SAML Service Provider (SP). A user clicking the login button is redirected to the Identity Provider (IdP) with a signed AuthnRequest. After the user authenticates at the IdP, the browser POSTs the signed SAML assertion back to the proxy's Assertion Consumer Service (ACS) endpoint. The proxy validates the assertion's signature, audience, and timestamps, provisions the user in the database if needed, and issues a session JWT that logs them into the admin UI.
+該 proxy 充當 SAML 服務提供者（SP）。使用者點擊登入按鈕後，會攜帶已簽署的 AuthnRequest 重新導向至身分提供者（IdP）。使用者在 IdP 完成驗證後，瀏覽器會將已簽署的 SAML assertion POST 回 proxy 的 Assertion Consumer Service（ACS）端點。proxy 會驗證 assertion 的簽章、受眾與時間戳，必要時在資料庫中建立使用者，並發出一個工作階段 JWT，讓使用者登入管理介面。
 
-Both SP-initiated and IdP-initiated flows are supported over the HTTP-POST binding. SP-initiated logins are bound to the browser that started them via an HttpOnly state cookie, so a captured assertion cannot be replayed into another browser. IdP-initiated (unsolicited) responses are rejected by default and only accepted when `SAML_ALLOW_UNSOLICITED=true` is set explicitly.
+HTTP-POST binding 同時支援由 SP 發起與由 IdP 發起的流程。由 SP 發起的登入會透過 HttpOnly 狀態 cookie 與啟動它的瀏覽器綁定，因此擷取到的 assertion 無法重放到其他瀏覽器。由 IdP 發起（未請求）的回應預設會被拒絕，只有在 `SAML_ALLOW_UNSOLICITED=true` 明確設定時才會接受。
 
-## Configure from the admin UI
+## 從管理介面設定 {#configure-from-the-admin-ui}
 
-The quickest way to set up SAML is from the dashboard. Go to **Admin Settings -> SSO Settings**, click **Configure SSO**, and pick **SAML SSO** from the provider dropdown. Paste your IdP's metadata (a URL or the inline XML), set the SP Entity ID and Proxy Base URL, and optionally enable IdP-initiated responses, then save.
+設定 SAML 最快的方式是從儀表板開始。前往 **Admin Settings -> SSO Settings**，點擊 **Configure SSO**，並在提供者下拉選單中選擇 **SAML SSO**。貼上您的 IdP 中繼資料（URL 或內嵌 XML）、設定 SP Entity ID 與 Proxy Base URL，並可選擇啟用由 IdP 發起的回應，然後儲存。
 
 <Image img={require('../../img/saml_ui_config_form.png')} style={{ width: '800px', height: 'auto' }} />
 
-The settings are stored (encrypted) in the SSO config table and applied as the `SAML_*` variables the handler reads, so they survive restarts without env vars. Prefer environment variables for headless or GitOps deployments; the [Quick start](#quick-start) below covers that path.
+這些設定會（加密後）儲存在 SSO 設定表中，並以處理常式讀取的 `SAML_*` 環境變數形式套用，因此即使沒有 env vars 也能在重新啟動後保留。無頭部署或 GitOps 部署建議使用環境變數；下面的[快速開始](#quick-start)會說明該路徑。
 
-## Quick start
+## 快速開始 {#quick-start}
 
-### 1. Install the SAML extra
+### 1. 安裝 SAML extra {#1-install-the-saml-extra}
 
-The SAML integration depends on the `python3-saml` library, which bundles the native `xmlsec`/`libxml2` libraries. Install it with the `saml` extra:
+SAML 整合依賴 `python3-saml` 函式庫，該函式庫封裝了原生的 `xmlsec`/`libxml2` 函式庫。使用 `saml` extra 安裝：
 
 ```bash
 pip install 'litellm[saml]'
 ```
 
-The official Docker images already include this extra. If you are building your own image, add `litellm[saml]` to your install step.
+官方 Docker 映像檔已包含此 extra。如果您是自行建置映像檔，請在安裝步驟中加入 `litellm[saml]`。
 
-### 2. Set environment variables
+### 2. 設定環境變數 {#2-set-environment-variables}
 
-At minimum, you need your IdP's metadata (as a URL or inline XML) and optionally an SP entity ID:
+至少需要您的 IdP 中繼資料（URL 或內嵌 XML），以及可選的 SP entity ID：
 
 ```bash
 # Point to your IdP's metadata (pick one)
@@ -67,112 +67,112 @@ LITELLM_MASTER_KEY="sk-..."
 DATABASE_URL="postgresql://..."
 ```
 
-### 3. Register the proxy at your IdP
+### 3. 在您的 IdP 註冊 proxy {#3-register-the-proxy-at-your-idp}
 
-Your IdP needs two values from the proxy:
+您的 IdP 需要從 proxy 取得兩個值：
 
-| Field | Value |
+| 欄位 | 值 |
 | --- | --- |
-| **ACS URL** (Assertion Consumer Service) | `https://<proxy_base_url>/sso/saml/callback` |
-| **SP Entity ID** / Audience | `https://<proxy_base_url>/sso/saml/metadata` (or whatever you set in `SAML_SP_ENTITY_ID`) |
+| **ACS URL**（Assertion Consumer Service） | `https://<proxy_base_url>/sso/saml/callback` |
+| **SP Entity ID** / Audience | `https://<proxy_base_url>/sso/saml/metadata`（或您在 `SAML_SP_ENTITY_ID` 中設定的任何值） |
 
-You can download the SP metadata XML directly from `GET /sso/saml/metadata` and import it into your IdP if it supports metadata upload.
+如果您的 IdP 支援中繼資料上傳，您可以直接從 `GET /sso/saml/metadata` 下載 SP 中繼資料 XML，並匯入到您的 IdP。
 
-After saving, the SSO Settings page shows the configured provider, including the SP Entity ID you register at the IdP:
+儲存後，SSO Settings 頁面會顯示已設定的提供者，包括您在 IdP 註冊的 SP Entity ID：
 
 <Image img={require('../../img/saml_ui_configured.png')} style={{ width: '800px', height: 'auto' }} />
 
-### 4. Start the proxy and test
+### 4. 啟動 proxy 並測試 {#4-start-the-proxy-and-test}
 
-Start (or restart) the proxy. Navigate to `https://<proxy_base_url>/ui` and click the SSO login button. You should be redirected to your IdP, and after authenticating, redirected back to the admin UI.
+啟動（或重新啟動）proxy。前往 `https://<proxy_base_url>/ui` 並點擊 SSO 登入按鈕。您應該會被重新導向至您的 IdP，完成驗證後再被重新導向回管理介面。
 
-## IdP setup guides
+## IdP 設定指南 {#idp-setup-guides}
 
 <Tabs>
 <TabItem value="okta" label="Okta">
 
-#### Step 1: Create a SAML application in Okta
+#### 步驟 1：在 Okta 建立 SAML 應用程式 {#step-1-create-a-saml-application-in-okta}
 
-In your Okta Admin Console, go to **Applications > Create App Integration** and select **SAML 2.0**.
+在您的 Okta Admin Console 中，前往 **Applications > Create App Integration** 並選擇 **SAML 2.0**。
 
-On the **General Settings** page, give the app a name (e.g. "LiteLLM Proxy").
+在 **General Settings** 頁面，為應用程式命名（例如「LiteLLM Proxy」）。
 
-On the **Configure SAML** page, fill in:
+在 **Configure SAML** 頁面，填入：
 
-| Field | Value |
+| 欄位 | 值 |
 | --- | --- |
 | **Single sign-on URL** | `https://<proxy_base_url>/sso/saml/callback` |
 | **Audience URI (SP Entity ID)** | `https://<proxy_base_url>/sso/saml/metadata` |
 | **Name ID format** | EmailAddress |
 
-Under **Attribute Statements**, add the attributes your proxy will read. The defaults work out of the box with common claim names, but you can add explicit mappings:
+在 **Attribute Statements** 下，新增 proxy 會讀取的屬性。預設值可直接與常見的 claim 名稱搭配使用，但您也可以新增明確對應：
 
-| Name | Value |
+| 名稱 | 值 |
 | --- | --- |
 | `email` | `user.email` |
 | `firstName` | `user.firstName` |
 | `lastName` | `user.lastName` |
 
-If you want to control user roles from Okta, add a **Group Attribute Statement** or a custom attribute named `role` with a value of `proxy_admin`, `proxy_admin_viewer`, `internal_user`, or `internal_user_viewer`.
+如果您想從 Okta 控制使用者角色，請新增 **Group Attribute Statement** 或名為 `role` 的自訂屬性，值可為 `proxy_admin`、`proxy_admin_viewer`、`internal_user` 或 `internal_user_viewer`。
 
-#### Step 2: Copy the IdP metadata URL
+#### 步驟 2：複製 IdP 中繼資料 URL {#step-2-copy-the-idp-metadata-url}
 
-After creating the app, go to the **Sign On** tab and copy the **Metadata URL** (it looks like `https://your-org.okta.com/app/abc123/sso/saml/metadata`).
+建立應用程式後，前往 **Sign On** 分頁並複製 **Metadata URL**（看起來像 `https://your-org.okta.com/app/abc123/sso/saml/metadata`）。
 
-#### Step 3: Set environment variables
+#### 步驟 3：設定環境變數 {#step-3-set-environment-variables}
 
 ```bash
 SAML_IDP_METADATA_URL="https://your-org.okta.com/app/abc123/sso/saml/metadata"
 PROXY_BASE_URL="https://litellm.yourcompany.com"
 ```
 
-#### Step 4: Assign users
+#### 步驟 4：指派使用者 {#step-4-assign-users}
 
-In the **Assignments** tab of the Okta app, assign the users or groups that should have access to the LiteLLM admin UI.
+在 Okta 應用程式的 **Assignments** 分頁中，指派應可存取 LiteLLM 管理介面的使用者或群組。
 
 </TabItem>
 <TabItem value="azure" label="Microsoft Entra ID (Azure AD)">
 
-#### Step 1: Create an Enterprise Application
+#### 步驟 1：建立 Enterprise Application {#step-1-create-an-enterprise-application}
 
-In the Azure portal, go to **Microsoft Entra ID > Enterprise applications > New application > Create your own application**. Name it (e.g. "LiteLLM Proxy") and select "Integrate any other application you don't find in the gallery (Non-gallery)".
+在 Azure portal 中，前往 **Microsoft Entra ID > Enterprise applications > New application > Create your own application**。為其命名（例如「LiteLLM Proxy」），並選擇「Integrate any other application you don't find in the gallery (Non-gallery)」。
 
-#### Step 2: Set up SAML SSO
+#### 步驟 2：設定 SAML SSO {#step-2-set-up-saml-sso}
 
-Go to **Single sign-on > SAML** and configure:
+前往 **Single sign-on > SAML** 並設定：
 
-| Field | Value |
+| 欄位 | 值 |
 | --- | --- |
 | **Identifier (Entity ID)** | `https://<proxy_base_url>/sso/saml/metadata` |
 | **Reply URL (ACS URL)** | `https://<proxy_base_url>/sso/saml/callback` |
 
-Under **Attributes & Claims**, verify that the default claims include the user's email. The default Entra ID claims (`emailaddress`, `givenname`, `surname`) are auto-detected by LiteLLM.
+在 **Attributes & Claims** 下，確認預設 claim 包含使用者電子郵件。預設的 Entra ID claims（`emailaddress`、`givenname`、`surname`）會被 LiteLLM 自動偵測。
 
-To map LiteLLM roles, add a custom claim named `role` with a value sourced from an App Role or directory attribute.
+若要對應 LiteLLM 角色，請新增名為 `role` 的自訂 claim，其值來源可為 App Role 或目錄屬性。
 
-#### Step 3: Copy the metadata URL
+#### 步驟 3：複製中繼資料 URL {#step-3-copy-the-metadata-url}
 
-Under **SAML Certificates**, copy the **App Federation Metadata Url**.
+在 **SAML Certificates** 下，複製 **App Federation Metadata Url**。
 
-#### Step 4: Set environment variables
+#### 步驟 4：設定環境變數 {#step-4-set-environment-variables}
 
 ```bash
 SAML_IDP_METADATA_URL="https://login.microsoftonline.com/<tenant-id>/federationmetadata/2007-06/federationmetadata.xml?appid=<app-id>"
 PROXY_BASE_URL="https://litellm.yourcompany.com"
 ```
 
-#### Step 5: Assign users
+#### 步驟 5：指派使用者 {#step-5-assign-users}
 
-In **Users and groups**, assign the users or groups that should have access.
+在 **Users and groups** 中，指派應可存取的使用者或群組。
 
 </TabItem>
-<TabItem value="generic" label="Other SAML IdPs">
+<TabItem value="generic" label="其他 SAML IdP">
 
-Any SAML 2.0 compliant IdP works. You need:
+任何符合 SAML 2.0 的 IdP 都可使用。您需要：
 
-1. The IdP's metadata XML (as a URL or pasted inline).
-2. To register the proxy's ACS URL (`/sso/saml/callback`) and Entity ID (`/sso/saml/metadata`) at the IdP.
-3. The IdP must send signed assertions containing at minimum the user's email (as the NameID or an attribute).
+1. IdP 的中繼資料 XML（作為 URL 或直接貼上內嵌內容）。
+2. 在 IdP 註冊 proxy 的 ACS URL（`/sso/saml/callback`）與 Entity ID（`/sso/saml/metadata`）。
+3. IdP 必須傳送已簽署的 assertion，且至少包含使用者電子郵件（作為 NameID 或屬性）。
 
 ```bash
 # URL-based metadata
@@ -187,73 +187,72 @@ PROXY_BASE_URL="https://litellm.yourcompany.com"
 </TabItem>
 </Tabs>
 
+## 屬性對應 {#attribute-mapping}
 
-## Attribute mapping
+LiteLLM 會自動偵測常見的 SAML 屬性名稱（URN/OID 與友善名稱），用於電子郵件、名字、姓氏、角色與團隊。如果您的 IdP 使用非標準屬性名稱，請使用環境變數覆寫它們：
 
-LiteLLM auto-detects common SAML attribute names (URN/OID and friendly names) for email, first name, last name, role, and teams. If your IdP uses non-standard attribute names, override them with environment variables:
-
-| Environment Variable | Default candidates | Description |
+| 環境變數 | 預設候選項 | 說明 |
 | --- | --- | --- |
-| `SAML_ATTRIBUTE_EMAIL` | `urn:oid:0.9.2342.19200300.100.1.3`, `emailaddress` claim URI, `email`, `mail` | Attribute containing the user's email |
-| `SAML_ATTRIBUTE_USER_ID` | NameID | Attribute for the stable user identifier |
-| `SAML_ATTRIBUTE_FIRST_NAME` | `urn:oid:2.5.4.42`, `givenname` claim URI, `givenName` | First name attribute |
-| `SAML_ATTRIBUTE_LAST_NAME` | `urn:oid:2.5.4.4`, `surname` claim URI, `sn` | Last name attribute |
-| `SAML_ATTRIBUTE_ROLE` | `role`, `roles`, `litellm_role` | Attribute mapped to the LiteLLM user role |
-| `SAML_ATTRIBUTE_TEAM_IDS` | `teams`, `team_ids`, `groups` | Attribute mapped to LiteLLM team IDs |
+| `SAML_ATTRIBUTE_EMAIL` | `urn:oid:0.9.2342.19200300.100.1.3`, `emailaddress` 聲明 URI, `email`, `mail` | 包含使用者電子郵件的屬性 |
+| `SAML_ATTRIBUTE_USER_ID` | NameID | 穩定使用者識別碼的屬性 |
+| `SAML_ATTRIBUTE_FIRST_NAME` | `urn:oid:2.5.4.42`, `givenname` 聲明 URI, `givenName` | 名字屬性 |
+| `SAML_ATTRIBUTE_LAST_NAME` | `urn:oid:2.5.4.4`, `surname` 聲明 URI, `sn` | 姓氏屬性 |
+| `SAML_ATTRIBUTE_ROLE` | `role`, `roles`, `litellm_role` | 映射到 LiteLLM 使用者角色的屬性 |
+| `SAML_ATTRIBUTE_TEAM_IDS` | `teams`, `team_ids`, `groups` | 映射到 LiteLLM 團隊 ID 的屬性 |
 
-The role attribute value must be one of: `proxy_admin`, `proxy_admin_viewer`, `internal_user`, or `internal_user_viewer`.
+角色屬性值必須是以下其中之一：`proxy_admin`、`proxy_admin_viewer`、`internal_user`，或 `internal_user_viewer`。
 
-## Configuration reference
+## 設定參考 {#configuration-reference}
 
-All configuration is done through environment variables. SAML is activated when either `SAML_IDP_METADATA_URL` or `SAML_IDP_METADATA_XML` is set.
+所有設定皆透過環境變數完成。當設定了 `SAML_IDP_METADATA_URL` 或 `SAML_IDP_METADATA_XML` 時，SAML 即會啟用。
 
-| Variable | Default | Purpose |
+| 變數 | 預設值 | 用途 |
 | --- | --- | --- |
-| `SAML_IDP_METADATA_URL` | unset | URL of the IdP metadata to fetch and parse |
-| `SAML_IDP_METADATA_XML` | unset | Inline IdP metadata XML (alternative to the URL) |
-| `SAML_IDP_METADATA_VALIDATE_CERT` | `true` | Verify the TLS certificate when fetching metadata over HTTPS |
-| `SAML_SP_ENTITY_ID` | `<proxy_base_url>/sso/saml/metadata` | Service Provider entity ID |
-| `SAML_SP_NAME_ID_FORMAT` | `emailAddress` | Requested NameID format |
-| `SAML_STRICT` | `true` | Enforce strict SAML validation (audience, timestamps, destination) |
-| `SAML_WANT_ASSERTIONS_SIGNED` | `true` | Reject unsigned assertions |
-| `SAML_WANT_MESSAGES_SIGNED` | `false` | Require the SAML response message itself to be signed |
-| `SAML_AUTHN_REQUESTS_SIGNED` | `false` | Sign outgoing AuthnRequests |
-| `SAML_ALLOW_UNSOLICITED` | `false` | Accept IdP-initiated (unsolicited) responses |
-| `SAML_ATTRIBUTE_EMAIL` | auto-detected | Override the assertion attribute name for email |
-| `SAML_ATTRIBUTE_USER_ID` | NameID | Override the assertion attribute for user ID |
-| `SAML_ATTRIBUTE_FIRST_NAME` | auto-detected | Override the assertion attribute for first name |
-| `SAML_ATTRIBUTE_LAST_NAME` | auto-detected | Override the assertion attribute for last name |
-| `SAML_ATTRIBUTE_ROLE` | `role` | Override the assertion attribute for the LiteLLM role |
-| `SAML_ATTRIBUTE_TEAM_IDS` | `teams`/`groups` | Override the assertion attribute for team IDs |
+| `SAML_IDP_METADATA_URL` | 未設定 | 要擷取並解析的 IdP 中繼資料 URL |
+| `SAML_IDP_METADATA_XML` | 未設定 | 內嵌 IdP 中繼資料 XML（URL 的替代方案） |
+| `SAML_IDP_METADATA_VALIDATE_CERT` | `true` | 透過 HTTPS 擷取中繼資料時驗證 TLS 憑證 |
+| `SAML_SP_ENTITY_ID` | `<proxy_base_url>/sso/saml/metadata` | 服務提供者實體 ID |
+| `SAML_SP_NAME_ID_FORMAT` | `emailAddress` | 要求的 NameID 格式 |
+| `SAML_STRICT` | `true` | 強制嚴格 SAML 驗證（受眾、時間戳記、目的地） |
+| `SAML_WANT_ASSERTIONS_SIGNED` | `true` | 拒絕未簽署的 assertion |
+| `SAML_WANT_MESSAGES_SIGNED` | `false` | 要求 SAML 回應訊息本身必須已簽署 |
+| `SAML_AUTHN_REQUESTS_SIGNED` | `false` | 對外送的 AuthnRequests 進行簽署 |
+| `SAML_ALLOW_UNSOLICITED` | `false` | 接受 IdP 發起（未經請求）的回應 |
+| `SAML_ATTRIBUTE_EMAIL` | 自動偵測 | 覆寫電子郵件的 assertion 屬性名稱 |
+| `SAML_ATTRIBUTE_USER_ID` | NameID | 覆寫使用者 ID 的 assertion 屬性 |
+| `SAML_ATTRIBUTE_FIRST_NAME` | 自動偵測 | 覆寫名字的 assertion 屬性 |
+| `SAML_ATTRIBUTE_LAST_NAME` | 自動偵測 | 覆寫姓氏的 assertion 屬性 |
+| `SAML_ATTRIBUTE_ROLE` | `role` | 覆寫 LiteLLM 角色的 assertion 屬性 |
+| `SAML_ATTRIBUTE_TEAM_IDS` | `teams`/`groups` | 覆寫團隊 ID 的 assertion 屬性 |
 
-## SP endpoints
+## SP 端點 {#sp-endpoints}
 
-The proxy exposes three SAML endpoints:
+此 proxy 會公開三個 SAML 端點：
 
-| Method | Path | Purpose |
+| 方法 | 路徑 | 用途 |
 | --- | --- | --- |
-| `GET` | `/sso/saml/login` | SP-initiated login; redirects the browser to the IdP |
-| `GET` | `/sso/saml/metadata` | SP metadata XML for registering the proxy at the IdP |
-| `POST` | `/sso/saml/callback` | Assertion Consumer Service; validates the IdP's signed response |
+| `GET` | `/sso/saml/login` | SP 發起登入；將瀏覽器重新導向至 IdP |
+| `GET` | `/sso/saml/metadata` | 用於在 IdP 註冊 proxy 的 SP 中繼資料 XML |
+| `POST` | `/sso/saml/callback` | Assertion Consumer Service；驗證 IdP 的已簽署回應 |
 
-The existing `GET /sso/key/generate` endpoint (the login button on the admin UI) automatically redirects to the SAML IdP when SAML is the only configured SSO provider.
+現有的 `GET /sso/key/generate` 端點（管理員 UI 上的登入按鈕）在 SAML 是唯一已設定的 SSO 提供者時，會自動重新導向至 SAML IdP。
 
-## Security
+## 安全性 {#security}
 
-SP-initiated logins use an HttpOnly state cookie (`litellm_saml_authn`) to bind the SAML response to the browser that started the login. This prevents login CSRF attacks where a signed response is captured and replayed into a different browser session. The cookie is `Secure; SameSite=None` over HTTPS (so it survives the IdP's cross-site POST) and `SameSite=Lax` over plain HTTP for local development.
+SP 發起的登入會使用 HttpOnly 狀態 cookie（`litellm_saml_authn`）將 SAML 回應繫結至啟動登入的瀏覽器。這可防止登入 CSRF 攻擊，也就是擷取已簽署的回應並將其重放到不同的瀏覽器工作階段。此 cookie 會在 HTTPS 下 `Secure; SameSite=None`（因此可透過 IdP 的跨網站 POST 保留），並且在純 HTTP 下 `SameSite=Lax`，以供本機開發使用。
 
-Assertions are checked for replay via a consumed-assertion guard keyed on the assertion ID. Each assertion can only be used once within its validity window.
+系統會透過以 assertion ID 為鍵的已使用 assertion 保護機制檢查 assertion 是否遭重放。每個 assertion 在其有效期限內只能使用一次。
 
-IdP-initiated (unsolicited) responses cannot be browser-bound, which is why they are rejected by default. Set `SAML_ALLOW_UNSOLICITED=true` only if your deployment requires IdP-initiated login and you understand the trade-off.
+IdP 發起（未經請求）的回應無法與瀏覽器繫結，因此預設會遭拒絕。只有在您的部署需要 IdP 發起登入且您了解其取捨時，才設定 `SAML_ALLOW_UNSOLICITED=true`。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-**"SAML SSO requires the optional 'python3-saml' dependency"** (501 error). Install the SAML extra: `pip install 'litellm[saml]'`. The official Docker images include it.
+**「SAML SSO 需要選用的 'python3-saml' 依賴項」**（501 錯誤）。安裝 SAML 額外套件：`pip install 'litellm[saml]'`。官方 Docker 映像檔已包含它。
 
-**"Could not parse an IdP entityID/SSO URL/certificate from the SAML metadata"** (502 error). The metadata URL returned something the parser could not extract an IdP descriptor from. Verify the URL is correct and accessible from the proxy. If using `SAML_IDP_METADATA_XML`, make sure the full XML is set (not truncated by shell quoting).
+**「無法從 SAML 中繼資料解析 IdP entityID/SSO URL/certificate」**（502 錯誤）。中繼資料 URL 回傳的內容，解析器無法從中擷取 IdP 描述元。請確認 URL 正確且可從 proxy 存取。如果使用 `SAML_IDP_METADATA_XML`，請確保已設定完整 XML（未被 shell 引號截斷）。
 
-**"SAML response references an unknown or already-used login request"** (401 error). The `InResponseTo` in the assertion does not match any pending login. This can happen if the login state expired (10 minute window), the user bookmarked the IdP redirect, or the assertion was replayed. Have the user start a fresh login from `/sso/saml/login`.
+**「SAML 回應參照了未知或已使用過的登入請求」**（401 錯誤）。assertion 中的 `InResponseTo` 與任何待處理登入都不符。這可能發生在登入狀態過期（10 分鐘視窗）、使用者將 IdP 重新導向頁面加入書籤，或 assertion 被重放時。請讓使用者從 `/sso/saml/login` 重新開始登入。
 
-**"Unsolicited (IdP-initiated) SAML responses are disabled"** (401 error). The proxy received a SAML response without an `InResponseTo` attribute, meaning it was an IdP-initiated login. Set `SAML_ALLOW_UNSOLICITED=true` if you want to allow this flow.
+**「未經請求（IdP 發起）的 SAML 回應已停用」**（401 錯誤）。proxy 收到的 SAML 回應沒有 `InResponseTo` 屬性，這表示它是 IdP 發起的登入。如果您要允許此流程，請設定 `SAML_ALLOW_UNSOLICITED=true`。
 
-**Assertion validation fails after the IdP's cross-site POST.** Make sure `PROXY_BASE_URL` is set to the public URL of the proxy (including `https://`). The ACS URL and audience in the SP metadata are derived from it, and a mismatch causes validation to fail.
+**在 IdP 的跨網站 POST 之後，assertion 驗證失敗。** 請確認 `PROXY_BASE_URL` 已設定為 proxy 的公開 URL（包含 `https://`）。SP 中繼資料中的 ACS URL 與受眾都是由它衍生而來，而不符會導致驗證失敗。

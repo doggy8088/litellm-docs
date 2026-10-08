@@ -1,57 +1,57 @@
 ---
 title: Production Best Practices
-description: Checklist for running LiteLLM in production; configuration, sizing and workers, Redis, and database and migrations.
+description: 生產環境執行 LiteLLM 的檢查清單；組態、容量規劃與 worker、Redis，以及資料庫與遷移。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# Production Best Practices
+# 生產環境最佳實務 {#production-best-practices}
 
-Work through this page before going live. It covers the production configuration, machine sizing and worker strategy, Redis, and database and migrations; each section stands alone, so you can also use it as a review checklist for an existing deployment. For how large to make the Postgres and Redis instances themselves, including instance recommendations for AWS, Azure, and GCP, see [Database Sizing](./db_sizing.md) and [Redis Sizing](./redis_sizing.md). For deeper container tuning such as alternative servers, TLS at the proxy, keepalive, and loading config from object storage, see [Server Tuning](./server_tuning.md).
+在正式上線前，請先完成本頁內容。此頁涵蓋生產環境組態、機器容量規劃與 worker 策略、Redis，以及資料庫與遷移；各段落彼此獨立，因此也可作為既有部署的檢視清單。關於 Postgres 與 Redis 執行個體本身要配置多大（包括 AWS、Azure 與 GCP 的執行個體建議），請參閱 [資料庫容量規劃](./db_sizing.md) 與 [Redis 容量規劃](./redis_sizing.md)。若要了解更深入的容器調校，例如替代伺服器、代理層的 TLS、keepalive，以及從物件儲存載入組態，請參閱 [伺服器調校](./server_tuning.md)。
 
-## Configuration
+## 組態 {#configuration}
 
-### Set a master key
+### 設定主金鑰 {#set-a-master-key}
 
-The master key is the proxy admin credential: it authenticates admin API calls and is the Admin UI login password. Set it as an env var (it must start with `sk-`), keep it in your secret manager, and rotate it with the [master key rotation flow](./master_key_rotations.md).
+主金鑰是代理的管理員憑證：它用於驗證管理員 API 請求，也是 Admin UI 的登入密碼。請將其設為環境變數（必須以 `sk-` 開頭），妥善保存在您的密鑰管理系統中，並使用 [主金鑰輪替流程](./master_key_rotations.md) 進行輪替。
 
 ```bash
 export LITELLM_MASTER_KEY="sk-<long-random-value>"
 ```
 
-### Set trusted proxy ranges
+### 設定受信任的代理範圍 {#set-trusted-proxy-ranges}
 
-Failed Admin UI sign-ins are limited per source address (see [security best practices](./security_best_practices.md#limit-failed-admin-ui-sign-in-attempts)). That limit only runs when the proxy knows which address is the client, so set `general_settings.trusted_proxy_ranges` to the CIDR ranges of the load balancer or ingress in front of LiteLLM, or to `[]` if clients connect directly. Left unset, the proxy warns at startup and only the weaker per-username limit applies.
+Admin UI 登入失敗會依來源位址限制次數（請參閱 [安全性最佳實務](./security_best_practices.md#limit-failed-admin-ui-sign-in-attempts)）。只有在代理知道哪個位址是用戶端時，此限制才會生效，因此請將 `general_settings.trusted_proxy_ranges` 設為 LiteLLM 前方負載平衡器或 ingress 的 CIDR 範圍；若用戶端直接連線，則設為 `[]`。若未設定，代理會在啟動時發出警告，且只會套用較弱的每個使用者名稱限制。
 
 ```yaml
 general_settings:
   trusted_proxy_ranges: ["10.0.0.0/8"]   # or [] when clients connect directly
 ```
 
-### Turn on alerting
+### 開啟警示 {#turn-on-alerting}
 
-Get notified about LLM exceptions, slow or hanging requests, budget crossings, database exceptions, outages, and weekly spend reports. In the Admin UI go to **Settings** then **Logging & Alerts**, open the **Alerting Types** tab, toggle the alert types you want, paste your Slack webhook URL, and click **Test Alerts** to confirm delivery. Thresholds and report frequency live in the **Alerting Settings** tab next to it.
+在 LLM 發生例外、請求過慢或卡住、超出預算、資料庫例外、服務中斷，以及每週支出報告時收到通知。在 Admin UI 中前往 **Settings**，再前往 **Logging & Alerts**，開啟 **Alerting Types** 分頁，切換您要的警示類型，貼上您的 Slack webhook URL，然後按一下 **Test Alerts** 以確認送達。門檻與報告頻率可在旁邊的 **Alerting Settings** 分頁中設定。
 
 <Image img={require('../../img/ui_alerting_types.png')} dark={require('../../img/ui_alerting_types_dark.png')} alt="Alerting Types tab in the Admin UI with per-alert toggles and Slack webhook fields" />
 
-To bake it into config instead, set `alerting: ["slack"]` under `general_settings` and export `SLACK_WEBHOOK_URL` in the environment.
+若要改為寫入組態，請在 `general_settings` 下設定 `alerting: ["slack"]`，並在環境中匯出 `SLACK_WEBHOOK_URL`。
 
-### Batch spend writes
+### 批次寫入支出 {#batch-spend-writes}
 
-Write spend updates to the database every 60 seconds instead of on every request; at production traffic, per-request writes become a database hot spot.
+將支出更新每 60 秒寫入一次資料庫，而不是每個請求都寫入；在生產流量下，每個請求都寫入會讓資料庫成為熱點。
 
 ```yaml
 general_settings:
   proxy_batch_write_at: 60
 ```
 
-Above roughly 1000 requests per second, also route these writes through Redis with the [Redis transaction buffer](#redis-transaction-buffer) to prevent connection exhaustion and deadlocks.
+當每秒大約超過 1000 個請求時，也請透過 [Redis 交易緩衝區](#redis-transaction-buffer) 來路由這些寫入，以避免連線耗盡與死結。
 
-### Tune config reload across pods
+### 調整跨 pod 的組態重新載入 {#tune-config-reload-across-pods}
 
-With `store_model_in_db: true`, each pod keeps itself in sync with config added at runtime (models, credentials, guardrails, general settings, etc.) by polling the database on a background job. There is no cross-pod push; a pod converges within one polling interval of a change. That interval defaults to 30 seconds and is tunable, so if you need faster convergence you can lower it, and if you run many pods against a busy database you can raise it to shed load.
+使用 `store_model_in_db: true` 時，每個 pod 都會透過背景工作，輪詢資料庫以與執行階段新增的組態（模型、憑證、防護欄、一般設定等）保持同步。這裡沒有跨 pod 的推送；pod 會在變更後的一個輪詢間隔內收斂。該間隔預設為 30 秒且可調整，因此若需要更快收斂可將其降低；若您在繁忙資料庫上執行許多 pod，則可將其提高以減輕負載。
 
 ```yaml
 general_settings:
@@ -59,48 +59,48 @@ general_settings:
   proxy_config_reload_interval_seconds: 30
 ```
 
-The value is read at startup, so a change takes effect once each pod restarts. It can also be set from the admin UI under Router Settings on the General tab, and via the `PROXY_CONFIG_RELOAD_INTERVAL_SECONDS` environment variable.
+該值會在啟動時讀取，因此變更會在每個 pod 重新啟動後生效。也可在 Admin UI 的 General 分頁下的 Router Settings 中設定，或透過 `PROXY_CONFIG_RELOAD_INTERVAL_SECONDS` 環境變數設定。
 
 <Image img={require('../../img/proxy_config_reload_interval_ui.png')} dark={require('../../img/proxy_config_reload_interval_ui_dark.png')} alt="Router Settings General tab showing proxy_config_reload_interval_seconds set to 12" />
 
-### Bound database connections
+### 限制資料庫連線 {#bound-database-connections}
 
-Cap the connection pool per worker process so your instances cannot exhaust the database. Size it as `MAX_DB_CONNECTIONS / (instances × workers)`; the default is 10.
+限制每個 worker process 的連線池，避免您的執行個體耗盡資料庫。將其大小設為 `MAX_DB_CONNECTIONS / (instances × workers)`；預設值為 10。
 
 ```yaml
 general_settings:
   database_connection_pool_limit: 10
 ```
 
-:::warning[Multiple instances]
+:::warning[多個執行個體]
 
-Each instance multiplies your total connections: 3 instances × 4 workers × 10 connections = 120 total connections against your database.
+每個執行個體都會放大總連線數：3 個執行個體 × 4 個 worker × 10 條連線 = 對您的資料庫總共 120 條連線。
 
 :::
 
-Once an autoscaler owns the replica count, the instance count in that formula is `maxReplicas`, not the number of pods you are running today. The `litellm-helm` chart defaults `autoscaling.maxReplicas` and `keda.maxReplicas` to 100, so a deployment that scales out fully asks for roughly 1000 connections at the default pool limit of 10, which is far past what a stock Postgres accepts. Set `maxReplicas` from what your database can serve, and see [how to calculate the right value](./configs.md#configure-db-pool-limits--connection-timeouts) for the full division.
+一旦 autoscaler 接管 replica 數量，該公式中的執行個體數就是 `maxReplicas`，而不是您目前執行的 pod 數量。`litellm-helm` 圖表預設將 `autoscaling.maxReplicas` 與 `keda.maxReplicas` 設為 100，因此完全擴展的部署在預設連線池上限 10 下，會要求大約 1000 條連線，遠超過標準 Postgres 可接受的範圍。請依照您的資料庫可提供的容量設定 `maxReplicas`，並參閱 [如何計算正確數值](./configs.md#configure-db-pool-limits--connection-timeouts) 了解完整計算方式。
 
-### Keep error logs out of the database
+### 將錯誤記錄排除在資料庫之外 {#keep-error-logs-out-of-the-database}
 
-LLM exceptions are written to the database by default. Under sustained provider errors this bloats the spend logs table; send exceptions to your logging stack (see [alerting](#turn-on-alerting) and [logging callbacks](./logging.md)) instead.
+LLM 例外預設會寫入資料庫。在持續發生提供者錯誤時，這會使支出記錄表膨脹；請改為將例外送至您的記錄堆疊（請參閱 [警示](#turn-on-alerting) 與 [記錄回呼](./logging.md)）。
 
 ```yaml
 general_settings:
   disable_error_logs: True
 ```
 
-### Set a request timeout
+### 設定請求逾時 {#set-a-request-timeout}
 
-Fail requests that hang instead of holding connections open; the default is 6000 seconds.
+讓卡住的請求失敗，而不是持續保持連線開啟；預設值為 6000 秒。
 
 ```yaml
 litellm_settings:
   request_timeout: 600
 ```
 
-### Production logging
+### 生產環境記錄 {#production-logging}
 
-Switch off debug logging, emit JSON logs, and silence FastAPI's per-request info logs:
+關閉除錯記錄、輸出 JSON 記錄，並靜音 FastAPI 的每請求資訊記錄：
 
 ```yaml
 litellm_settings:
@@ -112,25 +112,25 @@ litellm_settings:
 export LITELLM_LOG="ERROR"
 ```
 
-### Disable load_dotenv
+### 停用 load_dotenv {#disable-load_dotenv}
 
-Set `export LITELLM_MODE="PRODUCTION"`. This disables `load_dotenv()`, which would otherwise automatically load credentials from a local `.env`.
+設定 `export LITELLM_MODE="PRODUCTION"`。這會停用 `load_dotenv()`，否則它會自動從本機 `.env` 載入憑證。
 
-### Set the salt key
+### 設定鹽值金鑰 {#set-the-salt-key}
 
-If you use the database, set a salt key for encrypting and decrypting stored variables. Do not change it after adding a model; it encrypts your LLM API key credentials, and changing it makes them unreadable. Use a [password generator](https://1password.com/password-generator/) to get a random hash.
+如果您使用資料庫，請設定鹽值金鑰以加密與解密已儲存的變數。新增模型後請勿變更；它會加密您的 LLM API key 憑證，變更後將無法讀取。請使用 [密碼產生器](https://1password.com/password-generator/) 產生隨機雜湊。
 
 ```bash
 export LITELLM_SALT_KEY="sk-<paste-a-long-random-key>"
 ```
 
-[**See Code**](https://github.com/BerriAI/litellm/blob/036a6821d588bd36d170713dcf5a72791a694178/litellm/proxy/common_utils/encrypt_decrypt_utils.py#L15)
+[**查看程式碼**](https://github.com/BerriAI/litellm/blob/036a6821d588bd36d170713dcf5a72791a694178/litellm/proxy/common_utils/encrypt_decrypt_utils.py#L15)
 
-## Sizing and workers
+## 容量規劃與 workers {#sizing-and-workers}
 
-### Machine specifications
+### 機器規格 {#machine-specifications}
 
-Give each pod 1 vCPU and 4Gi of memory, as both requests and limits, and scale both with the worker count if you run more than one worker per container.
+每個 pod 請配置 1 vCPU 與 4Gi 記憶體，且 requests 與 limits 都要設定；如果每個容器執行超過一個 worker，則兩者都要隨 worker 數量擴充。
 
 ```yaml
 resources:
@@ -142,63 +142,63 @@ resources:
     memory: "4Gi"
 ```
 
-Both figures are per worker, so that multiplication is real rather than notional: a container running 8 workers wants 8 vCPU and 32Gi, not 1 vCPU and 4Gi. Sizing a multi-worker container from the single-worker numbers is a common way to end up under-provisioned, and it is the main reason to keep one worker per pod on Kubernetes and let replicas rather than workers carry the concurrency.
+這兩個數值都是以每個 worker 計算，因此該倍數是真實需求而非概略值：執行 8 個 worker 的容器需要 8 vCPU 與 32Gi，而不是 1 vCPU 與 4Gi。從單一 worker 的數值去規劃多 worker 容器，常會導致資源不足；這也是在 Kubernetes 上維持每個 pod 一個 worker，並讓 replica 而不是 worker 承擔並行度的主要原因。
 
-4Gi is a floor rather than a target. The proxy's steady-state footprint is not a function of how many requests it is serving concurrently: Prisma runs the query engine as a separate process whose resident memory behaves as a high-water mark, growing to fit the largest single statement that engine has ever executed, and glibc does not hand that memory back to the operating system afterwards. A pod's floor therefore ratchets up to its worst-ever write and stays there for the life of the worker. Provision below 4Gi and a single large write is enough to push the pod past its limit and have the kernel OOM-kill it, which surfaces as a crash loop under traffic that looks unremarkable on every other metric.
+4Gi 是底線，而不是目標。代理的穩態記憶體占用並不是取決於同時服務多少請求：Prisma 會將查詢引擎作為獨立程序執行，而其常駐記憶體行為像是高水位標記，會成長到該引擎曾執行過的最大單一語句所需大小，之後 glibc 也不會把那段記憶體還給作業系統。因此，pod 的底線會一路累積到它歷來最糟的一次寫入並在 worker 的生命週期內維持不變。若配置低於 4Gi，單次大型寫入就足以讓 pod 超過限制並被核心 OOM-kill，這會在其他各項指標看起來都很正常的流量下表現為 crash loop。
 
-The largest statements come from spend logging with `store_prompts_in_spend_logs` enabled, because each row then carries a full prompt and response rather than counters. If you store prompts, treat 4Gi as the minimum and give the pod headroom above it.
+最大的語句來自啟用 `store_prompts_in_spend_logs` 的支出記錄，因為此時每一列都會帶上完整的 prompt 與回應，而不只是計數器。若您儲存 prompts，請將 4Gi 視為最低值，並為 pod 保留更高的餘裕。
 
-### Autoscaling
+### 自動擴縮 {#autoscaling}
 
-Scale on CPU, and leave the memory target unset. Memory is not a usable scaling signal for the proxy: the query engine's resident memory reflects the largest write a pod has ever done rather than what it is doing now, so a memory target ratchets replicas up after one large write and never scales them back in. Provision memory as the floor above and let CPU drive the replica count.
+請以 CPU 為擴縮依據，並保持 memory 目標未設定。Memory 對代理而言不是可用的擴縮訊號：查詢引擎的常駐記憶體反映的是 pod 曾經做過的最大寫入，而不是目前正在做的事情，因此一旦有單次大型寫入，memory 目標就會把 replica 一路往上推，且不會再縮回來。請將記憶體配置為上述底線，並讓 CPU 決定 replica 數量。
 
 ```yaml
 targetCPUUtilizationPercentage: 60
 ```
 
-60 rather than a higher threshold because a replica is not useful the moment it is created. The `litellm-helm` startup probe allows up to 300 seconds for a pod to pass its first readiness check, so a replica added at 80 percent CPU arrives minutes after the saturation that triggered it. Both charts ship higher defaults, 80 on `litellm-helm` and 70 on the componentized chart's gateway, chosen so the charts install cleanly anywhere; lower them for production.
+之所以使用 60 而不是更高的門檻，是因為 replica 一建立完成並不代表可立即使用。`litellm-helm` 啟動探針最多允許 300 秒讓 pod 通過第一次 readiness 檢查，因此在 CPU 達到 80% 時新增的 replica，會在觸發飽和數分鐘後才到位。兩個圖表都內建較高的預設值：`litellm-helm` 為 80，而分組圖表的 gateway 為 70；這些數值是為了讓圖表能在任何環境順利安裝。請在生產環境中將其調低。
 
-### Workers and scaling
+### Worker 與擴縮 {#workers-and-scaling}
 
-On Kubernetes, or anywhere else a pod-level autoscaler is reading CPU, run one Uvicorn worker per pod and scale horizontally (more pods) rather than vertically (more workers per pod). This is the default, so you only need `--num_workers 1`; one process per pod keeps latency predictable, lets the Horizontal Pod Autoscaler read the [CPU threshold above](#autoscaling) against a single process, and makes rolling restarts hitless because Kubernetes drains one pod at a time.
+在 Kubernetes 上，或者在任何其他正在讀取 CPU 的 pod 層級 autoscaler 環境中，每個 pod 執行一個 Uvicorn worker，並水平擴充（增加 pod 數量）而不是垂直擴充（增加每個 pod 的 worker 數量）。這是預設設定，所以您只需要 `--num_workers 1`；每個 pod 一個程序可讓延遲保持可預測，讓 Horizontal Pod Autoscaler 針對單一程序讀取上方的 [CPU 閾值](#autoscaling)，而且因為 Kubernetes 一次只排空一個 pod，所以能讓滾動重啟無中斷。
 
 ```shell
 CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "1"]
 ```
 
-On a single VM or a bare container with nothing scaling it for you, the opposite applies: set `NUM_WORKERS` to the machine's vCPU count, since nothing else will put those cores to work. Sizing and connection limits are both per worker, so a machine running eight workers wants eight times the memory floor above and an eighth of the connection pool.
+在單一 VM 或裸容器上，如果沒有任何東西幫您做擴充，則情況相反：將 `NUM_WORKERS` 設為該機器的 vCPU 數量，因為沒有其他東西會讓那些核心投入工作。容量與連線限制都是按每個 worker 計算，所以一台執行八個 worker 的機器，需要上方記憶體底限的八倍，以及連線池的八分之一。
 
-If you see gradual memory growth under sustained load, recycle each worker after a fixed number of requests with `--max_requests_before_restart` to bound memory usage.
+如果您在持續負載下看到記憶體逐漸成長，請在固定的請求數之後使用 `--max_requests_before_restart` 回收每個 worker，以限制記憶體使用量。
 
 ```shell
 CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "1", "--max_requests_before_restart", "10000"]
 ```
 
-For packing multiple workers into one container, alternative servers (Gunicorn, Hypercorn, Granian), staggering recycles with jitter, hitless rolling restarts on Kubernetes, terminating TLS at the proxy, keepalive tuning, and loading `config.yaml` from S3 or GCS, see [Server Tuning](./server_tuning.md).
+若要在一個容器中配置多個 worker、替代伺服器（Gunicorn、Hypercorn、Granian）、以 jitter 錯開回收、Kubernetes 上的無中斷滾動重啟、在代理端終止 TLS、keepalive 調校，以及從 S3 或 GCS 載入 `config.yaml`，請參閱 [伺服器調校](./server_tuning.md)。
 
-### Run background jobs on a dedicated worker
+### 在專用 worker 上執行背景工作 {#run-background-jobs-on-a-dedicated-worker}
 
-At startup the proxy registers a scheduler of background jobs, and it does that once per Uvicorn worker process rather than once per pod. A pod started with `--num_workers 4` runs four copies of every job, so a deployment of ten such replicas runs forty, and the amount of work multiplies by replicas times processes even though most of these jobs exist to happen once.
+啟動時，proxy 會註冊背景工作的排程器，而且每個 Uvicorn worker 程序只會註冊一次，而不是每個 pod 一次。以 `--num_workers 4` 啟動的 pod 會執行每個工作的四份副本，因此十個這類 replica 的部署會執行四十份，而工作數量會隨 replica 乘以程序數量倍增，即使這些工作大多原本只應執行一次。
 
-Jobs whose effect is shared, resetting budgets or pruning spend logs or pushing a usage export, elect a single owner through Redis before doing anything. Where Redis is not configured there is nothing to elect through, so each of them runs unguarded on every process that registered it. `LITELLM_JOB_ROLE` lets you register those jobs on one deployment instead of on every replica serving traffic, and for a multi-pod deployment without Redis it is the only way to get single execution.
+其效果是共享的工作，例如重設預算、清理 spend log 或推送使用量匯出，會在執行任何動作前先透過 Redis 選出單一擁有者。未設定 Redis 時，沒有可供選舉的機制，因此每個註冊它的程序都會不受保護地執行。`LITELLM_JOB_ROLE` 可讓您在一個 deployment 上註冊這些工作，而不是在每個處理流量的 replica 上註冊；對於沒有 Redis 的多 pod deployment，這是達成單次執行的唯一方法。
 
-| `LITELLM_JOB_ROLE` | What the process registers |
+| `LITELLM_JOB_ROLE` | 程序註冊的內容 |
 | --- | --- |
-| unset, or `all` | Every job. This is the default and the behavior you already have |
-| `worker` | Every job, including the single-owner ones |
-| `serving` | No single-owner job |
+| 未設定，或 `all` | 每個工作。這是預設值，也是您已經擁有的行為 |
+| `worker` | 每個工作，包括單一擁有者的工作 |
+| `serving` | 不註冊任何單一擁有者工作 |
 
-Parsing is case insensitive and ignores surrounding whitespace. An unrecognized value falls back to `all` and logs a warning, so a typo cannot silently stop a deployment's budget resets.
+解析不區分大小寫，並且會忽略前後空白。無法辨識的值會回退到 `all` 並記錄警告，因此拼字錯誤不會在沒有提示的情況下停止某個 deployment 的預算重設。
 
-A pod set to `serving` stops registering the budget reset job, spend log cleanup, key rotation, expired Admin UI session key cleanup, the PTU flat-cost rollup, the weekly and monthly spend reports, the Prometheus fallback stats, the batch and responses cost polls, and the CloudZero, Focus, Vantage, and Mavvrik usage exports.
+設定為 `serving` 的 pod 會停止註冊預算重設工作、spend log 清理、金鑰輪替、過期的 Admin UI session key 清理、PTU 固定成本彙總、每週與每月 spend 報表、Prometheus fallback stats、batch 與 responses 成本輪詢，以及 CloudZero、Focus、Vantage 與 Mavvrik 使用量匯出。
 
-It keeps registering the spend flush, the daily tag spend flush, the gateway request counter flush, the periodic config reload, and the database model and credential reloads, because each of those drains that pod's own in-memory queues or refreshes that pod's own model registry rather than acting on state another pod could act on. A `serving` pod therefore keeps writing its own spend to the database and keeps picking up models added at runtime; the role changes which shared work it schedules, not whether it tracks what it served.
+它仍會註冊 spend flush、每日標籤 spend flush、gateway 請求計數器 flush、定期設定重新載入，以及資料庫 model 與憑證重新載入，因為這些工作各自只是排空該 pod 自己的記憶體佇列，或重新整理該 pod 自己的 model 註冊表，而不是作用於另一個 pod 也可能作用的狀態。因此，`serving` pod 仍會將自己的 spend 寫入資料庫，並持續接收在執行階段新增的 model；這個角色改變的是它排程哪些共享工作，而不是它是否追蹤自己所服務的內容。
 
-Ownership is observable at runtime. The elected pod logs `<job name>: pod <id> owns this run` at INFO, and the `litellm_pod_lock_manager_size` Prometheus gauge carries a `<job>:<pod>` label naming the job and the pod holding its lock.
+擁有權在執行階段可被觀察。當選出的 pod 會在 INFO 層級記錄 `<job name>: pod <id> owns this run`，而 `litellm_pod_lock_manager_size` Prometheus gauge 帶有 `<job>:<pod>` 標籤，用來命名該工作以及持有其 lock 的 pod。
 
-#### Kubernetes reference topology
+#### Kubernetes 參考拓撲 {#kubernetes-reference-topology}
 
-Scale the serving Deployment as usual and keep the worker at one replica. Both point at the same database and the same Redis, which is what lets the worker take over the jobs the serving pods no longer register.
+照常擴充 serving Deployment，並讓 worker 保持一個 replica。兩者都指向同一個資料庫與同一個 Redis，這使得 worker 能接手那些 serving pods 不再註冊的工作。
 
 ```yaml
 apiVersion: apps/v1
@@ -284,11 +284,11 @@ spec:
             name: litellm-config-file
 ```
 
-Point your Service and Ingress at `app: litellm-serving` only, so the worker takes no request traffic. Give the worker one Uvicorn worker for the same reason the serving pods get one, since a second process would register a second copy of every job on the one deployment meant to run them once.
+將您的 Service 和 Ingress 都只指向 `app: litellm-serving`，讓 worker 不承擔任何請求流量。給 worker 一個 Uvicorn worker，原因和 serving pods 只給一個相同，因為第二個程序會在原本只應執行一次的那個 deployment 上，註冊每個工作的第二份副本。
 
-## Redis
+## Redis {#redis}
 
-Run Redis (7.0 or newer) as soon as you run more than one proxy instance. It shares rate limit counters, router state, and the response cache across instances; without it, each instance enforces limits independently and cache hits stay local to the instance that served the request. For the full list of what degrades or stops working without it, see [What Needs Redis](./redis_requirements.md).
+只要您執行超過一個 proxy instance，就請執行 Redis（7.0 或更新版本）。它會在各個 instance 之間共享速率限制計數器、路由 state 與回應快取；沒有它時，每個 instance 都會獨立執行限制，而且快取命中會停留在處理該請求的 instance 本機。若要查看沒有它時哪些功能會退化或停止運作的完整清單，請參閱 [需要 Redis 的項目](./redis_requirements.md)。
 
 ```yaml
 router_settings:
@@ -306,60 +306,60 @@ litellm_settings:
     password: os.environ/REDIS_PASSWORD
 ```
 
-Keep the default `simple-shuffle` routing strategy for high-traffic deployments; usage-based routing adds Redis lookups to the request path. For how much Redis to provision and which managed offering to pick on each cloud, see [Redis Sizing](./redis_sizing.md).
+高流量部署請維持預設的 `simple-shuffle` 路由策略；基於使用量的路由會在請求路徑中加入 Redis 查詢。若要了解應配置多少 Redis，以及在每個雲端應選擇哪種代管方案，請參閱 [Redis 容量規劃](./redis_sizing.md)。
 
-### Redis transaction buffer
+### Redis 交易緩衝區 {#redis-transaction-buffer}
 
-At very high traffic (roughly 1000+ requests per second, or 10+ instances), spend tracking itself becomes a database bottleneck: every instance issues `UPDATE`/`UPSERT` statements against the same key, user, and team rows, which causes deadlocks and can exhaust Postgres connections (`FATAL: sorry, too many clients already`). The transaction buffer routes those writes through Redis instead: each instance queues its spend updates in Redis, and a single instance holding a Redis-backed lock aggregates the queue and flushes it to the database in one transaction.
+在極高流量下（大約每秒 1000+ 請求，或 10+ instance），spend 追蹤本身會成為資料庫瓶頸：每個 instance 都會對相同的 key、user 與 team rows 發出 `UPDATE`/`UPSERT` 陳述式，這會造成死結，並可能耗盡 Postgres 連線（`FATAL: sorry, too many clients already`）。交易緩衝區改為透過 Redis 路由這些寫入：每個 instance 將自己的 spend 更新排入 Redis，而持有 Redis 支援 lock 的單一 instance 會彙總佇列，並以單一 transaction 將其刷入資料庫。
 
 ```yaml
 general_settings:
   use_redis_transaction_buffer: true
 ```
 
-Monitor it with the `litellm_pod_lock_manager_size` Prometheus metric (which pod holds the flush lock) and the `litellm_in_memory_spend_update_queue_size` / `litellm_redis_spend_update_queue_size` gauges (spend updates waiting in memory and in Redis; the `_daily_` variants track per-user daily aggregates). If you see `Got exception from REDIS No connection available` under load, raise `max_connections` in your Redis `cache_params`.
+使用 `litellm_pod_lock_manager_size` Prometheus 指標（哪個 pod 持有 flush lock）以及 `litellm_in_memory_spend_update_queue_size` / `litellm_redis_spend_update_queue_size` gauge（在記憶體與 Redis 中等待的 spend 更新；`_daily_` 變體會追蹤每位 user 的每日彙總）來監控它。如果您在負載下看到 `Got exception from REDIS No connection available`，請提高您的 Redis `max_connections` 中的 `cache_params`。
 
-## Database and migrations
+## 資料庫與 migrations {#database-and-migrations}
 
-For instance sizes, storage and IOPS, the connection ceiling on each cloud's managed Postgres, and how to keep the spend log write path from being the thing you resize for, see [Database Sizing](./db_sizing.md).
+若要了解 instance 大小、儲存與 IOPS、各雲端代管 Postgres 的連線上限，以及如何避免 spend log 寫入路徑成為您必須調整容量的項目，請參閱 [資料庫容量規劃](./db_sizing.md)。
 
-### Gracefully handle DB unavailability
+### 優雅地處理 DB 無法使用 {#gracefully-handle-db-unavailability}
 
-When running LiteLLM on a VPC (and inaccessible from the public internet), you can enable graceful degradation so that request processing continues even if the database is temporarily unavailable.
+當 LiteLLM 執行於 VPC 上（且無法從公開網際網路存取）時，您可以啟用優雅降級，讓即使資料庫暫時不可用，請求處理仍可繼續。
 
-**WARNING: Only do this if you're running LiteLLM on VPC, that cannot be accessed from the public internet.**
+**警告：只有在您於 VPC 上執行 LiteLLM，且無法從公開網際網路存取時才這麼做。**
 
 ```yaml showLineNumbers title="litellm config.yaml"
 general_settings:
   allow_requests_on_db_unavailable: True
 ```
 
-When `allow_requests_on_db_unavailable` is set to `true`, LiteLLM will handle errors as follows:
+當 `allow_requests_on_db_unavailable` 設定為 `true` 時，LiteLLM 會依下列方式處理錯誤：
 
-| Type of Error | Expected Behavior | Details |
+| 錯誤類型 | 預期行為 | 詳細資料 |
 |---------------|-------------------|----------------|
-| Prisma connection errors | Request will be allowed | The database engine cannot be reached (connection refused or reset, `EngineConnectionError`). Requests proceed with a restricted `INTERNAL_USER` fallback identity, never admin. |
-| Prisma query errors (P2xxx, e.g. P2010) | Request will be blocked | The database answered but the query failed, so the key cannot be verified and the request gets a 401. Treated as fail-closed because the database is reachable. |
-| Httpx Errors | Request will be allowed | Occurs when the database is unreachable, allowing the request to proceed despite the DB outage. |
-| Pod Startup Behavior | Pods start regardless | LiteLLM Pods will start even if the database is down or unreachable, ensuring higher uptime guarantees for deployments. |
-| Health/Readiness Check | Always returns 200 OK | The /health/readiness endpoint returns a 200 OK status to ensure that pods remain operational even when the database is unavailable. |
-| LiteLLM Budget Errors or Model Errors | Request will be blocked | Triggered when the DB is reachable but the authentication token is invalid, lacks access, or exceeds budget limits. |
+| Prisma 連線錯誤 | 請求將被允許 | 無法連上資料庫引擎（連線被拒絕或重設，`EngineConnectionError`）。請求會以受限的 `INTERNAL_USER` fallback 身分繼續執行，絕不會是 admin。 |
+| Prisma 查詢錯誤（P2xxx，例如 P2010） | 請求將被阻擋 | 資料庫已回應，但查詢失敗，因此無法驗證金鑰，請求會得到 401。因為資料庫可連線，所以視為 fail-closed。 |
+| Httpx 錯誤 | 請求將被允許 | 發生於資料庫無法連線時，讓請求即使在 DB 故障期間也能繼續。 |
+| Pod 啟動行為 | pod 仍會啟動 | 即使資料庫當機或無法連線，LiteLLM Pods 仍會啟動，以確保部署具有更高的 uptime 保證。 |
+| 健康狀態/Readiness 檢查 | 一律回傳 200 OK | /health/readiness 端點會回傳 200 OK 狀態，以確保即使資料庫無法使用，pod 仍保持可運作。 |
+| LiteLLM 預算錯誤或 model 錯誤 | 請求將被阻擋 | 當 DB 可連線，但驗證 token 無效、沒有存取權限，或超出預算限制時觸發。 |
 
-During a database outage, virtual keys already in the in-memory auth cache keep authenticating until `user_api_key_cache_ttl` expires, which defaults to 60 seconds and can be longer with `enable_redis_auth_cache`; see [caching_redis](./caching_redis.md#virtual-key-authentication-cache-redis). The master key and models defined in the config file keep working. Uncached virtual key lookups, key/team/user management endpoints, and spend log writes fail or are deferred until the database is back
+在資料庫中斷期間，已在記憶體中的 auth cache 內的 virtual key 會持續通過驗證，直到 `user_api_key_cache_ttl` 過期；其預設值為 60 秒，並可因 `enable_redis_auth_cache` 而更長；請參閱 [caching_redis](./caching_redis.md#virtual-key-authentication-cache-redis)。config 檔案中定義的 master key 與 model 會持續運作。未快取的 virtual key 查詢、key/team/user 管理端點，以及 spend log 寫入會失敗，或延後到資料庫恢復後再處理
 
-[More information about what the Database is used for here](db_info)
+[更多關於資料庫用途的資訊請見此處](db_info)
 
-### Verify the database server certificate (custom CA, e.g. AWS RDS)
+### 驗證資料庫伺服器憑證（自訂 CA，例如 AWS RDS） {#verify-the-database-server-certificate-custom-ca-eg-aws-rds}
 
-Managed Postgres (AWS RDS, Cloud SQL, Azure Flexible Server, an internal PKI) serves a certificate issued by the provider's own CA, which is not in the stock image's trust store. You do not need a custom image to verify it: mount the CA bundle into the container and point the DB URL at it with the same libpq params the provider docs give you.
+託管式 Postgres（AWS RDS、Cloud SQL、Azure Flexible Server、內部 PKI）會提供由提供者自家 CA 簽發的憑證，而這個 CA 不在預設映像檔的信任存放區中。您不需要自訂映像檔也能驗證它：將 CA 憑證束掛載到容器中，並使用提供者文件提供的相同 libpq 參數將 DB URL 指向它。
 
 ```bash
 export DATABASE_URL="postgresql://user:pass@mydb.abc123.us-east-1.rds.amazonaws.com:5432/litellm?sslmode=verify-full&sslrootcert=/certs/global-bundle.pem"
 ```
 
-LiteLLM rewrites `sslmode=verify-full` (or `verify-ca`) and `sslrootcert` into the params its Postgres driver understands (`sslmode=require`, `sslcert=<bundle>`, `sslaccept=strict`) on `DATABASE_URL`, `DIRECT_URL` and `DATABASE_URL_READ_REPLICA`, so the server certificate chain and hostname are checked on every connection, including migrations. A server whose certificate does not chain to the mounted bundle fails at boot with `P1011: Error opening a TLS connection ... certificate verify failed`. The driver has no chain-only mode, so `verify-ca` also checks the hostname. Setting the driver params directly (`sslmode=require&sslcert=/certs/global-bundle.pem&sslaccept=strict`) works too, and any driver param you pin yourself wins over the translation. The same keys can be set from config instead of the URL through `database_extra_connection_params` (see [Cap Idle DB Connections + Pass Extra Prisma URL Params](./configs.md#cap-idle-db-connections--pass-extra-prisma-url-params)).
+LiteLLM 會將 `sslmode=verify-full`（或 `verify-ca`）以及 `sslrootcert` 重新寫入其 Postgres 驅動程式可理解的參數（`sslmode=require`、`sslcert=<bundle>`、`sslaccept=strict`）中，並在 `DATABASE_URL`、`DIRECT_URL` 與 `DATABASE_URL_READ_REPLICA` 上這麼做，因此每次連線都會檢查伺服器憑證鏈與主機名稱，包括遷移時。若伺服器的憑證無法鏈結到已掛載的憑證束，啟動時就會因 `P1011: Error opening a TLS connection ... certificate verify failed` 而失敗。此驅動程式沒有僅檢查憑證鏈的模式，因此 `verify-ca` 也會檢查主機名稱。直接設定驅動程式參數（`sslmode=require&sslcert=/certs/global-bundle.pem&sslaccept=strict`）同樣可行，而您自行固定的任何驅動程式參數都會優先於轉換結果。這些相同的鍵也可以透過 `database_extra_connection_params` 從設定而非 URL 設定（請參閱 [Cap Idle DB Connections + Pass Extra Prisma URL Params](./configs.md#cap-idle-db-connections--pass-extra-prisma-url-params)）。
 
-Plain Docker:
+純 Docker：
 
 ```bash
 docker run \
@@ -370,7 +370,7 @@ docker run \
   ghcr.io/berriai/litellm:main-stable --config /app/config.yaml
 ```
 
-Helm: put the bundle in a ConfigMap or Secret and mount it with `volumes` / `volumeMounts`. Both the Deployment and the migrations Job get these mounts, so migrations verify the certificate too.
+Helm：將憑證束放入 ConfigMap 或 Secret，並透過 `volumes` / `volumeMounts` 掛載。Deployment 與 migrations Job 都會取得這些掛載，因此 migrations 也會驗證憑證。
 
 ```bash
 kubectl create configmap rds-ca --from-file=global-bundle.pem
@@ -392,15 +392,15 @@ volumeMounts:
     readOnly: true
 ```
 
-Download the RDS bundle from [AWS](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem); other providers publish theirs the same way. This is separate from `SSL_CERT_FILE`, which only affects LiteLLM's outbound HTTPS calls to LLM providers and callbacks; the DB driver does not read it. If you need both, mount one bundle and point both settings at it.
+從 [AWS](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem) 下載 RDS 憑證束；其他提供者也會以相同方式發布他們的憑證束。這與 `SSL_CERT_FILE` 不同，後者只會影響 LiteLLM 對 LLM 提供者與回呼的外送 HTTPS 請求；DB 驅動程式不會讀取它。若您兩者都需要，請掛載一個憑證束，並讓兩個設定都指向它。
 
-### Stagger scheduled background jobs
+### 錯開排程背景工作 {#stagger-scheduled-background-jobs}
 
-LiteLLM runs a set of scheduled background jobs against the database: spend flushes, daily tag spend, budget resets, config-in-DB reloads, credential reloads, spend log retention cleanup, and any cost export integrations you enable. Every one of those is registered when the proxy starts, and an interval job's first run is one interval after that instant, so without staggering they all fire at the same moment, on every replica a rollout brought up together, for the life of the process. On a large deployment that shows up as a periodic database CPU spike that competes with request-path auth and budget queries.
+LiteLLM 會對資料庫執行一組排程背景工作：spend flushes、daily tag spend、budget resets、config-in-DB 重新載入、credential 重新載入、spend log retention cleanup，以及您啟用的任何 cost export 整合。這些工作會在 proxy 啟動時全部註冊，而 interval 工作的第一次執行會在那個時刻之後的一個 interval，因此若不錯開，它們會在同一時刻全部觸發；在 rollout 一起啟動的每個副本上都如此，且在程序存續期間都會如此。在大型部署中，這會表現為週期性的資料庫 CPU 尖峰，並與請求路徑驗證與 budget 查詢競爭資源。
 
-LiteLLM spreads them out by default. Each job is shifted by a deterministic offset derived from its scheduler job id and the identity of the process running it, so two jobs on one pod land at different instants, the same job lands at a different instant on each replica, and a simultaneous restart does not put everything back on one timestamp. Nothing is delayed by more than one of its own periods.
+LiteLLM 預設會將它們分散。每個工作都會依其 scheduler job id 與執行該工作的程序身分導出的確定性偏移量進行位移，因此同一個 pod 上的兩個工作會落在不同時刻；同一個工作在每個副本上也會落在不同時刻；同時重啟也不會把所有工作重新放回同一個時間戳記。任何工作都不會被延遲超過其自身週期的一次。
 
-The defaults suit most deployments. For a large multi-pod cluster, widen the window so the same number of jobs spreads over more time:
+這些預設值適合大多數部署。對於大型多 pod 叢集，請加寬視窗，讓相同數量的工作分散到更長的時間內：
 
 ```yaml showLineNumbers title="litellm config.yaml"
 general_settings:
@@ -408,9 +408,9 @@ general_settings:
     window_seconds: 600
 ```
 
-The applied offsets are logged once at startup, at INFO, as a single line naming the identity, the window, and every job's offset, so a schedule you are debugging can be reproduced from the log rather than guessed. Set the log level to DEBUG to also get each fire's scheduled time against the time it actually started.
+套用的偏移量會在啟動時以 INFO 等級記錄一次，作為單行內容，列出身分、視窗，以及每個工作的偏移量，因此您在除錯的排程可以從記錄中重現，而不是靠猜測。將記錄層級設為 DEBUG，還可取得每次觸發的排定時間與實際開始時間的對照。
 
-Offsets never touch a cron schedule you supplied yourself, such as `maximum_spend_logs_cleanup_cron`, since that names an instant you chose. To pin one of LiteLLM's own jobs to its unshifted schedule, or to place it exactly where you want it, set its offset explicitly:
+偏移量絕不會影響您自行提供的 cron 排程，例如 `maximum_spend_logs_cleanup_cron`，因為那指定的是您選定的某個時刻。若要將 LiteLLM 自己的其中一個工作固定在未位移的排程上，或將其精確放到您想要的位置，請明確設定其偏移量：
 
 ```yaml showLineNumbers title="litellm config.yaml"
 general_settings:
@@ -420,21 +420,21 @@ general_settings:
       ptu_flat_cost_rollup_job: 900
 ```
 
-Replicas are placed in the window using `POD_NAME`, falling back to `HOSTNAME` and then the system hostname, plus the worker process id. If your replicas share a hostname, give each one a distinct `identity` so they do not land on the same offset. Set `enabled: false` to turn the whole thing off and restore the previous behavior.
+副本會使用 `POD_NAME` 被放入視窗中，若失敗則退回到 `HOSTNAME`，再來是系統主機名稱，以及 worker process id。若您的副本共用同一個主機名稱，請為每個副本提供不同的 `identity`，以免它們落在相同的偏移量上。設定 `enabled: false` 可關閉整個機制並恢復先前的行為。
 
-### Run migrations from the Helm PreSync hook
+### 透過 Helm PreSync hook 執行 migrations {#run-migrations-from-the-helm-presync-hook}
 
 :::info
-The Helm PreSync hook flow is in beta.
+Helm PreSync hook 流程目前為 beta 版。
 :::
 
-To ensure only one service manages database migrations, use our [Helm PreSync hook for Database Migrations](https://github.com/BerriAI/litellm/blob/main/helm/litellm-helm/templates/migrations-job.yaml). This ensures migrations are handled during `helm upgrade` or `helm install`, while LiteLLM pods explicitly disable migrations.
+為了確保只有一個服務管理資料庫遷移，請使用我們的 [Helm PreSync Hook for Database Migrations](https://github.com/BerriAI/litellm/blob/main/helm/litellm-helm/templates/migrations-job.yaml)。這可確保遷移在 `helm upgrade` 或 `helm install` 期間處理，而 LiteLLM pods 則明確停用遷移。
 
-1. **Helm PreSync Hook**:
-   - The Helm PreSync hook is configured in the chart to run database migrations during deployments.
-   - The hook always sets `DISABLE_SCHEMA_UPDATE=false`, ensuring migrations are executed reliably.
+1. **Helm PreSync Hook**：
+   - Helm PreSync hook 已在 chart 中設定，會在部署期間執行資料庫 migrations。
+   - 此 hook 一律會設定 `DISABLE_SCHEMA_UPDATE=false`，確保 migrations 能可靠執行。
 
-  Reference Settings to set on ArgoCD for `values.yaml`
+  供 ArgoCD 設定的參考設定，用於 `values.yaml`
 
   ```yaml
   db:
@@ -442,56 +442,56 @@ To ensure only one service manages database migrations, use our [Helm PreSync ho
     url: postgresql://ishaanjaffer0324:... # url of existing Postgres DB
   ```
 
-2. **LiteLLM Pods**:
-   - Set `DISABLE_SCHEMA_UPDATE=true` in LiteLLM pod configurations to prevent them from running migrations.
+2. **LiteLLM Pods**：
+   - 在 LiteLLM pod 設定中設定 `DISABLE_SCHEMA_UPDATE=true`，以避免它們執行 migrations。
 
-   Example configuration for LiteLLM pod:
+   LiteLLM pod 的範例設定：
    ```yaml
    env:
      - name: DISABLE_SCHEMA_UPDATE
        value: "true"
    ```
 
-### Use prisma migrate deploy
+### 使用 prisma migrate deploy {#use-prisma-migrate-deploy}
 
-LiteLLM runs `prisma migrate deploy` on startup by default, so db migrations are handled across versions in production with no configuration. To stop a pod from running migrations at all, set `DISABLE_SCHEMA_UPDATE=true` as described in [Run migrations from the Helm PreSync hook](#run-migrations-from-the-helm-presync-hook).
+LiteLLM 預設會在啟動時執行 `prisma migrate deploy`，因此在正式環境中，db migrations 會跨版本處理而不需要任何設定。若要讓某個 pod 完全不執行 migrations，請如 [透過 Helm PreSync hook 執行 migrations](#run-migrations-from-the-helm-presync-hook) 所述設定 `DISABLE_SCHEMA_UPDATE=true`。
 
 :::info
 
-Older versions gated this behind `USE_PRISMA_MIGRATE="True"`. That flag was removed in [PR #13555](https://github.com/BerriAI/litellm/pull/13555) when migrate deploy became the default, and this page continued to recommend it after the fact. Setting `USE_PRISMA_MIGRATE` today does nothing; it is safe to remove from your environment, and removing it does not change migration behavior
+較舊版本會透過 `USE_PRISMA_MIGRATE="True"` 來限制此行為。當 migrate deploy 成為預設值時，該旗標已在 [PR #13555](https://github.com/BerriAI/litellm/pull/13555) 中移除，而這個頁面在之後仍持續建議使用它。現在設定 `USE_PRISMA_MIGRATE` 不會產生任何作用；可以安全地從您的環境中移除，而且移除後不會改變 migration 行為
 
 :::
 
-The migrate deploy command:
+migrate deploy 指令：
 
-- **Does not** issue a warning if an already applied migration is missing from migration history
-- **Does not** detect drift (production database schema differs from migration history end state - for example, due to a hotfix)
-- **Does not** reset the database or generate artifacts (such as Prisma Client)
-- **Does not** rely on a shadow database
+- **不會** 在已套用的 migration 自 migration history 中缺失時發出警告
+- **不會** 偵測 drift（production 資料庫結構描述與 migration history 結尾狀態不同，例如因 hotfix 造成）
+- **不會** 重設資料庫或產生構件（例如 Prisma Client）
+- **不會** 依賴 shadow database
 
-How LiteLLM ships migrations:
+LiteLLM 如何提供 migrations：
 
-1. A new migration file is written to our `litellm-proxy-extras` package. [See all](https://github.com/BerriAI/litellm/tree/main/litellm-proxy-extras/litellm_proxy_extras/migrations)
+1. 會將新的 migration 檔案寫入我們的 `litellm-proxy-extras` 套件。 [查看全部](https://github.com/BerriAI/litellm/tree/main/litellm-proxy-extras/litellm_proxy_extras/migrations)
 
-2. The core litellm pip package is bumped to point to the new `litellm-proxy-extras` package. This ensures, older versions of LiteLLM will continue to use the old migrations. [See code](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/pyproject.toml#L58)
+2. 核心 litellm pip 套件會更新，以指向新的 `litellm-proxy-extras` 套件。這可確保舊版 LiteLLM 會繼續使用舊的 migrations。 [查看程式碼](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/pyproject.toml#L58)
 
-3. When you upgrade to a new version of LiteLLM, the migration file is applied to the database. [See code](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/litellm-proxy-extras/litellm_proxy_extras/utils.py#L42)
+3. 當您升級到新版 LiteLLM 時，migration 檔案會套用到資料庫。 [查看程式碼](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/litellm-proxy-extras/litellm_proxy_extras/utils.py#L42)
 
-### Read-only file system
+### 唯讀檔案系統 {#read-only-file-system}
 
-Running LiteLLM with `readOnlyRootFilesystem: true` is a Kubernetes security best practice that prevents container processes from writing to the root filesystem. LiteLLM fully supports this configuration.
+在 Kubernetes 中以 `readOnlyRootFilesystem: true` 執行 LiteLLM 是安全最佳實務，可防止容器程序寫入 root 檔案系統。LiteLLM 完全支援此設定。
 
-If you see a `Permission denied` error, it means the LiteLLM pod is running with a read-only file system. LiteLLM needs writable directories for:
-- **Database migrations**: Set `LITELLM_MIGRATION_DIR="/path/to/writable/directory"`
-- **Admin UI**: Set `LITELLM_UI_PATH="/path/to/writable/directory"`
-- **UI assets/logos**: Set `LITELLM_ASSETS_PATH="/path/to/writable/directory"`
+如果您看到 `Permission denied` 錯誤，表示 LiteLLM pod 是以唯讀檔案系統執行。LiteLLM 需要可寫入的目錄，用於：
+- **資料庫遷移**：設定 `LITELLM_MIGRATION_DIR="/path/to/writable/directory"`
+- **管理 UI**：設定 `LITELLM_UI_PATH="/path/to/writable/directory"`
+- **UI 資產/標誌**：設定 `LITELLM_ASSETS_PATH="/path/to/writable/directory"`
 
-**Option 1: Using EmptyDir Volumes with InitContainer (Recommended)**
+**選項 1：使用 EmptyDir Volumes 搭配 InitContainer（建議）**
 
-This approach copies the pre-built UI from the Docker image to writable emptyDir volumes at pod startup.
+此方法會在 pod 啟動時，將 Docker 映像中的預先建置 UI 複製到可寫入的 emptyDir volumes。
 
 <details>
-<summary>Full Deployment manifest (initContainer, env, securityContext, volumes)</summary>
+<summary>完整 Deployment manifest（initContainer、env、securityContext、volumes）</summary>
 
 ```yaml
 apiVersion: apps/v1
@@ -573,9 +573,9 @@ spec:
 
 </details>
 
-**Option 2: Without UI (API-only deployment)**
+**選項 2：不含 UI（僅 API 部署）**
 
-If you don't need the admin UI, you can run with minimal configuration:
+如果您不需要管理 UI，可以使用最小化設定執行：
 
 ```yaml
 env:
@@ -587,29 +587,29 @@ securityContext:
   readOnlyRootFilesystem: true
 ```
 
-The proxy will log a warning about the UI but API endpoints will work normally.
+proxy 會針對 UI 記錄警告，但 API 端點會正常運作。
 
-Environment variables for read-only filesystems:
+唯讀檔案系統的環境變數：
 
-| Variable | Purpose | Default |
+| 變數 | 用途 | 預設值 |
 |----------|---------|---------|
-| `LITELLM_UI_PATH` | Admin UI directory | `/var/lib/litellm/ui` (Docker) |
-| `LITELLM_ASSETS_PATH` | UI assets/logos | `/var/lib/litellm/assets` (Docker) |
-| `LITELLM_MIGRATION_DIR` | Database migrations | Package directory |
-| `PRISMA_BINARY_CACHE_DIR` | Prisma binary cache | System default |
-| `XDG_CACHE_HOME` | General cache directory | System default |
+| `LITELLM_UI_PATH` | 管理 UI 目錄 | `/var/lib/litellm/ui` (Docker) |
+| `LITELLM_ASSETS_PATH` | UI 資產/標誌 | `/var/lib/litellm/assets` (Docker) |
+| `LITELLM_MIGRATION_DIR` | 資料庫遷移 | 套件目錄 |
+| `PRISMA_BINARY_CACHE_DIR` | Prisma 二進位快取 | 系統預設值 |
+| `XDG_CACHE_HOME` | 一般快取目錄 | 系統預設值 |
 
-Notes: always set `LITELLM_MIGRATION_DIR` to a writable emptyDir path, and set `PRISMA_BINARY_CACHE_DIR` and `XDG_CACHE_HOME` to writable paths. If using a custom `server_root_path`, you must pre-process UI files in your Dockerfile as the proxy cannot modify files at runtime with a read-only filesystem. The UI is automatically detected as pre-restructured if it contains a `.litellm_ui_ready` marker file (created by the official Docker images).
+注意：一律將 `LITELLM_MIGRATION_DIR` 設為可寫入的 emptyDir 路徑，並將 `PRISMA_BINARY_CACHE_DIR` 與 `XDG_CACHE_HOME` 設為可寫入路徑。若使用自訂 `server_root_path`，您必須在 Dockerfile 中預先處理 UI 檔案，因為 proxy 無法在執行時於唯讀檔案系統上修改檔案。若 UI 含有由官方 Docker 映像檔建立的 `.litellm_ui_ready` marker file，系統會自動判定其為已預先重構。
 
-## Verify production readiness
+## 驗證正式環境就緒狀態 {#verify-production-readiness}
 
-### Expected performance
+### 預期效能 {#expected-performance}
 
-See benchmarks [here](../benchmarks#performance-metrics).
+請參閱 [這裡](../benchmarks#performance-metrics) 的基準測試。
 
-### Confirm debug logging is off
+### 確認已關閉 debug 記錄 {#confirm-debug-logging-is-off}
 
-You should only see the following level of details in logs on the proxy server:
+您在 proxy 伺服器上的記錄中，應只看到以下等級的詳細資訊：
 
 ```shell
 # INFO:     192.168.2.205:11774 - "POST /chat/completions HTTP/1.1" 200 OK
@@ -617,20 +617,20 @@ You should only see the following level of details in logs on the proxy server:
 # INFO:     192.168.2.205:29734 - "POST /chat/completions HTTP/1.1" 200 OK
 ```
 
-## Deployment FAQ
+## 部署 FAQ {#deployment-faq}
 
-**Q: Is Postgres the only supported database, or do you support other ones (like Mongo)?**
+**Q: Postgres 是唯一支援的資料庫嗎？還是您也支援其他資料庫（例如 Mongo）？**
 
-A: We explored MySQL but that was hard to maintain and led to bugs for customers. Currently, PostgreSQL is our primary supported database for production deployments.
+A: 我們曾評估過 MySQL，但維護上很困難，並且替客戶帶來了 bug。現階段，PostgreSQL 是我們在正式部署中主要支援的資料庫。
 
-Because LiteLLM talks to the database through Prisma over the PostgreSQL wire protocol, any Postgres-wire-compatible distributed SQL database works as a drop-in replacement. [YugabyteDB](https://www.yugabyte.com/) is used in production this way; point `DATABASE_URL` at its YSQL endpoint (`postgresql://<user>:<password>@<host>:<port>/<dbname>`) and LiteLLM runs its migrations and queries unchanged. This is a good fit if you need horizontal scale or multi-region high availability beyond what a single Postgres instance provides.
+因為 LiteLLM 是透過 Prisma 與 PostgreSQL wire protocol 與資料庫溝通，所以任何與 Postgres-wire 相容的分散式 SQL 資料庫都可以直接替換使用。[YugabyteDB](https://www.yugabyte.com/) 就是在正式環境中以這種方式使用；只要將 `DATABASE_URL` 指向其 YSQL endpoint（`postgresql://<user>:<password>@<host>:<port>/<dbname>`），LiteLLM 就會不加修改地執行 migrations 與查詢。若您需要超越單一 Postgres 執行個體所能提供的水平擴充或多區域高可用性，這會是很適合的選擇。
 
-**Q: If there is Postgres downtime, how does LiteLLM react? Does it fail-open or is there API downtime?**
+**Q: 如果 Postgres 發生停機，LiteLLM 會如何反應？會 fail-open 還是會有 API 停機？**
 
-A: You can gracefully handle DB unavailability if it's on your VPC; see [Gracefully handle DB unavailability](#gracefully-handle-db-unavailability) above.
+A: 若 DB 不可用發生在您的 VPC 內，您可以優雅地處理它；請參閱上方的 [優雅處理 DB 不可用](#gracefully-handle-db-unavailability)。
 
 :::info
 
-Need help or want dedicated support? Talk to a founder [here](https://enterprise.litellm.ai/demo).
+需要協助或想要專屬支援嗎？請在 [這裡](https://enterprise.litellm.ai/demo) 與創辦人對談。
 
 :::

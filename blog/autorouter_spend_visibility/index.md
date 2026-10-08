@@ -1,86 +1,84 @@
 ---
 slug: auto-router-spend-visibility
-title: "AutoRouter: Easy Visibility to Your Savings"
+title: "AutoRouter：輕鬆掌握您的節省成效"
 date: 2026-08-06T10:00:00
 authors:
   - tin
-description: "A new Auto-Router Usage tab in Cost Optimization, per-request classifier cost reporting, preset matching against your own deployments, and two routing fixes."
+description: "Cost Optimization 中新增 Auto-Router Usage 分頁、每個請求的分類器成本回報、依您自己的部署進行預設比對，以及兩項路由修正。"
 image: ./auto-router-v2-hero.png
 keywords: [auto router, llm routing, litellm, cost optimization, spend tracking, prompt caching, complexity router]
 tags: [routing, complexity-router, cost-optimization, ui, engineering]
 hide_table_of_contents: false
 ---
 
-![Your savings, in one tab](./auto-router-v2-hero.png)
+![您的節省成效，盡在單一分頁](./auto-router-v2-hero.png)
 
 {/* truncate */}
 
-:::info[🚀 Help shape the Auto-Router]
+:::info[🚀 協助塑造 Auto-Router]
 
-Get early access, work directly with the LiteLLM team, and influence the roadmap with your production traffic.
+搶先體驗、與 LiteLLM 團隊直接合作，並以您的正式流量影響產品藍圖。
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計夥伴</a>
 
 <br /><br />
 
-Already testing it? Share your results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168).
+已在測試了嗎？請在 [討論 #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
 
 :::
 
-Everything below ships in **v1.97.x**.
+以下所有內容都已包含在 **v1.97.x** 中。
 
-## See Auto-Router savings + usage benchmarked against a relevant model
+## 查看與相關模型基準比較的 Auto-Router 節省成效與使用情況 {#see-auto-router-savings--usage-benchmarked-against-a-relevant-model}
 
-The most common question from teams piloting the Auto-Router is "how much is this actually saving me". There is now a tab that answers it.
+試用 Auto-Router 的團隊最常問的問題是「它實際幫我省了多少」。現在有一個分頁可以回答這個問題。
 
-Cost Optimization has a new **Auto-Router Usage** tab. It covers the last 24 hours, 7 days, or 30 days, for a single router or all routers combined, and shows:
+Cost Optimization 新增了 **Auto-Router Usage** 分頁。它涵蓋最近 24 小時、7 天或 30 天，可針對單一路由器或所有路由器合併顯示，並顯示：
 
-- **Total estimated savings:** in $ and %, with your actual routed spend next to what the same traffic would have cost if every request went to the most expensive model in the router. It prices the router against the "just always use the best model" setup it replaces, and the estimate accounts for caching in both directions
-- **Usage:** total sessions and turns on the Auto-Router, plus per-session averages for spend, turns, duration, and tokens
-- **Prompt caching:** the overall cache hit rate, broken down by what the router did on each turn (stayed on the same model, first visit to a tier, or returned to a tier used earlier), so you can tell whether a longer cache TTL or a background cache warmer would pay for itself
+- **總預估節省：**以美元與百分比呈現，將您實際的路由後支出，與若每個請求都送往該路由器中最昂貴模型時的相同流量成本相比。它是以取代「直接永遠使用最佳模型」這個設定來為路由器定價，而此預估已同時考量雙向快取
+- **使用情況：**Auto-Router 上的總 session 數與 turn 數，以及每個 session 的平均支出、turn 數、持續時間與 token 數
+- **Prompt caching：**整體快取命中率，並依路由器在每個 turn 上的動作拆分（維持在相同模型、首次造訪某個層級，或回到先前使用過的層級），讓您判斷更長的 cache TTL 或背景 cache warmer 是否值得
 
+這些數字來自新的每個 session 彙總表，因此此分頁在大規模下仍能保持快速；在我們的負載測試中，涵蓋 40 萬個 session 的 30 天視窗讀取時間為 38 ms。
 
-The numbers come from a new per-session rollup table so the tab stays fast at scale; in our load tests, a 30-day window over 400k sessions reads in 38 ms.
+![Cost Optimization 中的 Auto-Router Usage 分頁](./auto-router-usage-tab.png)
 
-![The Auto-Router Usage tab in Cost Optimization](./auto-router-usage-tab.png)
+接下來：將 Auto-Router 的品質與 turn 數，和您組織的等效使用情況進行基準比較。
 
-Next up: benchmarking the Auto-Router quality and # of turns against equivalent usage for your org.
+## 每個請求記錄 LLM 分類器成本 {#per-request-logging-of-the-llm-classifier-cost}
 
-## Per-request logging of the LLM classifier cost
+當複雜度路由器使用 LLM 分類器時，該分類器呼叫會產生費用，但直到現在，觸發它的請求上都看不到這筆費用。現在您可以按請求量化路由開銷。
 
-When the complexity router uses an LLM classifier, that classifier call is billed, but until now it was invisible on the request that triggered it. You can now quantify routing overhead per request.
+- 分類器呼叫的成本會記錄在 `routing_decision` 記錄中，作為 `classifier_cost`，因此它會進入 spend-log 中繼資料以及每個 `StandardLoggingPayload` 消費者（Langfuse、OTel、S3，以及其他）
+- 新的 `x-litellm-classifier-cost` 回應標頭會在 `/v1/chat/completions`、`/v1/messages` 和 `/v1/responses` 上按請求回報它，包含串流
 
-- The classifier call's cost is recorded on the `routing_decision` record as `classifier_cost`, so it reaches spend-log metadata and every `StandardLoggingPayload` consumer (Langfuse, OTel, S3, and the rest)
-- A new `x-litellm-classifier-cost` response header reports it per request on `/v1/chat/completions`, `/v1/messages` and `/v1/responses`, streaming included
+## 現在預設會比對您的實際部署 {#presets-now-match-your-actual-deployments}
 
+一鍵 Anthropic 和 OpenAI 預設不再依賴您的部署名稱是否與預設所預期的一致。
 
-## Presets now match your actual deployments
+- 預設現在會根據您部署底層的提供者模型 ID（`litellm_params.model`，以及設定時的 `model_info.base_model`）來解析，而不是直接比對名稱字串
+- 以這種方式解析的預設會顯示「Matches your deployments」提示，排序會排在不可用項目之前，並保持設定開啟，讓您看見已對應到哪些內容
 
-The 1-click Anthropic and OpenAI presets no longer depend on your deployment names lining up with what the preset expects.
+## 長提示詞現在不會再在路由步驟失敗 {#long-prompts-no-longer-fail-at-the-routing-step}
 
-- Presets now resolve against your deployment's underlying provider model ID (`litellm_params.model`, plus `model_info.base_model` where set) instead of a direct string match on the name
-- Presets that resolve this way show a "Matches your deployments" hint, sort ahead of unavailable ones, and keep the config open so you see what got mapped
+先前在使用語意路由時，長提示詞可能因為 embedding model 的短 context window 而失敗。 
+- 提示詞現在會在 embedding 前先截斷，預設為 2000 個字元，可透過 `auto_router_max_input_chars` 針對每個部署調整。
+- 截斷只會套用於路由步驟；防護欄與篩選器仍會看到完整提示詞
+- 所有 no-match 與 route-failure 路徑現在都會解析為 `default_model`，而不是發生錯誤
 
-## Long prompts no longer fail at the routing step
+## 以關鍵字為基礎的路由現在支援中文、日文和韓文字符 {#keyword-based-routing-now-supports-chinese-japanese-and-korean-characters}
 
-Previously, when using semantic routing long prompts could fail due to an embedding-model's short context window. 
-- The prompt is now truncated before embedding, at 2000 characters by default, tunable per deployment with `auto_router_max_input_chars`.
-- The truncation applies to the routing step only; guardrails and filters still see the whole prompt
-- Every no-match and route-failure path now resolves to `default_model` instead of erroring
+`keyword_tier_rules` 會依 regex 詞邊界比對，但 CJK 字元之間沒有詞邊界，因此針對 `发票` 的規則從未在 `我需要开发票` 內觸發。這些流量會默默流入複雜度評分。
 
-## Keyword-based routing now supports Chinese, Japanese and Korean characters
+- 含有 CJK 字元的關鍵字現在會以子字串方式比對
+- 拉丁字元關鍵字仍維持詞邊界比對不變
 
-`keyword_tier_rules` matched on regex word boundaries, which do not exist between CJK characters, so a rule on `发票` never fired inside `我需要开发票`. That traffic silently fell through to complexity scoring.
-
-- Keywords containing CJK characters now match as substrings
-- Latin keywords keep word-boundary matching unchanged
-
-## Try it
+## 試試看 {#try-it}
 
 :::info
 
-Open Cost Optimization in the dashboard and pick the Auto-Router Usage tab. Questions and results in [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168), or [apply to be a design partner](https://calendly.com/tin-berri/litellm-auto-router-design-partner) to work on the Auto-Router with us directly.
+在儀表板中開啟 Cost Optimization，並選擇 Auto-Router Usage 分頁。若有問題或結果，請到 [討論 #32168](https://github.com/BerriAI/litellm/discussions/32168)，或 [申請成為設計夥伴](https://calendly.com/tin-berri/litellm-auto-router-design-partner) 與我們直接一起開發 Auto-Router。
 
 :::
 
-Full reference on the [Auto Routing docs page](/docs/proxy/auto_routing).
+完整參考請見 [Auto Routing 文件頁面](/docs/proxy/auto_routing)。

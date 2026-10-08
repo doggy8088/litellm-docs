@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,16 +43,16 @@ pip install litellm==1.87.2
 </TabItem>
 </Tabs>
 
-`v1.87.2` is a patch release on top of [`v1.87.1`](/release_notes/v1.87.1/v1-87-1). It adds Claude Fable 5, batch-file authorization, the CrowdStrike AIDR identity pair, and SigV4/IAM auth for the Bedrock Mantle Responses API route.
+`v1.87.2` 是建立在 [`v1.87.1`](/release_notes/v1.87.1/v1-87-1) 之上的修補版本。它加入了 Claude Fable 5、批次檔授權、CrowdStrike AIDR 身分配對，以及 Bedrock Mantle Responses API 路由的 SigV4/IAM 驗證。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- feat: add Claude Fable 5 across Anthropic, Bedrock, Vertex AI, and Azure AI - [PR #30064](https://github.com/BerriAI/litellm/pull/30064)
-- fix(proxy): authorize batch files using upload `target_model_names` (LIT-3593) - [PR #30009](https://github.com/BerriAI/litellm/pull/30009)
-- feat(guardrails): capture CrowdStrike AIDR user and model metadata - [PR #29517](https://github.com/BerriAI/litellm/pull/29517)
-- fix(guardrails): read CrowdStrike AIDR identity from both metadata bags - [PR #29991](https://github.com/BerriAI/litellm/pull/29991)
-- feat(bedrock_mantle): add SigV4/IAM auth to the Responses API route, with its prerequisite Mantle Responses route (#29490) - [PR #29788](https://github.com/BerriAI/litellm/pull/29788)
+- feat: 在 Anthropic、Bedrock、Vertex AI 和 Azure AI 中新增 Claude Fable 5 - [PR #30064](https://github.com/BerriAI/litellm/pull/30064)
+- fix(proxy): 使用上傳 `target_model_names` 授權批次檔 (LIT-3593) - [PR #30009](https://github.com/BerriAI/litellm/pull/30009)
+- feat(guardrails): 擷取 CrowdStrike AIDR 使用者與模型中繼資料 - [PR #29517](https://github.com/BerriAI/litellm/pull/29517)
+- fix(guardrails): 從兩個 metadata bag 讀取 CrowdStrike AIDR 身分 - [PR #29991](https://github.com/BerriAI/litellm/pull/29991)
+- feat(bedrock_mantle): 為 Responses API 路由新增 SigV4/IAM 驗證，並包含其前置需求 Mantle Responses 路由 (#29490) - [PR #29788](https://github.com/BerriAI/litellm/pull/29788)
 
-## Full Changelog
+## 完整更新記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.87.1...v1.87.2

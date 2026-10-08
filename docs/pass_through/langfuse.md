@@ -1,10 +1,10 @@
-# Langfuse SDK
+# Langfuse SDK {#langfuse-sdk}
 
-Pass-through endpoints for Langfuse - call langfuse endpoints with LiteLLM Virtual Key.
+適用於 Langfuse 的轉接端點 - 使用 LiteLLM Virtual Key 呼叫 langfuse 端點。
 
-Just replace `https://us.cloud.langfuse.com` with `LITELLM_PROXY_BASE_URL/langfuse` 🚀
+只要將 `https://us.cloud.langfuse.com` 替換為 `LITELLM_PROXY_BASE_URL/langfuse` 即可 🚀
 
-#### **Example Usage**
+#### **範例用法** {#example-usage}
 ```python
 from langfuse import Langfuse
 
@@ -23,22 +23,22 @@ langfuse.flush()
 print("flushed langfuse request")
 ```
 
-Supports **ALL** Langfuse Endpoints.
+支援 **所有** Langfuse 端點。
 
-[**See All Langfuse Endpoints**](https://api.reference.langfuse.com/)
+[**查看所有 Langfuse 端點**](https://api.reference.langfuse.com/)
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-Let's log a trace to Langfuse.
+我們來將一個 trace 記錄到 Langfuse。
 
-1. Add Langfuse Public/Secret keys to environment
+1. 將 Langfuse 公開/私密金鑰加入環境
 
 ```bash
 export LANGFUSE_PUBLIC_KEY=""
 export LANGFUSE_SECRET_KEY=""
 ```
 
-2. Start LiteLLM Proxy 
+2. 啟動 LiteLLM Proxy
 
 ```bash
 litellm
@@ -46,9 +46,9 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！
 
-Let's log a trace to Langfuse! 
+我們來將一個 trace 記錄到 Langfuse！
 
 ```python
 from langfuse import Langfuse
@@ -68,17 +68,16 @@ langfuse.flush()
 print("flushed langfuse request")
 ```
 
+## 進階 - 搭配 Virtual Key 使用  {#advanced---use-with-virtual-keys}
 
-## Advanced - Use with Virtual Keys 
+前置需求
+- [使用 DB 設定 proxy](../proxy/virtual_keys.md#setup)
 
-Pre-requisites
-- [Setup proxy with DB](../proxy/virtual_keys.md#setup)
+使用這個方法，可避免將原始 Google AI Studio 金鑰提供給開發人員，同時仍讓他們能使用 Google AI Studio 端點。
 
-Use this, to avoid giving developers the raw Google AI Studio key, but still letting them use Google AI Studio endpoints.
+### 用法 {#usage}
 
-### Usage
-
-1. Setup environment
+1. 設定環境
 
 ```bash
 export DATABASE_URL=""
@@ -93,7 +92,7 @@ litellm
 # RUNNING on http://0.0.0.0:4000
 ```
 
-2. Generate virtual key 
+2. 產生 virtual key 
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -102,7 +101,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 -d '{}'
 ```
 
-Expected Response 
+預期回應 
 
 ```bash
 {
@@ -111,8 +110,7 @@ Expected Response
 }
 ```
 
-3. Test it! 
-
+3. 測試它！ 
 
 ```python
 from langfuse import Langfuse
@@ -132,4 +130,4 @@ langfuse.flush()
 print("flushed langfuse request")
 ```
 
-## [Advanced - Log to separate langfuse projects (by key/team)](../proxy/team_logging.md)
+## [進階 - 將記錄寫入不同的 langfuse 專案（依金鑰/團隊）](../proxy/team_logging.md) {#advanced---log-to-separate-langfuse-projects-by-keyteam}

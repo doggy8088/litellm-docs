@@ -1,6 +1,6 @@
 ---
 slug: gpt_6_astra
-title: "Day 0 Support: GPT-6 Astra"
+title: "第 0 天支援：GPT-6 Astra"
 date: 2026-09-03T11:00:00
 image: /img/litellm_gpt_6_astra_announcement.png
 authors:
@@ -8,7 +8,7 @@ authors:
   - mateo
   - krrish
   - ishaan-alt
-description: "Day 0 support for OpenAI's GPT-6 Astra on LiteLLM, with pricing, reasoning params, and the Responses API bridge."
+description: "LiteLLM 對 OpenAI 的 GPT-6 Astra 提供第 0 天支援，包含定價、推理參數與 Responses API 橋接。"
 tags: [openai, gpt-6, gpt-6-astra, completion, day 0 support]
 hide_table_of_contents: false
 ---
@@ -18,24 +18,24 @@ import TabItem from '@theme/TabItem';
 
 ![LiteLLM x GPT-6 Astra](/img/litellm_gpt_6_astra_announcement.png)
 
-LiteLLM now supports `gpt-6-astra`, OpenAI's next major model. Route traffic to it through the LiteLLM AI Gateway with the same config you use for every other OpenAI model.
+LiteLLM 現在支援 `gpt-6-astra`，OpenAI 的下一個主要模型。您可以透過 LiteLLM AI Gateway，使用與其他 OpenAI 模型相同的設定將流量路由到它。
 
 {/* truncate */}
 
-Astra is the first model on the GPT-6 name, and OpenAI's own [research post](https://openai.com/index/ten-advances-in-mathematics-and-theoretical-computer-science/) previewed it producing machine-checked proofs for ten open problems in mathematics and theoretical computer science. It scores 98% on FrontierMath Tier 4, 99.9% on ARC-AGI 3, and 100% on ExploitBench, with a 1,050,000-token context window, 128K max output, an April 30 2026 knowledge cutoff, and text and image input. Through the API it behaves like the GPT-5 reasoning line: `max_completion_tokens` instead of `max_tokens`, `reasoning_effort` up to `xhigh`, no `temperature` while reasoning is on, prompt caching, and the long-context pricing tier above 272K input tokens.
+Astra 是 GPT-6 名稱下的第一個模型，而 OpenAI 自己的[研究文章](https://openai.com/index/ten-advances-in-mathematics-and-theoretical-computer-science/)預覽了它為數學與理論電腦科學中的十個未解問題產生經機器驗證的證明。它在 FrontierMath Tier 4 取得 98%、在 ARC-AGI 3 取得 99.9%、在 ExploitBench 取得 100%，具備 1,050,000 token 的上下文視窗、128K 最大輸出、2026 年 4 月 30 日的知識截止時間，以及文字與圖片輸入。透過 API，它的行為類似 GPT-5 推理系列：`max_completion_tokens` 而不是 `max_tokens`，`reasoning_effort` 最多到 `xhigh`，推理開啟時沒有 `temperature`，具備提示快取，以及 272K 輸入 token 以上的長上下文定價級距。
 
 :::note
-**Cost tracking works on the version you already run.** Hit the **Reload Model Cost Map** button in the Admin UI (or `POST /reload/model_cost_map`) to pull the `gpt-6-astra` pricing from GitHub. This feature is available on `v1.76.0` and above.
+**成本追蹤可在您目前執行的版本上運作。** 在管理介面中按下 **重新載入模型成本映射** 按鈕（或 `POST /reload/model_cost_map`）即可從 GitHub 取得 `gpt-6-astra` 定價。此功能適用於 `v1.76.0` 及以上版本。
 
-**Parameter handling needs the next release.** The GPT-5 reasoning classifier in LiteLLM matched `gpt-5*` names only, so on older versions a `gpt-6-astra` request keeps `max_tokens` and `temperature` as sent and OpenAI rejects them. The fix widening it to GPT-6 is on `main` now and ships in this Saturday's release candidate; until you upgrade, send `max_completion_tokens` yourself and leave `temperature` unset.
+**參數處理需要下一個版本。** LiteLLM 中的 GPT-5 推理分類器只比對 `gpt-5*` 名稱，因此在舊版中，`gpt-6-astra` 請求會保持 `max_tokens` 和 `temperature` 為送出時的原樣，而 OpenAI 會拒絕它們。將其擴充以支援 GPT-6 的修正已在 `main` 上，並會在本週六的 release candidate 中推出；在您升級之前，請自行傳送 `max_completion_tokens`，並讓 `temperature` 保持未設定。
 :::
 
-## Usage
+## 用法 {#usage}
 
 <Tabs>
 <TabItem value="proxy" label="LiteLLM Proxy">
 
-**1. Setup config.yaml**
+**1. 設定 config.yaml**
 
 ```yaml
 model_list:
@@ -45,7 +45,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-**2. Start the proxy**
+**2. 啟動 proxy**
 
 ```bash
 docker run -d \
@@ -56,7 +56,7 @@ docker run -d \
   --config /app/config.yaml
 ```
 
-**3. Test it**
+**3. 測試它**
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/chat/completions" \
@@ -91,9 +91,9 @@ print(response.choices[0].message.content)
 </TabItem>
 </Tabs>
 
-## Responses API
+## Responses API {#responses-api}
 
-For agentic and multi-turn workflows, use `/v1/responses` to preserve reasoning state across turns. A `litellm.completion()` call that combines function tools with active reasoning is bridged to `/v1/responses` automatically, the same way it is for GPT-5.4 and newer.
+對於代理式與多輪工作流程，請使用 `/v1/responses` 以在各輪之間保留推理狀態。將函式工具與啟用中的推理結合的 `litellm.completion()` 呼叫，會自動橋接到 `/v1/responses`，就像 GPT-5.4 及更新版本一樣。
 
 ```bash
 curl -X POST "http://0.0.0.0:4000/v1/responses" \
@@ -106,22 +106,22 @@ curl -X POST "http://0.0.0.0:4000/v1/responses" \
   }'
 ```
 
-## Pricing
+## 定價 {#pricing}
 
-Prices are per 1M tokens (USD), shown as short context (≤272K tokens) / long context (>272K tokens).
+價格以每 100 萬 token（USD）計算，並以短上下文（≤272K tokens）/ 長上下文（>272K tokens）顯示。
 
-| Model | Input | Cached input | Cache write | Output |
+| 模型 | 輸入 | 快取輸入 | 快取寫入 | 輸出 |
 |-------|-------|--------------|-------------|--------|
 | `gpt-6-astra` | $10.00 / $20.00 | $1.00 / $2.00 | $12.50 / $25.00 | $50.00 / $75.00 |
 
-The `flex` service tier is billed at half the standard rate and `priority` at double, on both the short and long context tiers, and the Batch API is billed at half the standard input and output rate. Pass `service_tier` on the request and LiteLLM picks the matching rate. Fast mode costs 2x the applicable rate for up to 2.5x the speed.
+`flex` 服務級別按標準費率的一半計費，而 `priority` 則為兩倍，且同時適用於短與長上下文級距；Batch API 的計費則為標準輸入與輸出費率的一半。在請求中傳入 `service_tier`，LiteLLM 便會選取相符費率。Fast mode 的費用為適用費率的 2 倍，但速度最高可提升至 2.5 倍。
 
-## Notes
+## 備註 {#notes}
 
-- `gpt-6-astra` accepts `reasoning_effort` values `low`, `medium`, `high`, and `xhigh` on Chat Completions, plus `max` on the Responses API; `none` and `minimal` are rejected, so `temperature` cannot be used with it.
-- Availability is rolling out through the API; check your OpenAI account for model access.
-- See the [OpenAI provider docs](../../docs/providers/openai) for the full parameter reference.
+- `gpt-6-astra` 在 Chat Completions 中接受 `reasoning_effort` 值 `low`、`medium`、`high` 和 `xhigh`，另在 Responses API 中接受 `max`；`none` 和 `minimal` 會被拒絕，因此 `temperature` 無法與其一起使用。
+- 可用性正透過 API 逐步推出；請在您的 OpenAI 帳戶中確認模型存取權限。
+- 請參閱 [OpenAI 提供者文件](/docs/providers/openai) 以取得完整參數參考。
 
-## Feedback
+## 回饋 {#feedback}
 
-Running GPT-6 Astra through LiteLLM and hitting something unexpected? Share it on [GitHub discussion #39633](https://github.com/BerriAI/litellm/discussions/39633).
+透過 LiteLLM 執行 GPT-6 Astra 時遇到意料之外的情況嗎？請在 [GitHub 討論 #39633](https://github.com/BerriAI/litellm/discussions/39633) 分享。

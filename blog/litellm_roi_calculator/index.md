@@ -1,25 +1,25 @@
 ---
 slug: litellm-roi-calculator
-title: "Introducing the LiteLLM ROI Calculator"
+title: "LiteLLM ROI 計算器介紹"
 date: 2026-09-26T10:00:00-07:00
 authors: [moe]
-description: "Compare each engineer's LiteLLM gateway spend with the estimated effort of their merged pull requests. Open source and self-hosted."
+description: "比較每位工程師的 LiteLLM 閘道支出與其已合併拉取請求的預估工時。開源且可自行代管。"
 tags: [cost, product, announcement]
 hide_table_of_contents: true
 image: ./overview.png
 ---
 
-![LiteLLM ROI Calculator overview: $258 of matched gateway spend compared with 78 estimated engineering hours, or $3.31 per estimated hour, above a list of merged pull requests.](./overview.png)
+![LiteLLM ROI 計算器總覽：$258 的已配對閘道支出，相較於 78 個預估工程時數，或每個預估工時 $3.31，上方列出已合併的拉取請求。](./overview.png)
 
-Your gateway tells you what your team spends on AI. It doesn't tell you what that spend produced.
+您的閘道會告訴您團隊在 AI 上花了多少錢。它不會告訴您這些支出產生了什麼。
 
-**The [LiteLLM ROI Calculator](https://github.com/BerriAI/litellm-roi-calculator) compares gateway spend with the engineering work your team ships.** It reads spend per user from LiteLLM, estimates the effort in each merged pull request with a model you choose, and matches people by email. The result is one number: spend per estimated engineering hour.
+**[LiteLLM ROI 計算器](https://github.com/BerriAI/litellm-roi-calculator) 會比較閘道支出與團隊交付的工程工作。**它會從 LiteLLM 讀取每位使用者的支出、使用您選擇的模型估算每個已合併拉取請求的工時，並依電子郵件配對對象。結果只會得到一個數字：每個預估工程時數的支出。
 
 {/* truncate */}
 
-## Connect your gateway and GitHub
+## 連接您的閘道與 GitHub {#connect-your-gateway-and-github}
 
-Run it locally with one command:
+只要一個指令即可在本機執行：
 
 ```bash
 git clone https://github.com/BerriAI/litellm-roi-calculator.git
@@ -27,44 +27,44 @@ cd litellm-roi-calculator
 uv run litellm-roi
 ```
 
-The app opens at `http://localhost:8787`. There is no database server, Node installation, or frontend build.
+應用程式會在 `http://localhost:8787` 開啟。無需資料庫伺服器、Node 安裝或前端建置。
 
-Setup takes three steps:
+設定分三步驟：
 
-- **Gateway:** enter your gateway URL and an admin or read-only admin key that can read users and spend.
-- **GitHub:** click **Connect GitHub**. GitHub walks you through creating a read-only App and choosing its repositories. There are no client IDs or secrets to copy.
-- **Model and schedule:** pick a model from your gateway. A small model such as GPT Luna or Claude Haiku works well.
+- **閘道：** 輸入您的閘道 URL，以及可讀取使用者與支出的管理員或唯讀管理員金鑰。
+- **GitHub：** 點擊 **Connect GitHub**。GitHub 會引導您建立唯讀 App 並選擇其儲存庫。無需複製 client ID 或 secret。
+- **模型與排程：** 從您的閘道選擇一個模型。像 GPT Luna 或 Claude Haiku 這類小型模型表現良好。
 
-![Repository picker with two sample repositories selected](./setup-repositories.png)
+![已選取兩個範例儲存庫的儲存庫選擇器](./setup-repositories.png)
 
-## Estimate every merged pull request
+## 估算每個已合併的拉取請求 {#estimate-every-merged-pull-request}
 
-For each merged PR, the model answers one question:
+對於每個已合併的 PR，模型會回答一個問題：
 
-> Estimate how many hours it would take an engineer to complete the work in this pull request without AI assistance. Explain your estimate briefly.
+> 請估算若沒有 AI 協助，工程師完成這個拉取請求中的工作需要多少小時。請簡要說明您的估算。
 
-The model sees the PR description, file change counts, and commit metadata. Code patches are never sent. Temperature is fixed at 0, and you can edit the prompt, backfill window, and update interval in **Settings**.
+模型會看到 PR 說明、檔案變更數量與 commit 中繼資料。程式碼補丁絕不會傳送。temperature 固定為 0，且您可以在 **Settings** 中編輯提示、回補視窗與更新間隔。
 
-![Estimator setup with a model, a seven-day backfill, and a 24-hour update interval](./setup-estimator.png)
+![包含模型、七天回補與 24 小時更新間隔的估算器設定](./setup-estimator.png)
 
-Click **Start backfill** and the app imports spend and PRs, then estimates up to three PRs at a time. After that it refreshes on your schedule. Unchanged PRs reuse their cached estimates, so you only pay to estimate new or changed work.
+點擊 **Start backfill** 後，應用程式會匯入支出與 PR，然後一次最多估算三個 PR。之後會依您的排程重新整理。未變更的 PR 會重用其快取估算，因此您只需為新的或已變更的工作付出估算成本。
 
-![Backfill progress showing completed import stages, PR count, elapsed time, and estimated time remaining](./backfill.png)
+![回補進度顯示已完成的匯入階段、PR 數量、經過時間與預估剩餘時間](./backfill.png)
 
-## Read the report
+## 閱讀報告 {#read-the-report}
 
-- **Overview:** matched spend divided by estimated hours. Click any PR to see its estimate and the model's reasoning.
-- **People:** spend and estimated hours per engineer. Use **Match email** when someone's GitHub email differs from their gateway email.
-- **Calculation details:** shows how much spend was matched and what was excluded.
+- **總覽：** 已配對支出除以預估工時。點擊任何 PR 可查看其估算與模型推理。
+- **人員：** 每位工程師的支出與預估工時。當某人的 GitHub 電子郵件與其閘道電子郵件不同時，請使用 **Match email**。
+- **計算詳細資料：** 顯示已配對多少支出，以及排除了哪些項目。
 
-In the sample report above, $258 of matched spend ÷ 78 estimated hours = **$3.31 per estimated hour**. These are estimates of engineering effort, not hours worked or hours saved. Each person's spend covers all of their gateway usage, not costs attributed to a specific PR.
+在上方的範例報告中，$258 的已配對支出 ÷ 78 個預估工時 = **每個預估工時 $3.31**。這些是工程工作的估算，而不是實際工作時數或節省時數。每個人的支出涵蓋其全部閘道使用量，而不是歸因於特定 PR 的成本。
 
-## Host it for your team
+## 為您的團隊代管 {#host-it-for-your-team}
 
-The repository includes a Render blueprint for a single shared instance with a persistent disk. It has no built-in dashboard login, so put it behind your hosting provider's access controls or an SSO proxy before sharing company data. Keys stay on the server, and PR metadata only goes to the model you picked, through your own gateway.
+此儲存庫包含一個帶有持久磁碟的單一共享執行個體 Render blueprint。它沒有內建的儀表板登入，因此在分享公司資料前，請將其置於您的代管提供者的存取控制或 SSO proxy 之後。金鑰會保留在伺服器上，而 PR 中繼資料只會透過您自己的閘道傳送到您所選擇的模型。
 
-## Get started
+## 開始使用 {#get-started}
 
-The ROI Calculator is open source under Apache 2.0. Clone [BerriAI/litellm-roi-calculator](https://github.com/BerriAI/litellm-roi-calculator), follow the README, or [explore the demo without credentials](https://github.com/BerriAI/litellm-roi-calculator/blob/main/docs/running.md).
+ROI 計算器以 Apache 2.0 釋出為開源。複製 [BerriAI/litellm-roi-calculator](https://github.com/BerriAI/litellm-roi-calculator)、依照 README，或 [無需憑證即可探索示範](https://github.com/BerriAI/litellm-roi-calculator/blob/main/docs/running.md)。
 
-Try it on your team's last week of PRs and [tell us what you find](https://github.com/BerriAI/litellm-roi-calculator/issues).
+請用您團隊上週的 PR 試試看，並 [告訴我們您的發現](https://github.com/BerriAI/litellm-roi-calculator/issues)。

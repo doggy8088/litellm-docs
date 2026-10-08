@@ -1,5 +1,5 @@
 ---
-title: "v1.83.0 - Official Release (Post Supply Chain Incident)"
+title: "v1.83.0 - 官方發佈（供應鏈事件後）"
 slug: "v1-83-0"
 date: 2026-03-31T00:00:00
 authors:
@@ -14,7 +14,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -39,24 +39,23 @@ pip install litellm==1.83.0
 </TabItem>
 </Tabs>
 
-## Context: First Release After Supply Chain Incident
+## 背景：供應鏈事件後的首次發佈 {#context-first-release-after-supply-chain-incident}
 
-v1.83.0 is the first LiteLLM release built and published through our new [CI/CD v2 pipeline](https://docs.litellm.ai/blog/ci-cd-v2-improvements), following the [supply chain incident on March 24](https://docs.litellm.ai/blog/security-update-march-2026).
+v1.83.0 是第一個透過我們新的 [CI/CD v2 管線](https://docs.litellm.ai/blog/ci-cd-v2-improvements) 建置並發佈的 LiteLLM 版本，延續 [3 月 24 日的供應鏈事件](https://docs.litellm.ai/blog/security-update-march-2026) 之後。
 
-We paused all releases for one week while we:
-1. Completed a forensic review with [Mandiant](https://www.mandiant.com/) and [Veria Labs](https://verialabs.com/)
-2. Rebuilt the release pipeline from scratch with isolated environments and ephemeral credentials
-3. Verified the codebase contains no indicators of compromise
+我們暫停了所有發佈一週，期間我們：
+1. 與 [Mandiant](https://www.mandiant.com/) 和 [Veria Labs](https://verialabs.com/) 完成了鑑識審查
+2. 使用隔離環境與短期憑證，從零重建發佈管線
+3. 驗證程式碼庫不含任何入侵指標
 
-If you have questions about this release or the incident, see our [Security Townhall post](https://docs.litellm.ai/blog/security-townhall-updates) or reach out at `security@berri.ai`.
+如果您對此版本或該事件有任何問題，請參閱我們的 [Security Townhall 貼文](https://docs.litellm.ai/blog/security-townhall-updates) 或透過 `security@berri.ai` 與我們聯絡。
 
 ---
 
-## Links
+## 連結 {#links}
 
 - **PyPI**: [litellm 1.83.0](https://pypi.org/project/litellm/1.83.0/)
-- **Security update**: [Supply chain incident report](https://docs.litellm.ai/blog/security-update-march-2026)
-- **Security townhall**: [What happened, what we've done, what comes next](https://docs.litellm.ai/blog/security-townhall-updates)
-- **CI/CD v2**: [Announcing CI/CD v2 for LiteLLM](https://docs.litellm.ai/blog/ci-cd-v2-improvements)
-- **April stability sprint**: [Help us plan](https://github.com/BerriAI/litellm/issues/24825)
-
+- **安全更新**: [供應鏈事件報告](https://docs.litellm.ai/blog/security-update-march-2026)
+- **安全 townhall**: [發生了什麼、我們做了什麼、接下來會發生什麼](https://docs.litellm.ai/blog/security-townhall-updates)
+- **CI/CD v2**: [LiteLLM 的 CI/CD v2 發佈公告](https://docs.litellm.ai/blog/ci-cd-v2-improvements)
+- **4 月穩定性衝刺**: [協助我們規劃](https://github.com/BerriAI/litellm/issues/24825)

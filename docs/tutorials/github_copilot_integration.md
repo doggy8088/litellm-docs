@@ -5,40 +5,40 @@ sidebar_label: "GitHub Copilot / VS Code"
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# GitHub Copilot / VS Code
+# GitHub Copilot / VS Code {#github-copilot--vs-code}
 
-This tutorial shows two ways to use LiteLLM Proxy from VS Code's chat. The [LiteLLM extension](#option-1-litellm-extension-for-vs-code) adds your gateway as a language model provider, so the chat model picker lists the models your key can reach, with each model's price and a reasoning effort control. The [Copilot proxy override](#option-2-route-github-copilot-through-litellm) instead points GitHub Copilot's own traffic at the proxy.
+本教學示範兩種從 VS Code 的聊天中使用 LiteLLM Proxy 的方式。[LiteLLM 擴充功能](#option-1-litellm-extension-for-vs-code) 會將您的閘道加入為語言模型提供者，因此聊天模型選擇器會列出您的金鑰可存取的模型，並顯示每個模型的價格與推理努力控制。[Copilot proxy override](#option-2-route-github-copilot-through-litellm) 則是將 GitHub Copilot 本身的流量指向該 proxy。
 
 :::info
 
-The proxy override section is based on [Sergio Pino's guide](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4) for calling GitHub Copilot models through LiteLLM Proxy.
+proxy override 章節是根據 [Sergio Pino 的指南](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4)，說明如何透過 LiteLLM Proxy 呼叫 GitHub Copilot 模型。
 
 :::
 
-## Benefits of using VS Code chat with LiteLLM
+## 使用 VS Code 聊天搭配 LiteLLM 的優點 {#benefits-of-using-vs-code-chat-with-litellm}
 
-When you use VS Code chat with LiteLLM you get the following benefits:
+當您使用 VS Code 聊天搭配 LiteLLM 時，可獲得以下優點：
 
-**Developer Benefits:**
-- Universal Model Access: Use any LiteLLM supported model (Anthropic, OpenAI, Vertex AI, Bedrock, etc.) from the VS Code chat model picker.
-- Higher Rate Limits & Reliability: Load balance across multiple models and providers to avoid hitting individual provider limits, with fallbacks to ensure you get responses even if one provider fails.
+**開發者優點：**
+- 通用模型存取：從 VS Code 聊天模型選擇器使用任何 LiteLLM 支援的模型（Anthropic、OpenAI、Vertex AI、Bedrock 等）。
+- 更高的速率限制與可靠性：在多個模型與提供者之間進行負載平衡，以避免碰到單一提供者限制，並透過備援確保即使某個提供者失敗時仍能取得回應。
 
-**Proxy Admin Benefits:**
-- Centralized Management: Control access to all models through a single LiteLLM proxy instance without giving your developers API Keys to each provider.
-- Budget Controls: Set spending limits and track costs across all VS Code usage.
+**Proxy 管理員優點：**
+- 集中管理：透過單一 LiteLLM proxy 實例控制所有模型的存取，不必把各個提供者的 API 金鑰交給您的開發者。
+- 預算控制：設定支出上限並追蹤所有 VS Code 使用情況的成本。
 
-## Prerequisites
+## 先決條件 {#prerequisites}
 
-Before you begin, ensure you have:
-- A running LiteLLM Proxy instance
-- A LiteLLM Proxy API key, or on a gateway where users sign in through SSO, the [`lite` CLI](#sign-in-with-sso-instead-of-a-virtual-key)
-- VS Code 1.115 or newer with the GitHub Copilot Chat extension (the chat view and model picker come from it)
+開始之前，請確認您已具備：
+- 一個正在執行的 LiteLLM Proxy 實例
+- 一個 LiteLLM Proxy API 金鑰，或是在使用者透過 SSO 登入的 gateway 上，使用 [`lite` CLI](#sign-in-with-sso-instead-of-a-virtual-key)
+- VS Code 1.115 或更新版本，並安裝 GitHub Copilot Chat 擴充功能（聊天檢視與模型選擇器即來自此擴充功能）
 
-## Option 1: LiteLLM extension for VS Code
+## 選項 1：適用 VS Code 的 LiteLLM 擴充功能 {#option-1-litellm-extension-for-vs-code}
 
-The extension lives in the LiteLLM repository under [`vscode-extension/`](https://github.com/BerriAI/litellm/tree/main/vscode-extension). It reads the gateway's `GET /model_group/info` for the key you configure, so the picker shows exactly the chat models that key can use, each with its input and output price per 1M tokens. Models whose gateway entry lists `supported_reasoning_efforts` get a Reasoning Effort option in the model picker, and the effort you pick is sent as `reasoning_effort` on every request to that model. Requests go to `POST /v1/chat/completions` as streaming chat completions with tools and images passed through, so routing, fallbacks, guardrails, and spend tracking all apply as usual.
+此擴充功能位於 LiteLLM 儲存庫中的 [`vscode-extension/`](https://github.com/BerriAI/litellm/tree/main/vscode-extension)。它會讀取您所設定金鑰的 gateway `GET /model_group/info`，因此選擇器會顯示該金鑰可使用的確切聊天模型，每個模型都會顯示其每 100 萬 token 的輸入與輸出價格。gateway 項目列出 `supported_reasoning_efforts` 的模型，會在模型選擇器中提供 Reasoning Effort 選項，而您選擇的 effort 會在對該模型的每次請求中以 `reasoning_effort` 傳送。請求會以串流聊天完成傳送至 `POST /v1/chat/completions`，並透過工具與圖片，因此路由、備援、防護欄與支出追蹤都會如常套用。
 
-### Step 1: Build and install the extension
+### 步驟 1：建置並安裝擴充功能 {#step-1-build-and-install-the-extension}
 
 ```bash
 git clone https://github.com/BerriAI/litellm.git
@@ -48,18 +48,18 @@ npm run package
 code --install-extension litellm-vscode-0.1.0.vsix
 ```
 
-Every push to `main` that touches the extension also builds a `litellm-vscode` artifact on the [VS Code Extension workflow](https://github.com/BerriAI/litellm/actions/workflows/test-vscode-extension.yml), which you can download and install the same way.
+每次推送到 `main` 且有觸及此擴充功能時，也會在 [VS Code 擴充功能工作流程](https://github.com/BerriAI/litellm/actions/workflows/test-vscode-extension.yml) 上建置一個 `litellm-vscode` 成品，您可以用相同方式下載並安裝。
 
-### Step 2: Connect to your gateway
+### 步驟 2：連線到您的 gateway {#step-2-connect-to-your-gateway}
 
-1. Run `Chat: Manage Language Models` from the Command Palette and pick `LiteLLM`
-2. Enter a name for the connection, the gateway URL (for example `https://litellm.example.com`), and a LiteLLM API key: a virtual key, or on an SSO gateway the output of `lite auth print-token` (see [the next section](#sign-in-with-sso-instead-of-a-virtual-key)). The key is stored in VS Code's secret storage
+1. 從命令面板執行 `Chat: Manage Language Models`，然後選取 `LiteLLM`
+2. 輸入此連線的名稱、gateway URL（例如 `https://litellm.example.com`），以及一個 LiteLLM API 金鑰：虛擬金鑰，或是在 SSO gateway 上由 `lite auth print-token` 的輸出（請參閱[下一節](#sign-in-with-sso-instead-of-a-virtual-key)）。該金鑰會儲存在 VS Code 的秘密儲存中
 
-The Language Models editor now lists the chat models that key can reach under the name you chose. Add `LiteLLM` again with another name to reach a second gateway or a second key.
+Language Models 編輯器現在會在您選擇的名稱下列出該金鑰可存取的聊天模型。再次新增 `LiteLLM` 並使用另一個名稱，即可連線到第二個 gateway 或第二把金鑰。
 
-### Sign in with SSO instead of a virtual key
+### 改用 SSO 登入，而非虛擬金鑰 {#sign-in-with-sso-instead-of-a-virtual-key}
 
-If your users sign in to LiteLLM through your identity provider and nobody issues them virtual keys, each developer gets the extension's key from the LiteLLM CLI instead. This needs a proxy with SSO configured and `EXPERIMENTAL_UI_LOGIN=True`, as described in [CLI Authentication](../proxy/cli_sso.md). Option 2 below sets no LiteLLM credential on the client, so use this option on an SSO-only gateway
+如果您的使用者透過身分識別提供者登入 LiteLLM，且沒有人發放虛擬金鑰給他們，那麼每位開發者改為從 LiteLLM CLI 取得擴充功能的金鑰。這需要已設定 SSO 且 `EXPERIMENTAL_UI_LOGIN=True` 的 proxy，如 [CLI Authentication](../proxy/cli_sso.md) 所述。下面的選項 2 不會在用戶端上設定任何 LiteLLM 憑證，因此請在僅限 SSO 的 gateway 上使用此選項
 
 ```shell
 export LITELLM_PROXY_URL=https://litellm.example.com
@@ -67,33 +67,33 @@ lite login --pkce
 lite auth print-token
 ```
 
-`lite login --pkce` opens your browser at your identity provider's sign-in, then at a LiteLLM consent page where you pick the team to attribute requests to and click Approve. `lite auth print-token` prints the resulting key, which starts with `litellm_login_`; paste it as the API key in Step 2. The picker then lists the chat models that user and team can reach, and spend is logged against the signed-in user
+`lite login --pkce` 會在您的瀏覽器中開啟身分識別提供者的登入頁面，接著開啟 LiteLLM 同意頁面，您可在其中選擇要將請求歸屬到的團隊，然後按一下 Approve。`lite auth print-token` 會印出結果金鑰，其開頭為 `litellm_login_`；請將其貼上為步驟 2 中的 API 金鑰。之後選擇器會列出該使用者與團隊可存取的聊天模型，而支出則會記錄到已登入的使用者
 
-The key expires after `LITELLM_CLI_JWT_EXPIRATION_HOURS` (24 hours by default), and the extension keeps the key you pasted without renewing it. When requests start failing with an authentication error, run `lite auth print-token` again, which renews the key without a browser sign-in, and paste the new value through the gear on the connection's row and `Update API Key`. If it prints `Key expired. Run 'lite login --pkce' again.`, sign in again first. To make this less frequent, raise `LITELLM_CLI_JWT_EXPIRATION_HOURS` on the proxy
+該金鑰會在 `LITELLM_CLI_JWT_EXPIRATION_HOURS`（預設 24 小時）後過期，而擴充功能會保留您貼上的金鑰且不會更新它。當請求開始因驗證錯誤而失敗時，請再次執行 `lite auth print-token`，它會在不進行瀏覽器登入的情況下更新金鑰，然後透過連線列上的齒輪與 `Update API Key` 貼上新值。如果它印出 `Key expired. Run 'lite login --pkce' again.`，請先再次登入。若要降低發生頻率，請在 proxy 上提高 `LITELLM_CLI_JWT_EXPIRATION_HOURS`
 
-### Step 3: Pick a model and its reasoning effort
+### 步驟 3：選擇模型及其推理努力 {#step-3-pick-a-model-and-its-reasoning-effort}
 
-Open the chat view and click the model name in the toolbar. The gateway's models are listed with their price per 1M tokens, and hovering a model shows its context limits and the reasoning efforts it supports. After picking a model that supports reasoning efforts, the model picker shows a Reasoning Effort option whose choices are the efforts the gateway reports for that model plus `Gateway default`, which sends no `reasoning_effort` and lets the proxy's own default apply.
+開啟聊天檢視並按一下工具列中的模型名稱。gateway 的模型會列出其每 100 萬 token 的價格，而將游標懸停在某個模型上會顯示其上下文限制以及它支援的推理努力。選擇支援推理努力的模型後，模型選擇器會顯示一個 Reasoning Effort 選項，其選項為 gateway 對該模型回報的努力，加上 `Gateway default`，後者不會傳送 `reasoning_effort`，並讓 proxy 自身的預設值生效。
 
-### Keeping the list current
+### 保持清單為最新 {#keeping-the-list-current}
 
-Run `LiteLLM: Refresh Models` after the gateway's model list or pricing changes. To rotate the key of a connection, use the gear on its row in the Language Models editor and pick `Update API Key`; `Delete` removes the connection, and `Open in Language Models (JSON)` opens the entry to change its URL. If the stored key is ever lost, the editor shows a `missing its API key` row for that connection until you update the key.
+當 gateway 的模型清單或定價變更後，請執行 `LiteLLM: Refresh Models`。若要輪替某個連線的金鑰，請在 Language Models 編輯器中使用其列上的齒輪，然後選取 `Update API Key`；`Delete` 會移除該連線，而 `Open in Language Models (JSON)` 會開啟項目以變更其 URL。如果儲存的金鑰遺失，編輯器會在該連線上顯示一列 `missing its API key`，直到您更新金鑰為止。
 
-## Option 2: Route GitHub Copilot through LiteLLM
+## 選項 2：透過 LiteLLM 路由 GitHub Copilot {#option-2-route-github-copilot-through-litellm}
 
-This route keeps GitHub Copilot's own model picker and sends Copilot's traffic through the proxy instead. It needs a GitHub Copilot subscription (Individual, Business, or Enterprise) on top of the prerequisites above.
+此路由會保留 GitHub Copilot 自己的模型選擇器，並改將 Copilot 的流量經由 proxy 傳送。除了上述必要條件外，還需要 GitHub Copilot 訂閱（Individual、Business 或 Enterprise）。
 
-### Step 1: Install LiteLLM
+### 步驟 1：安裝 LiteLLM {#step-1-install-litellm}
 
-Install LiteLLM with proxy support:
+安裝具備 proxy 支援的 LiteLLM：
 
 ```bash
 uv tool install litellm[proxy]
 ```
 
-### Step 2: Configure LiteLLM Proxy
+### 步驟 2：設定 LiteLLM Proxy {#step-2-configure-litellm-proxy}
 
-Create a `config.yaml` file with your model configurations:
+建立一個 `config.yaml` 檔案，內容為您的模型設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -111,17 +111,17 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-### Step 3: Start LiteLLM Proxy
+### 步驟 3：啟動 LiteLLM Proxy {#step-3-start-litellm-proxy}
 
-Start the proxy server:
+啟動 proxy 伺服器：
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-### Step 4: Configure GitHub Copilot
+### 步驟 4：設定 GitHub Copilot {#step-4-configure-github-copilot}
 
-Configure GitHub Copilot to use your LiteLLM proxy. Add the following to your VS Code `settings.json`:
+將 GitHub Copilot 設定為使用您的 LiteLLM proxy。將以下內容加入您的 VS Code `settings.json`：
 
 ```json
 {
@@ -132,24 +132,24 @@ Configure GitHub Copilot to use your LiteLLM proxy. Add the following to your VS
 }
 ```
 
-### Step 5: Test the Integration
+### 步驟 5：測試整合 {#step-5-test-the-integration}
 
-Restart VS Code and test GitHub Copilot. Your requests will now be routed through LiteLLM Proxy, giving you access to LiteLLM's features like:
-- Request/response logging
-- Rate limiting
-- Cost tracking
-- Model routing and fallbacks
+重新啟動 VS Code 並測試 GitHub Copilot。您的請求現在將透過 LiteLLM Proxy 路由，讓您使用 LiteLLM 的功能，例如：
+- 請求/回應記錄
+- 速率限制
+- 成本追蹤
+- 模型路由與備援
 
-## Advanced
+## 進階 {#advanced}
 
-### Use Anthropic, OpenAI, Bedrock, etc. models from VS Code
+### 從 VS Code 使用 Anthropic、OpenAI、Bedrock 等模型 {#use-anthropic-openai-bedrock-etc-models-from-vs-code}
 
-Both options route to whatever the proxy config lists, so you can reach any provider by configuring different models in your LiteLLM Proxy config:
+這兩個選項都會路由到 proxy 組態所列的內容，因此您可以透過在 LiteLLM Proxy 組態中設定不同模型來存取任何提供者：
 
 <Tabs>
 <TabItem value="anthropic" label="Anthropic">
 
-Route requests to Claude Sonnet:
+將請求路由至 Claude Sonnet：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -165,7 +165,7 @@ general_settings:
 </TabItem>
 <TabItem value="openai" label="OpenAI">
 
-Route requests to `{{openai_large}}`:
+將請求路由至 `{{openai_large}}`：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -181,7 +181,7 @@ general_settings:
 </TabItem>
 <TabItem value="bedrock" label="Bedrock">
 
-Route requests to Claude on Bedrock:
+將請求路由至 Bedrock 上的 Claude：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -197,9 +197,9 @@ general_settings:
 ```
 
 </TabItem>
-<TabItem value="multi-provider" label="Multi-Provider Load Balancing">
+<TabItem value="multi-provider" label="多提供者負載平衡">
 
-All deployments with the same model_name will be load balanced. In this example we load balance between OpenAI and Anthropic:
+所有具有相同 model_name 的部署都會進行負載平衡。在此範例中，我們在 OpenAI 與 Anthropic 之間進行負載平衡：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -222,18 +222,18 @@ general_settings:
 </TabItem>
 </Tabs>
 
-With this configuration, VS Code chat requests are routed through LiteLLM to your configured provider(s) with load balancing and fallbacks.
+在此設定下，VS Code 聊天請求會透過 LiteLLM 路由到您設定的提供者，並具備負載平衡與備援。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-If you encounter issues:
+如果您遇到問題：
 
-1. **No LiteLLM models in the picker**: the picker only lists model groups whose mode is `chat` and that the configured key can access; check `GET /model_group/info` with that key, then run `LiteLLM: Refresh Models`. A window in Restricted Mode shows "Models unavailable" until you trust the workspace
-2. **`missing its API key` row in the Language Models editor**: the stored key was lost; use the gear on the connection's row and pick `Update API Key`
-3. **GitHub Copilot not using proxy**: Verify the proxy URL is correctly configured in VS Code settings and that LiteLLM proxy is running
-4. **Authentication errors**: Ensure your master key is valid and API keys for providers are correctly set
-5. **Connection errors**: Check that your LiteLLM Proxy is accessible at `http://localhost:4000`
+1. **選擇器中沒有 LiteLLM 模型**：選擇器只會列出模式為 `chat` 且已設定金鑰可存取的模型群組；請用該金鑰檢查 `GET /model_group/info`，然後執行 `LiteLLM: Refresh Models`。Restricted Mode 中的視窗會顯示「Models unavailable」，直到您信任工作區為止
+2. **Language Models 編輯器中的 `missing its API key` 列**：儲存的金鑰已遺失；請使用連線列上的齒輪並選取 `Update API Key`
+3. **GitHub Copilot 未使用 proxy**：請確認已在 VS Code 設定中正確設定 proxy URL，且 LiteLLM proxy 正在執行
+4. **驗證錯誤**：請確認您的主金鑰有效，且提供者的 API 金鑰已正確設定
+5. **連線錯誤**：請檢查您的 LiteLLM Proxy 是否可透過 `http://localhost:4000` 存取
 
-## Credits
+## 致謝 {#credits}
 
-The proxy override route is based on the work by [Sergio Pino](https://dev.to/spino327) from his original article: [Calling GitHub Copilot models from OpenHands using LiteLLM Proxy](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4). Thank you for the foundational work! 
+proxy override 路由是基於 [Sergio Pino](https://dev.to/spino327) 的原始文章：[透過 LiteLLM Proxy 從 OpenHands 呼叫 GitHub Copilot 模型](https://dev.to/spino327/calling-github-copilot-models-from-openhands-using-litellm-proxy-1hl4)。感謝這項基礎工作！

@@ -1,344 +1,344 @@
-# CLI Arguments
+# CLI 引數 {#cli-arguments}
 
-This page documents all command-line interface (CLI) arguments available for the LiteLLM proxy server.
+此頁面說明 LiteLLM proxy server 可用的所有命令列介面（CLI）參數。
 
-## Server Configuration
+## 伺服器設定 {#server-configuration}
 
-### --host
-   - **Default:** `'0.0.0.0'`
-   - The host for the server to listen on.
-   - **Usage:** 
+### --host {#--host}
+  - **預設：** `'0.0.0.0'`
+  - 伺服器要監聽的主機。
+  - **用法：** 
      ```shell
      litellm --host 127.0.0.1
      ```
-   - **Usage - set Environment Variable:** `HOST`
+   - **用法 - 設定環境變數：** `HOST`
     ```shell
     export HOST=127.0.0.1
     litellm
     ```
 
-### --port
-   - **Default:** `4000`
-   - The port to bind the server to.
-   - **Usage:** 
+### --port {#--port}
+  - **預設：** `4000`
+  - 要繫結伺服器的連接埠。
+  - **用法：** 
      ```shell
      litellm --port 8080
      ```
-  - **Usage - set Environment Variable:** `PORT`
+  - **用法 - 設定環境變數：** `PORT`
     ```shell
     export PORT=8080
     litellm
     ```
 
-### --num_workers
-   - **Default:** `1`, or the value of the `DEFAULT_NUM_WORKERS_LITELLM_PROXY` environment variable if set
-   - The number of worker processes to spin up (uvicorn, gunicorn, or Granian `--workers`).
-   - **Usage:** 
+### --num_workers {#--num_workers}
+  - **預設：** `1`，或若已設定則為 `DEFAULT_NUM_WORKERS_LITELLM_PROXY` 環境變數的值
+  - 要啟動的工作程序數量（uvicorn、gunicorn，或 Granian `--workers`）。
+  - **用法：** 
      ```shell
      litellm --num_workers 4
      ```
-  - **Usage - set Environment Variable:** `NUM_WORKERS`
+  - **用法 - 設定環境變數：** `NUM_WORKERS`
     ```shell
     export NUM_WORKERS=4
     litellm
     ```
 
-### --config
-   - **Short form:** `-c`
-   - **Default:** `None`
-   - Path to the proxy configuration file (e.g., config.yaml).
-   - **Usage:** 
+### --config {#--config}
+  - **短格式：** `-c`
+  - **預設：** `None`
+  - proxy 設定檔的路徑（例如 config.yaml）。
+  - **用法：** 
      ```shell
      litellm --config path/to/config.yaml
      ```
 
-### --log_config
-   - **Default:** `None`
-   - **Type:** `str`
-   - Path to the logging configuration file for uvicorn.
-   - **Usage:** 
+### --log_config {#--log_config}
+  - **預設：** `None`
+  - **類型：** `str`
+  - uvicorn 的記錄設定檔路徑。
+  - **用法：** 
      ```shell
      litellm --log_config path/to/log_config.conf
      ```
 
-### --keepalive_timeout
-   - **Default:** `None`
-   - **Type:** `int`
-   - Set the uvicorn keepalive timeout in seconds (uvicorn timeout_keep_alive parameter).
-   - **Usage:** 
+### --keepalive_timeout {#--keepalive_timeout}
+  - **預設：** `None`
+  - **類型：** `int`
+  - 將 uvicorn keepalive 逾時設定為秒數（uvicorn timeout_keep_alive 參數）。
+  - **用法：** 
      ```shell
      litellm --keepalive_timeout 30
      ```
-  - **Usage - set Environment Variable:** `KEEPALIVE_TIMEOUT`
+  - **用法 - 設定環境變數：** `KEEPALIVE_TIMEOUT`
     ```shell
     export KEEPALIVE_TIMEOUT=30
     litellm
     ```
 
-### --timeout_worker_healthcheck
-   - **Default:** `None` (uvicorn's own default of 5 seconds applies)
-   - **Type:** `int`
-   - Set the uvicorn worker health-check timeout in seconds (uvicorn `timeout_worker_healthcheck` parameter). When running uvicorn with `--num_workers` > 1, the supervisor process pings each worker; a worker that does not respond within this window (for example because its event loop is blocked by synchronous work) is killed with SIGKILL and replaced. A kill shows up in the logs as `Waiting for child process [<pid>]` followed by `Child process [<pid>] died`. Raise this value if healthy workers are being recycled during long synchronous operations.
-   - Requires `uvicorn>=0.37.0`. On older uvicorn versions the flag has no effect: LiteLLM prints a `Ignoring the flag` warning at startup and uvicorn's built-in 5 second timeout applies. If you set this flag, check your startup logs for that warning to confirm it took effect.
-   - Only applies when running uvicorn directly with `--num_workers` > 1; ignored under `--run_gunicorn` / `--run_hypercorn`.
-   - **Usage:** 
+### --timeout_worker_healthcheck {#--timeout_worker_healthcheck}
+  - **預設：** `None`（套用 uvicorn 預設的 5 秒）
+  - **類型：** `int`
+  - 將 uvicorn worker 健康檢查逾時設定為秒數（uvicorn `timeout_worker_healthcheck` 參數）。當以 `--num_workers` > 1 執行 uvicorn 時，supervisor process 會輪詢每個 worker；若 worker 在此時間窗內沒有回應（例如因為事件迴圈被同步工作阻塞），它會被 SIGKILL 終止並替換。被終止時會在記錄中顯示為 `Waiting for child process [<pid>]`，後面接著 `Child process [<pid>] died`。如果健康的 worker 在長時間同步操作期間被回收，請提高此值。
+  - 需要 `uvicorn>=0.37.0`。在較舊的 uvicorn 版本上，此旗標不會生效：LiteLLM 會在啟動時印出 `Ignoring the flag` 警告，並套用 uvicorn 內建的 5 秒逾時。如果您設定此旗標，請檢查啟動記錄中是否有該警告，以確認它已生效。
+  - 僅在直接以 `--num_workers` > 1 執行 uvicorn 時適用；在 `--run_gunicorn` / `--run_hypercorn` 下會被忽略。
+  - **用法：** 
      ```shell
      litellm --num_workers 4 --timeout_worker_healthcheck 30
      ```
-  - **Usage - set Environment Variable:** `TIMEOUT_WORKER_HEALTHCHECK`
+  - **用法 - 設定環境變數：** `TIMEOUT_WORKER_HEALTHCHECK`
     ```shell
     export TIMEOUT_WORKER_HEALTHCHECK=30
     litellm
     ```
 
-### --max_requests_before_restart
-   - **Default:** `None`
-   - **Type:** `int`
-   - Restart worker after this many requests. This is useful for mitigating memory growth over time.
-   - For uvicorn: maps to `limit_max_requests`
-   - For gunicorn: maps to `max_requests`
-   - **Usage:** 
+### --max_requests_before_restart {#--max_requests_before_restart}
+  - **預設：** `None`
+  - **類型：** `int`
+  - 在處理這麼多請求後重新啟動 worker。這有助於緩解記憶體隨時間成長的問題。
+  - 對 uvicorn：對應到 `limit_max_requests`
+  - 對 gunicorn：對應到 `max_requests`
+  - **用法：** 
      ```shell
      litellm --max_requests_before_restart 10000
      ```
-  - **Usage - set Environment Variable:** `MAX_REQUESTS_BEFORE_RESTART`
+  - **用法 - 設定環境變數：** `MAX_REQUESTS_BEFORE_RESTART`
     ```shell
     export MAX_REQUESTS_BEFORE_RESTART=10000
     litellm
     ```
 
-### --max_requests_before_restart_jitter
-   - **Default:** `None`
-   - **Type:** `int`
-   - Adds a random amount in `[0, jitter]` to `--max_requests_before_restart` for each worker so workers recycle at staggered request counts instead of all at once. Has no effect without `--max_requests_before_restart`.
-   - For uvicorn: maps to `limit_max_requests_jitter` (requires `uvicorn>=0.41.0`; on older versions the flag is ignored with a warning)
-   - For gunicorn: maps to `max_requests_jitter`
-   - **Usage:** 
+### --max_requests_before_restart_jitter {#--max_requests_before_restart_jitter}
+  - **預設：** `None`
+  - **類型：** `int`（旗標）
+  - 為每個 worker 加上一個介於 `[0, jitter]` 到 `--max_requests_before_restart` 的隨機值，讓各個 worker 以錯開的請求數量回收，而不是同時回收。若沒有 `--max_requests_before_restart`，則不會生效。
+  - 對 uvicorn：對應到 `limit_max_requests_jitter`（需要 `uvicorn>=0.41.0`；在較舊版本上，此旗標會被忽略並顯示警告）
+  - 對 gunicorn：對應到 `max_requests_jitter`
+  - **用法：** 
      ```shell
      litellm --max_requests_before_restart 10000 --max_requests_before_restart_jitter 1000
      ```
-  - **Usage - set Environment Variable:** `MAX_REQUESTS_BEFORE_RESTART_JITTER`
+  - **用法 - 設定環境變數：** `MAX_REQUESTS_BEFORE_RESTART_JITTER`
     ```shell
     export MAX_REQUESTS_BEFORE_RESTART=10000
     export MAX_REQUESTS_BEFORE_RESTART_JITTER=1000
     litellm
     ```
 
-## Server Backend Options
+## 伺服器後端選項 {#server-backend-options}
 
-### --run_gunicorn
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Starts proxy via gunicorn instead of uvicorn. Better for managing multiple workers in production.
-   - **Usage:** 
+### --run_gunicorn {#--run_gunicorn}
+  - **預設：** `False`
+  - **類型：** `bool`（旗標）
+  - 改以 gunicorn 啟動 proxy，而不是 uvicorn。較適合在正式環境中管理多個 worker。
+  - **用法：** 
      ```shell
      litellm --run_gunicorn
      ```
 
-### --run_hypercorn
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Starts proxy via hypercorn instead of uvicorn. Supports HTTP/2.
-   - **Usage:** 
+### --run_hypercorn {#--run_hypercorn}
+  - **預設：** `False`
+  - **類型：** `bool`（旗標）
+  - 改以 hypercorn 啟動 proxy，而不是 uvicorn。支援 HTTP/2。
+  - **用法：** 
      ```shell
      litellm --run_hypercorn
      ```
 
-### --run_granian
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - **Status:** Beta. Opt in when you want higher gateway throughput; uvicorn remains the default.
-   - Starts the proxy via [Granian](https://github.com/emmett-framework/granian) (Rust-backed ASGI server) instead of uvicorn. Supports HTTP/1 and HTTP/2.
-   - **Why use it:** Granian moves the HTTP layer off Python into a Rust runtime, which tends to handle concurrent proxy traffic more predictably than uvicorn alone. In LiteLLM load tests, Granian showed a **10–20 RPS improvement** over an equivalent uvicorn multi-worker setup, with **better stability under sustained load and fewer request failures**.
-   - **Requirements:** Python {{python_min_version}}+ and the `granian` package (included in `litellm[proxy]`).
-   - **Limitations when using Granian:**
-     - `--max_requests_before_restart` is not supported (Granian uses `workers_lifetime` in seconds, not a per-request limit).
-     - `--ciphers` is not applied.
-     - `--keepalive_timeout` and `--log_config` apply to uvicorn only.
-   - **Usage:** 
+### --run_granian {#--run_granian}
+  - **預設：** `False`
+  - **類型：** `bool`（旗標）
+  - **狀態：** Beta。當您想要更高的 gateway 吞吐量時可選用；uvicorn 仍是預設值。
+  - 改以 [Granian](https://github.com/emmett-framework/granian)（由 Rust 支援的 ASGI server）啟動 proxy，而不是 uvicorn。支援 HTTP/1 與 HTTP/2。
+  - **為什麼要使用它：** Granian 將 HTTP 層從 Python 移到 Rust runtime，通常比單獨使用 uvicorn 更能穩定地處理並發 proxy 流量。在 LiteLLM 壓力測試中，Granian 相較於等效的 uvicorn 多 worker 設定，展現出 **10–20 RPS 的提升**，且在持續負載下**更穩定、請求失敗更少**。
+  - **需求：** Python {{python_min_version}}+ 與 `granian` 套件（已包含於 `litellm[proxy]`）。
+  - **使用 Granian 時的限制：**
+    - 不支援 `--max_requests_before_restart`（Granian 使用以秒為單位的 `workers_lifetime`，而不是每個請求的限制）。
+    - 不會套用 `--ciphers`。
+    - `--keepalive_timeout` 與 `--log_config` 僅適用於 uvicorn。
+  - **用法：** 
      ```shell
      litellm --config config.yaml --run_granian --num_workers 4
      ```
 
-### --skip_server_startup
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Skip starting the server after setup (useful for database migrations only).
-   - **Usage:** 
+### --skip_server_startup {#--skip_server_startup}
+  - **預設：** `False`
+  - **類型：** `bool`（旗標）
+  - 在設定完成後不要啟動伺服器（僅供資料庫遷移時使用）。
+  - **用法：** 
      ```shell
      litellm --skip_server_startup
      ```
 
-## SSL/TLS Configuration
+## SSL/TLS 設定 {#ssltls-configuration}
 
-### --ssl_keyfile_path
-   - **Default:** `None`
-   - **Type:** `str`
-   - Path to the SSL keyfile. Use this when you want to provide SSL certificate when starting proxy.
-   - **Usage:** 
+### --ssl_keyfile_path {#--ssl_keyfile_path}
+  - **預設：** `None`
+  - **類型：** `str`
+  - SSL keyfile 的路徑。當您想在啟動 proxy 時提供 SSL 憑證時使用此項。
+  - **用法：** 
      ```shell
      litellm --ssl_keyfile_path /path/to/key.pem --ssl_certfile_path /path/to/cert.pem
      ```
-  - **Usage - set Environment Variable:** `SSL_KEYFILE_PATH`
+  - **用法 - 設定環境變數：** `SSL_KEYFILE_PATH`
     ```shell
     export SSL_KEYFILE_PATH=/path/to/key.pem
     litellm
     ```
 
-### --ssl_certfile_path
-   - **Default:** `None`
-   - **Type:** `str`
-   - Path to the SSL certfile. Use this when you want to provide SSL certificate when starting proxy.
-   - **Usage:** 
+### --ssl_certfile_path {#--ssl_certfile_path}
+  - **預設：** `None`
+  - **類型：** `str`
+  - SSL certfile 的路徑。當您想在啟動 proxy 時提供 SSL 憑證時使用此項。
+  - **用法：** 
      ```shell
      litellm --ssl_certfile_path /path/to/cert.pem --ssl_keyfile_path /path/to/key.pem
      ```
-  - **Usage - set Environment Variable:** `SSL_CERTFILE_PATH`
+  - **用法 - 設定環境變數：** `SSL_CERTFILE_PATH`
     ```shell
     export SSL_CERTFILE_PATH=/path/to/cert.pem
     litellm
     ```
 
-### --ciphers
-   - **Default:** `None`
-   - **Type:** `str`
-   - Ciphers to use for the SSL setup. Only used with `--run_hypercorn`.
-   - **Usage:** 
+### --ciphers {#--ciphers}
+  - **預設：** `None`
+  - **類型：** `str`
+  - SSL 設定要使用的密碼套件。僅與 `--run_hypercorn` 一起使用。
+  - **用法：** 
      ```shell
      litellm --run_hypercorn --ssl_keyfile_path /path/to/key.pem --ssl_certfile_path /path/to/cert.pem --ciphers "ECDHE+AESGCM"
      ```
 
-## Model Configuration
+## 模型設定 {#model-configuration}
 
-### --model or -m
-   - **Default:** `None`
-   - The model name to pass to LiteLLM.
-   - **Usage:** 
+### --model 或 -m {#--model-or--m}
+  - **預設：** `None`
+  - 要傳遞給 LiteLLM 的模型名稱。
+  - **用法：** 
      ```shell
      litellm --model {{openai_small}}
      ```
 
-### --alias
-   - **Default:** `None`
-   - An alias for the model, for user-friendly reference. Use this to give a litellm model name (e.g., "huggingface/codellama/CodeLlama-7b-Instruct-hf") a more user-friendly name ("codellama").
-   - **Usage:** 
+### --alias {#--alias}
+  - **預設：** `None`
+  - 模型的別名，方便人類閱讀參照。可用來將 litellm 模型名稱（例如 "huggingface/codellama/CodeLlama-7b-Instruct-hf"）改成更容易理解的名稱（"codellama"）。
+  - **用法：** 
      ```shell
      litellm --alias my-gpt-model
      ```
 
-### --api_base
-   - **Default:** `None`
-   - The API base for the model LiteLLM should call.
-   - **Usage:** 
+### --api_base {#--api_base}
+  - **預設：** `None`
+  - LiteLLM 應呼叫的模型 API base。
+  - **用法：** 
      ```shell
      litellm --model huggingface/tinyllama --api_base https://k58ory32yinf1ly0.us-east-1.aws.endpoints.huggingface.cloud
      ```
 
-### --api_version
-   - **Default:** `litellm.AZURE_DEFAULT_API_VERSION` (currently `2025-02-01-preview`)
-   - For Azure services, specify the API version.
-   - **Usage:** 
+### --api_version {#--api_version}
+  - **預設：** `litellm.AZURE_DEFAULT_API_VERSION`（目前為 `2025-02-01-preview`）
+  - 針對 Azure 服務，請指定 API 版本。
+  - **用法：** 
      ```shell
      litellm --model azure/gpt-deployment --api_version 2023-08-01 --api_base https://<your api base>"
      ```
 
-### --headers
-   - **Default:** `None`
-   - Headers for the API call (as JSON string).
-   - **Usage:** 
+### --headers {#--headers}
+  - **預設：** `None`
+  - API 呼叫的標頭（JSON 字串）。
+  - **用法：** 
      ```shell
      litellm --model my-model --headers '{"Authorization": "Bearer token"}'
      ```
 
-### --add_key
-   - **Default:** `None`
-   - Add a key to the model configuration.
-   - **Usage:** 
+### --add_key {#--add_key}
+  - **預設：** `None`
+  - 將鍵新增至模型設定。
+  - **用法：** 
      ```shell
      litellm --add_key my-api-key
      ```
 
-### --save
-   - **Type:** `bool` (Flag)
-   - Save the model-specific config.
-   - **Usage:** 
+### --save {#--save}
+  - **類型：** `bool`（旗標）
+  - 儲存模型專屬設定。
+  - **用法：** 
      ```shell
      litellm --model {{openai_small}} --save
      ```
 
-## Model Parameters
+## 模型參數 {#model-parameters}
 
-### --temperature
-   - **Default:** `None`
-   - **Type:** `float`
-   - Set the temperature for the model.
-   - **Usage:** 
+### --temperature {#--temperature}
+  - **預設值：** `None`
+  - **類型：** `float`
+  - 為模型設定溫度。
+  - **用法：** 
      ```shell
      litellm --temperature 0.7
      ```
 
-### --max_tokens
-   - **Default:** `None`
-   - **Type:** `int`
-   - Set the maximum number of tokens for the model output.
-   - **Usage:** 
+### --max_tokens {#--max_tokens}
+  - **預設值：** `None`
+  - **類型：** `int`
+  - 為模型輸出設定最大 token 數。
+  - **用法：** 
      ```shell
      litellm --max_tokens 50
      ```
 
-### --request_timeout
-   - **Default:** `None`
-   - **Type:** `int`
-   - Set the timeout in seconds for completion calls.
-   - **Usage:** 
+### --request_timeout {#--request_timeout}
+  - **預設值：** `None`
+  - **類型：** `int`
+  - 設定 completion 請求的逾時秒數。
+  - **用法：** 
      ```shell
      litellm --request_timeout 300
      ```
 
-### --max_budget
-   - **Default:** `None`
-   - **Type:** `float`
-   - Set max budget for API calls. Works for hosted models like OpenAI, TogetherAI, Anthropic, etc.
-   - **Usage:** 
+### --max_budget {#--max_budget}
+  - **預設值：** `None`
+  - **類型：** `float`
+  - 設定 API 請求的最高預算。適用於 OpenAI、TogetherAI、Anthropic 等代管模型。
+  - **用法：** 
      ```shell
      litellm --max_budget 100.0
      ```
 
-### --drop_params
-   - **Type:** `bool` (Flag)
-   - Drop any unmapped params.
-   - **Usage:** 
+### --drop_params {#--drop_params}
+  - **類型：** `bool`（旗標）
+  - 捨棄任何未對應的參數。
+  - **用法：** 
      ```shell
      litellm --drop_params
      ```
 
-### --add_function_to_prompt
-   - **Type:** `bool` (Flag)
-   - If a function passed but unsupported, pass it as a part of the prompt.
-   - **Usage:** 
+### --add_function_to_prompt {#--add_function_to_prompt}
+  - **類型：** `bool`（旗標）
+  - 如果傳入了函式但不受支援，則將其作為提示的一部分傳遞。
+  - **用法：** 
      ```shell
      litellm --add_function_to_prompt
      ```
 
-## Database Configuration
+## 資料庫設定 {#database-configuration}
 
-### --iam_token_db_auth
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Authenticates to PostgreSQL on Amazon RDS or Amazon Aurora with a short-lived IAM token instead of a stored password.
-   - LiteLLM generates the token with boto3 and refreshes it before it expires.
-   - This option supports AWS only. For Azure Database for PostgreSQL, use [`--azure_postgresql_auth`](#--azure_postgresql_auth) instead. For Google Cloud SQL, run the Cloud SQL Auth Proxy with `--auto-iam-authn`, then configure `DATABASE_URL` to use the local proxy connection. Do not enable this flag for Cloud SQL.
-   - **Required Environment Variables:**
-     - `DATABASE_HOST` - The RDS database host
-     - `DATABASE_PORT` - The database port
-     - `DATABASE_USER` - The database user
-     - `DATABASE_NAME` - The database name
-     - `DATABASE_SCHEMA` (optional) - The database schema
-   - **Usage:** 
+### --iam_token_db_auth {#--iam_token_db_auth}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 使用短效 IAM token 來向 Amazon RDS 或 Amazon Aurora 上的 PostgreSQL 驗證，而不是使用儲存的密碼。
+  - LiteLLM 會使用 boto3 產生 token，並在其過期前重新整理。
+  - 此選項僅支援 AWS。若為 Azure Database for PostgreSQL，請改用 [`--azure_postgresql_auth`](#--azure_postgresql_auth)。若為 Google Cloud SQL，請搭配 `--auto-iam-authn` 執行 Cloud SQL Auth Proxy，然後設定 `DATABASE_URL` 以使用本機 proxy 連線。請勿為 Cloud SQL 啟用此旗標。
+  - **必要環境變數：**
+     - `DATABASE_HOST` - RDS 資料庫主機
+     - `DATABASE_PORT` - 資料庫埠號
+     - `DATABASE_USER` - 資料庫使用者
+     - `DATABASE_NAME` - 資料庫名稱
+     - `DATABASE_SCHEMA`（選用）- 資料庫結構描述
+  - **用法：** 
      ```shell
      litellm --iam_token_db_auth
      ```
-   - **Usage - set Environment Variable:** `IAM_TOKEN_DB_AUTH`
+   - **用法 - 設定環境變數：** `IAM_TOKEN_DB_AUTH`
      ```shell
      export IAM_TOKEN_DB_AUTH=True
      export DATABASE_HOST=mydb.us-east-1.rds.amazonaws.com
@@ -348,36 +348,36 @@ This page documents all command-line interface (CLI) arguments available for the
      litellm
      ```
 
-#### Amazon ECS setup
+#### Amazon ECS 設定 {#amazon-ecs-setup}
 
-For LiteLLM running on Amazon ECS:
+對於在 Amazon ECS 上執行的 LiteLLM：
 
-1. Enable IAM database authentication on the Amazon RDS or Aurora PostgreSQL instance.
-2. Configure the PostgreSQL user for IAM authentication.
-3. Grant the ECS task role permission to connect to the database as that user.
-4. Set `IAM_TOKEN_DB_AUTH=True` and the required `DATABASE_*` variables in the ECS task definition.
+1. 在 Amazon RDS 或 Aurora PostgreSQL 執行個體上啟用 IAM 資料庫驗證。
+2. 將 PostgreSQL 使用者設定為可使用 IAM 驗證。
+3. 授予 ECS 任務角色以該使用者身分連線至資料庫的權限。
+4. 在 ECS 任務定義中設定 `IAM_TOKEN_DB_AUTH=True` 與必要的 `DATABASE_*` 變數。
 
-LiteLLM uses the task role's AWS credentials to generate and refresh the database token. A static database password is not required.
+LiteLLM 會使用任務角色的 AWS 憑證來產生並重新整理資料庫 token。不需要靜態資料庫密碼。
 
-These settings are read from the task environment when LiteLLM starts. To change the flag or connection parameters, deploy a new task definition or restart the proxy tasks. Token refreshes do not require a restart.
+LiteLLM 啟動時會從任務環境讀取這些設定。若要變更旗標或連線參數，請部署新的任務定義或重新啟動 proxy 任務。token 重新整理不需要重新啟動。
 
-### --azure_postgresql_auth
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Authenticates to Azure Database for PostgreSQL Flexible Server with a short-lived Microsoft Entra ID access token instead of a stored password.
-   - LiteLLM requests the token for the `https://ossrdbms-aad.database.windows.net/.default` scope through the Azure Identity library and refreshes it before it expires.
-   - This option supports Azure only, and it cannot be combined with `--iam_token_db_auth`. The proxy exits at startup when both are enabled.
-   - **Required Environment Variables:**
-     - `DATABASE_HOST` - The server host, such as `myserver.postgres.database.azure.com`
-     - `DATABASE_USER` - The Microsoft Entra principal that exists as a PostgreSQL role, such as a managed identity name or a user principal name
-     - `DATABASE_NAME` - The database name
-     - `DATABASE_PORT` (optional) - The database port, `5432` by default
-     - `DATABASE_SCHEMA` (optional) - The database schema
-   - **Usage:**
+### --azure_postgresql_auth {#--azure_postgresql_auth}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 使用短效 Microsoft Entra ID 存取 token 來向 Azure Database for PostgreSQL Flexible Server 驗證，而不是使用儲存的密碼。
+  - LiteLLM 透過 Azure Identity 程式庫請求 `https://ossrdbms-aad.database.windows.net/.default` 範圍的 token，並在其過期前重新整理。
+  - 此選項僅支援 Azure，且不能與 `--iam_token_db_auth` 一起使用。當兩者都啟用時，proxy 會在啟動時結束。
+  - **必要環境變數：**
+     - `DATABASE_HOST` - 伺服器主機，例如 `myserver.postgres.database.azure.com`
+     - `DATABASE_USER` - 作為 PostgreSQL 角色存在的 Microsoft Entra 主體，例如受控身分名稱或使用者主體名稱
+     - `DATABASE_NAME` - 資料庫名稱
+     - `DATABASE_PORT`（選用）- 資料庫埠號，預設為 `5432`
+     - `DATABASE_SCHEMA`（選用）- 資料庫結構描述
+   - **用法：**
      ```shell
      litellm --azure_postgresql_auth
      ```
-   - **Usage - set Environment Variable:** `AZURE_POSTGRESQL_AUTH`
+   - **用法 - 設定環境變數：** `AZURE_POSTGRESQL_AUTH`
      ```shell
      export AZURE_POSTGRESQL_AUTH=True
      export DATABASE_HOST=myserver.postgres.database.azure.com
@@ -386,39 +386,39 @@ These settings are read from the task environment when LiteLLM starts. To change
      litellm
      ```
 
-#### Choosing the Azure identity
+#### 選擇 Azure 身分識別 {#choosing-the-azure-identity}
 
-LiteLLM reads the credential from the environment, so one flag covers every hosting model.
+LiteLLM 會從環境讀取憑證，因此一個旗標即可涵蓋所有代管模式。
 
-| Identity | How to select it |
+| 身分 | 如何選取 |
 | --- | --- |
-| User-assigned managed identity | Set `AZURE_CLIENT_ID` to the identity's client ID. |
-| System-assigned managed identity | Set nothing extra when the host has one attached. |
-| Workload identity on AKS | Let the workload identity webhook inject `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_AUTHORITY_HOST`, and `AZURE_FEDERATED_TOKEN_FILE` into the pod. |
-| Service principal | Set `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_CLIENT_SECRET`. |
-| Local development | Run `az login` and LiteLLM uses that session. |
+| 使用者指派的受控身分 | 將 `AZURE_CLIENT_ID` 設為該身分的用戶端 ID。 |
+| 系統指派的受控身分 | 若主機已附加，則無需額外設定。 |
+| AKS 上的工作負載身分 | 讓 workload identity webhook 將 `AZURE_CLIENT_ID`、`AZURE_TENANT_ID`、`AZURE_AUTHORITY_HOST` 和 `AZURE_FEDERATED_TOKEN_FILE` 注入到 pod 中。 |
+| 服務主體 | 設定 `AZURE_CLIENT_ID`、`AZURE_TENANT_ID` 和 `AZURE_CLIENT_SECRET`。 |
+| 本機開發 | 執行 `az login`，LiteLLM 便會使用該工作階段。 |
 
-#### Setting DATABASE_USER
+#### 設定 DATABASE_USER {#setting-database_user}
 
-Put the principal in `DATABASE_USER` exactly as PostgreSQL knows it, including any `@`. A user principal name such as `litellm@contoso.onmicrosoft.com` goes in as it is, and LiteLLM percent-encodes it while assembling the connection URL. A value that is already percent-encoded, such as `litellm%40contoso.onmicrosoft.com`, is passed through unchanged, so a deployment carried over from RDS IAM authentication keeps working.
+將主體放入 `DATABASE_USER`，並完全依照 PostgreSQL 所識別的方式輸入，包括任何 `@`。像 `litellm@contoso.onmicrosoft.com` 這樣的使用者主體名稱會原樣輸入，LiteLLM 會在組裝連線 URL 時對其進行百分比編碼。已經完成百分比編碼的值，例如 `litellm%40contoso.onmicrosoft.com`，會原封不動地傳遞，因此從 RDS IAM 驗證延續過來的部署仍可正常運作。
 
-#### Azure Kubernetes Service setup
+#### Azure Kubernetes Service 設定 {#azure-kubernetes-service-setup}
 
-For LiteLLM running on AKS with workload identity:
+對於在 AKS 上搭配工作負載身分執行的 LiteLLM：
 
-1. Enable Microsoft Entra authentication on the Azure Database for PostgreSQL Flexible Server.
-2. Create the PostgreSQL role for the workload identity, either by adding it as a Microsoft Entra administrator or by having an existing administrator run `pgaadauth_create_principal`.
-3. Grant that role the privileges LiteLLM needs on the database.
-4. Annotate the LiteLLM service account with the identity's client ID and label the pod for workload identity.
-5. Set `AZURE_POSTGRESQL_AUTH=True` and the required `DATABASE_*` variables on the deployment.
+1. 在 Azure Database for PostgreSQL Flexible Server 上啟用 Microsoft Entra 驗證。
+2. 為工作負載身分建立 PostgreSQL 角色，方式可以是將其新增為 Microsoft Entra 管理員，或由既有管理員執行 `pgaadauth_create_principal`。
+3. 授予該角色 LiteLLM 在資料庫上所需的權限。
+4. 在 LiteLLM 服務帳戶上加上該身分的用戶端 ID 註解，並為 pod 加上工作負載身分標籤。
+5. 在部署上設定 `AZURE_POSTGRESQL_AUTH=True` 與必要的 `DATABASE_*` 變數。
 
-LiteLLM uses the pod's federated token to request and refresh the database token. A static database password is not required, so the server can keep password authentication disabled.
+LiteLLM 會使用 pod 的聯邦 token 來請求並重新整理資料庫 token。不需要靜態資料庫密碼，因此伺服器可以維持停用密碼驗證。
 
-These settings are read from the environment when LiteLLM starts. To change the flag or the connection parameters, restart the proxy. Token refreshes do not require a restart.
+LiteLLM 啟動時會從環境讀取這些設定。若要變更旗標或連線參數，請重新啟動 proxy。token 重新整理不需要重新啟動。
 
-#### Deploying with the Helm chart
+#### 使用 Helm chart 部署 {#deploying-with-the-helm-chart}
 
-The chart turns the flag on per database endpoint. Setting `database.writer.useAzureEntraAuth` emits `AZURE_POSTGRESQL_AUTH=true` and omits `DATABASE_PASSWORD`, so the writer needs no password in its Secret. The username still comes from `passwordSecret.usernameKey`.
+此 chart 會針對每個資料庫端點開啟該旗標。設定 `database.writer.useAzureEntraAuth` 會產生 `AZURE_POSTGRESQL_AUTH=true`，並省略 `DATABASE_PASSWORD`，因此寫入端的 Secret 中不需要密碼。使用者名稱仍來自 `passwordSecret.usernameKey`。
 
 ```yaml
 database:
@@ -431,108 +431,108 @@ database:
       usernameKey: username
 ```
 
-A read replica takes the same key under `database.reader`, and it requires the writer to use Entra authentication as well because the proxy reads one global toggle. Setting `useIAMAuth` and `useAzureEntraAuth` on the same endpoint fails the render with a message naming both.
+讀取複本會在 `database.reader` 下使用相同的鍵，而它也要求寫入端同樣使用 Entra 驗證，因為 proxy 只會讀取一個全域切換。若在同一端點上同時設定 `useIAMAuth` 與 `useAzureEntraAuth`，render 會失敗並顯示一則訊息，列出這兩者。
 
-### --use_prisma_db_push
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Use `prisma db push` instead of `prisma migrate` for database schema updates. This is useful when you want to quickly sync your database schema without creating migration files.
-   - **Usage:** 
+### --use_prisma_db_push {#--use_prisma_db_push}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 使用 `prisma db push` 取代 `prisma migrate` 來進行資料庫結構描述更新。當您想快速同步資料庫結構描述而不建立 migration 檔案時，這很有用。
+  - **用法：** 
      ```shell
      litellm --use_prisma_db_push
      ```
 
-## Debugging
+## 疑難排解 {#debugging}
 
-### --debug
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Enable debugging mode for the input.
-   - **Usage:** 
+### --debug {#--debug}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 啟用輸入的除錯模式。
+  - **用法：** 
      ```shell
      litellm --debug
      ```
-  - **Usage - set Environment Variable:** `DEBUG`
+  - **用法 - 設定環境變數：** `DEBUG`
     ```shell
     export DEBUG=True
     litellm
     ```
 
-### --detailed_debug
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Enable detailed debugging mode to view verbose debug logs.
-   - **Usage:** 
+### --detailed_debug {#--detailed_debug}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 啟用詳細除錯模式以檢視詳細的除錯記錄。
+  - **用法：** 
      ```shell
      litellm --detailed_debug
      ```
-  - **Usage - set Environment Variable:** `DETAILED_DEBUG`
+  - **用法 - 設定環境變數：** `DETAILED_DEBUG`
     ```shell
     export DETAILED_DEBUG=True
     litellm
     ```
 
-### --local
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - For local debugging purposes.
-   - **Usage:** 
+### --local {#--local}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 用於本機除錯用途。
+  - **用法：** 
      ```shell
      litellm --local
      ```
 
-## Testing & Health Checks
+## 測試與健康檢查 {#testing--health-checks}
 
-### --test
-   - **Type:** `bool` (Flag)
-   - Proxy chat completions URL to make a test request to.
-   - **Usage:** 
+### --test {#--test}
+  - **類型：** `bool`（旗標）
+  - 用於進行測試請求的 Proxy chat completions URL。
+  - **用法：** 
      ```shell
      litellm --test
      ```
 
-### --test_async
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - Calls async endpoints `/queue/requests` and `/queue/response`.
-   - **Usage:** 
+### --test_async {#--test_async}
+  - **預設：** `False`
+  - **類型：** `bool`（旗標）
+  - 呼叫非同步端點 `/queue/requests` 和 `/queue/response`。
+  - **用法：** 
      ```shell
      litellm --test_async
      ```
 
-### --num_requests
-   - **Default:** `10`
-   - **Type:** `int`
-   - Number of requests to hit async endpoint with (used with `--test_async`).
-   - **Usage:** 
+### --num_requests {#--num_requests}
+  - **預設：** `10`
+  - **類型：** `int`
+  - 向非同步端點發送的請求數量（與 `--test_async` 搭配使用）。
+  - **用法：** 
      ```shell
      litellm --test_async --num_requests 100
      ```
 
-### --health
-   - **Type:** `bool` (Flag)
-   - Runs a health check on all models in config.yaml.
-   - **Usage:** 
+### --health {#--health}
+  - **類型：** `bool`（旗標）
+  - 對 config.yaml 中所有模型執行健康檢查。
+  - **用法：** 
      ```shell
      litellm --health
      ```
 
-## Other Options
+## 其他選項 {#other-options}
 
-### --version
-   - **Short form:** `-v`
-   - **Type:** `bool` (Flag)
-   - Print LiteLLM version and exit.
-   - **Usage:** 
+### --version {#--version}
+  - **短格式：** `-v`
+  - **類型：** `bool`（旗標）
+  - 列印 LiteLLM 版本並結束。
+  - **用法：** 
      ```shell
      litellm --version
      ```
 
-### --use_queue
-   - **Default:** `False`
-   - **Type:** `bool` (Flag)
-   - To use celery workers for async endpoints.
-   - **Usage:** 
+### --use_queue {#--use_queue}
+  - **預設：** `False`
+  - **類型：** `bool`（旗標）
+  - 使用 celery workers 處理非同步端點。
+  - **用法：** 
      ```shell
      litellm --use_queue
      ```

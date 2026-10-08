@@ -1,23 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Nebius AI Studio
+# Nebius AI Studio {#nebius-ai-studio}
 https://docs.nebius.com/studio/inference/quickstart
 
 :::tip
 
-**Litellm provides support to all models from Nebius AI Studio. To use a model, set `model=nebius/<any-model-on-nebius-ai-studio>` as a prefix for litellm requests. The full list of supported models is provided at https://studio.nebius.ai/ **
+**Litellm 支援 Nebius AI Studio 的所有模型。若要使用模型，請將 `model=nebius/<any-model-on-nebius-ai-studio>` 設為 litellm 請求的前綴。完整的支援模型清單請參閱 https://studio.nebius.ai/ **
 
 :::
 
-## API Key
+## API 金鑰 {#api-key}
 ```python
 import os
 # env variable
 os.environ['NEBIUS_API_KEY']
 ```
 
-## Sample Usage: Text Generation
+## 範例用法：文字生成 {#sample-usage-text-generation}
 ```python
 from litellm import completion
 import os
@@ -44,7 +44,7 @@ response = completion(
 print(response)
 ```
 
-## Sample Usage - Streaming
+## 範例用法 - 串流 {#sample-usage---streaming}
 ```python
 from litellm import completion
 import os
@@ -74,7 +74,7 @@ for chunk in response:
     print(chunk)
 ```
 
-## Sample Usage - Embedding
+## 範例用法 - 嵌入 {#sample-usage---embedding}
 ```python
 from litellm import embedding
 import os
@@ -88,11 +88,11 @@ print(response)
 ```
 
 
-## Usage with LiteLLM Proxy Server
+## 與 LiteLLM Proxy Server 一起使用 {#usage-with-litellm-proxy-server}
 
-Here's how to call a Nebius AI Studio model with the LiteLLM Proxy Server
+以下說明如何透過 LiteLLM Proxy Server 呼叫 Nebius AI Studio 模型
 
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -101,12 +101,12 @@ Here's how to call a Nebius AI Studio model with the LiteLLM Proxy Server
         model: nebius/<your-model-name>  # add nebius/ prefix to use Nebius AI Studio as provider
         api_key: api-key                 # api key to send your model
   ```
-2. Start the proxy 
+2. 啟動 proxy 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 傳送請求到 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -153,43 +153,43 @@ Here's how to call a Nebius AI Studio model with the LiteLLM Proxy Server
 
   </Tabs>
 
-## Supported Parameters
+## 支援的參數 {#supported-parameters}
 
-The Nebius provider supports the following parameters:
+Nebius 提供者支援下列參數：
 
-### Chat Completion Parameters
+### 聊天完成參數 {#chat-completion-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 | --------- | ---- | ----------- |
-| frequency_penalty | number | Penalizes new tokens based on their frequency in the text |
-| function_call | string/object | Controls how the model calls functions |
-| functions | array | List of functions for which the model may generate JSON inputs |
-| logit_bias | map | Modifies the likelihood of specified tokens |
-| max_tokens | integer | Maximum number of tokens to generate |
-| n | integer | Number of completions to generate |
-| presence_penalty | number | Penalizes tokens based on if they appear in the text so far |
-| response_format | object | Format of the response, e.g., `{"type": "json"}` |
-| seed | integer | Sampling seed for deterministic results |
-| stop | string/array | Sequences where the API will stop generating tokens |
-| stream | boolean | Whether to stream the response |
-| temperature | number | Controls randomness (0-2) |
-| top_p | number | Controls nucleus sampling |
-| tool_choice | string/object | Controls which (if any) function to call |
-| tools | array | List of tools the model can use |
-| user | string | User identifier |
+| frequency_penalty | number | 依據文字中出現頻率對新 tokens 施加懲罰 |
+| function_call | string/object | 控制模型如何呼叫函式 |
+| functions | array | 函式清單，模型可為其產生 JSON 輸入 |
+| logit_bias | map | 修改指定 tokens 的可能性 |
+| max_tokens | integer | 要生成的 token 最大數量 |
+| n | integer | 要生成的完成數量 |
+| presence_penalty | number | 依據 tokens 到目前為止是否出現在文字中對其施加懲罰 |
+| response_format | object | 回應格式，例如 `{"type": "json"}` |
+| seed | integer | 用於決定性結果的取樣種子 |
+| stop | string/array | API 將停止生成 tokens 的序列 |
+| stream | boolean | 是否串流回應 |
+| temperature | number | 控制隨機性（0-2） |
+| top_p | number | 控制 nucleus sampling |
+| tool_choice | string/object | 控制要呼叫哪個函式（如果有） |
+| tools | array | 模型可使用的工具清單 |
+| user | string | 使用者識別碼 |
 
-### Embedding Parameters
+### 嵌入參數 {#embedding-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 | --------- | ---- | ----------- |
-| input | string/array | Text to embed |
-| user | string | User identifier |
+| input | string/array | 要嵌入的文字 |
+| user | string | 使用者識別碼 |
 
-## Error Handling
+## 錯誤處理 {#error-handling}
 
-The integration uses the standard LiteLLM error handling. Common errors include:
+此整合使用標準的 LiteLLM 錯誤處理。常見錯誤包括：
 
-- **Authentication Error**: Check your API key
-- **Model Not Found**: Ensure you're using a valid model name
-- **Rate Limit Error**: You've exceeded your rate limits
-- **Timeout Error**: Request took too long to complete
+- **驗證錯誤**：檢查您的 API 金鑰
+- **找不到模型**：請確認您使用的是有效的模型名稱
+- **速率限制錯誤**：您已超過速率限制
+- **逾時錯誤**：請求完成所需時間過長

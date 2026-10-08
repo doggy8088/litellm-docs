@@ -2,22 +2,21 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# OpenMeter
+# OpenMeter {#openmeter}
 
-[OpenMeter](https://openmeter.io/) is an Open Source Usage-Based Billing solution for AI/Cloud applications. It integrates with Stripe for easy billing.
+[OpenMeter](https://openmeter.io/) 是一個適用於 AI/Cloud 應用程式的開源、依使用量計費解決方案。它與 Stripe 整合，方便進行計費。
 
 <Image img={require('../../img/openmeter.png')} />
 
 :::info
-We want to learn how we can make the callbacks better! Meet the LiteLLM [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) or
-join our [discord](https://discord.gg/wuPM9dRgDw)
+我們想了解如何讓回呼更好！歡迎與 LiteLLM 的 [創辦人](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 見面，或
+加入我們的 [discord](https://discord.gg/wuPM9dRgDw)
 ::: 
 
+## 快速開始 {#quick-start}
+只需 2 行程式碼，即可透過 OpenMeter 立即記錄您 **跨所有提供者** 的回應
 
-## Quick Start
-Use just 2 lines of code, to instantly log your responses **across all providers** with OpenMeter
-
-Get your OpenMeter API Key from https://openmeter.cloud/meters
+從 https://openmeter.cloud/meters 取得您的 OpenMeter API 金鑰
 
 ```python
 litellm.callbacks = ["openmeter"] # logs cost + usage of successful calls to openmeter
@@ -54,7 +53,7 @@ response = litellm.completion(
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Add to Config.yaml
+1. 加入到 Config.yaml
 ```yaml
 model_list:
 - litellm_params:
@@ -67,13 +66,13 @@ litellm_settings:
   callbacks: ["openmeter"] # 👈 KEY CHANGE
 ```
 
-2. Start Proxy
+2. 啟動 Proxy
 
 ```
 litellm --config /path/to/config.yaml
 ```
 
-3. Test it! 
+3. 測試看看！ 
 
 ```bash
 curl --location 'http://0.0.0.0:4000/chat/completions' \
@@ -92,6 +91,5 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </TabItem>
 </Tabs>
-
 
 <Image img={require('../../img/openmeter_img_2.png')} />

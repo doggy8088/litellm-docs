@@ -1,25 +1,25 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# LiteLLM Managed Vector Stores
+# LiteLLM 受管理向量儲存 {#litellm-managed-vector-stores}
 
-Register an existing provider vector store (Bedrock Knowledge Base, Vertex AI Search datastore, Azure AI Search index, Milvus collection, Valkey search index, [MongoDB Vector Search index (BETA)](../providers/mongodb_vector_stores.md), ...) with LiteLLM, so that every consumer of the proxy can use it through one OpenAI-compatible API without knowing the provider or holding its credentials.
+將既有的提供者向量儲存（Bedrock Knowledge Base、Vertex AI Search datastore、Azure AI Search index、Milvus collection、Valkey search index、[MongoDB Vector Search index (BETA)](../providers/mongodb_vector_stores.md) 等）註冊到 LiteLLM，讓 proxy 的每個使用者都能透過一個相容 OpenAI 的 API 使用它，而無須知道提供者或持有其憑證。
 
-A managed vector store is a mapping, stored in `config.yaml` or in the LiteLLM database, of:
+受管理向量儲存是儲存在 `config.yaml` 或 LiteLLM 資料庫中的對應，包含：
 
-| Field | Required | Description |
+| 欄位 | 必填 | 說明 |
 |---|---|---|
-| `vector_store_id` | Yes | The id clients will reference, typically the provider's own store id (Knowledge Base id, datastore id, index name) |
-| `custom_llm_provider` | Yes | Which provider backend to route to, e.g. `bedrock`, `vertex_ai/search_api`, `azure_ai`, `milvus`, `mongodb` (BETA), `valkey`, `gemini`, `openai`, `pg_vector` |
-| `vector_store_name` | No | Human readable name shown in the UI |
-| `vector_store_description` | No | Description shown in the UI |
-| `vector_store_metadata` | No | Free-form metadata object |
-| `litellm_credential_name` | No | Name of a [stored credential](../proxy/config_settings.md) to authenticate with |
-| `litellm_params` | No | Provider parameters, e.g. `vertex_project` and `vertex_location` for Vertex AI, `aws_region_name` for Bedrock |
+| `vector_store_id` | 是 | 用戶端將參照的 id，通常是提供者自己的儲存 id（Knowledge Base id、datastore id、index name） |
+| `custom_llm_provider` | 是 | 要路由到哪個提供者後端，例如 `bedrock`、`vertex_ai/search_api`、`azure_ai`、`milvus`、`mongodb`（BETA）、`valkey`、`gemini`、`openai`、`pg_vector` |
+| `vector_store_name` | 否 | 在 UI 中顯示的人類可讀名稱 |
+| `vector_store_description` | 否 | 在 UI 中顯示的說明 |
+| `vector_store_metadata` | 否 | 自由格式中繼資料物件 |
+| `litellm_credential_name` | 否 | 要用來驗證的 [已儲存憑證](../proxy/config_settings.md) 名稱 |
+| `litellm_params` | 否 | 提供者參數，例如 Vertex AI 的 `vertex_project` 和 `vertex_location`，Bedrock 的 `aws_region_name` |
 
-Registering does not create anything on the provider. To create a new store upstream, use [`POST /v1/vector_stores`](./create.md) instead.
+註冊不會在提供者端建立任何內容。若要在上游建立新儲存，請改用 [`POST /v1/vector_stores`](./create.md)。
 
-## Register a vector store
+## 註冊向量儲存 {#register-a-vector-store}
 
 <Tabs>
 <TabItem value="config" label="config.yaml">
@@ -40,7 +40,7 @@ vector_store_registry:
       vertex_location: "global"
 ```
 
-`vector_store_id` and `custom_llm_provider` are required inside `litellm_params`; the proxy fails to start without them.
+`vector_store_id` 和 `custom_llm_provider` 在 `litellm_params` 中為必填；沒有它們，proxy 無法啟動。
 
 </TabItem>
 <TabItem value="api" label="Management API">
@@ -60,19 +60,19 @@ curl -X POST 'http://localhost:4000/vector_store/new' \
   }'
 ```
 
-The store is written to the LiteLLM database and is immediately available to direct search; no restart needed. If the proxy started with no registered vector stores, chat retrieval for its first UI or API registration becomes available after database synchronization or a proxy restart. The response echoes the stored object with sensitive `litellm_params` values redacted.
+儲存會寫入 LiteLLM 資料庫，並可立即供直接搜尋使用；不需要重新啟動。如果 proxy 在沒有已註冊向量儲存的情況下啟動，則其第一個 UI 或 API 註冊的聊天擷取會在資料庫同步或 proxy 重新啟動後可用。回應會回傳儲存的物件，並將敏感的 `litellm_params` 值遮罩。
 
 </TabItem>
 <TabItem value="ui" label="Admin UI">
 
-In the Admin UI go to **Tools > Vector Stores > Add new vector store**, pick the provider, and fill in the store id and provider parameters. The UI calls the same `POST /vector_store/new` endpoint. Screenshots are in the [chat completions guide](../completion/knowledgebase.md).
+在 Admin UI 中前往 **Tools > Vector Stores > Add new vector store**，選擇提供者，並填入儲存 id 與提供者參數。UI 會呼叫相同的 `POST /vector_store/new` 端點。截圖請見 [聊天完成指南](../completion/knowledgebase.md)。
 
 </TabItem>
 </Tabs>
 
-## Use a registered store
+## 使用已註冊的儲存 {#use-a-registered-store}
 
-Search it through the unified endpoint. LiteLLM resolves the provider and credentials from the registration:
+透過統一端點搜尋它。LiteLLM 會從註冊資訊中解析提供者與憑證：
 
 ```bash showLineNumbers title="Unified search"
 curl -X POST 'http://localhost:4000/v1/vector_stores/my-datastore_1234567890/search' \
@@ -81,9 +81,9 @@ curl -X POST 'http://localhost:4000/v1/vector_stores/my-datastore_1234567890/sea
   -d '{"query": "How do I authenticate?"}'
 ```
 
-The response is the OpenAI `vector_store.search_results.page` shape regardless of provider. See [Search](./search.md) for all request parameters.
+無論提供者為何，回應都是 OpenAI `vector_store.search_results.page` 形狀。所有請求參數請參見 [Search](./search.md)。
 
-Or attach it to a chat completion, and LiteLLM will search the store and inject the results as context before calling the model:
+或者將它附加到聊天完成中，LiteLLM 會搜尋該儲存，並在呼叫模型之前將結果作為上下文注入：
 
 ```bash showLineNumbers title="RAG in /chat/completions"
 curl -X POST 'http://localhost:4000/v1/chat/completions' \
@@ -96,11 +96,11 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   }'
 ```
 
-The request must reference the store explicitly (top-level `vector_store_ids` or inside `tools`); registering a store does not by itself change any chat completion. Details, citations, and streaming behavior: [Using Vector Stores with Chat Completions](../completion/knowledgebase.md).
+請求必須明確參照該儲存（頂層 `vector_store_ids` 或在 `tools` 之內）；註冊儲存本身不會改變任何聊天完成。詳細資訊、引註與串流行為： [在聊天完成中使用向量儲存](../completion/knowledgebase.md)。
 
-### Retrieved context goes through your pre-call guardrails
+### 擷取到的上下文會經過您的預呼叫防護欄 {#retrieved-context-goes-through-your-pre-call-guardrails}
 
-A document in the store is untrusted input: it can carry an instruction aimed at the model (indirect prompt injection through RAG). So every guardrail that runs `pre_call` on the request (`default_on: true` in the config, or requested through `guardrails` on the request, key, or team) also scans each store's retrieved context before it is injected into the prompt, one scan per store. A guardrail that blocks returns the same 400 it would return for the user's own message, with `guardrail_name` and `guardrail_mode` in the error, and the model is never called. A guardrail that masks rewrites the injected context instead. Guardrails set to `during_call` or `post_call` keep seeing the request and the response as before and are not run on the retrieved context
+儲存中的文件是不受信任的輸入：它可能帶有針對模型的指令（透過 RAG 的間接提示注入）。因此，任何在請求上執行 `pre_call` 的防護欄（`default_on: true` 在設定中，或透過請求、金鑰或團隊上的 `guardrails` 要求）也會在每個儲存的擷取內容注入提示之前先掃描該內容，每個儲存掃描一次。封鎖型防護欄會回傳與封鎖使用者自身訊息時相同的 400，錯誤中包含 `guardrail_name` 和 `guardrail_mode`，且模型絕不會被呼叫。遮罩型防護欄則會改寫注入的上下文。設定為 `during_call` 或 `post_call` 的防護欄仍會像之前一樣看到請求與回應，但不會針對擷取到的上下文執行
 
 ```json title="A blocked chunk, with the Azure Prompt Shield guardrail from the guardrails docs"
 {
@@ -119,25 +119,25 @@ A document in the store is untrusted input: it can carry an instruction aimed at
 }
 ```
 
-A guardrail that fails while scanning the retrieved context fails the request too, rather than injecting the context unscanned
+在掃描擷取到的上下文時失敗的防護欄，也會讓請求失敗，而不是將未掃描的上下文注入
 
-## Management API reference
+## Management API 參考 {#management-api-reference}
 
-All endpoints require a LiteLLM key (`Authorization: Bearer ...`). Access can be restricted with `general_settings.disable_vector_stores_for_internal_users` and `allow_vector_stores_for_team_admins`; proxy admins always have access.
+所有端點都需要 LiteLLM key（`Authorization: Bearer ...`）。可透過 `general_settings.disable_vector_stores_for_internal_users` 與 `allow_vector_stores_for_team_admins` 限制存取；proxy 管理員一律可存取。
 
-| Endpoint | Method | Body / params |
+| 端點 | 方法 | 主體 / 參數 |
 |---|---|---|
-| `/vector_store/new` | POST | The fields from the table above |
-| `/vector_store/list` | GET | `page`, `page_size` (also available as `/v1/vector_store/list`) |
+| `/vector_store/new` | POST | 上表中的欄位 |
+| `/vector_store/list` | GET | `page`、`page_size`（也可作為 `/v1/vector_store/list`） |
 | `/vector_store/info` | POST | `{"vector_store_id": "..."}` |
-| `/vector_store/update` | POST | `vector_store_id` plus any of `custom_llm_provider`, `vector_store_name`, `vector_store_description`, `vector_store_metadata` |
+| `/vector_store/update` | POST | `vector_store_id` 加上 `custom_llm_provider`、`vector_store_name`、`vector_store_description`、`vector_store_metadata` 中的任一項 |
 | `/vector_store/delete` | POST | `{"vector_store_id": "..."}` |
 
-`GET /vector_store/list` returns `{"object": "list", "data": [...], "total_count": n, "current_page": n, "total_pages": n}`. Stores registered via the API or UI are stamped with the creating key's `team_id` and `user_id`; stores created with a team are scoped to that team in list and search results (proxy admins see everything).
+`GET /vector_store/list` 會回傳 `{"object": "list", "data": [...], "total_count": n, "current_page": n, "total_pages": n}`。透過 API 或 UI 註冊的儲存會標記建立該儲存之 key 的 `team_id` 與 `user_id`；以團隊建立的儲存在清單與搜尋結果中會限定於該團隊（proxy 管理員可看到全部）。
 
-## Restricting keys and teams to specific stores
+## 將 key 與團隊限制為特定儲存 {#restricting-keys-and-teams-to-specific-stores}
 
-Set `object_permission.vector_stores` when creating a key or team to control which store ids its LLM requests may reference:
+建立 key 或團隊時設定 `object_permission.vector_stores`，以控制其 LLM 請求可參照哪些儲存 id：
 
 ```bash showLineNumbers title="Key limited to one store"
 curl -X POST 'http://localhost:4000/key/generate' \
@@ -148,29 +148,29 @@ curl -X POST 'http://localhost:4000/key/generate' \
   }'
 ```
 
-A request through that key using any other registered store id in `vector_store_ids` is rejected. An empty or unset list means the key is not restricted, unless [`vector_store_deny_by_default`](#deny-vector-stores-by-default) is on. The same field works on teams and users.
+透過該 key 使用任何其他已註冊的 `vector_store_ids` 中的儲存 id 之請求會被拒絕。空白或未設定的清單代表該 key 不受限制，除非 [`vector_store_deny_by_default`](#deny-vector-stores-by-default) 已啟用。相同欄位也可用於團隊與使用者。
 
-## Deny vector stores by default
+## 預設拒絕向量儲存 {#deny-vector-stores-by-default}
 
-Without restrictions, any key the proxy accepts can query any store id the proxy's provider credentials can reach. To make every store opt-in, turn on `vector_store_deny_by_default`:
+若沒有任何限制，proxy 接受的任何 key 都可以查詢 proxy 的提供者憑證可存取的任何儲存 id。若要讓每個儲存都必須明確允許，請開啟 `vector_store_deny_by_default`：
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
   vector_store_deny_by_default: true
 ```
 
-The setting defaults to `false`. With it on, every store id a request references, through `/v1/rag/query` or `/rag/query` (`retrieval_config.vector_store_id`), a `/v1/vector_stores/{vector_store_id}/...` path, a top-level `vector_store_ids`, or `vector_store_ids` in a `file_search` tool, must be listed in `object_permission.vector_stores` of each identity the request resolves to. A request naming several stores needs a grant for every one of them. A `vector_store_ids` value that is not a list of strings is rejected with `400`
+此設定預設為 `false`。開啟後，請求透過 `/v1/rag/query` 或 `/rag/query`（`retrieval_config.vector_store_id`）、`/v1/vector_stores/{vector_store_id}/...` 路徑、頂層 `vector_store_ids`，或某個 `file_search` 工具中的 `vector_store_ids` 而參照到的每個儲存 id，都必須列於請求所解析到之每個身分的 `object_permission.vector_stores` 中。名稱多個儲存的請求需要每一個儲存都具備授權。不是字串清單的 `vector_store_ids` 值會以 `400` 拒絕
 
-| Caller | Grants required |
+| 呼叫者 | 需要的授權 |
 |---|---|
-| Virtual key without a team | The key |
-| Virtual key with a team | The key and its team |
-| Team member without a virtual key (JWT or `lite login` session) | The team the request resolved to |
-| User without a virtual key or team | The user |
+| 沒有團隊的虛擬 key | 該 key |
+| 有團隊的虛擬 key | 該 key 及其團隊 |
+| 沒有虛擬 key 的團隊成員（JWT 或 `lite login` session） | 請求所解析到的團隊 |
+| 沒有虛擬 key 或團隊的使用者 | 該使用者 |
 
-A missing permission record, a `null` list, and an empty list all grant nothing. A user's personal grants only count when the request has no virtual key and no team, so they never widen or narrow a key or team request, and grants on other teams the user belongs to are ignored. If a key names a team that cannot be loaded, the request is denied rather than treated as a key without a team. Denied requests fail before any provider call with `key_vector_store_access_denied`, `team_vector_store_access_denied`, or `user_vector_store_access_denied`
+缺少的權限紀錄、`null` 清單，以及空清單都不授予任何權限。使用者個人授權只有在請求沒有虛擬 key 且沒有團隊時才會計入，因此它們絕不會擴大或縮小 key 或團隊請求，而使用者所屬其他團隊上的授權也會被忽略。如果某個 key 指定了一個無法載入的團隊，請求會被拒絕，而不是當成沒有團隊的 key。被拒絕的請求會在任何提供者呼叫之前以 `key_vector_store_access_denied`、`team_vector_store_access_denied` 或 `user_vector_store_access_denied` 失敗
 
-For a team key, grant the store on both objects:
+對於團隊 key，請在兩個物件上都授予該儲存：
 
 ```bash showLineNumbers title="Team and key both grant the store"
 curl -X POST 'http://localhost:4000/team/new' \
@@ -184,6 +184,6 @@ curl -X POST 'http://localhost:4000/key/generate' \
   -d '{"team_id": "<team_id from above>", "object_permission": {"vector_stores": ["YOUR_KNOWLEDGE_BASE_ID"]}}'
 ```
 
-Registering a store does not grant access to it, and a provider-native store that is granted explicitly can stay unregistered. The master key is not restricted. Dashboard login sessions are not covered by this setting yet
+註冊儲存不會授予其存取權，且明確授予的原生提供者儲存可以保持未註冊狀態。主金鑰不受限制。儀表板登入 session 尚未涵蓋此設定
 
-Setting the flag back to `false` restores the earlier behavior, where an empty or unset list means unrestricted. It does not turn off the existing check: a nonempty `vector_stores` list that leaves out the requested store is still rejected
+將旗標改回 `false` 會恢復先前的行為，也就是空白或未設定的清單代表不受限制。它不會關閉既有檢查：若 `vector_stores` 清單為非空且未包含所請求的儲存，仍會被拒絕

@@ -1,13 +1,8 @@
-# Reliability test Multiple LLM Providers with LiteLLM
+# 使用 LiteLLM 對多個 LLM 提供者進行可靠性測試 {#reliability-test-multiple-llm-providers-with-litellm}
 
-
-
-*   Quality Testing
-*   Load Testing
-*   Duration Testing
-
-
-
+*   品質測試
+*   負載測試
+*   持續時間測試
 
 ```bash
 uv add litellm python-dotenv
@@ -26,12 +21,11 @@ from dotenv import load_dotenv
 load_dotenv()
 ```
 
-## Quality Test endpoint
+## 品質測試端點 {#quality-test-endpoint}
 
-### Test the same prompt across multiple LLM providers
+### 在多個 LLM 提供者之間測試相同的提示 {#test-the-same-prompt-across-multiple-llm-providers}
 
-In this example, let's ask some questions about Paul Graham
-
+在這個範例中，我們來問一些關於 Paul Graham 的問題
 
 ```python
 models = ["{{openai_small}}", "{{openai_large}}", "{{anthropic}}", "replicate/llama-2-70b-chat:58d078176e02c219e11eb4da5a02a7830a283b14cf8f94537af893ccff5ee781"]
@@ -41,13 +35,11 @@ messages =  [[{"role": "user", "content": context + "\n" + prompt}] for prompt i
 result = [litellm.batch_completion_models_all_responses(models=models, messages=message) for message in messages]
 ```
 
-`batch_completion_models_all_responses` sends one conversation to every model in parallel and returns the responses that succeeded, so loop over the prompts. Models that raise are dropped from the returned list rather than surfaced as errors
+`batch_completion_models_all_responses` 會將一則對話平行送到每個模型，並回傳成功的回應，因此請對提示逐一迴圈處理。拋出例外的模型會從回傳清單中移除，而不會以錯誤形式顯示
 
+## 負載測試端點 {#load-test-endpoint}
 
-## Load Test endpoint
-
-Run 100+ simultaneous queries across multiple providers to see when they fail + impact on latency. `load_test_model` takes a single `model`, so call it once per provider.
-
+跨多個提供者執行 100+ 個同時請求，以觀察它們何時失敗，以及對延遲的影響。`load_test_model` 只接受一個 `model`，因此請針對每個提供者呼叫一次。
 
 ```python
 models=["{{openai_small}}", "replicate/llama-2-70b-chat:58d078176e02c219e11eb4da5a02a7830a283b14cf8f94537af893ccff5ee781", "{{anthropic}}"]
@@ -58,10 +50,9 @@ num_calls = 5
 result = {model: load_test_model(model=model, prompt=final_prompt, num_calls=num_calls) for model in models}
 ```
 
-`load_test_model` sends `num_calls` requests concurrently, but the `calls_made` field it returns is always 100 whatever `num_calls` is, so divide by your own `num_calls` when averaging
+`load_test_model` 會同時送出 `num_calls` 個請求，但它回傳的 `calls_made` 欄位無論 `num_calls` 為何，永遠都是 100，因此在計算平均值時請除以您自己的 `num_calls`
 
-### Visualize the data
-
+### 視覺化資料 {#visualize-the-data}
 
 ```python
 import matplotlib.pyplot as plt
@@ -83,16 +74,11 @@ plt.xticks(models, [model[:15]+'...' if len(model) > 15 else model for model in 
 plt.show()
 ```
 
-
-    
 ![png](litellm_Test_Multiple_Providers_files/litellm_Test_Multiple_Providers_11_0.png)
-    
 
+## 持續時間測試端點 {#duration-test-endpoint}
 
-## Duration Test endpoint
-
-Run load testing for 2 mins. Hitting endpoints with 100+ queries every 15 seconds. `load_test_model` has no interval or duration options, so loop over it yourself.
-
+執行 2 分鐘的負載測試。每 15 秒對端點發送 100+ 個請求。`load_test_model` 沒有間隔或持續時間選項，因此請自行迴圈呼叫。
 
 ```python
 models=["{{openai_small}}", "replicate/llama-2-70b-chat:58d078176e02c219e11eb4da5a02a7830a283b14cf8f94537af893ccff5ee781", "{{anthropic}}"]
@@ -108,7 +94,6 @@ while time.time() < end_time:
     result.append({model: load_test_model(model=model, prompt=final_prompt, num_calls=num_calls) for model in models})
     time.sleep(interval)
 ```
-
 
 ```python
 import matplotlib.pyplot as plt
@@ -135,8 +120,4 @@ plt.xticks(models, [model[:15]+'...' if len(model) > 15 else model for model in 
 plt.show()
 ```
 
-
-    
 ![png](litellm_Test_Multiple_Providers_files/litellm_Test_Multiple_Providers_14_0.png)
-    
-

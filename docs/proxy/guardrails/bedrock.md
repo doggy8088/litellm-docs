@@ -2,18 +2,19 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Bedrock Guardrails
+# Bedrock 防護欄 {#bedrock-guardrails}
 
 :::tip[⚡️]
-If you haven't set up or authenticated your Bedrock provider yet, see the [Bedrock Provider Setup & Authentication Guide](../../providers/bedrock.md).
+如果您尚未設定或完成 Bedrock 提供者驗證，請參閱 [Bedrock 提供者設定與驗證指南](../../providers/bedrock.md)。
 :::
 
-LiteLLM supports Bedrock guardrails via the [Bedrock ApplyGuardrail API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html).
+LiteLLM 支援透過 [Bedrock ApplyGuardrail API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html) 使用 Bedrock 防護欄。
 
-## Quick Start
-### 1. Define Guardrails on your LiteLLM config.yaml 
+## 快速開始 {#quick-start}
 
-Define your guardrails under the `guardrails` section
+### 1. 在您的 LiteLLM config.yaml 中定義防護欄  {#1-define-guardrails-on-your-litellm-configyaml}
+
+在 `guardrails` 區段下定義您的防護欄
 ```yaml
 model_list:
   - model_name: {{openai_small}}
@@ -34,27 +35,26 @@ guardrails:
   
 ```
 
-#### Supported values for `mode`
+#### `mode` 的支援值 {#supported-values-for-mode}
 
-- `pre_call` Run **before** LLM call, on **input**
-- `post_call` Run **after** LLM call, on **input & output**
-- `during_call` Run **during** LLM call, on **input** Same as `pre_call` but runs in parallel as LLM call.  Response not returned until guardrail check completes
+- `pre_call` 在 LLM 請求**之前**執行，針對**輸入**
+- `post_call` 在 LLM 請求**之後**執行，針對**輸入與輸出**
+- `during_call` 在 LLM 請求**期間**執行，針對**輸入**。與 `pre_call` 相同，但會與 LLM 請求並行執行。 在防護欄檢查完成之前不會回傳回應
 
-### 2. Start LiteLLM Gateway 
-
+### 2. 啟動 LiteLLM 閘道  {#2-start-litellm-gateway}
 
 ```shell
 litellm --config config.yaml --detailed_debug
 ```
 
-### 3. Test request 
+### 3. 測試請求  {#3-test-request}
 
-**[Langchain, OpenAI SDK Usage Examples](/docs/proxy/user_keys#request-format)**
+**[Langchain、OpenAI SDK 使用範例](/docs/proxy/user_keys#request-format)**
 
 <Tabs>
-<TabItem label="Unsuccessful call" value = "not-allowed">
+<TabItem label="失敗的呼叫" value = "not-allowed">
 
-Expect this to fail since since `ishaan@berri.ai` in the request is PII
+預期這會失敗，因為請求中的 `ishaan@berri.ai` 是 PII
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -69,7 +69,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-Expected response on failure
+失敗時的預期回應
 
 ```shell
 {
@@ -122,7 +122,7 @@ Expected response on failure
 
 </TabItem>
 
-<TabItem label="Successful Call " value = "allowed">
+<TabItem label="成功的呼叫 " value = "allowed">
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -139,14 +139,13 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-
 </Tabs>
 
-## Streaming
+## 串流 {#streaming}
 
-Streaming responses are scanned on `post_call`. By default the stream is buffered: every chunk is withheld until the assembled response passes one ApplyGuardrail OUTPUT scan, so no flagged content reaches the client before a block. The client sees nothing until the scan completes, then the whole response arrives in one burst.
+串流回應會在 `post_call` 上進行掃描。預設情況下，串流會先緩衝：每個區塊都會被保留，直到組裝完成的回應通過一次 ApplyGuardrail OUTPUT 掃描，因此在封鎖之前，不會有任何標記內容送達用戶端。用戶端在掃描完成前看不到任何內容，之後整個回應會一次送出。
 
-For latency-sensitive clients (interactive chat, coding agents), you can keep the stream flowing and run the scan in audit mode instead:
+對於對延遲敏感的用戶端（互動式聊天、程式設計代理程式），您可以改為讓串流持續進行，並以稽核模式執行掃描：
 
 ```yaml
 guardrails:
@@ -160,23 +159,23 @@ guardrails:
       streaming_end_of_stream_only: true
 ```
 
-Chunks now stream to the client as they arrive, and one OUTPUT scan runs over the assembled response at end of stream. A violation still terminates the stream with the guardrail's block message, but content that already streamed has been seen: this is detect-and-log, not prevention. Either way the scan result is recorded in `guardrail_information` on the request's spend log.
+區塊現在會在抵達時串流到用戶端，並在串流結束時對組裝完成的回應執行一次 OUTPUT 掃描。若有違規，仍會以防護欄的封鎖訊息終止串流，但已經串流出去的內容已被看見：這是偵測並記錄，而非防止。無論哪種方式，掃描結果都會記錄在請求的支出記錄中的 `guardrail_information`。
 
-| Parameter | Default | Description |
+| 參數 | 預設值 | 說明 |
 |-----------|---------|-------------|
-| `streaming_buffer_until_moderated` | `true` | Withhold every streamed chunk until end-of-stream moderation passes, so no flagged chunk reaches the client before a block |
-| `streaming_end_of_stream_only` | `false` | Scan streamed output once, over the assembled response, instead of per sampled chunk |
-| `streaming_sampling_rate` | `5` | When not buffering and not end-of-stream-only, scan the accumulated text every Nth chunk. Must be at least 1 |
+| `streaming_buffer_until_moderated` | `true` | 將每個已串流的區塊保留到串流結束時才進行審核，避免任何標記區塊在封鎖前送達用戶端 |
+| `streaming_end_of_stream_only` | `false` | 只對組裝完成的回應掃描一次串流輸出，而不是對每個取樣區塊掃描 |
+| `streaming_sampling_rate` | `5` | 在不緩衝且非僅串流結束時，將累積文字每第 N 個區塊掃描一次。至少必須為 1 |
 
-With `streaming_buffer_until_moderated: false` alone, the guardrail scans the accumulated response every `streaming_sampling_rate` chunks while streaming. Each sampled scan is a separate ApplyGuardrail call over all text so far, so it adds mid-stream latency and repeated Bedrock text-unit charges. Pair it with `streaming_end_of_stream_only: true` unless you need mid-stream blocking.
+僅使用 `streaming_buffer_until_moderated: false` 時，防護欄會在串流期間每 `streaming_sampling_rate` 個區塊掃描一次累積的回應。每次取樣掃描都是針對目前所有文字的獨立 ApplyGuardrail 呼叫，因此會增加串流中途延遲與重複的 Bedrock 文字單位費用。除非您需要串流中途封鎖，否則請搭配 `streaming_end_of_stream_only: true` 使用。
 
-These settings apply to both `/v1/chat/completions` and native `/v1/messages` streams.
+這些設定同時適用於 `/v1/chat/completions` 與原生 `/v1/messages` 串流。
 
-## Contextual Grounding
+## 脈絡基礎 {#contextual-grounding}
 
-Bedrock only scores contextual grounding when it is told what the reference text and the question are. By default LiteLLM sends just the model response, so a grounding policy never blocks anything.
+Bedrock 只有在被告知參考文字與問題內容時，才會評分脈絡基礎。預設情況下，LiteLLM 只會傳送模型回應，因此脈絡基礎政策不會封鎖任何內容。
 
-Set `contextual_grounding_from_messages: true` and post-call checks send the system prompt as the grounding source and the latest user message as the query. Answers that contradict the system prompt get blocked.
+設定 `contextual_grounding_from_messages: true` 後，呼叫後檢查會將系統提示詞作為脈絡基礎來源，並將最新的使用者訊息作為查詢。與系統提示詞相矛盾的答案會被封鎖。
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 guardrails:
@@ -190,13 +189,13 @@ guardrails:
       contextual_grounding_from_messages: true
 ```
 
-The flag defaults to `false`. Each scan with it on bills one Bedrock contextual grounding unit, and Bedrock rejects queries over roughly 1,000 characters, so only enable it on guardrails that have a grounding policy.
+此旗標的預設值為 `false`。每次啟用後掃描都會計費一個 Bedrock 脈絡基礎單位，且 Bedrock 會拒絕約 1,000 字元以上的查詢，因此只應在具有脈絡基礎政策的防護欄上啟用。
 
-## Resource-less Checks: InvokeGuardrailChecks
+## 無資源檢查：InvokeGuardrailChecks {#resource-less-checks-invokeguardrailchecks}
 
-With the [InvokeGuardrailChecks API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeGuardrailChecks.html) you don't need to create a guardrail in AWS. Instead, define the checks inline in your config; Bedrock returns a score per check, and LiteLLM blocks the request when a score reaches your threshold.
+使用 [InvokeGuardrailChecks API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeGuardrailChecks.html) 時，您不需要在 AWS 中建立防護欄。相反地，請在設定中內嵌定義這些檢查；Bedrock 會針對每項檢查回傳分數，而 LiteLLM 會在分數達到您的閾值時封鎖請求。
 
-Set `checks` instead of `guardrailIdentifier` (the two can't be combined). Your AWS credentials need the `bedrock:InvokeGuardrailChecks` permission.
+請設定 `checks` 取代 `guardrailIdentifier`（兩者不能合併使用）。您的 AWS 憑證需要 `bedrock:InvokeGuardrailChecks` 權限。
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 guardrails:
@@ -220,19 +219,19 @@ guardrails:
       pii_confidence_threshold: 0.5
 ```
 
-### Supported checks
+### 支援的檢查 {#supported-checks}
 
-| Check | What it detects | Threshold key |
+| 檢查 | 偵測內容 | 閾值鍵值 |
 |-------|-----------------|---------------|
-| `contentFilter` | Harmful content: `VIOLENCE`, `HATE`, `SEXUAL`, `MISCONDUCT`, `INSULTS` | `content_filter_threshold` |
-| `promptAttack` | `JAILBREAK`, `PROMPT_INJECTION`, `PROMPT_LEAKAGE` | `prompt_attack_threshold` |
-| `sensitiveInformation` | PII: `EMAIL`, `PHONE`, `NAME`, and [more](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeGuardrailChecks.html) | `pii_confidence_threshold` |
+| `contentFilter` | 有害內容：`VIOLENCE`、`HATE`、`SEXUAL`、`MISCONDUCT`、`INSULTS` | `content_filter_threshold` |
+| `promptAttack` | `JAILBREAK`、`PROMPT_INJECTION`、`PROMPT_LEAKAGE` | `prompt_attack_threshold` |
+| `sensitiveInformation` | 個資：`EMAIL`、`PHONE`、`NAME`，以及 [更多](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeGuardrailChecks.html) | `pii_confidence_threshold` |
 
-Include only the checks you want; at least one is required. An empty config like `promptAttack: {}` enables that check with AWS defaults.
+只包含您想要的檢查；至少需要一項。像 `promptAttack: {}` 這樣的空設定會以 AWS 預設值啟用該檢查。
 
-### How blocking works
+### 封鎖的運作方式 {#how-blocking-works}
 
-Scores range from 0 to 1 and each threshold defaults to `0.5`. A score at or above the threshold blocks the request with HTTP 400; set a threshold to `null` to only log that check's scores, never block. If Bedrock returns a truncated PII result, the request is blocked (fail closed).
+分數範圍從 0 到 1，且每個閾值預設為 `0.5`。分數達到或超過閾值時，會以 HTTP 400 封鎖請求；將閾值設為 `null` 可只記錄該檢查的分數，絕不封鎖。如果 Bedrock 回傳截斷的 PII 結果，請求會被封鎖（預設失敗）。
 
 ```json
 {
@@ -248,18 +247,18 @@ Scores range from 0 to 1 and each threshold defaults to `0.5`. A score at or abo
 }
 ```
 
-`disable_exception_on_block: true` (see [below](#disabling-exceptions-on-bedrock-block)) works here too; a block then returns HTTP 200 with `finish_reason: "content_filter"`.
+`disable_exception_on_block: true`（見[下方](#disabling-exceptions-on-bedrock-block)）在這裡同樣適用；此時封鎖會回傳 HTTP 200 與 `finish_reason: "content_filter"`。
 
-Callers can't weaken the configured checks: per-request guardrail params are ignored in this mode, and all input is checked as `user` content so a `system`-labeled injection can't dodge the prompt-attack check.
+呼叫端無法弱化已設定的檢查：在此模式下，逐請求的防護欄參數會被忽略，而且所有輸入都會視為 `user` 內容進行檢查，因此被標記為 `system` 的注入無法躲過提示攻擊檢查。
 
-## PII Masking with Bedrock Guardrails
+## 使用 Bedrock 防護欄進行 PII 遮罩 {#pii-masking-with-bedrock-guardrails}
 
-Bedrock guardrails support PII detection and masking capabilities. To enable this feature, you need to:
+Bedrock 防護欄支援 PII 偵測與遮罩功能。若要啟用此功能，您需要：
 
-1. Set `mode` to `pre_call` to run the guardrail check before the LLM call
-2. Enable masking by setting `mask_request_content` and/or `mask_response_content` to `true`
+1. 將 `mode` 設為 `pre_call`，以便在 LLM 請求之前執行防護欄檢查
+2. 透過將 `mask_request_content` 和／或 `mask_response_content` 設為 `true` 來啟用遮罩
 
-Here's how to configure it in your config.yaml:
+以下是如何在您的 config.yaml 中進行設定：
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 model_list:
@@ -281,31 +280,31 @@ guardrails:
       mask_response_content: true   # Enable masking in model responses
 ```
 
-With this configuration, when the bedrock guardrail intervenes, litellm will read the masked output from the guardrail and send it to the model.
+使用此設定時，當 bedrock 防護欄介入時，litellm 會讀取來自防護欄的已遮罩輸出，並將其傳送給模型。
 
-### Example Usage
+### 使用範例 {#example-usage}
 
-When enabled, PII will be automatically masked in the text. For example, if a user sends:
+啟用後，PII 會自動在文字中被遮罩。範例如下，若使用者送出：
 
 ```
 My email is john.doe@example.com and my phone number is 555-123-4567
 ```
 
-The text sent to the model might be masked as:
+傳送給模型的文字可能會被遮罩為：
 
 ```
 My email is [EMAIL] and my phone number is [PHONE_NUMBER]
 ```
 
-This helps protect sensitive information while still allowing the model to understand the context of the request.
+這有助於在仍能讓模型理解請求脈絡的同時，保護敏感資訊。
 
-## Experimental: Only Send Latest User Message
+## 實驗性：只傳送最新的使用者訊息 {#experimental-only-send-latest-user-message}
 
-When you're chaining long conversations through Bedrock guardrails, you can opt into a lighter, experimental behavior by setting `experimental_use_latest_role_message_only: true` in the guardrail's `litellm_params`. When enabled, LiteLLM only sends the most recent `user` message (or assistant output during post-call checks) to Bedrock, which:
+當您透過 Bedrock 防護欄串接長篇對話時，可透過在防護欄的 `experimental_use_latest_role_message_only: true` 中設定 `litellm_params`，選擇較輕量、實驗性的行為。啟用後，LiteLLM 只會將最近的 `user` 訊息（或在後續呼叫檢查期間的 assistant 輸出）傳送給 Bedrock，這會：
 
-- prevents unintended blocks on older system/dev messages
-- keeps Bedrock payloads smaller, reducing latency and cost
-- applies to proxy hooks (`pre_call`, `during_call`) and the `/guardrails/apply_guardrail` testing endpoint
+- 避免舊的 system/dev 訊息造成非預期封鎖
+- 讓 Bedrock 載荷更小，降低延遲與成本
+- 適用於 proxy hooks（`pre_call`、`during_call`）以及 `/guardrails/apply_guardrail` 測試端點
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 guardrails:
@@ -319,17 +318,17 @@ guardrails:
       experimental_use_latest_role_message_only: true  # NEW
 ```
 
-> ⚠️ This flag is currently experimental and defaults to `false` to preserve the legacy behavior (entire message history). We'll be listening to user feedback to decide if this becomes the default or rolls out more broadly.
+> ⚠️ 此旗標目前屬於實驗性功能，預設為 `false`，以保留舊版行為（完整訊息歷史）。我們會持續聆聽使用者回饋，以決定是否將其設為預設或更廣泛推出。
 
-## Disabling Exceptions on Bedrock BLOCK
+## 停用 Bedrock BLOCK 時的例外 {#disabling-exceptions-on-bedrock-block}
 
-By default, when Bedrock guardrails block content, LiteLLM raises an HTTP 400 exception. However, you can disable this behavior by setting `disable_exception_on_block: true`. This is particularly useful when integrating with **OpenWebUI**, where exceptions can interrupt the chat flow and break the user experience.
+預設情況下，當 Bedrock 防護欄封鎖內容時，LiteLLM 會引發 HTTP 400 例外。不過，您可以透過設定 `disable_exception_on_block: true` 來停用此行為。這在與 **OpenWebUI** 整合時特別有用，因為例外可能會中斷對話流程並破壞使用者體驗。
 
-When exceptions are disabled, instead of receiving an error, you'll get a successful response containing the Bedrock guardrail's modified/blocked output.
+停用例外後，您不會收到錯誤，而是會收到一個成功回應，內容包含 Bedrock 防護欄修改／封鎖後的輸出。
 
-### Configuration
+### 設定 {#configuration}
 
-Add `disable_exception_on_block: true` to your guardrail configuration:
+將 `disable_exception_on_block: true` 加入您的防護欄設定：
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 model_list:
@@ -350,12 +349,12 @@ guardrails:
       disable_exception_on_block: true  # Prevents exceptions when content is blocked
 ```
 
-### Behavior Comparison
+### 行為比較 {#behavior-comparison}
 
 <Tabs>
-<TabItem label="With Exceptions (Default)" value="with-exceptions">
+<TabItem label="有例外（預設）" value="with-exceptions">
 
-When `disable_exception_on_block: false` (default):
+當 `disable_exception_on_block: false`（預設）時：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -370,7 +369,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 400 Error**
+**回應：HTTP 400 錯誤**
 ```json
 {
   "error": {
@@ -391,9 +390,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem label="Without Exceptions" value="without-exceptions">
+<TabItem label="無例外" value="without-exceptions">
 
-When `disable_exception_on_block: true`:
+當 `disable_exception_on_block: true` 時：
 
 ```shell
 curl -i http://localhost:4000/v1/chat/completions \
@@ -408,7 +407,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-**Response: HTTP 200 Success**
+**回應：HTTP 200 成功**
 ```json
 {
   "id": "chatcmpl-123",

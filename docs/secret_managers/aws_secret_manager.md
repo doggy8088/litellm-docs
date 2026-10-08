@@ -1,30 +1,30 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# AWS Secret Manager
+# AWS Secret Manager {#aws-secret-manager}
 
 <EnterpriseFeature />
 
-Store your proxy keys in AWS Secret Manager.
+將您的 proxy 金鑰儲存在 AWS Secret Manager 中。
 
-| Feature | Support | Description |
+| 功能 | 支援 | 說明 |
 |---------|----------|-------------|
-| Reading Secrets | ✅ | Read secrets e.g `OPENAI_API_KEY` |
-| Writing Secrets | ✅ | Store secrets e.g `Virtual Keys` |
+| 讀取 Secrets | ✅ | 讀取 secrets，例如 `OPENAI_API_KEY` |
+| 寫入 Secrets | ✅ | 儲存 secrets，例如 `Virtual Keys` |
 
-## Proxy Usage
+## Proxy 使用方式 {#proxy-usage}
 
-1. Save AWS Credentials in your environment
+1. 將 AWS 憑證儲存在您的環境中
 ```bash
 os.environ["AWS_ACCESS_KEY_ID"] = ""  # Access key
 os.environ["AWS_SECRET_ACCESS_KEY"] = "" # Secret access key
 os.environ["AWS_REGION_NAME"] = "" # us-east-1, us-east-2, us-west-1, us-west-2
 ```
 
-2. Enable AWS Secret Manager in config. 
+2. 在設定中啟用 AWS Secret Manager。 
 
 <Tabs>
-<TabItem value="read_only" label="Read Keys from AWS Secret Manager">
+<TabItem value="read_only" label="從 AWS Secret Manager 讀取金鑰">
 
 ```yaml
 general_settings:
@@ -37,9 +37,9 @@ general_settings:
 
 </TabItem>
 
-<TabItem value="write_only" label="Write Virtual Keys to AWS Secret Manager">
+<TabItem value="write_only" label="將虛擬金鑰寫入 AWS Secret Manager">
 
-This will only store virtual keys in AWS Secret Manager. No keys will be read from AWS Secret Manager.
+這將只會將虛擬金鑰儲存在 AWS Secret Manager 中。不會從 AWS Secret Manager 讀取任何金鑰。
 
 ```yaml
 general_settings:
@@ -55,7 +55,7 @@ general_settings:
     kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/11111111-2222-3333-4444-555555555555" # OPTIONAL, customer-managed KMS key used to encrypt stored virtual keys
 ```
 </TabItem>
-<TabItem value="read_and_write" label="Read + Write Keys with AWS Secret Manager">
+<TabItem value="read_and_write" label="使用 AWS Secret Manager 讀取 + 寫入金鑰">
 
 ```yaml
 general_settings:
@@ -71,15 +71,15 @@ general_settings:
 </TabItem>
 </Tabs>
 
-3. Run proxy
+3. 執行 proxy
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-## Encrypt Virtual Keys with a Customer-Managed KMS Key
+## 使用客戶自行管理的 KMS 金鑰加密虛擬金鑰 {#encrypt-virtual-keys-with-a-customer-managed-kms-key}
 
-By default, secrets LiteLLM creates in AWS Secrets Manager are encrypted with the AWS-managed `aws/secretsmanager` key. Set `kms_key_id` to a KMS key ID, alias or ARN to encrypt them with your own customer-managed key (CMK) instead. The value is sent as `KmsKeyId` on every `CreateSecret` call, so it only applies to secrets created after the setting is in place. Existing secrets keep their current key.
+預設情況下，LiteLLM 在 AWS Secrets Manager 中建立的秘密會使用 AWS 管理的 `aws/secretsmanager` 金鑰加密。將 `kms_key_id` 設為 KMS 金鑰 ID、別名或 ARN，即可改用您自己的客戶自行管理金鑰（CMK）來加密。該值會在每次 `KmsKeyId` 呼叫時以 `CreateSecret` 送出，因此只會套用到設定生效後建立的秘密。既有秘密會保留目前的金鑰。
 
 ```yaml
 general_settings:
@@ -90,11 +90,11 @@ general_settings:
     kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/11111111-2222-3333-4444-555555555555"
 ```
 
-The IAM identity the proxy uses needs `kms:GenerateDataKey` and `kms:Decrypt` on that key in addition to its Secrets Manager permissions. You can confirm the key took effect with `aws secretsmanager describe-secret --secret-id litellm/<key_alias>`; the response's `KmsKeyId` should match the configured key.
+代理程式所使用的 IAM 身分除了 Secrets Manager 權限外，還需要在該金鑰上具有 `kms:GenerateDataKey` 和 `kms:Decrypt`。您可以使用 `aws secretsmanager describe-secret --secret-id litellm/<key_alias>` 確認金鑰已生效；回應中的 `KmsKeyId` 應與已設定的金鑰相符。
 
-## Using K/V pairs in 1 AWS Secret
+## 在 1 個 AWS Secret 中使用 K/V 配對 {#using-kv-pairs-in-1-aws-secret}
 
-You can read multiple keys from a single AWS Secret using the `primary_secret_name` parameter:
+您可以使用 `primary_secret_name` 參數從單一 AWS Secret 讀取多個金鑰：
 
 ```yaml
 general_settings:
@@ -107,7 +107,7 @@ general_settings:
     primary_secret_name: "litellm_secrets" # 👈 Read multiple keys from one JSON secret
 ```
 
-The `primary_secret_name` allows you to read multiple keys from a single AWS Secret as a JSON object. For example, the "litellm_secrets" would contain:
+`primary_secret_name` 可讓您將單一 AWS Secret 中的多個金鑰作為 JSON 物件讀取。例如，「litellm_secrets」將包含：
 
 ```json
 {
@@ -116,13 +116,13 @@ The `primary_secret_name` allows you to read multiple keys from a single AWS Sec
 }
 ```
 
-This reduces the number of AWS Secrets you need to manage.
+這可減少您需要管理的 AWS Secrets 數量。
 
-## IAM Role Assumption
+## IAM 角色假設 {#iam-role-assumption}
 
-Use IAM roles instead of static AWS credentials for better security.
+使用 IAM 角色取代靜態 AWS 憑證，以提升安全性。
 
-### Basic IAM Role
+### 基本 IAM 角色 {#basic-iam-role}
 
 ```yaml
 general_settings:
@@ -134,7 +134,7 @@ general_settings:
     aws_session_name: "litellm-session"
 ```
 
-### Cross-Account Access
+### 跨帳戶存取 {#cross-account-access}
 
 ```yaml
 general_settings:
@@ -146,7 +146,7 @@ general_settings:
     aws_external_id: "unique-external-id"
 ```
 
-### EKS with IRSA
+### 搭配 IRSA 的 EKS {#eks-with-irsa}
 
 ```yaml
 general_settings:
@@ -158,18 +158,15 @@ general_settings:
     aws_web_identity_token: "os.environ/AWS_WEB_IDENTITY_TOKEN_FILE"
 ```
 
-### Configuration Parameters
+### 設定參數 {#configuration-parameters}
 
-| Parameter | Description |
+| 參數 | 說明 |
 |-----------|-------------|
-| `aws_region_name` | AWS region |
-| `aws_role_name` | IAM role ARN to assume |
-| `aws_session_name` | Session name (optional) |
-| `aws_external_id` | External ID for cross-account |
-| `aws_profile_name` | AWS profile from `~/.aws/credentials` |
-| `aws_web_identity_token` | OIDC token path for IRSA |
-| `aws_sts_endpoint` | Custom STS endpoint for VPC |
-| `kms_key_id` | Customer-managed KMS key (ID, alias or ARN) used to encrypt secrets LiteLLM creates |
-
-
-
+| `aws_region_name` | AWS 區域 |
+| `aws_role_name` | 要假設的 IAM 角色 ARN |
+| `aws_session_name` | 工作階段名稱（選用） |
+| `aws_external_id` | 跨帳戶的外部 ID |
+| `aws_profile_name` | 來自 `~/.aws/credentials` 的 AWS 設定檔 |
+| `aws_web_identity_token` | IRSA 的 OIDC 權杖路徑 |
+| `aws_sts_endpoint` | 供 VPC 使用的自訂 STS 端點 |
+| `kms_key_id` | 用於加密 LiteLLM 建立之秘密的客戶自行管理 KMS 金鑰（ID、別名或 ARN） |

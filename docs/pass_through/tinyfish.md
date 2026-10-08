@@ -1,39 +1,39 @@
-# TinyFish Agent
+# TinyFish Agent {#tinyfish-agent}
 
-Pass-through endpoints for the [TinyFish Agent API](https://docs.tinyfish.ai/agent-api), goal-based web automation in native format (no translation). Point the official TinyFish SDK at the proxy and it works unchanged
+[TinyFish Agent API](https://docs.tinyfish.ai/agent-api) 的轉送端點，以原生格式進行以目標為基礎的網頁自動化（不翻譯）。將官方 TinyFish SDK 指向代理，即可在不變更的情況下運作
 
-| Feature | Supported | Notes |
+| 功能 | 支援 | 備註 |
 |---------|-----------|-------|
-| Cost Tracking | ✅ | `COMPLETED` runs billed as `num_of_steps x $0.016` (TinyFish's published rate) |
-| Logging | ✅ | Runs logged as model `tinyfish/automation-run` |
-| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
-| Streaming | ✅ | `run-sse` progress events relayed live |
+| 成本追蹤 | ✅ | `COMPLETED` 執行會以 `num_of_steps x $0.016` 計費（TinyFish 公布的費率） |
+| 記錄 | ✅ | 執行會記錄為模型 `tinyfish/automation-run` |
+| 端使用者追蹤 | ❌ | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
+| 串流 | ✅ | `run-sse` 進度事件即時轉送 |
 
-Just replace `https://agent.tinyfish.ai` with `LITELLM_PROXY_BASE_URL/tinyfish` 🚀
+只要將 `https://agent.tinyfish.ai` 替換為 `LITELLM_PROXY_BASE_URL/tinyfish` 即可 🚀
 
-**Supported endpoints:**
+**支援的端點：**
 
-| Endpoint | Method | Description |
+| 端點 | 方法 | 說明 |
 |----------|--------|-------------|
-| `/v1/automation/run` | POST | Run an automation to completion (blocking) |
-| `/v1/automation/run-async` | POST | Submit a run, poll for the result |
-| `/v1/automation/run-sse` | POST | Run with live SSE progress events |
-| `/v1/runs/{id}` | GET | Run status and result |
-| `/v1/runs/{id}/cancel` | POST | Cancel a run |
+| `/v1/automation/run` | POST | 執行自動化直到完成（阻塞） |
+| `/v1/automation/run-async` | POST | 提交執行，輪詢結果 |
+| `/v1/automation/run-sse` | POST | 以即時 SSE 進度事件執行 |
+| `/v1/runs/{id}` | GET | 執行狀態與結果 |
+| `/v1/runs/{id}/cancel` | POST | 取消執行 |
 
-Every other Agent API endpoint (vault, wallet, browser profiles) returns 403. All callers share the proxy's one upstream TinyFish key, so the credential and account management surface stays admin-only. The `GET /v1/runs` listing is also blocked: run ids are unguessable, so withholding the list keeps callers behind the shared key from discovering each other's runs
+其他所有 Agent API 端點（vault、wallet、browser profiles）都會回傳 403。所有呼叫端共用代理的一組上游 TinyFish 金鑰，因此憑證與帳戶管理介面維持僅供管理員使用。`GET /v1/runs` 列表也會被封鎖：執行 ID 無法猜測，因此不公開列表可避免共用金鑰下的呼叫端發現彼此的執行
 
-## Quick Start
+## 快速開始 {#quick-start}
 
-### 1. Add your TinyFish API key to the proxy
+### 1. 將您的 TinyFish API 金鑰加入代理 {#1-add-your-tinyfish-api-key-to-the-proxy}
 
-Set the `TINYFISH_API_KEY` environment variable on the proxy, or add a deployment with `use_in_pass_through: true`
+在代理上設定 `TINYFISH_API_KEY` 環境變數，或加入一個含有 `use_in_pass_through: true` 的部署
 
 ```bash
 export TINYFISH_API_KEY="your-tinyfish-api-key"
 ```
 
-### 2. Run an automation
+### 2. 執行自動化 {#2-run-an-automation}
 
 ```bash
 curl http://localhost:4000/tinyfish/v1/automation/run \
@@ -45,7 +45,7 @@ curl http://localhost:4000/tinyfish/v1/automation/run \
   }'
 ```
 
-**Expected response:**
+**預期回應：**
 
 ```json
 {
@@ -59,9 +59,9 @@ curl http://localhost:4000/tinyfish/v1/automation/run \
 }
 ```
 
-### 3. Or use the official TinyFish SDK
+### 3. 或使用官方 TinyFish SDK {#3-or-use-the-official-tinyfish-sdk}
 
-The SDK accepts a `base_url` with the `/tinyfish` prefix and sends the virtual key on the `X-API-Key` header, which LiteLLM accepts natively
+SDK 接受一個帶有 `base_url` 前綴的 `/tinyfish`，並在 `X-API-Key` 標頭上傳送虛擬金鑰，而 LiteLLM 原生支援該標頭
 
 ```python
 from tinyfish import TinyFish
@@ -77,39 +77,39 @@ run = client.agent.run(
 print(run.status, run.num_of_steps, run.result)
 ```
 
-### 4. View logs
+### 4. 查看記錄 {#4-view-logs}
 
-Navigate to **Logs** in the sidebar and filter by `tinyfish`. Each run shows model `tinyfish/automation-run`, the calling key, and the spend
+前往側邊欄中的 **Logs**，並依 `tinyfish` 篩選。每次執行都會顯示模型 `tinyfish/automation-run`、呼叫金鑰，以及花費
 
-## Spend tracking
+## 花費追蹤 {#spend-tracking}
 
-Runs are billed `num_of_steps x $0.016` to the calling key and team:
+執行會依照 `num_of_steps x $0.016` 計費給呼叫金鑰與團隊：
 
-- `POST /v1/automation/run` bills when the blocking response returns
-- `POST /v1/automation/run-async` bills exactly once: LiteLLM polls the run in the background and writes one spend log when it reaches a terminal status. Client polls of `GET /v1/runs/{id}` are never billed, no matter how many
-- `POST /v1/automation/run-sse` bills exactly once when the run reaches a terminal status, the same way: a client that disconnects mid-stream is still billed once the run completes
-- Only `COMPLETED` runs carry cost. `FAILED` and `CANCELLED` runs write a $0 spend log, matching how TinyFish invoices
-- `GET /v1/runs/{id}` and cancels never write spend logs
+- `POST /v1/automation/run` 會在阻塞式回應返回時計費
+- `POST /v1/automation/run-async` 只會計費一次：LiteLLM 會在背景輪詢執行，並在其達到終端狀態時寫入一筆花費記錄。對 `GET /v1/runs/{id}` 的客戶端輪詢永遠不會計費，不論次數多少
+- `POST /v1/automation/run-sse` 也只會在執行達到終端狀態時計費一次，方式相同：中途斷線的客戶端，在執行完成後仍只會計費一次
+- 只有 `COMPLETED` 執行會產生成本。`FAILED` 與 `CANCELLED` 執行會寫入 $0 花費記錄，與 TinyFish 的計費方式一致
+- `GET /v1/runs/{id}` 與取消永遠不會寫入花費記錄
 
-Override the per-step rate with the `TINYFISH_COST_PER_STEP` environment variable if your TinyFish contract prices steps differently
+如果您的 TinyFish 合約對步驟定價不同，請使用 `TINYFISH_COST_PER_STEP` 環境變數覆寫每步費率
 
-One operational caveat: run-async and SSE billing runs in an in-memory background poller. It survives client disconnects, but a proxy restart while such a run is in flight loses that run's spend log (the run itself completes upstream unaffected)
+一個營運上的注意事項：run-async 與 SSE 計費執行是在記憶體中的背景輪詢器中執行。它會在客戶端斷線後繼續存在，但若代理在此類執行進行中重新啟動，會遺失該執行的花費記錄（執行本身在上游仍會不受影響地完成）
 
-## Authenticated runs
+## 已驗證的執行 {#authenticated-runs}
 
-Request fields that run with the TinyFish account's saved logins (`use_vault`, `credential_item_ids`, `use_profile`, `profile_id`) are rejected with a 403 by default, because every caller shares the proxy's upstream key. Set `TINYFISH_ALLOW_AUTHENTICATED_RUNS=true` on the proxy to allow them
+使用 TinyFish 帳戶已儲存登入資訊（`use_vault`、`credential_item_ids`、`use_profile`、`profile_id`）的請求欄位，預設會被 403 拒絕，因為所有呼叫端都共用代理的上游金鑰。請在代理上設定 `TINYFISH_ALLOW_AUTHENTICATED_RUNS=true` 以允許它們
 
-LiteLLM's generic pass-through envelope fields (`custom_body`, `stream`, `query_params`) are rejected with a 400 on this route: send the native TinyFish request body, and streaming is determined by the endpoint you call
+LiteLLM 的通用轉送包裝欄位（`custom_body`、`stream`、`query_params`）在此路由上會以 400 拒絕：請傳送原生 TinyFish 請求主體，而串流則由您呼叫的端點決定
 
-## Timeouts
+## 逾時 {#timeouts}
 
-Blocking runs get a 1500 second upstream timeout by default, covering TinyFish's 1200 second maximum run duration. Setting `general_settings.pass_through_request_timeout` overrides it
+預設情況下，阻塞式執行會獲得 1500 秒的上游逾時，涵蓋 TinyFish 1200 秒的最長執行時間。設定 `general_settings.pass_through_request_timeout` 會覆寫它
 
-## Environment variables
+## 環境變數 {#environment-variables}
 
-| Variable | Description |
+| 變數 | 說明 |
 |----------|-------------|
-| `TINYFISH_API_KEY` | TinyFish API key the proxy uses upstream |
-| `TINYFISH_AGENT_API_BASE` | Base URL for the TinyFish Agent API. Default is https://agent.tinyfish.ai; a schemeless value is treated as https |
-| `TINYFISH_COST_PER_STEP` | Per-step USD rate used for spend tracking. Default is 0.016 |
-| `TINYFISH_ALLOW_AUTHENTICATED_RUNS` | Set to `true` to allow vault and browser-profile fields in run requests |
+| `TINYFISH_API_KEY` | 代理用於上游的 TinyFish API 金鑰 |
+| `TINYFISH_AGENT_API_BASE` | TinyFish Agent API 的基礎 URL。預設為 `https://agent.tinyfish.ai`；不含 scheme 的值會視為 https |
+| `TINYFISH_COST_PER_STEP` | 用於花費追蹤的每步 USD 費率。預設為 0.016 |
+| `TINYFISH_ALLOW_AUTHENTICATED_RUNS` | 設為 `true` 以允許執行請求中的 vault 與 browser-profile 欄位 |

@@ -3,20 +3,20 @@ title: OpenCode
 sidebar_label: OpenCode
 ---
 
-# OpenCode
+# OpenCode {#opencode}
 
-`Harness.OPENCODE` runs the OpenCode CLI with `opencode run --format json` inside your sandbox and turns its JSON events into events.
+`Harness.OPENCODE` 會在您的沙箱中使用 `opencode run --format json` 執行 OpenCode CLI，並將其 JSON 事件轉換為事件。
 
-## Install
+## 安裝 {#install}
 
 ```bash
 pip install litellm starlette uvicorn
 npm install -g opencode-ai   # inside the sandbox
 ```
 
-The `opencode` binary must already be on the sandbox's `PATH`. If it isn't, the call raises `HarnessInstallFailed`.
+`opencode` 二進位檔必須已經存在於沙箱的 `PATH` 上。如果沒有，呼叫會引發 `HarnessInstallFailed`。
 
-## Usage
+## 使用方式 {#usage}
 
 ```python
 import litellm
@@ -32,9 +32,9 @@ result = litellm.agent(
 )
 ```
 
-## Use with LiteLLM AI Gateway
+## 與 LiteLLM AI Gateway 搭配使用 {#use-with-litellm-ai-gateway}
 
-OpenCode speaks plain Chat Completions, so any model group works: Gemini, Claude, GPT, or a self-hosted model. This makes it the natural harness for models the other CLIs aren't built for.
+OpenCode 使用標準 Chat Completions，因此任何模型群組都可運作：Gemini、Claude、GPT，或自架模型。這使它成為其他 CLI 未為其設計之模型的自然 harness。
 
 ```yaml title="config.yaml"
 model_list:
@@ -52,7 +52,7 @@ general_settings:
   database_url: os.environ/DATABASE_URL
 ```
 
-Create a virtual key scoped to those groups.
+建立一個僅限於這些群組的 virtual key。
 
 ```bash
 curl -X POST http://localhost:4000/key/generate \
@@ -61,7 +61,7 @@ curl -X POST http://localhost:4000/key/generate \
   -d '{"models": ["gemini", "qwen-coder"], "key_alias": "opencode"}'
 ```
 
-Then run with the `litellm_proxy/` prefix. Set the gateway in the environment, or pass it on the call.
+接著使用 `litellm_proxy/` 前綴執行。將 gateway 設定在環境中，或在呼叫時傳入。
 
 ```python
 import litellm
@@ -79,11 +79,11 @@ result = litellm.agent(
 )
 ```
 
-OpenCode calls `/v1/chat/completions` with `stream: true`. The gateway sees each request with `model` set to your group, the header `x-litellm-tags: harness,opencode`, and your `metadata` as `x-litellm-spend-logs-metadata`, so the spend log row carries both.
+OpenCode 會以 `stream: true` 呼叫 `/v1/chat/completions`。gateway 會看到每個請求，其中 `model` 設為您的群組、標頭 `x-litellm-tags: harness,opencode`，以及您的 `metadata` 作為 `x-litellm-spend-logs-metadata`，因此費用記錄列會同時保留兩者。
 
-Because every response is streamed, `result.cost` and token counts come from the usage chunk at the end of each stream. Hosted providers send one. For a self-hosted group, check that the server returns usage when asked with `stream_options: {"include_usage": true}`; otherwise tokens and cost for that group read as zero. OpenCode also sends its small background calls (titles, summaries) to the same group, since LiteLLM sets its `small_model` to `model`.
+由於每個回應都會串流，`result.cost` 和 token 計數都來自每個串流結尾的 usage chunk。託管提供者會送出一個。對於自架群組，請確認伺服器在以 `stream_options: {"include_usage": true}` 要求時會回傳 usage；否則該群組的 token 與成本會顯示為 0。OpenCode 也會將其小型背景呼叫（標題、摘要）送到相同群組，因為 LiteLLM 會將其 `small_model` 設為 `model`。
 
-## Options
+## 選項 {#options}
 
 ```python
 @dataclass(frozen=True)
@@ -93,22 +93,22 @@ class OpenCodeOptions:
     env: Mapping[str, str] = field(default_factory=dict)
 ```
 
-## Models
+## 模型 {#models}
 
-The adapter writes an `opencode.json` with one provider, `litellm`, using `@ai-sdk/openai-compatible` with its base URL set to the session's local endpoint, and points `OPENCODE_CONFIG` at it. `XDG_CONFIG_HOME` and `XDG_DATA_HOME` point at temporary directories, so your own OpenCode providers and auth are never used. OpenCode speaks OpenAI Chat Completions. With a `litellm_proxy/` model the endpoint forwards `/v1/chat/completions` to the gateway with the `harness,opencode` tags; without a gateway it calls `litellm.acompletion`, so every LiteLLM provider works.
+此 adapter 會寫入一個 `opencode.json`，其中包含一個提供者 `litellm`，使用 `@ai-sdk/openai-compatible` 並將其 base URL 設為工作階段的本機端點，並將 `OPENCODE_CONFIG` 指向它。`XDG_CONFIG_HOME` 和 `XDG_DATA_HOME` 會指向暫存目錄，因此不會使用您自己的 OpenCode 提供者與驗證。OpenCode 使用 OpenAI Chat Completions。對於 `litellm_proxy/` 模型，端點會將 `/v1/chat/completions` 與 `harness,opencode` 標籤轉送到 gateway；沒有 gateway 時則會呼叫 `litellm.acompletion`，因此每個 LiteLLM 提供者都可運作。
 
-## Built-in tools
+## 內建工具 {#built-in-tools}
 
-`read`, `write`, `edit`, `bash`, `glob` and `grep` keep their names, and `webfetch` appears as `web_search`. Other tools keep their native names. `disable_tools=` turns tools off in the generated config.
+`read`、`write`、`edit`、`bash`、`glob` 和 `grep` 會保留原名稱，而 `webfetch` 會顯示為 `web_search`。其他工具會保留其原生名稱。`disable_tools=` 會在產生的設定中關閉工具。
 
-## Permissions
+## 權限 {#permissions}
 
-`"read-only"`, `"edit"` and `"full"` (the default) map to OpenCode's `permission` config. `"ask"` raises `CapabilityUnsupported` in this release, and permission keys in `config` are rejected so they can't loosen the mode you set.
+`"read-only"`、`"edit"` 和 `"full"`（預設值）會對應到 OpenCode 的 `permission` 設定。`"ask"` 在此版本中會引發 `CapabilityUnsupported`，而 `config` 中的權限鍵會被拒絕，因此無法放寬您設定的模式。
 
-## Skills, output and sessions
+## 技能、輸出與工作階段 {#skills-output-and-sessions}
 
-Skills are copied into `.opencode/skill/<name>/` in the working directory. Structured output works by instructing the model to answer with one JSON object matching your schema. Sessions resume with OpenCode's session id when it reports one.
+技能會複製到工作目錄中的 `.opencode/skill/<name>/`。結構化輸出則是透過指示模型以符合您 schema 的單一 JSON 物件作答。當 OpenCode 回報 session id 時，工作階段會以該 session id 繼續。
 
-## Limits
+## 限制 {#limits}
 
-Custom Python `tools=` and `history()` raise `CapabilityUnsupported`.
+自訂 Python `tools=` 和 `history()` 會引發 `CapabilityUnsupported`。

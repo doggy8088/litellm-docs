@@ -1,7 +1,7 @@
-# litellm.moderation()
-LiteLLM supports the moderation endpoint for OpenAI
+# litellm.moderation() {#litellmmoderation}
+LiteLLM 支援 OpenAI 的審核端點
 
-## Usage
+## 使用方式 {#usage}
 ```python
 import os
 from litellm import moderation

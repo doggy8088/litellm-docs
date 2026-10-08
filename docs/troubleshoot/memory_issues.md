@@ -1,37 +1,37 @@
-# Memory Issue Classification & Reproduction
+# 記憶體問題分類與重現 {#memory-issue-classification--reproduction}
 
-## 1. Classify the Memory Issue
+## 1. 分類記憶體問題 {#1-classify-the-memory-issue}
 
-Select the option(s) that best describe the memory behavior observed:
+選擇最能描述所觀察到記憶體行為的選項：
 
-- [ ] Memory scales with traffic (RPS-driven)  
-- [ ] Memory increases without a traffic increase  
-- [ ] Memory increases after a LiteLLM upgrade  
-- [ ] Memory leak (memory continuously grows over time)  
-- [ ] Out of Memory (OOM) events or pod restarts
-
----
-
-## 2. Can you reproduce the issue?
-
-Before escalating, verify whether the memory or OOM issue can be reproduced in a test environment that mirrors your production deployment.  
-
-If reproducible, provide **detailed reproduction steps** along with any relevant requests, workloads, or configuration used.  
-For guidance on the type of information we’re looking for, see the [LiteLLM Troubleshooting Guide](../troubleshoot).
+- [ ] 記憶體會隨流量擴增（由 RPS 驅動）  
+- [ ] 在流量未增加的情況下，記憶體增加  
+- [ ] 在 LiteLLM 升級後，記憶體增加  
+- [ ] 記憶體洩漏（記憶體隨時間持續成長）  
+- [ ] 記憶體不足（OOM）事件或 Pod 重新啟動
 
 ---
 
-## 3. Issue Cannot Be Reproduced
+## 2. 您可以重現此問題嗎？ {#2-can-you-reproduce-the-issue}
 
-If the memory or OOM issue cannot be reproduced in a test environment that mirrors production, please provide:
+在升級處理前，請確認記憶體或 OOM 問題是否能在與正式環境部署相符的測試環境中重現。  
 
-1. **Information from Sections 1 and 2**  
-   - Memory/issue classification (Section 1)  
-   - Reproduction attempts and environment details (Section 2)  
+如果可以重現，請提供**詳細的重現步驟**，以及任何相關的請求、工作負載或所使用的設定。  
+如需了解我們希望取得的資訊類型，請參閱 [LiteLLM 疑難排解指南](../troubleshoot)。
 
-2. **Additional context** to help investigate:  
-   - **Workload:** A realistic sample of requests processed before and during the spike, including any recent configuration changes.  
-   - **Metrics:** Memory usage, CPU usage, P50/P99 latency, and any pod restarts or OOM events. Please include **screenshots** of the metrics whenever possible.  
-   - **Logs / Alerts:** Any relevant logs or alerts captured **before and during the spike**, including OOM errors or stack traces if available.
+---
 
-> Providing this information allows the team to analyze patterns, correlate memory spikes or OOMs with traffic or configuration, and attempt to reproduce the issue internally. Without it, our engineers will not have enough information to investigate the problem.
+## 3. 無法重現問題 {#3-issue-cannot-be-reproduced}
+
+如果記憶體或 OOM 問題無法在與正式環境相符的測試環境中重現，請提供：
+
+1. **第 1 與第 2 節的資訊**  
+   - 記憶體／問題分類（第 1 節）  
+   - 重現嘗試與環境詳細資訊（第 2 節）  
+
+2. **其他背景資訊**，以協助調查：  
+   - **工作負載：** 在尖峰前與尖峰期間處理的具體請求範例，以及任何近期的設定變更。  
+   - **指標：** 記憶體使用量、CPU 使用量、P50/P99 延遲，以及任何 Pod 重新啟動或 OOM 事件。請在可能的情況下附上這些指標的**截圖**。  
+   - **記錄／警示：** 在尖峰前與尖峰期間擷取的任何相關記錄或警示，包括 OOM 錯誤或堆疊追蹤（如有）。
+
+> 提供這些資訊可讓團隊分析模式、將記憶體尖峰或 OOM 與流量或設定關聯起來，並嘗試在內部重現問題。若沒有這些資訊，我們的工程師將無法取得足夠的資訊來調查該問題。

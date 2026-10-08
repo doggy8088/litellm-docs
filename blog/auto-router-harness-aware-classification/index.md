@@ -1,80 +1,80 @@
 ---
 slug: auto-router-harness-aware-classification
-title: "Auto-Router Updates: Harness-Aware Routing"
+title: "自動路由器更新：支援 Harness 感知的路由"
 date: 2026-09-10T10:00:00
 authors:
   - moe
 image: ./hero.png
-description: "Harness-aware Auto-Router updates for Claude Code and Codex: less classifier context, encrypted task support, and clearer routing logs."
+description: "針對 Claude Code 和 Codex 的支援 Harness 感知的 Auto-Router 更新：更少的分類器上下文、支援加密任務，以及更清楚的路由記錄。"
 keywords: [auto router, harness aware routing, Claude Code, Codex, agent routing, complexity router, llm routing, litellm]
 tags: [routing, complexity-router, engineering]
 hide_table_of_contents: false
 ---
 
-![The Auto-Router sends task context to the classifier and the original request to the selected model](./hero.png)
+![The Auto-Router 將任務上下文傳送給分類器，並將原始請求傳送給所選模型](./hero.png)
 
-We've updated the Auto-Router to account for how Claude Code and Codex package requests. It now removes more harness context from classification, preserves encrypted delegated tasks, and shows exactly what the classifier received
+我們已更新 Auto-Router，以因應 Claude Code 和 Codex 封裝請求的方式。現在它會從分類中移除更多 harness 上下文、保留加密的委派任務，並清楚顯示分類器實際收到的內容
 
 {/* truncate */}
 
-:::info[Help shape the Auto-Router]
+:::info[協助塑造 Auto-Router]
 
-Work with the LiteLLM team to test routing on your production traffic and help shape what we build next
+與 LiteLLM 團隊合作，在您的正式流量上測試路由，並協助塑造我們下一步要打造的內容
 
-<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">Apply to Become a Design Partner</a>
+<a className="button button--primary button--lg" href="https://calendly.com/tin-berri/litellm-auto-router-design-partner">申請成為設計合作夥伴</a>
 
 :::
 
-A coding harness sends more than the user's task. Requests also carry environment details, repository instructions, skill catalogs, and reminders. Those can dominate the classifier input or appear after the task as a separate message. Harness-aware routing uses the client identity and request format to find the task that needs a model
+編碼 harness 傳送的內容不只有使用者的任務。請求還會帶有環境細節、儲存庫指示、技能目錄，以及提醒。這些內容可能主導分類器輸入，或在任務之後以獨立訊息的形式出現。支援 harness 感知的路由會使用用戶端身分與請求格式，找出需要模型處理的任務
 
-| Update | What changes |
+| 更新 | 變更內容 |
 | --- | --- |
-| [Claude Code classification](https://github.com/BerriAI/litellm/pull/40655) | Omits caller system text from the classifier input |
-| [Codex reminder handling](https://github.com/BerriAI/litellm/pull/40599) | Removes recognized harness blocks while preserving the delegated task |
-| [Encrypted delegated tasks](https://github.com/BerriAI/litellm/pull/40608) | Preserves encrypted task blocks in native Responses classifier calls |
-| [Classifier logs](https://github.com/BerriAI/litellm/pull/40604) | Separates classifier input, masked source request, and classifier response |
+| [Claude Code 分類](https://github.com/BerriAI/litellm/pull/40655) | 從分類器輸入中省略呼叫端系統文字 |
+| [Codex 提醒處理](https://github.com/BerriAI/litellm/pull/40599) | 移除可辨識的 harness 區塊，同時保留委派的任務 |
+| [加密的委派任務](https://github.com/BerriAI/litellm/pull/40608) | 在原生 Responses 分類器請求中保留加密的任務區塊 |
+| [分類器記錄](https://github.com/BerriAI/litellm/pull/40604) | 分開顯示分類器輸入、已遮罩的來源請求，以及分類器回應 |
 
-## Less classifier input for Claude Code
+## 為 Claude Code 減少分類器輸入 {#less-classifier-input-for-claude-code}
 
-In a Claude Code reproduction, a short binary-search question used 2,478 classifier input tokens. Environment details, agent definitions, and the skill catalog accounted for 7,613 characters in the classifier's user payload
+在一個 Claude Code 重現案例中，一個簡短的二分搜尋問題使用了 2,478 個分類器輸入 token。環境細節、代理程式定義，以及技能目錄在分類器的使用者酬載中占了 7,613 個字元
 
-For recognized Claude Code requests, the LLM classifier now omits caller system text. The selected model still receives the original system text, and the classifier keeps the current ask, configured prior turns, and conversation-depth signal
+對於可辨識的 Claude Code 請求，LLM 分類器現在會省略呼叫端系統文字。所選模型仍會收到原始系統文字，而分類器會保留目前的提問、已設定的先前回合，以及對話深度訊號
 
-| First classifier call | Before | After |
+| 第一次分類器呼叫 | 之前 | 之後 |
 | --- | ---: | ---: |
-| User payload, characters | 7,675 | 62 |
-| Total input tokens | 2,478 | 524 |
+| 使用者酬載，字元數 | 7,675 | 62 |
+| 總輸入 token | 2,478 | 524 |
 
-That's **about 79% fewer classifier input tokens on this call**. The reproduction used Claude Code 2.1.268, a Haiku 4.5 classifier, and a three-turn session with one delegated subagent. It measures classifier overhead on that first call; total session cost and answer quality need separate evaluation. [Reproduction and results](https://github.com/BerriAI/litellm/pull/40655)
+這表示**這次呼叫的分類器輸入 token 約減少了 79%**。該重現案例使用 Claude Code 2.1.268、Haiku 4.5 分類器，以及一個包含一個委派子代理程式的三輪對話。它衡量的是第一次呼叫的分類器額外負擔；整體工作階段成本與回答品質需要另外評估。 [重現與結果](https://github.com/BerriAI/litellm/pull/40655)
 
-Task constraints supplied only in Claude Code system messages also stop influencing tier selection. Put constraints that should affect routing in the task itself
+僅在 Claude Code 系統訊息中提供的任務限制，也不再影響 tier 選擇。請將應該影響路由的限制放在任務本身中
 
-## Keep the Codex task in view
+## 讓 Codex 任務保持在可見範圍內 {#keep-the-codex-task-in-view}
 
-Codex can append environment and repository instructions after a delegated task. Previously, that trailing message could become the classifier's current ask
+Codex 可以在委派任務之後附加環境與儲存庫指示。先前，該尾端訊息可能會成為分類器目前的提問
 
-For recognized Codex user agents, the router now strips complete harness blocks such as `<environment_context>` and `<recommended_plugins>`, plus the repository instruction envelope. The delegated task stays available for classification, and the selected model receives the original request
+對於可辨識的 Codex 用戶端代理，路由器現在會移除完整的 harness 區塊，例如 `<environment_context>` 和 `<recommended_plugins>`，以及儲存庫指示包裝區。委派的任務仍可供分類使用，而所選模型會收到原始請求
 
-With `classification_mode: user_turn` and a session identifier, a fresh ask followed by reminder text gets classified. Subsequent assistant or tool continuations reuse its selected model without another classifier call. A new ask remains eligible for classification. [Behavior and reproduction](https://github.com/BerriAI/litellm/pull/40599)
+使用 `classification_mode: user_turn` 與工作階段識別碼時，新的提問後接提醒文字會被分類。後續的助手或工具延續會沿用其所選模型，而不會再次進行分類器呼叫。新的提問仍可供分類。 [行為與重現](https://github.com/BerriAI/litellm/pull/40599)
 
-Custom `reminder_markers` replace the built-in markers, so include every pair your harness needs when overriding them
+自訂 `reminder_markers` 會取代內建標記，因此在覆寫它們時，請包含您的 harness 所需的每一對
 
-## Classify encrypted delegated tasks
+## 分類加密的委派任務 {#classify-encrypted-delegated-tasks}
 
-Some Codex delegated tasks arrive in an `agent_message` containing `encrypted_content`. Converting that payload to ordinary text hid the task from the classifier and produced a `SIMPLE` verdict for a difficult request
+有些 Codex 委派任務會以包含 `encrypted_content` 的 `agent_message` 形式到達。將該酬載轉成一般文字會讓分類器看不到任務，並對一個困難請求產生 `SIMPLE` 判定
 
-The router now preserves the encrypted task in a native Responses classifier call. In the reproduction, the difficult task changed from `SIMPLE` on `gpt-5.6-luna` to `REASONING` on `gpt-6-astra`. The easy task stayed `SIMPLE` on `gpt-5.6-luna`, with both streaming and non-streaming requests tested. [Reproduction and results](https://github.com/BerriAI/litellm/pull/40608)
+路由器現在會在原生 Responses 分類器請求中保留加密任務。在重現案例中，困難任務從 `SIMPLE` on `gpt-5.6-luna` 變成 `REASONING` on `gpt-6-astra`。簡單任務仍維持為 `SIMPLE` on `gpt-5.6-luna`，並測試了串流與非串流請求。 [重現與結果](https://github.com/BerriAI/litellm/pull/40608)
 
-This requires a native OpenAI or Azure OpenAI Responses classifier deployment with credentials that can consume the encrypted content. Encrypted tasks bypass the local scoring shortcut in `heuristic_first` and `hybrid` modes. Unsupported deployments and decryption errors follow `classifier_fallback`. The live reproduction used OpenAI; Azure transport was not exercised
+這需要原生 OpenAI 或 Azure OpenAI Responses 分類器部署，以及能消耗加密內容的憑證。加密任務會在 `heuristic_first` 和 `hybrid` 模式下繞過本地評分捷徑。不支援的部署與解密錯誤會遵循 `classifier_fallback`。實際重現使用了 OpenAI；未測試 Azure 傳輸
 
-## See what the classifier received
+## 查看分類器收到的內容 {#see-what-the-classifier-received}
 
-Open a request in **Logs**, then select its **Classify** row. New captures show **Classifier input**, **Originating request, credentials masked**, and **Classifier response** separately
+在 **Logs** 中開啟請求，然後選取其 **Classify** 列。新的擷取內容會分別顯示 **Classifier input**、**Originating request, credentials masked** 以及 **Classifier response**
 
-This makes it possible to check whether the task reached the classifier and compare its verdict with the original request. Credentials, including Cookie and Set-Cookie headers, are masked in the source copy. Message-logging redaction settings still apply, and older rows retain their existing view. [Logs update](https://github.com/BerriAI/litellm/pull/40604)
+這讓您可以檢查任務是否送達分類器，並將其判定與原始請求進行比較。來源副本中的憑證（包括 Cookie 和 Set-Cookie 標頭）會被遮罩。訊息記錄的去識別化設定仍然適用，而較舊的列會保留其既有檢視。 [Logs 更新](https://github.com/BerriAI/litellm/pull/40604)
 
-## Try it with your harness
+## 搭配您的 harness 試用 {#try-it-with-your-harness}
 
-Use a build containing the linked changes and send Claude Code or Codex traffic through the [Auto-Router](/docs/proxy/auto_routing). Preserve the client's `User-Agent` header so the router can recognize it. Test Claude Code behavior through the real client: the browser routing preview has no client-identity field and uses generic classification behavior
+使用包含相關變更的建置版本，並將 Claude Code 或 Codex 流量導向 [Auto-Router](/docs/proxy/auto_routing)。保留用戶端的 `User-Agent` 標頭，讓路由器可以辨識它。透過實際用戶端測試 Claude Code 行為：瀏覽器路由預覽沒有用戶端身分欄位，並使用一般分類行為
 
-Share what you find in the [Auto-Router discussion](https://github.com/BerriAI/litellm/discussions/32168)
+請在 [Auto-Router 討論](https://github.com/BerriAI/litellm/discussions/32168) 中分享您的發現

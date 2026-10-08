@@ -1,21 +1,21 @@
-# Pass-Through Cost & Usage Tracking
+# 透傳成本與用量追蹤 {#pass-through-cost--usage-tracking}
 
-Some pass-through targets fan a single HTTP request out to several models internally. LiteLLM cannot price those requests from the response body, so before this contract existed they landed in the spend logs with zero cost and zero tokens
+有些透傳目標會在內部將單一 HTTP 請求展開成多個模型請求。LiteLLM 無法從回應本文為這些請求定價，所以在這個合約存在之前，它們會以零成本、零 token 記入支出記錄
 
-The target can instead report the totals for the whole request in two response headers. LiteLLM records what it reports, without recomputing it
+目標可以改為透過兩個回應標頭回報整個請求的總計。LiteLLM 會記錄它所回報的內容，不會重新計算
 
-## The headers
+## 標頭 {#the-headers}
 
-| Header | Format | Meaning |
+| 標頭 | 格式 | 意義 |
 | --- | --- | --- |
-| `x-litellm-response-cost` | decimal string, USD | Total cost of this request across every internal model call, e.g. `0.000415` |
-| `x-litellm-total-tokens` | integer string | Total tokens across every internal model call, e.g. `1874` |
+| `x-litellm-response-cost` | 十進位字串，USD | 此請求跨所有內部模型呼叫的總成本，例如 `0.000415` |
+| `x-litellm-total-tokens` | 整數字串 | 此請求跨所有內部模型呼叫的總 token 數，例如 `1874` |
 
-Send one total per HTTP request. There is no per-model breakdown, and the reported values are authoritative
+每個 HTTP 請求送出一個總計。沒有逐模型明細，而回報的值具有權威性
 
-## Quick start
+## 快速開始 {#quick-start}
 
-Define the pass-through endpoint as usual. Nothing in the config opts into this contract; LiteLLM reads the headers whenever the target sends them
+照常定義透傳端點。設定中沒有任何內容會啟用此合約；只要目標送出這些標頭，LiteLLM 就會讀取它們
 
 ```yaml
 general_settings:
@@ -27,7 +27,7 @@ general_settings:
         Authorization: "Bearer os.environ/INTERNAL_API_TOKEN"
 ```
 
-Call it through the proxy with your LiteLLM key:
+透過 proxy 並使用您的 LiteLLM 金鑰來呼叫它：
 
 ```shell
 curl -i -X POST 'http://localhost:4000/internal-api/summarize' \
@@ -36,7 +36,7 @@ curl -i -X POST 'http://localhost:4000/internal-api/summarize' \
   -d '{"document_id": "doc-9931"}'
 ```
 
-Have the target answer with the totals it computed:
+讓目標回覆它計算出的總計：
 
 ```
 HTTP/1.1 200 OK
@@ -45,47 +45,47 @@ x-litellm-response-cost: 0.000415
 x-litellm-total-tokens: 1874
 ```
 
-LiteLLM books `0.000415` and `1874` against the calling key, team, and user, and the values show up in the spend logs and on the usage dashboards alongside the rest of that key's traffic
+LiteLLM 會將 `0.000415` 和 `1874` 記入呼叫的金鑰、團隊與使用者，這些值會顯示在支出記錄與用量儀表板上，並與該金鑰的其餘流量一同呈現
 
-## What LiteLLM records
+## LiteLLM 記錄哪些內容 {#what-litellm-records}
 
-The reported values are written as sent. LiteLLM parses them, checks them for sanity, and never recomputes a cost of its own on top
+回報的值會照原樣寫入。LiteLLM 會解析它們、檢查其合理性，且不會在其上方再重新計算任何自己的成本
 
-Only the values the target actually reported are written. A target that sends a cost but no token count keeps the token count LiteLLM derived on its own, rather than having it zeroed. A target that sends neither header is left alone entirely, which is the normal case for provider pass-through routes like Anthropic or Vertex AI, where LiteLLM derives the cost from the response body
+只有目標實際回報的值才會被寫入。若某目標送出成本但沒有 token 數，則會保留 LiteLLM 自行推導出的 token 數，不會將其歸零。若某目標兩個標頭都沒有送出，則會完全不受影響，這是 Anthropic 或 Vertex AI 等提供者透傳路由的正常情況，在這些情況下 LiteLLM 會從回應本文推導成本
 
-## Validation
+## 驗證 {#validation}
 
-A value that fails any of these checks is treated as not reported, and a warning is written to the proxy logs naming the header and the offending value
+任何未通過以下任一檢查的值都會被視為未回報，並且會在 proxy 記錄中寫入警告，指出標頭名稱與有問題的值
 
-| Header | Accepted | Rejected |
+| 標頭 | 接受 | 拒絕 |
 | --- | --- | --- |
-| `x-litellm-response-cost` | Any finite, non-negative decimal, including `0` | Unparseable text, negative values, `inf`, `nan` |
-| `x-litellm-total-tokens` | Any non-negative integer, including `0` | Unparseable text, negative values |
+| `x-litellm-response-cost` | 任何有限且非負的十進位數，包括 `0` | 無法解析的文字、負值、`inf`、`nan` |
+| `x-litellm-total-tokens` | 任何非負整數，包括 `0` | 無法解析的文字、負值 |
 
-An explicit `0` is a real value, not a missing one, so send both headers even when the totals are zero
+明確的 `0` 是真實值，而不是缺失值，因此即使總計為零，也請同時送出兩個標頭
 
-## Error responses
+## 錯誤回應 {#error-responses}
 
-The headers are read on every upstream response, whatever the status code. A request that burned tokens before failing books its spend on the failure row instead of being dropped for having a 4xx or 5xx status. Send the headers on error responses too whenever cost was still incurred
+無論狀態碼為何，系統都會在每個上游回應上讀取這些標頭。若某請求在失敗前已消耗 token，仍會將其支出記入失敗列，而不是因為具有 4xx 或 5xx 狀態就被捨棄。只要仍產生成本，錯誤回應也請一併送出這些標頭
 
-On a failure row, a value that was missing or unusable is recorded as `0`
+在失敗列上，缺失或無法使用的值會被記錄為 `0`
 
-## Precedence over `cost_per_request`
+## 優先於 `cost_per_request` {#precedence-over-cost_per_request}
 
-A target that prices its own requests always wins over the flat [`cost_per_request`](./pass_through.md) estimate configured on the endpoint. `cost_per_request` defaults to `0.0` on every config-defined endpoint, so honoring it would zero out the real cost the target just reported
+會為其自身請求定價的目標，永遠優先於在端點上設定的固定 [`cost_per_request`](./pass_through.md) 估算值。每個由設定定義的端點上，`cost_per_request` 預設為 `0.0`，因此若遵從它，就會將目標剛回報的真實成本歸零
 
-That holds even when the reported value could not be parsed. The request records `0` rather than billing an estimate the target has contradicted
+即使回報的值無法解析，情況仍然相同。系統會記錄 `0`，而不是採用與目標回報相矛盾的估算值來計費
 
-## Rate limits and budgets
+## 速率限制與預算 {#rate-limits-and-budgets}
 
-Reported tokens charge the same TPM window as the rest of the caller's traffic, so a key or team cannot exceed its shared token limit through pass-through traffic alone. Before this contract, pass-through usage never reached the token window at all, because the rate limiter only read usage off response shapes it models
+回報的 token 會與呼叫端流量的其他部分一樣，套用相同的 TPM 視窗，因此金鑰或團隊無法僅透過透傳流量來超過其共用 token 限額。在此合約出現之前，透傳用量從未進入 token 視窗，因為速率限制器只會從它能辨識的回應結構讀取用量
 
-Recorded cost counts toward budgets the same way any other request's cost does
+已記錄的成本會像任何其他請求的成本一樣計入預算
 
-## Streaming
+## 串流 {#streaming}
 
-Streaming targets work, because response headers arrive before the body. A target that only knows its final cost after it has finished streaming cannot report it through this contract, since by then the headers are already on the wire
+串流目標可以運作，因為回應標頭會在本文之前到達。若某目標必須等到串流結束後才知道最終成本，就無法透過此合約回報，因為屆時標頭早已在傳輸路徑上
 
-## Reading the values back
+## 讀回這些值 {#reading-the-values-back}
 
-Upstream response headers relay through to the calling client, so callers see the same `x-litellm-response-cost` shape they get from the general API. LiteLLM adds `x-litellm-call-id` on the way out, which is the value to match against the spend logs when reconciling any individual request
+上游回應標頭會透傳給呼叫端客戶端，因此呼叫端會看到與一般 API 相同的 `x-litellm-response-cost` 形式。LiteLLM 會在送出時加上 `x-litellm-call-id`，這是用來在比對單一請求時與支出記錄核對的值

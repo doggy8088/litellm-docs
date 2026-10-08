@@ -1,5 +1,5 @@
 ---
-title: "v1.100.1 - Retry Breadcrumb Memory Fix"
+title: "v1.100.1 - 重試麵包屑記憶體修正"
 slug: "v1-100-1"
 date: 2026-09-10T01:42:29
 authors:
@@ -21,7 +21,7 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -43,20 +43,20 @@ pip install litellm==1.100.1
 </TabItem>
 </Tabs>
 
-`v1.100.1` is a patch release on top of [`v1.100.0`](/release_notes/v1.100.0/v1-100-0). It carries one fix: the router's retry breadcrumbs no longer retain earlier requests, which stops a memory leak that could take down a proxy under retry-heavy load. Both the Docker image and the PyPI package were built from [`1dba17b`](https://github.com/BerriAI/litellm/commit/1dba17b10ded12ad0021edb453ba2c54e4637928).
+`v1.100.1` 是建置於 [`v1.100.0`](/release_notes/v1.100.0/v1-100-0) 之上的修補版本。它只包含一個修正：路由器的重試麵包屑不再保留較早的請求，這可避免在重試頻繁的負載下讓 proxy 當機的記憶體洩漏。Docker 映像與 PyPI 套件皆是從 [`1dba17b`](https://github.com/BerriAI/litellm/commit/1dba17b10ded12ad0021edb453ba2c54e4637928) 建置而成。
 
-If you run `v1.100.0` behind any deployment that fails often enough to trigger retries or fallbacks, upgrade. There are no configuration changes and nothing else in the release.
+如果您在任何部署後方執行 `v1.100.0`，且該部署失敗頻繁到足以觸發重試或備援，請升級。這個版本沒有任何組態變更，也沒有其他內容。
 
-## Retry breadcrumbs no longer leak memory
+## 重試麵包屑不再洩漏記憶體 {#retry-breadcrumbs-no-longer-leak-memory}
 
-Whenever a call fails and the router retries or falls back, it records a breadcrumb describing the failed attempt under `metadata.previous_models`, the same way Sentry breadcrumbs work. Under `v1.100.0` two things went wrong with that record. The breadcrumb list lived on the `Router` instance rather than on the request, so every request that retried appended to one shared list and saw the breadcrumbs of unrelated earlier requests. And each breadcrumb copied the proxy's snapshot of the inbound request, whose body aliases the live request metadata, earlier breadcrumbs included, so every new breadcrumb nested all of the ones before it. Under sustained retries the structure grew geometrically, the event loop spent its time copying and stringifying it, `/health/liveliness` slowed from milliseconds to hundreds of milliseconds, and the pod was eventually OOM-killed and restarted, at which point the cycle began again. A Redis or upstream deployment that keeps failing is enough to trigger it.
+每當請求失敗而路由器重試或備援時，它會在 `metadata.previous_models` 下記錄一筆描述失敗嘗試的麵包屑，作法與 Sentry breadcrumbs 相同。在 `v1.100.0` 下，這筆記錄出了兩個問題。麵包屑清單是存在 `Router` 執行個體上，而不是存在請求上，所以每個觸發重試的請求都會附加到同一個共享清單，並看到不相關的較早請求麵包屑。而且每一筆麵包屑都會複製 proxy 的傳入請求快照，而其主體別名指向實際執行中的請求中繼資料，並包含更早的麵包屑，因此每一筆新麵包屑都會巢狀包含之前的所有麵包屑。在持續重試下，這個結構會以幾何級數成長，事件迴圈把時間都花在複製與字串化上，`/health/liveliness` 從數毫秒變慢到數百毫秒，最後 pod 被 OOM-kill 並重新啟動，接著循環再次開始。任何持續失敗的 Redis 或上游部署都足以觸發這個問題。
 
-Breadcrumbs are now built per request and capped at the four most recent attempts, and the `proxy_server_request` snapshot is excluded from each one. Memory stays flat across retries, and the breadcrumbs a request logs describe only that request's own failed attempts. This is the same fix that ships in `v1.101.0`, backported to the stable line.
+麵包屑現在是按請求建立，並限制為最近四次嘗試，而且每一筆都會排除 `proxy_server_request` 快照。記憶體在重試之間保持平穩，而且請求記錄的麵包屑只描述該請求自身的失敗嘗試。這與 `v1.101.0` 中提供的修正相同，並已回補到穩定版本線。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(router): keep retry breadcrumbs per request and out of the request snapshot - [PR #40455](https://github.com/BerriAI/litellm/pull/40455) (backport of [PR #39491](https://github.com/BerriAI/litellm/pull/39491))
+- fix(router): 每個請求保留重試 breadcrumbs，且不納入請求快照 - [PR #40455](https://github.com/BerriAI/litellm/pull/40455) (backport of [PR #39491](https://github.com/BerriAI/litellm/pull/39491))
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.100.0...1dba17b10ded12ad0021edb453ba2c54e4637928

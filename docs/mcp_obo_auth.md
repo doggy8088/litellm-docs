@@ -1,14 +1,14 @@
-# MCP OBO Auth
+# MCP OBO 驗證 {#mcp-obo-auth}
 
-OAuth 2.0 On-Behalf-Of (OBO) auth lets LiteLLM exchange a user's incoming bearer token for a scoped token that is valid for a specific MCP server.
+OAuth 2.0 On-Behalf-Of（OBO）驗證讓 LiteLLM 可將使用者傳入的 bearer token 交換為一個具範圍限制的 token，且該 token 對特定 MCP server 有效。
 
-Use OBO when:
+在以下情況使用 OBO：
 
-- Your MCP server should receive a token minted specifically for that MCP server.
-- Your identity provider supports [RFC 8693 OAuth 2.0 Token Exchange](https://datatracker.ietf.org/doc/html/rfc8693), or is Microsoft Entra ID, which LiteLLM speaks natively (see [Microsoft Entra ID](#microsoft-entra-id-azure-ad) below).
-- You want LiteLLM to keep the user's raw token from being forwarded directly to the MCP server.
+- 您的 MCP 伺服器應該接收一個專門為該 MCP 伺服器簽發的權杖。
+- 您的身分提供者支援 [RFC 8693 OAuth 2.0 權杖交換](https://datatracker.ietf.org/doc/html/rfc8693)，或是 Microsoft Entra ID，而 LiteLLM 原生支援它（請參閱下方的 [Microsoft Entra ID](#microsoft-entra-id-azure-ad)）。
+- 您希望 LiteLLM 不要將使用者的原始權杖直接轉送到 MCP 伺服器。
 
-## How It Works
+## 運作方式 {#how-it-works}
 
 ```mermaid
 flowchart TD
@@ -24,17 +24,17 @@ flowchart TD
     J --> K[MCP server executes the tool and returns the result]
 ```
 
-In short:
+簡單來說：
 
-1. The client sends a request to LiteLLM with a bearer token.
-2. LiteLLM uses that bearer token as the RFC 8693 `subject_token`.
-3. LiteLLM exchanges it at your identity provider's token exchange endpoint.
-4. LiteLLM forwards only the exchanged scoped token to the MCP server.
-5. LiteLLM caches the exchanged token until it expires, so repeated calls avoid another identity provider round trip.
+1. 用戶端以 bearer token 向 LiteLLM 發送請求。
+2. LiteLLM 將該 bearer token 作為 RFC 8693 `subject_token`。
+3. LiteLLM 在您的身分識別提供者的 token exchange endpoint 進行交換。
+4. LiteLLM 只將交換後、具範圍限制的 token 轉送給 MCP server。
+5. LiteLLM 會快取交換後的 token 直到其過期，因此重複呼叫可避免再次往返身分識別提供者。
 
-## Configure an MCP Server for OBO
+## 將 MCP Server 設定為 OBO {#configure-an-mcp-server-for-obo}
 
-Set `auth_type: oauth2_token_exchange` on the MCP server.
+在 MCP server 上設定 `auth_type: oauth2_token_exchange`。
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -60,30 +60,25 @@ mcp_servers:
     subject_token_type: "urn:ietf:params:oauth:token-type:access_token"
 ```
 
-### Config Fields
+### 設定欄位 {#config-fields}
 
-| Field | Required | Description |
+| 欄位 | 必要 | 說明 |
 |-------|----------|-------------|
-| `auth_type` | Yes | Must be `oauth2_token_exchange`. |
-| `token_exchange_endpoint` | Yes | The identity provider endpoint that accepts RFC 8693 token exchange requests. |
-| `client_id` | Yes | OAuth client identifier LiteLLM uses when calling the token exchange endpoint. |
-| `client_secret` | Yes | OAuth client secret LiteLLM uses when calling the token exchange endpoint. |
-| `audience` | Recommended | Resource identifier for the MCP server. LiteLLM sends this as the token exchange `audience`. |
-| `scopes` | Optional | Scopes LiteLLM requests for the exchanged token. LiteLLM joins the list into the OAuth `scope` parameter. |
-| `subject_token_type` | Optional | RFC 8693 subject token type. Defaults to `urn:ietf:params:oauth:token-type:access_token`. |
-| `upstream_token_header` | Optional | Which upstream header carries the exchanged token. Defaults to `Authorization`. See [sending the token on a different header](#sending-the-exchanged-token-on-a-different-header). |
-| `token_exchange_profile` | Optional | Wire dialect for the exchange. `rfc8693` (default) speaks the standard token-exchange grant; `entra_obo` speaks Microsoft Entra ID's On-Behalf-Of flow. See [Microsoft Entra ID](#microsoft-entra-id-azure-ad). |
+| `auth_type` | 是 | 必須是 `oauth2_token_exchange`。 |
+| `token_exchange_endpoint` | 是 | 接受 RFC 8693 權杖交換請求的身分提供者端點。 |
+| `client_id` | 是 | LiteLLM 在呼叫權杖交換端點時使用的 OAuth 用戶端識別碼。 |
+| `client_secret` | 是 | LiteLLM 在呼叫權杖交換端點時使用的 OAuth 用戶端密鑰。 |
+| `audience` | 建議 | MCP 伺服器的資源識別碼。LiteLLM 會將其作為權杖交換 `audience` 傳送。 |
+| `scopes` | 選用 | LiteLLM 為交換後的權杖請求的範圍。LiteLLM 會將清單連接成 OAuth `scope` 參數。 |
+| `subject_token_type` | 選用 | RFC 8693 subject token type。預設為 `urn:ietf:params:oauth:token-type:access_token`。 |
+| `upstream_token_header` | 選用 | 上游哪個標頭承載交換後的權杖。預設為 `Authorization`。請參閱 [將權杖傳送到不同的標頭](#sending-the-exchanged-token-on-a-different-header)。 |
+| `token_exchange_profile` | 選用 | 交換的線路協定。`rfc8693`（預設）使用標準的 token-exchange grant；`entra_obo` 使用 Microsoft Entra ID 的 On-Behalf-Of flow。請參閱 [Microsoft Entra ID](#microsoft-entra-id-azure-ad)。 |
 
-### Sending the exchanged token on a different header
+### 將交換後的權杖傳送到不同的標頭 {#sending-the-exchanged-token-on-a-different-header}
 
-By default the exchanged token goes out as `Authorization: Bearer <token>`. When the MCP server sits
-behind an API gateway that reads its own credential from a private header, and the server behind the
-gateway still expects its own bearer on `Authorization`, both credentials have to travel on the same
-request.
+預設情況下，交換後的權杖會以 `Authorization: Bearer <token>` 傳出。當 MCP 伺服器位於會從私有標頭讀取自身憑證的 API 閘道後方，而閘道後方的伺服器仍然期望在 `Authorization` 上收到自己的 bearer 時，這兩個憑證都必須走同一個請求。
 
-Set `upstream_token_header` to name the header the exchanged token should use. Anything under
-`static_headers` is then left alone, so a shared credential still reaches the server behind the
-gateway.
+將 `upstream_token_header` 設定為交換後的權杖應使用的標頭名稱。之後 `static_headers` 之下的內容都會保持不變，因此共用憑證仍可送達閘道後方的伺服器。
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -99,23 +94,20 @@ mcp_servers:
       Authorization: "Bearer os.environ/UPSTREAM_MCP_TOKEN"
 ```
 
-Each upstream request then carries both, with the exchanged token scoped to the calling user:
+接著每個上游請求都會同時帶上兩者，而交換後的權杖會限定於呼叫的使用者：
 
 ```
 esb-oauth: Bearer <token exchanged for this user>
 Authorization: Bearer <the shared token you configured>
 ```
 
-The exchanged token is still cached per user, so a short-lived token does not mean an exchange on
-every request. Leaving `upstream_token_header` unset keeps the default.
+交換後的權杖仍會依使用者快取，因此短效權杖不代表每個請求都要交換。將 `upstream_token_header` 保持未設定可維持預設行為。
 
-If a redirect from the upstream crosses origin, the custom header is dropped rather than forwarded,
-the same way HTTP clients drop `Authorization`. An upstream that legitimately redirects across
-origins will not see the credential on the second hop.
+如果上游的重新導向跨越來源，客製化標頭會被捨棄而不會被轉送，這與 HTTP 用戶端捨棄 `Authorization` 的方式相同。合法跨來源重新導向的上游將不會在第二次跳轉時看到該憑證。
 
-## Token Exchange Request
+## Token Exchange 請求 {#token-exchange-request}
 
-For each uncached subject token and MCP server pair, LiteLLM sends a form-encoded request like this to `token_exchange_endpoint`:
+對於每個未快取的 subject token 與 MCP server 組合，LiteLLM 會向 `token_exchange_endpoint` 發送如下的 form-encoded 請求：
 
 ```http
 POST /oauth2/token
@@ -130,7 +122,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &scope=mcp.tools.read mcp.tools.execute
 ```
 
-Your identity provider should return an access token:
+您的身分識別提供者應回傳一個 access token：
 
 ```json
 {
@@ -140,15 +132,15 @@ Your identity provider should return an access token:
 }
 ```
 
-LiteLLM then calls the MCP server with:
+接著 LiteLLM 會使用以下方式呼叫 MCP server：
 
 ```http
 Authorization: Bearer scoped-token-for-mcp-server
 ```
 
-## Microsoft Entra ID (Azure AD)
+## Microsoft Entra ID (Azure AD) {#microsoft-entra-id-azure-ad}
 
-Microsoft Entra ID doesn't implement the RFC 8693 token-exchange grant above. Its On-Behalf-Of flow uses the RFC 7523 `jwt-bearer` grant instead: the caller's token rides as `assertion` rather than `subject_token`, there's no `audience` parameter, and a Microsoft-only `requested_token_use=on_behalf_of` extension is what turns the grant into a delegation rather than a plain jwt-bearer exchange. LiteLLM treats Entra as a first-class profile, so pointing at Entra is a config change, not a different integration: set `token_exchange_profile: entra_obo` and LiteLLM builds the jwt-bearer form instead of the RFC 8693 form.
+Microsoft Entra ID 不實作上方的 RFC 8693 權杖交換授權。其 On-Behalf-Of flow 改用 RFC 7523 `jwt-bearer` 授權：呼叫端的權杖以 `assertion` 而非 `subject_token` 的形式傳入，沒有 `audience` 參數，而是由僅限 Microsoft 的 `requested_token_use=on_behalf_of` 擴充將該授權轉換為委派，而不是單純的 jwt-bearer 交換。LiteLLM 將 Entra 視為第一級設定檔，因此指向 Entra 是設定變更，而不是不同的整合：設定 `token_exchange_profile: entra_obo`，LiteLLM 就會建立 jwt-bearer 格式而非 RFC 8693 格式。
 
 ```yaml title="config.yaml" showLineNumbers
 mcp_servers:
@@ -172,9 +164,9 @@ mcp_servers:
       - "api://internal-tools-mcp/.default"
 ```
 
-`audience` and `subject_token_type` are unused with `entra_obo`: Entra has no audience parameter (the target resource goes in `scope` instead), and the jwt-bearer grant doesn't examine subject token type.
+`audience` 和 `subject_token_type` 在 `entra_obo` 中不使用：Entra 沒有 audience 參數（目標資源會改放在 `scope` 中），而 jwt-bearer 授權不會檢查 subject token type。
 
-For each uncached caller token and MCP server pair, LiteLLM sends:
+對於每一組未快取的呼叫端權杖與 MCP 伺服器配對，LiteLLM 會傳送：
 
 ```http
 POST /<tenant-id>/oauth2/v2.0/token
@@ -188,17 +180,17 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
 &client_secret=<entra-app-client-secret>
 ```
 
-Entra returns the same access token response shape shown above, and LiteLLM caches and forwards the exchanged token the same way regardless of profile.
+Entra 回傳與上方相同的存取權杖回應格式，而 LiteLLM 會以相同方式快取並轉送交換後的權杖，不論設定檔為何。
 
 :::note
-The caller's token must be issued for LiteLLM's app registration, not some other Entra app. If your harness authenticates against a different app registration, have it request a token for this app's scope first, then send that token to LiteLLM.
+呼叫端的權杖必須是為 LiteLLM 的應用程式註冊所簽發，而不是其他 Entra 應用程式。如果您的測試工具是向不同的應用程式註冊進行驗證，請先讓它為此應用程式的範圍請求一個權杖，然後再將該權杖傳送給 LiteLLM。
 :::
 
-## Calling an OBO MCP Server
+## 呼叫 OBO MCP Server {#calling-an-obo-mcp-server}
 
-The inbound request must include the user's bearer token so LiteLLM has a `subject_token` to exchange.
+傳入請求必須包含使用者的 bearer token，讓 LiteLLM 有可供交換的 `subject_token`。
 
-For direct MCP calls, keep the LiteLLM key in `x-litellm-api-key` and leave `Authorization` for the user token:
+對於直接 MCP 呼叫，請將 LiteLLM key 保留在 `x-litellm-api-key` 中，並將 `Authorization` 留給使用者 token：
 
 ```bash title="Direct MCP call" showLineNumbers
 curl -X POST "https://litellm.example.com/internal_tools/mcp" \
@@ -208,7 +200,7 @@ curl -X POST "https://litellm.example.com/internal_tools/mcp" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
-For the Responses API, pass MCP tool headers with the LiteLLM key separated from the user token:
+對於 Responses API，請將 MCP tool headers 與 LiteLLM key 分開，並與使用者 token 分離傳遞：
 
 ```bash title="Responses API with MCP OBO" showLineNumbers
 curl -X POST "https://litellm.example.com/v1/responses" \
@@ -233,32 +225,31 @@ curl -X POST "https://litellm.example.com/v1/responses" \
 ```
 
 :::tip
-If the MCP client can only send one `Authorization` header, use `x-litellm-api-key` for the LiteLLM key and reserve `Authorization` for the user's token. LiteLLM needs the user token as the OBO `subject_token`.
+如果 MCP client 只能傳送一個 `Authorization` header，請將 LiteLLM key 放在 `x-litellm-api-key`，並將 `Authorization` 保留給使用者的 token。LiteLLM 需要使用者 token 作為 OBO `subject_token`。
 :::
 
-## Caching Behavior
+## 快取行為 {#caching-behavior}
 
-LiteLLM caches exchanged tokens by:
+LiteLLM 會依下列條件快取交換後的 tokens：
 
 - subject token
 - MCP server ID
 
-This means two different users get separate exchanged tokens, while repeated calls from the same user to the same MCP server reuse the cached token until it expires.
+這表示兩個不同的使用者會取得各自獨立的交換後 tokens，而同一位使用者對同一個 MCP server 的重複呼叫，會重用快取的 token，直到其過期。
 
-The cache TTL is based on `expires_in` minus LiteLLM's OAuth expiry buffer. If `expires_in` is missing or invalid, LiteLLM uses the default OAuth token cache TTL.
+快取 TTL 以 `expires_in` 減去 LiteLLM 的 OAuth 到期緩衝區為基準。若 `expires_in` 遺失或無效，LiteLLM 會使用預設的 OAuth token cache TTL。
 
-## Requests Without a Subject Token
+## 沒有 Subject Token 的請求 {#requests-without-a-subject-token}
 
-If a request to an `oauth2_token_exchange` server carries no user bearer token, LiteLLM rejects it with `401 Unauthorized` and `WWW-Authenticate: Bearer resource_metadata="/.well-known/oauth-protected-resource/mcp/<server_name>", error="invalid_token", error_description="Missing or invalid subject token; authenticate with the IdP and retry"`. There is no fallback to OAuth `client_credentials` and the request is never forwarded to the MCP server without an exchanged token.
+如果對 `oauth2_token_exchange` 伺服器的請求沒有使用者 bearer 權杖，LiteLLM 會以 `401 Unauthorized` 和 `WWW-Authenticate: Bearer resource_metadata="/.well-known/oauth-protected-resource/mcp/<server_name>", error="invalid_token", error_description="Missing or invalid subject token; authenticate with the IdP and retry"` 拒絕它。不會退回到 OAuth `client_credentials`，而且在沒有交換後權杖的情況下，該請求絕不會被轉送到 MCP 伺服器。
 
-If you also need machine-to-machine access to the same MCP server, register a separate server entry with `auth_type: oauth2` and `client_id`, `client_secret`, and `token_url` configured. Set `oauth2_flow: client_credentials` on that entry; the proxy refuses to start an `oauth2` server without an explicit `oauth2_flow`.
+如果您也需要對同一個 MCP 伺服器進行機器對機器存取，請另外註冊一個伺服器項目，並設定 `auth_type: oauth2` 和 `client_id`、`client_secret` 與 `token_url`。在該項目上設定 `oauth2_flow: client_credentials`；該代理程式會拒絕在沒有明確 `oauth2_flow` 的情況下啟動 `oauth2` 伺服器。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-| Symptom | Check |
+| 症狀 | 檢查 |
 |---------|-------|
-| MCP server receives the LiteLLM key | Move the LiteLLM key to `x-litellm-api-key` and use `Authorization` for the user token. |
-| Token exchange endpoint returns 400 | Confirm `audience`, `scopes`, `client_id`, and `subject_token_type` match your identity provider configuration. |
-| MCP server receives no `Authorization` header | Confirm the MCP server has `auth_type: oauth2_token_exchange` and the inbound request includes a user bearer token. |
-| Identity provider is called on every request | Confirm the identity provider returns `expires_in`, and that the same user token and MCP server are being reused. |
-
+| MCP server 收到 LiteLLM key | 將 LiteLLM key 移至 `x-litellm-api-key`，並使用 `Authorization` 作為使用者 token。 |
+| Token exchange endpoint 回傳 400 | 確認 `audience`、`scopes`、`client_id` 和 `subject_token_type` 與您的身分識別提供者設定相符。 |
+| MCP server 沒有收到 `Authorization` header | 確認 MCP server 已設定 `auth_type: oauth2_token_exchange`，且傳入請求包含使用者 bearer token。 |
+| 身分識別提供者在每個請求都被呼叫 | 確認身分識別提供者回傳 `expires_in`，且正在重用相同的使用者 token 與 MCP server。 |

@@ -1,18 +1,18 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /responses/compact
+# /responses/compact {#responsescompact}
 
-Compress conversation history using OpenAI's `/responses/compact` endpoint.
+使用 OpenAI 的 `/responses/compact` 端點壓縮對話歷史。
 
-| Feature | Supported |
+| 功能 | 支援 |
 |---------|-----------|
-| Supported LiteLLM Versions | 1.72.0+ |
-| Supported Providers | `openai` |
+| 支援的 LiteLLM 版本 | 1.72.0+ |
+| 支援的提供者 | `openai` |
 
-## Usage
+## 用法 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 ```python showLineNumbers title="Compact Response"
 import litellm
@@ -29,7 +29,7 @@ print(response.object)  # "response.compaction"
 print(response.output)
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
 <Tabs>
 <TabItem value="curl" label="Curl">
@@ -67,16 +67,16 @@ print(response.json())
 </TabItem>
 </Tabs>
 
-## Request Parameters
+## 請求參數 {#request-parameters}
 
-| Parameter | Type | Required | Description |
+| 參數 | 類型 | 必填 | 描述 |
 |-----------|------|----------|-------------|
-| `model` | string | Yes | Model to use for compaction |
-| `input` | string or array | Yes | Input messages to compact |
-| `instructions` | string | No | System instructions |
-| `previous_response_id` | string | No | ID of previous response to continue from |
+| `model` | string | 是 | 用於壓縮的模型 |
+| `input` | string or array | 是 | 要壓縮的輸入訊息 |
+| `instructions` | string | 否 | 系統指示 |
+| `previous_response_id` | string | 否 | 要接續的前一個回應 ID |
 
-## Response Format
+## 回應格式 {#response-format}
 
 ```json
 {
@@ -101,4 +101,3 @@ print(response.json())
   }
 }
 ```
-

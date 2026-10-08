@@ -1,38 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Nvidia NIM - Rerank
+# Nvidia NIM - 重新排序 {#nvidia-nim---rerank}
 
-Use Nvidia NIM Rerank models through LiteLLM.
+透過 LiteLLM 使用 Nvidia NIM Rerank 模型。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |----------|---------|
-| Description | Nvidia NIM provides high-performance reranking models for semantic search and retrieval-augmented generation (RAG) |
-| Provider Doc | [Nvidia NIM Rerank API ↗](https://docs.api.nvidia.com/nim/reference/nvidia-llama-3_2-nv-rerankqa-1b-v2-infer) |
-| Supported Endpoint | `/rerank` |
+| 說明 | Nvidia NIM 為語意搜尋與檢索增強生成（RAG）提供高效能的重新排序模型 |
+| 提供者文件 | [Nvidia NIM Rerank API ↗](https://docs.api.nvidia.com/nim/reference/nvidia-llama-3_2-nv-rerankqa-1b-v2-infer) |
+| 支援的端點 | `/rerank` |
 
-## Overview
+## 概覽 {#overview}
 
-Nvidia NIM rerank models help you:
-- Reorder search results by relevance to a query
-- Improve RAG (Retrieval-Augmented Generation) accuracy
-- Filter and rank large document sets efficiently
+Nvidia NIM 重新排序模型可協助您：
+- 依據與查詢的相關性重新排序搜尋結果
+- 提升 RAG（檢索增強生成）準確度
+- 有效率地篩選並排序大量文件集
 
-**Supported Models:**
-- All Nvidia NIM rerank models on their platform
+**支援的模型：**
+- 平台上所有 Nvidia NIM 重新排序模型
 
 :::tip
 
-See the full list of LiteLLM supported Nvidia NIM rerank models on [Nvidia NIM](https://models.litellm.ai)
+請參閱 [Nvidia NIM](https://models.litellm.ai) 上 LiteLLM 支援的 Nvidia NIM 重新排序模型完整清單
 
 :::
 
-## Usage
+## 使用方式 {#usage}
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk}
 
 <Tabs>
-<TabItem value="llama-1b" label="LLaMa 1B Model">
+<TabItem value="llama-1b" label="LLaMa 1B 模型">
 
 ```python
 import litellm
@@ -55,7 +55,7 @@ print(response)
 ```
 
 </TabItem>
-<TabItem value="mistral-4b" label="Mistral 4B Model">
+<TabItem value="mistral-4b" label="Mistral 4B 模型">
 
 ```python
 import litellm
@@ -80,7 +80,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-**Response:**
+**回應：**
 ```json
 {
     "results": [
@@ -103,11 +103,11 @@ print(response)
 ```
 
 
-## Usage with LiteLLM Proxy
+## 搭配 LiteLLM Proxy 使用 {#usage-with-litellm-proxy}
 
-### 1. Setup Config
+### 1. 設定組態 {#1-setup-config}
 
-Add Nvidia NIM rerank models to your proxy configuration:
+將 Nvidia NIM 重新排序模型新增至您的 proxy 組態：
 
 ```yaml
 model_list:
@@ -117,13 +117,13 @@ model_list:
       api_key: os.environ/NVIDIA_NIM_API_KEY
 ```
 
-### 2. Start Proxy
+### 2. 啟動 Proxy {#2-start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml
 ```
 
-### 3. Make Rerank Requests
+### 3. 發出重新排序請求 {#3-make-rerank-requests}
 
 ```bash
 curl -X POST http://0.0.0.0:4000/rerank \
@@ -141,13 +141,13 @@ curl -X POST http://0.0.0.0:4000/rerank \
   }'
 ```
 
-## `/v1/ranking` Models (llama-3.2-nv-rerankqa-1b-v2)
+## `/v1/ranking` 模型（llama-3.2-nv-rerankqa-1b-v2） {#v1ranking-models-llama-32-nv-rerankqa-1b-v2}
 
-Some Nvidia NIM rerank models use the `/v1/ranking` endpoint instead of the default `/v1/retrieval/{model}/reranking` endpoint.
+部分 Nvidia NIM 重新排序模型使用 `/v1/ranking` 端點，而非預設的 `/v1/retrieval/{model}/reranking` 端點。
 
-Use the `ranking/` prefix to force requests to the `/v1/ranking` endpoint:
+使用 `ranking/` 前綴，強制請求送往 `/v1/ranking` 端點：
 
-### LiteLLM Python SDK
+### LiteLLM Python SDK {#litellm-python-sdk-1}
 
 ```python showLineNumbers title="Force /v1/ranking endpoint with ranking/ prefix"
 import litellm
@@ -171,7 +171,7 @@ response = litellm.rerank(
 print(response)
 ```
 
-### LiteLLM Proxy
+### LiteLLM Proxy {#litellm-proxy}
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -196,9 +196,9 @@ curl -X POST http://0.0.0.0:4000/rerank \
   }'
 ```
 
-### Understanding Model Resolution
+### 理解模型解析 {#understanding-model-resolution}
 
-**Ranking Endpoint (`/v1/ranking`):**
+**排名端點（`/v1/ranking`）：**
 
 ```
 model: nvidia_nim/ranking/nvidia/llama-3.2-nv-rerankqa-1b-v2
@@ -213,7 +213,7 @@ model: nvidia_nim/ranking/nvidia/llama-3.2-nv-rerankqa-1b-v2
 API URL: https://ai.api.nvidia.com/v1/ranking
 ```
 
-**Visual Flow:**
+**流程圖：**
 
 ```
 Client Request                LiteLLM                              Provider API
@@ -233,40 +233,40 @@ model: "nvidia_nim/ranking/nvidia/model-name"
                                                                   Body: {"model": "nvidia/model-name", ...}
 ```
 
-**When to use each endpoint:**
+**何時使用各端點：**
 
-| Endpoint | Model Prefix | Use Case |
+| 端點 | 模型前綴 | 使用情境 |
 |----------|--------------|----------|
-| `/v1/retrieval/{model}/reranking` | `nvidia_nim/<model>` | Default for most rerank models |
-| `/v1/ranking` | `nvidia_nim/ranking/<model>` | For models like `nvidia/llama-3.2-nv-rerankqa-1b-v2` that require this endpoint |
+| `/v1/retrieval/{model}/reranking` | `nvidia_nim/<model>` | 大多數重新排序模型的預設值 |
+| `/v1/ranking` | `nvidia_nim/ranking/<model>` | 供像 `nvidia/llama-3.2-nv-rerankqa-1b-v2` 這類需要此端點的模型使用 |
 
 :::tip
 
-Check the [Nvidia NIM model deployment page](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2/deploy) to see which endpoint your model requires.
+查看 [Nvidia NIM 模型部署頁面](https://build.nvidia.com/nvidia/llama-3_2-nv-rerankqa-1b-v2/deploy)，以了解您的模型需要哪個端點。
 
 :::
 
-## API Parameters
+## API 參數 {#api-parameters}
 
-### Required Parameters
+### 必要參數 {#required-parameters}
 
-| Parameter | Type | Description |
+| 參數 | 類型 | 說明 |
 |-----------|------|-------------|
-| `model` | string | The Nvidia NIM rerank model name with `nvidia_nim/` prefix |
-| `query` | string | The search query to rank documents against |
-| `documents` | array | List of documents to rank (1-1000 documents) |
+| `model` | string | 帶有 `nvidia_nim/` 前綴的 Nvidia NIM 重新排序模型名稱 |
+| `query` | string | 用於對文件進行排序的搜尋查詢 |
+| `documents` | array | 要排序的文件清單（1-1000 份文件） |
 
-### Optional Parameters
+### 選用參數 {#optional-parameters}
 
-| Parameter | Type | Default | Description |
+| 參數 | 類型 | 預設值 | 說明 |
 |-----------|------|---------|-------------|
-| `top_n` | integer | All documents | Number of top-ranked documents to return |
+| `top_n` | integer | 所有文件 | 要回傳的頂部排序文件數量 |
 
-### Nvidia-Specific Parameters
+### Nvidia 特定參數 {#nvidia-specific-parameters}
 
-**`truncate`**: Controls how text is truncated if it exceeds the model's context window
-- `"NONE"`: No truncation (request may fail if too long)
-- `"END"`: Truncate from the end of the text
+**`truncate`**：控制文字超出模型的上下文視窗時要如何截斷
+- `"NONE"`：不截斷（如果過長，請求可能會失敗）
+- `"END"`：從文字末端截斷
 
 ```python
 response = litellm.rerank(
@@ -278,12 +278,12 @@ response = litellm.rerank(
 )
 ```
 
-## Authentication
+## 驗證 {#authentication}
 
-Set your Nvidia NIM API key:
+設定您的 Nvidia NIM API 金鑰：
 
 <Tabs>
-<TabItem value="env" label="Environment Variable">
+<TabItem value="env" label="環境變數">
 
 ```bash
 export NVIDIA_NIM_API_KEY="nvapi-..."
@@ -308,17 +308,17 @@ response = litellm.rerank(
 </TabItem>
 </Tabs>
 
-## Custom API Base URL
+## 自訂 API Base URL {#custom-api-base-url}
 
-You can override the default base URL in several ways:
+您可以透過多種方式覆寫預設 base URL：
 
-**Option 1: Environment Variable**
+**選項 1：環境變數**
 
 ```bash
 export NVIDIA_NIM_API_BASE="https://your-custom-endpoint.com"
 ```
 
-**Option 2: Pass as parameter**
+**選項 2：以參數傳入**
 
 ```python
 response = litellm.rerank(
@@ -329,9 +329,9 @@ response = litellm.rerank(
 )
 ```
 
-**Option 3: Full URL (including model path)**
+**選項 3：完整 URL（包含模型路徑）**
 
-If you have the complete endpoint URL, you can pass it directly:
+如果您有完整的端點 URL，可以直接傳入：
 
 ```python
 response = litellm.rerank(
@@ -342,15 +342,15 @@ response = litellm.rerank(
 )
 ```
 
-LiteLLM will detect the full URL (by checking for `/retrieval/` in the path) and use it as-is.
+LiteLLM 會偵測完整 URL（透過檢查路徑中的 `/retrieval/`）並直接使用原值。
 
-### How do I get an API key?
+### 如何取得 API 金鑰？ {#how-do-i-get-an-api-key}
 
-Get your Nvidia NIM API key from [Nvidia's website](https://developer.nvidia.com/nim/).
+請從 [Nvidia 的網站](https://developer.nvidia.com/nim/) 取得您的 Nvidia NIM API 金鑰。
 
-## Related Documentation
+## 相關文件 {#related-documentation}
 
-- [Nvidia NIM - Main Documentation](./nvidia_nim)
-- [Nvidia NIM Chat Completions](./nvidia_nim#sample-usage)
-- [LiteLLM Rerank Endpoint](../rerank)
-- [Nvidia NIM Official Docs ↗](https://docs.api.nvidia.com/nim/reference/)
+- [Nvidia NIM - 主要文件](./nvidia_nim)
+- [Nvidia NIM 聊天補全](./nvidia_nim#sample-usage)
+- [LiteLLM 重新排序端點](../rerank)
+- [Nvidia NIM 官方文件 ↗](https://docs.api.nvidia.com/nim/reference/)

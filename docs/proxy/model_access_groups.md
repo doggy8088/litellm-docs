@@ -1,20 +1,19 @@
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Model Access Groups
+# 模型存取群組 {#model-access-groups}
 
-### Overview
+### 總覽 {#overview}
 
-Group multiple models under a single name, then grant keys or teams access to the entire group. Add or remove models from a group without updating individual keys.
+將多個模型歸組到單一名稱下，然後授權金鑰或團隊存取整個群組。可在不更新個別金鑰的情況下，將模型加入或移出群組。
 
-Use cases:
-- Separate production and development models
-- Restrict expensive models to specific teams
-- Organize models by provider or capability
-- Control access to model families with wildcards (e.g., `openai/*`)
+使用情境：
+- 將正式環境與開發環境模型分開
+- 將昂貴模型限制給特定團隊
+- 依提供者或能力整理模型
+- 使用萬用字元控制對模型家族的存取（例如，`openai/*`）
 
-### How It Works
+### 運作方式 {#how-it-works}
 
 ```mermaid
 graph LR
@@ -35,9 +34,9 @@ graph LR
     style AG2 fill:#fff8e1
 ```
 
-**Key Concept:** Group models together → Attach group to key → Key gets access to all models in group
+**重點概念：** 將模型分組 → 將群組附加到金鑰 → 金鑰即可存取群組中的所有模型
 
-**Step 1. Assign model, access group in config.yaml**
+**步驟 1. 在 config.yaml 中指定 model, access group**
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -58,9 +57,9 @@ model_list:
 
 <Tabs>
 
-<TabItem value="key" label="Key Access Groups">
+<TabItem value="key" label="金鑰存取群組">
 
-**Create key with access group**
+**建立具有存取群組的金鑰**
 
 ```bash showLineNumbers title="Create Key with Access Group"
 curl --location 'http://localhost:4000/key/generate' \
@@ -70,10 +69,10 @@ curl --location 'http://localhost:4000/key/generate' \
 			"max_budget": 0,}'
 ```
 
-Test Key 
+測試金鑰
 
 <Tabs>
-<TabItem label="Allowed Access" value = "allowed">
+<TabItem label="允許的存取" value = "allowed">
 
 ```bash showLineNumbers title="Test Key - Allowed Access"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -89,11 +88,11 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem label="Disallowed Access" value = "not-allowed">
+<TabItem label="不允許的存取" value = "not-allowed">
 
 :::info
 
-Expect this to fail since gpt-5.6-luna is not in the `beta-models` access group
+預期這會失敗，因為 gpt-5.6-luna 不在 `beta-models` 存取群組中
 
 :::
 
@@ -115,9 +114,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem value="team" label="Team Access Groups">
+<TabItem value="team" label="團隊存取群組">
 
-Create Team
+建立團隊
 
 ```bash showLineNumbers title="Create Team"
 curl --location 'http://localhost:4000/team/new' \
@@ -126,7 +125,7 @@ curl --location 'http://localhost:4000/team/new' \
 -d '{"models": ["beta-models"]}'
 ```
 
-Create Key for Team 
+為團隊建立金鑰
 
 ```bash showLineNumbers title="Create Key for Team"
 curl --location 'http://0.0.0.0:4000/key/generate' \
@@ -135,11 +134,10 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 --data '{"team_id": "0ac97648-c194-4c90-8cd6-40af7b0d2d2a"}
 ```
 
-
-Test Key
+測試金鑰
 
 <Tabs>
-<TabItem label="Allowed Access" value = "allowed">
+<TabItem label="允許的存取" value = "allowed">
 
 ```bash showLineNumbers title="Test Team Key - Allowed Access"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -155,11 +153,11 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 
-<TabItem label="Disallowed Access" value = "not-allowed">
+<TabItem label="不允許的存取" value = "not-allowed">
 
 :::info
 
-Expect this to fail since gpt-5.6-luna is not in the `beta-models` access group
+預期這會失敗，因為 gpt-5.6-luna 不在 `beta-models` 存取群組中
 
 :::
 
@@ -183,17 +181,15 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
+### ✨ 控制萬用字元模型的存取 {#-control-access-on-wildcard-models}
 
-### ✨ Control Access on Wildcard Models
+控制對所有具有特定前綴的模型的存取（例如 `openai/*`）。
 
-Control access to all models with a specific prefix (e.g. `openai/*`). 
-
-Use this to also give users access to all models, except for a few that you don't want them to use (e.g. `openai/o1-*`). 
+也可用於讓使用者存取所有模型，但排除少數您不希望他們使用的模型（例如 `openai/o1-*`）。
 
 <EnterpriseFeature feature="Setting model access groups on wildcard models" />
 
-1. Setup config.yaml
-
+1. 設定 config.yaml
 
 ```yaml showLineNumbers title="config.yaml - Wildcard Models"
 model_list:
@@ -211,7 +207,7 @@ model_list:
       access_groups: ["restricted-models"]
 ```
 
-2. Generate a key with access to `default-models`
+2. 產生可存取 `default-models` 的金鑰
 
 ```bash showLineNumbers title="Generate Key for Wildcard Access Group"
 curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
@@ -222,10 +218,10 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 }'
 ``` 
 
-3. Test the key
+3. 測試金鑰
 
 <Tabs>
-<TabItem label="Successful Request" value = "success">
+<TabItem label="成功的請求" value = "success">
 
 ```bash showLineNumbers title="Test Wildcard Access - Allowed"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -239,7 +235,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 </TabItem>
-<TabItem value="bad-request" label="Rejected Request">
+<TabItem value="bad-request" label="遭拒的請求">
 
 ```bash showLineNumbers title="Test Wildcard Access - Rejected"
 curl -i http://localhost:4000/v1/chat/completions \
@@ -256,27 +252,27 @@ curl -i http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Managing Access Groups via API
+## 透過 API 管理存取群組 {#managing-access-groups-via-api}
 
-:::warning[Database Models Only]
-Access group management APIs only work with models stored in the database (added via `/model/new`). 
+:::warning[僅限資料庫模型]
+存取群組管理 API 僅適用於儲存在資料庫中的模型（透過 `/model/new` 新增）。 
 
-Models defined in `config.yaml` cannot be managed through these APIs and must be configured directly in the config file.
+定義於 `config.yaml` 的模型無法透過這些 API 管理，且必須直接在設定檔中設定。
 :::
 
-Use the access group management endpoints to dynamically create, update, and delete access groups without restarting the proxy.
+使用存取群組管理端點可動態建立、更新及刪除存取群組，而無需重新啟動 proxy。
 
-### Tutorial: Complete Access Group Workflow
+### 教學：完整的存取群組工作流程 {#tutorial-complete-access-group-workflow}
 
-This tutorial shows how to create an access group, view its details, attach it to a key, and update the models in the group.
+本教學將示範如何建立存取群組、檢視其詳細資訊、將其附加到金鑰，以及更新群組中的模型。
 
-**Prerequisites:**
-- Models must be added to the database first (not just in config.yaml)
-- You need your master key for authorization
+**必要條件：**
+- 模型必須先新增至資料庫（不能只在 config.yaml 中）
+- 您需要使用 master key 進行授權
 
-#### Step 1: Add Models to Database
+#### 步驟 1：將模型新增至資料庫 {#step-1-add-models-to-database}
 
-First, add some models to the database:
+首先，將一些模型新增至資料庫：
 
 ```bash showLineNumbers title="Add Models to Database"
 # Add {{openai_large}} to database
@@ -304,9 +300,9 @@ curl -X POST 'http://localhost:4000/model/new' \
   }'
 ```
 
-#### Step 2: Create Access Group
+#### 步驟 2：建立存取群組 {#step-2-create-access-group}
 
-Create an access group containing multiple models:
+建立一個包含多個模型的存取群組：
 
 ```bash showLineNumbers title="Create Access Group"
 curl -X POST 'http://localhost:4000/access_group/new' \
@@ -318,7 +314,7 @@ curl -X POST 'http://localhost:4000/access_group/new' \
   }'
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Response"
 {
   "access_group": "production-models",
@@ -327,16 +323,16 @@ curl -X POST 'http://localhost:4000/access_group/new' \
 }
 ```
 
-#### Step 3: View Access Group Info
+#### 步驟 3：檢視存取群組資訊 {#step-3-view-access-group-info}
 
-Check the access group details:
+檢查存取群組詳細資訊：
 
 ```bash showLineNumbers title="Get Access Group Info"
 curl -X GET 'http://localhost:4000/access_group/production-models/info' \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Response"
 {
   "access_group": "production-models",
@@ -345,9 +341,9 @@ curl -X GET 'http://localhost:4000/access_group/production-models/info' \
 }
 ```
 
-#### Step 4: Create Key with Access Group
+#### 步驟 4：建立具有存取群組的金鑰 {#step-4-create-key-with-access-group}
 
-Create an API key that can access all models in the group:
+建立一個可存取群組中所有模型的 API 金鑰：
 
 ```bash showLineNumbers title="Create Key with Access Group"
 curl -X POST 'http://localhost:4000/key/generate' \
@@ -359,7 +355,7 @@ curl -X POST 'http://localhost:4000/key/generate' \
   }'
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Response"
 {
   "key": "sk-...",
@@ -367,7 +363,7 @@ curl -X POST 'http://localhost:4000/key/generate' \
 }
 ```
 
-**Test the key:**
+**測試金鑰：**
 ```bash showLineNumbers title="Test Key Access"
 # This succeeds - {{openai_large}} is in production-models
 curl -X POST 'http://localhost:4000/v1/chat/completions' \
@@ -388,9 +384,9 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   }'
 ```
 
-#### Step 5: Update Access Group
+#### 步驟 5：更新存取群組 {#step-5-update-access-group}
 
-Add or remove models from the access group:
+將模型新增至或從存取群組中移除：
 
 ```bash showLineNumbers title="Update Access Group"
 curl -X PUT 'http://localhost:4000/access_group/production-models/update' \
@@ -401,7 +397,7 @@ curl -X PUT 'http://localhost:4000/access_group/production-models/update' \
   }'
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Response"
 {
   "access_group": "production-models",
@@ -410,39 +406,39 @@ curl -X PUT 'http://localhost:4000/access_group/production-models/update' \
 }
 ```
 
-The API key from Step 4 now automatically has access to `{{gemini_flash}}` without any changes to the key itself.
+第 4 步的 API 金鑰現在會自動存取 `{{gemini_flash}}`，而無需對金鑰本身做任何變更。
 
-### Budgets
+### 預算 {#budgets}
 
-A group can also carry one shared budget that every key granted the group draws from. See [Model Access Group Budgets](model_access_group_budgets.md).
+群組也可以包含一個所有被授予該群組的金鑰共用的單一預算。請參閱[模型存取群組預算](model_access_group_budgets.md)。
 
-### API Reference - Access Group Management
+### API 參考文件 - 存取群組管理 {#api-reference---access-group-management}
 
-For complete API documentation including all endpoints, parameters, and response schemas, see the [Access Group Management API Reference](https://docs.litellm.ai/api-reference/#/model%20management/create_model_group_access_group_new_post).
+如需包含所有端點、參數與回應 schema 的完整 API 文件，請參閱 [存取群組管理 API 參考文件](https://docs.litellm.ai/api-reference/#/model%20management/create_model_group_access_group_new_post)。
 
-## Managing Access Groups via UI
+## 透過 UI 管理存取群組 {#managing-access-groups-via-ui}
 
-You can also manage access groups through the LiteLLM Admin UI.
+您也可以透過 LiteLLM Admin UI 管理存取群組。
 
-### Step 1: Add Model to Access Group
+### 步驟 1：將模型新增至存取群組 {#step-1-add-model-to-access-group}
 
-When adding a model to the database, assign it to an access group using the "Model Access Group" field:
+將模型新增至資料庫時，請使用「Model Access Group」欄位將其指派給存取群組：
 
-![Add Model with Access Group](../../img/add_model_access.png)
+![新增具有存取群組的模型](../../img/add_model_access.png)
 
-In this example, `{{openai_large}}` is added to the `production-models` access group.
+在此範例中，`{{openai_large}}` 被新增至 `production-models` 存取群組。
 
-### Step 2: Create Key with Access Group
+### 步驟 2：建立具有存取群組的金鑰 {#step-2-create-key-with-access-group}
 
-When creating an API key, specify the access group in the "Models" field:
+建立 API 金鑰時，請在「Models」欄位中指定存取群組：
 
-![Create Key with Access Group](../../img/add_model_key.png)
+![建立具有存取群組的金鑰](../../img/add_model_key.png)
 
-The key will have access to all models in the `production-models` group.
+該金鑰將可存取 `production-models` 群組中的所有模型。
 
-### Step 3: Test the Key
+### 步驟 3：測試金鑰 {#step-3-test-the-key}
 
-Use the generated key to make requests:
+使用產生的金鑰發出請求：
 
 ```bash showLineNumbers title="Test Key with Access Group"
 # This succeeds - {{openai_large}} is in production-models
@@ -455,7 +451,7 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   }'
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Success Response"
 {
   "id": "chatcmpl-...",
@@ -475,7 +471,7 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
 }
 ```
 
-If you try to access a model not in the access group, the request will be rejected:
+如果您嘗試存取不在該存取群組中的模型，該請求將會被拒絕：
 
 ```bash showLineNumbers title="Test Rejected Request"
 # This fails - {{openai_small}} is not in production-models
@@ -488,7 +484,7 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   }'
 ```
 
-**Response:**
+**回應：**
 ```json showLineNumbers title="Error Response"
 {
   "error": {
@@ -497,4 +493,3 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   }
 }
 ```
-

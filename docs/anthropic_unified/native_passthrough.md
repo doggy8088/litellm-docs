@@ -1,12 +1,12 @@
-# Native /v1/messages and /v1/responses Passthrough for OpenAI-Compatible Providers
+# OpenAI 相容提供者的原生 /v1/messages 與 /v1/responses 轉送 {#native-v1messages-and-v1responses-passthrough-for-openai-compatible-providers}
 
-When a deployment's provider has no native Anthropic Messages support, LiteLLM translates each `/v1/messages` request into the provider's own API: `openai/` deployments go through the OpenAI Responses API (see [the parameter mapping](./messages_to_responses_mapping.md)) and everything else goes through `/v1/chat/completions`. That translation only keeps what the target API can express: `cache_control` blocks are dropped, `thinking` is mapped to the provider's own reasoning parameter, and other Anthropic-only request details are approximated or lost
+當某個部署的提供者沒有原生 Anthropic Messages 支援時，LiteLLM 會將每個 `/v1/messages` 請求轉換為該提供者自己的 API：`openai/` 部署會透過 OpenAI Responses API（請參閱 [參數對應](./messages_to_responses_mapping.md)），其餘都會透過 `/v1/chat/completions`。這種轉換只會保留目標 API 能表達的內容：`cache_control` 區塊會被捨棄，`thinking` 會對應到提供者自己的推理參數，而其他僅限 Anthropic 的請求細節則會被近似處理或遺失
 
-Many OpenAI-compatible servers (self-hosted vLLM, inference hubs, model vendors with an Anthropic-compatible endpoint) also expose the Anthropic Messages API natively. For those, you can opt a deployment into forwarding the Anthropic payload untranslated. Available from v1.92.0
+許多 OpenAI 相容伺服器（自架 vLLM、推理中樞、具有 Anthropic 相容端點的模型供應商）也原生提供 Anthropic Messages API。對於這些伺服器，您可以選擇讓某個部署直接轉送 Anthropic payload 而不做轉換。自 v1.92.0 起提供
 
-## Opt in with `supported_endpoints`
+## 啟用 `supported_endpoints` {#opt-in-with-supported_endpoints}
 
-Add `/v1/messages` to `model_info.supported_endpoints` on the deployment:
+將 `/v1/messages` 加入部署上的 `model_info.supported_endpoints`：
 
 ```yaml
 model_list:
@@ -19,15 +19,15 @@ model_list:
       supported_endpoints: ["/v1/chat/completions", "/v1/messages"]
 ```
 
-With the opt-in, a request to the proxy's `/v1/messages` is POSTed to `{api_base}/v1/messages` with the Anthropic body unchanged, apart from `cache_control` (see below). A trailing `/v1` on `api_base` is stripped first, so `https://inference.example.com/v1` and `https://inference.example.com` both resolve to `https://inference.example.com/v1/messages`. LiteLLM sends `Authorization: Bearer <api_key>` unless the request already carries an `Authorization` or `x-api-key` header, defaults `anthropic-version` to `2023-06-01`, and forwards `anthropic-beta` headers, both the ones the caller sent and the ones LiteLLM adds for features like context management. Streaming and response parsing work the same way they do for a native Anthropic deployment
+啟用後，對 proxy 的 `/v1/messages` 的請求會以 POST 送到 `{api_base}/v1/messages`，Anthropic body 會維持不變，但 `cache_control` 除外（如下所示）。`/v1` 尾端的 `api_base` 會先被移除，因此 `https://inference.example.com/v1` 與 `https://inference.example.com` 都會解析為 `https://inference.example.com/v1/messages`。LiteLLM 會送出 `Authorization: Bearer <api_key>`，除非請求已經帶有 `Authorization` 或 `x-api-key` 標頭，預設 `anthropic-version` 為 `2023-06-01`，並轉送 `anthropic-beta` 標頭，包括呼叫端送出的標頭，以及 LiteLLM 為內容管理等功能新增的標頭。串流與回應解析的運作方式與原生 Anthropic 部署相同
 
-Without the opt-in the deployment behaves as before and the request is translated. `/v1/chat/completions` calls to the same deployment are not affected either way
+未啟用時，部署會維持先前行為，且請求會被轉換。對同一部署的 `/v1/chat/completions` 呼叫則不受影響
 
-## `cache_control` is reduced to its portable core
+## `cache_control` 會被縮減為可攜核心 {#cache_control-is-reduced-to-its-portable-core}
 
-Strict implementations of the Messages API reject Anthropic-only `cache_control` extensions such as `ttl` with `cache_control.ttl: 1h is not supported`, and clients like Claude Code send `{"type": "ephemeral", "ttl": "1h"}` on every prompt block whenever 1h prompt caching is on. So by default every `cache_control` in the forwarded body is reduced to `{"type": "ephemeral"}`, at the request level and in system blocks, tools, message content blocks, and `tool_result` content. Application data such as `tool_use.input` and tool `input_schema` is never touched
+嚴格實作的 Messages API 會拒絕僅限 Anthropic 的 `cache_control` 擴充，例如 `ttl` 與 `cache_control.ttl: 1h is not supported`；而像 Claude Code 這類用戶端，只要啟用 1h prompt 快取，就會在每個 prompt 區塊送出 `{"type": "ephemeral", "ttl": "1h"}`。因此預設情況下，轉送 body 中的每個 `cache_control` 都會被縮減為 `{"type": "ephemeral"}`，包含請求層級、system 區塊、tools、message content 區塊，以及 `tool_result` content。像 `tool_use.input` 和 tool `input_schema` 這類應用程式資料絕不會被動到
 
-When the upstream honors `ttl`, keep it with `cache_control_ttl: true` in `model_info`:
+當上游支援 `ttl` 時，請在 `model_info` 中使用 `cache_control_ttl: true` 保留它：
 
 ```yaml
 model_list:
@@ -41,9 +41,9 @@ model_list:
       cache_control_ttl: true
 ```
 
-Deployments of providers with built-in Anthropic Messages support (`anthropic/`, `bedrock/`, `vertex_ai/`, and others) keep forwarding `cache_control` as sent
+內建支援 Anthropic Messages 的提供者部署（`anthropic/`、`bedrock/`、`vertex_ai/`，以及其他）會維持以原樣轉送 `cache_control`
 
-Test it with an Anthropic-only feature in the request:
+使用請求中的 Anthropic 專屬功能來測試它：
 
 ```bash
 curl http://0.0.0.0:4000/v1/messages \
@@ -58,13 +58,13 @@ curl http://0.0.0.0:4000/v1/messages \
   }'
 ```
 
-The response comes back in the provider's native Anthropic shape, including its own `usage` fields such as `cache_creation_input_tokens` and `cache_read_input_tokens`
+回應會以提供者原生的 Anthropic 形狀返回，包括其自己的 `usage` 欄位，例如 `cache_creation_input_tokens` 和 `cache_read_input_tokens`
 
-The opt-in only matters for providers LiteLLM would otherwise translate, such as `openai/` and `custom_openai/` deployments. Providers with built-in Anthropic Messages support (`anthropic/`, `bedrock/`, `vertex_ai/`, and others) already forward natively and ignore it
+這個啟用選項只對 LiteLLM 原本會轉換的提供者有影響，例如 `openai/` 和 `custom_openai/` 部署。內建支援 Anthropic Messages 的提供者（`anthropic/`、`bedrock/`、`vertex_ai/`，以及其他）已經原生轉送，會忽略它
 
-## Native `/v1/responses` passthrough
+## 原生 `/v1/responses` 轉送 {#native-v1responses-passthrough}
 
-A deployment whose `litellm_params.model` is prefixed `openai/` already sends `/v1/responses` natively to `{api_base}/responses`. A generic OpenAI-compatible deployment such as `custom_openai/` has no Responses API config of its own, so by default LiteLLM bridges `/v1/responses` through `/v1/chat/completions`: the input is converted to messages, the chat completion is converted back into a Responses object, and Responses-only request fields are approximated or dropped. When the server serves `/responses` itself, add `/v1/responses` to `model_info.supported_endpoints` to forward the request untranslated. Available from v1.102.0
+其 `litellm_params.model` 以前綴 `openai/` 的部署，已經會原生將 `/v1/responses` 傳送到 `{api_base}/responses`。像 `custom_openai/` 這類通用 OpenAI 相容部署沒有自己的 Responses API 設定，因此預設下 LiteLLM 會透過 `/v1/chat/completions` 將 `/v1/responses` 進行橋接：輸入會轉換成 messages，chat completion 會再轉回 Responses 物件，而僅限 Responses 的請求欄位則會被近似處理或捨棄。當伺服器本身提供 `/responses` 時，請將 `/v1/responses` 加入 `model_info.supported_endpoints`，以不經轉換地轉送請求。自 v1.102.0 起提供
 
 ```yaml
 model_list:
@@ -77,7 +77,7 @@ model_list:
       supported_endpoints: ["/v1/chat/completions", "/v1/responses"]
 ```
 
-With the opt-in, a request to the proxy's `/v1/responses` is POSTed to `{api_base}/responses` (`https://inference.example.com/v1/responses` here) with `Authorization: Bearer <api_key>`, for streaming and non-streaming requests alike. Deployments with `mode: responses` in `model_info` behave the same way. Without the opt-in the deployment keeps bridging through `/v1/chat/completions`, and `/v1/chat/completions` calls to the deployment are not affected either way. The `/v1/messages` and `/v1/responses` opt-ins are independent: list both when the server serves both
+啟用後，對 proxy 的 `/v1/responses` 的請求會以 POST 送到 `{api_base}/responses`（此處為 `https://inference.example.com/v1/responses`），且無論是串流或非串流請求都會帶著 `Authorization: Bearer <api_key>`。`mode: responses` 在 `model_info` 中的部署也會以相同方式運作。未啟用時，部署會繼續透過 `/v1/chat/completions` 進行橋接，而對該部署的 `/v1/chat/completions` 呼叫則不受影響。`/v1/messages` 與 `/v1/responses` 啟用選項彼此獨立：若伺服器同時提供兩者，請兩者都列出
 
 ```bash
 curl http://0.0.0.0:4000/v1/responses \
@@ -86,13 +86,13 @@ curl http://0.0.0.0:4000/v1/responses \
   -d '{"model": "my-open-model", "input": "Say hi in three words"}'
 ```
 
-### `previous_response_id` on stateless backends
+### 無狀態後端上的 `previous_response_id` {#previous_response_id-on-stateless-backends}
 
-The native path forwards `previous_response_id` to the backend as sent, so the backend is what resolves it. OpenAI-compatible servers that do not store responses reject it, typically with a 400, and that error is returned to the caller unchanged. Against such a backend either send the full conversation history in `input` on every turn, or leave the opt-in off and use the bridged path with `store_prompts_in_spend_logs: true`, which lets LiteLLM resolve `previous_response_id` from its own spend logs
+原生路徑會將 `previous_response_id` 以原樣轉送給後端，因此由後端負責解析。沒有儲存回應的 OpenAI 相容伺服器會拒絕它，通常回傳 400，而該錯誤會原樣回傳給呼叫端。對於這類後端，請在每一輪都於 `input` 中送出完整對話歷史，或者關閉啟用選項並使用帶有 `store_prompts_in_spend_logs: true` 的橋接路徑，這樣可讓 LiteLLM 從自己的支出記錄中解析 `previous_response_id`
 
-| Deployment `model` | `/v1/messages` with the opt-in | `/v1/messages` without it | `/v1/responses` with the opt-in | `/v1/responses` without it |
+| 部署 `model` | 啟用後的 `/v1/messages` | 未啟用時的 `/v1/messages` | 啟用後的 `/v1/responses` | 未啟用時的 `/v1/responses` |
 |---|---|---|---|---|
-| `openai/<model>` | Native passthrough | Translated via the Responses API | Native | Native |
-| `custom_openai/<model>` | Native passthrough | Translated via `/v1/chat/completions` | Native passthrough | Bridged via `/v1/chat/completions` |
+| `openai/<model>` | 原生轉送 | 透過 Responses API 轉換 | 原生 | 原生 |
+| `custom_openai/<model>` | 原生轉送 | 透過 `/v1/chat/completions` 轉換 | 原生轉送 | 透過 `/v1/chat/completions` 橋接 |
 
-Some named OpenAI-compatible providers (for example `hosted_vllm/`) ship their own Responses API support and also send `/v1/responses` natively without the opt-in. Check the provider's page for that
+有些具名的 OpenAI 相容提供者（例如 `hosted_vllm/`）本身就提供 Responses API 支援，也會在未啟用時原生傳送 `/v1/responses`。請查看該提供者的頁面。

@@ -1,5 +1,5 @@
 ---
-title: "v1.91.4 - Docker Migration Assets & Prisma Bake"
+title: "v1.91.4 - Docker 遷移資產與 Prisma 內建封裝"
 slug: "v1-91-4"
 date: 2026-07-18T19:14:34
 authors:
@@ -18,7 +18,7 @@ authors:
 hide_table_of_contents: false
 ---
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -43,13 +43,13 @@ pip install litellm==1.91.4
 </TabItem>
 </Tabs>
 
-`v1.91.4` is a patch release on top of [`v1.91.3`](/release_notes/v1.91.3/v1-91-3). It backports two Docker fixes onto the 1.91.x line. The first restores the `/app/litellm-proxy-extras` source directory in the runtime images, so downstream migration jobs that point `prisma migrate deploy` at that path apply migrations again instead of silently succeeding with no schema. The second bakes the prisma CLI and engines at `/opt/prisma`, a fixed path every runtime uid can read, so fresh-database migrations work under kubernetes `runAsUser`, `docker --user`, and other non-root deployments with no network access. The release also carries routine dependency maintenance updates to mcp and soupsieve in the image lockfile.
+`v1.91.4` 是建立於 [`v1.91.3`](/release_notes/v1.91.3/v1-91-3) 之上的修補版本。此版本將兩項 Docker 修正回溯移植至 1.91.x 分支。第一項修正恢復了執行階段映像檔中的 `/app/litellm-proxy-extras` 原始碼目錄，讓將 `prisma migrate deploy` 指向該路徑的下游遷移作業能再次正常套用遷移，而不會在沒有結構描述的情況下靜默成功。第二項修正將 prisma CLI 與引擎預先封裝於固定路徑 `/opt/prisma`（所有執行階段 uid 皆可讀取），使全新資料庫遷移在 Kubernetes `runAsUser`、`docker --user` 以及其他無網路連線的非 root 部署環境下皆能正常運作。此版本亦包含映像檔鎖定檔中 mcp 與 soupsieve 的例行相依套件維護更新。
 
-### What's Changed
+### 變更內容 {#whats-changed}
 
-- fix(docker): restore litellm-proxy-extras source dir in runtime images - [PR #33592](https://github.com/BerriAI/litellm/pull/33592)
-- fix(docker): bake prisma CLI and engines at a fixed path so fresh-DB migrations work for any uid offline - [PR #33853](https://github.com/BerriAI/litellm/pull/33853)
+- fix(docker): 恢復執行階段映像檔中的 litellm-proxy-extras 原始碼目錄 - [PR #33592](https://github.com/BerriAI/litellm/pull/33592)
+- fix(docker): 將 prisma CLI 與引擎封裝於固定路徑，使任何 uid 在離線環境下皆可執行全新資料庫遷移 - [PR #33853](https://github.com/BerriAI/litellm/pull/33853)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.91.3...v1.91.4

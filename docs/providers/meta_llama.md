@@ -1,39 +1,38 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Meta Llama
+# Meta Llama {#meta-llama}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Meta's Llama API provides access to Meta's family of large language models. |
-| Provider Route on LiteLLM | `meta_llama/` |
-| Supported Endpoints | `/chat/completions`, `/completions`, `/responses` |
-| API Reference | [Llama API Reference ↗](https://llama.developer.meta.com?utm_source=partner-litellm&utm_medium=website) |
+| 說明 | Meta 的 Llama API 提供對 Meta 大型語言模型系列的存取。 |
+| LiteLLM 上的提供者路由 | `meta_llama/` |
+| 支援的端點 | `/chat/completions`, `/completions`, `/responses` |
+| API 參考 | [Llama API 參考 ↗](https://llama.developer.meta.com?utm_source=partner-litellm&utm_medium=website) |
 
-## Required Variables
+## 必要變數 {#required-variables}
 
 ```python showLineNumbers title="Environment Variables"
 os.environ["LLAMA_API_KEY"] = ""  # your Meta Llama API key
 ```
 
-## Supported Models
+## 支援的模型 {#supported-models}
 
 :::info
-All models listed here https://llama.developer.meta.com/docs/models/ are supported. We actively maintain the list of models, token window, etc. [here](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json).
+此處列出的所有模型 https://llama.developer.meta.com/docs/models/ 都受支援。我們積極維護模型清單、token 視窗等資訊。[在這裡](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。
 
 :::
 
-
-| Model ID | Input context length | Output context length | Input Modalities | Output Modalities |
+| 模型 ID | 輸入上下文長度 | 輸出上下文長度 | 輸入模態 | 輸出模態 |
 | --- | --- | --- | --- | --- |
-| `Llama-4-Scout-17B-16E-Instruct-FP8` | 128k | 4028 | Text, Image | Text |
-| `Llama-4-Maverick-17B-128E-Instruct-FP8` | 128k | 4028 | Text, Image | Text |
-| `Llama-3.3-70B-Instruct` | 128k | 4028 | Text | Text |
-| `Llama-3.3-8B-Instruct` | 128k | 4028 | Text | Text |
+| `Llama-4-Scout-17B-16E-Instruct-FP8` | 128k | 4028 | 文字、圖片 | 文字 |
+| `Llama-4-Maverick-17B-128E-Instruct-FP8` | 128k | 4028 | 文字、圖片 | 文字 |
+| `Llama-3.3-70B-Instruct` | 128k | 4028 | 文字 | 文字 |
+| `Llama-3.3-8B-Instruct` | 128k | 4028 | 文字 | 文字 |
 
-## Usage - LiteLLM Python SDK
+## 使用方式 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Non-streaming
+### 非串流 {#non-streaming}
 
 ```python showLineNumbers title="Meta Llama Non-streaming Completion"
 import os
@@ -48,7 +47,7 @@ messages = [{"content": "Hello, how are you?", "role": "user"}]
 response = completion(model="meta_llama/Llama-4-Maverick-17B-128E-Instruct-FP8", messages=messages)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Meta Llama Streaming Completion"
 import os
@@ -70,7 +69,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Function Calling
+### 函式呼叫 {#function-calling}
 
 ```python showLineNumbers title="Meta Llama Function Calling"
 import os
@@ -117,7 +116,7 @@ response = completion(
 print(response.choices[0].message.tool_calls)
 ```
 
-### Tool Use
+### 工具使用 {#tool-use}
 
 ```python showLineNumbers title="Meta Llama Tool Use"
 import os
@@ -169,10 +168,9 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-## Usage - LiteLLM Proxy
+## 使用方式 - LiteLLM Proxy {#usage---litellm-proxy}
 
-
-Add the following to your LiteLLM Proxy configuration file:
+請將下列內容新增至您的 LiteLLM Proxy 設定檔：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -187,7 +185,7 @@ model_list:
       api_key: os.environ/LLAMA_API_KEY
 ```
 
-Start your LiteLLM Proxy server:
+啟動您的 LiteLLM Proxy 伺服器：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config config.yaml
@@ -300,4 +298,4 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-For more detailed information on using the LiteLLM Proxy, see the [LiteLLM Proxy documentation](../providers/litellm_proxy).
+如需關於使用 LiteLLM Proxy 的更詳細資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。

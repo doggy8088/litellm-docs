@@ -1,24 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# VLLM
+# VLLM {#vllm}
 
-LiteLLM supports all models on VLLM.
+LiteLLM 支援 VLLM 上的所有模型。
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | vLLM is a fast and easy-to-use library for LLM inference and serving. [Docs](https://docs.vllm.ai/en/latest/index.html) |
-| Provider Route on LiteLLM | `hosted_vllm/` (for OpenAI compatible server), `vllm/` ([DEPRECATED] for vLLM sdk usage) |
-| Provider Doc | [vLLM ↗](https://docs.vllm.ai/en/latest/index.html) |
-| Supported Endpoints | `/chat/completions`, `/embeddings`, `/completions`, `/rerank`, `/audio/transcriptions` |
+| 說明 | vLLM 是一個快速且易於使用的 LLM 推論與服務程式庫。[文件](https://docs.vllm.ai/en/latest/index.html) |
+| LiteLLM 提供者路由 | `hosted_vllm/`（用於 OpenAI 相容伺服器），`vllm/`（[已棄用]，用於 vLLM sdk 使用） |
+| 提供者文件 | [vLLM ↗](https://docs.vllm.ai/en/latest/index.html) |
+| 支援的端點 | `/chat/completions`、`/embeddings`、`/completions`、`/rerank`、`/audio/transcriptions` |
 
+## 快速開始 {#quick-start}
 
-## Quick Start
+## 使用 - litellm.completion（呼叫 OpenAI 相容端點） {#usage---litellmcompletion-calling-openai-compatible-endpoint}
+vLLM 提供 OpenAI 相容端點 - 以下是如何透過 LiteLLM 呼叫它
 
-## Usage - litellm.completion (calling OpenAI compatible endpoint)
-vLLM Provides an OpenAI compatible endpoints - here's how to call it with LiteLLM 
-
-To use litellm to call a hosted vllm server add the following to your completion call
+若要使用 litellm 呼叫代管的 vllm 伺服器，請將下列內容加入您的 completion 呼叫中
 
 * `model="hosted_vllm/<your-vllm-model-name>"` 
 * `api_base = "your-hosted-vllm-server"`
@@ -36,12 +35,11 @@ response = litellm.completion(
 print(response)
 ```
 
+## 使用 -  LiteLLM Proxy Server（呼叫 OpenAI 相容端點） {#usage----litellm-proxy-server-calling-openai-compatible-endpoint}
 
-## Usage -  LiteLLM Proxy Server (calling OpenAI compatible endpoint)
+以下是如何使用 LiteLLM Proxy Server 呼叫 OpenAI 相容端點
 
-Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
-
-1. Modify the config.yaml 
+1. 修改 config.yaml 
 
   ```yaml
   model_list:
@@ -51,13 +49,13 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
         api_base: https://hosted-vllm-api.co      # add api base for OpenAI compatible provider
   ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
   ```bash
   $ litellm --config /path/to/config.yaml
   ```
 
-3. Send Request to LiteLLM Proxy Server
+3. 將請求送至 LiteLLM Proxy Server
 
   <Tabs>
 
@@ -123,7 +121,7 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
   </TabItem>
   <TabItem value="proxy" label="PROXY">
 
-  1. Setup config.yaml
+  1. 設定 config.yaml
 
   ```yaml
   model_list:
@@ -133,13 +131,13 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
         api_base: https://hosted-vllm-api.co
   ```
 
-  2. Start the proxy
+  2. 啟動 proxy
 
   ```bash
   litellm --config /path/to/config.yaml
   ```
 
-  3. Test it!
+  3. 測試它！
 
   ```bash
   curl http://0.0.0.0:4000/v1/chat/completions \
@@ -150,10 +148,9 @@ Here's how to call an OpenAI-Compatible Endpoint with the LiteLLM Proxy Server
   </TabItem>
   </Tabs>
 
+## 嵌入 {#embeddings}
 
-## Embeddings
-
-vLLM serves OpenAI-compatible `/v1/embeddings`. When clients omit `encoding_format`, LiteLLM defaults it for OpenAI-compatible embedding routing (request → model `litellm_params` → `LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT` → `float`). See [Embeddings](../proxy/embedding.md#embedding-encoding-format).
+vLLM 提供 OpenAI 相容的 `/v1/embeddings`。當用戶端省略 `encoding_format` 時，LiteLLM 會為 OpenAI 相容的 embedding 路由預設設定它（request → model `litellm_params` → `LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT` → `float`）。請參閱 [Embeddings](../proxy/embedding.md#embedding-encoding-format)。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -173,7 +170,7 @@ print(embedding)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -183,7 +180,7 @@ model_list:
         api_base: https://hosted-vllm-api.co      # add api base for OpenAI compatible provider
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 $ litellm --config /path/to/config.yaml
@@ -191,7 +188,7 @@ $ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/embeddings' \
@@ -200,12 +197,12 @@ curl -L -X POST 'http://0.0.0.0:4000/embeddings' \
 -d '{"input": ["hello world"], "model": "my-model"}'
 ```
 
-[See OpenAI SDK/Langchain/etc. examples](../proxy/user_keys.md#embeddings)
+[查看 OpenAI SDK/Langchain/etc. 範例](../proxy/user_keys.md#embeddings)
 
 </TabItem>
 </Tabs>
 
-## Rerank
+## 重排 {#rerank}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -234,7 +231,7 @@ response = rerank(
 print(response)
 ```
 
-### Async Usage
+### 非同步使用 {#async-usage}
 
 ```python
 from litellm import arerank
@@ -266,7 +263,7 @@ asyncio.run(test_async_rerank())
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -277,7 +274,7 @@ model_list:
         # api_key: your-api-key             # [optional] if your VLLM server requires authentication
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 $ litellm --config /path/to/config.yaml
@@ -285,7 +282,7 @@ $ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -L -X POST 'http://0.0.0.0:4000/rerank' \
@@ -304,23 +301,23 @@ curl -L -X POST 'http://0.0.0.0:4000/rerank' \
 }'
 ```
 
-[See OpenAI SDK/Langchain/etc. examples](../rerank.md#litellm-proxy-usage)
+[查看 OpenAI SDK/Langchain/etc. 範例](../rerank.md#litellm-proxy-usage)
 
 </TabItem>
 </Tabs>
 
-### Truncating long documents
+### 截斷長文件 {#truncating-long-documents}
 
-vLLM's `/rerank` endpoint takes its own truncation controls, and LiteLLM forwards them to `hosted_vllm` rerank models whenever they are set. Without one of them, a document longer than the reranker's context window fails with a context length error
+vLLM 的 `/rerank` 端點具有自己的截斷控制，而 LiteLLM 在設定後會將其轉發至 `hosted_vllm` rerank 模型。若沒有其中之一，超過 reranker context 視窗的文件會因 context 長度錯誤而失敗
 
-| Parameter | Type | Description |
+| 參數 | 型別 | 描述 |
 |-----------|------|-------------|
-| `truncate_prompt_tokens` | integer | Truncate each query and document pair to this many tokens before scoring |
-| `truncation_side` | `left` or `right` | Which end of the input is cut off |
-| `max_tokens_per_doc` | integer | Cap each document at this many tokens |
-| `max_tokens_per_query` | integer | Cap the query at this many tokens |
+| `truncate_prompt_tokens` | integer | 在評分前，將每組查詢與文件配對截斷為這麼多 tokens |
+| `truncation_side` | `left` 或 `right` | 輸入內容要截斷的端點 |
+| `max_tokens_per_doc` | integer | 將每份文件上限設為這麼多 tokens |
+| `max_tokens_per_query` | integer | 將查詢上限設為這麼多 tokens |
 
-An invalid value, such as `truncation_side: "middle"`, returns a 400 before anything is sent to vLLM
+無效值（例如 `truncation_side: "middle"`）會在送往 vLLM 之前先回傳 400
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -357,9 +354,9 @@ curl -L -X POST 'http://0.0.0.0:4000/rerank' \
 </TabItem>
 </Tabs>
 
-## Image Edits
+## 圖片編輯 {#image-edits}
 
-vLLM-Omni serves OpenAI-compatible `/v1/images/edits` for image editing models such as `Qwen/Qwen-Image-Edit-2511`. Use the `hosted_vllm/` prefix and point `api_base` at the vLLM-Omni server; extra provider fields such as `seed` or `negative_prompt` are passed through as form fields. vLLM-Omni has no `quality` or `input_fidelity` form field and takes its mask as `mask_image` (a URL string) rather than OpenAI's `mask` file, so LiteLLM rejects `mask`, `quality`, and `input_fidelity` for `hosted_vllm/` models unless `drop_params: true` is set, in which case they are dropped before the request is sent. To mask an edit, pass `mask_image` as an extra field with the mask's URL.
+vLLM-Omni 針對 OpenAI 相容的 `/v1/images/edits` 提供影像編輯模型，例如 `Qwen/Qwen-Image-Edit-2511`。請使用 `hosted_vllm/` 前綴，並將 `api_base` 指向 vLLM-Omni 伺服器；其他提供者欄位，例如 `seed` 或 `negative_prompt`，會作為表單欄位傳遞。vLLM-Omni 沒有 `quality` 或 `input_fidelity` 表單欄位，並且接受其遮罩為 `mask_image`（URL 字串），而不是 OpenAI 的 `mask` 檔案，因此 LiteLLM 會拒絕 `mask`、`quality` 和 `input_fidelity` 用於 `hosted_vllm/` 模型，除非設定了 `drop_params: true`；在此情況下，它們會在請求送出前被捨棄。若要遮罩編輯，請將 `mask_image` 作為額外欄位，並提供遮罩的 URL。
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -382,7 +379,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -394,7 +391,7 @@ model_list:
         mode: image_edit
 ```
 
-2. Start the proxy 
+2. 啟動 proxy
 
 ```bash
 $ litellm --config /path/to/config.yaml
@@ -402,7 +399,7 @@ $ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！
 
 ```bash
 curl -X POST 'http://0.0.0.0:4000/v1/images/edits' \
@@ -415,24 +412,24 @@ curl -X POST 'http://0.0.0.0:4000/v1/images/edits' \
 </TabItem>
 </Tabs>
 
-## Send Video URL to VLLM
+## 將影片 URL 傳送至 VLLM {#send-video-url-to-vllm}
 
-Example Implementation from VLLM [here](https://github.com/vllm-project/vllm/pull/10020)
+VLLM 的範例實作 [請見此處](https://github.com/vllm-project/vllm/pull/10020)
 
 <Tabs>
-<TabItem value="files_message" label="(Unified) Files Message">
+<TabItem value="files_message" label="（統一）Files Message">
 
-Use this to send a video url to VLLM + Gemini in the same format, using OpenAI's `files` message type.
+使用此方式可用 OpenAI 的 `files` 訊息類型，以相同格式將影片 URL 傳送至 VLLM + Gemini。
 
-There are two ways to send a video url to VLLM:
+將影片 URL 傳送至 VLLM 有兩種方式：
 
-1. Pass the video url directly
+1. 直接傳遞影片 URL
 
 ```
 {"type": "file", "file": {"file_id": video_url}},
 ```
 
-2. Pass the video data as base64
+2. 將影片資料以 base64 傳遞
 
 ```
 {"type": "file", "file": {"file_data": f"data:video/mp4;base64,{video_data_base64}"}}
@@ -483,7 +480,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -497,7 +494,7 @@ model_list:
         api_key: os.environ/GEMINI_API_KEY
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 $ litellm --config /path/to/config.yaml
@@ -505,7 +502,7 @@ $ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST http://0.0.0.0:4000/chat/completions \
@@ -527,21 +524,20 @@ curl -X POST http://0.0.0.0:4000/chat/completions \
 </TabItem>
 </Tabs>
 
-
 </TabItem>
-<TabItem value="video_url" label="(VLLM-specific) Video Message">
+<TabItem value="video_url" label="（VLLM 專用）Video Message">
 
-Use this to send a video url to VLLM in it's native message format (`video_url`).
+使用此方式可將影片 URL 以其原生訊息格式（`video_url`）傳送至 VLLM。
 
-There are two ways to send a video url to VLLM:
+將影片 URL 傳送至 VLLM 有兩種方式：
 
-1. Pass the video url directly
+1. 直接傳遞影片 URL
 
 ```
 {"type": "video_url", "video_url": {"url": video_url}},
 ```
 
-2. Pass the video data as base64
+2. 將影片資料以 base64 傳遞
 
 ```
 {"type": "video_url", "video_url": {"url": f"data:video/mp4;base64,{video_data_base64}"}}
@@ -580,7 +576,7 @@ print(response)
 </TabItem>
 <TabItem value="proxy" label="PROXY">
 
-1. Setup config.yaml
+1. 設定 config.yaml
 
 ```yaml
 model_list:
@@ -590,7 +586,7 @@ model_list:
         api_base: https://hosted-vllm-api.co      # add api base for OpenAI compatible provider
 ```
 
-2. Start the proxy 
+2. 啟動 proxy 
 
 ```bash
 $ litellm --config /path/to/config.yaml
@@ -598,7 +594,7 @@ $ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-3. Test it! 
+3. 測試它！ 
 
 ```bash
 curl -X POST http://0.0.0.0:4000/chat/completions \
@@ -620,13 +616,12 @@ curl -X POST http://0.0.0.0:4000/chat/completions \
 </TabItem>
 </Tabs>
 
-
 </TabItem>
 </Tabs>
 
+## （已棄用）用於套件化 `vllm` 安裝 {#deprecated-for-packaged-vllm-installs}
 
-## (Deprecated) for packaged `vllm` installs
-### Using - `litellm.completion`
+### 使用 - `litellm.completion` {#using---litellmcompletion}
 
 ```
 uv add litellm vllm
@@ -643,8 +638,7 @@ response = litellm.completion(
 print(response)
 ```
 
-
-### Batch Completion
+### 批次完成 {#batch-completion}
 
 ```python
 from litellm import batch_completion
@@ -662,28 +656,28 @@ response_list = batch_completion(
         )
 print(response_list)
 ```
-### Prompt Templates
 
-For models with special prompt templates (e.g. Llama2), we format the prompt to fit their template.
+### 提示詞樣板 {#prompt-templates}
 
-**What if we don't support a model you need?**
-You can also specify you're own custom prompt formatting, in case we don't have your model covered yet. 
+對於具有特殊提示詞樣板的模型（例如 Llama2），我們會將提示詞格式化以符合其樣板。
 
-**Does this mean you have to specify a prompt for all models?**
-No. By default we'll concatenate your message content to make a prompt (expected format for Bloom, T-5, Llama-2 base models, etc.)
+**如果我們不支援您需要的模型怎麼辦？**
+您也可以指定自己的自訂提示詞格式化方式，以防我們尚未涵蓋您的模型。 
 
-**Default Prompt Template**
+**這是否表示您必須為所有模型指定提示詞？**
+不用。預設情況下，我們會將您的訊息內容串接成提示詞（適用於 Bloom、T-5、Llama-2 base models 等預期格式）
+
+**預設提示詞樣板**
 ```python
 def default_pt(messages):
     return " ".join(message["content"] for message in messages)
 ```
 
-[Code for how prompt templates work in LiteLLM](https://github.com/BerriAI/litellm/blob/main/litellm/llms/prompt_templates/factory.py)
+[LiteLLM 中提示詞樣板運作方式的程式碼](https://github.com/BerriAI/litellm/blob/main/litellm/llms/prompt_templates/factory.py)
 
+#### 我們已經有提示詞樣板的模型 {#models-we-already-have-prompt-templates-for}
 
-#### Models we already have Prompt Templates for
-
-| Model Name                           | Works for Models                  | Function Call                                                                                                    |
+| 模型名稱                           | Works for Models                  | 函式呼叫                                                                                                    |
 |--------------------------------------|-----------------------------------|------------------------------------------------------------------------------------------------------------------|
 | meta-llama/Llama-2-7b-chat           | All meta-llama llama2 chat models | `completion(model='vllm/meta-llama/Llama-2-7b', messages=messages, api_base="your_api_endpoint")`                |
 | tiiuae/falcon-7b-instruct            | All falcon instruct models        | `completion(model='vllm/tiiuae/falcon-7b-instruct', messages=messages, api_base="your_api_endpoint")`            |
@@ -692,7 +686,7 @@ def default_pt(messages):
 | WizardLM/WizardCoder-Python-34B-V1.0 | All wizardcoder models            | `completion(model='vllm/WizardLM/WizardCoder-Python-34B-V1.0', messages=messages, api_base="your_api_endpoint")` |
 | Phind/Phind-CodeLlama-34B-v2         | All phind-codellama models        | `completion(model='vllm/Phind/Phind-CodeLlama-34B-v2', messages=messages, api_base="your_api_endpoint")`         |
 
-#### Custom prompt templates
+#### 自訂提示詞樣板 {#custom-prompt-templates}
 
 ```python 
 # Create your own custom prompt template works 
@@ -723,4 +717,4 @@ def test_vllm_custom_model():
 test_vllm_custom_model()
 ```
 
-[Implementation Code](https://github.com/BerriAI/litellm/blob/6b3cb1898382f2e4e80fd372308ea232868c78d1/litellm/utils.py#L1414)
+[實作程式碼](https://github.com/BerriAI/litellm/blob/6b3cb1898382f2e4e80fd372308ea232868c78d1/litellm/utils.py#L1414)

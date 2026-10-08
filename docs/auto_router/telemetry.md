@@ -1,35 +1,35 @@
 ---
 title: Auto Router OTEL Telemetry
 sidebar_label: OTEL Telemetry
-description: Trace the Auto Router configuration, selected model, routing reason, and recovered classifier failures. Enable OpenTelemetry once on the gateway and inspect the results in Lens or another OTLP backend.
+description: 追蹤 Auto Router 設定、所選模型、路由原因，以及已復原的分類器失敗。只需在閘道上啟用一次 OpenTelemetry，然後在 Lens 或其他 OTLP 後端中檢視結果。
 ---
 
-Auto Router adds `litellm.routing.*` attributes to OpenTelemetry (OTEL) traces so you can identify which configuration ran, why it selected a model, and whether a classifier failed before the request recovered.
+Auto Router 會將 `litellm.routing.*` 屬性加入 OpenTelemetry（OTEL）追蹤中，讓您可以識別是哪個設定在執行、它為何選擇某個模型，以及在請求復原前分類器是否失敗。
 
-**If your gateway already exports OTEL traces, there is no per-router telemetry switch to enable.** Upgrade to a build with the instrumentation below. Use OTEL v2 for routing-phase details and retry/fallback events. Applications calling the gateway do not need an additional SDK or a different inference endpoint.
+**如果您的閘道已經匯出 OTEL 追蹤，就不需要啟用每個 router 的 telemetry 開關。** 請升級到包含下方檢測功能的版本。使用 OTEL v2 來取得路由階段細節與重試/備援事件。呼叫閘道的應用程式不需要額外的 SDK 或不同的推論端點。
 
-:::info Availability
+:::info 可用性
 
-These attributes require a gateway build containing [LiteLLM #44926](https://github.com/BerriAI/litellm/pull/44926). Setting an OTEL environment variable on an older build does not add the instrumentation. This guide covers inference through the gateway's asynchronous Router path; the dashboard's unsaved **Test Routing** preview is not an equivalent trace test.
+這些屬性需要包含 [LiteLLM #44926](https://github.com/BerriAI/litellm/pull/44926) 的閘道版本。對較舊版本設定 OTEL 環境變數不會加入這些檢測。此指南涵蓋透過閘道非同步 Router 路徑的推論；儀表板中未儲存的 **Test Routing** 預覽並不是等效的追蹤測試。
 
 :::
 
-## Do I need to set anything up?
+## 我需要先設定什麼嗎？ {#do-i-need-to-set-anything-up}
 
-| Your gateway today | What to do |
+| 您目前的閘道 | 要做什麼 |
 | --- | --- |
-| OTEL v2 already exports traces | Upgrade to a build containing the instrumentation. Existing routers and new routers emit the available fields automatically. |
-| Generic OTEL v1 with the `otel` callback | The upgraded build adds routing attributes to model spans. Enable v2 and restart for route-phase attributes and retry/fallback events. See the [migration guide](/docs/observability/opentelemetry_v2_migration). |
-| No OTEL exporter | Configure tracing once on the gateway using the example below. |
-| Lens runs on a different gateway | Configure the source gateway's exporter or its collector to forward traces to Lens. Opening Lens does not connect the two gateways. |
+| OTEL v2 已經匯出追蹤 | 升級到包含檢測功能的版本。現有與新的 routers 都會自動輸出可用欄位。 |
+| 一般的 OTEL v1 搭配 `otel` 回呼 | 升級後的版本會將路由屬性加入模型 spans。請啟用 v2 並重新啟動，以取得路由階段屬性與重試/備援事件。請參閱 [遷移指南](/docs/observability/opentelemetry_v2_migration)。 |
+| 沒有 OTEL 匯出器 | 使用下方範例在閘道上設定一次追蹤。 |
+| Lens 在不同的閘道上執行 | 設定來源閘道的匯出器或其收集器，將追蹤轉送至 Lens。開啟 Lens 並不會將兩個閘道連接起來。 |
 
-Your exporter, sampling rules and collector filters still decide which traces reach the backend. If a collector forwards only selected router names, update that filter when adding a router.
+您的匯出器、取樣規則與收集器篩選條件仍然會決定哪些追蹤會送達後端。如果收集器只轉送特定 router 名稱，新增 router 時請更新該篩選條件。
 
-## Enable tracing on the gateway
+## 在閘道上啟用追蹤 {#enable-tracing-on-the-gateway}
 
-Start with an existing [Auto Router configuration](./setup.md) and an OTLP collector reachable from the gateway. The gateway runtime needs the OpenTelemetry SDK and HTTP exporter; gateway server spans also need `opentelemetry-instrumentation-fastapi`. The LiteLLM `proxy-runtime` extra includes these dependencies.
+請從既有的 [Auto Router 設定](./setup.md) 與閘道可存取的 OTLP 收集器開始。閘道執行環境需要 OpenTelemetry SDK 與 HTTP 匯出器；閘道伺服器 spans 也需要 `opentelemetry-instrumentation-fastapi`。LiteLLM `proxy-runtime` extra 已包含這些相依性。
 
-Set the following in the **gateway process environment before startup**, then restart the gateway:
+請在啟動前將下列項目設定於**閘道程序環境**中，然後重新啟動閘道：
 
 ```bash
 export LITELLM_OTEL_V2=true
@@ -39,9 +39,9 @@ export OTEL_SERVICE_NAME="litellm-gateway"
 export OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=no_content
 ```
 
-Replace the endpoint with your collector's address. For OTLP/HTTP, LiteLLM appends `/v1/traces` to this base URL. Set `OTEL_HEADERS` if your collector requires authentication, for example `Authorization=Bearer <collector-token>`. Avoid also setting the equivalent `OTEL_EXPORTER_OTLP_*` aliases to conflicting values.
+請以您收集器的位址取代端點。對於 OTLP/HTTP，LiteLLM 會將 `/v1/traces` 附加到此基底 URL。若您的收集器需要驗證，請設定 `OTEL_HEADERS`，例如 `Authorization=Bearer <collector-token>`。也請避免將對應的 `OTEL_EXPORTER_OTLP_*` 別名設定為互相衝突的值。
 
-The complete example below explicitly registers the generic `otel` callback. If it is already configured, keep that entry. OTEL v2 also initializes a generic exporter on the proxy from its environment settings; no new callback is required for each router.
+下方完整範例會明確註冊一般的 `otel` 回呼。如果已經設定過，請保留該項目。OTEL v2 也會依據其環境設定在 proxy 上初始化一般匯出器；每個 router 都不需要新的回呼。
 
 ```yaml title="config.yaml"
 model_list:
@@ -74,13 +74,13 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-Supply `OPENAI_API_KEY` and `LITELLM_MASTER_KEY` through your deployment's secret configuration, then start the proxy:
+請透過您部署的密鑰設定提供 `OPENAI_API_KEY` 和 `LITELLM_MASTER_KEY`，然後啟動 proxy：
 
 ```bash
 litellm --config config.yaml --port 4000
 ```
 
-No collector yet? Use console export to inspect spans in gateway output:
+還沒有收集器？請使用主控台匯出來檢查閘道輸出中的 spans：
 
 ```bash
 unset OTEL_ENDPOINT OTEL_TRACES_ENDPOINT
@@ -88,13 +88,13 @@ unset OTEL_EXPORTER_OTLP_ENDPOINT OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
 export OTEL_EXPORTER=console
 ```
 
-Clear the endpoint variables because a configured endpoint selects network export even when `OTEL_EXPORTER=console`. If you configured explicit network exporters in `callback_settings.otel`, remove those for this console-only preview as well. Console export does not send traces to Lens or another backend.
+請清除端點變數，因為即使 `OTEL_EXPORTER=console`，已設定的端點仍會選擇網路匯出。如果您在 `callback_settings.otel` 中也設定了明確的網路匯出器，請一併移除這些設定以供此僅主控台預覽使用。主控台匯出不會將追蹤傳送至 Lens 或其他後端。
 
-These routing attributes and span events do not require `LITELLM_OTEL_INTEGRATION_ENABLE_METRICS` or `LITELLM_OTEL_INTEGRATION_ENABLE_EVENTS`.
+這些路由屬性與 span 事件不需要 `LITELLM_OTEL_INTEGRATION_ENABLE_METRICS` 或 `LITELLM_OTEL_INTEGRATION_ENABLE_EVENTS`。
 
-### Send traces to Lens
+### 將追蹤傳送至 Lens {#send-traces-to-lens}
 
-[Enable trace ingestion on the Lens gateway](/docs/proxy/lens) and obtain a LiteLLM key allowed to ingest traces there. To export directly from the source gateway, use the Lens gateway's base URL and ingestion key:
+[在 Lens 閘道上啟用追蹤擷取](/docs/proxy/lens) 並取得一個允許在那裡擷取追蹤的 LiteLLM 金鑰。若要直接從來源閘道匯出，請使用 Lens 閘道的基底 URL 與擷取金鑰：
 
 ```bash
 export LENS_GATEWAY_URL="https://your-lens-gateway.example"
@@ -104,11 +104,11 @@ export OTEL_ENDPOINT="${LENS_GATEWAY_URL}/v1/traces"
 export OTEL_HEADERS="Authorization=Bearer ${LENS_INGEST_KEY}"
 ```
 
-Keep `LITELLM_OTEL_V2=true` and restart the source gateway after changing its exporter. If an existing collector already sends traces to another backend, add Lens as a collector destination to keep both copies. The application continues sending inference requests to the source gateway; only telemetry is forwarded to Lens. See the [Lens OpenTelemetry integration](/docs/proxy/lens/integrations/opentelemetry) for ingestion setup and examples.
+變更匯出器之後，請保留 `LITELLM_OTEL_V2=true` 並重新啟動來源閘道。如果既有收集器已將追蹤傳送至其他後端，請將 Lens 新增為收集器目的地，以保留兩份副本。應用程式會繼續將推論請求送至來源閘道；只有 telemetry 會轉送至 Lens。請參閱 [Lens OpenTelemetry 整合](/docs/proxy/lens/integrations/opentelemetry) 以取得擷取設定與範例。
 
-## Verify an Auto Router request
+## 驗證 Auto Router 請求 {#verify-an-auto-router-request}
 
-Use a LiteLLM virtual key with access to `smart-router` as `LITELLM_API_KEY`:
+請使用具有 `smart-router` 存取權的 LiteLLM 虛擬金鑰作為 `LITELLM_API_KEY`：
 
 ```bash
 curl http://localhost:4000/v1/chat/completions \
@@ -117,44 +117,44 @@ curl http://localhost:4000/v1/chat/completions \
   -d '{"model":"smart-router","messages":[{"role":"user","content":"What is 2+2?"}]}'
 ```
 
-In your trace backend, find the request under service `litellm-gateway`. In Lens, open **Lens > Traces**, select the request, select **route smart-router**, then open **Attributes**. Look for `litellm.routing.router_config_id=smart-router-config`, `litellm.routing.routed_model`, and `litellm.routing.cause`.
+在您的追蹤後端中，請在服務 `litellm-gateway` 下找到該請求。在 Lens 中，開啟 **Lens > Traces**，選取該請求，選取 **route smart-router**，然後開啟 **Attributes**。請找 `litellm.routing.router_config_id=smart-router-config`、`litellm.routing.routed_model` 和 `litellm.routing.cause`。
 
-| Trace location | Data you can inspect |
+| 追蹤位置 | 您可以檢查的資料 |
 | --- | --- |
-| V2 `route <requested-model>` phase | Selected configuration before classification, then the completed decision when available. A failure before a decision can still retain the configuration. |
-| Model-call span, v1 or v2 | The completed routing decision associated with that model call. The span name can retain the requested router alias; use `routed_model` for the selected model group. |
-| V2 request root, or current span before a root exists | Routing retry/fallback events with the router name, error class and existing retry counter. |
+| V2 `route <requested-model>` 階段 | 分類前所選的設定，以及在可用時完成的決策。在做出決策前失敗，仍可能保留該設定。 |
+| 模型呼叫 span，v1 或 v2 | 與該模型呼叫相關聯的完整路由決策。span 名稱可以保留請求的 router 別名；請使用 `routed_model` 來查看所選的模型群組。 |
+| V2 請求根，或在尚無根之前的目前 span | 含有 router 名稱、錯誤類別與既有重試計數器的路由重試/備援事件。 |
 
-Internal classifier and embedding calls do not inherit an unfinished outer routing decision. If a failed Auto Router attempt falls back to a plain model, that final model span clears the previous decision. Inspect the earlier route phase to diagnose the failed router.
+內部分類器與 embedding 呼叫不會繼承尚未完成的外層路由決策。如果失敗的 Auto Router 嘗試改為備援到一般模型，該最終模型 span 會清除先前的決策。請檢查較早的 route 階段以診斷失敗的 router。
 
-## Available telemetry
+## 可用的 telemetry {#available-telemetry}
 
-All attribute names in this table start with **`litellm.routing.`**. Fields are optional and appear only when the selected strategy produces a scalar value. An absent field does not mean zero, false or success.
+此表中的所有屬性名稱都以 **`litellm.routing.`** 開頭。欄位是選用的，且只有在所選策略產生純量值時才會出現。欄位缺失不代表零、false 或成功。
 
-| Attribute suffix | Meaning |
+| 屬性後綴 | 含義 |
 | --- | --- |
-| `router_model_name`, `router_type` | Registered router identity and executed strategy type: `complexity`, `semantic`, `adaptive` or `quality`. The registered name can differ from a team's public alias. |
-| `router_config_id`, `router_config_updated_at` | Selected definition's ID and update timestamp, when available. Static configurations may have no update timestamp. |
-| `router_config_fingerprint` | Fingerprint of configured routing fields, model and tags, calculated when the strategy is registered. |
-| `routed_model`, `cause` | Selected model group and why it was selected. |
-| `tier`, `tier_label`, `request_type`, `score` | Strategy-specific classification. Tiers can use custom names; a score is not necessarily a probability. |
-| `classifier_model`, `classifier_cost`, `classifier_confidence` | Classifier identity, recorded cost and confidence, when available. |
-| `classifier_failure_reason`, `classifier_error_type` | Bounded failure category and exception class name, when an exception exists. The exception message is not included in these fields. |
-| `classifier_primary_rule`, `classifier_capability_boundary` | Rule and capability boundary reported by a capability classifier. |
-| `classifier_p_solve`, `classifier_calibrated_p_solve`, `classifier_calibration_version`, `classifier_threshold` | Available capability estimates, calibration identity and threshold. |
-| `classifier_efficient_p_solve`, `classifier_capable_p_solve`, `classifier_calibrated_efficient_p_solve`, `classifier_calibrated_capable_p_solve` | Available solver forecasts for the efficient and capable models. |
-| `classifier_max_quality_gap`, `classifier_prompt_version` | Configured quality-gap constraint and classifier prompt version, when produced. |
-| `escalated`, `context_escalated`, `context_escalation_original_tier`, `reasoning_override_min_score` | Escalation and reasoning-override details. |
-| `conversation_continuing` | Whether the decision identifies a continuing conversation. |
-| `savings_baseline_model`, `savings_baseline_deployment_id` | Baseline identity used by the routing decision. These fields alone do not establish an amount saved. |
+| `router_model_name`、`router_type` | 已註冊的 router 身分與已執行的策略類型：`complexity`、`semantic`、`adaptive` 或 `quality`。註冊名稱可能與團隊的公開別名不同。 |
+| `router_config_id`、`router_config_updated_at` | 已選擇定義的 ID 與更新時間戳記（如有）。靜態設定可能沒有更新時間戳記。 |
+| `router_config_fingerprint` | 在註冊策略時計算出的已設定路由欄位、模型與標籤指紋。 |
+| `routed_model`、`cause` | 所選模型群組與其被選中的原因。 |
+| `tier`、`tier_label`、`request_type`、`score` | 策略特定的分類。等級可以使用自訂名稱；分數不一定是機率。 |
+| `classifier_model`、`classifier_cost`、`classifier_confidence` | 分類器身分、記錄的成本與信心度（如有）。 |
+| `classifier_failure_reason`、`classifier_error_type` | 受界限限制的失敗類別與例外類別名稱（當存在例外時）。這些欄位不包含例外訊息。 |
+| `classifier_primary_rule`、`classifier_capability_boundary` | 能力分類器回報的規則與能力界限。 |
+| `classifier_p_solve`、`classifier_calibrated_p_solve`、`classifier_calibration_version`、`classifier_threshold` | 可用的能力估計、校準身分與閾值。 |
+| `classifier_efficient_p_solve`、`classifier_capable_p_solve`、`classifier_calibrated_efficient_p_solve`、`classifier_calibrated_capable_p_solve` | 高效率與高能力模型的可用解題預測。 |
+| `classifier_max_quality_gap`、`classifier_prompt_version` | 已設定的品質差距約束與分類器提示版本（如有產生）。 |
+| `escalated`、`context_escalated`、`context_escalation_original_tier`、`reasoning_override_min_score` | 升級與推理覆寫細節。 |
+| `conversation_continuing` | 此決策是否識別為持續中的對話。 |
+| `savings_baseline_model`、`savings_baseline_deployment_id` | 路由決策所使用的基準身分。僅憑這些欄位無法判定節省了多少。 |
 
-The fingerprint is not a complete snapshot of everything affecting routing. It excludes referenced file contents, live adaptive state and plugin implementation/state. Compare it alongside the configuration ID, timestamp and deployed gateway version.
+指紋不是影響路由的一切內容的完整快照。它不包含參考檔案內容、即時自適應狀態以及外掛實作／狀態。請將其與設定 ID、時間戳記及已部署的閘道版本一併比較。
 
-Existing model-call telemetry supplies provider, token usage and cost attributes; span timing supplies duration. This feature does not create new routing metrics, dashboards or alerts. See the [OTEL v2 reference](/docs/observability/opentelemetry_v2) for the surrounding trace data.
+既有的 model-call 監測資料提供提供者、token 使用量與成本屬性；span 時序提供持續時間。此功能不會建立新的路由指標、儀表板或警示。請參閱 [OTEL v2 參考](/docs/observability/opentelemetry_v2) 以了解周邊的 trace 資料。
 
-### Classifier failures that recover
+### 可回復的分類器失敗 {#classifier-failures-that-recover}
 
-A successful HTTP response can contain a classifier failure. For example, an LLM classifier can fail and the configured heuristic fallback can still choose a model and complete the request. An illustrative decision is:
+成功的 HTTP 回應可能包含分類器失敗。範例來說，LLM 分類器可能失敗，而已設定的 heuristic 備援仍可選擇模型並完成請求。示意性的決策如下：
 
 ```json
 {
@@ -167,42 +167,42 @@ A successful HTTP response can contain a classifier failure. For example, an LLM
 }
 ```
 
-This recovery example requires an LLM classifier; the heuristic-only setup above makes no classifier model call. Search for the presence of `classifier_failure_reason` to find recovered failures. Filtering only for an error HTTP status or a `cause` containing `fallback` will miss some of them.
+這個回復範例需要 LLM 分類器；上方僅使用 heuristic 的設定不會進行任何分類器模型呼叫。請搜尋 `classifier_failure_reason` 的存在來找出已回復的失敗。若只篩選錯誤 HTTP 狀態或包含 `fallback` 的 `cause`，將會漏掉其中一部分。
 
-![A Lens route span showing the selected configuration, classifier error and heuristic recovery](/img/auto-router/otel-telemetry.jpg)
+![顯示所選設定、分類器錯誤與 heuristic 回復的 Lens 路由 span](/img/auto-router/otel-telemetry.jpg)
 
-| `classifier_failure_reason` | Meaning |
+| `classifier_failure_reason` | 含義 |
 | --- | --- |
-| `timeout` | The classifier timed out. |
-| `circuit_open` | An open circuit prevented a classifier call. |
-| `not_configured` | A required classifier configuration was unavailable. |
-| `unsupported_input` | The classifier could not handle the input. |
-| `invalid_response` | The classifier result could not be used as a valid decision. |
-| `declined` | The classifier declined to choose a tier. |
-| `classifier_error` | Another classifier exception occurred. |
+| `timeout` | 分類器逾時。 |
+| `circuit_open` | 開啟的斷路器阻止了分類器呼叫。 |
+| `not_configured` | 必要的分類器設定無法使用。 |
+| `unsupported_input` | 分類器無法處理輸入。 |
+| `invalid_response` | 分類器結果無法作為有效決策使用。 |
+| `declined` | 分類器拒絕選擇層級。 |
+| `classifier_error` | 發生了其他分類器例外狀況。 |
 
-The routing `cause` keeps the actual decision reason, such as `heuristic_scorer`, `heuristic_v2`, `llm_classifier`, `capability_classifier`, `jev_classifier`, `classifier_plugin` or `default_model_fallback`. Semantic routers report `semantic_match`, `semantic_no_match` or `semantic_error`; a normal no-match is not a classifier failure. Other routing policies can report their own causes.
+路由 `cause` 會保留實際的決策原因，例如 `heuristic_scorer`、`heuristic_v2`、`llm_classifier`、`capability_classifier`、`jev_classifier`、`classifier_plugin` 或 `default_model_fallback`。語意路由器會回報 `semantic_match`、`semantic_no_match` 或 `semantic_error`；一般的未匹配並不是分類器失敗。其他路由政策可以回報各自的原因。
 
-### Retry and fallback events
+### 重試與備援事件 {#retry-and-fallback-events}
 
-OTEL v2 records **`litellm.routing.retry`** when the Router records retry/fallback bookkeeping for an auto-routed attempt. The event includes `litellm.routing.router_model_name`, `litellm.retry.count` and `error.type`, plus `litellm.deployment.model_group` and `litellm.deployment.id` when known.
+當 Router 記錄自動路由嘗試的 retry/fallback 記帳資訊時，OTEL v2 會記錄 **`litellm.routing.retry`**。該事件包含 `litellm.routing.router_model_name`、`litellm.retry.count` 與 `error.type`，以及在已知時的 `litellm.deployment.model_group` 和 `litellm.deployment.id`。
 
-The count follows the existing request retry counter. An event can describe an exhausted attempt or a fallback transition; it does not guarantee another outbound retry or equal the exact number of provider calls. Configuration identity remains on the route span.
+計數遵循既有的請求重試計數器。事件可以描述已耗盡的嘗試或備援轉換；它不保證會再向外重試一次，也不等於 provider 呼叫的確切數量。設定識別仍保留在 route span 上。
 
-## Data capture and performance
+## 資料擷取與效能 {#data-capture-and-performance}
 
-The new scalar routing attributes exclude prompt-quoting fields such as `signals`, matched keywords and `classifier_crux`, along with raw configuration, exception messages and nested forecast maps. Other span attributes and logs still follow their own capture and redaction settings. In particular, v1 retains its existing metadata export; this allowlist does not make the entire trace prompt-free.
+新的純量路由屬性不包含諸如 `signals`、已比對關鍵字與 `classifier_crux` 之類的 prompt 引號欄位，以及原始設定、例外訊息和巢狀預測對映。其他 span 屬性與記錄仍遵循各自的擷取與去識別化設定。尤其是，v1 會保留既有的中繼資料匯出；此 allowlist 不會讓整個 trace 變得沒有 prompt。
 
-Telemetry adds attribute processing and larger trace payloads. It does not add classifier or completion calls, and the configuration fingerprint is reused between requests. Standard network exporters batch in the background; console and explicitly configured simple processors behave differently. Measure throughput and tail latency with your own exporter and traffic before setting a performance expectation.
+Telemetry 會增加屬性處理與較大的 trace 負載。它不會新增分類器或 completion 呼叫，而且設定指紋會在請求之間重複使用。標準網路匯出器會在背景批次處理；console 與明確設定的 simple processors 的行為則不同。請先使用您自己的匯出器與流量測量吞吐量與尾端延遲，再設定效能預期。
 
-## Troubleshooting
+## 疑難排解 {#troubleshooting}
 
-| Symptom | Check |
+| 症狀 | 檢查項目 |
 | --- | --- |
-| No trace arrives | Confirm OTEL is configured on the source gateway, the destination accepts the protocol and credentials, and sampling or collector filters retain the request. A successful completion does not prove export succeeded. |
-| Traces arrive without `litellm.routing.*` | Confirm the gateway includes the instrumentation, the request went through a saved router using the gateway inference API, and you are inspecting the route or model-call span. |
-| Model attributes exist, but no routing-phase details | Enable v2 before startup and restart. Check that the backend or preset retains non-LLM spans and that gateway instrumentation dependencies are installed. |
-| Configuration fields exist without a chosen model | The attempt may have failed before producing a routing decision. Inspect that phase and its error. |
-| The final successful span has no routing fields | A plain-model fallback clears the earlier router decision. Inspect the previous route phase. |
-| No fingerprint or timestamp | A definition may not have a timestamp, and a fingerprint can be absent when the configured definition cannot be serialized. Use the available identity fields. |
-| A recovered failure has no exception class | Some failure categories are decisions rather than caught exceptions. Inspect `classifier_failure_reason` and `cause` together. |
+| 沒有 trace 抵達 | 確認來源閘道已設定 OTEL、目的端接受該協定與憑證，且取樣或 collector 篩選器保留了該請求。成功完成並不代表匯出成功。 |
+| trace 抵達但沒有 `litellm.routing.*` | 確認閘道包含 instrumentation、請求經由使用 gateway inference API 的已儲存 router 通過，且您正在檢視 route 或 model-call span。 |
+| 有 model 屬性，但沒有 routing 階段細節 | 請在啟動前啟用 v2 並重新啟動。檢查後端或 preset 是否保留非 LLM span，以及是否已安裝閘道 instrumentation 依賴。 |
+| 有設定欄位，但沒有選定的模型 | 嘗試可能在產生路由決策之前就已失敗。請檢視該階段及其錯誤。 |
+| 最後成功的 span 沒有 routing 欄位 | 純模型備援會清除較早的路由器決策。請檢視前一個 route 階段。 |
+| 沒有 fingerprint 或時間戳記 | 某個定義可能沒有時間戳記，而當已設定的定義無法序列化時，fingerprint 也可能不存在。請使用可用的識別欄位。 |
+| 已回復的失敗沒有例外類別 | 有些失敗類別是決策，而不是被攔截的例外。請一併檢視 `classifier_failure_reason` 與 `cause`。 |

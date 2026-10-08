@@ -1,5 +1,5 @@
-# Completion Function - completion()
-Here's the exact json output you can expect from a litellm `completion` call:
+# 完成函式 - completion() {#completion-function---completion}
+以下是您可以從 litellm `completion` 呼叫預期得到的精確 json 輸出：
 
 ```python 
 {'choices': [{'finish_reason': 'stop',

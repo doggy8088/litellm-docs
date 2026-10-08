@@ -1,24 +1,23 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# /realtime
+# /realtime {#realtime}
 
-Use this to loadbalance across Azure + OpenAI + xAI and more. 
+使用這個來在 Azure + OpenAI + xAI 等之間進行負載平衡。
 
-Supported Providers:
+支援的提供者：
 - OpenAI
 - Azure
-- xAI ([see full docs](/docs/providers/xai_realtime))
-- Google AI Studio (Gemini)
+- xAI ([查看完整文件](/docs/providers/xai_realtime))
+- Google AI Studio（Gemini）
 - Vertex AI
-- Vertex AI Chirp, transcription only ([see full docs](/docs/providers/vertex_transcription#chirp-realtime-transcription))
+- Vertex AI Chirp，僅限轉錄 ([查看完整文件](/docs/providers/vertex_transcription#chirp-realtime-transcription))
 - Bedrock
-- Meta Muse Voice, transcription only ([see full docs](/docs/providers/meta#muse-voice-realtime-transcription))
+- Meta Muse Voice，僅限轉錄 ([查看完整文件](/docs/providers/meta#muse-voice-realtime-transcription))
 
-## Proxy Usage
+## 代理程式用法 {#proxy-usage}
 
-### Add model to config 
-
+### 將模型加入設定檔  {#add-model-to-config}
 
 <Tabs>
 <TabItem value="openai" label="OpenAI">
@@ -58,7 +57,7 @@ model_list:
 ```
 
 </TabItem>
-<TabItem value="xai" label="xAI Grok Voice Agent">
+<TabItem value="xai" label="xAI Grok 語音代理程式">
 
 ```yaml
 model_list:
@@ -70,12 +69,12 @@ model_list:
       mode: realtime
 ```
 
-**[See full xAI Realtime documentation →](/docs/providers/xai_realtime)**
+**[查看完整 xAI Realtime 文件 →](/docs/providers/xai_realtime)**
 
 </TabItem>
 </Tabs>
 
-### Start proxy 
+### 啟動代理程式  {#start-proxy}
 
 ```bash
 litellm --config /path/to/config.yaml 
@@ -83,9 +82,9 @@ litellm --config /path/to/config.yaml
 # RUNNING on http://0.0.0.0:4000
 ```
 
-### Test 
+### 測試  {#test}
 
-Run this script using node - `node test.js`
+使用 node 執行這個腳本 - `node test.js`
 
 ```js
 // test.js
@@ -120,11 +119,11 @@ ws.on("error", function handleError(error) {
 });
 ```
 
-## Azure: GA vs beta realtime protocol
+## Azure：GA 與 beta 即時通訊協定 {#azure-ga-vs-beta-realtime-protocol}
 
-Azure exposes two realtime upstreams. The GA endpoint (`/openai/v1/realtime?model=<deployment>`) speaks the GA event schema (`session.type`, `output_modalities`, nested `audio`), and the older beta endpoint (`/openai/realtime?api-version=2024-10-01-preview&deployment=<deployment>`) speaks the beta schema (`modalities`, `voice`, flat audio formats). Sending a GA-shaped `session.update` to the beta endpoint fails with `Unknown parameter: 'session.type'`
+Azure 提供兩個即時上游。GA 端點（`/openai/v1/realtime?model=<deployment>`）使用 GA 事件結構（`session.type`、`output_modalities`、巢狀 `audio`），而較舊的 beta 端點（`/openai/realtime?api-version=2024-10-01-preview&deployment=<deployment>`）使用 beta 結構（`modalities`、`voice`、扁平音訊格式）。將 GA 形狀的 `session.update` 傳送至 beta 端點會失敗，並出現 `Unknown parameter: 'session.type'`
 
-LiteLLM picks the upstream from the client connection. A client that sends the `OpenAI-Beta: realtime=v1` header (the openai SDK's `client.beta.realtime.connect`) is bridged to the beta endpoint. A client without that header (the openai SDK's `client.realtime.connect`, and most voice agent frameworks) is bridged to the GA endpoint. Transcription sessions (`intent=transcription`) always use GA
+LiteLLM 會依據用戶端連線選擇上游。傳送 `OpenAI-Beta: realtime=v1` 標頭的用戶端（openai SDK 的 `client.beta.realtime.connect`）會橋接到 beta 端點。沒有該標頭的用戶端（openai SDK 的 `client.realtime.connect`，以及大多數語音代理程式框架）會橋接到 GA 端點。轉錄工作階段（`intent=transcription`）一律使用 GA
 
 ```python
 import os
@@ -143,7 +142,7 @@ async with client.realtime.connect(model="azure-gpt-realtime") as connection:
             break
 ```
 
-To pin one protocol regardless of what the client sends, set `realtime_protocol` on the deployment or `LITELLM_AZURE_REALTIME_PROTOCOL` in the proxy's environment. The deployment setting wins over the environment variable, and both win over the client header. The realtime health check (`/health` on a `mode: realtime` deployment, and the Admin UI's Test Connect) has no client header to read, so it probes the GA endpoint unless one of those pins the protocol
+若要固定某個協定，不論用戶端傳送什麼，都可在部署上設定 `realtime_protocol`，或在 Proxy 的環境中設定 `LITELLM_AZURE_REALTIME_PROTOCOL`。部署設定的優先順序高於環境變數，而兩者都高於用戶端標頭。即時健康檢查（`/health` 在 `mode: realtime` 部署上，以及 Admin UI 的 Test Connect）沒有可讀取的用戶端標頭，因此會探測 GA 端點，除非其中一項已將協定固定
 
 ```yaml
 model_list:
@@ -159,20 +158,20 @@ model_list:
 export LITELLM_AZURE_REALTIME_PROTOCOL=beta # or GA
 ```
 
-## Guardrails
+## 防護欄 {#guardrails}
 
-You can apply [LiteLLM guardrails](https://docs.litellm.ai/docs/proxy/guardrails/quick_start) to realtime sessions.
+您可以將 [LiteLLM 防護欄](https://docs.litellm.ai/docs/proxy/guardrails/quick_start) 套用到即時工作階段。
 
-### Set guardrails on a key or team
+### 在金鑰或團隊上設定防護欄 {#set-guardrails-on-a-key-or-team}
 
-The easiest production setup: attach guardrails to a virtual key or team so they always apply automatically, without any client-side changes.
+最簡單的正式環境設定：將防護欄附加到虛擬金鑰或團隊，如此它們就會自動套用，無需任何用戶端端變更。
 
-See [Virtual Keys → Guardrails](https://docs.litellm.ai/docs/proxy/virtual_keys#guardrails) and [Teams → Guardrails](https://docs.litellm.ai/docs/proxy/team_budgets).
+請參閱 [虛擬金鑰 → 防護欄](https://docs.litellm.ai/docs/proxy/virtual_keys#guardrails) 和 [團隊 → 防護欄](https://docs.litellm.ai/docs/proxy/team_budgets)。
 
-### Pass guardrails dynamically (easy testing)
+### 動態傳遞防護欄（方便測試） {#pass-guardrails-dynamically-easy-testing}
 
-Pass `guardrails` as a query param when opening the WebSocket.
-Useful for testing guardrails without modifying key/team config.
+在開啟 WebSocket 時，將 `guardrails` 作為查詢參數傳入。
+適合在不修改金鑰／團隊設定的情況下測試防護欄。
 
 ```js
 // node test.js
@@ -205,7 +204,7 @@ ws.on("close", function close(code, reason) {
 });
 ```
 
-Or with Python:
+或者使用 Python：
 
 ```python
 import asyncio
@@ -228,7 +227,7 @@ async def main():
 asyncio.run(main())
 ```
 
-When a guardrail blocks the request, the proxy sends an `error` event over the WebSocket and then closes the connection:
+當防護欄封鎖請求時，代理程式會透過 WebSocket 傳送一個 `error` 事件，然後關閉連線：
 
 ```json
 {
@@ -240,15 +239,15 @@ When a guardrail blocks the request, the proxy sends an `error` event over the W
 }
 ```
 
-## Logging
+## 記錄 {#logging}
 
-To prevent requests from being dropped, by default LiteLLM just logs these event types:
+為避免請求被丟棄，LiteLLM 預設只會記錄這些事件類型：
 
 - `session.created`
 - `response.create`
 - `response.done`
 
-You can override this by setting the `logged_real_time_event_types` parameter in the config. For example:
+您可以在設定檔中設定 `logged_real_time_event_types` 參數來覆寫這個行為。例如：
 
 ```yaml
 litellm_settings:

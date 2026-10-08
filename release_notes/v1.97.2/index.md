@@ -1,5 +1,5 @@
 ---
-title: "v1.97.2 - Docker-Only Dependency Refresh"
+title: "v1.97.2 - 僅限 Docker 的依賴重新整理"
 slug: "v1-97-2"
 date: 2026-09-03T18:54:20
 authors:
@@ -18,15 +18,15 @@ authors:
 hide_table_of_contents: false
 ---
 
-:::info[This is a Docker-only release]
+:::info[這是僅限 Docker 的版本]
 
-`v1.97.2` is distributed as container images. There is no PyPI package for this version, so `pip install litellm==1.97.2` will not resolve. If you install LiteLLM from PyPI, stay on `1.97.0`; the only change in this release is a refresh of three locked third-party dependencies, which only reaches you through the image.
+`v1.97.2` 以容器映像形式發佈。此版本沒有 PyPI 套件，因此 `pip install litellm==1.97.2` 不會解析。如果您從 PyPI 安裝 LiteLLM，請維持在 `1.97.0`；此版本的唯一變更是重新整理三個鎖定的第三方相依套件，而這些變更只會透過映像傳送給您。
 
-This release also does not move the `latest` tag. The current stable line is [`v1.99.1`](/release_notes/v1.99.1/v1-99-1).
+此版本也不會移動 `latest` 標籤。目前的穩定版本線是 [`v1.99.1`](/release_notes/v1.99.1/v1-99-1)。
 
 :::
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 ```bash
 docker run \
@@ -35,22 +35,22 @@ docker run \
 docker.litellm.ai/berriai/litellm:1.97.2
 ```
 
-The `litellm`, `litellm-database` and `litellm-non_root` variants are all published at this tag on both GHCR and Docker Hub, each cosign-signed as usual.
+`litellm`、`litellm-database` 和 `litellm-non_root` 變體都已在 GHCR 和 Docker Hub 以此標籤發佈，且一如往常皆已進行 cosign 簽署。
 
-## What's in it
+## 其中包含什麼 {#whats-in-it}
 
-`v1.97.2` is a maintenance patch on top of [`v1.97.1`](/release_notes/v1.97.1/v1-97-1). It carries no product changes and no Dockerfile changes: the diff is `uv.lock` plus the version string.
+`v1.97.2` 是建構在 [`v1.97.1`](/release_notes/v1.97.1/v1-97-1) 之上的維護修補程式。它沒有產品變更，也沒有 Dockerfile 變更：差異只有 `uv.lock` 加上版本字串。
 
-### Dependency refresh
+### 相依性重新整理 {#dependency-refresh}
 
-Image scanners had started flagging two Python packages on the published `v1.97.1` image, each with a fix available in a newer patch of the same series. `tornado` moves from 6.5.7 to 6.5.8 and `pypdf` from 6.15.0 to 6.16.1. `gitpython` moves from 3.1.58 to 3.1.61 in the same pass; it is pulled in only through `mlflow-skinny` and does not reach the proxy image, so scanners never reported it, but the lock is now clean there too.
+映像掃描器已開始針對已發佈的 `v1.97.1` 映像標記兩個 Python 套件，且兩者在同一系列的較新修補版中都有可用的修正。`tornado` 從 6.5.7 升級到 6.5.8，`pypdf` 從 6.15.0 升級到 6.16.1。`gitpython` 在同一次變更中從 3.1.58 升級到 3.1.61；它只會透過 `mlflow-skinny` 被帶入，且不會進入 proxy 映像，因此掃描器從未回報過它，但現在那邊的鎖定也已乾淨。
 
-All three are lock-only bumps inside the ranges `pyproject.toml` already allowed, so nothing about the install contract changes and each package moved on its own commit with no other package drifting. `litellm_internal_staging` already resolves at or above all three versions, so upgrading from this patch to a later release does not walk any of them backwards.
+這三者都是在 `pyproject.toml` 已允許的範圍內進行僅限鎖定的升級，因此安裝合約沒有任何變更，而且每個套件都是在各自的 commit 中更新，沒有其他套件漂移。`litellm_internal_staging` 已解析到等於或高於這三個版本，因此從這個修補程式升級到較新版本時，不會把其中任何一個版本往回帶。
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- chore(release): bump tornado and pypdf on stable/1.97.x and cut 1.97.2 - [PR #39580](https://github.com/BerriAI/litellm/pull/39580)
+- chore(release): 在 stable/1.97.x 上升級 tornado 和 pypdf 並釋出 1.97.2 - [PR #39580](https://github.com/BerriAI/litellm/pull/39580)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.97.1...0884a61e4d3ed8ae0f1849396a8a8425866f2d8f

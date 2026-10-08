@@ -1,19 +1,19 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Tensormesh
+# Tensormesh {#tensormesh}
 
-## Overview
+## 總覽 {#overview}
 
-| Property | Details |
+| 屬性 | 詳細資訊 |
 |-------|-------|
-| Description | Tensormesh provides serverless AI inference with OpenAI-compatible APIs. |
-| Provider Route on LiteLLM | `tensormesh/` |
-| Link to Provider Doc | [Tensormesh Documentation](https://docs.tensormesh.ai) |
+| 說明 | Tensormesh 提供具備 OpenAI 相容 API 的無伺服器 AI 推論。 |
+| LiteLLM 提供者路由 | `tensormesh/` |
+| 提供者文件連結 | [Tensormesh 文件](https://docs.tensormesh.ai) |
 | Default Base URL | `https://serverless.tensormesh.ai/v1` |
-| Supported Operations | `/chat/completions`, `/completions`, `/responses`, `/messages` through LiteLLM's Anthropic Messages adapter |
+| 支援的操作 | `/chat/completions`、`/completions`、`/responses`、`/messages`，透過 LiteLLM 的 Anthropic Messages 適配器 |
 
-## API Key
+## API 金鑰 {#api-key}
 
 ```python showLineNumbers title="Environment Variables"
 import os
@@ -21,19 +21,19 @@ import os
 os.environ["TENSORMESH_INFERENCE_API_KEY"] = "your-api-key"
 ```
 
-## Models
+## 模型 {#models}
 
-List the available models from the serverless catalog:
+列出無伺服器型錄中的可用模型：
 
 ```bash showLineNumbers title="List Tensormesh Models"
 curl https://serverless.tensormesh.ai/v1/models
 ```
 
-Use the catalog id with the `tensormesh/` route, for example `tensormesh/openai/gpt-oss-120b`, `tensormesh/MiniMaxAI/MiniMax-M2.5`, or `tensormesh/deepseek-ai/DeepSeek-V4-Flash`.
+使用型錄 id 與 `tensormesh/` 路由，例如 `tensormesh/openai/gpt-oss-120b`、`tensormesh/MiniMaxAI/MiniMax-M2.5` 或 `tensormesh/deepseek-ai/DeepSeek-V4-Flash`。
 
-## Usage - LiteLLM Python SDK
+## 用法 - LiteLLM Python SDK {#usage---litellm-python-sdk}
 
-### Chat Completions
+### 聊天補全 {#chat-completions}
 
 ```python showLineNumbers title="Tensormesh Chat Completion"
 import os
@@ -49,7 +49,7 @@ response = completion(
 print(response.choices[0].message.content)
 ```
 
-### Streaming
+### 串流 {#streaming}
 
 ```python showLineNumbers title="Tensormesh Streaming Chat Completion"
 import os
@@ -67,7 +67,7 @@ for chunk in response:
     print(chunk)
 ```
 
-### Tool Calling
+### 工具呼叫 {#tool-calling}
 
 ```python showLineNumbers title="Tensormesh Tool Calling"
 import os
@@ -100,11 +100,11 @@ response = completion(
 print(response.choices[0].message.tool_calls)
 ```
 
-Each tool function must include a non-empty `description`; Tensormesh rejects tool definitions without one.
+每個工具函式都必須包含非空的 `description`；Tensormesh 會拒絕沒有它的工具定義。
 
-### Reasoning
+### 推理 {#reasoning}
 
-Tensormesh reasoning models (for example DeepSeek-V4-Flash, Qwen3.5-397B, Qwen3.6-27B, GLM-5.1, MiniMax-M2.5, Kimi-K2.6, and the gpt-oss models) expose thinking mode through vLLM chat-template controls. Pair a thinking toggle (`thinking` or `enable_thinking`) with `reasoning_effort` and pass them through `extra_body`. The model returns its chain of thought in `reasoning_content`.
+Tensormesh 推理模型（例如 DeepSeek-V4-Flash、Qwen3.5-397B、Qwen3.6-27B、GLM-5.1、MiniMax-M2.5、Kimi-K2.6，以及 gpt-oss 模型）透過 vLLM chat-template 控制項提供 thinking 模式。將 thinking 切換（`thinking` 或 `enable_thinking`）與 `reasoning_effort` 配對，並透過 `extra_body` 傳遞。模型會以 `reasoning_content` 回傳其思路鏈。
 
 ```python showLineNumbers title="Tensormesh Reasoning"
 import os
@@ -122,7 +122,7 @@ print(response.choices[0].message.reasoning_content)
 print(response.choices[0].message.content)
 ```
 
-### Text Completions
+### 文字補全 {#text-completions}
 
 ```python showLineNumbers title="Tensormesh Text Completion"
 import os
@@ -139,7 +139,7 @@ response = text_completion(
 print(response.choices[0].text)
 ```
 
-### Responses API
+### 回應 API {#responses-api}
 
 ```python showLineNumbers title="Tensormesh Responses API"
 import os
@@ -155,9 +155,9 @@ response = litellm.responses(
 print(response)
 ```
 
-## Usage - LiteLLM Proxy
+## 用法 - LiteLLM Proxy {#usage---litellm-proxy}
 
-Add Tensormesh to your LiteLLM Proxy configuration:
+將 Tensormesh 加入您的 LiteLLM Proxy 設定：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -170,7 +170,7 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
-Start the proxy:
+啟動 proxy：
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 export TENSORMESH_INFERENCE_API_KEY="your-api-key"
@@ -180,9 +180,9 @@ litellm --config config.yaml --port 4000
 # RUNNING on http://0.0.0.0:4000
 ```
 
-Requests to LiteLLM Proxy must use the proxy key in `Authorization: Bearer $LITELLM_MASTER_KEY`. `TENSORMESH_INFERENCE_API_KEY` is only used by LiteLLM when it calls Tensormesh upstream.
+對 LiteLLM Proxy 的請求必須使用 `Authorization: Bearer $LITELLM_MASTER_KEY` 中的 proxy key。`TENSORMESH_INFERENCE_API_KEY` 只會在 LiteLLM 呼叫 Tensormesh upstream 時使用。
 
-For a basic startup check, use `/health/liveliness` or `/health/readiness`. The `/health` endpoint is authenticated and may run model checks.
+若要進行基本啟動檢查，請使用 `/health/liveliness` 或 `/health/readiness`。`/health` endpoint 已通過驗證，並可能執行模型檢查。
 
 <Tabs>
 <TabItem value="openai-sdk" label="OpenAI SDK">
@@ -220,9 +220,9 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## Anthropic Messages Compatibility
+## Anthropic Messages 相容性 {#anthropic-messages-compatibility}
 
-LiteLLM can translate Anthropic Messages-shaped requests to Tensormesh chat completions. In the Python SDK, use the Anthropic Messages facade:
+LiteLLM 可將 Anthropic Messages 格式的請求轉譯為 Tensormesh chat completions。在 Python SDK 中，請使用 Anthropic Messages facade：
 
 ```python showLineNumbers title="Anthropic Messages through LiteLLM SDK"
 import os
@@ -239,7 +239,7 @@ response = litellm.anthropic.messages.create(
 print(response["content"][0]["text"])
 ```
 
-For HTTP clients, LiteLLM Proxy exposes the Anthropic-compatible `/v1/messages` endpoint and routes the upstream request to Tensormesh chat completions. Set `model` in the request body to the proxy `model_name`.
+對於 HTTP 用戶端，LiteLLM Proxy 會公開 Anthropic 相容的 `/v1/messages` endpoint，並將 upstream 請求路由至 Tensormesh chat completions。請在請求主體中的 `model` 設為 proxy `model_name`。
 
 ```bash showLineNumbers title="Anthropic Messages through LiteLLM Proxy"
 curl http://localhost:4000/v1/messages \
@@ -253,27 +253,27 @@ curl http://localhost:4000/v1/messages \
   }'
 ```
 
-Both the SDK facade and the Proxy `/v1/messages` endpoint use LiteLLM's Anthropic Messages adapter. Tensormesh receives an OpenAI-compatible chat completion request upstream.
+SDK facade 與 Proxy `/v1/messages` endpoint 都使用 LiteLLM 的 Anthropic Messages 適配器。Tensormesh 在 upstream 接收 OpenAI 相容的 chat completion 請求。
 
-## Cost Tracking
+## 成本追蹤 {#cost-tracking}
 
-Tensormesh serverless models are registered in LiteLLM's model cost map, so LiteLLM computes per-request spend automatically. On the proxy, the cost is returned in the `x-litellm-response-cost` response header and recorded in spend logs. Cached input tokens are billed at zero.
+Tensormesh 無伺服器模型已註冊於 LiteLLM 的模型成本對照表，因此 LiteLLM 會自動計算每次請求的支出。在 proxy 上，成本會回傳於 `x-litellm-response-cost` 回應標頭中，並記錄於支出記錄。快取的輸入 token 以零計費。
 
-## Common Parameters
+## 常見參數 {#common-parameters}
 
-These are the common parameters to start with. Additional parameters are model-dependent and should be validated with the target Tensormesh model.
+以下是建議先使用的常見參數。其他參數取決於模型，應針對目標 Tensormesh 模型進行驗證。
 
 | Endpoint | Common parameters |
 |----------|-------------------|
-| `/chat/completions` | `messages`, `max_tokens`, `max_completion_tokens`, `temperature`, `top_p`, `stream`, `stop`, `tools`, `tool_choice`, `response_format`, `extra_body`, `extra_headers` |
-| `/completions` | `prompt`, `max_tokens`, `temperature`, `top_p`, `stream`, `stop` |
-| `/responses` | `input`, `max_output_tokens`, `temperature`, `top_p`, `stream`, `tools`, `tool_choice`, `text`, `extra_headers` |
-| `/messages` | `messages`, `max_tokens`, `temperature`, `top_p`, `stream`, `tools`, `tool_choice`, `extra_headers` |
+| `/chat/completions` | `messages`、`max_tokens`、`max_completion_tokens`、`temperature`、`top_p`、`stream`、`stop`、`tools`、`tool_choice`、`response_format`、`extra_body`、`extra_headers` |
+| `/completions` | `prompt`、`max_tokens`、`temperature`、`top_p`、`stream`、`stop` |
+| `/responses` | `input`、`max_output_tokens`、`temperature`、`top_p`、`stream`、`tools`、`tool_choice`、`text`、`extra_headers` |
+| `/messages` | `messages`、`max_tokens`、`temperature`、`top_p`、`stream`、`tools`、`tool_choice`、`extra_headers` |
 
-For chat completions, LiteLLM accepts `max_completion_tokens` and maps it to `max_tokens` for Tensormesh.
+對於 chat completions，LiteLLM 接受 `max_completion_tokens`，並將其對應到 Tensormesh 的 `max_tokens`。
 
-## Notes
+## 附註 {#notes}
 
-- Use `model="tensormesh/<your-model-name>"` for direct LiteLLM SDK calls.
-- The default serverless base URL is `https://serverless.tensormesh.ai/v1`.
-- Reasoning controls (`thinking`/`enable_thinking` and `reasoning_effort`) are passed through `extra_body.chat_template_kwargs` and are honored on the reasoning-capable models.
+- 直接 LiteLLM SDK 呼叫請使用 `model="tensormesh/<your-model-name>"`。
+- 預設的無伺服器 base URL 為 `https://serverless.tensormesh.ai/v1`。
+- 推理控制項（`thinking`/`enable_thinking` 與 `reasoning_effort`）會透過 `extra_body.chat_template_kwargs` 傳遞，並在具備推理能力的模型上會被支援。

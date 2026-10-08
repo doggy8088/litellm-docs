@@ -1,33 +1,32 @@
 ---
 title: Claude Code Compatibility
-sidebar_label: Claude Code Compatibility
+sidebar_label: Claude Code 相容性
 ---
 
 import ClaudeCodeCompatibilityTable from '@site/src/components/ClaudeCodeCompatibilityTable';
 
-# Claude Code × LiteLLM compatibility matrix
+# Claude Code × LiteLLM 相容性矩陣 {#claude-code--litellm-compatibility-matrix}
 
-This table is regenerated daily by an automated populator that runs the
-[Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) against
-the newest final LiteLLM release (the latest bare `vX.Y.Z` tag) across each
-supported provider, with Haiku 4.5, Sonnet 4.6, and Opus 4.7 in parallel. A
-cell goes green only if all three model tiers pass.
+此表格每日由自動化填入程式重新產生，該程式會以
+[Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) 對
+最新的最終版 LiteLLM 發行版本（最新的裸 `vX.Y.Z` 標籤）在每個
+支援的提供者上執行，並同時使用 Haiku 4.5、Sonnet 4.6 和 Opus 4.7。只有當三個模型層級全都通過時，儲存格才會顯示為綠色。
 
 <ClaudeCodeCompatibilityTable />
 
-## Legend
+## 圖例 {#legend}
 
-| Glyph | Meaning |
+| 符號 | 意義 |
 | --- | --- |
-| ✅ | All three model tiers pass for this `(feature, provider)` cell. |
-| ❌ | At least one model tier failed. Hover for the upstream error. |
-| — | No test ran for this combination. |
-| n/a | Not applicable (e.g. provider doesn't expose this feature). Hover for the reason. |
+| ✅ | 此 `(feature, provider)` 儲存格的三個模型層級全部通過。 |
+| ❌ | 至少有一個模型層級失敗。將滑鼠游標停留可查看上游錯誤。 |
+| — | 此組合沒有執行測試。 |
+| n/a | 不適用（例如提供者未公開此功能）。將滑鼠游標停留可查看原因。 |
 
-## Source
+## 來源 {#source}
 
-The matrix JSON lives at
-[`src/data/compatibility-matrix.json`](https://github.com/BerriAI/litellm-docs/blob/main/src/data/compatibility-matrix.json).
-The populator is in
+矩陣 JSON 位於
+[`src/data/compatibility-matrix.json`](https://github.com/BerriAI/litellm-docs/blob/main/src/data/compatibility-matrix.json)。
+填充程式位於
 [`tests/e2e/claude_code/cron_vm/`](https://github.com/BerriAI/litellm/tree/main/tests/e2e/claude_code/cron_vm)
-on the main repo.
+的主倉庫中。

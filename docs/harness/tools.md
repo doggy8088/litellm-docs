@@ -1,21 +1,21 @@
 ---
-title: Tools and skills
-sidebar_label: Tools and skills
+title: 工具與技能
+sidebar_label: 工具與技能
 ---
 
-# Tools and skills
+# 工具與技能 {#tools-and-skills}
 
-## Turning off built-in tools
+## 關閉內建工具 {#turning-off-built-in-tools}
 
 ```python
 litellm.agent(Harness.CLAUDE_CODE, task, sandbox=box, model="litellm_proxy/coder", disable_tools=["web_search", "bash"])
 ```
 
-Use the normalized names from [Events](./events.md#tool-names). Codex can't filter its built-in tools, so this raises `CapabilityUnsupported` there.
+使用 [Events](./events.md#tool-names) 中的標準化名稱。Codex 無法篩選其內建工具，因此在那裡這會引發 `CapabilityUnsupported`。
 
-## Custom tools
+## 自訂工具 {#custom-tools}
 
-Custom Python tools are supported on Deep Agents and Tool Loop. They're plain functions that run in your process
+Deep Agents 和 Tool Loop 支援自訂 Python 工具。它們是會在您的程序中執行的普通函式
 
 ```python
 from typing import Literal
@@ -37,22 +37,22 @@ litellm.agent(
 )
 ```
 
-The type hints and docstring become the tool's schema. Synchronous functions run in a worker thread and asynchronous functions are awaited. Passing `tools=` to Claude Code, Codex or OpenCode raises `CapabilityUnsupported`
+型別提示與 docstring 會成為工具的 schema。同步函式會在工作執行緒中執行，非同步函式則會被 await。將 `tools=` 傳給 Claude Code、Codex 或 OpenCode 會引發 `CapabilityUnsupported`
 
-## Skills
+## 技能 {#skills}
 
-A skill is a local folder containing a `SKILL.md` and any files it needs. Pass folder paths, and the adapter copies each one into the sandbox where the runtime looks for skills.
+技能是包含 `SKILL.md` 及其所需任何檔案的本機資料夾。傳入資料夾路徑後，適配器會將每個資料夾複製到沙箱中，執行階段會在其中尋找技能。
 
 ```python
 litellm.agent(Harness.CLAUDE_CODE, "Ship the fix.", sandbox=box, model="litellm_proxy/coder", skills=["./skills/release-checklist"])
 ```
 
-| Harness | Installed to |
+| Harness | 安裝至 |
 |---|---|
-| `CLAUDE_CODE` | `.claude/skills/<name>/` in the working directory |
+| `CLAUDE_CODE` | 工作目錄中的 `.claude/skills/<name>/` |
 | `CODEX` | `$CODEX_HOME/skills/<name>/` |
-| `OPENCODE` | `.opencode/skill/<name>/` in the working directory |
-| `DEEPAGENTS` | passed to the agent |
-| `TOOL_LOOP` | not supported |
+| `OPENCODE` | 工作目錄中的 `.opencode/skill/<name>/` |
+| `DEEPAGENTS` | 傳遞給代理程式 |
+| `TOOL_LOOP` | 不支援 |
 
-Skills are copied once when the session starts.
+技能會在工作階段開始時複製一次。

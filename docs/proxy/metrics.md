@@ -1,16 +1,16 @@
-# 💸 GET Daily Spend, Usage Metrics
+# 💸 取得每日支出、用量指標 {#-get-daily-spend-usage-metrics}
 
-The `GET /daily_metrics` endpoint that this page used to describe has been removed from the proxy. Daily spend and usage is now served by `GET /user/daily/activity`, which returns per-day spend, token counts and request counts with a breakdown by model, model group, provider, endpoint, API key and MCP server. See the [Daily Spend Breakdown API](./cost_tracking#daily-spend-breakdown-api) section for the full response shape and the [Swagger reference](https://docs.litellm.ai/api-reference/#/Budget%20%26%20Spend%20Tracking/get_user_daily_activity_user_daily_activity_get) for all parameters.
+此頁原本描述的 `GET /daily_metrics` 端點已從 proxy 中移除。每日支出與用量現在由 `GET /user/daily/activity` 提供，會回傳每日支出、token 數量與請求數，並依模型、模型群組、提供者、端點、API 金鑰與 MCP server 分解。請參閱 [每日支出明細 API](./cost_tracking#daily-spend-breakdown-api) 章節以取得完整回應結構，並參閱 [Swagger 參考](https://docs.litellm.ai/api-reference/#/Budget%20%26%20Spend%20Tracking/get_user_daily_activity_user_daily_activity_get) 以查看所有參數。
 
-## Request Format
+## 請求格式 {#request-format}
 ```shell
 curl -X GET "http://0.0.0.0:4000/user/daily/activity?start_date=2025-03-20&end_date=2025-03-27" \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
-Optional query parameters: `model`, `api_key` and `user_id` filter the results (non-admin callers must pass their own `user_id`), `page` and `page_size` (default 50, max 1000) paginate them, and `timezone` (offset in minutes from UTC) with `include_current_utc_day` control how day buckets are aligned.
+可選查詢參數：`model`、`api_key` 和 `user_id` 會篩選結果（非管理員呼叫者必須傳入自己的 `user_id`），`page` 和 `page_size`（預設 50，最大 1000）會分頁顯示，`timezone`（相對 UTC 的分鐘偏移）與 `include_current_utc_day` 一起控制每日區塊的對齊方式。
 
-## Response format
+## 回應格式 {#response-format}
 ```json
 {
     "results": [
@@ -44,4 +44,4 @@ Optional query parameters: `model`, `api_key` and `user_id` filter the results (
 }
 ```
 
-For individual request logs, use [`GET /spend/logs`](./cost_tracking#-spend-logs-api---individual-transaction-logs).
+如需個別請求記錄，請使用 [`GET /spend/logs`](./cost_tracking#-spend-logs-api---individual-transaction-logs)。

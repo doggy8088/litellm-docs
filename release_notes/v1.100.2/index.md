@@ -1,5 +1,5 @@
 ---
-title: "v1.100.2 - Claude Code Auto Mode, Bedrock GPT and Grok Fixes & TypeSafe Jev"
+title: "v1.100.2 - Claude Code 自動模式、Bedrock GPT 與 Grok 修正及 TypeSafe Jev"
 slug: "v1-100-2"
 date: 2026-09-23T06:12:15
 authors:
@@ -21,7 +21,7 @@ hide_table_of_contents: false
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Deploy this version
+## 部署此版本 {#deploy-this-version}
 
 <Tabs>
 <TabItem value="docker" label="Docker">
@@ -45,37 +45,37 @@ pip install litellm==1.100.2
 </TabItem>
 </Tabs>
 
-This release is published as [`ghcr.io/berriai/litellm:v1.100.2`](https://github.com/BerriAI/litellm/pkgs/container/litellm). See the [GitHub release](https://github.com/BerriAI/litellm/releases/tag/v1.100.2) and the full [releases page](https://github.com/BerriAI/litellm/releases)
+此版本已發布為 [`ghcr.io/berriai/litellm:v1.100.2`](https://github.com/BerriAI/litellm/pkgs/container/litellm)。請參閱 [GitHub release](https://github.com/BerriAI/litellm/releases/tag/v1.100.2) 以及完整的 [releases page](https://github.com/BerriAI/litellm/releases)
 
-`v1.100.2` is a patch release on top of [`v1.100.1`](/release_notes/v1.100.1/v1-100-1). It lets Claude Code auto mode work through the gateway, fixes Claude Code model switches to Bedrock OpenAI GPT and xAI Grok models, routes mid-stream Responses content policy errors to `content_policy_fallbacks`, and adds the TypeSafe Jev pass-through. There are no configuration changes. Both the Docker image and the PyPI package were built from [`9c1216a`](https://github.com/BerriAI/litellm/commit/9c1216a4278a4b8224ac1c8bfa922a110cdcd678)
+`v1.100.2` 是 [`v1.100.1`](/release_notes/v1.100.1/v1-100-1) 之上的修補版本。它讓 Claude Code 自動模式可透過閘道運作，修正 Claude Code 切換到 Bedrock OpenAI GPT 與 xAI Grok 模型時的問題，將中途 Responses 內容政策錯誤路由到 `content_policy_fallbacks`，並加入 TypeSafe Jev 傳遞。沒有組態變更。Docker 映像與 PyPI 套件皆是根據 [`9c1216a`](https://github.com/BerriAI/litellm/commit/9c1216a4278a4b8224ac1c8bfa922a110cdcd678) 建置
 
-## Claude Code auto mode works through the gateway
+## Claude Code 自動模式可透過閘道運作 {#claude-code-auto-mode-works-through-the-gateway}
 
-Claude Code auto mode sends a `safeguards` field and the `dangerous-tool-use-2026-09-03` beta on `/v1/messages`. The proxy dropped the field on the native Anthropic route and stripped beta values it did not recognize, while Bedrock Invoke and Bedrock Mantle dropped both and Vertex AI forwarded the field without the beta. Claude Code then reported auto mode as unavailable through the gateway and kept billing its own classifier calls. The field and the beta now reach Anthropic, Bedrock and Vertex AI together, and `safeguard_results` comes back to Claude Code
+Claude Code 自動模式會在 `safeguards` 欄位中傳送 `dangerous-tool-use-2026-09-03` beta，並在 `/v1/messages` 上傳送。代理程式在原生 Anthropic 路由上會丟棄該欄位，並移除其無法辨識的 beta 值；而 Bedrock Invoke 與 Bedrock Mantle 會同時丟棄兩者，Vertex AI 則會在沒有 beta 的情況下轉送該欄位。接著 Claude Code 回報經由閘道無法使用自動模式，並繼續計費其自己的分類器請求。現在該欄位與 beta 會一併送達 Anthropic、Bedrock 與 Vertex AI，而 `safeguard_results` 會回傳給 Claude Code
 
-## Bedrock OpenAI GPT and xAI Grok models on Converse
+## Bedrock OpenAI GPT 與 xAI Grok 模型在 Converse 上的問題 {#bedrock-openai-gpt-and-xai-grok-models-on-converse}
 
-On Bedrock Converse, OpenAI GPT and xAI Grok models reject a `maxTokens` below 16. Claude Code sends a `max_tokens=1` probe when `/model` switches to one of them, so the switch failed with a 400. The proxy now raises `maxTokens` to 16 for `openai.gpt-*` and `xai.grok-*` models on Converse, and every other Bedrock model still receives exactly what the caller sent
+在 Bedrock Converse 上，OpenAI GPT 與 xAI Grok 模型會拒絕低於 16 的 `maxTokens`。當 `/model` 切換到其中之一時，Claude Code 會送出 `max_tokens=1` 探測，因此切換會以 400 失敗。現在代理程式會將 Converse 上 `openai.gpt-*` 與 `xai.grok-*` 模型的 `maxTokens` 提高到 16，而其他所有 Bedrock 模型仍會收到與呼叫端送出內容完全相同的值
 
-After that probe, the first real turn on a GPT-6 model such as `us.openai.gpt-6-astra` still failed with 400 `Unknown parameter: 'thinking'`, because the Converse reasoning gate on this line only recognized `openai.gpt-5`. It now matches any `openai.gpt-<digit>` model, so `reasoning_effort` maps to `reasoning.effort` and an Anthropic `thinking` block is dropped for these models
+在該探測之後，GPT-6 模型（例如 `us.openai.gpt-6-astra`）上的第一個實際回合仍會以 400 `Unknown parameter: 'thinking'` 失敗，因為這條線上的 Converse 推理閘僅辨識 `openai.gpt-5`。現在它會比對任何 `openai.gpt-<digit>` 模型，因此 `reasoning_effort` 會對應到 `reasoning.effort`，而且針對這些模型會移除 Anthropic `thinking` 區塊
 
-## Mid-stream Responses API content policy errors reach fallbacks
+## 中途 Responses API 內容政策錯誤會到達備援 {#mid-stream-responses-api-content-policy-errors-reach-fallbacks}
 
-A `content_policy_violation` that arrived mid-stream on the Responses API surfaced as a bare `APIError`, so it never reached `content_policy_fallbacks` and the client got the raw error. Mid-stream error events now map to the same typed exceptions as the non-streaming path. A refusal goes to `content_policy_fallbacks`, 429 and 5xx stay eligible for the normal fallbacks, and other client errors such as context window errors raise directly
+在 Responses API 上於中途到達的 `content_policy_violation` 會顯示為一個裸露的 `APIError`，因此它從未到達 `content_policy_fallbacks`，而用戶端會取得原始錯誤。現在中途錯誤事件會對應到與非串流路徑相同的具型別例外。拒絕會送往 `content_policy_fallbacks`，429 與 5xx 仍可適用於一般備援，而其他用戶端錯誤，例如內容視窗錯誤，則會直接拋出
 
-## TypeSafe Jev pass-through
+## TypeSafe Jev 傳遞 {#typesafe-jev-pass-through}
 
-TypeSafe Jev is available on this line. A new `/typesafe/{endpoint}` pass-through forwards to TypeSafe with the proxy's `TYPESAFE_API_KEY`, so callers use their virtual keys and spend is priced from the model registry entries for `typesafe/jev-1.13.0`, `typesafe/jev-latest` and `typesafe/jev-preview`. See the [TypeSafe pass-through docs](/docs/pass_through/typesafe)
+TypeSafe Jev 可在此版本使用。新的 `/typesafe/{endpoint}` 傳遞會以代理程式的 `TYPESAFE_API_KEY` 轉送至 TypeSafe，因此呼叫端會使用其虛擬金鑰，而支出則依模型登錄中的 `typesafe/jev-1.13.0`、`typesafe/jev-latest` 與 `typesafe/jev-preview` 項目定價。請參閱 [TypeSafe 傳遞文件](/docs/pass_through/typesafe)
 
-### What's Changed
+### 有哪些變更 {#whats-changed}
 
-- fix(anthropic): forward safeguards and anthropic-beta unchanged on native /v1/messages - [PR #42152](https://github.com/BerriAI/litellm/pull/42152)
-- fix(anthropic): forward Claude Code safeguards and dangerous-tool-use beta to Bedrock Invoke and Vertex on /v1/messages - [PR #42288](https://github.com/BerriAI/litellm/pull/42288)
-- fix(bedrock): clamp maxTokens to the 16-token minimum for OpenAI GPT and xAI Grok models on Converse - [PR #41870](https://github.com/BerriAI/litellm/pull/41870)
-- fix(bedrock): match any `openai.gpt-<digit>` model in the Converse reasoning gate, from [PR #31884](https://github.com/BerriAI/litellm/pull/31884)
-- fix(responses): route mid-stream error events through exception_type so content_policy_fallbacks fire - [PR #40988](https://github.com/BerriAI/litellm/pull/40988)
-- feat(proxy): add TypeSafe AI Jev evaluate passthrough with registry-priced spend tracking - [PR #41607](https://github.com/BerriAI/litellm/pull/41607)
+- fix(anthropic): 在原生 /v1/messages 上不變地轉送 safeguards 與 anthropic-beta - [PR #42152](https://github.com/BerriAI/litellm/pull/42152)
+- fix(anthropic): 將 Claude Code safeguards 與 dangerous-tool-use beta 轉送至 Bedrock Invoke 與 Vertex 的 /v1/messages - [PR #42288](https://github.com/BerriAI/litellm/pull/42288)
+- fix(bedrock): 將 maxTokens 下修至 OpenAI GPT 與 xAI Grok 模型在 Converse 上的 16 token 最低值 - [PR #41870](https://github.com/BerriAI/litellm/pull/41870)
+- fix(bedrock): 在 Converse 推理閘中比對任何 `openai.gpt-<digit>` 模型，來自 [PR #31884](https://github.com/BerriAI/litellm/pull/31884)
+- fix(responses): 將中途錯誤事件經由 exception_type 路由，以便觸發 content_policy_fallbacks - [PR #40988](https://github.com/BerriAI/litellm/pull/40988)
+- feat(proxy): 新增 TypeSafe AI Jev evaluate 傳遞，並具備依登錄定價的支出追蹤 - [PR #41607](https://github.com/BerriAI/litellm/pull/41607)
 
-## Full Changelog
+## 完整變更記錄 {#full-changelog}
 
 https://github.com/BerriAI/litellm/compare/v1.100.1...v1.100.2
