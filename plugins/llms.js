@@ -409,13 +409,17 @@ module.exports = function llmsPlugin(context) {
 
       const updated = lastUpdatedDates(context.siteDir);
       const writeMd = async (permalink, content) => {
-        const target = mdPath(outDir, permalink);
+        const localPath =
+          context.baseUrl && context.baseUrl !== '/' && permalink.startsWith(context.baseUrl)
+            ? `/${permalink.slice(context.baseUrl.length)}`
+            : permalink;
+        const target = mdPath(outDir, localPath);
         await fs.promises.mkdir(path.dirname(target), {recursive: true});
         await fs.promises.writeFile(target, content);
         // /docs/ is served as /docs/index.md; also answer /docs.md so a plain
         // "append .md" works for index pages too.
-        if (permalink.endsWith('/') && permalink.length > 1) {
-          await fs.promises.writeFile(path.join(outDir, `${permalink.slice(0, -1)}.md`), content);
+        if (localPath.endsWith('/') && localPath.length > 1) {
+          await fs.promises.writeFile(path.join(outDir, `${localPath.slice(0, -1)}.md`), content);
         }
       };
 

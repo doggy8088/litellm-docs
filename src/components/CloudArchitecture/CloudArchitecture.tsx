@@ -1,6 +1,55 @@
 import React, { useState } from 'react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
+import useLocaleText, { useIsZhTw } from '@site/src/utils/useLocaleText';
+
+const CLOUD_TEXT_ZH: Record<string, string> = {
+  'Clients (OpenAI SDK, LangChain, curl)': '用戶端（OpenAI SDK、LangChain、curl）',
+  'Clients, routed to the nearest region': '用戶端，路由至最近的區域',
+  'HTTPS, path-based routing': 'HTTPS、依路徑路由',
+  'ALB or NLB via Service / Ingress': '透過 Service／Ingress 使用 ALB 或 NLB',
+  'ALB Ingress, path-based routing': 'ALB Ingress、依路徑路由',
+  'Global HTTPS Load Balancer': '全域 HTTPS 負載平衡器',
+  'serverless NEGs, URL map': '無伺服器 NEG、URL 對應',
+  'Cloud Load Balancing': 'Cloud 負載平衡',
+  'via Service / Ingress': '透過 Service／Ingress',
+  'GKE Ingress, path-based routing': 'GKE Ingress、依路徑路由',
+  'or Front Door, TLS termination': '或 Front Door、TLS 終止',
+  'AGIC, path-based routing': 'AGIC、依路徑路由',
+  'writer + reader, IAM auth': '寫入節點與讀取節點、IAM 驗證',
+  'multi-AZ, TLS': '跨可用區域、TLS',
+  'master key, provider keys': '主金鑰、提供者金鑰',
+  'writer + optional reader': '寫入節點與選用的讀取節點',
+  'standalone or cluster': '獨立執行個體或叢集',
+  'primary + read replica': '主要執行個體與讀取複本',
+  'private IP, TLS': '私人 IP、TLS',
+  'Flexible Server': '彈性伺服器',
+  'Terraform on ECS Fargate': '在 ECS Fargate 上使用 Terraform',
+  'EKS with Helm': '搭配 Helm 使用 EKS',
+  'EKS with Helm (microservices)': '搭配 Helm 使用 EKS（微服務）',
+  'Terraform on Cloud Run': '在 Cloud Run 上使用 Terraform',
+  'GKE with Helm': '搭配 Helm 使用 GKE',
+  'GKE with Helm (microservices)': '搭配 Helm 使用 GKE（微服務）',
+  'AKS with Helm': '搭配 Helm 使用 AKS',
+  'AKS with Helm (microservices)': '搭配 Helm 使用 AKS（微服務）',
+  'latency or geo DNS routing': '依延遲或地理位置進行 DNS 路由',
+  'latency-based routing': '依延遲路由',
+  'geolocation routing policy': '地理位置路由原則',
+  'performance routing, or Front Door': '效能路由或 Front Door',
+  'LiteLLM instances': 'LiteLLM 執行個體',
+  'regional load balancer + pods': '區域負載平衡器與 Pod',
+  'Regional Redis': '區域 Redis',
+  'rate limits, router state, cache': '速率限制、路由器狀態、快取',
+  'PostgreSQL (primary)': 'PostgreSQL（主要）',
+  'the single shared database': '單一共用資料庫',
+  'reads (optional replica), writes go to primary': '從選用複本讀取，寫入主要執行個體',
+  'Read replica (optional)': '讀取複本（選用）',
+};
+
+function useCloudText() {
+  const isZhTw = useIsZhTw();
+  return (text: string) => (isZhTw ? CLOUD_TEXT_ZH[text] ?? text : text);
+}
 
 /* ────────────────────── Shared pieces ────────────────────── */
 
@@ -16,6 +65,7 @@ function Icon({ file, className }: { file: string; className?: string }) {
 }
 
 function Clients({ label = 'Clients (OpenAI SDK, LangChain, curl)' }: { label?: string }) {
+  const cloudText = useCloudText();
   return (
     <div className={styles.clients}>
       <div className={styles.clientsIcon}>
@@ -24,7 +74,7 @@ function Clients({ label = 'Clients (OpenAI SDK, LangChain, curl)' }: { label?: 
           <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
         </svg>
       </div>
-      <span className={styles.clientsLabel}>{label}</span>
+      <span className={styles.clientsLabel}>{cloudText(label)}</span>
     </div>
   );
 }
@@ -42,6 +92,7 @@ function Node({
   accent?: 'blue' | 'green';
   small?: boolean;
 }) {
+  const cloudText = useCloudText();
   const cls = [
     styles.node,
     accent === 'blue' ? styles.nodeAccent : '',
@@ -52,8 +103,8 @@ function Node({
     <div className={cls}>
       <Icon file={icon} />
       <div className={styles.nodeText}>
-        <span className={styles.nodeTitle}>{title}</span>
-        {subtitle && <span className={styles.nodeSubtitle}>{subtitle}</span>}
+        <span className={styles.nodeTitle}>{cloudText(title)}</span>
+        {subtitle && <span className={styles.nodeSubtitle}>{cloudText(subtitle)}</span>}
       </div>
     </div>
   );
@@ -70,13 +121,14 @@ function ComputeNode({
   subtitle: string;
   replicas: string[];
 }) {
+  const cloudText = useCloudText();
   return (
     <div className={styles.computeNode}>
       <div className={styles.computeHeader}>
         <Icon file={icon} />
         <div className={styles.nodeText}>
-          <span className={styles.nodeTitle}>{title}</span>
-          <span className={styles.nodeSubtitle}>{subtitle}</span>
+          <span className={styles.nodeTitle}>{cloudText(title)}</span>
+          <span className={styles.nodeSubtitle}>{cloudText(subtitle)}</span>
         </div>
       </div>
       <div className={styles.replicaRow}>
@@ -91,10 +143,11 @@ function ComputeNode({
 }
 
 function ConnectorDown({ label }: { label?: string }) {
+  const cloudText = useCloudText();
   if (!label) return <div className={styles.connectorDown} />;
   return (
     <div className={styles.connectorLabeled}>
-      <span className={styles.connectorLabel}>{label}</span>
+      <span className={styles.connectorLabel}>{cloudText(label)}</span>
       <div className={styles.connectorDown} />
     </div>
   );
@@ -305,6 +358,7 @@ const CSP_TABS: {
 ];
 
 export function CloudArchitectureSelector() {
+  const cloudText = useCloudText();
   const [cspKey, setCspKey] = useState('aws');
   const csp = CSP_TABS.find((t) => t.key === cspKey) ?? CSP_TABS[0];
   const [variantByCsp, setVariantByCsp] = useState<Record<string, CloudKey>>({});
@@ -334,7 +388,7 @@ export function CloudArchitectureSelector() {
               className={`${styles.variantPill} ${v.key === variant ? styles.variantPillActive : ''}`}
               onClick={() => setVariantByCsp({ ...variantByCsp, [csp.key]: v.key })}
             >
-              {v.label}
+              {cloudText(v.label)}
             </button>
           ))}
         </div>
@@ -342,7 +396,7 @@ export function CloudArchitectureSelector() {
       {csp.variants.length === 1 && (
         <div className={styles.variantRow}>
           <span className={`${styles.variantPill} ${styles.variantPillActive}`}>
-            {csp.variants[0].label}
+            {cloudText(csp.variants[0].label)}
           </span>
         </div>
       )}
@@ -364,13 +418,14 @@ function Region({
   primary?: boolean;
   children: React.ReactNode;
 }) {
+  const t = useLocaleText();
   return (
     <div className={`${styles.region} ${primary ? styles.regionPrimary : ''}`}>
       <div className={styles.regionHeader}>
         <Icon file={brandIcon} className={styles.regionIcon} />
         <span className={styles.regionName}>{name}</span>
         <span className={`${styles.badge} ${primary ? styles.badgeBlue : styles.badgeGreen}`}>
-          {primary ? 'primary' : 'secondary'}
+          {primary ? t('主要', 'primary') : t('次要', 'secondary')}
         </span>
       </div>
       {children}
@@ -407,6 +462,7 @@ const MULTI_REGION_SPECS = {
 } as const;
 
 export function MultiRegionArchitecture() {
+  const t = useLocaleText();
   const [csp, setCsp] = useState<keyof typeof MULTI_REGION_SPECS>('aws');
   const spec = MULTI_REGION_SPECS[csp];
   return (
@@ -459,9 +515,10 @@ export function MultiRegionArchitecture() {
         </div>
         <div className={`${styles.callout} ${styles.calloutSuccess}`}>
           <span>
-            One Enterprise license covers every region. Each instance validates the same
-            LITELLM_LICENSE, and user / team limits are counted from the single shared database. All
-            instances must also share the same LITELLM_MASTER_KEY and LITELLM_SALT_KEY.
+            {t(
+              '一份 Enterprise 授權涵蓋所有區域。每個執行個體都會驗證相同的 LITELLM_LICENSE，並由單一共用資料庫統計使用者與團隊限制。所有執行個體也必須共用相同的 LITELLM_MASTER_KEY 與 LITELLM_SALT_KEY。',
+              'One Enterprise license covers every region. Each instance validates the same LITELLM_LICENSE, and user / team limits are counted from the single shared database. All instances must also share the same LITELLM_MASTER_KEY and LITELLM_SALT_KEY.',
+            )}
           </span>
         </div>
       </div>

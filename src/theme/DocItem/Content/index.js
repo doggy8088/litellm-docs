@@ -6,6 +6,7 @@ import {useActivePlugin, useDoc} from '@docusaurus/plugin-content-docs/client';
 import Heading from '@theme/Heading';
 import MDXContent from '@theme/MDXContent';
 import Head from '@docusaurus/Head';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import styles from './styles.module.css';
 import actionStyles from './pageActions.module.css';
 
@@ -43,6 +44,7 @@ function trackPageAction(action) {
 // assistant. The .md files are written at build time by plugins/llms.js, so
 // the menu only offers them for pages of the main docs plugin.
 export function PageActions({rawMarkdownB64, permalink, hasMarkdownUrl}) {
+  const t = useLocaleText();
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
@@ -77,9 +79,9 @@ export function PageActions({rawMarkdownB64, permalink, hasMarkdownUrl}) {
   const ask = encodeURIComponent(`Read ${mdUrl} and help me with it. I may ask follow-up questions about LiteLLM.`);
   const items = hasMarkdownUrl
     ? [
-        {id: 'view', label: 'View as Markdown', sub: 'Plain text for agents', href: mdUrl},
-        {id: 'claude', label: 'Open in Claude', sub: 'Ask questions about this page', href: `https://claude.ai/new?q=${ask}`},
-        {id: 'chatgpt', label: 'Open in ChatGPT', sub: 'Ask questions about this page', href: `https://chatgpt.com/?hints=search&q=${ask}`},
+        {id: 'view', label: t('檢視 Markdown', 'View as Markdown'), sub: t('供 AI 代理讀取的純文字格式', 'Plain text for agents'), href: mdUrl},
+        {id: 'claude', label: t('在 Claude 中開啟', 'Open in Claude'), sub: t('針對此頁面發問', 'Ask questions about this page'), href: `https://claude.ai/new?q=${ask}`},
+        {id: 'chatgpt', label: t('在 ChatGPT 中開啟', 'Open in ChatGPT'), sub: t('針對此頁面發問', 'Ask questions about this page'), href: `https://chatgpt.com/?hints=search&q=${ask}`},
       ]
     : [];
 
@@ -88,10 +90,10 @@ export function PageActions({rawMarkdownB64, permalink, hasMarkdownUrl}) {
       <button
         className={clsx(styles.copyBtn, actionStyles.main, copied && styles.success)}
         onClick={handleCopy}
-        title="Copy page as Markdown">
+        title={t('將頁面複製為 Markdown', 'Copy page as Markdown')}>
         <span className={styles.copyBtnInner}>
           {copied ? <CheckIcon /> : <CopyIcon />}
-          <span>{copied ? 'Copied' : 'Copy page'}</span>
+          <span>{copied ? t('已複製', 'Copied') : t('複製頁面', 'Copy page')}</span>
         </span>
       </button>
       {items.length > 0 && (
@@ -101,7 +103,7 @@ export function PageActions({rawMarkdownB64, permalink, hasMarkdownUrl}) {
             onClick={() => setOpen((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={open}
-            aria-label="More page actions">
+            aria-label={t('更多頁面操作', 'More page actions')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M6 9l6 6 6-6" />
             </svg>
@@ -139,6 +141,7 @@ function useSyntheticTitle() {
 }
 
 export default function DocItemContent({children}) {
+  const t = useLocaleText();
   const syntheticTitle = useSyntheticTitle();
   const {frontMatter, metadata} = useDoc();
   const activePlugin = useActivePlugin();
@@ -164,8 +167,8 @@ export default function DocItemContent({children}) {
       {showRustMigrationBanner && (
         <Link className={styles.rustMigrationBanner} to="/rust-migration">
           <span className={styles.rustMigrationContent}>
-            <strong>LiteLLM is moving to Rust <span aria-hidden="true">🦀</span></strong>
-            <small>Read the latest updates.</small>
+            <strong>{t('LiteLLM 正在遷移至 Rust', 'LiteLLM is moving to Rust')} <span aria-hidden="true">🦀</span></strong>
+            <small>{t('閱讀最新進度更新。', 'Read the latest updates.')}</small>
           </span>
           <span className={styles.rustMigrationChevron} aria-hidden="true">›</span>
         </Link>

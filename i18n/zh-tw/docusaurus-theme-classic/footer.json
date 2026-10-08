@@ -1,0 +1,106 @@
+{
+  "link.title.Community": {
+    "message": "社群",
+    "description": "The title of the footer links column with title=Community in the footer"
+  },
+  "link.item.label.Discord": {
+    "message": "Discord",
+    "description": "The label of footer link with label=Discord linking to https://discord.com/invite/wuPM9dRgDw"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/BerriAI/litellm/"
+  },
+  "copyright": {
+    "message": "Copyright © 2026 liteLLM",
+    "description": "The footer copyright"
+  },
+  "link.title.Product": {
+    "message": "產品",
+    "description": "The title of the footer links column with title=Product in the footer"
+  },
+  "link.title.Resources": {
+    "message": "資源",
+    "description": "The title of the footer links column with title=Resources in the footer"
+  },
+  "link.title.Company": {
+    "message": "公司",
+    "description": "The title of the footer links column with title=Company in the footer"
+  },
+  "link.item.label.Gateway quickstart": {
+    "message": "Gateway 快速入門",
+    "description": "The label of footer link with label=Gateway quickstart linking to /docs/proxy/docker_quick_start"
+  },
+  "link.item.label.Python SDK": {
+    "message": "Python SDK",
+    "description": "The label of footer link with label=Python SDK linking to /docs/"
+  },
+  "link.item.label.Production deployment": {
+    "message": "正式環境部署",
+    "description": "The label of footer link with label=Production deployment linking to /docs/proxy/deploy"
+  },
+  "link.item.label.MCP Gateway": {
+    "message": "MCP Gateway",
+    "description": "The label of footer link with label=MCP Gateway linking to /docs/mcp"
+  },
+  "link.item.label.Agent Gateway": {
+    "message": "Agent Gateway",
+    "description": "The label of footer link with label=Agent Gateway linking to /docs/a2a"
+  },
+  "link.item.label.Rust AI Gateway (beta)": {
+    "message": "Rust AI Gateway（Beta）",
+    "description": "The label of footer link with label=Rust AI Gateway (beta) linking to /docs/proxy/rust_gateway"
+  },
+  "link.item.label.Enterprise": {
+    "message": "企業版",
+    "description": "The label of footer link with label=Enterprise linking to /docs/enterprise"
+  },
+  "link.item.label.Blog": {
+    "message": "部落格",
+    "description": "The label of footer link with label=Blog linking to /blog"
+  },
+  "link.item.label.Changelog": {
+    "message": "變更記錄",
+    "description": "The label of footer link with label=Changelog linking to /release_notes"
+  },
+  "link.item.label.Agent resources": {
+    "message": "代理程式資源",
+    "description": "The label of footer link with label=Agent resources linking to /docs/agent_resources"
+  },
+  "link.item.label.llms.txt": {
+    "message": "llms.txt",
+    "description": "The label of footer link with label=llms.txt linking to https://docs.litellm.ai/llms.txt"
+  },
+  "link.item.label.Trust Center": {
+    "message": "信任中心",
+    "description": "The label of footer link with label=Trust Center linking to https://trust.litellm.ai/"
+  },
+  "link.item.label.Slack": {
+    "message": "Slack",
+    "description": "The label of footer link with label=Slack linking to https://litellmossslack.slack.com/"
+  },
+  "link.item.label.YouTube": {
+    "message": "YouTube",
+    "description": "The label of footer link with label=YouTube linking to https://www.youtube.com/@LiteLLMAIGateway"
+  },
+  "link.item.label.X": {
+    "message": "X",
+    "description": "The label of footer link with label=X linking to https://twitter.com/LiteLLM"
+  },
+  "link.item.label.LinkedIn": {
+    "message": "LinkedIn",
+    "description": "The label of footer link with label=LinkedIn linking to https://www.linkedin.com/company/berri-ai/"
+  },
+  "link.item.label.litellm.ai": {
+    "message": "litellm.ai",
+    "description": "The label of footer link with label=litellm.ai linking to https://www.litellm.ai/"
+  },
+  "link.item.label.Talk to sales": {
+    "message": "聯絡業務團隊",
+    "description": "The label of footer link with label=Talk to sales linking to https://www.litellm.ai/enterprise#talk-to-sales"
+  },
+  "link.item.label.Careers": {
+    "message": "職缺招募",
+    "description": "The label of footer link with label=Careers linking to https://jobs.ashbyhq.com/litellm"
+  }
+}

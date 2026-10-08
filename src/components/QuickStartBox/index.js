@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import {PROMPTS, QUICKSTART} from '../Conversion/content';
 import {IconAgent, IconCheck, IconCopy} from '../Conversion/icons';
 import {track, useCopy} from '../Conversion/shared';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import styles from './styles.module.css';
 
 // The one command that gets someone started, in the site's code block style:
@@ -13,6 +14,7 @@ import styles from './styles.module.css';
 // With a heading or child text, the box sits in a tinted panel with the text
 // below the command and the agent prompt button beside it.
 export default function QuickStartBox({variant = 'full', showTitle = true, heading, children, source = 'docs'}) {
+  const t = useLocaleText();
   const [product, setProduct] = useState('gateway');
   const [os, setOs] = useState('mac');
   const [copied, copy] = useCopy();
@@ -61,7 +63,7 @@ export default function QuickStartBox({variant = 'full', showTitle = true, headi
         track('docs_agent_prompt_copied', {prompt: product, source});
       }}>
       {promptCopied ? <IconCheck size={13} /> : <IconAgent size={13} />}
-      {promptCopied ? 'Copied' : 'Copy agent prompt'}
+      {promptCopied ? t('已複製', 'Copied') : t('複製 AI 代理提示詞', 'Copy agent prompt')}
     </button>
   );
   const panel = Boolean(heading || children);
@@ -72,14 +74,14 @@ export default function QuickStartBox({variant = 'full', showTitle = true, headi
       <div className={clsx('theme-code-block', styles.box)}>
         <div className={styles.head}>
           {variant === 'full' && (
-            <div className={styles.group} role="group" aria-label="What to start">
+            <div className={styles.group} role="group" aria-label={t('選擇啟動項目', 'What to start')}>
               {tab('Gateway', product === 'gateway', () => setProduct('gateway'))}
               {tab('SDK', product === 'sdk', () => setProduct('sdk'))}
             </div>
           )}
-          {showTitle && <span className={styles.title}>Quick Start</span>}
+          {showTitle && <span className={styles.title}>{t('快速開始', 'Quick Start')}</span>}
           {product === 'gateway' && (
-            <div className={clsx(styles.group, styles.right)} role="group" aria-label="Operating system">
+            <div className={clsx(styles.group, styles.right)} role="group" aria-label={t('作業系統', 'Operating system')}>
               {tab('macOS & Linux', os === 'mac', () => setOs('mac'), 'macOS/Linux')}
               {tab('Windows', os === 'windows', () => setOs('windows'))}
             </div>
@@ -92,13 +94,13 @@ export default function QuickStartBox({variant = 'full', showTitle = true, headi
           <button
             type="button"
             className={clsx(styles.copy, copied && styles.copyDone)}
-            aria-label={copied ? 'Command copied' : 'Copy command'}
+            aria-label={copied ? t('已複製指令', 'Command copied') : t('複製指令', 'Copy command')}
             onClick={() => {
               copy(command);
               track('docs_install_copied', {kind: product, os: product === 'sdk' ? undefined : os, source});
             }}>
             {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-            <span className={styles.copyLabel}>{copied ? 'Copied' : 'Copy'}</span>
+            <span className={styles.copyLabel}>{copied ? t('已複製', 'Copied') : t('複製', 'Copy')}</span>
           </button>
         </div>
       </div>

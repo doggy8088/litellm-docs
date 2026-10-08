@@ -43,7 +43,10 @@ function collectPages(allContent) {
   return [...new Map([...docs, ...posts].filter((page) => !page.image).map((page) => [page.permalink, page])).values()];
 }
 
-function socialCardsPlugin({siteDir}, {cacheDir = path.join(siteDir, socialCardsPlugin.cacheDir)} = {}) {
+const activeFilesByLocale = new Map();
+
+function socialCardsPlugin({siteDir, i18n}, {cacheDir = path.join(siteDir, socialCardsPlugin.cacheDir)} = {}) {
+  const localeKey = `${cacheDir}:${i18n?.currentLocale ?? 'default'}`;
   const templateDir = path.join(siteDir, 'scripts/social-card');
   const outputDir = path.join(cacheDir, 'img/og');
   const templateFiles = ['index.cjs', 'assets/litellm-logo-blue.svg',
@@ -82,7 +85,14 @@ function socialCardsPlugin({siteDir}, {cacheDir = path.join(siteDir, socialCards
           files.add(filename);
         }));
       }
-      await Promise.all([...cachedFiles].filter((file) => !files.has(file)).map((file) => fs.unlink(path.join(outputDir, file))));
+      activeFilesByLocale.set(localeKey, files);
+      const keepFiles = new Set();
+      for (const [key, set] of activeFilesByLocale) {
+        if (key.startsWith(`${cacheDir}:`)) {
+          for (const f of set) keepFiles.add(f);
+        }
+      }
+      await Promise.all([...cachedFiles].filter((file) => !keepFiles.has(file)).map((file) => fs.unlink(path.join(outputDir, file)).catch(() => {})));
       actions.setGlobalData({images});
       console.log(`[social-cards] Ready: ${pages.length} page previews (${rendered} rendered, ${cached} from cache)`);
     },

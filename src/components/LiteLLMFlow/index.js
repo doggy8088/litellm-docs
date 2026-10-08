@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import {GATEWAY_COMPOSE, PROMPTS} from '../Conversion/content';
 import {IconAgent, IconCheck} from '../Conversion/icons';
 import {track, useCopy} from '../Conversion/shared';
@@ -28,9 +29,9 @@ function Icon({children}) {
 }
 
 const CALLERS = [
-  ['Developer', <Icon key="d"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" /></Icon>],
-  ['Coding agent', <Icon key="c"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 9l3 3-3 3M13 15h4" /></Icon>],
-  ['Your app', <Icon key="a"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 9h18M9 21V9" /></Icon>],
+  ['Developer', '開發人員', <Icon key="d"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" /></Icon>],
+  ['Coding agent', '程式開發代理', <Icon key="c"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 9l3 3-3 3M13 15h4" /></Icon>],
+  ['Your app', '您的應用程式', <Icon key="a"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 9h18M9 21V9" /></Icon>],
 ];
 
 const AGENT_ICON = (
@@ -43,12 +44,23 @@ const AGENT_ICON = (
 // Logos are the vendors' files already in static/img/integrations
 const GROUPS = [
   {
-    label: 'LLM APIs',
-    items: [['OpenAI', 'openai.svg', true], ['Anthropic', 'anthropic.svg', true], ['Gemini', 'gemini.svg'], ['Amazon Bedrock', 'aws.svg', true]],
-    more: ['+100', '/docs/providers'],
+    key: 'LLM APIs',
+    labelZh: 'LLM API',
+    items: [['OpenAI', 'OpenAI', 'openai.svg', true], ['Anthropic', 'Anthropic', 'anthropic.svg', true], ['Gemini', 'Gemini', 'gemini.svg'], ['Amazon Bedrock', 'Amazon Bedrock', 'aws.svg', true]],
+    more: ['+100', '+100', '/docs/providers'],
   },
-  {label: 'MCP tools', items: [['GitHub', 'github.png', true], ['Slack', 'slack.svg']], more: ['any MCP', '/docs/mcp']},
-  {label: 'A2A agents', items: [['LangChain', 'langchain.png'], ['Letta', 'letta.svg', true], ['Your agent', null]], more: ['any A2A', '/docs/a2a']},
+  {
+    key: 'MCP tools',
+    labelZh: 'MCP 工具',
+    items: [['GitHub', 'GitHub', 'github.png', true], ['Slack', 'Slack', 'slack.svg']],
+    more: ['any MCP', '任何 MCP', '/docs/mcp'],
+  },
+  {
+    key: 'A2A agents',
+    labelZh: 'A2A 代理程式',
+    items: [['LangChain', 'LangChain', 'langchain.png'], ['Letta', 'Letta', 'letta.svg', true], ['Your agent', '您的代理程式', null]],
+    more: ['any A2A', '任何 A2A', '/docs/a2a'],
+  },
 ];
 
 // A soft S-curve whose control points sit far out, so lines bend gently
@@ -58,6 +70,7 @@ function curve(x1, y1, x2, y2) {
 }
 
 export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, highlight}) {
+  const t = useLocaleText();
   const ref = useRef(null);
   const [lines, setLines] = useState({w: 0, h: 0, d: []});
   const [copied, copy] = useCopy();
@@ -104,7 +117,10 @@ export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, hig
       <figure
         ref={ref}
         className={styles.flow}
-        aria-label="Developers, coding agents, and apps call LiteLLM, which reaches 100+ LLM APIs, MCP tools, and A2A agents.">
+        aria-label={t(
+          '開發人員、程式開發代理與應用程式呼叫 LiteLLM，進而連接 100+ 個 LLM API、MCP 工具與 A2A 代理程式。',
+          'Developers, coding agents, and apps call LiteLLM, which reaches 100+ LLM APIs, MCP tools, and A2A agents.',
+        )}>
         <svg className={styles.lines} width={lines.w} height={lines.h} viewBox={`0 0 ${lines.w || 1} ${lines.h || 1}`} aria-hidden="true">
           {lines.d.map((l, i) => (
             <Line key={i} d={l.d} on={l.on} />
@@ -112,11 +128,11 @@ export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, hig
         </svg>
 
         <div className={styles.callers}>
-          <span className={styles.label}>Who calls</span>
-          {CALLERS.map(([label, icon]) => (
-            <div key={label} className={styles.caller} data-caller="">
+          <span className={styles.label}>{t('呼叫來源', 'Who calls')}</span>
+          {CALLERS.map(([labelEn, labelZh, icon]) => (
+            <div key={labelEn} className={styles.caller} data-caller="">
               <span className={styles.icon}>{icon}</span>
-              {label}
+              {t(labelZh, labelEn)}
             </div>
           ))}
         </div>
@@ -128,8 +144,12 @@ export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, hig
               type="button"
               className={styles.hub}
               data-hub=""
-              title="Copy the command that starts the LiteLLM Gateway"
-              aria-label={hubCopied ? 'Start command copied' : 'Copy the command that starts the LiteLLM Gateway'}
+              title={t('複製啟動 LiteLLM Gateway 的指令', 'Copy the command that starts the LiteLLM Gateway')}
+              aria-label={
+                hubCopied
+                  ? t('已複製啟動指令', 'Start command copied')
+                  : t('複製啟動 LiteLLM Gateway 的指令', 'Copy the command that starts the LiteLLM Gateway')
+              }
               onClick={() => {
                 copyHub(GATEWAY_COMPOSE);
                 track('docs_install_copied', {kind: 'gateway', source: 'docs-index-figure'});
@@ -138,7 +158,9 @@ export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, hig
               <img className={styles.monoDark} src={monoWhite} alt="" width="52" height="52" />
               <span className={styles.hubName}>LiteLLM</span>
               <span className={hubCopied ? `${styles.hubHint} ${styles.hubHintOn}` : styles.hubHint} aria-live="polite">
-                {hubCopied ? 'Gateway start command copied' : 'Copy gateway start command'}
+                {hubCopied
+                  ? t('已複製 Gateway 啟動指令', 'Gateway start command copied')
+                  : t('複製 Gateway 啟動指令', 'Copy gateway start command')}
               </span>
             </button>
           ) : (
@@ -152,26 +174,29 @@ export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, hig
 
         <div className={highlight ? `${styles.dests} ${styles.dim}` : styles.dests}>
           {GROUPS.map((g) => {
-            const on = g.label === highlight;
+            const on = g.key === highlight;
             return (
-              <div key={g.label} className={on ? `${styles.group} ${styles.on}` : styles.group}>
-                <span className={styles.label}>{g.label}</span>
+              <div key={g.key} className={on ? `${styles.group} ${styles.on}` : styles.group}>
+                <span className={styles.label}>{t(g.labelZh, g.key)}</span>
                 <div className={styles.row} data-dest="" data-on={on ? '' : undefined}>
-                  {g.items.map(([name, file, invertDark]) => (
-                    <span key={name} className={styles.icon} title={name}>
-                      {file ? (
-                        <img src={integration + file} alt={name} width="15" height="15" className={invertDark ? styles.invertDark : undefined} />
-                      ) : (
-                        AGENT_ICON
-                      )}
-                    </span>
-                  ))}
+                  {g.items.map(([nameEn, nameZh, file, invertDark]) => {
+                    const displayName = t(nameZh, nameEn);
+                    return (
+                      <span key={nameEn} className={styles.icon} title={displayName}>
+                        {file ? (
+                          <img src={integration + file} alt={displayName} width="15" height="15" className={invertDark ? styles.invertDark : undefined} />
+                        ) : (
+                          AGENT_ICON
+                        )}
+                      </span>
+                    );
+                  })}
                   {/* The highlighted group is the page being read, so no link to itself */}
                   {on ? (
-                    <span className={styles.more}>{g.more[0]}</span>
+                    <span className={styles.more}>{t(g.more[1], g.more[0])}</span>
                   ) : (
-                    <Link className={styles.more} to={g.more[1]}>
-                      {g.more[0]}
+                    <Link className={styles.more} to={g.more[2]}>
+                      {t(g.more[1], g.more[0])}
                     </Link>
                   )}
                 </div>
@@ -191,7 +216,7 @@ export default function LiteLLMFlow({copyCommand = true, agentPrompt = true, hig
               track('docs_agent_prompt_copied', {prompt: 'gateway', source: 'docs-index-figure'});
             }}>
             {copied ? <IconCheck size={13} /> : <IconAgent size={13} />}
-            {copied ? 'Copied' : 'Copy agent prompt'}
+            {copied ? t('已複製', 'Copied') : t('複製 AI 代理提示詞', 'Copy agent prompt')}
           </button>
         </div>
       )}

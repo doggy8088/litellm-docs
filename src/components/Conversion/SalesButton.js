@@ -1,5 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import {SALES_URL, TRIAL_URL, withUtm} from './content';
 import {track} from './shared';
 import styles from './styles.module.css';
@@ -13,8 +14,9 @@ export default function SalesButton({
   children,
   className,
 }) {
+  const t = useLocaleText();
   const url = withUtm(kind === 'trial' ? TRIAL_URL : SALES_URL, source);
-  const label = children || (kind === 'trial' ? 'Start a 30-day trial' : 'Talk to sales');
+  const label = children || (kind === 'trial' ? t('開始 30 天免費試用', 'Start a 30-day trial') : t('聯絡業務團隊', 'Talk to sales'));
 
   return (
     <a
@@ -27,3 +29,4 @@ export default function SalesButton({
     </a>
   );
 }
+

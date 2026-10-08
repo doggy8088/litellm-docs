@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import SalesButton from './SalesButton';
 import {ICONS} from './icons';
 import styles from './styles.module.css';
@@ -47,18 +48,22 @@ export function Tiles({items, columns = 3, size = 'md'}) {
 
 // Closing call to action for enterprise-minded readers.
 export function SalesBand({title, text, source = 'docs'}) {
+  const t = useLocaleText();
   return (
     <aside className={styles.band}>
       <div className={styles.bandCopy}>
-        <p className={styles.bandTitle}>{title || 'LiteLLM for all the teams in your company'}</p>
+        <p className={styles.bandTitle}>{title || t('為您公司的所有團隊打造 LiteLLM', 'LiteLLM for all the teams in your company')}</p>
         <p className={styles.bandText}>
           {text ||
-            'Enterprise adds SSO, audit logs, admin roles for each team, and help from the LiteLLM engineers. It uses the same gateway with one license key.'}
+            t(
+              '企業版新增了 SSO、稽核日誌、各團隊的管理員角色，以及來自 LiteLLM 工程師的協助。使用同一個閘道，僅需一把授權金鑰。',
+              'Enterprise adds SSO, audit logs, admin roles for each team, and help from the LiteLLM engineers. It uses the same gateway with one license key.',
+            )}
         </p>
       </div>
       <div className={styles.bandActions}>
         <SalesButton source={source} />
-        <span className={styles.salesNote}>A free 30-day trial is available.</span>
+        <span className={styles.salesNote}>{t('提供 30 天免費試用。', 'A free 30-day trial is available.')}</span>
       </div>
     </aside>
   );
@@ -68,3 +73,4 @@ export function SalesBand({title, text, source = 'docs'}) {
 export function NextSteps({items}) {
   return <Tiles items={items} columns={items.length > 3 ? 4 : items.length} />;
 }
+

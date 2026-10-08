@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import styles from './styles.module.css';
 
 const icon = (paths) => (
@@ -58,44 +59,99 @@ const ICONS = {
   </>),
 };
 
-const HOME = {id: 'home', icon: 'home', title: 'Home', desc: 'Get started with LiteLLM', to: '/docs/'};
+function getProductsMenuContent(t) {
+  const home = {
+    id: 'home',
+    icon: 'home',
+    title: t('首頁', 'Home'),
+    desc: t('開始使用 LiteLLM', 'Get started with LiteLLM'),
+    to: '/docs/',
+  };
 
-const COLUMNS = [
-  {
-    heading: 'Build',
-    items: [
-      {id: 'gateway', icon: 'gateway', title: 'AI Gateway', desc: 'Route, control, and observe LLM traffic', to: '/docs/proxy/docker_quick_start'},
-      {id: 'mcp', icon: 'mcp', title: 'MCP Gateway', desc: 'Give agents governed access to tools', to: '/docs/mcp'},
-      {id: 'agent', icon: 'agent', title: 'Agent Gateway', desc: 'Register and invoke A2A agents', to: '/docs/a2a'},
-      {id: 'router', icon: 'router', title: 'Auto Router', desc: 'Send each request to the best model', to: '/docs/auto_router'},
-      {id: 'sdk', icon: 'sdk', title: 'Python SDK', desc: 'Call 100+ LLMs with one interface', to: '/docs/#litellm-python-sdk'},
-    ],
-  },
-  {
-    heading: 'Monitor',
-    items: [
-      {id: 'lens', icon: 'lens', title: 'Lens', desc: 'Trace agent swarms and find what to improve', to: '/docs/proxy/lens'},
-      {id: 'logs', icon: 'logs', title: 'AI Gateway - Logging & Observability', desc: 'Logs, spend, and callbacks for every request', to: '/docs/proxy/logging'},
-    ],
-  },
-];
+  const columns = [
+    {
+      heading: t('建置', 'Build'),
+      items: [
+        {
+          id: 'gateway',
+          icon: 'gateway',
+          title: 'AI Gateway',
+          desc: t('路由、控制並觀測 LLM 流量', 'Route, control, and observe LLM traffic'),
+          to: '/docs/proxy/docker_quick_start',
+        },
+        {
+          id: 'mcp',
+          icon: 'mcp',
+          title: 'MCP Gateway',
+          desc: t('為代理程式提供受控管的工具存取權', 'Give agents governed access to tools'),
+          to: '/docs/mcp',
+        },
+        {
+          id: 'agent',
+          icon: 'agent',
+          title: 'Agent Gateway',
+          desc: t('註冊並調用 A2A 代理程式', 'Register and invoke A2A agents'),
+          to: '/docs/a2a',
+        },
+        {
+          id: 'router',
+          icon: 'router',
+          title: 'Auto Router',
+          desc: t('將每個請求傳送至最適合的模型', 'Send each request to the best model'),
+          to: '/docs/auto_router',
+        },
+        {
+          id: 'sdk',
+          icon: 'sdk',
+          title: 'Python SDK',
+          desc: t('透過單一介面呼叫 100+ 個 LLM', 'Call 100+ LLMs with one interface'),
+          to: '/docs/#litellm-python-sdk',
+        },
+      ],
+    },
+    {
+      heading: t('監控', 'Monitor'),
+      items: [
+        {
+          id: 'lens',
+          icon: 'lens',
+          title: 'Lens',
+          desc: t('追蹤代理程式群並找出可改善之處', 'Trace agent swarms and find what to improve'),
+          to: '/docs/proxy/lens',
+        },
+        {
+          id: 'logs',
+          icon: 'logs',
+          title: t('AI Gateway - 記錄與可觀測性', 'AI Gateway - Logging & Observability'),
+          desc: t('每個請求的記錄、支出與回呼', 'Logs, spend, and callbacks for every request'),
+          to: '/docs/proxy/logging',
+        },
+      ],
+    },
+  ];
 
-const ALL_ITEMS = [HOME, ...COLUMNS.flatMap((c) => c.items)];
+  const allItems = [home, ...columns.flatMap((c) => c.items)];
+  return {home, columns, allItems};
+}
+
+function normalizePath(pathname) {
+  return pathname.replace(/^\/en(?=\/|$)/, '') || '/';
+}
 
 // Ordered most-specific first: /docs/proxy/lens must win over the /docs/proxy prefix.
 const SECTION_MATCHERS = [
-  ['lens', ({pathname}) => pathname.startsWith('/docs/proxy/lens')],
-  ['logs', ({pathname}) => pathname.startsWith('/docs/proxy/logging')],
-  ['mcp', ({pathname}) => pathname.startsWith('/docs/mcp')],
-  ['agent', ({pathname}) => pathname.startsWith('/docs/a2a')],
+  ['lens', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy/lens')],
+  ['logs', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy/logging')],
+  ['mcp', ({pathname}) => normalizePath(pathname).startsWith('/docs/mcp')],
+  ['agent', ({pathname}) => normalizePath(pathname).startsWith('/docs/a2a')],
   ['sdk', ({hash}) => hash === '#litellm-python-sdk'],
-  ['router', ({pathname}) => pathname.startsWith('/docs/auto_router')],
-  ['gateway', ({pathname}) => pathname.startsWith('/docs/proxy')],
+  ['router', ({pathname}) => normalizePath(pathname).startsWith('/docs/auto_router')],
+  ['gateway', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy')],
 ];
 
-function currentItem(location) {
+function currentItem(location, allItems) {
   const hit = SECTION_MATCHERS.find(([, matches]) => matches(location));
-  return ALL_ITEMS.find((item) => item.id === (hit ? hit[0] : 'home'));
+  return allItems.find((item) => item.id === (hit ? hit[0] : 'home'));
 }
 
 function MenuLink({item, active, onNavigate}) {
@@ -117,8 +173,10 @@ function MenuLink({item, active, onNavigate}) {
 }
 
 export default function ProductsMenu({mobile}) {
+  const t = useLocaleText();
+  const {home, columns, allItems} = getProductsMenuContent(t);
   const location = useLocation();
-  const current = currentItem(location);
+  const current = currentItem(location, allItems);
   const [open, setOpen] = useState(false);
   const leaveTimer = useRef();
   const close = () => {
@@ -134,7 +192,7 @@ export default function ProductsMenu({mobile}) {
       <li className="menu__list-item">
         <span className="menu__link">{current.title}</span>
         <ul className="menu__list">
-          {ALL_ITEMS.map((item) => (
+          {allItems.map((item) => (
             <li key={item.id} className="menu__list-item">
               <Link className={`menu__link ${item.id === current.id ? 'menu__link--active' : ''}`} to={item.to}>
                 {item.title}
@@ -167,7 +225,7 @@ export default function ProductsMenu({mobile}) {
         className={styles.trigger}
         aria-haspopup="true"
         aria-expanded={open}
-        aria-label={`Products: ${current.title}`}
+        aria-label={`${t('產品', 'Products')}: ${current.title}`}
         onClick={() => setOpen((v) => !v)}>
         <span className={styles.triggerIcon}>{ICONS[current.icon]}</span>
         <span className={styles.triggerLabel}>{current.title}</span>
@@ -178,9 +236,9 @@ export default function ProductsMenu({mobile}) {
       </button>
       <div className={styles.panel} role="menu">
         <div className={styles.home}>
-          <MenuLink item={HOME} active={current.id === HOME.id} onNavigate={close} />
+          <MenuLink item={home} active={current.id === home.id} onNavigate={close} />
         </div>
-        {COLUMNS.map((col) => (
+        {columns.map((col) => (
           <div key={col.heading} className={styles.column}>
             <div className={styles.heading}>{col.heading}</div>
             {col.items.map((item) => (

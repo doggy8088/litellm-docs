@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./styles.module.css";
+import useLocaleText from "@site/src/utils/useLocaleText";
 
 interface VersionEntry {
   version: string;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 function CopyButton({ text }: { text: string }) {
+  const t = useLocaleText();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -25,7 +27,7 @@ function CopyButton({ text }: { text: string }) {
     <button
       className={styles.copyBtn}
       onClick={handleCopy}
-      title="Copy full SHA-256"
+      title={t("複製完整 SHA-256", "Copy full SHA-256")}
     >
       {copied ? "✓" : "⧉"}
     </button>
@@ -33,17 +35,18 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function VersionVerificationTable({ entries }: Props) {
+  const t = useLocaleText();
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Version</th>
+            <th>{t("版本", "Version")}</th>
             <th>SHA-256</th>
-            <th>Clean of IOCs</th>
-            <th>Matches Git</th>
-            <th>Git Commit</th>
-            <th>Status</th>
+            <th>{t("未發現入侵指標", "Clean of IOCs")}</th>
+            <th>{t("符合 Git", "Matches Git")}</th>
+            <th>{t("Git 提交", "Git Commit")}</th>
+            <th>{t("狀態", "Status")}</th>
           </tr>
         </thead>
         <tbody>
@@ -57,10 +60,10 @@ export default function VersionVerificationTable({ entries }: Props) {
                 </span>
               </td>
               <td>
-                <span className={styles.badgeClean}>✔ CLEAN</span>
+                <span className={styles.badgeClean}>✔ {t("乾淨", "CLEAN")}</span>
               </td>
               <td>
-                <span className={styles.badgeYes}>✔ YES</span>
+                <span className={styles.badgeYes}>✔ {t("是", "YES")}</span>
               </td>
               <td>
                 <a
@@ -73,7 +76,7 @@ export default function VersionVerificationTable({ entries }: Props) {
                 </a>
               </td>
               <td>
-                <span className={styles.badgeClean}>✔ CLEAN</span>
+                <span className={styles.badgeClean}>✔ {t("乾淨", "CLEAN")}</span>
               </td>
             </tr>
           ))}

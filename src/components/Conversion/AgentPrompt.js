@@ -1,5 +1,6 @@
 import React, {useId, useState} from 'react';
 import clsx from 'clsx';
+import useLocaleText from '@site/src/utils/useLocaleText';
 import {PROMPTS} from './content';
 import {IconAgent, IconCheck, IconCopy} from './icons';
 import {track, useCopy} from './shared';
@@ -9,9 +10,10 @@ import styles from './styles.module.css';
 // Collapsed it shows the first lines with a fade; the copy button always
 // copies the whole prompt.
 export default function AgentPrompt({id, title, text, defaultOpen = false, compact = false}) {
+  const t = useLocaleText();
   const prompt = PROMPTS[id] || {};
   const body = text || prompt.text || '';
-  const heading = title || prompt.title || 'Agent prompt';
+  const heading = title || prompt.title || t('代理提示詞', 'Agent prompt');
   const [open, setOpen] = useState(defaultOpen);
   const [copied, copy] = useCopy();
   const bodyId = useId();
@@ -32,9 +34,9 @@ export default function AgentPrompt({id, title, text, defaultOpen = false, compa
             copy(body);
             track('docs_agent_prompt_copied', {prompt: id || heading});
           }}
-          aria-label={copied ? 'Prompt copied' : `Copy agent prompt: ${heading}`}>
+          aria-label={copied ? t('已複製提示詞', 'Prompt copied') : `${t('複製 AI 代理提示詞', 'Copy agent prompt')}: ${heading}`}>
           {copied ? <IconCheck /> : <IconCopy />}
-          <span>{copied ? 'Copied' : 'Copy agent prompt'}</span>
+          <span>{copied ? t('已複製', 'Copied') : t('複製 AI 代理提示詞', 'Copy agent prompt')}</span>
         </button>
       </div>
       <div id={bodyId} className={clsx(styles.promptBody, open && styles.promptBodyOpen)}>
@@ -45,9 +47,10 @@ export default function AgentPrompt({id, title, text, defaultOpen = false, compa
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls={bodyId}>
-          {open ? 'Show less' : 'Show full prompt'}
+          {open ? t('收合內容', 'Show less') : t('顯示完整提示詞', 'Show full prompt')}
         </button>
       </div>
     </div>
   );
 }
+

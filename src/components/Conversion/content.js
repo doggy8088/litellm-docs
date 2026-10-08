@@ -443,13 +443,250 @@ const PRODUCTS = [
   {id: 'enterprise', name: 'Enterprise', to: '/docs/enterprise', prompt: 'enterprise', text: 'SSO, audit logs, delegated admins, and multi-region on the same gateway, with a license key.'},
 ];
 
+const ENTERPRISE_HERO_ZH = {
+  title: '讓每個團隊都能使用 AI，同時全面掌控存取權限與成本支出。',
+  text: 'LiteLLM Enterprise 在開源 AI Gateway 之上提供單一登入（SSO）、稽核記錄、委派管理員角色，以及原廠工程團隊技術支援。完全部署於您的雲端環境中，提示詞與回應絕不離開您的基礎架構。',
+};
+
+const TIERS_ZH = [
+  {
+    id: 'enterprise',
+    name: 'Enterprise 企業版',
+    how: '於 Gateway 設定授權金鑰',
+    plus: '包含 AI Gateway 所有功能，另加',
+    items: [
+      ['SSO 與 SCIM', '/docs/proxy/admin_ui_sso'],
+      ['稽核記錄', '/docs/proxy/multiple_admins'],
+      ['組織與團隊管理員', '/docs/proxy/access_control'],
+      ['機密管理服務', '/docs/secret_managers/overview'],
+      ['IP 允許清單', '/docs/proxy/ip_address'],
+      ['依團隊分流記錄', '/docs/proxy/team_logging'],
+      ['多區域部署', '/docs/proxy/multi_region'],
+      ['支援服務水準協議（SLA）', '#professional-support'],
+    ],
+  },
+  {
+    id: 'gateway',
+    name: 'AI Gateway',
+    how: '開放原始碼、自行託管',
+    plus: '包含 SDK 所有功能，另加',
+    items: [
+      ['虛擬金鑰', '/docs/proxy/virtual_keys'],
+      ['預算與速率限制', '/docs/proxy/users'],
+      ['支出追蹤', '/docs/proxy/cost_tracking'],
+      ['管理介面（Admin UI）', '/docs/proxy/ui'],
+      ['負載平衡', '/docs/proxy/load_balancing'],
+      ['防護欄（Guardrails）', '/docs/proxy/guardrails/quick_start'],
+      ['MCP 閘道', '/docs/mcp'],
+      ['支援任何程式語言', '/docs/proxy/client_setup/overview'],
+    ],
+  },
+  {
+    id: 'sdk',
+    name: 'Python SDK',
+    how: '開放原始碼函式庫',
+    plus: '直接整合於 Python 程式碼',
+    items: [
+      ['100+ 家模型提供者', '/docs/providers'],
+      ['OpenAI 標準格式', '/docs/completion/output'],
+      ['路由與備援機制', '/docs/routing'],
+      ['單次呼叫成本計算', '/docs/completion/token_usage'],
+      ['記錄回呼（Callbacks）', '/docs/observability/callbacks'],
+    ],
+  },
+];
+
+const USE_CASES_ZH = [
+  {
+    id: 'sdk',
+    product: 'Python SDK',
+    problem: '透過單一 Python 函式串接 100+ 家 LLM 提供者。',
+    solution:
+      'completion() 函式對 OpenAI、Anthropic、Bedrock 及 100 多家其他提供者皆使用相同參數，並統一回傳 OpenAI 格式結果。切換模型只需替換一個字串，同時內建串流、重試、備援機制與每次呼叫的成本計算。',
+    to: '/docs/',
+    cta: '安裝 SDK',
+    prompt: 'sdk',
+    links: [
+      ['SDK 快速開始', '/docs/'],
+      ['支援的提供者', '/docs/providers'],
+    ],
+    visual: {
+      type: 'code',
+      lang: 'python',
+      code: `from litellm import completion
+
+messages = [{"role": "user", "content": "Hello"}]
+
+completion(model="openai/${M.openai_large}", messages=messages)
+completion(model="anthropic/${M.anthropic}", messages=messages)`,
+    },
+  },
+  {
+    id: 'gateway',
+    product: 'AI Gateway',
+    problem: '以單一端點統一存取所有模型，並為各團隊控管金鑰、預算與成本。',
+    solution:
+      '任何程式語言的應用程式皆可以 OpenAI 格式向閘道發送請求。每個應用程式或成員皆可獲配具備預算上限與速率限制的虛擬金鑰；閘道會記錄每筆請求及其成本，且提供者 API 金鑰安全保留於閘道內。',
+    to: '/docs/proxy/docker_quick_start',
+    cta: '啟動 Gateway',
+    prompt: 'gateway',
+    links: [
+      ['Gateway 快速開始', '/docs/proxy/docker_quick_start'],
+      ['虛擬金鑰與預算管理', '/docs/proxy/virtual_keys'],
+    ],
+    visual: {
+      type: 'code',
+      lang: 'bash',
+      code: `curl http://localhost:4000/v1/chat/completions \\
+  -H "Authorization: Bearer sk-<virtual-key>" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model": "${M.openai_large}",
+       "messages": [{"role": "user", "content": "Hello"}]}'`,
+    },
+  },
+  {
+    id: 'enterprise',
+    product: 'Enterprise 企業版',
+    problem: '為全公司所有團隊提供單一登入（SSO）、稽核記錄與管理員權限角色。',
+    solution:
+      '只需設定授權金鑰，即可在同一個閘道啟用企業版功能，涵蓋 SSO、SCIM、所有管理變更的稽核記錄，以及各團隊專屬管理員；同時支援跨區域部署，並由 LiteLLM 原廠工程團隊提供技術支援。',
+    to: '/docs/enterprise',
+    cta: '聯絡業務團隊',
+    sales: true,
+    visual: {
+      type: 'lines',
+      lines: [
+        ['jane@acme.com 透過 Okta', '已建立金鑰', '團隊：search'],
+        ['raj@acme.com 透過 Okta', '已調升預算', '團隊：support'],
+      ],
+    },
+  },
+];
+
+const CARD_GROUPS_ZH = [
+  {title: '工具與代理程式', ids: ['mcp', 'agents']},
+  {title: '模型路由與代理框架', ids: ['autorouter', 'liteagents']},
+  {title: '終端機與程式開發代理', ids: ['tools', 'liteadmin']},
+];
+
+const PRODUCT_CARDS_ZH = [
+  {
+    id: 'mcp',
+    product: 'MCP Gateway',
+    problem: '透過單一端點提供所有 MCP 工具。',
+    text: '只需將 MCP 伺服器加入閘道一次，無需分別連接至每個應用程式，並可精細控管哪些金鑰與團隊能存取各個伺服器。',
+    visual: {
+      type: 'table',
+      head: ['MCP 伺服器', '搜尋團隊', '客服團隊'],
+      rows: [
+        ['GitHub', '允許', '無存取權'],
+        ['Jira', '允許', '允許'],
+      ],
+    },
+    to: '/docs/mcp',
+    prompt: 'mcp',
+  },
+  {
+    id: 'agents',
+    product: 'Agent Gateway',
+    problem: '透過閘道轉發代理程式對代理程式（A2A）呼叫。',
+    text: '在閘道上註冊您的 A2A 代理程式。每次呼叫皆使用虛擬金鑰並連同成本一併寫入記錄，且僅有獲授權的團隊能呼叫這些代理程式。',
+    visual: {
+      type: 'lines',
+      lines: [
+        ['POST /a2a/support-agent', 'search-team', '已記錄'],
+        ['POST /a2a/billing-agent', 'search-team', '不允許'],
+      ],
+    },
+    to: '/docs/a2a',
+    prompt: 'agents',
+  },
+  {
+    id: 'autorouter',
+    product: 'Auto Router（擴充功能）',
+    problem: '將每個請求自動分派給能完成任務且成本最低的模型。',
+    text: '簡單的提示詞會自動路由至低成本模型，而您的應用程式程式碼完全無需修改。',
+    visual: {
+      type: 'table',
+      head: ['請求內容', '路由目標'],
+      rows: [
+        ['修正這句話中的錯字', '小型、低成本模型'],
+        ['規劃零停機遷移方案', '前瞻旗艦模型'],
+      ],
+    },
+    to: '/docs/auto_router/',
+    prompt: 'autorouter',
+  },
+  {
+    id: 'liteagents',
+    product: 'LiteAgents（預覽版）',
+    problem: '直接切換不同的代理執行框架（Harness），無需改寫代理程式碼。',
+    text: '只需替換一個參數即可在 Deep Agents、Pydantic AI、Claude Agent SDK、Codex 與 OpenCode 之間切換，既有的工具與 MCP 連線皆維持不變。',
+    visual: {
+      type: 'code',
+      lang: 'python',
+      code: `ProfileOptions(
+    harness="deepagents",  # or "claude-sdk", "codex", "pydantic-ai"
+    model="my-model",
+)`,
+    },
+    to: '/blog/liteagents-sdk',
+    prompt: 'liteagents',
+  },
+  {
+    id: 'tools',
+    product: 'lite CLI',
+    problem: '透過您的閘道執行 Claude Code 與 Codex。',
+    text: 'lite CLI 會登入您的閘道並透過閘道啟動工具。開發人員無需持有提供者 API 金鑰，預算、記錄與防護欄皆可自動套用至每位成員。',
+    visual: {
+      type: 'code',
+      lang: 'bash',
+      code: `lite login    # 登入您的閘道
+lite claude   # 透過閘道啟動 Claude Code`,
+    },
+    to: '/docs/proxy/management_cli',
+    prompt: 'clients',
+  },
+  {
+    id: 'liteadmin',
+    product: 'LiteAdmin MCP',
+    problem: '直接以自然語言指令讓代理程式管理您的閘道。',
+    text: '將 Claude 或 Codex 連接至閘道後，即可直接指示代理程式建立金鑰、新增模型、管理團隊與預算，或查詢發生錯誤的請求。',
+    visual: {
+      type: 'chat',
+      lines: [
+        ['您', '為搜尋團隊建立一把每月預算 $200 的金鑰。'],
+        ['Claude', '已完成。該金鑰屬於 search 團隊，每月預算上限為 $200。'],
+      ],
+    },
+    to: '/docs/proxy/liteadmin_mcp',
+    prompt: 'liteadmin',
+  },
+];
+
+const PRODUCTS_ZH = [
+  {id: 'gateway', name: 'AI Gateway', to: '/docs/simple_proxy', prompt: 'gateway', text: '供所有應用程式使用的單一 OpenAI 相容端點，具備虛擬金鑰、預算控管、支出記錄與防護欄。'},
+  {id: 'tools', name: '您的應用程式與 AI 工具', to: '/docs/proxy/client_setup/overview', prompt: 'clients', text: '任何 OpenAI 或 Anthropic SDK，以及 Claude Code、Codex 與 Cursor 皆可指向閘道。'},
+  {id: 'sdk', name: 'Python SDK', to: '/docs/', prompt: 'sdk', text: '專為 Python 應用程式設計的函式庫：以 completion() 呼叫 100+ 家提供者，內建路由、備援與單次呼叫成本計算。'},
+  {id: 'mcp', name: 'MCP Gateway', to: '/docs/mcp', prompt: 'mcp', text: '統整所有 MCP 工具的單一端點，支援依金鑰與團隊設定存取權限並追蹤成本。'},
+  {id: 'agents', name: 'Agent Gateway (A2A)', to: '/docs/a2a', prompt: 'agents', text: '透過閘道調用 A2A 代理程式，具備完整記錄與團隊存取權限控管。'},
+  {id: 'autorouter', name: 'Auto Router（擴充功能）', to: '/docs/auto_router/', prompt: 'autorouter', text: '自動將每個請求路由至能妥善回答且成本最低的模型。'},
+  {id: 'enterprise', name: 'Enterprise 企業版', to: '/docs/enterprise', prompt: 'enterprise', text: '透過授權金鑰在同一個閘道啟用 SSO、稽核記錄、委派管理員與多區域部署。'},
+];
+
 module.exports = {
   PRODUCTS,
+  PRODUCTS_ZH,
   USE_CASES,
+  USE_CASES_ZH,
   PRODUCT_CARDS,
+  PRODUCT_CARDS_ZH,
   CARD_GROUPS,
+  CARD_GROUPS_ZH,
   ENTERPRISE_HERO,
+  ENTERPRISE_HERO_ZH,
   TIERS,
+  TIERS_ZH,
   DOCS,
   SALES_URL,
   TRIAL_URL,

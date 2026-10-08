@@ -3,15 +3,16 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import SubscribeForm from '@site/src/components/SubscribeForm';
+import useLocaleText, {useIsZhTw} from '@site/src/utils/useLocaleText';
 import styles from './styles.module.css';
 
 const TABS = [
-  {id: 'all', label: 'All'},
-  {id: 'autorouter', label: 'Auto Router'},
-  {id: 'engineering', label: 'Engineering'},
-  {id: 'ideas', label: 'Ideas'},
-  {id: 'security', label: 'Security'},
-  {id: 'infrastructure', label: 'Performance / Reliability'},
+  {id: 'all', label: 'All', zhLabel: '全部'},
+  {id: 'autorouter', label: 'Auto Router', zhLabel: 'Auto Router'},
+  {id: 'engineering', label: 'Engineering', zhLabel: '工程'},
+  {id: 'ideas', label: 'Ideas', zhLabel: '觀點'},
+  {id: 'security', label: 'Security', zhLabel: '資安'},
+  {id: 'infrastructure', label: 'Performance / Reliability', zhLabel: '效能／可靠性'},
 ];
 
 const SECURITY_TAGS = ['security', 'incident-report'];
@@ -117,8 +118,8 @@ function itemScore(item, tokens) {
 // every post is still linked from /blog for crawlers.
 const PAGE_SIZE = 12;
 
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+function formatDate(dateStr, isZhTw) {
+  return new Date(dateStr).toLocaleDateString(isZhTw ? 'zh-TW' : 'en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
     timeZone: 'UTC',
   });
@@ -139,7 +140,7 @@ function CardImage({item, title}) {
   );
 }
 
-function PostCard({item, featured = false, hidden = false}) {
+function PostCard({item, featured = false, hidden = false, isZhTw = false}) {
   const {title, permalink, date, description, tags} = item.content.metadata;
   const tag = tags && tags[0] ? tags[0].label : '';
   return (
@@ -148,7 +149,7 @@ function PostCard({item, featured = false, hidden = false}) {
       <div className={styles.tileBody}>
         <div className={styles.tileMeta}>
           {tag && <span>{tag}</span>}
-          <time dateTime={date}>{formatDate(date)}</time>
+          <time dateTime={date}>{formatDate(date, isZhTw)}</time>
         </div>
         <h2 className={styles.tileTitle}>{title}</h2>
         {description && <p className={styles.tileDesc}>{description}</p>}
@@ -158,12 +159,13 @@ function PostCard({item, featured = false, hidden = false}) {
 }
 
 function Pagination({metadata}) {
+  const t = useLocaleText();
   const {previousPage, nextPage} = metadata;
   if (!previousPage && !nextPage) return null;
   return (
-    <nav className={styles.pagination} aria-label="Blog list pagination">
-      {previousPage ? <Link to={previousPage} className={styles.moreBtn}>&larr; Newer posts</Link> : <span />}
-      {nextPage ? <Link to={nextPage} className={styles.moreBtn}>Older posts &rarr;</Link> : <span />}
+    <nav className={styles.pagination} aria-label={t('部落格分頁', 'Blog list pagination')}>
+      {previousPage ? <Link to={previousPage} className={styles.moreBtn}>&larr; {t('較新的文章', 'Newer posts')}</Link> : <span />}
+      {nextPage ? <Link to={nextPage} className={styles.moreBtn}>{t('較舊的文章', 'Older posts')} &rarr;</Link> : <span />}
     </nav>
   );
 }
@@ -179,6 +181,8 @@ function SearchIcon() {
 
 // ── Page ──────────────────────────────────────────────────────────────────
 export default function BlogListPage(props) {
+  const t = useLocaleText();
+  const isZhTw = useIsZhTw();
   const items = props.items || [];
   const metadata = props.metadata || {};
   const [activeTab, setActiveTab] = useState('all');
@@ -197,22 +201,34 @@ export default function BlogListPage(props) {
 
   return (
     <Layout
-      title="Engineering Blog"
-      description="How we build the world's most widely used open-source AI Gateway. Routing, reliability, observability, and what we learn along the way."
+      title={t('工程部落格', 'Engineering Blog')}
+      description={t(
+        '我們如何打造全球使用最廣泛的開放原始碼 AI 閘道，以及在路由、可靠性與可觀測性方面的實務心得。',
+        "How we build the world's most widely used open-source AI Gateway. Routing, reliability, observability, and what we learn along the way.",
+      )}
     >
       <div className={styles.page}>
         <div className={styles.frame}>
           <header className={styles.hero}>
-            <h1 className={styles.heroTitle}>Blog</h1>
+            <h1 className={styles.heroTitle}>{t('部落格', 'Blog')}</h1>
             <p className={styles.heroSub}>
-              Insights on routing, reliability, and observability from the team building the most widely used open-source AI gateway.
+              {t(
+                '來自打造全球使用最廣泛開放原始碼 AI 閘道團隊的路由、可靠性與可觀測性實務洞察。',
+                'Insights on routing, reliability, and observability from the team building the most widely used open-source AI gateway.',
+              )}
             </p>
             <div className={styles.subscribe}>
               <SubscribeForm />
               <p className={styles.subscribeNote}>
-                <span>Get new posts in your inbox, or follow the <a href="/blog/rss.xml">RSS feed</a>.</span>
+                <span>
+                  {isZhTw ? (
+                    <>將最新文章寄到您的信箱，或訂閱 <a href="/blog/rss.xml">RSS feed</a>。</>
+                  ) : (
+                    <>Get new posts in your inbox, or follow the <a href="/blog/rss.xml">RSS feed</a>.</>
+                  )}
+                </span>
                 <a href="https://jobs.ashbyhq.com/litellm" target="_blank" rel="noopener noreferrer" className={styles.hiring}>
-                  We're hiring
+                  {t('人才招募中', "We're hiring")}
                 </a>
               </p>
             </div>
@@ -233,12 +249,12 @@ export default function BlogListPage(props) {
                     onKeyDown={event => {
                       if (event.key === 'Escape') setQuery('');
                     }}
-                    placeholder="Search posts"
-                    aria-label="Search posts"
+                    placeholder={t('搜尋文章', 'Search posts')}
+                    aria-label={t('搜尋文章', 'Search posts')}
                     autoComplete="off"
                   />
                 </label>
-                <nav className={styles.chips} aria-label="Filter posts by category">
+                <nav className={styles.chips} aria-label={t('依分類篩選文章', 'Filter posts by category')}>
                   {TABS.map(tab => (
                     <button
                       key={tab.id}
@@ -250,33 +266,35 @@ export default function BlogListPage(props) {
                       }}
                       aria-pressed={activeTab === tab.id}
                     >
-                      {tab.label}
+                      {t(tab.zhLabel, tab.label)}
                     </button>
                   ))}
                 </nav>
               </div>
 
               <p className={styles.resultCount} role="status" aria-live="polite">
-                {query ? `${filtered.length} of ${items.length} posts` : ''}
+                {query ? t(`共 ${items.length} 篇文章中的 ${filtered.length} 篇`, `${filtered.length} of ${items.length} posts`) : ''}
               </p>
 
               <main>
                 {filtered.length === 0 && (
                   <p className={styles.empty}>
-                    {query ? `No posts match “${query}”.` : 'No posts on this page match the selected filter.'}
+                    {query
+                      ? t(`找不到符合「${query}」的文章。`, `No posts match “${query}”.`)
+                      : t('此頁沒有符合目前篩選條件的文章。', 'No posts on this page match the selected filter.')}
                   </p>
                 )}
-                {featured && <PostCard item={featured} featured />}
+                {featured && <PostCard item={featured} featured isZhTw={isZhTw} />}
                 {rest.length > 0 && (
                   <div className={styles.tiles}>
                     {rest.map((item, index) => (
-                      <PostCard key={item.content.metadata.permalink} item={item} hidden={index >= shown} />
+                      <PostCard key={item.content.metadata.permalink} item={item} hidden={index >= shown} isZhTw={isZhTw} />
                     ))}
                   </div>
                 )}
                 {rest.length > shown && (
                   <button type="button" className={styles.moreBtn} onClick={() => setShown(shown + PAGE_SIZE)}>
-                    Load more posts
+                    {t('載入更多文章', 'Load more posts')}
                   </button>
                 )}
               </main>
