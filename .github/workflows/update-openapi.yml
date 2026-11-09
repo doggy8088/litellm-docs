@@ -48,6 +48,19 @@ jobs:
           body: "Regenerated the OpenAPI snapshot behind https://docs.litellm.ai/api-reference/ from litellm ${{ steps.version.outputs.litellm_version }} on PyPI."
       - name: Squash-merge once Vercel checks pass
         if: steps.pr.outputs.pull-request-operation == 'created'
-        run: gh pr merge --squash --auto "${{ steps.pr.outputs.pull-request-number }}"
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+        run: |
+          # GitHub rejects enabling auto-merge while a brand new PR is
+          # still in a clean state, which is the state it is usually in
+          # seconds after creation; retry for a while, then fall back to
+          # a direct merge if the PR stayed clean the whole time.
+          for attempt in $(seq 1 12); do
+            if gh pr merge --squash --auto "$PR_NUMBER"; then
+              exit 0
+            fi
+            echo "Auto-merge was not accepted yet (attempt $attempt); retrying in 10 seconds."
+            sleep 10
+          done
+          gh pr merge --squash "$PR_NUMBER"
