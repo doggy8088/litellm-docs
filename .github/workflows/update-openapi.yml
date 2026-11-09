@@ -7,13 +7,13 @@ on:
 
 jobs:
   update-openapi:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: pip install "litellm[proxy]"
@@ -39,7 +39,7 @@ jobs:
       - name: Resolve installed litellm version
         id: version
         run: echo "litellm_version=$(python -c "from importlib.metadata import version; print(version('litellm'))")" >> "$GITHUB_OUTPUT"
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         id: pr
         with:
           branch: litellm_openapi_snapshot
