@@ -64,3 +64,26 @@ jobs:
             sleep 10
           done
           gh pr merge --squash "$PR_NUMBER"
+      - name: Deploy the merged snapshot to Firebase Hosting
+        if: steps.pr.outputs.pull-request-operation == 'created'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+          BASE_BRANCH: ${{ github.ref_name }}
+        run: |
+          # A merge made with GITHUB_TOKEN does not trigger other
+          # workflows, so the push from the merge above never starts the
+          # Firebase Hosting workflow by itself. Wait for the merge to
+          # land, then dispatch that workflow explicitly;
+          # workflow_dispatch is the exception to the token rule.
+          for attempt in $(seq 1 30); do
+            state=$(gh pr view "$PR_NUMBER" --json state --jq .state)
+            if [ "$state" = "MERGED" ]; then
+              gh workflow run firebase-hosting.yml --ref "$BASE_BRANCH"
+              exit 0
+            fi
+            echo "PR #$PR_NUMBER is $state (attempt $attempt); waiting 10 seconds for the merge."
+            sleep 10
+          done
+          echo "PR #$PR_NUMBER was not merged within 5 minutes; skipping the deploy dispatch."
+          exit 1
