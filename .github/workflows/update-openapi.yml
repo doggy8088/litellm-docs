@@ -55,10 +55,16 @@ jobs:
         run: |
           # GitHub rejects enabling auto-merge while a brand new PR is
           # still in a clean state, which is the state it is usually in
-          # seconds after creation; retry for a while, then fall back to
-          # a direct merge if the PR stayed clean the whole time.
+          # seconds after creation. When that happens and the PR is
+          # already mergeable, merge directly instead of waiting;
+          # otherwise retry for a while, then fall back to a direct
+          # merge as a last resort.
           for attempt in $(seq 1 12); do
             if gh pr merge --squash --auto "$PR_NUMBER"; then
+              exit 0
+            fi
+            mergeable=$(gh pr view "$PR_NUMBER" --json mergeable --jq .mergeable)
+            if [ "$mergeable" = "MERGEABLE" ] && gh pr merge --squash "$PR_NUMBER"; then
               exit 0
             fi
             echo "Auto-merge was not accepted yet (attempt $attempt); retrying in 10 seconds."
