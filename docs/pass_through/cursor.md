@@ -11,7 +11,7 @@
 
 只要將 `https://api.cursor.com` 替換為 `LITELLM_PROXY_BASE_URL/cursor`
 
-此路由僅代理 Cloud Agents REST API。Cursor CLI 代理程式工作階段預設會登入 `api2.cursor.sh`（`agent --endpoint` 只會變更該登入），而不是 `api.cursor.com`，因此無法使用此路由，請參閱 [Cursor CLI](../tutorials/cursor_integration.md#cursor-cli-cursor-agent)。
+此路由僅代理 Cloud Agents REST API。若是已登入的終端機工作階段，請使用 [Cursor CLI 訂閱設定](../tutorials/cursor_cli_subscription.md) 中說明的獨立 `/cursor-cli` 中繼。CLI 中繼自 LiteLLM 1.112 起提供。請讓 Cursor 登入保持直接連線，並使用 `--agent-endpoint`（而非 `--endpoint`）來路由代理程式流量。
 
 **支援的端點：**
 

@@ -1,35 +1,20 @@
 ---
-title: API 參考
+title: Customer Management API 參考
 sidebar_label: API 參考
 description: 透過 Customer Management API 管理客戶組織、團隊、成員、budget 範本與使用量。
 ---
 
-# API 參考 {#api-reference}
+# Customer Management API 參考 {#customer-management-api-reference}
 
-從您的後端使用這些 API 匯入客戶、設定 budget，並將使用量回傳給您的產品。若要完成完整整合，請依照[追蹤客戶支出](./track-customer-spend.md)操作。
+從您的後端使用這些 API 匯入客戶、設定 budget，並將使用量回傳給您的產品。請先參閱[客戶管理](../customers.md)，再依照[設定客戶 budget 並讀取使用量](./track-customer-spend.md)完成完整整合。
 
 管理基礎路徑為 `/management/v1`。客戶組織、團隊與成員，與 LiteLLM 內部的組織、團隊、使用者，以及 `/customer` 終端使用者記錄是分開的。
 
-{/* keep-version-note: The reference describes verified main-branch contracts. A published release containing this complete surface has not been verified. */}
+<SinceVersion v="1.111.0" />
 
 ## 可用性 {#availability}
 
-以下管理與使用量路由位於 `main` 上。請檢查您的 gateway 的 `/openapi.json` 並套用其客戶遷移。包含完整整合的已發行版本尚未經過驗證。
-
-| 功能 | 所需變更 |
-| --- | --- |
-| 組織、團隊、成員、範本與使用量 API | 位於 `main`；成員使用 `budget_id`。 |
-| 身分標頭、首次請求成員註冊與階層 budget 檢查 | 位於 `main`，包含 [#51546](https://github.com/BerriAI/litellm/pull/51546)。 |
-| 即時共用客戶支出計數器 | 位於 `main`，包含 [#51568](https://github.com/BerriAI/litellm/pull/51568)。 |
-| 成員電子郵件欄位與電子郵件身分標頭 | 預覽：[#51617](https://github.com/BerriAI/litellm/pull/51617)。 |
-| 請求記錄中的客戶身分欄位 | 位於 `main`，包含 [#51596](https://github.com/BerriAI/litellm/pull/51596)。 |
-| 客戶 budget 事件與 webhook 回呼 | 位於 `main`，包含 [#51579](https://github.com/BerriAI/litellm/pull/51579)，以及 [#51645](https://github.com/BerriAI/litellm/pull/51645) 中的週期性期間、成員事件與團隊覆寫修正。 |
-| 原生 upsert 與首次請求建立組織 | 在 [#51607](https://github.com/BerriAI/litellm/pull/51607) 審查中；未記錄為受支援的契約。 |
-| Fail-open 客戶身分處理 | 在 [#51604](https://github.com/BerriAI/litellm/pull/51604) 審查中；設定與斷言身分的記錄仍未驗證。 |
-
-預覽功能在所連結的變更尚未合併期間，需要包含該變更的 build。
-
-免費層級支援將 Customer Management 限制為：無 Enterprise 時最多 5 個組織、每個組織 5 個團隊、每個團隊 5 名成員。請查看 `/openapi.json` 中的 `/management/v1/customer_portal/limits`，確認您的 build 包含此功能。
+請使用 PostgreSQL，並套用 gateway 的資料庫遷移。沒有 Enterprise 時，您最多可建立 5 個組織、每個組織 5 個團隊、每個團隊 5 名成員。請參閱[容量限制](#customer-management-limits)。
 
 ## 驗證與慣例 {#authentication-and-conventions}
 
@@ -53,7 +38,11 @@ export START_DATE="$END_DATE"
 
 ### 重試客戶匯入 {#retry-a-customer-import}
 
-以既有 ID 重複 `POST` 會回傳 `409`；它不會更新記錄。在逾時或收到 `409` 後，請取得該 ID，將其父層與設定與您的應用程式比對，然後使用 `PATCH` 進行所需變更。Patch 時請省略未變更的欄位。在資源允許的情況下，明確的 `null` 會清除可為 null 的欄位。
+請使用 `POST /management/v1/customer_organizations/upsert`，以 `customer_org_id` 建立或更新組織；若省略 ID，則以 `alias` 建立或更新。請使用 `POST /management/v1/customer_members/upsert`，處理以 `customer_member_id` 與 `customer_org_id` 或 `customer_org_alias` 識別的成員。若您同時傳送兩個組織欄位，兩者必須相符。兩個端點在建立新記錄時回傳 `200` 與 `created: true`，既有記錄則回傳 `created: false`。重複傳送相同的請求不會變更記錄；省略的欄位會保留原值。
+
+組織 upsert 接受組織建立欄位。成員 upsert 接受 `alias`、`budget_id`、`budget_override` 與 `budget_override_expires_at`，以及可選的 `parent_team_id`。沒有團隊的新成員會加入組織的 `default` 團隊。既有成員會保留其團隊；提供的 `parent_team_id` 會成為其第一個團隊。請使用成員 [PATCH 端點](#move-a-member-to-other-teams-preview)搭配 `parent_team_ids`，取代完整的團隊清單。衝突或不明確的組織 alias，以及跨組織移動，會回傳 `409`。
+
+建立端點在以既有 ID 重複 `POST` 時會回傳 `409`；它們不會更新記錄。在逾時或收到 `409` 後，請取得該 ID，將其父層與設定與您的應用程式比對，然後使用 `PATCH` 進行所需變更。Patch 時請省略未變更的欄位。在資源允許的情況下，明確的 `null` 會清除可為 null 的欄位。
 
 ## Budget 物件 {#budget-object}
 
@@ -74,7 +63,7 @@ export START_DATE="$END_DATE"
 
 使用客戶身分標頭時，LiteLLM 會在推論前檢查組織、團隊與成員的 budget。請求必須通過每個適用的限制，且每個限制都有自己的支出計數器：團隊 budget 計算整個團隊的支出，而指派到同一個範本的成員各自計算自己的支出。某個範圍達到或超過 `max_budget` 或 `budget_limits` 視窗時，會造成 [budget 錯誤](./track-customer-spend.md#handle-a-budget-refusal-in-your-client)；組織優先於團隊與成員。實際範例請參閱[共用團隊 budget 或每位成員額度](./track-customer-spend.md#shared-team-budget-or-per-member-allowance)。LiteLLM 也會檢查每個範圍的模型存取與速率限制。沒有這些標頭的請求不會進入此階層強制路徑。
 
-在[共用客戶支出計數器修正](https://github.com/BerriAI/litellm/pull/51568)之前的 build，在重新整理前可能使用快取的階層支出。請使用包含該變更的 build。在顯示餘額時，請將已在進行中的請求與背景帳務納入考量。
+在顯示餘額時，請將已在進行中的請求與背景帳務納入考量。
 
 重置工作會針對設定的期間更新 `budget_reset_at` 與資源目前的 `spend` 計數器。請讀取回傳的時間戳記；歷史日期請使用使用量 API。Budget 重置不會清除歷史每日使用量。
 
@@ -230,17 +219,16 @@ curl --request POST \
 | 請求欄位 | 建立 | 更新 | 意義 |
 | --- | --- | --- | --- |
 | `customer_member_id` | 可選，省略時自動產生 | 不接受 | 穩定的成員 ID。 |
-| `parent_team_ids` | 必填，非空陣列 | 可選；取代所有團隊；預覽 #51913 | 來自同一個客戶組織的既有客戶團隊 ID。第一個團隊是成員的預設團隊。 |
+| `parent_team_ids` | 必填，非空陣列 | 可選；取代所有團隊 | 來自同一個客戶組織的既有客戶團隊 ID。第一個團隊是成員的預設團隊。 |
 | `parent_org_id` | 可選 | 不接受 | 客戶組織 ID。設定時，必須與團隊的組織相符。 |
-| `email` | 可選，預設 `null`；預覽 #51617 | 可選；`null` 會清除；預覽 #51617 | 修剪並轉為小寫後 1–254 個字元的字串。在客戶組織內唯一。 |
 | `alias` | 可選，預設 `null` | 可選；`null` 會清除 | 顯示名稱。 |
 | `budget_id` | 可選；省略或 `null` 時使用組織的預設範本 | 可選；`null` 會解除範本連結 | 來自同一個客戶組織的成員範本 ID。 |
 | `budget_override` | 可選，預設 `null` | 可選；`null` 會移除 | 覆寫範本的成員 [budget 欄位](#budget-object)。 |
 | `budget_override_expires_at` | 可選，預設 `null` | 可選；`null` 會移除到期時間 | 帶有時區的時間戳記。到期後，成員使用其範本的設定。 |
 
-### 將成員移至其他團隊（預覽） {#move-a-member-to-other-teams-preview}
+### 將成員移至其他團隊 {#move-a-member-to-other-teams-preview}
 
-移動成員需要 [#51913](https://github.com/BerriAI/litellm/pull/51913)。在 `parent_team_ids` 中傳送成員完整的新團隊清單。清單會取代目前的團隊，因此請包含成員保留的每個團隊，預設團隊放第一個。省略此欄位可讓團隊保持不變。
+在 `parent_team_ids` 中傳送成員完整的新團隊清單。清單會取代目前的團隊，因此請包含成員保留的每個團隊，預設團隊放第一個。省略此欄位可讓團隊保持不變。
 
 ```bash title="Move Alice to the Billing team"
 curl --request PATCH \
@@ -276,18 +264,13 @@ curl --request POST \
 | --- | --- | --- |
 | `customer_member_id`、`parent_org_id` | 字串 | 成員 ID 與其客戶組織 ID。 |
 | `parent_team_ids` | 字串陣列 | 成員的客戶團隊，預設團隊在第一個。 |
-| `email` | 字串或 `null`；預覽 #51617 | 正規化後的電子郵件（當 build 包含成員電子郵件支援時）。 |
 | `budget_id` | 字串或 `null` | 選取的組織範本。 |
 | `budget_override_id` | 字串或 `null` | 擁有的覆寫記錄。 |
 | `budget_override` | Budget 物件或 `null` | 已儲存的覆寫，包括已到期的覆寫。 |
 | `budget_override_expires_at` | 日期時間或 `null` | 已儲存的覆寫到期時間。 |
 | `effective_budget` | Budget 物件 | 範本加上生效中的覆寫。 |
 
-:::info 成員電子郵件需要 #51617
-
-Main 使用 `customer_member_id` 作為成員身分。將電子郵件字串作為該 ID 傳送，不會以電子郵件查詢既有成員。`email` 資源欄位與 `x-litellm-customer-member-email` 標頭需要包含 [#51617](https://github.com/BerriAI/litellm/pull/51617) 的 build。該標頭需要 `x-litellm-customer-org-alias`；成員 ID 與電子郵件身分衝突時回傳 `403`。
-
-:::
+請使用 `customer_member_id` 作為成員身分。該欄位中的電子郵件字串就是一個 ID；v1.111 沒有獨立的 `email` 欄位或 `x-litellm-customer-member-email` 查詢功能。
 
 ## 成員 budget 範本 {#member-budget-templates}
 
@@ -383,8 +366,11 @@ curl --get \
 | --- | --- |
 | `x-litellm-customer-org-alias` | 依其 `alias` 解析客戶組織。單獨使用時，向組織範圍收費並檢查組織範圍。 |
 | `x-litellm-customer-member-id` | 解析成員，再解析其父團隊與組織。單獨使用時，需要既有成員。 |
+| `x-litellm-customer-team-id` | 選取成員的其中一個團隊。需要成員標頭。省略時使用成員的第一個團隊。 |
 
-同時使用兩個標頭時，LiteLLM 會檢查該成員屬於該組織。當組織有預設成員 budget 時，未知成員會加入組織的 `default` 團隊。LiteLLM 將該團隊的 ID 產生為 `{customer_org_id}:default`。未知的組織 alias 回傳 `401`；共用的 alias 回傳 `400`；成員與組織不符回傳 `403`。
+使用組織 alias 與成員 ID 時，LiteLLM 會檢查該成員屬於該組織。未知的 alias 會以該 ID 與 alias 註冊一個組織。未知成員會加入其 `default` 團隊，該團隊的 ID 為 `{customer_org_id}:default`，並繼承組織的預設成員範本。沒有預設範本時，首次請求註冊會建立一個沒有自身上限的成員。管理用的 `POST /customer_members` 仍需要範本或覆寫。
+
+共用的組織 alias 會回傳 `400`。組織與成員不符、團隊不在成員的團隊之中，或客戶不在金鑰設定的客戶範圍內，會回傳 `403`。若註冊無法完成，請求會在沒有該客戶層級的情況下繼續進行，並記錄警告；任何已解析的客戶層級仍會被追蹤。免費層級容量失敗會記錄 `CUSTOMER TRACKING OFF`。其他驗證、模型存取、budget 與速率限制檢查仍會套用。
 
 在各客戶之間使用您現有的應用程式金鑰。您的後端從已驗證的客戶工作階段選擇組織 alias 與成員 ID，並在 SDK 請求中傳遞它們。請參閱 [OpenAI Responses 與 Deep Agents 範例](./track-customer-spend.md)。
 
@@ -480,7 +466,7 @@ curl --get "$LITELLM_BASE_URL/management/v1/customer_members/daily/activity" \
 
 ## 客戶 budget 事件 {#customer-budget-events}
 
-客戶 budget 事件透過 [#51579](https://github.com/BerriAI/litellm/pull/51579)，以及[客戶 budget 警示修正 #51645](https://github.com/BerriAI/litellm/pull/51645)（涵蓋週期性期間、成員事件與團隊覆寫）位於 `main`。請使用包含這兩個變更的 build。在 `litellm_settings.callbacks` 中註冊 `customer_budget_webhook`。透過最上層的 `callback_settings.customer_budget_webhook` 設定它：
+在 `litellm_settings.callbacks` 中註冊 `customer_budget_webhook`。透過最上層的 `callback_settings.customer_budget_webhook` 設定它：
 
 | 設定 | 類型 | 意義 |
 | --- | --- | --- |
@@ -513,7 +499,7 @@ Webhook 接受成功的 `2xx` 回應，逾時為 10 秒。傳遞採盡力而為�
 | 狀態 | 原因與下一步 |
 | --- | --- |
 | `400` | 未知或重複的查詢參數、無效的日期範圍或無效的分頁。請檢查該路由的參數表。 |
-| `401` | 缺少或無效的驗證。在推論時，也請檢查未知的成員或組織 alias。 |
+| `401` | 缺少或無效的驗證。請檢查該路由的管理金鑰或應用程式金鑰。 |
 | `403` | 呼叫者缺少 `proxy_admin`，或成員不屬於提供的客戶組織。 |
 | `403` | 免費層級建立上限。Type `urn:litellm:error:customer-hierarchy-free-tier-limit`，title `Customer Management free tier limit reached`，detail `Customer Management free tier limit reached: up to 5 customer organizations, 5 teams per organization and 5 members per team without a LiteLLM Enterprise license. Upgrade to Enterprise to remove the limits: https://www.litellm.ai/enterprise`。重試前請升級至 Enterprise 或釋放容量。 |
 | `404` | 資源或父層不存在。請先取得或建立父層。 |

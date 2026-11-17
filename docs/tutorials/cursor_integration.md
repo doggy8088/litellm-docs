@@ -7,7 +7,7 @@ import Image from '@theme/IdealImage';
 :::info
 **支援模式：** Ask、Plan、Agent。使用基礎 URL 覆寫時，agent 模式可運作 <SinceVersion v="1.97.0" />，因為 LiteLLM 會將 Cursor agent 傳送的 Responses API 請求格式轉換為 chat completions 路徑。Cursor 會在其端依模式與模型限制自訂 API 金鑰，因此支援範圍取決於 Cursor 啟用的內容。
 
-Cursor 並未正式支援 AI 閘道；這裡的實作是根據其 API 反向工程得到的最佳努力。Cursor CLI（`agent` / `cursor-agent`）完全無法目標指向 LiteLLM，請參閱 [Cursor CLI](#cursor-cli-cursor-agent)。
+Cursor 已在文件中說明 [LLM 閘道網路設定](https://cursor.com/docs/enterprise/network-configuration#llm-gateways)。下方的設定使用其自訂 OpenAI 基底 URL。Cursor CLI 使用獨立的原生中繼，請參閱 [Cursor CLI](#cursor-cli-cursor-agent)。
 :::
 
 :::warning[缺少 Override OpenAI Base URL？]
@@ -40,7 +40,7 @@ https://your-litellm-proxy.com/cursor
 
 此代理必須可從網際網路存取：Cursor 會從其自己的伺服器傳送請求，而不是從您的電腦，並使用 `User-Agent: Cursor/1.0`。位於 VPN、IP allowlist 之後，或位於私有位址上的代理，會在任何請求到達 LiteLLM 之前就從 Cursor 端失敗；[疑難排解](#troubleshooting) 列出了 Cursor 在各種情況下顯示的內容。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2025-12-13/6580de2b-3a59-45b2-b7b6-3ab105d87e74/ascreenshot.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2JDELI43356LVVTC%2F20251213%2Fus-west-1%2Fs3%2Faws4_request&X-Amz-Date=20251213T224156Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=5a1af4ff63d38d51e06d398ed50f10161d690e3e57e9d67c1d23ce5b7ffdefd5)
+![](https://colony-recorder.s3.amazonaws.com/files/2025-12-13/6580de2b-3a59-45b2-b7b6-3ab105d87e74/ascreenshot.jpeg)
 
 ### 2. 建立虛擬金鑰 {#2-create-virtual-key}
 
@@ -93,7 +93,7 @@ Cursor 的模型選擇器可能會輸出模型名稱的 thinking 與 fast 變體
 
 以 `Cmd+L` / `Ctrl+L` 開啟 **Ask** 模式，並選取您的模型。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2025-12-13/d87ee25b-3c6d-4231-ba00-4d841d0612bc/ascreenshot.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2JDELI43356LVVTC%2F20251213%2Fus-west-1%2Fs3%2Faws4_request&X-Amz-Date=20251213T223855Z&X-Amz-Expires=900&X-Amz-SignedHeaders=host&X-Amz-Signature=75316b8cd2d451f476232bd0ca459c4b6877e788637bf228bbd7d8b319fd1427)
+![](https://colony-recorder.s3.amazonaws.com/files/2025-12-13/d87ee25b-3c6d-4231-ba00-4d841d0612bc/ascreenshot.jpeg)
 
 傳送訊息。所有請求現在都會透過 LiteLLM 路由。
 
@@ -171,29 +171,18 @@ LiteLLM 也可以作為 Cursor Cloud Agents API 的前端，因此透過 `api.cu
 
 ## Cursor CLI（cursor-agent） {#cursor-cli-cursor-agent}
 
-Cursor CLI（`agent`，也安裝為 `cursor-agent`）無法目標指向 LiteLLM 或任何其他閘道。其 `--endpoint` 旗標與 `CURSOR_API_ENDPOINT` 變數決定 CLI 登入哪個 Cursor 後端，而不是 OpenAI 相容 API：CLI 啟動時會將您的金鑰 POST 到 `<endpoint>/auth/exchange_user_api_key`，以換取 Cursor 工作階段權杖，之後的每個請求都是 Cursor 私有 RPC。Cursor 沒有記錄此旗標，也沒有在 CLI 中提供自訂端點或 OpenAI 相容金鑰（[open feature request](https://forum.cursor.com/t/cursor-cli-custom-endpoint-and-api-key-support/129424)）；其唯一的自備憑證選項 `agent bedrock`，仍然會透過 Cursor 的後端路由。
+Cursor CLI（`agent`，也安裝為 `cursor-agent`）使用 Cursor 的原生代理程式通訊協定，而非 IDE 的 OpenAI 相容 API。`/cursor-cli` 中繼自 LiteLLM 1.112 起提供，會使用 `--agent-endpoint` 與獨立的 `x-litellm-api-key` 標頭，轉送已登入的 CLI 工作階段。它需要 HTTP/1.1 代理程式傳輸與不受限制的閘道金鑰。登入、初始化與模型探索仍直接連向 Cursor。
 
-將 CLI 指向代理會在到達任何模型之前失敗（已在公開的 Cursor CLI 2026.08.31 建置版本中驗證）：
+請參閱 [透過 Cursor CLI 使用您的 Cursor 訂閱](./cursor_cli_subscription.md)，了解設定、驗證與不受支援的控制項目。
 
-```shell
-export CURSOR_API_KEY=<LITELLM_VIRTUAL_KEY>
-agent --endpoint https://your-litellm-proxy.com
-```
-
-```
-⚠ Warning: The provided API key is invalid.
-The API key was loaded from the CURSOR_API_KEY environment variable.
-Please check you have the right key, create a new one, or authenticate without it.
-```
-
-CLI 會對任何低於 500、且未攜帶 Cursor 工作階段權杖的回應輸出此警告（5xx 則會改為固定的 `Failed to reach the Cursor API` 錯誤），因此缺少該路由的代理（LiteLLM 在根路徑回應 404，而在 `/cursor` 下回應 401）看起來完全就像錯誤的 Cursor 金鑰，而代理中的任何文字都永遠不會顯示在畫面上。若要透過 LiteLLM 路由 Cursor，請使用本頁的 Cursor IDE 設定；若要使用支援自訂端點的終端機代理程式，請參閱 [Claude Code](./claude_responses_api.md)、[Codex CLI](../proxy/client_setup/codex_cli.md)、[Gemini CLI](./litellm_gemini_cli.md) 或 [OpenCode](./opencode_integration.md)。
+請勿將 `--endpoint` 或 `CURSOR_API_ENDPOINT` 指向 LiteLLM，也不要將 `CURSOR_API_KEY` 設為 LiteLLM 金鑰。這些設定會變更 Cursor 登入後端，並可能在代理程式請求到達代理之前就產生 `The provided API key is invalid`。
 
 ## 疑難排解 {#troubleshooting}
 
 | 問題 | 解決方案 |
 |-------|----------|
 | 模型沒有回應 | 檢查 base URL 是否以 `/cursor` 結尾，且 key 是否有模型存取權限 |
-| 使用 Cursor CLI 時出現 `The provided API key is invalid`（`agent` / `cursor-agent`） | Cursor CLI 無法使用閘道：`--endpoint` 選取的是 Cursor 後端，而非 OpenAI 相容 API，因此當任何缺少 Cursor 驗證路由的 proxy 使其登入失敗時，就會顯示此警告。請參閱 [Cursor CLI](#cursor-cli-cursor-agent) |
+| 使用 Cursor CLI 時出現 `The provided API key is invalid`（`agent` / `cursor-agent`） | 請讓登入直接連向 Cursor。請使用 `--agent-endpoint` 的原生中繼，而非 `--endpoint`，且不要將 LiteLLM 金鑰放入 `CURSOR_API_KEY`。請參閱 [Cursor CLI 訂閱設定](./cursor_cli_subscription.md) |
 | `Invalid API key` / `Unauthorized User API key` | 當 proxy 回應 401 時，Cursor 會顯示此訊息。API Key 欄位必須填入 LiteLLM 虛擬金鑰（會以 `sk-` 開頭）；占位值會被拒絕 |
 | `User API Key Rate limit exceeded` | 當 Cursor 對 proxy 的請求收到 429 或 5xx 時，以及完全沒有收到任何回應時，Cursor 都會顯示此訊息；VPN 或 IP allowlist 將來自 Cursor 伺服器的流量丟棄時也會如此（已在 Cursor 3.18.25 驗證：聊天會停在 `Taking longer than expected` 約一分鐘，然後顯示此訊息）。因此，原因通常不是速率限制。首先，從您網路外的一台機器執行 `curl <LITELLM_PROXY_BASE_URL>/cursor/models -H "Authorization: Bearer <LITELLM_VIRTUAL_KEY>"`；如果它卡住，表示 proxy 從網際網路無法存取，而 LiteLLM 從未看到這些請求。如果它有回應，請在 LiteLLM 記錄中查找這些請求（它們會帶有 `User-Agent: Cursor/1.0`）以取得真正的錯誤。那裡常見的原因是該金鑰的 rpm 或 tpm 限制，因為每個 Cursor 請求都會攜帶約 25k token 的系統提示，以及提供者 429 |
 | `Network Error` / `We're having trouble connecting to the model provider` | base URL 主機名稱在公開網際網路上無法解析，例如是內部 DNS 名稱。Cursor 會在重試約一分鐘時顯示 `Rate limited by model provider, retrying`，然後顯示此訊息。請使用公開 DNS 可解析的主機名稱 |

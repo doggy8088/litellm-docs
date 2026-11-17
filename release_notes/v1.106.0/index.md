@@ -66,6 +66,8 @@ pip install litellm==1.106.0
 
 **傳送模型無法讀取之媒體的 Decisions 請求現在回傳 400。**`/v1/systemone` 上的 `images`、任一路由上的 `audio` 與 `videos`，以及 TypeSafe `assets`，過去會以 200 丟棄。它們現在回傳指名該欄位的 400，除非設定了 `drop_params`，且 OpenAI 決策模型現在會收到 System One `images`，並會被計費。請參閱 [PR #46628](https://github.com/BerriAI/litellm/pull/46628)
 
+**在 Bedrock 模型上設定 `supports_prompt_cache_breakpoint: false` 會關閉其 Converse 提示快取。**該旗標原本用於選擇 OpenAI `prompt_cache_breakpoint` 格式，從本版本起 Bedrock Converse 也會讀取它來決定是否傳送 `cachePoint` 區塊。將該旗標設為 `false` 的 Bedrock Claude 部署不會傳送 `cachePoint`，也不會有快取寫入或讀取。若要恢復快取，請從支援提示快取的 Bedrock Claude 部署移除該旗標，只在描述 OpenAI 標記時才設定它。原本就是為了關閉 `cachePoint` 區塊而設定該旗標的地方請予以保留，例如 inference profile ARN 或會拒絕該欄位的模型。後續版本會把 Bedrock 的決策移至其專屬的 `supports_bedrock_converse_cache_point` 旗標，請參閱 [Bedrock 快取點](../../docs/completion/prompt_caching#control-bedrock-converse-cache-points) 與 [issue #52140](https://github.com/BerriAI/litellm/issues/52140)。請參閱 [PR #44292](https://github.com/BerriAI/litellm/pull/44292)
+
 **`/v1/responses/compact` 現在以與 `/v1/responses` 相同的方式檢查 `previous_response_id`。**另一位使用者或團隊的 id 回傳 403，代理程式從未發出的 id 也一樣，除非 `general_settings.allow_unmanaged_response_ids` 為 `true`。websocket `/v1/responses` 路由發出的 id 對每個金鑰都被拒絕。請參閱 [PR #46827](https://github.com/BerriAI/litellm/pull/46827)
 
 :::
@@ -192,7 +194,7 @@ pip install litellm==1.106.0
 - 將專案 id 作為文件記載的 `anthropic-workspace-id` 標頭傳送到 Bedrock Mantle，讓 `aws_bedrock_project_id` 生效 - [PR #44173](https://github.com/BerriAI/litellm/pull/44173)
 - 在 Converse 與 Invoke 串流呼叫上遵循逐請求 `timeout` - [PR #44134](https://github.com/BerriAI/litellm/pull/44134)
 - 從工具 schema 中丟棄會拒絕它們的 Converse 模型（Kimi K3、Grok 4.6 與 4.7）的 lookaround regex 模式，由新的 `supports_regex_lookaround` 成本對照表與 `model_info` 旗標控制 - [PR #44138](https://github.com/BerriAI/litellm/pull/44138)
-- 停止將 Converse `cachePoint` 區塊傳送給 Kimi K3，由新的 `supports_prompt_cache_breakpoint` 旗標控制 - [PR #44292](https://github.com/BerriAI/litellm/pull/44292)
+- 停止將 Converse `cachePoint` 區塊傳送給 Kimi K3，由現有的 `supports_prompt_cache_breakpoint` 旗標控制，該旗標現在也控制 Bedrock `cachePoint` 區塊（請參閱重大變更）- [PR #44292](https://github.com/BerriAI/litellm/pull/44292)
 - 依 `drop_params` 丟棄或拒絕 Bedrock GPT 模型不支援的推理強度等級，而非轉送它們換來 Bedrock 400 - [PR #44183](https://github.com/BerriAI/litellm/pull/44183)
 - 僅為原生 Chat Completions 上的 gpt-oss 將開頭的 `<reasoning>` 標籤從答案中分離，讓 GPT 5.6 與 Grok 答案保留它 - [PR #44432](https://github.com/BerriAI/litellm/pull/44432)
 - 透過即時 API 將每個 Nova Sonic assistant 句子轉送一次，而非兩次 - [PR #44987](https://github.com/BerriAI/litellm/pull/44987)

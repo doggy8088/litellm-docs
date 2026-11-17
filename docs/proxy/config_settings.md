@@ -1397,6 +1397,7 @@ router_settings:
 | LITELLM_MODE | LiteLLM 的運作模式（例如 production、development）
 | LITELLM_NON_ROOT | 讓 LiteLLM 在非 root 模式下執行的旗標，以提升 Docker 容器中的安全性
 | LITELLM_OFFLINE_MODE | 設為 `true` 可停止 LiteLLM 自行發出的每個請求，例如擷取模型成本對照表、Anthropic beta 標頭、auto router 預設集、政策範本、部落格文章和最新版本、已外洩密碼檢查，以及 Hugging Face tokenizer 下載。改為使用隨附的副本。對提供者和您設定的其他目的地的請求不受影響。預設為 `false`。請參閱 [對外請求和離線模式](./outbound_requests)。
+| LITELLM_PREFIX_BLOCK_HASHES_SECRET | <SinceVersion v="1.111.0" /> 啟用 `prefix_block_hashes` 回呼時，專用於提示詞前綴區塊雜湊 ID 的 HMAC 密鑰；未設定時會跳過雜湊，且不會退回使用 salt 或 master key。請參閱 [前綴區塊雜湊 ID](./prefix_block_hashes.md)。 |
 | LITELLM_RATE_LIMIT_WINDOW_SIZE | LiteLLM 的速率限制視窗大小。預設為 60
 | LITELLM_REASONING_AUTO_SUMMARY | 若設定為 "true"，會自動為跨所有轉換路徑（Anthropic adapter、Responses API 等）的 reasoning models 啟用詳細推理摘要（`summary: "detailed"`）。預設為 "false"
 | LITELLM_SALT_KEY | LiteLLM 中用於加密的 salt key

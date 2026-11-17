@@ -1,7 +1,7 @@
 ---
-title: Claude, Codex, and Copilot subscriptions
-sidebar_label: Claude, Codex & Copilot subscriptions
-description: 透過 LiteLLM 使用您的 ChatGPT、Claude 或 GitHub Copilot 訂閱。選擇您的訂閱並依照設定指南操作。
+title: Claude、Codex、Copilot 與 Cursor 訂閱
+sidebar_label: AI 訂閱
+description: 透過 LiteLLM 使用您的 ChatGPT、Claude、GitHub Copilot 或 Cursor 訂閱。選擇您的訂閱並依照設定指南操作。
 hide_table_of_contents: true
 ---
 
@@ -9,7 +9,7 @@ import SubscriptionCards from '@site/src/components/SubscriptionCards';
 
 # 搭配 LiteLLM 使用您的訂閱 {#use-your-claude-codex-or-copilot-subscription}
 
-保留您的程式設計用戶端與方案的額度。取得 LiteLLM 的存取控制與請求記錄。
+保留您的程式設計用戶端與方案的額度。可用的 LiteLLM 控制項與請求記錄取決於整合方式。
 
 開始之前，您需要一個執行中的 [LiteLLM proxy](./proxy/docker_quick_start.md)。
 
@@ -55,6 +55,19 @@ import SubscriptionCards from '@site/src/components/SubscriptionCards';
       ctaLabel: '設定 Copilot',
       icon: '/img/integrations/github-copilot.svg',
       to: '/docs/providers/github_copilot',
+    },
+    {
+      title: 'Cursor CLI',
+      since: '1.112.0',
+      description: '在 CLI 中使用 Cursor 登入。',
+      listDescription: [
+        '具有模型存取權的 Cursor 帳戶',
+        '具備 HTTP/1.1 代理程式傳輸的 Cursor CLI',
+        '已啟用 Cursor CLI 中繼的 Proxy',
+      ],
+      ctaLabel: '設定 Cursor CLI',
+      icon: '/img/integrations/cursor.svg',
+      to: '/docs/tutorials/cursor_cli_subscription',
     },
   ]}
 />

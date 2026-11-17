@@ -1,10 +1,10 @@
 ---
-title: 追蹤客戶支出
-sidebar_label: 追蹤客戶支出
+title: 設定客戶 budget 並讀取使用量
+sidebar_label: 設定 budget 並讀取使用量
 description: 匯入客戶、隨 LLM 請求傳遞其身分，並為您的產品取得使用量與 budget。
 ---
 
-# 追蹤客戶支出 {#track-customer-spend}
+# 設定客戶 budget 並讀取使用量 {#set-customer-budgets-and-read-usage}
 
 :::info
 
@@ -14,15 +14,14 @@ description: 匯入客戶、隨 LLM 請求傳遞其身分，並為您的產品�
 
 為您的客戶使用一個應用程式 API 金鑰。在每個請求中傳遞客戶的組織 alias 與成員 ID。LiteLLM 會解析成員的團隊與組織，檢查其 budget，並在三個層級記錄支出、token 與請求。
 
-先設定 budget 通知，然後匯入 Acme、其 Support 團隊與兩名成員。為 Alice 傳送一個請求，並取得要在您的產品中顯示的使用量與 budget。
+<SinceVersion v="1.111.0" />
+
+請先參閱[客戶管理](../customers.md)，追蹤您的第一個請求。本指南說明如何在傳送流量之前建立有 budget 的客戶、新增團隊與成員，並從您的後端讀取使用量。Webhook 通知為選填。
 
 ![Acme 的 Customer Management 使用量，支出 $0.14、一個請求與 120 個 token](../../../static/img/customer_portal/usage-overview.jpg)
 
 *本機 Customer Management 在一次受控提供者請求後的使用情況，使用量讀自會計分類帳。*
 
-{/* keep-version-note: This guide distinguishes the verified main-branch API from pending changes. A published release containing the complete integration has not been verified. */}
-
-請使用包含 `main` 上客戶階層 API、身分標頭、使用量路由與資料庫遷移的 build。請查看 `/openapi.json` 中的 `/management/v1/customer_members`。預覽需求會出現在需要它們的步驟旁邊；所需變更請參閱[可用性參考](./api_reference.md#availability)。
 
 ## 免費層級限制 {#free-tier-limits}
 
@@ -48,55 +47,7 @@ description: 匯入客戶、隨 LLM 請求傳遞其身分，並為您的產品�
 
 將金鑰保留在您的伺服器上。您的後端會先驗證客戶，並從該客戶的工作階段選擇身分標頭，然後才呼叫 LiteLLM。它也會在將使用量回傳給您的產品之前，先驗證客戶存取權。
 
-## 1. 設定 budget webhooks {#1-set-up-budget-webhooks}
-
-客戶 budget webhook 透過[客戶 budget webhook 支援](https://github.com/BerriAI/litellm/pull/51579) 與[客戶 budget 警示修正](https://github.com/BerriAI/litellm/pull/51645) 位於 `main`。以下週期性 budget 與成員事件，請使用包含這兩個變更的 build。請在您的產品中準備一個接受 JSON 並在 10 秒內回傳成功 `2xx` 回應的 POST 端點。Gateway 必須能連到它。
-
-將下方的範例端點替換為您的接收端 URL。在匯入客戶或傳送請求之前加入此設定，然後重新啟動 gateway：
-
-```yaml title="config.yaml, additions to your existing configuration"
-general_settings:
-  use_spend_logs_ledger: true
-
-litellm_settings:
-  callbacks: [customer_budget_webhook]
-
-callback_settings:
-  customer_budget_webhook:
-    endpoint: https://billing.example.com/litellm/customer-budget
-    headers:
-      X-Source: litellm
-```
-
-將這些項目與您現有的設定合併。如果您已有 callbacks，請將 `customer_budget_webhook` 加入該清單。透過 secret store 提供的值，請使用 `CUSTOMER_BUDGET_WEBHOOK_URL` 與 `CUSTOMER_BUDGET_WEBHOOK_HEADERS`；請參閱[設定優先順序](./api_reference.md#customer-budget-events)。
-
-在正支出更新提交後，LiteLLM 會檢查受影響的組織、團隊與成員。支出達到或超過 `soft_budget` 會產生 `soft_budget_crossed`；達到或超過 `max_budget` 會產生 `budget_crossed`。一次更新可以在多個層級產生兩個事件。免費請求與在推論前被拒絕的請求，不會產生客戶 budget 支出事件。
-
-```json title="Example event for Alice's $40 soft threshold"
-{
-  "event": "soft_budget_crossed",
-  "scope": "customer_member",
-  "entity_id": "acme-alice",
-  "customer_org_id": "org-acme",
-  "customer_org_alias": "Acme",
-  "customer_team_id": null,
-  "customer_team_alias": null,
-  "customer_member_id": "acme-alice",
-  "customer_member_alias": "Alice",
-  "spend": 41.25,
-  "budget": 40,
-  "period": "2026-12-13T12:00:00+00:00",
-  "timestamp": "2026-11-13T12:00:00Z"
-}
-```
-
-`budget` 是觸發的門檻。`period` 是記錄的下一次重置時間戳記，未記錄重置時為 `"lifetime"`。使用 `customer_org_id` 路由事件，以更新您產品中的客戶餘額。成員 budget 涵蓋該成員在各團隊間的使用，因此成員事件包含組織與成員 ID；團隊欄位為 `null`。
-
-在 10 秒內回傳成功的 `2xx` 回應。傳遞採盡力而為：快取 claim 會抑制相同的事件、範圍、實體與期間，直到 budget 重置為止，包括傳遞失敗後。Lifetime budget 使用 TTL 為 100 年的快取 claim。跨 worker 去重需要共用的 Redis；本機備援可能產生重複。HTTP 用戶端會在連線錯誤時重試一次，但對於逾時或不成功的 HTTP 回應，沒有持久的重試佇列或排程。請透過使用量 API 核對，以找回漏掉的事件。
-
-在客戶與 SDK 範例就緒後，於[步驟 4](#4-check-budgets-and-webhook-delivery) 驗證傳遞。
-
-## 2. 匯入客戶 {#2-import-a-customer}
+## 1. 匯入客戶 {#2-import-a-customer}
 
 先建立組織，然後建立其團隊與成員。使用您應用程式中的 ID，或在省略 ID 時儲存 LiteLLM 回傳的 ID。
 
@@ -178,18 +129,9 @@ curl --request POST "$LITELLM_BASE_URL/management/v1/customer_members" \
 
 每位成員預期回傳 `201`。讀取回應中的 `effective_budget` 以驗證繼承的 $50 上限。使用 `budget_id` 選取另一個範本，或使用 `budget_override` 自訂成員。目前的 API 會拒絕舊的 `budget_template_id` 欄位。
 
-### 新增電子郵件（預覽） {#add-an-email-preview}
+### 將電子郵件用作一個成員 ID {#add-an-email-preview}
 
-`email` 欄位需要 [#51617](https://github.com/BerriAI/litellm/pull/51617)。在包含該變更的 build 上，新增 Alice 的電子郵件：
-
-```bash title="PATCH /management/v1/customer_members/acme-alice"
-curl --request PATCH "$LITELLM_BASE_URL/management/v1/customer_members/acme-alice" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{
-    "email": "alice@acme.example"
-  }'
-```
+若電子郵件字串在您的應用程式中是穩定且 gateway 範圍內唯一的 ID，您可以將其用作 `customer_member_id`。LiteLLM 會將其視為一個 ID；v1.111 沒有獨立的成員 `email` 欄位或 `x-litellm-customer-member-email` 查詢功能。若電子郵件可能變更，請使用應用程式擁有的 ID。
 
 ### 重複匯入 {#repeat-an-import}
 
@@ -211,9 +153,9 @@ curl --request PATCH "$LITELLM_BASE_URL/management/v1/customer_members/acme-alic
   }'
 ```
 
-組織與團隊也使用相同的建立、取得與更新流程。原生 upsert 與自動建立組織仍在 [#51607](https://github.com/BerriAI/litellm/pull/51607) 審查中。
+組織與團隊也使用相同的建立、取得與更新流程。若要重複匯入組織與成員，請使用 [upsert 端點](./api_reference.md#retry-a-customer-import)。
 
-## 3. 為 Alice 傳送請求 {#3-send-a-request-for-alice}
+## 2. 為 Alice 傳送請求 {#3-send-a-request-for-alice}
 
 使用您現有的應用程式金鑰，並在請求標頭中傳遞 Alice 的身分：
 
@@ -240,7 +182,6 @@ client = OpenAI(
 raw_response = client.responses.with_raw_response.create(
     model=os.environ["LITELLM_MODEL"],
     input="Write a short welcome message.",
-    max_output_tokens=128,
     extra_headers={
         "x-litellm-customer-org-alias": "Acme",
         "x-litellm-customer-member-id": "acme-alice",
@@ -282,9 +223,142 @@ print(result["messages"][-1].text)
 
 既有成員 ID 不需要組織標頭即可解析其父層。有既有組織 alias 與新成員 ID 時，LiteLLM 會將成員註冊在 `org-acme:default` 下，並指派組織的預設成員範本。只有 alias 時，使用量歸屬到組織。
 
-使用 [#51617](https://github.com/BerriAI/litellm/pull/51617) 時，將成員 ID 標頭替換為 `x-litellm-customer-member-email: alice@acme.example`；保留組織 alias 標頭。成員 ID 標頭中的電子郵件字串是 ID，不是電子郵件查詢。
+如需首次請求註冊與團隊選取，請參閱[推論身分標頭](./api_reference.md#attribute-inference-requests)。
 
-## 4. 檢查 budget 與 webhook 傳遞 {#4-check-budgets-and-webhook-delivery}
+## 3. 為您的產品取得使用量 {#5-fetch-usage-for-your-product}
+
+組織彙總端點會回傳日期範圍內完整的支出、token 與請求總計，不需分頁。它接受最多 100 個客戶組織 ID。
+
+```bash title="Complete Acme usage"
+curl --get "$LITELLM_BASE_URL/management/v1/customer_organizations/daily/activity/aggregated" \
+  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
+  --data-urlencode "customer_org_ids=org-acme" \
+  --data-urlencode "start_date=$START_DATE" \
+  --data-urlencode "end_date=$END_DATE"
+```
+
+讀取回應最上層的 metadata：
+
+```json title="Usage response excerpt from the local example"
+{
+  "metadata": {
+    "total_spend": 0.14,
+    "total_tokens": 120,
+    "total_api_requests": 1
+  }
+}
+```
+
+日期為含起訖的 UTC 日，起訖最多相差 400 天。`total_spend` 是以 USD 計的成本。您可以在產品的定價或 chargeback 計算中使用它；此 API 不會建立發票或收款。金鑰明細顯示最高的金鑰，而總計包含每個金鑰。
+
+### 團隊與成員使用量 {#team-and-member-usage}
+
+```bash title="Support team usage, first page"
+curl --get "$LITELLM_BASE_URL/management/v1/customer_teams/daily/activity" \
+  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
+  --data-urlencode "customer_team_ids=acme-support" \
+  --data-urlencode "start_date=$START_DATE" \
+  --data-urlencode "end_date=$END_DATE" \
+  --data-urlencode "page=1" \
+  --data-urlencode "page_size=100"
+```
+
+```bash title="Alice's usage, first page"
+curl --get "$LITELLM_BASE_URL/management/v1/customer_members/daily/activity" \
+  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
+  --data-urlencode "customer_member_ids=acme-alice" \
+  --data-urlencode "start_date=$START_DATE" \
+  --data-urlencode "end_date=$END_DATE" \
+  --data-urlencode "page=1" \
+  --data-urlencode "page_size=100"
+```
+
+這些端點會對儲存的列分頁。跟隨 `metadata.has_more` 並遞增 `page` 直到它為 `false`。將每頁的總計加總一次；同一日期可能出現在多頁上。請參閱[分頁契約](./api_reference.md#usage-pagination)。不要將組織、團隊與成員的總計相加：它們包含相同的請求。
+
+帳務在背景執行。如果成功請求後使用量尚未出現，請檢查帳務完成情況、UTC 日期與身分標頭。零成本模型可以回報請求與 token，但支出為 $0。
+
+## 4. 取得 budget 與上限 {#6-fetch-budgets-and-caps}
+
+取得 Acme 目前的 budget 支出與組織上限：
+
+```bash title="Organization budget"
+curl "$LITELLM_BASE_URL/management/v1/customer_organizations/org-acme" \
+  --header "Authorization: Bearer $LITELLM_ADMIN_KEY"
+```
+
+取得 Support 團隊目前的支出與上限：
+
+```bash title="Team budget"
+curl "$LITELLM_BASE_URL/management/v1/customer_teams/acme-support" \
+  --header "Authorization: Bearer $LITELLM_ADMIN_KEY"
+```
+
+取得 Alice 繼承的 budget 與生效中的覆寫：
+
+```bash title="Member budget"
+curl "$LITELLM_BASE_URL/management/v1/customer_members/acme-alice" \
+  --header "Authorization: Bearer $LITELLM_ADMIN_KEY"
+```
+
+組織請讀取 `budget.max_budget`，團隊或成員請讀取 `effective_budget.max_budget`。相同的物件包含 `rpm_limit`、`tpm_limit`、模型限制與允許的模型。團隊或成員的有效 budget 結合其範本與生效中的覆寫；已到期的覆寫不再適用。
+
+`spend` 是目前的 budget 計數器，`budget_usage` 列出每個 budget 視窗目前的計數器與 `reset_at`，`budget_reset_at` 記錄下一次重置。使用量讀取會依您選取的日期回報 UTC 日的歷史支出。重置會將計數器歸零，但不會清除該歷史。Budget 依另行設定的[budget 重置時區](../budget_reset_and_tz.md) 重置，因此視窗邊界不一定與 UTC 日對齊。若要在您的產品中解析成員的父層，請讀取其 `parent_org_id` 與 `parent_team_ids`。第一個團隊是其預設團隊。
+
+開啟 **Customer Management → Customers**，選取 **Acme**，並選擇 **Select Time Range** 以包含您的請求。使用量頁面顯示支出、請求、token 與成員上限。在 **Break down by** 中選擇 **Teams** 以檢查 Support。
+
+![Acme 成員使用量，顯示 Alice 與 Bob 以及其設定的 budget](../../../static/img/customer_portal/member-caps.jpg)
+
+*本機 Customer Management 中的實際客戶記錄與會計資料。Alice 的受控提供者請求記錄了 $0.14 與 120 個 token。*
+
+## 設定 budget webhooks（選填） {#1-set-up-budget-webhooks}
+
+若您不需要 budget 通知，請跳過本節。請在您的產品中準備一個接受 JSON 並在 10 秒內回傳成功 `2xx` 回應的 POST 端點。Gateway 必須能連到它。
+
+將下方的範例端點替換為您的接收端 URL。在測試 webhook 傳遞之前加入此設定，然後重新啟動 gateway：
+
+```yaml title="config.yaml, additions to your existing configuration"
+general_settings:
+  use_spend_logs_ledger: true
+
+litellm_settings:
+  callbacks: [customer_budget_webhook]
+
+callback_settings:
+  customer_budget_webhook:
+    endpoint: https://billing.example.com/litellm/customer-budget
+    headers:
+      X-Source: litellm
+```
+
+將這些項目與您現有的設定合併。如果您已有 callbacks，請將 `customer_budget_webhook` 加入該清單。透過 secret store 提供的值，請使用 `CUSTOMER_BUDGET_WEBHOOK_URL` 與 `CUSTOMER_BUDGET_WEBHOOK_HEADERS`；請參閱[設定優先順序](./api_reference.md#customer-budget-events)。
+
+在正支出更新提交後，LiteLLM 會檢查受影響的組織、團隊與成員。支出達到或超過 `soft_budget` 會產生 `soft_budget_crossed`；達到或超過 `max_budget` 會產生 `budget_crossed`。一次更新可以在多個層級產生兩個事件。免費請求與在推論前被拒絕的請求，不會產生客戶 budget 支出事件。
+
+```json title="Example event for Alice's $40 soft threshold"
+{
+  "event": "soft_budget_crossed",
+  "scope": "customer_member",
+  "entity_id": "acme-alice",
+  "customer_org_id": "org-acme",
+  "customer_org_alias": "Acme",
+  "customer_team_id": null,
+  "customer_team_alias": null,
+  "customer_member_id": "acme-alice",
+  "customer_member_alias": "Alice",
+  "spend": 41.25,
+  "budget": 40,
+  "period": "2026-12-13T12:00:00+00:00",
+  "timestamp": "2026-11-13T12:00:00Z"
+}
+```
+
+`budget` 是觸發的門檻。`period` 是記錄的下一次重置時間戳記，未記錄重置時為 `"lifetime"`。使用 `customer_org_id` 路由事件，以更新您產品中的客戶餘額。成員 budget 涵蓋該成員在各團隊間的使用，因此成員事件包含組織與成員 ID；團隊欄位為 `null`。
+
+在 10 秒內回傳成功的 `2xx` 回應。傳遞採盡力而為：快取 claim 會抑制相同的事件、範圍、實體與期間，直到 budget 重置為止，包括傳遞失敗後。Lifetime budget 使用 TTL 為 100 年的快取 claim。跨 worker 去重需要共用的 Redis；本機備援可能產生重複。HTTP 用戶端會在連線錯誤時重試一次，但對於逾時或不成功的 HTTP 回應，沒有持久的重試佇列或排程。請透過使用量 API 核對，以找回漏掉的事件。
+
+在客戶與 SDK 範例就緒後，請以 [webhook 測試](#verify-webhook-delivery)驗證傳遞。
+
+## 檢查 budget 與 webhook 傳遞 {#4-check-budgets-and-webhook-delivery}
 
 建立另一個 budget 為零的客戶，在不變更 Acme 設定的情況下檢查拒絕行為：
 
@@ -301,7 +375,7 @@ curl --request POST "$LITELLM_BASE_URL/management/v1/customer_organizations" \
   }'
 ```
 
-使用步驟 3 的 `client`、相同的應用程式金鑰與模型，以及此客戶的 alias：
+使用[為 Alice 傳送請求](#3-send-a-request-for-alice)中的 `client`、相同的應用程式金鑰與模型，以及此客戶的 alias：
 
 ```python
 from openai import APIStatusError
@@ -310,7 +384,6 @@ try:
     response = client.responses.create(
         model=os.environ["LITELLM_MODEL"],
         input="Budget check",
-        max_output_tokens=128,
         extra_headers={"x-litellm-customer-org-alias": "Budget check"},
     )
     print("Request succeeded:", response.id)
@@ -320,7 +393,9 @@ except APIStatusError as error:
 
 預期回傳 `422` 與指名 `customer_org=org-budget-check` 的 budget 錯誤，且發生在向提供者送出請求之前。部署可以將此狀態改為 `429`；請參閱[在您的用戶端處理 budget 拒絕](#handle-a-budget-refusal-in-your-client)。
 
-使用正成本模型測試 webhook。將測試上限設為 $1、軟性門檻設為 $0，然後重新執行相同的 SDK 呼叫。請求會成功並產生模型的正常成本。零成本請求不會產生支出事件。
+### 驗證 webhook 傳遞 {#verify-webhook-delivery}
+
+若您未設定 [budget webhooks](#1-set-up-budget-webhooks)，請跳過此測試。使用正成本模型測試 webhook。將測試上限設為 $1、軟性門檻設為 $0，然後重新執行相同的 SDK 呼叫。請求會成功並產生模型的正常成本。零成本請求不會產生支出事件。
 
 ```bash title="Allow the test request and trigger a soft-budget alert"
 curl --request PATCH "$LITELLM_BASE_URL/management/v1/customer_organizations/org-budget-check" \
@@ -363,7 +438,7 @@ curl --request PATCH "$LITELLM_BASE_URL/management/v1/customer_organizations/org
   }'
 ```
 
-第一個耗盡的範圍會拒絕請求：先是組織，接著團隊，然後成員。各 worker 間即時的客戶支出計數器透過 [#51568](https://github.com/BerriAI/litellm/pull/51568) 位於 `main`。請使用包含該變更的 build；較舊的 build 在重新整理前可能依快取支出放行請求。在顯示餘額時，請將已在進行中的請求與背景帳務納入考量。
+第一個耗盡的範圍會拒絕請求：先是組織，接著團隊，然後成員。在顯示餘額時，請將已在進行中的請求與背景帳務納入考量。
 
 ### 在您的用戶端處理 budget 拒絕 {#handle-a-budget-refusal-in-your-client}
 
@@ -431,7 +506,6 @@ try:
     client.chat.completions.create(
         model=os.environ["LITELLM_MODEL"],
         messages=[{"role": "user", "content": "Budget check"}],
-        max_tokens=16,
         extra_headers={"x-litellm-customer-org-alias": "Budget check"},
     )
 except APIStatusError as error:
@@ -441,7 +515,7 @@ except APIStatusError as error:
         raise
 ```
 
-Anthropic SDK 公開整個回應內文，因此請讀取巢狀的 `error` 物件。先執行 `pip install anthropic`。
+Anthropic SDK 公開整個回應內文，因此請讀取巢狀的 `error` 物件。先執行 `pip install anthropic`。Anthropic 需要 `max_tokens`；請將 `LITELLM_MODEL_MAX_OUTPUT_TOKENS` 設為您所設定模型的文件所記載的原生輸出上限。
 
 ```python title="Detect a budget refusal with the Anthropic SDK"
 import os
@@ -463,8 +537,8 @@ def is_budget_refusal(error: APIStatusError) -> bool:
 try:
     client.messages.create(
         model=os.environ["LITELLM_MODEL"],
+        max_tokens=int(os.environ["LITELLM_MODEL_MAX_OUTPUT_TOKENS"]),
         messages=[{"role": "user", "content": "Budget check"}],
-        max_tokens=16,
         extra_headers={"x-litellm-customer-org-alias": "Budget check"},
     )
 except APIStatusError as error:
@@ -478,92 +552,7 @@ except APIStatusError as error:
 
 兩個 SDK 預設都會以退避方式重試 `429` 兩次，然後您的程式碼才會看到例外。使用預設的 `422` 時，拒絕在一次請求後就到達您的 `except` 區塊。使用設定的 `429` 時，上面的檢查仍可識別拒絕，但要等 SDK 已傳送請求三次之後。若要避免這些額外請求，請保留預設的 `422`，或在建立 client 時傳入 `max_retries=0`，或對單次呼叫使用 `client.with_options(max_retries=0)`，並且只在錯誤不是 budget 拒絕時，才在您自己的程式碼中重試。
 
-## 5. 為您的產品取得使用量 {#5-fetch-usage-for-your-product}
-
-組織彙總端點會回傳日期範圍內完整的支出、token 與請求總計，不需分頁。它接受最多 100 個客戶組織 ID。
-
-```bash title="Complete Acme usage"
-curl --get "$LITELLM_BASE_URL/management/v1/customer_organizations/daily/activity/aggregated" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
-  --data-urlencode "customer_org_ids=org-acme" \
-  --data-urlencode "start_date=$START_DATE" \
-  --data-urlencode "end_date=$END_DATE"
-```
-
-讀取回應最上層的 metadata：
-
-```json title="Usage response excerpt from the local example"
-{
-  "metadata": {
-    "total_spend": 0.14,
-    "total_tokens": 120,
-    "total_api_requests": 1
-  }
-}
-```
-
-日期為含起訖的 UTC 日，起訖最多相差 400 天。`total_spend` 是以 USD 計的成本。您可以在產品的定價或 chargeback 計算中使用它；此 API 不會建立發票或收款。金鑰明細顯示最高的金鑰，而總計包含每個金鑰。
-
-### 團隊與成員使用量 {#team-and-member-usage}
-
-```bash title="Support team usage, first page"
-curl --get "$LITELLM_BASE_URL/management/v1/customer_teams/daily/activity" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
-  --data-urlencode "customer_team_ids=acme-support" \
-  --data-urlencode "start_date=$START_DATE" \
-  --data-urlencode "end_date=$END_DATE" \
-  --data-urlencode "page=1" \
-  --data-urlencode "page_size=100"
-```
-
-```bash title="Alice's usage, first page"
-curl --get "$LITELLM_BASE_URL/management/v1/customer_members/daily/activity" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY" \
-  --data-urlencode "customer_member_ids=acme-alice" \
-  --data-urlencode "start_date=$START_DATE" \
-  --data-urlencode "end_date=$END_DATE" \
-  --data-urlencode "page=1" \
-  --data-urlencode "page_size=100"
-```
-
-這些端點會對儲存的列分頁。跟隨 `metadata.has_more` 並遞增 `page` 直到它為 `false`。將每頁的總計加總一次；同一日期可能出現在多頁上。請參閱[分頁契約](./api_reference.md#usage-pagination)。不要將組織、團隊與成員的總計相加：它們包含相同的請求。
-
-帳務在背景執行。如果成功請求後使用量尚未出現，請檢查帳務完成情況、UTC 日期與身分標頭。零成本模型可以回報請求與 token，但支出為 $0。
-
-## 6. 取得 budget 與上限 {#6-fetch-budgets-and-caps}
-
-取得 Acme 目前的 budget 支出與組織上限：
-
-```bash title="Organization budget"
-curl "$LITELLM_BASE_URL/management/v1/customer_organizations/org-acme" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY"
-```
-
-取得 Support 團隊目前的支出與上限：
-
-```bash title="Team budget"
-curl "$LITELLM_BASE_URL/management/v1/customer_teams/acme-support" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY"
-```
-
-取得 Alice 繼承的 budget 與生效中的覆寫：
-
-```bash title="Member budget"
-curl "$LITELLM_BASE_URL/management/v1/customer_members/acme-alice" \
-  --header "Authorization: Bearer $LITELLM_ADMIN_KEY"
-```
-
-組織請讀取 `budget.max_budget`，團隊或成員請讀取 `effective_budget.max_budget`。相同的物件包含 `rpm_limit`、`tpm_limit`、模型限制與允許的模型。團隊或成員的有效 budget 結合其範本與生效中的覆寫；已到期的覆寫不再適用。
-
-`spend` 是目前的 budget 計數器，`budget_usage` 列出每個 budget 視窗目前的計數器與 `reset_at`，`budget_reset_at` 記錄下一次重置。使用量讀取會依您選取的日期回報 UTC 日的歷史支出。重置會將計數器歸零，但不會清除該歷史。Budget 依另行設定的[budget 重置時區](../budget_reset_and_tz.md) 重置，因此視窗邊界不一定與 UTC 日對齊。若要在您的產品中解析成員的父層，請讀取其 `parent_org_id` 與 `parent_team_ids`。第一個團隊是其預設團隊。
-
-開啟 **Customer Management → Customers**，選取 **Acme**，並選擇 **Select Time Range** 以包含您的請求。使用量頁面顯示支出、請求、token 與成員上限。在 **Break down by** 中選擇 **Teams** 以檢查 Support。
-
-![Acme 成員使用量，顯示 Alice 與 Bob 以及其設定的 budget](../../../static/img/customer_portal/member-caps.jpg)
-
-*本機 Customer Management 中的實際客戶記錄與會計資料。Alice 的受控提供者請求記錄了 $0.14 與 120 個 token。*
-
-## 7. 在支出記錄中偵錯請求 {#7-debug-a-request-in-spend-logs}
+## 在支出記錄中偵錯請求 {#7-debug-a-request-in-spend-logs}
 
 使用 Responses SDK 印出的 `x-litellm-call-id`。在您執行 curl 的環境中，將該值設為 `LITELLM_CALL_ID`。
 
@@ -575,7 +564,7 @@ curl --get "$LITELLM_BASE_URL/spend/logs/v2" \
   --data-urlencode "end_date=$END_DATE 23:59:59"
 ```
 
-此 API 即使有請求 ID 也需要日期範圍。客戶身分欄位需要 [#51596](https://github.com/BerriAI/litellm/pull/51596)。檢查已儲存的 metadata 以驗證 Alice → Support → Acme：
+此 API 即使有請求 ID 也需要日期範圍。檢查已儲存的 metadata 以驗證 Alice → Support → Acme：
 
 ```json title="Saved customer identity excerpt"
 {
@@ -596,7 +585,7 @@ curl --get "$LITELLM_BASE_URL/spend/logs/v2" \
 
 ![支出記錄請求詳細資料，包含 Acme、Support、Alice、$0.14 成本與 120 個 token](../../../static/img/customer_portal/spend-log-customer.jpg)
 
-*本機 gateway 中實際儲存的請求，使用受控提供者與會計分類帳。Customer 區段需要 #51596。*
+*本機 gateway 中實際儲存的請求，使用受控提供者與會計分類帳。*
 
 記錄 API 沒有客戶組織、團隊或成員篩選。`user_id`、`team_id` 與 `end_user` 指的是分開的 LiteLLM 實體。請以 call ID 尋找個別請求，並使用客戶使用量 API 取得客戶總計。
 
@@ -604,7 +593,7 @@ curl --get "$LITELLM_BASE_URL/spend/logs/v2" \
 
 團隊 budget 是整個團隊共用的一個計數器：每位成員的支出都從同一個金額扣減。成員範本是一組限制，每位被指派的成員繼承它並擁有自己的計數器，因此三位成員在 $10 範本下可以各花 $10。使用團隊 budget 限制群組總額，使用範本給每個人一個額度。兩者也可以併用。
 
-以下範例接續[步驟 2](#2-import-a-customer)，使用 `org-acme`。它們需要 `jq` 從回應讀取 ID。顯示的 `effective_budget` 值是由 `main` 的 build 回傳的；內文中的支出數字是示意。
+以下範例接續[匯入客戶](#2-import-a-customer)，使用 `org-acme`。它們需要 `jq` 從回應讀取 ID。`effective_budget` 回應來自本機 gateway；內文中的支出數字是示意。
 
 ### 一個共用團隊 budget {#one-shared-team-budget}
 
@@ -775,9 +764,9 @@ Frank 的 `effective_budget` 現在有 $50 的每月視窗與範本的 $100 每�
 
 請求必須通過適用於它的每個限制：組織的 budget、請求解析到的團隊的 budget，以及成員的有效 budget（包括其每個視窗）。每個限制都與自己的計數器比對，因此最小的數字不會單獨決定結果。Erin 可能在個人支出 $15 時被拒絕，因為 Research 已達到 $100；Frank 也可能在他的 $20 每月視窗被拒絕，而 Acme 與 Sales 仍有餘額。LiteLLM 先檢查組織，接著團隊，然後成員，錯誤會指名第一個耗盡的範圍。
 
-## Fail-open 處理（待定） {#fail-open-handling-pending}
+## 未解析的客戶身分 {#fail-open-handling-pending}
 
-Fail-open 身分處理仍在 [#51604](https://github.com/BerriAI/litellm/pull/51604) 審查中。Main 會拒絕無法解析或註冊的身分，以及衝突的身分。在本指南能提供設定之前，需要一個經驗證的設定，能在記錄中保留斷言的客戶 ID。
+若 LiteLLM 無法註冊未知的組織或成員，它會記錄警告，並在不追蹤該客戶層級的情況下繼續進行。它仍會追蹤任何已解析的層級，並強制執行請求的其他驗證、模型、budget 與速率限制。衝突的組織、成員或團隊身分會回傳 `403`。請在設定完成後驗證使用量，而不是將成功的模型回應視為歸屬正確的證明。請參閱[身分處理](./api_reference.md#attribute-inference-requests)。
 
 ## 疑難排解 {#troubleshooting}
 
@@ -785,8 +774,8 @@ Fail-open 身分處理仍在 [#51604](https://github.com/BerriAI/litellm/pull/51
 | --- | --- |
 | 匯入時出現 `409` | 取得既有 ID，驗證其父層，然後 patch 可變更的欄位。 |
 | 成員建立時出現 `422` | 使用 `parent_team_ids` 與 `budget_id`。如果組織沒有預設範本，請提供範本或覆寫。 |
-| 推論時出現 `401` | 檢查組織 alias 與成員 ID。新成員註冊需要既有組織 alias 與預設範本。 |
+| 推論時出現 `401` | 檢查應用程式金鑰與 gateway 驗證。 |
 | 推論時出現 `403` | 確認組織 alias 與成員的組織相符。 |
 | Budget `422`，或設定時出現 `429` | 確認它是[budget 拒絕](#handle-a-budget-refusal-in-your-client)，然後讀取組織、團隊與成員的支出與上限，找出第一個耗盡的範圍。 |
 | 沒有 budget 錯誤類型的 `429` | 檢查該範圍的 RPM、TPM 與模型限制。 |
-| 記錄中缺少客戶 ID | 檢查您的 build 是否包含 #51596。 |
+| 記錄中缺少客戶使用量或 ID | 檢查身分標頭、註冊警告、免費層級容量與帳務完成情況。 |

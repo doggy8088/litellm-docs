@@ -35,6 +35,8 @@ for f in result.files:
 
 請參閱 [與 LiteLLM AI Gateway 搭配使用](./gateway.md) 了解 proxy 設定、虛擬金鑰、該選哪個 harness，以及各 harness 的支出。沒有前綴時，模型會直接透過 LiteLLM SDK 呼叫；請參閱 [模型與路由](./models.md#sdk-mode)。
 
+若要在您自己的任務上比較 harness 與模型，請參閱 [評估代理程式](./evaluation.md)。定義具型別的任務與成功檢查，執行獨立的試驗，並比較通過率、成本與時間。
+
 ## 支援的 harness {#supported-harnesses}
 
 | Harness | Runtime | 執行位置 |

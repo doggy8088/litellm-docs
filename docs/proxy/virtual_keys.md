@@ -3,6 +3,8 @@ import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
 # 虛擬金鑰 {#virtual-keys}
+
+自 v1.111 起，若要追蹤客戶與終端使用者的支出，請先參閱[客戶管理](./customers.md)。您可以在多位客戶之間共用同一把應用程式金鑰，並在每次請求中傳遞客戶身分標頭。
 透過 proxy 的 virtual key 追蹤支出並控管模型存取權
 
 :::info

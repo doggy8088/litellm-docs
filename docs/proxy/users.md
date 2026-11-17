@@ -4,6 +4,8 @@ import TabItem from '@theme/TabItem';
 
 # 預算、速率限制 {#budgets-rate-limits}
 
+自 v1.111 起，客戶與終端使用者的花費追蹤請先參閱[客戶管理](./customers.md)。下方的終端使用者預算範例涵蓋受支援的[舊版 API](./legacy_end_users.md)。
+
 :::info[**預算設定選項**]
 **個人預算**：建立不含 team_id 的虛擬金鑰，以設定個人支出上限
 

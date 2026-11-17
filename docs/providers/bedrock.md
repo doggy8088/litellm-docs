@@ -1290,29 +1290,31 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 LiteLLM 支援使用 `guarded_text` 內容類型進行選擇性內容審核。它可讓您標記哪些使用者內容要由 Bedrock Guardrails 評估。LiteLLM 也會自行標記部分內容，如下所述。
 
 這些規則僅適用於 LiteLLM 將請求送往 Bedrock Converse API 的情況，大多數位於 `/v1/chat/completions` 的 Bedrock 聊天模型都使用此 API。請勿在其他 Bedrock 路由上使用 `guarded_text`：
-- 在 Invoke 路由上，LiteLLM 會將 `guardrailConfig` 以請求標頭的形式傳送。此路由涵蓋具有 `bedrock/invoke/` 前綴的模型、LiteLLM 預設送往 Invoke 的模型（例如 `bedrock/mistral.mistral-7b-instruct-v0:2`），以及大多數送往 Claude 模型的 `/v1/messages` 請求。Bedrock 會將 guardrail 套用到整個提示，但 prompt attack 過濾器除外。AWS 僅對位於 [guardrail input tags](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-tagging.html) 內的輸入執行這些過濾器，而 LiteLLM 不會加入這些標籤。被封鎖的請求會以 `finish_reason: "stop"`（在 `/v1/messages` 上為 `stop_reason: "end_turn"`）回傳，並以 guardrail 的封鎖訊息作為內容。對於 `bedrock/invoke/` 的 Claude 模型，LiteLLM 會移除 `guarded_text` 部分，因此模型永遠不會看到該內容。
+- 在 Invoke 路由上，LiteLLM 會將 `guardrailConfig` 以請求標頭的形式傳送。此路由涵蓋具有 `bedrock/invoke/` 前綴的模型、LiteLLM 預設送往 Invoke 的模型（例如 `bedrock/mistral.mistral-7b-instruct-v0:2`），以及大多數送往 Claude 模型的 `/v1/messages` 請求。Bedrock 會將 guardrail 套用到整個提示，但 prompt attack 過濾器除外。AWS 僅對位於 [guardrail input tags](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-tagging.html) 內的輸入執行這些過濾器，而 LiteLLM 不會加入這些標籤。被封鎖的請求會以 `finish_reason: "stop"`（在 `/v1/messages` 上為 `stop_reason: "end_turn"`）回傳，並以 guardrail 的封鎖訊息作為內容。對於 `bedrock/invoke/` 的 Claude 模型，LiteLLM 會移除 `guarded_text` 部分，因此模型永遠不會看到該內容。對於 `bedrock/invoke/` 的 Nova 模型，若未設定 `drop_params: true`，Bedrock 會對 `guarded_text` 部分回傳 400 錯誤；設定後則會以純文字傳送。
 - 其他路由，例如 `bedrock/openai/`、`bedrock/mantle/` 與 `bedrock/claude_platform/`，不在此處涵蓋範圍內。
 
 **LiteLLM 如何建立 `guardContent` 區塊：**
-- 使用者訊息中具有 `type: "guarded_text"` 的內容會以 [`guardContent`](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlock.html) 區塊的形式傳送至 Bedrock。LiteLLM 尚不支援在 system 或 assistant 訊息中使用 `guarded_text`。請勿在這些訊息中使用，否則 LiteLLM 會捨棄這些部分，或將其以純文字傳送。
+- 使用者訊息中具有 `type: "guarded_text"` 的內容會以 [`guardContent`](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlock.html) 區塊的形式傳送至 Bedrock。
+- system 或 assistant 訊息中的 `guarded_text` 部分也會以 `guardContent` 傳送，因此模型會看到它，guardrail 也會評估它。當該部分位於請求開頭的 system 訊息之後，且會是訊息中唯一的 `guardContent` 時，LiteLLM 會改以純文字傳送，因此 Bedrock 會繼續評估整段對話。 <SinceVersion v="1.112.0" />
+- 當請求沒有 `guardrailConfig` 時，Bedrock 會以 400 拒絕 `guardContent`。設定 `drop_params: true` 後，LiteLLM 會改以純文字傳送 `guarded_text` 部分。 <SinceVersion v="1.112.0" />
 - 當最後一則訊息是使用者訊息時，LiteLLM 也會將該訊息的文字部分以 `guardContent` 傳送，其正前方的任何使用者訊息亦同。已含有 `guarded_text` 部分的使用者訊息會按原樣傳送，因此其 `type: "text"` 部分會保持純文字。圖片與文件永遠不會被包裝。
-- 在使用者、assistant 或 tool 訊息之後出現的 system 訊息會以使用者訊息的形式傳送，因此上述規則也適用於它。位於請求開頭的 system 訊息會保持為 system 訊息。 <SinceVersion v="1.104.0" />
-- 當請求含有工具結果但沒有 `tools` 參數時，LiteLLM 會將每個工具結果轉換為使用者訊息，並將其文字以 `guardContent` 傳送，無論工具結果位於對話中的何處。此行為發生於 `litellm.bedrock_neutralize_orphaned_tool_blocks` 為 `True` 時，這是預設值。 <SinceVersion v="1.103.0" />
+- 在使用者、assistant 或 tool 訊息之後出現的 system 訊息會以使用者訊息的形式傳送，因此上述規則也適用於它。位於請求開頭的 system 訊息會保持為 system 訊息。 <SinceVersion v="1.104.0" /> 當這類 system 訊息緊接在 assistant 訊息或工具結果之後、且位於請求結尾時，只有在某則使用者訊息含有 `guarded_text` 部分的情況下，LiteLLM 才會將其以 `guardContent` 傳送；否則會以純文字傳送，因此 Bedrock 會繼續評估整段對話。 <SinceVersion v="1.112.0" />
+- 當請求含有工具結果但沒有 `tools` 參數時，LiteLLM 會將每個工具結果轉換為使用者訊息。此行為發生於 `litellm.bedrock_neutralize_orphaned_tool_blocks` 為 `True` 時，這是預設值。 <SinceVersion v="1.103.0" /> 只有在某則使用者訊息含有 `guarded_text` 部分，或 LiteLLM 如上所述包裝尾端使用者訊息時，LiteLLM 才會將其文字以 `guardContent` 傳送，無論工具結果位於對話中的何處；否則會以純文字傳送，因此 Bedrock 會繼續評估整段對話。 <SinceVersion v="1.112.0" />
 
 **Bedrock Guardrails 評估的內容：**
 - 當請求至少含有一個 `guardContent` 區塊時，Bedrock Guardrails 只會評估 `guardContent` 區塊，但須注意 AWS 在下方說明的例外情況。純 `type: "text"` 部分、圖片與文件不會被評估，因此圖片內容過濾器不會看到與最後一則使用者訊息中的文字一併傳送的圖片。
 - 當請求沒有 `guardContent` 區塊時，Bedrock Guardrails 會評估每則使用者與 assistant 訊息的文字。
-- 在這兩種情況下，Bedrock 都不會評估請求開頭的 system 訊息，或隨 `tools` 參數傳送的工具結果。
+- 在這兩種情況下，Bedrock 都不會評估請求開頭的 system 訊息的純文字，或隨 `tools` 參數傳送的工具結果。
 
 :::note
 當請求含有任何 `guardContent` 區塊時，Bedrock Guardrails 只會評估以下內容：
-- 您在使用者訊息中的 `guarded_text` 部分
+- 您在使用者、assistant 與 system 訊息中的 `guarded_text` 部分
 - 當請求以一則以上使用者訊息結尾時，這些尾端使用者訊息中沒有 `guarded_text` 部分的文字
 - 在對話中任何位置、未隨 `tools` 參數傳送的每個工具結果
 
 較早的回合，以及含有 `guarded_text` 部分之訊息的 `type: "text"` 部分，都不會被評估。當內容必須被檢查時（例如您的用戶端可以編輯對話歷史），請將其放入 `guarded_text` 部分。
 
-只有當請求沒有這些區塊時，Bedrock 才會評估每則使用者與 assistant 訊息。例如，當請求以 assistant 訊息結尾，且沒有 `guarded_text` 部分或未隨 `tools` 傳送的工具結果時，就會發生這種情況。評估整段對話可能會增加延遲與成本。
+只有當請求沒有這些區塊時，Bedrock 才會評估每則使用者與 assistant 訊息。例如，當沒有任何使用者訊息含有 `guarded_text` 部分，且請求以 assistant 訊息、工具結果，或緊接在兩者之後的 system 訊息結尾時，就會發生這種情況。評估整段對話可能會增加延遲與成本。
 
 AWS 指出，在某些設定下（例如 contextual grounding 檢查），`guardContent` 區塊之外的內容仍可能被評估。詳情請參閱 [Include a guardrail with the Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-converse-api.html)。
 :::

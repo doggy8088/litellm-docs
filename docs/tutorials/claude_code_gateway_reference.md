@@ -253,7 +253,7 @@ curl -s http://localhost:4000/claude_code_gateway/managed/settings \
 
 **Claude Code 到負載平衡器後面的 LiteLLM。** 相同的設定，但有多個 replica：`PROXY_BASE_URL` 指名平衡器的來源，讓探索文件與瀏覽器 URL 將開發者指向他們能連接的位址，TLS 在平衡器上以私人主機名稱終結，並設定 Redis，讓裝置流程能在任何 replica 上完成。不需要黏性工作階段
 
-**Claude Code 到 Claude apps gateway 再到 LiteLLM。** Anthropic 不提供託管閘道；[Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) 是您自行執行的軟體。若您已經在執行它（為了它的 IdP 群組政策，或因為 Claude Desktop 透過它連接），它可以作為 LiteLLM 前面的 `anthropic` 上游，其 `base_url` 是 proxy，`api_key` 是 LiteLLM 虛擬金鑰。在該上游設定 `forward_user_identity: true`，Claude apps gateway 就會在它轉送的每個請求中加入 `x-litellm-end-user-id`（開發者的電子郵件）；LiteLLM 會將該標頭讀作[客戶 id](../proxy/customers)，無需任何額外設定，因此即使 proxy 只看到一把金鑰，支出仍按開發者追蹤。LiteLLM 對這類請求回傳的 `429` 會原封不動地回傳給開發者，而不是容錯移轉到另一個上游（Claude apps gateway v2.1.267 或更新版本），因此每位客戶的預算與速率限制得以維持。在此拓撲中，登入與受管理設定屬於 Claude apps gateway，而 LiteLLM 上的 `enable_claude_code_gateway` 保持關閉
+**Claude Code 到 Claude apps gateway 再到 LiteLLM。** Anthropic 不提供託管閘道；[Claude apps gateway](https://code.claude.com/docs/en/claude-apps-gateway) 是您自行執行的軟體。若您已經在執行它（為了它的 IdP 群組政策，或因為 Claude Desktop 透過它連接），它可以作為 LiteLLM 前面的 `anthropic` 上游，其 `base_url` 是 proxy，`api_key` 是 LiteLLM 虛擬金鑰。在該上游設定 `forward_user_identity: true`，Claude apps gateway 就會在它轉送的每個請求中加入 `x-litellm-end-user-id`（開發者的電子郵件）；LiteLLM 會將該標頭讀作[舊版終端使用者 ID](../proxy/legacy_end_users.md)，無需任何額外設定，因此即使 proxy 只看到一把金鑰，支出仍按開發者追蹤。LiteLLM 對這類請求回傳的 `429` 會原封不動地回傳給開發者，而不是容錯移轉到另一個上游（Claude apps gateway v2.1.267 或更新版本），因此每位客戶的預算與速率限制得以維持。在此拓撲中，登入與受管理設定屬於 Claude apps gateway，而 LiteLLM 上的 `enable_claude_code_gateway` 保持關閉
 
 ```yaml
 upstreams:

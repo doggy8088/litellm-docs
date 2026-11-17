@@ -270,6 +270,6 @@ curl --fail-with-body --silent --show-error --get \
 | 每個組織的客戶團隊 | 最多 5 | 超過 5 |
 | 每個團隊的客戶成員 | 最多 5 | 超過 5 |
 
-從[操作指南](/docs/proxy/customer_management/track-customer-spend)與 [API 參考](/docs/proxy/customer_management/api_reference)開始。對於更大的客戶階層，[與我們洽談 Enterprise](https://www.litellm.ai/enterprise)。
+從[快速入門](/docs/proxy/customers)與 [API 參考](/docs/proxy/customer_management/api_reference)開始。對於更大的客戶階層，[與我們洽談 Enterprise](https://www.litellm.ai/enterprise)。
 
-這份草稿以 `main` 為目標；尚未驗證包含完整流程的已發布版本。部署前請檢查[可用性](/docs/proxy/customer_management/api_reference#availability)。
+<SinceVersion v="1.111.0" />

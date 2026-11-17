@@ -121,7 +121,7 @@ litellm_settings:
 
 ### OpenAI GPT-5.6 及更新版本 {#openai-gpt-56-and-newer}
 
-相同的 `cache_control_injection_points` 在部署解析為支援 [明確提示快取斷點](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-breakpoints) 的 OpenAI 模型時也適用；成本對照表會以 `supports_prompt_cache_breakpoint` 標示這些模型（`openai/` 上的 GPT-5.6 及更新版本）。LiteLLM 看的是真正解析後的部署，而不是傳入請求的形狀，因此一個設定模式就能涵蓋混合 Anthropic 與 OpenAI 的叢集，而在 `/v1/messages` 上採用 Anthropic 形狀的用戶端也會得到 OpenAI 標記
+相同的 `cache_control_injection_points` 在部署解析為支援 [明確提示快取斷點](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-breakpoints) 的 OpenAI 模型時也適用；成本對照表會以 `supports_prompt_cache_breakpoint` 標示這些模型（`openai/` 上的 GPT-5.6 及更新版本）。部署也可以改在 `model_info` 中設定 `supports_openai_prompt_cache_breakpoint`，其優先順序高於舊名稱，且需要包含 [PR #52180](https://github.com/BerriAI/litellm/pull/52180) 的 LiteLLM 版本。兩個旗標都不控制 Bedrock Converse 的 `cachePoint` 區塊，請參閱 [Bedrock 快取點](../completion/prompt_caching.md#control-bedrock-converse-cache-points)。LiteLLM 看的是真正解析後的部署，而不是傳入請求的形狀，因此一個設定模式就能涵蓋混合 Anthropic 與 OpenAI 的叢集，而在 `/v1/messages` 上採用 Anthropic 形狀的用戶端也會得到 OpenAI 標記
 
 | Anthropic 目標 | OpenAI GPT-5.6+ 目標 |
 |---|---|

@@ -1,10 +1,22 @@
+---
+title: 舊版客戶使用情況儀表板
+description: 查看受支援的舊版終端使用者追蹤 API 的支出與記錄。
+unlisted: true
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 客戶使用情況 {#customer-usage}
+# 舊版客戶使用情況儀表板 {#legacy-customer-usage-dashboard}
 
-直接在儀表板中追蹤並視覺化終端使用者支出。監控客戶層級的使用分析、支出記錄與活動指標，以了解您的客戶如何使用您的 LLM 服務。
+:::info 建議新整合使用
+
+使用自 v1.111 起提供的 [客戶管理](./customers.md)，進行新的客戶與終端使用者追蹤。本頁說明受支援的舊版 **Usage → Customer Usage** 儀表板與 `/customer/*` API。
+
+:::
+
+直接在儀表板中追蹤並視覺化舊版終端使用者支出。監控客戶層級的使用分析、支出記錄與活動指標，以了解您的客戶如何使用您的 LLM 服務。
 
 <SinceVersion v="1.80.8-stable" />
 

@@ -4,6 +4,8 @@ import Image from '@theme/IdealImage';
 
 # 支出追蹤 {#spend-tracking}
 
+如需自 v1.111 起追蹤客戶與終端使用者的支出，請先參閱[客戶管理](./customers.md)。其客戶使用量 API 會回報組織、團隊與成員的總計。下方的 `end_user` 欄位與 `/customer/*` 範例指的是[舊版追蹤](./legacy_end_users.md)。
+
 追蹤跨越 100+ LLM 的金鑰、使用者與團隊支出。
 
 LiteLLM 會自動追蹤所有已知模型的支出。關於每個請求如何定價，請參閱 [模型成本對照表](./model_cost_map)

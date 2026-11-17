@@ -813,7 +813,7 @@ asyncio.run(main())
 - 會套用客戶預算
 - 所有工具呼叫都會以 `customer_123` 進行追蹤
 
-[深入了解客戶管理 →](./proxy/customers)
+[舊版客戶物件權限](./proxy/legacy_end_users.md#setting-customer-object-permissions)。自 v1.111 起，如需管理客戶支出與預算，請使用[客戶管理](./proxy/customers.md)。
 
 ## 呼叫 Proxy 的 /v1/responses 端點 {#calling-the-proxys-v1responses-endpoint}
 

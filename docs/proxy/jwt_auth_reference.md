@@ -108,7 +108,7 @@ general_settings:
     end_user_id_jwt_field: "customer.id"
 ```
 
-使用[使用者與團隊佈建設定](./jwt_user_team_auth.md#2-map-the-claims)控制是否建立缺少的使用者記錄。`team_id_upsert: true` 可以建立缺少的團隊；當管理員必須在授予存取權之前定義團隊政策時，請將它保持停用。最終使用者追蹤請參閱[客戶 ID 優先順序](./customers.md#1-make-llm-api-call-w-customer-id)。
+使用[使用者與團隊佈建設定](./jwt_user_team_auth.md#2-map-the-claims)控制是否建立缺少的使用者記錄。`team_id_upsert: true` 可以建立缺少的團隊；當管理員必須在授予存取權之前定義團隊政策時，請將它保持停用。JWT 最終使用者追蹤請參閱[舊版客戶 ID 優先順序](./legacy_end_users.md#1-make-llm-api-call-w-customer-id)，或參閱[客戶管理](./customers.md)以了解自 v1.111 起建議的支出追蹤設定。
 
 ## 加入自訂驗證 {#custom-jwt-validate}
 

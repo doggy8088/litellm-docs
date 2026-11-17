@@ -29,6 +29,40 @@ from litellm.harness import Text, ToolCall, FileChange, Done, Result, State
 | `litellm.agent_session(harness, *, sandbox, **options)` | `aagent_session` | `Session` |
 | `litellm.agent_resume(state, *, sandbox)` | `aagent_resume` | `Session` |
 | `litellm.agent_capabilities(harness)` | | `Capabilities` |
+| `litellm.agent_eval(tasks, targets, *, sandbox, **options)` | `aagent_eval` | `EvalScorecard` |
+
+## 評估 {#evaluations}
+
+評估的輸入與輸出都可從頂層套件取得。設定與完整逐步說明請參閱 [評估代理程式](./evaluation.md)。此 API 需要尚未發布的 SDK 實作，追蹤於 [#52143](https://github.com/BerriAI/litellm/issues/52143)。
+
+```python
+from litellm import (
+    CommandCheck,
+    EvalScorecard,
+    EvalStatus,
+    EvalTarget,
+    EvalTask,
+    JudgeCheck,
+    PredicateCheck,
+)
+```
+
+| 類型 | 欄位 |
+|---|---|
+| `EvalTask` | `id`、`prompt`、必要的 `check`，以及選填的 `workspace`、`files`、`setup` |
+| `EvalTarget` | `harness`、`model`，以及選填的 `label`、harness 專屬的 `options`、自訂的 `tools` |
+| `CommandCheck` | 引數序列 `command`，以及選填的 `timeout=30` |
+| `PredicateCheck` | 同步或非同步的布林值 `predicate`，接收代理程式的 `Result` |
+| `JudgeCheck` | `rubric`、明確指定的評判 `model`，以及選填的 `timeout=30` |
+| `EvalScorecard` | `suite_id`、`runs`、衍生的 `summaries`、`to_markdown()`、`to_json()` |
+| `EvalRun` | `run_id`、`task_id`、`target`、從 1 起算的 `trial`、`status`、選填的代理程式 `result`、選填的 `check`、`duration`、`detail` |
+| `EvalStatus` | `PASS`、`FAIL`、`ERROR` |
+
+`agent_eval()` 與 `aagent_eval()` 需要僅能以關鍵字指定的 `sandbox` 引數。請傳入型別為 `Callable[[Path], Sandbox]` 的 factory。執行器會在每次嘗試時以全新的暫存工作區呼叫它。對於受信任的任務，請使用 `sandbox=sandbox.local`，以您使用者的權限執行。
+
+選填引數包括 `trials=1`、`max_concurrency=1`、`max_turns=None`、`timeout=300`、`setup_timeout=120`、`metadata`、`api_base` 與 `api_key`。
+
+只有當代理程式結果的 `stop_reason="done"` 且檢查通過時，一次執行才算通過。摘要的通過率會把錯誤列計入分母。代理程式與評判的使用量及成本各自獨立，資料不完整的指標會帶有 `metrics_complete=False`。
 
 ## 選項 {#options}
 

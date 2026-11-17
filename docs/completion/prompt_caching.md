@@ -272,7 +272,7 @@ print(response.usage)
 
 ### OpenAI 明確斷點（GPT-5.6 及更新版本） {#openai-explicit-breakpoints-gpt-56-and-newer}
 
-GPT-5.6 及更新版本也支援 [明確快取斷點](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-breakpoints)：在內容區塊上加入 `prompt_cache_breakpoint` 標記，再搭配請求層級的 `prompt_cache_options` 來選擇模式（`implicit` 會保留 OpenAI 在最新訊息上的自動斷點並與您的標記並存，`explicit` 則只使用您的標記）以及快取 `ttl`（`30m`，或在 `/responses` 上為 `12h`）。LiteLLM 會在 `/chat/completions`、`/responses`，以及對 Anthropic 形狀的用戶端在 `/v1/messages` 上原樣傳遞這兩者。`12h` 的寫入費用為輸入費率的 2.5 倍，`30m` 則為 1.25 倍；OpenAI 會在 `usage.input_tokens_details.cache_write_tokens_details` 中以 `ttl_30m_tokens` 與 `ttl_12h_tokens` 回報兩者的拆分。LiteLLM 會以模型的 `cache_creation_input_token_cost_above_12hr` 計算 `12h` 部分的價格，其餘部分則以 `cache_creation_input_token_cost` 計算；沒有 12 小時費率的模型，所有寫入都以 30 分鐘費率計費。接受此標記的模型會在成本對應表中帶有 `supports_prompt_cache_breakpoint: true`，而尚未在對應表中被標記的 GPT-5.6 或更新版本 OpenAI 模型名稱也會以相同方式處理。若要讓 LiteLLM 從部署設定替您放置標記，請參閱 [自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)
+GPT-5.6 及更新版本也支援 [明確快取斷點](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-breakpoints)：在內容區塊上加入 `prompt_cache_breakpoint` 標記，再搭配請求層級的 `prompt_cache_options` 來選擇模式（`implicit` 會保留 OpenAI 在最新訊息上的自動斷點並與您的標記並存，`explicit` 則只使用您的標記）以及快取 `ttl`（`30m`，或在 `/responses` 上為 `12h`）。LiteLLM 會在 `/chat/completions`、`/responses`，以及對 Anthropic 形狀的用戶端在 `/v1/messages` 上原樣傳遞這兩者。`12h` 的寫入費用為輸入費率的 2.5 倍，`30m` 則為 1.25 倍；OpenAI 會在 `usage.input_tokens_details.cache_write_tokens_details` 中以 `ttl_30m_tokens` 與 `ttl_12h_tokens` 回報兩者的拆分。LiteLLM 會以模型的 `cache_creation_input_token_cost_above_12hr` 計算 `12h` 部分的價格，其餘部分則以 `cache_creation_input_token_cost` 計算；沒有 12 小時費率的模型，所有寫入都以 30 分鐘費率計費。接受此標記的模型會在成本對應表中帶有 `supports_prompt_cache_breakpoint: true`，而尚未在對應表中被標記的 GPT-5.6 或更新版本 OpenAI 模型名稱也會以相同方式處理。在部署上，`supports_openai_prompt_cache_breakpoint` 設定的也是同一件事，兩者都設定時以它為準。`supports_prompt_cache_breakpoint` 仍以其已棄用的名稱被接受，且只控制這個 OpenAI 標記，絕不影響 Bedrock `cachePoint` 區塊（[Bedrock 快取點](#control-bedrock-converse-cache-points)）。`supports_openai_prompt_cache_breakpoint` 這個名稱需要包含 [PR #52180](https://github.com/BerriAI/litellm/pull/52180) 的 LiteLLM 版本。若要讓 LiteLLM 從部署設定替您放置標記，請參閱 [自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -663,6 +663,21 @@ curl -X POST http://localhost:4000/chat/completions \
 | Claude Opus 4.5, 4.6, 4.7 | `us.anthropic.claude-opus-4-5-*`, `us.anthropic.claude-opus-4-6-*`, `us.anthropic.claude-opus-4-7-*` | 4,096 | 5 分鐘、1 小時 |
 
 也支援上述模型的跨區域推論設定檔。
+
+#### 控制 Bedrock Converse 快取點 {#control-bedrock-converse-cache-points}
+
+LiteLLM 會依下列順序決定 Converse 請求是否帶有 `cachePoint` 區塊。Bedrock 上的 OpenAI 系列模型絕不會帶有它們。接著，當部署的 `model_info` 或成本對應表將 `supports_bedrock_converse_cache_point` 設為 `true` 或 `false` 時，由該設定決定，部署的值優先。否則由模型的 `supports_prompt_caching` 決定，而成本對應表未列出的模型，例如應用程式推論設定檔 ARN，則會繼續帶有它們。對於會自行快取但拒絕 `cachePoint` 欄位的模型，請將此旗標設為 `false`（成本對應表已對 Kimi K3 這麼做）；對於推論設定檔 ARN 或比成本對應表更新的模型，請設為 `true`。在沒有提示快取的模型上將它設為 `true`，會讓 Bedrock 回應 400。
+
+```yaml
+model_list:
+  - model_name: claude-profile
+    litellm_params:
+      model: bedrock/arn:aws:bedrock:us-east-1:<account-id>:application-inference-profile/<profile-id>
+    model_info:
+      supports_bedrock_converse_cache_point: true
+```
+
+`supports_bedrock_converse_cache_point` 需要包含 [PR #52180](https://github.com/BerriAI/litellm/pull/52180) 的 LiteLLM 版本。從 v1.106.0 到該版本為止，Bedrock 會依 `supports_prompt_cache_breakpoint` 來做這個決定，因此在那裡設為 `false` 會關閉該模型的快取。修復之後，Bedrock 會忽略 `supports_prompt_cache_breakpoint`，而仍設定它、卻未設定 `supports_bedrock_converse_cache_point` 的 Bedrock 部署，每個模型會記錄一次警告。請把 Bedrock 的停用或啟用設定移到 `supports_bedrock_converse_cache_point`，以維持原有行為。
 
 請參閱 [AWS Bedrock prompt caching 文件](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html) 以取得完整支援模型與區域清單。
 

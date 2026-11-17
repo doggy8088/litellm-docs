@@ -14,9 +14,21 @@ Focus Format 匯出目前正在積極開發中，且現階段被視為實驗性�
 請將此整合視為預覽版本，並回報任何問題或建議，協助我們穩定並改進此工作流程。
 :::
 
-LiteLLM 可以將用量資料以 [FinOps FOCUS 格式](https://focus.finops.org/focus-specification/v1-2/) 輸出，並將產物（例如 Parquet 檔案）推送到 Amazon S3 或 Google Cloud Storage 等目的地。這可讓下游成本分析工具直接從 LiteLLM 擷取標準化資料集。
+LiteLLM 可以將用量資料以 [FinOps FOCUS 格式](https://focus.finops.org/) 輸出，並將產物（例如 Parquet 檔案）推送到 Amazon S3 或 Google Cloud Storage 等目的地。這可讓下游成本分析工具直接從 LiteLLM 擷取標準化資料集。
 
-LiteLLM 目前在輸出此資料集時符合 FinOps FOCUS v1.2 規格。
+實驗性匯出遵循 [FOCUS 1.5 發行候選版 Cost and Usage 資料集](https://github.com/FinOps-Open-Cost-and-Usage-Spec/FOCUS_Spec/tree/v1.5-cr/specification/datasets/cost_and_usage)。
+
+## 匯出欄位與請求計量 {#export-columns-and-request-meter}
+
+`ServiceProviderName` 與 `HostProviderName` 取代 `ProviderName` 與 `PublisherName`。兩者都包含 LiteLLM 提供者名稱。`InvoiceIssuerName` 仍可使用。
+
+`PrincipalId` 用來識別使用者。`CredentialId` 包含已儲存的雜湊 API 金鑰，而非用於驗證的金鑰。`RequesterDetails` 是一個 JSON 陣列：存在使用者 ID 時包含 Principal 項目，存在憑證 ID 時包含 Credential 項目。已知的使用者電子郵件與金鑰別名會提供描述性屬性；未知的屬性則會省略。當兩個 ID 都不存在時，該欄位為 null。
+
+每一列代表一個每日、每個金鑰／模型的請求計量。資料列不會依權杖方向或快取動作拆分，因為每日支出彙總會合併這些成本。`PricingQuantity` 與 `ConsumedQuantity` 都包含請求次數；`PricingUnit` 與 `ConsumedUnit` 皆為 `Requests`。
+
+`SkuId` 是 LiteLLM 定義的穩定識別碼，格式為 `provider/model`。`SkuPriceId` 會加上 `/requests`，用來識別合併後的請求計量，而非個別權杖價格。這些 ID 不包含帳戶識別碼或價格金額；若提供者或模型未知，則為 null。`SkuPriceDetails` 是一個 JSON 物件，包含 FOCUS 定義的 `ModelId` 屬性，設定為該模型。當 `SkuPriceId` 為 null 時，它也是 null，且不包含 `TokenDirection` 或 `TokenCacheAction`。
+
+Vantage 目的地會在上傳前移除其支援允許清單以外的欄位，包括 SKU 與請求者詳細資料欄位。
 
 ## 總覽 {#overview}
 
