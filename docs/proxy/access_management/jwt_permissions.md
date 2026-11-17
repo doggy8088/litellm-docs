@@ -124,7 +124,7 @@ general_settings:
 
 其他路由群組包括 `google_routes`、`mapped_pass_through_routes`、`management_routes` 與 `spend_tracking_routes`。完整且最新的路由清單請參閱[原始碼中的 `LiteLLMRoutes`](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/_types.py)。
 
-## 將提供者角色對應到權限（beta）{#beta-control-access-with-oidc-roles} {#beta-control-access-with-oidc-roles}
+## 將提供者角色對應到權限（beta） {#beta-control-access-with-oidc-roles}
 
 將提供者角色對應到 LiteLLM 角色，並使用 `role_permissions` 限制其模型與端點。設定 `enforce_rbac: true` 以強制執行這些權限。
 
@@ -148,7 +148,7 @@ general_settings:
 
 支援的內部角色為 `team`、`internal_user` 與 `proxy_admin`。當角色決定同一個 claim 識別的是團隊還是使用者時，請使用 `object_id_jwt_field`。當這些身分有各自的 claim 時，請使用 `user_id_jwt_field` 與 `team_id_jwt_field`。此功能目前為 beta。
 
-## 使用 scope 限制模型（beta）{#beta-control-model-access-with-scopes} {#beta-control-model-access-with-scopes}
+## 使用 scope 限制模型（beta） {#beta-control-model-access-with-scopes}
 
 使用 `scope_mappings` 讓 token scope 可以存取特定的已設定模型名稱。設定 `enforce_scope_based_access: true` 以強制執行此對應。
 
@@ -168,7 +168,7 @@ general_settings:
 
 在發出請求之前，先建立由 `client_id` 識別的團隊，或設定團隊 upsert。token 的 `scope` 可以是清單或空格分隔的字串。帶有兩個 scope 的 token 可以呼叫任一模型，但仍受其其他存取檢查約束。模型名稱必須與 `model_list` 完全相符；此對應不會展開萬用字元模型名稱。此功能目前為 beta。
 
-## 同步使用者角色與團隊（beta）{#beta-sync-user-roles-and-teams-with-idp} {#beta-sync-user-roles-and-teams-with-idp}
+## 同步使用者角色與團隊（beta） {#beta-sync-user-roles-and-teams-with-idp}
 
 啟用 `sync_user_role_and_teams`，即可在 JWT 驗證期間同步使用者的資料庫角色與團隊成員資格。在 token 中指派團隊 ID 之前，請先建立團隊。
 

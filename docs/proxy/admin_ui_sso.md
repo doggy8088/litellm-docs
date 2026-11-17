@@ -85,7 +85,7 @@ PROXY_BASE_URL="https://<your-proxy-base-url>"
 您可以在 `https://<your-okta-domain>/.well-known/openid-configuration` 找到所有 OAuth 端點
 :::
 
-#### 步驟 3a：設定存取政策（僅限 Custom Authorization Server）{#step-3a-configure-access-policy-custom-authorization-server-only} {#step-3a-configure-access-policy-custom-authorization-server-only}
+#### 步驟 3a：設定存取政策（僅限 Custom Authorization Server） {#step-3a-configure-access-policy-custom-authorization-server-only}
 
 若您使用的是 Custom Authorization Server，您必須設定 Access Policy。沒有它，使用者會收到 `no_matching_policy` 錯誤。若您使用的是 Org Authorization Server，請略過此步驟。
 

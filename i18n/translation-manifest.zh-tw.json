@@ -1222,7 +1222,7 @@
     },
     "docs/anthropic_unified/index.md": {
       "sourceSha256": "a4aedbf62b4f59ac5644d96e18f82fe01e690071daeda5f61e3275965982aa17",
-      "translationSha256": "bf58df15e4550a73ee9103428f5e92a979ff7cb7ea08a598675dc7fd0c462ff4",
+      "translationSha256": "67291f1d486d01c7c87ad9f46a9f311811f1d778d748a4141686555e03e3037b",
       "inputTokens": 1370,
       "outputTokens": 881
     },
@@ -3232,7 +3232,7 @@
     },
     "docs/providers/bedrock_mantle.md": {
       "sourceSha256": "2e1dc5ab1e9138ed534c0c0f0464a601824e9c91f225804afee876a27335a12f",
-      "translationSha256": "1abe2945198dedeb58a72655c6befa775300b1d7e284381901f6639c67e0e503",
+      "translationSha256": "fabdf1e74cdd6b759908fec95a96d8f6731c5d794ece141cef02e440ff5bfe72",
       "inputTokens": 2409,
       "outputTokens": 1985
     },
@@ -4282,7 +4282,7 @@
     },
     "docs/proxy/access_management/jwt_permissions.md": {
       "sourceSha256": "23eadbde1ca344b3e8f2d41f2b35d9bf7ff5837e0a9bf3aaf3b96cc426c628f4",
-      "translationSha256": "64aa651106d56b9933bd902008a2f5fc3df2fb7fa6d95571ef20012379bbf632",
+      "translationSha256": "035703a76ea6f2ae5ebbd6986c6abc5ee3f25dcb619902e841055541cc7ebd6d",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -4312,7 +4312,7 @@
     },
     "docs/proxy/admin_ui_sso.md": {
       "sourceSha256": "b672fd83225948fb440dca96e654d907684dfee7dae1f5342d24c503a5b1d1de",
-      "translationSha256": "51468f80f5ac7762b0eed59d2b62bc23a4e6f4d39feefe5d3347e6a795930441",
+      "translationSha256": "d07f2513ffbe7b953dcd1bc69a7dbb7367bb433e4be0b45cb2cac421c166197a",
       "inputTokens": 2134,
       "outputTokens": 1801
     },
@@ -7528,13 +7528,13 @@
     },
     "release_notes/v1.104.2/index.md": {
       "sourceSha256": "afb38ea2f38b5a6592b4774148c9031e4bc652451378c0479a5a940d4ab8d581",
-      "translationSha256": "1f92f936feb941050f2daf63fc9277b9f1a438a6bbff5b847e291ac6697bb5fc",
+      "translationSha256": "b25de8fb0d5b1f8e9c600ada1aa59bc553f5d00757e4292e5017b632def7b988",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "release_notes/v1.104.3/index.md": {
       "sourceSha256": "f8b5e261470d129c6c37a3bdb965ad2e34ef8b9cb5805b75ff019377b84950fa",
-      "translationSha256": "06bca44db31972a69c960d8d2cdff30e9d14cc4dcd3a4cdd6a72051aaf9c1a51",
+      "translationSha256": "2f39dab0b960ea86e1426098dfc94ee0e5c0451e2d90499ac7117d8874ef0434",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -7576,7 +7576,7 @@
     },
     "release_notes/v1.105.0/index.md": {
       "sourceSha256": "201c6d53b68d84be2f5f96a9284523b4fe2be6df9a162ddfb29a1559c18be232",
-      "translationSha256": "fa03c921eaa62aaf0cb30e0f793f493045b03e765f661319e90196a8fbff289b",
+      "translationSha256": "24b41abc1ae2ca508f165e3cf1b63056f976dd4a34e7ed6087fa861d402367e1",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -7624,7 +7624,7 @@
     },
     "release_notes/v1.106.0/index.md": {
       "sourceSha256": "58c28c66e4ae827a90e71600e51ddefa91f8fa5d15e13f9d5b4a777cdf3aa745",
-      "translationSha256": "61458c7bb0635a32b7eb430fe574945f6341f39b067a2efba872bf3141af7e5c",
+      "translationSha256": "788c90cb685c0b2f6e4864c3057a039df06006aaf5729369aa0711a3655ddb40",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -7708,7 +7708,7 @@
     },
     "release_notes/v1.108.0/index.md": {
       "sourceSha256": "4f0c7018cc2ed7bd5a898777fc8e597cf76cb273d6f7ba9b65c91dcc6801c5ed",
-      "translationSha256": "a92566a5935047d50c028cb3f75b3163a6a4bd37a57fd1d27e51318adf1356fd",
+      "translationSha256": "d85f4b5087dd06109eb6f7dc56ec4dc997b9c17114368b202ee1c2f301be7eff",
       "inputTokens": 0,
       "outputTokens": 0
     },

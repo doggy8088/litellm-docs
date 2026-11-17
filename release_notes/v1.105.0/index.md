@@ -87,7 +87,7 @@ pip install litellm==1.105.0
 
 ## 新提供者與端點 {#new-providers-and-endpoints}
 
-### 新提供者（3 個新提供者）{#new-providers-3-new-providers} {#new-providers-3-new-providers}
+### 新提供者（3 個新提供者） {#new-providers-3-new-providers}
 
 | 提供者 | 支援的 LiteLLM 端點 | 說明 |
 | --- | --- | --- |
@@ -122,7 +122,7 @@ pip install litellm==1.105.0
 - **Admin UI 與文件**：TypeSafe 與 Strands Decider 在 Add Model 提供者清單中，且 Swagger UI 描述了兩條路由
 - **透傳**：位於 `/v1/decisions` 的現有 `pass_through_endpoints` 條目繼續回應該路徑，而 `/decisions` 提供原生路由
 
-#### 新增 Decisions 模型支援（7 個新模型）{#new-decisions-model-support-7-new-models} {#new-decisions-model-support-7-new-models}
+#### 新增 Decisions 模型支援（7 個新模型） {#new-decisions-model-support-7-new-models}
 
 | 提供者 | 模型 | 上下文視窗 | 輸入（$/1M tokens）| 輸出（$/1M tokens）|
 | --- | --- | --- | --- | --- |
@@ -151,7 +151,7 @@ rc.1 之後的 Decisions 後續項目一起回移於 [PR #45905](https://github.
 
 ## 新增模型 / 更新模型 {#new-models--updated-models}
 
-#### 新增模型支援（78 個新模型）{#new-model-support-78-new-models} {#new-model-support-78-new-models}
+#### 新增模型支援（78 個新模型） {#new-model-support-78-new-models}
 
 計數代表與 `v1.104.0` 相比的新目錄識別碼，包括別名與區域變體。下方價格為此版本隨附的值，以美元計；執行階段的定價對照表重新載入可更新它們。輸入與輸出欄顯示基本 token 費率；長上下文、快取、影像 token 與其他特殊費率依模型而定
 
@@ -236,7 +236,7 @@ rc.1 之後的 Decisions 後續項目一起回移於 [PR #45905](https://github.
 | Voyage AI | `voyage/rerank-lite-1` | 4,000 | $0.02 | $0 | 重新排序 |
 | Voyage AI | `voyage/voyage-large-2-instruct` | 16,000 | $0.12 | $0 | 嵌入 |
 
-#### 更新後的定價（59 個模型）{#updated-pricing-59-models} {#updated-pricing-59-models}
+#### 更新後的定價（59 個模型） {#updated-pricing-59-models}
 
 | 提供者 / 模型 | 變更的 token 價格（每 1M tokens 的美元）|
 | --- | --- |

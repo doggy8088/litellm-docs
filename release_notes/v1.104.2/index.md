@@ -66,7 +66,7 @@ proxy 現在提供決策模型，它們會針對輸入回答具型別的問題�
 - **防護欄**：當呼叫端設定 `include_guardrail_response` 時，OpenAI 格式的回應會包含 `guardrail_information`
 - **透傳**：位於 `/v1/decisions` 的既有 `pass_through_endpoints` 項目會繼續回答該路徑，而 `/decisions` 則提供原生路由
 
-#### 新增模型支援（6 個新模型）{#new-model-support-6-new-models} {#new-model-support-6-new-models}
+#### 新增模型支援（6 個新模型） {#new-model-support-6-new-models}
 
 | 提供者 | 模型 | 上下文視窗 | 輸入 ($/1M tokens) | 輸出 ($/1M tokens) |
 | --- | --- | --- | --- | --- |

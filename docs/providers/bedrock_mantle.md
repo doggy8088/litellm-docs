@@ -310,7 +310,7 @@ print(response)
 </TabItem>
 </Tabs>
 
-### 提示快取（GPT-5.6 與更新版本）{#prompt-caching-gpt-56-and-newer} {#prompt-caching-gpt-56-and-newer}
+### 提示快取（GPT-5.6 與更新版本） {#prompt-caching-gpt-56-and-newer}
 
 Mantle 上的 GPT-5.6 與更新版本 OpenAI 模型在 Responses API 上接受[明確的提示快取斷點](../completion/prompt_caching.md#bedrock-mantle-explicit-breakpoints-openai-gpt-56-and-newer)：在 `input_text`、`input_image` 或 `input_file` 區塊上加上 `prompt_cache_breakpoint` 標記，再加上請求層級的 `prompt_cache_options`。每個快取前綴至少需要 1,024 個 token，一個請求最多可帶 4 個斷點，快取前綴至少保留 30 分鐘。LiteLLM 會在 `/v1/responses` 上透傳這兩個欄位。在 `/v1/chat/completions` 上，這些模型會橋接到 Responses API，因此內容區塊上的 `prompt_cache_breakpoint` 會被保留，部署上的 `cache_control_injection_points` 也會像對 `openai/gpt-5.6` 一樣為您放置標記（[教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)）
 

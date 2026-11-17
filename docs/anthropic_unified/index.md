@@ -453,7 +453,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/messages' \
 </TabItem>
 </Tabs>
 
-## Message threads（beta）{#message-threads-beta} {#message-threads-beta}
+## Message threads（beta） {#message-threads-beta}
 
 Anthropic 的 [message threads](https://platform.claude.com/docs/en/build-with-claude/message-threads) 會在每一輪之間將對話保留在 Anthropic 的伺服器上。第一個請求會以完整的 prompt 建立 thread，之後每個請求只需傳送新訊息加上前一個回應的 `id`，因此模型能更快開始回答，您也不必再為重送歷史紀錄付費。 <SinceVersion v="1.111.0" />
 

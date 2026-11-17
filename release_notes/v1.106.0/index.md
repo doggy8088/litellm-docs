@@ -94,7 +94,7 @@ pip install litellm==1.106.0
 
 ## 新提供者與端點 {#new-providers-and-endpoints}
 
-### 新提供者（3 個新提供者）{#new-providers-3-new-providers} {#new-providers-3-new-providers}
+### 新提供者（3 個新提供者） {#new-providers-3-new-providers}
 
 | 提供者 | 支援的 LiteLLM 端點 | 說明 |
 | --- | --- | --- |
@@ -110,7 +110,7 @@ pip install litellm==1.106.0
 
 ## 新增模型 / 更新模型 {#new-models--updated-models}
 
-#### 新增模型支援（59 個新模型）{#new-model-support-59-new-models} {#new-model-support-59-new-models}
+#### 新增模型支援（59 個新模型） {#new-model-support-59-new-models}
 
 計數代表與 `v1.105.0` 相比的新目錄識別碼，包括別名與區域變體。下方價格為此版本隨附的值，以美元計；執行階段的定價對照表重新載入可更新它們。輸入與輸出欄顯示基本 token 費率；長上下文、快取、影像 token 與其他特殊費率依模型而定
 

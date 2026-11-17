@@ -67,7 +67,7 @@ pip install litellm==1.104.3
 - **Auto Router**：新的 router 可以使用已接入的決策模型部署作為其分類器，且既有的 router 設定維持運作
 - **管理介面與文件**：TypeSafe 與 Strands Decider 位於 Add Model 提供者清單中，且 Swagger UI 描述了 `/v1/decisions` 與 `/v1/systemone`
 
-#### 新增模型支援（1 個新模型）{#new-model-support-1-new-model} {#new-model-support-1-new-model}
+#### 新增模型支援（1 個新模型） {#new-model-support-1-new-model}
 
 | 提供者 | 模型 | 上下文視窗 | 輸入 ($/1M tokens) | 輸出 ($/1M tokens) |
 | --- | --- | --- | --- | --- |

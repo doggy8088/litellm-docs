@@ -218,7 +218,7 @@ pip install litellm==1.108.0
 
 ## 新提供者與端點 {#new-providers-and-endpoints}
 
-### 新提供者（4 個新提供者）{#new-providers-4-new-providers} {#new-providers-4-new-providers}
+### 新提供者（4 個新提供者） {#new-providers-4-new-providers}
 
 | 提供者 | 支援的 LiteLLM 端點 | 說明 |
 | --- | --- | --- |
@@ -227,7 +227,7 @@ pip install litellm==1.108.0
 | ScaleDown | `/v1/chat/completions` | `scaledown/` 下的原生 classify、extract、summarize、decisions 與 compress 操作 |
 | Microsoft 365 Copilot | `/v1/chat/completions` | `microsoft_365_copilot/` 下的 Graph Copilot Chat，將呼叫者的 JWT 交換為委派的 Entra token |
 
-### 新 LLM API 端點（1 個新端點）{#new-llm-api-endpoints-1-new-endpoint} {#new-llm-api-endpoints-1-new-endpoint}
+### 新 LLM API 端點（1 個新端點） {#new-llm-api-endpoints-1-new-endpoint}
 
 | 端點 | 方法 | 說明 |
 | --- | --- | --- |
@@ -243,7 +243,7 @@ pip install litellm==1.108.0
 
 ## 新增模型 / 更新模型 {#new-models--updated-models-1}
 
-#### 新模型支援（237 個新模型）{#new-model-support-237-new-models} {#new-model-support-237-new-models}
+#### 新模型支援（237 個新模型） {#new-model-support-237-new-models}
 
 這些數字代表與 `v1.106.0` 相比新增的目錄識別碼，包含別名與區域變體。價格為本版本隨附的值（以 USD 計），執行階段重新載入定價對照表時可更新。496 個 `openrouter` 資料列與 11 個已淘汰的 `github_copilot` 資料列已被移除，請參閱上方的重大變更
 
