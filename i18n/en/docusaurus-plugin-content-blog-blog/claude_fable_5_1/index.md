@@ -8,6 +8,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Day 0 support for Claude Fable 5.1 on the LiteLLM AI Gateway, with the 0.025x cache read price tracked from the first call."
+card_title: "Claude Fable 5.1"
+card_summary: "Cache reads at $0.25 / MTok (0.025x input), thinking always on, so tool_choice required now returns a 400."
 image: /img/litellm_claude_fable_5_1_announcement.png
 tags: [anthropic, claude, fable 5.1, day 0 support]
 hide_table_of_contents: false
@@ -102,7 +104,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-`reasoning_effort` maps to adaptive thinking, the only mode Fable 5.1 accepts. Fixed budgets, assistant prefill, and non-default `temperature` or `top_p` return a 400. Pass `output_config: {"effort": "max"}` for the full ladder [Fable 5 uses](/blog/claude_fable_5).
+`reasoning_effort` maps to adaptive thinking, the only mode Fable 5.1 accepts. Fixed budgets, assistant prefill, and non-default `temperature` or `top_p` return a 400. Pass `output_config: {"effort": "max"}` for the full ladder [Fable 5 uses](../claude_fable_5/index.md).
 
 ## Feedback
 

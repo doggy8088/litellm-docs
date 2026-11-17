@@ -1,3 +1,8 @@
+---
+title: "Prompt Injection Detection on LiteLLM Gateway"
+sidebar_label: "In-memory Prompt Injection Detection"
+description: "Detect prompt injection on the LiteLLM AI Gateway with in-memory similarity checks or an LLM API check, across chat, messages and responses."
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -91,7 +96,7 @@ litellm_settings:
     llm_api_fail_call_string: "UNSAFE" # expected string to check if result failed 
 
 model_list:
-- model_name: azure-gpt-3.5 # 👈 same model_name as in prompt_injection_params
+- model_name: azure-gpt-3.5 # same model_name as in prompt_injection_params
   litellm_params:
       model: azure/chatgpt-v-2
       api_base: os.environ/AZURE_API_BASE

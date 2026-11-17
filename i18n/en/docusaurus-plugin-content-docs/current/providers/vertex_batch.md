@@ -1,3 +1,9 @@
+---
+title: "Vertex AI Batch Prediction with LiteLLM"
+sidebar_label: "Vertex Batch APIs"
+description: "Run batch prediction on Gemini Enterprise Agent Platform (formerly Vertex AI) with the LiteLLM Batch API: set gcs_bucket_name in config.yaml."
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -233,6 +239,10 @@ curl --request GET \
 Once the batch is completed, retrieve the results using the `output_file_id` from the batch response.
 
 **Important:** The `output_file_id` must be URL encoded when used in the request path.
+
+:::warning Proxy admin key required for raw `gs://` ids
+Starting in v1.108.0, `GET /files/{file_id}/content` only serves a raw `gs://` output id to a proxy admin key (the master key or a key with the `proxy_admin` role). Any other key gets a `403` telling it to use the LiteLLM managed file id. To read batch results with a non-admin key, upload the file with `target_model_names` set (see [managed batches](../proxy/managed_batches)) so the proxy hands back a managed `file-...` id, and pass that id to every later call instead of the `gs://` path
+:::
 
 <Tabs>
 <TabItem value="python" label="Python">

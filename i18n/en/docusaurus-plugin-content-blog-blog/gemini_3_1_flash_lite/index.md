@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Guide to using Gemini 3.1 Flash Lite Preview on LiteLLM Proxy and SDK with day 0 support."
+card_title: "Gemini 3.1 Flash Lite Preview"
+card_summary: "Lightest Gemini 3.1 with four thinking levels, MINIMAL to HIGH, for ultra-fast to deep reasoning."
 tags: [gemini, day 0 support, llms, supernova]
 hide_table_of_contents: false
 ---
@@ -142,8 +144,8 @@ LiteLLM provides **full end-to-end support** for Gemini 3.1 Flash Lite Preview o
 
 - ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
 - ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) compatible endpoint 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) compatible endpoint 
 
 All endpoints support:
 - Streaming and non-streaming responses

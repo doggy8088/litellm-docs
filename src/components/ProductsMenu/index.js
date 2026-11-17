@@ -42,20 +42,19 @@ const ICONS = {
   sdk: icon(<>
     <path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
   </>),
-  lens: icon(<>
-    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
-    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
-    <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
-    <path d="M17.599 6.5a3 3 0 0 0 .399-1.375" />
-    <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5" />
-    <path d="M3.477 10.896a4 4 0 0 1 .585-.396" />
-    <path d="M19.938 10.5a4 4 0 0 1 .585.396" />
-    <path d="M6 18a4 4 0 0 1-1.967-.516" />
-    <path d="M19.967 17.484A4 4 0 0 1 18 18" />
-  </>),
   logs: icon(<>
     <path d="M3 3v18h18" />
     <path d="M7 15l4-5 3 3 5-7" />
+  </>),
+  models: icon(<>
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </>),
+  subscriptions: icon(<>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 10h18M7 15h4" />
   </>),
 };
 
@@ -68,70 +67,51 @@ function getProductsMenuContent(t) {
     to: '/docs/',
   };
 
+  // Each column holds one or more groups. A group's `featured` items sit first,
+  // in a highlighted box.
   const columns = [
-    {
-      heading: t('建置', 'Build'),
-      items: [
-        {
-          id: 'gateway',
-          icon: 'gateway',
-          title: 'AI Gateway',
-          desc: t('路由、控制並觀測 LLM 流量', 'Route, control, and observe LLM traffic'),
-          to: '/docs/proxy/docker_quick_start',
-        },
-        {
-          id: 'mcp',
-          icon: 'mcp',
-          title: 'MCP Gateway',
-          desc: t('為代理程式提供受控管的工具存取權', 'Give agents governed access to tools'),
-          to: '/docs/mcp',
-        },
-        {
-          id: 'agent',
-          icon: 'agent',
-          title: 'Agent Gateway',
-          desc: t('註冊並調用 A2A 代理程式', 'Register and invoke A2A agents'),
-          to: '/docs/a2a',
-        },
-        {
-          id: 'router',
-          icon: 'router',
-          title: 'Auto Router',
-          desc: t('將每個請求傳送至最適合的模型', 'Send each request to the best model'),
-          to: '/docs/auto_router',
-        },
-        {
-          id: 'sdk',
-          icon: 'sdk',
-          title: 'Python SDK',
-          desc: t('透過單一介面呼叫 100+ 個 LLM', 'Call 100+ LLMs with one interface'),
-          to: '/docs/#litellm-python-sdk',
-        },
-      ],
-    },
-    {
-      heading: t('監控', 'Monitor'),
-      items: [
-        {
-          id: 'lens',
-          icon: 'lens',
-          title: 'Lens',
-          desc: t('追蹤代理程式群並找出可改善之處', 'Trace agent swarms and find what to improve'),
-          to: '/docs/proxy/lens',
-        },
-        {
-          id: 'logs',
-          icon: 'logs',
-          title: t('AI Gateway - 記錄與可觀測性', 'AI Gateway - Logging & Observability'),
-          desc: t('每個請求的記錄、支出與回呼', 'Logs, spend, and callbacks for every request'),
-          to: '/docs/proxy/logging',
-        },
-      ],
-    },
+    [
+      {
+        featured: [
+          {id: 'gateway', icon: 'gateway', title: 'AI Gateway', desc: t('路由並控制 LLM 流量', 'Route and control LLM traffic'), to: '/docs/simple_proxy'},
+          {id: 'router', icon: 'router', title: 'Auto Router', desc: t('為每個請求選出最佳模型', 'Best model for each request'), to: '/docs/auto_router'},
+          {id: 'subscriptions', icon: 'subscriptions', title: 'Claude, Codex & Copilot', desc: t('使用您既有的訂閱', 'Use your existing subscriptions'), to: '/docs/subscriptions'},
+        ],
+        items: [
+          {id: 'logs', icon: 'logs', title: t('記錄與可觀測性', 'Logging & Observability'), short: t('記錄', 'Logging'), desc: t('記錄、支出與回呼', 'Logs, spend, and callbacks'), to: '/docs/proxy/logging'},
+        ],
+      },
+    ],
+    [
+      {
+        items: [
+          {id: 'mcp', icon: 'mcp', title: 'MCP Gateway', desc: t('為代理程式提供受控管的工具存取權', 'Give agents governed access to tools'), to: '/docs/mcp'},
+          {id: 'agent', icon: 'agent', title: 'Agent Gateway', desc: t('註冊並調用 A2A 代理程式', 'Register and invoke A2A agents'), to: '/docs/a2a'},
+          {id: 'sdk', icon: 'sdk', title: 'Python SDK', desc: t('透過單一介面呼叫 100+ 個 LLM', 'Call 100+ LLMs with one interface'), to: '/docs/python_sdk'},
+          {id: 'models', icon: 'models', title: t('模型型錄', 'Model Catalog'), desc: t('定價與上下文視窗', 'Pricing and context windows'), to: 'https://models.litellm.ai'},
+        ],
+      },
+    ],
   ];
 
-  const allItems = [home, ...columns.flatMap((c) => c.items)];
-  return {home, columns, allItems};
+  // Every item gets a cell on one grid, so the rows of both columns line up.
+  // Row 1 is Home. On desktop each column fills rows 2 and down; on phones the
+  // columns stack, so the second column continues below the first.
+  const cells = (() => {
+    let phoneRow = 2;
+    return columns.flatMap((groups, col) => {
+      let row = 2;
+      return groups.flatMap((g) => [
+        ...(g.featured || []).map((item) => ({item, featured: true})),
+        ...g.items.map((item) => ({item, featured: false})),
+      ]).map((cell) => ({...cell, col: col + 1, row: row++, phoneRow: phoneRow++}));
+    });
+  })();
+  const featuredRows = cells.filter((c) => c.featured).length;
+  const rows = Math.max(...cells.map((c) => c.row)) - 1;
+
+  const allItems = [home, ...columns.flat().flatMap((g) => [...(g.featured || []), ...g.items])];
+  return {home, columns, cells, featuredRows, rows, allItems};
 }
 
 function normalizePath(pathname) {
@@ -139,14 +119,16 @@ function normalizePath(pathname) {
 }
 
 // Ordered most-specific first: /docs/proxy/lens must win over the /docs/proxy prefix.
+// Lens and Moyai have no menu entry, so their pages show Home.
 const SECTION_MATCHERS = [
-  ['lens', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy/lens')],
+  ['subscriptions', ({pathname}) => normalizePath(pathname).startsWith('/docs/subscriptions')],
+  ['home', ({pathname}) => normalizePath(pathname).startsWith('/docs/self_hosted_coding_agents') || normalizePath(pathname).startsWith('/docs/proxy/lens')],
   ['logs', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy/logging')],
   ['mcp', ({pathname}) => normalizePath(pathname).startsWith('/docs/mcp')],
   ['agent', ({pathname}) => normalizePath(pathname).startsWith('/docs/a2a')],
-  ['sdk', ({hash}) => hash === '#litellm-python-sdk'],
+  ['sdk', ({pathname, hash}) => normalizePath(pathname).startsWith('/docs/python_sdk') || hash === '#litellm-python-sdk'],
   ['router', ({pathname}) => normalizePath(pathname).startsWith('/docs/auto_router')],
-  ['gateway', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy')],
+  ['gateway', ({pathname}) => normalizePath(pathname).startsWith('/docs/proxy') || normalizePath(pathname).startsWith('/docs/simple_proxy')],
 ];
 
 function currentItem(location, allItems) {
@@ -154,9 +136,10 @@ function currentItem(location, allItems) {
   return allItems.find((item) => item.id === (hit ? hit[0] : 'home'));
 }
 
-function MenuLink({item, active, onNavigate}) {
+function MenuLink({item, active, onNavigate, className = '', style}) {
   return (
-    <Link className={`${styles.item} ${active ? styles.itemActive : ''}`} to={item.to} onClick={onNavigate}>
+    <Link className={`${styles.item} ${active ? styles.itemActive : ''} ${className}`} style={style}
+      to={item.to} onClick={onNavigate}>
       <span className={styles.icon}>{ICONS[item.icon]}</span>
       <span className={styles.text}>
         <span className={styles.title}>{item.title}</span>
@@ -174,7 +157,7 @@ function MenuLink({item, active, onNavigate}) {
 
 export default function ProductsMenu({mobile}) {
   const t = useLocaleText();
-  const {home, columns, allItems} = getProductsMenuContent(t);
+  const {home, cells, featuredRows, rows, allItems} = getProductsMenuContent(t);
   const location = useLocation();
   const current = currentItem(location, allItems);
   const [open, setOpen] = useState(false);
@@ -226,9 +209,20 @@ export default function ProductsMenu({mobile}) {
         aria-haspopup="true"
         aria-expanded={open}
         aria-label={`${t('產品', 'Products')}: ${current.title}`}
+        title={current.title}
         onClick={() => setOpen((v) => !v)}>
         <span className={styles.triggerIcon}>{ICONS[current.icon]}</span>
-        <span className={styles.triggerLabel}>{current.title}</span>
+        {/* A long name gets a short form on narrower screens */}
+        <span className={styles.triggerLabel}>
+          {current.short ? (
+            <>
+              <span className={styles.labelFull}>{current.title}</span>
+              <span className={styles.labelShort}>{current.short}</span>
+            </>
+          ) : (
+            current.title
+          )}
+        </span>
         <svg className={styles.chevron} viewBox="0 0 12 12" width="10" height="10" aria-hidden="true">
           <path d="M2 4.5l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6"
             strokeLinecap="round" strokeLinejoin="round" />
@@ -238,13 +232,17 @@ export default function ProductsMenu({mobile}) {
         <div className={styles.home}>
           <MenuLink item={home} active={current.id === home.id} onNavigate={close} />
         </div>
-        {columns.map((col) => (
-          <div key={col.heading} className={styles.column}>
-            <div className={styles.heading}>{col.heading}</div>
-            {col.items.map((item) => (
-              <MenuLink key={item.id} item={item} active={current.id === item.id} onNavigate={close} />
-            ))}
-          </div>
+        <span className={styles.featuredBox} style={{gridRow: `2 / span ${featuredRows}`}} aria-hidden="true" />
+        <span className={styles.divider} style={{gridRow: `2 / span ${rows}`}} aria-hidden="true" />
+        {cells.map(({item, featured, col, row, phoneRow}) => (
+          <MenuLink
+            key={item.id}
+            item={item}
+            active={current.id === item.id}
+            onNavigate={close}
+            className={`${styles.cell} ${col === 1 ? styles.cellLeft : styles.cellRight} ${featured ? styles.itemFeatured : ''}`}
+            style={{'--col': col, '--row': row, '--phone-row': phoneRow}}
+          />
         ))}
       </div>
     </div>

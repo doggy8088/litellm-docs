@@ -17,12 +17,12 @@ variant="cards"
 items={[
   { title: "Heuristic v1", icon: <SlidersHorizontal size={18} />, tone: "local", description: "Local keyword and pattern scoring with tunable weights. No classifier API call.", to: "#tune-heuristic-v1" },
   { title: "Heuristic v2", icon: <Gauge size={18} />, tone: "local", description: "Local success estimates for four tiers. Tune the minimum success threshold.", to: "#tune-heuristic-v2" },
-  { title: "Always use the judge", icon: <BrainCircuit size={18} />, tone: "judge", description: "An LLM selects the tier whenever classification runs.", to: "#tune-the-llm-judge" },
+  { title: "LLM as a judge", icon: <BrainCircuit size={18} />, tone: "judge", description: "An LLM selects the tier whenever classification runs.", to: "#tune-the-llm-judge" },
   { title: "Heuristic first", icon: <GitBranch size={18} />, tone: "chain", description: "Run v1 or v2 up to a tier ceiling, then ask the LLM for remaining requests.", to: "#heuristic-first" },
   { title: "Hybrid", icon: <Split size={18} />, tone: "chain", description: "Run v1 or v2 locally; ask the LLM near decision boundaries.", to: "#hybrid" },
   { title: "Capability", icon: <Target size={18} />, tone: "forecast", description: "Forecast whether an efficient solver can finish the task; otherwise use a capable solver.", to: "#capability" },
   { title: "Fuse v2", icon: <Combine size={18} />, tone: "forecast", description: "Compare two solver forecasts and choose within an acceptable quality gap.", to: "#fuse-v2" },
-  { title: "OSS classifier", icon: <Server size={18} />, description: "Connect to self-hosted Laya or Bespoke Nimble, or the hosted Jev classifier.", to: "#connect-a-self-hosted-classifier" },
+  { title: "Decision Model", icon: <Server size={18} />, description: "Connect to self-hosted Laya or Bespoke Nimble, or the hosted Jev classifier.", to: "#connect-a-self-hosted-classifier" },
   { title: "Custom classifier", icon: <Braces size={18} />, description: "Route with your own Python plugin, configured at gateway startup.", to: "#custom-classifier-startup-configuration-only" },
 ]}
 />
@@ -171,7 +171,7 @@ Select **Heuristics > Rule-based** (`classifier_type: heuristic`), the default w
 | Complex to Reasoning / `tier_boundaries.complex_reasoning` | `0.60` | Scores at or above this reach `REASONING`. |
 | Short below / `token_thresholds.simple` | `15` | Below this estimated token count, the token dimension scores `-1`. |
 | Long above / `token_thresholds.complex` | `400` | Above this estimated token count, the token dimension scores `1`; between thresholds it scores `0`. |
-| Minimum score / `reasoning_override_min_score` | Follows `simple_medium` | Two or more reasoning markers can promote to `REASONING` once this floor is reached. `0` restores marker-only promotion. |
+| Minimum score / `reasoning_override_min_score` | Follows `simple_medium` | Two or more reasoning markers can promote the v1 result to `REASONING` once this floor is reached. `0` lowers the floor to zero. V2 does not apply this override. |
 
 The UI accepts boundaries and the reasoning floor from `-1` to `1`, and nonnegative whole-number token thresholds. Keep boundaries increasing and the short threshold below the long threshold. Equality with a tier boundary selects the higher tier.
 
@@ -215,6 +215,15 @@ dimension_weights:
 | Reasoning keywords | `reasoning_keywords` | Shipped reasoning list; also supplies the reasoning-override markers. |
 | Technical keywords | `technical_keywords` | Shipped technical list; custom technical keywords append to this replacement. |
 | Simple keywords | `simple_keywords` | Shipped simple-request list; replace it with your list. |
+
+To route using `reasoning_keywords` and the two-marker reasoning override, select `classifier_type: heuristic`. Add the following settings under your existing `complexity_router_config` and keep your tier mapping. Omit `reasoning_keywords` to use the built-in list, or supply a nonempty list to replace it.
+
+```yaml title="Use the reasoning-marker override"
+classifier_type: heuristic
+reasoning_override_min_score: 0
+```
+
+The weighted score must still reach the configured floor, so a negative score does not qualify at `0`. These scoring keyword lists are separate from [`keyword_tier_rules`](#rules-and-recovery), which can select a tier before either classifier runs.
 
 ```yaml title="Append domain vocabulary without replacing built-ins"
 custom_technical_keywords: [kafka, terraform, postgresql]
@@ -267,7 +276,13 @@ Custom dimensions require standalone or chained v1. They are not accepted for v2
 
 Select **Heuristics > Heuristic v2**. **Heuristic tuning > Success threshold** maps to `heuristic_v2_success_threshold`, a number from `0` through `1`. Blank uses the selected artifact's `routing_threshold`, currently `0.75` for the bundled `ultrafeedback` artifact.
 
-V2 predicts success for each built-in tier and chooses the first that reaches the threshold. Raising it generally favors stronger tiers, or more judge calls in a chain. These are task-success estimates, not v1 scores or confidence in a class label. V1 weights, keywords, token thresholds, and custom dimensions do not tune v2.
+V2 predicts success for each built-in tier and chooses the first that reaches the threshold. Raising it generally favors stronger tiers, or more judge calls in a chain.
+
+:::note V1 scoring settings do not apply to v2
+
+`heuristic_v2` does not read `reasoning_keywords` or apply `reasoning_override_min_score`, even when the floor is `0`. The other scoring keyword lists, `dimension_weights`, `token_thresholds` and `tier_boundaries` do not affect its probabilities or tier selection. This also applies to `local_heuristic: heuristic_v2` in a chain. Use [`classifier_type: heuristic`](#keyword-lists) for the reasoning-marker override. Separate [`keyword_tier_rules`](#rules-and-recovery) routing overrides still run before classification.
+
+:::
 
 ```yaml title="Standalone v2"
 classifier_type: heuristic_v2
@@ -275,6 +290,14 @@ heuristic_v2_success_threshold: 0.75
 ```
 
 If no tier qualifies, standalone v2 chooses `REASONING`; a v2 chain asks the judge. The [v2 chain screenshot](#heuristic-first) shows the threshold control alongside its local ceiling.
+
+### How v2 calculates success probabilities
+
+The bundled `ultrafeedback` artifact contains success and observation counts for each tier, request type and similar-prompt cohort. V2 identifies the request type with built-in rules, then groups the prompt by length, code and math markers, multiple-choice formatting and non-ASCII character share.
+
+For each tier, the global estimate is `(successes + 1) / (observations + 2)`. The request-type estimate combines its counts with the global estimate as a prior. The cohort estimate uses the request-type estimate as its prior. Both use `(successes + prior_mass * prior_mean) / (observations + prior_mass)`, and missing statistics retain the broader estimate. This keeps sparse observations close to the broader data.
+
+V2 then raises each tier's probability to at least the highest probability of any lower tier. These dataset-derived success estimates determine whether a tier meets `heuristic_v2_success_threshold`. Classification runs locally without a classifier LLM call.
 
 ### Custom trained artifact (YAML only)
 
@@ -436,7 +459,7 @@ The canonical keys are `oss_classifier` and `opensource_classifier_config`. Exis
 
 ### A self-hosted OpenAI-compatible judge
 
-A generic vLLM or other OpenAI-compatible chat endpoint is a different integration: register it as a regular model and select **LLM**, not an OSS System One provider. Add this deployment alongside your existing solvers, then use its alias in `classifier_llm_config.model`:
+A generic OpenAI-compatible chat endpoint, such as an Ollama model, is a different integration: register it as a regular model and select **LLM**, not an OSS System One provider. vLLM v0.32.0 and later can also serve Qwen models as a System One classifier; see [vLLM](./decision_classifiers.md#vllm). Add this deployment alongside your existing solvers, then use its alias in `classifier_llm_config.model`:
 
 ```yaml title="Additional model_list entry"
 - model_name: local-routing-judge
@@ -603,6 +626,8 @@ classifier_fallback: heuristic
 
 Reuse requires a resolvable client session ID and a valid held decision. Missing/expired state still classifies. Routing plugins suppress the ordinary replay paths, and custom taxonomies do not support once-per-session mode.
 
+Claude Code sends one `x-claude-code-session-id` for the main agent and all of its subagents. In **Every new user message** mode each subagent holds its own decision, keyed on that session ID plus `x-claude-code-agent-id`, so a subagent's ask does not change the main agent's tier and the main agent's asks do not change a subagent's. Claude Code v2.1.273 and later can also label each request with `x-claude-code-request-class`, but only sends it through a gateway when `CLAUDE_CODE_GATEWAY_HINT_HEADERS=1` is set. Set it for developers who use Claude Code through the proxy; the router then treats side requests such as agent summaries as housekeeping even after a Claude Code release changes their wording.
+
 In **Sessions and efficiency > Affinity**, **Pin one model deployment per tier** maps to `deployment_affinity` (default `true`). It reuses a model/deployment within each classified tier while still permitting reclassification and tier changes. **How long a pin survives idle** maps to `session_affinity_ttl_seconds` (default `3600`, positive integer), refreshed on reuse. Session affinity implies a deployment pin even when `deployment_affinity` is false.
 
 ```yaml title="Reclassify each human ask while reusing continuation decisions"
@@ -652,7 +677,7 @@ Open **Routing rules and recovery**. Defaults and keys below apply to ordinary c
 | Semantic keyword matching | `semantic_keyword_matching: false`, `embedding_model: null`, `match_threshold: 0.5` | Uses embedding similarity instead of literal matching for the same rules. Requires an embedding model; threshold is `0` through `1`. Adds an embedding call. |
 | Escalation Keywords | `escalation_keywords` defaults to `["LITELLM ESCALATE"]` | Exact case-sensitive phrase bumps one tier. `[]` disables it. |
 | Plan-Mode Override | `plan_mode_min_tier: null`, `plan_mode_patterns: null` | Optional minimum tier while agent plan-mode markers are present. Additional patterns are case-sensitive literal sentinels. Does not rewrite the session pin. |
-| Housekeeping Routing | `route_housekeeping_to_cheapest_tier: true`, `housekeeping_patterns: null` | Recognized conversation-title calls skip classification and use the cheapest tier; keyword rules/pins still take precedence, and escalation can raise the result. Extra sentinels are case-sensitive. |
+| Housekeeping Routing | `route_housekeeping_to_cheapest_tier: true`, `housekeeping_patterns: null` | Recognized conversation-title calls, Claude Code agent progress summaries and prompt suggestions, and requests marked `x-claude-code-request-class: auxiliary` skip classification, use the cheapest tier and never become a held decision; keyword rules/pins still take precedence, and escalation can raise the result. Extra sentinels are case-sensitive. |
 | Modality Routing | `modality_routing: false`, `modality_pin_override: false` | Replaces an explicitly non-vision model on image turns with a capable higher-tier/default model. The override allows this on a pinned session for that turn only. Unknown vision support is not treated as explicitly unsupported. |
 | Context Window Escalation | `enable_context_window_escalation: false`, `context_window_escalation_buffer: 0.95` | Restricts selection to models that fit, or moves to the nearest higher tier proven to fit. Buffer is greater than `0`, at most `1`. Models with unknown windows are not proof of a fit or overflow. |
 | Stalled Task Escalation | `stall_escalation_enabled: false`, `stall_escalation_window: 6`, `stall_escalation_repeat_threshold: 3` | Escalates repeated/failing recent tool calls one tier. Repeat count must be at least `2` and no greater than the positive window. Incompatible with session affinity or `classification_mode: user_turn`. |

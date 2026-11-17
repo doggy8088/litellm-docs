@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Day 0 support for the GPT-5.6 family (Sol, Terra, and Luna) on LiteLLM."
+card_title: "GPT-5.6 (Sol, Terra, Luna)"
+card_summary: "The GPT-5.6 family (Sol, Terra, Luna) on OpenAI direct and Azure OpenAI, one config per variant."
 image: ./hero.png
 tags: [openai, gpt-5.6, gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna, completion, day 0 support]
 hide_table_of_contents: false
@@ -187,5 +189,5 @@ Global Azure OpenAI deployments (`azure/gpt-5.6-*`) match these OpenAI list pric
 ## Notes
 
 - For cost tracking on the GPT-5.6 models, hit the **Reload Model Cost Map** button in the Admin UI (or `POST /reload/model_cost_map`). Works on any LiteLLM version `v1.76.0` or newer, with no container restart or image upgrade required.
-- GPT-5.6 supports reasoning, function calling, parallel tool calls, vision (image input), prompt caching, web search, and structured output; see the [OpenAI provider docs](/docs/providers/openai) for advanced usage.
+- GPT-5.6 supports reasoning, function calling, parallel tool calls, vision (image input), prompt caching, web search, and structured output; see the [OpenAI provider docs](../../docs/providers/openai) for advanced usage.
 - The GPT-5.6 family launched in limited preview and OpenAI is expanding availability through the API and Codex; check your OpenAI account for model access.

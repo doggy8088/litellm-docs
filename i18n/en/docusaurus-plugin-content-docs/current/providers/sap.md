@@ -1,3 +1,9 @@
+---
+title: "SAP Generative AI Hub with LiteLLM: Setup"
+sidebar_label: "SAP Generative AI Hub"
+description: "Call models on SAP Generative AI Hub's Orchestration Service via LiteLLM from the Python SDK or AI Gateway, with AI Core service key auth and streaming."
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -165,7 +171,7 @@ try:
         max_tokens=20
     )
     print(f"✓ API Response: {response.choices[0].message.content}")
-    print("\n🎉 Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.")
+    print("\n Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.")
 except Exception as e:
     print(f"✗ API Error: {e}")
     print("\nTroubleshooting tips:")
@@ -192,7 +198,7 @@ python verify_sap_setup.py
 
 ✓ API Response: Connection successful!
 
-🎉 Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.
+Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.
 ```
 
 ## Authentication

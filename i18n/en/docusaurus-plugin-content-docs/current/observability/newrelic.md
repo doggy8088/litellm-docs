@@ -1,3 +1,8 @@
+---
+title: "New Relic Monitoring for LiteLLM AI Gateway"
+sidebar_label: "New Relic"
+description: "Send LiteLLM AI Gateway LLM events to New Relic with the newrelic callback and Python agent, with message redaction and per-team routing on OTel v2."
+---
 import Image from '@theme/IdealImage';
 
 # New Relic
@@ -194,6 +199,8 @@ curl -X POST 'http://localhost:4000/team/{team_id}/callback' \
 ```
 
 `newrelic_region` accepts `us` or `eu` and picks the data center for both traces (OTLP) and cost metrics (Metric API). The key is stored encrypted and reads back masked. Request bodies cannot supply `newrelic_api_key` or `newrelic_region`; only admin-configured team or key callback settings are honored.
+
+To keep internal Redis and PostgreSQL spans out of a team's destination, set the per-destination `excluded_services` callback variable. See [the OTel v2 exclusion settings](./opentelemetry_v2#keep-redis-and-postgres-spans-out-of-tenant-traces).
 
 Traces arrive as OTLP `gen_ai.*` spans with `litellm.team.id`, `litellm.team.alias` and `litellm.cost.*` attributes. Cost metrics arrive as `litellm.requests`, `litellm.cost.usd`, `litellm.tokens.*` counts and a `litellm.request.duration_ms` summary, faceted by `team_id`, `team_alias`, `model_group`, `model`, `custom_llm_provider` and `status`.
 

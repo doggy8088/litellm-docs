@@ -1,3 +1,8 @@
+---
+title: "Custom Code Guardrails on LiteLLM AI Gateway"
+sidebar_label: "Custom Code Guardrail"
+description: "Write guardrail logic as sandboxed Python-like code on the LiteLLM AI Gateway, with built-in regex and JSON helpers to block or flag requests."
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -386,7 +391,7 @@ Custom code runs in a restricted environment:
 - ❌ No `exec()` or `eval()`
 - ✅ HTTP requests via built-in `http_request`, `http_get`, `http_post` primitives, to public addresses or hosts listed in `user_url_allowed_hosts` (see [Blocked destinations](#blocked-destinations))
 - ✅ Only LiteLLM-provided primitives available
-- ⏱ Each run is bounded by the guardrail's `timeout` (see [Execution timeout](#execution-timeout))
+- Each run is bounded by the guardrail's `timeout` (see [Execution timeout](#execution-timeout))
 
 ## Per-Request Usage
 

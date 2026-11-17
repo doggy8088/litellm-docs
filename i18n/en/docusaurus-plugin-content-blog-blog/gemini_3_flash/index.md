@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Guide to using Gemini 3 Flash on LiteLLM Proxy and SDK with day 0 support."
+card_title: "Gemini 3 Flash"
+card_summary: "Gemini 3 Flash preview with thinking levels, on /chat/completions, /responses and /messages."
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -61,7 +63,7 @@ LiteLLM automatically maps the OpenAI `reasoning_effort` parameter to Gemini's `
 
 ### 2. Thought Signatures
 
-Like `gemini-3-pro`, this model also includes thought signatures for tool calls. LiteLLM handles signature extraction and embedding internally. [Learn more about thought signatures](/blog/gemini_3#thought-signatures).
+Like `gemini-3-pro`, this model also includes thought signatures for tool calls. LiteLLM handles signature extraction and embedding internally. [Learn more about thought signatures](../gemini_3/index.md#thought-signatures).
 
 **Edge Case Handling**: If thought signatures are missing in the request, LiteLLM adds a dummy signature ensuring the API call doesn't break
 
@@ -72,8 +74,8 @@ LiteLLM provides **full end-to-end support** for Gemini 3 Flash on:
 
 - ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
 - ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) compatible endpoint 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) compatible endpoint 
 All endpoints support:
 - Streaming and non-streaming responses
 - Function calling with thought signatures

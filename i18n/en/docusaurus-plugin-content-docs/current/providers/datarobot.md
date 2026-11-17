@@ -1,3 +1,9 @@
+---
+title: "DataRobot API with LiteLLM: Setup and Models"
+sidebar_label: "DataRobot"
+description: "Route completions to any model in your DataRobot LLM gateway catalog from the LiteLLM Python SDK, using the datarobot/ prefix and its OpenAI-compatible API."
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -39,6 +45,6 @@ print(response)
 
 ## DataRobot completion models
 
-🚨 LiteLLM supports _all_ DataRobot LLM gateway models. To get a list for your installation and user account, send the following CURL command:
+LiteLLM supports _all_ DataRobot LLM gateway models. To get a list for your installation and user account, send the following CURL command:
 `curl -X GET -H "Authorization: Bearer $DATAROBOT_API_TOKEN" "$DATAROBOT_ENDPOINT/genai/llmgw/catalog/" | jq | grep 'model":'DATAROBOT_ENDPOINT/genai/llmgw/catalog/`
 

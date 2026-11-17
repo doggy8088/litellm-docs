@@ -65,11 +65,3 @@ gh secret set FIREBASE_SERVICE_ACCOUNT \
 歡迎透過 Pull Request 提交修改。若涉及實質內容變更，請先建立 issue 討論。
 
 LiteLLM 的主要存放庫位於 <https://github.com/BerriAI/litellm>。
-
-## 更新 Lens 整合
-
-執行 `npm run sync:lens` 會複製 `BerriAI/litellm-lens-example` 的最新 `main` 分支，並匯入其 `docs.json` 清單所列的 README。此指令稿會加上 Docusaurus 中繼資料、改寫存放庫連結、複製圖片資產，並更新整合側邊欄；它只會取代 `docs/proxy/lens/imported/`，而本機維護的 Lens 頁面仍保留在 `docs/proxy/lens/` 中。
-
-請隨文件更新一併檢視並提交產生的變更。每個頁面都會記錄其來源 commit，並將編輯連結指回對應的 README。建置時會直接使用已提交的頁面，不會重新抓取範例存放庫，也不需要 GitHub token、dispatch 事件或排程工作流程。
-
-若要從本機已提交的工作目錄匯入，請執行 `npm run sync:lens -- --source-dir /path/to/litellm-lens-example`，這會匯入該工作目錄的 `HEAD`（不含未提交的變更）。

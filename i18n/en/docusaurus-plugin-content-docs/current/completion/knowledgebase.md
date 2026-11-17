@@ -1,3 +1,7 @@
+---
+sidebar_label: "Knowledge Bases"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
@@ -21,7 +25,7 @@ LiteLLM integrates with vector stores, allowing your models to access your organ
 - [Vertex AI RAG API](https://cloud.google.com/vertex-ai/generative-ai/docs/rag-overview)
 - [Gemini File Search](https://ai.google.dev/gemini-api/docs/file-search)
 - [MongoDB Vector Search (BETA)](../providers/mongodb_vector_stores.md#use-mongodb-in-chat-completions) (Use an existing Atlas or self-managed MongoDB index as context for chat completions)
-- [RAGFlow Datasets](/docs/providers/ragflow_vector_store) (Dataset management only, search not supported)
+- [RAGFlow Datasets](/docs/providers/ragflow_vector_store.md) (Dataset management only, search not supported)
 
 ## Quick Start
 

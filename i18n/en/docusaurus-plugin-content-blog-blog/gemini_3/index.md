@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Common questions and best practices for using gemini-3-pro-preview with LiteLLM Proxy and SDK."
+card_title: "Gemini 3"
+card_summary: "gemini-3-pro-preview on the proxy and SDK, with thought signatures and the new thinking controls."
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -83,7 +85,7 @@ LiteLLM provides **full end-to-end support** for Gemini 3 Pro Preview on:
 
 - ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
 - ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic-compatible messages endpoint
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
 - ✅ `/v1/generateContent` – [Google Gemini API](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini#rest) compatible endpoint (for code, see: `client.models.generate_content(...)`)
 
 All endpoints support:
@@ -969,7 +971,7 @@ messages.append(response.choices[0].message)  # ✅ Includes thought signatures
 
 ## Additional Resources
 
-- [Gemini Provider Documentation](/docs/providers/gemini)
-- [Thought Signatures Guide](/docs/providers/gemini#thought-signatures)
-- [Reasoning Content Documentation](/docs/reasoning_content)
-- [Function Calling Guide](/docs/completion/function_call)
+- [Gemini Provider Documentation](../../docs/providers/gemini)
+- [Thought Signatures Guide](../../docs/providers/gemini#thought-signatures)
+- [Reasoning Content Documentation](../../docs/reasoning_content)
+- [Function Calling Guide](../../docs/completion/function_call)

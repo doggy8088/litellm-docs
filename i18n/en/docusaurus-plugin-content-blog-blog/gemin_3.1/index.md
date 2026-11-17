@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Guide to using Gemini 3.1 Pro on LiteLLM Proxy and SDK with day 0 support."
+card_title: "Gemini 3.1 Pro"
+card_summary: "Gemini 3.1 Pro adds MINIMAL and MEDIUM thinking levels, mapped from reasoning_effort by LiteLLM."
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -59,8 +61,8 @@ LiteLLM provides **full end-to-end support** for Gemini 3.1 Pro on:
 
 - ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
 - ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic-compatible messages endpoint
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) compatible endpoint 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) compatible endpoint 
 
 All endpoints support:
 - Streaming and non-streaming responses

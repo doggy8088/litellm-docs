@@ -182,7 +182,7 @@ Subclass `CustomGuardrail` and define an `async_moderation_hook` function
 - This function runs in parallel to the actual LLM API call. 
 - If your `async_moderation_hook` raises an Exception, we will return that to the user. 
 
-See a complete example with our [Llama Guard content moderation hook](https://github.com/BerriAI/litellm/blob/main/enterprise/enterprise_hooks/llm_guard.py) and the [custom guardrail docs](./guardrails/custom_guardrail.md)
+See a complete example with our [Llama Guard content moderation hook](https://github.com/BerriAI/litellm/blob/main/litellm/enterprise/litellm_enterprise/enterprise_callbacks/llm_guard.py) and the [custom guardrail docs](./guardrails/custom_guardrail.md)
 
 ```python
 from litellm.integrations.custom_guardrail import CustomGuardrail
@@ -194,7 +194,7 @@ class MyCustomGuardrail(CustomGuardrail):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    async def async_moderation_hook( ### 👈 KEY CHANGE ###
+    async def async_moderation_hook( ### KEY CHANGE ##
         self,
         data: dict,
         user_api_key_dict: UserAPIKeyAuth,
@@ -341,7 +341,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
             "finish_reason": "stop",
             "index": 0,
             "message": {
-                "content": "This is an invalid response.", # 👈 REJECTED RESPONSE
+                "content": "This is an invalid response.", # REJECTED RESPONSE
                 "role": "assistant"
             }
         }

@@ -115,8 +115,8 @@ If the customer_id already exists, spend will be incremented.
 Call `/customer/info` to get a customer's all up spend
 
 ```bash showLineNumbers title="Get customer spend"
-# end_user_id: 👈 CUSTOMER ID
-# Authorization: 👈 YOUR PROXY KEY
+# end_user_id: CUSTOMER ID
+# Authorization: YOUR PROXY KEY
 curl -X GET 'http://0.0.0.0:4000/customer/info?end_user_id=ishaan3' \
         -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
@@ -152,7 +152,7 @@ export WEBHOOK_URL="https://webhook.site/6ab090e8-c55f-4a23-b075-3209f5c57906"
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings: 
-  alerting: ["webhook"] # 👈 KEY CHANGE
+  alerting: ["webhook"] # KEY CHANGE
 ```
 
 3. Test it! 
@@ -178,10 +178,10 @@ Expected Response
 
 ```json showLineNumbers title="Webhook event payload"
 {
-  "spend": 0.0011120000000000001, # 👈 SPEND
+  "spend": 0.0011120000000000001, # SPEND
   "max_budget": null,
   "token": "example-api-key-123",
-  "customer_id": "krrish12",  # 👈 CUSTOMER ID
+  "customer_id": "krrish12",  # CUSTOMER ID
   "user_id": null,
   "team_id": null,
   "user_email": null,
@@ -210,7 +210,7 @@ Every distinct customer ID LiteLLM sees is upserted into the customer table, whi
 
 Each session then lands in Usage -> Customer Usage as its own customer, and if you have a [default customer budget](#default-budget-for-all-customers) configured, each session gets its own copy of that budget, so a monthly cap meant for real customers turns into a per-session cap on that traffic.
 
-Set `validate_end_user_id_in_db` to keep those IDs out. Available in v1.87.0 and above.
+Set `validate_end_user_id_in_db` to keep those IDs out. <SinceVersion v="1.87.0" />
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
@@ -241,7 +241,7 @@ Set `models` on a customer to limit which models requests made on its behalf can
 
 Entries follow the same rules as key and team `models`, so a wildcard such as `anthropic/*` or a model access group name works here too
 
-Client-supplied `fallbacks` are checked against the customer's list too, as are router fallbacks when `enforce_fallback_model_access` is enabled
+Client-supplied `fallbacks` are checked against the customer's list too, as are router fallbacks unless `enforce_fallback_model_access` is set to `false`
 
 ```bash showLineNumbers title="Create a customer limited to one model"
 curl -L -X POST 'http://localhost:4000/customer/new' \
@@ -515,9 +515,9 @@ curl -X POST 'http://0.0.0.0:4000/customer/new'
     }'
 ```
 
-`/customer/new` accepts budget fields inline: `max_budget`, `soft_budget`, `budget_duration`, `tpm_limit`, `rpm_limit`, `max_parallel_requests` and `model_max_budget`. Set either `max_budget` or `budget_id`, not both; passing both is rejected. Customer `tpm_limit` and `rpm_limit` are stored on a budget object, so they only apply when the customer is linked to one, either inline as above or through `budget_id`.
+`/customer/new` accepts budget fields inline: `max_budget`, `soft_budget`, `budget_duration`, `tpm_limit`, `rpm_limit`, `max_parallel_requests` and `model_max_budget`. Set either `max_budget` or `budget_id`, not both; passing both is rejected. A field the endpoint does not know, such as a misspelled `tpm_limti`, is rejected with a 422 that names it, and no customer is created. Customer `tpm_limit` and `rpm_limit` are stored on a budget object, so they only apply when the customer is linked to one, either inline as above or through `budget_id`.
 
-`/customer/update` accepts a narrower set of fields: `user_id`, `alias`, `blocked`, `max_budget`, `budget_id`, `allowed_model_region`, `default_model` and `object_permission`. Anything else, including `tpm_limit`, `rpm_limit` and `budget_duration`, is silently dropped; to change those, update the budget object with `/budget/update` instead.
+`/customer/update` accepts a narrower set of fields: `user_id`, `alias`, `blocked`, `max_budget`, `budget_id`, `allowed_model_region`, `default_model` and `object_permission`. Anything else is rejected with a 422 that names each unknown field and leaves the customer unchanged. For budget fields such as `tpm_limit`, `rpm_limit`, `budget_duration`, `model_tpm_limit` and `model_rpm_limit` the error says to update the budget object with `/budget/update` instead.
 
 Customer budgets are global per deployment. Spend is tracked against the customer id alone, so the same customer shares one budget across every virtual key and team, and a customer budget can't be scoped to a single key or team.
 
@@ -599,7 +599,7 @@ curl -X POST 'http://localhost:4000/customer/new' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -D '{
     "user_id": "my-customer-id",
-    "budget_id": "my-free-tier" # 👈 KEY CHANGE
+    "budget_id": "my-free-tier" # KEY CHANGE
 }
 ```
 
@@ -614,7 +614,7 @@ curl -X POST 'http://localhost:4000/customer/new' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -D '{
     "user_id": "my-customer-id",
-    "budget_id": "my-free-tier" # 👈 KEY CHANGE
+    "budget_id": "my-free-tier" # KEY CHANGE
 }
 ```
 

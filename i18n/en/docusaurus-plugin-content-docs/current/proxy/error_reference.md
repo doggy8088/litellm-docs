@@ -60,6 +60,7 @@ The headers on a failed response carry the diagnostic context that the JSON body
 | `x-litellm-call-id` | Any failure after authentication succeeds | The request's correlation id. This is the value to quote in a support ticket and to search for in your logs; it ties the HTTP response to the gateway's log line, the spend-log row, and the OpenTelemetry trace. Absent on authentication failures, which are rejected before a call id is assigned |
 | `retry-after` | Gateway rate limits and router cooldowns | Seconds to wait. See the note below about what its presence implies |
 | `rate_limit_type` | Gateway rate limits | Which dimension was exceeded: `requests`, `tokens`, or `concurrent_requests` |
+| `rate_limited_by` | Gateway rate limits | Which limit was exceeded, as the limiter names it: `api_key`, `team`, `end_user`, `model_per_key`, `model_per_team`, `model_per_end_user`, `model_per_project`, and so on. Read with `rate_limit_type`: `model_per_end_user` plus `tokens` is the customer's `model_tpm_limit` |
 | `reset_at` | Gateway rate limits | UTC timestamp at which the exceeded window resets |
 | `x-litellm-key-rpm-limit`, `x-litellm-key-max-budget`, `x-litellm-key-spend` | Most failures after authentication | The calling key's configured ceilings and current spend, so you can confirm whether the key itself is the constraint |
 | `x-litellm-timeout` | Failures on a request that reached a deployment | The timeout that was in force for the call, in seconds |
@@ -89,7 +90,7 @@ The presence of a `<Provider>Exception` token means the request left the gateway
 | `message` contains `OpenAIException`, `AnthropicException`, `AzureException`, `BedrockException`, `VertexAIException`, or any other `<Provider>Exception` | Upstream provider |
 | `message` contains no provider name, and `type` is a LiteLLM value such as `budget_exceeded`, `expired_key`, `token_not_found_in_db`, `key_model_access_denied` | LiteLLM gateway |
 | `message` starts with `No deployments available for selected model` or `There are no healthy deployments for this model` | LiteLLM gateway (routing) |
-| 429 with a `retry-after`, `rate_limit_type`, or `reset_at` header | LiteLLM gateway (rate limiting) |
+| 429 with a `retry-after`, `rate_limit_type`, `rate_limited_by`, or `reset_at` header | LiteLLM gateway (rate limiting) |
 | 429 with no such headers | Upstream provider |
 
 Worked example, gateway origin. The virtual key is capped below its accrued spend, so the request is rejected before any provider is contacted:
@@ -165,7 +166,7 @@ Routing failures do not currently set a distinctive `error.type`; identify them 
 
 | Message prefix | Status | Cause |
 |---|---|---|
-| `No deployments available for selected model` | 429 | Every deployment in the model group is in cooldown after repeated failures. The message lists the cooling deployment ids and the seconds remaining |
+| `No deployments available for selected model` | 429 | Every deployment in the model group is in cooldown after repeated failures. The message lists the cooling deployment ids and the seconds remaining. The failure log lists the ones this request could have used, with their `api_base`, in [`error_information.error_cooldown_deployments`](/docs/proxy/logging_spec#standardloggingpayloaderrorinformation) |
 | `There are no healthy deployments for this model` | 400 | The model group has no deployment that can serve the request |
 | `Not allowed to access model due to tags configuration` | 401 | Tag-based routing excluded every deployment for this caller |
 | `No deployments available - crossed budget` | 429 | Provider-budget routing has exhausted the budget for every candidate deployment |
@@ -174,7 +175,7 @@ Routing failures do not currently set a distinctive `error.type`; identify them 
 
 429 is the one status the gateway and the providers both use heavily, so it deserves a dedicated check. Work through the response in this order
 
-A gateway rate limit sets `retry-after`, `rate_limit_type`, and `reset_at`, and its message names the limit that was hit:
+A gateway rate limit sets `retry-after`, `rate_limit_type`, `rate_limited_by`, and `reset_at`. `rate_limited_by` names the limit that was hit (`api_key` below) so you do not have to parse the message, which repeats it in words:
 
 ```json
 {

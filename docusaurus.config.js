@@ -7,63 +7,13 @@ require('dotenv').config();
 const lightCodeTheme = require('./src/utils/prismLight');
 const darkCodeTheme = require('./src/utils/prismDark');
 
-const inkeepApiKey = process.env.INKEEP_API_KEY;
-// Conditional check: docs should work if this key is missing.
-const hasInkeepSearch = Boolean(inkeepApiKey);
-
-const inkeepConfig = {
-  baseSettings: {
-    apiKey: inkeepApiKey,
-    organizationDisplayName: 'liteLLM',
-    primaryBrandColor: '#4965f5',
-    theme: {
-      styles: [
-        {
-          key: "custom-theme",
-          type: "style",
-          value: `
-            .ikp-chat-button__button {
-              margin-right: 80px !important;
-            }
-          `,
-        },
-      ],
-      syntaxHighlighter: {
-        lightTheme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
-      },
-    },
-  },
-  searchSettings: {
-    searchBarPlaceholder: 'Search docs, guides, API reference...',
-    debounceTimeMs: 0,
-    maxResults: 7 
-  },
-  aiChatSettings: {
-    aiAssistantName: 'LiteLLM AI',
-    chatSubjectName: 'LiteLLM',
-    aiAssistantAvatar: '/img/favicon.ico',
-    placeholder: 'Ask anything about LiteLLM...',
-    introMessage: 'Hi! I can help you with LiteLLM — proxy setup, model routing, caching, spend tracking, and more. What would you like to know?',
-    exampleQuestions: [
-      'How do I set up the LiteLLM proxy?',
-      'How do I route requests across multiple models?',
-      'How do I enable response caching?',
-      'How do I track spend per team or API key?',
-    ],
-    exampleQuestionsLabel: 'Common questions',
-    isFirstExampleQuestionHighlighted: true,
-    shouldOpenLinksInNewTab: true,
-    isCopyChatButtonVisible: true,
-    isShareButtonVisible: false,
-    prompts: [
-      'You are a helpful assistant specializing in LiteLLM. Answer questions about setup, configuration, model routing, the proxy server, caching, logging, and spend tracking. When referencing configuration options, include YAML or Python code examples where helpful. If a question is outside the scope of LiteLLM, politely redirect the user to the relevant docs or GitHub.',
-    ],
-  },
-};
-
 /** @type {import('@docusaurus/types').Config} */
 const config = {
+  // Temporary fallback while the internal gateway is unavailable.
+  // Set DOCS_CHAT_PROVIDER=internal and rebuild to switch back.
+  customFields: {
+    inkeepApiKey: process.env.DOCS_CHAT_PROVIDER === 'internal' ? null : process.env.INKEEP_API_KEY || null,
+  },
   title: 'liteLLM',
   tagline: 'Simplify LLM API Calls',
   // SVG favicon that turns white on dark browser themes; PNG for browsers without SVG icons
@@ -100,10 +50,12 @@ const config = {
       },
     },
   },
-  clientModules: [require.resolve('./src/clientModules/imageZoom.js'), require.resolve('./src/clientModules/gridMarks.js'), require.resolve('./src/clientModules/lensLegacyRedirect.js')],
+  clientModules: [require.resolve('./src/clientModules/imageZoom.js'), require.resolve('./src/clientModules/gridMarks.js'), require.resolve('./src/clientModules/lensLegacyRedirect.js'), require.resolve('./src/clientModules/deployLegacyRedirect.js')],
   plugins: [
     require('./plugins/litellm-stats'),
+    require('./plugins/release-feed'),
     require('./plugins/llms'),
+    require('./plugins/mcp-models-snapshot'),
     // vega-canvas tries to load the optional node `canvas` package during SSR.
     // Charts render as SVG, so resolve it to an empty module.
     () => ({
@@ -118,8 +70,42 @@ const config = {
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
+          {from: '/docs/proxy/customer_portal/api_reference_guide', to: '/docs/proxy/customer_management/track-customer-spend'},
+          {from: '/docs/proxy/customer_portal/track-customer-spend', to: '/docs/proxy/customer_management/track-customer-spend'},
+          {from: '/docs/proxy/customer_portal/api_reference', to: '/docs/proxy/customer_management/api_reference'},
+          {from: '/blog/customer-portal', to: '/blog/customer-management'},
+          // The decisions page was split into subpages for a few days in October 2026.
+          {from: '/docs/decisions/providers', to: '/docs/decisions#supported-providers'},
+          {from: '/docs/decisions/openai_format', to: '/docs/decisions#v1decisions'},
+          {from: '/docs/decisions/systemone_format', to: '/docs/decisions#v1systemone'},
+          {from: '/docs/decisions/typesafe_images', to: '/docs/decisions#typesafe-images-box-questions-and-long-context'},
+          {from: '/docs/decisions/sdk', to: '/docs/decisions#sdk-usage'},
+          {from: '/docs/decisions/admin_ui', to: '/docs/decisions#try-it-in-the-admin-ui'},
+          {from: '/docs/learn', to: '/docs/tutorials'},
+          {from: '/docs/learn/gateway_quickstart', to: '/docs/proxy/quick_start'},
+          {from: '/docs/learn/python_sdk_quickstart', to: '/docs/learn/sdk_quickstart'},
+          {from: '/docs/learn/enterprise_quickstart_learn', to: '/docs/learn/enterprise_quickstart'},
+          {from: '/docs/tutorials/python_sdk', to: '/docs/learn/call-any-model'},
+          {from: '/docs/tutorials/provider_tutorials', to: '/docs/learn/call-any-model'},
+          {from: '/docs/tutorials/proxy_admin_access', to: '/docs/learn/run-the-gateway'},
+          {from: '/docs/tutorials/proxy_features_safety', to: '/docs/learn/add-safety'},
+          {from: '/docs/tutorials/observability_evaluation', to: '/docs/learn/observe-and-evaluate'},
+          {from: '/docs/manage_with_ai_agents', to: '/docs/ai_tools'},
+          {from: '/docs/routing-load-balancing', to: '/docs/proxy/load_balancing'},
+          {from: '/docs/guides/retrieval_knowledge', to: '/docs/guides/tools_integrations'},
+          {from: '/docs/guides/security_network', to: '/docs/guides/security_settings'},
+          {from: '/docs/guides/reliability_testing_spend', to: '/docs/completion/reliable_completions'},
           {from: '/docs/proxy/liteadmin_slack_native', to: '/docs/proxy/liteadmin_slack'},
+          {from: '/docs/proxy/multiple_admins', to: '/docs/proxy/audit_logs'},
+          {from: '/docs/proxy/jwt_auth_arch', to: '/docs/proxy/access_management/jwt_permissions#beta-control-access-with-oidc-roles'},
+          {from: ['/docs/oidc', '/docs/oidcz'], to: '/docs/proxy/model_management#workload-identity-credentials'},
           {from: '/docs/proxy/lens/coding_agents', to: '/docs/proxy/lens/coding-agents'},
+          {from: '/docs/proxy/rust_gateway', to: '/rust-migration'},
+          {from: '/docs/proxy/deploy/iap/cloudflare', to: '/docs/proxy/deploy/iap/overview#cloudflare'},
+          {from: '/docs/proxy/deploy/iap/aws', to: '/docs/proxy/deploy/iap/overview#aws'},
+          {from: '/docs/proxy/deploy/iap/azure', to: '/docs/proxy/deploy/iap/overview#azure'},
+          {from: '/docs/proxy/deploy/iap/gcp', to: '/docs/proxy/deploy/iap/overview#gcp'},
+
           {
             from: '/docs/proxy/control_plane_and_data_plane',
             to: '/docs/proxy/multi_region',
@@ -138,7 +124,23 @@ const config = {
           },
           {
             from: '/docs/proxy/microservices_helm',
-            to: '/docs/proxy/deploy#deploy-with-helm',
+            to: '/docs/proxy/deploy/helm',
+          },
+          {
+            from: ['/docs/proxy/deploy/kubernetes', '/docs/proxy/manifests_to_microservices'],
+            to: '/docs/proxy/deploy/helm',
+          },
+          {
+            from: '/docs/proxy/deploy/terraform/provider',
+            to: '/docs/proxy/configuration/terraform',
+          },
+          {
+            from: '/docs/proxy/deploy/terraform/aws',
+            to: '/docs/proxy/deploy/terraform#aws',
+          },
+          {
+            from: '/docs/proxy/deploy/terraform/gcp',
+            to: '/docs/proxy/deploy/terraform#gcp',
           },
           {
             from: '/docs/proxy/db_deadlocks',
@@ -171,21 +173,7 @@ const config = {
         ],
       },
     ],
-    ...(hasInkeepSearch
-      ? [
-          [
-            '@inkeep/cxkit-docusaurus',
-            {
-              SearchBar: {
-                ...inkeepConfig,
-              },
-              ChatButton: {
-                ...inkeepConfig,
-              },
-            },
-          ],
-        ]
-      : []),
+    require('./plugins/docs-search'),
     [
       '@docusaurus/plugin-ideal-image',
       {
@@ -305,24 +293,18 @@ const config = {
         sortPosts: 'descending',
         include: ['**/index.{md,mdx}'],
         remarkPlugins: [require('./src/remark/raw-markdown')],
+        rehypePlugins: [require('./src/rehype/table-cell-labels')],
         onInlineAuthors: 'throw',
         onUntruncatedBlogPosts: 'throw',
+        feedOptions: {
+          // Every post, so feed readers get every post's tags. Full text is
+          // trimmed to the newest 50 in src/feed/card-categories.js.
+          limit: false,
+          createFeedItems: require('./src/feed/card-categories').createFeedItems,
+        },
       },
     ],
 
-    () => ({
-      name: 'cripchat',
-      injectHtmlTags() {
-        return {
-          headTags: [
-            {
-              tagName: 'script',
-              innerHTML: `window.$crisp=[];window.CRISP_WEBSITE_ID="be07a4d6-dba0-4df7-961d-9302c86b7ebc";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();`,
-            },
-          ],
-        };
-      },
-    }),
     // PostHog product analytics. Same project as the Webflow marketing site
     // (www.litellm.ai), so a visitor moving between the two domains is one
     // person and one journey: persistence keeps a first-party cookie on
@@ -411,7 +393,9 @@ const config = {
           remarkPlugins: [require('./src/remark/raw-markdown')],
         },
         blog: false, // Disable the default blog plugin from preset-classic
-        pages: {},
+        pages: {
+          beforeDefaultRemarkPlugins: [require('./src/remark/docs-models')],
+        },
         theme: {
           customCss: [require.resolve('./src/css/custom.css'), require.resolve('./src/css/logo-shape.css')],
         },
@@ -423,7 +407,8 @@ const config = {
     experimental_faster: {
       swcJsLoader: true,
       swcJsMinimizer: true,
-      swcHtmlMinimizer: true,
+      // Keep explicit <head> tags and quoted metadata for social previews.
+      swcHtmlMinimizer: false,
       lightningCssMinimizer: true,
       mdxCrossCompilerCache: true,
     },
@@ -446,12 +431,28 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      // Google Search Console ownership token. Public by design; keep it so the property stays verified.
+      // It lives here, not in headTags, so it renders near <title>. headTags land after inline
+      // scripts whose strings contain "<div>", and Google's verifier then decides <head> has ended.
+      metadata: [{name: 'google-site-verification', content: '2ECVUxrDhV_G5feehdJNQuTA4dEJbE9R918TbGTwJI8'}],
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.png',
+      // The whole bar links to the page; the close button still works.
+      // Entries live in src/announcements.js and are rotated by
+      // src/theme/AnnouncementBar/Content, which also drops an entry once its
+      // expiresAt passes. `content` is required by the theme schema but is not
+      // rendered; it holds the evergreen entry so the config still reads true.
+      // Bump `id` to resurface the bar for readers who dismissed the last one.
+      announcementBar: {
+        id: 'decisions_api_gemini_2026_11',
+        content:
+          '<a class="announcement-link" href="/docs/decisions"><strong>Decisions API is here.</strong> Call Gemini Decision 1, Jev, Clef or any decision model through one /v1/decisions endpoint. &rarr;</a>',
+        isCloseable: true,
+      },
       docs: {
         sidebar: {
-          // No collapse-sidebar toggle at the bottom of the sidebar
-          hideable: false,
+          // Collapse chevron at the bottom of the sidebar; see src/theme/DocSidebar
+          hideable: true,
         },
       },
       navbar: {
@@ -481,9 +482,9 @@ const config = {
           },
           {
             type: 'docSidebar',
-            sidebarId: 'learnSidebar',
+            sidebarId: 'providersSidebar',
             position: 'left',
-            label: 'Learn',
+            label: 'AI Providers',
           },
           {
             type: 'docSidebar',
@@ -492,18 +493,14 @@ const config = {
             label: 'Integrations',
           },
           {
+            type: 'docSidebar',
+            sidebarId: 'enterpriseSidebar',
             position: 'left',
             label: 'Enterprise',
-            to: "docs/enterprise"
           },
           { to: '/release_notes', label: 'Changelog', position: 'left' },
           { to: '/blog', label: 'Blog', position: 'left' },
           { to: '/rust-migration', label: 'Rust', position: 'left' },
-          {
-            href: 'https://trust.litellm.ai/',
-            label: 'Trust Center',
-            position: 'right',
-          },
           {
             href: 'https://github.com/BerriAI/litellm',
             position: 'right',
@@ -511,18 +508,15 @@ const config = {
             'aria-label': 'GitHub repository',
           },
           {
-            href: 'https://www.litellm.ai/support',
+            href: 'https://discord.com/invite/wuPM9dRgDw',
             position: 'right',
             className: 'header-discord-link',
-            'aria-label': 'Discord / Slack community',
+            'aria-label': 'Discord community',
           },
           {
             type: 'localeDropdown',
             position: 'right',
           },
-          ...(hasInkeepSearch
-            ? [{type: 'search', position: 'right'}]
-            : []),
         ],
       },
       footer: {
@@ -532,11 +526,11 @@ const config = {
             title: 'Product',
             items: [
               {label: 'Gateway quickstart', to: '/docs/proxy/docker_quick_start'},
-              {label: 'Python SDK', to: '/docs/'},
+              {label: 'Python SDK', to: '/docs/python_sdk'},
               {label: 'Production deployment', to: '/docs/proxy/deploy'},
               {label: 'MCP Gateway', to: '/docs/mcp'},
               {label: 'Agent Gateway', to: '/docs/a2a'},
-              {label: 'Rust AI Gateway (beta)', to: '/docs/proxy/rust_gateway'},
+              {label: 'Rust migration', to: '/rust-migration'},
               {label: 'Enterprise', to: '/docs/enterprise'},
             ],
           },

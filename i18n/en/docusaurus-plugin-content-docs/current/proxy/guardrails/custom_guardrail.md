@@ -1,3 +1,8 @@
+---
+title: "Build a Custom Guardrail for LiteLLM AI Gateway"
+sidebar_label: "Custom Guardrail"
+description: "Write a CustomGuardrail class for the LiteLLM AI Gateway: implement apply_guardrail to block or modify content and register it in config.yaml."
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -138,7 +143,7 @@ model_list:
 guardrails:
   - guardrail_name: "my-custom-guardrail"
     litellm_params:
-      guardrail: custom_guardrail.myCustomGuardrail  # 👈 Key change
+      guardrail: custom_guardrail.myCustomGuardrail  # Key change
       mode: "pre_call"                  # when apply_guardrail runs - see Mode Options below
       api_key: os.environ/MY_GUARDRAIL_API_KEY
       api_base: https://api.myguardrail.com
@@ -458,7 +463,7 @@ curl -i  -X POST http://localhost:4000/v1/chat/completions \
 
 </details>
 
-## ✨ Pass additional parameters to guardrail
+## Pass additional parameters to guardrail {#-pass-additional-parameters-to-guardrail}
 
 <EnterpriseFeature />
 

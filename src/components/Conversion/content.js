@@ -30,7 +30,7 @@ const PROMPTS = {
     title: 'Run the LiteLLM Gateway locally',
     text: `Help me run the LiteLLM Gateway locally. First read ${DOCS}/docs/proxy/docker_quick_start.md. Then:
 1. Check that Docker Compose v2 is installed and running, and that port 4000 is free.
-2. In a new litellm-gateway directory, download https://github.com/BerriAI/litellm/raw/main/docker/docker-compose.quickstart.yml and create .env with LITELLM_MASTER_KEY and LITELLM_SALT_KEY, each "sk-" followed by the output of openssl rand -hex 32, and POSTGRES_PASSWORD set to the output of openssl rand -hex 24. Add .env to .gitignore and never print any of these values.
+2. In a new litellm-gateway directory, download https://github.com/BerriAI/litellm/raw/main/litellm/deploy/docker/docker-compose.quickstart.yml and create .env with LITELLM_MASTER_KEY and LITELLM_SALT_KEY, each "sk-" followed by the output of openssl rand -hex 32, and POSTGRES_PASSWORD set to the output of openssl rand -hex 24. Add .env to .gitignore and never print any of these values.
 3. Run docker compose -f docker-compose.quickstart.yml up -d and poll http://localhost:4000/health/readiness until the database shows as connected.
 4. Ask me which provider and model to add. Add it with POST /model/new using the master key, reading my provider API key from my shell environment without echoing it.
 5. Verify: GET /v1/models lists the model and POST /v1/chat/completions returns a reply.
@@ -48,9 +48,9 @@ const PROMPTS = {
   'lens-claude-code': {
     title: 'Set up Claude Code tracing in Lens',
     text: `Set up this machine to send my Claude Code sessions to LiteLLM Lens. First read ${DOCS}/docs/proxy/lens/coding-agents.md and ${DOCS}/docs/proxy/lens/deployment.md.
-1. Ask me for my LiteLLM gateway URL and an agent name, defaulting to claude-code. Read my virtual key from an existing environment variable or a hidden terminal prompt. Never ask me to paste the key into chat, print it, or commit it.
-2. Check that tracing is enabled and the gateway accepts Claude conversation logs at /v1/logs. If it needs an upgrade, explain that before changing my local settings.
-3. Explain which session content will be sent to my gateway. Configure Claude's built-in OTLP trace and log exporters and the content flags in the guide. Merge them into the env object in my user-level ~/.claude/settings.json, preserving other settings and resource attributes. Keep credentials in private user configuration. Use lens.session.capture=true and my chosen gen_ai.agent.name. Do not install a plugin or helper, change my Claude subscription/API login or model endpoint, or enable optional raw API-body export.
+1. Ask me for the full Traces endpoint from Lens > Traces > Set up tracing and an agent name, defaulting to claude-code. Preserve any /lens-ingest prefix and include /v1/traces once. Derive the logs endpoint by replacing the final /v1/traces with /v1/logs. Read my dedicated tracing key from an existing environment variable or a hidden terminal prompt. Never ask me to paste the key into chat, print it, or commit it.
+2. Check that tracing is enabled and the Lens service accepts Claude conversation logs at /v1/logs. If it needs an upgrade, explain that before changing my local settings.
+3. Explain which session content will be sent to my Lens service. Configure Claude's built-in OTLP trace and log exporters and the content flags in the guide. Merge them into the env object in my user-level ~/.claude/settings.json, preserving other settings and resource attributes. Keep credentials in private user configuration. Use lens.session.capture=true and my chosen gen_ai.agent.name. Do not install a plugin or helper, change my Claude subscription/API login or model endpoint, or enable optional raw API-body export.
 4. Tell me to restart Claude Code, then complete a small prompt that uses a tool. Verify the new trace under my chosen agent name in Lens > Traces > Conversation contains the prompt, tool activity, and assistant reply. These events belong in Lens, not the normal request Logs screen. Report any missing content or export error instead of claiming setup succeeded.
 5. Show me the configuration changes with credentials hidden, explain how to pause telemetry, and point out the capture limits described in the guide.`,
   },
@@ -58,7 +58,7 @@ const PROMPTS = {
     title: 'Set up Codex tracing in Lens',
     text: `Set up LiteLLM Lens tracing for my local Codex desktop or CLI sessions. First read ${DOCS}/docs/proxy/lens/coding-agents.md and https://github.com/BerriAI/litellm-lens-codex-integration/blob/main/README.md.
 1. Check this machine's operating system and Python version against the integration's current prerequisites. If automatic setup is unsupported, explain the limitation rather than inventing installation steps.
-2. Ask me for my LiteLLM gateway URL and an agent name. Use the documented Terminal setup so I can enter my virtual key at its hidden prompt and confirm recording. Never ask me to paste the key into chat, print it, or commit it.
+2. Ask me for the full Traces endpoint from Lens > Traces > Set up tracing and an agent name. The installer accepts that endpoint at its Lens ingestion URL prompt and preserves /lens-ingest when present. Use the documented Terminal setup so I can enter my dedicated tracing key at its hidden prompt and confirm recording. Never ask me to paste the key into chat, print it, or commit it.
 3. Install or update the official BerriAI integration using the README's From Terminal instructions. Reuse an existing installation where possible, and preserve my Codex authentication, model configuration, and unrelated hooks. Explain what will be recorded; only newly captured activity should be exported.
 4. Tell me to start a new Codex chat and complete a small prompt that uses a tool. Verify its trace appears under my chosen agent name in Lens > Traces > Conversation, with the prompt, tool outcome, and assistant reply. Check the integration's status and pending uploads if it does not appear; installation alone is not proof that capture works.
 5. Show me what changed with credentials hidden, explain how to pause recording with lens-setup, and summarize the integration's capture limits.`,
@@ -119,16 +119,16 @@ If I do not have a license yet, stop and point me to ${SALES_URL}.`,
   },
 };
 
-const GATEWAY_COMPOSE = `curl -sSLO https://github.com/BerriAI/litellm/raw/main/docker/docker-compose.quickstart.yml
+const GATEWAY_COMPOSE = `curl -sSLO https://github.com/BerriAI/litellm/raw/main/litellm/deploy/docker/docker-compose.quickstart.yml
 printf 'LITELLM_MASTER_KEY=sk-%s\\nLITELLM_SALT_KEY=sk-%s\\nPOSTGRES_PASSWORD=%s\\n' "$(openssl rand -hex 32)" "$(openssl rand -hex 32)" "$(openssl rand -hex 24)" > .env
 docker compose -f docker-compose.quickstart.yml up -d`;
 
 // The one command per system shown in the Quick Start box. The gateway scripts
-// live in the litellm repo: scripts/quickstart.sh and scripts/quickstart.ps1.
+// live in the litellm repo: litellm/scripts/quickstart.sh and litellm/scripts/quickstart.ps1.
 const QUICKSTART = {
   gateway: {
-    mac: 'curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/quickstart.sh | sh',
-    windows: 'irm https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/quickstart.ps1 | iex',
+    mac: 'curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/quickstart.sh | sh',
+    windows: 'irm https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/quickstart.ps1 | iex',
   },
   sdk: 'uv add litellm',
 };
@@ -144,11 +144,14 @@ const GATEWAY_DOCKER_RUN = `docker run \\
 const ONE_CLICK = [
   ['Railway', 'https://railway.com/deploy/RhvhdC?referralCode=7mRv9K&utm_medium=integration&utm_source=template&utm_campaign=generic', 'https://railway.com/button.svg'],
   ['Render', 'https://render.com/deploy?repo=https://github.com/BerriAI/litellm', 'https://render.com/images/deploy-to-render-button.svg'],
+  ['AWS', '/docs/proxy/deploy/terraform#aws', '/img/deploy-on-aws.png'],
+  ['GCP', '/docs/proxy/deploy/terraform#gcp', '/img/deploy-on-gcp.png'],
 ];
 
-const INSTALLER = `curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install.sh | sh`;
+const INSTALLER = `curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/install.sh | sh`;
 
-const HELM = `helm install litellm oci://ghcr.io/berriai/litellm-helm -f values.yaml`;
+const HELM = `helm upgrade --install litellm oci://ghcr.io/YOUR_ORG/charts/litellm \\
+  --version 1.0.0 --namespace litellm -f values.yaml --wait --timeout 30m`;
 
 // Install options per path. The first entry is the recommended command and is
 // the only one shown up front; the rest sit under "Other ways to install",
@@ -175,16 +178,16 @@ const INSTALLS = {
       {
         id: 'helm',
         label: 'Helm',
-        when: 'You deploy to Kubernetes. Pair it with a values.yaml from the deploy guide.',
+        when: 'You deploy to Kubernetes. Publish the chart to your OCI registry and prepare values.yaml using the Helm guide. Replace YOUR_ORG with your registry namespace.',
         code: HELM,
-        more: '/docs/proxy/deploy#deploy-with-helm',
+        more: '/docs/proxy/deploy/helm',
       },
       {
         id: 'installer',
         label: 'One-line installer',
         when: 'You want the gateway as a local CLI without Docker (macOS and Linux). It runs from a config file with no database, so there are no virtual keys or admin UI.',
         code: INSTALLER,
-        more: 'https://github.com/BerriAI/litellm/blob/main/scripts/install.sh',
+        more: 'https://github.com/BerriAI/litellm/blob/main/litellm/scripts/install.sh',
         moreLabel: 'Read the script',
       },
     ],
@@ -213,7 +216,7 @@ const TIERS = [
     plus: 'Everything in AI Gateway, plus',
     items: [
       ['SSO and SCIM', '/docs/proxy/admin_ui_sso'],
-      ['Audit logs', '/docs/proxy/multiple_admins'],
+      ['Audit logs', '/docs/proxy/audit_logs'],
       ['Org and team admins', '/docs/proxy/access_control'],
       ['Secret managers', '/docs/secret_managers/overview'],
       ['IP allowlists', '/docs/proxy/ip_address'],

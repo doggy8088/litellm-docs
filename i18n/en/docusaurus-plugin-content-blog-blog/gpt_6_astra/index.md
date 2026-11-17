@@ -9,6 +9,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "Day 0 support for OpenAI's GPT-6 Astra on LiteLLM, with pricing, reasoning params, and the Responses API bridge."
+card_title: "GPT-6 Astra"
+card_summary: "OpenAI's GPT-6 flagship with new pricing and reasoning params, served through the Responses API bridge."
 tags: [openai, gpt-6, gpt-6-astra, completion, day 0 support]
 hide_table_of_contents: false
 ---
@@ -120,7 +122,7 @@ The `flex` service tier is billed at half the standard rate and `priority` at do
 
 - `gpt-6-astra` accepts `reasoning_effort` values `low`, `medium`, `high`, and `xhigh` on Chat Completions, plus `max` on the Responses API; `none` and `minimal` are rejected, so `temperature` cannot be used with it.
 - Availability is rolling out through the API; check your OpenAI account for model access.
-- See the [OpenAI provider docs](/docs/providers/openai) for the full parameter reference.
+- See the [OpenAI provider docs](../../docs/providers/openai) for the full parameter reference.
 
 ## Feedback
 

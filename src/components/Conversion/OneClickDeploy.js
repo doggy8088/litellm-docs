@@ -11,14 +11,23 @@ export default function OneClickDeploy({source = 'docs'}) {
   return (
     <div className={styles.oneClick}>
       <div className={styles.oneClickCopy}>
-        <p className={styles.oneClickTitle}>{t('一鍵部署至雲端', 'Deploy to the cloud in one click')}</p>
+        <p className={styles.oneClickTitle}>{t('雲端部署選項', 'Cloud deployment options')}</p>
         <p className={styles.oneClickText}>
           {t(
-            '為您代管相同的閘道與 Postgres。凡是本指南提及 ',
-            "Same gateway and Postgres, hosted for you. Use your deployment's URL wherever this guide says ",
+            'Railway 與 Render 為您代管相同的閘道與 Postgres。若使用 AWS 與 GCP，請參閱',
+            'Railway and Render host the same gateway and Postgres for you. For AWS and GCP, use the ',
           )}
+          <a href="/docs/proxy/deploy/terraform">{t('Terraform 部署指南', 'Terraform deployment guide')}</a>
+          {t('。凡是本指南提及 ', ". Use your deployment's URL wherever this guide says ")}
           <code>http://localhost:4000</code>
           {t(' 之處，請改用您的部署網址。', '.')}
+        </p>
+        <p className={styles.oneClickText}>
+          {t('在 Render 上，請先登入並在部署之前，將 ', 'On Render, set ')}
+          <strong>Blueprint Path</strong>
+          {t(' 設定為 ', ' to ')}
+          <code>litellm/deploy/render/render.yaml</code>
+          {t('。', ' after signing in, before you deploy.')}
         </p>
       </div>
       <div className={styles.oneClickBadges}>
@@ -36,4 +45,3 @@ export default function OneClickDeploy({source = 'docs'}) {
     </div>
   );
 }
-

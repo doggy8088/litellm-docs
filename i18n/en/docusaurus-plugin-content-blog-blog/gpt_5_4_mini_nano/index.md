@@ -92,5 +92,5 @@ print(response.choices[0].message.content)
 
 ## Notes
 
-- Both models support function calling, vision, and tool-use; see the [OpenAI provider docs](/docs/providers/openai) for advanced usage.
+- Both models support function calling, vision, and tool-use; see the [OpenAI provider docs](../../docs/providers/openai) for advanced usage.
 - GPT-5.4-nano is the most cost-effective option for simple tasks; GPT-5.4-mini offers a balance of speed and capability.

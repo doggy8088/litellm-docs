@@ -1,10 +1,11 @@
 import React from 'react';
+import {Database, Zap} from 'lucide-react';
 import styles from './styles.module.css';
 import useLocaleText from '@site/src/utils/useLocaleText';
 
 /* ────────────────────── Shared small pieces ────────────────────── */
 
-function InfraBox({ icon, label, color }: { icon: string; label: string; color: 'green' | 'blue' | 'orange' }) {
+function InfraBox({ icon, label, color }: { icon: React.ReactNode; label: string; color: 'green' | 'blue' | 'orange' }) {
   const colorClass =
     color === 'green'
       ? styles.infraBoxGreen
@@ -47,8 +48,8 @@ function WorkerColumn({
         <div className={styles.nodeCaption}>{t('處理 LLM 請求', 'Handles LLM requests')}</div>
       </div>
       <div className={styles.infraStack}>
-        <InfraBox icon="🗄" label={t('專屬資料庫', 'Own Database')} color="green" />
-        <InfraBox icon="⚡" label={t('專屬 Redis', 'Own Redis')} color="orange" />
+        <InfraBox icon={<Database size={16} aria-hidden="true" />} label={t('專屬資料庫', 'Own Database')} color="green" />
+        <InfraBox icon={<Zap size={16} aria-hidden="true" />} label={t('專屬 Redis', 'Own Redis')} color="orange" />
       </div>
     </div>
   );
@@ -71,7 +72,7 @@ function ArchitectureView() {
       {/* Control Plane */}
       <div className={`${styles.node} ${styles.nodeControlPlane}`}>
         <div className={styles.nodeHeader}>
-          <span className={styles.nodeTitle}>{t('全域控制平面', 'Global Control Plane')}</span>
+          <span className={styles.nodeTitle}>{t('UI 部署選取器', 'UI Deployment Selector')}</span>
           <span className={`${styles.badge} ${styles.badgeBlue}`}>{t('僅限管理介面', 'ADMIN UI ONLY')}</span>
         </div>
         <div className={styles.nodeSubtitle}>cp.example.com</div>

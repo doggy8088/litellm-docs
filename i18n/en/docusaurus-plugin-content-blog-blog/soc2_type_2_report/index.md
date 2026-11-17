@@ -16,6 +16,6 @@ Our updated SOC 2 Type 2 report is ready. You can access it through the [LiteLLM
 
 {/* truncate */}
 
-This completes the recertification we [announced in March](/blog/vanta-compliance-recertification), run with Vanta and validated by an independent auditor.
+This completes the recertification we [announced in March](../vanta_compliance_recertification/index.md), run with Vanta and validated by an independent auditor.
 
 If your security team needs the report for a vendor review, send them to [trust.litellm.ai](https://trust.litellm.ai/). For any additional questions, email security@berri.ai.

@@ -7,7 +7,7 @@ authors:
   - ishaan-alt
 description: "Chain Akto's model-based detection with LiteLLM's built-in guardrails — catch PII, prompt injection, and policy violations that pattern-based checks miss."
 image: /img/litellm_akto_announcement.png
-tags: [partnership, security, guardrails, akto]
+tags: [partnership, guardrails, akto]
 hide_table_of_contents: false
 ---
 
@@ -25,6 +25,6 @@ You run them together. LiteLLM's guardrails handle the cheap, fast checks; Akto 
 
 Akto runs in **sync mode** (block on violation before the LLM is called) or **async mode** (log and alert without adding latency). Configure it as a callback on your existing proxy; no app-level changes.
 
-**Get started:** [Akto guardrail setup guide](/docs/proxy/guardrails/akto)
+**Get started:** [Akto guardrail setup guide](../../docs/proxy/guardrails/akto)
 
 **Read the full announcement** on [Akto's blog →](https://www.akto.io/blog/akto-partners-litellm-ai-gateway-security-agents)
