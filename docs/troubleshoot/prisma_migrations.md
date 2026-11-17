@@ -199,3 +199,53 @@ ALTER COLUMN "updated_at" SET NOT NULL;
 接著再升級。不要手動將資料列插入 `_prisma_migrations`，也不要執行 `prisma migrate resolve --applied`；讓 `prisma migrate deploy` 在發現這些欄位已就緒時，記錄該遷移本身。
 
 如果您寧可讓 proxy 在啟動時執行重寫，請提高逾時時間，避免 Prisma 用戶端在陳述式執行到一半時被終止。從 v1.101.0 起，`prisma migrate deploy` 有自己的限制，`LITELLM_PRISMA_MIGRATE_DEPLOY_TIMEOUT`（預設 600 秒）。在 v1.99.x 與 v1.100.x 上，它是在 `LITELLM_PRISMA_COMMAND_TIMEOUT` 下執行（預設 60 秒），而這也涵蓋所有其他 Prisma 指令。較長的逾時只會停止重試迴圈：在重寫完成之前，proxy 仍然不可用，資料表也仍然鎖定，因此無論如何都應將重新啟動安排為維護時段。
+
+---
+
+### 6. schema 變更無法套用的資料列導致 `Database migration cannot proceed` {#6-database-migration-cannot-proceed-on-rows-the-schema-change-cannot-take}
+
+**v1.109.0 及之後版本的症狀：** proxy 或 migration job 在開始提供服務前就結束，記錄中帶有 PostgreSQL 本身針對第一個資料列無法承受的 migration 所回報的錯誤，例如 `index row size 2976 exceeds btree version 4 maximum 2704 for index "LiteLLM_SpendLogs_api_key_startTime_idx"`，或是 `column "team_alias" of relation "LiteLLM_TeamTable" contains null values`。該 migration 會整體 rollback，其後的 migrations 永遠不會執行，因此 schema 會維持一致的舊版本，舊 pod 也會繼續提供服務。`_prisma_migrations` 會為它保留一個失敗的資料列，讓之後每次啟動都以 `Migration completion could not be verified` 停下；因此修正資料列後，請依 [第 2 節](#2-new-migrations-cannot-be-applied-before-the-error-is-recovered-from) 所述，用 `prisma migrate resolve --rolled-back <migration_name>` 將它標記為已 rollback，再重新啟動。下面的 dry run 會在任何內容被記錄之前就失敗，讓您省去這個步驟。若要在升級前就看到這個錯誤，請使用新映像執行 `litellm --check_migrations_against_existing_data`，它會在一個會 rollback 的交易中套用待處理的 migrations，詳見 [升級指南](../proxy/upgrade_guide.md#dry-run-the-migrations-before-the-upgrade)。
+
+**v1.108.0 的症狀：** proxy 或 migration job 在第一個 migration 執行前就以狀態 2 結束，並顯示 `Existing rows would make a pending schema change fail`，以及由唯讀計數點名的資料列：
+
+```
+LiteLLM Proxy: Database migration cannot proceed. Existing rows would make a pending schema change fail:
+  "LiteLLM_SpendLogs".api_key, startTime: 2 row(s) with an index entry over 2704 bytes, largest 3232 bytes (api_key up to 3207 bytes)
+    blocks: CREATE INDEX "LiteLLM_SpendLogs_api_key_startTime_idx" (request-log index)
+    fix:    Shorten or hash the long "LiteLLM_SpendLogs" (api_key, startTime) values so every row's index entry fits.
+```
+
+`_prisma_migrations` 不受影響。計數會在 `LITELLM_MIGRATION_DATA_CHECK_TIMEOUT`（預設 600 秒）下執行，未完成的計數同樣會被拒絕；因此如果 `LiteLLM_SpendLogs` 很大，請提高該值，或升級到 v1.109.0，該版本中資料列不再會阻止啟動。
+
+**v1.103.0 到 v1.107.x 的症狀：** 相同的資料列改為在升級過程中失敗，記錄中出現 `index row size 2976 exceeds btree version 4 maximum 2704 for index "LiteLLM_SpendLogs_api_key_startTime_idx"`。在 v1.103.x 與 v1.104.x 上，索引是在 migration `20260823000000_add_spend_logs_api_key_starttime_index` 內建立，因此該 migration 失敗，其後的 migrations 永遠不會執行，pod 會以部分升級的 schema 啟動，請求便會以 `column t.tpd_limit does not exist` 之類的錯誤失敗。從 v1.105.0 起，索引改為在 migrations 之後以請求記錄索引的形式建立，因此 migrations 可以套用，但索引會留下 `INVALID` 狀態，job 每次重跑都以狀態 1 結束，並顯示 `Database setup failed after multiple retries ... check your database connection`。
+
+**原因：** 在 v1.99.0 之前，proxy 在寫入 `LiteLLM_SpendLogs.api_key` 前只會對 `sk-` 虛擬金鑰做雜湊；JWT 或 pass-through bearer token 會以送出的原樣儲存，有時長達數 KB。btree 項目必須能放入 8 KB 頁面的三分之一，也就是 2704 bytes（含項目標頭與每個被索引的欄位），對 `("api_key", "startTime")` 而言，金鑰只剩 2684 bytes 可用。v1.99.0 之後寫入的資料列保存的是 64 字元的雜湊，永遠不受影響。
+
+**修復方式：** 先計算資料列數量：
+
+```sql
+SELECT count(*), max(octet_length("api_key"))
+FROM "LiteLLM_SpendLogs"
+WHERE octet_length("api_key") > 2684;
+```
+
+接著就地對原始金鑰做雜湊，使用與 proxy 現在寫入相同的雜湊：
+
+```sql
+UPDATE "LiteLLM_SpendLogs"
+SET api_key = encode(sha256(convert_to(regexp_replace(api_key, '^[Bb][Ee][Aa][Rr][Ee][Rr] ', ''), 'UTF8')), 'hex')
+WHERE api_key <> ''
+  AND api_key !~ '^[0-9a-fA-F]{64}$'
+  AND api_key !~ '^hashed-jwt-[0-9A-Fa-f]{64}$';
+```
+
+這是其中一種做法，而且是冪等的（已雜湊的資料列兩個樣式都不符合，會被略過）。在我們的測試中，每 100,000 筆舊資料列約需 8 秒，且不會阻擋插入。proxy 以原始金鑰寫入的資料列會保留其支出，現在會以雜湊後的金鑰被找到，就像 v1.99.0 之後寫入的資料列一樣。
+
+在 v1.108.0 及之後版本，重新啟動 proxy 或 job，索引就會建立。在較早的版本上，還要清理失敗嘗試留下的東西。如果索引被留下無效狀態，請將它刪除，讓下次啟動重新建立：
+
+```sql
+SELECT indexrelid::regclass FROM pg_index WHERE NOT indisvalid;
+DROP INDEX CONCURRENTLY "LiteLLM_SpendLogs_api_key_startTime_idx";
+```
+
+如果有 migration 失敗，請依 [第 2 節](#2-new-migrations-cannot-be-applied-before-the-error-is-recovered-from) 所述移除其項目，然後重新啟動。

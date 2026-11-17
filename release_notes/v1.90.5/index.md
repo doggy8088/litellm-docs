@@ -1,5 +1,6 @@
 ---
-title: "v1.90.5 - Docker Migration Assets 已恢復"
+title: "LiteLLM v1.90.5 - Docker Migration Assets 已恢復"
+description: "透過恢復包含 Prisma schema 與 migrations 的 litellm-proxy-extras 資料夾，修正部署前 migration 作業。"
 slug: "v1-90-5"
 date: 2026-07-16T15:38:03
 authors:

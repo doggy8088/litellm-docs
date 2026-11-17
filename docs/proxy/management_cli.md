@@ -25,7 +25,7 @@ Codex、OpenCode），讓其 LLM 流量經由 proxy 路由。
 `lite` 用戶端是一個輕量的筆電安裝：它會連到 LiteLLM proxy，並透過它執行您的程式碼代理程式，不會帶入 proxy 伺服器執行時環境。單行安裝程式只需要 `curl`；若找不到 [uv](https://github.com/astral-sh/uv) 會先建立，並讓 uv 為您提供相容的 Python：
 
 ```shell
-   curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install-cli.sh | sh
+   curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/install-cli.sh | sh
    ```
 
    已經有 uv，而且想自行操作嗎？直接安裝套件：
@@ -67,7 +67,7 @@ Codex、OpenCode），讓其 LLM 流量經由 proxy 路由。
 
 :::info
 
-如需深入指南，請參閱 [CLI 驗證](./cli_sso)。
+如需深入指南，請參閱 [CLI 登入](./cli_sso)。
 
 :::
 
@@ -75,7 +75,7 @@ Codex、OpenCode），讓其 LLM 流量經由 proxy 路由。
 
 :::warning[Beta 功能 - 必要環境變數]
 
-CLI SSO 驗證目前仍在 beta 階段。您必須在**啟動 LiteLLM Proxy 時**設定此環境變數：
+CLI 登入目前仍在 beta 階段。您必須在**啟動 LiteLLM Proxy 時**設定此環境變數：
 
 ```bash
 export EXPERIMENTAL_UI_LOGIN="True"
@@ -189,14 +189,17 @@ lite logout             # clear the keychain entry and the token file, and revok
 
 ### 憑證管理 {#credentials-management}
 
-- 列出、建立、取得與刪除 LLM 提供者的憑證。
+- 列出、建立、取得與刪除 LLM 提供者的憑證。名稱無法變更，因此 `update` 僅能設定或清除顯示名稱
 - 範例：
 
   ```bash
   lite credentials list
   lite credentials create azure-prod \
     --info='{"custom_llm_provider": "azure"}' \
-    --values='{"api_key": "sk-123", "api_base": "https://prod.azure.openai.com"}'
+    --values='{"api_key": "sk-123", "api_base": "https://prod.azure.openai.com"}' \
+    --display-name="Azure (prod)"
+  lite credentials update azure-prod --display-name="Azure EU (prod)"
+  lite credentials update azure-prod --clear-display-name
   lite credentials get azure-cred
   lite credentials delete azure-cred
   ```

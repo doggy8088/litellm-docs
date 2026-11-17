@@ -1,3 +1,7 @@
+---
+sidebar_label: "微調模型"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

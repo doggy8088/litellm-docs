@@ -1,0 +1,92 @@
+---
+title: "支援的 API 端點：Chat、Responses、Embeddings、Audio"
+slug: /supported_endpoints
+sidebar_label: 支援的端點
+description: LiteLLM 從 Python SDK 與 AI Gateway 提供 40 多個 OpenAI、Anthropic 與 Google 格式的 API 端點。尋找端點並開啟其指南。
+keywords: [litellm 端點, 支援的端點, openai 相容 api, anthropic messages api, responses api, embeddings api, pass-through 端點, ai gateway 端點]
+hide_table_of_contents: true
+faq:
+  - question: LiteLLM 支援哪些端點？
+    answer: LiteLLM 支援 40 多個端點。包括 chat completions、responses、Anthropic messages、embeddings、images、video、audio、realtime、rerank、vector stores、files、batches、MCP 與 A2A。本頁面列出它們，並附上每個端點指南的連結。
+  - question: 我可以將 Anthropic 格式的請求送給非 Anthropic 的模型嗎？
+    answer: 可以。將請求以 Anthropic 格式送到 /v1/messages，並將模型設為您設定中的任何聊天模型。LiteLLM 會將請求轉換為該提供者的 API，並以 Anthropic 格式回傳答案。
+  - question: 我可以從 /chat/completions 呼叫只支援 Responses API 的模型嗎？
+    answer: 可以。當提供者不支援該模型的 chat completions 時，LiteLLM 會將 /chat/completions 橋接到 Responses API。反向也可以。/v1/responses 可以呼叫只有 chat completions 的提供者。
+  - question: translated 端點與 pass-through 端點有什麼不同？
+    answer: translated 端點接受一種請求格式並呼叫許多提供者。pass-through 端點將您的請求不經變更地送到單一提供者的 API。兩者都使用您的 LiteLLM 金鑰並會被記錄。對於 pass-through 端點，成本追蹤取決於提供者。
+  - question: 這些端點可以在 Python SDK 與 AI Gateway 中使用嗎？
+    answer: 大多數端點都有 Python SDK 函數與 Gateway 路由。本頁面的每張卡片都會在有 Python 函數時顯示它。提供 MCP 伺服器是僅限 Gateway 的功能。
+  - question: 如何請求本頁面沒有的端點？
+    answer: 在 GitHub 上的 BerriAI/litellm repository 開啟 issue，附上端點與您需要的提供者。
+---
+
+import EndpointPaths from '@site/src/components/EndpointPaths';
+import EndpointCatalog, {PassThroughList} from '@site/src/components/EndpointCatalog';
+
+# 支援的端點 {#supported-endpoints}
+
+{/* keep-version-note */}
+
+LiteLLM 提供 chat、responses、embeddings、images、video、audio、realtime、rerank、vector store、file、batch、MCP 與 A2A 端點。以 OpenAI、Anthropic 或 Google 格式送出請求，LiteLLM 就會呼叫任何支援它的提供者。使用 Python SDK 或 AI Gateway。大多數端點兩者都可使用。
+
+## LiteLLM 支援哪些端點？ {#all-endpoints}
+
+依名稱、路徑或 Python 函數搜尋，或選取一個分類。每張卡片都會開啟該端點的指南。
+
+<EndpointCatalog />
+
+## LiteLLM 如何處理請求？ {#how-it-works}
+
+LiteLLM 以三種方式之一處理請求。下圖顯示從您的應用程式到提供者的每條路徑。
+
+<EndpointPaths />
+
+### 比較三條路徑 {#request-paths}
+
+| | Translated | Native | Pass-through |
+| --- | --- | --- | --- |
+| **LiteLLM 做什麼** | 接受三種格式之一的聊天請求，並對應到任何聊天提供者的 API | 每個端點接受一種請求形狀，並對應到每個支援它的提供者的 API | 將您的請求不經變更地送到提供者 API |
+| **請求格式** | OpenAI、Anthropic 或 Google | 通常是 OpenAI。Rerank 使用 Cohere 格式，search 使用 Perplexity 格式，OCR 使用 Mistral 格式 | 提供者的 API |
+| **範例** | `/v1/chat/completions`、`/v1/responses`、`/v1/messages`、`generateContent` | `/v1/embeddings`、`/v1/images/generations`、`/v1/audio/speech`、`/v1/rerank` | `/anthropic/v1/messages`、`/bedrock/...`、`/gemini/...` |
+| **LiteLLM 金鑰與記錄** | 是 | 是 | 是 |
+| **成本追蹤** | 是 | 是 | 限支援的提供者。每個提供者頁面會說明是否支援 |
+| **使用時機** | 您想用一個用戶端對應許多模型 | 您跨提供者使用同一種能力 | 您已經在使用提供者 SDK，或您需要 LiteLLM 未對應的提供者功能 |
+
+## 哪些提供者有 pass-through 端點？ {#pass-through-endpoints}
+
+pass-through 路由會將請求送到單一提供者的 API。LiteLLM 會檢查您的 LiteLLM 金鑰、加入提供者憑證，並記錄請求。成本追蹤取決於提供者。請閱讀 [為什麼使用 pass-through 端點](./pass_through/intro.md)，或選取一個提供者。
+
+<PassThroughList />
+
+## 常見問題 {#faq}
+
+### LiteLLM 支援哪些端點？ {#which-endpoints-does-litellm-support}
+
+LiteLLM 支援 40 多個端點。包括 chat completions、responses、Anthropic messages、embeddings、images、video、audio、realtime、rerank、vector stores、files、batches、MCP 與 A2A。本頁面列出它們，並附上每個端點指南的連結。
+
+### 我可以將 Anthropic 格式的請求送給非 Anthropic 的模型嗎？ {#can-i-send-an-anthropic-format-request-to-a-model-that-is-not-from-anthropic}
+
+可以。將請求以 Anthropic 格式送到 `/v1/messages`，並將模型設為您設定中的任何聊天模型。LiteLLM 會將請求轉換為該提供者的 API，並以 Anthropic 格式回傳答案。請參閱 [/v1/messages](./anthropic_unified/index.md)。
+
+### 我可以從 /chat/completions 呼叫只支援 Responses API 的模型嗎？ {#can-i-call-a-model-that-only-supports-the-responses-api-from-chatcompletions}
+
+可以。當提供者不支援該模型的 chat completions 時，LiteLLM 會將 `/chat/completions` 橋接到 Responses API。反向也可以。`/v1/responses` 可以呼叫只有 chat completions 的提供者。請參閱 [/responses](./response_api.md)。
+
+### translated 端點與 pass-through 端點有什麼不同？ {#what-is-the-difference-between-a-translated-endpoint-and-a-pass-through-endpoint}
+
+translated 端點接受一種請求格式並呼叫許多提供者。pass-through 端點將您的請求不經變更地送到單一提供者的 API。兩者都使用您的 LiteLLM 金鑰並會被記錄。對於 pass-through 端點，成本追蹤取決於提供者。
+
+### 這些端點可以在 Python SDK 與 AI Gateway 中使用嗎？ {#do-the-endpoints-work-in-the-python-sdk-and-in-the-ai-gateway}
+
+大多數端點都有 Python SDK 函數與 Gateway 路由。本頁面的每張卡片都會在有 Python 函數時顯示它。提供 MCP 伺服器是僅限 Gateway 的功能。
+
+### 如何請求本頁面沒有的端點？ {#how-do-i-ask-for-an-endpoint-that-is-not-on-this-page}
+
+在 GitHub 上的 BerriAI/litellm repository [開啟 issue](https://github.com/BerriAI/litellm/issues/new)，附上端點與您需要的提供者。
+
+## 後續步驟 {#next-steps}
+
+- **教學：** [啟動 AI Gateway](./proxy/docker_quick_start.md) 或 [進行您的第一次 SDK 呼叫](./learn/sdk_quickstart.md)。
+- **操作指南：** [從 OpenAI SDK、LangChain 或 curl 呼叫 Gateway](./proxy/user_keys.md)。
+- **說明：** [為什麼使用 pass-through 端點](./pass_through/intro.md)。
+- **參考：** [所有模型提供者](./providers/index.mdx) 以及每個提供者支援的端點。

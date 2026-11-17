@@ -1,6 +1,6 @@
 # OWASP LLM Top 10（2026）對照 {#owasp-llm-top-10-2026-mapping}
 
-本頁將 [OWASP Top 10 for LLM Applications 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/) 的每一項對應到可處理它的 LiteLLM 閘道控制項，說明如何啟用每個控制項，並指出每個控制項的限制範圍。此頁是為填寫問卷的安全審查人員，以及決定要啟用哪些控制項的平台團隊所撰寫。其上的每一項主張都已對照 LiteLLM `main` 分支、版本 `1.104.0`（2026 年 9 月）進行檢查；最後一節說明如何對您實際執行的版本重新檢查
+本頁將 [OWASP Top 10 for LLM Applications 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/) 的每一項對應到可處理它的 LiteLLM 閘道控制項，說明如何啟用每個控制項，並指出每個控制項的限制範圍。此頁是為填寫問卷的安全審查人員，以及決定要啟用哪些控制項的平台團隊所撰寫。其上的每一項主張都已對照 LiteLLM `main` 分支、版本 `1.104.0`（2026 年 9 月）進行檢查；最後一節說明如何對您實際執行的版本重新檢查 {/* keep-version-note */}
 
 LiteLLM 位於您的呼叫端與模型提供者之間，因此其控制項涵蓋閘道可看見的內容：請求、回應、其代理的工具與 MCP 伺服器、其管理的檔案與向量儲存，以及其自身的設定、容器映像與相依性。提供者模型內部如何運作，以及閘道回傳後您的應用程式如何處理回應，都不在其範圍內。因此，下列每一項都保留一部分責任在應用程式或提供者身上，而每一節都會標明
 
@@ -121,4 +121,4 @@ LiteLLM 位於您的呼叫端與模型提供者之間，因此其控制項涵蓋
 
 ## 保持此頁最新 {#keeping-this-page-current}
 
-OWASP 清單位於 [genai.owasp.org](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/)，而此頁追蹤的是其 2026 版。上述控制項與限制已對照 LiteLLM `main` 於版本 `1.104.0` 進行檢查；如同處於審查中的連結 pull request 在合併時會變更某些限制，因此請依您執行的版本確認其狀態。如果您版本上的某項控制行為與此頁所述不同，請在 [BerriAI/litellm](https://github.com/BerriAI/litellm/issues) 開 issue，並附上版本與章節名稱
+OWASP 清單位於 [genai.owasp.org](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/)，而此頁追蹤的是其 2026 版。上述控制項與限制已對照 LiteLLM `main` 於版本 `1.104.0` 進行檢查；如同處於審查中的連結 pull request 在合併時會變更某些限制，因此請依您執行的版本確認其狀態。如果您版本上的某項控制行為與此頁所述不同，請在 [BerriAI/litellm](https://github.com/BerriAI/litellm/issues) 開 issue，並附上版本與章節名稱 {/* keep-version-note */}

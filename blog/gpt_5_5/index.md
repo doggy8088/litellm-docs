@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM 上 GPT-5.5 與 GPT-5.5 Pro 的 Day 0 支援。"
+card_title: "GPT-5.5 and GPT-5.5 Pro"
+card_summary: "GPT-5.5 與 GPT-5.5 Pro 沿用既有的 GPT-5 設定，因此任何近期的 LiteLLM 版本皆可開箱即用。"
 tags: [openai, gpt-5.5, gpt-5.5-pro, completion, day 0 support]
 hide_table_of_contents: false
 ---
@@ -140,6 +142,6 @@ LiteLLM 會在本地強制執行這些上限，因此傳入不支援的值（例
 
 - 若要追蹤 `gpt-5.5` 和 `gpt-5.5-pro` 的成本，請在 Admin UI 中按下 **Reload Model Cost Map** 按鈕（或 `POST /reload/model_cost_map`）。適用於任何 LiteLLM 版本 `v1.76.0` 或更新版本，無需重新啟動容器或升級映像檔。
 - `gpt-5.5-pro` 是僅支援 Responses API 的模型（`mode: "responses"`）。LiteLLM 的 Responses API 橋接會透明地將 `completion()` 呼叫轉譯為 `/v1/responses`，因此上方的 SDK 範例無需變更程式碼即可運作。
-- GPT-5.5 支援推理、函式呼叫、平行工具呼叫、視覺（影像輸入）、PDF 輸入、提示快取、網頁搜尋，以及結構化輸出；進階用法請參閱 [OpenAI provider 文件](/docs/providers/openai)。
+- GPT-5.5 支援推理、函式呼叫、平行工具呼叫、視覺（影像輸入）、PDF 輸入、提示快取、網頁搜尋，以及結構化輸出；進階用法請參閱 [OpenAI provider 文件](../../docs/providers/openai)。
 - 內容視窗：1.05M 輸入 tokens / 128K 輸出 tokens。長內容上下文層級定價會在超過 272K tokens 時生效。
 - Azure 支援：尚未提供。這篇文章僅涵蓋直接使用 OpenAI。

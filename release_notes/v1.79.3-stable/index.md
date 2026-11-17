@@ -1,5 +1,6 @@
 ---
-title: "v1.79.3-stable - 內建 AI Gateway 防護欄"
+title: "LiteLLM v1.79.3-stable - 內建 AI Gateway 防護欄"
+description: "新增關鍵字、敏感模式與自訂 regex 的內建 AI Gateway 防護欄。將 /responses 中位延遲降低 19 倍，並新增 Veo3 影片。"
 slug: "v1-79-3"
 date: 2025-11-08T10:00:00
 authors:

@@ -1,7 +1,15 @@
+---
+title: "透過 LiteLLM AI Gateway 使用 Mistral AI API"
+sidebar_label: "Mistral AI"
+description: "呼叫 Mistral Large、Codestral 與 Magistral，支援工具呼叫與 reasoning effort；使用 Voxtral 轉錄音訊、複製聲音進行語音合成，並嵌入文字。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Mistral AI API {#mistral-ai-api}
+
+Mistral AI 透過 Mistral API 提供其聊天、推理、嵌入與音訊模型；LiteLLM 會從 Python SDK 或 AI Gateway 以 `mistral/` 前綴呼叫它們。
 https://docs.mistral.ai/api/
 
 ## API 金鑰 {#api-key}
@@ -378,6 +386,125 @@ curl --location 'http://0.0.0.0:4000/v1/audio/transcriptions' \
 --header "Authorization: Bearer $LITELLM_API_KEY" \
 --form 'file=@"audio.wav"' \
 --form 'model="voxtral"'
+```
+
+## 文字轉語音 {#text-to-speech}
+
+Mistral 的 Voxtral TTS 模型透過 `litellm.speech()` 與 proxy 的 `/v1/audio/speech` 路由將文字轉為音訊。`mistral/voxtral-mini-tts-2603` 與 `mistral/voxtral-mini-tts-latest` 皆受支援 <SinceVersion v="1.102.0" />。
+
+### SDK 使用方式 {#sdk-usage-1}
+
+```python
+from litellm import speech
+import os
+
+os.environ["MISTRAL_API_KEY"] = ""
+
+response = speech(
+    model="mistral/voxtral-mini-tts-2603",
+    input="The quick brown fox jumped over the lazy dog.",
+    voice="alloy",
+)
+
+response.write_to_file("speech.mp3")
+```
+
+### 聲音 {#voices}
+
+`voice` 可傳入 OpenAI 聲音名稱或 Mistral 原生 voice id。LiteLLM 會將這六個 OpenAI 名稱對應到 Mistral 聲音，因此使用其中任一者的整合無需變更即可繼續運作：
+
+| OpenAI voice | Mistral voice     |
+|--------------|-------------------|
+| `alloy`      | `en_paul_neutral` |
+| `echo`       | `gb_oliver_neutral` |
+| `fable`      | `en_paul_cheerful` |
+| `onyx`       | `en_paul_confident` |
+| `nova`       | `gb_jane_sarcasm` |
+| `shimmer`    | `gb_jane_sarcasm` |
+
+任何其他值都會原封不動地傳給 Mistral，因此像 `en_paul_excited` 這樣的原生 id 可以直接使用。較新的 OpenAI 聲音（例如 `coral` 或 `ash`）不在對應之列，Mistral 對這些聲音（以及任何它不認識的聲音）會回傳 404 `invalid_voice` 錯誤。`nova` 與 `shimmer` 都對應到諷刺語氣的聲音，因此當您想要中性的女性聲音時，請直接傳入 `gb_jane_neutral`。`GET https://api.mistral.ai/v1/audio/voices?limit=100` 會列出您帳號可使用的聲音。該端點有分頁，未傳 `limit` 時回傳 10 個聲音。
+
+### 回應格式 {#response-formats}
+
+`response_format` 接受 `mp3`、`wav`、`pcm`、`flac` 與 `opus`，未傳時預設為 `mp3`。LiteLLM 會將回應的 `content-type` 設為與您要求的格式相符，因此 `opus` 回傳 `audio/ogg`，其他四種分別回傳 `audio/mpeg`、`audio/wav`、`audio/pcm` 與 `audio/flac`。OpenAI 的 `aac` 格式不受支援，Mistral 會以 422 拒絕。Mistral 的 `pcm` 是 24 kHz 單聲道的原始 32 位元浮點小端序樣本，與 OpenAI `pcm` 回傳的 16 位元有符號樣本不同，因此請以 float32 讀取，或改要求 `wav`。
+
+### 聲音複製 {#voice-cloning}
+
+將 base64 編碼的音訊樣本以 `ref_audio` 傳入，Voxtral 就會以取樣的聲音說出輸入內容：
+
+```python
+import base64
+from litellm import speech
+
+with open("sample.wav", "rb") as sample:
+    ref_audio = base64.b64encode(sample.read()).decode()
+
+response = speech(
+    model="mistral/voxtral-mini-tts-2603",
+    input="This sentence comes back in the sampled voice.",
+    ref_audio=ref_audio,
+)
+
+response.write_to_file("cloned.mp3")
+```
+
+在 proxy 上，將相同的 `ref_audio` 欄位放入 `/v1/audio/speech` 的 JSON body 中傳送。當請求同時帶有 `voice`（包括在部署上設定的預設 `voice`）時，Mistral 會使用 `ref_audio`，因此像 OpenAI SDK 這類要求 `voice` 的用戶端可以傳入任何聲音，並透過 `extra_body` 傳送 `ref_audio`。
+
+### 不支援的參數 {#unsupported-parameters}
+
+Mistral 的 speech API 會以 422 拒絕 `speed` 與 `instructions`，因此 LiteLLM 會在傳送請求前將兩者都移除，而不是讓請求失敗。傳入其中任一者的呼叫仍會回傳音訊，以 Mistral 接受的參數生成。
+
+### 搭配 LiteLLM Proxy 使用 {#usage-with-litellm-proxy-3}
+
+```yaml
+model_list:
+  - model_name: voxtral-tts
+    litellm_params:
+      model: mistral/voxtral-mini-tts-2603
+      api_key: os.environ/MISTRAL_API_KEY
+```
+
+```bash
+litellm --config /path/to/config.yaml
+```
+
+```bash
+curl --location 'http://0.0.0.0:4000/v1/audio/speech' \
+--header "Authorization: Bearer $LITELLM_API_KEY" \
+--header 'Content-Type: application/json' \
+--data '{
+    "model": "voxtral-tts",
+    "input": "The quick brown fox jumped over the lazy dog.",
+    "voice": "alloy"
+}' \
+--output speech.mp3
+```
+
+### 成本追蹤 {#cost-tracking}
+
+Voxtral TTS 依輸入字元計價，費率為[模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)中的 `input_cost_per_character`。LiteLLM 計算 `input` 的非空白字元數，因此一句 19 個字元、含 2 個空格的句子會以 17 個字元追蹤。Mistral 自己的字元計量（在 `x-ratelimit-input-characters-query-cost` 回應標頭中回報）會把空格也算入，因此只要 `input` 含有空白，LiteLLM 追蹤的花費就會低於 Mistral 的計量。
+
+## Token 計算 {#token-counting}
+
+<SinceVersion v="1.111.0" />
+
+LiteLLM 透過 Mistral 的 `/v1/responses/input_tokens` 端點支援 Mistral 模型的原生上游 token 計算。使用方式與詳細資訊請參閱 [Token 計算](../count_tokens.md)。
+
+位於 Azure 上的 Mistral 部署（Azure `api_base`、`MISTRAL_AZURE_API_BASE`，或只設定 `MISTRAL_AZURE_API_KEY`）會改用 LiteLLM 的本機 tokenizer 計算，因此 prompt 與 Azure 金鑰永遠不會送到 `api.mistral.ai`。
+
+```python
+import asyncio
+import litellm
+
+async def main():
+    result = await litellm.acount_tokens(
+        model="mistral/mistral-large-4",
+        messages=[{"role": "user", "content": "Hello, how are you?"}],
+    )
+    print(f"Token count: {result.total_tokens}")
+    print(f"Tokenizer: {result.tokenizer_type}")  # "mistral_api"
+
+asyncio.run(main())
 ```
 
 ## Files and Batches API {#files-and-batches-api}

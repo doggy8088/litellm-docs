@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Splunk Observability Cloud 追蹤"
+sidebar_label: "Splunk Observability Cloud"
+description: "透過 otel 回呼與標準 OTLP 環境變數，將 LiteLLM AI Gateway 的追蹤傳送至 Splunk Observability Cloud，並進行驗證。"
+---
 # Splunk 可觀測性雲端 {#splunk-observability-cloud}
 
 使用內建的 **`otel`** 回呼與標準 OpenTelemetry OTLP 環境變數，將 LiteLLM trace 傳送至 [Splunk Observability Cloud](https://www.splunk.com/en_us/products/observability-cloud.html)。

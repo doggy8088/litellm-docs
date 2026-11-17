@@ -1,7 +1,3 @@
----
-sidebar_label: "GitHub Copilot / VS Code"
----
-
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -36,13 +32,13 @@ proxy override 章節是根據 [Sergio Pino 的指南](https://dev.to/spino327/c
 
 ## 選項 1：適用 VS Code 的 LiteLLM 擴充功能 {#option-1-litellm-extension-for-vs-code}
 
-此擴充功能位於 LiteLLM 儲存庫中的 [`vscode-extension/`](https://github.com/BerriAI/litellm/tree/main/vscode-extension)。它會讀取您所設定金鑰的 gateway `GET /model_group/info`，因此選擇器會顯示該金鑰可使用的確切聊天模型，每個模型都會顯示其每 100 萬 token 的輸入與輸出價格。gateway 項目列出 `supported_reasoning_efforts` 的模型，會在模型選擇器中提供 Reasoning Effort 選項，而您選擇的 effort 會在對該模型的每次請求中以 `reasoning_effort` 傳送。請求會以串流聊天完成傳送至 `POST /v1/chat/completions`，並透過工具與圖片，因此路由、備援、防護欄與支出追蹤都會如常套用。
+此擴充功能位於 LiteLLM 儲存庫中的 [`vscode-extension/`](https://github.com/BerriAI/litellm/tree/main/litellm/vscode-extension)。它會讀取您所設定金鑰的 gateway `GET /model_group/info`，因此選擇器會顯示該金鑰可使用的確切聊天模型，每個模型都會顯示其每 100 萬 token 的輸入與輸出價格。gateway 項目列出 `supported_reasoning_efforts` 的模型，會在模型選擇器中提供 Reasoning Effort 選項，而您選擇的 effort 會在對該模型的每次請求中以 `reasoning_effort` 傳送。請求會以串流聊天完成傳送至 `POST /v1/chat/completions`，並透過工具與圖片，因此路由、備援、防護欄與支出追蹤都會如常套用。
 
 ### 步驟 1：建置並安裝擴充功能 {#step-1-build-and-install-the-extension}
 
 ```bash
 git clone https://github.com/BerriAI/litellm.git
-cd litellm/vscode-extension
+cd litellm/litellm/vscode-extension
 npm ci
 npm run package
 code --install-extension litellm-vscode-0.1.0.vsix
@@ -59,7 +55,7 @@ Language Models 編輯器現在會在您選擇的名稱下列出該金鑰可存�
 
 ### 改用 SSO 登入，而非虛擬金鑰 {#sign-in-with-sso-instead-of-a-virtual-key}
 
-如果您的使用者透過身分識別提供者登入 LiteLLM，且沒有人發放虛擬金鑰給他們，那麼每位開發者改為從 LiteLLM CLI 取得擴充功能的金鑰。這需要已設定 SSO 且 `EXPERIMENTAL_UI_LOGIN=True` 的 proxy，如 [CLI Authentication](../proxy/cli_sso.md) 所述。下面的選項 2 不會在用戶端上設定任何 LiteLLM 憑證，因此請在僅限 SSO 的 gateway 上使用此選項
+如果您的使用者透過身分識別提供者登入 LiteLLM，且沒有人發放虛擬金鑰給他們，那麼每位開發者改為從 LiteLLM CLI 取得擴充功能的金鑰。這需要已設定 SSO 且 `EXPERIMENTAL_UI_LOGIN=True` 的 proxy，如 [CLI 登入](../proxy/cli_sso.md) 所述。下面的選項 2 不會在用戶端上設定任何 LiteLLM 憑證，因此請在僅限 SSO 的 gateway 上使用此選項
 
 ```shell
 export LITELLM_PROXY_URL=https://litellm.example.com

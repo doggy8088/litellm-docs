@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 的自訂回呼：記錄任何 LLM 事件"
+sidebar_label: "自訂回呼"
+description: "撰寫 LiteLLM 自訂回呼類別或函式，從 Python SDK 記錄成功、失敗與呼叫前事件，並追蹤每次呼叫的 API 成本。"
+---
+
 # 自訂回呼 {#custom-callbacks}
 
 :::info
@@ -39,7 +45,7 @@ customHandler = MyCustomHandler()
 litellm.callbacks = [customHandler]
 
 ## sync 
-response = completion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi 👋 - i'm openai"}],
+response = completion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi - i'm openai"}],
                               stream=True)
 for chunk in response: 
     continue
@@ -49,7 +55,7 @@ for chunk in response:
 import asyncio 
 
 async def completion():
-    response = await acompletion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi 👋 - i'm openai"}],
+    response = await acompletion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi - i'm openai"}],
                               stream=True)
     async for chunk in response: 
         continue
@@ -158,7 +164,7 @@ response = completion(
     messages=[
         {
             "role": "user",
-            "content": "Hi 👋 - i'm openai"
+            "content": "Hi - i'm openai"
         }
     ]
 )
@@ -192,7 +198,7 @@ customHandler = MyCustomHandler()
 litellm.callbacks = [customHandler]
 
 async def completion():
-    response = await acompletion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi 👋 - i'm openai"}],
+    response = await acompletion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi - i'm openai"}],
                               stream=True)
     async for chunk in response: 
         continue
@@ -218,7 +224,7 @@ async def test_chat_openai():
         response = await litellm.acompletion(model="{{openai_small}}",
                               messages=[{
                                   "role": "user",
-                                  "content": "Hi 👋 - i'm openai"
+                                  "content": "Hi - i'm openai"
                               }],
                               stream=True)
         async for chunk in response: 

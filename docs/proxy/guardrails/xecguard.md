@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 上的 XecGuard 防護欄"
+sidebar_label: "XecGuard"
+description: "在 LiteLLM AI Gateway 上使用 CyCraft XecGuard 掃描 prompt injection、有害內容與 PII，並提供 RAG context grounding 與 fail-open。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

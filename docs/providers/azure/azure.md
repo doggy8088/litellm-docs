@@ -1,8 +1,16 @@
+---
+title: "透過 LiteLLM AI 閘道使用 Azure OpenAI API"
+sidebar_label: "Azure OpenAI"
+description: "透過 Python SDK 或 AI 閘道路由 Azure OpenAI 部署（包括 GPT-5、o 系列、視覺與音訊模型），並支援 Entra ID 驗證與 Batches。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Azure OpenAI {#azure-openai}
+
+Azure OpenAI Service 提供對 GPT-5 與 GPT-4o 等 OpenAI 模型的 REST API 存取；LiteLLM 會從 Python SDK 或 AI 閘道，透過相同的 OpenAI 格式 API，以 `azure/` 前綴呼叫您的 Azure 部署。
 
 ## 總覽 {#overview}
 
@@ -223,6 +231,20 @@ model_list:
 | gpt-3.5-turbo-16k    | `completion('azure/<your deployment name>', messages)` |
 | gpt-3.5-turbo-16k-0613    | `completion('azure/<your deployment name>', messages)`
 
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`azure/<family>-latest` 這類名稱會隨著 LiteLLM 將模型系列移至較新的模型而跟著更新，讓您的應用程式只需維持一個模型字串。您可以像使用任何其他 Azure OpenAI 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Azure OpenAI，並以該模型的價格計費。別名的運作方式與各提供者的完整清單，請參閱 [最新模型別名](../../model_latest_aliases.md)。
+
+| 別名 | 模型系列 |
+| --- | --- |
+| `azure/gpt-luna-latest` | GPT Luna |
+| `azure/gpt-sol-latest` | GPT Sol |
+| `azure/gpt-terra-latest` | GPT Terra |
+| `azure/gpt-astra-latest` | GPT Astra |
+| `azure/gpt-mini-latest` | GPT Mini |
+
 ## Azure OpenAI Vision 模型  {#azure-openai-vision-models}
 | 模型名稱            | 函式呼叫                                                   |
 |-----------------------|-----------------------------------------------------------------|
@@ -326,7 +348,7 @@ LiteLLM 會將任何模型名稱中包含 `o1` 或 `o3` 的部署名稱，路由
 ```python
 import litellm
 
-litellm.completion(model="azure/my-o3-deployment", messages=[{"role": "user", "content": "Hello, world!"}]) # 👈 Note: 'o3' in the deployment name
+litellm.completion(model="azure/my-o3-deployment", messages=[{"role": "user", "content": "Hello, world!"}]) # Note: 'o3' in the deployment name
 ```
 </TabItem>
 <TabItem value="proxy" label="PROXY">
@@ -351,7 +373,7 @@ model_list:
 ```python
 import litellm
 
-litellm.completion(model="azure/o_series/my-random-deployment-name", messages=[{"role": "user", "content": "Hello, world!"}]) # 👈 Note: 'o_series/' in the deployment name
+litellm.completion(model="azure/o_series/my-random-deployment-name", messages=[{"role": "user", "content": "Hello, world!"}]) # Note: 'o_series/' in the deployment name
 ```
 </TabItem>
 <TabItem value="proxy" label="PROXY">
@@ -503,6 +525,10 @@ curl http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 </Tabs>
+
+## Azure 即時翻譯 {#azure-realtime-translation}
+
+若要進行即時的語音對語音翻譯，請加入 `azure/gpt-realtime-translate` 並設定您的 `api_base` 與 `api_key`，然後連線至 proxy 上的 `/v1/realtime/translations`。設定方式、WebSocket 用戶端、WebRTC 與定價，請參閱 [即時翻譯](/docs/realtime_translation)。
 
 ## Azure Instruct 模型 {#azure-instruct-models}
 
@@ -733,7 +759,7 @@ model_list:
       api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
 
 litellm_settings:
-    enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
+    enable_azure_ad_token_refresh: true # KEY CHANGE
 ```
 
 **情境 2：受控身分識別（AKS、Azure VM）- 不需要硬編碼憑證**
@@ -748,7 +774,7 @@ model_list:
       api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
 
 litellm_settings:
-    enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
+    enable_azure_ad_token_refresh: true # KEY CHANGE
 ```
 
 **情境 3：Azure CLI 驗證**
@@ -763,7 +789,7 @@ model_list:
       api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
 
 litellm_settings:
-    enable_azure_ad_token_refresh: true # 👈 KEY CHANGE
+    enable_azure_ad_token_refresh: true # KEY CHANGE
 ```
 
 3. 啟動 proxy
@@ -1016,18 +1042,18 @@ print("list_batches_response=", list_batches_response)
 ### [BETA] 對多個 Azure 部署進行負載平衡 {#beta-loadbalance-multiple-azure-deployments}
 在您的 config.yaml 中，設定 `enable_loadbalancing_on_batch_endpoints: true`
 
-```yaml
+```yaml keep-model-ids
 model_list:
-  - model_name: "batch-gpt-4o-mini"
+  - model_name: "batch-model"
     litellm_params:
-      model: "azure/{{openai_small}}"
+      model: "azure/gpt-5.6-luna"
       api_key: os.environ/AZURE_API_KEY
       api_base: os.environ/AZURE_API_BASE
     model_info:
       mode: batch
 
 litellm_settings:
-  enable_loadbalancing_on_batch_endpoints: true # 👈 KEY CHANGE
+  enable_loadbalancing_on_batch_endpoints: true # KEY CHANGE
 ```
 
 注意：這可在 `{PROXY_BASE_URL}/v1/files` 和 `{PROXY_BASE_URL}/v1/batches` 上運作。
@@ -1035,7 +1061,7 @@ litellm_settings:
 
 1. 上傳檔案 
 
-只要在您的 .jsonl 中設定 `model: batch-gpt-4o-mini` 即可。
+只要在您的 .jsonl 中設定 `model: batch-model` 即可。
 
 ```bash
 curl http://localhost:4000/v1/files \
@@ -1049,9 +1075,9 @@ curl http://localhost:4000/v1/files \
 注意：`model` 應該是您的 azure 部署名稱。
 
 ```json
-{"custom_id": "task-0", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-gpt-4o-mini", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was Microsoft founded?"}]}}
-{"custom_id": "task-1", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-gpt-4o-mini", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was the first XBOX released?"}]}}
-{"custom_id": "task-2", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-gpt-4o-mini", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "What is Altair Basic?"}]}}
+{"custom_id": "task-0", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-model", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was Microsoft founded?"}]}}
+{"custom_id": "task-1", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-model", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "When was the first XBOX released?"}]}}
+{"custom_id": "task-2", "method": "POST", "url": "/chat/completions", "body": {"model": "batch-model", "messages": [{"role": "system", "content": "You are an AI assistant that helps people find information."}, {"role": "user", "content": "What is Altair Basic?"}]}}
 ```
 
 預期回應（相容 OpenAI）
@@ -1070,7 +1096,7 @@ curl http://0.0.0.0:4000/v1/batches \
     "input_file_id": "file-f0be81f654454113a922da60acb0eea6",
     "endpoint": "/v1/chat/completions",
     "completion_window": "24h",
-    "model": "batch-gpt-4o-mini"
+    "model": "batch-model"
   }'
 ```
 
@@ -1283,7 +1309,7 @@ model_list:
         api_version: 2023-06-01-preview
         api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
         api_key: os.environ/AZURE_API_KEY
-        base_model: dall-e-3 # 👈 set dall-e-3 as base model
+        base_model: dall-e-3 # set dall-e-3 as base model
     model_info:
         mode: image_generation
 ```

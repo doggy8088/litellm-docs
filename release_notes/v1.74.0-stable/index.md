@@ -1,5 +1,6 @@
 ---
-title: "v1.74.0-stable"
+title: "LiteLLM v1.74.0-stable"
+description: "新增 MCP 閘道上的具名空間 MCP 伺服器、UI 中的團隊與金鑰記錄、Azure Content Safety 防護欄，以及作為提供者的 GitHub Copilot。"
 slug: "v1-74-0-stable"
 date: 2025-07-05T10:00:00
 authors:

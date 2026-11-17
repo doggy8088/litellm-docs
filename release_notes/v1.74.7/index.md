@@ -1,5 +1,6 @@
 ---
-title: "v1.74.7-stable"
+title: "LiteLLM v1.74.7-stable"
+description: "為 Vertex RAG Engine、PG Vector 與 Azure OpenAI 新增 Vector Stores、UI 中的批次使用者編輯，以及 Moonshot AI 與 Vercel v0。"
 slug: "v1-74-7"
 date: 2025-07-19T10:00:00
 authors:

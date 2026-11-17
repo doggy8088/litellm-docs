@@ -1,5 +1,6 @@
 ---
-title: v1.65.4-stable
+title: "LiteLLM v1.65.4-stable"
+description: "修正多個執行個體寫入花費資料時，在 10K+ RPS 下發生的資料庫死結。新增 Usage 分頁，提供依模型的每日花費與 Databricks Claude 成本追蹤。"
 slug: v1.65.4-stable
 date: 2025-04-05T10:00:00
 authors:

@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock AgentCore Agents"
+sidebar_label: "Bedrock AgentCore"
+description: "透過 LiteLLM，從 Python SDK 或 AI 閘道以 OpenAI 格式呼叫 Bedrock AgentCore agent runtime，並透過 A2A 閘道叫用它們。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

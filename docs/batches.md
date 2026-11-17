@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 | 功能 | 支援 | 備註 | 
 |-------|-------|-------|
 | 支援的提供者 | OpenAI、Azure、Vertex、Bedrock、Mistral、vLLM、xAI | - |
-| ✨ 成本追蹤 | ✅ | 僅限 LiteLLM Enterprise |
+| 成本追蹤 | ✅ | 僅限 LiteLLM Enterprise |
 | 記錄 | ✅ | 可跨所有記錄整合運作 |
 
 在您的 proxy 上設定的防護欄會在批次輸入檔上傳時套用到檔案內的記錄。請參閱 [Batch API 防護欄](./proxy/guardrails/batch_guardrails)
@@ -28,8 +28,8 @@ import TabItem from '@theme/TabItem';
 每一行都是 [OpenAI 批次檔案格式](https://platform.openai.com/docs/guides/batch) 中的一個請求。每一行都需要 `custom_id`、`method`、`url`、以及 `body`：
 
 ```json showLineNumbers title="mydata.jsonl"
-{"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o", "messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_tokens": 1000}}
-{"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o", "messages": [{"role": "system", "content": "You are an unhelpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_tokens": 1000}}
+{"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "{{openai_large}}", "messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_completion_tokens": 1000}}
+{"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "{{openai_large}}", "messages": [{"role": "system", "content": "You are an unhelpful assistant."}, {"role": "user", "content": "Hello world!"}], "max_completion_tokens": 1000}}
 ```
 
 <Tabs>
@@ -39,19 +39,30 @@ import TabItem from '@theme/TabItem';
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
-  - model_name: gpt-4o
+  - model_name: {{openai_large}}
     litellm_params:
-      model: openai/gpt-4o
+      model: openai/{{openai_large}}
       api_key: os.environ/OPENAI_API_KEY
+
+files_settings:
+  - custom_llm_provider: openai
+    api_key: os.environ/OPENAI_API_KEY
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
 ```bash
 $ export OPENAI_API_KEY="sk-..."
+$ export LITELLM_MASTER_KEY="sk-$(openssl rand -hex 32)"
+$ printf 'Local proxy key: %s\n' "$LITELLM_MASTER_KEY"
 
 $ litellm --config config.yaml
 
 # RUNNING on http://0.0.0.0:4000
 ```
+
+在另一個終端機中，將 `LITELLM_API_KEY` 設為上方印出的金鑰，然後傳送下列請求。
 
 **為 Batch Completion 建立檔案**
 
@@ -155,7 +166,7 @@ while True:
     )
     
     status = retrieved_batch.status
-    print(f"⏳ Batch status: {status}")
+    print(f"Batch status: {status}")
     
     if status == "completed" and retrieved_batch.output_file_id:
         print("✅ Batch complete. Output file ID:", retrieved_batch.output_file_id)
@@ -206,15 +217,15 @@ print("list_batches_response=", list_batches_response)
 
 ### 組態 {#configuration}
 
-```yaml
+```yaml keep-model-ids
 model_list:
-  - model_name: gpt-4o-account-1
+  - model_name: openai-account-1
     litellm_params:
       model: openai/{{openai_large}}
       api_key: sk-account-1-key
       api_base: https://api.openai.com/v1
   
-  - model_name: gpt-4o-account-2
+  - model_name: openai-account-2
     litellm_params:
       model: openai/{{openai_large}}
       api_key: sk-account-2-key
@@ -222,7 +233,7 @@ model_list:
   
   - model_name: azure-batches
     litellm_params:
-      model: azure/{{openai_large}}
+      model: azure/gpt-5.6-terra
       api_key: azure-key-123
       api_base: https://my-resource.openai.azure.com
       api_version: "2024-02-01"
@@ -238,22 +249,22 @@ model_list:
 # Step 1: Upload file with model
 curl http://localhost:4000/v1/files \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
-  -H "x-litellm-model: gpt-4o-account-1" \
+  -H "x-litellm-model: openai-account-1" \
   -F purpose="batch" \
   -F file="@batch.jsonl"
 
 # Response includes encoded file ID:
 # {
-#   "id": "file-bGl0ZWxsbTpmaWxlLUxkaUwzaVYxNGZRVlpYcU5KVEdkSjk7bW9kZWwsZ3B0LTRvLWFjY291bnQtMQ",
+#   "id": "file-bGl0ZWxsbTpmaWxlLUxkaUwzaVYxNGZRVlpYcU5KVEdkSjk7bW9kZWwsb3BlbmFpLWFjY291bnQtMQ",
 #   ...
 # }
 
-# Step 2: Create batch - automatically routes to gpt-4o-account-1
+# Step 2: Create batch - automatically routes to openai-account-1
 curl http://localhost:4000/v1/batches \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "input_file_id": "file-bGl0ZWxsbTpmaWxlLUxkaUwzaVYxNGZRVlpYcU5KVEdkSjk7bW9kZWwsZ3B0LTRvLWFjY291bnQtMQ",
+    "input_file_id": "file-bGl0ZWxsbTpmaWxlLUxkaUwzaVYxNGZRVlpYcU5KVEdkSjk7bW9kZWwsb3BlbmFpLWFjY291bnQtMQ",
     "endpoint": "/v1/chat/completions",
     "completion_window": "24h"
   }'
@@ -261,11 +272,11 @@ curl http://localhost:4000/v1/batches \
 # Batch ID is also encoded with model:
 # {
 #   "id": "batch_bGl0ZWxsbTpiYXRjaF82OTIwM2IzNjg0MDQ4MTkwYTA3ODQ5NDY3YTFjMDJkYTttb2RlbCxncHQtNG8tYWNjb3VudC0x",
-#   "input_file_id": "file-bGl0ZWxsbTpmaWxlLUxkaUwzaVYxNGZRVlpYcU5KVEdkSjk7bW9kZWwsZ3B0LTRvLWFjY291bnQtMQ",
+#   "input_file_id": "file-bGl0ZWxsbTpmaWxlLUxkaUwzaVYxNGZRVlpYcU5KVEdkSjk7bW9kZWwsb3BlbmFpLWFjY291bnQtMQ",
 #   ...
 # }
 
-# Step 3: Retrieve batch - automatically routes to gpt-4o-account-1
+# Step 3: Retrieve batch - automatically routes to openai-account-1
 curl http://localhost:4000/v1/batches/batch_bGl0ZWxsbTpiYXRjaF82OTIwM2IzNjg0MDQ4MTkwYTA3ODQ5NDY3YTFjMDJkYTttb2RlbCxncHQtNG8tYWNjb3VudC0x \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
@@ -283,7 +294,7 @@ curl http://localhost:4000/v1/batches/batch_bGl0ZWxsbTpiYXRjaF82OTIwM2IzNjg0MDQ4
 # Create batch with model header
 curl http://localhost:4000/v1/batches \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
-  -H "x-litellm-model: gpt-4o-account-2" \
+  -H "x-litellm-model: openai-account-2" \
   -H "Content-Type: application/json" \
   -d '{
     "input_file_id": "file-abc123",
@@ -292,7 +303,7 @@ curl http://localhost:4000/v1/batches \
   }'
 
 # Or use query parameter
-curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2" \
+curl "http://localhost:4000/v1/batches?model=openai-account-2" \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -302,7 +313,7 @@ curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2" \
   }'
 
 # List batches for specific model
-curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2" \
+curl "http://localhost:4000/v1/batches?model=openai-account-2" \
   -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
@@ -338,13 +349,13 @@ curl http://localhost:4000/v1/batches \
 ```bash
 # Upload file to Account 1
 FILE_1=$(curl -s http://localhost:4000/v1/files \
-  -H "x-litellm-model: gpt-4o-account-1" \
+  -H "x-litellm-model: openai-account-1" \
   -F purpose="batch" \
   -F file="@batch1.jsonl" | jq -r '.id')
 
 # Upload file to Account 2
 FILE_2=$(curl -s http://localhost:4000/v1/files \
-  -H "x-litellm-model: gpt-4o-account-2" \
+  -H "x-litellm-model: openai-account-2" \
   -F purpose="batch" \
   -F file="@batch2.jsonl" | jq -r '.id')
 
@@ -361,8 +372,8 @@ curl http://localhost:4000/v1/batches/$BATCH_1
 curl http://localhost:4000/v1/batches/$BATCH_2
 
 # List batches per account
-curl "http://localhost:4000/v1/batches?model=gpt-4o-account-1"
-curl "http://localhost:4000/v1/batches?model=gpt-4o-account-2"
+curl "http://localhost:4000/v1/batches?model=openai-account-1"
+curl "http://localhost:4000/v1/batches?model=openai-account-2"
 ```
 
 ### 使用模型路由的 SDK 用法 {#sdk-usage-with-model-routing}
@@ -375,13 +386,13 @@ import asyncio
 file_obj = await litellm.acreate_file(
     file=open("batch.jsonl", "rb"),
     purpose="batch",
-    model="gpt-4o-account-1",  # Route to specific account
+    model="openai-account-1",  # Route to specific account
 )
 
 print(f"File ID: {file_obj.id}")
 # File ID is encoded with model info
 
-# Create batch - automatically uses gpt-4o-account-1 credentials
+# Create batch - automatically uses openai-account-1 credentials
 batch = await litellm.acreate_batch(
     completion_window="24h",
     endpoint="/v1/chat/completions",
@@ -403,7 +414,7 @@ batch2 = await litellm.acreate_batch(
     completion_window="24h",
     endpoint="/v1/chat/completions",
     input_file_id="file-regular-id",
-    model="gpt-4o-account-2",  # Explicit routing
+    model="openai-account-2",  # Explicit routing
 )
 ```
 
@@ -414,13 +425,13 @@ LiteLLM 使用 base64 將模型資訊編碼到檔案與 batch ID 中：
 ```
 Original:  file-abc123
 Encoded:   file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxncHQtNG8tdGVzdA
-           └─┬─┘ └──────────────────┬──────────────────────┘
-          prefix      base64(litellm:file-abc123;model,gpt-4o-test)
+           └─┬─┘ └───────────────────┬────────────────────────┘
+          prefix      base64(litellm:file-abc123;model,openai-test)
 
 Original:  batch_xyz789
-Encoded:   batch_bGl0ZWxsbTpiYXRjaF94eXo3ODk7bW9kZWwsZ3B0LTRvLXRlc3Q
-           └──┬──┘ └──────────────────┬──────────────────────┘
-           prefix       base64(litellm:batch_xyz789;model,gpt-4o-test)
+Encoded:   batch_bGl0ZWxsbTpiYXRjaF94eXo3ODk7bW9kZWwsb3BlbmFpLXRlc3Q
+           └──┬──┘ └────────────────────────┬────────────────────────┘
+           prefix       base64(litellm:batch_xyz789;model,openai-test)
 ```
 
 此編碼：
@@ -646,6 +657,46 @@ curl -X POST 'http://localhost:4000/key/generate' \
 - `disable_batch_input_file_rate_limiting` 與 `skip_batch_input_file_rate_limiting_for_providers` 具有優先權。當它們適用時，LiteLLM 不會進行已排隊 token 計算。
 - 對於 LiteLLM 從未觀察到終態的批次預留（例如，只曾直接對提供者輪詢的批次），會在 8 天後過期。
 
+#### 專案的個別模型上限 {#per-model-limits-on-a-project}
+
+<SinceVersion v="1.111.0" />
+
+當多個應用程式共用同一個團隊時，請將每個應用程式各自作為一個專案執行，並在專案 metadata 中以 `model_batch_enqueued_token_limit` 限制它對每個模型可排隊的 token 數量：
+
+```bash
+curl -X POST 'http://localhost:4000/project/update' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"project_id": "batch-app-project", "metadata": {"model_batch_enqueued_token_limit": {"gpt-5.5": 2000}}}'
+```
+
+專案中的每把金鑰對每個模型共用同一個計數器，因此即使呼叫者的自訂驗證會核發輪替的 token，仍會受到同一個上限約束。放不進上限的批次會收到 `429`：
+
+```json
+{"error": {"message": "Batch enqueued token limit exceeded for project_model: batch-app-project:gpt-5.5. Batch requires 1221 tokens but only 779 enqueued tokens remaining out of 2000 enqueued token limit. Tokens free up as running batches complete or are cancelled.", "type": "throttling_error", "param": null, "code": "429"}}
+```
+
+批次的計費方式：
+
+- 批次會向它路由到的模型計費，也會向其記錄的 `body.model` 中每個有設定上限的模型計費。沒有 `body.model` 的記錄，計入批次路由到的模型。
+- 受管理檔案（以 `target_model_names` 上傳）只向批次路由到的模型計費，因為 LiteLLM 會在上傳時將其記錄改寫為部署模型。
+- 解析到同一個模型群組的名稱，例如別名與其模型群組，或部署 id，會在其中最嚴格的上限下共用同一個計數器。`-latest` 模型名稱也會向其指向模型的上限計費；帶日期的快照，例如 `gpt-5.5-2026-04-23`，則向其無日期名稱的上限計費。
+- token 的退還方式與金鑰及團隊配額相同：當 LiteLLM 提供的回應顯示批次處於終態時，或在 8 天後。
+- 請在每個 proxy 執行個體都執行支援專案上限的版本之後，再設定專案上限；回復舊版本前也要記得這一點。舊版本的執行個體若提供了顯示批次終態的回應，只會退還金鑰與團隊配額。它略過的專案 token 會一直被保留，直到該專案與模型連續 8 天沒有任何批次預留為止，因此持續傳送批次的專案會一直保留這些 token。如果這使專案的上限被占滿，請提高上限以騰出空間。
+
+與其他上限的組合方式：
+
+- 當金鑰或團隊也設定了 `batch_enqueued_token_limit` 時，批次必須符合每一項配額，且不適用其他批次上限，如上所述。
+- 當只有專案上限適用，且它同時限制了批次路由到的模型與其記錄中命名的每個模型時，該批次會略過每分鐘批次限制（金鑰、團隊、使用者與終端使用者的 TPM 與 RPM，加上專案的個別模型 TPM、ITPM 與 OTPM）。每日 `tpd_limit` 上限仍然適用。
+- 當上述任一模型沒有專案上限時，批次會在專案預留之外，保留一般的批次限制。
+
+只有代理程式管理員可以設定或變更專案的 `model_batch_enqueued_token_limit`。團隊管理員嘗試時會收到 `403`。每個值都必須是正整數，否則 `/project/new` 與 `/project/update` 會回傳 `400`。
+
+此上限適用於請求會解析到某個專案的呼叫者：
+
+- 使用自訂驗證時，請在 `general_settings` 下設定 `custom_auth_run_common_checks: true`，讓 LiteLLM 載入專案的 metadata。
+- 原生 JWT 驗證不會指派專案，因此 JWT 呼叫者不在涵蓋範圍內。
+
 ### 作業行為 {#operational-behavior}
 
 | 行為 | 營運影響 |
@@ -682,7 +733,7 @@ general_settings:
 
 ## Batches API 的成本追蹤如何運作 {#how-cost-tracking-for-batches-api-works}
 
-✨ **Enterprise：** 自動化批次成本追蹤需要 LiteLLM Enterprise 授權。
+**Enterprise：** 自動化批次成本追蹤需要 LiteLLM Enterprise 授權。
 
 對於受管理的批次，LiteLLM 會在背景監控提供者工作。當工作到達終止狀態時，LiteLLM 會：
 

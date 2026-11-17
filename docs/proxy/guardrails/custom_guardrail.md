@@ -1,3 +1,9 @@
+---
+title: "為 LiteLLM AI 閘道建立自訂 Guardrail"
+sidebar_label: "自訂 Guardrail"
+description: "為 LiteLLM AI 閘道撰寫 CustomGuardrail 類別：實作 apply_guardrail 以阻擋或修改內容，並在 config.yaml 中註冊。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -138,7 +144,7 @@ model_list:
 guardrails:
   - guardrail_name: "my-custom-guardrail"
     litellm_params:
-      guardrail: custom_guardrail.myCustomGuardrail  # 👈 Key change
+      guardrail: custom_guardrail.myCustomGuardrail  # Key change
       mode: "pre_call"                  # when apply_guardrail runs - see Mode Options below
       api_key: os.environ/MY_GUARDRAIL_API_KEY
       api_base: https://api.myguardrail.com
@@ -456,7 +462,7 @@ curl -i  -X POST http://localhost:4000/v1/chat/completions \
 
 </details>
 
-## ✨ 將額外參數傳遞給 guardrail {#-pass-additional-parameters-to-guardrail}
+## 將額外參數傳遞給 guardrail {#-pass-additional-parameters-to-guardrail}
 
 <EnterpriseFeature />
 

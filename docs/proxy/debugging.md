@@ -171,8 +171,30 @@ $ litellm
 預期輸出： 
 
 ```bash showLineNumbers
-# no info statements
+# no info log lines
 ```
+
+啟動訊息仍會印出，因為 `LITELLM_LOG` 不會篩選它們。請參閱[抑制啟動輸出](#suppress-startup-output)。
+
+## 抑制啟動輸出 {#suppress-startup-output}
+
+Proxy 啟動時會在其記錄器之外印出訊息，例如橫幅、意見回饋框、模型清單、`Setting Cache on Proxy` 與 Search Tools 清單。`LITELLM_LOG` 不會篩選這些訊息。若要關閉它們，請在您的環境中設定 `LITELLM_SUPPRESS_STARTUP_OUTPUT`：
+
+```bash showLineNumbers
+export LITELLM_SUPPRESS_STARTUP_OUTPUT="true"
+```
+**或**
+
+在您的 yaml 中設定 `suppress_startup_output: true`：
+
+```yaml showLineNumbers
+litellm_settings:
+    suppress_startup_output: true
+```
+
+只有 `true` 會啟用它。當 proxy 從 S3 或 GCS 儲存桶載入設定時，請使用環境變數，因為 CLI 會在讀取 yaml 之前先印出自己的啟動行。此設定不涵蓋 Prisma 每個 worker 印出一次的純文字 `query-engine` 行，即使開啟 JSON 記錄也一樣。記錄行仍會以 `LITELLM_LOG` 設定的等級顯示，格式為純文字或 JSON。少數需要處理的啟動警告，例如被忽略或已棄用的 CLI 旗標，無論 `LITELLM_LOG` 設為何值都會印出。其他警告則遵循 `LITELLM_LOG`。開啟 JSON 記錄時，這些啟動警告會是 stdout 上的 `WARNING` 記錄，無論此設定是否開啟皆然。 <SinceVersion v="1.109.0" />
+
+當 stdout 不是終端機時，例如在未分配 TTY 的容器中啟動，或 `NO_COLOR` 被設為任何非空值時，純文字記錄行不會帶有 ANSI 色碼，因此記錄管線儲存的是純文字。啟動訊息以及記錄訊息內的色碼也同樣是純文字。 <SinceVersion v="1.109.0" />
 
 ## 常見錯誤  {#common-errors}
 
@@ -189,7 +211,7 @@ No deployments available for selected model, Try again in 60 seconds. Passed mod
 
 ```yaml showLineNumbers
 router_settings:
-    cooldown_time: 0 # 👈 KEY CHANGE
+    cooldown_time: 0 # KEY CHANGE
 ```
 
 - 停用冷卻機制 [不建議]

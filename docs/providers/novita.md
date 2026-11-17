@@ -1,8 +1,16 @@
+---
+title: "搭配 LiteLLM 使用 Novita AI API：Python SDK 與 Gateway"
+sidebar_label: "Novita AI"
+description: "透過 LiteLLM 執行 DeepSeek R1 Turbo、Qwen3、Llama 4 Maverick 及其他 Novita AI 模型，支援工具呼叫、JSON 模式與 min_p 或 top_k 採樣。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Novita AI {#novita-ai}
+
+Novita AI 是一個 AI 雲端平台，透過簡單的 API 提供模型；LiteLLM 可從 Python SDK 或 AI Gateway 以 `novita/` 前綴呼叫這些模型，並支援工具呼叫與 JSON 模式。
 
 | 屬性 | 詳細資料 |
 |-------|-------|
@@ -164,7 +172,7 @@ messages = [
 response = completion(
     model="novita/deepseek/deepseek-r1-turbo", 
     messages=messages, 
-    response_format={"type": "json_object"} # 👈 KEY CHANGE
+    response_format={"type": "json_object"} # KEY CHANGE
 )
 
 print(json.loads(response.choices[0].message.content))
@@ -209,7 +217,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 ## 聊天模型 {#chat-models}
 
-🚨 LiteLLM 支援所有 Novita AI 模型，請送出 `model=novita/<your-novita-model>` 以將其傳送至 Novita AI。請在[這裡](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link)查看所有 Novita AI 模型
+LiteLLM 支援所有 Novita AI 模型，請送出 `model=novita/<your-novita-model>` 以將其傳送至 Novita AI。請在[這裡](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link)查看所有 Novita AI 模型
 
 | 模型名稱                | 函式呼叫                                       |
 |---------------------------|-----------------------------------------------------|

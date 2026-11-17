@@ -1,5 +1,6 @@
 ---
-title: "v1.80.15-stable - Manus API 支援"
+title: "LiteLLM v1.80.15-stable - Manus API 支援"
+description: "新增 Manus API、MiniMax 與 AWS Polly 支援、RAG 查詢端點與 MCP 全域模式。將額外負擔降低 50%。"
 slug: "v1-80-15"
 date: 2026-01-10T10:00:00
 authors:

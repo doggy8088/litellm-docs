@@ -2,7 +2,7 @@ import Image from '@theme/IdealImage';
 
 # 健康檢查 {#health-checks}
 
-有兩件事會消耗閘道的健康狀態。您的協調器（Kubernetes、負載平衡器、uptime 監控）會輪詢輕量型探測端點，以判斷程序是否已啟動並準備好接受流量。您，作為營運者，則會檢查每個已設定的 LLM 是否 वास्तव際能夠提供請求服務。本頁涵蓋這兩者。
+有兩件事會消耗閘道的健康狀態。您的協調器（Kubernetes、負載平衡器、uptime 監控）會輪詢輕量型探測端點，以判斷程序是否已啟動並準備好接受流量。您，作為營運者，則會檢查每個已設定的 LLM 是否 實際能夠提供請求服務。本頁涵蓋這兩者。
 
 ## 探測端點 {#probe-endpoints}
 
@@ -11,9 +11,9 @@ import Image from '@theme/IdealImage';
 | 端點 | 驗證 | 回傳 | 意義 |
 |----------|------|---------|---------|
 | `GET /health/liveliness` | 無 | `"I'm alive!"`（200），或在平滑關機期間回傳 `{"status": "shutting_down"}`（503） | 程序已啟動。未檢查任何相依項目。`GET /health/liveness` 是採用 Kubernetes 拼法的別名；兩者都是真實路由 |
-| `GET /health/readiness` | 無 | 已就緒時回傳 `{"status": "healthy", "db": ...}`（200）；當已設定的資料庫無法連線時回傳 503 | 工作程序已準備好接受流量。當未設定資料庫時，`db` 欄位為 `"connected"`、`"disconnected"`，或 `"Not connected"` |
+| `GET /health/readiness` | 無 | 已就緒時回傳 `{"status": "healthy", "db": ...}`（200）；當已設定的資料庫無法連線時回傳 503，但設定 `allow_requests_on_db_unavailable: true` 時除外 | 工作程序已準備好接受流量。當未設定資料庫時，`db` 欄位為 `"connected"`、`"disconnected"`，或 `"Not connected"` |
 
-`db` 值可讓協調器區分健康的工作程序與已啟動但無法連線到資料庫的工作程序。當已設定資料庫但無法連線時，就緒檢查會回傳 503，因此該 pod 會從輪替中移除。
+`db` 值可讓協調器區分健康的工作程序與已啟動但無法連線到資料庫的工作程序。當已設定資料庫但無法連線時，就緒檢查會回傳 503，因此該 pod 會從輪替中移除，但設定 `allow_requests_on_db_unavailable: true` 時除外。
 
 預設的就緒回應內容刻意維持低細節，因此即使對未經驗證的探測公開也安全。若要取得完整診斷（回呼、快取、版本），可將 `general_settings.allow_public_health_readiness_details: true` 設為展開 `/health/readiness` 本身，或呼叫已驗證的 `GET /health/readiness/details` 端點。
 
@@ -38,24 +38,73 @@ readinessProbe:
 
 <Image img={require('../../img/ui_health_status.png')} alt="Model Health Status tab showing a healthy model after Run All Checks" />
 
-對應的 API 是 `GET /health`，可接受任何有效金鑰。它會對每個已設定的模型執行一次實際測試請求，因此每個模型會消耗少量 token。
+對應的 API 是 [`GET /health`](#model-health-from-the-api)。
+
+## 來自 API 的模型健康狀態 {#model-health-from-the-api}
+
+`GET /health` 會回報呼叫金鑰可見的每個部署為健康或不健康。除非已開啟[背景健康檢查](#background-health-checks)，否則每次呼叫都會對這些部署各發送一次實際測試請求，因此每個部署會消耗少量 token。對 [auto router](./auto_routing.md) 部署的定向檢查，也會對它路由到的每個模型發送測試請求。
 
 ```shell
-curl --location 'http://0.0.0.0:4000/health' -H "Authorization: Bearer $LITELLM_API_KEY"
+curl 'http://0.0.0.0:4000/health' -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
 
 ```json
 {
     "healthy_endpoints": [
-        {"model": "azure/{{openai_small}}", "api_base": "https://my-endpoint-canada-berri992.openai.azure.com/"}
+        {"model": "openai/{{openai_small}}", "model_id": "openai-small-1", "x-ratelimit-remaining-requests": "29999"}
     ],
     "unhealthy_endpoints": [
-        {"model": "azure/{{openai_small}}", "api_base": "https://openai-france-1234.openai.azure.com/"}
-    ]
+        {"model": "anthropic/{{anthropic}}", "model_id": "anthropic-1", "error": "litellm.AuthenticationError: ...", "exception_status": 401}
+    ],
+    "healthy_count": 1,
+    "unhealthy_count": 1
 }
 ```
 
-若要檢查單一模型，請傳入 `?model=<model_name>` 或 `?model_id=<id>`；您可以從 `GET /v1/model/info` 找到模型的 id。
+此端點會將結果限定於呼叫金鑰的範圍、以監控工具可據以行動的狀態碼回應定向檢查，且只回傳一組固定的診斷欄位。以下各節說明截至 v1.102.0 的這項契約。
+
+v1.84.0 至 v1.102.0 的版本已將結果限定於金鑰的 `models` 清單範圍，並對沒有健康部署的定向呼叫回應 503，但在幾個方面有所不同。金鑰清單中的存取群組不會被展開，因此只列出群組的金鑰會得到空清單，且非管理員金鑰也會看到其他團隊的部署。超出該金鑰範圍的 `?model_id=` 會被忽略，呼叫會以金鑰自己的部署回應，而不是 403。回應條目也會帶有其他 `litellm_params` 值，例如 `max_tokens` 與 `cache`，而不只是下方列出的欄位。對非管理員金鑰只會移除 `api_base` 與 `api_version`，因此 `aws_bedrock_runtime_endpoint` 仍會顯示，且標頭會顯示 `api_base and api_version are admin-only on this endpoint`。在 v1.84.0 上，金鑰無法呼叫的 `?model=` 會回應 401，而不是 403。
+
+### 金鑰可以看到哪些部署 {#which-deployments-a-key-sees}
+
+proxy 管理員，也就是 master key，或使用者具有 `proxy_admin` 或 `proxy_admin_viewer` 角色的金鑰，可以看到每個部署；但如果管理員的金鑰有自己的 `models` 清單，則由該清單決定可見範圍。其他每個金鑰只能看到不屬於其他任何團隊的部署。在這些部署中，自己的 `models` 清單為空或包含 `all-proxy-models` 的金鑰可以看到全部；其他金鑰只能看到 `model_name` 出現在其 `models` 清單中的部署，清單中的存取群組名稱與 `all-team-models` 會被展開。
+
+只有金鑰自己的 `models` 清單會縮小結果範圍。金鑰所屬團隊、使用者、組織或專案上的 `models` 限制，目前還不會縮小未定向的結果或 `model_id` 檢查；不過，被該限制禁止的 `?model=` 會以與聊天請求相同的方式被拒絕。因此，在沒有背景健康檢查時，這類金鑰的未定向呼叫會對它無法呼叫的部署發送測試請求。若要限定這類金鑰的可見範圍，請給它自己的 `models` 清單，或對團隊金鑰給予 `all-team-models`。像 `openai/*` 這樣的萬用字元條目，只會比對 `model_name` 恰好是 `openai/*` 的部署，因此清單中只有萬用字元的金鑰，即使對它可以呼叫的模型也會得到空結果。
+
+### 檢查單一模型 {#check-one-model}
+
+傳入 `?model=<model_name>` 可檢查該公開模型名稱背後的每個部署。當沒有部署使用該名稱時，proxy 會改為將它與每個部署的 `litellm_params.model` 比對，因此管理員可以傳入 `?model=openai/{{openai_small}}`。傳入 `?model_id=<id>` 可檢查具有該 `model_info.id` 的單一部署，該 id 可由 `GET /v1/model/info` 列出。當請求同時帶有兩者時，由 `model_id` 選定部署，但 `model` 仍必須通過金鑰的模型存取檢查。在 `model` 中使用 `model_group_alias` 名稱時，若金鑰沒有 `models` 清單，或其清單包含該別名名稱，就會檢查該別名路由到的部署。清單中只有目標名稱的金鑰，對該別名會得到 403，即使透過該別名的聊天請求能成功，因此請改為檢查目標名稱。只有萬用字元路由服務的名稱，例如 `anthropic/*` 部署背後的 `anthropic/{{anthropic}}`，不會比對到任何部署，因此即使對它的聊天請求能成功，它對管理員會回應 503 與空清單，對其他金鑰則回應 403。檢查這類路由時，請使用 `?model_id=`，或使用萬用字元名稱本身：`?model=anthropic/*`。
+
+### 狀態碼 {#status-codes}
+
+| 狀態 | 時機 |
+|--------|------|
+| 200 | 任何未定向的呼叫，即使每個部署都不健康 |
+| 200 | 至少有一個健康部署的定向呼叫 |
+| 503 | 沒有健康部署的定向呼叫 |
+| 403 | 目標超出該金鑰的範圍 |
+| 404 | 沒有部署具有該 `model_id` |
+| 401 | 金鑰無效 |
+
+503 會帶有正常的回應本文，因此監控工具可以依狀態碼發出告警，同時仍能讀取每個不健康的條目。
+
+403 與 404 的本文有兩種形式。金鑰無法呼叫的 `model` 會被與聊天請求相同的模型存取檢查拒絕，因此本文是標準錯誤物件 `{"error": {"type": "key_model_access_denied", ...}}`，或拒絕它的限制所對應的型別，例如 `team_model_access_denied`、`user_model_access_denied`、`org_model_access_denied` 或 `project_model_access_denied`。超出該金鑰範圍的 `model_id` 會回應 `{"detail": {"error": "key not allowed to health-check model_id <id>"}}`；通過存取檢查但在範圍內比對不到任何部署的 `model`，則回應 `{"detail": {"error": "key not allowed to health-check model <name>"}}`。未知的 `model_id` 會在任何範圍檢查之前，先以 `{"detail": {"error": "Model with ID <id> not found"}}` 回應 404。沒有 `models` 清單的管理員金鑰，若傳入沒有任何部署服務的 `model`，會得到 503 與空清單。
+
+### 回應欄位 {#response-fields}
+
+每個條目都帶有 `model_id`（該部署的 `model_info.id`）與 `model`（探測所呼叫的模型）。`model` 通常是該部署的 `litellm_params.model`，但 `health_check_model` 或提供者路由（例如模型字串中的 Bedrock 區域）可以改變它，因此請以 `model_id` 將條目對應到部署。條目中的任何其他欄位都來自以下清單，且只有在部署或其探測有設定時才會出現：`custom_llm_provider`、`mode`、`base_model`、`aws_region_name`、`region_name`、`watsonx_region_name`、`vertex_project`、`vertex_location`、`tpm`、`rpm`、`error`、`raw_request_typed_dict`、`x-ratelimit-remaining-requests`、`x-ratelimit-remaining-tokens` 與 `x-ms-region`。不健康的條目通常還會帶有 `exception_status`，即失敗探測的 HTTP 狀態；當錯誤沒有狀態時為 500。條目永遠不會有 `api_key` 欄位或任何其他來自 `litellm_params` 的憑證欄位，它能帶有的其他 `litellm_params` 值只有下方的管理員專用欄位。後續版本可能會在此清單中新增欄位，因此用戶端應忽略它不認識的欄位。
+
+`api_base`、`api_version` 與 `aws_bedrock_runtime_endpoint` 會從非管理員金鑰的每個條目中移除。後續版本在該清單中加入了伺服器端驗證設定，例如 v1.106.0 起的 `anthropic_identity_source`，以及 v1.107.0 起的 `token_exchange_endpoint` 與 `github_copilot_host`。對非管理員金鑰的每個 200 或 503 回應，都帶有一個 `Litellm-Health-Field-Notice` 標頭，列出每個管理員專用欄位，無論該回應中的條目是否帶有這些欄位：
+
+```text
+Litellm-Health-Field-Notice: api_base, api_version, aws_bedrock_runtime_endpoint, ... are admin-only on this endpoint
+```
+
+請讀取該標頭，而不是使用寫死的清單，因為管理員專用欄位的集合可能會增加。
+
+在不健康的條目上，`error` 保存失敗探測的完整錯誤文字，`raw_request_typed_dict` 則描述探測所發送的請求，包括它呼叫的 URL，該 URL 以部署的 `api_base` 或 Bedrock runtime 端點開頭。兩者都會提供給每個能看到該部署的金鑰，因此移除管理員專用欄位並不會對非管理員金鑰隱藏部署的位址。當非管理員金鑰只應看到每個部署的狀態時，請設定 `health_check_details: false`。
+
+使用 `general_settings.health_check_details: false` 時，每個條目只帶有 `model`、`model_id`，以及不健康條目上的 `exception_status`，不帶 `error`。唯一的例外是無法連通其路由目標模型之一的 [auto router](./auto_routing.md) 部署，它會保留指出該模型名稱的 `error`。管理員專用欄位對 proxy 管理員也會被省略。
 
 ## 背景健康檢查 {#background-health-checks}
 
@@ -65,12 +114,14 @@ curl --location 'http://0.0.0.0:4000/health' -H "Authorization: Bearer $LITELLM_
 general_settings:
   background_health_checks: true      # run checks in the background
   health_check_interval: 300          # seconds between runs (default 300)
-  health_check_details: true          # include endpoint URLs and errors in the response (default true)
+  health_check_details: true          # false trims each entry to model, model_id, and status fields (default true)
 ```
 
-當閘道暴露給廣泛受眾時，將 `health_check_details: false` 設為從回應中移除端點 URL、錯誤訊息及其他參數。
+當 proxy 暴露給廣泛受眾時，將 `health_check_details: false` 設為只回傳[最小條目](#response-fields)。
 
-若要將某個模型排除在背景迴圈之外，請在其 `model_info` 中設定 `disable_background_health_check: true`。這只會略過背景迴圈；按需的 `GET /health` 仍會探測它，除非您也設定 `general_settings.health_check_skip_disabled_background_models: true`，如此也會將那些部署從按需與共享健康檢查中排除。
+快取結果遵循與即時檢查相同的規則。每個金鑰只能看到自己的部署；當快取中沒有任何目標部署是健康的時候，定向呼叫會回應 503；非管理員金鑰的管理員專用欄位會被移除。在第一次背景執行完成之前，快取是空的，因此未定向的呼叫會以空清單回應 200，對沒有 `models` 清單的管理員金鑰則回應 `{}`，而每個定向呼叫都會以空清單回應 503。每個 proxy 工作程序與每個 pod 都執行自己的背景迴圈並保存自己的快取。在 proxy 啟動後或工作程序重新啟動後，第一次執行尚未完成的工作程序會以空快取回應，而另一個工作程序已有結果，因此同一個呼叫可能先回應 503，稍後又回應 200。被背景迴圈透過 `disable_background_health_check` 或下方的 `background_health_check_model_groups` 略過的部署，永遠不會出現在快取中，因此它不會出現，對它的定向檢查也永遠以空清單回應 503。
+
+若要將某個模型排除在背景迴圈之外，請在其 `model_info` 中設定 `disable_background_health_check: true`。背景檢查開啟時，`/health` 只讀取快取，因此該部署會如上所述從結果中消失。設定 `general_settings.health_check_skip_disabled_background_models: true`，可另外將那些部署排除在按需檢查（在背景檢查關閉時執行）與共享健康檢查之外。
 
 ```yaml
 model_list:
@@ -128,6 +179,25 @@ model_list:
       mode: embedding
 ```
 
+### 音訊輸出聊天模型 {#audio-output-chat-models}
+
+<SinceVersion v="1.109.0" />
+
+輸出音訊的 OpenAI 與 Azure 聊天模型，例如 `gpt-audio-1.5` 與 `gpt-audio-mini`，會拒絕輸入或輸出中沒有音訊的請求。聊天探測會向這些模型請求文字加音訊輸出，也就是以 [`health_check_voice`](#health-check-tuning-reference) 語音輸出的 `wav` 片段，因此它們能通過預設探測，無需覆寫 `model_info.health_check_params`。您在 `health_check_params` 中設定的值仍然優先，而其中不含 `"audio"` 的 `modalities` 清單會讓探測維持純文字。
+
+LiteLLM 依 `base_model` 挑選這些模型，先從 `model_info` 讀取，再從 `litellm_params` 讀取，否則依部署的模型名稱。因此，自訂名稱的 Azure 部署只有在 `base_model` 指名其模型時，才會得到音訊探測，如同[成本追蹤](./custom_pricing.md#set-base_model-for-cost-tracking-eg-azure-deployments)的情形。
+
+```yaml
+model_list:
+  - model_name: gpt-audio
+    litellm_params:
+      model: azure/my-gpt-audio-deployment
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+    model_info:
+      base_model: azure/gpt-audio-1.5
+```
+
 ## 健康檢查調整參考 {#health-check-tuning-reference}
 
 除非另有註明，請在模型的 `model_info` 下設定這些項目。它們控制探測請求的組成方式。
@@ -139,7 +209,7 @@ model_list:
 | `health_check_max_tokens_reasoning` | 未設定 | 當 `health_check_max_tokens` 未設定時，供推理模型使用的 `max_tokens` |
 | `health_check_max_tokens_non_reasoning` | 未設定 | 當 `health_check_max_tokens` 未設定時，供非推理模型使用的 `max_tokens` |
 | `health_check_reasoning_effort` | 未設定 | 探測中的 `reasoning_effort`（僅聊天、完成、批次、回應模式） |
-| `health_check_voice` | `alloy` | `audio_speech` 探測的語音 |
+| `health_check_voice` | `alloy` | `audio_speech` 探測的語音，也用於[輸出音訊的 OpenAI 與 Azure 模型](#audio-output-chat-models)的聊天探測 <SinceVersion v="1.109.0" />。Gemini TTS 部署自 v1.107.0 起，會將 `alloy` 與其他 OpenAI 語音名稱對應到 Gemini 預建語音（`alloy` 會變成 `Kore`，請參閱[對應表](../providers/gemini#voice-names)），因此預設值即可通過。設定像 `Kore` 這樣的 Gemini 名稱可直接選用，較早的版本需要這樣做 |
 | `health_check_model` | 未設定 | 萬用字元路由所探測的具體模型 |
 | `disable_background_health_check` | false | 在背景迴圈中略過此模型 |
 

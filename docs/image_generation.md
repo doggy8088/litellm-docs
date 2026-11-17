@@ -310,7 +310,7 @@ print(f"response: {response}")
 
 ## 支援的提供者 {#supported-providers}
 
-#### ⚡️請在 [models.litellm.ai](https://models.litellm.ai/) 查看所有支援的模型與提供者 {#️see-all-supported-models-and-providers-at-modelslitellmai}
+#### 請在 [models.litellm.ai](https://models.litellm.ai/) 查看所有支援的模型與提供者 {#see-all-supported-models-and-providers-at-modelslitellmai}
 
 | 提供者 | 文件連結 |
 |----------|-------------------|

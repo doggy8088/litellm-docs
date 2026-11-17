@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "在 LiteLLM Proxy 和 SDK 中使用 Gemini 3.5 Flash 的指南，提供 day 0 支援。"
+card_title: "Gemini 3.5 Flash"
+card_summary: "Gemini Flash，具備 thinking 等級、嚴格的 function-call ID 與 thought signatures，任何版本皆可進行成本追蹤。"
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -258,8 +260,8 @@ LiteLLM 為 Gemini 3.5 Flash 提供 **完整端到端支援**，適用於：
 
 - ✅ `/v1/chat/completions` - OpenAI 相容的 chat completions 端點
 - ✅ `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic 相容的 messages 端點
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) 相容端點 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic 相容的 messages 端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容端點 
 
 所有端點都支援：
 - 串流與非串流回應

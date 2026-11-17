@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Humanloop 提示管理"
+sidebar_label: "Humanloop"
+description: "將 Humanloop 提示詞與 LiteLLM 搭配使用：從 Python SDK 或 AI 閘道以 prompt_id 呼叫受管理的提示詞並帶入變數，並選擇模型的設定位置。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

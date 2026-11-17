@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure OpenAI 影片生成 (Sora)"
+sidebar_label: "Azure 影片生成"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 在 Azure OpenAI 上使用 Sora 生成影片。擷取影片內容、重混影片，並追蹤每秒成本。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,5 +1,6 @@
 ---
-title: "[Preview] v1.81.6 - 使用 Tool Call Tracing 的 Logs v2"
+title: "LiteLLM [Preview] v1.81.6 - 使用 Tool Call Tracing 的 Logs v2"
+description: "在此預覽版本中重新設計記錄檢視，加入工具呼叫追蹤、側邊面板與錯誤訊息搜尋。"
 slug: "v1-81-6"
 date: 2026-01-31T00:00:00
 authors:
@@ -338,7 +339,7 @@ pip install litellm==1.81.6
 
 | 資料表 | 變更類型 | 說明 | PR | 移轉 |
 | ----- | ----------- | ----------- | -- | --------- |
-| `LiteLLM_ManagedVectorStoresTable` | 新增欄位 | 新增 `team_id` 和 `user_id` 欄位用於權限管理 | [PR #19972](https://github.com/BerriAI/litellm/pull/19972) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260131150814_add_team_user_to_vector_stores/migration.sql) |
+| `LiteLLM_ManagedVectorStoresTable` | 新增欄位 | 新增 `team_id` 和 `user_id` 欄位用於權限管理 | [PR #19972](https://github.com/BerriAI/litellm/pull/19972) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260131150814_add_team_user_to_vector_stores/migration.sql) |
 
 ### Migration 改善 {#migration-improvements}
 
@@ -351,7 +352,7 @@ pip install litellm==1.81.6
 ## 文件更新 {#documentation-updates}
 
 - **[新增 Claude Agents SDK x LiteLLM 指南](../../docs/mcp)** - [PR #20036](https://github.com/BerriAI/litellm/pull/20036)
-- **[新增食譜：將 Claude Agent SDK + MCP 與 LiteLLM 搭配使用](https://github.com/BerriAI/litellm/tree/main/cookbook)** - [PR #20081](https://github.com/BerriAI/litellm/pull/20081)
+- **[新增食譜：將 Claude Agent SDK + MCP 與 LiteLLM 搭配使用](https://github.com/BerriAI/litellm/tree/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook)** - [PR #20081](https://github.com/BerriAI/litellm/pull/20081)
 - 修正文件中的 A2A Python SDK URL - [PR #19832](https://github.com/BerriAI/litellm/pull/19832)
 - **[新增 Sarvam 使用文件](../../docs/providers/sarvam)** - [PR #19844](https://github.com/BerriAI/litellm/pull/19844)
 - **[新增 embeddings 的支援輸入格式](../../docs/embedding/supported_embedding)** - [PR #20073](https://github.com/BerriAI/litellm/pull/20073)

@@ -1,3 +1,9 @@
+---
+title: "用於記錄與可觀測性的 LiteLLM 回呼"
+sidebar_label: "回呼"
+description: "使用 LiteLLM 的輸入、成功與失敗回呼，將 Python SDK 呼叫資料傳送至 Langfuse、LangSmith、Helicone、PostHog 與 Sentry 等工具。"
+---
+
 # 回呼 {#callbacks}
 
 ## 使用回呼將輸出資料傳送到 Posthog、Sentry 等 {#use-callbacks-to-send-output-data-to-posthog-sentry-etc}
@@ -30,11 +36,11 @@ liteLLM 提供 `input_callbacks`、`success_callbacks` 和 `failure_callbacks`�
 ### 相關食譜 {#related-cookbooks}
 試試我們的食譜，取得程式碼片段與互動式展示：
 
-- [Langfuse 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/logging_observability/LiteLLM_Langfuse.ipynb)
-- [Lunary 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/logging_observability/LiteLLM_Lunary.ipynb)
-- [Arize 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/logging_observability/LiteLLM_Arize.ipynb)
-- [Proxy + Langfuse 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/logging_observability/LiteLLM_Proxy_Langfuse.ipynb)
-- [PromptLayer 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_PromptLayer.ipynb)
+- [Langfuse 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/logging_observability/LiteLLM_Langfuse.ipynb)
+- [Lunary 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/logging_observability/LiteLLM_Lunary.ipynb)
+- [Arize 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/logging_observability/LiteLLM_Arize.ipynb)
+- [Proxy + Langfuse 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/logging_observability/LiteLLM_Proxy_Langfuse.ipynb)
+- [PromptLayer 回呼範例（Colab）](https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_PromptLayer.ipynb)
 
 ### 快速開始 {#quick-start}
 

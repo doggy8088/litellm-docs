@@ -1,148 +1,102 @@
-# ✨ 企業版 {#-enterprise}
+---
+title: Enterprise
+hide_title: true
+description: LiteLLM Enterprise 是開源 AI 閘道加上 SSO、稽核記錄、委派管理員角色、多區域部署與支援 SLA，自我託管於您的雲端環境。
+---
 
-:::info
+import {EnterpriseHero, TierStack} from '@site/src/components/Conversion/Enterprise';
+import {Tiles, SalesBand} from '@site/src/components/Conversion';
 
-新加入嗎？請從 [Enterprise Quickstart](/docs/learn/enterprise_quickstart) 開始。您也可以開始 [30 天試用](https://www.litellm.ai/enterprise#trial) 或 [預約示範](https://enterprise.litellm.ai/demo)。
+<EnterpriseHero />
 
-:::
+## 在開源版之上多得到什麼 {#what-you-get-on-top-of-open-source}
 
-## Enterprise 適用於誰？ {#who-is-enterprise-for}
+Enterprise 是套用在您可能已經在執行的同一個 Gateway 映像上的一把授權金鑰。無需遷移：每一層都包含其下方所有層級的功能。
 
-適用於大規模使用 LiteLLM 的團隊（100+ 使用者或 10+ 個正式上線的 AI 使用案例），且在 OSS 之上還需要 SSO、稽核記錄、細粒度存取控制與專業支援。SSO 最多 5 位使用者免費。超過之後則需要企業授權。不確定您是否符合資格嗎？[聯絡我們](https://enterprise.litellm.ai/demo)。
+<TierStack />
 
-## 為什麼選擇 Enterprise？ {#why-enterprise}
+## 對您的組織帶來的改變 {#what-changes-for-your-organization}
 
-LiteLLM OSS 已經涵蓋基本功能：相容 OpenAI 的閘道、虛擬金鑰、支出追蹤、預算、備援，以及請求/回應記錄。Enterprise 則新增大型組織安全地讓數百位使用者與數十個應用程式存取 LLM 所需的控管功能。
+<Tiles size="lg" columns={3} items={[
+  {icon: 'compliance', title: '可直接交給審查團隊的稽核級安全性', text: '通過 SOC 2 Type II 稽核，自我託管讓資料不離開您的環境，並提供可驗證的已簽署 Docker 映像。', to: 'https://trust.litellm.ai/', more: '驗證已簽署的映像', moreTo: '/docs/proxy/docker_image_security'},
+  {icon: 'sso', title: '所有人都能用您的身分提供者登入', text: '為 Okta、Entra ID、Google Workspace 或任何 OIDC 或 SAML 提供者提供 SSO 與 SCIM。存取權限依您的組織架構而定。', to: '/docs/proxy/admin_ui_sso'},
+  {icon: 'audit', title: '每一項管理員操作都有紀錄', text: '金鑰、團隊與模型變更的稽核記錄，並可由您的合規團隊設定保留政策。', to: '/docs/proxy/audit_logs'},
+  {icon: 'budget', title: '團隊自行管理金鑰與預算', text: '團隊管理員可依專案、標籤與模型管理金鑰、模型與預算，無需 master key，並在任何人達到上限前收到警示。', to: '/docs/proxy/access_control'},
+  {icon: 'secrets', title: '提供者的金鑰安全保存在您的保存庫中', text: '支援 AWS、Azure、Google、HashiCorp Vault 與 CyberArk 機密管理工具，並自動輪替虛擬金鑰。', to: '/docs/secret_managers/overview'},
+  {icon: 'support', title: '工程師隨時待命', text: '與打造 LiteLLM 的團隊共用 Slack Connect 頻道，並提供最快一小時回應的 24/7 SLA。', to: '/docs/enterprise/support'},
+]} />
 
-<div className="enterprise-compare">
+<SalesBand source="enterprise-page-mid" title="在您自己的基礎架構上實際看看它如何運作" text="與團隊討論您的導入計畫與安全審查，並以完整授權開始 30 天試用。" />
 
-<div className="enterprise-compare-head">
-<span></span>
-<span>OSS</span>
-<span>Enterprise</span>
-</div>
+## Enterprise 適合哪些團隊？ {#who-is-enterprise-for}
 
-<div>
-<strong>驗證</strong>
-<span>Master key、<a href="./proxy/ui#4-sign-in-for-the-first-time"><code>UI_USERNAME</code> 與 <code>UI_PASSWORD</code></a></span>
-<span>SSO + SCIM、OIDC/JWT</span>
-</div>
+適合大規模執行 LiteLLM（100 位以上使用者或 10 個以上正式環境 AI 使用案例）、需要在開源版之上加上 SSO、稽核記錄、細緻的存取控制與專業支援的團隊。SSO 在 5 位使用者以內免費；超過後需要 Enterprise 授權。評估試用的工程師可參考 [正式環境導入](/docs/learn/enterprise_quickstart) 指南，已經在使用開源版的團隊可從 [從 OSS 遷移](/docs/enterprise/moving_from_oss) 開始。
 
-<div>
-<strong>金鑰管理</strong>
-<span>跨 LLM APIs、MCPs 與 Agents 的虛擬金鑰、使用者、團隊</span>
-<span>組織、組織/團隊管理員、委派管理角色</span>
-</div>
+## 完整功能清單 {#full-feature-list}
 
-<div>
-<strong>安全性</strong>
-<span>Master key、虛擬金鑰，以及 [master key rotation](./proxy/master_key_rotations)</span>
-<span>虛擬金鑰輪替、對 secret manager 的讀/寫、[IP allowlists](./proxy/ip_address)、[public and private route controls](./proxy/public_routes)</span>
-</div>
-
-<div>
-<strong>防護欄</strong>
-<span>永遠啟用 / 依請求啟用。包含自訂防護欄與 Presidio（PII 遮罩）。內建 moderation callbacks 需要授權；請參閱<a href="#guardrails-oss-vs-enterprise">下方附註</a>。</span>
-<span>以金鑰與團隊為範圍的防護欄</span>
-</div>
-
-<div>
-<strong>記錄</strong>
-<span>請求/回應記錄、Prometheus 指標</span>
-<span>依金鑰 / 依團隊路由至 Langfuse、Langsmith、Arize 等。管理作業記錄</span>
-</div>
-
-<div>
-<strong>部署</strong>
-<span>單一區域 proxy</span>
-<span>單一授權下的<a href="./proxy/multi_region">多區域部署</a>，admin/worker 分離</span>
-</div>
-
-</div>
-
-## 功能 {#features}
+以下所有功能都由授權金鑰啟用。每一項都連到其設定指南。
 
 ### 安全性與存取 {#security-and-access}
 
 - **[Admin UI 的 SSO](./proxy/admin_ui_sso.md)**。Okta、Azure AD、Google Workspace，以及任何 OIDC/SAML 提供者
-- **[基於 JWT 的驗證](./proxy/token_auth.md)**。使用您身分提供者的 token 驗證請求
-- **[具保留政策的稽核記錄](./proxy/multiple_admins.md)**。追蹤每一個管理動作與金鑰層級變更
+- **[以 JWT 為基礎的驗證](./proxy/token_auth.md)**。使用您的身分提供者的權杖驗證請求
+- **[具保留政策的稽核記錄](./proxy/audit_logs.md)**。追蹤每一項管理員操作與金鑰層級的變更
 - **[以角色為基礎的存取控制](./proxy/access_control.md)**。組織、團隊與使用者角色
-- **[公開與私有路由控制](./proxy/public_routes.md)**。限制管理路由並鎖定攻擊面
-- **[基於 IP 位址的存取控制清單](./proxy/ip_address.md)**。將 proxy 存取限制在特定 CIDR 範圍
-- **[金鑰輪替](./proxy/virtual_keys.md#-key-rotations)**。自動化虛擬金鑰輪替
-- **[密鑰管理工具](./secret_managers/overview.md)**。AWS KMS、AWS Secrets Manager、Azure Key Vault、Google KMS、Google Secret Manager、HashiCorp Vault、CyberArk，或自訂密鑰管理工具
-- **[AI Hub](./proxy/ai_hub.md)**。分享可用模型、MCP servers、agents 與 skills 的公開品牌頁面
+- **[公開與私有路由控制](./proxy/public_routes.md)**。限制管理路由並縮小攻擊面
+- **[以 IP 位址為基礎的存取控制清單](./proxy/ip_address.md)**。將代理的存取限制在特定 CIDR 範圍
+- **[金鑰輪替](./proxy/virtual_keys.md#-key-rotations)**。自動輪替虛擬金鑰
+- **[機密管理工具](./secret_managers/overview.md)**。AWS KMS、AWS Secrets Manager、Azure Key Vault、Google KMS、Google Secret Manager、HashiCorp Vault、CyberArk，或自訂機密管理工具
+- **[AI Hub](./proxy/ai_hub.md)**。分享一個公開且具品牌識別的頁面，列出可用的模型、MCP 伺服器、代理程式與技能
 
 ### 治理與成本 {#governance-and-cost}
 
 - **[多租戶架構](./proxy/multi_tenant_architecture.md)**。組織、團隊、專案與金鑰
-- **[專案管理](./proxy/project_management.md)**。依應用程式或使用案例分組金鑰，並具備預算、擁有者、速率限制、模型 allowlist，以及隔離的支出檢視。請參閱 [UI walkthrough](./proxy/ui_project_management.md)
-- **[基於標籤的預算](./proxy/provider_budget_routing.md)**。依自訂標籤進行預算與支出追蹤
-- **[每個虛擬金鑰的特定模型預算](./proxy/users.md)**。每個模型、每個金鑰都有不同限制
-- **[暫時性預算增加](./proxy/temporary_budget_increase.md)**。有時限的支出提升，不做永久變更
-- **[預算接近上限的電子郵件警示](./proxy/ui_team_soft_budget_alerts.md)**。在團隊觸及硬性上限前發出警告
-- **[產生支出報表](./proxy/cost_tracking.md#-enterprise-generate-spend-reports)**。以金鑰、團隊、標籤或模型為單位取得支出資料的程式化存取
+- **[專案管理](./proxy/project_management.md)**。依應用程式或使用案例將金鑰分組，並設定預算、擁有者、速率限制、模型允許清單與獨立的支出檢視。請參閱 [UI 導覽](./proxy/ui_project_management.md)
+- **[以標籤為基礎的預算](./proxy/provider_budget_routing.md)**。依自訂標籤設定預算與追蹤支出
+- **[虛擬金鑰的模型專屬預算](./proxy/users.md)**。每個金鑰對不同模型設定不同上限
+- **[暫時提高預算](./proxy/temporary_budget_increase.md)**。限時提高支出額度，無需永久變更
+- **[軟性預算電子郵件警示](./proxy/ui_team_soft_budget_alerts.md)**。在團隊達到硬性上限前先提出警告
+- **[產生支出報表](./proxy/cost_tracking.md#-enterprise-generate-spend-reports)**。以程式方式依金鑰、團隊、標籤或模型存取支出
 
 ### 可觀測性與合規 {#observability-and-compliance}
 
-- **[以團隊為基礎的記錄](./proxy/team_logging.md)**。將每個團隊的記錄路由至其各自的 Langfuse 專案或 callback
-- **[依團隊停用記錄](./proxy/team_logging.md#disable-logging-for-a-team)**。在團隊層級提供符合 GDPR 的退出選項
-- **[記錄匯出至 GCS / Azure Blob](./observability/gcs_bucket_integration.md)**。用於合規的耐久儲存
-- **[每個金鑰/團隊的防護欄](#guardrails-oss-vs-enterprise)**。秘密資訊遮罩、內容審核、禁止關鍵字
+- **[SOC 2 Type II](https://trust.litellm.ai/)**。經稽核的控制措施；可透過 Trust Center 索取報告
+- **[以團隊為基礎的記錄](./proxy/team_logging.md)**。將每個團隊的記錄路由到他們自己的 Langfuse 專案或回呼
+- **[依團隊停用記錄](./proxy/team_logging.md#disable-logging-for-a-team)**。團隊層級的退出選項，符合 GDPR 需求
+- **[將記錄匯出至 GCS / Azure Blob](./observability/gcs_bucket_integration.md)**。為合規需求提供持久儲存
+- **[依金鑰/團隊設定防護欄](#guardrails-oss-vs-enterprise)**。機密資訊遮蔽、內容審核、禁用關鍵字
 - **強制必填參數**。拒絕缺少必要中繼資料的請求
 
-### 作業與品牌識別 {#operations--branding}
+### 營運與品牌 {#operations--branding}
 
-- **自訂 Swagger 品牌識別**。在 API 文件頁面上設定您自己的標題、描述與過濾後的路由
-- **[自訂電子郵件品牌識別](./proxy/email.md#email-customization)**。系統電子郵件顯示您的標誌與配色
-- **請求/回應大小上限**。保護 proxy 免於失控的負載
-- **[由團隊管理的模型](./proxy/team_model_add.md)**。讓團隊使用自己的金鑰與微調模型
+- **自訂 Swagger 品牌**。在 API 文件頁面上設定您自己的標題、說明與篩選後的路由
+- **[自訂電子郵件品牌](./proxy/email.md#email-customization)**。在系統電子郵件上使用您的標誌與顏色
+- **請求/回應大小上限**。保護代理免於失控的酬載
+- **[團隊自管模型](./proxy/team_model_add.md)**。讓團隊帶入自己的金鑰與微調模型
 
 ### 哪些防護欄需要授權？ {#guardrails-oss-vs-enterprise}
 
-OSS 防護欄架構包含自訂防護欄與用於 PII 遮罩的 Presidio。這些內建 callback 整合需要 LiteLLM Enterprise 授權：`llmguard_moderations`、`llamaguard_moderations`、`hide_secrets`、`openai_moderations`、`google_text_moderation`、`lakera_prompt_injection`，以及 `aporia_prompt_injection`。
+OSS 防護欄框架包含自訂防護欄與用於 PII 遮蔽的 Presidio。下列內建回呼整合需要 LiteLLM Enterprise 授權：`llmguard_moderations`、`llamaguard_moderations`、`hide_secrets`、`openai_moderations`、`google_text_moderation`、`lakera_prompt_injection` 與 `aporia_prompt_injection`。
 
-## 執行 {#run-it}
+## 執行方式 {#run-it}
 
-將 Docker 映像部署到您自己的基礎架構上，或從 pip 套件建置。授權金鑰可啟用上述功能，並包含專屬支援管道。
+在您自己的基礎架構上部署 Docker 映像，或從 pip 套件建置。授權金鑰會啟用上述功能，並包含專屬支援頻道。
 
 ```env
 LITELLM_LICENSE="eyJ..."
 ```
 
-不會有資料離開您的環境。[可透過 AWS 與 Azure Marketplace 採購。](./data_security.md#legalcompliance-faqs)
+任何資料都不會離開您的環境，且 LiteLLM 已通過 [SOC 2 Type II](https://trust.litellm.ai/) 稽核。[可透過 AWS 與 Azure Marketplace 採購。](./data_security.md#legalcompliance-faqs)
 
-價格取決於您的部署規模。[聯絡我們](https://enterprise.litellm.ai/demo)以確認範圍。
+定價依您的部署規模而定。[與我們聯繫](https://enterprise.litellm.ai/demo) 以評估範圍。
 
 ## 支援 {#professional-support}
 
-### 標準支援 {#standard-support}
-
-每一份企業授權皆包含：與工程團隊的專屬 Slack 或 Teams 頻道，用於整合、部署與提供者疑難排解。服務時間為 PST 週一至週五上午 9 點到晚上 9 點。不包含保證回應時間。
-
-### 24/7 支援 SLA {#247-support-slas}
-
-對於需要全天候保證回應時間的團隊，可加價取得 24/7 支援 SLA。
-
-| 嚴重性 | 回應 SLA |
-|---|---|
-| **Sev 0**。100% 的正式生產流量失敗 | 1 小時 |
-| **Sev 1**。部分正式生產影響 | 6 小時 |
-| **Sev 2–3**。設定問題與非緊急錯誤 | 24 小時（PT 早上 7 點到晚上 7 點，週一至週六） |
-| **安全性修補** | 72 小時 |
-
-可依需求提供自訂 SLA。支援範圍請參閱 [Shared Responsibility Model](./shared_responsibility.md)。
+每份授權都包含與工程團隊共用的 Slack Connect 頻道，或透過電子郵件 [support@berri.ai](mailto:support@berri.ai) 取得支援。加上選購的 24/7 SLA 後，Sev 0 的回應時間為 1 小時，安全性修補為 72 小時。服務時間、完整的嚴重程度對照表與自訂 SLA 請參閱 [支援與 SLA](/docs/enterprise/support)。
 
 ## 版本支援 {#version-support}
 
-LiteLLM 支援最近四個穩定的 minor line。這些線都會持續獲得 patch release。比這更舊的版本會進入生命週期結束並停止接收更新。此政策自 2026 年 6 月 29 日星期一生效。到 2026 年 6 月中旬為止，受支援的線為 1.86、1.87、1.88 與 1.89，且會隨著新的穩定版釋出而向前推進。
-
-LiteLLM 大約每週會推出一條新的 minor line。替每一條較舊的 line 打補丁，代表每一個修正都必須套用到所有仍在支援中的 line 上，而這個成本會隨著 line 數量而不是修正數量增加。四條 line 是仍能獲得這種照護的視窗。
-
-這個視窗始終保留最近四個穩定的 minor line。當新的 line 釋出時，最舊的那條會退出並停止接收 release。不存在獨立的長期維護軌道。對於任何受支援的 line，請使用其最新 patch。若發生罕見且高嚴重性的問題，LiteLLM 仍可能在該視窗之外處理。
-
-要確認您目前的位置，請取最新的穩定版 line，往回數四條。如果您的版本比那還舊，請規劃升級。固定到某個 minor line、套用其 patch，並在您的版本退出之前移至更新的 line。
+LiteLLM 支援最近四個穩定次要版本線，且 Enterprise 與開源版共用同一個映像與同一個版本號。請參閱 [版本支援](/docs/enterprise/version_support)。此政策在 [LTS 試行計畫](/docs/enterprise/lts_pilot) 期間暫停。
 
 ## 常見問題 {#faq}
 
@@ -153,45 +107,69 @@ LiteLLM 大約每週會推出一條新的 minor line。替每一條較舊的 lin
 
 </summary>
 
-先將授權金鑰加入您的環境，然後重新啟動 proxy。
+將授權金鑰加入您的環境，然後重新啟動代理。
 
 ```env
 LITELLM_LICENSE="eyJ..."
 ```
 
-開啟 `http://<your-proxy-host>:<port>/`。API 文件頁面應該會在描述中顯示 **Enterprise Edition**。如果沒有，請確認金鑰正確且尚未過期，並確認 proxy 已完全重新啟動。
+開啟 `http://<your-proxy-host>:<port>/`。API 文件頁面的說明中應顯示 **Enterprise Edition**。若未顯示，請確認金鑰正確且未過期，並確認代理已完整重新啟動。
 
 </details>
 
 <details>
 <summary>
 
-### 我可以在哪裡閱讀更多關於資料安全與法規遵循的資訊？ {#where-can-i-read-more-about-data-security-and-compliance}
+### LiteLLM 符合 SOC 2 規範嗎？ {#is-litellm-soc-2-compliant}
 
 </summary>
 
-請參閱[資料安全、法律與合規常見問題](./data_security.md)。
+是的。LiteLLM 已通過 SOC 2 Type II 稽核。可透過 [LiteLLM Trust Center](https://trust.litellm.ai/) 索取最新報告。資料處理、弱點通報與其餘安全審查事項，請參閱 [資料安全、法律與合規常見問題](./data_security.md)。
 
 </details>
 
 <details>
 <summary>
 
-### 定價結構是什麼？ {#how-is-pricing-structured}
+### 可以透過 AWS 或 Azure Marketplace 購買嗎？ {#can-we-buy-through-aws-or-azure-marketplace}
 
 </summary>
 
-定價依使用量而定。請 [聯絡我們](https://enterprise.litellm.ai/demo) 取得為您的團隊量身打造的報價。
+可以。您可以透過 AWS Marketplace 或 Azure Marketplace 購買 Enterprise 授權，或直接以發票購買。請參閱 [採購選項](./data_security.md#legalcompliance-faqs)。
 
 </details>
 
 <details>
 <summary>
 
-### 如何在不重新啟動的情況下，為新模型取得 day-0 支援？ {#how-do-i-get-day-0-support-for-new-models-without-restarting}
+### 哪裡可以進一步了解資料安全與合規？ {#where-can-i-read-more-about-data-security-and-compliance}
 
 </summary>
 
-使用[自動同步新模型](./proxy/sync_models_github.md)可隨需或依排程從 GitHub 擷取最新的價格與 context-window 資料，且無需重新啟動。可透過 `POST /reload/model_cost_map` 觸發手動同步，或使用 `POST /schedule/model_cost_map_reload?hours=6` 排程定期同步。
+請參閱 [資料安全、法律與合規常見問題](./data_security.md)。
 
 </details>
+
+<details>
+<summary>
+
+### 定價如何計算？ {#how-is-pricing-structured}
+
+</summary>
+
+定價依使用量而定。[與我們聯繫](https://enterprise.litellm.ai/demo) 以取得為您的團隊量身打造的報價。
+
+</details>
+
+<details>
+<summary>
+
+### 如何在不重新啟動的情況下取得新模型的即時支援？ {#how-do-i-get-day-0-support-for-new-models-without-restarting}
+
+</summary>
+
+使用 [自動同步新模型](./proxy/sync_models_github.md)，依需求或排程從 GitHub 拉取最新的定價與上下文視窗資料，無需重新啟動。以 `POST /reload/model_cost_map` 觸發手動同步，或以 `POST /schedule/model_cost_map_reload?hours=6` 安排定期同步。
+
+</details>
+
+<SalesBand source="enterprise-page-bottom" />

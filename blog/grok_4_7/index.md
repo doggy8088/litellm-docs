@@ -8,6 +8,8 @@ authors:
   - mateo
   - kerry
 description: "LiteLLM 對 Grok 4.7 的第 0 天支援，價格與 Grok 4.6 相同。"
+card_title: "Grok 4.7"
+card_summary: "SpaceXAI 對 Grok 4.6 的更新，價格與限制相同，更擅長檢視自身的工作成果與長上下文。"
 tags: [xai, grok, grok-4.7, day 0 support]
 hide_table_of_contents: false
 ---

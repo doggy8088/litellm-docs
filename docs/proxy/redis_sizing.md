@@ -1,53 +1,85 @@
 ---
 title: Redis 大小配置
-description: 如何為 LiteLLM Proxy 規劃 Redis 大小，並提供 AWS、Azure 與 GCP 的執行個體建議。
+description: 為 LiteLLM Proxy 規劃 Redis 大小，涵蓋最高 20K RPS，並提供雲端建議、shard 容量與記憶體指引。
 ---
-
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
 
 # Redis 大小配置 {#redis-sizing}
 
-本頁說明 LiteLLM Proxy 後方的 Redis 執行個體大小，當您有超過一個閘道執行個體時，就應立即執行。Postgres 的大小配置則會在 [資料庫大小配置](./db_sizing.md) 中另外說明。關於如何將 Redis 連接到 proxy，請參閱 [Production Best Practices](./prod.md#redis) 的 Redis 章節以及 [快取設定](./caching_redis.md)。
+設定方式請參閱 [production 中的 Redis](./prod.md#redis) 與 [快取設定](./caching_redis.md)。Postgres 的大小配置請參閱 [資料庫大小配置](./db_sizing.md)。
 
-## Proxy 對 Redis 的需求 {#what-the-proxy-asks-of-redis}
+## 工作負載 {#what-the-proxy-asks-of-redis}
 
-Redis 保存速率限制計數器、路由器與冷卻狀態、回應快取，以及在 `use_redis_transaction_buffer` 開啟時的花費更新佇列。這些全都是生命週期很短的即時狀態，而非持久歷史，因此 Redis 的特性是小且對延遲敏感，而不是大：即使在高流量下，幾 GB 的工作集也很常見。請把 RAM 視為您選擇要快取內容的預留空間，而不是請求速率的函數，並把 vCPU 數量視為決定吞吐量的因素，因為單一 Redis 處理程序是單執行緒，而 TLS 終止會與同一核心上的命令執行競爭。
+Redis 儲存速率限制計數器、router 與冷卻狀態，以及快取的回應。啟用 `use_redis_transaction_buffer` 時，它也會保存花費更新，直到 LiteLLM 將它們寫入 Postgres。
 
-沒有 Redis 時，每個執行個體會各自套用速率限制，而快取命中只會保留在處理該請求的執行個體本機，因此十個 pod 的叢集套用的限制大約是您設定值的十倍。
+記憶體取決於您啟用的功能、快取保留時間與回應大小。吞吐量取決於命令量與每個 shard 的容量。為單一節點增加 vCPU 並不保證吞吐量成比例提升。[Google 建議在需要更高吞吐量時增加 shard](https://docs.cloud.google.com/memorystore/docs/cluster/cluster-node-specification)。
+
+若沒有共享的 Redis state，每個 gateway 都會各自套用其速率限制並保留自己的快取。限制可能會在各執行個體之間倍增。
 
 ## 依請求速率配置大小 {#sizing-by-request-rate}
 
-| 持續 RPS | vCPU | RAM |
-|---------------|------|-----|
-| 最多 1K | 2 | 8GB |
-| 1K 到 5K | 4 | 16GB |
-| 5K 以上 | 8+ | 32GB+ |
+<span id="cloud-recommendations" />
 
-請執行 Redis 7.0 或更新版本。請將大小配置到在正常運作期間不會發生清除，並優先增加容量，而不是依賴清除策略：速率限制計數器與排隊中的花費更新都是即時記帳狀態，因此在壓力下發生清除的執行個體，損失的是花費更新並重設限制視窗，而不只是快取命中。若您使用 transaction buffer，也請啟用持久化，這樣在發生 failover 時，不會把已排隊但尚未刷入 Postgres 的花費更新丟掉。
+請將這些設定用作負載測試的起點。AWS 與 GCP 表格假設單一主要 shard 可支援 2,500 LiteLLM RPS，並保留突發流量的容量。這是範例假設，而非基準測試。請在啟用您的功能後測量每種節點類型，並以 `primary shards = ceil(target RPS / measured RPS per primary)` 計算。
 
-當流量超過約 1000 RPS 或 10 個執行個體時，buffer 才是避免 Postgres 成為瓶頸的關鍵，這使得 Redis 成為記帳路徑的一部分，而非可選快取；請參閱 [Redis transaction buffer](./prod.md#redis-transaction-buffer)。如果您在負載下看到 `Got exception from REDIS No connection available`，請先在 `cache_params` 中提高 `max_connections`，再考慮更大的執行個體，因為該錯誤是用戶端連線池耗盡，而不是伺服器飽和。
+請測試完整叢集，因為 key 分布與共享計數器可能限制擴展。記憶體總量不含保留的額外開銷與 replica 副本。
 
-## 雲端建議 {#cloud-recommendations}
+### AWS ElastiCache {#aws-elasticache}
 
-<Tabs>
-<TabItem value="aws" label="AWS">
+| 目標 RPS | 節點類型 | 主要 shard 數 | 可用主要記憶體 |
+| --- | --- | --- | --- |
+| 最多 1K | `cache.m7g.xlarge` | 1 | 約 9.70 GiB |
+| 1K 到 5K | `cache.m7g.xlarge` | 2 | 約 19.40 GiB |
+| 5K 到 10K | `cache.m7g.xlarge` | 4 | 約 38.79 GiB |
+| 10K 到 15K | `cache.m7g.xlarge` | 6 | 約 58.19 GiB |
+| 15K 到 20K | `cache.m7g.xlarge` | 8 | 約 77.58 GiB |
 
-請使用 ElastiCache 搭配 Valkey 或 Redis OSS 引擎，版本 7.x 或更新，並使用 Graviton 節點；`cache.m7g.large`（6.38 GiB）可支援到 1K RPS，而 `cache.m7g.xlarge`（12.93 GiB）則適用於更高流量；[支援的節點類型](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/CacheNodes.SupportedTypes.html) 清單列出的是每個節點可用記憶體，低於名義上的執行個體記憶體，因此請依該欄位而非執行個體名稱來規劃大小。生產環境請執行 [Multi-AZ with automatic failover](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/AutoFailover.html)。如果單一節點已不敷使用，請優先選擇叢集模式並搭配 LiteLLM 的 [Redis Cluster 設定](./caching_redis.md#redis-cluster)，而不是改用更大的節點，因為分片會把計數器 keyspace 分散到多個處理程序，而不是全部堆到單一處理程序上。ElastiCache Serverless 適合純快取，但不適合 [valkey-search 上的語意快取](./caching_semantic.md#valkey)，後者需要以節點為基礎的叢集。
+每個[節點](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/CacheNodes.SupportedTypes.html)在預設的 [25% 記憶體保留](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/redis-memory-management.html)之前有 12.93 GiB。請為每個主要節點新增一個 replica，並啟用 [Multi-AZ 與自動 failover](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/AutoFailover.html)。多個 shard 請使用 [Redis Cluster 設定](./caching_redis.md#redis-cluster)。
 
-</TabItem>
-<TabItem value="azure" label="Azure">
+ElastiCache Serverless 支援回應快取。[Valkey 語意快取](./caching_semantic.md#valkey) 需要具備 search 模組的節點式叢集。
 
-請使用 [Azure Managed Redis](https://learn.microsoft.com/en-us/azure/redis/overview) 的 Balanced 級別，該級別的記憶體與 vCPU 比為 4:1，而且與 Azure Cache for Redis 不同，能為單一執行個體提供超過一個 vCPU：`B5`（6GB、2 vCPU）已足夠只處理計數器與路由器狀態，`B10`（12GB、4 vCPU）是在快取回應之後較安全的預設值，而 `B20`（24GB、8 vCPU）足以涵蓋 5K RPS 那一列。請參閱 [級別與 SKU 表](https://learn.microsoft.com/en-us/azure/redis/how-to-scale#performance-tiers) 以取得完整清單，若瓶頸在吞吐量而非容量，則可考慮 Compute Optimized。若使用較舊的 Azure Cache for Redis，請使用 Premium 級別（`P1` 及以上），而非 Standard，因為 Basic 與 Standard 都是在單一 vCPU 上執行。請啟用可用性區域備援，並在使用 transaction buffer 時啟用資料持久化。
+### Google Cloud Memorystore for Redis Cluster {#google-cloud-memorystore-for-redis-cluster}
 
-</TabItem>
-<TabItem value="gcp" label="GCP">
+| 目標 RPS | 節點類型 | 主要 shard 數 | 可用主要記憶體 |
+| --- | --- | --- | --- |
+| 最多 1K | `redis-highmem-medium` | 1 | 10.4 GB |
+| 1K 到 5K | `redis-highmem-medium` | 2 | 20.8 GB |
+| 5K 到 10K | `redis-highmem-medium` | 4 | 41.6 GB |
+| 10K 到 15K | `redis-highmem-medium` | 6 | 62.4 GB |
+| 15K 到 20K | `redis-highmem-medium` | 8 | 83.2 GB |
 
-請使用 [Memorystore for Redis Cluster](https://cloud.google.com/memorystore/docs/cluster/cluster-node-specification)，其容量是節點類型乘以 shard 數量，而不是單一執行個體大小。`redis-standard-small`（每個節點 5.2GB 可寫）在 3 個 shard 時是一個合理的下限，`redis-highmem-medium`（10.4GB 可寫）在 3 個 shard 時可涵蓋 1K 到 5K 的那一列，而再往上則應增加 shard，而不是提高節點類型，這也是 Google 自己的價格效能指引，因為 Redis 在單一節點上的效能不會隨 vCPU 線性擴展。請略過 `redis-shared-core-nano`，它的效能會變動且沒有 SLA。請使用 [Redis Cluster 設定](./caching_redis.md#redis-cluster) 將 LiteLLM 指向該叢集。
+每個[節點](https://docs.cloud.google.com/memorystore/docs/cluster/cluster-node-specification)在扣除保留的額外開銷後，有 2 vCPU 與 10.4 GB 可寫記憶體。請使用 [Redis Cluster 設定](./caching_redis.md#redis-cluster)、[多可用區放置，以及每個主要節點一個 replica](https://docs.cloud.google.com/memorystore/docs/cluster/create-instances)。
 
-</TabItem>
-</Tabs>
+### Azure Managed Redis {#azure-managed-redis}
+
+這些 SKU 是記憶體容量的起點。Azure 會管理每個 SKU 的 shard 數量。在選定 SKU 之前，請先以負載測試驗證吞吐量。
+
+| 目標 RPS | Balanced SKU | 記憶體 | 可用記憶體 |
+| --- | --- | --- | --- |
+| 最多 1K | `B10` | 12 GB | 約 9.6 GB |
+| 1K 到 5K | `B20` | 24 GB | 約 19.2 GB |
+| 5K 到 10K | `B50` | 60 GB | 約 48 GB |
+| 10K 到 20K | `B100` | 120 GB | 約 96 GB |
+
+這些 [SKU 大小](https://azure.microsoft.com/en-us/pricing/details/managed-redis/)顯示的是 Azure [20% 保留](https://learn.microsoft.com/en-us/azure/redis/plan-tiers-and-capacity#reserved-memory)之後的可用記憶體。如果記憶體仍有餘裕但吞吐量限制了容量，請測試相同後綴的 Compute Optimized SKU，例如以 `X50` 取代 `B50`。
+
+請啟用[高可用性](https://learn.microsoft.com/en-us/azure/redis/overview#high-availability)。在支援可用區的區域中，Azure 會將節點分散到各可用區。
+
+## 容量規劃 {#capacity-planning}
+
+### 功能容量 {#feature-capacity}
+
+請執行 Redis 7.0 或更新版本。請為計數器、router state、快取的回應與排隊中的花費更新保留記憶體。回應快取會隨回應大小與保留時間成長，因此不能只以 RPS 決定記憶體需求。
+
+請避免在正常運作期間發生清除。清除可能會移除速率限制計數器或排隊中的花費更新，也會移除快取的回應。若您使用 transaction buffer，請設定受支援的持久化，並測試 failover 期間排隊更新的復原。
+
+當流量超過約 1K RPS 或 10 個 gateway 執行個體時，請使用 [Redis transaction buffer](./prod.md#redis-transaction-buffer) 以降低 Postgres 的寫入壓力。請將佇列的尖峰大小納入 Redis 記憶體預算。
+
+### 連線預算 {#connection-budgets}
+
+每個 gateway worker 都會開啟一個 Redis 連線池。將連線池大小與受管理服務的連線上限比較時，請把 gateway 執行個體的最大數量納入考量。
+
+如果您看到 `Got exception from REDIS No connection available`，請先檢查用戶端連線池，再調整 Redis 大小。當連線池對工作負載而言太小時，請在 `cache_params` 中提高 `max_connections`。
 
 ## 監控項目 {#what-to-monitor}
 
-請監看記憶體使用量相對於 `maxmemory` 的比例以及清除計數器，因為在這裡清除代表的是默默的正確性損失，而不是快取命中率問題。在 LiteLLM 端，有用的 Prometheus 訊號是 `litellm_redis_spend_update_queue_size` 與 `litellm_in_memory_spend_update_queue_size`，它們代表排隊中而非已寫入的花費更新，以及 `litellm_pod_lock_manager_size`，它指出目前是哪個 pod 持有 transaction buffer flush lock。用戶端連線數也很重要：每種受管理服務都有每個執行個體大小的連線上限，而 gateway 會為每個 worker 開啟連線池。
+請監看記憶體使用量相對於 `maxmemory` 的比例、清除、命令延遲與連線數。請檢查 `litellm_redis_spend_update_queue_size` 與 `litellm_in_memory_spend_update_queue_size` 以了解排隊中的花費更新。請使用 `litellm_pod_lock_manager_size` 檢查目前是哪個 pod 持有 transaction buffer flush lock。

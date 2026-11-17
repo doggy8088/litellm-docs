@@ -1,7 +1,15 @@
+---
+title: "透過 LiteLLM 使用 Moonshot AI (Kimi) API：設定"
+sidebar_label: "Moonshot AI"
+description: "在全球或中國端點呼叫 Moonshot AI 的 moonshot-v1 與 Kimi 模型（包括 kimi-k2.5 vision），並由 LiteLLM 處理 temperature 限制。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Moonshot AI {#moonshot-ai}
+
+Moonshot AI 提供 moonshot-v1 與 Kimi 模型；LiteLLM 會從 Python SDK 或 AI Gateway 以 `moonshot/` 前綴呼叫它們，並為您處理 Moonshot 的參數限制。
 
 ## 總覽 {#overview}
 
@@ -218,6 +226,16 @@ curl http://localhost:4000/v1/chat/completions \
 </Tabs>
 
 如需更詳細的 LiteLLM Proxy 使用資訊，請參閱 [LiteLLM Proxy 文件](../providers/litellm_proxy)。
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`moonshot/<family>-latest` 名稱會跟隨某個模型家族，當 LiteLLM 將它們移至較新的模型時，您的應用程式可以維持使用同一個模型字串。您可以像使用其他任何 Moonshot 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Moonshot，並依該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `moonshot/kimi-latest` | Kimi |
 
 ## 圖片 / 視覺支援 {#image--vision-support}
 

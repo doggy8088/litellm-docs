@@ -1,5 +1,6 @@
 ---
-title: "v1.100.2 - Claude Code 自動模式、Bedrock GPT 與 Grok 修正及 TypeSafe Jev"
+title: "LiteLLM v1.100.2 - Claude Code 自動模式、Bedrock GPT 與 Grok 修正及 TypeSafe Jev"
+description: "讓 Claude Code 自動模式可透過閘道運作，並在 Converse 上路由 Bedrock GPT 與 xAI Grok 模型。另新增 TypeSafe Jev 直通。"
 slug: "v1-100-2"
 date: 2026-09-23T06:12:15
 authors:

@@ -1,5 +1,6 @@
 ---
-title: v1.57.7
+title: "LiteLLM v1.57.7"
+description: "將 Langfuse 提示詞管理標示為 beta、新增 Hashicorp Vault 機密支援與 UI 團隊及組織管理。另新增 Prometheus 指標。"
 slug: v1.57.7
 date: 2025-01-10T10:00:00
 authors:

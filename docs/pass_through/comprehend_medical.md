@@ -9,7 +9,7 @@
 | 終端使用者追蹤 | ❌ | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ❌ | Comprehend Medical API 不提供 |
 
-只要將 `https://comprehendmedical.{aws_region_name}.amazonaws.com` 替換為 `LITELLM_PROXY_BASE_URL/comprehendmedical` 即可 🚀
+只要將 `https://comprehendmedical.{aws_region_name}.amazonaws.com` 替換為 `LITELLM_PROXY_BASE_URL/comprehendmedical` 即可
 
 LiteLLM 會使用代理程式的 AWS 憑證，透過 SigV4 對轉送的請求簽章，因此用戶端只需要一組 LiteLLM 虛擬金鑰。
 

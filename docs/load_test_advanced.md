@@ -10,7 +10,7 @@ import Image from '@theme/IdealImage';
     - [litellm docker containers](https://github.com/BerriAI/litellm/pkgs/container/litellm)
 - [ ] 確保您遵循**所有**[正式環境最佳實務](./proxy/prod.md)
 - [ ] Locust - 確保您的 Locust 執行個體可建立每秒 1K+ 請求
-    - 👉 您可以使用我們**[在此維護的 locust 執行個體](https://locust-load-tester-production.up.railway.app/)**
+    - 您可以使用我們**[在此維護的 locust 執行個體](https://locust-load-tester-production.up.railway.app/)**
     - 如果您是自行代管 locust
         - [以下是我們的 locust 機器所使用的規格](#machine-specifications-for-running-locust)
         - [以下是我們測試使用的 locustfile.py](#locust-file-used-for-testing)
@@ -68,7 +68,7 @@ litellm_settings:
 
 2. `uv add locust`
 
-3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 litellm 負載測試的內容複製到此處，來源可見 [這裡](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
+3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 litellm 負載測試的內容複製到此處，來源可見 [這裡](https://github.com/BerriAI/litellm/blob/df2a36dd27fa222623f08ab9a6d794ad88287888/.github/workflows/locustfile.py)
 
 4. 啟動 locust
   在與步驟 2 的 `locust` 相同目錄中執行 `locustfile.py`
@@ -136,7 +136,7 @@ litellm_settings:
 
 2. `uv add locust`
 
-3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 litellm 負載測試的內容複製到此處，來源可見 [這裡](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py)
+3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 litellm 負載測試的內容複製到此處，來源可見 [這裡](https://github.com/BerriAI/litellm/blob/df2a36dd27fa222623f08ab9a6d794ad88287888/.github/workflows/locustfile.py)
 
 4. 啟動 locust
   在與步驟 2 的 `locust` 相同目錄中執行 `locustfile.py`
@@ -179,7 +179,7 @@ litellm_settings:
 
 ## 執行 LiteLLM Proxy 的機器規格 {#machine-specifications-for-running-litellm-proxy}
 
-👉 為了取得 1K+ RPS，**LiteLLM Proxy 的副本數量=4**
+為了取得 1K+ RPS，**LiteLLM Proxy 的副本數量=4**
 
 | 服務 | 規格 | CPU | 記憶體 | 架構 | 版本|
 | --- | --- | --- | --- | --- | --- | 

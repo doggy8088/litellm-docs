@@ -1,3 +1,9 @@
+---
+title: "在 Python 中透過 LiteLLM 使用 Anyscale Endpoints API"
+sidebar_label: "Anyscale"
+description: "從 LiteLLM Python SDK 查詢 Anyscale Endpoints 上的 Llama 2、Mistral 7B Instruct 與 CodeLlama 34B 模型，支援標準與串流聊天補全。"
+---
+
 # Anyscale {#anyscale}
 https://app.endpoints.anyscale.com/
 

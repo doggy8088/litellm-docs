@@ -14,6 +14,8 @@
 - VLLM
 - Vertex AI
 - Eden AI
+- Bedrock
+- OpenRouter
 
 ### 使用方式 {#usage}
 
@@ -27,7 +29,7 @@ model_list:
         api_key: os.environ/XAI_API_KEY
 
 litellm_settings:
-    check_provider_endpoint: true # 👈 Enable checking provider endpoint for wildcard models
+    check_provider_endpoint: true # Enable checking provider endpoint for wildcard models
 ```
 
 **2. 啟動 proxy**
@@ -128,6 +130,46 @@ litellm_settings:
 ```
 
 該清單反映的是那一把金鑰的存取權限。請求者在 `/v1/models` 請求上轉送的提供者金鑰（請參閱 [轉送 LLM 提供者驗證標頭](./forward_client_headers.md#forward-llm-provider-authentication-headers)）不會用於探索，因此自己的金鑰可看到不同模型的使用者，全都會得到相同的清單，而且清單中的模型仍可能會因特定使用者的金鑰而失敗。當 deployment 金鑰與環境變數都未設定時，wildcard 路由不會新增任何內容到 `/v1/models`
+
+## Bedrock {#bedrock}
+
+`bedrock/*` 部署會列出其憑證在所在區域可隨需呼叫的 id：作用中的系統定義推論設定檔（`us.`、`global.` 與其他區域前綴），加上支援隨需輸送量的基礎模型。只能透過設定檔執行的模型、應用程式推論設定檔與預配輸送量不會列入，因此清單中的每個 id 都能回應請求
+
+```yaml
+model_list:
+  - model_name: bedrock/*
+    litellm_params:
+      model: bedrock/*
+      aws_region_name: us-east-1
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+
+litellm_settings:
+  check_provider_endpoint: true
+```
+
+此清單會以部署的 AWS 憑證簽署（金鑰、`aws_role_name`、`aws_profile_name`、web identity 或預設鏈），或以 Bedrock API 金鑰（`api_key` 或 `AWS_BEARER_TOKEN_BEDROCK`）簽署，且需要呼叫路徑不需要的兩項 IAM 權限：`bedrock:ListInferenceProfiles` 與 `bedrock:ListFoundationModels`。它呼叫的是 Bedrock 控制平面（`bedrock.<region>.amazonaws.com`），而非執行階段端點，因此僅公開 `bedrock-runtime` 的 VPC 也需要 `bedrock` 介面端點。當權限缺失或控制平面未回應時，該部署不會新增任何內容到 `/v1/models`，且 proxy 會在每次清單呼叫時記錄 `Error getting valid models`
+
+## OpenRouter {#openrouter}
+
+<SinceVersion v="1.110.0" />
+
+`openrouter/*` 部署會列出 OpenRouter 的[為使用者列出模型](https://openrouter.ai/docs/api/api-reference/models/list-models-filtered-by-user-provider-preferences-privacy-settings-and-guardrails)端點為該部署金鑰回傳的聊天模型，格式為 `openrouter/<vendor>/<model>` id，並透過同一個部署路由回來。該端點會排除被帳戶的提供者偏好、隱私設定或防護欄封鎖的模型，因此清單只包含該金鑰可呼叫的模型。
+
+```yaml
+model_list:
+  - model_name: openrouter/*
+    litellm_params:
+      model: openrouter/*
+      api_key: os.environ/OPENROUTER_API_KEY
+
+litellm_settings:
+  check_provider_endpoint: true
+```
+
+自訂前綴會在每個 id 中保留供應商，因此在 `model: openrouter/*` 之上使用 `model_name: or-team/*` 會列出 `or-team/openai/gpt-5.4-mini`，而在 `openrouter/*` 之上使用 catch-all `model_name: "*"` 會列出像 `openai/gpt-5.4-mini` 這樣的裸 id。Embedding 模型與以 `:batch` 結尾的 id 不會列入，而 embedding 模型仍可透過 wildcard 在 `/v1/embeddings` 上回應。被授予 `openrouter/*` 的金鑰或團隊不會列出任何 OpenRouter 模型，除非存在 `openrouter/*` 部署，因為型錄取決於提出請求的金鑰。
+
+此清單會依與聊天請求相同的順序，使用部署的 `api_key` 與 `api_base`，接著是 `OPENROUTER_API_KEY` 或 `OR_API_KEY` 與 `OPENROUTER_API_BASE`。當型錄呼叫失敗或耗時超過 10 秒時，該部署不會新增任何內容到 `/v1/models`，且在逾時後，接下來 30 秒的清單會跳過該呼叫。
 
 ## 將模型從 `/v1/models` 隱藏 {#hide-a-model-from-v1models}
 

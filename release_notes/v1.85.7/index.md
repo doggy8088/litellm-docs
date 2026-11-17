@@ -1,5 +1,6 @@
 ---
-title: "v1.85.7 - 串流成本復原與 Cache-Control 上限"
+title: "LiteLLM v1.85.7 - 串流成本復原與 Cache-Control 上限"
+description: "復原中斷的 Anthropic 串流成本，並將 cache_control 注入限制在 4 個區塊。更新含有已知 CVE 的相依套件。"
 slug: "v1-85-7"
 date: 2026-06-24T04:58:06
 authors:

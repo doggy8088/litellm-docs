@@ -1,7 +1,13 @@
+---
+title: "在 Python 中搭配 LiteLLM 使用 CometAPI"
+sidebar_label: "CometAPI"
+description: "透過 LiteLLM Python SDK 存取 GPT-5、gpt-oss、Claude Opus 4.1 以及 CometAPI 的 500 多種模型，並支援同步與非同步串流及錯誤處理。"
+---
+
 # CometAPI {#cometapi}
 LiteLLM 支援來自 [CometAPI](https://www.cometapi.com/) 的所有 AI 模型。CometAPI 透過統一的 API 介面提供超過 500 種 AI 模型的存取，包括 GPT-5、Claude Opus 4.1 等尖端模型，以及其他各種最先進的語言模型。
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_CometAPI.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_CometAPI.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 

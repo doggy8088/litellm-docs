@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "在 LiteLLM Proxy 和 SDK 上使用 Gemini 3.1 Flash Lite Preview 的指南，具備 day 0 支援。"
+card_title: "Gemini 3.1 Flash Lite Preview"
+card_summary: "最輕量的 Gemini 3.1，具備四種 thinking 等級，從 MINIMAL 到 HIGH，從超快速到深度推理。"
 tags: [gemini, day 0 support, llms, supernova]
 hide_table_of_contents: false
 ---
@@ -141,8 +143,8 @@ LiteLLM 在以下平台上為 Gemini 3.1 Flash Lite Preview 提供 **完整端�
 
 - ✅ `/v1/chat/completions` - 相容 OpenAI chat completions 的端點
 - ✅ `/v1/responses` - 相容 OpenAI Responses API 的端點（串流與非串流）
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - 相容 Anthropic messages 的端點
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) 相容的端點 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - 相容 Anthropic messages 的端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容的端點 
 
 所有端點都支援：
 - 串流與非串流回應

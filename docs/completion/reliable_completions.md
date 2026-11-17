@@ -1,3 +1,7 @@
+---
+sidebar_label: "重試與備援"
+---
+
 # 可靠性 - 重試、備援 {#reliability---retries-fallbacks}
 
 LiteLLM 可透過 2 種方式防止請求失敗： 
@@ -40,15 +44,15 @@ response = completion(
 
 ### Context Window 備援（SDK） {#context-window-fallbacks-sdk}
 
-以下的 ids 僅供說明，並保留其 context window 大小：一個 4k model 備援到其 16k variant。
+以下的 ids 僅供說明，並保留其 context window 大小：一個 272k token 的 model 備援到更大的 model。
 
 ```python keep-model-ids
 from litellm import completion
 
-fallback_dict = {"gpt-3.5-turbo": "gpt-3.5-turbo-16k"}
-messages = [{"content": "how does a court case get to the Supreme Court?" * 500, "role": "user"}]
+fallback_dict = {"gpt-5.4-mini": "{{openai_small}}"}
+messages = [{"content": "how does a court case get to the Supreme Court?" * 30000, "role": "user"}]
 
-completion(model="gpt-3.5-turbo", messages=messages, context_window_fallback_dict=fallback_dict)
+completion(model="gpt-5.4-mini", messages=messages, context_window_fallback_dict=fallback_dict)
 ```
 
 ### 備援 - 切換模型／API 金鑰／API Bases（SDK） {#fallbacks---switch-modelsapi-keysapi-bases-sdk}

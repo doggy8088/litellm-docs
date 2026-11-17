@@ -1,5 +1,6 @@
 ---
-title: "v1.91.0 - MCP OAuth v2、Rust OCR Gateway 與 Realtime 效能"
+title: "LiteLLM v1.91.0 - MCP OAuth v2、Rust OCR Gateway 與 Realtime 效能"
+description: "新增 MCP Gateway OAuth 2.0 v2、Rust Mistral OCR 橋接與約 48 個新模型。並加快 Realtime API 工作階段的設定速度。"
 slug: "v1-91-0"
 date: 2026-07-04T17:55:59
 authors:

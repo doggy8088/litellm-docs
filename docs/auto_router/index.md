@@ -1,32 +1,35 @@
 ---
 title: Auto Router [附加元件]
 sidebar_label: 總覽
-description: 將每個請求路由到能夠良好回答它的最便宜模型。基準測試、設定、建議的組態、提示快取，以及如何在您自己的流量上評估路由器。
+keywords: [autorouter, auto router]
+description: 使用 prompt 複雜度或您自己的規則，為每個請求選擇模型。在 Python 中開始，或在 LiteLLM gateway 中設定 Auto Router。
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 import AutoRouterDiagram from '@site/src/components/AutoRouterDiagram';
 
-:::info[🚀 協助塑造 Auto-Router]
+Auto Router 會為送往您 LiteLLM gateway 的每個請求選擇由哪個模型處理。您的應用程式只呼叫一個模型名稱；路由器會依 prompt 或您的路由規則，從您設定的模型中挑選。例如，您可以將簡單問題送給較便宜的模型，將較困難的任務送給較強的模型。
 
-搶先取得存取權，直接與 LiteLLM 團隊合作，並透過您的生產流量影響路線圖。
-
-<a className="button button--primary button--lg" href="https://calendar.app.google/i2e7qVEJphHi5S8UA">申請成為設計合作夥伴</a>
-
-<br /><br />
-
-已經在測試了嗎？請在 [discussion #32168](https://github.com/BerriAI/litellm/discussions/32168) 分享您的結果。
-
-:::
+要將路由建置到 Python 應用程式或 agent 中嗎？請使用 [Autorouter SDK](/docs/autorouter_sdk)。
 
 <AutoRouterDiagram />
 
-- **一鍵設定。** Configure 會自動檢查您的代理伺服器目前已提供的模型，並為您填入全部四個階層；無需選擇樣板。
-- **用戶端只需一個模型名稱。** 閘道會分類每個請求並選擇模型。
-- **每個階層皆可使用任何模型、任何提供者。** 單一模型、隨機池，或 Thompson 抽樣池。
-- **分類器選擇。** 啟發式規則、LLM、透過 TypeSafe System One Choice 的 JEV、關鍵字規則，或自訂外掛
-- **每個請求都會回報節省。** 相較於全前沿基準，在記錄中以及 Cost Optimization 中。
-- **適用於代理程式。** 提示快取、上下文視窗升級、模態路由、任務中停滯升級，以及可選的工作階段固定。
+每個階層的模型由您選擇。對於每個請求，路由器會挑選一個階層，並從中選出一個模型。
+
+## 在儀表板中設定 {#set-up-in-the-dashboard}
+
+您需要一個已設定好模型、且您有權限新增模型的 LiteLLM gateway。若您還沒有 gateway，請先從 [gateway 快速入門](/docs/proxy/quick_start) 開始。
+
+1. 開啟 **Models + Endpoints**，再開啟 **Auto Router** 分頁，新增一個路由器。
+2. 為它命名，例如 `smart-router`。按一下 **Configure automatically**，以您已部署的模型填入各階層，然後檢閱所選內容。
+3. 以您應用程式的一個 prompt 使用 **Test Routing**，檢查它選出的階層與模型。這會測試路由決策而不呼叫所選模型；但 LLM 分類器仍可能產生費用。
+4. 按一下 **Add Auto Router** 加以儲存。在您應用程式送往 gateway 的請求中，將 `smart-router` 用作 `model`。
+
+所選模型會產生回答。在切換流量之前，先試幾個您應用程式的任務，將回答與成本與您目前的模型比較。
+
+如需 YAML、API 或 CLI 設定，請參閱 [管理員設定](/docs/auto_router/setup)。若要從 Claude Code 或 Codex 使用路由器，請依照 [使用者設定](/docs/auto_router/user_setup)。
+
+若要改變路由器選擇模型的方式，請參閱 [自訂您的分類器](/docs/auto_router/optimize_classifier)。您也可以[連接決策模型](/docs/auto_router/decision_classifiers)，包括 Jev、Nimble、Laya 或 Databricks `ai_decide`。
 
 ## 結果 {#results}
 
@@ -40,49 +43,7 @@ import AutoRouterDiagram from '@site/src/components/AutoRouterDiagram';
 | 比只使用快取便宜 37% 到 69% | 包含實際閘道流量在內的五個資料集 | [提示快取](/blog/auto-router-prompt-caching-benchmark) |
 | 在 88.1% 的回應上與目前模型相符或更勝一籌 | 對實際流量進行影子評估，143 個經判定的回合 | [影子評估](/blog/auto-router-shadow-evaluations) |
 
-## 快速開始 {#quick-start}
-
-- **儀表板：** Models + Endpoints、Add Model、Auto Router 分頁，輸入名稱，然後按一下 **Configure automatically** 或選擇樣板。檢閱階層、Test Routing，並儲存。
-- **代理程式：** 告訴它 `run curl -fsSL https://docs.litellm.ai/skills/auto-router and follow the instructions`。
-- **config.yaml：** 一個路由器項目，其階層命名同一檔案中的其他模型。
-
-```yaml title="config.yaml" keep-model-ids
-model_list:
-  - model_name: claude-haiku-4-5
-    litellm_params:
-      model: anthropic/claude-haiku-4-5
-      api_key: os.environ/ANTHROPIC_API_KEY
-  - model_name: claude-sonnet-5
-    litellm_params:
-      model: anthropic/claude-sonnet-5
-      api_key: os.environ/ANTHROPIC_API_KEY
-  - model_name: claude-opus-5
-    litellm_params:
-      model: anthropic/claude-opus-5
-      api_key: os.environ/ANTHROPIC_API_KEY
-
-  - model_name: smart-router
-    litellm_params:
-      model: auto_router/complexity_router
-      complexity_router_config:
-        tiers:
-          SIMPLE:    claude-haiku-4-5
-          MEDIUM:    claude-sonnet-5
-          COMPLEX:   claude-opus-5
-          REASONING: claude-opus-5
-        classifier_type: heuristic
-      complexity_router_default_model: claude-sonnet-5
-```
-
-```shell
-curl -X POST http://localhost:4000/v1/chat/completions \
-  -H "Authorization: Bearer $LITELLM_API_KEY" \
-  -d '{"model": "smart-router", "messages": [{"role": "user", "content": "What is 2+2?"}]}'
-```
-
-## 探索 {#explore}
-
-使用 **OSS Classifier** 搭配代管 Jev 或自行代管 Nimble 和 Laya。[OSS 分類器指南](/docs/auto_router/decision_classifiers) 涵蓋設定、必要的閘道與儀表板建置，以及從現有 Jev 組態的遷移。請參閱 [分類器參考資料](/docs/proxy/auto_routing#jev-classifier) 以了解上下文、備援和計費。
+## 設定與評估 {#configure-and-evaluate}
 
 <NavigationCards
 columns={3}
@@ -109,7 +70,7 @@ items={[
   },
   {
     title: "提示快取",
-    description: "切換模型時會保持快取溫熱。已在五個資料集上測量。",
+    description: "設定 prompt 快取，並比較請求切換模型時的成本。",
     to: "/docs/auto_router/prompt_caching",
   },
   {

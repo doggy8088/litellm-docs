@@ -64,37 +64,37 @@ import TabItem from '@theme/TabItem';
 
 ### 4. 輸入名稱 {#4-enter-a-name}
 
-為 toolset 輸入名稱。請選擇具有描述性的名稱，因為代理程式會引用這個名稱。
+輸入具有描述性的 **Toolset Name**，以及選填的 **Description**。編輯器左側顯示 **Available Tools**，右側顯示 **Your Toolset**。
 
-![輸入工具集名稱](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/62b412e0-d38f-44c3-99e4-3693f1512f6a/ascreenshot_b678c7c988a04f8b887b0f54c4dd95a7_text_export.jpeg)
+![含名稱、描述與伺服器群組的新工具集編輯器](/img/mcp/toolset_editor_name.png)
 
-![工具集名稱欄位](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/ba5ebc95-cab7-470b-a7c9-21f12b9b01a3/ascreenshot_a602e982a2a44890a83dca64d61c38eb_text_export.jpeg)
+### 5. 尋找並選取工具 {#5-find-and-select-tools}
 
-### 5. 新增第一個工具 {#5-add-the-first-tool}
+點擊伺服器群組以展開其工具。選取個別工具的核取方塊，或使用伺服器的核取方塊選取其所有已載入的工具。
 
-從下拉選單中選取一個 MCP 伺服器，然後選擇要從該伺服器納入的工具。
+使用 **Search tools or servers...** 來比對工具名稱、工具描述或伺服器名稱。搜尋不區分大小寫，並會展開符合的群組。符合的伺服器名稱會顯示其所有工具；否則，每個群組只顯示符合搜尋的工具。
 
-![選取 MCP 伺服器](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/2aa5bcba-6414-42e3-9813-efb0a9078e32/ascreenshot_58fbff35ba654210a1b4dc5452aa6bd9_text_export.jpeg)
+搜尋期間，**Select all matching** 會加入跨伺服器符合的工具，**Deselect all matching** 只會移除那些符合的工具。伺服器的核取方塊同樣只套用到該群組符合的工具。這些動作只套用到已載入的工具，因此請等候載入指示器完成，以納入每個伺服器。
 
-![從下拉選單中選擇伺服器](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/4fd9cffb-d3ba-461a-8679-89f278bf67ad/ascreenshot_b61e9e85a51b494a8d09fe61198d63e1_text_export.jpeg)
+![搜尋建置工具，並已跨伺服器選取符合的工具](/img/mcp/toolset_editor_search.png)
 
-![從伺服器選取工具](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/60718e72-2062-494b-9a23-456992c88cbd/ascreenshot_7a1f8eeab30a4a05ba39c450e5458b78_text_export.jpeg)
+### 6. 檢視選取內容 {#6-review-the-selection}
 
-### 6. 新增來自第二個伺服器的工具 {#6-add-tools-from-a-second-server}
+**Your Toolset** 會列出每個已選取的工具，包括被目前搜尋隱藏的工具。變更或清除搜尋會保留這些選取。點擊已選取的工具可將其移除，或點擊 **Clear all** 移除整個選取，包括隱藏的工具。
 
-按一下 **Add Tool**，選擇不同的 MCP 伺服器，然後再選取另一個工具。依需要重複，工具可以來自任意數量的伺服器。
-
-![從第二個伺服器新增工具](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/f34e0600-cc74-4b18-8794-88d45f326144/ascreenshot_98834b14ab9343e39fb503e458d72b7c_text_export.jpeg)
-
-![選取第二個伺服器](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/75150368-2202-4da1-99f1-6f0620e9b133/ascreenshot_f94d0bc08ea147348a9cf021cce7d854_text_export.jpeg)
-
-![從第二個伺服器選取工具](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/ed2cdf6e-025d-4d50-8b12-ed68745d5c51/ascreenshot_0c1c7f76524b46c5a056fda5e6956e2b_text_export.jpeg)
+您可以在一個工具集中合併來自任意數量伺服器的工具。
 
 ### 7. 建立工具集 {#7-create-the-toolset}
 
 點擊 **Create Toolset** 以儲存。
 
-![建立工具集](https://colony-recorder.s3.amazonaws.com/files/2026-03-22/021ca7b3-2d9a-49a0-8758-dae3dc3bcb4d/ascreenshot_14c6434e71114a6091e359a996f20e12_text_export.jpeg)
+## 編輯工具集 {#edit-a-toolset}
+
+在 **Toolsets** 分頁中，開啟該列的 **Open toolset actions** 選單並選擇 **Edit**。使用相同的搜尋與選取控制項，然後點擊 **Save Changes**。
+
+已儲存的工具即使無法使用，仍會保持選取狀態。已選取工具面板會在伺服器已不存在時將其標示為 **server not found**，在其工具無法載入時標示為 **server unreachable**，或在伺服器回應中沒有該工具時標示為 **tool not found**。這些標籤不會將工具從已儲存的選取中移除。如果某個項目不再屬於該工具集，請明確將其移除。
+
+![編輯工具集，已選取工具面板中有一項無法使用的已儲存工具](/img/mcp/toolset_editor_unavailable.png)
 
 ---
 

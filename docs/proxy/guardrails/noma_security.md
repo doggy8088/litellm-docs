@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Noma Security 防護欄"
+sidebar_label: "Noma Security"
+description: "以 noma_v2 為 LiteLLM AI 閘道加上 Noma Security 審核與安全防護欄，包含 MCP 呼叫模式與僅監控模式。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -333,7 +338,7 @@ guardrails:
       monitor_mode: true
 ```
 
-## ✨ 傳遞額外參數 {#-pass-additional-parameters}
+## 傳遞額外參數 {#pass-additional-parameters-1}
 
 使用 `extra_body` 將額外參數傳遞給 Noma Security API 呼叫，例如為特定請求動態設定應用程式 ID。
 

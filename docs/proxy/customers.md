@@ -115,8 +115,8 @@ customer_id 會隨著新的花費 upsert 到資料庫中。
 呼叫 `/customer/info` 以取得客戶的總花費
 
 ```bash showLineNumbers title="Get customer spend"
-# end_user_id: 👈 CUSTOMER ID
-# Authorization: 👈 YOUR PROXY KEY
+# end_user_id: CUSTOMER ID
+# Authorization: YOUR PROXY KEY
 curl -X GET 'http://0.0.0.0:4000/customer/info?end_user_id=ishaan3' \
         -H "Authorization: Bearer $LITELLM_API_KEY"
 ```
@@ -152,7 +152,7 @@ export WEBHOOK_URL="https://webhook.site/6ab090e8-c55f-4a23-b075-3209f5c57906"
 
 ```yaml showLineNumbers title="config.yaml"
 general_settings: 
-  alerting: ["webhook"] # 👈 KEY CHANGE
+  alerting: ["webhook"] # KEY CHANGE
 ```
 
 3. 測試它！ 
@@ -178,10 +178,10 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 
 ```json showLineNumbers title="Webhook event payload"
 {
-  "spend": 0.0011120000000000001, # 👈 SPEND
+  "spend": 0.0011120000000000001, # SPEND
   "max_budget": null,
   "token": "example-api-key-123",
-  "customer_id": "krrish12",  # 👈 CUSTOMER ID
+  "customer_id": "krrish12",  # CUSTOMER ID
   "user_id": null,
   "team_id": null,
   "user_email": null,
@@ -209,7 +209,7 @@ LiteLLM 看到的每個不同 customer ID 都會 upsert 到 customer table；當
 
 接著每個 session 都會在 Usage -> Customer Usage 中以自己的 customer 顯示；如果您已設定 [default customer budget](#default-budget-for-all-customers)，每個 session 都會擁有該 budget 的自己的副本，因此原本要給真實客戶的每月上限，會變成該流量的每 session 上限。
 
-設定 `validate_end_user_id_in_db` 即可將這些 ID 排除在外。適用於 v1.87.0 及以上版本。
+設定 `validate_end_user_id_in_db` 即可將這些 ID 排除在外。<SinceVersion v="1.87.0" />
 
 ```yaml showLineNumbers title="config.yaml"
 litellm_settings:
@@ -240,7 +240,7 @@ litellm_settings:
 
 項目遵循與 key 和 team `models` 相同的規則，因此像 `anthropic/*` 這類萬用字元或 model access group 名稱在此也同樣有效。
 
-client 提供的 `fallbacks` 也會對照 customer 的清單檢查，在啟用 `enforce_fallback_model_access` 時，router fallback 亦同。
+client 提供的 `fallbacks` 也會對照 customer 的清單檢查，router fallback 亦同，除非 `enforce_fallback_model_access` 設為 `false`。
 
 ```bash showLineNumbers title="Create a customer limited to one model"
 curl -L -X POST 'http://localhost:4000/customer/new' \
@@ -514,9 +514,9 @@ curl -X POST 'http://0.0.0.0:4000/customer/new'
     }'
 ```
 
-`/customer/new` 可內嵌接受 budget 欄位：`max_budget`、`soft_budget`、`budget_duration`、`tpm_limit`、`rpm_limit`、`max_parallel_requests` 以及 `model_max_budget`。請設定 `max_budget` 或 `budget_id` 其一，不可同時設定兩者；同時傳入會被拒絕。Customer `tpm_limit` 與 `rpm_limit` 會儲存在 budget 物件上，因此只有在 customer 連結到該物件時才會套用，無論是如上內嵌設定，或透過 `budget_id`。
+`/customer/new` 可內嵌接受 budget 欄位：`max_budget`、`soft_budget`、`budget_duration`、`tpm_limit`、`rpm_limit`、`max_parallel_requests` 以及 `model_max_budget`。請設定 `max_budget` 或 `budget_id` 其一，不可同時設定兩者；同時傳入會被拒絕。端點不認識的欄位，例如拼錯的 `tpm_limti`，會被以 422 拒絕並指明該欄位，且不會建立 customer。Customer `tpm_limit` 與 `rpm_limit` 會儲存在 budget 物件上，因此只有在 customer 連結到該物件時才會套用，無論是如上內嵌設定，或透過 `budget_id`。
 
-`/customer/update` 可接受較少的一組欄位：`user_id`、`alias`、`blocked`、`max_budget`、`budget_id`、`allowed_model_region`、`default_model` 以及 `object_permission`。其他任何欄位，包括 `tpm_limit`、`rpm_limit` 和 `budget_duration`，都會被靜默捨棄；若要變更那些設定，請改用 `/budget/update` 更新 budget 物件。
+`/customer/update` 可接受較少的一組欄位：`user_id`、`alias`、`blocked`、`max_budget`、`budget_id`、`allowed_model_region`、`default_model` 以及 `object_permission`。其他任何欄位都會被以 422 拒絕，錯誤會逐一指明每個未知欄位，且 customer 保持不變。對於 `tpm_limit`、`rpm_limit`、`budget_duration`、`model_tpm_limit` 與 `model_rpm_limit` 等 budget 欄位，錯誤會提示改用 `/budget/update` 更新 budget 物件。
 
 Customer budgets 是每個 deployment 全域共用的。花費只會依 customer id 追蹤，因此同一個 customer 會在每個 virtual key 與 team 之間共用一個 budget，而且 customer budget 無法限定於單一 key 或 team。
 
@@ -598,7 +598,7 @@ curl -X POST 'http://localhost:4000/customer/new' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -D '{
     "user_id": "my-customer-id",
-    "budget_id": "my-free-tier" # 👈 KEY CHANGE
+    "budget_id": "my-free-tier" # KEY CHANGE
 }
 ```
 
@@ -613,7 +613,7 @@ curl -X POST 'http://localhost:4000/customer/new' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -D '{
     "user_id": "my-customer-id",
-    "budget_id": "my-free-tier" # 👈 KEY CHANGE
+    "budget_id": "my-free-tier" # KEY CHANGE
 }
 ```
 

@@ -6,7 +6,7 @@ import TabItem from '@theme/TabItem';
 
 向內部團隊、外部客戶依其用量收費
 
-**🚨 必要條件**
+** 必要條件**
 - [設定 Lago](https://docs.getlago.com/guide/self-hosted/docker#run-the-app)，用於依用量計費。我們建議遵循 [他們的 Stripe 教學](https://docs.getlago.com/templates/per-transaction/stripe#step-1-create-billable-metrics-for-transaction)
 
 步驟：
@@ -31,7 +31,7 @@ model_list:
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
 
 litellm_settings:
-  callbacks: ["lago"] # 👈 KEY CHANGE
+  callbacks: ["lago"] # KEY CHANGE
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
@@ -43,7 +43,7 @@ general_settings:
 export LAGO_API_BASE="http://localhost:3000" # self-host - https://docs.getlago.com/guide/self-hosted/docker#run-the-app
 export LAGO_API_KEY="3e29d607-de54-49aa-a019-ecf585729070" # Get key - https://docs.getlago.com/guide/self-hosted/docker#find-your-api-key
 export LAGO_API_EVENT_CODE="openai_tokens" # name of lago billing code
-export LAGO_API_CHARGE_BY="team_id" # 👈 Charges 'team_id' attached to proxy key
+export LAGO_API_CHARGE_BY="team_id" # Charges 'team_id' attached to proxy key
 ```
 
 啟動 proxy 
@@ -58,7 +58,7 @@ litellm --config /path/to/config.yaml
 curl 'http://0.0.0.0:4000/key/generate' \
 --header "Authorization: Bearer $LITELLM_API_KEY" \
 --header 'Content-Type: application/json' \
---data-raw '{"team_id": "my-unique-id"}' # 👈 Internal Team's ID
+--data-raw '{"team_id": "my-unique-id"}' # Internal Team's ID
 ```
 
 回應物件：
@@ -76,7 +76,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 <TabItem value="curl" label="Curl">
 
 ```bash
-# Authorization: 👈 Team's Key
+# Authorization: Team's Key
 curl --location 'http://0.0.0.0:4000/chat/completions' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer sk-tXL0wt5-lOOVK9sfY2UacA' \
@@ -97,7 +97,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 ```python
 import openai
 client = openai.OpenAI(
-    api_key="sk-tXL0wt5-lOOVK9sfY2UacA", # 👈 Team's Key
+    api_key="sk-tXL0wt5-lOOVK9sfY2UacA", # Team's Key
     base_url="http://0.0.0.0:4000"
 )
 
@@ -124,7 +124,7 @@ from langchain.prompts.chat import (
 from langchain.schema import HumanMessage, SystemMessage
 import os 
 
-os.environ["OPENAI_API_KEY"] = "sk-tXL0wt5-lOOVK9sfY2UacA" # 👈 Team's Key
+os.environ["OPENAI_API_KEY"] = "sk-tXL0wt5-lOOVK9sfY2UacA" # Team's Key
 
 chat = ChatOpenAI(
     openai_api_base="http://0.0.0.0:4000",
@@ -165,7 +165,7 @@ print(response)
           "input_tokens": <number>,
           "output_tokens": <number>,
           "model": <string>,
-          "response_cost": <number>, # 👈 LITELLM CALCULATED RESPONSE COST - https://github.com/BerriAI/litellm/blob/d43f75150a65f91f60dc2c0c9462ce3ffc713c1f/litellm/utils.py#L1473
+          "response_cost": <number>, # LITELLM CALCULATED RESPONSE COST - https://github.com/BerriAI/litellm/blob/d43f75150a65f91f60dc2c0c9462ce3ffc713c1f/litellm/utils.py#L1473
       }
     }
 }
@@ -203,7 +203,7 @@ print(response)
             "content": "what llm are you"
           }
         ],
-        "user": "my_customer_id" # 👈 whatever your customer id is
+        "user": "my_customer_id" # whatever your customer id is
       }
   '
   ```
@@ -223,7 +223,7 @@ print(response)
           "role": "user",
           "content": "this is a test request, write a short poem"
       }
-  ], user="my_customer_id") # 👈 whatever your customer id is
+  ], user="my_customer_id") # whatever your customer id is
 
   print(response)
   ```
@@ -248,7 +248,7 @@ print(response)
       model = "{{openai_large}}",
       temperature=0.1,
       extra_body={
-          "user": "my_customer_id"  # 👈 whatever your customer id is
+          "user": "my_customer_id"  # whatever your customer id is
       }
   )
 
@@ -283,7 +283,7 @@ export LAGO_API_CHARGE_BY="user_id"
 curl 'http://0.0.0.0:4000/key/generate' \
 --header 'Authorization: Bearer <your-master-key>' \
 --header 'Content-Type: application/json' \
---data-raw '{"user_id": "my-unique-id"}' # 👈 Internal User's id
+--data-raw '{"user_id": "my-unique-id"}' # Internal User's id
 ```
 
 回應物件：
@@ -299,7 +299,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 ```python
 import openai
 client = openai.OpenAI(
-    api_key="sk-tXL0wt5-lOOVK9sfY2UacA", # 👈 Generated key
+    api_key="sk-tXL0wt5-lOOVK9sfY2UacA", # Generated key
     base_url="http://0.0.0.0:4000"
 )
 

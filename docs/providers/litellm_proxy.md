@@ -1,3 +1,9 @@
+---
+title: "從 Python SDK 使用 LiteLLM Proxy (LLM Gateway)"
+sidebar_label: "LiteLLM Proxy (LLM Gateway)"
+description: "使用 litellm_proxy/ 前綴將 Python SDK 請求傳送至 LiteLLM AI Gateway：聊天、串流、embeddings、圖片、音訊與 rerank，可一次設定或逐次呼叫。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -176,11 +182,7 @@ LiteLLM Proxy 可搭配 Langchain、LlamaIndex、OpenAI JS、Anthropic SDK、Ins
 
 ## 將所有 SDK 請求送至 LiteLLM Proxy {#send-all-sdk-requests-to-litellm-proxy}
 
-:::info
-
-需要 v1.72.1 或更高版本。
-
-:::
+<SinceVersion v="1.72.1" />
 
 當您從任何已使用 LiteLLM SDK 的程式庫／程式碼庫呼叫 LiteLLM Proxy 時，請使用此功能。
 

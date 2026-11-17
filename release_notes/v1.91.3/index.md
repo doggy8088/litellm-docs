@@ -1,5 +1,6 @@
 ---
-title: "v1.91.3 - Responses 防護欄涵蓋範圍與 OTel 例外事件"
+title: "LiteLLM v1.91.3 - Responses 防護欄涵蓋範圍與 OTel 例外事件"
+description: "修正 Responses API 上的防護欄，使文字檢查能看到使用者與工具輸出。並將失敗的 LLM 呼叫記錄為 OTel 例外事件。"
 slug: "v1-91-3"
 date: 2026-07-11T15:20:47
 authors:

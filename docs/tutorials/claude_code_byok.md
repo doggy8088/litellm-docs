@@ -134,6 +134,18 @@ x-litellm-user-id: my-user-id"
 - 視您的設定結構而定，該設定可能位於 `litellm_settings` 或 `general_settings`。
 - 啟用除錯記錄：`LITELLM_LOG=DEBUG`，以查看正在轉送哪一把金鑰。
 
+### 在一位使用者達到上限後，模型對所有人都變成無法使用 {#model-is-unavailable-for-everyone-after-one-user-hits-their-limit}
+
+如果狀況正常的帳戶收到 `429 No deployments available for selected model`，請 proxy 營運者檢查是否已有部署處於冷卻狀態。等它到期，或依照下列步驟清除。
+
+在到期前進行還原會短暫中斷 proxy 流量。請 proxy 營運者：
+
+1. 停止所有使用受影響部署的 proxy worker。
+2. 如果已設定 Redis，請使用您的 Redis 管理工具，只移除該部署的 `deployment:<model_id>:cooldown` 金鑰。使用部署的 `model_info.id`，不要使用其模型名稱；如果有設定 Redis namespace 前綴，也要一併包含。保留所有其他金鑰。
+3. 啟動 proxy worker，並從狀況正常的帳戶送出請求。在 **Logs** 中確認請求成功。
+
+使用 Redis 時，只重新啟動 worker 可能會重新載入舊的項目。沒有 Redis 時，重新啟動所有 worker 會清除記憶體中的冷卻狀態。這項還原不會重設提供者的帳戶配額。
+
 ## 相關內容 {#related}
 
 - [轉送用戶端標頭](./../proxy/forward_client_headers.md) — BYOK 與標頭轉送的完整文件

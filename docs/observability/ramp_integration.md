@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Ramp 支出追蹤：設定"
+sidebar_label: "Ramp"
+description: "透過 Python SDK 或 AI Gateway 將 LiteLLM 的 AI 使用量與成本傳送至 Ramp 進行支出追蹤，記錄 token 數量、模型成本與 metadata。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -125,7 +130,7 @@ LiteLLM 會在成功的 LLM API 請求時，將 [Standard Logging Payload](https
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電話 📞 +1 (770) 8783-106 / ‭+1 (412) 618-6238‬
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電話 +1 (770) 8783-106 / ‭+1 (412) 618-6238‬
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

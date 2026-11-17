@@ -1,42 +1,60 @@
 ---
-title: ✨ Enterprise 快速入門
-sidebar_label: ✨ Enterprise 快速入門
-description: 部署 LiteLLM Enterprise，端到端驗證 LLM/MCP/Agent 閘道，強制執行預算，並啟用企業控制項。
+title: 生產環境上線
+sidebar_label: 生產環境上線
+description: 以五個步驟上線 LiteLLM Enterprise。部署閘道、開放模型、MCP 工具與代理程式的存取、連接用戶端、保護驗證，並在專案與事業單位之間分攤成本。
 ---
 
-import NavigationCards from '@site/src/components/NavigationCards';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-如果您正使用 **Enterprise 試用版**，請使用本指南來評估 LiteLLM 作為具備企業控制項與預算強制執行的統一 **LLM、MCP 與 Agent 閘道**。
+本指南提供為公司所有團隊上線 LiteLLM Enterprise 的五個步驟。請依序完成這些步驟。每個步驟都使用前面步驟的部署、團隊與虛擬金鑰。
+
+1. 以關鍵部署設定[部署 LiteLLM](#step-1-deploy-litellm)。
+2. 開放提供者、模型、MCP 工具與代理程式的[存取權](#step-2-give-access-to-models-mcp-tools-and-agents)。
+3. [設定用戶端端點](#step-3-configure-the-client-endpoints)。
+4. [實作安全的驗證](#step-4-implement-secure-authentication)。
+5. [設定費用分攤](#step-5-set-up-chargeback)，並在專案與事業單位之間分攤成本。
 
 :::info
 
 - **免費試用**：[30 天企業授權](https://www.litellm.ai/enterprise#trial)
-- **與我們聯絡**：[預約示範](https://enterprise.litellm.ai/demo)
-- **SSO 最多可免費供 5 位使用者使用。** 超過後則需要企業授權。
-- **完整功能目錄**：[Enterprise](/docs/enterprise)
+- **與我們聯繫**：[預約示範](https://enterprise.litellm.ai/demo)
+- **您現在執行的閘道**：從[從 OSS 遷移](/docs/enterprise/moving_from_oss)開始
+- **所有 Enterprise 功能**：[Enterprise 總覽](/docs/enterprise)
 
 :::
 
-## 部署 + 共用設定 {#deploy--shared-setup}
+## 步驟 1. 部署 LiteLLM {#step-1-deploy-litellm}
 
-所有閘道與預算測試都共用同一個部署，以及同一個 org/team/key。請先完成本節。
+### 關鍵部署設定 {#critical-deployment-settings}
+
+請在首次部署前做好這些決定。每一個決定在團隊開始使用閘道後都很難更改。
+
+- **Postgres。** Admin UI、虛擬金鑰、MCP 與代理程式登錄，以及預算追蹤的資料都保存在 Postgres 中。參見[資料庫規模](/docs/proxy/db_sizing)。
+- **Redis。** 當您執行多個執行個體或多個 worker 時，請執行 Redis 7.0 或更新版本。沒有 Redis 時，每個執行個體會各自獨立強制執行速率限制與預算。參見[哪些功能需要 Redis](/docs/proxy/redis_requirements)。
+- **Salt key。** 在加入第一個模型前設定 `LITELLM_SALT_KEY`。Salt key 會加密已儲存的憑證，加入模型後絕不能更改。參見[設定 salt key](/docs/proxy/prod#set-the-salt-key)。
+- **Master key。** 將 master key 保存在您的密鑰管理器中。應用程式必須使用虛擬金鑰，而不是 master key。
+- **版本。** 固定確切的版本或映像摘要，並[驗證映像簽章](/docs/proxy/docker_image_security)。請使用[受支援的版本](/docs/enterprise/version_support)。
+- **拓撲。** 若有多個區域，請在部署前閱讀[多區域部署](/docs/proxy/multi_region)。
+
+完整清單請見[生產環境最佳實踐](/docs/proxy/prod)與[安全性最佳實踐](/docs/proxy/security_best_practices)。
 
 ### 前置條件 {#prerequisites}
 
-- 一組 LLM 提供者 API 金鑰（OpenAI、Azure、Anthropic 等）
-- **Postgres** — Admin UI、virtual keys、MCP/Agent 註冊與預算追蹤所需
+- LLM 提供者的 API 金鑰（OpenAI、Azure、Anthropic 或其他提供者）
+- 一個 Postgres 資料庫，或部署方法所建立的 Postgres 資料庫
 - 您的 **Enterprise 授權金鑰**
-- 一個部署目標：**Docker Compose**、**Kubernetes** (`kubectl`) 或 **Helm**
+- 部署目標：**Docker Compose**、**Kubernetes**（`kubectl`）或 **Helm**
+
+### 部署閘道 {#deploy-the-gateway}
 
 <Tabs>
 <TabItem value="docker-compose" label="Docker Compose">
 
-請遵循 [快速入門](/docs/proxy/docker_quick_start)。精簡步驟：
+請依照[快速入門](/docs/proxy/docker_quick_start)。以下為精簡步驟：
 
 ```bash
-curl -O https://raw.githubusercontent.com/BerriAI/litellm/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/deploy/compose/docker-compose.yml
 ```
 
 建立 `.env`：
@@ -66,17 +84,29 @@ general_settings:
   store_model_in_db: true
 ```
 
+建立 `docker-compose.override.yml` 以掛載設定檔：
+
+```yaml title="docker-compose.override.yml"
+services:
+  litellm:
+    command: ["--config", "/app/config.yaml"]
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+```
+
+讓下載的 Compose 檔案指向此目錄中的 `.env`，然後啟動它：
+
 ```bash
-docker compose up
+LITELLM_ENV_FILE=.env docker compose up -d
 ```
 
 </TabItem>
 
 <TabItem value="kubernetes" label="Kubernetes">
 
-當您自行管理 Postgres 並希望完整掌控資源時，請使用原始 manifest 進行部署。您需要一個可從叢集存取的既有 Postgres。
+當您自行管理 Postgres 並想完全掌控資源時，可使用原始 manifest 部署。您需要一個叢集可連通的既有 Postgres。
 
-#### 步驟 1. 為 `config.yaml` 建立 ConfigMap {#step-1-create-a-configmap-for-configyaml}
+#### 1. 為 `config.yaml` 建立 ConfigMap {#1-create-a-configmap-for-configyaml}
 
 ```yaml title="litellm-config.yaml" showLineNumbers
 apiVersion: v1
@@ -103,7 +133,7 @@ data:
 kubectl apply -f litellm-config.yaml
 ```
 
-#### 步驟 2. 為金鑰建立 Secret {#step-2-create-a-secret-for-keys}
+#### 2. 為金鑰建立 Secret {#2-create-a-secret-for-keys}
 
 ```bash
 kubectl create secret generic litellm-secrets \
@@ -114,7 +144,7 @@ kubectl create secret generic litellm-secrets \
   --from-literal=DATABASE_URL="postgresql://user:pass@host:5432/litellm"
 ```
 
-#### 步驟 3. 建立 `deployment.yaml` {#step-3-create-deploymentyaml}
+#### 3. 建立 `deployment.yaml` {#3-create-deploymentyaml}
 
 ```yaml title="deployment.yaml" showLineNumbers
 apiVersion: apps/v1
@@ -170,7 +200,7 @@ spec:
 kubectl apply -f deployment.yaml
 ```
 
-#### 步驟 4. 建立 `service.yaml` {#step-4-create-serviceyaml}
+#### 4. 建立 `service.yaml` {#4-create-serviceyaml}
 
 ```yaml title="service.yaml" showLineNumbers
 apiVersion: v1
@@ -191,181 +221,135 @@ spec:
 kubectl apply -f service.yaml
 ```
 
-#### 步驟 5. 啟動伺服器 {#step-5-start-the-server}
+#### 5. 啟動伺服器 {#5-start-the-server}
 
 ```bash
 kubectl port-forward service/litellm-service 4000:4000
 ```
 
-您的 LiteLLM Gateway 現已在 `http://0.0.0.0:4000` 上執行。
+您的 LiteLLM 閘道現已在 `http://0.0.0.0:4000` 上執行。
 
 </TabItem>
 
 <TabItem value="helm" label="Helm">
 
-此 chart 已發佈至 OCI registry，因此 Helm 可直接安裝；不需要複製 repository。它可以為您 provision Postgres (`db.deployStandalone: true`)，或指向既有資料庫 (`db.useExisting`)。請參閱 [chart README](https://github.com/BerriAI/litellm/blob/main/helm/litellm-helm/README.md) 與完整的 [values.yaml](https://github.com/BerriAI/litellm/blob/main/helm/litellm-helm/values.yaml)。
+依照 [Helm 指南](../proxy/deploy/helm.md) 發布 chart 並建置其映像。安裝前先建立 PostgreSQL。Chart 不會建立資料庫。此範例使用 monolith 模式提供單一服務。
 
-#### 步驟 1. 為您的授權 + 提供者金鑰建立 Secret {#step-1-create-a-secret-for-your-license--provider-keys}
+#### 1. 建立 Secrets {#1-create-the-secrets}
 
-```bash
-kubectl create secret generic litellm-env-secret \
-  --from-literal=LITELLM_LICENSE="eyJ..." \
-  --from-literal=OPENAI_API_KEY="your-api-key"
-```
+使用您的密鑰管理器在部署命名空間中建立這些 Kubernetes Secrets：
 
-#### 步驟 2. 建立 `values-enterprise.yaml` {#step-2-create-values-enterpriseyaml}
+| Secret | 金鑰 |
+| --- | --- |
+| `litellm-masterkey` | `masterkey`：以 `sk-` 開頭的隨機金鑰 |
+| `litellm-db` | `username`、`password`：PostgreSQL 憑證 |
+| `litellm-env` | `LITELLM_LICENSE`、`LITELLM_SALT_KEY`、`OPENAI_API_KEY` |
 
-將您的企業設定套用到 chart 上。`environmentSecrets` 會將上述 Secret 注入為環境變數，而 `proxy_config` 接著會以 `os.environ/<NAME>` 參照它。
+升級時請保持相同的 salt，讓 LiteLLM 能讀取已儲存的提供者憑證。
 
-```yaml title="values-enterprise.yaml" showLineNumbers
-masterkey: sk-<your-litellm-api-key>
+#### 2. 建立 `values-enterprise.yaml` {#2-create-values-enterpriseyaml}
 
-environmentSecrets:
-  - litellm-env-secret
-
-db:
-  deployStandalone: true
-
-proxyConfigMap:
-  create: true
-
-proxy_config:
-  model_list:
-    - model_name: {{openai_large}}
-      litellm_params:
-        model: openai/{{openai_large}}
-        api_key: os.environ/OPENAI_API_KEY
-  litellm_settings:
-    callbacks: ["prometheus"]
-  general_settings:
-    store_model_in_db: true
-```
-
-`db.deployStandalone: true` 會使用 Bitnami chart 與預設密碼建立單節點 Postgres。試用版這樣足夠；若要更長期使用，請以 `--set postgresql.auth.password=<pw>,postgresql.auth.postgres-password=<pw>` 覆寫它，或改用下方您自己的資料庫。
-
-**使用您自己的資料庫。** 若要指向既有的 Postgres，而不是讓 chart 佈建一個，請替換 `db` 區塊。建立一個保留 `username` 和 `password` 金鑰的 Secret（預設名稱為 `postgres`）；chart 會根據 `endpoint`、`database` 及這些憑證建構連線 URL。
+將映像參照與 PostgreSQL 主機名稱換成您的值。憑證請保留在上方的 Secrets 中。
 
 ```yaml title="values-enterprise.yaml" showLineNumbers
-db:
-  useExisting: true
-  endpoint: my-postgres.default.svc.cluster.local
-  database: litellm
-  secret:
-    name: litellm-db-secret
-    usernameKey: username
-    passwordKey: password
+image:
+  repository: registry.example.com/platform/litellm
+  tag: source-f52f26d
+
+monolith:
+  enabled: true
+
+masterKey:
+  secretName: litellm-masterkey
+  secretKey: masterkey
+
+database:
+  writer:
+    host: my-postgres.default.svc.cluster.local
+    dbname: litellm
+    passwordSecret:
+      name: litellm-db
+      usernameKey: username
+      passwordKey: password
+
+gateway:
+  envSecrets: [litellm-env]
+  config:
+    proxy_config:
+      model_list:
+        - model_name: {{openai_large}}
+          litellm_params:
+            model: openai/{{openai_large}}
+            api_key: os.environ/OPENAI_API_KEY
+      litellm_settings:
+        callbacks: ["prometheus"]
+      general_settings:
+        store_model_in_db: true
 ```
 
-#### 步驟 3. 使用 Helm 部署 {#step-3-deploy-with-helm}
+將您資料庫提供者的 TLS 設定加入[驗證資料庫憑證](../proxy/prod.md#verify-the-database-server-certificate-custom-ca-eg-aws-rds)。在生產環境中使用 Redis 協調副本。Redis 設定請參見 [Helm 指南](../proxy/deploy/helm.md)。
 
-直接從 OCI registry 安裝 chart，並傳入您的企業設定值：
+#### 3. 使用 Helm 部署 {#3-deploy-with-helm}
+
+使用[發布到您的登錄庫的 OCI chart](../proxy/deploy/helm.md#install-the-chart)。將 `YOUR_ORG` 換成您的登錄庫命名空間：
 
 ```bash
-helm install \
-  -f values-enterprise.yaml \
-  mydeploy \
-  oci://docker.litellm.ai/berriai/litellm-helm
+helm upgrade --install mydeploy oci://ghcr.io/YOUR_ORG/charts/litellm \
+  --version 1.0.0 \
+  -f values-enterprise.yaml --wait --timeout 30m
 ```
 
-#### 步驟 4. 將服務公開至 localhost {#step-4-expose-the-service-to-localhost}
+Chart 會在應用程式上線前執行資料庫遷移。若使用 Argo CD，請改用 [Argo CD 安裝方式](../proxy/deploy/helm.md#install-the-chart)。
+
+#### 4. 將服務公開至 localhost {#4-expose-the-service-to-localhost}
 
 ```bash
-kubectl port-forward service/mydeploy-litellm-helm 4000:4000
+kubectl port-forward service/mydeploy-litellm 4000:4000
 ```
 
-您的 LiteLLM Gateway 現已在 `http://127.0.0.1:4000` 上執行。
+開啟 `http://127.0.0.1:4000`。
 
 </TabItem>
 </Tabs>
 
 ### 驗證 Enterprise 版本 {#verify-enterprise-edition}
 
-開啟 `http://localhost:4000/`。Swagger 的描述中應顯示 **"Enterprise Edition"**。請參閱 [Enterprise license FAQ](/docs/enterprise#how-do-i-set-up-and-verify-an-enterprise-license)。
+開啟 `http://localhost:4000/`。API 文件頁面的說明中必須顯示 **Enterprise Edition**。若未顯示，請參閱[啟用您的授權](/docs/enterprise/activate)。
 
-在 `http://localhost:4000/ui` 開啟 Admin UI，並使用您的 master key 登入。
+開啟位於 `http://localhost:4000/ui` 的 Admin UI，並以您的 master key 登入。在步驟 4 中，您會將此登入方式換成 SSO。
 
-### 共用租戶設定 {#shared-tenant-setup}
+---
 
-在開始 gateway tracks 之前，請先在 Admin UI 完成這些步驟。
+## 步驟 2. 開放模型、MCP 工具與代理程式的存取權 {#step-2-give-access-to-models-mcp-tools-and-agents}
+
+在此步驟中，您會將提供者、模型、MCP 伺服器與代理程式加入閘道。接著讓一個團隊能存取它們。
+
+### 2a. 新增提供者與模型 {#2a-add-providers-and-models}
+
+步驟 1 的部署已在 `config.yaml` 中加入 `{{openai_large}}`。若要加入更多模型，請使用 Admin UI 的 **Models** 頁面，或 `config.yaml` 中的 `model_list`。模型請使用單一資料來源。參見[模型管理](/docs/proxy/model_management)與[所有提供者](/docs/providers)。
+
+### 2b. 建立組織、團隊與虛擬金鑰 {#2b-create-an-organization-a-team-and-a-virtual-key}
+
+請在 Admin UI 中完成這些步驟。
 
 | 步驟 | 動作 | 原因 |
 | ---- | ------ | --- |
-| 1 | 建立 **Organization** 與 **Team** | Organizations 用作頂層實體（Department of Computer Science），其下包含多個 Teams（Robotics Club、Frontend Engineering team） |
-| 2 | 邀請 **Internal Users** | 在 team 內新增多位使用者，並管理支出 |
-| 2 | 設定 **team `max_budget`**（例如 `$10`、duration `30d`） | 及早建立硬性支出上限，如此即可在執行 LLM calls 後驗證預算強制執行與超出預算時的行為。 |
-| 3 | 建立具備模型存取權的 **team 範圍 virtual key** | 讓管理員與內部使用者可存取 team 模型並強制執行預算。追蹤各個 team 的支出。 |
+| 1 | 建立**組織**與**團隊** | 組織是最上層實體，例如事業單位。組織包含團隊，例如前端團隊。 |
+| 2 | 邀請**內部使用者**加入團隊 | 每位使用者都能存取團隊模型，閘道會追蹤每位使用者的支出。 |
+| 3 | 設定團隊的 **`max_budget`**（例如 `30d` 內 `$10`） | 預算提供硬性支出上限。在步驟 5 中，您會用它來檢視預算強制執行。 |
+| 4 | 建立可存取該模型的**團隊虛擬金鑰** | 應用程式在步驟 3 中使用此金鑰。閘道會記錄金鑰與團隊的支出。 |
 
-→ [Multi-tenant Architecture](/docs/proxy/multi_tenant_architecture) · [Virtual Keys](/docs/proxy/virtual_keys)
+參見[多租戶架構](/docs/proxy/multi_tenant_architecture)與[虛擬金鑰](/docs/proxy/virtual_keys)。
 
----
+### 2c. 新增 MCP 工具 {#2c-add-mcp-tools}
 
-## 1. LLM 閘道 {#1-llm-gateway}
-
-證明 LiteLLM 會透過您的 virtual key 路由 LLM requests、追蹤支出，並強制執行 RBAC。
-
-```mermaid
-flowchart TD
-    APP["Client App / SDK"]
-    APP -->|"Authorization: Bearer sk-..."| PROXY["LiteLLM Gateway"]
-    PROXY -->|"virtual key lookup"| KEY["Virtual Key + Team"]
-    KEY -->|"model allowlist"| ROUTE["LLM Router /v1/chat/completions"]
-    ROUTE -->|"litellm_params.model"| PROVIDER["Provider API (OpenAI, Azure, Bedrock)"]
-    PROXY -->|"request + token spend"| LOGS["Logs tab · Spend dashboard"]
-```
-
-### 步驟 {#steps}
-
-1. **確認模型** `{{openai_large}}`（或您的模型）出現在 `model_list`（config 或 Admin UI → Models）中。
-
-2. **使用您的 master key 進行測試**：
-
-```bash
-curl -X POST 'http://localhost:4000/chat/completions' \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $LITELLM_API_KEY" \
-  -d '{
-    "model": "{{openai_large}}",
-    "messages": [{"role": "user", "content": "Hello from LiteLLM Enterprise Gateway"}]
-  }'
-```
-
-3. **使用您的 team virtual key** — 使用共用設定中的金鑰重複相同請求。
-
-4. **驗證回應** — 預期為 `200 OK`；assistant text 會以 `choices[0].message.content` 顯示。
-
-5. **驗證記錄** — 開啟 **Logs** 分頁；確認金鑰、team、模型、延遲與支出都有顯示。
-
-6. **驗證 team 支出** — 開啟 **Teams** 分頁 → 選取您的 team；確認支出已增加至 `max_budget`。
-
-→ [Virtual Keys](/docs/proxy/virtual_keys)
-→ [Gateway Quickstart](/docs/learn/gateway_quickstart)
-→ [Role-Based Access Control](/docs/proxy/access_control)
-
----
-
-## 2. MCP 閘道 {#2-mcp-gateway}
-
-證明 LiteLLM 會註冊 MCP servers、強制執行每個金鑰的存取權限、路由工具 calls，並追蹤 MCP 成本。
-
-```mermaid
-flowchart TD
-    CLIENT["Client (curl / OpenAI SDK / Cursor)"]
-    CLIENT -->|"x-litellm-api-key: Bearer sk-..."| PROXY["LiteLLM MCP Gateway"]
-    PROXY -->|"object_permission.mcp_servers"| PERMS["Key / Team MCP allowlist"]
-    PERMS -->|"allowed server"| MCP["DeepWiki MCP Server"]
-    MCP -->|"tool result"| PROXY
-    PROXY -->|"mcp tool call log + cost"| LOGS["Logs tab · MCP cost tracking"]
-```
-
-### 步驟 {#steps-1}
-
-1. **註冊 MCP server** — Admin UI → **MCP Servers** → Add New MCP Server：
+1. 在 Admin UI 中，前往 **MCP Servers** 並選取 **Add New MCP Server**：
 
    - 名稱：`deepwiki`
    - URL：`https://mcp.deepwiki.com/mcp`
-   - 傳輸：HTTP
+   - 傳輸方式：HTTP
 
-   或新增至 `config.yaml`：
+   或者將伺服器加入 `config.yaml`：
 
 ```yaml
 mcp_servers:
@@ -375,11 +359,75 @@ mcp_servers:
     available_on_public_internet: true
 ```
 
-2. **指派給 team/key** — 在 virtual key 或 team 的 MCP Settings 中，允許 `deepwiki` server。請參閱 [MCP 權限管理](/docs/mcp_control)。
+2. 在團隊或虛擬金鑰的 MCP 設定中，允許 `deepwiki` 伺服器。參見 [MCP 權限管理](/docs/mcp_control)。
+3. 確認工具出現在 Admin UI 的 **MCP Servers > MCP Tools** 下。
 
-3. **列出工具** — 確認工具會出現在 Admin UI 的 **MCP Servers → MCP Tools** 下方。
+### 2d. 新增代理程式 {#2d-add-agents}
 
-4. **透過 `/v1/chat/completions` 呼叫**：
+1. 部署一個範例 A2A 代理程式，例如 [Multi-agent collaboration using A2A](https://github.com/a2aproject/a2a-samples/tree/main/demo)。此代理程式支援串流。
+2. 在 Admin UI 中，前往 **Agents** 並選取 **Add Agent**。輸入代理程式的名稱與 URL。
+3. 在虛擬金鑰的代理程式設定中，允許該代理程式。參見[代理程式權限管理](/docs/a2a_agent_permissions)。
+
+```mermaid
+flowchart TD
+    CLIENT["用戶端（A2A SDK / curl）"]
+    CLIENT -->|"Authorization: Bearer sk-..."| PROXY["LiteLLM 代理程式閘道"]
+    PROXY -->|"object_permission.agents"| PERMS["金鑰 / 團隊代理程式允許清單"]
+    PERMS -->|"GET /v1/agents 篩選"| LIST["代理程式目錄"]
+    PERMS -->|"POST /a2a/{agent_id}"| AGENT["下游 A2A 代理程式"]
+    AGENT -->|"回應 + 巢狀 LLM 呼叫"| PROXY
+    PROXY -->|"X-LiteLLM-Trace-Id · 代理程式支出"| LOGS["記錄分頁 · 代理程式成本追蹤"]
+```
+
+→ [MCP 總覽](/docs/mcp) · [Agent 閘道總覽](/docs/a2a)
+
+---
+
+## 步驟 3. 設定用戶端端點 {#step-3-configure-the-client-endpoints}
+
+應用程式與工具會以團隊虛擬金鑰將請求送往閘道 URL。在此步驟中，您會送出一次 LLM 請求、一次 MCP 工具呼叫與一次代理程式呼叫。接著連接您的用戶端工具。
+
+### 3a. LLM 請求 {#3a-llm-requests}
+
+```mermaid
+flowchart TD
+    APP["用戶端應用程式 / SDK"]
+    APP -->|"Authorization: Bearer sk-..."| PROXY["LiteLLM 閘道"]
+    PROXY -->|"虛擬金鑰查詢"| KEY["虛擬金鑰 + 團隊"]
+    KEY -->|"模型允許清單"| ROUTE["LLM 路由器 /v1/chat/completions"]
+    ROUTE -->|"litellm_params.model"| PROVIDER["提供者 API（OpenAI、Azure、Bedrock）"]
+    PROXY -->|"請求 + token 支出"| LOGS["記錄分頁 · 支出儀表板"]
+```
+
+1. 以團隊虛擬金鑰送出請求：
+
+```bash
+curl -X POST 'http://localhost:4000/chat/completions' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer sk-team-key' \
+  -d '{
+    "model": "{{openai_large}}",
+    "messages": [{"role": "user", "content": "Hello from LiteLLM Enterprise Gateway"}]
+  }'
+```
+
+2. 確認回應為 `200 OK`。助理文字位於 `choices[0].message.content`。
+3. 開啟 **Logs** 頁面。確認記錄顯示金鑰、團隊、模型、延遲與支出。
+4. 開啟 **Teams** 頁面並選取您的團隊。確認支出已增加。
+
+### 3b. MCP 工具呼叫 {#3b-mcp-tool-calls}
+
+```mermaid
+flowchart TD
+    CLIENT["用戶端（curl / OpenAI SDK / Cursor）"]
+    CLIENT -->|"x-litellm-api-key: Bearer sk-..."| PROXY["LiteLLM MCP 閘道"]
+    PROXY -->|"object_permission.mcp_servers"| PERMS["金鑰 / 團隊 MCP 允許清單"]
+    PERMS -->|"允許的伺服器"| MCP["DeepWiki MCP Server"]
+    MCP -->|"工具結果"| PROXY
+    PROXY -->|"mcp 工具呼叫記錄 + 成本"| LOGS["記錄分頁 · MCP 成本追蹤"]
+```
+
+1. 送出使用 `deepwiki` 工具的請求：
 
 ```bash
 curl -X POST 'http://localhost:4000/v1/chat/completions' \
@@ -397,45 +445,21 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   }'
 ```
 
-5. **驗證回應** — 內含工具輸出與 assistant 摘要。
+2. 確認回應包含工具輸出與助理的摘要。
+3. 開啟 **Logs** 頁面。確認記錄顯示 MCP 工具呼叫的工具名稱與成本。
 
-6. **驗證記錄** — **Logs** 分頁會顯示 MCP tool call，包含具命名空間的工具名稱與成本。
+參見[使用您的 MCP](/docs/mcp_usage)。
 
-→ [MCP 總覽](/docs/mcp) · [MCP 權限管理](/docs/mcp_control) · [使用您的 MCP](/docs/mcp_usage)
+### 3c. 代理程式呼叫 {#3c-agent-calls}
 
----
-
-## 3. Agent 閘道 {#3-agent-gateway}
-
-證明 LiteLLM 會註冊 A2A agents、強制執行每個金鑰的存取權限、呼叫 agents，並追蹤歸因於 agent 的支出。
-
-```mermaid
-flowchart TD
-    CLIENT["Client (A2A SDK / curl)"]
-    CLIENT -->|"Authorization: Bearer sk-..."| PROXY["LiteLLM Agent Gateway"]
-    PROXY -->|"object_permission.agents"| PERMS["Key / Team agent allowlist"]
-    PERMS -->|"GET /v1/agents filter"| LIST["Agent catalog"]
-    PERMS -->|"POST /a2a/{agent_id}"| AGENT["Downstream A2A Agent"]
-    AGENT -->|"response + nested LLM calls"| PROXY
-    PROXY -->|"X-LiteLLM-Trace-Id · agent spend"| LOGS["Logs tab · Agent cost tracking"]
-```
-
-### 步驟 {#steps-2}
-
-1. **部署範例代理程式** — 使用 [**使用 A2A 的多代理程式協作**](https://github.com/a2aproject/a2a-samples/tree/main/demo)（具有串流支援的簡單可部署 A2A 代理程式）。
-
-2. **在 Admin UI 註冊** — **Agents** 分頁 → **Add Agent** → 輸入名稱與 URL。
-
-3. **指派給 team/key** — 在虛擬金鑰的 Agent Settings 下，允許該代理程式。請參閱 [Agent Permission Management](/docs/a2a_agent_permissions)。
-
-4. **列出代理程式**：
+1. 列出金鑰可使用的代理程式：
 
 ```bash
 curl -H 'Authorization: Bearer sk-team-key' \
   'http://localhost:4000/v1/agents'
 ```
 
-5. **透過 A2A SDK 呼叫**：
+2. 以 A2A SDK 呼叫代理程式：
 
 ```python showLineNumbers title="invoke_a2a_agent.py"
 import httpx, asyncio
@@ -474,129 +498,23 @@ async def main():
 asyncio.run(main())
 ```
 
-6. **驗證記錄** — **Logs** 分頁會顯示 key、team、延遲，以及歸因於代理程式的成本。成本會計入第 0 節中的 team/key 支出。
+3. 開啟 **Logs** 頁面。確認記錄顯示金鑰、團隊、延遲與代理程式呼叫的成本。
 
-→ [Agent Gateway Overview](/docs/a2a) · [Invoking A2A Agents](/docs/a2a_invoking_agents) · [Agent Cost Tracking](/docs/a2a_cost_tracking)
+參見[叫用 A2A 代理程式](/docs/a2a_invoking_agents)與[代理程式成本追蹤](/docs/a2a_cost_tracking)。
 
----
+### 3d. 連接您的用戶端工具 {#3d-connect-your-client-tools}
 
-## 4. 預算與支出 {#4-budgets--spend}
-
-預算強制執行會透過相同的 virtual key 在 **全部三個閘道** 上運作，因此單一控制平面即可管理 LLM、MCP 與 Agent 的支出。
-
-```mermaid
-flowchart TD
-    REQUEST["Client Request (LLM / MCP / Agent)"]
-    REQUEST -->|"Authorization: Bearer sk-..."| PROXY["LiteLLM Enterprise Gateway"]
-
-    PROXY -->|"key.team_id"| TEAMS["Team (Org hierarchy)"]
-    PROXY -->|"virtual key lookup"| KEYS["Virtual Keys"]
-    PROXY -->|"metadata.tags on request"| TAGS["Tag Budget (cross-cutting projects)"]
-
-    TEAMS --> TBUDGET["Team max_budget / Monthly spend envelope"]
-    KEYS --> KBUDGET["Key max_budget + RPM/TPM limits"]
-    TAGS --> TABUDGET["Tag budget limits"]
-
-    TBUDGET --> ENFORCE["Budget check before route"]
-    KBUDGET --> ENFORCE
-    TABUDGET --> ENFORCE
-    ENFORCE --> ROUTES["LLM / MCP / Agent routes"]
-    PROXY --> SPEND["Spend dashboard · GET /spend/tags"]
-```
-
-### 4a. Key 預算 + 速率限制 {#4a-key-budget--rate-limits}
-
-1. 建立一個具有嚴格預算與 RPM 限制的測試 key：
-
-```bash
-curl -X POST 'http://localhost:4000/key/generate' \
-  -H "Authorization: Bearer $LITELLM_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "max_budget": 0.01,
-    "rpm_limit": 1,
-    "team_id": "<your-team-id>"
-  }'
-```
-
-2. **第一次請求** 使用新 key → `200 OK`。
-3. **同一分鐘內的第二次請求** → 速率限制錯誤（超出 RPM）。
-4. 在 Admin UI 的 **Virtual Keys** 下確認 key 支出。
-
-→ [Virtual Keys](/docs/proxy/virtual_keys) · [Quickstart: RPM test](/docs/proxy/docker_quick_start)
-
-### 4b. Team 預算 {#4b-team-budget}
-
-第 0 節中已設定 Team `max_budget`。完成第 1–3 節後：
-
-1. 開啟 **Teams** 分頁 → 選取您的 PoC team。
-2. 確認跨 LLM、MCP 與 Agent 呼叫累積的 **支出**。
-3. **可選負向測試** — 將 team `max_budget` 設得非常低（例如 `$0.0001`），發出一次 LLM 呼叫，確認超出預算錯誤。
-
-→ [Multi-tenant Architecture](/docs/proxy/multi_tenant_architecture)
-
-### 4c. 標籤預算 {#4c-tag-budget}
-
-1. 將 `tag_budget_config` 加到 `config.yaml`，並重新啟動 proxy：
-
-```yaml
-litellm_settings:
-  tag_budget_config:
-    poc:chat-app:
-      max_budget: 0.000000000001
-      budget_duration: 1d
-```
-
-2. 發出一個帶標籤的請求：
-
-```bash
-curl -X POST 'http://localhost:4000/chat/completions' \
-  -H 'Authorization: Bearer sk-team-key' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "{{openai_large}}",
-    "messages": [{"role": "user", "content": "Hello"}],
-    "metadata": {"tags": ["poc:chat-app"]}
-  }'
-```
-
-3. **第一次呼叫** 成功；**第二次呼叫** 使用相同標籤會因超出預算而失敗。
-
-4. 查詢標籤支出：
-
-```bash
-curl -X GET 'http://localhost:4000/spend/tags' \
-  -H "Authorization: Bearer $LITELLM_API_KEY"
-```
-
-**驗證：** 回應會列出 `poc:chat-app`，以及 `total_spend` 和 `log_count`。
-
-**接著探索：** [Projects](/docs/proxy/project_management) · [Temporary budget increases](/docs/proxy/temporary_budget_increase) · [Soft budget alerts](/docs/proxy/ui_team_soft_budget_alerts) · [Spend reports](/docs/proxy/cost_tracking) · [Budget Routing](/docs/proxy/provider_budget_routing) · [Enterprise Spend Tracking](/docs/enterprise)
+程式碼工具與聊天應用程式使用閘道 URL 以及虛擬金鑰或登入權杖。每個用戶端都有設定頁面，例如 Claude Code、Codex 與 Claude Desktop。參見[用戶端設定](/docs/proxy/client_setup/overview)。
 
 ---
 
-## 5. 企業控制 {#5-enterprise-controls}
+## 步驟 4. 實作安全的驗證 {#step-4-implement-secure-authentication}
 
-在運作中的閘道與預算之上，疊加安全性與合規性。
+在此步驟中，您會將共用的 master key 登入換成您的身分提供者。接著限制每個人與每個工作負載能做的事。
 
-### 稽核記錄 {#audit-logs}
+### Admin UI 的 SSO {#sso-for-the-admin-ui}
 
-預設在 enterprise license 下啟用；在您的 `config.yml` 的 litellm_settings 下設定 `store_audit_logs: false` 即可關閉。透過 API 或 UI 刪除 virtual key，然後查看 **Audit Logs** 分頁。
-
-→ [Audit Logs](/docs/proxy/multiple_admins)
-
-### Team/key 防護欄 {#teamkey-guardrails}
-
-1. **Guardrails** → 建立一個 guardrail（機密偵測或內容審核）
-2. **Policies** → 將 guardrail 附加到 team 或 key
-3. 傳送應該被封鎖的請求；確認 guardrail 觸發
-
-→ [Guardrail Policies](/docs/proxy/guardrails/guardrail_policies)
-→ [Guardrails Quick Start](/docs/proxy/guardrails/quick_start)
-
-### Admin UI 的 SSO {#sso-for-admin-ui}
-
-SSO 會控制 **Admin UI login**，這與 API 驗證（virtual keys 或 JWT）是分開的。請在您的 IdP 中註冊此 redirect URI：
+SSO 控制 Admin UI 的登入。API 請求使用不同的方法：虛擬金鑰或 JWT。在您的身分提供者中註冊此重新導向 URI：
 
 ```
 https://<your-proxy-base-url>/sso/callback
@@ -636,74 +554,142 @@ PROXY_BASE_URL="https://<your-proxy-base-url>"
 </TabItem>
 </Tabs>
 
-**驗證：** 透過您的身分識別提供者登入 Admin UI。
+透過您的身分提供者登入 Admin UI。接著停用以 master key 與 `UI_PASSWORD` 的登入。參見[停用環境憑證登入](/docs/proxy/security_best_practices#disable-environment-credential-login-to-the-admin-ui)。
 
-**另可使用：** [Custom SSO](/docs/proxy/custom_sso) · [CLI SSO](/docs/proxy/cli_sso) · [SCIM provisioning](/docs/tutorials/scim_litellm)
+若要從您的身分提供者建立使用者與團隊，請使用 [SCIM 佈建](/docs/tutorials/scim_litellm)。更多選項請參見 [Admin UI 的 SSO](/docs/proxy/admin_ui_sso)、[SSO 事件掛鉤](/docs/proxy/custom_sso) 與 [CLI 登入](/docs/proxy/cli_sso)。
 
-→ [SSO for Admin UI](/docs/proxy/admin_ui_sso)
+### API 流量的 JWT 驗證 {#jwt-authentication-for-api-traffic}
 
-### JWT/OIDC 驗證 {#jwtoidc-auth}
+工作負載可以送出您 OIDC 提供者的 JWT，取代長期有效的虛擬金鑰。JWT 聲明可將每個請求對應到 LiteLLM 使用者、團隊與模型存取權。參見 [JWT 驗證](/docs/proxy/token_auth) 與 [JWT 到虛擬金鑰的對應](/docs/proxy/jwt_key_mapping)。
 
-使用您的身分識別提供者的 JWT 權杖來驗證應用程式請求，而非靜態虛擬金鑰。
+### 最小權限存取 {#least-privilege-access}
 
-→ [JWT-based Authentication](/docs/proxy/token_auth)
+給予每個人最低限度的 [RBAC 角色](/docs/proxy/access_control)，並讓 proxy 管理員的人數保持精簡。給予每個生產工作負載自己的[服務帳戶](/docs/proxy/service_accounts)金鑰，讓您可以撤銷一個工作負載而不影響其他工作負載。若要限制網路來源，請使用 [IP 位址篩選](/docs/proxy/ip_address)。
 
 ### 密鑰管理器 {#secret-manager}
 
-將 LiteLLM 指向您的 secret manager，讓提供者金鑰從 vault 讀取，而不是從設定檔讀取。
+將提供者金鑰保留在您的密鑰管理器中，而不是設定檔裡。參見[密鑰管理器](/docs/secret_managers/overview)。
 
-→ [Secret Managers Overview](/docs/secret_managers/overview)
+### 稽核記錄 {#audit-logs}
 
----
-
-## 7. 其他企業價值 {#7-additional-enterprise-value}
-
-<NavigationCards
-columns={3}
-items={[
-  {
-    icon: "💰",
-    title: "治理與成本控制",
-    description: "標籤預算、軟性預算警報、支出報告，以及暫時性預算調升。",
-    to: "/docs/proxy/cost_tracking",
-  },
-  {
-    icon: "📡",
-    title: "可觀測性",
-    description: "依團隊分流的記錄、匯出記錄至 GCS/Azure Blob，以及依團隊分流的 Langfuse 路由。",
-    to: "/docs/proxy/team_logging",
-  },
-  {
-    icon: "🌐",
-    title: "AI Hub",
-    description: "為您的使用者提供顯示可用模型與代理程式的公開品牌頁面。",
-    to: "/docs/proxy/ai_hub",
-  },
-  {
-    icon: "🏗️",
-    title: "多區域部署",
-    description: "多區域部署、授權管理，以及管理端與工作節點分離架構。",
-    to: "/docs/proxy/multi_region",
-  },
-  {
-    icon: "🔒",
-    title: "資料安全",
-    description: "自架環境資料處理、弱點通報，以及合規常見問題。",
-    to: "/docs/data_security",
-  },
-  {
-    icon: "✨",
-    title: "完整企業版功能目錄",
-    description: "完整功能參考、部署選項與支援服務水準協議（SLA）。",
-    to: "/docs/enterprise",
-  },
-]}
-/>
+當閘道有授權時，稽核記錄預設開啟。若要關閉，請在 `litellm_settings` 中設定 `store_audit_logs: false`。若要測試，請在 API 或 Admin UI 中刪除一個虛擬金鑰。接著開啟 **Audit Logs** 頁面。參見[稽核記錄](/docs/proxy/audit_logs)。
 
 ---
 
-## 8. 需要協助？ {#8-need-help}
+## 步驟 5. 設定費用分攤 {#step-5-set-up-chargeback}
 
-每份 Enterprise 授權都包含一個與我們工程團隊聯繫的專屬 Slack 或 Teams 頻道。請與我們聯繫 `support@berri.ai`，我們非常樂意協助您！
+費用分攤會將每個請求的成本歸屬到送出它的事業單位或專案。LiteLLM 在租戶階層的每一層歸屬支出：組織、團隊、使用者與虛擬金鑰。專案與標籤提供更多維度。事業單位使用組織，其中的群組使用團隊。應用程式使用專案，跨團隊的成本使用標籤。
 
-請參閱 [Professional Support](/docs/enterprise#professional-support)。
+```mermaid
+flowchart TD
+    REQUEST["用戶端請求（LLM / MCP / Agent）"]
+    REQUEST -->|"Authorization: Bearer sk-..."| PROXY["LiteLLM Enterprise 閘道"]
+
+    PROXY -->|"key.team_id"| TEAMS["團隊（組織階層）"]
+    PROXY -->|"虛擬金鑰查詢"| KEYS["虛擬金鑰"]
+    PROXY -->|"請求上的 metadata.tags"| TAGS["標籤預算（跨切專案）"]
+
+    TEAMS --> TBUDGET["團隊 max_budget / 每月支出額度"]
+    KEYS --> KBUDGET["金鑰 max_budget + RPM/TPM 限制"]
+    TAGS --> TABUDGET["標籤預算限制"]
+
+    TBUDGET --> ENFORCE["路由前預算檢查"]
+    KBUDGET --> ENFORCE
+    TABUDGET --> ENFORCE
+    ENFORCE --> ROUTES["LLM / MCP / Agent 路由"]
+    PROXY --> SPEND["支出儀表板 · GET /spend/tags"]
+```
+
+相同的虛擬金鑰與相同的預算適用於 LLM、MCP 與代理程式請求。
+
+### 5a. 團隊預算 {#5a-team-budget}
+
+您已在步驟 2 設定團隊 `max_budget`。在步驟 3 之後：
+
+1. 開啟 **Teams** 頁面並選取您的團隊。
+2. 確認支出包含 LLM、MCP 與代理程式呼叫。
+3. 選用：將團隊 `max_budget` 設為非常低的值，例如 `$0.0001`。送出一次 LLM 請求，並確認閘道傳回預算錯誤。
+
+若要在團隊到達預算前寄電子郵件給團隊，請使用[軟性預算提醒](/docs/proxy/ui_team_soft_budget_alerts)。
+
+### 5b. 專案 {#5b-projects}
+
+專案將一個應用程式或使用案例的金鑰分組。專案有預算、擁有者、速率限制、模型允許清單與自己的支出檢視。參見[專案](/docs/proxy/project_management)。
+
+### 5c. 金鑰預算與速率限制 {#5c-key-budget-and-rate-limits}
+
+1. 建立一個預算小且有 RPM 限制的金鑰：
+
+```bash
+curl -X POST 'http://localhost:4000/key/generate' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "max_budget": 0.01,
+    "rpm_limit": 1,
+    "team_id": "<your-team-id>"
+  }'
+```
+
+2. 以新金鑰送出請求。確認回應為 `200 OK`。
+3. 在同一分鐘內送出第二次請求。確認閘道傳回速率限制錯誤。
+4. 在 Admin UI 中開啟 **Virtual Keys**，找到該金鑰的支出。
+
+參見[虛擬金鑰](/docs/proxy/virtual_keys)。
+
+### 5d. 標籤預算 {#5d-tag-budget}
+
+1. 將 `tag_budget_config` 加入 `config.yaml` 並重新啟動閘道：
+
+```yaml
+litellm_settings:
+  tag_budget_config:
+    poc:chat-app:
+      max_budget: 0.000000000001
+      budget_duration: 1d
+```
+
+2. 以該標籤送出請求：
+
+```bash
+curl -X POST 'http://localhost:4000/chat/completions' \
+  -H 'Authorization: Bearer sk-team-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "{{openai_large}}",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "metadata": {"tags": ["poc:chat-app"]}
+  }'
+```
+
+3. 確認第一個請求成功。以相同標籤送出第二個請求。確認閘道傳回預算錯誤。
+
+4. 取得每個標籤的支出：
+
+```bash
+curl -X GET 'http://localhost:4000/spend/tags' \
+  -H "Authorization: Bearer $LITELLM_API_KEY"
+```
+
+確認回應顯示 `poc:chat-app` 以及 `total_spend` 與 `log_count`。
+
+參見[請求標籤](/docs/proxy/request_tags)與[標籤預算](/docs/proxy/tag_budgets)。
+
+### 5e. 支出報告 {#5e-spend-reports}
+
+若要將成本送交財務部門，可透過 API 依團隊、金鑰、標籤或模型取得支出報告。參見[產生支出報告](/docs/proxy/cost_tracking#-enterprise-generate-spend-reports)。
+
+暫時性上限可使用[暫時提高預算](/docs/proxy/temporary_budget_increase)。分層上限可使用[預算與速率限制層級](/docs/proxy/rate_limit_tiers)。
+
+---
+
+## 上線之後 {#after-the-rollout}
+
+- **防護欄。** 建立一個防護欄，以原則將它附加到團隊或金鑰，並送出一個防護欄必須阻擋的請求。參見[防護欄快速入門](/docs/proxy/guardrails/quick_start)與[防護欄原則](/docs/proxy/guardrails/guardrail_policies)。
+- **團隊記錄。** 將每個團隊的記錄送到它自己的可觀測性專案。參見[團隊與金鑰記錄](/docs/proxy/team_logging)。
+- **AI Hub。** 在一個頁面上展示您的使用者可使用的模型、MCP 伺服器與代理程式。參見 [AI Hub](/docs/proxy/ai_hub)。
+- **安全性審查。** 收集 SOC 2 Type II 報告與給您安全團隊的答覆。參見[合規與 SOC 2 Type II](/docs/enterprise/compliance)。
+
+## 需要協助 {#get-help}
+
+每份 Enterprise 授權都包含與 LiteLLM 工程師共用的 Slack Connect 頻道。您也可以寄電子郵件至 `support@berri.ai`。若要取得頻道，請依照[如何申請您的頻道](/docs/enterprise/support#how-to-request-your-channel)。參見[支援與 SLA](/docs/enterprise/support)。

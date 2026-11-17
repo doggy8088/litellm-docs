@@ -1,7 +1,13 @@
+---
+title: "透過 LiteLLM 使用 Petals：分散式推論"
+sidebar_label: "Petals"
+description: "從 LiteLLM Python SDK 呼叫 Petals 分散式網路上的模型。安裝 petals、對每個模型使用 petals/ 前綴，並串流回應。"
+---
+
 # Petals {#petals}
 Petals: https://github.com/bigscience-workshop/petals
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_Petals.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_Petals.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 

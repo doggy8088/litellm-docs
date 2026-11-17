@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Deepgram 語音轉文字"
+sidebar_label: "Deepgram"
+description: "使用 Deepgram Nova-2 轉錄音訊：透過 litellm.transcription()，或 LiteLLM AI Gateway 上與 OpenAI 相容的 /audio/transcriptions 端點。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -154,6 +154,85 @@ curl -X POST "http://localhost:4000/team/update" \
 
 `/team/update` 的合併方式與 `/key/update` 相同：只有您送出的欄位會被取代。可透過 `GET /team/info?team_id=<team-id>` 讀回已儲存的授權；它會以 `team_info.object_permission` 返回。
 
+## 透過 SCIM 佈建的團隊授予 MCP 存取權 {#grant-mcp-access-through-scim-provisioned-teams}
+
+當您的身分提供者（IdP）透過 [SCIM](./tutorials/scim_litellm) 佈建 LiteLLM 時，讓 IdP 群組取得 MCP 存取權的受支援方式，是透過 SCIM 為該群組建立的 LiteLLM 團隊。SCIM 會將群組同步成團隊並保持其成員資格為最新；您只需在該團隊上授予 MCP 伺服器或存取群組一次，每位成員就能透過屬於該團隊的金鑰存取它們。
+
+```text
+IdP group -> SCIM /scim/v2/Groups -> LiteLLM team (team_id, members) -> team object_permission -> team keys
+```
+
+### 1. 將群組佈建為團隊 {#1-provision-the-group-as-a-team}
+
+依照 [SCIM with LiteLLM](./tutorials/scim_litellm#3-test-scim-connection) 所述，將群組指派給 IdP 中的 LiteLLM 應用程式。接著 IdP 會送出如下的 SCIM 群組。LiteLLM 會建立一個團隊，其 `team_id` 為群組的 `id`（未送出 `id` 時則為 `externalId`），`team_alias` 為群組的 `displayName`，成員則為群組的 `members`。
+
+```bash title="SCIM group the IdP sends" showLineNumbers
+curl -X POST "http://localhost:4000/scim/v2/Groups" \
+  -H "Authorization: Bearer <scim-token>" \
+  -H "Content-Type: application/scim+json" \
+  -d '{
+    "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+    "externalId": "6f1c2e1a-entra-research",
+    "displayName": "Research Engineers",
+    "members": [{"value": "alice@example.com"}]
+  }'
+```
+
+這會建立 `team_id` 為 `6f1c2e1a-entra-research` 的團隊 `Research Engineers`。可在 Admin UI 的 **Teams** 中查詢，或使用 `GET /team/info?team_id=6f1c2e1a-entra-research`。
+
+### 2. 將 MCP 存取權授予團隊 {#2-grant-mcp-access-to-the-team}
+
+將存取群組（或個別伺服器）授予團隊的方式與其他團隊相同，請參閱 [Grant an MCP server to a team](#grant-an-mcp-server-to-a-team)。在 Admin UI 中，從 **Teams** 開啟該團隊，前往 **Settings**，點選 **Edit Settings**，在 **MCP Servers / Access Groups** 下選取存取群組，然後點選 **Save Changes**。群組中的每台伺服器都會連同其工具列出，並標示其所屬群組。
+
+<Image
+  img={require('../img/mcp_scim_team_settings.png')}
+  style={{width: '80%', display: 'block', margin: '0'}}
+  alt="SCIM 佈建團隊設定中的 MCP Servers / Access Groups，已選取 research 存取群組，且 wiki 伺服器透過它解析"
+/>
+
+透過 API 時，使用 SCIM 團隊的 `team_id` 呼叫 `/team/update`：
+
+```bash title="Grant the research access group to the SCIM team" showLineNumbers
+curl -X POST "http://localhost:4000/team/update" \
+  -H "Authorization: Bearer sk-master-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team_id": "6f1c2e1a-entra-research",
+    "object_permission": {
+      "mcp_access_groups": ["research"]
+    }
+  }'
+```
+
+接著團隊的 **Overview** 分頁會在 **Object Permissions** 下顯示該授權，`GET /team/info` 也會在 `team_info.object_permission` 下回傳它。
+
+<Image
+  img={require('../img/mcp_scim_team_overview.png')}
+  style={{width: '80%', display: 'block', margin: '0'}}
+  alt="SCIM 佈建的 Research Engineers 團隊總覽，research 存取群組列於 Object Permissions 的 MCP Servers 之下"
+/>
+
+後續的 SCIM 同步會保留此授權。來自 IdP 的群組 `PUT` 與 `PATCH` 請求（重新命名、成員新增或移除）只會更新團隊別名、中繼資料與成員；不會更動 `object_permission`。
+
+### 3. 給成員一組團隊金鑰 {#3-give-members-a-team-key}
+
+成員透過屬於團隊的金鑰存取 MCP：在 **Virtual Keys** 中建立金鑰時選取該團隊，或將 `team_id` 傳給 `/key/generate`。沒有自己 MCP 授權的團隊金鑰會繼承團隊的授權，如 [How key and team grants resolve](#how-key-and-team-grants-resolve) 所述。不屬於該團隊的個人金鑰不會取得團隊的授權，即使其擁有者是成員也一樣。
+
+```bash title="Check what a team key can reach" showLineNumbers
+curl "http://localhost:4000/mcp-rest/tools/list" \
+  -H "Authorization: Bearer <team-key>"
+```
+
+回應只會列出 `research` 存取群組中伺服器的工具。呼叫授權範圍外伺服器上的工具會回傳 `403`，並顯示 `The key is not allowed to access server <server>`。
+
+當 IdP 將使用者從群組中移除時，LiteLLM 會將他們從團隊中移除，並刪除他們在該團隊的金鑰。如果使用者被重新加入，他們需要一組新的團隊金鑰。
+
+如果呼叫者使用 JWT 而非虛擬金鑰進行驗證，token 只有在解析到 SCIM 團隊時才能取得該團隊的 MCP 授權，例如在其 `team_id` 被列在設定為 `team_ids_jwt_field` 的 claim 中，請參閱 [Control model access with Teams](./proxy/access_management/jwt_permissions#control-model-access-with-teams)。
+
+### 不支援直接 claim 對應 {#direct-claim-mapping-is-not-supported}
+
+LiteLLM 不會將 IdP claim 直接對應到 MCP 存取群組，這是刻意的設計。SCIM 的 `groups[].value`、`roles` 或 `entitlements` 值，或是 JWT claim，即使命名了一個 MCP 存取群組，本身也不會授予任何權限：SCIM `groups[].value` 項目會被讀作 LiteLLM `team_id`，`roles` 與 `entitlements` 只會儲存為中繼資料，而且沒有任何 `litellm_jwtauth` 設定會從 token 讀取 MCP 存取群組。讓 IdP 負責誰屬於哪個群組，LiteLLM 團隊的 `object_permission` 負責該群組可以存取什麼，使每個 MCP 授權都有一條可在團隊上檢視的單一可稽核路徑。
+
 ## 金鑰與團隊授權如何解析 {#how-key-and-team-grants-resolve}
 
 完整規則集載於 [權限階層](./mcp_control#permission-hierarchy) 與 [每個實體的工具層級權限](./mcp_control#per-entity-tool-level-permissions)。以下案例是在只有金鑰與其團隊具有授權時會遇到的情況，順序依 LiteLLM 套用規則的先後而定。

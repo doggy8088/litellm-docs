@@ -1,5 +1,6 @@
 ---
-title: "v1.81.14 - 全新閘道層防護欄與合規實作遊樂場"
+title: "LiteLLM v1.81.14 - 全新閘道層防護欄與合規實作遊樂場"
+description: "新增 Guardrail Garden、Compliance Playground 與三個內建防護欄。於首日新增 Claude Sonnet 4.6，並將延遲降低最高 13%。"
 slug: "v1-81-14"
 date: 2026-02-21T00:00:00
 authors:

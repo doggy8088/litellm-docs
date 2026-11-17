@@ -86,6 +86,18 @@ LiteLLM 會將 `0.000415` 和 `1874` 記入呼叫的金鑰、團隊與使用者�
 
 串流目標可以運作，因為回應標頭會在本文之前到達。若某目標必須等到串流結束後才知道最終成本，就無法透過此合約回報，因為屆時標頭早已在傳輸路徑上
 
+## 命名操作 {#naming-the-operation}
+
+目標也可以表明它執行了哪個 GenAI 操作，讓它的追蹤不再顯示為 `chat`：
+
+```
+x-litellm-operation-name: retrieval
+```
+
+當 OpenTelemetry 追蹤遵循 GenAI 語意慣例時（`OTEL_SEMCONV_STABILITY_OPT_IN=gen_ai_latest_experimental` 或 `LITELLM_OTEL_V2=1`），LiteLLM 會將它用於 `gen_ai.operation.name` 與 span 名稱。請傳送來自 [OpenTelemetry GenAI 慣例](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/) 的操作名稱，例如 `retrieval`、`embeddings`、`execute_tool` 或 `invoke_agent`。未知的名稱會被忽略，並在 proxy 記錄中留下一則警告
+
+若沒有此標頭，在 `pass_through_endpoints` 下定義的路由會被標記為 `litellm.passthrough`。LiteLLM 內建的提供者路由（例如 `/anthropic` 與 `/openai`）則維持它們目前的標記
+
 ## 讀回這些值 {#reading-the-values-back}
 
 上游回應標頭會透傳給呼叫端客戶端，因此呼叫端會看到與一般 API 相同的 `x-litellm-response-cost` 形式。LiteLLM 會在送出時加上 `x-litellm-call-id`，這是用來在比對單一請求時與支出記錄核對的值

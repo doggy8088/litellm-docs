@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Vercel AI Gateway：設定"
+sidebar_label: "Vercel AI Gateway"
+description: "透過 Vercel AI Gateway 路由 OpenAI 與 Anthropic Claude 模型並支援串流，並以自訂維度建立 text-embedding-3-small 嵌入。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -115,7 +121,7 @@ response = embedding(
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
-  - model_name: gpt-4o-gateway
+  - model_name: {{openai_large}}-gateway
     litellm_params:
       model: vercel_ai_gateway/openai/{{openai_large}}
       api_key: os.environ/VERCEL_AI_GATEWAY_API_KEY
@@ -153,7 +159,7 @@ client = OpenAI(
 
 # Non-streaming response
 response = client.chat.completions.create(
-    model="gpt-4o-gateway",
+    model="{{openai_large}}-gateway",
     messages=[{"role": "user", "content": "Hello, how are you?"}]
 )
 
@@ -171,7 +177,7 @@ client = OpenAI(
 
 # Streaming response
 response = client.chat.completions.create(
-    model="gpt-4o-gateway",
+    model="{{openai_large}}-gateway",
     messages=[{"role": "user", "content": "Hello, how are you?"}],
     stream=True
 )
@@ -190,7 +196,7 @@ import litellm
 
 # Configure LiteLLM to use your proxy
 response = litellm.completion(
-    model="litellm_proxy/gpt-4o-gateway",
+    model="litellm_proxy/{{openai_large}}-gateway",
     messages=[{"role": "user", "content": "Hello, how are you?"}],
     api_base="http://localhost:4000",
     api_key="your-proxy-api-key"
@@ -204,7 +210,7 @@ import litellm
 
 # Configure LiteLLM to use your proxy with streaming
 response = litellm.completion(
-    model="litellm_proxy/gpt-4o-gateway",
+    model="litellm_proxy/{{openai_large}}-gateway",
     messages=[{"role": "user", "content": "Hello, how are you?"}],
     api_base="http://localhost:4000",
     api_key="your-proxy-api-key",
@@ -225,7 +231,7 @@ curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer your-proxy-api-key" \
   -d '{
-    "model": "gpt-4o-gateway",
+    "model": "{{openai_large}}-gateway",
     "messages": [{"role": "user", "content": "Hello, how are you?"}]
   }'
 ```
@@ -235,7 +241,7 @@ curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer your-proxy-api-key" \
   -d '{
-    "model": "gpt-4o-gateway",
+    "model": "{{openai_large}}-gateway",
     "messages": [{"role": "user", "content": "Hello, how are you?"}],
     "stream": true
   }'

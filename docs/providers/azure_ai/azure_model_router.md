@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure Model Router"
+sidebar_label: "Azure Model Router"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 以 azure_ai/model_router/ 前綴呼叫 Azure Model Router。串流回應並追蹤每個模型的成本。"
+---
+
 # Azure 模型路由器 {#azure-model-router}
 
 Azure Model Router 是 Azure AI Foundry 中的一項功能，會根據您的需求，自動將您的請求路由到可用的最佳模型。這讓您可以使用單一端點，為每個請求智慧地選擇最佳模型。

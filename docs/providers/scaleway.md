@@ -1,3 +1,9 @@
+---
+title: "Scaleway Generative APIs 與 LiteLLM"
+sidebar_label: "Scaleway"
+description: "從 LiteLLM Python SDK 或 AI 閘道執行 Qwen3 235B 等 Scaleway Generative APIs 聊天模型，並使用 Whisper large v3 轉錄音訊。"
+---
+
 # Scaleway {#scaleway}
 LiteLLM 支援 Scaleway Generative APIs 上所有可用的 [模型 ↗](https://www.scaleway.com/en/docs/generative-apis/reference-content/supported-models/)。 
 

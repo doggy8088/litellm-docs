@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM 對 GPT-5.3-Codex 的 Day 0 支援，包括 Responses API 的 phase 參數處理。"
+card_title: "GPT-5.3-Codex"
+card_summary: "Codex 模型，其 assistant 項目帶有 phase 欄位（commentary、final_answer），您必須在每一回合將其回傳。"
 tags: [openai, gpt-5.3-codex, codex, day 0 support]
 hide_table_of_contents: false
 ---

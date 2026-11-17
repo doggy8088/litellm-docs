@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 IBM watsonx.ai Rerank"
+sidebar_label: "watsonx.ai 重新排序"
+description: "以 ms-marco-minilm-l-12-v2 等 IBM watsonx.ai cross-encoder 模型重新排序文件，使用 top_n 與 return_documents，可從 SDK 或 AI Gateway 操作。"
+---
+
 # watsonx.ai 重新排序 {#watsonxai-rerank}
 
 ## 概覽 {#overview}

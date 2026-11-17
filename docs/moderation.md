@@ -136,7 +136,7 @@ LiteLLM 可接受並轉換所有支援提供者的 [OpenAI Moderation 參數](ht
 
 ## **支援的提供者** {#supported-providers}
 
-#### ⚡️請前往 [models.litellm.ai](https://models.litellm.ai/) 查看所有支援的模型與提供者 {#️see-all-supported-models-and-providers-at-modelslitellmai}
+#### 請前往 [models.litellm.ai](https://models.litellm.ai/) 查看所有支援的模型與提供者 {#see-all-supported-models-and-providers-at-modelslitellmai}
 
 | 提供者    |
 |-------------|

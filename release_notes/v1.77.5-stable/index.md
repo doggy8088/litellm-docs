@@ -1,5 +1,6 @@
 ---
-title: "v1.77.5-stable - MCP OAuth 2.0 支援"
+title: "LiteLLM v1.77.5-stable - MCP OAuth 2.0 支援"
+description: "新增 MCP OAuth 2.0 支援、排程金鑰輪換，以及 Gemini 2.5 Flash 與 Flash-lite 模型。Router 修正使 RPS 提升 54%。"
 slug: "v1-77-5"
 date: 2025-09-29T10:00:00
 authors:

@@ -1,5 +1,6 @@
 ---
-title: "v1.85.1 - Gemini 3.5 Flash 與可靠性修正"
+title: "LiteLLM v1.85.1 - Gemini 3.5 Flash 與可靠性修正"
+description: "在 Google AI Studio 與 Vertex AI 上新增 Gemini 3.5 Flash 第 0 天支援。修正 Vertex AI 工具呼叫錯誤與跨 Pod 的 Redis 支出植入。"
 slug: "v1-85-1"
 date: 2026-05-20T00:00:00
 authors:

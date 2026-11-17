@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 PostHog 記錄"
+sidebar_label: "PostHog"
+description: "透過 Python SDK 或 AI Gateway，將 LiteLLM 的 completion、embedding 與錯誤事件傳送至 PostHog，支援依團隊記錄與自訂執行個體。"
+---
 # PostHog {#posthog}
 
 ## PostHog 是什麼？ {#what-is-posthog}

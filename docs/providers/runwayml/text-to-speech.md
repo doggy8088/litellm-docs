@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 進行 RunwayML 文字轉語音"
+sidebar_label: "RunwayML - 文字轉語音"
+description: "使用 RunwayML eleven_multilingual_v2 將文字轉換為語音，可使用 OpenAI 語音名稱或 Maya、Bernard 等預設語音，並支援非同步呼叫與成本追蹤。"
+---
+
 # RunwayML - 文字轉語音 {#runwayml---text-to-speech}
 
 ## 總覽 {#overview}

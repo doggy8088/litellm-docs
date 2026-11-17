@@ -29,9 +29,9 @@ os.environ["AWS_REGION_NAME"] = "" # us-east-1, us-east-2, us-west-1, us-west-2
 ```yaml
 general_settings:
   master_key: os.environ/litellm_master_key 
-  key_management_system: "aws_secret_manager" # 👈 KEY CHANGE
+  key_management_system: "aws_secret_manager" # KEY CHANGE
   key_management_settings: 
-    hosted_keys: ["litellm_master_key"] # 👈 Specify which env keys you stored on AWS 
+    hosted_keys: ["litellm_master_key"] # Specify which env keys you stored on AWS
 
 ```
 
@@ -43,7 +43,7 @@ general_settings:
 
 ```yaml
 general_settings:
-  key_management_system: "aws_secret_manager" # 👈 KEY CHANGE
+  key_management_system: "aws_secret_manager" # KEY CHANGE
   key_management_settings: 
     store_virtual_keys: true # OPTIONAL. Defaults to False, when True will store virtual keys in secret manager
     prefix_for_stored_virtual_keys: "litellm/" # OPTIONAL. If set, this prefix will be used for stored virtual keys in the secret manager
@@ -60,7 +60,7 @@ general_settings:
 ```yaml
 general_settings:
   master_key: os.environ/litellm_master_key 
-  key_management_system: "aws_secret_manager" # 👈 KEY CHANGE
+  key_management_system: "aws_secret_manager" # KEY CHANGE
   key_management_settings: 
     store_virtual_keys: true # OPTIONAL. Defaults to False, when True will store virtual keys in secret manager
     prefix_for_stored_virtual_keys: "litellm/" # OPTIONAL. If set, this prefix will be used for stored virtual keys in the secret manager
@@ -94,7 +94,7 @@ general_settings:
 
 ## 在 1 個 AWS Secret 中使用 K/V 配對 {#using-kv-pairs-in-1-aws-secret}
 
-您可以使用 `primary_secret_name` 參數從單一 AWS Secret 讀取多個金鑰：
+You can read multiple keys from a single AWS Secret using the `primary_secret_name` parameter:
 
 ```yaml
 general_settings:
@@ -104,10 +104,10 @@ general_settings:
       "OPENAI_API_KEY_MODEL_1",
       "OPENAI_API_KEY_MODEL_2",
     ]
-    primary_secret_name: "litellm_secrets" # 👈 Read multiple keys from one JSON secret
+    primary_secret_name: "litellm_secrets" # Read multiple keys from one JSON secret
 ```
 
-`primary_secret_name` 可讓您將單一 AWS Secret 中的多個金鑰作為 JSON 物件讀取。例如，「litellm_secrets」將包含：
+The `primary_secret_name` allows you to read multiple keys from a single AWS Secret as a JSON object. For example, the "litellm_secrets" would contain:
 
 ```json
 {

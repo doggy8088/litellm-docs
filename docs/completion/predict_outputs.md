@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 | 說明 | 當 LLM 的大部分輸出可事先得知時，請使用此功能。例如，如果您要請模型僅做少量修改來重寫某段文字或程式碼，您可以將既有內容作為預測輸入，藉由 Predicted Outputs 大幅降低延遲。 |
 | 支援的提供者 | `openai` |
 | OpenAI 關於 Predicted Outputs 的文件連結 | [Predicted Outputs ↗](https://platform.openai.com/docs/guides/latency-optimization#use-predicted-outputs) |
-| LiteLLM 版本起支援 | `v1.51.4` |
+| LiteLLM 版本起支援 | <SinceVersion v="1.52.0" /> |
 
 ## 使用 Predicted Outputs {#using-predicted-outputs}
 

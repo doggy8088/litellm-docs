@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM 中將敏感資料路由至地端模型"
+sidebar_label: "敏感資料路由（內建防護欄）"
+description: "在 LiteLLM AI 閘道上偵測請求中的敏感資料，並將其重新路由至地端模型而非阻擋它，並具備工作階段黏性。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

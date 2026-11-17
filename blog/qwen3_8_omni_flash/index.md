@@ -7,6 +7,8 @@ authors:
   - misbah
   - mateo
 description: "LiteLLM 對 Qwen3.8-Omni-Flash 的支援首日，支援文字、圖片、音訊和影片輸入。"
+card_title: "Qwen3.8-Omni-Flash"
+card_summary: "Qwen 的首款 omni 模型：透過 DashScope 支援文字、圖片、音訊與影片輸入，並輸出文字。"
 tags: [qwen, dashscope, qwen3.8-omni-flash, day 0 support]
 hide_table_of_contents: false
 ---

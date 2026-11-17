@@ -1,184 +1,199 @@
+---
+title: 多區域部署
+sidebar_label: 總覽
+description: 以共用 PostgreSQL 與區域 Redis 在多個區域執行 LiteLLM。選擇路由政策，並測試故障復原。
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import Image from '@theme/IdealImage';
-import { MultiRegionArchitecture } from '@site/src/components/CloudArchitecture';
 
 # 多區域部署 {#multi-region-deployment}
 
-在同一家雲端提供者的多個區域中執行 LiteLLM proxy 執行個體，全部連接到同一個共享的 PostgreSQL 資料庫。用戶端會被路由到最近的區域以降低延遲，而金鑰、團隊、使用者與花費追蹤則會因為只有單一事實來源而在各處保持一致。
+{/* keep-version-note */}
 
-本頁涵蓋支援的拓撲、跨區域授權的運作方式，以及逐步設定方式。若要在每個區域部署 proxy 本身，請參閱[生產環境部署](./deploy.md)。
+當使用者需要鄰近的閘道，或您的復原計畫涵蓋區域中斷時，請在多個區域執行 LiteLLM。區域閘道使用一個邏輯 PostgreSQL 資料庫，以及每個區域一個 Redis 執行個體。
+
+若是處理單一區域內的副本與可用區故障，請從[高可用性](./deploy/ha/overview.md) 開始。使用[路由](./deploy/multi_region/routing.md) 為每個請求選擇區域。使用[備援切換](./deploy/multi_region/failover.md) 規劃區域與共用相依性故障。
 
 ## 架構 {#architecture}
 
-<MultiRegionArchitecture />
+```mermaid
+flowchart LR
+    Clients[應用程式] --> Route[全域路由]
+    subgraph A[區域 A]
+        IngressA[Ingress] --> GatewayA[LiteLLM 副本]
+        GatewayA --> RedisA[(Redis A)]
+        subgraph Data[共用資料]
+            DB[(PostgreSQL 寫入端)]
+        end
+        GatewayA --> DB
+    end
+    subgraph B[區域 B]
+        IngressB[Ingress] --> GatewayB[LiteLLM 副本]
+        GatewayB --> RedisB[(Redis B)]
+    end
+    Route --> IngressA
+    Route --> IngressB
+    GatewayB -->|私人連結| DB
+```
 
-此拓撲有三項規則：
+PostgreSQL 保存共用的金鑰、團隊、使用者、設定與支出記錄。請使用高可用性的資料庫服務。所有區域閘道都依賴其可寫入的主要資料庫。
 
-1. **一個資料庫。** 每個區域的 proxy 執行個體都指向 `DATABASE_URL` 同一個 PostgreSQL 資料庫，該資料庫託管在您的主要區域。這就是讓某個區域建立的金鑰能在所有區域運作的原因，也是讓預算與花費追蹤在全域保持一致的原因。
-2. **每個區域一個 Redis。** Redis 處理某個區域內各執行個體之間的速率限制、路由器狀態與回應快取。請保持在同區域內；將單一 Redis 放在跨區域連線後方，會讓每次速率限制檢查都多一次網路往返。
-3. **一個雲端提供者。** 在同一家雲端提供者中執行所有區域。
+| 模式 | 一般請求路由 | 容量需求 |
+| --- | --- | --- |
+| 主動-主動 | 兩個區域透過延遲、位置或加權政策提供請求服務。 | 存活的區域需要有備用容量來接手它接管的流量。 |
+| 主動-被動 | 區域 A 提供請求服務。區域 B 作為待命等待。 | 保持待命容量與提供者存取就緒，以符合所需的復原時間。 |
 
-相同的拓撲可採 active-active（DNS 將每個用戶端路由到最近的區域；目標是延遲）或 active-passive（所有流量都在一個區域上，第二個區域已部署但在 DNS 故障轉移記錄後方閒置；目標是災難復原）運作。設定完全相同；只有 DNS 政策不同。
+在主動-被動部署中，請定期測試待命區域，檢查是否有過期憑證、配額不足或缺少設定。
+
+驗證快取、設定重新載入、讀取副本延遲與批次支出寫入，都可能延遲跨區域的更新。請參閱[驗證快取](./caching_redis.md#virtual-key-authentication-cache-redis) 與[資料庫讀取副本](./db_read_replica.md)。
 
 ## 跨區域授權 {#licensing-across-regions}
 
-只要所有區域共用一個資料庫，單一 LiteLLM Enterprise 授權即可涵蓋所有區域。
+當所有區域共用一個資料庫時，單一 LiteLLM Enterprise 授權即可涵蓋多區域部署。每個執行個體接收並驗證相同的 `LITELLM_LICENSE`。LiteLLM 會依共用資料庫的授權限制計算使用者與團隊數量。
 
-每個 proxy 執行個體都會獨立驗證其接收到的 `LITELLM_LICENSE` 金鑰（離線對已簽署的負載，或對授權伺服器），而授權檢查中不會計算執行個體或區域數量。授權所帶有的數量限制，也就是最大使用者數與最大團隊數，會從資料庫計算。當每個區域共用同一個資料庫時，這些計數只存在一份，因此授權也只會在全域強制一次。
+| 拓撲 | 資料庫 | Enterprise 授權 |
+| --- | --- | --- |
+| 共用資料庫多區域部署 | 一個邏輯資料庫 | 部署一個 |
+| 每個區域獨立部署 | 每個部署一個 | 每個部署一個 |
 
-推論很簡單：每個區域各自一個資料庫就是各自獨立的部署，而每個部署都需要自己的授權。兩個資料庫就代表兩組使用者與團隊計數、兩組金鑰，以及兩份授權。
-
-| 拓撲 | 資料庫 | 所需授權 |
-|---|---|---|
-| 多區域，共用資料庫（本頁） | 1 | 1 |
-| 每個區域獨立部署 | 每個區域 1 個 | 每個區域 1 個 |
-| [Global Control Plane](./global_control_plane.md) | 每個 worker 1 個 | 每個 worker 1 個 |
-
-如果您想要每個區域都有完全獨立的部署（自己的資料庫、Redis、master key 和授權），並由單一 UI 管理，請使用 [Global Control Plane](./global_control_plane.md)（Enterprise），而不是本頁。它以全域一致性換取爆炸半徑隔離：某一區域的資料庫中斷不會影響其他區域，但 keys 和預算不會跨區域共享。
+這種共用資料庫設計可與開源 proxy 一起使用。[全域控制平面](./global_control_plane.md) 為獨立部署新增集中管理與報告。每個資料平面保留自己的金鑰、團隊、預算、資料庫、Redis 與主金鑰。控制平面服務需要 Enterprise 授權。
 
 ## 需求 {#requirements}
 
-每個區域中的每個 proxy 執行個體都必須共用下列項目。若這些項目在區域之間有任何差異，部署就會以難以除錯的方式出錯（無法解密已儲存憑證的執行個體、某個區域中驗證失敗的金鑰、座位限制在各處強制不一致）。
+| 設定 | 需求 | 用途 |
+| --- | --- | --- |
+| `DATABASE_URL` | 相同的邏輯可寫入資料庫 | 共用金鑰、設定、支出記錄與授權計數。 |
+| `LITELLM_MASTER_KEY` | 相同的密鑰 | 一致的管理驗證。 |
+| `LITELLM_SALT_KEY` | 相同的穩定密鑰 | 解密儲存在共用資料庫中的憑證。請勿在 rollout 期間更換它。 |
+| `LITELLM_LICENSE` | 相同的授權（使用 Enterprise 功能時） | 啟用共用部署的 Enterprise 功能。 |
+| `DISABLE_SCHEMA_UPDATE` | 在服務中的執行個體上為 `true` | 由單一協調的 migration 工作更新共用結構描述。 |
 
-| 設定 | 必須為 | 原因 |
-|---|---|---|
-| `DATABASE_URL` | 每個區域使用相同的資料庫 | 金鑰、團隊、使用者、花費與授權座位數的單一事實來源 |
-| `LITELLM_MASTER_KEY` | 每個區域都相同 | 金鑰會對共享資料庫進行驗證；master key 在各處都必須一致 |
-| `LITELLM_SALT_KEY` | 每個區域都相同，且設定完成後不得變更 | 加密與解密儲存在資料庫中的 LLM 憑證。使用不同 salt key 的執行個體無法讀取已儲存的模型憑證 |
-| `LITELLM_LICENSE` | 每個區域使用相同的授權金鑰 | 每個執行個體都會獨立驗證授權；一把金鑰可啟用所有執行個體 |
-| `DISABLE_SCHEMA_UPDATE` | 所有 proxy 執行個體上的 `true` | Schema migration 必須且只能執行一次（作為一個 job），不能被每個區域中的每個執行個體競態執行 |
+請在各區域使用相同的版本與設定來源。請為每個區域設定網路端點與提供者存取。請將共用密鑰儲存在您的密鑰管理器中，並提供給每個區域部署。
 
-每個區域另外還要執行一個 Redis 執行個體，並在該區域的 proxy 設定中將其設定好（`router_settings` 與快取設定）。Redis 狀態是區域性的：速率限制與已快取回應都只屬於處理該請求的區域。
+請為每個區域的 Redis 設定其本機副本，包括 `router_settings` 與任何 Redis 支援的快取設定。請參閱[生產環境 Redis 設定](./prod.md#redis)。
 
-:::info
+:::important 區域限制
 
-速率限制（key、team 和 user 的 TPM/RPM）是透過 Redis 強制執行。每個區域一個 Redis 時，100 RPM 的限制代表每個區域 100 RPM，而不是全域 100 RPM。若您需要嚴格的全域速率限制，所有執行個體都必須共用一個 Redis，這會讓遠端區域的請求路徑多一次跨區域往返。多數部署會接受每個區域各自強制執行。
+分開的 Redis 執行個體不會共用速率限制計數器。在兩個區域各有一個 Redis 支援的 100 RPM 額度，跨區域可能允許 200 RPM。共用 PostgreSQL 不會將這些計數器合併成全域速率限制。若需要全域配額，請設計並測試跨區域的強制執行。共用 Redis 部署會增加跨區域延遲與一個共用相依性。快取與清除間隔也會影響預算與支出記錄的更新速度。
 
 :::
 
+區域 Redis 也會為共用的背景工作建立分開的持有權鎖。請跨區域協調資料庫層級的清理、預算重設與匯出。請測試在備援切換期間由哪個區域持有每個工作。請參閱[背景工作持有權](./prod.md#run-background-jobs-on-a-dedicated-worker)。
+
 ## 設定 {#setup}
 
-以下步驟假設您已經可以部署單一區域的生產環境 proxy（load balancer、proxy 執行個體、Postgres、Redis）。如果還不行，請先從 [生產環境部署指南](./deploy.md) 和 [生產檢查清單](./prod.md) 開始。
+### 1. 佈建共用資料庫 {#1-provision-the-shared-database}
 
-### 1. 佈建共享資料庫 {#1-provision-the-shared-database}
+請佈建具備可用區備援、備份與經過測試之寫入端備援切換程序的 PostgreSQL。每次升級透過 [Helm migration 工作](./deploy/helm.md) 或共用部署管線執行一次結構描述 migrations。不要從每個區域各啟動一次獨立的 migration。
 
-在您的主要區域建立一個 PostgreSQL 資料庫，並使用 [Helm charts](./deploy.md#deploy-with-helm) 或 [Terraform modules](./deploy.md#deploy-with-terraform-aws-and-gcp) 中的 migration job，對其執行一次 schema migration。所有區域都會使用這個資料庫的連線字串。
+如果您的復原計畫需要，請在另一個區域新增資料庫副本。請在您的[資料庫復原程序](./deploy/multi_region/failover.md#recover-the-shared-database) 中定義如何將它提升並重新導向寫入。
 
 ### 2. 連接各區域的網路 {#2-connect-the-regions-networks}
 
-次要區域中的 proxy 執行個體必須透過私有、已路由的連線連到主要區域的資料庫：AWS 上使用 [VPC peering](https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html) 或 [Transit Gateway](https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html)，GCP 上使用 [VPC Network Peering](https://cloud.google.com/vpc/docs/vpc-peering)（具有區域子網路的全球 VPC 也可以），Azure 上使用 [VNet peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview)。在資料庫的 security group 或 firewall 中，從每個次要區域的 proxy 子網路開放資料庫埠（5432），並要求連線使用 TLS（`sslmode=require`）；這些流量會跨越區域邊界。每一次來自次要區域的未快取資料庫讀取，都會支付跨區域往返成本，這也是第 4 步新增區域內讀複本的原因。
+請提供從每個區域到共用資料庫的私人網路路由。只允許必要的資料庫連線。請依您的雲端使用 [AWS VPC peering](https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html)、[Google Cloud VPC](https://docs.cloud.google.com/vpc/docs/vpc) 或 [Azure VNet peering](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview)。請確認受管資料庫支援您的路由與 DNS 設定。
+
+請使用 TLS 並驗證資料庫伺服器憑證。請在服務中的執行個體與 migration 工作中掛載必要的 CA 憑證束。請參閱[資料庫 TLS](./prod.md#verify-the-database-server-certificate-custom-ca-eg-aws-rds)。跨區域的資料庫呼叫會增加網路延遲。請從每個區域測量驗證、管理操作與連線復原。
 
 ### 3. 在每個區域部署 proxy 執行個體 {#3-deploy-proxy-instances-in-each-region}
 
-在每個區域部署 proxy 的方式與單一區域完全相同，只有兩個差異：將 `DATABASE_URL` 指向主要區域的資料庫，而不是區域內的資料庫；並且只在主要區域執行 schema migrations job（次要區域的 Helm values 中設為 `migrationJob.enabled: false`），如此一來某個區域的 rollout 就不會與另一個區域對共享 schema 的 migration 競態。請從同一個事實來源部署每個區域（單一 Helm values 檔案或 Terraform 設定，只依區域參數化），以避免各區域在版本或設定上漂移。
+請使用 [Helm](./deploy/helm.md) 或 [Terraform](./deploy/terraform.md) 部署區域負載平衡器與 LiteLLM 副本。請在次要發佈中停用 migration 工作。在 Helm 圖表中，設定 `migrationJob.enabled: false`。請在所有服務中的執行個體上保持 `DISABLE_SCHEMA_UPDATE=true`。
+
+請透過您部署的密鑰管理器注入密鑰，並將 CA 掛載在 `/certs/db-ca.pem`。
 
 <Tabs>
-<TabItem value="primary" label="主要區域（us-east-1）">
+<TabItem value="primary" label="區域 A">
 
 ```bash
-DATABASE_URL="postgresql://litellm:<password>@db.us-east-1.internal:5432/litellm?sslmode=require"
-LITELLM_MASTER_KEY="sk-<same-everywhere>"
-LITELLM_SALT_KEY="sk-<same-everywhere-never-rotate>"
-LITELLM_LICENSE="<same-everywhere>"
+DATABASE_URL="postgresql://litellm:<password>@db-writer.internal:5432/litellm?sslmode=verify-full&sslrootcert=/certs/db-ca.pem"
+LITELLM_MASTER_KEY="sk-<shared-master-key>"
+LITELLM_SALT_KEY="<shared-stable-encryption-key>"
+LITELLM_LICENSE="<shared-enterprise-license>"
 DISABLE_SCHEMA_UPDATE="true"
-REDIS_HOST="redis.us-east-1.internal"
+REDIS_HOST="redis.region-a.internal"
 REDIS_PORT="6379"
-REDIS_PASSWORD="<regional>"
+REDIS_PASSWORD="<region-a-redis-secret>"
 ```
 
 </TabItem>
-<TabItem value="secondary" label="次要區域（eu-west-1）">
+<TabItem value="secondary" label="區域 B">
 
 ```bash
-# Same database as the primary region
-DATABASE_URL="postgresql://litellm:<password>@db.us-east-1.internal:5432/litellm?sslmode=require"
-LITELLM_MASTER_KEY="sk-<same-everywhere>"
-LITELLM_SALT_KEY="sk-<same-everywhere-never-rotate>"
-LITELLM_LICENSE="<same-everywhere>"
+# Same writable database and shared deployment secrets as Region A
+DATABASE_URL="postgresql://litellm:<password>@db-writer.internal:5432/litellm?sslmode=verify-full&sslrootcert=/certs/db-ca.pem"
+LITELLM_MASTER_KEY="sk-<shared-master-key>"
+LITELLM_SALT_KEY="<shared-stable-encryption-key>"
+LITELLM_LICENSE="<shared-enterprise-license>"
 DISABLE_SCHEMA_UPDATE="true"
-# Redis stays regional
-REDIS_HOST="redis.eu-west-1.internal"
+# Redis is regional
+REDIS_HOST="redis.region-b.internal"
 REDIS_PORT="6379"
-REDIS_PASSWORD="<regional>"
-
-# Optional: regional read replica (see next section)
-DATABASE_URL_READ_REPLICA="postgresql://litellm:<password>@db-replica.eu-west-1.internal:5432/litellm"
+REDIS_PASSWORD="<region-b-redis-secret>"
 ```
 
 </TabItem>
 </Tabs>
 
-### 4. 選用：新增區域內讀複本 {#4-optional-add-regional-read-replicas}
+開源部署請省略 `LITELLM_LICENSE`。請將 Redis 設定套用到您的 proxy 設定，並在服務需要時為 Redis 啟用 TLS。
 
-每個請求都會先向資料庫驗證其金鑰（並搭配記憶體快取，因此穩態流量不會在每次呼叫時都碰到資料庫）。次要區域仍可透過在區域內執行 PostgreSQL 讀複本，並設定 `DATABASE_URL_READ_REPLICA`，來降低資料庫讀取延遲。LiteLLM 會將唯讀查詢路由到該複本，而所有寫入則送往主資料庫。請參閱 [資料庫讀複本](./db_read_replica.md) 了解哪些路由到哪裡，以及如何處理 replication lag。
+### 4. 選用：新增區域讀取副本 {#4-optional-add-regional-read-replicas}
 
-寫入（建立金鑰、設定變更、花費更新）一律送往主要區域的資料庫。花費更新會批次處理，因此跨區域寫入延遲不會落在請求路徑中。
+如果您需要降低資料庫讀取延遲，請將 `DATABASE_URL_READ_REPLICA` 設為區域讀取端點。寫入仍會送至 `DATABASE_URL`。也請為讀取端設定 TLS。
 
-### 5. 將用戶端路由到最近的區域 {#5-route-clients-to-the-nearest-region}
+```bash
+DATABASE_URL_READ_REPLICA="postgresql://litellm:<password>@db-reader.region-b.internal:5432/litellm?sslmode=verify-full&sslrootcert=/certs/db-ca.pem"
+```
 
-在各區域負載平衡器前放置以延遲為基礎或地理位置的 DNS：AWS 上使用 [Route 53 latency-based routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-latency.html)，GCP 上使用 [Cloud DNS geolocation routing policies](https://cloud.google.com/dns/docs/routing-policies)，Azure 上使用 [Traffic Manager](https://learn.microsoft.com/en-us/azure/traffic-manager/traffic-manager-routing-methods) 或 [Front Door](https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview)。用戶端使用單一主機名稱，並進入其最近的區域。
+讀取副本可能落後於寫入端。在依賴副本之前，請測試新建立的金鑰、撤銷與預算變更。[讀取副本指南](./db_read_replica.md) 說明查詢路由與讀取端故障時的行為。讀取副本不會在主要資料庫故障時自動變成寫入端。
 
-對每個區域針對 `/health/liveliness` 進行健康檢查，而不是 `/health/readiness`。Readiness 只要資料庫無法連線就會回傳 503，而且資料庫是共用的：一次故障會同時觸發所有區域的 readiness 檢查，並將所有區域一併從 DNS 轉送中移除；而就在那個時候，`allow_requests_on_db_unavailable` 本可讓它們繼續服務快取流量。Liveliness 則回報該區域的 proxy 是否正常運作，這正是 DNS 故障轉移決策所需要的資訊。
+### 5. 路由用戶端 {#5-route-clients-to-the-nearest-region}
+
+給用戶端一個閘道主機名稱。使用 DNS 政策、全域 HTTP 負載平衡器或高可用性 proxy 來選擇區域端點。若要查看使用 AWS Route 53、Global Accelerator、Google Cloud 負載平衡、Azure Traffic Manager、Front Door 與 HAProxy 的範例，請參閱[路由](./deploy/multi_region/routing.md)。
+
+請設定健康檢查，使其符合您計畫在故障期間提供的服務。只有程序存活並不能證明某個區域可以驗證並提供請求服務。在啟用自動流量變更之前，請先閱讀[備援切換](./deploy/multi_region/failover.md#choose-a-health-policy)。
 
 ### 6. 驗證 {#6-verify}
 
-1. 開啟主區域的 Admin UI（`https://llm.example.com/ui`），前往 **Virtual Keys**，並建立一個金鑰。
+透過一個區域建立虛擬金鑰。透過另一個區域的端點將它用於模型請求。確認回應，然後在 Admin UI 中檢查支出記錄。請預留時間給已設定的快取、支出寫入與任何讀取副本延遲。[快速入門](./docker_quick_start.md#5-create-a-virtual-key) 涵蓋金鑰建立。
 
-2. 直接開啟次區域的 UI（`https://eu.llm.example.com/ui`），前往 **Test Key** playground，貼上您剛建立的金鑰，然後送出請求。這會成功，因為兩個區域都使用同一個資料庫驗證金鑰。
+逐一在每個區域不可用時測試路由。另外分開測試共用資料庫遺失。它可能同時影響兩個區域。記錄錯誤率、串流完成情況、復原時間，以及存活區域需要的備用容量。
 
-3. 回到 **Virtual Keys**，確認該 key 顯示您透過次要區域發出的請求所產生的支出。UI 流程本身已在 [Quickstart](./docker_quick_start.md#5-create-a-virtual-key) 中以截圖說明。
+## 選用：專用管理執行個體 {#optional-dedicated-admin-instance}
 
-## 選用：專用管理實例 {#optional-dedicated-admin-instance}
-
-預設情況下，每個實例同時提供 LLM 流量與管理流量（UI 與管理 API）。在多區域部署中，您可以將某個實例指定為僅供管理使用，並從各區域實例中移除管理介面。這可讓管理存取只經由單一主機名稱，並降低提供 LLM 流量之實例的攻擊面。
+您可以將管理存取保留在一個私人主機名稱上，同時由區域閘道提供模型請求服務。
 
 <EnterpriseFeature>
 
-`DISABLE_ADMIN_ENDPOINTS` 和 `DISABLE_LLM_API_ENDPOINTS` 是 Enterprise 功能。
+`DISABLE_ADMIN_ENDPOINTS` 與 `DISABLE_LLM_API_ENDPOINTS` 是 Enterprise 功能。
 
 </EnterpriseFeature>
 
+請設定這些環境值：
+
 <Tabs>
-<TabItem value="admin" label="管理實例">
+<TabItem value="admin" label="管理執行個體">
 
 ```bash
-# Serves the UI and management APIs, refuses LLM traffic
 DISABLE_LLM_API_ENDPOINTS="true"
-DATABASE_URL="postgresql://...@db.us-east-1.internal:5432/litellm"
-LITELLM_MASTER_KEY="sk-<same-everywhere>"
 ```
 
 </TabItem>
-<TabItem value="worker" label="區域實例">
+<TabItem value="worker" label="區域服務執行個體">
 
 ```bash
-# Serve LLM traffic, refuse admin traffic
 DISABLE_ADMIN_UI="true"
 DISABLE_ADMIN_ENDPOINTS="true"
-DATABASE_URL="postgresql://...@db.us-east-1.internal:5432/litellm"
-LITELLM_MASTER_KEY="sk-<same-everywhere>"
 ```
 
 </TabItem>
 </Tabs>
 
-| 變數 | 預設值 | 當 `true` 時的影響 |
-|---|---|---|
-| `DISABLE_ADMIN_UI` | `false` | `/ui` 的網頁 UI 會無法使用 |
-| `DISABLE_ADMIN_ENDPOINTS` | `false` | 管理端點（`/key/*`、`/user/*`、`/team/*`、`/model/*`）會回傳錯誤；LLM 端點、`/health`，以及 `/metrics` 會繼續運作 |
-| `DISABLE_LLM_API_ENDPOINTS` | `false` | LLM 端點（`/chat/completions`、`/v1/*`、provider pass-through routes）會回傳錯誤；管理端點會繼續運作，且 `/models` 仍可使用，因此 UI 可以列出模型 |
+`DISABLE_ADMIN_UI` 會停用 `/ui`。`DISABLE_ADMIN_ENDPOINTS` 會停用管理路由，而模型端點、健康檢查與指標仍可使用。`DISABLE_LLM_API_ENDPOINTS` 會停用模型服務路由，而管理功能仍可使用。組件化的 [Helm 部署](./deploy/helm.md) 也會分開 gateway、backend 與 UI 服務。
 
 ## 常見問題 {#faq}
 
-**我真的需要多區域嗎？**
-通常不需要。單區域部署搭配多 AZ 資料庫與 Redis，已足以在可用區故障時維持運作；請參閱 [Production Best Practices](./prod.md)。當您需要為遠端使用者降低延遲，或需要跨區域災難復原時，再新增區域。
+**我需要多區域嗎？** 單一區域內的副本與備援資料服務可以涵蓋執行個體與可用區故障。新增區域是為了滿足特定的延遲或災難復原需求。請測試額外的相依性。
 
-**多區域需要 Enterprise 授權嗎？**
-共用資料庫拓樸本身可在開源 proxy 上執行。Enterprise 功能在各區域之間由同一份授權涵蓋，詳見 [Licensing across regions](#licensing-across-regions)。
+**如果主要區域的資料庫故障怎麼辦？** 兩個區域都可能失去正常的資料庫支援操作。僅靠閘道備援切換無法解決這個問題。請使用[共用資料庫復原程序](./deploy/multi_region/failover.md#recover-the-shared-database)。請事先決定在中斷期間是否允許受限服務。
 
-**如果主區域的資料庫當機會發生什麼事？**
-所有區域都會失去資料庫存取：key 驗證會回退到快取，而管理操作會失敗，直到資料庫恢復為止。在這種架構中，資料庫是唯一的耦合點。請設定 `general_settings.allow_requests_on_db_unavailable: true`，讓 proxies 在故障期間仍能為已快取的 keys 繼續提供流量（請參閱 [優雅處理資料庫無法使用](./prod.md#gracefully-handle-db-unavailability)），以自動故障移轉方式在多個 AZ 上執行資料庫；如果這樣仍不足以提供隔離，請改用 [Global Control Plane](./global_control_plane.md)。
-
-**我可以在不同區域執行不同版本的 LiteLLM 嗎？**
-可以，但僅限於 rolling upgrade 期間。請勿在穩定狀態下執行混合版本；共用資料庫 schema 會遵循最新版本，而 migration 應在每次升級時只執行一次。
+**區域可以執行不同版本嗎？** 只有在經過測試的升級期間，且兩個版本都支援共用結構描述與設定時才可以。Migrations 只執行一次。升級後將所有區域回到相同的版本。請參閱 [Blue/Green](./deploy/ha/blue_green.md) 與 [Canary](./deploy/ha/canary.md)。

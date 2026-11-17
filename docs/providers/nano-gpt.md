@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 NanoGPT API：Python SDK 與 Gateway"
+sidebar_label: "NanoGPT"
+description: "透過 LiteLLM Python SDK 或 AI Gateway 使用 NanoGPT 按提示付費的 200+ 模型型錄，支援串流、工具呼叫與標準 OpenAI 參數。"
+---
+
 # NanoGPT {#nanogpt}
 
 ## 總覽 {#overview}

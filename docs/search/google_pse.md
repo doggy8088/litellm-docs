@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 Google Programmable Search Engine API"
+sidebar_label: "Google 可程式化搜尋引擎（PSE）"
+description: "將 Google Programmable Search 加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，並可使用日期、語言與檔案類型篩選。"
+---
 # Google 可程式化搜尋引擎（PSE） {#google-programmable-search-engine-pse}
+
+[Google Programmable Search Engine](https://programmablesearchengine.google.com/) 可回傳整個網路或僅限您所選網站的 Google 結果；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [Google Cloud Console](https://console.cloud.google.com/apis/credentials)  
 **建立搜尋引擎：** [Programmable Search Engine](https://programmablesearchengine.google.com/)

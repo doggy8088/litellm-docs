@@ -1,3 +1,9 @@
+---
+title: "LiteLLM MLflow 追蹤：Python SDK 與閘道"
+sidebar_label: "MLflow"
+description: "從 Python SDK 或 AI 閘道在 MLflow 中追蹤 LiteLLM 呼叫，包含工具呼叫與評估，並將追蹤資料匯出至 OpenTelemetry 收集器。"
+---
+
 import Image from '@theme/IdealImage';
 
 # MLflow {#mlflow}
@@ -42,7 +48,7 @@ os.environ["OPENAI_API_KEY"] = ""
 response = litellm.completion(
     model="{{openai_small}}",
     messages=[
-      {"role": "user", "content": "Hi 👋 - i'm openai"}
+      {"role": "user", "content": "Hi - i'm openai"}
     ]
 )
 ```

@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 MongoDB Atlas Vector Search"
+sidebar_label: "MongoDB - Vector Store (BETA)"
+description: "透過 MongoDB sidecar 將 MongoDB Vector Search 索引作為 LiteLLM 向量儲存（beta）使用：連接索引、在聊天中擷取上下文、從 Python 搜尋。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -105,49 +111,50 @@ docker compose up -d --force-recreate litellm mongodb-sidecar
 </TabItem>
 <TabItem value="helm" label="Kubernetes / Helm">
 
-在 LiteLLM 命名空間中建立名為 `mongodb-sidecar` 的 Kubernetes Secret，並包含鍵 `connection-string` 與 `api-key`。對於 LiteLLM `litellm-helm` chart，透過其既有的 `extraContainers` 設定新增 sidecar：
+在 LiteLLM 命名空間中建立名為 `mongodb-sidecar` 的 Kubernetes Secret，並包含鍵 `connection-string` 與 `api-key`。對於 [LiteLLM chart](../proxy/deploy/helm.md)，在任一部署模式下透過 `gateway.extraContainers` 新增 sidecar：
 
 ```yaml title="values-mongodb.yaml"
-extraEnvVars:
-  - name: MONGODB_SIDECAR_API_KEY
-    valueFrom:
-      secretKeyRef:
-        name: mongodb-sidecar
-        key: api-key
-extraContainers:
-  - name: mongodb-sidecar
-    image: ghcr.io/berriai/litellm-mongodb:v0.1.0-beta.1
-    ports:
-      - name: mongodb-http
-        containerPort: 8080
-    env:
-      - name: MONGODB_CONNECTION_STRING
-        valueFrom:
-          secretKeyRef:
-            name: mongodb-sidecar
-            key: connection-string
-      - name: MONGODB_SIDECAR_API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: mongodb-sidecar
-            key: api-key
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 10001
-      runAsGroup: 10001
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop: [ALL]
-    livenessProbe:
-      httpGet:
-        path: /health/liveness
-        port: mongodb-http
-    startupProbe:
-      httpGet:
-        path: /health/liveness
-        port: mongodb-http
-      failureThreshold: 30
-      periodSeconds: 2
+gateway:
+  extraEnv:
+    - name: MONGODB_SIDECAR_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: mongodb-sidecar
+          key: api-key
+  extraContainers:
+    - name: mongodb-sidecar
+      image: ghcr.io/berriai/litellm-mongodb:v0.1.0-beta.1
+      ports:
+        - name: mongodb-http
+          containerPort: 8080
+      env:
+        - name: MONGODB_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-sidecar
+              key: connection-string
+        - name: MONGODB_SIDECAR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-sidecar
+              key: api-key
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      livenessProbe:
+        httpGet:
+          path: /health/liveness
+          port: mongodb-http
+      startupProbe:
+        httpGet:
+          path: /health/liveness
+          port: mongodb-http
+        failureThreshold: 30
+        periodSeconds: 2
 ```
 
 將這些值與您現有的 chart 組態合併，並保留任何既有的額外環境變數與容器。將 MongoDB 註冊的 `api_base` 設為 `http://127.0.0.1:8080`；同一 Pod 中的容器會共享網路。不需要額外的 Service 或強制性的 chart 相依性。

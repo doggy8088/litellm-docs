@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 在 Azure Foundry 上使用 Claude"
+sidebar_label: "Azure Anthropic（透過 Azure Foundry 使用 Claude）"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 以 azure_ai/ 前綴呼叫部署在 Azure Foundry 上的 Claude 模型，支援串流與工具呼叫。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

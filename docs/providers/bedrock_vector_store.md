@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock 知識庫"
+sidebar_label: "Bedrock 知識庫"
+description: "將 AWS Bedrock 知識庫連接到 LiteLLM 作為向量儲存，可從 Python SDK 或 AI 閘道呼叫，依中繼資料篩選結果，並將結果限制在特定使用者。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';

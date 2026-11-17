@@ -1,13 +1,13 @@
+---
+sidebar_label: "推理"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # 「思考」/「推理內容」 {#thinking--reasoning-content}
 
-:::info
-
-需要 LiteLLM v1.63.0+
-
-:::
+<SinceVersion v="1.63.0" />
 
 支援的提供者：
 - Deepseek (`deepseek/`)
@@ -440,7 +440,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 將 `drop_params=True` 設為在從 Anthropic 切換到 Deepseek 模型時移除 'thinking' 區塊。可在[這裡](https://github.com/BerriAI/litellm/discussions/8927)提出對此做法的改進建議。
 
 ```python showLineNumbers
-litellm.drop_params = True # 👈 EITHER GLOBALLY or per request
+litellm.drop_params = True # EITHER GLOBALLY or per request
 
 # or per request
 ## Anthropic
@@ -571,7 +571,7 @@ curl http://0.0.0.0:4000/v1/responses \
 
 :::info
 
-Claude 4.6+ 會以 `400 "thinking.type.enabled" is not supported for this model. Use "thinking.type.adaptive" and "output_config.effort" to control thinking behavior.` 拒絕傳統格式。LiteLLM 只會對其模型對照表已知支援該格式的模型輸出 adaptive 格式，因此遇到此錯誤通常表示該模型比您安裝的 LiteLLM 版本更新。透過 Bedrock、Vertex AI 或 Azure AI 路由的 Opus 4.8 需要 v1.89.0+（[PR #29702](https://github.com/BerriAI/litellm/pull/29702)）
+Claude 4.6+ 會以 `400 "thinking.type.enabled" is not supported for this model. Use "thinking.type.adaptive" and "output_config.effort" to control thinking behavior.` 拒絕傳統格式。LiteLLM 只會對其模型對照表已知支援該格式的模型輸出 adaptive 格式，因此遇到此錯誤通常表示該模型比您安裝的 LiteLLM 版本更新。透過 Bedrock、Vertex AI 或 Azure AI 路由的 Opus 4.8 可在 <SinceVersion v="1.89.0" /> 使用（[PR #29702](https://github.com/BerriAI/litellm/pull/29702)）
 
 :::
 
@@ -685,6 +685,59 @@ model_list:
 ```
 
 :::
+
+## 將 `reasoning_effort` 取整至部署接受的等級 {#reasoning-effort-levels}
+
+<SinceVersion v="1.108.0" />
+
+有些部署只接受少數幾個 reasoning effort 等級，其餘等級會回應 400。在部署的 `model_info` 下以 `reasoning_effort_levels` 列出該部署接受的等級，proxy 會以已宣告的等級取代任何該部署不接受的等級。此行為適用於 `/v1/chat/completions`（含串流）、`/v1/responses` 與 `/v1/messages`，且適用於所有提供者。只有部署自身的宣告會啟用此行為。Mistral 與 Together AI 仍比照以往，自行從模型成本對照表對應等級。
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: my-model-azure-ai
+    litellm_params:
+      model: azure_ai/my-model
+      api_base: https://my-endpoint.services.ai.azure.com
+      api_key: os.environ/AZURE_AI_API_KEY
+    model_info:
+      reasoning_effort_levels: ["low", "high", "max", "none"]
+  - model_name: my-model-vllm
+    litellm_params:
+      model: hosted_vllm/my-model
+      api_base: https://my-vllm-server.example.com/v1
+    model_info:
+      reasoning_effort_levels: ["low", "high", "max", "none"]
+      reasoning_effort_rounding: down
+```
+
+強度順序由弱至強為 `minimal`、`low`、`medium`、`high`、`xhigh`、`max`。預設為向上取整：送出不弱於請求強度的最弱已宣告等級；當請求強於所有已宣告等級時，送出最強的已宣告等級。向下取整則送出不強於請求強度的最強已宣告等級；當請求弱於所有已宣告等級時，送出最弱的已宣告等級。以上方設定為例，`my-model-azure-ai` 向上取整，`my-model-vllm` 向下取整。
+
+| 請求的等級 | 向上取整時送出 | 向下取整時送出 |
+|---|---|---|
+| `minimal` | `low` | `low` |
+| `low` | `low` | `low` |
+| `medium` | `high` | `low` |
+| `high` | `high` | `high` |
+| `xhigh` | `max` | `high` |
+| `max` | `max` | `max` |
+| `none` | `none` | `none` |
+| `default` | 不送出 reasoning effort | 不送出 reasoning effort |
+
+`none` 以及強度順序之外的任何等級名稱都會原樣送出，因此關閉推理的呼叫者永遠不會被向上取整。設定 `drop_params: true` 時，未經部署宣告的等級會被丟棄，如同 LiteLLM 丟棄提供者不支援的其他值一樣。`default` 則完全不送出 reasoning effort。
+
+若要對所有部署一律向下取整，請在 `litellm_settings` 下設定 `reasoning_effort_rounding: down`。部署自身的 `model_info.reasoning_effort_rounding` 優先於全域設定。該值不分大小寫，且會忽略前後空白。`up` 或 `down` 以外的值會被忽略，並在 proxy 記錄中留下一則警告，接著套用下一個設定；因此 proxy 會先檢查部署，再檢查 `litellm_settings`，最後備援為 `up`。
+
+非空的 `reasoning_effort_levels` 也能讓原本不接受 `reasoning_effort` 的提供者接受它，目前指的是 `azure_ai`；空清單則不會。在 OpenAI 與 Azure GPT-5 部署上，即使模型對照表未為該模型列出 `xhigh` 或 `none` 等已宣告等級，也會照樣送出。
+
+在 Claude Code 與其他 Anthropic 格式用戶端呼叫的 `/v1/messages` 上，由 `thinking` 或 `output_config.effort` 推導出的 effort 也會以相同方式取整至已宣告等級，因此宣告了 `max` 時，`xhigh` 會變成 `max`。傳送 Anthropic 風格 `thinking` 預算的 `/v1/chat/completions` 請求也會被取整，且適用於所有提供者。在 adaptive Claude 模型上，預算會先透過 Claude 自身的對應轉換為 effort，並保留呼叫者的 `thinking.display`。`budget_tokens` 若不是數字，會回應 400，或在 `drop_params: true` 時被丟棄。當請求同時傳送 `reasoning_effort` 或 `output_config.effort` 時，該等級優先於預算（包括 `default`），除非 `drop_params: true` 將其丟棄，此時改由預算決定 effort。
+
+每次變更都會以下列格式記錄一行 INFO 記錄。
+
+```text
+reasoning_effort medium sent as high (rounding up) to deployment <deployment id>, model group my-model-azure-ai, model azure_ai/my-model
+```
+
+proxy 只有在設定 `LITELLM_LOG=INFO` 時才會顯示 INFO 行。在 `litellm_settings` 下設定 `json_logs: true` 時，該行還會帶有 `reasoning_effort_deployment_id`、`reasoning_effort_model_group`、`reasoning_effort_deployment_model`、`reasoning_effort_requested`、`reasoning_effort_sent` 與 `reasoning_effort_rounding` 等 JSON 鍵，方便您篩選或繪製圖表。
 
 ## OpenAI Responses API - 自動摘要控制 {#openai-responses-api---auto-summary-control}
 

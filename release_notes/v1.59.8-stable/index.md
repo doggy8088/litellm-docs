@@ -1,5 +1,6 @@
 ---
-title: v1.59.8-stable
+title: "LiteLLM v1.59.8-stable"
+description: "新增支援 Topaz 的 OpenAI 圖片變化、DeepSeek R1 reasoning_content 與更多 Bedrock Nova 文件類型。另新增 Azure o1 定價。"
 slug: v1.59.8-stable
 date: 2025-01-31T10:00:00
 authors:
@@ -147,7 +148,7 @@ import Image from '@theme/IdealImage';
 1. JWT / OIDC Auth - 新增 `enforce_rbac` 參數，允許 proxy 管理員防止任何尚未對應但已驗證的 jwt token 呼叫 proxy。[從這裡開始](/docs/proxy/token_auth)
 2. 修正自訂 swagger 的自訂 openapi schema 產生
 3. Request Headers - 支援從 request headers 讀取 `x-litellm-timeout` 參數。啟用在使用 Vercel 的 AI SDK + LiteLLM Proxy 時進行模型逾時控制。[從這裡開始](../../docs/proxy/request_headers#litellm-headers)
-4. JWT / OIDC Auth - 針對模型驗證新增以 `role` 為基礎的權限。[請見此處](https://docs.litellm.ai/docs/proxy/jwt_auth_arch)
+4. JWT / OIDC Auth - 針對模型驗證新增以 `role` 為基礎的權限。[請見此處](/docs/proxy/access_management/jwt_permissions#beta-control-access-with-oidc-roles)
 
 ## 完整 Git Diff {#complete-git-diff}
 

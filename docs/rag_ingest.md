@@ -289,6 +289,14 @@ curl -X POST "http://localhost:4000/v1/vector_stores/vs_692658d337c4819183f2ad84
 | `wait_for_import` | boolean | `true` | 等待匯入完成 |
 | `import_timeout` | integer | `600` | 等待時的逾時秒數 |
 
+:::info[非管理員金鑰的專案與區域]
+非 proxy 管理員的金鑰只能將資料擷取至 proxy 自身的 Vertex 專案與區域。專案為 `VERTEXAI_PROJECT`，區域為 `VERTEXAI_LOCATION`，否則為 `us-central1`。若 `vertex_project`、`vertex_location`，或完整的 `projects/<project>/locations/<location>/ragCorpora/<id>` corpus 名稱指向其他位置，將回傳 `400`，並附帶 `Rejected Request: vertex_project picks a Vertex project or region other than the proxy's`。若 proxy 未設定 Vertex 專案，所有由呼叫者命名的專案都會被拒絕。Corpus 名稱必須是完整路徑，且不得包含 `.` 或 `..` 路徑段。Google 回傳的 corpus 名稱帶有專案編號，因此以專案編號命名的 corpus 會被送至 proxy 自身的專案，且該金鑰必須被允許使用儲存在該專案 ID 下的 store。
+
+來自設定的 vector store、由 proxy 管理員建立的 vector store、proxy 管理員金鑰，以及 `general_settings.allow_client_side_credentials: true`，會保留呼叫者的值。
+
+<SinceVersion v="1.111.0" />
+:::
+
 :::info[Vertex AI 必要條件]
 1. 在 Vertex AI 主控台或透過 API 建立 RAG corpus
 2. 建立用於檔案上傳的 GCS 儲存貯體

@@ -70,7 +70,7 @@ litellm --config /path/to/config.yaml
 
 :::tip
 
-若要限制僅能存取您的公司網域，請在 `litellm_jwtauth` 下加入 `user_allowed_email_domain: "yourcompany.com"`。所有可用的 claim 對應與存取控制，請參閱 [JWT-based Auth](../proxy/token_auth)。
+若要限制僅能存取您的公司網域，請在 `litellm_jwtauth` 下加入 `user_allowed_email_domain: "yourcompany.com"`。claim 查詢請參閱 [JWT 身分對應](../proxy/jwt_user_team_auth)，存取控制請參閱 [JWT 權限](../proxy/access_management/jwt_permissions)。
 
 :::
 
@@ -183,7 +183,8 @@ done
 
 ## 相關文件 {#related-docs}
 
-- [JWT-based Auth](../proxy/token_auth)：所有 `litellm_jwtauth` 選項
+- [JWT 設定參考](../proxy/jwt_auth_reference)：權杖驗證與身分 claims
+- [JWT 權限](../proxy/access_management/jwt_permissions)：角色、scope 與路由
 - [JWT to Virtual Key Mapping](../proxy/jwt_key_mapping)：每位使用者的金鑰、預算與模型存取權
 - [Provisioning identities and issuing keys](../proxy/identity_provisioning)：JWT 驗證、SCIM 與金鑰自動註冊如何整合
 - [Claude Code Gateway (SSO sign-in)](./claude_code_gateway)：開發者透過 proxy 的 SSO 使用 `/login` 登入，無需輔助腳本

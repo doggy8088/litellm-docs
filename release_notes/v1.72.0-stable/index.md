@@ -1,5 +1,6 @@
 ---
-title: "v1.72.0-stable"
+title: "LiteLLM v1.72.0-stable"
+description: "新增依金鑰、團隊與組織劃分的向量儲存權限、滑動視窗速率限制、預設啟用的 aiohttp 傳輸，以及 Bedrock Agents。"
 slug: "v1-72-0-stable"
 date: 2025-05-31T10:00:00
 authors:

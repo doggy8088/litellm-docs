@@ -6,7 +6,7 @@ authors:
   - krrish
   - ishaan-alt
 description: "7 月 LiteLLM 線上大會回顧：38 項安全修補、317 項錯誤修正、140 個功能提交、全新的 Rust 閘道基準測試，以及 Autorouter V2 的推出。"
-tags: [townhall, security, reliability, product]
+tags: [townhall, reliability, product]
 hide_table_of_contents: false
 ---
 
@@ -107,11 +107,11 @@ hide_table_of_contents: false
 
 _*額外負擔是同一端點上閘道 p99 減去直接到 mock 的 p99。成本是根據 4 vCPU / 16 GB 下量測到的 CPU 與峰值 RSS 所做的占用估算，不含 token 成本。_
 
-Beta v0 現已可供測試。它今天已支援 Azure 的 /v1/messages 與所有 /ocr 提供者。請參閱[文件](https://docs.litellm.ai/docs/proxy/rust_gateway)。下一步是支援 Bedrock Invoke 的 /v1/messages，並支援所有已知的 Bedrock auth 方法：STS、keys 與 IAM。
+Beta v0 現已可供測試。它今天已支援 Azure 的 /v1/messages 與所有 /ocr 提供者。請參閱[文件](https://docs.litellm.ai/rust-migration)。下一步是支援 Bedrock Invoke 的 /v1/messages，並支援所有已知的 Bedrock auth 方法：STS、keys 與 IAM。
 
 這是逐步發布，一次只開放一條路由，每條都先在正式環境驗證後再開始下一條。我們的目標是在 12 月 1 日前完成全面發布。相同設定、相同資料庫、相同 API。您不需要做任何變更。
 
-[開始使用。](https://docs.litellm.ai/docs/proxy/rust_gateway)
+[開始使用。](https://docs.litellm.ai/rust-migration)
 
 ## 宣布 Autorouter V2 {#announcing-autorouter-v2}
 

@@ -109,7 +109,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 ```shell
 {"error":{"message":"Invalid model for team litellm-dev: BEDROCK_GROUP.  Valid models for team are: ['azure-gpt-3.5']\n\n\nTraceback (most recent call last):\n  File \"/Users/ishaanjaffer/Github/litellm/litellm/proxy/proxy_server.py\", line 2298, in chat_completion\n    _is_valid_team_configs(\n  File \"/Users/ishaanjaffer/Github/litellm/litellm/proxy/utils.py\", line 1296, in _is_valid_team_configs\n    raise Exception(\nException: Invalid model for team litellm-dev: BEDROCK_GROUP.  Valid models for team are: ['azure-gpt-3.5']\n\n","type":"None","param":"None","code":500}}%            
-```
+```         
 
 ### [API 參考](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post) {#api-reference-1}
 
@@ -247,4 +247,4 @@ model_list:
 
 對於進階使用案例，請使用 [模型存取群組](./model_access_groups) 動態分組多個模型，並在不重新啟動 proxy 的情況下管理存取。
 
-## [基於角色的存取控制（RBAC）](./jwt_auth_arch) {#role-based-access-control-rbac}
+## [基於角色的存取控制（RBAC）](./access_management/jwt_permissions#beta-control-access-with-oidc-roles) {#role-based-access-control-rbac}

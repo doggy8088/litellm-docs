@@ -162,6 +162,15 @@ general_settings:
 
 ---
 
+### 停用 prompts 或 resources {#disable-prompts-or-resources}
+
+預設情況下，閘道會向每一台 MCP 用戶端宣告 `prompts`、`resources` 與 `tools`，而 `prompts/list` 或 `resources/list` 呼叫會詢問呼叫者可連及的每一台 MCP 伺服器。當您的 MCP 伺服器只公開工具時，可使用 `mcp_disabled_capabilities` 關閉未使用的功能。停用的功能會從 `initialize` 與 `server/discover` 回應中移除，其清單呼叫（`prompts/list`、`resources/list`、`resources/templates/list`）會直接回傳空清單而不連繫任何 MCP 伺服器，而其取得／讀取呼叫（`prompts/get`、`resources/read`）則會回傳 JSON-RPC `METHOD_NOT_FOUND` 錯誤。工具不受影響。此設定作用於整個閘道，也可以從管理介面的 **MCP Servers > Network Settings > Served Capabilities** 變更。
+
+```yaml title="config.yaml"
+general_settings:
+  mcp_disabled_capabilities: ["prompts", "resources"]  # either value alone is fine
+```
+
 ## 相關內容 {#related}
 
 - [MCP 總覽](./mcp.md)

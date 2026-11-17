@@ -1,5 +1,6 @@
 ---
-title: "v1.90.4 - Responses API 防護欄涵蓋範圍"
+title: "LiteLLM v1.90.4 - Responses API 防護欄涵蓋範圍"
+description: "恢復 /v1/responses 上 AIM、Lakera v2 與 Azure Content Safety 的防護欄涵蓋範圍。請求文字現在比照 chat completions 進行檢查。"
 slug: "v1-90-4"
 date: 2026-07-11T13:00:41
 authors:

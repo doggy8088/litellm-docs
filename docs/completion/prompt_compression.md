@@ -152,5 +152,5 @@ python tests/eval_swe_bench.py --model {{openai_large}} --problems 10 \
 ### 執行 HumanEval 風格評估 {#running-the-humaneval-style-eval}
 
 ```bash
-python scripts/eval_compression.py --model {{openai_large}} --problems 5
+python litellm/scripts/eval_compression.py --model {{openai_large}} --problems 5
 ```

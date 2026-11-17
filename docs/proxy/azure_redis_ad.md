@@ -130,7 +130,7 @@ curl -s -X GET 'http://localhost:4000/cache/ping' \
 與該身分的物件 ID 相符
 
 來自 azure-identity 本身的錯誤，例如 `DefaultAzureCredential failed to retrieve a token`，
-表示找不到任何憑證來源。請檢查 proxy 是否 वास्तव際以您指派的受管理識別執行，
+表示找不到任何憑證來源。請檢查 proxy 是否 實際以您指派的受管理識別執行，
 或是否已設定 `AZURE_*` 變數
 
 ## 另請參閱 {#see-also}

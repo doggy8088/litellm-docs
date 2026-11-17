@@ -40,6 +40,7 @@ proxy 會回傳後端提供者回傳的剩餘請求／token。（LiteLLM 會將�
 | `x-litellm-attempted-retries` | int | 已進行的重試次數 |
 | `x-litellm-max-retries` | int | 已設定的 `num_retries`，僅在至少嘗試過一次重試時才會送出 |
 | `x-litellm-attempted-fallbacks` | int | 已進行的備援次數 |
+| `x-litellm-fallback-reason` | string | proxy 離開所請求模型的原因，僅在本機速率限制導致備援時傳送。`rate_limit:<scope>`，其中 scope 是拒絕所請求模型的限制，例如 `rate_limit:model_per_key` 或 `rate_limit:model_per_end_user`；或當具有 `router_settings.fallback_on_saturation` 的 key 或 team 離開已達到動態速率限制器飽和閾值的模型時，為 `rate_limit:model_saturation_fallback` |
 
 `max_fallbacks` 不會以回應標頭返回
 
@@ -111,7 +112,7 @@ model_list:
 | `x-litellm-attempted-retries` | `0` | 重試。 |
 | `x-litellm-attempted-fallbacks` | `1` | 備援到另一個部署。 |
 | `x-litellm-call-id` | `019b2c4d-e5f6-7890-abcd-ef1234567890` | 記錄／追蹤。 |
-| `x-litellm-version` | `1.55.3` | 版本。 |
+| `x-litellm-version` | `1.55.3` {/* keep-version-note */} | 版本。 |
 | `x-litellm-model-api-base` | `https://api.openai.com/v1` | 提供者 base（不含 query string）。 |
 
 ## 來自 LLM 提供者的回應標頭 {#response-headers-from-llm-providers}

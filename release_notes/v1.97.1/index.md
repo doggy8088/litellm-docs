@@ -1,5 +1,6 @@
 ---
-title: "v1.97.1 - 僅限 Docker 的維護版釋出"
+title: "LiteLLM v1.97.1 - 僅限 Docker 的維護版釋出"
+description: "在 1.97.x 系列上更新相依套件版本鎖定，並將建置用的 Python 鎖定為 3.13。"
 slug: "v1-97-1"
 date: 2026-09-02T00:10:30
 authors:

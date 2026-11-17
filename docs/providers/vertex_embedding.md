@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Vertex AI 嵌入"
+sidebar_label: "Vertex AI Embedding"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道，在 Gemini Enterprise Agent Platform（原 Vertex AI）上建立嵌入，包含多模態。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -269,6 +275,7 @@ Vertex AI 的 Gemini embedding 端點只提供單一內容 `embedContent`（沒�
 **輸入格式：**
 - **Data URI：** `data:image/png;base64,<encoded_data>`
 - **GCS URL：** `gs://bucket/path/to/file.png`（MIME 類型會根據副檔名推斷）
+- **檔案內容區塊：** `{"type": "file", "file": {...}}`，與 chat completions 接受的區塊相同，當媒體部分需要明確的 MIME 類型或影片片段時使用（見[下方](#video-clips-and-explicit-mime-types)）
 
 **支援的 MIME 類型：** `image/png`、`image/jpeg`、`audio/mpeg`、`audio/wav`、`video/mp4`、`video/quicktime`、`application/pdf`
 
@@ -325,6 +332,28 @@ curl -X POST http://localhost:4000/embeddings \
 
 </TabItem>
 </Tabs>
+
+#### 影片片段與明確的 MIME 類型 {#video-clips-and-explicit-mime-types}
+
+若要嵌入影片的某一個時間窗，或要指定 LiteLLM 無法從 GCS 副檔名或 data URI 推斷的 MIME 類型，請將元素以 OpenAI 檔案內容區塊傳入，這與 [chat completions](./vertex#video-metadata-control) 已接受的格式相同：`file.file_id`（`gs://...`）或 `file.file_data`（data URI）、可選的 `file.format` MIME 類型，以及可選的 `file.video_metadata`（含 `fps`、`start_offset` 與 `end_offset`），LiteLLM 會將其轉送為該部分的 `videoMetadata`。在 Vertex 上，此區塊會與其他元素合併成單一向量，與任何其他部分相同；巢狀清單在此路徑上仍不受支援。
+
+```python
+response = embedding(
+    model="vertex_ai/gemini-embedding-2-preview",
+    input=[
+        {
+            "type": "file",
+            "file": {
+                "file_id": "gs://my-bucket/clip.mp4",
+                "video_metadata": {"start_offset": "3s", "end_offset": "6s"},
+            },
+        },
+        "a solid blue clip",
+    ],
+)
+```
+
+Gemini 嵌入 API 對 PDF 輸入一律執行 OCR，且沒有對應的參數，因此無需傳入任何設定。
 
 ### multimodalembedding@001（舊版） {#multimodalembedding001-legacy}
 

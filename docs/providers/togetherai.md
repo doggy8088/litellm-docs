@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI 閘道使用 Together AI API"
+sidebar_label: "Together AI"
+description: "透過 LiteLLM 呼叫 Together AI 上的 Llama、CodeLlama、Qwen 與 GLM 模型，以 chat_template_kwargs 切換 thinking，使用 -latest 別名並重排文件。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -75,6 +81,20 @@ TogetherAI 使用範例 - 注意：liteLLM 支援 TogetherAI 上部署的所有�
 | upstage/SOLAR-0-70b-16bit           | `completion('together_ai/upstage/SOLAR-0-70b-16bit', messages)`           | `os.environ['TOGETHERAI_API_KEY']` |
 | WizardLM/WizardLM-70B-V1.0          | `completion('together_ai/WizardLM/WizardLM-70B-V1.0', messages)`          | `os.environ['TOGETHERAI_API_KEY']` |
 
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`together_ai/<family>-latest` 這類名稱會跟隨某個模型家族，當 LiteLLM 將其指向較新的模型時，您的應用程式只需保留同一個模型字串即可。您可以像使用任何其他 Together AI 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Together AI，並依該模型的價格計費。別名的運作方式與各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `together_ai/kimi-latest` | Kimi |
+| `together_ai/glm-latest` | GLM |
+| `together_ai/glm-flash-latest` | GLM Flash |
+| `together_ai/deepseek-pro-latest` | DeepSeek Pro |
+| `together_ai/qwen-flash-latest` | Qwen Flash |
+
 ## 提示範本 {#prompt-templates}
 
 使用 Together AI 的聊天模型及其自己的 prompt 格式？
@@ -95,7 +115,7 @@ completion(model="together_ai/togethercomputer/Llama-2-7B-32K-Instruct", message
 
 ### 使用其他模型 {#using-another-model}
 
-您可以在 LiteLLM 上建立自訂 prompt 範本（我們也 [歡迎 PR](https://github.com/BerriAI/litellm) 將它們加入主倉庫 🤗）
+您可以在 LiteLLM 上建立自訂 prompt 範本（我們也 [歡迎 PR](https://github.com/BerriAI/litellm) 將它們加入主倉庫）
 
 讓我們為 `OpenAssistant/llama2-70b-oasst-sft-v10` 做一個！
 

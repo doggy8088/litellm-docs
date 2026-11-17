@@ -1,5 +1,6 @@
 ---
-title: "v1.72.6-stable - MCP 閘道權限管理"
+title: "LiteLLM v1.72.6-stable - MCP 閘道權限管理"
+description: "新增依金鑰、團隊與組織劃分的 MCP 權限管理、Claude Code 上的 codex-mini，以及僅針對輸出 token 的速率限制。"
 slug: "v1-72-6-stable"
 date: 2025-06-14T10:00:00
 authors:

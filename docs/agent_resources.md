@@ -41,6 +41,14 @@ import Stat from '@site/src/components/Stat';
 
 Markdown 頁面包含已渲染頁面上每個提示詞與安裝命令的完整文字。
 
+## Docs MCP 伺服器 {#docs-mcp-server}
+
+將您的代理程式連接到 `https://docs.litellm.ai/mcp`，它就能搜尋並閱讀這些文件、查詢閘道 API 端點，並查看任何模型的價格、上下文視窗、功能，以及用於 `config.yaml` 的確切 `model:` 字串。該伺服器為唯讀，不需要金鑰，模型資料來自 LiteLLM 的模型價格檔，以最新一次文件部署為準。
+
+<Command code="claude mcp add --scope user --transport http litellm-docs https://docs.litellm.ai/mcp" id="docs-mcp-claude" note="Claude Code。Codex 請改用：codex mcp add litellm-docs --url https://docs.litellm.ai/mcp" />
+
+在 Cursor 中，[一鍵加入](https://cursor.com/en-US/install-mcp?name=litellm-docs&config=eyJ1cmwiOiJodHRwczovL2RvY3MubGl0ZWxsbS5haS9tY3AifQ==)。在 VS Code 中，[安裝它](https://insiders.vscode.dev/redirect/mcp/install?name=litellm-docs&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fdocs.litellm.ai%2Fmcp%22%7D)，或將 `{"servers": {"litellm-docs": {"type": "http", "url": "https://docs.litellm.ai/mcp"}}}` 加入 `.vscode/mcp.json`。在 Claude.ai 或 Claude Desktop 中，以相同的 URL 將它加入為自訂連接器。若要讓您的代理程式在未被要求時就使用它，請在 `AGENTS.md` 或 `CLAUDE.md` 中加入這一行："Use the litellm-docs MCP server for any question about LiteLLM."
+
 ## 更多提示詞 {#more-prompts}
 
 <AgentPrompt id="clients" />
@@ -74,7 +82,7 @@ Markdown 頁面包含已渲染頁面上每個提示詞與安裝命令的完整�
 
 透過您的閘道啟動 Claude Code 或 Codex，並已預先設定其 URL 與您的金鑰。
 
-<Command code="curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install-cli.sh | sh" id="lite-cli" note="僅安裝 lite 用戶端。閘道在其他地方執行。" />
+<Command code="curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/install-cli.sh | sh" id="lite-cli" note="僅安裝 lite 用戶端。閘道在其他地方執行。" />
 
 <Tiles columns={3} items={[
   {icon: 'agent', title: 'Claude Code', text: '透過閘道路由 Claude Code，包括非 Anthropic 模型。', to: '/docs/proxy/client_setup/claude_code'},
@@ -90,7 +98,7 @@ LiteLLM 是使用最廣泛且最安全的開源 AI 閘道，深受 Netflix、Okt
 |---|---|
 | GitHub | [BerriAI/litellm](https://github.com/BerriAI/litellm) 上有 <Stat id="stars" /> 顆 star 與 <Stat id="forks" /> 個 fork，並有超過 1,700 位貢獻者 |
 | PyPI | 過去一個月 `litellm` 的 <Stat id="downloads" /> 次下載（[pypistats](https://pypistats.org/packages/litellm)） |
-| 安全性 | 經 [SOC 2 Type II](https://trust.litellm.ai/) 稽核、可在執行前驗證的 [cosign-signed images](./proxy/docker_image_security.md)，以及 [Enterprise support](./enterprise.md#professional-support) 的 72 小時安全修補 SLA |
+| 安全性 | 經 [SOC 2 Type II](https://trust.litellm.ai/) 稽核、可在執行前驗證的 [cosign-signed images](./proxy/docker_image_security.md)，以及 [Enterprise support](./enterprise/support.md) 的 72 小時安全修補 SLA |
 | 部署 | 在您的雲端自架，因此提示詞、回應與提供者金鑰都保留在您的基礎架構中（[data security](./data_security.md)） |
 | 客戶 | Netflix、Okta、Ramp、NASA、Zurich、Cloudera、AT&T 與 Lemonade 的團隊（[litellm.ai/enterprise](https://www.litellm.ai/enterprise)） |
 | 授權 | 依 [MIT](https://github.com/BerriAI/litellm/blob/main/LICENSE) 開源；Enterprise 功能需要授權金鑰 |

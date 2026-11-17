@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Google Cloud Storage (GCS) 記錄"
+sidebar_label: "Google Cloud Storage"
+description: "透過 gcs_bucket 回呼將 LiteLLM AI 閘道請求記錄到 Google Cloud Storage (GCS) 儲存桶；這是 Enterprise 功能，會寫入標準記錄酬載。"
+---
 import Image from '@theme/IdealImage';
 
 # Google Cloud Storage {#google-cloud-storage}
@@ -18,7 +23,7 @@ model_list:
   model_name: fake-openai-endpoint
 
 litellm_settings:
-  callbacks: ["gcs_bucket"] # 👈 KEY CHANGE # 👈 KEY CHANGE
+  callbacks: ["gcs_bucket"] # KEY CHANGE # KEY CHANGE
 ```
 
 2. 設定必要的環境變數
@@ -70,6 +75,6 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [預約 Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約 Demo](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

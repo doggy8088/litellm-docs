@@ -1,3 +1,7 @@
+---
+sidebar_label: "自訂格式 (Adapters)"
+---
+
 # 以自訂格式呼叫任何 LiteLLM 模型 {#call-any-litellm-model-in-your-custom-format}
 
 使用此功能可用您的自訂格式呼叫任何 LiteLLM 支援的 `.completion()` 模型。若您有自訂 API，並想支援任何 LiteLLM 支援的模型，這會很有用。
@@ -194,9 +198,9 @@ curl http://localhost:4000/v1/messages \
 ## 實際範例 {#real-example}
 
 查看完整的 Anthropic adapter：
-- [transformation.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/experimental_pass_through/adapters/transformation.py)
-- [handler.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/experimental_pass_through/adapters/handler.py)
-- [streaming_iterator.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/experimental_pass_through/adapters/streaming_iterator.py)
+- [transformation.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/messages/adapters/transformation.py)
+- [handler.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/messages/adapters/handler.py)
+- [streaming_iterator.py](https://github.com/BerriAI/litellm/blob/main/litellm/llms/anthropic/messages/adapters/streaming_iterator.py)
 
 ## 就是這樣 {#thats-it}
 

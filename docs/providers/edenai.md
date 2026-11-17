@@ -1,3 +1,9 @@
+---
+title: "Eden AI API 與 LiteLLM：Python SDK 與 Gateway"
+sidebar_label: "Eden AI"
+description: "透過 Eden AI，從 Python SDK 或 AI Gateway 存取 1000+ 模型，涵蓋聊天、嵌入、音訊、圖片與影片，並支援備援與 Eden 回報的成本。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

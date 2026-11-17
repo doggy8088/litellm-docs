@@ -1,5 +1,6 @@
 ---
-title: v1.59.0
+title: "LiteLLM v1.59.0"
+description: "新增可選啟用的 store_prompts_in_spend_logs 選項，可在 Admin UI 中顯示訊息與回應。此選項預設關閉。"
 slug: v1.59.0
 date: 2025-01-17T10:00:00
 authors:

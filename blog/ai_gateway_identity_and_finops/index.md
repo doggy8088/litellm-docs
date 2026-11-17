@@ -39,7 +39,7 @@ flowchart LR
     AG2 --> Agent2["摘要代理程式"]
 ```
 
-[Agent Gateway](/docs/a2a) 會驗證呼叫者身分、控管哪些使用者與團隊可以呼叫每個代理程式，並記錄請求、回應、延遲與成本資料。Model Gateway 會對 LLM 流量進行路由，並套用預算與速率限制。MCP Gateway 會集中管理工具存取與上游驗證。
+[Agent Gateway](../../docs/a2a) 會驗證呼叫者身分、控管哪些使用者與團隊可以呼叫每個代理程式，並記錄請求、回應、延遲與成本資料。Model Gateway 會對 LLM 流量進行路由，並套用預算與速率限制。MCP Gateway 會集中管理工具存取與上游驗證。
 
 合在一起，它們讓平台團隊能將代理程式作為共享服務來營運，並在每次請求中對每位使用者施行治理。
 
@@ -125,7 +125,7 @@ curl -X POST "$LITELLM_BASE_URL/a2a/$AGENT_ID" \
 
 上游 MCP 伺服器仍是授權權威。它會評估權杖的聲明，並決定使用者可否存取薪資明細，或僅能存取更廣泛的營收摘要。LiteLLM 集中管理 OAuth 流程與憑證處理，同時保留每位使用者的上游身分。
 
-請參閱 [MCP OAuth](/docs/mcp_oauth) 以了解設定選項，包括 machine-to-machine 與 on-behalf-of 流程。
+請參閱 [MCP OAuth](../../docs/mcp_oauth) 以了解設定選項，包括 machine-to-machine 與 on-behalf-of 流程。
 
 ## 在多代理程式呼叫中保留使用者與代理程式歸屬 {#keep-user-and-agent-attribution-across-multi-agent-calls}
 
@@ -203,4 +203,4 @@ LiteLLM Logs 為平台、安全與 FinOps 團隊提供共享代理程式活動�
 
 其結果是一個具有清楚安全與財務邊界的共用代理程式平台：使用者可存取其已核准的工具與資料，支出會歸屬至正確的業務單位，而每個單位則透過單一共用代理程式部署獨立治理。
 
-請探索 [Agent Gateway](/docs/a2a)、[MCP Gateway](/docs/mcp) 與 [預算及速率限制控制](/docs/proxy/users)，以在您的 LiteLLM 部署中建構此模式。
+請探索 [Agent Gateway](../../docs/a2a)、[MCP Gateway](../../docs/mcp) 與 [預算及速率限制控制](../../docs/proxy/users)，以在您的 LiteLLM 部署中建構此模式。

@@ -41,21 +41,23 @@ LiteLLM 遵循與 [Bedrock Mantle endpoint](https://docs.aws.amazon.com/bedrock/
 在請求送出給提供者之前：
 
 1. **估算輸入 token 數**，來源為請求本文（`messages`、`prompt`，或 Responses `input`）。
-2. **決定有效的輸出上限**——在檢查配額時，作為 `max_tokens` 的替代值：
+2. **決定輸出保留量**，也就是在回應返回之前，針對 `otpm` 預留的輸出 token 數量：
 
-| 優先順序 | 來源 | 範例 (`openai.gpt-oss-120b`) |
+| 優先順序 | 來源 | 範例 (`openai.gpt-oss-120b`、`otpm: 100000`) |
 | --- | --- | --- |
-| 1 | 請求 `max_tokens` 或 `max_completion_tokens` | 用戶端送出 `max_tokens: 1024` → 使用 `1024` |
-| 2 | Model map `max_output_tokens`（fallback `max_tokens`） | 用戶端未指定上限 → 使用 model card 中的 `32768` |
-| 3 | 硬性預設值 | 未知模型 → `4096` |
+| 1 | 請求 `max_tokens`、`max_completion_tokens` 或 `max_output_tokens` | 用戶端送出 `max_tokens: 1024`，因此保留 `1024` |
+| 2 | 部署的 `litellm_params.max_tokens` 或 `max_completion_tokens`，或 Responses 請求的 `max_output_tokens`（當其低於預設值時） | 部署設定 `max_tokens: 2000`，因此保留 `2000` |
+| 3 | 預設值，取模型的 `max_output_tokens`（未對應的模型為 `4096`）與 `otpm` 的四分之一兩者中較小者 | 未設定上限，因此保留 `25000`，因為 `otpm` 的四分之一低於 model card 的 `32768` |
 
-3. **ITPM 檢查：** 針對部署 ITPM 限制保留 `estimated_input + effective_output_cap`。若准入會超出限制，則以 `429` 阻擋。
-4. **OTPM 檢查：** 確保 `current_otpm + effective_output_cap` 符合 OTPM 限制。若會超出 OTPM，則回滾 ITPM 保留並回傳 `429`。
+3. **ITPM 檢查：** 針對部署 ITPM 限制保留 `estimated_input`。若保留會超出限制，則以 `429` 阻擋。
+4. **OTPM 檢查：** 針對部署 OTPM 限制保留輸出保留量。若會超出 OTPM，則回滾 ITPM 保留並回傳 `429`。
 
-這與 Mantle 相同：當用戶端省略 `max_tokens` 時，LiteLLM 會假設 model 的**最大輸出容量**，而不是其輸入 context window。這就是為什麼在大型模型上缺少 `max_tokens`，可能會保留大量 ITPM/OTPM 餘裕。
+請求的上限會全額保留，即使它高於預設值。部署的上限只會降低保留量，因為路由器會在每個沒有自身上限的呼叫中送出它。<SinceVersion v="1.109.0" />
+
+預設值可讓四個沒有輸出上限的請求，在模型最大值高於 `otpm` 四分之一的部署上同時執行。這些請求的冗長回答可能使某一分鐘的實際輸出超過 `otpm`，因為計數器只有在每個回應返回時才會修正。設定 `NO_MAX_TOKENS_TPM_RESERVATION_FRACTION` 可以更改這個四分之一的比例，範圍從 `0.01` 到 `1`。值為 `1` 時會保留最多整個 `otpm`，當模型最大值高於 `otpm` 時，每分鐘大約只能准入一個這樣的請求。<SinceVersion v="1.109.0" />
 
 :::tip
-將 `max_tokens`（或 Responses 上的 `max_output_tokens`）設得接近您預期的 completion 大小。Mantle 和 LiteLLM 都會在回應後向下重新對帳，但過高的預設上限仍會在請求完成前阻擋並行請求。
+將 `max_tokens`（或 Responses 上的 `max_output_tokens`）設得接近您預期的 completion 大小。LiteLLM 會在回應後修正計數器，但過大的上限仍會在呼叫完成前佔用並行請求的 OTPM 容量。
 :::
 
 ### 請求後（重新對帳） {#post-call-reconciliation}
@@ -64,32 +66,34 @@ LiteLLM 遵循與 [Bedrock Mantle endpoint](https://docs.aws.amazon.com/bedrock/
 
 | 計數器 | 記錄內容 |
 | --- | --- |
-| **ITPM** | 以 `billable_input + completion_tokens` 取代請求前的保留，其中 `billable_input = prompt_tokens - cached_tokens` |
-| **OTPM** | 加上實際 `completion_tokens` |
+| **ITPM** | 以可計費輸入 `prompt_tokens - cached_tokens` 取代請求前的保留。Anthropic `/v1/messages` 的用量計算 `input_tokens` 加上快取寫入，不含快取讀取 |
+| **OTPM** | 以實際的 `completion_tokens` 取代請求前的保留 |
 
-如果請求在完成前**失敗**，ITPM 保留會退還；OTPM 不會計費。
+退還會回到持有該保留的那一分鐘。超出保留的用量會計入回應完成所在的那一分鐘，因此在 12:00:59 開始、12:01:20 完成的呼叫，其額外 token 會計入 12:01。<SinceVersion v="1.109.0" />
+
+如果請求**失敗**，兩項保留都會退還，每次失敗的重試或備援嘗試各退還一次。未回報用量的回應會保留其保留量，直到該分鐘結束。
 
 ### 具體範例 {#worked-example}
 
-對 `max_tokens`（`bedrock_mantle/openai.gpt-oss-120b`）的請求，未提供 `max_output_tokens: 32768`，`itpm: 500000`：
+對 `bedrock_mantle/openai.gpt-oss-120b`（`max_output_tokens: 32768`）發出未提供 `max_tokens` 的請求，`itpm: 500000`、`otpm: 100000`：
 
-| 步驟 | 計算 | ITPM 使用量 |
+| 步驟 | ITPM 使用量 | OTPM 使用量 |
 | --- | --- | --- |
-| 請求前保留 | `12` 輸入估算 + `32768` 輸出上限 | 保留 `32780` |
-| 回應 | `prompt_tokens=10`、`completion_tokens=150`、無快取 | — |
-| 請求後重新對帳 | `10 + 150` | `160` 最終 |
+| 請求前保留 | `12` 輸入估算 | `25000`，即 `otpm` 的四分之一 |
+| 回應 | `prompt_tokens=10`、無快取 | `completion_tokens=150` |
+| 請求後重新對帳 | `10` 最終 | `150` 最終 |
 
-若沒有明確的 `max_tokens`，預先請求保留量會遠大於最終扣款，這與 Mantle 文件中對配額保留的行為相同。
+若沒有明確的 `max_tokens`，請求前的預留量會遠大於最終扣款。這樣的請求最多可同時有四個納入 `otpm`，且每個完成的請求都會釋放其保留量的其餘部分，供同一分鐘內的下一個請求使用。
 
 ## 運作方式 {#how-it-works}
 
 | 階段 | ITPM | OTPM |
 | --- | --- | --- |
-| **請求前** | 保留 `estimated_input + effective_output_cap` | 檢查 `current_otpm + effective_output_cap` |
-| **請求後** | 重新對帳為 `billable_input + completion_tokens` | 加上實際 `completion_tokens` |
-| **失敗** | 退還 ITPM 保留 | 不收取 OTPM |
+| **請求前** | 保留 `estimated_input` | 保留輸出保留量 |
+| **請求後** | 重新對帳為可計費輸入 | 重新對帳為實際 `completion_tokens` |
+| **失敗** | 退還 ITPM 保留 | 退還 OTPM 保留 |
 
-**已快取的 prompt tokens**（`prompt_tokens_details.cached_tokens`）在回應後會自 ITPM 計費中排除。
+**已快取的 prompt tokens**（`prompt_tokens_details.cached_tokens`，或 Anthropic 用量中的 `cache_read_input_tokens`）在回應後會自 ITPM 計費中排除。
 
 ## 回應標頭 {#response-headers}
 
@@ -118,7 +122,7 @@ LiteLLM 遵循與 [Bedrock Mantle endpoint](https://docs.aws.amazon.com/bedrock/
 }
 ```
 
-回應會包含 `retry-after` 標頭（距離目前分鐘視窗重設還有幾秒）。
+訊息中的 `current usage` 包含被拒絕請求的保留量。回應會包含 `retry-after` 標頭（距離目前分鐘視窗重設還有幾秒）。
 
 ## 專案層級限制 {#project-level-limits}
 

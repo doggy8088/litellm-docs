@@ -1,5 +1,6 @@
 ---
-title: "v1.90.2 - 即時穩定性與受限記錄"
+title: "LiteLLM v1.90.2 - 即時穩定性與受限記錄"
+description: "防止即時工作階段中重複進行 Gemini Live 設定，並修補一處防護欄繞過問題。另對卡住的交握進行重試。"
 slug: "v1-90-2"
 date: 2026-07-01T02:09:44
 authors:

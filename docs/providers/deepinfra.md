@@ -1,7 +1,16 @@
+---
+title: "DeepInfra API 與 LiteLLM：聊天與 Rerank"
+sidebar_label: "DeepInfra"
+description: "從 Python SDK 或 AI Gateway 在 DeepInfra 上呼叫 Llama 3、Llama 2 與 CodeLlama 聊天模型，支援串流，以及在 /rerank 端點上使用 Qwen3 reranker。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # DeepInfra {#deepinfra}
+
+LiteLLM 從 Python SDK 或 AI Gateway 以 `deepinfra/` 前綴呼叫所有 DeepInfra 模型，並為 DeepInfra rerank 模型新增一個與 Cohere 相容的 `/rerank` 端點。
+
 https://deepinfra.com/
 
 :::tip

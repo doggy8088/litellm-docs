@@ -1,3 +1,8 @@
+---
+title: "LiteLLM Python SDK 的 Pydantic Logfire 追蹤"
+sidebar_label: "Logfire"
+description: "透過 logfire 回呼將 LiteLLM Python SDK 追蹤傳送到 Pydantic Logfire，查看每次呼叫在正式環境中的品質、成本與延遲追蹤。"
+---
 import Image from '@theme/IdealImage';
 
 # Logfire {#logfire}
@@ -54,13 +59,13 @@ litellm.success_callback = ["logfire"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

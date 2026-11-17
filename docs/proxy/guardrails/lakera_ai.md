@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 Lakera AI 防護欄"
+sidebar_label: "Lakera AI"
+description: "在 LiteLLM AI 閘道上使用 Lakera Guard 封鎖提示注入並遮蔽 PII：包含 config.yaml 設定以及 pre_call、during_call 與 post_call 模式。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -151,7 +156,7 @@ guardrails:
       # breakdown: Optional[bool] = True,
       # metadata: Optional[Dict] = None,
       # dev_info: Optional[bool] = True,
-      # on_flagged: Optional[str] = "block",  # "block", "monitor", or "inject_system_message"
+      # on_flagged: Optional[str] = "block",  # "block", "mask", "monitor", or "inject_system_message"
       # advisory_system_message: Optional[str] = None,  # custom template, only used with on_flagged: "inject_system_message"
       # skip_system_message_in_guardrail: Optional[bool] = None,  # exclude role: system from Lakera's inspection
       # skip_tool_message_in_guardrail: Optional[bool] = None,  # exclude role: tool from Lakera's inspection
@@ -165,7 +170,8 @@ guardrails:
 - `metadata`：(@@LITELLM_PROTECTED_000062@@) 中繼資料標籤可作為物件附加到篩選請求，且可包含任何任意的 key-value 配對。 
 - `dev_info`：(@@LITELLM_PROTECTED_000061@@) 當為 true 時，回應將會傳回一個包含 Lakera Guard 建置開發者資訊的物件。
 - `on_flagged`：(@@LITELLM_PROTECTED_000060@@) 當內容被標記時要採取的動作。預設為 `"block"`。 
-  - `"block"`：在偵測到違規時引發 HTTP 400 例外（預設行為）
+  - `"block"`：在偵測到違規時引發 HTTP 400 例外，包含僅偵測到 PII 的情況（預設行為）。
+  - `"mask"`：當 Lakera 僅標記 PII 時，將每個比對結果取代為 `[MASKED <TYPE>]`，並讓請求繼續。任何其他違規都會引發 HTTP 400 例外；在 `mode: during_call` 下偵測到的 PII 也一樣，因為該模式執行得太晚，無法遮蔽外送的請求。需要 `payload` 與 `breakdown` 保持為 `true`。舊版是在 `"block"` 下執行此行為，因此請設定 `"mask"` 以保留該行為。
   - `"monitor"`：記錄違規，但允許請求繼續。適合在不阻擋合法請求的情況下調整安全性 policy。
   - `"inject_system_message"`：將建議性系統訊息附加到請求中，並讓實際的 LLM 呼叫繼續（HTTP 200），而不是封鎖或靜默允許。請參閱下方的 [建議模式](#advisory-mode) 以了解其運作方式與限制。
 - `advisory_system_message`：(@@LITELLM_PROTECTED_000060@@) 自訂建議訊息範本，僅在 `on_flagged: "inject_system_message"` 時使用。必須是有效的 `str.format()` 字串，且包含實際的 `{reason}` 佔位符（已跳脫的 `{{reason}}` 會被拒絕）；無效範本會在 guardrail 設定時而非第一次被標記的請求時引發錯誤。未設定時預設為內建的通用訊息。
@@ -174,7 +180,7 @@ guardrails:
 
 與大多數透過對原始請求直接 hook 執行的其他 guardrails 不同，Lakera v2 會直接遵守這兩個 skip 標誌；大多數直接 hook 的 guardrails 不會。請參閱 [skip 標誌的適用位置](./quick_start#where-the-skip-flags-apply)，以取得跨 guardrails 的完整說明。
 
-就地遮罩會保留這兩個 skip 標誌，以及訊息上的所有其他欄位（tool 訊息的 `tool_call_id`、assistant 訊息的 `tool_calls`、`name`、`cache_control` 等等）：只會重寫訊息本身的 `content`，而被任一 skip 標誌排除的訊息會保留在原始位置且完全不受影響，而不是被移除。Lakera v2 在兩種較狹窄的情況下仍會退回到封鎖而非遮罩，因為無法安全地將遮罩後的結果寫回：當訊息包含非字串（multimodal）內容，或當請求將 chat completions `messages` 與 Responses API `input` 欄位合併，或包含 Responses API `instructions` 欄位時，因為那裡沒有單一欄位可安全地進行遮罩。
+當 `on_flagged` 設定為 `"mask"`、`"monitor"` 或 `"inject_system_message"` 時，僅有 PII 的標記會被就地遮罩。就地遮罩會保留這兩個 skip 標誌，以及訊息上的所有其他欄位（tool 訊息的 `tool_call_id`、assistant 訊息的 `tool_calls`、`name`、`cache_control` 等等）：只會重寫訊息本身的 `content`，而被任一 skip 標誌排除的訊息會保留在原始位置且完全不受影響，而不是被移除。Lakera v2 在兩種較狹窄的情況下仍會退回到封鎖而非遮罩，因為無法安全地將遮罩後的結果寫回：當訊息包含非字串（multimodal）內容，或當請求將 chat completions `messages` 與 Responses API `input` 欄位合併，或包含 Responses API `instructions` 欄位時，因為那裡沒有單一欄位可安全地進行遮罩。
 
 ## 建議模式 {#advisory-mode}
 

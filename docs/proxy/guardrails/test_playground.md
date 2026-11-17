@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM Playground 中測試防護欄"
+sidebar_label: "防護欄測試沙盒"
+description: "在 LiteLLM Admin UI 的 playground 中，使用範例輸入並排測試並比較多個防護欄，再為正式流量啟用它們。"
+---
 import Image from '@theme/IdealImage';
 
 # 防護欄測試沙盒 {#guardrail-testing-playground}

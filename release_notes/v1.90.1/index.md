@@ -1,5 +1,6 @@
 ---
-title: "v1.90.1 - Vertex 批次上傳與金鑰去識別化"
+title: "LiteLLM v1.90.1 - Vertex 批次上傳與金鑰去識別化"
+description: "將 Vertex AI 批次上傳修正、OpenAI 到 Vertex 的 JSONL 串流，以及 /key/info 錯誤中的 API 金鑰遮罩回補至 1.90 系列。"
 slug: "v1-90-1"
 date: 2026-06-30T01:40:47
 authors:

@@ -1,3 +1,8 @@
+---
+title: "搭配 LiteLLM 使用 Bedrock AgentCore Web Search API"
+sidebar_label: "Amazon Bedrock AgentCore 網頁搜尋"
+description: "在 LiteLLM 中使用 Bedrock AgentCore 網頁搜尋：在 Python SDK 中呼叫 search() 或在 AI Gateway 上呼叫 /v1/search，採用 SigV4 驗證，不需要第三方金鑰。"
+---
 # Amazon Bedrock AgentCore 網頁搜尋 {#amazon-bedrock-agentcore-web-search}
 
 [Amazon Bedrock AgentCore 上的網頁搜尋](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/built-in-tools-web-search.html) 是一個 AWS 托管的網頁索引，作為 AgentCore Gateway 上的 MCP 工具公開，因此搜尋流量會保留在 AWS 內部，並由 AWS 計費，而不是第三方搜尋 API
@@ -123,7 +128,7 @@ AgentCore 將查詢上限設為 200 個字元，因此較長的查詢會被截�
 
 ## 備註 {#notes}
 
-gateway 由 AWS 直接計費，因此 LiteLLM 會以零成本追蹤 `agentcore/search`
+LiteLLM 以每次查詢 $0.007 追蹤 `agentcore/search`，與 [Web Search on AgentCore 價格](https://aws.amazon.com/bedrock/agentcore/pricing/) 的每 1,000 次查詢 $7 相符。AWS 會另外為 AgentCore Gateway API 呼叫計費，LiteLLM 不會追蹤這些費用
 
 SigV4 簽署區域來自 gateway hostname。如果您用自訂 hostname 在前方代理 gateway，請將 `aws_region_name`（或 `AWS_REGION`，或 profile region）設為 gateway 的區域
 

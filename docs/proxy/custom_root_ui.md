@@ -4,13 +4,9 @@ import Image from '@theme/IdealImage';
 
 # UI - 自訂根路徑  {#ui---custom-root-path}
 
-💥 當您想要以自訂的基礎 URL 路徑提供 LiteLLM 時，請使用這個，例如 `https://localhost:4000/api/v1`
+當您想要以自訂的基礎 URL 路徑提供 LiteLLM 時，請使用這個，例如 `https://localhost:4000/api/v1`
 
-:::info
-
-需要 v1.72.3 或更高版本。
-
-:::
+<SinceVersion v="1.72.3" />
 
 Proxy 會在啟動時重寫 UI 檔案以使用自訂路徑，因此 UI 目錄必須可寫。[非 root 映像](./docker_image_security) 會將 UI 複製到 `/var/lib/litellm/ui`，該位置由執行階段使用者擁有，因此預設即可正常運作。在唯讀的根檔案系統上，請將 `LITELLM_UI_PATH` 指向可寫入的磁碟區（例如 Kubernetes `emptyDir`），否則 proxy 會記錄 `Cannot apply server_root_path replacements`，且 UI 資產將無法在自訂路徑下載入
 
@@ -18,7 +14,7 @@ Proxy 會在啟動時重寫 UI 檔案以使用自訂路徑，因此 UI 目錄必
 
 ### 1. 在您的 .env 中設定 `SERVER_ROOT_PATH` {#1-set-server_root_path-in-your-env}
 
-👉 在您的 .env 中設定 `SERVER_ROOT_PATH`，這會被設定為您的伺服器根路徑
+在您的 .env 中設定 `SERVER_ROOT_PATH`，這會被設定為您的伺服器根路徑
 
 ```
 export SERVER_ROOT_PATH="/api/v1"

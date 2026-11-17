@@ -1,5 +1,6 @@
 ---
-title: "v1.76.1-stable - Gemini 2.5 Flash Image"
+title: "LiteLLM v1.76.1-stable - Gemini 2.5 Flash Image"
+description: "以 fastuuid 將 Python SDK 的 completion 路徑加速 6.5 倍，並新增 Gemini 2.5 Flash Image Preview、Grok Code Fast 與 GPT Realtime。"
 slug: "v1-76-1"
 date: 2025-08-30T10:00:00
 authors:

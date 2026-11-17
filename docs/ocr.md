@@ -212,7 +212,7 @@ curl http://0.0.0.0:4000/v1/ocr \
 
 LiteLLM 遵循 **Mistral OCR API 規格**。 
 
-請參閱 [官方 Mistral OCR 文件](https://docs.mistral.ai/capabilities/vision/#optical-character-recognition-ocr) 以取得完整 विवरण。
+請參閱 [官方 Mistral OCR 文件](https://docs.mistral.ai/capabilities/vision/#optical-character-recognition-ocr) 以取得完整 詳細資訊。
 
 :::
 

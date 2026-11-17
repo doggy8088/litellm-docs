@@ -1,4 +1,4 @@
-# ✨ 預算 / 限流層級 {#-budget--rate-limit-tiers}
+# 預算 / 限流層級 {#budget--rate-limit-tiers}
 
 定義具有速率限制的層級。將它們指派給金鑰。
 
@@ -45,7 +45,7 @@ curl -L -X POST 'http://0.0.0.0:4000/key/generate' \
 ## 3. 檢查金鑰上是否已強制執行預算 {#3-check-if-budget-is-enforced-on-key}
 
 ```bash
-# Authorization: 👈 KEY from step 2.
+# Authorization: KEY from step 2.
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer sk-...' \

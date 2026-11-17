@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 中的 Anthropic Effort 參數"
+sidebar_label: "Anthropic Effort 參數"
+description: "在 LiteLLM 中使用 Anthropic effort 參數，於 Claude 上在回答深度與 token 用量之間取捨，可透過 Python SDK 或 AI Gateway 使用，支援 tools 與 thinking。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

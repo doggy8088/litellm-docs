@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Nscale API：EU 主權推論"
+sidebar_label: "Nscale（EU 主權）"
+description: "在 Nscale 的 EU 主權雲端上，透過 Python SDK 或 AI Gateway 使用 Llama 4 Scout 與 Llama 3.3 70B 生成文字，並使用 Stable Diffusion XL 生成影像。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -27,7 +33,7 @@ os.environ["NSCALE_API_KEY"] = ""  # your Nscale API key
 ## 探索可用模型   {#explore-available-models}
 
 探索我們完整的文字與多模態 AI 模型清單，全部皆以極具競爭力的價格提供：
-📚 [模型完整清單](https://docs.nscale.com/docs/inference/serverless-models/current)
+[模型完整清單](https://docs.nscale.com/docs/inference/serverless-models/current)
 
 ## 主要功能 {#key-features}
 - **EU Sovereign**：完整資料主權與符合歐洲法規

@@ -29,11 +29,7 @@ litellm_settings:
 
 ## 設定重設時刻 {#configuring-the-reset-time-of-day}
 
-:::info
-
-`budget_reset_time` 自下一個版本起可用（在 `v1.94.0` 之後）。
-
-:::
+<SinceVersion v="1.95.0" />
 
 預設情況下，日、週與月預算都會在午夜重設。請將 `budget_reset_time` 設定為選擇實際時鐘時間（在已設定的 `timezone` 中），使重設改為落在該時間，例如讓預算重新計算與您的營業日開始時間或上游提供者的計費邊界一致：
 

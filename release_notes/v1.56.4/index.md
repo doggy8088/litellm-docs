@@ -1,5 +1,6 @@
 ---
-title: v1.56.4
+title: "LiteLLM v1.56.4"
+description: "新增 Deepgram 語音轉文字、所有模型適用的 Fireworks AI 視覺功能，以及 Admin UI 中的 Test Key 分頁。另將 fastapi 升級至 0.115.5 以修復安全性問題。"
 slug: v1.56.4
 date: 2024-12-29T10:00:00
 authors:

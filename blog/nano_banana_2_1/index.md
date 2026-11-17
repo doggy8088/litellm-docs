@@ -8,6 +8,8 @@ authors:
   - mateo
   - kerry
 description: "LiteLLM 上 Google AI Studio 與 Gemini Enterprise Agent Platform 的 Gemini Nano Banana 2.1 Day 0 支援，提供的影像輸出價格僅為 Nano Banana 2 的一半。"
+card_title: "Nano Banana 2.1"
+card_summary: "Gemini 影像模型，影像輸出價格為 Nano Banana 2 的一半：影像輸出 $30 / MTok，文字輸入 $1.50。"
 tags: [gemini, gemini enterprise agent platform, nano banana, image generation, day 0 support]
 hide_table_of_contents: false
 ---

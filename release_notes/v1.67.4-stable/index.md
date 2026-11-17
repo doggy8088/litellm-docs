@@ -1,5 +1,6 @@
 ---
-title: v1.67.4-stable - 改良的使用者管理
+title: "LiteLLM v1.67.4-stable - 改良的使用者管理"
+description: "新增跨使用者、金鑰、團隊與模型的搜尋與篩選、具工作階段連續性的 Responses API 負載平衡，以及 UI 工作階段記錄。"
 slug: v1.67.4-stable
 date: 2025-04-26T10:00:00
 authors:

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Onyx Security 防護欄"
+sidebar_label: "Onyx Security"
+description: "為 LiteLLM AI 閘道加上 Onyx Security AI Guard 原則：建立原則、複製其 API 金鑰，並在呼叫之前、期間或之後執行。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

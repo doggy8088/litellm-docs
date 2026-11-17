@@ -1,3 +1,8 @@
+---
+title: "將 LiteLLM 從 OpenTelemetry v1 遷移至 v2"
+sidebar_label: "遷移至 OpenTelemetry v2"
+description: "將 LiteLLM AI Gateway 追蹤從 OpenTelemetry v1 移至 v2：root、防護欄與 inference span 的變更、舊屬性名稱、上線與回復。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -6,6 +11,8 @@ import TabItem from '@theme/TabItem';
 OpenTelemetry v2 是 LiteLLM 追蹤的重寫版本。HTTP 伺服器 span 由標準 FastAPI instrumentation 管理，而不是由 LiteLLM 管理；span 模型是有型別的，且提供者屬性詞彙表透過 mapper 鏈進行組合。本指南說明從 [v1 OpenTelemetry 整合](./opentelemetry_integration) 移至 [v2](./opentelemetry_v2) 時會有哪些變更，以及如何在不破壞現有儀表板的情況下完成遷移。
 
 ## 啟用 {#turn-it-on}
+
+如果您目前使用 SDK 架構的 `langfuse` 回呼，請改為遵循 [Langfuse SDK 至 OpenTelemetry v2 遷移指南](./langfuse_to_otel_v2_migration)。取代該回呼會改變 ingestion 量、內容擷取與 metadata 語意。此處的說明涵蓋現有的 OTel 回呼。
 
 設定功能旗標並重新啟動 proxy：
 
@@ -43,9 +50,13 @@ v1 會以明確的逐 span 程式碼，將團隊與金鑰身分標記到每個 s
 
 v1 會將成功的 span 狀態設為 `OK`。v2 則保留為 `UNSET`，這是與 FastAPI server span 相符的 semantic-convention 預設值，只有在真正發生錯誤時才會設為 `ERROR`。以狀態 `OK` 為依據的警示，應改為統計非錯誤 span。
 
-## 在切換期間保留舊的屬性名稱 {#keep-the-old-attribute-names-during-the-cutover}
+## 在切換期間保留舊的屬性名稱 {#more-than-one-collector}
 
 v2 預設附帶一個舊版相容 mapper（`LITELLM_OTEL_LEGACY_COMPAT=true`），會在 canonical keys 之外，額外以較舊的 Traceloop key 名稱（`gen_ai.system`、`gen_ai.usage.prompt_tokens`、`gen_ai.usage.completion_tokens`、`llm.is_streaming` 等）輸出相同資料。這就是能夠逐步遷移的原因：啟用 v2 後，讀取舊 token 數與提供者 key 的儀表板仍可正常運作。您可以依自己的步調，將每個查詢遷移到 canonical `gen_ai.*` keys，然後將 `LITELLM_OTEL_LEGACY_COMPAT=false` 設為停用以移除重複項目。
+
+### 不只一個 collector {#keep-the-old-attribute-names-during-the-cutover}
+
+v1 沒有 collector 清單。若要從 LiteLLM 本身匯出至第二個 collector，每個 collector 都需要一個 Python handler，額外的 handler 需設定 `skip_set_global=True`，而且只有第一個 handler 會收到 proxy 的 root、auth 與 database spans，因此其他 collector 會收到其 parent 永遠不會送達的 LLM spans。v2 會從 config.yaml 的 `callback_settings.otel.exporters` 讀取 collector 清單，並將完整的 trace 傳送給每一個 collector；請參閱[傳送至不只一個 collector](./opentelemetry_v2#send-to-more-than-one-collector)。切換時，請將每個 collector 都放入該清單，包含第一個 handler 的 collector，即使它來自 `OTEL_ENDPOINT`，因為對於 traces 而言，該清單會取代 `OTEL_ENDPOINT`。接著將 `otel` 加入 `litellm_settings.callbacks`（清單在被讀取之前需要這項設定），並移除 Python handlers。v1 會忽略該清單，因此在 `LITELLM_OTEL_V2` 啟用之前，它不會有任何作用。
 
 ## 安全上線 {#a-safe-rollout}
 

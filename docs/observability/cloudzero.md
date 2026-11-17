@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI Gateway 的 CloudZero 成本匯出"
+sidebar_label: "CloudZero"
+description: "將 LiteLLM AI Gateway 的支出匯出至 CloudZero AnyCost API 以進行成本追蹤，包含每小時自動匯出、手動匯出、試執行與 UI 設定。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

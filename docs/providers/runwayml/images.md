@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 進行 RunwayML 圖片生成"
+sidebar_label: "RunwayML"
+description: "使用 RunwayML gen4_image 將文字提示詞轉換為五種尺寸的圖片，透過同步或非同步呼叫，並在 LiteLLM 中自動輪詢任務與追蹤成本。"
+---
+
 # RunwayML - 圖像生成 {#runwayml---image-generation}
 
 ## 總覽 {#overview}

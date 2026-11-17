@@ -1,5 +1,6 @@
 ---
-title: "v1.76.0-stable - RPS 改進"
+title: "LiteLLM v1.76.0-stable - RPS 改進"
+description: "修正 Vertex AI 批次檔案格式、GPT-5 chat 函式支援、Responses API 預設 API 版本，以及 Bedrock 向量儲存查詢憑證。"
 slug: "v1-76-0"
 date: 2025-08-23T10:00:00
 authors:

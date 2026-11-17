@@ -8,7 +8,7 @@
 import litellm
 from litellm import completion
 
-litellm._turn_on_debug() # 👈 this is the 1-line change you need to make
+litellm._turn_on_debug() # this is the 1-line change you need to make
 
 ## set ENV variables
 os.environ["OPENAI_API_KEY"] = "openai key"
@@ -69,4 +69,4 @@ response = completion("command-nightly", messages, logger_fn=my_custom_logging_f
 
 加入 [Discord](https://discord.com/invite/wuPM9dRgDw)。 
 
-我們保證會以閃電般的速度協助您 `lite` ❤️
+我們保證會以閃電般的速度協助您 `lite`

@@ -1,5 +1,6 @@
 ---
-title: v1.65.0-stable - Model Context Protocol
+title: "LiteLLM v1.65.0-stable - Model Context Protocol"
+description: "新增 MCP 伺服器支援，讓開發者透過代理列出並呼叫 MCP 工具。並新增 DailyUserSpend 資料表，在記錄超過 100 萬筆後提供用量分析。"
 slug: v1.65.0-stable
 date: 2025-03-30T10:00:00
 authors:

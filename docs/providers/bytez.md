@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Bytez API：Python SDK 與閘道"
+sidebar_label: "Bytez"
+description: "透過 Python SDK 或 AI 閘道，將聊天、圖像、音訊與視訊提示傳送至 Gemma 3 等 Bytez 模型，並使用 repetition_penalty 等 Hugging Face kwargs。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -5,7 +11,7 @@ import TabItem from '@theme/TabItem';
 
 LiteLLM 支援 [Bytez](https://www.bytez.com) 上的所有聊天模型！
 
-這也代表支援多模態模型 🔥
+這也代表支援多模態模型
 
 支援的任務：`chat`、`image-text-to-text`、`audio-text-to-text`、`video-text-to-text`
 

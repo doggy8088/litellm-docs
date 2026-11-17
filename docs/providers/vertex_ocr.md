@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Vertex AI Mistral OCR"
+sidebar_label: "Vertex AI OCR"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道，使用 Gemini Enterprise Agent Platform（原 Vertex AI）上的 Mistral OCR，從 PDF 與圖片中擷取文字。"
+---
+
 # Vertex AI OCR {#vertex-ai-ocr}
 
 ## 總覽 {#overview}

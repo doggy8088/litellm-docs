@@ -1,5 +1,6 @@
 ---
-title: "v1.104.0 - Claude Opus 5.5、GPT-6、Master Key 強制執行與 Team 路由控制"
+title: "LiteLLM v1.104.0 新增 Claude Opus 5.5、GPT-6 與 master key 強制執行"
+description: "新增 Claude Opus 5.5 與 GPT-6。Proxy 現在會拒絕強度不足的 master key、在預算耗盡時傳回 422，並預設關閉 stdio MCP 伺服器。"
 slug: "v1-104-0"
 date: 2026-10-03T00:00:00
 authors:
@@ -109,7 +110,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS "LiteLLM_SpendLogs_litellm_call_id_idx" 
 | --- | --- | --- |
 | [TinyFish](../../docs/pass_through/tinyfish) | `/tinyfish/*` | 透過具備逐步計費的 pass-through 路由執行 TinyFish Agent API 自動化 |
 | [fal.ai](../../docs/providers/fal_ai) | `/fal_ai/*` | 透過具備支出追蹤的 pass-through 路由提交並輪詢 fal queue 工作 |
-| [OpenRouter](../../docs/providers/openrouter) | `/openrouter/alpha/decisions` | 透過 pass-through 路由連線到 OpenRouter 的 decisions API |
+| [OpenRouter](../../docs/providers/openrouter#decisions-jev) | `/openrouter/alpha/decisions` | 透過 pass-through 路由連線到 OpenRouter 的 decisions API |
 | [Amazon Bedrock](../../docs/providers/bedrock) | `/v1/responses` | 在 bedrock-runtime 的原生 Responses API 上提供 OpenAI 模型 |
 | [Bedrock Mantle](../../docs/providers/bedrock_mantle) | `/v1/messages` | 在 Mantle 的原生 Anthropic Messages API 上提供 Claude 模型 |
 | [Vertex AI](../../docs/providers/vertex_batch) | `/v1/files`、`/v1/batches` | 提交原生 Vertex batch JSONL，並進行成本追蹤 |

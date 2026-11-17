@@ -1,5 +1,6 @@
 ---
-title: "v1.84.10 - 中斷串流成本回收"
+title: "LiteLLM v1.84.10 - 中斷串流成本回收"
+description: "回收中斷的 Anthropic 串流的輸出 token 與成本，並在失敗資料列上記錄部分支出。"
 slug: "v1-84-10"
 date: 2026-06-24T04:00:54
 authors:

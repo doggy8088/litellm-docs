@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock Agents：InvokeAgent API"
+sidebar_label: "Bedrock Agents"
+description: "透過 LiteLLM 以 OpenAI 格式呼叫 Bedrock Agents，使用 bedrock/agent/ 模型前綴，可從 Python SDK 或 AI 閘道呼叫，並支援提供者專屬參數。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

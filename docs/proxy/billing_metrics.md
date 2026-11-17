@@ -3,15 +3,17 @@ import TabItem from '@theme/TabItem';
 
 # 可計費請求計量 {#billable-request-metering}
 
-LiteLLM Enterprise [定價採用按使用量計費](../enterprise#how-is-pricing-structured)。可計費請求計量會回報該使用量。proxy 會計算對 LLM、MCP 和 A2A 端點的成功請求，並將一個 OpenTelemetry 計數器推送到 LiteLLM 的收集器，該收集器使用為您的部署核發的 mTLS 用戶端憑證進行驗證。
+LiteLLM Enterprise [定價採用按使用量計費](../enterprise#how-is-pricing-structured)。可計費請求計量會回報該使用量。proxy 會計算對 LLM、MCP 和 A2A 端點的成功請求。它會將一個 OpenTelemetry 計數器傳送到 LiteLLM 的收集器，並使用您部署的 OAuth client ID 與 secret 進行驗證。
 
-只會傳送請求數量。提示詞、回應、虛擬金鑰與您的授權金鑰都不會離開部署。計量會與您設定的任何 [OTEL 記錄](../observability/opentelemetry_integration) 分開執行，且絕不會接觸您的自有指標管線。
+計量會連同端點類別、路由、狀態、模型 ID、LiteLLM 版本，以及可取得時的授權 ID，一併傳送請求數量。提示詞、回應與虛擬金鑰絕不會離開部署。只有在其離線簽章檢查失敗時，閘道才會將授權金鑰傳送到 LiteLLM 授權伺服器。請參閱[啟用您的授權](../enterprise/activate.md)。計量會與您的 [OTEL 記錄](../observability/opentelemetry_integration) 及指標管線分開執行。
 
 :::info
 
-您需要 `LITELLM_LICENSE` 以及來自 LiteLLM onboarding 的計量憑證（`client.crt` 和 `client.key`）。少了其中一項？[聯絡我們](https://enterprise.litellm.ai/demo)。
+在 LiteLLM onboarding 期間取得 `LITELLM_LICENSE`、OAuth client ID 與 OAuth client secret。若您需要這些憑證，請[聯絡我們](https://enterprise.litellm.ai/demo)。
 
 :::
+
+這些 OAuth 設定取代了早期版本的憑證設定。請使用包含 [OAuth 計量實作](https://github.com/BerriAI/litellm/blob/f52f26d9c636038c6e3609cc7d17cf625d434c3e/litellm/proxy/enterprise_billing/billing_metrics.py) 的 image。
 
 ## 快速開始 {#quick-start}
 
@@ -20,28 +22,17 @@ LiteLLM Enterprise [定價採用按使用量計費](../enterprise#how-is-pricing
 | 變數 | 必填 | 說明 |
 |----------|----------|-------------|
 | `LITELLM_BILLING_METRICS_ENDPOINT` | 是 | 收集器 URL。請使用 `https://telemetry.litellm.ai` |
-| `LITELLM_BILLING_METRICS_CLIENT_CERT` | 是 | mTLS 用戶端憑證。檔案路徑或內嵌 PEM |
-| `LITELLM_BILLING_METRICS_CLIENT_KEY` | 是 | 憑證的私密金鑰。檔案路徑或內嵌 PEM |
-| `LITELLM_BILLING_METRICS_CA_CERT` | 否 | 收集器的 CA 套件。若使用 `telemetry.litellm.ai`，請留空 |
+| `LITELLM_BILLING_METRICS_CLIENT_ID` | 是 | 來自 LiteLLM onboarding 的 OAuth client ID |
+| `LITELLM_BILLING_METRICS_CLIENT_SECRET` | 是 | 來自您的 secret manager 的 OAuth client secret |
+| `LITELLM_BILLING_METRICS_TOKEN_URL` | 是 | 來自 onboarding 的 HTTPS OAuth token 端點 |
 | `LITELLM_BILLING_METRICS_EXPORT_INTERVAL_MS` | 否 | 推送間隔（毫秒）。預設 `60000` |
 
 ```bash
-export LITELLM_LICENSE="eyJ..."
 export LITELLM_BILLING_METRICS_ENDPOINT="https://telemetry.litellm.ai"
-export LITELLM_BILLING_METRICS_CLIENT_CERT="/etc/litellm/billing-mtls/client.crt"
-export LITELLM_BILLING_METRICS_CLIENT_KEY="/etc/litellm/billing-mtls/client.key"
+export LITELLM_BILLING_METRICS_TOKEN_URL="https://litellm-prod.auth.us-west-1.amazoncognito.com/oauth2/token"
 ```
 
-憑證變數可接受檔案路徑或 PEM 內容本身。當您的密鑰存放區將值以環境變數注入且無法掛載檔案時，請使用內嵌 PEM，例如 ECS 搭配 AWS Secrets Manager 或 Cloud Run 搭配 Secret Manager。
-
-您也可以在設定檔中設定這些項目：
-
-```yaml
-environment_variables:
-  LITELLM_BILLING_METRICS_ENDPOINT: "https://telemetry.litellm.ai"
-  LITELLM_BILLING_METRICS_CLIENT_CERT: "-----BEGIN CERTIFICATE-----\n..."
-  LITELLM_BILLING_METRICS_CLIENT_KEY: "-----BEGIN PRIVATE KEY-----\n..."
-```
+請透過您的 secret manager 注入 `LITELLM_LICENSE`、`LITELLM_BILLING_METRICS_CLIENT_ID` 與 `LITELLM_BILLING_METRICS_CLIENT_SECRET`。匯出器會透過 OAuth client-credentials 流程取得 bearer token。兩個 URL 都必須使用 HTTPS。
 
 ### 2. 啟動 proxy {#2-start-the-proxy}
 
@@ -51,74 +42,64 @@ litellm --config config.yaml
 
 ### 3. 驗證 {#3-verify}
 
-透過 proxy 傳送請求，然後檢查記錄是否有：
+下面這一行是以 INFO 等級記錄，因此只有在 proxy 以 `LITELLM_LOG=INFO`（或 `--detailed_debug`）執行時才會顯示。透過 proxy 傳送請求，然後檢查記錄是否有：
 
 ```
 Enterprise billing metrics enabled: exporting to https://telemetry.litellm.ai every 60000 ms
 ```
 
-如果缺少這一行，請尋找指出設定錯誤變數名稱的警告。計量問題絕不會影響請求服務。發生任何錯誤時，匯出器都會停用，而 proxy 會正常執行。
+如果缺少這一行，請尋找指出設定錯誤變數名稱的警告。啟動設定無效會停用計量。若計量失敗，proxy 仍會繼續提供請求服務。
 
 ## 部署 {#deploy}
 
 <Tabs>
 <TabItem value="helm" label="Helm">
 
-[標準 chart](https://github.com/BerriAI/litellm/tree/main/helm/litellm-helm) 與 [微服務 chart](./deploy#deploy-with-helm) 都有 `billingMetrics` 區塊，且預設為停用。
+[LiteLLM chart](./deploy/helm.md) 針對兩種部署模式都只有一個 `billingMetrics` 區塊。請透過您的 secret manager 建立一個名為 `litellm-billing-metrics` 的 Secret，其中包含 `client-id` 與 `client-secret` 金鑰。然後啟用計量：
 
-1. 從您核發的憑證建立 TLS Secret：
-
-```bash
-kubectl create secret tls litellm-billing-metrics-mtls --cert=client.crt --key=client.key
-```
-
-2. 在您的 values 中啟用計量：
-
-```yaml
+```yaml title="values.yaml"
 billingMetrics:
   enabled: true
+  secretName: litellm-billing-metrics
 ```
-
-此 chart 預設會尋找名為 `litellm-billing-metrics-mtls` 的 Secret。
 
 | 值 | 預設值 | 說明 |
 |-------|---------|-------------|
 | `billingMetrics.enabled` | `false` | 啟用計量 |
 | `billingMetrics.endpoint` | `https://telemetry.litellm.ai` | 收集器 URL |
-| `billingMetrics.secretName` | `litellm-billing-metrics-mtls` | 現有的 TLS Secret，包含 `tls.crt` 和 `tls.key` |
-| `billingMetrics.caSecretName` | `""` | 現有的 Secret，包含 `ca.crt`。若要使用預設收集器，請留空 |
+| `billingMetrics.tokenUrl` | `https://litellm-prod.auth.us-west-1.amazoncognito.com/oauth2/token` | OAuth token 端點 |
+| `billingMetrics.secretName` | `litellm-billing-metrics` | 包含 `client-id` 與 `client-secret` 的 Secret |
 | `billingMetrics.exportIntervalMs` | `""` | 推送間隔。proxy 預設為 `60000` |
 
 </TabItem>
 <TabItem value="terraform" label="Terraform (AWS / GCP)">
 
-[`terraform/litellm/aws`](https://github.com/BerriAI/litellm/tree/main/terraform/litellm/aws)（ECS Fargate）與 [`terraform/litellm/gcp`](https://github.com/BerriAI/litellm/tree/main/terraform/litellm/gcp)（Cloud Run）中的參考堆疊在設定 `billing_metrics_endpoint` 時會啟用計量：
+[`terraform/litellm/aws`](https://github.com/BerriAI/litellm/tree/main/litellm/deploy/terraform/litellm/aws)（ECS Fargate）與 [`terraform/litellm/gcp`](https://github.com/BerriAI/litellm/tree/main/litellm/deploy/terraform/litellm/gcp)（Cloud Run）中的參考堆疊在設定 `billing_metrics_endpoint` 時會啟用計量：
 
 ```hcl
-billing_metrics_endpoint = "https://telemetry.litellm.ai"
+billing_metrics_endpoint  = "https://telemetry.litellm.ai"
+billing_metrics_client_id = "your-client-id"
 ```
 
-```bash
-export TF_VAR_billing_metrics_client_cert_pem="$(cat client.crt)"
-export TF_VAR_billing_metrics_client_key_pem="$(cat client.key)"
-```
-
-此堆疊會將憑證和金鑰儲存在 Secrets Manager（AWS）或 Secret Manager（GCP）中，並將它們作為環境變數注入。不需要磁碟區。
+請透過您的 secret manager 提供 `TF_VAR_billing_metrics_client_secret`。該模組會將它儲存在 AWS Secrets Manager 或 Google Secret Manager 中，並注入到執行環境。Terraform state 含有該 secret，請限制對 state backend 的存取。若 onboarding 提供不同的 token 端點，請設定 `billing_metrics_token_url`。
 
 </TabItem>
 <TabItem value="docker" label="Docker">
 
+請使用包含 OAuth 計量實作的相容 image，如 [Docker 指南](./docker_quick_start.md) 所述。將這些變數加入您現有的閘道容器：
+
 ```bash
 docker run \
-  -e LITELLM_LICENSE="eyJ..." \
+  --env-file litellm.env \
   -e LITELLM_BILLING_METRICS_ENDPOINT="https://telemetry.litellm.ai" \
-  -e LITELLM_BILLING_METRICS_CLIENT_CERT="$(cat client.crt)" \
-  -e LITELLM_BILLING_METRICS_CLIENT_KEY="$(cat client.key)" \
-  -v $(pwd)/config.yaml:/app/config.yaml \
-  -p 4000:4000 \
-  ghcr.io/berriai/litellm:main-stable \
+  -e LITELLM_BILLING_METRICS_TOKEN_URL="https://litellm-prod.auth.us-west-1.amazoncognito.com/oauth2/token" \
+  -v "$(pwd)/config.yaml:/app/config.yaml:ro" \
+  -p 127.0.0.1:4000:4000 \
+  "$LITELLM_IMAGE" \
   --config /app/config.yaml
 ```
+
+將 `LITELLM_IMAGE` 設定為您已測試的 image 參照。請保持 `litellm.env` 的私密性。請包含您現有部署中的授權、OAuth client ID 與 secret、master key，以及資料庫連線設定。
 
 </TabItem>
 </Tabs>
@@ -131,10 +112,10 @@ docker run \
 
 ## 常見問題 {#faq}
 
-**這會影響 proxy 效能嗎？** 在預設設定下幾乎沒有可感知的影響。每個請求的成本約為 1.6 微秒。
+**這會影響 proxy 效能嗎？** 在預設設定下沒有顯著影響。每個請求的成本約為 1.6 微秒。
 
 **如果收集器無法連線怎麼辦？** 請求不受影響。計數器是累計式的，因此在中斷期間記錄的計數會包含在下一次成功匯出中。
 
-**重新啟動時會怎樣？** proxy 在關機時會刷新計數器，因此不會遺失任何計數。
+**重新啟動時會怎樣？** proxy 會在正常關機時嘗試最後一次刷新。若發生當機或刷新失敗，在 proxy 匯出之前可能會遺失計數。
 
-**離線隔離部署呢？** 計量需要對收集器進行 HTTPS 對外連線。如果您的部署無法連線，請在 onboarding 期間與我們討論。
+**離線隔離部署呢？** 計量需要對收集器與 OAuth token 端點進行 HTTPS 對外連線。如果您的部署無法連線，請在 onboarding 期間與我們討論。

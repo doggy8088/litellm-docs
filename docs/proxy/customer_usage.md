@@ -6,7 +6,7 @@ import TabItem from '@theme/TabItem';
 
 直接在儀表板中追蹤並視覺化終端使用者支出。監控客戶層級的使用分析、支出記錄與活動指標，以了解您的客戶如何使用您的 LLM 服務。
 
-此功能在 **v1.80.8-stable 及以上版本** 可用。
+<SinceVersion v="1.80.8-stable" />
 
 ## 概覽 {#overview}
 

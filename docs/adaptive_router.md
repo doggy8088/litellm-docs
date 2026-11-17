@@ -1,3 +1,7 @@
+---
+sidebar_label: 自適應路由器 (Beta)
+---
+
 # [BETA] 自適應路由器 {#beta-adaptive-router}
 
 :::info

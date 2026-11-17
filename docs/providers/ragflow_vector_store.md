@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 RAGFlow Vector Stores"
+sidebar_label: "RAGFlow Vector Stores"
+description: "從 Python SDK 或 AI Gateway 建立並管理作為 LiteLLM vector store 的 RAGFlow 資料集，支援 chunk 方法、擷取管線與 parser 設定。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';

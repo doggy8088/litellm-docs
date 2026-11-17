@@ -74,15 +74,38 @@ class CostBreakdown(TypedDict, total=False):
 
 ## 標準記錄使用者 API 金鑰中繼資料 {#standardlogginguserapikeymetadata}
 
+這些欄位描述驗證該請求的虛擬金鑰，以及其所屬的實體。Proxy 會從金鑰的驗證物件複製這些欄位，因此支出與預算值是 Proxy 在此請求執行前所檢查的值，不包含此請求的成本。當金鑰沒有該實體，或該實體沒有該欄位的值時，該欄位為 `null`。
+
 | 欄位 | 型別 | 說明 |
 |-------|------|-------------|
 | `user_api_key_hash` | `Optional[str]` | litellm virtual key 的雜湊值 |
 | `user_api_key_alias` | `Optional[str]` | API 金鑰的別名 |
+| `user_api_key_spend` | `Optional[float]` | 金鑰的支出，單位為 USD |
+| `user_api_key_max_budget` | `Optional[float]` | 金鑰的預算上限，單位為 USD |
+| `user_api_key_budget_reset_at` | `Optional[str]` | 金鑰預算下次重置的 ISO 8601 時間 |
+| `user_api_key_user_spend` | `Optional[float]` | 擁有該金鑰的使用者的支出，單位為 USD |
+| `user_api_key_user_max_budget` | `Optional[float]` | 擁有該金鑰的使用者的預算上限，單位為 USD |
+| `user_api_key_team_spend` | `Optional[float]` | 金鑰所屬團隊的支出，單位為 USD |
+| `user_api_key_team_max_budget` | `Optional[float]` | 金鑰所屬團隊的預算上限，單位為 USD |
 | `user_api_key_org_id` | `Optional[str]` | 與金鑰相關聯的組織 ID |
+| `user_api_key_org_alias` | `Optional[str]` | 與金鑰相關聯的組織別名 |
 | `user_api_key_team_id` | `Optional[str]` | 與金鑰相關聯的團隊 ID |
+| `user_api_key_project_id` | `Optional[str]` | 與金鑰相關聯的 [Project](./project_management) ID |
+| `user_api_key_project_alias` | `Optional[str]` | 與金鑰相關聯的專案別名 |
 | `user_api_key_user_id` | `Optional[str]` | 與金鑰相關聯的使用者 ID |
-| `user_api_key_end_user_id` | `Optional[str]` | 與金鑰相關聯的終端使用者 ID |
+| `user_api_key_user_email` | `Optional[str]` | 擁有該金鑰的使用者的電子郵件，複製自該使用者的資料列。當金鑰沒有 `user_id` 或該使用者沒有電子郵件時為 `null`。在 v1.106.6 等較舊版本中，回呼已經會收到此欄位，但 SpendLogs（`/spend/logs` API 與 UI 請求記錄抽屜）要從 v1.109.0 起才會儲存它 |
 | `user_api_key_team_alias` | `Optional[str]` | 與金鑰相關聯的團隊別名 |
+| `user_api_key_end_user_id` | `Optional[str]` | 與金鑰相關聯的終端使用者 ID |
+| `user_api_key_customer_member_id` | `Optional[str]` | 當請求在[客戶階層](./customer_management/track-customer-spend)下執行時，該請求被計費的客戶成員 |
+| `user_api_key_customer_team_id` | `Optional[str]` | 該請求被計費的客戶團隊 |
+| `user_api_key_customer_org_id` | `Optional[str]` | 該請求被計費的客戶組織 |
+| `user_api_key_customer_org_alias` | `Optional[str]` | 客戶組織的別名。當請求沒有客戶階層時可能不存在 |
+| `user_api_key_customer_team_alias` | `Optional[str]` | 客戶團隊的別名。當請求沒有客戶階層時可能不存在 |
+| `user_api_key_customer_member_alias` | `Optional[str]` | 客戶成員的別名。當請求沒有客戶階層時可能不存在 |
+| `user_api_key_customer_budget_scopes` | `Optional[str]` | JSON 字串，列出該請求被計費的每個客戶層級，以及其 `key`、`entity_id` 與 `budget_limits`。當請求沒有客戶階層時可能不存在 |
+| `user_api_key_customer_hierarchy` | `Optional[dict]` | 請求執行時所屬的完整客戶階層，包含每個層級的支出與限制。當請求沒有客戶階層時可能不存在 |
+| `user_api_key_request_route` | `Optional[str]` | 請求呼叫的 Proxy 路由，路徑 ID 已替換為預留位置，例如 `/v1/responses/{response_id}` |
+| `user_api_key_auth_metadata` | `Optional[dict]` | 金鑰的 `metadata`，不含存放回呼憑證的欄位 |
 
 ## 標準記錄中繼資料 {#standardloggingmetadata}
 
@@ -168,6 +191,7 @@ class CostBreakdown(TypedDict, total=False):
 | `error_code` | `Optional[str]` | 可選的錯誤代碼（例如 "429"） |
 | `error_class` | `Optional[str]` | 可選的錯誤類別（例如 "RateLimitError"） |
 | `llm_provider` | `Optional[str]` | 傳回錯誤的 LLM 提供者（例如 "openai"）` |
+| `error_cooldown_deployments` | `Optional[Tuple[CooldownDeploymentInfo, ...]]` | 當路由器因為它能路由到的每個部署都在冷卻中而拒絕請求時設定。每個項目包含該部署的 `model_id` 與設定的 `api_base`，其中任何 `key=` 值都會被遮罩。被請求的團隊、標籤或允許區域排除的部署不會列入。對於其他所有錯誤則為 `None` |
 
 ## 標準記錄負載狀態 {#standardloggingpayloadstatus}
 

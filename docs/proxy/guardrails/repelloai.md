@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 閘道上的 RepelloAI Argus 防護欄"
+sidebar_label: "RepelloAI Argus"
+description: "在 LiteLLM AI 閘道上使用 RepelloAI Argus，依據您在 Repello 儀表板中針對每個資產設定的政策掃描提示詞與回應，並支援串流。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

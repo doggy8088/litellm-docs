@@ -1,3 +1,9 @@
+---
+title: "ElevenLabs Speech API 與 LiteLLM：STT 與 TTS"
+sidebar_label: "ElevenLabs"
+description: "從 Python SDK 或 AI Gateway 使用 ElevenLabs Scribe 轉錄音訊，並以 Eleven v3 或 Multilingual v2 生成語音，支援 OpenAI 語音對應。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

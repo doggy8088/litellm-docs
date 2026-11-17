@@ -67,7 +67,7 @@ general_settings:
     team_ids_jwt_field: "groups"    # claim carrying the user's group/team ids
 ```
 
-**檢查點。** 重新啟動 proxy，並使用有效的 IdP JWT 作為 bearer token 發送請求。它應該會通過驗證並將呼叫者解析為某個團隊。如果您收到 401，表示簽章、audience 或 issuer 檢查失敗；請參閱 [OIDC JWT 驗證](./token_auth.md) 進行疑難排解。
+**檢查點。** 重新啟動 proxy，並使用有效的 IdP JWT 作為 bearer token 發送請求。它應該會通過驗證並將呼叫者解析為某個團隊。如果您收到 401，表示簽章、audience 或 issuer 檢查失敗；請參閱 [JWT 疑難排解](./jwt_auth_reference.md#troubleshooting)。
 
 ---
 

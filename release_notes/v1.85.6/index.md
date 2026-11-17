@@ -1,5 +1,6 @@
 ---
-title: "v1.85.6 - 資料庫韌性回補"
+title: "LiteLLM v1.85.6 - 資料庫韌性回補"
+description: "修正快取計畫錯誤時的 Prisma 重新連線，並在驗證期間發生資料庫錯誤時回傳 5xx。新增 prepared statement 開關。"
 slug: "v1-85-6"
 date: 2026-06-13T17:14:49
 authors:

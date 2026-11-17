@@ -1,3 +1,9 @@
+---
+title: "DataRobot API 與 LiteLLM：設定與模型"
+sidebar_label: "DataRobot"
+description: "透過 LiteLLM Python SDK，使用 datarobot/ 前綴與其 OpenAI 相容 API，將 completion 請求路由至 DataRobot LLM 閘道型錄中的任何模型。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -38,5 +44,5 @@ print(response)
 
 ## DataRobot 完成模型 {#datarobot-completion-models}
 
-🚨 LiteLLM 支援 _所有_ DataRobot LLM gateway 模型。若要取得您安裝與使用者帳戶可用的清單，請送出以下 CURL 指令：
+LiteLLM 支援 _所有_ DataRobot LLM gateway 模型。若要取得您安裝與使用者帳戶可用的清單，請送出以下 CURL 指令：
 `curl -X GET -H "Authorization: Bearer $DATAROBOT_API_TOKEN" "$DATAROBOT_ENDPOINT/genai/llmgw/catalog/" | jq | grep 'model":'DATAROBOT_ENDPOINT/genai/llmgw/catalog/`

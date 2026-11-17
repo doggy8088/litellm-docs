@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM AI 閘道使用 CoralBricks API"
+sidebar_label: "CoralBricks"
+description: "透過 Python SDK 或 AI 閘道，在 CoralBricks 上執行 GLM-5.3 Fast 與 DeepSeek V4.1 Flash Fast，支援聊天、Responses 與 Messages 路由及成本追蹤。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -28,9 +34,10 @@ os.environ["CORALBRICKS_API_BASE"] = "https://inference.coralbricks.ai/v1"  # op
 
 | 模型 | 輸入 / 每 1M tokens | 輸出 / 每 1M tokens | 快取寫入 / 每 1M tokens | 快取讀取 / 每 1M tokens |
 |-------|-------------------|--------------------|-------------------------|------------------------|
-| `coralbricks/glm-5.3-fp4` | $1.12 | $4.40 | $1.68 | $0 |
-| `coralbricks/glm-5.3-flash-fp4` | $0.15 | $0.50 | $0.23 | $0 |
-| `coralbricks/deepseek-v4.1-flash-fast-fp4` | $0.30 | $1.20 | $0.09 | $0 |
+| `coralbricks/glm-5.3-fast` | $1.12 | $4.40 | $1.68 | $0 |
+| `coralbricks/deepseek-v4.1-flash-fast` | $0.01 | $1.20 | $0.09 | $0 |
+
+CoralBricks 仍接受舊的 `glm-5.3-fp4` 與 `deepseek-v4.1-flash-fast-fp4` 名稱作為已棄用別名，但 LiteLLM 只為上表中的現行名稱定價，因此新部署請使用這些現行名稱
 
 每個模型最多可處理 1,048,576 個輸入 tokens，並支援工具呼叫、推理與提示快取。定價依照 [CoralBricks 定價頁面](https://www.coralbricks.ai/pricing)：快取寫入依快取寫入費率計費，而快取讀取免費。如果您的合約價格不同，請在部署上設定 `input_cost_per_token` / `output_cost_per_token`，這些設定會覆寫成本對應表
 
@@ -45,7 +52,7 @@ from litellm import completion
 os.environ["CORALBRICKS_API_KEY"] = "your-api-key"
 
 response = completion(
-    model="coralbricks/glm-5.3-flash-fp4",
+    model="coralbricks/deepseek-v4.1-flash-fast",
     messages=[{"role": "user", "content": "Write a python function that reverses a string"}],
 )
 
@@ -61,7 +68,7 @@ from litellm import completion
 os.environ["CORALBRICKS_API_KEY"] = "your-api-key"
 
 response = completion(
-    model="coralbricks/glm-5.3-flash-fp4",
+    model="coralbricks/deepseek-v4.1-flash-fast",
     messages=[{"role": "user", "content": "Explain a binary search in two sentences"}],
     stream=True,
 )
@@ -79,7 +86,7 @@ import litellm
 os.environ["CORALBRICKS_API_KEY"] = "your-api-key"
 
 response = litellm.responses(
-    model="coralbricks/glm-5.3-flash-fp4",
+    model="coralbricks/deepseek-v4.1-flash-fast",
     input="Explain a binary search in two sentences",
     max_output_tokens=256,
 )
@@ -93,9 +100,9 @@ print(response.output_text)
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
-  - model_name: glm-5.3-flash
+  - model_name: deepseek-v4.1-flash
     litellm_params:
-      model: coralbricks/glm-5.3-flash-fp4
+      model: coralbricks/deepseek-v4.1-flash-fast
       api_key: os.environ/CORALBRICKS_API_KEY
 
 general_settings:
@@ -124,7 +131,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="glm-5.3-flash",
+    model="deepseek-v4.1-flash",
     messages=[{"role": "user", "content": "hello from litellm"}],
 )
 
@@ -140,7 +147,7 @@ curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "glm-5.3-flash",
+    "model": "deepseek-v4.1-flash",
     "messages": [{"role": "user", "content": "hello from litellm"}]
   }'
 ```
@@ -160,7 +167,7 @@ curl http://localhost:4000/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "glm-5.3-flash",
+    "model": "deepseek-v4.1-flash",
     "input": "hello from litellm",
     "max_output_tokens": 128
   }'
@@ -176,7 +183,7 @@ curl http://localhost:4000/v1/messages \
   -H "x-api-key: $LITELLM_MASTER_KEY" \
   -H "anthropic-version: 2023-06-01" \
   -d '{
-    "model": "glm-5.3-flash",
+    "model": "deepseek-v4.1-flash",
     "max_tokens": 128,
     "messages": [{"role": "user", "content": "hello from litellm"}]
   }'
@@ -192,9 +199,9 @@ curl http://localhost:4000/v1/messages \
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
-  - model_name: glm-5.3-flash
+  - model_name: deepseek-v4.1-flash
     litellm_params:
-      model: coralbricks/glm-5.3-flash-fp4
+      model: coralbricks/deepseek-v4.1-flash-fast
       api_base: https://your-coralbricks-endpoint/v1
       api_key: os.environ/CORALBRICKS_API_KEY
 ```

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 FOCUS 成本匯出：S3 與 GCS"
+sidebar_label: "Focus 匯出（實驗性）"
+description: "以 FinOps FOCUS 格式將 LiteLLM AI 閘道使用量匯出到 S3 或 GCS 儲存桶，透過環境變數與 config.yaml 設定（實驗性）。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

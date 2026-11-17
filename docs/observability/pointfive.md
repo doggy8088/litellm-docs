@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 PointFive 成本記錄"
+sidebar_label: "PointFive"
+description: "透過 presigned 批次上傳，將 LiteLLM AI Gateway 請求記錄傳送至 PointFive 進行 AI 成本與使用情況分析，包含 UI 設定與資料遮蔽。"
+---
 # PointFive {#pointfive}
 
 LiteLLM 可以將 proxy 請求記錄傳送至 [PointFive](https://www.pointfive.co)，用於 AI 成本與使用情況分析。記錄會先緩衝，並透過 PointFive API 針對每個批次發出的 presigned URL 上傳，因此 proxy 本身不需要持有任何雲端憑證，且可在任何代管環境中不經修改直接執行。

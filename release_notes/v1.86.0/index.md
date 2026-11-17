@@ -1,5 +1,6 @@
 ---
-title: "v1.86.0 - 加權路由備援、原生 Web 搜尋引用與 OTel 標準追蹤"
+title: "LiteLLM v1.86.0 - 加權路由備援、原生 Web 搜尋引用與 OTel 標準追蹤"
+description: "新增加權路由備援切換，可轉移到另一個部署；並為 Anthropic 用戶端提供原生網路搜尋引用，以及 OTel 伺服器 span 屬性。"
 slug: "v1-86-0"
 date: 2026-05-16T00:00:00
 authors:

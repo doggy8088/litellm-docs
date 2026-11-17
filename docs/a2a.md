@@ -74,7 +74,7 @@ curl -s http://localhost:4000/v1/agents \
 
 在 `config.yaml` 中宣告的 agents 不會儲存在資料庫中，因此無法從 Admin UI 編輯或刪除。請改為變更設定檔並重新啟動閘道。
 
-`agents` 鍵會從下一個版本開始正確讀取（在 `v1.95.0` 之後）。在較舊版本中，請使用 `agent_list`，並請注意，已連接資料庫的 gateways 會丟棄設定檔定義的 agents。
+`agents` 鍵自 <SinceVersion v="1.96.0" /> 起會正確讀取。在較舊版本中，請使用 `agent_list`，並請注意，已連接資料庫的 gateways 會丟棄設定檔定義的 agents。
 
 :::
 
@@ -82,7 +82,7 @@ curl -s http://localhost:4000/v1/agents \
 
 請依照[這份指南，將您的 azure ai foundry agent 加入 LiteLLM Agent Gateway](./providers/azure_ai_agents#litellm-a2a-gateway)
 
-目前 Foundry 入口網站中建立的 agents 會公開 A2A endpoint，而不是 Assistants API；請如[透過 A2A 的 Foundry agents](./providers/azure_ai_agents#foundry-agents-over-a2a) 所示，使用 Entra 憑證將這些 agents 註冊在 `agents:` 下
+目前 Foundry 入口網站中建立的 agents 不使用 Assistants API。請如[透過 Responses API 的 Foundry agents](./providers/azure_ai_agents#foundry-agents-through-the-responses-api) 所示，透過專案 Responses API 以模型名稱呼叫這些 agents；或如[透過 A2A 的 Foundry agents](./providers/azure_ai_agents#foundry-agents-over-a2a) 所示，使用 Entra 憑證將其 A2A endpoint 註冊在 `agents:` 下
 
 ### 新增 Vertex AI Agent Engine {#add-vertex-ai-agent-engine}
 
@@ -135,7 +135,7 @@ Task methods（`tasks/get`、`tasks/list`、…）會原封不動轉送到上游
 
 ### 相依性 {#dependency}
 
-LiteLLM proxy A2A routes 需要 **a2a-sdk >= 1.1.0**（已包含在 `proxy` / `proxy-dev` dependency groups 中）。如果您從自己的程式碼呼叫 agents，請安裝相對應的 SDK 版本：
+LiteLLM proxy A2A routes 需要 **a2a-sdk >= 1.1.0**（已包含在 `proxy` / `proxy-dev` dependency groups 中）。如果您從自己的程式碼呼叫 agents，請安裝相對應的 SDK 版本： {/* keep-version-note */}
 
 ```bash
 pip install "a2a-sdk>=1.1.0,<2.0"

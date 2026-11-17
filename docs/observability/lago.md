@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道的 Lago 用量計費"
+sidebar_label: "Lago"
+description: "從 Python SDK 或 AI 閘道將 LiteLLM 使用量與成本傳送到 Lago 進行依用量計費，透過 config.yaml 回呼與 Lago 記錄物件設定。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -41,9 +46,9 @@ litellm.success_callback = ["lago"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
-  metadata={"user_api_key_user_id": "your_customer_id"} # 👈 SET YOUR CUSTOMER ID HERE
+  metadata={"user_api_key_user_id": "your_customer_id"} # SET YOUR CUSTOMER ID HERE
 )
 ```
 
@@ -60,7 +65,7 @@ model_list:
   model_name: fake-openai-endpoint
 
 litellm_settings:
-  callbacks: ["lago"] # 👈 KEY CHANGE
+  callbacks: ["lago"] # KEY CHANGE
 ```
 
 2. 啟動 Proxy
@@ -85,7 +90,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
           "content": "what llm are you"
         }
       ],
-      "user": "your-customer-id" # 👈 SET YOUR CUSTOMER ID
+      "user": "your-customer-id" # SET YOUR CUSTOMER ID
     }
 '
 ```
@@ -105,7 +110,7 @@ response = client.chat.completions.create(model="{{openai_small}}", messages = [
         "role": "user",
         "content": "this is a test request, write a short poem"
     }
-], user="my_customer_id") # 👈 whatever your customer id is
+], user="my_customer_id") # whatever your customer id is
 
 print(response)
 ```
@@ -129,7 +134,7 @@ chat = ChatOpenAI(
     model = "{{openai_small}}",
     temperature=0.1,
     extra_body={
-        "user": "my_customer_id"  # 👈 whatever your customer id is
+        "user": "my_customer_id"  # whatever your customer id is
     }
 )
 
@@ -164,7 +169,7 @@ print(response)
       "code": os.getenv("LAGO_API_EVENT_CODE"), 
       "properties": {
           "model": <string>,
-          "response_cost": <number>, # 👈 LITELLM CALCULATED RESPONSE COST - https://github.com/BerriAI/litellm/blob/d43f75150a65f91f60dc2c0c9462ce3ffc713c1f/litellm/utils.py#L1473
+          "response_cost": <number>, # LITELLM CALCULATED RESPONSE COST - https://github.com/BerriAI/litellm/blob/d43f75150a65f91f60dc2c0c9462ce3ffc713c1f/litellm/utils.py#L1473
           "prompt_tokens": <number>,
           "completion_tokens": <number>,
           "total_tokens": <number>

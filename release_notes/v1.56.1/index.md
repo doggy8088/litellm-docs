@@ -1,5 +1,6 @@
 ---
-title: v1.56.1
+title: "LiteLLM v1.56.1"
+description: "為金鑰新增預算與速率限制層級、微調端點記錄與動態防護欄參數。另修正 OTEL span 重複記錄的問題。"
 slug: v1.56.1
 date: 2024-12-27T10:00:00
 authors:

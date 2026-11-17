@@ -1,5 +1,6 @@
 ---
-title: v1.55.10
+title: "LiteLLM v1.55.10"
+description: "為 Batches API 新增成本追蹤與記錄、/guardrails/list 端點，以及可管理自己團隊金鑰與模型的企業團隊管理員。"
 slug: v1.55.10
 date: 2024-12-24T10:00:00
 authors:

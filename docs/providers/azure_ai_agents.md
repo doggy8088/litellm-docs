@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure AI Foundry Agents"
+sidebar_label: "Azure AI Foundry Agents"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 以 OpenAI 格式呼叫 Azure AI Foundry Agents。設定 Entra ID 驗證、保留 threads，並使用 A2A 閘道。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -8,12 +14,12 @@ import TabItem from '@theme/TabItem';
 | 屬性 | 詳細資訊 |
 |----------|---------|
 | 說明 | Azure AI Foundry Agents 提供代管的代理程式執行階段，可使用基礎模型、工具與程式碼解譯器執行 agentic 工作流程。 |
-| LiteLLM 上的提供者路由 | `azure_ai/agents/{AGENT_ID}` |
+| LiteLLM 上的提供者路由 | `azure_ai/agents/{AGENT_NAME}` 或 `azure_ai/agents/{ASSISTANT_ID}` |
 | 提供者文件 | [Azure AI Foundry Agents ↗](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/quickstart) |
 
 ## 驗證 {#authentication}
 
-Azure AI Foundry Agents 需要 **Azure AD 驗證**（不是 API 金鑰）。您可以使用以下方式進行驗證：
+傳統代理程式（`asst_` ID）需要 **Azure AD 驗證**，而不是 API 金鑰。透過專案 Responses API 以名稱存取的代理程式也可以使用專案 API 金鑰，如[透過 Responses API 使用 Foundry 代理程式](#foundry-agents-through-the-responses-api)所示。您可以使用以下 Azure AD 方式進行驗證：
 
 ### 選項 1：服務主體（建議用於正式環境） {#option-1-service-principal-recommended-for-production}
 
@@ -64,9 +70,11 @@ azure_ai/agents/{AGENT_ID}
 ```
 
 **範例：**
-- `azure_ai/agents/asst_abc123`
+- `azure_ai/agents/math-agent`：目前 Foundry 入口網站中的代理程式，以名稱指定。請參閱[透過 Responses API 使用 Foundry 代理程式](#foundry-agents-through-the-responses-api)。
+- `azure_ai/agents/math-agent:2`：同一個代理程式，固定為版本 2。
+- `azure_ai/agents/asst_abc123`：傳統的 Assistants 代理程式。
 
-您可以在 Azure AI Foundry 入口網站的 Agents 下找到 Agent ID。
+您可以在 Azure AI Foundry 入口網站的 Agents 下找到代理程式名稱，或傳統代理程式的 ID。
 
 ### LiteLLM Python SDK {#litellm-python-sdk}
 
@@ -237,6 +245,59 @@ for chunk in stream:
 </TabItem>
 </Tabs>
 
+## 透過 Responses API 使用 Foundry 代理程式 {#foundry-agents-through-the-responses-api}
+
+<SinceVersion v="1.109.0" />
+
+在目前的 Microsoft Foundry 入口網站中建立的代理程式具有名稱，而不是 `asst_` ID。LiteLLM 會將 `azure_ai/agents/<agent name>` 連同 `agent_reference` 傳送到專案的 `/openai/v1/responses` 路由，因此代理程式可以在 `/v1/responses`、`/v1/chat/completions` 與 `/v1/messages` 上回應，並以 `"stream": true` 逐 token 串流。加上 `:<version>` 可固定版本；未指定時，Foundry 會執行代理程式的最新版本。以 `asst_` 開頭的 ID 仍會走傳統的 Assistants 路由。
+
+`api_base` 是專案端點 `https://<account>.services.ai.azure.com/api/projects/<project>`。LiteLLM 會對它傳送 `Authorization: Bearer`，因此 `api_key` 中的專案 API 金鑰與 Entra ID 憑證同樣有效。服務主體的權杖預設是為 `https://ai.azure.com/.default` 範圍簽發的，除非該項目上的 `azure_scope` 或 `AZURE_SCOPE` 環境變數設定了其他範圍。與其他所有 `azure_ai` 路由一樣，`AZURE_AI_API_KEY` 環境變數的優先順序高於服務主體欄位。
+
+```yaml title="config.yaml"
+model_list:
+  - model_name: math-agent
+    litellm_params:
+      model: azure_ai/agents/math-agent
+      api_base: https://<account>.services.ai.azure.com/api/projects/<project>
+      tenant_id: os.environ/AZURE_TENANT_ID
+      client_id: os.environ/AZURE_CLIENT_ID
+      client_secret: os.environ/AZURE_CLIENT_SECRET
+
+  - model_name: math-agent-v2
+    litellm_params:
+      model: azure_ai/agents/math-agent:2
+      api_base: https://<account>.services.ai.azure.com/api/projects/<project>
+      api_key: os.environ/FOUNDRY_PROJECT_API_KEY
+```
+
+透過 Responses API 呼叫代理程式：
+
+```bash
+curl http://localhost:4000/v1/responses \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "math-agent", "input": "What is 2 + 2?"}'
+```
+
+或透過 chat completions：
+
+```bash
+curl http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "math-agent", "messages": [{"role": "user", "content": "What is 2 + 2?"}]}'
+```
+
+代理程式擁有自己的模型設定，因此 Foundry 會拒絕在代理程式呼叫中使用 `temperature`、`top_p`、`tools`、`text` 與 `reasoning`。LiteLLM 會在 `drop_params: true` 時（設定於 `litellm_settings`、該項目或請求中）捨棄這些參數，未設定時則回應 400。Foundry 可接受與代理程式一起使用的參數，例如 `max_output_tokens`、`tool_choice`、`store`、`metadata` 與 `truncation`，會直接傳遞。
+
+系統提示詞（`instructions`、chat 系統訊息，或 Messages 的 `system`）會作為開頭的系統訊息，與代理程式自身的 instructions 一併傳送給代理程式。Foundry 會將它與該回合一起儲存，因此後續設定了 `previous_response_id` 的回合已經遵循它，而該回合中的 `instructions` 在未設定 `drop_params` 時會回應 400，設定後則會被捨棄。
+
+該項目永遠呼叫自己的代理程式。若請求的 `agent_reference`（或已淘汰的 `agent`）指向另一個代理程式，未設定 `drop_params` 時會回應 400，設定後則以該項目的代理程式為準，因此能呼叫某個項目的金鑰無法觸及專案中的其他代理程式。除非該項目已固定版本，否則請求可以選擇該項目代理程式的版本。回應中的 `instructions` 會被設為 null，因此呼叫者無法讀取代理程式在 Foundry 中被給予的系統提示詞。
+
+對代理程式呼叫 `/v1/responses/compact` 會在進行任何 Foundry 呼叫之前回應 400，因為專案的 compact 端點接受的是模型部署，而不是代理程式。請改為在該部署的模型項目上呼叫 compact。
+
+花費會依 Foundry 在回應中回報的模型計價。若要對每個代理程式收取固定價格，請在該項目上設定 `input_cost_per_token` 與 `output_cost_per_token`。
+
 ## 環境變數 {#environment-variables}
 
 | 變數 | 說明 |
@@ -253,7 +314,7 @@ export AZURE_CLIENT_SECRET="your-client-secret"
 
 ## 對話延續（Thread 管理） {#conversation-continuity-thread-management}
 
-Azure AI Foundry Agents 使用 threads 來維持對話內容。LiteLLM 會自動為您管理 threads，但您也可以傳入現有的 thread ID 以延續對話。
+傳統 Azure AI Foundry Agents 使用 threads 來維持對話內容。LiteLLM 會自動為您管理 threads，但您也可以傳入現有的 thread ID 以延續對話。以名稱存取的代理程式，則改為在 `/v1/responses` 上使用 `previous_response_id` 延續對話。
 
 ```python showLineNumbers title="Continuing a Conversation"
 import litellm
@@ -364,7 +425,7 @@ model_list:
 
 ![Azure 代理程式](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-14/5e29fc48-c0f7-4b6d-8313-2063d1240d15/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=39,187)
 
-2. 複製您要新增的代理程式的 "ID"（例如，`asst_hbnoK9BOCcHhC3lC4MDroVGG`）
+2. 複製您要新增的代理程式的名稱（例如 `math-agent`，或 `math-agent:2` 以固定版本）。傳統代理程式顯示的則是像 `asst_hbnoK9BOCcHhC3lC4MDroVGG` 這樣的 ID，同樣可以使用
 
 ![複製 Agent ID](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-14/bf17dfec-a627-41c6-9121-3935e86d3700/ascreenshot.jpeg?tl_px=0,0&br_px=2618,1463&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=504,241)
 
@@ -428,7 +489,7 @@ model_list:
 
 ## Foundry agents over A2A {#foundry-agents-over-a2a}
 
-在目前的 Microsoft Foundry 入口網站中建立的 Agents 不會使用 Assistants API，因此 `azure_ai/agents/<name>` 會傳回 `Invalid 'assistant_id'`。它們改為公開 A2A 端點，而 LiteLLM 會將它們註冊為使用 Microsoft Entra ID 驗證的標準 A2A agent
+在目前的 Microsoft Foundry 入口網站中建立的 Agents 不會使用 Assistants API。LiteLLM 會以名稱將它們作為模型來存取，如[透過 Responses API 使用 Foundry 代理程式](#foundry-agents-through-the-responses-api)所示。它們也會公開 A2A 端點，而 LiteLLM 可以將其註冊為使用 Microsoft Entra ID 驗證的標準 A2A agent
 
 端點為 `https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agent>/endpoint/protocols/a2a`。Foundry 會將其 agent card 提供在其下方的 `agentCard/v1.0`，而不是常見的 well-known paths，並且只接受 `https://ai.azure.com/.default` 範圍的 Entra bearer，因此此項目會設定 `agent_card_path` 與 service principal 欄位：
 

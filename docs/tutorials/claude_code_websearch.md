@@ -135,19 +135,32 @@ sequenceDiagram
 
 ## 搜尋提供者 {#search-providers}
 
-設定要使用哪個搜尋提供者。LiteLLM 支援多種搜尋提供者：
+LiteLLM 支援的任何搜尋提供者都能執行 Claude Code 的網路搜尋。在 `search_tools` 中設定其 `search_provider` 值：
 
 | 提供者 | `search_provider` 值 | 環境變數 |
 |----------|------------------------|----------------------|
-| **Perplexity AI** | `perplexity` | `PERPLEXITYAI_API_KEY` |
-| **Tavily** | `tavily` | `TAVILY_API_KEY` |
-| **Exa AI** | `exa_ai` | `EXA_API_KEY` |
-| **Parallel AI** | `parallel_ai` | `PARALLEL_AI_API_KEY` |
-| **Google PSE** | `google_pse` | `GOOGLE_PSE_API_KEY`, `GOOGLE_PSE_ENGINE_ID` |
-| **DataForSEO** | `dataforseo` | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` |
-| **Firecrawl** | `firecrawl` | `FIRECRAWL_API_KEY` |
-| **SearXNG** | `searxng` | `SEARXNG_API_BASE`（必填） |
-| **Linkup** | `linkup` | `LINKUP_API_KEY` |
+| [**Perplexity AI**](../search/perplexity.md) | `perplexity` | `PERPLEXITYAI_API_KEY` |
+| [**Tavily**](../search/tavily.md) | `tavily` | `TAVILY_API_KEY` |
+| [**Exa AI**](../search/exa_ai.md) | `exa_ai` | `EXA_API_KEY` |
+| [**Parallel AI**](../search/parallel_ai.md) | `parallel_ai` | `PARALLEL_AI_API_KEY` |
+| [**Google PSE**](../search/google_pse.md) | `google_pse` | `GOOGLE_PSE_API_KEY`, `GOOGLE_PSE_ENGINE_ID` |
+| [**DataForSEO**](../search/dataforseo.md) | `dataforseo` | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` |
+| [**Firecrawl**](../search/firecrawl.md) | `firecrawl` | `FIRECRAWL_API_KEY` |
+| [**SearXNG**](../search/searxng.md) | `searxng` | `SEARXNG_API_BASE`（必填） |
+| [**Linkup**](../search/linkup.md) | `linkup` | `LINKUP_API_KEY` |
+| [**Brave Search**](../search/brave.md) | `brave` | `BRAVE_API_KEY` |
+| [**fastCRW**](https://fastcrw.com/docs/rest-api) | `fastcrw` | `CRW_API_KEY` |
+| [**DuckDuckGo**](https://duckduckgo.com/api) | `duckduckgo` | 無 |
+| [**SearchAPI.io**](../search/searchapi.md) | `searchapi` | `SEARCHAPI_API_KEY` |
+| [**Serper**](../search/serper.md) | `serper` | `SERPER_API_KEY` |
+| [**You.com**](../search/you_com.md) | `you_com` | `YOUCOM_API_KEY`（選填） |
+| [**APISerpent**](../search/apiserpent.md) | `apiserpent` | `APISERPENT_API_KEY` |
+| [**TinyFish**](https://docs.tinyfish.ai/search-api) | `tinyfish` | `TINYFISH_API_KEY` |
+| [**Bedrock AgentCore**](../search/agentcore.md) | `agentcore` | `AGENTCORE_GATEWAY_URL`、AWS 憑證或 `AGENTCORE_GATEWAY_TOKEN` |
+| [**Nimble**](../search/nimble.md) | `nimble` | `NIMBLE_API_KEY` |
+| [**Grounding with Bing**](../search/bing_grounding.md) | `bing_grounding` | `BING_GROUNDING_PROJECT_ENDPOINT`、`BING_GROUNDING_MODEL`、Azure 憑證或 `BING_GROUNDING_TOKEN` |
+| [**DeepSeek**](../search/deepseek.md) | `deepseek` | `DEEPSEEK_API_KEY` |
+| [**xAI X Search**](https://docs.x.ai/developers/tools/x-search)（自 v1.109.0 起） | `xai` | `XAI_API_KEY` |
 
 請參閱[所有支援的搜尋提供者](../search/index.md)，以取得詳細的設定說明與各提供者專屬參數。
 

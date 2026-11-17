@@ -1,8 +1,10 @@
-# OpenAI 相容提供者的原生 /v1/messages 與 /v1/responses 轉送 {#native-v1messages-and-v1responses-passthrough-for-openai-compatible-providers}
+# OpenAI 相容提供者的原生 /v1/messages 轉送 {#native-v1messages-passthrough-for-openai-compatible-providers}
+
+本頁涵蓋 `model_info.supported_endpoints` 啟用選項中 `/v1/messages` 的一半。同一個欄位也能讓某個部署啟用原生 `/v1/responses`，請參閱 [原生 /v1/responses 轉送](../response_api_native_passthrough.md)。這兩個啟用選項彼此獨立：若伺服器同時提供兩者，請兩者都列出
 
 當某個部署的提供者沒有原生 Anthropic Messages 支援時，LiteLLM 會將每個 `/v1/messages` 請求轉換為該提供者自己的 API：`openai/` 部署會透過 OpenAI Responses API（請參閱 [參數對應](./messages_to_responses_mapping.md)），其餘都會透過 `/v1/chat/completions`。這種轉換只會保留目標 API 能表達的內容：`cache_control` 區塊會被捨棄，`thinking` 會對應到提供者自己的推理參數，而其他僅限 Anthropic 的請求細節則會被近似處理或遺失
 
-許多 OpenAI 相容伺服器（自架 vLLM、推理中樞、具有 Anthropic 相容端點的模型供應商）也原生提供 Anthropic Messages API。對於這些伺服器，您可以選擇讓某個部署直接轉送 Anthropic payload 而不做轉換。自 v1.92.0 起提供
+許多 OpenAI 相容伺服器（自架 vLLM、推理中樞、具有 Anthropic 相容端點的模型供應商）也原生提供 Anthropic Messages API。對於這些伺服器，您可以選擇讓某個部署直接轉送 Anthropic payload 而不做轉換。 <SinceVersion v="1.92.0" />
 
 ## 啟用 `supported_endpoints` {#opt-in-with-supported_endpoints}
 
@@ -62,37 +64,11 @@ curl http://0.0.0.0:4000/v1/messages \
 
 這個啟用選項只對 LiteLLM 原本會轉換的提供者有影響，例如 `openai/` 和 `custom_openai/` 部署。內建支援 Anthropic Messages 的提供者（`anthropic/`、`bedrock/`、`vertex_ai/`，以及其他）已經原生轉送，會忽略它
 
+| 部署 `model` | 啟用後的 `/v1/messages` | 未啟用時的 `/v1/messages` |
+|---|---|---|
+| `openai/<model>` | 原生轉送 | 透過 Responses API 轉換 |
+| `custom_openai/<model>` 以及其他未內建 Anthropic Messages 支援的 OpenAI 相容提供者 | 原生轉送 | 透過 `/v1/chat/completions` 轉換 |
+
 ## 原生 `/v1/responses` 轉送 {#native-v1responses-passthrough}
 
-其 `litellm_params.model` 以前綴 `openai/` 的部署，已經會原生將 `/v1/responses` 傳送到 `{api_base}/responses`。像 `custom_openai/` 這類通用 OpenAI 相容部署沒有自己的 Responses API 設定，因此預設下 LiteLLM 會透過 `/v1/chat/completions` 將 `/v1/responses` 進行橋接：輸入會轉換成 messages，chat completion 會再轉回 Responses 物件，而僅限 Responses 的請求欄位則會被近似處理或捨棄。當伺服器本身提供 `/responses` 時，請將 `/v1/responses` 加入 `model_info.supported_endpoints`，以不經轉換地轉送請求。自 v1.102.0 起提供
-
-```yaml
-model_list:
-  - model_name: my-open-model
-    litellm_params:
-      model: custom_openai/some-open-model
-      api_base: https://inference.example.com/v1
-      api_key: os.environ/EXAMPLE_API_KEY
-    model_info:
-      supported_endpoints: ["/v1/chat/completions", "/v1/responses"]
-```
-
-啟用後，對 proxy 的 `/v1/responses` 的請求會以 POST 送到 `{api_base}/responses`（此處為 `https://inference.example.com/v1/responses`），且無論是串流或非串流請求都會帶著 `Authorization: Bearer <api_key>`。`mode: responses` 在 `model_info` 中的部署也會以相同方式運作。未啟用時，部署會繼續透過 `/v1/chat/completions` 進行橋接，而對該部署的 `/v1/chat/completions` 呼叫則不受影響。`/v1/messages` 與 `/v1/responses` 啟用選項彼此獨立：若伺服器同時提供兩者，請兩者都列出
-
-```bash
-curl http://0.0.0.0:4000/v1/responses \
-  -H "Authorization: Bearer $LITELLM_API_KEY" \
-  -H "content-type: application/json" \
-  -d '{"model": "my-open-model", "input": "Say hi in three words"}'
-```
-
-### 無狀態後端上的 `previous_response_id` {#previous_response_id-on-stateless-backends}
-
-原生路徑會將 `previous_response_id` 以原樣轉送給後端，因此由後端負責解析。沒有儲存回應的 OpenAI 相容伺服器會拒絕它，通常回傳 400，而該錯誤會原樣回傳給呼叫端。對於這類後端，請在每一輪都於 `input` 中送出完整對話歷史，或者關閉啟用選項並使用帶有 `store_prompts_in_spend_logs: true` 的橋接路徑，這樣可讓 LiteLLM 從自己的支出記錄中解析 `previous_response_id`
-
-| 部署 `model` | 啟用後的 `/v1/messages` | 未啟用時的 `/v1/messages` | 啟用後的 `/v1/responses` | 未啟用時的 `/v1/responses` |
-|---|---|---|---|---|
-| `openai/<model>` | 原生轉送 | 透過 Responses API 轉換 | 原生 | 原生 |
-| `custom_openai/<model>` | 原生轉送 | 透過 `/v1/chat/completions` 轉換 | 原生轉送 | 透過 `/v1/chat/completions` 橋接 |
-
-有些具名的 OpenAI 相容提供者（例如 `hosted_vllm/`）本身就提供 Responses API 支援，也會在未啟用時原生傳送 `/v1/responses`。請查看該提供者的頁面。
+`/v1/responses` 啟用選項有其專屬頁面：[OpenAI 相容提供者的原生 /v1/responses 轉送](../response_api_native_passthrough.md)

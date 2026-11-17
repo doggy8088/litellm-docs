@@ -1,0 +1,15 @@
+---
+title: LiteLLM 支援的 AI 提供者
+slug: /providers
+sidebar_label: 所有提供者
+description: LiteLLM 支援的每個模型提供者，以及各自提供的端點。透過單一 OpenAI 格式 API，從 Python SDK 或 AI 閘道呼叫其中任何一個。
+hide_table_of_contents: true
+---
+
+import ProviderCatalog from '@site/src/components/ProviderCatalog';
+
+# AI 提供者 {#ai-providers}
+
+LiteLLM 透過單一 OpenAI 格式 API 呼叫下列每個提供者。將模型設為 `<prefix>/<model-name>`，例如 `anthropic/claude-sonnet-5`，相同的請求即可從 Python SDK 與閘道運作。開啟某個提供者可查看其金鑰、設定與支援的參數。每個模型的價格與上下文視窗位於 [Models & Pricing](https://models.litellm.ai)。
+
+<ProviderCatalog />

@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock Mantle API：設定"
+sidebar_label: "Amazon Bedrock Mantle"
+description: "在 Amazon Bedrock Mantle 上從 Python SDK 或 AI 閘道呼叫 Claude Mythos preview、GPT-5.5 與 gpt-oss，透過 /messages、/responses 或 chat 端點，並以 Bedrock 費率計價。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -304,6 +310,38 @@ print(response)
 </TabItem>
 </Tabs>
 
+### 提示快取（GPT-5.6 與更新版本）{#prompt-caching-gpt-56-and-newer} {#prompt-caching-gpt-56-and-newer}
+
+Mantle 上的 GPT-5.6 與更新版本 OpenAI 模型在 Responses API 上接受[明確的提示快取斷點](../completion/prompt_caching.md#bedrock-mantle-explicit-breakpoints-openai-gpt-56-and-newer)：在 `input_text`、`input_image` 或 `input_file` 區塊上加上 `prompt_cache_breakpoint` 標記，再加上請求層級的 `prompt_cache_options`。每個快取前綴至少需要 1,024 個 token，一個請求最多可帶 4 個斷點，快取前綴至少保留 30 分鐘。LiteLLM 會在 `/v1/responses` 上透傳這兩個欄位。在 `/v1/chat/completions` 上，這些模型會橋接到 Responses API，因此內容區塊上的 `prompt_cache_breakpoint` 會被保留，部署上的 `cache_control_injection_points` 也會像對 `openai/gpt-5.6` 一樣為您放置標記（[教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)）
+
+```yaml
+model_list:
+  - model_name: gpt-5.6-mantle
+    litellm_params:
+      model: bedrock_mantle/openai.gpt-5.6-sol
+      aws_region_name: us-east-1
+      api_key: os.environ/AWS_BEARER_TOKEN_BEDROCK
+      cache_control_injection_points:
+        - location: message
+          role: system
+```
+
+```bash
+curl -X POST http://0.0.0.0:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.6-mantle",
+    "messages": [
+      {"role": "system", "content": "<a system prompt of at least 1,024 tokens>"},
+      {"role": "user", "content": "What are the key terms and conditions?"}
+    ],
+    "prompt_cache_options": {"mode": "explicit", "ttl": "30m"}
+  }'
+```
+
+第一次呼叫會在 `usage.prompt_tokens_details.cache_write_tokens` 中回報快取寫入，在快取有效期間內重複相同前綴則會在 `usage.prompt_tokens_details.cached_tokens` 中回報，兩者分別依模型的快取寫入與快取讀取費率計價
+
 ## API 金鑰 {#api-key}
 
 ```python
@@ -324,6 +362,23 @@ os.environ['BEDROCK_MANTLE_REGION'] = "us-east-1"  # or use AWS_REGION
 | `openai.gpt-oss-20b` | `/chat/completions` | 131K | $0.07 | $0.30 |
 | `openai.gpt-oss-safeguard-120b` | `/chat/completions` | 131K | $0.15 | $0.60 |
 | `openai.gpt-oss-safeguard-20b` | `/chat/completions` | 131K | $0.07 | $0.20 |
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`bedrock_mantle/<family>-latest` 名稱會隨著 LiteLLM 將模型系列移至較新的模型而跟隨，讓您的應用程式只需保留一個模型字串。您可以像使用任何其他 Bedrock Mantle 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Bedrock Mantle，並以該模型的價格計費。別名的運作方式與各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型系列 |
+| --- | --- |
+| `bedrock_mantle/gpt-luna-latest` | GPT Luna |
+| `bedrock_mantle/gpt-sol-latest` | GPT Sol |
+| `bedrock_mantle/gpt-terra-latest` | GPT Terra |
+| `bedrock_mantle/gpt-astra-latest` | GPT Astra |
+| `bedrock_mantle/claude-opus-latest` | Claude Opus |
+| `bedrock_mantle/claude-sonnet-latest` | Claude Sonnet |
+| `bedrock_mantle/claude-haiku-latest` | Claude Haiku |
+| `bedrock_mantle/grok-latest` | Grok |
 
 ## 範例用法 {#sample-usage}
 

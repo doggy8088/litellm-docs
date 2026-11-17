@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Azure AI Search 向量儲存區"
+sidebar_label: "Azure AI Search - Vector Store (Unified API)"
+description: "透過 Python SDK 或 AI Gateway，使用 LiteLLM 的統一 API 搜尋 Azure AI Search 向量儲存區。設定 config.yaml、嵌入模型與索引。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -95,9 +101,30 @@ print(response)
 
 ### 設定設定檔 {#setup-config}
 
-將以下內容加入您的 config.yaml：
+#### 透過模型群組嵌入查詢 {#embed-queries-through-a-model-group}
+
+<SinceVersion v="1.101.0" />
+
+將 `litellm_embedding_model` 設為您 `model_list` 中的一個 `model_name`。如此一來，每次搜尋都會透過 LiteLLM 路由器來嵌入查詢，因此您為該模型群組設定的負載平衡、重試、冷卻與備援，會以套用於其 `/v1/embeddings` 呼叫的相同方式套用到搜尋查詢。您不需要設定 `litellm_embedding_config`；憑證會保留在各部署上。
 
 ```yaml
+model_list:
+  - model_name: query-embeddings
+    litellm_params:
+      model: azure/text-embedding-3-large
+      api_base: https://my-eastus2-resource.openai.azure.com/
+      api_key: os.environ/AZURE_EASTUS2_API_KEY
+      api_version: "2024-10-21"
+  - model_name: query-embeddings
+    litellm_params:
+      model: azure/text-embedding-3-large
+      api_base: https://my-westus3-resource.openai.azure.com/
+      api_key: os.environ/AZURE_WESTUS3_API_KEY
+      api_version: "2024-10-21"
+
+router_settings:
+  num_retries: 2
+
 vector_store_registry:
   - vector_store_name: "azure-ai-search-litellm-website-knowledgebase"
     litellm_params:
@@ -105,11 +132,28 @@ vector_store_registry:
         custom_llm_provider: "azure_ai"
         azure_search_service_name: "your-search-service"  # or api_base: https://your-search-service.search.windows.net
         api_key: os.environ/AZURE_SEARCH_API_KEY
+        litellm_embedding_model: "query-embeddings"  # model group from model_list
+```
+
+若某個部署失敗，路由器會改在群組中的另一個部署上重試查詢嵌入。若要容錯移轉至不同的模型群組，請將其加入 `router_settings.fallbacks`，例如 `fallbacks: [{"query-embeddings": ["query-embeddings-backup"]}]`。群組中以及任何備援群組中的每個部署，都必須使用與您索引中向量相同的嵌入模型與維度。
+
+#### 單一嵌入部署 {#single-embedding-deployment}
+
+您也可以讓向量儲存區直接指向單一嵌入部署，並在 `litellm_embedding_config` 中傳入其憑證。此形式不提供負載平衡或容錯移轉。
+
+```yaml
+vector_store_registry:
+  - vector_store_name: "azure-ai-search-litellm-website-knowledgebase"
+    litellm_params:
+        vector_store_id: "my-vector-index"
+        custom_llm_provider: "azure_ai"
+        azure_search_service_name: "your-search-service"
+        api_key: os.environ/AZURE_SEARCH_API_KEY
         litellm_embedding_model: "azure/text-embedding-3-large"
         litellm_embedding_config:
-            api_base: https://krris-mh44uf7y-eastus2.cognitiveservices.azure.com/
+            api_base: https://my-eastus2-resource.openai.azure.com/
             api_key: os.environ/AZURE_API_KEY
-            api_version: "2025-09-01"
+            api_version: "2024-10-21"
 ```
 
 ### 啟動 Proxy {#start-proxy}
@@ -139,8 +183,8 @@ curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-vector-index/search' \
 | `vector_store_id` | string | 您的 Azure AI Search 索引名稱 |
 | `custom_llm_provider` | string | 設為 `"azure_ai"` |
 | `azure_search_service_name` | string | 您的 Azure AI Search 服務名稱 |
-| `litellm_embedding_model` | string | 用於產生查詢嵌入的模型（例如，`"azure/text-embedding-3-large"`） |
-| `litellm_embedding_config` | dict | 嵌入模型的設定（api_base、api_key、api_version） |
+| `litellm_embedding_model` | string | 嵌入查詢的模型。在 Proxy 上，請使用您 `model_list` 中的模型群組名稱（例如，`"query-embeddings"`）或提供者模型（例如，`"azure/text-embedding-3-large"`） |
+| `litellm_embedding_config` | dict | 嵌入模型的憑證（api_base、api_key、api_version）。當 `litellm_embedding_model` 為 Proxy 模型群組時不需要 |
 | `api_key` | string | 您的 Azure AI Search API 金鑰 |
 
 ## 支援的功能 {#supported-features}
@@ -229,7 +273,8 @@ curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-vector-index/search' \
 **"無法為查詢產生嵌入"**
 
 您的嵌入模型設定有誤。請檢查：
-- `litellm_embedding_config` 是否具有正確的 api_base 和 api_key
+- 若 `litellm_embedding_model` 是模型群組，名稱是否與您 `model_list` 中的 `model_name` 相符；Proxy 無法辨識的名稱會被當作模型名稱傳送給提供者並失敗
+- 否則，`litellm_embedding_config` 是否具有正確的 api_base 和 api_key
 - 嵌入模型名稱是否正確
 - 您的憑證是否可用
 

@@ -1,3 +1,8 @@
+---
+title: "透過 LiteLLM AI Gateway 使用 Vigil Guard"
+sidebar_label: "Vigil Guard"
+description: "在結果回傳至您的應用程式之前，於 LiteLLM AI Gateway 上以 Vigil Guard 評估聊天輸入與模型輸出，採預設執行與 fail-open。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

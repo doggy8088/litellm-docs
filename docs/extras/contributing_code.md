@@ -31,12 +31,7 @@
 
 ## Commit 與分支慣例 {#commit-and-branch-conventions}
 
-LiteLLM 強制執行兩項社群規範：
-
-- **Commits** 遵循 [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)：`<type>(<scope>)!: <description>`
-- **Branches** 遵循 [Conventional Branches](https://conventional-branch.github.io/)：`<type>/<description>`
-
-強制執行發生在兩個地方：`.githooks/` 中可選用的本機 git hooks，以及 PR 標題上的必要 CI 檢查（因為 squash-merge 會使用 PR 標題作為 commit subject）。
+Commit 主旨遵循 [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)。其強制執行方式為可選用的本機 `commit-msg` hook，以及 PR 標題上的必要 CI 檢查，因為 squash-merge 會使用 PR 標題作為 commit subject。
 
 ### Commit 訊息格式 {#commit-message-format}
 
@@ -66,24 +61,7 @@ PR 標題必須遵循相同格式，因為 squash-merge 會使用 PR 標題作�
 
 ### 分支命名 {#branch-naming}
 
-格式：`<type>/<short-description>`，其中 `<type>` 是 `feature`、`bugfix`、`hotfix`、`release`、`chore` 其中之一。
-
-```
-feature/weighted-round-robin
-bugfix/streaming-empty-chunks
-chore/bump-ruff
-hotfix/auth-bypass
-release/v1.45.0
-```
-
-永遠允許的分支（`pre-push` hook 會略過它們）：
-
-- `main`
-- `litellm_internal_staging`
-- `dependabot/*`
-- `gh-readonly-queue/*`
-
-Tag push 與分支刪除也會被略過。
+內部貢獻者會從 `main` 建立分支，名稱以 `litellm_` 為前綴且不含 `/`，例如 `litellm_weighted_round_robin`。Fork 的分支可以任意命名。
 
 ### 安裝 hooks {#installing-the-hooks}
 
@@ -93,16 +71,12 @@ Tag push 與分支刪除也會被略過。
 make install-hooks
 ```
 
-這會為本機儲存庫設定 `core.hooksPath=.githooks`。之後：
+這會為本機儲存庫設定 `core.hooksPath=.githooks`。之後，`git commit` 會執行 `commit-msg`，用來驗證 subject line。
 
-- `git commit` 會執行 `commit-msg`，用來驗證 subject line。
-- `git push` 會執行 `pre-push`，用來驗證分支名稱。
-
-在極少數緊急情況下，您可以針對每個指令略過任一 hook：
+在極少數緊急情況下，您可以針對單一指令略過 commit hook：
 
 ```shell
 git commit --no-verify -m "..."
-git push   --no-verify
 ```
 
 解除安裝：`git config --unset core.hooksPath`。
@@ -127,7 +101,7 @@ uv sync --group dev --extra proxy
 
 ### 2. 新增測試 {#2-adding-tests}
 
-- 將測試加入 [`tests/test_litellm/` 目錄](https://github.com/BerriAI/litellm/tree/main/tests/litellm)。
+- 將測試加入 [`tests/unit/` 目錄](https://github.com/BerriAI/litellm/tree/main/tests/unit)。
 - 此目錄與 `litellm/` 目錄 1:1 對應，且應**只**包含 mocked tests。
 - **請勿**在此目錄中加入真實的 LLM API 請求。
 
@@ -176,7 +150,7 @@ git clone https://github.com/BerriAI/litellm.git
 步驟 2：前往 UI 儀表板目錄
 
 ```shell
-cd ui/litellm-dashboard
+cd litellm/litellm/ui/litellm-dashboard
 ```
 
 步驟 3：安裝相依套件

@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 🛡️ [Beta] 防護欄 {#️-beta-guardrails}
+# [Beta] 防護欄 {#beta-guardrails}
 
 在 LiteLLM Proxy 上設定提示注入偵測、秘密偵測
 
@@ -185,13 +185,13 @@ print(response)
 
 ## 依 API 金鑰開/關防護欄 {#switch-guardrails-onoff-per-api-key}
 
-❓ 當您需要依 API 金鑰開/關防護欄時，請使用此功能
+當您需要依 API 金鑰開/關防護欄時，請使用此功能
 
 **步驟 1** 建立開啟 `pii_masking` 的金鑰
 
 **注意：** 我們在[步驟 1](#1-setup-guardrails-on-litellm-proxy-configyaml) 定義了 `pii_masking`
 
-👉 將 `"permissions": {"pii_masking": true}` 設定為 `/key/generate` 或 `/key/update` 其中之一
+將 `"permissions": {"pii_masking": true}` 設定為 `/key/generate` 或 `/key/update` 其中之一
 
 這表示對此 API 金鑰的所有請求，`pii_masking` 防護欄都已開啟
 

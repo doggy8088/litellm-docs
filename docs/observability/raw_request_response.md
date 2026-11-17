@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM 中記錄原始 LLM 請求與回應"
+sidebar_label: "原始請求/回應記錄"
+description: "在 Langfuse 或 OpenTelemetry 等記錄工具中查看 LiteLLM 傳送給各提供者的原始請求，並回傳原始的 OpenAI 回應標頭。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -34,7 +39,7 @@ litellm.success_callback = ["langfuse"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```

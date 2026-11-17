@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "在 LiteLLM Proxy 和 SDK 上使用 Gemini 3.1 Pro 並提供 day 0 支援的指南。"
+card_title: "Gemini 3.1 Pro"
+card_summary: "Gemini 3.1 Pro 新增 MINIMAL 與 MEDIUM 思考等級，由 LiteLLM 從 reasoning_effort 對應。"
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -58,8 +60,8 @@ LiteLLM 為 Gemini 3.1 Pro 提供 **完整端到端支援**，涵蓋：
 
 - ✅ `/v1/chat/completions` - OpenAI 相容的聊天 completions 端點
 - ✅ `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic 相容的 messages 端點
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) 相容端點 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic 相容的 messages 端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容端點 
 
 所有端點都支援：
 - 串流與非串流回應

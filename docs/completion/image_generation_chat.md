@@ -1,3 +1,7 @@
+---
+sidebar_label: "聊天中的圖片生成"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -5,11 +9,7 @@ import TabItem from '@theme/TabItem';
 
 本指南說明如何在使用 `chat/completions` 時生成圖片。注意－如果您希望在 Responses API 上使用此功能，請在此處提出功能請求 [這裡](https://github.com/BerriAI/litellm/issues/new)。
 
-:::info
-
-需要 LiteLLM v1.76.1+
-
-:::
+<SinceVersion v="1.76.1" />
 
 支援的提供者：
 - Google AI Studio (`gemini`)

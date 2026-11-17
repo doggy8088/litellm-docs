@@ -1,5 +1,6 @@
 ---
-title: "v1.84.0 - 可靠性強化 + 多 pod 預算準確性"
+title: "LiteLLM v1.84.0 - 可靠性強化 + 多 pod 預算準確性"
+description: "使直通端點預設需要驗證，並新增供每模型策略使用的 Routing Groups。同時提升多 pod 預算準確性。"
 slug: "v1-84-0"
 date: 2026-05-14T00:00:00
 authors:
@@ -254,7 +255,7 @@ pip install litellm==1.84.0
   ```
   的情況下，呼叫端送出的 `X-Tenant-Id: evil-corp` 現在會讓 `X-Tenant-Id: acme-corp` 傳送到上游。`extra_headers` 中任何**不**與 `static_headers` 衝突的標頭仍會維持原樣轉送。
 - **受影響對象：** 在 OpenAPI MCP 伺服器上同時於 `static_headers` 與 `extra_headers` 設定相同標頭名稱，且原本依賴呼叫端值生效的營運人員。（注意：這只在 v1.84.0 release-candidate 週期中出貨；任何先前穩定版都完全沒有為 OpenAPI MCP 轉送 `extra_headers`。）
-- **還原先前行為：** 無。如果您 वास्तव需要讓呼叫端控制某個標頭，請將其從 `static_headers` 移除，並只保留在 `extra_headers`，或為營運人員固定的值與呼叫端提供的值使用不同名稱。
+- **還原先前行為：** 無。如果您 實際需要讓呼叫端控制某個標頭，請將其從 `static_headers` 移除，並只保留在 `extra_headers`，或為營運人員固定的值與呼叫端提供的值使用不同名稱。
 
 ### UI / 靜態資產 {#ui--static-assets}
 

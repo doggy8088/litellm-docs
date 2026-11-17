@@ -1,5 +1,6 @@
 ---
-title: v1.56.3
+title: "LiteLLM v1.56.3"
+description: "新增防護欄追蹤記錄、/guardrails/list 端點與防護欄的 mock_response 支援。另可在 Proxy UI 中將金鑰指派給使用者。"
 slug: v1.56.3
 date: 2024-12-28T10:00:00
 authors:

@@ -40,6 +40,30 @@ guardrails:
 4. 在您的 LiteLLM config 中設定防護欄
 
 ## 使用方式 {#usage}
+
+### Python SDK {#python-sdk}
+
+針對 [issue #49217](https://github.com/BerriAI/litellm/issues/49217) 的原始碼實作位於 [SDK PR #49469](https://github.com/BerriAI/litellm/pull/49469)，疊加在 [endpoint PR #49460](https://github.com/BerriAI/litellm/pull/49460) 之上，新增了 `litellm.guardrails.apply`。在正式發布之前，SDK 與 gateway 請使用同時包含這兩項變更的 checkout。
+
+只需設定一次連線，然後呼叫您已設定的防護欄：
+
+```python
+import os
+import litellm
+
+litellm.api_base = os.environ["LITELLM_API_BASE"]
+litellm.api_key = os.environ["LITELLM_API_KEY"]
+
+verdict = await litellm.guardrails.apply(
+    "answer-grounding",
+    response=answer,
+    messages=source_messages,
+)
+```
+
+傳入 `response=` 可檢查產生的輸出，傳入 `input=` 可檢查使用者輸入。兩者只能擇一提供。SDK 會推斷 `input_type`，並請求 native 結構化 findings。`messages` 為 grounding 等檢查提供 context；不需要 context 的檢查可省略。您可以在個別呼叫中覆寫 `api_base`、`api_key` 或 `timeout`。
+
+結果會遵循所設定防護欄的 schema，並在既有的 reporting 清理移除敏感欄位之後呈現。防護欄必須透過 `add_standard_logging_guardrail_information_to_request_data` 回報結構化 findings；對於未回報任何 findings 的防護欄，SDK 不會建立 verdict。如需可執行的 agent、自訂防護欄與 chat UI，請參閱 [grounding 教學](/blog/grounded-agent)。
 ---
 
 <Tabs>
@@ -50,7 +74,7 @@ guardrails:
 ```bash showLineNumbers title="Example calling the endpoint"
 curl -X POST 'http://localhost:4000/guardrails/apply_guardrail' \
 -H 'Content-Type: application/json' \
--H 'Authorization: Bearer your-api-key' \
+-H "Authorization: Bearer ${LITELLM_API_KEY}" \
 -d '{
     "guardrail_name": "mask_pii",
     "text": "My name is John Doe and my email is john@example.com",
@@ -67,7 +91,7 @@ curl -X POST 'http://localhost:4000/guardrails/apply_guardrail' \
 ```bash showLineNumbers title="Example calling the endpoint"
 curl -X POST 'http://localhost:4000/guardrails/apply_guardrail' \
 -H 'Content-Type: application/json' \
--H 'Authorization: Bearer your-api-key' \
+-H "Authorization: Bearer ${LITELLM_API_KEY}" \
 -d '{
     "guardrail_name": "bedrock-content-guard",
     "text": "This is potentially harmful content that should be blocked",
@@ -85,7 +109,7 @@ curl -X POST 'http://localhost:4000/guardrails/apply_guardrail' \
 ```bash showLineNumbers title="Example calling the endpoint"
 curl -X POST 'http://localhost:4000/guardrails/apply_guardrail' \
 -H 'Content-Type: application/json' \
--H 'Authorization: Bearer your-api-key' \
+-H "Authorization: Bearer ${LITELLM_API_KEY}" \
 -d '{
     "guardrail_name": "my-topic-guardrail",
     "text": "What are tax loopholes?",
@@ -135,10 +159,14 @@ curl -X POST 'http://localhost:4000/guardrails/apply_guardrail' \
 - **metadata** (object):  
   轉送至防護欄作為 `request_data["metadata"]` 的每次請求設定。覆寫 `apply_guardrail` 的自訂防護欄負責讀取它。僅在存在時才會轉送，因此省略它可保留現有行為。
 
+REST API 也接受 `input_type`（`request` 或 `response`）與 `response_format`（`standard` 或 `native`）。SDK 會從 `input=` 或 `response=` 推導方向，並選擇 `native`。
+
 ## 回應格式 {#response-format}
 ---
 
 回應將包含套用防護欄後處理過的文字。
+
+使用 `response_format: "native"` 時，回應改為包含防護欄所回報、經清理後的結構化 findings。單一 finding 會回傳其物件或陣列；多個回報的 findings 則回傳陣列。欄位名稱取決於防護欄。若它未回報任何結構化 findings，endpoint 會回傳 HTTP 422，而不是捏造一個通過結果。既有的封鎖與提供者錯誤行為仍照常適用。
 
 #### 回應範例 {#example-response}
 

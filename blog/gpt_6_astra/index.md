@@ -9,6 +9,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM 對 OpenAI 的 GPT-6 Astra 提供第 0 天支援，包含定價、推理參數與 Responses API 橋接。"
+card_title: "GPT-6 Astra"
+card_summary: "OpenAI 的 GPT-6 旗艦模型，具備新的定價與推理參數，透過 Responses API 橋接提供。"
 tags: [openai, gpt-6, gpt-6-astra, completion, day 0 support]
 hide_table_of_contents: false
 ---
@@ -120,7 +122,7 @@ curl -X POST "http://0.0.0.0:4000/v1/responses" \
 
 - `gpt-6-astra` 在 Chat Completions 中接受 `reasoning_effort` 值 `low`、`medium`、`high` 和 `xhigh`，另在 Responses API 中接受 `max`；`none` 和 `minimal` 會被拒絕，因此 `temperature` 無法與其一起使用。
 - 可用性正透過 API 逐步推出；請在您的 OpenAI 帳戶中確認模型存取權限。
-- 請參閱 [OpenAI 提供者文件](/docs/providers/openai) 以取得完整參數參考。
+- 請參閱 [OpenAI 提供者文件](../../docs/providers/openai) 以取得完整參數參考。
 
 ## 回饋 {#feedback}
 

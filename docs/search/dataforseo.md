@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 DataForSEO SERP API：設定"
+sidebar_label: "DataForSEO 搜尋"
+description: "將 DataForSEO 結果加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，並可使用國家、語言、裝置與深度選項。"
+---
 # DataForSEO 搜尋 {#dataforseo-search}
+
+[DataForSEO](https://dataforseo.com/) 提供 SERP API，可將搜尋引擎結果頁面以結構化資料回傳；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 存取權：** [DataForSEO](https://dataforseo.com/)
 

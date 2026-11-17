@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 Sumo Logic 記錄"
+sidebar_label: "Sumo Logic"
+description: "透過 Python SDK 或 AI Gateway，經由 HTTP Logs and Metrics 來源將 LiteLLM 記錄傳送至 Sumo Logic，支援批次處理、壓縮與查詢。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -58,7 +63,7 @@ litellm.callbacks = ["sumologic"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - I'm testing Sumo Logic integration"}
+    {"role": "user", "content": "Hi - I'm testing Sumo Logic integration"}
   ]
 )
 ```
@@ -331,6 +336,6 @@ URL 必須是來自 Sumo Logic 的完整 HTTP Source URL：
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

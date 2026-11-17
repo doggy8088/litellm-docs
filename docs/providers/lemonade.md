@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Lemonade Server：本機模型"
+sidebar_label: "Lemonade"
+description: "在 Lemonade Server 上執行本機模型（針對 AMD GPU 與 NPU 最佳化），透過 LiteLLM Python SDK 使用串流、函式呼叫與 JSON schema 輸出。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

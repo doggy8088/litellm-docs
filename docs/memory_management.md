@@ -20,7 +20,7 @@ import TabItem from '@theme/TabItem';
 | 分頁 | ✅ | 以頁面為單位，頁面大小可設定 |
 | 鍵前綴篩選 | ✅ | 類似 Redis 的命名空間掃描 |
 | 稽核軌跡 | ✅ | `created_by`、`updated_by`，含時間戳記 |
-| 支援的 LiteLLM 版本 | `v1.83.10+` | |
+| 支援的 LiteLLM 版本 | <SinceVersion v="1.83.10" /> | |
 
 ## 前置需求 {#prerequisites}
 

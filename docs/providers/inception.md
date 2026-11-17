@@ -1,3 +1,9 @@
+---
+title: "Inception Mercury API 搭配 LiteLLM：設定"
+sidebar_label: "Inception"
+description: "從 Python SDK 或 AI 閘道呼叫 Inception 的 Mercury 2 擴散 LLM 與 Mercury Edit 2 FIM 自動完成，支援串流、工具與 reasoning_effort。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

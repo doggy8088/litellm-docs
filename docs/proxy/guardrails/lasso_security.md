@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 Lasso Security 防護欄"
+sidebar_label: "Lasso Security"
+description: "在 LiteLLM AI 閘道上使用 Lasso Security 封鎖提示注入並遮蔽 PII，掃描輸入與輸出並追蹤使用者與對話。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -8,7 +13,7 @@ import TabItem from '@theme/TabItem';
 
 ## 必要條件 {#prerequisites}
 
-Lasso guardrail 需要 `ulid-py` 套件（版本 1.1.0 或以上）來產生唯一的對話識別碼：
+Lasso guardrail 需要 `ulid-py` 套件（版本 1.1.0 或以上）來產生唯一的對話識別碼： {/* keep-version-note */}
 
 ```shell
 uv add ulid-py>=1.1.0

@@ -66,43 +66,81 @@ reads until the reader is reachable.
 讀取執行個體。在 Azure 上，則會搭配 Azure Database for PostgreSQL Flexible Server 的
 讀取複本。
 
+### 跨區域的 RDS IAM 驗證 {#rds-iam-auth-across-regions}
+
+在 `IAM_TOKEN_DB_AUTH=True` 時，LiteLLM 會獨立簽署寫入端與讀取端的權杖，
+因此寫入端與跨區域的讀取複本可以各自在自己的區域中簽署。每個連線的簽署區域
+依以下順序解析：該連線的覆寫值、其 RDS 主機名稱中的區域，接著是處理程序的
+AWS 區域（`AWS_REGION_NAME`，並以 `AWS_REGION` 作為備援）。寫入端的覆寫值是
+`AWS_RDS_REGION`，讀取端的覆寫值是 `AWS_RDS_READ_REPLICA_REGION`。讀取端
+永遠不會繼承 `AWS_RDS_REGION`，因此只設定寫入端的覆寫值時，讀取端會維持
+自己的解析路徑。空白或僅含空白字元的值視為未設定，解析會繼續使用下一個來源。
+
+對於標準的 RDS 端點，不需要任何覆寫值；主機名稱本身已包含區域。當簽署區域
+必須與主機名稱所暗示的不同時，才需要設定覆寫值：
+
+```shell
+export IAM_TOKEN_DB_AUTH=true
+export DATABASE_HOST=writer.abc123.us-east-1.rds.amazonaws.com
+export DATABASE_PORT=5432
+export DATABASE_USER=iam_user
+export DATABASE_NAME=litellm
+export DATABASE_URL_READ_REPLICA=postgresql://iam_user@reader.abc123.ap-northeast-1.rds.amazonaws.com:5432/litellm?sslmode=require
+export AWS_RDS_REGION=us-east-1
+export AWS_RDS_READ_REPLICA_REGION=ap-northeast-1
+```
+
+明確的覆寫值即使與主機名稱不一致也會優先採用，因此錯誤的區域會使該連線的
+驗證失敗。讀取端失敗時，會依上方的退化行為改由寫入端處理讀取；寫入端失敗時
+則會使啟動失敗。這些覆寫值適用於啟動時的權杖簽發與每一次更新，包括透過
+`DATABASE_HOST_READ_REPLICA` 組裝的讀取端，以及容器內 PgBouncer 後方的
+寫入端。它們不會影響 Bedrock 或其他 AWS 服務的區域、密碼驗證或 Azure
+Entra 驗證。
+
+區域覆寫值只選擇簽署區域；不會改寫權杖簽署所用的主機名稱。AWS 在產生 IAM
+權杖時需要實際的 RDS 端點，因此自訂 DNS 名稱（例如 Route 53 記錄）在連線
+設定中仍需要標準的 RDS 端點。TLS 主機名稱驗證與區域選擇無關。
+
+
 ## Kubernetes / Helm {#kubernetes--helm}
 
-官方 Helm chart 提供兩種方式來設定 reader URL：
+[LiteLLM chart](./deploy/helm.md) 可接受完整的 reader URL 或分開的連線欄位。兩種情況下都請保留您現有的 `database.writer` 設定。
 
 <Tabs>
 
 <TabItem value="secret" label="從 Kubernetes secret 取得（建議）">
 
-當 reader URL 內嵌憑證時，請透過 `db.secret.name` 從既有的
-`db.secret.readReplicaUrlKey` Kubernetes secret 取得。這樣可避免 URL 出現在渲染後的 pod spec 與 Helm release secret 中。
+當 reader URL 內嵌憑證時，請使用 `urlKey` 從既有的
+`database.reader.passwordSecret.name` Kubernetes Secret 取得。這樣可避免
+URL 出現在渲染後的 pod spec 與 Helm release secret 中。
 
 ```yaml
-db:
-  useExisting: true
-  secret:
-    name: postgres
-    usernameKey: username
-    passwordKey: password
-    # Add the reader URL to the same secret under any key, then reference it:
-    readReplicaUrlKey: read-url
+database:
+  reader:
+    passwordSecret:
+      name: litellm-reader-secret
+      urlKey: read-url # contains the complete PostgreSQL connection URL
 ```
 
 </TabItem>
 
-<TabItem value="plain" label="純文字值">
+<TabItem value="plain" label="分開的連線欄位">
 
-對於不含憑證的 URL（例如，當 `IAM_TOKEN_DB_AUTH` 或
-`AZURE_POSTGRESQL_AUTH` 在執行時提供密碼時），
-`db.readReplicaUrl` 可正常運作：
+設定 reader 主機與資料庫名稱。引用包含其使用者名稱與密碼的 Secret：
 
 ```yaml
-db:
-  readReplicaUrl: "postgresql://litellm@reader.aurora.local:5432/litellm"
+database:
+  reader:
+    host: reader.aurora.local
+    port: 5432
+    dbname: litellm
+    passwordSecret:
+      name: litellm-reader-secret
+      usernameKey: username
+      passwordKey: password
 ```
 
-若 URL 內嵌密碼，請避免使用此形式，因為該值會呈現在
-pod 規格與 Helm release secret 中。
+若使用權杖驗證，請在 `database.writer` 與 `database.reader` 兩者上都設定 `useIAMAuth: true` 或 `useAzureEntraAuth: true`，並搭配相符的 workload identity。Secret 提供使用者名稱。執行環境會取得密碼權杖。每個部署請只使用一種驗證方法。請勿將分開的連線欄位與 `urlKey` 併用。
 
 </TabItem>
 

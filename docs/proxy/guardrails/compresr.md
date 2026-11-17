@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM 閘道使用 Compresr 進行上下文壓縮"
+sidebar_label: "上下文壓縮（Compresr）"
+description: "在 LiteLLM AI 閘道上使用 Compresr，在工具輸出、擷取的文件與 RAG 酬載送達模型之前先行壓縮，可依金鑰或依每次呼叫套用。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

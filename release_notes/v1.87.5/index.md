@@ -1,5 +1,6 @@
 ---
-title: "v1.87.5 - Web Search 成本計算與 MCP 金鑰範圍"
+title: "LiteLLM v1.87.5 - Web Search 成本計算與 MCP 金鑰範圍"
+description: "復原中斷的 Anthropic 串流成本，並修正串流網路搜尋回應的 completion_cost 錯誤。另新增 no-mcp-servers 哨兵值。"
 slug: "v1-87-5"
 date: 2026-06-24T18:28:54
 authors:

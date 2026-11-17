@@ -1,5 +1,6 @@
 ---
-title: "v1.79.0-stable - 搜尋 API"
+title: "LiteLLM v1.79.0-stable - 搜尋 API"
+description: "新增原生 /v1/search 端點、Sora-2 影片生成，以及作為向量儲存的 Vertex AI Search。將防護欄擴展至 Responses API。"
 slug: "v1-79-0"
 date: 2025-10-26T10:00:00
 authors:

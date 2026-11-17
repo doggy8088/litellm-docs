@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI Gateway 的 AgentOps 追蹤"
+sidebar_label: "AgentOps"
+description: "透過 OpenTelemetry v2，從 Python SDK 或 AI Gateway 將 LiteLLM 追蹤傳送至 AgentOps，包含 config.yaml 回呼設定以及 AgentOps 接收的 gen_ai span。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -37,7 +43,7 @@ litellm.callbacks = ["agentops"]
 response = litellm.completion(
   model="{{openai_large}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -121,6 +127,6 @@ AgentOps 會在第一次 span 匯出時才鑄造其認證 token，而不是在�
 
 ## 支援與與創辦人交流 {#support--talk-to-founders}
 
-- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

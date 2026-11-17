@@ -1,5 +1,6 @@
 ---
-title: "v1.87.1 - Azure AD、Batch 驗證與 Key 存取回補"
+title: "LiteLLM v1.87.1 - Azure AD、Batch 驗證與 Key 存取回補"
+description: "修正 Azure AD 權杖刷新、批次與影片模型路由，以及 Vertex Claude effort 處理。將五項待處理修正回補到 1.87 系列。"
 slug: "v1-87-1"
 date: 2026-06-03T21:54:19
 authors:

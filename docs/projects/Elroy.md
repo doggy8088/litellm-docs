@@ -1,4 +1,4 @@
-# 🐕 Elroy {#-elroy}
+# Elroy {#elroy}
 
 Elroy 是一個可透過腳本操作的 AI 助理，能夠記住並設定目標。
 

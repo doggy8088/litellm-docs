@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 vLLM Batch 與 Files API"
+sidebar_label: "vLLM - 批次 + 檔案 API"
+description: "透過 LiteLLM AI Gateway 在託管的 vLLM 伺服器上執行 OpenAI Batch API 工作；Gateway 會儲存輸入檔案、逐行執行並提供結果。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

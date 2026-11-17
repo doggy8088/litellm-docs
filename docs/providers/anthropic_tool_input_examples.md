@@ -1,15 +1,21 @@
+---
+title: "在 LiteLLM 中使用 Anthropic 工具輸入範例"
+sidebar_label: "Anthropic 工具輸入範例"
+description: "在工具定義中加入 input_examples，讓 Claude 學習有效的輸入格式。LiteLLM 會為您加入 beta 標頭，並提供巢狀與格式化輸入的範例。"
+---
+
 # Anthropic 工具輸入範例 {#anthropic-tool-input-examples}
 
 提供具體的有效工具輸入範例，幫助 Claude 更有效地理解如何使用您的工具。這對於具有巢狀物件、可選參數或對格式敏感的輸入之複雜工具特別有用。
 
 :::info
-工具輸入範例是 beta 功能。LiteLLM 會自動偵測具有 `input_examples` 欄位的工具，並依據您的提供者加入適當的 beta 標頭：
+工具輸入範例是 beta 功能。在 Anthropic API 與 Microsoft Foundry 上，LiteLLM 會偵測具有 `input_examples` 欄位的工具，並為您加入 beta 標頭：
 
 - **Anthropic API 與 Microsoft Foundry**：`advanced-tool-use-2025-11-20`
-- **Amazon Bedrock**：`advanced-tool-use-2025-11-20`（僅 Claude Opus 4.5）
+- **Amazon Bedrock**：LiteLLM 不會加入此標頭，請自行在 `/chat/completions` 上傳遞 `anthropic-beta: tool-examples-2025-10-29`（僅 Claude Opus 4.5）
 - **Google Cloud Vertex AI**：不支援
 
-您不需要手動指定 beta 標頭；LiteLLM 會自動處理這件事。
+在 Bedrock 之外，您不需要指定 beta 標頭，因為 LiteLLM 會自動處理。
 :::
 
 ## 何時使用輸入範例 {#when-to-use-input-examples}
@@ -255,7 +261,7 @@ print(response)
 - Claude Opus 4.1 (`claude-opus-4-1-20250805`)
 
 :::note
-在 Google Cloud 的 Vertex AI 與 Amazon Bedrock 上，只有 Claude Opus 4.5 支援工具輸入範例。
+在 Amazon Bedrock 上，只有 Claude Opus 4.5 支援工具輸入範例。
 :::
 
 ## 最佳實務 {#best-practices}
@@ -390,10 +396,10 @@ LiteLLM 支援以下相容 Anthropic 的提供者之輸入範例：
 
 - **標準 Anthropic API**（`anthropic/{{anthropic}}`）✅
 - **Azure Anthropic / Microsoft Foundry**（`azure_ai/{{anthropic}}`）✅
-- **Amazon Bedrock**（`bedrock/invoke/anthropic.claude-opus-4-5-20251101-v1:0`）✅（僅 Opus 4.5）
+- **Amazon Bedrock**（`bedrock/invoke/global.anthropic.claude-opus-4-5-20251101-v1:0`）✅（僅 Opus 4.5，需搭配下方的 beta 標頭）
 - **Google Cloud Vertex AI**（`vertex_ai/{{anthropic}}`）❌ 不支援
 
-當 LiteLLM 偵測到具有 `advanced-tool-use-2025-11-20` 欄位的工具時，會自動加入 beta 標頭（`input_examples`）。
+在 Anthropic API 與 Microsoft Foundry 上，當 LiteLLM 偵測到具有 `input_examples` 欄位的工具時，會自動加入 beta 標頭（`advanced-tool-use-2025-11-20`）。在 Bedrock 上，請將 `extra_headers={"anthropic-beta": "tool-examples-2025-10-29"}` 傳給 `litellm.completion`，或在 proxy 上將相同的標頭設定於該部署的 `litellm_params.extra_headers` 之下，並呼叫 `/chat/completions`。proxy 的 `/v1/messages` 路由目前在 Bedrock 上會丟棄此標頭，因此 Anthropic SDK 與 Claude Code 用戶端會在該處收到 400。沒有此標頭時，Bedrock 會以 400 回應（`Extra inputs are not permitted`）。未加前綴的 Opus 4.5 在隨需呼叫時，需要 `global.` 這類 inference profile。
 
 ## 疑難排解 {#troubleshooting}
 
@@ -418,7 +424,7 @@ LiteLLM 支援以下相容 Anthropic 的提供者之輸入範例：
 **解決方案**：
 1. **先檢查描述**：確保工具描述詳細且清楚
 2. **檢視範例品質**：確認範例真實且多樣
-3. **驗證 schema**：確認範例 वास्तव上符合您的 schema
+3. **驗證 schema**：確認範例 實際上符合您的 schema
 4. **增加變化**：加入展示不同使用情境的範例
 
 ### Token 使用量過高 {#token-usage-too-high}

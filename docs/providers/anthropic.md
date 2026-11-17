@@ -1,9 +1,16 @@
+---
+title: "透過 LiteLLM AI Gateway 使用 Anthropic Claude API"
+sidebar_label: "Anthropic"
+description: "透過 Python SDK 或 AI Gateway 呼叫 Claude，支援提示快取、工具與 MCP 呼叫、thinking、視覺、PDF 輸入、beta citations 與 Files API。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Anthropic {#anthropic}
 LiteLLM 支援所有 anthropic 模型。
 
+- `claude-haiku-5-5`
 - `claude-sonnet-5`
 - `claude-opus-5`
 - `claude-opus-4-6` (`claude-opus-4-6-20260205`)
@@ -66,7 +73,7 @@ LiteLLM 支援 Anthropic 的 [結構化輸出功能](https://platform.claude.com
 當模型在 model cost map 中將 `supports_native_structured_output` 設定為啟用時，會使用原生結構化輸出：
 - Sonnet 4.5 及之後版本（`claude-sonnet-4-5`、`claude-sonnet-4-6`、`claude-sonnet-5`）
 - Opus 4.5 及之後版本（`claude-opus-4-5`、`claude-opus-4-6`、`claude-opus-4-7`、`claude-opus-4-8`、`claude-opus-5`、`claude-opus-5-5`）
-- Haiku 4.5（`claude-haiku-4-5`）
+- Haiku 4.5 與 5.5（`claude-haiku-4-5`、`claude-haiku-5-5`）
 
 Claude Opus 4.1 與較舊的模型沒有這個旗標，因此 LiteLLM 絕不會為它們傳送 `output_format`。它會改為新增一個由您的 schema 建立的 `json_tool_call` 工具，並強制模型呼叫它
 
@@ -575,8 +582,8 @@ print(response)
 
 ## 支援的模型 {#supported-models-1}
 
-`Model Name` 👉 人類可讀名稱。  
-`Function Call` 👉 在 LiteLLM 中如何呼叫該模型。
+`Model Name` 人類可讀名稱。  
+`Function Call` 在 LiteLLM 中如何呼叫該模型。
 
 | 模型名稱       | 函式呼叫                              |
 |------------------|--------------------------------------------|
@@ -596,6 +603,19 @@ print(response)
 | claude-2  | `completion('claude-2', messages)` | `os.environ['ANTHROPIC_API_KEY']`       |
 | claude-instant-1.2  | `completion('claude-instant-1.2', messages)` | `os.environ['ANTHROPIC_API_KEY']`       |
 | claude-instant-1  | `completion('claude-instant-1', messages)` | `os.environ['ANTHROPIC_API_KEY']`       |
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`anthropic/<family>-latest` 名稱會隨著 LiteLLM 將模型系列移至較新的模型而跟隨，使您的應用程式只需保留一個模型字串。您可以像使用任何其他 Anthropic 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Anthropic，並依該模型的價格計費。別名的運作方式與跨提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型系列 |
+| --- | --- |
+| `anthropic/claude-opus-latest` | Claude Opus |
+| `anthropic/claude-sonnet-latest` | Claude Sonnet |
+| `anthropic/claude-haiku-latest` | Claude Haiku |
+| `anthropic/claude-fable-latest` | Claude Fable |
 
 ## **快取提示詞** {#prompt-caching}
 
@@ -1380,9 +1400,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 <TabItem value="web_search" label="網頁搜尋">
 
-:::info
-自 v1.70.1+ 起提供
-:::
+<SinceVersion v="1.70.1" />
 
 LiteLLM 會將 OpenAI 的 `search_context_size` 參數對應到 Anthropic 的 `max_uses` 參數。
 
@@ -1975,7 +1993,7 @@ response = completion(
                 {
                     "type": "file",
                     "file": {
-                       "file_data": f"data:application/pdf;base64,{encoded_file}", # 👈 PDF
+                       "file_data": f"data:application/pdf;base64,{encoded_file}", # PDF
                     }
                 },
             ],
@@ -2023,7 +2041,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
           {
                 "type": "file",
                 "file": {
-                    "file_data": f"data:application/pdf;base64,{encoded_file}", # 👈 PDF
+                    "file_data": f"data:application/pdf;base64,{encoded_file}", # PDF
                 }
             }
           }

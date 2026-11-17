@@ -34,6 +34,11 @@ general_settings:
   maximum_spend_logs_cleanup_run_budget: "5m"   # Wall clock for the whole run
   maximum_spend_logs_cleanup_batch_timeout: "30s" # statement_timeout and lock_timeout per batch
 
+  # Optional: a second rule, by size. Independent of the retention period, a row goes when either rule says so
+  maximum_spend_logs_size: "180GB"                 # Start cleaning when the spend-log tables hold more live data than this
+  maximum_spend_logs_cleanup_target_size: "20GB"   # Delete the oldest rows until they hold less than this
+  maximum_spend_logs_size_check_interval: "1d"     # How often the size is checked (ignored when the cron above is set)
+
 litellm_settings:
   cache: true
   cache_params:
@@ -42,9 +47,19 @@ litellm_settings:
 
 ### 作業執行時機 {#when-the-job-runs}
 
-清理作業只有在您要求時才會存在。當 `maximum_spend_logs_retention_period`、`maximum_autorouter_session_retention_period`、`maximum_health_check_retention_period` 或 `maximum_daily_tag_spend_retention_period` 之中任何一個被設定時，會在 proxy 啟動時註冊；否則不會。之後若透過 `/config/update` 設定其中之一，則會在下一次設定同步時註冊該作業，無需重新啟動。若未設定任何一項，無論 batch、budget 或 interval 設定如何，都不會刪除任何內容。
+清理作業只有在您要求時才會存在。當 `maximum_spend_logs_retention_period`、`maximum_autorouter_session_retention_period`、`maximum_health_check_retention_period` 或 `maximum_daily_tag_spend_retention_period` 之中任何一個被設定時，會在 proxy 啟動時註冊；否則不會；`maximum_spend_logs_size` 則會註冊下文所述的獨立大小檢查作業。之後若透過 `/config/update` 設定其中之一，則會在下一次設定同步時註冊該作業，無需重新啟動。若未設定任何一項，無論 batch、budget 或 interval 設定如何，都不會刪除任何內容。
 
-當設定了保留期間且未設定 `maximum_spend_logs_cleanup_cron` 時，排程是以間隔而非一天中的特定時間。該間隔來自 `maximum_spend_logs_retention_interval`，預設為 `1d`，並會額外加入最多 60 秒的隨機偏移，避免一整群 pod 在同一瞬間全部觸發。因此第一次執行大約會落在啟動後的一個間隔，而不是午夜，也不是開機時。若您希望作業固定在較安靜的時段執行，請設定 `maximum_spend_logs_cleanup_cron`。
+當設定了保留期間且未設定 `maximum_spend_logs_cleanup_cron` 時，排程是以間隔而非一天中的特定時間，取自 `maximum_spend_logs_retention_interval`（預設 `1d`）。排程存放在資料庫中，而不是任何單一程序裡。每個 proxy worker 每 `SCHEDULED_JOB_POLL_INTERVAL_SECONDS`（預設 30）輪詢一次 `LiteLLM_ScheduledJobRun` 表，並在該作業鎖定群組的 Postgres advisory lock 之下，規劃下一次執行並認領它。每個作業同一時間只有一列 `PENDING`，認領的 worker 會將其翻為 `RUNNING`，並將自己的身分記錄在 `claimed_by`（`<host>:<pid>:<id>`），該列最終會以 `SUCCEEDED` 或 `FAILED` 結束，並帶有 `finished_at`。下一次執行會規劃在該 `finished_at` 之後一個間隔，因此重新啟動不會重置等待時間，一整群 pod 也永遠不會重複執行同一次排程。啟用保留後，第一次執行會落在下一次輪詢，約 30 秒後，而不是一整個間隔之後。若您希望作業固定在較安靜的時段執行，請改設定 `maximum_spend_logs_cleanup_cron`；cron 排程以 UTC 評估。保留作業與大小檢查作業共用同一個鎖定群組，因此一方執行時另一方永遠不會啟動。Redis 在此不扮演任何角色。
+
+### 大小規則 {#the-size-rule}
+
+光靠保留期間無法保護磁碟：流量尖峰可能在任何一列滿 30 天之前就把它填滿，而保留作業從不查看這些列佔用多少空間。`maximum_spend_logs_size` 加入第二條獨立規則。每次檢查時，作業會從 Postgres catalog 讀取 `LiteLLM_SpendLogs` 與 `LiteLLM_SpendLogToolIndex` 在磁碟上佔用的空間（heap、索引與 TOAST，包含分割區），也就是 `SELECT pg_size_pretty(pg_total_relation_size('"LiteLLM_SpendLogs"'))` 印出的同一個數字；若即時資料超過上限，它會先刪除最舊的支出記錄及其 tool-index 列，直到這些表低於 `maximum_spend_logs_cleanup_target_size`。未設定 target 時，一次執行會在這些表回到上限以下時立即停止，因此下一次檢查可能在流量再次推高它們時立刻觸發；若希望執行之間保持安靜，請將 target 設在上限以下。這兩個表就是測量的全部。資料庫的其餘部分不列入計算，因此請將該數字與您的支出記錄儲存空間比較，而不是資料庫總大小。
+
+大小檢查有自己的排程。設定了 `maximum_spend_logs_size` 且未設定 cron 時，`spend_log_size_check_job` 會每 `maximum_spend_logs_size_check_interval` 執行一次（預設 `1d`，並加上相同的隨機偏移）。`1d` 的檢查只能在尖峰發生一天後才發現它，因此擔心尖峰的部署會設定像 `"10m"` 這樣的值：一次檢查只是一次 catalog 讀取，當這些表低於上限時不花費任何成本。設定了 `maximum_spend_logs_cleanup_cron` 時，兩條規則共用一個排程，cron 執行會在年齡檢查之後進行大小檢查。
+
+由大小觸發的執行與保留執行受到完全相同的限制，即同一組 `maximum_spend_logs_cleanup_batch_size`、`maximum_spend_logs_cleanup_max_batches`、`maximum_spend_logs_cleanup_run_budget` 與 `maximum_spend_logs_cleanup_batch_timeout`。以預設值計算，每次執行最多 500,000 列，以每列 2 KB 計約為每天 1 GB，不足以在有用的時間內將一個表從 180 GB 降到 20 GB。當積壓量大時，請提高 `maximum_spend_logs_cleanup_max_batches` 並縮短檢查間隔；執行摘要的 `above_target` 會告訴您還剩多少。在已分割的表（`use_spend_logs_partitioning: true`）上，大小檢查會先丟棄最舊且已完整經過的日分割區，每丟棄一個就重新測量，因為 `DROP` 會立即歸還其磁碟空間，之後才刪除列。
+
+刪除列並不會縮小表檔案。被刪除的列會成為 dead tuple，仍佔用其 page，直到 autovacuum 將它轉為可供新列使用的可用空間；即使如此，檔案仍保持其大小，因此 `pg_total_relation_size` 不會在列被刪除時變動，而 Postgres 也沒有便宜的方法得知一個檔案中有多少位元組是即時資料。因此作業會維護自己的計數。它在 `LiteLLM_Config` 中存放一列（`param_name` 為 `spend_logs_size_cleanup_state`），記錄它所知可回收的位元組數，也就是檔案內未存放任何即時列的空間，並在每次檢查時，依據 catalog 中 `pg_stat_user_tables` 的累計計數器向前滾動：自上次檢查以來刪除的每一列（`n_tup_del`，無論是由此作業、保留規則或任何人刪除）會加上其平均大小；插入量超過檔案增長量的每一列（`n_tup_ins`）會再將其扣回，因為它被寫入了可用空間；而縮小的檔案（有人執行了 `VACUUM FULL`）會將縮小的量歸還。即時位元組數等於已配置位元組減去該計數，也就是與上限和 target 比較的對象，且它不會在 autovacuum 執行時改變。在第一次檢查時，或計數器被重置之後（例如當機後），計數會從 Postgres 仍知道的 dead rows 開始，因此一個在大小規則啟用前其可用空間已被 autovacuum 回收的表，在第一次檢查時看起來會是完全即時的，可能會被多清理一次，範圍在單次執行的 `maximum_spend_logs_cleanup_max_batches` 之內。當列計數器完全為空而檔案中卻有資料時，作業會記錄警告並略過此次檢查；`ANALYZE "LiteLLM_SpendLogs"` 會重新填入它們。執行摘要會印出 `allocated_before`、`estimated_live_before`、`allocated_after`、`estimated_live_after`、`reclaimable_after`、`target`、`target_reached` 與 `above_target`，且當有列被刪除時，會提醒您只有對這兩個表執行 `VACUUM FULL` 或 `pg_repack` 才能將已配置位元組歸還給檔案系統。LiteLLM 從不執行其中任何一個，因為兩者都會在獨占鎖定下重寫整個表。
 
 ### 會刪除什麼 {#what-gets-deleted}
 
@@ -94,6 +109,18 @@ litellm_settings:
 
 以下四個設定會限制單次執行可做多少工作。每一項也都有對應的環境變數，用來設定該設定的預設值。兩者不可互換：當兩者都存在時，會以 `general_settings` 鍵為準，且是逐鍵生效。任何 duration parser 拒絕的值，以及任何非正值，都會回退到預設值。
 
+#### `maximum_spend_logs_size`（選填） {#maximum_spend_logs_size-optional}
+
+大小規則。一個儲存大小，例如 `"180GB"`、`"512MB"` 或 `"1.5TB"`，以 1024 的冪次計算，如同 `pg_size_pretty`。當 `LiteLLM_SpendLogs` 加上 `LiteLLM_SpendLogToolIndex` 持有的即時資料超過此值時，會先刪除最舊的支出記錄，直到這些表低於 `maximum_spend_logs_cleanup_target_size`。未設定表示沒有大小規則。與 `maximum_spend_logs_retention_period` 彼此獨立：任一規則說要刪除時，該列就會被刪除。
+
+#### `maximum_spend_logs_cleanup_target_size`（選填） {#maximum_spend_logs_cleanup_target_size-optional}
+
+由大小觸發的執行要刪除到的水準，例如 `"20GB"`。必須低於 `maximum_spend_logs_size`；target 等於或高於它時，會以 `ERROR` 記錄，且該次執行改為清理到 `maximum_spend_logs_size`。未設定也是同樣的意思：執行會在這些表回到上限以下時立即停止。
+
+#### `maximum_spend_logs_size_check_interval`（選填） {#maximum_spend_logs_size_check_interval-optional}
+
+大小規則的檢查頻率。預設為 `1d`。當設定了 `maximum_spend_logs_cleanup_cron` 時會被忽略，改由 cron 同時驅動年齡與大小清理。
+
 #### `maximum_spend_logs_cleanup_batch_size`（選填） {#maximum_spend_logs_cleanup_batch_size-optional}
 
 每個 `DELETE` 陳述式會刪除多少列。預設為 `1000`。環境預設值：`SPEND_LOG_CLEANUP_BATCH_SIZE`
@@ -118,18 +145,22 @@ litellm_settings:
 
 ## 運作方式 {#how-it-works}
 
-### 步驟 1. 取得鎖定（使用 Redis 為選用） {#step-1-lock-acquisition-optional-with-redis}
+### 步驟 1. 認領與租約 {#step-1-claim-and-lease}
 
-如果啟用 Redis，LiteLLM 會使用它來確保一次只有一個 instance 執行清理。
+每次執行都是一列 `LiteLLM_ScheduledJobRun`。認領它的 worker 持有 `maximum_spend_logs_cleanup_run_budget` 加上 `SCHEDULED_JOB_LEASE_GRACE_SECONDS`（預設 300s + 300s）的租約，記錄在 `lease_expires_at` 中。當該列為 `RUNNING` 時，任何 pod 上的 worker 都不會啟動保留作業或大小檢查作業。執行完成時，worker 會將該列標記為 `SUCCEEDED`，若執行中拋出例外，則標記為 `FAILED`。
 
-- 如果取得鎖定：
-  - 此 instance 會繼續清理
-  - 其他 instance 會略過
-- 如果沒有鎖定：
-  - 清理仍會執行（適用於單一節點設定）
+如果 pod 在執行中途死亡，該列會維持 `RUNNING` 直到租約到期。接著下一個輪詢的 worker 會將其標記為 `FAILED`，記錄 `Scheduled job spend_log_cleanup run <id> lost its lease; marked FAILED`，並從該時刻起規劃下一次執行。在優雅關閉（SIGTERM）時，進行中的執行會在 `SCHEDULED_JOB_SHUTDOWN_FINISH_TIMEOUT_SECONDS` 加上 `SCHEDULED_JOB_SHUTDOWN_CANCEL_TIMEOUT_SECONDS`（預設 5s + 5s）內被取消，其列會立即標記為 `FAILED`，下一次執行則由認領它的 pod 從同一個截止點接續。這裡的一切都不需要 Redis，且無論是一個 pod 還是二十個 pod，保證都相同。
 
-![Spend log 刪除的運作方式](../../img/spend_log_deletion_working.png)  
-*Spend log 刪除的運作方式*
+若要查看執行了什麼、在哪裡執行、花了多久：
+
+```sql
+SELECT job_name, status, claimed_by, scheduled_for, claimed_at, finished_at
+FROM "LiteLLM_ScheduledJobRun"
+ORDER BY scheduled_for DESC
+LIMIT 20;
+```
+
+該表會為每個作業保留最後 `SCHEDULED_JOB_RUN_HISTORY_LIMIT`（預設 1000）列已完成的記錄。
 
 ### 步驟 2. 批次刪除 {#step-2-batch-deletion}
 
@@ -171,6 +202,7 @@ litellm_settings:
 | `litellm_spend_log_cleanup_rows_remaining` | 執行後仍在等待中的過期列 |
 | `litellm_spend_log_cleanup_batch_failures_total` | 失敗的批次，包括因批次逾時而被取消的陳述式 |
 | `litellm_spend_log_cleanup_runs_total` | 依 `outcome` 分組的執行：`completed`、`budget_exhausted`、`batch_cap_reached`、`skipped_locked`、`skipped_disabled`，或 `aborted` |
+| `litellm_spend_log_storage_bytes` | 最後一次測量的支出記錄表，按 `measure` 區分：`allocated`（檔案在磁碟上佔用的大小）、`estimated_live`（已配置位元組減去可回收計數）、`above_target`（仍高於大小 target 的即時位元組，達到後為 0） |
 
 `rows_remaining` 是應該設定警示的項目。持平或接近零表示保留機制跟得上，線條上升則表示沒有跟上。請將它與 `runs_total` 一起閱讀：健康的部署會維持在 `completed`，而持續出現 `budget_exhausted` 或 `batch_cap_reached` 則表示每個 tick 執行都被提早中止，且需要提高這些參數
 
@@ -214,7 +246,7 @@ litellm_settings:
 
 無法直接對已填充的資料表進行分區，因此轉換會先將現有資料表改名移開，然後建立新的分區資料表。分區鍵必須是主鍵的一部分，因此主鍵會變成複合 `("request_id", "startTime")`；LiteLLM 的 spend-log 寫入路徑使用 `INSERT ... ON CONFLICT DO NOTHING`，這與此相容。
 
-在您的資料庫上執行 [`db_scripts/partition_spend_logs.sql`](https://github.com/BerriAI/litellm/blob/main/db_scripts/partition_spend_logs.sql) 中的 runbook（請先在 staging 副本上測試並先備份）。它會建立分區 parent、複合主鍵、`startTime` 索引，以及一個 `DEFAULT` 分區，作為任何超出範圍列的安全網。
+在您的資料庫上執行 [`db_scripts/partition_spend_logs.sql`](https://github.com/BerriAI/litellm/blob/main/litellm/scripts/db/partition_spend_logs.sql) 中的 runbook（請先在 staging 副本上測試並先備份）。它會建立分區 parent、複合主鍵、`startTime` 索引，以及一個 `DEFAULT` 分區，作為任何超出範圍列的安全網。
 
 轉換完成後，請如上所示設定保留期限，清理工作就會替您管理分區。
 

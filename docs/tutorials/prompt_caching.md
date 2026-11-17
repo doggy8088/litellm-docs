@@ -22,6 +22,7 @@ import TabItem from '@theme/TabItem';
 
 支援的提供者（`prompt_cache_breakpoint` 標記）：
 - OpenAI GPT-5.6 及更新版本（`openai/`），請參閱 [OpenAI GPT-5.6 及更新版本](#openai-gpt-56-and-newer)
+- Bedrock Mantle、OpenAI GPT-5.6 及更新版本（`bedrock_mantle/openai.gpt-5.6-*`、`bedrock_mantle/openai.gpt-6*`），透過同一個章節，在 `/chat/completions`（橋接至 Responses API）與 `/v1/responses` 上運作；Mantle 的限制請參閱 [Bedrock Mantle 明確斷點](../completion/prompt_caching.md#bedrock-mantle-explicit-breakpoints-openai-gpt-56-and-newer)
 
 提供者代管（自動，無需標記）：
 - OpenAI，GPT-5.6 之前的模型（`openai/`）
@@ -56,11 +57,7 @@ LiteLLM 可自動將提示快取檢查點注入到您對 LLM 提供者的請求�
 
 ## Claude 模型的自動檢查點 {#automatic-checkpoints-for-claude-models}
 
-:::info
-
-需要 LiteLLM v1.94.0
-
-:::
+<SinceVersion v="1.94.0" />
 
 以下內容都在要求您決定檢查點要放在 *哪裡*。如果您只是想要 Claude 的常見情況，一個旗標就能完成。
 
@@ -129,10 +126,10 @@ litellm_settings:
 | Anthropic 目標 | OpenAI GPT-5.6+ 目標 |
 |---|---|
 | 目標 block 上的 `"cache_control": {"type": "ephemeral"}` | 目標 block 上的 `"prompt_cache_breakpoint": {"mode": "explicit"}` |
-| 請求層級不放任何東西 | 請求根層級的 `"prompt_cache_options": {"mode": "explicit"}` |
+| 請求層級不放任何東西 | 請求根層級的 `"prompt_cache_options": {"mode": "implicit"}` |
 | `control.ttl` 會選擇 5 分鐘或 1 小時快取 | `control` 會被忽略；請自行為 `ttl` 設定 `prompt_cache_options` |
 
-LiteLLM 在請求層級加入的 `prompt_cache_options` 會將 OpenAI 切換為明確模式，因此已設定的檢查點就是完整的快取策略，和在 Anthropic 上完全相同。請求上若已有 `prompt_cache_options`，就會優先採用且絕不覆寫，這也是您可以變更模式或為每個部署請求 30 分鐘快取的方式：
+區塊標記決定了 OpenAI 寫入快取的位置。LiteLLM 在請求層級加入的 `prompt_cache_options` 為 `{"mode": "implicit"}`，因此 OpenAI 會在最近的使用者或工具訊息上保留自己的自動檢查點，與您設定的檢查點並存，也會查找更早的訊息邊界；這正是讓持續增長的代理程式對話能重用前一輪的前綴、而不必每一輪都在靜態前綴之後重寫所有內容的機制。[PR #42281](https://github.com/BerriAI/litellm/pull/42281)（`/chat/completions` 與 `/v1/responses`）以及 [PR #45121](https://github.com/BerriAI/litellm/pull/45121)（`/v1/messages`）之前的版本在此處傳送的是 `{"mode": "explicit"}`，使設定的檢查點成為唯一的快取邊界。請求上若已有 `prompt_cache_options`，就會優先採用且絕不覆寫，這也是您可以固定模式或為每個部署請求 30 分鐘快取的方式：
 
 ```yaml showLineNumbers title="config.yaml"
 model_list:
@@ -144,17 +141,29 @@ model_list:
         - location: message
           role: system
       prompt_cache_options:
-        mode: implicit
+        mode: explicit
         ttl: 30m
 ```
 
-使用 `mode: implicit` 時，OpenAI 會在最近的使用者或工具訊息上保留其自動檢查點，並與 LiteLLM 放置的明確檢查點並存，這適合長時間的多輪工作階段；使用預設的 `explicit` 時，只有已設定的檢查點會寫入快取，這適合許多共享單一長系統提示的單輪請求。無論哪種方式，OpenAI 都會從它能比對到的最長已快取前綴提供讀取
+使用 `mode: explicit` 時，只有設定的檢查點會寫入快取，這適合許多共享單一長系統提示的單輪請求，因為每個請求獨有的尾段永遠不會被寫入。預設的 `implicit` 適合長時間的多輪工作階段。無論哪種方式，OpenAI 都會從它能比對到的最長已快取前綴提供讀取。四個寫入名額是共用的：在 implicit 模式下，OpenAI 的自動檢查點會占用一個，剩下三個供設定的標記與用戶端標記使用，且 OpenAI 不會拒絕帶有更多標記的請求
+
+#### LiteLLM 預設傳送的內容 {#what-litellm-sends-by-default}
+
+| 情境 | 在目標區塊上 | 在請求根層級 | OpenAI 的行為 |
+|---|---|---|---|
+| 設定的點落在 `/chat/completions`、`/v1/responses` 或 `/v1/messages`（Anthropic SDK、Claude Code）上，且沒有任何設定指定 `prompt_cache_options` | `prompt_cache_breakpoint: {"mode": "explicit"}` | `{"mode": "implicit"}`，由 LiteLLM 加入 | 在您的檢查點與它自己的自動檢查點處寫入，並讀取最長的已快取前綴 |
+| 同上，但部署的 `litellm_params` 或請求已帶有 `prompt_cache_options` | 相同 | 您的設定，模式與 `ttl` 皆不更動 | 依您所選擇的行為 |
+| 沒有設定的點落下，例如沒有符合所設定角色的訊息 | 無 | 未加入任何內容 | 其預設行為，即隱式快取 |
+| 用戶端傳送自己的 `prompt_cache_breakpoint` 標記 | 保留用戶端的標記，設定的標記加在其旁邊，最多 4 個 | 用戶端傳送的 `prompt_cache_options`（若有），否則比照第一列的 `{"mode": "implicit"}` | 同上 |
+| 自訂 `api_base` 且部署上沒有 `prompt_cache_options` | Anthropic `cache_control`，OpenAI 會將其去除 | 未加入任何內容 | 其預設行為，即隱式快取 |
+| 自訂 `api_base` 且 `litellm_params` 中有 `prompt_cache_options` | `prompt_cache_breakpoint: {"mode": "explicit"}` | 您的設定 | 依您所選擇的行為 |
+| GPT-5.6 之前的 OpenAI 模型、Azure OpenAI、`litellm_proxy/` 部署 | 不對應 | 未加入任何內容 | 提供者代管的隱式快取 |
 
 關於 OpenAI 對應，需要知道的是：
 
 - **僅限區塊層級。** OpenAI 接受文字、圖片和檔案區塊上的標記。字串型 system prompt 或訊息會先包裝成單一區塊清單，再放置標記。assistant 區塊與工具結果無法攜帶斷點，因此落在那裡的插入點會被略過
 - **`/v1/messages` system prompt。** OpenAI 不接受頂層 `instructions` 欄位上的斷點，因此當 Anthropic `system` 攜帶檢查點時，LiteLLM 會改以前置 `developer` 訊息送出。OpenAI 會將這兩種形式視為相同的快取前綴，因此切換時不會讓快取冷啟動
-- **可與用戶端標記並用。** 已經帶有自身 `cache_control` 或 `prompt_cache_breakpoint` 標記的請求會保留它們，而設定的點會加在旁邊；用戶端已標記的目標會維持原樣。Claude Code 會設定自己的 `cache_control`，OpenAI 永遠看不到，因此在已設定點的 GPT-5.6 部署上執行 Claude Code 工作階段時，會使用您設定的明確檢查點；在該部署上設定 `prompt_cache_options: {mode: implicit}`，即可讓 OpenAI 的自動檢查點與它們並存
+- **可與用戶端標記並用。** 已經帶有自身 `cache_control` 或 `prompt_cache_breakpoint` 標記的請求會保留它們，而設定的點會加在旁邊；用戶端已標記的目標會維持原樣。Claude Code 會設定自己的 `cache_control`，OpenAI 永遠看不到，因此在已設定點的 GPT-5.6 部署上執行 Claude Code 工作階段時，會使用您設定的檢查點加上 OpenAI 的自動檢查點，一如其他每個端點，皆以 implicit 模式運作
 - **遵守 4 個斷點的限制**，會先計入用戶端提供的標記，因此原本會成為第 5 個的設定點會被略過
 - **僅適用於送往 OpenAI 本身的請求。** 當請求部署連到 `api.openai.com`（或地區性的 `*.api.openai.com` 主機）時，對 GPT-5.6 或更新的 OpenAI 模型（若該項目帶有值，則為費率對映中的 `supports_prompt_cache_breakpoint` 標記；否則依模型名稱中的 GPT 版本）會觸發對應，也就是沒有 `api_base`（或 `base_url`），或這些主機上沒有。具有自訂 `api_base` 的部署，例如前方有另一個 LiteLLM proxy 或 gateway 的 OpenAI，會維持目前的行為，除非其 `litellm_params` 也設定了 `prompt_cache_options`，這會將其納入。`litellm_proxy/` 部署與 Azure OpenAI 部署目前尚未涵蓋
 - **`/v1/responses`。** 標記會落在目標訊息的 `input_text` 區塊上，而字串訊息會先包裝成單一區塊清單。OpenAI 不接受頂層 `instructions` 欄位上的標記，因此送到那裡的 system prompt 會維持隱式快取；請將其作為 `developer` 或 `system` 訊息送出，以取得檢查點。用戶端送出的 `prompt_cache_options` 會照原樣轉送
@@ -420,11 +429,11 @@ LiteLLM 會根據我們的設定，自動將快取指令注入 system message：
 
 ### 3. 在 OpenAI GPT-5.6 部署上的同一請求 {#3-the-same-request-on-an-openai-gpt-56-deployment}
 
-當部署改為指向 `openai/gpt-5.6` 時，相同設定會在區塊上產生 OpenAI 的明確斷點，並在請求根節點產生明確模式：
+當部署改為指向 `openai/gpt-5.6` 時，相同設定會在區塊上產生 OpenAI 的明確斷點，並在請求根節點產生 implicit 模式，因此系統提示是固定的快取邊界，而 OpenAI 自己的檢查點仍會跟隨最新訊息：
 
 ```json showLineNumbers title="modified_request_openai.json"
 {
-    "prompt_cache_options": {"mode": "explicit"},
+    "prompt_cache_options": {"mode": "implicit"},
     "messages": [
         {
             "role": "system",

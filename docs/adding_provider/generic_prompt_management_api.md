@@ -244,7 +244,7 @@ response = client.chat.completions.create(
 
 ## 實作範例 {#implementation-example}
 
-請參閱 [mock_prompt_management_server.py](https://github.com/BerriAI/litellm/blob/main/cookbook/mock_prompt_management_server/mock_prompt_management_server.py) 取得完整的參考實作，內含多個範例提示、驗證，以及便利端點。
+請參閱 [mock_prompt_management_server.py](https://github.com/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/mock_prompt_management_server/mock_prompt_management_server.py) 取得完整的參考實作，內含多個範例提示、驗證，以及便利端點。
 
 **最小 FastAPI 範例：**
 

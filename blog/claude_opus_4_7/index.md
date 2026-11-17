@@ -178,11 +178,15 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 model_list:
   - model_name: claude-opus-4-7
     litellm_params:
-      model: bedrock/anthropic.claude-opus-4-7
+      model: bedrock/global.anthropic.claude-opus-4-7
       aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: us-east-1
 ```
+
+:::note
+`global.` 可從任何 AWS 商業區域處理請求。若要將請求保留在單一地理區域內，請改用地理推論設定檔，例如 `bedrock/us.anthropic.claude-opus-4-7`（該模型的 AWS 模型卡列出了它所擁有的設定檔），費用高出 10%。LiteLLM 會追蹤兩者的成本。在較舊的映像上，這需要遠端成本對照表；LiteLLM 會在啟動時載入它，除非已設定 `LITELLM_LOCAL_MODEL_COST_MAP`。
+:::
 
 **2. 啟動 proxy**
 

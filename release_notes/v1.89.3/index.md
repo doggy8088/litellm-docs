@@ -1,5 +1,6 @@
 ---
-title: "v1.89.3 - 防護欄與 Cache-Control 修正"
+title: "LiteLLM v1.89.3 - 防護欄與 Cache-Control 修正"
+description: "修正防護欄迴歸問題：DB 防護欄在每次輪詢時重新初始化。另將 Anthropic cache_control 注入上限設為 4 個區塊。"
 slug: "v1-89-3"
 date: 2026-06-20T14:45:08
 authors:

@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 # LiteAdmin MCP {#liteadmin-mcp}
 
-使用 **LiteAdmin MCP**（[https://github.com/BerriAI/litellm-admin-mcp]）從 Claude、Codex 或其他 MCP 用戶端管理您的閘道。您可以請求代理程式執行：
+使用 **LiteAdmin MCP**（[LiteLLM Admin MCP](https://github.com/BerriAI/litellm-admin-mcp)）從 Claude、Codex 或其他 MCP 用戶端管理您的閘道。您可以請求代理程式執行：
 
 - 建立與管理虛擬金鑰。
 - 新增模型部署。
@@ -18,7 +18,7 @@ import TabItem from '@theme/TabItem';
 
 您的用戶端會執行代理程式與模型。MCP 伺服器會使用您的個人管理憑證呼叫閘道的管理 API。連接後不會變更您用戶端的模型提供者設定。
 
-若要在您的 Enterprise 部署中託管 MCP，請依照 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md)，以使用統一與元件化的 Docker 映像檔。
+若要在您的 Enterprise 部署中託管 MCP，請依照 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md)，以在單體或元件化部署中使用共用的 Docker 映像檔。
 
 若要在 Slack 中管理閘道，請依照 [LiteAdmin Slack 應用程式設定](./liteadmin_slack.md)，並選擇 Enterprise 或獨立部署。若要透過 LiteLLM 路由第三方 MCP 工具，請參閱獨立的 [MCP Gateway](../mcp.md) 指南。
 
@@ -149,7 +149,7 @@ LITELLM_API_KEY = "<your-personal-proxy-admin-key>"
 
 您的閘道需要資料庫、`STORE_MODEL_IN_DB=True`，以及供 [模型管理](./model_management.md) 使用的提供者驗證。請在請求中包含公開模型名稱、精確的提供者/模型 ID，以及已儲存的憑證名稱或閘道環境變數參照。例如：
 
-> 使用 openai/gpt-4.1 與現有的閘道憑證 openai-production 新增名為 support-chat 的模型。
+> 使用 openai/{{openai_large}} 與現有的閘道憑證 openai-production 新增名為 support-chat 的模型。
 
 請使用在您的部署中存在的提供者/模型 ID 與憑證。請將提供者 API 金鑰保留在聊天內容之外。新增閘道部署不會佈建提供者存取權，也不會測試推論。
 
@@ -166,7 +166,7 @@ LITELLM_API_KEY = "<your-personal-proxy-admin-key>"
 
 ## 在 LiteLLM 內執行 LiteAdmin MCP {#run-liteadmin-mcp-inside-litellm}
 
-請依照 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md) 的說明，從統一的 LiteLLM 映像檔或元件化部署中的管理後端提供 `/admin/mcp`。該指南涵蓋啟用旗標、Enterprise 授權、入口路由、驗證、用戶端設定與驗證
+請依照 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md) 的說明，從共用 LiteLLM 映像檔中的 proxy 或管理後端程序提供 `/admin/mcp`。該指南涵蓋啟用旗標、Enterprise 授權、入口路由、驗證、用戶端設定與驗證
 
 ### 內嵌工具與回應設定 {#embedded-tool-and-response-settings}
 

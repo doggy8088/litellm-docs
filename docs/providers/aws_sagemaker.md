@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI 閘道使用 AWS SageMaker API"
+sidebar_label: "AWS Sagemaker"
+description: "從 Python SDK 或 AI 閘道透過 LiteLLM 以 sagemaker/ 前綴呼叫 AWS SageMaker 端點。設定 AWS 憑證、串流傳輸、執行 embedding 模型。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem'
 
@@ -307,7 +313,7 @@ os.environ["AWS_REGION_NAME"] = ""
 response = completion(
   model="sagemaker/jumpstart-dft-hf-textgeneration1-mp-20240815-185614",
   messages=[{ "content": "Hello, how are you?","role": "user"}],
-  top_k=1 # 👈 PROVIDER-SPECIFIC PARAM
+  top_k=1 # PROVIDER-SPECIFIC PARAM
 )
 ```
 </TabItem>
@@ -320,7 +326,7 @@ model_list:
   - model_name: jumpstart-model
     litellm_params:
       model: sagemaker/jumpstart-dft-hf-textgeneration1-mp-20240815-185614
-      top_k: 1 # 👈 PROVIDER-SPECIFIC PARAM
+      top_k: 1 # PROVIDER-SPECIFIC PARAM
 ```
 
 **在請求中設定**
@@ -342,7 +348,7 @@ response = client.chat.completions.create(model="jumpstart-model", messages = [
 ],
 temperature=0.7,
 extra_body={
-    "top_k": 1 # 👈 PROVIDER-SPECIFIC PARAM
+    "top_k": 1 # PROVIDER-SPECIFIC PARAM
 }
 )
 
@@ -373,6 +379,47 @@ response = completion(
             max_tokens=80
         )
 ```
+
+#### 在部署上固定推論元件 {#pin-the-inference-component-on-a-deployment}
+
+<SinceVersion v="1.109.0" />
+
+當 proxy 部署或 SDK `Router` 部署設定了 `model_id` 時，LiteLLM 會叫用該推論元件，並忽略請求本文中的任何 `model_id`（除非該部署允許用戶端自行選擇，如下所述）。部署也可以透過 `extra_headers` 中的 `X-Amzn-SageMaker-Inference-Component` 標頭固定元件，其優先順序同樣高於請求。在 `sagemaker_chat/` 部署上，如果部署已固定元件，LiteLLM 會丟棄用戶端自己的 `X-Amzn-SageMaker-Inference-Component` 標頭（不分大小寫）。
+
+```yaml
+model_list:
+  - model_name: my-llama
+    litellm_params:
+      model: sagemaker_chat/<your-endpoint-name>
+      model_id: <llama-inference-component>
+  - model_name: my-mistral
+    litellm_params:
+      model: sagemaker_chat/<your-endpoint-name>
+      extra_headers:
+        X-Amzn-SageMaker-Inference-Component: <mistral-inference-component>
+```
+
+以下請求仍會送往 `<llama-inference-component>`：
+
+```bash
+curl http://0.0.0.0:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "my-llama", "model_id": "<mistral-inference-component>", "messages": [{"role": "user", "content": "hi"}]}'
+```
+
+若要允許用戶端在部署上選擇元件，請將 `model_id` 列入其 `configurable_clientside_auth_params`。含有 `model_id` 的請求會被送往該元件，不含 `model_id` 的請求則送往部署自己的 `model_id`。`general_settings.allow_client_side_credentials: true` 並不允許用戶端覆寫已固定的元件。
+
+```yaml
+model_list:
+  - model_name: my-endpoint
+    litellm_params:
+      model: sagemaker_chat/<your-endpoint-name>
+      model_id: <default-inference-component>
+      configurable_clientside_auth_params: ["model_id"]
+```
+
+未設定 `model_id` 也未設定該標頭的部署，仍會使用請求中的 `model_id`。在 1.109.0 之前，請求本文中的 `model_id` 會取代部署的設定，因此用戶端可以將已固定元件的部署請求送往同一端點上的不同元件。
 
 ### 將憑證作為參數傳入 - Completion() {#passing-credentials-as-parameters---completion}
 將 AWS 憑證作為參數傳遞給 litellm.completion
@@ -427,7 +474,7 @@ import os
 import litellm
 from litellm import completion
 
-litellm.set_verbose = True # 👈 SEE RAW REQUEST
+litellm.set_verbose = True # SEE RAW REQUEST
 
 os.environ["AWS_ACCESS_KEY_ID"] = ""
 os.environ["AWS_SECRET_ACCESS_KEY"] = ""
@@ -479,7 +526,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-[**👉 查看 OpenAI SDK/Langchain/Llamaindex/etc. 範例**](../proxy/user_keys.md#chatcompletions)
+[** 查看 OpenAI SDK/Langchain/Llamaindex/etc. 範例**](../proxy/user_keys.md#chatcompletions)
 
 </TabItem>
 </Tabs>
@@ -568,6 +615,21 @@ model_list:
 
 `litellm_params` 中的 provider-specific 金鑰會原樣傳送到 request body，因此請只保留您的容器可接受的項目。
 
+### 拒絕對 embedding 端點的聊天呼叫 {#reject-chat-calls-on-embedding-endpoints}
+
+<SinceVersion v="1.109.0" />
+
+embedding 容器在與 SageMaker 往返之後，才會以自己的錯誤回應聊天請求；或者當它將提示詞視為要嵌入的文字時，回傳空的 assistant 訊息。若要讓 proxy 在聊天呼叫送出之前就拒絕它們，請列出該部署提供的端點並開啟強制執行：
+
+```yaml
+    model_info:
+      mode: embedding
+      supported_endpoints: ["/v1/embeddings"]
+      enforce_supported_endpoints: true
+```
+
+之後，針對該模型的聊天式請求會轉至已設定的備援，或收到指出端點與支援清單的 400 回應，而 `/v1/embeddings` 則繼續正常運作。涵蓋的路由與備援處理方式，請參閱 [拒絕對非聊天模型的聊天呼叫](../proxy/model_management.md#reject-chat-calls-on-non-chat-models)。
+
 ## SageMaker 上的 Nova 模型 {#nova-models-on-sagemaker}
 
 LiteLLM 支援部署在 SageMaker Inference 即時端點上的 Amazon Nova 模型（Nova Micro、Nova Lite、Nova 2 Lite）。這些自訂/微調的 Nova 模型使用與 OpenAI 相容的 API 格式。
@@ -606,7 +668,7 @@ response = litellm.completion(
     stream_options={"include_usage": True},
 )
 for chunk in response:
-    if chunk.choices[0].delta.content:
+    if chunk.choices and chunk.choices[0].delta.content:
         print(chunk.choices[0].delta.content, end="")
 ```
 

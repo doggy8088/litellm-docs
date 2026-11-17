@@ -1,3 +1,9 @@
+---
+title: "Empower API 與 LiteLLM：設定與模型"
+sidebar_label: "Empower"
+description: "從 LiteLLM Python SDK 呼叫 Empower 的 empower-functions 與 empower-functions-small 模型，支援一般或串流聊天與自動工具呼叫。"
+---
+
 # Empower {#empower}
 LiteLLM 支援 Empower 上的所有模型。 
 

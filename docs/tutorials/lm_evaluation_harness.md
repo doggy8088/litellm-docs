@@ -115,9 +115,9 @@ try:
 
 由於 LiteLLM 提供相容於 OpenAI 的 proxy `-t` 和 `-m` 不需要變更
 `-t` 將維持為 openai
-`-m` 將維持為 gpt-3.5
+`-m` 將維持為 `gpt-3.5-turbo`，因為 FastEval 的 `openai` 類型只接受以 `gpt-3.5-turbo` 或 `gpt-4` 開頭的模型名稱。proxy 會以它啟動時所用的模型回應，因此這個名稱永遠不會送達 OpenAI
 
-```shell
+```shell keep-model-ids
 ./fasteval -b human-eval-plus -t openai -m gpt-3.5-turbo
 ```
 

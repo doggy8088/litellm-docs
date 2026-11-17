@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM 上使用 Presidio 遮罩 PII 與 PHI"
+sidebar_label: "PII、PHI 遮罩 - Presidio"
+description: "在 LiteLLM AI 閘道上使用 Microsoft Presidio 遮罩 LLM 請求與回應中的 PII 與 PHI，並可設定實體類型與信心門檻。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

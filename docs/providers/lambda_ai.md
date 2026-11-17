@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Lambda AI API：Python SDK 與 Gateway"
+sidebar_label: "Lambda AI"
+description: "透過 LiteLLM 在 Lambda AI 上執行 Llama 3.1 與 4、DeepSeek R1、Hermes 3 與 Qwen Coder，支援串流、Llama 3.2 視覺輸入與函式呼叫。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

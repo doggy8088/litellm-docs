@@ -6,7 +6,7 @@ import Image from '@theme/IdealImage';
 
 追蹤跨越 100+ LLM 的金鑰、使用者與團隊支出。
 
-LiteLLM 會自動追蹤所有已知模型的支出。請參閱我們的 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
+LiteLLM 會自動追蹤所有已知模型的支出。關於每個請求如何定價，請參閱 [模型成本對照表](./model_cost_map)
 
 當回應包含分級中繼資料時，會自動套用特定提供者的成本追蹤（例如 [Vertex AI PayGo / priority pricing](../providers/vertex.md#paygo--priority-cost-tracking)、[Bedrock service tiers](../providers/bedrock.md#usage---service-tier)、[Azure base model mapping](./custom_pricing.md#set-base_model-for-cost-tracking-eg-azure-deployments)）。
 
@@ -22,7 +22,7 @@ LiteLLM 會自動追蹤所有已知模型的支出。請參閱我們的 [模型�
 
 **步驟 1**
 
-👉 [使用資料庫設定 LiteLLM](https://docs.litellm.ai/docs/proxy/virtual_keys#setup)
+[使用資料庫設定 LiteLLM](https://docs.litellm.ai/docs/proxy/virtual_keys#setup)
 
 **步驟2** 傳送 `/chat/completions` 請求
 
@@ -304,7 +304,7 @@ curl -L -X GET 'http://localhost:4000/user/info?user_id=jane_smith' \
 | 呼叫者角色 | `/spend/keys` | `/spend/users` |
 |-------------|---------------|----------------|
 | `proxy_admin` / `proxy_admin_viewer` | 所有金鑰 | 所有使用者（或單一資料列的 `?user_id=`） |
-| `internal_user` / `internal_user_view_only` | `user_id` 與呼叫者相符的金鑰 | 只有呼叫者自己的資料列 |
+| `internal_user` / `internal_user_viewer` | `user_id` 與呼叫者相符的金鑰 | 只有呼叫者自己的資料列 |
 | 未在金鑰上設定 `user_id` 的非管理員 | 空清單 `[]` | 空清單 `[]` |
 
 內部使用者若為**另一位**使用者傳遞 `?user_id=`，會收到 **HTTP 403**（而不是被靜默過濾的清單）。
@@ -335,7 +335,7 @@ curl -X GET 'http://localhost:4000/spend/keys' \
 
 ```shell title="Daily Spend Breakdown API" showLineNumbers
 curl -L -X GET 'http://localhost:4000/user/daily/activity?start_date=2025-03-20&end_date=2025-03-27' \
--H 'Authorization: Bearer sk-...'
+-H "Authorization: Bearer $LITELLM_MASTER_KEY"
 ```
 
 ```json title="Daily Spend Breakdown API Response" showLineNumbers
@@ -353,26 +353,123 @@ curl -L -X GET 'http://localhost:4000/user/daily/activity?start_date=2025-03-20&
             "breakdown": {
                 "models": {
                     "{{openai_small}}": {
-                        "spend": 1.82e-05,
-                        "prompt_tokens": 37,
-                        "completion_tokens": 9,
-                        "total_tokens": 46,
-                        "api_requests": 1
+                        "metrics": {
+                            "spend": 0.0177072,
+                            "prompt_tokens": 111,
+                            "completion_tokens": 1711,
+                            "total_tokens": 1822,
+                            "api_requests": 11
+                        },
+                        "metadata": {},
+                        "api_key_breakdown": {}
                     }
                 },
-                "providers": { "openai": { ... }, "azure_ai": { ... } },
-                "api_keys": { "3126b6eaf1...": { ... } }
+                "providers": {
+                    "openai": {
+                        "metrics": { "spend": 0.0177072 },
+                        "metadata": {},
+                        "api_key_breakdown": {}
+                    }
+                },
+                "api_keys": {
+                    "3126b6eaf1...": {
+                        "metrics": { "spend": 0.0177072 },
+                        "metadata": { "key_alias": "my-key", "key_exists": true }
+                    }
+                }
             }
         }
     ],
     "metadata": {
-        "total_spend": 0.7274667,
-        "total_prompt_tokens": 280990,
-        "total_completion_tokens": 376674,
-        "total_api_requests": 14
+        "total_spend": 0.0177072,
+        "total_prompt_tokens": 111,
+        "total_completion_tokens": 1711,
+        "total_api_requests": 11
     }
 }
 ```
+
+此範例顯示部分回應欄位。每個明細條目會將其值巢狀放在 `metrics` 下，並將其描述欄位放在 `metadata` 下。
+
+### 缺失的身分與 API 金鑰篩選 {#missing-identities-and-api-key-filters}
+
+每日報告、下鑽與匯出會將缺少 model 或 key 值的用量保留在備援 bucket 中。零支出請求與負調整仍會計入總計。
+
+| 儲存值 | 報告身分 |
+| --- | --- |
+| 空的或 null 的 model | `unknown-model` |
+| 空的或 null 的 model group，且 model 已知 | 模型名稱 |
+| 空的或 null 的 model group 與 model | `unknown-model-group` |
+| 空的或 null 的 API key | `unattributed` |
+| 字面 API key `unattributed` | `raw:unattributed` |
+| 以 `raw:` 開頭的 API key | 加上一個額外 `raw:` 前綴的該金鑰 |
+| 其他非空值，包括空白字元 | 不變 |
+
+與備援標籤相同的字面模型名稱會共用那些 model bucket。`unattributed` key bucket 沒有可點擊的金鑰詳細資訊。
+
+將報告身分傳給 `api_key` 查詢參數。例如，若要篩選字面儲存金鑰 `unattributed`，請使用 `raw:unattributed`。若字面儲存金鑰為 `raw:example`，請使用 `raw:raw:example`。若要改選缺少的金鑰，請使用 `unattributed`。
+
+```bash title="Filter an escaped API key identity"
+curl --get 'http://localhost:4000/user/daily/activity/aggregated' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  --data-urlencode 'start_date=2025-03-20' \
+  --data-urlencode 'end_date=2025-03-27' \
+  --data-urlencode 'api_key=raw:unattributed'
+```
+
+:::warning[匯出相容性]
+
+每日活動匯出（例如 `/user/daily/activity/export?export_type=daily_with_keys&format=json`）會將缺少的 model 與 key 值替換為上述 bucket 標籤，並跳脫保留的 API key ID。預期 null 值或未跳脫保留 key ID 的消費者必須調整。篩選每日報告時，請原樣使用匯出的報告身分。
+
+:::
+
+### 防護欄支出明細 {#guardrail-spend-breakdown}
+
+`GET /user/daily/activity/aggregated`、`GET /team/daily/activity/aggregated` 與 `GET /organization/daily/activity/aggregated` 會在 `breakdown.guardrails` 中傳回每天的防護欄成本，以防護欄 ID 為鍵。此明細遵循回應的日期、實體與 API key 篩選條件。
+
+```bash title="Get daily guardrail spend"
+curl --get 'http://localhost:4000/user/daily/activity/aggregated' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  --data-urlencode 'start_date=2025-03-20' \
+  --data-urlencode 'end_date=2025-03-27'
+```
+
+在同一個請求中使用 `/team/daily/activity/aggregated` 或 `/organization/daily/activity/aggregated` 可取得那些範圍。以下摘錄顯示某一天的防護欄明細。
+
+```json title="Guardrail spend response excerpt"
+{
+  "results": [
+    {
+      "date": "2025-03-27",
+      "metrics": { "spend": 0.05 },
+      "breakdown": {
+        "api_keys": {
+          "3126b6eaf1...": {
+            "metrics": { "spend": 0.05 },
+            "metadata": { "key_alias": "my-key", "key_exists": true }
+          }
+        },
+        "guardrails": {
+          "guardrail-id": {
+            "metrics": { "spend": 0.01, "untracked_units": 2 },
+            "metadata": { "guardrail_name": "content-safety" },
+            "api_key_breakdown": {
+              "3126b6eaf1...": {
+                "metrics": { "spend": 0.01, "untracked_units": 2 },
+                "metadata": { "key_alias": "my-key", "key_exists": true }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+防護欄支出已包含在金鑰與模型支出中。請勿將它加在那些總計之上。`untracked_units` 計算的是沒有已知價格的防護欄單位，因此非零單位表示所報告的支出是下限，而不是完整的防護欄成本。
+
+每個防護欄的 `api_key_breakdown` 只包含當天 `breakdown.api_keys` 中的金鑰。即使逐金鑰清單被截斷，防護欄的總計仍涵蓋所有相符的金鑰。非空的 `model` 篩選會讓 `guardrails` 為空，因為防護欄成本不會按模型歸屬。如果防護欄查詢因資料庫錯誤而失敗，每日回應仍會成功，並傳回空的防護欄明細。
 
 ### API 參考 {#api-reference}
 
@@ -385,7 +482,7 @@ curl -L -X GET 'http://localhost:4000/user/daily/activity?start_date=2025-03-20&
 ## 自訂標籤 {#custom-tags}
 
 :::tip[請參閱完整請求標籤文件]
-如需包含 `x-litellm-tags` header、request body `tags` 以及基於設定的標籤在內的所有標籤選項完整文件，請參閱專用的 [Request Tags](./request_tags.md) 頁面。
+如需包含 `x-litellm-tags` header、request body `tags` 以及基於設定的標籤在內的所有標籤選項完整文件，請參閱專用的 [Request Tags](./request_tags.md) 頁面。若要為 OpenTelemetry 用戶端已傳送的 W3C `baggage` header 中的請求加上標籤，請參閱 [將 Baggage 值對應到標籤](./tag_budgets.md#map-baggage-values-to-tags)。
 :::
 
 需求：
@@ -453,7 +550,7 @@ response = client.chat.completions.create(
     ],
     extra_body={
         "metadata": {
-            "tags": ["model-anthropic-claude-v2.1", "app-ishaan-prod"] # 👈 Key Change
+            "tags": ["model-anthropic-claude-v2.1", "app-ishaan-prod"] # Key Change
         }
     }
 )
@@ -484,7 +581,7 @@ async function runOpenAI() {
         },
       ],
       metadata: {
-        tags: ["model-anthropic-claude-v2.1", "app-ishaan-prod"], // 👈 Key Change
+        tags: ["model-anthropic-claude-v2.1", "app-ishaan-prod"], // Key Change
       },
     });
     console.log(response);
@@ -577,7 +674,7 @@ litellm_settings:
   disable_add_user_agent_to_request_tags: true
 ```
 
-## ✨（Enterprise）產生支出報告 {#-enterprise-generate-spend-reports}
+## （Enterprise）產生支出報告 {#-enterprise-generate-spend-reports}
 
 用於向其他團隊、客戶、使用者收費
 
@@ -589,7 +686,7 @@ litellm_settings:
 
 #### 範例請求 {#example-request}
 
-👉 金鑰變更：指定 `group_by=team`
+金鑰變更：指定 `group_by=team`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30&group_by=team' \
@@ -719,7 +816,7 @@ for row in spend_report:
 
 #### 範例請求 {#example-request-1}
 
-👉 主要變更：指定 `group_by=customer`
+主要變更：指定 `group_by=customer`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30&group_by=customer' \
@@ -772,7 +869,7 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 <TabItem value="per key" label="特定 API 金鑰的支出">
 
-👉 主要變更：指定 `api_key=sk-<your-litellm-api-key>`
+主要變更：指定 `api_key=sk-<your-litellm-api-key>`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-06-30&api_key=sk-<your-litellm-api-key>' \
@@ -816,7 +913,7 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 :::
 
-👉 主要變更：指定 `internal_user_id=ishaan`
+主要變更：指定 `internal_user_id=ishaan`
 
 ```shell
 curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end_date=2024-12-30&internal_user_id=ishaan' \
@@ -888,7 +985,7 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 </Tabs>
 
-## 📊 支出記錄 API - 個別交易記錄 {#-spend-logs-api---individual-transaction-logs}
+## 支出記錄 API - 個別交易記錄 {#-spend-logs-api---individual-transaction-logs}
 
 `/spend/logs` 端點現在支援 `summarize` 參數，以在使用日期篩選器時控制資料格式。
 
@@ -949,11 +1046,9 @@ curl -X GET "http://localhost:4000/spend/logs/v2?start_date=2024-01-01%2000:00:0
 
 使用 `group_by_session=true` 時，分頁同樣受限於相同的 10,000 列視窗，而從超出該視窗的位置開始的頁面不會回傳任何資料列，因此請切分時間範圍，而不要在超過上限後繼續翻頁。
 
-## ✨ 自訂支出記錄中繼資料 {#-custom-spend-log-metadata}
+## 自訂支出記錄中繼資料 {#custom-spend-log-metadata}
 
 將特定 key,value 配對作為支出記錄中繼資料的一部分進行記錄
-
-<EnterpriseFeature feature="Logging specific key,value pairs in spend logs metadata" />
 
 需求：
 
@@ -1080,7 +1175,7 @@ async function runOpenAI() {
         },
       ],
       metadata: {
-        spend_logs_metadata: { // 👈 Key Change
+        spend_logs_metadata: { // Key Change
             hello: "world"
         }
       }
@@ -1239,7 +1334,7 @@ curl -X GET "http://0.0.0.0:4000/spend/logs?request_id=<your-call-id" \
         "metadata": {
             "user_api_key": "example-api-key-123",
             "user_api_key_alias": null,
-            "spend_logs_metadata": { # 👈 LOGGED CUSTOM METADATA
+            "spend_logs_metadata": { # LOGGED CUSTOM METADATA
                 "hello": "world"
             },
             "user_api_key_team_id": null,

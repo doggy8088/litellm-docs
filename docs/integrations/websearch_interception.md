@@ -1,3 +1,7 @@
+---
+sidebar_label: "網頁搜尋攔截"
+---
+
 # 網頁搜尋整合 {#web-search-integration}
 
 為任何 LLM 提供者啟用透明的伺服器端網頁搜尋執行。LiteLLM 會自動攔截網頁搜尋工具請求，並使用您設定的搜尋提供者（Parallel、Perplexity、Tavily 等）來執行。
@@ -472,4 +476,4 @@ search_tools:
 
 ## 貢獻 {#contributing}
 
-發現錯誤或想要新增對新提供者的支援？請參閱我們的 [貢獻指南](https://github.com/BerriAI/litellm/blob/main/CONTRIBUTING.md)。
+發現錯誤或想要新增對新提供者的支援？請參閱我們的 [貢獻指南](https://github.com/BerriAI/litellm/blob/main/.github/CONTRIBUTING.md)。

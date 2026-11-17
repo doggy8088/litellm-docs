@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Datadog LLM 可觀測性與記錄"
+sidebar_label: "Datadog"
+description: "從 AI 閘道將 LiteLLM 記錄、LLM Observability 追蹤、自訂指標與雲端成本傳送到 Datadog，並支援訊息遮蔽與 ddtrace。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

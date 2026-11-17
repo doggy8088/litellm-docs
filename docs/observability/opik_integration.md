@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 Comet Opik 追蹤"
+sidebar_label: "Comet Opik"
+description: "從 Python SDK 或 AI Gateway 將 LiteLLM traces 傳送至 Comet Opik，可為每個請求設定 Opik 專屬參數，並從 API 金鑰加入 metadata。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
@@ -91,7 +96,7 @@ chunks = list(response)
 
 ```yaml
 model_list:
-  - model_name: gpt-3.5-turbo-testing
+  - model_name: {{openai_small}}-testing
     litellm_params:
       model: {{openai_small}}
       api_key: os.environ/OPENAI_API_KEY
@@ -117,7 +122,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Content-Type: application/json' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -d '{
-  "model": "gpt-3.5-turbo-testing",
+  "model": "{{openai_small}}-testing",
   "messages": [
     {
       "role": "user",
@@ -254,6 +259,6 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 ## 支援與聯絡創辦人 {#support--talk-to-founders}
 
-- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

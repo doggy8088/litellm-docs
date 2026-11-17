@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 上的 Azure Content Safety 防護欄"
+sidebar_label: "Azure Content Safety 防護欄"
+description: "在 LiteLLM AI 閘道上以 Azure Content Safety 封鎖越獄攻擊與有害文字，使用 Prompt Shield 與 Text Moderation，並支援成本追蹤。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

@@ -2,7 +2,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
 
-# 📈 Prometheus 指標 {#-prometheus-metrics}
+# Prometheus 指標 {#prometheus-metrics}
 
 LiteLLM 會提供一個供 Prometheus 輪詢的 `/metrics` 端點
 
@@ -61,7 +61,7 @@ export PROMETHEUS_MULTIPROC_DIR="/prometheus_multiproc"
 
 預設情況下，LiteLLM 會在 proxy 連接埠上，使用同一組提供推論請求服務的 Uvicorn worker 來輸出 `/metrics`。在多 worker 部署中，每次擷取都會彙總跨 worker 的 Prometheus 資料。因此，大型或高基數的指標集合可能會消耗提供請求服務之 worker 的 CPU，並增加尾端延遲。
 
-LiteLLM v1.101.0 及更新版本可從專用程序提供相同的指標集合。設定 `--prometheus_metrics_port` 或 `PROMETHEUS_METRICS_PORT`，然後更新 Prometheus 以擷取該連接埠。proxy 連接埠上的原始 `/metrics` 路由仍可使用，以維持向後相容，因此您可以在不中斷推論流量的情況下遷移擷取目標。
+LiteLLM 可從專用程序提供相同的指標集合 <SinceVersion v="1.101.0" />。設定 `--prometheus_metrics_port` 或 `PROMETHEUS_METRICS_PORT`，然後更新 Prometheus 以擷取該連接埠。proxy 連接埠上的原始 `/metrics` 路由仍可使用，以維持向後相容，因此您可以在不中斷推論流量的情況下遷移擷取目標。
 
 必須啟用 `prometheus` 回呼。當設定了專用連接埠時，LiteLLM 會在需要時建立 `PROMETHEUS_MULTIPROC_DIR`，將指標程序繫結到 proxy `--host`，並在 proxy 結束時一併停止該程序。
 
@@ -83,30 +83,18 @@ scrape_configs:
 ### 部署設定 {#deployment-configuration}
 
 <Tabs>
-<TabItem value="helm" label="Helm: litellm-helm">
-
-```yaml title="values.yaml"
-metricsServer:
-  enabled: true
-  port: 4001
-
-serviceMonitor:
-  enabled: true
-```
-
-此 chart 會建立一個專用的 `<release>-litellm-metrics` `ClusterIP` Service，並將 ServiceMonitor 導向它。主要 Service 不會變更，即使 `service.type` 為 `LoadBalancer` 也是如此。`metricsServer.port` 必須與 `service.port` 不同。
-
-</TabItem>
-<TabItem value="helm-componentized" label="Helm: componentized">
+<TabItem value="helm" label="Helm">
 
 ```yaml title="values.yaml"
 gateway:
   metricsServer:
     enabled: true
     port: 4001
+  serviceMonitor:
+    enabled: true
 ```
 
-此 chart 會將 metrics server 以 sidecar 形式執行，並與 gateway 共用 Prometheus multiprocess 資料。它會透過專用的 `<release>-litellm-gateway-metrics` `ClusterIP` Service 公開該監聽器；請將 Prometheus 設定為探索該私有 Service。gateway Service 保持不變。
+[LiteLLM chart](./deploy/helm.md) 在 componentized 與 monolith 兩種模式下都會使用這些值。它會從共享映像檔執行一個 sidecar，並公開一個私有的 metrics `ClusterIP` Service。ServiceMonitor 需要 Prometheus Operator，並以該 Service 為目標。請讓 metrics 連接埠與 gateway 的服務連接埠分開。
 
 </TabItem>
 <TabItem value="aws" label="Terraform: AWS">
@@ -247,6 +235,16 @@ sum by (requested_model) (rate(litellm_output_tokens_metric_total[5m]))
 | `litellm_remaining_api_key_requests_for_model`                | LiteLLM 虛擬 API 金鑰的剩餘請求數，僅在該虛擬金鑰已設定模型特定速率限制（rpm）時才會顯示。標籤：`"hashed_api_key", "api_key_alias", "model", "model_id"`|
 | `litellm_remaining_api_key_tokens_for_model`                | LiteLLM 虛擬 API 金鑰的剩餘 token 數，僅在該虛擬金鑰已設定模型特定 token 限制（tpm）時才會顯示。標籤：`"hashed_api_key", "api_key_alias", "model", "model_id"`|
 
+### 動態速率限制器 {#dynamic-rate-limiter}
+
+當 `dynamic_rate_limiter_v3` 與 `prometheus` 回呼一起執行時發布。值的計算方式請參閱 [動態速率限制](./dynamic_rate_limit.md#prometheus-metrics-for-shares-and-throttling)。份額持有者為團隊、金鑰或客戶組織，而 series 只會填入其持有者的標籤。
+
+| 指標名稱          | 說明                          |
+|----------------------|--------------------------------------|
+| `litellm_dynamic_limiter_share_tokens` | 份額持有者對該模型在目前期間的 token 份額，以其最後一次結算的請求為準。標籤：`"model_group", "team", "team_alias", "hashed_api_key", "api_key_alias", "customer_org_id", "customer_org_alias", "priority"` |
+| `litellm_dynamic_limiter_borrowed_tokens` | 份額持有者在此期間已使用、超出其份額的 token，未超出時為 `0`。標籤：`"model_group", "team", "team_alias", "hashed_api_key", "api_key_alias", "customer_org_id", "customer_org_alias", "priority"` |
+| `litellm_dynamic_limiter_throttled_total` | 動態速率限制器拒絕的請求。`reason` 是呼叫者收到的 429 的 `rate_limited_by` 標頭：`model_per_team_saturated`、`model_per_team_max_borrow_multiple`、它們的 `model_per_key_*` 與 `model_per_customer_org_*` 對應值，或 `priority_class_share_saturated`。標籤：`"model_group", "team", "team_alias", "hashed_api_key", "api_key_alias", "customer_org_id", "customer_org_alias", "priority", "rate_limit_type", "reason"` |
+
 ### 啟動時初始化預算指標 {#initialize-budget-metrics-on-startup}
 
 如果您希望 litellm 無論是否收到請求，都為所有金鑰與團隊發出預算指標，請在 `prometheus_initialize_budget_metrics` 中將 `true` 設為 `config.yaml`
@@ -362,6 +360,7 @@ curl http://localhost:4000/health/backlog \
 | litellm_model_name | LiteLLM 使用的 LLM 模型名稱 |
 | requested_model | 請求中送出的模型 |
 | model_id | 部署的 model_id。由 LiteLLM 自動產生，每個部署都有唯一的 model_id |
+| model_group | 部署所屬的 `config.yaml` 中的 `model_name`；依此分組，即可看到每個模型池一條 series |
 | api_base | 部署的 API Base |
 | api_provider | LLM API provider，用於提供者。範例（azure、openai、vertex_ai） |
 | hashed_api_key | 請求的雜湊後 API 金鑰 |
@@ -375,9 +374,9 @@ curl http://localhost:4000/health/backlog \
 
 | 指標名稱          | 說明                          |
 |----------------------|--------------------------------------|
- `litellm_deployment_success_responses`              | 部署成功的 LLM API 呼叫總次數。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "client_ip", "user_agent"` |
-| `litellm_deployment_failure_responses`              | 特定 LLM 部署失敗的 LLM API 呼叫總次數。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "exception_status", "exception_class", "hashed_api_key", "api_key_alias", "team", "team_alias", "client_ip", "user_agent"` |
-| `litellm_deployment_total_requests`                 | 部署的 LLM API 呼叫總次數－成功 + 失敗。標籤：`"requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "client_ip", "user_agent"` |
+ `litellm_deployment_success_responses`              | 部署成功的 LLM API 呼叫總次數。標籤：`"model_group", "requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "client_ip", "user_agent"` |
+| `litellm_deployment_failure_responses`              | 特定 LLM 部署失敗的 LLM API 呼叫總次數。標籤：`"model_group", "requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "exception_status", "exception_class", "hashed_api_key", "api_key_alias", "team", "team_alias", "client_ip", "user_agent"` |
+| `litellm_deployment_total_requests`                 | 部署的 LLM API 呼叫總次數－成功 + 失敗。標籤：`"model_group", "requested_model", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias", "client_ip", "user_agent"` |
 
 ### 剩餘請求與 token {#remaining-requests-and-tokens}
 
@@ -402,9 +401,9 @@ curl http://localhost:4000/health/backlog \
 | 指標名稱          | 描述                          |
 |----------------------|--------------------------------------|
 | `litellm_deployment_state`             | 部署的狀態：0 = 健康，1 = 部分中斷，2 = 完全中斷。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider"` |
-| `litellm_deployment_latency_per_output_token`       | 部署每個輸出 token 的延遲。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
-| `litellm_deployment_tpm_limit`             | 部署設定的 TPM 限制；僅對設定中具有 tpm 限制的部署設定。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider"` |
-| `litellm_deployment_rpm_limit`             | 部署設定的 RPM 限制；僅對設定中具有 rpm 限制的部署設定。標籤：`"litellm_model_name", "model_id", "api_base", "api_provider"` |
+| `litellm_deployment_latency_per_output_token`       | 部署每個輸出 token 的延遲。標籤：`"model_group", "litellm_model_name", "model_id", "api_base", "api_provider", "hashed_api_key", "api_key_alias", "team", "team_alias"` |
+| `litellm_deployment_tpm_limit`             | 部署設定的 TPM 限制；僅對設定中具有 tpm 限制的部署設定。標籤：`"model_group", "litellm_model_name", "model_id", "api_base", "api_provider"` |
+| `litellm_deployment_rpm_limit`             | 部署設定的 RPM 限制；僅對設定中具有 rpm 限制的部署設定。標籤：`"model_group", "litellm_model_name", "model_id", "api_base", "api_provider"` |
 
 #### 備援（故障轉移）指標 {#fallback-failover-metrics}
 
@@ -442,12 +441,18 @@ curl http://localhost:4000/health/backlog \
 histogram_quantile(0.95, sum by (le) (rate(litellm_request_total_latency_metric_bucket[5m])))
 ```
 
+依 `model_group` 分組，可取得 `config.yaml` 中每個模型池的一個 p95，涵蓋其背後的每個部署：
+
+```promql
+histogram_quantile(0.95, sum by (model_group, le) (rate(litellm_request_total_latency_metric_bucket[5m])))
+```
+
 <details>
 <summary>請求延遲指標的標籤</summary>
 
 | 指標 | 標籤 |
 |---|---|
-| `litellm_request_total_latency_metric`<br />`litellm_llm_api_latency_metric`<br />`litellm_llm_api_time_to_first_token_metric` | `end_user`, `hashed_api_key`, `api_key_alias`, `requested_model`, `team`, `team_alias`, `user`, `model`, `model_id`, `api_provider`, `service_tier` |
+| `litellm_request_total_latency_metric`<br />`litellm_llm_api_latency_metric`<br />`litellm_llm_api_time_to_first_token_metric` | `model_group`, `end_user`, `hashed_api_key`, `api_key_alias`, `requested_model`, `team`, `team_alias`, `user`, `model`, `model_id`, `api_provider`, `service_tier` |
 | `litellm_request_queue_time_seconds` | `end_user`, `hashed_api_key`, `api_key_alias`, `requested_model`, `team`, `team_alias`, `user`, `model`, `model_id`, `api_provider` |
 | `litellm_overhead_latency_metric`<br />`litellm_overhead_with_guardrails_latency_metric` | `model_group`, `api_provider`, `api_base`, `litellm_model_name`, `hashed_api_key`, `api_key_alias`, `model_id` |
 
@@ -933,13 +938,13 @@ histogram_quantile(0.95, sum by (le) (rate(litellm_postgres_latency_bucket[5m]))
 | `litellm_in_memory_spend_update_queue_size`         | keys、users、teams、team members 等的記憶體中彙總 spend 值。| In-Memory    |
 | `litellm_redis_spend_update_queue_size`             | keys、users、teams 等的 Redis 彙總 spend 值。                  | Redis        |
 
-## 🔥 LiteLLM 維護的 Grafana 儀表板  {#-litellm-maintained-grafana-dashboards}
+## LiteLLM 維護的 Grafana 儀表板 {#litellm-maintained-grafana-dashboards}
 
-LiteLLM 為此頁上的 `litellm_*` 指標維護兩個 Grafana 儀表板，兩者都位於 [`cookbook/litellm_proxy_server/grafana_dashboard`](https://github.com/BerriAI/litellm/tree/main/cookbook/litellm_proxy_server/grafana_dashboard) 資料夾中。請從 **Dashboards > New > Import** 匯入 JSON，並在提示時選取您的 Prometheus 資料來源
+LiteLLM 為此頁上的 `litellm_*` 指標維護兩個 Grafana 儀表板，兩者都位於 [`litellm/integrations/prometheus_helpers/grafana_dashboards`](https://github.com/BerriAI/litellm/tree/main/litellm/integrations/prometheus_helpers/grafana_dashboards) 資料夾中。請從 **Dashboards > New > Import** 匯入 JSON，並在提示時選取您的 Prometheus 資料來源
 
-[All Prometheus Metrics 儀表板](https://github.com/BerriAI/litellm/tree/main/cookbook/litellm_proxy_server/grafana_dashboard/dashboard_all_metrics) 針對上方表格中的每個指標都有一個面板，並依主題分組：traffic、latency、spend and tokens、cache、deployments、rate limits、budgets、guardrails、MCP、managed files and batches、users and teams，以及 `prometheus_system` 服務指標和 DB transaction 佇列大小。您尚未啟用的功能之面板會保持空白；其 [readme](https://github.com/BerriAI/litellm/blob/main/cookbook/litellm_proxy_server/grafana_dashboard/dashboard_all_metrics/readme.md) 列出每一列需要哪個設定
+[All Prometheus Metrics 儀表板](https://github.com/BerriAI/litellm/tree/main/litellm/integrations/prometheus_helpers/grafana_dashboards/dashboard_all_metrics) 針對上方表格中的每個指標都有一個面板，並依主題分組：traffic、latency、spend and tokens、cache、deployments、rate limits、budgets、guardrails、MCP、managed files and batches、users and teams，以及 `prometheus_system` 服務指標和 DB transaction 佇列大小。您尚未啟用的功能之面板會保持空白；其 [readme](https://github.com/BerriAI/litellm/blob/main/litellm/integrations/prometheus_helpers/grafana_dashboards/dashboard_all_metrics/readme.md) 列出每一列需要哪個設定
 
-[v2 儀表板](https://github.com/BerriAI/litellm/tree/main/cookbook/litellm_proxy_server/grafana_dashboard/dashboard_v2) 是請求速率、失敗、延遲，以及每個 model group 的剩餘請求與剩餘 token 儀表的精簡檢視，如下所示
+[v2 儀表板](https://github.com/BerriAI/litellm/tree/main/litellm/integrations/prometheus_helpers/grafana_dashboards/dashboard_v2) 是請求速率、失敗、延遲，以及每個 model group 的剩餘請求與剩餘 token 儀表的精簡檢視，如下所示
 
 <Image img={require('../../img/grafana_1.png')} />
 
@@ -955,7 +960,7 @@ LiteLLM 為此頁上的 `litellm_*` 指標維護兩個 Grafana 儀表板，兩�
 
 ## `/metrics` 端點上的驗證 {#authentication-on-metrics-endpoint}
 
-**預設情況下，`/metrics` 需要 LiteLLM API 金鑰驗證**（自 v1.85.0 起）。
+**自 v1.85.0 起，`/metrics` 預設需要 LiteLLM API 金鑰驗證。**
 
 對於 Prometheus，請將 `authorization` 加入您的 scrape config：
 

@@ -1,5 +1,6 @@
 ---
-title: "v1.100.0 - 存取群組預算、Together AI 同步與自訂路由器層級"
+title: "LiteLLM v1.100.0 - 存取群組預算、Together AI 同步與自訂路由器層級"
+description: "在模型存取群組上新增共用預算、Together AI 改寫與可編輯的 Auto Router 層級。另新增 242 個模型，例如 grok-4.20。"
 slug: "v1-100-0"
 date: 2026-09-06T00:00:00
 authors:

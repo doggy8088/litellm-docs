@@ -135,31 +135,26 @@ ModelResponse(
 columns={3}
 items={[
 {
-icon: "⚡",
 title: "串流回應",
 description: "使用 stream=True 逐步接收 token。",
 to: "/docs/completion/stream",
 },
 {
-icon: "🧰",
 title: "使用工具",
 description: "以與提供者無關的方式加入函式呼叫。",
 to: "/docs/completion/function_call",
 },
 {
-icon: "📦",
 title: "回傳 JSON",
 description: "將回應限制為結構化 JSON 輸出。",
 to: "/docs/completion/json_mode",
 },
 {
-icon: "🔀",
 title: "加入路由",
 description: "在應用程式程式碼中使用重試、備援與負載平衡。",
 to: "/docs/routing",
 },
 {
-icon: "🌐",
 title: "選擇提供者",
 description: "尋找特定提供者的驗證、模型命名與參數。",
 to: "/docs/providers",
@@ -171,4 +166,4 @@ to: "/docs/providers",
 
 如果您需要集中式驗證、虛擬金鑰、支出追蹤、共用記錄，或為多個應用程式提供單一相容 OpenAI 的端點，請使用 LiteLLM Gateway。
 
-[前往 Gateway 快速入門 →](/docs/learn/gateway_quickstart)
+[前往 Gateway 快速入門 →](/docs/proxy/docker_quick_start)

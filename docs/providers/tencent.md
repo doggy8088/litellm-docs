@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Tencent TokenHub API：設定"
+sidebar_label: "Tencent TokenHub"
+description: "透過 Tencent TokenHub 存取 DeepSeek V4、GLM-5、Kimi、MiniMax 與 Hunyuan 模型，使用 thinking 或 reasoning_effort，以及其與 Anthropic 相容的 Messages API。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

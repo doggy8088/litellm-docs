@@ -51,9 +51,9 @@ class InMemorySecretManager(CustomSecretManager):
 ```yaml showLineNumbers title="config.yaml"
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
-  key_management_system: custom  # 👈 KEY CHANGE
+  key_management_system: custom  # KEY CHANGE
   key_management_settings:
-    custom_secret_manager: my_secret_manager.InMemorySecretManager  # 👈 KEY CHANGE
+    custom_secret_manager: my_secret_manager.InMemorySecretManager  # KEY CHANGE
 
 model_list:
   - model_name: {{openai_large}}
@@ -244,7 +244,7 @@ async def async_delete_secret(
 
 ## 範例 {#example}
 
-請參閱 [cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py](https://github.com/BerriAI/litellm/blob/main/cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py) 以取得完整可運作範例，包含：
+請參閱 [cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py](https://github.com/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/litellm_proxy_server/secret_manager/my_secret_manager.py) 以取得完整可運作範例，包含：
 
 - 記憶體內祕密管理器實作  
 - 與 LiteLLM Proxy 整合  

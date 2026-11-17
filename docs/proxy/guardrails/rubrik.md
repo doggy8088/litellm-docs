@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Rubrik 防護欄"
+sidebar_label: "Rubrik 防護欄"
+description: "在 LiteLLM AI 閘道上使用 Rubrik 審核，以 OpenAI 與 Anthropic 格式篩選提示詞與回應，並批次記錄每個 LLM 請求。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

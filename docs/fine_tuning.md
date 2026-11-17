@@ -9,8 +9,8 @@ import TabItem from '@theme/TabItem';
 |-------|-------|-------|
 | 支援的提供者 | OpenAI, Azure OpenAI, Vertex AI | - |
 
-#### ⚡️請參閱在 [models.litellm.ai](https://models.litellm.ai/) 的支援模型與提供者完整清單 {#️see-an-exhaustive-list-of-supported-models-and-providers-at-modelslitellmai}
-| 成本追蹤 | 🟡 | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues) |
+#### 請參閱在 [models.litellm.ai](https://models.litellm.ai/) 的支援模型與提供者完整清單 {#see-an-exhaustive-list-of-supported-models-and-providers-at-modelslitellmai}
+| 成本追蹤 | 尚未支援 | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues) |
 | 記錄 | ✅ | 可跨所有記錄整合運作 |
 
 將 `finetune_settings` 和 `files_settings` 加入您的 litellm config.yaml，即可使用 fine-tuning 端點。
@@ -255,4 +255,4 @@ curl -X GET 'http://localhost:4000/v1/fine_tuning/jobs' \
 
 </Tabs>
 
-## [👉 Proxy API 參考文件](https://docs.litellm.ai/api-reference/#/fine-tuning) {#-proxy-api-reference}
+## [Proxy API 參考文件](https://docs.litellm.ai/api-reference/#/fine-tuning) {#proxy-api-reference}

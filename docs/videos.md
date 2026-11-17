@@ -9,7 +9,7 @@
 | 防護欄支援 | ✅ 內容審核與安全檢查 |
 | 代理伺服器支援 | ✅ 與虛擬金鑰的完整代理整合 |
 | 支出管理 | ✅ 預算追蹤與速率限制 |
-| 支援的提供者 | `openai`, `azure`, `gemini`, `vertex_ai`, `runwayml` |
+| 支援的提供者 | `openai`, `azure`, `gemini`, `vertex_ai`, `runwayml`, `qwencloud`, `qwen_ai_platform`, `dashscope`, `minimax`, `volcengine` |
 
 :::tip
 
@@ -290,6 +290,10 @@ curl --location 'http://localhost:4000/v1/videos' \
 --header 'custom-llm-provider: azure'
 ```
 
+### 自訂影片提供者 {#custom-video-providers}
+
+LiteLLM 未內建的影片後端（自有模型、區域提供者）可以透過在 `custom_provider_map` 中以您自己的提供者名稱註冊 `BaseVideoConfig` 子類別來提供服務；這份清單與存放聊天和圖片用 `CustomLLM` 處理常式的清單相同。建立、狀態、內容與清單路由全都會解析到它。類別、設定與 curl 範例請參閱 [Custom API Server: Video Generation](./providers/custom_llm_server.md#video-generation)。
+
 ### 角色、編輯與延伸端點 {#character-edit-and-extension-endpoints}
 
 LiteLLM proxy 也支援以下與 OpenAI 相容的影片路由：
@@ -568,7 +572,7 @@ print(f"Remix started. ID: {remix_response.id}")
 
 LiteLLM 遵循 **OpenAI 影片生成 API 規範**。 
 
-請參閱 [官方 OpenAI 影片生成文件](https://platform.openai.com/docs/guides/video-generation) 以取得完整 विवरण。
+請參閱 [官方 OpenAI 影片生成文件](https://platform.openai.com/docs/guides/video-generation) 以取得完整 詳細資訊。
 
 :::
 
@@ -681,3 +685,6 @@ LiteLLM 遵循 **OpenAI 影片生成 API 規範**。
 | Gemini       |   [使用方式](providers/gemini/videos)   |
 | Vertex AI   |   [使用方式](providers/vertex_ai/videos) |
 | RunwayML    |   [使用方式](providers/runwayml/videos) |
+| QwenCloud / Qianwen AI Platform / DashScope | [使用方式](providers/qwencloud#video-generation) |
+| MiniMax     |   [使用方式](providers/minimax#minimax---video-generation) |
+| Volcengine  |   [使用方式](providers/volcano#video-generation) |

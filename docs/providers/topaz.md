@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Topaz Image Variations API"
+sidebar_label: "Topaz"
+description: "從 LiteLLM Python SDK 透過 image_variation()，使用 Standard V2 模型並設定 size 與 response_format，將圖片傳送至 Topaz Labs 增強 API。"
+---
+
 # Topaz {#topaz}
 
 | 屬性 | 詳細資訊 |

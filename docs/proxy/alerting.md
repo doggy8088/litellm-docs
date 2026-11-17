@@ -4,6 +4,8 @@ import TabItem from '@theme/TabItem';
 
 # 警示 / Webhooks {#alerting--webhooks}
 
+若要在 Admin UI 中查看相關發現，請參閱[模型淘汰警示](./alerts/model-deprecations.md)與[效能警示](./alerts/performance.md)。本頁說明傳送至外部服務的通知。
+
 取得以下項目的警示：
 
 | 類別 | 警示類型 |
@@ -161,7 +163,7 @@ response = client.chat.completions.create(
 
 如果您只想採用特定警示類型，請設定 `alert_types`。當未設定 alert_types 時，所有預設警示類型都會啟用。
 
-👉 [**在此查看所有警示類型**](#all-possible-alert-types)
+[**在此查看所有警示類型**](#all-possible-alert-types)
 
 ```shell
 general_settings:
@@ -278,7 +280,9 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 ### MS Teams Webhooks {#ms-teams-webhooks}
 
-LiteLLM 會透過 `ms_teams` 警報目的地原生向 Microsoft Teams 傳送警報，自 v1.100.0 起可用。每則警報都會以 Adaptive Card 形式張貼，而 Teams Workflows webhooks 與舊版傳入 webhook 連接器都可接受
+<SinceVersion v="1.100.0" />
+
+LiteLLM 會透過 `ms_teams` 警報目的地原生向 Microsoft Teams 傳送警報。每則警報都會以 Adaptive Card 形式張貼，而 Teams Workflows webhooks 與舊版傳入 webhook 連接器都可接受
 
 ##### 快速開始 {#quick-start-1}
 
@@ -297,7 +301,7 @@ model_list:
     model_name: "azure-model"
     litellm_params:
         model: "azure/{{openai_small}}"
-        api_key: "my-bad-key" # 👈 bad key
+        api_key: "my-bad-key" # bad key
 
 general_settings: 
     alerting: ["ms_teams"]
@@ -347,7 +351,7 @@ model_list:
     model_name: "azure-model"
     litellm_params:
         model: "azure/{{openai_small}}"
-        api_key: "my-bad-key" # 👈 bad key
+        api_key: "my-bad-key" # bad key
 
 general_settings: 
     alerting: ["slack"]
@@ -374,7 +378,7 @@ export WEBHOOK_URL="https://webhook.site/6ab090e8-c55f-4a23-b075-3209f5c57906"
 在 config.yaml 中加入 'webhook'
 ```yaml
 general_settings: 
-  alerting: ["webhook"] # 👈 KEY CHANGE
+  alerting: ["webhook"] # KEY CHANGE
 ```
 
 2. 啟動 proxy
@@ -494,7 +498,7 @@ API Base: `None`
 - **每個執行個體**：彙總狀態會以記憶體方式保留於每個 proxy 執行個體中。如果您執行多個執行個體（例如，Cloud Run 搭配自動擴縮），每個執行個體都會維護自己的彙總並輸出自己的摘要。
 - **非持久化**：如果某個執行個體在彙總間隔到期前終止，該執行個體彙整的警示將會遺失。
 
-## 區域故障警示（✨ 企業功能） {#region-outage-alerting--enterprise-feature}
+## 區域故障警示（企業功能） {#region-outage-alerting--enterprise-feature}
 
 :::info
 [取得免費 2 週授權](https://forms.gle/P518LXsAZ7PhXpDn8)
@@ -524,7 +528,7 @@ general_settings:
 
 ## **所有可能的警示類型** {#all-possible-alert-types}
 
-👉 [**以下是如何設定特定警示類型**](/docs/proxy/alerting#select-specific-alert-types)
+[**以下是如何設定特定警示類型**](/docs/proxy/alerting#select-specific-alert-types)
 
 與 LLM 相關的警示
 

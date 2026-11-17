@@ -1,5 +1,6 @@
 ---
-title: v1.66.0-stable - 即時 API 成本追蹤
+title: "LiteLLM v1.66.0-stable - 即時 API 成本追蹤"
+description: "新增 Realtime API 的成本追蹤、Microsoft Entra ID 群組自動同步與 xai/grok-3 支援。並修正兩個 CVE 安全性問題。"
 slug: v1.66.0-stable
 date: 2025-04-12T10:00:00
 authors:

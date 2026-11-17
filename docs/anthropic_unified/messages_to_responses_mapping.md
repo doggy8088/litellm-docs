@@ -1,8 +1,8 @@
 # v1/messages → /responses 參數對照 {#v1messages--responses-parameter-mapping}
 
-當您向 `/v1/messages` 傳送針對 OpenAI 或 Azure 模型的請求時，LiteLLM 會在內部透過 OpenAI Responses API 路由。此頁面 دقیق說明每個參數在雙向之間如何轉換。
+當您向 `/v1/messages` 傳送針對 `openai/*` 模型的請求，或其他提供者少數僅支援 Responses 的部署（例如 `perplexity/perplexity/sonar`）時，LiteLLM 會在內部透過 OpenAI Responses API 路由。帶有 `stop_sequences` 的請求，或在 `use_chat_completions_url_for_anthropic_messages` 開啟時的任何請求，則改走 chat completions。此頁面詳細說明每個參數在雙向之間如何轉換。
 
-轉換邏輯位於 `litellm/llms/anthropic/experimental_pass_through/responses_adapters/transformation.py`。
+轉換邏輯位於 `litellm/llms/anthropic/messages/responses_adapters/transformation.py`。
 
 ## 請求：Anthropic → Responses API {#request-anthropic--responses-api}
 
@@ -21,10 +21,10 @@
 | `tool_choice` | `tool_choice` | 型別重新對應 — 請參閱下方的 tool_choice 區段 |
 | `thinking` | `reasoning` | 預算 token 會對應到 effort level — 請參閱下方的 thinking 區段 |
 | `output_format` 或 `output_config.format` | `text` | 包裝為 `{"format": {"type": "json_schema", "name": "structured_output", "schema": ..., "strict": ...}}`。`strict` 會從請求的 `strict` flag 複製而來，並預設為 `false`，因此具有可選屬性的 schema 會直接傳遞；將 `strict: true` 設為開啟 OpenAI strict mode，該模式要求 `required` 中的每個屬性都必須存在 |
-| `context_management` | `context_management` | 從 Anthropic dict 轉換為 OpenAI array 格式 — 請參閱下方的 context_management 區段 |
+| `context_management` | `context_management` | 僅轉換 `compact_20260112`，請參閱下方的 context_management 區段。其他 edits 會在請求轉換前先由 LiteLLM 執行 |
 | `metadata.user_id` | `user` | 從 metadata 物件擷取，並截斷為 64 個字元 |
 | `metadata.user_id` | `prompt_cache_key` | 相同的值，截斷為 64 個字元（OpenAI 的 key 限制），因此同一位使用者的請求會持續命中相同的 prompt cache。當 `user_id` 為空或 null 時不會設定。請求本文中送出的 `prompt_cache_key` 會優先於衍生出的值 |
-| `stop_sequences` | ❌ 未對應 | 會被靜默捨棄 |
+| `stop_sequences` | ❌ 未對應 | 帶有 `stop_sequences` 的請求會改走 chat completions，而非此路徑 |
 | `top_k` | ❌ 未對應 | 會被靜默捨棄 |
 | `speed` | ❌ 未對應 | 僅用於在原生路徑上設定 Anthropic beta headers |
 
@@ -76,7 +76,7 @@ chat-completions 路徑（`litellm_settings.use_chat_completions_url_for_anthrop
 
 ### context_management {#context_management}
 
-Anthropic 使用帶有 `edits` 陣列的巢狀 dict。OpenAI 使用扁平的 compaction objects 陣列。
+Anthropic 使用帶有 `edits` 陣列的巢狀 dict。OpenAI 使用扁平的 compaction objects 陣列。只有 `compact_20260112` 會成為 compaction object。如 [Context Management](../claude_code_context_management.md) 所述，LiteLLM 會在此轉換之前先對 messages 執行 `clear_tool_uses_20250919`。
 
 ```
 Anthropic input:

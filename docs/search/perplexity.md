@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 Perplexity Search API：設定"
+sidebar_label: "Perplexity AI 搜尋"
+description: "將 Perplexity 網路搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，並使用 PERPLEXITYAI_API_KEY 與 max_results。"
+---
 # Perplexity AI 搜尋 {#perplexity-ai-search}
+
+[Perplexity Search API](https://docs.perplexity.ai/api-reference/search-post) 會從 Perplexity 的搜尋索引回傳經排名的網路結果；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [https://www.perplexity.ai/settings/api](https://www.perplexity.ai/settings/api)
 

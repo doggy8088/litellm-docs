@@ -1,3 +1,7 @@
+---
+displayed_sidebar: tutorialSidebar
+---
+
 # CLI 引數 {#cli-arguments}
 
 此頁面說明 LiteLLM proxy server 可用的所有命令列介面（CLI）參數。
@@ -64,7 +68,8 @@
 ### --keepalive_timeout {#--keepalive_timeout}
   - **預設：** `None`
   - **類型：** `int`
-  - 將 uvicorn keepalive 逾時設定為秒數（uvicorn timeout_keep_alive 參數）。
+  - 將 uvicorn keepalive 逾時設定為秒數（uvicorn timeout_keep_alive 參數）。Uvicorn 的預設值為 5 秒。若位於會重複使用連線的負載平衡器後方，請將它設定為高於該負載平衡器的閒置逾時，詳見 [Keepalive 逾時](./server_tuning.md#keepalive-timeout)。
+  - `--run_gunicorn` 會忽略它，其 workers 會保留 Gunicorn 的 2 秒 keep-alive。
   - **用法：** 
      ```shell
      litellm --keepalive_timeout 30
@@ -74,6 +79,22 @@
     export KEEPALIVE_TIMEOUT=30
     litellm
     ```
+
+### --max_request_header_size {#--max_request_header_size}
+
+預設為 `16384` 位元組（16 KiB）。接受正整數，可透過 `--max_request_header_size` 或 `MAX_REQUEST_HEADER_SIZE` 環境變數設定。明確指定的 CLI 值優先於環境變數。
+
+```shell
+litellm --config config.yaml --max_request_header_size 131072
+```
+
+```shell
+MAX_REQUEST_HEADER_SIZE=131072 litellm --config config.yaml --run_gunicorn
+```
+
+當預設的 Uvicorn 伺服器或 `--run_gunicorn` 下的 Uvicorn workers 使用 h11 時適用。設定 CLI 旗標或環境變數會保留 Uvicorn 的自動 parser 選擇。安裝 httptools 時，Uvicorn 通常會選用它並忽略此設定。選用 h11 時，其預設緩衝區為 16 KiB，而此設定會變更該緩衝區。在 `--run_hypercorn` 與 `--run_granian` 下會被忽略。
+
+這會設定 Uvicorn 的 `h11_max_incomplete_event_size`，即為不完整的 HTTP 事件所緩衝的位元組數。[Uvicorn 文件記載其預設值為 16384 位元組](https://uvicorn.dev/settings/#implementation)。它不是每個完整標頭區塊總大小的嚴格上限。大型標頭區塊在一次讀取中送達時可以通過，但分段或以 TLS 記錄送達時，可能回傳 `400 Invalid HTTP request received.`。若上游閘道會加入大型身分標頭，請提高此值。它不會變更該閘道所強制執行的限制。
 
 ### --timeout_worker_healthcheck {#--timeout_worker_healthcheck}
   - **預設：** `None`（套用 uvicorn 預設的 5 秒）
@@ -94,7 +115,9 @@
 ### --max_requests_before_restart {#--max_requests_before_restart}
   - **預設：** `None`
   - **類型：** `int`
-  - 在處理這麼多請求後重新啟動 worker。這有助於緩解記憶體隨時間成長的問題。
+  - 在每個 worker 服務這麼多 HTTP 請求（包含健康探針）後將其回收。這有助於緩解記憶體隨時間成長的問題。
+  - 僅在 `--num_workers` 為 2 以上時才安全。使用單一 worker 時，一旦達到上限，整個 proxy 就會停止服務：Uvicorn 會結束程序，Gunicorn 在替代 worker 啟動完成前不會接受連線。在這種情況下，proxy 會在啟動時印出警告。
+  - 每次回收都會丟棄 keep-alive 反向 proxy 後方的請求，且自 v1.108.0 起，會取消在 `GRACEFUL_SHUTDOWN_TIMEOUT` 之後仍在執行的請求。請僅將它作為處理記憶體成長的最後手段，詳見 [回收 workers](./server_tuning.md#recycle-workers)。
   - 對 uvicorn：對應到 `limit_max_requests`
   - 對 gunicorn：對應到 `max_requests`
   - **用法：** 
@@ -440,6 +463,15 @@ database:
   - **用法：** 
      ```shell
      litellm --use_prisma_db_push
+     ```
+
+### --check_migrations_against_existing_data {#--check_migrations_against_existing_data}
+  - **預設值：** `False`
+  - **類型：** `bool`（旗標）
+  - 對 `DATABASE_URL` 乾跑此版本待處理的遷移：實際的 SQL 會在單一交易中執行並回滾，因此 PostgreSQL 會回報會導致升級失敗的資料列或綱要，然後結束。結束代碼 0 會列出每項遷移及其耗時，2 會印出 PostgreSQL 的錯誤。它會持有與升級時相同的鎖定，因此請在離峰時段執行。需要 `DATABASE_URL`。請參閱[升級指南](./upgrade_guide.md#dry-run-the-migrations-before-the-upgrade)。
+  - **用法：**
+     ```shell
+     litellm --check_migrations_against_existing_data
      ```
 
 ## 疑難排解 {#debugging}

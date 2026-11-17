@@ -1,8 +1,13 @@
+---
+title: "LiteLLM 中供 AI 代理程式使用的 Web Search API"
+sidebar_label: "總覽"
+description: "在 Python SDK 中使用單一 search() 呼叫，或在 AI 閘道上使用 /v1/search，查詢 19 個供 AI 代理程式使用的網路搜尋 API，並支援成本追蹤與依金鑰的存取控制。"
+---
 # 總覽 {#overview}
 
 | 功能 | 支援 | 
 |---------|-----------|
-| 支援的提供者 | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent`, `agentcore`, `nimble`, `bing_grounding` |
+| 支援的提供者 | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent`, `agentcore`, `nimble`, `bing_grounding`, `deepseek` |
 | 成本追蹤 | ✅ |
 | 記錄 | ✅ |
 | 負載平衡 | ❌ |
@@ -13,10 +18,7 @@ LiteLLM 遵循 [Search API 的 Perplexity API 請求/回應](https://docs.perple
 
 :::
 
-:::info
-
-自 LiteLLM v1.78.7+ 起支援
-:::
+<SinceVersion v="1.78.7" />
 
 ## **LiteLLM Python SDK 用法** {#litellm-python-sdk-usage}
 
@@ -188,6 +190,23 @@ curl http://0.0.0.0:4000/v1/search/my-search \
   }'
 ```
 
+### 自訂每次查詢價格 {#custom-per-query-pricing}
+
+在搜尋工具的 `litellm_params` 下設定 `input_cost_per_query`，即可為每次搜尋查詢收取您自訂的價格。LiteLLM 會以它取代該工具的 cost map 價格，因此 `x-litellm-response-cost` 與支出記錄會符合您支付的費率。它適用於每個搜尋提供者，未設定此項的工具則保留提供者的 cost map 價格。
+
+```yaml showLineNumbers title="config.yaml with a custom price"
+search_tools:
+  - search_tool_name: exa-search
+    litellm_params:
+      search_provider: exa_ai
+      api_key: os.environ/EXA_API_KEY
+      input_cost_per_query: 0.05
+```
+
+包含查詢清單的請求會依每個查詢計費一次。價格 `0` 會被保留為免費工具，不會被視為未設定。
+
+在 Admin UI 中，開啟 **Search Tools**，在新增或編輯搜尋工具時設定 **Cost per Query (USD)**。工具的詳細資料頁面會顯示已設定的價格，未設定時則顯示 `Provider default`。編輯時清除該欄位會移除自訂價格，工具會改回使用 cost map。
+
 ### 限制搜尋工具存取 {#restrict-search-tool-access}
 
 在 key 或 team 的 `object_permission` 底下設定 `search_tools`，以限制其可呼叫的搜尋工具。允許清單適用於 `/search`、`/v1/search`、`/search/{search_tool_name}`、網頁搜尋攔截、搜尋工具之間的路由備援，以及 `/search_tools/list`
@@ -265,7 +284,7 @@ LiteLLM 遵循 **Perplexity Search API 規格**。
 | 參數 | 類型 | 必填 | 說明 |
 |-----------|------|----------|-------------|
 | `query` | string 或 array | 是 | 搜尋查詢。可以是單一字串或字串陣列 |
-| `search_provider` | string | 是（SDK） | 要使用的搜尋提供者：`"perplexity"`、`"tavily"`、`"parallel_ai"`、`"exa_ai"`、`"brave"`、`"google_pse"`、`"dataforseo"`、`"firecrawl"`、`"searxng"`、`"linkup"`、`"duckduckgo"`、`"searchapi"`、`"serper"`，或 `"you_com"` 或 `"apiserpent"` 或 `"agentcore"` 或 `"bing_grounding"` |
+| `search_provider` | string | 是（SDK） | 要使用的搜尋提供者：`"perplexity"`、`"tavily"`、`"parallel_ai"`、`"exa_ai"`、`"brave"`、`"google_pse"`、`"dataforseo"`、`"firecrawl"`、`"searxng"`、`"linkup"`、`"duckduckgo"`、`"searchapi"`、`"serper"`，或 `"you_com"` 或 `"apiserpent"` 或 `"agentcore"` 或 `"bing_grounding"` 或 `"deepseek"` |
 | `search_tool_name` | string | 是（Proxy） | 在 `config.yaml` 中設定的搜尋工具名稱 |
 | `max_results` | integer | 否 | 要回傳的最大結果數量（1-20）。預設值：10 |
 | `search_domain_filter` | array | 否 | 用於篩選結果的網域清單（最多 20 個網域） |
@@ -316,6 +335,12 @@ query = ["AI developments", "machine learning trends"]
 | `results[].url` | string | 搜尋結果 URL |
 | `results[].snippet` | string | 結果中的文字片段 |
 | `results[].date` | string | 選用的發佈或最後更新日期 |
+| `results[].raw_content` | string 或 null | 來自 Tavily 等提供者的選用完整頁面內容 |
+| `results[].score` | number | 選用的提供者相關性分數 |
+| `results[].favicon` | string 或 null | 選用的提供者 favicon URL |
+| `provider_metadata` | object | 選用的提供者專屬回應欄位，例如 Tavily 的 answer、images 與 request ID |
+
+提供者專屬欄位取決於上游回傳的內容。請參閱 [Tavily 的回應範例](./tavily.md#response)，以了解完整頁面內容與回應中繼資料封裝。
 
 ## **支援的提供者** {#supported-providers}
 
@@ -338,6 +363,7 @@ query = ["AI developments", "machine learning trends"]
 | APISerpent | `APISERPENT_API_KEY` | `apiserpent` |
 | Bedrock AgentCore | `AGENTCORE_GATEWAY_URL`（必填）、AWS 憑證或 `AGENTCORE_GATEWAY_TOKEN` | `agentcore` |
 | Nimble | `NIMBLE_API_KEY` | `nimble` |
+| DeepSeek | `DEEPSEEK_API_KEY` | `deepseek` |
 | Grounding with Bing (Microsoft Foundry) | `BING_GROUNDING_PROJECT_ENDPOINT`、`BING_GROUNDING_MODEL`（必填）、`api_key` 或 `BING_GROUNDING_TOKEN` 或 azure-identity | `bing_grounding` |
 
 請參閱各個提供者的文件，以取得詳細的設定說明與提供者專屬參數。

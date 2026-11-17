@@ -9,6 +9,7 @@ import TabItem from '@theme/TabItem';
 - Google AI Studio (`gemini/`)
 - Vertex AI (`vertex_ai/`, `vertex_ai_beta/`)
 - Bedrock (`bedrock/`, `bedrock/invoke/`, `bedrock/converse`) ([Bedrock 支援提示快取的所有模型](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html))
+- Bedrock Mantle、OpenAI GPT-5.6 及更新版本 (`bedrock_mantle/openai.gpt-5.6-*`, `bedrock_mantle/openai.gpt-6*`)，請參閱 [Bedrock Mantle 明確斷點](#bedrock-mantle-explicit-breakpoints-openai-gpt-56-and-newer)
 - Deepseek API (`deepseek/`)
 - xAI (`xai/`)
 
@@ -271,7 +272,7 @@ print(response.usage)
 
 ### OpenAI 明確斷點（GPT-5.6 及更新版本） {#openai-explicit-breakpoints-gpt-56-and-newer}
 
-GPT-5.6 及更新版本也支援 [明確快取斷點](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-breakpoints)：在內容區塊上加入 `prompt_cache_breakpoint` 標記，再搭配請求層級的 `prompt_cache_options` 來選擇模式（`implicit` 會保留 OpenAI 在最新訊息上的自動斷點並與您的標記並存，`explicit` 則只使用您的標記）以及快取 `ttl`（`30m`）。LiteLLM 會在 `/chat/completions`、`/responses`，以及對 Anthropic 形狀的用戶端在 `/v1/messages` 上原樣傳遞這兩者。接受此標記的模型會在成本對應表中帶有 `supports_prompt_cache_breakpoint: true`，而尚未在對應表中被標記的 GPT-5.6 或更新版本 OpenAI 模型名稱也會以相同方式處理。若要讓 LiteLLM 從部署設定替您放置標記，請參閱 [自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)
+GPT-5.6 及更新版本也支援 [明確快取斷點](https://developers.openai.com/api/docs/guides/prompt-caching#prompt-cache-breakpoints)：在內容區塊上加入 `prompt_cache_breakpoint` 標記，再搭配請求層級的 `prompt_cache_options` 來選擇模式（`implicit` 會保留 OpenAI 在最新訊息上的自動斷點並與您的標記並存，`explicit` 則只使用您的標記）以及快取 `ttl`（`30m`，或在 `/responses` 上為 `12h`）。LiteLLM 會在 `/chat/completions`、`/responses`，以及對 Anthropic 形狀的用戶端在 `/v1/messages` 上原樣傳遞這兩者。`12h` 的寫入費用為輸入費率的 2.5 倍，`30m` 則為 1.25 倍；OpenAI 會在 `usage.input_tokens_details.cache_write_tokens_details` 中以 `ttl_30m_tokens` 與 `ttl_12h_tokens` 回報兩者的拆分。LiteLLM 會以模型的 `cache_creation_input_token_cost_above_12hr` 計算 `12h` 部分的價格，其餘部分則以 `cache_creation_input_token_cost` 計算；沒有 12 小時費率的模型，所有寫入都以 30 分鐘費率計費。接受此標記的模型會在成本對應表中帶有 `supports_prompt_cache_breakpoint: true`，而尚未在對應表中被標記的 GPT-5.6 或更新版本 OpenAI 模型名稱也會以相同方式處理。若要讓 LiteLLM 從部署設定替您放置標記，請參閱 [自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -346,6 +347,95 @@ print(response.usage.input_tokens_details)
 </TabItem>
 </Tabs>
 
+### Bedrock Mantle 明確斷點（OpenAI GPT-5.6 及更新版本） {#bedrock-mantle-explicit-breakpoints-openai-gpt-56-and-newer}
+
+Amazon Bedrock Mantle 上的 OpenAI GPT-5.6 及更新版本模型接受相同的 `prompt_cache_breakpoint` 標記與 `prompt_cache_options` 請求欄位，但僅限 Responses API。LiteLLM 會在 `/responses` 上原樣傳遞這兩者；對這類模型的 `/chat/completions` 呼叫會橋接到 Responses API，且標記會保留在內容區塊上，因此部署上的 `cache_control_injection_points` 的運作方式與 `openai/gpt-5.6` 相同（[自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)）。Mantle 的限制來自 [AWS 公告](https://aws.amazon.com/blogs/machine-learning/introducing-explicit-prompt-caching-for-openai-gpt-5-6-models-on-amazon-bedrock/)：每個被快取的前綴至少需要 1,024 個 token，一個請求最多可在 `input_text`、`input_image` 與 `input_file` 區塊上帶 4 個斷點，被快取的前綴至少可保留 30 分鐘，快取寫入費用為輸入費率的 1.25 倍，快取讀取則享 90% 折扣。回應會在寫入快取的呼叫上回報 `usage.input_tokens_details.cache_write_tokens`，在讀取快取的呼叫上回報 `cached_tokens`；LiteLLM 會以模型的 `cache_creation_input_token_cost` 與 `cache_read_input_token_cost` 計算兩者的價格
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python
+import litellm
+import os
+
+os.environ["AWS_BEARER_TOKEN_BEDROCK"] = ""
+
+response = litellm.responses(
+    model="bedrock_mantle/openai.gpt-5.6-sol",
+    aws_region_name="us-east-1",
+    input=[
+        {
+            "type": "message",
+            "role": "developer",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": "You are an AI assistant tasked with analyzing legal documents. "
+                    + "Here is the full text of a complex legal agreement " * 400,
+                    "prompt_cache_breakpoint": {"mode": "explicit"},
+                }
+            ],
+        },
+        {
+            "type": "message",
+            "role": "user",
+            "content": [{"type": "input_text", "text": "What are the key terms and conditions?"}],
+        },
+    ],
+    prompt_cache_options={"mode": "explicit", "ttl": "30m"},
+)
+print(response.usage.input_tokens_details)
+```
+
+</TabItem>
+<TabItem value="proxy" label="PROXY">
+
+```yaml
+model_list:
+  - model_name: gpt-5.6-mantle
+    litellm_params:
+      model: bedrock_mantle/openai.gpt-5.6-sol
+      aws_region_name: us-east-1
+      api_key: os.environ/AWS_BEARER_TOKEN_BEDROCK
+```
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="LITELLM_PROXY_KEY",
+    base_url="LITELLM_PROXY_BASE",
+)
+
+response = client.responses.create(
+    model="gpt-5.6-mantle",
+    input=[
+        {
+            "type": "message",
+            "role": "developer",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": "You are an AI assistant tasked with analyzing legal documents. "
+                    + "Here is the full text of a complex legal agreement " * 400,
+                    "prompt_cache_breakpoint": {"mode": "explicit"},
+                }
+            ],
+        },
+        {
+            "type": "message",
+            "role": "user",
+            "content": [{"type": "input_text", "text": "What are the key terms and conditions?"}],
+        },
+    ],
+    extra_body={"prompt_cache_options": {"mode": "explicit", "ttl": "30m"}},
+)
+print(response.usage.input_tokens_details)
+```
+
+</TabItem>
+</Tabs>
+
 ### Anthropic 範例  {#anthropic-example}
 
 Anthropic 會針對寫入快取收費。
@@ -362,7 +452,7 @@ from litellm import completion
 import litellm 
 import os 
 
-litellm.set_verbose = True # 👈 SEE RAW REQUEST
+litellm.set_verbose = True # SEE RAW REQUEST
 os.environ["ANTHROPIC_API_KEY"] = "" 
 
 response = completion(
@@ -784,7 +874,7 @@ print(response.usage)
 </TabItem>
 </Tabs>
 
-### Deepeek 範例  {#deepeek-example}
+### DeepSeek 範例  {#deepseek-example}
 
 與 OpenAI 的運作方式相同。 
 
@@ -795,7 +885,7 @@ import os
 
 os.environ["DEEPSEEK_API_KEY"] = "" 
 
-litellm.set_verbose = True # 👈 SEE RAW REQUEST
+litellm.set_verbose = True # SEE RAW REQUEST
 
 model_name = "deepseek/deepseek-chat"
 messages_1 = [
@@ -872,7 +962,7 @@ from litellm import completion, completion_cost
 import litellm 
 import os 
 
-litellm.set_verbose = True # 👈 SEE RAW REQUEST
+litellm.set_verbose = True # SEE RAW REQUEST
 os.environ["ANTHROPIC_API_KEY"] = "" 
 model = "anthropic/{{anthropic}}"
 response = completion(
@@ -990,7 +1080,7 @@ curl -L -X GET 'http://0.0.0.0:4000/v1/model/info' \
             "model_info": {
                 "key": "{{anthropic}}",
                 ...
-                "supports_prompt_caching": true # 👈 LOOK FOR THIS!
+                "supports_prompt_caching": true # LOOK FOR THIS!
             }
         }
     ]

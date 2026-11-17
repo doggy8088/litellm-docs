@@ -1,7 +1,13 @@
+---
+title: "透過 LiteLLM 使用 OVHcloud AI Endpoints：設定"
+sidebar_label: "OVHCloud AI Endpoints"
+description: "透過 LiteLLM 以 ovhcloud/ 前綴從 Python SDK 或 AI Gateway 呼叫 OVHcloud AI Endpoints 模型。可串流、呼叫工具、嵌入與轉錄音訊。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 🆕 OVHCloud AI 端點 {#-ovhcloud-ai-endpoints}
+# OVHCloud AI 端點 {#ovhcloud-ai-endpoints}
 歐洲領先的法國雲端提供者，具備資料主權與隱私保護。
 
 您可以在我們的 [catalog](https://endpoints.ai.cloud.ovh.net/catalog) 中探索我們最新提供的模型。
@@ -86,14 +92,14 @@ def get_current_weather(location, unit="celsius"):
 
 def print_message(role, content, is_tool_call=False, function_name=None):
     if role == "user":
-        print(f"🧑 User: {content}")
+        print(f"User: {content}")
     elif role == "assistant":
         if is_tool_call:
-            print(f"🤖 Assistant: I will call the function '{function_name}' to get some informations.")
+            print(f"Assistant: I will call the function '{function_name}' to get some informations.")
         else:
-            print(f"🤖 Assistant: {content}")
+            print(f"Assistant: {content}")
     elif role == "tool":
-        print(f"🔧 Tool ({function_name}): {content}")
+        print(f"Tool ({function_name}): {content}")
     print()
 
 messages = [{"role": "user", "content": "What's the weather like in Paris?"}]
@@ -120,13 +126,13 @@ tools = [
     }
 ]
 
-print("🌟 Beginning of the conversation")
+print("Beginning of the conversation")
 
 # Initial user message
 print_message("user", messages[0]["content"])
 
 # First request to the model
-print("📡 Sending first request to the model...")
+print("Sending first request to the model...")
 response = completion(
     model=model,
     messages=messages,
@@ -145,7 +151,7 @@ if tool_calls:
     # Display the tool calls suggested by the model
     for tool_call in tool_calls:
         print_message("assistant", "", is_tool_call=True, function_name=tool_call.function.name)
-        print(f"   📋 Arguments: {tool_call.function.arguments}")
+        print(f"   Arguments: {tool_call.function.arguments}")
         print()
     
     # Add assistant message with tool calls to the conversation history
@@ -172,7 +178,7 @@ if tool_calls:
         function_to_call = available_functions[function_name]
         function_args = json.loads(tool_call.function.arguments)
         
-        print(f"🔧 Executing function '{function_name}'...")
+        print(f"Executing function '{function_name}'...")
         function_response = function_to_call(
             location=function_args.get("location"),
             unit=function_args.get("unit"),
@@ -188,7 +194,7 @@ if tool_calls:
             "content": json.dumps(function_response),
         })
     
-    print("📡 Sending second request to the model with results...")
+    print("Sending second request to the model with results...")
     
     # Second request with function results
     second_response = completion(

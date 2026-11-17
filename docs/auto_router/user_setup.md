@@ -11,7 +11,7 @@ description: 使用 lite configure 將 Claude Code 或 Codex 連接到您團隊�
 ## 1. 安裝 LiteLLM CLI {#1-install-the-litellm-cli}
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install-cli.sh | sh
+curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/install-cli.sh | sh
 ```
 
 其他安裝選項請參閱 [LiteLLM Proxy CLI](/docs/proxy/management_cli#quick-start)。

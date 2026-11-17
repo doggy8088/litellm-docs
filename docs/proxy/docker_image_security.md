@@ -1,26 +1,21 @@
+---
+description: LiteLLM 自 v1.83.0 起，會以 cosign 簽署它發佈到 GHCR 的 Docker 映像。如何驗證簽章、在 CI/CD 中強制驗證，以及遵循建議的部署模式。
+---
+
 # Docker 映像安全指南 {#docker-image-security-guide}
 
-LiteLLM 自 **v1.83.0** 起會為發佈到 GHCR 的每個 Docker 映像簽署 [cosign](https://docs.sigstore.dev/quickstart/quickstart-cosign/)。本頁說明如何驗證簽章、在 CI/CD 中強制驗證，以及遵循建議的部署模式。
+LiteLLM 會以 [cosign](https://docs.sigstore.dev/quickstart/quickstart-cosign/) 為它發佈到 GHCR 的每個 Docker 映像簽署 <SinceVersion v="1.83.0" />。較舊的映像未經簽署。本頁說明如何驗證簽章、在 CI/CD 中強制驗證，以及遵循建議的部署模式。
 
 ## 已簽署的映像 {#signed-images}
 
-發佈到 `ghcr.io/berriai/` 的所有映像變體都使用相同的 cosign 金鑰簽署：
+使用 `ghcr.io/berriai/litellm`，並鏡像於 `docker.litellm.ai/berriai/litellm`。請驗證您部署的確切 release tag 或 digest。
 
-| 映像 | 說明 |
-|---|---|
-| `ghcr.io/berriai/litellm` | 核心 proxy，包含用於 Postgres 的 Prisma 工具鏈 |
-| `ghcr.io/berriai/litellm-non_root` | 非 root 變體 |
-| `ghcr.io/berriai/litellm-spend_logs` | spend-logs sidecar |
-| `ghcr.io/berriai/litellm-database` | `litellm` 的舊版別名，保留給既有部署使用 |
+這個 [Dockerfile](https://github.com/BerriAI/litellm/blob/f52f26d9c636038c6e3609cc7d17cf625d434c3e/Dockerfile) 為 proxy、gateway、backend、UI、migrations、metrics 與 collector 建置單一映像。較舊的 release tags 可能使用不同的 Dockerfile。請依照 [Helm 指南](./deploy/helm.md) 使您的 chart 與映像相符。內部建置請使用您自己的金鑰簽署。LiteLLM 的公開金鑰只能驗證由 LiteLLM 簽署的映像。
 
-:::note[`litellm-database` 是舊版別名]
-`ghcr.io/berriai/litellm-database` 過去是當 proxy 需要 Postgres 時應選擇的映像，因為它內建了核心映像缺少的 Prisma 工具鏈。`ghcr.io/berriai/litellm` 現在已隨附相同的工具鏈、entrypoint 和 migrations，因此不再需要在兩者之間做選擇。`litellm-database` 仍然以相同的金鑰發布並簽署，因此鎖定它的部署仍可正常運作，並以相同的命令進行驗證。新部署請使用 `ghcr.io/berriai/litellm`；本頁範例全程使用它。
-:::
+目前的簽署金鑰是在 [commit `e82a3c6`](https://github.com/BerriAI/litellm/commit/e82a3c646908ba0a6ee0beddc4310d7a6cac4065) 中導入的，而公開金鑰已提交到儲存庫中的 [`cosign.pub`](https://github.com/BerriAI/litellm/blob/main/cosign.pub)。其 SHA-256 指紋為 `e3fe3e08c44b16407fe0b37c43b4f8b603b3a0f4ee74c29e647bc022d762c2c0`。它簽署自 `v1.103.8`、`v1.104.6`、`v1.105.4`、`v1.106.3` 起以及每個後續版本的映像。
 
-該簽署金鑰是在 [commit `0112e53`](https://github.com/BerriAI/litellm/commit/0112e53046018d726492c814b3644b7d376029d0) 中導入的，而公開金鑰已提交到儲存庫中的 [`cosign.pub`](https://github.com/BerriAI/litellm/blob/main/cosign.pub)。
-
-:::info[Enterprise 映像]
-Enterprise 映像（`litellm-ee`）遵循相同的簽署流程。請聯絡 [support@berri.ai](mailto:support@berri.ai) 以確認您特定 enterprise 映像標記的涵蓋範圍。
+:::warning[先前的簽署金鑰]
+較舊的映像是使用來自 [commit `0112e53`](https://github.com/BerriAI/litellm/commit/0112e53046018d726492c814b3644b7d376029d0) 的先前金鑰簽署的。該金鑰已於 2026 年 10 月 23 日輪替，此前發生了 [2026 年 10 月 21 日事件](/blog/security-incident-oct-21-2026#image-signing-key-rotation)。只有在 2026 年 10 月 21 日 `v1.107.0` 發佈之前發佈的映像上，才信任來自它的簽章。
 :::
 
 ## 驗證映像簽章 {#verify-image-signatures}
@@ -33,18 +28,11 @@ commit hash 在密碼學上不可變，使這成為最強的驗證方法：
 
 ```bash
 cosign verify \
-  --key https://raw.githubusercontent.com/BerriAI/litellm/0112e53046018d726492c814b3644b7d376029d0/cosign.pub \
-  ghcr.io/berriai/litellm:v1.89.4
+  --key https://raw.githubusercontent.com/BerriAI/litellm/e82a3c646908ba0a6ee0beddc4310d7a6cac4065/cosign.pub \
+  ghcr.io/berriai/litellm:v1.106.6
 ```
 
-將映像參照替換為任何已簽署的變體：
-
-```bash
-# litellm-non_root
-cosign verify \
-  --key https://raw.githubusercontent.com/BerriAI/litellm/0112e53046018d726492c814b3644b7d376029d0/cosign.pub \
-  ghcr.io/berriai/litellm-non_root:v1.89.4
-```
+將範例標記替換為您部署的版本。簽章驗證可識別映像的簽署者。請確認該版本包含您的 chart 所需的 entrypoint 與功能。
 
 ### 使用 release tag 驗證（方便） {#verify-with-a-release-tag-convenience}
 
@@ -52,8 +40,8 @@ cosign verify \
 
 ```bash
 cosign verify \
-  --key https://raw.githubusercontent.com/BerriAI/litellm/v1.89.4/cosign.pub \
-  ghcr.io/berriai/litellm:v1.89.4
+  --key https://raw.githubusercontent.com/BerriAI/litellm/v1.106.6/cosign.pub \
+  ghcr.io/berriai/litellm:v1.106.6
 ```
 
 ### 預期輸出 {#expected-output}
@@ -92,8 +80,8 @@ spec:
     - key:
         data: |
           -----BEGIN PUBLIC KEY-----
-          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKi4ivqGpE231OGH50PKbqy1Y1Kkb
-          POJC8+i2Wko82gBOUCe3M0Vw86H/4rhUhfoYEti4gdJ9wZbYmK0I2EE96g==
+          MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEG06dpKM+vEDnmp2zcjyXgVCXxzRg
+          JA5H2LnmwBKQafZGka6OOrWujCEWATQewiAgyD4WQdJ0pvU9RC4mvNAjvQ==
           -----END PUBLIC KEY-----
 ```
 
@@ -137,7 +125,7 @@ AWS 在部署時不會原生驗證 cosign 簽章。常見做法如下：
 - name: Verify LiteLLM image signature
   run: |
     cosign verify \
-      --key https://raw.githubusercontent.com/BerriAI/litellm/0112e53046018d726492c814b3644b7d376029d0/cosign.pub \
+      --key https://raw.githubusercontent.com/BerriAI/litellm/e82a3c646908ba0a6ee0beddc4310d7a6cac4065/cosign.pub \
       ghcr.io/berriai/litellm:${{ env.LITELLM_VERSION }}
 ```
 
@@ -155,15 +143,15 @@ image: ghcr.io/berriai/litellm@sha256:<digest>
 
 ```bash
 docker inspect --format='{{index .RepoDigests 0}}' \
-  ghcr.io/berriai/litellm:v1.89.4
+  ghcr.io/berriai/litellm:v1.106.6
 ```
 
 Cosign 驗證也可搭配 digest 使用：
 
 ```bash
 cosign verify \
-  --key https://raw.githubusercontent.com/BerriAI/litellm/0112e53046018d726492c814b3644b7d376029d0/cosign.pub \
-  ghcr.io/berriai/litellm@sha256:<digest>
+  --key https://raw.githubusercontent.com/BerriAI/litellm/e82a3c646908ba0a6ee0beddc4310d7a6cac4065/cosign.pub \
+  'ghcr.io/berriai/litellm@sha256:<digest>'
 ```
 
 ### 使用穩定的 release tags {#use-stable-release-tags}
@@ -179,15 +167,28 @@ LiteLLM 已改用 PEP 440 / semver 版本控制，因此穩定版現在會以一
 
 ### 安全升級檢查清單 {#safe-upgrade-checklist}
 
-1. **驗證新映像** — 針對新的 release tag 或 digest 執行 `cosign verify`。
-2. **在 staging 測試** — 將已驗證的映像部署到非生產環境。
-3. **更新您的固定參照** — 變更部署 manifest 中的 digest 或 tag。
-4. **部署到生產環境** — 使用您標準的部署流程進行推出。
-5. **監控 `/health`** — 確認升級後 proxy 運作正常。
+1. **驗證新映像。** 針對新的 release tag 或 digest 執行 `cosign verify`。
+2. **在 staging 測試。** 使用您打算採用的 chart 與 values 部署已驗證的映像。
+3. **更新您的固定參照。** 變更部署 manifest 中的 digest 或 tag。
+4. **部署到生產環境。** 使用您標準的部署流程進行推出。
+5. **檢查就緒狀態。** 確認升級後 proxy 運作正常。
+
+### 執行階段使用者與 entrypoint {#runtime-user-and-entrypoint}
+
+[整合的原始碼映像](https://github.com/BerriAI/litellm/blob/f52f26d9c636038c6e3609cc7d17cf625d434c3e/Dockerfile#L212) 以 UID/GID `65532:65532` 執行。它的 entrypoint 接受 `proxy`、`gateway`、`backend`、`ui`、`migrations`、`metrics` 或 `collector` 作為第一個引數。沒有引數，或使用 `--config` 等 CLI 旗標時，會啟動完整的 proxy。請保留此 entrypoint。在 Kubernetes 中透過 `args` 選擇元件。
+
+在依賴該非 root 預設值之前，請檢查您實際使用的映像。較舊的已發佈映像使用不同的 entrypoint，且可能以 root 身分執行：
+
+```bash
+docker image inspect "$LITELLM_IMAGE" \
+  --format '{{.Config.User}} {{json .Config.Entrypoint}}'
+```
+
+將掛載的憑證限制為僅供執行階段使用者存取。如果您使用唯讀的根檔案系統，請為暫存檔案新增可寫入的磁碟區。Chart 不會自動新增它們。請為每個啟用的工作負載（包括 migration Job）設定 security contexts 與掛載。請參閱 [chart values](https://github.com/BerriAI/litellm/blob/f52f26d9c636038c6e3609cc7d17cf625d434c3e/helm/litellm/values.yaml)。
 
 ## 延伸閱讀 {#further-reading}
 
-- [CI/CD v2 公告](https://docs.litellm.ai/blog/ci-cd-v2-improvements) — LiteLLM 簽署基礎架構的背景
-- [Docker 部署指南](./deploy.md) — 完整的 Docker、Helm 與 Terraform 設定
-- [cosign 文件](https://docs.sigstore.dev/quickstart/quickstart-cosign/) — cosign 使用方式與金鑰管理
-- [Sigstore Policy Controller](https://docs.sigstore.dev/policy-controller/overview/) — Kubernetes admission control
+- [CI/CD v2 公告](https://docs.litellm.ai/blog/ci-cd-v2-improvements) 說明 LiteLLM 的簽署基礎架構。
+- [部署總覽](./deploy.md) 連結至 Helm、Terraform 與架構指南。
+- [cosign 文件](https://docs.sigstore.dev/quickstart/quickstart-cosign/) 涵蓋簽章驗證與金鑰管理。
+- [Sigstore Policy Controller](https://docs.sigstore.dev/policy-controller/overview/) 涵蓋 Kubernetes admission control。

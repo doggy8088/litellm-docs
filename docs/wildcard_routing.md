@@ -1,3 +1,7 @@
+---
+sidebar_label: "Wildcard Routing"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -6,6 +10,8 @@ import TabItem from '@theme/TabItem';
 **代理來自提供者的所有模型**
 
 如果您想要**代理來自特定提供者的所有模型，而不在 config.yaml 中定義它們**，請使用此功能
+
+對於像 `claude-newfamily-5` 這樣新的裸模型 ID，[備援歸納](./fallback_generalizations.md) 可以推斷虛擬金鑰的 `provider/*` 存取檢查所使用的提供者。路由規則不會新增定價，也不會繞過金鑰權限。
 
 ## 步驟 1. 定義依提供者的路由  {#step-1-define-provider-specific-routing}
 
@@ -140,4 +146,31 @@ curl http://localhost:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
-## [[僅限 PROXY] 控制萬用字元模型存取](/docs/proxy/model_access#advanced-model-access-groups) {#proxy-only-control-wildcard-model-accessdocsproxymodel_accessadvanced-model-access-groups}
+## [[僅限 PROXY] 控制萬用字元模型存取](/docs/proxy/model_access#advanced-model-access-groups) {#proxy-only-team-scoped-wildcards-take-precedence}
+
+## [僅限 PROXY] 團隊範圍的萬用字元優先 {#proxy-only-control-wildcard-model-accessdocsproxymodel_accessadvanced-model-access-groups}
+
+團隊可以[新增自己的萬用字元部署](/docs/proxy/team_model_add)並使用自己的憑證，讓該團隊的金鑰使用團隊的提供者帳戶。當同時存在相同模式的全 proxy 萬用字元時，團隊的部署會服務該團隊的金鑰，全 proxy 的部署則服務所有其他金鑰。兩者永遠不會一起做負載平衡，而沒有自己對應萬用字元的團隊會落回使用全 proxy 的那個。
+
+```yaml
+model_list:
+  # Proxy-wide: serves keys that have no team-scoped openrouter/* deployment
+  - model_name: openrouter/*
+    litellm_params:
+      model: openrouter/*
+      api_key: os.environ/SHARED_OPENROUTER_API_KEY
+```
+
+```bash
+# Team-scoped: serves keys that belong to this team, with the team's own credentials
+curl -X POST 'http://0.0.0.0:4000/model/new' \
+  -H 'Authorization: Bearer $LITELLM_MASTER_KEY' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model_name": "openrouter/*",
+    "litellm_params": {"model": "openrouter/*", "api_key": "<team-openrouter-key>"},
+    "model_info": {"team_id": "<team-id>"}
+  }'
+```
+
+`x-litellm-model-id` 回應標頭會指出服務某個請求的部署，因此使用團隊金鑰的呼叫會回傳團隊部署的 id，使用任何其他金鑰的呼叫則會回傳全 proxy 部署的 id。

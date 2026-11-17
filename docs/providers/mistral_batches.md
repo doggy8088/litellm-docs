@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Mistral AI Batch API"
+sidebar_label: "Mistral AI Batch API"
+description: "透過 LiteLLM 的 /v1/files 與 /v1/batches 端點執行 Mistral 批次工作：將模型加入 config.yaml、上傳輸入、建立、輪詢，並追蹤 OCR 成本。"
+---
+
 # Mistral AI 批次 API {#mistral-ai-batch-api}
 
 LiteLLM 會將與 OpenAI 相容的 `/v1/files` 和 `/v1/batches` 端點路由至 Mistral 的 [Files](https://docs.mistral.ai/api/#tag/files) 與 [Batch](https://docs.mistral.ai/api/#tag/batch) API。Mistral 批次工作會針對輸入檔案的每一行執行一次模型，因此模型只會在檔案上傳或批次請求時選取一次，而不是逐行選取。此工作可目標指向 `/v1/chat/completions` 或 `/v1/ocr`，而批次中的 OCR 頁面則依 Mistral 的批次費率計費。

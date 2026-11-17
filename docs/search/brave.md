@@ -1,4 +1,11 @@
+---
+title: "Brave Search API 與 LiteLLM：Python 與 Gateway"
+sidebar_label: "Brave Search"
+description: "將 Brave 網頁搜尋加入 LiteLLM：設定 BRAVE_API_KEY，在 Python SDK 中呼叫 search() 或在 AI Gateway 上呼叫 /v1/search，並在 config.yaml 中註冊。"
+---
 # Brave 搜尋 {#brave-search}
+
+[Brave Search API](https://brave.com/search/api/) 會從 Brave 自家的獨立搜尋索引回傳網頁結果；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI Gateway 上的 `/v1/search` 端點來提供它。
 
 先透過 https://brave.com/search/api/. 建立免費 API 金鑰開始使用
 

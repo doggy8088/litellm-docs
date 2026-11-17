@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 IBM watsonx.ai API：設定"
+sidebar_label: "WatsonX"
+description: "在 IBM watsonx.ai 上與 Llama、Granite 與 Mixtral 聊天、在部署空間中呼叫調校過的模型、以 Slate 嵌入文字，並使用 Zen API 金鑰驗證。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -21,7 +27,7 @@ os.environ["WATSONX_ZENAPIKEY"] = "" # Zen API key (use for long-term api token)
 
 ## 使用方式 {#usage}
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_IBM_Watsonx.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/liteLLM_IBM_Watsonx.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -223,3 +229,4 @@ response = client.chat.completions.create(
 ```
 
 請參閱 [IBM 文件](https://www.ibm.com/docs/en/watsonx/w-and-w/2.2.0?topic=keys-generating-zenapikey-authorization-tokens)以了解更多關於產生 Zen API 金鑰的資訊。
+

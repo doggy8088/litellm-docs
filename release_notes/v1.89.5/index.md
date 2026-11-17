@@ -1,5 +1,6 @@
 ---
-title: "v1.89.5 - Vertex Batch 上傳修正與金鑰遮罩"
+title: "LiteLLM v1.89.5 - Vertex Batch 上傳修正與金鑰遮罩"
+description: "修正大型檔案的 Vertex AI 批次上傳出現 499 錯誤的問題，並從 /key/info 用戶端錯誤訊息中遮罩 API 金鑰。"
 slug: "v1-89-5"
 date: 2026-06-29T18:17:14
 authors:

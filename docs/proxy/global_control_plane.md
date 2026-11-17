@@ -1,92 +1,48 @@
-import { ControlPlaneArchitecture } from '@site/src/components/ControlPlaneArchitecture';
+---
+title: 全域控制平面
+sidebar_label: 概覽
+description: 透過單一 API 管理彼此獨立的 LiteLLM 部署、比較跨區域用量，並匯出管理稽核記錄。
+---
 
 # 全域控制平面 {#global-control-plane}
 
-部署單一 LiteLLM UI，以管理多個彼此獨立的 LiteLLM proxy 執行個體，每個執行個體都有自己的資料庫、Redis 與主金鑰。
+{/* keep-version-note */}
+
+全域控制平面提供單一 API，用於管理跨區域與跨雲端的彼此獨立 LiteLLM 部署。每個部署都是一個**資料平面**，負責提供推論請求服務，並保有自己的金鑰、團隊、預算、PostgreSQL 資料庫與 Redis。
 
 <EnterpriseFeature />
 
-## 何時使用此功能 {#when-to-use-this}
+## 使用案例 {#use-cases}
 
-當爆炸半徑隔離比全域一致性更重要時，請選擇此方案，而非共用資料庫的 [多區域部署](./multi_region.md) 拓撲。某個 worker 上的資料庫中斷不會影響另一個 worker，但在某個 worker 上建立的金鑰無法在另一個 worker 上驗證，因為金鑰、團隊與預算都隸屬於其擁有它們的 worker。Multi-Region 涵蓋完整的取捨與授權表，本頁即列於其中
-
-不要將此與該頁面所描述的專用管理執行個體混淆。該執行個體同樣僅供管理使用且不提供任何 LLM 流量，但它與所管理的區域 proxy 共用一個資料庫，因此它管理的是單一部署。全域控制平面不與其 worker 共用任何資源，並管理多個獨立部署
-
-## 架構 {#architecture}
-
-<ControlPlaneArchitecture />
-
-**控制平面** 是一個 LiteLLM 執行個體，提供管理 UI 並了解所有 worker。它的存在純粹是為了讓管理員能在單一 UI 中切換 worker 並進行管理
-
-每個 **worker** 都是完全獨立的 LiteLLM proxy，負責處理其區域或團隊的 LLM 請求。Worker 擁有自己的資料庫、Redis、使用者、金鑰、團隊與預算
-
-## 設定 {#setup}
-
-### 1. 控制平面設定 {#1-control-plane-configuration}
-
-控制平面需要一個 `worker_registry`，列出所有 worker 執行個體。每個項目都需要 `worker_id`、`name` 和 `url`
-
-```yaml title="cp_config.yaml"
-model_list: []
-
-general_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
-  database_url: os.environ/DATABASE_URL
-
-worker_registry:
-  - worker_id: "worker-a"
-    name: "Worker A"
-    url: "http://localhost:4001" # must start with http:// or https://
-  - worker_id: "worker-b"
-    name: "Worker B"
-    url: "http://localhost:4002"
-```
-
-啟動控制平面：
-
-```bash
-litellm --config cp_config.yaml --port 4000
-```
-
-### 2. Worker 設定 {#2-worker-configuration}
-
-每個 worker 都需要在其 `general_settings` 中設定 `control_plane_url`。這會在 worker 上啟用 `/v3/login` 和 `/v3/login/exchange` 端點，讓控制平面 UI 能以跨來源方式對其進行驗證。每個 worker 也必須設定 `PROXY_BASE_URL`，以便 SSO 回呼重新導向能正確解析
-
-```yaml title="worker_a_config.yaml"
-model_list: []
-
-general_settings:
-  master_key: sk-worker-a-1234 # unique per worker
-  database_url: os.environ/WORKER_A_DATABASE_URL # unique per worker
-  control_plane_url: "http://localhost:4000"
-```
-
-```bash
-PROXY_BASE_URL=http://localhost:4001 litellm --config worker_a_config.yaml --port 4001
-```
-
-對登錄中的每個 worker 重複此操作，每次都變更主金鑰、資料庫 URL 與埠號。worker 在其他所有方面都是一般的 LiteLLM proxy，因此 [正式環境部署指南](./prod.md) 可原封不動套用
-
-:::important
-每個 worker 都必須有自己的 `master_key` 與 `database_url`。這個架構的核心目的就是讓 worker 彼此獨立
-:::
-
-:::info
-如果某個 worker 在負載平衡器後方執行多個執行個體，請在該 worker 上設定 Redis（其組態中的 `cache` 區段）。`/v3/login` 發出的登入代碼會儲存在伺服器端，因此若沒有共用 Redis，交換可能會落到不同的執行個體並以 401 失敗
-:::
-
-### 3. SSO 設定（選用） {#3-sso-configuration-optional}
-
-SSO 在控制平面執行個體上的設定方式與標準 LiteLLM proxy 相同。完整操作請參閱 [SSO 設定指南](./admin_ui_sso.md)。如果您使用 SSO，請在 SSO 提供者的儀表板中將每個 worker URL 與控制平面 URL 註冊為允許的回呼 URL
-
-當控制平面與至少一個 worker 都在執行時，請開啟 `http://localhost:4000/ui`。您應該會在登入頁面上看到 worker 選擇器
+| 需求 | 控制平面如何協助 |
+| --- | --- |
+| 為合規而隔離資料 | 將每個資料平面的資料庫、Redis、金鑰與憑證保留在各自獨立的區域環境中。控制平面接收管理與用量資料。 |
+| 透過單一端點管理資源 | 在選定的資料平面上讀取與更新金鑰、使用者、團隊、模型、預算及其他支援的資源。 |
+| 比較跨部署用量 | 彙總花費、請求數與 token 數。可依資料平面、模型、提供者、團隊或 API 金鑰分組檢視結果。 |
+| 給予操作人員有限的存取權限 | 指派控制平面角色，並將呼叫者限制在具名資料平面內。每個資料平面也會檢查呼叫者在本機的權限。 |
 
 ## 運作方式 {#how-it-works}
 
-### 登入流程 {#login-flow}
+操作人員或內部入口網站將經驗證的請求送至控制平面。控制平面檢查呼叫者的角色與資料平面存取權限，取得所選資料平面的憑證，並透過 HTTPS 呼叫其管理 API。資料平面會在回傳結果前檢查自身的權限。
 
-載入時，UI 會讀取控制平面的 `/.well-known/litellm-ui-config` 端點；當 `worker_registry` 已設定時，該端點會回報 `is_control_plane: true`，以及已註冊的 worker（其 ID、名稱與 URL）。由於它是控制平面，登入頁面會顯示 worker 選擇下拉選單
+應用程式將推論請求直接送至其區域資料平面。控制平面中斷會使中央管理與報表停止。資料平面會繼續使用自身的組態與相依性提供推論服務。
 
-使用者選擇一個 worker，然後以使用者名稱/密碼或 SSO 登入。UI 會透過呼叫所選 worker 的 `/v3/login` 端點來對其進行驗證，該端點會回傳一次性代碼，接著在該 worker 的 `/v3/login/exchange` 兌換此代碼以取得 JWT。從那時起，後續所有 API 呼叫都會指向該 worker，因此金鑰、團隊、模型與預算都會透過控制平面 UI 在所選 worker 上進行管理
+| 元件 | 職責 | 狀態 |
+| --- | --- | --- |
+| 控制平面 | 驗證、存取規則、管理請求、執行期登錄與角色寫入、機隊清單、用量彙總與稽核匯出 | 啟動時的登錄與角色，可選擇透過其專屬 PostgreSQL 資料庫與 Redis 串流中的執行期項目加以擴充。近期的稽核記錄與登入節流仍保留在處理程序記憶體中。 |
+| 資料平面 | 推論、本機資源管理、模型路由，以及金鑰、團隊與預算的強制執行 | 其專屬的 PostgreSQL、Redis、提供者憑證與主金鑰。 |
 
-登入後，使用者可從導覽列下拉選單切換 worker，而不必離開 UI。切換時會重新導向回登入頁面，以便對新的 worker 進行驗證
+僅以組態運作時不需要 PostgreSQL 與 Redis。啟用[執行期組態](./global_control_plane/configuration.md#runtime-configuration)，即可透過 API 管理登錄項目與角色，並將其傳播至各控制平面複本。
+
+控制平面不會複製金鑰、同步資料平面組態、強制執行共用的全域預算，也不會在資料平面之間進行推論備援切換。執行期組態共用僅涵蓋控制平面自身的登錄與角色。當區域閘道必須共用同一個資料庫與同一組金鑰時，請使用[多區域部署](./multi_region.md)。
+
+此實作提供 REST API 與互動式 API 文件，不提供管理 UI。
+
+## 文件 {#documentation}
+
+| 主題 | 內容 |
+| --- | --- |
+| [參考架構](./global_control_plane/architecture.md) | AWS、Azure、GCP 與混合雲圖表，包含區域、私有網路與管理連線。 |
+| [組態](./global_control_plane/configuration.md) | 控制平面、資料平面驗證與稽核目的地的設定與預設值。 |
+| [API 參考](./global_control_plane/api_reference.md) | 端點、範圍、參數與回應。 |
+| [UI 部署選取器](./global_control_plane/legacy_ui.md) | 使用 `worker_registry` 的現有管理 UI 設定。 |

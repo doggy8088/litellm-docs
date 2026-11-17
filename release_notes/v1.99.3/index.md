@@ -1,5 +1,6 @@
 ---
-title: "v1.99.3 - Claude Code 自動模式與 TypeSafe Jev 透傳"
+title: "LiteLLM v1.99.3 - Claude Code 自動模式與 TypeSafe Jev 透傳"
+description: "新增透過閘道的 Claude Code 自動模式，以及具備記錄與成本追蹤的 TypeSafe Jev 透傳。原封不動地轉送 safeguards 與 beta 標頭。"
 slug: "v1-99-3"
 date: 2026-09-23T07:10:00
 authors:

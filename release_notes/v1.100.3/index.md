@@ -1,5 +1,6 @@
 ---
-title: "v1.100.3 - GPT-6 請求處理與終端使用者預算重設"
+title: "LiteLLM v1.100.3 修正 GPT-6 請求規則與終端使用者預算重設"
+description: "修正 GPT-6 針對 reasoning_effort、max_tokens 與 tools 的請求規則，並修正大型共用預算的終端使用者預算重設。"
 slug: "v1-100-3"
 date: 2026-09-25T06:21:39
 authors:

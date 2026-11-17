@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的工具權限防護欄"
+sidebar_label: "LiteLLM 工具權限防護欄"
+description: "在 LiteLLM AI 閘道上，透過針對 OpenAI tool_calls、Anthropic tool_use 與 MCP 的允許與拒絕規則，控制模型可以進行哪些工具呼叫。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

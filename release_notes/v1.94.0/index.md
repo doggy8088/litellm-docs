@@ -1,5 +1,6 @@
 ---
-title: "v1.94.0 - 路由器外掛程式、MCP 用戶端持有憑證與共享 DataTable UI"
+title: "LiteLLM v1.94.0 - 路由器外掛程式、MCP 用戶端持有憑證與共享 DataTable UI"
+description: "新增路由器外掛程式管線、beta 版 Cost Optimization 頁面與 Python 3.14 支援。已知問題：使用者預算被套用到團隊金鑰。"
 slug: "v1-94-0"
 date: 2026-07-28T00:00:00
 authors:

@@ -3,11 +3,7 @@ import TabItem from '@theme/TabItem';
 
 # 預算備援 {#budget-fallbacks}
 
-:::info
-
-自 `v1.92.x` 起可用。
-
-:::
+<SinceVersion v="1.92.0" />
 
 當金鑰的 [`model_max_budget`](./users#-virtual-key-model-specific) 超過時，將請求重新導向到備援模型，而不是回傳 `budget_exceeded` 錯誤。
 

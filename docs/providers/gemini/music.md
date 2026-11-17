@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 中的 Gemini Lyria 音樂生成"
+sidebar_label: "Gemini Lyria（音樂生成）"
+description: "了解 LiteLLM 如何在 gemini/ 提供者下表列 Google Lyria 3 Clip 與 Pro 預覽音樂模型，並在成本對照表中以每首歌曲定價進行支出追蹤。"
+---
+
 # Gemini Lyria（音樂生成） {#gemini-lyria-music-generation}
 
 Google Lyria 3 預覽模型列於 LiteLLM 的 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中，歸類於 `gemini/` 提供者，用於中繼資料與支出追蹤。

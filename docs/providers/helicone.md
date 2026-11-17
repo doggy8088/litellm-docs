@@ -1,3 +1,9 @@
+---
+title: "Helicone AI 閘道搭配 LiteLLM：設定"
+sidebar_label: "Helicone"
+description: "從 LiteLLM Python SDK 將 OpenAI 與 Anthropic 呼叫路由至 Helicone 的 AI 閘道，支援串流、自訂屬性標頭、快取與備援。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

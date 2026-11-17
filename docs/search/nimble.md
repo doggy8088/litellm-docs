@@ -1,11 +1,15 @@
+---
+title: "搭配 LiteLLM 使用 Nimble Search API：Python 與閘道"
+sidebar_label: "Nimble 搜尋"
+description: "將 Nimble 網路搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，支援 focus 模式、搜尋深度與時間範圍。"
+---
 # Nimble 搜尋 {#nimble-search}
+
+[Nimble](https://www.nimbleway.com) 的 Search API 會回傳即時網路結果，並提供 news、shopping、academic 等 focus 模式；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [https://online.nimbleway.com/settings/api-keys](https://online.nimbleway.com/settings/api-keys)
 
-:::info
-
-支援自 LiteLLM v1.98.0+ 起
-:::
+<SinceVersion v="1.98.0" />
 
 ## LiteLLM Python SDK {#litellm-python-sdk}
 

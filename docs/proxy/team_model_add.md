@@ -1,4 +1,4 @@
-# ✨ 允許團隊新增模型 {#-allow-teams-to-add-models}
+# 允許團隊新增模型 {#allow-teams-to-add-models}
 
 <EnterpriseFeature />
 
@@ -9,12 +9,12 @@
 ## 在 `/model/add` 端點指定團隊 ID {#specify-team-id-in-modeladd-endpoint}
 
 ```bash
-# Authorization: 👈 Team API Key (has same 'team_id' as below)
+# Authorization: Team API Key (has same 'team_id' as below)
 curl -L -X POST 'http://0.0.0.0:4000/model/new' \
 -H 'Authorization: Bearer sk-******2ql3-sm28WU0tTAmA' \
 -H 'Content-Type: application/json' \
 -d '{
-  "model_name": "my-team-model", # 👈 Call LiteLLM with this model name
+  "model_name": "my-team-model", # Call LiteLLM with this model name
   "litellm_params": {
     "model": "openai/{{openai_large}}",
     "custom_llm_provider": "openai",
@@ -23,7 +23,7 @@ curl -L -X POST 'http://0.0.0.0:4000/model/new' \
     "api_version": "2023-12-01-preview"
   },
   "model_info": {
-    "team_id": "e59e2671-a064-436a-a0fa-16ae96e5a0a1" # 👈 Specify the team ID it belongs to
+    "team_id": "e59e2671-a064-436a-a0fa-16ae96e5a0a1" # Specify the team ID it belongs to
   }
 }'
 
@@ -32,12 +32,12 @@ curl -L -X POST 'http://0.0.0.0:4000/model/new' \
 ## 測試它！ {#test-it}
 
 ```bash
-# Authorization: 👈 Team API Key
+# Authorization: Team API Key
 curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer sk-******2ql3-sm28WU0tTAmA' \
 -d '{
-  "model": "my-team-model", # 👈 team model name
+  "model": "my-team-model", # team model name
   "messages": [
     {
       "role": "user",
@@ -68,8 +68,8 @@ curl -L -X GET 'http://localhost:4000/team/info?team_id=e59e2671-a064-436a-a0fa-
         ...,
         "litellm_model_table": {
             "model_aliases": {
-                "my-team-model": # 👈 public model name
-                    "model_name_e59e2671-a064-436a-a0fa-16ae96e5a0a1_e81c9286-2195-4bd9-81e1-cf393788a1a0" # 👈 internally generated model name (used to ensure uniqueness)
+                "my-team-model": # public model name
+                    "model_name_e59e2671-a064-436a-a0fa-16ae96e5a0a1_e81c9286-2195-4bd9-81e1-cf393788a1a0" # internally generated model name (used to ensure uniqueness)
             },
             "created_by": "default_user_id",
             "updated_by": "default_user_id"

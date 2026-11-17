@@ -1,5 +1,6 @@
 ---
-title: v1.68.0-stable
+title: "LiteLLM v1.68.0-stable"
+description: "新增 Bedrock Knowledge Base 向量儲存、精確的多執行個體速率限制，以及 Meta Llama API 與 LlamaFile 提供者。"
 slug: v1.68.0-stable
 date: 2025-05-03T10:00:00
 authors:

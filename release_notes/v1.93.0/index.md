@@ -1,5 +1,6 @@
 ---
-title: "v1.93.0 - GPT-5.6、Client-Forwarded MCP Credentials 與 Meta Model API"
+title: "LiteLLM v1.93.0 - GPT-5.6、Client-Forwarded MCP Credentials 與 Meta Model API"
+description: "新增 GPT-5.6、Grok-4.5 與 Meta Model API。金鑰達到支出上限時改為限流，不再直接撤銷。"
 slug: "v1-93-0"
 date: 2026-07-18T00:00:00
 authors:

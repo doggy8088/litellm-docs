@@ -10,7 +10,7 @@
 `output_cost_per_second`；解析後的費率只會收費一次，不會累加。轉錄、語音和影片仍繼續使用
 `input_cost_per_second` 和 `output_cost_per_second`
 
-`cost_per_second` 需要 v1.105.0 或更新版本。在較早版本中，請使用 `input_cost_per_second`
+`cost_per_second` 適用於 <SinceVersion v="1.105.0" />。在較早版本中，請使用 `input_cost_per_second`
 
 ```python
 # !uv add boto3 

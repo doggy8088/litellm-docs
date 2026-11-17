@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM AI 閘道上的 Conduct Guardrails"
+sidebar_label: "Conduct Guard"
+description: "從 LiteLLM AI 閘道將每個提示傳送到您的 Conduct 工作區，遇到 block 或 approval 判定時予以阻擋，警告則放行。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

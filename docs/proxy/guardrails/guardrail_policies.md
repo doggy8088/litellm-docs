@@ -1,3 +1,8 @@
+---
+title: "適用於團隊、金鑰與模型的防護欄政策"
+sidebar_label: "[Beta] 防護欄政策"
+description: "在 LiteLLM AI 閘道上將防護欄分組為政策，並全域、依模型或依團隊或金鑰（Enterprise）附加，支援繼承與預設值。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -307,16 +312,16 @@ curl -X POST "http://localhost:4000/policies/resolve" \
 
 ## 政策執行順序 {#policy-execution-order}
 
-當多個政策符合單一請求時，LiteLLM 會依從最廣的附加範圍到最狹的附加範圍執行：先 `scope: "*"`，再 `teams`，接著 `keys`，再來 `tags`，最後 `models`。結合了其中多種條件的附加，會依其最狹的條件排序，且排在該層級中的單一條件附加之後（`models: [gpt-4o]` 先於 `teams: [finance], models: [gpt-4o]`）。仍然同順位的附加，會保留其 `config.yaml` 順序，接著是透過 API 或 UI 建立的附加，且以最新建立者優先。透過請求本文（`"policies": [...]`）傳入的政策，會在每個附加符合之後依照給定順序執行。在各層級之間，順序不會取決於附加在 `config.yaml` 中的列出方式，也不取決於哪個 proxy worker 處理該請求。
+當多個政策符合單一請求時，LiteLLM 會依從最廣的附加範圍到最狹的附加範圍執行：先 `scope: "*"`，再 `teams`，接著 `keys`，再來 `tags`，最後 `models`。結合了其中多種條件的附加，會依其最狹的條件排序，且排在該層級中的單一條件附加之後（`models: [{{openai_large}}]` 先於 `teams: [finance], models: [{{openai_large}}]`）。仍然同順位的附加，會保留其 `config.yaml` 順序，接著是透過 API 或 UI 建立的附加，且以最新建立者優先。透過請求本文（`"policies": [...]`）傳入的政策，會在每個附加符合之後依照給定順序執行。在各層級之間，順序不會取決於附加在 `config.yaml` 中的列出方式，也不取決於哪個 proxy worker 處理該請求。
 
-這就是管線執行的順序，因此全域封鎖政策一定會在模型範圍的政策執行之前拒絕請求。這也是 `x-litellm-applied-policies` 以及 `matched_policies` 在 `/policies/resolve` 和 Policy Simulator 中的順序。當同一項政策附加在多個符合的範圍時，它只會執行一次，並依其排序最前的附加來排名，而 `matched_via` 會回報該附加（`scope:*` 而非 `model:gpt-4o`，當兩者都沒有 `priority` 時）。
+這就是管線執行的順序，因此全域封鎖政策一定會在模型範圍的政策執行之前拒絕請求。這也是 `x-litellm-applied-policies` 以及 `matched_policies` 在 `/policies/resolve` 和 Policy Simulator 中的順序。當同一項政策附加在多個符合的範圍時，它只會執行一次，並依其排序最前的附加來排名，而 `matched_via` 會回報該附加（`scope:*` 而非 `model:{{openai_large}}`，當兩者都沒有 `priority` 時）。
 
 若要覆寫層級順序，請在附加上設定可選的整數 `priority`。具有 `priority` 的附加會先於沒有該值的所有附加執行，且值越小越先執行；當兩者數值相同時，則回退到上述層級順序。沒有 `priority` 的附加行為完全相同，因此既有設定不會變更。此處 `model-policy` 會先於 `tag-policy` 執行，即使 `tags` 是較廣的層級：
 
 ```yaml showLineNumbers title="config.yaml"
 policy_attachments:
   - policy: model-policy
-    models: [gpt-4o]
+    models: [{{openai_large}}]
     priority: 1
   - policy: tag-policy
     tags: [production]
@@ -328,14 +333,14 @@ policy_attachments:
 ```yaml showLineNumbers title="config.yaml"
 policy_attachments:
   - policy: model-policy
-    models: [gpt-4o]
+    models: [{{openai_large}}]
   - policy: team-policy
     teams: [finance]
   - policy: global-policy
     scope: "*"
 ```
 
-來自 `finance` 金鑰的 `gpt-4o` 請求會先執行 `global-policy`，再執行 `team-policy`，接著執行 `model-policy`，並回傳 `x-litellm-applied-policies: global-policy,team-policy,model-policy`。
+來自 `finance` 金鑰的 `{{openai_large}}` 請求會先執行 `global-policy`，再執行 `team-policy`，接著執行 `model-policy`，並回傳 `x-litellm-applied-policies: global-policy,team-policy,model-policy`。
 
 ## 預設（備援）附加 {#default-fallback-attachments}
 

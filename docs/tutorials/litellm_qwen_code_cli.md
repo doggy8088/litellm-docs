@@ -2,11 +2,7 @@
 
 本教學示範如何將 Qwen Code CLI 與 LiteLLM Proxy 整合，讓您可以透過 LiteLLM 的統一介面路由請求。
 
-:::info
-
-此整合自 LiteLLM v1.73.3-nightly 及以上版本開始支援。
-
-:::
+<SinceVersion v="1.73.6" />
 
 <br />
 

@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM AI Gateway 上對 Claude Opus 5 的 Day 0 支援。可透過 Anthropic、Azure、Vertex AI 與 Bedrock 使用。"
+card_title: "Claude Opus 5"
+card_summary: "程式設計代理程式能力大幅提升，具備自我驗證，思考預設開啟，每 1M 為 $5 / $25，快速模式速度為 2.5 倍、費用為 2 倍。"
 image: /img/litellm_claude_opus_5_announcement.png
 tags: [anthropic, claude, opus 5, day 0 support]
 hide_table_of_contents: false
@@ -34,7 +36,7 @@ LiteLLM 現已在 Day 0 支援 [Claude Opus 5](https://www.anthropic.com/news/cl
 
 ## 在您從 Opus 4.8 切換之前 {#before-you-switch-from-opus-48}
 
-此切換並非免費。Priority Tier 和 web fetch 在 Opus 5 上都已移除，因此請分別規劃這些容量與工具。Opus 5 的資安分類器也可能直接拒絕請求，回傳 `stop_reason: "refusal"` 與 `stop_details` 中的類別；這值得明確處理，或透過 LiteLLM [備援](/docs/proxy/reliability) 繞開。
+此切換並非免費。Priority Tier 和 web fetch 在 Opus 5 上都已移除，因此請分別規劃這些容量與工具。Opus 5 的資安分類器也可能直接拒絕請求，回傳 `stop_reason: "refusal"` 與 `stop_details` 中的類別；這值得明確處理，或透過 LiteLLM [備援](../../docs/proxy/reliability) 繞開。
 
 取樣參數（`temperature`、`top_p`、`top_k`）、固定的思考預算，以及 assistant message prefill 仍不受支援，與 Opus 4.8 相同。Anthropic 的 [Opus 5 遷移指南](https://platform.claude.com/docs/en/about-claude/models/migration-guide) 提供完整的相容性清單。
 
@@ -138,14 +140,14 @@ docker run -d \
 model_list:
   - model_name: claude-opus-5
     litellm_params:
-      model: bedrock/anthropic.claude-opus-5
+      model: bedrock/global.anthropic.claude-opus-5
       aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: us-east-1
 ```
 
 :::note
-若要進行跨區域路由，請將模型 ID 改為區域推論設定檔（`us.`、`eu.`、`au.`，或 `jp.` 前綴），例如 `bedrock/converse/us.anthropic.claude-opus-5`。這些會額外收取 10% 的區域加價；`global.` 設定檔維持基礎價格。LiteLLM 會自動追蹤每個變體的成本。
+若要將請求保留在單一地理區域內，請將模型 ID 改為地理推論設定檔，例如 `bedrock/converse/us.anthropic.claude-opus-5`（該模型的 AWS 模型卡列出了它所擁有的設定檔）。這些設定檔的費用比 `global.` 高出 10%；`global.` 可從任何 AWS 商業區域處理請求。LiteLLM 會追蹤 `global.` 以及 `us.`、`eu.` 和 `au.` 設定檔的成本。在較舊的映像上，這需要遠端成本對照表；LiteLLM 會在啟動時載入它，除非已設定 `LITELLM_LOCAL_MODEL_COST_MAP`。
 :::
 
 **2. 啟動 proxy**

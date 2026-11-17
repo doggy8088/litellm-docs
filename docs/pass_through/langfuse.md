@@ -2,7 +2,7 @@
 
 適用於 Langfuse 的轉接端點 - 使用 LiteLLM Virtual Key 呼叫 langfuse 端點。
 
-只要將 `https://us.cloud.langfuse.com` 替換為 `LITELLM_PROXY_BASE_URL/langfuse` 即可 🚀
+只要將 `https://us.cloud.langfuse.com` 替換為 `LITELLM_PROXY_BASE_URL/langfuse` 即可
 
 #### **範例用法** {#example-usage}
 ```python

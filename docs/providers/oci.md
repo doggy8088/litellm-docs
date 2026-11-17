@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Oracle OCI Generative AI"
+sidebar_label: "Oracle Cloud Infrastructure (OCI)"
+description: "透過 LiteLLM 從 Python SDK 或 AI Gateway 呼叫 Oracle Cloud Infrastructure (OCI) Generative AI 模型，支援串流、工具呼叫與嵌入。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

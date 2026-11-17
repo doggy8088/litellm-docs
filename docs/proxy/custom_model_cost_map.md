@@ -43,9 +43,43 @@ model_list:
 
 ```bash
 export LITELLM_MODEL_COST_MAP_URL="https://your-host.example.com/model_prices.json"
+# or read it straight from a private S3 bucket
+export LITELLM_MODEL_COST_MAP_URL="s3://my-bucket/prices/model_prices.json"
+# or from a private Google Cloud Storage bucket
+export LITELLM_MODEL_COST_MAP_URL="gs://my-bucket/prices/model_prices.json"
 ```
 
-該對照表會在啟動時讀取一次，逾時為 5 秒，因此該變數必須在 proxy 啟動前設定，變更也需要重新啟動。URL 必須是 HTTP(S)；不支援 `file://` 路徑。若要完全離線執行，請改設 `LITELLM_LOCAL_MODEL_COST_MAP=True`，它會跳過抓取並使用套件內附的備份對照表（`litellm/model_prices_and_context_window_backup.json`），您可在自己的映像檔中覆寫該檔案。
+該對照表會在啟動時抓取，逾時為 5 秒，因此該變數必須在 proxy 啟動前設定於其環境中（`.env` 檔案、`docker run -e`，或 Kubernetes 的 `env:` 區塊）；在 `config.yaml` 的 `environment_variables` 下設定就太晚了。URL 可以是 HTTP(S)、`s3://` 或 `gs://`；不支援 `file://` 路徑。若要完全離線執行，請改設 `LITELLM_LOCAL_MODEL_COST_MAP=True`，它會跳過抓取並使用套件內附的備份對照表（`litellm/model_prices_and_context_window_backup.json`），您可在自己的映像檔中覆寫該檔案。
+
+### 從 S3 讀取對照表 {#reading-the-map-from-s3}
+
+使用 `s3://bucket/key` URL 時，proxy 會在啟動時、執行 `POST /reload/model_cost_map` 時，以及排程重新載入時，以 boto3 的 `get_object` 讀取該物件。這需要包含 [PR #46972](https://github.com/BerriAI/litellm/pull/46972) 的 LiteLLM 版本。
+
+LiteLLM 本身沒有這些憑證的設定。boto3 會在 proxy 的處理程序中以標準 AWS 方式找到它們：pod 或執行個體的 IAM 角色（EKS IRSA、ECS task role、EC2 instance role）、`AWS_ACCESS_KEY_ID` 與 `AWS_SECRET_ACCESS_KEY`（臨時金鑰另加 `AWS_SESSION_TOKEN`），或 `AWS_PROFILE` 搭配掛載的 AWS 設定檔。`config.yaml` 中的 AWS 憑證（包括 Bedrock 的 `aws_access_key_id` 與 `aws_role_name` 參數）不會被使用，因為對照表是在設定載入前抓取的。設定 `AWS_REGION_NAME` 可固定儲存桶的區域；此為選填。
+
+該身分需要對該物件有 `s3:GetObject` 權限：
+
+```json
+{
+  "Effect": "Allow",
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::my-bucket/prices/model_prices.json"
+}
+```
+
+如果儲存桶位於另一個 AWS 帳戶，儲存桶的政策也必須允許 proxy 的角色作為主體。如果物件以客戶管理的 KMS 金鑰加密，該角色還需要對該金鑰有 `kms:Decrypt` 權限。不支援 MinIO 等 S3 相容端點。
+
+S3 錯誤不會重試。啟動時若缺少憑證、`AccessDenied` 或 `NoSuchKey`，會回退到內附對照表，並將錯誤放在 `fallback_reason` 中（例如 `Remote fetch failed: S3 NoCredentialsError fetching s3://my-bucket/prices/model_prices.json: Unable to locate credentials`），重新載入則會保留目前的對照表，因此首次部署後請依下文所述檢查 `/model/cost_map/source`。
+
+### 從 Google Cloud Storage 讀取對照表 {#reading-the-map-from-google-cloud-storage}
+
+使用 `gs://bucket/object` URL 時，proxy 會在啟動時、執行 `POST /reload/model_cost_map` 時，以及排程重新載入時，透過 Cloud Storage JSON API 讀取該物件。這需要包含 [PR #51108](https://github.com/BerriAI/litellm/pull/51108) 的 LiteLLM 版本。
+
+Proxy 以 Google 應用程式預設憑證進行驗證，在 proxy 的處理程序中依此順序查找：`GOOGLE_APPLICATION_CREDENTIALS` 所指的服務帳戶金鑰檔案、gcloud 應用程式預設憑證檔案，然後是 GKE pod 或 GCE 執行個體的中繼資料伺服器（GKE Workload Identity，或執行個體附加的服務帳戶）。與 S3 路徑相同，它不會從 `config.yaml` 讀取 Vertex 或 GCS 記錄憑證，也不會讀取 `GCS_PATH_SERVICE_ACCOUNT`。該身分需要對該物件有 `storage.objects.get` 權限，例如授予儲存桶的 Storage Object Viewer 角色（`roles/storage.objectViewer`）。
+
+HTTP 429 與 5xx 回應會重試，取得存取權杖失敗也會重試，因為新的 GKE pod 的中繼資料伺服器在最初幾秒可能拒絕請求。啟動時，proxy 會在重試於背景執行期間先提供內附對照表，然後再安裝儲存桶的對照表。401、403 或 404 不會重試；啟動會回退到內附對照表，並將狀態放在 `fallback_reason` 中（例如 `Remote fetch failed: HTTP 403 from gs://my-bucket/prices/model_prices.json`），重新載入則會保留目前的對照表。
+
+設定 `STORAGE_EMULATOR_HOST` 時，抓取會改去該模擬器而非 `storage.googleapis.com`，且不傳送憑證，與 Google 自己的儲存用戶端相同。沒有 scheme 的值（例如 `localhost:4443`）會被解讀為 `http://localhost:4443`。物件名稱在第一個 `?` 或 `#` 處結束，因此不支援包含這兩個字元的物件名稱，以及 gsutil 的 `#generation` 後綴。
 
 ### 從完整的上游檔案開始 {#start-from-the-full-upstream-file}
 
@@ -66,7 +100,7 @@ curl -s http://localhost:4000/model/cost_map/source \
 
 ### 正式環境檢查清單 {#production-checklist}
 
-1. 將檔案作為版本化成品代管在您可控的基礎架構上（CDN 後方的物件儲存或內部端點），且每個 proxy pod 都能在 5 秒內連到。
+1. 將檔案作為版本化成品代管在您可控的基礎架構上（透過 `s3://` 讀取的 S3 物件、CDN 後方的物件儲存，或內部端點），且每個 proxy pod 都能在 5 秒內連到。
 2. 當 `/model/cost_map/source` 回報備援時發出警示。
 3. 設定與上游對照表重新同步的週期，避免新釋出模型的定價在分支建立時就被凍結。
 4. 在可行時將自訂對照表視為暫時方案：將您的修正回饋到預設對照表，然後移除分支。

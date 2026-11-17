@@ -6,7 +6,7 @@ import TabItem from '@theme/TabItem';
 
 與您的組織共享模型和代理程式。讓開發者能查看可用項目，而無需重新建置它們。
 
-此功能自 **v1.74.3-stable 及以上版本可用**。
+<SinceVersion v="1.74.3-stable" />
 
 ## 總覽 {#overview}
 
@@ -69,9 +69,7 @@ import TabItem from '@theme/TabItem';
 
 ## 代理程式 {#agents}
 
-:::info
-代理程式僅在 v1.79.4-stable 及以上版本可用。
-:::
+<SinceVersion v="1.80.0-stable.1" />
 
 在您的組織中共享預先建置的代理程式（A2A 規格）。使用者可以探索並使用代理程式，而無需重新建置。
 

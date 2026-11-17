@@ -9,7 +9,7 @@
 | 終端使用者追蹤 | ❌ | [如果您需要此功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ❌ | 串流轉錄（`StartStreamTranscription`，`transcribestreaming` HTTP/2 與 WebSocket 端點）是獨立協定，不在此轉送範圍內 |
 
-只要將 `https://transcribe.{aws_region_name}.amazonaws.com` 替換為 `LITELLM_PROXY_BASE_URL/transcribe` 即可 🚀
+只要將 `https://transcribe.{aws_region_name}.amazonaws.com` 替換為 `LITELLM_PROXY_BASE_URL/transcribe` 即可
 
 LiteLLM 會使用代理伺服器的 AWS 憑證透過 SigV4 簽署轉送的請求，因此用戶端只需要 LiteLLM 虛擬金鑰。
 

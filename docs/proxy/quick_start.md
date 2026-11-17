@@ -1,6 +1,7 @@
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import NavigationCards from '@site/src/components/NavigationCards';
 
 # CLI - 快速開始 {#cli---quick-start}
 
@@ -17,7 +18,7 @@ $ uv tool install 'litellm[proxy]'
 ```
 
 :::warning[最低 Python 版本]
-LiteLLM 1.84.0 及更新版本需要 Python {{python_min_version}} 或更高版本（`requires-python >={{python_min_version}}`）。`uv tool install` 會透過自動佈建相容的 Python 為您處理這件事。單純的 `pip install 'litellm[proxy]'` 不會；在較舊的解譯器上，pip 會默默解析到最後一個其 `requires-python` 仍允許它的版本（先前下限為 1.83.9），且不會報錯。如果您意外鎖定到舊版本，請檢查 `python --version` 並升級到 {{python_min_version}}+（或使用 uv），然後重新安裝
+LiteLLM 1.84.0 及更新版本需要 Python {{python_min_version}} 或更高版本（`requires-python >={{python_min_version}}`）。`uv tool install` 會透過自動佈建相容的 Python 為您處理這件事。單純的 `pip install 'litellm[proxy]'` 不會；在較舊的解譯器上，pip 會默默解析到最後一個其 `requires-python` 仍允許它的版本（先前下限為 1.83.9），且不會報錯。如果您意外鎖定到舊版本，請檢查 `python --version` 並升級到 {{python_min_version}}+（或使用 uv），然後重新安裝 {/* keep-version-note */}
 :::
 
 ## 快速入門 - LiteLLM Proxy CLI {#quick-start---litellm-proxy-cli}
@@ -426,7 +427,7 @@ print(message.content)
 
 [**更多資訊**](./configs.md)
 
-## 📖 Proxy 端點 - [Swagger 文件](https://docs.litellm.ai/api-reference/) {#-proxy-endpoints---swagger-docs}
+## Proxy 端點 - [Swagger 文件](https://docs.litellm.ai/api-reference/) {#proxy-endpoints---swagger-docs}
 - POST `/chat/completions` - 聊天完成端點，用於呼叫 100+ 個 LLM
 - POST `/completions` - 完成端點
 - POST `/embeddings` - 用於 Azure、OpenAI、Huggingface 端點的嵌入端點
@@ -463,3 +464,47 @@ export LITELLM_LOG=ERROR
 ```
 
 `LITELLM_LOG` 必須是有效的 Python logging level（`DEBUG`、`INFO`、`WARNING`、`ERROR`、`CRITICAL`）。將其設為 `None` 會使 `import litellm` 失敗。
+
+## 新增虛擬金鑰與 Admin UI {#add-virtual-keys-and-the-admin-ui}
+
+本頁的命令會在沒有資料庫的情況下啟動 proxy。若要建立虛擬金鑰、追蹤花費並使用 [Admin UI](/docs/proxy/ui)，請在 `config.yaml` 的 `general_settings` 下新增 `database_url`。接著請參閱 [虛擬金鑰](/docs/proxy/virtual_keys) 以了解金鑰與預算。若要以單一命令同時啟動 proxy、資料庫與 Admin UI，請使用 [快速入門](/docs/proxy/docker_quick_start)。
+
+## 後續步驟 {#next-steps}
+
+<NavigationCards
+columns={3}
+items={[
+  {
+    title: "發出 LLM 請求",
+    description: "將 LiteLLM 或與 OpenAI 相容的用戶端指向閘道。",
+    to: "/docs/proxy/user_keys",
+  },
+  {
+    title: "模型設定",
+    description: "新增更多模型與閘道設定。",
+    to: "/docs/proxy/configs",
+  },
+  {
+    title: "虛擬金鑰",
+    description: "建立金鑰、預算與存取控制。",
+    to: "/docs/proxy/virtual_keys",
+  },
+  {
+    title: "新增記錄",
+    description: "擷取記錄、花費與追蹤。",
+    to: "/docs/proxy/logging",
+  },
+  {
+    title: "負載平衡",
+    description: "跨部署、區域或提供者進行路由。",
+    to: "/docs/proxy/load_balancing",
+  },
+  {
+    title: "新增防護欄",
+    description: "新增安全檢查與政策強制執行。",
+    to: "/docs/proxy/guardrails/quick_start",
+  },
+]}
+/>
+
+如果您只需要從單一應用程式呼叫模型，不需要集中式驗證或共享基礎設施，請改用 [SDK 快速入門](/docs/learn/sdk_quickstart)。

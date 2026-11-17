@@ -74,12 +74,14 @@ HTTP/1.1 401 Unauthorized
 {"detail":"Authentication Error, Malformed API Key passed in. Ensure Key has `Bearer ` prefix."}
 ```
 
-未知或已過期的金鑰也會回傳 401，內容會命名被拒絕的金鑰：
+未知或已刪除的金鑰也會回傳 401。自 v1.107.0 起，回應內容不再命名被拒絕的金鑰：
 
 ```text
 HTTP/1.1 401 Unauthorized
-{"detail":"Authentication Error, Invalid proxy server token passed. Received API Key = sk-..., Key Hash (Token) =2ab06c... Unable to find token in cache or `LiteLLM_VerificationTokenTable`"}
+{"detail":"Authentication Error, Invalid API key provided."}
 ```
+
+較早的版本對同一個請求會回覆 `Invalid proxy server token passed`，其後接著該金鑰的雜湊值。已過期的金鑰則會回傳其專屬的 `Expired Key` 訊息。
 
 403 表示該金鑰已通過驗證，但缺少該伺服器的 MCP 權限；請修正金鑰/team 的 [權限指派](./mcp_control.md)，而不是憑證
 
@@ -233,7 +235,7 @@ curl -sS http://localhost:4000/v1/responses \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -d '{
-    "model": "gpt-4o-mini",
+    "model": "{{openai_small}}",
     "input": "List the top-level wiki pages for BerriAI/litellm",
     "tools": [{"type": "mcp", "server_label": "deepwiki", "server_url": "litellm_proxy", "require_approval": "never"}]
   }'

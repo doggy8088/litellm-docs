@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 DeepEval 追蹤：Confident AI"
+sidebar_label: "DeepEval"
+description: "透過 deepeval 回呼，將 LiteLLM Python SDK 追蹤傳送到 DeepEval 平台 Confident AI，以除錯、監控與評估 LLM 呼叫。"
+---
 import Image from '@theme/IdealImage';
 
 # DeepEval {#deepeval}
@@ -49,7 +54,7 @@ print(response)
 :::
 
 ## 支援與 Deepeval 團隊聯絡 {#support--talk-with-deepeval-team}
-- [Confident AI 文件 📝](https://documentation.confident-ai.com)
-- [平台 🚀](https://confident-ai.com)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 支援 ✉️ support@confident-ai.com
+- [Confident AI 文件](https://documentation.confident-ai.com)
+- [平台](https://confident-ai.com)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 支援 support@confident-ai.com

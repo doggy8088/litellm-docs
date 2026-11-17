@@ -22,9 +22,9 @@ MongoDB 向量儲存是 LiteLLM 中的 **BETA** 功能。此整合會搜尋現�
 | 用途 | 提供者 | 提供者模型 | 在 proxy 上的名稱 |
 |---|---|---|---|
 | 嵌入文件與搜尋查詢 | OpenAI | `text-embedding-3-small` | `text-embedding-3-small` |
-| 產生聊天回覆 | OpenAI | `gpt-4o-mini` | `gpt-4o-mini` |
+| 產生聊天回覆 | OpenAI | `{{openai_small}}` | `{{openai_small}}` |
 
-對於設定檔，LiteLLM 模型識別碼為 `openai/text-embedding-3-small` 與 `openai/gpt-4o-mini`。請在嵌入部署上設定 `model_info.mode: embedding`，讓 UI 將其識別為嵌入模型。此範例請使用嵌入模型預設的 **1536 維度**。
+對於設定檔，LiteLLM 模型識別碼為 `openai/text-embedding-3-small` 與 `openai/{{openai_small}}`。請在嵌入部署上設定 `model_info.mode: embedding`，讓 UI 將其識別為嵌入模型。此範例請使用嵌入模型預設的 **1536 維度**。
 
 ## 準備範例文件 {#prepare-the-sample-documents}
 
@@ -173,7 +173,7 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
-    "model": "gpt-4o-mini",
+    "model": "{{openai_small}}",
     "messages": [
       {
         "role": "system",

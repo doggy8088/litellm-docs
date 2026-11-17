@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 LLM 防護欄：快速入門"
+sidebar_label: "防護欄 - 快速入門"
+description: "為 LiteLLM AI 閘道加入提示詞注入偵測與 PII 遮罩：在 config.yaml 中定義防護欄、選擇模式，並設定預設開啟規則。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -83,12 +88,167 @@ guardrails:
 - `pre_call` 在 LLM 呼叫**之前**執行，針對**輸入**
 - `post_call` 在 LLM 呼叫**之後**執行，針對**輸入與輸出**
 - `during_call` 在 LLM 呼叫**期間**執行，針對**輸入**。與 `pre_call` 相同，但會與 LLM 呼叫平行執行。回應會在 guardrail 檢查完成之前不會傳回
-- `logging_only` 掃描已記錄的輸入與輸出，不會變更用戶端回應。支援情況取決於 guardrail 整合
+- `logging_only` 在呼叫結束後，於背景記錄 worker 上掃描已記錄的輸入與輸出，不變更用戶端回應，也不會增加其延遲。支援情況取決於 guardrail 整合
 - 可搭配多種模式執行的支援值清單，例如 `mode: [pre_call, post_call]`
+
+### 使用 `stream_scope` 僅在串流或非串流請求上執行 {#run-on-streaming-or-non-streaming-requests-only-with-stream_scope}
+
+防護欄預設會在串流與非串流請求上都執行。在防護欄的 `litellm_params` 下設定 `stream_scope`，即可選擇它要評估哪種請求型態：
+
+- `streaming`：僅在用戶端要求串流回應時執行
+- `non_streaming`：僅對一般請求/回應呼叫執行
+- `both`：在每個請求上都執行（預設值，也是未設定 `stream_scope` 時的既有行為）
+
+```yaml
+guardrails:
+  # runs only on streaming requests; non-streaming calls bypass the scan
+  - guardrail_name: "moderate-streams-only"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: post_call
+      stream_scope: streaming
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+
+  # runs only on non-streaming requests
+  - guardrail_name: "moderate-non-streams"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: post_call
+      stream_scope: non_streaming
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+```
+
+設定了多種模式的防護欄（例如 `mode: [pre_call, post_call]`）可以使用對應表（map）分別為每個模式設定範圍。鍵為模式名稱；未列入對應表的模式預設為 `both`：
+
+```yaml
+guardrails:
+  - guardrail_name: "scoped-by-mode"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: [pre_call, post_call]
+      stream_scope:
+        pre_call: streaming
+        post_call: both
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+```
+
+儀表板在防護欄建立表單上以 **Request shape** 提供相同的控制項；每個已設定的模式都有自己的下拉式選單。
+
+<Image
+  img={require('../../../img/stream_scope_request_shape_ui.png')}
+  alt="建立防護欄表單：Request shape 控制項，pre_call 套用至下拉式選單設為 Streaming only"
+  style={{ width: '100%', maxWidth: '900px', height: 'auto' }}
+/>
+
+下拉式選單已展開，顯示三個範圍選項：
+
+<Image
+  img={require('../../../img/stream_scope_request_shape_closeup.png')}
+  alt="特寫：pre_call 套用至下拉式選單已展開，包含 Streaming and non-streaming、Streaming only 與 Non-streaming only 選項"
+  style={{ width: '100%', maxWidth: '700px', height: 'auto' }}
+/>
+
+已儲存防護欄的詳細頁面會顯示各模式的範圍摘要：
+
+<Image
+  img={require('../../../img/stream_scope_guardrail_detail_ui.png')}
+  alt="防護欄詳細頁面：各模式串流範圍摘要，顯示 pre_call 為 Streaming only、post_call 為 Streaming and non-streaming"
+  style={{ width: '100%', maxWidth: '900px', height: 'auto' }}
+/>
+
+即時音訊輸入轉錄計為串流，因此 `streaming` 範圍也涵蓋在即時轉錄事件上執行的防護欄，而 `non_streaming` 範圍會將其排除。
+
+Bedrock 直通（pass-through）請求會從所呼叫的 Bedrock 動作回報其串流狀態，因此 `stream_scope` 對它們的控管方式與原生路由相同。
+
+#### 驗證 {#validation}
+
+`stream_scope` 的值若不是 `streaming`、`non_streaming` 或 `both`（或對應表的鍵不是模式名稱），在建立與更新時會被以 `422` 拒絕。啟動時，無論是從設定檔載入還是從已儲存的資料庫列載入，無效的 `stream_scope` 都會被忽略並記錄警告日誌，防護欄會以預設的 `both` 範圍繼續執行。
+
+### 使用 `logging_only_scope` 僅觀察單一方向 {#observe-only-one-direction-with-logging_only_scope}
+
+`logging_only` 掃描會在呼叫結束後執行，位於 proxy 的成功記錄流程中並由背景記錄 worker 處理，因此用戶端請求永遠不需要等待它，其延遲也不會影響回應。worker 在[設定設定](/docs/proxy/config_settings)中的 `LOGGING_WORKER_CONCURRENCY`、`LOGGING_WORKER_MAX_TIME_PER_COROUTINE` 與 `LOGGING_WORKER_MAX_QUEUE_SIZE` 設定，限定了同時執行的掃描數量，以及單一請求的記錄最長可花費的時間。
+
+`logging_only` 防護欄預設會觀察請求與回應。在防護欄的 `litellm_params` 下設定 `logging_only_scope`，即可選擇掃描要觀察的方向：
+
+- `input`：僅掃描請求
+- `output`：僅掃描回應
+- 未設定 / `null`（預設）：掃描兩個方向並保留既有行為，因此現有部署不受影響
+
+`both` 不是一個有效值。不設定範圍本來就會掃描兩個方向，而 `both` 值在啟動時會被記錄並忽略，在建立與更新時則會被以 `422` 拒絕。
+
+```yaml
+guardrails:
+  # unset (default): scans request and response, pre-existing behavior
+  - guardrail_name: "observe-default"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: logging_only
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+
+  # scans only the request
+  - guardrail_name: "observe-requests"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: logging_only
+      logging_only_scope: input
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+
+  # scans only the response
+  - guardrail_name: "observe-responses"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: logging_only
+      logging_only_scope: output
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+```
+
+在上述任何情況下，掃描都不會阻擋或變更用戶端呼叫；每個判定（包括原本會阻擋的判定）都會記錄在支出日誌的 `guardrail_information` 中，並計入 Guardrails Monitor。
+
+#### 若輸入掃描失敗 {#if-the-input-scan-fails}
+
+在 `logging_only` 模式下，實際上不會阻擋任何內容，因此被輸入掃描標記的請求仍會送達模型，對話也會繼續。`logging_only_continue_on_input_failure` 決定是否仍觀察回應：
+
+- **未設定或 `false`**（預設）：若輸入掃描失敗（防護欄發生錯誤，或傳回原本會阻擋呼叫的判定），則略過輸出掃描，僅記錄輸入判定/錯誤。這是既有行為，現有部署不受影響。
+- **`logging_only_continue_on_input_failure: true`**：輸入失敗會被記錄為警告，且回應**仍會被掃描**，因此您可以同時取得兩個判定。由於 `logging_only` 模式不會阻擋任何內容，這能讓您持續監看被標記對話的回應。
+
+```yaml
+guardrails:
+  - guardrail_name: "observe-both-verdicts"
+    litellm_params:
+      guardrail: generic_guardrail_api
+      mode: logging_only
+      logging_only_continue_on_input_failure: true
+      api_base: os.environ/GUARDRAIL_API_BASE
+      default_on: true
+```
+
+`input` 與 `output` 只會掃描單一方向，因此設定了 `logging_only_scope` 時，此旗標會被忽略。
+
+#### 驗證 {#validation-1}
+
+- `logging_only_scope` 的值若不是 `input` 或 `output`，在建立與更新時會被以 `422` 拒絕。
+- 防護欄無法使用的範圍（設定了 `logging_only_scope` 但 `mode` 中沒有 `logging_only`，或在有自己的記錄 hook 的防護欄上設定 `input`/`output`）在建立時傳回 `400`，在設定此類範圍的更新時傳回 `422`。被拒絕的寫入會被回滾，因此已儲存的防護欄會保留先前的設定。
+- 啟動時，無論是從設定檔載入還是從已儲存的資料庫列載入，無效的 `logging_only_scope` 都會被忽略並記錄錯誤日誌，防護欄會保留其設定的模式。
+
+`logging_only_scope` 只會縮小 `logging_only` 掃描的範圍。同一個防護欄上的強制模式（`pre_call`、`during_call`、`post_call`）不受影響，仍會阻擋：`mode: [pre_call, logging_only]` 搭配 `logging_only_scope: output` 會阻擋不良請求，並記錄回應判定但不阻擋回應。若要觀察某個方向且永遠不阻擋它，請將對應的阻擋模式排除在 `mode` 之外。
+
+方向性範圍適用於透過通用 `apply_guardrail` 介面執行 `logging_only` 掃描的防護欄。有自己記錄 hook 的防護欄（例如 Presidio，其有自己的 `presidio_filter_scope`）會忽略此處的 `input`/`output`。
+
+編輯防護欄（例如僅修改說明的 PUT）不再會重新排序防護欄的執行順序：防護欄順序在更新之間保持穩定，因此同一內容上 BLOCK 與 MASK 何者勝出不會改變。
 
 ### 在護欄評估中略過系統訊息 {#skip-system-messages-in-guardrail-evaluation}
 
 您可以阻止 guardrails 掃描 `role: system` 內容，同時仍將完整的 `messages` 清單傳送給模型。
+
+自 v1.103.0 起，Anthropic `/v1/messages` 上的防護欄也會掃描最上層的 `system` 提示詞。Claude Desktop 與 Cowork 會在每個請求中傳送一段很長的系統提示詞，而嚴格的提示詞攻擊篩選器（例如 Bedrock 防護欄的 `PROMPT_ATTACK` 篩選器）即使在使用者自己的文字無害時，也可能將其阻擋。設定此旗標可讓該提示詞不進入掃描。
+
+在 `/v1/messages` 上，此旗標只會略過最上層的 `system` 提示詞。`messages` 內的 `role: system` 項目屬於用戶端輸入，因此即使設定了此旗標，防護欄仍會掃描它。Claude Code 會在對話中途傳送這類項目，例如其環境詳細資訊，以及在工具執行期間輸入的修正內容。若要讓它們不進入 Bedrock 防護欄的掃描，請在防護欄上設定 [`experimental_use_latest_role_message_only: true`](./bedrock#experimental-only-send-latest-user-message)。
 
 **全域**，在 `litellm_settings` 中：
 
@@ -131,7 +291,7 @@ litellm_settings:
 
 ### 略過旗標適用於何處 {#where-the-skip-flags-apply}
 
-**這些適用於哪裡：** **統一** guardrail 路徑（實作 `apply_guardrail` 並透過 LiteLLM 的訊息轉譯層執行的提供者），適用於 **OpenAI Chat Completions**（`/v1/chat/completions`）與 **Anthropic Messages**（`/v1/messages`）。範例包括 Presidio、Bedrock guardrails、`litellm_content_filter`、OpenAI Moderation、Generic Guardrail API，以及定義 `apply_guardrail` 的自訂程式碼 guardrails。**Lakera v2** 也支援這兩個旗標，儘管其是透過直接 hook 而非統一路徑執行；請參閱 [Lakera AI](./lakera_ai#supported-params)。
+**這些適用於哪裡：** **統一** guardrail 路徑（實作 `apply_guardrail` 並透過 LiteLLM 的訊息轉譯層執行的提供者），適用於 **OpenAI Chat Completions**（`/v1/chat/completions`）與 **Anthropic Messages**（`/v1/messages`）。範例包括 Presidio、Bedrock guardrails、`litellm_content_filter`、OpenAI Moderation、Generic Guardrail API，以及定義 `apply_guardrail` 的自訂程式碼 guardrails。**Lakera v2** 也支援這兩個旗標，儘管其是透過直接 hook 而非統一路徑執行；請參閱 [Lakera AI](./lakera_ai#supported-params)。 **hide-secrets** 在兩條路由上同樣遵循 `skip_tool_message_in_guardrail`，但不遵循系統訊息旗標；請參閱 [Secret Detection](./secret_detection#skip-tool-results)。
 
 **這些不適用於哪裡：** 其他僅透過原始請求上的直接 hook 執行的 guardrails（例如 Aporia、DynamoAI、Javelin、Lasso、Pangea、Model Armor、Azure Content Safety hooks、Guardrails AI、AIM、Cato Networks、tool permission、MCP security）。在其他路由也使用相同轉譯層之前，這些旗標也不適用於其他路由（例如 Responses API、embeddings、speech）。
 
@@ -401,7 +561,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-### 4. ✨ 將動態參數傳遞給護欄 {#4--pass-dynamic-parameters-to-guardrail}
+### 4. 將動態參數傳遞給護欄 {#4-pass-dynamic-parameters-to-guardrail}
 
 <EnterpriseFeature />
 
@@ -484,7 +644,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 <Image img={require('../../../img/gd_fail.png')} />
 
-### ✨ 依 API 金鑰控制護欄 {#-control-guardrails-per-api-key}
+### 依 API 金鑰控制護欄 {#-control-guardrails-per-api-key}
 
 <EnterpriseFeature />
 
@@ -513,6 +673,16 @@ curl --location 'http://0.0.0.0:4000/key/update' \
 }'
 ```
 
+<SinceVersion v="1.111.0" />
+
+防護欄名稱會在儲存時檢查。`/key/generate`、`/key/service-account/generate`、`/key/update`、`/key/regenerate`、`/team/new`、`/team/update`、`/user/new`、`/project/new` 與 `/project/update` 對於既未從 config.yaml 載入、也不是資料庫中有效防護欄的名稱會傳回 400，無論該名稱是以 `guardrails` 還是以 `metadata.guardrails` 傳送。`/v2/guardrails/list` 會顯示有效的名稱。只有請求新增的名稱會被檢查，因此若編輯時重新傳送了一個已儲存、但其防護欄其後已被刪除的名稱，仍會成功。不是名稱清單的 `metadata.guardrails` 值也會被以 400 拒絕。在[停用團隊開啟/關閉 guardrails 的能力](#disable-team-from-turning-onoff-guardrails)中所述的團隊設定 `{"modify_guardrails": false}` 仍會被接受。
+
+```json
+{
+  "error": "Unknown guardrail(s): aporia-pre-guardd. Create the guardrail first, or check the name against /v2/guardrails/list."
+}
+```
+
 **步驟 2** 使用新金鑰測試
 
 ```shell
@@ -530,7 +700,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-### ✨ 以標籤為基礎的護欄模式 {#-tag-based-guardrail-modes}
+### 以標籤為基礎的護欄模式 {#-tag-based-guardrail-modes}
 
 <EnterpriseFeature />
 
@@ -549,12 +719,12 @@ guardrails:
   - guardrail_name: "guardrails_ai-guard"
     litellm_params:
       guardrail: guardrails_ai
-      guard_name: "pii_detect" # 👈 Guardrail AI guard name
+      guard_name: "pii_detect" # Guardrail AI guard name
       mode:
         tags:
             "User-Agent: claude-cli": "logging_only"                 # Claude CLI - only mask in logs
         default: "pre_call"               # Default mode when no tags match
-      api_base: os.environ/GUARDRAILS_AI_API_BASE # 👈 Guardrails AI API Base. Defaults to "http://0.0.0.0:8000"
+      api_base: os.environ/GUARDRAILS_AI_API_BASE # Guardrails AI API Base. Defaults to "http://0.0.0.0:8000"
       default_on: true # run on every request
 ```
 
@@ -598,7 +768,7 @@ guardrails:
       default_on: true
 ```
 
-### ✨ 模型層級 Guardrails {#-model-level-guardrails}
+### 模型層級 Guardrails {#-model-level-guardrails}
 
 <EnterpriseFeature />
 
@@ -612,7 +782,7 @@ model_list:
       api_key: os.environ/ANTHROPIC_API_KEY
       api_base: https://api.anthropic.com/v1
       guardrails: ["azure-text-moderation"]
-  - model_name: openai-gpt-4o
+  - model_name: openai-{{openai_large}}
     litellm_params:
       model: openai/{{openai_large}}
 
@@ -632,7 +802,7 @@ guardrails:
       api_base: os.environ/AZURE_GUARDRAIL_API_BASE 
 ```
 
-### ✨ 停用團隊開啟/關閉 guardrails 的能力 {#-disable-team-from-turning-onoff-guardrails}
+### 停用團隊開啟/關閉 guardrails 的能力 {#disable-team-from-turning-onoff-guardrails}
 
 <EnterpriseFeature />
 
@@ -700,6 +870,8 @@ guardrails:
       api_key: string          # Required: API key for the guardrail service
       api_base: string         # Optional: Base URL for the guardrail service
       default_on: boolean      # Optional: Default False. When set to True, will run on every request, does not need client to specify guardrail in request
+      logging_only_scope: string # Optional: "input" (request only) or "output" (response only). Unset scans both directions and keeps the pre-existing behavior
+      logging_only_continue_on_input_failure: boolean # Optional: when true, a flagged or failing logging_only request scan is logged and the response is still scanned. Ignored when logging_only_scope is set
     guardrail_info:            # Optional[Dict]: Additional information about the guardrail
       
 ```

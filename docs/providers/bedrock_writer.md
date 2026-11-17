@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 在 Bedrock 上使用 Writer Palmyra"
+sidebar_label: "Bedrock - Writer Palmyra"
+description: "透過 LiteLLM 在 AWS Bedrock 上呼叫 Writer Palmyra 模型，可從 Python SDK 或 AI 閘道呼叫，包含 config.yaml 設定、多步驟工具呼叫與 PDF 輸入。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 Parallel AI Search API（供代理程式使用）"
+sidebar_label: "平行 AI 搜尋"
+description: "將 Parallel AI 網路搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，支援 base 或 pro 處理器與攔截。"
+---
 # 平行 AI 搜尋 {#parallel-ai-search}
+
+[Parallel AI](https://www.parallel.ai) 是為 AI 代理程式打造的網路搜尋 API；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [https://www.parallel.ai](https://www.parallel.ai)
 

@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Nadir Router API：設定"
+sidebar_label: "Nadir"
+description: "將請求傳送至 Nadir 的 auto router，它會為每次呼叫挑選最便宜且能力足夠的模型，並在 LiteLLM 中記錄路由到的模型與 Nadir 計算的成本。"
+---
+
 # Nadir {#nadir}
 
 ## 概覽 {#overview}

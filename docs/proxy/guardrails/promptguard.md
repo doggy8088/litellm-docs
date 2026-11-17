@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 PromptGuard 防護欄"
+sidebar_label: "PromptGuard"
+description: "在 LiteLLM AI 閘道上使用 PromptGuard 偵測提示注入、遮蔽 PII 並過濾主題，支援故障開放模式與常時啟用的保護。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

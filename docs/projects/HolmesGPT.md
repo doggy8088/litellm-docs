@@ -4,4 +4,4 @@
 
 LiteLLM 協助 HolmesGPT 與多個 LLM 提供者整合，或使用您自己的模型並自行代管。
 
-🔗 試用 HolmesGPT → [https://github.com/robusta-dev/holmesgpt](https://github.com/robusta-dev/holmesgpt)
+試用 HolmesGPT → [https://github.com/robusta-dev/holmesgpt](https://github.com/robusta-dev/holmesgpt)

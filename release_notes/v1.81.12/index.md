@@ -1,5 +1,6 @@
 ---
-title: "v1.81.12-stable.1 - 防護欄政策範本與動作建構器"
+title: "LiteLLM v1.81.12-stable.1 - 防護欄政策範本與動作建構器"
+description: "新增防護欄政策範本、防護欄動作建構器，以及供模型、MCP 伺服器與代理程式使用的存取群組。新增 Responses API shell 工具。"
 slug: "v1-81-12"
 date: 2026-02-14T00:00:00
 authors:
@@ -380,13 +381,13 @@ Access Groups 可簡化跨組織定義資源存取權的作業。單一群組可
 
 | Table | Change Type | 說明 | PR | 移轉 |
 | ----- | ----------- | ----------- | -- | --------- |
-| `LiteLLM_VerificationToken` | New Indexes | 新增 `user_id`+`team_id`、`team_id`，以及 `budget_reset_at`+`expires` 的索引 | [PR #20736](https://github.com/BerriAI/litellm/pull/20736) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260209085821_add_verificationtoken_indexes/migration.sql) |
-| `LiteLLM_PolicyAttachmentTable` | 新欄位 | 為 policy-to-tag connections 新增 `tags` text array | [PR #21061](https://github.com/BerriAI/litellm/pull/21061) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260212103349_adjust_tags_policy_table/migration.sql) |
-| `LiteLLM_AccessGroupTable` | New Table | 用於管理 model、MCP server 與 agent 存取的 access groups | [PR #21022](https://github.com/BerriAI/litellm/pull/21022) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260212143306_add_access_group_table/migration.sql) |
-| `LiteLLM_AccessGroupTable` | Column Change | 將 `access_model_ids` 重新命名為 `access_model_names` | [PR #21166](https://github.com/BerriAI/litellm/pull/21166) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260213170952_access_group_change_to_model_name/migration.sql) |
-| `LiteLLM_ManagedVectorStoreTable` | New Table | 搭配 model mappings 的受管理 vector store 追蹤 | - | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260213105436_add_managed_vector_store_table/migration.sql) |
-| `LiteLLM_TeamTable`, `LiteLLM_VerificationToken` | 新欄位 | 新增 `access_group_ids` text array | [PR #21022](https://github.com/BerriAI/litellm/pull/21022) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260212143306_add_access_group_table/migration.sql) |
-| `LiteLLM_GuardrailsTable` | 新欄位 | 新增 `team_id` text column | - | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260214094754_schema_sync/migration.sql) |
+| `LiteLLM_VerificationToken` | New Indexes | 新增 `user_id`+`team_id`、`team_id`，以及 `budget_reset_at`+`expires` 的索引 | [PR #20736](https://github.com/BerriAI/litellm/pull/20736) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260209085821_add_verificationtoken_indexes/migration.sql) |
+| `LiteLLM_PolicyAttachmentTable` | 新欄位 | 為 policy-to-tag connections 新增 `tags` text array | [PR #21061](https://github.com/BerriAI/litellm/pull/21061) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260212103349_adjust_tags_policy_table/migration.sql) |
+| `LiteLLM_AccessGroupTable` | New Table | 用於管理 model、MCP server 與 agent 存取的 access groups | [PR #21022](https://github.com/BerriAI/litellm/pull/21022) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260212143306_add_access_group_table/migration.sql) |
+| `LiteLLM_AccessGroupTable` | Column Change | 將 `access_model_ids` 重新命名為 `access_model_names` | [PR #21166](https://github.com/BerriAI/litellm/pull/21166) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260213170952_access_group_change_to_model_name/migration.sql) |
+| `LiteLLM_ManagedVectorStoreTable` | New Table | 搭配 model mappings 的受管理 vector store 追蹤 | - | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260213105436_add_managed_vector_store_table/migration.sql) |
+| `LiteLLM_TeamTable`, `LiteLLM_VerificationToken` | 新欄位 | 新增 `access_group_ids` text array | [PR #21022](https://github.com/BerriAI/litellm/pull/21022) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260212143306_add_access_group_table/migration.sql) |
+| `LiteLLM_GuardrailsTable` | 新欄位 | 新增 `team_id` text column | - | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260214094754_schema_sync/migration.sql) |
 
 ---
 

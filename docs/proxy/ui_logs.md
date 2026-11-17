@@ -32,6 +32,32 @@ general_settings:
 
 <Image img={require('../../img/ui_request_logs_content.png')}/>
 
+已知型態的 token 機密在儲存的內容中預設會被遮罩。涵蓋的型態與退出方式，請參閱 [Spend Logs 中的 Token 遮罩](./token_redaction_spend_logs.md)。提供者的請求與用戶端的回應不受影響。
+
+### 為單一金鑰或團隊關閉提示儲存 {#turn-off-prompt-storage-for-a-key-or-team}
+
+當 proxy 已開啟提示儲存時，您仍可讓單一金鑰或整個團隊的請求與回應內容不寫入支出記錄。請在該金鑰或團隊的 metadata 中設定 `store_prompts_in_spend_logs: false`。
+
+```bash
+# one key
+curl -X POST 'http://0.0.0.0:4000/key/update' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"key": "sk-...", "metadata": {"store_prompts_in_spend_logs": false}}'
+
+# every key on a team
+curl -X POST 'http://0.0.0.0:4000/team/update' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"team_id": "my-team", "metadata": {"store_prompts_in_spend_logs": false}}'
+```
+
+您也可以使用 Admin UI 中 Create Key、Edit Key、Create Team 與 Edit Team 表單上的「Store prompts in spend logs」開關。
+
+受限制金鑰的請求仍會產生一筆支出記錄，包含成本、token 與身分，但其 `proxy_server_request` 與 `response` 為空。此設定涵蓋聊天、pass-through、佇列中與失敗的請求，以及 LiteLLM 執行的批次記錄。
+
+只要金鑰或其團隊任一方設為 `false`，提示就不會被儲存。金鑰設為 `true` 無法覆寫團隊的 `false`，用戶端也無法透過請求 metadata 或 `litellm-disable-message-redaction` 標頭重新開啟儲存。在金鑰或團隊上設為 `true`，也不會在 proxy 已關閉儲存時啟用它。與[訊息編輯遮罩](./logging.md#redact-messages-response-content)不同，此設定只影響支出記錄；其他記錄回呼仍會收到內容。
+
 ## 追蹤工具 {#tracing-tools}
 
 查看在您的 completion 請求中提供與呼叫了哪些工具。
@@ -84,6 +110,44 @@ general_settings:
 general_settings:
   disable_spend_logs: True   # Disable writing spend logs to DB
 ```
+
+## 選擇要儲存哪些 metadata 欄位 {#choose-which-metadata-fields-are-stored}
+
+每一筆 `LiteLLM_SpendLogs` 記錄都有一個 `metadata` JSON 欄位。其內容大多是 `model_map_information`，也就是複製到每一筆記錄的模型成本對照表項目（約 7 KB）。請使用 `spend_logs_metadata_fields` 選擇該欄位的哪些頂層鍵要寫入資料庫。`include` 與 `exclude` 只能設定其中一個
+
+```yaml
+general_settings:
+  spend_logs_metadata_fields:
+    exclude:
+      - model_map_information
+```
+
+```yaml
+general_settings:
+  spend_logs_metadata_fields:
+    include:
+      - user_api_key_alias
+      - usage_object
+      - cost_breakdown
+```
+
+`include` 清單會捨棄所有未列出的鍵，包括只有部分記錄才有的鍵，例如[鏡像呼叫](../traffic_mirroring#find-mirrored-calls-in-logs)上的 `is_silent_experiment`。
+
+未設定此項目時，所有鍵都會寫入，這是預設行為。同時設定兩個清單、兩個都不設定、列出非 `LiteLLM_SpendLogs.metadata` 欄位的鍵，或使用如 `usage_object.cache_read_input_tokens` 的點號路徑，都會讓 proxy 在啟動時停止。`status` 與 `cold_storage_object_key` 永遠會寫入，無法排除。此設定也可以不重啟而透過 `POST /config/field/update`（`config_type: general_settings`）變更，該端點會以 400 拒絕相同的無效值
+
+只有儲存的記錄會被篩選。每日支出表格、預算與記錄回呼仍會收到所有鍵。`proxy_server_request` 與 `response` 欄位不受影響；它們仍由 `store_prompts_in_spend_logs` 控制。變更前寫入的記錄會保留其 metadata，直到[保留期限](#automatically-deleting-old-spend-logs)將其刪除，而 Postgres 只有在 `VACUUM FULL` 或 `pg_repack` 之後才會歸還磁碟空間
+
+有些鍵會從儲存的記錄中讀回。省略它們會讓受影響記錄的以下功能停止運作
+
+| 鍵 | 缺少該鍵的記錄會停止運作的功能 |
+|---|---|
+| `model_map_information` | 沒有任何功能會從儲存的記錄中讀取它 |
+| `usage_object`、`cost_breakdown` | 記錄抽屜中的成本明細與提示快取頁面 |
+| `error_information` | `/spend/logs` 上的錯誤代碼與錯誤訊息篩選，以及記錄抽屜中的錯誤明細 |
+| `user_api_key_alias` | Logs 頁面與 `/spend/logs/ui` 上的金鑰別名篩選 |
+| `user_api_key_team_id`、`user_api_key_user_id` | 從支出記錄中還原已刪除金鑰的團隊與使用者 |
+| `guardrail_information` | 記錄抽屜中的防護欄面板與壓縮節省 |
+| `used_client_oauth_token` | `/spend/logs` 上的 OAuth token 篩選 |
 
 ## 自動刪除舊的支出記錄 {#automatically-deleting-old-spend-logs}
 

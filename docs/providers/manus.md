@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Manus Agents API：Responses API"
+sidebar_label: "Manus"
+description: "透過 Responses API 以 manus-1.6、manus-1.6-lite 或 manus-1.6-max 建立 Manus 代理程式任務，輪詢直到完成，並上傳檔案進行分析。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

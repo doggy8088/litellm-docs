@@ -14,11 +14,11 @@ LiteLLM 提供對應至 OpenAI 的 `/images/edits` API 端點的圖像編輯功�
 | 備援 | ✅ | 可在支援的模型之間使用 |
 | 負載平衡 | ✅ | 可在支援的模型之間使用 |
 | 支援的操作 | 建立圖像編輯 | 支援單張與多張圖像 |
-| 支援的 LiteLLM SDK 版本 | 1.63.8+ | Gemini 支援需要 1.79.3+ |
-| 支援的 LiteLLM Proxy 版本 | 1.71.1+ | Gemini 支援需要 1.79.3+ |
+| 支援的 LiteLLM SDK 版本 | <SinceVersion v="1.63.8" /> | Gemini 支援需要 <SinceVersion v="1.79.3" /> |
+| 支援的 LiteLLM Proxy 版本 | <SinceVersion v="1.71.1" /> | Gemini 支援需要 <SinceVersion v="1.79.3" /> |
 | 支援的 LLM 提供者 | **OpenAI**、**Gemini（Google AI Studio）**、**Vertex AI**、**OpenRouter**、**Stability AI**、**AWS Bedrock（Stability）**、**Black Forest Labs**、**Azure AI（FLUX）**、**Hosted vLLM（vLLM-Omni）** | Gemini 支援新的 `gemini-2.5-flash-image` 系列。Vertex AI 同時支援 Gemini 與 Imagen 模型。OpenRouter 透過聊天完成路由圖像編輯。Stability AI 與 Bedrock Stability 支援各種圖像編輯操作。Black Forest Labs 支援 FLUX Kontext 模型。Hosted vLLM 會路由到 vLLM-Omni 伺服器的相容 OpenAI 的 `/v1/images/edits`。 |
 
- #### ⚡️請參閱 [models.litellm.ai](https://models.litellm.ai/) 上所有支援的模型與提供者
+ #### 請參閱 [models.litellm.ai](https://models.litellm.ai/) 上所有支援的模型與提供者
 
 ## 使用方式 {#usage}
 

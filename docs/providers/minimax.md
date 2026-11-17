@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 MiniMax API：聊天、語音、影片"
+sidebar_label: "MiniMax"
+description: "以 Anthropic 或 OpenAI 格式與 MiniMax-M2.1 聊天，支援 thinking 與工具；使用 speech-2.6-hd 將文字轉語音，並生成 MiniMax-H3 影片。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -378,6 +384,16 @@ response = litellm.completion(
 print(f"Cost: ${response._hidden_params.get('response_cost', 0)}")
 ```
 
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`minimax/<family>-latest` 名稱會跟隨某個模型家族，當 LiteLLM 將它們移至較新的模型時，您的應用程式可以維持使用同一個模型字串。您可以像使用其他任何 MiniMax 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 MiniMax，並依該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `minimax/minimax-latest` | MiniMax |
+
 ## MiniMax - 文字轉語音 {#minimax---text-to-speech}
 
 ### 快速開始 {#quick-start}
@@ -632,3 +648,86 @@ except Exception as e:
 | bitrate | int | MP3 位元率：64000、128000、192000、256000 | 128000 |
 | channel | int | 音訊聲道：1（單聲道）或 2（立體聲） | 1 |
 | output_format | string | 輸出格式："hex" 或 "url"（url 會回傳 24 小時有效的 URL） | hex |
+
+## MiniMax - 影片生成 {#minimax---video-generation}
+
+<SinceVersion v="1.107.0" />
+
+MiniMax-H3 與 MiniMax-H3-Max 在 MiniMax 的 V2 影片任務 API 上以非同步任務方式執行。`video_generation` 會立即回傳工作 ID；輪詢 `video_status` 直到它回報 `completed`，然後用 `video_content` 下載 mp4。在此之前呼叫 `video_content` 會回傳 400，表示影片仍在處理中。
+
+較早的版本會回傳 500，表示 minimax 不支援影片生成。
+
+```python showLineNumbers title="MiniMax Video Generation"
+import os
+import time
+from litellm import video_content, video_generation, video_status
+
+os.environ["MINIMAX_API_KEY"] = "your-api-key"
+
+video = video_generation(
+    model="minimax/MiniMax-H3",
+    prompt="A paper boat drifting down a rain-soaked city gutter",
+    seconds="5",
+    size="1280x720",
+)
+
+while video.status not in ("completed", "failed", "cancelled"):
+    time.sleep(20)
+    video = video_status(video_id=video.id)
+
+if video.status == "completed":
+    with open("video.mp4", "wb") as f:
+        f.write(video_content(video_id=video.id))
+```
+
+`seconds` 設定時長，`size` 設定寬高比，因此 `1280x720` 會以 `16:9` 傳送。您也可以直接傳入 `ratio`。`resolution` 挑選輸出等級：MiniMax-H3 為 `768P`（預設）或 `2K`，MiniMax-H3-Max 為 `480P` 或 `768P`。未傳 `seconds` 時工作會執行 5 秒；純文字請求未傳 `size` 或 `ratio` 時以 16:9 執行。MiniMax 接受的比例為 16:9、4:3、1:1、3:4、9:16、21:9 與 `adaptive`，因此像 `1792x1024`（7:4）這樣的 `size` 會得到 MiniMax 的 400。MiniMax-H3 執行 4 到 15 秒，MiniMax-H3-Max 執行 5 到 15 秒。
+
+若要圖生影片，將第一幀以 `input_reference` 傳入，可以是 URL 或檔案（開啟的檔案、bytes，或 `(filename, file, content_type)` tuple）。若要參考生影片，則改在 `content` 中傳入 MiniMax 的 `image_url` 與 `audio_url` 項目，每個項目的 `role` 為 `reference_image` 或 `reference_audio`。MiniMax 不接受參考與第一幀同時使用。
+
+請求的文字一律來自 `prompt`，因此 `content` 中的文字項目會被拒絕。實作 `apply_guardrail` 的防護欄（例如 `litellm_content_filter`）會掃描該 `prompt`，但其他防護欄 hook 可能不會掃描 `/v1/videos` 請求，且沒有任何防護欄會掃描圖片與音訊參考。
+
+影片呼叫也會讀取 `MINIMAX_API_BASE`。如果您匯出了 `/v1/messages` 章節中的 `/anthropic/v1/messages` URL，影片呼叫會回傳 404，因此請將它設為 `https://api.minimax.io/anthropic`（兩者皆可運作），或只在影片呼叫時傳入 `api_base="https://api.minimax.io/v1"`。
+
+以下請求會回傳 400，不會送達 MiniMax：
+
+- 參考影片輸入（`content` 中的 `video_url` 項目），因為 MiniMax 只在任務建立後才依其時長計費
+- remix，因為 MiniMax 的重新生成只會將完成的 768P 任務升級至 2K，且會忽略 prompt
+- Python SDK 中的 `video_list` 搭配 `after` 或 `order="asc"`，因為 MiniMax 以頁碼分頁且最新者在前。若要取得後面的頁面，傳入 `extra_query={"page_num": 2}`
+- Python SDK 中的 `video_content` 搭配 `video` 以外的 `variant`，因為 MiniMax 只提供 mp4
+- 模型沒有定價的 `resolution`，例如 MiniMax-H3 上的 `480P`；除非開啟 `drop_params`，此時會改送 768P 預設值
+- MiniMax 無法處理的其他任何參數，例如 `seed`、`n`、`quality` 或 `negative_prompt`；除非開啟 `drop_params`
+
+花費會在建立時依傳送給 MiniMax 的解析度下該模型的每秒費率記錄，並加上超出 MiniMax 免費額度（MiniMax-H3 為 5 張，MiniMax-H3-Max 為 2 張）的每張輸入圖片。
+
+若要在 proxy 上提供這些模型，新增一個部署並呼叫 `/v1/videos`：
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: minimax-h3
+    litellm_params:
+      model: minimax/MiniMax-H3
+      api_key: os.environ/MINIMAX_API_KEY
+```
+
+```bash showLineNumbers title="Video generation via Proxy - cURL"
+curl http://localhost:4000/v1/videos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -d '{
+    "model": "minimax-h3",
+    "prompt": "A paper boat drifting down a rain-soaked city gutter",
+    "seconds": "5",
+    "size": "1280x720"
+  }'
+
+curl http://localhost:4000/v1/videos/$VIDEO_ID \
+  -H "Authorization: Bearer $LITELLM_API_KEY"
+
+curl http://localhost:4000/v1/videos/$VIDEO_ID/content \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -o video.mp4
+```
+
+Proxy 的 `/content` 路由一律回傳 mp4，因為它不讀取 `variant`。成本對照表將這兩個模型標記為 `video_generation`，因此對這些部署執行 proxy 健康檢查會建立一段真實的 5 秒影片，並由 MiniMax 計費。開啟 `background_health_checks` 時，請在部署的 `model_info` 中設定 `disable_background_health_check: true`。
+
+若要列出您的 MiniMax 任務，從 Python SDK 呼叫 `litellm.video_list(custom_llm_provider="minimax")`。MiniMax 不回傳 cursor，因此 `has_more` 一律為 `false`，後面的頁面來自 `extra_query={"page_num": N}`。在 proxy 上，`GET /v1/videos?custom_llm_provider=minimax` 只回傳第一頁（最新者在前），並忽略 `after`、`order`、`limit` 與 `page_num`。

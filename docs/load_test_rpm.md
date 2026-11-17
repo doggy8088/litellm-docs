@@ -17,7 +17,7 @@
 
 我們將以每分鐘 600 個請求打到 router。 
 
-複製這段腳本 👇。將其儲存為 `test_loadtest_router.py`，然後使用 `python3 test_loadtest_router.py` 執行它
+複製這段腳本。將其儲存為 `test_loadtest_router.py`，然後使用 `python3 test_loadtest_router.py` 執行它
 
 ```python
 from litellm import Router 
@@ -135,7 +135,7 @@ model_list:
 router_settings:
   num_retries: 0
   enable_pre_call_checks: true
-  redis_host: os.environ/REDIS_HOST ## 👈 IMPORTANT! Setup the proxy w/ redis
+  redis_host: os.environ/REDIS_HOST ## IMPORTANT! Setup the proxy w/ redis
   redis_password: os.environ/REDIS_PASSWORD
   redis_port: os.environ/REDIS_PORT
   routing_strategy: simple-shuffle # recommended for best performance
@@ -161,7 +161,7 @@ litellm --config /path/to/config.yaml --port 4001
 
 我們將以每分鐘 600 個請求打到 proxy。 
 
-複製這段腳本 👇。將其儲存為 `test_loadtest_proxy.py`，然後使用 `python3 test_loadtest_proxy.py` 執行它
+複製這段腳本。將其儲存為 `test_loadtest_proxy.py`，然後使用 `python3 test_loadtest_proxy.py` 執行它
 
 ```python
 from openai import AsyncOpenAI, AsyncAzureOpenAI

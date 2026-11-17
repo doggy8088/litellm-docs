@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI 閘道使用 Cato Networks Guardrails"
+sidebar_label: "Cato Networks"
+description: "將 Cato Networks AI Security 防護欄加入 LiteLLM AI 閘道：建立 guard、選擇偵測項目，並依金鑰別名為每把金鑰設定政策。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

@@ -1,5 +1,6 @@
 ---
-title: "v1.101.1 - Claude Code 自動模式、萬用字元授權自動路由器與 TypeSafe Jev"
+title: "LiteLLM v1.101.1 - Claude Code 自動模式、萬用字元授權自動路由器與 TypeSafe Jev"
+description: "讓 Claude Code 自動模式可透過閘道運作，並修正 Bedrock GPT 與 Grok 開關。另將自動路由器功能授予萬用字元授權。"
 slug: "v1-101-1"
 date: 2026-09-23T06:12:25
 authors:

@@ -1,5 +1,6 @@
 ---
-title: v1.70.1-stable - Gemini Realtime API 支援
+title: "LiteLLM v1.70.1-stable - Gemini Realtime API 支援"
+description: "新增透過 OpenAI /v1/realtime 端點的 Gemini Realtime API 呼叫、花費記錄保留，以及搭配 Presidio 的 PII Masking 2.0。"
 slug: v1.70.1-stable
 date: 2025-05-17T10:00:00
 authors:

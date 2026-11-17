@@ -1,7 +1,16 @@
+---
+title: "SambaNova API 與 LiteLLM：Python SDK 與閘道"
+sidebar_label: "SambaNova"
+description: "在 SambaNova Cloud 上呼叫 Llama 4 Maverick 與 Llama 3.3 70B，支援工具呼叫、圖片輸入與 JSON schema 輸出，並使用 E5-Mistral-7B 嵌入文字。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # SambaNova {#sambanova}
+
+SambaNova Cloud 提供聊天、視覺與嵌入模型；LiteLLM 可從 Python SDK 或 AI 閘道以 `sambanova/` 前綴呼叫所有 SambaNova 模型。
+
 [https://cloud.sambanova.ai/](http://cloud.sambanova.ai?utm_source=litellm&utm_medium=external&utm_campaign=cloud_signup)
 
 :::tip

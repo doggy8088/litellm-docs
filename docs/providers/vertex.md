@@ -1,8 +1,16 @@
+---
+title: "使用 LiteLLM 的 Vertex AI Gemini API"
+sidebar_label: "Gemini Enterprise Agent Platform"
+description: "透過 LiteLLM 以 vertex_ai/ 前綴呼叫 Gemini Enterprise Agent Platform（原 Vertex AI）上的 Gemini：GCP 驗證、函式呼叫、思考、快取。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # VertexAI [Gemini] {#vertexai-gemini}
+
+Gemini Enterprise Agent Platform（原 Vertex AI）是 Google Cloud 的全代管生成式 AI 平台；LiteLLM 使用 `vertex_ai/` 前綴與您的 GCP 憑證，從 Python SDK 或 AI 閘道呼叫其上的 Gemini。
 
 ## 概覽 {#overview}
 
@@ -33,7 +41,7 @@ Google 於 2026 年將 Vertex AI 更名為 Gemini Enterprise Agent Platform（�
 <br />
 <br />
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_VertextAI_Example.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/liteLLM_VertextAI_Example.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -155,7 +163,7 @@ print(completion(**data))
 
 ### **JSON Schema** {#json-schema}
 
-從 v`1.40.1+` 開始，LiteLLM 支援將 `response_schema` 作為 Gemini 模型在 Vertex AI 上的參數傳送（例如 `{{gemini_pro}}`）。對於原生不支援的模型，LiteLLM 會將 schema 以使用者可控制的提示加入訊息清單中。
+LiteLLM 支援將 `response_schema` 作為 Gemini 模型在 Vertex AI 上的參數傳送（例如 `{{gemini_pro}}`）<SinceVersion v="1.40.1" />。對於原生不支援的模型，LiteLLM 會將 schema 以使用者可控制的提示加入訊息清單中。
 
 **回應 Schema**
 <Tabs>
@@ -192,7 +200,7 @@ response_schema = {
 completion(
     model="vertex_ai/{{gemini_pro}}", 
     messages=messages, 
-    response_format={"type": "json_object", "response_schema": response_schema} # 👈 KEY CHANGE
+    response_format={"type": "json_object", "response_schema": response_schema} # KEY CHANGE
     )
 
 print(json.loads(completion.choices[0].message.content))
@@ -277,7 +285,7 @@ try:
     response_format={
         "type": "json_object", 
         "response_schema": response_schema,
-        "enforce_validation": true # 👈 KEY CHANGE
+        "enforce_validation": true # KEY CHANGE
     }
 	)
 except JSONSchemaValidationError as e: 
@@ -394,7 +402,7 @@ from litellm import completion
 ## SETUP ENVIRONMENT
 # !gcloud auth application-default login - run this to add vertex credentials to your env
 
-tools = [{"googleSearch": {}}] # 👈 ADD GOOGLE SEARCH
+tools = [{"googleSearch": {}}] # ADD GOOGLE SEARCH
 
 resp = litellm.completion(
                     model="vertex_ai/{{gemini_pro}}",
@@ -468,7 +476,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = ".."
 
-# 👇 ADD URL CONTEXT
+# ADD URL CONTEXT
 tools = [{"urlContext": {}}]
 
 response = completion(
@@ -530,7 +538,7 @@ from litellm import completion
 ## SETUP ENVIRONMENT
 # !gcloud auth application-default login - run this to add vertex credentials to your env
 
-tools = [{"enterpriseWebSearch": {}}] # 👈 ADD GOOGLE ENTERPRISE SEARCH
+tools = [{"enterpriseWebSearch": {}}] # ADD GOOGLE ENTERPRISE SEARCH
 
 resp = litellm.completion(
                     model="vertex_ai/{{gemini_pro}}",
@@ -601,7 +609,7 @@ import os
 # !gcloud auth application-default login - run this to add vertex credentials to your env
 
 
-tools = [{"codeExecution": {}}] # 👈 ADD CODE EXECUTION
+tools = [{"codeExecution": {}}] # ADD CODE EXECUTION
 
 response = completion(
     model="vertex_ai/{{gemini_flash}}",
@@ -647,7 +655,7 @@ from litellm import completion
 ## SETUP ENVIRONMENT
 # !gcloud auth application-default login - run this to add vertex credentials to your env
 
-tools = [{"googleMaps": {"enableWidget": "ENABLE_WIDGET"}}] # 👈 ADD GOOGLE MAPS
+tools = [{"googleMaps": {"enableWidget": "ENABLE_WIDGET"}}] # ADD GOOGLE MAPS
 
 resp = litellm.completion(
     model="vertex_ai/{{gemini_flash}}",
@@ -675,7 +683,7 @@ tools = [{
         "longitude": -122.4194,     # San Francisco longitude
         "languageCode": "en_US"     # Optional: language for results
     }
-}] # 👈 ADD GOOGLE MAPS WITH LOCATION
+}] # ADD GOOGLE MAPS WITH LOCATION
 
 resp = litellm.completion(
     model="vertex_ai/{{gemini_flash}}",
@@ -823,7 +831,7 @@ from litellm import completion
 
 # !gcloud auth application-default login - run this to add vertex credentials to your env
 
-tools = [{"googleSearch": {"disable_attributon": False}}] # 👈 ADD GOOGLE SEARCH
+tools = [{"googleSearch": {"disable_attributon": False}}] # ADD GOOGLE SEARCH
 
 resp = litellm.completion(
                     model="vertex_ai/{{gemini_pro}}",
@@ -984,6 +992,30 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
+#### 思考簽章與工具呼叫 id {#thought-signatures-and-tool-call-ids}
+
+Vertex AI 上的 Gemini 會隨其工具呼叫回傳思考簽章（thought signature），LiteLLM 的處理方式與 Gemini API 相同。預設情況下，帶有簽章的工具呼叫，其 id 會包含完整的簽章，形式如 `call_123__thought__<thought-signature>`，長度往往達數百個字元。若用戶端對 id 長度有限制，可在部署上或針對每個請求設定 `thought_signature_in_tool_call_id: false` <SinceVersion v="1.109.0" />。如此 id 會變短，例如 `call_467312`，簽章只會出現在該工具呼叫的 `provider_specific_fields.thought_signature` 中。
+
+```yaml
+model_list:
+  - model_name: {{gemini_flash}}
+    litellm_params:
+      model: vertex_ai/{{gemini_flash}}
+      vertex_project: "project-id"
+      vertex_location: "global"
+      thought_signature_in_tool_call_id: false
+```
+
+[讓工具呼叫 id 保持簡短](/docs/providers/gemini#keep-tool-call-ids-short) 說明了每個請求的設定方式、錯誤的值會造成什麼影響，以及簽章如何在下一輪回傳給模型。
+
+### **長輸出** {#long-outputs}
+
+對於會以 `continuationToken` 結束請求的模型（例如 Gemini 4 Argon），LiteLLM 會帶著該 token 再次送出請求，直到回答完成或 `max_tokens` 用完為止，因此 `max_tokens` 可以高於 Google 的單次請求上限。[長輸出](/blog/gemini-4-argon#long-outputs) 說明了其運作方式、回報的用量以及所需的逾時設定。
+
+未設定輸出上限的請求只會送出一次，並停在 Google 自己的單次請求上限。自 v1.108.0 起，可將環境變數 `LITELLM_GEMINI_DEFAULT_MAX_OUTPUT_TOKENS` 設為整數，為這類請求指定預算。它適用於透過 proxy 或 Python SDK 的 chat completion、text completion 與 Responses API 請求，但絕不適用於 `/v1/messages`（該端點要求 `max_tokens`）。LiteLLM 會將預算上限設為成本對照表中該模型的 `max_output_tokens`，且請求本身已帶有的任何輸出上限優先。以下情況不適用：成本對照表未將該模型列為 chat 模型（例如圖片模型）；成本對照表 `supported_output_modalities` 未包含 text 的模型；`modalities` 要求 text 以外內容的請求；以 `continuation_token` 續接的請求；以及 `vertex_ai/` 模型上的原生 `:generateContent` 路由。值設得太大，會讓非串流請求的執行時間與回答一樣長，因此請串流長回答或提高用戶端的逾時。[環境變數參考](/docs/proxy/config_settings#environment-variables---reference) 列出了所有情況。
+
+成本對照表中的 `supports_continuation: true` 標示該模型可以以 `continuationToken` 結束請求 <SinceVersion v="1.110.0" />。此旗標設定於 `gemini/gemini-4-argon`、`vertex_ai/gemini-4-argon` 與 `vertex_ai/gemini-4-argon-cyber-permissive`。送出請求前，可用 `litellm.supports_continuation("vertex_ai/gemini-4-argon")` 或 `litellm.get_model_info("vertex_ai/gemini-4-argon")["supports_continuation"]` 讀取，或透過 proxy 的 `GET /model/info` 與 `GET /v1/model/info`（每個部署會在 `model_info` 中帶有此值），以及 `GET /model_group/info`（只要模型群組中有任一部署支援，群組即回報 `true`）。對於成本對照表未標示的模型，`get_model_info` 與 `/model/info` 會回傳 `None`（`null`），因此請檢查是否為 `true`，而非檢查是否為 `false`。部署自身在 `config.yaml` 或 Admin UI 中的 `model_info` 會覆寫該部署的成本對照表值，因此對於成本對照表尚未標示的模型，可在該處設定 `supports_continuation: true`。此旗標只說明模型的能力，不會開啟或關閉續接功能。無論旗標為何，LiteLLM 只在請求帶有輸出上限（來自 `max_tokens` 或 `LITELLM_GEMINI_DEFAULT_MAX_OUTPUT_TOKENS`）時才會再次送出請求，且只要求一個選擇（`n` 為 1）。某個回答是否被截斷，仍須看回應本身。在 `/chat/completions` 上，該回答會以 `finish_reason: "length"` 結尾，並帶有 `provider_specific_fields.continuation_token`，[長輸出](/blog/gemini-4-argon#long-outputs) 說明了如何將它送回以接續回答。
+
 ### **Context Caching** {#context-caching}
 
 #### 統一端點 {#unified-endpoint}
@@ -1009,7 +1041,7 @@ for _ in range(2):
                     {
                         "type": "text",
                         "text": "Here is the full text of a complex legal agreement" * 4000,
-                        "cache_control": {"type": "ephemeral"}, # 👈 KEY CHANGE
+                        "cache_control": {"type": "ephemeral"}, # KEY CHANGE
                     }
                 ],
             },
@@ -1026,7 +1058,7 @@ for _ in range(2):
             }]
     )
 
-    print(resp.usage) # 👈 2nd usage block will be less, since cached tokens used
+    print(resp.usage) # 2nd usage block will be less, since cached tokens used
 ```
 
 </TabItem>
@@ -1047,7 +1079,7 @@ resp = completion(
                     "text": "Here is the full text of a complex legal agreement" * 4000,
                     "cache_control": {
                         "type": "ephemeral", 
-                        "ttl": "7200s"  # 👈 Cache for 2 hours
+                        "ttl": "7200s"  # Cache for 2 hours
                     },
                 }
             ],
@@ -1060,7 +1092,7 @@ resp = completion(
                     "text": "What are the key terms and conditions in this agreement?",
                     "cache_control": {
                         "type": "ephemeral",
-                        "ttl": "3600s"  # 👈 This TTL will be ignored (first one is used)
+                        "ttl": "3600s"  # This TTL will be ignored (first one is used)
                     },
                 }
             ],
@@ -1404,7 +1436,7 @@ from litellm import completion
 response = completion(
     model="vertex_ai/{{gemini_pro}}",
     messages=[{"role": "user", "content": "Hello!"}],
-    vertex_credentials="/path/to/wif-credentials.json",  # 👈 WIF credentials file
+    vertex_credentials="/path/to/wif-credentials.json",  # WIF credentials file
     vertex_project="your-gcp-project-id",
     vertex_location="us-central1"
 )
@@ -1420,7 +1452,7 @@ model_list:
       model: vertex_ai/{{gemini_pro}}
       vertex_project: your-gcp-project-id
       vertex_location: us-central1
-      vertex_credentials: /path/to/wif-credentials.json  # 👈 WIF credentials file
+      vertex_credentials: /path/to/wif-credentials.json  # WIF credentials file
 ```
 
 或者，您可以在 LiteLLM UI 的 **LLM Credentials** 中建立憑證，並使用它們來驗證您的模型：
@@ -1432,7 +1464,7 @@ model_list:
       model: vertex_ai/{{gemini_pro}}
       vertex_project: your-gcp-project-id
       vertex_location: us-central1
-      litellm_credential_name: my-vertex-wif-credential  # 👈 Reference credential stored in UI
+      litellm_credential_name: my-vertex-wif-credential  # Reference credential stored in UI
 ```
 
 </TabItem>
@@ -1665,7 +1697,7 @@ response = client.chat.completions.create(
 ```python
 import litellm 
 
-litellm.set_verbose = True # 👈 See RAW REQUEST/RESPONSE 
+litellm.set_verbose = True # See RAW REQUEST/RESPONSE
 
 litellm.vertex_ai_safety_settings = [
         {
@@ -1763,6 +1795,10 @@ LiteLLM 會依據回應的 `usageMetadata.trafficType`，自動使用正確的�
 當您使用 [Vertex AI PayGo](https://cloud.google.com/vertex-ai/generative-ai/pricing)（隨選優先）或批次工作負載時，LiteLLM 會從回應中讀取 `trafficType`，並套用 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中相對應的每 token 成本。不需要任何設定；支出追蹤可同時適用於標準與 PayGo 請求。
 
 一般成本追蹤設定請參閱 [Spend Tracking](../proxy/cost_tracking.md)。
+
+## Interactions API 與 Deep Research {#interactions-api-and-deep-research}
+
+`vertex_ai` 部署會在 `/v1beta/interactions` 原生提供 Google 的 Interactions API，包括作為背景工作的 `deep-research-preview-04-2026` 代理程式。請為該代理程式建立專屬的部署，其 `model` 即為該代理程式，然後將該部署的模型群組作為 `model`、代理程式作為 `agent` 送出。若要透過 proxy 輪詢、取消或刪除工作，請將建立回應中 `x-litellm-model-id` 標頭的部署 ID，或其建立所在的模型群組，作為 `model` 查詢參數或 `x-litellm-model` 標頭送出。[Vertex AI 上的 Interactions](../interactions.md#vertex-ai) 包含設定、請求與成本追蹤的詳細說明。
 
 ## Private Service Connect (PSC) 端點 {#private-service-connect-psc-endpoints}
 
@@ -2284,7 +2320,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 
 LiteLLM 支援以下透過 URL 傳入的檔案類型。
 
-自 v1.65.1+ 起，VertexAI 可使用 `file` 訊息類型
+您可以對 VertexAI 使用 `file` 訊息類型 <SinceVersion v="1.65.1" />
 
 ```
 Files with Cloud Storage URIs - gs://cloud-samples-data/generative-ai/image/boats.jpeg
@@ -2348,13 +2384,13 @@ response = completion(
                 {
                     "type": "file",
                     "file": {
-                        "file_data": f"data:application/pdf;base64,{encoded_file}", # 👈 PDF
+                        "file_data": f"data:application/pdf;base64,{encoded_file}", # PDF
                     }  
                 },
                 {
                     "type": "audio_input",
                     "audio_input": {
-                        "audio_input": f"data:audio/mp3;base64,{encoded_file}", # 👈 AUDIO File ('file' message works as too)
+                        "audio_input": f"data:audio/mp3;base64,{encoded_file}", # AUDIO File ('file' message works as too)
                     }  
                 },
             ],
@@ -2434,13 +2470,13 @@ curl http://0.0.0.0:4000/v1/chat/completions \
           {
                 "type": "file",
                 "file": {
-                    "file_data": f"data:application/pdf;base64,{encoded_file}", # 👈 PDF
+                    "file_data": f"data:application/pdf;base64,{encoded_file}", # PDF
                 },
             },
             {
                 "type": "audio_input",
                 "audio_input {
-                    "audio_input": f"data:audio/mp3;base64,{encoded_file}", # 👈 AUDIO File ('file' message works as too)
+                    "audio_input": f"data:audio/mp3;base64,{encoded_file}", # AUDIO File ('file' message works as too)
                 }  
             },
     ]
@@ -2973,7 +3009,7 @@ model_list:
       api_key: fake-key
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
 
-# 👇 Key change: For /fine_tuning/jobs endpoints
+# Key change: For /fine_tuning/jobs endpoints
 finetune_settings:
   - custom_llm_provider: "vertex_ai"
     vertex_project: "adroit-crow-413218"
@@ -3087,6 +3123,52 @@ LiteLLM 會建立填入所有字串值之 `labels` 欄位，內容為 `metadata`
 }
 ```
 
+### 以金鑰、團隊、組織與專案身分標記請求 {#label-requests-with-key-team-org-and-project-identity}
+
+proxy 可以根據發出呼叫的虛擬金鑰自動為您加上標籤，讓 Cloud Billing 能在本節末尾所列的路由上，依金鑰、團隊、組織與專案拆分 Vertex AI 成本，您的用戶端無需任何變更 <SinceVersion v="1.111.0" />。此功能預設關閉。請在 `litellm_settings` 下列出要送出的欄位：
+
+```yaml
+litellm_settings:
+  vertex_request_label_fields:
+    - user_api_key_alias
+    - user_api_key_team_alias
+    - user_api_key_org_alias
+    - user_api_key_project_alias
+    - spend_logs_metadata
+```
+
+採用上述設定後，一個以金鑰 `chargeback`、團隊 `AI Platform`、組織 `ml-org`、專案 `support-bot` 發出的請求，若其金鑰 metadata 將 `spend_logs_metadata` 設為 `{"cost-center": "cc-1234"}`，送達 Vertex AI 時會帶有以下標籤：
+
+```json
+{
+    "user_api_key_alias": "chargeback",
+    "user_api_key_team_alias": "ai_platform",
+    "user_api_key_org_alias": "ml-org",
+    "user_api_key_project_alias": "support-bot",
+    "cost-center": "cc-1234"
+}
+```
+
+| 欄位 | 標籤值 |
+|-------|-------------|
+| `user_api_key_alias` | 虛擬金鑰的別名 |
+| `user_api_key_team_id`, `user_api_key_team_alias` | 金鑰所屬的團隊 |
+| `user_api_key_org_id`, `user_api_key_org_alias` | 金鑰所屬的組織 |
+| `user_api_key_project_id`, `user_api_key_project_alias` | 金鑰所屬的專案 |
+| `spend_logs_metadata` | 請求的 [`spend_logs_metadata`](../proxy/cost_tracking.md#custom-spend-log-metadata) 中的每一組文字鍵值 |
+
+若某個欄位在特定請求中沒有值（例如沒有團隊的金鑰，其 `user_api_key_team_alias`），該欄位會被省略；而設為空字串的欄位會以空值送出。[Bedrock 身分清單](./bedrock.md#forward-key-team-and-org-identity-from-the-proxy) 中的其他文字 `user_api_key_*` 欄位也可以使用，但不適合作為標籤。`user_api_key_hash` 會被截斷為 63 個字元，因此不再與支出記錄相符；電子郵件與路由中的 `@`、`.` 與 `/` 會被替換為 `_`；而像 `user_api_key_end_user_id` 這類每位使用者專屬的 id，會碰到下方 Google 的值長度限制。呼叫者本身也會透過 `user` 欄位設定 `user_api_key_end_user_id`，因此它不是 proxy 所擔保的身分。`spend_logs_metadata` 是加入您自訂維度（例如成本中心）的方式。只需在金鑰或團隊的 `metadata` 中設定一次，LiteLLM 就會將它合併到以該金鑰發出的每個請求中，且請求上送出的值優先於金鑰與團隊的預設值。
+
+Vertex AI 會先收到身分標籤（依您列出的順序），接著是呼叫者來自上方[標籤](#labels)的標籤，最後是 `spend_logs_metadata` 鍵值對。兩者使用相同鍵時，先出現者優先。LiteLLM 最多送出 64 個標籤（這是 Vertex AI 在 Google 模型上接受的上限），在 Claude 與 Mistral 上最多 32 個，並放在 `X-Vertex-AI-Labels` 標頭中。身分標籤永遠保有一席。在 Claude 與 Mistral 上，呼叫者的標籤只來自 `/chat/completions` 的 `labels` 欄位，或呼叫者送出的 `X-Vertex-AI-Labels` 標頭，絕不來自 `metadata`；在 `/v1/messages` 上則只來自該標頭。呼叫者可以將該標頭放在請求本文的 `extra_headers` 中，或在 proxy 轉送用戶端標頭時將它作為 HTTP 標頭送出（在 `general_settings` 下設定 `forward_client_headers_to_llm_api: true`，或將模型群組列在 `litellm_settings.model_group_settings.forward_client_headers_to_llm_api` 下）。當標頭與 `labels` 欄位同時送達時，標頭會取代 `labels` 欄位。
+
+此設定開啟時，以 `user_api_key_` 開頭（不分大小寫）的鍵會保留給 proxy 使用，因此呼叫者標籤或 `spend_logs_metadata` 鍵值對若使用這類鍵，會被捨棄，呼叫者無法透過標籤偽造身分。只有身分標籤受到這種保護。呼叫者仍可送出自己的 `spend_logs_metadata`，或使用相同鍵的標籤，來取代像 `cost-center` 這類 `spend_logs_metadata` 標籤，因此對於呼叫者不得更改的分攤用途，請使用團隊或專案身分標籤。在 Claude 與 Mistral 上，LiteLLM 會將呼叫者的 `X-Vertex-AI-Labels` 標頭讀作其標籤，並以自己的標頭取代它送出。若標頭不是 base64 編碼的 JSON，會被捨棄，LiteLLM 改用呼叫者的 `labels` 欄位。在其他所有 LiteLLM 加入標籤的地方，標籤會放在請求本文中，且呼叫者的 `X-Vertex-AI-Labels` 標頭會被捨棄，讓該標頭無法將偽造的身分標籤帶到 Vertex AI。
+
+身分與 `spend_logs_metadata` 的文字會轉為小寫；字母、數字、`_` 或 `-` 以外的每個字元都會變成 `_`（包括寫成獨立字元的重音與母音符號，以及像 `ʰ` 這類修飾字母），並截斷為 63 個字元，因此像 `AI Platform` 這樣的團隊別名會變成有效的標籤值 `ai_platform`。經過上述處理後不以字母開頭的 `spend_logs_metadata` 鍵會被捨棄。兩個只在大小寫或這些字元上不同的別名（例如 `AI Platform` 與 `ai.platform`）會共用同一個標籤值，因此當確切的團隊名稱很重要時，請改列 `user_api_key_team_id`。呼叫者自己的標籤會原樣送出，與設定關閉時相同。
+
+Google 在帳單帳戶的整個生命週期內，每個標籤鍵最多保留 1,000 個不重複值，超過時可能逕行捨棄該鍵而不另行通知，因此請勿將每個請求專屬的 id 放入 `spend_logs_metadata` 與呼叫者標籤中。擁有超過 1,000 把虛擬金鑰的 proxy，也會在 `user_api_key_alias` 上碰到這個上限，因此請改列團隊、組織或專案欄位。標籤只有在隨用隨付的請求上才會送達 Cloud Billing。Google 依標籤計費的範圍包括：Gemini 的 `generateContent`、`streamGenerateContent` 與 `interactions.create`；Claude 與 Mistral 等夥伴模型的 `rawPredict` 與 `streamRawPredict`；Imagen 僅 `predict`；Veo 的 `predictLongRunning`。因此，Vertex AI 會忽略 LiteLLM 隨文字與多模態嵌入送出的標籤，它們不會出現在 Cloud Billing 中。至於 rerank 標籤（送往 Discovery Engine 排名 API）與批次工作標籤是否會出現在 Cloud Billing，Google 並未說明。
+
+此設定涵蓋 Gemini、Claude 與 Mistral（包括 Codestral）上的 `/chat/completions`、`/v1/messages`、`/v1/responses` 與 `/v1/completions`，Google GenAI 的 `generateContent` 與 `streamGenerateContent` 路由、Interactions API、文字與多模態嵌入、圖片生成與圖片編輯、Veo 影片生成、Gemini 音訊轉錄、rerank、批次，以及 `/vertex_ai` 直通路由，不涵蓋其他任何路由。在直通路由上，LiteLLM 只標記 POST 請求。它會在 `generateContent`、`streamGenerateContent`、`predict`、`predictLongRunning` 與批次工作建立時，將標籤加入請求本文；在 Claude 與 Mistral 的 `rawPredict` 與 `streamRawPredict` 上，則加入 `X-Vertex-AI-Labels` 標頭，呼叫者在本文中送出的 `labels` 也會移入該標頭。它也會改寫任何其他已帶有標籤的直通 POST 本文中的標籤，讓呼叫者無法在該處偽造身分。其他夥伴模型與自訂端點上的 `rawPredict` 與 `streamRawPredict`，以及 `PATCH` 與 `PUT` 請求，都會依呼叫者送出的原樣送出。批次工作的標籤只來自 proxy，絕不來自隨批次請求送出的 `metadata`。所有其他 Vertex AI 路由上的請求都不會取得身分標籤，包括 AI21、Llama 與其他夥伴模型、Gemma 與 Model Garden chat 模型、Agent Engine、RAG Engine 與向量儲存、微調、Chirp 音訊轉錄、語音與即時功能，以及 `gemini-embedding-2`。
+
 ## 其他 {#extra}
 
 ### 使用 `GOOGLE_APPLICATION_CREDENTIALS` {#using-google_application_credentials}
@@ -3133,7 +3215,7 @@ def load_vertex_ai_credentials():
 
 :::info
 
-想在 Google Cloud Run 上部署 LiteLLM？教學 [這裡](https://docs.litellm.ai/docs/proxy/deploy#deploy-with-terraform-aws-and-gcp)
+[使用 Terraform 在 Google Cloud Run 上部署 LiteLLM](../proxy/deploy/terraform.md#gcp)。
 
 :::
 

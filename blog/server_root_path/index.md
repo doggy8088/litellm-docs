@@ -82,15 +82,15 @@ PR [#19467](https://github.com/BerriAI/litellm/pull/19467)（`73d49f8`）從 `pr
 | #   | 動作                                                                                             | 狀態    | 程式碼                                                                                                                      |
 | --- | ------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
 | 1   | 在 FastAPI 應用程式初始化中恢復 `root_path=server_root_path`                                | ✅ 完成 | [`#19790`](https://github.com/BerriAI/litellm/pull/19790)（`5426b3c`）                                                      |
-| 2   | 為 `get_server_root_path()` 和 FastAPI 應用程式初始化新增單元測試                        | ✅ 完成 | [`test_server_root_path.py`](https://github.com/BerriAI/litellm/blob/main/tests/proxy_unit_tests/test_server_root_path.py) |
-| 3   | 新增 CI 工作流程，在每個 PR 上建置 Docker 映像並以 `SERVER_ROOT_PATH` 測試 UI 路由 | ✅ 完成 | [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml)    |
+| 2   | 為 `get_server_root_path()` 和 FastAPI 應用程式初始化新增單元測試                        | ✅ 完成 | [`test_server_root_path.py`](https://github.com/BerriAI/litellm/blob/main/tests/unit/proxy/test_server_root_path.py) |
+| 3   | 新增 CI 工作流程，在每個 PR 上建置 Docker 映像並以 `SERVER_ROOT_PATH` 測試 UI 路由 | ✅ 完成 | [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/1a0acaa33bf3abfec5cc939fb2a7a12d41d31de2/.github/workflows/test_server_root_path.yml)    |
 | 4   | 文件化 `SERVER_ROOT_PATH` 的手動測試流程                                            | ✅ 完成 | [Discussion #8495](https://github.com/BerriAI/litellm/discussions/8495)                                                    |
 
 ---
 
 ## CI 工作流程詳細資訊 {#ci-workflow-details}
 
-新的 [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml) 工作流程會在每個針對 `main` 的 PR 上執行。它會：
+新的 [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/1a0acaa33bf3abfec5cc939fb2a7a12d41d31de2/.github/workflows/test_server_root_path.yml) 工作流程會在每個針對 `main` 的 PR 上執行。它會：
 
 1. 建置 LiteLLM Docker 映像
 2. 啟動一個設置了 `SERVER_ROOT_PATH` 的容器（同時測試 `/api/v1` 與 `/llmproxy`）
@@ -124,7 +124,7 @@ flowchart TD
 | 2026 年 1 月 22 日 04:20 | PR [#19467](https://github.com/BerriAI/litellm/pull/19467) 合併，移除 `root_path=server_root_path`                                                     |
 | 1 月 22 日至 26 日          | 使用 nightly builds 的使用者回報在使用 `SERVER_ROOT_PATH` 時出現 UI 404 錯誤                                                                                   |
 | 2026 年 1 月 26 日 17:48 | 修正 PR [#19790](https://github.com/BerriAI/litellm/pull/19790) 合併，恢復 `root_path=server_root_path`                                                |
-| 2026 年 2 月 18 日       | 新增 CI 工作流程 [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test_server_root_path.yml)，在每個 PR 上執行 |
+| 2026 年 2 月 18 日       | 新增 CI 工作流程 [`test_server_root_path.yml`](https://github.com/BerriAI/litellm/blob/1a0acaa33bf3abfec5cc939fb2a7a12d41d31de2/.github/workflows/test_server_root_path.yml)，在每個 PR 上執行 |
 
 ---
 

@@ -8,7 +8,7 @@ authors:
   - oliver
   - mateo
 description: "9 月 LiteLLM town hall 回顧：安全性與穩定性更新、預設在 Rust 上執行的 OCR、測試覆蓋率超過 80% 目標，以及 Fusion 和 liteagents 的新發布。"
-tags: [townhall, security, reliability, product]
+tags: [townhall, reliability, product]
 hide_table_of_contents: false
 ---
 

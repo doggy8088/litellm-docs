@@ -1,5 +1,6 @@
 ---
-title: "v1.80.0-stable - 介紹 Agent Hub：註冊、發布與分享代理程式"
+title: "LiteLLM v1.80.0-stable - 介紹 Agent Hub：註冊、發布與分享代理程式"
+description: "新增 Agent Hub、RunwayML 影片與圖片生成，以及 GPT-5.1 支援。為開源版本新增 Prometheus 指標。"
 slug: "v1-80-0"
 date: 2025-11-15T10:00:00
 authors:

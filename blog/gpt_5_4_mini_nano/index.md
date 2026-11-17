@@ -92,5 +92,5 @@ print(response.choices[0].message.content)
 
 ## 注意事項 {#notes}
 
-- 這兩款模型都支援 function calling、vision 與 tool-use；進階用法請參閱 [OpenAI 提供者文件](/docs/providers/openai)。
+- 這兩款模型都支援 function calling、vision 與 tool-use；進階用法請參閱 [OpenAI 提供者文件](../../docs/providers/openai)。
 - GPT-5.4-nano 是簡單任務最具成本效益的選項；GPT-5.4-mini 則在速度與能力之間取得平衡。

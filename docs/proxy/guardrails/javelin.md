@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 Javelin 防護欄"
+sidebar_label: "Javelin 防護欄"
+description: "以 YAML 中的 pre_call 防護欄形式，將 Javelin 提示注入偵測、信任與安全檢查及語言偵測加入 LiteLLM AI 閘道。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

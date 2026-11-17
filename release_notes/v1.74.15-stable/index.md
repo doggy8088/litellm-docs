@@ -1,5 +1,6 @@
 ---
-title: "v1.74.15-stable"
+title: "LiteLLM v1.74.15-stable"
+description: "新增 User Agent 活動追蹤、Git-Ops 風格的提示詞管理、MCP 閘道防護欄，以及 Google AI Studio 上的 Imagen4。"
 slug: "v1-74-15"
 date: 2025-08-02T10:00:00
 authors:

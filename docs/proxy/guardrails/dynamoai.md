@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM AI 閘道上的 DynamoAI Guardrails"
+sidebar_label: "DynamoAI 防護欄"
+description: "在 LiteLLM AI 閘道上為 LLM 的輸入與輸出加入 DynamoAI 內容審核與政策執行，支援政策 ID 與自訂 API base。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -28,7 +28,7 @@ LiteLLM 可根據您定義的規則，自動選擇最適合請求的模型。
     "encoder_name": "text-embedding-3-large",
     "routes": [
         {
-            "name": "litellm-gpt-4.1",
+            "name": "litellm-{{openai_large}}",
             "utterances": [
                 "litellm is great"
             ],
@@ -71,7 +71,7 @@ router = Router(
         },
         # Your target models
         {
-            "model_name": "litellm-gpt-4.1",
+            "model_name": "litellm-{{openai_large}}",
             "litellm_params": {
                 "model": "{{openai_large}}",
             },

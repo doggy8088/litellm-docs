@@ -137,7 +137,9 @@ mcp_servers:
 
 請以您的提供者對應值取代範例伺服器 URL、OAuth 端點與範圍。當上游 MCP 伺服器發布 LiteLLM 可探索的 OAuth 中繼資料時，`authorization_url` 與 `token_url` 為選用。明確設定的端點會優先於衝突的已探索端點。
 
-當上游伺服器完全未發布任何 OAuth 中繼資料時（例如 [ms-365-mcp-server](./mcp_servers/microsoft_365.md) 後方的 Microsoft Graph），請加入 `per_server_oauth_discovery: true`，讓 LiteLLM 自行發布 `/{mcp_server_name}/mcp` 的探索文件，並以自己的 `/{mcp_server_name}/authorize` 與 `/{mcp_server_name}/token` 端點作為上方提供者 URL 的前端。此設定僅在 `auth_type: oauth2`、`oauth2_flow: authorization_code` 且沒有 `delegate_auth_to_upstream` 時才接受。
+對於會傳送 LiteLLM 虛擬金鑰的用戶端，當上游伺服器未發布任何 OAuth 中繼資料時（例如 [ms-365-mcp-server](./mcp_servers/microsoft_365.md) 後方的 Microsoft Graph），請啟用 `per_server_oauth_discovery: true`。LiteLLM 隨後會發布 `/{mcp_server_name}/mcp` 的探索文件，並以自己的 `/{mcp_server_name}/authorize` 與 `/{mcp_server_name}/token` 端點作為上方提供者 URL 的前端。此設定僅在 `auth_type: oauth2`、`oauth2_flow: authorization_code` 且沒有 `delegate_auth_to_upstream` 時才接受。
+
+此中繼機制要求在 `x-litellm-api-key` 中提供 LiteLLM 虛擬金鑰，包括其權杖請求。無金鑰的用戶端必須關閉 `per_server_oauth_discovery`，改用閘道的共用 `/mcp` 授權伺服器，並搭配 proxy SSO、`master_key` 以及伺服器上的使用者或團隊授權。該流程會先讓使用者登入 LiteLLM，接著執行上游同意並儲存使用者的上游權杖。在預設的使用者快取設定下，新的授權最多可能需要一分鐘才會出現在連線頁面上。請參閱 [With or without a virtual key](./mcp_servers/microsoft_365.md#with-or-without-a-virtual-key)。
 
 對於靜態用戶端，LiteLLM 會在本機處理 `POST /{mcp_server_name}/register`。它會將 MCP 伺服器名稱回傳為 `client_id`、`dummy` 回傳為 `client_secret`，以及用戶端提交的 `redirect_uris`。LiteLLM 會使用已設定的上游憑證進行授權與權杖交換。
 

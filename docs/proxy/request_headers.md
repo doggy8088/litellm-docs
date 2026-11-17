@@ -10,6 +10,8 @@ LiteLLM 支援的特殊標頭。
 
 `x-litellm-timeout` Optional[float]：請求的逾時時間（秒）。
 
+`x-litellm-priority` Optional[int]：此請求的 [scheduler](../scheduler#priority-header) 佇列優先順序。值越小越先執行。其優先順序高於請求本文中的 `priority`。<SinceVersion v="1.109.0" />
+
 `x-litellm-stream-timeout` Optional[float]：取得回應第一個區塊的逾時時間（秒）（僅適用於串流請求）。[示範影片](https://www.loom.com/share/8da67e4845ce431a98c901d4e45db0e5)
 
 `x-litellm-enable-message-redaction`: Optional[bool]：不要將訊息內容記錄到記錄整合中。只追蹤支出。[深入瞭解](./logging#redact-messages-response-content)
@@ -19,6 +21,8 @@ LiteLLM 支援的特殊標頭。
 `x-litellm-num-retries`: Optional[int]: 此請求的重試次數。此設定的優先順序高於請求本文中的 `num_retries`、部署的 `litellm_params`，以及 `litellm_settings`。 [了解更多](../routing#where-num_retries-can-be-set-and-which-one-wins)
 
 `x-litellm-keepalive-seconds`: Optional[float]: 在串流無訊號達這麼多秒後送出一個 SSE `: ping` 註解框架，以便透過負載平衡器逾時維持看似閒置的連線存活。受部署的 `allow_client_keepalive_override` 設定影響；若部署尚未啟用此功能，則不會生效。 [了解更多](./timeout#keepalive-pings-for-idle-streaming-connections)
+
+`x-litellm-include-cost-in-streaming-usage`: Optional[bool]：將 `cost` 新增至此單一串流中承載用量的事件（`/v1/messages`、Anthropic 與 OpenAI 直通端點），而不必為所有請求開啟 `litellm_settings.include_cost_in_streaming_usage`。[深入瞭解](../completion/usage#proxy-include-cost-in-streaming-usage) <SinceVersion v="1.110.0" />
 
 `x-litellm-spend-logs-metadata`: Optional[str]：包含要納入支出記錄的自訂中繼資料之 JSON 字串。範例：`{"user_id": "12345", "project_id": "proj_abc", "request_type": "chat_completion"}`。[深入瞭解](./cost_tracking)
 

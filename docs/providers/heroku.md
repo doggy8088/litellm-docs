@@ -1,3 +1,9 @@
+---
+title: "Heroku Inference API 搭配 LiteLLM：設定"
+sidebar_label: "Heroku"
+description: "從 LiteLLM Python SDK 呼叫 Heroku Inference 聊天模型。將模型附加到您的 Heroku 應用程式，然後設定 HEROKU_API_KEY 與 HEROKU_API_BASE，或傳入 api_key。"
+---
+
 # Heroku {#heroku}
 
 ## 佈建模型 {#provision-a-model}

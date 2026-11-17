@@ -1,5 +1,6 @@
 ---
-title: "v1.84.8 - 資料庫韌性與寬限期金鑰輪替"
+title: "LiteLLM v1.84.8 - 資料庫韌性與寬限期金鑰輪替"
+description: "修正寬限期金鑰輪替與 Prisma 重新連線，並在驗證期間發生資料庫錯誤時回傳 5xx。新增 prepared statement 開關。"
 slug: "v1-84-8"
 date: 2026-06-12T18:20:57
 authors:

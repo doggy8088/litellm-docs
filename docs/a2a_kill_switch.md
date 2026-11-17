@@ -127,7 +127,7 @@ LiteLLM 會完全依照設定送出，超時時間為 10 秒，且不會跟隨�
 
 ## 稽核記錄 {#audit-log}
 
-每次送達 webhook 的觸發，不論是否回傳 2xx，都會在稽核記錄中對 `LiteLLM_AgentsTable` 資料表寫入一筆 `kill_switch_fired` 資料列，並以代理程式 id 作為物件。該資料列會記錄觸發者（使用者與金鑰）、目標 URL、方法、webhook 回傳的狀態碼與截斷後的主體，以及若有傳輸錯誤時的錯誤內容。終止開關設定本身，包括驗證、自訂標頭、主體和查詢參數，都不會寫入該資料列。稽核記錄需要 `litellm_settings.store_audit_logs: true`，請參閱 [Audit Logs](./proxy/multiple_admins)。
+每次送達 webhook 的觸發，不論是否回傳 2xx，都會在稽核記錄中對 `LiteLLM_AgentsTable` 資料表寫入一筆 `kill_switch_fired` 資料列，並以代理程式 id 作為物件。該資料列會記錄觸發者（使用者與金鑰）、目標 URL、方法、webhook 回傳的狀態碼與截斷後的主體，以及若有傳輸錯誤時的錯誤內容。終止開關設定本身，包括驗證、自訂標頭、主體和查詢參數，都不會寫入該資料列。稽核記錄需要企業授權，取得授權後即會啟用，除非將 `store_audit_logs` 設為 `false`，或未設定該值且 `LITELLM_STORE_AUDIT_LOGS` 為 `false`，請參閱 [Audit Logs](./proxy/audit_logs)。
 
 在 Admin UI 中，開啟 **Logs**，切換到 **Audit Logs** 分頁，並將 action 篩選為 **Kill switch fired**（或將資料表篩選為 **Agents**）。點擊某一列即可查看完整酬載。
 

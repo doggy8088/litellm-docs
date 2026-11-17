@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM AI Gateway 提供 Claude Fable 5 的第 0 天支援。可在 Anthropic、Azure、Vertex AI 與 Bedrock 上使用。"
+card_title: "Claude Fable 5"
+card_summary: "Anthropic 的新前沿模型：1M 上下文、僅支援自適應思考、每 1M 為 $10 / $50，遭標記時以 Opus 4.8 備援。"
 image: /img/litellm_claude_fable_5_announcement.png
 tags: [anthropic, claude, fable 5, day 0 support]
 hide_table_of_contents: false

@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI Gateway 的 Braintrust 記錄"
+sidebar_label: "Braintrust"
+description: "從 Python SDK 或 AI Gateway 將 LiteLLM 呼叫記錄至 Braintrust、依每個請求設定專案 ID 或名稱，並加入自訂 span 名稱與屬性。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -25,7 +31,7 @@ litellm.callbacks = ["braintrust"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -87,7 +93,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
   metadata={
     "project_id": "1234",
@@ -106,7 +112,7 @@ response = litellm.completion(
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
   metadata={
     "project_id": "1234",
@@ -158,7 +164,7 @@ response = client.chat.completions.create(
         }
     ],
     extra_body={ # pass in any provider-specific param, if not supported by openai, https://docs.litellm.ai/docs/completion/input#provider-specific-params
-        "metadata": { # 👈 use for logging additional params (e.g. to braintrust)
+        "metadata": { # use for logging additional params (e.g. to braintrust)
             "project_id": "my-special-project",
             "span_name": "Poetry Generation"
         }

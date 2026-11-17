@@ -1,5 +1,6 @@
 ---
-title: "v1.102.0 - 自動路由控制、原生 OCR 與閘道可靠性"
+title: "LiteLLM v1.102.0 - 自動路由控制、原生 OCR 與閘道可靠性"
+description: "新增 Auto Router 控制、原生 OCR 與 Meta Muse Voice 即時轉錄。另新增 99 筆模型型錄項目與共用的 PgBouncer 連線。"
 slug: "v1-102-0"
 date: 2026-09-19T00:00:00
 authors:
@@ -77,7 +78,7 @@ pip install litellm==1.102.0
 
 **非常大的本機 token 數量會變成抽樣估計值。** 預設的精確計數上限為每個字串 4,000,000 個字元。設定 `TOKEN_COUNTER_MAX_EXACT_CHARS` 以選擇不同的限制。請參閱 [PR #40186](https://github.com/BerriAI/litellm/pull/40186)
 
-**模型健康檢查會強制執行部署可見性並限制回傳欄位。** 明確的範圍外目標會回傳 403，團隊特定部署會遵循路由權限，且結果只包含允許清單中的顯示欄位。請更新依賴先前回應的監控用戶端。請參閱 [PR #40765](https://github.com/BerriAI/litellm/pull/40765)
+**模型健康檢查會強制執行部署可見性並限制回傳欄位。** 明確的範圍外目標會回傳 403，團隊特定部署會遵循路由權限，且結果只包含允許清單中的顯示欄位。請更新依賴先前回應的監控用戶端，範圍規則、狀態碼與欄位請參閱 [`/health` 參考文件](../../docs/proxy/health#model-health-from-the-api)。請參閱 [PR #40765](https://github.com/BerriAI/litellm/pull/40765)
 
 **既有的 lite login --config-claude 指令現在會寫入靜態閘道 token。** Claude Code 設定先前使用 `apiKeyHelper` 動態擷取登入 token。當儲存的登入金鑰過期時，請重新執行 `lite login --config-claude`。請參閱 [PR #40330](https://github.com/BerriAI/litellm/pull/40330)
 

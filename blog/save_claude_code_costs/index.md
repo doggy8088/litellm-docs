@@ -57,7 +57,7 @@ curl -X POST http://localhost:4000/key/generate \
 
 一旦開發者在一天內把 Opus 花掉 20 美元，後續的 Opus 請求就會無聲地重新路由到 Sonnet；如果 Sonnet 也用完了，Haiku 就會接手。沒有 `model_max_budget` 項目的備援模型會被視為無上限。
 
-**→ 了解更多：** [預算視窗](/docs/proxy/users#set-multiple-budget-windows-on-a-key) · [預算備援](/docs/proxy/budget_fallbacks)
+**→ 了解更多：** [預算視窗](../../docs/proxy/users#set-multiple-budget-windows-on-a-key) · [預算備援](../../docs/proxy/budget_fallbacks)
 
 ## 2. 自動提示快取  {#2-automatic-prompt-caching}
 
@@ -96,7 +96,7 @@ router_settings:
 
 將 'prompt_caching' 作為 pre call check 開啟，表示如果您執行同一個 Claude 模型的多個部署，LiteLLM 會智慧地路由到最初用於該請求的模型部署。 
 
-**→ 了解更多：** [自動注入提示快取 checkpoint](/docs/tutorials/prompt_caching) · [Claude Code - 提示快取路由](/docs/tutorials/claude_code_prompt_cache_routing)
+**→ 了解更多：** [自動注入提示快取 checkpoint](../../docs/tutorials/prompt_caching) · [Claude Code - 提示快取路由](../../docs/tutorials/claude_code_prompt_cache_routing)
 
 ## 3. 提示壓縮（Headroom） {#3-prompt-compression-headroom}
 
@@ -116,7 +116,7 @@ guardrails:
 
 開發者仍然會匯出 `ANTHROPIC_BASE_URL` 並執行 `claude`；他們唯一注意到的變化，是支出紀錄上的數字變小了。
 
-**→ 了解更多：** [Headroom 防護欄設定指南](/docs/proxy/headroom)
+**→ 了解更多：** [Headroom 防護欄設定指南](../../docs/proxy/headroom)
 
 ## 4. 延後 MCP 工具 {#4-defer-mcp-tools}
 
@@ -138,7 +138,7 @@ curl -X POST http://localhost:4000/key/generate \
 
 排序是依據 `name + description` 的 token 重疊，因此不需要執行 embedding 依賴。存取範圍不會擴大；搜尋只會回傳該金鑰原本就允許呼叫的工具。
 
-**→ 了解更多：** [MCP 工具搜尋](/docs/mcp_tool_search)
+**→ 了解更多：** [MCP 工具搜尋](../../docs/mcp_tool_search)
 
 ## 5. 自動路由 {#5-auto-routing}
 
@@ -178,7 +178,7 @@ model_list:
       complexity_router_default_model: gpt-4o
 ```
 
-**→ 了解更多：** [Complexity Router](/docs/proxy/auto_routing#classification) · [Semantic 自動路由](/docs/proxy/auto_routing) · [Adaptive Router](/docs/adaptive_router)
+**→ 了解更多：** [Complexity Router](../../docs/proxy/auto_routing#classification) · [Semantic 自動路由](../../docs/proxy/auto_routing) · [Adaptive Router](../../docs/adaptive_router)
 
 ## 疊加這些槓桿 {#stacking-the-levers}
 

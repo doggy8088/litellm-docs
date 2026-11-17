@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI 閘道的 New Relic 監控"
+sidebar_label: "New Relic"
+description: "透過 newrelic callback 與 Python agent 將 LiteLLM AI 閘道的 LLM 事件送至 New Relic，並在 OTel v2 上提供訊息遮蔽與依團隊路由。"
+---
+
 import Image from '@theme/IdealImage';
 
 # New Relic {#new-relic}
@@ -193,6 +199,8 @@ curl -X POST 'http://localhost:4000/team/{team_id}/callback' \
 ```
 
 `newrelic_region` 接受 `us` 或 `eu`，並為追蹤資料（OTLP）與成本指標（Metric API）選擇資料中心。該 key 會以加密方式儲存，讀回時會被遮蔽。請求內容不能提供 `newrelic_api_key` 或 `newrelic_region`；只有管理員設定的團隊或 key callback 設定才會被採用。
+
+若要讓內部的 Redis 與 PostgreSQL spans 不進入團隊的目的地，請設定各目的地專屬的 `excluded_services` callback 變數。請參閱 [OTel v2 排除設定](./opentelemetry_v2#keep-redis-and-postgres-spans-out-of-tenant-traces)。
 
 追蹤資料會以 OTLP `gen_ai.*` spans 形式送達，並帶有 `litellm.team.id`、`litellm.team.alias` 和 `litellm.cost.*` attributes。成本指標會以 `litellm.requests`、`litellm.cost.usd`、`litellm.tokens.*` 計數與 `litellm.request.duration_ms` 摘要送達，並依 `team_id`、`team_alias`、`model_group`、`model`、`custom_llm_provider` 和 `status` 分面。
 

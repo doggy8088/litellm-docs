@@ -1,5 +1,6 @@
 ---
-title: "v1.90.6 - Prisma 為非 root migrations 烘焙"
+title: "LiteLLM v1.90.6 - Prisma 為非 root migrations 烘焙"
+description: "透過將 Prisma CLI 與 engines 內建於固定路徑，修正非 root 使用者的資料庫 migrations。全新資料庫可離線完成 migration。"
 slug: "v1-90-6"
 date: 2026-07-19T02:09:06
 authors:

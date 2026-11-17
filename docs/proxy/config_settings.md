@@ -1,3 +1,7 @@
+---
+displayed_sidebar: tutorialSidebar
+---
+
 ```yaml
 environment_variables: {}
 
@@ -11,6 +15,7 @@ model_list:
       output_cost_per_token: 0
       max_tokens: 2048
       base_model: {{openai_large}}
+      supported_endpoints: ["/v1/chat/completions", "/v1/responses"]  # opt an OpenAI-compatible deployment into native /v1/responses or /v1/messages passthrough, see /docs/response_api_native_passthrough and /docs/anthropic_unified/native_passthrough
       additionalProp1: {}
 
 litellm_settings:
@@ -42,8 +47,8 @@ litellm_settings:
 
   # Fallbacks, reliability
   default_fallbacks: ["claude-opus"] # set default_fallbacks, in case a specific model group is misconfigured / bad.
-  content_policy_fallbacks: [{ "gpt-3.5-turbo-small": ["claude-opus"] }] # fallbacks for ContentPolicyErrors
-  context_window_fallbacks: [{ "gpt-3.5-turbo-small": ["gpt-3.5-turbo-large", "claude-opus"] }] # fallbacks for ContextWindowExceededErrors
+  content_policy_fallbacks: [{ "small-model": ["claude-opus"] }] # fallbacks for ContentPolicyErrors
+  context_window_fallbacks: [{ "small-model": ["large-model", "claude-opus"] }] # fallbacks for ContextWindowExceededErrors
 
   # MCP Aliases - Map aliases to MCP server names for easier tool access
   mcp_aliases: {
@@ -117,34 +122,46 @@ callback_settings:
 general_settings:
   completion_model: string
   store_prompts_in_spend_logs: boolean
+  redact_tokens_in_spend_logs: boolean
+  spend_logs_metadata_fields: object  # {include: [string]} or {exclude: [string]}, which LiteLLM_SpendLogs.metadata keys are written to the db
   forward_client_headers_to_llm_api: boolean
   disable_spend_logs: boolean  # turn off writing each transaction to the db
+  disable_requester_ip_address_logging: boolean  # if true, new spend log rows store no requester IP address
   disable_master_key_return: boolean  # turn off returning master key on UI (checked on '/user/info' endpoint)
   disable_retry_on_max_parallel_request_limit_error: boolean  # turn off retries when max parallel request limit is reached
   disable_reset_budget: boolean  # turn off reset budget scheduled task
   disable_adding_master_key_hash_to_db: boolean  # turn off storing master key hash in db, for spend tracking
   disable_responses_id_security: boolean  # turn off response ID security checks that prevent users from accessing other users' responses
+  responses_websocket_session_limit_seconds: 3600  # max lifetime of a /v1/responses WebSocket session, from connect. 60-7200, default 3600
   allow_unmanaged_response_ids: boolean  # let keys address response IDs this proxy never issued, e.g. raw provider IDs
   vector_store_deny_by_default: boolean  # if true, a vector store must be granted in object_permission.vector_stores of the key and its team (or the user when there is neither); empty lists grant nothing
   disable_auto_add_proxy_admin_to_teams: boolean  # if true, a proxy admin calling /team/new is no longer auto-added to the new team as team admin
   search_tool_deny_by_default: boolean  # if true, a search tool must be granted in object_permission.search_tools of the key and its team (or the user when there is neither); empty lists grant nothing
-  enforce_fallback_model_access: boolean  # if true, router_settings fallbacks only run when the calling key, team and project may call the fallback model
+  disable_fallbacks_on_per_model_rate_limits: boolean  # if true, a key/team/org/project per-model rate limit (model_rpm_limit / model_tpm_limit) returns 429 instead of retrying on router_settings fallbacks
+  enforce_fallback_model_access: boolean  # default true; router_settings fallbacks only run when the calling key, team and project may call the fallback model. Set false to run them regardless
   enforce_fallback_budget: boolean  # default true; set false to let router_settings fallbacks run even when the calling key or user is out of budget
   enable_jwt_auth: boolean  # allow proxy admin to auth in via jwt tokens with 'litellm_proxy_admin' in claims
   enforce_user_param: boolean  # requires all openai endpoint requests to have a 'user' param
+  enforce_rpm_tpm_on_model_add: boolean  # or a {default, providers, models} mapping; new models must set a positive rpm and tpm
+  enforce_project_model_quota: boolean  # or a {default, providers, models} mapping; project models must have a positive model_rpm_limit and model_tpm_limit
   reject_clientside_metadata_tags: boolean  # if true, rejects requests with client-side 'metadata.tags' to prevent users from influencing budgets
+  request_tag_mappings: [{"key": "service", "tag_prefix": "app:"}]  # map W3C baggage values to request tags for spend tracking and tag budgets
   missing_session_id: generate  # or "reject". What to do with LLM API requests that carry no session id; unset keeps the legacy behavior
   disable_batch_input_file_rate_limiting: boolean  # skip TPM/RPM accounting for batch input files
   skip_batch_input_file_rate_limiting_for_providers: ["hosted_vllm"]  # apply the batch accounting skip only to these providers
   disable_budget_reservation: boolean  # disable pre-request budget reservation; may allow overspend under concurrency
   allowed_routes: ["route1", "route2"]  # list of allowed proxy API routes - a user can access. (currently JWT-Auth only)
+  allowed_client_side_s3_buckets: ["my-batch-bucket"]  # buckets a client may pick with s3_bucket_name or s3_output_bucket_name in a request body, e.g. on /v1/batches
+  allowed_client_side_s3_endpoint_urls: ["https://s3.us-west-2.amazonaws.com"]  # exact s3_endpoint_url values a client may send in a request body
   key_management_system: google_kms  # either google_kms or azure_kms
+  key_expiry_alert_days: 7  # email a key's owner when the key has this many days (1-365) or fewer left; metadata.key_expiry_alert_days overrides it per key
   master_key: string  # falls back to LITELLM_MASTER_KEY; the proxy will not start when the master key is unset, empty, or has a known unsafe value
   dangerously_permit_weak_or_unset_master_key: boolean  # local development only; lets the proxy start with no master key or a known unsafe value
   maximum_spend_logs_retention_period: 30d # The maximum time to retain spend logs before deletion.
   maximum_spend_logs_retention_interval: 1d # interval in which the spend log cleanup task should run in.
   maximum_daily_tag_spend_retention_period: 90d # Optional. Prune LiteLLM_DailyTagSpend rows for days older than this.
   user_mcp_management_mode: restricted  # or "view_all"
+  access_group_rules: [{"attribute": "jwt_claims.groups", "contains": "Anthropic_Access", "access_group": "claude-models"}]  # grant Access Groups from JWT claims per request
 
   # Database Settings
   database_url: string
@@ -181,12 +198,12 @@ router_settings:
   redis_password: <your-redis-password>   # string
   redis_port: <your-redis-port>           # string
   enable_pre_call_checks: true            # bool - Before call is made check if a call is within model context window 
-  allowed_fails: 3 # cooldown model if it fails > 1 call in a minute. 
-  cooldown_time: 30 # (in seconds) how long to cooldown model if fails/min > allowed_fails
+  allowed_fails: 3 # cooldown a deployment once it fails more than 3 calls within cooldown_time
+  cooldown_time: 30 # (in seconds) how long a deployment stays in cooldown
   disable_cooldowns: True                  # bool - Disable cooldowns for all models 
   enable_tag_filtering: True                # bool - Use tag based routing for requests
   tag_filtering_match_any: True             # bool - Tag matching behavior (only when enable_tag_filtering=true). `true`: match if deployment has ANY requested tag; `false`: match only if deployment has ALL requested tags
-  tag_routing_prefix: "route:"              # string - Opt-in marker prefix (default ""). A request tag starting with this exact string is stripped and matched as an explicit routing directive, skipping the known-tag-vocabulary heuristic. Unprefixed tags keep matching as today.
+  tag_routing_prefix: "route:"              # string - Opt-in marker prefix (default ""). A request tag starting with this exact string is stripped and matched as an explicit routing directive, skipping the known-tag-vocabulary heuristic. Once set, unprefixed request tags are ignored by routing, except key/team/project tags, which keep applying.
   retry_policy: {                          # Dict[str, int]: retry policy for different types of exceptions
     "AuthenticationErrorRetries": 3,
     "TimeoutErrorRetries": 3,
@@ -222,26 +239,29 @@ router_settings:
 | service_callback | object 陣列 | `[]` | 系統健康監控 - 會在指定服務上記錄 redis、postgres 失敗（例如 datadog、prometheus）[Doc Metrics](prometheus) |
 | turn_off_message_logging | boolean | `false` | 若為 true，會防止訊息與回應被記錄到回呼中，但請求中繼資料仍會被記錄。對於處理敏感資料時的隱私／合規性很有用 [Proxy Logging](logging) |
 | modify_params | boolean | `false` | 若為 true，允許在請求送出到 LLM 提供者之前修改其參數 |
+| reasoning_effort_rounding | string | `up` | 請求的 `reasoning_effort` 如何對應到部署在 `model_info.reasoning_effort_levels` 中宣告的等級。`up` 會傳送至少與請求一樣強的最弱已宣告等級，`down` 則傳送至多與請求一樣強的最強已宣告等級。部署自身的 `model_info.reasoning_effort_rounding` 優先於此設定。<SinceVersion v="1.108.0" /> [進一步文件](../reasoning_content#reasoning-effort-levels) |
 | enable_preview_features | boolean | `false` | 若為 true，會啟用預覽功能 - 例如支援串流的 Azure O1 Models。|
 | disable_stop_sequence_limit | boolean | `false` | 若為 true，會停用將 `stop` 參數截斷為 OpenAI 規格允許的 4 個序列。 |
 | redact_user_api_key_info | boolean | `false` | 若為 true，會在記錄中遮蔽使用者 API 金鑰相關資訊 [Proxy Logging](logging#redacting-userapikeyinfo) |
 | mcp_aliases | object | `{}` | 將友善別名對應到 MCP 伺服器名稱，以便更容易存取工具。每個伺服器只會使用第一個別名。[MCP 別名](../mcp#mcp-aliases) |
+| mcp_tool_search | object | `null` | `mcp_tool_search` 虛擬工具和 `/mcp/proxy` 的 `search_tools` 如何為工具排名。欄位為 `embedding_model`（`model_list` 中的一個條目，未設定時保持關鍵字排名）、`top_k`（預設 `5`，1 到 100）、`similarity_threshold`（預設 `0.0`，0.0 到 1.0）和 `core_tools`（預設 `[]`）。[MCP Tool Search 排名](../mcp_tool_search#ranking) |
 | langfuse_default_tags | strings 陣列 | `[]` | Langfuse Logging 的預設標籤。如果您想控制哪些 LiteLLM 特定欄位會被 LiteLLM proxy 以標籤形式記錄，請使用此項。預設情況下，LiteLLM Proxy 不會將任何 LiteLLM 特定欄位記錄為標籤。[更多文件](/docs/proxy/logging#litellm-tags---cache_hit-cache_key) |
 | set_verbose | boolean | `false` | [已棄用 - 請參閱除錯文件](./debugging) 改用 `--debug` 或 `--detailed_debug` CLI 旗標，或將 `LITELLM_LOG` 環境變數設為 "INFO"、"DEBUG" 或 "ERROR"。 |
 | json_logs | boolean | `false` | 若為 true，記錄將採用 json 格式。如果您需要將記錄儲存為 JSON，只要設定 `litellm.json_logs = True` 即可。我們目前只是將來自 litellm 的原始 POST 請求以 JSON 形式記錄下來。[更多文件](./debugging) |
 | request_correlation_in_logs | boolean | `false` | 若為 true，會在每一行記錄（純文字或 JSON）上標註該請求的 `trace_id` 與 `session_id`，並在 `StandardLoggingPayload` 中加入 `session_id` 欄位。[更多文件](./debugging#request-correlation-ids) |
+| suppress_startup_output | boolean | `false` | <SinceVersion v="1.109.0" /> 若為 true，proxy 不會列印任何例行啟動訊息，例如橫幅、模型清單和 Search Tools 清單。少數需要處理的啟動警告仍會列印。記錄行仍遵循 `LITELLM_LOG`。只有 `true` 會將它開啟。也可透過 `LITELLM_SUPPRESS_STARTUP_OUTPUT` 環境變數設定。[進一步文件](./debugging#suppress-startup-output) |
 | default_fallbacks | strings 陣列 | `[]` | 若特定模型群組設定錯誤／異常時，要使用的備援模型清單。[更多文件](./reliability#default-fallbacks) |
 | request_timeout | integer | `6000`（秒）| 請求逾時（以秒為單位）。若未設定，預設值為 `6000 seconds`。[供參考，OpenAI Python SDK 的預設值為 `600 seconds`。](https://github.com/openai/openai-python/blob/main/src/openai/_constants.py) 設定後，也會套用到原生提供者 passthrough 路由（`/v1/responses`、`/v1/messages`、Bedrock `/converse`），其優先順序高於 `general_settings.pass_through_request_timeout`，低於任何部署或路由逾時。[文件](./pass_through#request-timeouts) |
 | force_ipv4 | boolean | `false` | 若為 true，litellm 會強制所有 LLM 請求使用 ipv4。有些使用者在使用 ipv6 + Anthropic API 時曾遇到 httpx ConnectionError。`HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` 在 aiohttp 與 httpx 兩種傳輸方式上仍會被遵守；在 httpx 傳輸方式上只有直接連線會固定為 IPv4，連到 proxy 本身的那一跳不會 |
 | disable_aiohttp_transport | boolean | `false` | 若為 true，LLM 請求會改走一般的 httpx，而不是預設的 aiohttp 傳輸。若您看到 aiohttp 連接器錯誤，例如 `CancelledError` 以 `No response returned` 形式出現在 `/v1/responses`、`/v1/chat/completions` 或 `/v1/messages` 上，請設定此項（或 `DISABLE_AIOHTTP_TRANSPORT` 環境變數）。**預設為 False** |
-| http2 | boolean | `false` | 若為 true，LiteLLM 會透過 TLS 與 LLM 提供者協商 HTTP/2（若提供者不支援則回退至 HTTP/1.1）。流量會經由 httpx，而非預設的 aiohttp 傳輸。也可透過 `LITELLM_HTTP2` 環境變數設定。自 v1.103.0 起可用。[更多文件](./server_tuning#outbound-http2-to-providers)。**預設為 False** |
+| http2 | boolean | unset | <SinceVersion v="1.103.0" /> 控制 LiteLLM 透過 TLS 與 LLM 提供者之間的 HTTP/2（若提供者不支援則回退至 HTTP/1.1）。未設定時，LiteLLM 的 HTTP 用戶端對每個提供者都使用 HTTP/1.1，但非同步 Vertex AI Search 向量存放區搜尋除外，該搜尋使用 HTTP/2 <SinceVersion v="1.109.0" />。若為 true，提供者會協商 HTTP/2，流量會經由 httpx 而非預設的 aiohttp 傳輸（更多文件列出了例外情況），且在多個執行緒同時執行的同步呼叫可能會失敗。若為 false，LiteLLM 的 HTTP 用戶端對每個提供者都使用 HTTP/1.1，包含 Vertex AI Search。請使用未加引號的 `true` 或 `false`，因為加引號的 `"true"` 會被視為未設定。也可透過 `LITELLM_HTTP2` 環境變數設定，且任一處的 true 值會優先於另一處的 false 值。[更多文件](./server_tuning#outbound-http2-to-providers)。**預設為 unset** |
 | content_policy_fallbacks | objects 陣列 | `[]` | 當遇到 ContentPolicyViolationError 時要使用的備援。[更多文件](./reliability#content-policy-fallbacks) |
 | context_window_fallbacks | objects 陣列 | `[]` | 當遇到 ContextWindowExceededError 時要使用的備援。[更多文件](./reliability#context-window-fallbacks) |
 | cache | boolean | `false` | 若為 true，會啟用快取。[更多文件](./caching) |
 | cache_params | object | `{}`（`type` 預設為 `redis`） | 快取參數。[更多文件](./caching_settings#supported-cache_params-on-proxy-configyaml) |
 | enable_redis_auth_cache | boolean | `false` | 當 `true` 時，會將虛擬金鑰驗證負載儲存在 Redis（與回應快取相同的 client）中，因此每個 worker/pod 都會共享快取的驗證查詢——在快取未命中時，重複讀取資料庫的次數更少。**需要 `cache: true` 與 `cache_params.type: redis`**（Redis 或 Redis Cluster）。選用：可設定 `general_settings.user_api_key_cache_ttl`，讓 TTL 同時一致地套用於記憶體與 Redis。[更多文件](./caching_redis#virtual-key-authentication-cache-redis) |
 | force_redis_hash_tag_grouping | boolean | `false` | 當 `true` 時，即使快取是一般 Redis 連線而非 Redis Cluster，速率限制器也會依 hash slot 分組其 Redis Lua 腳本的鍵。若是仍會拒絕跨槽命令的單一端點 Redis 服務，請設定此項，例如採用 Enterprise clustering policy 的 Azure Managed Redis；若不設定，這些服務會使批次 `EVALSHA` 呼叫以 `CROSSSLOT Keys in request don't hash to the same slot` 失敗，而速率限制會回退到每個 pod 的記憶體。 |
-| disable_end_user_cost_tracking | boolean | `false` | 若為 true，會關閉 proxy 上 Prometheus 指標 + litellm spend logs table 的終端使用者成本追蹤。 |
+| disable_end_user_cost_tracking | boolean | `false` | 若為 true，會關閉 proxy 上 Prometheus 指標 + litellm spend logs table 的終端使用者成本追蹤。自 v1.107.0 起，spend log rows（Postgres、ClickHouse、Lens 匯出，以及使用 `gcs_pub_sub_use_v1` 的 Pub/Sub）不會儲存終端使用者，失敗的請求不會建立 customer rows，且 customer 與每日終端使用者支出檢視不會再有新資料。請求主體、標頭和用戶端中繼資料會保留用戶端送出的 id，而接收標準記錄酬載的回呼仍會取得終端使用者。 |
 | enable_end_user_cost_tracking_prometheus_only | boolean | `false` | 若為 true，會在 Prometheus 指標中加入 `end_user` 標籤。預設為停用，以維持 Prometheus cardinality 有上限。[更多文件](./prometheus#tracking-end_user-on-prometheus) |
 | cost_discount_config | object | `{}` | 套用於成本計算的特定提供者百分比折扣。請在 `litellm_settings` 下方設定。[更多文件](./provider_discounts) |
 | cost_margin_config | object | `{}` | 套用於成本計算的特定提供者或全域百分比／固定加價。請在 `litellm_settings` 下方設定。[更多文件](./provider_margins) |
@@ -250,8 +270,8 @@ router_settings:
 | use_chat_completions_url_for_anthropic_messages | boolean | `false` | 若為 true，會將 OpenAI `/v1/messages` 請求改走 chat/completions，而不是 Responses API。也可透過環境變數 `LITELLM_USE_CHAT_COMPLETIONS_URL_FOR_ANTHROPIC_MESSAGES=true` 設定。 |
 
 | route_all_chat_openai_to_responses | boolean | `false` | 若為 true，會將所有 OpenAI `/chat/completions` 請求透過 Responses API 橋接器路由。建議用於 OpenAI 模型。也可透過環境變數 `LITELLM_ROUTE_ALL_CHAT_OPENAI_TO_RESPONSES=true` 設定。 |
-| skip_system_message_in_guardrail | boolean | `false` | 若為 true，統一防護欄僅在 **聊天完成** 和 **Anthropic `/v1/messages`** 上，會從掃描輸入中省略 `role: system`；Lakera v2 也會在聊天完成上遵循此設定。LLM 仍會接收完整訊息。每個防護欄可個別覆寫：在每個防護欄上設定 `litellm_params.skip_system_message_in_guardrail`。[防護欄快速上手](./guardrails/quick_start#skip-system-messages-in-guardrail-evaluation) |
-| skip_tool_message_in_guardrail | boolean | `false` | 若為 true，統一防護欄僅在 **聊天完成** 和 **Anthropic `/v1/messages`** 上，會從掃描輸入中省略 `role: tool`；Lakera v2 也會在聊天完成上遵循此設定。LLM 仍會接收完整訊息。每個防護欄可個別覆寫：在每個防護欄上設定 `litellm_params.skip_tool_message_in_guardrail`。[防護欄快速上手](./guardrails/quick_start#skip-tool-messages-in-guardrail-evaluation) |
+| skip_system_message_in_guardrail | boolean | `false` | 若為 true，統一防護欄在 **聊天完成**（每個 `role: system` 訊息）和 **Anthropic `/v1/messages`**（僅頂層 `system` 欄位；`messages` 內的 `role: system` 條目，也就是 Claude Code 送出的那些，仍會被掃描）上，會從掃描輸入中省略系統提示；Lakera v2 也會在聊天完成上遵循此設定。LLM 仍會接收完整訊息。每個防護欄可個別覆寫：在每個防護欄上設定 `litellm_params.skip_system_message_in_guardrail`。[防護欄快速上手](./guardrails/quick_start#skip-system-messages-in-guardrail-evaluation) |
+| skip_tool_message_in_guardrail | boolean | `false` | 若為 true，統一防護欄僅在 **聊天完成** 和 **Anthropic `/v1/messages`** 上，會從掃描輸入中省略 `role: tool`；Lakera v2 也會在聊天完成上遵循此設定，hide-secrets 在聊天完成和 `/v1/messages` 上亦然。LLM 仍會接收完整訊息。每個防護欄可個別覆寫：在每個防護欄上設定 `litellm_params.skip_tool_message_in_guardrail`。[防護欄快速上手](./guardrails/quick_start#skip-tool-messages-in-guardrail-evaluation) |
 | disable_hf_tokenizer_download | boolean | `false` | 若為 true，預設對所有模型（包含 huggingface 模型）使用 openai tokenizer。 |
 | enable_json_schema_validation | boolean | `false` | 若為 true，會為所有請求啟用 json schema 驗證。 |
 | enable_key_alias_format_validation | boolean | `false` | 若為 true，會在 `/key/generate` 和 `/key/update` 上驗證 `key_alias` 格式。必須為 2-255 個字元，開頭/結尾須為英數字元，且僅允許 `a-zA-Z0-9_-/.@`。 |
@@ -260,10 +280,12 @@ router_settings:
 | user_url_validation | boolean | `true` | 當 `true` 時，proxy 會在抓取前驗證使用者可控制的 URL（例如：當 OpenAPI `spec_path` 是一個 `http(s)` URL、圖片 URL，以及類似情況）：會解析 DNS，並封鎖連線到非全球可路由位址（RFC1918、loopback、link-local 等），除非 **URL 中的 hostname** 已列於 `user_url_allowed_hosts`。設為 `false` 可略過驗證（僅在您信任可提供 URL 的人員時使用）。**必須設定在 `litellm_settings` 底下**，而非 `general_settings`。 |
 | user_url_allowed_hosts | array of strings | `[]` | 當 `user_url_validation` 為 `true` 時，允許解析為私有/內部 IP 的主機名稱。請比對主機 **在 URL 中呈現的樣子**（例如 `api.corp.internal`、`127.0.0.1`、`127.0.0.1:8080`、`[::1]:443`）。對於 split-horizon DNS，請將 public hostname 加入允許清單，而不是解析後的 `10.x` 位址。**必須設定在 `litellm_settings` 底下**，而非 `general_settings`。請參閱 [OpenAPI 的 MCP](../mcp_openapi#internal-spec-urls-ssrf) 與 [自訂程式碼防護欄](guardrails/custom_code_guardrail#blocked-destinations)。 |
 | disable_copilot_system_to_assistant | boolean | `false` | **已淘汰** - GitHub Copilot API 支援 system prompts。 |
-| default_team_params | object | `null` | 套用於透過 `/team/new` 建立的每個新 team 的預設參數（包含 SSO 自動建立的 teams）。會填入請求中被省略或 `null` 的欄位，但 `budget_duration` 除外：明確的 `"budget_duration": null` 會略過預設值，並建立不會重設的 budget。子欄位：`max_budget`（float）、`budget_duration`（string，例如 `"30d"`）、`tpm_limit`（integer）、`rpm_limit`（integer）、`team_member_permissions`（array of strings，例如 `["/team/daily/activity", "/key/generate"]`）、`models`（array of strings — 僅套用於 SSO 自動建立的 teams）。 |
-| budget_reset_time | string | `null` (midnight) | 將在下一個版本提供（在 `v1.94.0` 之後）。以設定的 `timezone` 為準的當天/每週/每月 budget 重設的實際時間，格式為加引號的 24 小時制 `"HH:MM"` 或 `"HH:MM:SS"` 字串，例如 `"09:00"`。未設定時預設為 midnight；小於一天的持續時間會忽略它。格式錯誤的值會在啟動時使設定載入失敗。[進一步文件](./budget_reset_and_tz#configuring-the-reset-time-of-day) |
-| overwrite_user_with_key_hash | boolean | `false` | 自 `v1.95.0` 起可用。當 `true` 時，會強制將傳出的 chat/completions 上的 `user` 設為呼叫該金鑰的身分，覆寫任何用戶端提供的值，並在未提供時也會設定：虛擬金鑰的 sha256 hash（在支出記錄中等於 `user_api_key_hash`）或 master-key 請求的 `litellm_proxy_master_key` 別名。提供穩定、不可竄改的終端使用者 id，因此 provider 端以 `user` 為鍵的濫用監控或其他處理可對應回單一金鑰。僅影響經 proxy 驗證的金鑰；custom-auth 與 JWT 請求不受影響。[進一步文件](./virtual_keys#overwrite-outgoing-user-with-the-key-hash) |
-| drop_params | boolean | `false` | 若為 true，會靜默捨棄目標提供者不支援的任何請求參數，而不是拋出錯誤。也可透過環境變數 `LITELLM_DROP_PARAMS=true` 設定。[進一步文件](../completion/drop_params) |
+| default_team_params | object | `null` | 套用於透過 `/team/new` 建立的每個新 team 的預設參數（包含 SSO 自動建立的 teams）。會填入請求中被省略或 `null` 的欄位，但 `budget_duration` 除外：明確的 `"budget_duration": null` 會略過預設值，並建立不會重設的 budget。子欄位：`max_budget`（float）、`budget_duration`（string，例如 `"30d"`）、`tpm_limit`（integer）、`rpm_limit`（integer）、`team_member_permissions`（array of strings，例如 `["/team/daily/activity", "/key/generate"]`）、`access_group_ids`（array of strings，附加到未設定自身 `access_group_ids` 的 teams 的存取群組 id；這些 id 在儲存設定時必須存在）、`models`（array of strings — 僅套用於 SSO 自動建立的 teams）。 |
+| budget_reset_time | string | `null` (midnight) | <SinceVersion v="1.95.0" /> 以設定的 `timezone` 為準的當天/每週/每月 budget 重設的實際時間，格式為加引號的 24 小時制 `"HH:MM"` 或 `"HH:MM:SS"` 字串，例如 `"09:00"`。未設定時預設為 midnight；小於一天的持續時間會忽略它。格式錯誤的值會在啟動時使設定載入失敗。[進一步文件](./budget_reset_and_tz#configuring-the-reset-time-of-day) |
+| overwrite_user_with_key_hash | boolean | `false` | <SinceVersion v="1.95.0" /> 當 `true` 時，會強制將傳出的 chat/completions 上的 `user` 設為呼叫該金鑰的身分，覆寫任何用戶端提供的值，並在未提供時也會設定：虛擬金鑰的 sha256 hash（在支出記錄中等於 `user_api_key_hash`）或 master-key 請求的 `litellm_proxy_master_key` 別名。提供穩定、不可竄改的終端使用者 id，因此 provider 端以 `user` 為鍵的濫用監控或其他處理可對應回單一金鑰。僅影響經 proxy 驗證的金鑰；custom-auth 與 JWT 請求不受影響。[進一步文件](./virtual_keys#overwrite-outgoing-user-with-the-key-hash) |
+| bedrock_request_metadata_fields | strings 陣列 | `null` | <SinceVersion v="1.99.0" /> 在每次 Bedrock 呼叫時轉送至 AWS Bedrock 作為請求中繼資料的欄位，讓模型叫用記錄帶有呼叫的金鑰、team 和 org。接受文字型 `user_api_key_*` 欄位（例如 `user_api_key_team_alias`、`user_api_key_org_alias`）和 `spend_logs_metadata`。[進一步文件](../providers/bedrock#forward-key-team-and-org-identity-from-the-proxy) |
+| vertex_request_label_fields | strings 陣列 | `null` | <SinceVersion v="1.111.0" /> 傳送至 Vertex AI 作為請求標籤的欄位，讓 Cloud Billing 依呼叫的金鑰、team、org 和專案拆分成本。接受文字型 `user_api_key_*` 欄位（例如 `user_api_key_team_alias`、`user_api_key_project_alias`）和 `spend_logs_metadata`。[進一步文件](../providers/vertex#label-requests-with-key-team-org-and-project-identity) |
+| drop_params | boolean | `null` | 若為 true，會靜默捨棄目標提供者不支援的任何請求參數，而不是拋出錯誤。也可透過環境變數 `LITELLM_DROP_PARAMS=true` 設定。兩者皆未設定時，不支援的參數會拋出錯誤，但來自 Claude Code 和 Codex 的請求預設會捨棄這些參數。設定 `false` 也可對它們關閉該預設行為。在 v1.103.0 到 v1.108.x 上有一個錯誤，會使 Claude Code 和 Codex 請求忽略此處的 `false`，v1.109.0 已修正。[進一步文件](../completion/drop_params#claude-code-and-codex-on-the-proxy) |
 | add_function_to_prompt | boolean | `false` | 若為 true，當提供者不支援 function/tool calling 時，會將 function 定義附加到 prompt，而不是拋出錯誤。 |
 | ssl_verify | boolean or string | `true` | 控制送往 LLM 的外送請求之 TLS 憑證驗證。設為 `false` 可停用驗證，或設為 CA bundle 的字串路徑。 |
 | return_response_headers | boolean | `false` | 若為 true，會在回應上顯示提供者的 rate-limit 回應標頭（例如 `x-ratelimit-remaining-requests`）。 |
@@ -271,7 +293,7 @@ router_settings:
 | max_internal_user_budget | float | `null` | 套用於每位內部使用者的預設最大 budget（USD）。`null` 表示沒有每位使用者的上限。[進一步文件](./self_serve#set-default-max-budget-for-internal-users) |
 | default_max_internal_user_budget | float | `null` | 當 `max_internal_user_budget` 未設定時，供內部使用者使用的備用最大 budget（USD）。`null` 表示沒有上限。 |
 | max_ui_session_budget | float | `1.0` | 每次 Admin UI 登入 session 的最大支出（USD）（playground、test connection）。`null` 會停用上限。 |
-| store_audit_logs | boolean | `null` | 若為 true，會為金鑰、teams 和 users 的建立/更新/刪除動作寫入稽核記錄。未設定時，會讀取 `LITELLM_STORE_AUDIT_LOGS` 環境變數；若該變數也未設定，則企業部署會開啟稽核記錄，否則關閉。 |
+| store_audit_logs | boolean | `null` | 若為 true，會為金鑰、teams 和 users 的建立/更新/刪除動作寫入稽核記錄。需要企業授權，否則不會寫入任何稽核記錄。未設定時，會讀取 `LITELLM_STORE_AUDIT_LOGS` 環境變數；若該變數也未設定，則企業部署會開啟稽核記錄，否則關閉。 |
 | default_key_generate_params | object | `null` | 當呼叫端未提供時，套用於 `/key/generate` 請求的預設參數。[進一步文件](./virtual_keys#default-keygenerate-params) |
 | upperbound_key_generate_params | object | `null` | 強制套用於 `/key/generate` 參數的硬性上限（例如最大 `max_budget`、`duration`）；超出上限的請求會被拒絕。[進一步文件](./virtual_keys#upperbound-keygenerate-params) |
 | default_internal_user_params | object | `null` | 套用於首次 SSO 登入時自動建立的內部使用者之預設參數（角色、模型、budget）。[進一步文件](./self_serve) |
@@ -281,11 +303,13 @@ router_settings:
 ### 一般設定 - 參考 {#general_settings---reference}
 
 | 名稱 | 類型 | 預設值 | 說明 |
+| access_group_rules | objects 陣列 | `null` | <SinceVersion v="1.110.0" /> 當 JWT claim 相符時，依請求授予存取群組。[文件](jwt_access_group_rules) |
 |------|------|---------|-------------|
 | completion_model | string | `null` | 要用於所有 completions 的模型，會覆寫請求中指定的任何 `model` |
 | enable_drain_endpoint | boolean | `false` | 若為 true，會公開未經驗證的 `GET /health/drain` 端點，供 Kubernetes `preStop` hooks 在關機前排空進行中的請求。預設為關閉；只有在健康連接埠僅可從叢集內部存取時才啟用，因為任何能連到它的呼叫者都可以將 pod 移出輪替。請參閱 `GRACEFUL_SHUTDOWN_TIMEOUT`。 |
 | drain_endpoint_token | string | `null` | `/health/drain` 端點的共享密鑰。設定後，drain 呼叫必須帶有相符的 `X-Drain-Token` 標頭（與 `secrets.compare_digest` 比對），否則會以 401 拒絕；kubelet 會從 preStop `httpGet.httpHeaders` 提供它。也可透過 `DRAIN_ENDPOINT_TOKEN` 環境變數設定。 |
 | disable_spend_logs | boolean | `false` | 若為 true，則關閉將每筆交易寫入資料庫 |
+| disable_requester_ip_address_logging | boolean | `false` | <SinceVersion v="1.107.0" /> 若為 true，新的 spend log rows 會在 `LiteLLM_SpendLogs` 中將 `requester_ip_address` 儲存為 null（欄位、metadata，以及在使用 `store_prompts_in_spend_logs` 時所儲存的請求；後者也會捨棄常見的用戶端 IP 轉送標頭，例如 `x-forwarded-for` 和 `x-real-ip`，並遮蔽其其他標頭值中的 IP 位址），成功和失敗的 rows 皆然，且已儲存錯誤訊息內的 IP 位址（例如 `allowed_ips` 拒絕）會被遮蔽，因此 Admin UI 的 Logs 頁面不會顯示 IP。防護欄、記錄回呼、指標和追蹤仍會接收 IP，因此能感知 IP 的防護欄可繼續運作。設定了冷儲存時，Logs 頁面的請求檢視會從您的 bucket 載入，此設定不會改變這一點。在開啟此設定之前寫入的 rows 會保留其 IP。設定 API 接受為 true 的任何值都會將它開啟（`true`、`"true"`、`"yes"`、`"on"`、`1`）。也可在 Admin UI 的 **Settings > Router Settings > General Settings** 下切換 |
 | disable_spend_updates | boolean | `false` | 若為 true，則關閉所有支出更新到 DB。包含 key/user/team 的支出更新。 |
 | disable_master_key_return | boolean | `false` | 若為 true，則關閉在 UI 上回傳 master key。（在 '/user/info' 端點檢查） |
 | disable_env_credential_login | boolean | `false` | 預設 `false`。若為 true，Admin UI 不再接受環境憑證（`UI_USERNAME`/`UI_PASSWORD`，或在 `UI_PASSWORD` 未設定時的 master key）；只能透過資料庫使用者與 SSO 登入。請先建立一個帶密碼的 `proxy_admin` 使用者；如果太早啟用，移除此設定並重新啟動即可恢復環境登入。[停用環境憑證登入](./ui#5-create-your-own-admin-account-and-disable-environment-credential-login) |
@@ -293,14 +317,19 @@ router_settings:
 | disable_reset_budget | boolean | `false` | 若為 true，則關閉重設預算的排程工作 |
 | disable_adding_master_key_hash_to_db | boolean | n/a | **代理程式不再讀取此項**；將 master key 雜湊寫入 DB 的程式碼已在 [litellm#8268](https://github.com/BerriAI/litellm/pull/8268) 中移除。若為 true，則關閉將 master key 雜湊儲存在 db 中 |
 | disable_responses_id_security | boolean | `false` | 若為 true，則停用 response ID 安全檢查，避免使用者存取其他使用者的 response ID。若為 false（預設），response ID 會以使用者資訊加密，以確保使用者只能存取自己的回應。適用於 /v1/responses 端點 |
+| responses_websocket_session_limit_seconds | float | `3600` | Responses API WebSocket 工作階段在 `/v1/responses` 和 `/responses` 上的最長存活時間（秒），從連線被接受時起算。閒置連線會保持開啟，直到其第一個 `response.create` 影格為止，上限為此限制。達到限制時，proxy 會以代碼 `1000` 和原因 `Session duration limit reached` 關閉 socket。必須介於 60 和 7200 之間；任何其他值會記錄警告並回退至 3600。[文件](../response_api#session-duration-limit) |
 | allow_unmanaged_response_ids | boolean | `false` | 若為 true，允許金鑰處理此 proxy 從未發出的 response ID，例如原始提供者 ID，或是在 response ID 加密啟用前發放的 ID。若為 false（預設），因為 proxy 無法辨識其擁有者，這些 ID 會以 403 拒絕。proxy 實際發出的 ID 不論哪種情況都會進行擁有者檢查。適用於 /v1/responses 端點 |
 | disable_auto_add_proxy_admin_to_teams | boolean | `false` | 當使用者呼叫 `/team/new` 時，LiteLLM 會自動將該呼叫者加入新團隊並設為團隊管理員。將此項設為 `true`，即可不再自動新增 proxy 管理員；您在 `members_with_roles` 中明確列出的成員仍會被新增，而非管理員呼叫者（例如內部使用者）仍會自動新增。也可在 Admin UI 的 **Settings > Router Settings > General Settings** 中切換。 |
 | search_tool_deny_by_default | boolean | `false` | 若為 true，請求只能使用其金鑰與團隊、無金鑰團隊成員所屬團隊，或使用者（若兩者皆無）在 `object_permission.search_tools` 中列出的搜尋工具。缺少或空白的清單不授予任何權限，而且網頁搜尋攔截不再回退到預設提供者。master key 與儀表板工作階段不受影響。[更多資訊請見此處](../search/index.md#restrict-search-tool-access) |
-| enforce_fallback_model_access | boolean | `false` | 預設 `false`。當 `true` 時，配置在 `router_settings`（`fallbacks`、`context_window_fallbacks`、`content_policy_fallbacks`、`default_fallbacks`）中的備援只有在呼叫的金鑰、其團隊及其專案都被允許呼叫該備援模型時才會執行；未授權的目標會被略過，且當沒有剩餘目標時會回傳主要模型的錯誤。[更多資訊請見此處](reliability#enforce-key-model-access-on-fallbacks) |
+| disable_fallbacks_on_per_model_rate_limits | boolean | `false` | 預設 `false`。當 `true` 時，被金鑰、team、組織或專案的個別模型速率限制（`model_rpm_limit` / `model_tpm_limit`）拒絕的請求會回傳 429，而不是在 `router_settings` 備援上重試。其他本機速率限制則維持原有的備援行為。[更多資訊請見此處](users#per-model-rate-limits-and-fallbacks) |
+| enforce_fallback_model_access | boolean | `true` | 預設 `true`。配置在 `router_settings`（`fallbacks`、`context_window_fallbacks`、`content_policy_fallbacks`、`default_fallbacks`）中的備援只有在呼叫的金鑰、其團隊及其專案都被允許呼叫該備援模型時才會執行；未授權的目標會被略過，且當沒有剩餘目標時會回傳主要模型的錯誤。設定為 `false` 可讓備援不論模型存取權限為何都執行。[更多資訊請見此處](reliability#enforce-key-model-access-on-fallbacks) |
 | enforce_fallback_budget | boolean | `true` | 預設 `true`。配置在 `router_settings` 中的備援只有在呼叫的金鑰與使用者仍在預算內時才會執行；超出預算的目標會被略過，且當沒有剩餘目標時會回傳主要模型的錯誤。零成本的備援目標一律允許，且主要嘗試永遠不會被阻擋。設為 `false` 可讓備援不受預算限制執行。[更多資訊請見此處](reliability#enforce-budget-on-fallbacks) |
 | enable_jwt_auth | boolean | `false` | 允許 proxy 管理員透過在 claims 中包含 'litellm_proxy_admin' 的 jwt tokens 進行驗證。[JWT Tokens 文件](token_auth) |
 | enforce_user_param | boolean | `false` | 若為 true，則要求所有 OpenAI 端點請求都必須有 'user' 參數。[call hooks 文件](call_hooks)|
-| reject_clientside_metadata_tags | boolean | `false` | 若為 true，會拒絕包含用戶端 'metadata.tags' 的請求，以防止使用者透過送出不同的 tags 來影響預算。tags 只能從 API key metadata 繼承。 |
+| enforce_rpm_tpm_on_model_add | boolean or mapping | `false` | <SinceVersion v="1.100.0" /> 若為 `true`，`POST /model/new` 會回應 `400`，除非該模型的 `litellm_params` 設定了正數的 `rpm` 和 `tpm`。具有 `default`、`providers` 和 `models` 鍵的 mapping 則改為設定每個提供者和模型需要這兩個限制中的哪一個 <SinceVersion v="1.109.0" />。[在新模型上要求 rpm 和 tpm](model_management#require-rpm-and-tpm-on-new-models) |
+| enforce_project_model_quota | boolean or mapping | `false` | （企業功能）<SinceVersion v="1.100.0" /> 若為 `true`，`POST /project/new` 和 `POST /project/update` 會回應 `400`，除非專案上的每個模型都有正數的 `model_rpm_limit` 和 `model_tpm_limit`。具有 `default`、`providers` 和 `models` 鍵的 mapping 則改為設定每個提供者和模型需要這兩個限制中的哪一個 <SinceVersion v="1.109.0" />。[在專案模型上要求配額](project_management#require-quotas-on-project-models) |
+| reject_clientside_metadata_tags | boolean | `false` | 若為 true，會拒絕包含用戶端 'metadata.tags' 的請求，以防止使用者透過送出不同的 tags 來影響預算。tags 只能從 API key metadata 繼承。透過 `request_tag_mappings` 對應的 tags 仍會被加入。 |
+| request_tag_mappings | List[Dict] | `null` | 將 W3C `baggage` 請求標頭的值對應到請求標籤的規則，用於支出追蹤和標籤預算。每條規則設定 `key`，以及 `value` 配 `tag` 或 `tag_prefix`，再加上選用的 `required` 和 `require_budgeted_tag`。<SinceVersion v="1.109.0" /> [將 baggage 對應到標籤的文件](./tag_budgets#map-baggage-values-to-tags) |
 | missing_session_id | string | `null`（舊版行為） | 對於沒有 session id 的 LLM API 請求要如何處理（`x-litellm-session-id` 標頭、`metadata.session_id`、W3C `baggage` `session.id` 等）。`generate` 會為每個請求建立一個 id，並將其標記到 `litellm_session_id`、`litellm_trace_id` 和 `metadata.session_id`，因此 SpendLogs 中的 `session_id` 欄位與傳送給 Langfuse 等記錄回呼的 session id 會一致。`reject` 會為此類請求回傳一個 `400`。未設定則保留舊版行為，也就是 SpendLogs 會回退到 trace id，而回呼不會收到 session id。MCP 路由不受影響。 |
 | disable_batch_input_file_rate_limiting | boolean | `false` | 預設 `false`。設為 `true` 可在提交批次輸入檔案時略過 TPM 與 RPM 計算。當 API key 有模型允許清單時，系統仍會讀取檔案。請參閱 [批次速率限制](../batches#how-rate-limiting-for-batches-api-works)。 |
 | skip_batch_input_file_rate_limiting_for_providers | array of strings | `[]` | 為列出的提供者略過批次輸入檔案的 TPM 與 RPM 計算，例如 `["hosted_vllm"]`。LiteLLM 會根據所選路由決定提供者。當 API key 有模型允許清單時，系統仍會讀取檔案。 |
@@ -349,7 +378,9 @@ router_settings:
 | supported_db_objects | List[str] | `null` | 當 `store_model_in_db` 為 True 時，可細緻控制要從資料庫載入哪些物件類型。可用類型：`"models"`、`"mcp"`、`"guardrails"`、`"vector_stores"`、`"pass_through_endpoints"`、`"prompts"`、`"model_cost_map"`。若未設定，則會載入所有物件類型（預設行為）。範例：`supported_db_objects: ["mcp"]` 以僅從 DB 載入 MCP servers。 |
 | vector_store_deny_by_default | boolean | `false` | 如果為 true，請求只能使用其金鑰與團隊所列於 `object_permission.vector_stores` 的 vector store，若為無金鑰的團隊成員，則只能使用其團隊所列的 vector store；若兩者皆無，則只能使用使用者的 vector store。缺少或空的清單不會授予任何權限。主金鑰與儀表板 session 不在此限。[預設拒絕 vector store 的文件](../vector_stores/managed_vector_stores#deny-vector-stores-by-default) |
 | user_mcp_management_mode | string | `null` | 控制非管理員在 MCP 儀表板上可見的內容。`restricted`（預設）只列出使用者所屬團隊明確被允許存取的 MCP servers。`view_all` 讓每位使用者都能看到完整的 MCP server 清單。Tool list/call 一律遵守每個金鑰的權限，因此使用者仍無法在沒有存取權的情況下執行 MCP 呼叫。 |
-| store_prompts_in_spend_logs | boolean | `false` | 如果為 true，允許將 prompts 與 responses 儲存在 spend logs 資料表中。 |
+| store_prompts_in_spend_logs | boolean | `false` | 如果為 true，允許將 prompts 與 responses 儲存在 spend logs 資料表中。金鑰或 team 可以在其 metadata 中設定 `store_prompts_in_spend_logs: false` 來退出，請參閱 [UI Logs](./ui_logs.md#turn-off-prompt-storage-for-a-key-or-team)。 |
+| redact_tokens_in_spend_logs | boolean | `true` | <SinceVersion v="1.110.0" /> 在啟用 `store_prompts_in_spend_logs` 時，遮蔽已儲存請求和回應內容中已知的 token 形狀機密。設定 `false` 可退出。不會改變提供者請求、用戶端回應或記錄回呼。請參閱 [Spend Logs 中的 Token 遮蔽](./token_redaction_spend_logs.md)。 |
+| spend_logs_metadata_fields | object | `null`（寫入每個鍵） | `LiteLLM_SpendLogs.metadata` 中哪些頂層鍵會寫入資料庫。只能設定 `include`（只寫入這些鍵）或 `exclude`（捨棄這些鍵）其中之一；同時設定兩者、兩者皆不設定，或設定未知鍵，都會使 proxy 在啟動時停止。`status` 和 `cold_storage_object_key` 一律會寫入。每日支出資料表、預算和記錄回呼仍會看到每個鍵。請參閱 [選擇要儲存哪些 metadata 欄位](./ui_logs.md#choose-which-metadata-fields-are-stored) |
 | scope_spend_list_endpoints_to_caller | boolean | n/a | **proxy 不再讀取此設定**；`/spend/keys` 與 `/spend/users` 一律將非管理員呼叫者範圍限制在其自己的列。當 `true`（預設）時，`/spend/keys` 與 `/spend/users` 只會回傳非管理員 API 金鑰呼叫者自己的列。設定為 `false` 可停用範圍限制。請參閱 [Spend list endpoints](./cost_tracking.md#spend-list-endpoints-spendkeys-and-spendusers)。 |
 | legacy_unscoped_spend_list_endpoints | boolean | n/a | **proxy 不再讀取此設定**；`/spend/keys` 與 `/spend/users` 一律將非管理員呼叫者範圍限制在其自己的列。當 `true` 時，會還原 `/spend/keys` 與 `/spend/users` 的範圍限制前行為（非管理員金鑰可列出所有列）。會覆寫 `scope_spend_list_endpoints_to_caller`。環境變數：`LITELLM_LEGACY_UNSCOPED_SPEND_LIST_ENDPOINTS`。 |
 | max_request_size_mb | int | `null`（無上限） | 請求的最大大小（MB）。超過此大小的請求將被拒絕。 |
@@ -363,7 +394,7 @@ router_settings:
 | blocked_file_extensions | List[str] | `null`（無封鎖） | 已淘汰，請改用 `allowed_file_extensions`。上傳到 `/v1/files` 的檔案副檔名（例如 `[".exe", ".sh"]`），適用於任何 `purpose`。會針對上傳的檔名以不區分大小寫方式比對。當允許清單與此設定同時存在時，仍會在允許清單之後強制執行。未設定表示沒有副檔名被封鎖。 |
 | proxy_budget_rescheduler_min_time | int | `597`（秒） | 在檢查資料庫是否有 budget 重設之前，需等待的最短時間（秒）。**預設為 597 秒** |
 | proxy_budget_rescheduler_max_time | int | `605`（秒） | 在檢查資料庫是否有 budget 重設之前，需等待的最長時間（秒）。**預設為 605 秒** |
-| proxy_batch_write_at | int | `10`（秒） | 在批次寫入 spend logs 到資料庫之前需等待的時間（秒）。**預設為 10 秒** |
+| proxy_batch_write_at | int | `10`（秒） | 在批次寫入 spend logs 到資料庫之前需等待的時間（秒）。**預設為 10 秒**。它也會將執行預算的 spend counters 的 Redis TTL 設為此值的 10 倍，下限為 1 小時，讓 counter 的存活時間長於批次寫入。較大的 `litellm_settings.default_redis_ttl` 則會套用到那些 counters。 |
 | proxy_batch_polling_interval | int | `3600`（秒） | 在輪詢批次之前需等待的時間（秒），以檢查是否已完成。輪詢器另外最多會再加入 30 秒的抖動。**預設為 3600 秒（1 小時）** |
 | proxy_config_reload_interval_seconds | int | `30` | 當啟用 `store_model_in_db` 時，每個 pod 從資料庫重新載入 config-in-DB 物件（models、credentials、guardrails 等）的頻率。較低的值可加快跨 pod 一致化，但會增加 DB 負載；套用於 proxy 啟動時。環境變數：`PROXY_CONFIG_RELOAD_INTERVAL_SECONDS`。**預設為 30 秒** |
 
@@ -372,6 +403,7 @@ router_settings:
 | custom_key_generate | str | `null` | 用於 key 產生的自訂函式 [自訂 key 產生文件](./virtual_keys.md#custom-keygenerate) |
 | custom_key_update | str | `null` | 用於 key 更新的自訂函式。若 `custom_key_generate` 原則也應套用於 key 編輯，則為必要設定 [自訂 key 更新文件](./virtual_keys.md#custom-keyupdate) |
 | custom_key_policy | str | `null` | 會在每次 key 操作（產生、更新、重新產生）時執行的自訂函式，並帶入操作與實際生效的 key 狀態 [自訂 key 原則文件](./virtual_keys.md#custom-key-policy-one-hook-for-every-key-operation) |
+| self_serve_budget_policy | string | `disabled` | 讓金鑰的擁有者（其建立者，且仍擁有它）可以透過 `/key/update` 變更該金鑰上的 `max_budget`、`budget_limits` 和 `budget_duration`，無需管理員。`lower_only` 允許新增預算時段、降低上限或清除 `budget_duration`，而 `ceiling` 還允許提高或移除限制，或設定新的 `budget_duration`，範圍以擁有者可以在 `/key/generate` 上設定的為限。`spend`、`soft_budget`、`budget_id`，以及連結了 `budget_id` 的金鑰上的 `max_budget` 或 `budget_duration`，仍僅限管理員。未知值會記錄警告並以 `disabled` 行為運作。[自助金鑰預算編輯文件](./virtual_keys.md#let-key-owners-edit-their-own-key-budgets) |
 | allowed_ips | List[str] | `null`（所有 IP） | 允許存取 proxy 的 IP 清單。若未設定，則允許所有 IP。 |
 | embedding_model | str | n/a | **proxy 不再讀取此值**；`/embeddings` 路由不會讀取它；請在請求中設定預設模型，或使用 `model_list` 別名。用於 embeddings 的預設模型 - 會忽略請求中設定的 model |
 | alert_to_webhook_url | Dict[str] | `null` | [為每種警示類型指定 webhook url。](./alerting.md#map-slack-channels-to-alert-type) |
@@ -386,21 +418,27 @@ router_settings:
 | allow_cli_sso_verification_uri_complete | boolean | `false` | 預設 `false`。當 `true` 時，`POST /sso/cli/start` 也會回傳 `verification_uri_complete`，且 `lite login` 會開啟瀏覽器驗證頁面並預先填入代碼，讓使用者只需確認即可。預設為關閉，因此代碼必須手動輸入。[CLI SSO 文件](./cli_sso.md#pre-fill-the-verification-code) |
 | include_call_id_in_error_body | boolean | `false` | 預設 `false`。當 `true` 時，JSON 錯誤本文也會包含 `x-litellm-call-id` 回應標頭的值，在 OpenAI 形狀的路由上作為 `error.litellm_call_id`，以及 `/v1/messages`，並在轉送路由上作為頂層 `litellm_call_id`，因此只列印本文的用戶端仍能顯示要查找的請求名稱。[回報問題文件](./error_reference.md#reporting-a-problem) |
 | allow_client_side_credentials | boolean | `false` | 若為 true，允許將用戶端端憑證傳遞給 proxy。（在測試 finetuning 模型時很有用）[用戶端端憑證文件](./virtual_keys.md) |
+| allowed_client_side_s3_buckets | List[str] | `null`（不允許任何） | 用戶端可以在請求主體中以 `s3_bucket_name` 或 `s3_output_bucket_name` 傳送的 S3 bucket 名稱，例如在 `/v1/batches` 上。任何其他 bucket 都會被拒絕，`allow_legacy_cloud_file_ids` 亦然，除非 `allow_client_side_credentials` 已開啟，或部署在 `configurable_clientside_auth_params` 中列出了該欄位。[依請求選擇批次 bucket 的文件](../providers/bedrock_batches#can-a-client-choose-the-s3-bucket-per-request) |
+| allowed_client_side_s3_endpoint_urls | List[str] | `null`（不允許任何） | 用戶端可以在請求主體中傳送的確切 `s3_endpoint_url` 值。任何其他值都會被拒絕，除非 `allow_client_side_credentials` 已開啟，或部署在 `configurable_clientside_auth_params` 中列出了該欄位。 |
 | admin_only_routes | List[str] | `null` | （企業功能）僅供管理員使用者存取的路由清單。[僅限管理員路由文件](/docs/proxy/public_routes#define-public-admin-only-and-allowed-routes) |
 | use_azure_key_vault | boolean | `false` | 若為 true，則從 azure key vault 載入 keys |
 | use_google_kms | boolean | `false` | 若為 true，則從 google kms 載入 keys |
 | spend_report_frequency | str | `7d` | 指定您希望多久寄送一次支出報告（例如「1d」、「2d」、「30d」）[更多內容](./alerting.md) |
 | spend_capture_rate_check | object | `null`（關閉） | 每日將 LiteLLM 擷取的支出與提供者帳單進行比對，當比率低於 `threshold`（預設 0.9）時發出警示。鍵：`providers`、`threshold`、`lookback_days`、`openai_project_ids`。需要 `OPENAI_ADMIN_KEY`。[支出擷取比率文件](./spend_capture_rate.md) |
+| key_expiry_alert_days | integer | `null`（關閉） | <SinceVersion v="1.111.0" /> 當金鑰距離到期剩下此天數或更少時（1 到 365），會寄送一次電子郵件給金鑰的擁有者。適用於每個有到期日和擁有者電子郵件的金鑰。金鑰的 `metadata.key_expiry_alert_days` 會覆寫它。需要開啟 `Virtual Key Expiring` 電子郵件事件。[金鑰到期警示文件](./email.md#4-configure-key-expiry-alerts-optional) |
 | ui_access_mode | Literal["admin_only"] | `all` | 若設定，會將 UI 的存取限制為僅限管理員使用者。[文件](./ui.md#disable-admin-ui) |
 | max_failed_login_attempts_per_source | integer | `10` | 允許來自單一來源位址的 Admin UI 登入失敗次數，跨所有使用者計算，於 `failed_login_window_seconds` 內累積；超過後會將該位址封鎖 `failed_login_block_seconds`。此值的一半（無條件捨去，至少 1）是來自該位址的單一使用者允許次數，僅會封鎖該位址與使用者配對。每位址限制僅在設定 `trusted_proxy_ranges` 時適用（`[]` 當用戶端直接連線時）；若留空，則只套用每使用者的一半限制。IPv6 位址會依 /64 分組。[文件](./ui#limit-failed-sign-in-attempts) |
 | max_failed_login_attempts_per_source_overrides | dict | `null` | 依 IP 位址或 CIDR 範圍鍵入的 `max_failed_login_attempts_per_source` 每位址覆寫，例如 `{"203.0.113.7": 50, "10.0.0.0/8": 100}`。最特定的匹配優先，單一使用者允許次數會隨覆寫值的一半而定，而 `0` 會將該位址從兩種限制中豁免 |
 | failed_login_window_seconds | integer | `60` | 計算 Admin UI 登入失敗嘗試次數的固定秒數視窗，從第一次失敗開始計算 |
 | failed_login_block_seconds | integer | `300` | 被封鎖的位址，或位址與使用者配對，會維持被封鎖多久。來自被封鎖 key 的每次嘗試都會在驗證密碼前以 429 拒絕，且被拒絕的嘗試不會延長封鎖時間 |
-| litellm_jwtauth | Dict[str, Any] | `null` | JWT 驗證設定。[文件](./token_auth.md) |
-| litellm_license | str | `null` | proxy 的授權金鑰。[文件](../enterprise.md#how-do-i-set-up-and-verify-an-enterprise-license) |
+| litellm_jwtauth | Dict[str, Any] | `null` | JWT 驗證設定。[文件](./jwt_auth_reference.md) |
+| litellm_jwtauth.unregistered_jwt_client_behavior | string | `fallback_team_mapping` | 當 JWT 沒有金鑰對應時的處理方式：`fallback_team_mapping`、`reject`、`auto_register` 或 `link_only` <SinceVersion v="1.109.0" />。[文件](./jwt_key_mapping.md#step-1-configure-the-claim-and-unmapped-client-policy) |
+| litellm_jwtauth.auto_register_map_existing_key | boolean | `false` | 使用 `auto_register` 時，重複使用使用者最新且符合資格的金鑰，而不是建立新金鑰。[文件](./jwt_key_mapping.md#which-existing-key-is-selected) {/* keep-version-note */} |
+| litellm_license | str | `null` | proxy 的授權金鑰。[文件](../enterprise/activate.md) |
 | oauth2_config_mappings | Dict[str, str] | `{}` | 定義 OAuth2 設定對應 |
 | pass_through_endpoints | List[Dict[str, Any]] | `null` | 定義轉送端點。[文件](./pass_through) |
 | pass_through_request_timeout | float | `null` | 轉送路由（自訂端點與原生提供者轉送）的上游請求逾時，單位為秒。預設值：`600`。每端點 `timeout` 會在自訂端點上覆寫此值。在原生提供者轉送路由上，部署或路由逾時以及明確設定的 `litellm_settings.request_timeout` 會覆寫它。[文件](./pass_through#request-timeouts) |
+| vertex_ai_pass_through_drop_anthropic_betas | List[str] | `null` | <SinceVersion v="1.108.0" /> Vertex AI 直通路由（`/vertex_ai/*` 和 `/vertex-ai/*`）在呼叫 Vertex AI 之前會移除的 `anthropic-beta` 值，適用於 Claude on Vertex AI 會拒絕的 beta。以 `x-pass-anthropic-beta` 傳送的值也會被移除。比對在修剪空格後為完全相符且區分大小寫，用戶端的其他值會保持其順序，且當沒有剩餘值時會省略該標頭。單一清單適用於每個 Vertex AI Claude 模型。[移除 Anthropic beta 值的文件](../pass_through/vertex_ai#removing-anthropic-beta-values-vertex-ai-rejects) |
 | enable_oauth2_proxy_auth | boolean | `false` | （企業功能）若為 true，則啟用 oauth2.0 驗證 |
 | forward_openai_org_id | boolean | `false` | 若為 true，則將 OpenAI Organization ID 轉送到後端 LLM 請求（若為 OpenAI）。 |
 
@@ -412,11 +450,13 @@ router_settings:
 | always_include_stream_usage | boolean | `false` | 若為 true，會在每個串流回應區塊中包含用量指標 |
 | sse_keepalive_ping_interval_seconds | Optional[float] | `null`（關閉） | 依據 [Timeouts](./timeout#keepalive-pings-for-idle-streaming-connections) 所述串流保活的全域預設值。套用至每個未設定自身 `keepalive_seconds` 的 deployment，以及沒有自身 deployment 的透傳路由。也涵蓋上游尚未回應的這段時間，而單一 deployment 的 `keepalive_seconds` 無法達到此處。預設為 None（關閉）。 |
 | auto_redirect_ui_login_to_sso | boolean | `false` | 若為 true，會自動將 UI 登入頁面重新導向至 SSO 提供者 |
+| claude_code_marketplace_auth_required | boolean | `false` | 若為 true，`GET /claude-code/marketplace.json` 需要以 `Authorization: Bearer <key>` 或 `x-litellm-api-key: Bearer <key>` 傳送的 LiteLLM 金鑰，且不再接受 `?key=` 查詢參數。沒有金鑰、未知金鑰，或帶有 `?key=` 參數的請求會得到帶有 `WWW-Authenticate: Bearer` 的 `401`，而 `allowed_routes` 不包含該路由的金鑰會得到 `403`。`GET /public/skill_hub` 屆時會回傳空清單。加引號的 `"true"` 也視為開啟，且 `config.yaml` 中不是布林值的值會使 proxy 在啟動時停止。<SinceVersion v="1.109.0" /> [為 marketplace 要求金鑰](../tutorials/claude_code_plugin_marketplace.md#require-a-key-for-the-marketplace) |
 | control_plane_url | string | `null` | 管理此實例的全域控制平面的 URL。會啟用 `/v3/login` 與 `/v3/login/exchange` 端點，讓控制平面 UI 可跨來源向此實例進行驗證。與控制平面之間不共享任何狀態。[文件](./global_control_plane.md) |
-| custom_auth_run_common_checks | boolean | `false` | 若為 true，會在自訂驗證旁一併執行 LiteLLM 的標準驗證檢查（key/team/user/project model allowlists、budgets、rate limits）。預設為 `false` — 請參閱 [Custom Auth — Enforce model access](/docs/proxy/custom_auth#enforce-budgets-and-model-access) |
+| custom_auth_run_common_checks | boolean | `false` | 若為 true，會在自訂驗證旁一併執行 LiteLLM 的標準驗證檢查（key/team/user/project model allowlists、budgets、rate limits）。預設為 `false` — 請參閱 [Custom Auth — Enforce model access](/docs/proxy/access_management/custom_auth_permissions#enforce-budgets-and-model-access) |
 | custom_ui_sso_sign_in_handler | string | `null` | UI 中 SSO 登入邏輯的自訂處理器 |
 | database_connection_pool_timeout | integer | `60`（秒） | 資料庫連線池逾時（秒） |
 | disable_error_logs | boolean | `false` | 若為 true，會停用資料庫中的錯誤追蹤與儲存 |
+| disable_pre_routing_error_logs | boolean | `false` | 若為 true，proxy 在選取部署之前拒絕的請求（無效或過期的金鑰、超出預算、模型存取被拒、未知模型、無法解析的主體）不會寫入 `LiteLLM_SpendLogs` 或每日支出資料表。提供者錯誤、防護欄封鎖和速率限制仍會被記錄。請參閱 [DB 資訊](./db_info.md#disable-litellm_spendlogs) |
 | enable_health_check_routing | boolean | `false` | 若為 true，會啟用以健康檢查驅動的 request routing，以避免路由到不健康的 deployments |
 | background_health_check_model_groups | Optional[List[str]] | `null`（所有群組） | 供選用的 model group 名稱 allowlist，用於背景健康檢查。設定後，僅會探測列出的群組，且 health-check routing 只會套用於這些群組；未列出的群組則維持其設定的 routing 行為。預設為 None（所有群組） |
 | health_check_ignore_transient_errors | boolean | `false` | 若為 true，會忽略 429（rate limit）與 408（timeout）健康檢查失敗，且不影響 routing 或冷卻時間 |
@@ -427,11 +467,15 @@ router_settings:
 | health_check_skip_disabled_background_models | boolean | `false` | 若為 true，會在隨需 `GET /health` 與相關健康檢查執行中略過對具有 `model_info.disable_background_health_check: true` 的 deployments 進行健康探測（不僅是背景迴圈）。[健康檢查文件](health) |
 | health_check_staleness_threshold | integer | `600`（秒） | 將 deployments 標記為過期之前，健康檢查結果的最大年齡（秒） |
 | maximum_spend_logs_cleanup_batch_size | integer | `1000` | spend log 清理期間每個 `DELETE` 陳述式刪除的列數。預設為 1000。當兩者都設定時，會覆寫 `SPEND_LOG_CLEANUP_BATCH_SIZE` 環境預設值。請參閱 [spend log deletion](spend_logs_deletion) |
+| maximum_spend_logs_size | string | unset | 大小規則：當 `LiteLLM_SpendLogs` 加上 `LiteLLM_SpendLogToolIndex` 在磁碟上佔用超過此大小時（例如 `"180GB"`），下一次大小檢查會刪除最舊的 spend logs。未設定表示沒有大小規則。請參閱 [spend log 刪除](spend_logs_deletion) |
+| maximum_spend_logs_cleanup_target_size | string | unset | 由大小觸發的執行會清理到多乾淨（例如 `"20GB"`），必須低於 `maximum_spend_logs_size`；未設定表示清理至該大小本身。請參閱 [spend log 刪除](spend_logs_deletion) |
+| maximum_spend_logs_size_check_interval | string | `1d` | 設定了 `maximum_spend_logs_size` 時，檢查大小規則的頻率。當設定了 `maximum_spend_logs_cleanup_cron` 時會被忽略，該 cron 屆時會同時執行保留和大小兩道程序。請參閱 [spend log 刪除](spend_logs_deletion) |
 | maximum_spend_logs_cleanup_max_batches | integer | `500` | 每次 spend log 清理執行中、每個資料表發出的 `DELETE` 陳述式數量，且精確就是這麼多，不多不少。預設為 500，因此在預設批次大小下，一次執行每個資料表最多刪除 500,000 列。當兩者都設定時，會覆寫 `SPEND_LOG_RUN_LOOPS` 環境預設值。請參閱 [spend log deletion](spend_logs_deletion) |
 | maximum_spend_logs_cleanup_run_budget | string | `5m` | 整次 spend log 清理執行的實際時間預算，跨越其清理的每個資料表共用，格式為持續時間字串，例如 `5m`。預設為 `5m`。耗盡時，執行會停止，並在下一個 tick 從相同的 cutoff 繼續，但由於預算是在陳述式之間檢查，因此最多可能因一個批次逾時而超出。當兩者都設定時，會覆寫 `SPEND_LOG_CLEANUP_RUN_BUDGET_SECONDS` 環境預設值。請參閱 [spend log deletion](spend_logs_deletion) |
 | maximum_spend_logs_cleanup_batch_timeout | string | `30s` | 套用於 spend log 清理執行所發出之每個陳述式的 Postgres `statement_timeout` 與 `lock_timeout`，格式為持續時間字串，例如 `30s`。預設為 `30s`，因此沒有任何單一陳述式能在使用者流量排隊等候時將鎖定住。被取消的陳述式會被視為批次失敗，因此不要將此值設得低於單一批次實際所需的時間。當兩者都設定時，會覆寫 `SPEND_LOG_CLEANUP_BATCH_TIMEOUT_SECONDS` 環境預設值。請參閱 [spend log deletion](spend_logs_deletion) |
 | maximum_spend_logs_cleanup_cron | string | `null` | 用於排程自動 spend log 清理工作的 cron 表達式。在 weekday 欄位中請使用星期名稱（`sun`、`mon`、...），而非數字：排程器將 weekday 編號為 0=星期一到 6=星期日，這與標準 cron 不同。請參閱 [spend log deletion](spend_logs_deletion) |
 | mcp_client_side_auth_header_name | string | `null` | 用於 client-side MCP server credentials 的 HTTP 標頭名稱 |
+| mcp_disabled_capabilities | list | `null` | 閘道停止提供的 MCP 功能，可為 `prompts` 和 `resources` 中的任一個。被停用的功能會從 `initialize` 和 `server/discover` 回應中省略，其清單呼叫會回傳空清單而不聯絡任何 MCP 伺服器，其 get/read 呼叫會回傳 `METHOD_NOT_FOUND`。未設定時會保持公布 prompts 和 resources。[停用 prompts 或 resources](../mcp_deployment.md#disable-prompts-or-resources) |
 | mcp_internal_ip_ranges | list | `null`（RFC1918 + loopback） | 視為內部用於非公開 MCP server 存取控制的 CIDR 範圍 |
 | mcp_required_fields | list | `null` | MCP server 提交所需欄位名稱清單 |
 | mcp_trusted_proxy_ranges | list | `null` | 被信任可轉送 `X-Forwarded-*` 標頭的 proxy 之 CIDR 範圍。除了 `use_x_forwarded_for: true` 之外，MCP OAuth `authorize` 端點若要從這些標頭推導其公開 origin，且 session/SSO/SAML cookie 要在具 TLS 終止的反向 proxy 後方被標記為 `Secure` from `X-Forwarded-Proto`，此設定為必要。若未設定，標頭會被忽略，而 proxy 會退回使用請求的字面 scheme/base URL。對於已經透過 ingress 的 deployments，請優先使用 [`PROXY_BASE_URL`](#environment-variables---reference)。儘管有 `mcp_` 前綴，這是 LiteLLM 用於 `X-Forwarded-*` 標頭的一般請求信任邊界，而非僅適用於 MCP 的設定。請參閱 [Security best practices — Secure cookies behind a reverse proxy](./security_best_practices#8-configure-secure-cookies-behind-a-tls-terminating-reverse-proxy) 與 [MCP OAuth — Reverse proxy and ingress configuration](../mcp_oauth#reverse-proxy-and-ingress-configuration)。 |
@@ -441,6 +485,7 @@ router_settings:
 | require_key_mcp_access_defined | boolean | `false` | 若為 true，當金鑰的 MCP 伺服器清單為空時，不再繼承其團隊的伺服器；團隊會成為上限，且金鑰必須明確授予 MCP 伺服器（直接或透過存取群組）。請參閱 [MCP 權限管理](../mcp_control#require-keys-to-define-their-own-mcp-access) |
 | role_permissions | list | `null` | 以角色為基礎的權限設定清單 |
 | search_tools | list | `null` | 啟用網頁搜尋功能的搜尋工具設定清單 |
+| safeguards_classifier_model | string | `null`（關閉） | `model_list` 中的一個 `model_name`，用於為沒有自己的 `safeguard_results` 的模型（例如 Fireworks 上的開放模型）評斷 Claude Code 自動模式的工具呼叫。<SinceVersion v="1.107.0" /> [Claude Code 自動模式文件](../claude_code_auto_mode) |
 | token_rate_limit_type | string | `total` | 速率限制計數方法："total"、"output" 或 "input" tokens |
 | use_redis_transaction_buffer | boolean | `false` | 若為 true，則在寫入前將資料庫交易緩衝於 Redis 中 |
 | use_shared_health_check | boolean | `false` | 若為 true，則使用 Redis 支援的共用健康檢查狀態，跨多個 proxy 執行個體共享 |
@@ -473,12 +518,12 @@ router_settings:
   redis_password: <your-redis-password>   # string
   redis_port: <your-redis-port>           # string
   enable_pre_call_checks: true            # bool - Before call is made check if a call is within model context window
-  allowed_fails: 3 # cooldown model if it fails > 1 call in a minute.
-  cooldown_time: 30 # (in seconds) how long to cooldown model if fails/min > allowed_fails
+  allowed_fails: 3 # cooldown a deployment once it fails more than 3 calls within cooldown_time
+  cooldown_time: 30 # (in seconds) how long a deployment stays in cooldown
   disable_cooldowns: True                  # bool - Disable cooldowns for all models
   enable_tag_filtering: True                # bool - Use tag based routing for requests
   tag_filtering_match_any: True             # bool - Tag matching behavior (only when enable_tag_filtering=true). `true`: match if deployment has ANY requested tag; `false`: match only if deployment has ALL requested tags
-  tag_routing_prefix: "route:"              # string - Opt-in marker prefix (default ""). A request tag starting with this exact string is stripped and matched as an explicit routing directive, skipping the known-tag-vocabulary heuristic. Unprefixed tags keep matching as today.
+  tag_routing_prefix: "route:"              # string - Opt-in marker prefix (default ""). A request tag starting with this exact string is stripped and matched as an explicit routing directive, skipping the known-tag-vocabulary heuristic. Once set, unprefixed request tags are ignored by routing, except key/team/project tags, which keep applying.
   retry_policy: {                          # Dict[str, int]: retry policy for different types of exceptions
     "AuthenticationErrorRetries": 3,
     "TimeoutErrorRetries": 3,
@@ -512,17 +557,20 @@ router_settings:
 | fallbacks | array of objects | `[]` | 指定所有類型錯誤的備援模型。[更多資訊請見此處](reliability) |
 | enable_tag_filtering | boolean | `false` | 若為 true，則對請求使用基於標籤的路由 [基於標籤的路由](tag_routing) |
 | enable_weighted_failover | boolean | `false` | 若為 true 且 `routing_strategy` 是 `simple-shuffle`，則單一部署上的可重試失敗會在跨群組備援前，於同一模型群組內的其他部署之間重新挑選（加權）。預設：false。 |
+| enable_mid_stream_fallback_continuation | boolean | `false` | 若為 true，在已傳遞純 assistant 文字後中斷的串流聊天完成，會透過 assistant prefill 在支援 prefill 的備援部署上繼續，而不是顯示錯誤。只有其模型支援 assistant prefill，且其自身設定未設定以下任何輸出限制的部署才符合資格。改為顯示原始錯誤的情況：請求設定了大於 1 的 `n`、結構化的 `response_format`、必要或具名的 `tool_choice`，或在請求或設定中設定了除 `model` 之外任何內容的備援目標；中斷的串流已用完請求的 `max_tokens` 或 `max_completion_tokens`（頂層或在 `extra_body` 中）；或註冊了帶有 `post_call` hook 的防護欄。備援會取得這些限制減去已傳送的 tokens。僅限非同步。 |
 | fallback_access_check | Optional[FallbackAccessCheck] | `null` | 僅限 SDK。路由器在每次跨模型備援嘗試前會查詢的一個非同步謂詞 `(model, request_kwargs, llm_router) -> bool`；會略過它拒絕的目標。Proxy 會注入自己的檢查，並透過 `general_settings.enforce_fallback_model_access` 暴露。 [更多資訊請見此處](reliability#enforce-key-model-access-on-fallbacks) |
 | fallback_budget_check | Optional[FallbackBudgetCheck] | `null` | 僅限 SDK。路由器在每次跨模型備援嘗試前會查詢的一個非同步謂詞 `(model, request_kwargs, llm_router) -> bool`；會略過它拒絕為超出預算的目標。Proxy 會注入自己的檢查，並透過 `general_settings.enforce_fallback_budget` 暴露。 [更多資訊請見此處](reliability#enforce-budget-on-fallbacks) |
+| fallback_rate_limit_check | Optional[FallbackRateLimitCheck] | `null` | <SinceVersion v="1.110.0" /> 僅限 SDK。一個非同步述詞 `(model, request_kwargs, ctx) -> bool`，路由器在每次跨模型備援嘗試之前會諮詢它；被它以超出其個別模型速率限制為由拒絕的目標會被略過。proxy 會注入自己的檢查，該檢查會在 v3 速率限制器中保留備援目標的個別模型 TPM 和 RPM 限制，因此提供者錯誤備援無法繞過備援模型上金鑰、team、組織、專案或 customer 的限制。 |
+| fallback_on_unsupported_params | bool | `true` | 當為 `false` 時，為呼叫者所命名的模型回傳的 400 會回傳給呼叫者，而不是嘗試備援，包括 LiteLLM 在傳送前拒絕的參數（`UnsupportedParamsError`，例如比模型允許更長的 `stop` 清單）和提供者回應的 400（例如在不接受 `reasoning_effort="none"` 的模型上）。Router 自身的 400（為其他 team 保留的部署、沒有健康的部署）、上下文視窗錯誤和內容政策錯誤會繼續備援 |
 | tag_filtering_match_any | boolean | `true` | 標籤比對行為（僅在 enable_tag_filtering=true 時）。`true`：若部署具有任何一個請求的標籤則比對；`false`：僅在部署具有所有請求的標籤時才比對 |
-| tag_routing_prefix | string | `""` (off) | 預設 `""`（無操作）。以此完全相同字串開頭的請求標籤會被移除，並作為明確且受信任的路由指示來比對；不受其他情況下會從部署標籤詞彙推斷路由意圖的啟發式規則影響。未加前綴的標籤則維持現有比對方式。[基於標籤的路由](tag_routing) |
+| tag_routing_prefix | string | `""` (off) | 預設 `""`（無操作）。以此完全相同字串開頭的請求標籤會被移除，並作為明確且受信任的路由指示來比對；不受其他情況下會從部署標籤詞彙推斷路由意圖的啟發式規則影響。設定後，未加前綴的請求標籤會被路由忽略，但 key/team/project 標籤除外，它們會繼續套用。[基於標籤的路由](tag_routing) |
 | cooldown_time | integer | `5` (seconds) | 若模型超過允許的失敗次數，將其冷卻的持續時間（秒）。 |
 | disable_cooldowns | boolean | `false` | 若為 true，則停用所有模型的冷卻。 [更多資訊請見此處](reliability) |
 | retry_policy | object | `null` | 指定不同類型例外的重試次數。[更多資訊請見此處](reliability) |
-| allowed_fails | integer | `3` | 在將模型冷卻之前允許的失敗次數。[更多資訊請見此處](reliability) |
+| allowed_fails | integer | `null` | 部署在 `cooldown_time` 內可失敗多少次呼叫才會進入冷卻。未設定時，改為套用以速率為準的冷卻。[更多資訊請見此處](../routing#cooldowns) |
 | allowed_fails_policy | object | `null` | 在將部署冷卻之前，針對不同錯誤類型允許的失敗次數。[更多資訊請見此處](reliability) |
 | default_max_parallel_requests | Optional[int] | `null` (no limit) | 部署的預設最大平行請求數。 |
-| default_priority | (Optional[int]) | `null` | 請求的預設優先順序。僅適用於 '.scheduler_acompletion()'。預設為 None。 |
+| default_priority | (Optional[int]) | `null` | 當 `/chat/completions`、`/completions` 或 `/queue/chat/completions` 請求未送出 `priority` 時，其排入佇列的優先順序。數字越小越優先處理。預設為 None，因此只有送出 `priority` 的請求才會排入佇列。 |
 | polling_interval | (Optional[float]) | `0.03` (seconds) | 輪詢佇列的頻率。僅適用於 '.scheduler_acompletion()'。預設為 3ms。 |
 | max_fallbacks | Optional[int] | `5` | 呼叫結束前要嘗試的備援最大數量。 |
 | default_litellm_params | Optional[dict] | `null` | 要加入所有請求的預設 litellm 參數（例如 `temperature`、`max_tokens`）。 |
@@ -537,7 +585,7 @@ router_settings:
 | model_group_alias | dict | `{}` | 模型群組別名對應。例如 `{"claude-3-haiku": "claude-3-haiku-20240229"}` |
 | num_retries | int | `2` | 一次請求的重試次數。 |
 | default_fallbacks | Optional[List[str]] | `null` | 若未定義模型群組特定的備援，則要嘗試的備援。 |
-| caching_groups | Optional[List[tuple]] | `null` | 用於跨模型群組快取的模型群組清單。- 例如 caching_groups=[("openai-gpt-3.5-turbo", "azure-gpt-3.5-turbo")]|
+| caching_groups | Optional[List[tuple]] | `null` | 用於跨模型群組快取的模型群組清單。- 例如 `caching_groups=[("openai-{{openai_small}}", "azure-{{openai_small}}")]`|
 | alerting_config | AlertingConfig | `null` | [僅限 SDK 的參數] Slack 警示組態。[進一步文件](../routing.md#alerting-) |
 | assistants_config | AssistantsConfig | `null` | 透過 `assistant_settings` 設定於 proxy。[進一步文件](../assistants.md) |
 | set_verbose | boolean | `false` | [已棄用參數 - 請參閱 debug 文件](./debugging) 若為 true，則將記錄等級設為 verbose。 |
@@ -550,8 +598,9 @@ router_settings:
 | redis_url | str | `null` | Redis 伺服器的 URL。**Redis URL 有已知的效能問題。** |
 | cache_responses | boolean | `false` | 啟用快取 LLM 回應的旗標；若快取設定於 `router_settings` 下方。若為 true，則會快取回應。 |
 | router_general_settings | RouterGeneralSettings | `{async_only_mode: true, pass_through_all_models: false}` 於 proxy（SDK 中為 `async_only_mode: false`）| [僅 SDK] 路由器一般設定 - 包含像 'async_only_mode' 之類的最佳化。 [文件](../routing.md#router-general-settings) |
-| optional_pre_call_checks | List[str] | `null` | 要新增到路由器的呼叫前檢查清單。支援：`router_budget_limiting`、`prompt_caching`、`responses_api_deployment_check`、`encrypted_content_affinity`（需要 LiteLLM >= 1.82.3）、`deployment_affinity`、`session_affinity`、`forward_client_headers_by_model_group` |
+| optional_pre_call_checks | List[str] | `null` | 要新增到路由器的呼叫前檢查清單。支援：`router_budget_limiting`、`prompt_caching`、`responses_api_deployment_check`、`encrypted_content_affinity` <SinceVersion v="1.82.3" />、`deployment_affinity`、`session_affinity`、`forward_client_headers_by_model_group` |
 | deployment_affinity_ttl_seconds | int | `3600`（秒） | 當啟用 `deployment_affinity` 時，使用者金鑰 → 部署親和性對應的 TTL（秒）（在 Router 初始化 / proxy 啟動時設定）。 |
+| session_affinity_repin_on_failover | boolean | `false` | 選擇在工作階段釘選的部署進入冷卻或被移除，且替代部署成功回應後，移動該工作階段釘選。適用於 proxy 和非同步 Router 請求。在啟動時設定。請參閱 [PR #48206](https://github.com/BerriAI/litellm/pull/48206)。[重新釘選指南](../routing.md#keep-the-replacement-after-failover)。 |
 | model_group_affinity_config | Dict[str, List[str]] | `null` | 每個模型群組的親和性旗標。鍵為模型群組名稱；值為要啟用的檢查清單（`deployment_affinity`、`responses_api_deployment_check`、`session_affinity`）。未列出的群組會回退到全域 `optional_pre_call_checks`。[文件](../response_api.md#per-model-group-affinity-configuration) |
 | ignore_invalid_deployments | boolean | `true` 於 proxy（SDK 中為 `false`）| 若為 true，則忽略無效的部署。proxy 一律會設定此項，因此無效的模型不會阻止其餘 `model_list` 載入。 |
 | auto_router_capability_limit | Optional[AutoRouterCapabilityLimit] | `null` | 僅限 SDK。路由器在每次註冊與模型寫入時都會查詢的一個可呼叫 `() -> Optional[int]`，用來決定各複雜度路由器可聲稱的每個授權自動路由器能力數量（`classifier_type: heuristic_v2`，以及操作員定義的 `tier_definitions`）；None 代表不受限。每項能力各自保有自己的計數。proxy 會注入其自身以授權為後盾的解析器（一個能力一個路由器，除非授權 `allowed_features` 包含 `auto_router`），並在 `router_settings` 中忽略此鍵。 |
@@ -581,9 +630,9 @@ router_settings:
 | AGENTOPS_SERVICE_NAME | AgentOps 記錄整合的服務名稱
 | AI21_API_BASE | AI21 的基礎 URL。預設為 https://api.ai21.com/studio/v1
 | AIMLAPI_KEY | AI/ML API 影像生成中 `AIML_API_KEY` 的其他拼寫；僅在 `AIML_API_KEY` 未設定時讀取
-| AIOHTTP_CONNECTOR_LIMIT | aiohttp 連接器的連線限制。設為 0 時，不套用限制。**預設為 0**
-| AIOHTTP_CONNECTOR_LIMIT_PER_HOST | aiohttp 連接器每個主機的連線限制。設為 0 時，不套用限制。**預設為 0**
-| AIOHTTP_KEEPALIVE_TIMEOUT | aiohttp 連線的 keep-alive 逾時（秒）。**預設為 120**
+| AIOHTTP_CONNECTOR_LIMIT | aiohttp 連接器的連線限制。設為 0 時，LiteLLM 不會傳遞限制，因此 aiohttp 使用其自身的預設值 100。在預設設定下，它也會將 Vertex AI Search 向量存放區搜尋限制為此值每 100 個一個 HTTP/2 連線（無條件進位），而 0 會移除該上限（[進一步文件](./server_tuning#vertex-ai-search-vector-stores)）。**預設為 1000**
+| AIOHTTP_CONNECTOR_LIMIT_PER_HOST | aiohttp 連接器每個主機的連線限制。設為 0 時，不套用限制。**預設為 500**
+| AIOHTTP_KEEPALIVE_TIMEOUT | 閒置的池化上游連線保留供重複使用的秒數，Python（aiohttp）和 Rust HTTP 用戶端皆適用。在預設設定下，它也適用於透過 HTTP/2 的 Vertex AI Search 向量存放區搜尋（[進一步文件](./server_tuning#vertex-ai-search-vector-stores)）。如果提供者前方的閘道或自架伺服器會更早關閉閒置連線，請將此值設為低於其閒置逾時，否則重複使用已關閉連線的請求會失敗。**預設為 15**（v1.107.0 之前為 120）
 | AIOHTTP_SO_KEEPALIVE | 在 aiohttp socket 上啟用 TCP `SO_KEEPALIVE`，讓閒置的提供者連線能在 NAT/負載平衡器靜默丟棄之前被偵測並回收。**預設為 False**
 | AIOHTTP_TCP_KEEPCNT | 在連線被視為已失效前，未確認的 TCP keepalive 探測次數（當 `AIOHTTP_SO_KEEPALIVE=True` 時適用）。**預設為 5**
 | AIOHTTP_TCP_KEEPIDLE | aiohttp TCP 連線在送出 keepalive 探測前必須閒置的秒數（當 `AIOHTTP_SO_KEEPALIVE=True` 時適用）。**預設為 60**
@@ -630,6 +679,8 @@ router_settings:
 | AWS_BEDROCK_RUNTIME_ENDPOINT | Bedrock runtime 的端點 URL，當每個請求未傳入 `api_base` 或 `aws_bedrock_runtime_endpoint` 時使用。會覆寫 LiteLLM 原本會從 AWS 區域推導的端點
 | AWS_DEFAULT_REGION | 若未設定 AWS_REGION，則用於服務互動的預設 AWS 區域
 | AWS_PROFILE_NAME | 要使用的 AWS CLI 設定檔名稱
+| AWS_RDS_READ_REPLICA_REGION | 當 `IAM_TOKEN_DB_AUTH=True` 時，唯讀複本 RDS IAM token 的簽署區域覆寫。預設為複本 RDS 主機名稱中的區域，其次是處理程序的 AWS 區域。絕不繼承 `AWS_RDS_REGION`；空值或空白值視為未設定
+| AWS_RDS_REGION | 當 `IAM_TOKEN_DB_AUTH=True` 時，寫入端 RDS IAM token 的簽署區域覆寫。預設為寫入端 RDS 主機名稱中的區域，其次是處理程序的 AWS 區域。空值或空白值視為未設定
 | AWS_REGION | 用於服務互動的 AWS 區域（優先於 AWS_DEFAULT_REGION）
 | AWS_REGION_NAME | 用於服務互動的預設 AWS 區域
 | AWS_ROLE_ARN | 用於驗證而假設的 AWS IAM 角色 ARN
@@ -661,7 +712,7 @@ router_settings:
 | AZURE_FEDERATED_TOKEN_FILE | Azure 聯合權杖的檔案路徑
 | AZURE_FILE_SEARCH_COST_PER_GB_PER_DAY | Azure File Search 服務每天每 GB 的成本
 | AZURE_POSTGRESQL_AUTH | 設為 `True`，即可使用短效 Microsoft Entra ID 存取權杖驗證 Azure Database for PostgreSQL Flexible Server。LiteLLM 會透過 Azure Identity 程式庫請求 `https://ossrdbms-aad.database.windows.net/.default` 範圍的權杖，並在其到期前重新整理。不可與 `IAM_TOKEN_DB_AUTH` 搭配使用。需要 `DATABASE_HOST`、`DATABASE_USER` 和 `DATABASE_NAME`。關於身分選項與 AKS 工作負載身分設定，請參閱 [`--azure_postgresql_auth`](./cli#--azure_postgresql_auth)。 |
-| AZURE_SCOPE | 用於 EntraID 驗證的 Azure 服務範圍，預設為 "https://cognitiveservices.azure.com/.default"
+| AZURE_SCOPE | 用於 EntraID 驗證的 Azure 服務範圍，預設為 "https://cognitiveservices.azure.com/.default"。Foundry 代理程式和對 Foundry 專案端點（`api_base` 中的 `/api/projects/<project>`）的 `azure_ai` Responses API 呼叫，預設改為 "https://ai.azure.com/.default"
 | AZURE_SENTINEL_DCR_IMMUTABLE_ID | Azure Sentinel 記錄的資料收集規則不可變 ID
 | AZURE_SENTINEL_STREAM_NAME | Azure Sentinel 記錄的串流名稱
 | AZURE_SENTINEL_AUDIT_STREAM_NAME | Azure Sentinel 稽核記錄的串流名稱；若未設定，則回退至 AZURE_SENTINEL_STREAM_NAME
@@ -685,14 +736,16 @@ router_settings:
 | BACKGROUND_INTERACTION_COST_POLLING_ENABLED | 設為 `false`，即可停止 proxy 輪詢 `background=true` Interactions API 請求以取得其最終用量。這些請求的成本將不再被追蹤。預設為 `true`
 | BACKGROUND_INTERACTION_COST_POLL_INITIAL_INTERVAL_SECONDS | 背景互動第一次輪詢前的延遲秒數。每次重試時，間隔會加倍。預設為 5
 | BACKGROUND_INTERACTION_COST_POLL_MAX_INTERVAL_SECONDS | 背景互動輪詢間隔回退的上限秒數。預設為 60
-| BACKGROUND_INTERACTION_COST_POLL_TIMEOUT_SECONDS | 在放棄並釋放其預算保留之前，持續輪詢背景互動的秒數。預設為 3600（1 小時）
+| BACKGROUND_INTERACTION_COST_POLL_TIMEOUT_SECONDS | 在放棄並釋放其預算保留之前，持續輪詢背景互動的秒數。預設為 7800（2 小時 10 分鐘），足以涵蓋在 Vertex AI 上執行 120 分鐘的 Deep Research。較舊版本預設為 3600
 | BASETEN_API_BASE | Baseten 的基礎 URL。預設為 https://inference.baseten.co/v1
+| BATCH_LINE_ITEMS_MAX_PART_BYTES | 批次行項目 part 物件關閉且下一筆記錄開始新 part 之前的原始請求和結果位元組數，請參閱 [儲存每一行的請求和回應](./managed_batches#storing-every-lines-request-and-response)。預設為 `16777216`（16 MB）
 | BATCH_STATUS_POLL_INTERVAL_SECONDS | 輪詢批次狀態的間隔秒數。預設為 3600（1 小時）
 | BATCH_STATUS_POLL_MAX_ATTEMPTS | 輪詢批次狀態的最大嘗試次數。預設為 24（24 小時）
 | BEDROCK_API_BASE | Bedrock 重新排序請求的基礎 URL
 | BEDROCK_MANTLE_API_BASE | Bedrock Mantle 的基礎 URL
 | BEDROCK_MAX_POLICY_SIZE | Bedrock 原則的最大大小。預設為 75
 | BEDROCK_MIN_THINKING_BUDGET_TOKENS | Bedrock 推理模型的最小思考預算（以 token 計）。如果 budget_tokens 低於此值，Bedrock 會回傳 400 錯誤。較低的請求值會被限制為此最小值。預設為 1024
+| BEDROCK_REALTIME_CLOSE_TIMEOUT_SECONDS | 用戶端中斷連線後，Bedrock Nova Sonic 即時輸入串流關閉程序的逾時秒數。預設為 5.0
 | BFL_API_BASE | Black Forest Labs 圖像生成與編輯的基礎 URL
 | BLACK_FOREST_LABS_API_KEY | Black Forest Labs 的 API 金鑰，於 `BFL_API_KEY` 之後讀取
 | BRAINTRUST_API_KEY | Braintrust 整合的 API 金鑰
@@ -746,19 +799,20 @@ router_settings:
 | CURSOR_API_BASE | Cursor AI 提供者整合的 API 基礎 URL。預設為 https://api.cursor.com
 | DASHSCOPE_API_BASE_IMAGE | DashScope 影像生成的基礎 URL。預設為 https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
 | DASHSCOPE_API_BASE_RERANK | DashScope rerank 的基礎 URL。預設為 https://dashscope.aliyuncs.com/compatible-api/v1/reranks
+| DASHSCOPE_API_BASE_VIDEO | DashScope 影片生成的基礎 URL。回退至不含其 /compatible-mode/v1 路徑的 DASHSCOPE_API_BASE，其次是 https://dashscope.aliyuncs.com
 | DATABASE_HOST | 資料庫伺服器的主機名稱
-| DATABASE_HOST_READ_REPLICA | 唯讀複本資料庫伺服器的主機名稱。僅在元件化部署於 `IAM_TOKEN_DB_AUTH=True` 或 `AZURE_POSTGRESQL_AUTH=True` 從離散的資料庫環境變數組裝 `DATABASE_URL_READ_REPLICA` 時使用
+| DATABASE_HOST_READ_REPLICA | 唯讀複本資料庫伺服器的主機名稱。共用映像進入點會在該 URL 未設定時，使用它來建立 `DATABASE_URL_READ_REPLICA`
 | DATABASE_NAME | 資料庫名稱
-| DATABASE_NAME_READ_REPLICA | 唯讀複本的資料庫名稱（預設為 `DATABASE_NAME`）。僅在元件化部署於 `IAM_TOKEN_DB_AUTH=True` 或 `AZURE_POSTGRESQL_AUTH=True` 時使用
+| DATABASE_NAME_READ_REPLICA | 唯讀複本的資料庫名稱（預設為 `DATABASE_NAME`）。共用映像進入點會使用它，從個別的連線欄位建立 `DATABASE_URL_READ_REPLICA`
 | DATABASE_PASSWORD | 資料庫使用者的密碼
 | DATABASE_PORT | 資料庫連線的連接埠號碼
-| DATABASE_PORT_READ_REPLICA | 唯讀複本的連接埠號碼（預設 5432）。僅在元件化部署於 `IAM_TOKEN_DB_AUTH=True` 或 `AZURE_POSTGRESQL_AUTH=True` 時使用
+| DATABASE_PORT_READ_REPLICA | 唯讀複本的連接埠號碼（預設 5432）。共用映像進入點會使用它，從個別的連線欄位建立 `DATABASE_URL_READ_REPLICA`
 | DATABASE_SCHEMA | 資料庫中使用的結構描述名稱
-| DATABASE_SCHEMA_READ_REPLICA | 唯讀複本的結構描述名稱（預設為 `DATABASE_SCHEMA`）。僅在元件化部署於 `IAM_TOKEN_DB_AUTH=True` 或 `AZURE_POSTGRESQL_AUTH=True` 時使用
+| DATABASE_SCHEMA_READ_REPLICA | 唯讀複本的結構描述名稱（預設為 `DATABASE_SCHEMA`）。共用映像進入點會使用它，從個別的連線欄位建立 `DATABASE_URL_READ_REPLICA`
 | DATABASE_URL | 資料庫的連線 URL
 | DATABASE_URL_READ_REPLICA | 選用的唯讀複本連線 URL。設定後，proxy 會將唯讀查詢（find_*、count、group_by、query_raw/_first）路由至此端點，而寫入仍會使用 `DATABASE_URL`。未設定時，會回退為僅寫入者行為。搭配 `IAM_TOKEN_DB_AUTH=True` 或 `AZURE_POSTGRESQL_AUTH=True` 時，讀取者 token 會與寫入者一起自動重新整理
 | DATABASE_USER | 資料庫連線的使用者名稱
-| DATABASE_USER_READ_REPLICA | 唯讀複本的資料庫使用者（預設為 `DATABASE_USER`）。僅在元件化部署於 `IAM_TOKEN_DB_AUTH=True` 或 `AZURE_POSTGRESQL_AUTH=True` 時使用
+| DATABASE_USER_READ_REPLICA | 唯讀複本的資料庫使用者（預設為 `DATABASE_USER`）。共用映像進入點會使用它，從個別的連線欄位建立 `DATABASE_URL_READ_REPLICA`
 | DATABASE_USERNAME | 資料庫使用者的別名
 | DATABRICKS_API_BASE | Databricks API 的基礎 URL
 | DATABRICKS_API_KEY | 用於 Databricks API 驗證的 API 金鑰（Personal Access Token）
@@ -813,13 +867,15 @@ router_settings:
 | JINA_AI_API_KEY | Jina AI 的 API 金鑰
 | JINA_AI_TOKEN | `JINA_AI_API_KEY` 的備援
 | JINA_API_KEY | `JINA_AI_API_KEY` 的備援
+| KUBERNETES_POD_DISCOVERY_IDLE_EVICTION_SECONDS | Kubernetes pod 探索條目在被從快取中捨棄之前可閒置未使用的秒數。預設為 300
+| KUBERNETES_POD_DISCOVERY_REFRESH_INTERVAL_SECONDS | 當 `kubernetes_pod_discovery` 開啟時，無頭服務的 pod IP 兩次 DNS 重新整理之間的秒數。預設為 5
 | LANGFLOW_API_BASE | Langflow 的基礎 URL。預設為 http://localhost:7860
 | LANGFLOW_API_KEY | Langflow 的 API 金鑰
-| BESPOKE_API_BASE | Bespoke Nimble System One 伺服器的 HTTP(S) 基礎 URL，不含 `/v1/systemone`，供 `/bespoke/v1/systemone` 和具有 `provider: bespoke` 的 [OSS 分類器](/docs/auto_router/decision_classifiers) 使用。當未提供分類器端點時為必填 |
-| BESPOKE_API_KEY | 與 `BESPOKE_API_BASE` 搭配的選用 bearer 金鑰。明確的分類器 `api_base` 僅使用其明確的 `api_key`；絕不繼承環境金鑰 |
+| BESPOKE_API_BASE | Bespoke Nimble System One 伺服器的 HTTP(S) 基礎 URL，不含 `/v1/systemone`，供 `/bespoke/v1/systemone`、`bespoke/*` [決策模型](/docs/decisions) 和具有 `provider: bespoke` 的 [OSS 分類器](/docs/auto_router/decision_classifiers) 使用。當未提供分類器端點時為必填 |
+| BESPOKE_API_KEY | 與 `BESPOKE_API_BASE` 搭配的選用 bearer 金鑰。它只會送往 `api_base` 未設定或與 `BESPOKE_API_BASE` 相符（忽略結尾的 `/` 或 `/v1`）的分類器或 `bespoke/*` 部署，且明確的 `api_key` 一律優先。在 [LiteLLM #45260](https://github.com/BerriAI/litellm/pull/45260) 之前的建置版本絕不會將它送往明確的 `api_base` |
 
-| LAYA_API_BASE | 自架設 Laya 伺服器的 HTTP(S) 基礎 URL，不含 `/v1/systemone`，用於原生閘道決策，以及具有 `opensource_classifier_config.provider: laya` 且省略 `api_base` 的 [OSS 分類器](/docs/auto_router/decision_classifiers)。當未提供分類器端點時為必填。需要包含 [LiteLLM #43626](https://github.com/BerriAI/litellm/pull/43626) 的建置版本 |
-| LAYA_API_KEY | 與 `LAYA_API_BASE` 搭配使用的選用 bearer 金鑰。具有明確 `opensource_classifier_config.api_base` 的 Laya 分類器只會使用其明確的 `api_key`；省略該金鑰則會在沒有驗證的情況下連線 |
+| LAYA_API_BASE | 自架設 Laya 伺服器的 HTTP(S) 基礎 URL，不含 `/v1/systemone`，用於原生閘道決策、`laya/*` [決策模型](/docs/decisions)，以及具有 `opensource_classifier_config.provider: laya` 且省略 `api_base` 的 [OSS 分類器](/docs/auto_router/decision_classifiers)。當未提供分類器端點時為必填。需要包含 [LiteLLM #43626](https://github.com/BerriAI/litellm/pull/43626) 的建置版本 |
+| LAYA_API_KEY | 與 `LAYA_API_BASE` 搭配使用的選用 bearer 金鑰。它只會送往 `api_base` 未設定或與 `LAYA_API_BASE` 相符（忽略結尾的 `/` 或 `/v1`）的分類器或 `laya/*` 部署，且明確的 `api_key` 一律優先。在 [LiteLLM #45260](https://github.com/BerriAI/litellm/pull/45260) 之前的建置版本絕不會將它送往明確的 `api_base` |
 | LEMONADE_API_KEY | Lemonade 的 API 金鑰
 | LINKUP_API_BASE | Linkup 搜尋提供者的基礎 URL
 | LLAMAFILE_API_KEY | llamafile 的 API 金鑰。llamafile 不需要此金鑰，因此在未設定時會使用預留值
@@ -842,6 +898,8 @@ router_settings:
 | OPENAI_LIKE_API_BASE | `openai_like` 提供者的基礎 URL，用於連線至任何與 OpenAI 相容的端點
 | OPENAI_LIKE_API_KEY | `openai_like` 提供者的 API 金鑰。未設定時保持空白，因為某些與 OpenAI 相容的伺服器不需要金鑰
 | OPENAI_PROJECT | 傳送至 OpenAI 請求的 OpenAI 專案 ID，相當於傳入 `project`
+| OPENINFER_API_BASE | OpenInfer 的基礎 URL。預設為 https://api.openinfer.ai/v1
+| OPENINFER_API_KEY | OpenInfer 的 API 金鑰
 | OR_API_KEY | OpenRouter 的 API 金鑰，於 `OPENROUTER_API_KEY` 之後讀取
 | OVHCLOUD_API_BASE | OVHcloud AI Endpoints 的基礎 URL
 | PARALLEL_AI_API_BASE | Parallel AI 搜尋提供者的基礎 URL
@@ -853,10 +911,12 @@ router_settings:
 | QWEN_AI_PLATFORM_API_BASE | Qianwen AI Platform（中國大陸）的基礎 URL。預設為 https://dashscope.aliyuncs.com/compatible-mode/v1
 | QWEN_AI_PLATFORM_API_BASE_IMAGE | Qianwen AI Platform 影像生成的基礎 URL。預設為 https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
 | QWEN_AI_PLATFORM_API_BASE_RERANK | Qianwen AI Platform rerank 的基礎 URL。預設為 https://dashscope.aliyuncs.com/compatible-api/v1/reranks
+| QWEN_AI_PLATFORM_API_BASE_VIDEO | Qianwen AI Platform 影片生成的基礎 URL。預設為 https://dashscope.aliyuncs.com
 | QWEN_AI_PLATFORM_API_KEY | Qianwen AI Platform 的 API 金鑰，於 `DASHSCOPE_API_KEY` 備援之前讀取
 | QWENCLOUD_API_BASE | QwenCloud 的基礎 URL。預設為 https://dashscope-intl.aliyuncs.com/compatible-mode/v1
 | QWENCLOUD_API_BASE_IMAGE | QwenCloud 影像生成的基礎 URL。預設為 https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
 | QWENCLOUD_API_BASE_RERANK | QwenCloud rerank 的基礎 URL。預設為 https://dashscope-intl.aliyuncs.com/compatible-api/v1/reranks
+| QWENCLOUD_API_BASE_VIDEO | QwenCloud 影片生成的基礎 URL。預設為 https://dashscope-intl.aliyuncs.com
 | QWENCLOUD_API_KEY | QwenCloud 的 API 金鑰，於 `DASHSCOPE_API_KEY` 備援之前讀取
 | REDIS_AZURE_AD_TOKEN | 啟用 Redis 的 Azure AD 驗證的旗標。請將其設為 `true`，而不是設為 token。若同時也設定了 GCP IAM 服務帳戶，則會以警告方式忽略。**預設為 False**
 | REDUCTO_API_KEY | Reducto OCR 的 API 金鑰
@@ -864,8 +924,12 @@ router_settings:
 | RUNWAYML_API_BASE | RunwayML 的基礎 URL
 | RUNWAYML_API_SECRET | RunwayML 的 API 金鑰，於 `RUNWAYML_API_KEY` 之前讀取
 | SAMBANOVA_API_BASE | SambaNova 的基礎 URL。預設為 https://api.sambanova.ai/v1
+| SCHEDULED_JOB_LEASE_GRACE_SECONDS | <SinceVersion v="1.110.0" /> 加到排程工作的執行預算上，以在 `LiteLLM_ScheduledJobRun` 中形成其租約的秒數。租約已過期的 `RUNNING` row 會被下一個輪詢的 worker 標記為 `FAILED`，且該工作會被重新排程。預設 300
+| SCHEDULED_JOB_POLL_INTERVAL_SECONDS | <SinceVersion v="1.110.0" /> 每個 proxy worker 輪詢 `LiteLLM_ScheduledJobRun` 資料表，以規劃和領取 spend log 清理和大小檢查執行的頻率。預設 30
+| SCHEDULED_JOB_RUN_HISTORY_LIMIT | <SinceVersion v="1.110.0" /> 每個工作保留的已完成 `LiteLLM_ScheduledJobRun` rows；較舊的會在執行完成時被修剪。預設 1000
 | SCHEDULED_JOB_SHUTDOWN_CANCEL_TIMEOUT_SECONDS | proxy 關閉時，等待已取消的排程工作記錄其結果後才放棄它們的秒數。預設 5
 | SCHEDULED_JOB_SHUTDOWN_FINISH_TIMEOUT_SECONDS | proxy 關閉時，等待執行中的排程工作（spend log 清理、spend 寫入）完成後才取消它們的秒數。預設 5
+| SCHEDULED_JOB_TICK_TIMEOUT_SECONDS | <SinceVersion v="1.110.0" /> 規劃和領取排程工作執行的交易的 `statement_timeout` 和 `lock_timeout`（秒），讓輪詢絕不會在工作資料表上阻擋使用者流量。預設 10
 | SCX_API_BASE | SCX.ai 的基礎 URL。預設為 https://api.scx.ai/v1
 | SCX_API_KEY | SCX.ai 的 API 金鑰
 | SEARCHAPI_API_BASE | SearchApi 搜尋提供者的基礎 URL
@@ -874,6 +938,8 @@ router_settings:
 | SONIOX_API_KEY | Soniox 的 API 金鑰
 | SPACE_ID | watsonx 部署空間 ID 可接受名稱中的第四個，也是最後一個名稱，前面依序為 `WATSONX_DEPLOYMENT_SPACE_ID`、`WATSONX_SPACE_ID` 和 `WX_SPACE_ID`
 | STABILITY_API_BASE | Stability AI 影像生成與編輯的基礎 URL
+| STRANDS_DECIDER_API_BASE | Strands Decider 伺服器的基礎 URL，不含 `/v1/systemone`，供 `strands_decider/*` [決策模型](/docs/providers/strands_decider) 使用。沒有預設主機，因此部署需要此值或其自己的 `api_base`
+| STRANDS_DECIDER_API_KEY | 傳送至 Strands Decider 伺服器的選用 bearer token，適用於未設定 `api_key` 的 `strands_decider/*` 部署。`strands-decider serve` 沒有驗證，因此只有在伺服器前方有東西會檢查它時才設定
 | TAVILY_API_BASE | Tavily 搜尋提供者的基礎 URL
 | TINYFISH_AGENT_API_BASE | TinyFish Agent pass-through 的基礎 URL。預設為 https://agent.tinyfish.ai
 | TINYFISH_ALLOW_AUTHENTICATED_RUNS | 設為 `true`，即可讓 TinyFish Agent pass-through 請求使用 vault 與 browser-profile 欄位
@@ -891,9 +957,9 @@ router_settings:
 | VERTEX_CREDENTIALS | `VERTEXAI_CREDENTIALS` 的備援：Vertex AI 服務帳戶 JSON 檔案的路徑或 JSON 本身
 | VLLM_API_BASE | 自架設 vLLM 伺服器的基礎 URL
 | VOLCENGINE_API_BASE | Volcengine 的基礎 URL。預設為 https://ark.cn-beijing.volces.com/api/v3
-| VOYAGE_AI_API_KEY | Voyage AI API 金鑰的別名，於 `VOYAGE_API_KEY` 之後讀取
-| VOYAGE_AI_TOKEN | Voyage AI API 金鑰可接受名稱中的第三個，也是最後一個名稱，前面依序為 `VOYAGE_API_KEY` 和 `VOYAGE_AI_API_KEY`
-| VOYAGE_API_BASE | Voyage AI rerank 請求的基礎 URL
+| VOYAGE_AI_API_KEY | VoyageAI by MongoDB API 金鑰的別名，於 `VOYAGE_API_KEY` 之後讀取
+| VOYAGE_AI_TOKEN | VoyageAI by MongoDB API 金鑰可接受名稱中的第三個，也是最後一個名稱，前面依序為 `VOYAGE_API_KEY` 和 `VOYAGE_AI_API_KEY`
+| VOYAGE_API_BASE | VoyageAI by MongoDB rerank 請求的基礎 URL；未設定時，MongoDB 核發的金鑰（`al-`）會前往 ai.mongodb.com，其他金鑰則前往 api.voyageai.com
 | WANDB_API_BASE | Weights & Biases Inference 的基礎 URL。預設為 https://api.inference.wandb.ai/v1
 | WATSONX_IAM_URL | 用於將 watsonx API 金鑰交換為 bearer token 的 IBM Cloud IAM token 端點。預設為 https://iam.cloud.ibm.com/identity/token
 | WATSONX_REGION | watsonx.ai 的區域，並接受 `WX_REGION`，接著是 `REGION` 作為備援
@@ -912,6 +978,8 @@ router_settings:
 | XAI_OAUTH_TOKEN_DIR | 保存 xAI OAuth 權杖檔案的目錄。預設為 ~/.config/litellm/xai_oauth
 | YOUCOM_API_BASE | You.com 搜尋提供者的基底 URL
 | ZAI_API_BASE | Z.ai 的基底 URL
+| ZEROGPU_API_BASE | ZeroGPU 的基礎 URL。預設為 https://api.zerogpu.ai/v1
+| ZEROGPU_API_KEY | ZeroGPU 的 API 金鑰
 | DD_AGENT_HOST | DataDog 代理程式的主機名稱或 IP（例如「localhost」）。設定後，記錄會傳送到代理程式，而不是直接送到 API
 | DD_AGENT_PORT | 用於接收記錄的 DataDog 代理程式連接埠。預設為 10518
 | DD_API_KEY | Datadog 整合的 API 金鑰
@@ -929,7 +997,7 @@ router_settings:
 | DEFAULT_ALLOWED_FAILS | 在讓模型進入冷卻前允許的最大失敗次數。預設為 3
 | DEFAULT_A2A_AGENT_TIMEOUT | A2A（Agent-to-Agent）協定請求的預設逾時（秒）。預設為 6000
 | DEFAULT_ACCESS_GROUP_CACHE_TTL | 快取的存取群組資訊存活時間（秒）。預設為 600（10 分鐘）
-| DEFAULT_ANTHROPIC_CHAT_MAX_TOKENS | Anthropic 聊天完成的預設最大 token 數。預設為 4096
+| DEFAULT_ANTHROPIC_CHAT_MAX_TOKENS | Anthropic 聊天完成的預設最大 token 數。預設為 128000
 | DEFAULT_BATCH_SIZE | 作業的預設批次大小。預設為 512
 | DEFAULT_CHUNK_OVERLAP | RAG 文字分割器的預設重疊 chunk 數。預設為 200
 | DEFAULT_CHUNK_SIZE | RAG 文字分割器的預設 chunk 大小。預設為 1000
@@ -1021,7 +1089,7 @@ router_settings:
 | LITELLM_HIDE_DEFAULT_CREDENTIALS_HINT | 用來隱藏管理 UI 登入頁面上的「Default Credentials」資訊卡的旗標（`/ui/login` 與 `/fallback/login`）。當 UI 憑證由 `UI_USERNAME` / `UI_PASSWORD` 或 SSO 管理，且關於 `admin` + `MASTER_KEY` 的硬編碼提示變得誤導或被安全掃描器標記時，這項設定很有用。**預設為 false**
 | LITELLM_ENABLE_HSTS | 用來在 proxy 與 UI 回應中傳送 `Strict-Transport-Security` 回應標頭的旗標。僅在透過 HTTPS 提供服務的部署上生效。**預設為 false**
 | DISABLE_AIOHTTP_TRANSPORT | 用來停用 aiohttp transport 的旗標。當此值設為 True 時，litellm 會使用 httpx 而非 aiohttp。**預設為 False**
-| DISABLE_AIOHTTP_TRUST_ENV | 用來停止 LiteLLM 在 aiohttp transport 的請求上解析 `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` 的旗標。預設情況下，這些環境變數會在不需額外設定的情況下被遵循。對於 httpx transport（`DISABLE_AIOHTTP_TRANSPORT=True`）沒有影響，因為它一律會遵循這些變數。**預設為 False**
+| DISABLE_AIOHTTP_TRUST_ENV | 用來停止 LiteLLM 在 aiohttp transport 的請求上解析 `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` 的旗標。預設情況下，這些環境變數會在不需額外設定的情況下被遵循。它也適用於 Vertex AI Search 向量存放區搜尋，該搜尋在預設設定下透過 httpx over HTTP/2 執行（[進一步文件](./server_tuning#vertex-ai-search-vector-stores)）。當流量在 httpx transport 上執行時（`DISABLE_AIOHTTP_TRANSPORT=True` 或 `http2` 為 true）沒有影響，因為它一律會遵循這些變數。**預設為 False**
 | DISABLE_PRISMA_HEALTH_CHECK_ON_STARTUP | 用來略過 proxy 在 Prisma 連線完成且 migration 套用後，對資料庫執行的 `SELECT 1` 驗證查詢的旗標。Prisma 連線本身不受影響；只有額外的可達性探測會被略過，因此能接受連線但無法提供查詢的資料庫，會在第一次請求時才被發現，而不是在啟動時。**預設為 False**
 | DISABLE_SCHEMA_UPDATE | 切換以停用 schema 更新
 
@@ -1063,6 +1131,10 @@ router_settings:
 | FOCUS_INTERVAL_SECONDS | 當 `frequency` 為 `interval` 時，Focus 匯出的間隔（秒）。
 | FOCUS_PREFIX | 上傳 Focus 匯出檔案時使用的物件金鑰前綴（或資料夾）。預設為 `focus_exports`。
 | FOCUS_S3_BUCKET_NAME | 使用 S3 目的地時，上傳 Focus 匯出檔案的 S3 bucket。
+| HEX_S3_BUCKET_NAME | <SinceVersion v="1.110.0" /> Hex 支出回呼所需的 S3 bucket。請參閱 [Hex](../observability/hex.md)。
+| HEX_S3_PATH | <SinceVersion v="1.110.0" /> Hex 支出匯出的 S3 物件前綴。預設為 `litellm-spend`。
+| HEX_S3_REGION_NAME | <SinceVersion v="1.110.0" /> Hex 支出匯出的區域。回退至 `AWS_REGION`，其次是 `us-east-1`。
+| HEX_S3_ENDPOINT_URL | <SinceVersion v="1.110.0" /> Hex 回呼的選用自訂 S3 相容端點。Athena 需要 AWS S3。
 | FOCUS_S3_REGION_NAME | Focus 匯出 S3 bucket 的 AWS 區域。
 | FOCUS_S3_ENDPOINT_URL | Focus 匯出 S3 client 的自訂端點（可選；對相容 S3 的儲存體很有用）。
 | FOCUS_S3_ACCESS_KEY | Focus 匯出 S3 client 使用的 AWS access key ID。
@@ -1081,6 +1153,8 @@ router_settings:
 | GALILEO_PASSWORD | Galileo enterprise Observe 驗證密碼
 | GALILEO_PROJECT_ID | Galileo 使用的專案 ID
 | GALILEO_USERNAME | Galileo enterprise Observe 驗證使用者名稱
+| GCE_METADATA_HOST | <SinceVersion v="1.109.0" /> Google Cloud metadata 伺服器的主機，或不含 scheme 的 host:port，`oidc/google/` 機密參照會從它取得 ID tokens。Google 的用戶端程式庫也會讀取它。預設為 `metadata.google.internal`。[在模型的 api_key 中使用 OIDC 的文件](./model_management#using-oidc-as-a-models-api_key)
+| GCE_METADATA_TIMEOUT | <SinceVersion v="1.109.0" /> 當模型的 `api_key` 是 `oidc/google/` 機密參照時，每次從 Google Cloud metadata 伺服器讀取的等待秒數。Google 的用戶端程式庫也會讀取它。預設為 3，當值不是正數時也會使用它。[在模型的 api_key 中使用 OIDC 的文件](./model_management#using-oidc-as-a-models-api_key)
 | GOOGLE_SECRET_MANAGER_PROJECT_ID | Google Secret Manager 的專案 ID
 | GRACEFUL_SHUTDOWN_TIMEOUT | proxy 在關閉時等待進行中的請求排空所花的秒數（SIGTERM 或 `/health/drain` preStop hook）後，再繼續進行收尾。**預設為 30**
 | GCS_BATCH_BUCKET_NAME | Vertex AI 檔案與批次使用的 GCS bucket。其優先於 GCS_BUCKET_NAME，因此批次資料可以與記錄 bucket 分開存放
@@ -1096,7 +1170,7 @@ router_settings:
 | GENERIC_AUTHORIZATION_ENDPOINT | generic OAuth 提供者的授權端點
 | GENERIC_CLIENT_ID | generic OAuth 提供者的 Client ID
 | GENERIC_CLIENT_SECRET | generic OAuth 提供者的 client secret
-| GENERIC_CLIENT_STATE | generic client 驗證的 state 參數
+| GENERIC_CLIENT_STATE | generic client 驗證的選用 state 參數。留空未設定可為每次 UI 登入產生隨機 state。CLI start/poll 登入會提供自己的 state 並忽略此設定。固定值會在啟用 PKCE 時破壞並行登入，包括 `login --pkce` 的瀏覽器登入。
 | GENERIC_CLIENT_USE_PKCE | 為 generic OAuth 提供者啟用 PKCE（Proof Key for Code Exchange）。當您的 OAuth 提供者需要 PKCE 時，請設為 "true"。**預設為 false**
 | GENERIC_SSO_HEADERS | 要新增到請求中的額外標頭，以逗號分隔清單表示 - 例如 Authorization=Bearer `<token>`、Content-Type=application/json 等。
 
@@ -1194,13 +1268,13 @@ router_settings:
 | LANGFUSE_FLUSH_AT | Langfuse 回呼每次 OTLP 匯出請求批次處理的 span 數；預設為 `512`。不是介於 `1` 與 `100000` 之間的整數值會記錄警告並使用預設值
 | LANGFUSE_FLUSH_INTERVAL | Langfuse 回呼在各 OTLP 匯出批次之間等待的秒數；預設為 `1`。不是大於 `0` 的整數值會記錄警告並使用預設值
 | LANGFUSE_PROMPT_CACHE_DEFAULT_TTL_SECONDS | Langfuse 回呼在下一個請求刷新前快取已擷取提示的時間長度；預設為 `60`。刷新失敗時會繼續提供快取中的提示。必須是整數秒：Langfuse SDK 在匯入時會將其讀取為整數，因此任何其他值（例如 `abc` 或 `2.5`）都會使回呼失敗，並顯示指出此變數名稱的錯誤；負值會記錄警告並使用預設值
-| LANGFUSE_TRACING_ENVIRONMENT | Langfuse tracing 的環境
+| LANGFUSE_TRACING_ENVIRONMENT | Langfuse tracing 的環境。在 OTel v2 上，沒有自己的 `langfuse_environment` 的金鑰和 teams 也會使用它
 | LANGFUSE_HOST | Langfuse 服務的主機 URL。優先於 `LANGFUSE_BASE_URL` |
 | LANGFUSE_MOCK | 啟用 Langfuse 整合測試的模擬模式。設定為 true 時，會攔截 Langfuse API 呼叫並回傳模擬回應，不會實際發出網路請求。預設為 false
 | LANGFUSE_MOCK_LATENCY_MS | 啟用模擬模式時，Langfuse API 呼叫的模擬延遲（毫秒）。模擬網路往返時間。預設為 100ms
 | LANGFUSE_PUBLIC_KEY | Langfuse 驗證的公鑰
 | LANGFUSE_MAX_RETRIES | Langfuse 回呼在超時、連線失敗或收到可重試狀態時，於批次被捨棄前重試 OTLP 匯出請求的次數；預設為 `3`，各次嘗試之間等待 1、2 和 4 秒，且每次加倍直到 64 秒。不是整數的值會記錄警告並使用預設值，而大於 `1000` 的值會記錄警告並使用 `1000`
-| LANGFUSE_RELEASE | 每個 Langfuse trace 上記錄的版本。未設定時，回呼會回退至 `RENDER_GIT_COMMIT`、`CI_COMMIT_SHA`、`CIRCLE_SHA1`、`SOURCE_VERSION`、`TRAVIS_COMMIT`、`GIT_COMMIT`、`GITHUB_SHA`、`BITBUCKET_COMMIT`、`BUILD_SOURCEVERSION` 和 `DRONE_COMMIT_SHA` 中第一個已設定的值，也就是 Langfuse SDK 讀取的相同清單
+| LANGFUSE_RELEASE | 每個 Langfuse trace 上記錄的版本。未設定時，回呼會回退至 `RENDER_GIT_COMMIT`、`CI_COMMIT_SHA`、`CIRCLE_SHA1`、`SOURCE_VERSION`、`TRAVIS_COMMIT`、`GIT_COMMIT`、`GITHUB_SHA`、`BITBUCKET_COMMIT`、`BUILD_SOURCEVERSION` 和 `DRONE_COMMIT_SHA` 中第一個已設定的值，也就是 Langfuse SDK 讀取的相同清單。OTel v2 不會讀取它；請改為傳送 `metadata.trace_release`
 | LANGFUSE_SECRET_KEY | Langfuse 驗證的密鑰
 | LANGFUSE_TIMEOUT | Langfuse 回呼送出的每個 OTLP 匯出請求以及每個 REST 請求（提示、憑證檢查、專案查詢）的逾時秒數；預設為 `20`，並接受如 `2.5` 之類的小數。逾時或連線失敗的匯出請求會重試 `LANGFUSE_MAX_RETRIES` 次，之後批次會被捨棄
 | LANGFUSE_OTEL_TRACES_EXPORT_PATH | Langfuse trace 匯出的可選 OTLP HTTP 路徑；預設為 `/api/public/otel/v1/traces`
@@ -1232,9 +1306,9 @@ router_settings:
 | LITELLM_ASSETS_PATH | UI 資產與標誌的目錄路徑。於唯讀檔案系統（例如 Kubernetes）執行時使用。Docker 中預設為 `/var/lib/litellm/assets`。
 | LITELLM_AUTOROUTER_PRESETS_URL | 用於擷取自動路由器預設集目錄的自訂 URL。預設為 GitHub main 分支 URL
 | LITELLM_BILLING_METRICS_ENDPOINT | [企業可計費請求計量](billing_metrics) 的收集器 URL。需要企業授權；未設定則停用計量
-| LITELLM_BILLING_METRICS_CLIENT_CERT | 用於可計費請求計量的 mTLS 用戶端憑證。接受檔案路徑或內嵌 PEM 內容
-| LITELLM_BILLING_METRICS_CLIENT_KEY | 與 `LITELLM_BILLING_METRICS_CLIENT_CERT` 相符的私鑰。接受檔案路徑或內嵌 PEM 內容
-| LITELLM_BILLING_METRICS_CA_CERT | 用於驗證計量收集器的 CA bundle。僅供私有或測試收集器使用；未設定時使用系統信任存放區
+| LITELLM_BILLING_METRICS_CLIENT_ID | 可計費請求計量的 OAuth 用戶端 ID {/* keep-version-note */}
+| LITELLM_BILLING_METRICS_CLIENT_SECRET | 可計費請求計量的 OAuth 用戶端密鑰。請透過您的機密管理器提供它 {/* keep-version-note */}
+| LITELLM_BILLING_METRICS_TOKEN_URL | 可計費請求計量的 HTTPS OAuth client-credentials token 端點 {/* keep-version-note */}
 
 | LITELLM_BILLING_METRICS_EXPORT_INTERVAL_MS | 以毫秒為單位的可計費請求計量推送週期。預設為 60000
 | LITELLM_BLOG_POSTS_URL | 用於擷取 LiteLLM 部落格文章 JSON 的自訂 URL。預設為 GitHub main 分支 URL
@@ -1254,13 +1328,18 @@ router_settings:
 | LITELLM_DEFAULT_EMBEDDING_ENCODING_FORMAT | 當 OpenAI 相容的 embedding 請求未在請求本身或模型 `litellm_params`（例如 `float`、`base64`）中設定時，預設的 `encoding_format`。備援為 `float`。請參閱 [Embeddings](./embedding.md#embedding-encoding-format)。
 | LITELLM_DEV_ENV_HOT_RELOAD | proxy 以 `--reload` 啟動時自行設定的內部旗標，會通知重新載入的 worker 以 `override=True` 重新讀取 `.env`，使既有鍵值的編輯在重新載入時生效。非供使用者設定
 | LITELLM_DONT_SHOW_FEEDBACK_BOX | 隱藏 LiteLLM UI 中意見回饋方塊的旗標
-| LITELLM_DROP_PARAMS | 要在 LiteLLM 請求中捨棄的參數
-| LITELLM_MODIFY_PARAMS | 要在 LiteLLM 請求中修改的參數
+| LITELLM_DROP_PARAMS | 設為 `true` 可在每個請求上捨棄目標提供者不支援的請求參數，而不是拋出錯誤，與 `litellm_settings.drop_params: true` 相同。它是旗標，不是參數清單。接受 true/false、1/0、yes/no、on/off、t/f 和 y/n，不分大小寫。空值視為 `false`，而任何其他無法判讀為 true 或 false 的值（例如參數名稱）會記錄警告並視為 `true`。在 v1.102.0 之前，任何非空值都會將它開啟，`false` 亦然。僅從 proxy 的處理程序環境讀取，不從 config.yaml 的 `environment_variables` 讀取，且兩者皆設定時 config.yaml 中的 `litellm_settings.drop_params` 優先。若要捨棄特定參數，請改在模型上使用 [`additional_drop_params`](../completion/drop_params#specify-params-to-drop)，且在此旗標未設定時，任何其他不支援的參數會再次回傳 400。來自 Claude Code 和 Codex 的請求（依其 user agent 辨識）預設會捨棄不支援的參數，不論此旗標為何，除非請求本身設定了 `drop_params`。`litellm_settings.drop_params: false` 也會關閉該預設行為。在 v1.103.0 到 v1.108.x 上有一個錯誤，會使 Claude Code 和 Codex 請求忽略該設定，v1.109.0 已修正。預設為 `false`。
+| LITELLM_MODIFY_PARAMS | 設為 `true` 可讓 LiteLLM 修改請求，使提供者能接受它，與 `litellm_settings.modify_params: true` 相同。這會修改參數和訊息，例如為沒有結果的工具呼叫加入結果（請參閱 [Message Sanitization](../completion/message_sanitization)）、降低 `max_tokens` 以符合模型的限制、在先前的 assistant 工具呼叫未帶有 thinking 區塊時，在 Claude 模型上捨棄 `thinking`，以及在使用 `cached_content` 的 Gemini 請求上省略系統提示和工具，否則 Gemini 會以 400 拒絕。它是旗標，不是參數清單。任何非空值都會將它開啟，`false`、`0` 和 `no` 亦然，因此請保持未設定以將其關閉。僅從 proxy 的處理程序環境讀取，不從 config.yaml 的 `environment_variables` 讀取。預設為關閉。
 | LITELLM_EMAIL | 與 LiteLLM 帳戶關聯的電子郵件
+| LITELLM_EMAIL_FALLBACK_LINKS_ANY_USER | <SinceVersion v="1.111.0" /> 設為 `true` 可保留 JWT 和 UI SSO 登入較早的電子郵件備援。當登入依 id 找不到相符的使用者時，LiteLLM 會依電子郵件查找該使用者。**預設情況下**，該查找會略過已連結到不同登入 id 的使用者、在身分提供者傳送 `email_verified: false` 時略過相符結果，且不會以另一位使用者已有的電子郵件填入使用者的空電子郵件。設為 `true` 時，該查找會如以往一樣連結任何具有該電子郵件的使用者。**預設為 false**
+| LITELLM_EVENT_LOOP | <SinceVersion v="1.109.0" /> proxy 在預設 Uvicorn 伺服器上執行的事件迴圈。`uvloop` 是 Linux 和 macOS 上的預設。設為 `asyncio` 可改為在標準程式庫 asyncio 迴圈上執行，例如為了排除 uvloop 是 worker 崩潰的原因。任何其他值會保持 uvloop，且 Windows 一律使用 Uvicorn 自己的預設。`--run_hypercorn` 一律在 asyncio 上執行，而 `--run_gunicorn` 和 `--run_granian` 會選擇自己的迴圈並忽略此變數。在 v1.108.x 上不可用。[文件](./server_tuning#event-loop)
 | LITELLM_FAVICON_URL | LiteLLM UI favicon 的自訂 URL。設定後會覆寫預設 favicon
+| LITELLM_GEMINI_DEFAULT_MAX_OUTPUT_TOKENS | <SinceVersion v="1.108.0" /> 對於未傳送輸出限制的 Gemini 聊天完成、文字完成或 Responses API 請求（透過 proxy 或 Python SDK，在 Google AI Studio 或 Vertex AI（Gemini Enterprise Agent Platform）上）的輸出 token 預算。在會回傳 continuation token 的模型上，例如 Gemini 4 Argon，[長輸出](/blog/gemini-4-argon#long-outputs) 會越過 Google 的單次請求上限持續進行，直到它用完為止，在其他模型上則是單純的輸出限制。上限為成本對照表中模型的 `max_output_tokens`，或當部署自己的 `model_info.max_output_tokens` 較低時以其為準。不適用於：成本對照表中缺少的模型，或在其中被列為聊天模型以外類型的模型（例如圖片模型）；其成本對照表條目在 `supported_output_modalities` 中未包含文字的聊天模型（例如 Lyria 音樂模型）；`modalities` 要求文字以外任何內容的請求；`extra_body` 欄位含有 snake_case `generation_config` 的請求；以 `continuation_token` 繼續的請求；要求 `max_tokens` 的 `/v1/messages`；`gemini/` 或 `vertex_ai/` 模型上的原生 `:generateContent` 路由；或 Vertex AI 批次工作。請求已帶有的任何輸出限制會優先，例如它自己的 `max_tokens`、`max_completion_tokens` 或 `max_output_tokens`，或部署的 `litellm_params.max_tokens`。零、負數或不是整數的值視為未設定。低於模型自身單次請求限制的值會讓較短的答案更早被截斷，且 thinking tokens 也會計入它。較大的值會讓非串流請求執行與答案一樣長的時間，可能超過用戶端的逾時。它限制的是輸出 tokens，不是成本，因為每次 continuation 請求都會再次傳送提示。預設為未設定
 | LITELLM_GLOBAL_MAX_PARALLEL_REQUEST_RETRIES | LiteLLM 平行請求的最大重試次數
 | LITELLM_GLOBAL_MAX_PARALLEL_REQUEST_RETRY_TIMEOUT | LiteLLM 平行請求重試的逾時時間
+| LITELLM_HTTP2 | `litellm_settings.http2` 的環境變數形式。`True` 會使 LiteLLM 透過 TLS 與 LLM 提供者協商 HTTP/2。`False`（或 `0`、`no`、`off`）會使 LiteLLM 的 HTTP 用戶端對每個提供者保持 HTTP/1.1，包括在未設定此值時使用 HTTP/2 的非同步 Vertex AI Search 向量存放區搜尋 <SinceVersion v="1.109.0" />。任何其他值（包括 `1`）視為未設定。此處或 `litellm_settings.http2` 中的 true 值會優先於另一處的 false 值。[進一步文件](./server_tuning#outbound-http2-to-providers)。**預設為未設定**
 | LITELLM_DISABLE_ACCESS_LOG_PATHS | 以逗號分隔的 URL 路徑清單，要從 uvicorn access logs 中排除（例如 `/health,/metrics`）。可用於抑制雜訊過多的健康檢查記錄項目。 |
+| LITELLM_DISABLE_LATEST_RELEASE_CHECK | 設為 `true` 可停止 proxy 為 Admin UI 升級通知查找最新的 LiteLLM 版本。`/get/latest_release_info` 屆時會回傳 `null` 而不發出任何對外請求，且通知不會顯示。預設為 `false`。
 | LITELLM_DISABLE_LAZY_LOADING | 設為「1」、「true」、「yes」或「on」時，會停用屬性的延遲載入（目前僅影響 encoding/tiktoken）。這可確保在 VCR 開始記錄 HTTP 請求之前就已初始化 encoding，修正 VCR cassette 建立問題。請參閱 [issue #18659](https://github.com/BerriAI/litellm/issues/18659)
 | LITELLM_DISABLE_LAZY_ROUTES | 設為「1」、「true」、「yes」或「on」時，會在 worker 啟動時、`LITELLM_WORKER_STARTUP_HOOKS` 執行前以及第一個請求之前，註冊每個可選功能路由器（MCP、防護欄、代理程式、向量儲存、轉接與其餘項目），而不是在第一次請求其路徑時才註冊。當您需要在啟動時取得完整路由表時請使用，例如從啟動回呼過濾 `app.routes`，或在提供流量前稽核 `GET /routes`。預設：未設定，因此可選路由器會以延遲方式載入。 |
 | LITELLM_DISABLE_NO_REDIS_WARNING | 設為「true」時，會隱藏在未設定 Redis 時顯示的 Admin UI 橫幅。僅應在單一 worker 部署上設定；請參閱 [What Needs Redis](./redis_requirements.md)。
@@ -1271,11 +1350,14 @@ router_settings:
 | LITELLM_UI_API_DOC_BASE_URL | 當管理 UI 執行於與 proxy 不同的主機上時，用於 API Reference 基底 URL（用於範例程式碼/文件）的選用覆寫。未設定時預設為 `PROXY_BASE_URL`。
 | LITELLM_UI_PATH | Admin UI 檔案的目錄路徑。當在唯讀檔案系統（例如 Kubernetes）上執行時使用。Docker 中預設為 `/var/lib/litellm/ui`。
 | LITELLM_UI_SESSION_DURATION | UI 登入工作階段的持續時間（使用者名稱/密碼、SSO、邀請連結）。格式：「30s」、「30m」、「24h」、「7d」。不適用於 EXPERIMENTAL_UI_LOGIN 流程，該流程為安全起見使用固定 10 分鐘到期時間。預設為「24h」
+| LITELLM_UI_ALLOW_MULTIPLE_SESSIONS | <SinceVersion v="1.111.0" /> 當為 "true" 時，使用者可以同時從多個瀏覽器或裝置保持登入 Admin UI，且共用 `UI_USERNAME` 登入的人不會互相登出。預設情況下，每次 Admin UI 登入（使用者名稱/密碼或 SSO）都會結束該使用者的其他 Admin UI 工作階段。預設為 "false"
+| LITELLM_UI_USE_SI_TERMINOLOGY | 當為 `true` 時，Admin UI 會在其自己的文字中以 "SI" 取代 "AI"，以 "Super Intelligence" 取代 "Artificial Intelligence"。第三方產品和提供者名稱保持不變。預設為 `false`。
 | LITELLM_EXECUTED_BATCH_CONCURRENCY | 當 LiteLLM 自行執行批次時，會平行執行單一批次中的幾行；它會針對伺服器沒有 Files API 的 `hosted_vllm` 部署這麼做。預設為 4。請參閱 [vLLM batches](../providers/vllm_batches)
 | LITELLM_EXPIRED_UI_SESSION_KEY_CLEANUP_BATCH_SIZE | 每次清理執行時可刪除的過期 LiteLLM dashboard session key 最大數量。預設為 1000。
 | LITELLM_EXPIRED_UI_SESSION_KEY_CLEANUP_ENABLED | 設為 `true` 以啟用過期 LiteLLM dashboard session key 的背景清理工作。預設為 `false`。
 | LITELLM_EXPIRED_UI_SESSION_KEY_CLEANUP_INTERVAL_SECONDS | 執行過期 LiteLLM dashboard session key 清理工作的間隔秒數。預設為 86400（24 小時）。
 | LITELM_ENVIRONMENT | LiteLLM 執行個體的環境，由記錄服務使用。目前僅供 DeepEval 使用。
+| LITELLM_KEY_EXPIRY_ALERT_CHECK_INTERVAL_SECONDS | <SinceVersion v="1.111.0" /> 金鑰到期警示工作檢查要寄送電子郵件的金鑰的頻率（秒）。預設為 43200（12 小時）。[金鑰到期警示文件](./email.md#4-configure-key-expiry-alerts-optional)
 | LITELLM_KEY_ROTATION_ENABLED | 啟用 LiteLLM 的自動金鑰輪替（布林值）。預設為 false。
 | LITELLM_KEY_ROTATION_CHECK_INTERVAL_SECONDS | 自動輪替金鑰的工作執行間隔秒數。預設為 86400（24 小時）。
 | LITELLM_KEY_ROTATION_GRACE_PERIOD | 輪替後保留舊金鑰有效的持續時間（例如「24h」、「2d」）。預設為空白（立即撤銷）。用於排程輪替，以及在 regenerate request 未指定時作為備援。
@@ -1289,13 +1371,16 @@ router_settings:
 | LITELLM_LOCAL_BLOG_POSTS | 設定為 `True` 時，只使用本機隨附的部落格文章，停用從 GitHub 的遠端擷取。預設為 `False`
 | LITELLM_LOCAL_MODEL_COST_MAP | 設定為 `True` 時，只使用套件隨附的模型成本對照表（`litellm/model_prices_and_context_window_backup.json`），停用啟動時及 `/reload/model_cost_map` 的 GitHub 遠端擷取。預設為 `False`：遠端檔案會在啟動時擷取，隨附副本僅在擷取失敗時作為備援使用
 | LITELLM_LOCAL_POLICY_TEMPLATES | 設定為 "true" 時，使用本機備援政策範本，而非從 GitHub 擷取。政策範本預設從 https://raw.githubusercontent.com/BerriAI/litellm/main/policy_templates.json 擷取，若失敗則自動回退至本機備援
+| LITELLM_LOCAL_WHATS_NEW | 設為 `True` 時，僅使用套件隨附的 What's new 發布清單，停用從 GitHub 的遠端擷取。預設為 `False`
 | LITELLM_LOG | 啟用 LiteLLM 的詳細記錄
-| LITELLM_MODEL_COST_MAP_URL | 用於擷取模型成本對照表資料的 URL。預設為 https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json
+| LITELLM_MODEL_COST_MAP_URL | 用於擷取模型成本對照表資料的 URL，可為 HTTP(S)、`s3://bucket/key`（以 proxy 的 AWS 憑證讀取，請參閱 [Custom model cost map](./custom_model_cost_map#reading-the-map-from-s3)）或 `gs://bucket/object`（以 Google 應用程式預設憑證讀取，請參閱 [Custom model cost map](./custom_model_cost_map#reading-the-map-from-google-cloud-storage)）。預設為 https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json
 | LITELLM_LOGGER_NAME | OTEL logger 的名稱 
 | LITELLM_METER_NAME | OTEL Meter 的名稱 
 | LITELLM_OTEL_INTEGRATION_ENABLE_EVENTS | 可選擇為 OTEL 啟用語義記錄（`gen_ai.content.prompt`/`gen_ai.content.completion`，或 semconv 模式中的 `gen_ai.client.inference.operation.details`）。預設 `false`。請參閱[OpenTelemetry](/docs/observability/opentelemetry_integration#configuration-reference)
 | LITELLM_OTEL_INTEGRATION_ENABLE_METRICS | 可選擇為 OTEL 啟用語義指標（TTFT、TPOT、回應持續時間、成本、token 用量）。預設 `false`。請參閱[OpenTelemetry](/docs/observability/opentelemetry_integration#metrics-reference)
-| LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS | 以逗號分隔的允許清單，列出會提升到 OTEL spans 中 `litellm.team.metadata` 下的 team-metadata 子鍵。預設為空，因此在每個子鍵明確列入允許清單之前，團隊的所有自由格式 metadata 都不會傳送到您的追蹤後端。也可在 config.yaml 的 `callback_settings.otel` 下透過 `baggage_team_metadata_keys` 設定。請參閱[OpenTelemetry](/docs/observability/opentelemetry_integration)。
+| LITELLM_OTEL_BAGGAGE_METADATA_KEYS | <SinceVersion v="1.88.0" /> 以逗號分隔的允許清單，列出會提升到 OTEL v2 spans 上作為 `litellm.metadata.<key>` 的請求中繼資料鍵。預設為 `user_api_key_org_id,user_api_key_user_id,user_api_key_alias,user_api_key_end_user_id,requester_ip_address`。設定它會取代預設清單。對於呼叫者在請求主體的 `metadata` 中傳送的鍵，請使用 `requester_metadata.<key>`。也可在 config.yaml 的 `callback_settings.otel` 下透過 `baggage_metadata_keys` 設定。請參閱 [OpenTelemetry v2](/docs/observability/opentelemetry_v2#request-identity-on-every-span)。
+| LITELLM_OTEL_BAGGAGE_PROMOTED_KEYS | <SinceVersion v="1.88.0" /> 以逗號分隔的清單，列出會標記在請求中每個 OTEL v2 span 上的身分屬性。預設為 `litellm.team.id,litellm.team.alias,litellm.team.metadata,litellm.api_key.hash,gen_ai.request.model,litellm.provider.model`；也接受 `litellm.end_user.id`。設定它會取代預設清單。也可在 config.yaml 的 `callback_settings.otel` 下透過 `baggage_promoted_keys` 設定。請參閱 [OpenTelemetry v2](/docs/observability/opentelemetry_v2#request-identity-on-every-span)。
+| LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS | 以逗號分隔的允許清單，列出團隊已儲存 metadata 的子鍵，會以單一 JSON 屬性 `litellm.team.metadata` 提升到 OTEL v2 spans 上。預設為空，因此在每個子鍵明確列入允許清單之前，團隊的所有自由格式 metadata 都不會傳送到您的追蹤後端。也可在 config.yaml 的 `callback_settings.otel` 下透過 `baggage_team_metadata_keys` 設定。請參閱 [OpenTelemetry v2](/docs/observability/opentelemetry_v2#team-metadata)。
 | LITELLM_ENABLE_PYROSCOPE | 若為 true，則啟用 Pyroscope CPU profiling。設定檔會傳送至 PYROSCOPE_SERVER_ADDRESS。預設關閉。請參閱[Pyroscope profiling](/docs/proxy/pyroscope_profiling)。
 | LITELLM_ENABLE_TEAM_STALE_ALIAS_BYPASS | 當 `true` 時，若團隊的舊版 `model_aliases` 項目將公開模型名稱對應至內部 `model_name_<team_id>_<uuid>` 部署，在公開名稱已有團隊範圍的同層部署時，前置呼叫處理可略過該重寫——因此負載平衡 / `order` 會在同層部署間套用。為向後相容，預設為 `false`。請參閱[團隊範圍模型與舊版別名](./load_balancing#team-scoped-models-and-legacy-model_aliases)。當偵測到過期別名且此旗標為關閉時，proxy 可能會記錄一次性警告。
 | PYROSCOPE_APP_NAME | 回報給 Pyroscope 的應用程式名稱。當 LITELLM_ENABLE_PYROSCOPE 為 true 時為必要。無預設值。
@@ -1311,19 +1396,28 @@ router_settings:
 | LITELLM_STORE_AUDIT_LOGS | 為每一次對金鑰、團隊與使用者等管理物件執行的建立、更新與刪除記錄稽核日誌項目的旗標。`litellm_settings.store_audit_logs` 的環境等效項；僅在設定檔未設定該項時讀取，而寫入這些項目需要企業授權。**在企業授權下預設為 True，否則為 False**
 | LITELLM_MODE | LiteLLM 的運作模式（例如 production、development）
 | LITELLM_NON_ROOT | 讓 LiteLLM 在非 root 模式下執行的旗標，以提升 Docker 容器中的安全性
+| LITELLM_OFFLINE_MODE | 設為 `true` 可停止 LiteLLM 自行發出的每個請求，例如擷取模型成本對照表、Anthropic beta 標頭、auto router 預設集、政策範本、部落格文章和最新版本、已外洩密碼檢查，以及 Hugging Face tokenizer 下載。改為使用隨附的副本。對提供者和您設定的其他目的地的請求不受影響。預設為 `false`。請參閱 [對外請求和離線模式](./outbound_requests)。
 | LITELLM_RATE_LIMIT_WINDOW_SIZE | LiteLLM 的速率限制視窗大小。預設為 60
 | LITELLM_REASONING_AUTO_SUMMARY | 若設定為 "true"，會自動為跨所有轉換路徑（Anthropic adapter、Responses API 等）的 reasoning models 啟用詳細推理摘要（`summary: "detailed"`）。預設為 "false"
 | LITELLM_SALT_KEY | LiteLLM 中用於加密的 salt key
 | LITELLM_SET_REPLICA_IDENTITY_FULL | 設定為 `true` 時，會在每次 migration run 結束時，於每一個 LiteLLM 資料表上執行 `ALTER TABLE ... REPLICA IDENTITY FULL`。Neon 或 lakehouse sync 等邏輯複寫消費者需要 FULL replica identity 才能讀取 UPDATE 或 DELETE 的舊列；Prisma 會讓新資料表維持 Postgres 預設值。需要 migration 使用者擁有這些資料表。預設為 `false`
 | LITELLM_SENSITIVE_ROUTING_TTL | 黏性敏感資料路由決策的 TTL（秒）；控制一個 session 會被固定在路由 guardrail 選定的 on-premise model 上多久。預設為 3600
 | LITELLM_SSL_CIPHERS | 用於更快握手的 SSL/TLS cipher 設定。控制 OpenSSL 連線的 cipher suite 偏好。
+| LITELLM_SUPPRESS_STARTUP_OUTPUT | <SinceVersion v="1.109.0" /> 設為 `true` 可停止 proxy 列印其例行啟動訊息，例如橫幅、模型清單和 Search Tools 清單。少數需要處理的啟動警告仍會列印。與 `litellm_settings.suppress_startup_output` 相同。[進一步文件](./debugging#suppress-startup-output)
 | LITELLM_SECRET_AWS_KMS_LITELLM_LICENSE | AWS KMS 加密的 LiteLLM 授權
+| LITELLM_TELEMETRY_DESTINATION | 使用量遙測報告的去向：`local_table` 或 `http`。會覆寫 Admin UI 中儲存的目的地。在選擇目的地之前不會記錄任何內容。請參閱 [Usage telemetry](./telemetry)
+| LITELLM_TELEMETRY_DISABLED | 設為 `true` 可強制關閉使用量遙測，覆寫 `LITELLM_TELEMETRY_GROUPS` 和 Admin UI 設定。請參閱 [Usage telemetry](./telemetry)
+| LITELLM_TELEMETRY_ENDPOINT | 當 `LITELLM_TELEMETRY_DESTINATION` 為 `http` 時，接收每個時段一份 JSON 使用量遙測報告的 HTTP 或 HTTPS URL。請參閱 [Usage telemetry](./telemetry)
+| LITELLM_TELEMETRY_GROUPS | 要開啟的以逗號分隔的使用量遙測群組，例如 `heartbeat,request_success`。設定時會覆寫 Admin UI 設定。請參閱 [Usage telemetry](./telemetry)
+| LITELLM_TELEMETRY_RETENTION_DAYS | 使用量遙測報告在 proxy 資料庫中保留的天數。預設為 `30`
+| LITELLM_TELEMETRY_SETTLE_TIMEOUT_SECONDS | 已完成的請求在寫入其遙測 row 之前，等待其提供者嘗試被記錄的秒數。預設為 `2`
 | LITELLM_TPM_TOKEN_RESERVATION_ENABLED | 預設 `true`。設定為 `false` 時，會停用 v3 rate limiter 中的請求前 TPM 預留，並在每次即時請求完成後套用實際用量。這會讓每個請求少一次 Redis 操作，但併發請求可能暫時超過 TPM 限制。此設定不適用於 `POST /v1/batches`，後者使用[獨立的輸入檔案限制器](../batches#how-rate-limiting-for-batches-api-works)。請參閱[預估輸出 token](./users#estimated-output-tokens-requests-without-max_tokens)。 |
 | LITELLM_USE_CHAT_COMPLETIONS_URL_FOR_ANTHROPIC_MESSAGES | 設定為 "true" 時，將 OpenAI /v1/messages 請求透過 chat/completions 而非 Anthropic models 的 Responses API 路由。也可透過 `litellm_settings.use_chat_completions_url_for_anthropic_messages` 設定
 | LITELLM_ROUTE_ALL_CHAT_OPENAI_TO_RESPONSES | 設定為 "true" 時，將所有 OpenAI /chat/completions 請求透過 Responses API 橋接層路由。建議用於 OpenAI models。也可透過 `litellm_settings.route_all_chat_openai_to_responses` 設定
 
 | LITELLM_GEMINI_LIVE_DEFER_SETUP | 設為 "true" 時，會延後 Gemini/Vertex Live 的設定，直到用戶端送出 `session.update`（用於執行階段工具注入）。為了向後相容，預設為 "false"，此時會在連線時自動送出設定。也可透過 `litellm.gemini_live_defer_setup` 設定
 | LITELLM_USER_AGENT | LiteLLM API 請求的自訂 user agent 字串。用於合作夥伴遙測歸因
+| LITELLM_WHATS_NEW_URL | Admin UI 首頁 What's new 下顯示的發布清單 JSON 的自訂 URL。預設為 GitHub main 分支上的 `litellm/proxy/public_endpoints/whats_new.json` 檔案
 | LITELLM_WORKER_STARTUP_HOOKS | 以逗號分隔的 `module.path:function_name` 可呼叫物清單，會在啟動期間於每個 worker process 中執行。會在 worker 生命週期早期執行（在設定/DB 載入之前）。適用於重新初始化每個 process 的狀態，例如 [gflags](https://github.com/google/python-gflags)。詳情請參閱 [Worker Startup Hooks](/docs/proxy/worker_startup_hooks)
 | LITELLM_PRINT_STANDARD_LOGGING_PAYLOAD | 若為 true，會將標準記錄負載列印到主控台 - 適合除錯
 | LITELLM_PRISMA_BOOTSTRAP_TIMEOUT | 允許 Prisma CLI 所使用的 Node toolchain 進行一次性安裝的秒數，此安裝會在任何 migration 之前、每個容器只執行一次。在安裝超過十分鐘的較慢或頻寬受限節點上可提高此值。非正數或非數值會被忽略並顯示警告，然後套用預設值。**預設為 600**
@@ -1340,8 +1434,11 @@ router_settings:
 | MAX_BASE64_LENGTH_FOR_LOGGING | 在記錄負載中保留的 base64 字元最大數量。超過此值的 Data URI 會以大小占位符取代。設為 0 可停用截斷。預設為 64
 | MAX_BASE64_LENGTH_STDOUT_LOG | 寫入 stdout 的 log line 中，允許原樣保留的 base64 串長度上限（字元數），適用於包含 DEBUG 在內的所有記錄等級。較長的串會在訊息與任何 traceback 中以大小占位符取代，例如 `[base64_data truncated: 2.86MB]`，而其周圍文字會保留。hex 與 decimal 串（摘要、數字 id）則不受影響。logging callbacks（OTEL、Datadog 等）仍會收到完整記錄。設為 0 可停用。預設為 4096
 | MAX_COMPETITOR_NAMES | policy template enrichment 中允許的競爭者名稱最大數量。預設為 100
+| MAX_DECOMPRESSED_REQUEST_BODIES_IN_FLIGHT_MB | <SinceVersion v="1.108.0" /> 一個 proxy worker 同時持有的已解碼請求主體的最大總大小（MB），適用於以 `Content-Encoding: gzip` 或 `zstd` 傳送的請求。每個壓縮請求以其 gzip 或 zstd 資料宣告的解碼大小計算，或在未宣告時以其可能解碼到的最大大小計算。會使 worker 超過此限制的請求會在到達驗證或路由之前，得到帶有 `Retry-After: 1` 的 503。當未持有其他已解碼主體時，單一請求一律會被放行。預設為 200
+| MAX_DECOMPRESSED_REQUEST_BODY_SIZE_MB | <SinceVersion v="1.108.0" /> 以 `Content-Encoding: gzip` 或 `zstd` 傳送的請求主體的最大大小（MB），在 proxy 解碼前後都會檢查。當具有企業授權的 proxy 設定了 `max_request_size_mb` 時，以兩者中較小者為準。較大的主體會在到達驗證或路由之前得到 413。設為 0 可拒絕每個壓縮主體。預設為 50
 | MAX_EXCEPTION_MESSAGE_LENGTH | 例外訊息的最大長度。預設為 2000
 | MAX_ITERATIONS_TO_CLEAR_QUEUE | 在關機期間嘗試清除 logging worker 佇列時的最大迭代次數。預設為 200
+| MAX_REQUEST_HEADER_SIZE | {/* keep-version-note: unversioned reference requested by maintainer */} Uvicorn 的 h11 未完成 HTTP 標頭緩衝區的正整數位元組大小。**預設為 16384**（16 KiB）。例如，設 `MAX_REQUEST_HEADER_SIZE=131072` 代表 128 KiB。適用於預設伺服器，以及使用 h11 時的 `--run_gunicorn`。保留自動解析器選取，且會被 httptools、Hypercorn 和 Granian 忽略。`--max_request_header_size` 優先。請在啟動 proxy 之前匯出此變數。這不是嚴格的總標頭限制。[進一步文件](./cli#--max_request_header_size)。 |
 | MAX_TIME_TO_CLEAR_QUEUE | 關機期間用於清除 logging worker 佇列的最長秒數。預設為 5.0
 | LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS | 佇列已滿時，允許下一次積極清除操作前的冷卻時間（秒）。預設為 0.5 
 | MAX_STRING_LENGTH_PROMPT_IN_DB | 在清理 request bodies 時，花費 logs 中字串的最大長度。超過此長度的字串會被截斷。預設為 1000
@@ -1350,6 +1447,7 @@ router_settings:
 | MAX_IMAGE_URL_DOWNLOAD_SIZE_MB | 透過 URL 下載圖片的最大大小（MB）。可防止下載非常大的圖片造成記憶體問題。超過此限制的圖片會在下載前被拒絕。設為 0 可完全停用 image URL 處理（所有 image_url 請求都會被封鎖）。預設為 50MB（與 [OpenAI's limit](https://platform.openai.com/docs/guides/images-vision?api-mode=chat#image-input-requirements) 相同）
 | MAX_LONG_SIDE_FOR_IMAGE_HIGH_RES | 高解析度圖片長邊的最大長度。預設為 2000
 | MAX_REDIS_BUFFER_DEQUEUE_COUNT | Redis buffer dequeue 操作的最大次數。預設為 100
+| MAX_REQUEST_BODY_DECOMPRESSION_RATIO | <SinceVersion v="1.108.0" /> 以 `Content-Encoding: gzip` 或 `zstd` 傳送的請求主體在 proxy 解碼時可擴張的最大倍數。擴張更多的主體會在到達驗證或路由之前得到 413。預設為 200
 | MAX_REQUEST_BODY_SIZE_TO_REPAIR_MB | LiteLLM 在無法將請求主體解析為 JSON 時，嘗試修復的最大 request body 大小（MB）。修復備援會執行兩次完整主體的 regex 掃描，以修正無效的 surrogate escapes，這會在大型損壞負載上阻塞 event loop。超過此大小的主體會略過修復並立即回傳 400；小於或等於此大小的主體仍會修復。設為 0 可停用上限並始終嘗試修復。預設為 1（MB）
 | MAX_SHORT_SIDE_FOR_IMAGE_HIGH_RES | 高解析度圖片短邊的最大長度。預設為 768
 | MAX_SIZE_IN_MEMORY_QUEUE | 記憶體內佇列的最大大小。預設為 10000
@@ -1390,6 +1488,7 @@ router_settings:
 | NEW_RELIC_APP_NAME | 用於 New Relic AI Monitoring 整合的應用程式名稱 |
 | NEW_RELIC_LICENSE_KEY | 用於 New Relic 驗證的授權金鑰 |
 | NO_DOCS | 停用 Swagger UI 文件的旗標
+| NO_MAX_TOKENS_TPM_RESERVATION_FRACTION | <SinceVersion v="1.109.0" /> 為未設定輸出上限的請求保留的 TPM 限制比例，以 0.01 到 1 的分數表示。在具有 `otpm` 的部署上，沒有 `max_tokens` 的請求會保留模型最大輸出和此 `otpm` 比例中較小者。在 proxy 上，當其金鑰、team 或專案的 TPM 限制低於 4096 時，它也會設定寫入沒有該值的請求中的 `max_tokens`。超出範圍的值會記錄警告並使用預設值。預設為 0.25。[文件](./io_token_rate_limits.md#pre-call-admission)
 | NO_OPENAPI | 停用 /openapi.json 端點的旗標
 | NO_REDOC | 停用 Redoc 文件的旗標
 | NO_PROXY | 要略過 proxy 的位址清單
@@ -1430,7 +1529,7 @@ router_settings:
 | OTEL_IGNORE_CONTEXT_PROPAGATION | 當為 true 時，忽略父 span context propagation（傳入的 `traceparent` 標頭以及任何作用中的 span），使每個 LiteLLM trace 都成為自己的根。預設 `false`
 | OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT | 控制是否在 OpenTelemetry traces 中擷取 prompts 與 completions。可接受 `NO_CONTENT`（依規格預設）、`SPAN_ONLY`、`EVENT_ONLY`、`SPAN_AND_EVENT`，或布林形式（`true` 對應 `EVENT_ONLY`，`false` 對應 `NO_CONTENT`）
 | OTEL_SEMCONV_STABILITY_OPT_IN | 設為 `gen_ai_latest_experimental` 以發出遵循最新 [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/) 的 spans。將 LLM 呼叫 span 重新命名為 `{operation} {model}`，抑制 `raw_gen_ai_request`，新增 `gen_ai.provider.name`，並整合事件。依 OTEL 規格可用逗號分隔
-| USE_OTEL_LITELLM_REQUEST_SPAN | 當為 `true` 時，proxy 會為每次 LLM 呼叫發出獨立的 `litellm_request` span，作為 `Received Proxy Server Request` span 的子 span。預設 `false`（自 v1.81.0 起）；LLM 呼叫屬性會直接設定在 proxy 根 span 上。請參閱 [為什麼我看不到 `litellm_request` span？](/docs/observability/opentelemetry_integration#why-dont-i-see-a-litellm_request-span)
+| USE_OTEL_LITELLM_REQUEST_SPAN | 當為 `true` 時，proxy 會為每次 LLM 呼叫發出獨立的 `litellm_request` span，作為 `Received Proxy Server Request` span 的子 span。預設 `false`（於 v1.81.0 變更）；LLM 呼叫屬性會直接設定在 proxy 根 span 上。請參閱 [為什麼我看不到 `litellm_request` span？](/docs/observability/opentelemetry_integration#why-dont-i-see-a-litellm_request-span)
 | OTEL_DEBUG | 當為 `true` 時，會將 exporter 與 span 建立診斷輸出到 stderr。當 traces 沒有送達後端時很有用。預設 `false`
 | DEBUG_OTEL | `OTEL_DEBUG` 的別名
 | PAGERDUTY_API_KEY | PagerDuty Alerting 的 API 金鑰
@@ -1496,7 +1595,7 @@ router_settings:
 | REDIS_HOST | Redis 伺服器的主機名稱
 | REDIS_PASSWORD | Redis 服務的密碼
 | REDIS_PORT | Redis 伺服器的連接埠號
-| REDIS_SOCKET_TIMEOUT | LiteLLM 建立且未明確設定 `socket_timeout` 的 Redis client 之 socket 逾時，這在目前表示 Sentinel 連線路徑。**proxy cache client 不會讀取它**：它一律傳遞自己的 `socket_timeout`（預設 5.0 s），因此請改用 `cache_params.socket_timeout` 來變更。請參閱 [Redis socket_timeout](./caching_redis#redis-socket_timeout)。預設為 0.1
+| REDIS_SOCKET_TIMEOUT | LiteLLM 建立且未明確設定 `socket_timeout` 的每個 Redis client 的備援 socket 逾時（秒），涵蓋 standalone、`REDIS_URL`、cluster 和 Sentinel clients，同步與非同步皆然。`socket_timeout: null` 也會回退至它，因此設為較大的數字可實際上停用該限制。**proxy cache client 只有在 `cache_params.socket_timeout` 為 `null` 時才會讀取它**：否則它傳遞自己的 `socket_timeout`（預設 5.0 s），因此請改用 `cache_params.socket_timeout` 來變更。請參閱 [Redis socket_timeout](./caching_redis#redis-socket_timeout)。預設為 5
 | REDIS_TIMEOUT_LOG_INTERVAL | Redis 逾時記錄行之間的秒數。某一連續逾時的第一次逾時會以正常層級記錄，後續則以 DEBUG 記錄，而當間隔時間到達後，會有一行報告被抑制了多少筆。非逾時的 Redis 錯誤不會被節流。預設為 5.0
 | REDIS_GCP_SERVICE_ACCOUNT | 用於與 Redis 進行 IAM 驗證的 GCP 服務帳戶。格式："projects/-/serviceAccounts/name@project.iam.gserviceaccount.com"
 | REDIS_GCP_SSL_CA_CERTS | 用於安全 GCP Memorystore Redis 連線的 SSL CA 憑證檔案路徑
@@ -1546,6 +1645,8 @@ router_settings:
 | SENDGRID_SENDER_EMAIL | 在 SendGrid 電子郵件交易中作為寄件者使用的電子郵件地址 
 | SPEND_LOGS_URL | 用於擷取支出記錄的 URL
 | SPEND_LOG_CLEANUP_BATCH_SIZE | 清理期間每批次刪除的記錄數。預設為 1000
+| SPEND_LOG_SIZE_CHECK_INTERVAL | `maximum_spend_logs_size_check_interval` 的預設值，設定了 `maximum_spend_logs_size` 時 spend-log 大小規則執行的頻率。預設為 `1d`。請參閱 [spend log 刪除](spend_logs_deletion)
+| SPEND_LOG_SIZE_CLEANUP_RECHECK_BATCHES | 由大小觸發的執行在兩次進度檢查之間刪除的批次數。預設為 10
 | STALE_OBJECT_CLEANUP_BATCH_SIZE | 每個清理週期更新的過期受管理物件最大數量。預設為 1000
 | SSL_CERTIFICATE | SSL 憑證檔案的路徑
 | SSL_ECDH_CURVE | SSL/TLS 金鑰交換使用的 ECDH 曲線（例如：'X25519' 可停用 PQC）。
@@ -1598,6 +1699,8 @@ router_settings:
 | WEBHOOK_URL | 用於接收來自外部服務的 webhook 的 URL
 | SPEND_LOG_RUN_LOOPS | 用於設定 spend_log_cleanup 任務應執行多少次 1000 筆批次刪除的常數
 | SPEND_LOG_CLEANUP_BATCH_SIZE | 清理期間每個批次刪除的記錄數。預設為 1000
+| SPEND_LOG_SIZE_CHECK_INTERVAL | `maximum_spend_logs_size_check_interval` 的預設值，設定了 `maximum_spend_logs_size` 時 spend-log 大小規則執行的頻率。預設為 `1d`。請參閱 [spend log 刪除](spend_logs_deletion)
+| SPEND_LOG_SIZE_CLEANUP_RECHECK_BATCHES | 由大小觸發的執行在兩次進度檢查之間刪除的批次數。預設為 10
 | SPEND_LOG_PARTITION_INTERVAL | LiteLLM_SpendLogs 分割區的粒度，當表格已分割時：day、week 或 month。預設為 day
 | SPEND_LOG_PARTITION_PRECREATE_AHEAD | 每次清理執行時要預先建立的未來 spend-log 分割區數量。預設為 7
 | SPEND_LOG_QUEUE_POLL_INTERVAL | spend log 佇列的輪詢間隔（秒）。預設為 2.0

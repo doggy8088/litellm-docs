@@ -1,5 +1,6 @@
 ---
-title: "v1.74.3-stable"
+title: "LiteLLM v1.74.3-stable"
+description: "新增 MCP 模型存取群組、MCP 工具成本追蹤、用於列出代理模型的 Model Hub v2，以及 Bytez 與 Dashscope 提供者。"
 slug: "v1-74-3-stable"
 date: 2025-07-12T10:00:00
 authors:

@@ -119,4 +119,5 @@ LiteLLM 有兩個相關概念：
 - [Virtual Keys](./virtual_keys.md) – 建立與管理 API 金鑰
 - [Role-based Access Controls](./access_control.md) – 組織、團隊與使用者角色
 - [Model Access Groups](./model_access_groups.md) – 以設定檔為基礎的模型存取群組
+- [將身分對應到存取群組](./jwt_access_group_rules.md) – 從 JWT claims 授予存取群組
 - [MCP Control](../mcp_control.md) – MCP 伺服器設定與存取控管

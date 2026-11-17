@@ -70,7 +70,7 @@ model_list:
       model: {{openai_small}}
 litellm_settings:
   success_callback: ["langfuse"]
-  turn_off_message_logging: True # 👈 Key Change
+  turn_off_message_logging: True # Key Change
 ```
 
 **2. 傳送請求**
@@ -123,7 +123,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 -H 'Authorization: Bearer sk-zV5HlSIm8ihj1F9C_ZbB1g' \
 -H 'x-litellm-enable-message-redaction: true' \
 -d '{
-  "model": "gpt-3.5-turbo-testing",
+  "model": "{{openai_small}}",
   "messages": [
     {
       "role": "user",
@@ -225,7 +225,7 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
       }
     ],
     "max_tokens": 300,
-    "no-log": true # 👈 Key Change
+    "no-log": true # Key Change
 }'
 ```
 
@@ -249,7 +249,7 @@ response = client.chat.completions.create(
         }
     ],
     extra_body={
-      "no-log": True # 👈 Key Change
+      "no-log": True # Key Change
     }
 )
 
@@ -265,7 +265,7 @@ print(response)
 LiteLLM.Info: "no-log request, skipping logging"
 ```
 
-### ✨ 動態停用特定 callback {#-dynamically-disable-specific-callbacks}
+### 動態停用特定 callback {#dynamically-disable-specific-callbacks}
 
 <EnterpriseFeature />
 
@@ -322,19 +322,19 @@ print(response)
 </TabItem>
 </Tabs>
 
-### ✨ 依虛擬金鑰、團隊進行條件式記錄 {#-conditional-logging-by-virtual-keys-teams}
+### 依虛擬金鑰、團隊進行條件式記錄 {#conditional-logging-by-virtual-keys-teams}
 
 可用於：
 1. 依條件為某些虛擬金鑰／團隊啟用記錄
 2. 為不同的虛擬金鑰／團隊設定不同的記錄提供者
 
-[👉 **開始使用** - 依團隊／金鑰的記錄](team_logging)
+[**開始使用** - 依團隊／金鑰的記錄](team_logging)
 
 ## 會記錄哪些內容？ {#what-gets-logged}
 
 終端成功與失敗回呼事件會包含 `kwargs["standard_logging_object"]`，當 LiteLLM 完成建構標準 payload 時。中間的串流事件，以及在 payload 建構失敗時的回呼，可以省略它。
 
-[👉 **標準記錄負載規格**](./logging_spec)
+[**標準記錄負載規格**](./logging_spec)
 
 ## Langfuse {#langfuse}
 
@@ -621,7 +621,7 @@ model_list:
 litellm_settings:
   success_callback: ["langfuse"]
 
-  # 👇 Key Change
+  # Key Change
   langfuse_default_tags: ["cache_hit", "cache_key", "proxy_base_url", "user_api_key_alias", "user_api_key_user_id", "user_api_key_user_email", "user_api_key_team_alias", "semantic-similarity", "proxy_base_url"]
 ```
 
@@ -931,7 +931,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 </Tabs>
 
-** 🎉 預期會在您的 OTEL collector 中看到這個 trace 被記錄**
+** 預期會在您的 OTEL collector 中看到這個 trace 被記錄**
 
 ### 遮罩訊息、回應內容 {#redacting-messages-response-content}
 
@@ -941,7 +941,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 litellm_settings:
   callbacks: ["otel"]
 
-## 👇 Key Change
+## Key Change
 callback_settings:
   otel:
     message_logging: False
@@ -951,7 +951,7 @@ callback_settings:
 
 ##### 跨服務的內容傳遞 `Traceparent HTTP Header` {#context-propagation-across-services-traceparent-http-header}
 
-❓ 當您想要在分散式追蹤系統中 **傳遞關於傳入請求的資訊** 時，請使用這個
+當您想要在分散式追蹤系統中 **傳遞關於傳入請求的資訊** 時，請使用這個
 
 ✅ 主要變更：在您的請求中傳遞 **`traceparent` 標頭**。[在此閱讀更多關於 traceparent 標頭的資訊](https://uptrace.dev/opentelemetry/opentelemetry-traceparent.html#what-is-traceparent-header)
 
@@ -1040,7 +1040,7 @@ model_list:
   model_name: fake-openai-endpoint
 
 litellm_settings:
-  callbacks: ["gcs_bucket"] # 👈 KEY CHANGE # 👈 KEY CHANGE
+  callbacks: ["gcs_bucket"] # KEY CHANGE # KEY CHANGE
 ```
 
 2. 設定必要的環境變數
@@ -1090,6 +1090,10 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 5. 點選 'Keys' -> Add Key -> Create New Key -> JSON
 6. 儲存 JSON 檔案並將路徑加入 `GCS_PATH_SERVICE_ACCOUNT`
 
+#### 批次逐行項目 {#batch-line-items}
+
+若要同時保留您受管理批次的每個請求與回應，作為每個批次底下 `batch_line_items/` 的 part 物件，請將 `gcs_bucket` 加入 `litellm_settings.batch_line_item_callbacks`。請參閱[儲存每一行的請求與回應](./managed_batches#storing-every-lines-request-and-response)
+
 ## Google Cloud Storage - PubSub 主題 {#google-cloud-storage---pubsub-topic}
 
 將 LLM 記錄/SpendLogs 寫入 [Google Cloud Storage PubSub Topic](https://cloud.google.com/pubsub/docs/reference/rest)
@@ -1116,7 +1120,7 @@ model_list:
   model_name: fake-openai-endpoint
 
 litellm_settings:
-  callbacks: ["gcs_pubsub"] # 👈 KEY CHANGE # 👈 KEY CHANGE
+  callbacks: ["gcs_pubsub"] # KEY CHANGE # KEY CHANGE
 ```
 
 2. 設定必要的環境變數
@@ -1344,6 +1348,10 @@ litellm_settings:
 如果團隊別名和金鑰別名都已啟用，則路徑會變成
 `my-test-path/my-team-alias/my-key-alias/...`
 
+#### 批次逐行項目 {#batch-line-items-1}
+
+若要同時保留您受管理批次的每個請求與回應，作為每個批次底下 `<s3_path>/batch_line_items/` 的 part 物件，請將 `s3_v2` 加入 `litellm_settings.batch_line_item_callbacks`。它會使用相同的 `s3_callback_params` 寫入。請參閱[儲存每一行的請求與回應](./managed_batches#storing-every-lines-request-and-response)
+
 ## AWS SQS {#aws-sqs}
 
 | 屬性             | 詳細資料                                                                              |
@@ -1380,7 +1388,7 @@ litellm_settings:
   callbacks: ["aws_sqs"]
 
   aws_sqs_callback_params:
-    # --- 🧱 Required Parameters ---
+    # --- Required Parameters ---
     sqs_queue_url: https://sqs.us-west-2.amazonaws.com/123456789012/my-queue
     # The AWS SQS Queue URL to which LiteLLM will send log events.
 
@@ -1441,7 +1449,7 @@ model_list:
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
 
 litellm_settings:
-  callbacks: ["azure_storage"] # 👈 KEY CHANGE # 👈 KEY CHANGE
+  callbacks: ["azure_storage"] # KEY CHANGE # KEY CHANGE
 ```
 
 2. 設定必要的環境變數
@@ -1511,11 +1519,11 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 ## [Datadog](../observability/datadog) {#datadog}
 
-👉 請到這裡使用 [Datadog LLM 可觀測性](../observability/datadog) 搭配 LiteLLM Proxy
+請到這裡使用 [Datadog LLM 可觀測性](../observability/datadog) 搭配 LiteLLM Proxy
 
 ## [Azure Sentinel](../observability/azure_sentinel) {#azure-sentinel}
 
-👉 請到這裡使用 [Azure Sentinel](../observability/azure_sentinel) 搭配 LiteLLM Proxy
+請到這裡使用 [Azure Sentinel](../observability/azure_sentinel) 搭配 LiteLLM Proxy
 
 ## Lunary {#lunary}
 
@@ -1569,7 +1577,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 ## MLflow {#mlflow}
 
-👉 請依照這裡的教學 [here](../observability/mlflow) 開始在 LiteLLM Proxy Server 上使用 mlflow
+請依照這裡的教學 [here](../observability/mlflow) 開始在 LiteLLM Proxy Server 上使用 mlflow
 
 ## 自訂 Callback 類別 [Async] {#custom-callback-class-async}
 
@@ -2244,7 +2252,7 @@ environment_variables:
   GALILEO_LOG_STREAM_ID: "your-log-stream-id"  # optional
 
 litellm_settings:
-  success_callback: ["galileo"] # 👈 KEY CHANGE
+  success_callback: ["galileo"] # KEY CHANGE
 ```
 
 2. 啟動 Proxy
@@ -2270,7 +2278,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 '
 ```
 
-🎉 就這樣 - 預期會在您的 Galileo 儀表板上看到您的記錄
+就這樣 - 預期會在您的 Galileo 儀表板上看到您的記錄
 
 ## OpenMeter {#openmeter}
 
@@ -2297,7 +2305,7 @@ model_list:
   model_name: fake-openai-endpoint
 
 litellm_settings:
-  success_callback: ["openmeter"] # 👈 KEY CHANGE
+  success_callback: ["openmeter"] # KEY CHANGE
 ```
 
 2. 啟動 Proxy

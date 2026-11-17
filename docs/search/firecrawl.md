@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 Firecrawl Search API：搜尋 + 擷取"
+sidebar_label: "Firecrawl 搜尋"
+description: "將 Firecrawl 搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，支援 web、news 與 image 來源以及頁面擷取。"
+---
 # Firecrawl 搜尋 {#firecrawl-search}
+
+[Firecrawl](https://firecrawl.dev) 是網路搜尋與擷取 API，可回傳每個結果的頁面內容；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [https://firecrawl.dev](https://firecrawl.dev)
 

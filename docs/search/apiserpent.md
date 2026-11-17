@@ -1,3 +1,8 @@
+---
+title: "APISerpent SERP API 與 LiteLLM：設定"
+sidebar_label: "APISerpent 搜尋"
+description: "將 APISerpent SERP 結果加入 LiteLLM：在 Python SDK 中呼叫 search() 或在 AI Gateway 上呼叫 /v1/search，可用於 Google、Bing、Yahoo 或 DuckDuckGo。"
+---
 # APISerpent 搜尋 {#apiserpent-search}
 
 **取得 API 金鑰：** [https://apiserpent.com](https://apiserpent.com)

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 上的團隊自帶 Guardrails"
+sidebar_label: "團隊自帶 Guardrails"
+description: "讓開發人員在 LiteLLM AI 閘道上為其團隊註冊 Generic Guardrail API 防護欄，再於 Admin UI 中核准或拒絕。"
+---
 import Image from '@theme/IdealImage';
 
 # 團隊自帶 Guardrails {#team-bring-your-own-guardrails}

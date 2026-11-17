@@ -1,5 +1,6 @@
 ---
-title: "v1.86.3 - Gemini 3.5 Flash 第 0 天與待處理分支回補"
+title: "LiteLLM v1.86.3 - Gemini 3.5 Flash 第 0 天與待處理分支回補"
+description: "在 Vertex AI 與 Google AI Studio 上新增 Gemini 3.5 Flash 第 0 天支援。停止 Claude Code 追蹤重複，並以 SET NX 植入 Redis 支出計數器。"
 slug: "v1-86-3"
 date: 2026-06-02T17:31:21
 authors:

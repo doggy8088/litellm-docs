@@ -1,7 +1,16 @@
+---
+title: "搭配 LiteLLM AI Gateway 使用 NVIDIA NIM API"
+sidebar_label: "Nvidia NIM"
+description: "透過 LiteLLM 執行 Llama 3、Mixtral、Phi-3、Nemotron 及其他 NVIDIA NIM 模型（支援串流），並使用 nv-embedqa-e5-v5 嵌入段落。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Nvidia NIM {#nvidia-nim}
+
+NVIDIA NIM 是一個平台，提供簡單的 API 供部署與使用 AI 模型；LiteLLM 可從 Python SDK 或 AI Gateway 以 `nvidia_nim/` 前綴呼叫這些模型，用於聊天與嵌入。
+
 https://docs.api.nvidia.com/nim/reference/
 
 :::tip
@@ -164,7 +173,7 @@ print(response)
 
   </Tabs>
 
-## 支援的模型 - 💥 支援所有 Nvidia NIM 模型！ {#supported-models----all-nvidia-nim-models-supported}
+## 支援的模型 - 支援所有 Nvidia NIM 模型！ {#supported-models---all-nvidia-nim-models-supported}
 我們支援所有 `nvidia_nim` 模型，只要在傳送 completion 請求時將 `nvidia_nim/` 設為前綴
 
 | 模型名稱 | 函式呼叫 |

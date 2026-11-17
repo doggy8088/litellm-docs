@@ -1,5 +1,6 @@
 ---
-title: "v1.73.6-stable"
+title: "LiteLLM v1.73.6-stable"
+description: "新增透過 LiteLLM 的 gemini-cli 支援，讓 gemini-cli 可呼叫 Claude、gemini-2.5-flash 與 gpt-4.1。並新增 Batch API 成本追蹤。"
 slug: "v1-73-6-stable"
 date: 2025-06-28T10:00:00
 authors:

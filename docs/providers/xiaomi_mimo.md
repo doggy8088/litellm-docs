@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI Gateway 使用 Xiaomi MiMo API"
+sidebar_label: "Xiaomi MiMo"
+description: "呼叫 mimo-v2-flash 等 Xiaomi MiMo 模型、使用串流回覆並調整 temperature 與 top_p，然後將它們加入 LiteLLM AI Gateway 的 config.yaml。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

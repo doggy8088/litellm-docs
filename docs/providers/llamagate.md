@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 LlamaGate API：Python SDK 與 Gateway"
+sidebar_label: "LlamaGate"
+description: "從 Python SDK 或 AI Gateway 在 LlamaGate 上呼叫 Llama 3.1、DeepSeek R1、Qwen Coder 以及 Qwen 3 VL 等視覺模型，支援串流與圖片輸入。"
+---
+
 # LlamaGate {#llamagate}
 
 ## 概覽 {#overview}

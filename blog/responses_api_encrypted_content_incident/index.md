@@ -110,7 +110,7 @@ LiteLLM 的路由器沒有機制追蹤哪些部署建立了特定的加密內容
 
 ### 實作 {#implementation}
 
-**1. 將 `model_id` 編碼到輸出項目中**（[`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/utils.py)）
+**1. 將 `model_id` 編碼到輸出項目中**（[`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/responses/utils.py)）
 
 這與用於 `previous_response_id` affinity 的方法相同，且不需要快取。當回應包含帶有 `encrypted_content` 的輸出項目時，LiteLLM 會為了冗餘，在 **兩個位置** 編碼原始部署的 `model_id`：
 
@@ -146,7 +146,7 @@ def _wrap_encrypted_content_with_model_id(encrypted_content: str, model_id: str)
 input = ResponsesAPIRequestUtils._restore_encrypted_content_item_ids_in_input(input)
 ```
 
-**2. `EncryptedContentAffinityCheck`，僅路由** ([`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py))
+**2. `EncryptedContentAffinityCheck`，僅路由** ([`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py))
 
 不需要 `async_log_success_event` 或快取查找；`model_id` 會直接從 item ID 或 encrypted_content 解碼：
 
@@ -187,7 +187,7 @@ class EncryptedContentAffinityCheck(CustomLogger):
         return None
 ```
 
-**3. 速率限制繞過**（[`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router.py)）
+**3. 速率限制繞過**（[`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/router.py)）
 
 當加密內容需要特定部署時，會繞過 RPM/TPM 限制（反正請求在其他任何部署上都會失敗）：
 
@@ -226,14 +226,14 @@ router_settings:
 
 | # | 動作 | 狀態 | 程式碼 |
 |---|---|---|---|
-| 1 | 在回應時將 `model_id` 編碼到加密內容 item ID 中 | ✅ 完成 | [`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/utils.py) |
-| 2 | 在轉送至上游提供者前還原原始 item ID | ✅ 完成 | [`responses/main.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/main.py) |
-| 3 | `EncryptedContentAffinityCheck`：解碼 item ID 以進行路由（不使用快取） | ✅ 完成 | [`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py) |
-| 4 | 將 `encrypted_content_affinity` 新增至 `OptionalPreCallChecks` 型別 | ✅ 完成 | [`types/router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/types/router.py) |
-| 5 | 為固定到 affinity 的請求實作速率限制繞過 | ✅ 完成 | [`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/router.py) |
-| 6 | 單元測試：編碼/解碼工具、路由、RPM 繞過 | ✅ 完成 | [`test_encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/tests/test_litellm/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py) |
+| 1 | 在回應時將 `model_id` 編碼到加密內容 item ID 中 | ✅ 完成 | [`responses/utils.py`](https://github.com/BerriAI/litellm/blob/main/litellm/responses/utils.py) |
+| 2 | 在轉送至上游提供者前還原原始 item ID | ✅ 完成 | [`responses/main.py`](https://github.com/BerriAI/litellm/blob/main/litellm/responses/main.py) |
+| 3 | `EncryptedContentAffinityCheck`：解碼 item ID 以進行路由（不使用快取） | ✅ 完成 | [`encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py) |
+| 4 | 將 `encrypted_content_affinity` 新增至 `OptionalPreCallChecks` 型別 | ✅ 完成 | [`types/router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/types/router.py) |
+| 5 | 為固定到 affinity 的請求實作速率限制繞過 | ✅ 完成 | [`router.py`](https://github.com/BerriAI/litellm/blob/main/litellm/router.py) |
+| 6 | 單元測試：編碼/解碼工具、路由、RPM 繞過 | ✅ 完成 | [`test_encrypted_content_affinity_check.py`](https://github.com/BerriAI/litellm/blob/main/tests/unit/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py) |
 | 7 | 文件：Responses API 指南、負載平衡指南、設定參考 | ✅ 完成 | [Docs](https://docs.litellm.ai/docs/response_api#encrypted-content-affinity-multi-region-load-balancing) |
-| 8 | **[3 月 3 日]** 修正串流事件以包裹 encrypted_content | ✅ 完成 | [`responses/streaming_iterator.py`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm/responses/streaming_iterator.py) |
+| 8 | **[3 月 3 日]** 修正串流事件以包裹 encrypted_content | ✅ 完成 | [`responses/streaming_iterator.py`](https://github.com/BerriAI/litellm/blob/main/litellm/responses/streaming_iterator.py) |
 
 ---
 

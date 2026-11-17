@@ -6,9 +6,9 @@ slug: "/proxy/lens/integrations/hermes"
 
 # Hermes {#hermes}
 
-在進行這些步驟之前，請先設定 [追蹤目的地](../first-trace.md#send-your-first-trace) 並設定您的 LiteLLM 金鑰。
+在進行這些步驟之前，請先設定 [追蹤目的地](../first-trace.md#send-your-first-trace) 並設定您專用的 Lens 追蹤金鑰。
 
-安裝並啟用社群版 [hermes-otel 外掛程式](https://github.com/briancaffey/hermes-otel#install)。將 `LITELLM_API_KEY` 設為您的 LiteLLM 金鑰，然後將以下內容加入 `~/.hermes/hermes_otel.yaml`：
+安裝並啟用社群版 [hermes-otel 外掛程式](https://github.com/briancaffey/hermes-otel#install)。將 `LENS_TRACING_KEY` 設為您專用的 Lens 追蹤金鑰，然後將以下內容加入 `~/.hermes/hermes_otel.yaml`：
 
 ```yaml title="hermes_otel.yaml"
 resource_attributes:
@@ -18,7 +18,7 @@ backends:
   - type: otlp
     endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}
     headers:
-      Authorization: "Bearer ${LITELLM_API_KEY}"
+      Authorization: "Bearer ${LENS_TRACING_KEY}"
     metrics: false
     logs: false
 ```

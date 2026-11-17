@@ -1,7 +1,3 @@
----
-sidebar_label: "OpenClaw"
----
-
 # OpenClaw + LiteLLM 整合 {#openclaw--litellm-integration}
 
 [OpenClaw](https://openclaw.ai) 是一個自架的 AI 助理，可將聊天應用程式（WhatsApp、Telegram、Discord 等）連接到 LLM 提供者。透過將 OpenClaw 經由 LiteLLM Proxy 路由，您可從單一閘道存取 100+ 個提供者、成本追蹤、支出上限與自動故障切換。

@@ -49,6 +49,10 @@ $ litellm --config /path/to/config.yaml
 
 - **`stream_timeout`** → 在串流回應中等待第一個區塊（亦即第一個 token）的最長時間。  
   用於中止「卡住」的提供者（例如 Bedrock 啟動緩慢），並重試另一個模型。
+
+有些請求無法由提供者串流，例如在不具備原生結構化輸出的 Bedrock 模型上使用 `json_schema` 回應格式。LiteLLM 此時會進行一次非串流呼叫，待整個答案寫完後再以區塊形式回傳，因此在答案完成之前不會有任何區塊送達。這類請求會使用 `timeout` 與 `stream_timeout` 中較長的一個，因此為停滯串流設定的短 `stream_timeout` 不會中斷較慢的結構化答案。
+
+當您不透過 Router 直接呼叫 `litellm.completion()`、`litellm.acompletion()` 或 `litellm.aresponses()` 時，也適用相同規則。請將 `stream_timeout` 與 `timeout` 並列傳入；即時串流受 `stream_timeout` 限制，未串流的呼叫受 `timeout` 限制，偽串流則取兩者中較長的一個。舊版在直接 SDK 呼叫時會忽略 `stream_timeout`，因此您在該處設定的短值，現在會中斷傳送一個區塊所需時間超過該值的即時串流。
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -115,6 +119,28 @@ $ litellm --config /path/to/config.yaml
 
 </TabItem>
 </Tabs>
+
+### 依服務層級設定逾時 {#per-service-tier-timeouts}
+
+部署可以為要求特定 `service_tier` 的請求設定專屬的逾時。例如，OpenAI 的 `flex` 層級比預設層級慢，因此依標準流量大小設定的 `timeout` 會過早中斷 flex 請求。請在 `litellm_params` 下設定 `timeout_by_service_tier` 與 `stream_timeout_by_service_tier`，並以層級名稱作為鍵：
+
+```yaml
+model_list:
+  - model_name: {{openai_small}}
+    litellm_params:
+      model: openai/gpt-5.1
+      api_key: os.environ/OPENAI_API_KEY
+      timeout: 610
+      stream_timeout: 610
+      timeout_by_service_tier:
+        flex: 900
+      stream_timeout_by_service_tier:
+        flex: 900
+```
+
+主體中帶有 `"service_tier": "flex"` 的請求，現在在 `/v1/chat/completions`、`/v1/responses` 以及其他所有接受 `service_tier` 的路由上，最多可等待 900 秒。沒有 `service_tier` 的請求，或其層級在對照表中沒有項目的請求，會維持該部署的 `timeout` 與 `stream_timeout`，因此新增這些對照表不會改變既有流量。
+
+在每次嘗試時，LiteLLM 會取第一個有設定的值：隨請求送出的逾時（`timeout` 參數或 `x-litellm-timeout` 標頭），接著是該請求層級的 `timeout_by_service_tier`，然後是該部署的 `timeout`，最後是上述的 router 與全域預設值。串流請求依相同順序使用 `stream_timeout_by_service_tier` 與 `stream_timeout`；只列在 `timeout_by_service_tier` 中的層級，其串流會維持該部署的 `stream_timeout`。值必須是以秒為單位的數字；若為其他值，proxy 將拒絕啟動。層級名稱不會與提供者核對，因此拼錯的鍵只會永遠無法比對成功。
 
 ### 閒置串流連線的 keepalive ping {#keepalive-pings-for-idle-streaming-connections}
 
@@ -265,7 +291,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": "what color is red"}
     ],
     logit_bias={12481: 100},
-    extra_body={"timeout": 1} # 👈 KEY CHANGE
+    extra_body={"timeout": 1} # KEY CHANGE
 )
 
 print(response)
@@ -291,6 +317,6 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
         "messages": [
         {"role": "user", "content": "hi my email is ishaan@berri.ai"}
         ],
-        "mock_timeout": true # 👈 KEY CHANGE
+        "mock_timeout": true # KEY CHANGE
     }'
 ```

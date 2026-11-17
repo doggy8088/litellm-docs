@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 AI/ML API：聊天、嵌入、圖片"
+sidebar_label: "AI/ML API"
+description: "透過 LiteLLM Python SDK 呼叫 Llama、Qwen 與其他 AI/ML API 模型，支援同步與非同步聊天、串流、嵌入與 dall-e-3 圖片生成。"
+---
+
 # AI/ML API {#aiml-api}
 https://aimlapi.com/
 
@@ -22,18 +28,18 @@ os.environ['AIML_API_BASE'] = "https://api.aimlapi.com"  # [optional]
 
 ### 1. 取得您的 API 金鑰   {#1-get-your-api-key}
 首先，您需要一組 API 金鑰。您可以在這裡取得：  
-🔑 [取得您的 API 金鑰](https://aimlapi.com/app/keys/?utm_source=aimlapi&utm_medium=github&utm_campaign=integration)  
+[取得您的 API 金鑰](https://aimlapi.com/app/keys/?utm_source=aimlapi&utm_medium=github&utm_campaign=integration)  
 
 ### 2. 探索可用模型   {#2-explore-available-models}
 想找不同的模型嗎？瀏覽完整的支援模型清單：  
-📚 [模型完整清單](https://docs.aimlapi.com/api-overview/model-database/text-models?utm_source=aimlapi&utm_medium=github&utm_campaign=integration)  
+[模型完整清單](https://docs.aimlapi.com/api-overview/model-database/text-models?utm_source=aimlapi&utm_medium=github&utm_campaign=integration)  
 
 ### 3. 閱讀文件   {#3-read-the-documentation}
 如需詳細的設定說明與使用指南，請查看官方文件：  
-📖 [AI/ML API 文件](https://docs.aimlapi.com/quickstart/setting-up?utm_source=aimlapi&utm_medium=github&utm_campaign=integration)  
+[AI/ML API 文件](https://docs.aimlapi.com/quickstart/setting-up?utm_source=aimlapi&utm_medium=github&utm_campaign=integration)  
 
 ### 4. 需要協助嗎？   {#4-need-help}
-如果您有任何問題，歡迎隨時聯絡。我們很樂意提供協助！ 🚀  [Discord](https://discord.gg/hvaUsJpVJf)
+如果您有任何問題，歡迎隨時聯絡。我們很樂意提供協助！ [Discord](https://discord.gg/hvaUsJpVJf)
 
 ## 使用方式 {#usage}
 您可以在 aimlapi.com/models 上從 LLama、Qwen、Flux，以及 200+ 其他開放原始碼與閉源模型中選擇。例如：
@@ -145,7 +151,7 @@ async def main():
     response = await litellm.aembedding(
         model="aiml/text-embedding-3-small", # The model name must include prefix "openai" + the model name from ai/ml api
         api_key="",  # your aiml api-key
-        api_base="https://api.aimlapi.com/v1", # 👈 the URL has changed from v2 to v1
+        api_base="https://api.aimlapi.com/v1", # the URL has changed from v2 to v1
         input="Your text string",
     )
     print(response)
@@ -167,7 +173,7 @@ async def main():
     response = await litellm.aimage_generation(
         model="aiml/dall-e-3",  # The model name must include prefix "openai" + the model name from ai/ml api
         api_key="",  # your aiml api-key
-        api_base="https://api.aimlapi.com/v1", # 👈 the URL has changed from v2 to v1
+        api_base="https://api.aimlapi.com/v1", # the URL has changed from v2 to v1
         prompt="A cute baby sea otter",
     )
     print(response)

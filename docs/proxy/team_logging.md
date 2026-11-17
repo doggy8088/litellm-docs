@@ -324,7 +324,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 
 #### API 提供之回呼的機密處理 {#secret-handling-for-api-provisioned-callbacks}
 
-API 提供的 `callback_vars` 中的 `os.environ/...` 參照會被拒絕（自 v1.84 起）。若從請求主體解析環境參照，任何具備金鑰管理存取權的呼叫者都能從 proxy 的環境中讀取任意機密，因此請求會改以驗證錯誤失敗。請在請求中傳入已解析的機密值；LiteLLM 會使用 proxy 的 salt key 將 `callback_vars` 憑證靜態加密保存。若您希望 proxy 從自己的環境中解析憑證，請在受信任的 `config.yaml` 中設定該回呼（全域設定於 `litellm_settings`，或透過 [`default_team_settings`](#team-logging---configyaml) 逐團隊設定）。
+自 v1.84.0 起，proxy 會拒絕 API 提供的 `callback_vars` 內的 `os.environ/...` 參照。若從請求主體解析環境參照，任何具備金鑰管理存取權的呼叫者都能從 proxy 的環境中讀取任意機密，因此請求會改以驗證錯誤失敗。請在請求中傳入已解析的機密值；LiteLLM 會使用 proxy 的 salt key 將 `callback_vars` 憑證靜態加密保存。若您希望 proxy 從自己的環境中解析憑證，請在受信任的 `config.yaml` 中設定該回呼（全域設定於 `litellm_settings`，或透過 [`default_team_settings`](#team-logging---configyaml) 逐團隊設定）。
 
 <iframe width="840" height="500" src="https://www.youtube.com/embed/8iF0Hvwk0YU" frameBorder="0" allowFullScreen></iframe>
 
@@ -496,7 +496,7 @@ model_list:
       model: {{openai_large}}
 litellm_settings:
   callbacks: ["datadog"]
-  turn_off_message_logging: True # 👈 Globally logging prompt / response is disabled
+  turn_off_message_logging: True # Globally logging prompt / response is disabled
 ```
 
 **為金鑰啟用 prompt 記錄**
@@ -512,7 +512,7 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
         "logging": [{
             "callback_name": "datadog",
             "callback_vars": {
-                "turn_off_message_logging": false # 👈 Enable prompt logging
+                "turn_off_message_logging": false # Enable prompt logging
             }
         }]
     }

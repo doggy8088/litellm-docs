@@ -1,6 +1,6 @@
-# CLI 驗證 {#cli-authentication}
+# CLI 登入 {#cli-sign-in}
 
-使用 litellm cli 驗證至 LiteLLM Gateway。如果您想讓大量開發者可自行存取 LiteLLM Gateway，這非常適合。
+從 `lite` CLI 登入，以取得 LiteLLM Gateway 的憑證。CLI 會開啟瀏覽器，並使用閘道已設定的登入流程，該流程可使用您的身分提供者，或使用者名稱與密碼。
 
 ## 示範 {#demo}
 
@@ -12,7 +12,7 @@
 
 :::warning[Beta 功能 - 必要]
 
-CLI SSO 驗證目前處於 beta 階段。啟動您的 LiteLLM Proxy 時，您必須設定這個環境變數：
+CLI 登入目前處於 beta 階段。啟動您的 LiteLLM Proxy 時，您必須設定這個環境變數：
 
 ```bash
 export EXPERIMENTAL_UI_LOGIN="True"
@@ -118,7 +118,7 @@ export GENERIC_USER_EXTRA_ATTRIBUTES="employment_type,org_info.department"
 `lite` 用戶端是一個輕量的筆電安裝：它會連到 LiteLLM proxy，並透過它執行您的 coding agents，且不會載入 proxy server runtime。這個單行安裝程式只需要 `curl`；當 [uv](https://github.com/astral-sh/uv) 不存在時，它會引導安裝，並讓 uv 為您佈建相容的 Python：
 
 ```shell
-   curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install-cli.sh | sh
+   curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/install-cli.sh | sh
    ```
 
    已經有 uv，並且想自行操作嗎？直接安裝套件：
@@ -196,16 +196,19 @@ key 會在 `LITELLM_CLI_JWT_EXPIRATION_HOURS` 後到期（預設為 24 小時，
 
 `lite auth print-token` 只會將目前的 key 輸出到 stdout，除此之外沒有其他輸出（診斷訊息會送到 stderr）。當 key 即將到期時，它會先更新 key，因此呼叫它的工具永遠能取得可用的 key
 
-Claude Code 可以將它作為 [`apiKeyHelper`](https://code.claude.com/docs/en/settings) 執行。`lite login --pkce --config-claude` 會在 `~/.claude/settings.json` 中將 `env.ANTHROPIC_BASE_URL` 設為 proxy，並將 `env.ANTHROPIC_AUTH_TOKEN` 設為此登入的 key，同時保留您的其他設定不變。key 到期後請重新執行此指令。若要讓 Claude Code 在每次更新時呼叫 `lite auth print-token`，請依下列方式手動設定 `apiKeyHelper`：
+Claude Code 可以將它作為 [`apiKeyHelper`](https://code.claude.com/docs/en/settings) 執行，而 `lite login --pkce --config-claude` 會在 `~/.claude/settings.json` 中完成這項設定 <SinceVersion v="1.111.0" />，同時保留您的其他設定不變。它會將 `env.ANTHROPIC_BASE_URL` 指向 proxy，寫入一個以絕對路徑執行 `lite auth print-token` 的 `apiKeyHelper`，並將 `env.ANTHROPIC_AUTH_TOKEN` 設為空字串，Claude Code 會將其視為未設定，因此在 shell 中匯出的 token 無法取代該協助工具：
 
 ```json title="~/.claude/settings.json"
 {
   "env": {
-    "ANTHROPIC_BASE_URL": "https://litellm.example.com"
+    "ANTHROPIC_BASE_URL": "https://litellm.example.com",
+    "ANTHROPIC_AUTH_TOKEN": ""
   },
   "apiKeyHelper": "/absolute/path/to/lite --base-url https://litellm.example.com auth print-token"
 }
 ```
+
+Claude Code 會在啟動時執行該協助工具，之後每五分鐘再執行一次，因此其金鑰會隨著登入一併更新，只有在 refresh token 連續 14 天未被使用後，您才需要重新登入。每次執行都是一次完整的 `lite` 啟動，需要幾秒鐘，並會從您的作業系統金鑰圈讀取登入資訊，因此當金鑰圈鎖定時，協助工具會失敗，而 Claude Code 會如此提示，直到您將其解鎖。狀態列無法執行該協助工具，因此在此模式下，它會顯示模型，但不會顯示工作階段的成本條。token 儲存區一次只保留一個登入，因此在對另一個 proxy 執行 `lite login` 之後，協助工具會失敗，直到您再次執行 `lite --base-url https://litellm.example.com login --pkce`。當找不到 `lite`，或登入無法儲存時，該指令會將金鑰本身寫入 `env.ANTHROPIC_AUTH_TOKEN` 並說明原因，而您需要在金鑰到期後重新執行它。較早的 `lite` 版本一律以該方式寫入金鑰。
 
 對於 OpenCode，或任何其他相容 OpenAI 的 client，請將 client 指向 `<proxy>/v1`，並透過環境變數傳遞 key：
 
@@ -225,11 +228,11 @@ LITELLM_PROXY_KEY=$(lite auth print-token) opencode
         "apiKey": "{env:LITELLM_PROXY_KEY}"
       },
       "models": {
-        "gpt-5.4-mini": { "name": "gpt-5.4-mini" }
+        "{{openai_small}}": { "name": "{{openai_small}}" }
       }
     }
   },
-  "model": "litellm/gpt-5.4-mini"
+  "model": "litellm/{{openai_small}}"
 }
 ```
 
@@ -356,7 +359,7 @@ curl https://litellm.example.com/.well-known/litellm-cli-auth
    curl https://litellm.example.com/v1/chat/completions \
      -H "Authorization: Bearer LneZuxEFqvemEwK6lRzgg6BN..." \
      -H 'content-type: application/json' \
-     -d '{"model": "gpt-5.4-mini", "messages": [{"role": "user", "content": "Say hi in three words."}]}'
+     -d '{"model": "{{openai_small}}", "messages": [{"role": "user", "content": "Say hi in three words."}]}'
    ```
 
 7. 在 `expires_in` 用完之前更新憑證。回應的格式與步驟 5 相同，並會帶回新的 refresh token。舊的 refresh token 若再次使用，將以 `400 invalid_grant` 被拒絕，因此在使用新的 access token 之前，請先儲存新的配對
@@ -376,6 +379,20 @@ curl https://litellm.example.com/.well-known/litellm-cli-auth
      -d token=llm_srefresh_eyJhbGciOiJ... \
      -d client_id=llm_dcrc_lq411b6QkPmfxjW...
    ```
+
+### 兌換身分斷言 (RFC 7523) {#redeem-an-identity-assertion-rfc-7523}
+
+已從您的身分提供者取得 ID-JAG（Identity Assertion Authorization Grant，即跨應用程式存取 profile）的代理程式，可以在不使用瀏覽器的情況下，將它兌換為相同的 proxy 憑證，方法是使用 `jwt-bearer` grant 將其 POST 到 `PROXY_BASE_URL/token`。身分提供者端的設定、LiteLLM 設定、請求與回應，以及疑難排解，請見 [LiteLLM as resource app](./id_jag/resource_app.md)。以下規則是閘道在此之上強制執行的部分。
+
+**中繼資料。** 閘道自身位於 `PROXY_BASE_URL/.well-known/oauth-authorization-server` 的文件（issuer 為裸 origin，token 端點為 `PROXY_BASE_URL/token`）只有在該頁面上的先決條件都符合時，才會在 `grant_types_supported` 中列出該 grant；彙總文件 `PROXY_BASE_URL/.well-known/oauth-authorization-server/mcp` 也會列出。當恰好設定了一個 OAuth2 MCP 伺服器時，根文件屬於該上游，且不會列出該 grant，因此該情況下請改用 `/.well-known/oauth-authorization-server/mcp`。
+
+**Audience。** 文件記載的 `aud` 是裸 origin `PROXY_BASE_URL`，例如 `https://litellm.example.com`；閘道絕不會從請求的 `Host` 取得它。`https://litellm.example.com/mcp`，即 MCP 資源識別碼，也可被接受，而且因為它命名的是 MCP 資源，它所簽發的憑證會被限制在 MCP 路由：未指定 `scope` 或指定 `litellm:mcp` 會簽發僅限 MCP 的憑證，回應中的 `scope` 為 `litellm:mcp`，而在該 audience 下指定 `litellm:llm` 會以 `400 invalid_scope` 被拒絕。LLM 路由請使用裸 origin 作為 audience。
+
+**Scope。** 斷言的 `scope` claim 會縮小憑證的範圍，而回應的 `scope` 正是實際強制執行的範圍。`litellm:mcp` 只開啟 MCP 閘道路由（`/mcp`、其工具與 SSE 路徑、`/token`、`/introspect`），`litellm:llm` 只開啟 LLM API 路由（`/chat/completions`、`/v1/messages`、`/responses`、embeddings、提供者 pass-through 路由、在 `pass_through_endpoints` 下新增的端點與 `GET /auto_router/session`，但不包括 `GET /v1/mcp/server`），兩者同時指定則同時開啟兩組。此限制即憑證的 `allowed_routes`，由 proxy 的驗證在每條路由上以與虛擬金鑰相同的方式強制執行，因此 `litellm:mcp` 憑證在 `/chat/completions` 上會得到 `403`，而 `litellm:llm` 憑證在 `/mcp` 上會得到 `403`。沒有 `scope` claim 的斷言會簽發完整憑證，與 `lite login` 完全相同。任何其他 scope 值都會以 `400 invalid_scope` 被拒絕，並附上命名這兩個支援值的描述。
+
+**用戶端驗證。** HTTP Basic 憑證會依 RFC 6749 第 2.3.1 節的要求，在 base64 之前先進行 form 編碼，因此 `client_id` 或 secret 中的空格會以 `+` 或 `%20` 傳遞。
+
+**拒絕情形。** 每個斷言只能兌換一次：再次提交相同的 `jti` 會回傳 `400 invalid_grant`，描述為 `the assertion has already been redeemed`。未列入允許清單的 `client_id` 或錯誤的 secret 會回傳 `401 invalid_client`。斷言本身的任何問題（簽章、`typ`、`iss`、`aud`、`exp`、與提出斷言的應用程式不符的 `client_id` claim、`cnf` claim，因為閘道不檢查持有證明，或閘道不認識的 `sub`）都會回傳 `400 invalid_grant`，並附上一般描述 `assertion was rejected`；原因記錄在 proxy 記錄中。沒有 refresh token；憑證到期時，請兌換一個新的 ID-JAG。ID-JAG 絕不會被接受為 `/mcp` 上的 bearer token。
 
 ### 安全規則 {#security-rules}
 

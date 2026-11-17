@@ -344,5 +344,5 @@ versions = litellm.interactions.agents.list_versions(
 
 - `base_agent` 只接受 `"antigravity-preview-05-2026"`（Google 目前的限制）。
 - 代理程式僅儲存在 Google 端。LiteLLM 不會將它們持續儲存到其資料庫中。如果您透過 Google 的 API 直接刪除代理程式，代理伺服器不會知道。
-- 透過 `agent` 參數使用 Interactions API，目前只受 Gemini 支援。請使用 `model` 參數來呼叫其他提供者的模型。
+- 在撰寫本文時，透過 `agent` 參數使用 Interactions API 只受 Gemini 支援。現在 Vertex AI 也已支援，請參閱 [Deep Research on Vertex AI](/docs/interactions#deep-research-on-vertex-ai)。請使用 `model` 參數來呼叫其他提供者的模型。
 - `GEMINI_API_KEY` / `GOOGLE_API_KEY` 必須存在於代理伺服器環境中。在 SDK 中支援透過 `api_key` 逐請求傳入金鑰，但目前代理端點尚不支援。

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 Vantage 成本匯出"
+sidebar_label: "Vantage"
+description: "透過 API 或環境變數，將 LiteLLM AI Gateway 的支出以 FOCUS 1.2 成本報告形式匯出至 Vantage，包含試運行與欄位對應。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

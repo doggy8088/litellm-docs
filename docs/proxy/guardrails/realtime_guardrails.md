@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 上 Realtime API 的防護欄"
+sidebar_label: "Realtime API 防護欄"
+description: "在 LiteLLM AI 閘道 Realtime API 上保護語音對話：在模型回應前檢查每一段語音轉錄，並可依虛擬金鑰分別設定。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -168,6 +173,8 @@ asyncio.run(main())
 3. OpenAI 的 TTS **會將警告朗讀** 回給使用者，例如 *"Content blocked: keyword 'system update' detected (Prompt injection attempt)"*
 
 LLM 永遠不會處理注入的指令。
+
+在僅轉錄的工作階段（`/v1/realtime?intent=transcription`，或 `session.type` 為 `transcription`）中，沒有可取消或重新建立的 assistant 回合，因此 proxy 在阻擋時不會向上游傳送任何內容。它仍會轉送轉錄內容，然後向用戶端傳送一個帶有 `"type": "guardrail_violation"` 與阻擋訊息的 `error` 事件，工作階段會繼續轉錄下一個回合。`on_violation: end_session` 與 `end_session_after_n_fails` 關閉工作階段的方式與語音工作階段相同。
 
 ## 與其他防護欄提供者一起使用 {#using-with-other-guardrail-providers}
 

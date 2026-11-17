@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Greenscale 記錄：GenAI 支出"
+sidebar_label: "Greenscale"
+description: "透過 greenscale 回呼將 LiteLLM Python SDK 呼叫記錄到 Greenscale，以追蹤 GenAI 支出，並以專案、應用程式與客戶中繼資料標記。"
+---
 # Greenscale {#greenscale}
 
 :::tip
@@ -41,7 +46,7 @@ litellm.success_callback = ["greenscale"]
 #openai call
 response = completion(
   model="{{openai_small}}",
-  messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}],
+  messages=[{"role": "user", "content": "Hi - i'm openai"}],
   metadata={
     "greenscale_project": "acme-project",
     "greenscale_application": "acme-application"
@@ -58,7 +63,7 @@ response = completion(
 response = completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
   metadata={
     "greenscale_project": "acme-project",
@@ -70,6 +75,6 @@ response = completion(
 
 ## 與 Greenscale 團隊取得支援與聯繫 {#support--talk-with-greenscale-team}
 
-- [預約示範 👋](https://calendly.com/nandesh/greenscale)
-- [網站 💻](https://greenscale.ai)
-- 我們的電子郵件 ✉️ `hello@greenscale.ai`
+- [預約示範](https://calendly.com/nandesh/greenscale)
+- [網站](https://greenscale.ai)
+- 我們的電子郵件 `hello@greenscale.ai`

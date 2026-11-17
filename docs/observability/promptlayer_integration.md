@@ -1,3 +1,8 @@
+---
+title: "LiteLLM Python SDK 的 PromptLayer 記錄"
+sidebar_label: "PromptLayer"
+description: "透過 promptlayer 回呼與 metadata，將 LiteLLM Python SDK 的請求記錄至 PromptLayer，涵蓋 OpenAI、Azure、Anthropic 與其他提供者。"
+---
 import Image from '@theme/IdealImage';
 
 # PromptLayer {#promptlayer}
@@ -42,10 +47,10 @@ os.environ["OPENAI_API_KEY"], os.environ["COHERE_API_KEY"] = "", ""
 litellm.success_callback = ["promptlayer"]
 
 #openai call
-response = completion(model="{{openai_small}}", messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}])
+response = completion(model="{{openai_small}}", messages=[{"role": "user", "content": "Hi - i'm openai"}])
 
 #cohere call
-response = completion(model="command-nightly", messages=[{"role": "user", "content": "Hi 👋 - i'm cohere"}])
+response = completion(model="command-nightly", messages=[{"role": "user", "content": "Hi - i'm cohere"}])
 ```
 
 ### 記錄中繼資料  {#logging-metadata}
@@ -70,16 +75,16 @@ os.environ["OPENAI_API_KEY"], os.environ["COHERE_API_KEY"] = "", ""
 litellm.success_callback = ["promptlayer"]
 
 #openai call - log llm provider is openai
-response = completion(model="{{openai_small}}", messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}], metadata={"provider": "openai"})
+response = completion(model="{{openai_small}}", messages=[{"role": "user", "content": "Hi - i'm openai"}], metadata={"provider": "openai"})
 
 #cohere call - log llm provider is cohere
-response = completion(model="command-nightly", messages=[{"role": "user", "content": "Hi 👋 - i'm cohere"}], metadata={"provider": "cohere"})
+response = completion(model="command-nightly", messages=[{"role": "user", "content": "Hi - i'm cohere"}], metadata={"provider": "cohere"})
 ```
 
 感謝 [Nick Bradford](https://github.com/nsbradford)，來自 [Vim-GPT](https://github.com/nsbradford/VimGPT)，提供這個建議。 
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

@@ -180,7 +180,7 @@ Because they make up everything!
 
 ## 完整可運作範例 {#complete-working-example}
 
-**[LiveKit Agent SDK 食譜](https://github.com/BerriAI/litellm/tree/main/cookbook/livekit_agent_sdk)**
+**[LiveKit Agent SDK 食譜](https://github.com/BerriAI/litellm/tree/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/livekit_agent_sdk)**
 
 ## 深入了解 {#learn-more}
 

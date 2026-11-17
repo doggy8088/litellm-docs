@@ -1,5 +1,6 @@
 ---
-title: "v1.84.5 - Azure AD、Batch Auth 與 Passthrough 回補"
+title: "LiteLLM v1.84.5 - Azure AD、Batch Auth 與 Passthrough 回補"
+description: "修正 Azure AD 權杖刷新、批次與影片模型路由，以及 Haiku 4.5 等模型的 Vertex Claude effort 處理。"
 slug: "v1-84-5"
 date: 2026-06-03T20:44:41
 authors:

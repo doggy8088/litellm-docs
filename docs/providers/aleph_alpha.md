@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Aleph Alpha API：設定與模型"
+sidebar_label: "Aleph Alpha"
+description: "透過 LiteLLM Python SDK 將聊天完成請求傳送至 Aleph Alpha 的 Luminous Base、Extended 與 Supreme 模型，以及其 control 變體。"
+---
+
 # Aleph Alpha {#aleph-alpha}
 
 LiteLLM 支援來自 [Aleph Alpha](https://www.aleph-alpha.com/) 的所有模型。 

@@ -1,3 +1,7 @@
+---
+sidebar_label: "批次處理"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -17,7 +21,7 @@ LiteLLM 讓您可以：
 
 在 batch_completion 方法中，您提供一個 `messages` 清單，其中每個子清單的 messages 都會傳遞給 `litellm.completion()`，讓您能在單一 API 呼叫中有效率地處理多個提示。
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_batch_completion.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_batch_completion.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -91,7 +95,7 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 -H 'Content-Type: application/json' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \ 
 -D '{
-    "model": "{{openai_large}}, groq-llama", # 👈 Comma-separated models
+    "model": "{{openai_large}}, groq-llama", # Comma-separated models
     "messages": [
       {
         "role": "user",
@@ -99,7 +103,7 @@ curl -X POST 'http://localhost:4000/chat/completions' \
       }
     ],
     "stream": true,
-    "fastest_response": true # 👈 FLAG
+    "fastest_response": true # FLAG
 }
 
 '
@@ -117,14 +121,14 @@ client = openai.OpenAI(
 
 # request sent to model set on litellm proxy, `litellm --model`
 response = client.chat.completions.create(
-    model="{{openai_large}}, groq-llama", # 👈 Comma-separated models
+    model="{{openai_large}}, groq-llama", # Comma-separated models
     messages = [
         {
             "role": "user",
             "content": "this is a test request, write a short poem"
         }
     ],
-    extra_body={"fastest_response": true} # 👈 FLAG
+    extra_body={"fastest_response": true} # FLAG
 )
 
 print(response)

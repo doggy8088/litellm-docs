@@ -1,5 +1,6 @@
 ---
-title: "v1.97.2 - 僅限 Docker 的依賴重新整理"
+title: "LiteLLM v1.97.2 - 僅限 Docker 的依賴重新整理"
+description: "在 1.97.x 系列上將 tornado 更新至 6.5.8 並更新 pypdf，消除了 v1.97.1 上的映像掃描發現。"
 slug: "v1-97-2"
 date: 2026-09-03T18:54:20
 authors:

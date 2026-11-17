@@ -6,6 +6,25 @@ import Image from '@theme/IdealImage';
 
 本文說明如何將 LiteLLM 作為 MCP 閘道使用。您可以了解如何搭配 Responses API、Cursor IDE 和 OpenAI SDK 使用它。若要在端點、傳輸與驗證模式之間進行選擇，請參閱 [MCP 組態參考](./mcp_config_reference)
 
+### 透過 `/mcp` 一次連接 {#connect-once-with-mcp}
+
+您不需要為每個 MCP 伺服器各設一個用戶端項目。只要讓任何 MCP 用戶端以 LiteLLM 金鑰指向 `/mcp`，就能取得該金鑰可存取之所有伺服器的工具，每個工具名稱都會加上其伺服器名稱作為前綴（例如 `github_mcp-search_issues`）。
+
+```json title="One entry for every MCP server the key can access" showLineNumbers
+{
+  "mcpServers": {
+    "LiteLLM": {
+      "url": "http://localhost:4000/mcp",
+      "headers": {
+        "x-litellm-api-key": "Bearer sk-<your-litellm-api-key>"
+      }
+    }
+  }
+}
+```
+
+金鑰能看到哪些伺服器與工具，是由 proxy 端依據該金鑰、團隊與組織的 MCP 權限決定（請參閱 [MCP 權限管理](./mcp_control)）。當您授予金鑰另一個伺服器，或將伺服器加入金鑰已擁有的存取群組時，用戶端會在下一次工具清單中自動取得它，無需變更用戶端設定。像 `/github_mcp/mcp` 這類個別伺服器 URL 或 `x-mcp-servers` 標頭只會縮小該集合，絕不會授予金鑰原本沒有的存取權。
+
 ### 在 LiteLLM UI 上使用  {#use-on-litellm-ui}
 
 請依照此逐步示範，將您的 MCP 用於 LiteLLM UI

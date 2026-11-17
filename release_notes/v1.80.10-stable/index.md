@@ -1,5 +1,6 @@
 ---
-title: "[Preview] v1.80.10.rc.1 - Agent Gateway: Azure Foundry & Bedrock AgentCore"
+title: "LiteLLM [Preview] v1.80.10.rc.1 - Agent Gateway: Azure Foundry & Bedrock AgentCore"
+description: "為 Agent Gateway A2A 代理程式、LangGraph 與 Azure AI Foundry 代理程式新增成本追蹤，並新增 227 個 Fireworks AI 模型。新增 GPT-5.2 支援。"
 slug: "v1-80-10"
 date: 2025-12-13T10:00:00
 authors:

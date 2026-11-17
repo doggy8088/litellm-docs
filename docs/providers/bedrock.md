@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM AI 閘道的 AWS Bedrock API"
+sidebar_label: "Bedrock"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道呼叫任何 AWS Bedrock 模型。在 config.yaml 中設定 boto3 或 API 金鑰驗證，進行串流、工具呼叫並使用 thinking。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -20,7 +26,7 @@ uv add boto3>=1.28.57
 
 :::info
 
-針對 **Amazon Nova Models**：請升級至 v1.53.5+
+**Amazon Nova** 模型自 <SinceVersion v="1.53.5" /> 起可使用。
 
 :::
 
@@ -65,7 +71,7 @@ model_list:
 
 ## 用法 {#usage}
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_Bedrock.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_Bedrock.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -119,7 +125,7 @@ api_key: Optional[str],
 ```bash
 litellm --config /path/to/config.yaml
 ```
-### 3. 測試它
+### 3. 測試它 {#3-test-it}
 
 <Tabs>
 <TabItem value="Curl" label="Curl 請求">
@@ -272,7 +278,7 @@ os.environ["AWS_REGION_NAME"] = ""
 response = completion(
   model="bedrock/us.anthropic.{{anthropic}}",
   messages=[{ "content": "Hello, how are you?","role": "user"}],
-  top_k=1 # 👈 PROVIDER-SPECIFIC PARAM
+  top_k=1 # PROVIDER-SPECIFIC PARAM
 )
 ```
 </TabItem>
@@ -285,7 +291,7 @@ model_list:
   - model_name: bedrock-claude-v1
     litellm_params:
       model: bedrock/us.anthropic.{{anthropic}}
-      top_k: 1 # 👈 PROVIDER-SPECIFIC PARAM
+      top_k: 1 # PROVIDER-SPECIFIC PARAM
 ```
 
 **在請求中設定**
@@ -307,7 +313,7 @@ response = client.chat.completions.create(model="bedrock-claude-v1", messages = 
 ],
 temperature=0.7,
 extra_body={
-    "top_k": 1 # 👈 PROVIDER-SPECIFIC PARAM
+    "top_k": 1 # PROVIDER-SPECIFIC PARAM
 }
 )
 
@@ -376,6 +382,48 @@ response = client.chat.completions.create(
 
 </TabItem>
 </Tabs>
+
+### 從 Proxy 轉送金鑰、團隊與組織身分 {#forward-key-team-and-org-identity-from-the-proxy}
+
+<SinceVersion v="1.99.0" />
+
+Proxy 可以根據發出呼叫的虛擬金鑰，自動為您填入請求 metadata，讓 Bedrock 的 [model invocation logs](https://docs.aws.amazon.com/bedrock/latest/userguide/cost-mgmt-request-metadata.html) 帶有與 LiteLLM 支出記錄相同的金鑰、團隊與組織歸屬資訊，且無需對您的用戶端做任何變更。此功能預設為關閉。請在 `litellm_settings` 下列出要轉送的欄位：
+
+```yaml
+litellm_settings:
+  bedrock_request_metadata_fields:
+    - user_api_key_org_alias
+    - user_api_key_team_alias
+    - user_api_key_alias
+    - user_api_key_user_id
+    - spend_logs_metadata
+```
+
+採用此設定後，使用位於團隊 `growth`、組織 `platform` 的金鑰發出的請求，到達 Bedrock 時會帶有 `{"user_api_key_org_alias": "platform", "user_api_key_team_alias": "growth", "user_api_key_alias": "...", "user_api_key_user_id": "...", ...}`，以及該請求 `spend_logs_metadata` 中的每一組鍵值對。
+
+| 欄位 | 轉送的值 |
+|-------|-----------------|
+| `user_api_key_alias` | 虛擬金鑰的別名 |
+| `user_api_key_hash` | 經雜湊的虛擬金鑰，與支出記錄中顯示的值相同 |
+| `user_api_key_user_id` | 擁有該金鑰的內部使用者 |
+| `user_api_key_user_email` | 擁有該金鑰的內部使用者的電子郵件 |
+| `user_api_key_end_user_id` | 此請求的終端使用者（客戶）ID（當呼叫端有傳送時） |
+| `user_api_key_team_id`, `user_api_key_team_alias` | 該金鑰所屬的團隊 |
+| `user_api_key_org_id`, `user_api_key_org_alias` | 該金鑰所屬的組織 |
+| `user_api_key_project_id`, `user_api_key_project_alias` | 該金鑰所屬的專案 |
+| `user_api_key_request_route` | 用戶端呼叫的路由，例如 `/v1/chat/completions` |
+| `user_api_key_budget_reset_at` | 該金鑰預算下次重設的 ISO 8601 時間 |
+| `spend_logs_metadata` | 該請求 [`spend_logs_metadata`](../proxy/cost_tracking.md#custom-spend-log-metadata) 中的每一組鍵值對 |
+
+只有文字欄位會被轉送，因為 Bedrock 只接受字串值。數值型的支出與預算欄位（`user_api_key_spend`、`user_api_key_max_budget`，以及使用者與團隊的對應欄位）與 `user_api_key_auth_metadata` 即使列出也會被略過。某個欄位在特定請求上沒有值時（例如沒有團隊的金鑰其 `user_api_key_team_alias`），該欄位會被省略。
+
+`spend_logs_metadata` 是轉送您自有維度（例如 agent 或成本中心）的方式，無需修改 agent 程式碼。只要在金鑰或團隊的 `metadata` 中設定一次，LiteLLM 就會將其合併到以該金鑰發出的每個請求中，請求上傳送的值優先於金鑰與團隊的預設值。這些鍵值對隨後會同時出現在 LiteLLM 支出記錄與 Bedrock 中。
+
+Bedrock 每個請求最多允許 16 組鍵值對，鍵與值最長 256 個字元，且只能使用 `a-z A-Z 0-9`、空白與 `:_@$#=/+,.-` 等字元。身分欄位會依您列出的順序優先放置，因此一定能取得名額。在 Converse 上，呼叫端傳送的任何 `requestMetadata` 會接在其後，`spend_logs_metadata` 再填補剩餘空間；當兩者使用相同的鍵時，先出現的值優先。不符合 Bedrock 規則的身分或 `spend_logs_metadata` 鍵值對會被捨棄，請求仍會成功，因此團隊別名中含有撇號也不會導致呼叫失敗。呼叫端傳送的格式錯誤 `requestMetadata` 會收到 400，如同 Bedrock 本身會回傳的結果，除非開啟了 `drop_params`，此時只會捨棄其中錯誤的鍵值對。關閉此設定時，`/bedrock` 直通路由會完全按照您撰寫的內容傳送請求本文，格式錯誤的內容由 Bedrock 自行回應，而 chat completions 在 `drop_params` 下仍會捨棄錯誤的鍵值對。以 `user_api_key_` 開頭的鍵保留給 Proxy 使用，因此呼叫端無法透過 `requestMetadata` 或 `spend_logs_metadata` 偽造身分，呼叫端傳送的任何 `X-Amzn-Bedrock-Request-Metadata` 標頭也會被取代。
+
+LiteLLM 會將 metadata 寫入 Converse 的 `requestMetadata` 本文欄位，以及 Invoke 的已簽署 `X-Amzn-Bedrock-Request-Metadata` 標頭，涵蓋 `/chat/completions`、`/v1/messages`，以及自 `v1.108.0` 起 `/bedrock` [直通路由](../pass_through/bedrock.md) 的 `converse`、`converse-stream`、`invoke` 與 `invoke-with-response-stream` 動作。在直通 Invoke 呼叫中，若呼叫端的本文已有 `requestMetadata`，LiteLLM 改用本文欄位。在每條 Invoke 路由上，會使標頭超過 Bedrock 8,500 字元上限的鍵值對會從尾端捨棄，因此身分欄位必定會被傳送。開啟此設定時，預設使用 [Native Chat Completions 路由](#native-chat-completions-route) 的模型會改用 Converse，因為該端點沒有請求 metadata。AWS 不支援 `bedrock-mantle` 模型上的請求 metadata。
+
+AWS 只有在該呼叫所在區域啟用了 model invocation logging 時才會記錄請求 metadata，且它不會出現在 Cost Explorer 或 CUR 中。`user_api_key_user_email` 與 `user_api_key_hash` 會進入您的 AWS 記錄，LiteLLM 無法將其刪除，因此除非需要，請勿將它們列入。
 
 ## 用法 - 函式呼叫 / 工具呼叫 {#usage---function-calling--tool-calling}
 
@@ -537,7 +585,7 @@ print(f"\nResponse: {resp}")
 
 目前僅支援 Anthropic 的 Claude 3.7 Sonnet + Deepseek R1 + GPT-OSS 模型。
 
-適用於 v1.61.20+。
+<SinceVersion v="1.61.20" />
 
 在 `message` 和 `delta` 物件中回傳 2 個新欄位：
 - `reasoning_content` - string - 回應的推理內容
@@ -580,7 +628,7 @@ model_list:
   - model_name: bedrock-claude-3-7
     litellm_params:
       model: bedrock/us.anthropic.{{anthropic}}
-      reasoning_effort: "low" # 👈 EITHER HERE OR ON REQUEST
+      reasoning_effort: "low" # EITHER HERE OR ON REQUEST
 ```
 
 2. 啟動 proxy 
@@ -598,7 +646,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   -d '{
     "model": "bedrock-claude-3-7",
     "messages": [{"role": "user", "content": "What is the capital of France?"}],
-    "reasoning_effort": "low" # 👈 EITHER HERE OR ON CONFIG.YAML
+    "reasoning_effort": "low" # EITHER HERE OR ON CONFIG.YAML
   }'
 ```
 
@@ -774,7 +822,7 @@ response = completion(
     messages=[{"role": "user", "content": "Hello! Testing 1M context window."}],
     max_tokens=100,
     extra_headers={
-        "anthropic-beta": "context-1m-2025-08-07"  # 👈 Enable 1M context
+        "anthropic-beta": "context-1m-2025-08-07"  # Enable 1M context
     }
 )
 ```
@@ -828,7 +876,7 @@ model_list:
     litellm_params:
       model: bedrock/anthropic.claude-sonnet-4-20250514-v1:0
       extra_headers:
-        anthropic-beta: "context-1m-2025-08-07"  # 👈 Enable 1M context
+        anthropic-beta: "context-1m-2025-08-07"  # Enable 1M context
 
   - model_name: claude-computer-use
     litellm_params:
@@ -837,7 +885,7 @@ model_list:
         anthropic-beta: "computer-use-2024-10-22,context-1m-2025-08-07"
 
 general_settings:
-  forward_client_headers_to_llm_api: true  # 👈 Required for client-side header forwarding
+  forward_client_headers_to_llm_api: true  # Required for client-side header forwarding
 ```
 
 **在請求中設定**
@@ -1017,7 +1065,7 @@ class EventsList(BaseModel):
     events: list[CalendarEvent]
 
 response = completion(
-  model="bedrock/anthropic.{{anthropic}}", # specify invoke via `bedrock/invoke/anthropic.{{anthropic}}`
+  model="bedrock/global.anthropic.{{anthropic}}", # specify invoke via `bedrock/invoke/global.anthropic.{{anthropic}}`
   response_format=EventsList,
   messages=[
     {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
@@ -1100,7 +1148,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 
 ## 用法 - 延遲最佳化推論 {#usage---latency-optimized-inference}
 
-自 v1.65.1+ 起有效
+<SinceVersion v="1.65.1" />
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -1125,7 +1173,7 @@ model_list:
   - model_name: bedrock-claude-3-7
     litellm_params:
       model: bedrock/us.anthropic.{{anthropic}}
-      performanceConfig: {"latency": "optimized"} # 👈 EITHER HERE OR ON REQUEST
+      performanceConfig: {"latency": "optimized"} # EITHER HERE OR ON REQUEST
 ```
 
 2. 啟動 proxy 
@@ -1143,7 +1191,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
   -d '{
     "model": "bedrock-claude-3-7",
     "messages": [{"role": "user", "content": "What is the capital of France?"}],
-    "performanceConfig": {"latency": "optimized"} # 👈 EITHER HERE OR ON CONFIG.YAML
+    "performanceConfig": {"latency": "optimized"} # EITHER HERE OR ON CONFIG.YAML
   }'
 ```
 
@@ -1239,15 +1287,34 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 
 ### 使用 `guarded_text` 進行選擇性內容審查 {#selective-content-moderation-with-guarded_text}
 
-LiteLLM 支援使用 `guarded_text` 內容類型進行選擇性內容審核。這可讓您只包裝應由 Bedrock Guardrails 審核的特定內容，而不是評估整段對話。
+LiteLLM 支援使用 `guarded_text` 內容類型進行選擇性內容審核。它可讓您標記哪些使用者內容要由 Bedrock Guardrails 評估。LiteLLM 也會自行標記部分內容，如下所述。
 
-**運作方式：**
-- 具有 `type: "guarded_text"` 的內容會自動包裝在 `guardrailConverseContent` 區塊中
-- 只有被包裝的內容會由 Bedrock Guardrails 評估
-- 具有 `type: "text"` 的一般內容會繞過 guardrail 評估
+這些規則僅適用於 LiteLLM 將請求送往 Bedrock Converse API 的情況，大多數位於 `/v1/chat/completions` 的 Bedrock 聊天模型都使用此 API。請勿在其他 Bedrock 路由上使用 `guarded_text`：
+- 在 Invoke 路由上，LiteLLM 會將 `guardrailConfig` 以請求標頭的形式傳送。此路由涵蓋具有 `bedrock/invoke/` 前綴的模型、LiteLLM 預設送往 Invoke 的模型（例如 `bedrock/mistral.mistral-7b-instruct-v0:2`），以及大多數送往 Claude 模型的 `/v1/messages` 請求。Bedrock 會將 guardrail 套用到整個提示，但 prompt attack 過濾器除外。AWS 僅對位於 [guardrail input tags](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-tagging.html) 內的輸入執行這些過濾器，而 LiteLLM 不會加入這些標籤。被封鎖的請求會以 `finish_reason: "stop"`（在 `/v1/messages` 上為 `stop_reason: "end_turn"`）回傳，並以 guardrail 的封鎖訊息作為內容。對於 `bedrock/invoke/` 的 Claude 模型，LiteLLM 會移除 `guarded_text` 部分，因此模型永遠不會看到該內容。
+- 其他路由，例如 `bedrock/openai/`、`bedrock/mantle/` 與 `bedrock/claude_platform/`，不在此處涵蓋範圍內。
+
+**LiteLLM 如何建立 `guardContent` 區塊：**
+- 使用者訊息中具有 `type: "guarded_text"` 的內容會以 [`guardContent`](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ContentBlock.html) 區塊的形式傳送至 Bedrock。LiteLLM 尚不支援在 system 或 assistant 訊息中使用 `guarded_text`。請勿在這些訊息中使用，否則 LiteLLM 會捨棄這些部分，或將其以純文字傳送。
+- 當最後一則訊息是使用者訊息時，LiteLLM 也會將該訊息的文字部分以 `guardContent` 傳送，其正前方的任何使用者訊息亦同。已含有 `guarded_text` 部分的使用者訊息會按原樣傳送，因此其 `type: "text"` 部分會保持純文字。圖片與文件永遠不會被包裝。
+- 在使用者、assistant 或 tool 訊息之後出現的 system 訊息會以使用者訊息的形式傳送，因此上述規則也適用於它。位於請求開頭的 system 訊息會保持為 system 訊息。 <SinceVersion v="1.104.0" />
+- 當請求含有工具結果但沒有 `tools` 參數時，LiteLLM 會將每個工具結果轉換為使用者訊息，並將其文字以 `guardContent` 傳送，無論工具結果位於對話中的何處。此行為發生於 `litellm.bedrock_neutralize_orphaned_tool_blocks` 為 `True` 時，這是預設值。 <SinceVersion v="1.103.0" />
+
+**Bedrock Guardrails 評估的內容：**
+- 當請求至少含有一個 `guardContent` 區塊時，Bedrock Guardrails 只會評估 `guardContent` 區塊，但須注意 AWS 在下方說明的例外情況。純 `type: "text"` 部分、圖片與文件不會被評估，因此圖片內容過濾器不會看到與最後一則使用者訊息中的文字一併傳送的圖片。
+- 當請求沒有 `guardContent` 區塊時，Bedrock Guardrails 會評估每則使用者與 assistant 訊息的文字。
+- 在這兩種情況下，Bedrock 都不會評估請求開頭的 system 訊息，或隨 `tools` 參數傳送的工具結果。
 
 :::note
-如果未使用 `guarded_text`，整段對話歷史都會送到 guardrail 進行評估，這可能會增加延遲與成本。
+當請求含有任何 `guardContent` 區塊時，Bedrock Guardrails 只會評估以下內容：
+- 您在使用者訊息中的 `guarded_text` 部分
+- 當請求以一則以上使用者訊息結尾時，這些尾端使用者訊息中沒有 `guarded_text` 部分的文字
+- 在對話中任何位置、未隨 `tools` 參數傳送的每個工具結果
+
+較早的回合，以及含有 `guarded_text` 部分之訊息的 `type: "text"` 部分，都不會被評估。當內容必須被檢查時（例如您的用戶端可以編輯對話歷史），請將其放入 `guarded_text` 部分。
+
+只有當請求沒有這些區塊時，Bedrock 才會評估每則使用者與 assistant 訊息。例如，當請求以 assistant 訊息結尾，且沒有 `guarded_text` 部分或未隨 `tools` 傳送的工具結果時，就會發生這種情況。評估整段對話可能會增加延遲與成本。
+
+AWS 指出，在某些設定下（例如 contextual grounding 檢查），`guardContent` 區塊之外的內容仍可能被評估。詳情請參閱 [Include a guardrail with the Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-converse-api.html)。
 :::
 
 <Tabs>
@@ -1512,7 +1579,7 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = ""
 os.environ["AWS_REGION_NAME"] = ""
 
 
-litellm.set_verbose = True #  👈 SEE RAW REQUEST 
+litellm.set_verbose = True # SEE RAW REQUEST
 
 response = completion(
     model="bedrock/us.anthropic.{{anthropic}}",
@@ -1624,11 +1691,7 @@ print(response)
 
 ## 設定 'converse' / 'invoke' 路由 {#set-converse--invoke-route}
 
-:::info
-
-自 LiteLLM 版本 `v1.53.5` 起支援
-
-:::
+<SinceVersion v="1.53.5" />
 
 LiteLLM 預設使用 `invoke` 路由。LiteLLM 會針對支援的 Bedrock 模型使用 `converse` 路由。
 
@@ -1826,7 +1889,7 @@ image_content = [
     {
         "type": "file",
         "file": {
-            "file_data": f"data:application/pdf;base64,{encoded_file}", # 👈 PDF
+            "file_data": f"data:application/pdf;base64,{encoded_file}", # PDF
         }
     },
 ]
@@ -1875,7 +1938,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
         {
             "type": "file",
             "file": {
-                "file_data": f"data:application/pdf;base64,{encoded_file}", # 👈 PDF
+                "file_data": f"data:application/pdf;base64,{encoded_file}", # PDF
             }
         }
     ]
@@ -2275,13 +2338,16 @@ LiteLLM 支援所有 Bedrock 模型。
 
 以下是使用 LiteLLM 搭配 bedrock 模型的範例。完整清單請參考 [model cost map](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
 
+Bedrock 上近期的 Claude 模型（包括 Opus 5.5）只能透過 inference profile 進行隨需呼叫，因此請以 `global.` 前綴或地理前綴（例如 `us.` 或 `eu.`）呼叫它們（每個模型的 AWS model card 都列出了它擁有的 profile）。裸露的模型 ID（例如 `bedrock/anthropic.claude-opus-5-5`）會收到 AWS 的 400，除非該區域在區域內提供該模型（對於 Opus 5.5，AWS 僅列出 London）。`global.` 可以將請求送往任何商業 AWS 區域，因此如果您的團隊有資料駐留規則或限制區域的 SCP，請閱讀 [AWS 的 global cross-Region inference 指南](https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html)，或改用地理 profile。地理 profile 的價格比 `global.` 高 10%（以 Opus 5.5 為例，每百萬 input tokens 為 $4.40 而非 $4），LiteLLM 會追蹤每個 Opus 5.5 profile 的成本。在較舊的映像上，這需要遠端 cost map，LiteLLM 會在啟動時載入它，除非設定了 `LITELLM_LOCAL_MODEL_COST_MAP`。
+
 | 模型名稱                 | 指令                                                          |
 |----------------------------|------------------------------------------------------------------|
 | GPT-OSS 20B | `completion(model='bedrock/converse/openai.gpt-oss-20b-1:0', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | GPT-OSS 120B | `completion(model='bedrock/converse/openai.gpt-oss-120b-1:0', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | Deepseek R1    | `completion(model='bedrock/us.deepseek.r1-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
 | Anthropic Claude Sonnet 4.5    | `completion(model='bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
-| Anthropic Claude-V3.5 Sonnet    | `completion(model='bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
+| Anthropic Claude Opus 5.5    | `completion(model='bedrock/global.anthropic.claude-opus-5-5', messages=messages)` or `completion(model='bedrock/us.anthropic.claude-opus-5-5', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
+| Anthropic Claude Haiku 4.5    | `completion(model='bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
 | Anthropic Claude-V3  sonnet    | `completion(model='bedrock/anthropic.claude-3-sonnet-20240229-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
 | Anthropic Claude-V3 Haiku     | `completion(model='bedrock/anthropic.claude-3-haiku-20240307-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
 | Anthropic Claude-V3 Opus     | `completion(model='bedrock/anthropic.claude-3-opus-20240229-v1:0', messages=messages)`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`           |
@@ -2307,6 +2373,26 @@ LiteLLM 支援所有 Bedrock 模型。
 | TwelveLabs Pegasus 1.2 (EU) | `completion(model='bedrock/eu.twelvelabs.pegasus-1-2-v1:0', messages=messages, mediaSource={...})`   | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | Moonshot Kimi K2 Thinking | `completion(model='bedrock/moonshot.kimi-k2-thinking', messages=messages)` or `completion(model='bedrock/invoke/moonshot.kimi-k2-thinking', messages=messages)` | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
 | Moonshot Kimi K3 | `completion(model='bedrock/global.moonshotai.kimi-k3', messages=messages)` or `completion(model='bedrock/us.moonshotai.kimi-k3', messages=messages)`. 裸露的 `moonshotai.kimi-k3` ID 是僅供推論設定檔使用的項目，無法依需求呼叫 | `os.environ['AWS_ACCESS_KEY_ID']`, `os.environ['AWS_SECRET_ACCESS_KEY']`, `os.environ['AWS_REGION_NAME']` |
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`bedrock/<family>-latest` 名稱會隨著 LiteLLM 將模型系列移至較新的模型而跟隨該系列，因此您的應用程式可以保持單一模型字串。您可以像使用任何其他 Bedrock 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Bedrock，並以該模型的價格計費。別名的運作方式以及跨提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型系列 |
+| --- | --- |
+| `bedrock/gpt-luna-latest` | GPT Luna |
+| `bedrock/gpt-sol-latest` | GPT Sol |
+| `bedrock/gpt-terra-latest` | GPT Terra |
+| `bedrock/gpt-astra-latest` | GPT Astra |
+| `bedrock/claude-opus-latest` | Claude Opus |
+| `bedrock/claude-sonnet-latest` | Claude Sonnet |
+| `bedrock/claude-haiku-latest` | Claude Haiku |
+| `bedrock/claude-fable-latest` | Claude Fable |
+| `bedrock/grok-latest` | Grok |
+| `bedrock/kimi-latest` | Kimi |
+| `bedrock/glm-latest` | GLM |
 
 ## Bedrock Embedding {#bedrock-embedding}
 
@@ -2471,7 +2557,7 @@ import os
 import litellm
 from litellm import completion
 
-litellm.set_verbose = True # 👈 SEE RAW REQUEST
+litellm.set_verbose = True # SEE RAW REQUEST
 
 response = completion(
             model="bedrock/us.anthropic.{{anthropic}}",
@@ -2769,7 +2855,7 @@ model_list:
 
 ### 將外部 BedrockRuntime.Client 作為參數傳遞 - Completion() {#passing-an-external-bedrockruntimeclient-as-a-parameter---completion}
   
-這是一個已棄用的流程。Boto3 不是非同步的，而且 boto3.client 不允許我們透過 httpx 發出 http 呼叫。請透過上方的方式傳入您的 aws 參數 👆。[查看驗證程式碼](https://github.com/BerriAI/litellm/blob/55a20c7cce99a93d36a82bf3ae90ba3baf9a7f89/litellm/llms/bedrock_httpx.py#L284) [新增新的驗證流程](https://github.com/BerriAI/litellm/issues)
+這是一個已棄用的流程。Boto3 不是非同步的，而且 boto3.client 不允許我們透過 httpx 發出 http 呼叫。請透過上方的方式傳入您的 aws 參數。[查看驗證程式碼](https://github.com/BerriAI/litellm/blob/55a20c7cce99a93d36a82bf3ae90ba3baf9a7f89/litellm/llms/bedrock_httpx.py#L284) [新增新的驗證流程](https://github.com/BerriAI/litellm/issues)
 
 :::warning
 

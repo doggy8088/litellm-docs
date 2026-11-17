@@ -7,9 +7,8 @@ import Image from '@theme/IdealImage';
 
 :::info
 
-- 🔑 [產生、編輯、刪除金鑰的 UI（含 SSO）](https://docs.litellm.ai/docs/proxy/ui)
-- [使用金鑰管理部署 LiteLLM Proxy](https://docs.litellm.ai/docs/proxy/deploy#provision-the-data-stores)
-- [LiteLLM Proxy + 金鑰管理的 Dockerfile.database](https://github.com/BerriAI/litellm/blob/main/docker/Dockerfile.database)
+- [產生、編輯、刪除金鑰的 UI（含 SSO）](https://docs.litellm.ai/docs/proxy/ui)
+- [使用金鑰管理部署 LiteLLM Proxy](https://docs.litellm.ai/docs/proxy/deploy/helm#valuesyaml)
 
 :::
 
@@ -19,7 +18,7 @@ import Image from '@theme/IdealImage';
 
 - 需要 postgres 資料庫（例如 [Supabase](https://supabase.com/)、[Neon](https://neon.tech/) 等）
 - 在您的環境中設定 `DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<dbname>`
-- 設定 `master key`，這是您的 Proxy 管理員金鑰 - 您可以用它來建立其他金鑰（🚨 必須以 `sk-` 開頭）。
+- 設定 `master key`，這是您的 Proxy 管理員金鑰 - 您可以用它來建立其他金鑰（必須以 `sk-` 開頭）。
   - ** 在 config.yaml 中設定** 將您的 master key 設在 `general_settings:master_key`，如下方範例
   - ** 設定環境變數** 設定 `LITELLM_MASTER_KEY`
 
@@ -48,7 +47,7 @@ model_list:
 
 general_settings: 
   master_key: os.environ/LITELLM_MASTER_KEY 
-  database_url: "postgresql://<user>:<password>@<host>:<port>/<dbname>" # 👈 KEY CHANGE
+  database_url: "postgresql://<user>:<password>@<host>:<port>/<dbname>" # KEY CHANGE
 ```
 
 **步驟 2：啟動 litellm**
@@ -85,7 +84,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 - key - 透過 `/key/info` [Swagger](https://docs.litellm.ai/api-reference/#/key%20management/info_key_fn_key_info_get)
 - user - 透過 `/user/info` [Swagger](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/user_info_user_info_get)
 - team - 透過 `/team/info` [Swagger](https://docs.litellm.ai/api-reference/#/team%20management/team_info_team_info_get)  
-- ⏳ end-users - 透過 `/end_user/info` - [在此 issue 留言以追蹤 end-user 成本](https://github.com/BerriAI/litellm/issues/2633)
+- end-users - 透過 `/end_user/info` - [在此 issue 留言以追蹤 end-user 成本](https://github.com/BerriAI/litellm/issues/2633)
 
 **如何計算？**
 
@@ -115,7 +114,7 @@ curl 'http://0.0.0.0:4000/key/info?key=<user-key>' \
     "key": "sk-tXL0wt5-lOOVK9sfY2UacA",
     "info": {
         "token": "sk-tXL0wt5-lOOVK9sfY2UacA",
-        "spend": 0.0001065, # 👈 SPEND
+        "spend": 0.0001065, # SPEND
         "expires": "2023-11-24T23:19:11.131000Z",
         "models": [
             "{{openai_small}}",
@@ -148,7 +147,7 @@ curl --location 'http://localhost:4000/user/new' \
 {
     ...
     "expires": "2023-12-22T09:53:13.861000Z",
-    "user_id": "my-unique-id", # 👈 unique id
+    "user_id": "my-unique-id", # unique id
     "max_budget": 0.0
 }
 ```
@@ -177,7 +176,7 @@ curl 'http://0.0.0.0:4000/user/info?user_id=my-unique-id' \
 ```bash
 {
   ...
-  "spend": 0 # 👈 SPEND
+  "spend": 0 # SPEND
 }
 ```
 
@@ -201,7 +200,7 @@ curl --location 'http://localhost:4000/team/new' \
 {
     ...
     "expires": "2023-12-22T09:53:13.861000Z",
-    "team_id": "my-unique-id", # 👈 unique id
+    "team_id": "my-unique-id", # unique id
     "max_budget": 0.0
 }
 ```
@@ -230,7 +229,7 @@ curl 'http://0.0.0.0:4000/team/info?team_id=my-unique-id' \
 ```bash
 {
   ...
-  "spend": 0 # 👈 SPEND
+  "spend": 0 # SPEND
 }
 ```
 
@@ -276,7 +275,7 @@ curl -X POST "https://0.0.0.0:4000/key/generate" \
 -H "Content-Type: application/json" \
 -d '{
 	"models": ["my-free-tier"], 
-	"aliases": {"{{openai_small}}": "my-free-tier"}, # 👈 KEY CHANGE
+	"aliases": {"{{openai_small}}": "my-free-tier"}, # KEY CHANGE
 	"duration": "30min"
 }'
 ```
@@ -319,7 +318,7 @@ model_list:
 
 general_settings: 
   master_key: os.environ/LITELLM_MASTER_KEY 
-  litellm_key_header_name: "X-Litellm-Key" # 👈 Key Change
+  litellm_key_header_name: "X-Litellm-Key" # Key Change
 
 ```
 
@@ -369,11 +368,7 @@ client = openai.OpenAI(
 
 ### 以金鑰雜湊覆寫傳出的 `user` {#overwrite-outgoing-user-with-the-key-hash}
 
-:::info
-
-自 `v1.95.0` 起可用。
-
-:::
+<SinceVersion v="1.95.0" />
 
 許多提供者會使用請求的 end-user 識別碼（`user` 欄位）來監控與偵測濫用，並將活動追溯到單一 end user，讓某位使用者的濫用行為較不容易影響整個組織的存取。由於該欄位由呼叫端設定，用戶端可以變更它，將其活動與某個身分解除關聯。當您希望提供者看到的 `overwrite_user_with_key_hash` 是一個穩定、不可竄改、且與發出呼叫的 LiteLLM 金鑰綁定的識別碼時，請開啟 `user`，如此任何以 `user` 為鍵的提供者端處理都能回到且只回到一把金鑰，不論用戶端送出了什麼。
 
@@ -674,7 +669,9 @@ litellm_settings:
 ### 預設 /key/generate 參數 {#default-keygenerate-params}
 如果您需要控制每個 key 的預設 `max_budget` 或任何 `key/generate` 參數，請使用此項。 
 
-當 `/key/generate` 請求未指定 `max_budget` 時，會使用在 `default_key_generate_params` 中指定的 `max_budget`。這些預設值會補入請求中任何缺少或 `null` 的欄位。`budget_duration` 是唯一例外：傳送明確的 `"budget_duration": null` 會建立一個其預算永不重置的 key，並略過已設定的預設值（`upperbound_key_generate_params` 仍然適用）。
+當 `/key/generate` 請求未指定 `max_budget` 時，會使用在 `default_key_generate_params` 中指定的 `max_budget`。這些預設值會補入請求中任何缺少或 `null` 的欄位。`budget_duration` 是唯一例外：傳送明確的 `"budget_duration": null` 會建立一個其預算永不重置的 key，並略過已設定的預設值（`upperbound_key_generate_params` 仍然適用）。`allowed_routes` 以相同方式套用，因此您可以將其設為 `["llm_api_routes", "/key/spend/report"]`，讓符合資格的新金鑰可以呼叫 `/key/spend/report`。非空的 `allowed_routes` 是一份允許清單，因此請列入金鑰仍需要的路由群組。請求上的非空 `allowed_routes` 會被保留，除非所選的 `key_type` 預設集覆寫它。空清單會被視為未提供。請求上 `key_type` 為 `llm_api`（Admin UI 預設會傳送）時，只有當清單包含 `llm_api_routes`，才會被此清單取代，因此以下方範例來說，這些金鑰也會取得 `/key/spend/report`。`management` 與 `read_only` 金鑰類型一律保留其預設集，`key_type` 為 `default`（Admin UI 的「Full Access」）則保留完整存取權。未帶 `allowed_routes` 也未帶 `key_type` 建立的金鑰只會取得此清單，因此請列出這些金鑰需要的每個路由群組。
+
+此 `allowed_routes` 清單中的每個路由都會授予符合資格的新金鑰，無論擁有者的角色為何，因此請只列出您希望這些金鑰能存取的路由。由於路由來自 proxy 管理員，非 proxy 管理員的金鑰擁有者日後無法以 `/key/update` 變更它們，包括在 Admin UI 中為金鑰選擇不同的金鑰類型。Proxy 管理員可以變更，而需要完整存取權的擁有者可以以 `default` 金鑰類型建立金鑰。來自 `/key/service-account/generate` 的服務帳戶金鑰不會取得此預設值，因此它們保留對 `/key/generate` 與 `/key/update` 的存取權。路由會在金鑰建立時複製到每個金鑰中，因此日後變更或移除此預設值，既有金鑰仍保留它們已有的路由。
 
 設定 `litellm_settings:default_key_generate_params`：
 ```yaml
@@ -685,9 +682,10 @@ litellm_settings:
     duration:     # blank means `null`
     metadata: {"setting":"default"}
     team_id: "core-infra"
+    allowed_routes: ["llm_api_routes", "/key/spend/report"]
 ```
 
-### ✨ 金鑰輪替 {#-key-rotations}
+### 金鑰輪替 {#-key-rotations}
 
 <EnterpriseFeature />
 
@@ -719,7 +717,7 @@ curl 'http://localhost:4000/key/sk-<virtual-key>/regenerate' \
 
 - [將輪換後的 key 寫入 secrets manager](https://docs.litellm.ai/docs/secret#aws-secret-manager)
 
-[**👉 API 參考文件**](https://docs.litellm.ai/api-reference/#/key%20management/regenerate_key_fn_key__key__regenerate_post)
+[** API 參考文件**](https://docs.litellm.ai/api-reference/#/key%20management/regenerate_key_fn_key__key__regenerate_post)
 
 ### 排程金鑰輪替 {#scheduled-key-rotations}
 
@@ -828,6 +826,35 @@ curl -L -X POST 'http://localhost:4000/key/update' \
 
 [API 參考](https://docs.litellm.ai/api-reference/#/key%20management/update_key_fn_key_update_post)
 
+### 讓金鑰擁有者編輯自己的金鑰預算 {#let-key-owners-edit-their-own-key-budgets}
+
+依預設，在 `/key/update` 上對 `max_budget` 或 `budget_limits` 的任何變更，或對帶有 `max_budget` 的金鑰變更 `budget_duration`，都需要 proxy 管理員、團隊管理員或組織管理員，其他人會收到 403。`budget_duration` 也算在內，因為新的週期會移動金鑰的下一次用量重置。設定 `general_settings.self_serve_budget_policy`，可讓建立金鑰且仍擁有它的人自行變更其預算。它適用於從 API 以及從 Admin UI 金鑰編輯表單（呼叫相同路由）發出的 `/key/update`。此設定本身沒有 Admin UI 開關，請在 `config.yaml` 中設定，或透過 `/config/update` 設定。
+
+```yaml
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  self_serve_budget_policy: lower_only
+```
+
+| 值 | 金鑰擁有者無需管理員即可變更的內容 |
+|-------|---------------------------------------------------|
+| `disabled`（預設） | 無。每一項預算變更都需要管理員。 |
+| `lower_only` | 新增預算視窗、降低上限，或清除 `budget_duration`。提高上限、移除 `max_budget`、刪除或重新命名視窗，以及設定或變更 `budget_duration`，仍需要管理員。 |
+| `ceiling` | 包含 `lower_only` 的全部內容，外加提高或移除 `max_budget` 或 `budget_limits`，或設定新的 `budget_duration`，前提是擁有者本來就能透過 `/key/generate` 以該預算建立金鑰。`key_generation_settings` 的角色閘門適用，非管理員的團隊成員需要 `/key/generate` 團隊成員權限，新預算不得超過呼叫者自身的 `max_budget`（UI 工作階段則為 `user_max_budget`），且在 `upperbound_key_generate_params.max_budget` 已設定時，金鑰不得處於無上限狀態。 |
+
+擁有者是指其 `user_id` 同時符合金鑰的 `user_id` 與其 `created_by` 的呼叫者。團隊成員仍需要 `/key/update` 團隊成員權限，才能編輯團隊金鑰。無論政策為何，`spend`、`soft_budget`、`budget_id`、連結了 `budget_id` 的金鑰上的 `max_budget` 或 `budget_duration`，以及任何非呼叫者建立的金鑰，都僅限管理員變更。上述三者以外的值會記錄一則警告，並以 `disabled` 的方式運作。
+
+啟用 `lower_only` 後，金鑰擁有者可以在既有的 7d 視窗之下，新增一個更緊的 24h 視窗：
+
+```bash
+curl http://localhost:4000/key/update \
+  -H "Authorization: Bearer $OWNER_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"key": "'$OWNER_KEY'", "budget_limits": [{"budget_duration": "7d", "max_budget": 50}, {"budget_duration": "24h", "max_budget": 5}]}'
+```
+
+`budget_limits` 的運作方式請參閱 [在金鑰上設定多個預算視窗](./users#set-multiple-budget-windows-on-a-key)。
+
 ### 限制金鑰產生 {#restricting-key-generation}
 
 使用此項來控制誰可以產生 key。當讓其他人在 UI 上建立 key 時很有用。 
@@ -913,12 +940,12 @@ class LitellmUserRoles(str, enum.Enum):
 
 ### 金鑰 {#keys}
 
-#### [**👉 API 參考文件**](https://docs.litellm.ai/api-reference/#/key%20management/) {#-api-reference-docs}
+#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#/key%20management/) {#-api-reference-docs}
 
 ### 使用者 {#users}
 
-#### [**👉 API 參考文件**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/) {#-api-reference-docs-1}
+#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/) {#-api-reference-docs-1}
 
 ### 團隊 {#teams}
 
-#### [**👉 API 參考文件**](https://docs.litellm.ai/api-reference/#/team%20management) {#-api-reference-docs-2}
+#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#/team%20management) {#-api-reference-docs-2}

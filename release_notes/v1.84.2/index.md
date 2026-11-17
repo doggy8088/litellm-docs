@@ -1,5 +1,6 @@
 ---
-title: "v1.84.2 - 路徑處理加固回補"
+title: "LiteLLM v1.84.2 - 路徑處理加固回補"
+description: "加固代理路徑處理，使驗證與路由從 ASGI scope 取得請求路由，而非 Host 標頭。"
 slug: "v1-84-2"
 date: 2026-05-27T00:00:00
 authors:

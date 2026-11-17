@@ -7,7 +7,7 @@ authors:
   - ishaan-alt
 description: "將 Akto 的基於模型偵測與 LiteLLM 的內建防護欄串接在一起——攔截僅靠模式比對檢查會漏掉的 PII、提示注入與政策違規。"
 image: /img/litellm_akto_announcement.png
-tags: [partnership, security, guardrails, akto]
+tags: [partnership, guardrails, akto]
 hide_table_of_contents: false
 ---
 
@@ -25,6 +25,6 @@ LiteLLM 已內建防護欄，可進行快速、確定性的檢查（基於正規
 
 Akto 以 **同步模式** 執行（在呼叫 LLM 之前於違規時封鎖）或 **非同步模式** 執行（記錄並發出警示，不增加延遲）。將其設定為現有 proxy 上的 callback；無需變更應用程式層級。
 
-**開始使用：** [Akto 防護欄設定指南](/docs/proxy/guardrails/akto)
+**開始使用：** [Akto 防護欄設定指南](../../docs/proxy/guardrails/akto)
 
 **閱讀完整公告**請見 [Akto 的部落格 →](https://www.akto.io/blog/akto-partners-litellm-ai-gateway-security-agents)

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Sentry 錯誤追蹤"
+sidebar_label: "Sentry"
+description: "將 LiteLLM 的例外與 breadcrumb 傳送至 Sentry，涵蓋 completion、acompletion 與串流呼叫，並支援 PII 清除與訊息遮蔽。"
+---
 # Sentry {#sentry}
 import Image from '@theme/IdealImage';
 

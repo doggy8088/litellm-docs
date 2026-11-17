@@ -181,7 +181,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 - 此函式會與實際的 LLM API 呼叫並行執行。 
 - 如果您的 `async_moderation_hook` 拋出 Exception，我們會將其回傳給使用者。 
 
-請參閱我們的 [Llama Guard 內容審核 hook](https://github.com/BerriAI/litellm/blob/main/enterprise/enterprise_hooks/llm_guard.py) 與 [自訂 guardrail 文件](./guardrails/custom_guardrail.md) 的完整範例
+請參閱我們的 [Llama Guard 內容審核 hook](https://github.com/BerriAI/litellm/blob/main/litellm/enterprise/litellm_enterprise/enterprise_callbacks/llm_guard.py) 與 [自訂 guardrail 文件](./guardrails/custom_guardrail.md) 的完整範例
 
 ```python
 from litellm.integrations.custom_guardrail import CustomGuardrail
@@ -193,7 +193,7 @@ class MyCustomGuardrail(CustomGuardrail):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    async def async_moderation_hook( ### 👈 KEY CHANGE ###
+    async def async_moderation_hook( ### KEY CHANGE ##
         self,
         data: dict,
         user_api_key_dict: UserAPIKeyAuth,
@@ -337,7 +337,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
             "finish_reason": "stop",
             "index": 0,
             "message": {
-                "content": "This is an invalid response.", # 👈 REJECTED RESPONSE
+                "content": "This is an invalid response.", # REJECTED RESPONSE
                 "role": "assistant"
             }
         }

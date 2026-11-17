@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI 閘道上的 Alice 防護欄"
+sidebar_label: "Alice"
+description: "在 LiteLLM AI 閘道上以 Alice 檢查提示與回應：允許、封鎖或替換被標記的文字，並依具名應用程式設定政策。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

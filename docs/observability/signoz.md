@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 SigNoz 追蹤：Python SDK 與 Gateway"
+sidebar_label: "SigNoz"
+description: "透過 signoz 回呼將 LiteLLM 追蹤傳送至 SigNoz Cloud 或自架環境，將每個團隊或虛擬金鑰路由至各自的帳戶，並加入指標。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

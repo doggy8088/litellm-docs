@@ -1,8 +1,10 @@
 # 路由外掛 {#routing-plugins}
 
+<SinceVersion v="1.94.0" />
+
 :::info
 
-Routing plugin 可從 **v1.92.x**（週四的版本）開始使用。設計仍在演進中，因此如果您想知道會如何使用它，以及接下來在 GitHub 上的 autorouter 討論中會想要什麼，請告訴我們：[#32168](https://github.com/BerriAI/litellm/discussions/32168)。
+設計仍在演進中，因此請告訴我們您會如何使用 routing plugin，以及接下來在 GitHub 上的 autorouter 討論中您想要什麼：[#32168](https://github.com/BerriAI/litellm/discussions/32168)。
 
 :::
 
@@ -320,4 +322,4 @@ PR： [#32972](https://github.com/BerriAI/litellm/pull/32972)（SDK）、[#33251
 
 ## 加入討論 {#join-the-discussion}
 
-可自 **v1.92.x**（週四的版本）起使用。我們正在積極規劃路由插件與 autorouter 的下一步方向，也希望聽到您想撰寫哪些插件、您想要哪些訊號，以及您會使用哪些路由策略。歡迎分享您的使用案例，並在 GitHub 上的 autorouter 討論中持續關注：[#32168](https://github.com/BerriAI/litellm/discussions/32168)。
+我們正在積極規劃路由插件與 autorouter 的下一步方向，也希望聽到您想撰寫哪些插件、您想要哪些訊號，以及您會使用哪些路由策略。歡迎分享您的使用案例，並在 GitHub 上的 autorouter 討論中持續關注：[#32168](https://github.com/BerriAI/litellm/discussions/32168)。

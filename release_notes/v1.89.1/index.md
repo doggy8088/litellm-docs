@@ -1,5 +1,6 @@
 ---
-title: "v1.89.1 - DB 彈性、MCP 與 Model-Info 回補"
+title: "LiteLLM v1.89.1 - DB 彈性、MCP 與 Model-Info 回補"
+description: "將資料庫彈性修正與 MCP OAuth 強化回補至 1.89 系列。另新增 disable_budget_reservation 設定，並對齊 /v1/model/info 的行為。"
 slug: "v1-89-1"
 date: 2026-06-15T20:08:03
 authors:

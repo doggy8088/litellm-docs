@@ -1,5 +1,6 @@
 ---
-title: "v1.90.3 - Bedrock 工具設定與 MCP 記錄去識別化"
+title: "LiteLLM v1.90.3 - Bedrock 工具設定與 MCP 記錄去識別化"
+description: "移除 Bedrock Converse 在 Claude Opus 4.7 與 4.8 上不支援的 toolSpec.strict 欄位。另停止記錄 MCP 用戶端工具呼叫的輸入。"
 slug: "v1-90-3"
 date: 2026-07-03T19:17:20
 authors:

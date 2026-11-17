@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Poe API：Python SDK 與 Gateway"
+sidebar_label: "Poe"
+description: "存取 Quora 的 Poe 上 100 多個模型，包括 GPT 與 Claude 系列，透過 LiteLLM Python SDK 或 AI Gateway 使用串流、工具與 response_format。"
+---
+
 # Poe {#poe}
 
 ## 概覽 {#overview}

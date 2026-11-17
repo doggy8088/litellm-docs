@@ -4,6 +4,8 @@
 
 **提供者：** OpenAI · Azure
 
+若要使用 `gpt-realtime-translate` 進行即時語音翻譯，請改用翻譯路由；請參閱 [即時翻譯](/docs/realtime_translation#translate-microphone-audio-in-a-browser-or-mobile-app)。
+
 :::info[**WebRTC 與 WebSocket**]
 - **WebSocket** (`/v1/realtime`)：伺服器對伺服器
 - **WebRTC** (`/v1/realtime/client_secrets` + `/v1/realtime/calls`)：瀏覽器／行動裝置，延遲較低

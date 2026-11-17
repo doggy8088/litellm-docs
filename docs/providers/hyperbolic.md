@@ -1,3 +1,9 @@
+---
+title: "Hyperbolic API 搭配 LiteLLM AI 閘道"
+sidebar_label: "Hyperbolic"
+description: "從 Python SDK 或 AI 閘道查詢 Hyperbolic 的 DeepSeek V3、DeepSeek R1 與 Qwen 2.5 模型，支援串流、函式呼叫與自訂 API base。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Gemini Veo 影片生成"
+sidebar_label: "Gemini 影片生成 (Veo)"
+description: "透過 LiteLLM 以 gemini/ 前綴，從 Python SDK 或 AI 閘道使用 Google Veo 生成影片。將尺寸對應至畫面比例、輪詢狀態並追蹤成本。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -153,7 +159,7 @@ def generate_and_download_veo_video(
     Returns:
         bool: True if successful
     """
-    print(f"🎬 Generating video: {prompt}")
+    print(f"Generating video: {prompt}")
     
     # Step 1: Initiate generation
     response = litellm.video_generation(
@@ -180,14 +186,14 @@ def generate_and_download_veo_video(
             print("✗ Video generation failed")
             return False
         
-        print(f"⏳ Status: {status_response.status}")
+        print(f"Status: {status_response.status}")
         time.sleep(10)
     else:
         print("✗ Timeout waiting for video generation")
         return False
     
     # Step 3: Download video
-    print("⬇️  Downloading video...")
+    print("Downloading video...")
     video_bytes = litellm.video_content(video_id=video_id)
     
     with open(output_file, "wb") as f:

@@ -1,5 +1,6 @@
 ---
-title: "v1.77.2-stable - Bedrock Batches API"
+title: "LiteLLM v1.77.2-stable - Bedrock Batches API"
+description: "透過統一的批次 API 新增 Bedrock 批次推論工作，並為 Dashscope Qwen 模型新增分層成本追蹤。"
 slug: "v1-77-2"
 date: 2025-09-13T10:00:00
 authors:

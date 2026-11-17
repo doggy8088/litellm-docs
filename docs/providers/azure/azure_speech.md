@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure OpenAI 文字轉語音"
+sidebar_label: "Azure 文字轉語音 (tts)"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 執行 Azure OpenAI 文字轉語音。使用您的 azure/ 部署名稱，選擇 alloy 等語音並設定格式。"
+---
+
 # Azure 文字轉語音 (tts) {#azure-text-to-speech-tts}
 
 ## 概覽 {#overview}

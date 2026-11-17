@@ -137,7 +137,7 @@ Jev 也可能判定某個結果仍有用而將其保留。啟用壓縮不代表�
 
 ## 為團隊啟用 {#turn-it-on-for-a-team}
 
-在 LiteLLM Enterprise 中，將 `jev-compaction` 附加到某個團隊。如果您的使用者透過 OIDC 驗證，請使用其 token 對應的 LiteLLM 團隊。請參閱 [OIDC 設定指南](/docs/proxy/token_auth#tracking-end-users--internal-users--team--org) 了解該對應。
+在 LiteLLM Enterprise 中，將 `jev-compaction` 附加到某個團隊。如果您的使用者透過 OIDC 驗證，請使用其 token 對應的 LiteLLM 團隊。請參閱 [OIDC 設定指南](/docs/proxy/jwt_auth_reference#tracking-end-users--internal-users--team--org) 了解該對應。
 
 ```bash
 curl "$LITELLM_PROXY_URL/team/update" \

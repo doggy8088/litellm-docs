@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Jina AI API：Embeddings 與 Rerank"
+sidebar_label: "Jina AI"
+description: "使用 jina-embeddings-v3 嵌入文字，並以 jina-reranker-v2-base-multilingual 重新排序結果，透過 LiteLLM 傳遞 dimensions 與其他 Jina AI 參數。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

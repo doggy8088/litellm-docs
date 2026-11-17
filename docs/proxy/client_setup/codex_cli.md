@@ -1,6 +1,6 @@
 ---
 title: Codex (CLI)
-sidebar_label: Codex (CLI)
+toc_max_heading_level: 4
 ---
 
 import Image from '@theme/IdealImage';
@@ -9,14 +9,21 @@ import Image from '@theme/IdealImage';
 
 [Codex](https://github.com/openai/codex) 會從 `~/.codex/config.toml` 讀取所有設定。您可在其中將 LiteLLM 定義為自訂模型提供者，並在同一個檔案中註冊 [MCP 閘道](../../mcp.md)。這與 [ChatGPT Desktop 內的 Codex 介面](./codex_chatgpt_desktop.md) 使用的是同一份設定，因此只要設定一次即可同時涵蓋兩者。
 
+:::tip 使用您的 ChatGPT 訂閱
+
+若要保留您自己的 ChatGPT 登入，並將其請求透過閘道傳送，請依照 [ChatGPT 訂閱設定](../../tutorials/openai_codex_byok.md)。該流程會傳送另一把 LiteLLM 金鑰，並將訂閱驗證保留在 Codex 中。
+
+:::
+
 ## 快速參考 {#quick-reference}
 
 | 設定 | 值 |
 |---|---|
 | 設定檔 | `~/.codex/config.toml` |
 | `base_url` | `<LITELLM_PROXY_BASE_URL>/v1`（例如 `http://localhost:4000/v1`） |
-| 提供者金鑰 | 您的 LiteLLM [虛擬金鑰](../virtual_keys.md)，從 `env_key` 中指定的環境變數讀取，或 [`lite auth print-token`](#sign-in-with-litellm-sso) |
+| 提供者金鑰 | 您的 LiteLLM [虛擬金鑰](../virtual_keys.md)，從 `env_key` 中指定的環境變數讀取，或 [`lite auth print-token`](./codex_cli_sso.md) |
 | `model_catalog_url` | `<LITELLM_PROXY_BASE_URL>/v1/models`，以及 `[features]` 下的 `api_key_model_discovery = true` |
+| 上下文視窗 | 每個部署上的 `model_info.max_input_tokens`（[詳細內容](#context-window)） <SinceVersion v="1.110.0" /> |
 | MCP 端點 | `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp` |
 | MCP 驗證 | 同一個虛擬金鑰，從 `bearer_token_env_var` 中指定的環境變數讀取 |
 
@@ -82,12 +89,13 @@ Codex 會在啟動標頭中顯示該模型，並透過閘道路由該任務。�
 
 若要查看具備 UI 截圖、設定與請求範例的 OpenAI 部署，請參閱 [Fast & Ultrafast mode](../../providers/openai/ultrafast.md)。該指南也說明了何時要設定預設 `service_tier`，以及何時讓 Codex 依請求自行選擇。
 
-除非您明確告知，否則 Codex 不會詢問自訂提供者其提供哪些模型，因此其 `/model` 選擇器只會顯示 Codex 內建的 OpenAI 模型，而像 `my-coding-model` 這類僅限閘道的名稱永遠不會出現在其中。Codex CLI 0.159 或更新版本可以改為從閘道擷取目錄。這兩個設定必須一起使用：提供者區塊上的 `model_catalog_url`，指向 `<LITELLM_PROXY_BASE_URL>/v1/models`，以及 `[features]` 下的 `api_key_model_discovery` 功能。任一單獨設定都不會改變任何行為，因此沒有 URL 的 `codex --enable api_key_model_discovery` 不會呼叫閘道。`suppress_unstable_features_warning = true` 會消除啟用該功能所新增的啟動警告
+除非您明確告知，否則 Codex 不會詢問自訂提供者其提供哪些模型，因此其 `/model` 選擇器只會顯示 Codex 內建的 OpenAI 模型，而像 `my-coding-model` 這類僅限閘道的名稱永遠不會出現在其中。Codex CLI 0.159 或更新版本可以改為從閘道擷取目錄。這兩個設定必須一起使用：提供者區塊上的 `model_catalog_url`，指向 `<LITELLM_PROXY_BASE_URL>/v1/models`，以及 `[features]` 下的 `api_key_model_discovery` 功能。任一單獨設定都不會改變任何行為，因此沒有 URL 的 `codex --enable api_key_model_discovery` 不會呼叫閘道。像 0.159 這類較舊版本也會顯示關於該功能的啟動警告，而位於檔案頂層、第一個表格之前的 `suppress_unstable_features_warning = true` 可以將其消除。在 `[features]` 之下，Codex 會忽略該鍵，並改為警告有無法辨識的設定。
 
 ```toml title="~/.codex/config.toml"
+suppress_unstable_features_warning = true
+
 [features]
 api_key_model_discovery = true
-suppress_unstable_features_warning = true
 
 [model_providers.litellm]
 name = "LiteLLM"
@@ -97,60 +105,60 @@ env_key = "LITELLM_API_KEY"
 wire_api = "responses"
 ```
 
-在啟動時，Codex 會使用您的虛擬金鑰呼叫 `GET /v1/models?client_version=<its version>`，而閘道會以 Codex 自己的目錄格式回應。接著 `/model` 選擇器會依 `model_list` 順序列出您閘道的聊天模型，若您有設定則以 `model_info.display_name` 命名，否則以 `model_name` 命名。像 `openai/*` 這類萬用字元項目，以及不是聊天模型的模型（例如 embeddings）都會被排除在外。Codex 已經認識的模型，無論是依其 `model_name` 或依 `litellm_params.model` 中的上游模型，都會以您的名稱保留 Codex 自己的中繼資料（推理等級、提示、工具支援），因此由 `my-coding-model` 所支援的 `openai/gpt-6.1-sol` 會取得與 Codex 自己的 `gpt-6.1-sol` 相同的推理等級與提示。任何其他模型都會取得 Codex 為 `codex -m <unknown name>` 使用的相同備援中繼資料，並以閘道的 `max_input_tokens` 作為其上下文視窗，因此可運作，但不提供推理強度選項
+在啟動時，Codex 會使用您的虛擬金鑰呼叫 `GET /v1/models?client_version=<its version>`，而閘道會以 Codex 自己的目錄格式回應。接著 `/model` 選擇器會依 `model_list` 順序列出您閘道的聊天模型，若您有設定則以 `model_info.display_name` 命名，否則以 `model_name` 命名。像 `openai/*` 這類萬用字元項目，以及不是聊天模型的模型（例如 embeddings）都會被排除在外。Codex 已經認識的模型，無論是依其 `model_name` 或依 `litellm_params.model` 中的上游模型，都會以您的名稱保留 Codex 自己的中繼資料（推理等級、提示、工具支援，以及上下文視窗，除非您[在其部署上設定了限制](#context-window)），因此由 `openai/gpt-6.1-sol` 支援的 `my-coding-model` 會取得與 Codex 自己的 `gpt-6.1-sol` 相同的推理等級與提示。閘道會以其自身保存的 Codex 內建目錄副本進行比對，因此哪些模型算作已知，取決於閘道的版本，而不是使用者的 Codex，而只有較新版 Codex 才提供的模型會被視為未知。任何其他模型都會取得 Codex 為 `codex -m <unknown name>` 使用的相同備援中繼資料，因此可運作，但不提供推理強度選項。其上下文視窗是該名稱所有部署中最大的 `max_input_tokens`，包括其他團隊的部署，若沒有任何部署設定，則為成本對照表中的限制。
 
-`model_info.service_tiers` 會設定 Codex 為某模型提供的服務等級，而每個等級都會成為一個斜線命令。等級 id `ultrafast` 會變成 `/ultrafast`；切換它會讓 Codex 在每次請求時送出 `service_tier: "ultrafast"`，而當該模型的定價項目包含等級成本欄位（`input_cost_per_token_ultrafast` 以及其他 `*_ultrafast` 欄位）時，閘道會將其轉送至上游並依該等級價格計費。每個項目可以是等級 id 字串，或包含 `id`、`name` 和 `description` 的物件。純字串會將 id 首字母大寫作為名稱，並以 `Sends service_tier=<id> upstream` 作為描述，而 Codex 會將名稱轉成小寫以形成命令。若字串名稱是 Codex 本身為該模型提供的等級，例如 `priority`，則會保留 Codex 自己的名稱與描述，因此它仍會顯示為 `/fast`。物件則會設定 Codex 在命令彈出視窗中顯示的名稱與描述。已設定的清單會取代 Codex 為該模型提供的等級，因此也要列出 `priority`，以保留 `/fast` 緊鄰新等級。空清單會移除所有等級，而保留 `service_tiers` 未設定則會讓 Codex 對其已知的模型保留內建等級（不認識的模型則沒有等級）
+**服務等級的先決條件：** 請您的閘道管理員設定該模型的 [Fast and Ultrafast 設定](../../providers/openai/ultrafast.md#set-up-with-configyaml)。在 Codex 中選取閘道模型，然後在可用時使用 `/fast` 或 `/ultrafast`。
 
-```yaml title="config.yaml"
+Codex 會在其家目錄下的 `models_cache.json` 中快取目錄五分鐘。閘道模型、服務等級或上下文視窗的變更，會在該快取過期後啟動時出現。
+
+對 `/v1/models` 或 `/models` 的請求若未帶有 Codex 的 `client_version` 查詢參數，會保留 OpenAI 的回應格式，因此其他用戶端不會看到變更。Codex 接受最大 1 MiB 的目錄；當主體更大時，會靜默保留其內建清單，因此閘道只保留放得下的項目：先保留列出服務等級的模型，再依 `model_list` 順序保留其餘模型；若某個項目太大而無法放入剩餘位元組，會略過它，但其後較小的項目仍會保留，而被排除的模型會被記錄。每個項目大小為 20 到 65 KB，因此大約可容納 20 到 45 個模型，而被排除但沒有等級的模型，仍可透過名稱與 Codex 的備援中繼資料運作。
+
+#### Codex 已知模型的上下文視窗 {#context-window}
+
+<SinceVersion v="1.110.0" />
+
+Codex 有提供項目的模型，無論是依其 `model_name` 或依 `litellm_params.model` 中的上游模型比對，都會預設保留該項目的上下文視窗。對於 `gpt-6.1-sol`，該項目記載為 272K，而 `/status` 會顯示其 95%，即 `258K`，即使該名稱背後的每個部署可接受 900K 或更多。若要給 Codex 更大的視窗，請在模型群組的每個部署上設定 `model_info.max_input_tokens`：
+
+```yaml title="config.yaml" keep-model-ids
 model_list:
-  - model_name: gpt-6-astra
+  - model_name: gpt-6.1-sol
     litellm_params:
-      model: openai/gpt-6-astra
+      model: openai/gpt-6.1-sol
       api_key: os.environ/OPENAI_API_KEY
     model_info:
-      service_tiers: ["priority", "ultrafast"]
-  - model_name: my-coding-model
+      max_input_tokens: 922000
+  - model_name: gpt-6.1-sol
     litellm_params:
-      model: openai/gpt-6-astra
-      api_key: os.environ/OPENAI_API_KEY
+      model: bedrock/us.openai.gpt-6.1-sol
+      aws_region_name: us-east-1
     model_info:
-      service_tiers:
-        - id: ultrafast
-          name: Ultrafast
-          description: Fastest responses, higher cost
+      max_input_tokens: 922000
 ```
 
-只列出上游模型與您的提供者帳戶所支援的等級。上述兩個部署都使用 GPT-6 Astra；在另一個模型上宣傳某個等級之前，請先參閱 [Fast and Ultrafast supported models](../../providers/openai/ultrafast.md#supported-models-and-availability)。
+接著目錄會給予該模型其群組部署中最小的 `max_input_tokens`，因為請求可以路由到其中任一個，最多可達 Codex 允許該模型達到的上限，也就是 Codex 自身項目中的 `max_context_window`。對於 `gpt-6.1-sol`，該上限為 872K，因此上述設定給予它的 `context_window` 為 872000，而 `/status` 顯示 `828K`：
 
-同樣的 `model_info` 也適用於透過 Admin UI 或 `POST /model/new` 新增的模型。Codex 會在其家目錄下的 `models_cache.json` 中快取目錄五分鐘，因此在快取過期後啟動時，新增到閘道的模型會在 `/model` 中出現。無效的 `service_tiers` 值（不是清單、空 id、未知的物件鍵）不會為該模型提供任何等級，包含 Codex 的內建等級在內，而閘道會記錄一則以其命名的警告；其餘清單不受影響
+```text
+  Model:               GPT-6.1-Sol (reasoning low)
+  Context window:      100% left (12.2K used / 828K)
+```
 
-當多個部署共用同一個 `model_name` 時，請求可以路由到其中任一個，因此 Codex 只會提供該金鑰所屬團隊能夠路由到的每個部署所列出的等級，並依第一個部署的順序呈現；另一個團隊的同名部署以及已暫停的部署都會被排除，因為路由本來就不會選到它們，而沒有團隊的金鑰則會讀取無團隊擁有的部署。這些部署也會決定 Codex 自己的中繼資料來自哪個上游模型，因此其部署的 `my-coding-model` 若由 `openai/gpt-6.1-sol` 支援，該團隊就會取得該模型的推理等級與提示；若由其他模型支援，則會取得備援中繼資料。因此，若一個可路由的部署未設定 `service_tiers`，或設定了無效值，便會移除該名稱的所有等級。這兩種情況都會記錄一則以模型命名的警告，因此請在每個部署上設定相同的清單
+沒有 `max_input_tokens` 的部署會以 Codex 自己的視窗計算，因此只在群組的部分部署上設定限制，只會降低視窗而永遠不會提高它，而沒有任何部署設定的群組則會保留 Codex 項目原本的視窗。只有呼叫金鑰所屬團隊可路由到的部署才會列入計算，因此兩個團隊對同一個模型可能看到不同的視窗。像由 `openai/gpt-6.1-sol` 支援的 `my-coding-model` 這類別名也遵循相同規則。上游比對會讀取金鑰可路由到的第一個部署，而像 `bedrock/us.openai.gpt-6.1-sol` 這類 Bedrock id 不符合任何 Codex 項目，因此第一個部署位於 Bedrock 的別名會改為取得上述的備援中繼資料。它接著就沒有推理強度選項，也沒有 872K 上限，而其視窗是群組中最大的限制，因此當 Bedrock 上為 922000、OpenAI 上為 500000 時，Codex 會取得 922000，比 OpenAI 部署可接受的還多。請將 `openai/` 部署放在第一個，或將群組命名為 `gpt-6.1-sol`。
 
-對 `/v1/models` 或 `/models` 的請求若未帶有 Codex 的 `client_version` 查詢參數，會保留 OpenAI 的回應格式，因此其他用戶端不會看到變更。Codex 接受最大 1 MiB 的目錄；當主體更大時，會靜默保留其內建清單，因此閘道只保留放得下的項目：先保留列出服務等級的模型，再依 `model_list` 順序保留其餘模型；若某個項目太大而無法放入剩餘位元組，會略過它，但其後較小的項目仍會保留，而被排除的模型會被記錄。每個項目大小為 20 到 65 KB，因此大約可容納 20 到 45 個模型，而未被納入但未設定等級的模型，仍可透過名稱與 Codex 的備援中繼資料運作。請將 Codex 使用者需要的模型放在 `model_list` 的前面
+對於已儲存的 `model_info` 帶有成本對照表 `key` 的部署，與目前成本對照表值相等的限制會被視為未設定，因為閘道無法將它與成本對照表的副本區分。v1.102 之前儲存的資料列帶有 `key`，透過 `/model/new` 以從 `/model/info` 回應複製的主體新增的部署也是如此，因此這類帶有 `max_input_tokens: 922000` 的 `gpt-6.1-sol` 部署會讓視窗維持在 272K。若要讓該限制生效，請刪除該部署，並在 `model_info` 中不帶 `key` 的情況下重新新增。從較舊成本對照表或從另一個部署複製的限制仍然有效，因此升級前，請檢查資料庫中 `LiteLLM_ProxyModelTable` 的 `model_info` 欄位，看看是否有沒人刻意設定的 `max_input_tokens`。`/model/info` 無法顯示這一點，因為它會為每個未儲存限制的部署填入一個值。
+
+更大的視窗可能花費更多。一旦請求的提示超過 272K 個 token，`gpt-6.1-sol` 會以成本對照表中較高的 `_above_272k_tokens` 費率，對該請求的每個 token（輸入、快取輸入與輸出）計費，因此在工作階段增長超過 272K 後的每個回合都會花費更多。已在 Codex 已知模型上設定 `max_input_tokens` 的設定，會在閘道執行 v1.110.0 {/* keep-version-note */} 或更新版本時改變 Codex 的視窗。較大的視窗只會影響透過 `model_catalog_url` 讀取目錄的 Codex。使用者自己在 `config.toml` 中的 `model_context_window` 優先於目錄，最多可達該項目的 `max_context_window`，因此 `model_context_window = 600000` 在 `/status` 中會顯示 `570K`，無論閘道設定什麼限制，較低的限制也一樣。[`lite codex`](../management_cli.md#run-coding-agents-through-the-proxy) 會寫入它自己的目錄，且永遠不會以此方式提高 Codex 的視窗，因此它的 `/status` 對 `gpt-6.1-sol` 會維持在 `258K`。
+
+若要查看閘道給予每個模型什麼，請使用您的金鑰讀取目錄：
+
+```bash
+curl -s -H "Authorization: Bearer $LITELLM_API_KEY" \
+  "http://localhost:4000/v1/models?client_version=0.166.0" \
+  | jq -c '.models[] | {slug, context_window, max_context_window}'
+```
+
 ## 使用 LiteLLM SSO 登入 {#sign-in-with-litellm-sso}
 
-Codex 不必使用長效虛擬金鑰，而是可以在需要時向 `lite` CLI 索取權杖。每位開發者只需執行一次 [`lite login --pkce`](../cli_sso.md)，之後請求就會歸屬到其 LiteLLM 使用者與團隊
-
-將 `env_key` 替換為 `auth` 表格於 `~/.codex/config.toml` 中：
-
-```toml title="~/.codex/config.toml"
-model_provider = "litellm"
-
-[model_providers.litellm]
-name = "LiteLLM"
-base_url = "https://litellm.example.com/v1"
-wire_api = "responses"
-
-[model_providers.litellm.auth]
-command = "/absolute/path/to/lite"
-args = ["--base-url", "https://litellm.example.com", "auth", "print-token"]
-timeout_ms = 30000
-refresh_interval_ms = 300000
-```
-
-將 `/absolute/path/to/lite` 替換為 `which lite` 回傳的絕對路徑。`--base-url` 值必須與 `lite login --pkce` 使用的 URL 完全相符；為 `http://127.0.0.1:4000` 發出的權杖不會回傳給 `http://localhost:4000`。`lite auth print-token` 只會將權杖寫入 stdout，並使用 PKCE 登入所儲存的 refresh token 來更新權杖。在 `lite logout` 後，Codex 會收到 401 回應，直到您再次執行 `lite login --pkce`
-
-Codex 會拒絕同時設定 `auth` 與 `env_key` 的提供者並回傳 `provider auth cannot be combined with env_key`，因此在新增 `auth` 時請移除 `env_key`。這是 [OpenAI 的以命令為基礎的閘道驗證](https://learn.chatgpt.com/docs/enterprise/connect-to-a-gateway)，並已用 Codex CLI 0.160.0 驗證
+使用 [Codex CLI SSO 指南](./codex_cli_sso.md)，以 `lite auth print-token` 進行驗證，取代長效虛擬金鑰。
 
 ## 自訂別名的模型中繼資料 {#model-metadata-for-custom-aliases}
 

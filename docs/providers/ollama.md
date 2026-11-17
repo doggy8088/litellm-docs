@@ -1,10 +1,16 @@
+---
+title: "搭配 LiteLLM 使用 Ollama：OpenAI 相容 API"
+sidebar_label: "Ollama"
+description: "透過 LiteLLM 從 Python SDK 或 AI Gateway 以 ollama_chat/ 前綴呼叫本機 Ollama 模型。支援串流、JSON 模式、工具呼叫與傳送影像。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Ollama {#ollama}
 LiteLLM 支援來自 [Ollama](https://github.com/ollama/ollama) 的所有模型
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_Ollama.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/liteLLM_Ollama.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -248,8 +254,8 @@ litellm --config /path/to/config.yaml --detailed_debug
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="anything", # 👈 PROXY KEY (can be anything, if master_key not set)
-    base_url="http://0.0.0.0:4000" # 👈 PROXY BASE URL
+    api_key="anything", # PROXY KEY (can be anything, if master_key not set)
+    base_url="http://0.0.0.0:4000" # PROXY BASE URL
 )
 
 response = client.completions.create(
@@ -342,8 +348,8 @@ from pydantic import BaseModel
 from openai import OpenAI
 
 client = OpenAI(
-    api_key="anything", # 👈 PROXY KEY (can be anything, if master_key not set)
-    base_url="http://0.0.0.0:4000" # 👈 PROXY BASE URL
+    api_key="anything", # PROXY KEY (can be anything, if master_key not set)
+    base_url="http://0.0.0.0:4000" # PROXY BASE URL
 )
 
 class Step(BaseModel):

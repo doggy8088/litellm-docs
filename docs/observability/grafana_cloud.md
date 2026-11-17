@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Grafana Cloud 追蹤：OTLP 設定"
+sidebar_label: "Grafana Cloud"
+description: "透過 OTLP 將 LiteLLM AI 閘道追蹤與 GenAI 指標傳送到 Grafana Cloud，包含 Basic 驗證權杖設定、現成的儀表板與 Prometheus 指標。"
+---
 # Grafana Cloud {#grafana-cloud}
 
 透過 OTLP 將 LiteLLM 追蹤與 GenAI 指標傳送到 [Grafana Cloud](https://grafana.com/products/cloud/)
@@ -81,7 +86,7 @@ callback_settings:
 
 ## 儀表板 {#dashboard}
 
-LiteLLM 在 [cookbook/litellm_proxy_server/grafana_dashboard/dashboard_genai_otel](https://github.com/BerriAI/litellm/tree/main/cookbook/litellm_proxy_server/grafana_dashboard/dashboard_genai_otel) 提供了這些指標的儀表板。請從 **Dashboards > New > Import** 匯入 JSON，並選擇您的 Prometheus 資料來源
+LiteLLM 在 [litellm/integrations/prometheus_helpers/grafana_dashboards/dashboard_genai_otel](https://github.com/BerriAI/litellm/tree/main/litellm/integrations/prometheus_helpers/grafana_dashboards/dashboard_genai_otel) 提供了這些指標的儀表板。請從 **Dashboards > New > Import** 匯入 JSON，並選擇您的 Prometheus 資料來源
 
 以統計方式呈現支出、token、請求次數與 p95 持續時間，接著按模型呈現請求速率、每小時支出、依輸入與輸出拆分的 token 吞吐量，以及 p95 持續時間、首個 token 的時間與提供者生成時間
 

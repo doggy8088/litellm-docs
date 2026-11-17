@@ -1,3 +1,9 @@
+---
+title: "SAP Generative AI Hub 與 LiteLLM：設定"
+sidebar_label: "SAP Generative AI Hub"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道呼叫 SAP Generative AI Hub 的 Orchestration Service 上的模型，支援 AI Core 服務金鑰驗證與串流。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -165,7 +171,7 @@ try:
         max_tokens=20
     )
     print(f"✓ API Response: {response.choices[0].message.content}")
-    print("\n🎉 Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.")
+    print("\n Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.")
 except Exception as e:
     print(f"✗ API Error: {e}")
     print("\nTroubleshooting tips:")
@@ -192,7 +198,7 @@ python verify_sap_setup.py
 
 ✓ API Response: Connection successful!
 
-🎉 Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.
+Setup complete! You're ready to use SAP Gen AI Hub with LiteLLM.
 ```
 
 ## 驗證 {#authentication}

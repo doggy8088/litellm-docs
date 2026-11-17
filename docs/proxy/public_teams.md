@@ -20,7 +20,7 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 ```yaml
 litellm_settings:
     default_internal_user_params:
-        available_teams: ["team_id_1"] # 👈 Make team available to new SSO users
+        available_teams: ["team_id_1"] # Make team available to new SSO users
 ```
 
 3. 測試看看！

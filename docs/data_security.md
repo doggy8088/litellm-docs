@@ -6,9 +6,9 @@
 
 ### 自我託管的 LiteLLM 執行個體 {#self-hosted-instances-litellm}
 
-- **當您自我託管時，LiteLLM 伺服器上不會儲存任何資料或遙測資料**
-- 安裝與設定請參閱：[自我託管指南](./proxy/deploy.md)
-- **遙測**：當您自我託管 LiteLLM 時，我們不會執行任何遙測
+- **當您自我託管時，LiteLLM 伺服器上不會儲存任何資料或遙測資料**，除非您依下方說明將 usage telemetry 的 HTTP 端點指向它們
+- 安裝與設定請參閱：[自我託管指南](../docs/proxy/deploy.md)
+- **遙測**：當您自我託管 LiteLLM 時，usage telemetry 預設是關閉的。如果您將其開啟，它會將彙總計數保存在您自己的資料庫中，或傳送到您設定的 HTTP 端點。它沒有預設端點，因此除非您設定的端點指向 LiteLLM 伺服器，否則不會有任何資料傳送到那裡。它可以收集的每個欄位，請參閱 [使用量遙測](./proxy/telemetry.md)
 
 如有安全相關詢問，請聯絡 support@berri.ai
 
@@ -36,16 +36,16 @@
 
 我們重視資安社群在保護我們的系統與使用者方面所扮演的角色。
 
-權威的漏洞揭露政策位於 [LiteLLM repository 中的 `security.md`](https://github.com/BerriAI/litellm/blob/main/security.md)，其中包含我們的 bug bounty 相關資訊。
+權威的漏洞揭露政策位於 [LiteLLM 儲存庫中的 `SECURITY.md`](https://github.com/BerriAI/litellm/blob/main/.github/SECURITY.md)，其中包含我們的 bug bounty 相關資訊。
 
-回報漏洞的首選管道是透過 [GitHub Security Advisories](https://github.com/BerriAI/litellm/security/advisories/new) 提交私人漏洞報告。如果您無法使用 GitHub，也可以寄信到 [support@berri.ai](mailto:support@berri.ai) 並提供相同細節作為替代方案，只是分流處理可能會比較慢。
+回報漏洞的首選方式是 [LiteLLM 漏洞揭露表單](https://security.litellm.ai/vdp)。透過表單提交的報告會送往 HackerOne 上的 LiteLLM 計畫並在該處進行分流處理，提交時不需要 HackerOne 帳戶。請勿開啟草稿版的 GitHub Security Advisory (GHSA) 來向我們回報漏洞。如果您無法使用表單，也可以寄信到 [support@berri.ai](mailto:support@berri.ai) 並提供相同細節作為替代方案，只是分流處理可能會比較慢。
 
 請注意，為了對抗低品質的 AI spam，所有漏洞報告都需要提供一段影片或螢幕錄影，示範您完整的 exploit。
 
 ## 漏洞掃描 {#vulnerability-scanning}
 
 - LiteLLM 會對所有建置完成的 Docker 映像執行 [`grype`](https://github.com/anchore/grype) 安全掃描。
-    - 請參閱 [`grype litellm` ci/cd 檢查](https://github.com/BerriAI/litellm/blob/main/.circleci/config.yml#L1099)。 
+    - 請參閱[已封存的 `grype litellm` CI 檢查](https://github.com/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/.circleci/config.yml#L1099)。
     - 目前狀態：✅ 通過。未發現 0 個高/嚴重等級漏洞。
 
 ## 法務／合規常見問題 {#legalcompliance-faqs}
@@ -71,7 +71,7 @@
 - 是 - [CodeQL](https://codeql.github.com/) 以及涵蓋多個安全領域的 ISMS。
 
 是否有關鍵事件的記錄 - 驗證、建立、更新變更？ 
-- 是 - 我們有 [稽核記錄](https://docs.litellm.ai/docs/proxy/multiple_admins#1-switch-on-audit-logs)
+- 是 - 我們有 [稽核記錄](https://docs.litellm.ai/docs/proxy/audit_logs#1-switch-on-audit-logs)
 
 供應商是否具有既定的資安事件管理計畫？ 
 - 是，事件回應政策可應要求提供。

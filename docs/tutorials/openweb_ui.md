@@ -4,6 +4,8 @@ import TabItem from '@theme/TabItem';
 
 # Open WebUI {#open-webui}
 
+若要將 Open WebUI 部署到整個公司，並搭配 SSO、將 IdP 群組對應到 LiteLLM 團隊、skills 與 artifacts，請參閱 [Open WebUI for Organizations](./openwebui_org_rollout.md)。
+
 本指南將帶您了解如何將 Open WebUI 連接到 LiteLLM。將 LiteLLM 與 Open WebUI 搭配使用可讓團隊
 - 在 Open WebUI 上存取 100+ 個 LLM
 - 追蹤支出 / 用量，設定預算上限

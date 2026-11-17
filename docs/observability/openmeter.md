@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 的 OpenMeter 使用量計費"
+sidebar_label: "OpenMeter"
+description: "透過 openmeter callback 與兩個環境變數，從 Python SDK 或 AI 閘道將 LiteLLM 的成本與使用量送至 OpenMeter，進行依使用量計費。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -45,7 +51,7 @@ litellm.callbacks = ["openmeter"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -63,7 +69,7 @@ model_list:
   model_name: fake-openai-endpoint
 
 litellm_settings:
-  callbacks: ["openmeter"] # 👈 KEY CHANGE
+  callbacks: ["openmeter"] # KEY CHANGE
 ```
 
 2. 啟動 Proxy

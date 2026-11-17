@@ -1,3 +1,9 @@
+---
+title: "Google AI Studio 圖片生成搭配 LiteLLM"
+sidebar_label: "Google AI Studio 圖片生成"
+description: "透過 Python SDK 或 AI 閘道，使用 Google AI Studio 的 Imagen 4 與 Gemini 3 圖片預覽模型生成圖片，支援 Search grounding 與 imageConfig。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

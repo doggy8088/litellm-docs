@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "使用 gemini-3-pro-preview 搭配 LiteLLM Proxy 和 SDK 的常見問題與最佳做法。"
+card_title: "Gemini 3"
+card_summary: "在 Proxy 與 SDK 上使用 gemini-3-pro-preview，具備 thought signatures 與新的 thinking 控制項。"
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -83,7 +85,7 @@ LiteLLM 提供 Gemini 3 Pro Preview 的**完整端對端支援**，適用於：
 
 - ✅ `/v1/chat/completions` - OpenAI 相容的 chat completions 端點
 - ✅ `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic 相容的 messages 端點
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic 相容的 messages 端點
 - ✅ `/v1/generateContent` – [Google Gemini API](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini#rest) 相容端點（程式碼請見：`client.models.generate_content(...)`）
 
 所有端點都支援：
@@ -966,7 +968,7 @@ messages.append(response.choices[0].message)  # ✅ Includes thought signatures
 
 ## 其他資源 {#additional-resources}
 
-- [Gemini 提供者文件](/docs/providers/gemini)
-- [Thought Signatures 指南](/docs/providers/gemini#thought-signatures)
-- [Reasoning Content 文件](/docs/reasoning_content)
-- [Function Calling 指南](/docs/completion/function_call)
+- [Gemini 提供者文件](../../docs/providers/gemini)
+- [Thought Signatures 指南](../../docs/providers/gemini#thought-signatures)
+- [Reasoning Content 文件](../../docs/reasoning_content)
+- [Function Calling 指南](../../docs/completion/function_call)

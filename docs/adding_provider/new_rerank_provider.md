@@ -128,7 +128,7 @@ elif _custom_llm_provider == "your_provider":
 
 ## 4. 新增測試 {#4-add-tests}
 
-將測試檔案加入 [`tests/llm_translation`](https://github.com/BerriAI/litellm/tree/main/tests/llm_translation)
+將測試檔案加入 [`tests/unit/llms`](https://github.com/BerriAI/litellm/tree/main/tests/unit/llms)
 
 ```python
 def test_basic_rerank_cohere():

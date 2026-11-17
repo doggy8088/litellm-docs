@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道的 Langtrace 追蹤"
+sidebar_label: "Langtrace"
+description: "從 Python SDK 或 AI 閘道將 LiteLLM 追蹤傳送到 Langtrace，可直接傳送到其 /api/trace 端點，或透過 OTel v2 上的 OpenTelemetry Collector 傳送。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -41,7 +46,7 @@ litellm.callbacks = ["langtrace"]
 response = litellm.completion(
   model="{{openai_large}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -134,6 +139,6 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 ## 支援與聯繫創辦人 {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

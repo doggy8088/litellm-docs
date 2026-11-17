@@ -1,5 +1,6 @@
 ---
-title: "v1.94.1 - 已還原團隊金鑰預算強制執行"
+title: "LiteLLM v1.94.1 - 已還原團隊金鑰預算強制執行"
+description: "還原團隊金鑰上的使用者預算強制執行，該行為曾導致使用者無法登入 Admin UI。移除 skip_user_budget_on_team_key。"
 slug: "v1-94-1"
 date: 2026-07-30T21:45:00
 authors:

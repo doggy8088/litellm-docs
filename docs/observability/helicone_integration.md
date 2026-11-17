@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道的 Helicone 記錄"
+sidebar_label: "Helicone"
+description: "從 Python SDK 或 AI 閘道將 LiteLLM 請求記錄到 Helicone，可作為提供者或回呼使用，並支援工作階段追蹤、重試與備援選項。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -29,7 +34,7 @@ os.environ["HELICONE_API_KEY"] = "your-helicone-key"
 # OpenAI call
 response = completion(
     model="helicone/{{openai_small}}",
-    messages=[{"role": "user", "content": "Hi 👋 - I'm OpenAI"}],
+    messages=[{"role": "user", "content": "Hi - I'm OpenAI"}],
 )
 
 print(response)
@@ -175,7 +180,7 @@ Helicone 的 AI Gateway 提供 [進階功能](https://docs.helicone.ai)，例如
   # OpenAI call
   response = completion(
       model="{{openai_large}}",
-      messages=[{"role": "user", "content": "Hi 👋 - I'm OpenAI"}],
+      messages=[{"role": "user", "content": "Hi - I'm OpenAI"}],
   )
 
   print(response)

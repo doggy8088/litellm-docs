@@ -17,12 +17,12 @@ variant="cards"
 items={[
   { title: "Heuristic v1", icon: <SlidersHorizontal size={18} />, tone: "local", description: "以可調整權重進行本機關鍵字與模式評分。不會呼叫分類器 API。", to: "#tune-heuristic-v1" },
   { title: "Heuristic v2", icon: <Gauge size={18} />, tone: "local", description: "四個 tier 的本機成功率估計。調整最低成功率門檻。", to: "#tune-heuristic-v2" },
-  { title: "永遠使用 judge", icon: <BrainCircuit size={18} />, tone: "judge", description: "當分類執行時，由 LLM 選擇 tier。", to: "#tune-the-llm-judge" },
+  { title: "LLM 擔任 judge", icon: <BrainCircuit size={18} />, tone: "judge", description: "當分類執行時，由 LLM 選擇 tier。", to: "#tune-the-llm-judge" },
   { title: "Heuristic first", icon: <GitBranch size={18} />, tone: "chain", description: "先執行 v1 或 v2，直到 tier 上限，然後對其餘請求詢問 LLM。", to: "#heuristic-first" },
   { title: "Hybrid", icon: <Split size={18} />, tone: "chain", description: "本機執行 v1 或 v2；在決策邊界附近詢問 LLM。", to: "#hybrid" },
   { title: "Capability", icon: <Target size={18} />, tone: "forecast", description: "預測高效率求解器是否能完成任務；否則使用高能力求解器。", to: "#capability" },
   { title: "Fuse v2", icon: <Combine size={18} />, tone: "forecast", description: "比較兩個求解器預測，並在可接受的品質差距內選擇。", to: "#fuse-v2" },
-  { title: "OSS classifier", icon: <Server size={18} />, description: "連接到自架的 Laya 或 Bespoke Nimble，或代管的 Jev 分類器。", to: "#connect-a-self-hosted-classifier" },
+  { title: "Decision Model", icon: <Server size={18} />, description: "連接到自架的 Laya 或 Bespoke Nimble，或代管的 Jev 分類器。", to: "#connect-a-self-hosted-classifier" },
   { title: "Custom classifier", icon: <Braces size={18} />, description: "使用您自己的 Python 外掛進行路由，並在閘道啟動時設定。", to: "#custom-classifier-startup-configuration-only" },
 ]}
 />
@@ -171,7 +171,7 @@ judge 可見的圖片與加密任務會略過本機捷徑。當 judge 發生錯�
 | 複雜到推理 / `tier_boundaries.complex_reasoning` | `0.60` | 大於或等於此值的分數會達到 `REASONING`。 |
 | 短於 / `token_thresholds.simple` | `15` | 低於此估算 token 數量時，token 維度的分數為 `-1`。 |
 | 長於 / `token_thresholds.complex` | `400` | 高於此估算 token 數量時，token 維度的分數為 `1`；介於閾值之間時，分數為 `0`。 |
-| 最低分數 / `reasoning_override_min_score` | 依照 `simple_medium` | 一旦達到此下限，兩個或以上的推理標記即可提升為 `REASONING`。`0` 會恢復僅依標記的提升。 |
+| 最低分數 / `reasoning_override_min_score` | 依照 `simple_medium` | 一旦達到此下限，兩個或以上的推理標記即可將 v1 結果提升為 `REASONING`。`0` 會將下限降為零。v2 不套用此覆寫。 |
 
 UI 接受來自 `-1` 到 `1` 的邊界與推理下限，以及非負整數的 token 閾值。請保持邊界遞增，且短閾值低於長閾值。與層級邊界相等時，會選擇較高層級。
 
@@ -215,6 +215,15 @@ dimension_weights:
 | 推理關鍵字 | `reasoning_keywords` | 出貨時的推理清單；也提供推理覆寫標記。 |
 | 技術關鍵字 | `technical_keywords` | 出貨時的技術清單；自訂技術關鍵字會附加到此取代內容。 |
 | 簡單關鍵字 | `simple_keywords` | 出貨時的簡單請求清單；可用您的清單取代。 |
+
+若要使用 `reasoning_keywords` 與雙標記推理覆寫進行路由，請選取 `classifier_type: heuristic`。將下列設定加入您現有的 `complexity_router_config` 之下，並保留您的分級對應。省略 `reasoning_keywords` 會使用內建清單；提供非空清單則會取代它。
+
+```yaml title="Use the reasoning-marker override"
+classifier_type: heuristic
+reasoning_override_min_score: 0
+```
+
+加權分數仍必須達到設定的下限，因此負分在 `0` 時不符合資格。這些評分關鍵字清單與 [`keyword_tier_rules`](#rules-and-recovery) 是分開的，後者可以在任一分類器執行之前選取分級。
 
 ```yaml title="Append domain vocabulary without replacing built-ins"
 custom_technical_keywords: [kafka, terraform, postgresql]
@@ -267,7 +276,13 @@ YAML 預設為 `binary`；新新增的 UI 列會以 `match_count` 開始。最�
 
 選取 **Heuristics > Heuristic v2**。**Heuristic tuning > Success threshold** 對應到 `heuristic_v2_success_threshold`，其數值範圍為 `0` 到 `1`。留白時會使用所選 artifact 的 `routing_threshold`，目前 bundled `ultrafeedback` artifact 的值為 `0.75`。
 
-V2 會預測每個內建層級的成功機率，並選擇第一個達到門檻的層級。提高此值通常會偏向更強的層級，或在串接中增加更多 judge 呼叫。這些是任務成功的估計，不是 v1 分數，也不是對類別標籤的信心。V1 的權重、關鍵字、token 閾值與自訂維度不會調整 v2。
+V2 會預測每個內建層級的成功機率，並選擇第一個達到門檻的層級。提高此值通常會偏向更強的層級，或在串接中增加更多 judge 呼叫。
+
+:::note v1 評分設定不適用於 v2
+
+`heuristic_v2` 不會讀取 `reasoning_keywords`，也不會套用 `reasoning_override_min_score`，即使下限為 `0` 也是如此。其他評分關鍵字清單、`dimension_weights`、`token_thresholds` 與 `tier_boundaries` 不會影響其機率或分級選擇。這也適用於串接中的 `local_heuristic: heuristic_v2`。若要使用推理標記覆寫，請使用 [`classifier_type: heuristic`](#keyword-lists)。獨立的 [`keyword_tier_rules`](#rules-and-recovery) 路由覆寫仍會在分類之前執行。
+
+:::
 
 ```yaml title="Standalone v2"
 classifier_type: heuristic_v2
@@ -275,6 +290,14 @@ heuristic_v2_success_threshold: 0.75
 ```
 
 如果沒有任何層級符合，獨立 v2 會選擇 `REASONING`；v2 串接會詢問 judge。[v2 串接截圖](#heuristic-first) 顯示了門檻控制項與其本地上限。
+
+### v2 如何計算成功機率 {#how-v2-calculates-success-probabilities}
+
+隨附的 `ultrafeedback` artifact 包含每個層級、請求類型與相似提示群組的成功次數與觀察次數。v2 先以內建規則識別請求類型，再依長度、程式碼與數學標記、選擇題格式與非 ASCII 字元占比，將提示分組。
+
+對於每個層級，全域估計值為 `(successes + 1) / (observations + 2)`。請求類型估計值會將其計數與全域估計值合併，並以全域估計值作為先驗。群組估計值則以請求類型估計值作為其先驗。兩者皆使用 `(successes + prior_mass * prior_mean) / (observations + prior_mass)`，而缺少的統計資料會保留較廣泛的估計值。這讓稀疏的觀察結果保持接近較廣泛的資料。
+
+接著，v2 會將每個層級的機率提高到至少與任一較低層級的最高機率相同。這些源自資料集的成功估計值，決定了某個層級是否達到 `heuristic_v2_success_threshold`。分類會在本機執行，不需呼叫分類器 LLM。
 
 ### 自訂訓練的 artifact（僅限 YAML） {#custom-trained-artifact-yaml-only}
 
@@ -436,7 +459,7 @@ classifier_context_budget_chars: 8000
 
 ### 自行代管的 OpenAI 相容 judge {#a-self-hosted-openai-compatible-judge}
 
-通用的 vLLM 或其他 OpenAI 相容聊天端點是不同的整合：將其註冊為一般模型，並選取 **LLM**，而不是 OSS System One 提供者。將此部署與您現有的求解器並列新增，然後在 `classifier_llm_config.model` 中使用其別名：
+一般的 OpenAI 相容聊天端點（例如 Ollama 模型）是不同的整合：將其註冊為一般模型，並選取 **LLM**，而不是 OSS System One 提供者。vLLM v0.32.0 及更高版本也可以將 Qwen 模型作為 System One 分類器來提供；請參閱 [vLLM](./decision_classifiers.md#vllm)。將此部署與您現有的求解器並列新增，然後在 `classifier_llm_config.model` 中使用其別名：
 
 ```yaml title="Additional model_list entry"
 - model_name: local-routing-judge
@@ -603,6 +626,8 @@ classifier_fallback: heuristic
 
 重用需要可解析的用戶端 session ID 與有效的保留決定。缺少/過期的狀態仍會進行分類。路由外掛會抑制一般的重播路徑，而自訂分類法不支援每個 session 一次模式。
 
+Claude Code 會為主代理程式與其所有子代理程式傳送同一個 `x-claude-code-session-id`。在 **每個新的使用者訊息** 模式下，每個子代理程式都持有自己的決定，其鍵為該 session ID 加上 `x-claude-code-agent-id`，因此子代理程式的提問不會改變主代理程式的分級，主代理程式的提問也不會改變子代理程式的分級。Claude Code v2.1.273 及更高版本也可以使用 `x-claude-code-request-class` 為每個請求加上標籤，但只有在設定 `CLAUDE_CODE_GATEWAY_HINT_HEADERS=1` 時，才會透過閘道傳送此標籤。請為透過 proxy 使用 Claude Code 的開發人員設定此變數；如此一來，即使 Claude Code 的版本更新改變了這些附帶請求的措辭，路由器仍會將代理程式摘要等附帶請求視為維運處理。
+
 在 **Sessions and efficiency > Affinity** 中，**Pin one model deployment per tier** 對應到 `deployment_affinity`（預設 `true`）。它會在每個已分類層級內重用模型/deployment，同時仍允許重新分類與層級變更。**How long a pin survives idle** 對應到 `session_affinity_ttl_seconds`（預設 `3600`，正整數），在重用時會重新整理。即使 `deployment_affinity` 為 false，session affinity 仍表示 deployment 固定。
 
 ```yaml title="Reclassify each human ask while reusing continuation decisions"
@@ -652,7 +677,7 @@ reminder_markers:
 | 語意關鍵字比對 | `semantic_keyword_matching: false`、`embedding_model: null`、`match_threshold: 0.5` | 對相同規則改用嵌入相似度，而非字面比對。需要嵌入模型；閾值為 `0` 到 `1`。會增加一次嵌入呼叫。 |
 | 升級關鍵字 | `escalation_keywords` 預設為 `["LITELLM ESCALATE"]` | 精確且區分大小寫的片語會上升一個分級。`[]` 會停用此功能。 |
 | 計畫模式覆寫 | `plan_mode_min_tier: null`、`plan_mode_patterns: null` | 當代理程式計畫模式標記存在時，選用的最低分級。額外模式為區分大小寫的字面哨兵。不會重寫工作階段釘選。 |
-| 維運路由 | `route_housekeeping_to_cheapest_tier: true`、`housekeeping_patterns: null` | 可辨識的對話標題呼叫會略過分類並使用最便宜的分級；關鍵字規則/釘選仍優先，且升級可提高結果。額外哨兵為區分大小寫。 |
+| 維運路由 | `route_housekeeping_to_cheapest_tier: true`、`housekeeping_patterns: null` | 可辨識的對話標題呼叫、Claude Code 代理程式進度摘要與提示建議，以及標記為 `x-claude-code-request-class: auxiliary` 的請求會略過分類、使用最便宜的分級，且永遠不會成為保留的決定；關鍵字規則/釘選仍優先，且升級可提高結果。額外哨兵為區分大小寫。 |
 | 多模態路由 | `modality_routing: false`、`modality_pin_override: false` | 在圖片輪次中，以具備能力的更高分級/預設模型取代明確非 vision 的模型。此覆寫允許在釘選工作階段中僅對該輪次生效。不會將未知的 vision 支援視為明確不支援。 |
 | 上下文視窗升級 | `enable_context_window_escalation: false`、`context_window_escalation_buffer: 0.95` | 將選擇限制在能容納的模型，或移至已證明可容納的最近較高分級。緩衝區大於 `0`，至多為 `1`。上下文視窗未知的模型，不能作為可容納或溢出的證明。 |
 | 卡住的任務升級 | `stall_escalation_enabled: false`、`stall_escalation_window: 6`、`stall_escalation_repeat_threshold: 3` | 將重複/失敗的近期工具呼叫升級一個分級。重複次數必須至少為 `2`，且不得大於正值視窗。不相容於工作階段親和性或 `classification_mode: user_turn`。 |

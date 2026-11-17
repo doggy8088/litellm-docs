@@ -12,7 +12,7 @@ import TabItem from '@theme/TabItem';
 
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 router_settings:
-  enable_tag_filtering: True # 👈 Key Change
+  enable_tag_filtering: True # Key Change
 ```
 
 ## 1. 建立標籤 {#1-create-a-tag}

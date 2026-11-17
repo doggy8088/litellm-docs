@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Vertex AI Agent Engine"
+sidebar_label: "Vertex AI Agent Engine"
+description: "透過 LiteLLM Python SDK、AI 閘道或 A2A，以 OpenAI 格式呼叫 Gemini Enterprise Agent Platform（原 Vertex AI）上的 Agent Engine 代理程式。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

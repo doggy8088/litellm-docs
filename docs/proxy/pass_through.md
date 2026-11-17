@@ -201,6 +201,23 @@ pass-through 路由預設的上游逾時時間為 **600 秒**。設定 `general_
 
 原生提供者 passthrough 路由（Bedrock `/converse`、`/v1/messages`，以及原生 `/v1/responses` stream）會透過路由器解析其逾時時間，且依序採用第一個設定值：請求的 `timeout`、部署在 `litellm_params` 下的 `timeout`、`router_settings.timeout`、您設定時的 `litellm_settings.request_timeout`（或 `REQUEST_TIMEOUT` 環境變數）、`general_settings.pass_through_request_timeout`，最後是 600 秒。串流請求會在上述每個層級檢查 `stream_timeout`，然後才進入 `timeout`。因此，您設定的 `litellm_settings.request_timeout` 會優先於這些路由上的 `pass_through_request_timeout`，而在串流中，它會限制等待下一個 chunk 的每次等待，因此卡住的上游會以錯誤結束串流，而不是一直掛住
 
+### 上游回報的用量與模型標籤 {#upstream-reported-usage-and-model-labels}
+
+自訂 pass-through 上游可以在回應標頭中回報其 HTTP 請求的成本與 token 數量。它也可以指出產生該用量的模型或功能名稱。
+
+```http title="Upstream response headers"
+HTTP/1.1 200 OK
+x-litellm-response-cost: 0.0123
+x-litellm-total-tokens: 4210
+x-litellm-upstream-model: support-summarizer
+```
+
+`x-litellm-response-cost` 回報該請求的成本（以美元計），`x-litellm-total-tokens` 則回報其 token 總數。`x-litellm-upstream-model` 設定支出記錄與用量報告中的模型標籤，即使請求主體沒有 `model` 也一樣。上游模型標籤在成功與失敗記錄上，都優先於主體中的 `model`。
+
+LiteLLM 會修剪模型標籤前後的空白，並忽略空值或只含空白的值。當標頭重複出現或包含以逗號分隔的值時，只會採用第一個值。標籤長度上限為 256 個字元。
+
+模型標頭只是一個標籤。它不會設定或重新計算成本、不會為該名稱查詢價格，也不會取代已設定的 `cost_per_request`。只傳送模型標頭，並不會讓請求變成依上游價格計費。請參閱[支出追蹤](./cost_tracking.md) 以檢視已記錄的用量。
+
 ### 標頭選項 {#header-options}
 - **Authorization**：目標 API 的驗證
 - **content-type**：請求主體格式規格
@@ -230,6 +247,35 @@ general_settings:
 |---------|----------|
 | `include_subpath: false`（預設） | 只會轉送 `/custom-api` |
 | `include_subpath: true` | `/custom-api`、`/custom-api/v1/chat`、`/custom-api/anything` 都會被轉送 |
+
+### 將金鑰與團隊限制於特定路由 {#restricting-keys-and-teams-to-routes}
+
+設定了 `auth: true` 的端點會以 403 拒絕非管理員金鑰，除非該金鑰或其團隊在 `allowed_passthrough_routes` 中列出了該路由。金鑰有自己的清單時，使用金鑰的清單；否則套用團隊的清單。若要從範圍較廣的授權中再排除某條路由，請將它加入 `denied_passthrough_routes`。金鑰或其團隊上的拒絕永遠優先於允許，因此團隊可以授權 `/custom-api`，同時封鎖某把金鑰或整個團隊存取 `/custom-api/admin`
+
+```bash
+curl -X POST http://localhost:4000/key/generate \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "allowed_passthrough_routes": ["/custom-api"],
+    "denied_passthrough_routes": ["/custom-api/admin"]
+  }'
+```
+
+`/team/new`、`/team/update` 與 `/key/update` 接受相同的兩個欄位，兩者都儲存在金鑰或團隊的 `metadata` 中。使用上述金鑰時：
+
+| 請求 | 結果 |
+|---------|--------|
+| `/custom-api/v1/chat` | 已轉送 |
+| `/custom-api/admin`、`/custom-api/admin/users` | 403，並指出相符的 `denied_passthrough_routes` 項目 |
+| `/custom-api/administrator` | 已轉送，因為項目只會比對完整的路徑區段 |
+| `/custom-api/public/../admin/users`、`/custom-api//admin/users` | 403，路徑會以將被轉送的形式檢查 |
+
+項目會比對其完全相同路徑以及其下的所有內容，項目結尾的 `/` 會被忽略，結尾的 `*` 則會比對任何以其前方文字開頭的路由（`/custom-api/adm*`）。更具體的允許項目無法重新開啟被拒絕前綴之下的路由。團隊端點清單也會隱藏團隊拒絕的已驗證端點
+
+拒絕清單會針對 LiteLLM 轉送的路徑進行檢查（在 `..`、`//` 與百分比編碼都解析之後），並精確比對該路徑。LiteLLM 原樣轉送的變體（例如 `/custom-api/ADMIN`、`/custom-api/admin;x=1`、結尾的 `%20` 或反斜線）不會被拒絕。如果您的上游將這些視為相同路徑，請改用 `allowed_passthrough_routes` 只授權金鑰需要的路由，而不要依賴拒絕項目
+
+這兩個欄位都是 Enterprise 功能，只有 proxy 管理員可以設定或變更。非管理員的更新若會變更、清除或移除現有的拒絕清單（包括透過取代 `metadata`），會收到 403。Proxy 管理員金鑰不受任一清單限制。拒絕清單只適用於 `auth: true` 的自訂端點；`auth: false` 的端點與 LiteLLM 內建的提供者路由（例如 `/anthropic/*`）會忽略它
 
 ---
 
@@ -436,8 +482,8 @@ general_settings:
 
 ### 取得協助 {#getting-help}
 
-[預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+[預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
 
-[社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
+[社群 Discord](https://discord.gg/wuPM9dRgDw)
 
-我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

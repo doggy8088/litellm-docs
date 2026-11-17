@@ -16,7 +16,7 @@ import TabItem from '@theme/TabItem';
 
 | 分類 | 詳細資訊 |
 |----------|---------|
-| 支援的事件 | • 使用者被新增為 LiteLLM Proxy 的使用者<br/>• 為使用者建立 Proxy API 金鑰<br/>• 為使用者輪替 Proxy API 金鑰<br/>• 虛擬金鑰接近或超過其預算 |
+| 支援的事件 | • 使用者被新增為 LiteLLM Proxy 的使用者<br/>• 為使用者建立 Proxy API 金鑰<br/>• 為使用者輪替 Proxy API 金鑰<br/>• 虛擬金鑰接近或超過其預算<br/>• 虛擬金鑰即將到期 |
 | 支援的電子郵件整合 | • Resend API<br/>• SendGrid API<br/>• SMTP |
 
 ## 用法 {#usage}
@@ -178,6 +178,40 @@ EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE=0.8
 # Time-to-live for alert deduplication in seconds (default: 24 hours)
 EMAIL_BUDGET_ALERT_TTL=86400
 ```
+
+### 4. 設定金鑰到期警示（選用） {#4-configure-key-expiry-alerts-optional}
+
+<SinceVersion v="1.111.0" />
+
+金鑰到期警示會在金鑰到期前寄送一次電子郵件給金鑰的擁有者，讓他們能及時重新產生金鑰。此功能需要 Enterprise 授權、資料庫，以及上述其中一種電子郵件整合。此事件預設為關閉。若要開啟，請在管理員 UI 中開啟 **Email Settings**，在 **Email events** 下開啟 **Virtual Key Expiring** 並儲存，或將相同的變更送至 `PATCH /email/event_settings`。
+
+接著設定要提前幾天警告：
+
+```yaml showLineNumbers title="proxy_config.yaml"
+general_settings:
+  key_expiry_alert_days: 7
+```
+
+`key_expiry_alert_days` 適用於每一個有到期日、且擁有者有電子郵件的金鑰，包括在您設定它之前就已建立的金鑰。當金鑰剩餘天數小於或等於該天數時，擁有者會收到一封電子郵件。Proxy 在每次執行時讀取此值，因此透過管理員 UI 或 `/config/field/update` 的變更無需重新啟動即可生效。
+
+若要為單一金鑰使用不同的時間範圍，請在其 metadata 中設定 `key_expiry_alert_days`。即使全域值未設定，這種方式也有效，因此您可以逐一選擇加入特定金鑰。
+
+```shell showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/key/generate' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "user_id": "owner-user-id",
+    "duration": "30d",
+    "metadata": {"key_expiry_alert_days": 3}
+  }'
+```
+
+兩個值都必須是 1 到 365 之間的整數。`/key/generate` 與 `/key/update` 對其他任何值都會回傳 400，無效的全域值會被記錄並忽略，而每把金鑰的值仍可正常運作。
+
+電子郵件只會寄送到金鑰 `user_id` 的 `user_email`，因此沒有擁有者、擁有者沒有電子郵件、或已封鎖的金鑰都不會收到任何郵件。郵件會顯示金鑰別名；沒有別名時，顯示縮短的金鑰名稱，而且絕不會顯示金鑰本身。郵件也會提供以 UTC 表示的到期時間、剩餘天數，以及指向位於 `PROXY_BASE_URL` 的儀表板的連結。主旨為 `LiteLLM: Virtual Key Expiring`。變更金鑰的到期時間或天數設定，會為新值啟用一封新的電子郵件。
+
+檢查預設每 12 小時執行一次，因此電子郵件最晚可能在金鑰進入時間範圍後一個間隔才送達。設定 `LITELLM_KEY_EXPIRY_ALERT_CHECK_INTERVAL_SECONDS` 可變更此間隔。當 Proxy 使用 Redis 時，每次檢查由一個 pod 執行，且每把金鑰有一個共用 claim，避免跨 pod 重複寄送電子郵件。
 
 ## 電子郵件範本 {#email-templates}
 

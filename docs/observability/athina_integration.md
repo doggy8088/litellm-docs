@@ -1,3 +1,9 @@
+---
+title: "LiteLLM Python SDK 的 Athina 記錄"
+sidebar_label: "Athina"
+description: "透過 athina 回呼，從 Python SDK 將 LiteLLM 補全記錄至 Athina、為評估加入中繼資料，或使用自行託管的 Athina 伺服器。"
+---
+
 import Image from '@theme/IdealImage';
 
 # Athina {#athina}
@@ -44,7 +50,7 @@ litellm.success_callback = ["athina"]
 #openai call
 response = completion(
   model="{{openai_small}}", 
-  messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}]
+  messages=[{"role": "user", "content": "Hi - i'm openai"}]
 ) 
 ```
 
@@ -56,7 +62,7 @@ response = completion(
 response = completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
   metadata={
     "environment": "staging",
@@ -93,8 +99,8 @@ os.environ["ATHINA_BASE_URL"]= "http://localhost:9000"
 
 ## 支援與 Athina 團隊交流 {#support--talk-with-athina-team}
 
-- [預約示範 👋](https://cal.com/shiv-athina/30min)
-- [網站 💻](https://athina.ai/?utm_source=litellm&utm_medium=website)
-- [文件 📖](https://docs.athina.ai/?utm_source=litellm&utm_medium=website)
-- [示範影片 📺](https://www.loom.com/share/d9ef2c62e91b46769a39c42bb6669834?sid=711df413-0adb-4267-9708-5f29cef929e3)
-- 我們的電子郵件 ✉️ shiv@athina.ai, akshat@athina.ai, vivek@athina.ai
+- [預約示範](https://cal.com/shiv-athina/30min)
+- [網站](https://athina.ai/?utm_source=litellm&utm_medium=website)
+- [文件](https://docs.athina.ai/?utm_source=litellm&utm_medium=website)
+- [示範影片](https://www.loom.com/share/d9ef2c62e91b46769a39c42bb6669834?sid=711df413-0adb-4267-9708-5f29cef929e3)
+- 我們的電子郵件 shiv@athina.ai, akshat@athina.ai, vivek@athina.ai

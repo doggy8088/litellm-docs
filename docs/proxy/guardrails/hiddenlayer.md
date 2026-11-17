@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 HiddenLayer 防護欄"
+sidebar_label: "HiddenLayer 防護欄"
+description: "將 LiteLLM AI 閘道上的每個請求與回應送往 HiddenLayer，以封鎖或遮蔽不安全的內容，支援 SaaS 或自行託管的憑證。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

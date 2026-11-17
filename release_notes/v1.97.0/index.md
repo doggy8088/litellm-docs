@@ -1,5 +1,6 @@
 ---
-title: "v1.97.0 - 工具結果防護欄、部署親和性與檢視者一致性"
+title: "LiteLLM v1.97.0 - 工具結果防護欄、部署親和性與檢視者一致性"
+description: "為防護欄新增 scan_only_tool_results，並將自動路由器的 deployment_affinity 設為預設。請求檢查現在涵蓋路徑與表單輸入。"
 slug: "v1-97-0"
 date: 2026-08-15T00:00:00
 authors:

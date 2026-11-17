@@ -12,6 +12,7 @@ keywords:
     高可用性,
     可靠性,
   ]
+sidebar_label: "路由策略"
 ---
 
 import Image from '@theme/IdealImage';
@@ -166,7 +167,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 - `router.image_generation()` - OpenAI `/v1/images/generations` 端點格式的 completion 呼叫
 - `router.aimage_generation()` - 非同步圖片生成呼叫
 
-## 進階 - 路由策略 ⭐️ {#advanced---routing-strategies-️}
+## 進階 - 路由策略 {#advanced---routing-strategies}
 #### 路由策略 - 加權挑選、速率限制感知、最少忙碌、依延遲、依成本 {#routing-strategies---weighted-pick-rate-limit-aware-least-busy-latency-based-cost-based}
 
 Router 提供多種策略，讓您在多個部署之間路由您的呼叫。**我們建議在正式環境中使用 `simple-shuffle`（預設）以獲得最佳效能。**
@@ -181,6 +182,8 @@ Router 提供多種策略，讓您在多個部署之間路由您的呼叫。**�
 如果未提供 `rpm` 或 `tpm`，則會隨機選取一個部署
 
 您也可以設定 `weight` 參數，以指定何時應選取哪個模型。
+
+部署也可以在 `litellm_params` 中，於 `rpm` 與 `tpm` 旁帶有每日上限：`rpd`（每 UTC 日的請求數）與 `tpd`（每 UTC 日的 token 數）。可選的 `daily_reset_time`（UTC 的 `"HH:MM"`）可調整每日計數重新開始的時刻；若未設定，則於 UTC 午夜重新開始。它們不會改變部署的選取方式。它們透過 [`enforce_model_rate_limits`](./proxy/load_balancing#enforce-model-rate-limits) 強制執行，該機制會將請求從每日配額已用完的部署移開，改送到群組中的另一個部署。
 
 <Tabs>
 <TabItem value="rpm" label="基於 RPM 的隨機排序">
@@ -318,7 +321,7 @@ asyncio.run(router_acompletion())
 
 :::
 
-**🎉 新功能** 這是基於使用量路由的非同步實作。
+**新功能** 這是基於使用量路由的非同步實作。
 
 **若 tpm/rpm 限制超過，則會過濾掉部署** - 如果您傳入部署的 tpm/rpm 限制。
 
@@ -368,8 +371,8 @@ router = Router(model_list=model_list,
                 redis_host=os.environ["REDIS_HOST"], 
 				redis_password=os.environ["REDIS_PASSWORD"], 
 				redis_port=os.environ["REDIS_PORT"], 
-                routing_strategy="simple-shuffle", # 👈 RECOMMENDED - best performance
-				enable_pre_call_checks=True, # enables router rate limits for concurrent calls
+                routing_strategy="simple-shuffle", # RECOMMENDED - best performance
+				enable_pre_call_checks=True, # filters deployments by context window and region
 				)
 
 response = await router.acompletion(model="{{openai_small}}", 
@@ -400,7 +403,7 @@ model_list:
       rpm: 1000
 
 router_settings:
-  routing_strategy: simple-shuffle # 👈 RECOMMENDED - best performance
+  routing_strategy: simple-shuffle # RECOMMENDED - best performance
   redis_host: <your-redis-host>
   redis_password: <your-redis-password>
   redis_port: <your-redis-port>
@@ -438,7 +441,7 @@ curl --location 'http://localhost:4000/v1/chat/completions' \
 
 它會根據請求送出與從部署接收的時間，快取並更新各部署的回應時間。
 
-[**如何測試**](https://github.com/BerriAI/litellm/blob/main/tests/local_testing/test_lowest_latency_routing.py)
+[**如何測試**](https://github.com/BerriAI/litellm/blob/main/tests/unit/router_strategy/test_lowest_latency.py)
 
 ```python
 from litellm import Router 
@@ -448,8 +451,8 @@ model_list = [{ ... }]
 
 # init router
 router = Router(model_list=model_list,
-				routing_strategy="latency-based-routing",# 👈 set routing strategy
-				enable_pre_call_checks=True, # enables router rate limits for concurrent calls
+				routing_strategy="latency-based-routing",# set routing strategy
+				enable_pre_call_checks=True, # filters deployments by context window and region
 				)
 
 ## CALL 1+2
@@ -571,7 +574,7 @@ router = Router(model_list=model_list,
 				redis_password=os.environ["REDIS_PASSWORD"], 
 				redis_port=os.environ["REDIS_PORT"], 
                 routing_strategy="usage-based-routing",
-				enable_pre_call_checks=True, # enables router rate limits for concurrent calls
+				enable_pre_call_checks=True, # filters deployments by context window and region
 				)
 
 response = await router.acompletion(model="{{openai_small}}", 
@@ -586,7 +589,7 @@ print(response)
 
 選取目前處理中最少的請求的部署。
 
-[**如何測試**](https://github.com/BerriAI/litellm/blob/main/tests/local_testing/test_least_busy_routing.py)
+[**如何測試**](https://github.com/BerriAI/litellm/blob/main/tests/unit/router_strategy/test_least_busy.py)
 
 ```python
 from litellm import Router 
@@ -727,7 +730,7 @@ router = Router(
     timeout=1,
 )  # type: ignore
 
-router.set_custom_routing_strategy(CustomRoutingStrategy()) # 👈 Set your routing strategy here
+router.set_custom_routing_strategy(CustomRoutingStrategy()) # Set your routing strategy here
 ```
 
 步驟 3. 測試您的路由策略。預期在執行 `router.acompletion` 請求時會呼叫您的自訂路由策略
@@ -763,7 +766,7 @@ model_list =  [
 	{
 		"model_name": "{{openai_small}}",
 		"litellm_params": {"model": "{{openai_large}}"},
-		"model_info": {"id": "openai-gpt-4o"},
+		"model_info": {"id": "openai-{{openai_large}}"},
 	},
 	{
 		"model_name": "{{openai_small}}",
@@ -957,9 +960,13 @@ router_settings:
 
 ## 工作階段親和性（黏著式工作階段） {#session-affinity-sticky-sessions}
 
-將對話的每個請求都固定到最初服務該對話的部署。工作階段親和性是路由器的 pre-call 檢查：它會在路由策略選擇部署之前執行，並將候選項縮小為已固定的那個，因此它可與本頁上的每一種策略（`simple-shuffle`、`least-busy`、`usage-based-routing-v2`、`latency-based-routing`、`cost-based-routing`）以及路由群組一起使用。
+將對話的每個請求都固定到最初服務該對話的部署。工作階段親和性是路由器的 pre-call 檢查：它會在路由策略選擇部署之前執行，並將候選項縮小為已固定的那個。當頂層 `routing_strategy` 為 `simple-shuffle`、`least-busy`、`usage-based-routing-v2`、`latency-based-routing` 或 `cost-based-routing` 時可以使用，在路由群組內則除了 `priority` 之外的任何策略都可以使用。它也可以在 `lar1` 下運作，而 `lar1` 僅支援非同步呼叫。
 
 當模型群組後方的部署不共用狀態時請使用它，例如提供者端的提示快取，或當對話必須停留在同一個區域時。
+
+:::warning[工作階段親和性的適用範圍]
+工作階段親和性適用於 LLM API 路由上的 proxy 請求，例如 `/v1/chat/completions`、`/v1/responses` 與 `/v1/embeddings`，也適用於非同步 Router 方法，例如 `acompletion`、`aresponses` 與 `aembedding`。指名 router 模型的 pass-through 路由，例如 `/bedrock/model/<model>/converse`，也會套用，但轉送路由 `/vllm`、`/azure`、`/azure_ai` 與 `/nvidia_nim` 不會攜帶工作階段 ID，因此在那些路由上只有 `deployment_affinity` 適用。Vertex AI pass-through 會在不進行這兩項檢查的情況下選取部署。同步 Router 方法，例如 `completion`、`responses` 與 `embedding`，會略過它，因此相同的工作階段 ID 每次呼叫都可能落到不同的部署。頂層 `routing_strategy` 為 `usage-based-routing`（舊版 v1 策略）時，每次呼叫也會略過它，包含 proxy 與每個路由群組。以 `router.set_custom_routing_strategy` 設定的自訂策略也一樣，除非其非同步方法會從 `router.select(model, request_kwargs, kind="healthy")` 的回傳結果中選取，如同 `lar1` 的做法。這些規則同樣適用於 `deployment_affinity`，以及 Responses API 檢查 `responses_api_deployment_check` 與 `encrypted_content_affinity`。在 `priority` 路由群組內，`session_affinity` 與 `deployment_affinity` 永遠不會固定，而 Responses API 檢查仍會。若要從 SDK 讓工作階段停留在同一個部署，請在上述任一頂層策略下呼叫非同步方法。
+:::
 
 <Tabs>
 <TabItem value="proxy" label="Proxy">
@@ -978,7 +985,7 @@ model_list:
       api_base: https://westus.openai.azure.com
 
 router_settings:
-  routing_strategy: simple-shuffle          # any strategy
+  routing_strategy: simple-shuffle          # any strategy but usage-based-routing (v1)
   optional_pre_call_checks: ["session_affinity"]
   deployment_affinity_ttl_seconds: 3600     # optional, default 3600
 ```
@@ -1012,7 +1019,7 @@ router = Router(
             "litellm_params": {"model": "azure/{{openai_large}}", "api_key": "...", "api_base": "https://westus.openai.azure.com"},
         },
     ],
-    routing_strategy="simple-shuffle",                 # any strategy
+    routing_strategy="simple-shuffle",                 # any strategy but usage-based-routing (v1)
     optional_pre_call_checks=["session_affinity"],
     deployment_affinity_ttl_seconds=3600,              # optional, default 3600
 )
@@ -1035,7 +1042,25 @@ print(response._hidden_params["model_id"])  # same deployment for every call wit
 - 每個請求都會重新整理固定，因此 `deployment_affinity_ttl_seconds` 限制的是回合之間的閒置時間，而不是對話長度。
 - 固定目標保存在路由器快取中。若已設定 Redis，會在各 proxy 執行個體之間共用；若未設定 Redis，每個執行個體都會保有自己的固定目標。
 - 如果固定的部署處於冷卻期或已不再屬於模型群組，請求會在其餘健康部署之間回退到路由策略。固定目標會保留，因此一旦該部署再次健康，工作階段就會回到它。於 v1.97.0 之前的版本中，工作階段會重新固定到策略所選擇的部署。
-- 負載平衡是跨工作階段而非跨請求進行：每個工作階段在 सक्रिय 狀態期間都會使用同一個部署。
+- 負載平衡是跨工作階段而非跨請求進行：每個工作階段在 作用中 狀態期間都會使用同一個部署。
+
+#### 在故障轉移後保留替換部署 {#keep-the-replacement-after-failover}
+
+此選項請參閱 [PR #48206](https://github.com/BerriAI/litellm/pull/48206)。
+
+若要在原始部署復原後，讓工作階段繼續停留在其成功的替換部署上，請將以下內容加入 proxy 設定並重新啟動它：
+
+```yaml
+router_settings:
+  optional_pre_call_checks: ["session_affinity"]
+  session_affinity_repin_on_failover: true
+```
+
+對於非同步 Router SDK 請求，請將 `session_affinity_repin_on_failover=True` 連同既有的工作階段親和性設定一起傳給 `Router()`。此選項預設為 `false`。停用時，它不會新增重新固定的快取讀取、Redis 呼叫或背景工作。
+
+只有在處理替換部署的成功回應時，原始部署仍處於冷卻期或已從路由中移除，固定目標才會移動。失敗或不完整的回應，以及暫時性的請求篩選器，都不會移動固定目標。替換部署在原始部署復原後仍保持固定，並受既有的親和性 TTL 約束。優先順序路由群組保留其既有行為。
+
+啟用並搭配 Redis 時，工作階段選取會讀取共用的固定目標，因此其他 worker 的本機快取無法將工作階段送回原始部署。重新固定會在既有的成功回呼中執行，因此在新固定目標生效之前，已經在進行中的請求可能會在不同的替換部署上完成。
 
 #### 設定 {#settings}
 
@@ -1043,7 +1068,8 @@ print(response._hidden_params["model_id"])  # same deployment for every call wit
 |---|---|
 | `optional_pre_call_checks` | 加入 `session_affinity` 以依工作階段 ID 固定。加入 `deployment_affinity` 以依呼叫端固定，取代或同時作為工作階段 ID 固定（工作階段固定具有優先權）。在 proxy 上，呼叫端是虛擬金鑰；若請求未攜帶金鑰（JWT 驗證），則是已驗證的使用者 ID。`responses_api_deployment_check` 和 `encrypted_content_affinity` 已在 [Responses API 工作階段延續性](./response_api.md#load-balancing-with-session-continuity) 中涵蓋。 |
 | `deployment_affinity_ttl_seconds` | 固定的閒置 TTL，以秒為單位。預設 `3600`。 |
-| `model_group_affinity_config` | 只對部分模型群組啟用親和性，例如 `{"gpt-4.1": ["session_affinity"]}`。未列出的群組會使用全域 `optional_pre_call_checks`。 |
+| `session_affinity_repin_on_failover` | 在冷卻或移除後保留成功的替換部署。預設 `false`，在啟動時設定。適用於 proxy 與非同步 Router 請求。請參閱[重新固定](#keep-the-replacement-after-failover)。 |
+| `model_group_affinity_config` | 只對部分模型群組啟用親和性，例如 `{"{{openai_large}}": ["session_affinity"]}`。未列出的群組會使用全域 `optional_pre_call_checks`。 |
 
 `deployment_affinity_ttl_seconds` 和 `model_group_affinity_config` 會在啟動時讀取：請將它們設定在 `config.yaml`（或 `Router()`）中，然後重新啟動 proxy。只要不在 `config.yaml` 中設定該鍵（那裡的值會生效，而傳送不同的值會回傳 400），`optional_pre_call_checks` 也可以在執行中的 proxy 上透過 `POST /config/update`，以及內容為 `{"router_settings": {"optional_pre_call_checks": [...]}}` 的請求主體進行變更。此呼叫需要管理員金鑰、資料庫，以及 `STORE_MODEL_IN_DB=True`。該清單會取代前一個清單並儲存在資料庫中，因此輪詢資料庫的每個執行個體都會套用它。新清單中的名稱會立即啟用。被省略的名稱會立即對 `prompt_caching`、`enforce_model_rate_limits` 和 `encrypted_content_affinity` 停用（最後一項自 v1.104.0 起），而 `session_affinity`、`deployment_affinity`、`responses_api_deployment_check` 和 `router_budget_limiting` 則會保持啟用直到重新啟動。`GET /router/settings` 會顯示儲存的清單，以及與資料庫合併後的設定檔
 
@@ -1065,6 +1091,10 @@ print(response._hidden_params["model_id"])  # same deployment for every call wit
 
 當對 `order=1` 部署的請求失敗（連線錯誤、404、429 等）時，路由器會自動先嘗試 `order=2` 部署，接著嘗試 `order=3`，依此類推。每個順序層級在升級到下一層之前都有自己的一組重試。如果所有順序層級都耗盡，路由器就會回退到任何已設定的備援。
 
+上下文視窗錯誤會在後續順序之前，先使用相符的 `context_window_fallbacks` 規則。當沒有規則與所請求的群組相符時，即使另一個群組有上下文視窗規則，後續順序以及一般備援仍然可用。內容政策錯誤會保留其各自的備援處理。決策表與完整設定請參閱[上下文錯誤備援優先順序](./proxy/reliability.md#context-error-fallback-precedence)。
+
+若跳轉到的部署無法解密失敗部署的加密推理（另一個提供者，或另一把 API 金鑰），該跳轉會捨棄那些推理項目並保留其摘要，因此跳轉會進行回覆，而不是以 `invalid_encrypted_content` 失敗；請參閱[備援](./proxy/reliability.md#explanation)
+
 <Tabs>
 <TabItem value="sdk" label="SDK">
 
@@ -1077,7 +1107,7 @@ model_list = [
         "litellm_params": {
             "model": "azure/gpt-4-primary",
             "api_key": os.getenv("AZURE_API_KEY"),
-            "order": 1,  # 👈 Highest priority
+            "order": 1,  # Highest priority
         },
     },
     {
@@ -1085,7 +1115,7 @@ model_list = [
         "litellm_params": {
             "model": "azure/gpt-4-fallback",
             "api_key": os.getenv("AZURE_API_KEY_2"),
-            "order": 2,  # 👈 Tried when order=1 fails
+            "order": 2,  # Tried when order=1 fails
         },
     },
 ]
@@ -1102,13 +1132,13 @@ model_list:
     litellm_params:
       model: azure/gpt-4-primary
       api_key: os.environ/AZURE_API_KEY
-      order: 1  # 👈 Highest priority
+      order: 1  # Highest priority
 
   - model_name: {{openai_large}}
     litellm_params:
       model: azure/gpt-4-fallback
       api_key: os.environ/AZURE_API_KEY_2
-      order: 2  # 👈 Tried when order=1 fails
+      order: 2  # Tried when order=1 fails
 ```
 
 </TabItem>
@@ -1140,7 +1170,7 @@ model_list = [
 		"litellm_params": {
 			"model": "{{openai_small}}", 
 			"api_key": os.getenv("OPENAI_API_KEY"), 
-			"weight": 2 # 👈 PICK THIS DEPLOYMENT 2x MORE OFTEN THAN THE ONE ABOVE
+			"weight": 2 # PICK THIS DEPLOYMENT 2x MORE OFTEN THAN THE ONE ABOVE
 		},
 	},
 ]
@@ -1167,7 +1197,7 @@ model_list:
     litellm_params:
       model: {{openai_small}}
       api_key: os.environ/OPENAI_API_KEY
-      weight: 2 # 👈 PICK THIS DEPLOYMENT 2x MORE OFTEN THAN THE ONE ABOVE
+      weight: 2 # PICK THIS DEPLOYMENT 2x MORE OFTEN THAN THE ONE ABOVE
 ```
 
 </TabItem>
@@ -1225,7 +1255,7 @@ model_list = [
 router = Router(
     model_list=model_list,
     routing_strategy="simple-shuffle",
-    enable_weighted_failover=True,  # 👈 retry within the same model group on failure
+    enable_weighted_failover=True,  # retry within the same model group on failure
 )
 
 response = await router.acompletion(
@@ -1254,7 +1284,7 @@ model_list:
 
 router_settings:
   routing_strategy: simple-shuffle
-  enable_weighted_failover: true  # 👈 retry within the same model group on failure
+  enable_weighted_failover: true  # retry within the same model group on failure
 ```
 
 </TabItem>
@@ -1290,13 +1320,13 @@ model_list = [{
 	"litellm_params": {
 		"model": "azure/{{openai_large}}",
 		# ...
-		"max_parallel_requests": 10 # 👈 SET PER DEPLOYMENT
+		"max_parallel_requests": 10 # SET PER DEPLOYMENT
 	}
 }]
 
 ### OR ### 
 
-router = Router(model_list=model_list, default_max_parallel_requests=20) # 👈 SET DEFAULT MAX PARALLEL REQUESTS 
+router = Router(model_list=model_list, default_max_parallel_requests=20) # SET DEFAULT MAX PARALLEL REQUESTS
 
 
 # deployment max parallel requests > default max parallel requests
@@ -1358,13 +1388,15 @@ print(f"response: {response}")
 
 ```yaml
 router_settings:
-  allowed_fails: 3 # cooldown model if it fails > 1 call in a minute. 
+  allowed_fails: 3 # cool a deployment down once it fails more than 3 calls
   cooldown_time: 30 # (in seconds) how long to cooldown model if fails/min > allowed_fails
 ```
 
 預設值：
-- allowed_fails: 3
+- allowed_fails: not set
 - cooldown_time: 5s（constants.py 中的 `DEFAULT_COOLDOWN_TIME_SECONDS`）
+
+未設定 `allowed_fails` 時，路由器會使用[部署何時進入冷卻期？](#when-are-deployments-cooled-down)中的規則。在 config.yaml 的 `router_settings` 中或在 `Router(...)` 中設定任何值（包含 3），路由器就會改為計算失敗次數。如此一來，部署在 `cooldown_time` 內失敗超過該次數時就會進入冷卻，而 429、401 或 404 會計入該上限，而不是立即讓部署進入冷卻。從 Admin UI 或 `/config/update` 儲存的值，只有在不是 3 時才算數，因為 Admin UI 每次變更都會將預設值一併存回。在 v1.109.0 之前，路由器會將明確設定的 3 視為未設定，並繼續使用那些規則。
 
 **設定單一模型**
 
@@ -1451,7 +1483,7 @@ model_list:
 
 #### 部署何時進入冷卻期？ {#when-are-deployments-cooled-down}
 
-路由器會根據下列條件自動將部署冷卻：
+當未設定 `allowed_fails` 與 `allowed_fails_policy` 時，路由器會根據下列條件將部署冷卻：
 
 | 條件 | 觸發 | 冷卻持續時間 |
 |-----------|---------|-------------------|
@@ -1743,7 +1775,7 @@ router = Router(model_list=model_list,
 ```python 
 from litellm import Router 
 # ...
-router = Router(model_list=model_list, enable_pre_call_checks=True) # 👈 Set to True
+router = Router(model_list=model_list, enable_pre_call_checks=True) # Set to True
 ```
 
 
@@ -1766,8 +1798,8 @@ model_list = [
                     "api_key": os.getenv("AZURE_API_KEY"),
                     "api_version": os.getenv("AZURE_API_VERSION"),
                     "api_base": os.getenv("AZURE_API_BASE"),
-					"region_name": "eu", # 👈 SET 'EU' REGION NAME
-					"base_model": "azure/{{openai_small}}", # 👈 (Azure-only) SET BASE MODEL
+					"region_name": "eu", # SET 'EU' REGION NAME
+					"base_model": "azure/{{openai_small}}", # (Azure-only) SET BASE MODEL
                 },
             },
             {
@@ -1782,7 +1814,7 @@ model_list = [
 				"litellm_params": {
 					"model": "vertex_ai/{{gemini_pro}}", 
 					"vertex_project": "adroit-crow-1234",
-					"vertex_location": "us-east1" # 👈 AUTOMATICALLY INFERS 'region_name'
+					"vertex_location": "us-east1" # AUTOMATICALLY INFERS 'region_name'
 				}
 			}
         ]
@@ -1800,8 +1832,8 @@ router = Router(model_list=model_list, enable_pre_call_checks=True)
 
 ```python keep-model-ids
 """
-- Give a gpt-3.5-turbo model group with different context windows (4k vs. 16k)
-- Send a 5k prompt
+- Give a model group two deployments with different context windows (a 4k Azure deployment and a larger OpenAI one)
+- Send a prompt of about 40k tokens, too long for the 4k deployment
 - Assert it works
 """
 from litellm import Router
@@ -1809,7 +1841,7 @@ import os
 
 model_list = [
 	{
-		"model_name": "gpt-3.5-turbo",  # model group name
+		"model_name": "chat-model",  # model group name
 		"litellm_params": {  # params for litellm completion/embedding call
 			"model": "azure/chatgpt-v-2",
 			"api_key": os.getenv("AZURE_API_KEY"),
@@ -1822,9 +1854,9 @@ model_list = [
 		}
 	},
 	{
-		"model_name": "gpt-3.5-turbo",  # model group name
+		"model_name": "chat-model",  # model group name
 		"litellm_params": {  # params for litellm completion/embedding call
-			"model": "gpt-3.5-turbo-1106",
+			"model": "{{openai_small}}",
 			"api_key": os.getenv("OPENAI_API_KEY"),
 		},
 	},
@@ -1835,7 +1867,7 @@ router = Router(model_list=model_list, enable_pre_call_checks=True)
 text = "What is the meaning of 42?" * 5000
 
 response = router.completion(
-	model="gpt-3.5-turbo",
+	model="chat-model",
 	messages=[
 		{"role": "system", "content": text},
 		{"role": "user", "content": "Who was Alexander?"},
@@ -1926,14 +1958,14 @@ async def test_acompletion_caching_on_router_caching_groups():
 		litellm.set_verbose = True
 		model_list = [
 			{
-				"model_name": "openai-gpt-4o-mini",
+				"model_name": "openai-model",
 				"litellm_params": {
 					"model": "{{openai_small}}",
 					"api_key": os.getenv("OPENAI_API_KEY"),
 				},
 			},
 			{
-				"model_name": "azure-gpt-4o-mini",
+				"model_name": "azure-model",
 				"litellm_params": {
 					"model": "azure/chatgpt-v-2",
 					"api_key": os.getenv("AZURE_API_KEY"),
@@ -1949,11 +1981,11 @@ async def test_acompletion_caching_on_router_caching_groups():
 		start_time = time.time()
 		router = Router(model_list=model_list, 
 				cache_responses=True, 
-				caching_groups=[("openai-gpt-4o-mini", "azure-gpt-4o-mini")])
-		response1 = await router.acompletion(model="openai-gpt-4o-mini", messages=messages, temperature=1)
+				caching_groups=[("openai-model", "azure-model")])
+		response1 = await router.acompletion(model="openai-model", messages=messages, temperature=1)
 		print(f"response1: {response1}")
 		await asyncio.sleep(1) # add cache is async, async sleep for cache to get set
-		response2 = await router.acompletion(model="azure-gpt-4o-mini", messages=messages, temperature=1)
+		response2 = await router.acompletion(model="azure-model", messages=messages, temperature=1)
 		assert response1.id == response2.id
 		assert len(response1.choices[0].message.content) > 0
 		assert response1.choices[0].message.content == response2.choices[0].message.content
@@ -1963,7 +1995,7 @@ async def test_acompletion_caching_on_router_caching_groups():
 asyncio.run(test_acompletion_caching_on_router_caching_groups())
 ```
 
-## 警示 🚨 {#alerting-}
+## 警示 {#alerting-}
 
 將以下事件的警示傳送到 slack / 您的 webhook URL
 - LLM API Exception
@@ -2090,7 +2122,7 @@ response = router.completion(
 ```python keep-model-ids
 from litellm import Router
 
-fallback_dict = {"gpt-4o-mini": "gpt-4.1"}
+fallback_dict = {"gpt-5.4-mini": "{{openai_large}}"}
 
 router = Router(model_list=model_list, 
                 default_litellm_params={"context_window_fallback_dict": fallback_dict})
@@ -2099,7 +2131,7 @@ user_message = "Hello, whats the weather in San Francisco??"
 messages = [{"content": user_message, "role": "user"}]
 
 # normal call 
-response = router.completion(model="gpt-4o-mini", messages=messages)
+response = router.completion(model="gpt-5.4-mini", messages=messages)
 
 print(f"response: {response}")
 ```

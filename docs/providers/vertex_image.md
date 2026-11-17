@@ -1,8 +1,14 @@
+---
+title: "透過 LiteLLM 使用 Vertex AI 圖片生成"
+sidebar_label: "Vertex AI Image Generation"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道，在 Gemini Enterprise Agent Platform（原 Vertex AI）上使用 Gemini 圖片模型與 Imagen 生成圖片。"
+---
+
 # Vertex AI 圖片生成 {#vertex-ai-image-generation}
 
 Vertex AI 支援兩種類型的圖片生成：
 
-1. **Gemini 圖片生成模型**（Nano Banana 🍌）- 使用 `generateContent` API 進行對話式圖片生成
+1. **Gemini 圖片生成模型**（Nano Banana）- 使用 `generateContent` API 進行對話式圖片生成
 2. **Imagen 模型** - 使用 `predict` API 進行傳統圖片生成
 
 | 屬性 | 詳細資訊 |

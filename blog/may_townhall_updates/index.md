@@ -6,7 +6,7 @@ authors:
   - krrish
   - ishaan-alt
 description: "5 月 LiteLLM town hall 回顧，涵蓋 89 項安全修補、新的版本發布編號、MCP 工具集、效能提升，以及 LiteLLM Agent Platform。"
-tags: [townhall, security, performance, product, agents]
+tags: [townhall, performance, product, agents]
 hide_table_of_contents: false
 ---
 

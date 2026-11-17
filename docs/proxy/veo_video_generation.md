@@ -1,3 +1,7 @@
+---
+sidebar_label: "Veo 影片生成"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -140,7 +144,7 @@ curl -X GET "http://localhost:4000/gemini/v1beta/files/VIDEO_ID:download?alt=med
 
 ## 完整範例 {#complete-example}
 
-如需含錯誤處理與記錄的完整可運作範例，請參閱我們的 [Veo Video Generation Cookbook](https://github.com/BerriAI/litellm/blob/main/cookbook/veo_video_generation.py)。
+如需含錯誤處理與記錄的完整可運作範例，請參閱我們的 [Veo Video Generation Cookbook](https://github.com/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/veo_video_generation.py)。
 
 ## 運作方式 {#how-it-works}
 

@@ -102,6 +102,6 @@ LiteLLM 會將相同的邊界檢查套用到已橋接的 Anthropic thinking 區�
 
 這讓 Auto-Router 有兩條安全路徑。當所選部署可以驗證加密推理時，它會保留加密推理。對於跨層 Responses 請求，它會保留可讀摘要並移除由提供者綁定的負載。對於已橋接的 Anthropic thinking，它會在派送前丟棄外來的加密區塊
 
-此行為位於加密內容的前置呼叫檢查與 Responses 請求工具中。相關實作與回歸涵蓋可見於 [親和性檢查](https://github.com/BerriAI/litellm/blob/main/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py)、[Responses 請求工具](https://github.com/BerriAI/litellm/blob/main/litellm/responses/utils.py) 與 [路由測試](https://github.com/BerriAI/litellm/blob/main/tests/test_litellm/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py)
+此行為位於加密內容的前置呼叫檢查與 Responses 請求工具中。相關實作與回歸涵蓋可見於 [親和性檢查](https://github.com/BerriAI/litellm/blob/main/litellm/router_utils/pre_call_checks/encrypted_content_affinity_check.py)、[Responses 請求工具](https://github.com/BerriAI/litellm/blob/main/litellm/responses/utils.py) 與 [路由測試](https://github.com/BerriAI/litellm/blob/main/tests/unit/router_utils/pre_call_checks/test_encrypted_content_affinity_check.py)
 
 如需完整設定與部署親和性行為，請參閱 [Responses API 加密內容親和性指南](https://docs.litellm.ai/docs/response_api#encrypted-content-affinity-multi-region-load-balancing)

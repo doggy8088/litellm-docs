@@ -1,5 +1,6 @@
 ---
-title: "v1.99.1 - OTel 快取 Token 計數"
+title: "LiteLLM v1.99.1 - OTel 快取 Token 計數"
+description: "修復 OpenTelemetry v2 LLM span，使其為每個請求輸出快取 Token 計數。可觀測性後端現在可以看到每次呼叫的快取 Token 用量。"
 slug: "v1-99-1"
 date: 2026-09-02T14:01:25
 authors:

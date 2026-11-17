@@ -1,5 +1,10 @@
-# ✨ Secret Detection/Redaction（僅限 Enterprise） {#-secret-detectionredaction-enterprise-only}
-❓ 使用此功能可將傳送至 LLM 的請求中的 API 金鑰、Secrets 予以遮罩。 
+---
+title: "LiteLLM 中的秘密偵測防護欄（Enterprise）"
+sidebar_label: "Secret Detection/Redaction（僅限 Enterprise）"
+description: "在 LiteLLM AI 閘道上，於請求到達 LLM 之前遮罩其中的 API 金鑰與秘密；可依金鑰或團隊啟用，並可控制偵測器。"
+---
+# Secret Detection/Redaction（僅限 Enterprise） {#secret-detectionredaction-enterprise-only}
+使用此功能可將傳送至 LLM 的請求中的 API 金鑰、Secrets 予以遮罩。
 
 範例：如果您想在下列請求中遮罩 `OPENAI_API_KEY` 的值
 
@@ -96,6 +101,21 @@ https://api.groq.com/openai/v1/ \
 ## 針對每個專案（API 金鑰/團隊）開啟/關閉 {#turn-onoff-per-project-api-keyteam}
 
 [**請見此處**](./quick_start.md#-control-guardrails-per-api-key)
+
+## 略過工具結果 {#skip-tool-results}
+
+hide-secrets 會遮罩工具呼叫與工具結果中的秘密，以及使用者文字中的秘密。若要將工具結果依原樣傳送給模型，請在防護欄上設定 `skip_tool_message_in_guardrail: true`，或在 `litellm_settings` 中設定以套用到每個防護欄。個別防護欄的值優先於全域值，因此在 hide-secrets 上設為 `false` 可讓工具結果保持遮罩，而其他防護欄則略過它們。請參閱[在 guardrail 評估中略過 tool 訊息](./quick_start.md#skip-tool-messages-in-guardrail-evaluation)。
+
+```yaml
+guardrails:
+  - guardrail_name: "hide-secrets"
+    litellm_params:
+      guardrail: "hide-secrets"
+      mode: "pre_call"
+      skip_tool_message_in_guardrail: true
+```
+
+如此一來，`/v1/chat/completions` 上的 `role: tool` 訊息與 `/v1/messages` 上的 `tool_result` 區塊會依原樣傳送。工具呼叫引數仍會被遮罩，而 `/v1/responses` 上的工具輸出永遠會被遮罩，與其他防護欄一致。
 
 ## 控制 secret detectors {#control-secret-detectors}
 

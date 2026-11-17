@@ -14,7 +14,7 @@ import TabItem from '@theme/TabItem';
 | 終端使用者追蹤 | ✅ | |
 | 支援 LLM 提供者（OpenAI `/vector_stores` API） | **OpenAI** | 跨提供者完整支援向量儲存庫 API |
 | 支援 LLM 提供者（Passthrough API） | [**Azure AI**](/docs/providers/azure_ai/azure_ai_vector_stores_passthrough) | 跨提供者完整支援向量儲存庫 API |
-| 支援 LLM 提供者（資料集管理） | [**RAGFlow**](/docs/providers/ragflow_vector_store) | 支援資料集建立與管理（不支援搜尋） |
+| 支援 LLM 提供者（資料集管理） | [**RAGFlow**](/docs/providers/ragflow_vector_store.md) | 支援資料集建立與管理（不支援搜尋） |
 
 此 proxy 也支援向量儲存庫的 **retrieve**、**list**、**update** 與 **delete**（OpenAI 相容）。請參閱 [Proxy 上的向量儲存庫管理與路由](#vector-store-management-and-routing-on-the-proxy) 以取得 `curl` 範例與提供者路由。
 

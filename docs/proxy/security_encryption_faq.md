@@ -267,9 +267,9 @@ export LITELLM_SALT_KEY="your-strong-random-key-here"
 ```
 
 **重要注意事項：**
-- ⚠️ **必須在新增任何模型之前設定**
-- ⚠️ **絕對不要變更此金鑰** - 加密資料將無法復原
-- ⚠️ 使用強隨機金鑰（建議：https://1password.com/password-generator/
+- **必須在新增任何模型之前設定**
+- **絕對不要變更此金鑰** - 加密資料將無法復原
+- 使用強隨機金鑰（建議：https://1password.com/password-generator/
 - 若未設定，會回退至 `LITELLM_MASTER_KEY`
 
 **文件：** `docs/my-website/docs/proxy/prod.md`（第 8 節，第 184-196 行）
@@ -298,7 +298,7 @@ export LITELLM_SALT_KEY="your-strong-random-key-here"
 4. **支援 TLS 1.2 與 TLS 1.3**
 5. **連線池** 以降低 TLS 握手額外負擔
 
-### ⚠️ 重要限制 {#️-important-limitations}
+### 重要限制 {#important-limitations}
 
 1. **快取資料不會加密**（Redis、S3、磁碟快取）
 2. **記錄資料不會加密**（spend logs、audit logs）
@@ -306,7 +306,7 @@ export LITELLM_SALT_KEY="your-strong-random-key-here"
 4. **使用 NaCl SecretBox，不是 AES-256**（但安全性相當）
 5. **TLS 版本未明確設定** - 使用 Python/系統預設值
 
-### 🔧 組態需求 {#-configuration-requirements}
+### 組態需求 {#configuration-requirements}
 
 **適用於正式環境部署：**
 

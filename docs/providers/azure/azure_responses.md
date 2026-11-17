@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure OpenAI Responses API"
+sidebar_label: "Azure Responses API"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 使用 Azure OpenAI Responses API。將模型加入 config.yaml，呼叫 Azure Codex 模型或 /chat/completions。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -143,7 +149,7 @@ response = litellm.responses(
     max_output_tokens=100,
     api_key=os.getenv("AZURE_RESPONSES_OPENAI_API_KEY"),
     api_base="https://litellm8397336933.openai.azure.com",
-    api_version="preview", # 👈 key difference
+    api_version="preview", # key difference
 )
 
 print(response)
@@ -160,7 +166,7 @@ response = litellm.responses(
     stream=True,
     api_key=os.getenv("AZURE_RESPONSES_OPENAI_API_KEY"),
     api_base="https://litellm8397336933.openai.azure.com",
-    api_version="preview", # 👈 key difference
+    api_version="preview", # key difference
 )
 
 for event in response:
@@ -178,7 +184,7 @@ model_list:
       model: azure/codex-mini
       api_key: os.environ/AZURE_RESPONSES_OPENAI_API_KEY
       api_base: https://litellm8397336933.openai.azure.com
-      api_version: preview # 👈 key difference
+      api_version: preview # key difference
 ```
 
 啟動您的 LiteLLM proxy：

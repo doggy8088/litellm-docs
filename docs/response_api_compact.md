@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 | 功能 | 支援 |
 |---------|-----------|
-| 支援的 LiteLLM 版本 | 1.72.0+ |
+| 支援的 LiteLLM 版本 | <SinceVersion v="1.72.0" /> |
 | 支援的提供者 | `openai` |
 
 ## 用法 {#usage}

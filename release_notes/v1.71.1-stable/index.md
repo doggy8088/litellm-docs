@@ -1,5 +1,6 @@
 ---
-title: v1.71.1-stable - 2x 更高的每秒請求數（RPS）
+title: "LiteLLM v1.71.1-stable - 2x 更高的每秒請求數（RPS）"
+description: "新增 aiohttp 傳輸，使每個執行個體達到 200 RPS；並新增受管理檔案的檔案權限，以及 OpenAI Responses API 中的 MCP 伺服器。"
 slug: v1.71.1-stable
 date: 2025-05-24T10:00:00
 authors:

@@ -1,5 +1,6 @@
 ---
-title: "v1.88.4 - Proxy Exception 與防護欄修正"
+title: "LiteLLM v1.88.4 - Proxy Exception 與防護欄修正"
+description: "恢復可讀的 ProxyException 訊息；當 AIM 防護欄封鎖請求時，改為回傳 400 而非 500。另修正 Datadog 413 錯誤。"
 slug: "v1-88-4"
 date: 2026-06-20T14:44:42
 authors:

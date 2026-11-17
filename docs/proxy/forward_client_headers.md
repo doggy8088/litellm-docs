@@ -63,7 +63,9 @@ general_settings:
 
 ## 轉送 LLM 提供者驗證標頭 {#forward-llm-provider-authentication-headers}
 
-**v1.82+ 新功能**：預設情況下，LiteLLM 會基於安全考量，從用戶端請求中移除 `x-api-key`、`x-goog-api-key` 和 `api-key` 等驗證標頭（這些通常用於向 proxy 本身驗證）。不過，您可以啟用這些 LLM 提供者驗證標頭的轉送，以支援 **Bring Your Own Key (BYOK)** 情境，讓用戶端將自己的 API 金鑰送到 LLM 提供者。
+<SinceVersion v="1.82.0" />
+
+預設情況下，LiteLLM 會基於安全考量，從用戶端請求中移除 `x-api-key`、`x-goog-api-key` 和 `api-key` 等驗證標頭（這些通常用於向 proxy 本身驗證）。不過，您可以啟用這些 LLM 提供者驗證標頭的轉送，以支援 **Bring Your Own Key (BYOK)** 情境，讓用戶端將自己的 API 金鑰送到 LLM 提供者。
 
 ### 設定 {#configuration-1}
 
@@ -72,7 +74,7 @@ general_settings:
 ```yaml
 general_settings:
   forward_client_headers_to_llm_api: true
-  forward_llm_provider_auth_headers: true  # 👈 Enable BYOK
+  forward_llm_provider_auth_headers: true  # Enable BYOK
 ```
 
 ### 哪些標頭會被轉送 {#which-headers-are-forwarded}
@@ -218,7 +220,7 @@ general_settings:
 # BYOK enabled - auth headers ARE forwarded
 general_settings:
   forward_client_headers_to_llm_api: true
-  forward_llm_provider_auth_headers: true  # 👈 Opt-in required
+  forward_llm_provider_auth_headers: true  # Opt-in required
 ```
 
 ## 對特定模型群組啟用 {#enable-for-a-model-group}
@@ -285,7 +287,7 @@ forward_client_headers_to_llm_api:
 
 ## 安全性考量 {#security-considerations-1}
 
-⚠️ **重要安全注意事項：**
+**重要安全注意事項：**
 
 1. **敏感資料**：僅對可信任的模型群組啟用標頭轉送，因為標頭可能包含敏感資訊
 2. **API 金鑰**：切勿在轉送的標頭中包含 API 金鑰或密鑰
@@ -340,7 +342,7 @@ curl -X POST "https://your-proxy.com/v1/chat/completions" \
 ```yaml
 model_list:
   # Fixed model with header forwarding
-  - model_name: byok-fixed-gpt-4o-mini
+  - model_name: byok-fixed-{{openai_small}}
     litellm_params:
       model: openai/{{openai_small}}
       api_base: "https://your-openai-endpoint.com"
@@ -354,7 +356,7 @@ model_list:
       api_key: "your-api-key"
       
   # Standard model without header forwarding
-  - model_name: standard-gpt-4o
+  - model_name: standard-{{openai_large}}
     litellm_params:
       model: openai/{{openai_large}}
       api_key: "your-api-key"
@@ -365,9 +367,9 @@ litellm_settings:
   
   model_group_settings:
     forward_client_headers_to_llm_api:
-      - byok-fixed-gpt-4o-mini
+      - byok-fixed-{{openai_small}}
       - byok-wildcard/*
-      # Note: standard-gpt-4o is NOT included, so no headers forwarded
+      # Note: standard-{{openai_large}} is NOT included, so no headers forwarded
 
 general_settings:
   # Enable OpenAI organization header forwarding (optional)
@@ -389,6 +391,10 @@ general_settings:
 1. **檢查模型名稱**：確認您請求中的模型名稱與組態相符
 2. **驗證模式比對**：萬用字元模式必須完全相符
 3. **檢視記錄**：啟用詳細記錄以查看標頭處理
+
+### 健康的帳號收到「No deployments available」 {#healthy-accounts-receive-no-deployments-available}
+
+如果健康的帳號收到 `429 No deployments available for selected model`，請參閱[復原既有部署的冷卻狀態](../tutorials/claude_code_byok.md#model-is-unavailable-for-everyone-after-one-user-hits-their-limit)。
 
 ### 提供者錯誤 {#provider-errors}
 

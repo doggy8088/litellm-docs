@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 LLM-as-a-Judge 防護欄"
+sidebar_label: "LLM-as-a-Judge"
+description: "在 LiteLLM AI 閘道上以評審模型依加權標準為每個請求或回應評分 0-100，並封鎖或記錄低於門檻的呼叫。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

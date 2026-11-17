@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM AI 閘道上的自訂程式碼防護欄"
+sidebar_label: "自訂程式碼防護欄"
+description: "在 LiteLLM AI 閘道上以沙箱化的類 Python 程式碼撰寫防護欄邏輯，使用內建的 regex 與 JSON 輔助函式來阻擋或標記請求。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -386,7 +392,7 @@ def apply_guardrail(inputs, request_data, input_type):
 - ❌ 不可使用 `exec()` 或 `eval()`
 - ✅ 僅能透過內建的 `http_request`、`http_get`、`http_post` 原語進行 HTTP 請求，目標為公開位址或列於 `user_url_allowed_hosts` 中的主機（請參閱 [被封鎖的目的地](#blocked-destinations)）
 - ✅ 僅可使用 LiteLLM 提供的原語
-- ⏱ 每次執行都受 guardrail 的 `timeout` 限制（請參閱 [執行逾時](#execution-timeout)）
+- 每次執行都受 guardrail 的 `timeout` 限制（請參閱 [執行逾時](#execution-timeout)）
 
 ## 每次請求使用 {#per-request-usage}
 

@@ -50,7 +50,35 @@ default_vertex_config:
 
 - `vertex_project`（選用）：Google Cloud 專案 ID（可在設定中設置）
 - `vertex_location`（選用）：Vertex AI 位置（可在設定中設置，預設：us-central1）
-- `model`（選用）：模型名稱，用於決定全域模型的 Vertex 區域
+- `model`（選用）：模型名稱，用於決定全域模型的 Vertex 區域，並挑選 `use_in_pass_through` 部署
+
+### 已釘選的部署 {#pinned-deployments}
+
+當 `model` 指定了一個 `use_in_pass_through` Vertex AI 部署，且代理沒有 `default_vertex_config` 或 `DEFAULT_VERTEXAI_PROJECT` 時，session 會使用該部署的專案與區域。若 `vertex_project` 或 `vertex_location` 查詢參數與該部署的值不同，連線會以代碼 `1008` 關閉，原因為 `Rejected Request: vertex_location is pinned by the deployment, see configurable_clientside_auth_params`。若一組 `vertex_project` 與 `vertex_location` 與另一個 `use_in_pass_through` 部署相符，則會改透過該部署連線。
+
+若要讓呼叫者自行挑選區域或專案，請將該參數列入該部署的 `configurable_clientside_auth_params`，或在整個代理範圍設定 `general_settings.allow_client_side_credentials: true`。
+
+當代理設定了 `default_vertex_config` 時，它所設定的每個欄位都會以相同方式釘選 session。若 `vertex_project` 或 `vertex_location` 查詢參數與其不同，連線會以代碼 `1008` 關閉，原因為 `Rejected Request: vertex_location is pinned by default_vertex_config, see allow_client_side_credentials`。`default_vertex_config` 未設定的區域仍由呼叫者決定，因為它只決定由哪個 Google 端點為 session 提供服務。未被任何設定釘選的專案則不然，因為它決定了代理的憑證要花在誰的配額與帳單上。此時，若 `vertex_project` 不是代理自己的 `VERTEXAI_PROJECT` 或 `DEFAULT_VERTEXAI_PROJECT`，連線會以代碼 `1008` 關閉，原因為 `Rejected Request: vertex_project must come from the proxy's configuration, see allow_client_side_credentials`。`default_vertex_config` 沒有逐欄位的選擇性啟用，因此只有 `general_settings.allow_client_side_credentials: true` 能解除它的釘選。
+
+Google 的 SDK 會將 setup 訊息的 `model` 送出為完整的 `projects/<project>/locations/<location>/publishers/google/models/<model>` 路徑。代理會在轉送訊息之前，將該路徑中的專案與區域換成 session 自己的值，使 session 保持在管理員所選的專案與區域上。以二進位 frame 送出的 setup 訊息也會經過相同改寫，而非 UTF-8 文字者會以代碼 `1008` 關閉連線。設定了 `allow_client_side_credentials: true` 時，該路徑會原樣轉送。
+
+```yaml
+model_list:
+  - model_name: gemini-live
+    litellm_params:
+      model: vertex_ai/gemini-3.8-live
+      vertex_project: my-project
+      vertex_location: us-central1
+      vertex_credentials: os.environ/GOOGLE_APPLICATION_CREDENTIALS
+      use_in_pass_through: true
+      configurable_clientside_auth_params: ["vertex_location"] # optional, lets callers pick the region
+```
+
+```javascript
+const ws = new WebSocket('ws://localhost:4000/vertex_ai/live?model=gemini-live');
+```
+
+<SinceVersion v="1.111.0" />
 
 ### 連線範例 {#example-connection}
 
@@ -173,7 +201,9 @@ import websockets
 async def chat_with_gemini():
     uri = "ws://localhost:4000/vertex_ai/live?vertex_project=your-project-id"
     
-    async with websockets.connect(uri) as websocket:
+    headers = {"Authorization": "Bearer sk-<your-litellm-api-key>"}
+
+    async with websockets.connect(uri, additional_headers=headers) as websocket:
         # Setup
         setup = {
             "setup": {
@@ -248,6 +278,8 @@ ws.onmessage = function(event) {
 ```
 Vertex AI auth failed: set a use_in_pass_through vertex model, default_vertex_config, or DEFAULT_VERTEXAI_* env
 ```
+
+若 `vertex_project` 或 `vertex_location` 查詢參數移動了已釘選的部署或 `default_vertex_config` 所設定的欄位，或該 `vertex_project` 是代理沒有任何設定的，連線會在呼叫 Vertex AI 之前以代碼 `1008` 關閉。請參閱[已釘選的部署](#pinned-deployments)。
 
 ## 驗證 {#authentication}
 

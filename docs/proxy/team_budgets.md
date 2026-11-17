@@ -89,7 +89,7 @@ curl -X POST 'http://0.0.0.0:4000/team/new' \
 
 <TabItem value="api" label="API">
 
-💡 **團隊="QA Prod Bot" 的預算將套用到此團隊**
+**團隊="QA Prod Bot" 的預算將套用到此團隊**
 
 ```shell
 curl -X POST 'http://0.0.0.0:4000/key/generate' \

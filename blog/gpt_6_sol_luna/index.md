@@ -8,6 +8,8 @@ authors:
   - mateo
   - kerry
 description: "LiteLLM 對 GPT-6 Sol 與 GPT-6 Luna 的 Day 0 支援，價格僅為其 GPT-5.6 對應模型的一半。"
+card_title: "GPT-6 Sol 與 GPT-6 Luna"
+card_summary: "兩個 GPT-6 變體，價格為其 GPT-5.6 對應模型的一半，並以 GPT-5 請求家族的方式路由。"
 tags: [openai, gpt-6, gpt-6-sol, gpt-6-luna, completion, day 0 support]
 hide_table_of_contents: false
 ---
@@ -135,7 +137,7 @@ Flex 與 Batch 的費率為上述一半，Priority 則為兩倍；LiteLLM 會從
 
 `temperature` 僅在 reasoning 關閉時適用，因此請連同 `reasoning_effort="none"` 一併送出，如上方 Luna 範例所示。若未提供，LiteLLM 會丟棄或拒絕該參數，因為預設 effort 為 `medium`。
 
-這兩個模型都支援 OpenAI 明確的 prompt cache breakpoint，LiteLLM 會在 `/chat/completions`、`/responses` 與 `/v1/messages` 上直接轉送；請參閱 [prompt caching](/docs/completion/prompt_caching)。OpenAI 也表示，在對話中途變更 reasoning effort 或 tools 不再會破壞 cache，若您將不同 effort 等級路由到同一個 deployment，這點就很重要。
+這兩個模型都支援 OpenAI 明確的 prompt cache breakpoint，LiteLLM 會在 `/chat/completions`、`/responses` 與 `/v1/messages` 上直接轉送；請參閱 [prompt caching](../../docs/completion/prompt_caching)。OpenAI 也表示，在對話中途變更 reasoning effort 或 tools 不再會破壞 cache，若您將不同 effort 等級路由到同一個 deployment，這點就很重要。
 
 ## 回饋 {#feedback}
 

@@ -9,7 +9,7 @@ Mistral 的透傳端點 - 直接呼叫提供者專屬端點，使用原生格式
 | 終端使用者追蹤 | ❌ | [若您需要，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ✅ | |
 
-只要將 `https://api.mistral.ai/v1` 替換為 `LITELLM_PROXY_BASE_URL/mistral` 🚀
+只要將 `https://api.mistral.ai/v1` 替換為 `LITELLM_PROXY_BASE_URL/mistral`
 
 #### **使用範例** {#example-usage}
 

@@ -1,3 +1,9 @@
+---
+title: "Sarvam AI API 與 LiteLLM：Python SDK 與閘道"
+sidebar_label: "Sarvam.ai"
+description: "以 sarvam/ 前綴將聊天請求傳送至 sarvam-m 等 Sarvam AI 文字模型，再透過 AI 閘道提供給 OpenAI 用戶端與 curl。"
+---
+
 # Sarvam.ai {#sarvamai}
 
 import Tabs from '@theme/Tabs';

@@ -6,7 +6,7 @@ import TabItem from '@theme/TabItem';
 
 在互動式遊樂場介面中並排比較多個 LLM 模型。評估模型回應、效能指標與成本，以便針對您的使用情境做出明智決策，判斷哪些模型最適合。
 
-此功能在 **v1.80.0-stable 及以上版本可用**。
+<SinceVersion v="1.80.5" />
 
 ## 概覽 {#overview}
 

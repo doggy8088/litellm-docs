@@ -1,3 +1,9 @@
+---
+title: "EmpirioLabs AI API 與 LiteLLM：設定"
+sidebar_label: "EmpirioLabs AI"
+description: "從 LiteLLM Python SDK 或 AI Gateway 呼叫 EmpirioLabs AI 託管的 Qwen3.7、DeepSeek V4、GLM-5.1 與 Kimi K2.6，支援串流與 reasoning_effort。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

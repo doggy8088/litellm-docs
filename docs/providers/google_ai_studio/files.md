@@ -1,3 +1,9 @@
+---
+title: "Gemini Files API (Beta) 搭配 LiteLLM"
+sidebar_label: "[BETA] Google AI Studio (Gemini) Files API"
+description: "Beta：透過 LiteLLM AI 閘道將大型媒體檔案上傳至 Google AI Studio (Gemini) 供 generateContent 使用，包含 config.yaml 設定與 Azure Blob Storage。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -234,7 +240,7 @@ file = client.files.create(
     purpose="user_data",
     extra_body={
         "target_model_names": "{{gemini_flash}}",
-        "target_storage": "azure_storage"  # 👈 Use Azure Blob Storage
+        "target_storage": "azure_storage"  # Use Azure Blob Storage
     }
 )
 

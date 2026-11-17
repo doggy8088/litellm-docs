@@ -1,3 +1,7 @@
+---
+sidebar_label: "預算路由"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -264,7 +268,7 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
-## ✨ 標籤預算 {#-tag-budgets}
+## 標籤預算 {#tag-budgets}
 
 <EnterpriseFeature />
 
@@ -366,7 +370,7 @@ router_settings:
       budget_limit: 0.000000000001 # float of $ value budget for time period
       time_period: 1d # can be 1d, 2d, 30d, 1mo, 2mo
   
-  # 👇 Add this: Set Redis Host, Port, and Password if using multiple instance of LiteLLM
+  # Add this: Set Redis Host, Port, and Password if using multiple instance of LiteLLM
   redis_host: os.environ/REDIS_HOST
   redis_port: os.environ/REDIS_PORT
   redis_password: os.environ/REDIS_PASSWORD

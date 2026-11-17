@@ -1,7 +1,16 @@
+---
+title: "Groq API 搭配 LiteLLM：Python SDK 與閘道"
+sidebar_label: "Groq"
+description: "從 Python SDK 或 AI 閘道在 Groq 上執行 Llama 3.3、Llama 4 Scout 與 Maverick，以及 Qwen3，支援串流、工具、視覺與 Whisper 轉錄。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Groq {#groq}
+
+LiteLLM 透過單一 OpenAI 格式的 API，從 Python SDK 或 AI 閘道以 `groq/` 前綴呼叫所有 Groq 模型，包括 Llama 聊天模型與 Whisper 語音轉文字。
+
 https://groq.com/
 
 :::tip

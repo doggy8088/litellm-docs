@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock 圖像生成"
+sidebar_label: "AWS Bedrock - 圖像生成"
+description: "透過 LiteLLM 在 AWS Bedrock 上以 Stable Diffusion、Titan Image Generator 與 Nova Canvas 生成圖像，可從 Python SDK 或 AI 閘道呼叫，並支援圖像編輯。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -370,6 +370,27 @@ curl -s http://localhost:4000/v1/mcp/server \
 
 如果已啟用 `LITELLM_USE_SHORT_MCP_TOOL_PREFIX`，變更 id 也會變更伺服器的工具前綴。透過 UI 或 `/v1/mcp/server` 新增的伺服器已具有穩定的 id。
 
+### 跳過工具輸出驗證 {#skipping-tool-output-validation}
+
+<SinceVersion v="1.110.0" />
+
+當工具宣告了 `outputSchema` 時，MCP 用戶端函式庫會逐一檢查每個結果是否符合該結構。為了找到該結構，用戶端需要伺服器的工具清單。未傳送 `Mcp-Session-Id` 標頭的呼叫者，每次呼叫都會取得一個全新的上游工作階段，因此用戶端沒有任何快取，必須在每次 `tools/call` 之前下載完整的 `tools/list`。對於擁有數百個工具的伺服器，這可能意味著每次呼叫要傳輸數百 KB。
+
+在伺服器的 `mcp_info` 中設定 `skip_tool_output_validation`，即可跳過此檢查與額外的清單請求：
+
+```yaml
+mcp_servers:
+  internal_docs:
+    url: "https://docs.internal.example/mcp"
+    transport: "http"
+    mcp_info:
+      skip_tool_output_validation: true
+```
+
+此值必須是布林值，預設為 `false`。相同的鍵也可用於 `POST /v1/mcp/server` 與 `PUT /v1/mcp/server` 的 `mcp_info`。
+
+啟用此設定後，LiteLLM 會直接回傳上游的結果，即使其結構化內容不符合所宣告的 `outputSchema`。需要該保證的呼叫者應保持此設定關閉。固定使用 `protocol_version: "2026-07-28"` 的伺服器會忽略此設定，因為該修訂版無論如何都會在每次呼叫前列出工具。
+
 ### MCP 逐步導覽 {#mcp-walkthroughs}
 
 - **Strands (STDIO)** – [觀看教學](https://screen.studio/share/ruv4D73F)
@@ -752,7 +773,7 @@ config = {
             "url": "http://localhost:4000/github_mcp/mcp",
             "headers": {
                 "x-litellm-api-key": "Bearer sk-<your-litellm-api-key>",
-                "x-litellm-end-user-id": "customer_123",  # 👈 CUSTOMER ID
+                "x-litellm-end-user-id": "customer_123",  # CUSTOMER ID
                 "Authorization": "Bearer gho_token"
             }
         }
@@ -1103,13 +1124,15 @@ LiteLLM 提供 MCP Gateway，讓管理員可將所有 MCP 伺服器加入 LiteLL
 LiteLLM Python SDK 可作為 MCP 橋接器，讓 MCP 工具可與所有 LiteLLM 支援的模型搭配使用。LiteLLM 提供以下用於 MCP 的功能
 
 - **列出** 可用的 MCP 工具：OpenAI 用戶端可以檢視所有可用的 MCP 工具
-  - `litellm.experimental_mcp_client.load_mcp_tools` 以列出所有可用的 MCP 工具
+  - `litellm.mcp_client.load_mcp_tools` 以列出所有可用的 MCP 工具
 - **呼叫** MCP 工具：OpenAI 用戶端可以呼叫 MCP 工具
-  - `litellm.experimental_mcp_client.call_openai_tool` 以在 MCP 伺服器上呼叫 OpenAI 工具
+  - `litellm.mcp_client.call_openai_tool` 以在 MCP 伺服器上呼叫 OpenAI 工具
+
+`litellm.experimental_mcp_client` 是 `litellm.mcp_client` 的已棄用別名。它仍可運作，但在匯入時會發出 `DeprecationWarning`，因此請將匯入更新為新名稱。
 
 ### 1. 列出可用的 MCP 工具 {#1-list-available-mcp-tools}
 
-在此範例中，我們將使用 `litellm.experimental_mcp_client.load_mcp_tools` 來列出任何 MCP 伺服器上的所有可用 MCP 工具。這個方法可用兩種方式：
+在此範例中，我們將使用 `litellm.mcp_client.load_mcp_tools` 來列出任何 MCP 伺服器上的所有可用 MCP 工具。這個方法可用兩種方式：
 
 - `format="mcp"` - （預設）回傳 MCP 工具
   - 回傳：`mcp.types.Tool`
@@ -1125,7 +1148,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 import os
 import litellm
-from litellm import experimental_mcp_client
+from litellm import mcp_client
 
 
 server_params = StdioServerParameters(
@@ -1140,7 +1163,7 @@ async with stdio_client(server_params) as (read, write):
         await session.initialize()
 
         # Get tools
-        tools = await experimental_mcp_client.load_mcp_tools(session=session, format="openai")
+        tools = await mcp_client.load_mcp_tools(session=session, format="openai")
         print("MCP TOOLS: ", tools)
 
         messages = [{"role": "user", "content": "what's (3 + 5)"}]
@@ -1165,7 +1188,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 import os
 from openai import OpenAI
-from litellm import experimental_mcp_client
+from litellm import mcp_client
 
 server_params = StdioServerParameters(
     command="python3",
@@ -1179,7 +1202,7 @@ async with stdio_client(server_params) as (read, write):
         await session.initialize()
 
         # Get tools using litellm mcp client
-        tools = await experimental_mcp_client.load_mcp_tools(session=session, format="openai")
+        tools = await mcp_client.load_mcp_tools(session=session, format="openai")
         print("MCP TOOLS: ", tools)
 
         # Use OpenAI SDK pointed to LiteLLM proxy
@@ -1202,12 +1225,12 @@ async with stdio_client(server_params) as (read, write):
 ### 2. 列出並呼叫 MCP 工具 {#2-list-and-call-mcp-tools}
 
 在此範例中，我們將使用 
-- `litellm.experimental_mcp_client.load_mcp_tools` 來列出任何 MCP 伺服器上的所有可用 MCP 工具
-- `litellm.experimental_mcp_client.call_openai_tool` 來在 MCP 伺服器上呼叫 OpenAI 工具
+- `litellm.mcp_client.load_mcp_tools` 來列出任何 MCP 伺服器上的所有可用 MCP 工具
+- `litellm.mcp_client.call_openai_tool` 來在 MCP 伺服器上呼叫 OpenAI 工具
 
-第一個 llm 回應會回傳 OpenAI 工具清單。我們從 LLM 回應中取出第一個工具呼叫，並將其傳遞給 `litellm.experimental_mcp_client.call_openai_tool`，以在 MCP 伺服器上呼叫該工具。
+第一個 llm 回應會回傳 OpenAI 工具清單。我們從 LLM 回應中取出第一個工具呼叫，並將其傳遞給 `litellm.mcp_client.call_openai_tool`，以在 MCP 伺服器上呼叫該工具。
 
-#### `litellm.experimental_mcp_client.call_openai_tool` 的運作方式 {#how-litellmexperimental_mcp_clientcall_openai_tool-works}
+#### `litellm.mcp_client.call_openai_tool` 的運作方式 {#how-litellmmcp_clientcall_openai_tool-works}
 
 - 接受來自 LLM 回應的 OpenAI 工具呼叫
 - 將 OpenAI 工具呼叫轉換為 MCP 工具
@@ -1223,7 +1246,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 import os
 import litellm
-from litellm import experimental_mcp_client
+from litellm import mcp_client
 
 
 server_params = StdioServerParameters(
@@ -1238,7 +1261,7 @@ async with stdio_client(server_params) as (read, write):
         await session.initialize()
 
         # Get tools
-        tools = await experimental_mcp_client.load_mcp_tools(session=session, format="openai")
+        tools = await mcp_client.load_mcp_tools(session=session, format="openai")
         print("MCP TOOLS: ", tools)
 
         messages = [{"role": "user", "content": "what's (3 + 5)"}]
@@ -1252,7 +1275,7 @@ async with stdio_client(server_params) as (read, write):
 
         openai_tool = llm_response["choices"][0]["message"]["tool_calls"][0]
         # Call the tool using MCP client
-        call_result = await experimental_mcp_client.call_openai_tool(
+        call_result = await mcp_client.call_openai_tool(
             session=session,
             openai_tool=openai_tool,
         )
@@ -1290,7 +1313,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 import os
 from openai import OpenAI
-from litellm import experimental_mcp_client
+from litellm import mcp_client
 
 server_params = StdioServerParameters(
     command="python3",
@@ -1304,7 +1327,7 @@ async with stdio_client(server_params) as (read, write):
         await session.initialize()
 
         # Get tools using litellm mcp client
-        tools = await experimental_mcp_client.load_mcp_tools(session=session, format="openai")
+        tools = await mcp_client.load_mcp_tools(session=session, format="openai")
         print("MCP TOOLS: ", tools)
 
         # Use OpenAI SDK pointed to LiteLLM proxy
@@ -1325,7 +1348,7 @@ async with stdio_client(server_params) as (read, write):
         tool_call = llm_response.choices[0].message.tool_calls[0]
         
         # Call the tool using MCP client
-        call_result = await experimental_mcp_client.call_openai_tool(
+        call_result = await mcp_client.call_openai_tool(
             session=session,
             openai_tool=tool_call.model_dump(),
         )

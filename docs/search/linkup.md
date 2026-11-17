@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 Linkup Search API：Python 與閘道"
+sidebar_label: "Linkup 搜尋"
+description: "將 Linkup 網路搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，支援深度搜尋、附來源的答案與日期篩選。"
+---
 # Linkup 搜尋 {#linkup-search}
+
+[Linkup](https://linkup.so) 是網路搜尋 API，可為 AI 應用程式回傳搜尋結果或附來源的答案；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [https://linkup.so](https://linkup.so)
 
@@ -127,6 +134,12 @@ response = search(
     structuredOutputSchema='{"type": "object", "properties": {"revenue": {"type": "string"}, "year": {"type": "string"}}}'
 )
 ```
+
+## 成本 {#cost}
+
+LiteLLM 會依據 [model cost map](/docs/proxy/model_cost_map) 為每次 Linkup 搜尋計價。以 `depth: "deep"` 傳送的搜尋會以 `linkup/search-deep` 項目計費，而 `standard` 搜尋（或未指定 `depth` 的搜尋）則以 `linkup/search` 計費。此規則適用於 SDK、proxy 上的每個 `/search` 路由，以及 proxy 為[網路搜尋攔截](/docs/integrations/websearch_interception)執行的網路搜尋。
+
+若要為兩種深度都以您自己的費率計費，請在搜尋工具上設定 `input_cost_per_query`，如 [Custom Per-Query Pricing](/docs/search#custom-per-query-pricing) 所述。您以 `litellm.register_model` 為 `linkup/search` 註冊的價格，會持續套用到深度搜尋，直到您也註冊 `linkup/search-deep` 為止。
 
 ## 回應格式 {#response-format}
 

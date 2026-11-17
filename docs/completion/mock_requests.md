@@ -1,4 +1,8 @@
-# Mock Completion() 回應 - 節省測試成本 💰 {#mock-completion-responses---save-testing-costs-}
+---
+sidebar_label: 模擬回應
+---
+
+# Mock Completion() 回應 - 節省測試成本 {#mock-completion-responses---save-testing-costs}
 
 為了測試用途，您可以搭配 `completion()` 與 `mock_response` 來模擬呼叫 completion 端點。 
 

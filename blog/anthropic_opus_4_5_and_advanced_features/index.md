@@ -27,7 +27,7 @@ import TabItem from '@theme/TabItem';
 | Input Examples | Claude Opus 4.5, Sonnet 4.5 |
 | Effort 參數 | 僅 Claude Opus 4.5 |
 
-支援的提供者：[Anthropic](/docs/providers/anthropic)、[Bedrock](/docs/providers/bedrock)、[Vertex AI](/docs/providers/vertex_partner#vertex-ai---anthropic-claude)、[Azure AI](/docs/providers/azure_ai)。
+支援的提供者：[Anthropic](../../docs/providers/anthropic)、[Bedrock](../../docs/providers/bedrock)、[Vertex AI](../../docs/providers/vertex_partner#vertex-ai---anthropic-claude)、[Azure AI](../../docs/providers/azure_ai)。
 
 ## 使用 {#usage}
 
@@ -116,7 +116,7 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 
 LiteLLM 使用 boto3 函式庫與 Bedrock 進行驗證。
 
-如需更多與 Bedrock 驗證的方式，請參閱 [Bedrock 文件](/docs/providers/bedrock#authentication)。
+如需更多與 Bedrock 驗證的方式，請參閱 [Bedrock 文件](../../docs/providers/bedrock#authentication)。
 
 :::
 

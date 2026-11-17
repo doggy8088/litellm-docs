@@ -1,7 +1,7 @@
 ---
 title: 在企業版部署 LiteAdmin MCP
 sidebar_label: 部署 MCP（企業版）
-description: 在整合式或元件化的 LiteLLM 部署中啟用 LiteAdmin MCP，並連接 Claude Code 或 Codex。
+description: 在單體或元件化的 LiteLLM 部署中啟用 LiteAdmin MCP，並連接 Claude Code 或 Codex。
 toc_max_heading_level: 2
 ---
 
@@ -16,7 +16,7 @@ import TabItem from '@theme/TabItem';
 
 :::info 圖片可用性
 
-**LiteLLM 1.106.x 及更新版本可用。** 請從 HTTPS 部署與資料庫開始。託管預設為關閉；基礎 Enterprise 授權已涵蓋此功能
+<SinceVersion v="1.106.0" /> 請從 HTTPS 部署與資料庫開始。託管預設為關閉；基礎 Enterprise 授權已涵蓋此功能
 
 :::
 
@@ -25,7 +25,7 @@ import TabItem from '@theme/TabItem';
 保留您現有的 `DATABASE_URL`、`LITELLM_MASTER_KEY` 和 proxy 設定。請在啟用端點之前，將任何名為 `admin` 的 MCP 伺服器別名重新命名，因為該端點會保留 `/admin`
 
 <Tabs groupId="liteadmin-deployment">
-<TabItem value="unified" label="整合式 Docker" default>
+<TabItem value="unified" label="Docker" default>
 
 將這些項目新增到您現有的 `litellm` service。請透過您的 secret store 或 Compose 環境提供授權
 
@@ -44,12 +44,12 @@ services:
 docker compose up -d litellm
 ```
 
-將 `/admin/mcp` 導向容器現有的 port，預設為 `4000`。這適用於 unified、database 和 non-root 映像
+將 `/admin/mcp` 導向容器現有的 port，預設為 `4000`。請以 proxy 模式使用共用的 LiteLLM 映像檔
 
 </TabItem>
 <TabItem value="componentized" label="元件化（Helm）">
 
-對於 [`helm/litellm` chart](https://github.com/BerriAI/litellm/tree/main/helm/litellm)，將這些項目合併到 `backend.extraEnv`。重複使用現有的授權與公開 URL 項目，以避免重複
+對於 [`helm/litellm` chart](https://github.com/BerriAI/litellm/tree/main/litellm/deploy/helm/litellm)，將這些項目合併到 `backend.extraEnv`。重複使用現有的授權與公開 URL 項目，以避免重複
 
 ```yaml title="values.yaml (componentized chart fragment)"
 backend:
@@ -67,7 +67,7 @@ backend:
 
 將 `litellm-enterprise` 和 `license` 取代為您現有的 Secret 名稱與 key，然後套用您的 Helm upgrade
 
-該 chart 的 ingress 會將 `/admin/mcp` 路由到 backend。若使用自訂 ingress，請使用 backend service port，預設為 `4001`，並保留 path 與 `Authorization` header。gateway 元件不提供此端點
+該 chart 的 ingress 會將 `/admin/mcp` 路由到 backend。若使用自訂 ingress，請使用 backend service port，預設為 `4001`，並保留 path 與 `Authorization` header。gateway 元件不提供此端點。使用 `monolith.enabled: true` 時，請將相同的環境項目放在 `gateway.extraEnv` 下，並路由到 port `4000` 的 monolith Service
 
 </TabItem>
 </Tabs>
@@ -185,8 +185,8 @@ curl --fail-with-body https://gateway.example.com/admin/mcp \
 | 症狀 | 檢查項目 |
 | --- | --- |
 | 啟動失敗 | 檢查啟動錯誤中的授權、enable flag，以及衝突的 header 名稱 |
-| 缺少 MCP 依賴項 | 使用 LiteLLM 1.106.x 或更新版本的 unified 或 backend 映像 |
-| `404` | 檢查映像版本、enable flag，以及容器重新啟動。將 `/admin/mcp` 原樣路由到 unified proxy 或 backend |
+| 缺少 MCP 依賴項 | 使用包含 MCP 依賴項的相容 LiteLLM 映像 <SinceVersion v="1.106.0" /> |
+| `404` | 檢查映像版本、enable flag，以及容器重新啟動。將 `/admin/mcp` 原樣路由到 proxy 或 backend |
 | key 模式下出現 `401` 或 `403` | 使用有效的個人 `proxy_admin` key |
 | OAuth2 proxy 驗證失敗 | 檢查受信任的直接對等端、對應的身分 header，以及已儲存的使用者角色 |
 | Host 或 Origin 被拒絕 | 將 `PROXY_BASE_URL` 或 `LITELLM_MCP_PUBLIC_URL` 對應到您的公開 HTTPS origin |

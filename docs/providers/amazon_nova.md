@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI Gateway 使用 Amazon Nova API"
+sidebar_label: "Amazon Nova"
+description: "透過 Python SDK 或 AI Gateway 呼叫 Amazon Nova Micro、Lite、Pro 與 Premier，支援串流、工具呼叫，並可依每個請求設定 temperature 或 top_p。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

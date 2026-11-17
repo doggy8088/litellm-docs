@@ -84,21 +84,25 @@ async with ClaudeSDKClient(options=options) as client:
 
 ## 完整範例 {#complete-example}
 
-請參閱我們的 [cookbook 範例](https://github.com/BerriAI/litellm/tree/main/cookbook/anthropic_agent_sdk)，取得一個完整的互動式 CLI 代理程式，它會：
+請參閱我們的 [封存的 cookbook 範例](https://github.com/BerriAI/litellm/tree/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/anthropic_agent_sdk)，取得一個完整的互動式 CLI 代理程式，它會：
 - 即時串流回應
 - 動態切換模型
 - 從 proxy 取得可用模型
 
+這個 cookbook 已從 `main` 移除。進入範例目錄前，請先 checkout 封存的 commit：
+
 ```bash
-# Clone and run the example
 git clone https://github.com/BerriAI/litellm.git
-cd litellm/cookbook/anthropic_agent_sdk
-uv add -r requirements.txt
-python main.py
+cd litellm
+git checkout 89a6b5fbb26b632ef0faf633b0d3cf317d73deaa
+cd cookbook/anthropic_agent_sdk
+uv venv
+uv pip install -r requirements.txt
+uv run --no-project python main.py
 ```
 
 ## 相關資源 {#related-resources}
 
 - [Claude Agent SDK 文件](https://github.com/anthropics/anthropic-agent-sdk)
 - [LiteLLM Proxy 快速開始](../proxy/quick_start)
-- [完整 Cookbook 範例](https://github.com/BerriAI/litellm/tree/main/cookbook/anthropic_agent_sdk)
+- [完整 Cookbook 範例](https://github.com/BerriAI/litellm/tree/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/anthropic_agent_sdk)

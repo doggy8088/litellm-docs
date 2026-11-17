@@ -1,3 +1,7 @@
+---
+sidebar_label: "Tag Routing"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -14,12 +18,12 @@ model_list:
       model: openai/fake
       api_key: fake-key
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
-      tags: ["free"] # 👈 Key Change
+      tags: ["free"] # Key Change
   - model_name: {{openai_large}}
     litellm_params:
       model: openai/{{openai_large}}
       api_key: os.environ/OPENAI_API_KEY
-      tags: ["paid"] # 👈 Key Change
+      tags: ["paid"] # Key Change
   - model_name: {{openai_large}}
     litellm_params:
       model: openai/{{openai_large}}
@@ -28,7 +32,7 @@ model_list:
       tags: ["default"] # OPTIONAL - All untagged requests will get routed to this
 
 router_settings:
-  enable_tag_filtering: True # 👈 Key Change
+  enable_tag_filtering: True # Key Change
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
@@ -135,7 +139,7 @@ model_list:
       model: openai/fake
       api_key: fake-key
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
-      tags: ["default"] # 👈 Key Change - All untagged requests will get routed to this
+      tags: ["default"] # Key Change - All untagged requests will get routed to this
     model_info:
       id: "default-model"
 ```
@@ -445,7 +449,13 @@ curl http://localhost:4000/v1/chat/completions \
 
 以標籤為基礎的路由會透過檢查某個部署的字面標籤字串是否剛好匹配，來推斷「這個標籤是否用於路由」。這個經驗法則通常是對的，但呼叫者自訂的 `&`/`!` 標籤若完全不命中任何項目，會被視為可疑雜訊，並且即使呼叫者確實想要的是誠實但無法滿足的請求，也可能阻擋 `allow_fail_open` 的回退（見上文）。設定 `router_settings.tag_routing_prefix` 後，呼叫者就能將特定標籤標記為受信任、無歧義的路由指示，對使用它的標籤徹底消除這種歧義。
 
-任何以已設定前綴開頭的請求標籤都會移除前綴，並使用一般的 `!`/`&`/一般標籤邏輯來比對，因為呼叫者已明確宣告路由意圖，因此不需要詞彙檢查。未加前綴的標籤則維持現有處理方式不變，因此採用此前綴不需要遷移。
+任何以已設定前綴開頭的請求標籤都會移除前綴，並使用一般的 `!`/`&`/一般標籤邏輯來比對，因為呼叫者已明確宣告路由意圖，因此不需要詞彙檢查。一旦設定了前綴，未帶前綴的請求標籤會被標籤路由忽略：它永遠不會被比對、要求或排除，因此像 `user_id:234` 這樣的支出或歸屬標籤不再會造成 `no_deployments_with_tag_routing`。設定在金鑰、團隊或專案上的標籤（`metadata.inherited_tags`）是例外。呼叫者無法控制這些標籤，因此它們不論有無前綴都會繼續參與路由。
+
+:::caution
+
+在呼叫者以一般未加前綴標籤（含 `!` 與 `&` 標籤）進行路由的 proxy 上設定 `tag_routing_prefix`，會停止這些呼叫者的路由。啟用時，請將每位呼叫者的路由標籤改為加上前綴（`route:region:eu`、`route:!provider:openai`），或改將這些路由標籤設定在金鑰或團隊上。
+
+:::
 
 ### 快速範例 {#quick-example-2}
 
@@ -517,7 +527,7 @@ curl http://localhost:4000/v1/chat/completions \
 | 預設值 | `""`。`str.startswith("")` 會匹配每個字串，因此在設定前此機制完全不會作用 |
 | 比對 | 完全字面前綴，不會自動附加分隔符。請自行設定尾部分隔符（例如 `"route:"`，而不是 `"route"`）— 沒有分隔符的前綴可能會意外匹配到剛好以相同字元開頭的無關標籤 |
 | 剝除順序 | 會先剝除前綴，再進行 `!`/`&` 解析，因此 `route:!provider:x` 與 `route:&provider:x` 都可正常運作 |
-| 未加前綴的標籤 | 維持現有處理方式不變：一般標籤會走已知標籤詞彙的經驗法則，而 `!`/`&` 標籤則走未知標籤失敗開放防護 |
+| 未加前綴的標籤 | 一旦設定前綴即被忽略：永遠不會被比對、要求或排除，也永遠不會造成 `no_deployments_with_tag_routing`。金鑰、團隊與專案標籤（`metadata.inherited_tags`）不論有無前綴都會繼續參與路由 |
 | 與失敗開放的互動 | 前綴的 `&`/`!` 標籤會被視為 `allow_fail_open` 的未知標籤防護所認定的已知標籤，不受部署標籤詞彙影響 |
 
 ## 依模型群組的標籤過濾（`enable_tag_filtering`） {#per-model-group-tag-filtering-enable_tag_filtering}
@@ -738,7 +748,7 @@ model_list:
       model: openai/fake
       api_key: fake-key
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
-      tags: ["teamA"] # 👈 Key Change
+      tags: ["teamA"] # Key Change
     model_info:
       id: "team-a-model"
   - model_name: fake-openai-endpoint
@@ -746,7 +756,7 @@ model_list:
       model: openai/fake
       api_key: fake-key
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
-      tags: ["teamB"] # 👈 Key Change
+      tags: ["teamB"] # Key Change
     model_info:
       id: "team-b-model"
   - model_name: fake-openai-endpoint
@@ -757,7 +767,7 @@ model_list:
       tags: ["default"] # OPTIONAL - All untagged requests will get routed to this
 
 router_settings:
-  enable_tag_filtering: True # 👈 Key Change
+  enable_tag_filtering: True # Key Change
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY

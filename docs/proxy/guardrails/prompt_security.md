@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Prompt Security 防護欄"
+sidebar_label: "Prompt Security"
+description: "在 LiteLLM AI 閘道上使用 Prompt Security 封鎖提示注入、越獄、PII 外洩與惡意檔案，並支援檔案清理與串流。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

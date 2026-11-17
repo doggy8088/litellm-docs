@@ -2,7 +2,7 @@
 
 ## 概覽 {#overview}
 
-本文 प्रस्तुत了比較 LiteLLM v1.71.1 與先前 litellm 版本的效能基準測試。
+本文 呈現了比較 LiteLLM v1.71.1 與先前 litellm 版本的效能基準測試。
 
 **相關 PR：** [#11097](https://github.com/BerriAI/litellm/pull/11097)
 

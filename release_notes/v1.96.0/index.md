@@ -1,5 +1,6 @@
 ---
-title: "v1.96.0 - MCP 權益、Redis 設定同步與自動路由器脈絡"
+title: "LiteLLM v1.96.0 - MCP 權益、Redis 設定同步與自動路由器脈絡"
+description: "為使用者新增 MCP 權益、MCP 工具結果上的防護欄，以及 GPT-5.6 降價。設定變更會透過 Redis 同步到所有 Pod。"
 slug: "v1-96-0"
 date: 2026-08-09T00:00:00
 authors:

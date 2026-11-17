@@ -740,7 +740,7 @@ async def test_async_completion_azure_caching():
     response1 = await litellm.acompletion(model="azure/chatgpt-v-2",
                             messages=[{
                                 "role": "user",
-                                "content": f"Hi 👋 - i'm async azure {unique_time}"
+                                "content": f"Hi - i'm async azure {unique_time}"
                             }],
                             caching=True)
     await asyncio.sleep(1)
@@ -748,7 +748,7 @@ async def test_async_completion_azure_caching():
     response2 = await litellm.acompletion(model="azure/chatgpt-v-2",
                             messages=[{
                                 "role": "user",
-                                "content": f"Hi 👋 - i'm async azure {unique_time}"
+                                "content": f"Hi - i'm async azure {unique_time}"
                             }],
                             caching=True)
     await asyncio.sleep(1) # success callbacks are done in parallel

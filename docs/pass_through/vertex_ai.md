@@ -46,7 +46,7 @@ model_list:
       vertex_project: adroit-crow-413218
       vertex_location: us-central1
       vertex_credentials: /path/to/credentials.json
-      use_in_pass_through: true # 👈 KEY CHANGE
+      use_in_pass_through: true # KEY CHANGE
 ```
 
 </TabItem>
@@ -491,3 +491,18 @@ curl http://localhost:4000/vertex_ai/v1/projects/${PROJECT_ID}/locations/us-east
 :::info
 `x-pass-` 前綴適用於所有 LLM pass-through 端點，不僅限於 Vertex AI。
 :::
+
+### 移除 Vertex AI 拒絕的 Anthropic Beta 值 {#removing-anthropic-beta-values-vertex-ai-rejects}
+
+<SinceVersion v="1.108.0" />
+
+Anthropic API 接受的某些 `anthropic-beta` 值，會被 Vertex AI 上的 Claude 以 400 拒絕，例如 ``Unexpected value(s) `files-api-2025-04-14` for the `anthropic-beta` header``。當您無法控制的用戶端送出這類值時，請將它列入 `general_settings.vertex_ai_pass_through_drop_anthropic_betas`，`/vertex_ai/*` 與 `/vertex-ai/*` 路由便會在呼叫 Vertex AI 之前將它移除。
+
+```yaml
+general_settings:
+  vertex_ai_pass_through_drop_anthropic_betas: ["files-api-2025-04-14"]
+```
+
+採用此設定後，以 `anthropic-beta: interleaved-thinking-2025-05-14,files-api-2025-04-14` 送出的請求，到達 Vertex AI 時的標頭為 `anthropic-beta: interleaved-thinking-2025-05-14`。用戶端的其他值保持原有順序；若沒有任何值留下，則省略該標頭。以 `x-pass-anthropic-beta` 送出的值同樣會被移除。比對是在去除空格後精確且區分大小寫地進行，而包含多個逗號分隔值的條目會比照標頭的方式拆分。
+
+此清單適用於所有 Vertex AI Claude 模型。若您列入某個其他模型需要的 beta 值，該值也會對該模型移除，而使用該功能 body 欄位的請求便會收到 Vertex AI 回傳的 400。若設定的值不是字串清單，代理會在啟動時停止，並顯示指明該鍵的驗證錯誤。重新載入設定即可套用變更，無需重新啟動；在設定了 `store_model_in_db: true` 的代理上，透過 `/config/field/update` 也一樣。

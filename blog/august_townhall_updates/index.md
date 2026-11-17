@@ -6,7 +6,7 @@ authors:
   - krrish
   - ishaan-alt
 description: "八月 LiteLLM town hall 摘要：79 項安全修補、375 項 bug 修復、142 個功能 commit、新任安全總監、公開狀態儀表板，以及來自 production 的 Auto-Router 結果。"
-tags: [townhall, security, reliability, product]
+tags: [townhall, reliability, product]
 hide_table_of_contents: false
 ---
 

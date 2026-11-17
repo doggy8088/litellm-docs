@@ -22,14 +22,14 @@ model_list:
       model: azure/gpt-4-prod
       api_key: os.environ/AZURE_PROD_API_KEY
       api_base: https://prod.openai.azure.com/
-      tags: ["AWS_IAM_PROD"]  # 👈 Tag for production
+      tags: ["AWS_IAM_PROD"]  # Tag for production
 
   - model_name: gpt-4-dev
     litellm_params:
       model: azure/gpt-4-dev
       api_key: os.environ/AZURE_DEV_API_KEY
       api_base: https://dev.openai.azure.com/
-      tags: ["AWS_IAM_DEV"]  # 👈 Tag for development
+      tags: ["AWS_IAM_DEV"]  # Tag for development
 ```
 
 ## 發出請求 {#make-request}
@@ -180,3 +180,4 @@ litellm_settings:
 - [支出追蹤總覽](cost_tracking.md) - 使用標籤追蹤支出的完整教學
 - [標籤預算](tag_budgets.md) - 依標籤設定預算上限
 - [Virtual Keys 設定](virtual_keys.md) - 標籤追蹤所需
+- [將 Baggage 值對應至標籤](tag_budgets.md#map-baggage-values-to-tags) - 依 W3C `baggage` 標頭為請求加上標籤

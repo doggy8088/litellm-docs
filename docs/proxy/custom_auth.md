@@ -1,361 +1,180 @@
-# 自訂驗證  {#custom-auth}
+# 自訂驗證 {#custom-auth}
 
-您現在可以覆寫預設的 api key 驗證。
+使用 Python handler 驗證 API 請求，該 handler 會驗證您應用程式的憑證，並傳回呼叫者的 LiteLLM 身分。
 
-:::warning[使用自訂驗證的強制執行]
+## 運作方式 {#how-it-works}
 
-預設情況下，自訂驗證只會強制執行您在回傳物件上設定的速率限制。預算與模型存取需要旗標。下表顯示每個控制項要在哪裡設定，以及需要哪些旗標。
+LiteLLM 會將 FastAPI `Request` 與 bearer 憑證傳給您的 async handler。驗證憑證後傳回 `UserAPIKeyAuth`，或擲出例外以拒絕它。傳回的身分會提供用量歸屬以及任何已設定的授權檢查。
+
+:::warning[自訂驗證的強制執行]
+
+傳回 `UserAPIKeyAuth` 並不會啟用每一項授權檢查。設定在該物件上的速率限制會直接套用；預算與模型存取需要額外的旗標。請使用 [自訂驗證權限](./access_management/custom_auth_permissions.md) 設定它們。
 
 :::
 
-## 會被強制執行的項目 {#what-gets-enforced}
+## 前置條件 {#prerequisites}
 
-| 目標 | 設定位置 | 需要的旗標 |
-| --- | --- | --- |
-| key / user / team / end-user 速率限制 | 回傳物件（`rpm_limit`、`team_tpm_limit`、…） | 無 |
-| 每個模型的速率限制，key / team 範圍 | 回傳物件上的 `metadata` / `team_metadata` | 無 |
-| 每個模型的速率限制，project 範圍 | project 記錄（`model_tpm_limit` / `model_rpm_limit`） | `custom_auth_run_common_checks` |
-| team / user / project 預算 | team / user / project 記錄 | `custom_auth_run_common_checks` |
-| team / user / project 模型允許清單 | team / user / project 記錄 | `custom_auth_run_common_checks` |
-| end-user 預算 | end-user 記錄 | `custom_auth_run_common_checks` 或 `enable_post_custom_auth_checks` |
-| key 模型允許清單（`models`） | 回傳物件 | 兩個旗標都要 |
-| key 每個模型的預算（`model_max_budget`） | 回傳物件 | `enable_post_custom_auth_checks` |
-| key 到期（`expires`） | 回傳物件 | `enable_post_custom_auth_checks` |
-| key 純量預算（`max_budget` / `soft_budget`） | 不支援；請使用每個範圍的預算 | 不適用 |
+先準備一個可運作的 proxy 與一個已設定的模型；範例使用 `my-model`。將您的 Python 模組放在 `config.yaml` 旁邊，或放在 proxy 的 Python import path 上。將範例使用的憑證儲存在 proxy 的 `CUSTOM_AUTH_TOKEN` 環境變數中。
 
-**附註：** project 的每個模型限制在關閉旗標時會放在物件的 `project_metadata` 上，但一旦旗標開啟，DB 的 project 記錄會覆寫它，所以請在那裡設定。（透過 `team_metadata` 的 team 每個模型設定則一律保留在物件上。）
+對於既有的驗證服務，請將範例的憑證比對替換為該服務的驗證，並傳回其已驗證的身分。
 
-請參閱 [強制執行預算與模型存取](#enforce-budgets-and-model-access) 與 [key 層級強制執行](#key-level-enforcement) 以查看範例。
+<a id="usage"></a>
 
-## 使用方式 {#usage}
+## 設定 {#setup}
 
-#### 1. 建立自訂驗證檔案。  {#1-create-a-custom-auth-file}
+### 1. 撰寫 handler {#1-create-a-custom-auth-file}
 
-請確認回應型別符合 `UserAPIKeyAuth` pydantic 物件。這會用於記錄該使用者 key 的使用量。
+將它儲存為 `custom_auth.py`。此範例驗證一個應用程式的憑證，並將其識別為 `integration-client`。
 
-```python
+```python title="custom_auth.py"
+import os
+from secrets import compare_digest
+
 from fastapi import Request
-from litellm.proxy._types import UserAPIKeyAuth
+from litellm.proxy._types import ProxyException, UserAPIKeyAuth
 
-async def user_api_key_auth(request: Request, api_key: str) -> UserAPIKeyAuth: 
-    try: 
-        modified_master_key = "sk-my-master-key"
-        if api_key == modified_master_key:
-            return UserAPIKeyAuth(api_key=api_key)
-        raise Exception
-    except: 
-        raise Exception
+
+async def user_api_key_auth(request: Request, api_key: str) -> UserAPIKeyAuth:
+    expected_token = os.environ["CUSTOM_AUTH_TOKEN"]
+    if not expected_token or not api_key or not compare_digest(api_key, expected_token):
+        raise ProxyException(
+            message="Invalid credential",
+            type="authentication_error",
+            param="api_key",
+            code=401,
+        )
+    return UserAPIKeyAuth(api_key=api_key, user_id="integration-client")
 ```
 
-#### 2. 傳入檔案路徑（相對於 config.yaml） {#2-pass-the-filepath-relative-to-the-configyaml}
+### 2. 設定 proxy {#2-pass-the-filepath-relative-to-the-configyaml}
 
-將檔案路徑傳給 config.yaml 
+將模組與函式名稱加入您既有的設定中。請保留您的模型與資料庫設定。
 
-例如，如果兩者都在同一個目錄中 - `./config.yaml` 和 `./custom_auth.py`，會長這樣：
-```yaml 
-model_list: 
-  - model_name: "openai-model"
-    litellm_params: 
-      model: "{{openai_small}}"
-
-litellm_settings:
-  drop_params: True
-  set_verbose: True
-
+```yaml title="config.yaml"
 general_settings:
   custom_auth: custom_auth.user_api_key_auth
 ```
 
-[**實作程式碼**](https://github.com/BerriAI/litellm/blob/caf2a6b279ddbe89ebd1d8f4499f65715d684851/litellm/proxy/utils.py#L122)
-
-#### 3. 啟動 proxy {#3-start-the-proxy}
-```shell
-$ litellm --config /path/to/config.yaml 
-```
-
-## UserAPIKeyAuth 欄位參考 {#userapikeyauth-fields-reference}
-
-這些欄位會直接從回傳物件讀取，並在不需要旗標的情況下強制執行。預算與模型存取則會在旗標後方強制執行（見下方）。
-
-### 身分 {#identity}
-
-請求屬於誰。`*_id` 欄位也會告訴 LiteLLM 在 `custom_auth_run_common_checks: true` 時要載入哪些 DB 記錄。
-
-```python
-def UserAPIKeyAuth(
-    api_key: Optional[str] = None,                    # The API key (will be hashed automatically)
-    token: Optional[str] = None,                      # Hashed token for internal use
-    key_alias: Optional[str] = None,                  # Key alias for identification
-    user_id: Optional[str] = None,                    # User identifier (also used to load the user record)
-    user_email: Optional[str] = None,                 # User email address
-    user_role: Optional[LitellmUserRoles] = None,     # User role (PROXY_ADMIN, INTERNAL_USER, etc.)
-    team_id: Optional[str] = None,                    # Team identifier (also used to load the team record)
-    org_id: Optional[str] = None,                     # Organization identifier (also used to load the org record)
-    end_user_id: Optional[str] = None,                # End-user identifier (also used to load the end-user record)
-): ...
-```
-
-### 速率限制 {#rate-limits}
-
-下方所有範圍都會直接從回傳物件強制執行，不需要旗標。
-
-```python
-def UserAPIKeyAuth(
-    # Key
-    tpm_limit: Optional[int] = None,
-    rpm_limit: Optional[int] = None,
-    # User
-    user_tpm_limit: Optional[int] = None,
-    user_rpm_limit: Optional[int] = None,
-    # Team
-    team_tpm_limit: Optional[int] = None,
-    team_rpm_limit: Optional[int] = None,
-    # Per team-member
-    team_member_tpm_limit: Optional[int] = None,
-    team_member_rpm_limit: Optional[int] = None,
-    # Per end-user
-    end_user_tpm_limit: Optional[int] = None,
-    end_user_rpm_limit: Optional[int] = None,
-    # Per-model (key / team scoped)
-    metadata: Dict = {},          # e.g. {"model_tpm_limit": {...}, "model_rpm_limit": {...}}
-    team_metadata: Optional[Dict] = None,  # same keys, team scoped
-): ...
-```
-
-:::note
-
-每個模型的速率限制是從 `metadata`（key）與 `team_metadata`（team）讀取，並以模型名稱作為索引。模型 key 必須與請求的 `model` 字串完全相同，否則會靜默略過該限制。
-
-`rpm_limit_per_model` / `tpm_limit_per_model` 存在於物件上，但不會生效；請改用 `metadata` / `team_metadata`，或使用 project 記錄（見下方）。
-
-:::
-
-### 進階 {#advanced}
-
-```python
-def UserAPIKeyAuth(
-    max_parallel_requests: Optional[int] = None,      # Concurrent request limit
-    allowed_model_region: Optional[AllowedModelRegion] = None,  # Geographic restrictions
-    blocked: Optional[bool] = None,                   # Whether the key is blocked
-    config: Dict = {},                                # Configuration settings
-): ...
-```
-
-### 物件權限（MCP、agent 等） {#object-permission-mcp-agents-etc}
-
-```python
-from litellm.proxy._experimental.mcp_server.mcp_server_manager import (
-    global_mcp_server_manager,
-)
-
-def _server_id(name: str) -> str:
-    server = global_mcp_server_manager.get_mcp_server_by_name(name)
-    if not server:
-        raise ValueError(f"Unknown MCP server '{name}'")
-    return server.server_id
-
-object_permission = LiteLLM_ObjectPermissionTable(
-    mcp_servers=[_server_id("deepwiki"), _server_id("everything")], # MCP servers this key is allowed to use
-    mcp_tool_permissions={"deepwiki": ["search", "read_doc"]},      # optional per-server tool allow-list
-)
-
-UserAPIKeyAuth(
-    object_permission=object_permission,
-)
-```
-
-## 強制執行預算與模型存取 {#enforce-budgets-and-model-access}
-
-設定 `custom_auth_run_common_checks: true` 以在自訂驗證之外一併強制執行預算與模型存取：
-
-```yaml
-general_settings:
-  custom_auth: custom_auth.user_api_key_auth
-  custom_auth_run_common_checks: true
-```
-
-您的處理常式會回傳這些 ID；預算與允許清單會存在對應的 DB 記錄（`/team/new`、`/user/new`、`/project/new`、`/customer/new`，或 UI）上，LiteLLM 會載入並強制執行。
-
-例如，一個具有預算與模型允許清單的 team：
+### 3. 啟動 proxy {#3-start-the-proxy}
 
 ```bash
-curl -X POST 'http://0.0.0.0:4000/team/new' \
-  -H 'Authorization: Bearer sk-master-key' \
+litellm --config config.yaml
+```
+
+## 測試驗證 {#test-authentication}
+
+在您的用戶端環境中將 `CUSTOM_AUTH_TOKEN` 設為相同憑證，然後將它作為 bearer token 傳送：
+
+```bash
+curl 'http://localhost:4000/v1/chat/completions' \
+  -H "Authorization: Bearer $CUSTOM_AUTH_TOKEN" \
   -H 'Content-Type: application/json' \
-  -d '{
-    "team_id": "eng-team",
-    "max_budget": 100,
-    "models": ["{{openai_small}}", "{{anthropic}}"]
-  }'
+  -d '{"model":"my-model","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
-```python
-# ...then return that team_id from custom auth:
-return UserAPIKeyAuth(api_key=api_key, team_id="eng-team")
-```
+有效的憑證會通過驗證。再以不正確的憑證重複一次；範例會傳回 `401`。如果有效的呼叫者被拒絕使用某個模型或超過限制，請[另外檢查授權](./access_management/custom_auth_permissions.md)。
 
-若要設定 project 的每個模型速率限制，請在 project 記錄上設定 `model_tpm_limit` / `model_rpm_limit`（以模型名稱作為索引），並回傳該 `project_id`：
+## 設定參考 {#configuration-reference}
 
-```python
-# On the project record (via /project/new or the UI):
-#   model_tpm_limit = {"{{openai_large}}": 100000, "{{anthropic}}": 50000}
-#   model_rpm_limit = {"{{openai_large}}": 100,    "{{anthropic}}": 200}
-```
+### 呼叫者身分 {#userapikeyauth-fields-reference}
 
-:::note
+<a id="identity"></a>
 
-- project 記錄的 metadata 會取代您在回傳物件上設定的任何 `project_metadata`，因此請將 project 的每個模型限制設定在 project 記錄上，而不是物件上。
-- 對於每個模型的速率限制，模型 key 必須與請求的 `model` 字串完全相同，否則會靜默略過該限制。這正是 Expedia 當時的實際失敗模式。
+傳回 LiteLLM 用於用量歸屬的身分欄位。當 `custom_auth_run_common_checks: true` 時，`*_id` 欄位也會識別所載入的資料庫記錄。
 
-:::
+| 欄位 | 意義 |
+| --- | --- |
+| `api_key` | 呼叫者憑證；LiteLLM 會將它雜湊以供內部使用。 |
+| `token` | 供內部使用的雜湊權杖。 |
+| `key_alias` | 憑證的顯示名稱。 |
+| `user_id`、`user_email` | 已驗證的呼叫者身分。 |
+| `user_role` | LiteLLM 角色；請參閱[角色與權限](./access_management/custom_auth_permissions.md)。 |
+| `team_id`、`org_id`、`end_user_id` | 請求的團隊、組織與終端使用者身分。 |
 
-### Key `models` 與 project `models` {#key-models-vs-project-models}
+模型權限、預算與速率限制欄位請使用 [自訂驗證權限](./access_management/custom_auth_permissions.md)。
 
-這些是不同的控制項：
+### 權杖到期 {#token-expiration}
 
-| 欄位 | 強制執行位置 | 真實來源 |
-| --- | --- | --- |
-| `models` 於 `UserAPIKeyAuth` 上 | key 層級允許清單 | 您從自訂驗證回傳的值 |
-| `project_id` 於 `UserAPIKeyAuth` 上 | project 層級允許清單 | LiteLLM 的 **DB 中 project 記錄** 上的 `models` |
-
-空的 `models` 清單（`[]`）表示不限制。名稱必須與您設定中的 model group 完全一致（支援萬用字元）。請參閱 [Project Management](./project_management) 與 [Config Settings](/docs/proxy/config_settings#litellm_settings---reference)。
-
-## Key 層級強制執行 {#key-level-enforcement}
-
-以下項目會根據回傳物件強制執行，但只有在 `litellm.enable_post_custom_auth_checks: true` 也設定時才會生效：
+以 `expires` 傳回憑證的原始到期時間，並啟用到期檢查：
 
 ```yaml
-general_settings:
-  custom_auth: custom_auth.user_api_key_auth
-  custom_auth_run_common_checks: true   # required for the key models allowlist
-
 litellm_settings:
   enable_post_custom_auth_checks: true
 ```
 
-```python
-from datetime import datetime, timedelta, timezone
-
-return UserAPIKeyAuth(
-    api_key=api_key,
-    models=["{{openai_small}}"],                                   # key model allowlist (needs both flags)
-    model_max_budget={"{{openai_large}}": {"budget_limit": 100, "time_period": "30d"}},  # key per-model budget
-    expires=datetime.now(timezone.utc) + timedelta(days=30),  # key expiry
-)
-```
-
-當 `end_user_id` 已設定時，這條路徑也會強制執行 end-user 預算與每個模型的 end-user 預算。
-
-## ✨ 支援 LiteLLM Virtual Keys + 自訂驗證 {#-support-litellm-virtual-keys--custom-auth}
-
-自 v1.72.2+ 起支援
-
-<EnterpriseFeature feature="Using Custom Auth with LiteLLM Virtual Keys" />
-
-### 使用方式 {#usage-1}
-
-1. 設定自訂驗證檔案
+此 helper 接受從您的憑證驗證器取得的到期時間：
 
 ```python
-"""
-Example custom auth function.
-
-This will allow all keys starting with "my-custom-key" to pass through.
-"""
-from typing import Union
-
-from fastapi import Request
-
+from datetime import datetime
 from litellm.proxy._types import UserAPIKeyAuth
 
 
-async def user_api_key_auth(
-    request: Request, api_key: str
-) -> Union[UserAPIKeyAuth, str]:
-    try:
-        if api_key.startswith("my-custom-key"):
-            return "sk-P1zJMdsqCPNN54alZd_ETw"
-        else:
-            raise Exception("Invalid API key")
-    except Exception:
-        raise Exception("Invalid API key")
-
+def authentication_result(api_key: str, expires_at: datetime) -> UserAPIKeyAuth:
+    return UserAPIKeyAuth(api_key=api_key, expires=expires_at)
 ```
 
-2. 設定 config.yaml
+請使用帶有時區資訊的到期時間。在每個請求時以目前時間重新計算，會不斷延長憑證的生命週期。
 
-Key 變更集 `mode: auto`。這會同時檢查 litellm api key 驗證 + 自訂驗證。
+### 同時接受 Virtual Keys 與自訂憑證 {#support-litellm-virtual-keys--custom-auth}
 
-```yaml
-model_list: 
-  - model_name: "openai-model"
-    litellm_params: 
-      model: "{{openai_small}}"
-      api_key: os.environ/OPENAI_API_KEY
+<a id="usage-1"></a>
 
-general_settings:
-  custom_auth: custom_auth_auto.user_api_key_auth
-  custom_auth_settings:
-    mode: "auto" # can be 'on', 'off', 'auto' - 'auto' checks both litellm api key auth + custom auth
-```
+<SinceVersion v="1.72.2" />
 
-流程：
-1. 先檢查自訂驗證
-2. 如果自訂驗證失敗，則檢查 litellm api key 驗證
-3. 如果兩者都失敗，回傳 401
+<EnterpriseFeature feature="Using Custom Auth with LiteLLM Virtual Keys" />
 
-3. 測試它！
+設定 `mode: auto` 可先嘗試自訂 handler，並在它擲出一般例外時備援到正常的 Virtual Key 驗證。`ProxyException` 是明確的拒絕，不會觸發備援。
 
-```bash
-curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
--H 'Content-Type: application/json' \
--H 'Authorization: Bearer sk-P1zJMdsqCPNN54alZd_ETw' \
--d '{
-    "model": "openai-model",
-    "messages": [
-          {
-            "role": "user",
-            "content": "Hey! My name is John"
-          }
-        ]
-}'
-```
+Handler 也可以在驗證外部憑證後傳回既有的 Virtual Key 字串。LiteLLM 接著會透過其正常路徑驗證該金鑰：
 
-#### 向上拋出自訂例外 {#bubble-up-custom-exceptions}
-
-如果您想要向上拋出自訂例外，可以透過擲出 `ProxyException` 來達成。
-
-```python
-"""
-Example custom auth function.
-
-This will allow all keys starting with "my-custom-key" to pass through.
-"""
-
-from typing import Union
+```python title="custom_auth_auto.py"
+import os
+from secrets import compare_digest
 
 from fastapi import Request
 
-from litellm.proxy._types import UserAPIKeyAuth, ProxyException
 
-
-async def user_api_key_auth(
-    request: Request, api_key: str
-) -> Union[UserAPIKeyAuth, str]:
-    try:
-        if api_key.startswith("my-custom-key"):
-            return "sk-P1zJMdsqCPNN54alZd_ETw"
-        if api_key == "invalid-api-key":
-            # raise a custom exception back to the client
-            raise ProxyException(
-                message="Invalid API key",
-                type="invalid_request_error",
-                param="api_key",
-                code=401,
-            )
-        else:
-            raise Exception("Invalid API key")
-    except Exception:
-        raise Exception("Invalid API key")
-
+async def user_api_key_auth(request: Request, api_key: str) -> str:
+    expected_token = os.environ["CUSTOM_AUTH_TOKEN"]
+    if not expected_token:
+        raise ValueError("Custom credential is not configured")
+    if api_key and compare_digest(api_key, expected_token):
+        return os.environ["LITELLM_VIRTUAL_KEY"]
+    raise ValueError("Credential not handled by custom auth")
 ```
+
+在 proxy 上將 `LITELLM_VIRTUAL_KEY` 設為既有的金鑰，然後設定 handler：
+
+```yaml
+general_settings:
+  custom_auth: custom_auth_auto.user_api_key_auth
+  custom_auth_settings:
+    mode: auto
+```
+
+以外部憑證與既有的 Virtual Key 測試。兩者都應通過驗證。兩條路徑都不接受的憑證會被拒絕。
+
+| 模式 | 行為 |
+| --- | --- |
+| `on` | 執行自訂 handler。在未設定 `custom_auth_settings` 而設定了自訂驗證時，這也是其行為。 |
+| `off` | 略過自訂 handler，使用正常驗證。 |
+| `auto` | 嘗試自訂 handler；一般例外會備援到正常驗證。`ProxyException` 會被向上傳播。 |
+
+### 傳回特定錯誤 {#bubble-up-custom-exceptions}
+
+如設定範例所示，擲出帶有回應訊息與 HTTP 代碼的 `ProxyException`。讓它從 handler 向上傳播。攔截它並擲出一般例外會丟棄預期的回應，並可能在 `auto` 模式下啟用備援。
+
+## 疑難排解 {#troubleshooting}
+
+| 症狀 | 檢查 |
+| --- | --- |
+| Handler 無法匯入 | 確認檔案名稱、函式名稱、import path 與掛載的檔案與 `general_settings.custom_auth` 相符。 |
+| 每個憑證都被拒絕 | 確認驗證器的設定與祕密存在於 proxy 處理程序中。 |
+| Virtual Key 在備援前就被拒絕 | 在 `auto` 模式下，對於自訂 handler 不處理的憑證，請擲出一般例外。`ProxyException` 保留給明確拒絕。 |
+| 自訂錯誤詳細資訊消失 | 移除會攔截所有例外並取代 `ProxyException` 的 handler。 |
+| 已到期的憑證仍可使用 | 傳回其原始 `expires` 值，並啟用 `enable_post_custom_auth_checks`。 |
+| 預算或模型限制未套用 | 檢查[自訂驗證強制執行旗標](./access_management/custom_auth_permissions.md#what-gets-enforced)。 |
+
+## 相關指南 {#related-guides}
+
+授權請使用 [自訂驗證權限](./access_management/custom_auth_permissions.md)，憑證管理請使用 [Virtual Keys](./virtual_keys.md)，瀏覽器登入回呼請使用[自訂 SSO hooks](./custom_sso.md)。

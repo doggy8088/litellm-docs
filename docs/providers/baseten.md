@@ -1,3 +1,9 @@
+---
+title: "Baseten API 與 LiteLLM：Python SDK 與 Gateway"
+sidebar_label: "Baseten"
+description: "透過 Python SDK 或 AI Gateway 呼叫 Baseten Model API 與專屬部署，包含 gpt-oss-120b 範例、串流、-latest 別名與 /v1/responses。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -103,3 +109,21 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": "Hello!"}]
 )
 ```
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`baseten/<family>-latest` 名稱會跟隨某個模型家族，當 LiteLLM 將它們移至較新的模型時，您的應用程式可以維持使用同一個模型字串。您可以像使用其他任何 Baseten 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Baseten，並依該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `baseten/kimi-latest` | Kimi |
+| `baseten/glm-latest` | GLM |
+| `baseten/glm-flash-latest` | GLM Flash |
+| `baseten/deepseek-pro-latest` | DeepSeek Pro |
+| `baseten/deepseek-flash-latest` | DeepSeek Flash |
+
+## Responses API 支援（`/v1/responses`） {#responses-api-v1responses}
+
+Baseten 的 Model API 本身即提供 `/v1/responses` 服務。若要將 `/v1/responses` 請求不經轉換直接轉送給它，而不是透過 `/v1/chat/completions` 橋接，請在該部署的 `model_info` 下加入 `supported_endpoints: ["/v1/responses"]`，請參閱[原生 /v1/responses 直通](../response_api_native_passthrough.md)。

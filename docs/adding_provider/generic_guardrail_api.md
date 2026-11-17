@@ -259,11 +259,15 @@ litellm_settings:
         api_key: os.environ/YOUR_GUARDRAIL_API_KEY  # optional
         unreachable_fallback: fail_closed  # default: fail_closed. Set to fail_open to proceed if the guardrail endpoint is unreachable (network errors, or HTTP 502/503/504 from an upstream proxy/LB).
         fail_on_error: true  # default: true (fail closed). Set to false to proceed on ANY guardrail error. See "Error handling" below before changing this.
+        num_retries: 1  # optional. Resend a check that timed out waiting for the answer or lost its connection, on a fresh connection. See "Retries" below.
+        forward_messages_as_sent: false  # default: false. Set to true to receive structured_messages as the client sent it. See below.
         additional_provider_specific_params:
           # your custom parameters
           threshold: 0.8
           language: "en"
 ```
+
+使用 `forward_messages_as_sent: true` 時，`structured_messages` 會以用戶端送出的原樣送達，保留 OpenAI chat 格式未宣告的鍵與內容區塊，因此資料列可能不是 OpenAI 的形狀。
 
 ### 錯誤處理：`unreachable_fallback` 與 `fail_on_error` {#error-handling-unreachable_fallback-and-fail_on_error}
 
@@ -286,6 +290,26 @@ litellm_settings:
 :::
 
 預設之所以是失敗封閉，正是因為防護欄通常是一種安全控制。每一次 fail-open 繞過都會以 critical 等級（`Generic Guardrail API error (fail-open) ...`）記錄，並附上 call id 與 trace id，因此您可以對其發出警示並稽核其發生頻率。
+
+### 重試：`num_retries` {#retries-num_retries}
+
+防護欄檢查可能會在送出後遺失：防護欄讓請求等待超過 `timeout`，或負載平衡器關閉了檢查所使用的閒置 keep-alive 連線。在這些情況下，可設定 `num_retries` 重新送出檢查，而不是讓請求失敗。
+
+```yaml
+litellm_params:
+  guardrail: generic_guardrail_api
+  api_base: https://your-guardrail-api.com
+  timeout: 5
+  num_retries: 1
+```
+
+- `num_retries` 是第一次嘗試之後的額外嘗試次數。未設定或設為 `0` 時，每次檢查只送出一次，這是預設行為。允許的最大值為 `5`。
+- 每次重試都會與防護欄建立新的連線，並重新取得完整的 `timeout`，因此一次檢查的最差延遲為 `timeout x (num_retries + 1)`。
+- 只有在連線建立之後發生的失敗才會重試：讀取或寫入逾時、連線重設，或伺服器在未回應的情況下中斷連線。
+- 連線逾時與連線被拒絕不會由 `num_retries` 重試，因為不接受連線的端點很少能在同一次請求內恢復。HTTP 錯誤狀態（例如 500 或 503）與 `BLOCKED` 判定永遠不會重試。
+- 當所有嘗試都失敗時，由 `unreachable_fallback` 與 `fail_on_error` 決定請求的結果，與沒有重試時相同。
+
+只有在您的防護欄端點以相同輸入呼叫兩次也安全時，才啟用重試；分類型防護欄即屬此類，它們不會在每次呼叫保留狀態。每次重試都會以 warning 等級記錄（`Generic Guardrail API check timed out or lost its connection, retrying on a fresh connection`）。
 
 ### 靜態與動態標頭 {#static-and-dynamic-headers}
 
@@ -367,7 +391,7 @@ response = client.chat.completions.create(
 
 ## 實作範例 {#implementation-example}
 
-請參閱 [mock_bedrock_guardrail_server.py](https://github.com/BerriAI/litellm/blob/main/cookbook/mock_guardrail_server/mock_bedrock_guardrail_server.py) 取得完整的參考實作。
+請參閱 [mock_bedrock_guardrail_server.py](https://github.com/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/mock_guardrail_server/mock_bedrock_guardrail_server.py) 取得完整的參考實作。
 
 **最小化 FastAPI 範例：**
 

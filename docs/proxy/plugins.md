@@ -12,11 +12,7 @@ import Image from '@theme/IdealImage';
 
 <Image img={require('../../img/plugins_loaded.png')} />
 
-:::info
-
-自 v1.89.3+ 起可用。
-
-:::
+<SinceVersion v="1.89.3" />
 
 ## 快速開始 {#quick-start}
 

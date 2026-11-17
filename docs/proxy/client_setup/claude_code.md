@@ -1,6 +1,5 @@
 ---
 title: Claude Code (CLI)
-sidebar_label: Claude Code (CLI)
 ---
 
 import Image from '@theme/IdealImage';
@@ -40,6 +39,8 @@ Claude Code 會將每個請求送到 LiteLLM 的 `/v1/messages` 端點，並使�
 
 Claude Code 會送出所選取的任何模型 ID，因此該 ID 必須存在於您閘道上的一個 `model_name`。`ANTHROPIC_MODEL` 會將預設值固定為您的其中一個名稱。工作階段內的 `/model` 選擇器仍會列出 Anthropic 自己的 ID（例如 `claude-haiku-4-5-20251001`），因此選擇那些項目會導致 `Invalid model name passed in`，除非您的設定也定義了完全相同的名稱；您可以將那些名稱加入 `model_list`，或是持續透過 `ANTHROPIC_MODEL` 切換模型。[將 Claude Code 路由到非 Anthropic 模型](../../tutorials/claude_non_anthropic_models.md) 說明如何將 Sonnet、Opus 和 Haiku 層級對應到任何提供者。
 
+您的 team 或 key 必須允許所選取的模型。如果存取受到限制，請將 `ANTHROPIC_MODEL` 設為允許的別名。
+
 ### 3. 驗證 {#3-verify}
 
 傳送一個提示。在此，Claude Code 2.1 正透過本機閘道回應，並將 `ANTHROPIC_MODEL` 設為來自 `model_list` 的模型：
@@ -50,11 +51,19 @@ Claude Code 會送出所選取的任何模型 ID，因此該 ID 必須存在於�
 
 ## 不使用靜態金鑰登入 {#sign-in-without-a-static-key}
 
-[Claude Code Gateway SSO](../../tutorials/claude_code_gateway.md) 是原生裝置登入選項，建議用於大規模部署，且不需要每位使用者各自的金鑰。您也可以在 [`lite auth print-token`](../cli_sso.md#use-the-credential-from-other-tools) 之後將其作為 [`lite login --pkce`](../cli_sso.md#browser-sign-in-with-pkce) 的 `apiKeyHelper` 使用，或使用 [IdP JWT helper](../../tutorials/claude_code_okta_sso.md)
+請參閱 [Claude Code 登入](../../tutorials/claude_code_gateway.md)，了解 Claude 應用程式閘道設定、Lite CLI 登入，以及透過 LiteLLM 使用 Claude 訂閱。
 
-`lite login --pkce --config-claude` 會將此登入的金鑰寫入 `~/.claude/settings.json`，並設為 `env.ANTHROPIC_AUTH_TOKEN`；請在金鑰過期後重新執行，或設定 `apiKeyHelper`，讓 Claude Code 自行取得新的 token
+## 使用身分提供者 token {#use-an-identity-provider-token}
 
-如果使用者的 team 或 key 限制了模型，Claude Code 的預設模型名稱必須在該清單中，或將 `ANTHROPIC_MODEL` 設為允許的別名。否則請求會以 `403 The requested model '...' is not available for this API key` 失敗
+如果您的管理員已設定[身分與虛擬金鑰對應](../jwt_key_mapping.md)，Claude Code 可以直接傳送您身分提供者的 JWT。設定閘道 URL 與 bearer token，並清除任何衝突的 API 金鑰：
+
+```bash
+export ANTHROPIC_BASE_URL="http://localhost:4000"
+export ANTHROPIC_AUTH_TOKEN="<identity-provider-jwt>"
+unset ANTHROPIC_API_KEY
+```
+
+您的身分提供者整合必須取得並更新此 token。設定環境變數並不會啟動登入流程。若要使用提供用戶端憑證的瀏覽器登入，請使用 [CLI 登入](../cli_sso.md)。
 
 ## MCP 設定 {#mcp-setup}
 

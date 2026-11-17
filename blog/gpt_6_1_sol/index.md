@@ -8,6 +8,8 @@ authors:
   - mateo
   - kerry
 description: "LiteLLM 對 GPT-6.1 Sol 的 Day 0 支援，快取輸入價格只有 GPT-6 Sol 的一半。"
+card_title: "GPT-6.1 Sol"
+card_summary: "GPT-6 Sol 的後繼版本，快取輸入的價格為 GPT-6 Sol 的一半，請求家族與參數相同。"
 tags: [openai, gpt-6, gpt-6.1-sol, completion, day 0 support]
 hide_table_of_contents: false
 ---

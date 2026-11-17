@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Predibase API：Python SDK 與 Gateway"
+sidebar_label: "Predibase"
+description: "在 Predibase 上呼叫 Llama 3 與 Mistral 模型、註冊自訂提示範本，並在每次請求中傳入 Predibase 的 adapter_id 與 adapter_source。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

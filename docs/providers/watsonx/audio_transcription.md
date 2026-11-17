@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 IBM watsonx.ai 音訊轉錄"
+sidebar_label: "WatsonX 音訊轉錄"
+description: "透過 LiteLLM 的 /v1/audio/transcriptions 在 IBM watsonx 上以 Whisper 模型轉錄音訊，可從 Python SDK 或搭配 config.yaml 的 AI Gateway 操作。"
+---
+
 # WatsonX 音訊轉錄 {#watsonx-audio-transcription}
 
 ## 概觀 {#overview}

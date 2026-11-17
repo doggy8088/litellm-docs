@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM 對 Gemini 3.8 Flash 的第 0 天支援，並追蹤 Google AI Studio 與 Vertex AI 的上市定價。"
+card_title: "Gemini 3.8 Flash"
+card_summary: "更快的 Gemini Flash，上市定價已在 Google AI Studio 與 Vertex AI 上追蹤，無需升級 image。"
 image: ./hero.png
 tags: [gemini, gemini-3.8-flash, day 0 support, llms]
 hide_table_of_contents: false
@@ -122,8 +124,8 @@ LiteLLM 為 Gemini 3.8 Flash 提供完整的端到端支援，涵蓋：
 
 - `/v1/chat/completions` - 相容 OpenAI 的 chat completions 端點
 - `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
-- [`/v1/messages`](/docs/anthropic_unified) - 相容 Anthropic 的 messages 端點
-- `/v1/generateContent` - 相容 [Google Gemini API](/docs/generateContent) 的端點
+- [`/v1/messages`](../../docs/anthropic_unified) - 相容 Anthropic 的 messages 端點
+- `/v1/generateContent` - 相容 [Google Gemini API](../../docs/generateContent) 的端點
 
 所有端點都支援串流與非串流回應、包含 thought signatures 的 function calling、多輪對話，以及完整的多模態輸入（文字、圖片、音訊、影片）。
 

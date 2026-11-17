@@ -7,6 +7,8 @@ authors:
   - mateo
   - kerry
 description: "LiteLLM AI Gateway 對 Claude Opus 5.5 的 Day 0 支援。可透過 Anthropic、Bedrock、Gemini Enterprise Agent Platform 和 Azure 使用。"
+card_title: "Claude Opus 5.5"
+card_summary: "比 Opus 5 便宜 20%，每 1M 為 $4 / $20，輸出速度快 30%，Terminal-Bench 4.0 達 66.4%，思考恆開。"
 image: /img/litellm_claude_opus_5_5_announcement.png
 tags: [anthropic, claude, opus 5.5, day 0 support]
 hide_table_of_contents: false
@@ -77,11 +79,15 @@ docker run -d \
 model_list:
   - model_name: claude-opus-5-5
     litellm_params:
-      model: bedrock/anthropic.claude-opus-5-5
+      model: bedrock/global.anthropic.claude-opus-5-5
       aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: us-east-1
 ```
+
+:::note
+`global.` 可從任何 AWS 商業區域處理請求。若要將請求保留在單一地理區域內，請改用地理推論設定檔，例如 `bedrock/us.anthropic.claude-opus-5-5`（該模型的 AWS 模型卡列出了它所擁有的設定檔），費用高出 10%。LiteLLM 會追蹤兩者的成本。在較舊的映像上，這需要遠端成本對照表；LiteLLM 會在啟動時載入它，除非已設定 `LITELLM_LOCAL_MODEL_COST_MAP`。
+:::
 
 **2. 啟動 proxy**
 

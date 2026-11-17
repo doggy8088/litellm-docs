@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 NVIDIA Triton Inference Server"
+sidebar_label: "Triton Inference Server"
+description: "透過 LiteLLM 以 triton/ 前綴呼叫 NVIDIA Triton Inference Server：/generate 與 /infer 用於聊天，/embeddings 用於嵌入，並在 config.yaml 中設定。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

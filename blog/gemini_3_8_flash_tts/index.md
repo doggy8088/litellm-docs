@@ -7,6 +7,8 @@ authors:
   - mateo
   - kerry
 description: "LiteLLM 的 /v1/audio/speech 對 Gemini 3.8 Flash TTS 與 Flash-Lite TTS 的第 0 天支援，並追蹤至 2026 年的上市定價。"
+card_title: "Gemini 3.8 Flash TTS and Flash-Lite TTS"
+card_summary: "Gemini 語音模型在 /v1/audio/speech 上提供，包含 Flash 與 Flash-Lite，上市定價追蹤至 2026 年。"
 image: ./hero.png
 tags: [gemini, gemini-3.8-flash-tts, text to speech, day 0 support]
 hide_table_of_contents: false

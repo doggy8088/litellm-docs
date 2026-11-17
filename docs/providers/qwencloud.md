@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 QwenCloud API (Qwen)：設定"
+sidebar_label: "QwenCloud 與 Qianwen AI Platform（Qwen models）"
+description: "透過 LiteLLM 從 Python SDK 或 AI Gateway 在 QwenCloud 或 Qianwen AI Platform 上呼叫 Qwen 模型：chat、串流、嵌入、rerank 與圖片輸出。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -26,8 +32,9 @@ Alibaba 已將其模型平台品牌（DashScope、Bailian、Model Studio）在�
 | 預設 API base | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
 | rerank 端點 | `https://dashscope-intl.aliyuncs.com/compatible-api/v1/reranks` |
 | 圖像生成端點 | `https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation` |
+| 影片生成主機 | `https://dashscope-intl.aliyuncs.com` |
 | API 金鑰環境變數 | `QWENCLOUD_API_KEY`（會回退至 `DASHSCOPE_API_KEY`） |
-| base URL 覆寫 | `QWENCLOUD_API_BASE`、`QWENCLOUD_API_BASE_RERANK`、`QWENCLOUD_API_BASE_IMAGE` |
+| base URL 覆寫 | `QWENCLOUD_API_BASE`、`QWENCLOUD_API_BASE_RERANK`、`QWENCLOUD_API_BASE_IMAGE`、`QWENCLOUD_API_BASE_VIDEO` |
 
 ## Qianwen AI Platform（中國大陸） {#qianwen-ai-platform-mainland-china}
 
@@ -39,8 +46,9 @@ Alibaba 已將其模型平台品牌（DashScope、Bailian、Model Studio）在�
 | 預設 API base | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
 | rerank 端點 | `https://dashscope.aliyuncs.com/compatible-api/v1/reranks` |
 | 圖像生成端點 | `https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation` |
+| 影片生成主機 | `https://dashscope.aliyuncs.com` |
 | API 金鑰環境變數 | `QWEN_AI_PLATFORM_API_KEY`（會回退至 `DASHSCOPE_API_KEY`） |
-| base URL 覆寫 | `QWEN_AI_PLATFORM_API_BASE`、`QWEN_AI_PLATFORM_API_BASE_RERANK`、`QWEN_AI_PLATFORM_API_BASE_IMAGE` |
+| base URL 覆寫 | `QWEN_AI_PLATFORM_API_BASE`、`QWEN_AI_PLATFORM_API_BASE_RERANK`、`QWEN_AI_PLATFORM_API_BASE_IMAGE`、`QWEN_AI_PLATFORM_API_BASE_VIDEO` |
 
 ## API 金鑰 {#api-key}
 
@@ -139,6 +147,69 @@ response = image_generation(
 )
 
 print(response.data[0].url)
+```
+
+### 影片生成 {#video-generation}
+
+影片生成在 DashScope task API 上以非同步任務方式執行。`video_generation` 會立即回傳 job id；持續輪詢 `video_status` 直到其回報 `completed`，再以 `video_content` 下載 mp4。
+
+```python showLineNumbers title="QwenCloud Video Generation"
+import os
+import time
+from litellm import video_content, video_generation, video_status
+
+os.environ["QWENCLOUD_API_KEY"] = "your-api-key"
+
+video = video_generation(
+    model="qwencloud/wan3.0-video",
+    prompt="A paper boat drifting down a rain-soaked city gutter",
+    seconds="5",
+    size="1280x720",
+)
+
+while video.status not in ("completed", "failed"):
+    time.sleep(20)
+    video = video_status(video_id=video.id)
+
+with open("video.mp4", "wb") as f:
+    f.write(video_content(video_id=video.id))
+```
+
+支援的模型為 `wan3.0-video`、`wan3.0-video-prime`、`wan2.7-t2v`、`wan2.7-i2v`、`wan2.7-r2v`、`happyhorse-1.1-t2v`、`happyhorse-1.1-i2v`、`happyhorse-1.1-r2v`、`happyhorse-1.0-t2v`、`happyhorse-1.0-i2v` 與 `happyhorse-1.0-r2v`，可搭配 `qwencloud/`、`qwen_ai_platform/` 與 `dashscope/` 任一前綴。每個前綴依其預設主機所服務地區的價目表計價。價格取決於前綴而非主機，因此透過 `DASHSCOPE_API_BASE` 或 `DASHSCOPE_API_BASE_VIDEO` 送往國際主機的 `dashscope/` 影片，仍按中國大陸費率計費。國際主機請使用 `qwencloud/` 前綴，或以 [自訂定價](../proxy/custom_pricing) 設定您自己的價格。
+
+`seconds` 設定以整數秒為單位的時長。`size` 會從 16:9、9:16、1:1、4:3 與 3:4 中挑選最接近的長寬比，並依其較短邊決定計費的解析度級別：小於 600 px 為 480P、小於 900 px 為 720P、更大者為 1080P。Wan 2.7 與 HappyHorse 1.0 僅提供 720P 與 1080P，因此落在 480P 級別的 `size` 在這些模型上會被拒絕。若要使用模型支援的其他比例，例如 Wan 3.0 的 21:9，請直接傳入 `ratio`。未指定 `size` 時，任務以 1080P 執行並計費；未指定 `seconds` 時，任務長度為 5 秒。litellm 僅對其有定價的影片模型對應 `size`，因此在其他任何 DashScope 影片模型上，傳入 `size` 會得到 400 回應，該模型自身的尺寸欄位應改放在 `parameters` 內。格式錯誤的 `seconds` 或 `size`，或模型未提供的解析度，會得到 400 回應，除非在全域、部署或請求上設定了 `drop_params`，此時該值會被捨棄並套用 DashScope 的預設值。圖生影片與參考生影片模型透過 `input_reference` 傳入圖片，可為 URL 或檔案（已開啟的檔案、bytes 或 `pathlib.Path`）。
+
+DashScope 欄位 `resolution`、`ratio`、`audio`、`seed`、`negative_prompt`、`prompt_extend`、`watermark` 與 `media` 可放在請求的最上層。其他任何 DashScope 請求欄位，例如 `shot_type`，應放在 `parameters` 物件內，該物件會按原樣送往 DashScope。從 OpenAI SDK 傳入時，請使用 `extra_body={"parameters": {"shot_type": "multi"}}`。型別錯誤的 `duration`、`seed`、`audio`、`prompt_extend`、`watermark`、`resolution` 或 `ratio`，或超出 0 至 2147483647 範圍的 `seed`，會得到 400 回應，除非設定了 `drop_params`；否則 DashScope 會在建立任務並計費後才讓任務失敗。智慧時長（`duration: -1`）與影片輸入（`media` 中的 `reference_video` 項目）會被拒絕，因為 litellm 在任務建立時即對影片計費，而當時尚無法得知其計費長度。輪詢 DashScope 已不認識的 task id（id 在 24 小時後過期，且僅存在於建立它的地區）會得到 400 回應。DashScope 沒有 list、delete 或 remix 端點。
+
+若要在 proxy 上提供這些模型，請在部署上設定 `mode: video_generation`，並呼叫 `/v1/videos`：
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: wan3-video
+    litellm_params:
+      model: qwencloud/wan3.0-video
+      api_key: os.environ/QWENCLOUD_API_KEY
+    model_info:
+      mode: video_generation
+```
+
+```bash showLineNumbers title="Video generation via Proxy - cURL"
+curl http://localhost:4000/v1/videos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -d '{
+    "model": "wan3-video",
+    "prompt": "A paper boat drifting down a rain-soaked city gutter",
+    "seconds": "5",
+    "size": "1280x720"
+  }'
+
+curl http://localhost:4000/v1/videos/$VIDEO_ID \
+  -H "Authorization: Bearer $LITELLM_API_KEY"
+
+curl http://localhost:4000/v1/videos/$VIDEO_ID/content \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -o video.mp4
 ```
 
 ## 用法 - LiteLLM Proxy {#usage---litellm-proxy}

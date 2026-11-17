@@ -1,8 +1,16 @@
+---
+title: "使用 LiteLLM 的 Gemini API：Google AI Studio 設定"
+sidebar_label: "Google AI Studio"
+description: "從 Python SDK 或 AI 閘道呼叫 Google AI Studio 上的 Gemini，支援思考等級、TTS、轉錄、Google 搜尋、程式碼執行與上下文快取。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Gemini - Google AI Studio {#gemini---google-ai-studio}
+
+Google AI Studio 是 Google 的代管平台，用於使用 Gemini 模型進行建置；LiteLLM 會透過 Python SDK 或 AI 閘道，以 `gemini/` 前綴與 `GEMINI_API_KEY` 呼叫這些模型，不需要 GCP 專案。
 
 | 屬性 | 詳細資訊 |
 |-------|-------|
@@ -46,6 +54,53 @@ response = completion(
     messages=[{"role": "user", "content": "write code for saying hi from LiteLLM"}]
 )
 ```
+
+## 決策 {#decisions}
+
+Gemini Decision 1 透過 LiteLLM 的 [`/v1/decisions` 與 `/v1/systemone`](../decisions.md) 路由回答是非題、選擇題與評分量表分數問題。此提供者已透過 [LiteLLM #51220](https://github.com/BerriAI/litellm/pull/51220) 合併至 main，尚未包含在正式版本中
+
+在 proxy 環境中設定 `GEMINI_API_KEY`，並將此部署加入 `config.yaml`
+
+```yaml showLineNumbers
+model_list:
+  - model_name: gemini/gemini-decision-1
+    litellm_params:
+      model: gemini/gemini-decision-1
+      api_key: os.environ/GEMINI_API_KEY
+```
+
+以 OpenAI Decisions 格式的主體呼叫 proxy
+
+```bash showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/v1/decisions' \
+-H "Authorization: Bearer $LITELLM_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+  "model": "gemini/gemini-decision-1",
+  "input": "The mug arrived cracked.",
+  "questions": [
+    {"type": "predicate", "name": "damaged", "instructions": "Is the mug damaged?"},
+    {
+      "type": "choice",
+      "name": "action",
+      "instructions": "Choose the next action",
+      "choices": [{"value": "replace", "description": "Broken item"}, {"value": "keep", "description": "Undamaged item"}]
+    },
+    {
+      "type": "score",
+      "name": "severity",
+      "instructions": "Rate the damage",
+      "levels": [{"label": "None"}, {"label": "Severe"}]
+    }
+  ]
+}'
+```
+
+LiteLLM 會將請求傳送至 Google 的 [Decisions API](https://aistudio.google.com/docs/decisions-api)，路徑為 `/v1beta/decisions`，並使用 `x-goog-api-key` 驗證。兩條 LiteLLM 路由使用同一個部署，回答的格式取決於您呼叫的路由。用量會回報輸入 token 數與零個輸出 token，供成本追蹤使用
+
+支援文字、圖片與行內音訊/視訊。每個請求最多接受 16 張圖片，解碼後的圖片資料總量上限為 20 MiB，包括 LiteLLM 下載的遠端圖片。訊息輸入會保留文字與圖片的順序。Box 問題會回傳 400。PDF 與遠端音訊/視訊 URL 不會由 LiteLLM 的 Decisions 輸入結構描述對應
+
+每個請求層級的 `api_base` 或 `base_url` 覆寫，必須在同一個請求中明確提供 `api_key`，否則會回傳 400，即使部署已設定金鑰也一樣。請為自訂部署 URL 設定其專屬的金鑰，避免將共用的 Google 憑證傳送到其他主機
 
 ## 支援的 OpenAI 參數 {#supported-openai-params}
 - temperature
@@ -94,7 +149,7 @@ LiteLLM 會將 OpenAI 的 `reasoning_effort` 轉換為 Gemini 的 `thinking` 參
 
 | reasoning_effort | thinking | 備註 |
 | ---------------- | -------- | ----- |
-| "none"           | "budget_tokens": 0, "includeThoughts": false | 💰 **建議用於成本最佳化** - 相容 OpenAI，永遠為 0 |
+| "none"           | "budget_tokens": 0, "includeThoughts": false | **建議用於成本最佳化** - 相容 OpenAI，永遠為 0 |
 | "disable"        | "budget_tokens": DEFAULT (0), "includeThoughts": false | LiteLLM 特定，可透過環境變數設定 |
 | "low"            | "budget_tokens": 1024 | |
 | "medium"         | "budget_tokens": 2048 | |
@@ -214,12 +269,12 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 :::warning
 **Gemini 3 模型的 Temperature 建議**
 
-對於 Gemini 3 模型，LiteLLM 預設將 `temperature` 設為 `1.0`，並強烈建議維持此預設值。將 `temperature < 1.0` 設為其他值可能導致：
+對於 Gemini 3 模型，請不要設定 `temperature`。LiteLLM 只會轉送您設定的取樣參數，因此省略 `temperature` 可讓 Google 套用它自己的預設值 `1.0`。設定 `temperature < 1.0` 可能導致：
 - 無限迴圈
 - 推理效能下降
 - 複雜任務失敗
 
-若未為 Gemini 3+ 模型指定，LiteLLM 會自動設定 `temperature=1.0`。
+明確指定的 `temperature`（包括在 `litellm_params` 中固定為 `1.0` 的情況）仍會照原樣轉送。如果您希望 LiteLLM 停止傳送此參數，請將它移除。
 :::
 
 **預期回應**
@@ -305,6 +360,40 @@ import litellm
 litellm.enable_gemini_default_thinking_level_low = True
 ```
 
+### 思考但不含思考摘要 {#thinking-without-thought-summaries}
+
+<SinceVersion v="1.107.0" />
+
+只要開啟思考，Gemini 就會在 `reasoning_content` 中回傳其思考的摘要。若要保留思考、但在每個 Gemini 請求中捨棄摘要文字，請將摘要關閉。
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python
+import litellm
+
+litellm.gemini_include_thoughts_default = False
+```
+
+</TabItem>
+<TabItem value="proxy" label="PROXY">
+
+```yaml
+litellm_settings:
+  gemini_include_thoughts_default: false
+```
+
+</TabItem>
+</Tabs>
+
+模型仍會思考，`usage.completion_tokens_details.reasoning_tokens` 也仍會計費，但回應不帶有思考文字。若請求本身要求摘要，仍會取得摘要：
+
+- `/v1/chat/completions`：`reasoning_effort={"effort": "medium", "summary": "auto"}`、位於 `reasoning_effort` 旁的 AI SDK `reasoning_summary`（或 `reasoningSummary`），或帶有 `summary` 字串、或 `display` 不為 `"omitted"` 的 `thinking`。
+- `/v1/messages`：帶有 `summary` 字串、或 `display` 不為 `"omitted"`（例如 `"summarized"`）的 `thinking`。
+- `/v1/responses`: `reasoning={"effort": "medium", "summary": "auto"}`.
+
+`"display": "omitted"` 不算是要求，因此由設定決定。在 `/v1/messages` 上，此設定也優先於 `reasoning_auto_summary`，因為該摘要是由閘道加入的，而非請求所要求。像 `"false"` 這樣的文字值會被讀作 `false`，而無法判讀為任何一種的值會讓摘要保持開啟。
+
 ## 用法 - `service_tier` {#usage---service_tier}
 
 LiteLLM 會將 OpenAI 的 `service_tier` 參數傳遞給 Gemini，並且也會將其從回應標頭（`x-gemini-service-tier`）擷取到 `model_response.service_tier`。
@@ -318,6 +407,18 @@ LiteLLM 會將 OpenAI 的 `service_tier` 參數傳遞給 Gemini，並且也會�
 | Any other value       | Passed as-is (lowercased) | 值不區分大小寫，並會正規化為小寫。 |
 
 在回應中，LiteLLM 會將 `"standard"` 對應回 Gemini API 的 `"default"`。
+
+## 長輸出 {#long-outputs}
+
+對於會以 `continuationToken` 結束請求的模型（例如 Gemini 4 Argon），LiteLLM 會帶著該 token 再次傳送請求，直到回答完成或 `max_tokens` 用完為止，因此 `max_tokens` 可以超過 Google 的單次請求上限。[長輸出](/blog/gemini-4-argon#long-outputs) 說明了其運作方式、所回報的用量，以及所需的逾時設定。
+
+未傳送輸出上限的請求只會傳送一次，並停在 Google 自己的單次請求上限。自 v1.108.0 起，將環境變數 `LITELLM_GEMINI_DEFAULT_MAX_OUTPUT_TOKENS` 設為整數，即可為這類請求提供預算。它適用於透過 proxy 或 Python SDK 送出的 chat completion、text completion 與 Responses API 請求，但永遠不適用於 `/v1/messages`（該端點要求 `max_tokens`）。LiteLLM 會將預算上限設為成本對照表中該模型的 `max_output_tokens`，且請求本身已帶有的任何輸出上限優先。它不會套用到成本對照表未列為聊天模型的模型（例如圖片模型）、成本對照表的 `supported_output_modalities` 未包含文字的模型（例如 Lyria 音樂模型）、`modalities` 要求文字以外內容的請求、以 `continuation_token` 續傳的請求，或原生 `:generateContent` 路由。較大的值會讓非串流請求執行與回答相同的時間，因此請串流長回答，或提高用戶端的逾時。[環境變數參考](/docs/proxy/config_settings#environment-variables---reference) 列出了所有情況。
+
+成本對照表中的 `supports_continuation: true` 標示某個模型可以以 `continuationToken` 結束請求 <SinceVersion v="1.110.0" />。它已設定在 `gemini/gemini-4-argon`、`vertex_ai/gemini-4-argon` 與 `vertex_ai/gemini-4-argon-cyber-permissive` 上。傳送請求前，可用 `litellm.supports_continuation("gemini/gemini-4-argon")` 或 `litellm.get_model_info("gemini/gemini-4-argon")["supports_continuation"]` 讀取它，或透過 proxy 的 `GET /model/info` 與 `GET /v1/model/info`（每個部署都會在 `model_info` 中帶有此值），以及 `GET /model_group/info`（當模型群組的任一部署支援時，會回報 `true`）。對於成本對照表未標示的模型，`get_model_info` 與 `/model/info` 會回傳 `None`（`null`），因此請檢查是否為 `true`，而不是檢查 `false`。部署自身在 `config.yaml` 或 Admin UI 中的 `model_info` 會覆寫成本對照表的值，但僅限於該部署，因此對於成本對照表尚未標示的模型，可在該處設定 `supports_continuation: true`。此旗標只說明模型的能力，並不會開啟或關閉續傳。無論旗標為何，LiteLLM 只會在請求具有輸出上限（來自 `max_tokens` 或 `LITELLM_GEMINI_DEFAULT_MAX_OUTPUT_TOKENS`）且要求一個選項（`n` 為 1）時，才再次傳送請求。某個回答是否被截斷，仍須從回應判斷。在 `/chat/completions` 上，該回答會以 `finish_reason: "length"` 結束，並帶有 `provider_specific_fields.continuation_token`，而 [長輸出](/blog/gemini-4-argon#long-outputs) 示範如何將它送回以接續回答。
+
+## Interactions API 與 Deep Research {#interactions-api-and-deep-research}
+
+`gemini` 部署會在 `/v1beta/interactions` 原生提供 Google 的 Interactions API，包括 `deep-research-preview-04-2026` 與 `deep-research-max-preview-04-2026` 等代理程式、背景工作，以及依 ID 進行的 GET、取消與刪除。請參閱 [/interactions](../interactions.md) 與 [Managed Agents](../managed_agents.md)。
 
 ## 文字轉語音（TTS）音訊輸出 {#text-to-speech-tts-audio-output}
 
@@ -341,6 +442,31 @@ LiteLLM 支援具有音訊功能的 Gemini TTS 模型（例如 `gemini-2.5-flash
 - TTS 請求必須將 `modalities` 參數設為 `['audio']`
 
 :::
+
+### 語音名稱 {#voice-names}
+
+`audio.voice` 接受任何 Gemini 預建語音名稱（`Kore`、`Puck`、`Zephyr` 等），並原樣傳送。OpenAI 語音名稱會對應到最接近的 Gemini 預建語音，因此 OpenAI 格式的用戶端與 proxy 預設的 `audio_speech` 健康檢查（`alloy`）不需要變更設定即可運作。此查詢不區分大小寫，任何其他名稱都會原樣傳送，因此打錯字仍會在 Google 端以其 `No matching speaker voice found` 錯誤失敗。
+
+此對應自 <SinceVersion v="1.107.0" /> 起可用，最早出現在 `v1.107.0-rc.1`。較早的版本會將 OpenAI 語音名稱原樣傳送給 Google，而 Google 會加以拒絕，因此在那些版本上請設定 Gemini 語音名稱，例如 `Kore`。
+
+| OpenAI 語音 | Gemini 語音 |
+|--------------|--------------|
+| `alloy` | `Kore` |
+| `ash` | `Iapetus` |
+| `ballad` | `Algieba` |
+| `cedar` | `Achird` |
+| `coral` | `Sulafat` |
+| `echo` | `Charon` |
+| `fable` | `Umbriel` |
+| `marin` | `Despina` |
+| `onyx` | `Orus` |
+| `sage` | `Vindemiatrix` |
+| `shimmer` | `Achernar` |
+| `verse` | `Puck` |
+
+Gemini 語音名稱及其角色來自 [Gemini 語音生成文件](https://ai.google.dev/gemini-api/docs/speech-generation)（於 2026-10-07 讀取）。
+
+`nova` 不在表中：Gemini 3.x TTS 模型接受它作為自己的語音名稱（於 2026-10-08 實際驗證），因此會原樣傳送。`gemini-2.5-flash-preview-tts` 會拒絕 `nova`，因此在該模型上請使用 Gemini 語音名稱。
 
 ### 快速開始 {#quick-start}
 
@@ -562,7 +688,7 @@ response_schema = {
 completion(
     model="gemini/{{gemini_pro}}", 
     messages=messages, 
-    response_format={"type": "json_object", "response_schema": response_schema} # 👈 KEY CHANGE
+    response_format={"type": "json_object", "response_schema": response_schema} # KEY CHANGE
     )
 
 print(json.loads(completion.choices[0].message.content))
@@ -632,7 +758,7 @@ try:
     response_format={
         "type": "json_object", 
         "response_schema": response_schema,
-        "enforce_validation": true # 👈 KEY CHANGE
+        "enforce_validation": true # KEY CHANGE
     }
 	)
 except JSONSchemaValidationError as e: 
@@ -721,7 +847,7 @@ messages = [
 completion(
     model="gemini/{{gemini_pro}}", 
     messages=messages, 
-    topK=1 # 👈 KEY CHANGE
+    topK=1 # KEY CHANGE
 )
 
 print(json.loads(completion.choices[0].message.content))
@@ -756,7 +882,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
   "messages": [
         {"role": "user", "content": "List 5 popular cookie recipes."}
     ],
-  "topK": 1 # 👈 KEY CHANGE
+  "topK": 1 # KEY CHANGE
 }
 '
 ```
@@ -780,7 +906,7 @@ try:
     response_format={
         "type": "json_object", 
         "response_schema": response_schema,
-        "enforce_validation": true # 👈 KEY CHANGE
+        "enforce_validation": true # KEY CHANGE
     }
 	)
 except JSONSchemaValidationError as e: 
@@ -921,7 +1047,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = ".."
 
-tools = [{"googleSearch": {}}] # 👈 ADD GOOGLE SEARCH
+tools = [{"googleSearch": {}}] # ADD GOOGLE SEARCH
 
 response = completion(
     model="gemini/{{gemini_flash}}",
@@ -1081,7 +1207,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = ".."
 
-# 👇 ADD URL CONTEXT
+# ADD URL CONTEXT
 tools = [{"urlContext": {}}]
 
 response = completion(
@@ -1141,7 +1267,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = ".."
 
-tools = [{"googleSearch": {}}] # 👈 ADD GOOGLE SEARCH
+tools = [{"googleSearch": {}}] # ADD GOOGLE SEARCH
 
 response = completion(
     model="gemini/{{gemini_flash}}",
@@ -1196,7 +1322,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = ".."
 
-tools = [{"codeExecution": {}}] # 👈 ADD GOOGLE SEARCH
+tools = [{"codeExecution": {}}] # ADD GOOGLE SEARCH
 
 response = completion(
     model="gemini/{{gemini_flash}}",
@@ -1693,7 +1819,93 @@ curl --location 'http://localhost:4000/v1/chat/completions' \
 
 5. **格式**：thought signatures 會儲存在回應中工具呼叫的 `provider_specific_fields.thought_signature` 中，並在您將 assistant 訊息附加到對話歷史時自動包含。
 
-6. **Chat Completions 用戶端**：對於您無法控制前一個 assistant 訊息是否原樣包含的 chat completions 用戶端（例如 langchain 的 ChatOpenAI），LiteLLM 也會透過將 thought signature 附加到工具呼叫 id（`call_123__thought__<thought-signature>`）來保留它，並在將外發請求送往 Gemini 之前將其再次擷取出來。
+6. **Chat Completions 用戶端**：對於您無法控制前一個 assistant 訊息是否原樣包含的 chat completions 用戶端（例如 langchain 的 ChatOpenAI），LiteLLM 也會透過將 thought signature 附加到工具呼叫 id（`call_123__thought__<thought-signature>`）來保留它，並在將外發請求送往 Gemini 之前將其再次擷取出來。若用戶端對 id 長度有限制，請參閱 [讓工具呼叫 id 保持簡短](#keep-tool-call-ids-short)。
+
+### 讓工具呼叫 id 保持簡短 {#keep-tool-call-ids-short}
+
+依預設，當工具呼叫帶有 thought signature 時，LiteLLM 回傳的工具呼叫 id 會包含完整的簽章，格式為 `call_123__thought__<thought-signature>`。Gemini 只會簽署平行批次中的第一個呼叫，因此其他 id 本來就很簡短。簽章通常長達數百個字元，因此對 id 長度有限制的用戶端會拒絕該工具呼叫。例如，AWS Bedrock AgentCore harness 最多允許 128 個字元。
+
+設定 `thought_signature_in_tool_call_id: false` <SinceVersion v="1.109.0" />，即可取得像 `call_436686` 這樣的短 id。LiteLLM 接著只會在帶有該簽章的工具呼叫的 `provider_specific_fields.thought_signature` 中回傳簽章。此設定適用於透過 `gemini/` 與 `vertex_ai/`、在 `/chat/completions` 與 `/responses` 上呼叫的 Gemini 模型，串流與非串流皆適用。未設定時，id 會如以往一樣包含簽章。
+
+在您的 `config.yaml` 中對某個部署進行設定：
+
+```yaml
+model_list:
+  - model_name: {{gemini_flash}}
+    litellm_params:
+      model: gemini/{{gemini_flash}}
+      api_key: os.environ/GEMINI_API_KEY
+      thought_signature_in_tool_call_id: false
+```
+
+或依每個請求設定。請求中的值優先於部署上的值。
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python
+from litellm import completion
+
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_current_temperature",
+            "description": "Gets the current weather temperature for a given location.",
+            "parameters": {
+                "type": "object",
+                "properties": {"location": {"type": "string"}},
+                "required": ["location"],
+            },
+        },
+    }
+]
+
+response = completion(
+    model="gemini/{{gemini_flash}}",
+    messages=[{"role": "user", "content": "What's the temperature in London?"}],
+    tools=tools,
+    reasoning_effort="low",
+    thought_signature_in_tool_call_id=False,
+)
+print(response.choices[0].message.tool_calls[0].id)
+```
+
+</TabItem>
+<TabItem value="proxy" label="PROXY">
+
+```bash
+curl http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -d '{
+    "model": "{{gemini_flash}}",
+    "messages": [{"role": "user", "content": "What'\''s the temperature in London?"}],
+    "tools": [{
+      "type": "function",
+      "function": {
+        "name": "get_current_temperature",
+        "description": "Gets the current weather temperature for a given location.",
+        "parameters": {
+          "type": "object",
+          "properties": {"location": {"type": "string"}},
+          "required": ["location"]
+        }
+      }
+    }],
+    "reasoning_effort": "low",
+    "thought_signature_in_tool_call_id": false
+  }'
+```
+
+</TabItem>
+</Tabs>
+
+此值為布林值。LiteLLM 也接受可轉換為布林值的值，例如 `"false"` 或 `0`。任何其他值（例如 `"maybe"`）都會得到一個指出 `thought_signature_in_tool_call_id` 的 HTTP 400 錯誤。使用 `drop_params: true` 時，LiteLLM 會改為捨棄該錯誤值，並使用部署上的值；若部署未設定，則使用預設值。
+
+在下一輪中，將 assistant 訊息連同其工具呼叫照您收到的樣子送回，包括 `provider_specific_fields`。LiteLLM 會從 `provider_specific_fields` 讀取簽章，並隨工具呼叫一起傳送給 Gemini。使用 OpenAI 用戶端時，`messages.append(response.choices[0].message)` 即可做到這一點，如上方的[多輪範例](#multi-turn-function-calling-with-thought-signatures)所示。在 `/responses` 上，每個 `function_call` 輸出項目都帶有相同的 `provider_specific_fields`，因此請在下一個 `input` 中將該項目原樣送回。LiteLLM 只會在該請求的此設定也為 `false` 時，才從輸入項目中讀取這些欄位，因此如果您以每個請求為單位設定，請在每一輪都傳送它，或改為在部署上設定。
+
+如果您的用戶端只送回短 id 並捨棄 `provider_specific_fields`，LiteLLM 就沒有簽章可傳送。對於 Gemini 3 與更新的模型，它接著會在每個 assistant 訊息的第一個工具呼叫上放置預留位置簽章，讓請求仍能成功，但模型會失去真實簽章所承載的推理。因此，如果您的用戶端接受長 id、但會捨棄 `provider_specific_fields`，請保留預設值。
 
 ## JSON 模式 {#json-mode}
 
@@ -1719,7 +1931,7 @@ messages = [
 completion(
     model="gemini/{{gemini_pro}}", 
     messages=messages, 
-    response_format={"type": "json_object"} # 👈 KEY CHANGE
+    response_format={"type": "json_object"} # KEY CHANGE
 )
 
 print(json.loads(completion.choices[0].message.content))
@@ -2129,7 +2341,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = "" 
 
-litellm.set_verbose = True # 👈 See Raw call 
+litellm.set_verbose = True # See Raw call
 
 audio_bytes = Path("speech_vertex.mp3").read_bytes()
 encoded_data = base64.b64encode(audio_bytes).decode("utf-8")
@@ -2145,7 +2357,7 @@ response = litellm.completion(
                 {
                     "type": "file",
                     "file": {
-                        "file_data": "data:audio/mp3;base64,{}".format(encoded_data), # 👈 SET MIME_TYPE + DATA
+                        "file_data": "data:audio/mp3;base64,{}".format(encoded_data), # SET MIME_TYPE + DATA
                     }
                 },
             ],
@@ -2185,7 +2397,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = "" 
 
-litellm.set_verbose = True # 👈 See Raw call 
+litellm.set_verbose = True # See Raw call
 
 model = "gemini/{{gemini_flash}}"
 response = litellm.completion(
@@ -2198,7 +2410,7 @@ response = litellm.completion(
                 {
                     "type": "file",
                     "file": {
-                        "file_id": "https://storage...", # 👈 SET THE IMG URL
+                        "file_id": "https://storage...", # SET THE IMG URL
                         "format": "application/pdf" # OPTIONAL
                     }
                 },
@@ -2216,7 +2428,7 @@ import os
 
 os.environ["GEMINI_API_KEY"] = "" 
 
-litellm.set_verbose = True # 👈 See Raw call 
+litellm.set_verbose = True # See Raw call
 
 model = "gemini/{{gemini_flash}}"
 response = litellm.completion(
@@ -2229,7 +2441,7 @@ response = litellm.completion(
                 {
                     "type": "file",
                     "file": {
-                        "file_id": "gs://storage...", # 👈 SET THE IMG URL
+                        "file_id": "gs://storage...", # SET THE IMG URL
                         "format": "application/pdf" # OPTIONAL
                     }
                 },
@@ -2267,7 +2479,7 @@ response = litellm.completion(
     {
         "role": "system",
         "content": ...,
-        "cache_control": {"type": "ephemeral"} # 👈 KEY CHANGE
+        "cache_control": {"type": "ephemeral"} # KEY CHANGE
     },
     ...
 }
@@ -2286,7 +2498,7 @@ response = litellm.completion(
         "content": ...,
         "cache_control": {
             "type": "ephemeral",
-            "ttl": "3600s"  # 👈 Cache for 1 hour
+            "ttl": "3600s"  # Cache for 1 hour
         }
     },
     ...
@@ -2353,7 +2565,7 @@ for _ in range(2):
                     {
                         "type": "text",
                         "text": "Here is the full text of a complex legal agreement" * 4000,
-                        "cache_control": {"type": "ephemeral"}, # 👈 KEY CHANGE
+                        "cache_control": {"type": "ephemeral"}, # KEY CHANGE
                     }
                 ],
             },
@@ -2370,7 +2582,7 @@ for _ in range(2):
             }]
     )
 
-    print(resp.usage) # 👈 2nd usage block will be less, since cached tokens used
+    print(resp.usage) # 2nd usage block will be less, since cached tokens used
 ```
 
 </TabItem>
@@ -2391,7 +2603,7 @@ resp = completion(
                     "text": "Here is the full text of a complex legal agreement" * 4000,
                     "cache_control": {
                         "type": "ephemeral", 
-                        "ttl": "7200s"  # 👈 Cache for 2 hours
+                        "ttl": "7200s"  # Cache for 2 hours
                     },
                 }
             ],
@@ -2404,7 +2616,7 @@ resp = completion(
                     "text": "What are the key terms and conditions in this agreement?",
                     "cache_control": {
                         "type": "ephemeral",
-                        "ttl": "3600s"  # 👈 This TTL will be ignored (first one is used)
+                        "ttl": "3600s"  # This TTL will be ignored (first one is used)
                     },
                 }
             ],
@@ -2454,7 +2666,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
                     {
                         "type": "text",
                         "text": "Here is the full text of a complex legal agreement" * 4000,
-                        "cache_control": {"type": "ephemeral"}, # 👈 KEY CHANGE
+                        "cache_control": {"type": "ephemeral"}, # KEY CHANGE
                     }
                 ],
             },
@@ -2529,7 +2741,7 @@ response = await client.chat.completions.create(
                     {
                         "type": "text",
                         "text": "Here is the full text of a complex legal agreement" * 4000,
-                        "cache_control": {"type": "ephemeral"}, # 👈 KEY CHANGE
+                        "cache_control": {"type": "ephemeral"}, # KEY CHANGE
                     }
             ],
         },

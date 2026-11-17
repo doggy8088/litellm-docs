@@ -1,6 +1,6 @@
 ---
 title: "[Beta] Auto Routing"
-sidebar_label: "[Beta] Auto Routing"
+sidebar_label: "Auto Routing (Beta)"
 ---
 
 import Image from '@theme/IdealImage';
@@ -13,7 +13,9 @@ import TabItem from '@theme/TabItem';
 
 :::info[可用性]
 
-Auto routing 目前為 **beta**，因此設定鍵與預設值在版本之間仍可能變更。將於 **v1.94.x** 推出。最早的開發版本預計於 **2026-07-14 星期二** 發佈。建議與回饋：[@discussion #32168](https://github.com/BerriAI/litellm/discussions/32168)。
+<SinceVersion v="1.94.0" />
+
+Auto routing 目前為 **beta**，因此設定鍵與預設值在版本之間仍可能變更。建議與回饋：[discussion #32168](https://github.com/BerriAI/litellm/discussions/32168)。
 
 :::
 
@@ -131,9 +133,6 @@ v2 暴露的每個旋鈕。除了 `tiers` 之外，`complexity_router_config` �
       enable_context_window_escalation: false   # default; set true to opt in
       context_window_escalation_buffer: 0.95   # default; prompt must fit within this fraction of the window
 
-      # Send image-bearing requests to a tier that can see them
-      modality_routing: false   # default; set true to opt in
-
       # Classify new user asks only, carrying the decision through continuation turns
       classification_mode: every_request   # default; or user_turn
 
@@ -174,6 +173,24 @@ v2 暴露的每個旋鈕。除了 `tiers` 之外，`complexity_router_config` �
     # auto_router_model_compression: none
 ```
 
+## 圖片請求與純文字層級 {#image-requests-and-text-only-tiers}
+
+圖片請求是指帶有 `image_url` 內容部分的 `/v1/chat/completions` 呼叫、帶有 `input_image` 項目的 `/v1/responses` 呼叫，或帶有 `image` 區塊的 `/v1/messages` 呼叫。LiteLLM 不會將這類請求傳送至宣告為純文字的部署。當 `model_info.supports_vision` 為 `false` 時，該部署即為純文字部署；或者當該鍵未設定，且模型型錄依序對 `model_info.base_model`、`litellm_params.base_model`、部署模型名稱標示 `supports_vision: false` 時亦然。沒有任何宣告且型錄中也沒有條目的部署會被視為具備圖片處理能力，因此自訂的純文字部署需要明確設定 `model_info.supports_vision: false` 才會被略過。LiteLLM 在路由期間絕不會探測提供者。
+
+```yaml
+model_list:
+  - model_name: oss-120b
+    litellm_params:
+      model: hosted_vllm/my-text-only-model
+      api_base: os.environ/TEXT_API_BASE
+    model_info:
+      supports_vision: false
+```
+
+在模型群組內，這項檢查在每一種路由策略下預設都會執行，包括串流，且不需要 `enable_pre_call_checks`。當群組同時包含純文字部署與視覺部署時，圖片請求會在視覺部署之中挑選，其餘路由邏輯（健康狀態、冷卻、存取、配額、順序、外掛）則在該子集內套用。當群組中的每個部署都是純文字時，不會移除任何部署，而是回傳提供者自身的錯誤，因此只曾提供文字服務的群組會維持先前的行為。模型群組版本請參閱[視覺能力篩選](./reliability#vision-capability-filtering-image-requests)。
+
+自動路由器在此之上再加上一層層級檢查。在複雜度路由器設定中設定 `modality_routing: true` 後，被分類到純文字層級的圖片回合會移至下一個具備能力的層級或預設模型，而不會在提供者處失敗。當該層級模型背後的任一部署宣告為純文字時，便會略過該層級，解析方式與上述相同，未宣告的模型則維持符合資格。工作階段釘選預設會保留，因此被釘選的純文字模型會繼續接收該工作階段的圖片回合。設定 `modality_pin_override: true` 可讓該圖片回合移至具備能力的模型，且不變更已儲存的工作階段釘選。
+
 ## 分類 {#classification}
 
 選擇一個分類器，並可在分類前套用選用的關鍵字規則。除非另有設定，LLM、JEV 或自訂分類器失敗時會回退到 heuristic scorer
@@ -203,7 +220,7 @@ classifier_llm_config:
 
 ### JEV 分類器 {#jev-classifier}
 
-這份參考文件保留了發行版建置所支援的欄位名稱。包含 [backend #43626](https://github.com/BerriAI/litellm/pull/43626) 的建置也接受帶有 `opensource_classifier_config.provider: jev` 的 `classifier_type: oss_classifier`；以下設定會套用於 `opensource_classifier_config` 內。既有名稱仍然可接受。請參閱 [OSS 分類器指南](/docs/auto_router/decision_classifiers) 以了解遷移方式，以及 Jev、Nimble 與 Laya 提供者設定。
+這份參考文件保留了發行版建置所支援的欄位名稱。包含 [backend #43626](https://github.com/BerriAI/litellm/pull/43626) 的建置也接受帶有 `opensource_classifier_config.provider: jev` 的 `classifier_type: oss_classifier`；以下設定會套用於 `opensource_classifier_config` 內。既有名稱仍然可接受。請參閱 [OSS 分類器指南](/docs/auto_router/decision_classifiers) 以了解遷移方式，以及 Jev、Nimble、Laya 與 Databricks 提供者設定。使用 `provider: databricks` 時，`model` 為 `ai_decide` 或純粹的 serving endpoint 名稱，而 `api_key` 與 `api_base` 在省略時會讀取 `DATABRICKS_API_KEY`（或 `DATABRICKS_TOKEN`）與 `DATABRICKS_API_BASE`。
 
 以 `jev_classifier_config` 設定 `classifier_type: jev`，即可使用 [TypeSafe System One](/docs/pass_through/typesafe)。它會向 `POST /v1/systemone` 傳送一個 `questions.tier` Choice 問題，並將分類輸入放在 `state`、層級說明放在 `criteria`。回傳的 choice 會選取既有的層級池。請參閱 [設定與儀表板說明](/docs/auto_router/setup#jev-classifier-typesafe-ai)
 
@@ -348,7 +365,7 @@ tier_by_team = TierByTeam()
 
 :::info
 
-context-window 支援隨 **v1.96.x** 一起推出（[PR #35185](https://github.com/BerriAI/litellm/pull/35185)）；同版也加入了視窗中的 assistant turns（[PR #35471](https://github.com/BerriAI/litellm/pull/35471)）。在較早版本中，classifier 只會看到目前訊息，而這些 key 會被靜默忽略。
+context-window 支援適用於 <SinceVersion v="1.96.0" />（[PR #35185](https://github.com/BerriAI/litellm/pull/35185)）；同版也加入了視窗中的 assistant turns（[PR #35471](https://github.com/BerriAI/litellm/pull/35471)）。在較早版本中，classifier 只會看到目前訊息，而這些 key 會被靜默忽略。
 
 :::
 
@@ -565,7 +582,7 @@ savings = cost(baseline model, this request)
 - **「最昂貴」由成本決定，而不是由費率決定**，因為每輸出 token 更貴的模型，可能每個快取 token 反而更便宜。候選項會透過相同的引擎，以固定參考請求（20k 提示詞 tokens：19k 快取讀取與 1k 快取寫入，加上 1k completion）計價一次，該引擎也用於節省量。無法計價的候選項會被排除，若沒有任何項目可計價，驅動程式會回報零。排序會釘選在每個路由器執行個體上，因此它不會走在每請求路徑上
 - **只有一側是反事實。** 該請求實際花費多少，是從成本計算器記錄回來的結果讀取，而不是重新推導；基準值從未執行過，因此它會以相同基礎透過同一個引擎計價。該數字是輸入加上輸出成本，因此把內建工具成本、折扣與利潤排除在比較之外
 - **結果可為負。** 切換模型會讓新模型維持冷態，而當因此產生的快取建立費用大於較便宜的費率時，數字就會變成負值，儀表板也會顯示如此
-- **分類器本身的費用會計入節省量**（v1.100 及之後）。LLM 分類器會將其在路由決策上的呼叫成本記錄為 `classifier_cost`，而回報的數值會扣除它，因此該數字是路由在支付決策成本之後所賺到的量。由啟發式自行做出的決策不會記錄任何費用，且那裡不會扣除任何東西
+- **分類器本身的費用會計入節省量** <SinceVersion v="1.100.0" />。LLM 分類器會將其在路由決策上的呼叫成本記錄為 `classifier_cost`，而回報的數值會扣除它，因此該數字是路由在支付決策成本之後所賺到的量。由啟發式自行做出的決策不會記錄任何費用，且那裡不會扣除任何東西
 - **零節省會保留兩項成本。** 對於支援的原生 Anthropic 請求，完整觀察到的使用情況會建立相等的模型成本，而已記錄的會話則已使用完全相同、以相同價格計算的基準部署，包括重疊請求。當請求可計費時，兩項成本都維持非零。已記錄的分類器費用仍會計入節省量。在路由分歧之後，要回到相同模型需要快取歷史證據；僅靠模型身份無法建立零節省。缺少定價或證據會產生不可用的估算
 
 ### 快取前綴歷史與到期 {#the-baseline-is-priced-with-a-warm-cache}
@@ -745,6 +762,8 @@ Anthropic 系列的級別會以相同方式使用 `thinking`，因為它是一�
 ```
 
 努力等級是每個模型的能力，因此請確認模型支援您要求的級別：`gpt-5-mini` 會拒絕 `xhigh`，而 `gpt-5.4-mini` 則接受它，若在路由器別名上設定 `drop_params: true`，會把該拒絕變成一個悄然被丟棄的參數，讀起來就像一個什麼都沒改變的階梯。還有兩件事要記住。成本追蹤會依其底層模型為每個級別定價，因此這種方式建構的階梯在支出上會顯示為同一個模型有多個努力等級，而不是多個獨立模型。而 `session_affinity` 會固定該級別的 `model_name`；快取命中時 TTL 會重新整理，而升階請求可能把固定點往上移一個階層，而不是讓它維持在硬性固定期間鎖定
+
+安裝、憑證與完整可執行範例，請參閱 [Autorouter SDK 指南](/docs/autorouter_sdk)。
 
 ## Python SDK {#python-sdk}
 

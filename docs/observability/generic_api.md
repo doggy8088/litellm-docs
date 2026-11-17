@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Generic API 記錄：任何 HTTP 端點"
+sidebar_label: "Generic API"
+description: "透過 generic_api 回呼將 LiteLLM 記錄傳送到任何 HTTP 端點，支援自訂標頭、事件篩選、批次處理，以及 JSON 陣列或 NDJSON 格式。"
+---
 # 通用 API {#generic-api}
 
 將 LiteLLM 記錄傳送至任何 HTTP 端點。

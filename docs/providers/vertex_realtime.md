@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Vertex AI Gemini Live 即時 API"
+sidebar_label: "Vertex AI Gemini Live - Realtime API"
+description: "透過 LiteLLM 的 /realtime 端點，使用 Gemini Enterprise Agent Platform（原 Vertex AI）上的 Gemini Live，支援語音輸入、語音輸出與工具。"
+---
+
 # Vertex AI Gemini Live - 即時 API {#vertex-ai-gemini-live---realtime-api}
 
 透過 LiteLLM 的統一 `/realtime` 端點使用 Vertex AI 的 Gemini Live API（BidiGenerateContent），其採用 OpenAI Realtime 通訊協定。
@@ -34,11 +40,13 @@ model_list:
     litellm_params:
       model: vertex_ai/gemini-2.0-flash-live-001
       vertex_project: your-gcp-project-id
-      vertex_location: us-east4   # or any supported region, or "global"
+      vertex_location: us-east4   # a region (us-east4), a multi-region (us, eu), or "global"
 
 general_settings:
   master_key: sk-your-key
 ```
+
+`vertex_location` 決定 LiteLLM 為 Live API websocket 撥接的主機：區域（例如 `us-east4`）會撥接 `us-east4-aiplatform.googleapis.com`；多區域（`us` 或 `eu`）會撥接 `aiplatform.us.rep.googleapis.com` 或 `aiplatform.eu.rep.googleapis.com`；`global` 則撥接 `aiplatform.googleapis.com`。每個位置提供哪些模型由 Google 決定。截至 2026 年 10 月，`gemini-3.8-live` 尚未在 `global` 提供。`/realtime` 上的多區域位置自 <SinceVersion v="1.106.0" /> 起受支援，首次出現在 `v1.106.0-rc.1`（[PR #45166](https://github.com/BerriAI/litellm/pull/45166)）。
 
 ### 3. 啟動 Proxy {#3-start-the-proxy}
 
@@ -154,8 +162,6 @@ asyncio.run(main())
 ```
 
 ## 語音輸入 / 語音輸出 {#voice-in--voice-out}
-
-完整的語音範例請參閱 [`voice_realtime_test.py`](https://github.com/BerriAI/litellm/blob/main/voice_realtime_test.py)。
 
 音訊的關鍵設定：
 - 麥克風輸入：**16 kHz** PCM16 (`audio/pcm;rate=16000`)

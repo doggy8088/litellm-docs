@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 OpenAI API：Python SDK 與 Gateway"
+sidebar_label: "OpenAI"
+description: "呼叫 GPT-5、GPT-4.1 與 o 系列模型，支援推理強度、網頁搜尋、視覺、PDF 輸入與 Responses API 橋接，並使用 Whisper 轉錄音訊。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -58,17 +64,20 @@ export OPENAI_API_KEY=""
 <Tabs>
 <TabItem value="config" label="config.yaml">
 
-```yaml
+```yaml keep-model-ids
 model_list:
   - model_name: {{openai_small}}
     litellm_params:
       model: openai/{{openai_small}}                          # The `openai/` prefix will call openai.chat.completions.create
       api_key: os.environ/OPENAI_API_KEY
-  - model_name: gpt-3.5-turbo-instruct
+  - model_name: gpt-5.4-mini-completions
     litellm_params:
-      model: text-completion-openai/gpt-3.5-turbo-instruct # The `text-completion-openai/` prefix will call openai.completions.create
+      model: text-completion-openai/gpt-5.4-mini # The `text-completion-openai/` prefix will call openai.completions.create
       api_key: os.environ/OPENAI_API_KEY
 ```
+
+`gpt-5.4-mini-completions` 群組呼叫 OpenAI 的舊版 `/v1/completions` 端點；該端點會接續提示詞，而不是回覆提示詞，且 LiteLLM 尚未追蹤它的花費。請傳送單一使用者訊息，因為在此路由上使用系統訊息或 `tools` 會回傳 500 錯誤。請參閱 [OpenAI (Text Completion)](./text_completion_openai.md)。
+
 </TabItem>
 <TabItem value="config-*" label="config.yaml - 代理所有 OpenAI 模型">
 
@@ -220,7 +229,7 @@ model_list:
 
 靜態金鑰永遠優先：當部署、憑證或 `OPENAI_API_KEY` 攜帶 API 金鑰時，不會使用聯盟。聯盟也只適用於 API base 是 `https://api.openai.com` 或像 `https://eu.api.openai.com` 這類區域主機時；指向其他 OpenAI 相容伺服器的自訂 `api_base` 仍會使用金鑰。
 
-只有 proxy 管理員可以在部署或憑證上設定這些欄位，因為權杖檔案路徑會決定 proxy 交換哪個工作負載身分。Chat completions、Responses API 和 embeddings 會使用聯盟；image、audio、transcription、moderation、files、batches、fine-tuning 和 assistants 呼叫仍會讀取 `OPENAI_API_KEY`。
+只有 proxy 管理員可以在部署或憑證上設定這些欄位，因為權杖檔案路徑會決定 proxy 交換哪個工作負載身分。Chat completions、Responses API 和 embeddings 會使用聯盟，以 API 為後端的 token 計數自 v1.107.0 起也會使用聯盟。自 v1.108.0 起，所有其他 OpenAI 路由也會使用聯盟：text completions、images、audio 與 transcription、moderation、files、batches、fine-tuning、assistants、containers、vector stores、videos、evals、decisions，以及 realtime sessions 與 client secrets。在 v1.108.0 之前，這些路由會讀取 `OPENAI_API_KEY`。
 
 ### OpenAI Chat Completion Models {#openai-chat-completion-models}
 
@@ -271,12 +280,6 @@ model_list:
 | gpt-4-turbo-preview   | `response = completion(model="gpt-4-0125-preview", messages=messages)` |
 | gpt-4-0125-preview    | `response = completion(model="gpt-4-0125-preview", messages=messages)` |
 | gpt-4-1106-preview    | `response = completion(model="gpt-4-1106-preview", messages=messages)` |
-| gpt-3.5-turbo-1106    | `response = completion(model="gpt-3.5-turbo-1106", messages=messages)` |
-| gpt-3.5-turbo         | `response = completion(model="gpt-3.5-turbo", messages=messages)` |
-| gpt-3.5-turbo-0301    | `response = completion(model="gpt-3.5-turbo-0301", messages=messages)` |
-| gpt-3.5-turbo-0613    | `response = completion(model="gpt-3.5-turbo-0613", messages=messages)` |
-| gpt-3.5-turbo-16k     | `response = completion(model="gpt-3.5-turbo-16k", messages=messages)` |
-| gpt-3.5-turbo-16k-0613| `response = completion(model="gpt-3.5-turbo-16k-0613", messages=messages)` |
 | gpt-4                 | `response = completion(model="gpt-4", messages=messages)` |
 | gpt-4-0314            | `response = completion(model="gpt-4-0314", messages=messages)` |
 | gpt-4-0613            | `response = completion(model="gpt-4-0613", messages=messages)` |
@@ -293,7 +296,7 @@ OpenAI 有兩種使用網頁搜尋的方式，取決於端點：
 | 方法 | 端點 | 模型 | 啟用方式 |
 |----------|----------|--------|---------------|
 | **搜尋模型** | `/chat/completions` | `gpt-5-search-api`、`gpt-4o-search-preview`、`gpt-4o-mini-search-preview` | 傳入 `web_search_options` 參數 |
-| **網頁搜尋工具** | `/responses` | `gpt-5`、`gpt-4.1`、`gpt-4o`，以及其他一般模型 | 傳入 `web_search_preview` 工具 |
+| **網頁搜尋工具** | `/responses` | `{{openai_large}}`、`{{openai_small}}`，以及其他一般模型 | 傳入 `web_search_preview` 工具 |
 
 <Tabs>
 <TabItem value="sdk-completion" label="SDK - /chat/completions">
@@ -348,6 +351,20 @@ model_list:
 </Tabs>
 
 完整細節請參閱[網頁搜尋指南](../completion/web_search.md)。
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`openai/<family>-latest` 名稱會跟隨一個模型系列，隨著 LiteLLM 將它們移至更新的模型，讓您的應用程式維持單一模型字串。您可以像使用任何其他 OpenAI 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 OpenAI，並以該模型的價格計費。別名的運作方式與各提供者的完整清單，請參閱 [最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型系列 |
+| --- | --- |
+| `openai/gpt-luna-latest` | GPT Luna |
+| `openai/gpt-sol-latest` | GPT Sol |
+| `openai/gpt-terra-latest` | GPT Terra |
+| `openai/gpt-astra-latest` | GPT Astra |
+| `openai/gpt-mini-latest` | GPT Mini |
 
 ## OpenAI Vision 模型 {#openai-vision-models}
 | 模型名稱            | 函式呼叫                                                   |
@@ -934,7 +951,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 
   # Model with mode: chat (use prefix for built-in tools)
-  - model_name: gpt-4o-with-tools
+  - model_name: {{openai_large}}-with-tools
     litellm_params:
       model: openai/responses/{{openai_large}}
       api_key: os.environ/OPENAI_API_KEY
@@ -953,7 +970,7 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -d '{
-    "model": "gpt-4o-with-tools",
+    "model": "{{openai_large}}-with-tools",
     "messages": [
         {"role": "user", "content": "What is the weather in Paris today?"}
     ],
@@ -1030,6 +1047,10 @@ curl --location 'http://0.0.0.0:4000/v1/audio/transcriptions' \
 
 </TabItem>
 </Tabs>
+
+## OpenAI 即時翻譯 {#openai-realtime-translation}
+
+如需即時的語音對語音翻譯，請加入 `openai/gpt-realtime-translate` 並連線至 proxy 上的 `/v1/realtime/translations`。模型會在說話者說話的同時回傳翻譯後的音訊與文字。設定方式、WebSocket 用戶端、WebRTC 與定價，請參閱 [即時翻譯](/docs/realtime_translation)。
 
 ## 進階 {#advanced}
 
@@ -1279,7 +1300,7 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 
 general_settings:
-    forward_openai_org_id: true # 👈 KEY CHANGE
+    forward_openai_org_id: true # KEY CHANGE
 ```
 
 2. 啟動 Proxy

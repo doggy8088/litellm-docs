@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Prisma AIRS 防護欄"
+sidebar_label: "PANW Prisma AIRS"
+description: "在 LiteLLM AI 閘道上以 Palo Alto Networks Prisma AIRS 掃描提示與回應，包含安全性設定檔、內容遮罩與 fail-open。"
+---
 import Image from '@theme/IdealImage';
 
 # PANW Prisma AIRS {#panw-prisma-airs}
@@ -121,6 +126,7 @@ LiteLLM 會將此詳細資訊包裝在與端點相關的 HTTP 錯誤信封中。
 | `mask_request_content` | 否 | 在提示中遮罩敏感資料，而非封鎖 | `false` |
 | `mask_response_content` | 否 | 在回應中遮罩敏感資料，而非封鎖 | `false` |
 | `mask_on_block` | 否 | 向後相容的旗標，可同時啟用請求與回應遮罩 | `false` |
+| `include_masked_response_on_block` | 否 | 當 `post_call` 掃描封鎖回應時，將 AIRS 的 `response_masked_data`（遮罩後的文字與 `pattern_detections`）加入 HTTP 400 錯誤主體。僅適用於此防護欄。當 `mask_response_content` 開啟時無效 | `false` |
 | `experimental_use_latest_role_message_only` | 否 | 僅限 Anthropic `/v1/messages`。未設定時：請求端只掃描最新的使用者訊息。設定 `false` 以掃描所有使用者／系統／開發者訊息。非 Anthropic 不受影響。 | 未設定（Anthropic 預設為 true） |
 
 請使用與您的 Prisma AIRS 部署設定檔區域相符的區域 `api_base`，以降低延遲並符合資料駐留規範。
@@ -197,6 +203,47 @@ guardrails:
 - `mask_request_content: true` — 在提示中遮罩敏感資料，而非封鎖
 - `mask_response_content: true` — 在回應中遮罩敏感資料，而非封鎖
 - `mask_on_block: true` — 向後相容的旗標，可同時啟用請求與回應遮罩
+
+### 封鎖時的遮罩回應詳細資訊 {#masked-response-details-on-block}
+
+預設情況下，被封鎖的 `post_call` 回應會回傳 HTTP 400，附帶 AIRS 掃描中繼資料（`action`、`category`、`response_detected`、掃描與報告 ID），但不包含 `response_masked_data`。在防護欄上設定 `include_masked_response_on_block: true` 即可將其加入，讓用戶端能看到 AIRS 比對到哪些模式以及其位置，而無需原始模型輸出。
+
+```yaml
+guardrails:
+  - guardrail_name: "panw-block-details"
+    litellm_params:
+      guardrail: panw_prisma_airs
+      mode: "post_call"
+      api_key: os.environ/PANW_PRISMA_AIRS_API_KEY
+      profile_name: "default"
+      include_masked_response_on_block: true
+```
+
+狀態仍為 400，額外欄位會出現在 `/v1/chat/completions`、`/v1/responses` 與 `/v1/messages` 的 `error.provider_specific_fields.error` 之下：
+
+```json
+{
+  "error": {
+    "code": "400",
+    "provider_specific_fields": {
+      "error": {
+        "code": "panw_prisma_airs_response_blocked",
+        "action": "block",
+        "category": "malicious",
+        "response_detected": {"dlp": true},
+        "response_masked_data": {
+          "data": "Sample values:\n\n- Email ID: `XXXXXXXXXXXXXXXXXXXXX`",
+          "pattern_detections": [
+            {"pattern": "Internet - addr_email", "locations": [[41, 61]]}
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+只有當 AIRS 回傳該欄位，且防護欄有設定此旗標時，才會加入該欄位。若同時開啟 `mask_response_content`，回應會如以往一樣被遮罩並以 HTTP 200 回傳，因此沒有可擴充的封鎖主體。此設定也可以從 Admin UI 的防護欄表單中設定。
 
 ### fail-open 設定 {#fail-open-configuration}
 

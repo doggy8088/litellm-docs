@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Azure AI Speech 文字轉語音"
+sidebar_label: "Azure AI Speech (Cognitive Services)"
+description: "透過 Python SDK 或 AI Gateway，使用 Azure AI Speech 神經語音將文字轉換為語音，支援 OpenAI 語音對應、原始 SSML 與逐字元計費。"
+---
+
 # Azure AI Speech（Cognitive Services） {#azure-ai-speech-cognitive-services}
 
 Azure AI Speech 是 Azure 的 Cognitive Services 文字轉語音 API，獨立於 Azure OpenAI。它提供高品質神經語音，支援更多語言，並具備進階語音自訂功能。

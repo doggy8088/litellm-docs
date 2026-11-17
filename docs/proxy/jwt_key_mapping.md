@@ -1,292 +1,208 @@
-# JWT → 虛擬金鑰對應 {#jwt--virtual-key-mapping}
-
-<EnterpriseFeature feature="JWT → Virtual Key Mapping" />
-
-將 JWT 權杖對應到 LiteLLM 虛擬金鑰，讓每個 JWT 用戶端都能享有與虛擬金鑰相同的細緻控制：模型限制、支出上限、速率限制、防護欄，以及完整的支出追蹤。
-
-**這很重要的原因：** 標準 JWT 驗證會將 JWT 對應到一個 *團隊*。那是一個共享邊界，因此團隊底下的所有用戶端都會共用相同的限制。透過 JWT → 虛擬金鑰對應，每個個別 JWT 用戶端（由 `client_id`、`azp` 或 `sub` 等聲明識別）都會對應到自己的虛擬金鑰。您可以在不發放 API 金鑰給使用者的情況下，對每個用戶端進行可追蹤管理。
-
-**常見使用情境：** 您的公司使用 SSO/OIDC。開發者使用 Claude Code 搭配自己的身分 token。您希望在不為每個人發放 LiteLLM API 金鑰的情況下，強制執行每位開發者的模型存取與花費上限。
-
 ---
+sidebar_label: 將身分對應到虛擬金鑰
+---
+
+# 將身分對應到虛擬金鑰 {#map-identities-to-virtual-keys}
+
+<EnterpriseFeature feature="JWT authentication" />
+
+讓用戶端使用身分提供者的 JWT 進行驗證，取代靜態的 LiteLLM 憑證。將穩定的 JWT claim 對應到現有的[虛擬金鑰](./virtual_keys.md)，然後將 JWT 作為 bearer token 傳送。
 
 ## 運作方式 {#how-it-works}
 
-```mermaid
-sequenceDiagram
-    participant Client as Client (Claude Code / API)
-    participant Proxy as LiteLLM Proxy
-    participant OIDC as OIDC Provider
-    participant DB as Mapping Table
+LiteLLM 使用您設定的簽章金鑰、issuer 與 audience 驗證 JWT，然後查找設定的 claim。相符的對應會識別出用於授權與用量追蹤的虛擬金鑰。透過[存取管理](./access_management/overview.md)設定該金鑰的權限。
 
-    Client->>Proxy: POST /v1/chat/completions<br/>Authorization: Bearer <JWT>
+如果沒有對應存在，`unregistered_jwt_client_behavior` 會決定要拒絕請求、使用標準 JWT 授權、建立金鑰，還是連結現有的金鑰。
 
-    Proxy->>OIDC: Verify JWT signature
-    OIDC-->>Proxy: Valid ✓
+## 先決條件 {#prerequisites}
 
-    Proxy->>Proxy: Extract claim<br/>(e.g. client_id = "alice@corp.com")
+完成[身分提供者設定](./token_auth.md)，並將您的 proxy 連接到資料庫。準備一把現有的虛擬金鑰，並具有呼叫者所需的 [LLM](./access_management/llm.md)、[MCP](./access_management/mcp.md) 或[代理程式](./access_management/agents.md)存取權。金鑰的建立與設定請參閱[虛擬金鑰](./virtual_keys.md)。
 
-    Proxy->>DB: Look up (claim_name, claim_value)
-    alt Mapping found
-        DB-->>Proxy: key = sk-abc123
-        Proxy->>Proxy: Apply virtual key permissions<br/>(models, budget, rate limits)
-        Proxy-->>Client: 200 OK
-    else No mapping — fallback_team_mapping
-        Proxy->>Proxy: Fall through to team JWT auth
-        Proxy-->>Client: 200 OK
-    else No mapping — reject
-        Proxy-->>Client: 403 Forbidden
-    else No mapping — auto_register
-        Proxy->>DB: Create new virtual key + mapping
-        Proxy-->>Client: 200 OK
-    end
-```
+下方的測試請求使用名為 `my-model` 的已設定模型，該金鑰可以存取它。
 
----
+選擇可識別呼叫者的穩定 claim。對人員使用 `sub`，對工作負載使用提供者的應用程式識別碼。共用的應用程式 `client_id` 無法區分個別使用者。
+
+對應的管理需要 [proxy 管理員或管理員檢視者，視操作而定](./access_management/jwt_permissions.md#virtual-key-mappings)。
 
 ## 設定 {#setup}
 
-### 先決條件 {#prerequisites}
+<a id="step-1-configure-the-jwt-claim-to-map-on"></a>
 
-先完成 [OIDC JWT 驗證設定](./token_auth.md)；您需要先設定 `JWT_PUBLIC_KEY_URL`，並在您的 proxy 設定中加入 `enable_jwt_auth: True`。
+### 1. 設定對應 claim {#step-1-configure-the-claim-and-unmapped-client-policy}
 
-### 步驟 1. 設定要用來對應的 JWT claim {#step-1-configure-the-jwt-claim-to-map-on}
-
-將 `virtual_key_claim_field` 加入您的 `litellm_jwtauth` 設定。這是 LiteLLM 用來作為查找鍵的 JWT claim：
+將這些設定加入您現有的 proxy 設定中。此範例要求管理員逐一註冊每個對應。
 
 ```yaml
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
-  enable_jwt_auth: True
+  database_url: os.environ/DATABASE_URL
+  enable_jwt_auth: true
   litellm_jwtauth:
-    team_id_jwt_field: "team_id"          # existing team mapping (optional)
-    user_id_jwt_field: "sub"
-    virtual_key_claim_field: "client_id"  # claim used as the key-mapping lookup
-    unregistered_jwt_client_behavior: "fallback_team_mapping"  # see below
+    user_id_jwt_field: sub
+    virtual_key_claim_field: sub
+    unregistered_jwt_client_behavior: reject
 ```
 
-`virtual_key_claim_field` 先前名為 `jwt_client_id_field`；舊名稱仍可作為向後相容別名使用。
+### 2. 註冊對應 {#step-2-register-a-mapping}
 
-**`unregistered_jwt_client_behavior`** 控制當 JWT 沒有已註冊對應時會發生什麼事：
-
-| Value | 行為 |
-|-------|----------|
-| `fallback_team_mapping` | 直接回退到以 team 為基礎的 JWT 驗證（預設值 — 向後相容） |
-| `reject` | 若找不到對應則回傳 403 |
-| `auto_register` | 首次遇到時自動建立虛擬金鑰 + 對應 |
-
-使用 `auto_register` 時，第一個帶有新 claim 值的請求會即時建立一把虛擬金鑰與對應，無需管理員呼叫。只有在 JWT 通過完整政策檢查（簽章、RBAC/scope、`custom_validate` 與 `user_allowed_email_domain`）後才會建立金鑰；如果 token 未通過任一檢查，請求會被拒絕且不會建立任何內容。新金鑰會繼承從已驗證 JWT 解析出的 team、user 與 org，因此請確保這些 claim 已設定完成。若 token 解析為 proxy 管理員，則不會自動註冊，因為管理員本來就擁有完整存取權。`auto_register` 需要資料庫連線
-
-### 步驟 2. 註冊 JWT 用戶端 → 虛擬金鑰對應 {#step-2-register-a-jwt-client--virtual-key-mapping}
-
-**建議：讓 `auto_register` 自動處理。** 在步驟 1 設定 `unregistered_jwt_client_behavior: "auto_register"`，之後每個新的 claim 值第一次發送請求時，就會自動建立自己的金鑰，無需管理員呼叫。當每位用戶端都應從相同預設值開始時，請使用此方式。
-
-**手動：註冊一把具有特定限制的金鑰。** 當某位用戶端需要自己的預算或模型集合時，先建立虛擬金鑰，再將某個 claim 值對應到該金鑰。沒有單一原子化端點；需要兩次呼叫。
+以呼叫者的 claim 值註冊現有的金鑰。claim 名稱必須與 `virtual_key_claim_field` 相符，值必須與呼叫者的 JWT 相符。
 
 ```bash
-# 1. Create a virtual key with the limits you want
-curl -X POST 'http://0.0.0.0:4000/key/generate' \
-  -H 'Authorization: Bearer <PROXY_MASTER_KEY>' \
+curl -X POST 'http://localhost:4000/jwt/key/mapping/new' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
-    "models": ["{{anthropic}}", "{{anthropic_large}}"],
-    "max_budget": 50.0,
-    "budget_duration": "30d",
-    "rpm_limit": 100,
-    "tpm_limit": 50000,
-    "team_id": "engineering"
-  }'
-# -> {"key": "sk-abc123...", ...}
-
-# 2. Map a JWT claim value to that key
-curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/new' \
-  -H 'Authorization: Bearer <PROXY_MASTER_KEY>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jwt_claim_name": "client_id",
-    "jwt_claim_value": "dev-alice",
-    "key": "sk-abc123...",
-    "description": "dev-alice"
+    "jwt_claim_name": "sub",
+    "jwt_claim_value": "user-123",
+    "key": "<existing-virtual-key>",
+    "description": "user-123"
   }'
 ```
 
-### 步驟 3. 測試 {#step-3-test-it}
+建立對應並不會建立或變更金鑰。
+
+#### 以金鑰的雜湊代替明文金鑰進行對應 {#map-with-the-keys-hash-instead-of-the-plaintext-key}
+
+<SinceVersion v="1.104.0" />
+
+如果您不再持有明文金鑰，請將其 SHA-256 雜湊作為 `token` 傳入。使用 `/key/generate` 回傳的 `token`，或 `/key/list` 回傳的金鑰雜湊。`key` 與 `token` 只能傳送其中一個；將雜湊作為 `key` 傳送會再次對它進行雜湊，並回傳 `The provided key does not match an existing virtual key.`
 
 ```bash
-# Get a JWT from your OIDC provider (must have client_id: dev-alice)
-JWT_TOKEN="eyJhbG..."
+curl -X POST 'http://localhost:4000/jwt/key/mapping/new' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jwt_claim_name": "sub",
+    "jwt_claim_value": "user-123",
+    "token": "<64-character lowercase hex key hash>",
+    "description": "user-123"
+  }'
+```
 
-curl -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
+## 測試驗證 {#test-authentication}
+
+<a id="step-3-test-it"></a>
+
+向您的身分提供者取得 `sub: user-123` 的 JWT，並將它作為 bearer token 傳送。
+
+```bash
+export JWT_TOKEN="<identity-provider-jwt>"
+
+curl 'http://localhost:4000/v1/chat/completions' \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{
-    "model": "{{anthropic}}",
+    "model": "my-model",
     "messages": [{"role": "user", "content": "Hello"}]
   }'
 ```
 
-此請求現在會以 `dev-alice` 的虛擬金鑰進行追蹤，並對每個用戶端強制執行支出、速率限制與模型存取。
+該請求使用連結金鑰的現有權限。在儀表板或透過 `/key/info` 檢視其用量。
 
----
+## 設定參考 {#configuration-reference}
 
-## 範例流程：管理員授予細緻存取權，team 使用 Claude Code {#walkthrough-admin-grants-granular-access-team-uses-claude-code}
+### 對應 claim 與快取 {#mapping-claim-and-cache}
 
-這是工程團隊使用 Claude Code 搭配公司 SSO 的完整流程。
+`virtual_key_claim_field` 支援巢狀 claim，例如 `user.sub`。它先前的名稱 `jwt_client_id_field` 仍可作為別名使用。`virtual_key_mapping_cache_ttl` 設定對應快取的存活時間（以秒為單位），預設為 `300`。
 
-### 管理員設定 {#admin-setup}
+| `unregistered_jwt_client_behavior` | 沒有對應存在時 |
+| --- | --- |
+| `fallback_team_mapping` | 使用標準 JWT 授權。這是預設值。 |
+| `reject` | 回傳 403。 |
+| `auto_register` | 在 JWT 授權後建立虛擬金鑰與對應。可選擇先嘗試現有的金鑰。 |
+| `link_only` | 連結符合資格的現有使用者金鑰，或回傳 403。絕不建立金鑰。 |
 
-**1. 為工程團隊建立一個 team**
+在 `reject`、`auto_register` 與 `link_only` 模式中，缺少 claim 也會回傳 403。
 
-```bash
-curl -X POST 'http://0.0.0.0:4000/team/new' \
-  -H 'Authorization: Bearer <MASTER_KEY>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "team_alias": "engineering",
-    "models": ["{{anthropic}}", "{{anthropic_large}}"]
-  }'
+### 自動建立對應 {#create-mappings-automatically}
+
+設定 `unregistered_jwt_client_behavior: auto_register`，即可在未對應身分的第一個請求時建立金鑰與對應。使用[身分 claim 設定](./jwt_auth_reference.md#tracking-end-users--internal-users--team--org)設定您希望新金鑰繼承的使用者、團隊與組織 claim。
+
+在建立任何東西之前，LiteLLM 會執行 JWT 授權，包括設定的角色與 scope 檢查、`custom_validate` 以及電子郵件網域限制。新金鑰會繼承解析出的身分。當管理員必須在金鑰的第一個請求之前設定它時，請使用手動對應；請參閱[存取管理](./access_management/overview.md)。
+
+設定 `auto_register_map_existing_key: true`，會先重複使用符合資格的使用者金鑰，只有在沒有符合資格的金鑰時才建立新金鑰。若要重複使用，`virtual_key_claim_field` 必須與 `user_id_jwt_field` 或 `user_email_jwt_field` 相符。需要資料庫連線。未對應的 proxy 管理員 JWT 會直接通過驗證，不建立對應。
+
+### 連結到現有金鑰 {#link-to-existing-keys}
+
+<SinceVersion v="1.109.0" />
+
+當管理員預先佈建金鑰時，請使用 `link_only`。第一個獲授權的請求會將身分連結到其最新且符合資格的金鑰。如果沒有金鑰符合資格，LiteLLM 會回傳 403，並附上 `JWT Key Mapping: No eligible existing virtual key for this identity. Access denied.`
+
+```yaml
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  enable_jwt_auth: true
+  litellm_jwtauth:
+    user_id_jwt_field: sub
+    virtual_key_claim_field: sub
+    user_id_upsert: false
+    unregistered_jwt_client_behavior: link_only
 ```
 
-**2. 為每位開發者註冊自己的金鑰與花費上限**
+對應 claim 必須與 `user_id_jwt_field` 或 `user_email_jwt_field` 相符，且資料庫必須已連線。此模式絕不建立金鑰。`user_id_upsert: true` 仍可建立使用者，因此如果使用者必須預先存在，請將它保持為 `false`。未對應的 proxy 管理員 JWT 會直接通過驗證，不連結金鑰。
 
-每位開發者都是一個虛擬金鑰，再加上從其 JWT claim 到該金鑰的對應。先使用 `/key/generate` 建立金鑰，再使用 `/jwt/key/mapping/new` 將 claim 值對應上去。
+#### 選取哪一把現有金鑰 {#which-existing-key-is-selected}
 
-```bash
-# Alice: senior eng, higher budget
-ALICE_KEY=$(curl -s -X POST 'http://0.0.0.0:4000/key/generate' \
-  -H 'Authorization: Bearer <MASTER_KEY>' -H 'Content-Type: application/json' \
-  -d '{"team_id": "engineering", "models": ["{{anthropic}}", "{{anthropic_large}}"], "max_budget": 200.0, "budget_duration": "30d", "rpm_limit": 200}' \
-  | jq -r '.key')
+對於 `link_only` 與 `auto_register_map_existing_key`，金鑰必須屬於解析出的使用者與團隊；當 JWT 沒有解析出團隊時，金鑰必須沒有團隊。金鑰必須永不過期、未被封鎖，且不得為 Admin UI 工作階段金鑰或自動註冊的金鑰。最新且符合資格的金鑰會被選取。後續請求會保留該對應，即使之後建立了更新的金鑰。
 
-curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/new' \
-  -H 'Authorization: Bearer <MASTER_KEY>' -H 'Content-Type: application/json' \
-  -d "{\"jwt_claim_name\": \"client_id\", \"jwt_claim_value\": \"alice@corp.com\", \"key\": \"$ALICE_KEY\", \"description\": \"alice@corp.com\"}"
+`allowed_routes` 不影響選取。在啟用自動連結之前，請檢視現有金鑰的權限，包括它授予的任何管理路由權限。
 
-# Bob: contractor, tighter limits
-BOB_KEY=$(curl -s -X POST 'http://0.0.0.0:4000/key/generate' \
-  -H 'Authorization: Bearer <MASTER_KEY>' -H 'Content-Type: application/json' \
-  -d '{"team_id": "engineering", "models": ["{{anthropic}}"], "max_budget": 20.0, "budget_duration": "30d", "rpm_limit": 30}' \
-  | jq -r '.key')
+### 多個身分提供者 {#multiple-identity-providers}
 
-curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/new' \
-  -H 'Authorization: Bearer <MASTER_KEY>' -H 'Content-Type: application/json' \
-  -d "{\"jwt_claim_name\": \"client_id\", \"jwt_claim_value\": \"bob@contractor.com\", \"key\": \"$BOB_KEY\", \"description\": \"bob@contractor.com\"}"
-```
-
-對於所有人都從相同預設值開始的團隊，請略過每位開發者各自呼叫，改為設定 `unregistered_jwt_client_behavior: "auto_register"`。
-
-**3. 設定 Claude Code 使用 proxy**
-
-在團隊的 Claude Code 設定中，將 proxy 設為 API base：
-
-```bash
-# Point Claude Code at the LiteLLM proxy instead of Anthropic directly.
-# ANTHROPIC_API_KEY here is the bearer token sent to the proxy — set it to
-# the user's SSO/OIDC JWT token (obtained from your IdP at login).
-export ANTHROPIC_API_KEY="<user-sso-jwt-token>"
-export ANTHROPIC_BASE_URL="http://your-litellm-proxy:4000"
-```
-
-或者在 `~/.claude/settings.json` 中：
+在[依 issuer 的設定](./jwt_auth_reference.md#per-issuer-claim-mapping)中使用 `litellm_jwtauth.issuers` 設定與 issuer 綁定的驗證，然後在每個對應上將 `jwt_issuer` 設為相應的已設定 issuer。issuer 專屬的 `virtual_key_claim_field` 與 `unregistered_jwt_client_behavior` 設定可以覆寫全域值。
 
 ```json
 {
-  "env": {
-    "ANTHROPIC_BASE_URL": "http://your-litellm-proxy:4000"
-  }
+  "jwt_issuer": "https://idp.example.com",
+  "jwt_claim_name": "sub",
+  "jwt_claim_value": "user-123",
+  "key": "<existing-virtual-key>"
 }
 ```
 
-**4. 開發者照常使用 SSO 驗證**
+LiteLLM 會先查找 issuer 範圍的對應，然後備援到沒有 `jwt_issuer` 的全域對應。全域對應在各提供者之間共用相同的 claim 命名空間。使用 issuer 範圍的對應，可區分來自不同提供者的相同 claim 值。
 
-當 Alice 執行 Claude Code 時，她的 JWT（由您的 IdP 發出，且包含 `client_id: alice@corp.com`）會送到 proxy。LiteLLM 會查詢對應，找到她的虛擬金鑰，並強制執行她特定的限制：每月 200 美元預算、200 RPM 上限，以及僅可存取 Sonnet 和 Opus。
+### 管理對應 {#managing-mappings}
 
-Bob 的權杖會對應到他自己的金鑰：每月 20 美元、僅 Sonnet、30 RPM。
+對應的回應包含 `id`、claim 名稱與值、issuer、說明、啟用旗標以及稽核中繼資料。它們絕不會回傳連結的金鑰或其雜湊。金鑰本身請透過[虛擬金鑰](./virtual_keys.md)管理。
 
-不需要分發 API 金鑰。沒有共享限制。LiteLLM dashboard 中可完整查看每位開發者的花費。
+| 操作 | 端點 | 輸入 |
+| --- | --- | --- |
+| 清單 | `GET /jwt/key/mapping/list` | `page` 與 `size` 查詢參數 |
+| 檢視 | `GET /jwt/key/mapping/info` | `id` 查詢參數 |
+| 更新 | `POST /jwt/key/mapping/update` | JSON `id` 加上 `key` 或 `token`、`description`、`is_active` 或 `jwt_issuer` |
+| 刪除 | `POST /jwt/key/mapping/delete` | JSON `id` |
 
----
-
-## 管理對應 {#managing-mappings}
-
-每個對應都有一個 `id`（建立時會回傳）。`info`、`update` 和 `delete` 端點都以該 `id` 為索引，因此請先從 `list` 開始找出它。
-
-**列出對應**
-
-```bash
-curl 'http://0.0.0.0:4000/jwt/key/mapping/list?page=1&size=50' \
-  -H 'Authorization: Bearer <MASTER_KEY>'
-```
-
-**依 id 檢視單一對應**
+例如，先列出對應以找到 ID，然後將該對應指向替代金鑰。
 
 ```bash
-curl 'http://0.0.0.0:4000/jwt/key/mapping/info?id=<mapping-id>' \
-  -H 'Authorization: Bearer <MASTER_KEY>'
-```
+curl 'http://localhost:4000/jwt/key/mapping/list?page=1&size=50' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY"
 
-回應是該對應本身的中繼資料：claim 名稱和值、描述、`is_active`、時間戳記，以及建立或最後更新者。它不包含關聯的金鑰或其設定，而且雜湊金鑰永遠不會回傳。若要檢查該金鑰的模型、預算或花費，請使用 `/key/info`。
-
-**更新對應**
-
-`update` 會變更對應本身：將它指向另一把金鑰、編輯描述，或切換 `is_active`。若要變更預算或模型存取權，請使用 `/key/update` 更新底層金鑰；對應只會儲存 claim、連結的金鑰、描述與啟用旗標。
-
-```bash
-curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/update' \
-  -H 'Authorization: Bearer <MASTER_KEY>' \
+curl -X POST 'http://localhost:4000/jwt/key/mapping/update' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{
-    "id": "<mapping-id>",
-    "key": "sk-newkey...",
-    "description": "rotated key",
-    "is_active": true
-  }'
+  -d '{"id": "<mapping-id>", "key": "<replacement-key>"}'
 ```
 
-**刪除對應**
+每個操作允許的角色，請參閱[對應管理權限](./access_management/jwt_permissions.md#virtual-key-mappings)。
 
-```bash
-curl -X POST 'http://0.0.0.0:4000/jwt/key/mapping/delete' \
-  -H 'Authorization: Bearer <MASTER_KEY>' \
-  -H 'Content-Type: application/json' \
-  -d '{"id": "<mapping-id>"}'
-```
+## 疑難排解 {#troubleshooting}
 
----
+<a id="error-codes"></a>
 
-## 安全性 {#security}
+| 代碼 | 含義 |
+| --- | --- |
+| 400 | 金鑰識別碼無效或找不到金鑰。 |
+| 403 | 未對應的身分被政策拒絕、沒有符合資格的現有金鑰，或對應管理權限不足。 |
+| 404 | 找不到對應。 |
+| 409 | 該 issuer、claim 名稱與 claim 值已有對應存在。 |
 
-- 建立、更新與刪除對應僅限 proxy 管理員；列出與檢視也允許 admin viewer 角色。所有 `/jwt/key/mapping/*` 路由都會以 403 拒絕其他呼叫者。
-- 對應端點永遠不會回傳底層金鑰或其雜湊 token；回應僅包含對應的中繼資料。
-- 已對應或自動註冊的金鑰就是標準虛擬金鑰。它會精確套用該金鑰上設定的模型、預算、速率限制、team 與防護欄設定，而且如同任何非管理員金鑰一樣，它可以呼叫 LLM 路由，但不能管理其他金鑰或管理資源。
+簽章、issuer、audience 或簽章金鑰錯誤，請參閱 [JWT 疑難排解](./jwt_auth_reference.md#troubleshooting)。如果對應的憑證被接受，但其資源請求被拒絕，請在[存取管理](./access_management/overview.md)中檢查連結金鑰的權限。
 
----
+## 相關指南 {#related-guides}
 
-## 多個身分提供者 {#multiple-identity-providers}
+使用[身分提供者設定](./token_auth.md)設定 token 驗證，或使用[將身分對應到使用者與團隊](./jwt_user_team_auth.md)直接解析呼叫者。請參閱[虛擬金鑰](./virtual_keys.md)管理連結的憑證，並參閱 [JWT 權限](./access_management/jwt_permissions.md#virtual-key-mappings)瞭解對應管理的角色與政策行為。
 
-對應只會以 `(jwt_claim_name, jwt_claim_value)` 為索引；沒有按 issuer 區分的維度。若兩個身分提供者可以送出相同的 claim 值（例如兩者都送出 `sub: user-123`），那些 token 會解析到同一個對應並發生衝突。請對全域唯一的 claim 進行對應，例如 `email`，或使用 [issuer 綁定的 JWT 規則](./token_auth.md) 設定每個 issuer 的驗證，讓各提供者的身分落在不同的 claim 值上。
-
----
-
-## JWT 用戶端相較於虛擬金鑰可以與不能做的事 {#what-jwt-clients-can-and-cant-do-vs-virtual-keys}
-
-| 功能 | 虛擬金鑰 | JWT → 金鑰對應 |
-|---|---|---|
-| 每位用戶端的模型存取 | ✅ | ✅ |
-| 每位用戶端的花費預算 | ✅ | ✅ |
-| 每位用戶端的 RPM/TPM 限制 | ✅ | ✅ |
-| team 成員資格 | ✅ | ✅ |
-| 儀表板中的花費追蹤 | ✅ | ✅ |
-| 防護欄 | ✅ | ✅ |
-| 金鑰輪替 | ✅ | ✅（僅限管理員） |
-| 金鑰到期 | ✅ | ✅ |
-| 無需分發 API 金鑰 | ❌ | ✅ |
-| 可與現有 SSO/OIDC 搭配使用 | ❌ | ✅ |
-
----
-
-## 相關 {#related}
-
-- [OIDC JWT 驗證](./token_auth.md) — 使用此功能前所需的基礎 JWT 驗證設定
-- [虛擬金鑰](./virtual_keys.md) — 完整的虛擬金鑰文件
-- [存取控制](./access_control.md) — 模型與團隊存取控制
+Claude Code 用戶端設定請參閱[使用身分提供者 token](./client_setup/claude_code.md#use-an-identity-provider-token)。

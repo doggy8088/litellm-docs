@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM 中使用 Black Forest Labs FLUX 圖像編輯"
+sidebar_label: "Black Forest Labs 圖像編輯"
+description: "透過 Python SDK 或 AI 閘道的 /images/edits 路由，使用 FLUX Kontext Pro 與 Max、FLUX Pro Fill 與 FLUX Pro Expand 編輯圖像並進行 inpaint 與 outpaint。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

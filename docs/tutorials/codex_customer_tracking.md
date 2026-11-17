@@ -16,8 +16,10 @@ Codex 沒有可將最終使用者放進請求本文中的設定，因此若沒�
 
 用這個方式將成本歸因到特定客戶或最終使用者。`x-litellm-customer-id` 與 `x-litellm-end-user-id` 都會成為支出列的最終使用者。
 
+將 `model` 設為已在您的 LiteLLM proxy 上設定的模型名稱。
+
 ```toml
-model = "gpt-5.3-codex"
+model = "{{openai_large}}"
 model_provider = "litellm"
 
 [model_providers.litellm]

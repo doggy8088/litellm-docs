@@ -1,10 +1,16 @@
+---
+title: "透過 LiteLLM AI 閘道使用 Amazon Bedrock Guardrails"
+sidebar_label: "Bedrock 防護欄"
+description: "透過 ApplyGuardrail API 在 LiteLLM AI 閘道上套用 Amazon Bedrock Guardrails，支援 PII 遮罩、脈絡基礎檢核與串流檢查。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Bedrock 防護欄 {#bedrock-guardrails}
 
-:::tip[⚡️]
+:::tip[]
 如果您尚未設定或完成 Bedrock 提供者驗證，請參閱 [Bedrock 提供者設定與驗證指南](../../providers/bedrock.md)。
 :::
 
@@ -141,6 +147,38 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
+## 圖片與附件 {#images-and-attachments}
+
+`pre_call` 與 `during_call` 防護欄除了檢查請求的文字，也會檢查請求附加的內容。這涵蓋 `/v1/chat/completions`、`/v1/messages`、`/v1/responses` 以及 Bedrock Converse 直通端點（`/bedrock/model/{model}/converse`），包括工具結果中回傳的附件。會縮小掃描訊息範圍的設定（例如 `experimental_use_latest_role_message_only`）也會以相同方式縮小附件檢查的範圍。
+
+| 附件 | 處理方式 |
+|---|---|
+| 內嵌 base64 PNG 或 JPEG，大小上限 4 MB、單邊上限 8000 像素 | 以圖片形式傳送至 ApplyGuardrail。被封鎖的圖片會回傳 HTTP 400 |
+| Converse `guardContent` 圖片 | 與其他圖片相同，在呼叫模型之前進行掃描 |
+| 文字文件（來源為 `text` 或 `content` 的 Messages 或 Converse `document`） | 以文字形式掃描。被封鎖的文件會回傳 HTTP 400 |
+| 任何文件的標題、名稱與上下文，包含 PDF | 以文字形式掃描 |
+| PDF、檔案、音訊、視訊、GIF、WebP、以 URL、檔案 id 或 S3 位置傳送的圖片、超過大小上限的圖片，或以 `bytes` 或 `s3Location` 傳送的 Converse 文件 | Bedrock 無法掃描，因此請求回傳 HTTP 400 |
+
+無法掃描的附件所回傳的 400 會指明被拒絕的內容，例如 `Bedrock guardrail cannot scan 1 attachment(s) (file), so the request was blocked`。若要改為讓這類附件未經掃描直接通過，請設定 `skip_unscannable_attachments: true`。LiteLLM 可以掃描的圖片、文字文件，以及每份文件的標題、名稱與上下文仍會受到檢查。
+
+```yaml showLineNumbers title="litellm proxy config.yaml"
+guardrails:
+  - guardrail_name: "bedrock-pre-guard"
+    litellm_params:
+      guardrail: bedrock
+      mode: "pre_call"
+      guardrailIdentifier: ff6ujrregl1q
+      guardrailVersion: "DRAFT"
+      aws_region_name: os.environ/AWS_REGION
+      skip_unscannable_attachments: true
+```
+
+| 參數 | 預設值 | 說明 |
+|-----------|---------|-------------|
+| `skip_unscannable_attachments` | `false` | 讓 Bedrock 無法掃描的附件未經掃描直接通過，而不是回傳 HTTP 400 |
+
+圖片會以每批最多 20 張的方式，透過 ApplyGuardrail 呼叫傳送至 Bedrock，文字文件則會再增加一次呼叫，因此帶有附件的請求會產生額外的 Bedrock 呼叫，每次呼叫都會計費，並在該請求的支出記錄中記為獨立的防護欄項目。若無法連線至 Bedrock，帶有圖片或文字文件的請求會失敗，與純文字請求相同。文件文字無法改寫，因此若政策會遮罩文件中的某些內容，改為直接封鎖該請求；`mask_request_content` 只適用於訊息文字。巢狀深度超過三層的文件會被拒絕，Bedrock `/invoke` 直通端點的主體也不會檢查附件。
+
 ## 串流 {#streaming}
 
 串流回應會在 `post_call` 上進行掃描。預設情況下，串流會先緩衝：每個區塊都會被保留，直到組裝完成的回應通過一次 ApplyGuardrail OUTPUT 掃描，因此在封鎖之前，不會有任何標記內容送達用戶端。用戶端在掃描完成前看不到任何內容，之後整個回應會一次送出。
@@ -166,10 +204,13 @@ guardrails:
 | `streaming_buffer_until_moderated` | `true` | 將每個已串流的區塊保留到串流結束時才進行審核，避免任何標記區塊在封鎖前送達用戶端 |
 | `streaming_end_of_stream_only` | `false` | 只對組裝完成的回應掃描一次串流輸出，而不是對每個取樣區塊掃描 |
 | `streaming_sampling_rate` | `5` | 在不緩衝且非僅串流結束時，將累積文字每第 N 個區塊掃描一次。至少必須為 1 |
+| `streaming_scan_in_background` | `false` | 在不緩衝且非僅串流結束時，讓每次取樣掃描在串流持續傳送的同時執行，而不是暫停串流 |
 
 僅使用 `streaming_buffer_until_moderated: false` 時，防護欄會在串流期間每 `streaming_sampling_rate` 個區塊掃描一次累積的回應。每次取樣掃描都是針對目前所有文字的獨立 ApplyGuardrail 呼叫，因此會增加串流中途延遲與重複的 Bedrock 文字單位費用。除非您需要串流中途封鎖，否則請搭配 `streaming_end_of_stream_only: true` 使用。
 
-這些設定同時適用於 `/v1/chat/completions` 與原生 `/v1/messages` 串流。
+若要在不暫停的情況下保留串流中途封鎖，請加上 `streaming_scan_in_background: true`。如此每次取樣掃描會在區塊持續串流的同時執行，一次執行一個掃描。發現違規時，串流會在下一個區塊之前以封鎖訊息結束，因此掃描執行期間已串流的文字已經送達用戶端。串流結尾（`finish_reason` 或 `message_delta`）會等待最後一次掃描完成，因此在最後一個區塊之後才發現的違規，仍會以封鎖訊息取代正常結尾來結束串流。
+
+這些設定同時適用於 `/v1/chat/completions`、原生 `/v1/messages` 串流，以及 Bedrock `/bedrock/model/<model>/converse-stream` 直通端點；在該端點上，串流中途封鎖會以 AWS `validationException` 事件結束串流，AWS SDK 會隨附防護欄的訊息引發該事件。
 
 ## 脈絡基礎 {#contextual-grounding}
 
@@ -251,6 +292,8 @@ guardrails:
 
 呼叫端無法弱化已設定的檢查：在此模式下，逐請求的防護欄參數會被忽略，而且所有輸入都會視為 `user` 內容進行檢查，因此被標記為 `system` 的注入無法躲過提示攻擊檢查。
 
+InvokeGuardrailChecks 只讀取文字，因此在此模式下，每張圖片都視為[無法掃描的附件](#images-and-attachments)，除非設定了 `skip_unscannable_attachments`，否則會回傳 HTTP 400。
+
 ## 使用 Bedrock 防護欄進行 PII 遮罩 {#pii-masking-with-bedrock-guardrails}
 
 Bedrock 防護欄支援 PII 偵測與遮罩功能。若要啟用此功能，您需要：
@@ -306,6 +349,8 @@ My email is [EMAIL] and my phone number is [PHONE_NUMBER]
 - 讓 Bedrock 載荷更小，降低延遲與成本
 - 適用於 proxy hooks（`pre_call`、`during_call`）以及 `/guardrails/apply_guardrail` 測試端點
 
+可搭配 Claude Code 以及其他會在 `/v1/messages` 的 `messages` 中傳送 `role: system` 項目的用戶端使用。`skip_system_message_in_guardrail` 在該端點只會移除最上層的 `system` 提示，因此若沒有此旗標，這些項目仍會送達 Bedrock。
+
 ```yaml showLineNumbers title="litellm proxy config.yaml"
 guardrails:
   - guardrail_name: "bedrock-pre-guard"
@@ -318,7 +363,7 @@ guardrails:
       experimental_use_latest_role_message_only: true  # NEW
 ```
 
-> ⚠️ 此旗標目前屬於實驗性功能，預設為 `false`，以保留舊版行為（完整訊息歷史）。我們會持續聆聽使用者回饋，以決定是否將其設為預設或更廣泛推出。
+> 此旗標目前屬於實驗性功能，預設為 `false`，以保留舊版行為（完整訊息歷史）。我們會持續聆聽使用者回饋，以決定是否將其設為預設或更廣泛推出。
 
 ## 停用 Bedrock BLOCK 時的例外 {#disabling-exceptions-on-bedrock-block}
 

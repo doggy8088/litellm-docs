@@ -1,5 +1,6 @@
 ---
-title: "v1.86.6 - DB 復原能力、Passthrough 與相依性回補"
+title: "LiteLLM v1.86.6 - DB 復原能力、Passthrough 與相依性回補"
+description: "新增 disable_budget_reservation 設定，並在驗證期間發生資料庫失敗時回傳 5xx。另修正 Prisma 重新連線。"
 slug: "v1-86-6"
 date: 2026-06-13T17:37:03
 authors:

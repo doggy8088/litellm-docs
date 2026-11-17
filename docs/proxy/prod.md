@@ -78,7 +78,7 @@ general_settings:
 
 :::
 
-一旦 autoscaler 接管 replica 數量，該公式中的執行個體數就是 `maxReplicas`，而不是您目前執行的 pod 數量。`litellm-helm` 圖表預設將 `autoscaling.maxReplicas` 與 `keda.maxReplicas` 設為 100，因此完全擴展的部署在預設連線池上限 10 下，會要求大約 1000 條連線，遠超過標準 Postgres 可接受的範圍。請依照您的資料庫可提供的容量設定 `maxReplicas`，並參閱 [如何計算正確數值](./configs.md#configure-db-pool-limits--connection-timeouts) 了解完整計算方式。
+請以 autoscaler 的最大 replica 數來規劃連線預算。[LiteLLM 圖表](./deploy/helm.md) 預設將 `gateway.hpa.maxReplicas` 與 `gateway.keda.maxReplicaCount` 設為 10。十個 pod、每個一個 worker、連線池上限為 10，可以用掉 100 條連線，這還沒有算入 backend pods、migrations 與 rollout 重疊。請參閱[如何計算正確數值](./configs.md#configure-db-pool-limits--connection-timeouts)。
 
 ### 將錯誤記錄排除在資料庫之外 {#keep-error-logs-out-of-the-database}
 
@@ -130,7 +130,7 @@ export LITELLM_SALT_KEY="sk-<paste-a-long-random-key>"
 
 ### 機器規格 {#machine-specifications}
 
-每個 pod 請配置 1 vCPU 與 4Gi 記憶體，且 requests 與 limits 都要設定；如果每個容器執行超過一個 worker，則兩者都要隨 worker 數量擴充。
+請將每個 pod 的 requests 與 limits 都設為 1 vCPU 與 4Gi 記憶體。如果每個容器執行多個 worker，請依 worker 數量按比例增加兩者。若使用 Helm，請將這些容器設定放在 `gateway.resources` 下。
 
 ```yaml
 resources:
@@ -150,17 +150,13 @@ resources:
 
 ### 自動擴縮 {#autoscaling}
 
-請以 CPU 為擴縮依據，並保持 memory 目標未設定。Memory 對代理而言不是可用的擴縮訊號：查詢引擎的常駐記憶體反映的是 pod 曾經做過的最大寫入，而不是目前正在做的事情，因此一旦有單次大型寫入，memory 目標就會把 replica 一路往上推，且不會再縮回來。請將記憶體配置為上述底線，並讓 CPU 決定 replica 數量。
+請在您的 HPA 中，除了 CPU 與記憶體目標之外，也使用每秒請求數（RPS）與每秒 token 數（TPS）。當請求在等待模型提供者時，CPU 使用量可能仍然很低。請依照 [HPA 指標指南](./deploy/autoscaling.md#scale-on-requests-and-tokens-per-pod) 公開每個 pod 的指標，並根據負載測試設定目標。
 
-```yaml
-targetCPUUtilizationPercentage: 60
-```
-
-之所以使用 60 而不是更高的門檻，是因為 replica 一建立完成並不代表可立即使用。`litellm-helm` 啟動探針最多允許 300 秒讓 pod 通過第一次 readiness 檢查，因此在 CPU 達到 80% 時新增的 replica，會在觸發飽和數分鐘後才到位。兩個圖表都內建較高的預設值：`litellm-helm` 為 80，而分組圖表的 gateway 為 70；這些數值是為了讓圖表能在任何環境順利安裝。請在生產環境中將其調低。
+請求與 token 計數器會在請求完成時更新，因此請為長時間串流與流量尖峰保留備用 replica。請測量 pod 啟動時間，並視需要設定 `gateway.startupProbe`。
 
 ### Worker 與擴縮 {#workers-and-scaling}
 
-在 Kubernetes 上，或者在任何其他正在讀取 CPU 的 pod 層級 autoscaler 環境中，每個 pod 執行一個 Uvicorn worker，並水平擴充（增加 pod 數量）而不是垂直擴充（增加每個 pod 的 worker 數量）。這是預設設定，所以您只需要 `--num_workers 1`；每個 pod 一個程序可讓延遲保持可預測，讓 Horizontal Pod Autoscaler 針對單一程序讀取上方的 [CPU 閾值](#autoscaling)，而且因為 Kubernetes 一次只排空一個 pod，所以能讓滾動重啟無中斷。
+在 Kubernetes 上，請使用預設的每個 pod 一個 Uvicorn worker（`--num_workers 1`），並透過增加 pod 數量來擴充。
 
 ```shell
 CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "1"]
@@ -168,11 +164,7 @@ CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers"
 
 在單一 VM 或裸容器上，如果沒有任何東西幫您做擴充，則情況相反：將 `NUM_WORKERS` 設為該機器的 vCPU 數量，因為沒有其他東西會讓那些核心投入工作。容量與連線限制都是按每個 worker 計算，所以一台執行八個 worker 的機器，需要上方記憶體底限的八倍，以及連線池的八分之一。
 
-如果您在持續負載下看到記憶體逐漸成長，請在固定的請求數之後使用 `--max_requests_before_restart` 回收每個 worker，以限制記憶體使用量。
-
-```shell
-CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "1", "--max_requests_before_restart", "10000"]
-```
+不要將 `--num_workers 1` 與 `--max_requests_before_restart` 一起使用。只有單一 worker 時，此旗標不會回收任何東西；一旦觸及上限，整個 pod 就會停止服務。在 Uvicorn 下，程序會以代碼 0 結束，Kubernetes 會重啟容器；在 Gunicorn 下，則要等舊 worker 排空、新 worker 啟動完成後，才有東西接受連線，這段時間長到足以讓 liveness 探針失敗。健康探針也會計入上限，因此每 15 秒兩個探針，在任何真實流量進來之前，一天就會用掉 11,520 個請求。如果您在持續負載下看到記憶體逐漸成長，請依賴 Kubernetes 更換 pods，或如[回收 worker](./server_tuning.md#recycle-workers) 所述，執行兩個以上帶 jitter 的 worker。
 
 若要在一個容器中配置多個 worker、替代伺服器（Gunicorn、Hypercorn、Granian）、以 jitter 錯開回收、Kubernetes 上的無中斷滾動重啟、在代理端終止 TLS、keepalive 調校，以及從 S3 或 GCS 載入 `config.yaml`，請參閱 [伺服器調校](./server_tuning.md)。
 
@@ -288,7 +280,7 @@ spec:
 
 ## Redis {#redis}
 
-只要您執行超過一個 proxy instance，就請執行 Redis（7.0 或更新版本）。它會在各個 instance 之間共享速率限制計數器、路由 state 與回應快取；沒有它時，每個 instance 都會獨立執行限制，而且快取命中會停留在處理該請求的 instance 本機。若要查看沒有它時哪些功能會退化或停止運作的完整清單，請參閱 [需要 Redis 的項目](./redis_requirements.md)。
+只要您執行超過一個 proxy instance，就請執行 Redis（7.0 或更新版本）。映像會使用 `REDIS_HOST`、`REDIS_PORT` 與 `REDIS_PASSWORD` 來協調 pods。圖表的 `redis` 值會設定這些變數。`general_settings.coordination_redis` 設定會覆寫這些變數。回應快取請如下方所示另行啟用。請參閱[需要 Redis 的項目](./redis_requirements.md) 了解依賴它的功能。
 
 ```yaml
 router_settings:
@@ -370,26 +362,36 @@ docker run \
   ghcr.io/berriai/litellm:main-stable --config /app/config.yaml
 ```
 
-Helm：將憑證束放入 ConfigMap 或 Secret，並透過 `volumes` / `volumeMounts` 掛載。Deployment 與 migrations Job 都會取得這些掛載，因此 migrations 也會驗證憑證。
+Helm：將憑證束放入 ConfigMap 或 Secret。請分別在 gateway、backend 與 migrations Job 上掛載它。在 monolith 模式下，proxy 使用 gateway 的掛載。
 
 ```bash
 kubectl create configmap rds-ca --from-file=global-bundle.pem
 ```
 
 ```yaml title="values.yaml"
-db:
-  useExisting: true
-  endpoint: mydb.abc123.us-east-1.rds.amazonaws.com
-  database: litellm
-  url: postgresql://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@$(DATABASE_HOST)/$(DATABASE_NAME)?sslmode=verify-full&sslrootcert=/certs/global-bundle.pem
-volumes:
-  - name: rds-ca
-    configMap:
-      name: rds-ca
-volumeMounts:
-  - name: rds-ca
-    mountPath: /certs
-    readOnly: true
+database:
+  writer:
+    host: mydb.abc123.us-east-1.rds.amazonaws.com
+    dbname: litellm
+    passwordSecret:
+      name: litellm-writer-secret # contains username and password
+    sslMode: verify-full
+    sslRootCert: /certs/global-bundle.pem
+gateway:
+  volumes: &caVolumes
+    - name: rds-ca
+      configMap:
+        name: rds-ca
+  volumeMounts: &caMounts
+    - name: rds-ca
+      mountPath: /certs
+      readOnly: true
+backend:
+  volumes: *caVolumes
+  volumeMounts: *caMounts
+migrationJob:
+  volumes: *caVolumes
+  volumeMounts: *caMounts
 ```
 
 從 [AWS](https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem) 下載 RDS 憑證束；其他提供者也會以相同方式發布他們的憑證束。這與 `SSL_CERT_FILE` 不同，後者只會影響 LiteLLM 對 LLM 提供者與回呼的外送 HTTPS 請求；DB 驅動程式不會讀取它。若您兩者都需要，請掛載一個憑證束，並讓兩個設定都指向它。
@@ -422,39 +424,27 @@ general_settings:
 
 副本會使用 `POD_NAME` 被放入視窗中，若失敗則退回到 `HOSTNAME`，再來是系統主機名稱，以及 worker process id。若您的副本共用同一個主機名稱，請為每個副本提供不同的 `identity`，以免它們落在相同的偏移量上。設定 `enabled: false` 可關閉整個機制並恢復先前的行為。
 
-### 透過 Helm PreSync hook 執行 migrations {#run-migrations-from-the-helm-presync-hook}
+### 透過部署 hook 執行 migrations {#run-migrations-from-the-helm-presync-hook}
 
-:::info
-Helm PreSync hook 流程目前為 beta 版。
-:::
+[LiteLLM 圖表](./deploy/helm.md) 預設會在兩種部署模式下，透過 Helm `pre-install` 與 `pre-upgrade` hooks 執行一個獨立的 migrations Job。請在 `database.writer` 下設定 writer 資料庫，並讓 Job 在流量到達新版本之前完成。
 
-為了確保只有一個服務管理資料庫遷移，請使用我們的 [Helm PreSync Hook for Database Migrations](https://github.com/BerriAI/litellm/blob/main/helm/litellm-helm/templates/migrations-job.yaml)。這可確保遷移在 `helm upgrade` 或 `helm install` 期間處理，而 LiteLLM pods 則明確停用遷移。
+若使用 Argo CD，請改選它的 PreSync hook：
 
-1. **Helm PreSync Hook**：
-   - Helm PreSync hook 已在 chart 中設定，會在部署期間執行資料庫 migrations。
-   - 此 hook 一律會設定 `DISABLE_SCHEMA_UPDATE=false`，確保 migrations 能可靠執行。
+```yaml title="values.yaml"
+migrationJob:
+  enabled: true
+  hooks:
+    helm:
+      enabled: false
+    argocd:
+      enabled: true
+```
 
-  供 ArgoCD 設定的參考設定，用於 `values.yaml`
-
-  ```yaml
-  db:
-    useExisting: true # use existing Postgres DB
-    url: postgresql://ishaanjaffer0324:... # url of existing Postgres DB
-  ```
-
-2. **LiteLLM Pods**：
-   - 在 LiteLLM pod 設定中設定 `DISABLE_SCHEMA_UPDATE=true`，以避免它們執行 migrations。
-
-   LiteLLM pod 的範例設定：
-   ```yaml
-   env:
-     - name: DISABLE_SCHEMA_UPDATE
-       value: "true"
-   ```
+即使 `migrationJob.enabled` 為 false，圖表也會在服務中的 pods 上設定 `DISABLE_SCHEMA_UPDATE=true`。如果您停用該 Job，請透過您自己的發佈流程執行 migrations。請參閱[升級閘道](./upgrade_guide.md)。
 
 ### 使用 prisma migrate deploy {#use-prisma-migrate-deploy}
 
-LiteLLM 預設會在啟動時執行 `prisma migrate deploy`，因此在正式環境中，db migrations 會跨版本處理而不需要任何設定。若要讓某個 pod 完全不執行 migrations，請如 [透過 Helm PreSync hook 執行 migrations](#run-migrations-from-the-helm-presync-hook) 所述設定 `DISABLE_SCHEMA_UPDATE=true`。
+proxy 會在啟動時執行 `prisma migrate deploy`，除非 `DISABLE_SCHEMA_UPDATE=true`。Helm 圖表會在服務中的 pods 上設定此旗標，並使用其[部署 hook](#run-migrations-from-the-helm-presync-hook) 執行 migrations。
 
 :::info
 
@@ -471,11 +461,13 @@ migrate deploy 指令：
 
 LiteLLM 如何提供 migrations：
 
-1. 會將新的 migration 檔案寫入我們的 `litellm-proxy-extras` 套件。 [查看全部](https://github.com/BerriAI/litellm/tree/main/litellm-proxy-extras/litellm_proxy_extras/migrations)
+1. 會將新的 migration 檔案寫入我們的 `litellm-proxy-extras` 套件。 [查看全部](https://github.com/BerriAI/litellm/tree/main/litellm/proxy-extras/litellm_proxy_extras/migrations)
 
 2. 核心 litellm pip 套件會更新，以指向新的 `litellm-proxy-extras` 套件。這可確保舊版 LiteLLM 會繼續使用舊的 migrations。 [查看程式碼](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/pyproject.toml#L58)
 
 3. 當您升級到新版 LiteLLM 時，migration 檔案會套用到資料庫。 [查看程式碼](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/litellm-proxy-extras/litellm_proxy_extras/utils.py#L42)
+
+若要了解 migrations 在生產規模下需要多久，以及如何圍繞它們規劃升級，請參閱[升級指南](./upgrade_guide.md#database-migrations)。
 
 ### 唯讀檔案系統 {#read-only-file-system}
 
@@ -605,7 +597,7 @@ proxy 會針對 UI 記錄警告，但 API 端點會正常運作。
 
 ### 預期效能 {#expected-performance}
 
-請參閱 [這裡](../benchmarks#performance-metrics) 的基準測試。
+請參閱[閘道負載測試結果](../benchmarks.md#high-throughput-profile-3000-rps-with-50k-to-100k-token-prompts)。
 
 ### 確認已關閉 debug 記錄 {#confirm-debug-logging-is-off}
 

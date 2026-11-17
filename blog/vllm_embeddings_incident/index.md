@@ -100,9 +100,9 @@ data = {"model": model, "input": input, **filtered_optional_params}
 | # | 動作 | 狀態 | 程式碼 |
 |---|---|---|---|
 | 1 | 在 OpenAI 類 embedding handler 中過濾 `None` 和空字串值 | ✅ 完成 | [`handler.py#L108`](https://github.com/BerriAI/litellm/blob/main/litellm/llms/openai_like/embedding/handler.py#L108) |
-| 2 | 參數過濾的單元測試（None、空字串、有效值） | ✅ 完成 | [`test_openai_like_embedding.py`](https://github.com/BerriAI/litellm/blob/main/tests/test_litellm/llms/openai_like/embedding/test_openai_like_embedding.py) |
-| 3 | hosted_vllm embedding 組態的轉換測試 | ✅ 完成 | [`test_hosted_vllm_embedding_transformation.py`](https://github.com/BerriAI/litellm/blob/main/tests/test_litellm/llms/hosted_vllm/embedding/test_hosted_vllm_embedding_transformation.py) |
-| 4 | 使用實際 vLLM 端點的 E2E 測試 | ✅ 完成 | [`test_hosted_vllm_embedding_e2e.py`](https://github.com/BerriAI/litellm/blob/main/tests/test_litellm/llms/hosted_vllm/embedding/test_hosted_vllm_embedding_e2e.py) |
+| 2 | 參數過濾的單元測試（None、空字串、有效值） | ✅ 完成 | [`test_openai_like_embedding.py`](https://github.com/BerriAI/litellm/blob/main/tests/unit/llms/openai_like/embedding/test_openai_like_embedding.py) |
+| 3 | hosted_vllm embedding 組態的轉換測試 | ✅ 完成 | [`test_hosted_vllm_embedding_transformation.py`](https://github.com/BerriAI/litellm/blob/main/tests/unit/llms/hosted_vllm/embedding/test_hosted_vllm_embedding_transformation.py) |
+| 4 | 使用實際 vLLM 端點的 E2E 測試 | ✅ 完成 | `test_hosted_vllm_embedding_e2e.py` |
 | 5 | 驗證 JSON payload 結構符合 vLLM 預期 | ✅ 完成 | 測試會驗證傳送至端點的 JSON 完全一致 |
 
 ---

@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 Gray Swan Cygnal 防護欄"
+sidebar_label: "Gray Swan Cygnal 防護欄"
+description: "在 LiteLLM AI 閘道上使用 Gray Swan Cygnal 監控或封鎖政策違規、越獄與間接提示注入，包含 Claude Code 的流量。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

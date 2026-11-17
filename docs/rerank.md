@@ -16,7 +16,7 @@ LiteLLM 遵循 [rerank API 的 cohere API 請求 / 回應](https://cohere.com/re
 | 備援 | ✅                                                                                                   | 可在支援的模型之間運作 |
 | 負載平衡 | ✅                                                                                                   | 可在支援的模型之間運作 |
 | 防護欄 | ✅                                                                                                   | 僅套用於輸入查詢（不包含文件） |
-| 支援的提供者 | Cohere, Together AI, Azure AI, DeepInfra, Nvidia NIM, Infinity, Fireworks AI, Voyage AI, watsonx.ai | |
+| 支援的提供者 | Cohere, Together AI, Azure AI, DeepInfra, Nvidia NIM, Infinity, Fireworks AI, VoyageAI by MongoDB, watsonx.ai | |
 
 ## **LiteLLM Python SDK 用法** {#litellm-python-sdk-usage}
 
@@ -122,7 +122,7 @@ curl http://0.0.0.0:4000/rerank \
 
 ## **支援的提供者** {#supported-providers}
 
-#### ⚡️請參閱 [models.litellm.ai](https://models.litellm.ai/) 上所有支援的模型與提供者 {#️see-all-supported-models-and-providers-at-modelslitellmai}
+#### 請參閱 [models.litellm.ai](https://models.litellm.ai/) 上所有支援的模型與提供者 {#see-all-supported-models-and-providers-at-modelslitellmai}
 
 | 提供者                 | 使用方式連結                                        |
 |--------------------------|------------------------------------------------------|
@@ -137,5 +137,5 @@ curl http://0.0.0.0:4000/rerank \
 | DeepInfra                | [使用方式](../docs/providers/deepinfra#rerank-endpoint) |
 | Vertex AI                | [使用方式](../docs/providers/vertex#rerank-api)         |
 | Fireworks AI             | [使用方式](/docs/providers/fireworks_ai#rerank) |
-| Voyage AI                | [使用方式](../docs/providers/voyage#rerank)             |  
+| VoyageAI by MongoDB      | [使用方式](../docs/providers/voyage#rerank)             |  
 | IBM watsonx.ai           | [使用方式](../docs/providers/watsonx/rerank)            |

@@ -1,5 +1,6 @@
 ---
-title: "v1.77.7-stable - 中位延遲降低 2.9 倍"
+title: "LiteLLM v1.77.7-stable - 中位延遲降低 2.9 倍"
+description: "在 1,000 名同時使用者下將中位延遲降低 2.9 倍。新增 Claude Sonnet 4.5、排程虛擬金鑰輪換與 MCP OAuth 2.0 用戶端憑證。"
 slug: "v1-77-7"
 date: 2025-10-04T10:00:00
 authors:

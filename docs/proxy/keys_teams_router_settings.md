@@ -1,3 +1,7 @@
+---
+sidebar_label: "金鑰與團隊的路由設定"
+---
+
 import Image from '@theme/IdealImage';
 
 # UI - 金鑰與團隊的路由設定 {#ui---router-settings-for-keys-and-teams}
@@ -12,6 +16,7 @@ import Image from '@theme/IdealImage';
 
 - **依金鑰或團隊自訂路由策略**（例如，對高優先權金鑰使用 `least-busy`，對其他金鑰使用 `latency-based-routing`）
 - **為不同金鑰或團隊設定不同的備援鏈**
+- **使用[部署權重](#deployment-weights)依金鑰或團隊在各部署之間分配流量**
 - **設定特定金鑰或特定團隊的逾時**與重試政策
 - **套用不同的可靠性設定**（冷卻時間、允許失敗次數）於各金鑰或團隊
 - **在需要時覆寫全域設定**，以符合特定使用情境
@@ -107,6 +112,27 @@ import Image from '@theme/IdealImage';
 
 ![](https://colony-recorder.s3.amazonaws.com/files/2026-01-24/67ca2655-4e82-4f93-be9a-7244ad22640f/ascreenshot_4fdbed826cd546d784e8738626be835d_text_export.jpeg)
 
+## 部署權重 {#deployment-weights}
+
+部署權重可針對單一金鑰或團隊，將某個模型群組的流量分配到其各部署。例如，某個團隊可以將其 `gpt-5` 流量的 90% 送往一個部署、10% 送往另一個部署，而其他所有呼叫者仍維持全域的分配方式。
+
+若要在 UI 中設定，請開啟金鑰或團隊的 Router Settings，在 Loadbalancing 分頁選取 `simple-shuffle` 路由策略，並在 Deployment Weights 下新增一個模型群組。該群組的每個部署都會列出，並附有權重欄位與其接收的流量比例。權重是相對值，因此 `9` 與 `1` 和 `90` 與 `10` 會得到相同的分配比例。
+
+相同的設定也可以透過 API 在 `/team/new`、`/team/update`、`/key/generate` 或 `/key/update` 上傳送。`weights` 的鍵是模型群組名稱，內層的鍵則是部署 ID（`model_info.id`）：
+
+```json
+{
+  "router_settings": {
+    "routing_strategy": "simple-shuffle",
+    "weights": {
+      "gpt-5": {"deployment-id-a": 9, "deployment-id-b": 1}
+    }
+  }
+}
+```
+
+權重僅適用於 `simple-shuffle` 路由策略，該策略可設定在金鑰或團隊上，或全域設定。當選取了其他策略時，UI 會顯示警告。一旦群組中的任一部署有了權重，該群組中沒有權重的部署就不會從此金鑰或團隊接收任何流量。有權重的群組必須至少有一個權重大於 0，且 proxy 會拒絕不存在或屬於其他團隊的部署 ID。權重的解析順序與其他路由設定相同，因此擁有自己路由設定的金鑰只會使用自己的設定，團隊的權重不會套用到它。
+
 ## 使用情境 {#use-cases}
 
 ### 每個金鑰使用不同的路由策略 {#different-routing-strategies-per-key}
@@ -121,7 +147,7 @@ import Image from '@theme/IdealImage';
 
 在團隊內的所有金鑰套用一致的路由設定：
 
-- 為整個團隊設定備援鏈，以提升可靠性
+- 為整個團隊設定備援鏈以提升可靠性，並可設定 `fallback_on_saturation: true`，在請求的模型達到動態速率限制器的 `saturation_threshold` 時立即依序走訪備援鏈（請參閱[在偏好模型飽和前先進行備援](./dynamic_rate_limit.md#fall-back-before-the-preferred-model-saturates)）
 - 設定團隊專屬的逾時政策
 - 在團隊成員間套用一致的重試政策
 

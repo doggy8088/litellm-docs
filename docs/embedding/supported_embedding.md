@@ -523,6 +523,7 @@ print(response)
 **輸入格式：**
 - **Data URI：** `data:image/png;base64,<encoded_data>`
 - **Gemini 檔案參照：** `files/abc123`（透過 Gemini Files API 預先上傳）
+- **檔案內容區塊：** `{"type": "file", "file": {...}}`，與 chat completions 接受的相同區塊，當媒體部分需要明確的 MIME 類型或視訊片段時使用（見[下方](#video-clips-and-explicit-mime-types)）
 
 **支援的 MIME 類型：** `image/png`、`image/jpeg`、`audio/mpeg`、`audio/wav`、`video/mp4`、`video/quicktime`、`application/pdf`
 
@@ -616,6 +617,71 @@ curl -X POST http://localhost:4000/embeddings \
 
 這對於將多模態實體（例如：具有名稱 + 照片的產品）表示為單一向量，以供搜尋與檢索非常有用。僅限 Gemini API。無論輸入形狀為何，Vertex AI 一律會回傳單一合併向量（請參閱 [Vertex AI embeddings 文件](../providers/vertex_embedding#gemini-embedding-2-preview-multimodal)）。
 
+#### 視訊片段與明確的 MIME 類型 {#video-clips-and-explicit-mime-types}
+
+純字串元素不帶任何選項，因此若要嵌入影片的一個時間窗口，或指定 LiteLLM 無法推斷的 MIME 類型，請將元素以 OpenAI 檔案內容區塊傳入，就是 [chat completions](../providers/vertex#video-metadata-control) 已經接受的區塊。該區塊可作為扁平元素使用，也可放在巢狀清單內，並會以一個帶有 `videoMetadata` 的 Gemini `Part` 轉發。
+
+| 欄位 | 說明 |
+|-------|-------------|
+| `file.file_id` | `gs://bucket/clip.mp4`、Gemini Files API 參照 `files/abc123`，或 `/v1/files` 為 Gemini 上傳回傳的 id (`https://generativelanguage.googleapis.com/v1beta/files/abc123`) |
+| `file.file_data` | Data URI，`data:video/mp4;base64,<encoded_data>` |
+| `file.format` | 可選的 MIME 類型，覆寫依副檔名或 data URI 推斷的類型 |
+| `file.video_metadata` | 可選的 `fps`（數字）、`start_offset` 與 `end_offset`（例如 `"3s"` 的字串），轉換為 Gemini 的 `startOffset` 與 `endOffset` |
+
+`file_id` 與 `file_data` 兩者恰需其一。區塊中任何位置的未知鍵（例如 chat 的 `detail`）都會以 400 回應並指名它，或在全域或請求上設定 `drop_params` 時被丟棄，與不支援的參數被丟棄的方式相同。
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python
+from litellm import embedding
+
+response = embedding(
+    model="gemini/gemini-embedding-2-preview",
+    input=[
+        {
+            "type": "file",
+            "file": {
+                "file_id": "files/abc123",
+                "video_metadata": {"fps": 1, "start_offset": "3s", "end_offset": "6s"},
+            },
+        },
+        "a solid blue clip",
+    ],
+)
+# response.data has 2 embeddings: the 3s-6s window of the video, then the text
+```
+
+</TabItem>
+<TabItem value="proxy" label="PROXY">
+
+```bash
+curl -X POST http://localhost:4000/embeddings \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemini-embedding-2-preview",
+    "input": [[
+      {
+        "type": "file",
+        "file": {
+          "file_data": "data:video/mp4;base64,...",
+          "video_metadata": {"start_offset": "3s", "end_offset": "6s"}
+        }
+      },
+      "a solid blue clip"
+    ]]
+  }'
+```
+
+</TabItem>
+</Tabs>
+
+:::note[PDF OCR]
+Gemini embeddings API 一律對 PDF 輸入執行 OCR，且沒有參數可以開啟或關閉它，因此不需要為它傳入任何東西。
+:::
+
+
 ## Vertex AI 嵌入模型 {#vertex-ai-embedding-models}
 
 ### 用法 - 嵌入 {#usage---embedding-1}
@@ -645,7 +711,7 @@ print(response)
 | text-embedding-preview-0409 | `embedding(model="vertex_ai/text-embedding-preview-0409", input)` |
 | text-multilingual-embedding-preview-0409 | `embedding(model="vertex_ai/text-multilingual-embedding-preview-0409", input)` |
 
-## Voyage AI 嵌入模型 {#voyage-ai-embedding-models}
+## VoyageAI by MongoDB 嵌入模型 {#voyageai-by-mongodb-embedding-models}
 
 ### 用法 - 嵌入 {#usage---embedding-2}
 ```python
@@ -700,7 +766,7 @@ os.environ["COHERE_API_KEY"] = "cohere key"
 response = embedding(
     model="embed-english-v3.0", 
     input=["good morning from litellm", "this is another item"], 
-    input_type="search_document" # 👈 PROVIDER-SPECIFIC PARAM
+    input_type="search_document" # PROVIDER-SPECIFIC PARAM
 )
 ```
 </TabItem>
@@ -713,7 +779,7 @@ model_list:
   - model_name: "cohere-embed"
     litellm_params:
       model: embed-english-v3.0
-      input_type: search_document # 👈 PROVIDER-SPECIFIC PARAM
+      input_type: search_document # PROVIDER-SPECIFIC PARAM
 ```
 
 **透過請求**
@@ -725,7 +791,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/embeddings' \
 -d '{
   "model": "cohere-embed",
   "input": ["Are you authorized to work in United States of America?"],
-  "input_type": "search_document" # 👈 PROVIDER-SPECIFIC PARAM
+  "input_type": "search_document" # PROVIDER-SPECIFIC PARAM
 }'
 ```
 </TabItem>

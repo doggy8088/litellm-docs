@@ -61,6 +61,7 @@
 | `retry-after` | 閘道速率限制與路由器冷卻期 | 等待秒數。請參閱下方關於其出現所代表意涵的註記 |
 | `rate_limit_type` | 閘道速率限制 | 哪個維度超標：`requests`、`tokens` 或 `concurrent_requests` |
 | `reset_at` | 閘道速率限制 | 超出視窗重設的 UTC 時間戳記 |
+| `rate_limited_by` | 閘道速率限制 | 哪個限制超標，以限制器的命名為準：`api_key`、`team`、`end_user`、`model_per_key`、`model_per_team`、`model_per_end_user`、`model_per_project` 等。與 `rate_limit_type` 一起判讀：`model_per_end_user` 加上 `tokens` 表示客戶的 `model_tpm_limit` |
 | `x-litellm-key-rpm-limit`、`x-litellm-key-max-budget`、`x-litellm-key-spend` | 驗證後的大多數失敗 | 呼叫用金鑰的已設定上限與目前支出，因此您可以確認是否真的是金鑰本身的限制 |
 | `x-litellm-timeout` | 已到達部署的請求失敗 | 該次呼叫生效中的逾時值（以秒計） |
 
@@ -89,7 +90,7 @@ LiteLLM's normalized class              the provider that actually failed
 | `message` 包含 `OpenAIException`、`AnthropicException`、`AzureException`、`BedrockException`、`VertexAIException`，或任何其他 `<Provider>Exception` | 上游提供者 |
 | `message` 不包含提供者名稱，且 `type` 是 LiteLLM 值，例如 `budget_exceeded`、`expired_key`、`token_not_found_in_db`、`key_model_access_denied` | LiteLLM 閘道 |
 | `message` 以 `No deployments available for selected model` 或 `There are no healthy deployments for this model` 開頭 | LiteLLM 閘道（路由） |
-| 帶有 `retry-after`、`rate_limit_type` 或 `reset_at` 標頭的 429 | LiteLLM 閘道（速率限制） |
+| 帶有 `retry-after`、`rate_limit_type`、`rate_limited_by` 或 `reset_at` 標頭的 429 | LiteLLM 閘道（速率限制） |
 | 沒有這些標頭的 429 | 上游提供者 |
 
 範例一，閘道來源。虛擬金鑰上限低於其累積支出，因此在任何提供者被呼叫之前，請求就被拒絕：
@@ -165,7 +166,7 @@ LiteLLM's normalized class              the provider that actually failed
 
 | 訊息前綴 | 狀態 | 原因 |
 |---|---|---|
-| `No deployments available for selected model` | 429 | 模型群組中的每個 deployment 在重複失敗後都進入冷卻期。訊息會列出正在冷卻的 deployment ids 與剩餘秒數 |
+| `No deployments available for selected model` | 429 | 模型群組中的每個 deployment 在重複失敗後都進入冷卻期。訊息會列出正在冷卻的 deployment ids 與剩餘秒數。失敗記錄會列出此請求本可使用的 deployment 及其 `api_base`，位於 [`error_information.error_cooldown_deployments`](/docs/proxy/logging_spec#standardloggingpayloaderrorinformation) |
 | `There are no healthy deployments for this model` | 400 | 該模型群組沒有任何可處理此請求的 deployment |
 | `Not allowed to access model due to tags configuration` | 401 | 基於標籤的路由將此呼叫者的每個 deployment 都排除在外 |
 | `No deployments available - crossed budget` | 429 | 基於提供者預算的路由已耗盡每個候選 deployment 的預算 |
@@ -174,7 +175,7 @@ LiteLLM's normalized class              the provider that actually failed
 
 429 是閘道與提供者都大量使用的唯一狀態，因此值得單獨檢查。請依照下列順序檢視回應
 
-閘道速率限制會設定 `retry-after`、`rate_limit_type` 和 `reset_at`，其訊息會指出觸發的限制：
+閘道速率限制會設定 `retry-after`、`rate_limit_type`、`rate_limited_by` 和 `reset_at`。`rate_limited_by` 會指出觸發的限制（下方為 `api_key`），因此您不必解析訊息；訊息會以文字重述該限制：
 
 ```json
 {

@@ -12,7 +12,7 @@ Anthropic 相容的 token 計數端點。在將訊息送入模型之前先計算
 | 成本追蹤 | ❌ | 僅進行 token 計數，不產生成本 |
 | 記錄 | ✅ | 可跨所有整合使用 |
 | 終端使用者追蹤 | ✅ | |
-| 支援的提供者 | Anthropic、Vertex AI（Claude）、Bedrock（Claude）、Gemini、Vertex AI | 會自動路由至提供者專屬的 token 計數 API |
+| 支援的提供者 | Anthropic、Vertex AI（Claude）、Bedrock（Claude）、Gemini、Vertex AI、Mistral | 會自動路由至提供者專屬的 token 計數 API |
 
 ## 快速入門 {#quick-start}
 
@@ -98,6 +98,11 @@ model_list:
     litellm_params:
       model: bedrock/us.anthropic.{{anthropic}}
       aws_region_name: us-west-2
+
+  - model_name: mistral-large-4
+    litellm_params:
+      model: mistral/mistral-large-4
+      api_key: os.environ/MISTRAL_API_KEY
 ```
 
 ## 請求參數 {#request-parameters}
@@ -139,8 +144,9 @@ model_list:
 |----------|----------------------|
 | Anthropic | [Anthropic Token Counting API](https://docs.anthropic.com/en/docs/build-with-claude/token-counting) |
 | OpenAI | [OpenAI Responses API `/input_tokens`](https://platform.openai.com/docs/api-reference/responses/input-tokens) — 參閱 [Token Counting](./count_tokens.md) |
+| Mistral | [Mistral Responses API `/v1/responses/input_tokens`](https://docs.mistral.ai/api/endpoint/responses#operation-count_input_tokens_v1_responses_input_tokens_post) — 參閱 [Token Counting](./count_tokens.md) |
 | Vertex AI（Claude） | Vertex AI Partner Models Token Counter |
-| Bedrock（Claude） | AWS Bedrock CountTokens API |
+| Bedrock（Claude） | AWS Bedrock CountTokens API，其次是 bedrock-mantle（用於它拒絕的 Claude 模型），參閱 [Bedrock Claude models](./count_tokens.md#bedrock-claude-models) |
 | Gemini | Google AI Studio countTokens API |
 | Vertex AI（Gemini） | Vertex AI countTokens API |
 

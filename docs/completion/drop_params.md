@@ -13,6 +13,8 @@ import TabItem from '@theme/TabItem';
 
 **當 `drop_params=True` 已設定時**，LiteLLM 會捨棄不支援的參數，而不是擲出例外。這讓您的程式碼能跨不同提供者運作，而不必為每一個提供者自訂參數。
 
+在 proxy 上，來自 Claude Code 與 Codex 的請求預設會捨棄不支援的參數。請參閱 [Claude Code 與 Codex 在 proxy 上](#claude-code-and-codex-on-the-proxy)。
+
 ## 快速開始  {#quick-start}
 
 ```python 
@@ -22,7 +24,7 @@ import os
 # set keys 
 os.environ["COHERE_API_KEY"] = "co-.."
 
-litellm.drop_params = True # 👈 KEY CHANGE
+litellm.drop_params = True # KEY CHANGE
 
 response = litellm.completion(
                 model="command-r",
@@ -44,6 +46,17 @@ LiteLLM 會依據提供者 + 模型對應所有支援的 openai 參數（例如�
 litellm_settings:
     drop_params: true
 ```
+
+### Claude Code 與 Codex 在 proxy 上 {#claude-code-and-codex-on-the-proxy}
+
+來自 Claude Code 與 Codex 的請求（依其 user agent 辨識）即使未設定 `drop_params`，預設也會捨棄不支援的參數，因此其用戶端專屬參數不會在其他提供者上失敗。在 `litellm_settings` 中設定 `drop_params: false`，可讓這些請求同樣擲回例外。在 `model_list` 中對單一模型設定 `drop_params: false`，不會關閉此預設行為。
+
+```yaml
+litellm_settings:
+    drop_params: false
+```
+
+在 v1.103.0 至 v1.108.x 中，有一個錯誤會使這些請求忽略 `litellm_settings` 中的 `drop_params: false`，此問題已在 v1.109.0 修正。
 
 ## 在 `completion(..)` 中傳入 drop_params {#pass-drop_params-in-completion}
 
@@ -73,7 +86,7 @@ response = litellm.completion(
 - litellm_params:
     api_base: my-base
     model: openai/my-model
-    drop_params: true # 👈 KEY CHANGE
+    drop_params: true # KEY CHANGE
   model_name: my-model
 ```
 </TabItem>
@@ -109,7 +122,7 @@ response = litellm.completion(
 - litellm_params:
     api_base: my-base
     model: openai/my-model
-    additional_drop_params: ["response_format"] # 👈 KEY CHANGE
+    additional_drop_params: ["response_format"] # KEY CHANGE
   model_name: my-model
 ```
 </TabItem>

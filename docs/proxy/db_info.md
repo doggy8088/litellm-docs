@@ -6,7 +6,7 @@ LiteLLM Proxy 使用 PostgreSQL 資料庫來儲存各種資訊。以下是此 DB
 
 ## DB 結構的連結 {#link-to-db-schema}
 
-您可以在[這裡](https://github.com/BerriAI/litellm/blob/main/schema.prisma)查看完整的 DB 結構
+您可以在[這裡](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/schema.prisma)查看完整的 DB 結構
 
 ## DB 資料表 {#db-tables}
 
@@ -48,11 +48,18 @@ LiteLLM Proxy 使用 PostgreSQL 資料庫來儲存各種資訊。以下是此 DB
 | LiteLLM_SpendLogs | 所有 API 請求的詳細記錄。記錄 token 使用量、花費與時間資訊。追蹤使用了哪些模型與金鑰。 | **中等 - 這是一個以固定間隔執行的批次程序。** |
 | LiteLLM_DailyUserSpend 和其同系列表（DailyTeamSpend、DailyOrgSpend、DailyTagSpend、DailyEndUserSpend、DailyAgentSpend） | 依使用者、團隊、組織、標籤、最終使用者與代理程式彙總的每日花費預先聚合資料；管理介面中的用量檢視會讀取這些彙總，而不是掃描 SpendLogs。 | 低 - 每個實體每天一列，以批次方式更新 |
 | LiteLLM_DailyGatewayRequests | 由 request-metrics middleware 在 ASGI 邊緣記錄的成功與失敗請求計數，以日期、類別與路由為鍵。支援用量頁面上的 Successful Requests 與 Failed Requests 磚塊，以及 Gateway Requests by Endpoint 圖表；請參閱 [gateway request counts](./endpoint_activity.md#gateway-request-counts)。 | 低 - 每個路由每天一列，以批次方式更新 |
-| LiteLLM_AuditLog | 追蹤系統設定的變更。記錄是誰進行了變更，以及修改了什麼。維護團隊、使用者與模型更新的歷史。 | **預設關閉**，**高 - 在每次對實體的變更時執行** |
+| LiteLLM_AuditLog | 追蹤系統設定的變更。記錄是誰進行了變更，以及修改了什麼。維護團隊、使用者與模型更新的歷史。 | **具有 Enterprise 授權時預設開啟，否則關閉**（請參閱 [稽核記錄](./audit_logs.md)），**高 - 在每次對實體的變更時執行** |
 
 ## 停用 `LiteLLM_SpendLogs` {#disable-litellm_spendlogs}
 
 在 `general_settings` 下設定 `disable_spend_logs: True` 或 `disable_error_logs: True` 以停止寫入這些資料表。停用 spend logs 後，您會失去 UI 中的每請求記錄細節，但仍可在記錄整合（s3、Prometheus、Langfuse）中保留成本指標；停用 error logs 後，您會失去 UI 中的 Errors 檢視，但仍可在應用程式記錄與其他記錄整合中保留錯誤。請參閱生產檢查清單中的 [將錯誤記錄排除在資料庫之外](./prod.md#keep-error-logs-out-of-the-database)。
+
+若要保留 Errors 檢視，但避免被拒絕的請求塞滿資料表，請改為設定 `disable_pre_routing_error_logs: True`。Proxy 在選取部署之前就拒絕的請求（金鑰無效或已過期、超出預算、模型存取遭拒、未知模型、無法解析的請求內文）將不會在 `LiteLLM_SpendLogs` 或每日支出資料表中寫入任何資料列，因此用戶端重試已耗盡額度的金鑰時，不會產生數百萬列零支出記錄。提供者錯誤、防護欄封鎖與速率限制錯誤仍會被記錄。
+
+```yaml
+general_settings:
+  disable_pre_routing_error_logs: True
+```
 
 ## 資料庫遷移  {#migrating-databases}
 

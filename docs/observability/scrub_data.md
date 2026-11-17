@@ -1,3 +1,8 @@
+---
+title: "清除 LiteLLM 記錄中的 PII 並遮蔽訊息"
+sidebar_label: "清理已記錄資料"
+description: "在 LiteLLM 將資料傳送至 Langfuse 等記錄整合之前遮蔽 PII 並編輯訊息，透過具備同步或非同步 hook 的自訂回呼完成。"
+---
 # 清理已記錄資料 {#scrub-logged-data}
 
 在將資料傳送至記錄整合（langfuse/etc.）之前，先將訊息去識別化／遮罩 PII。
@@ -79,7 +84,7 @@ litellm.success_callback = ["langfuse"]
 
 
 ## sync 
-response = completion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi 👋 - i'm openai"}],
+response = completion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi - i'm openai"}],
                               stream=True)
 for chunk in response: 
     continue
@@ -89,7 +94,7 @@ for chunk in response:
 import asyncio 
 
 async def completion():
-    response = await acompletion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi 👋 - i'm openai"}],
+    response = await acompletion(model="{{openai_small}}", messages=[{ "role": "user", "content": "Hi - i'm openai"}],
                               stream=True)
     async for chunk in response: 
         continue

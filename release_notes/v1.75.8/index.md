@@ -1,5 +1,6 @@
 ---
-title: "v1.75.8-stable - Team Member Rate Limits"
+title: "LiteLLM v1.75.8-stable - Team Member Rate Limits"
+description: "新增搭配 JWT 驗證的團隊成員速率限制、支援 reasoning_effort 的 GPT-5，以及 Azure AI Flux 圖片生成。"
 slug: "v1-75-8"
 date: 2025-08-16T10:00:00
 authors:

@@ -1,5 +1,6 @@
 ---
-title: v1.55.8-stable
+title: "LiteLLM v1.55.8-stable"
+description: "新增 Langfuse 提示詞管理、用戶端備援提示詞與 Azure Data Lake 使用量匯出。另新增 NVIDIA Triton /infer 與 Infinity rerank 模型。"
 slug: v1.55.8-stable
 date: 2024-12-22T10:00:00
 authors:

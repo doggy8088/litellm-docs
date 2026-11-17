@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Infinity Embeddings 與 Rerank"
+sidebar_label: "Infinity"
+description: "從 Python SDK 或 AI Gateway 呼叫您 Infinity 伺服器上的 rerank 與 embedding 模型，支援與 Cohere 相容的 /rerank 以及與 OpenAI 相容的 /embeddings。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -135,7 +141,7 @@ response = rerank(
     model="infinity/rerank",
     query="What is the capital of France?",
     documents=["Paris", "London", "Berlin", "Madrid"],
-    raw_scores=True, # 👈 PROVIDER-SPECIFIC PARAM
+    raw_scores=True, # PROVIDER-SPECIFIC PARAM
 )
 ```
 
@@ -151,7 +157,7 @@ model_list:
     litellm_params:
       model: infinity/rerank
       api_base: https://localhost:8080
-      raw_scores: True # 👈 EITHER SET PROVIDER-SPECIFIC PARAMS HERE OR IN REQUEST BODY
+      raw_scores: True # EITHER SET PROVIDER-SPECIFIC PARAMS HERE OR IN REQUEST BODY
 ```
 
 2. 啟動 litellm
@@ -177,7 +183,7 @@ curl http://0.0.0.0:4000/rerank \
         "Washington, D.C. is the capital of the United States.",
         "Capital punishment has existed in the United States since before it was a country."
     ],
-    "raw_scores": True # 👈 PROVIDER-SPECIFIC PARAM
+    "raw_scores": True # PROVIDER-SPECIFIC PARAM
   }'
 ```
 

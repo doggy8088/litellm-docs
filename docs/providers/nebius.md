@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Nebius AI Studio API：設定"
+sidebar_label: "Nebius AI Studio"
+description: "透過 LiteLLM 呼叫 Qwen3 235B 與其他 Nebius AI Studio 模型，支援 JSON 模式、工具與固定 seed，串流輸出，並使用 BAAI bge-en-icl 嵌入文字。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

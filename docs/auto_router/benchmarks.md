@@ -6,7 +6,7 @@ description: Auto Router 的每一項已發布量測，從 Terminal-Bench 2.0 �
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
-這些貼文會使用真實的提供者 API 及其設定來發布量測結果。JEV 分類器比較會直接計時分類器，並包含單獨的即時 proxy 檢查。以下數字皆 उद्ध自這些貼文
+這些貼文會使用真實的提供者 API 及其設定來發布量測結果。JEV 分類器比較會直接計時分類器，並包含單獨的即時 proxy 檢查。以下數字皆 摘錄自這些貼文
 
 ## JEV 分類器：速度比 Haiku 快 5.43 倍，成本低 96% {#jev-classifier-543x-as-fast-as-haiku-96-lower-cost}
 

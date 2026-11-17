@@ -1,5 +1,6 @@
 ---
-title: "v1.85.3 - 可觀測性、預算與速率限制修正"
+title: "LiteLLM v1.85.3 - 可觀測性、預算與速率限制修正"
+description: "修正 Claude Code 追蹤重複、Bearer 前綴處理與預算重置寫入。從提供者請求本文中移除內部速率限制資料。"
 slug: "v1-85-3"
 date: 2026-06-01T19:02:53
 authors:

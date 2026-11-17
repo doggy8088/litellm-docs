@@ -27,7 +27,7 @@ model_list:
         model: vertex_ai/{{gemini_flash}}
         vertex_project: my-project-id
         vertex_location: us-central1
-    - model_name: "gpt-4o-mini-openai"
+    - model_name: "{{openai_small}}-openai"
       litellm_params:
         model: {{openai_small}}
         api_key: os.environ/OPENAI_API_KEY
@@ -53,10 +53,10 @@ litellm_settings:
 
 ```python
 # String (comma-separated for multiple models)
-extra_body={"target_model_names": "gpt-4o-mini-openai, {{gemini_flash}}"}
+extra_body={"target_model_names": "{{openai_small}}-openai, {{gemini_flash}}"}
 
 # List (OpenAI Python SDK sends this as target_model_names[] in multipart form)
-extra_body={"target_model_names": ["gpt-4o-mini-openai"]}
+extra_body={"target_model_names": ["{{openai_small}}-openai"]}
 ```
 
 ### 2. 啟動 proxy {#2-start-proxy}
@@ -70,7 +70,7 @@ litellm --config /path/to/config.yaml
 指定 `target_model_names` 以在不同提供者之間使用相同的 file id。這是透過 config.yaml 設定的 model_names 清單（或 UI 上的 'public_model_names'）。 
 
 ```python
-target_model_names="gpt-4o-mini-openai, {{gemini_flash}}" # 👈 Specify model_names
+target_model_names="{{openai_small}}-openai, {{gemini_flash}}" # Specify model_names
 ```
 
 請查看 `/v1/models`，以查看某個 key 可用的模型名稱清單。
@@ -97,7 +97,7 @@ with open("2403.05530.pdf", "wb") as f:
 file = client.files.create(
     file=open("2403.05530.pdf", "rb"),
     purpose="user_data", # can be any openai 'purpose' value
-    extra_body={"target_model_names": "gpt-4o-mini-openai, {{gemini_flash}}"}, # 👈 Specify model_names
+    extra_body={"target_model_names": "{{openai_small}}-openai, {{gemini_flash}}"}, # Specify model_names
 )
 
 print(f"file id={file.id}")
@@ -110,7 +110,7 @@ print(f"file id={file.id}")
 
 ```python
 completion = client.chat.completions.create(
-    model="gpt-4o-mini-openai",
+    model="{{openai_small}}-openai",
     messages=[
         {
             "role": "user",
@@ -185,10 +185,10 @@ with open("2403.05530.pdf", "wb") as f:
 file = client.files.create(
     file=open("2403.05530.pdf", "rb"),
     purpose="user_data", # can be any openai 'purpose' value
-    extra_body={"target_model_names": "gpt-4o-mini-openai, vertex_ai/{{gemini_flash}}"},
+    extra_body={"target_model_names": "{{openai_small}}-openai, vertex_ai/{{gemini_flash}}"},
 )
 
-print(f"file.id: {file.id}") # 👈 Unified file id
+print(f"file.id: {file.id}") # Unified file id
 
 ## GEMINI CALL ### 
 completion = client.chat.completions.create(
@@ -214,7 +214,7 @@ print(completion.choices[0].message)
 
 ### OPENAI CALL ### 
 completion = client.chat.completions.create(
-    model="gpt-4o-mini-openai",
+    model="{{openai_small}}-openai",
     messages=[
         {
             "role": "user",
@@ -243,7 +243,7 @@ print(completion.choices[0].message)
 
 ```yaml
 model_list:
-    - model_name: "gpt-4o-mini-openai"
+    - model_name: "{{openai_small}}-openai"
       litellm_params:
         model: {{openai_small}}
         api_key: os.environ/OPENAI_API_KEY
@@ -267,7 +267,7 @@ litellm --config /path/to/config.yaml
 curl -L -X POST 'http://0.0.0.0:4000/user/new' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
 -H 'Content-Type: application/json' \
--d '{"models": ["gpt-4o-mini-openai"], "user_id": "user_123"}'
+-d '{"models": ["{{openai_small}}-openai"], "user_id": "user_123"}'
 ```
 
 從回應中取得 key。
@@ -294,7 +294,7 @@ from openai import OpenAI
 
 client = OpenAI(
     base_url="http://0.0.0.0:4000",
-    api_key="sk-...", # 👈 Use the key you generated in step 3
+    api_key="sk-...", # Use the key you generated in step 3
     max_retries=0
 )
 
@@ -302,7 +302,7 @@ client = OpenAI(
 finetuning_input_file = client.files.create(
     file=open("./fine_tuning.jsonl", "rb"), # {"model": "azure-gpt-4o"} <-> {"model": "gpt-4o-my-special-deployment"}
     purpose="fine-tune",
-    extra_body={"target_model_names": "gpt-4.1-openai"} # 👈 Tells litellm which regions/projects to write the file in. 
+    extra_body={"target_model_names": "gpt-4.1-openai"} # Tells litellm which regions/projects to write the file in.
 )
 print(finetuning_input_file) # file.id = "litellm_proxy/..." = {"model_name": {"deployment_id": "deployment_file_id"}}
 ```
@@ -368,7 +368,7 @@ with open("2403.05530.pdf", "wb") as f:
 file = client.files.create(
     file=open("2403.05530.pdf", "rb"),
     purpose="user_data", # can be any openai 'purpose' value
-    extra_body={"target_model_names": "gpt-4o-mini-openai, vertex_ai/{{gemini_flash}}"},
+    extra_body={"target_model_names": "{{openai_small}}-openai, vertex_ai/{{gemini_flash}}"},
 )
 ```
 
@@ -393,14 +393,14 @@ file = client.files.delete(file_id=file.id)
 ```python
 client = OpenAI(base_url="http://0.0.0.0:4000", api_key="sk-<your-litellm-api-key>", max_retries=0)
 
-files = client.files.list(extra_body={"target_model_names": "gpt-4o-mini-openai"})
+files = client.files.list(extra_body={"target_model_names": "{{openai_small}}-openai"})
 
 print(files) # All files user has created
 ```
 
 GA 前列出檔案的限制：
  - 不支援多模型：目前只支援 1 個模型名稱。
- - 不支援多部署：目前只支援該模型的 1 個部署（例如，如果您有 2 個具有 `gpt-4o-mini-openai` 公開模型名稱的部署，它會挑選其中一個，並回傳該部署上的所有檔案）。
+ - 不支援多部署：目前只支援該模型的 1 個部署（例如，如果您有 2 個具有 `{{openai_small}}-openai` 公開模型名稱的部署，它會挑選其中一個，並回傳該部署上的所有檔案）。
 
 GA 前的限制會在 Managed Files 功能正式發布前修正。
 

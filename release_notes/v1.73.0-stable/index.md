@@ -1,5 +1,6 @@
 ---
-title: "v1.73.0-stable - 為新使用者設定預設團隊"
+title: "LiteLLM v1.73.0-stable - 為新使用者設定預設團隊"
+description: "新增新使用者的預設團隊、具自訂成本追蹤的 Passthrough Endpoints v2，以及模型健康檢查儀表板。"
 slug: "v1-73-0-stable"
 date: 2025-06-21T10:00:00
 authors:

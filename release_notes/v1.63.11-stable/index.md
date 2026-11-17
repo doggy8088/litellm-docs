@@ -1,5 +1,6 @@
 ---
-title: v1.63.11-stable
+title: "LiteLLM v1.63.11-stable"
+description: "新增 Responses API beta、Snowflake Cortex 與 Nova Canvas 圖片生成。並在 UI 中新增憑證重複使用功能。不建議用於 Azure OpenAI。"
 slug: v1.63.11-stable
 date: 2025-03-15T10:00:00
 authors:
@@ -130,7 +131,7 @@ docker.litellm.ai/berriai/litellm:main-v1.63.11-stable
 
 1. 支援輪替 Master Keys [Getting Started](https://docs.litellm.ai/docs/proxy/master_key_rotations)
 2. 修正：Internal User Viewer 權限，不允許 `internal_user_viewer` 角色查看 `Test Key Page` 或 `Create Key Button` [More information on role based access controls](https://docs.litellm.ai/docs/proxy/access_control)
-3. 在所有使用者 + 模型建立/更新/刪除端點發出稽核記錄 [Getting Started](https://docs.litellm.ai/docs/proxy/multiple_admins)
+3. 在所有使用者 + 模型建立/更新/刪除端點發出稽核記錄 [Getting Started](https://docs.litellm.ai/docs/proxy/audit_logs)
 4. JWT
     - 支援多個 JWT OIDC 提供者 [Getting Started](https://docs.litellm.ai/docs/proxy/token_auth)
     - 修正當 team 被指派 All Proxy Models 存取權時，Groups 的 JWT 存取無法運作的問題

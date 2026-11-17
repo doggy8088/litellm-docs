@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 LangGraph Agents"
+sidebar_label: "LangGraph"
+description: "從 Python SDK 或 AI Gateway 透過 LiteLLM 以 OpenAI 聊天格式呼叫 LangGraph 代理程式，執行本機 LangGraph 伺服器並將其加入 A2A Gateway。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

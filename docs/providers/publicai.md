@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 PublicAI API：Python SDK 與 Gateway"
+sidebar_label: "PublicAI"
+description: "透過 LiteLLM Python SDK 或 AI Gateway config.yaml，在 PublicAI 上呼叫 Swiss AI Apertus 8B 與 70B instruct 模型，支援串流與自訂 base URL。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

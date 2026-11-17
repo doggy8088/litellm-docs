@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Hugging Face Rerank"
+sidebar_label: "HuggingFace Rerank"
+description: "透過 Python SDK 或 AI 閘道的 /rerank 路由，使用 Hugging Face 上或您自己端點的 BAAI bge-reranker 模型重新排序文件，支援同步或非同步。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';

@@ -87,4 +87,4 @@ print(response.choices[0].message.content)
 
 - 重新啟動您的容器，以取得此模型的成本追蹤。
 - 使用 `/responses` 以獲得更好的模型效能。
-- GPT-5.4 支援推理、函式呼叫、視覺與工具使用；請參閱 [OpenAI 提供者文件](/docs/providers/openai) 以了解進階用法。
+- GPT-5.4 支援推理、函式呼叫、視覺與工具使用；請參閱 [OpenAI 提供者文件](../../docs/providers/openai) 以了解進階用法。

@@ -1,5 +1,6 @@
 ---
-title: "v1.85.0 - Realtime GA、MCP Gateway 擴充與加固的多租戶"
+title: "LiteLLM v1.85.0 - Realtime GA、MCP Gateway 擴充與加固的多租戶"
+description: "新增 OpenAI Realtime GA 支援，包含 gpt-realtime-2、xAI grok-4.3 與組織層級的 MCP 權限。並加固各租戶的範圍隔離。"
 slug: "v1-85-0"
 date: 2026-05-16T00:00:00
 authors:

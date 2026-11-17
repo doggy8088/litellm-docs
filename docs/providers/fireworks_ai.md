@@ -134,7 +134,7 @@ print(response)
 
 `auto` 和 `auto-instant` 只使用 Fireworks open models，因此您的 Fireworks API 金鑰是它們唯一需要的憑證。`firerouter/auto` 和 `firerouter/auto-instant` 的運作方式也相同。請參閱 [範例路由器 ID](https://docs.fireworks.ai/nexus/firerouter#example-router-ids) 以取得更多路由
 
-完整資源路徑可在每個 LiteLLM 版本上使用。短版 `firerouter` ID 需要 v1.104.0-rc.1 或更新版本，而短版 `auto` 和 `auto-instant` ID 需要 v1.105.0 或更新版本。在較舊版本中，短 ID 會以模型路徑傳送，而 Fireworks 會回傳 404，因此請在那裡使用完整路徑
+完整資源路徑可在每個 LiteLLM 版本上使用。短版 `firerouter` ID 可於 <SinceVersion v="1.104.0" /> 使用（最早出現於 `v1.104.0-rc.1`），而短版 `auto` 和 `auto-instant` ID 可於 <SinceVersion v="1.105.0" /> 使用。在較舊版本中，短 ID 會以模型路徑傳送，而 Fireworks 會回傳 404，因此請在那裡使用完整路徑
 
 ```yaml
 model_list:
@@ -296,6 +296,73 @@ print(response)
 </TabItem>
 </Tabs>
 
+## 決策（System One） {#decisions-system-one}
+
+Fireworks 在 `https://api.fireworks.ai/inference/v1/systemone` 上提供其決策模型 `accounts/fireworks/routers/rune`。它目前為私人預覽，請洽您的 Fireworks 客戶團隊啟用；他們提供的模型名稱可能不同。LiteLLM 在 [`/v1/systemone` 與 `/v1/decisions`](../decisions.md) 兩個路徑上提供它：System One 路由會將 `state` 加上 `questions` 的請求主體原樣轉送，而 OpenAI 格式路由則會轉換為相同的請求。此模型僅接受文字，並依輸入 tokens 計費，`cached_input_tokens` 的費率較低，LiteLLM 會將其記錄為快取 tokens 以進行成本追蹤
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python
+import os
+from litellm import systemone
+
+os.environ["FIREWORKS_AI_API_KEY"] = "YOUR_API_KEY"
+
+response = systemone(
+    model="fireworks_ai/accounts/fireworks/routers/rune",
+    state={"tool_name": "Bash", "tool_input": "rm -rf ./build", "user_request": "clean the build dir"},
+    questions={
+        "allowed": {"type": "noul", "instructions": "Is this tool call safe to run without asking the user?"},
+        "risk": {"type": "score", "instructions": "How risky is this tool call?", "criteria": ["none", "low", "medium", "high"]},
+    },
+)
+print(response.answers)
+```
+
+</TabItem>
+<TabItem value="proxy" label="PROXY">
+
+```yaml
+model_list:
+  - model_name: rune
+    litellm_params:
+      model: fireworks_ai/accounts/fireworks/routers/rune
+      api_key: os.environ/FIREWORKS_AI_API_KEY
+```
+
+```bash
+curl http://0.0.0.0:4000/v1/systemone \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "rune",
+    "state": {"tool_name": "Bash", "tool_input": "rm -rf ./build", "user_request": "clean the build dir"},
+    "questions": {
+      "allowed": {"type": "noul", "instructions": "Is this tool call safe to run without asking the user?"}
+    }
+  }'
+```
+
+同一個部署也會在 `/v1/decisions` 上回應 OpenAI 格式的請求：
+
+```bash
+curl http://0.0.0.0:4000/v1/decisions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "rune",
+    "input": "Customer wrote: the package arrived late and damaged, I want my money back.",
+    "questions": [
+      {"type": "predicate", "name": "refund", "instructions": "Does the customer ask for a refund?"},
+      {"type": "choice", "name": "tone", "instructions": "What is the tone?", "choices": [{"value": "angry"}, {"value": "neutral"}, {"value": "positive"}]}
+    ]
+  }'
+```
+
+</TabItem>
+</Tabs>
+
 ## Responses API {#responses-api}
 
 `fireworks_ai/` 在 `/v1/responses` 上的模型會直接送往 Fireworks 的原生 `https://api.fireworks.ai/inference/v1/responses` 端點，因此 MCP 工具（`"type": "mcp"`）、`previous_response_id`，以及 reasoning output items 等伺服器端功能，運作方式都與直接對 Fireworks 使用時相同
@@ -368,7 +435,7 @@ curl http://0.0.0.0:4000/v1/responses \
 
 多回合工具呼叫的運作方式與直接對 Fireworks 使用時相同：將 `function_call_output` items 與 Fireworks 回傳的 `previous_response_id` 一併送回，Fireworks 就會在伺服器端繼續對話
 
-`developer` input items 會以 `system` messages 的形式送往 Fireworks，因為 Fireworks 的 Responses API 在 kimi-k3 和 qwen3.8 等模型上沒有 developer role。其 chat template 需要 system message 先出現的模型（qwen3.8）仍會拒絕放在第一個 input item 之後的 developer item，和直接呼叫時的行為相同
+`developer` input items 不會以 messages 的形式送往 Fireworks，因為 Fireworks 的 Responses API 在 kimi-k3 和 qwen3.8 等模型上沒有 developer role。LiteLLM 會將請求的 `instructions`、開頭的 `system` 與 `developer` items，以及後續每一個文字 `developer` item 併入頂層的 `instructions` 欄位，因此其 chat template 需要 system message 先出現的模型（qwen3.8）可以接受放在第一個 input item 之後的 developer item。在其 `model_info` 中宣告 `supports_mid_conversation_system: true` 的部署，則會改為將每個 `developer` item 以 `system` item 的形式就地送出。同一個請求若透過 chat completions 橋接（`use_chat_completions_api: true`）送出，則遵循 [developer role](../completion/developer_role.md) 規則，該規則只會為宣告 `supports_mid_conversation_system: false` 的模型移動後置的 `developer` message
 
 ## 文件內嵌  {#document-inlining}
 
@@ -525,6 +592,48 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 </TabItem>
 </Tabs>
 
+## 使用者與工作階段歸屬 {#user-and-session-attribution}
+
+當 LiteLLM 在每個請求上送出兩個識別碼時，Fireworks 可以區分共用同一個 Fireworks API 金鑰背後的開發人員
+
+| 識別碼 | LiteLLM 來源 | 送往 Fireworks 的形式 |
+|---|---|---|
+| 使用者 id | 發出請求的虛擬金鑰的 `user_id` | 請求主體中的 `user` 欄位 |
+| 工作階段 id | `x-litellm-session-id` 標頭、`litellm_session_id` 或 `metadata.session_id` | `x-session-affinity` 標頭 |
+
+### 工作階段 id {#session-id}
+
+`fireworks_ai/` 部署會在 `/v1/chat/completions`（含串流）、`/v1/responses` 和 `/v1/messages` 上將工作階段 id 以 `x-session-affinity` 送出，因此同一個工作階段中的每個請求都會到達同一個 Fireworks 複本，並重用其提示詞快取。無需任何設定
+
+```bash
+curl http://0.0.0.0:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_KEY" \
+  -H "x-litellm-session-id: my-session-1" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "fireworks-glm-5p2", "messages": [{"role": "user", "content": "hi"}]}'
+```
+
+當請求沒有工作階段 id，或 proxy 因 `general_settings.missing_session_id` 而產生了一個時，不會送出 `x-session-affinity` 標頭。用戶端若送出自己的 `x-session-affinity` 標頭，則保留該值。對於位於 `openai/` 前綴之後的 Fireworks 模型，請在該部署的 `litellm_params` 中設定 `provider_affinity_header: x-session-affinity`
+
+### 使用者 id {#user-id}
+
+在部署上設定 `fireworks_forward_user_id: true`，即可將 LiteLLM 使用者 id 以 Fireworks 的 `user` 欄位送出。由於使用者 id 通常是電子郵件地址，因此預設為關閉
+
+```yaml
+model_list:
+  - model_name: fireworks-glm-5p2
+    litellm_params:
+      model: fireworks_ai/glm-5p2
+      api_key: "os.environ/FIREWORKS_AI_API_KEY"
+      fireworks_forward_user_id: true
+```
+
+若要從管理員 UI 啟用，請在 Models 頁面開啟該模型，點擊 **Edit Settings**，並將 `"fireworks_forward_user_id": true` 加入 **LiteLLM Params**
+
+它適用於 `fireworks_ai/` 部署上的 `/v1/chat/completions`（含串流）、`/v1/responses` 和 `/v1/messages`。其值為虛擬金鑰的 `user_id`，因此共用同一個 Fireworks API 金鑰的兩位開發人員會顯示為兩位使用者，而以主金鑰發出的請求則送出 proxy 管理員 id `default_user_id`。Fireworks 會在 `/v1/responses` 回覆中回傳 `user`，因此開發人員可以在那裡看到自己的使用者 id
+
+LiteLLM 使用者 id 會取代用戶端送出的任何 `user`（以及 `/v1/messages` 上的 `metadata.user_id`），也會取代 `litellm_settings.overwrite_user_with_key_hash` 原本會送出的金鑰雜湊，而且請求若試圖自行設定 `fireworks_forward_user_id` 會被拒絕，因此開發人員無法變更自己的歸屬。當金鑰沒有 `user_id` 時，LiteLLM 會保持請求原樣，用戶端提供的 `user` 仍會被轉送。若要防止這類金鑰自行選擇 `user`，請同時設定 `litellm_settings.overwrite_user_with_key_hash: true`，它會為這類金鑰送出金鑰雜湊，而具有 `user_id` 的金鑰仍送出使用者 id
+
 ## 支援的模型 - 支援所有 Fireworks AI 模型！ {#supported-models---all-fireworks-ai-models-supported}
 
 :::info
@@ -541,6 +650,17 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 | gpt-oss-120b | `completion(model="fireworks_ai/gpt-oss-120b", messages)` |
 
 上表僅列出少數常見模型。完整且最新的模型與路由器清單，請參閱 [Fireworks 模型程式庫](https://fireworks.ai/models)。
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`fireworks_ai/<family>-latest` 名稱會跟隨某個模型家族，隨著 LiteLLM 將它們移至較新的模型，您的應用程式可以保持同一個模型字串。您可以像使用任何其他 Fireworks AI 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型送往 Fireworks AI，並依該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱 [最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `fireworks_ai/kimi-latest` | Kimi |
+| `fireworks_ai/minimax-latest` | MiniMax |
 
 ## 支援的嵌入模型 {#supported-embedding-models}
 

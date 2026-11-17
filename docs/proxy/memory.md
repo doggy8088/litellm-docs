@@ -5,7 +5,9 @@ import TabItem from '@theme/TabItem';
 
 儲存使用者偏好與回饋，讓您的 LLM 能在不同工作階段之間記住它們。依使用者與團隊進行範圍劃分，並內建存取控制。
 
-**需要：** 已連接 PostgreSQL 的 LiteLLM `v1.83.10+`。無需變更設定。
+<SinceVersion v="1.83.10" />
+
+**需要：** 已連接 PostgreSQL。無需變更設定。
 
 ### 建立 {#create}
 

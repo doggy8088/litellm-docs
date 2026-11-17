@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 AWS Polly 文字轉語音"
+sidebar_label: "AWS Polly 文字轉語音 (tts)"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道執行 AWS Polly 文字轉語音。選擇 Polly 引擎與語音、傳送 SSML，並將 OpenAI 語音名稱對應至 Polly。"
+---
+
 # AWS Polly 文字轉語音 (tts) {#aws-polly-text-to-speech-tts}
 
 ## 概覽 {#overview}

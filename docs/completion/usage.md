@@ -46,7 +46,10 @@ completion = completion(
 )
 
 for chunk in completion:
-  print(chunk.choices[0].delta)
+  if chunk.choices:
+    print(chunk.choices[0].delta)
+  else:
+    print(chunk.usage)
 
 ```
 
@@ -95,3 +98,35 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 ```
 
 將會自動在回應中收到 usage 資訊，而無需明確包含 `stream_options`。
+
+### Proxy：在串流使用量中包含成本 {#proxy-include-cost-in-streaming-usage}
+
+`/v1/chat/completions` 與 `/v1/responses` 的串流會在最終的 `usage` 物件中攜帶 `cost`。`/v1/messages` 以及 Anthropic 與 OpenAI 的傳遞（pass-through）路由則不會，除非開啟下方兩個開關之一。兩者都會將 `cost` 加入攜帶 usage 的串流事件（在 `/v1/messages` 上為 `message_delta`），且該數字與 LiteLLM 寫入 `LiteLLM_SpendLogs` 的支出相同。
+
+#### 設定 {#configuration-1}
+
+全域開關適用於 proxy 提供的每一個串流：
+
+```yaml
+litellm_settings:
+  include_cost_in_streaming_usage: true
+```
+
+逐請求的開關是 `x-litellm-include-cost-in-streaming-usage: true` header。它只對攜帶此 header 的請求生效，因此您的其餘流量仍維持 proxy 在不逐一檢查每個 chunk 時所採用的較輕量串流路徑。只有 `true` 這個值才有效。<SinceVersion v="1.110.0" />
+
+#### 範例 {#example-1}
+
+```bash
+curl -N http://localhost:4000/v1/messages \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "x-litellm-include-cost-in-streaming-usage: true" \
+  -H "content-type: application/json" \
+  -d '{"model": "claude-haiku-4-5", "max_tokens": 16, "stream": true, "messages": [{"role": "user", "content": "hi"}]}'
+```
+
+```text
+event: message_delta
+data: {"type": "message_delta", "delta": {"stop_reason": "max_tokens", ...}, "usage": {"input_tokens": 8, "output_tokens": 16, "cost": 8.8e-05}}
+```
+
+任何能呼叫 proxy 的金鑰都可以送出此 header，且沒有任何金鑰或團隊設定能拒絕它。當只有部分請求需要負擔逐 chunk 的成本時，請將全域開關保持關閉。

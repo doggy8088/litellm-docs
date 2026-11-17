@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 進行 RunwayML 影片生成"
+sidebar_label: "RunwayML - 影片生成"
+description: "透過 LiteLLM 從 Python SDK 或 AI 閘道使用 RunwayML Gen-4 依文字與圖片生成影片。查詢狀態、下載內容並追蹤成本。"
+---
+
 # RunwayML - 影片生成 {#runwayml---video-generation}
 
 LiteLLM 支援 RunwayML 的 Gen-4 影片生成 API，讓您可以從文字提示與圖片生成影片。

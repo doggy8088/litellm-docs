@@ -102,5 +102,5 @@ Deleted Teams 表格提供每個已刪除團隊的詳細資訊：
 
 ## 相關功能 {#related-features}
 
-- [稽核記錄](./multiple_admins.md) - 檢視所有實體變更的稽核記錄
+- [稽核記錄](./audit_logs.md) - 檢視所有實體變更的稽核記錄
 - [UI 記錄](./ui_logs.md) - 檢視請求記錄與支出追蹤

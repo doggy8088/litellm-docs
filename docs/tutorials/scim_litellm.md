@@ -2,7 +2,7 @@ import Image from '@theme/IdealImage';
 
 # LiteLLM 的 SCIM {#scim-with-litellm}
 
-✨ **企業版**：SCIM 支援需要進階授權。
+**企業版**：SCIM 支援需要進階授權。
 
 可讓身分識別提供者（Okta、Azure AD、OneLogin 等）在 LiteLLM 上自動化使用者與團隊（群組）的佈建、更新與取消佈建。
 
@@ -99,7 +99,7 @@ LiteLLM 依下列順序評估潛在衝突：
 
 ## 指派代理閘道管理員角色 {#assigning-the-proxy-admin-role}
 
-預設情況下，新配置的 SCIM 使用者會取得 `litellm_settings.default_internal_user_params.user_role` 中設定的角色。若未設定角色，LiteLLM 會指派 `internal_user_view_only`。既有使用者會保留其目前角色。
+預設情況下，新配置的 SCIM 使用者會取得 `litellm_settings.default_internal_user_params.user_role` 中設定的角色。若未設定角色，LiteLLM 會指派 `internal_user_viewer`。既有使用者會保留其目前角色。
 
 設定 `scim_admin_group`，透過 SCIM 群組成員資格管理全域角色：
 
@@ -109,6 +109,10 @@ litellm_settings:
 ```
 
 LiteLLM 會將此設定與每個群組的 `value` 和 `display` 名稱進行比對。符合的群組成員會取得 `proxy_admin` 角色；其他所有使用者都會取得上述預設角色。LiteLLM 會在每次 SCIM 寫入時評估此對應，因此從已設定的管理員群組中移除使用者會在下一次同步期間變更該使用者的角色。若未設定 `scim_admin_group`，SCIM 不會修改透過管理員 UI 或管理 API 指派的角色。
+
+## 授與 SCIM 群組 MCP 存取權 {#granting-mcp-access-to-scim-groups}
+
+每個 SCIM 群組都會成為一個 LiteLLM 團隊，因此您可以將 MCP 伺服器或存取群組授與 SCIM 建立的團隊，成員再使用屬於該團隊的金鑰取用它們。SCIM 同步會維持這項授與。群組、角色與權益值即使命名了某個 MCP 存取群組，本身並不會授與 MCP 存取權；操作步驟與背後理由請參閱 [透過 SCIM 佈建的團隊授與 MCP 存取權](../mcp_grant_access#grant-mcp-access-through-scim-provisioned-teams)。
 
 ## 停用與取消配置 {#deactivation-and-deprovisioning}
 

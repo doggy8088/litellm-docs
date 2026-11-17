@@ -319,7 +319,7 @@ router_settings:
     socket_timeout: 10.0
 ```
 
-`REDIS_SOCKET_TIMEOUT` 環境變數（預設 `0.1`）不會變更快取用戶端的逾時設定。LiteLLM 只會將它套用到未明確設定 `socket_timeout` 的 Redis 用戶端，而目前這只會出現在 `litellm/_redis.py` 的 Sentinel 連線路徑中。proxy 的快取用戶端一律會傳入自己的 `socket_timeout`（5.0 秒預設值或您的 `cache_params` 值），而呼叫端的 kwarg 會優先於 `REDIS_*` 環境對應，因此在設定 `REDIS_SOCKET_TIMEOUT` 時，快取用戶端仍會以 5.0 秒執行。協調與路由用戶端也是以相同方式建立，因此也適用相同情況。當快取用戶端也透過 Sentinel 連線時，情況亦然，因為在 Sentinel 預設值原本會套用之前，它的 kwarg 就已經存在。唯一的例外是 `socket_timeout: null` 中的 `cache_params`，它會移除該 kwarg，並讓 `REDIS_SOCKET_TIMEOUT` 通過
+`REDIS_SOCKET_TIMEOUT` 環境變數（預設 `5`）不會變更快取用戶端的逾時設定。LiteLLM 會將它作為備援，套用到其建立的所有未明確設定 `socket_timeout` 的 Redis 用戶端，無論是獨立部署、`REDIS_URL`、叢集或 Sentinel，也無論同步或非同步。proxy 的快取用戶端一律會傳入自己的 `socket_timeout`（5.0 秒預設值或您的 `cache_params` 值），而呼叫端的 kwarg 會優先於 `REDIS_*` 環境對應，因此在設定 `REDIS_SOCKET_TIMEOUT` 時，快取用戶端仍會以 5.0 秒執行。協調與路由用戶端也是以相同方式建立，因此也適用相同情況。唯一的例外是 `cache_params` 中的 `socket_timeout: null`，它會移除該 kwarg，讓用戶端改以 `REDIS_SOCKET_TIMEOUT` 作為備援。`null` 在任何拓撲下都不會關閉逾時，因此若要實際解除此限制，請將 `socket_timeout` 設定為較大的數字。
 
 ## 虛擬金鑰驗證快取（Redis） {#virtual-key-authentication-cache-redis}
 

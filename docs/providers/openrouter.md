@@ -1,7 +1,13 @@
+---
+title: "在 Python 中透過 LiteLLM 使用 OpenRouter API"
+sidebar_label: "OpenRouter"
+description: "呼叫任何 OpenRouter 模型、傳入 transforms 與 route、嵌入文字、以 Gemini 圖片模型建立或編輯圖片，並透過 proxy 存取 Jev 決策模型。"
+---
+
 # OpenRouter {#openrouter}
 LiteLLM 支援來自 [OpenRouter](https://openrouter.ai/docs) 的所有文字／聊天／視覺／嵌入模型
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_OpenRouter.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_OpenRouter.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -47,7 +53,7 @@ response = completion(
 這種做法在管理不同環境（dev、staging、production）之間的設定時提供更高的彈性，也讓在自架與雲端端點之間切換更容易。
 
 ## OpenRouter 補全文本模型 {#openrouter-completion-models}
-🚨 LiteLLM 支援所有 OpenRouter 模型，傳送 `model=openrouter/<your-openrouter-model>` 即可將其送至 open router。請在 [這裡](https://openrouter.ai/models) 查看所有 openrouter 模型
+LiteLLM 支援所有 OpenRouter 模型，傳送 `model=openrouter/<your-openrouter-model>` 即可將其送至 open router。請在 [這裡](https://openrouter.ai/models) 查看所有 openrouter 模型
 
 | 模型名稱                | 函式呼叫                                       |
 |---------------------------|-----------------------------------------------------|
@@ -297,3 +303,65 @@ response = image_edit(
 
 print(response)
 ```
+
+## 決策（Jev） {#decisions-jev}
+
+OpenRouter 在其 Decisions API（`POST https://openrouter.ai/api/alpha/decisions`）上提供 TypeSafe 的 Jev 決策模型，並在 `/chat/completions` 上拒絕這些模型。LiteLLM proxy 可透過兩種方式存取該 API。
+
+### 透過 `/v1/systemone` 與 `/v1/decisions` {#through-v1systemone-and-v1decisions}
+
+將模型以 `openrouter/` 前綴加入您的 `model_list`。該模型便會像其他部署一樣經過 router，因此具備負載平衡、備援與各部署專屬的金鑰，您也可以在 [`/v1/systemone`](../decisions.md#v1systemone) 上以 System One 格式呼叫它，或在 [`/v1/decisions`](../decisions.md#v1decisions) 上以 OpenAI Decisions 格式呼叫。
+
+```yaml showLineNumbers
+model_list:
+  - model_name: jev
+    litellm_params:
+      model: openrouter/typesafe/jev-1.14
+      api_key: os.environ/OPENROUTER_API_KEY
+```
+
+```bash showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/v1/systemone' \
+-H "Authorization: Bearer $LITELLM_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+  "model": "jev",
+  "state": "The sky is blue on a clear day.",
+  "questions": {"blue": {"type": "noul", "instructions": "Is the sky described as blue?"}}
+}'
+```
+
+自 v1.104.3 起，花費為 OpenRouter 回傳的 `usage.cost`。LiteLLM 會將其放在 `x-litellm-response-cost` 標頭中回傳，並寫入花費記錄。較早的版本沒有 `jev-1.14` 的定價，`v1.105.0-rc.3` 與 `v1.106.0` dev 版本也不讀取 `usage.cost`。格式與支援的功能請參閱[決策](../decisions.md)。
+
+### 透過 `/openrouter` pass-through {#through-the-openrouter-pass-through}
+
+`/openrouter/{path}` 會將請求本文按原樣送往 OpenRouter。它送出的金鑰來自 `model_list` 中第一個設定了 `use_in_pass_through: true` 且持有金鑰的 OpenRouter 部署（`openrouter/` 模型或 `custom_llm_provider: openrouter`），金鑰可為其 `api_key` 或其 `litellm_credential_name` 所指的金鑰；若沒有任何部署符合，則來自 `OPENROUTER_API_KEY`。請求一律送往 `OPENROUTER_API_BASE`，不會送往該部署的 `api_base`。當您已有 OpenRouter Decisions 請求本文且不需要路由時，請使用此方式。此功能存在於 v1.104.0 及之後版本，以及 v1.101.1、v1.102.1 與這兩條線的後續修補版本，但不存在於任何 v1.103 版本。
+
+路徑是相對於 `https://openrouter.ai/api`，即去掉尾端 `/v1` 的 `OPENROUTER_API_BASE`。因此 Decisions API 為 `/openrouter/alpha/decisions`。請勿在路徑中加入 `/api`，因為 `/openrouter/api/alpha/decisions` 會被送往 `https://openrouter.ai/api/api/alpha/decisions`，OpenRouter 會以 404 回應。
+
+帶有 `models` 清單的虛擬金鑰，必須將 `typesafe/jev-1.14`（請求本文中的模型名稱）列入該清單，才能呼叫 pass-through。僅有 `model_list` 別名（例如 `jev`）並不足夠，呼叫會得到 403。
+
+```bash showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/openrouter/alpha/decisions' \
+-H "Authorization: Bearer $LITELLM_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+  "model": "typesafe/jev-1.14",
+  "state": "The sky is blue on a clear day.",
+  "questions": {"blue": {"type": "noul", "instructions": "Is the sky described as blue?"}}
+}'
+```
+
+回應
+
+```json
+{
+  "model": "typesafe/jev-1.14-20261014",
+  "answers": {"blue": {"type": "noul", "noul": 0.99}},
+  "usage": {"input_tokens": 282, "output_tokens": 20, "cost": 0.000011844},
+  "id": "gen-dec-1792543634-CgEHGExRXfbzgBwKxiWf",
+  "provider": "TypeSafe"
+}
+```
+
+LiteLLM 會以 OpenRouter 回傳的版本化模型名稱記錄每次 `/alpha/decisions` 呼叫，例如 `openrouter/typesafe/jev-1.14-20261014`。自 v1.104.3 起，花費為回應中的 `usage.cost`，較早的版本沒有 `jev-1.14` 的定價。`v1.105.0` 的 dev 版本與 release candidate 以及 `v1.106.0` 的 dev 版本也不讀取 `usage.cost`。對其他 `/openrouter` 路徑（例如 `/openrouter/v1/chat/completions`）的呼叫會被轉送，但記錄的花費為 $0，因此預算不會將其計入。

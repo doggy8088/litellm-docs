@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM 中使用 Black Forest Labs FLUX 圖像生成"
+sidebar_label: "Black Forest Labs 圖像生成"
+description: "透過 Python SDK 或 AI 閘道，使用 FLUX Pro 1.1、FLUX Pro 1.1 Ultra 與 FLUX Dev 生成圖像，並設定 aspect_ratio、seed 與 safety_tolerance。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

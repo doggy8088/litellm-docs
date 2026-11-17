@@ -1,6 +1,5 @@
 ---
 title: Codex (ChatGPT Desktop)
-sidebar_label: Codex (ChatGPT Desktop)
 ---
 
 import Image from '@theme/IdealImage';
@@ -23,7 +22,7 @@ import Image from '@theme/IdealImage';
 |---|---|
 | 設定檔 | `~/.codex/config.toml`（與 CLI 共用） |
 | `base_url` | `<LITELLM_PROXY_BASE_URL>/v1`（例如 `http://localhost:4000/v1`） |
-| 提供者金鑰 | 您的 LiteLLM [虛擬金鑰](../virtual_keys.md)，從 `env_key` 中命名的環境變數讀取，或使用 `lite auth print-token` 命令（請參閱 [Codex CLI SSO](./codex_cli.md#sign-in-with-litellm-sso)） |
+| 提供者金鑰 | 您的 LiteLLM [虛擬金鑰](../virtual_keys.md)，從 `env_key` 中命名的環境變數讀取，或使用 `lite auth print-token` 命令（請參閱 [Codex Desktop SSO](./codex_chatgpt_desktop_sso.md)） |
 | MCP 端點 | `<LITELLM_PROXY_BASE_URL>/<server_name>/mcp` |
 | MCP 驗證 | 相同的虛擬金鑰，從 `bearer_token_env_var` 中命名的環境變數讀取 |
 
@@ -56,7 +55,7 @@ LITELLM_API_KEY=sk-<your-virtual-key>
 
 將預留位置替換為您的虛擬金鑰，將此檔案保密，並在變更後重新啟動應用程式。現有使用 `launchctl setenv LITELLM_API_KEY <your-key>` 的 macOS 設定可以繼續透過該方式提供此變數。
 
-您可以透過使用 [`auth` 命令](./codex_cli.md#sign-in-with-litellm-sso) 取代 `env_key` 來略過 `.env`，因為應用程式會執行相同的輔助程式
+您可以透過使用 [`auth` 命令](./codex_chatgpt_desktop_sso.md) 取代 `env_key` 來略過 `.env`，因為應用程式會執行相同的輔助程式
 
 ### 2. 在 ChatGPT Desktop 中啟動 Codex {#2-launch-codex-in-chatgpt-desktop}
 
@@ -70,7 +69,9 @@ LITELLM_API_KEY=sk-<your-virtual-key>
 
 ## MCP 設定 {#mcp-setup}
 
-### 1. 設定閘道伺服器 {#1-configure-the-gateway-server}
+**先決條件：** 一個[已在 LiteLLM 上註冊的 MCP 伺服器](../../mcp.md#adding-your-mcp)，以及一把可[存取該伺服器](../../mcp_control.md)的虛擬金鑰。
+
+### 1. 新增 MCP 連線 {#1-configure-the-gateway-server}
 
 MCP 是在相同的 `~/.codex/config.toml` 中設定，因此 [CLI 的 MCP 設定](./codex_cli.md#mcp-setup) 可直接套用且不需變更。新增：
 

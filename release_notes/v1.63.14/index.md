@@ -1,5 +1,6 @@
 ---
-title: v1.63.14-stable
+title: "LiteLLM v1.63.14-stable"
+description: "新增 Bedrock application inference profiles、在 /v1/completions 上的 Ollama 呼叫，以及透過 websocket 的串流防護欄。並加快路由速度。"
 slug: v1.63.14-stable
 date: 2025-03-22T10:00:00
 authors:

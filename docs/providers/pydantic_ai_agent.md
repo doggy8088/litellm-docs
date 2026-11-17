@@ -1,3 +1,9 @@
+---
+title: "LiteLLM A2A Gateway 上的 Pydantic AI Agents"
+sidebar_label: "Pydantic AI Agents"
+description: "透過 LiteLLM A2A Gateway 呼叫 Pydantic AI 代理程式：以 to_a2a() 公開代理程式、在 Agents 下新增、在 Playground 中測試並傳送訊息。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -31,7 +37,7 @@ uv add pydantic-ai fasta2a uvicorn
 ```python title="agent.py"
 from pydantic_ai import Agent
 
-agent = Agent('openai:gpt-4o-mini', instructions='Be helpful!')
+agent = Agent('openai:{{openai_small}}', instructions='Be helpful!')
 
 @agent.tool_plain
 def get_weather(city: str) -> str:

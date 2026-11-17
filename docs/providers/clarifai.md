@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Clarifai API：Python SDK 與閘道"
+sidebar_label: "Clarifai"
+description: "透過 LiteLLM Python SDK 或 AI 閘道，使用託管於 Clarifai 的 gpt-oss、GPT-5、Claude、Grok、Gemini 與 Qwen 模型，並支援串流與工具呼叫。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -97,7 +103,7 @@ print(response.choices[0].message.tool_calls)
 ## Clarifai 模型 {#clarifai-models}
 liteLLM 支援 [Clarifai community](https://clarifai.com/explore/models?filterData=%5B%7B%22field%22%3A%22use_cases%22%2C%22value%22%3A%5B%22llm%22%5D%7D%5D&page=1&perPage=24) 上的所有模型
 
-### 🧠 OpenAI 模型 {#-openai-models}
+### OpenAI 模型 {#openai-models}
 - [gpt-oss-20b](https://clarifai.com/openai/chat-completion/models/gpt-oss-20b)
 - [gpt-oss-120b](https://clarifai.com/openai/chat-completion/models/gpt-oss-120b)
 - [gpt-5-nano](https://clarifai.com/openai/chat-completion/models/gpt-5-nano)
@@ -107,14 +113,14 @@ liteLLM 支援 [Clarifai community](https://clarifai.com/explore/models?filterDa
 - [o3](https://clarifai.com/openai/chat-completion/models/o3)
 - 更多...
 
-### 🤖 Anthropic 模型 {#-anthropic-models}
+### Anthropic 模型 {#anthropic-models}
 - [claude-sonnet-4](https://clarifai.com/anthropic/completion/models/claude-sonnet-4)
 - [claude-opus-4](https://clarifai.com/anthropic/completion/models/claude-opus-4)
 - [claude-3_5-haiku](https://clarifai.com/anthropic/completion/models/claude-3_5-haiku)
 - [claude-3_7-sonnet](https://clarifai.com/anthropic/completion/models/claude-3_7-sonnet)
 - 更多...
 
-### 🪄 xAI 模型 {#-xai-models}
+### xAI 模型 {#xai-models}
 - [grok-3](https://clarifai.com/xai/chat-completion/models/grok-3)
 - [grok-2-vision-1212](https://clarifai.com/xai/chat-completion/models/grok-2-vision-1212)
 - [grok-2-1212](https://clarifai.com/xai/chat-completion/models/grok-2-1212)
@@ -122,14 +128,14 @@ liteLLM 支援 [Clarifai community](https://clarifai.com/explore/models?filterDa
 - [grok-2-image-1212](https://clarifai.com/xai/image-generation/models/grok-2-image-1212)
 - 更多...
 
-### 🔷 Google Gemini 模型 {#-google-gemini-models}
+### Google Gemini 模型 {#google-gemini-models}
 - [gemini-2_5-pro](https://clarifai.com/gcp/generate/models/gemini-2_5-pro)
 - [gemini-2_5-flash-lite](https://clarifai.com/gcp/generate/models/gemini-2_5-flash-lite)
 - [gemini-2_0-flash](https://clarifai.com/gcp/generate/models/gemini-2_0-flash)
 - [gemini-2_0-flash-lite](https://clarifai.com/gcp/generate/models/gemini-2_0-flash-lite)
 - 更多...
 
-### 🧩 Qwen 模型 {#-qwen-models}
+### Qwen 模型 {#qwen-models}
 - [Qwen3-30B-A3B-Instruct-2507](https://clarifai.com/qwen/qwenLM/models/Qwen3-30B-A3B-Instruct-2507)
 - [Qwen3-30B-A3B-Thinking-2507](https://clarifai.com/qwen/qwenLM/models/Qwen3-30B-A3B-Thinking-2507)
 - [Qwen3-14B](https://clarifai.com/qwen/qwenLM/models/Qwen3-14B)
@@ -138,22 +144,22 @@ liteLLM 支援 [Clarifai community](https://clarifai.com/explore/models?filterDa
 - [Qwen3-Coder-30B-A3B-Instruct](https://clarifai.com/qwen/qwenCoder/models/Qwen3-Coder-30B-A3B-Instruct)
 - 更多...
 
-### 💡 MiniCPM（OpenBMB）模型 {#-minicpm-openbmb-models}
+### MiniCPM（OpenBMB）模型 {#minicpm-openbmb-models}
 - [MiniCPM-o-2_6-language](https://clarifai.com/openbmb/miniCPM/models/MiniCPM-o-2_6-language)
 - [MiniCPM3-4B](https://clarifai.com/openbmb/miniCPM/models/MiniCPM3-4B)
 - [MiniCPM4-8B](https://clarifai.com/openbmb/miniCPM/models/MiniCPM4-8B)
 - 更多...
 
-### 🧬 Microsoft Phi 模型 {#-microsoft-phi-models}
+### Microsoft Phi 模型 {#microsoft-phi-models}
 - [Phi-4-reasoning-plus](https://clarifai.com/microsoft/text-generation/models/Phi-4-reasoning-plus)
 - [phi-4](https://clarifai.com/microsoft/text-generation/models/phi-4)
 - 更多...
 
-### 🦙 Meta Llama 模型 {#-meta-llama-models}
+### Meta Llama 模型 {#meta-llama-models}
 - [Llama-3_2-3B-Instruct](https://clarifai.com/meta/Llama-3/models/Llama-3_2-3B-Instruct)
 - 更多...
 
-### 🔍 DeepSeek 模型 {#-deepseek-models}
+### DeepSeek 模型 {#deepseek-models}
 - [DeepSeek-R1-0528-Qwen3-8B](https://clarifai.com/deepseek-ai/deepseek-chat/models/DeepSeek-R1-0528-Qwen3-8B)
 - 更多...
 

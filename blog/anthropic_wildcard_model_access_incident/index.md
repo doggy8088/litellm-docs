@@ -132,7 +132,7 @@ def add_known_models(model_cost_map: Optional[Dict] = None):
 | 1 | 在週期性重新載入路徑中呼叫 `add_known_models(model_cost_map=...)` | ✅ 完成 | [`proxy_server.py#L4393`](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/proxy_server.py#L4393) |
 | 2 | 在 `add_known_models(model_cost_map=...)` 端點中呼叫 `/reload/model_cost_map` | ✅ 完成 | [`proxy_server.py#L11904`](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/proxy_server.py#L11904) |
 | 3 | 更新 `add_known_models()`，使其接受明確的 map 參數 | ✅ 完成 | [`__init__.py#L617`](https://github.com/BerriAI/litellm/blob/main/litellm/__init__.py#L617) |
-| 4 | 回歸測試：`add_known_models(model_cost_map=...)` 會填入提供者集合 | ✅ 完成 | [`test_auth_checks.py`](https://github.com/BerriAI/litellm/blob/main/tests/proxy_unit_tests/test_auth_checks.py) |
-| 5 | 回歸測試：`anthropic/*` 萬用字元在重新載入後可正確授予/拒絕存取 | ✅ 完成 | [`test_auth_checks.py`](https://github.com/BerriAI/litellm/blob/main/tests/proxy_unit_tests/test_auth_checks.py) |
+| 4 | 回歸測試：`add_known_models(model_cost_map=...)` 會填入提供者集合 | ✅ 完成 | [`test_auth_checks.py`](https://github.com/BerriAI/litellm/blob/main/tests/unit/proxy/auth/test_auth_checks.py) |
+| 5 | 回歸測試：`anthropic/*` 萬用字元在重新載入後可正確授予/拒絕存取 | ✅ 完成 | [`test_auth_checks.py`](https://github.com/BerriAI/litellm/blob/main/tests/unit/proxy/auth/test_auth_checks.py) |
 
 ---

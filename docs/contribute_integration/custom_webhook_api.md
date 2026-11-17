@@ -100,7 +100,7 @@ curl -L -X POST 'http://0.0.0.0:4000/chat/completions' \
 如果您要新增一個整合，請在 `observability` 資料夾下為它新增文件：
 
 - 在 `docs/my-website/docs/observability/<your_integration>_integration.md` 建立新檔案
-- 遵循既有整合文件的格式，例如 [Langsmith Integration](https://github.com/BerriAI/litellm/blob/main/docs/my-website/docs/observability/langsmith_integration.md)
+- 遵循既有整合文件的格式，例如 [Langsmith Integration](https://docs.litellm.ai/docs/observability/langsmith_integration)
 - 包含：快速開始、SDK 用法、Proxy 用法，以及任何進階設定選項
 
 5. 提交 PR！

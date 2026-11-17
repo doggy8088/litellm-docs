@@ -1,5 +1,6 @@
 ---
-title: "v1.102.1 - Claude Code 自動模式、即時連線交握錯誤、OTEL 中繼資料與 TypeSafe Jev"
+title: "LiteLLM v1.102.1 - Claude Code 自動模式、即時連線交握錯誤、OTEL 中繼資料與 TypeSafe Jev"
+description: "讓 Claude Code 自動模式可透過閘道運作。另將遭拒的即時交握回報給用戶端，並提升巢狀 OTEL 呼叫端中繼資料。"
 slug: "v1-102-1"
 date: 2026-09-23T06:12:28
 authors:

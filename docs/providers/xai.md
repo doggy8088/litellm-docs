@@ -1,7 +1,15 @@
+---
+title: "透過 LiteLLM 使用 xAI Grok API：Python SDK 與 Gateway"
+sidebar_label: "xAI"
+description: "以 low、medium 或 high reasoning effort 呼叫 xAI Grok 4.5，支援 vision 輸入、JSON 回應、串流與 grok-latest 別名，並讀取 reasoning tokens。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # xAI {#xai}
+
+xAI 打造了 Grok 模型；LiteLLM 透過 Python SDK 或 AI Gateway 以 `xai/` 前綴呼叫每一個 xAI 模型，支援串流、vision 與 reasoning。
 
 https://docs.x.ai/docs
 
@@ -45,6 +53,16 @@ response = completion(
 # env variable
 os.environ['XAI_API_KEY']
 ```
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`xai/<family>-latest` 名稱會跟隨某個模型家族，當 LiteLLM 將它們移至較新的模型時，您的應用程式可以維持使用同一個模型字串。您可以像使用其他任何 xAI 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 xAI，並依該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `xai/grok-latest` | Grok |
 
 ## 範例用法 {#sample-usage}
 

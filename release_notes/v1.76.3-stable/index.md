@@ -1,5 +1,6 @@
 ---
-title: "v1.76.3-stable - 效能、影片生成與 CloudZero 整合"
+title: "LiteLLM v1.76.3-stable - 效能、影片生成與 CloudZero 整合"
+description: "為 Google AI Studio 與 Vertex AI 新增 Veo 影片生成、CloudZero 花費匯出整合，以及透過 worker 設定帶來的 400 RPS 提升。"
 slug: "v1-76-3"
 date: 2025-09-06T10:00:00
 authors:

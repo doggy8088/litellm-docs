@@ -1,3 +1,9 @@
+---
+title: "FriendliAI API 與 LiteLLM：設定與模型"
+sidebar_label: "FriendliAI"
+description: "從 LiteLLM Python SDK 呼叫 Llama 3.1 8B 與 70B Instruct 或任何其他 FriendliAI 模型，透過 friendliai/ 路由進行一般與串流聊天。"
+---
+
 # FriendliAI {#friendliai}
 
 :::info

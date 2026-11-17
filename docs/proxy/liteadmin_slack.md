@@ -14,7 +14,7 @@ import TabItem from '@theme/TabItem';
 
 先安裝 Slack app，然後從下方選擇一種部署方式。**Enterprise** 使用隨您的 gateway 一起封裝的 worker 及其既有的 SSO。**Standalone** 會執行一個獨立的 agent 服務，並使用自己的 HTTPS 位址與登入設定
 
-若要將 Claude Code 或 Codex 連接到 Enterprise 部署上的 MCP endpoint，請參閱 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md)。該指南涵蓋 `/admin/mcp` 在整合式與組件化映像中的設定；本頁面則設定 Slack agent worker
+若要將 Claude Code 或 Codex 連接到 Enterprise 部署上的 MCP endpoint，請參閱 [在 Enterprise 上部署 LiteAdmin MCP](./liteadmin_mcp_enterprise.md)。該指南涵蓋 `/admin/mcp` 在單體與獨立服務部署中的設定。本頁面則設定 Slack agent worker
 
 ## 開始之前 {#before-you-start}
 
@@ -133,7 +133,7 @@ python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 <Tabs groupId="liteadmin-native-deployment">
 <TabItem value="helm" label="Kubernetes / Helm" default>
 
-請使用包含此整合的 LiteLLM checkout 中的 `helm/litellm-helm` chart。請保留您現有的 gateway values，包括 Enterprise 授權、資料庫與 SSO 設定
+請使用包含此整合的 [LiteLLM chart](./deploy/helm.md) 版本。請保留您現有的 gateway values，包括 Enterprise 授權、資料庫與 SSO 設定
 
 透過您平常的 secret 管理流程，在 gateway 的 namespace 中建立名為 `liteadmin-slack` 的 Secret。它必須包含上方 **儲存 worker 的憑證** 中的五個設定。若為手動安裝，請只將這些設定儲存在私有的 `liteadmin-secrets.env` 檔案中，然後執行：
 
@@ -162,14 +162,13 @@ liteadmin:
   readOnly: true
 ```
 
-請將映像替換為包含此整合的 build。將 `gatewayUrl` 與 `model` 設為您的 gateway URL 與模型名稱。若您的叢集需要特定的儲存類別，請在 `liteadmin` 下使用 `storageClassName`
+請將映像替換為包含此整合的 build。此共用映像也會執行 gateway、backend、UI 與 migrations。將 `gatewayUrl` 與 `model` 設為您的 gateway URL 與模型名稱。若您的叢集需要特定的儲存類別，請在 `liteadmin` 下使用 `storageClassName`
 
 將設定套用到您現有的 release。請將 `litellm` 替換為您的 release 名稱，並將 `gateway-values.yaml` 替換為您已使用的 values 檔案：
 
 ```bash
 export LITELLM_RELEASE=litellm
-helm dependency build ./helm/litellm-helm
-helm upgrade "$LITELLM_RELEASE" ./helm/litellm-helm \
+helm upgrade "$LITELLM_RELEASE" ./litellm/deploy/helm/litellm \
   --namespace "$LITELLM_NAMESPACE" \
   -f gateway-values.yaml \
   -f liteadmin-values.yaml
@@ -185,7 +184,7 @@ Gateway autoscaling 不會擴縮 worker。請將 worker 維持為 1 個副本，
 從包含此整合的 LiteLLM checkout 中，建置映像或使用包含它的已發布 build：
 
 ```bash
-docker build -t litellm-native-admin:local .
+docker build -f litellm/deploy/docker/Dockerfile -t litellm-native-admin:local .
 ```
 
 保留您現有的閘道 `.env` 和 Compose 設定，包括其授權、資料庫、模型與 SSO 設定。將 worker 設定儲存在另一個私密檔案中：
@@ -209,7 +208,8 @@ ADMIN_READ_ONLY=true
 ```bash
 chmod 600 liteadmin.env
 docker compose --env-file .env --env-file liteadmin.env \
-  -f docker-compose.yml -f docker-compose.liteadmin.yml up -d
+  -f litellm/deploy/compose/docker-compose.yml \
+  -f litellm/deploy/compose/docker-compose.liteadmin.yml up -d
 ```
 
 使用 Docker Compose v2。將 worker 憑證保留在 `liteadmin.env`；基礎閘道設定會載入其自己的 `.env`。overlay 會以 `--admin-agent` 啟動相同映像、在閘道上設定私有 worker 位址，並建立 `liteadmin_state` 磁碟區。它不會公開任何 worker 連接埠
@@ -240,7 +240,8 @@ kubectl --namespace "$LITELLM_NAMESPACE" exec \
 
 ```bash
 docker compose --env-file .env --env-file liteadmin.env \
-  -f docker-compose.yml -f docker-compose.liteadmin.yml \
+  -f litellm/deploy/compose/docker-compose.yml \
+  -f litellm/deploy/compose/docker-compose.liteadmin.yml \
   exec liteadmin /opt/liteadmin/bin/python -c \
   "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:10000/readyz').read().decode())"
 ```

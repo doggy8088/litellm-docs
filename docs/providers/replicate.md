@@ -1,3 +1,9 @@
+---
+title: "Replicate API 與 LiteLLM：Python SDK 與閘道"
+sidebar_label: "Replicate"
+description: "在 Replicate 或您自己的 Replicate 部署上呼叫 Llama 3、Llama 2 與 Mistral，設定自訂提示詞範本，並傳入 seed、min_tokens 與 top_k。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

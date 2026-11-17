@@ -10,25 +10,25 @@ import Image from '@theme/IdealImage';
 
 <Image img={require('../../img/bench_llm.png')} />
 
-## 設定： {#setup}
-```
-git clone https://github.com/BerriAI/litellm
-```
-cd 到 `litellm/cookbook/benchmark` 目錄
+## 設定 {#setup}
 
-位置如下：
-https://github.com/BerriAI/litellm/tree/main/cookbook/benchmark
-```
-cd litellm/cookbook/benchmark
+[已封存的基準測試範例](https://github.com/BerriAI/litellm/tree/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/benchmark) 已自 `main` 移除。進入其目錄前，請先 checkout 該封存 commit：
+
+```bash
+git clone https://github.com/BerriAI/litellm.git
+cd litellm
+git checkout 89a6b5fbb26b632ef0faf633b0d3cf317d73deaa
+cd cookbook/benchmark
 ```
 
 ### 安裝相依套件 {#install-dependencies}
 ```
-uv add litellm click tqdm tabulate termcolor
+uv venv
+uv pip install litellm click tqdm tabulate termcolor
 ```
 
 ### 設定 - 在 benchmark.py 中設定 LLM API 金鑰 + LLM {#configuration---set-llm-api-keys--llms-in-benchmarkpy}
-在 `benchmark/benchmark.py` 中選擇您的 LLM、LLM API 金鑰與問題
+在 `benchmark.py` 中選擇您的 LLM、LLM API 金鑰與問題
 
 支援的 LLM：https://docs.litellm.ai/docs/providers
 
@@ -50,7 +50,7 @@ questions = [
 
 ## 執行 benchmark.py {#run-benchmarkpy}
 ```
-python3 benchmark.py
+uv run --no-project python benchmark.py
 ```
 
 ## 預期輸出 {#expected-output}
@@ -83,7 +83,7 @@ Benchmark Results for 'When will BerriAI IPO?':
 +-----------------+----------------------------------------------------------------------------------+---------------------------+------------+
 ```
 ## 支援 {#support}
-**🤝 預約 1 對 1 會議：** 與創辦人 Krrish 和 Ishaan 預約一場 [1 對 1 會議](https://enterprise.litellm.ai/demo)，討論任何問題、提供意見回饋，或探索我們如何為您改進 LiteLLM。
+**預約 1 對 1 會議：** 與創辦人 Krrish 和 Ishaan 預約一場 [1 對 1 會議](https://enterprise.litellm.ai/demo)，討論任何問題、提供意見回饋，或探索我們如何為您改進 LiteLLM。
 
 {/* 
 ## 前置需求： {#pre-requisites}

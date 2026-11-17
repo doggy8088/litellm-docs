@@ -1,5 +1,6 @@
 ---
-title: "v1.75.5-stable - Redis 延遲改善"
+title: "LiteLLM v1.75.5-stable - Redis 延遲改善"
+description: "將 Redis P99 延遲降低 50%，新增具圖片支援的 Responses API 工作階段管理，並新增 Oracle Cloud Infrastructure 與 Digital Ocean Gradient AI。"
 slug: "v1-75-5"
 date: 2025-08-10T10:00:00
 authors:

@@ -53,18 +53,25 @@ LiteLLM Proxy 是 **與 Vertex AI 相容**：
 
 <TabItem value="openai" label="OpenAI Python v1.0.0+">
 
-將您想傳遞的 `extra_body={"metadata": { }}` 設定為 `metadata`
+在用戶端環境中設定您的閘道 URL 與[虛擬金鑰](./api_key_auth.md)：
+
+```bash
+export LITELLM_PROXY_URL="https://litellm.example.com"
+export LITELLM_API_KEY="<your-virtual-key>"
+```
+
+將 SDK 指向閘道的 `/v1` 基礎 URL，並提供該虛擬金鑰。請將 `my-model` 替換為您的金鑰可使用的已設定模型。下方選用的 `extra_body.metadata` 欄位會將記錄中繼資料附加到請求。
 
 ```python
+import os
 import openai
 client = openai.OpenAI(
-    api_key="anything",
-    base_url="http://0.0.0.0:4000"
+    api_key=os.environ["LITELLM_API_KEY"],
+    base_url=f"{os.environ['LITELLM_PROXY_URL'].rstrip('/')}/v1",
 )
 
-# request sent to model set on litellm proxy, `litellm --model`
 response = client.chat.completions.create(
-    model="{{openai_small}}",
+    model="my-model",
     messages = [
         {
             "role": "user",
@@ -72,7 +79,7 @@ response = client.chat.completions.create(
         }
     ],
     extra_body={ # pass in any provider-specific param, if not supported by openai, https://docs.litellm.ai/docs/completion/input#provider-specific-params
-        "metadata": { # 👈 use for logging additional params (e.g. to langfuse)
+        "metadata": { # use for logging additional params (e.g. to langfuse)
             "generation_name": "ishaan-generation-openai-client",
             "generation_id": "openai-client-gen-id22",
             "trace_id": "openai-client-trace-id22",
@@ -86,7 +93,7 @@ print(response)
 </TabItem>
 <TabItem value="litellm_sdk" label="LiteLLM Python SDK">
 
-[**👉 前往此處**](../providers/litellm_proxy#send-all-sdk-requests-to-litellm-proxy)
+[**前往此處**](../providers/litellm_proxy#send-all-sdk-requests-to-litellm-proxy)
 
 </TabItem>
 <TabItem value="azureopenai" label="AzureOpenAI Python">
@@ -110,7 +117,7 @@ response = client.chat.completions.create(
         }
     ],
     extra_body={ # pass in any provider-specific param, if not supported by openai, https://docs.litellm.ai/docs/completion/input#provider-specific-params
-        "metadata": { # 👈 use for logging additional params (e.g. to langfuse)
+        "metadata": { # use for logging additional params (e.g. to langfuse)
             "generation_name": "ishaan-generation-openai-client",
             "generation_id": "openai-client-gen-id22",
             "trace_id": "openai-client-trace-id22",
@@ -233,7 +240,7 @@ import { ChatOpenAI } from "@langchain/openai";
 const model = new ChatOpenAI({
   modelName: "{{openai_large}}",
   openAIApiKey: "sk-<your-litellm-api-key>",
-  modelKwargs: {"metadata": "hello world"} // 👈 PASS Additional params here
+  modelKwargs: {"metadata": "hello world"} // PASS Additional params here
 }, {
   basePath: "http://0.0.0.0:4000",
 });
@@ -954,7 +961,7 @@ print(result)
 
 ## 與 Vertex、Boto3、Anthropic SDK 搭配使用（原生格式） {#using-with-vertex-boto3-anthropic-sdk-native-format}
 
-👉 **[以下是在原生格式中將 litellm proxy 與 Vertex、boto3、Anthropic SDK 搭配使用的方法](../pass_through/vertex_ai.md)**
+**[以下是在原生格式中將 litellm proxy 與 Vertex、boto3、Anthropic SDK 搭配使用的方法](../pass_through/vertex_ai.md)**
 
 ## 進階 {#advanced}
 

@@ -1,5 +1,6 @@
 ---
-title: "v1.98.1 - Bedrock 上的 Claude Code、GPT 和 Grok，終端使用者預算重設"
+title: "LiteLLM v1.98.1 修復 Bedrock GPT 與 Grok 模型上的 Claude Code"
+description: "修復 Claude Code 模型切換至 Bedrock GPT 與 Grok 模型、移除 Bedrock GPT-6 的思考區塊，並修復終端使用者預算重設。"
 slug: "v1-98-1"
 date: 2026-09-25T06:20:00
 authors:

@@ -1,13 +1,13 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# [舊版 Proxy 👉 [新版 proxy 在這裡](./simple_proxy)] 本機 LiteLLM Proxy Server {#old-proxy--new-proxy-here-local-litellm-proxy-server}
+# [舊版 Proxy [新版 proxy 在這裡](./simple_proxy)] 本機 LiteLLM Proxy Server {#old-proxy-new-proxy-here-local-litellm-proxy-server}
 
 一個快速且輕量、相容 OpenAI 的伺服器，可呼叫 100+ 個 LLM API。 
 
 :::info
 
-文件已過時。新文件 👉 [這裡](./simple_proxy)
+文件已過時。新文件 [這裡](./simple_proxy)
 
 :::
 
@@ -25,7 +25,7 @@ $ litellm --model ollama/codellama
 在新的 shell 中執行： 
 ```shell
 $ litellm --test
-```
+``` 
 
 ### 取代 openai base {#replace-openai-base}
 
@@ -734,6 +734,6 @@ Thread Stats   Avg      Stdev     Max   +/- Stdev
 
 ## 支援／與創辦人聯絡 {#support-talk-with-founders}
 
-- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

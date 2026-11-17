@@ -17,14 +17,17 @@ import TabItem from '@theme/TabItem';
 | 支援的提供者 | 所有 Chat Completion 提供者 | |
 
 ### 使用方式 {#usage}
+
+LiteLLM 會將聊天模型的文字補全請求送到該模型的 chat completions 端點，並以文字補全格式回傳答案。若要直接呼叫 OpenAI 舊版的 `/v1/completions` 端點，請參閱 [OpenAI（文字補全）](./providers/text_completion_openai.md)。
+
 <Tabs>
 <TabItem value="python" label="LiteLLM Python SDK">
 
-```python
+```python keep-model-ids
 from litellm import text_completion
 
 response = text_completion(
-    model="gpt-3.5-turbo-instruct",
+    model="gpt-5.4-mini",
     prompt="Say this is a test",
     max_tokens=7
 )
@@ -35,15 +38,11 @@ response = text_completion(
 
 1. 在 config.yaml 中定義模型
 
-```yaml
+```yaml keep-model-ids
 model_list:
-  - model_name: gpt-3.5-turbo-instruct
+  - model_name: gpt-5.4-mini
     litellm_params:
-      model: text-completion-openai/gpt-3.5-turbo-instruct # The `text-completion-openai/` prefix will call openai.completions.create
-      api_key: os.environ/OPENAI_API_KEY
-  - model_name: text-davinci-003
-    litellm_params:
-      model: text-completion-openai/text-davinci-003
+      model: openai/gpt-5.4-mini
       api_key: os.environ/OPENAI_API_KEY
 ```
 
@@ -56,7 +55,7 @@ litellm --config config.yaml
 <Tabs>
 <TabItem value="python" label="OpenAI Python SDK">
 
-```python
+```python keep-model-ids
 from openai import OpenAI
 
 # set base_url to your proxy server
@@ -64,7 +63,7 @@ from openai import OpenAI
 client = OpenAI(api_key="<proxy-api-key>", base_url="http://0.0.0.0:4000")
 
 response = client.completions.create(
-    model="gpt-3.5-turbo-instruct",
+    model="gpt-5.4-mini",
     prompt="Say this is a test",
     max_tokens=7
 )
@@ -75,12 +74,12 @@ print(response)
 
 <TabItem value="curl" label="Curl Request">
 
-```shell
+```shell keep-model-ids
 curl --location 'http://0.0.0.0:4000/completions' \
     --header 'Content-Type: application/json' \
     --header "Authorization: Bearer $LITELLM_API_KEY" \
     --data '{
-        "model": "gpt-3.5-turbo-instruct",
+        "model": "gpt-5.4-mini",
         "prompt": "Say this is a test",
         "max_tokens": 7
     }'
@@ -118,6 +117,8 @@ LiteLLM 接受並轉換跨所有支援提供者的 [OpenAI Text Completion 參�
 - `top_p`: *number* - 取樣溫度的替代方案，稱為 nucleus sampling。 
 - `user`: *string* - 代表您的終端使用者的唯一識別碼
 
+在 OpenAI 上，`best_of`、`echo`、`suffix` 以及整數型別的 `logprobs` 只能搭配 `text-completion-openai/` 前綴使用，該前綴會呼叫舊版的 `/v1/completions` 端點。使用 `openai/` 前綴的聊天模型對這些參數會回應 400。請參閱 [OpenAI（文字補全）](./providers/text_completion_openai.md)。
+
 ## 輸出格式 {#output-format}
 以下是您可從 completion 呼叫預期得到的確切 JSON 輸出格式：
 
@@ -127,13 +128,13 @@ LiteLLM 接受並轉換跨所有支援提供者的 [OpenAI Text Completion 參�
 
 <TabItem value="non-streaming" label="非串流回應">
 
-```python
+```python keep-model-ids
 {
   "id": "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7",
   "object": "text_completion",
   "created": 1589478378,
-  "model": "gpt-3.5-turbo-instruct",
-  "system_fingerprint": "fp_44709d6fcb",
+  "model": "gpt-5.4-mini",
+  "system_fingerprint": null,
   "choices": [
     {
       "text": "\n\nThis is indeed a test",
@@ -153,7 +154,7 @@ LiteLLM 接受並轉換跨所有支援提供者的 [OpenAI Text Completion 參�
 </TabItem>
 <TabItem value="streaming" label="串流回應">
 
-```python
+```python keep-model-ids
 {
   "id": "cmpl-7iA7iJjj8V2zOkCGvWF2hAkDWBQZe",
   "object": "text_completion",
@@ -166,8 +167,8 @@ LiteLLM 接受並轉換跨所有支援提供者的 [OpenAI Text Completion 參�
       "finish_reason": null
     }
   ],
-  "model": "gpt-3.5-turbo-instruct",
-  "system_fingerprint": "fp_44709d6fcb",
+  "model": "gpt-5.4-mini",
+  "system_fingerprint": null,
 }
 
 ```

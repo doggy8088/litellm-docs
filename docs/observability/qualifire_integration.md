@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 Qualifire 記錄"
+sidebar_label: "Qualifire"
+description: "透過 Python SDK 或 AI Gateway 將 LiteLLM 呼叫傳送至 Qualifire 進行評估與可觀測性，包含環境變數設定與記錄內容說明。"
+---
 import Image from '@theme/IdealImage';
 
 # Qualifire {#qualifire}
@@ -52,7 +57,7 @@ litellm.callbacks = ["qualifire_eval"]
 response = litellm.completion(
   model="{{openai_large}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -91,7 +96,7 @@ litellm --config config.yaml
 curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 -H 'Content-Type: application/json' \
 -H "Authorization: Bearer $LITELLM_API_KEY" \
--d '{ "model": "{{openai_large}}", "messages": [{"role": "user", "content": "Hi 👋 - i'm openai"}]}'
+-d '{ "model": "{{openai_large}}", "messages": [{"role": "user", "content": "Hi - i'm openai"}]}'
 ```
 
 ## 環境變數 {#environment-variables}

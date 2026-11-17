@@ -1,5 +1,6 @@
 ---
-title: "v1.78.0-stable - MCP Gateway: 依團隊、金鑰控制工具存取"
+title: "LiteLLM v1.78.0-stable - MCP Gateway: 依團隊、金鑰控制工具存取"
+description: "新增依團隊與依金鑰的 MCP 工具存取控制、GPT-5 Pro 與 EnkryptAI 防護欄。p99 延遲降低 70%。"
 slug: "v1-78-0"
 date: 2025-10-11T10:00:00
 authors:

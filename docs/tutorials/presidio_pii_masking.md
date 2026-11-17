@@ -320,7 +320,7 @@ guardrails:
 1. **使用者輸入**： "Hello, my name is Jane Doe. My number is 555-1234"
 2. **LLM 會收到**： "Hello, my name is `<PERSON>`. My number is `<PHONE_NUMBER>`"
 3. **LLM 回應**： "Nice to meet you, `<PERSON>`!"
-4. **使用者收到**： "Nice to meet you, Jane Doe!" ✨
+4. **使用者收到**： "Nice to meet you, Jane Doe!"
 
 ### 多語言支援 {#multi-language-support}
 
@@ -673,7 +673,7 @@ litellm_settings:
 
 ## 結論 {#conclusion}
 
-恭喜！🎉 您已成功使用 Presidio 和 LiteLLM 設定 PII 遮罩。您現在擁有：
+恭喜！您已成功使用 Presidio 和 LiteLLM 設定 PII 遮罩。您現在擁有：
 
 ✅ 可用於正式環境的 PII 遮罩解決方案  
 ✅ 自動偵測敏感資訊  

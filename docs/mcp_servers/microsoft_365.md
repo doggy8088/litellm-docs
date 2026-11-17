@@ -24,7 +24,7 @@ Microsoft Graph 是 Microsoft 365 背後的 API，而開放原始碼 [ms-365-mcp
 
 ## 驗證 {#authentication}
 
-- **方法：** 透過 Microsoft Entra ID 進行具 PKCE 的 OAuth 2.0 授權碼流程。Entra 不支援動態用戶端註冊，因此您需要註冊一個應用程式，並提供 LiteLLM 其 client ID 與 secret。接著 LiteLLM 會為該伺服器發布 OAuth 探索文件，將 MCP 用戶端指向位於 Entra 前方、LiteLLM 自己的登入端點（如下方 `per_server_oauth_discovery: true`）。
+- **方法：** 透過 Microsoft Entra ID 進行具 PKCE 的 OAuth 2.0 授權碼流程。Entra 不支援動態用戶端註冊，因此您需要註冊一個應用程式，並提供 LiteLLM 其 client ID 與 secret。LiteLLM 同時支援會傳送虛擬金鑰的用戶端與無金鑰的用戶端，兩者的 OAuth 探索設定不同，詳如下述。
 - **應用程式註冊：** 請在 [Microsoft Entra admin center](https://entra.microsoft.com) 的 **App registrations** 下建立一個。您將新增 Web redirect URI、client secret，以及委派的 Microsoft Graph 權限。
 - **同意：** 每位使用者在首次登入時核准委派權限。若租用戶限制使用者自行同意，則需要管理員在應用程式註冊的 **API permissions** 頁面上一次性授予同意。
 
@@ -33,6 +33,14 @@ Microsoft Graph 是 Microsoft 365 背後的 API，而開放原始碼 [ms-365-mcp
 Microsoft Graph 只接受 Entra ID 核發的 access token，因此無論是 Okta token，或是您 LiteLLM 單一登入取得的憑證，都不能取代 Graph token，LiteLLM 也不會將其中一個轉換成另一個。可沿用的是登入本身。當您的 Microsoft 365 租用戶將驗證聯邦到 Okta 或其他識別提供者時，LiteLLM 啟動的 Entra 登入會像任何其他 Microsoft 365 登入一樣重新導向到那裡，因此使用者會看到慣用的 SSO 頁面，而 Entra 會在他們返回後核發 Graph token。每位使用者只需執行一次；之後 LiteLLM 會重新整理該 token。
 
 此設定中還會出現另外三種 LiteLLM 驗證模式，但都無法取代上述流程。[代表方 token 交換](../mcp_obo_auth.md) 會交換用戶端已提供給 LiteLLM 的 Entra ID token，因此只適用於使用者以 Entra ID token 驗證到 LiteLLM，而不是透過 Okta 的情況。[ID-JAG](../mcp_id_jag.md) 會從 Okta 授權伺服器取得 token，但 Graph 不信任該伺服器。[OAuth passthrough](../mcp_oauth_passthrough.md) 會原封不動地轉送用戶端的 bearer token 並不做交換，因此用戶端仍必須自行取得 Graph token。
+
+### 有無虛擬金鑰的差異 {#with-or-without-a-virtual-key}
+
+**使用虛擬金鑰時**，請設定 `per_server_oauth_discovery: true`，並在 MCP 請求與中繼機制的 token 請求中，於 `x-litellm-api-key` 傳送 LiteLLM 虛擬金鑰。每台伺服器的中繼機制會發布探索文件，並作為 Entra 授權與 token 端點的前置。它需要 LiteLLM 金鑰來識別其所儲存 Graph token 的使用者。下方設定與標頭範例使用此模式。
+
+**不使用虛擬金鑰時**，請省略 `per_server_oauth_discovery` 或將其設為 `false`。請設定 [proxy SSO](../proxy/admin_ui_sso.md)、設定 proxy `master_key`，並將伺服器授與 LiteLLM 使用者或其所屬團隊。連線 MCP 用戶端時不要帶 LiteLLM 金鑰標頭。伺服器的受保護資源中繼資料會指向閘道共用的 `/mcp` 授權伺服器。使用者先登入 LiteLLM，接著連線頁面會啟動上游 Entra 授權碼流程，並儲存該使用者的 Graph token。用戶端會收到一個閘道工作階段 token，供後續 MCP 呼叫使用。
+
+如果連線頁面顯示「The connection cannot continue」，原因是已登入的使用者沒有伺服器授權（`state: stale`），請檢查使用者與團隊權限。關閉中繼機制並不會阻止上游登入。在預設的使用者快取設定下，新的授權最多可能需要一分鐘才會出現在連線頁面上，等待使用者快取過期。
 
 ## 端點 {#endpoint}
 
@@ -104,7 +112,7 @@ mcp_servers:
       - Sites.Read.All
 ```
 
-`oauth2_flow: authorization_code` 會選擇每位使用者的互動式流程，且為必要；若 `auth_type: oauth2` 伺服器省略它，代理程式將拒絕啟動。`per_server_oauth_discovery: true` 讓 LiteLLM 為 `/microsoft_365/mcp` 本身發佈 OAuth 探索文件，並以其自己的 `/microsoft_365/authorize` 與 `/microsoft_365/token` 端點作為上述 Entra URL 的前置。若沒有它，伺服器的受保護資源中繼資料會將 MCP 用戶端導向閘道共用的 `/mcp` 授權伺服器，該伺服器會將使用者登入 LiteLLM 而不是 Entra，因此瀏覽器最後會停在「連線無法繼續」頁面，且永遠不會儲存任何 Graph token。儲存 MCP 伺服器也需要 `store_model_in_db: true`，詳見 [Prerequisites](../mcp.md#prerequisites)。
+`oauth2_flow: authorization_code` 會選擇每位使用者的互動式流程，且為必要；若 `auth_type: oauth2` 伺服器省略它，代理程式將拒絕啟動。`per_server_oauth_discovery: true` 讓 LiteLLM 為 `/microsoft_365/mcp` 本身發佈 OAuth 探索文件，並以其自己的 `/microsoft_365/authorize` 與 `/microsoft_365/token` 端點作為上述 Entra URL 的前置。此中繼機制需要 LiteLLM 虛擬金鑰。對於無金鑰的用戶端，請省略此設定或將其設為 `false`，並依照 [With or without a virtual key](#with-or-without-a-virtual-key) 操作。儲存 MCP 伺服器也需要 `store_model_in_db: true`，詳見 [Prerequisites](../mcp.md#prerequisites)。
 
 </TabItem>
 <TabItem value="ui" label="LiteLLM UI">
@@ -123,7 +131,7 @@ mcp_servers:
 | **Token URL** | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token` |
 | **Scopes** | 第 1 步中的委派權限 |
 
-點選 **Create MCP Server**。此表單尚未提供 `per_server_oauth_discovery` 欄位，因此請透過管理 API，使用伺服器頁面上顯示的 `server_id` 將其開啟：
+點選 **Create MCP Server**。對於會傳送虛擬金鑰的用戶端，請啟用每台伺服器的中繼機制。此表單尚未提供 `per_server_oauth_discovery` 欄位，因此請透過管理 API，使用伺服器頁面上顯示的 `server_id` 將其開啟。無金鑰的用戶端請略過此步驟：
 
 ```bash showLineNumbers
 curl -X PUT http://localhost:4000/v1/mcp/server \
@@ -147,11 +155,19 @@ export PROXY_BASE_URL=https://llm.example.com
 
 ### 第 5 步：授與使用者伺服器存取權限 {#step-5-give-users-access-to-the-server}
 
-LiteLLM 會將每個 Entra token 儲存到 key 背後的 LiteLLM 使用者帳戶，因此該 key 或其 team 需要在 `object_permission.mcp_servers` 中擁有此伺服器，且該 key 背後必須有一位使用者。沒有這些條件的 key 仍可完成登入，但沒有地方儲存 token，因此下一次工作階段會再次登入，而代理程式記錄會顯示 `OAuth credential storage not authorized`。請參閱 [MCP Permission Management](../mcp_control.md)。透過 SSO 登入 LiteLLM 的使用者已經擁有 LiteLLM 使用者帳戶，因此只要將伺服器授與其身分提供者群組對應到的 team 即可。
+LiteLLM 會將每個 Entra token 儲存到一位 LiteLLM 使用者帳戶。使用虛擬金鑰時，該 key 或其 team 需要在 `object_permission.mcp_servers` 中擁有此伺服器，且該 key 背後必須有一位使用者。沒有這些條件的 key 仍可完成登入，但沒有地方儲存 token，因此下一次工作階段會再次登入，而代理程式記錄會顯示 `OAuth credential storage not authorized`。對於無金鑰的用戶端，請將伺服器直接授與已登入的使用者或其所屬團隊，包括其身分提供者群組對應到的 team。新的授權最多可能需要一分鐘才會出現在連線頁面上。請參閱 [MCP Permission Management](../mcp_control.md)。
 
 ### 第 6 步：從代理程式連線 {#step-6-connect-from-an-agent}
 
 閘道會在 `http://localhost:4000/{server_name}/mcp` 提供每個伺服器，因此 `microsoft_365` 可透過 `http://localhost:4000/microsoft_365/mcp` 存取。
+
+對於無金鑰的 Claude Code 用戶端，請依照 [With or without a virtual key](#with-or-without-a-virtual-key) 所述關閉中繼機制，然後在不帶金鑰標頭的情況下新增伺服器：
+
+```bash showLineNumbers
+claude mcp add --transport http microsoft_365 http://localhost:4000/microsoft_365/mcp
+```
+
+在 Claude Code 中開啟 `/mcp`，以啟動閘道登入與上游同意流程。下方分頁中的範例改用虛擬金鑰中繼機制。
 
 <Tabs>
 <TabItem value="claude-code" label="Claude Code">
@@ -163,21 +179,7 @@ claude mcp add --transport http microsoft_365 http://localhost:4000/microsoft_36
 
 在 Claude Code 內部執行 `/mcp` 會顯示伺服器並啟動 Entra 登入。Claude Code 會快取其向閘道註冊的 OAuth 用戶端，因此如果您在新增伺服器後開啟 `per_server_oauth_discovery`，請先移除它再重新新增。
 
-透過 SSO 登入 LiteLLM 的使用者沒有可貼上的 `sk-` key。完成 `lite login`（[CLI authentication](../proxy/cli_sso.md)）之後，讓 Claude Code 使用 `headersHelper` 自行擷取該標頭，此命令的輸出會將標頭以 JSON 形式輸出：
-
-```json title=".mcp.json" showLineNumbers
-{
-  "mcpServers": {
-    "microsoft_365": {
-      "type": "http",
-      "url": "http://localhost:4000/microsoft_365/mcp",
-      "headersHelper": "printf '{\"x-litellm-api-key\": \"Bearer %s\"}' \"$(lite auth print-token)\""
-    }
-  }
-}
-```
-
-接著進行的 Microsoft 登入會儲存到 SSO 建立的 LiteLLM 使用者帳戶，因此同一位使用者可在不同 key 與不同工作階段之間保有其 Graph token。
+Microsoft 登入會儲存到 key 背後的 LiteLLM 使用者帳戶，因此同一位使用者可在不同 key 與不同工作階段之間保有其 Graph token。
 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
@@ -196,7 +198,7 @@ Claude Desktop 在第三方推論上的 MCP 伺服器是透過 **Configure Third
 ]
 ```
 
-透過 SSO 登入的部署會將 `headers` 取代為 `headersHelper`，詳見 [Claude Desktop (Cowork)](../tutorials/claude_desktop_cowork.md#mcp-servers-through-the-litellm-mcp-gateway)。Claude Desktop 內建的 Microsoft 365 連接器會直接呼叫 Microsoft，完全不經過 LiteLLM，因此不會享有上述任何存取控制或記錄；請改用 `url` 項目。
+若要輪替 LiteLLM 憑證，請使用 `headersHelper` 提供 `x-litellm-api-key` 標頭；請參閱 Claude 的 [MCP headers helper guide](https://claude.com/docs/third-party/claude-desktop/extensions#short-lived-credentials-with-a-headers-helper)。Microsoft OAuth 登入仍是獨立的。Claude Desktop 內建的 Microsoft 365 連接器會直接呼叫 Microsoft，完全不經過 LiteLLM，因此不會享有上述任何存取控制或記錄；請改用 `url` 項目。
 
 </TabItem>
 <TabItem value="cursor" label="Cursor">
@@ -251,6 +253,6 @@ Claude Desktop 在第三方推論上的 MCP 伺服器是透過 **Configure Third
 透過 `object_permission` 依每個 key 或每個團隊授予伺服器存取權，並透過 `mcp_rpm_limit` 限制每台伺服器的呼叫量，這兩者都已在 [MCP 權限管理](../mcp_control.md) 中說明。Graph 會套用其自身的每位使用者節流，因此失控的代理程式會先讓該使用者自己的 Outlook 和 Teams 用戶端變慢，而不會影響其他人。
 :::
 
-:::warning[將 LiteLLM key 放在 `x-litellm-api-key` 中]
+:::warning[使用虛擬金鑰的用戶端，請將 LiteLLM key 放在 `x-litellm-api-key` 中]
 互動式 OAuth 需要讓 `Authorization` 標頭保持空出，以便給上游 token 使用。如果用戶端將 LiteLLM API key 作為 `Authorization: Bearer sk-...` 傳送，OAuth 流程就永遠不會執行，而 LiteLLM 會將您的 LiteLLM key 轉送給 Graph 伺服器，Graph 伺服器再將其傳給 Microsoft，而 Graph 會以 `InvalidAuthenticationToken` 拒絕。請參閱 [偵錯 OAuth](../mcp_oauth.md#debugging-oauth) 以及 [MCP 疑難排解指南](../mcp_troubleshoot.md)。
 :::

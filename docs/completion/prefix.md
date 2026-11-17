@@ -1,3 +1,7 @@
+---
+sidebar_label: 助手預填
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -13,7 +17,7 @@ import TabItem from '@theme/TabItem';
   "role": "assistant", 
   "content": "..", 
   ...,
-  "prefix": true # 👈 KEY CHANGE
+  "prefix": true # KEY CHANGE
 }
 ```
 

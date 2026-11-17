@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 中的 Anthropic 保留思考"
+sidebar_label: "保留思考前綴穩定性"
+description: "透過 LiteLLM 保持 Claude 保留思考區塊的有效性：system 提示、tools 與較早的訊息必須在各輪之間維持穩定，以及哪些情況會破壞它。"
+---
+
 # 保留思考前綴穩定性 {#preserved-thinking-prefix-stability}
 
 會在各輪之間保留思考內容的 Claude 模型，會為每個思考區塊簽署並將其綁定到產生它的請求。當您使用 `thinking-binding-controls-2026-08-01` beta 重放對話時，Anthropic 會檢查區塊之前的請求部分是否仍與該區塊建立時一致：最上層的 `system` 提示、`tools` 清單，以及其前面的每則訊息。若前綴有變更，則會捨棄該區塊（`prefix_mismatch_behavior: drop_block`，Anthropic 會在 `input_transformations` 中將其回報為 `thinking_dropped` 項目）或以 400 拒絕請求，並指出差異部分（`prefix_mismatch_behavior: error`）。`cache_control` 標記不會納入比較

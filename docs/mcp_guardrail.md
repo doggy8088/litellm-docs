@@ -51,15 +51,36 @@ guardrails:
 
 對於自訂防護欄，請在您的 `CustomGuardrail` 子類別上實作 `apply_guardrail`。LiteLLM 會以 `input_type="response"` 以及工具結果的文字值呼叫它。如果您覆寫 `get_supported_event_hooks`，請將 `post_mcp_call` 包含在清單中。不支援的模式會在初始化時記錄錯誤，並在 proxy 持續啟動的同時略過該防護欄。請檢查啟動記錄以確認註冊。
 
-在 `/mcp` 上，被封鎖的結果會以 MCP 工具錯誤（`result.isError: true`）回傳，且可能伴隨 HTTP 200。對於 `/v1/responses` MCP 自動執行，模型會收到工具錯誤而非被封鎖的內容，並可繼續產生回應。防護欄封鎖本身不會使整體 Responses 請求回傳 HTTP 400。
+在 `/mcp` 上，被封鎖的結果會以 MCP 工具錯誤（`result.isError: true`）回傳，且可能伴隨 HTTP 200。對於 `/v1/responses` MCP 自動執行，模型會收到工具錯誤而非被封鎖的內容，並可繼續產生回應。防護欄封鎖本身不會使整體 Responses 請求回傳 HTTP 400；若要達到該效果，請在防護欄上設定 [`mcp_block_behavior: raise`](#failing-the-request-when-a-guardrail-blocks-an-mcp-tool)。
 
 PANW 支援需要包含 [整合修正](https://github.com/BerriAI/litellm/pull/43109) 的 LiteLLM 版本。
 
+### 當防護欄封鎖 MCP 工具時讓請求失敗 {#failing-the-request-when-a-guardrail-blocks-an-mcp-tool}
+
+<SinceVersion v="1.110.0" />
+
+依預設，當防護欄封鎖了 LiteLLM 為 `/v1/responses`、`/v1/chat/completions` 或 `/v1/messages` 執行的 MCP 工具時，封鎖會以工具結果的形式回到模型，請求則回傳 HTTP 200。在防護欄上設定 `mcp_block_behavior: raise`，即可改為以防護欄的錯誤（HTTP 400）讓請求失敗。
+
+```yaml title="config.yaml" showLineNumbers
+guardrails:
+  - guardrail_name: block-tool
+    litellm_params:
+      guardrail: litellm_content_filter
+      mode: pre_mcp_call
+      default_on: true
+      blocked_words:
+        - keyword: forbiddenmarker
+          action: BLOCK
+      mcp_block_behavior: raise  # default: tool_result
+```
+
+串流的 `/v1/responses` 與 `/v1/chat/completions` 請求則會以錯誤事件結束，因為 200 已經送出。自訂防護欄必須以拋出 `HTTPException`、`GuardrailRaisedException` 或 `BlockedPiiEntityError` 的方式封鎖，`raise` 才會生效。
+
 ### 掃描探索時的工具描述 {#scanning-tool-descriptions-on-discovery}
 
-`pre_mcp_call` 防護欄也會在上游伺服器從 `tools/list` 回傳的每個工具上執行，然後閘道才提供該清單。防護欄在那次通過中看到的是工具的描述，以及其輸入 schema 內的每個 `description`；在呼叫時則如往常一樣看到引數。掃描涵蓋 `tools/list` 於 `/mcp` 與 `/{server_name}/mcp` 上的情況，以及 `GET /mcp-rest/tools/list`、`/v1/responses` 或 `/v1/chat/completions` 請求以 `server_url: "litellm_proxy"` 執行的探索
+`pre_mcp_call` 防護欄也會在上游伺服器從 `tools/list` 回傳的每個工具上執行，然後閘道才提供該清單。防護欄在那次通過中看到的是工具的描述，以及其輸入 schema 內的每個 `description`。在呼叫時，防護欄會收到引數，以及提供給該呼叫者的工具定義。掃描涵蓋 `tools/list` 於 `/mcp` 與 `/{server_name}/mcp` 上的情況，以及 `GET /mcp-rest/tools/list`、`/v1/responses` 或 `/v1/chat/completions` 請求以 `server_url: "litellm_proxy"` 執行的探索
 
-- 其描述被防護欄封鎖的工具會從清單中移除，因此沒有模型會讀取它
+- 其描述或輸入 schema 被防護欄封鎖的工具會從清單中移除，並在 `tools/call` 時被拒絕，即使客戶端已經知道它的名稱
 - 其描述被防護欄遮罩的工具會以遮罩後的文字列出
 - 閘道會記錄警告，並送出 `mcp_tool_description_blocked` [警示](./proxy/alerting#all-possible-alert-types)，列出被隱藏的工具名稱；每台伺服器每一組不同的隱藏工具只會通知一次；一旦上游再次提供乾淨的目錄，警示就會自動清除
 
@@ -96,7 +117,9 @@ MCP server `notes`: 1 tool description(s) blocked by a guardrail and hidden from
 - `get_note`: Content blocked: prompt_injection_jailbreak conditional match 'enable + no restrictions' detected (severity: high)
 ```
 
-隱藏會在清單列出時發生。先前已快取工具名稱的用戶端仍然可以嘗試呼叫，而同一個防護欄接著會在該呼叫的引數上執行。若要拒絕對任何管理員尚未核准的工具進行呼叫，請[釘選伺服器的工具清單](./mcp_control#pin-a-servers-tool-list)；掃描仍會在已釘選的伺服器上執行，針對 proxy 即將提供的已釘選文字
+當某次呼叫沒有來自呼叫者清單的工具定義時，LiteLLM 會使用該呼叫者的上游憑證取得定義，並在執行前套用探索防護欄。這也涵蓋從未呼叫過 `tools/list` 的用戶端，以及由另一個 proxy worker 處理的呼叫。被封鎖的工具，或無法取得的定義，會在上游工具執行前被拒絕。遮罩後的描述與釘選的定義會保留提供給呼叫者的文字。
+
+若要將呼叫限制在管理員核准的工具集合內，請[釘選伺服器的工具清單](./mcp_control#pin-a-servers-tool-list)。防護欄仍會掃描釘選的文字。此行為需要包含[呼叫強制執行修正](https://github.com/BerriAI/litellm/pull/48669)的版本。
 
 自訂防護欄：在探索掃描中，該 hook 的 `call_type` 會是 `list_mcp_tools` 而不是 `call_mcp_tool`，`mcp_tool_description` 與 `mcp_input_schema` 會設定在請求資料中，而建立在 `apply_guardrail` 上的防護欄會在引數文字之前，將描述與 schema 描述作為額外的 `texts` 項目接收。丟出例外會封鎖工具；回傳改寫後的文字會將其遮罩
 

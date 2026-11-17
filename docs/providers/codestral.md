@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Mistral Codestral API：FIM 與聊天"
+sidebar_label: "Codestral API [Mistral AI]"
+description: "透過 LiteLLM Python SDK，使用 Mistral Codestral（codestral-latest、codestral-2405）執行 fill-in-the-middle 程式碼補全與聊天，並支援非同步串流。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

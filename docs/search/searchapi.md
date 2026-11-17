@@ -1,3 +1,8 @@
+---
+title: "搭配 LiteLLM 使用 SearchAPI.io Google Search API"
+sidebar_label: "SearchAPI.io（Google 搜尋）"
+description: "將 SearchAPI.io 的 Google 結果加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，並可使用地點與時間篩選。"
+---
 # SearchAPI.io（Google 搜尋） {#searchapiio-google-search}
 
 請先透過 https://www.searchapi.io/. 建立免費 API 金鑰開始使用

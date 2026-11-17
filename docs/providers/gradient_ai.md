@@ -1,3 +1,9 @@
+---
+title: "GradientAI API 搭配 LiteLLM：設定與代理程式"
+sidebar_label: "GradientAI"
+description: "從 LiteLLM Python SDK 呼叫 DigitalOcean GradientAI 無伺服器模型或您自己的 GradientAI 代理程式，支援串流與 k 等知識庫參數。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

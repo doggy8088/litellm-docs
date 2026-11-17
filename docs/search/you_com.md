@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 You.com Search API：設定"
+sidebar_label: "You.com 搜尋"
+description: "將 You.com 網路搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，免費層級免金鑰或使用 API 金鑰。"
+---
 # You.com 搜尋 {#youcom-search}
+
+[You.com](https://you.com/docs) Search API 為 LLM 應用程式回傳網路與新聞結果；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰（選用，用於更高的速率限制）：** [https://you.com/docs](https://you.com/docs)
 

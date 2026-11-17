@@ -1,3 +1,9 @@
+---
+title: "Databricks API 與 LiteLLM AI Gateway"
+sidebar_label: "Databricks"
+description: "從 Python SDK 或 AI Gateway 透過 LiteLLM 呼叫 Databricks 模型服務端點。使用 OAuth M2M 或 PAT，執行思考模型與嵌入。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -436,6 +442,66 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 | databricks-mixtral-8x7b-instruct    | `completion(model='databricks/databricks-mixtral-8x7b-instruct', messages=messages)`   | 
 | databricks-mpt-30b-instruct    | `completion(model='databricks/databricks-mpt-30b-instruct', messages=messages)`   | 
 | databricks-mpt-7b-instruct    | `completion(model='databricks/databricks-mpt-7b-instruct', messages=messages)`   | 
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`databricks/<family>-latest` 名稱會跟隨模型家族，在 LiteLLM 將其移至較新的模型時，讓您的應用程式維持單一模型字串。您可以像使用任何其他 Databricks 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Databricks，並以該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱 [最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `databricks/gpt-luna-latest` | GPT Luna |
+| `databricks/gpt-sol-latest` | GPT Sol |
+| `databricks/gpt-terra-latest` | GPT Terra |
+| `databricks/gpt-astra-latest` | GPT Astra |
+| `databricks/gpt-mini-latest` | GPT Mini |
+| `databricks/claude-opus-latest` | Claude Opus |
+| `databricks/claude-sonnet-latest` | Claude Sonnet |
+| `databricks/claude-haiku-latest` | Claude Haiku |
+| `databricks/claude-fable-latest` | Claude Fable |
+| `databricks/grok-latest` | Grok |
+| `databricks/kimi-latest` | Kimi |
+| `databricks/glm-latest` | GLM |
+| `databricks/glm-flash-latest` | GLM Flash |
+
+## 決策 (ai_decide) {#decisions-ai_decide}
+
+Databricks 以 [`ai_decide` AI Function](https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_decide) 提供 OpenJev，該函數在您的工作區上於 `POST /api/2.0/ai-functions/ai-decide` 回答決策問題。此函數尚處於 Beta 階段，因此工作區管理員必須先開啟 `ai_decide` 預覽。LiteLLM 在[統一決策路由](/docs/decisions)上公開它，`/v1/systemone` 用於 System One 格式的主體，`/v1/decisions` 用於 OpenAI Decisions 格式，並可作為 Auto Router 分類器。將它加入 `model_list`：
+
+```yaml title="config.yaml"
+model_list:
+  - model_name: databricks-decider
+    litellm_params:
+      model: databricks/ai_decide
+      api_base: os.environ/DATABRICKS_API_BASE
+      api_key: os.environ/DATABRICKS_API_KEY
+```
+
+`DATABRICKS_API_BASE` 為 `https://<workspace-host>`。上方聊天部署所用的 `/serving-endpoints` URL 也可使用，因為 LiteLLM 會在加入 AI Function 路徑前移除該後綴。LiteLLM 不會傳送 `model` 欄位給 AI Function，因為它會自行挑選模型。決策路由上的任何其他 `databricks/<endpoint>` 名稱仍會前往該服務端點的 `/invocations` 路由。
+
+```bash
+curl http://localhost:4000/v1/systemone \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "databricks-decider",
+    "state": "My invoice has two identical charges for the same month",
+    "questions": {
+      "is_billing": {"type": "noul", "instructions": "Is this a billing problem?"},
+      "intent": {
+        "type": "choice",
+        "instructions": "What does the customer want?",
+        "criteria": {"refund": "Money back", "explanation": "Understand the charge", "cancel": "Close the account"}
+      },
+      "urgency": {"type": "score", "instructions": "How urgent is this?", "criteria": ["low", "medium", "high"]}
+    }
+  }'
+```
+
+LiteLLM 會拆開 Databricks 回傳的 `response` 封套，因此答案會以與其他決策提供者相同的格式回傳，且 `metadata` 會保留。`noul` 答案的 `probability` 會以 `noul` (System One 的欄位名稱) 回傳。AI Function 不回報 token 使用量與模型名稱，因此 `usage` 為零，支出記錄會將此呼叫記為 `databricks/ai_decide` 且成本為零，`/v1/systemone` 回傳 `model: null`。Databricks 在您的工作區上對 AI Functions 計費，且未公布每 token 價格。`/health` 會以 System One 請求探測部署，因此不需要 `model_info.mode`。傳送至 `/v1/decisions` 的 OpenAI 格式主體會以相同的 System One 請求送達 Databricks，答案則以 OpenAI 格式回傳。
+
+若要以同一個 AI Function 路由 Auto Router 流量，請依 [OSS 分類器指南](/docs/auto_router/decision_classifiers#databricks-ai-decide) 中的說明，設定 `opensource_classifier_config.provider: databricks` 與 `model: ai_decide`。
 
 ## 嵌入模型 {#embedding-models}
 

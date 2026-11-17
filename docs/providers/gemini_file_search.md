@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Gemini File Search RAG"
+sidebar_label: "Gemini File Search"
+description: "透過 LiteLLM 使用 Gemini File Search 進行 RAG：將檔案匯入向量儲存庫、搜尋它、設定自訂分塊與中繼資料篩選器，並擷取引用。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

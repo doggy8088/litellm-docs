@@ -1,3 +1,7 @@
+---
+sidebar_label: 知識庫
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
@@ -20,7 +24,7 @@ LiteLLM 與向量儲存區整合，讓您的模型能存取您組織的資料，
 - [Vertex AI RAG API](https://cloud.google.com/vertex-ai/generative-ai/docs/rag-overview)
 - [Gemini File Search](https://ai.google.dev/gemini-api/docs/file-search)
 - [MongoDB Vector Search (BETA)](../providers/mongodb_vector_stores.md#use-mongodb-in-chat-completions)（使用現有的 Atlas 或自我管理的 MongoDB 索引作為聊天完成的內容）
-- [RAGFlow Datasets](/docs/providers/ragflow_vector_store)（僅支援資料集管理，不支援搜尋）
+- [RAGFlow Datasets](/docs/providers/ragflow_vector_store.md)（僅支援資料集管理，不支援搜尋）
 
 ## 快速開始 {#quick-start}
 

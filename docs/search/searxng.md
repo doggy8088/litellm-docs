@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 SearXNG Search API：自行託管"
+sidebar_label: "SearXNG 搜尋"
+description: "將 SearXNG 中繼搜尋加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，可在自行託管或公開執行個體上依類別搜尋。"
+---
 # SearXNG 搜尋 {#searxng-search}
+
+[SearXNG](https://github.com/searxng/searxng) 是開放原始碼的中繼搜尋引擎，您可以自行託管或透過公開執行個體使用；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **開放原始碼：** [https://github.com/searxng/searxng](https://github.com/searxng/searxng)
 

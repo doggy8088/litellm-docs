@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 NLP Cloud API：設定"
+sidebar_label: "NLP Cloud"
+description: "透過 LiteLLM Python SDK 呼叫 NLP Cloud 的 dolphin 與 chatdolphin 模型、串流回覆，並使用其他託管模型，例如微調過的 Llama 2。"
+---
+
 # NLP Cloud {#nlp-cloud}
 
 LiteLLM 支援 NLP Cloud 上的所有 LLM。

@@ -1,3 +1,9 @@
+---
+title: "將 AWS S3 Vectors 作為 LiteLLM 向量儲存"
+sidebar_label: "AWS S3 Vectors"
+description: "使用 Amazon S3 Vectors 作為 LiteLLM RAG 背後的向量儲存：設定 config.yaml、匯入文件、搜尋儲存，並在聊天補全中使用。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

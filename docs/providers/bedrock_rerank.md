@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock Rerank API"
+sidebar_label: "AWS Bedrock - Rerank API"
+description: "透過 LiteLLM 以 Cohere /rerank 格式使用 AWS Bedrock 重新排序文件。在 AI 閘道上設定 config.yaml 或呼叫 Python SDK，並追蹤成本。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

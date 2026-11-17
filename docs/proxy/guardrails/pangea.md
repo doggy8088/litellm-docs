@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Pangea 防護欄"
+sidebar_label: "Pangea"
+description: "在 LiteLLM AI 閘道上以 Pangea AI Guard recipes 封鎖提示注入、PII 與有毒內容，並為輸入與輸出使用不同的 recipe。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -136,7 +141,7 @@ curl -sSLX POST http://localhost:4000/v1/chat/completions \
       "finish_reason": "stop",
       "index": 0,
       "message": {
-        "content": "Hello! 😊 How can I assist you today?",
+        "content": "Hello! How can I assist you today?",
         "role": "assistant",
         "tool_calls": null,
         "function_call": null,

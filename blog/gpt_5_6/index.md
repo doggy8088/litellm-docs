@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM 對 GPT-5.6 系列（Sol、Terra、Luna）的第 0 天支援。"
+card_title: "GPT-5.6 (Sol, Terra, Luna)"
+card_summary: "GPT-5.6 家族（Sol、Terra、Luna）支援 OpenAI 直連與 Azure OpenAI，每個變體各一份設定。"
 image: ./hero.png
 tags: [openai, gpt-5.6, gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna, completion, day 0 support]
 hide_table_of_contents: false
@@ -187,5 +189,5 @@ curl -X POST "http://0.0.0.0:4000/v1/responses" \
 ## 附註 {#notes}
 
 - 若要對 GPT-5.6 模型進行成本追蹤，請在 Admin UI 中點選 **Reload Model Cost Map** 按鈕（或 `POST /reload/model_cost_map`）。適用於任何 `v1.76.0` 或更新版本的 LiteLLM，無需重新啟動容器或升級映像檔。
-- GPT-5.6 支援 reasoning、function calling、parallel tool calls、vision（image input）、prompt caching、web search 與 structured output；進階用法請參閱 [OpenAI provider docs](/docs/providers/openai)。
+- GPT-5.6 支援 reasoning、function calling、parallel tool calls、vision（image input）、prompt caching、web search 與 structured output；進階用法請參閱 [OpenAI provider docs](../../docs/providers/openai)。
 - GPT-5.6 系列已在 limited preview 中推出，而 OpenAI 正透過 API 與 Codex 擴大可用性；請在您的 OpenAI 帳戶中查看模型存取權限。

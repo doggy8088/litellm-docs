@@ -1,3 +1,7 @@
+---
+sidebar_label: 訊息修剪
+---
+
 # 修剪輸入訊息 {#trimming-input-messages}
 **使用 litellm.trim_messages() 確保訊息不會超過模型的 token 限制或指定的 `max_tokens`**
 

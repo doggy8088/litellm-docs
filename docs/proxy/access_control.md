@@ -16,7 +16,7 @@ import { TenancyDiagram } from '@site/src/components/CloudArchitecture';
 - `Virtual Keys` - 金鑰用於對 LiteLLM API 進行驗證。每個金鑰可選擇性地關聯至 `user_id`、`team_id`，或兩者皆是：
   - **僅使用者金鑰**：具有 `user_id`，但沒有 `team_id`。會個別追蹤，且在使用者刪除時一併刪除。
   - **Team 金鑰（服務帳號）**：具有 `team_id`，但沒有 `user_id`。由 Team 共用，當使用者被移除時不會刪除。[深入了解服務帳號金鑰](https://docs.litellm.ai/docs/proxy/virtual_keys#service-account-keys)。
-  - **使用者 + Team 金鑰**：同時具有 `user_id` 和 `team_id`。屬於 Team 情境中的特定使用者。
+  - **使用者 + Team 金鑰**：同時具有 `user_id` 和 `team_id`。屬於 Team 情境中的特定使用者。在使用者從該 Team 被移除或使用者被刪除時，此金鑰會被刪除。被移除的金鑰會出現在[已刪除金鑰](./deleted_keys_teams.md)稽核記錄中。
 
 ### 何時使用每種金鑰類型 {#when-to-use-each-key-type}
 
@@ -24,7 +24,7 @@ import { TenancyDiagram } from '@site/src/components/CloudArchitecture';
 |----------|----------|----------------|-----------|
 | **僅使用者** | 個別開發者的個人 API 金鑰 | 追蹤到使用者 | 使用者刪除時刪除 |
 | **Team（服務帳號）** | 生產環境應用程式、CI/CD 管線、共用服務 | 僅追蹤到 Team | 即使 Team 成員離開仍會保留 |
-| **使用者 + Team** | 在 Team 情境中工作的使用者 | 同時追蹤到使用者與 Team | 使用者刪除時刪除 |
+| **使用者 + Team** | 在 Team 情境中工作的使用者 | 同時追蹤到使用者與 Team | 使用者從 Team 被移除或被刪除時刪除 |
 
 **範例情境：**
 - 為在本機測試的開發者使用 **僅使用者金鑰**
@@ -47,14 +47,14 @@ LiteLLM 有兩種類型的角色：
 | `proxy_admin` | 整個平台的管理員。對所有 Organizations、Teams 和使用者擁有完整控制權 |
 | `proxy_admin_viewer` | 可以登入、檢視所有金鑰、檢視整個平台的所有支出。**無法**建立金鑰／刪除金鑰／新增使用者 |
 | `internal_user` | 可以登入、檢視／建立（當 team-specific 權限允許時）／刪除自己的金鑰，檢視自己的支出。**無法**新增使用者 |
-| `internal_user_viewer` | ⚠️ **已淘汰** - 請改用 team/org specific 角色。可以登入、檢視自己的金鑰、檢視自己的支出。**無法**建立／刪除金鑰、 新增使用者 |
+| `internal_user_viewer` | **已淘汰** - 請改用 team/org specific 角色。可以登入、檢視自己的金鑰、檢視自己的支出。**無法**建立／刪除金鑰、 新增使用者 |
 
 ### Organization/Team 特定角色 {#organizationteam-specific-roles}
 
 | 角色名稱 | 權限 |
 |-----------|-------------|
-| `org_admin` | 特定 Organization 的管理員。可在其 Organization 內建立 Teams 和使用者 ✨ **進階功能** |
-| `team_admin` | 特定 Team 的管理員。可管理 Team 成員、更新 Team 成員權限，並為其 Team 建立金鑰。✨ **進階功能** |
+| `org_admin` | 特定 Organization 的管理員。可在其 Organization 內建立 Teams 和使用者 **進階功能** |
+| `team_admin` | 特定 Team 的管理員。可管理 Team 成員、更新 Team 成員權限，並為其 Team 建立金鑰。**進階功能** |
 
 ## 使用情況儀表板可見性 {#usage-dashboard-visibility}
 
@@ -180,26 +180,25 @@ Org admin 管理一個或多個 Organizations。他們可以在自己的 Organiz
 
 ### Team Admin - Team 層級存取 {#team-admin---team-level-access}
 
-✨ **這是進階功能**
+**這是進階功能**
 
 Team admin 管理特定的 Team。他們就像 Team lead，可以新增人員、更新設定，但僅限於自己的 Team。
 
 **他們可以做什麼：**
 - 從自己的 Team 新增或移除 Team 成員
 - 更新 Team 成員在該 Team 內的預算與速率限制
-- 變更 Team 速率限制（TPM/RPM）與允許的模型
-- 保留或降低 Team 的 `max_budget`
+- 變更 Team 速率限制（TPM/RPM）與 Team 的 `max_budget`，但僅限 proxy 管理員在[團隊管理員可編輯的欄位](#choosing-what-team-admins-can-edit)下啟用的欄位
 - 為 Team 成員建立與刪除金鑰
 - 將 [team-BYOK](./team_model_add) 模型導入 LiteLLM（例如導入某個 Team 的微調模型）
 - 設定 [team member permissions](#team-member-permissions) 以控制一般 Team 成員可執行的操作
 
 **他們不能做的事：**
 - 建立新團隊
-- 將團隊的 `max_budget` 提高到目前值以上，或移除預算上限（`max_budget: null`）；只有 proxy 管理員可以這麼做
+- 提高團隊的 `max_budget`（除非 proxy 管理員已啟用 `raise_max_budget`），或移除預算上限（`max_budget: null`），後者只有 proxy 管理員可以做
 - 將全域 proxy 模型新增至其團隊或從中移除
 
 :::info[團隊預算提高]
-在 `/team/update` 上，團隊管理員可以維持或降低 `max_budget`。提高它（或清除上限）僅保留給 proxy 管理員，因此團隊管理員無法自行增加支出權限。組織範圍內的團隊也必須維持在組織預算之內。
+在 `/team/update` 上，團隊管理員只能變更 proxy 管理員在[團隊管理員可編輯的欄位](#choosing-what-team-admins-can-edit)下啟用的欄位。啟用 `max_budget` 後，他們可以維持或降低它；提高它還需要 `raise_max_budget` 條目，且在組織範圍內的團隊上受組織 `max_budget` 的上限約束。清除上限仍屬於 proxy 管理員的權限。
 :::
 
 **誰應該擔任團隊管理員：** 需要管理其團隊 API 存取權、但不想麻煩 IT 的團隊負責人。
@@ -217,11 +216,39 @@ curl -X POST 'http://0.0.0.0:4000/team/member_add' \
 
 :::
 
+#### 選擇團隊管理員可以編輯的項目 {#choosing-what-team-admins-can-edit}
+
+預設情況下，團隊管理員完全不能變更團隊設定：團隊管理員呼叫 `/team/update` 會傳回 403，並指出 proxy 管理員需要啟用哪個設定。proxy 管理員可以在 Admin UI 的 Settings > UI > "Team admin editable fields" 中選取欄位，或透過 API 設定 `team_admin_editable_team_fields`。同一個鍵也可以放在 proxy 設定 yaml 的 `general_settings` 底下；透過 UI 或 API 儲存的值優先於 yaml。此清單適用於 proxy 上的每一位團隊管理員，但僅限他們管理的團隊。proxy 管理員與組織管理員不受影響。
+
+```shell
+curl -X PATCH 'http://localhost:4000/update/ui_settings' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"team_admin_editable_team_fields": ["tpm_limit", "rpm_limit", "max_budget", "raise_max_budget"]}'
+```
+
+使用 `GET /get/ui_settings` 讀回目前的值。
+
+| 條目 | 團隊管理員可以在他們管理的團隊上做什麼 |
+|-------|-------------------------------------------------------|
+| `tpm_limit` | 在 `/team/update` 上變更團隊的每分鐘 token 限制 |
+| `rpm_limit` | 在 `/team/update` 上變更團隊的每分鐘請求限制 |
+| `max_budget` | 在 `/team/update` 上維持或降低團隊的 `max_budget`。提高或移除它仍會傳回 403 |
+| `raise_max_budget` | 也可以提高 `max_budget`。只能與 `max_budget` 一起使用：若單獨啟用，API 會傳回 400，且 UI 中的核取方塊位於 Max Budget 底下，在 Max Budget 被勾選前保持停用。移除預算（`max_budget: null`）永遠屬於 proxy 管理員的權限 |
+| `soft_budget` | 在 `/team/update` 上變更或清除團隊的 `soft_budget`。它必須低於團隊的 `max_budget`，與 proxy 管理員遵循的規則相同 |
+| `projects` | 為這些團隊建立與更新專案（`/project/new`、`/project/update`） |
+| `member_key_budgets` | 更新這些團隊其他成員所擁有金鑰的預算欄位（`/key/update`） |
+| `metadata` | 在 `/team/update` 上新增、變更與移除團隊自己的中繼資料鍵。proxy 讀作設定的鍵（防護欄、標籤、回呼、速率限制層級等類似項目）仍屬於 proxy 管理員，並會傳回 403 且指出該鍵。在 `team_metadata_schema` 中宣告的鍵可以變更，但不能移除或留空 |
+
+當團隊屬於有預算的組織時，提高預算受組織 `max_budget` 的上限約束：超過它會傳回 400，訊息為 `Team max_budget (...) exceeds organization's max_budget (...)`。不在組織內的團隊，或所屬組織沒有預算的團隊，則沒有上限。組織範圍內的團隊無論由誰編輯，也都必須維持在組織的預算與 TPM/RPM 限制之內。
+
+團隊管理員可以在 `/team/info` 上查看自己可以編輯的項目：對於已啟用的團隊管理員，`team_info.caller_edit_access` 為 `{"kind": "team_admin", "editable_fields": ["max_budget", "rpm_limit"], "may_raise_max_budget": true}`；沒有任何項目啟用時為 `{"kind": "team_admin_disabled"}`；proxy 管理員與組織管理員為 `{"kind": "unrestricted"}`；其他所有人為 `{"kind": "none"}`。
+
 ---
 
 ## 團隊成員權限 {#team-member-permissions}
 
-✨ **這是一項進階功能**
+**這是一項進階功能**
 
 團隊成員權限可讓您控制一般團隊成員（role=`user`）能對其團隊中的 API 金鑰執行哪些操作。預設情況下，團隊成員只能檢視金鑰資訊，但您可以授予他們額外權限，以建立、更新或刪除金鑰。
 
@@ -322,7 +349,7 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 
 ### 全域 Proxy 角色 {#global-proxy-roles-2}
 
-| 動作 | Proxy 管理員 | Proxy 管理員檢視者 | 內部使用者 | 內部使用者檢視者 ⚠️（已棄用） |
+| 動作 | Proxy 管理員 | Proxy 管理員檢視者 | 內部使用者 | 內部使用者檢視者（已棄用） |
 |--------|-------------|-------------------|---------------|-------------------------------------|
 | 建立組織 | ✅ | ❌ | ❌ | ❌ |
 | 建立團隊 | ✅ | ❌ | ❌ | ❌ |
@@ -345,9 +372,9 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 | 管理其組織內的團隊 | ✅ | ❌ |
 | 管理其特定團隊 | ✅ | ✅ |
 | 新增/移除團隊成員 | ✅（在其組織內） | ✅（僅其團隊） |
-| 維持 / 降低團隊 `max_budget` | ✅（在其組織內） | ✅（僅其團隊） |
-| 提高團隊 `max_budget` | ✅ 在組織限制內（組織範圍）；獨立部署則由 proxy 管理員處理 | ❌（僅限 proxy 管理員） |
-| 更新團隊速率限制 | ✅（在其組織內） | ✅（僅其團隊） |
+| 維持 / 降低團隊 `max_budget` | ✅（在其組織內） | ✅（僅其團隊，當 `max_budget` 已[啟用](#choosing-what-team-admins-can-edit)時） |
+| 提高團隊 `max_budget` | ✅ 在組織限制內（組織範圍）；獨立部署則由 proxy 管理員處理 | ✅（僅其團隊，當 `raise_max_budget` 已啟用時；受組織預算上限約束） |
+| 更新團隊速率限制 | ✅（在其組織內） | ✅（僅其團隊，當 `tpm_limit` / `rpm_limit` 已啟用時） |
 | 為團隊成員建立金鑰 | ✅（在其組織內） | ✅（僅其團隊） |
 | 檢視組織支出 | ✅（其組織） | ❌ |
 | 檢視團隊支出 | ✅（在其組織內） | ✅（其團隊） |
@@ -356,7 +383,7 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 
 ## 組織導入  {#onboarding-organizations}
 
-✨ **這是一項進階功能**
+**這是一項進階功能**
 
 ### 1. 建立新組織 {#1-creating-a-new-organization}
 
@@ -462,7 +489,7 @@ curl --location 'http://0.0.0.0:4000/team/new' \
 
 ### 4. `Organization Admin` - 新增團隊管理員 {#4-organization-admin---add-a-team-admin}
 
-✨ **這是一項進階功能**
+**這是一項進階功能**
 
 組織管理員現在可以新增一位團隊管理員，負責管理 `engineering_team`。
 
@@ -476,7 +503,7 @@ curl -X POST 'http://0.0.0.0:4000/team/member_add' \
     -d '{"team_id": "01044ee8-441b-45f4-be7d-c70e002722d8", "member": {"role": "admin", "user_id": "john@company.com"}}'
 ```
 
-現在 `john@company.com` 是團隊管理員。他們可以管理 `engineering_team`（新增成員、更新速率限制、保留或降低團隊預算、建立金鑰），但他們不能動到其他團隊，或將團隊預算提高到目前上限以上。
+現在 `john@company.com` 是團隊管理員。他們可以管理 `engineering_team`（新增成員、建立金鑰，以及變更 proxy 管理員在[團隊管理員可編輯的欄位](#choosing-what-team-admins-can-edit)下啟用的任何團隊設定），但他們不能動到其他團隊。
 
 為團隊管理員建立一個 Virtual Key：
 
@@ -523,7 +550,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 
 ### 6. `Team Admin` - 更新團隊設定 {#6-team-admin---update-team-settings}
 
-團隊管理員可以更新速率限制，並維持或降低團隊預算。將 `max_budget` 提高到團隊目前值以上需要 proxy 管理員。
+此步驟需要 proxy 管理員已在[團隊管理員可編輯的欄位](#choosing-what-team-admins-can-edit)下啟用 `rpm_limit` 與 `max_budget`。有了這兩個條目，團隊管理員可以變更 RPM 限制，並維持或降低團隊預算；提高 `max_budget` 還需要 `raise_max_budget` 條目。
 
 ```shell
 curl --location 'http://0.0.0.0:4000/team/update' \
@@ -536,4 +563,4 @@ curl --location 'http://0.0.0.0:4000/team/update' \
     }'
 ```
 
-在此範例中，僅當團隊目前預算已是 `max_budget: 100` 或更高（維持 / 降低）時，`100` 才會成功。若要提高團隊預算，請使用 proxy 管理員金鑰。
+在此範例中，當團隊目前預算已是 `100` 或更高時，`max_budget: 100` 才會成功。超過目前預算還需要 `raise_max_budget`，且在組織範圍內的團隊上，新值必須維持在組織的 `max_budget` 之內。若沒有啟用任何欄位，此呼叫會傳回 403，並告知團隊管理員要請 proxy 管理員啟用哪個設定。

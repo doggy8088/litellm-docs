@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Qualifire 防護欄"
+sidebar_label: "Qualifire"
+description: "在 LiteLLM AI 閘道上使用 Qualifire 偵測提示注入、幻覺、PII 與有害內容，並支援評估與自訂斷言。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

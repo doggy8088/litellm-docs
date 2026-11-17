@@ -37,7 +37,7 @@ LiteLLM 也提供一些輔助函式：
 
 - `api.litellm.ai`：跨[所有支援的模型](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)即時統計 token 與價格。**跳至程式碼**
 
-📣 [這是一份由社群維護的清單](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。歡迎貢獻！❤️
+[這是一份由社群維護的清單](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)。歡迎貢獻！
 
 ## 範例用法  {#example-usage}
 

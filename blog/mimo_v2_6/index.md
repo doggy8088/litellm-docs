@@ -7,6 +7,8 @@ authors:
   - misbah
   - mateo
 description: "LiteLLM 對 Xiaomi MiMo V2.6 Pro 和 Flash 的 Day 0 支援，首次以原生路由計價。"
+card_title: "Xiaomi MiMo V2.6"
+card_summary: "Xiaomi 的 Pro（每 1M 為 $0.435 / $0.87）與 Flash（$0.14 / $0.28），與 V2.5 相同費率，以原生路由計價。"
 tags: [xiaomi, mimo, mimo-v2.6, day 0 support]
 hide_table_of_contents: false
 ---

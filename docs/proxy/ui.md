@@ -82,6 +82,32 @@ ROOT_REDIRECT_URL="/ui"       # Redirect root path (/) to /ui
 
 預設情況下，`DOCS_URL` 是 `"/"`，因此只有在您已將 `DOCS_URL` 變更為不同路徑時才需要此設定。
 
+## 為 SSO 中斷保留一個緊急管理員帳號 {#keep-a-break-glass-admin-account-for-sso-outages}
+
+如果您的管理員平常以 SSO 登入，且 `disable_env_credential_login` 已開啟，請保留一個共用的 `proxy_admin` 資料庫使用者並為其設定密碼，以備您的 SSO 提供者中斷時使用，並將其電子郵件與密碼存放在您的密碼保管庫中。該帳號在 `/fallback/login` 以其電子郵件作為使用者名稱登入。`disable_env_credential_login` 不會阻擋它，因為該設定只關閉 `UI_USERNAME`/`UI_PASSWORD` 與 master key 登入，而設有密碼的資料庫使用者仍可登入。請為它指定一個您的 SSO 提供者中任何帳號都未使用的電子郵件，因為以相同電子郵件進行的 SSO 登入會被比對到此使用者，並可能改變其角色。
+
+建立它最簡單的方法，是以管理員身分登入後從儀表板操作。前往 `Internal Users` -> `+ Invite User`，輸入例如 `breakglass-admin@example.com` 的電子郵件，並將 `Global Proxy Role` 設為 `Admin (All Permissions)`。未使用 SSO 時，開啟它顯示的邀請連結來設定密碼。已設定 SSO 時，該連結只會透過 SSO 將使用者登入，因此請開啟 `Internal Users` 中新使用者列上的動作選單，選擇 `Reset password`，再開啟該連結來設定密碼。請在私密視窗中開啟連結，因為設定密碼會讓該瀏覽器以新帳號登入。透過任一連結設定的密碼都可立即使用，首次登入時不需強制變更。
+
+您也可以使用 master key 透過 API 建立它。`/user/new` 不接受密碼，因此請以 `/user/update` 設定密碼，並傳入 `"auto_create_key": false`，讓 `/user/new` 不會同時為此使用者建立管理員 API 金鑰：
+
+```bash
+curl -X POST "$PROXY_BASE_URL/user/new" \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "breakglass-admin", "user_email": "breakglass-admin@example.com", "user_role": "proxy_admin", "auto_create_key": false}'
+
+curl -X POST "$PROXY_BASE_URL/user/update" \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "breakglass-admin", "password": "<password>"}'
+```
+
+密碼必須通過 proxy 的密碼原則，預設為至少 12 個字元，且包含一個大寫字母、一個小寫字母、一個數字和一個特殊字元，否則 `/user/update` 會回應 400。自 v1.104.0 起，管理員以 `/user/update` 設定的密碼必須在首次登入時變更。儀表板會開啟 Change Password 頁面，在密碼變更之前，該工作階段只能變更密碼或登出。因此，請在建立帳號後立即在 `/fallback/login` 登入一次，在該處選定最終密碼，並將該密碼存入保管庫。
+
+請在需要用到它之前先測試該帳號。登出後開啟 `/fallback/login`，以保管庫中的憑證登入。您應該會以管理員身分進入儀表板。若日後要更換密碼，請以該帳號登入並使用帳號選單中的 `Change Password`（自 v1.104.0 起），或請另一位管理員在其 `Internal Users` 列上開啟 `Reset password`，然後更新保管庫。
+
+當 `disable_password_login_when_sso_enabled` 開啟時，此帳號無法登入，因為該設定在 SSO 完整設定後會拒絕所有使用者名稱/密碼登入；因此若您仰賴緊急帳號，請將其保持關閉。此帳號的登入失敗會計入下方的[登入限制](#limit-failed-sign-in-attempts)。
+
 ## 限制登入失敗嘗試次數 {#limit-failed-sign-in-attempts}
 
 Admin UI 中使用者名稱與密碼登入失敗的次數會依來源位址計算。任何位址在 60 秒內對所有使用者名稱累計超過 10 次錯誤密碼，會使該位址被封鎖 5 分鐘。帳號永遠不會被鎖定：相同的使用者名稱仍可從任何其他位址登入。位址限制的一半（預設為 5）是該位址對單一使用者名稱的可用次數。超過後只會封鎖該位址與使用者名稱組合，而其後續失敗將不再計入該位址，因此卡在單一帳號上的腳本不會讓共享辦公室位址後方的所有人都無法登入。

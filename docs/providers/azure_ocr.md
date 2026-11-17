@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure AI OCR（Mistral、Cohere Parse）"
+sidebar_label: "Azure AI OCR (Mistral, Cohere Parse)"
+description: "透過 litellm.ocr() 或 AI Gateway 的 /ocr 路由，使用 Azure AI 上的 Mistral Document AI 從 PDF 與圖片中擷取文字，或使用 Cohere Parse 解析圖片。"
+---
+
 # Azure AI OCR (Mistral, Cohere Parse) {#azure-ai-ocr-mistral-cohere-parse}
 
 ## 總覽 {#overview}

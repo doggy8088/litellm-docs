@@ -1,8 +1,15 @@
+---
+title: "LiteLLM 上的 TypeSafe Jev 上下文壓縮"
+sidebar_label: "基於相關性的壓縮（TypeSafe / Jev）"
+description: "在 LiteLLM AI 閘道上，將 TypeSafe Jev 評分低於相關性閾值的工具結果清空，讓過時的上下文不再消耗輸入 token。"
+---
 # 基於相關性的壓縮（TypeSafe / Jev） {#relevance-based-compaction-typesafe--jev}
 
 [TypeSafe](https://typesafe.ai) 的 Jev 模型會判斷每個已完成的工具交換是否仍與目前的任務相關。作為 LiteLLM 的防護欄，它會在請求到達模型之前，將 Jev 低於相關性閾值的工具結果清空，因此無效內容不會再消耗輸入 token。與摘要式壓縮器不同，這是以每次交換為單位的全有或全無：結果不是原封不動保留，就是被取代為移除通知。
 
 此功能適用於 `/v1/chat/completions`、`/v1/messages`（Anthropic 格式）以及 `/v1/responses`。
+
+此防護欄只會壓縮工具結果，永遠不會阻擋請求。若要使用 Jev 阻擋提示詞注入或其他政策違規，請使用 [Decision Model 防護欄](./decision_model.md)。
 
 ## 運作方式 {#how-it-works}
 

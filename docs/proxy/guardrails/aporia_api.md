@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI 閘道上的 Aporia 防護欄"
+sidebar_label: "Aporia"
+description: "在 LiteLLM AI 閘道上以 Aporia 偵測請求中的 PII 與回應中的髒話，使用呼叫前與呼叫後專案，並可依金鑰控制。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -131,7 +137,7 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
-## 5. ✨ 依專案（API 金鑰）控制防護欄 {#5--control-guardrails-per-project-api-key}
+## 5. 依專案（API 金鑰）控制防護欄 {#5-control-guardrails-per-project-api-key}
 
 <EnterpriseFeature />
 

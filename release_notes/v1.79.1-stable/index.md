@@ -1,5 +1,6 @@
 ---
-title: "v1.79.1-stable - 防護欄 Playground"
+title: "LiteLLM v1.79.1-stable - 防護欄 Playground"
+description: "新增 OpenAI Container API 支援、FAL AI 圖片生成，以及 UI 中的 Guardrail Playground。修復 SDK 與 AI Gateway 中的大多數記憶體洩漏。"
 slug: "v1-79-1"
 date: 2025-11-01T10:00:00
 authors:

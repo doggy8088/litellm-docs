@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 進行 Vertex AI Veo 影片生成"
+sidebar_label: "Vertex AI 影片生成 (Veo)"
+description: "透過 LiteLLM，從 Python SDK 或 AI 閘道在 Gemini Enterprise Agent Platform（原 Vertex AI）上生成 Veo 影片，並提供成本追蹤。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Chutes API：Python SDK 與閘道"
+sidebar_label: "Chutes"
+description: "透過 Python SDK 或 AI 閘道呼叫部署於 Chutes（與 OpenAI 相容的服務平台）上的 LLM，並使用串流、temperature、top_p 與 max_tokens。"
+---
+
 # Chutes {#chutes}
 
 ## 總覽 {#overview}

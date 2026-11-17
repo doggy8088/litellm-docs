@@ -9,7 +9,7 @@
 | 端使用者追蹤 | ❌ | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ✅ | `run-sse` 進度事件即時轉送 |
 
-只要將 `https://agent.tinyfish.ai` 替換為 `LITELLM_PROXY_BASE_URL/tinyfish` 即可 🚀
+只要將 `https://agent.tinyfish.ai` 替換為 `LITELLM_PROXY_BASE_URL/tinyfish` 即可
 
 **支援的端點：**
 

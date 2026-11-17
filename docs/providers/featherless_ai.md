@@ -1,3 +1,9 @@
+---
+title: "Featherless AI API 與 LiteLLM：設定"
+sidebar_label: "Featherless AI"
+description: "從 LiteLLM Python SDK 執行 Featherless AI 託管的 Qwerky、Qwen2.5、OpenHands LM 與 DeepSeek-V3 模型，支援標準與串流聊天補全。"
+---
+
 # Featherless AI {#featherless-ai}
 https://featherless.ai/
 

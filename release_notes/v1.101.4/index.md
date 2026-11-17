@@ -1,5 +1,6 @@
 ---
-title: "v1.101.4 - Straiker v3 平台與 Guardrail api_version 修正"
+title: "LiteLLM v1.101.4 支援 Straiker v3 金鑰並修正 Azure Content Safety"
+description: "為 Straiker 防護欄新增 Straiker v3 平台金鑰，並修正未提供 api_version 時傳回 404 的 Azure Content Safety 防護欄。"
 slug: "v1-101-4"
 date: 2026-10-01T05:10:00
 authors:

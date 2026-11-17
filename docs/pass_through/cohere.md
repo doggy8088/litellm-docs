@@ -9,7 +9,7 @@ Cohere 的直通端點 - 以原生格式呼叫提供者專屬端點（不進行�
 | 端使用者追蹤 | ❌ | [如果您需要，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ✅ | |
 
-只要將 `https://api.cohere.com` 替換為 `LITELLM_PROXY_BASE_URL/cohere` 🚀
+只要將 `https://api.cohere.com` 替換為 `LITELLM_PROXY_BASE_URL/cohere`
 
 #### **使用範例** {#example-usage}
 ```bash

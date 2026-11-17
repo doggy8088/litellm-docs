@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI Gateway 的 Azure Sentinel 記錄"
+sidebar_label: "Azure Sentinel"
+description: "透過 Azure Monitor Logs Ingestion API 將 LiteLLM AI Gateway 記錄傳送至 Azure Sentinel，包含資料表、DCR 與應用程式註冊的逐步設定說明。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

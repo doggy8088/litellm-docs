@@ -6,7 +6,7 @@ authors:
   - krrish
   - ishaan-alt
 description: "4 月 LiteLLM town hall 的回顧，涵蓋 CI/CD v2、產品穩定性工作，以及近期藍圖。"
-tags: [townhall, security, reliability, product]
+tags: [townhall, reliability, product]
 hide_table_of_contents: false
 ---
 

@@ -1,4 +1,4 @@
-🔥 PROMPTMETHEUS – 提示工程 IDE
+PROMPTMETHEUS – 提示工程 IDE
 
 為大型語言模型撰寫、測試、最佳化並部署可靠的提示。
 

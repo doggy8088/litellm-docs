@@ -32,7 +32,7 @@ LiteLLM 的 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main
 是 `output_cost_per_second`；解析後的費率只會收取一次，不會累加。轉錄、語音和影片仍繼續使用
 `input_cost_per_second` 和 `output_cost_per_second`
 
-`cost_per_second` 需要 v1.105.0 或更新版本。較早版本請使用 `input_cost_per_second`
+`cost_per_second` 可用於 <SinceVersion v="1.105.0" />。較早版本請使用 `input_cost_per_second`
 
 #### 搭配 LiteLLM Proxy Server 使用 {#usage-with-litellm-proxy-server}
 
@@ -74,8 +74,8 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
       api_version: os.environ/AZURE_API_VERSION
     model_info:
-      input_cost_per_token: 0.000421 # 👈 ONLY to track cost per token
-      output_cost_per_token: 0.000520 # 👈 ONLY to track cost per token
+      input_cost_per_token: 0.000421 # ONLY to track cost per token
+      output_cost_per_token: 0.000520 # ONLY to track cost per token
 ```
 
 ## 覆寫模型成本對照表 {#override-model-cost-map}
@@ -152,8 +152,8 @@ model_list:
       model: ollama/llama3
       api_base: http://localhost:11434
     model_info:
-      input_cost_per_token: 0   # 👈 Explicitly set to 0
-      output_cost_per_token: 0  # 👈 Explicitly set to 0
+      input_cost_per_token: 0   # Explicitly set to 0
+      output_cost_per_token: 0  # Explicitly set to 0
   
   # Paid cloud model - budget checks apply
   - model_name: {{openai_large}}
@@ -209,12 +209,34 @@ model_list:
       model: openai/gpt-4o-mini-audio-preview
       api_key: os.environ/OPENAI_API_KEY
     model_info:
-      base_model: gpt-4o-mini-audio-preview  # 👈 Used for pricing lookup
+      base_model: gpt-4o-mini-audio-preview  # Used for pricing lookup
       input_cost_per_token: 0.0000006
       output_cost_per_token: 0.0000024
       input_cost_per_audio_token: 0.00001
       output_cost_per_audio_token: 0.00002
 ```
+
+## 當路由提供者與定價提供者不同時，設定 'pricing_provider' {#set-pricing_provider-when-the-routing-provider-and-the-pricing-provider-differ}
+
+**問題**：您透過 OpenAI 相容端點（`custom_llm_provider: openai` 搭配自訂 `api_base`）路由到第三方主機，但該模型在 LiteLLM 的成本對照表中是以該主機自己的提供者定價的。成本查找會以路由提供者執行，在該處找不到對應列，並將請求以 $0 計費。`model_info.id` 等於該提供者某個成本對照表鍵的部署，也會遇到同樣的 $0 問題。
+
+**解決方案** ✅：在 `model_info` 下設定 `pricing_provider`，指定應以哪個提供者的成本對照表列為該部署定價。未設定時，會使用路由提供者（`custom_llm_provider`），這是先前的行為。
+
+```yaml
+model_list:
+  - model_name: glm-5.2
+    litellm_params:
+      model: zai-org/GLM-5.2
+      api_base: https://inference.baseten.co/v1
+      api_key: os.environ/BASETEN_API_KEY
+      custom_llm_provider: openai
+    model_info:
+      pricing_provider: baseten            # price from the baseten/zai-org/GLM-5.2 cost-map row
+      input_cost_per_token: 0.00000096     # optional, overrides that row's rate
+      output_cost_per_token: 0.00000302
+```
+
+您在部署上設定的費率優先。您未設定的費率（例如 `cache_read_input_token_cost`）會取自定價提供者對該模型的對應列，而不是預設為 0。完全未設定任何費率時，請求會以該列的費率計費。
 
 ## 疑難排解 {#debugging}
 

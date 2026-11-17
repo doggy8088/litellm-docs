@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Perplexity Embeddings"
+sidebar_label: "Perplexity Embeddings"
+description: "使用 Perplexity 的 0.6b 與 4b 模型建立 pplx-embed v1 嵌入，再縮減輸出維度或切換為二進位編碼，可從 SDK 或 AI Gateway 操作。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

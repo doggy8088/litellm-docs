@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM AI 閘道上的 CrowdStrike AIDR Guardrails"
+sidebar_label: "CrowdStrike AIDR"
+description: "在 LiteLLM AI 閘道上以 CrowdStrike AIDR 政策阻擋提示注入、PII 與有害內容，包含 collector 註冊與設定。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -26,7 +32,7 @@ CrowdStrike AIDR 防護欄使用可設定的偵測政策來識別並緩解 AI �
 
 ## 快速開始 {#quick-start}
 
-在 Falcon 主控台中，按一下 **Open menu** (**☰**) 並前往 **AI detection and response** > **Collectors**。
+在 Falcon 主控台中，按一下 **Open menu** (** **) 並前往 **AI detection and response** > **Collectors**。
 
 ### 1. 註冊 LiteLLM 收集器 {#1-register-litellm-collector}
 
@@ -210,7 +216,7 @@ curl -sSLX POST http://localhost:4000/v1/chat/completions \
       "finish_reason": "stop",
       "index": 0,
       "message": {
-        "content": "Hello! 😊 How can I assist you today?",
+        "content": "Hello! How can I assist you today?",
         "role": "assistant"
       }
     }

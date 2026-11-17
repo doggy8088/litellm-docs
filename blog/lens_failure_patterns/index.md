@@ -82,7 +82,7 @@ Python 會在沒有網路存取的受限環境中執行。隨著調查擴大，�
 
 ![Lens 工作者會輪詢 LiteLLM 以取得調查，讀取證據並透過 gateway 呼叫模型，然後回報進度與發現。](./assets/06-deployment.svg)
 
-工作者會在您的基礎架構上執行，並向 LiteLLM 輪詢工作。它使用 gateway 來取得證據，並呼叫您選擇的分析模型。ClickHouse 儲存追蹤結果，而 Postgres 儲存調查狀態。[管線與工具](https://github.com/BerriAI/litellm/blob/main/litellm/proxy/lens/context_pipeline.py) 是開源的。
+工作者會在您的基礎架構上執行，並向 LiteLLM 輪詢工作。它使用 gateway 來取得證據，並呼叫您選擇的分析模型。ClickHouse 儲存追蹤結果，而 Postgres 儲存調查狀態。[管線與工具](https://github.com/BerriAI/litellm/blob/0734e35024608d3affa17a633fd4519415b2558e/litellm/proxy/lens/context_pipeline.py) 是開源的。
 
 在我們的架構實驗中，我們建立了一個黃金資料集，包含 25 項調查、3,752 個工作階段與 99,797 個跨度。這些受控案例包含巢狀代理程式、長工具結果、健康執行，以及失敗後恢復。我們的架構找出了全部 11 種預期的失敗模式：**100% 的召回率**。
 

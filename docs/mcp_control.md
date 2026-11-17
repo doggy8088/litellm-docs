@@ -38,12 +38,13 @@ LiteLLM 支援在 LiteLLM 上以金鑰、團隊、組織（實體）來管理 MC
 
 ## 權限階層 {#permission-hierarchy}
 
-權限可設定於六個不同層級。當多個層級同時適用於某個請求時，LiteLLM 會**取交集**（最嚴格者勝出），組織層級除外，其作用為**上限**。
+權限可設定於六個不同層級。當多個層級同時適用於某個請求時，LiteLLM 會**取交集**（最嚴格者勝出），組織層級除外，其作用為**上限**；另外，附加在金鑰上的存取群組（Access Groups）會在金鑰與團隊之上**新增**伺服器。
 
 | 層級 | 來源 | 組合方式 |
 |---|---|---|
 | **Key** | 虛擬 key 上的 `object_permission.mcp_servers` / `object_permission.mcp_access_groups` | 如果 key 有明確清單，就使用該清單。 |
-| **Team** | team 上相同的欄位 | 如果 key 和 team 都有清單，結果為**交集**（只保留同時屬於兩者的 servers）。如果只有 team 有清單，key 會繼承該清單。 |
+| **Team** | team 上相同的欄位，外加 team 的 `access_group_ids` 中 [存取群組](./proxy/access_groups) 的 MCP 伺服器 | 如果 key 和 team 都有清單，結果為**交集**（只保留同時屬於兩者的 servers）。如果只有 team 有清單，key 會繼承該清單。 |
+| **Key access groups** | key 的 `access_group_ids` 中 [存取群組](./proxy/access_groups) 的 MCP 伺服器 | **新增**到 key/team 的結果中，因此附加在 key 上的群組即使 team 未列出其伺服器，也能連及這些伺服器。以下層級仍然適用。 |
 | **End user** | 與 `x-litellm-end-user-id` 相符的 `LiteLLM_EndUserTable` 資料列上的相同欄位 | 與目前結果取交集。若請求中沒有 end-user-id，則略過。 |
 | **Agent** | 由 `x-litellm-agent-id` 所識別的 agent 上的相同欄位，或 key 綁定的 agent（在 key 生成時設定 `agent_id`） | 與目前結果取交集。若不適用任何 agent，則略過。 |
 | **Internal user** | 請求驗證為其身分的 internal user（真人）上的相同欄位 | 與目前結果取交集，因此只能縮小範圍。若該使用者沒有任何權益，則略過。 |
@@ -707,7 +708,7 @@ curl --location '<your-litellm-proxy-base-url>/v1/responses' \
 {
   "mcpServers": {
     "LiteLLM": {
-      "url": "litellm_proxy",
+      "url": "http://localhost:4000/mcp",
       "headers": {
         "x-litellm-api-key": "Bearer sk-<your-litellm-api-key>",
         "x-mcp-servers": "alias_1,Server2"
@@ -743,6 +744,8 @@ mcp_servers:
 - 在 `access_groups` 中傳入字串清單
 - 接著可使用這些群組，透過金鑰、團隊與使用標頭的 MCP 用戶端來分隔存取權限
 
+若要將存取群組授予 IdP 群組，請將其授予 SCIM 為該群組佈建的團隊，請參閱 [透過 SCIM 佈建的團隊授予 MCP 存取權](./mcp_grant_access#grant-mcp-access-through-scim-provisioned-teams)。
+
 ##### B. 使用 UI 建立存取群組 {#b-creating-access-groups-using-ui}
 
 若要建立存取群組：
@@ -764,7 +767,7 @@ mcp_servers:
 {
   "mcpServers": {
     "LiteLLM": {
-      "url": "litellm_proxy",
+      "url": "http://localhost:4000/mcp",
       "headers": {
         "x-litellm-api-key": "Bearer sk-<your-litellm-api-key>",
         "x-mcp-servers": "dev_group"
@@ -947,9 +950,9 @@ Tool 'delete_repo' is not allowed for your key/team on server 'issue_tracker'. C
 
 ## 每個 MCP 伺服器的速率限制 {#rate-limiting-per-mcp-server}
 
-使用 `mcp_rpm_limit` 將金鑰或團隊每分鐘可對特定 MCP 伺服器發出的工具呼叫數量設上限。這是一個以 MCP 伺服器名稱為鍵的 `Dict[str, int]`；名稱若有設定別名，則使用伺服器別名，否則使用設定的伺服器名稱。每個項目都為該伺服器設定每分鐘請求數上限，因此對 `github` 的限制不會影響對 `slack` 的呼叫。未設定項目的伺服器不受上限限制。
+使用 `mcp_rpm_limit` 將金鑰或團隊每分鐘可對特定 MCP 伺服器發出的請求數量設上限。這是一個以 MCP 伺服器名稱為鍵的 `Dict[str, int]`；名稱若有設定別名，則使用伺服器別名，否則使用設定的伺服器名稱。每個項目都為該伺服器設定每分鐘請求數上限，因此對 `github` 的限制不會影響對 `slack` 的呼叫。未設定項目的伺服器不受上限限制。
 
-一旦在該時間窗內超過上限，之後對該伺服器的工具呼叫會回傳 `429 Too Many Requests`，直到時間窗重新開始。此上限僅套用於實際的 MCP 工具呼叫；對一般 LLM 請求沒有影響。
+傳送到該伺服器的每一個 MCP 操作都會計入：`tools/call`、`tools/list`、`prompts/list`、`prompts/get`、`resources/list`、`resources/templates/list` 與 `resources/read`，外加位於 `/mcp-rest/tools/list` 的 REST 工具清單。一旦在時間窗內超過上限，之後對該伺服器的請求會被拒絕，直到時間窗重新開始。在 `/mcp` 上，拒絕會以指出已耗盡限制的 MCP 錯誤形式回傳，而 REST 路由則回傳 `429 Too Many Requests`。此上限對一般 LLM 請求沒有影響。
 
 <Tabs>
 <TabItem value="key" label="在金鑰上">
@@ -982,6 +985,39 @@ curl -X POST "http://localhost:4000/team/new" \
 </Tabs>
 
 `mcp_rpm_limit` 也可用於 `/key/update`、`/team/update`、`/user/new` 與 `/user/update`。對同一伺服器而言，金鑰層級的限制優先於團隊層級的限制；否則團隊限制會作為共享計數器套用到該團隊中的每個金鑰。
+
+### MCP 伺服器的全域限制 {#global-limit-on-an-mcp-server}
+
+在 MCP 伺服器本身設定 `rpm`，即可限制它從所有呼叫者收到的請求總數，就如同模型部署上的 `rpm` 限制該部署一樣。此計數器僅以伺服器的 ID 為鍵，因此所有金鑰、團隊與使用者共用同一個 bucket；當代理使用 Redis 時，該 bucket 會在所有代理執行個體之間共用。它會與任何金鑰或團隊的 `mcp_rpm_limit` 疊加套用，當伺服器限制或任何適用的金鑰或團隊限制耗盡時，請求會被拒絕。若不設定 `rpm`，則沒有伺服器層級的限制；`rpm: 0` 會拒絕對該伺服器的每一個請求。
+
+<Tabs>
+<TabItem value="config" label="config.yaml">
+
+```yaml title="Cap all callers of github at 300 requests per minute" showLineNumbers
+mcp_servers:
+  github:
+    url: "https://api.githubcopilot.com/mcp"
+    rpm: 300
+```
+
+</TabItem>
+<TabItem value="api" label="API">
+
+```bash title="Set a server-wide limit on an existing MCP server" showLineNumbers
+curl -X PUT "http://localhost:4000/v1/mcp/server" \
+  -H "Authorization: Bearer sk-master-key" \
+  -H "Content-Type: application/json" \
+  -d '{"server_id": "<server_id>", "rpm": 300}'
+```
+
+</TabItem>
+</Tabs>
+
+在管理介面中，相同的設定是 MCP 伺服器表單上的 **RPM limit (all callers)** 欄位，位於 Max Concurrent Requests 旁邊。
+
+請求的計算方式。分頁清單的每一頁，對它讀取的每台伺服器都算一次請求，因此逐頁瀏覽大型目錄的用戶端，每頁每台伺服器會消耗一個單位。在橫跨多台伺服器的清單中，若某台伺服器在第一頁就超過其限制，該伺服器會被排除並以 `rate_limited` 狀態回報，而其他伺服器仍會回傳其項目；若在後續頁面才觸及限制，整個請求會被拒絕，因為在清單中途移除伺服器會使分頁游標不一致。`server/discover` 請求對每台伺服器只計費一次，即使它執行了多個清單。在到達限制器之前就被拒絕的呼叫不會計入，例如金鑰無權使用的工具或無效的引數。被其中一項限制拒絕的請求不會計入任何一項限制，因此金鑰在其自身的 `mcp_rpm_limit` 之外重試，不會消耗團隊或伺服器的額度。對於 `tools/call`，會先檢查金鑰的一般 `rpm_limit` 與防護欄，被它們拒絕的呼叫也不會計入 MCP 限制。內部清單同樣不計入：代理在第一次工具呼叫前執行的目錄預熱，以及包含已停用工具的管理員伺服器工具設定檢視。
+
+時間窗預設為 60 秒，從第一個計入的請求開始；設定 `LITELLM_RATE_LIMIT_WINDOW_SIZE`（以秒為單位）即可變更。這些 MCP 限制僅由預設的速率限制器強制執行。當 `LEGACY_MULTI_INSTANCE_RATE_LIMITING=true` 時，`mcp_rpm_limit` 與伺服器的 `rpm` 都不會被強制執行。
 
 ## 儀表板檢視模式 {#dashboard-view-modes}
 

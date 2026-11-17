@@ -2,42 +2,66 @@ import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# ✨ 管理 UI 的 SSO {#-sso-for-admin-ui}
+# OpenID Connect (OIDC) SSO {#openid-connect-oidc-sso}
 
-<EnterpriseFeature feature="SSO">自 v1.76.0 起，SSO 對最多 5 位使用者免費。超過後則需要企業授權。</EnterpriseFeature>
+使用 OpenID Connect (OIDC) 登入 Admin UI；OIDC 是建立在 OAuth 2.0 之上的身分層。若是 SAML 提供者，請使用 [SAML SSO](./saml_sso.md)。
 
-### 用法（Google、Microsoft、Okta 等） {#usage-google-microsoft-okta-etc}
+<EnterpriseFeature feature="SSO">從 v1.76.0 起，SSO 對最多 5 位使用者免費。超過此人數需要企業授權。</EnterpriseFeature>
+
+## 運作方式 {#how-it-works}
+
+Admin UI 會將使用者重新導向到您的身分提供者。登入後，LiteLLM 會在 `/sso/callback` 收到提供者的回應，識別使用者，並啟動他們的 UI 工作階段。角色、團隊成員資格與登入限制請在 [SSO 權限](./access_management/sso_permissions.md)中設定。
+
+## 必要條件 {#prerequisites}
+
+- 一個正在執行且具有主金鑰與資料庫連線的 LiteLLM proxy。
+- 一個已向您的身分提供者註冊的應用程式，附有 client ID 與 secret。
+- 公開的 proxy URL，包含 `https://`（本機開發則為 `http://`）。
+
+<a id="step-3-set-proxy_base_url-in-your-env"></a>
+
+設定 base URL，讓 LiteLLM 產生正確的 callback URL：
+
+```bash
+PROXY_BASE_URL="https://litellm.yourcompany.com"
+```
+
+## 設定 {#setup}
+
+<a id="usage-google-microsoft-okta-etc"></a>
+
+選擇您的提供者，並將 `<PROXY_BASE_URL>/sso/callback` 註冊為其登入重新導向 URI。
 
 <Tabs>
 <TabItem value="okta" label="Okta SSO">
 
-### 影片導覽 {#video-walkthrough}
+#### 影片操作指南 {#video-walkthrough}
 
 <iframe width="100%" height="415" src="https://www.loom.com/embed/cac5be90f2714ceaa95d7f89cf4ac548" frameBorder="0" allowFullScreen></iframe>
 
 #### 步驟 1：在 Okta 中建立 OIDC 應用程式 {#step-1-create-an-oidc-application-in-okta}
 
-在您的 Okta 管理主控台中，建立新的 **OIDC Web Application**。如需詳細操作說明，請參閱 [Okta 關於建立 OIDC app integrations 的指南](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm)。
+在您的 Okta Admin Console 中，建立一個新的 **OIDC Web Application**。詳細說明請參閱 [Okta 的 OIDC 應用程式整合建立指南](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm)。
 
 設定應用程式時：
-- **登入重新導向 URI**：`https://<your-proxy-base-url>/sso/callback`
-- **登出重新導向 URI**（選用）：`https://<your-proxy-base-url>`
+- **Sign-in redirect URI**：`https://<your-proxy-base-url>/sso/callback`
+- **Sign-out redirect URI**（選填）：`https://<your-proxy-base-url>`
 
 <Image img={require('../../img/okta_redirect_uri.png')} />
 
-建立 app 後，請從應用程式的 General 分頁複製您的 **Client ID** 和 **Client Secret**：
+建立應用程式後，從應用程式的 General 分頁複製您的 **Client ID** 與 **Client Secret**：
 
 <Image img={require('../../img/okta_client_credentials.png')} />
 
 #### 步驟 2：將使用者指派給應用程式 {#step-2-assign-users-to-the-application}
 
-請確認使用者已在 **Assignments** 分頁中指派到 app。如果已啟用 Federation Broker Mode，您可能需要先停用它，才能手動指派使用者。
+確保使用者已在 **Assignments** 分頁中被指派給該應用程式。若啟用了 Federation Broker Mode，您可能需要先將其停用，才能手動指派使用者。
 
 #### 步驟 3：設定環境變數 {#step-3-set-environment-variables}
 
-設定下列環境變數。兩個 Okta authorization server 之間唯一的差異在於端點 URL：
+設定下列環境變數。兩個 Okta 授權伺服器之間唯一的差異是端點 URL：
 
-**Org Authorization Server**（適用於所有 Okta 方案，無需額外 SKU）：
+**Org Authorization Server**（所有 Okta 方案皆可使用，不需要額外的 SKU）：
 ```bash
 GENERIC_CLIENT_ID="<your-client-id>"
 GENERIC_CLIENT_SECRET="<your-client-secret>"
@@ -61,69 +85,40 @@ PROXY_BASE_URL="https://<your-proxy-base-url>"
 您可以在 `https://<your-okta-domain>/.well-known/openid-configuration` 找到所有 OAuth 端點
 :::
 
-#### 步驟 3a：設定 Access Policy（僅限 Custom Authorization Server） {#step-3a-configure-access-policy-custom-authorization-server-only}
+#### 步驟 3a：設定存取政策（僅限 Custom Authorization Server）{#step-3a-configure-access-policy-custom-authorization-server-only} {#step-3a-configure-access-policy-custom-authorization-server-only}
 
-如果您使用的是 Custom Authorization Server，則必須設定 Access Policy。若未設定，使用者將會收到 `no_matching_policy` 錯誤。如果您使用的是 Org Authorization Server，請略過此步驟。
+若您使用的是 Custom Authorization Server，您必須設定 Access Policy。沒有它，使用者會收到 `no_matching_policy` 錯誤。若您使用的是 Org Authorization Server，請略過此步驟。
 
 1. 前往 **Security** → **API**
 
 <Image img={require('../../img/okta_security_api.png')} />
 
-2. 選取 **default** authorization server（或您的自訂 server）
+2. 選取 **default** 授權伺服器（或您的自訂伺服器）
 
 <Image img={require('../../img/okta_authorization_server.png')} />
 
-3. 點擊 **Access Policies** 分頁，建立一個指派給您的 LiteLLM app 的新 policy
-4. 新增一條允許 **Authorization Code** grant type 的規則
+3. 按一下 **Access Policies** 分頁，建立一個指派給您的 LiteLLM 應用程式的新政策
+4. 新增一條允許 **Authorization Code** 授權類型的規則
 
 <Image img={require('../../img/okta_access_policies.png')} />
 
 更多詳細資訊請參閱 [Okta 的 Access Policy 文件](https://help.okta.com/en-us/content/topics/security/api-access-management/access-policies.htm)。
 
-#### 步驟 4：設定 Okta 安全性設定 {#step-4-configure-okta-security-settings}
-
-建議為 Okta 使用 **GENERIC_CLIENT_STATE** 以防止 CSRF 攻擊：
-
-```bash
-GENERIC_CLIENT_STATE="random-string"
-```
-
-**PKCE（Proof Key for Code Exchange）。** 如果您的 Okta 應用程式設定為需要 PKCE，請透過設定以下內容來啟用：
-
-```bash
-GENERIC_CLIENT_USE_PKCE="true"
-```
-
-LiteLLM 會在 OAuth flow 期間自動處理 PKCE 參數的產生與驗證。
-
-#### 步驟 5：測試 SSO flow {#step-5-test-the-sso-flow}
-
-1. 啟動您的 LiteLLM proxy
-2. 前往 `https://<your-proxy-base-url>/ui`
-3. 點擊 SSO 登入按鈕
-4. 使用 Okta 驗證，並確認您已重新導向回 LiteLLM
-
-#### 疑難排解 {#troubleshooting}
-
-| 錯誤 | 原因 | 解決方法 |
-|-------|-------|----------|
-| `redirect_uri` error | 未設定 Redirect URI | 在 Okta 的 Sign-in redirect URIs 中新增 `<proxy_base_url>/sso/callback` |
-| `access_denied` | 使用者未指派給 app | 在 Assignments 分頁中指派該使用者 |
-| `no_matching_policy` | 缺少 Access Policy（僅限 Custom Authorization Server） | 在 Authorization Server 中建立 Access Policy（請參閱步驟 3a） |
+state 與 PKCE 設定請參閱 [Okta 安全性設定](#step-4-configure-okta-security-settings)。
 
 </TabItem>
 <TabItem value="google" label="Google SSO">
 
-- 在 https://console.cloud.google.com/ 上建立新的 Oauth 2.0 Client
+- 在 [Google Cloud Console](https://console.cloud.google.com/)上建立新的 Oauth 2.0 Client
 
-**您的 Proxy 上需要的 .env 變數**
+**您的 Proxy 上必要的 .env 變數**
 ```shell
 # for Google SSO Login
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
+GOOGLE_CLIENT_ID="<client-id>"
+GOOGLE_CLIENT_SECRET="<client-secret>"
 ```
 
-- 在 https://console.cloud.google.com/ 上的 Oauth 2.0 Client 設定 Redirect URL 
+- 在 [Google Cloud Console](https://console.cloud.google.com/)上為您的 Oauth 2.0 Client 設定 Redirect URL
     - 設定 redirect url = `<your proxy base url>/sso/callback`
     ```shell
     https://litellm-production-7002.up.railway.app/sso/callback
@@ -133,174 +128,47 @@ GOOGLE_CLIENT_SECRET=
 
 <TabItem value="msft" label="Microsoft SSO">
 
-- 在 https://portal.azure.com/ 上建立新的 App Registration
+- 在 [Azure 入口網站](https://portal.azure.com/)上建立新的 App Registration
 - 為您的 App Registration 建立 client Secret
 
-**您的 Proxy 上需要的 .env 變數**
+**您的 Proxy 上必要的 .env 變數**
 ```shell
-MICROSOFT_CLIENT_ID="84583a4d-"
-MICROSOFT_CLIENT_SECRET="nbk8Q~"
-MICROSOFT_TENANT="5a39737"
+MICROSOFT_CLIENT_ID="<client-id>"
+MICROSOFT_CLIENT_SECRET="<client-secret>"
+MICROSOFT_TENANT="<tenant-id>"
 ```
 
-**選用：自訂 Microsoft SSO 端點**
+自訂端點請參閱 [Microsoft 端點覆寫](#microsoft-endpoint-overrides)。
 
-如果您需要使用自訂 Microsoft SSO 端點（例如自訂識別提供者、主權雲端或 proxy），您可以覆寫預設端點：
-
-```shell
-MICROSOFT_AUTHORIZATION_ENDPOINT="https://your-custom-url.com/oauth2/v2.0/authorize"
-MICROSOFT_TOKEN_ENDPOINT="https://your-custom-url.com/oauth2/v2.0/token"
-MICROSOFT_USERINFO_ENDPOINT="https://your-custom-graph-api.com/v1.0/me"
-```
-
-如果未設定這些值，則會依據您的 tenant 使用預設 Microsoft 端點。
-
-- 在 https://portal.azure.com/ 上的 App Registration 設定 Redirect URI
+- 在 [Azure 入口網站](https://portal.azure.com/)上為您的 App Registration 設定 Redirect URI
     - 設定 redirect url = `<your proxy base url>/sso/callback`
     ```shell
     http://localhost:4000/sso/callback
     ```
 
-**使用 App Roles 設定使用者權限**
+若要從 Entra ID 指派 LiteLLM 角色，請依照[透過 Microsoft Entra ID 指派角色](./access_management/sso_permissions.md#manage-user-roles-via-azure-app-roles)。
 
-您可以直接從 Entra ID 使用 App Roles 指派使用者角色。LiteLLM 會自動從 JWT token 中讀取 app roles，並將對應的角色指派給使用者。
-
-支援的角色：
-- `proxy_admin` - 平台管理員
-- `proxy_admin_viewer` - 可登入、檢視所有金鑰、檢視所有花費（唯讀）
-- `internal_user` - 一般使用者。可登入、檢視花費，並依據 team-member 權限檢視／建立／刪除自己的金鑰。
-
-設定 app roles：
-1. 前往 https://portal.azure.com/ 的 App Registration
-2. 進入「App roles」並建立新的 app role
-3. 使用上述其中一個支援的角色名稱（例如 `proxy_admin`）
-4. 在您的 Enterprise Application 中將使用者指派到這些角色
-5. 使用者透過 SSO 登入時，LiteLLM 會自動指派對應的角色
-
-**進階：自訂使用者屬性對應**
-
-對於某些 Microsoft Entra ID 設定，您可能需要覆寫預設的使用者屬性欄位名稱。當您的組織在 SSO 回應中使用自訂 claims 或非標準屬性名稱時，這會很有用。
-
-**步驟 1：除錯 SSO 回應**
-
-首先，使用 [SSO 除錯路由](#debugging-sso-jwt-fields) 檢查您的 Microsoft SSO 提供者回傳的 JWT 欄位。
-
-1. 在 proxy 上設定 `ENABLE_SSO_DEBUG="true"` 並重新啟動（否則 debug 路由會回傳 404）
-2. 在您的 Azure App Registration 中將 `/sso/debug/callback` 加入為重新導向 URL
-3. 前往 `https://<proxy_base_url>/sso/debug/login`
-4. 完成 SSO 流程以查看傳回的使用者屬性
-
-**步驟 2：識別欄位屬性名稱**
-
-從除錯回應中，識別 email、顯示名稱、使用者 ID、名字與姓氏所使用的欄位名稱。
-
-**步驟 3：設定環境變數**
-
-透過設定以下環境變數覆寫預設屬性名稱：
-
-| 環境變數 | 說明 | 預設值 |
-|---------------------|-------------|---------------|
-| `MICROSOFT_USER_EMAIL_ATTRIBUTE` | 使用者 email 的欄位名稱 | `userPrincipalName` |
-| `MICROSOFT_USER_DISPLAY_NAME_ATTRIBUTE` | 顯示名稱的欄位名稱 | `displayName` |
-| `MICROSOFT_USER_ID_ATTRIBUTE` | 使用者 ID 的欄位名稱 | `id` |
-| `MICROSOFT_USER_FIRST_NAME_ATTRIBUTE` | 名字的欄位名稱 | `givenName` |
-| `MICROSOFT_USER_LAST_NAME_ATTRIBUTE` | 姓氏的欄位名稱 | `surname` |
-
-**步驟 4：重新啟動 Proxy**
-
-設定環境變數後，重新啟動 proxy：
-
-```bash
-litellm --config /path/to/config.yaml
-```
+非標準使用者欄位請參閱 [Microsoft 身分屬性](#microsoft-identity-attributes)。
 
 </TabItem>
 
 <TabItem value="Generic" label="Generic SSO Provider">
 
-可快速建立近乎無需程式碼即可支援任何 OAuth 提供者的通用 OAuth client
+設定一個 OIDC 提供者，包含其 authorization、token 與 UserInfo 端點。
 
-**您的 Proxy 上需要的 .env 變數**
+**您的 Proxy 上必要的 .env 變數**
 ```shell
 
-GENERIC_CLIENT_ID = "******"
-GENERIC_CLIENT_SECRET = "G*******"
-GENERIC_AUTHORIZATION_ENDPOINT = "http://localhost:9090/auth"
-GENERIC_TOKEN_ENDPOINT = "http://localhost:9090/token"
-GENERIC_USERINFO_ENDPOINT = "http://localhost:9090/me"
+GENERIC_CLIENT_ID="<client-id>"
+GENERIC_CLIENT_SECRET="<client-secret>"
+GENERIC_AUTHORIZATION_ENDPOINT="http://localhost:9090/auth"
+GENERIC_TOKEN_ENDPOINT="http://localhost:9090/token"
+GENERIC_USERINFO_ENDPOINT="http://localhost:9090/me"
 ```
 
-**選用 .env 變數**
-下列項目可用於在與通用 OAuth 提供者互動時自訂屬性名稱。我們會從 SSO Provider 結果中讀取這些屬性
+使用[通用提供者選項](#generic-provider-options)設定穩定的使用者識別碼與任何額外的回應欄位。
 
-```shell
-GENERIC_USER_ID_ATTRIBUTE = "sub"
-GENERIC_USER_EMAIL_ATTRIBUTE = "email"
-GENERIC_USER_DISPLAY_NAME_ATTRIBUTE = "display_name"
-GENERIC_USER_FIRST_NAME_ATTRIBUTE = "first_name"
-GENERIC_USER_LAST_NAME_ATTRIBUTE = "last_name"
-GENERIC_USER_ROLE_ATTRIBUTE = "given_role"
-GENERIC_USER_PROVIDER_ATTRIBUTE = "provider"
-GENERIC_USER_EXTRA_ATTRIBUTES = "department,employee_id,manager" # comma-separated list of additional fields to extract from SSO response
-GENERIC_CLIENT_STATE = "some-state" # if the provider needs a state parameter
-GENERIC_INCLUDE_CLIENT_ID = "false" # some providers enforce that the client_id is not in the body
-GENERIC_SCOPE = "openid profile email" # default scope openid is sometimes not enough to retrieve basic user info like first_name and last_name located in profile scope
-```
-
-設定 `GENERIC_INCLUDE_TOKEN_CLAIMS = "true"`，以便在 UserInfo 回應不完整時，也從 ID token 與 access token 讀取使用者宣告。UserInfo 宣告優先
-
-**選擇 `GENERIC_USER_ID_ATTRIBUTE`**
-
-LiteLLM 會將此屬性的值儲存為使用者的身分，並在每次後續登入時依此查找使用者，因此請將其指向提供者保證唯一且在帳戶生命週期內永不變更的宣告。`sub` 是此用途的標準 OIDC 宣告。使用者可在自己個人檔案中編輯的宣告，例如 `preferred_username`、`email` 或 `name`，會在 LiteLLM 端變動，而下一次登入就會被視為不同的人，並擁有一組獨立的金鑰、團隊與支出。當 `GENERIC_USER_ID_ATTRIBUTE` 未設定時，LiteLLM 會讀取 `preferred_username`，因此若您的提供者允許使用者變更該值，請明確設定它。
-
-**透過 SSO 指派使用者角色**
-
-使用 `GENERIC_USER_ROLE_ATTRIBUTE` 指定 SSO token 中哪個屬性包含使用者的角色。角色值必須是下列 LiteLLM 支援角色之一：
-
-- `proxy_admin` - 平台管理員
-- `proxy_admin_viewer` - 可登入、檢視所有金鑰、檢視所有花費（唯讀）
-- `internal_user` - 可登入、檢視／建立／刪除自己的金鑰、檢視自己的花費
-- `internal_user_viewer` - 可登入、檢視自己的金鑰、檢視自己的花費
-
-支援巢狀屬性路徑（例如 `claims.role` 或 `attributes.litellm_role`）。
-
-**擷取額外的 SSO 欄位**
-
-使用 `GENERIC_USER_EXTRA_ATTRIBUTES` 來從 SSO 提供者回應中擷取標準使用者屬性（id、email、name 等）以外的其他欄位。當您需要在您的 [自訂 SSO 處理器](./custom_sso.md) 中存取自訂的組織特定資料（例如 department、employee ID、groups）時，這會很有用。
-
-對於 **CLI SSO**，您可以將相同（或其他）的宣告對應到使用者 `metadata`，並透過 `CLI_SSO_CLAIM_MAP` 將純量回傳給 CLI。請參閱 [CLI 驗證](./cli_sso.md#attribution-metadata-oidc-claims)。
-
-```shell
-# Comma-separated list of field names to extract
-GENERIC_USER_EXTRA_ATTRIBUTES="department,employee_id,manager,groups"
-```
-
-**在自訂 SSO 處理器中存取額外欄位：**
-
-```python
-from litellm.proxy.management_endpoints.types import CustomOpenID
-
-async def custom_sso_handler(userIDPInfo: CustomOpenID):
-    # Access the extra fields
-    extra_fields = getattr(userIDPInfo, 'extra_fields', None) or {}
-    
-    user_department = extra_fields.get("department")
-    employee_id = extra_fields.get("employee_id")
-    user_groups = extra_fields.get("groups", [])
-    
-    # Use these fields for custom logic (e.g., team assignment, access control)
-    # ...
-```
-
-**巢狀欄位路徑：**
-
-支援巢狀欄位的點記法：
-
-```shell
-GENERIC_USER_EXTRA_ATTRIBUTES="org_info.department,org_info.cost_center,metadata.employee_type"
-```
-
-- 如果您的提供者需要，請設定 Redirect URI
+- 若您的提供者需要，設定 Redirect URI
     - 設定 redirect url = `<your proxy base url>/sso/callback`
     ```shell
     http://localhost:4000/sso/callback
@@ -310,334 +178,167 @@ GENERIC_USER_EXTRA_ATTRIBUTES="org_info.department,org_info.cost_center,metadata
 
 </Tabs>
 
-### 預設登入、登出 URL {#default-login-logout-urls}
+## 測試登入 {#test-sign-in}
 
-某些 SSO 提供者需要特定的登入與登出 redirect url。您可以輸入以下值。
+<a id="step-5-test-the-sso-flow"></a>
+<a id="step-4-test-flow"></a>
 
-- Login: `<your-proxy-base-url>/sso/key/generate`
-- Logout: `<your-proxy-base-url>`
+1. 使用您現有的設定啟動或重新啟動 proxy：
 
-以下是要在 proxy 上設定登出 url 的環境變數
+   ```bash
+   litellm --config /path/to/config.yaml
+   ```
+
+2. 開啟 `https://<your-proxy-base-url>/ui` 並按一下 **SSO**。
+3. 使用已指派給身分提供者應用程式的使用者登入。確認您回到了 Admin UI。
+
+<Image img={require('../../img/litellm_ui_3.gif')} />
+
+## 設定參考 {#configuration-reference}
+
+### 預設的登入、登出 URL {#default-login-logout-urls}
+
+| 端點 | URL |
+| --- | --- |
+| 開始登入 | `<PROXY_BASE_URL>/sso/key/generate` |
+| 登入 callback | `<PROXY_BASE_URL>/sso/callback` |
+| 預設登出目的地 | `<PROXY_BASE_URL>` |
+
+當您的提供者需要其他 URL 時，覆寫登出目的地：
+
 ```bash
 PROXY_LOGOUT_URL="https://www.google.com"
 ```
 
-#### 步驟 3. 在您的 .env 中設定 `PROXY_BASE_URL` {#step-3-set-proxy_base_url-in-your-env}
+### Okta 安全性設定 {#step-4-configure-okta-security-settings}
 
-請將此設定於您的 .env（如此 proxy 才能設定正確的 redirect url）
-```shell
-PROXY_BASE_URL=https://your-proxy-domain.com
-```
+不要設定 `GENERIC_CLIENT_STATE`。LiteLLM 會為每次 UI 登入產生隨機的 state。在 `GENERIC_CLIENT_USE_PKCE=true` 的情況下，固定的 state 會讓同時發生的登入互相覆寫對方的 PKCE verifier 而失敗。
 
-#### 步驟 4. 測試流程 {#step-4-test-flow}
-<Image img={require('../../img/litellm_ui_3.gif')} />
-
-### 限制 SSO 下的電子郵件子網域 {#restrict-email-subdomains-w-sso}
-
-如果您使用 SSO，並且只想允許具有特定子網域的使用者——例如（@berri.ai 電子郵件帳號）——存取 UI，請這樣做：
+**PKCE (Proof Key for Code Exchange)。**若您的 Okta 應用程式設定為需要 PKCE，請透過以下設定啟用它：
 
 ```bash
-export ALLOWED_EMAIL_DOMAINS="berri.ai"
+GENERIC_CLIENT_USE_PKCE="true"
 ```
 
-這會先檢查從 SSO 收到的使用者 email 是否包含此網域，然後才允許存取。
+LiteLLM 會在 OAuth 流程中自動處理 PKCE 參數的產生與驗證。
 
-### 設定 Proxy Admin {#set-proxy-admin}
+### Microsoft 端點覆寫 {#microsoft-endpoint-overrides}
 
-在啟用 SSO 時設定 Proxy Admin。啟用 SSO 後，使用者的 `user_id` 會從 SSO 提供者擷取。若要設定 Proxy Admin，您需要從 UI 複製 `user_id`，並在您的 `.env` 中將其設定為 `PROXY_ADMIN_ID`。
+若您需要使用自訂的 Microsoft SSO 端點（例如用於自訂身分提供者、主權雲或 proxy），您可以覆寫預設端點：
 
-#### 步驟 1：從 UI 複製您的 ID  {#step-1-copy-your-id-from-the-ui}
-
-<Image img={require('../../img/litellm_ui_copy_id.png')} />
-
-#### 步驟 2：在您的 .env 中將其設定為 PROXY_ADMIN_ID  {#step-2-set-it-in-your-env-as-the-proxy_admin_id}
-
-```env
-export PROXY_ADMIN_ID="116544810872468347480"
-```
-
-這會將 `LiteLLM_UserTable` 中的使用者角色更新為 `proxy_admin`。 
-
-如果您打算變更此 ID，請透過 API `/user/update` 或 UI（Internal Users 頁面）更新使用者角色。
-
-#### 步驟 3：查看所有 proxy keys {#step-3-see-all-proxy-keys}
-
-<Image img={require('../../img/litellm_ui_admin.png')} />
-
-:::info
-
-如果您沒有看到所有 keys，這可能是因為快取的 token。只要重新登入即可恢復正常。
-
-:::
-
-### 自動將 SSO 使用者加入團隊（OIDC） {#auto-add-sso-users-to-teams-oidc}
-
-對於 OIDC 提供者（Okta、Google、Generic SSO），您可以將身分提供者傳回的 token 中某個宣告，帶入使用者的 `team_ids`。每次 SSO 登入時，LiteLLM 會讀取該宣告，並將使用者加入每個符合的團隊成員。
-
-#### 步驟 1：將 LiteLLM 指向包含團隊 ID 的宣告 {#step-1-point-litellm-at-the-claim-containing-the-team-ids}
-
-```yaml showLineNumbers title="config.yaml"
-general_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
-  litellm_jwtauth:
-    team_ids_jwt_field: "groups" # any claim; dot notation works for nested claims, e.g. "resource_access.myapp.groups"
-```
-
-這假設來自您提供者的 token 會像這樣：
-
-```json
-{
-  ...,
-  "groups": ["team_id_1", "team_id_2"]
-}
-```
-
-如果您不確定提供者傳送了什麼，請使用 [SSO debug 流程](#debugging-sso-jwt-fields) 檢查收到的宣告。
-
-#### 步驟 2：在 LiteLLM 上建立團隊 {#step-2-create-the-teams-on-litellm}
-
-宣告值必須與 LiteLLM 上已存在團隊的 `team_id` 相符。OIDC 宣告不會自動建立團隊，且沒有對應團隊的宣告值會被略過。
-
-```bash showLineNumbers title="Create team with team_id matching the SSO group value"
-curl -X POST '<PROXY_BASE_URL>/team/new' \
--H 'Authorization: Bearer <PROXY_MASTER_KEY>' \
--H 'Content-Type: application/json' \
--d '{
-    "team_alias": "team_1",
-    "team_id": "team_id_1"
-}'
-```
-
-#### 步驟 3：測試 SSO 流程 {#step-3-test-the-sso-flow}
-
-透過 SSO 登入，並在 UI（Internal Users 頁面）上驗證使用者的團隊成員資格。這裡有一個 [影片導覽](https://www.loom.com/share/8959be458edf41fd85937452c29a33f3?sid=7ebd6d37-569a-4023-866e-e0cde67cb23e)。
-
-某些提供者只會在 access token 中包含 groups 宣告，而不會在 userinfo 回應中包含。在這種情況下，請透過 `ui_access_mode` 設定該宣告，這也會解碼 access token。請注意，此格式也會將 UI 登入限制為指定群組的成員：
-
-```yaml showLineNumbers title="config.yaml"
-general_settings:
-  ui_access_mode:
-    type: "restricted_sso_group"
-    restricted_sso_group: "<group required for UI access>"
-    sso_group_jwt_field: "groups"
-```
-
-對於 Microsoft Entra ID，群組成員資格則改由 Microsoft Graph API 讀取；請依照 [此教學](../tutorials/msft_sso.md)。對於 SAML，團隊 ID 來自 assertion 屬性；請參閱 [SAML SSO](./saml_sso.md)。
-
-### 限制建立個人金鑰 {#restrict-personal-key-creation}
-
-如果您想阻止使用者建立個人金鑰（沒有團隊的金鑰），請使用此功能。這會在 `/key/generate` 上強制執行，因此同時適用於 Admin UI 與直接 API 呼叫
-
-在您的 litellm config.yaml 中設定 `key_generation_settings`
-
-```yaml
-litellm_settings:
-  key_generation_settings:
-    personal_key_generation:
-      allowed_user_roles: ["proxy_admin"]
-```
-
-所有選項請參閱 [限制金鑰產生](./virtual_keys.md#restricting-key-generation)
-
-### 在 SSO 開啟時使用 Username、Password {#use-username-password-when-sso-is-on}
-
-如果您需要在 SSO 開啟時透過 username/password 存取 UI，請前往 `/fallback/login`。此路由將允許您使用 username/password 憑證登入。
-
-### 限制 UI 存取 {#restrict-ui-access}
-
-您可以將 UI 存取限制為僅管理員——包含您（proxy_admin）以及您授予僅檢視存取權的人（proxy_admin_viewer），以查看 global spend。
-
-**步驟 1. 設定 'admin_only' 存取**
-```yaml
-general_settings:
-    ui_access_mode: "admin_only"
-```
-
-**步驟 2. 邀請僅檢視使用者**
-
-<Image img={require('../../img/admin_ui_viewer.png')} />
-
-### 自訂品牌 Admin UI {#custom-branding-admin-ui}
-
-在 LiteLLM Admin UI 上使用您公司的自訂品牌識別
-我們允許您：
-- 自訂 UI Logo
-- 自訂 UI 色彩配置
-<Image img={require('../../img/litellm_custom_ai.png')} />
-
-#### 設定自訂 Logo {#set-custom-logo}
-我們允許您傳入本機圖片或您的圖片之 http/https url
-
-在您的 env 中設定 `UI_LOGO_PATH`。我們建議使用託管圖片，這樣設定與設定 / 除錯會容易很多
-
-託管圖片的設定範例
 ```shell
-UI_LOGO_PATH="https://litellm-logo-aws-marketplace.s3.us-west-2.amazonaws.com/berriai-logo-github.png"
+MICROSOFT_AUTHORIZATION_ENDPOINT="https://your-custom-url.com/oauth2/v2.0/authorize"
+MICROSOFT_TOKEN_ENDPOINT="https://your-custom-url.com/oauth2/v2.0/token"
+MICROSOFT_USERINFO_ENDPOINT="https://your-custom-graph-api.com/v1.0/me"
 ```
 
-本機圖片的設定範例（在您的容器內）
+若未設定這些值，會依您的 tenant 使用預設的 Microsoft 端點。
+
+### Microsoft 身分屬性 {#microsoft-identity-attributes}
+
+使用 [SSO 偵錯流程](#debugging-sso-jwt-fields)檢查您的提供者回應，然後覆寫任何非標準使用者欄位並重新啟動 proxy。
+
+| 環境變數 | 說明 | 預設值 |
+|---------------------|-------------|---------------|
+| `MICROSOFT_USER_EMAIL_ATTRIBUTE` | 使用者電子郵件的欄位名稱 | `userPrincipalName` |
+| `MICROSOFT_USER_DISPLAY_NAME_ATTRIBUTE` | 顯示名稱的欄位名稱 | `displayName` |
+| `MICROSOFT_USER_ID_ATTRIBUTE` | 使用者 ID 的欄位名稱 | `id` |
+| `MICROSOFT_USER_FIRST_NAME_ATTRIBUTE` | 名字的欄位名稱 | `givenName` |
+| `MICROSOFT_USER_LAST_NAME_ATTRIBUTE` | 姓氏的欄位名稱 | `surname` |
+
+### 通用提供者選項 {#generic-provider-options}
+
+自訂從您的提供者讀取的使用者屬性與通訊協定設定：
+
 ```shell
-UI_LOGO_PATH="ui_images/logo.jpg"
+GENERIC_USER_ID_ATTRIBUTE="sub"
+GENERIC_USER_EMAIL_ATTRIBUTE="email"
+GENERIC_USER_DISPLAY_NAME_ATTRIBUTE="display_name"
+GENERIC_USER_FIRST_NAME_ATTRIBUTE="first_name"
+GENERIC_USER_LAST_NAME_ATTRIBUTE="last_name"
+GENERIC_USER_PROVIDER_ATTRIBUTE="provider"
+GENERIC_USER_EXTRA_ATTRIBUTES="department,employee_id,manager" # comma-separated list of additional fields to extract from SSO response
+GENERIC_INCLUDE_CLIENT_ID="false" # some providers enforce that the client_id is not in the body
+GENERIC_SCOPE="openid profile email" # default scope openid is sometimes not enough to retrieve basic user info like first_name and last_name located in profile scope
 ```
 
-#### 或直接從 Admin UI 設定您的 logo： {#or-set-your-logo-directly-from-admin-ui}
-<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-  <Image img={require('../../img/admin_settings_ui_theme.png')} />
-  <Image img={require('../../img/admin_settings_ui_theme_logo.png')} />
-</div>
+設定 `GENERIC_INCLUDE_TOKEN_CLAIMS="true"`，即可在 UserInfo 回應不完整時，也從 ID token 與 access token 讀取使用者 claims。UserInfo claims 優先。
 
-#### 設定自訂色彩主題 {#set-custom-color-theme}
-- 前往 [/enterprise/enterprise_ui](https://github.com/BerriAI/litellm/blob/main/enterprise/enterprise_ui/_enterprise_colors.json)
-- 在 `enterprise_ui` 目錄中，將 `_enterprise_colors.json` 重新命名為 `enterprise_colors.json`
-- 在 `enterprise_colors.json` 中設定您公司的自訂色彩配置
-`enterprise_colors.json` 的內容範例 
-將您的顏色設定為以下任一顏色：https://www.tremor.so/docs/layout/color-palette#default-colors
-```json
-{
-    "brand": {
-      "DEFAULT": "teal",
-      "faint": "teal",
-      "muted": "teal",
-      "subtle": "teal",
-      "emphasis": "teal",
-      "inverted": "teal"
-    }
-}
+**選擇 `GENERIC_USER_ID_ATTRIBUTE`**
 
-```
-- 部署 LiteLLM Proxy Server
+LiteLLM 會將此屬性的值儲存為使用者的身分，並在之後每次登入時以它查詢使用者，因此請將它指向您的提供者保證唯一且在帳號存續期間永不變更的 claim。`sub` 是用於此目的的標準 OIDC claim。使用者可以在自己的個人資料中編輯的 claims，例如 `preferred_username`、`email` 或 `name`，會在 LiteLLM 不知情的情況下變更，下一次登入就會被視為不同的人，擁有另一組金鑰、團隊與支出。當 `GENERIC_USER_ID_ATTRIBUTE` 未設定時，LiteLLM 會讀取 `preferred_username`，因此若您的提供者允許使用者變更該值，請明確設定它。
 
-## 疑難排解 {#troubleshooting-1}
+角色指派請參閱[通用 OIDC 角色對應](./access_management/sso_permissions.md#assign-roles-through-a-generic-oidc-provider)。
 
-### "The 'redirect_uri' parameter must be a Login redirect URI in the client app settings" 錯誤 {#the-redirect_uri-parameter-must-be-a-login-redirect-uri-in-the-client-app-settings-error}
+**擷取額外的 SSO 欄位**
 
-當 redirect URI 設定不正確時，這個錯誤常見於 Okta 和其他 SSO 提供者。
+使用 `GENERIC_USER_EXTRA_ATTRIBUTES` 從 SSO 提供者回應中擷取標準使用者屬性（id、email、name 等）之外的額外欄位。當您需要在[自訂 SSO 處理常式](./custom_sso.md)中存取組織專屬的自訂資料（例如部門、員工 ID、群組）時，這很有用。
 
-#### 問題 {#issue}
-```
-Your request resulted in an error. The 'redirect_uri' parameter must be a Login redirect URI in the client app settings
+```shell
+# Comma-separated list of field names to extract
+GENERIC_USER_EXTRA_ATTRIBUTES="department,employee_id,manager,groups"
 ```
 
-#### 解決方案 {#solution}
+在您的[自訂 SSO callback](./custom_sso.md#read-additional-provider-fields) 中，透過 `userIDPInfo.extra_fields` 讀取這些值。
 
-**1. 確認您已在 .env 中設定 PROXY_BASE_URL 且包含 protocol**
+**巢狀欄位路徑：**
 
-請確認您的 `PROXY_BASE_URL` 包含完整的 URL 與 protocol（`http://` 或 `https://`）：
+巢狀欄位支援點記法：
 
-```bash
-# ✅ Correct - includes https://
-PROXY_BASE_URL=https://litellm.platform.com
-
-# ✅ Correct - includes http://
-PROXY_BASE_URL=http://litellm.platform.com
-
-# ❌ Incorrect - missing protocol
-PROXY_BASE_URL=litellm.platform.com
+```shell
+GENERIC_USER_EXTRA_ATTRIBUTES="org_info.department,org_info.cost_center,metadata.employee_type"
 ```
 
-**2. 針對 Okta，請確認已設定 `GENERIC_CLIENT_STATE`，且如有需要已設定 PKCE**
+## 疑難排解 {#troubleshooting}
 
-詳細資訊請參閱 [Okta SSO，步驟 4：設定 Okta 安全性設定](#step-4-configure-okta-security-settings)，了解 `GENERIC_CLIENT_STATE` 與 PKCE 設定。
+### Redirect URI 錯誤 {#redirect-uri-errors}
 
-### 常見設定問題 {#common-configuration-issues}
+<a id="the-redirect_uri-parameter-must-be-a-login-redirect-uri-in-the-client-app-settings-error"></a>
+<a id="common-configuration-issues"></a>
+<a id="missing-protocol-in-base-url"></a>
+<a id="issue"></a>
+<a id="solution"></a>
 
-#### Base URL 中缺少 Protocol {#missing-protocol-in-base-url}
-```bash
-# This will cause redirect_uri errors
-PROXY_BASE_URL=mydomain.com
+若提供者回報 `redirect_uri` 不是已註冊的登入 URI，請確認以下兩個設定相符：
 
-# Fix: Add the protocol
-PROXY_BASE_URL=https://mydomain.com
-```
+- `PROXY_BASE_URL` 包含通訊協定，例如 `https://litellm.yourcompany.com`。
+- 提供者註冊的 redirect URI 恰好是 `<PROXY_BASE_URL>/sso/callback`。
+
+### Okta 錯誤 {#okta-errors}
+
+| 錯誤 | 原因 | 解決方式 |
+|-------|-------|----------|
+| `redirect_uri` error | Redirect URI 未設定 | 在 Okta 中將 `<proxy_base_url>/sso/callback` 加入 Sign-in redirect URIs |
+| `access_denied` | 使用者未被指派給應用程式 | 在 Assignments 分頁中指派使用者 |
+| `no_matching_policy` | 缺少 Access Policy（僅限 Custom Authorization Server） | 在 Authorization Server 中建立 Access Policy（見步驟 3a） |
+
 
 ### 備援登入 {#fallback-login}
 
-如果您需要在 SSO 開啟時透過 username/password 存取 UI，請前往 `/fallback/login`。此路由將允許您使用 username/password 憑證登入。
+<a id="use-username-password-when-sso-is-on"></a>
+
+在 SSO 啟用時，開啟 `/fallback/login` 即可使用使用者名稱與密碼登入。即使 `disable_env_credential_login` 已開啟，這對具有密碼的資料庫使用者也有效。請參閱[為 SSO 中斷保留緊急管理員帳號](./ui.md#keep-a-break-glass-admin-account-for-sso-outages)。
 
 <Image img={require('../../img/fallback_login.png')} />
 
-### 偵錯 SSO JWT 欄位  {#debugging-sso-jwt-fields}
+### 偵錯 SSO JWT 欄位 {#debugging-sso-jwt-fields}
 
-如果您需要檢查 LiteLLM 從您的 SSO 提供者收到的 JWT 欄位，請依照以下說明。本指南將帶您設定一個 debug callback，以便在 SSO 流程期間檢視 JWT 資料。
+1. 設定 `ENABLE_SSO_DEBUG="true"` 並重新啟動 proxy。此功能停用時，偵錯路由會傳回 404。
+2. 在您的提供者處將 `<PROXY_BASE_URL>/sso/debug/callback` 註冊為額外的 redirect URI。
+3. 開啟 `<PROXY_BASE_URL>/sso/debug/login` 並完成登入。
+4. 在 **SSO Debug Information** 頁面上檢查傳回的欄位，完成後取消設定 `ENABLE_SSO_DEBUG`。
 
-<Image img={require('../../img/debug_sso.png')}  style={{ width: '500px', height: 'auto' }} />
-<br />
+<Image img={require('../../img/debug_sso.png')} style={{ width: '500px', height: 'auto' }} />
 
-1. 在 proxy 上啟用 debug 路由
+## 相關指南 {#related-guides}
 
-  debug 路由預設為停用，並會回傳 404。設定下列環境變數並重新啟動 proxy（除錯完成後請再取消設定）：
+<a id="manage-sso-permissions"></a>
+<a id="custom-branding-admin-ui"></a>
+<a id="set-custom-logo"></a>
+<a id="or-set-your-logo-directly-from-admin-ui"></a>
+<a id="set-custom-color-theme"></a>
 
-  ```bash showLineNumbers title="Environment variable"
-  ENABLE_SSO_DEBUG="true"
-  ```
-
-2. 在您的 SSO 提供者中將 `/sso/debug/callback` 加入為重新導向 URL 
-
-在您的 SSO 提供者設定中，新增以下 URL 作為新的 redirect（callback）URL：
-
-```bash showLineNumbers title="Redirect URL"
-  http://<proxy_base_url>/sso/debug/callback
-  ```
-
-3. 在瀏覽器中前往 debug 登入頁面 
-
-在您的瀏覽器中前往以下 URL：
-
-```bash showLineNumbers title="URL to navigate to"
-    https://<proxy_base_url>/sso/debug/login
-    ```
-
-    這將啟動標準的 SSO 流程。您將被重新導向至 SSO 提供者的登入畫面，並在成功驗證後，被重新導向回 LiteLLM 的 debug callback 路由。
-
-4. 檢視 JWT 欄位 
-
-重新導向後，您應該會看到名為 "SSO Debug Information" 的頁面。此頁面會顯示從您的 SSO 提供者收到的 JWT 欄位（如上圖所示）
-
-## 進階 {#advanced}
-
-### 透過 Azure App Roles 管理使用者角色 {#manage-user-roles-via-azure-app-roles}
-
-透過在 Azure Entra ID 中定義使用者權限來集中管理角色。當使用者登入時，LiteLLM 會根據您的 Azure 設定自動指派角色，無需在 LiteLLM 中手動管理角色。
-
-#### 步驟 1：在 Azure App Registration 上建立 App Roles {#step-1-create-app-roles-on-azure-app-registration}
-
-1. 前往您在 https://portal.azure.com/ 上的 App Registration
-2. 前往 **App roles** > **Create app role**
-3. 使用 [支援的 LiteLLM 角色](./access_control.md#global-proxy-roles) 之一來設定 app role：
-   - **Display name**：Admin Viewer（或您偏好的顯示名稱）
-   - **Value**：`proxy_admin_viewer`（必須與其中一個 LiteLLM role value 完全一致）
-4. 點擊 **Apply** 以儲存角色
-5. 對您要使用的每個 LiteLLM 角色重複上述步驟
-
-**支援的 LiteLLM role values**（請參閱 [完整角色文件](./access_control.md#global-proxy-roles)）：
-- `proxy_admin` - 完整管理員存取權
-- `proxy_admin_viewer` - 唯讀管理員存取權
-- `internal_user` - 可建立／檢視／刪除自己的 keys
-- `internal_user_viewer` - 可檢視自己的 keys（唯讀）
-
-<Image img={require('../../img/app_roles.png')} style={{ width: '900px', height: 'auto' }} />
-
----
-
-#### 步驟 2：將使用者指派給應用程式角色 {#step-2-assign-users-to-app-roles}
-
-1. 前往 https://portal.azure.com/ 的 **Enterprise Applications**
-2. 選取您的 LiteLLM 應用程式
-3. 前往 **Users and groups** > **Add user/group**
-4. 選取使用者
-5. 在 **Select a role** 下，選擇您建立的應用程式角色（例如，`proxy_admin_viewer`）
-6. 點擊 **Assign** 以儲存
-
-<Image img={require('../../img/app_role2.png')} style={{ width: '900px', height: 'auto' }} />
-
----
-
-#### 步驟 3：登入並驗證 {#step-3-sign-in-and-verify}
-
-1. 透過 SSO 登入 LiteLLM UI
-2. LiteLLM 會自動從 JWT token 擷取應用程式角色
-3. 使用者將被指派對應的角色（您可以在 UI 中透過檢查使用者個人資料下拉選單來驗證）
-
-<Image img={require('../../img/app_role3.png')} style={{ width: '900px', height: 'auto' }} />
-
-**注意：** 來自 Entra ID 的角色將優先於 LiteLLM 資料庫中的任何現有角色。這可確保您的 SSO 提供者是使用者角色的權威來源。
+- [SSO 權限](./access_management/sso_permissions.md)：登入限制、角色、團隊成員資格與金鑰建立。
+- [CLI 登入](./cli_sso.md)：從命令列用戶端登入。
+- [自訂 SSO](./custom_sso.md)：自訂登入整合。
+- [自訂 UI 品牌](./ui/ui_edit_logo.md)：標誌與 favicon。

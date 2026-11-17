@@ -6,6 +6,8 @@ import TabItem from '@theme/TabItem';
 
 本教學示範如何將 OpenCode 連接到您現有的 LiteLLM 實例，並在模型之間切換。
 
+若要將您的 OpenCode Go 訂閱用作上游服務，請參閱 [OpenCode Go](../providers/opencode_go.md)。
+
 :::info 
 
 此整合可讓您透過 OpenCode 使用任何 LiteLLM 支援的模型，並具備集中式驗證、用量追蹤與成本控管。

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道的 Mavvrik 成本匯出"
+sidebar_label: "Mavvrik"
+description: "將 LiteLLM AI 閘道支出以 FOCUS 1.2 成本報告形式匯出到 Mavvrik，透過簽署 URL 上傳 gzip 壓縮的 CSV，並在 config.yaml 中設定。"
+---
 # Mavvrik {#mavvrik}
 
 LiteLLM 可將 proxy 的支出資料匯出至 [Mavvrik](https://mavvrik.ai)，作為 [FOCUS 1.2](https://focus.finops.org/) 格式的成本報表。這讓您能在 Mavvrik 成本管理平台中追蹤並分析 LLM 支出。

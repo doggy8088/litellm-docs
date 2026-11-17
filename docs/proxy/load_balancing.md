@@ -1,3 +1,7 @@
+---
+sidebar_label: "負載平衡"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -68,6 +72,12 @@ router_settings:
   redis_port: 1992
 ```
 
+## Kubernetes Pod 探索 {#kubernetes-pod-discovery}
+
+使用[快取感知路由](./cache_aware_routing.md)探索 Kubernetes headless service 後方的推論 pod，讓來自同一個工作階段的請求留在同一個 pod 上，以利重複使用提示快取。沒有明確工作階段 ID 的請求會使用 round robin。
+
+本指南涵蓋 `kubernetes_pod_discovery` 設定、工作階段 ID、重試行為、探索設定與多叢集路由。
+
 ## 強制執行模型速率限制 {#enforce-model-rate-limits}
 
 嚴格強制套用在部署上設定的 RPM/TPM 限制。當超過限制時，請求會在到達 LLM 提供者之前被阻擋，並回傳 `429 Too Many Requests` 錯誤。
@@ -90,11 +100,20 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
     rpm: 60     # 60 requests per minute
     tpm: 90000  # 90k tokens per minute
+  - model_name: {{openai_large}}
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+      rpd: 1500     # 1500 requests per UTC day
+      tpd: 1000000  # 1M tokens per UTC day
+      daily_reset_time: "08:00"  # counts start over at 08:00 UTC instead of midnight UTC
 
 router_settings:
   optional_pre_call_checks:
-    - enforce_model_rate_limits  # 👈 Enables strict enforcement
+    - enforce_model_rate_limits  # Enables strict enforcement
 ```
+
+`rpm` 和 `tpm` 可以設定在部署的最上層、`litellm_params` 內，或 `model_info` 內。`rpd`、`tpd` 和 `daily_reset_time` 則放在 `litellm_params` 內。
 
 ### 運作方式 {#how-it-works}
 
@@ -102,8 +121,14 @@ router_settings:
 |------------|-------------|----------|
 | **RPM** | 硬性限制－在精確門檻處阻擋 | 100% 準確 |
 | **TPM** | 盡力而為－可能略微超出 | 在已超過限制時阻擋 |
+| **RPD** | 硬性限制－在精確門檻處阻擋 | 100% 準確 |
+| **TPD** | 盡力而為－可能略微超出 | 在已超過限制時阻擋 |
 
-**為什麼 TPM 屬於 best-effort：** 在 LLM 回應之前，Token 數量是未知的。TPM 會在每次請求前檢查（若已超過則阻擋），並在之後追蹤（加入實際使用的 token 數）。
+**為什麼 TPM 與 TPD 屬於 best-effort：** 在 LLM 回應之前，Token 數量是未知的。TPM 與 TPD 會在每次請求前檢查（若已超過則阻擋），並在之後追蹤（加入實際使用的 token 數）。
+
+**每日限制會在 UTC 午夜重置，或在 `daily_reset_time` 時重置。** 計數器金鑰帶有目前時間窗的日期，因此新的一天會在同一時刻在每個 proxy 執行個體上開始全新計數。`daily_reset_time` 是 UTC 的 `"HH:MM"`，用來移動該時刻；例如，對於配額在日光節約時間期間於太平洋時間午夜重置的提供者，可設為 `"08:00"`（在日光節約時間之外為 `"07:00"`，此值不會跟隨日光節約時間）。未設定 `daily_reset_time` 時，時間窗即為 UTC 日曆日。
+
+當某個部署超過其每日限制時，請求會由路由器一般的重試與備援邏輯，在同一個模型群組中的另一個部署上重試，或移到該群組的 `fallbacks`。因此，每日配額已耗盡的部署會故障轉移到其群組中的其他部署，直到下一次重置為止。
 
 ### 錯誤回應 {#error-response}
 
@@ -117,7 +142,7 @@ router_settings:
 }
 ```
 
-回應包含 `retry-after: 60` 標頭。
+回應包含 `retry-after: 60` 標頭。對於 `rpd` 與 `tpd`，訊息會標明該每日限制（`RPD limit=1500, current usage=1501`），且 `retry-after` 為距離下一次重置（UTC 午夜或 `daily_reset_time`）的秒數。
 
 ### 多執行個體部署 {#multi-instance-deployment}
 
@@ -147,7 +172,7 @@ $ litellm --config /path/to/config.yaml
 
 在這裡，`model=gpt-5.6-luna` 的請求將會分散路由到多個 `azure/gpt-5.6-luna` 執行個體
 
-👉 主要變更：`model="{{openai_small}}"`
+主要變更：`model="{{openai_small}}"`
 
 **請檢查回應標頭中的 `model_id`，以確認請求已進行負載平衡**
 
@@ -321,13 +346,13 @@ model_list:
     litellm_params:
       model: azure/gpt-4-primary
       api_key: os.environ/AZURE_API_KEY
-      order: 1  # 👈 Highest priority - always tried first
+      order: 1  # Highest priority - always tried first
 
   - model_name: {{openai_large}}
     litellm_params:
       model: azure/gpt-4-fallback
       api_key: os.environ/AZURE_API_KEY_2
-      order: 2  # 👈 Used when order=1 fails
+      order: 2  # Used when order=1 fails
 ```
 
 ### 基於順序的備援如何運作 {#how-order-based-fallback-works}
@@ -335,6 +360,8 @@ model_list:
 當對 `order=1` 部署的請求失敗（連線錯誤、404、429 等）時，路由器會自動嘗試 `order=2` 部署，接著是 `order=3`，依此類推。每個順序層級在升級到下一層之前，都會先有自己的一組重試。
 
 如果所有順序層級都已用盡，路由器會轉而使用任何已設定的[模型層級備援](./reliability.md)。
+
+跳轉至無法解密失敗部署之加密推理內容的部署（另一個提供者，或另一把 API 金鑰）時，會捨棄這些推理項目並保留其摘要，讓該跳轉能回應，而不是以 `invalid_encrypted_content` 失敗；請參閱[備援](./reliability.md#explanation)
 
 ```yaml
 model_list:
@@ -396,7 +423,7 @@ router_settings:
 
 當在不同部署之間進行 OpenAI Responses API 的負載平衡，且使用**不同的 API 金鑰**時（例如，不同的 Azure 區域或組織），加密內容項目（如 `rs_...` reasoning 項目）只能由最初的 API 金鑰解密。
 
-**解決方案：** 使用 `encrypted_content_affinity` pre-call 檢查（需要 LiteLLM >= 1.82.3），將包含加密項目的後續請求自動路由到正確的部署：
+**解決方案：** 使用 `encrypted_content_affinity` pre-call 檢查 <SinceVersion v="1.82.3" />，將包含加密項目的後續請求自動路由到正確的部署：
 
 ```yaml
 model_list:
@@ -418,11 +445,15 @@ model_list:
 
 router_settings:
   optional_pre_call_checks:
-    - encrypted_content_affinity  # 👈 Prevents invalid_encrypted_content errors
+    - encrypted_content_affinity  # Prevents invalid_encrypted_content errors
 ```
 
 這可確保包含加密內容的請求會被路由到建立它們的部署，而其他請求則會持續正常進行負載平衡。
 
-當該部署不在後續請求的健康池中（它已經進入冷卻、已被移除，或該回合已路由到另一個模型群組），且沒有任何部署具有相同的 `api_base` 和 `api_key` 時，LiteLLM 會從請求中移除加密的推理內容，保留對話其餘部分，將其轉送到健康的部署，並記錄一則路由器警告，因此該回合會使用新的推理成功完成，而不是失敗
+當該部署不在後續請求的健康池中（它已經進入冷卻、已被移除，或該回合已路由到另一個模型群組），且沒有任何部署具有相同的 `api_base` 和 `api_key` 時，LiteLLM 會從請求中移除加密的推理內容，保留對話其餘部分，將其轉送到健康的部署，並記錄一則路由器警告，因此該回合會使用新的推理成功完成，而不是失敗。共用同一個提供者組織但 `api_base` 不同的端點，例如同一個 OpenAI 組織的區域端點，在設定相同的 `model_info.encrypted_content_boundary` 時會保留推理內容 <SinceVersion v="1.110.0" />；請參閱[宣告共用的加密邊界](../response_api.md#declaring-a-shared-encryption-boundary)
+
+重試也遵循相同規則：一旦已固定的部署在該請求先前的一次嘗試中失敗，即使停用了冷卻也一樣。在產生推理內容的部署回傳伺服器錯誤、429 或連線錯誤之後，下一次重試會前往同一個加密邊界上的部署，或前往已捨棄加密推理內容的健康部署；而提早失敗的串流重試也會如此 <SinceVersion v="1.110.0" />。只有當請求的 `previous_response_id` 是由該部署核發時，這個固定才會成立，因為儲存的回應就位於該部署上。
+
+備援跳轉也是如此，無論該檢查是否開啟。依順序跳轉到下一個 `order`、已設定的 `fallbacks` 跳轉到另一個模型群組，以及在串流中途失敗的 Responses 串流重試，都會捨棄跳轉目標無法解密的加密推理內容並保留摘要，沒有逐部署的開關。對於由兩個提供者組成的有序群組，還是建議保持開啟此檢查：它會以產生每個推理項目的部署來標記該項目，因此當某個回合在 `order: 1` 冷卻期間直接派送到 `order: 2`（沒有跳轉，也就沒有跳轉時的剝除）時，推理內容也會被捨棄，而跳轉之後的那個回合會保留回應它的部署的推理內容，不必先付出一次失敗呼叫的代價
 
 **[進一步瞭解加密內容親和性 →](../response_api.md#encrypted-content-affinity-multi-region-load-balancing)**

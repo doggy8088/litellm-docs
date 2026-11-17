@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 IBM FMS 防護欄"
+sidebar_label: "IBM 防護欄"
+description: "在 LiteLLM AI 閘道上使用 IBM FMS 防護欄偵測越獄、PII 與仇恨言論，可從 config.yaml 呼叫偵測器伺服器或 orchestrator。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

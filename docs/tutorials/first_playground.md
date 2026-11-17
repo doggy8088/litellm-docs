@@ -21,7 +21,7 @@ import Image from '@theme/IdealImage';
 
 讓我們先確認金鑰可正常運作。請在您選擇的任何環境中執行這段程式（例如 [Google Colab](https://colab.research.google.com/#create=true)）。
 
-🚨 別忘了將預留位置的金鑰值替換成您的金鑰！
+別忘了將預留位置的金鑰值替換成您的金鑰！
 
 ```bash
 uv add litellm
@@ -53,7 +53,7 @@ response = completion("j2-mid", messages)
 讓我們先建立一個基本的 Flask 應用程式作為後端伺服器。我們會為 completion 請求設定一個特定路由。  
 
 **注意**：
-* 🚨 別忘了將預留位置的金鑰值替換成您的金鑰！
+* 別忘了將預留位置的金鑰值替換成您的金鑰！
 * `completion_with_retries`：LLM API 請求在正式環境中可能會失敗。這個函式會用 [tenacity](https://tenacity.readthedocs.io/en/latest/) 封裝一般的 litellm completion() 呼叫，以便在失敗時重試。
 
 LiteLLM 特定片段：
@@ -178,7 +178,7 @@ uv add streamlit
 您應該會看到這樣的結果：
 <Image img={require('../../img/litellm_streamlit_playground.png')} alt="streamlit_playground" />
 
-## 恭喜您 🚀  {#congratulations-}
+## 恭喜您  {#congratulations}
 
 您已建立您的第一個 LLM Playground——具備可呼叫 50+ 個 LLM API 的能力。
 

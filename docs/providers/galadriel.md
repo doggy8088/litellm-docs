@@ -1,3 +1,9 @@
+---
+title: "Galadriel API 與 LiteLLM：設定與模型"
+sidebar_label: "Galadriel"
+description: "從 LiteLLM Python SDK 將聊天請求傳送至 Galadriel 的無伺服器 Llama 3.1（8B、70B、405B）與 Mistral Nemo，並使用 llama3.1:70b 等簡短名稱。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

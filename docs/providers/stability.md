@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 進行 Stability AI 圖片生成"
+sidebar_label: "Stability AI"
+description: "使用 SD 3.5 與 Stable Image Ultra 生成圖片，再透過 Stability AI 或 AWS Bedrock 進行局部重繪、放大、向外擴展、消除物件或移除背景。"
+---
+
 # Stability AI {#stability-ai}
 https://stability.ai/
 

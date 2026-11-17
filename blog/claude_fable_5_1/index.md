@@ -8,6 +8,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM AI Gateway 對 Claude Fable 5.1 的 Day 0 支援，並自首次請求起追蹤 0.025x 的快取讀取價格。"
+card_title: "Claude Fable 5.1"
+card_summary: "快取讀取 $0.25 / MTok（輸入價格的 0.025x），思考恆開，因此將 tool_choice 設為 required 現在會回傳 400。"
 image: /img/litellm_claude_fable_5_1_announcement.png
 tags: [anthropic, claude, fable 5.1, day 0 support]
 hide_table_of_contents: false
@@ -102,7 +104,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
-`reasoning_effort` 對應到 adaptive thinking，這是 Fable 5.1 唯一接受的模式。固定預算、assistant prefill，以及非預設的 `temperature` 或 `top_p` 會回傳 400。傳入 `output_config: {"effort": "max"}` 可取得完整階層 [Fable 5 uses](/blog/claude_fable_5)。
+`reasoning_effort` 對應到 adaptive thinking，這是 Fable 5.1 唯一接受的模式。固定預算、assistant prefill，以及非預設的 `temperature` 或 `top_p` 會回傳 400。傳入 `output_config: {"effort": "max"}` 可取得完整階層 [Fable 5 uses](../claude_fable_5/index.md)。
 
 ## 回饋 {#feedback}
 

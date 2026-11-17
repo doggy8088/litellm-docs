@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "在 LiteLLM Proxy 與 SDK 上使用具備 day 0 支援的 Gemini 3 Flash 之指南。"
+card_title: "Gemini 3 Flash"
+card_summary: "Gemini 3 Flash 預覽版，具備 thinking 等級，可用於 /chat/completions、/responses 與 /messages。"
 tags: [gemini, day 0 support, llms]
 hide_table_of_contents: false
 ---
@@ -60,7 +62,7 @@ LiteLLM 會自動將 OpenAI 的 `reasoning_effort` 參數對應到 Gemini 的 `t
 
 ### 2. 思考簽章 {#2-thought-signatures}
 
-如同 `gemini-3-pro`，這個模型也為工具呼叫包含 thought signatures。LiteLLM 會在內部處理 signature 的擷取與嵌入。[深入了解 thought signatures](/blog/gemini_3#thought-signatures)。
+如同 `gemini-3-pro`，這個模型也為工具呼叫包含 thought signatures。LiteLLM 會在內部處理 signature 的擷取與嵌入。[深入了解 thought signatures](../gemini_3/index.md#thought-signatures)。
 
 **邊界情況處理**：如果請求中缺少 thought signatures，LiteLLM 會加入一個虛擬 signature，確保 API 呼叫不會中斷
 
@@ -71,8 +73,8 @@ LiteLLM 提供 Gemini 3 Flash 的**完整端到端支援**，適用於：
 
 - ✅ `/v1/chat/completions` - OpenAI 相容的 chat completions 端點
 - ✅ `/v1/responses` - OpenAI Responses API 端點（串流與非串流）
-- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic 相容的 messages 端點
-- ✅ `/v1/generateContent` – [Google Gemini API](/docs/generateContent) 相容端點 
+- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic 相容的 messages 端點
+- ✅ `/v1/generateContent` – [Google Gemini API](../../docs/generateContent) 相容端點 
 所有端點都支援：
 - 串流與非串流回應
 - 具備 thought signatures 的函式呼叫

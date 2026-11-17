@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 GigaChat API：Python SDK 與閘道"
+sidebar_label: "GigaChat"
+description: "透過 LiteLLM 以 gigachat/ 前綴，從 Python SDK 或 AI 閘道呼叫 Sber GigaChat 模型。支援串流、函式呼叫、結構化輸出與嵌入。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

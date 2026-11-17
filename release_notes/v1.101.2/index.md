@@ -1,5 +1,6 @@
 ---
-title: "v1.101.2 - Bedrock Invoke 串流與終端使用者預算重設"
+title: "LiteLLM v1.101.2 修正 Bedrock Invoke 串流與終端使用者預算重設"
+description: "修正 Claude Code 中無聲的 Bedrock Invoke /v1/messages 串流，以及客戶數超過 32,700 的共用預算之終端使用者預算重設。"
 slug: "v1-101-2"
 date: 2026-09-24T00:17:20
 authors:

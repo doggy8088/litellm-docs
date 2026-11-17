@@ -1,5 +1,6 @@
 ---
-title: "v1.72.2-stable"
+title: "LiteLLM v1.72.2-stable"
+description: "將 /v1/messages 代理額外負擔降至 250 RPS 時的 50ms，新增零溢出的多執行個體速率限制與 UI 稽核記錄。"
 slug: "v1-72-2-stable"
 date: 2025-06-07T10:00:00
 authors:

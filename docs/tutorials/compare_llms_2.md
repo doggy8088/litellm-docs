@@ -5,7 +5,7 @@ import Image from '@theme/IdealImage';
 <div class="cell markdown" id="L-W4C3SgClxl">
 
 LiteLLM 讓您可以使用任何 LLM，作為即插即用的替代方案，適用於
-`gpt-3.5-turbo`
+`{{openai_small}}`
 
 本筆記本將示範如何使用 litellm 在給定的測試集上比較 GPT-4 與 Claude-2
 
@@ -63,7 +63,7 @@ os.environ['ANTHROPIC_API_KEY'] = ""
 
 <div class="cell markdown" id="Ktn25dfKEJF1">
 
-## 在相同問題上呼叫 gpt-3.5-turbo 與 claude-2 {#calling-gpt-35-turbo-and-claude-2-on-the-same-questions}
+## 在相同問題上呼叫 OpenAI 模型與 Anthropic 模型 {#calling-an-openai-model-and-an-anthropic-model-on-the-same-questions}
 
 ## LiteLLM `completion()` 讓您可以用相同格式呼叫所有 LLM {#litellm-completion-allows-you-to-call-all-llms-in-the-same-format}
 

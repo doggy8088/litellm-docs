@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 OpenAI 文字轉語音"
+sidebar_label: "OpenAI - 文字轉語音"
+description: "透過 Python SDK 或 AI Gateway，經由 LiteLLM 的 /audio/speech 端點執行 OpenAI 文字轉語音，支援非同步呼叫與受支援的 TTS 模型。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -103,7 +109,7 @@ litellm --config /path/to/config.yaml
 | tts-1-hd | speech(model="tts-1-hd", voice="alloy", input="Hello, world!") |
 | gpt-4o-mini-tts | speech(model="gpt-4o-mini-tts", voice="alloy", input="Hello, world!") |
 
-## ✨ Enterprise LiteLLM Proxy - 設定最大請求檔案大小  {#-enterprise-litellm-proxy---set-max-request-file-size}
+## Enterprise LiteLLM Proxy - 設定最大請求檔案大小 {#enterprise-litellm-proxy---set-max-request-file-size}
 
 當您想限制傳送至 `audio/transcriptions` 的請求檔案大小時，請使用此設定
 
@@ -112,7 +118,7 @@ litellm --config /path/to/config.yaml
   litellm_params:
     model: whisper-1
     api_key: sk-*******
-    max_file_size_mb: 0.00001 # 👈 max file size in MB  (Set this intentionally very small for testing)
+    max_file_size_mb: 0.00001 # max file size in MB  (Set this intentionally very small for testing)
   model_info:
     mode: audio_transcription
 ```

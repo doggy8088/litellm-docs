@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock 批次推論"
+sidebar_label: "Bedrock 批次"
+description: "透過 LiteLLM AI 閘道執行 Amazon Bedrock 批次推論：在 config.yaml 中設定 mode: batch、上傳 JSONL 檔案、建立批次並取得結果。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -45,7 +51,7 @@ model_list:
       # Optional: AWS account id that owns the S3 buckets, when they live in another account
       # s3_bucket_owner: "123456789012"
     model_info: 
-      mode: batch # 👈 SPECIFY MODE AS BATCH, to tell user this is a batch model
+      mode: batch # SPECIFY MODE AS BATCH, to tell user this is a batch model
 ```
 
 **必要參數：**
@@ -65,6 +71,7 @@ model_list:
 |-----------|-------------|
 | `s3_encryption_key_id` | 用於 LiteLLM 上傳至 S3 的批次輸入檔與批次輸出資料的自訂 KMS 加密金鑰 ID。對於 LiteLLM 用來簽署上傳的憑證，此金鑰需要 `kms:GenerateDataKey`。若未指定，Bedrock 會使用 AWS 管理的加密金鑰。 |
 | `s3_bucket_owner` | 擁有批次輸入與輸出 S3 bucket 的 AWS 帳戶 id。會以 `s3BucketOwner` 傳送到 Bedrock 工作的輸入與輸出資料設定中。當 bucket 位於與執行批次工作的帳戶不同的帳戶時請設定此值，否則 Bedrock 會根據工作的帳戶驗證 bucket 擁有權，而導致工作失敗。也可透過 `AWS_S3_BUCKET_OWNER` 環境變數設定。 |
+| `s3_output_bucket_name` | Bedrock 寫入批次輸出的 S3 儲存貯體，位於 `litellm-batch-outputs/<job name>/` 之下。預設為 `s3_bucket_name`。也可透過 `AWS_S3_OUTPUT_BUCKET_NAME` 環境變數設定。 |
 
 ### 2. 建立虛擬金鑰 {#2-create-virtual-key}
 
@@ -270,7 +277,48 @@ print(result.text)
 
 ### 我的檔案會寫到哪裡？ {#where-are-my-files-written}
 
-當指定 `target_model_names` 時，檔案會寫入您在 Bedrock 批次模型組態中設定的 S3 儲存貯體。
+當指定 `target_model_names` 時，檔案會寫入您在 Bedrock 批次模型組態中設定的 S3 儲存貯體，除非上傳時指定了自己的允許儲存貯體（請參閱[用戶端可以為每個請求選擇 S3 儲存貯體嗎？](#can-a-client-choose-the-s3-bucket-per-request)）。Bedrock 會將批次輸出寫入隨批次建立請求送出的 `s3_output_bucket_name`，其次是模型的 `s3_output_bucket_name`，否則寫入輸入檔案的儲存貯體。
+
+### 如何讓每個團隊的批次資料保留在自己的儲存貯體中？ {#how-do-i-keep-each-teams-batch-data-in-its-own-bucket}
+
+最簡單的方法是將每個團隊的儲存貯體列在團隊的中繼資料中，並讓團隊的呼叫者在上傳與建立批次時指定自己的儲存貯體，如[用戶端可以為每個請求選擇 S3 儲存貯體嗎？](#can-a-client-choose-the-s3-bucket-per-request)所述。所有團隊共用一個批次模型，而每個團隊只能使用自己清單上的儲存貯體。
+
+如果您不想讓呼叫者傳入儲存貯體，可以為每個團隊提供專屬的批次模型與儲存貯體，再將每個團隊限制為只能使用其模型。團隊的輸入檔案與批次輸出便只會落在該團隊的儲存貯體中。
+
+```yaml showLineNumbers title="litellm_config.yaml"
+model_list:
+  - model_name: "bedrock-batch-team-a"
+    litellm_params:
+      model: bedrock/us.amazon.nova-lite-v1:0
+      s3_bucket_name: team-a-batch-bucket
+      s3_output_bucket_name: team-a-batch-bucket
+      s3_region_name: us-east-1
+      aws_batch_role_arn: arn:aws:iam::123456789012:role/LiteLLMBedrockBatchRole
+    model_info:
+      mode: batch
+  - model_name: "bedrock-batch-team-b"
+    litellm_params:
+      model: bedrock/us.amazon.nova-lite-v1:0
+      s3_bucket_name: team-b-batch-bucket
+      s3_output_bucket_name: team-b-batch-bucket
+      s3_region_name: us-east-1
+      aws_batch_role_arn: arn:aws:iam::123456789012:role/LiteLLMBedrockBatchRole
+    model_info:
+      mode: batch
+```
+
+以僅包含其批次模型的方式建立每個團隊，然後以該 `team_id` 建立團隊的金鑰：
+
+```bash showLineNumbers title="create_team.sh"
+curl -L -X POST 'https://{PROXY_BASE_URL}/team/new' \
+-H 'Authorization: Bearer ${PROXY_API_KEY}' \
+-H 'Content-Type: application/json' \
+-d '{"team_alias": "team-a", "models": ["bedrock-batch-team-a"]}'
+```
+
+團隊 A 的金鑰上傳時將 `target_model_names` 設為 `bedrock-batch-team-a`。團隊 A 的金鑰若在上傳或建立批次時指定 `bedrock-batch-team-b` 會被拒絕，因此團隊 A 的記錄永遠不會進入團隊 B 的儲存貯體。下載批次輸出時會從執行該批次的模型所屬儲存貯體讀取，而[受管理批次存取規則](../proxy/managed_batches#access-control)會阻止其他團隊讀取結果。
+
+`aws_batch_role_arn` 中的 IAM 角色需要對每個輸入儲存貯體的讀取權限與對每個輸出儲存貯體的寫入權限，而 LiteLLM 使用的 S3 憑證需要對所有儲存貯體的讀寫權限。若也要在 AWS 層級隔離團隊，可為每個團隊的模型提供專屬的角色與憑證，範圍限定在該團隊的儲存貯體。
 
 ### 支援哪些模型？ {#what-models-are-supported}
 
@@ -335,7 +383,7 @@ export AWS_S3_ENCRYPTION_KEY_ID=arn:aws:kms:us-west-2:123456789012:key/12345678-
 
 Bedrock 會檢查輸入與輸出 bucket 是否屬於 `s3BucketOwner` 中所命名的帳戶，而當該欄位缺失時，預設為執行 batch job 的帳戶。如果您的 bucket 位於另一個帳戶，即使 bucket policy 已授予存取權，工作仍會因 S3 權限錯誤而在驗證時失敗。將 `s3_bucket_owner` 設為擁有這些 bucket 的帳戶 id，LiteLLM 就會在輸入與輸出資料設定中都傳送它
 
-透過 proxy，`s3_bucket_owner` 在 `/v1/batches` request body 中傳入時，會優先於部署的 `litellm_params` 值，而該值又會優先於 `AWS_S3_BUCKET_OWNER` 環境變數。這與 router 套用到其他所有部署參數（例如 `s3_bucket_name` 或 `s3_encryption_key_id`）的順序相同。當都未設定時，該欄位會被省略，而 Bedrock 會保留其預設值
+透過 proxy，`s3_bucket_owner` 在 `/v1/batches` request body 中傳入時，會優先於部署的 `litellm_params` 值，而該值又會優先於 `AWS_S3_BUCKET_OWNER` 環境變數。這與 router 套用到其他所有部署參數（例如 `s3_encryption_key_id`）的順序相同。當都未設定時，該欄位會被省略，而 Bedrock 會保留其預設值
 
 ```yaml
 model_list:
@@ -350,6 +398,58 @@ model_list:
 ```bash
 export AWS_S3_BUCKET_OWNER=123456789012
 ```
+
+### 用戶端可以為每個請求選擇 S3 儲存貯體嗎？ {#can-a-client-choose-the-s3-bucket-per-request}
+
+預設不行。proxy 會拒絕用戶端 request body 中的 `s3_bucket_name`、`s3_output_bucket_name`、`s3_endpoint_url` 與 `allow_legacy_cloud_file_ids`，因為 proxy 是以部署的 AWS 憑證讀寫這些儲存貯體。儲存貯體來自部署的 `litellm_params` 或 `AWS_S3_BUCKET_NAME` 環境變數。
+
+若要讓用戶端從一組固定的儲存貯體中挑選，可將團隊可使用的儲存貯體以 `allowed_s3_buckets` 列在該團隊的中繼資料中。團隊的金鑰在將批次輸入檔案上傳到 `POST /v1/files` 時，可將其中一個儲存貯體以 `s3_bucket_name` 送出；在以 `POST /v1/batches` 建立批次時，則以 `s3_output_bucket_name` 送出。該儲存貯體會覆寫該請求的模型儲存貯體。不在團隊清單上的儲存貯體會以 401 拒絕，未送出儲存貯體的請求則繼續使用模型的儲存貯體。
+
+`PATCH /team/{team_id}` 會將金鑰合併到團隊現有的中繼資料中，而 `POST /team/update` 會取代整個中繼資料物件。只有 proxy 管理員可以在 `POST /team/new` 或更新團隊時設定 `allowed_s3_buckets`。組織管理員、團隊管理員以及可建立團隊的使用者都無法新增、變更或移除它，即使 `team_admin_editable_team_fields` 允許團隊管理員編輯團隊中繼資料的其餘部分也一樣，因為這份清單讓團隊能以 proxy 的 AWS 憑證讀寫這些儲存貯體。項目也可以帶前綴，例如 `team-a-batch-bucket/tenant`，讓團隊的檔案保留在該前綴之下。項目以完全相符且區分大小寫的字串比對，因此 `team-a-batch-bucket/tenant` 只允許該值，不允許儲存貯體的其他前綴或子路徑。值必須是字串清單。任何其他形式都會被視為空清單，使團隊無法選擇儲存貯體。
+
+```bash showLineNumbers title="allow_team_buckets.sh"
+curl -X PATCH 'http://localhost:4000/team/team-a' \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"metadata": {"allowed_s3_buckets": ["team-a-batch-bucket"]}}'
+```
+
+```bash showLineNumbers title="upload_and_create.sh"
+curl http://localhost:4000/v1/files \
+  -H "Authorization: Bearer $TEAM_A_KEY" \
+  -F purpose="batch" \
+  -F target_model_names="bedrock-batch-claude" \
+  -F s3_bucket_name="team-a-batch-bucket" \
+  -F file="@batch_input.jsonl"
+
+curl http://localhost:4000/v1/batches \
+  -H "Authorization: Bearer $TEAM_A_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_file_id": "<file id from the upload>",
+    "endpoint": "/v1/chat/completions",
+    "completion_window": "24h",
+    "s3_output_bucket_name": "team-a-batch-bucket"
+  }'
+```
+
+LiteLLM 會記錄它建立的每個受管理檔案與批次輸出的 S3 位置，因此擷取批次、下載其輸出檔案、刪除檔案與追蹤批次成本時，都會從資料實際寫入的儲存貯體讀取，呼叫者無需再次傳入儲存貯體。將儲存貯體從團隊清單移除後，新的上傳與批次便無法再使用它，而已儲存在那裡的檔案仍可供其擁有者讀取。
+
+批次成本是依 Bedrock 寫入的輸出檔案計算，因此不要讓團隊成員在 AWS 中直接對其儲存貯體擁有寫入或刪除權限。只有 LiteLLM 使用的 S3 憑證與 `aws_batch_role_arn` 中的批次角色應能變更其中的物件，否則成員可能置換已完成的輸出檔案，改變批次的計費內容。
+
+若要防止團隊讀取其他團隊的批次，也請開啟 [`require_managed_files`](../proxy/managed_batches#access-control)。啟用後，只有建立檔案或批次的團隊能對其進行操作，原始的 `s3://` id 也會被拒絕。
+
+若要讓所有團隊都能使用某個儲存貯體，可改將它列在 `general_settings.allowed_client_side_s3_buckets` 中。`allowed_client_side_s3_endpoint_urls` 對 `s3_endpoint_url` 有相同作用。設定 `allow_client_side_credentials: true` 仍會允許這些欄位使用任意值，這也會讓任何呼叫者送出任意儲存貯體，因而停用各團隊的清單。當團隊必須保留在自己的儲存貯體時，請勿開啟它。
+
+```yaml
+general_settings:
+  allowed_client_side_s3_buckets:
+    - shared-batch-bucket
+```
+
+### LiteLLM 如何取得 Bedrock 輸出檔案的詳細資訊？ {#how-does-litellm-get-bedrock-output-file-details}
+
+Bedrock 沒有檔案詳細資訊 API，因此 LiteLLM 會以與批次部署相同的憑證，直接從 S3 物件讀取大小與上次修改時間。空白的輸出或錯誤檔案會顯示為 `bytes: 0`。LiteLLM 何時查詢這些資訊，請參閱[輸出與錯誤檔案](../proxy/managed_batches#output-and-error-files)。
 
 ## 延伸閱讀 {#further-reading}
 

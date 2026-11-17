@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Synthetic API：Python SDK 與閘道"
+sidebar_label: "Synthetic"
+description: "透過 SDK 或 AI 閘道，呼叫 Synthetic 託管於美國與歐盟安全資料中心的開源模型，支援串流與 OpenAI 採樣參數。"
+---
+
 # 合成 {#synthetic}
 
 ## 概覽 {#overview}

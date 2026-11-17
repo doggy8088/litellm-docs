@@ -1,7 +1,16 @@
+---
+title: "搭配 LiteLLM 使用 Cerebras API：Python SDK 與閘道"
+sidebar_label: "Cerebras"
+description: "透過 Python SDK 或 AI 閘道呼叫 llama3-70b-instruct 等 Cerebras 模型，並透過 response_format 使用串流與 JSON 模式。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Cerebras {#cerebras}
+
+LiteLLM 透過 Python SDK 或 AI 閘道呼叫所有 Cerebras 模型時都會加上 `cerebras/` 前綴；請設定 `CEREBRAS_API_KEY` 進行驗證。
+
 https://inference-docs.cerebras.ai/api-reference/chat-completions
 
 :::tip

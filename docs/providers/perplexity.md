@@ -1,7 +1,16 @@
+---
+title: "透過 LiteLLM 使用 Perplexity API：Sonar 與 Agent API"
+sidebar_label: "Perplexity AI"
+description: "透過 LiteLLM 以 perplexity/ 前綴從 Python SDK 或 AI Gateway 呼叫 Perplexity Sonar 模型與 Agent API，支援網路搜尋與推理。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Perplexity AI（pplx-api） {#perplexity-ai-pplx-api}
+
+Perplexity 提供 Sonar 模型，以及具備網路搜尋工具的 Agent API；LiteLLM 可從 Python SDK 或 AI Gateway 以 `perplexity/` 前綴呼叫兩者。
+
 https://www.perplexity.ai
 
 ## API 金鑰 {#api-key}
@@ -41,7 +50,7 @@ for chunk in response:
 
 ## 推理努力 {#reasoning-effort}
 
-需要 v1.72.6+
+<SinceVersion v="1.72.6" />
 
 :::info
 
@@ -117,7 +126,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 
 ## 代理程式 API（Responses API） {#agent-api-responses-api}
 
-需要 v1.72.6+
+<SinceVersion v="1.72.6" />
 
 ### 使用預設值 {#using-presets}
 

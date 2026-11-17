@@ -3,7 +3,7 @@ slug: guardrail-logging-secret-exposure-incident
 title: "事件報告：Guardrail 記錄將秘密標頭暴露於 spend logs 和 traces 中"
 date: 2026-03-18T10:00:00
 authors:
-  - litellm
+  - ishaan
 tags: [incident-report, security, guardrails]
 hide_table_of_contents: false
 ---

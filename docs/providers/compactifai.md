@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 CompactifAI API：設定與模型"
+sidebar_label: "CompactifAI"
+description: "透過 Python SDK 或 AI 閘道呼叫 CompactifAI 壓縮後的 Llama、Mistral 與 CodeLlama 模型，並使用串流、函式呼叫與非同步請求。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

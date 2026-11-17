@@ -19,7 +19,9 @@ Headroom 以 sidecar 服務的方式與 LiteLLM 並行執行。用戶端流量�
 
 ## 需求 {#requirements}
 
-LiteLLM v1.92.x 或更新版本，以及可連線的 Headroom proxy。請參閱下方的 [部署 Headroom](#deploy-headroom) 以取得單一檔案的 Dockerfile。
+<SinceVersion v="1.92.0" />
+
+您需要可連線的 Headroom proxy。請參閱下方的 [部署 Headroom](#deploy-headroom) 以取得單一檔案的 Dockerfile。
 
 若要在穩定版發布前進行測試，請使用 [v1.92.0-dev.1](https://github.com/BerriAI/litellm/releases/tag/v1.92.0-dev.1) 開發版。
 
@@ -247,3 +249,11 @@ Headroom 預設會保護兩種訊息類型，這是設定在 Headroom 容器本�
 | -------------------- | -------------------------------------------------------------------- |
 | `HEADROOM_API_BASE`  | 當未在防護欄設定中設定 `api_base` 時的後備值。        |
 | `HEADROOM_API_KEY`   | 當未在防護欄設定中設定 `api_key` 時的後備值。         |
+
+## 壓縮節省的計算方式 {#how-compression-savings-are-calculated}
+
+Admin UI 中的 Cost Optimization 頁面會顯示一個 **Compression savings** 磚塊，包含一個金額與被壓縮的 token 數量。兩者都來自 Headroom 回傳的逐請求統計數據。
+
+每次壓縮成功時，`/v1/compress` 回應會回報 `tokens_before` 與 `tokens_after`，由 Headroom 自己的 tokenizer 就傳送給它的訊息計算而得。LiteLLM 會將這些統計數據儲存在該請求支出記錄的 `guardrail_information` 中，連同 `tokens_saved` 一併保存；當 Headroom 服務未傳送 `tokens_saved` 時，其值為 `tokens_before - tokens_after`。當支出記錄彙總至每日支出表格時，`tokens_saved` 會寫入該請求的 `compression_saved_tokens`，而 `compression_savings_spend` 則是 `tokens_saved` 乘以該請求所傳送模型的 `input_cost_per_token`。該費率在 `model_list` 有設定時，採用部署設定的輸入價格；否則採用 LiteLLM 內建的模型價格。該磚塊會就所選日期範圍加總這兩個欄位。
+
+這個金額是被移除的 token 若以一般輸入費率計費的估算值，因此不會套用 prompt 快取折扣與服務層級。壓縮失敗或被略過的請求不計入；沒有已知價格的模型只貢獻其 token 數量，金額為零。

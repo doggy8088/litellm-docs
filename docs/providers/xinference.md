@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Xinference：Embedding 與影像生成"
+sidebar_label: "Xinference [Xorbits Inference]"
+description: "在 Xinference (Xorbits Inference) 伺服器上以 bge、e5 與 gte 模型產生 embedding，並建立 Stable Diffusion 圖片，可從 SDK 或 AI Gateway 操作。"
+---
+
 # Xinference [Xorbits Inference] {#xinference-xorbits-inference}
 https://inference.readthedocs.io/en/latest/index.html
 

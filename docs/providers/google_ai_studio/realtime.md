@@ -1,9 +1,15 @@
+---
+title: "Gemini Live Realtime API 搭配 LiteLLM"
+sidebar_label: "Gemini Realtime API - Google AI Studio"
+description: "透過 LiteLLM AI 閘道連接到 Google AI Studio 的 Gemini Realtime API：將模型加入設定、啟動 proxy，並使用工具呼叫。"
+---
+
 # Gemini 即時 API - Google AI Studio {#gemini-realtime-api---google-ai-studio}
 
 | 功能 | 說明 | 備註 |
 | --- | --- | --- |
 | Proxy | ✅ |  |
-| SDK | ⌛️ | 可透過 `litellm._arealtime` 進行實驗性存取。 |
+| SDK | | 可透過 `litellm._arealtime` 進行實驗性存取。 |
 
 ## Proxy 使用方式 {#proxy-usage}
 

@@ -1,15 +1,21 @@
+---
+title: "在 LiteLLM 中使用 Anthropic 工具搜尋"
+sidebar_label: "工具搜尋"
+description: "透過 LiteLLM 使用 Claude 工具搜尋，從大型目錄依需求載入工具，在 Chat Completions、Messages 與 Responses 上提供 regex 與 BM25 變體。"
+---
+
 # 工具搜尋 {#tool-search}
 
 工具搜尋可讓 Claude 依需求從大型工具目錄（10,000+ 工具）中動態探索並載入工具。Claude 不會一開始就將所有工具定義載入到內容視窗中，而是會搜尋您的工具目錄，僅載入所需的工具。
 
 ## 支援的提供者 {#supported-providers}
 
-| 提供者 | Chat Completions API | Messages API |
-|----------|---------------------|--------------|
-| **Anthropic API** | ✅ | ✅ |
-| **Azure Anthropic**（Microsoft Foundry） | ✅ | ✅ |
-| **Google Cloud Vertex AI** | ✅ | ✅ |
-| **Amazon Bedrock** | ✅（僅限 Invoke API，Claude 4.5 及更新版本） | ✅（僅限 Invoke API，Claude 4.5 及更新版本） |
+| 提供者 | Chat Completions API | Messages API | [Responses API](#responses-api) |
+|----------|---------------------|--------------|---------------|
+| **Anthropic API** | ✅ | ✅ | ✅ |
+| **Azure Anthropic**（Microsoft Foundry） | ✅ | ✅ | ✅ |
+| **Google Cloud Vertex AI** | ✅ | ✅ | ✅ |
+| **Amazon Bedrock** | ✅（僅限 Invoke API，Claude 4.5 及更新版本） | ✅（僅限 Invoke API，Claude 4.5 及更新版本） | ✅（僅限 Invoke API，Claude 4.5 及更新版本） |
 
 ## 優點 {#benefits}
 
@@ -397,7 +403,7 @@ response = await litellm.anthropic.messages.acreate(
 import litellm
 
 response = await litellm.anthropic.messages.acreate(
-    model="bedrock/invoke/anthropic.{{anthropic_large}}",
+    model="bedrock/invoke/global.anthropic.{{anthropic_large}}",
     messages=[
         {
             "role": "user",
@@ -531,6 +537,127 @@ response = client.messages.create(
 )
 
 print(response)
+```
+
+---
+
+## Responses API {#responses-api}
+
+從 v1.107.0 起，OpenAI Responses API 呼叫者可以將 OpenAI 的 `tool_search` 工具傳送至 `/v1/responses` 上的 Claude 模型。LiteLLM 會改傳送 Claude 的 Anthropic regex 工具搜尋工具，並將 Claude 的搜尋結果以 `tool_search_call` 輸出項目回傳，讓同一個請求同時適用於 OpenAI 與 Claude 模型。
+
+帶有 `"execution": "server"` 或未設定 `execution` 的 `{"type": "tool_search"}` 工具會變成 `tool_search_tool_regex_20251119`。函式工具會保留 `defer_loading`，`namespace` 工具的成員工具亦然。Claude 的搜尋結果會以 `tool_search_call` 項目的形式回傳，排在它所觸發的 `function_call` 之前。它的 `call_id` 是 Anthropic 的 `srvtoolu_` id，`id` 是 `tsc_` 加上該 id，`arguments` 是存放 Claude 搜尋模式的物件，`execution` 則是 `server`。串流回應會將它以 `response.output_item.added` 與 `response.output_item.done` 事件傳送，搜尋模式會出現在 `done` 事件中。
+
+後續輪次可以將 `tool_search_call` 作為輸入項目，連同其餘輸出一起傳回；當 proxy [儲存工作階段](../response_api.md#session-management) 時，也可以使用 `previous_response_id`。LiteLLM 傳送給 Claude 的請求不會包含該搜尋呼叫，因此 Claude 只會看到函式呼叫及其輸出，而不會看到找到這些工具的搜尋過程；它的回答可能會表示自己未經搜尋就直接呼叫了某個工具。
+
+此功能適用於 LiteLLM 會建立 Anthropic 請求的路由（Anthropic、Azure Anthropic、Vertex AI 與 Bedrock Invoke），前提是模型在成本對照表中的條目具有 `supports_tool_search`，涵蓋 Claude 4.5 及更新版本。在其他所有路由（包括 Bedrock Converse）上，LiteLLM 會丟棄 `tool_search` 工具、記錄一則警告，並在不帶 `defer_loading` 的情況下傳送函式工具。
+
+OpenAI 工具搜尋有兩個部分不會被轉換。LiteLLM 會丟棄帶有 `"execution": "client"` 的 `tool_search` 工具；在 Claude 路由上，它會保留其他工具的 `defer_loading`，因此當請求中的所有工具都被延遲載入時，Anthropic 會回傳 400（`All tools cannot be deferred.`）。LiteLLM 也不會回傳 `tool_search_output` 項目。OpenAI 會在該項目中填入搜尋所載入工具的定義，而呼叫者本來就已持有這些定義。
+
+### AI 閘道使用方式 {#ai-gateway-usage-2}
+
+#### Proxy 設定 {#proxy-configuration-2}
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: claude-sonnet
+    litellm_params:
+      model: anthropic/{{anthropic}}
+      api_key: os.environ/ANTHROPIC_API_KEY
+```
+
+#### 用戶端請求 {#client-request-2}
+
+此請求中的每個函式工具都設定了 `defer_loading`，因此 Claude 必須搜尋它需要的工具。
+
+```bash showLineNumbers title="tool_search on a Claude model through /v1/responses"
+curl http://0.0.0.0:4000/v1/responses \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-sonnet",
+    "input": "What is the weather in Paris right now? Use the right tool.",
+    "tools": [
+      {"type": "tool_search", "execution": "server"},
+      {"type": "function", "name": "get_weather", "description": "Get the current weather for a city", "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}, "defer_loading": true},
+      {"type": "function", "name": "get_stock_price", "description": "Get the current stock price for a ticker", "parameters": {"type": "object", "properties": {"ticker": {"type": "string"}}, "required": ["ticker"]}, "defer_loading": true},
+      {"type": "function", "name": "send_email", "description": "Send an email to a recipient", "parameters": {"type": "object", "properties": {"to": {"type": "string"}, "body": {"type": "string"}}, "required": ["to", "body"]}, "defer_loading": true}
+    ]
+  }'
+```
+
+回應的 `output` 陣列先包含搜尋呼叫，接著是函式呼叫：
+
+```json showLineNumbers title="Response output"
+[
+  {
+    "id": "tsc_srvtoolu_01F8hTt8WqVTUttskjushEVj",
+    "arguments": {"pattern": "weather|forecast|temperature"},
+    "call_id": "srvtoolu_01F8hTt8WqVTUttskjushEVj",
+    "execution": "server",
+    "status": "completed",
+    "type": "tool_search_call"
+  },
+  {
+    "arguments": "{\"city\": \"Paris\"}",
+    "call_id": "toolu_01K24WmFy7Wp67qTowYf2cw3",
+    "name": "get_weather",
+    "type": "function_call",
+    "id": "fc_toolu_01K24WmFy7Wp67qTowYf2cw3",
+    "namespace": null,
+    "status": "completed"
+  }
+]
+```
+
+使用 OpenAI Python SDK 時，後續輪次會將第一個回應的輸出連同函式結果一起傳回：
+
+```python showLineNumbers title="tool_search on a Claude model with the OpenAI SDK"
+from openai import OpenAI
+
+client = OpenAI(api_key="your-litellm-proxy-key", base_url="http://0.0.0.0:4000")
+
+tools = [
+    {"type": "tool_search"},
+    {
+        "type": "function",
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]},
+        "defer_loading": True,
+    },
+    {
+        "type": "function",
+        "name": "send_email",
+        "description": "Send an email to a recipient",
+        "parameters": {
+            "type": "object",
+            "properties": {"to": {"type": "string"}, "body": {"type": "string"}},
+            "required": ["to", "body"],
+        },
+        "defer_loading": True,
+    },
+]
+
+question = [{"role": "user", "content": "What is the weather in Paris right now? Use the right tool."}]
+response = client.responses.create(model="claude-sonnet", input=question, tools=tools)
+
+for item in response.output:
+    if item.type == "tool_search_call":
+        print(f"Searched with {item.arguments}")
+    elif item.type == "function_call":
+        print(f"Called {item.name}({item.arguments})")
+
+weather_call = next(item for item in response.output if item.type == "function_call")
+follow_up = client.responses.create(
+    model="claude-sonnet",
+    input=[
+        *question,
+        *response.output,
+        {"type": "function_call_output", "call_id": weather_call.call_id, "output": '{"temp_c": 18, "condition": "cloudy"}'},
+    ],
+    tools=tools,
+)
+print(follow_up.output_text)
 ```
 
 ---

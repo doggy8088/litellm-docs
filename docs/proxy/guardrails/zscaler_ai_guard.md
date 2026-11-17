@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 上的 Zscaler AI Guard"
+sidebar_label: "Zscaler AI Guard"
+description: "透過 LiteLLM AI Gateway 對提示與回應強制執行 Zscaler AI Guard 政策，可依團隊或金鑰使用自訂政策 ID，並附帶使用者詳細資訊。"
+---
 # Zscaler AI Guard {#zscaler-ai-guard}
 
 ## 概觀 {#overview}
@@ -113,6 +118,14 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 - To send user_api_key_team_id:
 在 litellm 中設定 SEND_USER_API_KEY_TEAM_ID = True（預設：False），並在 Zscaler AI Guard 的 custom_headers 中加入 'user-api-key-team-id'
+
+請求的頂層 `user` 欄位會一律被傳送，無需任何設定；只要它是非空字串，就會以 `user` 出現在 execute-policy 請求本文中。其他型別的值則會被略過。
+
+```json
+{"direction": "IN", "content": "...", "policyId": 100, "user": "alice@example.com"}
+```
+
+該值就是用戶端在 `user` 中放入的內容，因此應將其視為歸屬資訊，而非經過驗證的身分。proxy 也可以代為填入：來自 `general_settings.user_header_name` 所指定的標頭、在 `/v1/audio/speech` 上使用金鑰擁有者的 user id，或在 `litellm_settings.overwrite_user_with_key_hash` 開啟時使用虛擬金鑰的雜湊值。啟用該設定時，使用 master key 發出的請求會傳送固定值 `litellm_proxy_master_key`，而不是雜湊值，詳見[虛擬金鑰](../virtual_keys.md#overwrite-outgoing-user-with-the-key-hash)。
 
 ## 7. 使用自訂 Zscaler AI Guard 原則（選用） {#7-using-a-custom-zscaler-ai-guard-policy-optional}
 如果終端使用者想使用自己自訂的 Zscaler AI Guard 政策，而不是 LiteLLM 的預設政策，可以透過在其 LiteLLM 請求中提供 metadata 來達成。請依照以下步驟實作此功能：

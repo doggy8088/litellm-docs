@@ -33,7 +33,7 @@ import { RequestFlowDiagram, RouterFlowDiagram, ImageFlowDiagram } from '@site/s
         - Virtual Key 速率限制
         - 使用者速率限制
         - Team 限制
-    - `_ProxyDBLogger` 會更新 LiteLLM 資料庫中的支出／使用量。[以下是每個請求在 DB 中追蹤的所有內容](https://github.com/BerriAI/litellm/blob/main/schema.prisma)
+    - `_ProxyDBLogger` 會更新 LiteLLM 資料庫中的支出／使用量。[以下是每個請求在 DB 中追蹤的所有內容](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/schema.prisma)
 
 ## 路由器：備援與重試 {#the-router-fallbacks-and-retries}
 

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 閘道上的 Google Model Armor 防護欄"
+sidebar_label: "Google Cloud Model Armor"
+description: "在 LiteLLM AI 閘道上套用 Google Cloud Model Armor 範本，淨化或封鎖提示與回應，包含文件與檔案掃描。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

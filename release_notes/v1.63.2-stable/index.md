@@ -1,5 +1,6 @@
 ---
-title: v1.63.2-stable
+title: "LiteLLM v1.63.2-stable"
+description: "為 Assistants 新增 /openai/ 直通、Bedrock Claude 工具與 response_format 修正，以及 Bedrock Claude 的 PDF 輸入旗標。"
 slug: v1.63.2-stable
 date: 2025-03-08T10:00:00
 authors:

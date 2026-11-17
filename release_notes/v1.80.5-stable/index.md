@@ -1,5 +1,6 @@
 ---
-title: "v1.80.5-stable - Gemini 3.0 支援"
+title: "LiteLLM v1.80.5-stable - Gemini 3.0 支援"
+description: "新增 Gemini 3 支援、搭配 Prompt Studio 的提示版本管理，以及 MCP Hub。將 /realtime p99 延遲降低 182 倍。"
 slug: "v1-80-5"
 date: 2025-11-22T10:00:00
 authors:
@@ -49,7 +50,7 @@ pip install litellm==1.80.5
 - **提示管理** - [完整的提示版本控管支援，具備可編輯、測試與版本歷史的 UI](../../docs/proxy/litellm_prompt_management)
 - **MCP Hub** - [在您的組織內發布並探索 MCP 伺服器](../../docs/proxy/ai_hub#mcp-servers)
 - **模型比較 UI** - [並排模型比較介面，用於測試](../../docs/proxy/model_compare_ui)
-- **批次 API 支出追蹤** - [針對批次與檔案建立請求的自訂中繼資料進行細緻的支出追蹤](../../docs/proxy/cost_tracking#-custom-spend-log-metadata)
+- **批次 API 支出追蹤** - [針對批次與檔案建立請求的自訂中繼資料進行細緻的支出追蹤](../../docs/proxy/cost_tracking#custom-spend-log-metadata)
 - **AWS IAM Secret Manager** - [支援 AWS Secret Manager 的 IAM 角色驗證](../../docs/secret_managers/aws_secret_manager#iam-role-assumption)
 - **記錄回呼控制** - [管理員層級控制，可防止呼叫端在合規環境中停用記錄回呼](../../docs/proxy/dynamic_logging#disabling-dynamic-callback-management-enterprise)
 - **Proxy CLI JWT 驗證** - [讓開發者可使用 Proxy CLI 透過 LiteLLM AI Gateway 進行驗證](../../docs/proxy/cli_sso)

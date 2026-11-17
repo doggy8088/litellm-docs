@@ -311,7 +311,7 @@ def transform_response(*args, **kwargs):
 
 ---
 
-### 🧪 測試 {#-tests}
+### 測試 {#tests}
 
 在 `tests/test_litellm/llms/my_provider/chat/test.py` 中建立測試。反覆迭代直到您對品質滿意為止！
 

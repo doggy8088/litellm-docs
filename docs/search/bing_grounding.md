@@ -1,3 +1,8 @@
+---
+title: "搭配 LiteLLM 使用 Grounding with Bing Search API"
+sidebar_label: "使用 Bing 搜尋進行 Grounding（Microsoft Foundry）"
+description: "在 LiteLLM 中使用 Grounding with Bing Search：透過 Microsoft Foundry 專案，在 Python SDK 中呼叫 search() 或在 AI Gateway 上呼叫 /v1/search。"
+---
 # 使用 Bing 搜尋進行 grounding（Microsoft Foundry） {#grounding-with-bing-search-microsoft-foundry}
 
 [使用 Bing 搜尋進行 grounding](https://learn.microsoft.com/en-us/azure/ai-foundry/agents/how-to/tools/bing-grounding) 會透過 [Microsoft Foundry](https://learn.microsoft.com/en-us/azure/ai-foundry/) 專案中的模型部署執行網頁搜尋，並使用該專案的 Responses API。模型會執行搜尋並回傳附引用的結果，因此搜尋流量會停留在您的 Foundry 專案內，並由 Azure 計費

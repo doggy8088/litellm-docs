@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 vLLM：自行託管模型設定"
+sidebar_label: "vLLM"
+description: "透過 LiteLLM 以 hosted_vllm/ 前綴與您的 api_base 呼叫託管的 vLLM 伺服器，可從 Python SDK 或 AI Gateway 操作，適用於 chat、embeddings 與 rerank。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -619,6 +625,10 @@ curl -X POST http://0.0.0.0:4000/chat/completions \
 </TabItem>
 </Tabs>
 
+## 決策 {#decisions}
+
+vLLM v0.32.0 與後續版本提供 [`/v1/systemone`](https://github.com/vllm-project/vllm/pull/59299)，並依 vLLM 的 [Structured Decisions](https://github.com/vllm-project/vllm/blob/v0.32.0/docs/serving/online_serving/structured_decisions.md) 文件所述回答 `choice`、`noul` 與 `score` 問題。它們提供 vLLM 的 [`READ_STRATEGIES`](https://github.com/vllm-project/vllm/blob/v0.32.0/vllm/entrypoints/generate/structured_decisions/strategies.py#L812) 中列出的模型架構，其中包括 Qwen3 與 Qwen3.5。您可以在 LiteLLM 的 [`/v1/decisions` 與 `/v1/systemone` 路由](../decisions.md) 上使用 `hosted_vllm/` 模型，或將其用作 [Auto Router 分類器](../auto_router/decision_classifiers.md#vllm)。
+
 ## （已棄用）用於套件化 `vllm` 安裝 {#deprecated-for-packaged-vllm-installs}
 
 ### 使用 - `litellm.completion` {#using---litellmcompletion}
@@ -673,7 +683,7 @@ def default_pt(messages):
     return " ".join(message["content"] for message in messages)
 ```
 
-[LiteLLM 中提示詞樣板運作方式的程式碼](https://github.com/BerriAI/litellm/blob/main/litellm/llms/prompt_templates/factory.py)
+[LiteLLM 中提示詞樣板運作方式的程式碼](https://github.com/BerriAI/litellm/blob/main/litellm/litellm_core_utils/prompt_templates/factory.py)
 
 #### 我們已經有提示詞樣板的模型 {#models-we-already-have-prompt-templates-for}
 

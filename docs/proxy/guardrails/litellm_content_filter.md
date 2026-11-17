@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 內建的內容篩選防護欄"
+sidebar_label: "LiteLLM 內容篩選器（內建防護欄）"
+description: "在 LiteLLM AI 閘道上使用內建內容篩選器遮蔽或封鎖敏感資料，透過正規表示式模式與關鍵字，可在 UI 或 YAML 中設定。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Image from '@theme/IdealImage';
@@ -16,7 +21,7 @@ import Image from '@theme/IdealImage';
 | 防護欄名稱 | `litellm_content_filter` |
 | 偵測方法 | 預先建置的 regex 模式、自訂 regex、關鍵字比對 |
 | 動作 | `BLOCK`（拒絕請求）、`MASK`（將內容去識別化） |
-| 支援模式 | `pre_call`、`post_call`、`during_call`（串流） |
+| 支援模式 | `pre_call`、`post_call`、`during_call`（串流）、`logging_only` |
 | 效能 | 快速 - 在本地執行，不會呼叫外部 API |
 
 ## 快速開始 {#quick-start}
@@ -236,6 +241,29 @@ Contact me at [EMAIL_REDACTED]
 - **`pre_call`** - 在 LLM 呼叫前執行，篩選輸入訊息
 - **`post_call`** - 在 LLM 呼叫後執行，篩選輸出回應
 - **`during_call`** - 在串流期間執行，即時篩選每個區塊
+- **`logging_only`** - 在呼叫之後掃描記錄下來的請求與回應，不改變用戶端收到的內容
+
+在 `logging_only` 模式下，篩選器只進行觀察。每個比對結果都會記錄在該請求的防護欄資訊中，顯示於 [Logs](/docs/proxy/ui_logs) 頁面，不論其動作為何。`BLOCK` 比對會以 `guardrail_flagged` 狀態記錄，而不是拒絕呼叫，且在請求比對之後仍會掃描回應。`MASK` 比對會連同其遮罩實體數量一起記錄，而記錄下來的文字保持原樣。任何強制模式會拒絕的情況，例如無法重寫的工具引數名稱上的 `MASK` 比對，也會記錄為 `guardrail_flagged`。
+
+```yaml
+guardrails:
+  - guardrail_name: "secrets-audit"
+    litellm_params:
+      guardrail: litellm_content_filter
+      mode: logging_only
+      default_on: true
+      patterns:
+        - pattern_type: regex
+          pattern: "AKIA[0-9A-Z]{16}"
+          name: aws_access_key
+          action: BLOCK
+        - pattern_type: regex
+          pattern: "ghp_[A-Za-z0-9]{36}"
+          name: github_pat
+          action: BLOCK
+```
+
+在 Admin UI 中，新增防護欄時請將模式選為 **Logging Only**。
 
 ### 動作 {#actions}
 
@@ -630,24 +658,39 @@ exceptions:
 
 #### 檔案放置位置 {#where-to-put-the-file}
 
-請將您的 YAML 放在以下兩個位置之一：
+請將您的 YAML 放在以下兩個位置之一。
 
-**選項 A：放在內建的 `categories/` 目錄中（建議）**
+**選項 A：放在載入器會掃描的 `categories/` 目錄中（建議）**
 
-將檔案掛載到 `<site-packages>/litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/categories/<your-category-name>.yaml`，並省略 `category_file:` 欄位。載入器會依類別名稱將其載入
+將檔案掛載到匯入套件的 `categories/` 目錄中，並省略 `category_file:`。共用的 LiteLLM 映像檔在兩種部署模式下都使用 `/app/.venv/lib/python{{python_version}}/site-packages/litellm/proxy/guardrails/content_filter_data/categories/`。當您的映像檔變更時，請更新路徑中的 Python 次要版本。
+
+請使用 `subPath` 掛載每個檔案。對整個目錄進行掛載會隱藏內建的類別。對於 [LiteLLM chart](../deploy/helm.md)：
 
 ```yaml title="values.yaml (Helm)"
-extraVolumeMounts:
-  - name: content-filter-categories
-    mountPath: /usr/local/lib/python{{python_version}}/site-packages/litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/categories/<your-category-name>.yaml
-    subPath: <your-category-name>.yaml
-    readOnly: true
+gateway:
+  volumeMounts:
+    - name: content-filter-categories
+      mountPath: /app/.venv/lib/python{{python_version}}/site-packages/litellm/proxy/guardrails/content_filter_data/categories/<your-category-name>.yaml
+      subPath: <your-category-name>.yaml
+      readOnly: true
+  volumes:
+    - name: content-filter-categories
+      configMap:
+        name: <your-configmap-name>
 
-extraVolumes:
-  - name: content-filter-categories
-    configMap:
-      name: <your-configmap-name>
+backend:
+  volumeMounts:
+    - name: content-filter-categories
+      mountPath: /app/.venv/lib/python{{python_version}}/site-packages/litellm/proxy/guardrails/content_filter_data/categories/<your-category-name>.yaml
+      subPath: <your-category-name>.yaml
+      readOnly: true
+  volumes:
+    - name: content-filter-categories
+      configMap:
+        name: <your-configmap-name>
 ```
+
+對於獨立的服務，請將檔案同時掛載在 gateway 與 backend 上。gateway 會執行防護欄。backend 提供 UI 類別清單與編輯器。在 monolith 模式下，請使用 `gateway` 的掛載。此模式會忽略 `backend` 區塊。
 
 ```yaml title="config.yaml"
 guardrails:
@@ -663,8 +706,6 @@ guardrails:
           severity_threshold: "high"
 ```
 
-如果您升級到以不同 Python 次要版本建置的 litellm 映像檔，請更新 `mountPath`
-
 **選項 B：任何其他路徑，搭配 env var 明確啟用**
 
 設定
@@ -673,7 +714,7 @@ guardrails:
 LITELLM_CONTENT_FILTER_ALLOW_EXTERNAL_PATHS=true
 ```
 
-在 proxy pod 上，然後以絕對路徑參照該檔案
+在 proxy pod 上（對於 `litellm` chart，則是在 gateway 與 backend 兩個 pod 上），然後以絕對路徑參照該檔案
 
 ```yaml title="config.yaml"
 categories:
@@ -683,6 +724,8 @@ categories:
     severity_threshold: "high"
     category_file: "/absolute/path/to/<your-category-name>.yaml"
 ```
+
+以這種方式載入的類別會在請求上強制執行，但不會出現在 UI 類別清單中，因為該清單只讀取套件內的 `categories/` 目錄。
 
 僅在所有能寫入 `category_file`（proxy 設定、DB、Admin UI、team 範圍設定）的人都可信任時才使用；啟用此旗標後，`category_file` 可以指向 pod 上任何可被 YAML 解析的檔案
 
@@ -701,6 +744,8 @@ content_filter.py: Category <name>: invalid category_file path, skipping. ...
 ```
 
 第二行表示該檔案被拒絕，而此類別正以零規則執行；請使用上述兩個選項之一修正
+
+使用選項 A 時，`Category file not found: <path>, skipping` 表示該檔案不在此映像檔讀取的目錄中，因此請對照上表檢查掛載路徑
 
 ## 使用案例 {#use-cases}
 

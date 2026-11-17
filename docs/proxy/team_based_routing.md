@@ -15,13 +15,13 @@
 
 ```yaml
 model_list: 
-  - model_name: gpt-4o-mini-eu # 👈 Model Group 1
+  - model_name: model-eu # Model Group 1
     litellm_params:
       model: azure/chatgpt-v-2
       api_base: os.environ/AZURE_API_BASE_EU
       api_key: os.environ/AZURE_API_KEY_EU
       api_version: "2023-07-01-preview"
-  - model_name: gpt-4o-mini-worldwide # 👈 Model Group 2
+  - model_name: model-worldwide # Model Group 2
     litellm_params:
       model: azure/chatgpt-v-2
       api_base: os.environ/AZURE_API_BASE
@@ -30,7 +30,7 @@ model_list:
 
 general_settings: 
     master_key: os.environ/LITELLM_MASTER_KEY
-    database_url: "postgresql://..." # 👈 Connect proxy to DB
+    database_url: "postgresql://..." # Connect proxy to DB
 ```
 
 啟動 proxy
@@ -42,13 +42,13 @@ litellm --config /path/to/config.yaml
 ### 使用模型別名建立團隊 {#create-team-with-model-alias}
 
 ```bash
-# Authorization: 👈 Master Key
+# Authorization: Master Key
 curl --location 'http://0.0.0.0:4000/team/new' \
 --header "Authorization: Bearer $LITELLM_API_KEY" \
 --header 'Content-Type: application/json' \
 --data '{
   "team_alias": "my-new-team_4",
-  "model_aliases": {"{{openai_small}}": "gpt-4o-mini-eu"}
+  "model_aliases": {"{{openai_small}}": "model-eu"}
 }'
 
 # Returns team_id: my-team-id
@@ -61,7 +61,7 @@ curl --location 'http://localhost:4000/key/generate' \
 --header "Authorization: Bearer $LITELLM_API_KEY" \
 --header 'Content-Type: application/json' \
 --data '{
-    "team_id": "my-team-id",  # 👈 YOUR TEAM ID
+    "team_id": "my-team-id",  # YOUR TEAM ID
 }'
 ```
 
@@ -72,7 +72,7 @@ curl --location 'http://0.0.0.0:4000/v1/chat/completions' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer sk-A1L0C3Px2LJl53sF_kTF9A' \
 --data '{
-  "model": "{{openai_small}}", # 👈 MODEL 
+  "model": "{{openai_small}}", # MODEL
   "messages": [{"role": "system", "content": "You'\''re an expert at writing poems"}, {"role": "user", "content": "Write me a poem"}, {"role": "user", "content": "What'\''s your name?"}],
   "user": "usha"
 }'

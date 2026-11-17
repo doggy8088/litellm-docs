@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Apertis AI API：Stima API 設定"
+sidebar_label: "Apertis AI（Stima API）"
+description: "從 LiteLLM Python SDK 或 AI 閘道存取 Apertis AI（原名 Stima API）背後的 430+ 個模型，支援串流以及 tools 等 OpenAI 參數。"
+---
+
 # Apertis AI（Stima API） {#apertis-ai-stima-api}
 
 ## 總覽 {#overview}

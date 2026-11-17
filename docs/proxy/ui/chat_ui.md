@@ -7,24 +7,26 @@ import Image from '@theme/IdealImage';
 
 # 聊天介面 {#chat-ui}
 
-聊天介面是 LiteLLM 管理員介面中的聊天頁面，位於 `/ui/chat`。代理程式管理員會為閘道啟用它。之後，任何可以登入管理員介面的使用者都可以使用它。使用者可以向其有存取權的模型傳送訊息，並使用 MCP 伺服器的工具。
+聊天介面是 LiteLLM 管理員介面中的聊天頁面，位於 `/ui/chat`。當它開啟時，任何可以登入管理員介面的使用者都可以使用它。使用者可以向其有存取權的模型傳送訊息，並使用 MCP 伺服器的工具。
 
 來自聊天介面的每個請求都會經過閘道。LiteLLM 會將相同的模型存取、預算與記錄套用到這些請求，與 API 請求相同。
 
 :::info Beta
 
-聊天介面是一項 beta 功能。其頁面與控制項可能會在新版本中變更。聊天介面可用於 v1.92.0 及更新版本。
+<SinceVersion v="1.92.0" />
+
+聊天介面是一項 beta 功能。其頁面與控制項可能會在新版本中變更。
 
 :::
 
-## 啟用聊天介面 {#enable-the-chat-ui}
+## 開啟或關閉聊天介面 {#turn-the-chat-ui-on-or-off}
 
-聊天介面預設為關閉。代理程式管理員必須將其啟用。
+在包含 [PR #46918](https://github.com/BerriAI/litellm/pull/46918) 的版本中，聊天介面預設為開啟。在較舊的版本中，它預設為關閉，且代理程式管理員必須將其開啟。代理程式管理員可以隨時以同一個開關將其關閉。
 
 1. 以代理程式管理員身分登入管理員介面。
 2. 前往 **Settings** > **Admin Settings**。
 3. 點擊 **UI Settings** 分頁。
-4. 將 **[BETA] Enable Chat page** 設為開啟。頁面會重新整理。
+4. 將 **[BETA] Enable Chat page** 設為開啟或關閉。頁面會重新整理。
 
 <Image
   img={require('../../../img/chat_ui_enable.png')}
@@ -54,6 +56,19 @@ curl -X PATCH "$PROXY_BASE_URL/update/ui_settings" \
 ```
 
 LiteLLM 會將此值保存在資料庫中。閘道必須有 `DATABASE_URL`。
+
+### 透過設定啟用 {#enable-through-configuration}
+
+在 v1.104.0 及更新版本中，請在 `config.yaml` 中設定此旗標，並重新啟動閘道：
+
+```yaml
+general_settings:
+  enable_chat_ui: true
+```
+
+設定值優先於透過管理員介面或 API 儲存的值。將它從 `config.yaml` 中移除，即可再次透過管理員介面管理此旗標
+
+閘道仍需要 `DATABASE_URL` 才能使用 UI 設定。啟用聊天不需要 `store_model_in_db: true`；您的模型可以留在 `config.yaml` 中
 
 ## 傳送訊息 {#send-a-message}
 
@@ -99,6 +114,8 @@ LiteLLM 會將此值保存在資料庫中。閘道必須有 `DATABASE_URL`。
 您的瀏覽器最多會保留 100 則聊天。當您再開始一則聊天時，聊天介面會刪除變更最舊的聊天。來自一個瀏覽器的聊天不會顯示在不同的瀏覽器或不同的電腦上。如果您清除瀏覽器資料，瀏覽器就會刪除您的聊天。
 
 閘道會在記錄中記錄每個請求。請參閱 [查看您的記錄](#see-your-logs)。
+
+若要刪除對話，請將游標移到 **Recents** 中的該對話上，點擊垃圾桶圖示，然後確認 **Delete**。這會將對話從此瀏覽器中移除，而不是從閘道的請求記錄中移除
 
 ## 在聊天中使用 MCP 工具 {#use-mcp-tools-in-a-chat}
 

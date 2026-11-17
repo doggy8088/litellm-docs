@@ -1,5 +1,6 @@
 ---
-title: v1.65.0 - Team Model Add - 更新
+title: "LiteLLM v1.65.0 - Team Model Add - 更新"
+description: "讓團隊管理員透過 /model/new、/model/update 與 /model/delete 建立、更新與刪除團隊模型。並在 /v2/model/info 新增 user_models_only。"
 slug: v1.65.0
 date: 2025-03-28T10:00:00
 authors:

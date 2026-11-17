@@ -12,7 +12,7 @@ import {OneClickDeploy} from '@site/src/components/Conversion';
 
 # 快速入門 {#quickstart}
 
-LiteLLM 以可立即執行的閘道形式提供。您只需用一個指令（或一次點擊）啟動它，接著就在瀏覽器中完成其他所有工作：連接提供者、新增模型、建立金鑰，以及從內建的 Admin UI 傳送測試請求。本指南不需要任何設定檔。
+在本機執行 LiteLLM 與 PostgreSQL，然後使用 Admin UI 新增模型、建立金鑰，並傳送您的第一個請求。
 
 <QuickStartBox variant="gateway" showTitle={false} heading="Up and running in a minute" source="docker-quickstart">
 
@@ -20,39 +20,37 @@ LiteLLM 以可立即執行的閘道形式提供。您只需用一個指令（或
 
 </QuickStartBox>
 
-如需詳細的安裝步驟，請依照本指南後續內容操作。到最後，您將會讓 LiteLLM 在 `http://localhost:4000` 上執行，連接一個模型、發出一個虛擬金鑰，並透過閘道處理一筆請求。
-
 ## 1. 啟動 LiteLLM {#1-start-litellm}
 
 ```bash
-curl -sSLO https://github.com/BerriAI/litellm/raw/main/docker/docker-compose.quickstart.yml
+curl -sSLO https://github.com/BerriAI/litellm/raw/main/litellm/deploy/docker/docker-compose.quickstart.yml
 printf 'LITELLM_MASTER_KEY=sk-%s\nLITELLM_SALT_KEY=sk-%s\n' "$(openssl rand -hex 32)" "$(openssl rand -hex 32)" > .env
 docker compose -f docker-compose.quickstart.yml up -d
 ```
 
-這會啟動埠號 4000 上的閘道，以及一個儲存您的模型、金鑰和支出記錄的 Postgres 資料庫。[compose 檔案](https://github.com/BerriAI/litellm/blob/main/docker/docker-compose.quickstart.yml)只定義了這兩個服務，且現在位於您的工作目錄中，因此您可以在啟動前閱讀它，並在之後編輯它以鎖定特定的發行標記。
+[compose 檔案](https://github.com/BerriAI/litellm/blob/f52f26d9c636038c6e3609cc7d17cf625d434c3e/docker/docker-compose.quickstart.yml)會在埠號 4000 上啟動完整的 LiteLLM proxy 與 PostgreSQL。在正式環境使用前，請鎖定經過測試的發行標記或 digest。
 
-第二個指令會產生您的主金鑰，這是您在下方每個請求都會使用的憑證。若沒有它，proxy 無法啟動。請保管好 `.env` 檔案：重新產生 `LITELLM_SALT_KEY` 會讓資料庫中已儲存的憑證無法讀取。
+若使用 Kubernetes，請參閱 [Helm 指南](./deploy/helm.md)。
 
 <OneClickDeploy source="docker-quickstart" />
 
 :::warning[兩個金鑰的用途]
-在本機執行時，上面的指令會將兩者都產生到 `.env`，而 compose 檔案若沒有它們則無法啟動。在一鍵部署中，請將它們設定在提供者的環境中。
+本機設定會將兩個金鑰都產生到 `.env`。Compose 檔案需要這兩個金鑰。在一鍵部署中，請將它們設定在提供者的環境中。
 
-`LITELLM_MASTER_KEY` 是閘道的根憑證：它可授權每一個管理 API 呼叫，且預設也會同時作為 Admin UI 密碼。持有它的人擁有完整管理權限，因此請像保管 root 密碼一樣保管它，避免放入原始碼控制，並在它外洩時輪替。產生值中的 `sk-` 前綴是一種慣例，並非必要
+`LITELLM_MASTER_KEY` 可授權每一個管理 API 呼叫，並作為預設的 Admin UI 密碼。產生值中的 `sk-` 前綴是選用的。
 
 `LITELLM_SALT_KEY` 會加密您在 UI 中新增的提供者 API 金鑰。它無法就地輪替，因此請保留產生出的值：若之後變更它，所有已儲存的憑證都會變得無法讀取，直到您重新輸入為止。請參閱 [金鑰輪替](./master_key_rotations) 以了解這兩個金鑰之間的關係。
 :::
 
 ## 2. 登入 Admin UI {#2-log-in-to-the-admin-ui}
 
-開啟 [http://localhost:4000/ui](http://localhost:4000/ui)。使用者名稱是 `admin`，密碼是您的 `LITELLM_MASTER_KEY` 值，也就是您剛剛產生的 `.env` 檔案中的那個值。
+開啟 [http://localhost:4000/ui](http://localhost:4000/ui)。使用者名稱是 `admin`，密碼是 `.env` 中的 `LITELLM_MASTER_KEY` 值。
 
 <Image img={require('../../img/ui_quickstart_login.png')} dark={require('../../img/ui_quickstart_login_dark.png')} alt="LiteLLM Admin UI login page" />
 
 ## 3. 新增您的第一個模型 {#3-add-your-first-model}
 
-前往 **Models + Endpoints**，開啟 **Add Model** 分頁，選擇您的提供者和您要公開的模型，然後貼上您的提供者 API 金鑰。LiteLLM 會隨附每個提供者的模型目錄，因此您是選擇模型，而不是手動輸入。
+前往 **Models + Endpoints**，開啟 **Add Model** 分頁，選擇您的提供者與模型，然後貼上您的提供者 API 金鑰。
 
 <Image img={require('../../img/ui_quickstart_add_model.png')} dark={require('../../img/ui_quickstart_add_model_dark.png')} alt="Add Model form with OpenAI provider and gpt-5.5 selected" />
 
@@ -66,11 +64,11 @@ docker compose -f docker-compose.quickstart.yml up -d
 
 ## 4. 傳送測試訊息 {#4-send-a-test-message}
 
-前往 **Playground**，選擇您的模型，然後傳送一則訊息。請求會經由閘道送到您的提供者，而回應會連同延遲時間與 token 數量一起返回：
+前往 **Playground**，選擇您的模型，然後傳送一則訊息。回應包含延遲時間與 token 數量：
 
 <Image img={require('../../img/ui_quickstart_playground.png')} dark={require('../../img/ui_quickstart_playground_dark.png')} alt="Playground showing a live response from the model with latency and token metrics" />
 
-您的閘道已端到端正常運作。Playground 中的 **Get Code** 按鈕會為您的語言產生對應的 API 呼叫。
+**Get Code** 按鈕會為您的語言產生對應的 API 呼叫。
 
 ## 5. 建立虛擬金鑰 {#5-create-a-virtual-key}
 
@@ -80,7 +78,7 @@ docker compose -f docker-compose.quickstart.yml up -d
 
 <Image img={require('../../img/ui_quickstart_create_key.png')} dark={require('../../img/ui_quickstart_create_key_dark.png')} alt="Save your Key modal showing the newly created virtual key" />
 
-現在請複製這個金鑰；它只會顯示一次。
+現在請複製這個金鑰。它只會顯示一次。
 
 ## 6. 從您的應用程式呼叫閘道 {#6-call-the-gateway-from-your-app}
 
@@ -175,7 +173,7 @@ console.log(response.choices[0].message.content);
 
 ## 無資料庫執行 {#running-without-a-database}
 
-如果您只需要 OpenAI 相容 API（不需要 Admin UI 的模型管理、虛擬金鑰或支出追蹤），您可以改用設定檔執行純 `litellm` 映像：
+若需要 API 存取，但不需要資料庫支援的模型管理、虛擬金鑰或支出追蹤，請使用設定檔執行同一個映像：
 
 ```yaml
 # litellm_config.yaml
@@ -187,11 +185,14 @@ model_list:
 ```
 
 ```bash
+export OPENAI_API_KEY="<your-openai-key>"
+export LITELLM_MASTER_KEY="sk-<paste-a-long-random-key>"
+
 docker run \
-  -v $(pwd)/litellm_config.yaml:/app/config.yaml \
-  -e OPENAI_API_KEY=<your-openai-key> \
-  -e LITELLM_MASTER_KEY=sk-<paste-a-long-random-key> \
-  -p 4000:4000 \
+  -v "$PWD/litellm_config.yaml:/app/config.yaml:ro" \
+  -e OPENAI_API_KEY \
+  -e LITELLM_MASTER_KEY \
+  -p 127.0.0.1:4000:4000 \
   docker.litellm.ai/berriai/litellm:latest \
   --config /app/config.yaml
 ```
@@ -200,14 +201,14 @@ docker run \
 
 :::warning[未連接資料庫時不會強制執行預算]
 
-`litellm_settings.max_budget` 在這條路徑中不是支出上限。載入 proxy 的全域支出需要資料庫用戶端，因此沒有資料庫時，執行中的總額會保持未知，而全域預算檢查也永遠不會觸發；若 proxy 設定了 `max_budget: 100`，它會在超過 100 美元後仍持續處理請求，不會有逐請求錯誤，也不會有預算警示。當設定了預算但未連接資料庫時，proxy 會在啟動時記錄一次警告，而那一行啟動訊息就是您唯一會得到的訊號
+`litellm_settings.max_budget` 需要資料庫才能載入支出並強制執行全域預算。沒有資料庫時，`max_budget: 100` 會在超過 100 美元後仍持續處理請求，不會有請求錯誤，也不會有預算警示。Proxy 會在啟動時記錄一次警告。
 
-在這裡，金鑰與團隊預算也不是替代方案，因為虛擬金鑰本身就需要資料庫（攜帶虛擬金鑰的請求會以 `No connected db.` 失敗），因此主金鑰是唯一的憑證，而且它本身沒有預算
+虛擬金鑰同樣需要資料庫。攜帶虛擬金鑰的請求會以 `No connected db.` 失敗。主金鑰本身沒有預算。
 
-如果預算是您界定支出的方式之一，請如本頁上方所示，搭配資料庫執行 LiteLLM。若沒有資料庫，請在上游改以您提供者自身的支出上限來限制支出
+若要強制執行 LiteLLM 預算，請搭配資料庫執行。否則，請在您的提供者端設定支出上限。
 
 :::
 
 ## 後續步驟 {#next-steps}
 
-要進入正式環境：[Production Deployment guide](./deploy.md) 涵蓋了 AWS、GCP 和 Azure 上的 Helm、Terraform 與 Kubernetes，而[production checklist](./prod.md) 涵蓋了加固與調校。完整的容器與資料庫選項，包括 Redis 和 Prometheus，都收錄在 repo 的 [docker-compose.yml](https://github.com/BerriAI/litellm/blob/main/docker-compose.yml) 中。
+使用[部署指南](./deploy.md)了解 Helm 與 Terraform，並以 [production checklist](./prod.md) 進行加固與調校。Repository 的 [docker-compose.yml](https://github.com/BerriAI/litellm/blob/main/litellm/deploy/compose/docker-compose.yml) 包含資料庫、Redis 與 Prometheus 選項。

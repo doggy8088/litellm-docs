@@ -1,5 +1,6 @@
 ---
-title: "v1.86.1 - 非 root Docker 建置修正"
+title: "LiteLLM v1.86.1 - 非 root Docker 建置修正"
+description: "在非 root 建置階段還原 npm，讓 Prisma 無需備援即可解析 Node。應用程式碼與 v1.86.0 相同。"
 slug: "v1-86-1"
 date: 2026-05-26T00:00:00
 authors:

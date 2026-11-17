@@ -1,3 +1,9 @@
+---
+title: "DashScope API (Qwen) 與 LiteLLM：設定"
+sidebar_label: "Dashscope API (Qwen models)"
+description: "從 LiteLLM Python SDK 在 DashScope 上呼叫 Alibaba Qwen Turbo、Plus 與 Max，支援串流、國際或北京 API base，以及 -latest 模型別名。"
+---
+
 # Dashscope API（Qwen 模型） {#dashscope-api-qwen-models}
 https://dashscope.console.aliyun.com/
 
@@ -85,3 +91,14 @@ for chunk in response:
 | qwen3-235b-a22b | `completion(model="dashscope/qwen3-235b-a22b", messages)` |  
 | qwen3-32b | `completion(model="dashscope/qwen3-32b", messages)` |  
 | qwen3-30b-a3b | `completion(model="dashscope/qwen3-30b-a3b", messages)` |
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`dashscope/<family>-latest` 名稱會跟隨模型家族，在 LiteLLM 將其移至較新的模型時，讓您的應用程式維持單一模型字串。您可以像使用任何其他 DashScope 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 DashScope，並以該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱 [最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `dashscope/qwen-max-latest` | Qwen Max |
+| `dashscope/qwen-flash-latest` | Qwen Flash |

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM Python SDK 的 Slack 記錄"
+sidebar_label: "Slack"
+description: "透過自訂回呼將 LiteLLM Python SDK 的呼叫結果張貼至 Slack 頻道，將每個回應傳送至您建立的 Slack incoming webhook URL。"
+---
 import Image from '@theme/IdealImage';
 
 # Slack {#slack}
@@ -90,13 +95,13 @@ response = litellm.completion(
     messages=[
         {
             "role": "user",
-            "content": "Hi 👋 - i'm openai"
+            "content": "Hi - i'm openai"
         }
     ]
 )
 ```
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [安排示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

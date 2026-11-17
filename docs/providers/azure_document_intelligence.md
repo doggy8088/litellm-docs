@@ -1,3 +1,9 @@
+---
+title: "使用 LiteLLM 的 Azure Document Intelligence OCR"
+sidebar_label: "Azure Document Intelligence OCR"
+description: "透過 LiteLLM 使用 Azure Document Intelligence，從 PDF 與圖片中擷取文字。在 SDK 中呼叫 litellm.ocr()，或在 AI Gateway 上使用 /ocr，並追蹤成本。"
+---
+
 # Azure 文件智慧 OCR {#azure-document-intelligence-ocr}
 
 ## 總覽 {#overview}
@@ -181,7 +187,7 @@ curl -X POST http://localhost:4000/ocr \
 </Tabs>
 
 **功能：**
-- 具有 markdown 格式的文字擷取
+- 文字擷取，當您提出要求時可提供 Markdown 輸出（請參閱 [Markdown 輸出](#markdown-output)）
 - 表格偵測與擷取
 - 文件結構分析
 - 段落與章節辨識
@@ -358,6 +364,79 @@ for page in response.pages:
         print(f"Width: {page.dimensions.width}px")
         print(f"Height: {page.dimensions.height}px")
 ```
+
+## Markdown 輸出 {#markdown-output}
+
+<SinceVersion v="1.109.0" />
+
+設定 `outputContentFormat` 即可取得 Azure 的 Markdown 輸出，而非純文字。它可接受 `text` 或 `markdown`，且值不區分大小寫。snake_case 寫法 `output_content_format` 的作用相同。若省略此設定，回應會與先前相同，為文字輸出。
+
+Markdown 來自 Azure 的 `prebuilt-layout` 模型。Azure 在其他模型上會忽略此設定並回傳文字。
+
+在 LiteLLM 預設回應格式中，`content` 是 Azure 的 Markdown，而每個 `pages[].markdown` 是該頁在 `content` 中的片段。依序串接所有頁面即可還原 `content`。
+
+在預設格式中要求 Markdown 時，回應還會帶有 `"stringIndexType": "unicodeCodePoint"`。這表示 `tables` 與 `keyValuePairs` 中的 span 偏移量是以 Unicode 字碼點計算，也就是 Python 字串索引所使用的方式，而非 Azure 預設的文字元素。
+
+使用 `"req_format": "native"` 時，Proxy 會回傳 Azure 的原始分析主體。其 `analyzeResult.contentFormat` 為 `markdown`，且其偏移量保留 Azure 的預設單位。
+
+任何其他值都會回傳 400 錯誤，訊息為 `invalid OCR outputContentFormat, expected text or markdown`。若在請求中、部署的 `litellm_params` 上，或以 `litellm.drop_params = True` 設定了 `drop_params`，該值會被捨棄，您會取得文字輸出。
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python showLineNumbers title="Markdown Output - SDK"
+import litellm
+import os
+
+os.environ["AZURE_DOCUMENT_INTELLIGENCE_API_KEY"] = "your-api-key"
+os.environ["AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"] = "https://your-resource.cognitiveservices.azure.com"
+
+response = litellm.ocr(
+    model="azure_ai/doc-intelligence/prebuilt-layout",
+    document={
+        "type": "document_url",
+        "document_url": "https://example.com/document.pdf"
+    },
+    outputContentFormat="markdown",
+)
+
+print(response.content)
+
+for page in response.pages:
+    print(f"Page {page.index}:")
+    print(page.markdown)
+```
+
+</TabItem>
+<TabItem value="proxy" label="Proxy">
+
+```yaml showLineNumbers title="proxy_config.yaml"
+model_list:
+  - model_name: azure-layout
+    litellm_params:
+      model: azure_ai/doc-intelligence/prebuilt-layout
+      api_key: os.environ/AZURE_DOCUMENT_INTELLIGENCE_API_KEY
+      api_base: os.environ/AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT
+    model_info:
+      mode: ocr
+```
+
+```bash showLineNumbers title="cURL Request"
+curl -X POST http://localhost:4000/v1/ocr \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "model": "azure-layout",
+    "document": {
+      "type": "document_url",
+      "document_url": "https://example.com/document.pdf"
+    },
+    "outputContentFormat": "markdown"
+  }'
+```
+
+</TabItem>
+</Tabs>
 
 ## 非同步支援 {#async-support}
 

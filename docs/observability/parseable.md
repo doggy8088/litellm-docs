@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 Parseable 追蹤"
+sidebar_label: "Parseable"
+description: "透過 OpenTelemetry，從 Python SDK 或 AI Gateway 將 LiteLLM traces、logs 與 metrics 傳送至 Parseable，並提供使用情況、tokens 與成本的儀表板。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

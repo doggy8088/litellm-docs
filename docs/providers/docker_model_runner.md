@@ -1,3 +1,9 @@
+---
+title: "Docker Model Runner 與 LiteLLM：本機模型"
+sidebar_label: "Docker Model Runner"
+description: "透過 LiteLLM，從 Python SDK 或 AI Gateway 以 docker_model_runner/ 前綴呼叫本機 Docker Model Runner 模型。設定 API base 與 engine。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

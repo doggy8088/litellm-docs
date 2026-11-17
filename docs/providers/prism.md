@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Prism API：Python SDK 與 Gateway"
+sidebar_label: "Prism"
+description: "在 Prism Inference 上執行 DeepSeek V4.1 Flash，具備零資料保留、工具呼叫、JSON schema、圖片輸入，以及原生 Responses 與 Messages 端點。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

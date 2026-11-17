@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 Databricks Zerobus 記錄"
+sidebar_label: "Databricks Zerobus"
+description: "透過 Databricks Zerobus Ingest 將 LiteLLM AI Gateway 的請求記錄傳送至 Unity Catalog Delta 資料表，使用服務主體並以 YAML 或 Admin UI 設定。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import ZerobusArchitecture from '@site/src/components/ZerobusArchitecture';

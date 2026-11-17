@@ -1,4 +1,10 @@
+---
+sidebar_label: 模型別名
+---
+
 # 模型別名 {#model-alias}
+
+若要追蹤模型家族而不自行維護對應，請使用[最新模型別名](../model_latest_aliases.md)。
 
 您顯示給終端使用者的模型名稱，可能與您傳遞給 LiteLLM 的名稱不同——例如，前端顯示 `GPT-5.6`，而後端呼叫 `{{openai_small}}`。
 
@@ -27,8 +33,8 @@ litellm.model_alias_map = model_alias_map
 
 ### 完整程式碼 {#complete-code}
 ```python
-import litellm 
-from litellm import completion 
+import litellm
+from litellm import completion
 
 
 ## set ENV variables

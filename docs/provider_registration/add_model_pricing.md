@@ -6,6 +6,8 @@ title: "新增模型定價與上下文視窗"
 
 **[模型價格與上下文視窗.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)**
 
+對於尚無條目的新模型 ID，[備援泛化規則](../fallback_generalizations.md) 可以推斷提供者與功能預設值。精確條目優先，且隨附的規則不提供定價。
+
 ### 範例規格 {#sample-spec}
 
 以下是包含所有可用欄位的完整規格：

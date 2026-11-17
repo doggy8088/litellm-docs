@@ -9,6 +9,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM 對 Meta Muse Spark 1.3 的 Day 0 支援，並提供標準與貢獻者方案的成本追蹤。"
+card_title: "Meta Muse Spark 1.3"
+card_summary: "Meta 的 Muse Spark 1.3，並為標準與貢獻者兩種定價層級提供成本追蹤。"
 image: ./hero.png
 tags: [meta, muse-spark-1.3, day 0 support, llms]
 hide_table_of_contents: false
@@ -98,7 +100,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 
 Muse Spark 1.3 是一個推理模型。LiteLLM 以 OpenAI 格式傳遞 `reasoning_effort`，可接受 `minimal`、`low`、`medium`、`high` 與 `xhigh`。Meta 的公告提到較高的「max reasoning」模式，但目前尚未提供，因此 `xhigh` 是目前的上限。推理 token 會以輸出 token 計費。
 
-文字、圖片、影片與 PDF 輸入的運作方式與 1.2 相同，涵蓋 `/v1/chat/completions`、`/v1/responses`，以及 [`/v1/messages`](/docs/anthropic_unified)，並具有 1,048,576-token 的上下文視窗。
+文字、圖片、影片與 PDF 輸入的運作方式與 1.2 相同，涵蓋 `/v1/chat/completions`、`/v1/responses`，以及 [`/v1/messages`](../../docs/anthropic_unified)，並具有 1,048,576-token 的上下文視窗。
 
 ## 回饋 {#feedback}
 

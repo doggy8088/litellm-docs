@@ -1,3 +1,7 @@
+---
+displayed_sidebar: tutorialSidebar
+---
+
 # 檔案管理 {#file-management}
 
 ## `include` config.yaml 中的外部 YAML 檔案 {#include-external-yaml-files-in-a-configyaml}
@@ -11,7 +15,7 @@
 `parent_config.yaml` 的內容：
 ```yaml
 include:
-  - model_config.yaml # 👈 Key change, will include the contents of model_config.yaml
+  - model_config.yaml # Key change, will include the contents of model_config.yaml
 
 litellm_settings:
   callbacks: ["prometheus"] 

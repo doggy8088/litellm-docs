@@ -1,5 +1,6 @@
 ---
-title: "v1.103.2 - Claude Code 自動模式、CLI 工作階段支出與轉送修正"
+title: "LiteLLM v1.103.2 支援 Claude Code 自動模式並修正 CLI 支出"
+description: "讓 Claude Code 自動模式可透過閘道執行、逐使用者記錄 CLI 工作階段支出，並修正轉送標頭的直通端點。"
 slug: "v1-103-2"
 date: 2026-10-01T06:37:00
 authors:

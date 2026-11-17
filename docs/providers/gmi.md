@@ -1,3 +1,9 @@
+---
+title: "GMI Cloud API 搭配 LiteLLM：Python SDK 與閘道"
+sidebar_label: "GMI Cloud"
+description: "透過 LiteLLM Python SDK 或 AI 閘道使用 GMI Cloud 上的 Claude、GPT-5 與 DeepSeek-V3.2 模型，支援串流與標準 OpenAI 聊天參數。"
+---
+
 # GMI Cloud {#gmi-cloud}
 
 ## 總覽 {#overview}

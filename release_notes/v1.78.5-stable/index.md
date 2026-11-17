@@ -1,5 +1,6 @@
 ---
-title: "v1.78.5-stable - 原生 OCR 支援"
+title: "LiteLLM v1.78.5-stable - 原生 OCR 支援"
+description: "新增供 Mistral OCR 與 Azure AI OCR 使用的原生 /v1/ocr 端點，並支援 Claude Haiku 4.5 與 GPT-5-Codex。"
 slug: "v1-78-5"
 date: 2025-10-18T10:00:00
 authors:

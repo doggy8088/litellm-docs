@@ -1,5 +1,6 @@
 ---
-title: "v1.99.0 - 深色模式、CLI OAuth 登入與批次計費"
+title: "LiteLLM v1.99.0 - 深色模式、CLI OAuth 登入與批次計費"
+description: "新增深色模式、採用 OAuth 與 PKCE 的 lite 登入，以及批次支出記帳。稽核記錄在 Enterprise 授權下現在預設開啟。"
 slug: "v1-99-0"
 date: 2026-09-01T00:00:00
 authors:

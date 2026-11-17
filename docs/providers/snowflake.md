@@ -1,5 +1,7 @@
 ---
+title: "Snowflake Cortex API 與 LiteLLM：設定"
 sidebar_label: Snowflake Cortex
+description: "透過 LiteLLM 以 snowflake/ 前綴呼叫 Snowflake Cortex 模型。使用 PAT 或 JWT 驗證、串流、呼叫工具、使用 thinking 與嵌入。"
 ---
 
 import Tabs from '@theme/Tabs';

@@ -1,5 +1,6 @@
 ---
-title: "v1.81.9 - 控制哪些 MCP 伺服器會公開到網際網路"
+title: "LiteLLM v1.81.9 - 控制哪些 MCP 伺服器會公開到網際網路"
+description: "為 MCP 伺服器新增公開或私人可見性與 IP 存取控制、Claude Opus 4.6，以及透過 /chat/completions 的 A2A 代理程式呼叫。"
 slug: "v1-81-9"
 date: 2026-02-07T00:00:00
 authors:
@@ -339,11 +340,11 @@ style={{ maxWidth: '900px', width: '100%' }}
 
 | 資料表 | 變更類型 | 說明 | PR | 移轉 |
 | ----- | ----------- | ----------- | -- | --------- |
-| `LiteLLM_TeamTable` | 新增欄位 | 新增 `allow_team_guardrail_config` 布林欄位，用於 team-based guardrail 隔離 | [PR #20318](https://github.com/BerriAI/litellm/pull/20318) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260205091235_allow_team_guardrail_config/migration.sql) |
-| `LiteLLM_DeletedTeamTable` | 新增欄位 | 新增 `allow_team_guardrail_config` 布林欄位 | [PR #20318](https://github.com/BerriAI/litellm/pull/20318) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260205091235_allow_team_guardrail_config/migration.sql) |
-| `LiteLLM_TeamTable` | 新增欄位 | 新增 `soft_budget`（double precision），用於 soft budget alerting | [PR #20530](https://github.com/BerriAI/litellm/pull/20530) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260205144610_add_soft_budget_to_team_table/migration.sql) |
-| `LiteLLM_DeletedTeamTable` | 新增欄位 | 新增 `soft_budget`（double precision） | [PR #20653](https://github.com/BerriAI/litellm/pull/20653) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260207110613_add_soft_budget_to_deleted_teams_table/migration.sql) |
-| `LiteLLM_MCPServerTable` | 新增欄位 | 新增 `available_on_public_internet` 布林欄位，用於 MCP 以 IP 為基礎的存取控制 | [PR #20607](https://github.com/BerriAI/litellm/pull/20607) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm-proxy-extras/litellm_proxy_extras/migrations/20260207093506_add_available_on_public_internet_to_mcp_servers/migration.sql) |
+| `LiteLLM_TeamTable` | 新增欄位 | 新增 `allow_team_guardrail_config` 布林欄位，用於 team-based guardrail 隔離 | [PR #20318](https://github.com/BerriAI/litellm/pull/20318) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260205091235_allow_team_guardrail_config/migration.sql) |
+| `LiteLLM_DeletedTeamTable` | 新增欄位 | 新增 `allow_team_guardrail_config` 布林欄位 | [PR #20318](https://github.com/BerriAI/litellm/pull/20318) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260205091235_allow_team_guardrail_config/migration.sql) |
+| `LiteLLM_TeamTable` | 新增欄位 | 新增 `soft_budget`（double precision），用於 soft budget alerting | [PR #20530](https://github.com/BerriAI/litellm/pull/20530) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260205144610_add_soft_budget_to_team_table/migration.sql) |
+| `LiteLLM_DeletedTeamTable` | 新增欄位 | 新增 `soft_budget`（double precision） | [PR #20653](https://github.com/BerriAI/litellm/pull/20653) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260207110613_add_soft_budget_to_deleted_teams_table/migration.sql) |
+| `LiteLLM_MCPServerTable` | 新增欄位 | 新增 `available_on_public_internet` 布林欄位，用於 MCP 以 IP 為基礎的存取控制 | [PR #20607](https://github.com/BerriAI/litellm/pull/20607) | [Migration](https://github.com/BerriAI/litellm/blob/main/litellm/proxy-extras/litellm_proxy_extras/migrations/20260207093506_add_available_on_public_internet_to_mcp_servers/migration.sql) |
 
 ---
 

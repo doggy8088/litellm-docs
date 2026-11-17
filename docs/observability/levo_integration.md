@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Levo 追蹤：Python SDK 與閘道"
+sidebar_label: "Levo"
+description: "透過 OpenTelemetry 從 Python SDK 或 AI 閘道將 LiteLLM 追蹤傳送到 Levo，進行 API 與 LLM 安全性測試，並使用收集器 URL 與金鑰。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -42,7 +47,7 @@ litellm.callbacks = ["levo"]
 response = litellm.completion(
   model="{{openai_large}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -122,6 +127,6 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 ## 支援與聯絡創辦人 {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

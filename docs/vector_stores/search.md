@@ -328,6 +328,8 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/vs_abc123/search' \
 
 使用提供者 `vertex_ai/search_api` 將資料儲存或搜尋應用程式註冊為 [受管理的 vector store](./managed_vector_stores.md)。原生 Discovery Engine 搜尋欄位放在 `extra_body` 中。
 
+傳送到 Google 的搜尋預設使用 HTTP/2 <SinceVersion v="1.109.0" />。若要讓它們維持 HTTP/1.1，請在 `litellm_settings` 下設定 `http2: false`。請參閱 [Vertex AI Search vector stores](../proxy/server_tuning.md#vertex-ai-search-vector-stores)。
+
 使用基於版面配置分塊的資料儲存預設會回傳整份文件的片段。請要求回傳 chunk 結果，讓每個命中都帶有對應段落：
 
 ```bash showLineNumbers title="Search a chunked data store"

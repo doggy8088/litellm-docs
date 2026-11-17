@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Vertex AI Speech to Text"
+sidebar_label: "Vertex AI Audio Transcription"
+description: "透過 LiteLLM 從 Python SDK 或 AI Gateway 在 Gemini Enterprise Agent Platform（前稱 Vertex AI）上以 Gemini 與 Chirp 3 模型轉錄音訊。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -5,11 +11,13 @@ import TabItem from '@theme/TabItem';
 
 | Property | Details |
 |-------|-------|
-| 說明 | 透過 OpenAI `/v1/audio/transcriptions` 端點在 Vertex AI 上使用 Gemini 語音轉文字，以及透過 `/v1/realtime` 使用 Chirp 串流語音轉文字 |
-| LiteLLM 上的提供者路由 | `vertex_ai/gemini-3.5-transcribe-preview`（批次），`vertex_ai/chirp_3`（即時，[請見下方](#chirp-realtime-transcription)） |
+| 說明 | 透過 OpenAI `/v1/audio/transcriptions` 端點在 Vertex AI 上使用 Gemini 語音轉文字、在 Google Cloud Speech-to-Text 上使用 Chirp 3 語音轉文字，以及透過 `/v1/realtime` 使用 Chirp 串流語音轉文字 |
+| LiteLLM 上的提供者路由 | `vertex_ai/gemini-3.5-transcribe-preview`（批次），`vertex_ai/chirp_3`（[批次](#chirp-3-transcription)與[即時](#chirp-realtime-transcription)） |
 | 支援的 OpenAI 參數 | `language`、`response_format`（`json`、`text`） |
 
-Vertex AI 上的 Gemini 轉錄模型由 `global` 位置提供服務，而在未設定 `vertex_location` 時，LiteLLM 預設會使用該位置。如果您設定了區域位置（在 config、`litellm.vertex_location`，或 `VERTEXAI_LOCATION` / `VERTEX_LOCATION` 環境變數中），該值將優先，且當模型在該區域不可用時，Vertex 會回傳 404，因此這些模型請固定使用 `vertex_location: global`。
+透過 AI Gateway，本頁每個模型的 `response_format: text` 目前都會回傳與 `json` 相同的 JSON 內容，因此要求 `text` 的 OpenAI SDK 用戶端會以字串形式收到該 JSON。
+
+Vertex AI 上的 Gemini 轉錄模型由 `global` 位置提供服務，而在未設定 `vertex_location` 時，LiteLLM 預設會使用該位置。如果您設定了區域位置（在 config、`litellm.vertex_location`，或 `VERTEXAI_LOCATION` / `VERTEX_LOCATION` 環境變數中），該值將優先，且當模型在該區域不可用時，Vertex 會回傳 404，因此這些模型請固定使用 `vertex_location: global`。這僅適用於 Gemini，因為 Speech-to-Text 不會從 `global` 提供 `vertex_ai/chirp_3`。其位置請參閱 [Chirp 3 轉錄](#chirp-3-transcription)。
 
 偏好使用 API 金鑰而非 GCP service account？同一個模型也可透過 [Google AI Studio](./gemini.md#audio-transcription-speech-to-text) 以 `gemini/gemini-3.5-transcribe` 使用。
 
@@ -85,11 +93,62 @@ print(response.text)
 
 ## 支援的參數 {#supported-params}
 
-`language` 接受兩字母代碼或 BCP-47 標記，並在送往 Gemini 之前正規化為 BCP-47。`response_format` 支援 `json`（預設）與 `text`；Vertex AI 上的 Gemini 轉錄不回傳字詞時間戳記，因此 `verbose_json`、`srt` 與 `vtt` 會被拒絕並回傳 400，除非設定了 `drop_params`，此時它們會被捨棄並回傳純文字轉錄。
+對於 Gemini 轉錄模型，`language` 接受兩字母代碼或 BCP-47 標記，並在送往 Gemini 之前正規化為 BCP-47。`response_format` 支援 `json`（預設）與 `text`；Vertex AI 上的 Gemini 轉錄不回傳字詞時間戳記，因此 `verbose_json`、`srt` 與 `vtt` 會被拒絕並回傳 400，除非設定了 `drop_params`，此時它們會被捨棄並回傳純文字轉錄。
 
 ## 用量與成本追蹤 {#usage-and-cost-tracking}
 
-Vertex AI 會回報依模態分割的 token 用量，而 LiteLLM 會分別追蹤音訊輸入 token 與文字輸出 token，因此支出記錄與 `x-litellm-response-cost` 標頭會反映 Google 公布的每 token 音訊轉錄定價。
+對於 Gemini 轉錄模型，Vertex AI 會回報依模態分割的 token 用量，而 LiteLLM 會分別追蹤音訊輸入 token 與文字輸出 token，因此支出記錄與 `x-litellm-response-cost` 標頭會反映 Google 公布的每 token 音訊轉錄定價。
+
+## Chirp 3 轉錄 {#chirp-3-transcription}
+
+`vertex_ai/chirp_3` 透過同一個 `/v1/audio/transcriptions` 端點，將音訊送往 Google Cloud Speech-to-Text v2 的 Chirp 3 模型。批次 Chirp 3 轉錄自 <SinceVersion v="1.93.0" /> 起可用。Chirp 3 呼叫的是 Speech-to-Text API 而非 Vertex AI，因此請在專案上啟用該 API，並給予 service account 一個帶有 `speech.recognizers.recognize` 的角色，例如 `roles/speech.client`。模型 id 是帶底線的 `chirp_3`。LiteLLM 會照原樣將名稱傳給 Google，因此 `vertex_ai/chirp-3` 會以 400 失敗：`The model "chirp-3" does not exist in the location named "us"`。
+
+Speech-to-Text 從 `us` 與 `eu` 多區域提供 Chirp 3，因此請將 `vertex_location` 設為其中之一。未設定位置時 LiteLLM 使用 `us`，但來自 config、`litellm.vertex_location` 或 `VERTEXAI_LOCATION` / `VERTEX_LOCATION` 環境變數的位置會優先，其他位置則會失敗。截至 2026 年 10 月，`global` 以及 `us-central1` 等區域會回傳 400：`The model "chirp_3" does not exist in the location named "us-central1"`。Google 不再提供 Chirp 3 的區域，例如 `europe-west2`，會回傳 403，說明該模型 `is no longer generally available in region europe-west2`。沒有 Speech-to-Text 端點的 Vertex AI 區域，例如 `us-east5`，會回傳 HTML 404 頁面。當同一個部署也提供即時服務時，請在 config 中設定 `vertex_location`，因為即時端點會讀取 `VERTEXAI_LOCATION` 但不讀取 `VERTEX_LOCATION`。Google 的 [Chirp 3 頁面](https://docs.cloud.google.com/speech-to-text/docs/models/chirp-3) 列出了目前的位置。
+
+### LiteLLM Python SDK {#litellm-python-sdk-1}
+
+```python showLineNumbers title="Chirp 3 Quick Start"
+from litellm import transcription
+
+audio_file = open("speech.wav", "rb")
+response = transcription(
+    model="vertex_ai/chirp_3",
+    file=audio_file,
+    language="en",
+    vertex_project="your-project-id",
+    vertex_location="us",
+    vertex_credentials="/path/to/service_account.json",
+)
+print(response.text)
+```
+
+### LiteLLM AI 閘道 {#litellm-ai-gateway-1}
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: chirp-3
+    litellm_params:
+      model: vertex_ai/chirp_3
+      vertex_project: "your-project-id"
+      vertex_location: us
+      vertex_credentials: "/path/to/service_account.json"
+```
+
+```bash showLineNumbers title="Chirp 3 Quick Start"
+curl http://0.0.0.0:4000/v1/audio/transcriptions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -F file=@speech.wav \
+  -F model=chirp-3 \
+  -F language=en
+```
+
+LiteLLM 將每個請求送往同步的 Speech-to-Text `recognize` 方法，該方法最多接受一分鐘的音訊（以及 10 MB，依 Google 的[配額頁面](https://docs.cloud.google.com/speech-to-text/docs/quotas)），因此較長的檔案會回傳 400：`Audio can be of a maximum of 60 seconds.` 請將較長的音訊切成一分鐘以內的片段。
+
+同一個部署自 v1.103.0 起也提供下方的[即時端點](#chirp-realtime-transcription)，且 `/health` 會以一個不帶任何 `model_info` 的轉錄請求檢查它，因為模型成本對照表將 `vertex_ai/chirp_3` 列為 `audio_transcription` 模型。
+
+`language` 接受 BCP-47 標記。常見語言的裸兩字母代碼會展開為其預設地區（`en` 變成 `en-US`、`pt` 變成 `pt-BR`），其他值則照原樣送出，因此像 `nl` 這樣的裸代碼會回傳 400：`The language "nl" is not supported by the model "chirp_3"`，而 `nl-NL` 可以使用。省略 `language` 時，Google 會偵測語言。`response_format` 接受 `json`（預設）或 `text`，其他值會被拒絕並回傳 400，除非設定了 `drop_params`，此時它們會被捨棄。回應帶有 Google 回報的 `language` 以及以秒計費的 `duration`。Chirp 3 依音訊秒數計費（模型成本對照表中的 `input_cost_per_second`），LiteLLM 會在 `x-litellm-response-cost` 標頭中回傳該計費時長的成本。
+
+若要使用 Chirp 3 HD 語音進行文字轉語音，請參閱 [Vertex AI Text to Speech](./vertex_speech.md)（`vertex_ai/chirp`）。
 
 ## Chirp 即時轉錄 {#chirp-realtime-transcription}
 
@@ -117,7 +176,7 @@ model_list:
       vertex_credentials: "/path/to/service_account.json"
 ```
 
-`vertex_credentials` 會回退到 `VERTEXAI_CREDENTIALS` 環境變數；`vertex_project` 與 `vertex_location` 會回退到 `litellm.vertex_project` 和 `litellm.vertex_location`，再回退到 `VERTEXAI_PROJECT` 和 `VERTEXAI_LOCATION`。位置預設為 `us`，並選取區域端點 `<location>-speech.googleapis.com`（`speech.googleapis.com` 用於 `global`），因此請選擇 Speech-to-Text 提供該模型的位置。`api_base` 為選用，且只會使用其主機。Chirp 部署不支援即時健康檢查：請使用 `mode: audio_transcription` 來進行健康檢查，這會透過同一個部署所提供的批次 `/v1/audio/transcriptions` 端點
+`vertex_credentials` 會回退到 `VERTEXAI_CREDENTIALS` 環境變數；`vertex_project` 與 `vertex_location` 會回退到 `litellm.vertex_project` 和 `litellm.vertex_location`，再回退到 `VERTEXAI_PROJECT` 和 `VERTEXAI_LOCATION`。位置預設為 `us`，並選取區域端點 `<location>-speech.googleapis.com`（`speech.googleapis.com` 用於 `global`），因此請選擇 Speech-to-Text 提供該模型的位置，Chirp 3 請選 `us` 或 `eu`。`api_base` 為選用，且只會使用其主機。Chirp 部署不支援即時健康檢查，因此請讓 `model_info.mode` 保持未設定或設為 `audio_transcription`，`/health` 會透過同一個部署所提供的批次 `/v1/audio/transcriptions` 端點
 
 ```bash showLineNumbers title="Start LiteLLM Proxy"
 litellm --config /path/to/config.yaml
@@ -159,7 +218,7 @@ LiteLLM 會在 socket 一接受時立即發出帶有 `object: realtime.transcrip
 | `format` | `type` 必須是 `audio/pcm`（或 `pcm16`），`rate` 為從 `8000` 到 `48000` 的任一整數，若存在，`channels` 必須是 `1`。省略則表示單聲道 24 kHz。 |
 | `transcription.model` | 選用。搭配 `intent=transcription` 時，proxy 會將其替換為您被授權的模型；若未提供，則僅接受 `chirp_3` 或 `vertex_ai/chirp_3`。 |
 | `transcription.language` | 選用的 BCP-47 標記。常見語言的裸兩字母代碼會展開為其預設地區（`en` 會變成 `en-US`、`pt` 會變成 `pt-BR`、`zh` 會變成 `zh-CN`）；其他值會照原樣送出。省略表示由 Google 偵測語言。 |
-| `turn_detection` | 選擇模式（如下表）。除 `server_vad` 之外的任何 `type` 都會被拒絕；沒有 `type` 的物件表示伺服器 VAD。 |
+| `turn_detection` | 選擇模式（如下表）。除 `server_vad` 之外的任何 `type` 都會被拒絕，或在設定了 [`drop_params`](/docs/completion/drop_params) 時回退為伺服器 VAD；沒有 `type` 的物件表示伺服器 VAD。 |
 | 其他 `transcription` 鍵 | 會被忽略，並記錄一行除錯記錄。 |
 | Beta 版配置 | 接受 `input_audio_format: "pcm16"` 加上頂層 `input_audio_transcription` 與 `turn_detection`，以 24 kHz。不要在一次更新中混用這兩種配置。 |
 

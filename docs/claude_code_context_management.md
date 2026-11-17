@@ -5,17 +5,24 @@ sidebar_label: Claude Code - 內容管理
 
 # Claude Code - 內容管理 {#claude-code---context-management}
 
-LiteLLM 原生支援 Anthropic 的 `context_management` beta，涵蓋 **所有提供者** - 不只是 Anthropic。
+LiteLLM 在 Anthropic 與許多其他提供者上支援 Anthropic 的 `context_management` beta。當提供者沒有原生支援時，會由**閘道內 polyfill** 套用編輯。
 
-當您將請求傳送到 `/v1/messages`（或透過 `litellm.anthropic.messages.*`）並附帶 `context_management` 規格時，LiteLLM 會依請求路由位置以兩種方式之一處理：
+當您將請求傳送到 `/v1/messages`（或透過 `litellm.anthropic.messages.*`）並附帶 `context_management` 規格時，LiteLLM 會依請求路由位置以下列方式之一處理：
 
 | 路由路徑 | context_management 的套用方式 |
 |---|---|
-| **Anthropic API** | 傳遞至 Anthropic 伺服器，由其原生套用編輯 |
-| **OpenAI Responses API**（例如 `gpt-5.x-*`） | 傳遞過去；由 Responses API 處理 |
-| **任何其他提供者**（OpenAI、xAI、Gemini、Azure、Bedrock non-Anthropic、…） | **閘道內 polyfill** - LiteLLM 在轉送前先對訊息陣列套用編輯 |
+| **Anthropic API**，以及 Bedrock Invoke、Vertex AI、Azure AI 與 Databricks 上的 Claude | 傳遞至提供者，由其原生套用編輯。在 Azure AI 上，LiteLLM 會捨棄 `compact-2026-01-12` beta 標頭，因此 Azure 對 `compact_20260112` 回應 400 |
+| **OpenAI Responses API**（`openai/*` 模型，以及少數其他提供者的 Responses 專用部署，例如 `perplexity/perplexity/sonar`） | `compact_20260112` 會成為 Responses API 的原生壓縮。所有其他編輯，例如 `clear_tool_uses_20250919`，會在**閘道內 polyfill** 中執行 |
+| **LiteLLM 透過其自有 `/v1/messages` 端點呼叫的其他提供者**（DeepSeek、Tencent、MiniMax、BigModel、EdenAI、DashScope 的 Anthropic 端點、GitHub Copilot 與 Bedrock Mantle 上的 Claude、…） | 照原樣傳遞。LiteLLM 不執行 polyfill，也不檢查編輯，因此由提供者決定如何處理它們 |
+| **任何其他提供者**（OpenAI chat completions、xAI、Gemini、Azure、Bedrock Converse、Bedrock non-Anthropic、…） | **閘道內 polyfill** - LiteLLM 在轉送前先對訊息陣列套用編輯 |
 
-此 polyfill 的意思是，您只要撰寫一次 Claude Code 工具迴圈，像平常一樣傳入 `context_management`，就能在代理後方的模型為何者時都正常運作。
+Databricks 上的 Claude <SinceVersion v="1.109.0" /> 會針對名稱以 `databricks-claude-` 或 `system.ai.claude-` 開頭的端點傳遞過去。其他任何 Databricks 端點名稱則執行 polyfill。DashScope 的 Anthropic 端點 <SinceVersion v="1.109.0" /> 在部署的 `api_base` 指向它時會傳遞過去。`model_info.supported_endpoints` 列出 `/v1/messages` 的部署，無論其提供者為何，都會照原樣傳遞。
+
+在 `openai/*` 模型上，`clear_tool_uses_20250919` 會在閘道中於 `/v1/messages` 與 `/v1/messages/count_tokens` <SinceVersion v="1.109.0" /> 上執行，因此計數會與 `/v1/messages` 傳送的歷史一致。較早版本會在此路徑上捨棄該編輯，且不發出警告。
+
+帶有 `stop_sequences` 的 `openai/*` 請求會改走 chat completions，兩種編輯都會在 polyfill 中執行。當 proxy 以 `LITELLM_USE_CHAT_COMPLETIONS_URL_FOR_ANTHROPIC_MESSAGES=true` 執行時，每個 `openai/*` 請求也是如此。
+
+在 polyfill 執行的情況下，您只要撰寫一次 Claude Code 工具迴圈，像平常一樣傳入 `context_management`，無論代理後方的模型為何都能正常運作。
 
 ## 支援的編輯類型 {#supported-edit-types}
 
@@ -23,7 +30,7 @@ LiteLLM 原生支援 Anthropic 的 `context_management` beta，涵蓋 **所有�
 |---|---|---|
 | `clear_tool_uses_20250919` | ✅ **支援** | 當觸發門檻達成時，從對話歷史中清除舊的 `tool_result` 內容，只保留最新的 `N` 工具結果 |
 | `clear_thinking_20251015` | ❌ 即將推出 | 從歷史中清除 extended-thinking 區塊 |
-| `compact_20260112` | ✅ **支援** | 摘要編輯 - LiteLLM 會呼叫已設定的摘要模型，將摘要注入為 system 前綴，並在回應中回傳 `compaction` 區塊 |
+| `compact_20260112` | ✅ **支援** | 摘要編輯 - LiteLLM 會呼叫已設定的摘要模型，將摘要注入為 system 前綴，並在回應中回傳 `compaction` 區塊。在 OpenAI Responses API 路徑上，改由 OpenAI 執行壓縮 |
 
 ## 運作方式 {#how-it-works}
 
@@ -38,9 +45,9 @@ Claude Code client
 │  1. Detect routing target                               │
 │                                                         │
 │  ┌──────────────────────┐   ┌────────────────────────┐  │
-│  │  Anthropic / Bedrock │   │  Any other provider    │  │
-│  │  Anthropic / OpenAI  │   │  (OpenAI, xAI, Gemini, │  │
-│  │  Responses API       │   │   Azure, …)            │  │
+│  │  Anthropic and other │   │  Any other provider    │  │
+│  │  native /v1/messages │   │  (OpenAI, xAI, Gemini, │  │
+│  │  endpoints           │   │   Azure, …)            │  │
 │  │                      │   │                        │  │
 │  │  Pass context_mgmt   │   │  In-gateway polyfill:  │  │
 │  │  spec through as-is  │   │                        │  │
@@ -62,8 +69,8 @@ Claude Code client
 │             └────────────┬─────────────┘                 │
 │                          │                               │
 │  2. Forward to provider  │                               │
-│     (without context_    │                               │
-│      management key)     │                               │
+│     (polyfill path drops │                               │
+│      context_management) │                               │
 └──────────────────────────┼──────────────────────────────┘
                            ▼
                     Upstream model
@@ -80,6 +87,8 @@ Claude Code client
                            ▼
                     Claude Code client
 ```
+
+在 OpenAI Responses API 路徑上，LiteLLM 會將 `compact_20260112` 作為 Responses API 自身的壓縮設定傳送給 OpenAI，而其他每個編輯都會走右側分支。
 
 ## 用法 {#usage}
 
@@ -144,7 +153,9 @@ curl -X POST http://localhost:4000/v1/messages \
 
 ## `compact_20260112` - 對話壓縮 {#compact_20260112---conversation-compaction}
 
-`compact_20260112` 編輯類型會在輸入 token 數超過門檻時，摘要對話歷史。LiteLLM 的 polyfill 讓這項功能可在**任何提供者**上運作，不只是 Anthropic。
+`compact_20260112` 編輯類型會在輸入 token 數超過門檻時，摘要對話歷史。LiteLLM 的 polyfill 讓這項功能可在每個執行 polyfill 的提供者上運作，不只是 Anthropic。
+
+在 OpenAI Responses API 路徑上，LiteLLM 只將 `trigger.value` 傳送給 OpenAI，作為 Responses API 的 `compact_threshold`，並由 OpenAI 自行壓縮對話。OpenAI 對低於 1,000 的 `trigger.value` 回應 400。若沒有 `trigger.value`，OpenAI 會使用自己的預設門檻，而不是 `150000`。LiteLLM 在此路徑上的回應沒有 `compaction` 區塊，因此用戶端在下一個請求會再次傳送完整歷史，OpenAI 也會再次將其壓縮。摘要模型、`instructions`、50,000 token 最低值，以及下方的 `compaction` 區塊與 `applied_edits`，只適用於 polyfill 執行的情況。
 
 ### 設定 - 設定摘要模型 {#setup---configure-a-summary-model}
 
@@ -164,7 +175,7 @@ general_settings:
 import litellm
 
 response = await litellm.anthropic.messages.acreate(
-    model="{{openai_small}}",          # any non-Anthropic provider
+    model="gemini/{{gemini_flash}}",   # any provider that runs the polyfill
     max_tokens=1024,
     messages=[...],                # multi-turn history
     context_management={
@@ -188,7 +199,7 @@ curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -d '{
-    "model": "{{openai_small}}",
+    "model": "{{gemini_flash}}",
     "max_tokens": 1024,
     "messages": [...],
     "context_management": {
@@ -261,7 +272,7 @@ context_management={
     },
     {"type": "text", "text": "Sure, here's the output formatter..."}
   ],
-  "model": "{{openai_small}}",
+  "model": "{{gemini_flash}}",
   "stop_reason": "end_turn",
   "usage": {"input_tokens": 420, "output_tokens": 120},
   "context_management": {
@@ -298,15 +309,29 @@ context_management={
 
 | 欄位 | 必填 | 預設值 | 說明 |
 |---|---|---|---|
+| `trigger` | 否 | `{"type": "input_tokens", "value": 100000}` | 必須是物件 |
 | `trigger.type` | 否 | `"input_tokens"` | `"input_tokens"` 或 `"tool_uses"` |
 | `trigger.value` | 否 | `100000` | 門檻；當目前值**超過**此值時，編輯會觸發 |
+| `keep` | 否 | `{"type": "tool_uses", "value": 3}` | 必須是物件 |
 | `keep.type` | 否 | `"tool_uses"` | 必須為 `"tool_uses"` |
 | `keep.value` | 否 | `3` | 要保留的最近工具結果數量 |
-| `clear_at_least` | 接受 | - | 請求中接受但被 polyfill 忽略（v0） |
-| `exclude_tools` | 接受 | - | 請求中接受但被 polyfill 忽略（v0） |
-| `clear_tool_inputs` | 接受 | - | 請求中接受但被 polyfill 忽略（v0） |
+| `clear_at_least.type` | 否 | - | 必須為 `"input_tokens"` |
+| `clear_at_least.value` | 否 | - | 以批次清除舊的工具使用，每個批次至少釋放這麼多 tokens |
+| `exclude_tools` | 否 | - | 其使用永遠不會被清除的工具名稱 |
+| `clear_tool_inputs` | 否 | `false` | `true`，或工具名稱清單，用以一併清空每個被清除 `tool_use` 的 `input` |
 
 > **硬性下限：** 不論 `keep` 為何，LiteLLM 的 polyfill 絕不會清除最近一次完成的 `tool_result` - 也就是模型即將回覆的那一次。
+
+`clear_at_least`、`exclude_tools` 與 `clear_tool_inputs` 可以正常運作 <SinceVersion v="1.109.0" />。較早版本會接受它們並將其忽略。
+
+此 polyfill 接受某些 Anthropic API 會以 400 回答的值，因此請只傳送表格中的值。它會將 `null` 的 `trigger` 或 `keep` 視為未提供，並為任何其他 `trigger.type` 計算輸入 tokens。不是整數的 `trigger.value`，對 `input_tokens` 觸發會使用 `100000`，且永遠不會觸發 `tool_uses` 觸發。任何其他 `keep.type`，或不是非負整數的 `keep.value`，都會保留 3 個工具結果。值為 `true` 時計為 1。
+
+此 polyfill 以下列方式處理 `clear_at_least`、`exclude_tools`、小型結果與格式錯誤的欄位：
+
+- **批次。** 使用 `clear_at_least` 時，舊的工具使用會由最舊開始分批清除。每個批次至少釋放 `clear_at_least.value` 個 tokens，計算時包含被清除的結果，以及以 `litellm.token_counter` 計算的被清除輸入。不完整的批次會等待後續的請求，因此中間的請求會傳送相同的歷史，並持續命中 prompt 快取。
+- **被排除的工具。** `exclude_tools` 中工具的使用永遠不會被清除，也不計入 `keep`、`tool_uses` 觸發或批次。
+- **小型結果。** 結果為 1 到 46 bytes 文字 的工具使用會被跳過，除非 `clear_tool_inputs` 涵蓋該工具。
+- **格式錯誤的值。** 格式錯誤的欄位，例如 `exclude_tools: "memory"`，或不是物件的 `trigger` 或 `keep` <SinceVersion v="1.109.0" />，會取得一個指明編輯與欄位的 HTTP 400，例如 `context_management.edits.0.clear_tool_uses_20250919.trigger: Input should be an object`。使用 `drop_params: true`（Claude Code 與 Codex 請求預設即取得此設定）時，LiteLLM 會改為只捨棄該欄位、使用其預設值，並仍套用該編輯與其他編輯。
 
 ## 回應 {#responses}
 
@@ -393,9 +418,9 @@ data: {"type":"message_stop"}
 ```yaml
 # proxy_server_config.yaml
 model_list:
-  - model_name: gpt-4.1
+  - model_name: {{openai_large}}
     litellm_params:
-      model: openai/gpt-4.1
+      model: openai/{{openai_large}}
       additional_drop_params: ["context_management"]
 ```
 
@@ -406,26 +431,35 @@ import litellm
 litellm.completion(..., additional_drop_params=["context_management"])
 ```
 
-`drop_params: true` 不會停用 polyfill。`context_management` 是 LiteLLM 支援的參數（在 Anthropic 上為原生支援，在其他地方則由 polyfill 提供），而 `drop_params` 只會移除真正不支援的參數。
+`drop_params: true` 不會停用 polyfill。`context_management` 是 LiteLLM 支援的參數（在原生 `/v1/messages` 端點上傳遞過去，在其他地方由 polyfill 提供），因此 `drop_params` 會保留它。在 polyfill 執行的 `clear_tool_uses_20250919` 編輯內部，`drop_params` 只會捨棄格式錯誤的欄位，例如不是物件的 `trigger` 或 `keep`，而編輯會以它們的預設值執行。在傳遞路由上，編輯會照原樣送至提供者，因此 Anthropic 仍會以自己的 400 回答格式錯誤的欄位。
+
+來自 Claude Code 與 Codex 的請求（依其 user agent 辨識）預設會取得 `drop_params: true`。自行設定 `drop_params` 的請求，或在 proxy 設定中設定 `litellm_settings.drop_params: false`，會關閉此行為。因此在這一頁上，Claude Code 與 Codex 會取得捨棄行為，而其他用戶端會取得 400。請參閱 [Claude Code 與 Codex 在 proxy 上](/docs/completion/drop_params#claude-code-and-codex-on-the-proxy)。
+
+`text` 不是字串的 `tool_result` 文字部分，在執行 polyfill 的 `/v1/messages` 請求上，以及每個 `/v1/messages/count_tokens` 請求上（無論有無編輯），都會取得 HTTP 400 <SinceVersion v="1.109.0" />。當 LiteLLM 將計數傳送給 Claude 時，例如在 Vertex AI 與 Azure AI 上，400 來自 Claude。使用 `drop_params: true` 時，LiteLLM 會改為在任何編輯執行之前捨棄該文字部分。
 
 ## 提供者支援矩陣 {#provider-support-matrix}
 
 | 提供者 | `clear_tool_uses_20250919` | `compact_20260112` |
 |---|---|---|
 | `anthropic/*` | 原生透傳 | 原生透傳 |
-| `bedrock/anthropic.*` | 原生透傳 | 原生透傳 |
-| `openai/*` (Responses API) | 原生透傳 | 原生透傳 |
+| `bedrock/anthropic.*` (Invoke) | 原生透傳 | 原生透傳 |
+| `bedrock/converse/*` | Polyfill | Polyfill |
+| `openai/*` (Responses API，在 `/v1/messages` 上為預設) | Polyfill | 由 OpenAI 壓縮，不回傳 `compaction` 區塊 |
 | `openai/*` (chat completions) | Polyfill | Polyfill |
 | `azure/*` | Polyfill | Polyfill |
 | `xai/*` | Polyfill | Polyfill |
 | `gemini/*` | Polyfill | Polyfill |
-| `vertex_ai/*` | Polyfill | Polyfill |
-| 其他所有提供者 | Polyfill | Polyfill |
+| `vertex_ai/*` 上的 Claude，以及 `databricks/*`（`databricks-claude-*`、`system.ai.claude-*`）上的 Claude | 原生透傳 | 原生透傳 |
+| `azure_ai/*` 上的 Claude | 原生透傳 | Azure 回應 400，因為 LiteLLM 捨棄了 beta 標頭 |
+| `vertex_ai/*`（其他模型） | Polyfill | Polyfill |
+| `deepseek/*`、`tencent/*`、`minimax/*`、DashScope Anthropic 端點上的 `dashscope/*`，以及其他具有原生 `/v1/messages` 端點的提供者 | 照原樣傳遞 | 照原樣傳遞 |
+| DashScope OpenAI 相容端點上的 `dashscope/*` | Polyfill | Polyfill |
+| 其他所有沒有原生 `/v1/messages` 端點的提供者 | Polyfill | Polyfill |
 
 ## 附註 {#notes}
 
-- **`compact_20260112` 需要設定 `context_management_summary_model`** 於 `general_settings` 中。若未設定，編輯會被確認，但不會執行壓縮。
+- **`compact_20260112` 需要設定 `context_management_summary_model`** 於 `general_settings` 中，在每個 polyfill 執行的地方皆然。若未設定，編輯會被確認，但不會執行壓縮。
 - **Token 計數** 用於 polyfill 閾值檢查時使用 `litellm.token_counter`（未知模型則回退至 tiktoken `cl100k_base`）。
-- **`clear_tool_uses_20250919`** 會保留訊息陣列結構：相同的訊息數量、相同的角色順序。只有匹配訊息中的 `tool_result.content` 會被替換為 `"[Cleared by context management]"`。
-- **`compact_20260112`** 會將整個先前歷史壓縮為單一的 system 前綴摘要 + 最後一個使用者問題。回應中的 `compaction` 區塊會將摘要文字提供給 Claude Code 用戶端，以便在下一輪延續。
-- `compact_20260112` 觸發的 50,000 token 最低值由 proxy 強制執行；較低值的請求會以 HTTP 400 拒絕。
+- **`clear_tool_uses_20250919`** 會保留訊息陣列結構：相同的訊息數量、相同的角色順序。只有匹配訊息中的 `tool_result.content` 會被替換為 `"[Cleared by context management]"`，且當 `clear_tool_inputs` 涵蓋該工具時，這些使用的 `tool_use.input` 會被清空。
+- **`compact_20260112`** 在 polyfill 執行時，會將整個先前歷史壓縮為單一的 system 前綴摘要 + 最後一個使用者問題。回應中的 `compaction` 區塊會將摘要文字提供給 Claude Code 用戶端，以便在下一輪延續。
+- `compact_20260112` 觸發的 50,000 token 最低值在每個 polyfill 執行的地方都由 proxy 強制執行；較低值的請求會以 HTTP 400 拒絕。

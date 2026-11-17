@@ -9,6 +9,7 @@ import TabItem from '@theme/TabItem';
 import NavigationCards from '@site/src/components/NavigationCards';
 import LiteLLMFlow from '@site/src/components/LiteLLMFlow';
 import QuickStartBox from '@site/src/components/QuickStartBox';
+import ThemedVideo from '@site/src/components/ThemedVideo';
 
 <LiteLLMFlow copyCommand={false} agentPrompt={false} />
 
@@ -32,7 +33,23 @@ import QuickStartBox from '@site/src/components/QuickStartBox';
 uv add litellm
 ```
 
-若要部署完整的 AI Gateway (Proxy) 與管理介面，請依照 [快速開始](./proxy/docker_quick_start.md)；其以容器執行，無需 Python 設定。若要改為從 CLI 執行，請參閱 [Gateway 快速開始](./learn/gateway_quickstart.md)。
+### 更精簡的 SDK 安裝 {#a-leaner-sdk-installation}
+
+對於直接使用 Python SDK 的應用程式，`litellm-core` 提供共用的 SDK，強制相依性更少，且不含內附的儀表板或閘道 CLI 入口點。Python 匯入方式維持不變：繼續使用 `litellm`
+
+在全新環境中安裝 `litellm-core`，而不是安裝 `litellm`。當您的應用程式需要時，再加入 AWS 與 Python Hugging Face tokenizer 套件。這兩個發行版無法同時安裝，因為它們共用相同的 Python 檔案
+
+請參閱 [LiteLLM Core](https://docs.litellm.ai/docs/litellm_core) 了解安裝、套件選擇與可選相依性。現有的 `litellm` 安裝會保留目前的相依性預設值
+
+若要部署完整的 AI Gateway (Proxy) 與管理介面，請依照 [快速開始](./proxy/docker_quick_start.md)；其以容器執行，無需 Python 設定。若要改為從 CLI 執行，請參閱 [CLI 快速開始](./proxy/quick_start.md)。
+
+若要讓 Claude Code 為您設定 Gateway，請安裝 LiteLLM 設定 skill，然後在 Claude Code 中輸入 `/litellm-setup`：
+
+```shell
+npx skills add BerriAI/litellm -g
+```
+
+該 skill 會詢問您想使用哪些提供者與模型，以 uv 或 Docker 安裝 Gateway，寫入設定與金鑰，啟動它，最後以一次測試聊天完成來收尾。
 
 ---
 
@@ -194,10 +211,10 @@ print(response.choices[0].message.content)
 }
 ```
 
-📖 [完整輸出格式參考 →](/docs/completion/output)
+[完整輸出格式參考 →](/docs/completion/output)
 
 :::tip[在 Colab 中開啟]
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_Getting_Started.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/liteLLM_Getting_Started.ipynb">
 <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 :::
@@ -218,7 +235,6 @@ print(response.choices[0].message.content)
 columns={2}
 items={[
 {
-icon: "🐍",
 title: "Python SDK",
 description: "將 LiteLLM 直接整合到您的 Python 應用程式中。可直接替代 OpenAI client。",
 listDescription: [
@@ -230,7 +246,6 @@ listDescription: [
 to: "#litellm-python-sdk",
 },
 {
-icon: "🖥️",
 title: "Proxy 伺服器（LLM 閘道）",
 description: "供平台團隊自行代管的閘道，用於管理整個組織的 LLM 存取。",
 listDescription: [
@@ -301,7 +316,7 @@ response = litellm.completion(
 )
 ```
 
-📖 [查看所有可觀測性整合 →](/docs/observability/opentelemetry_v2)
+[查看所有可觀測性整合 →](/docs/observability/opentelemetry_v2)
 
 ### 追蹤成本與用量 {#track-costs--usage}
 
@@ -322,7 +337,7 @@ litellm.completion(
 )
 ```
 
-📖 [自訂回呼文件 →](/docs/observability/custom_callback)
+[自訂回呼文件 →](/docs/observability/custom_callback)
 
 ---
 
@@ -330,7 +345,13 @@ litellm.completion(
 
 該 proxy 是一個自我託管、相容 OpenAI 的 gateway。任何可搭配 OpenAI 使用的用戶端，都可直接與該 proxy 搭配使用，無需變更程式碼。
 
-![LiteLLM Proxy 儀表板](https://github.com/BerriAI/litellm/assets/29436595/47c97d5e-b9be-4839-b28c-43d7f4f10033)
+<ThemedVideo
+  src={require('../img/gateway_dashboard_loop.mp4')}
+  dark={require('../img/gateway_dashboard_loop_dark.mp4')}
+  poster={require('../img/gateway_dashboard_loop_poster.png')}
+  darkPoster={require('../img/gateway_dashboard_loop_poster_dark.png')}
+  title="LiteLLM 管理介面：附預算的虛擬金鑰、依模型區分的每日支出，以及含成本的請求記錄"
+/>
 
 #### 步驟 1：啟動 proxy {#step-1-start-the-proxy}
 
@@ -382,13 +403,13 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-👉 [完整 proxy 快速開始 →](/docs/proxy/docker_quick_start)
+[完整 proxy 快速開始 →](/docs/proxy/docker_quick_start)
 
 :::tip[除錯工具]
 使用 **`/utils/transform_request`** 來精確檢查 LiteLLM 傳送給任何提供者的內容。這在除錯提示格式、標頭問題，以及提供者特定參數時很有幫助。
 :::
 
-🔗 [互動式 API 探索工具（Swagger） →](https://docs.litellm.ai/api-reference/)
+[互動式 API 探索工具（Swagger） →](https://docs.litellm.ai/api-reference/)
 
 ---
 
@@ -400,20 +421,17 @@ LiteLLM 是一個整合的 **LLMs、agents 與 MCP** 閘道，因此您不需要
 columns={3}
 items={[
 {
-icon: "🔗",
 title: "A2A 代理程式",
 description: "透過 LiteLLM 閘道新增並調用 A2A 代理程式。",
 to: "/docs/a2a",
 },
 {
-icon: "🛠️",
 title: "MCP 閘道",
 description: "具備金鑰層級存取控制的集中式 MCP 端點。",
 to: "/docs/mcp",
 },
 {
-icon: "✨",
-title: "✨ 企業版快速入門",
+title: "企業版快速入門",
 description: "試用客戶快速入門指南：LLM、MCP 與 Agent 閘道。",
 to: "/docs/learn/enterprise_quickstart",
 },
@@ -428,37 +446,31 @@ to: "/docs/learn/enterprise_quickstart",
 columns={3}
 items={[
 {
-icon: "🔀",
 title: "路由與負載平衡",
 description: "在多個部署之間進行負載平衡並設定自動備援。",
-to: "/docs/routing-load-balancing",
+to: "/docs/proxy/load_balancing",
 },
 {
-icon: "🔑",
 title: "虛擬金鑰",
 description: "依團隊或使用者管理存取、預算與速率限制。",
 to: "/docs/proxy/virtual_keys",
 },
 {
-icon: "📊",
 title: "支出追蹤",
 description: "追蹤所有提供者中每個金鑰、團隊與使用者的成本。",
 to: "/docs/proxy/cost_tracking",
 },
 {
-icon: "🛡️",
 title: "防護欄（Guardrails）",
 description: "加入內容過濾、PII 遮罩與安全檢查。",
 to: "/docs/proxy/guardrails/quick_start",
 },
 {
-icon: "📡",
 title: "可觀測性",
 description: "與 Langfuse、MLflow、Helicone 等更多工具整合。",
 to: "/docs/observability/opentelemetry_v2",
 },
 {
-icon: "🏭",
 title: "企業版（Enterprise）",
 description: "供正式環境使用的 SSO/SAML、稽核記錄與進階安全性。",
 to: "/docs/enterprise",

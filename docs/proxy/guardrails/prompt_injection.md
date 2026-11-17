@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 閘道上的提示注入偵測"
+sidebar_label: "記憶體內提示注入偵測"
+description: "在 LiteLLM AI 閘道上以記憶體內相似度檢查或 LLM API 檢查偵測提示注入，涵蓋聊天、訊息與回應。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -91,7 +96,7 @@ litellm_settings:
     llm_api_fail_call_string: "UNSAFE" # expected string to check if result failed 
 
 model_list:
-- model_name: azure-gpt-3.5 # 👈 same model_name as in prompt_injection_params
+- model_name: azure-gpt-3.5 # same model_name as in prompt_injection_params
   litellm_params:
       model: azure/chatgpt-v-2
       api_base: os.environ/AZURE_API_BASE

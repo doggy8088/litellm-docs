@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 進行 Vertex AI 批次預測"
+sidebar_label: "Vertex Batch APIs"
+description: "透過 LiteLLM Batch API 在 Gemini Enterprise Agent Platform（原 Vertex AI）上執行批次預測：在 config.yaml 中設定 gcs_bucket_name。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -233,6 +239,10 @@ curl --request GET \
 batch 完成後，請使用 batch 回應中的 `output_file_id` 來擷取結果。
 
 **重要：**在請求路徑中使用 `output_file_id` 時，必須先進行 URL 編碼。
+
+:::warning 原始 `gs://` id 需要 Proxy 管理員金鑰
+自 v1.108.0 起，`GET /files/{file_id}/content` 僅會將原始 `gs://` 輸出 id 提供給 Proxy 管理員金鑰（主金鑰，或具有 `proxy_admin` 角色的金鑰）。任何其他金鑰都會收到 `403`，提示改用 LiteLLM 受管理檔案 id。若要以非管理員金鑰讀取批次結果，請在上傳檔案時設定 `target_model_names`（見 [managed batches](../proxy/managed_batches)），讓 Proxy 回傳受管理的 `file-...` id，並在後續每次呼叫都傳入該 id，而非 `gs://` 路徑
+:::
 
 <Tabs>
 <TabItem value="python" label="Python">

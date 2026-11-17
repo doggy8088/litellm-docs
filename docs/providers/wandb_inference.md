@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 W&B Inference API：設定"
+sidebar_label: "Weights & Biases 推論"
+description: "在 Weights & Biases Inference 上執行 Qwen3 與其他模型，支援串流、JSON 回應與固定 seed，並在 LiteLLM 中解決 401、403 與 429 錯誤。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

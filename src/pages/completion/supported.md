@@ -4,9 +4,6 @@
 
 | 模型名稱       | 函式呼叫                          | 需要的 OS 變數                |
 |------------------|----------------------------------------|--------------------------------------|
-| gpt-3.5-turbo    | `completion('gpt-3.5-turbo', messages)` | `os.environ['OPENAI_API_KEY']`       |
-| gpt-3.5-turbo-16k    | `completion('gpt-3.5-turbo-16k', messages)` | `os.environ['OPENAI_API_KEY']`       |
-| gpt-3.5-turbo-16k-0613    | `completion('gpt-3.5-turbo-16k-0613', messages)` | `os.environ['OPENAI_API_KEY']`       |
 | gpt-4            | `completion('gpt-4', messages)`         | `os.environ['OPENAI_API_KEY']`       |
 | gpt-5-pro        | `completion('gpt-5-pro', messages)`    | `os.environ['OPENAI_API_KEY']`       |
 
@@ -22,7 +19,7 @@
 
 | 模型名稱       | 函式呼叫                              | 需要的 OS 變數                |
 |------------------|--------------------------------------------|--------------------------------------|
-| text-davinci-003 | `completion('text-davinci-003', messages)` | `os.environ['OPENAI_API_KEY']`       |
+| gpt-5.4-mini | `completion('text-completion-openai/gpt-5.4-mini', messages)` | `os.environ['OPENAI_API_KEY']`       |
 
 ### Cohere 模型 {#cohere-models}
 
@@ -74,7 +71,7 @@
 
 ## Novita AI Completion 模型 {#novita-ai-completion-models}
 
-🚨 LiteLLM 支援所有 Novita AI 模型，將 `model=novita/<your-novita-model>` 傳送以將其送往 Novita AI。查看所有 Novita AI 模型 [這裡](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link)
+LiteLLM 支援所有 Novita AI 模型，將 `model=novita/<your-novita-model>` 傳送以將其送往 Novita AI。查看所有 Novita AI 模型 [這裡](https://novita.ai/models/llm?utm_source=github_litellm&utm_medium=github_readme&utm_campaign=github_link)
 
 | 模型名稱       | 函式呼叫                              | 需要的 OS 變數                |
 |------------------|--------------------------------------------|--------------------------------------|

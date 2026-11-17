@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 xAI Batch API"
+sidebar_label: "xAI Batch API"
+description: "透過 LiteLLM 的 /v1/files 與 /v1/batches 端點執行 xAI 批次工作：將 xAI 加入 config.yaml、上傳輸入、建立並輪詢批次，以及追蹤成本。"
+---
+
 # xAI Batch API {#xai-batch-api}
 
 LiteLLM 會將相容於 OpenAI 的 `/v1/files` 與 `/v1/batches` 端點路由到 xAI 的 [Files](https://docs.x.ai/developers/files/managing-files) 與 [Batch](https://docs.x.ai/developers/advanced-api-usage/batch-api) API。xAI 以較低費率計費批次請求，這些請求不計入速率限制，而且多數批次會在最佳努力基礎下於 24 小時內完成。並非每個 xAI 模型都接受批次請求，因此在選擇模型前請先查看 xAI 的模型清單

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Straiker 防護欄"
+sidebar_label: "Straiker"
+description: "在 LiteLLM AI 閘道上使用 Straiker 阻擋提示詞注入，包括隱藏在工具輸出中的酬載，並檢查提示詞與工具呼叫。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

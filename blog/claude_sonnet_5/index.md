@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM AI Gateway 上對 Claude Sonnet 5 的第 0 天支援。可透過 Anthropic、Azure、Vertex AI 與 Bedrock 使用。"
+card_title: "Claude Sonnet 5"
+card_summary: "Opus 等級的品質、Sonnet 的價格，僅支援自適應思考，每 1M 為 $2 / $10，1M 上下文。"
 image: /img/litellm_claude_sonnet_5_announcement.png
 tags: [anthropic, claude, sonnet 5, day 0 support]
 hide_table_of_contents: false
@@ -28,7 +30,7 @@ Sonnet 5 是目前最具 agentic 特性的 Sonnet 模型，效能接近 Opus 4.8
 - **Opus 級品質，Sonnet 價格。** Anthropic 表示，Sonnet 5 的表現接近 Opus 4.8，但成本低得多，且在推理、工具使用、程式撰寫與知識工作方面，比 Sonnet 4.6 有顯著提升。([Anthropic 的詳細資訊](https://www.anthropic.com/news/claude-sonnet-5))
 - **為執行代理程式而打造。** 它會規劃、驅動瀏覽器與終端機等工具、 автономously 運作，並在未被要求時自行檢查輸出，在早期 Sonnet 模型會停下的地方完成複雜任務。Anthropic 強調其在 BrowseComp（agentic 搜尋）與 OSWorld-Verified（電腦使用）上的提升。
 - **僅支援自適應思考。** Sonnet 5 會自行決定要思考多深入。您可透過 `reasoning_effort` 或 `output_config.effort` 針對每個請求加以調整；模型不支援固定思考預算、`temperature`、`top_p` 與 assistant 訊息預填。
-- **輸入 $3 / MTok、輸出 $15 / MTok**，prompt caching 為 $0.30 / MTok（讀取）與 $3.75 / MTok（寫入）。Anthropic 目前提供至 2026 年 8 月 31 日的導入期價格：輸入 $2 / MTok、輸出 $10 / MTok。在 Bedrock 上，`us.`、`eu.`、`au.` 與 `jp.` inference profiles 會有一般 10% 區域加價，而 `global.` 則維持基礎價格；LiteLLM 會自動追蹤每個變體。
+- **輸入 $2 / MTok、輸出 $10 / MTok**，prompt caching 為 $0.20 / MTok（讀取）與 $2.50 / MTok（寫入）。Anthropic 最初將此作為至 2026 年 8 月 31 日的導入期價格推出，之後改為標準價格。在 Bedrock 上，`us.`、`eu.` 與 `au.` inference profiles 會有一般 10% 區域加價，而 `global.` 則維持基礎價格；LiteLLM 會追蹤這四者的成本。
 - **100 萬 token 內容長度**，最多 128K 輸出 token。
 - **一個 gateway，涵蓋所有介面。** 視覺、PDF 輸入、電腦使用、工具呼叫、prompt caching、自適應思考與結構化輸出，皆可在 Anthropic、Azure、Vertex AI 與 Bedrock 上使用，並具備統一的支出追蹤、記錄與備援。
 
@@ -133,14 +135,14 @@ docker run -d \
 model_list:
   - model_name: claude-sonnet-5
     litellm_params:
-      model: bedrock/anthropic.claude-sonnet-5
+      model: bedrock/global.anthropic.claude-sonnet-5
       aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: us-east-1
 ```
 
 :::note
-若要進行跨區域 routing，請將 model ID 改為區域 inference profile（`us.`、`eu.`、`au.` 或 `jp.` 前綴），例如 `bedrock/converse/us.anthropic.claude-sonnet-5`。這些會有 10% 的區域加價；`global.` profile 則維持基礎價格。LiteLLM 會自動追蹤每個變體的成本。
+若要將請求保留在單一地理區域內，請將 model ID 改為地理 inference profile，例如 `bedrock/converse/us.anthropic.claude-sonnet-5`（該模型的 AWS 模型卡列出了它所擁有的設定檔）。這些費用比 `global.` 高出 10%；`global.` 可從任何 AWS 商業區域處理請求。LiteLLM 會追蹤 `global.` 以及 `us.`、`eu.` 和 `au.` 設定檔的成本。在較舊的映像上，這需要遠端成本對照表；LiteLLM 會在啟動時載入它，除非已設定 `LITELLM_LOCAL_MODEL_COST_MAP`。
 :::
 
 **2. 啟動 proxy**

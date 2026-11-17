@@ -7,6 +7,8 @@ LiteLLM 提供了一個符合 [OpenAI 的 `/responses` API](https://platform.ope
 
 當提供者不支援該端點時，對 /chat/completions 的請求可自動橋接至此。模型的預設 `mode` 會決定橋接方式。（請參閱 `model_prices_and_context_window`） 
 
+反向情況也會發生：提供者本身沒有 Responses API 設定的部署（`custom_openai/`、`baseten/`、`openai_like/` 與多數其他 OpenAI 相容提供者）會透過 `/v1/chat/completions` 橋接 `/v1/responses`。當伺服器本身提供 `/responses` 時，請在部署的 `model_info` 下加入 `supported_endpoints: ["/v1/responses"]`，讓請求不經轉換直接轉送。請參閱 [原生 /v1/responses 直通](./response_api_native_passthrough.md)
+
 | 功能 | 支援 | 備註 |
 |---------|-----------|--------|
 | 成本追蹤 | ✅ | 適用於所有受支援的模型 |
@@ -19,7 +21,7 @@ LiteLLM 提供了一個符合 [OpenAI 的 `/responses` API](https://platform.ope
 | 負載平衡 | ✅ | 可在受支援模型之間運作 |
 | 防護欄 | ✅ | 套用於輸入與輸出文字（僅限非串流） |
 | 支援的操作 | 建立回應、取得回應、刪除回應 | |
-| 支援的 LiteLLM 版本 | 1.63.8+ | |
+| 支援的 LiteLLM 版本 | <SinceVersion v="1.63.8" /> | |
 | 支援的 LLM 提供者 | **所有 LiteLLM 支援的提供者** | `openai`、`anthropic`、`bedrock`、`vertex_ai`、`gemini`、`azure`、`azure_ai` 等。 |
 
 ## 用法 {#usage}
@@ -1049,6 +1051,17 @@ model_list:
 
 這兩個模型都會自動在 `ws://localhost:4000/v1/responses` 支援 WebSocket 模式。
 
+### 工作階段時長上限 {#session-duration-limit}
+
+`/v1/responses` 上的 WebSocket 工作階段預設最長為 60 分鐘，與 OpenAI 自身的 WebSocket 連線上限一致。此上限自 proxy 接受連線時起算，因此像 Codex 這類會預先開啟連線的用戶端可以讓連線保持閒置，稍後再送出第一個 `response.create`。到達上限時，不論是否有回應正在進行，proxy 都會以代碼 `1000` 與原因 `Session duration limit reached` 關閉 socket，用戶端應重新連線。
+
+若要變更此上限，請在 `general_settings` 下設定 `responses_websocket_session_limit_seconds`。可接受的值為 60 至 7200 秒；其他值會記錄一則警告，且 proxy 會改用 3600。
+
+```yaml showLineNumbers title="config.yaml"
+general_settings:
+  responses_websocket_session_limit_seconds: 1800  # 30 minutes
+```
+
 ## Response ID 安全性 {#response-id-security}
 
 預設情況下，LiteLLM Proxy 會防止使用者存取其他使用者的 response IDs。
@@ -1143,6 +1156,10 @@ create 呼叫會在模型產生任何 token 之前就返回，因此在請求時
 
 當使用 Responses API 搭配同一模型的多個部署（例如，多個 Azure OpenAI endpoints）時，LiteLLM 會提供 session continuity。這可確保使用 `previous_response_id` 的後續請求會被路由到產生原始回應的相同部署。
 
+:::warning[這些檢查的適用範圍]
+`responses_api_deployment_check`、`encrypted_content_affinity`、`session_affinity` 與 `deployment_affinity` 適用於 `/v1/responses` 上的 proxy 請求以及 `router.aresponses`。同步的 `router.responses` 會略過這些檢查，因此後續請求可能落到未提供第一輪回應的部署上。頂層 `routing_strategy` 為 `usage-based-routing`（舊版 v1 策略）時，每次呼叫也都會略過這些檢查，包括 proxy 在內；不透過 `router.select(..., kind="healthy")` 挑選部署的自訂策略同樣會略過。完整規則請參閱 [Session Affinity](./routing.md#session-affinity-sticky-sessions)。
+:::
+
 #### 使用範例 {#example-usage}
 
 <Tabs>
@@ -1209,12 +1226,12 @@ follow_up = await router.aresponses(
 若要在您的 LiteLLM proxy 中啟用 Responses API 的 session continuity，請在您的 proxy config.yaml 中設定 `optional_pre_call_checks`。
 
 - `responses_api_deployment_check`：當提供 `previous_response_id` 時的高優先順序路由
-- `encrypted_content_affinity`：**[建議]** 針對加密項目的具內容感知路由（例如，`rs_...` reasoning items）（**需要 LiteLLM >= 1.82.3**）
+- `encrypted_content_affinity`：**[建議]** 針對加密項目的具內容感知路由（例如，`rs_...` reasoning items）<SinceVersion v="1.82.3" />
 - `session_affinity`：依據 session id 的黏性工作階段（優先於 `deployment_affinity`）
 - `deployment_affinity`：依據 user key 的黏性工作階段（即使沒有 `previous_response_id` 也適用）
 
 :::tip[建議：使用 `encrypted_content_affinity`]
-若要將 Responses API 透過**不同 API 金鑰**的部署進行負載平衡，請改用 `encrypted_content_affinity`，不要使用 `deployment_affinity`。它只會將包含加密內容的請求固定到同一部署，避免降低配額，同時防止 `invalid_encrypted_content` 錯誤。（需要 LiteLLM >= 1.82.3。）
+若要將 Responses API 透過**不同 API 金鑰**的部署進行負載平衡，請改用 `encrypted_content_affinity`，不要使用 `deployment_affinity`。它只會將包含加密內容的請求固定到同一部署，避免降低配額，同時防止 `invalid_encrypted_content` 錯誤。 <SinceVersion v="1.82.3" />
 :::
 
 備註：
@@ -1302,6 +1319,10 @@ follow_up = client.responses.create(
 
 `encrypted_content_affinity` 呼叫前檢查會將包含加密項目的後續請求路由到原始部署，**僅在必要時**
 
+:::warning[此檢查的適用範圍]
+`encrypted_content_affinity` 適用於 LLM API 路由（例如 `/v1/responses`）上的 proxy 請求，以及 `router.aresponses` 等非同步 Router 方法。同步的 `router.responses` 會略過它，因此帶有加密項目的後續請求可能落到未建立這些項目的部署上。頂層 `routing_strategy` 為 `usage-based-routing`（舊版 v1 策略）時，每次呼叫也都會略過它，包括 proxy 在內；不透過 `router.select(..., kind="healthy")` 挑選部署的自訂策略同樣會略過。完整規則請參閱 [Session Affinity](./routing.md#session-affinity-sticky-sessions)。
+:::
+
 **主要優點：**
 - ✅ **不會降低配額**：與 `deployment_affinity` 不同，只會固定含有加密項目的請求
 - ✅ **繞過速率限制**：當加密內容需要特定部署時，會繞過 RPM/TPM 限制（否則該請求在任何其他部署上都會失敗）
@@ -1322,7 +1343,7 @@ follow_up = client.responses.create(
 
 ### 當原始部署無法處理該輪請求時 {#when-the-originating-deployment-cannot-serve-the-turn}
 
-只有在原始部署仍位於已路由模型群組的健康池中時，固定才會生效。當它不在其中時，原因可能是它在錯誤後被降溫、已從設定中移除，或後續請求被路由到不同的模型群組（自動路由器層級變更，或用戶端在輪次之間切換 `model`），LiteLLM 會先尋找同儕，也就是其解析後的 `api_base` 與 `api_key` 和原始來源完全相同的部署，並改固定到那個部署。不同區域或使用不同金鑰的部署永遠不算同儕，不論提供者是否會接受，因此多區域群組沒有同儕。已從設定中移除的來源，或沒有任何部署相符的 id，將不再有可比對的憑證，並會跳過同儕搜尋
+只有在原始部署仍位於已路由模型群組的健康池中時，固定才會生效。當它不在其中時，原因可能是它在錯誤後被降溫、已從設定中移除，或後續請求被路由到不同的模型群組（自動路由器層級變更，或用戶端在輪次之間切換 `model`），LiteLLM 會先尋找同儕，也就是其解析後的 `api_base` 與 `api_key` 和原始來源完全相同的部署，並改固定到那個部署。不同區域或使用不同金鑰的部署本身不算同儕，不論提供者是否會接受，因此多區域群組沒有同儕，除非您[宣告共用加密邊界](#declaring-a-shared-encryption-boundary)。已從設定中移除的來源，或沒有任何部署相符的 id，將不再有可比對的憑證，並會跳過同儕搜尋
 
 沒有同儕時，該輪請求會以降級形式提供，而不是失敗。在 Responses API 中，每個 reasoning 項目都會保留其摘要文字，只會失去加密負載與 id（沒有可讀文字的項目會整個丟棄），而在 `/v1/messages` 後續請求中，thinking 區塊會整個丟棄。其餘對話不受影響，請求會依正常路由策略送往健康部署，而模型會在該輪重新推理。它回傳的 reasoning 項目會帶有提供該項目的部署 id，因此後續輪次會固定在那裡。每個降級輪次都會記錄一則 router 警告，因此當跨輪次的推理連續性對您很重要時，請留意：
 
@@ -1332,7 +1353,44 @@ EncryptedContentAffinityCheck: model_id=<id> cannot serve group <model> and no d
 
 只有同儕才能在這類輪次中保留推理。在自動路由器上，`complexity_router_config.session_affinity: true` 會保留一個會話，並在產生這些項目的層級上帶有 `session_id`（請參閱 [自動路由](./proxy/auto_routing.md)），因此該輪次通常會留在原始來源，儘管升級與路由外掛程式仍可能將其移動。v1.103.x 以前的版本在沒有同儕的情況下，會讓已降溫的來源以 429 或 503 失敗，而不是提供該輪請求；v1.102.0 之前的版本則會以相同方式讓已移除的來源或群組變更失敗
 
+不論是否開啟此檢查，相同的剝除都會在每個備援跳躍上執行：跳到下一個 `order` 的[以順序為基礎的跳躍](./proxy/load_balancing.md#how-order-based-fallback-works)、跳到另一個模型群組的已設定 [`fallbacks`](./proxy/reliability.md) 跳躍，以及對在完成前中斷的 Responses 串流所做的重試。跳躍會丟棄其目標無法解密的 reasoning 項目並保留其摘要，因此從 OpenAI 跳到 Bedrock，或在同一提供者的兩把金鑰之間跳躍時，該輪請求會得到回應，而不是以 `invalid_encrypted_content` 失敗。此行為沒有個別部署的開關。未開啟檢查時，項目不帶有來源標記，因此跳躍會將每個項目都歸屬於剛失敗的部署：跳到具有相同 `api_base` 與 `api_key` 的部署會保留它們，任何其他跳躍都會丟棄它們，包括跳躍目標自己在先前輪次產生的項目；而跳躍後的下一輪會先將跳躍目標的推理重播到 `order: 1`，在請求再次跳躍之前先在該部署上失敗。這類跳躍只會記錄其 `Falling back to model_group` 行
+
+即使是有順序的雙提供者群組，也請開啟此檢查。它的標記會指出產生每個項目的部署，因此跳躍後的下一輪能保留回應它的部署的推理，不需要先有一次失敗的呼叫；跳躍時也會記錄上方的警告；而當 `order: 1` 已降溫、請求直接被派送到 `order: 2` 時（沒有跳躍，也就沒有跳躍剝除），會透過固定丟棄該部署無法解密的內容，而不是失敗。v1.105.x 以前的版本會在跳躍時重播失敗部署的推理，因此目標會回應 400（OpenAI 為 `invalid_encrypted_content`，Bedrock 為 `invalid encrypted reasoning`）；開啟檢查時，以順序為基礎的跳躍則改回應 429 `No deployments available`
+
 可透過 `POST /config/update` 在運行中的 proxy 上開啟或關閉此檢查，請參閱 [執行階段變更 affinity 設定](./routing.md#settings)
+
+### 宣告共用加密邊界 {#declaring-a-shared-encryption-boundary}
+
+<SinceVersion v="1.110.0" /> 有些部署即使 `api_base` 不同，也能解密彼此的推理。同一 OpenAI 組織的區域端點是常見例子，因為 OpenAI 會依組織加密推理。為它們各自設定相同的 `model_info.encrypted_content_boundary`，LiteLLM 就會將它們視為同儕，因此來源無法提供該輪請求的後續請求，能在同儕上保留其加密推理，而不是重新推理。此行為適用於上方的同儕搜尋、跨模型群組，以及以順序為基礎與 `fallbacks` 跳躍上的剝除。來源本身只要仍在健康池中，仍會優先。
+
+當兩個部署都設定了此鍵時，只有在值相符時它們才是同儕，不論其 `api_base` 與 `api_key` 為何。當任一方未設定時，則比照以往，由 `api_base` 與 `api_key` 是否相符決定。這個值是您自行選取的名稱，LiteLLM 不會向提供者核對，因此請只將同一個值給真正共用同一組織的部署。位於錯誤邊界的部署會收到它無法解密的推理，該輪請求會以 `invalid_encrypted_content` 失敗，而不是以全新推理提供。
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: {{openai_large}}
+    litellm_params:
+      model: openai/{{openai_large}}
+      api_base: https://<region-1 endpoint>/v1
+      api_key: os.environ/OPENAI_API_KEY
+      order: 1
+    model_info:
+      id: region-1
+      encrypted_content_boundary: org-1
+
+  - model_name: {{openai_large}}
+    litellm_params:
+      model: openai/{{openai_large}}
+      api_base: https://<region-2 endpoint>/v1
+      api_key: os.environ/OPENAI_API_KEY
+      order: 2
+    model_info:
+      id: region-2
+      encrypted_content_boundary: org-1
+
+router_settings:
+  optional_pre_call_checks:
+    - encrypted_content_affinity
+```
 
 ### 組態 {#configuration-1}
 
@@ -1423,7 +1481,7 @@ litellm --config config.yaml
 |---------------|----------|-------|--------------|
 | **`encrypted_content_affinity`** | **[推薦]** 具有不同 API 金鑰的多區域 Responses API | 僅限有追蹤加密項目的請求 | ✅ 無（精準固定） |
 | `responses_api_deployment_check` | 當 `previous_response_id` 可用時 | 具有 `previous_response_id` 的請求 | ✅ 無 |
-| `session_affinity` | 以工作階段為基礎的應用程式 | 所有具有相同 `session_id` 的請求 | ⚠️ 會依工作階段數量降低配額 |
+| `session_affinity` | 以工作階段為基礎的應用程式 | 所有具有相同 `session_id` 的請求 | 會依工作階段數量降低配額 |
 | `deployment_affinity` | 簡單的黏著式工作階段 | 來自相同 API 金鑰的所有請求 | ❌ 會依使用者數量降低配額 |
 
 ## 按模型群組的親和性組態 {#per-model-group-affinity-configuration}

@@ -1,5 +1,6 @@
 ---
-title: "v1.91.1 - DB Model Config 一致性與 OTel 錯誤 span"
+title: "LiteLLM v1.91.1 - DB Model Config 一致性與 OTel 錯誤 span"
+description: "修正儲存在資料庫中的模型設定，使其與 YAML 模型一致。恢復 OpenTelemetry v2 錯誤 span 的完整錯誤屬性集。"
 slug: "v1-91-1"
 date: 2026-07-08T23:01:36
 authors:

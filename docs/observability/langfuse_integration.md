@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Langfuse 追蹤：設定"
+sidebar_label: "Langfuse"
+description: "從 Python SDK 或 AI 閘道將 LiteLLM 追蹤傳送到 Langfuse，可依請求設定追蹤 ID、使用者 ID、標籤與中繼資料，並遮蔽訊息。"
+---
 import Image from '@theme/IdealImage';
 
 # Langfuse {#langfuse}
@@ -13,6 +18,8 @@ Langfuse（[GitHub](https://github.com/langfuse/langfuse)）是一個開源的 L
 
 對於 Langfuse v3 和 v4，我們建議使用 [OpenTelemetry v2 指南](./opentelemetry_v2#2-send-traces-to-a-specific-tool-presets) 中的 `langfuse_otel` 預設設定。這能提供更好的 span 品質、更低的延遲，以及原生 OpenTelemetry 語意。
 
+正在從以 SDK 為基礎的 `langfuse` 回呼移轉嗎？請先閱讀 [Langfuse SDK 至 OpenTelemetry v2 移轉指南](./langfuse_to_otel_v2_migration)，了解擷取成本、伺服器相容性、內容擷取與中繼資料的變更。除非您需要在 Langfuse 中查看完整的請求樹，否則請使用 `llm_only`。
+
 以下 SDK 回呼（`langfuse`）需要 Langfuse Python SDK v4（`langfuse>=4.7,<5`）。它會透過 LiteLLM 自己的 OpenTelemetry 管線將追蹤傳送至 Langfuse 的 OTLP 端點，因此追蹤幾乎即時顯示，並且只使用該 SDK 的 REST 用戶端來進行提示管理與憑證檢查。批次大小與提示快取 TTL 會透過 `LANGFUSE_FLUSH_AT` 和 `LANGFUSE_PROMPT_CACHE_DEFAULT_TTL_SECONDS` 調整（請參閱 [config settings](../proxy/config_settings)）。
 
 自架的 Langfuse 必須是 3.63.0 或更新的伺服器版本才能使用 SDK v4，依據 [Langfuse 相容性矩陣](https://langfuse.com/self-hosting/upgrade/versioning#sdk-server)；OSS v2 伺服器不會提供回呼匯出到的 `/api/public/otel/v1/traces` 路由，因此追蹤會被以 404 拒絕，而 proxy 會記錄該拒絕。請先升級伺服器，再升級 LiteLLM，或在此之前先維持先前的 LiteLLM 版本。Langfuse 前方的 ingress 或反向 proxy 若有 request body 大小限制，對於過大的批次會回應 413；此回呼會將該批次切成兩半後重新傳送，而只有單一 span 自身就超過限制時才會被捨棄，並記錄錯誤。
@@ -21,7 +28,7 @@ Langfuse（[GitHub](https://github.com/langfuse/langfuse)）是一個開源的 L
 
 ## 與 LiteLLM Proxy（LLM 閘道）搭配使用 {#usage-with-litellm-proxy-llm-gateway}
 
-👉 [**請透過此連結開始使用 LiteLLM Proxy server 將記錄傳送到 langfuse**](../proxy/logging)
+[**請透過此連結開始使用 LiteLLM Proxy server 將記錄傳送到 langfuse**](../proxy/logging)
 
 若要將不同團隊或虛擬金鑰路由到不同的 Langfuse 專案，請參閱 [依 Team/Key 的記錄](../proxy/team_logging)。Team 預設值位於受信任的 `config.yaml`（其中 `os.environ/...` 參照會由 gateway 解析），而每個 key 的回呼則透過 `/key/generate` 或 `/key/update` 以解析後的憑證值佈建；這些是 key 上儲存的設定，而非每次請求的憑證。
 
@@ -42,7 +49,7 @@ uv add "langfuse>=4.7,<5" litellm
 ### 快速開始 {#quick-start}
 只需 2 行程式碼，即可透過 Langfuse 立即記錄您的回應，**涵蓋所有提供者**：
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/logging_observability/LiteLLM_Langfuse.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/logging_observability/LiteLLM_Langfuse.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -72,7 +79,7 @@ litellm.success_callback = ["langfuse"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -104,7 +111,7 @@ litellm.success_callback = ["langfuse"]
 response = completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
   metadata = {
     "generation_name": "litellm-ishaan-gen", # set langfuse generation name
@@ -139,7 +146,7 @@ litellm.success_callback = ["langfuse"]
 response = completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ],
   metadata={
       "generation_name": "ishaan-test-generation",  # set langfuse Generation Name
@@ -351,6 +358,6 @@ chat(messages)
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [預約 Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約 Demo](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

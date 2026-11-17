@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI 閘道使用 Tensormesh API"
+sidebar_label: "Tensormesh"
+description: "透過 Python SDK 或 AI 閘道，以 tensormesh/ 前綴經由 LiteLLM 呼叫 Tensormesh 無伺服器模型，支援串流、工具呼叫、推理與 Responses。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

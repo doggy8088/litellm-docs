@@ -1,3 +1,9 @@
+---
+title: "Vertex AI 合作夥伴模型：Claude、DeepSeek、Llama"
+sidebar_label: "Vertex AI - Anthropic, DeepSeek, Model Garden, xAI"
+description: "透過 LiteLLM 並以 config.yaml 設定，在 Gemini Enterprise Agent Platform（原 Vertex AI）上呼叫 Claude、DeepSeek、Llama、Mistral、Qwen 與 Grok。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -17,6 +23,20 @@ import TabItem from '@theme/TabItem';
 | Qwen | `vertex_ai/qwen/*` | [Vertex AI - Qwen 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen) |
 | OpenAI (GPT-OSS) | `vertex_ai/openai/gpt-oss-*` | [Vertex AI - GPT-OSS 模型](https://console.cloud.google.com/vertex-ai/publishers/openai/model-garden/) |
 | xAI (Grok) | `vertex_ai/xai/{MODEL}` | [xAI 模型（含 Vertex）](https://docs.x.ai/docs/models), [Vertex AI Model Garden](https://cloud.google.com/vertex-ai/generative-ai/docs/model-garden/explore-models) |
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`vertex_ai/<family>-latest` 名稱會跟隨某個模型家族，隨著 LiteLLM 將其移至較新的模型而更新，因此您的應用程式可以維持單一模型字串。其用法與其他 Vertex AI 模型名稱相同。LiteLLM 會將目前的目標模型傳送給 Vertex AI，並以該模型的價格計費。別名的運作方式與跨提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `vertex_ai/claude-opus-latest` | Claude Opus |
+| `vertex_ai/claude-sonnet-latest` | Claude Sonnet |
+| `vertex_ai/claude-haiku-latest` | Claude Haiku |
+| `vertex_ai/claude-fable-latest` | Claude Fable |
+| `vertex_ai/grok-latest` | Grok |
 
 ## Vertex AI - Anthropic (Claude) {#vertex-ai---anthropic-claude}
 
@@ -88,7 +108,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "anthropic-vertex", # 👈 the 'model_name' in config
+            "model": "anthropic-vertex", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -369,7 +389,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "anthropic-llama", # 👈 the 'model_name' in config
+            "model": "anthropic-llama", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -463,7 +483,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "vertex-mistral", # 👈 the 'model_name' in config
+            "model": "vertex-mistral", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -547,7 +567,7 @@ curl -X POST 'http://0.0.0.0:4000/completions' \
       -H "Authorization: Bearer $LITELLM_API_KEY" \
       -H 'Content-Type: application/json' \
       -d '{
-            "model": "vertex-codestral", # 👈 the 'model_name' in config
+            "model": "vertex-codestral", # the 'model_name' in config
             "prompt": "def is_odd(n): \n return n % 2 == 1 \ndef test_is_odd():", 
             "suffix":"return True",                                              # optional
             "temperature":0,                                                     # optional
@@ -712,7 +732,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "vertex-qwen", # 👈 the 'model_name' in config
+            "model": "vertex-qwen", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -791,7 +811,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "gpt-oss", # 👈 the 'model_name' in config
+            "model": "gpt-oss", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",

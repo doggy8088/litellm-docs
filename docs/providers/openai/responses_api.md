@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 OpenAI Responses API"
+sidebar_label: "OpenAI - 回應 API"
+description: "透過 Python SDK 或 AI Gateway，經由 LiteLLM 使用 OpenAI Responses API，支援可重複使用的提示詞、電腦操作、MCP 工具、函式呼叫與工具搜尋。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -695,6 +701,8 @@ print(final_response.output)
 工具搜尋可讓模型在執行階段動態載入工具，而不是在提示中傳送每個工具定義。將函式分組為 **namespaces**，並以 `defer_loading: true` 標記它們，模型就只會載入實際需要的 schema，節省 token。
 
 需要 `gpt-5.4` 或更新版本。請參閱 [OpenAI 工具搜尋文件](https://developers.openai.com/api/docs/guides/tools-tool-search) 取得完整詳細資訊。
+
+Claude 模型在 `/v1/responses` 上同樣可使用 `tool_search` 工具。請參閱 [透過 Responses API 在 Claude 上使用工具搜尋](../anthropic_tool_search.md#responses-api)。
 
 <Tabs>
 <TabItem value="sdk" label="LiteLLM Python SDK">

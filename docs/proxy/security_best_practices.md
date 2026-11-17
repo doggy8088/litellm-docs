@@ -10,7 +10,7 @@ LiteLLM 將安全性列為首要優先事項。請在正式環境與企業部署
 
 ## 2. 執行受支援的穩定版本 {#2-run-a-supported-stable-release}
 
-請保持在最新的穩定版本，並將 LiteLLM 升級納入您 नियमित的修補流程。請鎖定精確版本或映像 digest，而不是使用 `latest`，並在部署前[驗證 Docker 映像簽章](./docker_image_security)。
+請保持在最新的穩定版本，並將 LiteLLM 升級納入您 定期的修補流程。請鎖定精確版本或映像 digest，而不是使用 `latest`，並在部署前[驗證 Docker 映像簽章](./docker_image_security)。
 
 請參閱 [LiteLLM 發行週期](./release_cycle) 以了解目前的發行排程。
 
@@ -73,7 +73,7 @@ general_settings:
 
 將提供者憑證、master key 與 salt key 儲存在您平台的秘密儲存庫或受支援的 [secret manager](../secret_managers/overview) 中。請勿將密鑰提交到 `config.yaml` 或原始碼控制系統。請遵循 [master key 旋轉指南](./master_key_rotations)，且在憑證已儲存後不要旋轉 `LITELLM_SALT_KEY`。
 
-啟用 [稽核記錄](./multiple_admins)，並檢閱管理變更，例如金鑰建立、金鑰刪除、角色變更與團隊更新。
+啟用 [稽核記錄](./audit_logs)，並檢閱管理變更，例如金鑰建立、金鑰刪除、角色變更與團隊更新。
 
 ## 7. 避免透過錯誤回應與標頭揭露內部資訊 {#7-avoid-disclosing-internals-through-error-responses-and-headers}
 

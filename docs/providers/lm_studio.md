@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 LM Studio：本機模型設定"
+sidebar_label: "LM Studio"
+description: "透過 Python SDK 或 AI Gateway，讓 LiteLLM 指向您機器上於 LM Studio 載入的模型，用於聊天、串流、embeddings 與 JSON Schema 輸出。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

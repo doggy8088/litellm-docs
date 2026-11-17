@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 GitHub Models API：設定"
+sidebar_label: "Github"
+description: "從 Python SDK 或 AI 閘道呼叫 GitHub Models（例如 Llama 3.2 11B Vision 與 Mixtral），支援串流、工具呼叫，並附 LangChain 用戶端範例。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

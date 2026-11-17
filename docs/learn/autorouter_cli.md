@@ -19,7 +19,7 @@ description: 使用 lite CLI 在本機針對您的實際 proxy 嘗試 LiteLLM �
 `lite autoroute start` 會在您的電腦上執行一次性 proxy，因此需要完整的 proxy 執行環境：來自 [CLI quick start](../proxy/management_cli.md#quick-start) 的精簡 `install-cli.sh` 一行指令只會安裝 `litellm[cli]`，這裡還不夠，而下方指令會以新的安裝取代它。它會透過單一 curl 指令從 `main` 安裝 `litellm[proxy]`；如果 `uv` 不存在，會自動啟動。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/scripts/install.sh | \
+curl -fsSL https://raw.githubusercontent.com/BerriAI/litellm/main/litellm/scripts/install.sh | \
   LITELLM_CLI_REF=main sh
 ```
 

@@ -1,5 +1,6 @@
 ---
-title: "v1.74.9-stable - 自動路由器"
+title: "LiteLLM v1.74.9-stable - 自動路由器"
+description: "新增依內容路由請求的 Auto-Router、模型層級防護欄、MCP 標頭傳遞與 Recraft 圖片生成。"
 slug: "v1-74-9"
 date: 2025-07-27T10:00:00
 authors:

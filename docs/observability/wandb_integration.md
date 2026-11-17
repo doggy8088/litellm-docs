@@ -1,3 +1,8 @@
+---
+title: "LiteLLM Python SDK 的 Weights & Biases 記錄"
+sidebar_label: "Weights & Biases"
+description: "安裝 wandb 並設定金鑰後，透過 wandb 回呼將 LiteLLM Python SDK 在所有提供者的回應記錄至 Weights & Biases。"
+---
 import Image from '@theme/IdealImage';
 
 # Weights & Biases {#weights--biases}
@@ -46,13 +51,13 @@ litellm.success_callback = ["wandb"]
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
 
 ## 支援與聯絡 founders {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

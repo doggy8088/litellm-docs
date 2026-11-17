@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 OpenAI 相容端點"
+sidebar_label: "OpenAI 相容端點"
+description: "透過 Python SDK 或 AI Gateway，以 openai/ 前綴與您的 api_base，經由 LiteLLM 呼叫任何 OpenAI 相容端點，適用於 completion 與 embedding。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -143,5 +149,5 @@ model_list:
       model: openai/google/gemma
       api_base: http://my-custom-base
       api_key: "" 
-      supports_system_message: False # 👈 KEY CHANGE
+      supports_system_message: False # KEY CHANGE
 ```

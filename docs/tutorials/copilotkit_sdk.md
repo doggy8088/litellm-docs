@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 
 透過 LiteLLM Proxy 使用 CopilotKit SDK 搭配任何 LLM 提供者。
 
-> **注意：** CopilotKit SDK 與 LiteLLM Proxy 的整合可搭配 LiteLLM v1.81.7-nightly 或更高版本使用。
+> **注意：** CopilotKit SDK 可搭配 LiteLLM Proxy <SinceVersion v="1.81.7-nightly" />。
 
 ## 快速開始 {#quick-start}
 

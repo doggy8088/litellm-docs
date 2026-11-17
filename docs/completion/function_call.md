@@ -24,8 +24,8 @@ assert litellm.supports_parallel_function_calling(model="gpt-4") == False
 ## 平行函式呼叫 {#parallel-function-calling}
 平行函式呼叫是模型同時執行多個函式呼叫的能力，讓這些函式呼叫的影響與結果能夠平行解析
 
-## 快速開始 - gpt-3.5-turbo-1106 {#quick-start---gpt-35-turbo-1106}
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/Parallel_function_calling.ipynb">
+## 快速開始 {#quick-start}
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/Parallel_function_calling.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -35,7 +35,7 @@ assert litellm.supports_parallel_function_calling(model="gpt-4") == False
 - 步驟 2：解析模型回應中的輸出 - 使用模型提供的參數執行 `get_current_weather`
 - 步驟 3：將執行 `get_current_weather` 函式的輸出傳送給模型
 
-### 完整程式碼 - 使用 `gpt-3.5-turbo-1106` 的平行函式呼叫 {#full-code---parallel-function-calling-with-gpt-35-turbo-1106}
+### 完整程式碼 - 平行函式呼叫 {#full-code---parallel-function-calling}
 
 ```python
 import litellm
@@ -133,7 +133,7 @@ test_parallel_function_call()
 ```
 
 ### 說明 - 平行函式呼叫 {#explanation---parallel-function-calling}
-以下是上述程式碼片段中，使用 `gpt-3.5-turbo-1106` 進行平行函式呼叫時所發生內容的說明
+以下是上述程式碼片段中，使用 `{{openai_small}}` 進行平行函式呼叫時所發生內容的說明
 ### 步驟 1：`tools` 設定為 `get_current_weather` 的 litellm.completion() {#step1-litellmcompletion-with-tools-set-to-get_current_weather}
 ```python
 import litellm

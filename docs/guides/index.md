@@ -1,78 +1,50 @@
 ---
-title: 指南
+title: 功能
 sidebar_label: 總覽
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
-**指南** 是依您使用 LiteLLM 想完成的工作來組織的重點參考：發出請求、使用工具、處理媒體、管理上下文，或安全地操作閘道。
+**功能** 是 LiteLLM 跨提供者對您的請求所做的處理：負載平衡與備援、串流、工具呼叫、媒體輸入、提示詞快取等。大多數頁面同時提供 Python SDK 的程式碼與 AI Gateway 的設定方式。僅適用於單一產品的功能，會放在該產品的專區中。
 
-> 您是 LiteLLM 新手，或不確定是否需要先走 SDK 或 Gateway 路徑？請從 [了解 →](/docs/learn) 開始
-
----
-
-## 使用 LiteLLM 建置 {#build-with-litellm}
+> 您是 LiteLLM 新手嗎？請從 [AI Gateway 快速入門](/docs/proxy/docker_quick_start) 或 [Python SDK 快速入門](/docs/learn/sdk_quickstart) 開始。
 
 <NavigationCards
 columns={3}
 items={[
   {
-    icon: "⚡",
-    title: "核心請求",
-    description: "串流、批次處理、結構化輸出，以及推理行為。",
+    title: "路由與可靠性",
+    description: "負載平衡、備援、用戶端備援、逾時，以及路由規則。",
+    to: "/docs/proxy/load_balancing",
+  },
+  {
+    title: "請求與回應",
+    description: "串流、批次處理、結構化輸出，以及推理。",
     to: "/docs/guides/core_request_response_patterns",
   },
   {
-    icon: "🛠️",
     title: "工具呼叫",
-    description: "函式呼叫、網頁工具、攔截模式、computer use、code interpreter，以及工具呼叫衛生。",
+    description: "函式呼叫、網頁搜尋與擷取、computer use、code interpreter，以及知識庫。",
     to: "/docs/guides/tools_integrations",
   },
   {
-    icon: "🖼️",
-    title: "多模態 I/O",
-    description: "視覺、音訊、PDF、圖片生成，以及影片生成。",
+    title: "多模態",
+    description: "視覺、音訊、PDF 輸入，以及聊天中的圖片生成。",
     to: "/docs/guides/multimodal_io",
   },
   {
-    icon: "📚",
-    title: "檢索與知識",
-    description: "向量儲存、檔案搜尋、引文，以及知識庫路由。",
-    to: "/docs/guides/retrieval_knowledge",
-  },
-  {
-    icon: "🧠",
     title: "提示詞與上下文",
-    description: "提示詞快取、修剪、格式化、assistant 預填，以及預測輸出。",
+    description: "提示詞快取、assistant 預填，以及預測輸出。",
     to: "/docs/guides/prompts_context",
   },
-]}
-/>
-
----
-
-## 操作與擴充 {#operate--extend}
-
-<NavigationCards
-columns={3}
-items={[
   {
-    icon: "🎛️",
-    title: "相容性與可擴充性",
-    description: "提供者特定參數、模型別名、微調模型，以及轉接器。",
+    title: "相容性",
+    description: "提供者特定參數、不支援的參數，以及訊息清理。",
     to: "/docs/guides/compatibility_extensibility",
   },
-  {
-    icon: "🧪",
-    title: "可靠性、測試與支出",
-    description: "重試、備援、模擬回應，以及預算控制。",
-    to: "/docs/guides/reliability_testing_spend",
-  },
-  {
-    icon: "🔒",
-    title: "安全性與網路",
-    description: "SSL、自訂 CA 套件、HTTP proxy 設定，以及每個服務的驗證。",
-    to: "/docs/guides/security_network",
-  },
 ]}
 />
+
+## 先前放在這裡的其他頁面 {#other-pages-that-were-here}
+
+[重試與備援](/docs/completion/reliable_completions)、[模擬回應](/docs/completion/mock_requests)、[訊息修剪](/docs/completion/message_trimming)、[模型別名](/docs/completion/model_alias) 與 [提示詞格式化](/docs/completion/prompt_formatting) 位於 [Python SDK](/docs/python_sdk) 專區。[SSL 與 HTTP 代理設定](/docs/guides/security_settings) 位於 AI Gateway 設定頁面，[自訂格式](/docs/extras/creating_adapters) 則與自訂外掛放在一起。[微調模型](/docs/guides/finetuned_models) 與提供者放在一起，[Veo 影片生成](/docs/proxy/veo_video_generation) 則與影片端點放在一起。

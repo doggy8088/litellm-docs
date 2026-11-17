@@ -1,5 +1,6 @@
 ---
-title: "v1.88.3 - 防護欄輪詢與 Hook 修正"
+title: "LiteLLM v1.88.3 - 防護欄輪詢與 Hook 修正"
+description: "修正防護欄迴歸問題：DB 防護欄在每次輪詢時重新初始化，且模型層級的 pre-call hook 執行超過一次。"
 slug: "v1-88-3"
 date: 2026-06-17T12:44:42
 authors:

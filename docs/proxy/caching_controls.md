@@ -288,7 +288,7 @@ litellm_settings:
   set_verbose: True
   cache: True
   cache_params:
-    mode: default_off # 👈 Key change cache is default_off
+    mode: default_off # Key change cache is default_off
 ```
 
 2. **在快取預設關閉時 opt in 使用快取**

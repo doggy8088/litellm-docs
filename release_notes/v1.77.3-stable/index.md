@@ -1,5 +1,6 @@
 ---
-title: "v1.77.3-stable - 以優先權為基礎的速率限制"
+title: "LiteLLM v1.77.3-stable - 以優先權為基礎的速率限制"
+description: "為每個金鑰的 TPM 與 RPM 容量新增優先權配額保留，並使請求處理效能提升 550 RPS。"
 slug: "v1-77-3"
 date: 2025-09-21T10:00:00
 authors:

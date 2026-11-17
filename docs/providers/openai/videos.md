@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 OpenAI 影片生成 (Sora)"
+sidebar_label: "OpenAI 影片生成"
+description: "透過 Python SDK 或 AI Gateway，經由 LiteLLM 的 /v1/videos 端點以 OpenAI Sora 生成影片：建立、檢查狀態、下載與重新混音影片。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

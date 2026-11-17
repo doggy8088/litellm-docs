@@ -1,3 +1,9 @@
+---
+title: "LiteLLM AI 閘道上的 Aim Security 防護欄"
+sidebar_label: "Aim Security"
+description: "將 Aim Security 防護欄加入 LiteLLM AI 閘道：建立 Aim Guard、調整其偵測項目，並依虛擬金鑰別名設定每把金鑰的政策。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

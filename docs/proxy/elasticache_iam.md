@@ -198,11 +198,11 @@ curl -s -X GET 'http://localhost:4000/cache/ping' \
 接著以相同的 completion 送出兩次，確認快取確實正在提供流量。第二次
 呼叫會回傳相同的 response id，且耗時只是一小部分
 
-```shell
+```shell keep-model-ids
 curl -s -X POST 'http://localhost:4000/v1/chat/completions' \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "ping"}], "temperature": 0}'
+  -d '{"model": "gpt-5.4-mini", "messages": [{"role": "user", "content": "ping"}], "temperature": 0}'
 ```
 
 ## 設定 {#settings}

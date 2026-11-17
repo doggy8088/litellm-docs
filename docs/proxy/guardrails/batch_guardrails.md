@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 上 Batch API 檔案的防護欄"
+sidebar_label: "批次 API 防護欄"
+description: "在 LiteLLM AI 閘道上對 Batch API 輸入檔中的每筆記錄執行防護欄，讓批次作業無法跳過適用於聊天呼叫的檢查。"
+---
+
 # 批次 API 防護欄 {#batch-api-guardrails}
 
 保護批次輸入檔中的記錄，這樣批次作業就不會把內容送過原本會在 `/chat/completions` 阻擋相同內容的防護欄。

@@ -7,21 +7,36 @@ import Image from '@theme/IdealImage';
 
 # 將用戶端連線至 LiteLLM {#connect-a-client-to-litellm}
 
-當您的 LiteLLM 閘道執行中時，程式開發工具或聊天應用程式就可以將模型流量透過它進行路由。每個用戶端會根據不同情況，以虛擬金鑰或登入權杖進行驗證，而本節中的每個頁面都會逐步說明其設定
+這些指南假設您已有一個執行中的 [LiteLLM 閘道](../docker_quick_start.md)。每個用戶端會根據不同情況，以虛擬金鑰或登入權杖進行驗證，而本節中的每個頁面都會逐步說明其設定。
 
 **LLM 路由**會將用戶端的模型流量指向 LiteLLM。用戶端維持其原本的介面，但每個請求都會經過閘道，因此您可透過單一 API 介面存取 100+ 個模型，並同時獲得支出追蹤、預算與防護欄。請從您的設定中設置閘道基礎 URL 與 `model_name`，然後使用該用戶端支援的憑證
 
 **MCP** 會將用戶端連線到 LiteLLM 的 [MCP 閘道](../../mcp.md)，讓其可呼叫您在那裡公開的工具。用戶端透過 MCP 端點連到 LiteLLM，並以虛擬金鑰進行驗證；LiteLLM 會將請求分發到您註冊的上游 MCP 伺服器，並在過程中套用存取控制、成本追蹤與防護欄。
+
+## 選擇執行環境 {#choose-a-harness}
+
+在側邊欄的 **Client Setup** 下展開您的執行環境，選擇用戶端，然後選取 **SSO** 或 **Virtual keys**。
+
+| 執行環境 | 用戶端 | SSO | Virtual keys |
+|---|---|---|---|
+| Claude | Desktop & Cowork | [SSO](../../tutorials/claude_desktop_cowork.md) | [Virtual keys](./claude_desktop.md) |
+| Claude | Code | [SSO](../../tutorials/claude_code_gateway.md) | [Virtual keys](./claude_code.md) |
+| Codex | Desktop | [SSO](./codex_chatgpt_desktop_sso.md) | [Virtual keys](./codex_chatgpt_desktop.md) |
+| Codex | CLI | [SSO](./codex_cli_sso.md) | [Virtual keys](./codex_cli.md) |
+| Hermes | CLI | [SSO](./hermes_sso.md) | [Virtual keys](./hermes.md) |
+
+**Desktop & Cowork** 指南使用一份共用的閘道設定，包括 Code 工作階段，以及啟用時的 Chat。請參閱 [Claude 官方部署總覽](https://claude.com/docs/third-party/claude-desktop/overview)。其他執行環境的下拉選單會連結到各自的設定指南：[Cursor](../../tutorials/cursor_integration.md)、[Gemini CLI](../../tutorials/litellm_gemini_cli.md)、[GitHub Copilot](../../tutorials/github_copilot_integration.md)、[OpenClaw](../../tutorials/openclaw_integration.md)、[OpenCode](../../tutorials/opencode_integration.md) 與 [Qwen Code](../../tutorials/litellm_qwen_code_cli.md)。
 
 ## 每個用戶端支援哪些功能 {#what-each-client-supports}
 
 | 用戶端 | 介面 | LLM 路由 | MCP |
 |---|---|---|---|
 | [Claude Code](./claude_code.md) | CLI | 是 | 是 |
-| [Claude Desktop](./claude_desktop.md) | GUI | 是 | 是 |
+| [Claude Desktop & Cowork](./claude_desktop.md) | GUI | 是 | 是 |
 | [Codex (CLI)](./codex_cli.md) | CLI | 是，透過 `/v1/responses` | 是 |
 | [Codex (ChatGPT Desktop)](./codex_chatgpt_desktop.md) | GUI | 是，透過 `/v1/responses` | 是 |
 | 一般 ChatGPT 對話（ChatGPT Desktop） | GUI | 否，它們會保持在您的 ChatGPT 工作區中 | 此處未涵蓋 |
+| [Hermes](./hermes.md) | CLI | 是，透過 `/v1/chat/completions` | 此處未涵蓋 |
 
 ## 兩種憑證，兩次跳轉 {#two-credentials-two-hops}
 
@@ -33,10 +48,11 @@ import Image from '@theme/IdealImage';
 
 | 用戶端 | 靜態金鑰 | 登入，不需手動發行長效金鑰 | 授權 | 一鍵設定 |
 |---|---|---|---|---|
-| Claude Code | `ANTHROPIC_AUTH_TOKEN` 中的虛擬金鑰 | [Claude Code Gateway](../../tutorials/claude_code_gateway.md) 裝置登入、將 [`lite auth print-token`](../cli_sso.md) 作為 `apiKeyHelper`，或使用 [IdP JWT 輔助工具](../../tutorials/claude_code_okta_sso.md) | 透過 IdP 的 Gateway 裝置登入與 `lite login`：最多 5 位 SSO 使用者免費，超過則需 Enterprise。IdP JWT 輔助工具：Enterprise | `lite configure claude` |
-| Claude Desktop | Gateway API 金鑰 | [互動式 OIDC](../../tutorials/claude_desktop_cowork.md) | Enterprise（JWT 驗證） | 無 |
-| Codex CLI | 透過 `env_key` 的虛擬金鑰 | [將 `lite auth print-token` 作為提供者 `auth` 指令](./codex_cli.md#sign-in-with-litellm-sso) | 透過 IdP 的 `lite login`：最多 5 位 SSO 使用者免費，超過則需 Enterprise | `lite configure codex` |
-| ChatGPT Desktop 中的 Codex | 透過 `env_key` 與 `~/.codex/.env` 的虛擬金鑰 | 相同的 `auth` 指令，因為應用程式會讀取相同的 `config.toml` | 透過 IdP 的 `lite login`：最多 5 位 SSO 使用者免費，超過則需 Enterprise | 與 Codex CLI 相同 |
+| Claude Code | `ANTHROPIC_AUTH_TOKEN` 中的虛擬金鑰 | [Claude 應用程式閘道 SSO、Lite CLI SSO 或 Claude 訂閱](../../tutorials/claude_code_gateway.md) | 透過 IdP 的 SSO：最多 5 位使用者免費，超過則需 Enterprise | `lite configure claude` |
+| Claude Desktop & Cowork | Gateway API 金鑰 | [互動式 OIDC](../../tutorials/claude_desktop_cowork.md) | Enterprise（JWT 驗證） | 無 |
+| Codex CLI | 透過 `env_key` 的虛擬金鑰 | [將 `lite auth print-token` 作為提供者 `auth` 指令](./codex_cli_sso.md) | 透過 IdP 的 `lite login`：最多 5 位 SSO 使用者免費，超過則需 Enterprise | `lite configure codex` |
+| ChatGPT Desktop 中的 Codex | 透過 `env_key` 與 `~/.codex/.env` 的虛擬金鑰 | [相同的 `auth` 指令](./codex_chatgpt_desktop_sso.md)，因為應用程式會讀取相同的 `config.toml` | 透過 IdP 的 `lite login`：最多 5 位 SSO 使用者免費，超過則需 Enterprise | 與 Codex CLI 相同 |
+| Hermes CLI | 透過 `key_env` 的虛擬金鑰 | [將 `lite auth print-token` 作為 `key_cmd`](./hermes_sso.md) | 透過 IdP 的 `lite login`：最多 5 位 SSO 使用者免費，超過則需 Enterprise | 無 |
 
 每種登入流程都會使用與使用者 LiteLLM 身分與團隊相關聯的短效權杖。這些流程移除了管理員原本必須發行、分發與輪替的長效虛擬金鑰
 
@@ -48,8 +64,8 @@ import Image from '@theme/IdealImage';
 
 | 用戶端 | 與 LiteLLM 的通訊協定 | 最適合 | 主要限制 |
 |---|---|---|---|
-| Claude Code | Anthropic Messages、`/v1/messages` | Anthropic、Bedrock、Vertex AI 或 Azure Foundry 上的 Claude 模型 | 其他提供者會被轉譯，而各提供者的功能支援請見 [相容性矩陣](../../claude_code_compatibility.md)。Claude Code 在閘道工作階段中會關閉伺服器端 WebSearch，且提示快取 TTL 為 5 分鐘（[已知限制](../../tutorials/claude_code_gateway.md#known-limits)）。模型允許清單必須包含 Claude Code 傳送的模型名稱 |
-| Claude Desktop | Anthropic Messages、`/v1/messages`，以及來自 `/v1/models` 的模型 | Claude 模型 | 模型的 `model_name` 必須包含 `claude` 或 `anthropic` 才會出現在選擇器中。非 Claude 模型需要 `drop_params: true`，而 Claude for Teams 或 Enterprise 組織必須將閘道模型名稱加入允許清單（[選擇器中的模型](../../tutorials/claude_desktop_cowork.md#models-in-the-picker)） |
+| Claude Code | Anthropic Messages、`/v1/messages` | Anthropic、Bedrock、Vertex AI 或 Azure Foundry 上的 Claude 模型 | 其他提供者會被轉譯，而各提供者的功能支援請見 [相容性矩陣](../../claude_code_compatibility.md)。Claude Code 在閘道工作階段中會關閉伺服器端 WebSearch，且提示快取 TTL 為 5 分鐘（[已知限制](../../tutorials/claude_code_gateway_reference.md#known-limits)）。模型允許清單必須包含 Claude Code 傳送的模型名稱 |
+| Claude Desktop & Cowork | Anthropic Messages、`/v1/messages`，以及來自 `/v1/models` 的模型 | Claude 模型 | 模型的 `model_name` 必須包含 `claude` 或 `anthropic` 才會出現在選擇器中。非 Claude 模型需要 `drop_params: true`，而 Claude for Teams 或 Enterprise 組織必須將閘道模型名稱加入允許清單（[Claude 的模型設定](https://claude.com/docs/third-party/claude-desktop/configuration)） |
 | 一般 ChatGPT 對話 | 未路由 | 不適用 | 它們會保持在您的 ChatGPT 工作區中，因此 LiteLLM 不會追蹤或管理它們 |
 | Codex（CLI 與桌面版） | OpenAI Responses、`/v1/responses` | OpenAI 模型，原生使用 Responses API | 自訂 `model_name` 需要一筆 [模型目錄項目](./codex_cli.md#model-metadata-for-custom-aliases)；若沒有，Codex 會使用一般模型中繼資料。在測試中，shell 工具呼叫與後續回合在 OpenAI 路徑與轉譯後的 Anthropic 路徑上都可正常運作，而 Codex 網頁搜尋也可在 Anthropic 路徑上執行。現在尚未有 Codex 相容性矩陣，因此在部署前請先確認您路徑上的其他功能 |
 
@@ -69,10 +85,8 @@ import Image from '@theme/IdealImage';
 
 LiteLLM 在 MCP 端點上接受虛擬金鑰，格式可為 `Authorization: Bearer <key>` 或 `x-litellm-api-key: Bearer <key>`。設定 bearer token 選項時，請使用您的虛擬金鑰；用戶端會將其放在 `Authorization` 中傳送。設定自訂標頭時，建議使用 `x-litellm-api-key`，如此可保留 `Authorization` 供上游伺服器自身的 OAuth token 使用。端點與標頭的選擇請參閱 [MCP 設定參考](../../mcp_config_reference.md)。
 
-:::info 授予該金鑰存取 MCP 伺服器
+:::info MCP 先決條件
 
-虛擬金鑰只能看見已授權給它的 MCP 伺服器。若未授權，閘道會回應 `The key is not allowed to access the requested MCP servers: my_mcp_server`。請透過 `"object_permission": {"mcp_servers": ["my_mcp_server"]}` 在 `POST /key/generate`、其團隊，或使用 `allow_all_keys: true` 將伺服器設為公開來授予該金鑰存取權。詳細內容請見 [MCP 存取控制](../../mcp_control.md)。
+您的閘道管理員必須先[註冊 MCP 伺服器](../../mcp.md#adding-your-mcp)並[授予您的金鑰或團隊存取權](../../mcp_control.md)，您才能連線用戶端。
 
 :::
-
-如果您目前還沒有執行中的閘道，請先從 [部署閘道 -> 快速入門](../docker_quick_start.md) 開始，然後回到這裡連線您的用戶端。

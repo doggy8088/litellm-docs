@@ -6,7 +6,7 @@ authors:
   - krrish
   - ishaan-alt
 description: "June LiteLLM town hall 的回顧，涵蓋安全加強、零回歸承諾、78 項功能提交，以及閘道逐步遷移至 Rust。"
-tags: [townhall, security, reliability, product]
+tags: [townhall, reliability, product]
 hide_table_of_contents: false
 ---
 

@@ -1,4 +1,11 @@
+---
+title: "搭配 LiteLLM 使用 Serper Google Search API：設定"
+sidebar_label: "Serper 搜尋"
+description: "將 Serper 的 Google 結果加入 LiteLLM：在 Python SDK 中呼叫 search()，或在 AI 閘道上使用 /v1/search，並可使用國家、語言與時間篩選。"
+---
 # Serper 搜尋 {#serper-search}
+
+[Serper](https://serper.dev) 是 Google Search 結果的 API；LiteLLM 透過 Python SDK 中的單一 `search()` 呼叫，以及 AI 閘道上的 `/v1/search` 端點來提供它。
 
 **取得 API 金鑰：** [https://serper.dev](https://serper.dev)
 

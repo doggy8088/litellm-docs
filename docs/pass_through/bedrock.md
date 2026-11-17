@@ -9,7 +9,7 @@ Bedrock 的透傳端點 - 直接呼叫提供者特定端點，使用原生格式
 | 終端使用者追蹤 | ❌ | [如果您需要，請告訴我們](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html) |
 | 串流 | ✅ | |
 
-只要將 `https://bedrock-runtime.{aws_region_name}.amazonaws.com` 直接替換為 `LITELLM_PROXY_BASE_URL/bedrock` 🚀
+只要將 `https://bedrock-runtime.{aws_region_name}.amazonaws.com` 直接替換為 `LITELLM_PROXY_BASE_URL/bedrock`
 
 ## 總覽 {#overview}
 
@@ -184,6 +184,15 @@ curl -X POST 'http://0.0.0.0:4000/bedrock/model/my-claude-model/converse-stream'
 }'
 ```
 
+#### `/converse-stream` 上的 post_call 防護欄 {#post_call-guardrails-on-converse-stream}
+
+設在呼叫者金鑰上的 `post_call` 防護欄會在 `/converse-stream` 輸出串流的同時掃描它，方式與掃描 `/v1/chat/completions` 串流相同：
+
+- 使用 `streaming_buffer_until_moderated: false`（多數防護欄的預設值）時，代理會在 Bedrock 送出 frame 時即轉送，並每隔 `streaming_sampling_rate` 個 frame（預設 5）掃描一次文字，也會在結尾掃描。文字會在防護欄給出判定之前到達用戶端，且不會套用遮罩。每次掃描都會暫停串流，直到防護欄回應，因此緩慢的防護欄會拉長冗長回答的時間（使用 Bedrock 防護欄時，一段 700 字的回答約需 50 秒，而非 12 秒）；加入 `streaming_end_of_stream_only: true`，即可改為只在結尾掃描一次。
+- 使用 `streaming_buffer_until_moderated: true`（[Bedrock 防護欄](../proxy/guardrails/bedrock#streaming) 的預設值）時，代理會保留串流直到掃描完成，然後按內容區塊套用遮罩後送出。
+- 在第一個 frame 之後發生的封鎖，會以 AWS `validationException` 事件結束串流，AWS SDK 會將其擲出為帶有防護欄訊息的 `EventStreamError`。在第一個 frame 之前發生的封鎖則回傳 HTTP 錯誤。
+- 使用自己的 hook 而非 `apply_guardrail` 掃描回應的防護欄（例如未設定 `use_v2: true` 的 Noma 防護欄）、設定了 `mask_response_content: true` 的防護欄、設定了 `streaming_buffer_release_on_scan: true` 的保留型防護欄、設定了 `run_in_parallel: true` 的 post_call 防護欄，以及 post_call 原則管線，仍會保留整個串流並只掃描一次。對於 Noma，請設定 `use_v2: true`，以便在串流到達時即進行掃描。
+
 ### 使用 config.yaml 支援的 Bedrock 端點 {#supported-bedrock-endpoints-with-configyaml}
 
 使用 config.yaml 中的模型時，您可以呼叫任何 Bedrock 端點：
@@ -292,6 +301,51 @@ print(response_body['content'][0]['text'])
 ```
 
 Proxy 會自動在所有已設定的部署之間對您的 boto3 請求進行負載平衡。
+
+### config.yaml 模型上的 Bedrock 防護欄 {#bedrock-guardrails-on-configyaml-models}
+
+<SinceVersion v="1.108.0" />
+
+`config.yaml` 中模型（或在 UI 中新增的模型）上的 `guardrailConfig` 也適用於這些透傳路由，方式與在 `/v1/chat/completions` 上相同。
+
+```yaml showLineNumbers
+model_list:
+  - model_name: my-bedrock-model
+    litellm_params:
+      model: bedrock/us.anthropic.{{anthropic}}
+      aws_region_name: us-west-2
+      custom_llm_provider: bedrock
+```
+
+| 路由 | 代理如何送出防護欄 |
+|-------|-----------------------------------|
+| `/converse` | 請求 body 中的 `guardrailConfig` |
+| `/converse-stream` | 請求 body 中的 `guardrailConfig`，若您有設定，還包括 `streamProcessingMode` |
+| `/invoke`、`/invoke-with-response-stream` | `X-Amzn-Bedrock-GuardrailIdentifier`、`X-Amzn-Bedrock-GuardrailVersion` 與 `X-Amzn-Bedrock-Trace` 標頭 |
+
+模型的防護欄會取代呼叫者在 body 或標頭中送出的任何防護欄，因此呼叫者無法將其關閉，也無法改用其他防護欄。在負載平衡下，每個請求會使用為其提供服務的部署所屬的防護欄。
+
+當 Bedrock 封鎖請求時，`/converse` 會回傳 `stopReason: guardrail_intervened`，`/invoke` 則回傳 `amazon-bedrock-guardrailAction: INTERVENED`，兩者都會帶有您的封鎖訊息，並在啟用 `trace` 時附上防護欄追蹤。
+
+`/invoke` 路由只接受 `guardrailIdentifier`、`guardrailVersion` 與 `trace`。若模型的 `guardrailConfig` 缺少 `guardrailVersion`，或指定了不存在的防護欄，這些路由會回傳 400，與 `/v1/chat/completions` 相同。
+
+透傳會將請求 body 原封不動地送給 Bedrock，因此 Bedrock 會檢查其中的每則訊息。若要讓 Bedrock 只檢查 Converse 請求的一部分，請將該部分包裝在 `guardContent` 區塊中，詳見[選擇性評估內容](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-converse-api.html)。
+
+### 從 Bedrock 請求中繼資料取得 Session ID {#session-id-from-bedrock-request-metadata}
+
+<SinceVersion v="1.109.0" />
+
+Bedrock 用戶端可以用[請求中繼資料](https://docs.aws.amazon.com/bedrock/latest/userguide/cost-mgmt-request-metadata.html)為每次呼叫加上標籤，在 `/converse` 與 `/converse-stream` 上以 `requestMetadata` body 欄位送出，或在 `/invoke` 與 `/invoke-with-response-stream` 上以 `X-Amzn-Bedrock-Request-Metadata` JSON 標頭送出。當該中繼資料含有 `sessionId`、`threadId` 或 `conversationId` 鍵時，代理會使用其值作為該次呼叫的 LiteLLM session ID，因此送出相同值的呼叫會在支出記錄中共用同一個 session。這些鍵會依該順序檢查，並使用第一個非空字串值（原樣使用）。同一請求上的 `x-litellm-session-id` 或 `x-litellm-trace-id` 標頭優先於此。
+
+使用上方的 `bedrock_runtime` 用戶端：
+
+```python showLineNumbers
+response = bedrock_runtime.converse(
+    modelId='my-claude-model',  # Your model_name from config.yaml
+    messages=[{"role": "user", "content": [{"text": "Hello, how are you?"}]}],
+    requestMetadata={"threadId": "thread-abc-123"},
+)
+```
 
 ## 範例 {#examples}
 

@@ -32,13 +32,13 @@ import Tabs from '@theme/Tabs';
 ```yaml
 model_list:
   # litellm OpenAI Account
-  - model_name: "gpt-4o-litellm"
+  - model_name: "openai-litellm"
     litellm_params:
       model: openai/{{openai_large}}
       api_key: os.environ/OPENAI_LITELLM_API_KEY
   
   # Free OpenAI Account
-  - model_name: "gpt-4o-free"
+  - model_name: "openai-free"
     litellm_params:
       model: openai/{{openai_large}}
       api_key: os.environ/OPENAI_FREE_API_KEY
@@ -58,10 +58,10 @@ client = OpenAI(
 file_response = client.files.create(
     file=open("batch_data.jsonl", "rb"),
     purpose="batch",
-    extra_body={"model": "gpt-4o-litellm"}  # Routes to litellm key
+    extra_body={"model": "openai-litellm"}  # Routes to litellm key
 )
 print(f"File ID: {file_response.id}")
-# Returns encoded ID like: file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxncHQtNG8taWZvb2Q
+# Returns encoded ID like: file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxvcGVuYWktbGl0ZWxsbQ
 
 # Create batch using the encoded file ID
 # No need to specify model again - it's embedded in the file ID
@@ -79,26 +79,26 @@ print(f"Status: {batch_status.status}")
 
 # List files for a specific account
 files = client.files.list(
-    extra_body={"model": "gpt-4o-free"}  # List free files
+    extra_body={"model": "openai-free"}  # List free files
 )
 
 # List batches for a specific account
 batches = client.batches.list(
-    extra_query={"model": "gpt-4o-litellm"}  # List litellm batches
+    extra_query={"model": "openai-litellm"}  # List litellm batches
 )
 ```
 
 ### 參數選項 {#parameter-options}
 
 您可以透過以下方式傳入 `model` 參數：
-- **請求本文**：`extra_body={"model": "gpt-4o-litellm"}`
-- **查詢參數**：`?model=gpt-4o-litellm`
-- **標頭**：`x-litellm-model: gpt-4o-litellm`
+- **請求本文**：`extra_body={"model": "openai-litellm"}`
+- **查詢參數**：`?model=openai-litellm`
+- **標頭**：`x-litellm-model: openai-litellm`
 
 ### 編碼 ID 的運作方式 {#how-encoded-ids-work}
 
 - 當您使用 `model` 參數建立檔案/批次時，LiteLLM 會將模型名稱編碼進回傳的 ID 中
-- 編碼後的 ID 會以 base64 編碼，看起來像：`file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxncHQtNG8taWZvb2Q`
+- 編碼後的 ID 會以 base64 編碼，看起來像：`file-bGl0ZWxsbTpmaWxlLWFiYzEyMzttb2RlbCxvcGVuYWktbGl0ZWxsbQ`
 - 當您在後續操作（取得、刪除、建立批次）中使用此 ID 時，LiteLLM 會自動：
   1. 解碼 ID
   2. 擷取模型名稱
@@ -132,7 +132,7 @@ client.files.retrieve(file_id, extra_headers={"custom-llm-provider": "openai"})
 **新做法（建議）：**
 ```yaml
 model_list:
-  - model_name: "gpt-4o-account1"
+  - model_name: "openai-account1"
     litellm_params:
       model: openai/{{openai_large}}
       api_key: os.environ/OPENAI_KEY
@@ -140,7 +140,7 @@ model_list:
 
 ```python
 # Specify model once on create
-file = client.files.create(..., extra_body={"model": "gpt-4o-account1"})
+file = client.files.create(..., extra_body={"model": "openai-account1"})
 
 # Then just use the ID - routing is automatic
 client.files.retrieve(file.id)  # No need to specify account

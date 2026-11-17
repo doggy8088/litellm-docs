@@ -226,7 +226,7 @@ curl -X POST 'http://0.0.0.0:4000/team/member_update' \
 -d '{"team_id": "e8d1460f-846c-45d7-9b43-55f3cc52ac32", "user_id": "ishaan", "temp_budget_increase": 25, "temp_budget_expiry": "2026-11-01T00:00:00Z"}'
 ```
 
-若要將已自訂的成員恢復為團隊預設值，請在團隊的 **Members** 分頁中，按一下其預算旁邊的 **Use team default**，或呼叫 `POST /team/{team_id}/member/{user_id}/reset_budget`。其支出會被保留，且之後對 `team_member_budget` 的 `/team/update` 變更會再次套用到他們。此功能自 `v1.104.0` 起提供
+若要將已自訂的成員恢復為團隊預設值，請在團隊的 **Members** 分頁中，按一下其預算旁邊的 **Use team default**，或呼叫 `POST /team/{team_id}/member/{user_id}/reset_budget`。其支出會被保留，且之後對 `team_member_budget` 的 `/team/update` 變更會再次套用到他們。<SinceVersion v="1.104.0" />
 
 #### 重設團隊成員的支出 {#reset-a-team-members-spend}
 
@@ -473,7 +473,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 
 <Image img={require('../../img/key_budget_window_4.png')} dark={require('../../img/key_budget_window_4_dark.png')} alt="Reset schedule shown below each budget window" />
 
-### ✨ 虛擬金鑰（模型特定） {#-virtual-key-model-specific}
+### 虛擬金鑰（模型特定） {#-virtual-key-model-specific}
 
 為每個可供虛擬金鑰使用的模型設定獨立預算。例如，一把金鑰可以有：
 
@@ -516,7 +516,7 @@ LiteLLM 會將預算與請求中的模型名稱及其帶有提供者前綴的形
 
 #### 檢視目前用量 {#view-current-usage}
 
-`/key/info` 會連同 `model_max_budget_usage` 與 `model_max_budget` 一併回傳。對於每個有預算的模型，它會回報目前預算期間內的支出金額。LiteLLM 使用相同的用量值來執行預算限制，因此回報的用量會與限制執行一致。
+`/key/info` 會連同 `model_max_budget_usage` 與 `model_max_budget` 一併回傳。對於每個有預算的模型，它會回報目前預算期間內的支出金額。LiteLLM 使用相同的用量值來執行預算限制，因此回報的用量會與限制執行一致。`/user/info` 與 `/team/info` 會針對設定在使用者或團隊上的個別模型預算，回傳相同的區塊。
 
 ```bash
 curl -X GET 'http://0.0.0.0:4000/key/info?key=sk-...' \
@@ -528,11 +528,26 @@ curl -X GET 'http://0.0.0.0:4000/key/info?key=sk-...' \
   "info": {
     "model_max_budget": {"{{openai_large}}": {"budget_limit": 0.0001, "time_period": "30d"}},
     "model_max_budget_usage": {
-      "{{openai_large}}": {"current_spend": 0.0002, "budget_limit": 0.0001, "time_period": "30d"}
+      "{{openai_large}}": {
+        "current_spend": 0.0002,
+        "budget_limit": 0.0001,
+        "time_period": "30d",
+        "budget_reset_at": "2026-11-14T09:30:12.418093+00:00"
+      }
     }
   }
 }
 ```
+
+<SinceVersion v="1.107.0" /> 每個條目也包含 `budget_reset_at`，首次提供於 `v1.107.0-rc.1`。它代表該模型的目前預算視窗結束、且其 `current_spend` 回到 0 的時間。超過此上限的模型會在此時間再次接受請求，除非仍有其他預算阻擋它，例如金鑰、使用者、團隊、團隊成員或終端使用者上的個別模型預算，或金鑰的 `max_budget` 這類整體預算。此值是 UTC 的 ISO 8601 時間戳記。它不是同一回應最上層的 `budget_reset_at`，後者屬於以 `budget_duration` 設定的整體預算。
+
+視窗會在該模型的第一個成功請求完成時開啟，即使該請求費用為 $0，例如快取命中或對定價為 $0 的模型發出的請求，且自該時刻起持續 `time_period`，而非自日曆邊界起算。同一視窗內的後續請求不會移動 `budget_reset_at`。例如，`1d` 視窗會在開啟 24 小時後結束。`1mo` 視窗會在下個月同一天（UTC）的同一時間結束；當下個月較短時，則在該月最後一天結束。
+
+當沒有視窗開啟時，`budget_reset_at` 為 `null`，也就是在該模型的第一個請求之前，以及視窗結束之後，直到下一個請求開啟新視窗為止。
+
+在 v1.109.0 之前，若未使用 Redis，每個 proxy 執行個體與每個 worker 都各自維護自己的視窗。同一個條目因此可能在一個執行個體上讀到 `null`，在另一個上讀到時間戳記，或是兩個不同的時間戳記，視由哪個執行個體回應而定。<SinceVersion v="1.109.0" /> 它們會透過資料庫共享每個金鑰、使用者與團隊的視窗。未服務開啟該視窗之請求的執行個體，在該視窗於資料庫中出現支出之前會讀到 `null`；以預設的 `proxy_batch_write_at` 10 秒而言，這在費用超過 $0 的請求之後通常最多需要約 20 秒。當 `proxy_batch_write_at` 較大時需要更久，或當[讀取副本](./db_read_replica)落後於主要資料庫時亦然。
+
+在 `/team/info` 上，當一把金鑰對請求所使用的模型有自己的 `budget_limit` 時，該請求既不受團隊在該模型名稱下之條目的限制，也不會向其收費；兩個名稱都會依 [LiteLLM 如何比對模型名稱](#how-litellm-matches-model-names) 所述，與請求的模型名稱比對。該條目的視窗只會由沒有此類預算的金鑰所發出的請求開啟。
 
 如果模型的 `time_period` 遺失或無效，該模型會被省略於 `model_max_budget_usage`，而不是以零用量回報。
 
@@ -600,7 +615,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 預設情況下，當每模型預算超過時，LiteLLM 會回傳 `budget_exceeded` 錯誤。如要改為將請求路由到另一個模型，請參閱 [預算備援](./budget_fallbacks)。
 
-### ✨ 內部使用者（特定模型） {#-internal-user-model-specific}
+### 內部使用者（特定模型） {#internal-user-model-specific}
 
 使用內部使用者的每模型預算，將單一上限套用到該使用者擁有的所有金鑰。這可防止使用者透過建立另一把金鑰來繞過限制。範例來說，當工程師有多把金鑰時，可使用此範圍為每位工程師設定每月 $200 的 Opus 預算。
 
@@ -618,7 +633,7 @@ curl 'http://0.0.0.0:4000/user/new' \
 }'
 ```
 
-使用 `1mo` 來設定每個月第一天重設的日曆月預算。當使用者超過上限後，LiteLLM 會拒絕使用該使用者任何金鑰所發出的請求：
+使用 `1mo` 來設定每月預算。<SinceVersion v="1.107.0" /> 視窗會隨著使用者對該模型的第一個請求開啟，並在一個日曆月後（UTC）重設，首次提供於 `v1.107.0-rc.1`，如[檢視目前用量](#view-current-usage)所述。當使用者超過上限後，LiteLLM 會拒絕使用該使用者任何金鑰所發出的請求：
 
 ```json
 {
@@ -631,7 +646,7 @@ curl 'http://0.0.0.0:4000/user/new' \
 }
 ```
 
-`/user/info` 會以與 `/key/info` 相同的格式，回傳每個模型在目前預算期間內於 `model_max_budget_usage` 的支出。
+`/user/info` 會以與 `/key/info` 相同的格式，回傳每個模型在目前預算期間內於 `model_max_budget_usage` 的支出，包括每個視窗在 `budget_reset_at` 的重設時間。
 
 **透過儀表板**
 
@@ -827,7 +842,7 @@ curl 'http://0.0.0.0:4000/user/new' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "max_budget": 10,
-  "budget_duration": "30s", # 👈 KEY CHANGE
+  "budget_duration": "30s", # KEY CHANGE
 }'
 ```
 </TabItem>
@@ -839,7 +854,7 @@ curl 'http://0.0.0.0:4000/key/generate' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "max_budget": 10,
-  "budget_duration": "30s", # 👈 KEY CHANGE
+  "budget_duration": "30s", # KEY CHANGE
 }'
 ```
 
@@ -852,7 +867,7 @@ curl 'http://0.0.0.0:4000/team/new' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "max_budget": 10,
-  "budget_duration": "30s", # 👈 KEY CHANGE
+  "budget_duration": "30s", # KEY CHANGE
 }'
 ```
 </TabItem>
@@ -1105,6 +1120,19 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 
 **解析順序：** 當 key 屬於某個 team 時，rate limits 的解析順序為：**Key metadata > Key model_max_budget > Team metadata**。Keys 可以使用自己的 `model_rpm_limit` 或 `model_tpm_limit` 覆寫 team 層級的 per-model 限制。
 
+#### 每模型速率限制與備援 {#per-model-rate-limits-and-fallbacks}
+
+依預設，當請求超過金鑰、團隊、組織、專案或客戶的 `model_rpm_limit` / `model_tpm_limit`，且 `router_settings.fallbacks` 中有該模型的條目時，LiteLLM 會在備援模型上重試該請求。備援模型會依呼叫者自己對該模型的每模型限制來准入，用戶端會從備援取得 200 回應，並帶有 `x-litellm-attempted-fallbacks: 1` 與 `x-litellm-fallback-reason: rate_limit:<scope>`，例如當客戶的每模型限制造成此次跳轉時為 `rate_limit:model_per_end_user`。非模型特定的限制，例如客戶或金鑰的整體 `tpm_limit`，仍會在每個模型上回傳 429。
+
+若要讓金鑰、團隊、組織與專案的每模型限制成為回傳 429 的硬性上限，請設定：
+
+```yaml
+general_settings:
+  disable_fallbacks_on_per_model_rate_limits: true
+```
+
+其他本機速率限制（例如金鑰的整體 `rpm_limit`）會保留其既有的備援行為
+
 **驗證：** 發出一個 `/chat/completions` 請求，並檢查回應標頭 `x-litellm-key-remaining-requests-{model}` 和 `x-litellm-key-remaining-tokens-{model}`，以確認 model-specific 限制。
 
 [**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
@@ -1151,7 +1179,7 @@ curl --location 'http://0.0.0.0:4000/key/generate' \
 {
     "key": "sk-ulGNRXWtv7M0lFnnsQk0wQ",
     "expires": "2024-01-18T20:48:44.297973",
-    "user_id": "78c2c8fc-c233-43b9-b0c3-eb931da27b84"  // 👈 auto-generated
+    "user_id": "78c2c8fc-c233-43b9-b0c3-eb931da27b84"  // auto-generated
 }
 ```
 
@@ -1406,7 +1434,7 @@ model_list:
       api_key: "os.environ/AZURE_API_KEY"
       api_version: "2023-07-01-preview"
     model_info:
-      access_groups: ["beta-models"] # 👈 Model Access Group
+      access_groups: ["beta-models"] # Model Access Group
 ```
 
 **步驟 2. 建立具有存取群組的金鑰**
@@ -1415,7 +1443,7 @@ model_list:
 curl --location 'http://localhost:4000/user/new' \
 -H 'Authorization: Bearer <your-master-key>' \
 -H 'Content-Type: application/json' \
--d '{"models": ["beta-models"], # 👈 Model Access Group
+-d '{"models": ["beta-models"], # Model Access Group
 			"max_budget": 0}'
 ```
 

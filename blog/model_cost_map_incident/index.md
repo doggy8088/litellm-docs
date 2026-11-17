@@ -71,11 +71,11 @@ LiteLLM 在匯入時會從 GitHub `main` 取得 model cost map。如果抓取失
 
 | # | 動作 | 狀態 | 程式碼 |
 |---|---|---|---|
-| 1 | 對 `model_prices_and_context_window.json` 進行 CI 驗證 | ✅ 完成 | [`test-model-map.yaml`](https://github.com/BerriAI/litellm/blob/main/.github/workflows/test-model-map.yaml) |
+| 1 | 對 `model_prices_and_context_window.json` 進行 CI 驗證 | ✅ 完成 | [`test-model-map.yaml`](https://github.com/BerriAI/litellm/blob/cde134488c88306dab078c542c698605d41f17c5/.github/workflows/test-model-map.yaml) |
 | 2 | 回退到本機備份時記錄警告 | ✅ 完成 | [`get_model_cost_map.py#L57-L68`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm_core_utils/get_model_cost_map.py#L57-L68) |
 | 3 | 具備完整性驗證輔助工具的 `GetModelCostMap` 類別 | ✅ 完成 | [`get_model_cost_map.py#L24-L149`](https://github.com/BerriAI/litellm/blob/main/litellm/litellm_core_utils/get_model_cost_map.py#L24-L149) |
-| 4 | 韌性測試套件（有問題的託管 map、回退、completion） | ✅ 完成 | [`test_model_cost_map_resilience.py#L150-L291`](https://github.com/BerriAI/litellm/blob/main/tests/llm_translation/test_model_cost_map_resilience.py#L150-L291) |
-| 5 | 測試備份 model cost map 永遠存在且包含常見模型 | ✅ 完成 | [`test_model_cost_map_resilience.py#L213-L228`](https://github.com/BerriAI/litellm/blob/main/tests/llm_translation/test_model_cost_map_resilience.py#L213-L228) |
+| 4 | 韌性測試套件（有問題的託管 map、回退、completion） | ✅ 完成 | [`test_model_cost_map_resilience.py#L150-L291`](https://github.com/BerriAI/litellm/blob/15eb898c2d6114c0d71fa8df35e3a76ba2c8fb31/tests/llm_translation/test_model_cost_map_resilience.py#L150-L291) |
+| 5 | 測試備份 model cost map 永遠存在且包含常見模型 | ✅ 完成 | [`test_model_cost_map_resilience.py#L213-L228`](https://github.com/BerriAI/litellm/blob/15eb898c2d6114c0d71fa8df35e3a76ba2c8fb31/tests/llm_translation/test_model_cost_map_resilience.py#L213-L228) |
 
 需要在匯入時完全不依賴外部資源的企業可以設定 `LITELLM_LOCAL_MODEL_COST_MAP=True`，以完全略過 GitHub 抓取。
 

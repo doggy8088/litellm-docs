@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Supabase 記錄：追蹤 LLM 支出"
+sidebar_label: "Supabase"
+description: "將 LiteLLM Python SDK 的請求記錄至 Supabase 資料表，透過成功與失敗回呼及 SQL 資料表，查看各 LLM 提供者的總支出。"
+---
 # Supabase {#supabase}
 
 :::tip
@@ -67,14 +72,14 @@ litellm.failure_callback=["supabase"]
 # openai call
 response = completion(
   model="{{openai_small}}", 
-  messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}],
+  messages=[{"role": "user", "content": "Hi - i'm openai"}],
   user="ishaan22" # identify users
 ) 
 
 # bad call, expect this call to fail and get logged
 response = completion(
   model="chatgpt-test", 
-  messages=[{"role": "user", "content": "Hi 👋 - i'm a bad call to test error logging"}]
+  messages=[{"role": "user", "content": "Hi - i'm a bad call to test error logging"}]
 )
  
 ```
@@ -88,7 +93,7 @@ response = completion(
 ```python
 response = completion(
   model="{{openai_small}}", 
-  messages=[{"role": "user", "content": "Hi 👋 - i'm openai"}],
+  messages=[{"role": "user", "content": "Hi - i'm openai"}],
   user="ishaan22" # identify users
 ) 
 ```
@@ -103,6 +108,6 @@ litellm.modify_integration("supabase",{"table_name": "litellm_logs"})
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Lunary 追蹤：Python SDK 與閘道"
+sidebar_label: "Lunary"
+description: "從 Python SDK 或 AI 閘道將 LiteLLM 呼叫傳送到 Lunary，並在 Lunary 中追蹤 LangChain ChatLiteLLM、提示詞範本與自訂鏈。"
+---
 import Image from '@theme/IdealImage';
 
 # Lunary {#lunary}
@@ -40,7 +45,7 @@ litellm.failure_callback = ["lunary"]
 
 response = completion(
   model="{{openai_large}}",
-  messages=[{"role": "user", "content": "Hi there 👋"}],
+  messages=[{"role": "user", "content": "Hi there "}],
   user="ishaan_litellm"
 )
 ```
@@ -173,6 +178,6 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 ## 支援與創辦人交流 {#support--talk-to-founders}
 
-- [安排 Demo 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的 email ✉️ ishaan@berri.ai / krrish@berri.ai
+- [安排 Demo](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的 email ishaan@berri.ai / krrish@berri.ai

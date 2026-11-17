@@ -81,7 +81,7 @@ model_list:
 
 ## JEV 分類器 (TypeSafe AI) {#jev-classifier-typesafe-ai}
 
-本節使用已發布建置版本支援的 Jev 設定與儀表板標籤。新的 **OSS Classifier** 設定需要 [backend #43626](https://github.com/BerriAI/litellm/pull/43626)，而其儀表板需要 [UI #43768](https://github.com/BerriAI/litellm/pull/43768)。請參閱 [OSS classifiers](/docs/auto_router/decision_classifiers) 了解託管 Jev、自架 Nimble 和 Laya，以及 [從現有名稱遷移](/docs/auto_router/decision_classifiers#migrate-an-existing-jev-or-nimble-router)。新的 backend 仍可接受以下設定。
+本節使用已發布建置版本支援的 Jev 設定與儀表板標籤。新的 **OSS Classifier** 設定需要 [backend #43626](https://github.com/BerriAI/litellm/pull/43626)，而其儀表板需要 [UI #43768](https://github.com/BerriAI/litellm/pull/43768)。請參閱 [OSS classifiers](/docs/auto_router/decision_classifiers) 了解託管 Jev、自架 Nimble 和 Laya、Databricks `ai_decide` AI Function，以及 [從現有名稱遷移](/docs/auto_router/decision_classifiers#migrate-an-existing-jev-or-nimble-router)。新的 backend 仍可接受以下設定。
 
 `classifier_type: jev` 使用 TypeSafe System One Choice evaluation，在現有的 Auto Router 中選出某個 tier。LiteLLM 會將分類器輸入傳送到 `POST /v1/systemone` 作為 `state`，並附上一個 `questions.tier` 問題，其準則描述已設定的 tiers。所選 tier 的模型會提供 completion
 

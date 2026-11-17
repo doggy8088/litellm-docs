@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Vertex AI 文字轉語音"
+sidebar_label: "Vertex AI Text to Speech"
+description: "透過 LiteLLM 的 Python SDK 或 AI 閘道，在 Gemini Enterprise Agent Platform（原 Vertex AI）上以 Chirp3 HD 聲音與 Gemini TTS 執行文字轉語音。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -86,6 +92,48 @@ response.stream_to_file("speech.mp3")
 
 </TabItem>
 </Tabs>
+
+### 區域端點 {#regional-endpoints}
+
+部署的 `vertex_location` 決定 Chirp 使用的 Cloud Text-to-Speech 主機。<SinceVersion v="1.110.0" /> 在較舊的版本中，所有 Chirp 請求都會送往全域主機。
+
+| `vertex_location` | LiteLLM 呼叫的主機 |
+|-------------------|--------------------|
+| `us`、`us-central1`、`us-east1`、`us-east4`、`us-east5`、`us-south1`、`us-west1`、`us-west2`、`us-west3`、`us-west4`、`us-west5` | `us-texttospeech.googleapis.com` |
+| `eu`、`europe-central2`、`europe-north1`、`europe-north2`、`europe-southwest1`、`europe-west1`、`europe-west3`、`europe-west4`、`europe-west8`、`europe-west9`、`europe-west10`、`europe-west12` | `eu-texttospeech.googleapis.com` |
+| 未設定、`global` 或任何其他位置 | `texttospeech.googleapis.com` |
+
+只有在部署上設定或在呼叫時傳入的 `vertex_location` 才會決定 Chirp 主機。`VERTEXAI_LOCATION` 與 `litellm.vertex_location` 不會。
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: chirp-eu
+    litellm_params:
+      model: vertex_ai/chirp
+      vertex_project: "your-project-id"
+      vertex_location: "eu"
+      vertex_credentials: "/path/to/service_account.json"
+```
+
+```bash showLineNumbers title="Chirp on the EU host"
+curl http://0.0.0.0:4000/v1/audio/speech \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "chirp-eu",
+    "voice": "fr-FR-Chirp3-HD-Aoede",
+    "input": "Bonjour, votre rendez-vous est confirmé."
+  }' \
+  --output speech.wav
+```
+
+LiteLLM 會將此請求傳送至 `https://eu-texttospeech.googleapis.com/v1/text:synthesize`，且該請求的支出記錄會將該 URL 顯示為其 `api_base`。
+
+若要使用表格未列出的主機，例如單一區域主機，請將 `api_base` 設定為完整 URL，例如 `https://europe-west2-texttospeech.googleapis.com/v1/text:synthesize`。`api_base` 一律優先於 `vertex_location`。
+
+:::note
+若您的網路僅允許連往 `texttospeech.googleapis.com` 的對外流量，在升級具有美國或歐盟 `vertex_location` 的 Chirp 部署之前，也請一併允許 `us-texttospeech.googleapis.com` 或 `eu-texttospeech.googleapis.com`。
+:::
 
 ### 聲音對應 {#voice-mapping}
 
@@ -306,6 +354,8 @@ asyncio.run(main())
 ## Gemini TTS {#gemini-tts}
 
 具備音訊輸出能力的 Gemini 模型，使用 chat completions API。
+
+上方的聲音對應表格適用於 Chirp。若使用 Gemini TTS，請傳入 Gemini 預建聲音名稱（例如 `Kore`），或自 v1.107.0 起傳入 OpenAI 聲音名稱，其會對應到 [Gemini 提供者文件](./gemini#voice-names) 中列出的 Gemini 聲音。
 
 :::warning
 **限制：**

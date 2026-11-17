@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Meta Model API (Muse)：設定"
+sidebar_label: "Meta Model API"
+description: "呼叫 Meta 的 Muse Spark 1.1，支援最高 xhigh 的 reasoning effort、工具與 Messages API，並透過 /v1/realtime 以 Muse Voice 轉錄即時語音。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -93,7 +99,7 @@ LiteLLM 在連線到 Meta 後、Muse 握手之前，會發出帶有 `object: rea
 | `format` | `type` 必須是 `audio/pcm`，`rate` 必須是 `16000` 或 `24000`，`channels` 必須是 `1`。若省略則代表單聲道 24 kHz。 |
 | `transcription.model` | 選用。搭配 `intent=transcription` 時，proxy 會以 `muse-voice-transcribe-1.0` 取代；若沒有它，則只接受 `muse-voice-transcribe-1.0` 或 `meta/muse-voice-transcribe-1.0`。 |
 | `transcription.language` | 對某一語言的選用偏好，可用名稱或 ISO 639 代碼。會忽略地區尾碼，因此 `en-US`、`zh-Hans` 和 `pt-BR` 都可運作。 |
-| `turn_detection` | 選擇模式（如下表）。除 `server_vad` 之外的任何 `type` 都會被拒絕；沒有 `type` 的物件代表 server VAD。 |
+| `turn_detection` | 選擇模式（如下表）。除 `server_vad` 之外的任何 `type` 都會被拒絕，或在設定 [`drop_params`](/docs/completion/drop_params) 時備援為 server VAD；沒有 `type` 的物件代表 server VAD。 |
 | 其他任何內容 | 會在 proxy 記錄中以警告方式丟棄。 |
 | Beta 版佈局 | 接受 `input_audio_format: "pcm16"` 加上 `input_audio_transcription`，採 24 kHz。請勿在單一更新中混用兩種佈局。 |
 

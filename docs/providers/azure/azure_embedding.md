@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure OpenAI Embeddings"
+sidebar_label: "Azure OpenAI Embeddings"
+description: "使用 litellm.embedding() 或 LiteLLM AI 閘道上的 /embeddings 路由，在您的 Azure OpenAI 部署上建立 text-embedding-ada-002 嵌入。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

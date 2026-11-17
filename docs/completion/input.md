@@ -84,43 +84,58 @@ LiteLLM 假設任何非 openai 參數都是特定於提供者，並在請求主�
 ```python
 def completion(
     model: str,
-    messages: List = [],
-    # Optional OpenAI params
-    timeout: Optional[Union[float, int]] = None,
-    temperature: Optional[float] = None,
-    top_p: Optional[float] = None,
-    n: Optional[int] = None,
-    stream: Optional[bool] = None,
-    stream_options: Optional[dict] = None,
+    messages: list = [],
+    timeout: float | str | httpx.Timeout | None = None,
+    temperature: float | None = None,
+    top_p: float | None = None,
+    n: int | None = None,
+    stream: bool | None = None,
+    stream_options: dict | None = None,
     stop=None,
-    max_completion_tokens: Optional[int] = None,
-    max_tokens: Optional[int] = None,
-    presence_penalty: Optional[float] = None,
-    frequency_penalty: Optional[float] = None,
-    logit_bias: Optional[dict] = None,
-    user: Optional[str] = None,
+    max_completion_tokens: int | None = None,
+    max_tokens: int | None = None,
+    modalities: list[ChatCompletionModality] | None = None,
+    prediction: ChatCompletionPredictionContentParam | None = None,
+    audio: ChatCompletionAudioParam | None = None,
+    presence_penalty: float | None = None,
+    frequency_penalty: float | None = None,
+    logit_bias: dict | None = None,
+    user: str | None = None,
     # openai v1.0+ new params
-    response_format: Optional[dict] = None,
-    seed: Optional[int] = None,
-    tools: Optional[List] = None,
-    tool_choice: Optional[str] = None,
-    parallel_tool_calls: Optional[bool] = None,
-    logprobs: Optional[bool] = None,
-    top_logprobs: Optional[int] = None,
-    safety_identifier: Optional[str] = None,
+    reasoning_effort: Literal["none", "minimal", "low", "medium", "high", "xhigh", "max", "default"] | None = None,
+    verbosity: Literal["low", "medium", "high"] | None = None,
+    response_format: dict | type[BaseModel] | None = None,
+    seed: int | None = None,
+    tools: list | None = None,
+    tool_choice: str | dict | None = None,
+    logprobs: bool | None = None,
+    top_logprobs: int | None = None,
+    parallel_tool_calls: bool | None = None,
+    web_search_options: OpenAIWebSearchOptions | None = None,
+    include_server_side_tool_invocations: bool | None = None,
     deployment_id=None,
+    extra_headers: dict | None = None,
+    safety_identifier: str | None = None,
+    service_tier: str | None = None,
+    store: bool | None = None,
+    prompt_cache_key: str | None = None,
     # soon to be deprecated params by OpenAI
-    functions: Optional[List] = None,
-    function_call: Optional[str] = None,
+    functions: list | None = None,
+    function_call: str | None = None,
     # set api_base, api_version, api_key
-    base_url: Optional[str] = None,
-    api_version: Optional[str] = None,
-    api_key: Optional[str] = None,
-    model_list: Optional[list] = None,  # pass in a list of api_base,keys, etc.
+    base_url: str | None = None,
+    api_version: str | None = None,
+    api_key: str | None = None,
+    model_list: list | None = None,  # pass in a list of api_base,keys, etc.
     # Optional liteLLM function params
+    thinking: AnthropicThinkingParam | None = None,
+    # Session management
+    shared_session: Optional["ClientSession"] = None,
+    # Per-request JSON schema validation (overrides litellm.enable_json_schema_validation)
+    enable_json_schema_validation: bool | None = None,
     **kwargs,
-
-) -> ModelResponse: ...
+) -> ModelResponse | CustomStreamWrapper:
+    ...
 ```
 
 ### 必填欄位 {#required-fields}
@@ -208,7 +223,7 @@ messages=[{"role": "user", "content": [
 
 - `presence_penalty`: *number or null (optional)* - 用來根據 tokens 在至今文字中的存在情況，對新 tokens 施加懲罰。
 
-- `response_format`: *object (optional)* - 指定模型必須輸出格式的物件。
+- `response_format`: *dict or Pydantic model class (optional)* - 指定回應格式。傳入 Pydantic 模型類別可要求以結構描述為基礎的輸出；請參閱 [JSON 模式與結構化輸出](./json_mode.md)。
 
     - 設為 `{ "type": "json_object" }` 可啟用 JSON mode，確保模型產生的訊息是有效的 JSON。
     
@@ -222,7 +237,7 @@ messages=[{"role": "user", "content": [
 
     - `function`: *object* - 函式工具必填。
 
-- `tool_choice`: *string or object (optional)* - 控制模型會呼叫哪個函式（如果有的話）。none 表示模型不會呼叫函式，而是產生訊息。auto 表示模型可在產生訊息或呼叫函式之間選擇。透過 `{"type": "function", "function": {"name": "my_function"}}` 指定特定函式會強制模型呼叫該函式。
+- `tool_choice`: *string or dict (optional)* - 控制模型會呼叫哪個工具（如果有的話）。使用 `none` 或 `auto`，或提供 dict 指定特定工具。
 
     - `none` 是在沒有 functions 時的預設值。若有 functions，`auto` 為預設值。
 
@@ -234,7 +249,7 @@ messages=[{"role": "user", "content": [
 
 - `user`: *string (optional)* - 代表您最終使用者的唯一識別碼。這有助於 OpenAI 監控並偵測濫用。
 
-- `timeout`: *int (optional)* - completion 請求的逾時秒數（預設為 600 秒）
+- `timeout`: *float, string, `httpx.Timeout` or null (optional)* - 請求的逾時秒數。字串可包含逾時數值；使用 `httpx.Timeout` 可分別設定各階段的逾時。
 
 - `logprobs`: * bool (optional)* - 是否傳回輸出 token 的機率對數。若為 true，則會傳回訊息內容中每個輸出 token 的機率對數
         
@@ -245,6 +260,38 @@ messages=[{"role": "user", "content": [
 - `headers`: *dict (optional)* - 要隨請求送出的標頭字典。
 
 - `extra_headers`: *dict (optional)* - `headers` 的替代方案，用於在 LLM API 請求中傳送額外標頭。
+
+- `reasoning_effort`: *string or null (optional)* - 為支援的模型設定推理強度。值可為 `none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max` 與 `default`。請參閱[推理內容](../reasoning_content.md)。
+
+- `verbosity`: *string or null (optional)* - 為支援的 OpenAI GPT-5 系列模型，將輸出詳細程度設為 `low`、`medium` 或 `high`。
+
+- `thinking`: *object or null (optional)* - Anthropic 風格的 thinking 設定。請參閱[推理內容](../reasoning_content.md)。
+
+- `modalities`: *array or null (optional)* - 要求的輸出模態，例如文字與音訊。請參閱[音訊](./audio.md)。
+
+- `audio`: *object or null (optional)* - 音訊輸出設定，例如語音與格式。請參閱[音訊](./audio.md)。
+
+- `prediction`: *object or null (optional)* - 預期的輸出內容；當大部分回應可事先得知時，可降低延遲。請參閱[預測輸出](./predict_outputs.md)。
+
+- `web_search_options`: *object or null (optional)* - 支援的內建網路搜尋模型與端點的選項，例如搜尋上下文大小。請參閱[網路搜尋](./web_search.md)。
+
+- `include_server_side_tool_invocations`: *boolean or null (optional)* - 對於支援的 Gemini/Vertex 請求，設定 `toolConfig.includeServerSideToolInvocations`。
+
+- `service_tier`: *string or null (optional)* - 在模型支援時，要求特定的處理服務層級。
+
+- `store`: *boolean or null (optional)* - 控制提供者是否儲存回應（在支援時）。
+
+- `prompt_cache_key`: *string or null (optional)* - OpenAI 提示快取的路由提示，適用於具有共享前綴的請求。請參閱[提示快取](./prompt_caching.md)。
+
+- `shared_session`: *aiohttp `ClientSession` or null (optional)* - 在非同步 API 呼叫之間重複使用同一個 session。請參閱[共享 session](./shared_session.md)。
+
+- `enable_json_schema_validation`: *boolean or null (optional)* - 啟用或停用針對所要求結構描述逐請求驗證產生的 JSON，覆寫全域設定。請參閱 [JSON 模式與結構化輸出](./json_mode.md)。
+
+- `api_key`: *string or null (optional)* - 此請求要使用的提供者 API 金鑰。
+
+- `base_url`: *string or null (optional)* - 提供者 API 的基礎 URL。為 `api_base` 的別名。
+
+- `model_list`: *list or null (optional)* - 模型部署設定，用於選取並呼叫與 `model` 相符的部署。
 
 #### 已棄用的參數 {#deprecated-params}
 - `functions`: *array* - 模型可用來產生 JSON 輸入的函式清單。每個函式應具有以下屬性：
@@ -271,10 +318,52 @@ messages=[{"role": "user", "content": [
 
 - `metadata`: *dict (optional)* - 呼叫時您希望額外記錄的任何資料（會傳送至 logging 整合，例如 promptlayer，並可透過自訂 callback function 存取）
 
+- `custom_llm_provider`: *string (optional)* - 解析模型及其 API 設定時要使用的提供者識別碼
+
+- `drop_params`: *boolean (optional)* - 丟棄不支援的 OpenAI 參數，而不是擲出錯誤。請參閱[丟棄不支援的參數](./drop_params.md)。
+
+- `additional_drop_params`: *list of strings (optional)* - 要從請求中丟棄的 OpenAI 參數。請參閱[丟棄不支援的參數](./drop_params.md)。
+
+- `allowed_openai_params`: *list of strings (optional)* - 此請求允許透傳的 OpenAI 參數。請參閱[丟棄不支援的參數](./drop_params.md)。
+
+- `mock_response`: *string or response object (optional)* - 不呼叫模型，直接回傳模擬的 completion 回應。請參閱[模擬請求](./mock_requests.md)。
+
+- `max_retries`: *integer (optional)* - API 呼叫的最大重試次數
+
+- `ssl_verify`: *boolean or string (optional)* - 啟用或停用 SSL 驗證，或設定自訂 CA 憑證包路徑。請參閱 [SSL 安全性設定](../guides/security_settings.md)。
+
+- `merge_reasoning_content_in_choices`: *boolean (optional)* - 對於串流回應，將 `reasoning_content` 以 `<think>` 標籤包覆加入 `content`，供預期在 content 中取得推理內容的用戶端使用
+
+- `thought_signature_in_tool_call_id`: *boolean (optional)* <SinceVersion v="1.109.0" /> - 對於 Gemini API 與 Vertex AI 上的 Gemini 模型，`false` 可讓 thought signature 不進入 tool 呼叫 ID，使 ID 保持簡短。請參閱[讓 tool 呼叫 ID 保持簡短](../providers/gemini.md#keep-tool-call-ids-short)。
+
+- `prompt_id`: *string (optional)* - 傳給 prompt 管理 hooks 的受管理 prompt ID。請參閱 [prompt 管理](../prompt_management.md)。
+
+- `prompt_variables`: *dict (optional)* - 設定 prompt 管理 hooks 時，用來填入受管理 prompt 變數的值。請參閱 [prompt 管理](../prompt_management.md)。
+
+- `litellm_system_prompt`: *string (optional)* - 將此 prompt 加到第一則 system 訊息之前；若沒有 system 訊息，則在開頭新增一則 system 訊息
+
+- `base_model`: *string (optional)* - 用於提供者專屬模型與參數設定的基礎模型名稱。請參閱[微調模型](../guides/finetuned_models.md)。
+
+- `supports_system_message`: *boolean (optional)* - 當模型不接受 system 角色訊息時設為 false；LiteLLM 會重新對應這些訊息
+
+- `ensure_alternating_roles`: *boolean (optional)* - 在需要時加入 user 或 assistant 接續訊息，使對話角色交替出現。請參閱[訊息清理](./message_sanitization.md)。
+
+- `user_continue_message`: *message object (optional)* - 當角色交替需要 user 回合時插入的自訂 user 訊息。請參閱[訊息清理](./message_sanitization.md)。
+
+- `assistant_continue_message`: *message object (optional)* - 當角色交替需要 assistant 回合時插入的自訂 assistant 訊息。請參閱[訊息清理](./message_sanitization.md)。
+
+- `cooldown_time`: *float (optional)* - 路由的部署失敗後，可再次重試前的冷卻秒數
+
 **自訂 model 成本** 
 - `input_cost_per_token`: *float (optional)* - completion 呼叫的每個 input token 成本 
 
 - `output_cost_per_token`: *float (optional)* - completion 呼叫的每個 output token 成本 
+
+- `cost_per_second`: *float (optional)* - 用於計算按時長計費之模型成本的每秒費率
+
+- `input_cost_per_second`: *float (optional)* - 用於計算按時長計費之模型成本的每秒輸入費率
+
+- `output_cost_per_second`: *float (optional)* - 用於計算按時長計費之模型成本的每秒輸出費率
 
 **自訂 prompt template**（更多資訊請參閱 [prompt formatting](./prompt_formatting.md#format-prompt-yourself)）
 - `initial_prompt_value`: *string (optional)* - 套用於 input messages 開頭的初始字串

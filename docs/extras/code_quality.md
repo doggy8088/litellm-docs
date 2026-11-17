@@ -1,6 +1,6 @@
 # 程式碼品質 {#code-quality}
 
-🚅 LiteLLM 遵循 [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)。
+LiteLLM 遵循 [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)。
 
 我們執行：
 - 使用 Ruff 進行格式化與 linting（`make format`，`make lint-ruff`）

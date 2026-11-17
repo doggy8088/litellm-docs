@@ -1,10 +1,41 @@
-# Voyage AI {#voyage-ai}
+---
+title: "透過 LiteLLM 使用 Voyage AI API：Embeddings、Rerank"
+sidebar_label: "VoyageAI by MongoDB"
+description: "透過 LiteLLM 以 voyage/ 前綴使用 VoyageAI by MongoDB 建立 embeddings 並進行 rerank，可從 Python SDK 或 AI Gateway 操作，並支援 contextual embeddings。"
+---
+
+# VoyageAI by MongoDB {#voyageai-by-mongodb}
 https://docs.voyageai.com/embeddings/
+
+Voyage AI 現在是 VoyageAI by MongoDB。LiteLLM 保留 `voyage/` 模型前綴，並依您提供的金鑰挑選 API 主機，方式與官方 `voyageai` SDK 相同。
 
 ## API 金鑰 {#api-key}
 ```python
 # env variable
 os.environ['VOYAGE_API_KEY']
+```
+
+當 `VOYAGE_API_KEY` 未設定時，LiteLLM 也會讀取 `VOYAGE_AI_API_KEY` 與 `VOYAGE_AI_TOKEN`。
+
+### 您的金鑰會送往哪個主機 {#which-host-your-key-goes-to}
+
+| 金鑰簽發者 | 金鑰前綴 | 請求送往 |
+|---------------|------------|----------------|
+| MongoDB Atlas (Model API) | `al-` | `https://ai.mongodb.com/v1` |
+| Voyage AI dashboard | `pa-` | `https://api.voyageai.com/v1` |
+
+每個主機都會以 403 拒絕另一方簽發的金鑰，因此不需要任何設定：MongoDB 簽發的金鑰會自動路由到 `ai.mongodb.com`。在模型上設定 `api_base`（rerank 則用 `VOYAGE_API_BASE`）可以將請求送往其他地方，例如任一主機前方的 gateway；明確指定的 `api_base` 永遠優先於金鑰前綴。
+
+```yaml
+model_list:
+  - model_name: voyage-3.5
+    litellm_params:
+      model: voyage/voyage-3.5
+      api_key: os.environ/VOYAGE_API_KEY   # al-... goes to ai.mongodb.com, pa-... to api.voyageai.com
+  - model_name: rerank-2.5
+    litellm_params:
+      model: voyage/rerank-2.5
+      api_key: os.environ/VOYAGE_API_KEY
 ```
 
 ## 範例用法 - Embedding {#sample-usage---embedding}
@@ -219,7 +250,7 @@ curl http://localhost:4000/v1/embeddings \
 
 ## 重新排序 {#rerank}
 
-Voyage AI 提供 reranking 模型，會根據文件與查詢的相關性重新排序文件，以提升搜尋相關性。
+VoyageAI by MongoDB 提供 reranking 模型，會根據文件與查詢的相關性重新排序文件，以提升搜尋相關性。MongoDB 簽發的金鑰（`al-`）在此也會路由到 `ai.mongodb.com`。
 
 ### 快速開始 {#quick-start}
 

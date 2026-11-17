@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 Guardrails AI 檢查"
+sidebar_label: "Guardrails AI"
+description: "透過 LiteLLM AI 閘道在 LLM 呼叫上執行 Guardrails AI 防護：將 config.yaml 指向您的 Guardrails AI 伺服器，並依金鑰控制防護。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -25,10 +30,10 @@ guardrails:
   - guardrail_name: "guardrails_ai-guard"
     litellm_params:
       guardrail: guardrails_ai
-      guard_name: "detect-secrets-guard"            # 👈 Guardrail AI guard name
+      guard_name: "detect-secrets-guard"            # Guardrail AI guard name
       mode: "pre_call"
-      guardrails_ai_api_input_format: "llmOutput"   # 👈 This is the only option that currently works (and it is a default), use it for both pre_call and post_call hooks
-      api_base: os.environ/GUARDRAILS_AI_API_BASE   # 👈 Guardrails AI API Base. Defaults to "http://0.0.0.0:8000"
+      guardrails_ai_api_input_format: "llmOutput"   # This is the only option that currently works (and it is a default), use it for both pre_call and post_call hooks
+      api_base: os.environ/GUARDRAILS_AI_API_BASE   # Guardrails AI API Base. Defaults to "http://0.0.0.0:8000"
 ```
 
 2. 啟動 LiteLLM 閘道 
@@ -54,7 +59,7 @@ curl -i http://localhost:4000/v1/chat/completions \
   }'
 ```
 
-## ✨ 依專案（API 金鑰）控制 Guardrails {#-control-guardrails-per-project-api-key}
+## 依專案（API 金鑰）控制 Guardrails {#control-guardrails-per-project-api-key}
 
 <EnterpriseFeature />
 

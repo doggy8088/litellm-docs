@@ -14,7 +14,7 @@ import TabItem from '@theme/TabItem';
 | 備援 | ✅ | 可在支援的模型之間運作 |
 | 負載平衡 | ✅ | 可在支援的模型之間運作 |
 | 防護欄 | ✅ | 套用於輸入文字（僅限非串流） |
-| 支援的提供者 | OpenAI, Azure OpenAI, Vertex AI, AWS Polly, ElevenLabs , MiniMax |
+| 支援的提供者 | OpenAI, Azure OpenAI, Vertex AI, AWS Polly, ElevenLabs , MiniMax, Mistral |
 
 ## **LiteLLM Python SDK 使用方式** {#litellm-python-sdk-usage}
 ### 快速開始  {#quick-start}
@@ -106,6 +106,7 @@ litellm --config /path/to/config.yaml
 | Gemini      |   [使用方式](#gemini-text-to-speech)                 |
 | ElevenLabs  |   [使用方式](../docs/providers/elevenlabs#text-to-speech-tts)                 |
 | MiniMax     |   [使用方式](/docs/providers/minimax)                 |
+| Mistral     |   [使用方式](/docs/providers/mistral#text-to-speech)                 |
 
 ## `/audio/speech` 到 `/chat/completions` 橋接 {#audiospeech-to-chatcompletions-bridge}
 
@@ -195,6 +196,8 @@ curl http://0.0.0.0:4000/v1/audio/speech \
   --output gemini_speech.mp3
 ```
 
+自 v1.107.0 起，OpenAI 的語音名稱（例如 `alloy`）會對應到 Gemini 的預建語音（`alloy` 會變成 `Kore`）。傳入 Gemini 語音名稱（例如 `Kore` 或 `Puck`）即可直接挑選；完整對應表請見 [Gemini 提供者文件](./providers/gemini#voice-names)。
+
 ### Vertex AI 文字轉語音 {#vertex-ai-text-to-speech}
 
 #### Python SDK 使用方式 {#python-sdk-usage-1}
@@ -254,7 +257,7 @@ AWS Polly 提供神經式與標準文字轉語音引擎，支援多種語音與�
 
 請參閱 [AWS Polly 提供者文件](../docs/providers/aws_polly) 以取得詳細的使用範例。
 
-## ✨ Enterprise LiteLLM Proxy - 設定最大請求檔案大小  {#-enterprise-litellm-proxy---set-max-request-file-size}
+## Enterprise LiteLLM Proxy - 設定最大請求檔案大小  {#enterprise-litellm-proxy---set-max-request-file-size}
 
 當您想要限制送往 `audio/transcriptions` 的請求檔案大小時，請使用此功能
 
@@ -263,7 +266,7 @@ AWS Polly 提供神經式與標準文字轉語音引擎，支援多種語音與�
   litellm_params:
     model: whisper-1
     api_key: sk-*******
-    max_file_size_mb: 0.00001 # 👈 max file size in MB  (Set this intentionally very small for testing)
+    max_file_size_mb: 0.00001 # max file size in MB  (Set this intentionally very small for testing)
   model_info:
     mode: audio_transcription
 ```

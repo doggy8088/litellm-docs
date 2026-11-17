@@ -24,7 +24,7 @@ Gateway 與上游驗證是分開設定的。請將它們的憑證分開保存。
 | 端點 | 協定 | 適用情況 | 必要標頭 | 伺服器範圍 | 預期回應 |
 |----------|----------|----------|------------------|--------------|-------------------|
 | `/mcp` | MCP JSON-RPC（可串流 HTTP） | 直接的 MCP 用戶端（Claude Desktop/Code、Cursor、MCP Inspector、FastMCP）應該看到該金鑰可存取的每一台伺服器 | `x-litellm-api-key: Bearer sk-...`；可選 `x-mcp-servers: <name1>,<group1>` 以縮小集合 | 該金鑰/團隊被允許使用的所有伺服器，可選擇以 `x-mcp-servers` 縮小範圍 | MCP `initialize` / `tools/list` / `tools/call` JSON-RPC 回應；工具名稱會以前綴加上伺服器別名（例如 `github_mcp-search_issues`） |
-| `/{server_name}/mcp` | MCP JSON-RPC（可串流 HTTP） | 直接的 MCP 用戶端應該剛好看到一台伺服器（或以逗號分隔的清單 `/{name1,name2}/mcp`） | `x-litellm-api-key: Bearer sk-...` | 僅限所命名的伺服器、toolset，或存取群組 | 相同的 JSON-RPC 回應，但僅限於該伺服器 |
+| `/{server_name}/mcp` 或 `/mcp/{server_name}` | MCP JSON-RPC（可串流 HTTP） | 直接的 MCP 用戶端應該剛好看到一台伺服器（或以逗號分隔的清單 `/{name1,name2}/mcp`）。兩種 URL 形式的作用相同 | `x-litellm-api-key: Bearer sk-...` | 僅限所命名的伺服器、toolset，或存取群組 | 相同的 JSON-RPC 回應，但僅限於該伺服器 |
 | `/toolset/{toolset_name}/mcp` | MCP JSON-RPC（可串流 HTTP） | 直接的 MCP 用戶端應該只看到 [toolset](./mcp_toolsets) 中的工具 | `x-litellm-api-key: Bearer sk-...` | 所命名的 toolset | 相同的 JSON-RPC 回應，但僅限於該 toolset |
 | 位於 `tools` 內的 `server_url: "litellm_proxy"` | LLM API（`/v1/responses` 或 `/v1/chat/completions`） | LLM 應在完成請求期間探索並執行 MCP 工具。`litellm_proxy` 是字面上的 sentinel，絕不是 URL | LLM 請求上的 `Authorization: Bearer sk-...`；每台伺服器的上游憑證則透過 `x-mcp-...` 標頭或工具的 `headers` 物件提供 | 所有允許的伺服器，或使用 `litellm_proxy/mcp/<server_alias>` 指定伺服器或 toolset | 回應 / Chat Completions 輸出；`require_approval: "never"` 會啟用模型所選工具的執行 |
 | `GET /v1/mcp/server` | REST | 列出已設定的伺服器並擷取真實的 `server_id` / `server_name` | `Authorization: Bearer sk-...` 或 `x-litellm-api-key: sk-...` | 該金鑰可見的所有伺服器 | 伺服器物件的 JSON 陣列 |

@@ -21,6 +21,12 @@ export const Logo = ({ src }) => (
 columns={3}
 items={[
   {
+    icon: <Logo src="/img/hex/hex-logo-blue.svg" />,
+    title: "Hex",
+    description: "在 Hex 中分析團隊每日成本，再於 LiteLLM 設定預算與路由。",
+    to: "/blog/hex-litellm-roi",
+  },
+  {
     icon: <Logo src="/img/integrations/langfuse.png" />,
     title: "Langfuse",
     description: "LLM 可觀測性與分析。",

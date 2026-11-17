@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Fal AI 圖片生成"
+sidebar_label: "Fal AI"
+description: "從 Python SDK 或 AI Gateway 在 Fal AI 上以 FLUX Pro v1.1 Ultra、Imagen 4 preview、Recraft v3 與 Stable Diffusion 3.5 生成圖片，支援同步或非同步。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

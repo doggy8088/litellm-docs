@@ -1,3 +1,8 @@
+---
+title: "在 LiteLLM AI 閘道上使用 EnkryptAI 防護欄"
+sidebar_label: "EnkryptAI 防護欄"
+description: "在 LiteLLM AI 閘道上為 LLM 的輸入與輸出加入 EnkryptAI 內容審核與安全檢查，並提供自訂政策與可觀測性。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,3 +1,9 @@
+---
+title: "搭配 LiteLLM 使用 Cognition API：SWE 模型設定"
+sidebar_label: "Cognition"
+description: "透過 Python SDK 或 AI 閘道呼叫 Cognition 的 swe-1.7、swe-1.7-lightning 與 swe-1.6 程式碼模型，並使用工具呼叫、/v1/messages 與成本追蹤。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

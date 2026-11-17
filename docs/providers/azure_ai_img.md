@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure AI 圖像生成 (FLUX)"
+sidebar_label: "Azure AI 圖像生成（Black Forest Labs - Flux）"
+description: "從 Python SDK 或 AI 閘道，在 Azure AI 上使用 FLUX 1.1 Pro、FLUX.1 Kontext Pro 與 FLUX 2 Pro 或 Flex 生成圖像，並以 FLUX 2 Pro 編輯圖像。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

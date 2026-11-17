@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Bedrock 匯入模型"
+sidebar_label: "Bedrock 匯入模型"
+description: "透過 LiteLLM 呼叫 Bedrock 匯入模型，例如 DeepSeek R1、Qwen3、Qwen2 與 Kimi K2 Thinking，包含 config.yaml 設定與 AI 閘道測試請求。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -56,7 +62,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "DeepSeek-R1-Distill-Llama-70B", # 👈 the 'model_name' in config
+            "model": "DeepSeek-R1-Distill-Llama-70B", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -120,7 +126,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "DeepSeek-R1-Distill-Llama-70B", # 👈 the 'model_name' in config
+            "model": "DeepSeek-R1-Distill-Llama-70B", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -184,7 +190,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "Qwen3-32B", # 👈 the 'model_name' in config
+            "model": "Qwen3-32B", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",
@@ -249,7 +255,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
       --header "Authorization: Bearer $LITELLM_API_KEY" \
       --header 'Content-Type: application/json' \
       --data '{
-            "model": "Qwen2-72B", # 👈 the 'model_name' in config
+            "model": "Qwen2-72B", # the 'model_name' in config
             "messages": [
                 {
                 "role": "user",

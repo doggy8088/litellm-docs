@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Literal AI 記錄：多步驟追蹤"
+sidebar_label: "Literal AI"
+description: "從 Python SDK 或 AI 閘道將 LiteLLM 呼叫記錄到 Literal AI，透過裝飾器建立多步驟代理程式追蹤，並將 generation 與提示詞綁定。"
+---
 import Image from '@theme/IdealImage';
 
 # Literal AI {#literal-ai}
@@ -31,7 +36,7 @@ litellm.failure_callback = ["literalai"] # Log Errors to LiteralAI
 response = litellm.completion(
   model="{{openai_small}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```

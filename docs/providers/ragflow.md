@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 RAGFlow API：Chat 與 Agents"
+sidebar_label: "RAGFlow"
+description: "透過 LiteLLM Python SDK 或 AI Gateway config.yaml，以 ID 呼叫 RAGFlow 的 chat 與 agent 端點，使用 OpenAI 格式請求並支援串流。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

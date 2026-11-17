@@ -1,6 +1,6 @@
 # 成為整合合作夥伴 {#be-an-integration-partner}
 
-歡迎，整合合作夥伴們！👋
+歡迎，整合合作夥伴們！
 
 我們很高興您能為 LiteLLM 做出貢獻。若要開始並與 LiteLLM 社群連結：
 

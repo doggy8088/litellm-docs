@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM AI Gateway 使用 Meta Llama API"
+sidebar_label: "Meta Llama"
+description: "在 Meta 的 Llama API 上呼叫 Llama 4 Maverick、Llama 4 Scout 與 Llama 3.3，支援串流與函式呼叫，再透過 proxy 提供給 OpenAI 用戶端。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

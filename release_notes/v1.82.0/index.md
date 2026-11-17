@@ -1,5 +1,6 @@
 ---
-title: "v1.82.0 - 即時防護欄、專案管理，以及 10+ 項效能最佳化"
+title: "LiteLLM v1.82.0 - 即時防護欄、專案管理，以及 10+ 項效能最佳化"
+description: "為 /v1/realtime 工作階段新增防護欄與 Projects UI。預設將 OpenAI 與 Azure 模型的 /v1/messages 路由至 Responses API。"
 slug: "v1-82-0"
 date: 2026-02-28T00:00:00
 authors:

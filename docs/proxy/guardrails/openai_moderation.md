@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 閘道上的 OpenAI Moderation 防護欄"
+sidebar_label: "OpenAI Moderation"
+description: "在 LiteLLM AI 閘道上以 OpenAI Moderation API 封鎖仇恨言論、騷擾、自傷、性內容與暴力內容，並支援串流。"
+---
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -36,7 +41,7 @@ guardrails:
     litellm_params:
       guardrail: openai_moderation
       mode: "pre_call"
-      api_key: os.environ/OPENAI_API_KEY  # Optional if already set globally
+      api_key: os.environ/OPENAI_API_KEY  # Optional if already set globally, or if OPENAI_IDENTITY_* federation is set (v1.108.0+)
       model: "omni-moderation-latest"     # Optional, defaults to omni-moderation-latest
       api_base: "https://api.openai.com/v1"  # Optional, defaults to OpenAI API
 ```

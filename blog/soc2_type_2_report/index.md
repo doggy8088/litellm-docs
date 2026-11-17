@@ -16,6 +16,6 @@ hide_table_of_contents: true
 
 {/* truncate */}
 
-這完成了我們在 [3 月宣布](/blog/vanta-compliance-recertification) 的重新認證，該認證由 Vanta 執行，並經由獨立稽核員驗證。
+這完成了我們在 [3 月宣布](../vanta_compliance_recertification/index.md) 的重新認證，該認證由 Vanta 執行，並經由獨立稽核員驗證。
 
 如果您的安全團隊需要該報告作為供應商審查之用，請引導他們前往 [trust.litellm.ai](https://trust.litellm.ai/)。如有任何其他問題，請寄信至 security@berri.ai。

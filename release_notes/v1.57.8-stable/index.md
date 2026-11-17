@@ -1,5 +1,6 @@
 ---
-title: v1.57.8-stable
+title: "LiteLLM v1.57.8-stable"
+description: "新增 Hashicorp 機密管理員支援、警示整合與 Prometheus 改進。另更新 Mistral Large、Cohere command-r7b 與 Voyage 的定價。"
 slug: v1.57.8-stable
 date: 2025-01-11T10:00:00
 authors:

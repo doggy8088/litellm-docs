@@ -1,5 +1,5 @@
 ---
-title: OpenAI Fast 與 Ultrafast 模式
+title: "LiteLLM 中的 OpenAI Fast 與 Ultrafast 模式"
 sidebar_label: Fast 與 Ultrafast 模式
 description: 透過 LiteLLM Admin UI 或 config.yaml 設定 OpenAI Fast 和 Ultrafast 模式，透過 Responses API 呼叫它們，並在 Codex 中公開它們。
 ---
@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 # OpenAI Fast 與 Ultrafast 模式 {#openai-fast--ultrafast-mode}
 
-對 GPT-6 Astra 的 Fast 模式使用 `service_tier: "priority"`，或對 Ultrafast 使用 `service_tier: "ultrafast"`。您可以在 Admin UI 或 `config.yaml` 中將該層級設為部署預設值，或針對每個請求個別選擇。以下範例使用 [Responses API](./responses_api.md)。
+對 GPT-6 Astra 或 GPT-6.1 Sol 的 Fast 模式使用 `service_tier: "priority"`，或對 Ultrafast 使用 `service_tier: "ultrafast"`。您可以在 Admin UI 或 `config.yaml` 中將該層級設為部署預設值，或針對每個請求個別選擇。以下範例使用 [Responses API](./responses_api.md)。
 
 本導覽會為 Astra Ultrafast 建立 `gpt-6-astra-ultrafast`，並以名為 `gpt-6.1-sol-fast` 的 Fast 替代項目。這些 gateway 別名是您自行選擇的名稱；`service_tier` 參數會選取處理模式。
 
@@ -35,9 +35,9 @@ OpenAI 已將 Priority 處理重新命名為 [Fast 模式](https://developers.op
 
 ### Ultrafast 模式 {#ultrafast-mode}
 
-搭配 `service_tier: "ultrafast"` 使用 **GPT-6 Astra**（`openai/gpt-6-astra`）。透過 LiteLLM 的完整 Responses API 請求在測試中回傳了 `service_tier: "ultrafast"`。本指南中的 Ultrafast 設定只使用 Astra。
+搭配 `service_tier: "ultrafast"` 使用 **GPT-6 Astra**（`openai/gpt-6-astra`）或 **GPT-6.1 Sol**（`openai/gpt-6.1-sol`）。OpenAI 的 [Ultrafast 指南](https://developers.openai.com/api/docs/guides/ultrafast-mode) 截至 2026 年 10 月 10 日列出了這兩個模型，LiteLLM 的成本對照表也為兩者都提供了 `*_ultrafast` 費率。透過 LiteLLM 對 Astra 完成的一次 Responses API 呼叫在測試中回傳了 `service_tier: "ultrafast"`。本指南中的 Ultrafast 設定使用 Astra；若要使用 Sol，請改用 `openai/gpt-6.1-sol`，以及例如 `gpt-6.1-sol-ultrafast` 的公開名稱。
 
-OpenAI 讓所有 API 使用者都能使用 Astra Ultrafast，且初始速率限制較低。請透過 HTTP 或 WebSocket 使用 Responses API。Ultrafast 僅支援美國資料駐留與全球處理；不支援 EU 與其他非美國區域處理端點。請參閱 OpenAI 的 [Ultrafast 指南](https://developers.openai.com/api/docs/guides/ultrafast-mode) 以取得目前的可用性與限制。
+OpenAI 讓所有 API 使用者都能使用 Ultrafast，且初始速率限制較低。請透過 HTTP 或 WebSocket 使用 Responses API。Ultrafast 僅支援美國資料駐留與全球處理；不支援 EU 與其他非美國區域處理端點。請參閱 OpenAI 的 [Ultrafast 指南](https://developers.openai.com/api/docs/guides/ultrafast-mode) 以取得目前的可用性與限制。
 
 您的 OpenAI 帳戶必須支援該模型所選的層級。將層級加入 LiteLLM 的目錄不會在 OpenAI 啟用它，而且支援 Fast 模式不代表支援 Ultrafast。
 
@@ -144,7 +144,7 @@ model_list:
 </TabItem>
 <TabItem value="fast" label="Fast（GPT-6.1 Sol）">
 
-```yaml title="config.yaml"
+```yaml title="config.yaml" keep-model-ids
 model_list:
   - model_name: gpt-6.1-sol-fast
     litellm_params:
@@ -237,7 +237,7 @@ print(response)
 
 ## 在 Codex 中提供 /fast 和 /ultrafast {#offer-fast-and-ultrafast-in-codex}
 
-使用 `model_info.service_tiers: ["priority"]` 來提供 `/fast`。對於 Astra，使用 `["priority", "ultrafast"]` 來同時提供 `/fast` 和 `/ultrafast`。Codex CLI 0.159 或更新版本也需要將 `model_catalog_url` 指向您閘道的 `/v1/models` 端點，並且 `[features] api_key_model_discovery = true`。請遵循 [Codex 模型目錄設定](../../proxy/client_setup/codex_cli.md#model-catalog-and-service-tiers)，選取您的閘道模型，然後選擇一個模式。
+使用 `model_info.service_tiers: ["priority"]` 來提供 `/fast`。對於 Astra 或 GPT-6.1 Sol，使用 `["priority", "ultrafast"]` 來同時提供 `/fast` 和 `/ultrafast`。Codex CLI 0.159 或更新版本也需要將 `model_catalog_url` 指向您閘道的 `/v1/models` 端點，並且 `[features] api_key_model_discovery = true`。請遵循 [Codex 模型目錄設定](../../proxy/client_setup/codex_cli.md#model-catalog-and-service-tiers)，選取您的閘道模型，然後選擇一個模式。
 
 對於使用者切換模式開關的模型，請省略部署的 `litellm_params.service_tier`，並保留 `model_info.service_tiers`。否則，停止送出 tier 的用戶端仍會繼承部署的預設值。宣告一個 tier 並不會授予 OpenAI 存取該 tier 的權限。
 
@@ -248,7 +248,7 @@ print(response)
 | 症狀 | 要檢查的項目 |
 | --- | --- |
 | `insufficient_quota` 或 `credit_balance_exhausted` | 檢查 OpenAI 帳戶的點數與帳單。LiteLLM 虛擬金鑰的預算不會為上游帳戶提供資金。 |
-| `Invalid service_tier argument`，或提供者拒絕該模型或 tier | 檢查 [支援的模型](#supported-models-and-availability)、帳戶存取權限、區域端點，以及請求的 tier。對於上述 Ultrafast 設定，請使用 Astra。僅有模型存取權並不保證能存取每個 tier。 |
+| `Invalid service_tier argument`，或提供者拒絕該模型或 tier | 檢查 [支援的模型](#supported-models-and-availability)、帳戶存取權限、區域端點，以及請求的 tier。Ultrafast 僅限 GPT-6 Astra 與 GPT-6.1 Sol。僅有模型存取權並不保證能存取每個 tier。 |
 | Fast 或 Ultrafast 請求看起來與 Standard 成本相同 | 確認模型的 `*_priority` 或 `*_ultrafast` 定價欄位，或設定自訂定價。提供者存取權與 LiteLLM 成本追蹤是分開的。 |
 | 請求使用了不同的 tier | 檢查用戶端的 `service_tier`；它會覆寫部署預設值。確認所選別名路由到預期的部署。 |
 | Fast 請求回傳 `service_tier: "default"` | 當流量上升過快時，OpenAI 可能會降級請求。請檢查提供者的上升限制；僅有 HTTP 200 並不能證明是 Fast 處理。 |

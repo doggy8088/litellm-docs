@@ -7,6 +7,8 @@ authors:
   - krrish
   - ishaan-alt
 description: "LiteLLM AI Gateway 對 Claude Opus 4.8 的 Day 0 支援。可透過 Anthropic、Azure、Vertex AI 和 Bedrock 使用。"
+card_title: "Claude Opus 4.8"
+card_summary: "讓自身程式碼缺陷蒙混通過的可能性降低 4 倍，努力階層從 low 到 max，支援任務中途的 system 訊息，價格與 4.7 相同。"
 tags: [anthropic, claude, opus 4.8, day 0 support]
 hide_table_of_contents: false
 ---
@@ -194,11 +196,15 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 model_list:
   - model_name: claude-opus-4-8
     litellm_params:
-      model: bedrock/anthropic.claude-opus-4-8
+      model: bedrock/global.anthropic.claude-opus-4-8
       aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: us-east-1
 ```
+
+:::note
+`global.` 可從任何 AWS 商業區域處理請求。若要將請求保留在單一地理區域內，請改用地理推論設定檔，例如 `bedrock/us.anthropic.claude-opus-4-8`（該模型的 AWS 模型卡列出了它所擁有的設定檔），費用高出 10%。LiteLLM 會追蹤兩者的成本。在較舊的映像上，這需要遠端成本對照表；LiteLLM 會在啟動時載入它，除非已設定 `LITELLM_LOCAL_MODEL_COST_MAP`。
+:::
 
 **2. 啟動 proxy**
 

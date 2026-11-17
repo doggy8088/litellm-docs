@@ -1,3 +1,9 @@
+---
+title: "LiteLLM 的 OpenTelemetry 追蹤：v1 設定"
+sidebar_label: "OpenTelemetry v1"
+description: "透過 v1 整合將 LiteLLM 追蹤資料送至任何 OpenTelemetry 收集器，例如 Jaeger、Zipkin 或 Datadog：包含 span 階層、traceparent 與遮蔽。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -557,7 +563,7 @@ semconv 模式下發出的 operation 名稱：`chat`（預設）、`embeddings`�
 
 | 屬性 | 預設模式 | Semconv 模式 |
 |---|---|---|
-| `gen_ai.operation.name` | litellm `call_type`（例如 `acompletion`） | semconv operation（`chat`、`embeddings`、`text_completion`） |
+| `gen_ai.operation.name` | litellm `call_type`（例如 `acompletion`） | semconv operation（`chat`、`embeddings`、`text_completion`）；位於 `pass_through_endpoints` 下的路由會讀取 `litellm.passthrough`，且任何 pass-through 目標都能以 [`x-litellm-operation-name`](../proxy/pass_through_cost_tracking#naming-the-operation) 指定自己的 operation 名稱 |
 | `gen_ai.system` | 提供者名稱（例如 `openai`） | 不變 |
 | `gen_ai.provider.name` | 未設定 | 提供者名稱（依規格重新命名的 Required 屬性） |
 | `gen_ai.framework` | `litellm` | `litellm` |

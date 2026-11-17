@@ -9,7 +9,7 @@ Azure AI Speech [Azure AI Speech](https://learn.microsoft.com/azure/ai-services/
 | 端使用者追蹤 | ❌ | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ❌ | 即時辨識使用 Speech SDK WebSocket 協定，此通過不涵蓋 |
 
-只要將 `https://{region}.stt.speech.microsoft.com` 或 `https://{region}.api.cognitive.microsoft.com` 替換為 `LITELLM_PROXY_BASE_URL/azure_speech` 即可 🚀
+只要將 `https://{region}.stt.speech.microsoft.com` 或 `https://{region}.api.cognitive.microsoft.com` 替換為 `LITELLM_PROXY_BASE_URL/azure_speech` 即可
 
 LiteLLM 會從代理的 Azure Speech 認證注入 `Ocp-Apim-Subscription-Key` 標頭，因此用戶端只需要一把 LiteLLM 虛擬金鑰。由用戶端送出的訂閱金鑰會被捨棄，且永遠不會送達 Azure。
 

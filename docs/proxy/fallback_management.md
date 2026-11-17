@@ -1,3 +1,7 @@
+---
+sidebar_label: "備援管理 API"
+---
+
 # [New] 備援管理端點 {#new-fallback-management-endpoints}
 
 專門用於將模型備援與一般組態分開管理的端點。
@@ -235,8 +239,8 @@ curl -X POST 'http://0.0.0.0:4000/chat/completions' \
 
 ```json keep-model-ids
 {
-  "model": "gpt-3.5-turbo",
-  "fallback_models": ["gpt-4-32k", "claude-3-opus"],
+  "model": "gpt-5.4-mini",
+  "fallback_models": ["{{openai_large}}", "{{anthropic_large}}"],
   "fallback_type": "context_window"
 }
 ```

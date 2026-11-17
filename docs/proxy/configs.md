@@ -1,9 +1,19 @@
+---
+title: YAML 設定
+sidebar_label: YAML
+description: 在 config.yaml 中設定 LiteLLM 模型、路由、記錄與伺服器設定。
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import SinceVersion from '@site/src/components/SinceVersion';
 
-# 概覽 {#overview}
-在 config.yaml 上設定 model list、`api_base`、`api_key`、`temperature` 與 proxy server settings（`master-key`）。
+# YAML 設定 {#configyaml}
+
+使用 `config.yaml` 定義模型、提供者憑證、路由、記錄與伺服器設定。請將檔案與您的部署設定放在一起。祕密請使用環境變數。
+
+本指南涵蓋主要區段與範例。[設定參考](./config_settings.md) 列出所有選項。使用 [檔案管理](./config_management.md) 可將設定拆分到多個檔案。啟動旗標請參閱 [CLI 參考](./cli.md)。[設定概覽](./configuration/overview.md) 可協助您選擇 YAML、Admin UI、Management API 或 Terraform。
 
 | Param Name           | 說明                                                   |
 |----------------------|---------------------------------------------------------------|
@@ -27,13 +37,13 @@ import TabItem from '@theme/TabItem';
 
 例如： 
 - `model=vllm-models` 會路由到 `openai/facebook/opt-125m`。 
-- `model={{openai_large}}` 會在 `azure/gpt-4o-eu` 和 `azure/gpt-4o-ca` 之間進行負載平衡
+- `model={{openai_large}}` 會在 `azure/{{openai_large}}-eu` 和 `azure/{{openai_large}}-ca` 之間進行負載平衡
 
 ```yaml
 model_list:
   - model_name: {{openai_large}} ### RECEIVED MODEL NAME ###
     litellm_params: # all params accepted by litellm.completion() - https://docs.litellm.ai/docs/completion/input
-      model: azure/gpt-4o-eu ### MODEL NAME sent to `litellm.completion()` ###
+      model: azure/{{openai_large}}-eu ### MODEL NAME sent to `litellm.completion()` ###
       api_base: https://my-endpoint-europe-berri-992.openai.azure.com/
       api_key: "os.environ/AZURE_API_KEY_EU" # does os.getenv("AZURE_API_KEY_EU")
       rpm: 6      # [OPTIONAL] Rate limit for this deployment: in requests per minute (rpm)
@@ -42,7 +52,7 @@ model_list:
       model: bedrock/us.anthropic.{{anthropic}}
   - model_name: {{openai_large}}
     litellm_params:
-      model: azure/gpt-4o-ca
+      model: azure/{{openai_large}}-ca
       api_base: https://my-endpoint-canada-berri992.openai.azure.com/
       api_key: "os.environ/AZURE_API_KEY_CA"
       rpm: 6
@@ -122,9 +132,31 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 ## config.yaml 與資料庫設定 {#configyaml-vs-database-settings}
 
-一旦啟用 `store_model_in_db`（透過 `general_settings.store_model_in_db: true` 或 `STORE_MODEL_IN_DB="True"`），Admin UI 和 `/config/update` API 就會把設定寫入 `LiteLLM_Config` 資料表，而資料庫會成為它們所寫入內容的真實來源。在啟動時以及每次設定重新整理時，proxy 會先載入您的 `config.yaml`，然後再疊加 `general_settings`、`router_settings`、`litellm_settings` 與 `environment_variables` 的資料庫列。這個疊加是深度合併，凡是兩邊都存在的任何鍵，都以資料庫值為準，因此在 YAML 中編輯該鍵並重新啟動 pods 不會改變執行中的值。請將 YAML 視為這四個區段的啟動基礎，並在 UI 中變更由 UI 寫入的鍵（或從 `LiteLLM_Config` 刪除該列），而不是在檔案中變更。
+<SinceVersion v="1.103.0" />
 
-有幾個細節值得了解。`null` 與空清單的資料庫值會被視為「無值」，且不會覆寫 YAML 所提供的內容，因此您從未在 UI 中設定的鍵仍然會來自檔案。這個疊加也只套用於那四個設定區段；`model_list` 不會以這種方式合併，因為透過 UI 或 API 新增的模型會儲存在 `LiteLLM_ProxyModelTable` 中，並與您的 YAML 模型一同提供，也就是說，資料庫模型永遠不會取代同名的 YAML 項目，而是會成為另一個與其一起進行負載平衡的部署（請參閱 [模型管理](./model_management.md)）。而當 `store_model_in_db` 關閉時，設定永遠不會從資料庫讀取，因此您的 `config.yaml` 具有完全的權威性。
+`general_settings`、`router_settings`、`litellm_settings` 與 `environment_variables` 中的設定是逐鍵擁有的。您在 `config.yaml` 中宣告的鍵由檔案擁有，proxy 一律以檔案的值執行。檔案未宣告的鍵則由資料庫擁有。一旦啟用 `store_model_in_db`（透過 `general_settings.store_model_in_db: true` 或 `STORE_MODEL_IN_DB="True"`），Admin UI 和 `/config/update` API 就會把這些鍵寫入 `LiteLLM_Config` 資料表，proxy 會在啟動時以及每次設定重新整理時套用它們。
+
+對由設定擁有的鍵進行寫入會被拒絕。從 Admin UI、`/config/update` 或 `/config/field/update` 變更這類鍵會傳回 400，其中會指出該鍵、其所屬區段、資料庫中已儲存的該鍵值是否正被忽略，以及如何解決。以下是 `/config/field/update` 的回應：
+
+```json
+{
+  "detail": {
+    "error": "general_settings key 'store_model_in_db' is set in the config file and cannot be changed here.",
+    "keys": ["store_model_in_db"],
+    "section": "general_settings",
+    "stored_database_values_ignored": [],
+    "resolution": "edit /app/config.yaml to change it, or remove it from the file to let the database own it"
+  }
+}
+```
+
+`/config/update` 會在 `error.message` 內傳回相同欄位。當資料庫已持有該鍵的值時，錯誤會補充說明所儲存的值會被忽略且永遠不會被套用，並將該鍵列入 `stored_database_values_ignored`。
+
+重新送出檔案已持有的值的請求會被接受，因為它沒有改變任何東西。如果資料庫仍持有某個檔案現在宣告的鍵的值（例如在您將該鍵加入 YAML 之前從 UI 儲存的值），該儲存值會被忽略且永遠不會被套用。若要變更由設定擁有的鍵，請編輯 `config.yaml` 並重新啟動或重新載入。若要將鍵交給 UI，請將它從 `config.yaml` 移除，之後資料庫值（若有）便會生效。
+
+所有權規則只套用於那四個設定區段。`model_list` 不會以這種方式合併，因為透過 UI 或 API 新增的模型會儲存在 `LiteLLM_ProxyModelTable` 中，並與您的 YAML 模型一同提供，也就是說，資料庫模型永遠不會取代同名的 YAML 項目，而是會成為另一個與其一起進行負載平衡的部署（請參閱 [模型管理](./model_management.md)）。當 `store_model_in_db` 關閉時，設定永遠不會從資料庫讀取，因此您的 `config.yaml` 具有完全的權威性。
+
+在 v1.103.0 之前，優先順序正好相反。Proxy 會將資料庫列深度合併到 `config.yaml` 之上，因此凡是兩邊都存在的任何鍵，都以資料庫值為準，在 YAML 中編輯該鍵並重新啟動也不會改變執行中的值。如果您執行的是較舊版本，請在 UI 中變更由 UI 寫入的鍵（或從 `LiteLLM_Config` 刪除該列），而不是在檔案中變更。
 
 ## LLM 設定 `model_list` {#llm-configs-model_list}
 
@@ -133,8 +165,8 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 
 [**所有輸入參數**](https://docs.litellm.ai/docs/completion/input#input-params-1)
 
-**步驟 1**：建立一個 `config.yaml` 檔案
-```yaml
+**步驟 1**：建立一個 `config.yaml` 檔案。設定 `temperature` 的部署使用 gpt-5.4-mini，因為較新的預設 OpenAI 模型除非關閉推理，否則只接受 temperature 為 1。
+```yaml keep-model-ids
 model_list:
   - model_name: gpt-4-team1
     litellm_params: # params for litellm.completion() - https://docs.litellm.ai/docs/completion/input#input---request-body
@@ -146,13 +178,13 @@ model_list:
       max_tokens: 20
   - model_name: gpt-4-team2
     litellm_params:
-      model: azure/{{openai_large}}
+      model: azure/gpt-5.4-mini
       api_key: sk-123
       api_base: https://openai-gpt-4-test-v-2.openai.azure.com/
       temperature: 0.2
-  - model_name: openai-gpt-4o
+  - model_name: openai-gpt-5.4-mini
     litellm_params:
-      model: openai/{{openai_large}}
+      model: openai/gpt-5.4-mini
       extra_headers: {"AI-Resource Group": "ishaan-resource"}
       api_key: sk-123
       organization: org-ikDc4ex8NB
@@ -413,9 +445,9 @@ litellm_settings:
   request_timeout: 10 # raise Timeout error if call takes longer than 10s. Sets litellm.request_timeout 
   fallbacks: [{"zephyr-beta": ["{{openai_small}}"]}] # fallback to {{openai_small}} if call fails num_retries 
   context_window_fallbacks: [{"zephyr-beta": ["{{openai_large}}"]}, {"{{openai_small}}": ["{{openai_large}}"]}] # fallback to {{openai_large}} if context window error
-  allowed_fails: 3 # cooldown model if it fails > 1 call in a minute. 
 
 router_settings: # router_settings are optional
+  allowed_fails: 3 # cooldown a deployment once it fails more than 3 calls within cooldown_time
   routing_strategy: simple-shuffle # Literal["simple-shuffle", "least-busy", "usage-based-routing","latency-based-routing"], default="simple-shuffle"
   model_group_alias: {"gpt-5.6": "{{openai_small}}"} # all requests with `gpt-5.6` will be routed to models with `{{openai_small}}`
   num_retries: 2
@@ -442,7 +474,7 @@ model_list:
       model: azure/chatgpt-v-2
       api_base: https://openai-gpt-4-test-v-1.openai.azure.com/
       api_version: "2023-05-15"
-      api_key: os.environ/AZURE_NORTH_AMERICA_API_KEY # 👈 KEY CHANGE
+      api_key: os.environ/AZURE_NORTH_AMERICA_API_KEY # KEY CHANGE
 ```
 
 [**查看程式碼**](https://github.com/BerriAI/litellm/blob/c12d6c3fe80e1b5e704d9846b246c059defadce7/litellm/utils.py#L2366)
@@ -477,6 +509,21 @@ credential_list:
 - `credential_name`：認證集合的唯一識別碼
 - `credential_values`：認證／機密的鍵值對（支援 `os.environ/` 語法）
 - `credential_info`：使用者提供之認證資訊的鍵值對。雖然不需要任何鍵值對，但該字典必須存在。
+
+#### 憑證名稱是永久性的 {#credential-names-are-permanent}
+
+模型與向量儲存會以 `credential_name` 參照憑證，因此它在建立後無法變更。使用不同的 `credential_name` 進行 `PATCH` 會傳回 400
+
+若要在 Admin UI 中重新標記憑證，請改設 `display_name`。它為選填，不需要唯一，且上限為 255 個字元。在 `PATCH` 時，省略它可保留目前標籤，傳送 `null` 可清除它：
+
+```bash
+curl -X PATCH http://localhost:4000/credentials/default_azure_credential \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"display_name": "Azure EU (prod)", "credential_info": {}}'
+```
+
+`credential_list` 中的憑證只能在 `config.yaml` 中變更。對它們進行 `PATCH` 和 `DELETE` 會傳回 405，UI 會停用 Edit 和 Delete，在該處設定的 `display_name` 會被忽略。`GET /credentials` 會傳回每個憑證的 `display_name` 及其 `source`，為 `db` 或 `config`
 
 ### 從密鑰管理服務載入 API 金鑰（Azure Vault 等） {#load-api-keys-from-secret-managers-azure-vault-etc}
 
@@ -667,7 +714,7 @@ general_settings:
 export LITELLM_LICENSE="eyJ..."
 ```
 
-授權金鑰是在您購買 LiteLLM Enterprise 授權時提供的 JWT 權杖。設定後，LiteLLM 會自動偵測並啟用企業功能。
+當您購買 LiteLLM Enterprise 授權時，LiteLLM 會提供授權金鑰（請參閱 [啟用您的授權](../enterprise/activate.md)）。設定後，LiteLLM 會自動偵測並啟用企業功能。
 
 您也可以將其加入您的 `.env` 檔案：
 

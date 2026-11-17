@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 | 支援的端點 | - `/chat/completions` <br/> - `/responses` <br/> - `/images/generations`（僅限 Gemini 圖像模型） |
 | 支援的提供者 | `openai`、`xai`、`vertex_ai`、`anthropic`、`gemini`、`perplexity` |
 | LiteLLM 成本追蹤 | ✅ 支援 |
-| LiteLLM 版本 | `v1.71.0+` |
+| LiteLLM 版本 | <SinceVersion v="1.71.0" /> |
 
 ## 使用的是哪個搜尋引擎？ {#which-search-engine-is-used}
 
@@ -52,7 +52,7 @@ OpenAI 依端點與模型提供兩種不同的網路搜尋使用方式：
 | 方式 | 端點 | 模型 | 啟用方式 |
 |----------|----------|--------|---------------|
 | **搜尋模型** | `/chat/completions` | `gpt-5-search-api`、`gpt-4o-search-preview`、`gpt-4o-mini-search-preview` | 傳入 `web_search_options` 參數 |
-| **網路搜尋工具** | `/responses` | `gpt-5`、`gpt-4.1`、`gpt-4o`，以及其他一般模型 | 傳入 `web_search_preview` 工具 |
+| **網路搜尋工具** | `/responses` | `{{openai_large}}`、`{{openai_small}}`，以及其他一般模型 | 傳入 `web_search_preview` 工具 |
 
 :::tip[搜尋模型會自動搜尋]
 像 `gpt-5-search-api` 這類搜尋模型，即使沒有 `web_search_options` 參數，也會**自動搜尋網路**。使用 `web_search_options` 設定 `search_context_size`（`"low"`、`"medium"`、`"high"`），或指定 `user_location` 以取得在地化結果。
@@ -668,6 +668,35 @@ model_list:
         search_context_size_medium: 0.014
         search_context_size_high: 0.014
 ```
+
+### Google 的免費 grounding 額度 {#googles-free-grounding-allowance}
+
+Google 在逐查詢價格開始適用之前，會給每個帳單帳戶一定的 Google Search grounding 免費額度：Gemini 3 系列模型每月共用 5,000 次查詢；Gemini 2.0 Flash、2.5 Flash 與 2.5 Flash-Lite 每天共用 1,500 個 grounded 提示；Gemini 2.5 Pro 每天 10,000 個 grounded 提示。LiteLLM 預設從第一次查詢就開始對 grounding 計費，因此記錄的 grounding 支出是 Google 帳單金額的上限。
+
+成本對照表以 `search_free_requests` 描述 Gemini 各資料列的這項額度。`count` 是每個週期的免費單位數，`period` 為 `"day"` 或 `"month"`，具有相同 `shared_group` 的模型會從同一個池取用，並以該列的 `web_search_billing_unit` 計數。
+
+```json keep-model-ids
+{
+    "gemini/{{gemini_flash}}": {
+        "web_search_billing_unit": "per_query",
+        "search_free_requests": {"count": 5000, "period": "month", "shared_group": "gemini-3"}
+    }
+}
+```
+
+這個欄位本身不會產生任何作用。若要讓 proxy 在共用額度用完之前以 $0 記錄 grounding，請啟用 `apply_search_free_tier`。Proxy 會在它的 Redis 中為每個 `shared_group` 與 UTC 週期各維護一個計數器，這與它用於預算的 Redis 相同，因此每個 proxy 執行個體都從同一個池取用，重新啟動也不會重置它。跨越額度的請求會被拆分：仍在額度內的查詢免費，其餘則以 `search_context_cost_per_query` 計費。支出記錄列會在 `metadata.cost_breakdown.original_cost` 中保留完整價格，並將免除的金額放在 `discount_amount` 中。
+
+```yaml
+litellm_settings:
+  apply_search_free_tier: true   # default false
+  cache: true
+  cache_params:
+    type: redis
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+```
+
+開啟前有兩件事需要知道。額度是依 Google 帳單帳戶計算，而 LiteLLM 只能看到自己的流量，因此如果同一帳戶上還有其他工作負載也在使用 grounding，LiteLLM 會免除 Google 實際有計費的查詢，已記錄的支出在額度期間內就會變成下限；如果其他工作負載共用此帳戶，請勿開啟此設定。Google 沒有公開其額度重置所依據的時區，因此 LiteLLM 依 UTC 日曆日與月份重置。在沒有 Redis，或計數器無法連線時，請求會以完整價格計費，並記錄一則警告。`x-litellm-response-cost` header 與記錄回呼仍會回報套用額度前的成本；只有支出記錄列、預算與支出計數器會看到減少後的支出。
 
 ### LiteLLM 如何追蹤搜尋用量 {#how-litellm-tracks-search-usage}
 

@@ -1,3 +1,9 @@
+---
+title: "在 LiteLLM 中使用 Anthropic 程式化工具呼叫"
+sidebar_label: "Anthropic 程式化工具呼叫"
+description: "透過 LiteLLM 使用 Anthropic 程式化工具呼叫（公開 beta），讓 Claude 在容器中從程式碼呼叫您的工具，並搭配 allowed_callers 與 caller 欄位。"
+---
+
 # Anthropic 程式化工具呼叫 {#anthropic-programmatic-tool-calling}
 
 程式化工具呼叫可讓 Claude 撰寫程式碼，在程式執行容器內以程式化方式呼叫您的工具，而不是在每次工具呼叫時都必須透過模型往返。這可降低多工具工作流程的延遲，並透過讓 Claude 在資料進入模型的 context window 之前先進行篩選或處理，來減少 token 消耗。

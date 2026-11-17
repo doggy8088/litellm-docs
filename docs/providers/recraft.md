@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Recraft 圖片生成"
+sidebar_label: "Recraft"
+description: "從 SDK 或 AI Gateway 使用 Recraft V3 與 V2 生成圖片，或以強度控制編輯參考圖片，並傳入 style 或 Recraft 自己的 style_id。"
+---
+
 # Recraft {#recraft}
 https://www.recraft.ai/
 

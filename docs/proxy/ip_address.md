@@ -1,4 +1,4 @@
-# ✨ IP 位址篩選 {#-ip-address-filtering}
+# IP 位址篩選 {#ip-address-filtering}
 
 <EnterpriseFeature />
 

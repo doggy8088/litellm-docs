@@ -1,5 +1,6 @@
 ---
-title: "v1.89.4 - Vertex 批次上傳與 CVE 修補"
+title: "LiteLLM v1.89.4 - Vertex 批次上傳與 CVE 修補"
+description: "將 OpenAI 到 Vertex 的批次 JSONL 上傳改為串流傳輸，並回收中斷的 Anthropic 串流成本。另新增 no-mcp-servers sentinel。"
 slug: "v1-89-4"
 date: 2026-06-25T02:38:49
 authors:

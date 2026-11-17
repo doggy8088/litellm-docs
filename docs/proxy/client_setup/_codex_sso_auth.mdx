@@ -1,0 +1,22 @@
+Codex 不必使用長效虛擬金鑰，而是可以在需要時向 `lite` CLI 索取 token。每位開發者只需執行一次 [`lite login --pkce`](../cli_sso.md)，之後請求就會歸屬到其 LiteLLM 使用者與團隊
+
+在 `~/.codex/config.toml` 中，將 `env_key` 替換為 `auth` 表格：
+
+```toml title="~/.codex/config.toml"
+model_provider = "litellm"
+
+[model_providers.litellm]
+name = "LiteLLM"
+base_url = "https://litellm.example.com/v1"
+wire_api = "responses"
+
+[model_providers.litellm.auth]
+command = "/absolute/path/to/lite"
+args = ["--base-url", "https://litellm.example.com", "auth", "print-token"]
+timeout_ms = 30000
+refresh_interval_ms = 300000
+```
+
+將 `/absolute/path/to/lite` 替換為 `which lite` 回傳的絕對路徑。`--base-url` 值必須與 `lite login --pkce` 使用的 URL 完全相符；為 `http://127.0.0.1:4000` 發出的 token 不會回傳給 `http://localhost:4000`。`lite auth print-token` 只會將 token 寫入 stdout，並使用 PKCE 登入所儲存的 refresh token 來更新 token。在 `lite logout` 後，Codex 會收到 401 回應，直到您再次執行 `lite login --pkce`
+
+Codex 會拒絕同時設定 `auth` 與 `env_key` 的提供者並回傳 `provider auth cannot be combined with env_key`，因此在新增 `auth` 時請移除 `env_key`。這是 [OpenAI 的以命令為基礎的閘道驗證](https://learn.chatgpt.com/docs/enterprise/connect-to-a-gateway)，並已用 Codex CLI 0.160.0 驗證

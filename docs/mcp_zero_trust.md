@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 
 ![零信任 MCP 閘道](/img/mcp_zero_trust_gateway.png)
 
-MCP 伺服器沒有內建方式可驗證請求是否 वास्तव際經由 LiteLLM 傳入。若沒有這道防護欄，任何能直接連到您的 MCP 伺服器的用戶端都可以呼叫工具，完全繞過您的存取控制。
+MCP 伺服器沒有內建方式可驗證請求是否 實際經由 LiteLLM 傳入。若沒有這道防護欄，任何能直接連到您的 MCP 伺服器的用戶端都可以呼叫工具，完全繞過您的存取控制。
 
 `MCPJWTSigner` 修正了這個問題。它會用短效的 RS256 JWT 為每個對外工具呼叫簽署。您的 MCP 伺服器會以 LiteLLM 的公開金鑰驗證簽章。沒有經過 LiteLLM 的請求不會有有效簽章，因此會被拒絕。
 

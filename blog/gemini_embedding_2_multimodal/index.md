@@ -200,4 +200,4 @@ embedding(
 )
 ```
 
-這對於單一實體具有多種模態的多模態檢索很有用。詳情請參閱 [embedding 文件](/docs/embedding/supported_embedding#combined-multimodal-embeddings)。在 Vertex AI 上，不需要這個選用設定；每個請求都已經會回傳一個整合向量。
+這對於單一實體具有多種模態的多模態檢索很有用。詳情請參閱 [embedding 文件](../../docs/embedding/supported_embedding#combined-multimodal-embeddings)。在 Vertex AI 上，不需要這個選用設定；每個請求都已經會回傳一個整合向量。

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 的 Arize Phoenix 追蹤：設定"
+sidebar_label: "Arize Phoenix"
+description: "從 Python SDK 或 AI Gateway 將 LiteLLM traces 傳送至 Arize Phoenix，將每個團隊或金鑰路由至其專屬專案，並可同時匯出至 Arize AX。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -7,7 +12,7 @@ import TabItem from '@theme/TabItem';
 
 Phoenix 與 [Arize AX](https://arize.com/products/ax/) 分開，後者是供生產團隊、AI 原生公司與企業使用的完整平台，可作為受管理雲端或企業自架部署使用。LiteLLM 支援兩種後端，但它們使用不同的回呼、憑證與端點。Phoenix 使用 `arize_phoenix`，AX 使用 `arize`，或在您需要將相同追蹤送往兩者時，同時啟用兩者。
 
-對於圍繞 LiteLLM 追蹤建立評估迴圈的團隊，Arize 的 [agent evaluation guide](https://arize.com/guides/ai-agent-handbook/agent-evaluation/) 與 [LLM evaluation guide](https://arize.com/resources/llm-evaluation/) 涵蓋了用於追蹤失敗、評估模型行為，以及改善代理程式可靠性的生產工作流程。
+對於圍繞 LiteLLM 追蹤建立評估迴圈的團隊，Arize 的 [agent evaluation guide](https://arize.com/ai-agents/agent-evaluation/) 與 [LLM evaluation guide](https://arize.com/resources/llm-evaluation/) 涵蓋了用於追蹤失敗、評估模型行為，以及改善代理程式可靠性的生產工作流程。
 
 :::info
 我們希望了解如何讓這些回呼變得更好！認識 LiteLLM 的 [founders](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version) 或
@@ -43,7 +48,7 @@ litellm.callbacks = ["arize_phoenix"]
 response = litellm.completion(
   model="{{openai_large}}",
   messages=[
-    {"role": "user", "content": "Hi 👋 - i'm openai"}
+    {"role": "user", "content": "Hi - i'm openai"}
   ]
 )
 ```
@@ -103,7 +108,9 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 開啟 Phoenix；專案來自 `PHOENIX_PROJECT_NAME`（預設 `default`），並以 `openinference.project.name` 資源屬性標記。每個請求都會以 `chat <model>` span 的形式顯示在請求根節點下。在 proxy 上，您可以將團隊或金鑰的 LLM spans 傳送到不同的 Phoenix 專案；請參閱[將追蹤依團隊或金鑰路由到 Phoenix 專案](#route-traces-to-a-phoenix-project-per-team-or-key)。
 
-Phoenix 使用與 Arize AX 相同的 OpenInference 詞彙，因此 LLM 呼叫 span 會帶有 `llm.model_name`、`llm.provider`、`llm.token_count.*` 用量分割、`llm.invocation_parameters`、在啟用內容擷取時的訊息陣列，以及 `llm.tools.*`，以及標準的 `gen_ai.*` keys。請參閱[完整屬性表](./opentelemetry_v2#seeing-your-traces)。
+Phoenix 使用與 Arize AX 相同的 OpenInference 詞彙，因此 LLM 呼叫 span 會帶有 `llm.model_name`、`llm.provider`、`llm.token_count.*` 用量分割、`llm.invocation_parameters`、在啟用內容擷取時的訊息陣列，以及 `llm.tools.*`，以及標準的 `gen_ai.*` keys。span 也會將每個 assistant 工具呼叫以結構化的 `llm.output_messages.{idx}.message.tool_calls.{idx}.tool_call.*` 屬性形式攜帶，並將允許清單中的請求 metadata 作為 `metadata` 屬性，這正是填入 Phoenix 的 Output 工具呼叫列與其 Metadata 區段的內容。請參閱[完整屬性表](./opentelemetry_v2#seeing-your-traces)與 [OpenInference 工具呼叫與 metadata](./opentelemetry_v2#openinference-tool-calls-and-metadata)。
+
+`arize_phoenix` preset 會為您指定 `openinference` mapper。如果您改將通用 OTLP 路徑指向 Phoenix（您自己的 collector，`OTEL_ENDPOINT` 指向 Phoenix 的 `/v1/traces` URL），spans 只會帶有標準的 `gen_ai.*` 名稱並以樸素形式呈現，直到您以 `MAPPER_NAMES=genai,openinference` 或 `callback_settings.otel.mapper_names` 指定 mapper 為止。
 
 ![Phoenix 中的 LiteLLM 追蹤](/img/observability/otel_v2_phoenix.png)
 
@@ -238,6 +245,6 @@ litellm_settings:
 
 ## 支援與聯絡創辦人 {#support--talk-to-founders}
 
-- [預約示範 👋](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
-- [社群 Discord 💭](https://discord.gg/wuPM9dRgDw)
-- 我們的電子郵件 ✉️ ishaan@berri.ai / krrish@berri.ai
+- [預約示範](https://calendly.com/d/4mp-gd3-k5k/berriai-1-1-onboarding-litellm-hosted-version)
+- [社群 Discord](https://discord.gg/wuPM9dRgDw)
+- 我們的電子郵件 ishaan@berri.ai / krrish@berri.ai

@@ -1,3 +1,7 @@
+---
+sidebar_label: "健康檢查路由"
+---
+
 # 受健康檢查驅動的路由 {#health-check-driven-routing}
 
 在使用者遇到錯誤之前，將流量路由遠離不健康的部署。背景健康檢查會以可設定的間隔執行，任何失敗的部署都會主動從路由池中移除，而不是等到使用者請求已經失敗之後才處理。
@@ -26,7 +30,7 @@
   {/* Deployment C */}
   <rect x="40" y="214" width="200" height="50" fill="white" rx="8" stroke="#fde68a" strokeWidth="1.5"/>
   <text x="140" y="234" textAnchor="middle" fill="#92400e" fontSize="12" fontWeight="500">部署 C</text>
-  <text x="140" y="252" textAnchor="middle" fill="#64748b" fontSize="11">ahealth_check() → 429 ⚡</text>
+  <text x="140" y="252" textAnchor="middle" fill="#64748b" fontSize="11">ahealth_check() → 429</text>
 
   {/* ignore_transient box */}
   <rect x="40" y="282" width="200" height="68" fill="#fefce8" rx="8" stroke="#fde047" strokeWidth="1.5"/>

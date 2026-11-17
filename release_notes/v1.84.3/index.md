@@ -1,5 +1,6 @@
 ---
-title: "v1.84.3 - 供非 root 映像重新裁切 Dockerfile"
+title: "LiteLLM v1.84.3 - 供非 root 映像重新裁切 Dockerfile"
+description: "在非 root 建置階段還原 npm，v1.84.2 的建置缺少此項。應用程式碼與 v1.84.2 相同。"
 slug: "v1-84-3"
 date: 2026-05-27T00:00:00
 authors:

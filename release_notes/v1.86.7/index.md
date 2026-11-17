@@ -1,5 +1,6 @@
 ---
-title: "v1.86.7 - 串流成本回收與 MCP 金鑰範圍設定"
+title: "LiteLLM v1.86.7 - 串流成本回收與 MCP 金鑰範圍設定"
+description: "新增 no-mcp-servers 哨兵值，可將金鑰範圍限定為零個 MCP 伺服器。另復原中斷的 Anthropic 串流成本。"
 slug: "v1-86-7"
 date: 2026-06-24T18:28:34
 authors:

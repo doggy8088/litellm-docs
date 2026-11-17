@@ -1,5 +1,6 @@
 ---
-title: "v1.92.1 - Docker 遷移資產、Model Armor 附件與 Anthropic Passthrough"
+title: "LiteLLM v1.92.1 - Docker 遷移資產、Model Armor 附件與 Anthropic Passthrough"
+description: "為非 root 使用者恢復 migration 資產，並修正 Model Armor 附件與 Anthropic passthrough 的 temperature 處理。"
 slug: "v1-92-1"
 date: 2026-07-19T03:07:45
 authors:

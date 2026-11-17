@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Llamafile：本機模型設定"
+sidebar_label: "Llamafile"
+description: "從 Python SDK 或 AI Gateway 透過 LiteLLM 以 llamafile/ 前綴與您的 api_base 呼叫 Llamafile 伺服器，用於聊天補全與 embeddings。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

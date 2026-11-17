@@ -1,5 +1,6 @@
 ---
-title: "v1.83.7-stable - 每位使用者的 MCP OAuth、團隊支出記錄 RBAC"
+title: "LiteLLM v1.83.7-stable - 每位使用者的 MCP OAuth、團隊支出記錄 RBAC"
+description: "新增每位使用者的 MCP OAuth 權杖與團隊支出記錄 RBAC。將預設 Prometheus 延遲 bucket 從 35 個減少為 18 個，這會改變儀表板查詢。"
 slug: "v1-83-7-stable"
 date: 2026-04-18T00:00:00
 authors:

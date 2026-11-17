@@ -1,5 +1,6 @@
 ---
-title: "v1.101.0 - 啟發式自動路由器、語意 MCP 工具搜尋與離峰定價"
+title: "LiteLLM v1.101.0 - 啟發式自動路由器、語意 MCP 工具搜尋與離峰定價"
+description: "新增啟發式自動路由器分類器、語意 MCP 工具搜尋與離峰定價。另新增 411 個模型，例如 claude-fable-5-1 與 gpt-6-astra。"
 slug: "v1-101-0"
 date: 2026-09-14T00:00:00
 authors:

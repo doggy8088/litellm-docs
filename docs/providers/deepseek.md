@@ -1,7 +1,16 @@
+---
+title: "DeepSeek API 與 LiteLLM：Python SDK 與 Gateway"
+sidebar_label: "Deepseek"
+description: "從 Python SDK 或 AI Gateway 呼叫 DeepSeek chat、coder、flash、V4 Pro 與 reasoner 模型，支援串流、思考模式與離峰成本追蹤。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Deepseek {#deepseek}
+
+DeepSeek 打造了 DeepSeek 聊天與推理模型；LiteLLM 從 Python SDK 或 AI Gateway 以 `deepseek/` 前綴呼叫這些模型，並支援思考模式。
+
 https://deepseek.com/
 
 **我們支援所有 Deepseek 模型，送出 completion 請求時只要將 `deepseek/` 作為前綴即可**
@@ -54,6 +63,17 @@ for chunk in response:
 | deepseek-coder | `completion(model="deepseek/deepseek-coder", messages)` | 
 | deepseek-flash | `completion(model="deepseek/deepseek-flash", messages)` | 
 | deepseek-v4-pro | `completion(model="deepseek/deepseek-v4-pro", messages)` |
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`deepseek/<family>-latest` 名稱會跟隨模型家族，在 LiteLLM 將其移至較新的模型時，讓您的應用程式維持單一模型字串。您可以像使用任何其他 DeepSeek 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 DeepSeek，並以該模型的價格計費。別名的運作方式以及各提供者的完整清單，請參閱 [最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型家族 |
+| --- | --- |
+| `deepseek/deepseek-pro-latest` | DeepSeek Pro |
+| `deepseek/deepseek-flash-latest` | DeepSeek Flash |
 
 ## 推理模型 {#reasoning-models}
 | 模型名稱               | 函式呼叫                                                                                                                                                      |

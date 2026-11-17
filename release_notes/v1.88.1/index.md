@@ -1,5 +1,6 @@
 ---
-title: "v1.88.1 - 相依性升級"
+title: "LiteLLM v1.88.1 - 相依性升級"
+description: "將 PyJWT 升級至 2.13.0、ws override 升級至 8.20.1，以清除 1.88 系列的相依性安全公告。本版本不含其他程式碼變更。"
 slug: "v1-88-1"
 date: 2026-06-08T17:23:56
 authors:

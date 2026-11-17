@@ -1,3 +1,8 @@
+---
+title: "LiteLLM 上的 Microsoft Purview DLP 防護欄"
+sidebar_label: "Microsoft Purview 防護欄"
+description: "透過 Microsoft Graph processContent API 在 LiteLLM AI 閘道上強制執行 Microsoft Purview DLP 原則，包含 Entra 應用程式設定與使用者 ID。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,15 +1,21 @@
+---
+title: "透過 LiteLLM 使用 Azure AI 圖像編輯"
+sidebar_label: "Azure AI 圖像編輯"
+description: "從 Python SDK 或 AI 閘道，在 Azure AI 上使用 FLUX.1 Kontext Pro、FLUX 2 Pro、FLUX 2 Flex 或 gpt-image 部署，透過文字提示詞編輯圖像。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Azure AI 圖像編輯 {#azure-ai-image-editing}
 
-Azure AI 提供強大的圖像編輯能力，使用來自 Black Forest Labs 的 FLUX 模型，根據文字描述修改現有圖像。
+Azure AI 透過 Black Forest Labs 的 FLUX 模型與 OpenAI gpt-image 模型提供強大的圖像編輯能力。您可以使用文字修改現有圖像。
 
 ## 概覽 {#overview}
 
 | 屬性 | 詳細資訊 |
 |----------|---------|
-| 說明 | Azure AI 圖像編輯使用 FLUX 模型，根據文字提示修改現有圖像。 |
+| 說明 | Azure AI 圖像編輯使用 FLUX 與 gpt-image 模型，根據文字提示編輯圖像。 |
 | LiteLLM 上的提供者路由 | `azure_ai/` |
 | 提供者文件 | [Azure AI FLUX 模型 ↗](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/black-forest-labs-flux-1-kontext-pro-and-flux1-1-pro-now-available-in-azure-ai-f/4434659) |
 | 支援的操作 | [`/images/edits`](#image-editing) |
@@ -35,8 +41,22 @@ os.environ["AZURE_AI_API_VERSION"] = "2025-04-01-preview"  # Example API version
 | `azure_ai/FLUX.1-Kontext-pro` | 具備增強情境理解能力、可用於編輯的 FLUX 1 Kontext Pro 模型 | $0.04 |
 | `azure_ai/flux.2-pro` | FLUX 2 Pro，每次編輯最多 8 張參考圖片 | $0.04 |
 | `azure_ai/FLUX.2-flex` | FLUX 2 Flex，每次編輯最多 10 張參考圖片，可調整 `guidance` 和 `steps` | 每百萬像素 $0.05（1024x1024 時為 $0.052） |
+| `azure_ai/gpt-image-2.5-flare` | 部署到您的 Foundry 資源的 OpenAI gpt-image 2.5 Flare | 依輸入與輸出 token 計費 |
+| `azure_ai/<your deployment name>` | 任何其他 Foundry 部署（例如您自行命名的 gpt-image 部署） | 設定 `model_info.base_model`，請參閱 [gpt-image 模型](#gpt-image-models) |
 
-FLUX 2 編輯會走與 FLUX 2 生成相同的、模型特定的 Black Forest Labs 路由（`/providers/blackforestlabs/v1/flux-2-pro` 或 `/providers/blackforestlabs/v1/flux-2-flex`），參考圖片會以 base64 形式放在 JSON 主體中，而不是 multipart form data。將檔案清單作為 `image` 傳入，即可一次以多個參考圖片進行編輯。模型名稱比對不區分大小寫，因此 `azure_ai/flux.2-flex` 也可以
+FLUX 2 編輯會走與 FLUX 2 生成相同的、模型特定的 Black Forest Labs 路徑（`/providers/blackforestlabs/v1/flux-2-pro` 或 `/providers/blackforestlabs/v1/flux-2-flex`），參考圖片會以 base64 形式放在 JSON 主體中，而不是 multipart form data。將檔案清單作為 `image` 傳入，即可一次對多個參考圖片進行編輯。模型名稱比對不區分大小寫，因此 `azure_ai/flux.2-flex` 也可以使用。
+
+### gpt-image 模型 {#gpt-image-models}
+
+<SinceVersion v="1.111.0" />
+
+GPT 圖像編輯會前往您的 Foundry 資源的 `/openai/deployments/<deployment>/images/edits` 路由（與 Azure OpenAI 使用的路由相同）。LiteLLM 會將每個不是 FLUX 或 MAI 模型的 `azure_ai/` 模型路由到此路由，因此 `azure_ai/` 加上您的部署名稱即可運作，無論您如何命名該部署。請將 `api_base` 設定為您的 Foundry 資源（例如 `https://<your-resource>.services.ai.azure.com`）。
+
+如果您沒有設定 `api_version`，LiteLLM 會傳送 `2025-04-01-preview`，因為 Foundry 對 `2025-02-01-preview` 與 `2025-03-01-preview` 的編輯請求會傳回 404。如果您有設定版本，該版本會原樣傳送，而 LiteLLM 讀取它的順序是先模型的 `api_version`，再來是 `AZURE_AI_API_VERSION`，最後是 `litellm.api_version`。您可以設定 `api_version: v1`，讓編輯請求改為傳送到 Foundry 的 `/openai/v1/images/edits` 路由。
+
+以您自行選擇的名稱建立的部署不會出現在 LiteLLM 的成本對照表中，因此 LiteLLM 不會記錄它的成本，直到您將 `model_info.base_model` 設定為該部署所提供的模型（例如 `azure/gpt-image-2.5-flare`）。更多詳細資訊請參閱[自訂定價](../proxy/custom_pricing.md)。
+
+LiteLLM 進行驗證的順序是先模型的 `api_key`，再來是 `litellm.api_key`，接著是 `AZURE_AI_API_KEY`，最後才是模型的 Entra ID 憑證。如果設定了 `AZURE_AI_API_KEY`，它的優先順序會高於模型的 Entra ID 憑證，因此如果模型應該使用其 Entra ID 登入，請勿設定它。
 
 ## 圖像編輯 {#image-editing}
 
@@ -172,6 +192,31 @@ Path("flux2_edited_image.png").write_bytes(img_bytes)
 ```
 
 </TabItem>
+
+<TabItem value="gpt-image-edit" label="gpt-image">
+
+```python showLineNumbers title="gpt-image Edit on Azure AI Foundry"
+import os
+import base64
+from pathlib import Path
+
+import litellm
+
+os.environ["AZURE_AI_API_KEY"] = "your-api-key-here"
+os.environ["AZURE_AI_API_BASE"] = "your-azure-ai-endpoint"  # e.g., https://your-resource.services.ai.azure.com
+
+response = litellm.image_edit(
+    model="azure_ai/gpt-image-2.5-flare",
+    image=open("path/to/your/image.png", "rb"),
+    prompt="Make the background green",
+    size="1024x1024",
+    quality="low",
+)
+img_bytes = base64.b64decode(response.data[0].get("b64_json"))
+Path("gpt_image_edited.png").write_bytes(img_bytes)
+```
+
+</TabItem>
 </Tabs>
 
 ### 用法 - LiteLLM Proxy Server {#usage---litellm-proxy-server}
@@ -197,6 +242,23 @@ model_list:
       api_version: preview
     model_info:
       mode: image_edit
+
+  - model_name: azure-gpt-image-edit
+    litellm_params:
+      model: azure_ai/gpt-image-2.5-flare
+      api_key: os.environ/AZURE_AI_API_KEY
+      api_base: os.environ/AZURE_AI_API_BASE
+    model_info:
+      mode: image_edit
+
+  - model_name: azure-gpt-image-custom-edit
+    litellm_params:
+      model: azure_ai/my-image-editor  # a gpt-image-2.5-flare deployment under your own name
+      api_key: os.environ/AZURE_AI_API_KEY
+      api_base: os.environ/AZURE_AI_API_BASE
+    model_info:
+      mode: image_edit
+      base_model: azure/gpt-image-2.5-flare
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
@@ -282,18 +344,20 @@ Azure AI 圖像編輯支援以下相容於 OpenAI 的參數：
 |-----------|------|-------------|---------|---------|
 | `image` | 檔案 | 要編輯的圖像檔案 | 必填 | 檔案物件或二進位資料 |
 | `prompt` | string | 所需變更的文字描述 | 必填 | `"Add snow and winter elements"` |
-| `model` | string | 用於編輯的 FLUX 模型 | 必填 | `"azure_ai/FLUX.1-Kontext-pro"` |
-| `n` | integer | 要產生的編輯後圖像數量（您只能指定 1） | `1` | `1` |
+| `model` | string | 用於編輯的 FLUX 或 gpt-image 模型 | 必填 | `"azure_ai/FLUX.1-Kontext-pro"` |
+| `n` | integer | 要產生的圖像數量（編輯後）。僅支援 `1` | `1` | `1` |
 | `api_base` | string | 您的 Azure AI 端點 URL | 必填 | `"https://your-endpoint.eastus2.inference.ai.azure.com/"` |
 | `api_key` | string | 您的 Azure AI API 金鑰 | 必填 | 環境變數或直接值 |
-| `api_version` | string | Azure AI 的 API 版本 | 必填 | `"2025-04-01-preview"` |
+| `api_version` | string | Azure AI 的 API 版本 | FLUX 必填，gpt-image 為 `2025-04-01-preview` | `"2025-04-01-preview"` |
 
-FLUX 2 Pro 和 FLUX 2 Flex 編輯使用與 [FLUX 2 生成](./azure_ai_img#flux-2-parameters) 相同的參數：`size`（或 `width` 和 `height`）、`output_format`、`seed`、`safety_tolerance`、`aspect_ratio`，而對於 Flex，還有 `guidance` 和 `steps`。僅 OpenAI 可用的欄位 `user`、`quality`、`background`、`moderation` 和 `output_compression` 會被接受並丟棄，因此設定它們的 OpenAI SDK 用戶端仍可正常運作
+FLUX 2 Pro 和 FLUX 2 Flex 編輯使用與 [FLUX 2 生成](./azure_ai_img#flux-2-parameters) 相同的參數：`size`（或 `width` 和 `height`）、`output_format`、`seed`、`safety_tolerance`、`aspect_ratio`，而對於 Flex，還有 `guidance` 和 `steps`。僅 OpenAI 可用的欄位 `user`、`quality`、`background`、`moderation` 和 `output_compression` 會被接受並丟棄，因此設定它們的 OpenAI SDK 用戶端仍可正常運作。
+
+GPT 圖像編輯使用與 OpenAI 圖像編輯相同的參數。
 
 ## 開始使用 {#getting-started}
 
 1. 在 [Azure AI Studio](https://ai.azure.com/) 建立帳號
-2. 在您的 Azure AI Studio 工作區中部署 FLUX 模型
+2. 在您的 Azure AI Studio 工作區中部署 FLUX 或 gpt-image 模型
 3. 從部署詳細資訊取得您的 API 金鑰與端點
 4. 設定您的 `AZURE_AI_API_KEY`、`AZURE_AI_API_BASE` 和 `AZURE_AI_API_VERSION` 環境變數
 5. 準備您的來源圖像

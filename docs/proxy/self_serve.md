@@ -26,7 +26,7 @@ curl -X POST '<PROXY_BASE_URL>/user/new' \
 -H 'Content-Type: application/json' \
 -D '{
     "user_email": "krrishdholakia@gmail.com",
-    "user_role": "internal_user" # 👈 THIS ALLOWS USER TO CREATE/VIEW/DELETE THEIR OWN KEYS + SEE THEIR SPEND
+    "user_role": "internal_user" # THIS ALLOWS USER TO CREATE/VIEW/DELETE THEIR OWN KEYS + SEE THEIR SPEND
 }'
 ```
 
@@ -34,7 +34,7 @@ curl -X POST '<PROXY_BASE_URL>/user/new' \
 
 ```bash
 {
-    "user_id": "e9d45c7c-b20b-4ff8-ae76-3f479a7b1d7d", 👈 USE IN STEP 2
+    "user_id": "e9d45c7c-b20b-4ff8-ae76-3f479a7b1d7d", USE IN STEP 2
     "user_email": "<YOUR_USERS_EMAIL>",
     "user_role": "internal_user",
     ...
@@ -71,7 +71,7 @@ curl -X POST '<PROXY_BASE_URL>/invitation/new' \
 -H 'Authorization: Bearer <PROXY_MASTER_KEY>' \
 -H 'Content-Type: application/json' \
 -D '{
-    "user_id": "e9d45c7c-b20b..." # 👈 USER ID FROM STEP 1
+    "user_id": "e9d45c7c-b20b..." # USER ID FROM STEP 1
 }'
 ```
 
@@ -83,7 +83,7 @@ curl -X POST '<PROXY_BASE_URL>/invitation/new' \
     "user_id": "e9d45c7c-b20b..",
     "is_accepted": false,
     "accepted_at": null,
-    "expires_at": "2024-06-13T00:02:16.454000Z", # 👈 VALID FOR 7d
+    "expires_at": "2024-06-13T00:02:16.454000Z", # VALID FOR 7d
     "created_at": "2024-06-06T00:02:16.454000Z",
     "created_by": "116544810872468347480",
     "updated_at": "2024-06-06T00:02:16.454000Z",
@@ -172,7 +172,7 @@ LiteLLM Enterprise：啟用 [SSO 登入](./admin_ui_sso.md)
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
   litellm_jwtauth:
-    team_ids_jwt_field: "groups" # 👈 CAN BE ANY FIELD
+    team_ids_jwt_field: "groups" # CAN BE ANY FIELD
 ```
 
 這是假設您的 SSO token 看起來像這樣。**如果您需要檢查 LiteLLM 從您的 SSO 提供者收到的 JWT 欄位，請依照這裡的說明操作 [這裡](#debugging-sso-jwt-fields)**
@@ -192,7 +192,7 @@ curl -X POST '<PROXY_BASE_URL>/team/new' \
 -H 'Content-Type: application/json' \
 -D '{
     "team_alias": "team_1",
-    "team_id": "team_id_1" # 👈 MUST BE THE SAME AS THE SSO GROUP ID
+    "team_id": "team_id_1" # MUST BE THE SAME AS THE SSO GROUP ID
 }'
 ```
 
@@ -364,11 +364,14 @@ litellm_settings:
     team_member_permissions:       # Optional[List[str]]: permissions granted to non-admin team members
       - "/team/daily/activity"     # Allow members to view team usage
       - "/key/generate"            # Allow members to generate API keys
+    access_group_ids: ["<access-group-id>"]  # Optional[List[str]]: access groups attached to teams created without access_group_ids
 ```
 
 :::info
 
 這些預設值會填入 `/team/new` 請求中任何缺少或 `null` 的欄位。`budget_duration` 是唯一的例外：送出明確的 `"budget_duration": null`（UI 建立表單中的「Never resets」選項）會建立一個預算永不重置的團隊，並略過已設定的預設值。
+
+`access_group_ids` 可讓您以一個中央 [存取群組](./access_groups.md) 作為每個新團隊的模型清單：從 Admin UI、`/team/new` 或 SSO 群組自動建立、且未設定自己的 `access_group_ids` 的團隊，會取得所設定的群組，且該群組的 `assigned_team_ids` 會保持同步。請求若送出 `"access_group_ids": []`，會保留該空清單。`PATCH /update/default_team_settings` 會拒絕不存在的存取群組 id。`models` 僅適用於 SSO 自動建立的團隊。
 
 :::
 
@@ -378,7 +381,7 @@ litellm_settings:
 
 這也會防止使用者在測試金鑰聊天窗格中使用其 session token。 
 
-👉 [**看這裡**](./virtual_keys.md#restricting-key-generation)
+[**看這裡**](./virtual_keys.md#restricting-key-generation)
 
 ## **所有自助服務 / SSO 流程設定** {#all-settings-for-self-serve--sso-flow}
 
@@ -405,6 +408,7 @@ litellm_settings:
     rpm_limit: 1000                # Optional[int]: requests per minute limit
     team_member_permissions:       # Optional[List[str]]: permissions granted to non-admin team members
       - "/team/daily/activity"
+    access_group_ids: ["<access-group-id>"]  # Optional[List[str]]: access groups attached to teams created without access_group_ids
 
 
   upperbound_key_generate_params:    # Upperbound for /key/generate requests when self-serve flow is on

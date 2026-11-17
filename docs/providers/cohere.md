@@ -1,7 +1,15 @@
+---
+title: "搭配 LiteLLM 使用 Cohere API：聊天、嵌入、Rerank"
+sidebar_label: "Cohere"
+description: "透過 Python SDK 或 AI 閘道，在 v1 或 v2 聊天 API 上使用 Cohere Command A 與 Command R 聊天、含 input_type 的 Embed v3、rerank 與 Parse OCR。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 # Cohere {#cohere}
+
+Cohere 提供 Command 聊天模型，以及嵌入與 rerank 模型；LiteLLM 透過 Python SDK 或 AI 閘道呼叫聊天時使用 `cohere_chat/` 前綴，呼叫 rerank 時使用 `cohere/` 前綴。
 
 ## API 金鑰 {#api-keys}
 
@@ -209,6 +217,7 @@ print(response)
 ## 支援的模型 {#supported-models}
 | 模型名稱 | 函式呼叫 |
 |------------|----------------|
+| north-large-01-2026 | `litellm.completion('cohere_chat/north-large-01-2026', messages)` |
 | command-a-03-2025 | `litellm.completion('command-a-03-2025', messages)` |
 | command-r-plus-08-2024 | `litellm.completion('command-r-plus-08-2024', messages)` |  
 | command-r-08-2024 | `litellm.completion('command-r-08-2024', messages)` |
@@ -216,6 +225,22 @@ print(response)
 | command-r | `litellm.completion('command-r', messages)` |
 | command-light | `litellm.completion('command-light', messages)` |  
 | command-nightly | `litellm.completion('command-nightly', messages)` |
+
+### north-large-01-2026 的成本追蹤 {#cost-tracking-for-north-large-01-2026}
+
+Cohere 未公布 `north-large-01-2026` 的每 token 價格，因此 LiteLLM 沒有其預設價格，在您設定價格之前，其花費會記錄為 $0。在部署上設定您的合約價格即可追蹤成本：
+
+```yaml
+model_list:
+  - model_name: north-large
+    litellm_params:
+      model: cohere_chat/north-large-01-2026
+      api_key: os.environ/COHERE_API_KEY
+      input_cost_per_token: 0.000001
+      output_cost_per_token: 0.000002
+```
+
+將兩個範例價格換成您的合約價格（單位為每 token 的美元價格）。其他定價欄位請參閱 [自訂定價](../proxy/custom_pricing)。
 
 ## 嵌入 {#embedding}
 

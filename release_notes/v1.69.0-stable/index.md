@@ -1,5 +1,6 @@
 ---
-title: v1.69.0-stable - 負載平衡批次 API 模型
+title: "LiteLLM v1.69.0-stable - 負載平衡批次 API 模型"
+description: "新增跨 Azure 批次部署的負載平衡、支援 Resend 的 Email Invites 2.0、Nscale 提供者與 Bedrock /v1/messages。"
 slug: v1.69.0-stable
 date: 2025-05-10T10:00:00
 authors:

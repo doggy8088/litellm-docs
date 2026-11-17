@@ -32,6 +32,6 @@ Headroom 以 LiteLLM 的 sidecar 方式執行。用戶端流量仍會先進入 L
 
 可依金鑰、依請求，或透過 `default_on: true` 全域啟用。請透過檢查 `x-litellm-applied-guardrails` 回應標頭或 Logs UI 中的 Guardrails 面板，確認其已執行。
 
-**開始使用：** [Headroom guardrail 設定指南](/docs/proxy/headroom)（需要 LiteLLM v1.92.x 或更新版本；若要在穩定版釋出前先行測試，請取得 [v1.92.0-dev.1](https://github.com/BerriAI/litellm/releases/tag/v1.92.0-dev.1) 開發版本）
+**開始使用：** [Headroom guardrail 設定指南](../../docs/proxy/headroom)（需要 LiteLLM v1.92.x 或更新版本；若要在穩定版釋出前先行測試，請取得 [v1.92.0-dev.1](https://github.com/BerriAI/litellm/releases/tag/v1.92.0-dev.1) 開發版本）
 
 **討論：** [GitHub discussion #31816](https://github.com/BerriAI/litellm/discussions/31816)

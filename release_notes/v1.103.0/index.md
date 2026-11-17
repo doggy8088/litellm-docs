@@ -1,5 +1,6 @@
 ---
-title: "v1.103.0 - 設定檔所有權、Fuse 路由與閘道強化"
+title: "LiteLLM v1.103.0 新增 Fuse V2、TypeSafe Jev 與設定檔所有權"
+description: "新增 Fuse V2 路由、逐模型 Fast 模式與 408 個模型。Proxy 現在會忽略 config.yaml 已設定的金鑰在資料庫中的值。"
 slug: "v1-103-0"
 date: 2026-09-27T00:00:00
 authors:
@@ -72,7 +73,7 @@ SELECT indisvalid FROM pg_index WHERE indexrelid = '"LiteLLM_SpendLogs_api_key_s
 
 **key 自己的 per-model rpm/tpm 覆寫現在會優先於 team 的 per-model 限制。** 文件化的優先順序（key metadata 優於 team metadata）現在就是程式碼的實際行為，適用於 chat、batch 與 `/cost/predict-cache`。若某個 key 只覆寫 RPM，仍會套用 team 的 TPM pool；反之亦然。請檢查那些依賴 per-model team 上限來壓住自己宣告 key 的 teams。請參閱 [PR #41302](https://github.com/BerriAI/litellm/pull/41302)
 
-**Delegated MCP OAuth 需要核准。** 尚未獲准加入 LiteLLM 的舊版 delegated MCP 整合現在會收到 401，直到它們核准或移轉到 `oauth_delegate`。請參閱 [PR #40923](https://github.com/BerriAI/litellm/pull/40923)
+**設定了 `delegate_auth_to_upstream: true` 的 MCP 伺服器現在需要 LiteLLM 憑證。** 先前，請求只要在 `Authorization` 中攜帶上游權杖就會被放行，不需要 LiteLLM 身分，因此任何能連上閘道的人都能使用該伺服器，且其工具呼叫不會出現在支出記錄中。現在，沒有 LiteLLM 憑證的請求會將其上游權杖當作 LiteLLM 金鑰或 JWT 驗證，驗證失敗會傳回 401，例如 `No matching public key found`（權杖由其他簽發者簽署）或 `Audience doesn't match`（權杖是為 MCP 伺服器而非 LiteLLM 簽發）。修正方式是將 LiteLLM 金鑰或 JWT 放在 `x-litellm-api-key` 中傳送，上游權杖則保留在 `Authorization` 中轉送給 MCP 伺服器，或將伺服器移轉到 `oauth_delegate`。若某台伺服器應在沒有 LiteLLM 驗證的情況下保持可連線，可使用 `true_passthrough`，它會刻意保留匿名存取。請參閱 [PR #40923](https://github.com/BerriAI/litellm/pull/40923)
 
 **`CustomLogger` moderation callback 現在會拒絕該請求。** `llm_api_check` moderation 透過 `during_call_hook` 分派，因此被標記的請求現在會回傳 400，而先前是 200。請參閱 [PR #41685](https://github.com/BerriAI/litellm/pull/41685)
 

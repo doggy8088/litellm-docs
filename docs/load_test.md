@@ -19,7 +19,7 @@ model_list:
 
 2. `uv add locust`
 
-3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 [這裡](https://github.com/BerriAI/litellm/blob/main/.github/workflows/locustfile.py) 的 litellm 負載測試內容複製過來
+3. 在您的本機建立一個名為 `locustfile.py` 的檔案。將 [這裡](https://github.com/BerriAI/litellm/blob/df2a36dd27fa222623f08ab9a6d794ad88287888/.github/workflows/locustfile.py) 的 litellm 負載測試內容複製過來
 
 4. 啟動 locust
   在與步驟 2 中的 `locustfile.py` 相同目錄下執行 `locust`

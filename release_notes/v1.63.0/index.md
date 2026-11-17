@@ -1,5 +1,6 @@
 ---
-title: v1.63.0 - Anthropic 'thinking' 回應更新
+title: "LiteLLM v1.63.0 - Anthropic 'thinking' 回應更新"
+description: "修正 Anthropic thinking 回應在串流時的問題，使其回傳 signature 區塊。將欄位從 signature_delta 移至 signature，以符合 Anthropic 的規格。"
 slug: v1.63.0
 date: 2025-03-05T10:00:00
 authors:

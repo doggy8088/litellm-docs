@@ -1,5 +1,6 @@
 ---
-title: v1.67.0-stable - SCIM 整合
+title: "LiteLLM v1.67.0-stable - SCIM 整合"
+description: "新增 SCIM 使用者與團隊佈建、在記錄超過 100 萬筆時的團隊與標籤花費檢視，以及對 Anthropic 與 Gemini 模型的 Responses API 呼叫。"
 slug: v1.67.0-stable
 date: 2025-04-19T10:00:00
 authors:

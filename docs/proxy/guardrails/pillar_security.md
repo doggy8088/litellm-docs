@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的 Pillar Security 防護欄"
+sidebar_label: "Pillar Security"
+description: "在 LiteLLM AI 閘道上透過 Generic Guardrail API 使用 Pillar Security，封鎖提示與回應中的提示注入、越獄與 PII 外洩。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

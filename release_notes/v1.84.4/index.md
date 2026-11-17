@@ -1,5 +1,6 @@
 ---
-title: "v1.84.4 - 重設預算與可觀測性修正"
+title: "LiteLLM v1.84.4 - 重設預算與可觀測性修正"
+description: "修正 ResetBudgetJob 對 UI 建立金鑰的支出重置，並停止已完成串流的重複 Datadog 記錄與 OTLP 追蹤。"
 slug: "v1-84-4"
 date: 2026-05-31T00:00:00
 authors:

@@ -25,7 +25,7 @@ description: 當您自行代管閘道時，LiteLLM 負責什麼、您負責什�
 
 我們負責產品能正常運作。本站文件中所記載的每個功能都應如文件所述般運作。若不是如此，那就是我們的錯誤，您應該 [提出 issue](https://github.com/BerriAI/litellm/issues) 或在您的企業支援管道中回報。
 
-這項責任涵蓋的是穩定性，不只是正確性。文件化功能集中的記憶體成長、檔案描述元或連線洩漏、死結、卡住，以及吞吐量退化，都屬於我們負責診斷與修正的範圍。這也涵蓋您所互動的介面：公開 HTTP 表面受 [API 穩定性政策](./api_stability_policy.md) 規範，版本編號以及 patch 或 minor 版本升級代表什麼，已記載於 [發布週期](./proxy/release_cycle.md)，而依 [遷移政策](./migration_policy.md) 移至 Enterprise 之後的 beta 功能。我們維護 [正式版部署](./proxy/deploy.md) 中所描述的官方 Docker 映像、Helm chart 與 Terraform 模組，並為 [支援版本範圍](./enterprise.md#version-support) 提供安全修補程式。
+這項責任涵蓋的是穩定性，不只是正確性。文件化功能集中的記憶體成長、檔案描述元或連線洩漏、死結、卡住，以及吞吐量退化，都屬於我們負責診斷與修正的範圍。這也涵蓋您所互動的介面：公開 HTTP 表面受 [API 穩定性政策](./api_stability_policy.md) 規範，版本編號以及 patch 或 minor 版本升級代表什麼，已記載於 [發布週期](./proxy/release_cycle.md)，而依 [遷移政策](./migration_policy.md) 移至 Enterprise 之後的 beta 功能。我們維護 [正式版部署](./proxy/deploy.md) 中所描述的官方 Docker 映像、Helm chart 與 Terraform 模組，並為 [支援版本範圍](./enterprise/version_support.md) 提供安全修補程式。
 
 如果您使用的是已終止支援的版本線，我們建議先升級，確保已套用最新的錯誤修正與安全修補程式。
 
@@ -55,4 +55,4 @@ description: 當您自行代管閘道時，LiteLLM 負責什麼、您負責什�
 6. 對於穩定性報告，我們建議一併提供隨時間變化的記憶體或延遲曲線、請求速率，以及 worker 與容器限制
 7. 對於記憶體與延遲問題，我們建議一併提供 [Pyroscope profiling](./proxy/pyroscope_profiling.md) 結果
 
-請將錯誤與功能請求以 [GitHub issues](https://github.com/BerriAI/litellm/issues) 提出。企業客戶也可以使用其專屬支援管道。關於服務時段與 SLA 選項，請參閱 [專業支援](./enterprise.md#professional-support)。
+請將錯誤與功能請求以 [GitHub issues](https://github.com/BerriAI/litellm/issues) 提出。企業客戶也可以使用其專屬支援管道。關於服務時段與 SLA 選項，請參閱 [支援與 SLA](./enterprise/support.md)。

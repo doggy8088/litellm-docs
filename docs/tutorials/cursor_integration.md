@@ -5,7 +5,7 @@ import Image from '@theme/IdealImage';
 將 Cursor IDE 請求透過 LiteLLM 路由，以便統一記錄、預算控制，以及存取任何模型。若要將 Cursor 連接到 MCP 工具，請使用 [MCP 設定參考](../mcp_config_reference#common-client-configs) 中的直接用戶端 URL 與標頭
 
 :::info
-**支援模式：** Ask、Plan、Agent。使用基礎 URL 覆寫時，agent 模式需要 LiteLLM v1.97.0+，它會將 Cursor agent 傳送的 Responses API 請求格式轉換為 chat completions 路徑。Cursor 會在其端依模式與模型限制自訂 API 金鑰，因此支援範圍取決於 Cursor 啟用的內容。
+**支援模式：** Ask、Plan、Agent。使用基礎 URL 覆寫時，agent 模式可運作 <SinceVersion v="1.97.0" />，因為 LiteLLM 會將 Cursor agent 傳送的 Responses API 請求格式轉換為 chat completions 路徑。Cursor 會在其端依模式與模型限制自訂 API 金鑰，因此支援範圍取決於 Cursor 啟用的內容。
 
 Cursor 並未正式支援 AI 閘道；這裡的實作是根據其 API 反向工程得到的最佳努力。Cursor CLI（`agent` / `cursor-agent`）完全無法目標指向 LiteLLM，請參閱 [Cursor CLI](#cursor-cli-cursor-agent)。
 :::
@@ -86,7 +86,7 @@ model_list:
 :::
 
 :::tip[模型變體]
-Cursor 的模型選擇器可能會輸出模型名稱的 thinking 與 fast 變體，例如 `claude-opus-5-thinking-high` 或 `claude-opus-5-fast`。LiteLLM v1.97.0+ 會去除尾端的 `-fast` 與 `-thinking-<effort>` 後綴，其中 `<effort>` 是 `reasoning_effort` 值（`none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`），LiteLLM 會將其作為請求的 reasoning effort 轉送，除非請求本身已設定。金鑰範圍與每個模型的預算會套用到解析後的模型，因此您不需要為這些變體建立個別的 `model_list` 項目。沒有 effort 等級的單純 `-thinking` 後綴，例如 `claude-opus-5-thinking`，不會被解析，並會回傳 `Invalid model name`，除非它有自己的 `model_list` 項目
+Cursor 的模型選擇器可能會輸出模型名稱的 thinking 與 fast 變體，例如 `claude-opus-5-thinking-high` 或 `claude-opus-5-fast`。<SinceVersion v="1.97.0" /> LiteLLM 會去除尾端的 `-fast` 與 `-thinking-<effort>` 後綴，其中 `<effort>` 是 `reasoning_effort` 值（`none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`），LiteLLM 會將其作為請求的 reasoning effort 轉送，除非請求本身已設定。金鑰範圍與每個模型的預算會套用到解析後的模型，因此您不需要為這些變體建立個別的 `model_list` 項目。沒有 effort 等級的單純 `-thinking` 後綴，例如 `claude-opus-5-thinking`，不會被解析，並會回傳 `Invalid model name`，除非它有自己的 `model_list` 項目
 :::
 
 ### 4. 測試 {#4-test}
@@ -198,8 +198,8 @@ CLI 會對任何低於 500、且未攜帶 Cursor 工作階段權杖的回應輸�
 | `User API Key Rate limit exceeded` | 當 Cursor 對 proxy 的請求收到 429 或 5xx 時，以及完全沒有收到任何回應時，Cursor 都會顯示此訊息；VPN 或 IP allowlist 將來自 Cursor 伺服器的流量丟棄時也會如此（已在 Cursor 3.18.25 驗證：聊天會停在 `Taking longer than expected` 約一分鐘，然後顯示此訊息）。因此，原因通常不是速率限制。首先，從您網路外的一台機器執行 `curl <LITELLM_PROXY_BASE_URL>/cursor/models -H "Authorization: Bearer <LITELLM_VIRTUAL_KEY>"`；如果它卡住，表示 proxy 從網際網路無法存取，而 LiteLLM 從未看到這些請求。如果它有回應，請在 LiteLLM 記錄中查找這些請求（它們會帶有 `User-Agent: Cursor/1.0`）以取得真正的錯誤。那裡常見的原因是該金鑰的 rpm 或 tpm 限制，因為每個 Cursor 請求都會攜帶約 25k token 的系統提示，以及提供者 429 |
 | `Network Error` / `We're having trouble connecting to the model provider` | base URL 主機名稱在公開網際網路上無法解析，例如是內部 DNS 名稱。Cursor 會在重試約一分鐘時顯示 `Rate limited by model provider, retrying`，然後顯示此訊息。請使用公開 DNS 可解析的主機名稱 |
 | `Provider returned error: Access to private networks is forbidden` | base URL 指向私有位址（`10.x`、`192.168.x`、`localhost` 等），Cursor 的伺服器會拒絕呼叫。請將 proxy 放在公開位址上 |
-| 代理程式模式無法運作 | 升級至 LiteLLM v1.97.0+，並確認模型支援 Cursor 中的自訂 API 金鑰 |
-| Cursor 不會列出您的 LiteLLM 模型 | 升級至 LiteLLM v1.97.0+，其會提供 `GET /cursor/models`。較早版本不會提供該路由，並回應 401 或 404。請使用 `curl <LITELLM_PROXY_BASE_URL>/cursor/models -H "Authorization: Bearer <LITELLM_VIRTUAL_KEY>"` 驗證 |
+| 代理程式模式無法運作 | 代理程式模式可運作 <SinceVersion v="1.97.0" />。如果您執行的是較舊版本，請升級 LiteLLM，並確認模型支援 Cursor 中的自訂 API 金鑰 |
+| Cursor 不會列出您的 LiteLLM 模型 | 升級 LiteLLM。`GET /cursor/models` 自 <SinceVersion v="1.97.0" /> 起提供。較早版本不會提供該路由，並回應 401 或 404。請使用 `curl <LITELLM_PROXY_BASE_URL>/cursor/models -H "Authorization: Bearer <LITELLM_VIRTUAL_KEY>"` 驗證 |
 | `The model "X" is already available as "Y"` | Cursor 會封鎖與其內建模型相符的名稱。請以不同的公開模型名稱新增該模型（請參閱步驟 3 的警告） |
 | `This model does not support custom API keys` | 您選擇了 Cursor 原生模型（Composer、Cursor Grok），同時啟用了自訂 API 金鑰。請選擇您新增的自訂模型，或停用 Azure OpenAI 切換開關，以在您的訂閱中使用 Cursor 的模型 |
 | 在啟用 Azure OpenAI 時選取內建模型後，聊天卡住 | Cursor 仍會將內建的 Claude 和 GPT 模型路由到您的 proxy，且其格式會被 deployment 路由拒絕。請選擇您新增的自訂模型 |

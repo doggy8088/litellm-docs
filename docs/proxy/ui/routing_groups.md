@@ -1,3 +1,7 @@
+---
+sidebar_label: "路由群組"
+---
+
 import Image from '@theme/IdealImage';
 
 # 管理路由群組 {#manage-routing-groups}

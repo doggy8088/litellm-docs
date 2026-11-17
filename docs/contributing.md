@@ -42,7 +42,7 @@ UI 開發有兩種選項：
 這會在 3000 埠執行 UI，並啟用熱重載。proxy 會在 4000 埠執行。
 
 ```bash
-cd ui/litellm-dashboard
+cd litellm/ui/litellm-dashboard
 npm install
 npm run dev
 ```
@@ -61,11 +61,11 @@ npm run dev
 
 這會建置 UI 並將其複製到 proxy。變更後需要重新建置。
 
-1. 在 `ui/litellm-dashboard/src/` 中進行程式碼變更
+1. 在 `litellm/ui/litellm-dashboard/src/` 中進行程式碼變更
 
 2. 建置 UI
 ```bash
-cd ui/litellm-dashboard
+cd litellm/ui/litellm-dashboard
 npm install
 npm run build
 ```
@@ -73,14 +73,14 @@ npm run build
 建置完成後，將輸出複製到 proxy：
 
 ```bash
-cp -r out/* ../../litellm/proxy/_experimental/out/
+cp -r out/* ../../proxy/_experimental/out/
 ```
 
 接著重新啟動 proxy，並透過 `http://localhost:4000/ui` 存取 UI
 
 ## 4. PR 前檢查清單 {#4-pre-pr-checklist}
 
-在提交您的 pull request 之前，請確認以下項目在本機透過 `ui/litellm-dashboard/` 通過：
+在提交您的 pull request 之前，請確認以下項目在本機透過 `litellm/ui/litellm-dashboard/` 通過：
 
 **執行與您變更相關的測試：**
 
@@ -116,4 +116,4 @@ git commit -m "feat: description of your changes"
 git push origin feat/your-feature-name
 ```
 
-4. 依照 [PR 範本](https://github.com/BerriAI/litellm/blob/main/.github/pull_request_template.md) 在 GitHub 上建立 Pull Request
+4. 依照 [PR 範本](https://github.com/BerriAI/litellm/blob/main/.github/PULL_REQUEST_TEMPLATE/general.md) 在 GitHub 上建立 Pull Request

@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Valkey 向量儲存"
+sidebar_label: "Valkey - Vector Store"
+description: "透過 LiteLLM 的統一向量儲存 API 搜尋索引於 Valkey 的文件：開啟向量搜尋、儲存文件、註冊索引並測試該儲存。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

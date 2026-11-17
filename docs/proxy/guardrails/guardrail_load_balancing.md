@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI 閘道上的防護欄負載平衡"
+sidebar_label: "防護欄負載平衡"
+description: "在 LiteLLM AI 閘道上跨部署對防護欄呼叫進行負載平衡，支援加權路由與多帳號 Bedrock Guardrails 設定。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 

@@ -1,3 +1,8 @@
+---
+title: "LiteLLM AI Gateway 的 OpenTelemetry v2 追蹤"
+sidebar_label: "OpenTelemetry v2"
+description: "透過 OpenTelemetry v2，從 LiteLLM AI Gateway 為每個請求取得一條 trace：HTTP、auth、防護欄與 LLM spans，傳送至任何 OTLP collector。"
+---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -86,6 +91,32 @@ litellm --config config.yaml
 
 提出請求後，您會在後端看到每個請求一條 trace。
 
+#### 傳送至不只一個 collector {#send-to-more-than-one-collector}
+
+`OTEL_ENDPOINT` 只能保存單一 URL。若要將每條 trace 同時傳送至數個 collector，例如 Datadog Agent 與 Grafana Tempo，請在 config.yaml 的 `callback_settings.otel.exporters` 下列出它們，並將 `otel` 加入 `callbacks`：
+
+```yaml title="config.yaml"
+litellm_settings:
+  callbacks: ["otel"]
+
+callback_settings:
+  otel:
+    exporters:
+      - kind: otlp_http
+        endpoint: http://datadog-agent:4318
+      - kind: otlp_grpc
+        endpoint: http://tempo:4317
+      - kind: otlp_http
+        endpoint: https://collector.example.com
+        headers: os.environ/COLLECTOR_HEADERS
+```
+
+每個項目都會成為自己的 exporter，且每一個 exporter 都會收到每個請求的完整 trace，包含 root span。項目需提供 `kind`（`otlp_http`、`otlp_grpc`，或供無法解碼 protobuf 的 collector 使用的 `http/json`）、`endpoint`，並可選擇性地提供以逗號分隔的 `key=value` 對作為 `headers`；`os.environ/VAR` 可讓標頭值不留在檔案中。`otlp_http` endpoint 是會附加 `/v1/traces` 的基礎 URL，因此當 collector 在其他路徑上提供 traces 時，請改將 `traces_endpoint` 設為完整 URL。
+
+只有當 `otel` 出現在 `callbacks` 中時才會讀取此清單；沒有它，proxy 會退回使用 `OTEL_*` 變數，或在這些變數未設定時將 spans 印到 stdout。清單一旦設定，對於 traces 而言會取代 `OTEL_EXPORTER`、`OTEL_ENDPOINT` 與 `OTEL_HEADERS`，而 [metrics](#metrics) 與 events 仍會送往單一的 `OTEL_*` 目的地。此清單適用於整個 proxy；金鑰或團隊無法新增自己的通用 collector（請參閱 [每個金鑰 / 每個團隊的憑證](#per-key--per-team-credentials-multi-tenant)）。OpenTelemetry v1 會忽略此清單。
+
+如果您寧願在 LiteLLM 中只保留一個端點，請將 `OTEL_ENDPOINT` 指向 [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)，並在它的 `traces` pipeline 中將您的後端列為 exporters；collector 接著會將每條 trace 複製到所有後端。
+
 ### 2. 將追蹤傳送到特定工具（預設） {#2-send-traces-to-a-specific-tool-presets}
 
 對於 LLM 可觀測性工具，請使用**預設**。預設知道工具的端點，並以該工具所預期的 schema 發出屬性。若要啟用其中之一，請在設定檔中的 `callbacks` 新增其名稱，並將該工具的憑證設為環境變數。
@@ -133,10 +164,20 @@ litellm_settings:
 
 ```shell
 LITELLM_OTEL_V2=true
+LITELLM_OTEL_LANGFUSE_SPAN_SCOPE=llm_only    # model calls only
+OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only
 LANGFUSE_PUBLIC_KEY="pk-..."
 LANGFUSE_SECRET_KEY="sk-..."
 LANGFUSE_HOST="https://cloud.langfuse.com"   # or your self-hosted URL
 ```
+
+OTel v2 預設不會擷取任何訊息內容，因此若未設定 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only`，Langfuse 會顯示每個 generation 的模型、tokens 與時間，但 input 與 output 為空。請參閱[擷取提示與回應](#capturing-prompts--responses)。
+
+:::warning[省略 `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE` 會將每個 proxy span 都傳送至 Langfuse]
+
+若未設定 `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE=llm_only`，scope 即為 `full`，因此每個請求還會將其 HTTP、auth、Postgres、Redis、防護欄與 spend 寫入 spans 傳送至 Langfuse，而 `/model/info` 等 admin API 呼叫也會以各自的 traces 形式送達。這可能使 Langfuse 接收的資料量增加一個數量級以上，並直接反映在 Langfuse Cloud 的用量與成本上。請參閱[只將模型呼叫傳送至 Langfuse](#send-only-the-model-calls-to-langfuse)。
+
+:::
 
 </TabItem>
 
@@ -251,7 +292,7 @@ litellm_settings:
   callbacks: ["langfuse_otel", "arize"]
 ```
 
-每個預設都會新增自己的目的地，因此您的 spans 會平行送達所有目的地，且各自採用該工具的原生格式。
+每個預設都會新增自己的目的地，因此您的 spans 會平行送達所有目的地，且各自採用該工具的原生格式。若要使用數個通用 OTLP collectors 而非供應商工具，請參閱[傳送至不只一個 collector](#send-to-more-than-one-collector)。
 
 :::
 
@@ -298,7 +339,9 @@ litellm_settings:
 | `llm.invocation_parameters` | request 參數的 JSON blob |
 | `llm.input_messages.{idx}.message.role`, `content` | prompt（已開啟內容擷取），[有上限](#chat-messages-are-capped) |
 | `llm.output_messages.{idx}.message.role`, `content` | response（已開啟內容擷取），[有上限](#chat-messages-are-capped) |
-| `input.value`, `output.value` | 每則訊息的 role 與文字之 JSON 陣列（已開啟內容擷取） |
+| `llm.output_messages.{idx}.message.tool_calls.{idx}.tool_call.id`, `.tool_call.function.name`, `.tool_call.function.arguments` | assistant 工具呼叫（已開啟內容擷取），請參閱 [OpenInference 工具呼叫與 metadata](#openinference-tool-calls-and-metadata) |
+| `metadata` | 允許清單中的請求 metadata 之 JSON，請參閱 [OpenInference 工具呼叫與 metadata](#openinference-tool-calls-and-metadata) |
+| `input.value`, `output.value` | 每則訊息的 role 與文字之 JSON 陣列，包含工具呼叫（已開啟內容擷取） |
 | `llm.tools.{idx}.tool.name`, `description`, `json_schema` | tool 定義，[有上限](#tool-definitions-are-capped) |
 
 完整且權威的詞彙請參閱完整的 [OpenInference 規格](https://github.com/Arize-ai/openinference/blob/main/spec/semantic_conventions.md)。
@@ -342,7 +385,7 @@ Phoenix 有不只一種 collector 端點形式，選錯是最常見的 Phoenix �
 
 #### Langfuse 會呈現什麼 {#what-langfuse-renders}
 
-開啟 Langfuse 的 traces 檢視；LLM 呼叫 span 會以 Langfuse **generation** 的形式出現，可依團隊篩選。端點解析順序為 `LANGFUSE_OTEL_HOST`，接著是 `LANGFUSE_HOST`，再來是美國雲端預設值，自架主機則會附加 `/api/public/otel`。
+開啟 Langfuse 的 traces 檢視；LLM 呼叫 span 會以 Langfuse **generation** 的形式出現，可依團隊、金鑰、使用者與終端使用者篩選。端點解析順序為 `LANGFUSE_OTEL_HOST`，接著是 `LANGFUSE_HOST`，再來是美國雲端預設值，自架主機則會附加 `/api/public/otel`。
 
 #### 由 `langfuse` 對應器新增的屬性 {#attributes-added-by-the-langfuse-mapper}
 
@@ -355,15 +398,21 @@ Phoenix 有不只一種 collector 端點形式，選錯是最常見的 Phoenix �
 | `langfuse.observation.input` / `output` | prompt 與 response 內容（已開啟內容擷取） |
 | `langfuse.observation.usage_details` | 輸入／輸出／總 token 數 |
 | `langfuse.observation.cost_details` | 總成本 |
+| `langfuse.release` / `langfuse.version` | 來自請求的 `metadata.trace_release` 與 `metadata.trace_version` |
 | `langfuse.trace.metadata.team_id`, `team_alias` | 可篩選的團隊身分 |
+| `langfuse.observation.metadata` | 呼叫者身分的 JSON，顯示為 generation 自身的 Metadata 欄位：`user_api_key_alias`、`user_api_key_user_id`、`user_api_key_end_user_id`、`user_api_key_team_id`、`user_api_key_team_alias` 與 `user_api_key_org_id` |
+| `langfuse.trace.metadata.user_api_key_*` | 相同的身分欄位，作為 trace metadata，讓您可以依金鑰、使用者、終端使用者、團隊或組織篩選 traces |
 
 這些是由預設從 request 與 response 設定，而不是來自用戶端提供的 metadata dict，因此無需額外設定就會取得。
+
+金鑰別名、使用者、團隊與組織來自 proxy 認證的虛擬金鑰，終端使用者則是 proxy 為該請求解析出的那一位，與 spend 追蹤使用的值相同；呼叫者無法透過請求 `metadata` 設定其中任何一項。沒有值的欄位會被省略，例如組織外金鑰的 `user_api_key_org_id`。團隊 ID 與別名一律會傳送。金鑰別名、使用者、終端使用者與組織遵循 [每個 span 上的請求身分](#request-identity-on-every-span) 中的 metadata 允許清單，因此從 `LITELLM_OTEL_BAGGAGE_METADATA_KEYS` 移除其中一項，也會將它從這裡移除。在 `litellm_settings` 下設定 `redact_user_api_key_info: true` 會捨棄全部這些欄位，如同它對 `langfuse` 回呼的作用。Langfuse 旁邊的其他 exporters，例如純 `otel` collector 或 Arize，不會在 LiteLLM 的 spans 上收到這些鍵。
 
 #### 設定注意事項 {#setup-notes-2}
 
 - 驗證採用 HTTP Basic，`Authorization: Basic <base64(public_key:secret_key)>`；該預設會從 `LANGFUSE_PUBLIC_KEY` 與 `LANGFUSE_SECRET_KEY` 建立此設定，因此您不需要直接設定標頭。
 - 如果您的用戶端已經送出 W3C `traceparent`，而 Langfuse 卻抓到錯誤的父項，請在 proxy 環境中設定 `OTEL_IGNORE_CONTEXT_PROPAGATION=true` 以捨棄進站 context。
-- 預設情況下，您的 Langfuse 專案會接收整個 request tree。請設定 `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE=llm_only` 以只保留 generations；請參閱 [只將 model call 傳送到 Langfuse](#send-only-the-model-calls-to-langfuse)。
+- `LANGFUSE_TRACING_ENVIRONMENT` 可設定 Langfuse 環境。金鑰或團隊可以在其 `langfuse_otel` 回呼中以 `langfuse_environment` 設定自己的環境。
+- 請設定 `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE=llm_only` 以只保留 generations。若未設定，您的 Langfuse 專案會接收整個 request tree，這可能使 Langfuse 接收的資料量倍增；請參閱 [只將模型呼叫傳送至 Langfuse](#send-only-the-model-calls-to-langfuse)。
 - 這是 Langfuse 風格的路徑；若要使用通用 OTel 後端，請改用 [通用 OTLP 設定](#1-send-traces-to-any-otlp-collector)。
 
 ![LiteLLM 在 Langfuse 中的 trace](/img/observability/otel_v2_langfuse.png)
@@ -382,7 +431,7 @@ Phoenix 有不只一種 collector 端點形式，選錯是最常見的 Phoenix �
 
 | 屬性 | 目的 |
 |---|---|
-| `weave.display_name` | `"{operation} {model}"`（例如 `chat gpt-4o`） |
+| `weave.display_name` | `"{operation} {model}"`（例如 `chat {{openai_large}}`） |
 | `weave.call_id` | 與 `litellm.call_id` 相同 |
 | `weave.output` | choices 的 JSON 陣列（已開啟內容擷取） |
 
@@ -531,7 +580,7 @@ OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT="span_and_event"
 
 | 屬性 | 設定時機 |
 |---|---|
-| `gen_ai.operation.name` | 一律（`chat`、`text_completion`、`embeddings`） |
+| `gen_ai.operation.name` | 一律（`chat`、`text_completion`、`embeddings`）；`pass_through_endpoints` 下的路由會讀作 `litellm.passthrough`，且任何 pass-through 目標都可以透過 [`x-litellm-operation-name`](../proxy/pass_through_cost_tracking#naming-the-operation) 指定自己的名稱 |
 | `gen_ai.provider.name` | 一律 |
 | `gen_ai.request.model` | 一律（使用者可見的模型群組名稱） |
 | `gen_ai.request.temperature`, `top_p`, `top_k`, `max_tokens` | 在請求上設定時 |
@@ -595,6 +644,8 @@ OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT="span_and_event"
 
 LiteLLM 會輸出一組標準的 GenAI 屬性，並透過新增 mapper 在其上疊加其他詞彙；啟用中的集合由 `mapper_names` 控制，而 `genai` 永遠優先。`legacy` mapper 預設為開啟（`LITELLM_OTEL_LEGACY_COMPAT=true`），並會以舊版 semconv-ai / Traceloop 名稱重新輸出相同資料，因此以那些名稱建立的儀表板在遷移期間仍可正常運作。當您的查詢已改用標準鍵後，可用 `LITELLM_OTEL_LEGACY_COMPAT=false` 將其關閉。供應商 mapper（`openinference`、`langfuse`、`weave`、`langtrace`）由其預設設定加入，且永遠不會取代標準鍵。
 
+`mapper_names` 本身預設只有 `genai`，因此在[通用 OTLP 路徑](#1-send-traces-to-any-otlp-collector)上，span 只會帶有標準名稱，直到您新增更多為止。您可以用 `MAPPER_NAMES` 環境變數設定它（以逗號分隔，例如 `MAPPER_NAMES=genai,openinference`），所有路徑都會讀取它；或是在 config.yaml 中以 `callback_settings.otel.mapper_names` 設定，這是會在 `otel` 回呼路徑上讀取的 YAML 清單。這些值會疊加：列出兩個，每個 span 就會同時帶有兩組名稱，且無論您以何種順序書寫，`genai` 都會被移到最前面。預設會在您設定的值之上再蓋上自己的 mapper，因此 `arize`、`arize_phoenix` 與 `weave_otel` 無需額外設定即帶有 `openinference`。親自指定 `openinference`，正是讓工具呼叫與 metadata 在 Arize 與 Phoenix 中以原生方式呈現的關鍵；請參閱 [OpenInference 工具呼叫與 metadata](#openinference-tool-calls-and-metadata)。
+
 最常見的鍵在各詞彙中的對應如下：
 
 | 標準（`genai`） | 舊版（Traceloop） | OpenInference |
@@ -605,30 +656,170 @@ LiteLLM 會輸出一組標準的 GenAI 屬性，並透過新增 mapper 在其上
 | `litellm.request.streaming` | `llm.is_streaming` | n/a |
 | `gen_ai.request.model` | n/a | `llm.model_name` |
 
+## OpenInference 工具呼叫與 metadata {#openinference-tool-calls-and-metadata}
+
+在 `openinference` mapper 啟用時，每個 LLM 呼叫 span 除了[上方 Arize 表格](#seeing-your-traces)中的鍵之外，還會以結構化屬性攜帶模型的輸出工具呼叫，以及一個保存允許清單中請求 metadata 的 `metadata` 屬性。在此之前，Arize 與 Phoenix 會將工具呼叫回覆顯示為 `{"role": "assistant", "content": null}`，並讓 span 的 metadata 面板保持空白：工具呼叫只以文字形式存在於 `input.value` blob 中，而請求的 metadata 只位於 `litellm.metadata.*` 命名空間之下。
+
+![之前：工具呼叫只以文字形式出現在 input.value blob 內，沒有結構化欄位，也沒有 metadata 屬性](https://raw.githubusercontent.com/BerriAI/litellm/assets-pr43698/assets/pr43698/pr43698-arize-before-tool-call-1126ca21921b.png)
+
+### 輸出訊息上的工具呼叫 {#tool-calls-on-output-messages}
+
+每個 assistant 工具呼叫都會寫成自己的一組索引屬性，因此 Arize 與 Phoenix 會將工具名稱與其引數呈現為可讀取、篩選與分組的一級欄位。第一則輸出訊息上的一個工具呼叫如下所示：
+
+```text
+llm.output_messages.0.message.tool_calls.0.tool_call.id = "call_uXEPx7V2yQk5IwXzzGxL0mf9"
+llm.output_messages.0.message.tool_calls.0.tool_call.function.name = "lookup_weather"
+llm.output_messages.0.message.tool_calls.0.tool_call.function.arguments = "{\"city\": \"Paris\"}"
+```
+
+`tool_call.function.arguments` 是模型所產生引數的 JSON 字串。Python 無法 JSON 編碼的值會退回使用該值的 `repr` 字串，因此該屬性永遠存在。prompt 較早回合中的工具呼叫會留在 `input.value` 與 `gen_ai.input.messages` blobs 內，而不會取得自己的索引鍵，因為在長對話中為整段歷史建立索引會擠掉上面的鍵。無論呼叫者使用哪個介面，`/v1/chat/completions`、`/v1/responses` 或 `/v1/messages`，回覆的工具呼叫都會落在相同的 `llm.output_messages.*` 鍵中。與訊息的 `role` 與 `content` 鍵一樣，工具呼叫鍵會在內容擷取開啟時（`span_only` 或 `span_and_event`）寫入。
+
+![之後：chat completion 的工具呼叫由索引屬性呈現](https://raw.githubusercontent.com/BerriAI/litellm/assets-pr43698/assets/pr43698/pr43698-chat-tool-call-completion-1bef719681bf.png)
+
+![之後：/v1/responses 呼叫在最終 span 上攜帶其工具呼叫](https://raw.githubusercontent.com/BerriAI/litellm/assets-pr43698/assets/pr43698/pr43698-recorded-responses-call-final-d438e0784b49.png)
+
+![之後：工具結果以及隨後的模型回答](https://raw.githubusercontent.com/BerriAI/litellm/assets-pr43698/assets/pr43698/pr43698-recorded-tool-result-and-answer-875a942c3efb.png)
+
+### metadata 屬性 {#the-metadata-attribute}
+
+span 也會攜帶一個 `metadata` 屬性：一個 JSON 物件，只保存請求 metadata 中被提升且列入允許清單的子集，與[每個 span 上的請求身分](#request-identity-on-every-span)中所述、供應 `litellm.metadata.*` 命名空間的同一份允許清單相同。呼叫者送出的原始 `metadata` dict 絕不會整包寫入，而 `litellm.metadata.*` 會保持與之前完全相同的形狀。在預設允許清單下，`metadata` 保存 `user_api_key_org_id`、`user_api_key_user_id`、`user_api_key_alias`、`user_api_key_end_user_id` 與 `requester_ip_address`：
+
+```text
+metadata = {"user_api_key_alias": "demo-key-alias", "requester_ip_address": "203.0.113.7"}
+```
+
+若要將呼叫者自己的鍵提升到其中，請使用同一個 `LITELLM_OTEL_BAGGAGE_METADATA_KEYS` 設定（帶點的 `requester_metadata.trace_marker` 會讀取呼叫者巢狀的 `metadata.trace_marker`）。Arize 與 Phoenix 會將此屬性顯示為 span 的 Metadata 面板，並讓您依它篩選與分組 traces。請注意，預設允許清單包含呼叫者的 IP 位址與金鑰別名；如果這超出您希望放入可觀測性後端的範圍，請明確設定允許清單。
+
+![之後：列入允許清單的 metadata 隨 span 傳送，並呈現在 metadata 面板中](https://raw.githubusercontent.com/BerriAI/litellm/assets-pr43698/assets/pr43698/pr43698-recorded-allowlisted-metadata-23279e75a073.png)
+
+回應快取命中不會開啟 LLM 呼叫 span，因此從快取提供的回覆在 Arize 或 Phoenix 中既不會顯示工具呼叫，也不會顯示 `metadata`；而填入快取的那個請求兩者都有攜帶。
+
+### 是 mapper，不只是 endpoint {#the-mapper-not-just-the-endpoint}
+
+設定 Arize 或 Phoenix 的 OTLP endpoint 可以讓 spans 送達，且兩個工具都會接受，但在通用 OTLP 路徑上，它們只會帶有標準的 `gen_ai.*` 名稱，並以樸素 span 的形式呈現：沒有逐訊息列、沒有結構化工具呼叫、沒有 metadata 面板。這兩個設定回答的是兩個不同的問題。endpoint 決定 spans 的去向；`mapper_names` 決定哪些屬性名稱會寫在它們上面。
+
+若要透過您自己的 collector 或純 OTLP 路徑傳送時仍取得原生呈現，請在 endpoint 旁指定 `openinference` mapper。自架 Phoenix：
+
+```yaml title="config.yaml"
+litellm_settings:
+  callbacks: ["otel"]
+
+callback_settings:
+  otel:
+    mapper_names: ["genai", "openinference"]
+```
+
+```shell
+LITELLM_OTEL_V2=true
+OTEL_EXPORTER="otlp_http"
+OTEL_ENDPOINT="http://localhost:6006"
+```
+
+Arize AX 透過其預設 gRPC endpoint（gRPC 匯出需 `pip install grpcio`），憑證以 OTLP headers 形式提供：
+
+```shell
+LITELLM_OTEL_V2=true
+OTEL_EXPORTER="otlp_grpc"
+OTEL_ENDPOINT="https://otlp.arize.com/v1"
+OTEL_HEADERS="space_id=your-space-id,api_key=your-api-key"
+MAPPER_NAMES=genai,openinference   # env alternative to the YAML list above
+```
+
+如果您使用 `arize` 或 `arize_phoenix` 預設，您已經擁有這項設定：預設會在每個 span 上蓋上 `openinference`，無需額外設定，上面截圖背後正是這個組態。未攜帶 `openinference` mapper 的 spans 與之前逐位元組相同，因此未新增任何設定的通用 OTLP 設定不會看到任何變化。
+
+### 屬性預算 {#attribute-budget}
+
+索引化的 OpenInference 鍵會累加：開啟 `openinference` 時，每個 LLM 呼叫 span 大約會多出 18 個屬性（以單回合 chat 呼叫量測）。整個 span 的 128 個屬性上限，以及逐索引訊息鍵如何塞進 span 剩餘的預算，詳見[聊天訊息有上限](#chat-messages-are-capped)與[工具定義有上限](#tool-definitions-are-capped)；工具呼叫鍵也計入同一個預算。當 span 的預算吃緊時，mapper 會先捨棄較後面的工具呼叫群組，接著是中間訊息的索引，而 `metadata` 只會在每個索引訊息屬性之後才被捨棄。非常長的對話仍會失去中間訊息的索引；完整的對話（包含工具呼叫）永遠會保存在 `input.value` 與 `output.value` blobs 中。
+
 ## 每個 span 上的請求識別 {#request-identity-on-every-span}
 
-LiteLLM 會在授權邊界將一小組請求身分值寫入標準 OpenTelemetry [Baggage](https://opentelemetry.io/docs/specs/otel/baggage/)。接著自訂的 span processor 會將這些值複製到 trace 中的每個 span，因此可依團隊或金鑰篩選防護欄、資料儲存或服務 span，而不必由 LiteLLM 逐一手動重設。
+LiteLLM 會在呼叫者的金鑰通過認證後，立即將一小組請求身分值的允許清單寫入標準 OpenTelemetry [Baggage](https://opentelemetry.io/docs/specs/otel/baggage/)。接著自訂的 span processor 會將這些值複製到該請求中稍後啟動的每個 span 上，因此可依團隊或金鑰篩選防護欄、資料儲存或服務 span，而不必由 LiteLLM 逐一手動重設。
 
-預設會將以下鍵寫入每個 span：
+### 每個屬性與控制它的設定 {#attributes-and-the-setting-that-controls-each}
 
-| 鍵 | 值 |
-|---|---|
-| `litellm.team.id` | Team UUID |
-| `litellm.team.alias` | Team 顯示名稱 |
-| `litellm.team.metadata` | Team 的自由格式中繼資料，已過濾至您加入 allowlist 的子鍵 |
-| `litellm.api_key.hash` | 呼叫者虛擬金鑰的雜湊值 |
-| `gen_ai.request.model` | 使用者可見的 model group 名稱 |
-| `litellm.provider.model` | 在提供者上派送的 model |
+| 屬性 | 值 | 控制設定 | 預設開啟 |
+|---|---|---|---|
+| `litellm.team.id` | Team UUID | `baggage_promoted_keys` | 是 |
+| `litellm.team.alias` | Team 顯示名稱 | `baggage_promoted_keys` | 是 |
+| `litellm.team.metadata` | 保存團隊已儲存 metadata 中允許清單子鍵的 JSON 物件 | `baggage_promoted_keys` 與 `baggage_team_metadata_keys` | 有列出，但子鍵允許清單是空的，因此不會傳送任何內容 |
+| `litellm.api_key.hash` | 呼叫者虛擬金鑰的雜湊值 | `baggage_promoted_keys` | 是 |
+| `litellm.end_user.id` | proxy 為該請求解析出的終端使用者 | `baggage_promoted_keys` | 否 |
+| `gen_ai.request.model` | 使用者可見的 model group 名稱 | `baggage_promoted_keys` | 是 |
+| `litellm.provider.model` | 派送至提供者的 model | `baggage_promoted_keys` | 是 |
+| `litellm.metadata.<key>` | 每個列入允許清單的請求 metadata 鍵各一個屬性 | `baggage_metadata_keys` | `user_api_key_org_id`, `user_api_key_user_id`, `user_api_key_alias`, `user_api_key_end_user_id`, `requester_ip_address` |
 
-另一組請求中繼資料欄位會寫入 `litellm.metadata.*` 命名空間下。預設值：
+`litellm.provider.model` 只有在路由選定部署後才會知道，因此在該時間點之前啟動的 spans 不會有它。LLM 呼叫 span 永遠會從自己的屬性攜帶它。某個鍵或子鍵對該請求沒有值時，會被省略而不是以空值傳送。
 
-`litellm.metadata.user_api_key_org_id`、`litellm.metadata.user_api_key_user_id`、`litellm.metadata.user_api_key_alias`、`litellm.metadata.user_api_key_end_user_id`、`litellm.metadata.requester_ip_address`。
+兩個預設值為了隱私而保持保守。終端使用者 id 可提升，但在頂層預設為關閉，因為它會識別個人；它仍會透過 metadata 允許清單出現在 `litellm.metadata.user_api_key_end_user_id` 之下。團隊的自由格式 metadata 絕不會整包送出；只有您列入允許清單的子鍵會離開程序，而該允許清單預設是空的。
 
-兩個預設值為了隱私而保持保守。終端使用者 id 可提升，但在頂層預設為關閉（它會識別個人）；它會出現在 `litellm.metadata.user_api_key_end_user_id` 底下，而依使用者過濾的呼叫端應該啟用它。團隊的自由格式 metadata 絕不會整包送出；只有您列入 allowlist 的子鍵會離開程序，而 allowlist 預設是空的。
+### 設定 {#settings}
 
-可透過 `LITELLM_OTEL_BAGGAGE_PROMOTED_KEYS`、`LITELLM_OTEL_BAGGAGE_METADATA_KEYS` 和 `LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS` 環境變數（以逗號分隔），或 `callback_settings.otel` 下對應的 YAML 清單來覆寫這些設定。
+| 環境變數 | `callback_settings.otel` 下的 YAML 鍵 | 預設值 | 控制內容 |
+|---|---|---|---|
+| `LITELLM_OTEL_BAGGAGE_PROMOTED_KEYS` | `baggage_promoted_keys` | `litellm.team.id`, `litellm.team.alias`, `litellm.team.metadata`, `litellm.api_key.hash`, `gen_ai.request.model`, `litellm.provider.model` | 上述身分屬性中哪些會被蓋上。該表之外的名稱會被忽略。 |
+| `LITELLM_OTEL_BAGGAGE_METADATA_KEYS` | `baggage_metadata_keys` | `user_api_key_org_id`, `user_api_key_user_id`, `user_api_key_alias`, `user_api_key_end_user_id`, `requester_ip_address` | 哪些請求 metadata 鍵會成為 `litellm.metadata.<key>`。請參閱[請求 metadata](#request-metadata)。 |
+| `LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS` | `baggage_team_metadata_keys` | none | 團隊已儲存 metadata 的哪些子鍵會進入 `litellm.team.metadata`。請參閱[團隊 metadata](#team-metadata)。 |
+
+環境變數採用以逗號分隔的清單，YAML 鍵則採用 YAML 清單。每個設定都會取代其預設清單，而不是附加在其上。因此，設定 `LITELLM_OTEL_BAGGAGE_METADATA_KEYS=requester_metadata.correlation_id` 會停止傳送 `litellm.metadata.user_api_key_org_id` 與其他預設值，所以請列出您想保留的每個鍵：
+
+```bash
+LITELLM_OTEL_BAGGAGE_METADATA_KEYS=user_api_key_org_id,user_api_key_user_id,user_api_key_alias,user_api_key_end_user_id,requester_ip_address,requester_metadata.correlation_id
+```
+
+當 `otel` 是 `callbacks` 中唯一的 OTel v2 回呼，且某個設定同時出現在 `callback_settings.otel` 與環境變數中時，以 YAML 值為準。`arize` 或 `langfuse_otel` 等預設只會從環境變數讀取這三個設定，列在預設旁邊的 `otel` 回呼也是如此，因此只要 `callbacks` 中有預設，就請將它們設為環境變數。
+
+這些是由操作員控制的 proxy 全域設定，透過 `/team/{team_id}/callback` 或金鑰的記錄設定新增的目的地會使用 proxy 的清單。金鑰或團隊無法變更這些清單，但它自己的目的地可以匯出額外的請求 metadata 鍵。請參閱[為單一團隊或金鑰新增請求 metadata 鍵](#add-request-metadata-keys-for-one-team-or-key)。
+
+### 請求 metadata {#request-metadata}
+
+請求 metadata 是依每次呼叫設定的：它是呼叫者在請求 body 中送出的 `metadata` 物件。proxy 會將呼叫者自己的物件保存在 `requester_metadata` 之下，與 `user_api_key_user_id`、`requester_ip_address` 等由 proxy 設定的欄位並列。若要提升呼叫者送出的鍵，請將它以 `requester_metadata.<key>` 的形式列入允許清單。LiteLLM 在命名屬性時會去掉 `requester_metadata.` 前綴，因此 `requester_metadata.correlation_id` 會以 `litellm.metadata.correlation_id` 的形式送出。巢狀值使用帶點路徑，例如 `{"agent": {"id": "..."}}` 的 `requester_metadata.agent.id`，會以 `litellm.metadata.agent.id` 的形式送出。由於呼叫者的鍵永遠位於 `requester_metadata` 之下，呼叫者無法透過送出同名鍵來覆寫由 proxy 設定的欄位，例如 `litellm.metadata.user_api_key_user_id`。
+
+<SinceVersion v="1.102.1" />
+
+在此設定下：
+
+```bash
+LITELLM_OTEL_BAGGAGE_METADATA_KEYS=user_api_key_org_id,user_api_key_user_id,user_api_key_alias,user_api_key_end_user_id,requester_ip_address,requester_metadata.correlation_id
+```
+
+並送出此請求：
+
+```bash
+curl http://localhost:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "hi"}],
+    "metadata": {"correlation_id": "corr-123", "tenant_id": "t-9"}
+  }'
+```
+
+該請求的 spans 會攜帶 `litellm.metadata.correlation_id = "corr-123"`，以及預設的 `litellm.metadata.*` 鍵。`tenant_id` 未列入允許清單，因此不會傳送。
+
+### 團隊 metadata {#team-metadata}
+
+團隊 metadata 是依每個團隊設定的：它是透過 `/team/new` 或 `/team/update` 儲存在團隊上的 `metadata` 物件，而使用該團隊任一金鑰發出的每個請求都會攜帶相同的值。它不是來自請求 body。列入允許清單的子鍵會一起以單一屬性 `litellm.team.metadata` 送出，其值是鍵已排序的 JSON 物件。團隊沒有的子鍵會被跳過，而當允許清單中的子鍵都不存在時，該屬性會被省略。`litellm.team.metadata` 也必須留在 `baggage_promoted_keys` 中，而它預設就在其中。
+
+對於以如下方式建立的團隊：
+
+```bash
+curl http://localhost:4000/team/new \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"team_alias": "ml-platform", "metadata": {"cost_center": "cc-42", "owner": "ml-platform", "region": "eu"}}'
+```
+
+設定 `LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS=cost_center,region` 會將 `litellm.team.metadata = {"cost_center": "cc-42", "region": "eu"}` 放到該團隊的 spans 上。`owner` 未列入允許清單，因此不會傳送。
+
+### 哪些 spans 會攜帶這些屬性 {#which-spans-carry-the-attributes}
+
+身分會在金鑰通過認證後立即附加，而較早啟動的 root HTTP server span 會在該時間點直接被蓋上。proxy 的 pre-call hook 接著會加入該請求的 `litellm.metadata.*` 鍵，並再次蓋上 server span。之後在同一個請求中啟動的每個 span 都會繼承這些屬性，包含 router span、LLM 呼叫 span、防護欄 spans、資料儲存（Redis 與 Postgres）spans，以及內部服務 spans。`auth` span 與認證期間進行的資料儲存查詢在金鑰被得知之前就已啟動，因此不會攜帶這些屬性；在任何請求之外執行的背景資料庫寫入（例如 spend log flushes）也不會。當請求在其金鑰被查出後遭到拒絕（例如因為超出預算），server span 仍會攜帶團隊與金鑰屬性。
+
+資料儲存 spans 也會自行設定 `litellm.metadata.table_name` 與 `litellm.metadata.db_operation`。這兩者來自 span mapper，而不是 `baggage_metadata_keys`，因此無論允許清單內容為何都會出現。
 
 ## 指標 {#metrics}
+## 指標 {#metrics-1}
 
 除了 traces 之外，OTel v2 還可以發出 GenAI **client metrics**：用於呼叫延遲、token 使用量與成本的直方圖，由您的後端在多個請求之間彙總。和 OTel v2 的其他功能一樣，它們在您啟用之前都會保持關閉。
 
@@ -639,7 +830,7 @@ LITELLM_OTEL_V2=true
 LITELLM_OTEL_INTEGRATION_ENABLE_METRICS=true
 ```
 
-指標會透過您已為 traces 設定的 exporter 傳送。`OTEL_EXPORTER`（`console`、`otlp_http`、`otlp_grpc`）、`OTEL_ENDPOINT` 和 `OTEL_HEADERS` 會像處理 spans 一樣決定 metric 串流的去向，因此接收您 traces 的 collector 也會接收這些 metrics。
+指標會透過您已為 traces 設定的 exporter 傳送。`OTEL_EXPORTER`（`console`、`otlp_http`、`otlp_grpc`）、`OTEL_ENDPOINT` 和 `OTEL_HEADERS` 會像處理 spans 一樣決定 metric 串流的去向，因此接收您 traces 的 collector 也會接收這些 metrics。`callback_settings.otel.exporters` 清單不會改變這一點：它只負責路由 traces，metrics 仍會遵循 `OTEL_*` 變數。
 
 ### 記錄了什麼 {#whats-recorded}
 
@@ -716,6 +907,8 @@ OTEL_PYTHON_FASTAPI_EXCLUDED_URLS=""
 # Exclude only your own custom paths
 OTEL_PYTHON_FASTAPI_EXCLUDED_URLS="/health,/internal"
 ```
+
+排除某條路由只會捨棄它的 server span。`/health/liveliness` 與 `/health/readiness` 不會進行模型呼叫，也不會傳送任何內容，但 `/health` 會以真實呼叫檢查每個模型，因此每次檢查仍會以 `auth /health` root 之下的模型呼叫 span 形式被追蹤。處於 `llm_only` 的 Langfuse 專案會捨棄 auth span，但仍會收到模型呼叫。
 
 ## 每個金鑰 / 每個團隊的憑證（多租戶） {#per-key--per-team-credentials-multi-tenant}
 
@@ -831,12 +1024,58 @@ Admin UI 會將相同欄位顯示為在團隊或金鑰的 Langfuse OTEL 憑證�
 您自己的 Langfuse exporter 在 proxy 環境中有一個獨立開關：
 
 ```shell
-LITELLM_OTEL_LANGFUSE_SPAN_SCOPE=llm_only   # default: full
+LITELLM_OTEL_LANGFUSE_SPAN_SCOPE=llm_only   # recommended; unset means full
 ```
+
+:::warning[`full` 會將顯著更多的資料傳送至 Langfuse]
+
+在 `full` 下（只要 scope 未設定就適用），每個 proxy 請求除了模型呼叫之外，還會加上它的 HTTP、auth、Postgres、Redis、防護欄與 spend 寫入 spans，而 `/model/info` 等 admin API 呼叫會成為各自獨立的 traces。在忙碌的 proxy 上，這可能使 Langfuse 接收的資料量增加一個數量級以上，並直接反映在 Langfuse Cloud 的用量與成本上。除非您需要在 Langfuse 中查看那些 spans，否則請使用 `llm_only`。
+
+:::
 
 這兩者彼此獨立。租戶的 `llm_only` 只會縮小該租戶的專案，而操作員設定只會縮小由 `LANGFUSE_PUBLIC_KEY` 與 `LANGFUSE_SECRET_KEY` 建立的 exporter，無論 `otel_tenant_destination_mode` 處於哪種模式。兩者都不會影響一般的 `otel` collector 或任何其他預設，因此同一請求在 Datadog 或 Grafana 中的視圖仍然完整。可接受的值是 `full` 與 `llm_only`，而金鑰或團隊回呼中的任何其他值在儲存時都會被拒絕。此設定僅適用於 `langfuse_otel` 預設：在舊版 `langfuse_span_scope` 回呼或其他後端的回呼上儲存 `langfuse` 也會被拒絕，因為那裡沒有任何東西會讀取它
 
+若要讓每個金鑰與團隊的 Langfuse 專案使用相同的預設值，請在 proxy 上設定 `LITELLM_OTEL_LANGFUSE_DESTINATION_SPAN_SCOPE`，或在設定檔中設定 `callback_settings.otel.langfuse_destination_span_scope`。沒有自有 `langfuse_span_scope` 的 `langfuse_otel` 回呼會使用該值，而明確設定 `full` 或 `llm_only` 的回呼會保留自己的值。未設定即代表 `full`，因此租戶專案會保留整個 tree，直到您選擇加入為止。無效的值會記錄警告並退回 `full`。此設定與 `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE` 彼此獨立，後者仍只適用於您自己的 exporter。此值只會在啟動時讀取一次，因此變更後請重新啟動 proxy
+
+```shell
+LITELLM_OTEL_LANGFUSE_DESTINATION_SPAN_SCOPE=llm_only   # default for key and team langfuse_otel callbacks
+```
+
 guardrail 與 MCP spans 會在 `llm_only` 下被捨棄，因此在任何模型被呼叫之前就失敗的 guardrail block，不會在該 Langfuse 專案中留下任何內容。當您依賴 Langfuse 觀察那些內容時，請保留 `full`
+
+### 依租戶選擇 prompt 擷取 {#choose-prompt-capture-per-tenant}
+
+團隊或金鑰可以選擇自己的目的地是否接收 prompts 與 responses，獨立於 proxy 在全域擷取的內容之外。在 `langfuse_otel`、`arize`、`weave_otel` 或 `newrelic` 回呼中，在其憑證旁設定 `capture_message_content`：
+
+```shell
+curl -X POST 'http://localhost:4000/team/<team-id>/callback' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" -H 'Content-Type: application/json' \
+  -d '{
+    "callback_name": "langfuse_otel",
+    "callback_type": "success",
+    "callback_vars": {
+      "langfuse_public_key": "pk-lf-...",
+      "langfuse_secret_key": "sk-lf-...",
+      "capture_message_content": "span_only"
+    }
+  }'
+```
+
+| 團隊值 | 該租戶的目的地會收到什麼 |
+|------------|------------------------------------------|
+| `span_only` | prompts 與 responses，即使全域擷取為 `no_content` |
+| `no_content` | 不含 prompt 或 response 內容，即使全域擷取已開啟 |
+| omitted | 當 proxy 有載入相同後端的自有回呼時，使用該回呼的模式，否則使用全域模式 |
+
+全域模式是 `callback_settings.otel.capture_message_content`，若未設定則是 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`（請參閱[擷取提示與回應](#capturing-prompts--responses)）。對於省略的值，「相同後端的自有回呼」指的是：團隊的 `langfuse_otel` 項目會跟隨 proxy 自己的 `langfuse_otel` exporter，團隊的 `arize` 項目會跟隨 proxy 自己的 `arize`，依此類推；而在只匯出至 Langfuse 的 proxy 上的團隊 `arize` 項目，則跟隨全域模式。`litellm_settings.callbacks` 的順序不會改變結果。proxy 自己的 `langfuse_otel` 與 `arize` exporters 只讀取 `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT`，因此跟隨它們的團隊項目會得到 `no_content`，除非該環境變數開啟了擷取
+
+此值只會改變該租戶的副本。在全域擷取為 `no_content` 時，`span_only` 租戶會取得 prompts 與 responses，而您自己的 exporters、純 `otel` collector 與其他租戶仍只會取得 metadata。在全域擷取開啟時，`no_content` 租戶只會取得 metadata，而其他人則保留內容
+
+`no_content` 會移除 proxy 所寫入的每個詞彙的內容屬性：`gen_ai.input.messages`、`gen_ai.output.messages`、`gen_ai.system_instructions`、MCP 的 `gen_ai.tool.call.arguments` 與 `gen_ai.tool.call.result`、`langfuse.observation.input` 與 `output`、OpenInference 的 `input.value`、`output.value` 與 `llm.input_messages.*` / `llm.output_messages.*` 鍵、Langtrace 的 `llm.prompts` 與 `llm.completions`，以及 `weave.output`。spans 本身仍會帶著它們的 trace 與 span ids、它們在樹中的位置、模型、token 使用量、成本與已宣告的工具定義送達。當 `no_content` 租戶的目的地與您自己的某個 exporter 是同一個帳戶時，該帳戶會收到一份副本，且其中沒有內容
+
+可接受的值為 `no_content` 與 `span_only`。`event_only` 與 `span_and_event` 仍是 proxy 全域的值，因為 OTel v2 只會將內容寫入 span 屬性。團隊回呼路由、`/key/generate` 與 `/key/update` 會拒絕任何其他值、拒絕將此欄位設在非上述四種之一的回呼上、拒絕只處理失敗的項目、拒絕在 proxy 未以 `LITELLM_OTEL_V2=true` 執行時設在任何回呼上，以及拒絕同一後端的兩個項目彼此不一致。不同後端的項目可以使用不同的值。呼叫者無法依請求設定它
+
+升級時，已儲存且沒有值的團隊或金鑰項目，以往會接收 `litellm_settings.callbacks` 中第一個 OTel 回呼所擷取的內容。在同時也載入相同回呼的 proxy 上，例如 `callbacks: ["otel", "langfuse_otel"]`，該項目現在會跟隨 proxy 自己的該後端 exporter。請在每個應保留 prompts 與 responses 的項目上設定 `capture_message_content: span_only`
 
 ### 將 Redis 和 Postgres span 排除在租戶追蹤之外 {#keep-redis-and-postgres-spans-out-of-tenant-traces}
 
@@ -854,11 +1093,55 @@ callback_settings:
 LITELLM_OTEL_EXCLUDED_SERVICES=redis,postgres
 ```
 
-當兩者都設定時，以設定值為準。可接受的名稱是 `redis` 與 `postgres`（`postgresql` 也適用），不論如何皆然。當某個 span 的 `db.system.name`，或舊版的 `db.system`，屬於列出的系統之一時，就會被捨棄。像 `auth` 這類未知名稱會被記錄為錯誤並忽略；其旁邊有效的名稱仍然適用，而 proxy 會正常啟動。若兩者都未設定，則不會捨棄任何內容
+當兩者都設定時，以設定值為準。可接受的服務名稱是 `redis`、`postgres`、`batch_write_to_db` 與 `redis_*` 名稱（`postgresql` 也適用），不論大小寫。當某個 span 的 `db.system.name`，或舊版的 `db.system`，屬於列出的系統之一時，就會被捨棄。像 `auth` 這類未知名稱會被記錄為錯誤並忽略；其旁邊有效的名稱仍然適用，而 proxy 會正常啟動。若兩者都未設定，則不會捨棄任何內容
 
-此設定只會縮小金鑰與團隊目的地，意即在團隊或金鑰上設定的 `langfuse_otel`、`arize`、`weave_otel` 或 `newrelic` 回呼，如同 [在團隊上設定](#set-it-on-a-team) 中所示，無論是透過 API 或 Admin UI 中團隊的記錄設定。租戶不需要任何新設定。您的自有 exporters、`otel` collector，以及 `litellm_settings.callbacks` 中列出的任何預設（包括 proxy 全域的 `langfuse_otel`），都會繼續接收每個 span。沒有 `excluded_services` 的 Admin UI 欄位，因為它是 proxy 全域設定
+全域設定會縮小金鑰與團隊目的地，意即在團隊或金鑰上設定的 `langfuse_otel`、`arize`、`weave_otel` 或 `newrelic` 回呼，如[在團隊上設定](#set-it-on-a-team)所示。您自己的 exporters、`otel` collector，以及 `litellm_settings.callbacks` 中列出的任何預設（包括 proxy 全域的 `langfuse_otel`），都會繼續接收每個 span。請在 proxy YAML 或環境中設定全域設定。
+
+### 為單一團隊或金鑰覆寫排除 {#override-exclusions-for-one-team-or-key}
+
+在目的地的 `callback_vars` 中設定 `excluded_services`，以取代全域排除集合。可接受的值與全域設定相同，都是資料儲存名稱，以逗號分隔的字串提供。例如，`"redis,postgres"` 會從該目的地排除 Redis 與 PostgreSQL spans，即使全域設定是空的。`"none"` 不會排除任何資料庫 spans，即使全域設定排除了它們。省略此變數則跟隨全域設定。這些值會取代全域集合，而不是與它合併。
+
+此覆寫需要 `LITELLM_OTEL_V2=true` 以及可作為目的地的回呼：`langfuse_otel`、`arize`、`weave_otel` 或 `newrelic`。它可用於 `success` 與 `success_and_failure` 項目，不可用於只處理失敗的項目。例如，將它註冊在團隊的 New Relic 目的地上：
+
+```shell
+curl -X POST 'http://localhost:4000/team/<team-id>/callback' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" -H 'Content-Type: application/json' \
+  -d '{
+    "callback_name": "newrelic",
+    "callback_type": "success",
+    "callback_vars": {
+      "newrelic_api_key": "<team ingest license key>",
+      "excluded_services": "redis,postgres"
+    }
+  }'
+```
+
+相同的 `callback_vars` 設定也可用於金鑰的記錄回呼。無效或空的值、像 `"auth"` 這類未知名稱，以及 `"none"` 與其他名稱的組合，都會在回呼儲存時被拒絕。
 
 `langfuse_span_scope: llm_only` 已經會捨棄這些 Langfuse 專案的 spans，連同請求根節點、驗證與 guardrail spans 一起捨棄。當租戶應保留請求樹的其餘部分時，請使用 `excluded_services`
+
+### 為單一團隊或金鑰新增請求 metadata 鍵 {#add-request-metadata-keys-for-one-team-or-key}
+
+<SinceVersion v="1.111.0" />
+
+在目的地的 `callback_vars` 中設定 `baggage_metadata_keys`，以將呼叫者更多的請求 metadata 傳送至該目的地。此值是以逗號分隔的 `requester_metadata.<key>` 路徑清單，寫法與[請求 metadata](#request-metadata)中相同。這些鍵會加在全域 `baggage_metadata_keys` 清單之上，且只有該目的地的 spans 會以 `litellm.metadata.<key>` 的形式攜帶它們。您自己的 exporters 與其他租戶的目的地不會收到它們。
+
+```shell
+curl -X POST 'http://localhost:4000/team/<team-id>/callback' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" -H 'Content-Type: application/json' \
+  -d '{
+    "callback_name": "newrelic",
+    "callback_type": "success",
+    "callback_vars": {
+      "newrelic_api_key": "<team ingest license key>",
+      "baggage_metadata_keys": "requester_metadata.correlation_id,requester_metadata.tenant_id"
+    }
+  }'
+```
+
+來自此團隊某個金鑰、且送出 `"metadata": {"correlation_id": "corr-123", "tenant_id": "t-9"}` 的請求，接著會將 `litellm.metadata.correlation_id` 與 `litellm.metadata.tenant_id` 放到送達該團隊 New Relic 帳戶的 spans 上。
+
+如果某個項目未以 `requester_metadata.` 開頭、會覆寫像 `requester_metadata.user_api_key_user_id` 或 `requester_metadata.requester_ip_address` 這類 proxy 身分欄位、指向 `requester_metadata.headers` 之下的請求標頭，或列出超過 20 個不同的鍵，此回呼會在儲存時被拒絕。只有 proxy 全域的 `LITELLM_OTEL_BAGGAGE_METADATA_KEYS` 可以匯出請求標頭。與 `excluded_services` 一樣，此設定需要 `LITELLM_OTEL_V2=true`、一個 `langfuse_otel`、`arize`、`weave_otel` 或 `newrelic` 回呼，以及 `success` 或 `success_and_failure` 項目。它在金鑰的記錄回呼中以相同方式運作，且同一後端的兩個項目必須列出相同的鍵（順序不限）。
 
 ### 須知 {#good-to-know}
 
@@ -884,10 +1167,11 @@ proxy 會針對每組不同的憑證快取一個 tracer provider，最多同時 
 |---|---|---|
 | `LITELLM_OTEL_V2` | `false` | **總開關。** 在此項目設為 `true` 之前，OTel v2 不會執行任何動作。 |
 | `LITELLM_OTEL_TENANT_DESTINATION_MODE` | `override` | `additive` 會保留您自己的 exporter 對於某個 key 或 team 路由到其自身帳戶之請求的副本。 |
-| `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE` | `full` | `llm_only` 只會將模型呼叫 span 傳送到您自己的 Langfuse exporter。租戶會透過在 key 或 team 上設定 `langfuse_span_scope` 來設定自己的值。請參閱[只將模型呼叫傳送到 Langfuse](#send-only-the-model-calls-to-langfuse)。 |
+| `LITELLM_OTEL_LANGFUSE_SPAN_SCOPE` | `full` | `llm_only` 只會將模型呼叫 span 傳送到您自己的 Langfuse exporter，這是建議的設定；`full` 可能使 Langfuse 接收的資料量倍增。租戶會透過在 key 或 team 上設定 `langfuse_span_scope` 來設定自己的值。請參閱[只將模型呼叫傳送到 Langfuse](#send-only-the-model-calls-to-langfuse)。 |
+| `LITELLM_OTEL_LANGFUSE_DESTINATION_SPAN_SCOPE` | `full` | 未設定自有 `langfuse_span_scope` 的金鑰與團隊 `langfuse_otel` 回呼的預設 `langfuse_span_scope`。`callback_settings.otel.langfuse_destination_span_scope` 可覆寫它。請參閱[只將模型呼叫傳送到 Langfuse](#send-only-the-model-calls-to-langfuse)。 |
 | `LITELLM_OTEL_EXCLUDED_SERVICES` | none | 以逗號分隔的 datastores、`redis` 與 `postgres`，其 span 不會轉送到 key 和 team 目的地。`callback_settings.otel.excluded_services` 會覆寫此設定。請參閱[將 Redis 和 Postgres spans 排除在租戶追蹤之外](#keep-redis-and-postgres-spans-out-of-tenant-traces)。 |
 | `OTEL_EXPORTER` (alias `OTEL_EXPORTER_OTLP_PROTOCOL`) | `console` | exporter 類型：`console`、`otlp_http`、`otlp_grpc`。 |
-| `OTEL_ENDPOINT` (alias `OTEL_EXPORTER_OTLP_ENDPOINT`) | none | OTLP collector URL。設定 endpoint 即表示 `otlp_http`，除非您覆寫 `OTEL_EXPORTER`。 |
+| `OTEL_ENDPOINT` (alias `OTEL_EXPORTER_OTLP_ENDPOINT`) | none | OTLP collector URL。設定 endpoint 即表示 `otlp_http`，除非您覆寫 `OTEL_EXPORTER`。對於 traces，`callback_settings.otel.exporters` 清單會取代它；請參閱[傳送至不只一個 collector](#send-to-more-than-one-collector)。 |
 | `OTEL_HEADERS` (alias `OTEL_EXPORTER_OTLP_HEADERS`) | none | 提供給後端的以逗號分隔 `key=value` 驗證標頭。 |
 | `OTEL_SERVICE_NAME` | `litellm` | 顯示在後端中的 `service.name` 資源屬性。 |
 | `OTEL_ENVIRONMENT_NAME` | none | `deployment.environment` 資源屬性（例如 `production`）。 |
@@ -895,6 +1179,10 @@ proxy 會針對每組不同的憑證快取一個 tracer provider，最多同時 
 | `OTEL_PYTHON_FASTAPI_EXCLUDED_URLS` | health/metrics/UI routes | 要從追蹤中排除的以逗號分隔路徑（子字串比對）。設為 `""` 可追蹤所有內容。 |
 | `LITELLM_OTEL_INTEGRATION_ENABLE_METRICS` | `false` | 也發出 GenAI client 指標（持續時間、token 用量、成本、串流計時）。請參閱[指標](#metrics)。 |
 | `LITELLM_OTEL_LEGACY_COMPAT` | `true` | 也發出舊版 Traceloop 金鑰名稱下的屬性。請參閱[屬性慣例](#attribute-conventions)。 |
+| `LITELLM_OTEL_BAGGAGE_PROMOTED_KEYS` | 請參閱[設定](#settings) | 蓋在每個 span 上的身分屬性，以逗號分隔。也可使用 `callback_settings.otel.baggage_promoted_keys`。 |
+| `LITELLM_OTEL_BAGGAGE_METADATA_KEYS` | 請參閱[設定](#settings) | 以 `litellm.metadata.<key>` 形式蓋上的請求 metadata 鍵，以逗號分隔。也可使用 `callback_settings.otel.baggage_metadata_keys`。 |
+| `LITELLM_OTEL_BAGGAGE_TEAM_METADATA_KEYS` | none | 蓋在 `litellm.team.metadata` 中的團隊 metadata 子鍵，以逗號分隔。也可使用 `callback_settings.otel.baggage_team_metadata_keys`。 |
+| `MAPPER_NAMES` | `genai` | 寫在每個 span 上的屬性詞彙，以逗號分隔，例如 `genai,openinference`。也可使用 config.yaml 中的 `callback_settings.otel.mapper_names`。請參閱[屬性慣例](#attribute-conventions)與 [OpenInference 工具呼叫與 metadata](#openinference-tool-calls-and-metadata)。 |
 
 每一種 span 類型上的完整金鑰集合請參閱[Span 屬性](#span-attributes)。
 

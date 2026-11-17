@@ -46,13 +46,13 @@ model_list:
       api_key: fake-key
       api_base: https://exampleopenaiendpoint-production.up.railway.app/
     model_info:
-      access_groups: ["beta-models"] # 👈 Model Access Group
+      access_groups: ["beta-models"] # Model Access Group
   - model_name: fireworks-llama-v3-70b-instruct
     litellm_params:
       model: fireworks_ai/accounts/fireworks/models/llama-v3-70b-instruct
       api_key: "os.environ/FIREWORKS"
     model_info:
-      access_groups: ["beta-models"] # 👈 Model Access Group
+      access_groups: ["beta-models"] # Model Access Group
 ```
 
 <Tabs>
@@ -65,7 +65,7 @@ model_list:
 curl --location 'http://localhost:4000/key/generate' \
 -H 'Authorization: Bearer <your-master-key>' \
 -H 'Content-Type: application/json' \
--d '{"models": ["beta-models"], # 👈 Model Access Group
+-d '{"models": ["beta-models"], # Model Access Group
 			"max_budget": 0,}'
 ```
 
@@ -181,7 +181,7 @@ curl -i http://localhost:4000/v1/chat/completions \
 
 </Tabs>
 
-### ✨ 控制萬用字元模型的存取 {#-control-access-on-wildcard-models}
+### 控制萬用字元模型的存取 {#control-access-on-wildcard-models}
 
 控制對所有具有特定前綴的模型的存取（例如 `openai/*`）。
 

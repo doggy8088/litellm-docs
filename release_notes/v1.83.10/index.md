@@ -1,5 +1,6 @@
 ---
-title: "v1.83.10 - Claude Opus 4.7、Prompt Compression 與 Multi-Window Budgets"
+title: "LiteLLM v1.83.10 - Claude Opus 4.7、Prompt Compression 與 Multi-Window Budgets"
+description: "新增 Claude Opus 4.7、litellm.compress() 與多閾值預算警示。除非金鑰或團隊選擇加入，否則移除呼叫者標籤。"
 slug: "v1-83-10"
 date: 2026-04-27T00:00:00
 authors:

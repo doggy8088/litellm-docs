@@ -1,3 +1,9 @@
+---
+title: "透過 LiteLLM 使用 Azure AI Foundry (AI Studio) API"
+sidebar_label: "Azure AI"
+description: "從 Python SDK 或 AI 閘道呼叫 Azure AI Foundry（原 AI Studio）上的 Command R、Mistral Large、Jamba 與 Claude，支援工具呼叫與 rerank。"
+---
+
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
@@ -307,6 +313,31 @@ LiteLLM 支援 **所有** azure ai 模型。以下是幾個範例：
 | Cohere command-r | `completion(model="azure_ai/command-r", messages)` | 
 | mistral-large-latest | `completion(model="azure_ai/mistral-large-latest", messages)` | 
 | AI21-Jamba-Instruct | `completion(model="azure_ai/ai21-jamba-instruct", messages)` | 
+
+## 最新模型別名 {#latest-model-aliases}
+
+<SinceVersion v="1.109.0" />
+
+`azure_ai/<family>-latest` 這類名稱會隨著 LiteLLM 將某個模型系列移往較新的模型而跟著調整，因此您的應用程式只需保留同一個模型字串。您可以像使用任何其他 Azure AI Foundry 模型名稱一樣使用它們。LiteLLM 會將目前的目標模型傳送給 Azure AI Foundry，並以該模型的價格計費。別名的運作方式與各提供者的完整清單，請參閱[最新模型別名](../model_latest_aliases.md)。
+
+| 別名 | 模型系列 |
+| --- | --- |
+| `azure_ai/gpt-luna-latest` | GPT Luna |
+| `azure_ai/gpt-sol-latest` | GPT Sol |
+| `azure_ai/gpt-terra-latest` | GPT Terra |
+| `azure_ai/gpt-astra-latest` | GPT Astra |
+| `azure_ai/gpt-mini-latest` | GPT Mini |
+| `azure_ai/claude-opus-latest` | Claude Opus |
+| `azure_ai/claude-sonnet-latest` | Claude Sonnet |
+| `azure_ai/claude-haiku-latest` | Claude Haiku |
+| `azure_ai/claude-fable-latest` | Claude Fable |
+| `azure_ai/grok-latest` | Grok |
+| `azure_ai/kimi-latest` | Kimi |
+| `azure_ai/glm-latest` | GLM |
+| `azure_ai/glm-flash-latest` | GLM Flash |
+| `azure_ai/deepseek-pro-latest` | DeepSeek Pro |
+| `azure_ai/deepseek-flash-latest` | DeepSeek Flash |
+| `azure_ai/minimax-latest` | MiniMax |
 
 ## 使用方式 - Azure Anthropic (Azure Foundry Claude) {#usage---azure-anthropic-azure-foundry-claude}
 

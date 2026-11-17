@@ -9,7 +9,7 @@
 | 終端使用者追蹤 | ❌ | [如果您需要這項功能，請告訴我們](https://github.com/BerriAI/litellm/issues/new) |
 | 串流 | ❌ | Cursor API 不使用串流 |
 
-只要將 `https://api.cursor.com` 替換為 `LITELLM_PROXY_BASE_URL/cursor` 🚀
+只要將 `https://api.cursor.com` 替換為 `LITELLM_PROXY_BASE_URL/cursor`
 
 此路由僅代理 Cloud Agents REST API。Cursor CLI 代理程式工作階段預設會登入 `api2.cursor.sh`（`agent --endpoint` 只會變更該登入），而不是 `api.cursor.com`，因此無法使用此路由，請參閱 [Cursor CLI](../tutorials/cursor_integration.md#cursor-cli-cursor-agent)。
 

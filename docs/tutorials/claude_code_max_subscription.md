@@ -1,353 +1,111 @@
-import Image from '@theme/IdealImage';
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-# 使用 Claude Code Max 訂閱 {#using-claude-code-max-subscription}
-
-<div style={{ textAlign: 'center' }}>
-<Image img={require('../../img/claude_code_max.png')} style={{ width: '100%', maxWidth: '800px', height: 'auto' }} />
-
-透過 LiteLLM AI Gateway 路由 Claude Code Max 訂閱流量。
-</div>
-
-**為什麼選擇 Claude Code Max，而不是直接使用 API？**
-- **更低成本** — 對 Claude Code 重度使用者而言，Claude Code Max 訂閱比按 token 計價的 API 更便宜
-
-**為什麼要透過 LiteLLM 路由？**
-- **成本歸因** — 追蹤每位使用者、團隊或金鑰的支出
-- **預算與速率限制** — 設定支出上限與請求限制
-- **防護欄** — 將內容過濾與安全控制套用到所有請求
-
-## 快速開始影片 {#quick-start-video}
-
-觀看使用 LiteLLM Gateway 設定 Claude Code 的端到端示範：
-
-<iframe width="840" height="500" src="https://www.loom.com/embed/2d069b9e3bcc4cecaa5eb27a72ba7b3c" frameBorder="0" allowFullScreen></iframe>
-
-## 必要條件 {#prerequisites}
-
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) 已安裝
-- Claude Max 訂閱
-- LiteLLM Gateway 正在執行
-
-## 步驟 1：設定 LiteLLM Proxy {#step-1-configure-litellm-proxy}
-
-建立一個 `config.yaml`，並設定關鍵的 `forward_client_headers_to_llm_api: true`：
-
-```yaml showLineNumbers title="config.yaml"
-model_list:
-  - model_name: anthropic-claude
-    litellm_params:
-      model: anthropic/{{anthropic}}
-
-  - model_name: {{anthropic}}
-    litellm_params:
-      model: anthropic/{{anthropic}}
-
-  - model_name: {{anthropic_large}}
-    litellm_params:
-      model: anthropic/{{anthropic_large}}
-
-general_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
-  forward_client_headers_to_llm_api: true  # Required: forwards OAuth token to Anthropic
-```
-
-:::info[為什麼是 `forward_client_headers_to_llm_api`？]
-
-此設定會將使用者的 OAuth token（位於 `Authorization` 標頭中）透過 LiteLLM 轉送至 Anthropic API，讓 LiteLLM 負責追蹤與控管，同時啟用使用者以其 Max 訂閱進行個別驗證。
-
-:::
-
-## 步驟 2：啟動 LiteLLM Proxy {#step-2-start-litellm-proxy}
-
-```bash showLineNumbers title="Start LiteLLM Proxy"
-litellm --config /path/to/config.yaml
-
-# RUNNING on http://0.0.0.0:4000
-```
-
-## 逐步操作 {#walkthrough}
-
-### 第 1 部分：在 LiteLLM 中建立虛擬金鑰 {#part-1-create-a-virtual-key-in-litellm}
-
-前往 LiteLLM 儀表板，為 Claude Code 使用建立新的虛擬金鑰。
-
-#### 1.1 開啟虛擬金鑰頁面 {#11-open-virtual-keys-page}
-
-前往 LiteLLM 儀表板中的 Virtual Keys 區段。
-
-<Image img={require('../../img/claude_code_max/step1.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-#### 1.2 點擊 "Create New Key" {#12-click-create-new-key}
-
-<Image img={require('../../img/claude_code_max/step2.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-#### 1.3 設定金鑰詳細資訊 {#13-configure-key-details}
-
-輸入金鑰名稱（例如 `claude-code-test`），並選取您要允許存取的模型。
-
-<Image img={require('../../img/claude_code_max/step3.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-#### 1.4 選擇模型 {#14-select-models}
-
-選擇應可透過此金鑰存取的 Anthropic 模型（例如 `anthropic-claude`、`claude-4.5-haiku`）。
-
-<Image img={require('../../img/claude_code_max/step5.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-#### 1.5 確認模型選擇 {#15-confirm-model-selection}
-
-<Image img={require('../../img/claude_code_max/step7.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-#### 1.6 建立金鑰 {#16-create-the-key}
-
-點擊「Create Key」以產生您的虛擬金鑰。複製產生的金鑰值（例如 `sk-otsclFlEblQ-6D60ua2IZg`）。
-
-<Image img={require('../../img/claude_code_max/step8.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
+---
+title: 使用您的 Claude 訂閱搭配 Claude Code
+sidebar_label: Claude 訂閱
+description: 使用您的 Claude 訂閱將 Claude Code 連接到 LiteLLM。設定 proxy、建立虛擬金鑰、登入並驗證使用情況。
 ---
 
-### 第 2 部分：登入 Claude Code Max 方案（用戶端） {#part-2-sign-into-claude-code-max-plan-client-side}
+# 使用您的 Claude 訂閱搭配 Claude Code {#use-your-claude-subscription-with-claude-code}
 
-設定 Claude Code 環境變數，並以您的 Max 訂閱進行驗證。
+使用您自己的 Claude Pro、Max、Team 或 Enterprise 訂閱，透過 LiteLLM 傳送 Claude Code 請求。LiteLLM 會套用存取控制、預算與防護欄，並記錄使用情況。Claude Code 會保留您的登入狀態並自動刷新。
 
-#### 2.1 設定環境變數 {#21-set-environment-variables}
+## 前置條件 {#prerequisites}
 
-設定 Claude Code 使用 LiteLLM Gateway 與您的虛擬金鑰：
+- 已安裝 [Claude Code](https://code.claude.com/docs/en/overview) 並擁有 Claude 訂閱。Team 與 Enterprise 成員使用管理員邀請的帳戶。
+- 一個正在執行的 [LiteLLM proxy](../proxy/docker_quick_start.md) <SinceVersion v="1.81.14" />，並搭配 PostgreSQL 存放虛擬金鑰與記錄。
 
-```bash showLineNumbers title="Configure Claude Code Environment Variables"
-export ANTHROPIC_BASE_URL=http://localhost:4000
-export ANTHROPIC_MODEL="anthropic-claude"
-export ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: Bearer sk-otsclFlEblQ-6D60ua2IZg"
+## 步驟 1：設定 proxy {#step-1-configure-litellm-proxy}
+
+將此項目加入 proxy 的 `model_list` 並重新啟動 proxy。若您的管理員已完成設定，可略過此步驟。請保留您現有的 master key、資料庫與其他設定。
+
+```yaml title="config.yaml"
+model_list:
+  - model_name: "anthropic/*"
+    litellm_params:
+      model: "anthropic/*"
 ```
 
-<Image img={require('../../img/claude_code_max/step15.jpeg')} style={{ width: '800px', height: 'auto' }} />
+萬用字元會路由您的方案允許的任何 Claude 模型。請依所示方式保持此部署的設定，以使用每位開發者的訂閱登入。LiteLLM 會自動轉送該登入。
 
-#### 環境變數說明 {#environment-variables-explained}
+## 步驟 2：建立虛擬金鑰 {#step-2-create-a-virtual-key}
 
-| 變數 | 說明 |
-|----------|-------------|
-| `ANTHROPIC_BASE_URL` | 將 Claude Code 指向您的 LiteLLM Gateway 端點 |
-| `ANTHROPIC_MODEL` | 在您的 LiteLLM `config.yaml` 中設定的模型名稱 |
-| `ANTHROPIC_CUSTOM_HEADERS` | LiteLLM 驗證用的 `x-litellm-api-key` 標頭 |
+在 `http://localhost:4000/ui` 開啟您的 proxy 儀表板（請將 URL 換成您 proxy 的 URL）。若是本機 proxy，請以 `admin` 身分使用您的 master key 登入。前往 **Virtual Keys**，按一下 **+ Create New Key**，輸入 **Key Name**，並在 **Models** 下選取 **All anthropic models**。按一下 **Create Key** 並複製金鑰；金鑰只會顯示一次。
 
-#### 2.2 啟動 Claude Code {#22-launch-claude-code}
+若是既有的金鑰，請允許 `anthropic/*`。將 **Models** 留空可允許 proxy 上的所有模型。
 
-啟動 Claude Code：
+## 步驟 3：連接 Claude Code {#step-3-connect-claude-code}
 
-```bash showLineNumbers title="Launch Claude Code"
+若您先前使用 API 金鑰驗證，請從您目前使用的 [Claude Code 設定](https://code.claude.com/docs/en/settings) 中移除 `apiKeyHelper` 以及 `env` 中的 `ANTHROPIC_AUTH_TOKEN` / `ANTHROPIC_API_KEY` 項目：`~/.claude/settings.json` 以及您專案的 `.claude/settings.json` 或 `.claude/settings.local.json`。
+
+在您的專案資料夾中，清除 shell 覆寫設定，設定 proxy 的根 URL 與虛擬金鑰，然後啟動 Claude Code：
+
+```bash
+unset ANTHROPIC_AUTH_TOKEN ANTHROPIC_API_KEY ANTHROPIC_MODEL
+export ANTHROPIC_BASE_URL="http://localhost:4000"
+export ANTHROPIC_CUSTOM_HEADERS="x-litellm-api-key: Bearer sk-<your-litellm-virtual-key>"
+
 claude
 ```
 
-<Image img={require('../../img/claude_code_max/step16.jpeg')} style={{ width: '800px', height: 'auto' }} />
+將 URL 換成您 proxy 的根位址，例如 `https://litellm.example.com`，並換掉金鑰。既有的自訂標頭請保留在各自獨立的行。
 
-#### 2.3 選擇登入方式 {#23-select-login-method}
+選擇 **Claude account with subscription**，並在需要時完成瀏覽器登入。若瀏覽器沒有開啟，請按 `c` 複製 URL；若出現提示，請將驗證碼貼回終端機。完成您專案的工作區信任提示。既有的訂閱登入可以保持登入狀態。
 
-選擇「具備訂閱的 Claude 帳號」（Pro、Max、Team 或 Enterprise）。
+使用 `/model` 選取您的訂閱支援的 Claude 模型。若要明確設定預設值，請將 `ANTHROPIC_MODEL` 設為 Claude 模型 ID，例如 `{{anthropic_large}}`。若要在日後的終端機中沿用，請將 `unset` 與 `export` 行加入 shell 設定檔（`~/.zshrc` 或 `~/.bashrc`）的末尾。
 
-<Image img={require('../../img/claude_code_max/step17.jpeg')} style={{ width: '800px', height: 'auto' }} />
+## 步驟 4：驗證請求 {#step-4-verify-a-request}
 
-#### 2.4 在瀏覽器中授權 {#24-authorize-in-browser}
+傳送：**Reply with exactly Hello.**
 
-Claude Code 會開啟您的瀏覽器進行驗證。點擊「Authorize」以連結您的 Claude Max 帳號。
+您應該會收到一句問候。在儀表板中開啟 **Logs**，在您的虛擬金鑰下找到成功的工作階段。開啟它以檢視模型、token 與成本。
 
-<Image img={require('../../img/claude_code_max/step19.jpeg')} style={{ width: '800px', height: 'auto' }} />
+### 確認訂閱使用情況 {#seeing-which-requests-were-billed-to-a-seat}
 
-#### 2.5 登入成功 {#25-login-successful}
+使用 **Credential: Client OAuth token** 篩選 **Logs** <SinceVersion v="1.105.0" />；Request Details 會顯示相同的值。支出記錄的中繼資料會為訂閱請求記錄 `used_client_oauth_token=true`，為使用已設定憑證的請求記錄 `false`。若要透過 API 存取，請以該篩選條件查詢 `/spend/logs/ui`，並以 `YYYY-MM-DD HH:MM:SS` 格式提供 UTC 的 `start_date` / `end_date` 值。
 
-授權後，您會看到登入成功確認。
+## 限制與計費 {#attribution-and-cost}
 
-<Image img={require('../../img/claude_code_max/step20.jpeg')} style={{ width: '800px', height: 'auto' }} />
+您的 Claude 方案決定模型存取權與配額。閘道的歸因請使用 LiteLLM 虛擬金鑰的使用者與團隊，訂閱成員資格則請使用 Claude 的管理主控台。
 
-#### 2.6 完成設定 {#26-complete-setup}
+**LiteLLM 以 Anthropic API 的定價回報成本，訂閱請求也是如此。** 請將這些金額用於以 API 等值美元計算的[預算](../proxy/virtual_keys.md)。Anthropic 透過您的方案對訂閱請求收費；API 計費的支出請從使用已設定 API 憑證的資料列計算。
 
-按下 Enter 即可略過安全性說明並完成設定。
+請讓每位開發者遵循 [Anthropic 的使用條款](https://code.claude.com/docs/en/legal-and-compliance)，以自己的訂閱登入。Team 與 Enterprise 的管理仍在 Claude 的管理主控台中進行；使用 [`forceLoginOrgUUID`](https://code.claude.com/docs/en/authentication#restrict-login-to-your-organization) 可將 Claude Code 限制為僅能登入您的組織。
 
-<Image img={require('../../img/claude_code_max/step21.jpeg')} style={{ width: '800px', height: 'auto' }} />
+<details>
+<summary>憑證與支援的路由</summary>
 
----
+### 運作方式 {#how-it-works}
 
-### 第 3 部分：使用 Claude Code 搭配 LiteLLM {#part-3-use-claude-code-with-litellm}
+`x-litellm-api-key` 用於向 LiteLLM 驗證身分。Claude Code 在 `Authorization` 中提供其訂閱 OAuth 權杖；LiteLLM 會將它轉送到直接的 `anthropic/` 部署，優先於任何已設定的 API 金鑰，並加入必要的 OAuth beta 標頭。其他用戶端標頭需要另外的[標頭轉送設定](../proxy/forward_client_headers.md)。
 
-現在您可以正常使用 Claude Code，所有請求都會在 LiteLLM 中被追蹤。
+### 哪些請求使用訂閱權杖 {#which-requests-use-the-subscription-token}
 
-#### 3.1 在 Claude Code 中發出請求 {#31-make-a-request-in-claude-code}
+訂閱轉送與憑證歸因請使用 `/v1/messages` 或 `/v1/chat/completions` 上的直接 Anthropic 部署。Bedrock 與 Vertex AI 使用各自的憑證（提供者隔離可運作 <SinceVersion v="1.99.0" />）。`/v1/messages/count_tokens` 使用已設定的憑證。`/anthropic` 直通路由在有設定時會使用 proxy 的 Anthropic 金鑰；本指南的訂閱設定請使用 proxy 根位址。
 
-開始使用 Claude Code - 請求將會透過 LiteLLM Gateway 傳送。
+### 憑證的儲存、刷新與撤銷 {#credential-storage-refresh-and-revocation}
 
-<Image img={require('../../img/claude_code_max/step24.jpeg')} style={{ width: '800px', height: 'auto' }} />
+Claude Code 在本機儲存並刷新其登入。LiteLLM 會為每個請求轉送呼叫者的權杖，並在支出記錄中記錄憑證類型。使用 `/logout` 登出，或使用 `/login` 更新已過期或遭撤銷的登入。
 
-#### 3.2 在 LiteLLM 儀表板中查看記錄 {#32-view-logs-in-litellm-dashboard}
+若要終止閘道存取權，請封鎖或刪除 [LiteLLM 金鑰](../proxy/virtual_keys.md)。若也要終止訂閱存取權，請登出 Claude Code，或請 Claude 管理員撤銷它。
 
-前往 LiteLLM 儀表板中的 Logs 頁面，查看所有 Claude Code 請求。
-
-<Image img={require('../../img/claude_code_max/step25.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-#### 3.3 查看請求詳細資訊 {#33-view-request-details}
-
-點擊某個請求以查看詳細資訊，包括 token、成本、持續時間，以及使用的模型。
-
-<Image img={require('../../img/claude_code_max/step27.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
-記錄顯示：
-- **金鑰名稱**: `claude-code-test`（您建立的虛擬金鑰）
-- **模型**: `anthropic/claude-sonnet-4-20250514`
-- **Token**: 65012（64679 prompt + 333 completion）
-- **成本**: $0.249754
-- **狀態**: 成功
-
-<Image img={require('../../img/claude_code_max/step28.jpeg')} style={{ width: '800px', height: 'auto' }} />
-
----
-
-## 運作方式 {#how-it-works}
-
-LiteLLM Gateway 處理兩種類型的驗證：
-1. **`x-litellm-api-key`**：使用 LiteLLM 驗證請求（用量追蹤、預算、速率限制）
-2. **OAuth Token（透過 `Authorization` 標頭）**：轉送至 Anthropic API 以進行 Claude Max 驗證
-
-```mermaid
-sequenceDiagram
-    participant User as Claude Code User
-    participant LiteLLM as LiteLLM AI Gateway
-    participant Anthropic as Anthropic API
-
-    User->>LiteLLM: Request with:<br/>- x-litellm-api-key (LiteLLM auth)<br/>- Authorization: Bearer {oauth_token}
-
-    Note over LiteLLM: 1. Validate x-litellm-api-key<br/>2. Check budgets/rate limits<br/>3. Log request for tracking
-
-    LiteLLM->>Anthropic: Forward request with:<br/>- Authorization: Bearer {oauth_token}<br/>(User's Claude Max OAuth token)
-
-    Note over Anthropic: Authenticate user via<br/>OAuth token from Max plan
-
-    Anthropic-->>LiteLLM: Response
-
-    Note over LiteLLM: Log usage, tokens, cost
-
-    LiteLLM-->>User: Response
-```
-
-### 標頭流程 {#header-flow}
-
-| 標頭 | 用途 | 由誰處理 |
-|--------|---------|------------|
-| `x-litellm-api-key` | LiteLLM Gateway 驗證、預算追蹤、速率限制 | LiteLLM |
-| `Authorization: Bearer {oauth_token}` | Claude Max 訂閱驗證 | Anthropic API |
-
-### 完整請求流程範例 {#complete-request-flow-example}
-
-以下是在 Claude Code 透過 LiteLLM 發出呼叫時的典型請求：
-
-```bash showLineNumbers title="Example Request from Claude Code to LiteLLM"
-curl -X POST "http://localhost:4000/v1/messages" \
-  -H "x-litellm-api-key: Bearer sk-otsclFlEblQ-6D60ua2IZg" \
-  -H "Authorization: Bearer oauth_token_from_max_plan" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "anthropic-claude",
-    "max_tokens": 1024,
-    "messages": [{"role": "user", "content": "Hello, Claude!"}]
-  }'
-```
-
-LiteLLM 接著會：
-1. 驗證用於閘道存取的 `x-litellm-api-key`
-2. 記錄請求以供用量追蹤
-3. 以 OAuth `Authorization` 標頭將請求轉送至 Anthropic（因為 `forward_client_headers_to_llm_api: true`）
-
-## 進階設定 {#advanced-configuration}
-
-### 按模型轉送標頭 {#per-model-header-forwarding}
-
-若要更細緻地控制，您可以只為特定模型啟用標頭轉送：
-
-```yaml showLineNumbers title="config.yaml - Per-Model Header Forwarding"
-model_list:
-  - model_name: anthropic-claude
-    litellm_params:
-      model: anthropic/{{anthropic}}
-
-  - model_name: {{anthropic_large}}
-    litellm_params:
-      model: anthropic/{{anthropic_large}}
-
-general_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
-
-litellm_settings:
-  model_group_settings:
-    forward_client_headers_to_llm_api:
-      - anthropic-claude
-      - {{anthropic_large}}
-```
-
-### 預算控制 {#budget-controls}
-
-在使用 Max 訂閱時設定每位使用者的預算：
-
-```yaml showLineNumbers title="config.yaml - With Database for Budget Tracking"
-model_list:
-  - model_name: anthropic-claude
-    litellm_params:
-      model: anthropic/{{anthropic}}
-
-general_settings:
-  master_key: os.environ/LITELLM_MASTER_KEY
-  forward_client_headers_to_llm_api: true
-  database_url: "postgresql://..."
-```
-
-接著建立具有預算的虛擬金鑰：
-
-```bash showLineNumbers title="Create Virtual Key with Budget"
-curl -X POST "http://localhost:4000/key/generate" \
-  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "key_alias": "developer-1",
-    "max_budget": 100.00,
-    "budget_duration": "monthly"
-  }'
-```
+</details>
 
 ## 疑難排解 {#troubleshooting}
 
-### OAuth 權杖未被轉送 {#oauth-token-not-being-forwarded}
+| 問題 | 修正方式 |
+|---|---|
+| LiteLLM 拒絕該金鑰 | 檢查 URL 以及 `ANTHROPIC_CUSTOM_HEADERS` 中的 `x-litellm-api-key`。已刪除或不正確的金鑰會回傳 401。 |
+| Anthropic 拒絕登入，或請求使用了 API 金鑰 | 檢查 `/status`，移除 API 憑證覆寫與 `apiKeyHelper`，然後執行 `/login`。確認使用直接的 `anthropic/` 部署與 proxy 根 URL。 |
+| 找不到模型或存取遭拒 | 設定 `anthropic/*`，在金鑰上允許 **All anthropic models**，並選擇您的方案支援的模型。 |
+| LiteLLM 中沒有出現請求 | 檢查 `ANTHROPIC_BASE_URL`，然後從您匯出它的終端機重新啟動 Claude Code。 |
+| 狀態正常的帳戶收到 `429 No deployments available for selected model` | 請營運人員檢查是否有既存的部署冷卻；並依照[復原步驟](./claude_code_byok.md#model-is-unavailable-for-everyone-after-one-user-hits-their-limit)處理。 |
 
-**症狀**：來自 Anthropic API 的驗證錯誤
+使用您的 URL 與金鑰檢查閘道驗證與模型存取權：
 
-**解決方案**：請確保在您的設定中已設定 `forward_client_headers_to_llm_api: true`：
-
-```yaml showLineNumbers title="config.yaml - Enable Header Forwarding"
-general_settings:
-  forward_client_headers_to_llm_api: true
-```
-
-### LiteLLM 驗證失敗 {#litellm-authentication-failing}
-
-**症狀**：來自 LiteLLM Gateway 的 401 錯誤
-
-**解決方案**：請確認在 `x-litellm-api-key` 中已正確設定 `ANTHROPIC_CUSTOM_HEADERS` 標頭：
-
-```bash showLineNumbers title="Verify Key Info"
-curl -X GET "http://localhost:4000/key/info" \
-  -H "Authorization: Bearer sk-otsclFlEblQ-6D60ua2IZg"
-```
-
-### 找不到模型 {#model-not-found}
-
-**症狀**：找不到模型錯誤
-
-**解決方案**：請確保 `ANTHROPIC_MODEL` 與您設定中的模型名稱相符：
-
-```bash showLineNumbers title="List Available Models"
+```bash
 curl "http://localhost:4000/v1/models" \
-  -H "Authorization: Bearer sk-otsclFlEblQ-6D60ua2IZg"
+  -H "x-litellm-api-key: Bearer sk-<your-litellm-virtual-key>"
 ```
 
-## 相關文件 {#related-documentation}
+`200` 表示閘道驗證通過，並會列出可存取的模型。若是 `401`，請將金鑰換成有效的虛擬金鑰。使用步驟 4 的提示與 Credential 篩選來確認訂閱存取。
 
-- [轉發用戶端標頭](/docs/proxy/forward_client_headers) - 詳細的標頭轉發設定
-- [Claude Code 快速入門](/docs/tutorials/claude_responses_api) - Claude Code + LiteLLM 基本設定
-- [虛擬金鑰](/docs/proxy/virtual_keys) - 建立與管理 API 金鑰
-- [預算與速率限制](/docs/proxy/users) - 設定用量控制
+請參閱[設定影片](https://www.loom.com/share/2d069b9e3bcc4cecaa5eb27a72ba7b3c)、[訂閱選項](../subscriptions.md)或 [Claude Code 搭配 Lite CLI SSO](./claude_code_gateway.md#claude-subscription)。

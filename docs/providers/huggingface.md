@@ -1,3 +1,9 @@
+---
+title: "Hugging Face API 搭配 LiteLLM：推論設定"
+sidebar_label: "HuggingFace"
+description: "從 Python SDK 或 AI 閘道，透過 LiteLLM 呼叫 Hugging Face Inference Providers 與專用 Inference Endpoints，支援串流、工具與嵌入。"
+---
+
 import Image from '@theme/IdealImage';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -61,7 +67,7 @@ completion(model="huggingface/meta-llama/Llama-3.3-70B-Instruct", messages=messa
 ```
 
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_HuggingFace.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_HuggingFace.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
@@ -192,7 +198,7 @@ print(response)
 
 <TabItem value="endpoints" label="Inference Endpoints">
 
-<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/LiteLLM_HuggingFace.ipynb">
+<a target="_blank" href="https://colab.research.google.com/github/BerriAI/litellm/blob/89a6b5fbb26b632ef0faf633b0d3cf317d73deaa/cookbook/LiteLLM_HuggingFace.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="在 Colab 中開啟"/>
 </a>
 
