@@ -565,7 +565,10 @@ const sidebars = {
             {
               type: "category",
               label: "Cursor",
-              items: [{ type: "doc", id: "tutorials/cursor_integration", label: "Setup" }],
+              items: [
+                { type: "doc", id: "tutorials/cursor_integration", label: "IDE setup" },
+                { type: "doc", id: "tutorials/cursor_cli_subscription", label: "CLI subscription" },
+              ],
             },
             {
               type: "category",
@@ -671,7 +674,9 @@ const sidebars = {
             {
               type: "category",
               label: "Customer Management",
+              link: {type: "doc", id: "proxy/customers"},
               items: [
+                "proxy/customers",
                 "proxy/customer_management/track-customer-spend",
                 "proxy/customer_management/api_reference",
               ],
@@ -702,7 +707,7 @@ const sidebars = {
             "proxy/users",
             "proxy/team_budgets",
             { type: "doc", id: "proxy/project_management", className: "sidebar-enterprise" },
-            "proxy/customers",
+            {type: "link", label: "Customer Management", href: "/docs/proxy/customers"},
 
             { type: "doc", id: "proxy/ui_team_soft_budget_alerts", className: "sidebar-enterprise" },
             "proxy/tag_budgets",
@@ -821,6 +826,7 @@ const sidebars = {
             { type: "doc", id: "proxy/dynamic_logging", className: "sidebar-enterprise" },
             "proxy/logging",
             "proxy/logging_spec",
+            "proxy/prefix_block_hashes",
             { type: "doc", id: "proxy/team_logging", className: "sidebar-enterprise" },
             { type: "ref", id: "proxy/audit_logs", label: "Audit Logs", className: "sidebar-enterprise" },
             { type: "ref", id: "proxy/prometheus", label: "Prometheus Metrics" },
@@ -895,7 +901,7 @@ const sidebars = {
               type: "category",
               label: "Observability: Usage",
               items: [
-                "proxy/customer_usage",
+                {type: "link", label: "Customer Management", href: "/docs/proxy/customers"},
                 "proxy/endpoint_activity",
               ]
             },
@@ -1169,6 +1175,7 @@ const sidebars = {
               collapsible: false,
               items: [
                 "harness/quickstart",
+                "harness/evaluation",
                 "harness/models",
                 "harness/sessions",
                 "harness/events",

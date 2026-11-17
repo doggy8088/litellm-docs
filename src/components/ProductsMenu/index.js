@@ -75,7 +75,7 @@ function getProductsMenuContent(t) {
         featured: [
           {id: 'gateway', icon: 'gateway', title: 'AI Gateway', desc: t('路由並控制 LLM 流量', 'Route and control LLM traffic'), to: '/docs/simple_proxy'},
           {id: 'router', icon: 'router', title: 'Auto Router', desc: t('為每個請求選出最佳模型', 'Best model for each request'), to: '/docs/auto_router'},
-          {id: 'subscriptions', icon: 'subscriptions', title: 'Claude, Codex & Copilot', desc: t('使用您既有的訂閱', 'Use your existing subscriptions'), to: '/docs/subscriptions'},
+          {id: 'subscriptions', icon: 'subscriptions', title: 'AI Subscriptions', desc: t('Claude、Codex、Copilot、Cursor', 'Claude, Codex, Copilot, Cursor'), to: '/docs/subscriptions'},
         ],
         items: [
           {id: 'logs', icon: 'logs', title: t('記錄與可觀測性', 'Logging & Observability'), short: t('記錄', 'Logging'), desc: t('記錄、支出與回呼', 'Logs, spend, and callbacks'), to: '/docs/proxy/logging'},
