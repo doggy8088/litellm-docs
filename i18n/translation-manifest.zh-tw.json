@@ -1497,7 +1497,7 @@
       "outputTokens": 84
     },
     "docs/completion/knowledgebase.md": {
-      "sourceSha256": "f88bc16714a0db3a3844658331a8d481755f82c3ca35b79e3e1adf36db5d7ea4",
+      "sourceSha256": "4d5f872f176a27fe701ae6bc6ebee6d8000c65fa6be03b9f66af96f58a10552b",
       "translationSha256": "6f78759c11bb15a07b6634c54e85f795843e386b41c82b73d9d06caeed377844",
       "inputTokens": 1094,
       "outputTokens": 541
@@ -1665,7 +1665,7 @@
       "outputTokens": 308
     },
     "docs/data_security.md": {
-      "sourceSha256": "d80b84877f46c9721d6647237280439457ab48ce51aa3e5536bf41ad1ee5d861",
+      "sourceSha256": "693a24367ebaec2b9a59716552b3ed692250d3f5b5550f33cf75dbb10873295a",
       "translationSha256": "f0ccdd23b521f800069aa39747f6afff04ed39cfb5df06f7eceab698dddf9c35",
       "inputTokens": 903,
       "outputTokens": 342
@@ -7287,7 +7287,7 @@
       "outputTokens": 0
     },
     "docs/vector_stores/create.md": {
-      "sourceSha256": "ae5d95ea5280bd36e72aff436d2a0d42ef06d7c1915158ec1064cd1548732bc5",
+      "sourceSha256": "66a67b80a04f057f8112d1858fc6be7b30408761a6ebd90bf5fba3ea519c92ee",
       "translationSha256": "7e15e91c9f75b7172442317fbce61c8d90ad17479c19d806a416669150b08799",
       "inputTokens": 817,
       "outputTokens": 256
