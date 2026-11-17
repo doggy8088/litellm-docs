@@ -27,7 +27,7 @@ This guide covers Anthropic's latest model (Claude Opus 4.5) and its advanced fe
 | Input Examples | Claude Opus 4.5, Sonnet 4.5 |
 | Effort Parameter | Claude Opus 4.5 only |
 
-Supported Providers: [Anthropic](../../docs/providers/anthropic), [Bedrock](../../docs/providers/bedrock), [Vertex AI](../../docs/providers/vertex_partner#vertex-ai---anthropic-claude), [Azure AI](../../docs/providers/azure_ai).
+Supported Providers: [Anthropic](/docs/providers/anthropic), [Bedrock](/docs/providers/bedrock), [Vertex AI](/docs/providers/vertex_partner#vertex-ai---anthropic-claude), [Azure AI](/docs/providers/azure_ai).
 
 ## Usage
 
@@ -117,7 +117,7 @@ curl --location 'http://0.0.0.0:4000/v1/messages' \
 
 LiteLLM uses the boto3 library to authenticate with Bedrock.
 
-For more ways to authenticate with Bedrock, see the [Bedrock documentation](../../docs/providers/bedrock#authentication).
+For more ways to authenticate with Bedrock, see the [Bedrock documentation](/docs/providers/bedrock#authentication).
 
 :::
 

@@ -137,7 +137,7 @@ Flex and Batch run at half these rates and Priority at double; LiteLLM tracks al
 
 `temperature` only applies when reasoning is off, so send `reasoning_effort="none"` alongside it, as in the Luna example above. Without it LiteLLM drops or refuses the parameter, since the default effort is `medium`.
 
-Both models accept OpenAI's explicit prompt cache breakpoints, and LiteLLM passes them through on `/chat/completions`, `/responses` and `/v1/messages`; see [prompt caching](../../docs/completion/prompt_caching). OpenAI also says changing reasoning effort or tools mid-conversation no longer breaks the cache, which matters if you route different effort levels to the same deployment.
+Both models accept OpenAI's explicit prompt cache breakpoints, and LiteLLM passes them through on `/chat/completions`, `/responses` and `/v1/messages`; see [prompt caching](/docs/completion/prompt_caching). OpenAI also says changing reasoning effort or tools mid-conversation no longer breaks the cache, which matters if you route different effort levels to the same deployment.
 
 ## Feedback
 

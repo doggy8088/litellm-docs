@@ -39,7 +39,7 @@ flowchart LR
     AG2 --> Agent2["Summarizer Agent"]
 ```
 
-The [Agent Gateway](../../docs/a2a) authenticates callers, controls which users and teams can invoke each agent, and records request, response, latency, and cost data. The Model Gateway routes LLM traffic and applies budgets and rate limits. The MCP Gateway centralizes tool access and upstream authentication.
+The [Agent Gateway](/docs/a2a) authenticates callers, controls which users and teams can invoke each agent, and records request, response, latency, and cost data. The Model Gateway routes LLM traffic and applies budgets and rate limits. The MCP Gateway centralizes tool access and upstream authentication.
 
 Together, they let platform teams operate agents as shared services with per-user governance across every request.
 
@@ -125,7 +125,7 @@ For interactive per-user OAuth, configure the MCP server with `auth_type: oauth2
 
 The upstream MCP server remains the authorization authority. It evaluates the token's claims and decides whether the user can access payroll details or only the broader revenue summary. LiteLLM centralizes the OAuth flow and credential handling while preserving each user's upstream identity.
 
-See [MCP OAuth](../../docs/mcp_oauth) for configuration options, including machine-to-machine and on-behalf-of flows.
+See [MCP OAuth](/docs/mcp_oauth) for configuration options, including machine-to-machine and on-behalf-of flows.
 
 ## Keep user and agent attribution across multi-agent calls
 
@@ -203,4 +203,4 @@ To apply this architecture:
 
 The result is a shared agent platform with clear security and financial boundaries: users access their approved tools and data, spend is attributed to the correct business unit, and each unit is governed independently through one shared agent deployment.
 
-Explore the [Agent Gateway](../../docs/a2a), [MCP Gateway](../../docs/mcp), and [budget and rate-limit controls](../../docs/proxy/users) to build this pattern in your LiteLLM deployment.
+Explore the [Agent Gateway](/docs/a2a), [MCP Gateway](/docs/mcp), and [budget and rate-limit controls](/docs/proxy/users) to build this pattern in your LiteLLM deployment.

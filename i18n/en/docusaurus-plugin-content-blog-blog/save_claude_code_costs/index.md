@@ -57,7 +57,7 @@ curl -X POST http://localhost:4000/key/generate \
 
 Once the developer burns $20 of Opus in a day, subsequent Opus requests silently reroute to Sonnet; if Sonnet is also tapped out, Haiku picks up. Fallback models without a `model_max_budget` entry are treated as unlimited.
 
-**→ Learn more:** [Budget Windows](../../docs/proxy/users#set-multiple-budget-windows-on-a-key) · [Budget Fallbacks](../../docs/proxy/budget_fallbacks)
+**→ Learn more:** [Budget Windows](/docs/proxy/users#set-multiple-budget-windows-on-a-key) · [Budget Fallbacks](/docs/proxy/budget_fallbacks)
 
 ## 2. Automatic Prompt Caching 
 
@@ -96,7 +96,7 @@ router_settings:
 
 Turning on 'prompt_caching' as a pre call check, means if you run multiple deployments of the same Claude model, LiteLLM will intelligently route to the model deployment which was initially used for the request. 
 
-**→ Learn more:** [Auto-Inject Prompt Caching Checkpoints](../../docs/tutorials/prompt_caching) · [Claude Code - Prompt Cache Routing](../../docs/tutorials/claude_code_prompt_cache_routing)
+**→ Learn more:** [Auto-Inject Prompt Caching Checkpoints](/docs/tutorials/prompt_caching) · [Claude Code - Prompt Cache Routing](/docs/tutorials/claude_code_prompt_cache_routing)
 
 ## 3. Prompt Compression (Headroom)
 
@@ -116,7 +116,7 @@ guardrails:
 
 The developer still exports `ANTHROPIC_BASE_URL` and runs `claude`; the only thing they notice is a smaller number on the spend log.
 
-**→ Learn more:** [Headroom guardrail setup guide](../../docs/proxy/headroom)
+**→ Learn more:** [Headroom guardrail setup guide](/docs/proxy/headroom)
 
 ## 4. Defer MCP tools
 
@@ -138,7 +138,7 @@ curl -X POST http://localhost:4000/key/generate \
 
 Ranking is token-overlap over `name + description`, so there is no embedding dependency to run. The access surface does not widen; search only returns tools the key was already allowed to call.
 
-**→ Learn more:** [MCP Tool Search](../../docs/mcp_tool_search)
+**→ Learn more:** [MCP Tool Search](/docs/mcp_tool_search)
 
 ## 5. Auto routing
 
@@ -178,7 +178,7 @@ model_list:
       complexity_router_default_model: gpt-4o
 ```
 
-**→ Learn more:** [Complexity Router](../../docs/proxy/auto_routing#classification) · [Semantic Auto Routing](../../docs/proxy/auto_routing) · [Adaptive Router](../../docs/adaptive_router)
+**→ Learn more:** [Complexity Router](/docs/proxy/auto_routing#classification) · [Semantic Auto Routing](/docs/proxy/auto_routing) · [Adaptive Router](/docs/adaptive_router)
 
 ## Stacking the levers
 

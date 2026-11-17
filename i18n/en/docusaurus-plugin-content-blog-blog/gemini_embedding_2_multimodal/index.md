@@ -201,4 +201,4 @@ embedding(
 )
 ```
 
-Useful for multi-modal retrieval where a single entity has more than one modality. See the [embedding docs](../../docs/embedding/supported_embedding#combined-multimodal-embeddings) for details. On Vertex AI this opt-in is unnecessary; every request already returns one combined vector.
+Useful for multi-modal retrieval where a single entity has more than one modality. See the [embedding docs](/docs/embedding/supported_embedding#combined-multimodal-embeddings) for details. On Vertex AI this opt-in is unnecessary; every request already returns one combined vector.

@@ -21,19 +21,19 @@
       "outputTokens": 0
     },
     "blog/ai_gateway_identity_and_finops/index.md": {
-      "sourceSha256": "74fdc9823f0fd7320995353ef2c4602eb84303f4b6f11d26517f63909abd6aa1",
+      "sourceSha256": "ca101988cbd033820e65f5a2544c71931f5909d4e685e12cf5fc7e8dcb6c0b7a",
       "translationSha256": "ae46ad21ee691c9f685d6c60cb6eeaf82fe2990635a6d8c2278eeadf93ce088e",
       "inputTokens": 3805,
       "outputTokens": 3701
     },
     "blog/akto_partnership/index.md": {
-      "sourceSha256": "ed03dfa7aca7bc3142905d8871e3e46ada05e3d416ffcda096c2a9bc337ce4ae",
+      "sourceSha256": "d8e4a60fbbe0ad54cab11407a8dd78b98b47ba24e794d13708ff811e6246639f",
       "translationSha256": "17353a9d4bd5d51b364bee5e8aeb912b9e9d21a76a701d5f25a781d44dbf83f9",
       "inputTokens": 788,
       "outputTokens": 236
     },
     "blog/anthropic_opus_4_5_and_advanced_features/index.md": {
-      "sourceSha256": "a0557798de9cf21b4564e5e885085bc9ba29831f6ab729d2c6409cd34303da8a",
+      "sourceSha256": "d1382fbce6574b625b09623daaf3fbf2665c6348b2bfc991a9660d9a379d85cb",
       "translationSha256": "b51bf9f24893a4d379ffed47ac7a7e23ef66a7afeae9be6a7d462b488ac22806",
       "inputTokens": 0,
       "outputTokens": 0
@@ -225,7 +225,7 @@
       "outputTokens": 0
     },
     "blog/claude_code_beta_headers/index.md": {
-      "sourceSha256": "398835e36b062e74ea63fc970382607ebb9b6903ac4e453bf3105d1b7696a4cf",
+      "sourceSha256": "f30a81e10f695749c1ef495e67809447416079e04b2b0449eb661f9b9d42a52d",
       "translationSha256": "a568196a550db45a1b83464293df48f0fcd5f3ec6d1454aad76d8df81863ba4f",
       "inputTokens": 0,
       "outputTokens": 0
@@ -267,7 +267,7 @@
       "outputTokens": 0
     },
     "blog/claude_opus_5/index.md": {
-      "sourceSha256": "44aaf3ba34d1c3ab6b3e8ca17122114557be8ae4831a9ae3ec726507c86d1a73",
+      "sourceSha256": "ab5a41ebc9220ece4a733427a7cecf4c1a352beec87ff27070dc5cc6f847da89",
       "translationSha256": "566ddf54b536eb137e1b0151a3d203890dd99dff8d07d6f5ef3a3e64b497dc23",
       "inputTokens": 3001,
       "outputTokens": 1972
@@ -363,7 +363,7 @@
       "outputTokens": 2754
     },
     "blog/gemin_3.1/index.md": {
-      "sourceSha256": "0ea0deec1d9f4c3c77e144ef5991bf238d96f8286f7c9f4c7bcc7997976c98c3",
+      "sourceSha256": "15660f18c0ac0b730e38eaad4f3c35bbd30e105abd6814b32304023577506f62",
       "translationSha256": "21d41ba049d9b769992c3249582769a26d15d162cca26eed85aa4b4e9c8fd7c9",
       "inputTokens": 0,
       "outputTokens": 0
@@ -387,31 +387,31 @@
       "outputTokens": 0
     },
     "blog/gemini_3/index.md": {
-      "sourceSha256": "920bc9f754eca53d195419a490a349a2471fcb1f55c470dcd576530657383994",
+      "sourceSha256": "cd9be6cf2f6c48228015072fa52fe96694ad59eca978df1ed07bebb6a11048ef",
       "translationSha256": "bf0c22fe6ee6827a51377e43e96ab42b56abffbda6eaddaace4a05e9febfa014",
       "inputTokens": 1240,
       "outputTokens": 787
     },
     "blog/gemini_3_1_flash_lite/index.md": {
-      "sourceSha256": "24d8f1cd7fc53011d3ab5abe03e59a2b72e9aea29cdac9db972d485f45f6d03f",
+      "sourceSha256": "3ec35d40019e45d82aef837b55ae5c38b61a5d6a025bc5de5dafcb7903de14d9",
       "translationSha256": "dee3e8c01026382a281c7b90e0af263f48b44019db8890ef07dd6eec90bde971",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "blog/gemini_3_5_flash/index.md": {
-      "sourceSha256": "94c087f0c46052b25bbc2a704bf3fba3ce80e6aa1082919ae7f4a5e2696498d4",
+      "sourceSha256": "71569d45d7abbaa79ebdd9dede451d2ab6ee719d99a06e634d88c431efb7e441",
       "translationSha256": "0144cc80137d95b1e01a52ea049c3ac9a8c084267534723dccbcf8dff9e04334",
       "inputTokens": 986,
       "outputTokens": 396
     },
     "blog/gemini_3_7_flash/index.md": {
-      "sourceSha256": "0886c49cc1f75a1f2e479aa5c804b289d6fa7a7455ed1e0f91f726dd80e6ab1f",
+      "sourceSha256": "3e3500bd8ac146e65e021f3352675beda191b4139df18b45e9a774e260ac8fbd",
       "translationSha256": "5692fc89a97ea5595259598f2ba5b341a4a49b71c5bb491d2cedc50f57149f30",
       "inputTokens": 2447,
       "outputTokens": 1348
     },
     "blog/gemini_3_8_flash/index.md": {
-      "sourceSha256": "9aa8bc1b64f0442c0666e9c0341e5db75bcd6f5b2dff9481513ff108b6d1fdce",
+      "sourceSha256": "9659b770b3e8ceb9268160a3ca9b1689fdcc57d78079f24b7700ce50fbbb71b6",
       "translationSha256": "e14fcb190b67d2e4c8a0b173de9b710dd95b16fe5cd7391f3ccd98930f60f292",
       "inputTokens": 2542,
       "outputTokens": 1424
@@ -423,7 +423,7 @@
       "outputTokens": 1109
     },
     "blog/gemini_3_flash/index.md": {
-      "sourceSha256": "827acf040a97fd123ee2fd1f12d0608ee4a2956466d2a2995c845166aa98c959",
+      "sourceSha256": "7e974fe1492fbbb455c4a81d0796c956d42695b4b713a8a1c2d3659b9fcb4ab0",
       "translationSha256": "21c214fc90d8f5aebcddf4025d8feade172f39ae33f5e1fed72a19377bc33a55",
       "inputTokens": 0,
       "outputTokens": 0
@@ -435,7 +435,7 @@
       "outputTokens": 0
     },
     "blog/gemini_embedding_2_multimodal/index.md": {
-      "sourceSha256": "0d42e3a4db9c200f24fe690ca830636d47af43b8c8772b2dcf042161cb442a74",
+      "sourceSha256": "7e458a79c63ae22ae879b30e9ab29e1e53627d2fd1f00990ee97a169515864df",
       "translationSha256": "feec383cf3df0406df91d70ea605e78784aec45ef7d7d51b5af3d808e5047df4",
       "inputTokens": 1082,
       "outputTokens": 580
@@ -471,25 +471,25 @@
       "outputTokens": 0
     },
     "blog/gpt_5_4/index.md": {
-      "sourceSha256": "e0ec47cd4677abc3d5eead12bb4e8c2e177fb1e6f21d53b35968de74ec25afba",
+      "sourceSha256": "a7f103a9426693f52773f93b4cc17846769d17c9afc8e26c0d3ccb0bd6792856",
       "translationSha256": "961ad8b219a35fbb346b649f6745f9277c99229a422a0dfa565db5bd68929a2f",
       "inputTokens": 719,
       "outputTokens": 126
     },
     "blog/gpt_5_4_mini_nano/index.md": {
-      "sourceSha256": "fb7015dc9c345d8ff245e3cadc8a45f92c600461d785c8b6cf80f3c0e65ac8dc",
+      "sourceSha256": "19382c51144b6f26730da1879073b5bd03551e1d63a71894af5a049ad7f7f908",
       "translationSha256": "a53ff74654200cba9984f7b1049985c8e5cde0e027f98e9e172d72a9176eb1c7",
       "inputTokens": 764,
       "outputTokens": 178
     },
     "blog/gpt_5_5/index.md": {
-      "sourceSha256": "56e6cb6e8c34680a7b9bfb02198b2f6b9c4bceba43e74bc37628b493346799fe",
+      "sourceSha256": "e87dfba6a50d0024676e82f81c1d385a7d15dcbc72f0e3e0428dce8700d9057e",
       "translationSha256": "e47c7760733b777586efcb10042be3a95df00a48b79a90e12bd40afc3f5cc119",
       "inputTokens": 991,
       "outputTokens": 471
     },
     "blog/gpt_5_6/index.md": {
-      "sourceSha256": "ca59138168f34376fad7cfdf642ad409a3cad682f29a191e6aef423c601b3f01",
+      "sourceSha256": "18443b14ba41a7c06258be7753a19e3dfc8be93f2c1869c65efdb865da808192",
       "translationSha256": "173f56c87c5b7d1f92de77164e347c031db34765b5a979b3a2a00ef2119a8788",
       "inputTokens": 704,
       "outputTokens": 16
@@ -501,13 +501,13 @@
       "outputTokens": 1055
     },
     "blog/gpt_6_astra/index.md": {
-      "sourceSha256": "2c10ef093bd3bb09a84465e04f3d21ee76ab9277444b9571e284cbd5d1afdcde",
+      "sourceSha256": "69f95639f5f9d8bed337a12f813379f570df0d61f10cb5f845953d5c7bf76427",
       "translationSha256": "f6e3cb1af24039b989bb61fa58e148406a28fefec7d62ac4578c22381be888f2",
       "inputTokens": 2747,
       "outputTokens": 1677
     },
     "blog/gpt_6_sol_luna/index.md": {
-      "sourceSha256": "ae680e3f114872d86898d01f2736d60ab391393cbdb999f22ae095d06b69742e",
+      "sourceSha256": "76a1ab285072106e4b7263b9014deb9e89c24c9defd934efdfe7436d465d1afa",
       "translationSha256": "e105bd0cf062c7f98db1473d1c6041211a53d27285782258f0bd1bd30917957b",
       "inputTokens": 1920,
       "outputTokens": 1519
@@ -537,7 +537,7 @@
       "outputTokens": 195
     },
     "blog/headroom_integration/index.md": {
-      "sourceSha256": "f2fb59f30201e30a421bc2c63703fd8c246a64b17b3a2da2688cd03bcc027f51",
+      "sourceSha256": "1ebf12b4da3375403bce3b11a86392f41de505373c25b0029ce03ee99415dc82",
       "translationSha256": "cf95360291ec766fd6b32fc5866a41359f9dab9d8d3233219aeda6b4b1192054",
       "inputTokens": 0,
       "outputTokens": 0
@@ -813,7 +813,7 @@
       "outputTokens": 1472
     },
     "blog/muse_spark_1_3/index.md": {
-      "sourceSha256": "d743cd6aaffe86ab074608992f181a65682b0b59de0e1e45d86c6375f17a6381",
+      "sourceSha256": "e21fe4982458e996a33f7435f4ab4325dce1f9fb5391e9b985fa3c55cd739e81",
       "translationSha256": "242ac37235f8bacf7737a6b4d7d3ba26593055bcead303b32fac3e15a0ed68aa",
       "inputTokens": 2256,
       "outputTokens": 1075
@@ -933,7 +933,7 @@
       "outputTokens": 0
     },
     "blog/save_claude_code_costs/index.md": {
-      "sourceSha256": "eb84f114b9dcccd466d8c85f93d429ecd4c91d15977cfae6256bcfe8c376d661",
+      "sourceSha256": "ae6b69e4a61e648a912f0a8ff287065c838b10a51312b3c5aa85855037cba1c9",
       "translationSha256": "22e7b5100a992161ae654c4d9c0ef7c71355784d8dc1b8235afc50fdf3336f3d",
       "inputTokens": 0,
       "outputTokens": 0

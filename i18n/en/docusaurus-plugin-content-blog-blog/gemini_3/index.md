@@ -85,7 +85,7 @@ LiteLLM provides **full end-to-end support** for Gemini 3 Pro Preview on:
 
 - ✅ `/v1/chat/completions` - OpenAI-compatible chat completions endpoint
 - ✅ `/v1/responses` - OpenAI Responses API endpoint (streaming and non-streaming)
-- ✅ [`/v1/messages`](../../docs/anthropic_unified) - Anthropic-compatible messages endpoint
+- ✅ [`/v1/messages`](/docs/anthropic_unified) - Anthropic-compatible messages endpoint
 - ✅ `/v1/generateContent` – [Google Gemini API](https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini#rest) compatible endpoint (for code, see: `client.models.generate_content(...)`)
 
 All endpoints support:
@@ -971,7 +971,7 @@ messages.append(response.choices[0].message)  # ✅ Includes thought signatures
 
 ## Additional Resources
 
-- [Gemini Provider Documentation](../../docs/providers/gemini)
-- [Thought Signatures Guide](../../docs/providers/gemini#thought-signatures)
-- [Reasoning Content Documentation](../../docs/reasoning_content)
-- [Function Calling Guide](../../docs/completion/function_call)
+- [Gemini Provider Documentation](/docs/providers/gemini)
+- [Thought Signatures Guide](/docs/providers/gemini#thought-signatures)
+- [Reasoning Content Documentation](/docs/reasoning_content)
+- [Function Calling Guide](/docs/completion/function_call)
