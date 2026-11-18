@@ -468,7 +468,7 @@ database:
 ### --check_migrations_against_existing_data {#--check_migrations_against_existing_data}
   - **預設值：** `False`
   - **類型：** `bool`（旗標）
-  - 對 `DATABASE_URL` 乾跑此版本待處理的遷移：實際的 SQL 會在單一交易中執行並回滾，因此 PostgreSQL 會回報會導致升級失敗的資料列或綱要，然後結束。結束代碼 0 會列出每項遷移及其耗時，2 會印出 PostgreSQL 的錯誤。它會持有與升級時相同的鎖定，因此請在離峰時段執行。需要 `DATABASE_URL`。請參閱[升級指南](./upgrade_guide.md#dry-run-the-migrations-before-the-upgrade)。
+  - 對 `DATABASE_URL` 乾跑此版本待處理的遷移：實際的 SQL 會在單一交易中執行並回滾，因此 PostgreSQL 會回報會導致升級失敗的資料列或綱要，然後結束。結束代碼 0 會列出每項遷移及其耗時，2 會印出 PostgreSQL 的錯誤。它會持有與升級時相同的鎖定，因此請在離峰時段執行。需要 `DATABASE_URL`。請參閱[資料庫遷移](./database_migrations.md#dry-run-the-migrations-before-the-upgrade)。
   - **用法：**
      ```shell
      litellm --check_migrations_against_existing_data

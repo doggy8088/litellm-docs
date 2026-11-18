@@ -29,6 +29,8 @@ LiteLLM Lens 使用 AI 代理程式分析您的代理程式追蹤並找出重複
 
 使用[coding agent 指南](./coding-agents.md)來記錄個人的 Claude Code 或 Codex 工作階段。一旦有追蹤可用，就[執行調查](./investigations.md)或使用[API 參考文件](./api.md)。
 
+使用[模型最佳化](./model-optimizations.md)，在即時流量或已儲存的資料集上比較模型。選擇 Live、Shadow 或 Offline，並檢查品質、成本、延遲與個別答案。
+
 ## Lens 如何運作 {#how-lens-works}
 
 **1. 擷取您代理程式的追蹤**

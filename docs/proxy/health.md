@@ -61,19 +61,23 @@ curl 'http://0.0.0.0:4000/health' -H "Authorization: Bearer $LITELLM_API_KEY"
 }
 ```
 
-此端點會將結果限定於呼叫金鑰的範圍、以監控工具可據以行動的狀態碼回應定向檢查，且只回傳一組固定的診斷欄位。以下各節說明截至 v1.102.0 的這項契約。
+此端點會將結果限定於呼叫金鑰的範圍、以監控工具可據以行動的狀態碼回應定向檢查，且只回傳一組固定的診斷欄位。以下各節說明截至 v1.102.0 的這項契約，以及截至 v1.109.0 金鑰可以看到哪些部署。
 
 v1.84.0 至 v1.102.0 的版本已將結果限定於金鑰的 `models` 清單範圍，並對沒有健康部署的定向呼叫回應 503，但在幾個方面有所不同。金鑰清單中的存取群組不會被展開，因此只列出群組的金鑰會得到空清單，且非管理員金鑰也會看到其他團隊的部署。超出該金鑰範圍的 `?model_id=` 會被忽略，呼叫會以金鑰自己的部署回應，而不是 403。回應條目也會帶有其他 `litellm_params` 值，例如 `max_tokens` 與 `cache`，而不只是下方列出的欄位。對非管理員金鑰只會移除 `api_base` 與 `api_version`，因此 `aws_bedrock_runtime_endpoint` 仍會顯示，且標頭會顯示 `api_base and api_version are admin-only on this endpoint`。在 v1.84.0 上，金鑰無法呼叫的 `?model=` 會回應 401，而不是 403。
 
 ### 金鑰可以看到哪些部署 {#which-deployments-a-key-sees}
 
-proxy 管理員，也就是 master key，或使用者具有 `proxy_admin` 或 `proxy_admin_viewer` 角色的金鑰，可以看到每個部署；但如果管理員的金鑰有自己的 `models` 清單，則由該清單決定可見範圍。其他每個金鑰只能看到不屬於其他任何團隊的部署。在這些部署中，自己的 `models` 清單為空或包含 `all-proxy-models` 的金鑰可以看到全部；其他金鑰只能看到 `model_name` 出現在其 `models` 清單中的部署，清單中的存取群組名稱與 `all-team-models` 會被展開。
+<SinceVersion v="1.109.0" />
 
-只有金鑰自己的 `models` 清單會縮小結果範圍。金鑰所屬團隊、使用者、組織或專案上的 `models` 限制，目前還不會縮小未定向的結果或 `model_id` 檢查；不過，被該限制禁止的 `?model=` 會以與聊天請求相同的方式被拒絕。因此，在沒有背景健康檢查時，這類金鑰的未定向呼叫會對它無法呼叫的部署發送測試請求。若要限定這類金鑰的可見範圍，請給它自己的 `models` 清單，或對團隊金鑰給予 `all-team-models`。像 `openai/*` 這樣的萬用字元條目，只會比對 `model_name` 恰好是 `openai/*` 的部署，因此清單中只有萬用字元的金鑰，即使對它可以呼叫的模型也會得到空結果。
+proxy 管理員，也就是 master key，或使用者具有 `proxy_admin` 或 `proxy_admin_viewer` 角色的金鑰，可以看到每個部署；但如果管理員的金鑰有自己的 `models` 清單，則由該清單決定可見範圍。其他每個金鑰只能看到不屬於其他任何團隊的部署，而且在這些部署中，只能看到使用該金鑰的聊天請求能夠觸及的部署。proxy 會執行與聊天請求相同的模型存取檢查，因此金鑰、其團隊、其專案或其使用者（適用於沒有團隊的金鑰）上的 `models` 限制都會縮小結果範圍，且此呼叫絕不會對金鑰無法呼叫的部署發送測試請求。沒有上述任何限制的金鑰，或清單中包含 `all-proxy-models` 的金鑰，可以看到每個不屬於其他任何團隊的部署。開啟背景健康檢查時，適用相同的範圍。
+
+這些限制中的名稱，會以聊天請求解讀它的方式計算。存取群組名稱與 `all-team-models` 會展開為其模型，而當金鑰持有的存取群組只包含某個模型名稱的部分部署時，金鑰只能看到那些部署。像 `openai/*` 這樣的萬用字元條目涵蓋金鑰可透過它呼叫的每個部署，包括 `openai/*` 部署本身、名為 `openai/{{openai_small}}` 的部署，以及任何其他 `model_name`、其 `litellm_params.model` 符合 `openai/*` 的部署。別名會視為它路由到的模型群組，因此清單中只有 `model_group_alias` 名稱的金鑰，可以看到該別名背後的部署。金鑰所屬組織上的 `models` 清單不會縮小結果範圍，因為聊天請求也不會檢查它。
+
+v1.109.0 之前的版本只會以金鑰自己的 `models` 清單縮小結果範圍。金鑰所屬團隊、使用者、組織或專案上的 `models` 限制，不會縮小那些版本上未定向的結果或 `model_id` 檢查，因此在沒有背景健康檢查時，這類金鑰的未定向呼叫會對它無法呼叫的部署發送測試請求。在那些版本上，萬用字元條目只會比對 `model_name` 恰好是 `openai/*` 的部署，而存取群組持有兩個共用同一模型名稱的部署其中之一的金鑰，會看到兩者。若要在那些版本上限縮金鑰的可見範圍，請給它自己的 `models` 清單，或對團隊金鑰給予 `all-team-models`。
 
 ### 檢查單一模型 {#check-one-model}
 
-傳入 `?model=<model_name>` 可檢查該公開模型名稱背後的每個部署。當沒有部署使用該名稱時，proxy 會改為將它與每個部署的 `litellm_params.model` 比對，因此管理員可以傳入 `?model=openai/{{openai_small}}`。傳入 `?model_id=<id>` 可檢查具有該 `model_info.id` 的單一部署，該 id 可由 `GET /v1/model/info` 列出。當請求同時帶有兩者時，由 `model_id` 選定部署，但 `model` 仍必須通過金鑰的模型存取檢查。在 `model` 中使用 `model_group_alias` 名稱時，若金鑰沒有 `models` 清單，或其清單包含該別名名稱，就會檢查該別名路由到的部署。清單中只有目標名稱的金鑰，對該別名會得到 403，即使透過該別名的聊天請求能成功，因此請改為檢查目標名稱。只有萬用字元路由服務的名稱，例如 `anthropic/*` 部署背後的 `anthropic/{{anthropic}}`，不會比對到任何部署，因此即使對它的聊天請求能成功，它對管理員會回應 503 與空清單，對其他金鑰則回應 403。檢查這類路由時，請使用 `?model_id=`，或使用萬用字元名稱本身：`?model=anthropic/*`。
+傳入 `?model=<model_name>` 可檢查該公開模型名稱背後的每個部署。當沒有部署使用該名稱時，proxy 會改為將它與每個部署的 `litellm_params.model` 比對，因此管理員可以傳入 `?model=openai/{{openai_small}}`。傳入 `?model_id=<id>` 可檢查具有該 `model_info.id` 的單一部署，該 id 可由 `GET /v1/model/info` 列出。當請求同時帶有兩者時，由 `model_id` 選定部署，但 `model` 仍必須通過金鑰的模型存取檢查。在 `model` 中使用別名，例如 `model_group_alias` 名稱時，只要透過該別名使用該金鑰發出的聊天請求能夠成功，就會檢查該別名路由到的模型群組的部署，即使金鑰的清單中只有目標名稱。只有萬用字元路由服務的名稱，例如 `anthropic/*` 部署背後的 `anthropic/{{anthropic}}`，對除沒有 `models` 清單的管理員金鑰以外的任何金鑰，都會檢查該萬用字元部署。該管理員金鑰對此名稱比對不到任何部署，會得到 503 與空清單，因此請以 `?model_id=` 或萬用字元名稱本身 `?model=anthropic/*` 檢查該路由。v1.109.0 之前的版本對非管理員金鑰，會就清單中只有別名目標的別名，以及只有萬用字元路由服務的名稱回應 403，因此在那些版本上請改為檢查目標名稱、`model_id` 或萬用字元名稱。
 
 ### 狀態碼 {#status-codes}
 
@@ -88,7 +92,7 @@ proxy 管理員，也就是 master key，或使用者具有 `proxy_admin` 或 `p
 
 503 會帶有正常的回應本文，因此監控工具可以依狀態碼發出告警，同時仍能讀取每個不健康的條目。
 
-403 與 404 的本文有兩種形式。金鑰無法呼叫的 `model` 會被與聊天請求相同的模型存取檢查拒絕，因此本文是標準錯誤物件 `{"error": {"type": "key_model_access_denied", ...}}`，或拒絕它的限制所對應的型別，例如 `team_model_access_denied`、`user_model_access_denied`、`org_model_access_denied` 或 `project_model_access_denied`。超出該金鑰範圍的 `model_id` 會回應 `{"detail": {"error": "key not allowed to health-check model_id <id>"}}`；通過存取檢查但在範圍內比對不到任何部署的 `model`，則回應 `{"detail": {"error": "key not allowed to health-check model <name>"}}`。未知的 `model_id` 會在任何範圍檢查之前，先以 `{"detail": {"error": "Model with ID <id> not found"}}` 回應 404。沒有 `models` 清單的管理員金鑰，若傳入沒有任何部署服務的 `model`，會得到 503 與空清單。
+403 與 404 的本文有兩種形式。金鑰無法呼叫的 `model` 會被與聊天請求相同的模型存取檢查拒絕，因此本文是標準錯誤物件 `{"error": {"type": "key_model_access_denied", ...}}`，或拒絕它的限制所對應的型別，例如 `team_model_access_denied`、`user_model_access_denied` 或 `project_model_access_denied`。超出該金鑰範圍的 `model_id` 會回應 `{"detail": {"error": "key not allowed to health-check model_id <id>"}}`；通過存取檢查但在範圍內比對不到任何部署的 `model`，則回應 `{"detail": {"error": "key not allowed to health-check model <name>"}}`。未知的 `model_id` 會在任何範圍檢查之前，先以 `{"detail": {"error": "Model with ID <id> not found"}}` 回應 404。沒有 `models` 清單的管理員金鑰，若傳入沒有任何部署服務的 `model`，會得到 503 與空清單。
 
 ### 回應欄位 {#response-fields}
 

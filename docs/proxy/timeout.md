@@ -146,7 +146,7 @@ model_list:
 
 `timeout` 和 `stream_timeout` 會限制請求可執行的最長時間。另一個問題是，proxy 前方的負載平衡器與反向 proxy 經常會關閉看起來處於閒置狀態的連線，即使客戶端確實正在等待回應。針對在第一個 token 之前有很長靜默間隔的模型（例如延長式或自適應思考模型），或其他較慢的提供者所發出的串流請求，可能會在任何內容到達前就觸發這些閒置連線逾時。
 
-請在部署的 `litellm_params` 下設定 `keepalive_seconds`，以便在這些間隔期間維持連線存活。當串流靜默時間超過 `keepalive_seconds` 時，proxy 會沿著連線送出一個 SSE 註解框架（`: ping`），之後每隔 `keepalive_seconds` 重複一次，直到有真正的內容恢復。註解框架是 SSE 規格的一部分，且客戶端與中介 proxy 預期會忽略它們，因此不會影響您的應用程式所看到的回應。
+請在部署的 `litellm_params` 下設定 `keepalive_seconds`，以便在這些間隔期間維持連線存活。當串流靜默時間超過 `keepalive_seconds` 時，proxy 會沿著連線送出一個 SSE 註解框架（`: ping`），之後每隔 `keepalive_seconds` 重複一次，直到有真正的內容恢復。註解框架是 SSE 規格的一部分，且客戶端與中介 proxy 預期會忽略它們，因此不會改變您的應用程式所看到的內容。它們確實會改變失敗的送達方式。一旦 ping 已經送出，回應就已經以狀態 200 開始，因此該時間點之後的錯誤會以 SSE 框架而非 HTTP 錯誤狀態送達。關於各路由傳送的框架，請參閱[串流錯誤](/docs/proxy/error_reference#streaming-errors)。
 
 ```yaml
 model_list:

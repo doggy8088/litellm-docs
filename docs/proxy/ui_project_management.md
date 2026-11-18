@@ -1,16 +1,8 @@
-import Image from '@theme/IdealImage';
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
-# [Beta] 專案管理 UI {#beta-project-management-ui}
+# 專案管理 UI {#project-management-ui}
 
 <EnterpriseFeature />
 
 直接從 LiteLLM 管理員 UI 管理專案。專案位於組織階層中的團隊與金鑰之間，可針對特定使用案例或應用程式提供細緻的存取控制與預算管理。
-
-:::info
-專案管理是 beta 功能。API 與 UI 可能變更。如需完整 API 文件，請參閱 [專案管理](./project_management.md)。
-:::
 
 ## 概觀 {#overview}
 
@@ -28,85 +20,54 @@ import TabItem from '@theme/TabItem';
 
 ## 前置條件 {#prerequisites}
 
+- 有效的 LiteLLM Enterprise 授權
 - 管理員或團隊管理員存取權限
 - 至少已建立一個團隊（專案從屬於團隊）
 - 本機或遠端執行中的 LiteLLM 管理員 UI
 
-## 在 UI 設定中啟用專案 {#enable-projects-in-ui-settings}
-
-在您能建立專案之前，需要先在管理員 UI 設定中啟用 Projects 功能。
-
-### 步驟 1：存取管理員設定 {#step-1-access-admin-settings}
-
-前往管理員 UI（例如，`http://localhost:4000/ui/?login=success`）。
-
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/b8de4dbf-a23b-4979-84a3-95fe17427b5a/ascreenshot_84dcb13b57a84fd589dff2d5af58adde_text_export.jpeg)
-
-### 步驟 2：開啟設定選單 {#step-2-open-settings-menu}
-
-點選頂端導覽列中的 **"New"** 按鈕。
-
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/b8de4dbf-a23b-4979-84a3-95fe17427b5a/ascreenshot_447c8ea124f64d0eb18d3c9621f7cbbc_text_export.jpeg)
-
-### 步驟 3：前往管理員設定 {#step-3-navigate-to-admin-settings}
-
-點選 **"Admin Settings"**。
-
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/cc2ce9d9-d2d2-49f3-9fb8-c546fb8dfdcf/ascreenshot_fd792e9dbda24e7eb5cdb508c4f181f8_text_export.jpeg)
-
-### 步驟 4：開啟 UI 設定 {#step-4-open-ui-settings}
-
-點選 **"UI Settings New"**。
-
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/d667f4b4-300b-47c6-9d76-12e439519da6/ascreenshot_3f3db4df432843a48b53ae16b311e7df_text_export.jpeg)
-
-### 步驟 5：啟用 Projects 功能 {#step-5-enable-projects-feature}
-
-點選切換開關以啟用 Projects 功能。
-
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/4819f76b-4855-4f5c-8c4b-b4c272399724/ascreenshot_9df0555ae6db425ab839d73485ee9b99_text_export.jpeg)
-
-啟用後，Projects 區段會出現在管理員 UI 導覽中，您就能建立與管理專案。
-
 ## 建立與管理專案 {#create-and-manage-projects}
 
-啟用 Projects 功能後，您可以從 Projects 頁面建立專案。
+Projects 會出現在管理員 UI 側邊欄的 Access Control 下，供 Proxy 管理員、Org 管理員與 Team 管理員使用。請從 Projects 頁面建立與管理專案。
+
+若沒有有效的 Enterprise 授權，Projects 頁面會顯示 Enterprise 通知與試用連結，而非專案控制項。
+
+![顯示 Enterprise 授權通知的 Projects 頁面](/img/projects-ga/projects-enterprise-notice.jpg)
 
 ### 步驟 1：前往 Projects {#step-1-navigate-to-projects}
 
-在側邊欄中點選 **"Projects New"**。
+在側邊欄中點選 **"Projects"**。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/889e2e55-af7a-42f1-90d5-8bba8efaa986/ascreenshot_c42e33e2226c4e8b8e8ea83a7c8955e4_text_export.jpeg)
+![管理員 UI 側邊欄中 Access Control 下的 Projects](/img/projects-ga/projects-01-navigation.jpg)
 
 ### 步驟 2：建立新專案 {#step-2-create-a-new-project}
 
 點選 **"Create Project"**。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/8ecb531c-8e96-443d-ba1d-1a9e04ba2da3/ascreenshot_74f1b3c1c1b84517ae51881a050df73a_text_export.jpeg)
+![Create New Project 表單](/img/projects-ga/projects-02-create-dialog.jpg)
 
 ### 步驟 3：輸入專案名稱 {#step-3-enter-project-name}
 
 點選 **"Project Name"** 欄位並輸入您的專案名稱。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/83bf0612-2b19-4b28-ae02-bdb122dca4fa/ascreenshot_16ca328a71f04a79bb9641ab9c1ed6fe_text_export.jpeg)
+![已為 Documentation Assistant 輸入專案名稱與說明](/img/projects-ga/projects-03-project-name.jpg)
 
 ### 步驟 4：選擇團隊 {#step-4-select-a-team}
 
 選擇此專案所屬的團隊。專案的範圍限定於團隊，因此您只能存取該團隊可用的模型與功能。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/653c2f1e-5140-49b8-962f-a2b112f4834c/ascreenshot_7861310ad77d4859adcae789a9d51bd0_text_export.jpeg)
+![Team 選擇器中的 Product Engineering](/img/projects-ga/projects-04-select-team.jpg)
 
 ### 步驟 5：設定模型存取權限 {#step-5-configure-model-access}
 
 選擇此專案可存取哪些模型。可用模型的範圍限定於團隊允許的模型。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/401a5716-ea16-4744-866a-d0ed6007065d/ascreenshot_a936c3ca417a49b2b603c890dee9d0ea_text_export.jpeg)
+![含有 All Team Models 選項的 Allowed Models 選擇器](/img/projects-ga/projects-05-model-access.jpg)
 
 ### 步驟 6：建立專案 {#step-6-create-project}
 
 點選 **"Create Project"** 以儲存您的專案。
 
-![](https://colony-recorder.s3.amazonaws.com/files/2026-03-01/2f9f9ba1-df0b-4bef-b17c-77dfc38372f7/ascreenshot_933e4c1b119d43beb84161b94b17b764_text_export.jpeg)
+![Documentation Assistant 已儲存為 Product Engineering 下的啟用專案](/img/projects-ga/projects-06-created.jpg)
 
 ## 使用案例 {#use-cases}
 

@@ -1,179 +1,104 @@
 ---
 title: 升級指南
-description: 使用 Helm 或 Terraform 升級 LiteLLM。在閘道部署之前，先在獨立的 job 中執行綱要遷移與請求記錄索引建立。
+description: 零停機升級 LiteLLM。準備滾動部署、保護進行中的串流、驗證新版本，並保留回退路徑。
+toc_max_heading_level: 2
 ---
 
-# 升級指南 {#upgrade-guide}
+# 零停機升級 LiteLLM {#upgrade-litellm-with-zero-downtime}
 
-Helm chart 與官方 Terraform 模組為綱要變更與請求記錄索引建立提供了一個**獨立的遷移 job**。請在閘道 pod 上保持 `DISABLE_SCHEMA_UPDATE=true`，並讓該 job 完成後再部署新的閘道版本。
+## 概覽 {#overview}
 
-```mermaid
-flowchart LR
-    subgraph Job["遷移 job"]
-        Schema["綱要遷移"] --> Indexes["請求記錄索引"]
-    end
-    Indexes -->|成功| Gateway["部署閘道 pod"]
-```
+請讓目前版本繼續提供服務，直到替代版本就緒。將新請求路由到健康的執行個體，並讓進行中的請求完成後再淘汰舊執行個體。
 
-## 升級之前 {#before-you-upgrade}
+**準備 → 視需要遷移 → 部署並排空 → 驗證**
 
-請閱讀您將跨越版本的[發行說明](/release_notes)。檢查破壞性變更與資料庫變更、拍攝資料庫快照，並對還原的正式環境副本測試升級以測量其所需時間。回復映像不會還原資料庫變更。
+例行升級請使用滾動部署；若要在切換前測試完整替代版本，請使用[藍綠部署](./deploy/ha/blue_green.md)；若要逐步轉移流量，請使用[金絲雀部署](./deploy/ha/canary.md)。
 
-### 從 v1.104.0 之前的版本升級 {#upgrading-from-a-version-before-v11040}
+## 開始之前 {#before-you-upgrade}
 
-:::danger 舊 pod 可能會捨棄已升級的綱要
+| 檢查項目 | 此工作流程的需求 |
+| --- | --- |
+| 可用性 | 負載平衡器後方至少有兩個健康的執行個體、自動調整器的最小值為兩個，以及可供替代版本使用的備援運算／資料庫連線。 |
+| 發行版本 | 固定映像與 chart／模組版本。請查閱您會跨越的每個版本的[發行說明](/release_notes)。儲存目前的映像與設定。 |
+| 共用狀態 | 保持相同的資料庫、Redis、驗證設定與 `LITELLM_SALT_KEY`。請參閱[正式環境設定](./prod.md)。 |
+| 演練 | 備份資料庫。請以已遷移的正式環境等比副本測試兩個版本，並在替換執行個體期間測試長時間串流。 |
 
-在遷移 job 或第一個新 pod 執行之前，請在**共用該資料庫的每個舊 LiteLLM 部署**上設定 `DISABLE_SCHEMA_UPDATE=true`。請在資料庫仍是舊綱要時完成部署該設定，讓重新啟動的 pod 無法以舊映像執行綱要設定。請將其他部署、重新啟動原則與自動映像回復納入這項檢查
+## 1. 設定滾動部署 {#1-configure-a-rolling-deployment}
 
-舊版遷移解析器可以比對即時資料庫與舊映像的 `schema.prisma` 並執行該差異。它會捨棄舊映像不認識的表格與欄位，包括其資料，但會將它們已完成的遷移留在 `_prisma_migrations` 中。部署期間的舊 pod 重新啟動、映像回復，或同一資料庫上的另一個部署，都可能觸發這個情況
-
-在 v1.84.0 之前，遷移後的健全性檢查即使在沒有待處理遷移時也會執行。在 v1.84.0 到 v1.103.x 中，它仍可能在遷移後或 `P3009` / `P3018` 復原期間執行。v1.104.0 將 v2 解析器設為預設，它不會執行這個綱要差異。以 `USE_V2_MIGRATION_RESOLVER=false` 或 `--use_legacy_migration_resolver` 明確選取舊版解析器，會在後續版本中保留這個風險
-
-在新版本已更動資料庫之後，不要只回復映像。請停止部署，並將升級前的資料庫快照與相符的舊映像一起還原。請預期該快照之後的寫入會遺失或需要另外復原
-
-:::
-
-保持閘道 pod 的綱要更新停用，並另外執行目標版本的遷移 job。這可以防止舊解析器變更綱要；它不保證舊應用程式碼與每個新綱要都相容。請在正式環境之前，對還原的資料庫測試混合版本的期間
-
-#### 當遷移歷史領先綱要時的復原 {#recovery-when-migration-history-is-ahead-of-the-schema}
-
-如果舊 pod 已經執行了綱要設定，請停止該資料庫上的**所有 LiteLLM 執行個體與遷移 job**，並防止自動重新啟動。在復原之前先備份受損的資料庫。最安全的復原方式是還原升級前的快照，並在舊部署停用綱要更新的情況下重複升級
-
-缺少如 `LiteLLM_DailyEndUserSpend` 的表格，可能在遷移期間造成帶有 PostgreSQL 錯誤 `42P01` 的 `P3018`，或即使啟動時回報 `No pending migrations to apply` 也會造成執行階段失敗。僅憑遷移總帳無法證明表格仍然存在。只刪除失敗的遷移項目，不會重建其建立遷移仍被記錄為完成的缺少表格
-
-如果無法還原快照，請讓您的資料庫管理員先在受損資料庫的副本上測試綱要修復。確認即時綱要與確切舊映像的 `schema.prisma` 相符，然後將總帳與該舊映像隨附的遷移目錄比對。只移除該映像中不存在的遷移的總帳列，並讓目標映像重新套用它們。不要清除整個總帳，也不要將缺少表格的遷移標記為已套用。如果綱要只是部分重設或有其他變更，請勿使用這個程序
-
-<details>
-<summary>v1.80.0-stable.1 到 v1.105.0 的版本專屬範例</summary>
-
-**只有**在 v1.80.0-stable.1 的舊版解析器於升級到 v1.105.0 期間，已將資料庫重設為該映像的綱要，且每個 LiteLLM 程序都已停止並已完成備份時，才使用這段 SQL。它會移除較新的遷移記錄，讓 v1.105.0 可以重播它們。三個明確的名稱是補登日期的遷移，僅靠時間戳記截點會漏掉它們。其他來源或目標版本需要各自的遷移比對
-
-```sql
-DELETE FROM "_prisma_migrations"
-WHERE migration_name > '20251115120539_baseline_diff'
-   OR migration_name IN (
-     '20251113000000_add_project_table',
-     '20251113000001_add_project_fields',
-     '20251114180624_Add_org_usage_table'
-   );
-```
-
-在啟用綱要更新的情況下執行 v1.105.0 遷移 job，並讓每個舊部署保持停止。要求成功結束，使用 `prisma migrate diff` 將修復後的綱要與目標映像的 `schema.prisma` 比對，並在閘道綱要更新停用的情況下恢復流量之前，驗證受影響的讀取與寫入
-
-</details>
-
-重播遷移會重建綱要，**而不是舊 pod 捨棄的資料**。請從備份復原該資料。永遠不要在啟用綱要更新的情況下，對修復後的資料庫執行舊映像
-
-### 在升級之前先試跑遷移 {#dry-run-the-migrations-before-the-upgrade}
-
-自 v1.109.0 起，proxy 會在啟動時套用待處理的遷移，並讓 PostgreSQL 回報資料庫無法接受的第一個遷移，回報方式與任何其他失敗的遷移相同（請參閱[遷移疑難排解](../troubleshoot/prisma_migrations.md#6-database-migration-cannot-proceed-on-rows-the-schema-change-cannot-take)）。若要在升級時段之前看到該結果，請從任何可連線到資料庫的機器，以**目標**映像執行試跑：
-
-```bash
-docker run \
--e DATABASE_URL=postgresql://<user>:<password>@<host>:5432/<dbname> \
-docker.litellm.ai/berriai/litellm:X.Y.Z --check_migrations_against_existing_data
-```
-
-它會依序執行每個待處理遷移的真實 SQL，每個都在自己的交易中執行，並在下一個開始之前回復，因此 `_prisma_migrations` 與綱要會保持原樣，且沒有鎖會比其遷移存活更久，與真實升級一次提交一個遷移檔案的方式相同。依賴前一個遷移的遷移（例如在前一個遷移新增的欄位上建立的索引）會與它一起重播。結束代碼 0 會列出每個遷移及其花費的時間，這就是真實升級會持有該遷移鎖定的時間：
-
-```
-LiteLLM Proxy: 2 pending migration(s) applied one at a time in a dry run, each rolled back before the next so its locks are released, nothing changed:
-  20991231000000_require_team_alias: 0.0 s
-  20991231000001_team_alias_index: 0.0 s
-```
-
-結束代碼 2 會印出第一個失敗遷移的 PostgreSQL 本身錯誤。它之後的任何遷移都不會執行，而它之前的遷移會與其時間一起列出：
-
-```
-LiteLLM Proxy: Database migration cannot proceed. Migration 20991231000000_require_team_alias fails on this database after 0.0 s, nothing was applied.
-column "team_alias" of relation "LiteLLM_TeamTable" contains null values
-```
-
-因為陳述式真的會執行，試跑會取得與升級相同的表格鎖定，持續時間與每個陳述式的執行時間相同，而在大型 `LiteLLM_SpendLogs` 上的 `CREATE INDEX` 會讓該表格的寫入停滯數分鐘。請在離峰時段或對還原的正式環境副本執行它。遷移以 `CONCURRENTLY` 建立的索引，會在交易內以一般方式建立，因為 PostgreSQL 在該處不允許並行形式。有表格但沒有 `_prisma_migrations` 歷史的資料庫不會被重播：試跑會詢問與啟動在建立基線之前相同的問題，即遷移資料夾是否為此建置隨附的那個（自訂的 `LITELLM_MIGRATION_DIR` 會被拒絕），以及即時綱要是否與此建置的 `schema.prisma` 相符，並在兩者都成立時回報 `nothing to dry-run`，或在其中之一不成立時回報拒絕（`prisma migrate diff`，或自訂資料夾）。proxy 在開始提供服務後於背景建立的請求記錄索引不屬於試跑的一部分；只有在 v1.108.0 上，同一個旗標改為執行唯讀的列計數，且 proxy 會因其發現而拒絕啟動。
-
-## 使用 Helm 或 Terraform 升級 {#upgrade-with-helm-or-terraform}
-
-| 部署 | 選取發行版本 | 在部署之前執行遷移 |
-| --- | --- | --- |
-| [Helm](./deploy/helm.md) | 固定 chart 修訂版與共用映像。遷移 Job 與應用程式使用相同的映像。 | 保持 `migrationJob.enabled: true`，並為您的部署控制器啟用 hook。等待 job 完成。 |
-| [Terraform](./deploy/terraform.md) | 固定模組版本或來源修訂版。將 `image` 設為相容的映像標籤或摘要。 | 執行 `terraform init -upgrade`。在套用之前先檢視 `terraform plan`。這些模組會在更新服務之前，在 AWS 上執行 ECS 遷移任務，或在 GCP 上執行 Cloud Run 遷移 job。 |
-
-<details>
-<summary>Helm 與 Argo CD hook 設定</summary>
-
-對於 `helm upgrade`，以下是 chart 在元件化與單體模式下的預設值：
+請將以下內容合併到您的 [Helm values](./deploy/helm.md)，並保留現有的 `extraEnv` 項目。此 HPA 範例假設**請求上限為 600 秒**；請依您最長的請求（包括串流）調整逾時。
 
 ```yaml title="values.yaml"
-migrationJob:
-  enabled: true
-  hooks:
-    helm:
-      enabled: true
-    argocd:
-      enabled: false
+gateway:
+  hpa:
+    minReplicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  terminationGracePeriodSeconds: 650
+  extraEnv:
+    - name: GRACEFUL_SHUTDOWN_TIMEOUT
+      value: "610"
+  lifecycle:
+    preStop:
+      exec:
+        command: ["sh", "-c", "sleep 10"]
 ```
 
-對於 Argo CD，請啟用 `argocd` 並停用 `helm`。請參閱 [chart 值](https://github.com/BerriAI/litellm/blob/main/litellm/deploy/helm/litellm/values.yaml)。
+**這些設定適用於新的 pod。**請在替換前檢查現有 pod 的關閉設定。如果它們無法排空您最長的請求，請先啟動替代容量，將舊 pod 從新流量中移除，並讓進行中的請求完成後再終止它們。
 
-</details>
+請保持 chart 的 [`/health/readiness` 探針](./health.md#probe-endpoints)啟用。使用 KEDA 時，請設定 `gateway.keda.minReplicaCount: 2`；未使用自動調整時，請設定 `gateway.replicaCount: 2`。請對獨立的後端／UI 元件套用對等的設定。
 
-檢查**遷移 job 記錄**，確認綱要與索引建立都已完成。在閘道部署之後，驗證 [`/health/readiness`](./health.md#probe-endpoints) 並透過閘道傳送一個測試請求。
+`preStop` 延遲可讓流量路由有時間更新；伺服器接著會在關閉時排空請求。請將終止寬限維持在 **preStop + 伺服器排空 + 清理時間**之上。請對齊 ingress 逾時並測試串流完成情況；請參閱[關閉設定](./server_tuning.md#keep-restarts-hitless)。
 
-## 資料庫遷移 {#database-migrations}
+`maxUnavailable: 0` 會在更新期間維持期望的可用副本數量，但激增的 pod 仍需要可排程的 CPU、記憶體與資料庫連線。PodDisruptionBudget 管控自願驅逐，並不控制 Deployment 自身的滾動更新。請參閱 Kubernetes 的[滾動更新設定](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment)與 [pod 終止流程](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-flow)。
 
-### 什麼會花時間 {#what-takes-time}
+## 2. 準備資料庫 {#database-migrations}
 
-遷移 job 先執行綱要遷移，然後建立任何缺少的請求記錄索引。**兩個階段都計入 job 的執行時間。**已存在的有效索引會被跳過。
+若沒有資料庫，請跳過此步驟。Helm 會自動透過獨立的 migration job 執行綱要變更。若要從較舊版本升級或使用自訂部署，請在部署前查閱[遷移防護措施](./database_migrations.md#upgrading-from-a-version-before-v11040)。
 
-| 工作 | 什麼會影響持續時間 | 對資料庫的影響 |
-| --- | --- | --- |
-| 綱要變更，例如新表格或可為 null 的欄位 | 通常很短；鎖定等待仍可能延遲它們 | 短暫的鎖定可能延遲其他查詢 |
-| 請求記錄索引 | `LiteLLM_SpendLogs` 大小、磁碟速度、記憶體與資料庫負載 | 並行索引建立允許讀取與寫入，但會消耗資料庫資源 |
-| 帶有一般索引建立、表格重寫或資料回填的遷移 | 掃描或變更的列數；請檢查該發行的遷移 SQL | 可能阻擋寫入或其他查詢；請測試，並在需要時規劃維護時段 |
+請在應用程式部署前，使用**目標映像**執行一次 migration job。必須確認綱要遷移與請求記錄索引建立皆已成功。Helm 與官方 Terraform 模組會提供此 job；自訂部署請使用 [`litellm --skip_server_startup`](./database_migrations.md#run-the-migration-job)。請參閱 [dry run](./database_migrations.md#dry-run-the-migrations-before-the-upgrade)與 [job 逾時](./database_migrations.md#migration-duration-and-timeouts)。
 
-### 預期持續時間 {#expected-duration}
+## 3. 部署新版本 {#upgrade-with-helm-or-terraform}
 
-對正式環境大小的資料庫副本測量**完整遷移 job**的時間。僅綱要的升級可能很快，而在大型支出記錄表格上建立新索引會花更久。僅靠表格大小不足以預測升級時段。
+| 部署方式 | 動作 |
+| --- | --- |
+| [Helm](./deploy/helm.md) | 固定 `image.tag` 或 `image.digest`。保持 `migrationJob.enabled: true` 與 Helm pre-upgrade hook 啟用。執行下方的命令。 |
+| [Argo CD](./deploy/helm.md) | 固定 chart／映像。啟用 Argo CD migration hook 並停用 Helm hook。同步完整的 Application，讓 PreSync 先完成。 |
+| [Terraform](./deploy/terraform.md) | 固定模組修訂版本與 `image`。執行 `terraform init -upgrade`，查閱 `terraform plan` 後再套用。請為您的雲端執行階段確認替代容量與排空。 |
+| 自訂容器或 VM | 在負載平衡器後方啟動新執行個體，等待就緒後再停止將新請求傳送到舊執行個體。請讓舊執行個體繼續執行，直到進行中的請求完成。 |
 
-對於 Helm，請設定 `migrationJob.activeDeadlineSeconds`（預設為 **1800 秒**）與部署控制器的逾時，以涵蓋完整的 job。使用 `helm upgrade` 時，也請相應設定 `--timeout`。對於 Terraform，請檢查 ECS 任務或 Cloud Run job 的逾時與部署等待上限；Helm 設定不適用於該處。
-
-使用[支出記錄保留](./spend_logs_deletion.md)來限制未來索引建立必須掃描的資料。
-
-<details>
-<summary>檢查哪些綱要遷移已經套用</summary>
-
-```sql
-SELECT migration_name, finished_at
-FROM "_prisma_migrations"
-WHERE finished_at IS NOT NULL
-  AND rolled_back_at IS NULL
-ORDER BY finished_at;
-```
-
-將完整結果與您的**目標發行標籤**（而不是 `main`）的[遷移檔案](https://github.com/BerriAI/litellm/tree/main/litellm/proxy-extras/litellm_proxy_extras/migrations)比對。檢查待處理 SQL 中對大型表格的操作。請求記錄索引建立是一個獨立階段，因此僅憑遷移歷史無法確認 job 已完成。
-
-</details>
-
-## 滾動升級與支出記錄清理 {#rolling-upgrades-and-spend-log-cleanup}
-
-[支出記錄清理](./spend_logs_deletion.md#when-the-job-runs)從 `LiteLLM_ScheduledJobRun` 表格執行，該表格由遷移 `20261105000000_scheduled_job_runs` 建立。舊版本的 pod 從程序內計時器排程同一個清理，使用 Redis 鎖，或在未設定 Redis 時完全不使用鎖，且兩者永遠看不到彼此。因此在滾動升級期間，兩個版本會同時執行清理，直到最後一個舊 pod 消失為止。每一方都在自己的陳述式逾時下以小批次刪除，且兩者使用相同的保留截點，因此成本是部署期間的重複工作與額外的刪除負載，而不是資料遺失。如果表格很大且部署很慢，請在升級之前取消保留設定，並在之後還原，或接受額外的負載
-
-當舊 pod 使用 v2 解析器或設有 `DISABLE_SCHEMA_UPDATE=true` 時，這個額外的表格不會阻止它啟動。在舊版解析器上啟用綱要更新時，這並不安全，因為它可能捨棄新表格。請在目標遷移 job 執行之前遵循 [v1.104.0 之前的防護措施](#upgrading-from-a-version-before-v11040)，包括任何明確選取舊版解析器的後續映像。在整個部署期間保持閘道綱要更新停用
-
-## 自訂部署 {#custom-deployments}
-
-如果您的部署不提供遷移 job，請使用**目標 LiteLLM proxy 映像**，在設定了 `DATABASE_URL` 與所需資料庫憑證的情況下，在獨立的容器中執行這個命令：
+若使用 Helm，請設定下方的 chart 版本與實測逾時。請使用您現有的 release 名稱與 namespace：
 
 ```bash
-DISABLE_SCHEMA_UPDATE=false litellm --skip_server_startup
+helm upgrade litellm oci://ghcr.io/berriai/litellm/chart/litellm \
+  --version "$CHART_VERSION" \
+  --namespace litellm --values values.yaml \
+  --wait --timeout "$UPGRADE_TIMEOUT"
 ```
 
-這個 LiteLLM 命令會執行綱要遷移**與請求記錄索引建立**，等待兩者都完成，然後結束而不啟動閘道。在以 `DISABLE_SCHEMA_UPDATE=true` 部署閘道容器之前，請要求成功結束。資料列無法接受的遷移會在此命令內以 PostgreSQL 的錯誤失敗，且命令以非零代碼結束；請參閱[試跑](#dry-run-the-migrations-before-the-upgrade)以更早發現這個情況。
+請在另一個終端機中檢查 migration job 與替代 pod。先找出閘道 Deployment 的名稱，再監看其部署進度，並將 `<gateway-deployment>` 替換為該名稱：
 
-## 當遷移緩慢或卡住時 {#when-a-migration-is-slow-or-stuck}
+```bash
+kubectl -n litellm get jobs,pods
+kubectl -n litellm get deployments -l app.kubernetes.io/instance=litellm
+kubectl -n litellm rollout status deployment/<gateway-deployment> --timeout=10m
+kubectl -n litellm get events --sort-by=.lastTimestamp
+```
 
-先從**遷移 job 的記錄與狀態**開始。在變更逾時之前，先檢查 `pg_stat_activity` 中的資料庫鎖定等待與 `pg_stat_progress_create_index` 中的索引建立進度。
+上述觀察逾時不會取消或復原部署。請在重試前，先檢查失敗 job 的記錄或未就緒 pod 的事件。請勿假設失敗的 Helm 命令已還原先前的應用程式或資料庫狀態。
 
-`LITELLM_PRISMA_MIGRATE_DEPLOY_TIMEOUT` 控制綱要遷移子程序（預設為 **600 秒**）。如果該階段需要更長時間，請在**遷移 job**上設定它；它不涵蓋請求記錄索引建立。整個 job 與部署的逾時必須為兩個階段與重試留出足夠的時間。
+如果遷移失敗、替代版本持續未就緒，或錯誤增加，請停止部署。請在調查期間讓健康的執行個體繼續提供服務。
 
-失敗的遷移與 PostgreSQL 版本專屬問題，請參閱[遷移疑難排解](../troubleshoot/prisma_migrations.md)。
+## 4. 驗證升級 {#4-verify-the-upgrade}
+
+請確認每個新執行個體都通過 `/health/readiness`。透過正常的 ingress，使用現有的虛擬金鑰傳送一個已驗證的模型請求與一個串流請求。請檢查串流是否完成、模型權限是否正常、支出是否已記錄，以及必要的回呼是否已送達。
+
+請將錯誤、延遲與中斷的串流，與您所選觀察期間的基準進行比較。請驗證每個提供服務的元件（包括獨立的後端／UI 部署）都使用目標映像。當所有執行個體都執行目標版本、舊執行個體已排空，且指標維持在約定的限制內，即可完成。Readiness 與成功的 Helm 命令並不會測試提供者呼叫；請參閱[健康檢查](./health.md)。
+
+## 視需要回退 {#roll-back-if-needed}
+
+請還原先前的映像與設定，或將流量切回 blue，**僅限於該版本已針對目前資料庫綱要測試過的情況**。此次應用程式回退請跳過 migration hook／job，並排空失敗的版本。
+
+映像回退並不會復原遷移。如果舊版本無法使用新的綱要，請停下來並遵循已測試的資料庫復原計畫；還原快照需要停機，且可能遺失快照之後的寫入。請參閱[資料庫復原](./database_migrations.md#recovery-when-migration-history-is-ahead-of-the-schema)。

@@ -1,4 +1,4 @@
-# [Beta] 專案管理 {#beta-project-management}
+# 專案管理 {#project-management}
 
 <EnterpriseFeature />
 

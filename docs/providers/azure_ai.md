@@ -120,6 +120,44 @@ response = completion(
 
 </Tabs>
 
+## Foundry 專案與 `/openai/v1` 端點 {#foundry-project-and-openaiv1-endpoints}
+
+<SinceVersion v="1.112.0" />
+
+`api_base` 可以指向 Foundry 資源、其 `/openai/v1` 端點，或 Foundry 專案。LiteLLM 會依 `api_base` 的形式選擇聊天路由。
+
+| `api_base` | 聊天路由 |
+|---|---|
+| `https://<resource>.services.ai.azure.com` | `/models/chat/completions` |
+| `https://<resource>.services.ai.azure.com/openai/v1` | `/openai/v1/chat/completions` |
+| `https://<resource>.services.ai.azure.com/api/projects/<project>` | `/api/projects/<project>/openai/v1/chat/completions` |
+
+在專案端點上，LiteLLM 不會傳送 `api-version`，因為該路由會拒絕所有值。它會以 `Authorization: Bearer` 傳送金鑰，因此 `api_key` 可以存放 API 金鑰或 Microsoft Entra 權杖。服務主體會取得適用範圍為 `https://ai.azure.com/.default` 的權杖，除非 `azure_scope` 或 `AZURE_SCOPE` 設定了其他範圍。位於專案前方的閘道也可以運作，只要其路徑終止於 `/api/projects/<project>`，或繼續接上 `/openai`、`/models` 或 `/v1`。LiteLLM 會保留閘道的查詢參數，例如 `subscription-key`，僅移除 `api-version`。
+
+在資源的 `/openai/v1` 端點上，LiteLLM 會以 `api-key` 標頭傳送金鑰，並透傳您設定的任何 `api_version`，例如 `preview`。
+
+像 `azure_ai/gpt-4.1` 這類 OpenAI 模型，若使用 `<resource>.openai.azure.com/openai/v1` 或 `<resource>.cognitiveservices.azure.com/openai/v1` 基底，會經由 [Azure OpenAI](./azure/azure.md) 提供者處理，其花費會記錄在 `azure` 項目下。
+
+在任何 Azure OpenAI `/openai/v1` 基底上，未設定 `api_version` 的項目會使用 Azure OpenAI v1 API 進行聊天、嵌入與圖片產生，即使 `AZURE_API_VERSION` 存放了帶日期的版本也一樣。
+
+```yaml
+model_list:
+  - model_name: gpt-4.1
+    litellm_params:
+      model: azure_ai/gpt-4.1
+      api_base: https://my-resource.services.ai.azure.com/api/projects/my-project
+      api_key: os.environ/AZURE_AI_API_KEY
+```
+
+```shell
+curl http://0.0.0.0:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"model": "gpt-4.1", "messages": [{"role": "user", "content": "What is 2+2? Answer in one word."}]}'
+```
+
+LiteLLM 會將請求傳送至 `https://my-resource.services.ai.azure.com/api/projects/my-project/openai/v1/chat/completions`，且回應的訊息內容為 `Four`。同一個項目也提供 `/v1/responses` 與 `/v1/messages`。
+
 ## 傳遞額外參數 - max_tokens, temperature  {#passing-additional-params---max_tokens-temperature}
 請參閱所有 litellm.completion 支援的參數 [這裡](../completion/input.md#translated-openai-params)
 

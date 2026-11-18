@@ -42,6 +42,7 @@ LiteLLM 中的 **代管向量儲存庫** 是一種*註冊*，不是新的儲存�
 | `gemini`（File Search） | 是 | 是 | [設定](../providers/gemini_file_search.md) |
 | `milvus` | 是 | 否 | 搜尋既有 collection，[設定](../providers/milvus_vector_stores.md) |
 | `mongodb`（BETA） | 是 | 否 | 搜尋 Atlas 或自我管理部署上的既有 MongoDB Vector Search 索引。[設定](../providers/mongodb_vector_stores.md)、[chat completions](../providers/mongodb_vector_stores.md#use-mongodb-in-chat-completions)、[完整範例](../tutorials/mongodb_vector_search.md) |
+| `opensearch`（Amazon OpenSearch） | 是 | 否 | 搜尋 Serverless 或網域上既有的 k-NN 索引，[設定](../providers/opensearch_vector_stores.md)、[pass-through](../providers/opensearch_vector_stores.md#pass-through-with-per-key-index-permissions) |
 | `pg_vector` | 是 | 是 | 需要 [litellm-pgvector](../completion/knowledgebase.md) 連接器 |
 | `s3_vectors` | 是 | 否 | 透過 [/rag/ingest](../rag_ingest.md) 建立，[設定](../providers/s3_vectors.md) |
 | `valkey` | 是 | 否 | 搜尋既有 valkey-search 索引，[設定](../providers/valkey_vector_stores.md) |

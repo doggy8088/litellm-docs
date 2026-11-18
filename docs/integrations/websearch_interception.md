@@ -242,6 +242,7 @@ sequenceDiagram
 | **Linkup** | `linkup` | `LINKUP_API_KEY` |
 | **Serper** | `serper` | `SERPER_API_KEY` |
 | **SearchAPI.io** | `searchapi` | `SEARCHAPI_API_KEY` |
+| **Microsoft Web IQ** | `webiq` | `WEBIQ_API_KEY` |
 
 請參閱 [搜尋提供者文件](../search/index.md) 以取得詳細設定說明。
 

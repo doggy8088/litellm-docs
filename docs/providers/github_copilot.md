@@ -264,6 +264,49 @@ LiteLLM 簽署短效的 RS256 JWT，並在建立安裝權杖時僅請求 `organi
 
 預設主機為 `github.com`。`github_copilot_host` 也接受提供者現有的 `SUBDOMAIN.ghe.com` 主機格式。GitHub Enterprise Server 與任意權杖或模型 URL 會被拒絕。此功能的實際驗證使用 github.com。推出前，請確認您的資料落地部署中可使用 App 驗證的 Copilot。
 
+## 自訂 GitHub App 裝置登入 {#custom-github-app-for-device-login}
+
+當您的組織不允許預設的 Copilot 登入 App 時，請將 `GITHUB_COPILOT_CLIENT_ID` 設為您自己的 GitHub App 的用戶端 ID。Copilot 僅在該 App 具備 **Copilot Requests** 組織權限且設為**唯讀**時，才會為自訂 App 的登入提供服務。缺少該權限時，每次模型呼叫都會失敗，即使是能在您的編輯器中運作的模型也一樣。
+
+**1. 開啟您組織的 GitHub Apps 頁面**，網址為 `https://github.com/organizations/<your-org>/settings/apps`，然後在 App 上按一下**編輯**。
+
+<div className="docs-screenshot">
+  <Image img={require('../../img/github_copilot_custom_app_step1.png')} alt="在 GitHub App 上按一下「編輯」" />
+</div>
+
+**2. 按一下「權限與事件」。**
+
+<div className="docs-screenshot">
+  <Image img={require('../../img/github_copilot_custom_app_step2.png')} alt="開啟「權限與事件」" />
+</div>
+
+**3. 展開「組織權限」，並將 Copilot Requests 設為「存取：唯讀」。**
+
+<div className="docs-screenshot">
+  <Image img={require('../../img/github_copilot_custom_app_step3.png')} alt="將 Copilot Requests 設為唯讀" />
+</div>
+
+**4. 按一下「儲存變更」。**
+
+<div className="docs-screenshot">
+  <Image img={require('../../img/github_copilot_custom_app_step4.png')} alt="按一下「儲存變更」" />
+</div>
+
+**5. 在安裝上接受新權限。**GitHub 會請組織擁有者在 App 的安裝上核准它。在他們核准之前，請求會持續失敗。
+
+Copilot 也會檢查是哪個用戶端傳送了請求。對於自訂 App，請傳送 `copilot-integration-id: copilot-developer-cli`。在仍會傳送 `vscode-chat` 的版本上，請將其加入每個 GitHub Copilot 模型：
+
+```yaml keep-model-ids
+model_list:
+  - model_name: claude-sonnet
+    litellm_params:
+      model: github_copilot/claude-sonnet-5
+      extra_headers:
+        copilot-integration-id: copilot-developer-cli
+```
+
+LiteLLM 會將 Copilot 工作階段保留最多 24 小時，適用於將其儲存在 `api-key.json` 中的版本。若要立即使用新權限，請刪除 `access-token` 檔案旁邊的那個檔案。某些模型，例如 `claude-opus-4.8`，完全不提供給自訂 App。
+
 ## 支援的端點與模型 {#supported-endpoints-and-models}
 
 設定模型時請使用 `github_copilot/` 前綴。對閘道的請求使用公開模型名稱

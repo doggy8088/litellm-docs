@@ -95,6 +95,7 @@ JWKS 與探索回應會快取 `public_key_ttl` 秒；有設定時使用 Redis，
 | `org_id_jwt_field` | LiteLLM 組織 ID。 |
 | `org_alias_jwt_field` | 現有組織的唯一 `organization_alias`。 |
 | `end_user_id_jwt_field` | 用於客戶支出歸屬的最終使用者 ID。已驗證的 claim 優先於請求標頭或主體中提供的客戶 ID。 |
+| `customer_org_alias_jwt_field`, `customer_member_id_jwt_field`, `customer_team_id_jwt_field` | 客戶管理的組織別名、成員 ID，以及選用的客戶團隊選擇。全域與每個 issuer 皆可使用。當其中任一欄位已對應時，JWT 請求會忽略客戶標頭。請參閱[透過 JWT claims 的客戶身分](./customer_management/jwt-customer-identity.md)。 |
 | `agent_id_jwt_field` | 已註冊代理程式的 ID 或名稱。請參閱[已註冊的代理程式](#bind-jwts-to-registered-agents)。 |
 
 ```yaml

@@ -1,6 +1,6 @@
 # 錯誤參考 {#error-reference}
 
-透過 LiteLLM AI Gateway 的每個失敗請求都會回傳相容 OpenAI 的 JSON 錯誤主體與 HTTP 狀態碼。本頁是閱讀這些內容的參考：有效負載包含什麼、哪些錯誤來自閘道而非上游提供者、每個狀態碼與錯誤類型的意義，以及當備援鏈用盡目標時閘道會回傳什麼
+透過 LiteLLM AI Gateway 的每個失敗請求都會回傳 JSON 錯誤主體與 HTTP 狀態碼。OpenAI 形狀的路由會回傳相容 OpenAI 的主體，而 Anthropic Messages 路由則會回傳 Anthropic 的錯誤主體，說明請參閱 [Anthropic Messages 路由上的錯誤](#errors-on-the-anthropic-messages-routes)，串流例外則請參閱 [串流錯誤](#streaming-errors)。本頁是閱讀這些內容的參考：有效負載包含什麼、哪些錯誤來自閘道而非上游提供者、每個狀態碼與錯誤類型的意義，以及當備援鏈用盡目標時閘道會回傳什麼
 
 如果您只需要快速的提供者與閘道判別規則，請參閱 [診斷錯誤](/docs/proxy/error_diagnosis)。關於 Python SDK 的例外類別與各提供者對應表，請參閱 [例外對應](/docs/exception_mapping)
 
@@ -51,6 +51,90 @@
 
 :::
 
+## Anthropic Messages 路由上的錯誤 {#errors-on-the-anthropic-messages-routes}
+
+<SinceVersion v="1.110.0" />
+
+提供 Anthropic Messages API 的路由會以 [Anthropic 的錯誤形狀](https://docs.claude.com/en/api/errors)回應閘道自身的錯誤，因此 Anthropic SDK 與 Claude Code 讀取這些錯誤的方式，與讀取來自 Anthropic 的錯誤相同。這些路由是 `/v1/messages`、`/v1/messages/count_tokens`、`/claude_code_gateway` 下相同的兩條路由，以及 `/anthropic/` 下的每一條路由。模型清單路由（`/v1/models`、`/models` 與 `/claude_code_gateway/v1/models`）只有在請求送出 `anthropic-version` 標頭時才使用這種形狀；若無此標頭，則維持 OpenAI 主體。其他所有路由都維持上述 OpenAI 主體。[串流錯誤](#streaming-errors)會說明這些路由上的串流請求如何失敗
+
+一把預算為零的金鑰以 `x-request-id: req-docs-check-1` 標頭呼叫 `/v1/messages` 時，會得到以下主體，且狀態與在 `/v1/chat/completions` 上得到的 422 相同：
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "Budget has been exceeded! Key=zero-budget (sk-...PO3g) Current cost: 0.0, Max budget: 0.0",
+    "litellm_error_type": "budget_exceeded"
+  },
+  "request_id": "req-docs-check-1"
+}
+```
+
+| 欄位 | 類型 | 說明 |
+|---|---|---|
+| `type` | string | 永遠是 `"error"` |
+| `error.type` | string | 對應 HTTP 狀態的 Anthropic 錯誤類型，見下方表格 |
+| `error.message` | string | 與 OpenAI 形狀路由針對此錯誤回傳的訊息相同 |
+| `error.litellm_error_type` | string | 選用。僅在 Messages 處理器之前拋出的錯誤上設定，值為 OpenAI 形狀路由放在 `error.type` 中的 LiteLLM 錯誤類型，例如 `budget_exceeded`、`team_model_access_denied` 或 `token_not_found_in_db`。若只會重複 `error.type` 或該狀態的預設類型，則會省略 |
+| `request_id` | string | 選用。請求的 `x-request-id` 標頭值，僅在用戶端有送出時才會出現。當串流請求在閘道呼叫提供者之後失敗時，此欄位會缺失。`/anthropic/` 路由上的提供者錯誤則會改為帶有 Anthropic 自身的 `request_id`，如下所述 |
+| `error.provider_specific_fields` | object | 選用。與 OpenAI 形狀主體所帶有的提供者細節相同 |
+| `error.litellm_call_id` | string | 選用。當 `general_settings.include_call_id_in_error_body` 開啟時才設定。請參閱 [回報問題](#reporting-a-problem) |
+| `error.details` | object | 選用，自 v1.111.0 起。針對 [訊息執行緒](/docs/anthropic_unified#message-threads-beta)錯誤的機器可讀代碼，例如 `{"error_code": "thread_not_found"}` |
+
+這些路由上沒有 `error.code` 或 `error.param`，因此請從 HTTP 狀態列讀取狀態
+
+:::tip
+
+在 `error.type` 中比對 `budget_exceeded` 這類閘道錯誤類型的程式碼，在這些路由上必須改讀 `error.litellm_error_type`，因為 `error.type` 存放的是 Anthropic 針對該狀態的類型。[閘道錯誤類型](#gateway-error-types)表格列出了這些值
+
+有一種預算拒絕沒有 `error.litellm_error_type`。由防護欄加到請求上的標籤所對應的預算，是在 Messages 處理器內部檢查，因此會回傳 422，且 `error.type` 設為 `api_error`，訊息則以 `Budget has been exceeded! Tag=` 開頭
+
+:::
+
+閘道在請求到達 Messages 處理器之前拋出的錯誤（驗證、模型存取、預算、格式錯誤的主體、請求大小上限，以及 [准入控制](/docs/proxy/server_tuning#per-worker-admission-control)），會依下列方式將狀態對應到 `error.type`：
+
+| 狀態 | `error.type` |
+|---|---|
+| 400 | `invalid_request_error` |
+| 401 | `authentication_error` |
+| 402 | `billing_error` |
+| 403 | `permission_error` |
+| 404 | `not_found_error` |
+| 409 | `conflict_error` |
+| 413 | `request_too_large` |
+| 429 | `rate_limit_error` |
+| 500 | `api_error` |
+| 503，來自准入控制 | `overloaded_error` |
+| 504 | `timeout_error` |
+| 529 | `overloaded_error` |
+| 408，以及任何其他 5xx | `api_error` |
+| 任何其他 4xx，例如 422 預算拒絕 | `invalid_request_error` |
+
+`/anthropic/` 路由沒有 Messages 處理器，因此閘道在這些路由上的自身錯誤（包括速率限制）都使用此表格，並帶有 `error.litellm_error_type`
+
+在 `/v1/messages`、count_tokens 與 `/claude_code_gateway` 路由上，處理器處理請求時拋出的錯誤（例如閘道速率限制、提供者拒絕、逾時或未知模型名稱），在 400、401、403、404、413、429、500 與 529 時帶有 Anthropic 的類型，而在任何其他狀態（包括 402、409 與 504）時則為 `api_error`。這些錯誤不帶有 `error.litellm_error_type`。提供者錯誤仍會在 `error.message` 中指出提供者，與 OpenAI 形狀路由上的做法相同；例外是串流請求中提供者逾時或中斷連線的情況，說明請參閱 [串流錯誤](#streaming-errors)：
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "litellm.BadRequestError: AnthropicException - {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"max_tokens: 100000000 > 128000, which is the maximum allowed number of output tokens for claude-haiku-5-5\"},\"request_id\":\"req_...\"} ..."
+  }
+}
+```
+
+`/anthropic/` 路由是直通路由，因此提供者在這些路由上的錯誤就是 Anthropic 自身的回應，會原樣傳回。閘道在這些路由上的自身錯誤沒有 `request-id` 回應標頭。提供者錯誤的 `error.message` 不會指出提供者，且其 `request_id` 是 Anthropic 的值，與 `request-id` 回應標頭相同，即使是用戶端已送出 `x-request-id` 的情況也一樣：
+
+```json
+{"type":"error","error":{"type":"invalid_request_error","message":"max_tokens: 100000000 > 128000, which is the maximum allowed number of output tokens for claude-haiku-5-5"},"request_id":"req_011Ch9u1XnKBcB7mazDjbXH1"}
+```
+
+因此，閘道速率限制會回傳 429，且 `error.type` 設為 `rate_limit_error`。在 `/v1/messages` 與 `/claude_code_gateway` 路由上，它沒有 `error.litellm_error_type`，且訊息以 `Rate limit exceeded for` 開頭。在 `/anthropic/` 路由上，它的 `error.litellm_error_type` 設為 `throttling_error`，且訊息以 `litellm.RateLimitError:` 開頭。[回應標頭](#response-headers)與 [是閘道還是提供者？](#is-it-the-gateway-or-the-provider)之下的 429 標頭規則在此不適用，因此請用本節針對任何錯誤所述的方式來區分兩者。提供者的 429 會在 `error.message` 中指出提供者，或在 `/anthropic/` 路由上帶有 `request-id` 標頭，而閘道的 429 則兩者皆無
+
+在 Messages 處理器之外拋出的非預期例外，在這些路由上會回傳 500 與 `{"type": "error", "error": {"type": "api_error", "message": "Internal server error"}}`，且在用戶端有送出 `x-request-id` 時會加上 `request_id`。在 `/v1/messages`、count_tokens 與 `/claude_code_gateway` 路由上，於處理器內部拋出的例外則會如上所述帶有其自身的訊息。無法解析的 JSON 會回傳 400，且 `error.type` 設為 `invalid_request_error`，不帶有 `error.litellm_error_type`
+
 ## 回應標頭 {#response-headers}
 
 失敗回應上的標頭會帶有 JSON 主體沒有的診斷內容
@@ -69,7 +153,7 @@
 
 :::tip
 
-`retry-after` 是強烈的歧義消除訊號。閘道會在自己的速率限制與冷卻期上設定它，且不會將提供者的 `retry-after` 轉送到錯誤回應。因此，帶有 `retry-after` 的 429 是閘道的限制；沒有它的 429 則是提供者的限制
+`retry-after` 是強烈的歧義消除訊號。閘道會在自己的速率限制與冷卻期上設定它，且在 OpenAI 形狀的路由上不會將提供者的 `retry-after` 轉送到錯誤回應。因此，在這些路由上，帶有 `retry-after` 的 429 是閘道的限制；沒有它的 429 則是提供者的限制。`/anthropic/` 路由會將提供者的 `retry-after` 傳回，因此在 Anthropic Messages 路由上，請改用 [Anthropic Messages 路由上的錯誤](#errors-on-the-anthropic-messages-routes)中的檢查方式
 
 :::
 
@@ -88,12 +172,12 @@ LiteLLM's normalized class              the provider that actually failed
 | 回應中的訊號 | 來源 |
 |---|---|
 | `message` 包含 `OpenAIException`、`AnthropicException`、`AzureException`、`BedrockException`、`VertexAIException`，或任何其他 `<Provider>Exception` | 上游提供者 |
-| `message` 不包含提供者名稱，且 `type` 是 LiteLLM 值，例如 `budget_exceeded`、`expired_key`、`token_not_found_in_db`、`key_model_access_denied` | LiteLLM 閘道 |
+| `message` 不包含提供者名稱，且 `type`（在 Anthropic Messages 路由上為 `litellm_error_type`）是 LiteLLM 值，例如 `budget_exceeded`、`expired_key`、`token_not_found_in_db`、`key_model_access_denied` | LiteLLM 閘道 |
 | `message` 以 `No deployments available for selected model` 或 `There are no healthy deployments for this model` 開頭 | LiteLLM 閘道（路由） |
-| 帶有 `retry-after`、`rate_limit_type`、`rate_limited_by` 或 `reset_at` 標頭的 429 | LiteLLM 閘道（速率限制） |
-| 沒有這些標頭的 429 | 上游提供者 |
+| 在 OpenAI 形狀的路由上，帶有 `retry-after`、`rate_limit_type`、`rate_limited_by` 或 `reset_at` 標頭的 429 | LiteLLM 閘道（速率限制） |
+| 在 OpenAI 形狀的路由上，沒有這些標頭的 429 | 上游提供者 |
 
-範例一，閘道來源。虛擬金鑰上限低於其累積支出，因此在任何提供者被呼叫之前，請求就被拒絕：
+範例一，閘道來源。虛擬金鑰上限低於其累積支出，因此請求會以 HTTP 422 被拒絕，且在任何提供者被呼叫之前就已被拒絕：
 
 ```json
 {
@@ -101,12 +185,12 @@ LiteLLM's normalized class              the provider that actually failed
     "message": "Budget has been exceeded! Key=analytics-team (sk-...W8TA) Current cost: 0.06, Max budget: 0.05",
     "type": "budget_exceeded",
     "param": null,
-    "code": "429"
+    "code": "422"
   }
 }
 ```
 
-範例二，提供者來源。相同的 429 狀態，但訊息指出了提供者，且有效負載不帶有任何閘道的速率限制標頭：
+範例二，提供者來源。一個 429，其訊息指出了提供者，且有效負載不帶有任何閘道的速率限制標頭：
 
 ```json
 {
@@ -130,8 +214,8 @@ LiteLLM's normalized class              the provider that actually failed
 | 403 | 閘道 | 該金鑰、團隊、使用者或組織未被允許使用所請求的模型、工具或 vector store | 否 |
 | 404 | 兩者皆可 | 所請求的模型或路由不存在 | 否 |
 | 408 | 兩者皆可 | 呼叫已超過目前生效的逾時時間。訊息會同時回報設定的逾時與已經過的時間 | 是，搭配 backoff |
-| 422 | 提供者 | 提供者接受了請求的結構，但無法處理其內容 | 否 |
-| 429 | 兩者皆可 | 已超出速率限制或預算。請參見下方的 [這是哪一種 429？](#which-429-is-this) | 是，並遵守 `retry-after` |
+| 422 | 兩者皆可 | 閘道：金鑰、團隊、使用者或標籤的支出上限已達到（`budget_exceeded`）。提供者：提供者接受了請求的結構，但無法處理其內容 | 否 |
+| 429 | 兩者皆可 | 已超出速率限制。請參見下方的 [這是哪一種 429？](#which-429-is-this) | 是，並遵守 `retry-after` |
 | 499 | 用戶端 | 用戶端已中斷連線，上游呼叫已取消 | 不適用 |
 | 500 | 兩者皆可 | 閘道：未處理的內部錯誤。提供者：提供者端錯誤，包括連往提供者時的網路失敗，會顯示為 `InternalServerError ... Connection error.` | 是，搭配 backoff |
 | 503 | 提供者 | 提供者回報自身不可用或過載 | 是，搭配 backoff |
@@ -140,7 +224,7 @@ LiteLLM's normalized class              the provider that actually failed
 
 ## 閘道錯誤類型 {#gateway-error-types}
 
-這些 `error.type` 值由閘道本身產生。看到其中之一代表失敗過程中沒有涉及提供者
+這些 `error.type` 值由閘道本身產生。看到其中之一代表失敗過程中沒有涉及提供者。在 [Anthropic Messages 路由](#errors-on-the-anthropic-messages-routes)上，於 Messages 處理器之前拋出的錯誤會在 `error.litellm_error_type` 中帶有相同的值；例外是該值僅為其狀態的預設類型時，例如 4xx 上的 `invalid_request_error`
 
 | `error.type` | 狀態 | 原因 | 該怎麼做 |
 |---|---|---|---|
@@ -154,12 +238,12 @@ LiteLLM's normalized class              the provider that actually failed
 | `key_vector_store_access_denied`, `team_vector_store_access_denied`, `user_vector_store_access_denied`, `org_vector_store_access_denied` | 401 | 呼叫者不得使用所請求的 vector store | 將該 store 加入該類型所命名物件上的 `object_permission.vector_stores` |
 | `team_member_permission_error` | 401 | 呼叫者缺少執行此管理動作所需的 team-member 權限 | 請 team admin 執行，或授與該權限 |
 | `key_search_tool_access_denied`, `team_search_tool_access_denied`, `user_search_tool_access_denied` | 403 | `search_tool_deny_by_default` 已啟用，且該類型所命名的金鑰、團隊或使用者未授與所請求的 search tool | 將工具加入該類型所命名物件上的 `object_permission.search_tools` |
-| `budget_exceeded` | 429 | 已達到金鑰、團隊、使用者或每工作階段的支出上限。訊息會回報目前花費與最高預算 | 提高預算，或等待預算視窗重設 |
+| `budget_exceeded` | 422 | 已達到金鑰、團隊、使用者或每工作階段的支出上限。訊息會回報目前花費與最高預算。設定 `litellm_settings.budget_exceeded_status_code: 429` 可改為回傳 429 | 提高預算，或等待預算視窗重設 |
 | `throttling_error` | 429 | 已超出 RPM、TPM 或最大平行請求上限。也用於提供者 429，因此請檢查標頭以區分 | 使用 `retry-after` 進行 back off |
 | `invalid_request_error` | 400 | 必要參數遺失或格式錯誤。`error.param` 會指出其名稱 | 修正請求主體 |
 | `bad_request_error` | 400 | 一般性的閘道端請求拒絕 | 閱讀訊息 |
 | `not_found_error` | 404 | 所參照的物件不存在 | 檢查 id |
-| `no_db_connection` | 503 | 端點需要資料庫，而閘道無法連到它 | 檢查 `DATABASE_URL` 與資料庫健康狀態 |
+| `no_db_connection` | 400 或 503 | 端點需要資料庫。未設定資料庫且呼叫者未使用主金鑰時為 400；已設定的資料庫無法連線時為 503 | 設定 `DATABASE_URL`，或檢查資料庫健康狀態 |
 | `internal_server_error` | 500 | 未處理的閘道例外 | 檢查閘道記錄中相符的 `x-litellm-call-id` |
 
 目前路由失敗不會設定明顯的 `error.type`；請改以訊息前綴識別
@@ -173,7 +257,7 @@ LiteLLM's normalized class              the provider that actually failed
 
 ## 這是哪一種 429？ {#which-429-is-this}
 
-429 是閘道與提供者都大量使用的唯一狀態，因此值得單獨檢查。請依照下列順序檢視回應
+429 是閘道與提供者都大量使用的唯一狀態，因此值得單獨檢查。在 OpenAI 形狀的路由上，請依照下列順序檢視回應。在 Anthropic Messages 路由上，請改用 [Anthropic Messages 路由上的錯誤](#errors-on-the-anthropic-messages-routes)中的檢查方式
 
 閘道速率限制會設定 `retry-after`、`rate_limit_type`、`rate_limited_by` 和 `reset_at`。`rate_limited_by` 會指出觸發的限制（下方為 `api_key`），因此您不必解析訊息；訊息會以文字重述該限制：
 
@@ -188,7 +272,7 @@ LiteLLM's normalized class              the provider that actually failed
 }
 ```
 
-閘道預算上限會將 `type` 設為 `budget_exceeded`，並回報相對於上限的支出。路由冷卻會設定 `retry-after`，並以 `No deployments available for selected model` 開頭。任何其他訊息中帶有 `<Provider>Exception` 的情況，都是提供者自己的節流，而且閘道在回傳前已用盡其設定的重試與備援
+閘道預算上限預設不是 429：它會回傳 422，且 `type` 設為 `budget_exceeded`，除非 `litellm_settings.budget_exceeded_status_code` 已設為 429。路由冷卻會設定 `retry-after`，並以 `No deployments available for selected model` 開頭。任何其他訊息中帶有 `<Provider>Exception` 的情況，都是提供者自己的節流，而且閘道在回傳前已用盡其設定的重試與備援
 
 從 Python SDK 來看，這個分類不需要解析字串即可取得。每個 `litellm.RateLimitError` 都帶有來自 `RateLimitErrorCategory` 的 `category` 屬性，以及來自 `RateLimitType` 的 `rate_limit_type` 屬性：
 
@@ -260,7 +344,51 @@ data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"index":
 data: {"error": {"message": "litellm.APIConnectionError: APIConnectionError: OpenAIException - The server had an error while processing your request. Sorry about that!", "type": null, "param": null, "code": "500"}}
 ```
 
-在將任何 SSE 負載視為區塊之前，請檢查每個 SSE 負載是否包含 `error` 鍵。只檢查 HTTP 狀態的用戶端，會把串流中途失敗記錄成成功，但完成內容不完整
+在 `/v1/messages`、count_tokens 與 `/claude_code_gateway` 路由上，於回應開啟之前失敗的串流請求，會得到 HTTP 錯誤狀態與 [Anthropic 錯誤主體](#errors-on-the-anthropic-messages-routes)，但其狀態與訊息不一定與相同請求在非串流情況下相同。當提供者在送出第一個區塊之前逾時或中斷連線時，狀態為 500，`error.type` 為 `api_error`，且訊息不會指出提供者。相同請求在非串流情況下會得到 408，以及指出 `AnthropicException` 的訊息：
+
+```
+HTTP/1.1 500 Internal Server Error
+content-type: application/json
+
+{"type":"error","error":{"type":"api_error","message":"Timeout on reading data from socket"}}
+```
+
+回應開啟後，狀態已是 200，錯誤會以 SSE 訊框到達。[Keepalive ping](/docs/proxy/timeout#keepalive-pings-for-idle-streaming-connections) 可能會在第一個區塊之前就開啟回應，因為閘道會在提供者安靜時送出 `: ping` 註解。當呼叫提供者失敗時，例如因為無法連到提供者，串流會以一個 Anthropic `error` 事件結束，且沒有 `data: [DONE]`，Anthropic SDK 會將其作為錯誤拋出：
+
+```
+HTTP/1.1 200 OK
+content-type: text/event-stream; charset=utf-8
+
+: ping
+
+: ping
+
+event: error
+data: {"type": "error", "error": {"type": "api_error", "message": "litellm.Timeout: AnthropicException - litellm.Timeout: Connection timed out. Timeout passed=4.0, time taken=4.003 seconds\n\nLiteLLM: model group 'claude-unreachable' failed with the error above. No fallback was attempted."}}
+```
+
+當提供者開啟自身的串流，然後在送出第一個事件之前失敗時，相同的錯誤主體會以不帶 `event:` 名稱的 `data:` 行到達，後面接著 `data: [DONE]`。Anthropic SDK 只會讀取帶有事件名稱的訊框，因此會在沒有錯誤、也沒有事件的情況下結束串流：
+
+```
+HTTP/1.1 200 OK
+content-type: text/event-stream; charset=utf-8
+
+: ping
+
+: ping
+
+data: {"type":"error","error":{"type":"api_error","message":"Timeout on reading data from socket"}}
+
+data: [DONE]
+```
+
+一個封鎖串流回應的 `post_call` 防護欄，會在這些路由上同樣送出 OpenAI 的 `data: {"error": ...}` 訊框與 `data: [DONE]`。狀態為 400；若 keepalive ping 已先開啟回應，則為 200
+
+在 `/anthropic/` 路由上，串流開始後的失敗不會送出任何錯誤事件。閘道會關閉連線，因此串流會提早停止，而 curl 會回報 `transfer closed with outstanding read data remaining`
+
+沒有提供者名稱的 500、不帶事件名稱的 `data:` 行，以及針對防護欄封鎖的 OpenAI 訊框，都是閘道已知的缺口，因此後續版本可能會改變它們。請以以下檢查為依據建立處理方式，這些檢查在現在與修復後都適用，而不是依賴確切的訊框
+
+在將任何 SSE 負載視為區塊之前，請檢查每個 SSE 負載是否包含 `error` 鍵，這可捕捉 OpenAI 訊框、Anthropic `error` 事件，以及不帶事件名稱的 `data:` 行。在 Anthropic Messages 路由上，若串流結束時沒有 `message_stop` 事件，也請視為失敗。只檢查 HTTP 狀態的用戶端，會把串流中途失敗記錄成成功，但完成內容不完整
 
 ## 例外參考 {#exception-reference}
 
@@ -277,8 +405,8 @@ Python SDK 會拋出型別化例外，且這些例外繼承自對應的 OpenAI �
 | 404 | `NotFoundError` | 針對未知模型名稱拋出 |
 | 408 | `Timeout` | |
 | 422 | `UnprocessableEntityError` | |
+| 422 | `BudgetExceededError` | 閘道預算上限；包含 `current_cost` 與 `max_budget`。狀態來自 `litellm.budget_exceeded_status_code`（預設為 422） |
 | 429 | `RateLimitError` | 包含 `category` 和 `rate_limit_type` |
-| 429 | `BudgetExceededError` | 閘道預算上限；包含 `current_cost` 和 `max_budget` |
 | 500 | `APIConnectionError` | 任何未對應錯誤的基準情況 |
 | 500 | `APIError` | |
 | 503 | `ServiceUnavailableError` | |
@@ -319,7 +447,7 @@ curl -X POST 'http://localhost:4000/key/generate' \
   -H 'Content-Type: application/json' \
   -d '{"key_alias": "capped", "rpm_limit": 1}'
 
-# 429 budget_exceeded, once accrued spend passes the cap
+# 422 budget_exceeded, once accrued spend passes the cap
 curl -X POST 'http://localhost:4000/key/generate' \
   -H "Authorization: Bearer $LITELLM_API_KEY" \
   -H 'Content-Type: application/json' \

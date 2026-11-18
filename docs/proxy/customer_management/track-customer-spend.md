@@ -225,6 +225,8 @@ print(result["messages"][-1].text)
 
 如需首次請求註冊與團隊選取，請參閱[推論身分標頭](./api_reference.md#attribute-inference-requests)。
 
+若要以 JWT 而非標頭傳送客戶身分，請參閱[來自 JWT 聲明的客戶身分](./jwt-customer-identity.md)。
+
 ## 3. 為您的產品取得使用量 {#5-fetch-usage-for-your-product}
 
 組織彙總端點會回傳日期範圍內完整的支出、token 與請求總計，不需分頁。它接受最多 100 個客戶組織 ID。

@@ -12,7 +12,7 @@ import TabItem from '@theme/TabItem';
 
 {/* keep-version-note */}
 
-雲端基礎架構、用戶端存取與可用性的參考設計。
+雲端基礎架構、用戶端存取、可用性與容量的參考設計。
 
 ## 選擇主題 {#cloud-architectures}
 
@@ -42,7 +42,9 @@ import TabItem from '@theme/TabItem';
 
 ### 在故障與發佈期間持續提供服務 {#keep-serving-through-failures-and-releases}
 
-在[高可用性](./ha/overview.md) 中規劃副本、可用性區域與資料儲存可用性。使用[藍綠部署](./ha/blue_green.md) 進行受控切換，或使用[金絲雀部署](./ha/canary.md) 進行漸進式發佈。
+在[高可用性](./ha/overview.md) 中規劃副本、可用性區域與資料儲存可用性。請遵循[升級指南](../upgrade_guide.md) 中的發佈順序。使用[藍綠部署](./ha/blue_green.md) 進行受控切換，或使用[金絲雀部署](./ha/canary.md) 進行漸進式發佈。
+
+使用 [L7 proxy 與 LiteLLM](./ha/haproxy.md) 以有界緩衝、每工作者准入控制與 KEDA 擴展來處理流量突增。
 
 如需多個區域，請參閱[多區域部署](../multi_region.md)、[路由](./multi_region/routing.md) 與[故障轉移](./multi_region/failover.md)。
 

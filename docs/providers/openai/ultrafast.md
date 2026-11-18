@@ -239,6 +239,8 @@ print(response)
 
 使用 `model_info.service_tiers: ["priority"]` 來提供 `/fast`。對於 Astra 或 GPT-6.1 Sol，使用 `["priority", "ultrafast"]` 來同時提供 `/fast` 和 `/ultrafast`。Codex CLI 0.159 或更新版本也需要將 `model_catalog_url` 指向您閘道的 `/v1/models` 端點，並且 `[features] api_key_model_discovery = true`。請遵循 [Codex 模型目錄設定](../../proxy/client_setup/codex_cli.md#model-catalog-and-service-tiers)，選取您的閘道模型，然後選擇一個模式。
 
+使用 `lite codex` 啟動 Codex 的使用者可跳過上述兩項目錄設定。每次啟動時，`lite codex` 會將閘道的模型，連同其服務層級與顯示名稱，寫入目錄檔案，並讓 Codex 指向該檔案。這需要 `lite` v1.112.0 或更新版本，因為舊版本寫入的檔案缺少閘道的顯示名稱與服務層級，也需要 v1.106.0 或更新版本的閘道。`lite codex --skip-verify` 不會寫入目錄檔案，因此 Codex 需要像一般 `codex` 一樣設定兩項設定。以訂閱方式啟動時，不論是加上 `--subscription`，或在執行 `lite config set codex_subscription true` 之後，也不會寫入目錄檔案。詳情請參閱 [使用 `lite codex` 的模型與服務層級](../../proxy/client_setup/codex_cli.md#lite-codex)。 <SinceVersion v="1.112.0" />
+
 對於使用者切換模式開關的模型，請省略部署的 `litellm_params.service_tier`，並保留 `model_info.service_tiers`。否則，停止送出 tier 的用戶端仍會繼承部署的預設值。宣告一個 tier 並不會授予 OpenAI 存取該 tier 的權限。
 
 ## 驗證與疑難排解 {#verify-and-troubleshoot}
@@ -252,6 +254,6 @@ print(response)
 | Fast 或 Ultrafast 請求看起來與 Standard 成本相同 | 確認模型的 `*_priority` 或 `*_ultrafast` 定價欄位，或設定自訂定價。提供者存取權與 LiteLLM 成本追蹤是分開的。 |
 | 請求使用了不同的 tier | 檢查用戶端的 `service_tier`；它會覆寫部署預設值。確認所選別名路由到預期的部署。 |
 | Fast 請求回傳 `service_tier: "default"` | 當流量上升過快時，OpenAI 可能會降級請求。請檢查提供者的上升限制；僅有 HTTP 200 並不能證明是 Fast 處理。 |
-| Codex 沒有顯示 `/fast` 或 `/ultrafast` | 檢查目錄設定與模型的 `service_tiers`。如果多個部署共用同一個別名，請在每個部署上設定清單。請參閱 Codex 指南以了解目錄快取與版本需求。 |
+| Codex 沒有顯示 `/fast` 或 `/ultrafast` | 請檢查模型的 `service_tiers`。使用一般 `codex` 或 `lite codex --skip-verify` 時，也請檢查兩項目錄設定。如果 `lite codex` 印出 `not syncing Codex models from the proxy` 或 `Codex keeps its own display names and service tiers`，請依訊息後方印出的原因修正。`lite codex` 在舊於 v1.112.0 時，或金鑰無法讀取 `/v1/model/info` 時，會在沒有警告的情況下捨棄閘道的層級。如果多個部署共用同一個別名，請在每個部署上設定清單。請參閱 Codex 指南以了解目錄快取與版本需求。 |
 
 這些範例使用 HTTP Responses 請求。對於重複的代理程式工具呼叫，OpenAI 建議使用持久的 WebSocket 連線以降低連線額外負擔；請參閱 [LiteLLM 的 Responses WebSocket 指南](../../response_api.md#websocket-mode)。

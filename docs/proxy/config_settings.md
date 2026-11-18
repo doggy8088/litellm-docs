@@ -571,6 +571,7 @@ router_settings:
 | allowed_fails_policy | object | `null` | 在將部署冷卻之前，針對不同錯誤類型允許的失敗次數。[更多資訊請見此處](reliability) |
 | default_max_parallel_requests | Optional[int] | `null` (no limit) | 部署的預設最大平行請求數。 |
 | default_priority | (Optional[int]) | `null` | 當 `/chat/completions`、`/completions` 或 `/queue/chat/completions` 請求未送出 `priority` 時，其排入佇列的優先順序。數字越小越優先處理。預設為 None，因此只有送出 `priority` 的請求才會排入佇列。 |
+| dynamic_queue | Optional[dict] | `null` (off) | <SinceVersion v="1.111.0" /> 專為非同步、非串流聊天完成提供的選擇性壅塞優先順序佇列。需要 `enabled: true`、`default_priority`、路由器 Redis，以及每個部署明確設定的 `max_waiting` 整數（1 到 64）。沒有預設的佇列大小。`queue_timeout` 預設為累計佇列等待 30 秒。上游固定狀態碼 429 與 529 表示壅塞。佇列授權依請求優先順序決定，同優先順序以先進先出處理。Redis 協調失敗時會恢復一般路由。串流、文字完成、同步呼叫及其他端點維持既有行為。 |
 | polling_interval | (Optional[float]) | `0.03` (seconds) | 輪詢佇列的頻率。僅適用於 '.scheduler_acompletion()'。預設為 3ms。 |
 | max_fallbacks | Optional[int] | `5` | 呼叫結束前要嘗試的備援最大數量。 |
 | default_litellm_params | Optional[dict] | `null` | 要加入所有請求的預設 litellm 參數（例如 `temperature`、`max_tokens`）。 |
@@ -613,6 +614,33 @@ router_settings:
 | health_check_ignore_transient_errors | boolean | `false` | 若為 true，則忽略 429（速率限制）與 408（逾時）的健康檢查失敗，且不會影響路由或冷卻 |
 | routing_groups | Optional[List[RoutingGroup]] | `null` | 各自對模型子集套用自己的路由策略的模型群組清單。每個群組都有 `group_name`、`models`（與請求的模型比對的模型名稱清單）、`routing_strategy`，以及可選的 `routing_strategy_args`。 |
 | plugins | Optional[List[RoutingPlugin]] | `null` | [僅 SDK 參數] 在做出路由決策前執行的路由外掛管線。每個外掛都會實作 `async def run(context: RoutingContext) -> RoutingContext`，讀取／縮減 `candidate_models`，並附加 `signals`，供下一個外掛（或最終路由決策）讀取。若外掛將候選縮減為零，則會直接拋出錯誤，而不是回退到未篩選的池。 |
+
+#### 壅塞優先順序佇列 {#congestion-priority-queues}
+
+`dynamic_queue` 僅支援非同步、非串流聊天完成。串流、文字完成、同步呼叫及其他端點維持既有行為，即使啟用此設定亦然。各 worker 會依每個已設定的部署 ID 共用一個 Redis 佇列。來自同一提供者的部署不會自動共用佇列。
+
+```yaml
+router_settings:
+  redis_host: os.environ/REDIS_HOST
+  redis_port: os.environ/REDIS_PORT
+  default_priority: 5
+  dynamic_queue:
+    enabled: true
+    max_waiting: 8
+    queue_timeout: 30
+```
+
+`max_waiting: 8` 只是範例，不是預設值或容量建議值。啟用時，`max_waiting` 必須是 1 到 64 之間的整數。相同的操作人員設定上限會分別套用至每個部署佇列。API 呼叫者無法覆寫它。佇列已滿時，有較高優先順序的請求到達也不會驅逐既有的等待者。
+
+上游回應 429 與 529 會將部署標示為壅塞。這些觸發狀態碼是固定的。佇列是在一般路由選出符合資格的部署之後才套用。它不會改變部署選擇、不會讓冷卻中的部署變得符合資格、不會取代重試退避，也不會改變備援政策。
+
+應用程式會設定既有的請求 `priority`。數值越小越先獲得佇列授權，同值以先進先出排序。由於請求是並行處理，提供者收到與完成的順序可能不同。啟用此功能需要 `default_priority`，它會套用至未明確設定優先順序的請求。呼叫者自有的憑證維持既有路由行為。佇列使用呼叫者提供的優先順序，不會按租戶預留等待位置。
+
+佇列溢出會回傳 503。耗盡 `queue_timeout`（請求各次嘗試的累計佇列等待時間）會回傳 408。這些佇列拒絕會直接終止請求，不會再重試或備援。因此，即使另一個部署可以處理請求，被選中的部署仍可能逾時。一般重試等待與佇列等待是分開的，不會消耗 `queue_timeout`。提供者重試延遲與請求的總期限仍然適用。
+
+當 Redis 協調失敗或佇列操作逾時，請求會以剩餘預算恢復一般路由與重試。在此期間，優先順序的排序僅為盡力而為。一般冷卻與速率限制行為仍然適用。既有的 Redis 斷路器可能會在 Redis 恢復可用後延遲復原。
+
+請依跨部署與 worker 的等待請求總數來估算容量。十個滿載且 `max_waiting: 64` 的佇列代表 640 個等待中的請求。每個部署的上限並不限制 proxy 的總體 CPU 使用量。請在預期的負載下同時測試等待與同時復原的情況，並觀察 proxy CPU、正常請求延遲與 Redis 延遲。基準測試結果並非通用的容量保證。
 
 ### 環境變數 - 參考 {#environment-variables---reference}
 

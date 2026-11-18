@@ -220,6 +220,15 @@ retry-after: 1
 {"error":{"message":"Worker at capacity: 64 in-flight, 64 queued requests. Retry later.","type":"overloaded_error","code":"503"}}
 ```
 
+在 `/v1/messages` 以及 [Anthropic Messages 路由上的錯誤](/docs/proxy/error_reference#errors-on-the-anthropic-messages-routes)所列的其他路由上，同樣的拒絕會保留其狀態與 `retry-after` 標頭，改用 Anthropic 的錯誤主體。<SinceVersion v="1.110.0" />
+
+```
+HTTP/1.1 503 Service Unavailable
+retry-after: 1
+
+{"type":"error","error":{"type":"overloaded_error","message":"Worker at capacity: 64 in-flight, 64 queued requests. Retry later."}}
+```
+
 插槽會在整個回應期間被保留，因此串流 completion 會被視為一個 in-flight request，直到最後一個區塊送出為止，而用戶端中斷連線（排隊中或 in flight）會立即釋放插槽。探針與指標路徑（`/health/liveliness`、`/health/liveness`、`/health/readiness`、`/health/readiness/details`、`/health/backlog`、`/health/drain`、`/metrics`）會繞過此閘門，因此過載的工作程序仍會快速回應其 liveness probe，而卡住的程序則不會。拒絕會在驗證之前發生，因此在 spend logs 中不會歸屬到某個金鑰。這些限制會在第一個請求時讀取，且需要重新啟動才能變更。
 
 此上限是每個工作程序程序各自適用，且在 uvicorn 和 Granian 上的運作方式相同。以 `--num_workers 4` 和 `max_in_flight_requests_per_worker: 64` 啟動的 pod 最多可接受 256 個並行請求，而 N 個複本的部署可接受其 N 倍，因此應根據您量測到的每個工作程序吞吐量來設定，而不是依據部署總量。這非常適合搭配 HPA：已經飽和的複本會以 `503` 拒絕負載，而不是在新複本啟動期間累積延遲。它與 `global_max_parallel_requests` 相輔相成，後者是透過 Redis 協調的整體部署層級限制：使用全域限制來界定對您的提供者的總負載，並使用每工作程序限制來確保任何單一事件迴圈不會在不依賴 Redis 的情況下被淹沒。

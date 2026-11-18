@@ -284,6 +284,63 @@ litellm --config /path/to/config.yaml
 
 ## 進階 {#advanced}
 
+### 在標準層級備援之前先重試 Flex {#flex-tier-fallbacks}
+
+對於能夠容忍可變延遲與容量的工作，請使用 OpenAI Flex。當應用程式允許標準層級的成本時，請為該層級設定一個獨立的備援部署。備援會更換部署，但不會自動變更 `service_tier`。關於模型可用性與資源不足錯誤，請參閱 OpenAI 的 [Flex 處理指南](https://platform.openai.com/docs/guides/flex-processing)。
+
+在這個獨立範例中，客戶端選擇 `flex-workload`，而每個部署各自設定其層級。請將模型換成您的提供者帳戶中支援 Flex 的模型。逾時值為範例，目的是符合您應用程式的期限：
+
+```yaml
+model_list:
+  - model_name: flex-workload
+    litellm_params:
+      model: openai/{{openai_small}}
+      api_key: os.environ/OPENAI_API_KEY
+      service_tier: flex
+      timeout: 120
+      stream_timeout: 120
+  - model_name: standard-workload
+    litellm_params:
+      model: openai/{{openai_small}}
+      api_key: os.environ/OPENAI_API_KEY
+      service_tier: default
+      timeout: 60
+      stream_timeout: 60
+
+router_settings:
+  num_retries: 0
+  model_group_retry_policy:
+    flex-workload:
+      RateLimitErrorRetries: 2
+  max_fallbacks: 1
+  fallbacks:
+    - flex-workload: [standard-workload]
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+```
+
+OpenAI Flex 容量錯誤的 HTTP `429` 會對應到 `RateLimitError`。此獨立組態允許在 `flex-workload` 中針對該錯誤最多進行兩次路由器重試，接著進行一次標準層級備援。冷卻期與部署可用性可能會使重試無法到達提供者。路由器對於其他錯誤與模型群組的預設值為零次重試；Flex 政策會從第一次失敗起授予其重試額度。請求層級的 `num_retries: 0` 會停用群組重試政策；在將此組態合併到共用閘道之前，請先檢視呼叫端、金鑰與既有的路由器覆寫。
+
+請在應用程式的期限內設定[逾時](./timeout.md)。請為每一次獲准的 Flex 嘗試、退避、連線建立、標準層級嘗試，以及任何客戶端重試預留時間。所示的值是每次嘗試的預算，而不是整個請求的期限。先到期的 ingress 或客戶端逾時，會使應用程式無法從備援中受益。
+
+請傳送別名，不要帶請求層級的 `service_tier`：
+
+```bash
+curl http://localhost:4000/v1/responses \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"flex-workload","input":"Summarize this non-sensitive test sentence."}'
+```
+
+請求層級的 `service_tier: flex` 優先於部署預設值，且可能沿用到備援，使兩次嘗試都留在 Flex 上。在此模式中，請將層級保留在部署上。此模式使用兩個模型群組；它不是針對任意傳入請求的自動層級降級。備援清單會處理一般錯誤，因此不限於 Flex 容量錯誤。只有當標準層級服務對於此工作負載的失敗情境、成本與資料政策而言可以接受時，才使用它。請依照[備援模型存取檢查](#enforce-key-model-access-on-fallbacks)，授予呼叫端存取兩個別名的權限。
+
+#### 驗證層級轉換 {#validate-the-tier-transition}
+
+請測試一次成功的 Flex 請求、一次 Flex 容量失敗，以及一次 Flex 逾時。請檢查提供者回傳的層級（若有提供）、重試次數、最終部署、延遲，以及記錄的成本。請使用[支出記錄中的備援中繼資料](#track-fallbacks-in-spend-logs)來區分主要與最終模型群組。接著讓標準層級目標失敗，並確認客戶端是在設定的嘗試次數之後才收到錯誤，而不是陷入無限制的重試迴圈。
+
+請以串流重複測試，並量測首個內容的到達時間以及總持續時間。不要假設備援能夠在客戶端已經取用部分輸出後，透明地重新開始回應。如果禁止標準層級成本，請省略此備援，讓應用程式在其自身期限內排隊或重試 Flex 工作。請協調[警示路由](./alerting.md#route-actionable-alerts)，使預期的 Flex 延遲不會淹沒閘道失敗。
+
 ### 備援 + 重試 + 逾時 + 冷卻期 {#fallbacks--retries--timeouts--cooldowns}
 
 設定備援，只要這樣做： 
@@ -934,6 +991,8 @@ general_settings:
 預算只會在請求通過驗證時檢查一次，檢查對象是呼叫者所要求的模型。之後才會選定備援目標，因此單靠這次檢查無法看見實際計費的模型。這在主要模型的定價為零時最重要：零成本模型完全免於預算檢查，因此若沒有第二次檢查，該模型的請求會被允許通過、再備援到付費模型，並且會在沒有套用上限的情況下完整計費。
 
 Proxy 會在嘗試每個備援目標之前，重新檢查呼叫用 key 與使用者的預算，因此這不需要任何設定。超出預算的目標會被略過。當沒有可負擔的目標可用時，呼叫者會收到主要模型本身的錯誤。主要嘗試本身永遠不會被阻擋，因此零成本模型在上限下仍可運作，而零成本的備援目標則一律允許。此檢查涵蓋 `fallbacks`、`context_window_fallbacks`、`content_policy_fallbacks` 和 `default_fallbacks`。
+
+此備援檢查涵蓋金鑰與使用者的整體 `max_budget`，以及團隊成員的每模型上限。它不會重新檢查團隊或團隊成員的整體預算、終端使用者／組織／全域預算、一般的金鑰／使用者／團隊 `model_max_budget`，或金鑰的滾動式 `budget_limits`。它會在不預留資金的情況下讀取支出，因此並行的備援可能會跨越上限。不要將原始模型別名的預算視為橫跨所有備援群組的一個強制上限；請參閱[別名報表與預算](./cost_tracking.md#track-a-public-model-alias)。
 
 ```yaml keep-model-ids
 model_list:

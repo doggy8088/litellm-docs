@@ -103,6 +103,12 @@ Gray Swan 可在 `pre_call`、`during_call` 與 `post_call` 階段執行。請�
 
 在串流且沒有 `streaming_end_of_stream_only` 的情況下，每個抽樣區塊檢查都會帶有相同的對話，因此請將 `streaming_end_of_stream_only: true` 設為每個回應只送出一次。
 
+### Cygnal 未回傳可用分數時 {#when-cygnal-does-not-return-a-usable-score}
+
+LiteLLM 只有在 Cygnal 回覆為 JSON 物件，且 `error` 未設定或為 false、`violation` 為 `0` 至 `1` 之間的數字時，才會據此採取行動。其他任何回覆都視為檢查失敗，與 Cygnal 逾時或 HTTP 錯誤相同。這包括 `error: true` 的回覆（即使同時帶有分數）、缺少 `violation` 或 `violation` 為 `null`、字串或布林值分數、低於 `0` 或高於 `1` 的分數，以及 `NaN` 或無限值
+
+檢查失敗時遵循 `fail_open`。在預設的 `fail_open: true` 下，請求會繼續進行，LiteLLM 會將防護欄狀態記錄為 `guardrail_failed_to_respond`。在 `fail_open: false` 下，請求會以 500 失敗；若串流的 `post_call` 回應已經開始，則會以錯誤事件結束
+
 ---
 
 ## 與 Claude Code 搭配使用 {#work-with-claude-code}
@@ -220,6 +226,6 @@ resp = client.messages.create(
 | `optional_params.categories`          | object          | 自訂類別名稱與描述的對應表。 |
 | `optional_params.policy_id`           | string          | Gray Swan 政策識別碼。 |
 | `guardrail_timeout`                   | number          | Cygnal 請求的逾時秒數。預設為 30。 |
-| `fail_open`                           | boolean         | 若為 true，與 Cygnal 通訊時發生的錯誤會被記錄且請求會繼續；若為 false，錯誤會向上傳遞。預設為 true。 |
+| `fail_open`                           | boolean         | 若為 true，當 Cygnal 發生錯誤、逾時，或回傳沒有可用分數的回覆時，請求會繼續進行並記錄失敗；若為 false，請求會失敗。預設為 true。請參閱 [Cygnal 未回傳可用分數時](#when-cygnal-does-not-return-a-usable-score)。 |
 | `streaming_end_of_stream_only`        | boolean         | 對於串流 `post_call`，僅將最終組合完成的回應傳送給 Cygnal。預設為 false。 |
 | `default_on`                          | boolean         | 預設對每個請求執行 guardrail。 |

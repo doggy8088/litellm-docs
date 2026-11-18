@@ -41,6 +41,23 @@ POST /v1/chat/completions                  ← HTTP request (server span)
 - **預設安全** — 除非您明確選擇啟用，否則不會擷取 prompts 與 responses。雜訊路由（健康檢查、metrics 抓取、UI 資產）會自動排除。
 - **分散式追蹤** — 如果您的用戶端傳送 `traceparent` 標頭，LiteLLM 的 spans 會巢狀地嵌入您現有的 trace 中。
 
+### 重試與備援 {#retries-and-fallbacks}
+
+當路由器重試請求或備援至另一個部署時，每次提供者嘗試都會在同一條 trace 中擁有自己的 LLM 呼叫 span。失敗嘗試的 span 會以 ERROR 狀態結束，並攜帶該次嘗試的錯誤類型與訊息，以及其目的地（位於 `server.address` 與 `server.port` 中）。每個 LLM 呼叫 span 會在其自己的上游呼叫開始時開始，因此這些 span 會與時間軸上的嘗試對齊。第一次部署失敗四次、之後由備援部署回應的請求，看起來像這樣：
+
+```
+POST /v1/chat/completions
+├── auth /v1/chat/completions
+├── chat {{openai_large}}       ERROR      ← attempt 1, first deployment
+├── chat {{openai_large}}       ERROR      ← attempt 2
+├── chat {{openai_large}}       ERROR      ← attempt 3
+├── chat {{openai_large}}       ERROR      ← attempt 4
+├── chat {{openai_large}}                  ← fallback deployment answers
+└── batch_write_to_db
+```
+
+這適用於通用 OTLP 匯出器與每個預設，因為它們都執行於相同的 v2 記錄器。支出記錄、metrics 與其他回呼仍只記錄此請求一次；只有 trace 會為每次失敗的嘗試多出一個 span。因此 span 的數量會隨著重試次數增加，而使用 Langfuse 預設時，每次失敗的嘗試會在同一條 trace 中多出一個 generation。
+
 ## 開始使用 {#getting-started}
 
 如需 Auto Router 組態識別、所選模型與已復原的分類器失敗，請參閱 [Auto Router OTEL Telemetry](/docs/auto_router/telemetry)。

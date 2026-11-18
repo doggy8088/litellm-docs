@@ -17,6 +17,8 @@
 | `VertexAIException` | Google Vertex AI |
 | 沒有提供者名稱 | LiteLLM AI Gateway |
 
+在 Anthropic Messages 路由上，沒有提供者名稱的錯誤仍可能來自提供者。`/anthropic/` 路由上的提供者錯誤是 Anthropic 自身的回應主體，而提供者逾時或中斷連線的串流請求會收到一則未指明提供者的訊息。請參閱 [Anthropic Messages 路由上的錯誤](/docs/proxy/error_reference#errors-on-the-anthropic-messages-routes)與 [串流錯誤](/docs/proxy/error_reference#streaming-errors)
+
 ## 範例 {#examples}
 
 ### 提供者錯誤（來自 AWS Bedrock） {#provider-error-from-aws-bedrock}

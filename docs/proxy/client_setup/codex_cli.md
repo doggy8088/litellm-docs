@@ -156,6 +156,29 @@ curl -s -H "Authorization: Bearer $LITELLM_API_KEY" \
   | jq -c '.models[] | {slug, context_window, max_context_window}'
 ```
 
+#### 搭配 `lite codex` 的模型與服務等級 {#lite-codex}
+
+<SinceVersion v="1.112.0" />
+
+[`lite codex`](../management_cli.md#run-coding-agents-through-the-proxy) 不使用 `model_catalog_url`。每次啟動時，它會將閘道的聊天模型寫入 `$CODEX_HOME/litellm-models.json`（預設為 `~/.codex/litellm-models.json`），並以 `-c model_catalog_json=...` 將 Codex 指向該檔案，取代 Codex 原本會擷取的目錄。已安裝的 Codex 認識的模型會保留該 Codex 自己的項目。部署上設定了 `model_info.display_name` 或 `model_info.service_tiers` 的模型，會從閘道為您的金鑰提供的目錄中取得該名稱與那些服務等級，金鑰別名或團隊別名也是如此：
+
+```yaml title="config.yaml" keep-model-ids
+model_list:
+  - model_name: gpt-6.1-sol-fast
+    litellm_params:
+      model: openai/gpt-6.1-sol
+      api_key: os.environ/OPENAI_API_KEY
+      service_tier: priority
+    model_info:
+      mode: responses
+      display_name: GPT-6.1 Sol Fast
+      service_tiers: ["priority"]
+```
+
+使用此設定時，`lite codex` 會在 `/model` 中列出 `GPT-6.1 Sol Fast`，並為它提供 `/fast`。較舊版本的 `lite codex` 寫入該檔案時，不含閘道的顯示名稱與服務等級。
+
+閘道必須執行 v1.106.0 {/* keep-version-note */} 或更新版本，該版本提供 Codex 的目錄格式。使用較舊的閘道時，`lite codex` 會印出 `litellm: Codex keeps its own display names and service tiers`，並寫入不含顯示名稱與服務等級的檔案。
+
 ## 使用 LiteLLM SSO 登入 {#sign-in-with-litellm-sso}
 
 使用 [Codex CLI SSO 指南](./codex_cli_sso.md)，以 `lite auth print-token` 進行驗證，取代長效虛擬金鑰。

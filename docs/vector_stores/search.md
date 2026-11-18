@@ -12,7 +12,7 @@ import TabItem from '@theme/TabItem';
 | 成本追蹤 | ✅ | 依每次搜尋作業追蹤 |
 | 記錄 | ✅ | 可跨所有整合使用 |
 | 終端使用者追蹤 | ✅ | |
-| 支援 LLM 提供者 | **OpenAI, Azure OpenAI, Bedrock, Vertex RAG Engine, Azure AI, Milvus, Valkey, Gemini** | 跨提供者完整支援 vector stores API |
+| 支援 LLM 提供者 | **OpenAI, Azure OpenAI, Bedrock, Vertex RAG Engine, Azure AI, Milvus, Valkey, Amazon OpenSearch, Gemini** | 跨提供者完整支援 vector stores API |
 
 如需透過 HTTP 進行 **retrieve、list、update 與 delete**（包含 `custom_llm_provider` / `model` 路由），請參閱[建立向量儲存](./create.md#vector-store-management-and-routing-on-the-proxy)。
 
@@ -219,6 +219,29 @@ print(response)
 ```
 
 [查看完整的 Valkey vector store 文件](../providers/valkey_vector_stores.md)
+
+</TabItem>
+
+<TabItem value="opensearch-provider" label="Amazon OpenSearch 提供者">
+
+#### 使用 Amazon OpenSearch {#using-amazon-opensearch}
+```python showLineNumbers title="Search Vector Store - Amazon OpenSearch Provider"
+import litellm
+
+response = await litellm.vector_stores.asearch(
+    vector_store_id="support-docs",  # name of the k-NN index in OpenSearch
+    query="What is the capital of France?",
+    custom_llm_provider="opensearch",
+    api_base="https://abc123.us-east-1.aoss.amazonaws.com",
+    litellm_embedding_model="openai/text-embedding-3-small",
+    max_num_results=3,
+)
+print(response)
+```
+
+LiteLLM 會使用 AWS SigV4 簽署請求，採用 `aws_*` 參數或預設 AWS 憑證鏈。
+
+[請參閱完整的 Amazon OpenSearch vector store 文件](../providers/opensearch_vector_stores.md)
 
 </TabItem>
 

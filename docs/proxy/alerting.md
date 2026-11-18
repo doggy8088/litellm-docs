@@ -74,6 +74,41 @@ curl -X GET 'http://0.0.0.0:4000/health/services?service=slack' \
 
 ## 進階 {#advanced}
 
+### 路由可採取行動的警示 {#route-actionable-alerts}
+
+請為每個警示指定負責人與回應方式。將資料庫故障與持續的提供者中斷路由給閘道維運人員。將預算與支出報告路由給成本負責人。將個別的緩慢呼叫保留在診斷頻道中；請依據您的延遲或錯誤目標，從監控規則發出分頁通知。在將 Flex 延遲視為事件之前，請先與該工作負載的期限比較。
+
+請從外部監控閘道可用性與遺失的指標。已停止或被阻擋的閘道無法可靠地傳送自己的中斷警示。
+
+以下範例會選取五種警示類型，並將它們路由至不同的 Slack 傳入 webhook。請將網址存放在環境變數中，並將此片段與您現有的設定合併：
+
+```yaml
+general_settings:
+  alerting: [slack]
+  alert_types: [db_exceptions, outage_alerts, llm_too_slow, budget_alerts, spend_reports]
+  alert_to_webhook_url:
+    db_exceptions: os.environ/SLACK_OPERATIONS_WEBHOOK_URL
+    outage_alerts: os.environ/SLACK_OPERATIONS_WEBHOOK_URL
+    llm_too_slow: os.environ/SLACK_DIAGNOSTICS_WEBHOOK_URL
+    budget_alerts: os.environ/SLACK_BUDGET_WEBHOOK_URL
+    spend_reports: os.environ/SLACK_BUDGET_WEBHOOK_URL
+  alert_type_config:
+    llm_too_slow:
+      digest: true
+      digest_interval: 300
+
+litellm_settings:
+  redact_messages_in_exceptions: true
+```
+
+`alert_types` 是允許清單：其他類型會被排除。套用前請先檢閱[完整清單](#all-possible-alert-types)。已啟用但未對應的類型會使用預設 webhook，取自 `SLACK_WEBHOOK_URL` 或其備援 `ALERTING_WEBHOOK_URL`。每個對應的環境變數都必須解析為 webhook 網址。
+
+請讓 `db_exceptions` 這類緊急類型遠離[彙總模式](#digest-mode-reducing-alert-noise)。彙總會延遲傳送、保留每組的第一則訊息與事件計數，並存放在每個 proxy 程序的記憶體中。重新啟動可能遺失待處理的事件，而多個 worker 或 Pod 可能傳送各自的摘要。請使用您的監控系統來做持久彙整與簡潔的事件分頁。這些路由設定不會自訂警示文字。對應與彙總設定適用於 Slack；[Teams](#ms-teams-webhooks) 使用自己的目的地，並逐則傳送警示。
+
+需要時請在診斷中加入冷卻通知。`fallback_reports` 是來自 Prometheus 的排程報告，不是每次備援的通知；它需要已設定的 `PROMETHEUS_URL` 與已收集的備援指標。
+
+在預備環境中，請觸發選取的事件並檢查其目的地。請確認重複的緩慢呼叫會產生摘要，而緊急事件沒有彙總延遲。請檢查承載中是否含有敏感中繼資料。關於部署與安全性檢查，請參閱 [搭配 LiteLLM 的 L7 proxy](./deploy/ha/haproxy.md) 與 [安全性最佳做法](./security_best_practices.md)。
+
 ### 自警示中移除訊息內容 {#redacting-messages-from-alerts}
 
 預設情況下，警示會顯示傳遞給 LLM 的 `messages/input`。如果您想從 Slack 警示中移除此內容，請在設定中設定以下項目

@@ -1,13 +1,13 @@
 ---
 title: "LiteLLM 中供 AI 代理程式使用的 Web Search API"
 sidebar_label: "總覽"
-description: "在 Python SDK 中使用單一 search() 呼叫，或在 AI 閘道上使用 /v1/search，查詢 19 個供 AI 代理程式使用的網路搜尋 API，並支援成本追蹤與依金鑰的存取控制。"
+description: "在 Python SDK 中使用單一 search() 呼叫，或在 AI 閘道上使用 /v1/search，查詢 20 個供 AI 代理程式使用的網路搜尋 API，並支援成本追蹤與依金鑰的存取控制。"
 ---
 # 總覽 {#overview}
 
 | 功能 | 支援 | 
 |---------|-----------|
-| 支援的提供者 | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent`, `agentcore`, `nimble`, `bing_grounding`, `deepseek` |
+| 支援的提供者 | `perplexity`, `tavily`, `parallel_ai`, `exa_ai`, `brave`, `google_pse`, `dataforseo`, `firecrawl`, `searxng`, `linkup`, `duckduckgo`, `searchapi`, `serper`, `you_com`, `apiserpent`, `agentcore`, `nimble`, `bing_grounding`, `deepseek`, `webiq` |
 | 成本追蹤 | ✅ |
 | 記錄 | ✅ |
 | 負載平衡 | ❌ |

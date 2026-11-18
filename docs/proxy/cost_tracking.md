@@ -20,7 +20,33 @@ LiteLLM 會自動追蹤所有已知模型的支出。關於每個請求如何定
 請使用 [Debugging a cost discrepancy](../troubleshoot/cost_discrepancy) 中的逐步流程：對齊時間範圍、比較 token 類別（包含快取），然後判定差異是來自 ingestion、公式，還是 model-map 定價。
 :::
 
-### 如何使用 LiteLLM 追蹤支出 {#how-to-track-spend-with-litellm}
+## 追蹤公開模型別名 {#track-a-public-model-alias}
+
+在 `model_list[].model_name` 設定公開名稱，在 `litellm_params.model` 設定提供者模型。用戶端將公開名稱（例如 `product-chat`）作為請求的 `model` 傳送：
+
+```yaml
+model_list:
+  - model_name: product-chat
+    litellm_params:
+      model: openai/{{openai_small}}
+      api_key: os.environ/OPENAI_API_KEY
+```
+
+| 記錄欄位 | 用途 |
+| --- | --- |
+| `model_group` | 此嘗試的路由群組。依此欄位分組支出，以回報是哪個已設定的路由處理了此次呼叫。 |
+| `model` | 此次呼叫實際使用的底層模型或部署。用它來調查提供者層級的成本。 |
+| metadata 中的 `original_model_group` | 備援前的模型群組。搭配路由群組使用，將備援流量歸屬到其原始路由。 |
+
+備援可能會改變 `model_group`，因此只依該欄位分組會把一個工作負載拆分到其主要路由與備援路由。若要製作原始路由的報告，請在 `metadata.original_model_group` 存在時使用它，否則改用 `model_group`。團隊範圍的部署可能使用內部群組名稱，因此在合併報告前，請先確認與團隊公開名稱的對應關係。在建立報告前，請先測試一次直接請求與一次強制備援，並檢查[備援中繼資料](./reliability.md#track-fallbacks-in-spend-logs)。
+
+### 跨路由共用一個預算 {#share-one-budget-across-routes}
+
+使用一個虛擬金鑰，或指派給同一個團隊的金鑰，並設定該實體整體的 `max_budget` 與 `budget_duration`。例如，`max_budget: 100` 搭配 `budget_duration: "30d"`，會將該實體跨模型的支出彙整為每 30 天 $100 的預算。請參閱[金鑰預算](./users.md#add-budgets-to-keys)與[團隊預算](./team_budgets.md)。
+
+若需要各模型分開的預算，請使用 `model_max_budget`。項目使用公開模型群組名稱與[每模型預算結構描述](./users.md#genericbudgetinfo)。這不會建立一個橫跨所有備援路由的單一預算：准入檢查的是請求的模型，而呼叫後的記帳使用的是路由群組，或團隊部署的公開名稱。`original_model_group` 是報告用中繼資料，不是共用預算鍵。請參閱[備援預算範圍與並行限制](./reliability.md#enforce-budget-on-fallbacks)，並在依賴強制執行前，先在接近預算時測試直接請求與備援請求。
+
+## 如何使用 LiteLLM 追蹤支出 {#how-to-track-spend-with-litellm}
 
 **步驟 1**
 

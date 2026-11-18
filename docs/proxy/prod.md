@@ -38,6 +38,8 @@ general_settings:
 
 若要改為寫入組態，請在 `general_settings` 下設定 `alerting: ["slack"]`，並在環境中匯出 `SLACK_WEBHOOK_URL`。
 
+將資料庫與持續的提供者中斷路由給閘道營運人員，將預算路由給成本負責人，將個別緩慢的呼叫路由給診斷作業。對於重複發生的低優先順序事件，請使用摘要。請從外部監控無法使用的閘道與缺失的指標，因為已停止的閘道無法自行發出警示。關於組態與傳遞限制，請參閱[可採取行動的警示路由](./alerting.md#route-actionable-alerts)。
+
 ### 批次寫入支出 {#batch-spend-writes}
 
 將支出更新每 60 秒寫入一次資料庫，而不是每個請求都寫入；在生產流量下，每個請求都寫入會讓資料庫成為熱點。
@@ -112,6 +114,14 @@ litellm_settings:
 export LITELLM_LOG="ERROR"
 ```
 
+### 限制儲存與匯出的內容 {#limit-stored-and-exported-content}
+
+對於敏感工作負載，請關閉訊息記錄與 prompt 儲存，只將營運中繼資料傳送到已核准的目的地，並分別檢查例外記錄、回呼、快取與備份。請為每個儲存區設定保留期限，並以合成標記測試匯出。請參閱[回呼遮罩](./logging.md#redact-messages-response-content)、[支出記錄儲存](./ui_logs.md)，以及[安全性最佳實務](./security_best_practices.md)。
+
+### 固定並驗證發行版本 {#pin-and-verify-releases}
+
+請驗證映像簽章、核准構件，並透過您的發行管線部署不可變的 digest。請將提供者 egress 與部署權限置於您的控制之下。請參閱[映像驗證](./docker_image_security.md)與[安全性最佳實務](./security_best_practices.md)。請依照[升級指南](./upgrade_guide.md)測試相容性、維持服務容量、排空請求並準備回復。
+
 ### 停用 load_dotenv {#disable-load_dotenv}
 
 設定 `export LITELLM_MODE="PRODUCTION"`。這會停用 `load_dotenv()`，否則它會自動從本機 `.env` 載入憑證。
@@ -130,7 +140,7 @@ export LITELLM_SALT_KEY="sk-<paste-a-long-random-key>"
 
 ### 機器規格 {#machine-specifications}
 
-請將每個 pod 的 requests 與 limits 都設為 1 vCPU 與 4Gi 記憶體。如果每個容器執行多個 worker，請依 worker 數量按比例增加兩者。若使用 Helm，請將這些容器設定放在 `gateway.resources` 下。
+請以每個 worker 1 vCPU 與 4Gi 記憶體作為負載測試的起點。如果每個容器執行多個 worker，請依 worker 數量按比例增加兩者，再根據量測結果調整。若使用 Helm，請將這些容器設定放在 `gateway.resources` 下。
 
 ```yaml
 resources:
@@ -142,13 +152,13 @@ resources:
     memory: "4Gi"
 ```
 
-這兩個數值都是以每個 worker 計算，因此該倍數是真實需求而非概略值：執行 8 個 worker 的容器需要 8 vCPU 與 32Gi，而不是 1 vCPU 與 4Gi。從單一 worker 的數值去規劃多 worker 容器，常會導致資源不足；這也是在 Kubernetes 上維持每個 pod 一個 worker，並讓 replica 而不是 worker 承擔並行度的主要原因。
+例如，八個 worker 在進行工作負載專屬調校之前，先以 8 vCPU 與 32Gi 為起點。在 Kubernetes 上，請優先為每個 pod 配置一個 worker，讓 replica 能夠獨立擴充。
 
-4Gi 是底線，而不是目標。代理的穩態記憶體占用並不是取決於同時服務多少請求：Prisma 會將查詢引擎作為獨立程序執行，而其常駐記憶體行為像是高水位標記，會成長到該引擎曾執行過的最大單一語句所需大小，之後 glibc 也不會把那段記憶體還給作業系統。因此，pod 的底線會一路累積到它歷來最糟的一次寫入並在 worker 的生命週期內維持不變。若配置低於 4Gi，單次大型寫入就足以讓 pod 超過限制並被核心 OOM-kill，這會在其他各項指標看起來都很正常的流量下表現為 crash loop。
-
-最大的語句來自啟用 `store_prompts_in_spend_logs` 的支出記錄，因為此時每一列都會帶上完整的 prompt 與回應，而不只是計數器。若您儲存 prompts，請將 4Gi 視為最低值，並為 pod 保留更高的餘裕。
+記憶體需求取決於已受理與排隊中的請求、有效負載大小、串流持續時間、記錄，以及資料庫工作。請量測尖峰期間與大型寫入後的尖峰常駐記憶體，並在容器限制之下保留餘裕。啟用 `store_prompts_in_spend_logs` 會將 prompt 與回應內文加入資料庫寫入，因此當該設定變更時，請重新測試。請使用 [L7 proxy with LiteLLM](./deploy/ha/haproxy.md) 設定受理限制並驗證容量。
 
 ### 自動擴縮 {#autoscaling}
+
+對於突發流量與長時間串流，請限制等待中的請求、拒絕過量負載，並依據未完成的工作以及請求速率進行擴充。在新 pod 啟動期間，請維持暖容量。請使用 [L7 proxy with LiteLLM](./deploy/ha/haproxy.md) 進行上游緩衝、worker 受理控制與 KEDA 設定。
 
 請在您的 HPA 中，除了 CPU 與記憶體目標之外，也使用每秒請求數（RPS）與每秒 token 數（TPS）。當請求在等待模型提供者時，CPU 使用量可能仍然很低。請依照 [HPA 指標指南](./deploy/autoscaling.md#scale-on-requests-and-tokens-per-pod) 公開每個 pod 的指標，並根據負載測試設定目標。
 
@@ -162,7 +172,7 @@ resources:
 CMD ["--port", "4000", "--config", "./proxy_server_config.yaml", "--num_workers", "1"]
 ```
 
-在單一 VM 或裸容器上，如果沒有任何東西幫您做擴充，則情況相反：將 `NUM_WORKERS` 設為該機器的 vCPU 數量，因為沒有其他東西會讓那些核心投入工作。容量與連線限制都是按每個 worker 計算，所以一台執行八個 worker 的機器，需要上方記憶體底限的八倍，以及連線池的八分之一。
+在單一 VM 或裸容器上，如果沒有任何東西幫您做擴充，則情況相反：將 `NUM_WORKERS` 設為該機器的 vCPU 數量，因為沒有其他東西會讓那些核心投入工作。容量與連線限制都是按每個 worker 計算，所以一台執行八個 worker 的機器，一開始需要上方記憶體預算的八倍，以及每個 worker 連線池的八分之一。
 
 不要將 `--num_workers 1` 與 `--max_requests_before_restart` 一起使用。只有單一 worker 時，此旗標不會回收任何東西；一旦觸及上限，整個 pod 就會停止服務。在 Uvicorn 下，程序會以代碼 0 結束，Kubernetes 會重啟容器；在 Gunicorn 下，則要等舊 worker 排空、新 worker 啟動完成後，才有東西接受連線，這段時間長到足以讓 liveness 探針失敗。健康探針也會計入上限，因此每 15 秒兩個探針，在任何真實流量進來之前，一天就會用掉 11,520 個請求。如果您在持續負載下看到記憶體逐漸成長，請依賴 Kubernetes 更換 pods，或如[回收 worker](./server_tuning.md#recycle-workers) 所述，執行兩個以上帶 jitter 的 worker。
 
@@ -467,7 +477,7 @@ LiteLLM 如何提供 migrations：
 
 3. 當您升級到新版 LiteLLM 時，migration 檔案會套用到資料庫。 [查看程式碼](https://github.com/BerriAI/litellm/blob/52b35cd8093b9ad833987b24f494586a1e923209/litellm-proxy-extras/litellm_proxy_extras/utils.py#L42)
 
-若要了解 migrations 在生產規模下需要多久，以及如何圍繞它們規劃升級，請參閱[升級指南](./upgrade_guide.md#database-migrations)。
+關於遷移所需時間與工作逾時，請參閱[資料庫遷移](./database_migrations.md#migration-duration-and-timeouts)。關於部署順序，請參閱[升級指南](./upgrade_guide.md)。
 
 ### 唯讀檔案系統 {#read-only-file-system}
 

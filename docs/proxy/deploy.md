@@ -16,5 +16,5 @@ description: Helm、Terraform、規模規劃、參考架構、生產就緒、升
 | [規模與擴展](./deploy/sizing.md) | [自動擴展](./deploy/autoscaling.md), [PostgreSQL](./db_sizing.md), [Redis](./redis_sizing.md), [伺服器調校](./server_tuning.md) |
 | [參考架構](./deploy/architecture.md) | [雲端部署](./deploy/cloud/overview.md), [Identity-Aware Proxy](./deploy/iap/overview.md), [mTLS](./deploy/mtls.md), [高可用性](./deploy/ha/overview.md), [多區域](./multi_region.md), [全域控制平面](./global_control_plane.md) |
 | [生產環境最佳實踐](./prod.md) | 生產設定與就緒 |
-| [升級指南](./upgrade_guide.md) | 版本升級與資料庫遷移 |
+| [升級指南](./upgrade_guide.md) | 零停機升級與回復 |
 | [健康檢查](./health.md) | 就緒與存活探針 |

@@ -9,6 +9,8 @@ import TabItem from '@theme/TabItem';
 
 # 使用 Helm 部署 {#deploy-with-helm}
 
+若要取得新的模型價格，請[重新載入定價，無需升級映像檔或 Helm chart](../sync_models_github)。
+
 {/* keep-version-note */}
 
 ## 前置條件 {#prerequisites}
