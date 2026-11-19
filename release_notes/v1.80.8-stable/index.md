@@ -2,7 +2,7 @@
 title: "LiteLLM v1.80.8-stable - 推出 A2A Agent Gateway"
 description: "新增 A2A Agent Gateway、Guardrails API v2 與終端使用者用量 UI。新增 vLLM 批次與檔案 API 支援，以及 Google Chirp3 HD 語音。"
 slug: "v1-80-8"
-date: 2025-12-06T10:00:00
+date: 2025-12-14T02:19:26
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

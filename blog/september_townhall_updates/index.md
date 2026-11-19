@@ -99,6 +99,8 @@ hide_table_of_contents: false
 
 ### liteagents SDK {#liteagents-sdk}
 
+對於新專案，請使用 [LiteLLM SDK 中的代理程式](/docs/harness)。以下回顧介紹的是在本場 town hall 發布的獨立 LiteAgents 預覽版。
+
 liteagents 是一個 beta SDK，讓您可以在不同 agent harness 之間切換，而不必重寫您的 agent。您可以在 `ProfileOptions` 區塊中選擇 harness，不論是 Claude Agent SDK、Deep Agents 或 Pydantic AI，然後透過單一用戶端對其進行查詢。
 
 ![liteagents SDK 程式碼範例：以 ProfileOptions 區塊設定 LiteAgentClient，選擇 deepagents harness 和一個模型，然後查詢回應](./liteagents-sdk.png)

@@ -65,7 +65,7 @@ Markdown 頁面包含已渲染頁面上每個提示詞與安裝命令的完整�
 
 <AgentPrompt id="liteadmin" />
 
-<AgentPrompt id="liteagents" />
+<AgentPrompt id="sdk_agents" />
 
 ## LiteAdmin MCP {#liteadmin-mcp}
 

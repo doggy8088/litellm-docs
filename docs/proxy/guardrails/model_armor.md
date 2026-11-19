@@ -51,7 +51,29 @@ guardrails:
 - `post_call` 在 LLM 呼叫 **之後** 執行，作用於 **輸出**
 - `pre_mcp_call` 在 MCP 工具呼叫 **之前** 執行，作用於 **輸入**
 - `during_mcp_call` 與 MCP 工具呼叫 **並行** 執行，作用於 **輸入**
+- `post_mcp_call` 在 MCP 工具呼叫 **之後** 執行，作用於工具 **結果**，在用戶端或模型看到它之前
 - `logging_only` 掃描已記錄的請求與完成的回應，不會阻擋或修改用戶端回應
+
+#### 掃描 MCP 工具結果 {#scan-mcp-tool-results}
+
+加入 `post_mcp_call` 來掃描 MCP 工具回傳的內容。LiteLLM 會將工具結果的文字（包含 `structuredContent` 中的字串值）傳送至範本的 `sanitizeModelResponse` 端點，再將結果交回 MCP 用戶端或放入模型的上下文。
+
+```yaml
+guardrails:
+  - guardrail_name: model-armor-mcp-output
+    litellm_params:
+      guardrail: model_armor
+      mode: [post_call, post_mcp_call]
+      template_id: "your-template-id"
+      project_id: "your-project-id"
+      location: "us-central1"
+      mask_response_content: true
+      fail_on_error: true
+```
+
+當 Model Armor 標記結果時，原始結果不會回傳。位於 `/mcp` 上的 MCP 用戶端會收到一個 `isError: true` 的工具結果，文字為「Response blocked by Model Armor」；`/mcp-rest/tools/call` 會以 HTTP 400 回應；而在搭配 `litellm_proxy` MCP 工具的 `/v1/responses` 或 `/v1/chat/completions` 上，模型會收到一個工具失敗來取代結果。設定 `mask_response_content: true` 時，只符合去識別化範本的結果會以 Model Armor 的淨化文字取代敏感值後回傳。遮罩命中 `structuredContent` 的鍵或非字串值時無法重寫，因此會改為封鎖結果。若 Model Armor API 發生錯誤，`fail_on_error: true`（預設值）會扣留結果，在 `/mcp` 上顯示為 `isError: true` 的工具結果，在 `/mcp-rest/tools/call` 上顯示為 HTTP 500；而 `fail_on_error: false` 則會未經掃描直接回傳結果。設定 `default_on: false` 時，只有在請求主體中指名此防護欄，或金鑰或團隊帶有此防護欄的請求才會執行掃描。只會掃描文字，因此工具結果中的圖片、音訊與內嵌資源會原樣通過。
+
+工具結果若太大而無法讓 Model Armor 完整掃描，在 `post_mcp_call` 上會被視為 Model Armor 錯誤，因此由 `fail_on_error` 決定是否扣留。
 
 #### 在不阻擋的情況下觀察 {#observe-without-blocking}
 
@@ -149,7 +171,7 @@ LiteLLM 辨識為文件但無法提交掃描的附件會採取封閉失敗：除
 - `api_key` - str - Google Cloud 服務帳戶憑證（若使用 ADC 則為選用）
 - `api_base` - str - 自訂 Model Armor API 端點（選用）
 - `default_on` - bool - 是否預設執行此 guardrail。預設為 `false`。
-- `mode` - Union[str, list[str]] - 執行此 guardrail 所需模式。支援值：`pre_call`、`during_call`、`post_call`、`pre_mcp_call`、`during_mcp_call` 以及 `logging_only`。
+- `mode` - Union[str, list[str]] - 執行此 guardrail 所需模式。支援值：`pre_call`、`during_call`、`post_call`、`pre_mcp_call`、`during_mcp_call`、`post_mcp_call` 以及 `logging_only`。
 
 ### Model Armor 特定 {#model-armor-specific}
 

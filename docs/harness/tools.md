@@ -1,9 +1,10 @@
 ---
-title: 工具與技能
+title: litellm.agent() 的工具與技能
 sidebar_label: 工具與技能
+description: 設定呼叫 litellm.agent() 時 harness 可用的內建工具、自訂工具與技能。
 ---
 
-# 工具與技能 {#tools-and-skills}
+# `litellm.agent()` 的工具與技能 {#tools-and-skills-for-litellmagent}
 
 ## 關閉內建工具 {#turning-off-built-in-tools}
 
@@ -37,7 +38,7 @@ litellm.agent(
 )
 ```
 
-型別提示與 docstring 會成為工具的 schema。同步函式會在工作執行緒中執行，非同步函式則會被 await。將 `tools=` 傳給 Claude Code、Codex 或 OpenCode 會引發 `CapabilityUnsupported`
+型別提示與 docstring 會成為工具的 schema。同步函式會在工作執行緒中執行，非同步函式則會被 await。將 `tools=` 傳給 Claude Code、Codex、OpenCode 或 Pi 會引發 `CapabilityUnsupported`
 
 ## 技能 {#skills}
 

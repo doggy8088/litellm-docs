@@ -2,7 +2,7 @@
 title: "LiteLLM v1.92.0 - Claude Sonnet 5、正式版 MCP OAuth 與新提供者"
 description: "新增具備 1M token 上下文視窗的 Claude Sonnet 5，以及 Tencent 與 Google Distributed Cloud 提供者。將權限限制為僅限 proxy 管理員。"
 slug: "v1-92-0"
-date: 2026-07-11T00:00:00
+date: 2026-07-12T01:15:37
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

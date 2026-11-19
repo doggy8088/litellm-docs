@@ -2,7 +2,7 @@
 title: "LiteLLM v1.89.2 - 成本追蹤與模型清單修正"
 description: "修正非字串 service_tier 值的成本追蹤，以及團隊與 BYOK 設定下的 /v1/models 清單。另新增可選用的 healthy_only 篩選器。"
 slug: "v1-89-2"
-date: 2026-06-17T19:22:38
+date: 2026-06-18T02:25:59
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

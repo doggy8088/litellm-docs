@@ -2,7 +2,7 @@
 title: "LiteLLM v1.87.0 - OCI 生成式 AI 提供者、Gemini 3.5 Flash Day-0、OAuth 伺服器的 MCP UI"
 description: "新增 OCI Generative AI、Gemini 3.5 Flash 第 0 天支援，以及 OAuth 伺服器的 MCP UI。另將 Anthropic 串流的 TTFT 額外開銷降低約 90%。"
 slug: "v1-87-0"
-date: 2026-05-23T16:35:00
+date: 2026-06-02T03:53:25
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

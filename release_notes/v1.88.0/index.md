@@ -2,7 +2,7 @@
 title: "LiteLLM v1.88.0 - Claude Opus 4.8, MCP 存取群組授權與型別化 OpenTelemetry"
 description: "新增支援 1M 上下文的 Claude Opus 4.8、MCP 存取群組授權與型別化 OpenTelemetry span。另將串流每個區塊的成本降低約 30%。"
 slug: "v1-88-0"
-date: 2026-06-04T18:45:10
+date: 2026-06-06T23:25:07
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

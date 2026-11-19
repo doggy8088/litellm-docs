@@ -1,8 +1,10 @@
 ---
-title: 結構化輸出
+title: 來自 litellm.agent() 的結構化輸出
+sidebar_label: 結構化輸出
+description: 將 Pydantic model 傳給 litellm.agent()，以驗證最終答案並從結果讀取具型別的資料。
 ---
 
-# 結構化輸出 {#structured-output}
+# 來自 `litellm.agent()` 的結構化輸出 {#structured-output-from-litellmagent}
 
 將 Pydantic model 作為 `output=` 傳入。執行階段會照常運作，並將其最終答案驗證為 `result.output`。
 

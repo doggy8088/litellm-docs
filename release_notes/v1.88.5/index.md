@@ -2,7 +2,7 @@
 title: "LiteLLM v1.88.5 - Vertex 批次上傳與串流成本回收"
 description: "將 OpenAI 到 Vertex 的批次 JSONL 上傳改為串流傳輸，不再於記憶體中緩衝。另回收中斷的 Anthropic 串流成本。"
 slug: "v1-88-5"
-date: 2026-06-25T00:00:17
+date: 2026-06-24T23:56:54
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

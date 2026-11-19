@@ -2,7 +2,7 @@
 title: "LiteLLM v1.81.3 - 效能 - CPU 使用量降低 25%"
 description: "新增 gpt-audio 定價與 ChatGPT 訂閱支援。將 CPU 使用量降低 25%，並修復 Bedrock AgentCore 串流。"
 slug: "v1-81-3"
-date: 2026-01-26T10:00:00
+date: 2026-02-08T00:28:27
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

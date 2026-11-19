@@ -2,7 +2,7 @@
 title: "LiteLLM v1.99.2 - 呼叫端逾時冷卻"
 description: "修復路由器，使呼叫端設定的逾時 408 錯誤不再計入部署冷卻。健康的部署會持續留在輪替中。"
 slug: "v1-99-2"
-date: 2026-09-15T10:00:00
+date: 2026-09-23T03:54:10
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

@@ -2,7 +2,7 @@
 title: "LiteLLM v1.84.7 - Claude Fable 5 與批次檔案授權"
 description: "在 Anthropic、Bedrock、Vertex AI 與 Azure AI 上新增 Claude Fable 5。使用上傳時的 target_model_names 授權批次檔案。"
 slug: "v1-84-7"
-date: 2026-06-10T18:11:13
+date: 2026-06-11T01:14:21
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

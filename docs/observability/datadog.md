@@ -307,6 +307,7 @@ LiteLLM 支援自訂以下 Datadog 環境變數
 | `DD_LLMOBS_ML_APP` | LLM Observability 的預設 ml_app 名稱（Application 欄位）。可透過 `metadata.ml_app` 依請求覆寫。 | 預設為 `DD_SERVICE` | ❌ 否 |
 | `DD_SOURCE` | 您記錄的來源名稱 | "litellm" | ❌ 否 |
 | `DD_VERSION` | 您記錄的版本標籤 | "unknown" | ❌ 否 |
+| `DD_TAGS` | 附加到每一筆 Datadog 記錄與 LLM Observability span 的額外 `key:value` 標籤，以逗號或空格分隔（例如 `team:platform,cost_center:engineering`）。LiteLLM 會按原樣傳送，不加依請求標籤所用的 `request_tag:` 前綴。鍵為 LiteLLM 已設定的標籤（`env`、`service`、`version`、`HOSTNAME`、`POD_NAME`，以及請求帶有團隊時的 `team`）會被跳過，因此只會保留 LiteLLM 的值。在 LLM Observability span 上，請求本身的 `user`、`key_alias` 與 `model_group` 也會取代該鍵的 `DD_TAGS` 值 | None | ❌ 否 |
 | `HOSTNAME` | 您記錄的主機名稱標籤 | "" | ❌ 否 |
 | `POD_NAME` | Pod 名稱標籤（適用於 Kubernetes 部署） | "unknown" | ❌ 否 |
 

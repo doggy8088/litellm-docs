@@ -1,9 +1,10 @@
 ---
-title: Models and routing
+title: litellm.agent() 的模型與路由
 sidebar_label: Models and routing
+description: 為 litellm.agent() 選擇模型，並經由 LiteLLM AI Gateway 或直接向提供者路由模型請求。
 ---
 
-# 模型與路由 {#models-and-routing}
+# `litellm.agent()` 的模型與路由 {#models-and-routing-for-litellmagent}
 
 `model=` 的行為與 `litellm.completion` 相同。前綴為 `litellm_proxy/` 的模型會送往閘道，其餘則會透過 LiteLLM SDK 直接呼叫。
 

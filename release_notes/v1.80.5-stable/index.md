@@ -2,7 +2,7 @@
 title: "LiteLLM v1.80.5-stable - Gemini 3.0 支援"
 description: "新增 Gemini 3 支援、搭配 Prompt Studio 的提示版本管理，以及 MCP Hub。將 /realtime p99 延遲降低 182 倍。"
 slug: "v1-80-5"
-date: 2025-11-22T10:00:00
+date: 2025-12-03T22:09:03
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

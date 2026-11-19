@@ -2,7 +2,7 @@
 title: "LiteLLM v1.87.3 - DB 彈性與 Passthrough 強化"
 description: "新增 disable_budget_reservation 設定，並在驗證期間發生資料庫錯誤時回傳 5xx。另修正 Prisma 重新連線。"
 slug: "v1-87-3"
-date: 2026-06-13T17:37:18
+date: 2026-06-14T00:57:47
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

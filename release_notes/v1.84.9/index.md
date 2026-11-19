@@ -2,7 +2,7 @@
 title: "LiteLLM v1.84.9 - Anthropic 快取控制上限"
 description: "把 Anthropic cache_control 注入限制在 API 的 4 區塊上限內，使符合資格的區塊較多時提示詞快取請求不再失敗。"
 slug: "v1-84-9"
-date: 2026-06-16T18:19:59
+date: 2026-06-17T01:23:00
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

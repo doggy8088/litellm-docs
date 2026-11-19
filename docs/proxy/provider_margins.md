@@ -140,6 +140,10 @@ litellm /path/to/config.yaml
 
 加成會自動套用到已設定提供者的所有成本計算。
 
+## 客戶請求附加費 {#surcharge-on-customer-requests}
+
+`customer` 金鑰只會對為客戶組織提出的請求加收百分比。請參閱[為客戶請求加收附加費](./customer_management/customer-surcharge.md)。
+
 ## 加成如何運作 {#how-margins-work}
 
 - 加成會在折扣**之後**套用（如果有設定）

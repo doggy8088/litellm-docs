@@ -2,7 +2,7 @@
 title: "LiteLLM v1.81.9 - 控制哪些 MCP 伺服器會公開到網際網路"
 description: "為 MCP 伺服器新增公開或私人可見性與 IP 存取控制、Claude Opus 4.6，以及透過 /chat/completions 的 A2A 代理程式呼叫。"
 slug: "v1-81-9"
-date: 2026-02-07T00:00:00
+date: 2026-02-15T01:18:13
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

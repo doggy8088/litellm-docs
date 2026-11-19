@@ -2,7 +2,7 @@
 title: "LiteLLM v1.89.0 - Claude Fable 5、A2A 代理程式提供者與 MCP 每伺服器控制"
 description: "新增 Claude Fable 5、watsonx Orchestrate 與 LangFlow A2A 提供者，以及每伺服器 MCP 環境變數。"
 slug: "v1-89-0"
-date: 2026-06-10T11:04:00
+date: 2026-06-13T23:45:46
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

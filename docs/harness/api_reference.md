@@ -1,8 +1,10 @@
 ---
-title: API reference
+title: litellm.agent() API 參考
+sidebar_label: API 參考
+description: 查詢 litellm.agent() 及其 async 與 session 變體的 Python 函式、選項與回傳型別。
 ---
 
-# API 參考 {#api-reference}
+# `litellm.agent()` API 參考 {#litellmagent-api-reference}
 
 入口點位於頂層的 `litellm` 模組，與 `litellm.completion` 並列。每一個都有一個帶有 `a` 前綴的 async 版本。
 
@@ -13,6 +15,7 @@ from litellm import (
     ClaudeCodeOptions,
     CodexOptions,
     OpenCodeOptions,
+    PiOptions,
     DeepAgentsOptions,
     ToolLoopOptions,
     sandbox,
@@ -92,6 +95,7 @@ def agent(
         ClaudeCodeOptions
         | CodexOptions
         | OpenCodeOptions
+        | PiOptions
         | DeepAgentsOptions
         | ToolLoopOptions
         | None

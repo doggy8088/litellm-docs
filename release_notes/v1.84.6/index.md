@@ -2,7 +2,7 @@
 title: "LiteLLM v1.84.6 - CrowdStrike AIDR 身分擷取"
 description: "為防護欄新增 CrowdStrike AIDR 使用者與模型中繼資料擷取，並從兩個中繼資料包讀取身分。"
 slug: "v1-84-6"
-date: 2026-06-08T18:25:32
+date: 2026-06-09T01:36:45
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

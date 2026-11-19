@@ -2,7 +2,7 @@
 title: "LiteLLM v1.103.1、v1.102.2、v1.101.3 與 v1.100.4 修正 UI 與 CLI 工作階段權杖"
 description: "將 UI 與 CLI 工作階段權杖改為以 litellm_login_ 開頭的 AES-256-GCM 權杖。Admin UI 與 lite CLI 使用者必須重新登入。"
 slug: "v1-103-1"
-date: 2026-09-30T00:59:00
+date: 2026-09-29T23:36:06
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

@@ -2,7 +2,7 @@
 title: "LiteLLM v1.87.2 - Claude Fable 5, Batch Auth, CrowdStrike & Mantle SigV4"
 description: "新增 Claude Fable 5、批次檔案授權、CrowdStrike AIDR 身分中繼資料，以及 Bedrock Mantle Responses API 路由的 SigV4 驗證。"
 slug: "v1-87-2"
-date: 2026-06-10T21:47:54
+date: 2026-06-11T04:59:59
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

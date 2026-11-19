@@ -1,11 +1,13 @@
 ---
-title: 快速入門
+title: litellm.agent() 快速入門
+sidebar_label: 快速入門
+description: 安裝 harness，進行第一次 litellm.agent() 呼叫，並在 Python 中從程式碼代理程式串流事件。
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 快速入門 {#quickstart}
+# `litellm.agent()` 快速入門 {#litellmagent-quickstart}
 
 ## 1. 安裝 {#1-install}
 
@@ -16,6 +18,7 @@ import TabItem from '@theme/TabItem';
 | Claude Code | `pip install litellm starlette uvicorn` | `npm install -g @anthropic-ai/claude-code` |
 | Codex | `pip install litellm starlette uvicorn` | `npm install -g @openai/codex` |
 | OpenCode | `pip install litellm starlette uvicorn` | `npm install -g opencode-ai` |
+| [Pi](./pi.md) | `pip install litellm starlette uvicorn` | `npm install -g @earendil-works/pi-coding-agent` |
 | Deep Agents | `pip install litellm deepagents langchain-litellm` (Python 3.11+) {/* keep-python-version */} | 無 |
 | Tool Loop | `pip install litellm` | 無 |
 

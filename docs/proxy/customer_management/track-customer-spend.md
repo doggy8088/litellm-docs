@@ -225,7 +225,7 @@ print(result["messages"][-1].text)
 
 如需首次請求註冊與團隊選取，請參閱[推論身分標頭](./api_reference.md#attribute-inference-requests)。
 
-若要以 JWT 而非標頭傳送客戶身分，請參閱[來自 JWT 聲明的客戶身分](./jwt-customer-identity.md)。
+若要以 JWT 而非標頭傳送客戶身分，請參閱[來自 JWT 聲明的客戶身分](./jwt-customer-identity.md)。若 JWT 識別的是您的應用程式，但客戶身分來自標頭，請參閱[如何在一筆請求中同時傳送兩者](./jwt-customer-identity.md#app-jwt-customer-headers)。
 
 ## 3. 為您的產品取得使用量 {#5-fetch-usage-for-your-product}
 

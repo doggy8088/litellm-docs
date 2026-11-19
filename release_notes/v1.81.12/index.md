@@ -2,7 +2,7 @@
 title: "LiteLLM v1.81.12-stable.1 - 防護欄政策範本與動作建構器"
 description: "新增防護欄政策範本、防護欄動作建構器，以及供模型、MCP 伺服器與代理程式使用的存取群組。新增 Responses API shell 工具。"
 slug: "v1-81-12"
-date: 2026-02-14T00:00:00
+date: 2026-02-21T22:46:10
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

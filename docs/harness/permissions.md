@@ -1,8 +1,10 @@
 ---
-title: Permissions
+title: litellm.agent() 的權限
+sidebar_label: 權限
+description: 為 litellm.agent() 選擇權限模式，並了解 harness 如何強制執行讀取、寫入與命令存取。
 ---
 
-# 權限 {#permissions}
+# `litellm.agent()` 的權限 {#permissions-for-litellmagent}
 
 `permissions=` 採用一種模式，而每個 harness 都會設定其權限行為以符合該模式。預設值是 `"full"`。沙箱只會限制在其中執行的操作；Deep Agents 和 Tool Loop 的 Python 工具是在您的程序中執行。請傳入受信任的函式，並強制執行其所需的任何額外存取規則
 

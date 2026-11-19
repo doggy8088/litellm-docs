@@ -1,11 +1,12 @@
 ---
-title: 支援的 harness
+title: litellm.agent() 支援的 harness
 sidebar_label: 支援的 harness
+description: 查看 litellm.agent() 支援哪些 harness，並比較每一種的執行階段、工作階段與工具能力。
 ---
 
-# 支援的 harness {#supported-harnesses}
+# `litellm.agent()` 支援的 harness {#supported-harnesses-for-litellmagent}
 
-此版本支援五種 harness。每一種都透過各自的程式化介面驅動，從不透過擷取終端機
+此版本支援六種 harness。每一種都透過各自的程式化介面驅動，從不透過擷取終端機
 
 ```python
 from enum import Enum
@@ -14,6 +15,7 @@ class Harness(Enum):
     CLAUDE_CODE = "claude_code"
     CODEX = "codex"
     OPENCODE = "opencode"
+    PI = "pi"
     DEEPAGENTS = "deepagents"
     TOOL_LOOP = "tool_loop"
 ```
@@ -22,17 +24,17 @@ class Harness(Enum):
 
 ## 能力 {#capabilities}
 
-| 能力 | Claude Code | Codex | OpenCode | Deep Agents | Tool Loop |
-|---|:-:|:-:|:-:|:-:|:-:|
-| 任何 gateway 模型群組 | 是 | 是 | 是 | 是 | 是 |
-| 成本追蹤 | 是 | 是 | 是 | 是 | 是 |
-| Skills | 是 | 是 | 是 | 是 | 否 |
-| 結構化輸出 | 是 | 是 | 是 | 是 | 是 |
-| 分離並恢復 | 是 | 是 | 是 | 是 | 否 |
-| 內建工具篩選（`disable_tools=`） | 是 | 否 | 是 | 是 | 否 |
-| 自訂 Python 工具（`tools=`） | 否 | 否 | 否 | 是 | 是 |
-| 歷史紀錄（`s.history()`） | 否 | 否 | 否 | 是 | 是 |
-| 權限模式 | `read-only`, `edit`, `full` | `read-only`, `full` | `read-only`, `edit`, `full` | `read-only`, `edit`, `full` | `ask`, `full` |
+| 能力 | Claude Code | Codex | OpenCode | Pi | Deep Agents | Tool Loop |
+|---|:-:|:-:|:-:| :-: |:-:|:-:|
+| 任何 gateway 模型群組 | 是 | 是 | 是 | 是 | 是 | 是 |
+| 成本追蹤 | 是 | 是 | 是 | 是 | 是 | 是 |
+| Skills | 是 | 是 | 是 | 是 | 是 | 否 |
+| 結構化輸出 | 是 | 是 | 是 | 是 | 是 | 是 |
+| 分離並恢復 | 是 | 是 | 是 | 是 | 是 | 否 |
+| 內建工具篩選（`disable_tools=`） | 是 | 否 | 是 | 是 | 是 | 否 |
+| 自訂 Python 工具（`tools=`） | 否 | 否 | 否 | 否 | 是 | 是 |
+| 歷史紀錄（`s.history()`） | 否 | 否 | 否 | 否 | 是 | 是 |
+| 權限模式 | `read-only`, `edit`, `full` | `read-only`, `full` | `read-only`, `edit`, `full` | `read-only`, `edit`, `full` | `read-only`, `edit`, `full` | `ask`, `full` |
 
 `permissions="ask"` 搭配互動式核准在此版本的 CLI harness 上不可用。向 harness 要求它不支援的功能時，會在執行階段開始前引發 `CapabilityUnsupported`，而且絕不會退回到較寬鬆的模式。您可以在程式碼中讀到相同的表格。
 
@@ -49,6 +51,7 @@ caps.permission_modes   # frozenset({'read-only', 'full'})
 | `CLAUDE_CODE` | `claude -p --output-format stream-json` | Anthropic Messages | sandbox | `claude` |
 | `CODEX` | `codex exec --json` | OpenAI Responses | sandbox | `codex` |
 | `OPENCODE` | `opencode run --format json` | OpenAI Chat Completions | sandbox | `opencode` |
+| `PI` | `pi --mode json` | OpenAI Chat Completions | sandbox | `pi` |
 | `DEEPAGENTS` | `deepagents` Python API | LangChain chat model | 您的程序 | 無需任何 |
 | `TOOL_LOOP` | LiteLLM tool loop | OpenAI Chat Completions | 您的程序 | 無需任何 |
 

@@ -2,14 +2,14 @@
 id: python_sdk
 title: LiteLLM Python SDK
 sidebar_label: 總覽
-description: LiteLLM Python SDK 讓您以單一介面從 Python 呼叫 100+ 個 LLM 提供者，且每個提供者使用相同的輸入與輸出格式。
+description: 使用 LiteLLM SDK 從 Python 呼叫 100+ 個 LLM 提供者並執行代理程式任務。使用 completion() 進行模型呼叫，並使用 agent() 執行代理程式任務。
 ---
 
 import NavigationCards from '@site/src/components/NavigationCards';
 
 # LiteLLM Python SDK {#litellm-python-sdk}
 
-LiteLLM Python SDK 是一個 Python 函式庫。它讓您以單一介面，以 OpenAI 格式呼叫 100+ 個 LLM 提供者，例如 OpenAI、Anthropic、Vertex AI 與 Bedrock。
+LiteLLM Python SDK 讓您以單一介面，以 OpenAI 格式呼叫 100+ 個 LLM 提供者，例如 OpenAI、Anthropic、Vertex AI 與 Bedrock。同一個套件可以執行[使用 `litellm.agent()` 的代理程式](/docs/harness)，包括 Claude Code、Codex、OpenCode、Pi、Deep Agents 與 Tool Loop。
 
 您將 SDK 匯入應用程式碼中。您不需要運作伺服器。
 
@@ -46,6 +46,7 @@ print(response.choices[0].message.content)
 
 - **單一介面。** 每個提供者使用相同的 `completion()` 函式與相同的參數。
 - **單一輸出格式。** 每個回應都是 OpenAI 格式，適用於所有提供者。
+- **代理程式。** 使用 `agent()` 執行代理程式任務、串流事件，並以 `agent_session()` 保持多輪工作階段。為每項任務選擇執行框架與模型。
 - **例外對應。** SDK 會將提供者錯誤轉換為 OpenAI 例外類型。您攔截 OpenAI 例外的程式碼也能攔截每個提供者的錯誤。
 - **自動路由。** 建立 [Python 中的 Autorouter](/docs/autorouter_sdk)，依每個請求的複雜度選擇模型。
 - **路由。** [Router](/docs/routing) 讓您在各部署之間進行重試、備援與負載平衡。
@@ -58,6 +59,7 @@ print(response.choices[0].message.content)
 | 函式 | 用途 | 參考 |
 |---|---|---|
 | `completion()` | 將聊天訊息傳送至模型 | [completion()](/docs/completion/input) |
+| `agent()` | 以您選擇的執行框架與模型執行代理程式任務 | [LiteLLM SDK 中的代理程式](/docs/harness) |
 | `responses()` | 使用 OpenAI Responses API 格式 | [responses()](/docs/response_api) |
 | `embedding()` | 取得文字的向量嵌入 | [embedding()](/docs/embedding/supported_embedding) |
 | `image_generation()` | 依文字提示產生圖片 | [image_generation()](/docs/image_generation) |
@@ -78,7 +80,7 @@ LiteLLM 支援的所有端點，請參閱 [支援的端點](/docs/supported_endp
 | 計算 token 用量與成本 | [Token 用量](/docs/completion/token_usage) |
 | 加入重試、備援與負載平衡 | [Router](/docs/routing) |
 | 快取回應 | [快取](/docs/caching/all_caches) |
-| 從 Python 執行編碼代理程式 | [代理程式執行框架](/docs/harness) |
+| 從 Python 執行代理程式 | [LiteLLM SDK 中的代理程式](/docs/harness) |
 
 ## 執行緒與並行 {#threads-and-concurrency}
 

@@ -2,7 +2,7 @@
 title: "LiteLLM v1.90.0 - 六個新提供者、OpenTelemetry v2 對等功能與串流可靠性"
 description: "新增六個提供者、91 個模型與 OpenTelemetry v2 指標對等功能。另將 /key/list 改為 user_id 與 key_alias 的精確比對。"
 slug: "v1-90-0"
-date: 2026-06-26T19:52:37
+date: 2026-06-27T03:12:44
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

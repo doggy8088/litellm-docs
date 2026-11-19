@@ -4,7 +4,7 @@
 
 :::warning
 
-如果您設定了 [salt key](./prod.md#set-the-salt-key)，proxy 會使用 salt key 來解密儲存的憑證，而不是主金鑰。在那種設定下，不要使用 `POST /key/regenerate` 和 `new_master_key` 來輪替主金鑰。那個流程會以新的主金鑰重新加密所有內容，但執行中的 proxy 仍會用 salt key 解密，因此所有儲存的憑證都會變得無法讀取，部署也可能被鎖死。請改為遵循下方的 salt-key 章節。
+如果您設定了 [salt key](./prod.md#set-the-salt-key)，proxy 會使用 salt key 來解密儲存的憑證，而不是主金鑰。在 v1.112.0 之前，在那種設定下不要使用 `POST /key/regenerate` 和 `new_master_key` 來輪替主金鑰。在這些版本上，該呼叫會以新的主金鑰重新加密所有內容，但 proxy 仍會用 salt key 解密，因此所有儲存的憑證都會變得無法讀取，部署也可能被鎖死。該呼叫會讓儲存的憑證繼續以 salt key 加密 <SinceVersion v="1.112.0" />，因此它們仍可讀取。在每個版本上，請遵循下方的 salt-key 章節，它不會使用該呼叫。
 
 :::
 
@@ -16,9 +16,9 @@
 
 當 `LITELLM_SALT_KEY` 已設定時，salt key 會用來加密與解密您儲存的憑證，而主金鑰只是一個驗證憑證。輪替它不會碰到任何靜態儲存的加密內容，因此不需要重新加密。
 
-產生新的主金鑰值，更新秘密所在的位置（`LITELLM_MASTER_KEY` 環境變數，或您設定檔中的 `general_settings.master_key`），並重新啟動每個 proxy 執行個體，讓它們載入新值。不要在此處搭配 `POST /key/regenerate` 與 `new_master_key`；那樣會以 proxy 從不拿來解密的金鑰重新加密您的憑證。
+產生新的主金鑰值，更新秘密所在的位置（`LITELLM_MASTER_KEY` 環境變數，或您設定檔中的 `general_settings.master_key`），並重新啟動每個 proxy 執行個體，讓它們載入新值。您在此處不需要 `POST /key/regenerate` 搭配 `new_master_key`。在 v1.112.0 之前不要呼叫它；它會以新的主金鑰重新加密您的憑證，而那是 proxy 從不用來解密它們的金鑰。
 
-不要輪替 `LITELLM_SALT_KEY` 本身。您一旦新增模型之後，它就不能再變更；salt-key 輪替沒有就地遷移，因此每個儲存的憑證都必須重新註冊。
+不要輪替或移除 `LITELLM_SALT_KEY` 本身。您一旦新增模型之後，它就不能再變更，包括主金鑰輪替之後的重新啟動；salt-key 輪替沒有就地遷移，因此每個儲存的憑證都必須重新註冊。
 
 ## 如果 master key 就是您的加密金鑰 {#if-the-master-key-is-your-encryption-key}
 
@@ -100,7 +100,7 @@ echo "LITELLM_MASTER_KEY=sk-$(openssl rand -hex 32)" | tee -a .env
 echo "sk-$(openssl rand -hex 32)"
 ```
 
-接著再次啟動 proxy。這與 [使用 salt key 進行輪替](#if-you-use-a-salt-key-recommended-setup) 的交換與重新啟動相同。當 `LITELLM_SALT_KEY` 已設定時，不要呼叫 `POST /key/regenerate` 搭配 `new_master_key`。如本頁頂端的警告所說，這會讓您儲存的憑證無法讀取。
+接著再次啟動 proxy。這與 [使用 salt key 進行輪替](#if-you-use-a-salt-key-recommended-setup) 的交換與重新啟動相同。當 `LITELLM_SALT_KEY` 已設定時，您不需要呼叫 `POST /key/regenerate` 搭配 `new_master_key`。如本頁頂端的警告所說，在 v1.112.0 之前，該呼叫會讓您儲存的憑證無法讀取。
 
 ### 資料庫中保存著以舊金鑰加密的值 {#the-database-holds-values-encrypted-with-the-old-key}
 

@@ -2,7 +2,7 @@
 title: "LiteLLM v1.94.2 - 儀表板 Token 儲存與相依性更新"
 description: "將 Admin UI 的 MCP 工作階段 token 改為透過共用的瀏覽器儲存輔助程式傳遞。更新 Terraform provider 模組與四項 Python 相依性。"
 slug: "v1-94-2"
-date: 2026-08-07T19:10:07
+date: 2026-08-08T02:31:09
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

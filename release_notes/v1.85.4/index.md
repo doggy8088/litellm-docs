@@ -2,7 +2,7 @@
 title: "LiteLLM v1.85.4 - Azure AD、批次驗證與 Passthrough 回溯移植"
 description: "修正 Azure AD 權杖刷新、批次與影片模型路由，以及組織範圍的團隊金鑰建立。移除 Vertex Claude 模型的 effort 設定。"
 slug: "v1-85-4"
-date: 2026-06-03T16:25:32
+date: 2026-06-04T04:57:59
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

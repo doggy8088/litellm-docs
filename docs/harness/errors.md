@@ -1,8 +1,10 @@
 ---
-title: Errors
+title: 來自 litellm.agent() 的錯誤
+sidebar_label: 錯誤
+description: 辨識 litellm.agent() 引發的例外，並區分設定錯誤與保留部分結果的時間與回合限制。
 ---
 
-# 錯誤 {#errors}
+# 來自 `litellm.agent()` 的錯誤 {#errors-from-litellmagent}
 
 設定問題會引發例外。您設定的限制，例如 `timeout` 和 `max_turns`，會結束該回合並回傳帶有 `stop_reason` 的 `Result`，因此部分工作會被保留。
 

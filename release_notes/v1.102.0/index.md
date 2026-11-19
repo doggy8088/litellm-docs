@@ -2,7 +2,7 @@
 title: "LiteLLM v1.102.0 - 自動路由控制、原生 OCR 與閘道可靠性"
 description: "新增 Auto Router 控制、原生 OCR 與 Meta Muse Voice 即時轉錄。另新增 99 筆模型型錄項目與共用的 PgBouncer 連線。"
 slug: "v1-102-0"
-date: 2026-09-19T00:00:00
+date: 2026-09-20T04:41:12
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

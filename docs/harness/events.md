@@ -1,8 +1,10 @@
 ---
-title: 事件
+title: 來自 litellm.agent() 的串流事件
+sidebar_label: 事件
+description: 閱讀 litellm.agent() 為輸出、工具呼叫、核准與回合完成所串流的正規化事件。
 ---
 
-# 事件 {#events}
+# 來自 `litellm.agent()` 的串流事件 {#streaming-events-from-litellmagent}
 
 `litellm.agent(..., stream=True)` 會產生八種事件。每個 adapter 都會將其執行階段的原生事件轉換為這些事件。
 
@@ -52,16 +54,16 @@ for event in litellm.agent(Harness.CLAUDE_CODE, "Add type hints to utils.py", sa
 
 在每個 harness 中，做相同事情的內建工具都會具有相同的 `name`，因此 UI 程式碼不需要針對每個執行階段分支處理。`native_name` 一律保留執行階段的原始名稱。
 
-| `name` | Claude Code | Codex | OpenCode | Deep Agents | Tool Loop |
-|---|---|---|---|---|---|
-| `read` | `Read` | | `read` | `read_file` | |
-| `write` | `Write` | | `write` | `write_file` | |
-| `edit` | `Edit` | | `edit` | `edit_file` | |
-| `bash` | `Bash` | command execution | `bash` | `execute` | |
-| `glob` | `Glob` | | `glob` | `glob` | |
-| `grep` | `Grep` | | `grep` | `grep` | |
-| `ls` | `LS` | | `list` | `ls` | |
-| `web_search` | `WebSearch` | web search | `webfetch` | | |
+| `name` | Claude Code | Codex | OpenCode | Pi | Deep Agents | Tool Loop |
+|---|---|---|---| --- |---|---|
+| `read` | `Read` | | `read` | `read` | `read_file` | |
+| `write` | `Write` | | `write` | `write` | `write_file` | |
+| `edit` | `Edit` | | `edit` | `edit` | `edit_file` | |
+| `bash` | `Bash` | command execution | `bash` | `bash`, `powershell` | `execute` | |
+| `glob` | `Glob` | | `glob` | `find` | `glob` | |
+| `grep` | `Grep` | | `grep` | `grep` | `grep` | |
+| `ls` | `LS` | | `list` | `ls` | `ls` | |
+| `web_search` | `WebSearch` | web search | `webfetch` |  | | |
 
 不在此表中的工具會在 `name` 中保留其原生名稱。
 

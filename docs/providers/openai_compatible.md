@@ -138,6 +138,25 @@ print(response)
 
   </Tabs>
 
+### 呼叫 `/v1/messages`（Anthropic 格式）{#calling-v1messages-anthropic-format} {#calling-v1messages-anthropic-format}
+
+LiteLLM 會將 `openai/` 模型的 `/v1/messages` 請求經由 OpenAI Responses API 路由，因此 proxy 會對您的 `api_base` 呼叫 `/responses`。如果您的端點只提供 `/chat/completions`，請求會以該路由的端點錯誤失敗，通常是 404 或 400，而同一模型的 `/chat/completions` 請求仍可正常運作。
+
+若要改為透過 `/chat/completions` 傳送 `/v1/messages` 請求，請開啟 `use_chat_completions_url_for_anthropic_messages`。
+
+```yaml
+model_list:
+  - model_name: my-model
+    litellm_params:
+      model: openai/<your-model-name>
+      api_base: <model-api-base>
+      api_key: api-key
+
+litellm_settings:
+  use_chat_completions_url_for_anthropic_messages: true
+```
+
+您也可以設定環境變數 `LITELLM_USE_CHAT_COMPLETIONS_URL_FOR_ANTHROPIC_MESSAGES=true`。此設定適用於整個 proxy，因此一旦開啟，連 OpenAI 自家託管模型的 `/v1/messages` 請求也會走 `/chat/completions`。預設路由如何轉換請求，請見 [`/v1/messages` 至 `/responses` 參數對應](../anthropic_unified/messages_to_responses_mapping.md)。
 ### 進階 - 停用系統訊息 {#advanced---disable-system-messages}
 
 某些 VLLM 模型（例如 gemma）不支援系統訊息。若要將這些請求對應為 'user' 訊息，請使用 `supports_system_message` 旗標。 

@@ -2,7 +2,7 @@
 title: "LiteLLM v1.81.0-stable - Claude Code - 全部提供者的 Web Search"
 description: "為 Claude Code 在 Bedrock、Vertex AI 與所有提供者上新增 Web 搜尋。將圖片 URL 下載限制為 50MB，並將 CPU 使用量降低 25%。"
 slug: "v1-81-0"
-date: 2026-01-18T10:00:00
+date: 2026-01-24T19:46:15
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

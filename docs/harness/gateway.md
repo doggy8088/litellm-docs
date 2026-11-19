@@ -6,7 +6,7 @@ description: 針對一個 LiteLLM AI Gateway 虛擬金鑰執行 litellm.agent() 
 
 # 使用 LiteLLM AI Gateway {#using-with-litellm-ai-gateway}
 
-建議以 `litellm.agent()` 搭配 [LiteLLM AI Gateway](/docs/proxy/docker_quick_start) 來執行代理程式。Claude Code、Codex、OpenCode、Deep Agents 與 Tool Loop 使用不同的模型 API 以及傳遞憑證的方式。透過 gateway，它們共用一把虛擬金鑰、相同的模型群組與備援，而且每次請求都會進入 gateway 的支出記錄，並標記發出請求的 harness
+建議以 `litellm.agent()` 搭配 [LiteLLM AI Gateway](/docs/proxy/docker_quick_start) 來執行代理程式。Claude Code、Codex、OpenCode、Pi、Deep Agents 與 Tool Loop 使用不同的模型 API 以及傳遞憑證的方式。透過 gateway，它們共用一把虛擬金鑰、相同的模型群組與備援，而且每次請求都會進入 gateway 的支出記錄，並標記發出請求的 harness
 
 CLI 執行環境只會看到主機上本機端點的每個工作階段權杖，而該端點在轉送至 gateway 時會加入您的虛擬金鑰。Deep Agents 與 Tool Loop 會在您的 Python 程式中，使用虛擬金鑰呼叫 gateway。提供者金鑰保留在 gateway 上，絕不會到達您的機器
 
@@ -14,7 +14,7 @@ CLI 執行環境只會看到主機上本機端點的每個工作階段權杖，�
 
 ```mermaid
 flowchart LR
-    R[Claude Code / Codex / OpenCode<br/>在沙箱中] -->|工作階段權杖| E[主機上的本機端點]
+    R[Claude Code / Codex / OpenCode / Pi<br/>在沙箱中] -->|工作階段權杖| E[主機上的本機端點]
     E -->|虛擬金鑰<br/>x-litellm-tags: harness,codex| G[LiteLLM AI Gateway]
     D[Deep Agents<br/>在您的程式中] -->|虛擬金鑰| G
     T[Tool Loop<br/>在您的程式中] -->|虛擬金鑰| G
@@ -27,7 +27,7 @@ flowchart LR
 
 ## 1. 設定 gateway {#1-configure-the-gateway}
 
-為每一種 harness 指派適合的模型群組。Claude Code 最適合 Claude，Codex 最適合 OpenAI 推理模型，而 OpenCode、Deep Agents 與 Tool Loop 可搭配任何支援其 API 的群組
+為每一種 harness 指派適合的模型群組。Claude Code 最適合 Claude，Codex 最適合 OpenAI 推理模型，而 OpenCode、Pi、Deep Agents 與 Tool Loop 可搭配任何支援其 API 的群組
 
 ```yaml title="config.yaml"
 model_list:
@@ -49,7 +49,7 @@ model_list:
     litellm_params:
       model: openai/gpt-5
       api_key: os.environ/OPENAI_API_KEY
-  # a cheaper general model for OpenCode, Deep Agents and Tool Loop
+  # a cheaper general model for OpenCode, Pi, Deep Agents and Tool Loop
   - model_name: gemini
     litellm_params:
       model: gemini/gemini-2.5-pro
@@ -105,13 +105,14 @@ result = litellm.agent(
 
 ## 4. 選擇一個 harness {#4-choosing-a-harness}
 
-五種 harness 都使用相同的呼叫，但它們擅長不同工作，並使用適合各自執行環境的 gateway 路由
+六種 harness 都使用相同的呼叫，但它們擅長不同工作，並使用適合各自執行環境的 gateway 路由
 
 | Harness | Gateway 路由 | 最適合的模型群組 | 適用情境 |
 |---|---|---|---|
 | Claude Code | `/v1/messages` | Claude（Anthropic、Bedrock 或 Vertex） | 真實儲存庫中長篇、多檔案變更 |
 | Codex | `/v1/responses` | OpenAI 推理模型 | 困難、規格明確且值得投入推理深度的任務 |
 | OpenCode | `/v1/chat/completions` | 任何 | 在非 Claude 或自架模型上執行 coding agent |
+| [Pi](./pi.md) | `/v1/chat/completions` | 任何支援工具呼叫的模型 | Pi 的檔案與 shell 工具，具備工作階段與技能 |
 | Deep Agents | 透過 `litellm_proxy/` 的 `/v1/chat/completions` | 任何 | 會呼叫您自己的 Python 函式的代理程式 |
 | Tool Loop | 透過 `litellm_proxy/` 的 `/v1/chat/completions` | 任何支援工具呼叫的模型 | 圍繞您自己的 Python 函式的極簡迴圈 |
 
@@ -162,6 +163,10 @@ litellm.agent(
     permissions="edit",
 )
 ```
+
+### Pi {#pi}
+
+Pi 透過相同的 gateway 模型群組使用 Chat Completions。請選擇 `Harness.PI`，並在您的 sandbox 中安裝 Pi CLI。它支援 `"read-only"`、`"edit"` 與 `"full"`、個別工具篩選、技能、結構化輸出與工作階段恢復。完整範例與 `PiOptions` 請參閱 [Pi 指南](./pi.md)。
 
 ### Deep Agents {#deep-agents}
 

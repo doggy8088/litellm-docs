@@ -2,7 +2,7 @@
 title: "LiteLLM v1.83.3-stable - MCP 工具集與技能市集"
 description: "新增 MCP Toolsets、供 Claude Code 技能使用的 Skills Marketplace，以及透過 on_error 設定的防護欄備援。"
 slug: "v1-83-3-stable"
-date: 2026-04-04T00:00:00
+date: 2026-04-14T03:19:31
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

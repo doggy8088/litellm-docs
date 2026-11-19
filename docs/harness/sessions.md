@@ -1,8 +1,10 @@
 ---
-title: Sessions
+title: litellm.agent() 的工作階段
+sidebar_label: 工作階段
+description: 使用 litellm.agent_session() 在多個代理程式回合之間保留工作目錄與對話歷史。
 ---
 
-# 工作階段 {#sessions}
+# `litellm.agent()` 的工作階段 {#sessions-for-litellmagent}
 
 工作階段會在各回合之間保留其工作目錄與對話歷史。`litellm.agent()` 會為單一回合建立工作階段，並在之後關閉它。當您需要超過一個回合時，請使用 `litellm.agent_session()`
 

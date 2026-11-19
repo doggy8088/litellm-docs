@@ -2,7 +2,7 @@
 title: "LiteLLM v1.86.4 - Azure AD、Batch Auth 與 Passthrough 回補"
 description: "修正 Azure AD 權杖刷新、批次與影片模型路由，以及組織範圍的團隊金鑰建立。移除 Vertex Claude 模型的 effort 設定。"
 slug: "v1-86-4"
-date: 2026-06-03T20:10:47
+date: 2026-06-04T16:16:24
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

@@ -2,7 +2,7 @@
 title: "LiteLLM v1.91.4 - Docker 遷移資產與 Prisma 內建封裝"
 description: "恢復 litellm-proxy-extras 資料夾，並將 Prisma CLI 內建於固定路徑。修正非 root 使用者在全新資料庫上的 migrations。"
 slug: "v1-91-4"
-date: 2026-07-18T19:14:34
+date: 2026-07-19T02:45:36
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

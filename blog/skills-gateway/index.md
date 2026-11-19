@@ -18,6 +18,8 @@ image: ./hero.png
 - 版本歷程
 - 下載追蹤
 
+已在 [LiteLLM 1.110.x 版本](/release_notes/v1.110.0/v1-110-0)中提供。請升級至 v1.110.0 或更新版本以使用這些功能。
+
 {/* truncate */}
 
 ## 上傳完整的技能 {#upload-a-complete-skill}

@@ -9,6 +9,10 @@ hide_table_of_contents: true
 image: ./hero.png
 ---
 
+:::info LiteLLM SDK 中的代理程式
+對於新專案，請使用 [`litellm.agent()`](/docs/harness)，它包含在 LiteLLM Python SDK 中。本篇發布文章介紹的是獨立的 LiteAgents 套件。其原始碼與參考資料仍在 [LiteAgents 儲存庫](https://github.com/BerriAI/liteagents)。
+:::
+
 ![LiteAgents：切換 harness，保留您的 agent。ProfileOptions 範例將 deepagents 變更為 claude-sdk，同時保留模型、工具與 MCP 連線。](./hero.png)
 
 您已使用自己的工具、提示詞和模型組態建置了一個 agent。現在您想在相同任務上嘗試不同的 harness。

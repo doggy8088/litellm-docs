@@ -1,8 +1,10 @@
 ---
-title: Sandboxes
+title: litellm.agent() 的沙箱
+sidebar_label: 沙箱
+description: 選擇 litellm.agent() 執行 harness 的位置，並了解哪些工具在沙箱內或沙箱外執行。
 ---
 
-# 沙箱 {#sandboxes}
+# `litellm.agent()` 的沙箱 {#sandboxes-for-litellmagent}
 
 每次呼叫都需要沙箱。CLI harness 會在其中執行，而 Deep Agents 內建的檔案與 shell 工具也會使用它。Tool Loop 和 Deep Agents 會在您的程序中執行 Python 工具，因此這些工具不會自動受到沙箱限制
 

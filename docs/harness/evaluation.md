@@ -1,9 +1,10 @@
 ---
-title: 評估代理程式
-description: 使用具型別的評估、可重複的執行，以及包含成功、成本與時間的成績卡，在您自己的任務上比較代理程式 harness 與模型。
+title: 使用 litellm.agent_eval() 評估代理程式
+sidebar_label: 評估代理程式
+description: 使用 litellm.agent_eval()，在可重複的任務上比較代理程式 harness 與模型，並為其成功、成本與時間評分。
 ---
 
-# 評估代理程式 {#evaluate-agents}
+# 使用 `litellm.agent_eval()` 評估代理程式 {#evaluate-agents-with-litellmagent_eval}
 
 {/* keep-version-note */}
 

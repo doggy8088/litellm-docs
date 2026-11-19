@@ -2,7 +2,7 @@
 title: "LiteLLM v1.88.2 - DB 彈性、Passthrough、Model-Info 與 Budget"
 description: "將資料庫彈性修正與 disable_budget_reservation 設定回補至 1.88 系列。另修正 /v1/model/info 的團隊存取與 BYOK 編輯。"
 slug: "v1-88-2"
-date: 2026-06-13T19:29:53
+date: 2026-06-14T02:32:48
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM

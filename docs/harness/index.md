@@ -1,17 +1,21 @@
 ---
-title: Agents (litellm.agent)
+title: LiteLLM SDK 中的代理程式
 slug: /harness
 sidebar_label: 總覽
-description: 使用 litellm.agent() 從 Python 執行 Claude Code、Codex、OpenCode、Deep Agents 和 Tool Loop，模型請求則透過 LiteLLM AI Gateway 路由。
+description: 使用包含於 LiteLLM SDK 中的 litellm.agent()，從 Python 執行代理程式。選擇 harness、串流結果，並追蹤用量與成本。
 ---
 
-# Agents (`litellm.agent`) {#agents-litellmagent}
+# LiteLLM SDK 中的代理程式 {#agents-in-the-litellm-sdk}
+
+使用 `litellm.agent()`，從 Python 執行 Claude Code、Codex、OpenCode、Pi、Deep Agents 或 Tool Loop。它與 `completion()` 屬於同一個 `litellm` 套件。請為每項任務選擇 harness 與模型、串流其輸出，並從結果中讀取用量與成本。
+
+請先閱讀 [代理程式快速入門](./quickstart.md)，安裝 SDK 與您選擇的 harness，再執行您的第一項任務。
 
 :::info Beta
 `litellm.agent()` 處於 beta 階段。API 可能會在不同版本之間變更。
 :::
 
-使用 `litellm.agent()` 執行代理程式，透過單一 API 從 Python 驅動 Claude Code、Codex、OpenCode、Deep Agents 或 Tool Loop。將模型請求經由 LiteLLM AI Gateway 路由，讓這五種 harness 都能共用一把虛擬金鑰、一組模型群組與備援，以及一個查看支出的位置
+將模型請求經由 LiteLLM AI Gateway 路由，共用一把虛擬金鑰、模型群組與備援，以及一個查看各 harness 支出的位置。
 
 ```python title="fix_flaky.py"
 import litellm
@@ -44,6 +48,7 @@ for f in result.files:
 | [`Harness.CLAUDE_CODE`](./claude_code.md) | Anthropic 的 Claude Code CLI | 您的 sandbox |
 | [`Harness.CODEX`](./codex.md) | OpenAI 的 Codex CLI | 您的 sandbox |
 | [`Harness.OPENCODE`](./opencode.md) | OpenCode CLI | 您的 sandbox |
+| [`Harness.PI`](./pi.md) | Pi coding agent CLI | 您的 sandbox |
 | [`Harness.DEEPAGENTS`](./deepagents.md) | LangChain Deep Agents | 您的 Python 程序，工具會在您的 sandbox 上執行 |
 | [`Harness.TOOL_LOOP`](./tool_loop.md) | LiteLLM tool-calling loop | 您的 Python 程序，呼叫您的工具 |
 

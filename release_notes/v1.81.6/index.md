@@ -2,7 +2,7 @@
 title: "LiteLLM [Preview] v1.81.6 - 使用 Tool Call Tracing 的 Logs v2"
 description: "在此預覽版本中重新設計記錄檢視，加入工具呼叫追蹤、側邊面板與錯誤訊息搜尋。"
 slug: "v1-81-6"
-date: 2026-01-31T00:00:00
+date: 2026-02-01T04:02:23
 authors:
   - name: Krrish Dholakia
     title: CEO, LiteLLM
