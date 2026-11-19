@@ -139,7 +139,7 @@ const sidebars = {
         { type: "doc", id: "langchain/langchain", label: "LangChain with LiteLLM", customProps: { icon: "/img/integrations/langchain.png" } },
         { type: "ref", id: "projects/openai-agents", customProps: { icon: "/img/integrations/openai.png" } },
         { type: "doc", id: "tutorials/instructor", label: "Instructor with LiteLLM" },
-        { type: "link", label: "Agent Harnesses (litellm.agent)", href: "/docs/harness", className: "sidebar-xlink" },
+        { type: "link", label: "Agents in the LiteLLM SDK", href: "/docs/harness", className: "sidebar-xlink" },
       ]
     },
     {
@@ -681,6 +681,8 @@ const sidebars = {
               items: [
                 "proxy/customers",
                 "proxy/customer_management/track-customer-spend",
+                "proxy/customer_management/applications",
+                "proxy/customer_management/customer-surcharge",
                 "proxy/customer_management/jwt-customer-identity",
                 "proxy/customer_management/api_reference",
               ],
@@ -1140,11 +1142,11 @@ const sidebars = {
             },
           ],
         },
-        // litellm.agent(): agent harnesses (Claude Code, Codex, OpenCode, Deep Agents, Tool Loop).
+        // litellm.agent(): agent harnesses (Claude Code, Codex, OpenCode, Pi, Deep Agents, Tool Loop).
         // Styled by the "litellm.harness docs" block in src/css/custom.css.
         {
           type: "category",
-          label: "Agent Harnesses",
+          label: "Agents",
           className: "harness-sidebar",
           items: [
             {
@@ -1167,6 +1169,7 @@ const sidebars = {
                 "harness/claude_code",
                 "harness/codex",
                 "harness/opencode",
+                "harness/pi",
                 "harness/deepagents",
                 "harness/tool_loop",
               ],
@@ -1374,7 +1377,6 @@ const sidebars = {
       ],
     },
     { type: "html", value: "Developer Tools", className: "sidebar-caption", defaultStyle: true },
-    { type: "doc", id: "liteagents", label: "liteagents SDK", className: "top-level-doc-item sidebar-beta" },
     {
       type: "category",
       label: "lite CLI",

@@ -1,8 +1,10 @@
 ---
-title: API reference
+title: litellm.agent() API reference
+sidebar_label: API reference
+description: Look up the Python functions, options, and return types for litellm.agent() and its async and session variants.
 ---
 
-# API reference
+# `litellm.agent()` API reference
 
 The entry points live on the top-level `litellm` module, next to `litellm.completion`. Each one has an async version with an `a` prefix.
 
@@ -13,6 +15,7 @@ from litellm import (
     ClaudeCodeOptions,
     CodexOptions,
     OpenCodeOptions,
+    PiOptions,
     DeepAgentsOptions,
     ToolLoopOptions,
     sandbox,
@@ -92,6 +95,7 @@ def agent(
         ClaudeCodeOptions
         | CodexOptions
         | OpenCodeOptions
+        | PiOptions
         | DeepAgentsOptions
         | ToolLoopOptions
         | None
