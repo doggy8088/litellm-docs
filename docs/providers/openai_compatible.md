@@ -138,7 +138,7 @@ print(response)
 
   </Tabs>
 
-### 呼叫 `/v1/messages`（Anthropic 格式）{#calling-v1messages-anthropic-format} {#calling-v1messages-anthropic-format}
+### 呼叫 `/v1/messages`（Anthropic 格式） {#calling-v1messages-anthropic-format}
 
 LiteLLM 會將 `openai/` 模型的 `/v1/messages` 請求經由 OpenAI Responses API 路由，因此 proxy 會對您的 `api_base` 呼叫 `/responses`。如果您的端點只提供 `/chat/completions`，請求會以該路由的端點錯誤失敗，通常是 404 或 400，而同一模型的 `/chat/completions` 請求仍可正常運作。
 
