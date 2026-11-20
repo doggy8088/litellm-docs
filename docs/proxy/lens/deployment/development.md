@@ -21,9 +21,9 @@ npm ci
 npm run dev
 ```
 
-第一次啟動會建置 Lens、在 `deploy/lens/.env` 中產生私密憑證、啟動 Lens 和 ClickHouse，並在 [http://127.0.0.1:3100/ui/](http://127.0.0.1:3100/ui/) 啟動 UI。使用該檔案中的 `LENS_ADMIN_TOKEN` 登入。在本機讀取它，並避免將它放入共用的記錄中。UI 變更會自動重新載入，開發伺服器會將 API 請求轉送到 Lens 容器
+第一次啟動會建置 Lens，編譯 Rust 後端約需 22 分鐘。接著在 `deploy/lens/.env` 中產生私密憑證、啟動 Lens 和 ClickHouse，並在 [http://127.0.0.1:3100/ui/](http://127.0.0.1:3100/ui/) 啟動 UI。請將該檔案中的 `LENS_ADMIN_TOKEN` 值貼到 **Setup token** 欄位中以登入。在本機讀取它，並避免將它放入共用的記錄中。UI 變更會自動重新載入，開發伺服器會將 API 請求轉送到 Lens 容器
 
-開啟 **Traces**，按一下 **Connect project**，選取您的框架並建立追蹤金鑰。使用產生的設定執行您的代理程式，然後使用 **Check for traces** 並開啟相符的執行。只有在您啟用調查或 Signals 時，才需要提供者設定
+開啟 **Home**，選擇 **Set up with your coding agent** 或 **Set up manually** 以建立追蹤金鑰。使用產生的設定執行您的代理程式。當執行送達時，Home 會提供 **Open trace**；空白的 **Traces** 頁面也有 **Check for traces**。只有在您啟用調查或 Signals 時，才需要提供者設定
 
 如果連接埠 4318 被占用，請使用 `LENS_PORT=4320 LENS_DEV_API_URL=http://127.0.0.1:4320 npm run dev`。UI 使用連接埠 3100，因此請先停止任何使用該連接埠的先前預覽
 
@@ -49,4 +49,4 @@ docker compose -f deploy/lens/compose.yaml stop
 
 再次執行 `npm run dev` 以繼續。保留環境檔案和 ClickHouse 磁碟區，讓您的憑證和儲存的記錄得以保留
 
-如需不含開發工具的原始碼安裝，請使用 [Run Lens](https://github.com/BerriAI/lens/blob/main/deploy/lens/README.md)。該指南也說明了目前已發佈版本的狀態。官方配對版本使用相同的 Lens 和 LiteLLM 版本；連接閘道需要 [閘道整合指南](./docker-compose.md) 中所述的相容配接器和憑證
+如需不含開發工具的原始碼安裝，請使用 [Run Lens](https://github.com/BerriAI/lens/blob/main/deploy/lens/README.md)。該指南也說明了目前已發佈版本的狀態。官方配對版本使用相同的 Lens 和 LiteLLM 版本；連接閘道需要 [將 Lens 加入 LiteLLM](./litellm.md) 中所述的相容配接器和憑證

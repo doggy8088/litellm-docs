@@ -53,7 +53,7 @@ async def get_prompt(prompt_id: str):
             {"role": "user", "content": "Help me with {task}"}
         ],
         "prompt_template_model": "{{openai_large}}",
-        "prompt_template_optional_params": {"temperature": 0.7}
+        "prompt_template_optional_params": {"max_tokens": 500}
     }
 ```
 
@@ -112,9 +112,7 @@ GET /beta/litellm_prompt_management?prompt_id=hello-world-prompt-2bac&project_na
   ],
   "prompt_template_model": "{{openai_large}}",
   "prompt_template_optional_params": {
-    "temperature": 0.7,
-    "max_tokens": 500,
-    "top_p": 0.9
+    "max_tokens": 500
   }
 }
 ```
@@ -271,7 +269,6 @@ PROMPTS = {
         ],
         "prompt_template_model": "{{openai_large}}",
         "prompt_template_optional_params": {
-            "temperature": 0.7,
             "max_tokens": 500
         }
     },
@@ -289,7 +286,6 @@ PROMPTS = {
         ],
         "prompt_template_model": "{{openai_large}}",
         "prompt_template_optional_params": {
-            "temperature": 0.3,
             "max_tokens": 1000
         }
     }
@@ -409,7 +405,6 @@ curl "http://localhost:8080/beta/litellm_prompt_management?prompt_id=hello-world
   ],
   "prompt_template_model": "{{openai_large}}",
   "prompt_template_optional_params": {
-    "temperature": 0.7,
     "max_tokens": 500
   }
 }
@@ -490,18 +485,18 @@ LiteLLM 將會使用用戶端指定的模型，忽略提示的模型。
 
 用戶端參數會與提示參數合併，且提示參數優先：
 ```python
-# Prompt returns: {"temperature": 0.7, "max_tokens": 500}
-# Client sends: {"temperature": 0.9, "top_p": 0.95}
-# Final params: {"temperature": 0.7, "max_tokens": 500, "top_p": 0.95}
+# Prompt returns: {"max_tokens": 500, "reasoning_effort": "low"}
+# Client sends: {"max_tokens": 1000, "seed": 7}
+# Final params: {"max_tokens": 500, "reasoning_effort": "low", "seed": 7}
 ```
 
 **使用 `ignore_prompt_manager_optional_params: true` 時：**
 
 只會使用用戶端參數：
 ```python
-# Prompt returns: {"temperature": 0.7, "max_tokens": 500}
-# Client sends: {"temperature": 0.9, "top_p": 0.95}
-# Final params: {"temperature": 0.9, "top_p": 0.95}
+# Prompt returns: {"max_tokens": 500, "reasoning_effort": "low"}
+# Client sends: {"max_tokens": 1000, "seed": 7}
+# Final params: {"max_tokens": 1000, "seed": 7}
 ```
 
 ## 安全性考量 {#security-considerations}

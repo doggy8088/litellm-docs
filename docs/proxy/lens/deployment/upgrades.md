@@ -24,6 +24,12 @@ slug: "/proxy/lens/deployment/upgrades"
 docker compose -f deploy/lens/compose.yaml up -d --wait
 ```
 
+[快速入門](./local.md) 安裝會將 `.env` 保留在下載的 `compose.yaml` 旁邊，且該檔案目前還沒有 `LENS_IMAGE` 這一行。請加入一行已驗證的成品，例如 `LENS_IMAGE=ghcr.io/berriai/lens:0.1.0`，然後從該資料夾套用它：
+
+```sh
+docker compose up -d --wait
+```
+
 對於 Helm，保留您的版本名稱、命名空間和值，並透過 [Lens Helm 指南](https://github.com/BerriAI/lens/blob/main/helm/lens/README.md) 更新 Lens 映像或 chart。產生的憑證會由具有叢集存取權的 Helm 重複使用；GitOps 使用 [預先佈建的密鑰](./storage.md#gitops)
 
 完成 [第一次追蹤檢查](../deployment.md#check-the-installation)，開啟先前儲存的追蹤和資料集，並在恢復排程之前執行一個有界限的調查。連接到 LiteLLM 時，也請在內嵌頁面中驗證一般的推論和現有的使用者範圍

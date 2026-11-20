@@ -268,6 +268,10 @@ curl -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-vector-index/search' \
 - `text-embedding-3-small`：1536 維
 - `text-embedding-ada-002`：1536 維
 
+## 搜尋服務備援 {#search-service-fallbacks}
+
+為了提升跨 Azure AI Search 服務的彈性，請在 YAML 中[定義向量儲存庫備援](../completion/knowledgebase.md#define-vector-store-fallbacks)。搜尋服務容錯移轉與嵌入模型群組路由是分開的。它支援統一搜尋與原生的 Azure 搜尋路由，而寫入則維持既有路由，不會備援。
+
 ## 常見問題 {#common-issues}
 
 **"無法為查詢產生嵌入"**

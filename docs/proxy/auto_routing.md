@@ -761,7 +761,7 @@ Anthropic 系列的級別會以相同方式使用 `thinking`，因為它是一�
       thinking: {type: enabled, budget_tokens: 8192}
 ```
 
-努力等級是每個模型的能力，因此請確認模型支援您要求的級別：`gpt-5-mini` 會拒絕 `xhigh`，而 `gpt-5.4-mini` 則接受它，若在路由器別名上設定 `drop_params: true`，會把該拒絕變成一個悄然被丟棄的參數，讀起來就像一個什麼都沒改變的階梯。還有兩件事要記住。成本追蹤會依其底層模型為每個級別定價，因此這種方式建構的階梯在支出上會顯示為同一個模型有多個努力等級，而不是多個獨立模型。而 `session_affinity` 會固定該級別的 `model_name`；快取命中時 TTL 會重新整理，而升階請求可能把固定點往上移一個階層，而不是讓它維持在硬性固定期間鎖定
+努力等級是每個模型的能力，因此請確認模型支援您要求的級別。在 `/v1/chat/completions` 上，若 GPT 模型的 `xhigh` 級別在[模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)中沒有把 `supports_xhigh_reasoning_effort` 設為 `true`，LiteLLM 會以 400 回應，說明 `xhigh is not supported for <model>`，因此沒有對照列的部署名稱同樣會收到 400。`/v1/responses` 只有在該列把旗標設為 `false` 時才回傳這個 400。在 [`reasoning_effort_levels`](../reasoning_content#reasoning-effort-levels) 中列出 `xhigh` 的部署，不論對照列如何設定都會收到 `xhigh`，而清單中未列出 `xhigh` 的部署則會收到其宣告的其中一個級別。若在路由器別名上設定 `drop_params: true`，被拒絕的 `xhigh` 會被丟棄，因此呼叫會以模型的預設努力等級執行，該等級可能比 `low` 級別還低。捨入到另一個級別與丟棄參數兩種做法都會回傳 200，但不會以 `xhigh` 執行。還有兩件事要記住。成本追蹤會依其底層模型為每個級別定價，因此這種方式建構的階梯在支出上會顯示為同一個模型有多個努力等級，而不是多個獨立模型。而 `session_affinity` 會固定該級別的 `model_name`；快取命中時 TTL 會重新整理，而升階請求可能把固定點往上移一個階層，而不是讓它維持在硬性固定期間鎖定
 
 安裝、憑證與完整可執行範例，請參閱 [Autorouter SDK 指南](/docs/autorouter_sdk)。
 

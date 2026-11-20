@@ -226,8 +226,8 @@ print(response.choices[0].message.content)
 
 LiteLLM 提供一個伺服器，為 PG Vector 提供相容 OpenAI 的 `vector_store` 端點。LiteLLM Proxy 伺服器會連接到您已部署的服務，並在查詢時將其用作向量儲存區。
 
-1. 請依照此處的 litellm-pg-vector-store 連接器部署說明[https://github.com/BerriAI/litellm-pgvector?tab=readme-ov-file#configuration]
-2. 如需詳細設定選項，請參閱[設定指南](https://github.com/BerriAI/litellm-pgvector)
+1. 請依照此處的 litellm-pg-vector-store 連接器部署說明[https://github.com/BerriAI/litellm-pgvector]
+2. 如需詳細設定選項，請參閱[設定指南](https://github.com/BerriAI/litellm-pgvector?tab=readme-ov-file#configuration)
 
 **部署 litellm-pg-vector-store 的 .env 設定範例：**
 
@@ -285,6 +285,90 @@ DB_FIELDS__CREATED_AT_FIELD="created_at"
 />
 </div>
 
+
+
+## 定義向量儲存區備援 {#define-vector-store-fallbacks}
+
+為 Proxy 搜尋請求設定一份依序排列的備援向量儲存區清單。LiteLLM 會先嘗試主要儲存區，若搜尋因可重試的錯誤而失敗，再依序嘗試已設定的備援儲存區。呼叫端仍使用主要儲存區 ID 或既有的 passthrough URL。
+
+:::note 僅限設定檔
+
+請在 `config.yaml` 的 `vector_store_registry` 下定義主要儲存區與每一個備援儲存區。目前無法透過管理 API 或 Admin UI 設定備援，且僅存於資料庫的儲存區不能作為備援目標。以資料庫為後端的儲存區仍支援一般搜尋。
+
+:::
+
+### 設定主要儲存區與備援儲存區 {#configure-the-primary-and-backups}
+
+請在主要儲存區的 `litellm_params` 下加入 `fallbacks`。每個項目是另一個註冊項目的 **`vector_store_id`**，而非其 `vector_store_name`。以下 OpenAI 範例使用既有的提供者儲存區 ID：
+
+```yaml title="config.yaml"
+vector_store_registry:
+  - vector_store_name: documents-primary
+    litellm_params:
+      vector_store_id: vs_primary
+      custom_llm_provider: openai
+      api_key: os.environ/PRIMARY_OPENAI_API_KEY
+      fallbacks: [vs_backup]
+
+  - vector_store_name: documents-backup
+    litellm_params:
+      vector_store_id: vs_backup
+      custom_llm_provider: openai
+      api_key: os.environ/BACKUP_OPENAI_API_KEY
+
+router_settings:
+  cooldown_time: 5
+```
+
+請將 `vs_primary` 與 `vs_backup` 換成您實際的儲存區 ID。變更後請部署或重新載入 Proxy 設定。每次嘗試都會使用目標儲存區自身的提供者設定與憑證。呼叫端必須有權存取主要儲存區與所有已設定的備援儲存區；備援路由不會繞過儲存區或索引的權限。
+
+備援 ID 必須唯一，且須指向現有、支援搜尋的 YAML 註冊項目。儲存區不能備援至自身，備援儲存區也不能再定義另一層備援鏈。請自行在各儲存區中維持相同的資料。LiteLLM 不會複製文件、複寫寫入或同步索引。
+
+### 透過統一 API 搜尋 {#search-through-the-unified-api}
+
+```bash
+curl -i 'http://localhost:4000/v1/vector_stores/vs_primary/search' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"query": "What is our refund policy?"}'
+```
+
+[統一搜尋 API](../vector_stores/search.md) 可以跨提供者備援，前提是每個儲存區都支援搜尋，且資料與搜尋設定相容。這些備援適用於 Proxy 搜尋端點與下方列出的原生路由；它們不會設定聊天完成模型的備援，也不會設定由提供者管理的文件搜尋工具。
+
+### 透過原生 passthrough API 搜尋 {#search-through-native-passthrough-apis}
+
+原生搜尋使用相同的 `litellm_params.fallbacks` 設定。所有目標必須使用**相同的提供者與 API 類型**，原始請求與回應格式才會保持有效。
+
+| 提供者 | 支援備援的原生請求 |
+| --- | --- |
+| Azure AI Search | `POST /azure_ai/indexes/{name}/docs/search`, `GET /azure_ai/indexes/{name}/docs`. 也支援 `/azure/` 前綴。 |
+| Milvus | `POST /milvus/v2/vectordb/entities/search` |
+| OpenSearch | `GET` 或 `POST /opensearch/{name}/_search` |
+| Vertex AI Search | `POST /vertex_ai/discovery/v1*/projects/{project}/locations/{location}/collections/{collection}/dataStores/{store}/servingConfigs/{config}:search` |
+
+對於 Azure、Milvus 與 OpenSearch，請保留現有指向主要儲存區的索引註冊項目。備援不需要第二個 LiteLLM 索引註冊項目。備援必須包含原生請求所使用的相同實體索引或集合名稱。Vertex 支援 `vertex_ai/search_api` 資料儲存區搜尋，不支援引擎路由，並使用各目標的專案與資料儲存區設定。Milvus 混合式搜尋與其他原生讀取不在此備援支援範圍內。
+
+**寫入不會備援切換。**文件上傳、新增、更新、刪除與索引生命週期操作，仍維持既有的 passthrough 路由。即使搜尋在冷卻期間使用備援儲存區，主要寫入失敗時也不會將寫入傳送至備援。
+
+### 備援切換、冷卻與回應標頭 {#failover-cooldown-and-response-headers}
+
+HTTP `408`、`429` 與 `5xx` 回應，以及連線失敗與逾時，都會觸發搜尋備援切換。其他 `4xx` 回應，包括驗證、授權與索引不存在錯誤，則為最終結果，不會切換。查詢 embedding 失敗不會觸發向量儲存區備援切換；請在 [embedding 模型群組](../providers/azure_ai_vector_stores.md#embed-queries-through-a-model-group)上設定 embedding 的備援彈性。
+
+可重試的儲存區失敗會立即讓該儲存區進入冷卻狀態，持續 `router_settings.cooldown_time` 秒（預設為 5 秒）。冷卻期間的搜尋會跳過該儲存區。時間一到，它會恢復為可用狀態，並由實際流量再次測試。這項機制不使用模型路由的失敗次數閾值。若所有目標都處於冷卻狀態，LiteLLM 會回傳 `503` 與 `Retry-After`。
+
+若要讓多個 Proxy worker 與執行個體共用冷卻狀態，請在每個 Proxy 的設定中，將 `general_settings.coordination_redis` 指向同一個 Redis 執行個體：
+
+```yaml
+general_settings:
+  coordination_redis:
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+    password: os.environ/REDIS_PASSWORD
+```
+
+若未設定協調用的 Redis，或該 Redis 無法使用，冷卻狀態會改以各 worker 的本機快取為準。
+
+成功的回應會以 `x-litellm-vector-store-id` 標示實際提供服務的儲存區，並以 `x-litellm-attempted-fallbacks` 標示備援嘗試次數。原生回應會保留提供者的回應主體。這些標頭不會提供完整的嘗試記錄。
 ## 進階 {#advanced}
 
 ### 記錄向量儲存區使用情況 {#logging-vector-store-usage}

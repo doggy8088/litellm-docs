@@ -105,8 +105,6 @@ for _ in range(2):
                 ],
             },
         ],
-        temperature=0.2,
-        max_tokens=10,
     )
 
 print("response=", response)
@@ -184,14 +182,12 @@ for _ in range(2):
                 ],
             },
         ],
-        temperature=0.2,
-        max_tokens=10,
     )
 
 print("response=", response)
 print("response.usage=", response.usage)
 
-assert "prompt_tokens_details" in response.usage
+assert response.usage.prompt_tokens_details is not None
 assert response.usage.prompt_tokens_details.cached_tokens > 0
 ```
 
@@ -349,7 +345,7 @@ print(response.usage.input_tokens_details)
 
 ### Bedrock Mantle 明確斷點（OpenAI GPT-5.6 及更新版本） {#bedrock-mantle-explicit-breakpoints-openai-gpt-56-and-newer}
 
-Amazon Bedrock Mantle 上的 OpenAI GPT-5.6 及更新版本模型接受相同的 `prompt_cache_breakpoint` 標記與 `prompt_cache_options` 請求欄位，但僅限 Responses API。LiteLLM 會在 `/responses` 上原樣傳遞這兩者；對這類模型的 `/chat/completions` 呼叫會橋接到 Responses API，且標記會保留在內容區塊上，因此部署上的 `cache_control_injection_points` 的運作方式與 `openai/gpt-5.6` 相同（[自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)）。Mantle 的限制來自 [AWS 公告](https://aws.amazon.com/blogs/machine-learning/introducing-explicit-prompt-caching-for-openai-gpt-5-6-models-on-amazon-bedrock/)：每個被快取的前綴至少需要 1,024 個 token，一個請求最多可在 `input_text`、`input_image` 與 `input_file` 區塊上帶 4 個斷點，被快取的前綴至少可保留 30 分鐘，快取寫入費用為輸入費率的 1.25 倍，快取讀取則享 90% 折扣。回應會在寫入快取的呼叫上回報 `usage.input_tokens_details.cache_write_tokens`，在讀取快取的呼叫上回報 `cached_tokens`；LiteLLM 會以模型的 `cache_creation_input_token_cost` 與 `cache_read_input_token_cost` 計算兩者的價格
+[Amazon Bedrock Mantle](../providers/bedrock_mantle.md) 上的 OpenAI GPT-5.6 及更新版本模型接受相同的 `prompt_cache_breakpoint` 標記與 `prompt_cache_options` 請求欄位，但僅限 Responses API。LiteLLM 會在 `/responses` 上原樣傳遞這兩者；對這類模型的 `/chat/completions` 呼叫會橋接到 Responses API，且標記會保留在內容區塊上，因此部署上的 `cache_control_injection_points` 的運作方式與 `openai/gpt-5.6` 相同（[自動注入教學](../tutorials/prompt_caching.md#openai-gpt-56-and-newer)）。Mantle 的限制來自 [AWS 公告](https://aws.amazon.com/blogs/machine-learning/introducing-explicit-prompt-caching-for-openai-gpt-5-6-models-on-amazon-bedrock/)：每個被快取的前綴至少需要 1,024 個 token，一個請求最多可在 `input_text`、`input_image` 與 `input_file` 區塊上帶 4 個斷點，被快取的前綴至少可保留 30 分鐘，快取寫入費用為輸入費率的 1.25 倍，快取讀取則享 90% 折扣。回應會在寫入快取的呼叫上回報 `usage.input_tokens_details.cache_write_tokens`，在讀取快取的呼叫上回報 `cached_tokens`；LiteLLM 會以模型的 `cache_creation_input_token_cost` 與 `cache_read_input_token_cost` 計算兩者的價格
 
 <Tabs>
 <TabItem value="sdk" label="SDK">

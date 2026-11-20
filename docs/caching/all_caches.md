@@ -572,6 +572,7 @@ def enable_cache(
     supported_call_types: Optional[
         List[Literal["completion", "acompletion", "embedding", "aembedding", "atranscription", "transcription"]]
     ] = ["completion", "acompletion", "embedding", "aembedding", "atranscription", "transcription"],
+    excluded_call_types: Optional[Sequence[CachingSupportedCallTypes]] = None,
     **kwargs,
 ) -> None: ...
 ```
@@ -596,10 +597,32 @@ def update_cache(
     supported_call_types: Optional[
         List[Literal["completion", "acompletion", "embedding", "aembedding", "atranscription", "transcription"]]
     ] = ["completion", "acompletion", "embedding", "aembedding", "atranscription", "transcription"],
+    excluded_call_types: Optional[Sequence[CachingSupportedCallTypes]] = None,
     **kwargs,
 ) -> None: ...
 ```
 
+### 從快取中排除呼叫類型 {#exclude-call-types-from-caching}
+
+`excluded_call_types` 已合併至 LiteLLM `main`（[PR #52902](https://github.com/BerriAI/litellm/pull/52902)），尚未包含在任何已標記的版本中。
+
+`excluded_call_types` 會從 `supported_call_types` 中移除指定的呼叫類型；若未設定 `supported_call_types`，則從預設清單中移除。`enable_cache`、`update_cache` 與 `Cache` 都接受此參數。簽名型別 `CachingSupportedCallTypes` 來自 `litellm.types.caching`。若要停止快取同步與非同步的 embedding，同時繼續快取 completion，請同時列出 `embedding` 與 `aembedding`：
+
+```python
+import os
+
+import litellm
+
+litellm.enable_cache(
+    type="redis",
+    host=os.environ["REDIS_HOST"],
+    port=os.environ["REDIS_PORT"],
+    password=os.environ["REDIS_PASSWORD"],
+    excluded_call_types=["embedding", "aembedding"],
+)
+```
+
+被排除的呼叫類型會跳過快取的讀取與寫入，包括在排除之前就已快取的項目。未設定或為空的 `excluded_call_types` 不會改變任何行為，而 `supported_call_types=None` 或 `[]` 仍代表完全不快取。關於批次 embedding 工作為何會塞滿共用的 Redis，請見 [避免 embedding 排擠速率限制與花費](../proxy/caching_redis.md#keep-embeddings-from-evicting-rate-limits-and-spend)。
 ## 自訂快取金鑰： {#custom-cache-keys}
 定義函式以回傳快取金鑰
 ```python
@@ -708,6 +731,7 @@ def __init__(
     qdrant_semantic_cache_embedding_model="text-embedding-ada-002",
 
     qdrant_semantic_cache_vector_size: Optional[int] = None,
+    excluded_call_types: Optional[Sequence[CachingSupportedCallTypes]] = None,
     **kwargs
 ): ...
 ```

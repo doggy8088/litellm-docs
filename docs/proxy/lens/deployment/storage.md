@@ -8,6 +8,8 @@ slug: "/proxy/lens/deployment/storage"
 
 獨立 Lens 啟動器和 Helm chart 包含搭配 Keeper 的 ClickHouse，並產生私密憑證。在提供外部儲存或密鑰時使用本頁。[Lens Helm 指南](https://github.com/BerriAI/lens/blob/main/helm/lens/README.md#use-existing-clickhouse) 擁有完整的儲存需求
 
+關於 Kubernetes 儲存的必要條件和大小，請參閱 [Helm 設定](./kubernetes.md)。處於 Pending 狀態的磁碟區會使 ClickHouse 無法啟動。閘道的受管理 PostgreSQL 是分開的，兩個 chart 都不提供它
+
 ## ClickHouse 連線 {#clickhouse-connection}
 
 使用 ClickHouse HTTP(S) 端點，憑證中的特殊字元需經過 URL 編碼：
@@ -49,6 +51,8 @@ adminTokenSecret:
 ```
 
 連接閘道還需要 [服務與簽署憑證](https://github.com/BerriAI/lens/blob/main/helm/lens/README.md#connect-a-gateway)。在這兩個服務上重複使用相同的值，每個至少 32 個字元。這些憑證與管理員 token、代理程式追蹤金鑰和模型提供者金鑰是分開的
+
+當 Lens 和 LiteLLM 使用不同的命名空間時，請在兩者中佈建具有相符 `gateway-secret` 和 `service-token` 金鑰的 `lens-connection`。閘道在其命名空間中也需要自己的主金鑰和 PostgreSQL 憑證
 
 在升級過程中保留現有的密鑰。舊的已註冊 worker token 屬於先前的閘道控制平面，不授權新的獨立執行階段
 

@@ -23,11 +23,21 @@ LiteLLM Lens 使用 AI 代理程式分析您的代理程式追蹤並找出重複
 
 ## 開始使用 {#get-started}
 
+Lens 獨立執行。請先啟動 Docker，然後在一個空資料夾中執行以下指令：
+
+```sh
+curl -fsSLO https://raw.githubusercontent.com/BerriAI/lens/main/deploy/lens/compose.yaml && docker compose up --wait && docker compose logs -n1 credentials
+```
+
+開啟 [http://localhost:4318/ui/](http://localhost:4318/ui/)，然後貼上該指令印出的設定權杖。您不需要 LiteLLM 閘道、Kubernetes 或模型提供者金鑰。[獨立快速入門](./deployment/local.md)涵蓋登入與第一筆追蹤。
+
 如果您的團隊已經在執行 Lens，請[送出您的第一筆追蹤](./first-trace.md)。選擇您的框架、為代理程式命名，然後執行範例。
 
-您可以[單獨部署 Lens](./deployment/local.md)，或[將它加入您的 LiteLLM 儀表板](./deployment/litellm.md)。如果 Lens 已經在執行，請[將該部署連接到您的閘道](./deployment/litellm.md#1-get-the-lens-address)。每份指南的結尾都包含連線檢查與第一筆追蹤。
+對於團隊，請在[伺服器](./deployment/server.md)上部署 Lens，或部署到 [Kubernetes](./deployment/kubernetes.md)，或[將它加入您的 LiteLLM 儀表板](./deployment/litellm.md)。如果 Lens 已經在執行，請[將該部署連接到您的閘道](./deployment/litellm.md#1-get-the-lens-address)。每份指南的結尾都包含連線檢查與第一筆追蹤。
 
-使用[coding agent 指南](./coding-agents.md)來記錄個人的 Claude Code 或 Codex 工作階段。一旦有追蹤可用，就[執行調查](./investigations.md)或使用[API 參考文件](./api.md)。
+**查看您的 coding agent 工作階段：**請先啟動 Lens、產生追蹤金鑰，然後依照 [Claude Code](./coding-agents.md#claude-code) 或 [Codex](./coding-agents.md#codex) 的設定步驟操作。開啟 **Traces** 即可查看記錄的活動。
+
+一旦有追蹤可用，就[執行調查](./investigations.md)或使用[API 參考文件](./api.md)。
 
 使用[模型最佳化](./model-optimizations.md)，在即時流量或已儲存的資料集上比較模型。選擇 Live、Shadow 或 Offline，並檢查品質、成本、延遲與個別答案。
 

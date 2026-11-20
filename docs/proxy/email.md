@@ -101,7 +101,7 @@ general_settings:
 
 **最高預算警示**：當金鑰達到其最高預算指定百分比時自動觸發（預設：80%）。這些警示會在您接近預算耗盡時提醒您。
 
-這兩種警示類型每 24 小時最多寄送一封電子郵件，以避免垃圾信件。
+每個設定的百分比各有自己的 24 小時抑制視窗。固定金額警示有各自獨立的抑制視窗。
 
 #### 每個金鑰的門檻與收件者 {#per-key-thresholds-and-recipients}
 
@@ -127,7 +127,48 @@ curl -X POST 'http://0.0.0.0:4000/key/generate' \
 
 在金鑰上設定 `max_budget_alert_emails` 會取代該金鑰預設的 80% 警示。若要變更既有金鑰的門檻，請將相同的 `metadata` 區塊送至 `/key/update`。
 
-目前尚未提供 UI 欄位，因此請透過 `/key/generate` 或 `/key/update` 設定。
+請在金鑰建立／編輯表單中設定這些門檻，或透過 `/key/generate` 或 `/key/update` 設定。
+
+#### 團隊預算門檻與收件者 {#team-budget-thresholds-and-recipients}
+
+<SinceVersion v="1.112.0" />
+
+<EnterpriseFeature>電子郵件預算警示需要企業授權。</EnterpriseFeature>
+
+若要針對團隊的合計支出發出警示，請使用 `metadata.max_budget_alert_emails`，其欄位與百分比對應收件者的格式與金鑰相同。請為團隊設定正數的 `max_budget`，並為每個門檻設定至少一位收件者。警示使用團隊所有金鑰（包含服務帳號金鑰）的合計支出。
+
+```shell showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/team/update' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "team_id": "my-team",
+    "max_budget": 1000,
+    "metadata": {
+      "max_budget_alert_emails": {
+        "50": ["finance@your-company.com"],
+        "75": ["finance@your-company.com"],
+        "90": ["finance@your-company.com"]
+      }
+    }
+  }'
+```
+
+使用 `/team/update` 時，請一併附上您想保留的其他 metadata。`/team/new` 接受相同的設定。在 Admin UI 中，開啟 **Teams**，選取團隊，選擇 **Settings > Edit Settings**，設定正數的 **Max Budget (USD)**，再於 **Team Budget Alerts** 下新增百分比與收件者。舊版金額控制項位於 **Legacy dollar alerts (deprecated)** 下。
+
+以上述範例而言，當團隊合計支出達到 $500、$750 與 $900 時，警示即符合寄送條件。記錄的團隊支出會在下一次推論請求時檢查，因此一個請求可能同時寄出多個級別。非推論檢查（例如團隊資格與 MCP 授權者查詢）不會寄送這些電子郵件。只有設定的收件者會收到電子郵件；不會另外加入金鑰擁有者，`default_key_max_budget_alert_emails` 也不適用於團隊。
+
+每個百分比在每 `EMAIL_BUDGET_ALERT_TTL`（24 小時）內，每個團隊最多只會寄送一次，無論該團隊擁有或輪替多少金鑰。金鑰預算警示會另外追蹤。預算重設不會清除此視窗，因此當支出仍高於門檻時，警示可能在一天後再次寄送。
+
+這些警示僅以電子郵件寄送。硬性預算強制執行及其 Slack、Microsoft Teams 與 webhook 通知不受影響。
+
+若百分比不是 1 到 100 之間的單純整數（例如 `"050"` 會被拒絕）、某個百分比沒有收件者，或 `max_budget` 缺失或不是正數，團隊建立與更新請求會被拒絕。若要移除 `max_budget`，請在同一次更新中一併移除警示。若要關閉百分比警示，請從團隊的 metadata 中移除 `max_budget_alert_emails`。
+
+##### 舊版固定金額團隊警示 {#legacy-fixed-dollar-team-alerts}
+
+固定金額團隊警示（`soft_budget` 搭配 `metadata.soft_budget_alerting_emails`）已棄用，建議改用百分比警示。它們仍可運作且仍可編輯，不會自動轉換任何內容。
+
+若兩者皆已設定，兩者都會寄送。百分比警示需要在 `general_settings.alerting` 中設定 `email`，舊版警示則不需要，因此請在移轉前先啟用它。若要移轉，請先新增百分比與收件者，再從團隊的 metadata 中移除 `soft_budget_alerting_emails`。百分比警示會跟著 `max_budget` 走：75% 警示在 $1,000 預算下會於 $750 觸發，但若預算變為 $2,000，則會於 $1,500 觸發。沒有最高預算的團隊可以繼續使用固定金額警示。
 
 #### 團隊成員預算門檻與收件者 {#team-member-budget-thresholds-and-recipients}
 

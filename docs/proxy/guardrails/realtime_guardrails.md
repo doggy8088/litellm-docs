@@ -14,7 +14,7 @@ import TabItem from '@theme/TabItem';
 
 Realtime API 是一個長時間存在的 WebSocket 連線。不同於 `/chat/completions` 中防護欄每個 HTTP 請求只會執行一次，語音工作階段有多個輪次，而且每一輪都需要單獨檢查。
 
-LiteLLM 會在轉錄事件時攔截每一輪：先由 Whisper 將語音轉成文字，接著在 LLM 產生回應之前：
+LiteLLM 會在轉錄事件時攔截每一輪：先由轉錄模型將語音轉成文字，接著在 LLM 產生回應之前：
 
 ```
 User speaks into mic
@@ -27,7 +27,7 @@ User speaks into mic
          ▼
 ┌───────────────────┐
 │     OpenAI        │
-│  VAD → Whisper    │  detects speech end, transcribes
+│  VAD → transcribe │  detects speech end, transcribes
 └────────┬──────────┘
          │
          │  conversation.item.input_audio_transcription.completed
@@ -65,9 +65,9 @@ User speaks into mic
 
 ```yaml
 model_list:
-  - model_name: openai/gpt-4o-realtime-preview
+  - model_name: openai/gpt-realtime-2.1
     litellm_params:
-      model: openai/gpt-4o-realtime-preview
+      model: openai/gpt-realtime-2.1
       api_key: os.environ/OPENAI_API_KEY
 
 guardrails:
@@ -105,8 +105,10 @@ litellm --config proxy_config.yaml --port 4000
 <TabItem value="js" label="JavaScript">
 
 ```javascript
+const WebSocket = require("ws")
+
 const ws = new WebSocket(
-  "ws://localhost:4000/v1/realtime?model=openai/gpt-4o-realtime-preview",
+  "ws://localhost:4000/v1/realtime?model=openai/gpt-realtime-2.1",
   [],
   { headers: { Authorization: "Bearer sk-<your-litellm-api-key>" } }
 )
@@ -115,16 +117,21 @@ ws.onopen = () => {
   ws.send(JSON.stringify({
     type: "session.update",
     session: {
-      modalities: ["audio", "text"],
-      input_audio_transcription: { model: "whisper-1" },
-      turn_detection: { type: "server_vad" },
+      type: "realtime",
+      output_modalities: ["audio"],
+      audio: {
+        input: {
+          transcription: { model: "gpt-transcribe" },
+          turn_detection: { type: "server_vad" },
+        },
+      },
     },
   }))
 }
 
 ws.onmessage = (e) => {
   const event = JSON.parse(e.data)
-  if (event.type === "response.audio.delta") {
+  if (event.type === "response.output_audio.delta") {
     // play audio...
   }
 }
@@ -140,7 +147,7 @@ import websockets
 
 async def main():
     async with websockets.connect(
-        "ws://localhost:4000/v1/realtime?model=openai/gpt-4o-realtime-preview",
+        "ws://localhost:4000/v1/realtime?model=openai/gpt-realtime-2.1",
         additional_headers={"Authorization": "Bearer sk-<your-litellm-api-key>"},
     ) as ws:
         await ws.recv()  # session.created
@@ -148,9 +155,14 @@ async def main():
         await ws.send(json.dumps({
             "type": "session.update",
             "session": {
-                "modalities": ["audio", "text"],
-                "input_audio_transcription": {"model": "whisper-1"},
-                "turn_detection": {"type": "server_vad"},
+                "type": "realtime",
+                "output_modalities": ["audio"],
+                "audio": {
+                    "input": {
+                        "transcription": {"model": "gpt-transcribe"},
+                        "turn_detection": {"type": "server_vad"},
+                    },
+                },
             },
         }))
 

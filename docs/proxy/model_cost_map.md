@@ -1,6 +1,6 @@
 # 模型成本對照表 {#model-cost-map}
 
-LiteLLM 以其模型成本對照表 [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 為每個請求計價。每個項目將一個模型對應到其費率、內容限制與能力。原始 JSON 大到 GitHub 無法渲染，因此請在 [models.litellm.ai](https://models.litellm.ai/) 瀏覽相同資料，該站列出每個模型的價格、內容視窗與支援功能，並讓您依模型名稱或提供者搜尋。proxy 會在啟動時從 GitHub 取得最新的對照表，因此新模型與價格變更無需升級 LiteLLM 即可抵達。若要為您自己的部署變更價格，請參閱[自訂 LLM 計價](./custom_pricing)與[自訂模型成本對照表](./custom_model_cost_map)。
+LiteLLM 以其模型成本對照表 [`model_prices_and_context_window.json`](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 為每個請求計價。每個項目將一個模型對應到其費率、內容限制與能力。原始 JSON 大到 GitHub 無法渲染，因此請在 [models.litellm.ai](https://models.litellm.ai/) 瀏覽相同資料，該站列出每個模型的價格、內容視窗與支援功能，並讓您依模型名稱或提供者搜尋。proxy 會在啟動時從 GitHub 取得最新的對照表，因此新模型與價格變更無需升級 LiteLLM 即可抵達。若要為您自己的部署變更價格，請參閱[自訂 LLM 計價](./custom_pricing)與[自訂模型成本對照表](./custom_model_cost_map)。若要在 Slack 或 RSS 閱讀器中取得新模型、價格變更與棄用通知，請參閱[訂閱模型與價格更新](./model_updates_feed)。
 
 此對照表也包含用於新 ID 的[備援泛化規則](../fallback_generalizations.md)。這些規則在缺少確切項目時推斷提供者與能力預設值。隨附的規則不含價格，因此在為未對應的模型依賴成本追蹤之前，請先加入已驗證的費率。
 

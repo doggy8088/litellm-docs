@@ -394,3 +394,7 @@ if __name__ == "__main__":
     # display_results(results)
 
 ```
+
+## 搜尋備援 {#search-fallbacks}
+
+[在 YAML 中設定備援儲存區](../../completion/knowledgebase.md#define-vector-store-fallbacks)，讓 `POST /azure_ai/indexes/{name}/docs/search` 與 `GET /azure_ai/indexes/{name}/docs` 能夠備援。`/azure/` 與 `/azure_ai/` 使用相同的處理程式，兩者都支援備援。請保留一個指向主要索引的 LiteLLM 索引註冊；每個備份都必須包含請求所使用的相同實體索引名稱。寫入與索引生命週期操作不會備援。

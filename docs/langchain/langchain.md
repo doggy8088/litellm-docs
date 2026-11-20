@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 
 ## 先決條件 {#pre-requisites}
 ```shell
-!uv add litellm langchain
+!uv add litellm langchain "langchain-openai>=0.3.0"
 ```
 
 ## 快速開始 {#quick-start}
@@ -183,7 +183,6 @@ os.environ['OPENAI_API_KEY'] = "sk-your-key-here"
 
 chat = ChatOpenAI(
     model="{{openai_large}}",
-    temperature=0.7,
     extra_body={
         "metadata": {
             "tags": ["production", "customer-support", "high-priority"]
@@ -243,7 +242,6 @@ from langchain_core.messages import HumanMessage, SystemMessage
 chat = ChatOpenAI(
     openai_api_base="http://localhost:4000",  # Your proxy URL
     model="{{openai_large}}",
-    temperature=0.7,
     extra_body={
         "metadata": {
             "tags": ["proxy", "team-alpha", "feature-flagged"],
@@ -296,7 +294,6 @@ def create_chat_with_tags(user_type: str, feature: str):
     return ChatOpenAI(
         openai_api_base="http://localhost:4000",
         model="{{openai_large}}",
-        temperature=0.7,
         extra_body={
             "metadata": {
                 "tags": tags,
@@ -326,7 +323,6 @@ from langchain_core.messages import HumanMessage, SystemMessage
 cost_tracking_chat = ChatOpenAI(
     openai_api_base="http://localhost:4000",
     model="{{openai_large}}",
-    temperature=0.7,
     extra_body={
         "metadata": {
             "tags": [
@@ -367,18 +363,18 @@ def create_ab_test_chat(test_variant: str = None):
     return ChatOpenAI(
         openai_api_base="http://localhost:4000",
         model="{{openai_large}}",
-        temperature=0.7 if test_variant == "variant-a" else 0.9,  # Different temp for variants
+        reasoning_effort="low" if test_variant == "variant-a" else "medium",  # Different reasoning effort for variants
         extra_body={
             "metadata": {
                 "tags": [
                     "ab-test-experiment-1",
                     f"variant-{test_variant}",
-                    "temperature-test",
+                    "reasoning-effort-test",
                     "user-experience"
                 ],
                 "experiment_id": "ab-test-001",
                 "variant": test_variant,
-                "test_group": "temperature-optimization"
+                "test_group": "reasoning-effort-optimization"
             }
         }
     )

@@ -73,7 +73,7 @@ response2 = client.chat.completions.create(
 以唯一的 ID 初始化新會話，並建立一個 chat model 實例以發出請求。會話 ID 會嵌入模型的設定中。
 
 ```python showLineNumbers
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 import uuid
 
 # Create a session ID

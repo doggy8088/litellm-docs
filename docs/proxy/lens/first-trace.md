@@ -1,6 +1,6 @@
 ---
 title: "傳送您的第一個 trace"
-description: "將一次模型呼叫傳送至 Lens，然後連接您現有的代理程式。適用於獨立 Lens 和 LiteLLM。"
+description: "將 Lens Home 的設定指示貼到您的程式碼代理程式中，並開啟您的第一個 trace；或以 Python 範例手動設定。"
 slug: "/proxy/lens/first-trace"
 ---
 
@@ -9,13 +9,11 @@ import TabItem from '@theme/TabItem';
 
 # 傳送您的第一個 trace {#send-your-first-trace}
 
-將一次模型呼叫傳送至 Lens，並在 **Traces** 中開啟它。這些步驟適用於獨立 Lens，以及 LiteLLM 儀表板內的 Lens。
+使用您的程式碼代理程式將專案連接至 Lens，並開啟真實任務的 trace。這些步驟適用於獨立 Lens，以及 LiteLLM 儀表板內的 Lens。
 
-您需要一個執行中的 Lens 服務、Python {{python_version}}，以及一個模型金鑰。如果 Lens 尚未就緒，請先依照 [設定 Lens](./deployment.md)。此範例會進行一次模型呼叫，可能產生提供者費用。
+您需要一個執行中的 Lens 服務。如果 Lens 尚未就緒，請先依照 [設定 Lens](./deployment.md)。如果您的專案沒有程式碼代理程式，請改以 Python 範例[手動設定](#set-up-manually)。
 
-如果您已有代理程式，您可以改依照它的 [框架指南](#connect-your-existing-agent)，並保留其現有的模型設定。
-
-## 1. 取得追蹤金鑰和端點 {#connect-your-agent}
+## 1. 開啟 Lens Home {#open-lens-home}
 
 透過您打算使用 Lens 的位置開啟 Lens：
 
@@ -24,13 +22,41 @@ import TabItem from '@theme/TabItem';
 | 連接到 LiteLLM | 登入 LiteLLM 並在側邊欄中選取 **Lens**。 |
 | 獨立 | 在 `/ui/` 開啟您的 Lens URL，並使用 `LENS_ADMIN_TOKEN` 登入。 |
 
-在 Lens 首頁，展開 **Tracing key** 並選取 **Generate tracing key**。如果您的 Lens 版本改為顯示追蹤設定面板，請在該處使用 **Generate tracing key**。如果該按鈕無法使用，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰。
+**Home** 會顯示 **Connect a new agent**，以及 **Set up with your coding agent** 面板。相同的指示適用於 Claude Code、Codex 與 Cursor。
 
-將金鑰複製到您的本機環境。從設定面板的 **Set up manually** 或 **Connection details** 複製完整的追蹤端點。它以 `/v1/traces` 結尾。對於本機快速入門，它是 `http://localhost:4318/v1/traces`。
+![Lens Home 顯示適用於 Claude Code、Codex 與 Cursor 的「Set up with your coding agent」面板，以及「Copy instructions with new key」按鈕。](/img/lens/home-connect-agent.png)
+
+## 2. 將指示複製到您的程式碼代理程式中 {#copy-the-instructions}
+
+選取 **Copy instructions with new key**。Lens 會建立一把專用的追蹤金鑰，並複製已包含該金鑰與您的 trace 端點的指示。請在您的程式碼代理程式中開啟專案並貼上它們。
+
+代理程式會檢查您的專案、為其框架新增追蹤、保留您既有的模型提供者與憑證、執行一個真實任務，並向 Lens 確認 trace 已送達。若要先閱讀指示，請展開 **View full instructions**。
+
+貼上的指示包含追蹤金鑰，因此金鑰會留在您的程式碼代理程式的聊天記錄中。請只將它們貼到您信任的代理程式中。若要重複使用金鑰而非建立新金鑰，請選取 **Use an existing key**。如果按鈕顯示 **Copy setup instructions**，指示中不含金鑰，代理程式會使用您專案環境中的追蹤金鑰。如果您無法自行建立金鑰，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰，並將它儲存為 `LITELLM_TRACING_KEY`。
+
+指示中會指名此 Lens 的 trace 端點，例如本機快速入門的 `http://localhost:4318/v1/traces`。位於另一個容器或另一台機器上的代理程式，需要一個它能連線到的位址，而不是它自己的 `localhost`。
+
+## 3. 開啟 trace {#view-your-first-trace}
+
+複製指示後，Lens Home 上的 **See your trace** 會顯示 **Waiting for your agent's trace**。任務完成後，您的程式碼代理程式會回報代理程式名稱與 trace ID，並提供 Lens 中該 trace 的連結。請開啟該連結，或在 Lens Home 顯示 **Trace received** 時選取 **Open trace**。
+
+您應該會在您的代理程式名稱下看到該次執行。只有在 instrumentation 記錄時，才會出現模型呼叫、工具步驟，以及提示與回應文字。程式碼代理程式最後會詢問接下來要檢測什麼，因此請在該處提出需求。**Demo data** 會顯示範例；檢查您自己的 trace 時請將它關閉。如果沒有任何內容送達，請參閱[如果 trace 沒有出現](#troubleshooting)。
+
+## 手動設定 {#set-up-manually}
+
+如果您有自己的應用程式且沒有程式碼代理程式，請使用此路徑。Python 範例需要 Python {{python_version}} 與一個模型金鑰。它會進行一次模型呼叫，可能產生提供者費用。對於建立在框架上的代理程式，請使用[框架指南](#connect-your-existing-agent)。若要記錄 Claude Code 或 Codex 工作階段本身，請參閱[程式碼代理程式工作階段](./coding-agents.md)。
+
+### 取得追蹤金鑰和端點 {#connect-your-agent}
+
+在 Lens Home 上，選取 **Set up manually**，再選取 **Create tracing key**。如果該按鈕無法使用，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰。
+
+![Lens Home 上的「Set up manually」顯示「Create tracing key」與您專案的環境變數，包括 trace 端點。](/img/lens/home-set-up-manually.png)
+
+將金鑰複製到您的本機環境。從 **Configure your project** 下的 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` 複製完整的 trace 端點。它以 `/v1/traces` 結尾。對於本機快速入門，它是 `http://localhost:4318/v1/traces`。位於另一個容器或另一台機器上的代理程式，需要一個它能連線到的位址，而不是它自己的 `localhost`。
 
 追蹤金鑰會上傳遙測資料。它不會呼叫模型或讀取追蹤。讓它與您的模型金鑰和管理員 token 保持分開。
 
-## 2. 準備範例 {#send-your-first-trace}
+### 準備範例 {#send-your-first-trace}
 
 在空的工作目錄中，建立 Python 環境並安裝追蹤相依性：
 
@@ -41,7 +67,7 @@ python -m pip install openai openinference-instrumentation-openai \
   opentelemetry-sdk opentelemetry-exporter-otlp-proto-http
 ```
 
-在此終端機中設定步驟 1 的端點和追蹤金鑰：
+在此終端機中設定上一個步驟的端點和追蹤金鑰：
 
 ```sh
 export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="YOUR_FULL_TRACE_ENDPOINT"
@@ -83,7 +109,7 @@ export LENS_EXAMPLE_MODEL="YOUR_LITELLM_MODEL_ALIAS"
 
 此範例會記錄提示和回應文字。使用您可以在 Lens 中儲存的測試提示。
 
-## 3. 執行一次有追蹤的呼叫 {#3-run-one-traced-call}
+### 執行一次有追蹤的呼叫 {#run-one-traced-call}
 
 將此檔案儲存為 `first_trace.py`：
 
@@ -134,7 +160,7 @@ python first_trace.py
 
 預期會得到回應和 trace ID。等待處理程序結束，讓匯出器完成傳送追蹤。
 
-## 4. 在 Lens 中開啟追蹤 {#view-your-first-trace}
+### 開啟範例 trace {#open-the-example-trace}
 
 回到 Lens，選取 **first_agent** 代理程式，然後選取 **Traces**。如果設定顯示 **Check for traces**，請選取它。開啟範例印出的 trace ID 所對應的執行。
 
@@ -155,8 +181,6 @@ python first_trace.py
 | 透過 LiteLLM 的其他框架 | [完整的框架範例](./framework-examples.md) |
 
 執行一個真實的任務，然後開啟該追蹤並檢查其輸入、輸出和預期步驟。追蹤送達後，您可以 [建立調查](./investigations.md)。
-
-**選擇性：** 將 [connect-an-agent 提示](https://github.com/BerriAI/lens/blob/main/docs/setup-with-agent.md#connect-an-agent-to-lens-already-running) 複製到您的程式碼代理程式中。提供 Lens URL 和框架。讓追蹤金鑰保留在您的本機環境中，而不是放在提示中。
 
 ## 如果 trace 沒有出現 {#troubleshooting}
 

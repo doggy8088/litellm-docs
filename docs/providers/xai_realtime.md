@@ -47,10 +47,10 @@ model_list:
     model_info:
       mode: realtime
 
-  # Optional: Add fallback to OpenAI
+  # Optional: load-balance sessions with OpenAI
   - model_name: grok-voice-agent
     litellm_params:
-      model: openai/gpt-4o-realtime-preview-2024-10-01
+      model: openai/gpt-realtime-2.1
       api_key: os.environ/OPENAI_API_KEY
     model_info:
       mode: realtime
@@ -78,9 +78,8 @@ async def test_proxy():
     
     async with websockets.connect(
         url,
-        extra_headers={
+        additional_headers={
             "Authorization": "Bearer sk-<your-litellm-api-key>",  # Your LiteLLM proxy key
-            "OpenAI-Beta": "realtime=v1"
         }
     ) as ws:
         # First event from the server is session.created
@@ -127,7 +126,6 @@ const url = "ws://0.0.0.0:4000/v1/realtime?model=grok-voice-agent";
 const ws = new WebSocket(url, {
     headers: {
         "Authorization": "Bearer sk-<your-litellm-api-key>",
-        "OpenAI-Beta": "realtime=v1",
     },
 });
 
@@ -151,7 +149,7 @@ ws.on("open", function open() {
     ws.send(JSON.stringify({
         type: "response.create",
         response: {
-            modalities: ["text"],
+            output_modalities: ["text"],
             instructions: "Please assist the user."
         }
     }));
@@ -178,7 +176,7 @@ xAI 的 Grok 語音代理程式與 OpenAI 的 Realtime API 有一些差異：
 | 功能 | xAI | OpenAI | LiteLLM 處理方式 |
 |---------|-----|--------|------------------|
 | WebSocket URL | `wss://api.x.ai/v1/realtime` | `wss://api.openai.com/v1/realtime` | ✅ 自動設定 |
-| 模型 | `grok-voice-latest` | `gpt-4o-realtime-preview` | ✅ 透過模型前綴 |
+| 模型 | `grok-voice-latest` | `gpt-realtime-2.1` | ✅ 透過模型前綴 |
 | 音訊格式 | PCM (8-48kHz), μ-law, A-law | PCM16 24kHz 單聲道 | ✅ 相容 |
 
 LiteLLM 會自動設定 xAI 端點、設定驗證標頭（它不會傳送 `OpenAI-Beta` 標頭給 xAI），並管理 WebSocket 連線。除此之外沒有任何 xAI 特有的處理事項：Voice Agent API 與 OpenAI 相容，並在連線時傳出 `session.created`，就像 OpenAI 一樣。音訊回應會以 `response.output_audio.delta` 串流傳送，對應的逐字稿則在 `response.output_audio_transcript.delta` 上。

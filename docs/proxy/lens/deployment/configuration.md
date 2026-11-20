@@ -19,7 +19,7 @@ slug: "/proxy/lens/deployment/configuration"
 | 閘道服務與簽署憑證 | 驗證選用的內部連線與委派身分 |
 | LiteLLM 使用者或模型金鑰 | 依其現有的驗證與模型規則存取閘道 |
 
-獨立啟動器會在 `deploy/lens/.env` 中建立其管理員 token 與資料庫密碼。獨立的追蹤安裝需要這些憑證與一把追蹤金鑰。調查、Signals 與評估評判需要各自對應的提供者設定。只有在連接 LiteLLM 時才需要閘道連線密鑰
+獨立啟動器會在 `deploy/lens/.env` 中建立其管理員 token 與資料庫密碼。[快速入門](./local.md) 會將它們寫入下載的 `compose.yaml` 旁的 `.env`。獨立的追蹤安裝需要這些憑證與一把追蹤金鑰。調查、Signals 與評估評判需要各自對應的提供者設定。只有在連接 LiteLLM 時才需要閘道連線密鑰
 
 請將部署密鑰保持私密，並與您的復原資料一起保存。閘道保留其自身的資料庫與加密金鑰；這些與 Lens 的 ClickHouse 儲存是分開的
 
@@ -31,11 +31,13 @@ slug: "/proxy/lens/deployment/configuration"
 
 閘道另外使用 `LITELLM_LENS_URL` 作為其私有連線，並使用 `LITELLM_LENS_PUBLIC_URL` 作為顯示給使用者的追蹤位址。請從實際的閘道、瀏覽器與代理程式網路驗證可達性
 
+對於 Kubernetes，請為 Lens 的 `publicUrl` 與閘道的 `lens.publicUrl` 使用可達的 HTTPS 來源，並設定好 ingress、DNS 與 TLS。閘道的 `lens.url` 會跨命名空間使用私有的 Lens Service 位址。Port-forward 僅是初步的健康檢查，不是已發佈的端點
+
 ## 搭配 Helm 使用 ingress {#dedicated-ingress}
 
-獨立的 Lens chart 在頂層使用 `publicUrl`、選用的 `ingestionUrl` 與 `ingress`。其 ingress 可以提供獨立 UI 與 API。請使用 [Lens Helm 指南](https://github.com/BerriAI/lens/blob/main/helm/lens/README.md) 設定主機名稱、TLS 與 ingress 控制器
+獨立的 Lens chart 在頂層使用 `publicUrl`、選用的 `ingestionUrl` 與 `ingress`。其 ingress 可以提供獨立 UI 與 API。請依 [公開 Lens](./kubernetes.md#ingress) 所示設定主機名稱、TLS 與 ingress 控制器
 
-LiteLLM chart 透過 `lens.enabled`、`lens.url`、`lens.publicUrl` 與 Secret 參考連接到獨立的 Lens 部署。請參閱[連接現有的 LiteLLM 部署](./kubernetes.md#existing-deployment)。該 chart 不接受 `lensWorker`，也不會部署 Lens 與 ClickHouse。
+LiteLLM chart 透過 `lens.enabled`、`lens.url`、`lens.publicUrl` 與 Secret 參考連接到獨立的 Lens 部署。請參閱[將 Lens 加入 LiteLLM](./litellm.md#helm)。該 chart 不接受 `lensWorker`，也不會部署 Lens 與 ClickHouse。
 
 ## 連接 Docker 網路 {#docker-network}
 
@@ -73,14 +75,32 @@ docker inspect "<your-litellm-container>" --format '{{json .NetworkSettings.Netw
 
 閘道透過有上限的非同步佇列轉送遙測。如果 Lens 無法使用，一般的閘道推論仍會繼續，而遙測在重試或佇列上限後可能會延遲或被捨棄。代理程式匯出器有自己的重試行為。請驗證您選定的部署與匯出器在中斷時的行為
 
+## 其他容器平台 {#other-container-platforms}
+
+在受管理的容器平台上，請執行[發行版本與映像](./releases.md#container-images) 中的已發佈映像，並透過平台的私密設定提供 `LENS_ADMIN_TOKEN`、`LENS_PUBLIC_URL` 與 [ClickHouse 連線](./storage.md#external-clickhouse)。請以該發行版本的 [Compose 設定](https://github.com/BerriAI/lens/blob/main/deploy/lens/compose.yaml) 作為資源與沙箱設定的參考
+
+請保留映像的非 root 使用者、唯讀檔案系統、有上限的暫存空間、已捨棄的 capabilities 與沙箱設定。調查需要原生 Linux，並具備[計算沙箱](https://github.com/BerriAI/lens/blob/main/docs/sandbox.md) 的 capabilities
+
+Lens 會在連接埠 4318 上監聽。請使用 `/health/live` 檢查處理程序健康狀態，並使用 `/health/ready` 檢查就緒狀態
+
 ## 疑難排解 {#troubleshooting}
 
-在原始碼 Compose 安裝中：
+在全新的 Helm 安裝上，ClickHouse 啟動期間出現幾次帶有 `Error: Storage(Storage(Transport))` 的 Lens 重新啟動是預期的。如果 ClickHouse 進入 Ready 狀態後仍持續發生，請檢查其 Service、憑證與記錄。如果 ClickHouse 持續處於 Pending，請使用 `kubectl --namespace "$LENS_NAMESPACE" describe pvc` 檢查其 PVC 與 StorageClass，並使用 Helm 設定中的命名空間。請勿將持續的失敗視為正常的啟動過程
+
+如果啟動失敗，請檢查 Docker 與服務記錄。在[快速入門](./local.md)之後，請從存放下載的 `compose.yaml` 的資料夾執行以下命令。最後一個命令會檢查就緒狀態：
+
+```sh
+docker info
+docker compose ps
+docker compose logs --tail=100 lens clickhouse
+curl --fail http://localhost:4318/health/ready
+```
+
+從解壓縮的發行套件或 Lens 檢出中，請指名 Compose 檔案：
 
 ```sh
 docker compose -f deploy/lens/compose.yaml ps
 docker compose -f deploy/lens/compose.yaml logs --tail=100 lens clickhouse
-curl --fail http://localhost:4318/health/ready
 ```
 
 | 您看到的現象 | 要檢查的項目 |

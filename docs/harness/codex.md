@@ -39,11 +39,11 @@ Codex 使用 OpenAI Responses API，因此最適合搭配 OpenAI reasoning model
 model_list:
   - model_name: gpt
     litellm_params:
-      model: openai/gpt-5
+      model: openai/{{openai_large}}
       api_key: os.environ/OPENAI_API_KEY
   - model_name: gpt
     litellm_params:
-      model: azure/gpt-5
+      model: azure/{{openai_large}}
       api_base: os.environ/AZURE_API_BASE
       api_key: os.environ/AZURE_API_KEY
       api_version: "2025-04-01-preview"

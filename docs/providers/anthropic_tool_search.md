@@ -35,7 +35,7 @@ Claude 會建構 regex 模式來搜尋工具。最適合精確模式比對（更
 
 Claude 使用自然語言查詢透過 BM25 演算法搜尋工具。最適合自然語言語意搜尋。
 
-**注意**：Bedrock 不支援 BM25 變體。
+在 Amazon Bedrock 上，兩種變體都可透過 Invoke API（`bedrock/invoke/` 模型）運作，而非 Converse。在 [PR #52959](https://github.com/BerriAI/litellm/pull/52959) 之前，LiteLLM 會從 Bedrock Chat Completions 請求中捨棄 BM25 工具，因此如果 Bedrock 上的 Claude 用 BM25 找不到您延遲載入的工具，請升級。
 
 ---
 
@@ -176,6 +176,40 @@ response = litellm.completion(
             "name": "tool_search_tool_bm25"
         },
         # Your deferred tools...
+    ]
+)
+```
+
+#### Bedrock 範例 {#bedrock-example}
+
+```python showLineNumbers title="Bedrock Tool Search (Invoke)"
+import litellm
+
+response = litellm.completion(
+    model="bedrock/invoke/global.anthropic.{{anthropic_large}}",
+    messages=[
+        {"role": "user", "content": "Where is my parcel? The tracking number is 1Z999AA10123456784."}
+    ],
+    tools=[
+        {
+            "type": "tool_search_tool_bm25_20251119",
+            "name": "tool_search_tool_bm25"
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "lookup_package_tracking",
+                "description": "Look up the delivery status of a parcel by tracking number",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "tracking_number": {"type": "string"}
+                    },
+                    "required": ["tracking_number"]
+                }
+            },
+            "defer_loading": True
+        }
     ]
 )
 ```

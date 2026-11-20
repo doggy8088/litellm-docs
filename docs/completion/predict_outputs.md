@@ -7,8 +7,11 @@ import TabItem from '@theme/TabItem';
 |-------|-------|
 | 說明 | 當 LLM 的大部分輸出可事先得知時，請使用此功能。例如，如果您要請模型僅做少量修改來重寫某段文字或程式碼，您可以將既有內容作為預測輸入，藉由 Predicted Outputs 大幅降低延遲。 |
 | 支援的提供者 | `openai` |
+| 支援的模型 | 支援 Predicted Outputs 的 OpenAI 模型，例如 gpt-4.1-mini。推理模型（例如 {{openai_small}}）對 `prediction` 會回應 400 |
 | OpenAI 關於 Predicted Outputs 的文件連結 | [Predicted Outputs ↗](https://platform.openai.com/docs/guides/latency-optimization#use-predicted-outputs) |
 | LiteLLM 版本起支援 | <SinceVersion v="1.52.0" /> |
+
+
 
 ## 使用 Predicted Outputs {#using-predicted-outputs}
 
@@ -16,8 +19,10 @@ import TabItem from '@theme/TabItem';
 <TabItem label="LiteLLM Python SDK" value="Python">
 
 在此範例中，我們要重構一段 C# 程式碼，並將 Username 屬性改為 Email：
-```python
+```python keep-model-ids
+import os
 import litellm
+
 os.environ["OPENAI_API_KEY"] = "your-api-key"
 code = """
 /// <summary>
@@ -43,7 +48,7 @@ public class User
 """
 
 completion = litellm.completion(
-    model="{{openai_small}}",
+    model="gpt-4.1-mini",
     messages=[
         {
             "role": "user",
@@ -62,11 +67,11 @@ print(completion)
 
 1. 在 config.yaml 中定義模型
 
-```yaml
+```yaml keep-model-ids
 model_list:
-  - model_name: {{openai_small}} # OpenAI {{openai_small}}
+  - model_name: gpt-4.1-mini
     litellm_params:
-      model: openai/{{openai_small}}
+      model: openai/gpt-4.1-mini
       api_key: os.environ/OPENAI_API_KEY 
 
 ```
@@ -79,8 +84,17 @@ litellm --config config.yaml
 
 3. 使用 OpenAI Python SDK 進行測試
 
-```python
+```python keep-model-ids
 from openai import OpenAI
+
+code = """
+public class User
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Username { get; set; }
+}
+"""
 
 client = OpenAI(
     api_key="LITELLM_PROXY_KEY", # sk-<your-litellm-api-key>
@@ -88,7 +102,7 @@ client = OpenAI(
 )
 
 completion = client.chat.completions.create(
-    model="{{openai_small}}",
+    model="gpt-4.1-mini",
     messages=[
         {
             "role": "user",

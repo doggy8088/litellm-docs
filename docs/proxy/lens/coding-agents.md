@@ -1,19 +1,17 @@
 ---
 title: 追蹤程式碼代理程式工作階段
-description: 將您個人的 Claude Code 與 Codex 工作階段傳送至 LiteLLM Lens。
+description: 設定 Claude Code 或 Codex 將工作階段傳送至 Lens，再於 Traces 開啟記錄的活動。
 ---
 
 import AgentPrompt from '@site/src/components/Conversion/AgentPrompt';
 
 # 追蹤程式碼代理程式工作階段 {#trace-coding-agent-sessions}
 
-如需程式碼代理程式的選用協助，[幫我設定](https://github.com/BerriAI/lens/blob/main/docs/setup-with-agent.md) 提供了適用於現有 LiteLLM 部署、獨立 Lens 與外部 ClickHouse 的提示。代理程式在套用本指南之前，應先檢查已安裝的版本
-
-將您個人的 Claude Code 或 Codex 工作階段傳送至 [LiteLLM Lens](./index.md)，以檢視其記錄的活動。請在下方選擇您的代理程式。
+將您的 [Claude Code](#claude-code) 或 [Codex](#codex) 活動傳送至 Lens。您的模型登入與模型端點維持不變。
 
 您需要一個執行中的 Lens 安裝，以及一把專用的 Lens 追蹤金鑰。如果您是從零開始，請遵循 [Lens 部署指南](./deployment/local.md)。您既有的 Claude Code 或 Codex 模型登入仍可繼續運作。
 
-在獨立 Lens 中，開啟 **Traces**，如果設定面板尚未開啟，請點選 **Connect project**。在閘道隨附的版本中，開啟 **Lens > Traces** 並點選 **Connect project**。在 **Connection details** 下，複製完整的 **Traces endpoint**（包括 `/v1/traces`），並點選 **Generate tracing key**。如果您無法自行建立追蹤金鑰，請向管理員索取。URL 中若有任何 `/lens-ingest` 前綴，請保留。這些設定影響遙測；您的模型 URL 與模型憑證則維持分開。
+若為本機快速入門，請開啟 `http://localhost:4318/ui/`；若使用 LiteLLM 儀表板，請選取 **Lens**。[產生追蹤金鑰](./first-trace.md#connect-your-agent) 並複製完整的 **Traces endpoint**（包括 `/v1/traces`）。如果您無法自行建立金鑰，請向管理員索取。範例使用本機 Lens；請將位址換成您的端點，並保留任何 `/lens-ingest` 前綴。追蹤金鑰上傳的是遙測資料，而非模型請求。請妥善保管，不要公開。
 
 ## Claude Code {#claude-code}
 
@@ -23,19 +21,20 @@ Claude Code 不需要 Lens 外掛程式或輔助工具。其內建的 [OpenTelem
 
 <AgentPrompt id="lens-claude-code" />
 
-此設定需要具有 `/v1/logs` 擷取路由的 Lens 服務。請使用支援助理回覆記錄的最新 Claude Code 版本。
+已使用 Claude Code **2.1.328** 與 Lens **0.1.0** 驗證。請保留 `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1`：僅啟用遙測的標記並不會啟用其 beta 追蹤匯出器。
 
 在您執行 `claude` 的終端機中，將端點與追蹤金鑰貼到前兩行，然後執行此區塊。記錄 URL 使用相同位址，但以 `/v1/logs` 取代 `/v1/traces`：
 
 ```bash
 export LENS_TRACING_KEY="<paste your Lens tracing key>"
-export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="<paste the full Traces endpoint>"
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="http://localhost:4318/v1/traces"
 export OTEL_EXPORTER_OTLP_TRACES_HEADERS="Authorization=Bearer $LENS_TRACING_KEY"
 export OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT%/v1/traces}/v1/logs"
 export OTEL_EXPORTER_OTLP_LOGS_HEADERS="Authorization=Bearer $LENS_TRACING_KEY"
 
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
 export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
+export OTEL_METRICS_INCLUDE_SESSION_ID=true
 export OTEL_TRACES_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_TRACES_PROTOCOL="http/protobuf"
 export OTEL_METRICS_EXPORTER=none
@@ -48,14 +47,19 @@ export OTEL_LOG_ASSISTANT_RESPONSES=1
 export OTEL_LOG_TOOL_DETAILS=1
 export OTEL_LOG_TOOL_CONTENT=1
 
-claude
+claude -p "Reply with exactly: Lens telemetry check."
 ```
 
 內容標記包含提示、助理回覆、工具引數，以及支援的工具輸出，這些可能包含原始碼或秘密。僅在您打算儲存該內容的 Lens 部署上啟用它們。
 
-完成一個使用工具的提示，然後開啟 **Lens > Traces**，選取 **claude-code**，並將 trace 切換為 **Conversation**。您應該會看到您的提示、註解、工具活動，以及最終回覆。子代理程式會顯示在可展開的分支中。背景標題產生與建議提示不會納入對話中。
+在獨立 Lens 中開啟 **Traces**，或在 LiteLLM 中開啟 **Lens > Traces**。依 **claude-code** 篩選，開啟工作階段 trace，並選取 **Conversation** 以查看提示與回覆。若要進行互動式工作階段，請執行不帶 `-p` 的 `claude`。同一工作階段中的新回合會更新其 trace。
 
 `lens.session.capture=true` 會將具有相同 Claude 工作階段 ID 的回合分組為一個 trace，包括恢復的工作階段與背景代理程式回覆。原始 trace ID 會保留在 span 屬性中。若省略此資源屬性，則可保留 Claude 每次互動各自獨立的 trace。如果您已設定 `OTEL_RESOURCE_ATTRIBUTES`，請附加這些值，而不是取代您現有的屬性。
+
+請勿設定 `OTEL_METRICS_INCLUDE_SESSION_ID=false`。儘管名稱如此，它也會從 Claude 的 traces 中移除 `session.id`，並阻止工作階段分組。
+
+<details>
+<summary>額外的 Claude Code 內容與持久性設定</summary>
 
 助理回覆使用與追蹤 span 不同的遙測串流。請保持兩個匯出器都啟用。無需白名單中的詳細追蹤端點。請參閱 Claude Code 的 [監控參考](https://code.claude.com/docs/en/monitoring-usage)，了解 beta 匯出器的涵蓋範圍與內容限制。
 
@@ -76,19 +80,46 @@ export CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH=1048576
 
 若要進行持久性設定，請將這些變數新增至您使用者層級 `~/.claude/settings.json` 中的 `env` 物件，並保留既有設定。儲存庫層級設定無法啟用遙測或選擇其目的地。受管理的設定可能會覆寫您的本機目的地。
 
+</details>
+
 ## Codex {#codex}
 
-請使用 [BerriAI Codex GitHub 整合](https://github.com/BerriAI/litellm-lens-codex-integration)。這個公開預覽版本支援本機 Codex 桌面版與 CLI 工作階段。自動設定目前支援 macOS，且需要 Python 3.11 或更新版本。{/* keep-python-version: Codex integration prerequisite */}
+請使用 [BerriAI Codex 整合](https://github.com/BerriAI/litellm-lens-codex-integration)，適用於本機 Codex 桌面版與 CLI 工作階段。自動設定目前支援 **macOS**，需要 Python 3.11 或更新版本，以及支援外掛程式的 Codex 版本。請在執行 Codex 的電腦上執行設定。{/* keep-python-version: Codex integration prerequisite */}
 
 將此提示複製到您的程式碼代理程式中，以便讓它安裝並設定整合，或依照下方的手動步驟操作。
 
 <AgentPrompt id="lens-codex" />
 
-1. 請遵循安裝指南中的 **[從終端機（建議）](https://github.com/BerriAI/litellm-lens-codex-integration#from-terminal-recommended)**。相同的安裝程式適用於桌面版與 CLI。
-2. 在 **Lens ingestion URL** 處，貼上儀表板中的完整 **Traces endpoint**。安裝程式接受該端點，並在有 `/lens-ingest` 時保留它。在隱藏提示下輸入您的 **Lens tracing key**，選擇 **agent name**，並確認後開始記錄。
-3. **開始一個新的 Codex 聊天並完成一個回合。** 開啟 **Lens > Traces**，並找到您選擇的代理程式名稱。
+在終端機中安裝此外掛程式。同一此外掛程式適用於桌面版與 CLI：
 
-每個聊天都有一個 trace，並會在完成或中斷的回合後更新。重新開啟聊天會延續其 trace。只有設定完成後的活動會被記錄。
+```bash
+codex plugin marketplace add BerriAI/litellm-lens-codex-integration
+codex plugin add litellm-lens@berriai-lens
+```
+
+開始一個**新的 Codex 聊天**並傳送：
+
+```text
+Use lens-setup to connect my Codex chats to LiteLLM Lens.
+```
+
+在私密的終端機設定視窗中，輸入以下值：
+
+| 設定欄位 | 本機 Lens 值 |
+| --- | --- |
+| Lens ingestion URL | `http://localhost:4318/v1/traces`，或從 Lens 複製的完整端點 |
+| Lens tracing key | 專用的追蹤金鑰，在隱藏提示下輸入 |
+| Agent name | `codex` |
+
+確認開始記錄，然後再開始**另一個新的聊天**，讓其 hooks 載入。若要進行 CLI 檢查，請在您的專案中執行：
+
+```bash
+codex exec "Reply with exactly: Lens Codex telemetry check."
+```
+
+在獨立 Lens 中開啟 **Traces**，或在 LiteLLM 中開啟 **Lens > Traces**，依 **codex** 篩選，並在 **Conversation** 中開啟聊天 trace。請勿將追蹤金鑰貼到 Codex 提示中，也不要將它用作模型金鑰。外掛程式會處理遙測；請勿將 Claude Code 的環境變數複製到 Codex，也不要為同一筆記錄啟用第二個匯出器。
+
+CLI 擷取已使用 Codex **0.170.0** 與外掛程式 **0.4.0** 檢查。每個聊天都有一個 trace，並會在完成或中斷的回合後更新。重新開啟聊天會延續其 trace。外掛程式會提供聊天層級的 trace ID，因此此分組在 Lens **0.1.0** 與 **main** 上都適用，不需要 `lens.session.capture` 或 `lens.session.attribute`。只有設定完成後的活動會被記錄。
 
 外掛程式會讀取新記錄回合中可見的轉錄項目，包括註解、重複訊息、工具結果、模型變更與子代理程式。當缺少完成回呼時，可還原已完成的轉錄回合。請參閱 [涵蓋範圍與隱私詳細資訊](https://github.com/BerriAI/litellm-lens-codex-integration#what-youll-see) 了解其限制。若要暫停記錄，請詢問 Codex：`Use lens-setup to pause recording.`
 

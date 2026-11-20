@@ -85,3 +85,7 @@ for result in response.json().get("results", []):
     data = result["document"]["derivedStructData"]
     print(f"{data['title']}: {data['link']}")
 ```
+
+## 搜尋備援 {#search-fallbacks}
+
+[YAML 設定的向量儲存庫備援](../completion/knowledgebase.md#define-vector-store-fallbacks)也支援原生資料儲存庫 `:search` 請求。目標必須是 `vertex_ai/search_api` 資料儲存庫；引擎路由與寫入不會備援。

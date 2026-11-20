@@ -43,9 +43,9 @@ response.stream_to_file(speech_file_path)
 
 ```yaml showLineNumbers title="proxy_config.yaml"
 model_list:
-  - model_name: azure/tts-1
+  - model_name: azure/gpt-4o-mini-tts
     litellm_params:
-      model: azure/tts-1
+      model: azure/gpt-4o-mini-tts
       api_base: "os.environ/AZURE_API_BASE_TTS"
       api_key: "os.environ/AZURE_API_KEY_TTS"
       api_version: "os.environ/AZURE_API_VERSION" 
@@ -75,7 +75,6 @@ response = speech(
 
 ## 支援的模型 {#supported-models}
 
-- `tts-1` - 標準品質，針對速度最佳化
-- `tts-1-hd` - 高解析度，針對品質最佳化
+- `gpt-4o-mini-tts` - 通用文字轉語音
 
 使用您的 Azure 部署名稱：`azure/<your-deployment-name>`

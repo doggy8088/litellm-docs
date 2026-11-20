@@ -178,10 +178,8 @@ lite logout             # clear the keychain entry and the token file, and revok
 
   ```bash
   lite models list
-  lite models add {{openai_large}} \
-    --param api_key=sk-123 \
-    --param max_tokens=2048
-  lite models update <model-id> -p temperature=0.7
+  lite models add {{openai_large}} --param model=openai/{{openai_large}} --param api_key=sk-123
+  lite models update <model-id> -p api_key=sk-456 -i id=<model-id>
   lite models delete <model-id>
   ```
 
@@ -270,11 +268,12 @@ lite logout             # clear the keychain entry and the token file, and revok
 ### 聊天完成 {#chat-completions}
 
 - 在 proxy 伺服器上以模型開始互動式串流聊天工作階段。省略模型即可互動式選取。
+- `lite chat` 會傳送 temperature 0.7，除非您傳入 `--temperature`；只接受 1 的推理模型會拒絕這個值，因此範例會傳入 `--temperature 1`。
 - 範例：
 
 ```bash
-  lite chat {{openai_large}}
-  lite chat {{openai_large}} --temperature 0.9 --system "You are a helpful coding assistant"
+  lite chat {{openai_large}} --temperature 1
+  lite chat {{openai_large}} --temperature 1 --system "You are a helpful coding assistant"
   ```
 
   [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/chat%2Fcompletions)
@@ -321,9 +320,7 @@ lite logout             # clear the keychain entry and the token file, and revok
 2. **新增模型：**
 
 ```bash
-   lite models add {{openai_large}} \
-     --param api_key=sk-123 \
-     --param max_tokens=2048
+   lite models add {{openai_large}} --param model=openai/{{openai_large}} --param api_key=sk-123
    ```
 
 3. **建立憑證：**
@@ -348,6 +345,7 @@ lite logout             # clear the keychain entry and the token file, and revok
 
 ```bash
    lite chat {{openai_large}} \
+     --temperature 1 \
      --system "You are a helpful coding assistant"
    ```
 

@@ -658,6 +658,10 @@ for i in range(5):
     print(f"Search {i} latency: {round(t1-t0, 4)} seconds")
 ```
 
+#### 搜尋備援 {#search-fallbacks}
+
+透過 [YAML 設定的備援](../completion/knowledgebase.md#define-vector-store-fallbacks)，`POST /milvus/v2/vectordb/entities/search` 可在具有相同實體集合名稱的多個 Milvus 儲存庫之間運作。混合搜尋與寫入不會容錯移轉。
+
 #### 完整範例 {#complete-example}
 
 以下是完整可運作的範例：

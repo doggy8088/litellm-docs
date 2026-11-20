@@ -121,6 +121,10 @@ curl -X POST 'http://localhost:4000/v1/chat/completions' \
 
 在掃描擷取到的上下文時失敗的防護欄，也會讓請求失敗，而不是將未掃描的上下文注入
 
+## 搜尋備援 {#search-fallbacks}
+
+在 `config.yaml` 中[定義向量儲存庫備援](../completion/knowledgebase.md#define-vector-store-fallbacks)，將搜尋路由至備援儲存庫。此功能僅限設定檔：透過管理 API 與 Admin UI 註冊的儲存庫仍支援一般搜尋，但無法設定備援，也無法擔任備援目標。
+
 ## Management API 參考 {#management-api-reference}
 
 所有端點都需要 LiteLLM key（`Authorization: Bearer ...`）。可透過 `general_settings.disable_vector_stores_for_internal_users` 與 `allow_vector_stores_for_team_admins` 限制存取；proxy 管理員一律可存取。

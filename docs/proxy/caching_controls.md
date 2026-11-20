@@ -354,6 +354,23 @@ litellm_settings:
       # /chat/completions, /completions, /embeddings, /audio/transcriptions, /v1/responses
 ```
 
+
+### 從快取中排除呼叫類型 {#exclude-call-types-from-caching}
+
+`excluded_call_types` 已合併至 LiteLLM `main`（[PR #52902](https://github.com/BerriAI/litellm/pull/52902)），尚未包含在任何已標記的版本中。
+
+`excluded_call_types` 會從 `supported_call_types` 中移除呼叫類型；若未設定 `supported_call_types`，則從預設清單中移除，其他呼叫類型仍照常快取。`embedding` 與 `aembedding` 兩者都要列出，因為 proxy 上的 `/embeddings` 是以 `aembedding` 執行，而 SDK 的 `embedding()` 呼叫則以 `embedding` 執行。
+
+```yaml
+litellm_settings:
+  cache: True
+  cache_params:
+    type: redis
+    excluded_call_types: ["embedding", "aembedding"]
+```
+
+被排除的呼叫類型會跳過快取讀取與寫入，因此在排除前已快取的項目將不再提供。此設定不會刪除既有項目；它們既有的到期與淘汰規則仍適用。未設定或為空的 `excluded_call_types` 不會改變任何行為，而 `supported_call_types: []` 或 `null` 仍代表完全不快取。Embeddings 預設仍會快取。何時使用此設定，請參閱[避免 embeddings 排擠速率限制與支出](./caching_redis.md#keep-embeddings-from-evicting-rate-limits-and-spend)。
+
 ## 為 proxy 設定快取，但不套用於實際的 llm api 呼叫 {#set-cache-for-proxy-but-not-on-the-actual-llm-api-call}
 
 如果您只想啟用像是速率限制與跨多個

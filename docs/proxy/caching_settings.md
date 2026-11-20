@@ -54,6 +54,10 @@ cache_params:
     ["acompletion", "atext_completion", "aembedding", "atranscription", "aresponses"]
     # /chat/completions, /completions, /embeddings, /audio/transcriptions, /v1/responses
 
+  # Call types to remove from supported_call_types, or from the defaults when it is not set
+  # Unreleased, on main since PR #52902
+  excluded_call_types: ["embedding", "aembedding"]
+
   # Redis cache parameters
   host: localhost # Redis server hostname or IP address
   port: "6379" # Redis server port (as a string)
@@ -93,3 +97,5 @@ cache_params:
   similarity_threshold: 0.8 # Minimum cosine similarity for a cached response to be served
   semantic_cache_embedding_timeout: 5.0 # Seconds the prompt embedding may take before the lookup gives up
 ```
+
+`excluded_call_types` 已合併至 LiteLLM `main`（[PR #52902](https://github.com/BerriAI/litellm/pull/52902)），尚未包含在任何已標記的版本中。如需了解它與 `supported_call_types` 的搭配方式，請參閱[從快取中排除呼叫類型](./caching_controls.md#exclude-call-types-from-caching)。

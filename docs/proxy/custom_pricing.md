@@ -196,24 +196,17 @@ model_list:
 
 ### 具有日期版本的 OpenAI 模型 {#openai-models-with-dated-versions}
 
-當 OpenAI 在回應中傳回與您設定的模型名稱不同的日期版模型名稱時，`base_model` 也很有用。
-
-**範例**：您為 `gpt-4o-mini-audio-preview` 設定了自訂定價，但 OpenAI 在回應中傳回 `gpt-4o-mini-audio-preview-2024-12-17`。由於 LiteLLM 會使用回應中的模型名稱進行定價查找，因此您的自訂定價不會被套用。
-
-**解決方案** ✅：將 `base_model` 設為您希望 LiteLLM 用於定價查找的鍵。
+OpenAI 會在回應中傳回日期版模型名稱，例如 `gpt-5.5` 對應的 `gpt-5.5-2026-04-23`。部署上的自訂價格仍會套用到這些回應，因為 LiteLLM 會以該部署自身的 `model_info` 為其定價，而非以回應中的模型名稱。您不需要為此設定 `base_model`。
 
 ```yaml
 model_list:
-  - model_name: my-audio-model
+  - model_name: my-gpt-5.5
     litellm_params:
-      model: openai/gpt-4o-mini-audio-preview
+      model: openai/gpt-5.5
       api_key: os.environ/OPENAI_API_KEY
     model_info:
-      base_model: gpt-4o-mini-audio-preview  # Used for pricing lookup
       input_cost_per_token: 0.0000006
       output_cost_per_token: 0.0000024
-      input_cost_per_audio_token: 0.00001
-      output_cost_per_audio_token: 0.00002
 ```
 
 ## 當路由提供者與定價提供者不同時，設定 'pricing_provider' {#set-pricing_provider-when-the-routing-provider-and-the-pricing-provider-differ}

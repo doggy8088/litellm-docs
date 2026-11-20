@@ -397,6 +397,10 @@ reader = client(READ_KEY)
 reader.search(index="docs", body={"query": {"match": {"text": "refunds"}}, "_source": ["text"]})
 ```
 
+### 搜尋備援 {#search-fallbacks}
+
+若要設定備援搜尋叢集，請在 YAML 中[定義向量儲存庫備援](../completion/knowledgebase.md#define-vector-store-fallbacks)。統一搜尋與原生 `GET`/`POST /opensearch/{name}/_search` 都支援備援。原生備援必須使用相同的提供者／API 類型與實體索引名稱；寫入不會進行備援切換。
+
 ### 各權限允許的操作 {#what-each-permission-allows}
 
 | 權限 | 方法 | API |

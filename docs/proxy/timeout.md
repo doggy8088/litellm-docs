@@ -269,7 +269,6 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
         "messages": [
             {"role": "user", "content": "what color is red"}
         ],
-        "logit_bias": {12481: 100},
         "timeout": 1
      }'
 ```
@@ -290,7 +289,6 @@ response = client.chat.completions.create(
     messages=[
         {"role": "user", "content": "what color is red"}
     ],
-    logit_bias={12481: 100},
     extra_body={"timeout": 1} # KEY CHANGE
 )
 

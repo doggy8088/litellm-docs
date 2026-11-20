@@ -12,9 +12,9 @@ columns={1}
 items={[
   {
     title: "LiteLLM Academy",
-    description: "從我們的互動式課程開始使用。學習每位平台管理員都需掌握的基礎知識，從閘道設定與存取控制到路由與可觀測性。",
-    ctaLabel: "開始使用",
-    to: "https://litellm.ai/course",
+    description: "參加閘道課程，跟隨請求穿越 LiteLLM；或參加資料庫課程，了解每張資料表與每個欄位，以及新增它們的歷次變更。",
+    ctaLabel: "選擇課程",
+    to: "https://www.litellm.ai/course",
   },
 ]}
 />

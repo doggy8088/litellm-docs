@@ -391,6 +391,10 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/vector_stores/my-search-app/search' \
 </TabItem>
 </Tabs>
 
+## 備援 {#fallbacks}
+
+Proxy 支援針對 `POST /v1/vector_stores/{id}/search` 的 [YAML 設定的向量儲存庫備援](../completion/knowledgebase.md#define-vector-store-fallbacks)，具備冷卻時間與標示服務儲存庫的回應標頭。主要儲存庫與備援儲存庫都必須在設定檔中註冊；透過 API 或 UI 建立的資料庫儲存庫目前尚不支援備援路由。
+
 ## 設定向量儲存 {#setting-up-vector-stores}
 
 若要搜尋已存在於某個提供者上的儲存區，請先透過 `config.yaml`、`POST /vector_store/new`，或 Admin UI 將其註冊至 LiteLLM；請參閱 [受管理的 Vector Stores](./managed_vector_stores.md)。關於提供者特定的設定，請參閱 [Vector Store 設定指南](../completion/knowledgebase.md)：

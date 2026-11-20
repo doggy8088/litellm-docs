@@ -114,7 +114,7 @@ import Image from '@theme/IdealImage';
 
 ## 部署權重 {#deployment-weights}
 
-部署權重可針對單一金鑰或團隊，將某個模型群組的流量分配到其各部署。例如，某個團隊可以將其 `gpt-5` 流量的 90% 送往一個部署、10% 送往另一個部署，而其他所有呼叫者仍維持全域的分配方式。
+部署權重可針對單一金鑰或團隊，將某個模型群組的流量分配到其各部署。例如，某個團隊可以將其 `{{openai_large}}` 流量的 90% 送往一個部署、10% 送往另一個部署，而其他所有呼叫者仍維持全域的分配方式。
 
 若要在 UI 中設定，請開啟金鑰或團隊的 Router Settings，在 Loadbalancing 分頁選取 `simple-shuffle` 路由策略，並在 Deployment Weights 下新增一個模型群組。該群組的每個部署都會列出，並附有權重欄位與其接收的流量比例。權重是相對值，因此 `9` 與 `1` 和 `90` 與 `10` 會得到相同的分配比例。
 
@@ -125,7 +125,7 @@ import Image from '@theme/IdealImage';
   "router_settings": {
     "routing_strategy": "simple-shuffle",
     "weights": {
-      "gpt-5": {"deployment-id-a": 9, "deployment-id-b": 1}
+      "{{openai_large}}": {"deployment-id-a": 9, "deployment-id-b": 1}
     }
   }
 }

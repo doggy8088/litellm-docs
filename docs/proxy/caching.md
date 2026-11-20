@@ -51,6 +51,9 @@ model_list:
 litellm_settings:
   set_verbose: True
   cache: True # set cache responses to True, litellm defaults to using a redis cache
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
 ```
 
 ### 步驟 2：將 Redis 憑證加入 .env {#step-2-add-redis-credentials-to-env}
@@ -71,10 +74,15 @@ REDIS_PASSWORD = ""   # REDIS_PASSWORD='liteLlmIsAmazing'
 ### 步驟 3：使用設定啟動 proxy {#step-3-run-proxy-with-config}
 
 ```shell
+$ export OPENAI_API_KEY="sk-..."
+$ export LITELLM_MASTER_KEY="sk-$(openssl rand -hex 32)"
+$ printf 'Local proxy key: %s\n' "$LITELLM_MASTER_KEY"
 $ litellm --config /path/to/config.yaml
 ```
 
 ### 步驟 4：測試它 {#step-4-test-it}
+
+在另一個終端機中，將 `LITELLM_API_KEY` 設為上面印出的金鑰，然後送出以下請求。
 
 <Tabs>
 <TabItem value="chat_completions" label="/chat/completions">
@@ -84,18 +92,18 @@ $ litellm --config /path/to/config.yaml
 ```shell
 curl http://0.0.0.0:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
   -d '{
      "model": "{{openai_small}}",
-     "messages": [{"role": "user", "content": "write a poem about litellm!"}],
-     "temperature": 0.7
+     "messages": [{"role": "user", "content": "write a poem about litellm!"}]
    }'
 
 curl http://0.0.0.0:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
   -d '{
      "model": "{{openai_small}}",
-     "messages": [{"role": "user", "content": "write a poem about litellm!"}],
-     "temperature": 0.7
+     "messages": [{"role": "user", "content": "write a poem about litellm!"}]
    }'
 ```
 
@@ -107,6 +115,7 @@ curl http://0.0.0.0:4000/v1/chat/completions \
 ```shell
 curl http://0.0.0.0:4000/v1/responses \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
   -d '{
      "model": "{{openai_small}}",
      "input": "write a poem about litellm!"
@@ -114,6 +123,7 @@ curl http://0.0.0.0:4000/v1/responses \
 
 curl http://0.0.0.0:4000/v1/responses \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
   -d '{
      "model": "{{openai_small}}",
      "input": "write a poem about litellm!"
@@ -128,6 +138,7 @@ curl http://0.0.0.0:4000/v1/responses \
 ```shell
 curl --location 'http://0.0.0.0:4000/embeddings' \
   --header 'Content-Type: application/json' \
+  --header "Authorization: Bearer $LITELLM_API_KEY" \
   --data ' {
   "model": "text-embedding-ada-002",
   "input": ["write a litellm poem"]
@@ -135,6 +146,7 @@ curl --location 'http://0.0.0.0:4000/embeddings' \
 
 curl --location 'http://0.0.0.0:4000/embeddings' \
   --header 'Content-Type: application/json' \
+  --header "Authorization: Bearer $LITELLM_API_KEY" \
   --data ' {
   "model": "text-embedding-ada-002",
   "input": ["write a litellm poem"]

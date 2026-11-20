@@ -1,8 +1,16 @@
 # 自訂模型成本對照表 {#custom-model-cost-map}
 
-LiteLLM 會根據其模型成本對照表為每個請求定價，該表是一個 JSON 檔案，將每個模型對應到每 token 費率、上下文限制與功能。預設情況下，proxy 會在啟動時從 GitHub 取得最新對照表，因此新模型的定價可在不升級 LiteLLM 的情況下到達。當您的部署有錯誤或缺失的價格（例如區域價格變體、議定費率，或預設對照表尚未收錄的全新層級）時，您有兩種方式修正：在設定檔中覆寫特定部署的定價，或以您自己代管的副本取代整張對照表。
+LiteLLM 會根據其模型成本對照表為每個請求定價，該表是一個 JSON 檔案，將每個模型對應到每 token 費率、上下文限制與功能。預設情況下，proxy 會在啟動時從 GitHub 取得最新對照表，因此新模型的定價可在不升級 LiteLLM 的情況下到達。氣隙部署無法連上 GitHub，需要採用[氣隙與出口受限部署](#air-gapped-and-egress-restricted-deployments)中的其中一種設定。當您的部署有錯誤或缺失的價格（例如區域價格變體、議定費率，或預設對照表尚未收錄的全新層級）時，您有兩種方式修正：在設定檔中覆寫特定部署的定價，或以您自己代管的副本取代整張對照表。
 
 若要做有限範圍的修正，請優先使用每個部署的覆寫。它只會變更您指定的部署，會在每次上游對照表更新後保留，不需要檔案代管，也沒有備援失敗模式。只有當修正涵蓋的模型多到每個部署的設定已難以維護時，才改用完整自訂對照表。
+
+## 氣隙與出口受限部署 {#air-gapped-and-egress-restricted-deployments}
+
+對照表位於 LiteLLM repo 中的 [model_prices_and_context_window.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)，我們會定期以新模型與價格更新它。Proxy 會在啟動時、收到 `POST /reload/model_cost_map` 時，以及在您設定了重新載入排程時（例如 `POST /schedule/model_cost_map_reload?hours=6`，請見[從 GitHub 同步模型](./sync_models_github)），從 `raw.githubusercontent.com` 下載它。在氣隙部署中，下載會失敗，LiteLLM 會改用隨您安裝的版本一併打包的對照表。該副本在發布時即已凍結，因此之後發布的模型不會出現在提供者清單與 Admin UI 的模型選擇器中，對這些模型的請求會以 $0 計費。
+
+客戶通常以三種方式之一處理此問題。最簡單的方式是在您的出口規則中將 `https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json` 加入允許清單，讓下載得以成功，再開啟重新載入排程，讓新模型不需重新啟動即可出現。若完全不允許對外存取，請定期將該檔案從我們的 repo 鏡像到內部 repo 或 bucket，並將 `LITELLM_MODEL_COST_MAP_URL` 指向該鏡像，如[選項 2](#option-2-serve-your-own-cost-map)所述。若您只關心少數模型，請訂閱 [models.litellm.ai/changelog](https://models.litellm.ai/changelog) 的 RSS 摘要（摘要 URL 為 `https://models.litellm.ai/changelog.xml`，`?providers=` 與 `?models=` 可縮小範圍），並在您使用的模型新增或變更價格時更新您的鏡像或[每個部署的定價](#option-1-per-deployment-pricing-overrides-recommended)。
+
+無論您選擇哪種方式，請在首次部署後檢查 `GET /model/cost_map/source`。當 proxy 仍在使用內附副本時，它會回報 `source: \"local\"` 與 `fallback_reason`。若要完全跳過下載、刻意使用內附副本，請設定 `LITELLM_LOCAL_MODEL_COST_MAP=True`，或開啟[離線模式](./outbound_requests)。
 
 ## 選項 1：每個部署的定價覆寫（建議） {#option-1-per-deployment-pricing-overrides-recommended}
 

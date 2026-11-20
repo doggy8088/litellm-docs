@@ -28,7 +28,7 @@ model_list:
     litellm_params:
       model: openai/{{openai_large}}
 
-# 1. Define your guardrails
+# 1. 定義您的防護欄 {#1-define-your-guardrails}
 guardrails:
   - guardrail_name: pii_masking
     litellm_params:
@@ -41,7 +41,7 @@ guardrails:
       mode: pre_call
       api_key: os.environ/LAKERA_API_KEY
 
-# 2. Create a policy
+# 2. 建立政策 {#2-create-a-policy}
 policies:
   my-policy:
     guardrails:
@@ -49,7 +49,7 @@ policies:
         - pii_masking
         - prompt_injection
 
-# 3. Attach the policy
+# 3. 附加政策 {#3-attach-the-policy}
 policy_attachments:
   - policy: my-policy
     scope: "*"  # apply to all requests
@@ -212,7 +212,7 @@ policies:
       add:
         - strict_content_filter
     condition:
-      model: "gpt-5.6.*"  # regex - matches {{openai_small}}, {{openai_large}}
+      model: "({{openai_small}}|{{openai_large}})"  # regex - matches {{openai_small}} or {{openai_large}}
 
   bedrock-compliance:
     guardrails:

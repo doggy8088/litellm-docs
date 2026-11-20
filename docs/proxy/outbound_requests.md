@@ -15,6 +15,8 @@ litellm --config config.yaml
 
 只有 `true`（不分大小寫）會開啟它。任何其他值（例如 `1` 或 `yes`）都會讓它保持關閉。
 
+離線模式會將模型成本對照表凍結在您 LiteLLM 版本內附的副本上，因此在您升級之前，較新的模型會缺失。若要在不開放一般外送連線的情況下保持對照表為最新狀態，請參閱[氣隙與外送受限部署](./custom_model_cost_map#air-gapped-and-egress-restricted-deployments)。
+
 ## 離線模式會停止的請求 {#requests-offline-mode-stops}
 
 | 項目 | 主機 | 時機 | 開啟離線模式時 | 各功能開關 |

@@ -341,6 +341,63 @@ My email is [EMAIL] and my phone number is [PHONE_NUMBER]
 
 這有助於在仍能讓模型理解請求脈絡的同時，保護敏感資訊。
 
+## 只掃描工作階段中的新輸入文字 {#only-scan-new-input-text-in-a-session}
+
+在僅封鎖的 Bedrock 防護欄上設定 `only_scan_new_messages: true`，可避免重複掃描未變更的對話紀錄。此設定的預設值為 `false`，適用於請求文字。若政策需要將新文字與先前的對話脈絡一起評估，請使用完整輸入掃描。每個防護欄只能啟用 `only_scan_new_messages` 與 `experimental_use_latest_role_message_only` 其中之一。
+
+請為每段對話指定唯一的 session ID，並在每一輪都傳送相同的 `x-litellm-session-id` 標頭。在第一次請求時，LiteLLM 會將所有選定掃描的文字傳送給 Bedrock。掃描通過後，LiteLLM 會依防護欄名稱與 session ID，為每個文字片段儲存一個 SHA-256 雜湊值。在後續輪次中，只有新增或編輯過的文字會送往 Bedrock。若每個文字片段都符合快取的雜湊值，LiteLLM 就會略過 Bedrock 文字掃描。模型仍會收到完整的對話紀錄。
+
+例如，若第一輪包含 system 提示與使用者問題，Bedrock 會掃描兩者。若下一輪重複這些文字，並新增一則 assistant 回覆與一個追問，Bedrock 只會掃描該回覆與追問。
+
+```yaml title="config.yaml"
+guardrails:
+  - guardrail_name: bedrock-input
+    litellm_params:
+      guardrail: bedrock
+      mode: pre_call
+      guardrailIdentifier: os.environ/BEDROCK_GUARDRAIL_ID
+      guardrailVersion: "DRAFT"
+      aws_region_name: os.environ/AWS_REGION
+      only_scan_new_messages: true
+      default_on: true
+
+general_settings:
+  coordination_redis:
+    host: os.environ/VALKEY_HOST
+    port: 6379
+```
+
+選用的 `coordination_redis` 區塊可讓每個 LiteLLM worker 或副本指向同一個 Valkey 或 Redis 執行個體。若沒有共用快取，worker 會將掃描紀錄保留在記憶體中。如需驗證與 TLS 設定，請參閱[Redis 與 Valkey 快取](../caching_redis.md)。
+
+快取寫入的預設 TTL 為 24 小時。請設定 `GUARDRAIL_SCANNED_MESSAGES_CACHE_TTL_SECONDS` 來變更它。若請求沒有 session ID，或 LiteLLM 沒有該工作階段的快取掃描紀錄，Bedrock 會掃描所有選定的文字。遮罩設定會使用一般的掃描路徑，以便 LiteLLM 套用遮罩。
+
+## 將工具呼叫與工具描述以文字形式掃描 {#scan-tool-calls-and-tool-descriptions-as-text}
+
+<SinceVersion v="1.112.0" />
+
+Bedrock ApplyGuardrail API 沒有適用於工具呼叫或工具定義的內容類型，因此 Bedrock 防護欄預設只會檢查訊息文字與工具結果。兩個選用設定會將其餘內容以文字形式傳送給 Bedrock。兩者預設皆為關閉，並適用於 `/v1/chat/completions`、`/v1/messages` 與 `/v1/responses`。
+
+```yaml title="config.yaml"
+guardrails:
+  - guardrail_name: bedrock-tool-text
+    litellm_params:
+      guardrail: bedrock
+      mode: [pre_call, post_call]
+      guardrailIdentifier: os.environ/BEDROCK_GUARDRAIL_ID
+      guardrailVersion: "DRAFT"
+      aws_region_name: os.environ/AWS_REGION
+      scan_tool_calls_as_text: true          # tool-call names and arguments
+      scan_tool_descriptions_as_text: true   # tool descriptions in the request
+      default_on: true
+```
+
+`scan_tool_calls_as_text: true` 會掃描每個工具呼叫的名稱與引數。請求紀錄中的工具呼叫會在 `pre_call` 模式下以輸入形式掃描，模型產生的工具呼叫則在 `post_call` 模式下以輸出形式掃描，串流與非串流回應皆適用。LiteLLM 會在掃描前解碼 JSON 引數，因此逸出字元無法將文字藏過政策。巢狀過深而無法掃描的引數會以 400 遭到封鎖。含有工具呼叫的請求或回應會多耗用一次 ApplyGuardrail 呼叫。
+
+`scan_tool_descriptions_as_text: true` 會在 `pre_call` 模式下，將請求中每個工具的 `description` 以輸入形式掃描，並一併掃描其參數在任何深度的描述，可捕捉植入工具定義中的提示注入。每個至少有一個描述的工具會耗用一次 ApplyGuardrail 呼叫。
+
+當 Bedrock 封鎖文字時，任一掃描都會以與其他 Bedrock 封鎖相同的錯誤，使請求或回應失敗。當政策採取遮罩而非封鎖時，兩種掃描的行為有所不同。工具呼叫掃描會以相同的錯誤封鎖政策遮罩的工具呼叫，且絕不會重寫引數，因為重寫可能使其成為無效的 JSON。工具描述掃描則會將每個描述替換為 Bedrock 回傳的遮罩文字，因此模型看到的是遮罩後的描述。
+
+若 Bedrock 防護欄同時設定任一選項與 `mode: during_call` 或 `experimental_use_latest_role_message_only: true`，LiteLLM 會拒絕載入，因為這些路徑不會執行掃描。
 ## 實驗性：只傳送最新的使用者訊息 {#experimental-only-send-latest-user-message}
 
 當您透過 Bedrock 防護欄串接長篇對話時，可透過在防護欄的 `experimental_use_latest_role_message_only: true` 中設定 `litellm_params`，選擇較輕量、實驗性的行為。啟用後，LiteLLM 只會將最近的 `user` 訊息（或在後續呼叫檢查期間的 assistant 輸出）傳送給 Bedrock，這會：

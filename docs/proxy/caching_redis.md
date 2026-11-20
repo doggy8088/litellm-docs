@@ -237,6 +237,33 @@ litellm_settings:
     # default_in_redis_ttl: Optional[float], default is None. time in seconds.
 ```
 
+
+## 避免 embeddings 排擠速率限制與支出 {#keep-embeddings-from-evicting-rate-limits-and-spend}
+
+回應快取會針對每個輸入項目儲存 embeddings，因此一次帶有 N 個輸入的批次 `/embeddings` 請求會寫入 N 個鍵，每個鍵都存放一個完整向量。針對不重複文字的批次任務幾乎得不到快取命中，卻可能把 Redis 塞滿。一旦 Redis 達到 `maxmemory`，`volatile-lru` 淘汰策略會淘汰任何帶有 TTL 的鍵，包括共用同一個執行個體的速率限制計數器、支出與預算狀態，以及驗證快取項目。縮短 `ttl` 也無法避免，因為一波不重複的 embeddings 會在鍵到期前就把記憶體塞滿。
+
+若要停止快取 embeddings、同時保留其他所有呼叫類型的快取，請依[從快取中排除呼叫類型](./caching_controls.md#exclude-call-types-from-caching)所述設定 `excluded_call_types`。`excluded_call_types` 已合併至 LiteLLM `main`（[PR #52902](https://github.com/BerriAI/litellm/pull/52902)），尚未包含在任何已標記的版本中。在較舊版本上，請在 `supported_call_types` 中列出您想快取的所有呼叫類型，並排除 `embedding` 與 `aembedding`。
+
+若要繼續快取 embeddings，請為回應快取提供專屬的 Redis 執行個體。在同一個執行個體上使用不同的 `namespace` 或資料庫編號並無法隔離記憶體，因為 `maxmemory` 與淘汰策略是套用於整個執行個體。請將存放速率限制、支出追蹤與 pod 鎖的 `general_settings.coordination_redis`，以及 `router_settings` 中的 router Redis，指向與 `cache_params` 不同的執行個體：
+
+```yaml
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: cache-redis
+    port: 6379
+
+general_settings:
+  coordination_redis:
+    host: coordination-redis
+    port: 6379
+
+router_settings:
+  redis_host: coordination-redis
+  redis_port: 6379
+```
+
 ## SSL {#ssl}
 
 只要在您的 .env 中設定 `REDIS_SSL="True"`，LiteLLM 就會讀取它。
@@ -320,6 +347,8 @@ router_settings:
 ```
 
 `REDIS_SOCKET_TIMEOUT` 環境變數（預設 `5`）不會變更快取用戶端的逾時設定。LiteLLM 會將它作為備援，套用到其建立的所有未明確設定 `socket_timeout` 的 Redis 用戶端，無論是獨立部署、`REDIS_URL`、叢集或 Sentinel，也無論同步或非同步。proxy 的快取用戶端一律會傳入自己的 `socket_timeout`（5.0 秒預設值或您的 `cache_params` 值），而呼叫端的 kwarg 會優先於 `REDIS_*` 環境對應，因此在設定 `REDIS_SOCKET_TIMEOUT` 時，快取用戶端仍會以 5.0 秒執行。協調與路由用戶端也是以相同方式建立，因此也適用相同情況。唯一的例外是 `cache_params` 中的 `socket_timeout: null`，它會移除該 kwarg，讓用戶端改以 `REDIS_SOCKET_TIMEOUT` 作為備援。`null` 在任何拓撲下都不會關閉逾時，因此若要實際解除此限制，請將 `socket_timeout` 設定為較大的數字。
+
+Bedrock guardrails 也會使用協調快取來[記住先前在各 worker 間已掃描過的請求文字](./guardrails/bedrock.md#only-scan-new-input-text-in-a-session)。
 
 ## 虛擬金鑰驗證快取（Redis） {#virtual-key-authentication-cache-redis}
 
