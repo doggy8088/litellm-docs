@@ -113,7 +113,7 @@ Token 會在送達時立即轉送，而不是緩衝到回應結尾。Shield 只�
 
 ## 什麼會被去識別化，什麼會被還原 {#what-is-redacted-and-what-is-restored}
 
-在請求端，guardrail 會收集聊天中的訊息文字與工具呼叫引數、Responses `input`、Completions `prompt` 與 `suffix`，以及 Anthropic 訊息，包括巢狀工具結果。也會遍歷：Anthropic 文件部分（其 `title`、`context`，以及 `text` 來源的文字）、Responses function-call 輸出（一個字串或 `output_text` 部分）、自訂 tool-call `input`、code-interpreter `code`、型別化的 prompt 變數，以及 `extra_body` 底下的任何內容，LiteLLM 會在送出轉換後的請求前將其合併進來。若那裡存在未去識別化的 `messages` 或 `system`，就會在傳輸中取代已去識別化的那個。每個請求都會得到 LiteLLM 新建立且以程序命名空間隔離的 vault id；呼叫端送出的任何內容都不會被用來命名 vault，因此呼叫端無法透過讓替代值被回顯來取得其他請求的值。
+在請求端，guardrail 會收集聊天中的訊息文字與工具呼叫引數、Responses `input`、Completions `prompt` 與 `suffix`，以及 Anthropic 訊息，包括巢狀工具結果。也會遍歷：Anthropic 文件部分（其 `title`、`context`，以及 `text` 來源的文字）、Responses function-call 輸出（一個字串或 `output_text` 部分）、自訂 tool-call `input`、code-interpreter `code`、型別化的 prompt 變數，以及 `extra_body` 底下的任何內容，LiteLLM 會在送出轉換後的請求前將其合併進來。若那裡存在未去識別化的 `messages` 或 `system`，就會在傳輸中取代已去識別化的那個。在 `/v1/decisions` 上，它也會遍歷 [`input_json` 部分](../../decisions.md#json-input)內的鍵、字串值與數字，而它替換的數字會以字串形式送出。每個請求都會得到 LiteLLM 新建立且以程序命名空間隔離的 vault id；呼叫端送出的任何內容都不會被用來命名 vault，因此呼叫端無法透過讓替代值被回顯來取得其他請求的值。
 
 應用程式寫入而非呼叫端輸入的文字，會被去識別化到第二個 vault，而這個 vault 不會被還原：`system` 與 `developer` turns、Responses `input` 中的 `system` 與 `developer` 項目、Anthropic 的頂層 `system`、Responses `instructions`、工具描述與參數 schema、結構化輸出 schema、web-search 使用者位置，以及 `user` 與 `safety_identifier` 欄位。例外是 schema 中的 `enum` 與 `const` 值，這些會送到呼叫端的 vault，因此使用它們的工具呼叫或結構化輸出會帶著真實值回來。若請求在遍歷上限之外還更深一層，系統會拒絕而非只部分未去識別化地轉送。
 

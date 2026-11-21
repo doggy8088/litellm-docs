@@ -57,7 +57,7 @@ response = completion(
 
 ## 決策 {#decisions}
 
-Gemini Decision 1 透過 LiteLLM 的 [`/v1/decisions` 與 `/v1/systemone`](../decisions.md) 路由回答是非題、選擇題與評分量表分數問題。此提供者已透過 [LiteLLM #51220](https://github.com/BerriAI/litellm/pull/51220) 合併至 main，尚未包含在正式版本中
+Gemini Decision 1 透過 LiteLLM 的 [`/v1/decisions` 與 `/v1/systemone`](../decisions.md) 路由回答是非題、選擇題與評分量表分數問題。<SinceVersion v="1.111.0" />，最早出現在 `v1.111.0-rc.1`。
 
 在 proxy 環境中設定 `GEMINI_API_KEY`，並將此部署加入 `config.yaml`
 

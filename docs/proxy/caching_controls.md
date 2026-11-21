@@ -5,6 +5,7 @@ description: 控制 LiteLLM proxy 快取哪些內容以及快取多久，可依�
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import SinceVersion from '@site/src/components/SinceVersion';
 
 # 快取控制 {#cache-controls}
 
@@ -253,6 +254,52 @@ curl http://localhost:4000/v1/chat/completions \
 
 </TabItem>
 </Tabs>
+
+### `Cache-Control` 請求標頭 {#cache-control-request-header}
+
+無法在 body 中加入 `cache` 欄位的用戶端，可以改為傳送標準 HTTP `Cache-Control` 請求標頭。<SinceVersion v="1.112.0" /> Proxy 會從標頭讀取 `no-cache` 與 `no-store`，並像上述 body 控制項一樣套用。
+
+<Tabs>
+<TabItem value="openai" label="OpenAI Python SDK">
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="your-api-key",
+    base_url="http://0.0.0.0:4000"
+)
+
+chat_completion = client.chat.completions.create(
+    messages=[{"role": "user", "content": "Hello"}],
+    model="{{openai_small}}",
+    extra_headers={"Cache-Control": "no-cache"}  # Skip the cached response for this request
+)
+```
+
+</TabItem>
+
+<TabItem value="curl" label="curl">
+
+```shell
+curl http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Cache-Control: no-cache" \
+  -d '{
+    "model": "{{openai_small}}",
+    "messages": [
+      {"role": "user", "content": "Hello"}
+    ]
+  }'
+```
+
+</TabItem>
+</Tabs>
+
+只有 `no-cache` 與 `no-store` 會從標頭讀取，其他指令（例如 `max-age` 與 `s-maxage`）會被忽略。body 內 `cache` 欄位的值優先於標頭。當虛擬金鑰設定了 `allowed_cache_controls`，標頭中不在該清單內的指令會被忽略，而非遭到拒絕。金鑰中繼資料內的快取控制（如下所述）優先於標頭，其方式與優先於 body 相同。
+
+有些 HTTP 用戶端預設會在每個請求傳送 `Cache-Control: no-cache`（例如 Postman），因此其請求會跳過快取。
 
 ## 依金鑰的快取控制 {#per-key-cache-controls}
 

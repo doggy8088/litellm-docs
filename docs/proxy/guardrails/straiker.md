@@ -149,6 +149,8 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 | `initial_backoff` | `0.1` | 首次重試退避時間（秒） |
 | `max_backoff` | `2.0` | 退避上限（秒） |
 | `unreachable_fallback` | `fail_closed` | Straiker 在重試後仍無法連線時的行為 |
+| `stream_mode` | `buffered` | `buffered` 或 `streaming`。請參閱[串流](#streaming) |
+| `hold_tool_calls` | `true` | 搭配 `stream_mode: streaming` 時，於 Straiker 完成回應檢查前暫留工具呼叫 |
 | `fail_on_error` | `true` | Straiker 傳回非成功回應時是否封鎖呼叫 |
 | `max_payload_bytes` | `524288` | 序列化酬載的最大大小 |
 | `custom_headers` | `None` | 傳送至 Straiker 的額外標頭。`Authorization` 無法被覆寫 |
@@ -159,7 +161,39 @@ curl -sSLX POST 'http://0.0.0.0:4000/v1/chat/completions' \
 
 Straiker 支援 `pre_call` 與 `post_call`，而且兩者都可以封鎖。`during_call` 會在初始化時遭拒絕。
 
-串流回應會在 `post_call` 上處理。Straiker 一律會緩衝串流，並在組裝完成後一次進行調節，因此在該檢查通過之前，任何資料塊都不會送達用戶端，而且在封鎖之前不會釋出任何標記的資料塊。這是固定行為，因此通用的 `streaming_buffer_until_moderated`、`streaming_end_of_stream_only` 與 `streaming_sampling_rate` 防護欄設定對 Straiker 沒有效果
+## 串流 {#streaming}
+
+Straiker 會在 `post_call` 上檢查串流回應。`stream_mode` 決定在檢查完成之前，用戶端會看到什麼。
+
+| `stream_mode` | 用戶端看到的內容 |
+|---|---|
+| `buffered`（預設） | 在整個回應通過檢查之前，什麼都看不到 |
+| `streaming` | 文字隨到隨見。封鎖時會以封鎖訊息結束串流，但該文字已經送出 |
+
+```yaml title="config.yaml"
+guardrails:
+  - guardrail_name: straiker-post
+    litellm_params:
+      guardrail: straiker
+      mode: post_call
+      default_on: true
+      api_key: os.environ/STRAIKER_API_KEY
+      stream_mode: streaming
+```
+
+### 工具呼叫 {#tool-calls}
+
+編碼代理程式一收到工具呼叫就會立即執行。因此在 `streaming` 模式下，文字仍會即時串流，但工具呼叫會等到檢查完成，而被封鎖的工具呼叫永遠不會送達用戶端。等待期間串流會出現停頓。
+
+將 `hold_tool_calls` 設為 `false`，即可在工具呼叫抵達時立即送出。被封鎖的工具呼叫便會在串流結束前送達用戶端。
+
+在 A2A 路由上，整個串流都會等待檢查完成。
+
+通用的 `streaming_buffer_until_moderated`、`streaming_end_of_stream_only` 與 `streaming_sampling_rate` 設定對 Straiker 沒有效果。
+
+## 記錄中的被封鎖提示 {#blocked-prompts-in-logs}
+
+Straiker 會以 HTTP 200 與封鎖訊息作為回應來回覆被封鎖的提示，因此用戶端會顯示原因。記錄回呼與 Prometheus 會將該請求記為失敗。唯一的例外是串流的 `/v1/chat/completions` 請求，該請求會被記為成功。
 
 ## 延伸閱讀 {#further-reading}
 

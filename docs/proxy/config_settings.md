@@ -1056,6 +1056,7 @@ router_settings:
 | DEFAULT_MCP_SEMANTIC_FILTER_SIMILARITY_THRESHOLD | MCP 語意工具篩選的預設相似度門檻。預設為 0.3
 | DEFAULT_MCP_SEMANTIC_FILTER_TOP_K | MCP 語意工具篩選要回傳的預設前幾名結果數。預設為 10
 | MCP_NPM_CACHE_DIR | STDIO MCP 伺服器使用的 npm 快取目錄。在容器中，預設值（~/.npm）可能不存在或為唯讀。預設為 `/tmp/.npm_mcp_cache`
+| LITELLM_MCP_DCR_GATEWAY_CLIENT | <SinceVersion v="1.112.0" /> 設定為 `true`，讓代理程式為尚未擁有自身用戶端的新 MCP DCR 橋接註冊一個閘道擁有的 OAuth 用戶端（`oauth_delegate` 或 `true_passthrough`）。需要 `PROXY_BASE_URL` 與資料庫。該流程發出的權杖會綁定至瀏覽器使用者，而非呼叫金鑰。預設為 `false`：新的無用戶端橋接會將用戶端自身的註冊中繼至上游，已設定或已儲存的用戶端則維持原有流程
 | LITELLM_MCP_CLIENT_TIMEOUT | MCP 用戶端連線逾時（秒）（stdio 與 HTTP/SSE 傳輸）。預設為 60
 | LITELLM_MCP_TOOL_LISTING_TIMEOUT | 從 MCP 伺服器列出工具的逾時（秒）。預設為 30
 | LITELLM_MCP_METADATA_TIMEOUT | 用於 OAuth 中繼資料擷取的 HTTP 用戶端逾時（秒）。預設為 10

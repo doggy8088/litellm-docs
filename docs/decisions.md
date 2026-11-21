@@ -47,11 +47,12 @@ litellm --config config.yaml
 
 | 提供者或功能 | 版本 |
 |---------------------|---------|
-| [Gemini Decision 1](./providers/gemini.md#decisions) | 在 main 上透過 [LiteLLM #51220](https://github.com/BerriAI/litellm/pull/51220)，尚未進入正式版本 |
+| [Gemini Decision 1](./providers/gemini.md#decisions) | `v1.111.0-rc.1` |
 | vLLM、Microsoft Foundry、來自 `usage.cost` 的 OpenRouter 支出 | `v1.104.3` |
 | Databricks 服務端點、Cloudflare Clef 上的圖片輸入、Cloudflare Clef-omni 上的[音訊與視訊輸入](#audio-and-video-input)、TypeSafe 圖片與 box 問題 | `v1.106.0` |
 | Databricks `ai_decide`、Fireworks AI、Laya 與 Bespoke Nimble（包含 Add Model 表單），以及部署自己的 [`supports_box_questions`](#box-questions-on-other-deployments) 值（在設定與 SDK 中） | `v1.107.0-rc.1` |
 | 部署自己的 [`supports_audio_input` 與 `supports_video_input`](#audio-and-video-on-other-deployments) 值，以及 clip 請求只送到接受 clip 的群組部署 | `v1.110.0` |
+| [JSON 輸入](#json-input)（OpenAI） | `v1.112.0-rc.1`，以及 1.108.x LTS 線上的 `v1.108.14` |
 
 | 功能 | 支援 | 備註 |
 |---------|-----------|-------|
@@ -61,6 +62,7 @@ litellm --config config.yaml
 | 負載平衡、備援 | 是 | 像 `/chat/completions` 一樣經過路由器 |
 | 圖片輸入 | OpenAI、Gemini、Cloudflare Clef 與 TypeSafe | TypeSafe 需要 `TypeSafe-Danger-Zone-Images: true` 標頭。其他提供者回傳 400，或在 `drop_params` 下丟棄圖片 |
 | 音訊與視訊輸入 | Gemini Decision 1 與 Cloudflare Clef-omni | 其他模型回傳 400，或在 `drop_params` 下丟棄 clip，除非[部署旗標](#audio-and-video-on-other-deployments)開啟 clip。`openai/` 與 `azure/` 部署無論旗標如何都拒絕 clip |
+| JSON 輸入 | OpenAI | `azure/` 部署會像 OpenAI 一樣把這些部分繼續往下傳。其他提供者（包含 Microsoft Foundry）會回傳一個指名 `input_json` 的 400，或在 `drop_params` 下丟棄這些部分 |
 | 串流 | 否 | |
 
 ## 支援的提供者 {#supported-providers}
@@ -83,6 +85,8 @@ litellm --config config.yaml
 | [Bespoke Nimble](https://github.com/bespokelabsai/nimble) (self-hosted) | 在 Ollama 上為 `bespoke/nimble`，其他為 `bespoke/nimble-latest` 或 `bespoke/bespokelabs/Bespoke-Nimble-9B` | `api_base` 或 `BESPOKE_API_BASE` 必填，`BESPOKE_API_KEY` 可選 | `/v1/systemone` | 否 |
 
 其中部分提供者需要比決策路由更新的 LiteLLM 版本，如[可用性與支援的功能](#availability-and-supported-features)所列
+
+主機與模型同樣重要。決策模型只在 LiteLLM 有 Decisions 整合的提供者上運作。GPT-6 Luna 在 `openai/gpt-6-luna` 上以及在 Azure OpenAI 上以 `azure/gpt-6-luna` 提供決策。AWS Bedrock 不是 Decisions 提供者，因此 GPT-6 Luna 的 `bedrock/` 部署（包含 `bedrock/converse/`）與 `bedrock_mantle/` 部署能回答聊天請求，但在 `/v1/decisions` 上會回傳 `Unknown Decisions provider`，作為 Auto Router 決策分類器時與在 Decision Model 防護欄中也是如此。Amazon 在 Bedrock 上的 Decisions 端點目前不接受 GPT-6 Luna。若要以 Bedrock 託管的 GPT-6 Luna 分類 Auto Router 請求，請使用 [LLM 分類器](./proxy/auto_routing.md)並設定 `classifier_type: llm`，它會透過聊天呼叫模型
 
 LiteLLM 在兩種格式之間轉換，因此您呼叫的路由不會限制您能使用哪個提供者。OpenAI 接收 OpenAI 格式的主體，Gemini 接收其原生 Decisions 格式，其他提供者接收 System One 主體。答案以您呼叫的路由的格式回來。OpenAI `input` 的文字部分會被連接成 System One 的 `state`，而 System One 問題在送到 OpenAI 時以其鍵命名
 
@@ -198,7 +202,7 @@ curl -X POST 'http://0.0.0.0:4000/v1/decisions' \
 | 欄位 | 類型 | 說明 |
 |-------|------|-------------|
 | `model` | string | 代理模型名稱，或在 SDK 中為 `<provider>/<model>` |
-| `input` | string or array | 一個字串，或形狀如 `{"type": "message", "role": "user", "content": ...}` 的訊息。`content` 是一個字串，或一份 `input_text` 與 `input_image` 部分的清單 |
+| `input` | string or array | 一個字串，或形狀如 `{"type": "message", "role": "user", "content": ...}` 的訊息。`content` 是一個字串，或一份 `input_text`、`input_image` 與 [`input_json`](#json-input) 部分的清單 |
 | `questions` | array | 1 至 128 個問題。答案以相同順序回來 |
 | `safety_identifier` | string, optional | 您終端使用者的穩定 ID。傳送給 OpenAI。其他提供者回傳 400，或在 `drop_params` 下丟棄它 |
 | `audio` | array, optional | 最多 4 段音訊 clip，規則見[音訊與視訊輸入](#audio-and-video-input) |
@@ -322,6 +326,38 @@ curl -X POST 'http://0.0.0.0:4000/v1/decisions' \
 ```
 
 在 `litellm_settings` 中或部署上設定 `drop_params: true` 時，LiteLLM 會丟棄圖片，只傳送文字。丟棄後沒有剩下文字的請求仍會得到 400。
+
+### JSON 輸入 {#json-input}
+
+OpenAI 模型會在使用者訊息中接受 `input_json` 部分。`data` 是一個物件或一份物件陣列，LiteLLM 會把它原樣傳送給提供者，放在訊息的其他部分旁邊。developer 或 system 訊息中的 `input_json` 部分會得到 400，即使開啟 `drop_params` 也一樣。
+
+```bash showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/v1/decisions' \
+-H "Authorization: Bearer $LITELLM_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+  "model": "luna",
+  "input": [
+    {
+      "type": "message",
+      "role": "user",
+      "content": [
+        {"type": "input_text", "text": "Evaluate the ticket using the order evidence."},
+        {"type": "input_json", "data": {"ticket": {"body": "Please refund the duplicate charge."}, "order": {"charges": [49, 49]}}}
+      ]
+    }
+  ],
+  "questions": [
+    {"type": "predicate", "name": "duplicate_charge", "instructions": "Does the ticket describe a duplicate charge supported by the order?"}
+  ]
+}'
+```
+
+答案的形狀與純文字請求的答案相同。[`hide-secrets`](./proxy/guardrails/secret_detection.md) 防護欄也會檢查 `data` 內的鍵與字串值，把每個值連同其鍵一起讀取，並在請求送到提供者之前，把找到的每個 secret 換成 `[REDACTED]`。一個經過遮罩的鍵若會與同一物件中的另一個鍵衝突，就會得到一個編號，例如 `[REDACTED] (2)`，因此不會遺失任何值。[LLM Shield Proxy](./proxy/guardrails/llm_shield_proxy.md) 防護欄會把 `data` 內的鍵、字串值與數字中的個人資料換成替代值，而被換掉的數字會以字串形式傳送。其他讀取訊息文字的防護欄，例如禁用關鍵字、OpenAI 審核與 Azure Content Safety，會把 `data` 當作 JSON 文字讀取。Cisco AI Defense 無法改寫 `data`，因此當它要求遮罩一個帶有 `input_json` 的請求時，閘道會以 400 封鎖該請求，即使在監控模式下也一樣。
+
+其他提供者會在呼叫提供者之前回傳一個指名 `input_json` 的 400。開啟 `drop_params` 時，LiteLLM 會丟棄 `input_json` 部分並傳送其餘部分。丟棄後沒有剩下輸入的請求仍會得到 400。`data` 不是物件或物件陣列時，即使開啟 `drop_params` 也會得到 400。
+
+在負載平衡群組中，帶有 `input_json` 部分的請求只會送到接受它們的部署，沒有這些部分的請求仍會使用每一個部署。開啟 `drop_params` 時，不接受 JSON 的部署仍留在候選中並丟棄 JSON 部分，只要它還保有一些輸入。一個部署若在丟棄 JSON 部分以及它不接受的任何圖片或 developer 與 system 訊息後沒有剩下輸入，就會被跳過。因此，使用者訊息中只有 `input_json` 部分的請求，只會送到接受 JSON 的部署。群組中沒有部署能接受請求時，它會得到指名 `input_json` 的 400，然後群組的[備援](./proxy/reliability.md)會執行（若有的話）。未開啟 `drop_params` 時，若每個接受 JSON 的部署都在冷卻中，請求會得到同樣的 400，而在 1.108.x LTS 線上則會得到路由器的 429 冷卻錯誤。開啟 `drop_params` 時，不接受 JSON 的部署就能以其餘輸入來回答它。若要讓 JSON 請求留在讀取 JSON 的部署上，請把這些部署放在自己的模型群組中，並把 JSON 請求傳送到該群組。
 
 ## /v1/systemone {#v1systemone}
 

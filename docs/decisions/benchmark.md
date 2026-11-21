@@ -10,6 +10,8 @@ import DecisionBenchmark from '@site/src/components/DecisionBenchmark';
 
 這些基準測試以三種工作測試 LiteLLM 支援的每一個[決策模型](../decisions.md)：作為防護欄、作為 Auto Router 分類器，以及作為 Lens Signals 的 LLM judge。每個模型在 2026 年 10 月透過 LiteLLM 代理在 `/v1/decisions` 上接收相同的請求。自我託管的模型在沒有 GPU 的 8 核心 CPU 上執行，因此其延遲無法與託管模型相比
 
+每一列是[支援的提供者表格](../decisions.md#supported-providers)中該提供者上的模型。GPT-6 Luna 各列是在 `openai/gpt-6-luna` 上執行的。數字只適用於該提供者。同一模型在另一個主機上的分數可能不同，有些主機完全不透過 LiteLLM 提供 `/v1/decisions`，例如 AWS Bedrock 上的 GPT-6 Luna
+
 最佳模型取決於工作。GPT-6 Luna 作為防護欄與 Lens judge 都在頂尖群組中，但在 Auto Router 測試中，它把 80 個提示詞中的 15 個送到較便宜的層級。Decision-1 在路由上並列第二，但只為 44% 的 Lens 旗標挑出正確的證據
 
 ## 防護欄 {#guardrails}

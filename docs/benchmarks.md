@@ -97,3 +97,27 @@ LiteLLM 閘道的效能測試結果。
 | 設定 | 基礎 proxy 與 [GCS bucket 記錄](./observability/gcs_bucket_integration.md) 及 [LangSmith 記錄](./observability/langsmith_integration.md) 的比較 |
 | 持續時間 | 未記錄 |
 | 量測 | 每秒請求數與請求延遲中位數 |
+
+## 依 pod 基準測試 {#per-pod-streaming-benchmarks}
+
+在這個短回應工作負載下，為保留延遲餘裕，請以每個四 worker pod 在 AWS c7a.2xlarge 上約 **100 個合併 RPS** 來規劃。同一 pod 與節點上的三次執行共完成 **134,992 個量測請求，零失敗**，其中 80% 為一般流量、20% 為串流流量。
+
+| 每個 pod 的合併 RPS | 一般額外負擔 p99 | 串流額外負擔 p99 |
+|---|---:|---:|
+| 100 | 47 ms | 45 ms |
+| 150 | 91 ms | 93 ms |
+| 200 | 651 ms | 645 ms |
+
+在 150 RPS 時，p99 額外負擔接近 100 ms 目標；在 200 RPS 時超過目標。在 100 RPS 時，p99 首 token 時間為 264 ms，包含 mock 提供者的 200 ms 延遲。
+
+### 測試方法 {#methodology-4}
+
+| 設定項目 | 設定 |
+|---|---|
+| 版本與機器 | LiteLLM v1.110.0；2026 年 11 月 20 日（UTC）；專用 c7a.2xlarge 節點，8 vCPU 與 16 GiB RAM，AWS EKS `us-west-1a` |
+| Pod | 三次執行使用同一 pod 與節點；四個 worker；閘道請求 4 vCPU 與 8 GiB RAM，上限為 8 vCPU 與 8 GiB；collector 與 metrics sidecar |
+| 驗證 | 所有負載請求使用同一組已儲存的 LiteLLM 虛擬金鑰；master key 僅在測試前用來建立它 |
+| 工作負載 | 80% 一般／20% 串流；小型不重複提示，`max_tokens: 64`；另一個網路 mock 等待 200 ms 後回傳 37 個內容 chunk，串流時每 15 ms 一個 |
+| 負載與持續時間 | 叢集內 Locust FastHttpUser；100、150 與 200 RPS；每次執行 60 秒暖機與 5 分鐘量測。pacing 開始後啟動偏移仍有效；以 100 ms 區間檢查送達的請求；驗證完整串流 |
+| 量測 | 閘道額外負擔使用 `x-litellm-overhead-duration-ms` 回應標頭，不包含完整串流持續時間 |
+| 服務與範圍 | PostgreSQL、Redis 與 mock 提供者在同一可用區的另一個節點上；已啟用 PgBouncer、collector、提示儲存、支出追蹤與 Prometheus。直接走 Kubernetes Service 流量 |

@@ -14,7 +14,8 @@ import TabItem from '@theme/TabItem';
 - Vertex AI Chirp，僅限轉錄 ([查看完整文件](/docs/providers/vertex_transcription#chirp-realtime-transcription))
 - Bedrock
 - Meta Muse Voice，僅限轉錄 ([查看完整文件](/docs/providers/meta#muse-voice-realtime-transcription))
-- OpenAI Live 模型，例如 `gpt-live-1`，使用其專屬的 `/v1/live/sessions` 路由（[見下文](#openai-live-sessions-gpt-live-1)）
+- OpenAI Live 模型，例如 `gpt-live-1`，使用其專屬的 `/v1/live/sessions` 路由（[查看完整文件](/docs/live_sessions)）
+- 使用 `gpt-live-transcribe` 在 OpenAI 與 Azure 上進行即時轉錄（[見下文](#live-transcription-with-gpt-live-transcribe)）
 - 使用 `gpt-realtime-translate` 的即時語音翻譯（OpenAI 與 Azure），使用其專屬的 `/v1/realtime/translations` 路由（[查看完整文件](/docs/realtime_translation)）
 
 ## 代理程式用法 {#proxy-usage}
@@ -116,80 +117,78 @@ ws.on("error", function handleError(error) {
 
 ## OpenAI Live 工作階段（`gpt-live-1`） {#openai-live-sessions-gpt-live-1}
 
-<SinceVersion v="1.107.0" /> OpenAI Live 模型（例如 `gpt-live-1`）使用其專屬的 WebSocket 通訊協定，LiteLLM 在 `/v1/live/sessions` 上提供這些模型，首次出現於 `v1.107.0-rc.1`。OpenAI 會以 `invalid_model` 拒絕在 `/v1/realtime` 上使用 Live 模型，因此 `/v1/realtime` 用戶端無法使用 `gpt-live-1`。請改用下方的路由。
+GPT-Live 模型（例如 `gpt-live-1`）不會在 `/v1/realtime` 上執行。它們有自己的路由 `/v1/live/sessions` 與自己的頁面。請參閱 [GPT-Live](/docs/live_sessions)。
 
-### 將模型加入設定檔 {#add-the-model-to-config}
+## 使用 `gpt-live-transcribe` 進行即時轉錄 {#live-transcription-with-gpt-live-transcribe}
+
+`gpt-live-transcribe` 會將串流進來的音訊即時轉成文字。它以轉錄工作階段的形式在 Realtime 路由上執行，OpenAI 與 Azure 皆適用。它不是 GPT-Live 模型，因此不使用 `/v1/live/sessions`。
 
 ```yaml
 model_list:
-  - model_name: gpt-live-1
+  - model_name: gpt-live-transcribe
     litellm_params:
-      model: openai/gpt-live-1
+      model: openai/gpt-live-transcribe
       api_key: os.environ/OPENAI_API_KEY
+  - model_name: azure-live-transcribe
+    litellm_params:
+      model: azure/gpt-live-transcribe
+      api_key: os.environ/AZURE_API_KEY
+      api_base: os.environ/AZURE_API_BASE
 ```
 
-Live 工作階段僅支援 `openai` 提供者。在其他提供者的部署（例如 `azure/gpt-live-1`）上建立的工作階段，會收到一個 `error` 事件，內容為 `OpenAI Live sessions require the openai provider`，且工作階段會以代碼 1011 關閉。LiteLLM 會連線至 `api_base` 所指定主機上的 `/v1/live/sessions`，並捨棄其中的任何路徑，因此位於路徑前綴之後的 `api_base` 無法運作。
-
-### 連線 {#connect}
-
-使用 LiteLLM 虛擬金鑰，在 proxy 上開啟通往 `/v1/live/sessions` 的 WebSocket。`/live/sessions` 與 `/openai/v1/live/sessions` 也可以使用。第一則訊息必須是 `session.start`，其 `session.model` 為您設定中的 `model_name`。LiteLLM 會從該訊息取得模型，並忽略 `?model=` 查詢參數。它會換入部署的模型，連線至 OpenAI 的 `/v1/live/sessions`，然後在兩個方向上原封不動地傳遞每個事件。
-
-將 `base_url` 指向 proxy 時，OpenAI Python SDK 會完成上述所有操作。`client.live` 需要 `openai` 3.12.0 或更新版本，請使用 `pip install -U "openai[realtime]>=3.12.0"` 安裝或升級：
+請使用查詢字串中的 `intent=transcription` 連線到 `/v1/realtime`。若沒有它，LiteLLM 會開啟對話工作階段，而提供者會拒絕轉錄模型的交握。
 
 ```python
 import asyncio
+import base64
+import json
 import os
 
-from openai import AsyncOpenAI
+import websockets
 
-client = AsyncOpenAI(base_url="http://0.0.0.0:4000/v1", api_key=os.environ["LITELLM_API_KEY"])
+URL = "ws://0.0.0.0:4000/v1/realtime?model=gpt-live-transcribe&intent=transcription"
 
 
 async def main() -> None:
-    async with client.live.connect() as connection:
-        await connection.send({"type": "session.start", "session": {"model": "gpt-live-1"}})
-        async for event in connection:
-            print(event.type)
-            if event.type == "session.started":
-                await connection.send({"type": "session.close"})
-            if event.type in ("session.closed", "error"):
+    headers = {"Authorization": f"Bearer {os.environ['LITELLM_API_KEY']}"}
+    async with websockets.connect(URL, additional_headers=headers) as ws:
+        await ws.send(
+            json.dumps(
+                {
+                    "type": "session.update",
+                    "session": {
+                        "type": "transcription",
+                        "audio": {
+                            "input": {
+                                "format": {"type": "audio/pcm", "rate": 24000},
+                                "transcription": {"model": "gpt-live-transcribe"},
+                            }
+                        },
+                    },
+                }
+            )
+        )
+        with open("speech.pcm", "rb") as f:
+            pcm = f.read()
+        for start in range(0, len(pcm), 4800):
+            chunk = base64.b64encode(pcm[start : start + 4800]).decode()
+            await ws.send(json.dumps({"type": "input_audio_buffer.append", "audio": chunk}))
+        await ws.send(json.dumps({"type": "input_audio_buffer.commit"}))
+
+        async for message in ws:
+            event = json.loads(message)
+            if event["type"] == "conversation.item.input_audio_transcription.delta":
+                print(event["delta"], end="", flush=True)
+            if event["type"] in ("conversation.item.input_audio_transcription.completed", "error"):
                 break
 
 
 asyncio.run(main())
 ```
 
-傳送音訊前，請先等待 `session.started`。以 base64 區塊的形式，在 `session.input_audio.append` 事件中傳送音訊，並從 `session.output_audio.delta` 事件讀取模型的音訊。完整事件清單請參閱 OpenAI 的 [GPT-Live 指南](https://developers.openai.com/api/docs/guides/live) 與 [WebSocket 指南](https://developers.openai.com/api/docs/guides/voice-websockets?api=live)。
+`speech.pcm` 是 16 位元單聲道 PCM，取樣率 24 kHz。文字會透過 `conversation.item.input_audio_transcription.delta` 事件送達，而 `completed` 事件帶有完整逐字稿。
 
-### 驗證與錯誤 {#auth-and-errors}
-
-LiteLLM 會在 WebSocket 開啟時檢查虛擬金鑰。它先從 `Authorization: Bearer <key>` 標頭讀取金鑰，再從 `api-key` 標頭讀取，最後從 `openai-insecure-api-key.<key>` WebSocket 子通訊協定讀取（供無法設定標頭的用戶端使用）。從瀏覽器傳送的金鑰可被任何使用該頁面的人讀取，因此請只給予該金鑰頁面所需的模型與預算。缺少金鑰、金鑰無效，或金鑰超過其總預算（`max_budget`）時，會收到 HTTP 403，且 WebSocket 不會開啟。
-
-在 `session.start` 之後，LiteLLM 會執行需要模型的檢查，例如金鑰是否可呼叫 `session.model`，以及每模型預算（`model_max_budget`）。檢查失敗時，LiteLLM 會傳送帶有下列其中一個代碼的 `error` 事件，並以代碼 1008 關閉工作階段：
-
-| 代碼 | 原因 |
-| --- | --- |
-| `model_not_allowed` | 金鑰不可呼叫該模型 |
-| `session_not_allowed` | 其他檢查失敗，例如每模型預算已用盡 |
-| `invalid_session_start` | 第一則訊息不是 `session.start` |
-
-若 30 秒內未收到第一則訊息，LiteLLM 也會傳送 `invalid_session_start`。若金鑰可呼叫該模型，但您設定中的 `model_name` 都不符合，LiteLLM 會傳送類型為 `server_error` 的 `error` 事件，並以代碼 1011 關閉工作階段。
-
-金鑰的速率限制（例如 `rpm_limit`）也會在 `session.start` 之後檢查。超過限制的工作階段會收到類型為 `guardrail_error` 的 `error` 事件，其訊息以 `429` 開頭，且工作階段會以代碼 1011 關閉。若未使用 Redis，每個 proxy worker 會各自計數，因此具有多個 worker 的 proxy 可能放行超過限制的工作階段。
-
-### 用量追蹤 {#spend-tracking}
-
-若要結束工作階段，請傳送 `session.close` 並等待 `session.closed`，其中帶有最終的 `usage`。LiteLLM 會依據 OpenAI 回報的 `usage.seconds`，以模型的 `input_cost_per_second` 對工作階段計費。若您在 `litellm_params` 中設定了部署自身的 `input_cost_per_second`，則使用該值，否則使用模型成本對照表中的值。例如，一個有 6 秒音訊的工作階段，費用為 `input_cost_per_second` 的 6 倍。若用戶端未傳送 `session.close` 就中斷 socket，LiteLLM 會自行向 OpenAI 傳送 `session.close`，並仍依 OpenAI 的 `session.closed` 中的 `usage.seconds` 計費。當工作階段結束時未收到 OpenAI 的 `session.closed`（例如與 OpenAI 的連線中斷，或用戶端中斷後 5 秒內 OpenAI 未傳送），LiteLLM 會以最後回報的 `usage.seconds` 與工作階段開啟時間兩者中較大者計費。
-
-當工作階段將工作交給 Responses 模型時，OpenAI 會傳送 `response.event` 事件，LiteLLM 會以該模型的 token 價格加上每個已完成回應的 token。若某個模型不在 LiteLLM 的模型成本對照表中，其 token 費用為 $0。LiteLLM 只計算 token 費用，因此網路搜尋等工具的費用不會被計費。
-
-全部費用會記入工作階段的用量記錄與金鑰的用量，因此金鑰預算的套用方式與 `/v1/realtime` 相同。LiteLLM 會在工作階段開始時檢查預算，並在工作階段結束時加上費用，因此一個長時間的工作階段可能花費超過預算。之後該金鑰或模型的工作階段將被拒絕。
-
-### 限制 {#limits}
-
-防護欄不會在 Live 工作階段上執行。當 `pre_call`、`post_call` 或 `realtime_input_transcription` 防護欄適用於工作階段時，LiteLLM 會傳送一個 `error` 事件，內容為 `Guardrails are not supported on OpenAI Live sessions`，並以代碼 1011 關閉工作階段。這包括附加在金鑰上的防護欄，以及 `default_on: true` 的防護欄，因此這些模式中 `default_on` 的防護欄會關閉 proxy 上的每個 Live 工作階段。其他模式的防護欄（例如 `during_call`）以及 `guardrails` 查詢參數不會關閉工作階段，工作階段會在沒有它們的情況下執行。
-
-LiteLLM 只在 WebSocket 路由上檢查 Live 工作階段並計費。WebRTC 工作階段建立（`POST /v1/live/sessions`）以及 `/v1/live/sessions/{session_id}/` 下的通話控制路由（例如 `hangup` 與 `accept`），在 proxy 上沒有 Live 路由。`/openai/v1/live/sessions` 上的 [OpenAI 透通傳遞](/docs/pass_through/openai_passthrough) 會將它們以一般透通呼叫的形式轉送至 OpenAI，LiteLLM 不會將其計為 Live 工作階段，因此其使用不會計入金鑰用量或預算。Proxy 管理員可以將金鑰的 `allowed_routes` 設為 `["/v1/live/sessions"]`，讓金鑰只能使用 Live WebSocket 路由。
+若要使用瀏覽器，請以 `POST /v1/realtime/client_secrets` 建立短期權杖，並將 `session.type` 設為 `transcription`，再依照 [WebRTC 指南](/docs/proxy/realtime_webrtc)操作。`gpt-live-transcribe` 無法在 `/v1/audio/transcriptions` 上運作，該路由用於將檔案上傳至 `gpt-4o-transcribe` 等模型。
 
 ## Azure：GA 與 beta 即時通訊協定 {#azure-ga-vs-beta-realtime-protocol}
 

@@ -104,7 +104,7 @@ https://api.groq.com/openai/v1/ \
 
 ## 略過工具結果 {#skip-tool-results}
 
-hide-secrets 會遮罩工具呼叫與工具結果中的秘密，以及使用者文字中的秘密。若要將工具結果依原樣傳送給模型，請在防護欄上設定 `skip_tool_message_in_guardrail: true`，或在 `litellm_settings` 中設定以套用到每個防護欄。個別防護欄的值優先於全域值，因此在 hide-secrets 上設為 `false` 可讓工具結果保持遮罩，而其他防護欄則略過它們。請參閱[在 guardrail 評估中略過 tool 訊息](./quick_start.md#skip-tool-messages-in-guardrail-evaluation)。
+hide-secrets 會遮罩工具呼叫與工具結果中的秘密，以及使用者文字中的秘密。在 `/v1/decisions` 上，它也會檢查 [`input_json` 部分](../../decisions.md#json-input)內的鍵與字串值。若要將工具結果依原樣傳送給模型，請在防護欄上設定 `skip_tool_message_in_guardrail: true`，或在 `litellm_settings` 中設定以套用到每個防護欄。個別防護欄的值優先於全域值，因此在 hide-secrets 上設為 `false` 可讓工具結果保持遮罩，而其他防護欄則略過它們。請參閱[在 guardrail 評估中略過 tool 訊息](./quick_start.md#skip-tool-messages-in-guardrail-evaluation)。
 
 ```yaml
 guardrails:

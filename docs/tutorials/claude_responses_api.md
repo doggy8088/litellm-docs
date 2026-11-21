@@ -321,11 +321,11 @@ claude --model claude-opus-vertex
 
 ### Claude Code 的 Bedrock 專用設定 {#bedrock-specific-setup-for-claude-code}
 
-目前有兩個額外步驟可讓 Claude Code 透過 LiteLLM 乾淨地對接 Bedrock。請在以 Bedrock 為後端的模型上啟動 `claude` 之前，先完成這兩步。
+在以 Bedrock 為後端的模型上啟動 `claude` 之前，請先檢查以下兩件事。
 
 :::note[暫時性替代方案]
 
-下方的 Invoke 偏好設定與 beta-header 旗標都是暫時性的。LiteLLM 已在閘道內的 Bedrock 之上重新實作了許多 Anthropic API 功能，而且我們也持續在 Converse 路徑上擴充這些涵蓋範圍。不久之後，這些替代方案將不再需要。
+下方的 Invoke 偏好設定是暫時性的。LiteLLM 已在閘道內的 Bedrock 之上重新實作了許多 Anthropic API 功能，而且我們也持續在 Converse 路徑上擴充這些涵蓋範圍。不久之後，這項替代方案將不再需要。
 
 :::
 
@@ -333,48 +333,23 @@ claude --model claude-opus-vertex
 
 在上方設定中，Bedrock 模型使用 `bedrock/invoke/<model-id>` 前綴，這目前是 Claude Code 流量較順暢的路徑。若您想嘗試 Converse，請將前綴從 `bedrock/invoke/` 切換為 `bedrock/converse/`，並在矩陣中確認您需要的功能。
 
-#### 2. 停用 Claude Code 對 Bedrock 的實驗性 beta 標頭 {#2-disable-claude-codes-experimental-beta-headers-for-bedrock}
+#### 2. 不要設定 `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` {#2-dont-set-claude_code_disable_experimental_betas}
 
-Claude Code 會在每個請求附加 Anthropic 實驗性 beta 標頭（例如 `anthropic-beta: prompt-caching-scope-2026-01-05,advanced-tool-use-2025-11-20`）。這些標頭對 Anthropic 第一方 API 運作良好，但 Bedrock 目前不接受所有標頭，可能會回傳 `400 invalid beta flag` 錯誤。請將 **`CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS`** 環境變數設為 `1` 以移除這些標頭。
+本指南的舊版本曾告訴 Bedrock 使用者設定 `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`，以避免 `400 invalid beta flag` 錯誤。LiteLLM 會捨棄 Bedrock 不接受的 beta 標頭，而 v1.109.0 已修復 Bedrock Invoke 上最後一個 `invalid beta flag` 錯誤，因此 Claude Code 不需要該變數也能對接 Bedrock。
 
-建議將其設定在下列位置的 **Claude Code 全域使用者設定檔**：
+該變數也會關閉自動模式的[伺服器端檢查](https://code.claude.com/docs/en/permission-modes#server-side-classifier-review)。Claude Code 接著會自行傳送分類器請求，這些請求會[計入您的 token 用量](https://code.claude.com/docs/en/auto-mode-classifier-billing)，且 `/status` 會顯示 `Auto mode server: Disabled`。若您先前已設定該變數，請從 `~/.claude/settings.json` 的 `env` 區塊、專案的 `.claude/settings.json` 或 `.claude/settings.local.json`，以及 shell 設定檔中移除它。接著完全結束並重新開啟 Claude Code；若使用 VS Code 或 JetBrains 外掛，請重新啟動 IDE。
 
+若您仍需要該變數，例如代理版本舊於 v1.109.0 且回應 `400 invalid beta flag`，請在其旁邊將 `CLAUDE_CODE_AUTO_MODE_SERVER` 設為 `1`。在 Claude Code 2.1.319 或更新版本上，這能讓伺服器端檢查保持開啟。
+
+```json title="~/.claude/settings.json"
+{
+  "env": {
+    "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1",
+    "CLAUDE_CODE_AUTO_MODE_SERVER": "1"
+  }
+}
 ```
-~/.claude/settings.json
-```
 
-（在 macOS / Linux 上是 `/Users/<you>/.claude/settings.json`，在 Windows 上是 `C:\Users\<you>\.claude\settings.json`。所有 Claude Code 用戶端，包括 CLI、VS Code extension、JetBrains plugin 等，都會讀取此檔案。）
-
-**如何編輯：**
-
-1. 在您慣用的編輯器中開啟 `~/.claude/settings.json`。如果尚不存在，請建立它。
-
-   ```bash
-   # macOS / Linux - open with your default editor
-   ${EDITOR:-nano} ~/.claude/settings.json
-
-   # Or with VS Code
-   code ~/.claude/settings.json
-   ```
-
-2. 新增（或合併至現有的）`env` 區塊：
-
-   ```json title="~/.claude/settings.json"
-   {
-     "env": {
-       "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1"
-     }
-   }
-   ```
-
-3. **完全結束並重新開啟 Claude Code**，讓新設定生效。若是 IDE plugin（VS Code、JetBrains），請重新啟動 IDE。
-
-:::tip[替代方案：以專案範圍或 shell 範圍設定]
-
-如果您只想針對單一專案停用 beta 標頭，請將相同的 `env` 區塊放入專案根目錄中的 `.claude/settings.json`（已提交）或 `.claude/settings.local.json`（被 gitignore，個人用）中。
-
-CLI 也可以使用 shell 層級的 export（在啟動 `export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1` 前先執行 `claude`），但 **不適用** 於 IDE plugin。
-
-:::
+若要確認檢查已開啟，請讓 Claude Code 執行一次工具呼叫，再執行 `/status` 並查看 `Auto mode server: Enabled`。
 
 <Image img={require('../../img/release_notes/claude_code_demo.png')} style={{ width: '500px', height: 'auto' }} />

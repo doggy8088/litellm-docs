@@ -61,7 +61,7 @@ litellm_settings:
 # Required: Data Collection Rule (DCR) configuration
 AZURE_SENTINEL_DCR_IMMUTABLE_ID="dcr-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # DCR Immutable ID from Azure portal
 AZURE_SENTINEL_STREAM_NAME="Custom-LiteLLM_CL_CL"                    # Stream name from your DCR
-AZURE_SENTINEL_ENDPOINT="https://your-dcr-endpoint.eastus-1.ingest.monitor.azure.com"  # DCR logs ingestion endpoint (NOT the DCE endpoint)
+AZURE_SENTINEL_ENDPOINT="https://your-dcr-endpoint.eastus-1.ingest.monitor.azure.com"  # DCR logs ingestion endpoint or DCE logs ingestion URI
 
 # Required: OAuth2 Authentication (App Registration)
 AZURE_SENTINEL_TENANT_ID="your-tenant-id"                            # Azure Tenant ID
@@ -70,7 +70,7 @@ AZURE_SENTINEL_CLIENT_SECRET="your-client-secret"                    # Client se
 
 ```
 
-**注意**：`AZURE_SENTINEL_ENDPOINT` 應該是 DCR 的 logs ingestion endpoint（可在 DCR Overview 頁面找到），**不是** Data Collection Endpoint（DCE）。DCR endpoint 會與您特定的 DCR 關聯，外觀如下：`https://your-dcr-endpoint.{region}-1.ingest.monitor.azure.com`
+**注意**：`AZURE_SENTINEL_ENDPOINT` 可以是 DCR 的 logs ingestion endpoint（DCR Overview 頁面），或與您的 DCR 連結的 Data Collection Endpoint（DCE）的 logs ingestion URI（DCE Overview 頁面）。兩者外觀都是 `https://<name>.{region}-1.ingest.monitor.azure.com`。[Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview#endpoint) 接受任一種，因此如果 Microsoft Sentinel 連接器給了您 DCE URI，請使用它。
 
 **步驟 4**：啟動 proxy 並發出測試請求
 
@@ -121,7 +121,7 @@ LiteLLM_CL
 | 環境變數 | 說明 | 預設值 | 必填 |
 |---------------------|-------------|---------------|----------|
 | `AZURE_SENTINEL_DCR_IMMUTABLE_ID` | Data Collection Rule（DCR）不可變 ID | 無 | ✅ 是 |
-| `AZURE_SENTINEL_ENDPOINT` | DCR 記錄擷取端點 URL（來自 DCR Overview 頁面） | 無 | ✅ 是 |
+| `AZURE_SENTINEL_ENDPOINT` | DCR 記錄擷取端點或 DCE 記錄擷取 URI | 無 | ✅ 是 |
 | `AZURE_SENTINEL_STREAM_NAME` | 來自 DCR 的串流名稱（例如："Custom-LiteLLM_CL_CL"） | "Custom-LiteLLM" | ❌ 否 |
 | `AZURE_SENTINEL_TENANT_ID` | 用於 OAuth2 驗證的 Azure Tenant ID | 無（回退至 `AZURE_TENANT_ID`） | ✅ 是 |
 | `AZURE_SENTINEL_CLIENT_ID` | 用於 OAuth2 驗證的 Application（client）ID | 無（回退至 `AZURE_CLIENT_ID`） | ✅ 是 |
@@ -144,7 +144,7 @@ Azure Government 使用其自己的 Entra authority 和自己的 Azure Monitor a
 Azure Sentinel 整合使用 [Azure Monitor Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview) 將記錄傳送到您的 Log Analytics 工作區。此整合：
 
 - 使用 OAuth2 client credentials flow 搭配您的應用程式註冊進行驗證
-- 將記錄傳送到 Data Collection Rule (DCR) endpoint
+- 透過其 logs ingestion endpoint 或連結的 Data Collection Endpoint（DCE）將記錄傳送到您的 Data Collection Rule（DCR）
 - 批次處理記錄以提升傳輸效率
 - 以 [StandardLoggingPayload](../proxy/logging_spec) 格式傳送記錄
 - 自動處理成功與失敗事件
@@ -247,7 +247,7 @@ Azure Sentinel 整合使用 [Azure Monitor Logs Ingestion API](https://learn.mic
 | 環境變數 | 查找位置 |
 |---------------------|------------------|
 | `AZURE_SENTINEL_DCR_IMMUTABLE_ID` | DCR Overview 頁面 → Immutable ID（以 `dcr-` 開頭） |
-| `AZURE_SENTINEL_ENDPOINT` | DCR Overview 頁面 → Logs Ingestion Endpoint |
+| `AZURE_SENTINEL_ENDPOINT` | DCR Overview 頁面 → Logs Ingestion Endpoint，或 DCE Overview 頁面 → Logs Ingestion |
 | `AZURE_SENTINEL_STREAM_NAME` | DCR JSON View → `streamDeclarations` 區段 |
 | `AZURE_SENTINEL_TENANT_ID` | App Registration → Overview → Directory (tenant) ID |
 | `AZURE_SENTINEL_CLIENT_ID` | App Registration → Overview → Application (client) ID |
