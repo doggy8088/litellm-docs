@@ -339,6 +339,7 @@ router_settings:
 | key_management_system | string | `null` | 指定金鑰管理系統。[密鑰管理器文件](../secret) |
 
 | master_key | string | `null`（若未設定則回退至 `LITELLM_MASTER_KEY`） | 代理程式的主金鑰。若未設定、為空，或具有已知不安全值，代理程式將不會啟動。[設定 Virtual Keys](virtual_keys)、[代理程式因已知不安全的主金鑰而拒絕啟動](./master_key_rotations.md#proxy-refuses-to-start) |
+| meter_webrtc_calls | boolean | `true` | <SinceVersion v="1.112.0" /> 若為 false，Realtime、GPT-Live 與翻譯 WebRTC 通話會在未建立代理程式計費連線的情況下開始，因此不會計費，也不會計入預算；且代理程式無法加入的通話不再以 `503` 拒絕。 [Doc](realtime_webrtc#billing-and-limits) |
 | dangerously_permit_weak_or_unset_master_key | boolean | `false` | 僅供本機開發使用：若為 true，即使主金鑰未設定、為空，或具有已知不安全值，代理程式也會啟動，並在每次開機時記錄警告。也可透過 `LITELLM_DANGEROUSLY_PERMIT_WEAK_OR_UNSET_MASTER_KEY` 環境變數設定。[代理程式因已知不安全的主金鑰而拒絕啟動](./master_key_rotations.md#proxy-refuses-to-start) |
 | database_url | string | `null`（若未設定則回退至 `DATABASE_URL`） | 資料庫連線的 URL [設定 Virtual Keys](virtual_keys) |
 | database_connection_pool_limit | integer | `10` | 資料庫連線池限制 [設定 DB 連線池限制](./configs.md#configure-db-pool-limits--connection-timeouts) |
@@ -432,6 +433,8 @@ router_settings:
 | failed_login_window_seconds | integer | `60` | 計算 Admin UI 登入失敗嘗試次數的固定秒數視窗，從第一次失敗開始計算 |
 | failed_login_block_seconds | integer | `300` | 被封鎖的位址，或位址與使用者配對，會維持被封鎖多久。來自被封鎖 key 的每次嘗試都會在驗證密碼前以 429 拒絕，且被拒絕的嘗試不會延長封鎖時間 |
 | litellm_jwtauth | Dict[str, Any] | `null` | JWT 驗證設定。[文件](./jwt_auth_reference.md) |
+| litellm_jwtauth.public_key_url | string | `null` | 全域 JWT 路徑的 JWKS 或 OIDC 探索 URL，多個以逗號分隔。優先於 `JWT_PUBLIC_KEY_URL`。 [Docs](./token_auth.md#usage) <SinceVersion v="1.112.0" /> |
+| litellm_jwtauth.audience | string | `null` | 全域 JWT 路徑預期的 `aud` 宣告。優先於 `JWT_AUDIENCE`。 [Docs](./token_auth.md#usage) <SinceVersion v="1.112.0" /> |
 | litellm_jwtauth.unregistered_jwt_client_behavior | string | `fallback_team_mapping` | 當 JWT 沒有金鑰對應時的處理方式：`fallback_team_mapping`、`reject`、`auto_register` 或 `link_only` <SinceVersion v="1.109.0" />。[文件](./jwt_key_mapping.md#step-1-configure-the-claim-and-unmapped-client-policy) |
 | litellm_jwtauth.auto_register_map_existing_key | boolean | `false` | 使用 `auto_register` 時，重複使用使用者最新且符合資格的金鑰，而不是建立新金鑰。[文件](./jwt_key_mapping.md#which-existing-key-is-selected) {/* keep-version-note */} |
 | litellm_license | str | `null` | proxy 的授權金鑰。[文件](../enterprise/activate.md) |

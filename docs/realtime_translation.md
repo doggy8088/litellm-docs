@@ -255,6 +255,8 @@ LiteLLM 會以模型的 `input_cost_per_second`，對每秒輸入音訊計費。
 
 秒數來自 `session.closed` 中的 `usage.input_seconds`。若提供者未傳送此值，LiteLLM 會計算您的用戶端傳送的音訊秒數。因此，請務必傳送 `session.close` 並等待 `session.closed`。只收到 error 事件的工作階段（例如來自未知模型），會被記錄為失敗，LiteLLM 不會對其計費。
 
+在 WebRTC 上，音訊不會經過代理。代理會以自己的連線加入每通電話，並從加入的那一刻起到通話結束為止，按秒計費。代理無法加入的通話會收到 `503`，且不會開始。關於重新連線與 `meter_webrtc_calls` 設定，請參閱[計費與限制](/docs/proxy/realtime_webrtc#billing-and-limits)。
+
 若要使用不同的價格，請在部署上設定 `input_cost_per_second`：
 
 ```yaml

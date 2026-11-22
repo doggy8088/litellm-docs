@@ -18,15 +18,15 @@ keywords:
 
 使用 WebRTC 將瀏覽器或行動應用程式中的麥克風連線到 Realtime 模型。您的應用程式向 LiteLLM 代理索取短期權杖，瀏覽器再使用該權杖開始通話。提供者金鑰永遠不會到達瀏覽器，音訊則在瀏覽器與 OpenAI 或 Azure 之間流動，不經過代理。
 
-若您的伺服器已持有 LiteLLM 金鑰，請改用 [WebSocket 路由](/docs/realtime)。若要使用 `gpt-realtime-translate`，請使用[翻譯路由](/docs/realtime_translation#translate-microphone-audio-in-a-browser-or-mobile-app)。若要使用 `gpt-live-1`，請使用 [GPT-Live](/docs/live_sessions)，代理僅以 WebSocket 提供該服務。[語音總覽](/docs/voice)比較了每一種路由。
+若您的伺服器已持有 LiteLLM 金鑰，請改用 [WebSocket 路由](/docs/realtime)。若要使用 `gpt-realtime-translate`，請使用[翻譯路由](/docs/realtime_translation#translate-microphone-audio-in-a-browser-or-mobile-app)。若要使用 `gpt-live-1`，請使用 [GPT-Live](/docs/live_sessions#start-a-session-from-a-browser-over-webrtc)。[語音總覽](/docs/voice)比較了每一種路由。
 
-:::warning WebRTC 通話不會出現在支出記錄中
-LiteLLM 會在核發權杖時檢查虛擬金鑰、其預算與其模型存取權。通話接通後，音訊與用量會在瀏覽器與提供者之間直接往來，因此 LiteLLM 不會為該通話寫入支出記錄，也不會將其費用計入該金鑰、團隊或使用者。防護欄看不到音訊。當工作階段必須計入預算時，請使用 [WebSocket 路由](/docs/realtime)。
+:::info WebRTC 通話會被計費
+LiteLLM 會在核發權杖時檢查虛擬金鑰、其預算與其模型存取權，並在通話開始時再次檢查。接著代理會以自己連往提供者的連線加入通話，讀取提供者回報的用量，為該通話寫入支出記錄，並將費用計入該金鑰、團隊與使用者。請參閱[計費與限制](#billing-and-limits)。防護欄看不到音訊。
 :::
 
 ## 運作方式 {#how-it-works}
 
-代理處理兩次 HTTP 請求，然後退出通話。
+代理處理兩次 HTTP 請求。通話開始時，它也會為該通話開啟自己連往提供者的 WebSocket，只監聽用量，絕不會向通話中傳送任何內容。
 
 ```
 Browser                  LiteLLM Proxy              OpenAI/Azure
@@ -35,6 +35,7 @@ Browser                  LiteLLM Proxy              OpenAI/Azure
   |<-- encrypted token -------|<-- ek_... ---------------|
   |-- POST calls [SDP+token] ->|-- POST calls ----------->|
   |<-- SDP answer ------------|<-- SDP answer -----------|
+  |                           |== usage, WebSocket =====>|
   |===== audio, browser to provider =====================>|
 ```
 
@@ -117,4 +118,25 @@ dc.onmessage = (e) => console.log(JSON.parse(e.data).type);
 
 若通話已接通但您聽不到任何聲音，請檢查頁面是否取得麥克風權限、`pc.ontrack` 是否將串流附加到具有 `autoplay` 的音訊元素，以及您的網路是否允許 WebRTC 流量連往提供者。
 
+若 `/v1/realtime/calls` 傳回 `503`，表示代理無法加入通話以計費，因此未發出 SDP answer。常見原因包括金鑰已達速率限制或超出預算，或是網路只允許代理以 HTTPS 連往提供者，而不允許以 WebSocket 連線。
+
 在 Azure 上，任一路徑傳回的 `404` 或版本錯誤，通常表示 `litellm_params` 中的 `api_base` 或 `api_version` 與資源不符。
+
+## 計費與限制 {#billing-and-limits}
+
+代理會依提供者在代理自己的連線上傳送的用量事件，為通話計費。通話結束時，記錄頁面會顯示一列該通話的 token 與費用，而金鑰的支出會增加。
+
+一通通話會使用金鑰速率限制中的四次請求：權杖、通話、代理的加入，以及通話結束後再一次加入嘗試，代理就是這樣得知通話已結束。它在通話進行期間也會佔用金鑰的一個平行請求名額。請提高先前以每通電話一次請求為基準設定的 `rpm_limit` 與 `max_parallel_requests` 值。
+
+`/v1/realtime/calls` 會在回應前等待代理的連線，最長 10 秒。代理無法加入的通話會得到 `503` 且不會啟動，因此不會有任何通話在未計費的情況下執行。
+
+若代理的連線在通話仍進行時中斷，代理會再次加入並為通話的其餘部分計費。在連線中斷期間結束的回覆不會被計費，而代理在通話期間重新啟動時，會停止為該通話其餘部分的計費。預算只在通話開始時檢查，不會在通話期間檢查。
+
+若要在沒有代理連線的情況下啟動 WebRTC 通話，請將 `meter_webrtc_calls` 設為 `false`。通話接著會像 LiteLLM 開始計費之前那樣啟動：沒有支出記錄、金鑰上沒有費用，也沒有 `503`。
+
+```yaml
+general_settings:
+  meter_webrtc_calls: false
+```
+
+代理也會加入 `/v1/realtime/translations/calls` 上的翻譯通話。提供者不會回報翻譯通話的用量，因此 LiteLLM 會依該模型的 `input_cost_per_second`，為其連線加入通話的那一刻到通話結束之間的秒數計費。

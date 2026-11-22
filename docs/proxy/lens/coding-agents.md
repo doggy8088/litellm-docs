@@ -15,7 +15,43 @@ import AgentPrompt from '@site/src/components/Conversion/AgentPrompt';
 
 ## Claude Code {#claude-code}
 
-Claude Code 不需要 Lens 外掛程式或輔助工具。其內建的 [OpenTelemetry 匯出器](https://code.claude.com/docs/en/monitoring-usage) 會直接將追蹤 span 與助理回覆記錄傳送至 Lens。模型呼叫可繼續透過您的 Claude 訂閱或您既有的 API 提供者；請保持您的 Claude 登入與模型端點不變。
+Claude Code 不需要 Lens 外掛程式或輔助工具。其內建的 [OpenTelemetry 匯出器](https://code.claude.com/docs/en/monitoring-usage) 會完成這項工作。
+
+:::warning 需要啟用遙測
+
+Claude Code 的遙測預設是關閉的；只有在您開啟之後，Lens 才會記錄 Claude Code 的回合。若未設定下方的項目，Lens 只會逐一列出閘道的模型呼叫，不會有回合、工具或子代理程式步驟。
+
+:::
+
+### 透過 LiteLLM 閘道 {#through-the-litellm-gateway}
+
+如果 Claude Code 已經透過您的 LiteLLM 閘道傳送模型呼叫，請用同一把金鑰將其遙測傳送到同一個閘道。閘道會將遙測轉送至 Lens，因此執行 `claude` 的機器不需要 Lens 位址，也不需要 Lens 追蹤金鑰。閘道必須已[連接至 Lens](./deployment/litellm.md)。
+
+```bash
+export ANTHROPIC_BASE_URL="http://localhost:4000"
+export ANTHROPIC_AUTH_TOKEN="<your LiteLLM key>"
+
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
+export CLAUDE_CODE_PROPAGATE_TRACEPARENT=1
+export OTEL_TRACES_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="$ANTHROPIC_BASE_URL/v1/traces"
+export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer $ANTHROPIC_AUTH_TOKEN"
+export OTEL_LOG_USER_PROMPTS=1
+
+claude -p "Reply with exactly: Lens telemetry check."
+```
+
+每個遙測變數都是必要的。`CLAUDE_CODE_ENABLE_TELEMETRY`、`CLAUDE_CODE_ENHANCED_TELEMETRY_BETA` 與 `OTEL_TRACES_EXPORTER` 三者共同產生回合；缺少其中任何一個，Lens 只會顯示各自獨立的 `chat <model>` 列。`CLAUDE_CODE_PROPAGATE_TRACEPARENT` 會將回合的 trace ID 附加到每次模型呼叫上；沒有它，回合與其閘道呼叫會成為兩個互不相關的 trace。`OTEL_LOG_USER_PROMPTS` 會包含您輸入的文字，否則該文字會顯示為 `<REDACTED>`，而它會將該文字儲存在 Lens 中。端點是您的閘道位址加上 `/v1/traces`，標頭則帶有您的 LiteLLM 金鑰。
+
+請勿在此路徑上設定 `OTEL_LOGS_EXPORTER`。閘道只接受 trace span，並以 `410` 回應 `POST /v1/logs`。也不要加入下方直接設定中的 `lens.session.capture=true`：它與 `CLAUDE_CODE_PROPAGATE_TRACEPARENT=1` 一起使用時，會把每個回合拆成兩個 trace，回合在一個 trace ID 下，其閘道呼叫在另一個 trace ID 下。
+
+在 LiteLLM 中開啟 **Lens > Traces** 並依 **claude-code** 篩選。每個回合都是一個 `claude_code.interaction` trace，其模型與工具呼叫巢狀列於其下，並附有您的提示與閘道的費用。已使用 Claude Code **2.1.330** 驗證。
+
+### 直接連接至 Lens {#directly-to-lens}
+
+當 Claude Code 未透過 LiteLLM 閘道時，請使用此路徑。模型呼叫可繼續透過您的 Claude 訂閱或您既有的 API 提供者；請保持您的 Claude 登入與模型端點不變。Claude Code 會使用 Lens 追蹤金鑰，將追蹤 span 與助理回覆記錄直接傳送至 Lens。
 
 將此提示複製到您的程式碼代理程式中，以便讓它設定這台機器，或依照下方的手動步驟操作。
 

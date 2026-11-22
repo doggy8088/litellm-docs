@@ -50,7 +50,7 @@ keywords:
 | 您的伺服器，例如電話通話或媒體串流 | WebSocket | 您的伺服器持有 LiteLLM 金鑰並傳送音訊 |
 | 瀏覽器或行動應用程式中的麥克風 | [WebRTC](/docs/proxy/realtime_webrtc) | 瀏覽器取得短期權杖，音訊直接送往提供者，不經過代理 |
 
-WebRTC 適用於 OpenAI 與 Azure 上的 Realtime 模型、`gpt-live-transcribe` 與 `gpt-realtime-translate`。`gpt-live-1` 在代理上僅支援 WebSocket。LiteLLM 不會記錄 WebRTC 通話的支出，因此當通話必須計入預算時，請使用 WebSocket。
+WebRTC 適用於 OpenAI 與 Azure 上的 Realtime 模型、`gpt-live-transcribe` 與 `gpt-realtime-translate`。`gpt-live-1` 有自己的 [WebRTC 路由](/docs/live_sessions#start-a-session-from-a-browser-over-webrtc)。LiteLLM 會對 WebRTC 通話計費，並將其計入預算。翻譯 WebRTC 通話會依通話進行的時間計費。
 
 ## 執行第一個工作階段 {#run-a-first-session}
 

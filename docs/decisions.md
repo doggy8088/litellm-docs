@@ -53,6 +53,7 @@ litellm --config config.yaml
 | Databricks `ai_decide`、Fireworks AI、Laya 與 Bespoke Nimble（包含 Add Model 表單），以及部署自己的 [`supports_box_questions`](#box-questions-on-other-deployments) 值（在設定與 SDK 中） | `v1.107.0-rc.1` |
 | 部署自己的 [`supports_audio_input` 與 `supports_video_input`](#audio-and-video-on-other-deployments) 值，以及 clip 請求只送到接受 clip 的群組部署 | `v1.110.0` |
 | [JSON 輸入](#json-input)（OpenAI） | `v1.112.0-rc.1`，以及 1.108.x LTS 線上的 `v1.108.14` |
+| [另一個 LiteLLM 代理](#send-decision-calls-through-a-litellm-proxy)作為提供者，搭配 `litellm_proxy/` 模型 | `v1.112.0-rc.1`，以及 1.108.x LTS 線上的 `v1.108.15` |
 
 | 功能 | 支援 | 備註 |
 |---------|-----------|-------|
@@ -83,6 +84,7 @@ litellm --config config.yaml
 | [vLLM](https://docs.vllm.ai/en/latest/serving/online_serving/structured_decisions.html) (self-hosted) | `hosted_vllm/Qwen/Qwen3-0.6B` | `HOSTED_VLLM_API_BASE` 或 `api_base` 必填，`HOSTED_VLLM_API_KEY` 可選 | `/v1/systemone` | 否 |
 | [Laya](https://github.com/NandhaKishorM/laya) (self-hosted) | `laya/english`、`laya/multilingual` 或 `laya/typed-decisions` | `api_base` 或 `LAYA_API_BASE` 必填，`LAYA_API_KEY` 可選 | `/v1/systemone` | 否 |
 | [Bespoke Nimble](https://github.com/bespokelabsai/nimble) (self-hosted) | 在 Ollama 上為 `bespoke/nimble`，其他為 `bespoke/nimble-latest` 或 `bespoke/bespokelabs/Bespoke-Nimble-9B` | `api_base` 或 `BESPOKE_API_BASE` 必填，`BESPOKE_API_KEY` 可選 | `/v1/systemone` | 否 |
+| [LiteLLM 代理](#send-decision-calls-through-a-litellm-proxy) | `litellm_proxy/<該代理上的模型>` | `LITELLM_PROXY_API_BASE` 或 `api_base` 必填，`LITELLM_PROXY_API_KEY` 可選 | 您呼叫的路由 | 當該代理的模型接受圖片時 |
 
 其中部分提供者需要比決策路由更新的 LiteLLM 版本，如[可用性與支援的功能](#availability-and-supported-features)所列
 
@@ -641,6 +643,42 @@ asyncio.run(main())
 :::info 從 v1.104.x 升級
 在 v1.104.2 至 v1.104.x 中，`litellm.decisions` 接受兩種形狀，並依您傳入 `input` 或 `state` 挑選格式。這些呼叫維持不變地運作，並帶有 `UserWarning`。方便時將 `litellm.decisions(state=...)` 改名為 `litellm.systemone(state=...)`，引數維持相同。
 :::
+
+### 透過 LiteLLM 代理傳送決策呼叫 {#send-decision-calls-through-a-litellm-proxy}
+
+為模型加上 `litellm_proxy/` 前綴，即可把呼叫傳送到另一個 LiteLLM 代理。`litellm.decisions` 呼叫會送到該代理的 `/v1/decisions`，`litellm.systemone` 呼叫則送到其 `/v1/systemone`，因此該代理的虛擬金鑰需要有您所呼叫路由的存取權。答案包含直接呼叫該模型會回傳的欄位，而呼叫的成本取自該代理的 `x-litellm-response-cost` 標頭，否則取前綴後模型的成本對照價格。
+
+```python showLineNumbers title="SDK through a LiteLLM proxy"
+import os
+import litellm
+
+os.environ["LITELLM_PROXY_API_BASE"] = "https://litellm.example.com"
+os.environ["LITELLM_PROXY_API_KEY"] = "sk-..."
+
+response = litellm.systemone(
+    model="litellm_proxy/jev",
+    state="Customer wrote: I was charged twice for my order #4411 and want one of the charges refunded today.",
+    questions={
+        "is_refund_request": {"type": "noul", "instructions": "Is the customer asking for a refund?"},
+    },
+)
+print(response.answers["is_refund_request"].noul)
+```
+
+在呼叫上設定 `use_litellm_proxy=True`，或設定 `litellm.use_litellm_proxy = True`，即可把沒有前綴的模型也傳送到同一個代理。您在呼叫上傳入的 `drop_params` 也會一併送到該代理，而全域的 `litellm.drop_params` 則留在本機。
+
+在代理上，`litellm_proxy/` 部署會把決策呼叫轉送到其 `api_base` 所指名的 LiteLLM 代理。該部署自己的 `drop_params` 也會一併送到該代理，而 `litellm_settings` 中的 `drop_params` 則留在本機。
+
+```yaml showLineNumbers
+model_list:
+  - model_name: jev
+    litellm_params:
+      model: litellm_proxy/jev
+      api_base: https://litellm.example.com
+      api_key: os.environ/UPSTREAM_LITELLM_KEY
+    model_info:
+      mode: decisions
+```
 
 ## 限制 {#limits}
 

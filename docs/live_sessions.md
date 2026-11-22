@@ -24,7 +24,7 @@ GPT-Live 是 OpenAI 的全雙工語音 API。它的模型，例如 `gpt-live-1`�
 
 | 模型 | 用途 | 代理上的路由 | 文件 |
 | --- | --- | --- | --- |
-| `gpt-live-1` | 全雙工語音對話 | `WS /v1/live/sessions` | [GPT-Live](/docs/live_sessions) |
+| `gpt-live-1` | 全雙工語音對話 | `WS /v1/live/sessions`，或 [WebRTC](#start-a-session-from-a-browser-over-webrtc) | [GPT-Live](/docs/live_sessions) |
 | `gpt-realtime` 與其他 Realtime 模型 | 有輪次與工具的語音或文字對話 | `WS /v1/realtime`，或 [WebRTC](/docs/proxy/realtime_webrtc) | [Realtime](/docs/realtime) |
 | `gpt-live-transcribe` | 即時語音轉文字 | `WS /v1/realtime?intent=transcription` | [即時轉錄](/docs/realtime#live-transcription-with-gpt-live-transcribe) |
 | `gpt-realtime-translate` | 即時語音翻譯 | `WS /v1/realtime/translations` | [即時翻譯](/docs/realtime_translation) |
@@ -89,6 +89,29 @@ asyncio.run(main())
 
 傳送音訊之前，請先等待 `session.started`。請以 base64 chunk 的形式，在 `session.input_audio.append` 事件中傳送音訊，並從 `session.output_audio.delta` 事件讀取模型的音訊。完整事件清單請參閱 OpenAI 的 [GPT-Live 指南](https://developers.openai.com/api/docs/guides/live)與 [WebSocket 指南](https://developers.openai.com/api/docs/guides/voice-websockets?api=live)。
 
+## 從瀏覽器以 WebRTC 啟動工作階段 {#start-a-session-from-a-browser-over-webrtc}
+
+當音訊來自瀏覽器或行動應用程式中的麥克風時，請使用 WebRTC。您的伺服器會將瀏覽器的 SDP offer 與其 LiteLLM 金鑰一起傳送到代理，音訊接著會在瀏覽器與 OpenAI 或 Azure 之間流動，不經過代理。
+
+```bash
+curl -X POST https://litellm-domain/v1/live/sessions \
+  -H "Authorization: Bearer $LITELLM_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"session": {"model": "gpt-live-1"}, "transport": {"type": "webrtc", "sdp": "<SDP offer from the browser>"}}'
+```
+
+代理會傳回 `201`，並在 `transport.sdp` 中附上 SDP answer，以及一個 `session.id`。請將 answer 傳給瀏覽器中的 `setRemoteDescription`。`transport.type` 不是 `webrtc` 時會得到 `400`。
+
+`session.id` 是只有代理能讀取的 token。您的伺服器可以用它加入工作階段，接收每一個工作階段事件，並傳送 `session.close` 等事件：
+
+```
+wss://litellm-domain/v1/live/sessions/{session.id}/attach
+```
+
+請使用建立該工作階段的 LiteLLM 金鑰連線。其他金鑰會讓 socket 以代碼 1008 關閉，並顯示 `Unknown session`。
+
+LiteLLM 對 WebRTC 工作階段的計費方式與 WebSocket 工作階段相同。代理會以自己的連線加入每個工作階段，讀取提供者回報的秒數；無法加入的工作階段會得到 `503` 且不會啟動。[WebRTC 指南](/docs/proxy/realtime_webrtc#billing-and-limits)涵蓋速率限制、重新連線，以及同樣適用於此處的 `meter_webrtc_calls` 設定。
+
 ## 驗證與錯誤 {#auth-and-errors}
 
 LiteLLM 會在 WebSocket 開啟時檢查虛擬金鑰。它會先從 `Authorization: Bearer <key>` 標頭讀取金鑰，再從 `api-key` 標頭讀取，然後從無法設定標頭的用戶端所用的 `openai-insecure-api-key.<key>` WebSocket subprotocol 讀取。從瀏覽器傳送的金鑰，任何使用該頁面的人都能讀取，因此請只給該金鑰該頁面需要的模型與預算。缺少或無效的金鑰，或超出總預算（`max_budget`）的金鑰，會得到 HTTP 403，而 WebSocket 永遠不會開啟。
@@ -117,4 +140,4 @@ LiteLLM 會在 WebSocket 開啟時檢查虛擬金鑰。它會先從 `Authorizati
 
 防護欄不會在 Live 工作階段上執行。當 `pre_call`、`post_call` 或 `realtime_input_transcription` 防護欄適用於該工作階段時，LiteLLM 會傳送一個說明 `Guardrails are not supported on OpenAI Live sessions` 的 `error` 事件，並以代碼 1011 關閉工作階段。這包含附加到金鑰的防護欄，以及 `default_on: true` 的防護欄，因此其中一種模式下的 `default_on` 防護欄會關閉代理上的每一個 Live 工作階段。其他模式的防護欄，例如 `during_call`，以及 `guardrails` 查詢參數不會關閉工作階段，而工作階段會在沒有它們的情況下執行。
 
-LiteLLM 只在 WebSocket 路由上檢查與計費 Live 工作階段。WebRTC 工作階段建立（`POST /v1/live/sessions`）與 `/v1/live/sessions/{session_id}/` 下的呼叫控制路由（例如 `hangup` 與 `accept`），在代理上沒有 Live 路由。`/openai/v1/live/sessions` 上的 [OpenAI pass-through](/docs/pass_through/openai_passthrough) 會把它們當作一般 pass-through 呼叫轉發給 OpenAI，而 LiteLLM 不會把它們當作 Live 工作階段計費，因此它們的使用永遠不會計入金鑰支出或預算。代理管理員可以將金鑰的 `allowed_routes` 設為 `["/v1/live/sessions"]`，讓金鑰留在 Live WebSocket 路由上。
+LiteLLM 會在 WebSocket 路由上，以及以 `POST /v1/live/sessions` 建立的 WebRTC 工作階段上檢查與計費 Live 工作階段。`/v1/live/sessions/{session_id}/` 下的呼叫控制路由（例如 `hangup` 與 `accept`），在代理上沒有 Live 路由。`/openai/v1/live/sessions` 上的 [OpenAI pass-through](/docs/pass_through/openai_passthrough) 會把請求當作一般 pass-through 呼叫轉發給 OpenAI，而 LiteLLM 不會把它們當作 Live 工作階段計費，因此它們的使用永遠不會計入金鑰支出或預算。代理管理員可以將金鑰的 `allowed_routes` 設為 `["/v1/live/sessions"]`，讓金鑰留在 Live 路由上。

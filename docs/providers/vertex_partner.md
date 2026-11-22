@@ -18,6 +18,7 @@ import TabItem from '@theme/TabItem';
 | DeepSeek | `vertex_ai/deepseek-ai/{MODEL}` | [Vertex AI - DeepSeek 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/deepseek) |
 | ZAI (GLM) | `vertex_ai/zai-org/{MODEL}` | [Vertex AI - GLM 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/zaiorg/glm-47) |
 | Meta/Llama | `vertex_ai/meta/{MODEL}` | [Vertex AI - Meta 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/llama) |
+| Meta Muse | `vertex_ai/meta/muse-*` | [Vertex AI - Meta Muse 模型](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/partner-models/meta) |
 | Mistral | `vertex_ai/mistral-*` | [Vertex AI - Mistral 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/mistral) |
 | AI21 (Jamba) | `vertex_ai/jamba-*` | [Vertex AI - AI21 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/ai21) |
 | Qwen | `vertex_ai/qwen/*` | [Vertex AI - Qwen 模型](https://cloud.google.com/vertex-ai/generative-ai/docs/maas/qwen) |
@@ -402,6 +403,102 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 </TabItem>
 </Tabs>
 
+## VertexAI Meta Muse API {#vertexai-meta-muse-api}
+
+<SinceVersion v="1.112.0" />
+
+Meta Muse 模型在 Vertex AI 上使用 Meta 發佈者的 Responses API。LiteLLM 會以裸模型 ID，把每個 Muse 請求傳送到全域端點。聊天補全（`/chat/completions`）與 Anthropic Messages（`/v1/messages`）請求會經過 LiteLLM 的 Responses 橋接，因此三個端點都可以用同一個部署運作。
+
+Google 將這些模型列為預覽版。呼叫前，請先在您的 Google Cloud 專案中啟用模型。請參閱 [Google 的 Meta 模型指南](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/partner-models/meta)。
+
+| 模型名稱 | 使用方式 |
+|------------|-------|
+| `vertex_ai/meta/muse-wonder-1.0` | `responses('vertex_ai/meta/muse-wonder-1.0', input)` |
+| `vertex_ai/meta/muse-ember-1.0` | `responses('vertex_ai/meta/muse-ember-1.0', input)` |
+| `vertex_ai/meta/muse-spark-1.3` | `responses('vertex_ai/meta/muse-spark-1.3', input)` |
+
+#### 使用方式 {#usage-4}
+
+<Tabs>
+<TabItem value="sdk" label="SDK">
+
+```python
+import litellm
+
+response = litellm.responses(
+    model="vertex_ai/meta/muse-spark-1.3",
+    input="Write a Python binary search function with type annotations.",
+    vertex_project="your-vertex-project",  # or os.environ["VERTEXAI_PROJECT"]
+    vertex_credentials="/path/to/service_account.json",  # optional, defaults to Application Default Credentials
+    max_output_tokens=4096,
+)
+print(response.output_text)
+```
+
+</TabItem>
+<TabItem value="proxy" label="Proxy">
+
+**1. 加入設定**
+
+```yaml
+model_list:
+    - model_name: muse-spark
+      litellm_params:
+        model: vertex_ai/meta/muse-spark-1.3
+        vertex_project: "my-test-project"
+        vertex_location: "global"
+        vertex_credentials: /path/to/service_account.json
+```
+
+**2. 啟動 proxy**
+
+```bash
+litellm --config /path/to/config.yaml
+
+# RUNNING at http://0.0.0.0:4000
+```
+
+**3. 測試！**
+
+```bash
+curl --location 'http://0.0.0.0:4000/v1/responses' \
+      --header "Authorization: Bearer $LITELLM_API_KEY" \
+      --header 'Content-Type: application/json' \
+      --data '{
+            "model": "muse-spark",
+            "input": "what llm are you",
+            "max_output_tokens": 1024
+        }'
+```
+
+同一個部署也能回應聊天補全。
+
+```bash
+curl --location 'http://0.0.0.0:4000/chat/completions' \
+      --header "Authorization: Bearer $LITELLM_API_KEY" \
+      --header 'Content-Type: application/json' \
+      --data '{
+            "model": "muse-spark",
+            "messages": [{"role": "user", "content": "what llm are you"}],
+            "max_tokens": 1024
+        }'
+```
+
+</TabItem>
+</Tabs>
+
+#### 支援的參數 {#supported-parameters}
+
+Muse 模型會先推理再回答，推理權杖會計入 `max_output_tokens`（或 `max_tokens`）。限制太小可能回傳空答案。
+
+Vertex AI 只在 `global` 位置提供 Muse。任何其他 `vertex_location` 的部署都會收到 400 錯誤。設定 `drop_params: true` 時，LiteLLM 會忽略位置並呼叫全域端點。
+
+Muse 請求是無狀態的。`store: true`、`background`、`previous_response_id` 與 `conversation` 會收到 400 錯誤。設定 `drop_params: true` 時，LiteLLM 會捨棄它們並傳送 `store: false`。請在每次請求的 `input` 中傳送完整對話。
+
+Muse 只接受 `tool_choice: "auto"`。`required`、`none` 與具名工具選擇會收到 400 錯誤。設定 `drop_params: true` 時，LiteLLM 會改傳 `auto`，而對於 `none`，它還會從請求中移除工具，讓模型無法呼叫工具。降級後的 `required` 或具名選擇會讓模型以文字回答，因此請在應用程式中檢查是否有缺少的工具呼叫。
+
+Muse 只接受 `function` 與 `namespace` 工具。Vertex AI 會對 `web_search`、`local_shell`、`mcp` 等內建工具與自訂工具回傳 400。設定 `drop_params: true` 時，LiteLLM 會移除這些工具並保留其餘工具，因此預設會傳送 `web_search` 的用戶端（例如 Codex）仍可運作。
+
 ## VertexAI Mistral API {#vertexai-mistral-api}
 
 [**支援的 OpenAI 參數**](https://github.com/BerriAI/litellm/blob/e0f3cd580cb85066f7d36241a03c30aa50a8a31d/litellm/llms/openai.py#L137)
@@ -425,7 +522,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 | codestral@latest   | `completion('vertex_ai/codestral@latest', messages)` |
 | codestral@@2405   | `completion('vertex_ai/codestral@2405', messages)` |
 
-#### 使用方式 {#usage-4}
+#### 使用方式 {#usage-5}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -589,7 +686,7 @@ curl -X POST 'http://0.0.0.0:4000/completions' \
 | jamba-1.5-mini@001   | `completion(model='vertex_ai/jamba-1.5-mini@001', messages)` |
 | jamba-1.5-large@001   | `completion(model='vertex_ai/jamba-1.5-large@001', messages)` |
 
-#### 使用方式 {#usage-5}
+#### 使用方式 {#usage-6}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -674,7 +771,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 | vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas | `completion('vertex_ai/qwen/qwen3-coder-480b-a35b-instruct-maas', messages)` |
 | vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas | `completion('vertex_ai/qwen/qwen3-235b-a22b-instruct-2507-maas', messages)` |
 
-#### 使用方式 {#usage-6}
+#### 使用方式 {#usage-7}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -758,7 +855,7 @@ curl --location 'http://0.0.0.0:4000/chat/completions' \
 |------------------|------------------------------|
 | vertex_ai/openai/gpt-oss-20b-maas | `completion('vertex_ai/openai/gpt-oss-20b-maas', messages)` |
 
-#### 用量 {#usage-7}
+#### 用量 {#usage-8}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">
@@ -896,7 +993,7 @@ Vertex AI Model Garden 中可用的 xAI Grok 模型，使用與其他 Model Gard
 | `vertex_ai/xai/grok-4.20-non-reasoning` | `completion('vertex_ai/xai/grok-4.20-non-reasoning', messages)` |
 | `vertex_ai/xai/grok-4.20-reasoning` | `completion('vertex_ai/xai/grok-4.20-reasoning', messages)` |
 
-#### 用量 {#usage-8}
+#### 用量 {#usage-9}
 
 <Tabs>
 <TabItem value="sdk" label="SDK">

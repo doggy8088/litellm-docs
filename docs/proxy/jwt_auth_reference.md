@@ -43,7 +43,7 @@ Issuer 項目中省略的對應會備援到全域 `litellm_jwtauth` 設定。當
 
 :::important
 
-`issuers` 是路由設定，不是允許清單。未比對到的 `iss` 會備援到全域的 `JWT_PUBLIC_KEY_URL`、`JWT_ISSUER` 與 `JWT_AUDIENCE` 路徑。如果只有設定的 issuers 應該進行驗證，請將 `JWT_PUBLIC_KEY_URL` 保持未設定。
+`issuers` 是路由設定，不是允許清單。未比對到的 `iss` 會備援到全域的 `JWT_PUBLIC_KEY_URL`、`JWT_ISSUER` 與 `JWT_AUDIENCE` 路徑，其中 `litellm_jwtauth.public_key_url` 與 `litellm_jwtauth.audience` 在設定時會取代其環境變數。如果只有設定的 issuers 應該進行驗證，請將兩個金鑰 URL 設定都保持未設定。
 
 :::
 

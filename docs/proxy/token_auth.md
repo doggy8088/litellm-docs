@@ -42,9 +42,19 @@ export JWT_AUDIENCE="litellm-proxy"
 
 `JWT_ISSUER` 必須與 token 的 `iss` 宣告完全相符。`JWT_AUDIENCE` 必須與 token 的 `aud` 宣告相符，或在 `aud` 為清單時與其中一個值相符。請將您的身分提供者設定為針對該對象發行存取 token。
 
+您也可以改在 `config.yaml` 中、於 `litellm_jwtauth` 下設定簽署金鑰與對象 <SinceVersion v="1.112.0" />。在其中設定的每個值優先於其環境變數，且可以是 `os.environ/` 參照。任一值為空，或是參照到未設定變數的 `os.environ/` 參照時，代理會拒絕啟動。
+
+```yaml title="config.yaml"
+general_settings:
+  enable_jwt_auth: true
+  litellm_jwtauth:
+    public_key_url: https://login.microsoftonline.com/<tenant_id>/discovery/v2.0/keys
+    audience: <client_id>
+```
+
 :::important
 
-當 `JWT_ISSUER` 或 `JWT_AUDIENCE` 未設定時，發行者與對象驗證會分別停用。請兩者都設定，讓僅有有效簽章不足以驗證為其他應用程式發行的 token。
+當 `JWT_ISSUER` 未設定，或 `JWT_AUDIENCE` 與 `litellm_jwtauth.audience` 皆未設定時，發行者與對象驗證會分別停用。請兩者都設定，讓僅有有效簽章不足以驗證為其他應用程式發行的 token。
 
 :::
 
@@ -91,6 +101,8 @@ curl 'http://localhost:4000/v1/chat/completions' \
 | `JWT_PUBLIC_KEY_URL` | 提供者的 JWKS 端點或 OIDC 探索 URL。 |
 | `JWT_ISSUER` | 預期的 `iss` 宣告。未設定時會停用發行者檢查。 |
 | `JWT_AUDIENCE` | 預期的 `aud` 宣告或其其中一個值。未設定時會停用對象檢查。 |
+| `general_settings.litellm_jwtauth.public_key_url` | 與 `JWT_PUBLIC_KEY_URL` 相同，兩者皆設定時會改用此值。 |
+| `general_settings.litellm_jwtauth.audience` | 與 `JWT_AUDIENCE` 相同，兩者皆設定時會改用此值。 |
 | `general_settings.enable_jwt_auth` | 啟用 JWT 驗證。 |
 
 多個提供者、支援的 token、身分宣告對應與金鑰快取，請參閱 [JWT 設定參考](./jwt_auth_reference.md)。
