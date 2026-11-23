@@ -1299,8 +1299,8 @@
       "outputTokens": 9
     },
     "docs/audio_transcription.md": {
-      "sourceSha256": "fb520a18406935efc1eb989c0a41d09a7b02974f25fd64c6174806456af13777",
-      "translationSha256": "8230ea59828ebeb0190ea5c5a579d488caaff0f789017a253f38f74812a5cbe4",
+      "sourceSha256": "6b524cf4c93d543dc5d5493827082363d2cad5bf5fe1c8d6ef0b427354a05ccc",
+      "translationSha256": "900ce1f062c60b712a7e2ba519d12143a14d7b34d3fce28925862bf3916f943e",
       "inputTokens": 866,
       "outputTokens": 291
     },
@@ -3507,8 +3507,8 @@
       "outputTokens": 0
     },
     "docs/providers/gemini.md": {
-      "sourceSha256": "30afe991535a29b40803409243ece203cfc15c7063b38f219cfc027360306fd4",
-      "translationSha256": "2131564f0d22344287dfd6b5b781b184c97107e2900aa9d2fdf11f2d75b7cc2c",
+      "sourceSha256": "e0022cc4a461b9a556001c7dae62aeb63109e8191bcd83c589a4a1753fe27522",
+      "translationSha256": "052994b0447c4b77435a22a4194de6af76016b65bf1a5dab810cd41ed0ffee03",
       "inputTokens": 3142,
       "outputTokens": 2104
     },
@@ -3551,6 +3551,12 @@
     "docs/providers/gmi.md": {
       "sourceSha256": "8a282eecd7bc038941cfb2973baa1babfd3877af8d7e39ece915a1790a38cf22",
       "translationSha256": "4cce6b852ddb430b50241a88c449d2a00916c6644a908233c73139479a7cb549",
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "docs/providers/gnani.md": {
+      "sourceSha256": "e71cc057e8616afcfb2d581b693359038c5995b635a8ddcc3b37d253bbd416d9",
+      "translationSha256": "7548fccc4c61627f33d615c83a21c1c29170fb20c9a27f391d533c265ae38484",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -4143,8 +4149,8 @@
       "outputTokens": 0
     },
     "docs/providers/vertex.md": {
-      "sourceSha256": "f73f9a65f9708c62b66cd6f6c668430eed422cd93ffaa264420e3033fc4f0a2a",
-      "translationSha256": "0052286de5bd705f124090881ef76e32b4f24e6db076893579565cee20de698a",
+      "sourceSha256": "241e47a354c43b1b0013f420c6da2c12e42b2c3330724cc47e82adaf91d95efd",
+      "translationSha256": "965f18deec8fa3cc2202de1c0363dd17f56c680c1f674ad71c9b1d2783b62230",
       "inputTokens": 1829,
       "outputTokens": 1320
     },
@@ -5529,8 +5535,8 @@
       "outputTokens": 0
     },
     "docs/proxy/lens/api.md": {
-      "sourceSha256": "c56ae21884c04e54649683368521fc6aaad078d1dd7ed48d4325c7863876fbb3",
-      "translationSha256": "d2eb936cf64a35a0761ccec2bbafe284098ae8725f2966b90ef52baa33839fc1",
+      "sourceSha256": "6d8566751052d99fa7d771b1a7e1613629646bda60a380f186be9a5e62e0de17",
+      "translationSha256": "71b0050e8c95bbceb9f345e170f9b59f60a057fe5da46a5b98d51b0e7d29132a",
       "inputTokens": 1876,
       "outputTokens": 1540
     },
@@ -5541,14 +5547,14 @@
       "outputTokens": 0
     },
     "docs/proxy/lens/coding-agents.md": {
-      "sourceSha256": "d11705d521b7a2cb33866c0c37497d440dd1af17e351b310138731f727193d71",
-      "translationSha256": "bd18213f3f0eb5e36ac6666dc7b3f9f1ebc7cd8aa487e8d903d0ed5fe0989281",
+      "sourceSha256": "b6598918db938e50ae1dc3013c92acf6d8c610bf9c9d7d90d8a811bf982c2e11",
+      "translationSha256": "c1f0ba83865826d380f2a2caf4925b7683d639c6b232883628e03185c6f50c08",
       "inputTokens": 2246,
       "outputTokens": 2341
     },
     "docs/proxy/lens/deployment.md": {
-      "sourceSha256": "0679bce7634cc44999bae5b06218f87d29d098110ddb0ed35b858176b25bd620",
-      "translationSha256": "418af16dbf1cdc06d3db42566198768cbe16cc551826dcf209383088d51e3530",
+      "sourceSha256": "34e5892bec20edf847423c5de63d8b6f32bac40e74bbc62eea46f659c841c4d2",
+      "translationSha256": "ccda427d8f1a6ad7a02e0bdb8ffc6f40e8e7bf5f24d49917f3ec986f8d9d98b4",
       "inputTokens": 4773,
       "outputTokens": 4611
     },
@@ -5559,38 +5565,38 @@
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/development.md": {
-      "sourceSha256": "0ffeac4048ba089f695759bb9efc2304c5427da34dc8c626fa6c7e6aa87ab033",
-      "translationSha256": "fd2b26d878aa1c2a099d583957c6b3ed487c907894a99f93e7dc3d6ede41fbd6",
+      "sourceSha256": "0df1fee05fc4aa71637139fb29a438d70c06ab58fd5c4de8a55b24021d50bbe1",
+      "translationSha256": "fc77b613460aa8ef250cc32c052c8aa4051120ef994d0d808fa598ca5961ab93",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/kubernetes.md": {
-      "sourceSha256": "890dbbbba504055ed42b3e0e53b0b479aa2ddbb12ab4c830484934b7599a3849",
-      "translationSha256": "9e547884ec31723c7bb70582de1ecf165459c3414f9b21ac67ff2e249c3f27f1",
+      "sourceSha256": "bc82873a4baeda32e894dc8f98b0cb63e4b62d3e8535e26677f1d93024af54f8",
+      "translationSha256": "e44f3d8ec1d2afcea8521b2a88229e6b608e02d2a4f9bde7a6ea16cc7f7e812f",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/litellm.md": {
-      "sourceSha256": "9c02ef61d34c9114e774fa6eafeccf711e943c54fbffb45b69b9e3e7ec7aca46",
-      "translationSha256": "3449d95229f84c4660aa74bd3e262729aff861b70c488d965ab335ea58d1b1f6",
+      "sourceSha256": "29505a68076ac466063da3840f106c5d864647612d43091b5d622fa44b5109b2",
+      "translationSha256": "5a1827cd82981aa53c9837b1d15008249d0d7c478bf527c20e5b100e8891390f",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/local.md": {
-      "sourceSha256": "0ff4a5edb036565f634e5fe5fe07a4c5119b613c0a92a49c5b122a7ed820a39b",
-      "translationSha256": "57afdea2df52da40fcb4bbba0fc14ce5ea6b86ef007b6518acfa0747d58f1892",
+      "sourceSha256": "4a53fd5efb69830c7a6785957be88d5e99bc89cf2f4572c91232e502341fbbfd",
+      "translationSha256": "88da6c00c5a921daba8bbbb7a4ebb75aa1ea74c8ddeeec9a8142bdbaceb9d688",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/releases.md": {
-      "sourceSha256": "6abda4b9bcd3063860cd39c62f695fada270c318757e1e54673468415a3f45b4",
-      "translationSha256": "a8ae2ab7ad88bf838b059dd45d7b747db2a2dccd6b8759786eb6ad859a52cea2",
+      "sourceSha256": "34d58ce5f70f4a3a9ba2c88e83dcbb69df38846397687efd167f5c99cf0bfdb3",
+      "translationSha256": "a7caec3fbbc98921fcf0b439be5003ef81755cdf6bc256f94a4bf3c3ac3be813",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/server.md": {
-      "sourceSha256": "7b1e32807b8c6ea7b7dc542ab5e7a71d27bbc4d0e40683d8273b5a03190de260",
-      "translationSha256": "f12d37b82ff026ee8280ac462f1c3f6c1c891c12fa3c4bc51fd3d40416ca0cf3",
+      "sourceSha256": "870b09707e9e64167e7c08768dcc33add62eb798223a92442c0a4ac74f6b081f",
+      "translationSha256": "d2fc19a0b6d64b5cc6579d99d9e1f0f8e8d53b4ec1b6c7474f1a866b7fc3fa7c",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -5601,14 +5607,14 @@
       "outputTokens": 0
     },
     "docs/proxy/lens/deployment/upgrades.md": {
-      "sourceSha256": "b8ce38b68cbf35e4b73f6c53cb4a33717a19012d5ba098791b2d92ac09e6847f",
-      "translationSha256": "9c6ae61f3e4dc25888da84c52750b49ceea583b95f3832d840ec4ed267be0c2e",
+      "sourceSha256": "9739158cd28f9172bdbba28d481ace7cb5448e737133c1daa1de962ee7092a9a",
+      "translationSha256": "f74d8818f788c0e12a8d288219b07f8edc59cb52627ce534b2352a909ad2fe32",
       "inputTokens": 0,
       "outputTokens": 0
     },
     "docs/proxy/lens/first-trace.md": {
-      "sourceSha256": "82d0ed82831daaf826453cd4573f6ac9d5d1b686a5136deceda12adad142c0de",
-      "translationSha256": "228ab8d5a50a2b93007fd35fa7f48639872e024601fa6866f99ecb6bf0ee1038",
+      "sourceSha256": "fbca949d563c6e972f6deea048c01a74ec889f96a314f5d3b6c56f2ac35d5a51",
+      "translationSha256": "20f56b15c107e7ef3a0bdc06ce6a8107db5fea24ae4cc066809e64f5d9f3285a",
       "inputTokens": 1136,
       "outputTokens": 678
     },
@@ -5625,8 +5631,8 @@
       "outputTokens": 440
     },
     "docs/proxy/lens/imported/coding-agents/codex.md": {
-      "sourceSha256": "f8fa1a6e4f79ccf8cfa01525d27de0943a5a76a913eddbd1a0ebb62c7c61c0a2",
-      "translationSha256": "7dea96082871d6a5174de2960e67e19bf9860fa982107fbf62d9d0ca8096b407",
+      "sourceSha256": "27b20cd455268359c914da8fcd1eb4c18d35ca3c127721e7ec5e9b7127774938",
+      "translationSha256": "069ec153a448a55ea5c052462f3e0655174d7189b29df06a56e9d7f6b7bfe631",
       "inputTokens": 999,
       "outputTokens": 467
     },
@@ -5721,8 +5727,8 @@
       "outputTokens": 1302
     },
     "docs/proxy/lens/index.md": {
-      "sourceSha256": "5b9f445a9760bf435a36fe6a1c60f6461650f0e847b57565fb2298630f1d64b4",
-      "translationSha256": "8429d149b80c34e47ad9bee6ee477dbf39b95c7f305a1cf124d2c86a07601826",
+      "sourceSha256": "5d0901b551c58c1e05adb33bf6eddaf49ebefde05cf1d48206347f01b0788467",
+      "translationSha256": "1e8efa68f9760f10c8a8dfa917b633597c0c3e24b29949d7d3753c6a6403ae16",
       "inputTokens": 1018,
       "outputTokens": 527
     },
@@ -5739,10 +5745,16 @@
       "outputTokens": 244
     },
     "docs/proxy/lens/investigations.md": {
-      "sourceSha256": "87973fd709bf98bb45a40fb562a770951cd38551870f05a76c5f37e8e2b73047",
-      "translationSha256": "9b9f526336dead8210ebcdc8307f4c8f14ffb8358488b57e63a4254980f2f313",
+      "sourceSha256": "64b1e26b41a972e2247fcc60a7fde39aa1e5872ffc9bb85f1c37362b03d9a5f3",
+      "translationSha256": "5042d082e16f106f6f18f7815f4f6fe997f4487d586212141d87209503064f47",
       "inputTokens": 1818,
       "outputTokens": 1686
+    },
+    "docs/proxy/lens/mcp.md": {
+      "sourceSha256": "d247e5eecf546ecc29c3d59f4f203441bfe36f767fce4ce76bc6ddf98da24713",
+      "translationSha256": "e9cea042ee6b2a8aded2d71c210cbff8a0cacdd43a6dd6c35d3ce22ff2c593d5",
+      "inputTokens": 0,
+      "outputTokens": 0
     },
     "docs/proxy/lens/model-optimizations-demo.md": {
       "sourceSha256": "dde9e4ecb648d8b09c50b6134f278474b0af366ca67f245326445c7d56ed4ee0",
@@ -7395,8 +7407,8 @@
       "outputTokens": 0
     },
     "docs/tutorials/vertex_ai_pay_go.md": {
-      "sourceSha256": "fc7632bb52a080b435ffc0ffd991a02298ca5ce9fa6f4e4c349f5e0614dcd1bf",
-      "translationSha256": "a6d05afb8a64b9ffa06dca2fa5ae2df8f990a4d0658a6bd68243bc792ee7daa2",
+      "sourceSha256": "896082102d1d9b485ff04c0e7537894c89c5d910921b819803c4e8f173058ae7",
+      "translationSha256": "93123ba841c4f21c56273c1b9e57f44755075c22918aa4c814e4438f04149a89",
       "inputTokens": 750,
       "outputTokens": 139
     },
