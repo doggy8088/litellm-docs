@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 | 備援 | ✅ | 可在支援的模型之間運作 |
 | 負載平衡 | ✅ | 可在支援的模型之間運作 |
 | 防護欄 | ✅ | 套用至輸出的轉錄文字（僅限非串流） |
-| 支援的提供者 | `openai`, `azure`, `vertex_ai`, `gemini`, `deepgram`, `groq`, `fireworks_ai`, `ovhcloud`, `mistral` | |
+| 支援的提供者 | `openai`, `azure`, `vertex_ai`, `gemini`, `deepgram`, `groq`, `fireworks_ai`, `ovhcloud`, `mistral`, `gnani` | |
 
 ## 快速開始 {#quick-start}
 
@@ -125,6 +125,7 @@ transcript = client.audio.transcriptions.create(
 - [Fireworks AI](./providers/fireworks_ai.md#audio-transcription)
 - [Groq](./providers/groq.md#speech-to-text---whisper)
 - [Deepgram](./providers/deepgram.md)
+- [Gnani](./providers/gnani.md)
 - [Google AI Studio (Gemini)](./providers/gemini.md#audio-transcription-speech-to-text)
 - [Mistral (Voxtral)](./providers/mistral.md#audio-transcription)
 - [OVHcloud AI Endpoints](./providers/ovhcloud.md)

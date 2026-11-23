@@ -22,7 +22,7 @@ mdx:
 
 ## 設定 {#setup}
 
-請依照 [Lens coding agent 設定指南](/docs/proxy/lens/coding-agents) 取得追蹤端點與金鑰說明。請參閱 [LiteLLM Lens Codex 整合](https://github.com/BerriAI/litellm-lens-codex-integration)，以了解此整合的設定與支援的遙測。
+請依照 [Lens coding agent 設定指南](/docs/proxy/lens/coding-agents) 取得追蹤端點與金鑰說明。請參閱 [LiteLLM Lens Codex 外掛程式](https://github.com/BerriAI/litellm-lens-plugins/tree/main/codex)，以了解此整合的設定與支援的遙測。
 
 ## 驗證追蹤 {#verify-the-trace}
 

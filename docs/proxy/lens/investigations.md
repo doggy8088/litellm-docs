@@ -56,17 +56,17 @@ Lens 會平行檢閱所選執行，將相似觀察結果分組，並在儲存發
 
 調查完成後，開啟 **Findings**。**Needs attention** 會顯示問題，並依優先順序排列。**Patterns** 會顯示其他觀察結果，包括成功復原與有用的行為。
 
-開啟某個發現可閱讀發生了什麼事，以及建議的下一步。展開 **Evidence by run** 可閱讀引文。按一下 **Open original step** 可查看其 trace 中所引用的步驟。
+開啟某個發現可閱讀其 **Summary** 與 **Suggested fix**。**Frequency** 會顯示受影響的取樣 trace 占比。**Examples** 會列出附有引文的支援執行。按一下引文上的 **View span** 可查看其 trace 中所引用的步驟。
 
-![一個範例發現，包含建議的下一步與支援證據。](/img/lens/investigation-findings.png)
+![一個範例發現，包含其摘要、建議的修正、頻率與支援範例。](/img/lens/investigation-findings.png)
 
-使用 **History** 可返回先前的執行及其發現、設定、進度、總持續時間與成本。持續時間包含等待 worker 的時間。**Traces** 會顯示該次執行所選取的活動；當選取這些活動類型時，此分頁稱為 **Requests** 或 **Traces & requests**。
+使用 **History** 可返回先前的執行及其發現、設定、進度、總持續時間與成本。持續時間包含等待 worker 的時間。**Agent traces** 會顯示該次執行所選取的活動；當選取這些活動類型時，此分頁稱為 **LLM requests** 或 **Traces and requests**。
 
-發現會描述所檢閱的樣本。**Linked runs** 會計算引用的支援執行數；這不是所有失敗次數的計數。證據也可以包含標記的反例。
+發現會描述所檢閱的樣本。**Examples** 會列出引用的支援執行；這不是所有失敗的清單。證據也可以包含標記的反例。
 
 ### 提供回饋 {#give-feedback}
 
-如果 Lens 標示了預期行為，請在 **Feedback** 中說明原因，然後按一下 **This is expected**。Lens 會在後續對相同 lens 的調查中使用該回饋。
+如果 Lens 標示了預期行為，請在 **What should Lens remember?** 下方說明原因，然後按一下 **This is expected**。Lens 會在後續對相同 lens 的調查中使用該回饋。
 
 修正問題後，按一下 **Mark resolved**。如果相同問題出現在新的執行中，Lens 可能會重新開啟它。
 

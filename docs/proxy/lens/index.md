@@ -35,7 +35,7 @@ curl -fsSLO https://raw.githubusercontent.com/BerriAI/lens/main/deploy/lens/comp
 
 對於團隊，請在[伺服器](./deployment/server.md)上部署 Lens，或部署到 [Kubernetes](./deployment/kubernetes.md)，或[將它加入您的 LiteLLM 儀表板](./deployment/litellm.md)。如果 Lens 已經在執行，請[將該部署連接到您的閘道](./deployment/litellm.md#1-get-the-lens-address)。每份指南的結尾都包含連線檢查與第一筆追蹤。
 
-**查看您的 coding agent 工作階段：**請先啟動 Lens、產生追蹤金鑰，然後依照 [Claude Code](./coding-agents.md#claude-code) 或 [Codex](./coding-agents.md#codex) 的設定步驟操作。開啟 **Traces** 即可查看記錄的活動。
+**查看您的 coding agent 工作階段：**請先啟動 Lens、產生追蹤金鑰，然後為 [Claude Code](./coding-agents.md#claude-code) 或 [Codex](./coding-agents.md#codex) 安裝 Lens 外掛程式。開啟 **Traces** 即可查看記錄的活動。
 
 一旦有追蹤可用，就[執行調查](./investigations.md)或使用[API 參考文件](./api.md)。
 

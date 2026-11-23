@@ -18,9 +18,9 @@ curl -fsSLO https://raw.githubusercontent.com/BerriAI/lens/main/deploy/lens/comp
 credentials-1  | Open http://localhost:4318/ui/ and paste this setup token: <your token>
 ```
 
-開啟 [http://localhost:4318/ui/](http://localhost:4318/ui/)，將 token 貼入 **Setup token** 欄位，然後選取 **Sign in**。若要在沒有 token 的情況下四處看看，請在同一頁面選取 **Explore demo data**。
+開啟 [http://localhost:4318/ui/](http://localhost:4318/ui/)，開啟 **Admin token**，將 token 貼入欄位，然後選取 **Sign in**。若要在沒有 token 的情況下四處看看，請在同一頁面選取 **Explore demo data**。
 
-![Lens 登入頁面，包含一個設定 token 的欄位。](/img/lens/quickstart-signin.webp)
+![Lens 登入頁面，Admin token 區段已開啟。](/img/lens/quickstart-signin.webp)
 
 您需要 Docker 搭配 Docker Compose 2.24 或更新版本，且 Docker 必須正在執行。您不需要 Git、LiteLLM、Kubernetes、PostgreSQL 或模型金鑰。此命令會下載一個 [Compose 檔案](https://github.com/BerriAI/lens/blob/main/deploy/lens/compose.yaml)，並從已發佈的映像啟動 Lens 和 ClickHouse。Lens 會在首次啟動時產生其憑證，並將它們儲存在該檔案旁邊的 `.env` 中，其中 token 是 `LENS_ADMIN_TOKEN`。
 

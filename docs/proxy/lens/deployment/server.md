@@ -6,16 +6,16 @@ slug: "/proxy/lens/deployment/server"
 
 # 伺服器上的 Docker Compose {#docker-compose-on-a-server}
 
-安裝具備 Compose v2 的 Docker，然後在您的伺服器上執行 [v0.1.0 發行套件](https://github.com/BerriAI/lens/releases/tag/v0.1.0)。它不需要 Git，會依摘要拉取已發佈的映像，且可以在執行之前先 [驗證](./releases.md#verify-a-release)：
+安裝具備 Compose v2 的 Docker，然後在您的伺服器上執行 [v0.4.0 發行套件](https://github.com/BerriAI/lens/releases/tag/v0.4.0)。它不需要 Git，會依摘要拉取已發佈的映像，且可以在執行之前先 [驗證](./releases.md#verify-a-release)：
 
 ```sh
-curl -fLO https://github.com/BerriAI/lens/releases/download/v0.1.0/lens-install-0.1.0.tar.gz
-tar xzf lens-install-0.1.0.tar.gz
-cd lens-0.1.0
+curl -fLO https://github.com/BerriAI/lens/releases/download/v0.4.0/lens-install-0.4.0.tar.gz
+tar xzf lens-install-0.4.0.tar.gz
+cd lens-0.4.0
 ./start
 ```
 
-此指令碼會在 `deploy/lens/.env` 中產生憑證，並搭配 ClickHouse 啟動 Lens。在 `/ui/` 登入，方式是將該檔案中的 `LENS_ADMIN_TOKEN` 值貼入 **Setup token** 欄位。使用 `docker compose -f deploy/lens/compose.yaml down` 停止，並使用 `./start` 重新啟動。保留解壓縮的套件、環境檔案和持久磁碟區
+此指令碼會在 `deploy/lens/.env` 中產生憑證，並搭配 ClickHouse 啟動 Lens。在 `/ui/` 登入，方式是開啟 **Admin token**，將該檔案中的 `LENS_ADMIN_TOKEN` 值貼上。使用 `docker compose -f deploy/lens/compose.yaml down` 停止，並使用 `./start` 重新啟動。保留解壓縮的套件、環境檔案和持久磁碟區
 
 如需協助設定現有的部署，請使用 [Set it up for me](https://github.com/BerriAI/lens/blob/main/docs/setup-with-agent.md)。若要將 Lens 服務連接到現有的閘道，請使用 [將 Lens 新增至 LiteLLM](./litellm.md#docker-compose)
 
@@ -31,7 +31,7 @@ LENS_PUBLIC_URL=https://lens.example.com
 
 ## 套用設定 {#2-start-the-services}
 
-從解壓縮的 `lens-0.1.0` 目錄：
+從解壓縮的 `lens-0.4.0` 目錄：
 
 ```sh
 docker compose -f deploy/lens/compose.yaml up -d --wait
@@ -82,6 +82,6 @@ sudo haproxy -c -f /etc/haproxy/haproxy.cfg && sudo systemctl reload haproxy
 
 ## 檢查安裝 {#4-check-the-installation}
 
-使用您的主機名稱開啟 `https://lens.example.com/ui/`，並將產生的管理員 token 貼入 **Setup token** 欄位。從代理程式的實際網路完成 [第一次追蹤檢查](../deployment.md#check-the-installation)。如果您啟用了調查，也請驗證一個有界限的調查
+使用您的主機名稱開啟 `https://lens.example.com/ui/`，然後開啟 **Admin token** 並貼上產生的管理員 token。從代理程式的實際網路完成 [第一次追蹤檢查](../deployment.md#check-the-installation)。如果您啟用了調查，也請驗證一個有界限的調查
 
 使用 [備份與還原 Lens](https://github.com/BerriAI/lens/blob/main/docs/backup.md)，將資料、Keeper 狀態、憑證和確切的映像保留在一起。將備份儲存在這台伺服器之外，並演練還原。支援的資料庫拓撲是一台 ClickHouse 伺服器；移至外部儲存本身並不提供複寫或自動容錯移轉

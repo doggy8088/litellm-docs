@@ -21,9 +21,9 @@ npm ci
 npm run dev
 ```
 
-第一次啟動會建置 Lens，編譯 Rust 後端約需 22 分鐘。接著在 `deploy/lens/.env` 中產生私密憑證、啟動 Lens 和 ClickHouse，並在 [http://127.0.0.1:3100/ui/](http://127.0.0.1:3100/ui/) 啟動 UI。請將該檔案中的 `LENS_ADMIN_TOKEN` 值貼到 **Setup token** 欄位中以登入。在本機讀取它，並避免將它放入共用的記錄中。UI 變更會自動重新載入，開發伺服器會將 API 請求轉送到 Lens 容器
+第一次啟動會建置 Lens，編譯 Rust 後端約需 22 分鐘。接著在 `deploy/lens/.env` 中產生私密憑證、啟動 Lens 和 ClickHouse，並在 [http://127.0.0.1:3100/ui/](http://127.0.0.1:3100/ui/) 啟動 UI。請開啟 **Admin token**，將該檔案中的 `LENS_ADMIN_TOKEN` 值貼上以登入。在本機讀取它，並避免將它放入共用的記錄中。UI 變更會自動重新載入，開發伺服器會將 API 請求轉送到 Lens 容器
 
-開啟 **Home**，選擇 **Set up with your coding agent** 或 **Set up manually** 以建立追蹤金鑰。使用產生的設定執行您的代理程式。當執行送達時，Home 會提供 **Open trace**；空白的 **Traces** 頁面也有 **Check for traces**。只有在您啟用調查或 Signals 時，才需要提供者設定
+開啟 **Home**，複製 coding agent 說明，或選擇 **Set up manually** 以建立追蹤金鑰。使用產生的設定執行您的代理程式。當執行送達時，Home 會提供 **Open trace**；空白的 **Traces** 頁面也有 **Check for traces**。只有在您啟用調查或 Signals 時，才需要提供者設定
 
 如果連接埠 4318 被占用，請使用 `LENS_PORT=4320 LENS_DEV_API_URL=http://127.0.0.1:4320 npm run dev`。UI 使用連接埠 3100，因此請先停止任何使用該連接埠的先前預覽
 

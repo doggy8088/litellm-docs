@@ -211,9 +211,11 @@ curl -X POST "https://<your-litellm-proxy>/v1/traces/query" \
 
 ## 上傳 traces {#upload}
 
-代理程式使用專用的追蹤金鑰（在 `Authorization: Bearer <tracing-key>` 中）將 traces 直接上傳至 Lens。以 proxy 管理員身分在 LiteLLM 上以 `POST /lens/tracing/keys` 產生金鑰，或開啟 **Lens > Traces**，點選 **Connect project**，再點選 **Generate tracing key**。LiteLLM 上的 `GET /lens/service` 會回傳公開的擷取基礎 URL 與連線狀態。
+代理程式以下列兩種方式之一上傳其遙測資料。模型呼叫經過您的 LiteLLM 閘道的代理程式，會以其已在 `Authorization: Bearer <key>` 中使用的 LiteLLM 金鑰，將 OTLP 傳送至閘道的 `/v1/traces` 與 `/v1/logs`。閘道會檢查金鑰、記錄是哪個金鑰、使用者、團隊與組織傳送的資料，並將上傳轉送至 Lens。未使用 LiteLLM 的代理程式，則以專用的追蹤金鑰（在 `Authorization: Bearer <tracing-key>` 中）直接上傳至 Lens。
 
-使用 Lens 基礎 URL（有 `/lens-ingest` 時請保留），後面接下方的路徑。儀表板的 **Traces endpoint** 已包含 `/v1/traces`。
+以 proxy 管理員身分在 LiteLLM 上以 `POST /lens/admin/tracing/keys` 產生追蹤金鑰，或開啟 Lens 中的 **Home**，選取 **Standalone Lens**，再選取 **Set up manually**，然後選取 **Create tracing key**。LiteLLM 上的 `GET /lens/service` 會回傳公開的擷取基礎 URL 與連線狀態。
+
+若為直接上傳，請使用 Lens 基礎 URL（有 `/lens-ingest` 時請保留），後面接下方的路徑。儀表板的 **Traces endpoint** 已包含 `/v1/traces`。
 
 | 端點 | 用途 |
 | --- | --- |
@@ -221,7 +223,7 @@ curl -X POST "https://<your-litellm-proxy>/v1/traces/query" \
 | `POST /v1/logs` | 擷取 OTLP/HTTP 記錄，包括程式碼代理程式工作階段事件 |
 | `POST /v1/traces/receipt` | 檢查以相同追蹤金鑰上傳的某個 `trace_id` 與最多 1,000 個 `span_ids` 的傳送狀況。回傳 `received`；絕不回傳 trace 內容 |
 
-追蹤金鑰僅允許擷取及其自身的傳送回執。它無法讀取 traces 或呼叫模型，一般的模型金鑰也無法上傳。閘道的上傳路由會回傳 410，因此匯出器 URL 必須直接指向 Lens。
+追蹤金鑰僅允許擷取及其自身的傳送回執。它無法讀取 traces 或呼叫模型。Lens 本身會以 401 拒絕 LiteLLM 金鑰，因此 LiteLLM 金鑰只能透過閘道上傳。
 
 上傳成功表示 ClickHouse 已接受它。429 或 503 可以重試，因此請使用有上限的匯出器重試。在長時間中斷期間，匯出器可能會捨棄 traces。金鑰在每個 Lens 複本上每 30 秒重新整理一次，憑證快照的最長年限為 90 秒。
 

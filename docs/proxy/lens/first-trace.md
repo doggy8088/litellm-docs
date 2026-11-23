@@ -9,9 +9,9 @@ import TabItem from '@theme/TabItem';
 
 # 傳送您的第一個 trace {#send-your-first-trace}
 
-使用您的程式碼代理程式將專案連接至 Lens，並開啟真實任務的 trace。這些步驟適用於獨立 Lens，以及 LiteLLM 儀表板內的 Lens。
+請將您的程式碼代理程式連接至 Lens，並開啟真實任務的 trace。這些步驟適用於獨立 Lens，以及 LiteLLM 儀表板內的 Lens。
 
-您需要一個執行中的 Lens 服務。如果 Lens 尚未就緒，請先依照 [設定 Lens](./deployment.md)。如果您的專案沒有程式碼代理程式，請改以 Python 範例[手動設定](#set-up-manually)。
+您需要一個執行中的 Lens 服務。如果 Lens 尚未就緒，請先依照 [設定 Lens](./deployment.md)。若要追蹤您自己的應用程式而非程式碼代理程式，請改以 Python 範例[手動設定](#set-up-manually)。
 
 ## 1. 開啟 Lens Home {#open-lens-home}
 
@@ -22,33 +22,40 @@ import TabItem from '@theme/TabItem';
 | 連接到 LiteLLM | 登入 LiteLLM 並在側邊欄中選取 **Lens**。 |
 | 獨立 | 在 `/ui/` 開啟您的 Lens URL，並使用 `LENS_ADMIN_TOKEN` 登入。 |
 
-**Home** 會顯示 **Connect a new agent**，以及 **Set up with your coding agent** 面板。相同的指示適用於 Claude Code、Codex 與 Cursor。
+**Home** 會顯示 **Connect a new agent**，並提供兩種連接方式。Lens 會開啟符合其執行方式的那一種：
 
-![Lens Home 顯示適用於 Claude Code、Codex 與 Cursor 的「Set up with your coding agent」面板，以及「Copy instructions with new key」按鈕。](/img/lens/home-connect-agent.png)
+| 路徑 | 使用時機 | 代理程式使用的金鑰 |
+| --- | --- | --- |
+| **透過 LiteLLM 閘道** | 您的程式碼代理程式的模型呼叫已透過已連接至 Lens 的 LiteLLM 閘道。代理程式會將其遙測傳送至該閘道。 | 代理程式已使用的 LiteLLM 金鑰。不需要 Lens 追蹤金鑰。 |
+| **獨立 Lens** | 您的程式碼代理程式未使用 LiteLLM。它會將其遙測直接傳送至 Lens。 | 一把專用的 Lens 追蹤金鑰。 |
+
+![Lens Home 顯示兩種連接路徑，已選取 Standalone Lens，並顯示程式碼代理程式選項與「Copy instructions with new key」按鈕。](/img/lens/home-connect-agent.png)
 
 ## 2. 將指示複製到您的程式碼代理程式中 {#copy-the-instructions}
 
-選取 **Copy instructions with new key**。Lens 會建立一把專用的追蹤金鑰，並複製已包含該金鑰與您的 trace 端點的指示。請在您的程式碼代理程式中開啟專案並貼上它們。
+請選擇您的程式碼代理程式，例如 **Claude Code** 或 **Codex**，然後選取複製按鈕，並將指示貼到該程式碼代理程式中。指示會在您的機器上為該代理程式安裝 Lens 外掛程式、保留其模型提供者與憑證，並執行一個真實任務。若要先閱讀指示，請展開 **View full instructions**。它們套用的外掛程式設定，就是 [程式碼代理程式工作階段](./coding-agents.md) 中的設定。
 
-代理程式會檢查您的專案、為其框架新增追蹤、保留您既有的模型提供者與憑證、執行一個真實任務，並向 Lens 確認 trace 已送達。若要先閱讀指示，請展開 **View full instructions**。
+在閘道路徑上，按鈕顯示 **Copy setup instructions**。指示中不含金鑰：代理程式會找出閘道位址與它已使用的 LiteLLM 金鑰。
 
-貼上的指示包含追蹤金鑰，因此金鑰會留在您的程式碼代理程式的聊天記錄中。請只將它們貼到您信任的代理程式中。若要重複使用金鑰而非建立新金鑰，請選取 **Use an existing key**。如果按鈕顯示 **Copy setup instructions**，指示中不含金鑰，代理程式會使用您專案環境中的追蹤金鑰。如果您無法自行建立金鑰，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰，並將它儲存為 `LITELLM_TRACING_KEY`。
+在獨立路徑上，按鈕顯示 **Copy instructions with new key**。Lens 會建立一把專用的追蹤金鑰，並複製已包含該金鑰與您的 Lens 位址的指示。金鑰會留在您的程式碼代理程式的聊天記錄中，因此請只將指示貼到您信任的代理程式中。若要重複使用金鑰而非建立新金鑰，請選取 **Use an existing key**。如果按鈕顯示 **Copy setup instructions**，指示中不含金鑰，代理程式會使用您環境中儲存為 `LITELLM_TRACING_KEY` 的追蹤金鑰。如果您無法自行建立金鑰，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰。
 
-指示中會指名此 Lens 的 trace 端點，例如本機快速入門的 `http://localhost:4318/v1/traces`。位於另一個容器或另一台機器上的代理程式，需要一個它能連線到的位址，而不是它自己的 `localhost`。
+指示中會指名此 Lens 或閘道的位址，例如本機快速入門的 `http://localhost:4318`。位於另一個容器或另一台機器上的代理程式，需要一個它能連線到的位址，而不是它自己的 `localhost`。
+
+外掛程式會將您輸入的提示、代理程式的回覆、它讀取的檔案，以及它的工具引數與輸出傳送至 Lens。僅在您打算保留該內容的 Lens 部署上使用它。
 
 ## 3. 開啟 trace {#view-your-first-trace}
 
-複製指示後，Lens Home 上的 **See your trace** 會顯示 **Waiting for your agent's trace**。任務完成後，您的程式碼代理程式會回報代理程式名稱與 trace ID，並提供 Lens 中該 trace 的連結。請開啟該連結，或在 Lens Home 顯示 **Trace received** 時選取 **Open trace**。
+任務完成後，請重新啟動您已開啟的任何程式碼代理程式工作階段，讓它們載入外掛程式。在獨立路徑上，Lens Home 上的 **See your trace** 會顯示 **Waiting for your agent's trace**，然後顯示 **Trace received** 並附有 **Open trace**。在閘道路徑上，請選取 **View agents** 並開啟該次執行。
 
-您應該會在您的代理程式名稱下看到該次執行。只有在 instrumentation 記錄時，才會出現模型呼叫、工具步驟，以及提示與回應文字。程式碼代理程式最後會詢問接下來要檢測什麼，因此請在該處提出需求。**Demo data** 會顯示範例；檢查您自己的 trace 時請將它關閉。如果沒有任何內容送達，請參閱[如果 trace 沒有出現](#troubleshooting)。
+您應該會在代理程式名稱（例如 **claude-code**）下看到該次執行，並附有您的提示、模型呼叫與工具步驟。**Demo data** 會顯示範例；檢查您自己的 trace 時請將它關閉。如果沒有任何內容送達，請參閱[如果 trace 沒有出現](#troubleshooting)。
 
 ## 手動設定 {#set-up-manually}
 
-如果您有自己的應用程式且沒有程式碼代理程式，請使用此路徑。Python 範例需要 Python {{python_version}} 與一個模型金鑰。它會進行一次模型呼叫，可能產生提供者費用。對於建立在框架上的代理程式，請使用[框架指南](#connect-your-existing-agent)。若要記錄 Claude Code 或 Codex 工作階段本身，請參閱[程式碼代理程式工作階段](./coding-agents.md)。
+若要追蹤您自己的應用程式，請使用此路徑。Python 範例需要 Python {{python_version}} 與一個模型金鑰。它會進行一次模型呼叫，可能產生提供者費用。對於建立在框架上的代理程式，請使用[框架指南](#connect-your-existing-agent)。若要記錄 Claude Code 或 Codex 工作階段本身，請參閱[程式碼代理程式工作階段](./coding-agents.md)。
 
 ### 取得追蹤金鑰和端點 {#connect-your-agent}
 
-在 Lens Home 上，選取 **Set up manually**，再選取 **Create tracing key**。如果該按鈕無法使用，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰。
+在 Lens Home 上，選取 **Standalone Lens**，再選取 **Set up manually**，然後選取 **Create tracing key**。如果該按鈕無法使用，請向您的 Lens 或閘道管理員索取專用的追蹤金鑰。
 
 ![Lens Home 上的「Set up manually」顯示「Create tracing key」與您專案的環境變數，包括 trace 端點。](/img/lens/home-set-up-manually.png)
 

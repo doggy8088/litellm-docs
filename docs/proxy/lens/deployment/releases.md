@@ -1,24 +1,24 @@
 ---
 title: "版本與映像"
-description: "從已發佈的 Compose 套件、映像或 Helm chart 安裝 Lens v0.1.0。"
+description: "從已發佈的 Compose 套件、映像或 Helm chart 安裝 Lens v0.4.0。"
 slug: "/proxy/lens/deployment/releases"
 ---
 
 # 版本與映像 {#releases-and-images}
 
-目前的版本是 [Lens v0.1.0](https://github.com/BerriAI/lens/releases/tag/v0.1.0)。所有成品都是公開的，不需要登錄憑證。
+目前的版本是 [Lens v0.4.0](https://github.com/BerriAI/lens/releases/tag/v0.4.0)。所有成品都是公開的，不需要登錄憑證。
 
-[Compose 套件](https://github.com/BerriAI/lens/releases/download/v0.1.0/lens-install-0.1.0.tar.gz) 可以在不需要建置或 Git 檢出的情況下啟動 Lens 和 ClickHouse。請依照 [伺服器上的 Docker Compose](./server.md) 安裝它。若要在您自己的電腦上試用 Lens，[快速入門](./local.md) 更簡短。
+[Compose 套件](https://github.com/BerriAI/lens/releases/download/v0.4.0/lens-install-0.4.0.tar.gz) 可以在不需要建置或 Git 檢出的情況下啟動 Lens 和 ClickHouse。請依照 [伺服器上的 Docker Compose](./server.md) 安裝它。若要在您自己的電腦上試用 Lens，[快速入門](./local.md) 更簡短。
 
 ## 容器映像 {#container-images}
 
-使用 `ghcr.io/berriai/lens:0.1.0`。套件和 chart 會將映像固定為 `sha256:489a007c48043a5b6c7c6b5f9f646fd46ccb4dd371ea674df6496b326efbc270`。
+使用 `ghcr.io/berriai/lens:0.4.0`。套件和 chart 會依摘要固定映像，而該版本的 `manifest.txt` 會列出該摘要。
 
 ## Helm charts {#helm-charts}
 
-使用 `oci://ghcr.io/berriai/charts/lens`，搭配 `--version 0.1.0`。請依照 [Kubernetes 指南](./kubernetes.md#new-deployment)。
+使用 `oci://ghcr.io/berriai/charts/lens`，搭配 `--version 0.4.0`。請依照 [Kubernetes 指南](./kubernetes.md#new-deployment)。
 
-若要升級，請在完成 [備份與升級檢查](./upgrades.md) 後變更套件、映像或 chart 版本。保留資料和憑證。Lens 和 LiteLLM 各自獨立更新。內嵌 UI 的更新需要閘道更新。
+若要升級，請在完成 [備份與升級檢查](./upgrades.md) 後變更套件、映像或 chart 版本。保留資料和憑證。Lens 和 LiteLLM 各自獨立更新。從 LiteLLM v1.112.0 起，儀表板會顯示所連接 Lens 提供的 UI，因此升級 Lens 也會更新 LiteLLM 中的 Lens 頁面。較舊的閘道帶有自己的 Lens UI 副本，需要更新閘道才能變更它。 {/* keep-version-note: The first gateway release that loads the UI from Lens is the subject of this note. */}
 
 ## 驗證版本 {#verify-a-release}
 

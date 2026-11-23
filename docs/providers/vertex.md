@@ -1789,10 +1789,14 @@ LiteLLM 會依據回應的 `usageMetadata.trafficType`，自動使用正確的�
 | Vertex AI `trafficType` | LiteLLM `service_tier` | 套用的定價 |
 |-------------------------|-------------------------|-----------------|
 | `ON_DEMAND_PRIORITY` | `priority` | PayGo / 優先定價（`input_cost_per_token_priority`、`output_cost_per_token_priority`） |
-| `ON_DEMAND` | standard | 預設隨選定價 |
+| `ON_DEMAND` | `default` | 預設隨選定價 |
+| `ON_DEMAND_FLEX` | `flex` | Flex 定價 |
 | `FLEX` / `BATCH` | `flex` | 批次/flex 定價 |
+| `PROVISIONED_THROUGHPUT` 或任何其他值 | `default` | 預設隨選定價 |
 
 當您使用 [Vertex AI PayGo](https://cloud.google.com/vertex-ai/generative-ai/pricing)（隨選優先）或批次工作負載時，LiteLLM 會從回應中讀取 `trafficType`，並套用 [模型成本對照表](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) 中相對應的每 token 成本。不需要任何設定；支出追蹤可同時適用於標準與 PayGo 請求。
+
+若要請求優先或 Flex PayGo，請傳送 `service_tier="priority"` 或 `service_tier="flex"`，LiteLLM 會將其以 `X-Vertex-AI-LLM-Shared-Request-Type` 標頭送出 <SinceVersion v="1.112.0" />。[Gemini `service_tier` 文件](./gemini.md#usage---service_tier)列出了所有值。
 
 一般成本追蹤設定請參閱 [Spend Tracking](../proxy/cost_tracking.md)。
 

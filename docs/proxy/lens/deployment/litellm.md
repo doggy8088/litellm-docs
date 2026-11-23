@@ -72,7 +72,7 @@ LENS_GATEWAY_SECRET=YOUR_SIGNING_SECRET
 docker compose up -d --wait
 ```
 
-如果您執行的是 [發行套件](./server.md)，請改為將它們新增至 `deploy/lens/.env`。從 `lens-0.1.0` 目錄套用它們：
+如果您執行的是 [發行套件](./server.md)，請改為將它們新增至 `deploy/lens/.env`。從 `lens-0.4.0` 目錄套用它們：
 
 ```sh
 docker compose -f deploy/lens/compose.yaml up -d --wait

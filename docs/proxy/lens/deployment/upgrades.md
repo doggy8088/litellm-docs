@@ -6,7 +6,7 @@ slug: "/proxy/lens/deployment/upgrades"
 
 # 升級 Lens {#upgrade-lens}
 
-選取可用的 [Lens 成品](./releases.md) 並閱讀其遷移需求。當 Lens 與閘道版本的合約相容時，兩者的版本可以不同。內嵌 UI 的變更需要對應的閘道 UI 更新
+選取可用的 [Lens 成品](./releases.md) 並閱讀其遷移需求。當 Lens 與閘道版本的合約相容時，兩者的版本可以不同。從 LiteLLM v1.112.0 起，儀表板會顯示所連接 Lens 提供的 UI，因此 LiteLLM 中的 Lens 頁面會跟隨 Lens 版本。較舊的閘道帶有自己的 Lens UI 副本，需要更新閘道才能變更它 {/* keep-version-note: The first gateway release that loads the UI from Lens is the subject of this note. */}
 
 在變更持久安裝之前，請先 [備份並演練復原](https://github.com/BerriAI/lens/blob/main/docs/backup.md)。保留確切的已安裝映像、原始碼或安裝套件、環境檔案、ClickHouse 資料和 Keeper 狀態。在維護時段之前，暫停排程的工作，並完成或取消進行中的調查
 
@@ -24,7 +24,7 @@ slug: "/proxy/lens/deployment/upgrades"
 docker compose -f deploy/lens/compose.yaml up -d --wait
 ```
 
-[快速入門](./local.md) 安裝會將 `.env` 保留在下載的 `compose.yaml` 旁邊，且該檔案目前還沒有 `LENS_IMAGE` 這一行。請加入一行已驗證的成品，例如 `LENS_IMAGE=ghcr.io/berriai/lens:0.1.0`，然後從該資料夾套用它：
+[快速入門](./local.md) 安裝會將 `.env` 保留在下載的 `compose.yaml` 旁邊，且該檔案目前還沒有 `LENS_IMAGE` 這一行。請加入一行已驗證的成品，例如 `LENS_IMAGE=ghcr.io/berriai/lens:0.4.0`，然後從該資料夾套用它：
 
 ```sh
 docker compose up -d --wait

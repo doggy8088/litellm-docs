@@ -22,7 +22,7 @@ helm upgrade --install lens oci://ghcr.io/berriai/charts/lens \
 
 Argo CD 和其他 GitOps 工具會在沒有叢集存取權的情況下轉譯 chart，因此產生的憑證會在每次同步時變更。請在該處使用 [預先佈建的 Secret](./storage.md#gitops)
 
-首次啟動時，Lens pod 可能會在 ClickHouse 就緒之前重新啟動幾次。持續失敗需要 [儲存與啟動診斷](./configuration.md#troubleshooting)
+首次啟動時，Lens pod 會停留在 `Init`，直到內建的 ClickHouse 回應為止。如果使用您自己的 ClickHouse，Lens 會重新啟動，直到能夠連線為止。持續失敗需要 [儲存與啟動診斷](./configuration.md#troubleshooting)
 
 ## 對外開放 Lens {#ingress}
 
@@ -47,7 +47,7 @@ curl --fail https://lens.example.com/health/ready
 
 ## 登入 {#sign-in}
 
-開啟 `https://lens.example.com/ui/`，並將產生的管理員 token 貼入 **Setup token** 欄位。使用以下方式讀取 token：
+開啟 `https://lens.example.com/ui/`，開啟 **Admin token**，然後貼上產生的管理員 token。使用以下方式讀取 token：
 
 ```sh
 kubectl --namespace lens get secret lens-admin \
@@ -62,18 +62,19 @@ kubectl --namespace lens get secret lens-admin \
 
 | 值 | 預設值 | 說明 |
 | --- | --- | --- |
-| `publicUrl` | `http://localhost:4318` | Lens 的瀏覽器對外來源，不含 `/ui/`。 |
+| `publicUrl` | `""` | Lens 的瀏覽器對外來源，不含 `/ui/`。Lens 會拒絕來自任何其他來源的登入與儲存。若為空值，當啟用 ingress 時（設定 `ingress.tls` 時為 `https`），即為 `ingress.host` 位址，否則為 `http://localhost:4318`。若其命名的主機與 `ingress.host` 不同，安裝會失敗。 |
 | `ingestionUrl` | `""` | 代理程式傳送 trace 的位址。為空時使用 `publicUrl`。 |
 | `ingress.enabled` | `false` | 建立 Ingress。請另外安裝其控制器。 |
 | `ingress.className`、`ingress.host` | 兩者皆為 `""` | Ingress 類別和主機名稱。啟用 Ingress 時必須提供主機名稱。 |
 | `ingress.annotations`、`ingress.tls` | `{}`、`[]` | 控制器設定和 Kubernetes Ingress TLS 項目。 |
+| `service.type`、`service.nodePort` | `ClusterIP`、`null` | 服務類型。若要在沒有 ingress 的情況下連到 Lens，請使用 `NodePort` 或 `LoadBalancer`，並將 `publicUrl` 設為瀏覽器開啟的位址。 |
 | `adminTokenSecret.name`、`.key` | `""`、`admin-token` | 存放管理員 token 的現有 Secret。名稱為空時，chart 會產生 `lens-admin`。 |
 | `gateway.enabled` | `false` | 接受來自 LiteLLM 閘道的登入。請參閱 [將 Lens 新增至 LiteLLM](./litellm.md)。 |
 | `gateway.secretName`、`serviceTokenSecret.name` | 兩者皆為 `""` | 存放兩個閘道連線值的現有 Secret。 |
 | `clickhouse.storage`、`clickhouse.storageClassName` | `20Gi`、`null` | ClickHouse 磁碟區的大小和 StorageClass。請依您的流量和保留期調整大小。 |
 | `clickhouseSecret.name`、`.key` | `""`、`url` | 存放 [現有 ClickHouse](./storage.md) URL 的 Secret。取代隨附的 ClickHouse。 |
 | `retentionDays` | `14` | Lens 保留 trace 資料的天數。 |
-| `resources`、`clickhouse.resources` | 請求 `100m` CPU 與 `256Mi` 和 `512Mi`，記憶體限制 `2Gi` | Lens 和 ClickHouse 容器的資源。 |
+| `resources`、`clickhouse.resources` | 請求 `100m` CPU 與 `256Mi` 和 `512Mi`，記憶體限制 `2Gi` 和 `4Gi` | Lens 和 ClickHouse 容器的資源。 |
 | `extraEnv`、`extraEnvFrom` | 兩者皆為 `[]` | 額外的 [環境設定](./configuration.md)，例如分析模型憑證。 |
 
 ## 升級 {#upgrade}

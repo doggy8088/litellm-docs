@@ -15,6 +15,8 @@ LiteLLM 支援 Priority PayGo。
 
 ### 傳送 priority 請求 {#send-a-priority-request}
 
+傳入 `service_tier="priority"`（或 `"flex"`），LiteLLM 就會為您傳送下方的標頭 <SinceVersion v="1.112.0" />。[Gemini `service_tier` 文件](../providers/gemini.md#usage---service_tier) 列出了每一個值。若使用較舊的版本，或要為整個部署設定標頭，請自行傳送。
+
 使用此標頭：
 
 `X-Vertex-AI-LLM-Shared-Request-Type: priority`
@@ -84,11 +86,14 @@ curl -X POST \
 
 **`trafficType` → `service_tier` 對應**
 
-| `usageMetadata.trafficType` | `service_tier` | 使用的定價鍵 |
+| `usageMetadata.trafficType` | 回應的 `service_tier` | 使用的定價鍵 |
 |---|---|---|
-| `ON_DEMAND` | `None` | `input_cost_per_token` |
+| `ON_DEMAND` | `"default"` | `input_cost_per_token` |
 | `ON_DEMAND_PRIORITY` | `"priority"` | `input_cost_per_token_priority` |
-| `FLEX` / `BATCH` | `"flex"` | `input_cost_per_token_flex` |
+| `ON_DEMAND_FLEX`、`FLEX` 或 `BATCH` | `"flex"` | `input_cost_per_token_flex` |
+| `PROVISIONED_THROUGHPUT` 或任何其他值 | `"default"` | `input_cost_per_token` |
+
+回應會帶有此 `service_tier` <SinceVersion v="1.112.0" />。
 
 如果缺少特定層級的鍵，LiteLLM 會回退到標準定價鍵。
 
@@ -96,7 +101,7 @@ curl -X POST \
 
 ## 標準 PayGo 與 Provisioned Throughput {#standard-paygo-vs-provisioned-throughput}
 
-這與 priority 路由是不同的標頭：
+這與 priority 路由是不同的標頭。單獨傳送 `X-Vertex-AI-LLM-Shared-Request-Type` 會先使用 Provisioned Throughput，再回退到 Priority 或 Flex PayGo。若要只使用 PayGo，請再加上 `X-Vertex-AI-LLM-Request-Type: shared`。
 
 | 標頭值 | 行為 |
 |---|---|

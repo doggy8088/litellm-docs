@@ -396,17 +396,37 @@ litellm_settings:
 
 ## 用法 - `service_tier` {#usage---service_tier}
 
-LiteLLM 會將 OpenAI 的 `service_tier` 參數傳遞給 Gemini，並且也會將其從回應標頭（`x-gemini-service-tier`）擷取到 `model_response.service_tier`。
+LiteLLM 會將 OpenAI 的 `service_tier` 參數對應到 Gemini API（`gemini/`）與 Vertex AI（`vertex_ai/`）。Gemini API 以 `serviceTier` 內文欄位接收階層。Vertex AI 對該欄位回應 `400`，因此 LiteLLM 改以 `X-Vertex-AI-LLM-Shared-Request-Type` 標頭傳送 Vertex 階層 <SinceVersion v="1.112.0" />。
 
-| OpenAI `service_tier` | Gemini `service_tier` | 備註 |
-| --------------------- | --------------------- | ----- |
-| `"auto"`              | `"priority"`          | LiteLLM 會將 OpenAI 的 `"auto"` 對應到 Gemini 的 `"priority"` 階層，因為 `priority` 會在 Gemini 上回退。 |
-| `"flex"`              | `"flex"`              | 直接對應。 |
-| `"priority"`          | `"priority"`          | 直接對應。 |
-| `"default"`           | `"standard"`          | LiteLLM 會將 `"default"` 對應到 `"standard"`。 |
-| Any other value       | Passed as-is (lowercased) | 值不區分大小寫，並會正規化為小寫。 |
+| OpenAI `service_tier` | `gemini/` 傳送 | `vertex_ai/` 傳送 |
+| --------------------- | --------------- | ------------------ |
+| `"auto"` | `serviceTier: "priority"` | 不傳送階層，因此 Vertex 會使用其標準路由 |
+| `"priority"` | `serviceTier: "priority"` | `X-Vertex-AI-LLM-Shared-Request-Type: priority` |
+| `"flex"` | `serviceTier: "flex"` | `X-Vertex-AI-LLM-Shared-Request-Type: flex` |
+| `"standard"` 或 `"standard_only"` | `serviceTier: "standard"` | 不傳送階層 |
+| `"default"` | `serviceTier: "standard"` | 不傳送階層 |
+| `"unspecified"` | 不傳送階層 | 不傳送階層 |
+| 其他任何值，例如 `"scale"` | `400`，或在 [`drop_params`](../completion/drop_params) 下捨棄 | `400`，或在 `drop_params` 下捨棄 |
 
-在回應中，LiteLLM 會將 `"standard"` 對應回 Gemini API 的 `"default"`。
+值不區分大小寫，也可以帶有 Google 的 `SERVICE_TIER_` 前綴，因此 `"SERVICE_TIER_PRIORITY"` 與 `"priority"` 的效果相同。
+
+在 Vertex AI 上，僅有共用請求類型標頭時，會先使用任何 Provisioned Throughput 配額，再回退到 Priority 或 Flex PayGo。若要跳過 Provisioned Throughput，請同時在 `extra_headers` 中傳送 `X-Vertex-AI-LLM-Request-Type: shared`。您自行傳送的標頭優先於 LiteLLM 依 `service_tier` 建立的標頭。請參閱 [Vertex AI PayGo 與 Priority](../tutorials/vertex_ai_pay_go.md)。
+
+```python
+import litellm
+
+response = litellm.completion(
+    model="vertex_ai/{{gemini_flash}}",
+    messages=[{"role": "user", "content": "Hello"}],
+    service_tier="priority",
+)
+
+print(response.service_tier)  # "priority" when Vertex served the request at Priority PayGo
+```
+
+回應會在 `service_tier` 中回報實際提供服務的階層。Gemini API 會從 `x-gemini-service-tier` 回應標頭讀取它，並將 `"standard"` 對應到 `"default"`。Vertex AI 則從 `usageMetadata.trafficType` 讀取，其中 `ON_DEMAND_PRIORITY` 是 `"priority"`，`ON_DEMAND_FLEX`、`FLEX` 與 `BATCH` 是 `"flex"`，而其他任何值（例如 `ON_DEMAND` 或 `PROVISIONED_THROUGHPUT`）則是 `"default"`，也就是 LiteLLM 計費時採用的階層。
+
+Vertex AI 批次工作會在批次階層上執行，因此在 Vertex 批次請求列上使用 `"priority"` 或 `"flex"` 會回應 `400`，或在 `drop_params` 下被捨棄。`"standard"`、`"default"` 與 `"auto"` 則不帶階層上傳。
 
 ## 長輸出 {#long-outputs}
 
