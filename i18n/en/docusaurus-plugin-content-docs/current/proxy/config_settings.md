@@ -1048,7 +1048,7 @@ Size for the total number of waiting requests across deployments and workers. Te
 | DEFAULT_MCP_SEMANTIC_FILTER_SIMILARITY_THRESHOLD | Default similarity threshold for MCP semantic tool filtering. Default is 0.3
 | DEFAULT_MCP_SEMANTIC_FILTER_TOP_K | Default number of top results to return for MCP semantic tool filtering. Default is 10
 | MCP_NPM_CACHE_DIR | Directory for npm cache used by STDIO MCP servers. In containers the default (~/.npm) may not exist or be read-only. Default is `/tmp/.npm_mcp_cache`
-| LITELLM_MCP_DCR_GATEWAY_CLIENT | <SinceVersion v="1.112.0" /> Set to `true` to let the proxy register its own gateway-owned OAuth client for new MCP DCR bridges that have no client of their own (`oauth_delegate` or `true_passthrough`). Needs `PROXY_BASE_URL` and a database. Tokens from that flow are bound to the browser user, not the calling key. Default is `false`: new clientless bridges relay the client's own registration upstream, and clients that are already configured or saved keep their current flow
+| LITELLM_MCP_DCR_GATEWAY_CLIENT | <SinceVersion v="1.111.0" /> Set to `true` to let the proxy register its own gateway-owned OAuth client for new MCP DCR bridges that have no client of their own (`oauth_delegate` or `true_passthrough`). Needs `PROXY_BASE_URL` and a database. Tokens from that flow are bound to the browser user, not the calling key. Default is `false`: new clientless bridges relay the client's own registration upstream, and clients that are already configured or saved keep their current flow
 | LITELLM_MCP_CLIENT_TIMEOUT | MCP client connection timeout in seconds (stdio and HTTP/SSE transports). Default is 60
 | LITELLM_MCP_TOOL_LISTING_TIMEOUT | Timeout in seconds for listing tools from an MCP server. Default is 30
 | LITELLM_MCP_METADATA_TIMEOUT | HTTP client timeout in seconds for OAuth metadata fetching. Default is 10
@@ -1117,7 +1117,7 @@ Size for the total number of waiting requests across deployments and workers. Te
 | DOCS_DESCRIPTION | Description text for documentation pages
 | DOCS_FILTERED | Flag indicating filtered documentation
 | DOCS_TITLE | Title of the documentation pages
-| DOCS_URL | The path to the Swagger API documentation. **By default this is "/"**
+| DOCS_URL | Path to the Scalar API reference. Defaults to `/`.
 | EMAIL_LOGO_URL | URL for the logo used in emails
 | EMAIL_BUDGET_ALERT_TTL | Time-to-live for email budget alerts in seconds
 | EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE | Maximum spend percentage for triggering email budget alerts
@@ -1457,7 +1457,8 @@ Size for the total number of waiting requests across deployments and workers. Te
 | MAX_REQUEST_HEADER_SIZE | {/* keep-version-note: unversioned reference requested by maintainer */} Positive integer byte size for Uvicorn's h11 incomplete HTTP header buffer. **Default is 16384** (16 KiB). For example, set `MAX_REQUEST_HEADER_SIZE=131072` for 128 KiB. Applies to the default server and `--run_gunicorn` when h11 is used. Preserves automatic parser selection and is ignored by httptools, Hypercorn, and Granian. `--max_request_header_size` takes precedence. Export this variable before starting the proxy. This is not a strict total-header limit. [Further docs](./cli#--max_request_header_size). |
 | MAX_TIME_TO_CLEAR_QUEUE | Maximum time in seconds to spend clearing the logging worker queue during shutdown. Default is 5.0
 | LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS | Cooldown time in seconds before allowing another aggressive clear operation when the queue is full. Default is 0.5 
-| MAX_STRING_LENGTH_PROMPT_IN_DB | Maximum length for strings in spend logs when sanitizing request bodies. Strings longer than this will be truncated. Default is 1000
+| MAX_STRING_LENGTH_PROMPT_IN_DB | Maximum length for strings in spend logs when sanitizing request bodies. Strings longer than this will be truncated. Provider-signed reasoning fields of `/v1/responses` calls served through chat completions follow `MAX_STRING_LENGTH_PROVIDER_SIGNED_IN_DB` when it is larger. Default is 2048
+| MAX_STRING_LENGTH_PROVIDER_SIGNED_IN_DB | <SinceVersion v="1.113.0" /> Maximum length of a provider-signed reasoning field (a signed Claude thinking block with its text, `redacted_thinking` data, `encrypted_content`, a Gemini thought signature) kept in a spend log row of a `/v1/responses` call that LiteLLM serves through chat completions, so a `previous_response_id` follow-up sends it back unchanged. A cut signature makes the provider reject the follow-up. A larger `MAX_STRING_LENGTH_PROMPT_IN_DB` wins, and a smaller one does not lower this limit. The 1.108 LTS line has it in releases after 1.108.15. Default is 1048576 (1 MiB)
 | MAX_STRING_LENGTH_STDOUT_LOG | Maximum number of characters an INFO-or-higher log line (message or traceback) may write to stdout. A longer line keeps its head and tail around a `litellm_truncated skipped N chars` marker, which counts toward the cap. DEBUG lines are never cut, so `--detailed_debug` still prints whole payloads, and logging callbacks (OTEL, Datadog, etc.) still receive the full record. Set to 0 to disable. Default is 4096
 | MAX_IN_MEMORY_QUEUE_FLUSH_COUNT | Maximum count for in-memory queue flush operations. Default is 1000
 | MAX_IMAGE_URL_DOWNLOAD_SIZE_MB | Maximum size in MB for downloading images from URLs. Prevents memory issues from downloading very large images. Images exceeding this limit will be rejected before download. Set to 0 to completely disable image URL handling (all image_url requests will be blocked). Default is 50MB (matching [OpenAI's limit](https://platform.openai.com/docs/guides/images-vision?api-mode=chat#image-input-requirements))
@@ -1502,11 +1503,12 @@ Size for the total number of waiting requests across deployments and workers. Te
 | MS_TEAMS_WEBHOOK_URL | Incoming webhook URL for Microsoft Teams alerts, used when `ms_teams` is in `general_settings.alerting`. See [MS Teams alerting](./alerting#ms-teams-webhooks)
 | NEW_RELIC_APP_NAME | Application name for New Relic AI Monitoring integration |
 | NEW_RELIC_LICENSE_KEY | License key for New Relic authentication |
-| NO_DOCS | Flag to disable Swagger UI documentation
+| NO_DOCS | Disables the API reference
 | NO_MAX_TOKENS_TPM_RESERVATION_FRACTION | <SinceVersion v="1.109.0" /> Share of a TPM limit reserved for a request that sets no output cap, as a fraction from 0.01 to 1. On a deployment with `otpm`, a request without `max_tokens` reserves the smaller of the model's max output and this share of `otpm`. On the proxy, it also sets the `max_tokens` written into a request without one when its key, team, or project has a TPM limit under 4096. A value outside the range logs a warning and uses the default. Default is 0.25. [Docs](./io_token_rate_limits.md#pre-call-admission)
 | NO_OPENAPI | Flag to disable the /openapi.json endpoint
-| NO_REDOC | Flag to disable Redoc documentation
 | NO_PROXY | List of addresses to bypass proxy
+| NO_REDOC | Set to `true` to disable ReDoc unless `REDOC_URL` is set to a nonempty value {/* keep-version-note */}
+| NO_SWAGGER | <SinceVersion v="1.112.0" /> Set to `true` to disable Swagger UI unless `SWAGGER_URL` is set.
 | NON_LLM_CONNECTION_TIMEOUT | Timeout in seconds for non-LLM service connections. Default is 15
 | OAUTH_TOKEN_INFO_ENDPOINT | Endpoint for OAuth token info retrieval
 | OPENAI_BASE_URL | Base URL for OpenAI API
@@ -1613,7 +1615,7 @@ Size for the total number of waiting requests across deployments and workers. Te
 | REDIS_TIMEOUT_LOG_INTERVAL | Seconds between Redis timeout log lines. The first timeout of a streak logs at the normal level, later ones log at DEBUG, and once the interval passes one line reports how many were suppressed. Non-timeout Redis errors are not throttled. Default is 5.0
 | REDIS_GCP_SERVICE_ACCOUNT | GCP service account for IAM authentication with Redis. Format: "projects/-/serviceAccounts/name@project.iam.gserviceaccount.com"
 | REDIS_GCP_SSL_CA_CERTS | Path to SSL CA certificate file for secure GCP Memorystore Redis connections
-| REDOC_URL | The path to the Redoc Fast API documentation. **By default this is "/redoc"**
+| REDOC_URL | Custom path for ReDoc. Defaults to `/redoc` unless `NO_REDOC` is true. A nonempty value overrides `NO_REDOC` {/* keep-version-note */}
 | REPEATED_STREAMING_CHUNK_LIMIT | Limit for repeated streaming chunks to detect looping. Default is 100
 | REALTIME_CREDENTIAL_RESOLUTION_TIMEOUT_SECONDS | Timeout in seconds for fetching the Vertex AI access token before a realtime session starts. Default is 20.0
 | REALTIME_WEBSOCKET_MAX_MESSAGE_SIZE_BYTES | Maximum size in bytes for WebSocket messages in realtime connections. Default is None.
@@ -1670,6 +1672,7 @@ Size for the total number of waiting requests across deployments and workers. Te
 | SUPABASE_URL | Base URL for Supabase instance
 | STORE_MODEL_IN_DB | If true, enables storing model + credential information in the DB. 
 | STORE_PROMPTS_IN_SPEND_LOGS | Flag to persist the request and response payloads of each call on its SpendLogs row, so prompts and completions are visible in the logs UI. Environment equivalent of `general_settings.store_prompts_in_spend_logs`; either source enabling it is enough. **Default is False**
+| SWAGGER_URL | <SinceVersion v="1.112.0" /> Path to Swagger UI. Defaults to `/swagger`, or `/swagger/ui` if Scalar or the OpenAPI schema already uses `/swagger`.
 | SYSTEM_MESSAGE_TOKEN_COUNT | Token count for system messages. Default is 4
 | TEST_EMAIL_ADDRESS | Email address used for testing purposes
 | TOGETHER_AI_4_B | Size parameter for Together AI 4B model. Default is 4
