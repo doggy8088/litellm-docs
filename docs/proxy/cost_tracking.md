@@ -501,7 +501,7 @@ curl --get 'http://localhost:4000/user/daily/activity/aggregated' \
 
 ### API 參考 {#api-reference}
 
-請參閱我們的 [Swagger API](https://docs.litellm.ai/api-reference/#/Budget%20%26%20Spend%20Tracking/get_user_daily_activity_user_daily_activity_get) 以取得關於 `/user/daily/activity` 端點的更多詳細資訊
+請參閱我們的 [API 參考](https://docs.litellm.ai/api-reference/#tag/Budget~20~26~20Spend~20Tracking/get_user_daily_activity_user_daily_activity_get) 以取得關於 `/user/daily/activity` 端點的更多詳細資訊
 
 :::info
 此端點上的請求計數是從 spend logs 推導而來，因此只涵蓋已記錄的請求，且會分別記錄每次上游嘗試。若要取得閘道實際回應的計數，包括在 key 或 model 尚未解析前就被拒絕的請求，請使用 [`/gateway/daily/activity`](./endpoint_activity.md#gateway-daily-activity)。這兩者預期不會相符
@@ -931,7 +931,7 @@ curl -X GET 'http://localhost:4000/global/spend/report?start_date=2024-04-01&end
 
 :::info
 
-內部使用者（金鑰擁有者）：這是呼叫 [`user_id`](https://docs.litellm.ai/api-reference/#/key%20management/generate_key_fn_key_generate_post) 時傳入的 `/key/generate` 值
+內部使用者（金鑰擁有者）：這是呼叫 [`user_id`](https://docs.litellm.ai/api-reference/#tag/key~20management/generate_key_fn_key_generate_post) 時傳入的 `/key/generate` 值
 
 :::
 

@@ -1,6 +1,6 @@
 # 取得每日支出、用量指標 {#get-daily-spend-usage-metrics}
 
-此頁原本描述的 `GET /daily_metrics` 端點已從 proxy 中移除。每日支出與用量現在由 `GET /user/daily/activity` 提供，會回傳每日支出、token 數量與請求數，並依模型、模型群組、提供者、端點、API 金鑰與 MCP server 分解。請參閱 [每日支出明細 API](./cost_tracking#daily-spend-breakdown-api) 章節以取得完整回應結構，並參閱 [Swagger 參考](https://docs.litellm.ai/api-reference/#/Budget%20%26%20Spend%20Tracking/get_user_daily_activity_user_daily_activity_get) 以查看所有參數。
+此頁原本描述的 `GET /daily_metrics` 端點已從 proxy 中移除。每日支出與用量現在由 `GET /user/daily/activity` 提供，會回傳每日支出、token 數量與請求數，並依模型、模型群組、提供者、端點、API 金鑰與 MCP server 分解。請參閱 [每日支出明細 API](./cost_tracking#daily-spend-breakdown-api) 章節以取得完整回應結構，並參閱 [API 參考](https://docs.litellm.ai/api-reference/#tag/Budget~20~26~20Spend~20Tracking/get_user_daily_activity_user_daily_activity_get) 以查看所有參數。
 
 ## 請求格式 {#request-format}
 

@@ -74,7 +74,6 @@ LiteLLM 內附 `cl100k_base`、`o200k_base` 與 `p50k_base` tiktoken 檔案。�
 
 這些請求來自使用 Admin UI 或 API 文件之人的瀏覽器，而不是來自 proxy：
 
-- **ReDoc。** `/redoc` 頁面從 `cdn.jsdelivr.net` 載入它的指令碼，並從 `fonts.googleapis.com` 載入字體。設定 `NO_REDOC=True` 可關閉該頁面。
 - **MCP 伺服器圖示。** Admin UI 中的 MCP 伺服器目錄與 OpenAPI 選取器會從 `cdn.simpleicons.org` 與 `raw.githubusercontent.com` 載入圖示。當它們被封鎖時，圖示不會顯示。
 
-Admin UI 與位於 `/` 的 Swagger 頁面會提供它們自己的指令碼與字體。
+Admin UI 與位於 `/` 的 API 參考文件會提供它們自己的指令碼。API 參考文件使用系統字體。

@@ -1059,7 +1059,7 @@ router_settings:
 | DEFAULT_MCP_SEMANTIC_FILTER_SIMILARITY_THRESHOLD | MCP 語意工具篩選的預設相似度門檻。預設為 0.3
 | DEFAULT_MCP_SEMANTIC_FILTER_TOP_K | MCP 語意工具篩選要回傳的預設前幾名結果數。預設為 10
 | MCP_NPM_CACHE_DIR | STDIO MCP 伺服器使用的 npm 快取目錄。在容器中，預設值（~/.npm）可能不存在或為唯讀。預設為 `/tmp/.npm_mcp_cache`
-| LITELLM_MCP_DCR_GATEWAY_CLIENT | <SinceVersion v="1.112.0" /> 設定為 `true`，讓代理程式為尚未擁有自身用戶端的新 MCP DCR 橋接註冊一個閘道擁有的 OAuth 用戶端（`oauth_delegate` 或 `true_passthrough`）。需要 `PROXY_BASE_URL` 與資料庫。該流程發出的權杖會綁定至瀏覽器使用者，而非呼叫金鑰。預設為 `false`：新的無用戶端橋接會將用戶端自身的註冊中繼至上游，已設定或已儲存的用戶端則維持原有流程
+| LITELLM_MCP_DCR_GATEWAY_CLIENT | <SinceVersion v="1.111.0" /> 設定為 `true`，讓代理程式為尚未擁有自身用戶端的新 MCP DCR 橋接註冊一個閘道擁有的 OAuth 用戶端（`oauth_delegate` 或 `true_passthrough`）。需要 `PROXY_BASE_URL` 與資料庫。該流程發出的權杖會綁定至瀏覽器使用者，而非呼叫金鑰。預設為 `false`：新的無用戶端橋接會將用戶端自身的註冊中繼至上游，已設定或已儲存的用戶端則維持原有流程
 | LITELLM_MCP_CLIENT_TIMEOUT | MCP 用戶端連線逾時（秒）（stdio 與 HTTP/SSE 傳輸）。預設為 60
 | LITELLM_MCP_TOOL_LISTING_TIMEOUT | 從 MCP 伺服器列出工具的逾時（秒）。預設為 30
 | LITELLM_MCP_METADATA_TIMEOUT | 用於 OAuth 中繼資料擷取的 HTTP 用戶端逾時（秒）。預設為 10
@@ -1130,7 +1130,7 @@ router_settings:
 | DOCS_DESCRIPTION | 文件頁面的說明文字
 | DOCS_FILTERED | 表示已篩選文件的旗標
 | DOCS_TITLE | 文件頁面的標題
-| DOCS_URL | Swagger API 文件的路徑。**預設為 "/"**
+| DOCS_URL | Scalar API 參考文件的路徑。預設為 `/`。
 | EMAIL_LOGO_URL | 電子郵件中使用的標誌 URL
 | EMAIL_BUDGET_ALERT_TTL | 電子郵件預算警示的存留時間（秒）
 | EMAIL_BUDGET_ALERT_MAX_SPEND_ALERT_PERCENTAGE | 觸發電子郵件預算警示的最大支出百分比
@@ -1475,7 +1475,8 @@ router_settings:
 | MAX_REQUEST_HEADER_SIZE | {/* keep-version-note: unversioned reference requested by maintainer */} Uvicorn 的 h11 未完成 HTTP 標頭緩衝區的正整數位元組大小。**預設為 16384**（16 KiB）。例如，設 `MAX_REQUEST_HEADER_SIZE=131072` 代表 128 KiB。適用於預設伺服器，以及使用 h11 時的 `--run_gunicorn`。保留自動解析器選取，且會被 httptools、Hypercorn 和 Granian 忽略。`--max_request_header_size` 優先。請在啟動 proxy 之前匯出此變數。這不是嚴格的總標頭限制。[進一步文件](./cli#--max_request_header_size)。 |
 | MAX_TIME_TO_CLEAR_QUEUE | 關機期間用於清除 logging worker 佇列的最長秒數。預設為 5.0
 | LOGGING_WORKER_AGGRESSIVE_CLEAR_COOLDOWN_SECONDS | 佇列已滿時，允許下一次積極清除操作前的冷卻時間（秒）。預設為 0.5 
-| MAX_STRING_LENGTH_PROMPT_IN_DB | 在清理 request bodies 時，花費 logs 中字串的最大長度。超過此長度的字串會被截斷。預設為 1000
+| MAX_STRING_LENGTH_PROMPT_IN_DB | 在清理 request bodies 時，花費 logs 中字串的最大長度。超過此長度的字串會被截斷。透過聊天完成服務的 `/v1/responses` 呼叫中，提供者簽署的推理欄位在 `MAX_STRING_LENGTH_PROVIDER_SIGNED_IN_DB` 較大時遵循該設定。預設為 2048
+| MAX_STRING_LENGTH_PROVIDER_SIGNED_IN_DB | <SinceVersion v="1.113.0" /> 在 LiteLLM 透過聊天完成服務的 `/v1/responses` 呼叫之花費記錄列中，保留的提供者簽署推理欄位（包含文字的已簽署 Claude 思考區塊、`redacted_thinking` 資料、`encrypted_content`、Gemini 思考簽章）之最大長度，讓 `previous_response_id` 後續呼叫能原封不動地將其送回。簽章遭截斷會使提供者拒絕後續呼叫。較大的 `MAX_STRING_LENGTH_PROMPT_IN_DB` 優先，較小者不會降低此上限。1.108 LTS 系列在 1.108.15 之後的版本包含此設定。預設為 1048576 (1 MiB)
 | MAX_STRING_LENGTH_STDOUT_LOG | INFO 或更高等級的 log line（訊息或 traceback）可寫入 stdout 的字元最大數。較長的行會在 `litellm_truncated skipped N chars` 標記前後保留首尾，而該標記會計入上限。DEBUG 行永遠不會被截斷，因此 `--detailed_debug` 仍會列印完整負載，而 logging callbacks（OTEL、Datadog 等）仍會收到完整記錄。設為 0 可停用。預設為 4096
 | MAX_IN_MEMORY_QUEUE_FLUSH_COUNT | 記憶體內佇列 flush 操作的最大次數。預設為 1000
 | MAX_IMAGE_URL_DOWNLOAD_SIZE_MB | 透過 URL 下載圖片的最大大小（MB）。可防止下載非常大的圖片造成記憶體問題。超過此限制的圖片會在下載前被拒絕。設為 0 可完全停用 image URL 處理（所有 image_url 請求都會被封鎖）。預設為 50MB（與 [OpenAI's limit](https://platform.openai.com/docs/guides/images-vision?api-mode=chat#image-input-requirements) 相同）
@@ -1521,11 +1522,12 @@ router_settings:
 | MS_TEAMS_WEBHOOK_URL | Microsoft Teams 警示的傳入 webhook URL，當 `ms_teams` 位於 `general_settings.alerting` 時使用。請參閱 [MS Teams 警示](./alerting#ms-teams-webhooks)
 | NEW_RELIC_APP_NAME | 用於 New Relic AI Monitoring 整合的應用程式名稱 |
 | NEW_RELIC_LICENSE_KEY | 用於 New Relic 驗證的授權金鑰 |
-| NO_DOCS | 停用 Swagger UI 文件的旗標
+| NO_DOCS | 停用 API 參考文件
 | NO_MAX_TOKENS_TPM_RESERVATION_FRACTION | <SinceVersion v="1.109.0" /> 為未設定輸出上限的請求保留的 TPM 限制比例，以 0.01 到 1 的分數表示。在具有 `otpm` 的部署上，沒有 `max_tokens` 的請求會保留模型最大輸出和此 `otpm` 比例中較小者。在 proxy 上，當其金鑰、team 或專案的 TPM 限制低於 4096 時，它也會設定寫入沒有該值的請求中的 `max_tokens`。超出範圍的值會記錄警告並使用預設值。預設為 0.25。[文件](./io_token_rate_limits.md#pre-call-admission)
 | NO_OPENAPI | 停用 /openapi.json 端點的旗標
-| NO_REDOC | 停用 Redoc 文件的旗標
 | NO_PROXY | 要略過 proxy 的位址清單
+| NO_REDOC | 設定為 `true` 可停用 ReDoc，除非 `REDOC_URL` 設定為非空值 {/* keep-version-note */}
+| NO_SWAGGER | <SinceVersion v="1.112.0" /> 設定為 `true` 可停用 Swagger UI，除非已設定 `SWAGGER_URL`。
 | NON_LLM_CONNECTION_TIMEOUT | 非 LLM 服務連線的逾時秒數。預設為 15
 | OAUTH_TOKEN_INFO_ENDPOINT | 用於取得 OAuth 權杖資訊的端點
 | OPENAI_BASE_URL | OpenAI API 的基底 URL
@@ -1633,7 +1635,7 @@ router_settings:
 | REDIS_TIMEOUT_LOG_INTERVAL | Redis 逾時記錄行之間的秒數。某一連續逾時的第一次逾時會以正常層級記錄，後續則以 DEBUG 記錄，而當間隔時間到達後，會有一行報告被抑制了多少筆。非逾時的 Redis 錯誤不會被節流。預設為 5.0
 | REDIS_GCP_SERVICE_ACCOUNT | 用於與 Redis 進行 IAM 驗證的 GCP 服務帳戶。格式："projects/-/serviceAccounts/name@project.iam.gserviceaccount.com"
 | REDIS_GCP_SSL_CA_CERTS | 用於安全 GCP Memorystore Redis 連線的 SSL CA 憑證檔案路徑
-| REDOC_URL | Redoc Fast API 文件的路徑。**預設為 "/redoc"**
+| REDOC_URL | ReDoc 的自訂路徑。除非 `NO_REDOC` 為 true，否則預設為 `/redoc`。非空值會覆寫 `NO_REDOC` {/* keep-version-note */}
 | REPEATED_STREAMING_CHUNK_LIMIT | 用於偵測迴圈的重複串流分塊限制。預設為 100
 | REALTIME_CREDENTIAL_RESOLUTION_TIMEOUT_SECONDS | realtime 工作階段開始前，擷取 Vertex AI 存取權杖的逾時（秒）。預設為 20.0
 | REALTIME_WEBSOCKET_MAX_MESSAGE_SIZE_BYTES | realtime 連線中 WebSocket 訊息的最大大小（位元組）。預設為 None。
@@ -1691,6 +1693,7 @@ router_settings:
 | SUPABASE_URL | Supabase 執行個體的基底 URL
 | STORE_MODEL_IN_DB | 若為 true，則啟用將模型 + 認證資訊儲存在資料庫中。 
 | STORE_PROMPTS_IN_SPEND_LOGS | 將每次呼叫的請求與回應 payload 持久化到其 SpendLogs 資料列的旗標，讓 prompts 和 completions 可在記錄 UI 中看見。環境變數等同於 `general_settings.store_prompts_in_spend_logs`；任一來源啟用即可。**預設為 False**
+| SWAGGER_URL | <SinceVersion v="1.112.0" /> Swagger UI 的路徑。預設為 `/swagger`；若 Scalar 或 OpenAPI 結構描述已使用 `/swagger`，則為 `/swagger/ui`。
 | SYSTEM_MESSAGE_TOKEN_COUNT | 系統訊息的 token 數。預設為 4
 | TEST_EMAIL_ADDRESS | 用於測試目的的電子郵件地址
 | TOGETHER_AI_4_B | Together AI 4B 模型的大小參數。預設為 4

@@ -50,6 +50,8 @@ pip install litellm==1.104.9
 
 `v1.104.9` 是建立在 [`v1.104.8`](/release_notes/v1.104.8/v1-104-8) 之上的修補版本。沒有新的資料庫 migration。兩個 `LiteLLM_SpendLogs` 索引 migration 維持 no-op，索引現在改於 migration 執行後建立。migration 工作會建立這些索引；自行執行 migration 的代理程式則會在開始提供服務後於背景建立。`v1.104.9` 標籤指向 [`8aa2ffb`](https://github.com/BerriAI/litellm/commit/8aa2ffb6377e35b7e5e5c3a091f8bc944e006a4a)。
 
+在 `v1.104.0` 到 `v1.104.8` 上，`LiteLLM_SpendLogs` 的 `litellm_call_id` 與 `(api_key, startTime)` 索引可能缺失。在大型 spend logs 資料表上，於 Logs 檢視中開啟請求時會掃描整個資料表、逾時，並顯示誤導的「prompt logging not enabled」訊息。此版本會在 migration 後建立這兩個索引，且不會阻擋 spend log 寫入，適用於已分割區與未分割區的資料表。您已手動建立的索引會被偵測並重複使用，不會重複建立。
+
 ### 變更內容 {#whats-changed}
 
 - **記錄與可觀測性：** 透過在 migration 後建立任何缺少的索引，改善大型支出記錄表上 Logs 檢視的請求查詢 - [PR #43948](https://github.com/BerriAI/litellm/pull/43948)、[PR #44109](https://github.com/BerriAI/litellm/pull/44109)、[PR #44203](https://github.com/BerriAI/litellm/pull/44203)

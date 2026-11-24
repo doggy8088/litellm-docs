@@ -83,9 +83,9 @@ curl 'http://0.0.0.0:4000/key/generate' \
 ## 支出追蹤 {#spend-tracking}
 
 可依下列方式取得支出：
-- key - 透過 `/key/info` [Swagger](https://docs.litellm.ai/api-reference/#/key%20management/info_key_fn_key_info_get)
-- user - 透過 `/user/info` [Swagger](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/user_info_user_info_get)
-- team - 透過 `/team/info` [Swagger](https://docs.litellm.ai/api-reference/#/team%20management/team_info_team_info_get)  
+- key - 透過 `/key/info` [API 參考](https://docs.litellm.ai/api-reference/#tag/key~20management/info_key_fn_key_info_get)
+- user - 透過 `/user/info` [API 參考](https://docs.litellm.ai/api-reference/#tag/Internal~20User~20management/user_info_user_info_get)
+- team - 透過 `/team/info` [API 參考](https://docs.litellm.ai/api-reference/#tag/team~20management/team_info_team_info_get)  
 - end-users - 透過 `/end_user/info` - [在此 issue 留言以追蹤 end-user 成本](https://github.com/BerriAI/litellm/issues/2633)
 
 **如何計算？**
@@ -719,7 +719,7 @@ curl 'http://localhost:4000/key/sk-<virtual-key>/regenerate' \
 
 - [將輪換後的 key 寫入 secrets manager](https://docs.litellm.ai/docs/secret#aws-secret-manager)
 
-[** API 參考文件**](https://docs.litellm.ai/api-reference/#/key%20management/regenerate_key_fn_key__key__regenerate_post)
+[** API 參考文件**](https://docs.litellm.ai/api-reference/#tag/key~20management/regenerate_key_fn_key__key__regenerate_post)
 
 ### 排程金鑰輪替 {#scheduled-key-rotations}
 
@@ -826,7 +826,7 @@ curl -L -X POST 'http://localhost:4000/key/update' \
 -d '{"key": "sk-b3Z3Lqdb_detHXSUp4ol4Q", "temp_budget_increase": 100, "temp_budget_expiry": "2026-10-15"}'
 ```
 
-[API 參考](https://docs.litellm.ai/api-reference/#/key%20management/update_key_fn_key_update_post)
+[API 參考](https://docs.litellm.ai/api-reference/#tag/key~20management/update_key_fn_key_update_post)
 
 ### 讓金鑰擁有者編輯自己的金鑰預算 {#let-key-owners-edit-their-own-key-budgets}
 
@@ -942,12 +942,12 @@ class LitellmUserRoles(str, enum.Enum):
 
 ### 金鑰 {#keys}
 
-#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#/key%20management/) {#-api-reference-docs}
+#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#tag/key~20management) {#-api-reference-docs}
 
 ### 使用者 {#users}
 
-#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/) {#-api-reference-docs-1}
+#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#tag/Internal~20User~20management) {#-api-reference-docs-1}
 
 ### 團隊 {#teams}
 
-#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#/team%20management) {#-api-reference-docs-2}
+#### [** API 參考文件**](https://docs.litellm.ai/api-reference/#tag/team~20management) {#-api-reference-docs-2}

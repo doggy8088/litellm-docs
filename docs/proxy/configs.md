@@ -23,7 +23,7 @@ import SinceVersion from '@site/src/components/SinceVersion';
 | `general_settings`   | 伺服器設定，範例設定 `master_key: sk-my_special_key` [**查看全部**](./config_settings#general_settings---reference)|
 | `environment_variables`   | 環境變數範例，`REDIS_HOST`、`REDIS_PORT` [**查看全部**](./config_settings#environment-variables---reference)|
 
-**完整清單：** 請查看 `<your-proxy-url>/#/config.yaml` 上的 Swagger UI 文件（例如 http://0.0.0.0:4000/#/config.yaml config.yaml 中傳入的一切內容。
+**完整清單：** 請在您的 proxy URL 開啟 API 參考，並搜尋 `config.yaml`。
 
 ## 快速入門 {#quick-start}
 
@@ -592,7 +592,7 @@ $ litellm --config /path/to/config.yaml
 
 ### 設定自訂 tokenizer {#set-custom-tokenizer}
 
-如果您使用 [`/utils/token_counter` 端點](https://docs.litellm.ai/api-reference/#/llm%20utils/token_counter_utils_token_counter_post)，並且想為某個模型設定自訂 huggingface tokenizer，您可以在 `config.yaml` 中這麼做
+如果您使用 [`/utils/token_counter` 端點](https://docs.litellm.ai/api-reference/#tag/llm~20utils/token_counter_utils_token_counter_post)，並且想為某個模型設定自訂 huggingface tokenizer，您可以在 `config.yaml` 中這麼做
 
 ```yaml
 model_list:
@@ -724,22 +724,12 @@ LITELLM_LICENSE="eyJ..."
 
 ## 其他 {#extras}
 
-### 停用 Swagger UI {#disable-swagger-ui}
+### 停用 API 參考 {#disable-the-api-reference}
 
-若要從基底 URL 停用 Swagger 文件，請在您的環境中設定 
+若要停用 Scalar API 參考，請在您的環境中設定 
 
 ```env
 NO_DOCS="True"
-```
-
-，並重新啟動 proxy。
-
-### 停用 Redoc {#disable-redoc}
-
-若要停用 Redoc 文件（預設為 `<your-proxy-url>/redoc`），請在您的環境中設定 
-
-```env
-NO_REDOC="True"
 ```
 
 ，並重新啟動 proxy。
@@ -756,15 +746,14 @@ NO_OPENAPI="True"
 
 ### 限制生產／離線部署的所有 API 文件 {#restrict-all-api-documentation-for-productionair-gapped-deployments}
 
-Swagger、Redoc 與原始 OpenAPI schema 是三個彼此獨立的介面，各自由各自的環境變數停用。若要完整鎖定生產或離線部署，請將三者都設定為： 
+若要在生產或離線部署上停用 API 參考與原始 OpenAPI schema，請將兩個變數都設定為： 
 
 ```env
 NO_DOCS="True"
-NO_REDOC="True"
 NO_OPENAPI="True"
 ```
 
-設定完成後請重新啟動 proxy。`/redoc` 和 `/openapi.json` 接著會回傳 404，回應中不含 schema，`/` 只會回傳純粹的 `"LiteLLM: RUNNING"` 狀態字串，而推論與管理路由不受影響。
+設定完成後請重新啟動 proxy。`/openapi.json` 接著會回傳 404，`/` 只會回傳 `"LiteLLM: RUNNING"` 狀態字串，而推論與管理路由不受影響。
 
 ### 為 proxy 使用 CONFIG_FILE_PATH（更容易在 Azure container 部署） {#use-config_file_path-for-proxy-easier-azure-container-deployment}
 

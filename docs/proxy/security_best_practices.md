@@ -103,15 +103,14 @@ general_settings:
 
 ## 9. 在正式環境中停用 API 文件 {#9-disable-api-documentation-in-production}
 
-預設情況下，proxy 會在未驗證的情況下提供位於 `/` 的 Swagger UI、位於 `/redoc` 的 ReDoc，以及位於 `/openapi.json` 的原始 OpenAPI schema。安全掃描工具會將此視為可供偵察的面向，因為它列出了所有路由與請求 schema。在正式環境中請停用這三者：
+預設情況下，proxy 會在未驗證的情況下提供位於 `/` 的 Scalar API 參考，以及位於 `/openapi.json` 的原始 OpenAPI schema。如果您不希望公開路由清單與 schema，請在正式環境中停用這兩者：
 
 ```env
 NO_DOCS="True"
-NO_REDOC="True"
 NO_OPENAPI="True"
 ```
 
-每個變數都控制不同的面向，因此只設定 `NO_DOCS` 仍會讓 `/redoc` 與 `/openapi.json` 保持可讀；請將三者都設定後重新啟動 proxy。之後 `/redoc` 與 `/openapi.json` 會回傳 404，而 `/` 只會回傳純粹的 `"LiteLLM: RUNNING"` 狀態字串；推論與管理路由則不受影響。請參閱 [限制所有 API 文件](./configs#restrict-all-api-documentation-for-productionair-gapped-deployments)，了解各面向的變數，以及如何將文件移至其他路徑而非停用它們。
+只設定 `NO_DOCS` 仍會讓 `/openapi.json` 保持可讀。請將兩個變數都設定後重新啟動 proxy。之後 `/openapi.json` 會回傳 404，而 `/` 會回傳 `"LiteLLM: RUNNING"` 狀態字串；推論與管理路由則不受影響。請參閱 [限制所有 API 文件](./configs#restrict-all-api-documentation-for-productionair-gapped-deployments)。
 
 ## 10. 限制檔案上傳 {#10-restrict-file-uploads}
 

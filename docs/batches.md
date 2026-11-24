@@ -749,4 +749,4 @@ general_settings:
 
 批次成本追蹤不會變更在提交時保留的 TPM 或 RPM 計數器。這些計數器仍然是以上述的輸入檔案計算為基礎。
 
-## [Swagger API 參考](https://docs.litellm.ai/api-reference/#/batch) {#swagger-api-reference}
+## [API 參考](https://docs.litellm.ai/api-reference/#tag/batch) {#api-reference}

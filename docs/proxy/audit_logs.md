@@ -146,7 +146,7 @@ curl -X POST 'http://0.0.0.0:4000/key/update' \
 
 #### 2. 在請求標頭中設定 `LiteLLM-Changed-By` {#2-set-litellm-changed-by-in-request-headers}
 
-呼叫管理端點時，在請求標頭中設定 'user_id'。[查看完整清單](https://docs.litellm.ai/api-reference/#/team%20management)。
+呼叫管理端點時，在請求標頭中設定 'user_id'。[查看完整清單](https://docs.litellm.ai/api-reference/#tag/team~20management)。
 
 - 使用已選擇啟用的管理員金鑰更新團隊預算。 
 - 將變更歸屬給 'krrish@berri.ai'。 

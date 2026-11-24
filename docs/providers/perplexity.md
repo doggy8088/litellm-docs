@@ -11,6 +11,8 @@ import TabItem from '@theme/TabItem';
 
 Perplexity 提供 Sonar 模型，以及具備網路搜尋工具的 Agent API；LiteLLM 可從 Python SDK 或 AI Gateway 以 `perplexity/` 前綴呼叫兩者。
 
+要透過 Perplexity 的 Orchestrator API 呼叫 Claude、GPT、Gemini、Grok 及其他廠商的模型（模型 ID 如 `anthropic/claude-haiku-5-5`），請使用 [Perplexity Orchestrator 提供者](./perplexity_orchestrator.md)。
+
 https://www.perplexity.ai
 
 ## API 金鑰 {#api-key}

@@ -409,7 +409,7 @@ print(response.choices[0].message.content)
 使用 **`/utils/transform_request`** 來精確檢查 LiteLLM 傳送給任何提供者的內容。這在除錯提示格式、標頭問題，以及提供者特定參數時很有幫助。
 :::
 
-[互動式 API 探索工具（Swagger） →](https://docs.litellm.ai/api-reference/)
+[API 參考 →](https://docs.litellm.ai/api-reference/)
 
 ---
 

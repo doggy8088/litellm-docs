@@ -57,4 +57,4 @@ curl -L -X POST 'http://0.0.0.0:4000/v1/chat/completions' \
 }'
 ```
 
-## [API 參考](https://docs.litellm.ai/api-reference/#/budget%20management) {#api-reference}
+## [API 參考](https://docs.litellm.ai/api-reference/#tag/budget~20management) {#api-reference}

@@ -183,7 +183,7 @@ lite logout             # clear the keychain entry and the token file, and revok
   lite models delete <model-id>
   ```
 
-  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/model%20management)
+  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/model~20management)
 
 ### 憑證管理 {#credentials-management}
 
@@ -202,7 +202,7 @@ lite logout             # clear the keychain entry and the token file, and revok
   lite credentials delete azure-cred
   ```
 
-  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/credential%20management)
+  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/credential~20management)
 
 ### 金鑰管理 {#keys-management}
 
@@ -229,7 +229,7 @@ lite logout             # clear the keychain entry and the token file, and revok
     --created-since 2026-01-01
   ```
 
-  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/key%20management)
+  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/key~20management)
 
 ### 使用者管理 {#user-management}
 
@@ -248,7 +248,7 @@ lite logout             # clear the keychain entry and the token file, and revok
   lite users delete <user-id>
   ```
 
-  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/Internal%20User%20management)
+  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/Internal~20User~20management)
 
 ### 團隊管理 {#teams-management}
 
@@ -263,7 +263,7 @@ lite logout             # clear the keychain entry and the token file, and revok
 
   不使用 `lite teams assign-key` 執行 `--team-id` 時，系統會提示您以互動方式選取團隊。
 
-  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/team%20management)
+  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/team~20management)
 
 ### 聊天完成 {#chat-completions}
 
@@ -276,7 +276,7 @@ lite logout             # clear the keychain entry and the token file, and revok
   lite chat {{openai_large}} --temperature 1 --system "You are a helpful coding assistant"
   ```
 
-  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/chat%2Fcompletions)
+  [使用的 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/chat~2Fcompletions)
 
 ### 一般 HTTP 請求 {#general-http-requests}
 
@@ -289,7 +289,7 @@ lite logout             # clear the keychain entry and the token file, and revok
     --json '{"model": "{{openai_large}}", "messages": [{"role": "user", "content": "Hello"}]}'
   ```
 
-  [所有 API（OpenAPI）](https://docs.litellm.ai/api-reference/#/)
+  [所有 API（OpenAPI）](https://docs.litellm.ai/api-reference/#tag/)
 
 ### 加密遷移 {#encryption-migration}
 

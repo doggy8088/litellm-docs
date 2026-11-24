@@ -227,6 +227,8 @@ curl -X POST "https://<your-litellm-proxy>/v1/traces/query" \
 
 上傳成功表示 ClickHouse 已接受它。429 或 503 可以重試，因此請使用有上限的匯出器重試。在長時間中斷期間，匯出器可能會捨棄 traces。金鑰在每個 Lens 複本上每 30 秒重新整理一次，憑證快照的最長年限為 90 秒。
 
+這些規則來自閘道。Lens 不會自行新增使用者、角色或授權，詳見[使用您已有的權限](./rbac.md#gateway-permissions)。
+
 ## 誰可以讀取 traces {#access}
 
 Proxy 管理員與 proxy 管理員檢視者可以讀取每個 trace。其他所有使用者（包括 SCIM 佈建的使用者）讀取其使用者擁有的 traces，加上每個與他們共用 traces 的團隊的 traces，如[共用團隊的 traces](#trace-access) 所述。SQL 查詢遵循相同規則。不屬於任何使用者的金鑰（例如團隊服務帳戶金鑰）無法讀取 traces，會得到 403。

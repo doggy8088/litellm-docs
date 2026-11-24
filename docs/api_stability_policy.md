@@ -4,7 +4,7 @@
 
 ## OpenAPI 規格是公開 API {#the-openapi-spec-is-the-public-api}
 
-出現在 proxy 的 OpenAPI 規格中的每個 endpoint 都是公開的。該規格預設會在 `/openapi.json` 提供，並在 `/` 以 Swagger UI 呈現（可透過 `DOCS_URL` 設定，請參閱 [UI 設定](./proxy/ui.md)）。對於公開 endpoints，我們致力維護其行為合約：路徑與 HTTP 方法、請求與回應結構、驗證需求，以及預設行為。
+出現在 proxy 的 OpenAPI 規格中的每個 endpoint 都是公開的。該規格預設會在 `/openapi.json` 提供，並在 `/` 以 Scalar 呈現（可透過 `DOCS_URL` 設定，請參閱 [UI 設定](./proxy/ui.md)）。對於公開 endpoints，我們致力維護其行為合約：路徑與 HTTP 方法、請求與回應結構、驗證需求，以及預設行為。
 
 新增變更不會造成破壞，可在任何版本中釋出：新增 endpoint、新增可選請求欄位，以及新增回應欄位。用戶端應忽略其無法辨識的回應欄位。若變更移除或重新命名欄位、變更預設值、收緊可呼叫 endpoint 的對象，或以其他方式要求採取行動才能維持先前行為，則屬於破壞性變更。破壞性變更會在該版本發佈時於 [版本資訊](/release_notes) 頂端的專用 `Breaking Changes` 區段中標示，並受 [發佈週期](./proxy/release_cycle.md) 的版本控制規則約束。
 
@@ -22,7 +22,7 @@
 curl -s http://localhost:4000/openapi.json | jq '.paths | keys'
 ```
 
-設定 `NO_DOCS` 或 `NO_OPENAPI`（請參閱 [環境變數](./proxy/config_settings.md#environment-variables---reference)）會停止 proxy 提供 Swagger UI 或 `/openapi.json`；但不會改變哪些 endpoints 屬於公開。若要查看公開介面，請從未設定這些旗標的 proxy 取得規格，或從本機執行的相同版本取得規格。
+設定 `NO_DOCS` 或 `NO_OPENAPI`（請參閱 [環境變數](./proxy/config_settings.md#environment-variables---reference)）會停止 proxy 提供 Scalar 或 `/openapi.json`；但不會改變哪些 endpoints 屬於公開。若要查看公開介面，請從未設定這些旗標的 proxy 取得規格，或從本機執行的相同版本取得規格。
 
 ## 相關內容 {#related}
 

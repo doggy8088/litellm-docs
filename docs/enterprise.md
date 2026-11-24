@@ -69,7 +69,6 @@ Enterprise 是套用在您可能已經在執行的同一個 Gateway 映像上的
 
 ### 營運與品牌 {#operations--branding}
 
-- **自訂 Swagger 品牌**。在 API 文件頁面上設定您自己的標題、說明與篩選後的路由
 - **[自訂電子郵件品牌](./proxy/email.md#email-customization)**。在系統電子郵件上使用您的標誌與顏色
 - **請求/回應大小上限**。保護代理免於失控的酬載
 - **[團隊自管模型](./proxy/team_model_add.md)**。讓團隊帶入自己的金鑰與微調模型

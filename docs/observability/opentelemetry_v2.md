@@ -913,7 +913,7 @@ callback_settings:
 
 ## 追蹤哪些路由 {#which-routes-are-traced}
 
-高頻率、非 LLM 路由**預設會排除**，以免它們淹沒您的 traces：健康檢查（`/health*`）、Prometheus scrape（`/metrics`），以及靜態 UI/文件資產（`/ui`、`/docs`、`/redoc`、`/_next`、`/openapi.json`、favicon，…）。
+高頻率、非 LLM 路由**預設會排除**，以免它們淹沒您的 traces：健康檢查（`/health*`）、Prometheus scrape（`/metrics`），以及靜態 UI/文件資產（`/ui`、`/docs`、`/scalar`、`/_next`、`/openapi.json`、favicon，…）。
 
 若要變更此集合，請使用標準的 OpenTelemetry 環境變數（以逗號分隔的 paths、以子字串比對）：
 

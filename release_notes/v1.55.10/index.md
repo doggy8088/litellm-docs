@@ -40,7 +40,7 @@ import Image from '@theme/IdealImage';
 
 ## ✨ `/guardrails/list` 端點  {#-guardrailslist-endpoint}
 
-向使用者顯示可用的防護欄。 [從這裡開始](https://docs.litellm.ai/api-reference/#/guardrails)
+向使用者顯示可用的防護欄。 [從這裡開始](https://docs.litellm.ai/api-reference/#tag/guardrails)
 
 ## ✨ 允許團隊新增模型 {#-allow-teams-to-add-models}
 

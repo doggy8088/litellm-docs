@@ -29,11 +29,9 @@ litellm --config /path/to/config.yaml
 http://0.0.0.0:4000/ui # <proxy_base_url>/ui
 ```
 
-### 3. 在 Swagger 取得 Admin UI 連結 {#3-get-admin-ui-link-on-swagger}
+### 3. 從 API 參考開啟 Admin UI {#3-open-the-admin-ui-from-the-api-reference}
 
-您的 Proxy Swagger 可在 Proxy 的根目錄找到：例如：`http://localhost:4000/`
-
-<Image img={require('../../img/ui_link.png')} alt="Swagger page with the Admin UI link" />
+請在 `http://localhost:4000/` 開啟 proxy 的 API 參考，並在簡介中選擇 Admin Panel 連結。
 
 ### 4. 首次登入 {#4-sign-in-for-the-first-time}
 

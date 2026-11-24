@@ -330,4 +330,4 @@ print("file content=", content.text)
 Anthropic Files API 的用途與 OpenAI 的不同。它不是用來支援 Batches 或 Fine-tuning，而是讓您可以上傳一次檔案，並在多則訊息中透過 `file_id` 來參照，避免重複上傳。檔案 API 操作是免費的；在 Messages 請求中使用的檔案內容會以輸入 token 計費。
 :::
 
-## [Swagger API 參考](https://docs.litellm.ai/api-reference/#/files) {#swagger-api-reference}
+## [API 參考](https://docs.litellm.ai/api-reference/#tag/files) {#api-reference}

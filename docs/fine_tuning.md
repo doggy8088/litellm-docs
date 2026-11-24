@@ -255,4 +255,4 @@ curl -X GET 'http://localhost:4000/v1/fine_tuning/jobs' \
 
 </Tabs>
 
-## [Proxy API 參考文件](https://docs.litellm.ai/api-reference/#/fine-tuning) {#proxy-api-reference}
+## [Proxy API 參考文件](https://docs.litellm.ai/api-reference/#tag/fine-tuning) {#proxy-api-reference}

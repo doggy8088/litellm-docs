@@ -11,6 +11,8 @@ import TabItem from '@theme/TabItem';
 
 當您的應用程式或代理程式已設定 OpenTelemetry (OTel) 環境變數時，您透過閘道傳送的流量會以附帶成本的 trace 形式出現在 Lens 中。請依照 [應用程式追蹤](../first-trace.md) 或 [程式碼代理程式設定](../coding-agents.md)。Lens 也可以使用您的 LiteLLM 登入，從 LiteLLM 側邊欄開啟。
 
+在 LiteLLM 中已設定好的使用者、團隊、SSO 與權限，會在兩者連接後立即套用到 Lens。您不需要重新設定權限。請參閱[沿用的內容](../rbac.md#gateway-permissions)。
+
 您需要 LiteLLM v1.108.0 或更新版本、執行中的 Lens，以及這兩者的環境設定存取權。閘道管理員會成為 Lens 管理員，因此請只連接您信任的閘道。 {/* keep-version-note: The minimum gateway release is the subject of this note. */}
 
 ## 1. 取得 Lens 位址 {#1-get-the-lens-address}
@@ -204,6 +206,16 @@ docker compose up -d --no-deps litellm
 以閘道管理員身分登入您的 LiteLLM 儀表板，並在側邊欄中選取 **Lens**。已連接的 Lens 工作區會在 **Traces** 上開啟。您不應該被要求提供獨立 Lens 管理員 token。
 
 如果服務已連接但沒有追蹤，請在 Lens 中選取 **Home**，並從該處依照 [傳送您的第一個 trace](../first-trace.md)。在這裡建立追蹤金鑰會套用閘道使用者的存取範圍。連接閘道時，現有的獨立追蹤不會重新指派給不同的使用者或團隊。
+
+### 在 Lens 登入頁面提供「使用 LiteLLM 登入」 {#log-in-with-litellm}
+
+直接開啟 Lens 位址的使用者，也可以使用其 LiteLLM 登入登入，並取得相同的閘道權限。請將瀏覽器用來存取閘道的位址加入 Lens 服務，然後重新部署 Lens：
+
+```dotenv
+LENS_GATEWAY_PUBLIC_URL=https://litellm.example.com
+```
+
+在 Lens Helm chart 上，請透過 `extraEnv` 設定它。閘道的 `LITELLM_LENS_PUBLIC_URL` 必須是瀏覽器用來存取 Lens 的位址，因為閘道會在登入後將瀏覽器送回該處。Lens 登入頁面接著會顯示 **Log in with LiteLLM**。這需要 LiteLLM v1.112.0 或更新版本，以及 Lens 0.4.0 或更新版本。 {/* keep-version-note: The first gateway and Lens releases that support signing in to standalone Lens with a LiteLLM login. */}
 
 透過您的閘道發出一個一般的模型請求，檢查其現有的模型連線是否仍可運作。Lens 設定不需要變更您的代理程式使用的模型端點或模型金鑰。
 

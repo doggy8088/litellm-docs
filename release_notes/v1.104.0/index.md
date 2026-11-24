@@ -68,7 +68,9 @@ pip install litellm==1.104.0
 
 :::warning 從 `v1.102.x` 或更早版本升級
 
-來自 `v1.103.0` 的兩個 `LiteLLM_SpendLogs` 索引 migration 現在已成為 no-op。請在交易之外自行線上建立索引：
+來自 `v1.103.0` 的兩個 `LiteLLM_SpendLogs` 索引 migration 現在已成為 no-op，因此此版本不會建立這些索引。升級到 [`v1.103.11`](/release_notes/v1.103.11/v1-103-11)、[`v1.104.9`](/release_notes/v1.104.9/v1-104-9) 或 [`v1.105.0`](/release_notes/v1.105.0/v1-105-0) 及之後的版本時會自動建立，無需手動步驟。[migration job](/docs/proxy/database_migrations#run-the-migration-job) 會在 migration 執行後建立它們，而自行執行 migration 的代理程式會在開始提供服務後於背景建立。建立過程不會阻擋 spend log 寫入，適用於已分割區與未分割區的資料表，且會重複使用您已手動建立的索引。請參閱 [PR #43948](https://github.com/BerriAI/litellm/pull/43948)、[PR #50856](https://github.com/BerriAI/litellm/pull/50856) 與 [PR #50823](https://github.com/BerriAI/litellm/pull/50823)。
+
+若要繼續使用此版本，請在交易之外自行線上建立索引：
 
 ```sql
 CREATE INDEX CONCURRENTLY IF NOT EXISTS "LiteLLM_SpendLogs_api_key_startTime_idx" ON "LiteLLM_SpendLogs"("api_key", "startTime");

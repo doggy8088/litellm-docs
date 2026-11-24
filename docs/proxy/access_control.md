@@ -391,7 +391,7 @@ curl --location 'http://0.0.0.0:4000/team/update' \
 
 **用法**
 
-[**/organization/new 的 API 參考**](https://docs.litellm.ai/api-reference/#/organization%20management/new_organization_organization_new_post)
+[**/organization/new 的 API 參考**](https://docs.litellm.ai/api-reference/#tag/organization~20management/new_organization_organization_new_post)
 
 ```shell
 curl --location 'http://0.0.0.0:4000/organization/new' \

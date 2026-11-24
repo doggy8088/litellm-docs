@@ -296,7 +296,8 @@ OCSF 端點會檢查回傳記錄的完整性。`sequence_gaps` 計算回傳記�
 | --- | --- | --- | --- |
 | `GET` | `/healthz` | 無。不需要 bearer token。 | 當控制平面處理程序回應時為 `{"status":"ok"}`。 |
 | `GET` | `/readyz` | 無。不需要 bearer token。 | 當控制平面處理程序回應時為 `{"status":"ok"}`。 |
-| `GET` | `/api/v1/docs` | 無。不需要 bearer token。 | 互動式 Swagger UI。 |
+| `GET` | `/api/v1/docs` | 無。不需要 bearer token。 | 互動式 Scalar API 參考。 |
+| `GET` | `/api/v1/swagger` | 無。不需要 bearer token。 | 供同一 OpenAPI schema 使用的選用 Swagger UI。 |
 | `GET` | `/api/v1/openapi.json` | 無。不需要 bearer token。 | 執行中服務的 OpenAPI 結構描述。 |
 
 健康路徑不使用 `CONTROL_PLANE_API_PREFIX`。它們不測試資料平面、稽核傳遞，或執行期儲存的可用性與遷移狀態。若要檢查資料平面，請使用 `/api/v1/dataplanes/{id}/health`。

@@ -18,10 +18,10 @@ LiteLLM 中的多租戶是指執行單一 proxy，為您公司內許多不同的
 
 LiteLLM 將租戶建模為四個巢狀層級：組織包含團隊，團隊包含使用者，而使用者與團隊擁有金鑰。每一層都是隔離與支出歸屬的邊界。
 
-- 組織是最高層級的租戶，可容納多個團隊。[API 參考](https://docs.litellm.ai/api-reference/#/organization%20management)
-- 團隊是使用者的集合，可容納多位使用者。[API 參考](https://docs.litellm.ai/api-reference/#/team%20management)
-- 使用者隸屬於團隊（可同時隸屬多個），並可擁有多把金鑰。[API 參考](https://docs.litellm.ai/api-reference/#/Internal%20User%20management)
-- 金鑰用於驗證請求，並隸屬於使用者、團隊，或兩者皆是。[API 參考](https://docs.litellm.ai/api-reference/#/key%20management)
+- 組織是最高層級的租戶，可容納多個團隊。[API 參考](https://docs.litellm.ai/api-reference/#tag/organization~20management)
+- 團隊是使用者的集合，可容納多位使用者。[API 參考](https://docs.litellm.ai/api-reference/#tag/team~20management)
+- 使用者隸屬於團隊（可同時隸屬多個），並可擁有多把金鑰。[API 參考](https://docs.litellm.ai/api-reference/#tag/Internal~20User~20management)
+- 金鑰用於驗證請求，並隸屬於使用者、團隊，或兩者皆是。[API 參考](https://docs.litellm.ai/api-reference/#tag/key~20management)
 
 ### 組織 {#organizations}
 

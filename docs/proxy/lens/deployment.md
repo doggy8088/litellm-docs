@@ -35,6 +35,8 @@ flowchart LR
 
 已經設定好了？[傳送您的第一個 trace](./first-trace.md)。
 
+連接閘道後，Lens 會沿用閘道的使用者、團隊、SSO 與追蹤權限。請參閱[存取控制](./rbac.md#gateway-permissions)。
+
 ## 記錄程式碼代理程式工作階段 {#record-coding-agent-sessions}
 
 Lens 啟動後，請產生追蹤金鑰，並為 [Claude Code](./coding-agents.md#claude-code) 或 [Codex](./coding-agents.md#codex) 安裝 Lens 外掛程式。請保留您既有的模型登入。開啟 Lens 中的 **Traces** 以尋找您的工作階段；不需要 Python 範例或 LiteLLM 閘道。

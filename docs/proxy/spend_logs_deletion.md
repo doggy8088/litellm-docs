@@ -53,7 +53,7 @@ litellm_settings:
 
 ### 大小規則 {#the-size-rule}
 
-光靠保留期間無法保護磁碟：流量尖峰可能在任何一列滿 30 天之前就把它填滿，而保留作業從不查看這些列佔用多少空間。`maximum_spend_logs_size` 加入第二條獨立規則。每次檢查時，作業會從 Postgres catalog 讀取 `LiteLLM_SpendLogs` 與 `LiteLLM_SpendLogToolIndex` 在磁碟上佔用的空間（heap、索引與 TOAST，包含分割區），也就是 `SELECT pg_size_pretty(pg_total_relation_size('"LiteLLM_SpendLogs"'))` 印出的同一個數字；若即時資料超過上限，它會先刪除最舊的支出記錄及其 tool-index 列，直到這些表低於 `maximum_spend_logs_cleanup_target_size`。未設定 target 時，一次執行會在這些表回到上限以下時立即停止，因此下一次檢查可能在流量再次推高它們時立刻觸發；若希望執行之間保持安靜，請將 target 設在上限以下。這兩個表就是測量的全部。資料庫的其餘部分不列入計算，因此請將該數字與您的支出記錄儲存空間比較，而不是資料庫總大小。
+光靠保留期間無法保護磁碟：流量尖峰可能在任何一列滿 30 天之前就把它填滿，而保留作業從不查看這些列佔用多少空間。`maximum_spend_logs_size` 加入第二條獨立規則。每次檢查時，作業會從 Postgres catalog 讀取 `LiteLLM_SpendLogs` 與 `LiteLLM_SpendLogToolIndex` 在磁碟上佔用的空間（heap、索引與 TOAST，包含分割區），也就是 `SELECT pg_size_pretty(pg_total_relation_size('"LiteLLM_SpendLogs"'))` 印出的同一個數字；若即時資料超過上限，它會先刪除最舊的支出記錄及其 tool-index 列，直到這些表低於 `maximum_spend_logs_cleanup_target_size`。未設定 target 時，一次執行會在這些表回到上限以下時立即停止，因此下一次檢查可能在流量再次推高它們時立刻觸發；若希望執行之間保持安靜，請將 target 設在上限以下。這兩個表就是測量的全部。`LiteLLM_SpendLogGuardrailIndex` 不列入計算，大小規則也不會從該資料表刪除資料，因此只有保留期間能限制該資料表。資料庫的其餘部分不列入計算，因此請將該數字與您的支出記錄儲存空間比較，而不是資料庫總大小。
 
 大小檢查有自己的排程。設定了 `maximum_spend_logs_size` 且未設定 cron 時，`spend_log_size_check_job` 會每 `maximum_spend_logs_size_check_interval` 執行一次（預設 `1d`，並加上相同的隨機偏移）。`1d` 的檢查只能在尖峰發生一天後才發現它，因此擔心尖峰的部署會設定像 `"10m"` 這樣的值：一次檢查只是一次 catalog 讀取，當這些表低於上限時不花費任何成本。設定了 `maximum_spend_logs_cleanup_cron` 時，兩條規則共用一個排程，cron 執行會在年齡檢查之後進行大小檢查。
 
@@ -69,11 +69,16 @@ litellm_settings:
 | --- | --- | --- |
 | `LiteLLM_SpendLogs` | `startTime` | `maximum_spend_logs_retention_period` |
 | `LiteLLM_SpendLogToolIndex` | `start_time` | `maximum_spend_logs_retention_period` |
+| `LiteLLM_SpendLogGuardrailIndex` | `start_time` | `maximum_spend_logs_retention_period` |
 | `LiteLLM_AutoRouterSession` | `last_turn_at` | `maximum_autorouter_session_retention_period` |
+| `LiteLLM_AutoRouterUserSession` | `last_turn_at` | `maximum_autorouter_session_retention_period` |
+| `LiteLLM_AutoRouterDailySpend` | `date` | `maximum_autorouter_session_retention_period` |
 | `LiteLLM_HealthCheckTable` | `checked_at` | `maximum_health_check_retention_period` |
 | `LiteLLM_DailyTagSpend` | `date` | `maximum_daily_tag_spend_retention_period` |
 
-`LiteLLM_SpendLogToolIndex` 列是從 spend logs 衍生而來，因此其到期時間與其所指向的日誌列相同。Auto-router session rollups 有自己的保留設定與自己的截止點。只設定 `maximum_autorouter_session_retention_period` 就足以註冊該作業，在這種情況下 spend logs 會保持不變，而只會修剪 session rollups。
+`LiteLLM_SpendLogToolIndex` 與 `LiteLLM_SpendLogGuardrailIndex` 列是從 spend logs 衍生而來，因此其到期時間與其所指向的日誌列相同。Auto-router session rollups 有自己的保留設定與自己的截止點。只設定 `maximum_autorouter_session_retention_period` 就足以註冊該作業，在這種情況下 spend logs 會保持不變，而只會修剪 session rollups。
+
+`LiteLLM_SpendLogGuardrailIndex` 會為每個請求上執行的每個防護欄各保留一列，並支撐 Guardrails Monitor 的 Logs 分頁。其資料列自 v1.112.0 起會被修剪。已修剪的請求會離開 Logs 分頁，而總覽計數不受影響。
 
 `LiteLLM_DailyTagSpend` 每個 tag、model 與日曆日各有一列，並支撐 Tag Usage 頁面。其 `date` 欄位是 `YYYY-MM-DD` 字串，因此截止點以日計：其日期嚴格早於保留期間回溯到的那一天的列會被刪除，而那個邊界日本身則會保留。若 `maximum_daily_tag_spend_retention_period` 未設定，該資料表就永遠不會被動到，這是既有行為。Tag 預算是根據終身計數器執行，且不受此修剪影響，但 Tag Usage 圖表將無法再顯示已刪除的日期。
 
@@ -131,7 +136,7 @@ litellm_settings:
 
 #### `maximum_spend_logs_cleanup_run_budget`（選填） {#maximum_spend_logs_cleanup_run_budget-optional}
 
-整次執行的牆鐘時間預算，格式與保留期間相同。預設為 `5m`。此預算是涵蓋執行所觸及的所有資料表，而非逐一資料表分開計算，因此 spend logs 會先消耗它，剩餘的部分再供 tool index 與 session rollups 使用。當預算用盡時，執行會停在當下的位置，而剩餘積壓會等到下一個 tick。環境預設值：`SPEND_LOG_CLEANUP_RUN_BUDGET_SECONDS`，以秒表示
+整次執行的牆鐘時間預算，格式與保留期間相同。預設為 `5m`。此預算是涵蓋執行所觸及的所有資料表，而非逐一資料表分開計算，因此 spend logs 會先消耗它，剩餘的部分再供 tool index、guardrail index 與 session rollups 使用。當預算用盡時，執行會停在當下的位置，而剩餘積壓會等到下一個 tick。環境預設值：`SPEND_LOG_CLEANUP_RUN_BUDGET_SECONDS`，以秒表示
 
 #### `maximum_spend_logs_cleanup_batch_timeout`（選填） {#maximum_spend_logs_cleanup_batch_timeout-optional}
 
@@ -239,6 +244,8 @@ LIMIT 20;
 修正方式是對 `startTime` 採用原生 Postgres 範圍分割區。對於已分割區的資料表，保留機制會以 `DROP TABLE` 捨棄整個分割區，這是一個立即釋放磁碟空間的中繼資料操作，不會留下 tombstone，也不需要 vacuum。當設定了 `general_settings.use_spend_logs_partitioning: true` 且資料表確實已分割區時，同一個清理工作會從批次刪除切換為捨棄過期分割區，並在每次執行時預先建立即將到來的分割區，讓寫入永遠有可落點的分割區；這兩個條件都必須成立，僅偵測到並不會切換行為。
 
 這是選擇性啟用。預設 schema 不會分區，因此現有部署不會受到影響，直到您將資料表轉換為止。
+
+只有 `LiteLLM_SpendLogs` 可以分割區。tool index 與 guardrail index 資料表一律以批次刪除修剪。
 
 分割區維護與執行預算之間有一項值得知道的互動。此工作只會在執行仍有預算時開始分割區維護，而已經超時的執行會跳過，直到下一個 tick。當捨棄動作開始後，預算無法將其提早中止，因為捨棄分割區屬於 DDL，會持有 `ACCESS EXCLUSIVE` 鎖並且必須執行到完成。此工作其餘動作都可以在陳述式之間被中斷，因此這是預算無法在進行中界定的唯一工作
 

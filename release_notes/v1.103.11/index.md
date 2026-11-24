@@ -50,6 +50,8 @@ pip install litellm==1.103.11
 
 `v1.103.11` 是建立在 [`v1.103.10`](/release_notes/v1.103.10/v1-103-10) 之上的修補版本。沒有新的資料庫遷移。兩個 `LiteLLM_SpendLogs` 索引遷移維持為 no-op，而索引現在會在遷移執行後建置。遷移作業會建置它們，而自行執行遷移的 proxy 會在開始提供服務後於背景建置它們。`v1.103.11` 標籤指向 [`6061a83`](https://github.com/BerriAI/litellm/commit/6061a83a2774e1f22f9b4cbdcff8058b328084aa)。
 
+在 `v1.103.0` 到 `v1.103.10` 上，`LiteLLM_SpendLogs` 的 `litellm_call_id` 與 `(api_key, startTime)` 索引可能缺失。在大型 spend logs 資料表上，於 Logs 檢視中開啟請求時會掃描整個資料表、逾時，並顯示誤導的「prompt logging not enabled」訊息。此版本會在遷移後建立這兩個索引，且不會阻擋 spend log 寫入，適用於已分割區與未分割區的資料表。您已手動建立的索引會被偵測並重複使用，不會重複建立。
+
 ### 有什麼變更 {#whats-changed}
 
 - **記錄與可觀測性：** 透過在遷移後建置任何缺少的索引，改善大型支出記錄表格上 Logs 檢視的請求查詢 - [PR #43948](https://github.com/BerriAI/litellm/pull/43948)、[PR #44109](https://github.com/BerriAI/litellm/pull/44109)、[PR #44203](https://github.com/BerriAI/litellm/pull/44203)、[PR #46131](https://github.com/BerriAI/litellm/pull/46131)

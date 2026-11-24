@@ -90,7 +90,7 @@ curl --location 'http://localhost:4000/team/new' \
 }' 
 ```
 
-[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
+[**查看 API 參考**](https://docs.litellm.ai/api-reference/#tag/team~20management/new_team_team_new_post)
 
 **範例回應**
 
@@ -305,7 +305,7 @@ curl --location 'http://localhost:4000/user/new' \
 --data-raw '{"models": ["azure-models"], "max_budget": 0, "user_id": "krrish3@berri.ai"}' 
 ```
 
-[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/new_user_user_new_post)
+[**查看 API 參考**](https://docs.litellm.ai/api-reference/#tag/Internal~20User~20management/new_user_user_new_post)
 
 **範例回應**
 
@@ -1058,7 +1058,7 @@ curl --location 'http://0.0.0.0:4000/team/new' \
 --data '{"team_id": "my-prod-team", "max_parallel_requests": 10, "tpm_limit": 20, "rpm_limit": 4}' 
 ```
 
-[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
+[**查看 API 參考**](https://docs.litellm.ai/api-reference/#tag/team~20management/new_team_team_new_post)
 
 **預期回應**
 
@@ -1137,7 +1137,7 @@ general_settings:
 
 **驗證：** 發出一個 `/chat/completions` 請求，並檢查回應標頭 `x-litellm-key-remaining-requests-{model}` 和 `x-litellm-key-remaining-tokens-{model}`，以確認 model-specific 限制。
 
-[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/team%20management/new_team_team_new_post)
+[**查看 API 參考**](https://docs.litellm.ai/api-reference/#tag/team~20management/new_team_team_new_post)
 
 </TabItem>
 <TabItem value="per-user" label="Per Internal User">
@@ -1151,7 +1151,7 @@ curl --location 'http://0.0.0.0:4000/user/new' \
 --data '{"user_id": "krrish@berri.ai", "max_parallel_requests": 10, "tpm_limit": 20, "rpm_limit": 4}' 
 ```
 
-[**查看 Swagger**](https://docs.litellm.ai/api-reference/#/Internal%20User%20management/new_user_user_new_post)
+[**查看 API 參考**](https://docs.litellm.ai/api-reference/#tag/Internal~20User~20management/new_user_user_new_post)
 
 **預期回應**
 

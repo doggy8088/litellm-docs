@@ -414,7 +414,7 @@ curl -X PUT 'http://localhost:4000/access_group/production-models/update' \
 
 ### API 參考文件 - 存取群組管理 {#api-reference---access-group-management}
 
-如需包含所有端點、參數與回應 schema 的完整 API 文件，請參閱 [存取群組管理 API 參考文件](https://docs.litellm.ai/api-reference/#/model%20management/create_model_group_access_group_new_post)。
+如需包含所有端點、參數與回應 schema 的完整 API 文件，請參閱 [存取群組管理 API 參考文件](https://docs.litellm.ai/api-reference/#tag/model~20management/create_model_group_access_group_new_post)。
 
 ## 透過 UI 管理存取群組 {#managing-access-groups-via-ui}
 

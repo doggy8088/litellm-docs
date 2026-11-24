@@ -209,10 +209,10 @@ curl -X GET 'http://localhost:4000/team/dbe2f686-a686-4896-864a-4c3924458709/cal
 
 ### 團隊記錄端點 {#team-logging-endpoints}
 
-- [`POST /team/{team_id}/callback` 將成功／失敗回呼新增至團隊](https://docs.litellm.ai/api-reference/#/team%20management/add_team_callbacks_team__team_id__callback_post)
-- [`GET /team/{team_id}/callback` - 取得團隊的成功／失敗回呼與變數](https://docs.litellm.ai/api-reference/#/team%20management/get_team_callbacks_team__team_id__callback_get)
-- [`DELETE /team/{team_id}/callback/{callback_name}` - 從團隊移除單一回呼](https://docs.litellm.ai/api-reference/#/team%20management/delete_team_callback_team__team_id__callback__callback_name__delete)
-- [`POST /team/{team_id}/disable_logging` - 移除團隊中的每個回呼](https://docs.litellm.ai/api-reference/#/team%20management/disable_team_logging_team__team_id__disable_logging_post)
+- [`POST /team/{team_id}/callback` 將成功／失敗回呼新增至團隊](https://docs.litellm.ai/api-reference/#tag/team~20management/add_team_callbacks_team__team_id__callback_post)
+- [`GET /team/{team_id}/callback` - 取得團隊的成功／失敗回呼與變數](https://docs.litellm.ai/api-reference/#tag/team~20management/get_team_callbacks_team__team_id__callback_get)
+- [`DELETE /team/{team_id}/callback/{callback_name}` - 從團隊移除單一回呼](https://docs.litellm.ai/api-reference/#tag/team~20management/delete_team_callback_team__team_id__callback__callback_name__delete)
+- [`POST /team/{team_id}/disable_logging` - 移除團隊中的每個回呼](https://docs.litellm.ai/api-reference/#tag/team~20management/disable_team_logging_team__team_id__disable_logging_post)
 
 ## 團隊記錄 - `config.yaml` {#team-logging---configyaml}
 

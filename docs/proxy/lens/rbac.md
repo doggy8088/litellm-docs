@@ -1,6 +1,6 @@
 ---
 title: "存取控制與工作區篩選器"
-description: "控制哪些人可以讀取 Lens 追蹤、為團隊與金鑰啟用追蹤，並依組織、團隊、專案或金鑰篩選請求。"
+description: "Lens 會沿用您的 LiteLLM 閘道使用者、團隊與權限。了解哪些人可以讀取追蹤、為團隊與金鑰啟用追蹤，並依組織、團隊、專案或金鑰篩選。"
 slug: "/proxy/lens/rbac"
 ---
 
@@ -14,9 +14,31 @@ slug: "/proxy/lens/rbac"
 
 :::
 
-使用 LiteLLM 儀表板中的 Lens 來分享追蹤並檢查應用程式流量。您的 Gateway 帳號決定您可以讀取哪些追蹤。工作區篩選器會縮小這些結果；選取另一個組織、團隊、專案或金鑰並不會授予存取權。
+將 Lens 連接到您的 LiteLLM 閘道，您已在該處設定好的權限就會套用到 Lens。您不需要再次建立 Lens 使用者、對應團隊或定義角色。您的 Gateway 帳號決定您可以讀取哪些追蹤，且這適用於每個透過閘道執行的請求。
 
-請先[將 Lens 連接到 LiteLLM](./deployment/litellm.md)。管理員只需設定一次該連線。團隊成員不需要為每個金鑰另外輸入 Lens 整合憑證。
+## 使用您已有的權限 {#gateway-permissions}
+
+管理員[將 Lens 連接到 LiteLLM](./deployment/litellm.md)一次即可，閘道上需要四個環境變數，Lens 上需要兩個。此後，Lens 會向閘道詢問每個人的身分與可見內容。
+
+| 已經在 LiteLLM 中設定 | 它在 Lens 中的作用 |
+| --- | --- |
+| 使用者與單一登入 (SSO) | 使用者以其 LiteLLM 登入登入 Lens。Lens 沒有獨立的使用者清單或身分提供者設定。 |
+| Proxy 管理員與管理員檢視者角色 | 這些角色可以讀取每筆追蹤。 |
+| 團隊與團隊管理員 | 追蹤屬於發出請求的金鑰所屬團隊。團隊管理員可以讀取其團隊的追蹤。 |
+| 團隊成員權限 | 當團隊授予 `/spend/logs` 時，成員可以讀取其團隊的追蹤，該權限與分享其支出記錄的權限相同。 |
+| 虛擬金鑰 | 每筆追蹤都會記錄傳送它的金鑰、使用者與團隊，因此使用者無需額外設定即可看到自己的流量。 |
+
+閘道上的變更也會沿用。將某人加入團隊或在 LiteLLM 中變更成員權限，會在該人下次開啟 Lens 或登入時套用到 Lens。Lens 中沒有需要對應變更的設定。
+
+### 使用您的 LiteLLM 登入 {#log-in-with-litellm}
+
+在 LiteLLM 儀表板側邊欄中選取 **Lens**，即可使用您目前的閘道工作階段開啟 Lens。在 Lens 位址本身，請在登入頁面選取 **Log in with LiteLLM**。閘道會為您登入，透過 SSO 進行（如果您使用 SSO），再將您帶回 Lens，並套用您的閘道權限。[在 Lens 登入頁面提供「使用 LiteLLM 登入」](./deployment/litellm.md#log-in-with-litellm)涵蓋 Lens 登入頁面的一項額外設定。
+
+![Lens 登入頁面在 Admin token 選項上方顯示 Log in with LiteLLM 按鈕。](/img/lens/rbac/log-in-with-litellm.png)
+
+團隊成員不需要為每個金鑰另外輸入 Lens 整合憑證。工作區篩選器會縮小您可以讀取的追蹤。選取另一個組織、團隊、專案或金鑰並不會授予存取權。
+
+Lens 也可以在沒有閘道的情況下執行。獨立 Lens 只有一個管理員 token，且沒有依團隊區分的權限，因此當不同的人需要不同的存取權時，請連接閘道。
 
 組織與專案選單需要已設定的實體與列出它們的權限。組織管理遵循 Gateway 的 Enterprise 授權。這些管理權限不會授予追蹤存取權。
 
@@ -37,7 +59,7 @@ flowchart TD
 
 ## 誰可以讀取追蹤 {#who-can-read-traces}
 
-Lens 使用 Gateway 現有的追蹤權限：
+Lens 使用 Gateway 現有的追蹤權限。此表中的任何項目都不是在 Lens 中設定：
 
 | 讀者 | 可見的追蹤 |
 | --- | --- |

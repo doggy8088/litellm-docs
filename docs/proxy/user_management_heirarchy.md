@@ -7,10 +7,10 @@ import Image from '@theme/IdealImage';
 
 LiteLLM 支援使用者、團隊、組織與預算的階層。
 
-- 組織可以有多個團隊。[API Reference](https://docs.litellm.ai/api-reference/#/organization%20management)
-- 團隊可以有多個使用者。[API Reference](https://docs.litellm.ai/api-reference/#/team%20management)
-- 使用者可以有多個金鑰，並且可以隸屬於多個團隊。[API Reference](https://docs.litellm.ai/api-reference/#/budget%20management)
-- 金鑰可以屬於團隊或使用者。[API Reference](https://docs.litellm.ai/api-reference/#/Customer%20Management)
+- 組織可以有多個團隊。[API Reference](https://docs.litellm.ai/api-reference/#tag/organization~20management)
+- 團隊可以有多個使用者。[API Reference](https://docs.litellm.ai/api-reference/#tag/team~20management)
+- 使用者可以有多個金鑰，並且可以隸屬於多個團隊。[API Reference](https://docs.litellm.ai/api-reference/#tag/budget~20management)
+- 金鑰可以屬於團隊或使用者。[API Reference](https://docs.litellm.ai/api-reference/#tag/Customer~20Management)
 
 :::info
 

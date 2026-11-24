@@ -52,6 +52,8 @@ pip install litellm==1.103.0
 
 **此版本在 `LiteLLM_SpendLogs` 上新增索引，會在啟動時建立索引期間阻擋 spend log 寫入。** 在大型資料表上，這可能需要很長時間。為避免這點，請在升級前先用 `CONCURRENTLY` 自行建立索引，這不會阻擋寫入。接著 migration 會找到它並略過建立。請參閱 [PR #37983](https://github.com/BerriAI/litellm/pull/37983)
 
+升級到 [`v1.103.11`](/release_notes/v1.103.11/v1-103-11)、[`v1.104.9`](/release_notes/v1.104.9/v1-104-9) 或 [`v1.105.0`](/release_notes/v1.105.0/v1-105-0) 及之後的版本時，`LiteLLM_SpendLogs` 索引改為自動建立，因此您可以跳過下方的手動步驟。[migration job](/docs/proxy/database_migrations#run-the-migration-job) 會在 migration 執行後建立這些索引，而自行執行 migration 的 proxy 會在開始提供服務後於背景建立。建立過程不會阻擋 spend log 寫入，適用於已分割區與未分割區的資料表，且會重複使用您已手動建立的索引。請參閱 [PR #43948](https://github.com/BerriAI/litellm/pull/43948)、[PR #50856](https://github.com/BerriAI/litellm/pull/50856) 與 [PR #50823](https://github.com/BerriAI/litellm/pull/50823)。只有在升級到更早版本時才需要執行下方的步驟。
+
 ```sql
 SET statement_timeout = 0;
 CREATE INDEX CONCURRENTLY IF NOT EXISTS "LiteLLM_SpendLogs_api_key_startTime_idx" ON "LiteLLM_SpendLogs"("api_key", "startTime");

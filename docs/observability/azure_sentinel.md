@@ -72,6 +72,8 @@ AZURE_SENTINEL_CLIENT_SECRET="your-client-secret"                    # Client se
 
 **注意**：`AZURE_SENTINEL_ENDPOINT` 可以是 DCR 的 logs ingestion endpoint（DCR Overview 頁面），或與您的 DCR 連結的 Data Collection Endpoint（DCE）的 logs ingestion URI（DCE Overview 頁面）。兩者外觀都是 `https://<name>.{region}-1.ingest.monitor.azure.com`。[Logs Ingestion API](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/logs-ingestion-api-overview#endpoint) 接受任一種，因此如果 Microsoft Sentinel 連接器給了您 DCE URI，請使用它。
 
+為直接擷取而建立的 DCR（`"kind": "Direct"`）擁有自己的 logs ingestion endpoint，顯示於 DCR Overview 頁面，以及 DCR JSON view 中 `properties.endpoints.logsIngestion` 之下。若要改用 DCE，請開啟 **Monitor** → **Data Collection Endpoints**，選取您的 DCR 所連結的 DCE（該 DCR 的 `dataCollectionEndpointId`），並從其 Overview 頁面複製 **Logs Ingestion**。當工作區使用私人連結，或 DCR 本身沒有 logs ingestion endpoint 時，您需要 DCE；這包括在 2024 年 3 月 31 日之前建立的 DCR，以及未設定 `"kind": "Direct"` 的 DCR。DCE、DCR 與 Log Analytics 工作區必須位於相同區域。
+
 **步驟 4**：啟動 proxy 並發出測試請求
 
 啟動 proxy
@@ -220,7 +222,7 @@ Azure Sentinel 整合使用 [Azure Monitor Logs Ingestion API](https://learn.mic
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/cd0ad69a-4d95-4b6a-9533-7720908ba809/ascreenshot.jpeg?tl_px=1160,92&br_px=2618,907&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=530,277)
 
-3. 複製 **Logs Ingestion Endpoint** URL
+3. 複製 **Logs Ingestion Endpoint** URL。如果您希望改經由您在步驟 3 中選取的 Data Collection Endpoint 傳送，請從該 DCE 的 Overview 頁面（位於 **Monitor** → **Data Collection Endpoints** 下）複製 **Logs Ingestion**。任一 URL 都可作為 `AZURE_SENTINEL_ENDPOINT` 使用。
 
 ![](https://ajeuwbhvhr.cloudimg.io/https://colony-recorder.s3.amazonaws.com/files/2025-12-17/3d3752ed-08ea-4490-8c98-a97d33947ea7/ascreenshot.jpeg?tl_px=1160,464&br_px=2618,1279&force_format=jpeg&q=100&width=1120.0&wat=1&wat_opacity=0.7&wat_gravity=northwest&wat_url=https://colony-recorder.s3.us-west-1.amazonaws.com/images/watermarks/FB923C_standard.png&wat_pad=532,277)
 

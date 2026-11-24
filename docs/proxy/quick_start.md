@@ -421,7 +421,7 @@ print(message.content)
 
 [**更多資訊**](./configs.md)
 
-## Proxy 端點 - [Swagger 文件](https://docs.litellm.ai/api-reference/) {#proxy-endpoints---swagger-docs}
+## Proxy 端點 - [API 參考](https://docs.litellm.ai/api-reference/) {#proxy-endpoints---api-reference}
 - POST `/chat/completions` - 聊天完成端點，用於呼叫 100+ 個 LLM
 - POST `/completions` - 完成端點
 - POST `/embeddings` - 用於 Azure、OpenAI、Huggingface 端點的嵌入端點

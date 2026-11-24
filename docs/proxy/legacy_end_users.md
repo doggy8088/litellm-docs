@@ -569,7 +569,7 @@ curl -X POST 'http://localhost:4000/chat/completions' \
 </TabItem>
 <TabItem value="api" label="API">
 
-使用 `/budget/new` 端點來建立新的預算。[API 參考](https://docs.litellm.ai/api-reference/#/budget%20management/new_budget_budget_new_post)
+使用 `/budget/new` 端點來建立新的預算。[API 參考](https://docs.litellm.ai/api-reference/#tag/budget~20management/new_budget_budget_new_post)
 
 ```bash showLineNumbers title="Create budget via API"
 curl -X POST 'http://localhost:4000/budget/new' \
