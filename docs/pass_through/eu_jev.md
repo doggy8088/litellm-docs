@@ -2,7 +2,7 @@
 
 <SinceVersion v="1.109.0" />
 
-[eu/jev](https://eu-jev.com/docs) 決策 API 的透傳端點。eu/jev 代管於歐盟，並在位於德國的伺服器上執行 System One 推論，提示與回應會在該處處理且不被儲存，因此您送出的資料會留在德國。它回傳的是有型別的決策（選項、分數，或是是否的機率），而不是文字，且它接受與 [TypeSafe](./typesafe.md) 相同的 System One 請求 body。
+[eu/jev](https://eu-jev.com/docs) 決策 API 的透傳端點。eu/jev 代管於歐盟，並在位於德國的伺服器上執行 System One 推論，提示與回應會在該處處理且不被儲存，因此您送出的資料會留在德國。它回傳的是有型別的決策（選項、分數，或是是否的機率），而不是文字，且它接受與 [TypeSafe](../decisions.md#v1systemone) 相同的 System One 請求 body。
 
 | 功能 | 支援 | 備註 |
 |-------|-------|-------|

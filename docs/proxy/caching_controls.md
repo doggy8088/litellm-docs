@@ -318,6 +318,71 @@ curl http://localhost:4000/key/generate \
 
 支援的金鑰層級快取控制：`ttl`、`s-maxage`、`no-cache`、`no-store`。
 
+## 依模型的快取控制 {#per-model-cache-controls}
+
+在模型的 `litellm_params` 下設定 `cache`，proxy 便會將其套用至路由到該部署的每個請求，因此用戶端無需變更。它採用與請求本文相同的控制：`ttl`、`s-maxage`、`no-cache`、`no-store`。沒有 `cache` 設定的模型會使用 proxy 層級的快取設定。
+
+```yaml
+model_list:
+  - model_name: cached-long
+    litellm_params:
+      model: openai/gpt-4o
+      cache: {ttl: 3600}          # cache for 1 hour
+  - model_name: cached-short
+    litellm_params:
+      model: openai/gpt-4o-mini
+      cache: {ttl: 60}            # cache for 1 minute
+  - model_name: uncached
+    litellm_params:
+      model: anthropic/claude-sonnet-4-5
+      cache: {no-cache: true, no-store: true}   # never read from or write to the cache
+      allowed_response_cache_overrides: []   # clients cannot change this
+  - model_name: default
+    litellm_params:
+      model: openai/gpt-4o        # no cache setting, uses litellm_settings
+
+litellm_settings:
+  cache: true
+```
+
+此設定以部署為單位。當多個部署共用同一個 `model_name` 時，請在每個部署上重複設定。
+
+設定 `allowed_response_cache_overrides` 的模型，同時也決定其備援模型的快取方式。當對該模型的請求由本身沒有 `allowed_response_cache_overrides` 的備援模型提供時，請求模型的 `cache` 控制會優先於備援模型的控制，而備援模型會保留請求模型未設定的任何控制。當備援模型有自己的 `allowed_response_cache_overrides` 時，每個控制以較嚴格的值為準：任一模型設定的 `no-cache` 或 `no-store` 會保持開啟，而較短的存留時間勝出。只有在兩個模型都允許時，請求控制才會被接受。沒有 `allowed_response_cache_overrides` 的模型，會讓每個備援模型維持其自身的設定。
+
+虛擬金鑰自身的 `cache` 控制，在具備 `allowed_response_cache_overrides` 的模型上仍然適用，前提是其嚴格程度至少與模型相同：設為 `no-store` 或 `no-cache` 的金鑰，在其清單未包含這些項目的模型上仍保持不快取；而金鑰的 `ttl` 或 `s-maxage`，在模型對同一控制設定了相等或更長的存留時間時仍然有效。會放寬模型規則的金鑰控制會被忽略，並像其他控制一樣在回應標頭中具名。
+
+### 選擇用戶端可覆寫的控制 {#choose-which-controls-a-client-may-override}
+
+模型的 `cache` 與請求的 `cache` 會逐一控制合併。模型的數值是每個控制的預設值，而依預設，請求會覆寫其傳送的控制，並保留其他控制不變。向上述 `uncached` 模型傳送 `"cache": {"ttl": 600}` 的請求，只會變更 `ttl`；`no-cache` 與 `no-store` 仍保持設定。
+
+在同一個 `litellm_params` 下新增 `allowed_response_cache_overrides`，即可列出請求可在該模型上設定的控制。清單之外的請求控制會被忽略，並改用模型的值。
+
+| `allowed_response_cache_overrides` | 用戶端可在該模型上變更的內容 |
+|---|---|
+| 未設定 | 其傳送的任何控制 |
+| `[]` | 無，模型的 `cache` 已鎖定 |
+| `["ttl"]` | 僅限 `ttl` |
+| `["no-cache", "no-store"]` | 可選擇退出快取，但無法變更 `ttl` |
+
+被忽略的控制不會被無聲捨棄。回應會帶有 `x-litellm-ignored-cache-controls` 標頭，具名列出每個被忽略的控制，而請求仍會成功。
+
+```shell
+curl -i http://localhost:4000/v1/chat/completions   -H "Authorization: Bearer $LITELLM_API_KEY"   -H "Content-Type: application/json"   -d '{
+    "model": "uncached",
+    "messages": [{"role": "user", "content": "Hello"}],
+    "cache": {"ttl": 600, "no-store": false}
+  }'
+
+# HTTP/1.1 200 OK
+# x-litellm-ignored-cache-controls: ttl,no-store
+```
+
+這與虛擬金鑰上的 `allowed_cache_controls` 不同，後者會以 403 拒絕清單之外的控制。這也與提供者的提示快取無關，例如 Anthropic 在訊息區塊上的 `cache_control`，此設定不會觸及它。
+
+### 優先順序 {#order-of-precedence}
+
+`litellm_settings` 中的 proxy 層級設定決定快取是否整體開啟，並提供預設的 `ttl`。模型的 `cache` 會覆寫這些預設值，適用於其部署。請求的控制接著依此順序解析：虛擬金鑰的中繼資料、本文的 `cache` 欄位，然後是 `Cache-Control` 標頭。結果會針對模型允許的每個控制覆寫模型的值，因此模型的 `allowed_response_cache_overrides` 也適用於來自虛擬金鑰的控制。當整個 proxy 的快取關閉時，任何請求或金鑰設定都無法將其開啟。
+
 ## 將快取預設關閉（僅 opt in） {#set-caching-default-off-opt-in-only}
 
 1. **將 `mode: default_off` 設為快取**

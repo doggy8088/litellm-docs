@@ -467,6 +467,7 @@ router_settings:
 | enforce_rbac | boolean | `false` | 若為 true，會為所有 proxy 操作啟用以角色為基礎的存取控制（RBAC） |
 | forward_llm_provider_auth_headers | boolean | `false` | 若為 true，會將提供者特定的驗證標頭轉送到 LLM API 請求 |
 | health_check_concurrency | integer | `null`（無上限） | 健康檢查操作的最大並行數量 |
+| health_check_skip_blocked_background_models | boolean | `false` | 若為 true，背景健康檢查迴圈會略過以 `model_info.blocked: true` 暫停的 deployments，包括僅由已暫停的萬用字元服務的公開模型 <SinceVersion v="1.113.0" />。[健康檢查文件](health#skip-paused-models) |
 | health_check_skip_disabled_background_models | boolean | `false` | 若為 true，會在隨需 `GET /health` 與相關健康檢查執行中略過對具有 `model_info.disable_background_health_check: true` 的 deployments 進行健康探測（不僅是背景迴圈）。[健康檢查文件](health) |
 | health_check_staleness_threshold | integer | `600`（秒） | 將 deployments 標記為過期之前，健康檢查結果的最大年齡（秒） |
 | maximum_spend_logs_cleanup_batch_size | integer | `1000` | spend log 清理期間每個 `DELETE` 陳述式刪除的列數。預設為 1000。當兩者都設定時，會覆寫 `SPEND_LOG_CLEANUP_BATCH_SIZE` 環境預設值。請參閱 [spend log deletion](spend_logs_deletion) |
@@ -1235,10 +1236,10 @@ router_settings:
 | GITHUB_COPILOT_TOKEN_DIR | 儲存 GitHub Copilot token 的目錄，供 `github_copilot` llm provider 使用
 | GITHUB_COPILOT_API_KEY_FILE | 儲存 GitHub Copilot API key 的檔案，供 `github_copilot` llm provider 使用
 | GITHUB_COPILOT_ACCESS_TOKEN_FILE | 儲存 GitHub Copilot access token 的檔案，供 `github_copilot` llm provider 使用
-| GITHUB_COPILOT_API_BASE | GitHub Copilot API 的 base URL。對於具有自訂主機的 GitHub Enterprise 訂閱，類似於 https://copilot-api.my-company.ghe.com. 預設為 https://api.githubcopilot.com
+| GITHUB_COPILOT_API_BASE | 共用 GitHub Copilot 登入的備援 base URL（在 Copilot 使用者查詢未回傳可用的 API 主機時使用）。預設為 https://api.githubcopilot.com；當共用登入位於 GitHub Enterprise Cloud 租戶時，則為 https://copilot-api.my-company.ghe.com
 | GITHUB_COPILOT_DEVICE_CODE_URL | GitHub Copilot device code 驗證的 URL。對於具有自訂主機的 GitHub Enterprise 訂閱，類似於 https://my-company.ghe.com/login/device/code. 預設為 https://github.com/login/device/code
 | GITHUB_COPILOT_ACCESS_TOKEN_URL | 取得 GitHub Copilot access token 的 URL。對於具有自訂主機的 GitHub Enterprise 訂閱，類似於 https://my-company.ghe.com/login/oauth/access_token. 預設為 https://github.com/login/oauth/access_token
-| GITHUB_COPILOT_API_KEY_URL | 取得 GitHub Copilot API key 的 URL。對於具有自訂主機的 GitHub Enterprise 訂閱，類似於 https://my-company.ghe.com/api/v3/copilot_internal/v2/token. 預設為 https://api.github.com/copilot_internal/v2/token
+| GITHUB_COPILOT_API_KEY_URL | 舊版設定。LiteLLM 不再呼叫該 URL。若 GITHUB_COPILOT_ACCESS_TOKEN_URL 未設定，或未指名 github.com 或 GHE.com 主機，則 api.my-company.ghe.com 上的 URL 會將共用登入的 Copilot 使用者查詢指向該 GitHub Enterprise Cloud 租戶。
 | GITHUB_COPILOT_CLIENT_ID | GitHub Copilot device flow 驗證的 Client ID。這由 `github_copilot` provider 用於 device code 驗證。預設為 "Iv1.b507a08c87ecfe98"
 | GREENSCALE_API_KEY | Greenscale 服務的 API 金鑰
 | GREENSCALE_ENDPOINT | Greenscale 服務的 endpoint URL
@@ -1465,7 +1466,7 @@ router_settings:
 | LOGGING_WORKER_MAX_QUEUE_SIZE | logging worker 佇列的最大大小。當佇列已滿時，worker 會積極清除任務以騰出空間，而不是捨棄 logs。預設為 50,000
 | LOGGING_WORKER_MAX_TIME_PER_COROUTINE | logging worker 中每個 coroutine 在逾時前允許的最長秒數。預設為 20.0
 | LOGGING_WORKER_CLEAR_PERCENTAGE | 清除時要擷取的佇列百分比。預設為 50% 
-| MAX_BASE64_LENGTH_FOR_LOGGING | 在記錄負載中保留的 base64 字元最大數量。超過此值的 Data URI 會以大小占位符取代。設為 0 可停用截斷。預設為 64
+| MAX_BASE64_LENGTH_FOR_LOGGING | 在記錄負載中保留的 base64 字元最大數量。超過此值的 Data URI 以及 Anthropic base64 來源資料會以大小占位符取代。設為 0 可停用截斷。預設為 64
 | MAX_BASE64_LENGTH_STDOUT_LOG | 寫入 stdout 的 log line 中，允許原樣保留的 base64 串長度上限（字元數），適用於包含 DEBUG 在內的所有記錄等級。較長的串會在訊息與任何 traceback 中以大小占位符取代，例如 `[base64_data truncated: 2.86MB]`，而其周圍文字會保留。hex 與 decimal 串（摘要、數字 id）則不受影響。logging callbacks（OTEL、Datadog 等）仍會收到完整記錄。設為 0 可停用。預設為 4096
 | MAX_COMPETITOR_NAMES | policy template enrichment 中允許的競爭者名稱最大數量。預設為 100
 | MAX_DECOMPRESSED_REQUEST_BODIES_IN_FLIGHT_MB | <SinceVersion v="1.108.0" /> 一個 proxy worker 同時持有的已解碼請求主體的最大總大小（MB），適用於以 `Content-Encoding: gzip` 或 `zstd` 傳送的請求。每個壓縮請求以其 gzip 或 zstd 資料宣告的解碼大小計算，或在未宣告時以其可能解碼到的最大大小計算。會使 worker 超過此限制的請求會在到達驗證或路由之前，得到帶有 `Retry-After: 1` 的 503。當未持有其他已解碼主體時，單一請求一律會被放行。預設為 200

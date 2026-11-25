@@ -1,0 +1,187 @@
+---
+slug: mcp-for-agent-builders
+title: "如何讓客戶把他們的應用程式連接到您的代理程式"
+subtitle: "使用 LiteLLM MCP Gateway"
+date: 2026-11-23T09:00:00-08:00
+authors: [moe]
+description: "讓客戶用自己的帳號連接到您的代理程式。註冊 MCP 伺服器、授予金鑰存取權，並透過 LiteLLM 呼叫工具。"
+tags: [tutorial, agents, mcp]
+hide_table_of_contents: false
+image: ./hero.png
+---
+
+如果您正在打造代理程式，您花在研究連接器驗證上的時間可能比預期多得多。每位客戶都需要登入自己的帳號，而且每次工具呼叫都需要正確的權杖。再加一台 MCP 伺服器，就又多一個要設定與管理的整合。
+
+LiteLLM MCP Gateway 提供一個地方，讓您新增 MCP 伺服器，並選擇您的代理程式可以使用哪些伺服器。註冊伺服器、將它附加到應用程式的虛擬金鑰，然後用已連接客戶的存取權杖傳送工具呼叫。您可以在不同客戶之間使用同一把應用程式金鑰，不必為他們建立 LiteLLM 帳號。
+
+本教學會連接 Granola，讓客戶從您的應用程式登入，並向您的代理程式詢問他們的會議。您的後端負責執行 OAuth 並儲存他們的權杖。**LiteLLM 會在每次請求轉發存取權杖；在此設定中，它不會儲存客戶的 OAuth 權杖。**
+
+{/* truncate */}
+
+## 開始之前 {#before-you-start}
+
+您需要一個正在執行且已設定 PostgreSQL 資料庫的 LiteLLM 閘道、新增 MCP 伺服器與管理虛擬金鑰的權限，以及一個具備使用者登入功能的應用程式。這些範例以 [LiteLLM v1.110.2](https://github.com/BerriAI/litellm/releases/tag/v1.110.2) 為目標。如果您還需要先建立閘道，請參閱 [MCP 部署指南](/docs/mcp_deployment)。
+
+請使用具備 [MCP 存取權](https://docs.granola.ai/help-center/sharing/integrations/mcp) 的 Granola 帳號來測試連線。後端範例使用 TypeScript；請求標頭也適用於其他 MCP 用戶端。
+
+## 1. 新增 MCP 伺服器 {#1-add-the-mcp-server}
+
+註冊 Granola，讓 LiteLLM 可以把您代理程式的請求路由到它。在終端機中，設定閘道的根 URL（不含 `/v1`）與一把管理員金鑰：
+
+```bash
+export LITELLM_PROXY_API_BASE="https://gateway.example.com"
+export LITELLM_ADMIN_KEY="<your-litellm-admin-key>"
+```
+
+```bash
+curl --fail-with-body \
+  "${LITELLM_PROXY_API_BASE%/}/v1/mcp/server" \
+  -H "Authorization: Bearer $LITELLM_ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "server_name": "granola",
+    "alias": "granola",
+    "url": "https://mcp.granola.ai/mcp",
+    "transport": "http",
+    "auth_type": "oauth_delegate",
+    "dcr_bridge": false,
+    "allowed_tools": ["get_account_info", "query_granola_meetings"]
+  }'
+```
+
+`oauth_delegate` 會告訴 LiteLLM 使用每次請求中的客戶權杖。`dcr_bridge: false` 讓登入流程留在您的應用程式內。工具清單允許帳號檢查與會議搜尋。
+
+回應中包含 `server_id`，Granola 也會出現在 Admin UI 的 **MCP Servers** 下。它的閘道路由是 `/granola/mcp`。如果您已經註冊過 Granola，請更新該項目以符合這些設定。
+
+## 2. 授予您的代理程式存取權 {#2-give-your-agent-access}
+
+在 **Virtual Keys → + Create New Key** 為您的應用程式建立一把虛擬金鑰。在 **MCP Settings → Allowed MCP Servers** 下，選取 `granola`。
+
+如果是現有的金鑰，請開啟 **Settings → Edit Settings**，在 **MCP Servers / Access Groups** 下加入 `granola`。保留它現有的選取項目。如果這把金鑰屬於擁有 MCP 允許清單的團隊，也請把 Granola 加入該團隊的允許清單。
+
+請把這些環境變數存入代理程式後端的部署設定：
+
+```dotenv
+LITELLM_PROXY_API_BASE=https://gateway.example.com
+LITELLM_PROXY_API_KEY=<your-application-virtual-key>
+```
+
+請使用閘道的根 URL 與您建立的虛擬金鑰。把金鑰留在後端。客戶登入您的應用程式，但絕不會收到這把金鑰。
+
+## 3. 讓客戶連接 Granola {#3-let-a-customer-connect-granola}
+
+在您的應用程式中加入 **Connect Granola** 按鈕。它會啟動使用 PKCE 的 OAuth 授權碼流程：客戶登入 Granola、核准存取，然後回到您的應用程式。
+
+請使用 MCP OAuth 用戶端，例如 [MCP TypeScript SDK](https://ts.sdk.modelcontextprotocol.io/v2/clients/oauth)，來處理探索、註冊與授權碼交換。請對 `https://mcp.granola.ai/mcp` 啟動 OAuth。在下一步的工具呼叫中使用 LiteLLM URL。
+
+您的後端需要兩條路由：
+
+| 路由 | 功能 |
+| --- | --- |
+| Connect | 從應用程式工作階段讀取已登入的客戶。啟動 OAuth、為該工作階段儲存 state 與 PKCE verifier，並把瀏覽器重新導向到 Granola。 |
+| Callback | 驗證 state 與工作階段、交換授權碼，並以該客戶的身分儲存連線。重新導向回您的應用程式。 |
+
+請把回呼設定為已部署應用程式上的一條 HTTPS 路由，例如 `https://agent.example.com/oauth/callback`。Granola 支援動態用戶端註冊，因此 SDK 可以註冊此回呼，不必另外設定 OAuth 應用程式。
+
+請把存取權杖、重新整理權杖、到期時間，以及 SDK 用戶端／探索資訊，儲存在加密的持久儲存中，並以您的租戶 ID、使用者 ID 與 MCP 伺服器作為鍵。請從已驗證的工作階段取得這些 ID。把重新整理權杖留在後端，並在工具呼叫前先重新整理已過期的存取權杖。如果客戶撤銷存取權，請顯示 **Reconnect**。
+
+[參考應用程式](https://github.com/BerriAI/litellm-docs/tree/dcd908bbd8e92633bac0cd0dbc8c790d4694817b/static/examples/granola-meeting-agent) 在 `src/server.ts` 中包含這些路由，並在 `src/connections.ts` 中實作 OAuth。它的 `begin()` 與 `finish()` 方法涵蓋重新導向與回呼。請依您的應用程式調整它的工作階段與儲存方式；隨附的 SQLite 儲存僅適用於本機單一處理程序的示範。代管的應用程式需要的儲存必須在部署後仍存在，且所有執行個體都能存取。
+
+## 4. 以客戶的帳號呼叫工具 {#4-call-a-tool-with-the-customers-account}
+
+每次 MCP 請求請傳送兩組憑證：應用程式的 LiteLLM 金鑰，以及已連接客戶的 Granola 存取權杖。
+
+```http
+POST /granola/mcp
+x-litellm-api-key: Bearer <application-virtual-key>
+Authorization: Bearer <customer-granola-access-token>
+```
+
+LiteLLM 會檢查金鑰的 MCP 權限，並以客戶的權杖轉發請求。Granola 會決定該帳號可以存取哪些會議。
+
+若要從 TypeScript 後端驗證連線，請安裝 MCP 用戶端：
+
+```bash
+npm install @modelcontextprotocol/client@2.4.0
+```
+
+請把這個函式加入後端。它會透過 LiteLLM 連線，並呼叫 Granola 的帳號資訊工具：
+
+```typescript title="check-granola.ts"
+import {
+  Client,
+  StreamableHTTPClientTransport,
+} from "@modelcontextprotocol/client";
+
+export async function checkGranola(accessToken: string) {
+  const base = process.env.LITELLM_PROXY_API_BASE;
+  const key = process.env.LITELLM_PROXY_API_KEY;
+  if (!base || !key) throw new Error("Set the LiteLLM backend environment variables.");
+
+  const client = new Client({ name: "meeting-agent", version: "1.0.0" });
+  const transport = new StreamableHTTPClientTransport(
+    new URL("granola/mcp", `${base.replace(/\/$/, "")}/`),
+    {
+      authProvider: { token: async () => accessToken },
+      requestInit: {
+        headers: { "x-litellm-api-key": `Bearer ${key}` },
+        redirect: "error",
+      },
+    },
+  );
+
+  try {
+    await client.connect(transport);
+    let cursor: string | undefined;
+    do {
+      const page = await client.listTools({ cursor });
+      const tool = page.tools.find(t => t.name.endsWith("get_account_info"));
+      if (tool) return await client.callTool({ name: tool.name, arguments: {} });
+      cursor = page.nextCursor;
+    } while (cursor);
+    throw new Error("Account tool unavailable. Check the MCP tool permissions.");
+  } finally {
+    await client.close();
+  }
+}
+```
+
+在已驗證的請求處理常式中，載入目前客戶已儲存的連線，並把未過期的存取權杖傳給 `checkGranola()`。成功的結果會識別已連接的 Granola 帳號與工作區。只有在此呼叫成功後才顯示 **Connected**。請用第二個帳號測試，確認您的應用程式會取回每位客戶自己的連線。
+
+請在代理程式的 MCP 整合中使用相同的傳輸方式。把 `listTools()` 回傳的工具交給模型，並用 `callTool()` 執行它選取的呼叫，保留回傳的工具名稱。參考應用程式的 `src/agent.ts` 展示了完整的迴圈，包括會議搜尋，以及透過 LiteLLM 從模型取得的回答。
+
+## 新增更多整合 {#add-more-integrations}
+
+若要加入另一台 MCP 伺服器，請重複註冊與金鑰授權步驟，再把它加入應用程式的 Connect 選單。對於支援 MCP OAuth 探索與動態用戶端註冊的伺服器，請重複使用您的 OAuth 路由與連線儲存。其他提供者可能需要已註冊的 OAuth 應用程式或特定的 scope。
+
+請為目前的客戶與伺服器建立 MCP 用戶端。如果您改用 LiteLLM 的彙總 `/mcp` 端點，請把每台伺服器的權杖放在各自的 [每台伺服器授權標頭](/docs/mcp_oauth_passthrough#multi-server-aggregate-requests) 中傳送。
+
+## 所有人都使用同一條連線時 {#when-everyone-should-use-the-same-connection}
+
+有些工具使用您提供給所有客戶的資料，例如產品文件搜尋。請為該 MCP 設定共用的服務憑證。客戶不必連接自己的帳號就能使用工具。
+
+對於接受靜態 bearer 權杖的伺服器，請把以下內容加入閘道設定：
+
+```yaml title="config.yaml"
+mcp_servers:
+  knowledge:
+    url: "https://mcp.example.com/mcp"
+    transport: "http"
+    auth_type: "bearer_token"
+    auth_value: os.environ/KNOWLEDGE_MCP_TOKEN
+```
+
+請把 URL 換成您的 MCP 伺服器 URL，並在 **閘道** 的部署環境中把 `KNOWLEDGE_MCP_TOKEN` 設定為它的服務權杖。使用更新後的設定重新啟動閘道，並授予應用程式金鑰存取 `knowledge` 的權限。
+
+請用 LiteLLM 金鑰把代理程式連接到 `/knowledge/mcp`。從上述 TypeScript 傳輸中省略客戶的 `authProvider`；`x-litellm-api-key` 標頭保留。呼叫 `listTools()` 以檢查存取權。在此設定中，LiteLLM 會從環境讀取共用憑證，並將它用於上游請求。使用它的所有客戶都擁有該憑證的上游權限。
+
+## 疑難排解 {#troubleshooting}
+
+| 問題 | 檢查項目 |
+| --- | --- |
+| LiteLLM 拒絕請求 | 應用程式金鑰、它的 MCP 授權，以及任何團隊限制。 |
+| Granola 拒絕工具呼叫 | 已儲存權杖的到期時間與帳號權限。如果重新整理失敗，請重新連接。 |
+| 登入時開啟 LiteLLM 登入頁面 | 保持 `dcr_bridge: false`，並對 Granola 的 URL 啟動 OAuth。 |
+| 缺少工具 | 伺服器的 `allowed_tools` 與金鑰的工具權限。 |
+
+若要查看完整的本機範例，請 [開啟參考應用程式](https://github.com/BerriAI/litellm-docs/tree/dcd908bbd8e92633bac0cd0dbc8c790d4694817b/static/examples/granola-meeting-agent) 並依照其 README 操作。其他用戶端設定請參閱 [委派 OAuth 參考](/docs/mcp_oauth_passthrough#oauth_delegate)。

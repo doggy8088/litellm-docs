@@ -123,7 +123,7 @@ general_settings:
 
 當 proxy 暴露給廣泛受眾時，將 `health_check_details: false` 設為只回傳[最小條目](#response-fields)。
 
-快取結果遵循與即時檢查相同的規則。每個金鑰只能看到自己的部署；當快取中沒有任何目標部署是健康的時候，定向呼叫會回應 503；非管理員金鑰的管理員專用欄位會被移除。在第一次背景執行完成之前，快取是空的，因此未定向的呼叫會以空清單回應 200，對沒有 `models` 清單的管理員金鑰則回應 `{}`，而每個定向呼叫都會以空清單回應 503。每個 proxy 工作程序與每個 pod 都執行自己的背景迴圈並保存自己的快取。在 proxy 啟動後或工作程序重新啟動後，第一次執行尚未完成的工作程序會以空快取回應，而另一個工作程序已有結果，因此同一個呼叫可能先回應 503，稍後又回應 200。被背景迴圈透過 `disable_background_health_check` 或下方的 `background_health_check_model_groups` 略過的部署，永遠不會出現在快取中，因此它不會出現，對它的定向檢查也永遠以空清單回應 503。
+快取結果遵循與即時檢查相同的規則。每個金鑰只能看到自己的部署；當快取中沒有任何目標部署是健康的時候，定向呼叫會回應 503；非管理員金鑰的管理員專用欄位會被移除。在第一次背景執行完成之前，快取是空的，因此未定向的呼叫會以空清單回應 200，對沒有 `models` 清單的管理員金鑰則回應 `{}`，而每個定向呼叫都會以空清單回應 503。每個 proxy 工作程序與每個 pod 都執行自己的背景迴圈並保存自己的快取。在 proxy 啟動後或工作程序重新啟動後，第一次執行尚未完成的工作程序會以空快取回應，而另一個工作程序已有結果，因此同一個呼叫可能先回應 503，稍後又回應 200。被背景迴圈透過 `disable_background_health_check`、下方的 `background_health_check_model_groups` 或 `health_check_skip_blocked_background_models` 略過的部署，永遠不會出現在快取中，因此它不會出現，對它的定向檢查也永遠以空清單回應 503。
 
 若要將某個模型排除在背景迴圈之外，請在其 `model_info` 中設定 `disable_background_health_check: true`。背景檢查開啟時，`/health` 只讀取快取，因此該部署會如上所述從結果中消失。設定 `general_settings.health_check_skip_disabled_background_models: true`，可另外將那些部署排除在按需檢查（在背景檢查關閉時執行）與共享健康檢查之外。
 
@@ -146,6 +146,20 @@ general_settings:
 ```
 
 若要協調多個 pod 之間的檢查，以免昂貴模型每個 pod 都被探測一次，請參閱 [共用健康檢查狀態](./shared_health_check.md)。
+
+### 略過已暫停的模型 {#skip-paused-models}
+
+<SinceVersion v="1.113.0" />
+
+若要在模型暫停期間停止探測，請設定 `general_settings.health_check_skip_blocked_background_models: true`。背景迴圈隨後會略過每個 `model_info.blocked: true` 的部署（由 `POST /model/block` 以及「Models + Endpoints」頁面上的 Pause 切換設定），以及僅由已暫停萬用字元提供的每個公開模型。此設定預設為關閉，且在背景檢查關閉時不會改變任何行為，因此按需 `/health` 呼叫屆時仍會探測已暫停的部署。
+
+```yaml
+general_settings:
+  background_health_checks: true
+  health_check_skip_blocked_background_models: true
+```
+
+已暫停的部署會像其他部署一樣被略過，因此它會從 `/health` 中消失，對它的定向檢查會以空清單回應 503。在 Health Status 分頁上，它的列會保留暫停前的最後結果，直到有人重新檢查它，而重新檢查會因為該 503 將其標示為不健康。每個工作程序會在下次重新載入模型時得知暫停或恢復，因此在您暫停部署後，可能還會有一次背景執行探測它，而在您恢復它之後，探測會在下一次執行時重新開始。啟用[健康檢查路由](health_check_routing)時，暫停時間超過 `health_check_staleness_threshold` 的模型在您恢復它之後會立即被視為健康，就像新加入的模型一樣，直到下一次執行探測它。Test Connection 仍會對已暫停的部署傳送真實請求。
 
 ## 模型模式 {#model-modes}
 

@@ -141,7 +141,7 @@ JEV 使用與 LLM classifier 相同的歷史預設值：在 8,000 字元的前�
 
 內建 JEV 分類使用與內建 LLM classifier 相同的授權政策。自訂 `instructions` 和 `tier_definitions` 使用既有的 Enterprise 自訂分類器能力。JEV 也支援 `enable_non_reasoning_tier`
 
-請參閱 [JEV 參考](/docs/proxy/auto_routing#jev-classifier) 了解預設值、上下文、復原、授權與帳務，[量測比較](/blog/jev-auto-router-benchmark) 了解品質與成本範圍，以及 [TypeSafe pass-through](/docs/pass_through/typesafe) 以直接呼叫 System One
+請參閱 [JEV 參考](/docs/proxy/auto_routing#jev-classifier) 了解預設值、上下文、復原、授權與帳務，[量測比較](/blog/jev-auto-router-benchmark) 了解品質與成本範圍，以及 [統一決策端點](/docs/decisions#migrate-from-typesafe-pass-through)，可透過 `/v1/systemone` 或 `/v1/decisions` 呼叫 Jev，包括圖片請求
 
 ## 模型管理 API {#model-management-api}
 

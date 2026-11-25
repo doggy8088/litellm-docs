@@ -67,6 +67,23 @@ curl -L -X POST 'http://localhost:4000/key/service-account/generate' \
 | 更新時完全省略 `metadata` | 安全 — 既有值會保留 |
 | 重新傳送相同值 | 允許（無操作） |
 
+## AI API 金鑰的預設路由 {#default-routes-for-ai-api-keys}
+
+若要讓新的服務帳戶金鑰讀取自己的花費與金鑰資訊，請在 Admin UI 中選取 **AI APIs**，或對 `POST /key/service-account/generate` 傳送 `"key_type": "llm_api"`。請在 proxy 組態中設定這些路由。花費報告需要 Enterprise 授權。
+
+```yaml
+litellm_settings:
+  default_key_generate_params:
+    allowed_routes:
+      - llm_api_routes
+      - /key/spend/report
+      - /key/info
+```
+
+設定的清單必須包含 `llm_api_routes`。符合資格的額外路由為 `/key/spend/report`、`/key/info`、`/key/health`、`/model/info`、`/v1/model/info`、`/v2/model/info` 與 `/model_group/info`。Proxy 會忽略為這些金鑰設定的其他項目，包括管理路由群組與萬用字元。花費報告與金鑰資訊路由的作用範圍限於呼叫的金鑰，即使其他金鑰屬於同一團隊也是如此。
+
+[預設路由](./virtual_keys.md#default-keygenerate-params)會在建立時套用。在 API 中省略 `key_type`，可保留服務帳戶的一般路由行為，包括在團隊授予該權限時建立團隊金鑰的能力。
+
 ## 範例 - 針對所有服務帳戶請求要求 `user` 參數 {#example---require-user-param-for-all-service-account-requests}
 
 ### 1. 為服務帳戶設定設定 {#1-set-settings-for-service-accounts}

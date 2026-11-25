@@ -718,7 +718,7 @@ model_list:
 
 <Image img={require('../img/decisions_playground_openai.png')} alt="Decisions playground 已挑選 /v1/decisions 與 luna 模型，錯誤報告分流範例帶有 choice、predicate 與 score 問題及其答案" />
 
-此分頁在 `v1.106.0` 與更新版本中，且不在 `v1.104.2` 或 `v1.105.0` 中。`v1.106.0` 一開始填入第一個範例，從下拉選單而不是 **Load example** 挑選其他範例，並將橡皮擦標示為 **Clear**。[TypeSafe 頁面](./pass_through/typesafe.md#try-it-in-the-admin-ui)逐步介紹 System One 表單、驗證與答案檢視。
+此分頁在 `v1.106.0` 與更新版本中，且不在 `v1.104.2` 或 `v1.105.0` 中。`v1.106.0` 一開始填入第一個範例，從下拉選單而不是 **Load example** 挑選其他範例，並將橡皮擦標示為 **Clear**。
 
 ## 將決策模型用作防護欄 {#use-a-decision-model-as-a-guardrail}
 
@@ -726,4 +726,64 @@ model_list:
 
 ## 決策路由與直通路由的比較 {#decision-routes-vs-pass-through-routes}
 
-位於 `/typesafe/v1/systemone` 的 [TypeSafe 直通](./pass_through/typesafe.md)只將原始請求轉發給 TypeSafe，並從代理環境讀取金鑰。位於 `/openrouter/alpha/decisions` 的 [OpenRouter 直通](./providers/openrouter.md#through-the-openrouter-pass-through)只將原始請求轉發給 OpenRouter。`/v1/decisions` 與 `/v1/systemone` 使用您 `model_list` 中的模型，因此您可以切換提供者、負載平衡並設定每個部署的金鑰，而不改變請求主體
+位於 `/openrouter/alpha/decisions` 的 [OpenRouter 直通](./providers/openrouter.md#through-the-openrouter-pass-through)只將原始請求轉發給 OpenRouter。`/v1/decisions` 與 `/v1/systemone` 使用您 `model_list` 中的模型，因此您可以切換提供者、負載平衡並設定每個部署的金鑰，而不改變請求主體
+
+## 從 TypeSafe 直通遷移 {#migrate-from-typesafe-pass-through}
+
+TypeSafe 直通已在 `v1.113.0` 中移除。升級到該版本或更新版本後，`/typesafe/...` 會回傳 404。Jev 可透過 `/v1/systemone` 與 `/v1/decisions` 使用。您需要設定模型部署，因為統一路由使用 `model_list`，而不是直接把任何舊路徑轉發到 TypeSafe。
+
+請在代理上設定 `TYPESAFE_API_KEY`，並把此部署加入其設定。用戶端使用 `LITELLM_API_KEY` 中的 LiteLLM 金鑰進行驗證（不是 TypeSafe 金鑰）。
+
+```yaml showLineNumbers keep-model-ids
+model_list:
+  - model_name: jev
+    litellm_params:
+      model: typesafe/jev-1.14.0
+      api_key: os.environ/TYPESAFE_API_KEY
+```
+
+對於現有的 System One 請求，請把路徑從 `/typesafe/v1/systemone` 改為 `/v1/systemone`，並把 `model` 設定為部署名稱 `jev`。`state` 與 `questions` 對應保持不變。對於圖片，請傳送 JSON 而不是 multipart 上傳。PNG 與 JPEG 圖片在 `/v1/systemone` 上是 base64 `assets`，在 `/v1/decisions` 上是 `input_image` 部分。兩者都需要 `TypeSafe-Danger-Zone-Images: true`。
+
+請把 `<BASE64_PNG>` 換成 PNG 的 base64 位元組（不要加 data URL 前綴）。資產名稱必須出現在 `state` 中。
+
+```bash showLineNumbers
+curl -X POST 'http://localhost:4000/v1/systemone' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -H 'TypeSafe-Danger-Zone-Images: true' \
+  -d '{
+    "model": "jev",
+    "state": {"photo": "photo-red"},
+    "assets": {
+      "photo-red": {"type": "image", "format": "png", "data_base64": "<BASE64_PNG>"}
+    },
+    "questions": {
+      "red": {"type": "noul", "instructions": "Is the image mostly red?"}
+    }
+  }'
+```
+
+對於 OpenAI 形狀的請求，請使用 `/v1/decisions`，搭配 `input` 與 questions 陣列。此時 PNG 位元組需要 `data:image/png;base64,` 前綴。JPEG 請在資產中使用 `format: "jpeg"`，或在圖片 URL 中使用 `data:image/jpeg;base64,` 前綴。
+
+```bash showLineNumbers
+curl -X POST 'http://localhost:4000/v1/decisions' \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -H 'TypeSafe-Danger-Zone-Images: true' \
+  -d '{
+    "model": "jev",
+    "input": [{
+      "type": "message",
+      "role": "user",
+      "content": [
+        {"type": "input_text", "text": "Inspect this photo."},
+        {"type": "input_image", "image_url": "data:image/png;base64,<BASE64_PNG>"}
+      ]
+    }],
+    "questions": [
+      {"name": "red", "type": "predicate", "instructions": "Is the image mostly red?"}
+    ]
+  }'
+```
+
+這些請求形狀已透過實際運行的代理與 TypeSafe Jev 1.14.0，以一張 512x512 PNG 進行測試。移除後，兩條統一路由都回傳 200，舊的直通路由則回傳 404。其他圖片問題與自選標頭請參閱 [TypeSafe 圖片、方框問題與長上下文](#typesafe-images-box-questions-and-long-context)。EU Jev、Laya、Bespoke 與 OpenRouter 直通是各自獨立的整合，不受此變更影響。

@@ -50,7 +50,8 @@ JWT 憑證使用 [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519.html) 定義�
 | 範圍 | 授予權限 | 預設角色 |
 | --- | --- | --- |
 | `dataplanes:read` | 讀取登錄項目、檢查資料平面健康狀態，並檢視有效身分。 | `admin`, `editor`, `viewer` |
-| `fleet:read` | 列出跨資料平面的模型與團隊。 | `admin`, `editor`, `viewer` |
+| `fleet:read` | 列出跨資料平面的模型與團隊，並讀取已採用團隊的狀態。 | `admin`, `editor`, `viewer` |
+| `fleet:write` | 採用現有團隊並設定其預期預算。 | `admin` |
 | `usage:read` | 讀取用量摘要、每日用量與最高花費者。 | `admin`, `editor`, `viewer`, `usage_viewer` |
 | `proxy:read` | 將 `GET` 與 `HEAD` 請求轉送至支援的資料平面管理路由。 | `admin`, `editor`, `viewer` |
 | `proxy:write` | 將 `POST`、`PUT`、`PATCH` 與 `DELETE` 請求轉送至支援的資料平面管理路由。 | `admin`, `editor` |
@@ -100,7 +101,7 @@ Content-Type: application/json
 ```json
 {
   "items": [
-    {"name": "admin", "scopes": ["audit:read", "dataplanes:read", "dataplanes:write", "fleet:read", "proxy:read", "proxy:write", "roles:write", "usage:read"], "inherits": [], "source": "config"},
+    {"name": "admin", "scopes": ["audit:read", "dataplanes:read", "dataplanes:write", "fleet:read", "fleet:write", "proxy:read", "proxy:write", "roles:write", "usage:read"], "inherits": [], "source": "config"},
     {"name": "editor", "scopes": ["dataplanes:read", "fleet:read", "proxy:read", "proxy:write", "usage:read"], "inherits": [], "source": "config"},
     {"name": "finops", "scopes": ["usage:read"], "inherits": ["usage_viewer"], "source": "runtime"},
     {"name": "usage_viewer", "scopes": ["usage:read"], "inherits": [], "source": "config"},
@@ -200,6 +201,26 @@ Authorization: Bearer REPLACE_WITH_ADMIN_CREDENTIAL
 每個團隊項目包含 `dataplane_id`、`team_id`、`team_alias`、`organization_id`、`spend`、`max_budget`、`members`、`models` 與 `blocked`。`members` 是計數。
 
 兩個回應都包含 `partial` 與 `unreachable`。請參閱[部分結果](#partial-results)。
+
+### 已採用的團隊預算 {#adopted-team-budgets}
+
+啟用[執行期組態](./configuration.md#runtime-configuration)，並在每個目標資料平面上設定服務權杖。每個請求都需要存取每個目標資料平面。採用與協調會使用已設定的服務權杖，不會冒充操作員。預設只有 `admin` 角色與控制平面主金鑰可以採用團隊或變更預期預算。
+
+| 方法 | 路徑 | 所需範圍 | 行為 |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/fleet/teams/adopt` | `fleet:write` | 傳送確切的 `team_alias` 與包含不同 ID 的非空 `dataplanes` 陣列。控制平面會固定區域團隊 ID 與 URL。省略 `fleet_team_id` 可建立連結，或提供它以重新整理現有連結的 URL。 |
+| `PUT` | `/api/v1/fleet/teams/{fleet_team_id}` | `fleet:write` | 以 `max_budget` 與 `budget_duration` 其中一項或兩項取代預期設定。回應會在區域變更完成之前回傳已提交的修訂版本。 |
+| `GET` | `/api/v1/fleet/teams/{fleet_team_id}/status` | `fleet:read` | 回傳預期設定，以及每個資料平面的預期修訂版本、已套用修訂版本、最後錯誤與狀態。 |
+
+若任何目標無法連線、沒有服務權杖，或沒有確切相符項目或有多個確切相符項目，採用會回傳 `409` 與 `conflicts` 清單。若區域團隊已連結，新的採用也會回傳 `409`。失敗的採用不會變更任何對應。
+
+若已註冊的 URL 變更，控制平面會停止協調受影響的連結。若要恢復，請以現有的 `fleet_team_id`、相同的 `team_alias` 以及 `dataplanes` 中受影響的 ID 再傳送一次採用請求。控制平面會檢查整個機隊團隊的存取權，且只有在新端點回傳相同的區域團隊 ID 時才會重新整理每個 URL。預期預算及其修訂版本保持不變。對未變更的 URL 重複傳送請求不會改變任何內容。
+
+省略預算欄位可使其不受管理。使用 `null` 可清除欄位；`max_budget: 0` 為零預算。協調器會讀取每個團隊，且只更新有差異的欄位。保持相同的 `budget_duration` 可保留現有的重置排程。區域預算驗證仍然適用。
+
+狀態在修訂版本套用前會回報 `pending`；若資料平面無法讀取，回報 `unreachable`；受管理值相符時回報 `applied`；若套用後本機編輯變更了受管理值，回報 `drifted`。漂移僅供回報。請提交新的 PUT 以重新套用預期值。此處沒有機隊團隊的建立、刪除或花費協調。
+
+若控制平面在區域更新提交後、記錄進度前停止，它會在重試時再次讀取團隊，並在值相符時略過寫入。在該期間進行的本機編輯可能會在重試時被覆寫一次。
 
 ### 用量 {#usage}
 

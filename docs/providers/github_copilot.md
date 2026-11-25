@@ -11,7 +11,7 @@ import TabItem from '@theme/TabItem';
 
 # GitHub Copilot {#github-copilot}
 
-透過 LiteLLM 閘道或 Python SDK 使用 [GitHub Copilot](https://docs.github.com/en/copilot) 模型。LiteLLM 支援 Chat Completions、Responses、Embeddings 與 Anthropic Messages
+透過 LiteLLM 閘道或 Python SDK 使用 [GitHub Copilot](https://docs.github.com/en/copilot) 模型。LiteLLM 支援 Chat Completions、Responses、Embeddings 與 Anthropic Messages。
 
 個人 Copilot 方案可選擇逐使用者 GitHub OAuth，或為向組織收費的後端服務選擇 [GitHub App 驗證](#github-app-authentication)。您的 GitHub Copilot 方案決定了您可以使用的模型，且每個模型支援特定的端點。請參閱[支援的端點與模型](#supported-endpoints-and-models)
 
@@ -29,7 +29,7 @@ LiteLLM 也可使用 Claude 與 ChatGPT (Codex) 訂閱。如需比較這三種�
 
 在 LiteLLM 儀表板中開啟 **Models + Endpoints** > **LLM Credentials**，然後點擊 **Add Credential**。將提供者選為 **GitHub Copilot**，並輸入 `github-copilot` 作為 **Credential Name**。在此儀表板流程中，於 **Auth Type** 下選擇 **Per-user GitHub OAuth**。若是服務應用程式，請改選 [GitHub App](#github-app-authentication)。點擊 **Add Credential**
 
-如果您的使用者是在 github.com 登入，請將 **GitHub host** 留空。如果您的企業使用具資料落地（data residency）的 GitHub Enterprise Cloud，請輸入您的 `SUBDOMAIN.ghe.com` 主機，例如 `octocorp.ghe.com`。LiteLLM 隨後會將登入送往 `https://SUBDOMAIN.ghe.com`、將權杖交換與使用者查詢送往 `https://api.SUBDOMAIN.ghe.com`，並僅將模型請求送往 `https://copilot-api.SUBDOMAIN.ghe.com`。每個憑證保留自己的主機，因此單一閘道可同時服務 github.com 憑證與 GHE.com 憑證。GitHub Enterprise Server 主機會被拒絕，因為 GitHub 未在 GitHub Enterprise Server 上提供 Copilot。變更憑證的主機會移除其上的所有使用者連接，因此使用者需在新主機上重新連接。
+如果您的使用者是在 github.com 登入，請將 **GitHub host** 留空。如果您的企業使用具資料落地（data residency）的 GitHub Enterprise Cloud，請輸入您的 `SUBDOMAIN.ghe.com` 主機，例如 `octocorp.ghe.com`。LiteLLM 隨後會將登入送往 `https://SUBDOMAIN.ghe.com`、將使用者查詢送往 `https://api.SUBDOMAIN.ghe.com`，並僅將模型請求送往 `https://copilot-api.SUBDOMAIN.ghe.com`。每個憑證保留自己的主機，因此單一閘道可同時服務 github.com 憑證與 GHE.com 憑證。GitHub Enterprise Server 主機會被拒絕，因為 GitHub 未在 GitHub Enterprise Server 上提供 Copilot。變更憑證的主機會移除其上的所有使用者連接，因此使用者需在新主機上重新連接。
 
 <div className="docs-screenshot">
   <Image img={require('../../img/github_copilot_credential.png')} dark={require('../../img/github_copilot_credential_dark.png')} alt="在 LiteLLM 中建立逐使用者 GitHub OAuth 憑證" width={656} height={585} />
@@ -45,7 +45,7 @@ LiteLLM 也可使用 Claude 與 ChatGPT (Codex) 訂閱。如需比較這三種�
 
 :::note
 
-Claude Code 與 Claude Desktop 僅接受以 `claude-` 或 `anth-` 開頭的模型名稱，因此請為從這些應用程式使用的模型取像 `claude-copilot` 這樣的公開名稱。其他應用程式可使用任何名稱。
+Claude Code 與 Claude Desktop 僅接受以 `claude-` 或 `anth-` 開頭的模型名稱，因此若您從這些應用程式使用模型，請為其取一個以 `claude-copilot` 開頭的公開名稱。其他應用程式可使用任何喜歡的名稱。
 
 :::
 
@@ -355,7 +355,7 @@ export GITHUB_COPILOT_API_VERSION=2026-08-01
 
 ## 搭配 LiteLLM Python SDK 使用 {#usage-with-the-litellm-python-sdk}
 
-依預設，直接 SDK 呼叫在您自己的程序中執行，並以一個 GitHub 帳號登入。對於後端服務，請使用下方的 GitHub App 設定。第一次呼叫會在您的終端機中啟動 GitHub 的裝置流程。LiteLLM 將 GitHub 存取權杖儲存至 `~/.config/litellm/github_copilot/access-token`，並在後續呼叫中重複使用。閘道永不使用此登入。直接 SDK 呼叫使用完整模型名稱，包括 `github_copilot/` 前綴
+依預設，直接 SDK 呼叫在您自己的程序中執行，並以一個 GitHub 帳號登入。對於後端服務，請使用下方的 GitHub App 設定。第一次呼叫會在您的終端機中啟動 GitHub 的裝置流程。LiteLLM 將 GitHub 存取權杖儲存至 `~/.config/litellm/github_copilot/access-token`，並在後續呼叫中重複使用。在閘道上，沒有 **Per-user GitHub OAuth** 或 GitHub App 憑證的模型會使用此共用登入，從閘道主機讀取。直接 SDK 呼叫使用完整模型名稱，包括 `github_copilot/` 前綴
 
 <Tabs>
 <TabItem value="chat" label="Chat Completions">
@@ -445,20 +445,50 @@ print(response)
 </TabItem>
 </Tabs>
 
+### 共享登入於 GitHub Enterprise Cloud (GHE.com) {#shared-sign-in-on-github-enterprise-cloud-ghecom}
+
+如果您的 Copilot 方案來自具資料落地的 GitHub Enterprise Cloud 租戶，請將共用登入指向該租戶。請在第一次呼叫前設定以下兩個變數，並在之後保持設定，因為 LiteLLM 會在每次呼叫時從 `GITHUB_COPILOT_ACCESS_TOKEN_URL` 讀取租戶。如果該變數未設定，或未命名 github.com 或 GHE.com 主機，LiteLLM 會改從 `GITHUB_COPILOT_API_KEY_URL` 讀取租戶；若兩者皆無，則使用 github.com。
+
+<SinceVersion v="1.113.0" />
+
+```bash
+export GITHUB_COPILOT_DEVICE_CODE_URL="https://SUBDOMAIN.ghe.com/login/device/code"
+export GITHUB_COPILOT_ACCESS_TOKEN_URL="https://SUBDOMAIN.ghe.com/login/oauth/access_token"
+```
+
+LiteLLM 隨後會在 `https://SUBDOMAIN.ghe.com` 登入、在 `https://api.SUBDOMAIN.ghe.com/copilot_internal/user` 查詢您的 Copilot API，並將模型請求傳送至 `https://copilot-api.SUBDOMAIN.ghe.com`。如果查詢失敗，或命名了租戶以外的主機，模型請求會在已設定 `GITHUB_COPILOT_API_BASE` 時前往該處，否則前往 `https://copilot-api.SUBDOMAIN.ghe.com`，因此除非您設定了該變數，請求絕不會離開您的租戶。舊的設定方式會將 `GITHUB_COPILOT_API_KEY_URL` 設為 `https://api.SUBDOMAIN.ghe.com/copilot_internal/v2/token`，同樣會選取該租戶，不過 LiteLLM 已不再呼叫該 URL。
+
+若要在閘道上使用此登入，您需要在閘道之外先登入一次，並使用上述變數，因為閘道本身無法執行裝置流程。
+
+```bash
+python -c "from litellm.llms.github_copilot.authenticator import Authenticator; Authenticator().get_access_token()"
+```
+
+現在請使用相同的兩個變數啟動閘道：`GITHUB_COPILOT_TOKEN_DIR` 指向包含已儲存 `access-token` 檔案的目錄，並搭配一個沒有憑證的模型。
+
+```yaml showLineNumbers keep-model-ids title="config.yaml"
+model_list:
+  - model_name: claude-copilot
+    litellm_params:
+      model: github_copilot/claude-sonnet-5.5
+```
+
+對 `claude-copilot` 的請求隨後會從 `https://copilot-api.SUBDOMAIN.ghe.com` 回傳模型的回應。
+
 ## 環境變數 {#environment-variables}
 
-權杖檔案設定與 `GITHUB_COPILOT_API_BASE` 僅適用於直接 Python SDK 呼叫。閘道會忽略它們。`GITHUB_COPILOT_TOKEN_DIR` 請使用絕對路徑。在閘道上，`GITHUB_COPILOT_DEVICE_CODE_URL`、`GITHUB_COPILOT_ACCESS_TOKEN_URL` 與 `GITHUB_COPILOT_API_KEY_URL` 僅適用於沒有 **GitHub host** 或使用 `github.com` 的憑證。具有 GHE.com 主機的憑證一律使用從該主機衍生的 URL
+權杖檔案設定與 `GITHUB_COPILOT_API_BASE` 僅適用於共用登入（直接 Python SDK 呼叫，以及沒有 **Per-user GitHub OAuth** 憑證的閘道模型會使用它）。逐使用者憑證會忽略它們。`GITHUB_COPILOT_TOKEN_DIR` 請使用絕對路徑。在閘道上，`GITHUB_COPILOT_DEVICE_CODE_URL` 與 `GITHUB_COPILOT_ACCESS_TOKEN_URL` 僅適用於沒有 **GitHub host** 或使用 `github.com` 的憑證。具有 GHE.com 主機的憑證一律使用從該主機衍生的 URL
+
+LiteLLM 只是將 GitHub OAuth 權杖以 Bearer 權杖的形式傳送至 Copilot API。請視需要將 `GITHUB_COPILOT_CLIENT_ID` 設為您自己的 GitHub App 的用戶端 ID。您需要為該 App 啟用裝置流程。
 
 | 變數 | 預設值 | 用途 |
 |-------|-------|-------|
-| `GITHUB_COPILOT_TOKEN_DIR` | `~/.config/litellm/github_copilot` | 僅限 SDK。GitHub 存取權杖與 Copilot API 權杖快取的目錄 |
-| `GITHUB_COPILOT_ACCESS_TOKEN_FILE` | `access-token` | 僅限 SDK。權杖目錄中的存取權杖檔案名稱 |
-| `GITHUB_COPILOT_API_KEY_FILE` | `api-key.json` | 僅限 SDK。權杖目錄中的 Copilot API 權杖快取檔案名稱 |
-| `GITHUB_COPILOT_CLIENT_ID` | `Iv1.b507a08c87ecfe98` | 用於閘道與 SDK 登入的 OAuth client ID |
+| `GITHUB_COPILOT_TOKEN_DIR` | `~/.config/litellm/github_copilot` | 僅限共用登入。GitHub 存取權杖的目錄 |
+| `GITHUB_COPILOT_ACCESS_TOKEN_FILE` | `access-token` | 僅限共用登入。權杖目錄中的存取權杖檔案名稱 |
+| `GITHUB_COPILOT_CLIENT_ID` | `Iv1.b507a08c87ecfe98` | 用於閘道與 SDK 登入的 OAuth client ID。您自己的 GitHub App 必須已啟用裝置流程。 |
 | `GITHUB_COPILOT_DEVICE_CODE_URL` | `https://github.com/login/device/code` | 用於閘道與 SDK 登入的裝置碼端點 |
 | `GITHUB_COPILOT_ACCESS_TOKEN_URL` | `https://github.com/login/oauth/access_token` | 用於閘道與 SDK 登入的存取權杖端點 |
-| `GITHUB_COPILOT_API_KEY_URL` | `https://api.github.com/copilot_internal/v2/token` | 將 GitHub 權杖交換為 Copilot API 權杖的端點 |
-| `GITHUB_COPILOT_API_BASE` | `https://api.githubcopilot.com` | 僅限 SDK。Chat Completions、Responses 與 Embeddings 的備援 API base |
+| `GITHUB_COPILOT_API_BASE` | `https://api.githubcopilot.com`，或在 GHE.com 登入時為 `https://copilot-api.SUBDOMAIN.ghe.com` | 僅限共用登入。Chat Completions、Responses 與 Embeddings 的備援 API base |
 
 ## 驗證細節 {#authentication-details}
 
@@ -469,20 +499,20 @@ print(response)
 
 使用 Redis 時，LiteLLM 會將加密的憑證或無連接的記錄快取 60 秒。沒有 Redis 時，請求會讀取資料庫。
 
-每個 worker 會將短效的 Copilot 權杖快取在記憶體中，直到其到期前 60 秒。如果 GitHub 在權杖交換期間回傳 401、403 或 404，LiteLLM 會清除已快取的工作階段，並要求使用者重新連接。
+每個 worker 會將使用者的 GitHub 權杖與經驗證的 Copilot API base 快取 30 分鐘。連接時，LiteLLM 會檢查對 Copilot `/models` 端點的存取權。如果 GitHub 回傳 401、403 或 404，LiteLLM 會清除已快取的工作階段，並要求使用者重新連接。
 
-直接 SDK 呼叫會從磁碟讀取 GitHub 存取權杖，並將其交換為 Copilot API 權杖，快取在 `api-key.json` 中直到過期
+直接 SDK 呼叫會從磁碟讀取 GitHub 存取權杖，並以 bearer 權杖的形式將其傳遞給 Copilot API。LiteLLM 不會以任何方式將其換成另一個獨立的 Copilot API 權杖。
 
 </details>
 
 <details>
 <summary>API base URL</summary>
 
-在閘道上，如果 GitHub 權杖回應中的 API 主機使用 HTTPS，且主機為 `githubcopilot.com` 或其子網域，LiteLLM 會使用該主機。否則，它會使用 `https://api.githubcopilot.com`。閘道不使用 `GITHUB_COPILOT_API_BASE`
+對於 **Per-user GitHub OAuth** 憑證，如果 GitHub Copilot 使用者查詢中的 `endpoints.api` 使用 HTTPS，且主機為 `githubcopilot.com` 或其子網域，LiteLLM 會使用它；若是 GHE.com 憑證，則使用 `copilot-api.SUBDOMAIN.ghe.com`。否則，它會使用 `https://api.githubcopilot.com`；若是 GHE.com 憑證，則使用 `https://copilot-api.SUBDOMAIN.ghe.com`。逐使用者憑證不使用 `GITHUB_COPILOT_API_BASE`。
 
-對於直接 SDK 的 Chat Completions、Responses 與 Embeddings，LiteLLM 依序檢查這些值：憑證或部署的 `api_base`、權杖回應中的 `endpoints.api`、`GITHUB_COPILOT_API_BASE`，然後是 `https://api.githubcopilot.com`。
+對於共用登入的 Chat Completions、Responses 與 Embeddings，LiteLLM 依序檢查這些值：憑證或部署的 `api_base`、登入的 GitHub 主機上 Copilot 使用者查詢中的 `endpoints.api`（若其命名 `githubcopilot.com` 主機，或 GHE.com 登入時為 `copilot-api.SUBDOMAIN.ghe.com`）、`GITHUB_COPILOT_API_BASE`，然後是 `https://api.githubcopilot.com`（GHE.com 登入時為 `https://copilot-api.SUBDOMAIN.ghe.com`）。
 
-Anthropic Messages 使用經驗證的 Copilot 端點。它會忽略呼叫者提供的 `api_base` 與 `GITHUB_COPILOT_API_BASE`。
+Anthropic Messages 使用經驗證的 Copilot 端點。它會忽略呼叫者提供的任何 `api_base` 與 `GITHUB_COPILOT_API_BASE`，但查詢失敗的 GHE.com 登入除外，該情況會像其他端點一樣退回 `GITHUB_COPILOT_API_BASE`。
 
 GitHub App 部署一律呼叫其 GitHub 主機的 Copilot 端點，並忽略已設定的 `api_base`。花費記錄、回應標頭與 Prometheus `api_base` 標籤都會報告該端點。
 

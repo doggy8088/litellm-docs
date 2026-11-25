@@ -673,7 +673,9 @@ litellm_settings:
 
 當 `/key/generate` 請求未指定 `max_budget` 時，會使用在 `default_key_generate_params` 中指定的 `max_budget`。這些預設值會補入請求中任何缺少或 `null` 的欄位。`budget_duration` 是唯一例外：傳送明確的 `"budget_duration": null` 會建立一個其預算永不重置的 key，並略過已設定的預設值（`upperbound_key_generate_params` 仍然適用）。`allowed_routes` 以相同方式套用，因此您可以將其設為 `["llm_api_routes", "/key/spend/report"]`，讓符合資格的新金鑰可以呼叫 `/key/spend/report`。非空的 `allowed_routes` 是一份允許清單，因此請列入金鑰仍需要的路由群組。請求上的非空 `allowed_routes` 會被保留，除非所選的 `key_type` 預設集覆寫它。空清單會被視為未提供。請求上 `key_type` 為 `llm_api`（Admin UI 預設會傳送）時，只有當清單包含 `llm_api_routes`，才會被此清單取代，因此以下方範例來說，這些金鑰也會取得 `/key/spend/report`。`management` 與 `read_only` 金鑰類型一律保留其預設集，`key_type` 為 `default`（Admin UI 的「Full Access」）則保留完整存取權。未帶 `allowed_routes` 也未帶 `key_type` 建立的金鑰只會取得此清單，因此請列出這些金鑰需要的每個路由群組。
 
-此 `allowed_routes` 清單中的每個路由都會授予符合資格的新金鑰，無論擁有者的角色為何，因此請只列出您希望這些金鑰能存取的路由。由於路由來自 proxy 管理員，非 proxy 管理員的金鑰擁有者日後無法以 `/key/update` 變更它們，包括在 Admin UI 中為金鑰選擇不同的金鑰類型。Proxy 管理員可以變更，而需要完整存取權的擁有者可以以 `default` 金鑰類型建立金鑰。來自 `/key/service-account/generate` 的服務帳戶金鑰不會取得此預設值，因此它們保留對 `/key/generate` 與 `/key/update` 的存取權。路由會在金鑰建立時複製到每個金鑰中，因此日後變更或移除此預設值，既有金鑰仍保留它們已有的路由。
+對於符合資格的一般金鑰，無論擁有者的角色為何，設定的清單都會套用至金鑰。請只列出這些金鑰需要的路由。由於路由來自 proxy 管理員，非 proxy 管理員的金鑰擁有者日後無法以 `/key/update` 變更它們，包括在 Admin UI 中為金鑰選擇不同的金鑰類型。Proxy 管理員可以變更，而需要完整存取權的擁有者可以以 `default` 金鑰類型建立金鑰。路由會在金鑰建立時複製到每個金鑰中，因此日後變更或移除此預設值，既有金鑰仍保留它們已有的路由。
+
+以 AI APIs 預設集建立的服務帳戶會繼承[符合資格的預設路由](./service_accounts.md#default-routes-for-ai-api-keys)。省略 `key_type` 的服務帳戶請求會略過路由預設值。
 
 設定 `litellm_settings:default_key_generate_params`：
 ```yaml

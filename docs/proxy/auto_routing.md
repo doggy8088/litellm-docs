@@ -222,7 +222,7 @@ classifier_llm_config:
 
 這份參考文件保留了發行版建置所支援的欄位名稱。包含 [backend #43626](https://github.com/BerriAI/litellm/pull/43626) 的建置也接受帶有 `opensource_classifier_config.provider: jev` 的 `classifier_type: oss_classifier`；以下設定會套用於 `opensource_classifier_config` 內。既有名稱仍然可接受。請參閱 [OSS 分類器指南](/docs/auto_router/decision_classifiers) 以了解遷移方式，以及 Jev、Nimble、Laya 與 Databricks 提供者設定。使用 `provider: databricks` 時，`model` 為 `ai_decide` 或純粹的 serving endpoint 名稱，而 `api_key` 與 `api_base` 在省略時會讀取 `DATABRICKS_API_KEY`（或 `DATABRICKS_TOKEN`）與 `DATABRICKS_API_BASE`。
 
-以 `jev_classifier_config` 設定 `classifier_type: jev`，即可使用 [TypeSafe System One](/docs/pass_through/typesafe)。它會向 `POST /v1/systemone` 傳送一個 `questions.tier` Choice 問題，並將分類輸入放在 `state`、層級說明放在 `criteria`。回傳的 choice 會選取既有的層級池。請參閱 [設定與儀表板說明](/docs/auto_router/setup#jev-classifier-typesafe-ai)
+以 `jev_classifier_config` 設定 `classifier_type: jev`，即可使用 TypeSafe System One。它會向 TypeSafe 的 `POST /v1/systemone` 傳送一個 `questions.tier` Choice 問題，並將分類輸入放在 `state`、層級說明放在 `criteria`。回傳的 choice 會選取既有的層級池。若要透過 proxy 呼叫 Jev，請使用[統一決策端點](/docs/decisions#migrate-from-typesafe-pass-through)。此分類器不依賴已移除的 `/typesafe` pass-through 路由。請參閱 [設定與儀表板說明](/docs/auto_router/setup#jev-classifier-typesafe-ai)
 
 ```yaml
 classifier_type: jev

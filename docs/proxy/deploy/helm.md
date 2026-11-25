@@ -189,7 +189,9 @@ helm upgrade --install litellm oci://ghcr.io/berriai/litellm/chart/litellm \
 
 在單一服務模式下，內建與元件目標路徑使用單體 Service。讓健康與指標端點保持私有。
 
-在元件模式下，chart 將閘道服務的每個路徑都路由到閘道 Service。使用 `alb` 控制器時，它在每個 ALB 規則中放入兩個閘道前綴，讓預設安裝保持在 ALB 監聽器預設允許的 100 條規則以下。舊版 chart 將 `/decisions`、`/v1/decisions`、`/deepgram`、`/extraction`、`/v1/extraction`、`/fal_ai`、`/gigachat`、`/live/sessions`、`/v1/live/sessions`、`/nvidia_nim`、`/openrouter`、`/systemone`、`/v1/systemone`、`/tinyfish`、`/typesafe`、`/watsonx` 以及確切路徑 `/eu_jev/v1/systemone` 送到後端 catch-all。若您曾將其中任何一個加入 `ingress.extraPaths` 作為因應措施，升級時請移除這些項目。與內建路由具有相同路徑與路徑類型的項目會使 chart 無法算繪。網路放置請使用[雲端參考架構](./cloud/overview.md)。
+在元件模式下，chart 將閘道服務的每個路徑都路由到閘道 Service。使用 `alb` 控制器時，它在每個 ALB 規則中放入兩個閘道前綴，讓預設安裝保持在 ALB 監聽器預設允許的 100 條規則以下。舊版 chart 將 `/decisions`、`/v1/decisions`、`/deepgram`、`/extraction`、`/v1/extraction`、`/fal_ai`、`/gigachat`、`/live/sessions`、`/v1/live/sessions`、`/nvidia_nim`、`/openrouter`、`/systemone`、`/v1/systemone`、`/tinyfish`、`/watsonx` 以及確切路徑 `/eu_jev/v1/systemone` 送到後端 catch-all。若您曾將其中任何一個加入 `ingress.extraPaths` 作為因應措施，升級時請移除這些項目。與內建路由具有相同路徑與路徑類型的項目會使 chart 無法算繪。網路放置請使用[雲端參考架構](./cloud/overview.md)。
+
+對於 Jev，請使用 `/v1/systemone` 或 `/v1/decisions`，chart 會將它們路由到閘道。移除 TypeSafe 直通的建置會對 `/typesafe/...` 回傳 404。`ingress.extraPaths` 項目無法恢復已移除的 API 路由。請移除任何舊的 `/typesafe` 覆寫，並遵循[遷移範例](../../decisions.md#migrate-from-typesafe-pass-through)，包括 JSON 映像格式與選擇加入標頭。
 
 </details>
 

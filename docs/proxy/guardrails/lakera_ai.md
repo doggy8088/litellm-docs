@@ -9,7 +9,23 @@ import TabItem from '@theme/TabItem';
 
 # Lakera AI {#lakera-ai}
 
-**支援的端點：** Lakera v2 整合僅支援 **chat completions** 端點（`/v1/chat/completions`）。它不支援 Responses API、`/v1/messages`、MCP、A2A 或其他 proxy 端點。
+## 端點涵蓋範圍 {#endpoint-coverage}
+
+以下請求欄位已在 LiteLLM 1.110.3 上以 Lakera v2 的 `pre_call` 模式驗證。
+
+| 端點 | 受篩選的請求文字 |
+| --- | --- |
+| Chat Completions (`/v1/chat/completions`) | `messages` 中的使用者訊息文字 |
+| Responses (`/v1/responses`) | 字串 `input`，以及輸入訊息中的 `input_text` 區塊 |
+| Anthropic Messages (`/v1/messages`) | `messages` 中的使用者文字區塊。頂層 `system` 欄位不在此檢查範圍內。 |
+| Embeddings (`/v1/embeddings`) | 以字串或字串清單提供的 `input` |
+| Moderations (`/v1/moderations`) | 字串 `input` |
+| Speech (`/v1/audio/speech`) | `input` 中要合成的文字 |
+| Image generation (`/v1/images/generations`) | `prompt` 中的文字 |
+
+在 Responses 請求上，Lakera v2 在建立檢查請求時，也會將 `instructions` 視為系統訊息。`skip_system_message_in_guardrail` 設定適用於該訊息。在 1.110.3 測試中，僅在 `instructions` 中含有標記文字的請求仍會送達模型提供者，因此僅針對該欄位進行封鎖尚未經過驗證。
+
+對於非串流 Chat Completions，`post_call` 會從 `choices[].message.content` 讀取助手文字。原生 Responses 的 `output[]` 與 Anthropic Messages 回應的 `content[]` 不在此輸出檢查範圍內。MCP 工具呼叫與 A2A 代理程式訊息不在上述已驗證涵蓋範圍內。
 
 ## 快速開始 {#quick-start}
 
@@ -50,7 +66,7 @@ guardrails:
 #### `mode` 的支援值 {#supported-values-for-mode}
 
 - `pre_call` 在 LLM 呼叫之前執行，針對 **輸入**
-- `post_call` 在 LLM 呼叫之後執行，針對 **輸入與輸出**
+- `post_call` 在非串流 Chat Completions 呼叫之後執行，檢查聊天訊息與助手回覆
 - `during_call` 在 LLM 呼叫期間執行，針對 **輸入** 與 `pre_call` 相同，但會與 LLM 呼叫平行執行。回應會等到防護欄檢查完成後才會返回
 
 ### 2. 啟動 LiteLLM Gateway  {#2-start-litellm-gateway}

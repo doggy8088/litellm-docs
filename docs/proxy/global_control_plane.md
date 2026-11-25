@@ -34,7 +34,7 @@ description: 透過單一 API 管理彼此獨立的 LiteLLM 部署、比較跨�
 
 僅以組態運作時不需要 PostgreSQL 與 Redis。啟用[執行期組態](./global_control_plane/configuration.md#runtime-configuration)，即可透過 API 管理登錄項目與角色，並將其傳播至各控制平面複本。
 
-控制平面不會複製金鑰、同步資料平面組態、強制執行共用的全域預算，也不會在資料平面之間進行推論備援切換。執行期組態共用僅涵蓋控制平面自身的登錄與角色。當區域閘道必須共用同一個資料庫與同一組金鑰時，請使用[多區域部署](./multi_region.md)。
+啟用執行期組態後，操作員可以[採用現有團隊並跨資料平面管理其預算](./global_control_plane/api_reference.md#adopted-team-budgets)。每個資料平面仍會強制執行並核算自己的預算。控制平面不會同步其他資料平面組態、不會複製金鑰、不會強制執行共用的全域預算，也不會進行推論備援切換。當區域閘道必須共用同一個資料庫與同一組金鑰時，請使用[多區域部署](./multi_region.md)。
 
 此實作提供 REST API 與互動式 API 文件，不提供管理 UI。
 
