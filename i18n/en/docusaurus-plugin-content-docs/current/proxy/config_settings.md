@@ -461,6 +461,7 @@ The **Default** column is the value LiteLLM uses when the setting is omitted fro
 | enforce_rbac | boolean | `false` | If true, enables role-based access control (RBAC) for all proxy operations |
 | forward_llm_provider_auth_headers | boolean | `false` | If true, forwards provider-specific auth headers to LLM API calls |
 | health_check_concurrency | integer | `null` (unbounded) | Maximum number of concurrent health check operations |
+| health_check_skip_blocked_background_models | boolean | `false` | If true, the background health check loop skips deployments paused with `model_info.blocked: true`, including public models that only a paused wildcard serves <SinceVersion v="1.113.0" />. [Doc on health checks](health#skip-paused-models) |
 | health_check_skip_disabled_background_models | boolean | `false` | If true, skips health probes for deployments with `model_info.disable_background_health_check: true` on on-demand `GET /health` and related health runs (not only the background loop). [Doc on health checks](health) |
 | health_check_staleness_threshold | integer | `600` (seconds) | Maximum age in seconds for health check results before marking deployments as stale |
 | maximum_spend_logs_cleanup_batch_size | integer | `1000` | Rows deleted per `DELETE` statement during spend log cleanup. Default is 1000. Overrides the `SPEND_LOG_CLEANUP_BATCH_SIZE` environment default when both are set. See [spend log deletion](spend_logs_deletion) |
@@ -1221,10 +1222,10 @@ Size for the total number of waiting requests across deployments and workers. Te
 | GITHUB_COPILOT_TOKEN_DIR | Directory to store GitHub Copilot token for `github_copilot` llm provider
 | GITHUB_COPILOT_API_KEY_FILE | File to store GitHub Copilot API key for `github_copilot` llm provider
 | GITHUB_COPILOT_ACCESS_TOKEN_FILE | File to store GitHub Copilot access token for `github_copilot` llm provider
-| GITHUB_COPILOT_API_BASE | Base URL for GitHub Copilot API. For GitHub Enterprise subscriptions with custom host, it is similar to https://copilot-api.my-company.ghe.com. Default is https://api.githubcopilot.com
+| GITHUB_COPILOT_API_BASE | Fallback base URL for the shared GitHub Copilot sign-in (used when the Copilot user lookup returns no usable API host). The default is https://api.githubcopilot.com, or https://copilot-api.my-company.ghe.com when the shared sign-in is on a GitHub Enterprise Cloud tenant
 | GITHUB_COPILOT_DEVICE_CODE_URL | URL for GitHub Copilot device code authentication. For GitHub Enterprise subscriptions with custom host, it is similar to https://my-company.ghe.com/login/device/code. Default is https://github.com/login/device/code
 | GITHUB_COPILOT_ACCESS_TOKEN_URL | URL for GitHub Copilot access token retrieval. For GitHub Enterprise subscriptions with custom host, it is similar to https://my-company.ghe.com/login/oauth/access_token. Default is https://github.com/login/oauth/access_token
-| GITHUB_COPILOT_API_KEY_URL | URL for GitHub Copilot API key retrieval. For GitHub Enterprise subscriptions with custom host, it is similar to https://my-company.ghe.com/api/v3/copilot_internal/v2/token. Default is https://api.github.com/copilot_internal/v2/token
+| GITHUB_COPILOT_API_KEY_URL | Legacy.  LiteLLM no longer calls that URL.  If GITHUB_COPILOT_ACCESS_TOKEN_URL is unset or names neither github.com nor a GHE.com host then a URL on api.my-company.ghe.com will point the shared sign-in's Copilot user lookup at that GitHub Enterprise Cloud tenant.
 | GITHUB_COPILOT_CLIENT_ID | Client ID for GitHub Copilot device flow authentication. This is used by the `github_copilot` provider for device code authentication. Default is "Iv1.b507a08c87ecfe98"
 | GREENSCALE_API_KEY | API key for Greenscale service
 | GREENSCALE_ENDPOINT | Endpoint URL for Greenscale service
@@ -1447,7 +1448,7 @@ Size for the total number of waiting requests across deployments and workers. Te
 | LOGGING_WORKER_MAX_QUEUE_SIZE | Maximum size of the logging worker queue. When the queue is full, the worker aggressively clears tasks to make room instead of dropping logs. Default is 50,000
 | LOGGING_WORKER_MAX_TIME_PER_COROUTINE | Maximum time in seconds allowed for each coroutine in the logging worker before timing out. Default is 20.0
 | LOGGING_WORKER_CLEAR_PERCENTAGE | Percentage of the queue to extract when clearing. Default is 50% 
-| MAX_BASE64_LENGTH_FOR_LOGGING | Maximum number of base64 characters to keep in logging payloads. Data URIs exceeding this are replaced with a size placeholder. Set to 0 to disable truncation. Default is 64
+| MAX_BASE64_LENGTH_FOR_LOGGING | Maximum number of base64 characters to keep in logging payloads. Data URIs and Anthropic base64 source data exceeding this are replaced with a size placeholder. Set to 0 to disable truncation. Default is 64
 | MAX_BASE64_LENGTH_STDOUT_LOG | Maximum length, in characters, of a base64 run kept as is in a log line written to stdout, at every log level including DEBUG. A longer run is replaced with a size placeholder such as `[base64_data truncated: 2.86MB]`, in the message and in any traceback, and the text around it stays. Hex and decimal runs (digests, numeric ids) are left alone. Logging callbacks (OTEL, Datadog, etc.) still receive the full record. Set to 0 to disable. Default is 4096
 | MAX_COMPETITOR_NAMES | Maximum number of competitor names allowed in policy template enrichment. Default is 100
 | MAX_DECOMPRESSED_REQUEST_BODIES_IN_FLIGHT_MB | <SinceVersion v="1.108.0" /> Maximum total size in MB of the decoded request bodies one proxy worker holds at a time for requests sent with `Content-Encoding: gzip` or `zstd`. Each compressed request counts the decoded size its gzip or zstd data declares, or the largest size it may decode to when it declares none. A request that would take the worker past this limit gets a 503 with `Retry-After: 1` before it reaches auth or the route. A single request is always let through when no other decoded body is held. Default is 200
