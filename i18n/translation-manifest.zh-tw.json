@@ -1437,8 +1437,8 @@
       "outputTokens": 3096
     },
     "docs/caching/all_caches.md": {
-      "sourceSha256": "83a947f4ca1a325f92e320b79cf9246f33151c5ff65e49fc55f570c555b36a6f",
-      "translationSha256": "3c3954a9893733fe79b74d005da8ef61619907b8d72efc7025125f621e92ce36",
+      "sourceSha256": "9f77ee1154d8bbf2cfe95974db8e7a05f1e8469c874dce7a8760580003e0f211",
+      "translationSha256": "669005e74559fb17f15213d5f96c2d873987eb38842ac47d610744551de4d15a",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -1796,6 +1796,12 @@
       "inputTokens": 0,
       "outputTokens": 0
     },
+    "docs/enterprise/private_registry.md": {
+      "sourceSha256": "67e54315208c707435f7f6ca388866acda33f712e003086ceff5388c7a8d47d6",
+      "translationSha256": "e14ccbd947f8e6734f451f96bb0e1aa64eb80ac7ab1438a4a6d1fbb6763e51c2",
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
     "docs/enterprise/support.md": {
       "sourceSha256": "5f3f4d49fc05e00f2486b8073ee2722fe417c99a65631d7495ef8d950a1a8038",
       "translationSha256": "bac3a8aa69aa65da57bc0747d85631fa5d7d1be477e039a41f844f11391f0e5e",
@@ -2079,8 +2085,8 @@
       "outputTokens": 241
     },
     "docs/integrations/observability_index.md": {
-      "sourceSha256": "ae90f37b6b5ae8ca421d64b18c96d7d94ed7a4186630199435f55ba827ae9d29",
-      "translationSha256": "e8d0d816783efe6bc3ed7734b3a00851ade06899201a3ccabb8e11de44a33575",
+      "sourceSha256": "9bc9a1a21c8d9e4e76e87f3dbffb679171f6e0ec5010f9c0e55116e8a6954808",
+      "translationSha256": "3243ba0bd895b0910a6d521cde1da665541289766ddc67150c0e7d5d7eecdbd3",
       "inputTokens": 1327,
       "outputTokens": 778
     },
@@ -2109,8 +2115,8 @@
       "outputTokens": 1079
     },
     "docs/learn/enterprise_quickstart.md": {
-      "sourceSha256": "7b67cb975d3f302932db8a195d24fe8badd0146aa5f5558c46cf9030cc00e23f",
-      "translationSha256": "500d55f846d90c1e0e910267be6978078ece559a3daa6e5268676501f9699867",
+      "sourceSha256": "3614edb440db39e1ca2b4d9c92ba877a65e26ececc48df0e4d80c2321a213197",
+      "translationSha256": "6218090a7b7feb0d4325ec439c21bfb09543af0316b783c5a1f4d319c9036217",
       "inputTokens": 1072,
       "outputTokens": 521
     },
@@ -2493,14 +2499,14 @@
       "outputTokens": 225
     },
     "docs/observability/langfuse_integration.md": {
-      "sourceSha256": "f185fdc3e16c7429cb131ec87203a62515dda787015a54fb86b52fdb728c6023",
-      "translationSha256": "44980d425efe8fdea96394a89c9c374f78ad950b61b6d701f9afee1587f4d772",
+      "sourceSha256": "3651a3525737b2e6aac98f4f25b12984a4355c62fb454de7e133957389afb108",
+      "translationSha256": "e7fbd69aa9b7ba3423e239e7ad46d658d0f26ae1432a47a989e2d8b8c3ebdffc",
       "inputTokens": 2214,
       "outputTokens": 1929
     },
     "docs/observability/langfuse_to_otel_v2_migration.md": {
-      "sourceSha256": "fd6ccc0075eafa31137621ed0efef51a72d8f5af44c6d23adf98fc61b951fbb6",
-      "translationSha256": "4bdc514a624a1ae279f1df927815047b2989ed28aada856968c5b068c06e503f",
+      "sourceSha256": "1adcd000a61fd15940b7c0b47dc5d98bec5aa59657dd138d73088b32ff9b7e5c",
+      "translationSha256": "7424dd5a1faa626ef169653e5db41fb6036c7dc2cc066a3e1a3a3f7e79ed7c44",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -2546,6 +2552,12 @@
       "inputTokens": 696,
       "outputTokens": 94
     },
+    "docs/observability/mixpanel.md": {
+      "sourceSha256": "9a14775e2fd145c691be0f27ad858060c3c2e22028b4d95a99c5754361ca055d",
+      "translationSha256": "bfa5b1db0b0d68e49dd33477b7dcf14d4c5206955ae8485109184e220ae2032d",
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
     "docs/observability/mlflow.md": {
       "sourceSha256": "0deef484df0c2ba642f11971f2a612cb67b05346b9f0923ad48c353c1590b07a",
       "translationSha256": "6350d794fe07eb0653fe9034206c352b5c07093f65d5b1fc13aa569086c13298",
@@ -2571,8 +2583,8 @@
       "outputTokens": 3723
     },
     "docs/observability/opentelemetry_v2.md": {
-      "sourceSha256": "1acc9b4071d63525618da48dc7377b4e16cd159cec30a519f4a9163a392af5a0",
-      "translationSha256": "bc9812cf2386f76131609df42d017a5205fc3c63ddad5b188051d7c10c1639c8",
+      "sourceSha256": "485cf2a3bb8712182053e69ca9f0e6bef83179585caac46fbe5233cb8219cfcf",
+      "translationSha256": "9e15d46f9cb12e57fb72c306fcae3baf561fedd51a6af1c5dcf5ae0888894f2a",
       "inputTokens": 21726,
       "outputTokens": 20196
     },
@@ -3111,8 +3123,8 @@
       "outputTokens": 195
     },
     "docs/providers/anthropic_tool_search.md": {
-      "sourceSha256": "c612ceef809cc15d382883f7c205371d8b85ca7e319980265afdac64b23bdfdf",
-      "translationSha256": "f7ae96b7c84056525157662cdd508f1fe44649ce9890157e71e31f024ce44a55",
+      "sourceSha256": "72761fcf3552826fd1fef57cd4beb54756dd65534e738869eb8e25436829b7cd",
+      "translationSha256": "80e2fb0078b93c0d01ba3a5bb1d0362cfd4d84dd8de11e4d07df2f07df2f60aa",
       "inputTokens": 740,
       "outputTokens": 133
     },
@@ -3525,8 +3537,8 @@
       "outputTokens": 2104
     },
     "docs/providers/gemini/multimodal_file_inspection.md": {
-      "sourceSha256": "573adacfe4e1727feaca42a1686727a2b810e7fc774efbe2975b06b81cb7bba1",
-      "translationSha256": "3228f3dc673befddff8add8187176f068f164b2558700350b3578aaf0283efa6",
+      "sourceSha256": "5a2349b3a5b1e1e8798253eaecf6af1e2a13013a64598f90f95491731ed0259e",
+      "translationSha256": "275987c72e53a3b3e7a52a421851094ef3dc36a2028aec103ab1499adcf04f8a",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -3573,8 +3585,8 @@
       "outputTokens": 0
     },
     "docs/providers/gnani.md": {
-      "sourceSha256": "e71cc057e8616afcfb2d581b693359038c5995b635a8ddcc3b37d253bbd416d9",
-      "translationSha256": "7548fccc4c61627f33d615c83a21c1c29170fb20c9a27f391d533c265ae38484",
+      "sourceSha256": "ad17745d363d57370661af6646f50fe488421ea9b0ddfba59e7a832db6d42246",
+      "translationSha256": "ce7cbc47fba150c996609fdef4df5ace8f289efe78cc20148bf972be1689e357",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -4467,8 +4479,8 @@
       "outputTokens": 0
     },
     "docs/proxy/audit_logs.md": {
-      "sourceSha256": "fbdd4bac8a0dc4375595e2884fe01f60c18525484b35f0c4a45d604c48f09d31",
-      "translationSha256": "aedeea03d0953815b2de25cb4193216b089a6136947eb22e4065821b83197a99",
+      "sourceSha256": "f4c1cd88db3c360e450254e95ac927b0540d3338bdb1cbcd438af11397222433",
+      "translationSha256": "dc0a0097154354dd7a71a8181f6d1a255c1efb552d013540416e41691e81ba1c",
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -5247,8 +5259,8 @@
       "outputTokens": 2547
     },
     "docs/proxy/guardrails/microsoft_agent_365.md": {
-      "sourceSha256": "b5bad6819d500ae71e0051b319d97111c75b12bebc5cd993cab1877de82099a8",
-      "translationSha256": "a7eb968689e7bc540d8b4a6d15bd127090fb7ecfe2193dfa1724300317f1bd5c",
+      "sourceSha256": "c8030398c444625436b4448d8c8c93bed63f6337a55810011964e63f2f06de33",
+      "translationSha256": "80463fa1cb99bdbbcb7e6f74304256efac1ea3e8a0fa0971f422463e533ff7af",
       "inputTokens": 5427,
       "outputTokens": 5310
     },
@@ -6045,8 +6057,8 @@
       "outputTokens": 0
     },
     "docs/proxy/prometheus.md": {
-      "sourceSha256": "43ed8198648670796089c68888e20e08109685dba196102bcd9ed92399895f34",
-      "translationSha256": "8a2ffd1d2558af2888e08858a830c111328ac31f9a2fff3c8a6ed8f3cd6b50ec",
+      "sourceSha256": "791d2a89724ded269eed972cb4eb96a7494b24e1f31aeb1211470ce36002181c",
+      "translationSha256": "43f58e49cb4681d3ead10adc060b66d218332811bdf978fef632d54e6a1ee7a9",
       "inputTokens": 10740,
       "outputTokens": 10211
     },
@@ -6141,8 +6153,8 @@
       "outputTokens": 251
     },
     "docs/proxy/reliability.md": {
-      "sourceSha256": "f2c40fd07ec89f56074865b53dee7cf3fe311017771ffe3b21357daff8c2408e",
-      "translationSha256": "2d1e94224b3054f0b128237097cbf21fb2015447f9131b0603fbd83d74c7eac0",
+      "sourceSha256": "ee9694a3f596025c1fbb82fefc83f7830eefc55da16b8bacfebb0006a9f7d542",
+      "translationSha256": "b04e7664963f0e79878419b78def9624187c91fda65b61218fc84532670baf37",
       "inputTokens": 3784,
       "outputTokens": 3176
     },
@@ -6489,8 +6501,8 @@
       "outputTokens": 591
     },
     "docs/realtime.md": {
-      "sourceSha256": "1e2ce16d45df7ada2307af70caab1c2932f4897f9ea8c99a576804dac5d4b79c",
-      "translationSha256": "6d3346f177c799ac62cede7ecd20bd7468a27f28539acb2058efb104dbe35ae3",
+      "sourceSha256": "a62ae1e07cc2e8961cf9ccaffc0ff45d0d0d4081495b6f2f06ce0441c07c5014",
+      "translationSha256": "ba907debd9e10bd965c309eb28f3bb6f883df071d6ad11f0f92aac3ce340b3f9",
       "inputTokens": 1202,
       "outputTokens": 704
     },
@@ -8061,8 +8073,8 @@
       "outputTokens": 0
     },
     "release_notes/v1.112.0rc1/index.md": {
-      "sourceSha256": "b6491c3dd4fd0b1fafaabfbb21e11cc57853f13cf0a7c5cb6145b1c6f6845426",
-      "translationSha256": "188b490c5d859bc9cb34c945cee94d5e310425019377dfd35b43847da277be2f",
+      "sourceSha256": "b69210c1b05925608fb35cc971d7d392f50c92fcaa051be5000540a46a17d323",
+      "translationSha256": "3feaac0690f570264f2dc3ec31ec98fef68a049744729678203736340469aa8e",
       "inputTokens": 0,
       "outputTokens": 0
     },
