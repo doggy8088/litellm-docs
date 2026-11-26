@@ -215,7 +215,7 @@ response2 = completion(
 
 安裝 redisvl 用戶端
 ```shell
-uv add redisvl==0.4.1
+uv add 'redisvl>=0.26.0,<1.0'
 ```
 
 託管版本中，您可以在這裡設定您自己的 Redis DB：https://redis.io/try-free/

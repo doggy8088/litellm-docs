@@ -1,14 +1,14 @@
 ---
 title: "透過 LiteLLM 使用 Gnani 語音轉文字"
 sidebar_label: "Gnani"
-description: "使用 Gnani Prisma v3.0 與 v2.5 轉錄音訊：透過 litellm.transcription()，或 LiteLLM AI 閘道上與 OpenAI 相容的 /audio/transcriptions 端點。"
+description: "使用 Gnani Prisma v3.0 與 v2.5 轉錄音訊：透過 litellm.transcription()、LiteLLM AI 閘道上與 OpenAI 相容的 /audio/transcriptions 端點，或即時透過 /v1/realtime WebSocket。"
 ---
 
 # Gnani {#gnani}
 
 <SinceVersion v="1.112.0" />
 
-LiteLLM 支援 Gnani 的 Prisma REST 語音轉文字 API，可處理單一最長 30 秒的錄音。
+LiteLLM 支援 Gnani 的 Prisma REST 語音轉文字 API，可處理單一最長 30 秒的錄音，Proxy 也會透過與 OpenAI 相容的 `/v1/realtime` WebSocket 將即時音訊串流至 Gnani（[見下文](#realtime-transcription)）。
 
 | 屬性 | 詳細內容 |
 |-------|-------|
@@ -16,7 +16,7 @@ LiteLLM 支援 Gnani 的 Prisma REST 語音轉文字 API，可處理單一最長
 | LiteLLM 上的提供者路由 | `gnani/` |
 | 支援的模型 | `gnani/prisma-v3.0`、`gnani/prisma-v2.5` |
 | 提供者文件 | [Gnani REST 參考 ↗](https://docs.gnani.ai/api/STT/speech-to-text) |
-| 支援的 OpenAI 端點 | `/audio/transcriptions` |
+| 支援的 OpenAI 端點 | `/audio/transcriptions`、`/realtime`（僅轉錄，Proxy） |
 
 Gnani 接受 WAV、MP3、OGG、FLAC、AAC 與 M4A。上傳時請保留正確的副檔名，因為 Gnani 會依檔名選擇解碼器。對於記憶體中的壓縮音訊，請傳入例如 `("clip.mp3", audio_bytes)` 的元組。
 
@@ -137,7 +137,7 @@ model_list:
 
 ## 限制 {#limitations}
 
-此整合涵蓋 REST 轉錄。Prisma REST 沒有逐字時間戳記、說話者分離或串流。OpenAI 的 `temperature`、`timestamp_granularities`、`chunking_strategy`、`include`、`known_speaker_names`、`known_speaker_references` 與 `stream=True` 在此沒有對應項目，`prompt` 在 v2.5 上也一樣，因此 LiteLLM 會對它們回傳 400。對於所選模型不接受的 Gnani 選項（例如 v2.5 上的 `topic`），它同樣會回傳 400。若要改為捨棄它們，請在 SDK 中傳入 `drop_params=True`，或在 Proxy 的 `litellm_settings` 下設定 `drop_params: true`。
+這些限制適用於 REST 轉錄。Prisma REST 沒有逐字時間戳記、說話者分離或串流。若要使用即時音訊，請參閱[即時轉錄](#realtime-transcription)。OpenAI 的 `temperature`、`timestamp_granularities`、`chunking_strategy`、`include`、`known_speaker_names`、`known_speaker_references` 與 `stream=True` 在此沒有對應項目，`prompt` 在 v2.5 上也一樣，因此 LiteLLM 會對它們回傳 400。對於所選模型不接受的 Gnani 選項（例如 v2.5 上的 `topic`），它同樣會回傳 400。若要改為捨棄它們，請在 SDK 中傳入 `drop_params=True`，或在 Proxy 的 `litellm_settings` 下設定 `drop_params: true`。
 
 Gnani 會限制一個帳號可同時執行的請求數，並對重疊的請求回應 429。測試使用的帳號一次只執行一個請求，且同一帳號下的金鑰共用此上限。Proxy 預設會對 429 重試兩次，測試中足以涵蓋三個重疊請求。若要處理更多平行流量，請提高 `router_settings` 下的 `num_retries`。SDK 函式 `litellm.transcription` 與 `litellm.atranscription` 不會重試，因此會傳送重疊請求的 SDK 程式碼應在已設定 `num_retries` 的 `litellm.Router` 上呼叫 `atranscription`。
 
@@ -180,3 +180,119 @@ model_list:
     model_info:
       mode: audio_transcription
 ```
+
+## 即時轉錄 {#realtime-transcription}
+
+<SinceVersion v="1.113.0" />
+
+Proxy 透過與 OpenAI 相容的 `/v1/realtime` WebSocket，為即時音訊提供 Prisma v3.0 與 v2.5。用戶端使用 OpenAI Realtime 轉錄協定。LiteLLM 會接收音訊並轉交給 Gnani 的串流 API。Gnani 會執行 VAD（語音活動偵測）來判斷每段話語的結束位置，因此每段話語都會有各自的最終逐字稿。
+
+### 1. 將模型加入您的設定 {#1-add-the-model-to-your-config}
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: gnani-prisma
+    litellm_params:
+      model: gnani/prisma-v3.0
+      api_key: os.environ/GNANI_API_KEY
+      input_cost_per_second: 0.0001
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+```
+
+`api_key` 會退回使用 `GNANI_API_KEY`。`api_base` 會退回使用 `GNANI_API_BASE`，再退回使用 `https://api.vachana.ai`。它必須是 `https://` 或 `wss://` 網址（LiteLLM 會將金鑰放入 WebSocket 交握中）。LiteLLM 會透過 `wss://` 連線，並在路徑後附加 `/stt/v3/stream`。請在部署的 `extra_headers` 中設定 Gnani 連線選項（例如 `format`、`x-idle-timeout-sec`）。
+
+成本對照表中沒有 Gnani 的價格，因此請將您的合約費率設為 `input_cost_per_second`，以便追蹤花費並執行金鑰與團隊預算。
+
+```bash showLineNumbers title="Start LiteLLM Proxy"
+litellm --config config.yaml
+
+# RUNNING on http://0.0.0.0:4000
+```
+
+### 2. 轉錄一段錄音 {#2-transcribe-a-recording}
+
+請在查詢字串中使用 `intent=transcription` 連線。此範例會讀取一個 24kHz 單聲道 PCM16 WAV 檔案，並輸出它的第一份最終逐字稿。
+
+```python
+import asyncio
+import base64
+import os
+import wave
+
+from openai import AsyncOpenAI
+
+
+async def transcribe(path):
+    async with AsyncOpenAI(base_url="http://localhost:4000/v1", api_key=os.environ["LITELLM_API_KEY"]) as client:
+        async with client.realtime.connect(model="gnani-prisma", extra_query={"intent": "transcription"}) as ws:
+            await ws.session.update(session={
+                "type": "transcription",
+                "audio": {"input": {"transcription": {"model": "gnani-prisma", "language": "en"}}},
+            })
+            with wave.open(path, "rb") as audio:
+                assert (audio.getframerate(), audio.getnchannels(), audio.getsampwidth()) == (24000, 1, 2)
+                while chunk := audio.readframes(768):
+                    await ws.input_audio_buffer.append(audio=base64.b64encode(chunk).decode())
+            await ws.input_audio_buffer.commit()
+            async for event in ws:
+                if event.type == "error":
+                    raise RuntimeError(event.error.message)
+                if event.type == "conversation.item.input_audio_transcription.completed":
+                    print(event.transcript)
+                    return
+
+
+asyncio.run(transcribe("speech.wav"))
+```
+
+### 3. 設定工作階段 {#3-configure-the-session}
+
+| 欄位 | 規則 |
+| --- | --- |
+| `format` | `type` 必須是單聲道的 `audio/pcm`。`rate` 必須是 `8000`、`16000`、`24000`、`44100` 或 `48000`，省略時為 24 kHz。LiteLLM 會將音訊重新取樣為 Gnani 預期的 16 kHz。 |
+| `transcription.language` | 一種語言，例如 `hi` 或 `en-IN`；在 Prisma v3.0 上可使用 `indic-auto` 偵測語言，這也是預設值。Prisma v2.5 在第一次附加音訊之前需要一種明確的語言。以逗號分隔的清單會被拒絕。 |
+| `turn_detection` | 省略，或 `{"type": "server_vad"}`。Gnani 的伺服器端 VAD 採用固定設定，因此 `threshold`、`prefix_padding_ms`、`silence_duration_ms`、其他任何輪次偵測類型與 `turn_detection: null` 都會被拒絕。 |
+| `transcription.prompt` | 會被拒絕。 |
+
+若在部署上設定了 [`drop_params`](/docs/completion/drop_params)，LiteLLM 會捨棄被拒絕的設定並保留 Gnani 的伺服器端 VAD。被拒絕的 `session.update` 會回傳一個 `error` 事件，且工作階段會保持開啟，讓用戶端可以傳送修正後的更新。
+
+### 4. 串流音訊 {#4-stream-audio}
+
+`input_audio_buffer.append` 會以工作階段的取樣率傳送 base64 編碼的單聲道 PCM16 音訊（每次附加最多 4 秒音訊）。Gnani 需要即時音訊，因此 LiteLLM 會以即時方式轉發。請在音訊進來時逐一傳送每次附加（即使錄音傳送得比即時更快，傳到 Gnani 仍需要它本身的長度）。
+
+`input_audio_buffer.commit` 會立即終止目前的話語。自上次逐字稿以來沒有語音的 commit（例如發生在 Gnani 已經自行終止話語之後，或發生在只有靜音的區段上）不會產生任何回覆，因此在這種情況下請勿等待 `input_audio_buffer.committed`。所有其他用戶端事件（包括 `input_audio_buffer.clear` 與 `response.create`）都會產生一個 `error` 事件，且工作階段會保持開啟。
+
+### 5. 讀取逐字稿 {#5-read-transcripts}
+
+| 事件 | 欄位 | 時機 |
+| --- | --- | --- |
+| `session.created` | `session.type: transcription` | Gnani 已接受連線 |
+| `session.updated` | 生效的設定，相同的 `session.id` | Gnani 已接受您的 `session.update` |
+| `input_audio_buffer.speech_started` | `item_id` | Gnani 偵測到語音 |
+| `input_audio_buffer.speech_stopped` | `item_id` | 在話語的逐字稿之前 |
+| `input_audio_buffer.committed` | `item_id`、`previous_item_id` | 在話語的逐字稿之前 |
+| `conversation.item.input_audio_transcription.completed` | `item_id`、`transcript`、`usage: {"type": "duration", "seconds": 4.032}`、`detected_language_code`（Gnani 回報時） | 每段話語的最終逐字稿 |
+| `error` | `error.message` | Gnani 或 LiteLLM 拒絕了一個事件 |
+
+四個話語事件都帶有一個 `item_id`。`usage.seconds` 是話語的長度，話語之間的靜音會隨下一份逐字稿或工作階段關閉時一併計費。
+
+### 工作階段限制 {#session-limits}
+
+Gnani 會在 15 分鐘後，或在 60 秒未偵測到語音後關閉工作階段。若要變更閒置上限，請在部署的 `extra_headers` 中設定 `x-idle-timeout-sec`（5 至 900）。LiteLLM 不會自動重新開啟已關閉的工作階段，因此您需要開啟新的工作階段，並從上一段已完成的說話內容繼續。
+
+```yaml
+model_list:
+  - model_name: gnani-prisma
+    litellm_params:
+      model: gnani/prisma-v3.0
+      api_key: os.environ/GNANI_API_KEY
+      input_cost_per_second: 0.0001
+      extra_headers:
+        x-idle-timeout-sec: "300"
+```
+
+`gnani-prisma` 上的工作階段在沒有任何語音的情況下最多可保持開啟 5 分鐘。
+
+在 Python 3.13 及以上版本，重新取樣器需要 `audioop-lts` 套件，執行 `pip install 'litellm[proxy]'` 即可安裝。{/* keep-python-version */}

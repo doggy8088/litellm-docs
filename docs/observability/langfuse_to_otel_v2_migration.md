@@ -117,7 +117,8 @@ litellm_settings:
 | `session_id`、`langfuse_session_id` 標頭 | 不變 |
 | `tags` | 不變。包含金鑰標籤、團隊標籤與 `x-litellm-tags` 標頭 |
 | `trace_release`、`trace_version`、`LANGFUSE_TRACING_ENVIRONMENT` | 已對應 <SinceVersion v="1.111.0" />。不會讀取 `LANGFUSE_RELEASE` |
-| `trace_id`、`existing_trace_id`、`update_trace_keys` | 忽略。使用 W3C `traceparent` 標頭連結追蹤。V2 無法更新現有追蹤 |
+| `trace_id`、`langfuse_trace_id` 標頭 | 傳送相同值的呼叫會共用一個 trace <SinceVersion v="1.113.0" />（請參閱 [trace ID 與 `langfuse_otel`](./langfuse_integration#trace-id-with-langfuse_otel)）。若同時存在 W3C `traceparent` 標頭，以其為準。`x-litellm-trace-id` 標頭不會命名 trace。 |
+| `existing_trace_id`、`update_trace_keys` | 忽略。V2 無法將呼叫加入現有 trace 或以任何方式修改它，只會針對 `existing_trace_id` 記錄一次警告 |
 | `generation_id`、`parent_observation_id` | 忽略。觀察 ID 是 LiteLLM 呼叫 ID，呼叫者可以用 `x-litellm-call-id` 標頭設定 |
 | `trace_metadata`、自訂 generation 中繼資料 | 不會傳遞。使用 `LITELLM_OTEL_BAGGAGE_METADATA_KEYS` 將您需要的金鑰加入允許清單，請參閱[請求身分](./opentelemetry_v2#request-identity-on-every-span) |
 | Usage `cache_read_input_tokens`、`cache_creation_input_tokens` | 重新命名為 `input_cached_tokens` 與 `input_cache_creation`。推理 token 從 `output` 移出到 `output_reasoning_tokens` |

@@ -696,6 +696,61 @@ print(follow_up.output_text)
 
 ---
 
+## 在非 Claude 模型上使用 Claude Code 工具搜尋 {#claude-code-tool-search-on-non-claude-models}
+
+啟用 `ENABLE_TOOL_SEARCH=true` 的 Claude Code 會以 `defer_loading: true` 傳送大型工具集（例如 MCP 伺服器工具），並搭配一個 `ToolSearch` 工具，依需求載入它們。每次載入都會改變 Claude Code 在下一個請求中傳送的工具清單。在走 `/v1/messages`、但不是 Claude 的模型上，這樣的改變會破壞提供者的提示快取，因此每次工具載入後的第一個請求都要支付完整輸入費用。
+
+在部署的 `model_info` 中設定 `deferred_tools`，選擇 LiteLLM 如何為該部署處理這些延遲載入的工具。
+
+<SinceVersion v="1.113.0" />
+
+| 值 | LiteLLM 傳送的內容 | 適用對象 |
+|-------|--------------------|------------|
+| `drop`（預設） | 每個延遲載入的工具都以一般工具傳送，不帶 `defer_loading` | 可接受快取損失的後端 |
+| `native` | 將請求送往提供者的 Responses API，`ToolSearch` 作為用戶端 `tool_search`，延遲載入的工具維持延遲載入 | Azure OpenAI 與 OpenAI |
+| `emulate` | 一份固定工具清單，延遲載入的工具由一個 `CallLoadedTool` 工具取代，該工具會依名稱呼叫已載入的工具 | 僅支援對話的後端，例如 Bedrock 或 Fireworks Kimi |
+| `passthrough` | 每個工具都保留 Claude Code 傳送時的 `defer_loading` 旗標，每個 `ToolSearch` 結果都以文字呈現，列出已載入的工具 | 接受 Anthropic 風格延遲載入的後端 |
+
+使用 `emulate` 時，`ToolSearch` 結果會以文字形式傳給模型，列出每個已載入工具及其描述與輸入 schema，模型再透過 `CallLoadedTool` 呼叫該工具。LiteLLM 會以該已載入工具自己的名稱，將此次呼叫回傳給 Claude Code，因此 Claude Code 會照常執行該工具。整個工作階段的工具清單維持不變，因此提示快取在多次工具載入之間仍然有效。`emulate` 不會改變沒有 `ToolSearch` 工具的請求。
+
+使用 `native` 時，即使開啟了 `use_chat_completions_url_for_anthropic_messages`，部署仍會使用 Responses API，因此對話絕不會切換 API 而遺失快取。將 `tool_choice` 強制指定到 `ToolSearch` 的請求會回應 400，因為 Responses API 無法強制執行用戶端工具搜尋。
+
+使用 `emulate` 時，已載入工具的引數會以 `CallLoadedTool` 的自由格式 `input` 傳給模型，因此提供者不再依據該工具的 schema 檢查它們。帶有 `strict: true` 的延遲載入工具在 `emulate` 下會回應 400，因為 `CallLoadedTool` 無法強制執行嚴格輸入。LiteLLM 只有在呼叫的工具是由對話中的 `ToolSearch` 結果所載入時，才會以該真實工具的名稱回傳 `CallLoadedTool` 呼叫，其他呼叫則會以 `CallLoadedTool` 的形式傳給用戶端。將 `tool_choice` 強制指定到延遲載入工具的請求，會被強制經由 `CallLoadedTool` 傳送，並固定該工具的名稱。
+
+`deferred_tools` 只適用於 LiteLLM 將 `/v1/messages` 轉譯為其他 API 的情況。LiteLLM 透過提供者自己的 `/v1/messages` API 呼叫的提供者（例如 Anthropic），會照 Claude Code 傳送的原樣接收延遲載入的工具，因此在該處使用 `passthrough` 以外的值會回應 400。
+
+未知的值、在上述兩個提供者以外的提供者上使用 `native`，或在 OpenAI、Azure OpenAI 或 Mistral（其 API 會拒絕 `defer_loading`）上使用 `passthrough`，都會回應 400。`passthrough` 在無法將 `defer_loading` 傳遞給模型的路由上也會回應 400：Bedrock Converse、Bedrock 的原生對話路由（對許多請求參數會退回 Converse）、Gemini 與 Vertex AI Gemini。在 `drop_params: true` 的情況下，LiteLLM 會改用 `drop`（並在提供者自己的 `/v1/messages` API 上忽略此設定）、捨棄強制指定到 `ToolSearch` 的 `tool_choice`、在 `emulate` 下傳送不帶 `strict` 的 `strict` 延遲載入工具，並記錄一則指明該設定的警告。
+
+Proxy 預設會為 Claude Code 請求開啟 `drop_params`，因此 Claude Code 工作階段會得到該備援行為與警告，而不是 400。在 `litellm_settings` 下設定 `drop_params: false`，同樣會得到 400。
+
+```yaml showLineNumbers title="config.yaml"
+model_list:
+  - model_name: azure-gpt
+    litellm_params:
+      model: azure/{{openai_large}}
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+    model_info:
+      deferred_tools: native
+  - model_name: kimi
+    litellm_params:
+      model: bedrock/chat_completions/us.moonshotai.kimi-k3.1
+      aws_region_name: us-east-1
+    model_info:
+      deferred_tools: emulate
+```
+
+對 proxy 啟用工具搜尋啟動 Claude Code，然後使用一個 MCP 工具。工具載入後的請求會在用量中將大部分輸入回報為 `cache_read_input_tokens`。
+
+```bash showLineNumbers title="Start Claude Code"
+export ANTHROPIC_BASE_URL=http://0.0.0.0:4000
+export ANTHROPIC_AUTH_TOKEN=$LITELLM_API_KEY
+export ENABLE_TOOL_SEARCH=true
+claude --model kimi
+```
+
+---
+
 ## 其他資源 {#additional-resources}
 
 - [Anthropic 工具搜尋文件](https://docs.anthropic.com/en/docs/build-with-claude/tool-use/tool-search)

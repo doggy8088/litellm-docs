@@ -203,6 +203,50 @@ curl --location --request POST 'http://0.0.0.0:4000/chat/completions' \
 }'
 ```
 
+#### Trace ID 與 `langfuse_otel` {#trace-id-with-langfuse_otel}
+
+<SinceVersion v="1.113.0" />
+
+經由 `langfuse_otel` 傳送的呼叫，若被命名為同一個 trace，就會歸入同一個 Langfuse trace。請在屬於該 trace 的每一次呼叫中，於 `metadata` 或 `litellm_metadata` 傳送相同的 `trace_id`，或傳送相同的 `langfuse_trace_id` 請求標頭：
+
+```shell
+curl --location 'http://0.0.0.0:4000/chat/completions' \
+    --header 'Content-Type: application/json' \
+    --header "Authorization: Bearer $LITELLM_API_KEY" \
+    --data '{
+    "model": "gpt-4o",
+    "messages": [{"role": "user", "content": "what llm are you"}],
+    "metadata": {"trace_id": "0af76519-16cd-43dd-8448-eb211c80319c"}
+}'
+```
+
+當請求以多種方式命名其 trace 時，以該清單中的第一種為準。
+
+未設定 `LITELLM_OTEL_V2` 時：
+
+1. 有效的 W3C `traceparent` 標頭。
+2. `metadata` 中的 `existing_trace_id`，或 `langfuse_existing_trace_id` 標頭。此呼叫只是加入該 trace，不會重新命名它。
+3. `langfuse_trace_id` 標頭。
+4. `x-litellm-trace-id` 標頭。
+5. `metadata` 或 `litellm_metadata` 中的 `trace_id`。
+
+設定 `LITELLM_OTEL_V2=true` 時：
+
+1. 正確的 W3C `traceparent` 標頭。
+2. `langfuse_trace_id` 標頭。
+3. `metadata` 或 `litellm_metadata` 中的 `trace_id`。若 `/v1/responses` 或 `/v1/messages` 請求同時傳送兩者，則以 `litellm_metadata` 為準，因為 `metadata` 是提供者自己的欄位。
+
+在 V2 上，`x-litellm-trace-id` 不會命名 trace，因為它是整個用戶端工作階段共用的一個 ID，會把該工作階段的所有呼叫合併成單一 trace。V2 也不使用 `existing_trace_id`，因為該請求會成為 trace 的第二個根節點，Langfuse 會重新命名 trace。傳送它的請求會得到自己的 trace。Proxy 會在第一次發生時記錄一次警告。
+
+- 此 ID 的正規化方式與 `langfuse` 回呼相同（轉小寫、移除連字號），若不是 UUID 或 32 個十六進位字元，會雜湊成 32 個十六進位字元。Langfuse 中顯示的 trace ID 是正規化後的形式。
+- 請為每個希望成為獨立 trace 的工作單元傳送不同的 `trace_id`。重複使用相同值（例如常數）的呼叫會被合併成單一 trace。
+- 設定 `LITELLM_OTEL_V2=true` 時，這適用於所有 proxy 端點（`/v1/chat/completions`、`/v1/responses`、`/v1/messages` 等），限於 proxy 的 `max_request_size_mb` 與 16MB 上限內的 JSON、表單或文字 body，以及經由 Python SDK 發出的呼叫。二進位 body（例如音訊）不會被讀取，因此請務必以 `langfuse_trace_id` 標頭命名您的 trace。
+- 設定 `LITELLM_OTEL_V2=true` 時，整個請求（包括其驗證與路由 spans）都是 Langfuse 中該命名 trace 的一部分。其他 OpenTelemetry exporter 與 `traceresponse` 回應標頭仍使用請求最初的 trace ID，且那些 exporter 不會獲得新的 span 屬性。所有傳送到 Langfuse 的 spans 都連結到該 trace 內的同一個 span。
+- 設定 `LITELLM_OTEL_V2=true` 時，proxy 會提早讀取請求 body 以擷取其 trace ID。提早讀取時，每個 worker 同一時間最多保留 64MB 的請求 body，且最多等待 body 10 秒。超過這些上限的請求會得到自己的 trace，且 Langfuse 中的根 span 會帶有 `litellm.otel.trace_id_skipped` 屬性，說明 proxy 未使用該 trace ID 的原因。Proxy 會在每種上限第一次被超過時各記錄一次警告。
+- 未設定 `LITELLM_OTEL_V2` 且已設定 `otel` 回呼時，`otel` exporter 會保留請求自己的 trace，Langfuse 中的每次呼叫會連結到 exporter 中其請求的 span。
+- 工作階段標頭（例如 `x-litellm-session-id`）不會命名 trace。這些呼叫屬於同一個工作階段，但各自有自己的 trace。若未設定 `LITELLM_OTEL_V2`，工作階段標頭也會取代 body 中傳送的 `trace_id`（與 `langfuse` 回呼的行為相同）。因此，若您傳送工作階段標頭，也必須傳送 `langfuse_trace_id` 標頭。
+- 較早的版本只是將 `trace_id` 設為 span 屬性，或在設定 `LITELLM_OTEL_V2=true` 時完全省略它，因此每次呼叫都進入自己的 trace。
+
 #### Trace 與生成參數 {#trace--generation-parameters}
 
 ##### Trace 特定參數 {#trace-specific-parameters}
@@ -346,7 +390,7 @@ chat(messages)
 
 將 `mask_input` 設為 `True`，會遮罩此呼叫的輸入不被記錄
 
-將 `mask_output` 設為 `True`，會使此呼叫的輸出不被記錄。
+將 `mask_output` 設為 `True`，會將此呼叫所記錄的輸出替換為 `redacted-by-litellm`。
 
 請注意，如果您正在延續既有 trace，且將 `update_trace_keys` 設定為包含 `input` 或 `output`，同時您也設定了對應的 `mask_input` 或 `mask_output`，那麼該 trace 既有的 input 和/或 output 將會被替換成一則已遮蔽的訊息。這僅適用於 `langfuse_enable_update_trace_keys` 開啟時。
 

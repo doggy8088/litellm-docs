@@ -525,6 +525,41 @@ router_settings:
 
 這些規則適用於 LiteLLM 分類為 `ContextWindowExceededError` 的錯誤，包括提供者的拒絕。`enable_pre_call_checks` 還會在聯絡提供者之前檢查已宣告的輸入限制。現有的 `max_fallbacks` 限制仍會約束該鏈。備援部署仍必須接受該提示，並通過存取、健康狀態與其他路由檢查。
 
+#### 先在群組內重試，再進行備援 {#retry-the-group-before-falling-back}
+
+<SinceVersion v="1.113.0" />
+
+啟用 `enable_pre_call_checks: true` 後，提供者回報的上下文視窗錯誤會先在同一群組內的另一個部署上重試。這些重試會計入 `num_retries`，且發生在後續的 `order` 層級與通用 `fallbacks` 之前。當某個部署的 `max_input_tokens` 實際上大於提供者帳號實際接受的上限時，這項機制特別有用：呼叫前檢查會放行該提示，隨後提供者卻拒絕了它。
+
+重試會跳過所有提供被拒模型的部署（因為它們都會拒絕同一個提示）。若某個部署的 `max_input_tokens` 大於被拒部署的上限，仍會嘗試該部署。路由器會從 `model_info.base_model` 讀取模型，否則從 `model` 讀取，並會把 Bedrock 區域前綴（例如 `us.`）視為其基礎模型。同一模型的兩個 Azure 部署必須具備相同的 `base_model`，才會一起被跳過。相符的 `context_window_fallbacks` 規則仍優先於重試，而對單一部署 ID 的呼叫不會重試。若重試全部失敗，請求會回傳第一個上下文視窗錯誤。
+
+在此範例中，Bedrock 部署宣告了 100 萬 token 的視窗，但帳號實際接受的輸入 token 更少。
+
+```yaml
+model_list:
+  - model_name: long-prompt
+    litellm_params:
+      model: bedrock/us.anthropic.{{anthropic}}
+    model_info:
+      max_input_tokens: 1000000
+  - model_name: long-prompt
+    litellm_params:
+      model: openai/{{openai_large}}
+      api_key: os.environ/OPENAI_API_KEY
+router_settings:
+  enable_pre_call_checks: true
+  num_retries: 2
+```
+
+```bash
+curl -i http://0.0.0.0:4000/v1/chat/completions \
+  -H "Authorization: Bearer $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @long_prompt.json
+```
+
+當路由器為一個超過帳號可接受長度的提示選擇 Bedrock 部署時，Bedrock 會回傳 400 並附上「prompt is too long」。路由器接著會把提示轉發給 OpenAI 部署，Proxy 則回傳 200 並帶有 `x-litellm-attempted-retries: 1`。若未啟用 `enable_pre_call_checks`，該 400 會直接回傳給呼叫端，或交由該群組的通用 `fallbacks` 處理（若有設定）。
+
 ### 上下文視窗備援（呼叫前檢查 + 備援） {#context-window-fallbacks-pre-call-checks--fallbacks}
 
 **在發出呼叫之前**，使用 **`enable_pre_call_checks: true`** 檢查請求是否在模型上下文視窗內。

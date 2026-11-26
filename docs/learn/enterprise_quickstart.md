@@ -34,7 +34,7 @@ import TabItem from '@theme/TabItem';
 - **Redis。** 當您執行多個執行個體或多個 worker 時，請執行 Redis 7.0 或更新版本。沒有 Redis 時，每個執行個體會各自獨立強制執行速率限制與預算。參見[哪些功能需要 Redis](/docs/proxy/redis_requirements)。
 - **Salt key。** 在加入第一個模型前設定 `LITELLM_SALT_KEY`。Salt key 會加密已儲存的憑證，加入模型後絕不能更改。參見[設定 salt key](/docs/proxy/prod#set-the-salt-key)。
 - **Master key。** 將 master key 保存在您的密鑰管理器中。應用程式必須使用虛擬金鑰，而不是 master key。
-- **版本。** 固定確切的版本或映像摘要，並[驗證映像簽章](/docs/proxy/docker_image_security)。請使用[受支援的版本](/docs/enterprise/version_support)。
+- **版本。** 固定確切的版本或映像摘要，並[驗證映像簽章](/docs/proxy/docker_image_security)。請使用[受支援的版本](/docs/enterprise/version_support)。您可以從[私人容器登錄檔](/docs/enterprise/private_registry)拉取 Enterprise 映像。
 - **拓撲。** 若有多個區域，請在部署前閱讀[多區域部署](/docs/proxy/multi_region)。
 
 完整清單請見[生產環境最佳實踐](/docs/proxy/prod)與[安全性最佳實踐](/docs/proxy/security_best_practices)。

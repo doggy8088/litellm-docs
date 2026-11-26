@@ -154,7 +154,7 @@ curl -X POST http://localhost:4000/mcp-rest/tools/call \
 
 每個受防護的工具呼叫，無論允許、封鎖或拒絕，在 `/mcp` 與 `/mcp-rest/tools/call` 上都會在 Admin UI 的 **Logs** 下產生一列（[UI logs](/docs/proxy/ui_logs)）。該列一律顯示防護欄名稱、模式與狀態。它會顯示 Agent 365 呼叫所花的時間，但當 Agent 365 未被呼叫、未回覆（無法連線或逾時），或回覆 5xx 或無法解析的主體時除外。狀態對於允許的呼叫是 `success`，對於 Defender 封鎖、被拒絕的呼叫端或被 Agent 365 拒絕的請求是 `guardrail_intervened`，而當 Agent 365 或 Entra 無法被詢問、節流該呼叫、回傳 5xx 或無法解析的回覆、拒絕閘道自身的憑證，或 Defender 未進行評估時，則是 `guardrail_failed_to_respond`。被拒絕呼叫的錯誤詳細資訊帶有完整的錯誤主體，包括封鎖的 Defender 訊息與關聯 id
 
-該列上防護欄的回應，包含判定（`Allow`、`Block`、`Rejected`、`Throttled`、`Unavailable`、`Unscanned`）、Defender 狀態、關聯 id、延遲與失敗原因，只有在 `store_prompts_in_spend_logs` 開啟時才會儲存。未開啟時，回應會顯示為 `REDACTED_BY_LITELM`
+該列上防護欄的回應，包含判定（`Allow`、`Block`、`Rejected`、`Throttled`、`Unavailable`、`Unscanned`）、Defender 狀態、關聯 id、延遲與失敗原因，只有在 `store_prompts_in_spend_logs` 開啟時才會儲存。未開啟時，回應會儲存為 `null`，因此該列只會顯示防護欄名稱、模式與狀態，不會顯示回應詳細資訊
 
 ```yaml
 general_settings:

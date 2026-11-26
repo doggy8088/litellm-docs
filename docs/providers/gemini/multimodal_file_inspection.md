@@ -52,35 +52,6 @@ litellm --config config.yaml
 PDF（`.pdf`）、文件（`.docx`、`.doc`、`.dotx`、`.odt`）與簡報（`.pptx`、`.ppt`、`.odp`）請使用這些欄位。頁面與投影片皆從 1 開始編號，範圍的兩端都包含在內。
 
 <Tabs>
-<TabItem value="generate-content" label="generateContent">
-
-```bash
-curl -X POST "http://localhost:4000/v1beta/models/gemini-4-hydrogen:generateContent" \
-  -H "x-goog-api-key: $LITELLM_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "contents": [{
-      "role": "user",
-      "parts": [
-        {
-          "fileData": {
-            "fileUri": "https://generativelanguage.googleapis.com/v1beta/files/FILE_ID",
-            "mimeType": "application/pdf"
-          },
-          "documentMetadata": {
-            "startPage": 3,
-            "endPage": 4,
-            "contentLayers": ["PAGE_IMAGE"]
-          },
-          "mediaResolution": {"level": "MEDIA_RESOLUTION_HIGH"}
-        },
-        {"text": "Summarize the chart and footnotes on pages 3 and 4."}
-      ]
-    }]
-  }'
-```
-
-</TabItem>
 <TabItem value="interactions" label="Interactions">
 
 ```bash
@@ -106,6 +77,35 @@ curl -X POST "http://localhost:4000/v1beta/interactions" \
       },
       {"type": "text", "text": "Summarize the chart and footnotes on pages 3 and 4."}
     ]
+  }'
+```
+
+</TabItem>
+<TabItem value="generate-content" label="generateContent">
+
+```bash
+curl -X POST "http://localhost:4000/v1beta/models/gemini-4-hydrogen:generateContent" \
+  -H "x-goog-api-key: $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "role": "user",
+      "parts": [
+        {
+          "fileData": {
+            "fileUri": "https://generativelanguage.googleapis.com/v1beta/files/FILE_ID",
+            "mimeType": "application/pdf"
+          },
+          "documentMetadata": {
+            "startPage": 3,
+            "endPage": 4,
+            "contentLayers": ["PAGE_IMAGE"]
+          },
+          "mediaResolution": {"level": "MEDIA_RESOLUTION_HIGH"}
+        },
+        {"text": "Summarize the chart and footnotes on pages 3 and 4."}
+      ]
+    }]
   }'
 ```
 
@@ -152,34 +152,6 @@ Office 檔案請更換 MIME 類型，欄位保持不變。`.pptx` 簡報使用 `
 試算表（`.xlsx`、`.xls`、`.ods`）請使用這些欄位。`sheetIndex` 是工作表在分頁順序中的位置（從 1 開始編號），`visibleCells` 則是 A1 儲存格或範圍。
 
 <Tabs>
-<TabItem value="generate-content" label="generateContent">
-
-```bash
-curl -X POST "http://localhost:4000/v1beta/models/gemini-4-hydrogen:generateContent" \
-  -H "x-goog-api-key: $LITELLM_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "contents": [{
-      "role": "user",
-      "parts": [
-        {
-          "fileData": {
-            "fileUri": "https://generativelanguage.googleapis.com/v1beta/files/WORKBOOK_FILE_ID",
-            "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          },
-          "spreadsheetMetadata": {
-            "sheetIndex": 2,
-            "visibleCells": "A1:H50",
-            "contentLayers": ["DATA", "FORMULAS"]
-          }
-        },
-        {"text": "List the formulas in this range and what each one computes."}
-      ]
-    }]
-  }'
-```
-
-</TabItem>
 <TabItem value="interactions" label="Interactions">
 
 ```bash
@@ -208,6 +180,34 @@ curl -X POST "http://localhost:4000/v1beta/interactions" \
 ```
 
 </TabItem>
+<TabItem value="generate-content" label="generateContent">
+
+```bash
+curl -X POST "http://localhost:4000/v1beta/models/gemini-4-hydrogen:generateContent" \
+  -H "x-goog-api-key: $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "role": "user",
+      "parts": [
+        {
+          "fileData": {
+            "fileUri": "https://generativelanguage.googleapis.com/v1beta/files/WORKBOOK_FILE_ID",
+            "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          },
+          "spreadsheetMetadata": {
+            "sheetIndex": 2,
+            "visibleCells": "A1:H50",
+            "contentLayers": ["DATA", "FORMULAS"]
+          }
+        },
+        {"text": "List the formulas in this range and what each one computes."}
+      ]
+    }]
+  }'
+```
+
+</TabItem>
 </Tabs>
 
 | generateContent | Interactions | 含義 |
@@ -221,32 +221,6 @@ curl -X POST "http://localhost:4000/v1beta/interactions" \
 偏移量是以 `s` 結尾的秒數字串（例如 `"10s"`、`"10.5s"`）。
 
 <Tabs>
-<TabItem value="generate-content" label="generateContent">
-
-```bash
-curl -X POST "http://localhost:4000/v1beta/models/gemini-4-hydrogen:generateContent" \
-  -H "x-goog-api-key: $LITELLM_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "contents": [{
-      "role": "user",
-      "parts": [
-        {
-          "fileData": {
-            "fileUri": "https://generativelanguage.googleapis.com/v1beta/files/VIDEO_FILE_ID",
-            "mimeType": "video/mp4"
-          },
-          "videoMetadata": {"startOffset": "10s", "endOffset": "20s", "fps": 1}
-        },
-        {"text": "Describe what happens in this segment."}
-      ]
-    }]
-  }'
-```
-
-音訊：請將 `mimeType` 設為音訊類型（例如 `audio/mpeg`），並將 `videoMetadata` 換成 `"audioMetadata": {"startOffset": "60s", "endOffset": "90s"}`。
-
-</TabItem>
 <TabItem value="interactions" label="Interactions">
 
 ```bash
@@ -272,6 +246,32 @@ curl -X POST "http://localhost:4000/v1beta/interactions" \
 ```
 
 音訊請使用 `"type": "audio"`，搭配音訊 MIME 類型（例如 `audio/mpeg`）與相同的 `processing` 偏移量。
+
+</TabItem>
+<TabItem value="generate-content" label="generateContent">
+
+```bash
+curl -X POST "http://localhost:4000/v1beta/models/gemini-4-hydrogen:generateContent" \
+  -H "x-goog-api-key: $LITELLM_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "role": "user",
+      "parts": [
+        {
+          "fileData": {
+            "fileUri": "https://generativelanguage.googleapis.com/v1beta/files/VIDEO_FILE_ID",
+            "mimeType": "video/mp4"
+          },
+          "videoMetadata": {"startOffset": "10s", "endOffset": "20s", "fps": 1}
+        },
+        {"text": "Describe what happens in this segment."}
+      ]
+    }]
+  }'
+```
+
+音訊：請將 `mimeType` 設為音訊類型（例如 `audio/mpeg`），並將 `videoMetadata` 換成 `"audioMetadata": {"startOffset": "60s", "endOffset": "90s"}`。
 
 </TabItem>
 </Tabs>

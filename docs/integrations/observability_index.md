@@ -36,6 +36,7 @@ items={[
   { icon: <Logo src="/img/integrations/posthog.png" />, title: "PostHog", description: "產品分析。", to: "/docs/observability/posthog_integration" },
   { icon: <Logo src="/img/integrations/splunk.png" />, title: "Splunk Observability Cloud", description: "發送至 Splunk 的 OTLP 追蹤。", to: "/docs/observability/splunk_observability_cloud" },
   { icon: <Logo src="/img/integrations/signoz.png" />, title: "SigNoz", description: "具有每個團隊攝取金鑰的 OTLP 追蹤。", to: "/docs/observability/signoz" },
+  { icon: <Logo src="/img/integrations/mixpanel.svg" />, title: "Mixpanel", description: "具有使用者歸屬的 OTLP 追蹤。", to: "/docs/observability/mixpanel" },
 ]}
 />
 

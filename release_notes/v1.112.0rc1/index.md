@@ -58,6 +58,17 @@ pip install litellm==1.112.0rc1
 
 **FOCUS 匯出現在使用 FOCUS 1.5 結構描述，不再寫入 `ProviderName` 與 `PublisherName` 欄位。**從 CSV 或 Parquet 匯出讀取這些欄位的查詢與儀表板，必須改讀 `ServiceProviderName`。請參閱 [PR #52105](https://github.com/BerriAI/litellm/pull/52105)。
 
+**`/v1/chat/completions` 與 `/v1/messages` 現在會以 400 拒絕 `previous_response_id`。**先前，對於 LiteLLM 透過提供者的 Responses API 服務的模型，帶有 `previous_response_id` 的請求會回傳 200 並繼續使用已儲存的回應，在 Bedrock 上，每一輪後續對話都會對系統提示詞重複計費兩次。現在它會回傳 400，並指向 `/v1/responses`，而 `/v1/messages/count_tokens` 也會回傳相同的 400。`/v1/responses` 仍會接受此欄位。請改為在 `messages` 中傳送先前的對話輪次，或將呼叫移至 `/v1/responses`。`drop_params: true` 不會略過此檢查。如果您暫時無法變更用戶端，請在部署上將此欄位加入 `additional_drop_params`，LiteLLM 就會捨棄在請求主體最上層傳送的 `previous_response_id`，而非拒絕請求。如此一來，模型只會看到 `messages`，因此只有在用戶端已傳送完整對話紀錄時才使用此做法。請參閱 [PR #53038](https://github.com/BerriAI/litellm/pull/53038)。
+
+```yaml
+model_list:
+  - model_name: gpt-openai-chat
+    litellm_params:
+      model: openai/responses/gpt-6.2-sol
+      api_key: os.environ/OPENAI_API_KEY
+      additional_drop_params: ["previous_response_id"]
+```
+
 :::
 
 ## 重點摘要 {#key-highlights}

@@ -313,6 +313,7 @@ curl http://localhost:4000/health/backlog \
 - `S3Logger` - S3 冷儲存失敗
 - `langfuse` - Langfuse 記錄失敗
 - `otel` -  OpenTelemetry 記錄失敗
+- `audit_log_database` - Proxy 在重試約 30 秒後仍無法儲存至資料庫的稽核記錄項目，每筆遺失的記錄一項 <SinceVersion v="1.113.0" />
 
 ## 防護欄指標 {#guardrail-metrics}
 

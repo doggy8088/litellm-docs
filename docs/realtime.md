@@ -15,6 +15,7 @@ import TabItem from '@theme/TabItem';
 - Bedrock
 - Meta Muse Voice，僅限轉錄 ([查看完整文件](/docs/providers/meta#muse-voice-realtime-transcription))
 - ElevenLabs Scribe v2 Realtime，僅限轉錄 ([查看完整文件](/docs/providers/elevenlabs#realtime-transcription-scribe-v2-realtime)) <SinceVersion v="1.113.0" />
+- Gnani Prisma，僅限轉錄（[查看完整文件](/docs/providers/gnani#realtime-transcription)） <SinceVersion v="1.113.0" />
 - OpenAI Live 模型，例如 `gpt-live-1`，使用其專屬的 `/v1/live/sessions` 路由（[查看完整文件](/docs/live_sessions)）
 - 使用 `gpt-live-transcribe` 在 OpenAI 與 Azure 上進行即時轉錄（[見下文](#live-transcription-with-gpt-live-transcribe)）
 - 使用 `gpt-realtime-translate` 的即時語音翻譯（OpenAI 與 Azure），使用其專屬的 `/v1/realtime/translations` 路由（[查看完整文件](/docs/realtime_translation)）

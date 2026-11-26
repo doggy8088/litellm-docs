@@ -59,6 +59,20 @@ curl -X POST 'http://0.0.0.0:4000/key/delete' \
 />
 
 
+## 稽核記錄寫入失敗時 <SinceVersion v="1.113.0" /> {#when-an-audit-log-write-fails-sinceversion-v11130-}
+
+即使資料庫無法儲存稽核記錄，對金鑰、團隊、使用者、模型或其他受稽核物件的變更仍會成功。Proxy 會記錄一則警告，然後在背景重試寫入，最長 30 秒。若仍無法儲存該筆記錄，Proxy 會將其記錄為錯誤並附上物件名稱，同時計入 `litellm_callback_logging_failures_metric`（`callback_name="audit_log_database"`），以便您針對遺失的稽核記錄發出警示：
+
+```yaml
+groups:
+  - name: litellm-audit
+    rules:
+      - alert: AuditLogEntriesLost
+        expr: increase(litellm_callback_logging_failures_metric_total{callback_name="audit_log_database"}[5m]) > 0
+```
+
+若資料庫停機超過重試期間，只要過去 5 分鐘內有任何記錄遺失，此規則就會觸發，而 Proxy 記錄中會針對每一筆顯示 `Failed Creating audit log for <action> <table> <object id>`。
+
 ## 將稽核記錄匯出至外部儲存 {#export-audit-logs-to-external-storage}
 
 除了將稽核記錄儲存在資料庫中，您也可以將其匯出至外部儲存後端（例如 S3）。記錄會批次處理並以非同步方式上傳，因此不會阻擋您的 proxy 請求。

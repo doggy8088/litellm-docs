@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 OpenTelemetry v2（OTel v2）是 LiteLLM Proxy 的下一代追蹤。它為您提供**每個請求一條乾淨的 trace**，涵蓋傳入的 HTTP 呼叫、驗證、防護欄、LLM 呼叫本身，以及內部資料庫／快取工作，全部都嵌套在同一棵樹中。
 
-它遵循標準的 [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)，因此它產生的 traces 可在任何 OTel 後端（Grafana Tempo、Jaeger、Honeycomb、Datadog，…）中讀取，並附帶針對熱門 LLM 可觀測性工具（Arize、Phoenix、Langfuse、Weave、Langtrace、Levo、AgentOps、SigNoz）的現成預設。
+它遵循標準的 [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)，因此它產生的 traces 可在任何 OTel 後端（Grafana Tempo、Jaeger、Honeycomb、Datadog，…）中讀取，並附帶針對熱門 LLM 可觀測性工具（Arize、Phoenix、Langfuse、Weave、Langtrace、Levo、AgentOps、SigNoz、Mixpanel）的現成預設。
 
 :::info[選用功能]
 
@@ -37,7 +37,7 @@ POST /v1/chat/completions                  ← HTTP request (server span)
 - **一條 trace，端到端** — HTTP 請求、驗證、防護欄、LLM 呼叫與 DB 寫入都位於同一條 trace 中，且正確嵌套。
 - **豐富的 GenAI 屬性** — 每個 LLM 呼叫 span 都帶有 `gen_ai.*` 屬性：模型、提供者、token 使用量、成本、結束原因、請求參數等。
 - **基於標準** — 建置於官方 OpenTelemetry GenAI semantic conventions 之上，因此可與任何相容 OTel 的後端搭配使用。
-- **供應商預設** — 只要一行設定，就能以各工具所預期的格式將 traces 傳送到 Arize、Phoenix、Langfuse、Weave、Langtrace、Levo、AgentOps 或 SigNoz。
+- **供應商預設** — 只要一行設定，就能以各工具所預期的格式將 traces 傳送到 Arize、Phoenix、Langfuse、Weave、Langtrace、Levo、AgentOps、SigNoz 或 Mixpanel。
 - **預設安全** — 除非您明確選擇啟用，否則不會擷取 prompts 與 responses。雜訊路由（健康檢查、metrics 抓取、UI 資產）會自動排除。
 - **分散式追蹤** — 如果您的用戶端傳送 `traceparent` 標頭，LiteLLM 的 spans 會巢狀地嵌入您現有的 trace 中。
 
@@ -298,6 +298,21 @@ SIGNOZ_INGESTION_KEY="your-ingestion-key"                              # omit fo
 
 </TabItem>
 
+<TabItem value="mixpanel" label="Mixpanel">
+
+```yaml title="config.yaml"
+litellm_settings:
+  callbacks: ["mixpanel"]
+```
+
+```shell
+LITELLM_OTEL_V2=true
+MIXPANEL_PROJECT_TOKEN="your-mixpanel-project-token"
+MIXPANEL_REGION="us"   # optional: "us" (default), "eu", or "in"
+```
+
+</TabItem>
+
 </Tabs>
 
 :::tip[同時傳送到多個後端]
@@ -327,6 +342,7 @@ litellm_settings:
 | Levo | `levo` | `LEVOAI_API_KEY`、`LEVOAI_ORG_ID`、`LEVOAI_WORKSPACE_ID`、`LEVOAI_COLLECTOR_URL` | — | Levo collector | 僅標準化 `gen_ai.*` | 否 |
 | AgentOps | `agentops` | `AGENTOPS_API_KEY` | `AGENTOPS_SERVICE_NAME`（預設 `agentops`）、`AGENTOPS_ENVIRONMENT`（無預設） | AgentOps（`https://otlp.agentops.ai/v1/traces`） | 僅標準化 `gen_ai.*` | 否 |
 | SigNoz | `signoz` | `SIGNOZ_INGESTION_ENDPOINT`（OTLP 基底 URL；會附加 `/v1/traces`） | `SIGNOZ_INGESTION_KEY`（以 `signoz-ingestion-key` 傳送；自架可省略） | SigNoz Cloud 或自架 SigNoz，OTLP HTTP | 僅標準化 `gen_ai.*` | 是 |
+| Mixpanel | `mixpanel` | `MIXPANEL_PROJECT_TOKEN` | `MIXPANEL_REGION`（`us` 預設、`eu` 或 `in`）、`MIXPANEL_ENDPOINT` | Mixpanel OTLP traces（`https://ingestion-<region>.mixpanel.com/v1/ai/otel/traces`） | 標準化 `gen_ai.*` + `user.id` | 是 |
 
 附註：
 
@@ -545,6 +561,27 @@ Langtrace 只在一個自訂路徑攝取 JSON 格式的 OTLP，因此 litellm �
 
 </TabItem>
 
+<TabItem value="mixpanel-shot" label="Mixpanel">
+
+#### Mixpanel 會呈現什麼 {#what-mixpanel-renders}
+
+開啟 Mixpanel；spans 會送達 Mixpanel 的區域 OTLP traces 端點（`/v1/ai/otel/traces`），帶有標準 `gen_ai.*` 屬性，而 `user.id` 會對應到 Mixpanel 的 `distinct_id`。
+
+#### 由 `mixpanel` 對應器新增的屬性 {#attributes-added-by-the-mixpanel-mapper}
+
+| 屬性 | 目的 |
+|---|---|
+| `user.id` | 對應到 Mixpanel `distinct_id` 的終端使用者識別碼，會出現在每個 span 上 |
+
+#### 設定注意事項 {#setup-notes-8}
+
+- 驗證使用 HTTP Basic（`Authorization: Basic <base64(project_token:)>`），由 `MIXPANEL_PROJECT_TOKEN` 自動建立。
+- Mixpanel 要求每個 span 都有非空的 `user.id` 屬性，沒有的 span 會被捨棄。LiteLLM 只會在傳送到 Mixpanel 的 spans 上、而不對其他後端，加上 `user.id`，來源如[設定 `user.id`](./mixpanel#setting-userid)所列。
+- 將 `MIXPANEL_REGION` 設為 `us`（預設）、`eu` 或 `in`，以選擇 `https://ingestion-<region>.mixpanel.com/v1/ai/otel/traces`。
+- 依團隊與依金鑰的路由可透過 `mixpanel_project_token` 與 `mixpanel_region` 使用。請參閱 [Mixpanel](./mixpanel)。
+
+</TabItem>
+
 <TabItem value="generic-shot" label="Generic OTLP">
 
 #### 通用 OTLP 後端會呈現什麼 {#what-a-generic-otlp-backend-renders}
@@ -555,7 +592,7 @@ Langtrace 只在一個自訂路徑攝取 JSON 格式的 OTLP，因此 litellm �
 
 除了 [Span 屬性](#span-attributes) 中列出的標準化 `gen_ai.*` 和 `litellm.*` 金鑰，以及在 `LITELLM_OTEL_LEGACY_COMPAT=true` 時的 `legacy` Traceloop 金鑰之外，沒有其他內容。
 
-#### 設定注意事項 {#setup-notes-8}
+#### 設定注意事項 {#setup-notes-9}
 
 此路徑適用於 Jaeger、Grafana Tempo、Honeycomb、Datadog、Splunk Observability Cloud，以及任何其他使用標準 OTLP 的後端。SigNoz 有自己的 `signoz` 預設，並提供每個團隊的攝取金鑰；請參閱 [SigNoz](./signoz)。如果後端未列於上方且沒有專用分頁，就請使用這個。若是 Grafana Cloud，請參閱 [Grafana Cloud](./grafana_cloud)，其中涵蓋 OTLP gateway 的驗證格式與預建的 GenAI 儀表板。
 
@@ -929,7 +966,7 @@ OTEL_PYTHON_FASTAPI_EXCLUDED_URLS="/health,/internal"
 
 ## 每個金鑰 / 每個團隊的憑證（多租戶） {#per-key--per-team-credentials-multi-tenant}
 
-一個 proxy 可以服務多個租戶：團隊或虛擬 key 會帶有自己的後端憑證，因此它的 traces 會送到該租戶自己的 Langfuse 專案、Arize 空間、Weave 專案、New Relic 帳戶或 SigNoz 帳戶，而不是 proxy 全域的那一個。憑證來自 proxy 在認證時解析出的 key 與 team，絕不來自 request body，因此呼叫端無法選擇其他租戶的後端。
+一個 proxy 可以服務多個租戶：團隊或虛擬 key 會帶有自己的後端憑證，因此它的 traces 會送到該租戶自己的 Langfuse 專案、Arize 空間、Weave 專案、New Relic 帳戶、SigNoz 帳戶或 Mixpanel 專案，而不是 proxy 全域的那一個。憑證來自 proxy 在認證時解析出的 key 與 team，絕不來自 request body，因此呼叫端無法選擇其他租戶的後端。
 
 這與 [依 Team/Key 的 logging](../proxy/team_logging) 中說明的相同 key/team callback 機制；v2 只是將其套用到 OTel 預設設定。沒有另外的管理員擁有的「destination」物件，而 `/credentials` 儲存的是 LLM provider 憑證，不是 logging 憑證。
 
@@ -942,6 +979,7 @@ OTEL_PYTHON_FASTAPI_EXCLUDED_URLS="/health,/internal"
 | Weave (W&B) | `weave_otel` | `wandb_api_key`、`weave_project_id` | W&B 帳戶與 Weave 專案 |
 | New Relic | `newrelic` | `newrelic_api_key`、`newrelic_region`（`us` 或 `eu`，預設 `us`） | New Relic 帳戶及其資料中心 |
 | SigNoz | `signoz` | `signoz_ingestion_key`、`signoz_ingestion_endpoint` | SigNoz 帳戶，以及選用的 SigNoz Cloud 區域或其傳送到的自架 collector |
+| Mixpanel | `mixpanel` | `mixpanel_project_token`、`mixpanel_region`（`us`、`eu` 或 `in`，預設 `us`） | Mixpanel 專案及其區域攝取端點 |
 
 其他所有預設設定（`arize_phoenix`、`langtrace`、`levo`、`agentops`）以及純粹的 `otel` OTLP exporter 都沒有每個請求的憑證，因此它們一律會以 proxy 全域設定輸出。對於 Phoenix，請改以專案而不是後端來區分租戶，並在團隊或 key 上設定 [`phoenix_project_name`](./phoenix_integration#route-traces-to-a-phoenix-project-per-team-or-key)。若要維持單一後端，但用租戶自己的 `service.name` 標記其 spans，請改在 key 或 team 的 `metadata` 中設定 `otel_service_name`。
 
@@ -1062,7 +1100,7 @@ guardrail 與 MCP spans 會在 `llm_only` 下被捨棄，因此在任何模型�
 
 ### 依租戶選擇 prompt 擷取 {#choose-prompt-capture-per-tenant}
 
-團隊或金鑰可以選擇自己的目的地是否接收 prompts 與 responses，獨立於 proxy 在全域擷取的內容之外。在 `langfuse_otel`、`arize`、`weave_otel` 或 `newrelic` 回呼中，在其憑證旁設定 `capture_message_content`：
+團隊或金鑰可以選擇自己的目的地是否接收 prompts 與 responses，獨立於 proxy 在全域擷取的內容之外。在 `langfuse_otel`、`arize`、`weave_otel`、`newrelic` 或 `mixpanel` 回呼中，在其憑證旁設定 `capture_message_content`：
 
 ```shell
 curl -X POST 'http://localhost:4000/team/<team-id>/callback' \
@@ -1112,13 +1150,13 @@ LITELLM_OTEL_EXCLUDED_SERVICES=redis,postgres
 
 當兩者都設定時，以設定值為準。可接受的服務名稱是 `redis`、`postgres`、`batch_write_to_db` 與 `redis_*` 名稱（`postgresql` 也適用），不論大小寫。當某個 span 的 `db.system.name`，或舊版的 `db.system`，屬於列出的系統之一時，就會被捨棄。像 `auth` 這類未知名稱會被記錄為錯誤並忽略；其旁邊有效的名稱仍然適用，而 proxy 會正常啟動。若兩者都未設定，則不會捨棄任何內容
 
-全域設定會縮小金鑰與團隊目的地，意即在團隊或金鑰上設定的 `langfuse_otel`、`arize`、`weave_otel` 或 `newrelic` 回呼，如[在團隊上設定](#set-it-on-a-team)所示。您自己的 exporters、`otel` collector，以及 `litellm_settings.callbacks` 中列出的任何預設（包括 proxy 全域的 `langfuse_otel`），都會繼續接收每個 span。請在 proxy YAML 或環境中設定全域設定。
+全域設定會縮小金鑰與團隊目的地，意即在團隊或金鑰上設定的 `langfuse_otel`、`arize`、`weave_otel`、`newrelic` 或 `mixpanel` 回呼，如[在團隊上設定](#set-it-on-a-team)所示。您自己的 exporters、`otel` collector，以及 `litellm_settings.callbacks` 中列出的任何預設（包括 proxy 全域的 `langfuse_otel`），都會繼續接收每個 span。請在 proxy YAML 或環境中設定全域設定。
 
 ### 為單一團隊或金鑰覆寫排除 {#override-exclusions-for-one-team-or-key}
 
 在目的地的 `callback_vars` 中設定 `excluded_services`，以取代全域排除集合。可接受的值與全域設定相同，都是資料儲存名稱，以逗號分隔的字串提供。例如，`"redis,postgres"` 會從該目的地排除 Redis 與 PostgreSQL spans，即使全域設定是空的。`"none"` 不會排除任何資料庫 spans，即使全域設定排除了它們。省略此變數則跟隨全域設定。這些值會取代全域集合，而不是與它合併。
 
-此覆寫需要 `LITELLM_OTEL_V2=true` 以及可作為目的地的回呼：`langfuse_otel`、`arize`、`weave_otel` 或 `newrelic`。它可用於 `success` 與 `success_and_failure` 項目，不可用於只處理失敗的項目。例如，將它註冊在團隊的 New Relic 目的地上：
+此覆寫需要 `LITELLM_OTEL_V2=true` 以及可作為目的地的回呼：`langfuse_otel`、`arize`、`weave_otel`、`newrelic` 或 `mixpanel`。它可用於 `success` 與 `success_and_failure` 項目，不可用於只處理失敗的項目。例如，將它註冊在團隊的 New Relic 目的地上：
 
 ```shell
 curl -X POST 'http://localhost:4000/team/<team-id>/callback' \
