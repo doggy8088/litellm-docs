@@ -7952,6 +7952,18 @@
       "inputTokens": 0,
       "outputTokens": 0
     },
+    "release_notes/v1.108.18/index.md": {
+      "sourceSha256": "70e4d4603b74c5217fba831c73cc554b18326f570b1341b1391539ead216185b",
+      "translationSha256": "266fc74b76ada6b3c99ed9e9af2893659e0884429e30c1fb1dc5bfe900fd6824",
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "release_notes/v1.108.19/index.md": {
+      "sourceSha256": "a47e96553cfffa0a79fe3f1cbc331147d94de51d3197ba2d79b0a6ff3c9c492c",
+      "translationSha256": "128863a11e3089ede286b8a37f7ebe3b60b60161bf3503c6374572474ce286be",
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
     "release_notes/v1.108.2/index.md": {
       "sourceSha256": "ad4bbc1f54973bfe5af91a701c5d373ce98514dc2c07f0e48d3d5ab7ebe5866f",
       "translationSha256": "7b2d0bc81b038812e4ada883d607bd7b6273be9b2a8287af3f23da40df670a4e",
