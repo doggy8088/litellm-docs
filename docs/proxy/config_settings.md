@@ -1301,6 +1301,7 @@ router_settings:
 | LANGFUSE_DEBUG | 切換 Langfuse 的除錯模式。僅 `true` 或 `1` 會啟用；任何其他值皆為關閉
 | LANGFUSE_FLUSH_AT | Langfuse 回呼每次 OTLP 匯出請求批次處理的 span 數；預設為 `512`。不是介於 `1` 與 `100000` 之間的整數值會記錄警告並使用預設值
 | LANGFUSE_FLUSH_INTERVAL | Langfuse 回呼在各 OTLP 匯出批次之間等待的秒數；預設為 `1`。不是大於 `0` 的整數值會記錄警告並使用預設值
+| LANGFUSE_MEDIA_QUEUE_MAX_BYTES | 以位元組為單位的記憶體預算，`langfuse` 回呼在等待將 base64 媒體上傳至 Langfuse 媒體儲存前所保留的量，每組 Langfuse 憑證、每個 worker 各計；預設為 `104857600`（100 MB）。放不下的媒體會以警告略過，其 trace 會保留一個沒有檔案的參照。小於 `1` 的值會被視為 `1`
 | LANGFUSE_PROMPT_CACHE_DEFAULT_TTL_SECONDS | Langfuse 回呼在下一個請求刷新前快取已擷取提示的時間長度；預設為 `60`。刷新失敗時會繼續提供快取中的提示。必須是整數秒：Langfuse SDK 在匯入時會將其讀取為整數，因此任何其他值（例如 `abc` 或 `2.5`）都會使回呼失敗，並顯示指出此變數名稱的錯誤；負值會記錄警告並使用預設值
 | LANGFUSE_TRACING_ENVIRONMENT | Langfuse tracing 的環境。在 OTel v2 上，沒有自己的 `langfuse_environment` 的金鑰和 teams 也會使用它
 | LANGFUSE_HOST | Langfuse 服務的主機 URL。優先於 `LANGFUSE_BASE_URL` |

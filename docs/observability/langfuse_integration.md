@@ -394,6 +394,18 @@ chat(messages)
 
 請注意，如果您正在延續既有 trace，且將 `update_trace_keys` 設定為包含 `input` 或 `output`，同時您也設定了對應的 `mask_input` 或 `mask_output`，那麼該 trace 既有的 input 和/或 output 將會被替換成一則已遮蔽的訊息。這僅適用於 `langfuse_enable_update_trace_keys` 開啟時。
 
+### 圖片與其他 Base64 媒體 {#images-and-other-base64-media}
+
+<SinceVersion v="1.113.0" />
+
+`langfuse` 回呼會將 trace 中的 base64 媒體上傳至 Langfuse 媒體儲存，並在原處存放一段簡短參照，做法與 Langfuse SDK 相同。涵蓋範圍包括 OpenAI `image_url` 等 data URI、Anthropic 與 Vertex 的 base64 區塊，以及 Gemini `inline_data` 部分，位置在 trace 的輸入、輸出與 metadata 中。您開啟 trace 時，Langfuse UI 會從媒體儲存載入該檔案。不需要任何設定。
+
+自行架設的 Langfuse 需要一個媒體 bucket 才能使用此功能，請參閱 [Langfuse 自行架設指南](https://langfuse.com/self-hosting/deployment/infrastructure/blobstorage)。當 Langfuse 沒有媒體 bucket，或上傳失敗時，trace 仍會保留該參照、檔案則不存在，而 LiteLLM 會記錄一則警告，指出該媒體與該 trace。
+
+上傳會在背景執行，因此絕不會延遲請求。等待上傳的媒體會保留在記憶體中，每組 Langfuse 憑證、每個 worker 最多可保留 `LANGFUSE_MEDIA_QUEUE_MAX_BYTES`（預設 100 MB）。佇列滿了之後，新的媒體會以相同的警告略過，直到先前的上傳完成。
+
+`langfuse_otel` 回呼與 OpenTelemetry v2 Langfuse 路徑會以內嵌方式傳送媒體，不會上傳。
+
 ## 疑難排解與錯誤 {#troubleshooting--errors}
 
 ### 資料沒有被記錄到 Langfuse？  {#data-not-getting-logged-to-langfuse-}
